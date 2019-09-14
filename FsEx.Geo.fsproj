@@ -2,9 +2,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>netstandard2.0</TargetFramework>    
+    <TargetFramework>net472</TargetFramework>    <!--netstandard2.0 does not support [<IsByRefLike; IsReadOnly>] -->
     <LangVersion>preview</LangVersion>
-    <OtherFlags>$(OtherFlags)--warnon:3390</OtherFlags>  <!-- warnon:3390 is to verify xml docstrings https://devblogs.microsoft.com/dotnet/announcing-f-5/#improved-compiler-analysis-for-library-authors -->
+    <OtherFlags>$(OtherFlags)--warnon:3390</OtherFlags>  <!-- warnon:3390 is to verify xml docstrings https://devblogs.microsoft.com/dotnet/announcing-f-5/0improved-compiler-analysis-for-library-authors -->
 
     <NeutralLanguage>en</NeutralLanguage>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>    <!--to only have the english resources-->
@@ -27,10 +27,10 @@
     <Authors>GoswinR</Authors>
     <Copyright>Goswin Rothenthal 2021</Copyright>
 
-    <Description>An F# extension and utility library, mostly focused on scripting.</Description>
-    <PackageDescription>An F# extension and utility library, mostly focused on scripting.</PackageDescription><!--used on nuget.org-->
+    <Description>An F0 extension and utility library, mostly focused on scripting.</Description>
+    <PackageDescription>An F0 extension and utility library, mostly focused on scripting.</PackageDescription><!--used on nuget.org-->
 
-    <WarningLevel>5</WarningLevel>
+    <WarningLevel>3</WarningLevel>
     <!-- WarningLevel 3 is default , see https://github.com/dsyme/fsharp-presentations/blob/master/design-notes/off-by-default-warnings.md -->
   </PropertyGroup>
 
@@ -47,16 +47,31 @@
     <PackageIcon>logo128.png</PackageIcon>
     <PackageReadmeFile>READMEnuget.md</PackageReadmeFile> <!--  -->
     
-    <PackageTags>F# Geometry</PackageTags>
+    <PackageTags>F0 Geometry</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
     <None Include="README.md" />
     <None Include="Doc/READMEnuget.md" Pack="true" PackagePath="" />
-    <None Include="Doc/logo128.png" Pack="true" PackagePath="" /> <!--PackagePath = "" makes the file availabe to nuget pack tool-->
-
-    <Compile Include="Src/Geometyry3D.fsx" />
-    <Compile Include="Src/Geometyry2D.fsx" />
+    <None Include="Doc/logo128.png" Pack="true" PackagePath="" />
+    <Compile Include="Src\Util.fs" />
+    <Compile Include="Src\Format.fs" />
+    <Compile Include="Src\Vectors2D.fs" />
+    <Compile Include="Src\Vectors3D.fs" />
+    <Compile Include="Src\DebugDraw.fs" />
+    <Compile Include="Src\BBox.fs" />
+    <Compile Include="Src\Rotate.fs" />
+    <Compile Include="Src\Quat.fs" />
+    <Compile Include="Src\UnitVc_members.fs" />
+    <Compile Include="Src\Vc_members.fs" />
+    <Compile Include="Src\Pt_members.fs" />
+    <Compile Include="Src\UnitVec_members.fs" />
+    <Compile Include="Src\Vec_members.fs" />
+    <Compile Include="Src\Pnt_members.fs" />
+    <Compile Include="Src\Intersect.fs" />
+    <Compile Include="Src\ResizeArray.fs" />
+    <Compile Include="Src\Points.fs" />
+    <Compile Include="Src\Loops.fs" /> <!--PackagePath = "" makes the file availabe to nuget pack tool-->
     
     
   </ItemGroup>
