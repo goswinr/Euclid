@@ -57,6 +57,67 @@ module AutoOpenVc =
         /// 90 degree rotation clockwise
         member inline v.RotatedCW  = Vc( v.Y,  -v.X )
 
+        /// The diamond angle is always positive and in the range of 0.0 to 4.0 ( for 360 degrees) 
+        /// 0.0 = XAxis,  going Counter clockwise.
+        member inline v.DiamondAngle =
+            // https://stackoverflow.com/a/14675998/969070       
+            #if DEBUG // TODO : with this test all  operations are 2.5 times slower 
+            if v.IsTiny 1e-16  then FsExGeoException.Raise $"FsEx.Geo.Vc.DiamondAngle Failed for tiny Vector %O{v}."  
+            #endif
+            if v.Y >= 0.0 then 
+                if v.X >= 0.0 then   
+                    v.Y/(v.X+v.Y) 
+                else             
+                    1.0 - v.X/(-v.X+v.Y)
+            else
+                if v.X < 0.0 then   
+                    2.0 - v.Y/(-v.X-v.Y) 
+                else 
+                    3.0 + v.X/(v.X-v.Y) 
+        
+        /// Returns the Angle in Radians from XAxis,  
+        /// Going Counter clockwise till two Pi.
+        member inline v.AngleTowPi =
+            // https://stackoverflow.com/a/14675998/969070
+            #if DEBUG // TODO : with this test all  operations are 2.5 times slower 
+            if v.IsTiny 1e-16  then FsExGeoException.Raise $"FsEx.Geo.Vc.AngleTowPi Failed for tiny Vector %O{v}."  
+            #endif
+            let a = Math.Atan2(v.Y, v.X) 
+            if a < 0. then  
+                a + Util.twoPi
+            else  
+                a
+        
+        /// Returns the Angle in Degrees from XAxis.  
+        /// Going Counter clockwise till 360.
+        member inline v.Angle360 =
+            v.AngleTowPi |> toDegrees
+
+        /// Returns the Angle in Radians from XAxis, 
+        /// Ignores orientation.
+        /// Range 0.0 to Pi.
+        member inline v.AnglePi =
+            // https://stackoverflow.com/a/14675998/969070
+            #if DEBUG // TODO : with this test all  operations are 2.5 times slower 
+            if v.IsTiny 1e-16  then FsExGeoException.Raise $"FsEx.Geo.Vc.AngleTowPi Failed for tiny Vector %O{v}."  
+            #endif
+            let a = Math.Atan2(v.Y, v.X) 
+            if a < 0. then  
+                a + Math.PI
+            else  
+                a
+        
+        /// Returns the Angle in Radians from XAxis, 
+        /// Ignores orientation.
+        /// Range 0.0 to 180.
+        member inline v.Angle180 =
+            v.AnglePi |> toDegrees
+
+        member inline v.AsPt         = Pt( v.X, v.Y)
+        member inline v.AsVec        = Vec(v.X, v.Y, 0.0)
+        member inline v.AsPnt        = Pnt(v.X, v.Y, 0.0)
+        member inline v.AsVecWithZ z = Vec(v.X, v.Y, z)
+        member inline v.AsPntWithZ z = Pnt(v.X, v.Y, z)
 
         //----------------------------------------------------------------------------------------------
         //--------------------------  Static Members  --------------------------------------------------
@@ -119,29 +180,74 @@ module AutoOpenVc =
         /// Takes vector orientation into account.
         /// Range 0.0 to PI( = 0 to 180 degree)
         static member inline anglePi (a:Vc) (b:Vc) = 
-            UnitVc.anglePi a.Unitized b.Unitized
+            UnitVc.anglePi a.Unitized b.Unitized // TODO optimise using Math.Atan2
+            //Math.Atan2(Cross(A,B), Dot(A,B));
+            //compare too https://stackoverflow.com/a/21486462/969070 !
+
+            //or https://bl.ocks.org/shancarter/1034db3e675f2d3814e6006cf31dbfdc
 
         /// Returns positive angle between two UnitVectors in Radians. Ignores orientation. 
         /// Range 0.0 to PI/2 ( = 0 to 90 degree)
         static member inline angleHalfPi (a:Vc) (b:Vc) = 
-            UnitVc.angleHalfPi a.Unitized b.Unitized
+            UnitVc.angleHalfPi a.Unitized b.Unitized // TODO optimise using Math.Atan2
         
 
         /// Returns positive angle between two UnitVectors in Degrees. 
         /// Takes vector orientation into account.
         /// Range 0 to 180 degrees.
         static member inline angle180 (a:Vc) (b:Vc) = 
-            UnitVc.anglePi a.Unitized b.Unitized |>  toDegrees 
+            UnitVc.anglePi a.Unitized b.Unitized |>  toDegrees // TODO optimise using Math.Atan2
 
 
         /// Returns positive angle between two UnitVectors in Degrees,
         /// Ignores vector orientation.
         /// Range: 0 to 90 degrees.
         static member inline angle90 (a:Vc) (b:Vc) = 
-            UnitVc.angleHalfPi a.Unitized b.Unitized |>  toDegrees 
+            UnitVc.angleHalfPi a.Unitized b.Unitized |>  toDegrees// TODO optimise using Math.Atan2
+            
+        /// The diamond angle is always positive and in the range of 0.0 to 4.0 ( for 360 degrees) 
+        /// 0.0 = XAxis,  going Counter clockwise.
+        static member inline diamondAngle(a:Vc) =
+            // https://stackoverflow.com/a/14675998/969070           
+            if a.Y >= 0.0 then 
+                if a.X >= 0.0 then   
+                    a.Y/(a.X+a.Y) 
+                else             
+                    1.0 - a.X/(-a.X+a.Y)
+            else
+                if a.X < 0.0 then   
+                    2.0 - a.Y/(-a.X-a.Y) 
+                else 
+                    3.0 + a.X/(a.X-a.Y) 
         
+        /// Returns positive angle for rotating  counter clockwise from Vector 'a' to Vector 'b' .
+        /// In Radians
+        /// Range: 0.0 to 2 PI ( = 0 to 360 degrees)
+        static member inline angleTwoPi (a:Vc , b:Vc)   =              
+            let r = b.AngleTowPi - a.AngleTowPi            
+            if r >= 0. then  r
+            else r + Util.twoPi 
 
-     
+        /// Returns positive angle for rotating  counter clockwise from Vector 'a' to Vector 'b' .
+        /// In Degree
+        /// Range: 0.0 to 2 PI ( = 0 to 360 degrees)
+        static member inline angle360 (a:Vc, b:Vc)  = 
+            Vc.angleTwoPi (a,b) |> toDegrees
+
+        /// Returns positive angle of vector. Counter clockwise from X Axis.
+        /// In Radians
+        /// Range: 0.0 to 2 PI ( = 0 to 360 degrees)
+        static member inline angleTwoPi (v:Vc)   =              
+            v.AngleTowPi
+
+        /// Returns positive angle of vector. Counter clockwise from X Axis.
+        /// In Degree
+        /// Range: 0.0 to 2 PI ( = 0 to 360 degrees)
+        static member inline angle360 (v:Vc)  = 
+            v.Angle360
+        /// Rotate the 2D Point Counter Clockwise.
+        /// For better Performance precompute the Rotate2D struct and use its member to rotate.
+        static member inline rotate (angDegree) (v:Vc) = (Rotate.createFromDegrees angDegree).Rotate v
         
         //static member inline ( + )  (a:Vc, b:Vc) = Pnt (a.X + b.X , a.Y + b.Y , a.Z + b.Z) // required for Seq.average
         //static member inline DivideByInt (v:Vc, i:int) = if i<>0 then v / float i else failwithf "DivideByInt 0 %O " pt  // needed by  'Array.average'

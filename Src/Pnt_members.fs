@@ -10,8 +10,11 @@ module AutoOpenPnt =
 
     type Pnt with   
     
-        member inline pt.IsZero = pt.X = 0.0 && pt.Y = 0.0 && pt.Z= 0.0
+        member inline pt.IsOrigin = pt.X = 0.0 && pt.Y = 0.0 && pt.Z= 0.0
+        member inline v.IsAlomstOrigin tol = abs v.X < tol && abs v.Y < tol  
+       
         //member inline v.IsInValid =  Double.IsNaN v.X || Double.IsNaN v.Y || Double.IsNaN v.Z || Double.IsInfinity v.X || Double.IsInfinity v.Y || Double.IsInfinity v.Z
+        
         member inline pt.WithX x = Pnt (x ,pt.Y, pt.Z) // returns new Vector with new x coordinate, y and z the same as before
         member inline pt.WithY y = Pnt (pt.X, y, pt.Z)
         member inline pt.WithZ z = Pnt (pt.X ,pt.Y, z)
@@ -22,8 +25,30 @@ module AutoOpenPnt =
         member inline pt.DistFromOriginSquareInXY = pt.X*pt.X + pt.Y*pt.Y
         member inline pt.WithDistFromOrigin (l:float) = 
             let d = pt.DistFromOrigin 
-            if d < zeroLenghtTol then FsExGeoException.Raise $"pnt.WithDistFromOrigin  %O{pt} is too small to be scaled" 
+            if d < zeroLenghtTol then FsExGeoException.Raise $"pnt.WithDistFromOrigin  %O{pt} is too small to be scaled." 
             pt * (l/d) 
+        
+        /// Returns the Diamond Angle from this point to another point.
+        /// The diamond angle is always positive and in the range of 0.0 to 4.0 ( for 360 degrees) 
+        /// 0.0 = XAxis,  going Counter clockwise. Ignoring Z component.
+        member inline p.DiamondAngleTo(o:Pnt) =
+            // https://stackoverflow.com/a/14675998/969070            
+            let x = o.X-p.X
+            let y = o.Y-p.Y
+            if abs x < 1e-16 && abs y < 1e-16 then FsExGeoException.Raise $"FsEx.Geo.Pt.DiamondAngleTo Failed for too short Distance between %O{p} and %O{o}."
+            if y >= 0.0 then 
+                if x >= 0.0 then   
+                    y/(x+y) 
+                else             
+                    1.0 - x/(-x+y)
+            else
+                if x < 0.0 then   
+                    2.0 - y/(-x-y) 
+                else 
+                    3.0 + x/(x-y)  
+        
+        member inline p.AsVec       = Vec(p.X,p.Y,p.Z)
+        member inline p.AsPt        = Pt(p.X,p.Y)
 
         //----------------------------------------------------------------------------------------------
         //--------------------------  Static Members  --------------------------------------------------

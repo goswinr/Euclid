@@ -29,6 +29,46 @@ module AutoOpenUnitVec =
         /// Tests if dot product is bigger than 0.0
         member inline v.MatchesOrientation (vv:UnitVec) = v*vv > 0. // direction match
         
+ 
+        /// The diamond angle is always positive and in the range of 0.0 to 4.0 ( for 360 degrees) 
+        /// 0.0 = XAxis,  going Counter clockwise. Ignoring Z component.
+        member inline v.DiamondAngleInXY =
+            // https://stackoverflow.com/a/14675998/969070            
+            #if DEBUG 
+            if abs(v.X) < zeroLenghtTol && abs(v.Y) < zeroLenghtTol then FsExGeoDivByZeroException.Raise $"UnitVec.DiamondAngleInXY: input vector is vertical or zero length:%O{v}"            
+            #endif
+            if v.Y >= 0.0 then 
+                if v.X >= 0.0 then   
+                    v.Y/(v.X+v.Y) 
+                else             
+                    1.0 - v.X/(-v.X+v.Y)
+            else
+                if v.X < 0.0 then   
+                    2.0 - v.Y/(-v.X-v.Y) 
+                else 
+                    3.0 + v.X/(v.X-v.Y) 
+        
+        /// Returns the Angle in Radians from XAxis,  
+        /// Going Counter clockwise till two Pi. Ignoring Z component.
+        member inline v.AngleTowPiInXY =
+            // https://stackoverflow.com/a/14675998/969070
+            #if DEBUG 
+            if abs(v.X) < zeroLenghtTol && abs(v.Y) < zeroLenghtTol then FsExGeoDivByZeroException.Raise $"UnitVec.AngleTowPiInXY: input vector is vertical or zero length:%O{v}"            
+            #endif
+            let a = Math.Atan2(v.Y, v.X) 
+            if a < 0. then  
+                a + Util.twoPi
+            else  
+                a        
+         
+        /// Returns the Angle in Degrees from XAxis.  
+        /// Going Counter clockwise till 360.
+        member inline v.Angle360InXY =
+            v.AngleTowPiInXY |> toDegrees
+        
+        member inline v.AsVec        = Vec(v.X, v.Y, v.Z)
+        member inline v.AsPnt        = Pnt(v.X, v.Y, v.Z)
+        member inline v.AsVc         = Vc(v.X, v.Y)        
 
         //----------------------------------------------------------------------------------------------
         //--------------------------  Static Members  --------------------------------------------------
@@ -155,29 +195,23 @@ module AutoOpenUnitVec =
         /// Ignores vector orientation.
         /// Range: 0 to 90 degrees.
         static member inline angle90 (a:UnitVec) (b:UnitVec) = 
-            UnitVec.angleHalfPi a b |>  toDegrees 
-    
+            UnitVec.angleHalfPi a b |>  toDegrees  
+ 
         
         /// Returns positive angle from Vector 'a' to Vector 'b' projected in XY Plane.
         /// In Radians
         /// Considering counter clockwise rotation round the World ZAxis
         /// Range: 0.0 to 2 PI ( = 0 to 360 degrees)
-        static member inline angleTwoPiProjectedInXYPlane (a:UnitVec, b:UnitVec)   = 
-            if abs(a.X) < zeroLenghtTol && abs(a.Y) < zeroLenghtTol then 
-                FsExGeoDivByZeroException.Raise $"UnitVec.angleTwoPiProjectedInXYPlane: input vector a is vertical or zero length:%O{a}"
-            if abs(b.X) < zeroLenghtTol && abs(b.Y) < zeroLenghtTol then 
-                FsExGeoDivByZeroException.Raise $"UnitVec.angleTwoPiProjectedInXYPlane: input vector b is vertical or zero length:%O{b}"
-            let va = Vc(a.X, a.Y)  
-            let vb = Vc(b.X, b.Y)  
-            let ang = Vc.anglePi va vb 
-            if Vc.cross (va, vb) >= 0.0 then ang  else  twoPi - ang // TODO test
+        static member inline angleTwoPiInXY (a:UnitVec, b:UnitVec)   =
+            let r = b.AngleTowPiInXY  - a.AngleTowPiInXY            
+            if r >= 0. then  r
+            else r + Util.twoPi 
 
         /// Returns positive angle of two Vector projected in XY Plane in Degrees
         /// Considering positve rotation round the World ZAxis
         /// Range:  0 to 360 degrees
-        static member inline angle360ProjectedInXYPlane (a:UnitVec, b:UnitVec)   = 
-            UnitVec.angleTwoPiProjectedInXYPlane (a,b) |> toDegrees        
-        
+        static member inline angle360InXY (a:UnitVec, b:UnitVec)   = 
+            UnitVec.angleTwoPiInXY (a, b) |> toDegrees
     
         /// Rotate the UnitVector in Degrees around X axis, from Y to Z Axis, Counter Clockwise looking from right.
         /// For better Performance precompute the Rotate2D struct and use its member to rotate.

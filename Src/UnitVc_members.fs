@@ -33,6 +33,43 @@ module AutoOpenUnitVc =
 
         /// 90 degree rotation clockwise
         member inline v.RotatedCW  = UnitVc.createUnchecked(  v.Y,  -v.X  )  
+
+        /// The diamond angle is always positive and in the range of 0.0 to 4.0 ( for 360 degrees) 
+        /// 0.0 = XAxis,  going Counter clockwise.
+        member inline v.DiamondAngle =
+            // https://stackoverflow.com/a/14675998/969070            
+            if v.Y >= 0.0 then 
+                if v.X >= 0.0 then   
+                    v.Y/(v.X+v.Y) 
+                else             
+                    1.0 - v.X/(-v.X+v.Y)
+            else
+                if v.X < 0.0 then   
+                    2.0 - v.Y/(-v.X-v.Y) 
+                else 
+                    3.0 + v.X/(v.X-v.Y) 
+
+        /// Returns the Angle in Radians from XAxis,  
+        /// Going Counter clockwise till two Pi.
+        member inline v.AngleTowPi =
+            // https://stackoverflow.com/a/14675998/969070
+            let a = Math.Atan2(v.Y, v.X) 
+            if a < 0. then  
+                a + Util.twoPi
+            else  
+                a
+        
+        /// Returns the Angle in Degrees from XAxis.  
+        /// Going Counter clockwise till 360.
+        member inline v.Angle360 =
+            v.AngleTowPi |> toDegrees
+        
+        member inline v.AsPt         = Pt( v.X, v.Y)
+        member inline v.AsVec        = Vec(v.X, v.Y, 0.0)
+        member inline v.AsUnitVec    = UnitVec.createUnchecked(v.X, v.Y, 0.0)
+        member inline v.AsPnt        = Pnt(v.X, v.Y, 0.0)
+        member inline v.AsVecWithZ z = Vec(v.X, v.Y, z)
+        member inline v.AsPntWithZ z = Pnt(v.X, v.Y, z)
      
         //----------------------------------------------------------------------------------------------
         //--------------------------  Static Members  --------------------------------------------------
@@ -132,15 +169,31 @@ module AutoOpenUnitVc =
         /// Ignores vector orientation.
         /// Range: 0 to 90 degrees.
         static member inline angle90 (a:UnitVc) (b:UnitVc) = 
-            UnitVc.angleHalfPi a b |>  toDegrees 
+            UnitVc.angleHalfPi a b |>  toDegrees    
         
 
+        /// The diamond angle is always positive and in the range of 0.0 to 4.0 ( for 360 degrees) 
+        /// 0.0 = XAxis,  going Counter clockwise.
+        static member inline diamondAngle(a:UnitVc) =
+            // https://stackoverflow.com/a/14675998/969070            
+            if a.Y >= 0.0 then 
+                if a.X >= 0.0 then   
+                    a.Y/(a.X+a.Y) 
+                else             
+                    1.0 - a.X/(-a.X+a.Y)
+            else
+                if a.X < 0.0 then   
+                    2.0 - a.Y/(-a.X-a.Y) 
+                else 
+                    3.0 + a.X/(a.X-a.Y) 
+        
         /// Returns positive angle for rotating  counter clockwise from Vector 'a' to Vector 'b' .
         /// In Radians
         /// Range: 0.0 to 2 PI ( = 0 to 360 degrees)
         static member inline angleTwoPi (a:UnitVc , b:UnitVc)   =              
-            let ang = UnitVc.anglePi a b 
-            if UnitVc.cross (a, b) >= 0.0 then ang  else  twoPi - ang // TODO test
+            let r = b.AngleTowPi  - a.AngleTowPi            
+            if r >= 0. then  r
+            else r + Util.twoPi 
 
         /// Returns positive angle for rotating  counter clockwise from Vector 'a' to Vector 'b' .
         /// In Degree
@@ -148,19 +201,17 @@ module AutoOpenUnitVc =
         static member inline angle360 (a:UnitVc, b:UnitVc)  = 
             UnitVc.angleTwoPi (a,b) |> toDegrees
 
-        /// Returns positive angle for rotating till vector counter clockwise from X Axis.
+        /// Returns positive angle of vector. Counter clockwise from X Axis.
         /// In Radians
         /// Range: 0.0 to 2 PI ( = 0 to 360 degrees)
         static member inline angleTwoPi (v:UnitVc)   =              
-            let a = acos (clamp11 v.X)
-            if v.Y >= 0.0 then a else twoPi - a // TODO test
+            v.AngleTowPi
 
-        /// Returns positive angle for rotating  till vector  counter clockwise from Vector X Axis
+        /// Returns positive angle of vector. Counter clockwise from X Axis.
         /// In Degree
         /// Range: 0.0 to 2 PI ( = 0 to 360 degrees)
         static member inline angle360 (v:UnitVc)  = 
-            UnitVc.angleTwoPi(v) |> toDegrees
-
+            v.Angle360
         
 
         /// Rotate the UnitVector in Degrees. Counter Clockwise.

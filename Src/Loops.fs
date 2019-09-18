@@ -2,7 +2,7 @@ namespace FsEx.Geo
 
 open System
     
-    
+open System .Collections.Generic   
 
 /// A counter-clockwise,  closed series of points.
 /// Checks for too short segments
@@ -10,7 +10,7 @@ open System
 /// Makes it Counterclockwise.
 /// Also check for self intersection.
 /// Does NOT remove colinear points.
-type Loop(points:ResizeArray<Pt>, minSegmentLength:float, snapThreshold:float) =
+type Loop(points:IList<Pt>, minSegmentLength:float, snapThreshold:float) =
         
     let pts = 
         if points.Count<3 then FsExGeoException.Raise $"FsEx.Geo.Loop constructor: Input ResizeArray needs to have a least three points, not {points.Count} " 

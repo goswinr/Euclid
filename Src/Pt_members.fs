@@ -11,7 +11,10 @@ module AutoOpenPt =
     
     type Pt with  
     
-        member inline pt.IsZero = pt.X = 0.0 && pt.Y = 0.0 
+        
+        member inline pt.IsOrigin = pt.X = 0.0 && pt.Y = 0.0 
+        member inline v.IsAlomstOrigin tol = abs v.X < tol && abs v.Y < tol 
+        
         //member inline v.IsInValid =  Double.IsNaN v.X || Double.IsNaN v.Y || Double.IsNaN v.Z || Double.IsInfinity v.X || Double.IsInfinity v.Y || Double.IsInfinity v.Z
         
         member inline pt.WithX x = Pt (x ,pt.Y) // returns new Vector with new x coordinate, y and z the same as before
@@ -26,6 +29,48 @@ module AutoOpenPt =
             if d < zeroLenghtTol then FsExGeoException.Raise $"pnt.WithDistFromOrigin  %O{pt} is too small to be scaled" 
             pt * (l/d) 
         
+        /// Returns the Diamond Angle from this point to another point.
+        /// The diamond angle is always positive and in the range of 0.0 to 4.0 ( for 360 degrees) 
+        /// 0.0 = XAxis,  going Counter clockwise.
+        member inline p.DiamondAngleTo(o:Pt) =
+            // https://stackoverflow.com/a/14675998/969070            
+            let x = o.X-p.X
+            let y = o.Y-p.Y
+            if abs x < 1e-16 && abs y < 1e-16 then FsExGeoException.Raise $"FsEx.Geo.Pt.DiamondAngleTo Failed for too short Distance between %O{p} and %O{o}."
+            if y >= 0.0 then 
+                if x >= 0.0 then   
+                    y/(x+y) 
+                else             
+                    1.0 - x/(-x+y)
+            else
+                if x < 0.0 then   
+                    2.0 - y/(-x-y) 
+                else 
+                    3.0 + x/(x-y) 
+
+        /// Returns the Angle in Radians from this point to another point.
+        /// 0.0 = XAxis,  going Counter clockwise till two Pi.
+        member inline p.AngleTowPiTo(o:Pt) =
+            // https://stackoverflow.com/a/14675998/969070            
+            let x = o.X-p.X
+            let y = o.Y-p.Y
+            let a = Math.Atan2(y, x) 
+            if a < 0. then  
+                a + Util.twoPi
+            else  
+                a
+        
+        /// Returns the Angle in Degrees from this point to another point.
+        /// 0.0 = XAxis,  going Counter clockwise till 360.
+        member inline p.Angle360To(o:Pt) =
+            p.AngleTowPiTo o |> toDegrees
+
+        member inline p.AsVc         = Vc( p.X, p.Y)
+        member inline p.AsVec        = Vec(p.X, p.Y, 0.0)
+        member inline p.AsPnt        = Pnt(p.X, p.Y, 0.0)
+        member inline p.AsVecWithZ z = Vec(p.X, p.Y, z)
+        member inline p.AsPntWithZ z = Pnt(p.X, p.Y, z)
+
         //----------------------------------------------------------------------------------------------
         //--------------------------  Static Members  --------------------------------------------------
         //----------------------------------------------------------------------------------------------
@@ -86,6 +131,7 @@ module AutoOpenPt =
             (ptPrev-ptThis).Unitized  + (ptNext-ptThis).Unitized   
         
         /// Rotate the 2D Point Counter Clockwise.
+        /// For better Performance precompute the Rotate2D struct and use its member to rotate.
         static member inline rotate (angDegree) (pt:Pt) = (Rotate.createFromDegrees angDegree).Rotate pt
     
         /// Rotate the 2D Point around a center 2D Point. Counter Clockwise.
