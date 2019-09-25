@@ -99,7 +99,6 @@ module Intersect =
                 // parameter on second segment is  beyond length ,  so probaly false unless closer than snapThreshold and colinear
                 elif tb > bl + snapThreshold && isParamStillMoreThanLengthAfterOffsets (bp, bu, bXaInverse, bl, ap, au, snapThreshold) then  
                     NoIntersection
-
                 else  
                     if aXb > 0.0 then BfromRight (ta, tb)
                     else              BfromLeft  (ta, tb)
@@ -137,7 +136,7 @@ module Intersect =
         |BfromLeft  (ta, _ ) -> FromLeft  (ap + au * (max 0.0 (min al ta))) // clamp point to actually be on line even if it is not quite in case of PreStart or PostEnd
         |BfromRight (ta, _ ) -> FromRight (ap + au * (max 0.0 (min al ta))) 
     
-    
+    (*
     /// Start and End means the intesection point is within the threshold distance of start or end point respectively
     /// PreStart and PostEnd means intesection point is beyond the threshold distance,  but an offest by threshold distance would intersect within this 
     type IntersectionZone =  
@@ -149,4 +148,5 @@ module Intersect =
         elif  t <  len-snapThreshold then Middle
         elif  t <  len+snapThreshold then End
         else                              PostEnd
+    *)
 
