@@ -2,7 +2,7 @@ namespace FsEx.Geo
     
 
 /// For formating floats with adaptive precision  
-module internal Format = 
+module Format = 
     open System
 
     module private Literals = 

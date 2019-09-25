@@ -149,18 +149,9 @@ type Loop(points:IList<Pt>, minSegmentLength:float, snapThreshold:float) =
     member _.SnapThreshold = snapThreshold
 
     
-open Intersect
+
     
-[<RequireQualifiedAccess>]
-type ContinueOn = A | B 
-    
-type Location = { 
-    aIdx:int
-    bIdx:int
-    at:float // parameter on unitvector of A segment
-    bt:float // parameter on unitvector of B segment
-    dir: ContinueOn 
-    }
+
     
 // now develeped in Geeometry2D test:
     
