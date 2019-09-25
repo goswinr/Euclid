@@ -7,7 +7,7 @@ open System
 module AutoOpenUnitVc = 
     open Util
 
-    /// returns distance between the tips of two vectoers
+    /// Returns distance between the tips of two vectoers
     let inline internal vecDist2(ax:float,ay:float,bx:float,by:float) =
         let x = bx-ax
         let y = by-ay
@@ -34,9 +34,12 @@ module AutoOpenUnitVc =
         /// 90 degree rotation clockwise
         member inline v.RotatedCW  = UnitVc.createUnchecked(  v.Y,  -v.X  )  
 
-        /// The diamond angle is always positive and in the range of 0.0 to 4.0 ( for 360 degrees) 
+        /// The diamond angle.
+        /// Calculates the proportion of X to Y component. 
+        /// It is always positive and in the range of 0.0 to 4.0 ( for 360 degrees) 
         /// 0.0 = XAxis,  going Counter clockwise.
-        member inline v.DiamondAngle =
+        /// It is the fastest angle calculation since it does not involve cosine or atan functions
+        member inline v.DirectionDiamond =
             // https://stackoverflow.com/a/14675998/969070            
             if v.Y >= 0.0 then 
                 if v.X >= 0.0 then   
@@ -51,18 +54,35 @@ module AutoOpenUnitVc =
 
         /// Returns the Angle in Radians from XAxis,  
         /// Going Counter clockwise till two Pi.
-        member inline v.AngleTowPi =
+        member inline v.Direction2PI =
             // https://stackoverflow.com/a/14675998/969070
             let a = Math.Atan2(v.Y, v.X) 
             if a < 0. then  
                 a + Util.twoPi
             else  
                 a
+
+        /// Returns the Angle in Radians from XAxis, 
+        /// Ignores orientation.
+        /// Range 0.0 to Pi.
+        member inline v.DirectionPI =
+            // https://stackoverflow.com/a/14675998/969070            
+            let a = Math.Atan2(v.Y, v.X) 
+            if a < 0. then  
+                a + Math.PI
+            else  
+                a
         
         /// Returns the Angle in Degrees from XAxis.  
         /// Going Counter clockwise till 360.
-        member inline v.Angle360 =
-            v.AngleTowPi |> toDegrees
+        member inline v.Direction360 =
+            v.Direction2PI |> toDegrees
+        
+        /// Returns the Angle in Radians from XAxis, 
+        /// Ignores orientation.
+        /// Range 0.0 to 180.
+        member inline v.Direction180 =
+            v.DirectionPI |> toDegrees
         
         member inline v.AsPt         = Pt( v.X, v.Y)
         member inline v.AsVec        = Vec(v.X, v.Y, 0.0)
@@ -124,8 +144,9 @@ module AutoOpenUnitVc =
 
         /// Returns angle between two UnitVectors in Radians.
         /// Takes vector orientation into account.
+        /// Ignores order of input vectors. anglePI(a,b) = anglePI(b,a)
         /// Range 0.0 to PI( = 0 to 180 degree)
-        static member inline anglePi (a:UnitVc) (b:UnitVc) = 
+        static member inline anglePI (a:UnitVc) (b:UnitVc) = 
             // The "straight forward" method of acos(u.v) has large precision
             // issues when the dot product is near +/-1.  This is due to the
             // steep slope of the acos function as we approach +/- 1.  Slight
@@ -144,37 +165,69 @@ module AutoOpenUnitVc =
                 acos dot
             else
                 if dot < 0. then Math.PI - 2.0 * asin(vecDist2(-a.X,-a.Y,b.X,b.Y) * 0.5) 
-                else                       2.0 * asin(vecDist2( a.X, a.Y,b.X,b.Y) * 0.5)            
+                else                       2.0 * asin(vecDist2( a.X, a.Y,b.X,b.Y) * 0.5) 
+            //let mutable r = b.Direction2PI  - a.Direction2PI  // this alternative calculation is about 10x slower for unit vectors            
+            //if r < 0.      then  r <- r + Util.twoPi 
+            //if r > Math.PI then  r <- Util.twoPi - r 
+            //r
 
-        /// Returns positive angle between two UnitVectors in Radians. Ignores orientation. 
+
+        /// Returns positive angle between two UnitVectors in Radians. 
+        /// Ignores orientation. 
+        /// Ignores order of input vectors. angleHalfPI(a,b) = angleHalfPI(b,a) = angleHalfPI(-b,a) = angleHalfPI(-b,-a)
         /// Range 0.0 to PI/2 ( = 0 to 90 degree)
-        static member inline angleHalfPi (a:UnitVc) (b:UnitVc) = 
+        static member inline angleHalfPI (a:UnitVc) (b:UnitVc) = 
             let dot =  a * b
             let dotAbs = abs dot
             if dotAbs < 0.98 then  
                 acos dotAbs 
             else
                 if dot < 0. then 2.0 * asin(vecDist2(-a.X,-a.Y,b.X,b.Y) * 0.5)
-                else             2.0 * asin(vecDist2( a.X, a.Y,b.X,b.Y) * 0.5) 
+                else             2.0 * asin(vecDist2( a.X, a.Y,b.X,b.Y) * 0.5)         
+            //let mutable r = b.Direction2PI  - a.Direction2PI // this alternative calculation is about 10x slower for unit vectors              
+            //if r < 0.      then  r <- r + Util.twoPi 
+            //if r > Math.PI then  r <- Util.twoPi - r 
+            //if r > halfPi  then  r <- Math.PI - r 
+            //r
 
 
-        /// Returns positive angle between two UnitVectors in Degrees. 
-        /// Takes vector orientation into account.
-        /// Range 0 to 180 degrees.
-        static member inline angle180 (a:UnitVc) (b:UnitVc) = 
-            UnitVc.anglePi a b |>  toDegrees 
-
+        /// Returns positive angle for rotating counter clockwise from Vector 'a' to Vector 'b' .
+        /// In Radians.
+        /// Range: 0.0 to 2 PI ( = 0 to 360 degrees)
+        static member inline angle2PI (a:UnitVc , b:UnitVc)   =              
+            let r = b.Direction2PI  - a.Direction2PI            
+            if r >= 0. then  r
+            else r + Util.twoPi 
 
         /// Returns positive angle between two UnitVectors in Degrees,
         /// Ignores vector orientation.
+        /// Ignores order of input vectors. angle90(a,b) = angle90(b,a) = angle90(-b,a) = angle90(-b,-a)
         /// Range: 0 to 90 degrees.
         static member inline angle90 (a:UnitVc) (b:UnitVc) = 
-            UnitVc.angleHalfPi a b |>  toDegrees    
-        
+            UnitVc.angleHalfPI a b |>  toDegrees        
+            
 
-        /// The diamond angle is always positive and in the range of 0.0 to 4.0 ( for 360 degrees) 
+        /// Returns positive angle between two UnitVectors in Degrees. 
+        /// Takes vector orientation into account. 
+        /// Ignores order of input vectors. angle180(a,b) = angle180(b,a)
+        /// Range 0 to 180 degrees.
+        static member inline angle180 (a:UnitVc) (b:UnitVc) = 
+            UnitVc.anglePI a b |>  toDegrees         
+
+
+        /// Returns positive angle for rotating counter clockwise from Vector 'a' to Vector 'b' .
+        /// In Degree.
+        /// Range: 0.0 to 2 PI ( = 0 to 360 degrees)
+        static member inline angle360 (a:UnitVc, b:UnitVc)  = 
+            UnitVc.angle2PI (a,b) |> toDegrees
+
+
+        /// The diamond angle.
+        /// Calculates the proportion of X to Y component. 
+        /// It is always positive and in the range of 0.0 to 4.0 ( for 360 degrees) 
         /// 0.0 = XAxis,  going Counter clockwise.
-        static member inline diamondAngle(a:UnitVc) =
+        /// It is the fastest angle calculation since it does not involve cosine or atan functions
+        static member inline directionDiamond(a:UnitVc) =
             // https://stackoverflow.com/a/14675998/969070            
             if a.Y >= 0.0 then 
                 if a.X >= 0.0 then   
@@ -185,45 +238,33 @@ module AutoOpenUnitVc =
                 if a.X < 0.0 then   
                     2.0 - a.Y/(-a.X-a.Y) 
                 else 
-                    3.0 + a.X/(a.X-a.Y) 
+                    3.0 + a.X/(a.X-a.Y)        
         
-        /// Returns positive angle for rotating  counter clockwise from Vector 'a' to Vector 'b' .
+
+        /// Returns positive angle of unit vector. Counter clockwise from X Axis.
         /// In Radians
         /// Range: 0.0 to 2 PI ( = 0 to 360 degrees)
-        static member inline angleTwoPi (a:UnitVc , b:UnitVc)   =              
-            let r = b.AngleTowPi  - a.AngleTowPi            
-            if r >= 0. then  r
-            else r + Util.twoPi 
+        static member inline direction2PI (v:UnitVc)   =              
+            v.Direction2PI
 
-        /// Returns positive angle for rotating  counter clockwise from Vector 'a' to Vector 'b' .
+        /// Returns positive angle of unit vector. Counter clockwise from X Axis.
         /// In Degree
         /// Range: 0.0 to 2 PI ( = 0 to 360 degrees)
-        static member inline angle360 (a:UnitVc, b:UnitVc)  = 
-            UnitVc.angleTwoPi (a,b) |> toDegrees
-
-        /// Returns positive angle of vector. Counter clockwise from X Axis.
-        /// In Radians
-        /// Range: 0.0 to 2 PI ( = 0 to 360 degrees)
-        static member inline angleTwoPi (v:UnitVc)   =              
-            v.AngleTowPi
-
-        /// Returns positive angle of vector. Counter clockwise from X Axis.
-        /// In Degree
-        /// Range: 0.0 to 2 PI ( = 0 to 360 degrees)
-        static member inline angle360 (v:UnitVc)  = 
-            v.Angle360
+        static member inline direction360 (v:UnitVc)  = 
+            v.Direction360
         
 
         /// Rotate the UnitVector in Degrees. Counter Clockwise.
         /// For better Performance precompute the Rotate2D struct and use its member to rotate.
-        static member inline rotate (angDegree) (vec:UnitVc) = (Rotate.createFromDegrees angDegree).Rotate vec  
+        static member inline rotate (angDegree) (vec:UnitVc) = 
+            (Rotate.createFromDegrees angDegree).Rotate vec  
 
          
 
         //[<Obsolete("Unsave Member") >]
-        //static member Zero = Vec ( 0. , 0.)  // needed by 'Array.sum' 
+        //static member Zero = UnitVc ( 0. , 0.)  // needed by 'Array.sum' 
         //[<Obsolete("Unsave Member") >]
-        //static member inline DivideByInt (v:UnitVec, i:int) = if i<>0 then v / float i else failwithf "DivideByInt 0 %O " v // needed by  'Array.average'  
+        //static member inline DivideByInt (v:UnitVc, i:int) = if i<>0 then v / float i else failwithf "DivideByInt 0 %O " v // needed by  'Array.average'  
         
         
         

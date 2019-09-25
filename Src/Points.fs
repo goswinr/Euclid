@@ -26,7 +26,7 @@ type Points private () =
     
 
 
-    /// returns the closest point index form a Point list  to a given Point
+    /// Returns the closest point index form a Point list  to a given Point
     static member closestPointIdx (pts:ResizeArray<Pnt>,pt:Pnt) : int = 
         if pts.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.closestPoint<Pnt>: empty List of Points: pts"
         let mutable mi = -1
@@ -39,7 +39,7 @@ type Points private () =
                 mi <- i
         mi
 
-    /// returns the closest point index form a Point list  to a given Point
+    /// Returns the closest point index form a Point list  to a given Point
     static member closestPointIdx (pts:ResizeArray<Pt>,pt:Pt) : int = 
         if pts.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.closestPoint<Pt>: empty List of Points: pts"
         let mutable mi = -1
@@ -52,15 +52,15 @@ type Points private () =
                 mi <- i
         mi
    
-    /// returns the closest point form a Point list to a given Point
+    /// Returns the closest point form a Point list to a given Point
     static member  closestPoint (pts:ResizeArray<Pnt>, pt:Pnt) : Pnt= 
         pts.[Points.closestPointIdx (pts, pt)]
 
-    /// returns the closest point form a Point list to a given Point
+    /// Returns the closest point form a Point list to a given Point
     static member  closestPoint (pts:ResizeArray<Pt>, pt:Pt) : Pt= 
         pts.[Points.closestPointIdx (pts, pt)]
 
-    /// returns the indices of the points that are closest to each other
+    /// Returns the indices of the points that are closest to each other
     static member closestPointsIdx (xs:ResizeArray<Pnt>, ys:ResizeArray<Pnt>) = 
         if xs.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.closestPointsIdx<Pnt>: empty List of Points: xs"
         if ys.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.closestPointsIdx<Pnt>: empty List of Points: ys"
@@ -77,7 +77,7 @@ type Points private () =
                     yj <- j
         xi,yj   
 
-    /// returns the indices of the points that are closest to each other
+    /// Returns the indices of the points that are closest to each other
     static member closestPointsIdx (xs:ResizeArray<Pt>, ys:ResizeArray<Pt>) = 
         if xs.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.closestPointsIdx<Pt>: empty List of Points: xs"
         if ys.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.closestPointsIdx<Pt>: empty List of Points: ys"
@@ -95,14 +95,14 @@ type Points private () =
         xi,yj    
 
 
-    /// returns the smallest Distance between Point Sets
+    /// Returns the smallest Distance between Point Sets
     static member  minDistBetweenPointSets (xs:ResizeArray<Pnt>, ys:ResizeArray<Pnt>) = 
         if xs.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.minDistBetweenPointSets<Pnt>: empty List of Points: xs"
         if ys.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.minDistBetweenPointSets<Pnt>: empty List of Points: ys"
         let (i,j) = Points.closestPointsIdx (xs, ys)
         Pnt.distance xs.[i]  ys.[j]
 
-    /// returns the smallest Distance between Point Sets
+    /// Returns the smallest Distance between Point Sets
     static member  minDistBetweenPointSets (xs:ResizeArray<Pt>, ys:ResizeArray<Pt>) = 
         if xs.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.minDistBetweenPointSets<Pt>: empty List of Points: xs"
         if ys.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.minDistBetweenPointSets<Pt>: empty List of Points: ys"
@@ -112,7 +112,7 @@ type Points private () =
 
     /// Find the index of the point that has the biggest distance to any point from the other set
     /// basicaly the most lonely point in 'findPointFrom' list with respect to 'checkAgainst' list
-    /// returns findPointFromIdx * checkAgainstIdx
+    /// Returns findPointFromIdx * checkAgainstIdx
     static member  mostDistantPointIdx (findPointFrom:ResizeArray<Pnt>, checkAgainst:ResizeArray<Pnt>) : int*int= 
         if findPointFrom.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.mostDistantPoint<Pnt>: empty List of Points: findPointFrom"
         if checkAgainst.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.mostDistantPoint<Pnt>: empty List of Points: checkAgainst"
@@ -136,7 +136,7 @@ type Points private () =
 
     /// Find the index of the point that has the biggest distance to any point from the other set
     /// basicaly the most lonely point in 'findPointFrom' list with respect to 'checkAgainst' list
-    /// returns findPointFromIdx * checkAgainstIdx
+    /// Returns findPointFromIdx * checkAgainstIdx
     static member  mostDistantPointIdx (findPointFrom:ResizeArray<Pt>, checkAgainst:ResizeArray<Pt>) : int*int= 
         if findPointFrom.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.mostDistantPoint<Pt>: empty List of Points: findPointFrom"
         if checkAgainst.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.mostDistantPoint<Pt>: empty List of Points: checkAgainst"

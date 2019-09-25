@@ -31,11 +31,11 @@ module AutoOpenPnt =
         /// Returns the Diamond Angle from this point to another point.
         /// The diamond angle is always positive and in the range of 0.0 to 4.0 ( for 360 degrees) 
         /// 0.0 = XAxis,  going Counter clockwise. Ignoring Z component.
-        member inline p.DiamondAngleTo(o:Pnt) =
+        member inline p.DirDiamondTo(o:Pnt) =
             // https://stackoverflow.com/a/14675998/969070            
             let x = o.X-p.X
             let y = o.Y-p.Y
-            if abs x < 1e-16 && abs y < 1e-16 then FsExGeoException.Raise $"FsEx.Geo.Pt.DiamondAngleTo Failed for too short Distance between %O{p} and %O{o}."
+            if abs x < 1e-16 && abs y < 1e-16 then FsExGeoException.Raise $"FsEx.Geo.Pnt.DirDiamondTo Failed for too short Distance between %O{p} and %O{o}."
             if y >= 0.0 then 
                 if x >= 0.0 then   
                     y/(x+y) 
@@ -118,9 +118,13 @@ module AutoOpenPnt =
         static member inline setDistFromOrigin f (pt:Pnt) = pt.WithDistFromOrigin f
         static member inline distFromOriginSquare (pt:Pnt) = pt.DistFromOriginSquare
     
-        /// Returns angle between three Points in Radians 
-        static member inline angleFrom3Pts (ptPrev:Pnt, ptThis:Pnt, ptNext:Pnt)  =   
-            Vec.anglePi (ptPrev-ptThis) (ptNext-ptThis)
+        /// Returns angle between three Points in Radians. Range 0.0 to Pi  
+        static member inline anglePiPts (ptPrev:Pnt, ptThis:Pnt, ptNext:Pnt)  =   
+            Vec.anglePI (ptPrev-ptThis) (ptNext-ptThis)
+
+        /// Returns angle between three Points in Degrees. Range 0.0 to 180 
+        static member inline angle180Pts (ptPrev:Pnt, ptThis:Pnt, ptNext:Pnt)  =   
+            Pnt.anglePiPts (ptPrev, ptThis, ptNext) |> toDegrees
 
         /// Returns a (not unitized) bisector vector in the middle direction from ptThis. 
         /// Code : (ptPrev-ptThis).Unitized  + (ptNext-ptThis).Unitized 
@@ -151,20 +155,19 @@ module AutoOpenPnt =
         static member inline rotateOnZwithCenter (cen:Pnt) (angDegree) (pt:Pnt) = (Rotate.createFromDegrees angDegree).RotateOnZwithCenter(cen,pt) 
              
        
-        /// returns a point that is at a given distance from a point in the direction of another point.
+        /// Returns a point that is at a given distance from a point in the direction of another point.
         static member inline distPt (fromPt:Pnt) ( dirPt:Pnt) ( distance:float) : Pnt  = 
             let v = dirPt - fromPt
             let sc = distance/v.Length
-            fromPt + v*sc
+            fromPt + v*sc       
        
-       
-        /// returns a Point by evaluation a line between two point with a normalized patrameter.
+        /// Returns a Point by evaluation a line between two point with a normalized patrameter.
         /// e.g. rel=0.5 will return the middle point, rel=1.0 the endPoint
         static member inline divPt(fromPt:Pnt)( toPt:Pnt)(rel:float) : Pnt  = 
             let v = toPt - fromPt
             fromPt + v*rel
        
-        /// returns a point that is at a given Z level,
+        /// Returns a point that is at a given Z level,
         /// going from a point in the direction of another point.
         static member inline extendToZLevel (fromPt:Pnt)( toPt:Pnt) (z:float) = 
             let v = toPt - fromPt
@@ -198,6 +201,7 @@ module AutoOpenPnt =
             if len < zeroLenghtTol then Vec.XAxis
             else Vec(x/len, y/len, 0.0)
        
+
         /// Offsets two points by two given distances.
         /// The fist distance (distHor) is applied in in XY Plane
         /// The second distance (distNormal) is applied perpendicular to the line (made by the two points) and perpendicular to the horizontal offset direction.
@@ -217,15 +221,9 @@ module AutoOpenPnt =
                 |> Vec.unitizeWithAlternative Vec.ZAxis
        
             let shift = distHor * normHor + distNormal * normFree
-            fromPt +  shift, toPt + shift
-             
+            fromPt +  shift, toPt + shift             
               
-        /// returns angle in degree at midd point
-        static member angelInCorner(prevPt:Pnt, thisPt:Pnt, nextPt:Pnt) = 
-            let a = prevPt-thisPt
-            let b = nextPt-thisPt
-            Vec.angle180 a b
-       
+          
        
 
     

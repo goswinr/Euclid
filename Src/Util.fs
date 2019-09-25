@@ -29,6 +29,9 @@ module Util =
 
     /// Math.PI * 2.0
     let twoPi = 6.28318530717959
+    
+    /// Math.PI * 0.5
+    let halfPi = 1.5707963267949
 
     /// clamp value between -1.0 and +1.0
     let inline clamp11 (x:float)= 

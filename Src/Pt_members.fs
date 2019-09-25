@@ -29,14 +29,16 @@ module AutoOpenPt =
             if d < zeroLenghtTol then FsExGeoException.Raise $"pnt.WithDistFromOrigin  %O{pt} is too small to be scaled" 
             pt * (l/d) 
         
-        /// Returns the Diamond Angle from this point to another point.
-        /// The diamond angle is always positive and in the range of 0.0 to 4.0 ( for 360 degrees) 
+        /// Returns the Diamond Angle from this point to another point.        
+        /// Calculates the proportion of X to Y component. 
+        /// It is always positive and in the range of 0.0 to 4.0 ( for 360 degrees) 
         /// 0.0 = XAxis,  going Counter clockwise.
-        member inline p.DiamondAngleTo(o:Pt) =
+        /// It is the fastest angle calculation since it does not involve cosine or atan functions
+        member inline p.DirDiamondTo(o:Pt) =
             // https://stackoverflow.com/a/14675998/969070            
             let x = o.X-p.X
             let y = o.Y-p.Y
-            if abs x < 1e-16 && abs y < 1e-16 then FsExGeoException.Raise $"FsEx.Geo.Pt.DiamondAngleTo Failed for too short Distance between %O{p} and %O{o}."
+            if abs x < 1e-16 && abs y < 1e-16 then FsExGeoException.Raise $"FsEx.Geo.Pt.DirDiamondTo Failed for too short Distance between %O{p} and %O{o}."
             if y >= 0.0 then 
                 if x >= 0.0 then   
                     y/(x+y) 
@@ -50,7 +52,7 @@ module AutoOpenPt =
 
         /// Returns the Angle in Radians from this point to another point.
         /// 0.0 = XAxis,  going Counter clockwise till two Pi.
-        member inline p.AngleTowPiTo(o:Pt) =
+        member inline p.Angle2PiTo(o:Pt) =
             // https://stackoverflow.com/a/14675998/969070            
             let x = o.X-p.X
             let y = o.Y-p.Y
@@ -63,7 +65,7 @@ module AutoOpenPt =
         /// Returns the Angle in Degrees from this point to another point.
         /// 0.0 = XAxis,  going Counter clockwise till 360.
         member inline p.Angle360To(o:Pt) =
-            p.AngleTowPiTo o |> toDegrees
+            p.Angle2PiTo o |> toDegrees
 
         member inline p.AsVc         = Vc( p.X, p.Y)
         member inline p.AsVec        = Vec(p.X, p.Y, 0.0)
@@ -120,9 +122,13 @@ module AutoOpenPt =
         static member inline setDistFromOrigin f (pt:Pt) = pt.WithDistFromOrigin f
         static member inline distFromOriginSquare (pt:Pt) = pt.DistFromOriginSquare
     
-        /// Returns angle between three Points in Radians 
-        static member inline angleFrom3Pts (ptPrev:Pt, ptThis:Pt, ptNext:Pt)  =   
-            Vc.anglePi (ptPrev-ptThis) (ptNext-ptThis)
+        /// Returns angle between three Points in Radians. Range 0.0 to Pi  
+        static member inline anglePiPts (ptPrev:Pt, ptThis:Pt, ptNext:Pt)  =   
+            Vc.anglePI (ptPrev-ptThis) (ptNext-ptThis)
+
+        /// Returns angle between three Points in Degrees. Range 0.0 to 180 
+        static member inline angle180Pts (ptPrev:Pt, ptThis:Pt, ptNext:Pt)  =   
+            Pt.anglePiPts (ptPrev, ptThis, ptNext) |> toDegrees
 
         /// Returns a (not unitized) bisector vector in the middle direction from ptThis. 
         /// Code : (ptPrev-ptThis).Unitized  + (ptNext-ptThis).Unitized 
@@ -137,14 +143,14 @@ module AutoOpenPt =
         /// Rotate the 2D Point around a center 2D Point. Counter Clockwise.
         static member inline rotateWithCenter (cen:Pt) (angDegree) (pt:Pt) = (Rotate.createFromDegrees angDegree).RotateWithCenter(cen,pt)              
        
-        /// returns a point that is at a given distance from a point in the direction of another point.
+        /// Returns a point that is at a given distance from a point in the direction of another point.
         static member inline distPt (fromPt:Pt) ( dirPt:Pt) ( distance:float) : Pt  = 
             let v = dirPt - fromPt
             let sc = distance/v.Length
             fromPt + v*sc
        
        
-        /// returns a Point by evaluation a line between two point with a normalized patrameter.
+        /// Returns a Point by evaluation a line between two point with a normalized patrameter.
         /// e.g. rel=0.5 will return the middle point, rel=1.0 the endPoint
         static member inline divPt(fromPt:Pt)( toPt:Pt)(rel:float) : Pt  = 
             let v = toPt - fromPt
@@ -160,7 +166,7 @@ module AutoOpenPt =
             if (snapTo-pt).Length < snapDistance then snapTo else pt
             
               
-        /// returns angle in degree at midd point
+        /// Returns angle in degree at midd point
         static member angelInCorner(prevPt:Pt, thisPt:Pt, nextPt:Pt) = 
             let a = prevPt-thisPt
             let b = nextPt-thisPt

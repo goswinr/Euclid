@@ -8,7 +8,7 @@ open System
 module AutoOpenUnitVec = 
     open Util
 
-    /// returns distance between the tips of two vectoers
+    /// Returns distance between the tips of two vectoers
     let inline internal vecDist3(ax:float,ay:float,az:float,bx:float,by:float,bz:float) =
          let x = bx-ax
          let y = by-ay
@@ -32,10 +32,10 @@ module AutoOpenUnitVec =
  
         /// The diamond angle is always positive and in the range of 0.0 to 4.0 ( for 360 degrees) 
         /// 0.0 = XAxis,  going Counter clockwise. Ignoring Z component.
-        member inline v.DiamondAngleInXY =
+        member inline v.DirDiamondInXY =
             // https://stackoverflow.com/a/14675998/969070            
             #if DEBUG 
-            if abs(v.X) < zeroLenghtTol && abs(v.Y) < zeroLenghtTol then FsExGeoDivByZeroException.Raise $"UnitVec.DiamondAngleInXY: input vector is vertical or zero length:%O{v}"            
+            if abs(v.X) < zeroLenghtTol && abs(v.Y) < zeroLenghtTol then FsExGeoDivByZeroException.Raise $"UnitVec.DirDiamondInXY: input vector is vertical or zero length:%O{v}"            
             #endif
             if v.Y >= 0.0 then 
                 if v.X >= 0.0 then   
@@ -50,10 +50,10 @@ module AutoOpenUnitVec =
         
         /// Returns the Angle in Radians from XAxis,  
         /// Going Counter clockwise till two Pi. Ignoring Z component.
-        member inline v.AngleTowPiInXY =
+        member inline v.Angle2PIInXY =
             // https://stackoverflow.com/a/14675998/969070
             #if DEBUG 
-            if abs(v.X) < zeroLenghtTol && abs(v.Y) < zeroLenghtTol then FsExGeoDivByZeroException.Raise $"UnitVec.AngleTowPiInXY: input vector is vertical or zero length:%O{v}"            
+            if abs(v.X) < zeroLenghtTol && abs(v.Y) < zeroLenghtTol then FsExGeoDivByZeroException.Raise $"UnitVec.Angle2PIInXY: input vector is vertical or zero length:%O{v}"            
             #endif
             let a = Math.Atan2(v.Y, v.X) 
             if a < 0. then  
@@ -64,7 +64,7 @@ module AutoOpenUnitVec =
         /// Returns the Angle in Degrees from XAxis.  
         /// Going Counter clockwise till 360.
         member inline v.Angle360InXY =
-            v.AngleTowPiInXY |> toDegrees
+            v.Angle2PIInXY |> toDegrees
         
         member inline v.AsVec        = Vec(v.X, v.Y, v.Z)
         member inline v.AsPnt        = Pnt(v.X, v.Y, v.Z)
@@ -151,7 +151,7 @@ module AutoOpenUnitVec =
         /// Returns angle between two UnitVectors in Radians.
         /// Takes vector orientation into account. 
         /// Range 0.0 to PI( = 0 to 180 degree)
-        static member inline anglePi (a:UnitVec) (b:UnitVec) = 
+        static member inline anglePI (a:UnitVec) (b:UnitVec) = 
             // The "straight forward" method of acos(u.v) has large precision
             // issues when the dot product is near +/-1.  This is due to the
             // steep slope of the acos function as we approach +/- 1.  Slight
@@ -175,7 +175,7 @@ module AutoOpenUnitVec =
         /// Returns positive angle between two UnitVectors in Radians. 
         /// Ignores orientation. 
         /// Range 0.0 to PI/2 ( = 0 to 90 degree)
-        static member inline angleHalfPi (a:UnitVec) (b:UnitVec) = 
+        static member inline angleHalfPI (a:UnitVec) (b:UnitVec) = 
             let dot =  a * b
             let dotAbs = abs dot
             if dotAbs < 0.98 then  
@@ -184,26 +184,12 @@ module AutoOpenUnitVec =
                 if dot < 0. then 2.0 * asin(vecDist3(-a.X,-a.Y,-a.Z,b.X,b.Y,b.Z) * 0.5)
                 else             2.0 * asin(vecDist3( a.X, a.Y, a.Z,b.X,b.Y,b.Z) * 0.5) 
         
-        /// Returns positive angle between two UnitVectors in Degrees. 
-        /// Takes vector orientation into account.
-        /// Range 0 to 180 degrees.
-        static member inline angle180 (a:UnitVec) (b:UnitVec) = 
-            UnitVec.anglePi a b |>  toDegrees 
-
-
-        /// Returns positive angle between two UnitVectors in Degrees,
-        /// Ignores vector orientation.
-        /// Range: 0 to 90 degrees.
-        static member inline angle90 (a:UnitVec) (b:UnitVec) = 
-            UnitVec.angleHalfPi a b |>  toDegrees  
- 
-        
         /// Returns positive angle from Vector 'a' to Vector 'b' projected in XY Plane.
         /// In Radians
         /// Considering counter clockwise rotation round the World ZAxis
         /// Range: 0.0 to 2 PI ( = 0 to 360 degrees)
-        static member inline angleTwoPiInXY (a:UnitVec, b:UnitVec)   =
-            let r = b.AngleTowPiInXY  - a.AngleTowPiInXY            
+        static member inline angle2PiInXY (a:UnitVec, b:UnitVec)   =
+            let r = b.Angle2PIInXY  - a.Angle2PIInXY            
             if r >= 0. then  r
             else r + Util.twoPi 
 
@@ -211,7 +197,19 @@ module AutoOpenUnitVec =
         /// Considering positve rotation round the World ZAxis
         /// Range:  0 to 360 degrees
         static member inline angle360InXY (a:UnitVec, b:UnitVec)   = 
-            UnitVec.angleTwoPiInXY (a, b) |> toDegrees
+            UnitVec.angle2PiInXY (a, b) |> toDegrees
+        
+        /// Returns positive angle between two UnitVectors in Degrees. 
+        /// Takes vector orientation into account.
+        /// Range 0 to 180 degrees.
+        static member inline angle180 (a:UnitVec) (b:UnitVec) = 
+            UnitVec.anglePI a b |>  toDegrees 
+
+        /// Returns positive angle between two UnitVectors in Degrees,
+        /// Ignores vector orientation.
+        /// Range: 0 to 90 degrees.
+        static member inline angle90 (a:UnitVec) (b:UnitVec) = 
+            UnitVec.angleHalfPI a b |>  toDegrees 
     
         /// Rotate the UnitVector in Degrees around X axis, from Y to Z Axis, Counter Clockwise looking from right.
         /// For better Performance precompute the Rotate2D struct and use its member to rotate.
