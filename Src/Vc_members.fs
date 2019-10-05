@@ -91,11 +91,6 @@ module AutoOpenVc =
             else  
                 a
         
-        /// Returns the Angle in Degrees from XAxis.  
-        /// Going Counter clockwise till 360.
-        member inline v.Direction360 =
-            v.Direction2PI |> toDegrees
-
         /// Returns the Angle in Radians from XAxis, 
         /// Ignores orientation.
         /// Range 0.0 to Pi.
@@ -109,12 +104,26 @@ module AutoOpenVc =
                 a + Math.PI
             else  
                 a
+
+        /// Returns the Angle in Degrees from XAxis.  
+        /// Going Counter clockwise till 360.
+        member inline v.Direction360 =
+            v.Direction2PI |> toDegrees
         
         /// Returns the Angle in Radians from XAxis, 
         /// Ignores orientation.
         /// Range 0.0 to 180.
         member inline v.Direction180 =
             v.DirectionPI |> toDegrees
+
+        /// Returns positive angle for rotating counter clockwise from this Vector to Vector 'b' .
+        /// In Diamond Angle. Using only proportion of X to Y components.
+        /// Range of 0.0 to 4.0 ( for 360 degrees) 
+        /// It is the fastest angle calculation since it does not involve cosine or atan functions
+        member inline v.AngleDiamondTo (b:Vc)   =              
+            let r = b.DirectionDiamond - v.DirectionDiamond          
+            if r >= 0. then  r
+            else r + 4.0 
 
         member inline v.AsPt         = Pt( v.X, v.Y)
         member inline v.AsVec        = Vec(v.X, v.Y, 0.0)
@@ -226,6 +235,15 @@ module AutoOpenVc =
         /// Range: 0.0 to 2 PI ( = 0 to 360 degrees)
         static member inline angle360 (a:Vc, b:Vc)  = 
             Vc.angle2PI (a,b) |> toDegrees
+        
+        /// Returns positive angle for rotating counter clockwise from Vector 'a' to Vector 'b' .
+        /// In Diamond Angle. Using only proportion of X to Y components.
+        /// Range of 0.0 to 4.0 ( for 360 degrees) 
+        /// It is the fastest angle calculation since it does not involve cosine or atan functions
+        static member inline angleDiamond (a:Vc , b:Vc)   =              
+            let r = b.DirectionDiamond - a.DirectionDiamond          
+            if r >= 0. then  r
+            else r + 4.0 
 
         /// The diamond angle.
         /// Calculates the proportion of X to Y component. 

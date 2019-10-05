@@ -1,5 +1,9 @@
+#if COMPILED
 namespace FsEx.Geo
-
+#else
+#r "D:/Git/FsEx.Geo/bin/Debug/net472/FsEx.Geo.dll"
+open FsEx.Geo
+#endif
 
 module Intersect =     
     
@@ -100,8 +104,8 @@ module Intersect =
                 elif tb > bl + snapThreshold && isParamStillMoreThanLengthAfterOffsets (bp, bu, bXaInverse, bl, ap, au, snapThreshold) then  
                     NoIntersection
                 else  
-                    if aXb > 0.0 then BfromRight (ta, tb)
-                    else              BfromLeft  (ta, tb)
+                    if aXb > 0.0 then BfromRight (ta, tb) // TODO could be almost coliniear tooo, check offset  !!
+                    else              BfromLeft  (ta, tb) // TODO could be almost coliniear tooo, check offset  !!
 
         else // Colinear
             // probaly no itersection  unless closer than snapThreshold

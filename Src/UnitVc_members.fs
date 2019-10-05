@@ -84,12 +84,23 @@ module AutoOpenUnitVc =
         member inline v.Direction180 =
             v.DirectionPI |> toDegrees
         
+        /// Returns positive angle for rotating counter clockwise from this Vector to Vector 'b' .
+        /// In Diamond Angle. Using only proportion of X to Y components.
+        /// Range of 0.0 to 4.0 ( for 360 degrees) 
+        /// It is the fastest angle calculation since it does not involve cosine or atan functions
+        member inline v.AngleDiamondTo (b:UnitVc)   =              
+            let r = b.DirectionDiamond - v.DirectionDiamond          
+            if r >= 0. then  r
+            else r + 4.0   
+            
         member inline v.AsPt         = Pt( v.X, v.Y)
         member inline v.AsVec        = Vec(v.X, v.Y, 0.0)
         member inline v.AsUnitVec    = UnitVec.createUnchecked(v.X, v.Y, 0.0)
         member inline v.AsPnt        = Pnt(v.X, v.Y, 0.0)
         member inline v.AsVecWithZ z = Vec(v.X, v.Y, z)
         member inline v.AsPntWithZ z = Pnt(v.X, v.Y, z)
+
+
      
         //----------------------------------------------------------------------------------------------
         //--------------------------  Static Members  --------------------------------------------------
@@ -220,7 +231,16 @@ module AutoOpenUnitVc =
         /// Range: 0.0 to 2 PI ( = 0 to 360 degrees)
         static member inline angle360 (a:UnitVc, b:UnitVc)  = 
             UnitVc.angle2PI (a,b) |> toDegrees
+        
 
+        /// Returns positive angle for rotating counter clockwise from Vector 'a' to Vector 'b' .
+        /// In Diamond Angle. Using only proportion of X to Y components.
+        /// Range of 0.0 to 4.0 ( for 360 degrees) 
+        /// It is the fastest angle calculation since it does not involve cosine or atan functions
+        static member inline angleDiamond (a:UnitVc , b:UnitVc)   =              
+            let r = b.DirectionDiamond - a.DirectionDiamond          
+            if r >= 0. then  r
+            else r + 4.0 
 
         /// The diamond angle.
         /// Calculates the proportion of X to Y component. 
