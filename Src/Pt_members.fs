@@ -9,8 +9,7 @@ open System
 module AutoOpenPt = 
     open Util
     
-    type Pt with  
-    
+    type Pt with      
         
         member inline pt.IsOrigin = pt.X = 0.0 && pt.Y = 0.0 
         member inline v.IsAlomstOrigin tol = abs v.X < tol && abs v.Y < tol 
@@ -20,12 +19,22 @@ module AutoOpenPt =
         member inline pt.WithX x = Pt (x ,pt.Y) // returns new Vector with new x coordinate, y and z the same as before
         member inline pt.WithY y = Pt (pt.X, y)
         member inline pt.WithZ z = Pnt (pt.X ,pt.Y, z)
-    
-        member inline pt.DistFromOrigin = sqrt (pt.X*pt.X + pt.Y*pt.Y ) 
-        member inline pt.DistFromOriginSquare = pt.X*pt.X + pt.Y*pt.Y 
+        
+        /// Returns the distance between two points
+        member inline p.DistanceTo (b:Pt) = let v = p-b in sqrt(v.X*v.X + v.Y*v.Y )
+       
+        /// Returns the squared distance bewteen two points.
+        /// This operation is slighty faster than the distance function, and sufficient for many algorithms like finding closest points.
+        member inline p.DistanceSqTo (b:Pt) = let v = p-b in  v.X*v.X + v.Y*v.Y 
+        
+        /// Returns the distance fron Origin (0,0)
+        member inline pt.DistanceFromOrigin = sqrt (pt.X*pt.X + pt.Y*pt.Y ) 
+        
+        /// Returns the squared distance fron Origin (0,0)
+        member inline pt.DistanceSqFromOriginSquare = pt.X*pt.X + pt.Y*pt.Y 
         
         member inline pt.WithDistFromOrigin (l:float) = 
-            let d = pt.DistFromOrigin 
+            let d = pt.DistanceFromOrigin 
             if d < zeroLenghtTol then FsExGeoException.Raise $"pnt.WithDistFromOrigin  %O{pt} is too small to be scaled" 
             pt * (l/d) 
         
@@ -57,10 +66,8 @@ module AutoOpenPt =
             let x = o.X-p.X
             let y = o.Y-p.Y
             let a = Math.Atan2(y, x) 
-            if a < 0. then  
-                a + Util.twoPi
-            else  
-                a
+            if a < 0. then  a + Util.twoPi
+            else            a
         
         /// Returns the Angle in Degrees from this point to another point.
         /// 0.0 = XAxis,  going Counter clockwise till 360.
@@ -72,6 +79,67 @@ module AutoOpenPt =
         member inline p.AsPnt        = Pnt(p.X, p.Y, 0.0)
         member inline p.AsVecWithZ z = Vec(p.X, p.Y, z)
         member inline p.AsPntWithZ z = Pnt(p.X, p.Y, z)
+
+        /// Get closest point on finit line to test point. 
+        member inline testPt.ClosestPointOnLine(fromPt:Pt, toPt:Pt) = 
+            let dir = testPt - fromPt
+            let v   = toPt   - fromPt
+            let lenSq = v.LengthSq
+            let lenSq =  v.LengthSq
+            if lenSq < 1e-6 then FsExGeoDivByZeroException.Raise $"Pt.closetPointOnLine: Line is too short for fromPt{fromPt} to {toPt} and {testPt}"
+            let dot = Vc.dot (v,  dir) / lenSq
+            if   dot < 0.0 then  fromPt 
+            elif dot > 1.0 then  toPt
+            else                 fromPt+dot*v
+        
+        /// Get closest point on finit line to test point. 
+        member inline testPt.ClosestPointOnLine(fromPt:Pt, uv:UnitVc, len:float) = 
+            let dir = testPt-fromPt 
+            let dot = Vc.dot (uv,  dir) 
+            if   dot < 0.0 then  fromPt 
+            elif dot > len then (fromPt+len*uv)  
+            else                 fromPt+dot*uv 
+        
+        /// Squared Distance between point and finite line segment.   
+        member inline testPt.DistanceSqToLine(fromPt:Pt, uv:UnitVc, len:float) = 
+            let dir = testPt-fromPt 
+            let dot = Vc.dot (uv,  dir) 
+            if   dot < 0.0 then testPt.DistanceSqTo  fromPt 
+            elif dot > len then testPt.DistanceSqTo (fromPt+len*uv)  
+            else 
+                let actual = uv.RotatedCCW * dir 
+                actual*actual
+                
+        /// Squared Distance between point and finite line segment  defined by start , end,  direction and length 
+        /// The last two paramters  help speed up calculations.
+        member inline testPt.DistanceSqToLine(fromPt:Pt, toPt:Pt,  uv:UnitVc, len:float) = 
+            let dir = testPt-fromPt 
+            let dot = Vc.dot (uv,  dir) 
+            if   dot < 0.0 then testPt.DistanceSqTo fromPt 
+            elif dot > len then testPt.DistanceSqTo toPt 
+            else 
+                let actual = uv.RotatedCCW * dir 
+                actual*actual 
+                
+        /// Distance between point and finite line segment  defined by start ,  direction and length.
+        member inline testPt.DistanceToLine(fromPt:Pt, uv:UnitVc, len:float) = 
+            let dir = testPt-fromPt 
+            let dot = Vc.dot (uv,  dir) 
+            if   dot < 0.0 then testPt.DistanceSqTo  fromPt 
+            elif dot > len then testPt.DistanceSqTo  (fromPt+len*uv)  
+            else                abs (uv.RotatedCCW * dir) 
+                
+        /// Distance between point and finite line segment  defined by start and end.
+        member inline testPt.DistanceToLine(fromPt:Pt, toPt:Pt) =  
+            let dir = testPt - fromPt 
+            let v   = toPt   - fromPt
+            let lenSq =  v.LengthSq 
+            if lenSq < 1e-6 then FsExGeoDivByZeroException.Raise $"Pt.DistanceToLine: Line is too short for fromPt{fromPt} to {toPt} and {testPt}"
+            let dot = Vc.dot (v,  dir) / v.LengthSq 
+            if   dot < 0.0 then testPt.DistanceTo   fromPt 
+            elif dot > 1.0 then testPt.DistanceTo   toPt  
+            else                testPt.DistanceTo   (fromPt + v * dot) 
+
 
         //----------------------------------------------------------------------------------------------
         //--------------------------  Static Members  --------------------------------------------------
@@ -101,8 +169,8 @@ module AutoOpenPt =
         /// Gets the Y value of  Pt
         static member inline getY (pt:Pt) =  pt.Y
        
-        static member inline add        (v:Vc) (a:Pt) = a + v
-        static member inline addToPtn   (a:Pt) (v:Vc) = a + v
+        static member inline add        (v:Pt) (a:Pt) = a + v
+        static member inline addVc      (a:Pt) (v:Vc) = a + v
 
         static member inline midPt      (a:Pt) (b:Pt)         = (a+b) * 0.5
         static member inline scale      (f:float) (pt:Pt) = pt*f
@@ -118,9 +186,9 @@ module AutoOpenPt =
         /// This operation is slighty faster than the distance function, and sufficient for many algorithms like finding closest points.
         static member inline distanceSq (a:Pt) (b:Pt) = let v = a-b in  v.X*v.X + v.Y*v.Y 
 
-        static member inline distFromOrigin (pt:Pt) = pt.DistFromOrigin
+        static member inline distFromOrigin (pt:Pt) = pt.DistanceFromOrigin
         static member inline setDistFromOrigin f (pt:Pt) = pt.WithDistFromOrigin f
-        static member inline distFromOriginSquare (pt:Pt) = pt.DistFromOriginSquare
+        static member inline distFromOriginSquare (pt:Pt) = pt.DistanceSqFromOriginSquare
     
         /// Returns angle between three Points in Radians. Range 0.0 to Pi  
         static member inline anglePiPts (ptPrev:Pt, ptThis:Pt, ptNext:Pt)  =   
@@ -171,6 +239,38 @@ module AutoOpenPt =
             let a = prevPt-thisPt
             let b = nextPt-thisPt
             Vc.angle180 a b
+
+        /// 'fromPt' Pt  and UnitVc decribe an endless line. 
+        /// testPt gets projected on to this line.
+        /// Returns the paramter (or scaling for unitvector) on this line of the projection
+        static member inline projectedParameter (fromPt:Pt, uv:UnitVc, testPt:Pt) = 
+           let dir = testPt-fromPt
+           Vc.dot (dir,  uv) 
+        
+        /// 'fromPt' Pt  and Vc decribe an endless line.
+        /// testPt gets projected on to this line.
+        /// Returns the paramter (or scaling for vector) on this line of the projection
+        static member inline projectedParameter (fromPt:Pt, v:Vc, testPt:Pt) = 
+           let dir = testPt-fromPt
+           let lenSq =  v.LengthSq
+           if lenSq < 1e-6 then FsExGeoDivByZeroException.Raise $"Pt.projectedParameter: {v} is too short for fromPt{fromPt} and {testPt}"
+           Vc.dot (v,  dir) / v.LengthSq 
+        
+        /// 'fromPt' Pt  and Pt decribe an endless line. 
+        /// testPt gets projected on to this line.
+        /// Returns the paramter (or scaling for vector) on this line of the projection
+        static member inline projectedParameter (fromPt:Pt, toPt:Pt, testPt:Pt) = 
+            let dir = testPt - fromPt 
+            let v   = toPt   - fromPt
+            let lenSq =  v.LengthSq 
+            if lenSq < 1e-6 then FsExGeoDivByZeroException.Raise $"Pt.projectedParameter: Line is too short for fromPt{fromPt} to {toPt} and {testPt}"
+            Vc.dot (v,  dir) / v.LengthSq
+        
+        
+
+
+
+
        
        
 

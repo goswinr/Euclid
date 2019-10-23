@@ -1,8 +1,19 @@
 namespace FsEx.Geo
 
-open System
-    
+open System    
 open System .Collections.Generic   
+
+
+/// Discriminated union for the three possible relations of a point to a closed polyline Loop
+[<RequireQualifiedAccess>]
+type PointLoopRel = 
+    In | On | Out
+
+    member r.IsInside =  r= PointLoopRel.In
+    
+    member r.IsOutside = r= PointLoopRel.Out 
+        
+
 
 /// A counter-clockwise,  closed series of points.
 /// Checks for too short segments
@@ -10,73 +21,219 @@ open System .Collections.Generic
 /// Makes it Counterclockwise.
 /// Also check for self intersection.
 /// Does NOT remove colinear points.
-type Loop(points:IList<Pt>, minSegmentLength:float, snapThreshold:float) =
-        
-    let pts = 
-        if points.Count<3 then FsExGeoException.Raise $"FsEx.Geo.Loop constructor: Input ResizeArray needs to have a least three points, not {points.Count} " 
-            
-        let ps= ResizeArray<Pt>(points.Count+1)
-        // check gap sizes
-        let minLenSq = minSegmentLength * minSegmentLength
-        ps.Add points.[0]
-        for i = 1 to points.Count-1 do
-            let pt = points.[i]
-            if Pt.distanceSq ps.Last pt > minLenSq then
-                ps.Add pt
-            else
-                // set last to average
-                ps.Last <- (ps.Last + pt) *0.5 
-                Debug2D.drawDot $"short segm:{i-1}" pt 
-                #if DEBUG
-                eprintfn $"Loop constructor: Segment {i-1} shorter than {snapThreshold} was skiped, it was just {Pt.distance ps.Last pt} long."
-                #endif
-        // close
-        if Pt.distanceSq ps.Last ps.First > minLenSq then
-            ps.Add ps.First // add first to close loop
-        else
-            ps.Last <- ps.First // make sure they are exactly the same
-        ps
+type Loop private ( pts:ResizeArray<Pt>
+                  , unitVcts:UnitVc[]
+                  , bboxes:BBox[] 
+                  , lens:float[] 
+                  , xys:float[] // TODO is this needed to be always precomputed ?
+                  , area:float
+                  , minSegmentLength:float
+                  , snapThreshold:float
+                  , box:BBox
+                  ) =    
 
-    let segCount = pts.Count-1
-        
-    let segLastIdx = pts.Count-2      
+    /// Without sign,  since loop is guaranteed to be Counter Clockwise
+    member _.Area = area
+
+    /// This list is one item shorter than Points
+    member _.BBoxes = bboxes
+   
+    /// This list is one item shorter than Points
+    member _.UnitVectors = unitVcts
+
+    /// This list is one item shorter than Points
+    member _.Lengths = lens
     
+    /// List of X and Y coordinates of Points.
+    /// Even indices are X
+    /// Odd  indices are Y
+    /// Length is double of SegmentCount
+    /// Last pair is not equal first pair.
+    member _.XandYs = xys
 
-    // get Area also Reverse to make it counter clockwise if needed
-    let area =
-        let sa = Points.getSignedArea pts
-        if sa < 0. then  pts.Reverse() ;  -sa
-        else sa 
+    /// This list is one item Longer than Vectors , BBoxes or Lengths
+    /// Last Point equals first Point
+    member _.Points = pts
+             
+    /// One less than Points count 
+    member val SegmentCount = unitVcts.Length  
         
-    let mutable xmin, ymin = Double.MaxValue, Double.MaxValue // for overall bounding box
-    let mutable xmax, ymax = Double.MinValue, Double.MinValue
+    /// The overall Bounding Box. 
+    /// Including snapThreshold expansion.
+    member _.BoundingBox = box
         
-    // loop again to precalculate vectors ,  unit vectors,   BBoxes,  and lengths
-    let vcts, unitVcts, bboxes , lens=
-        let vs   = Array.zeroCreate (segCount)
-        let uvs  = Array.zeroCreate (segCount)
-        let bs   = Array.zeroCreate (segCount)
-        let lens = Array.zeroCreate (segCount)
-        let mutable t = pts.[0]
-        for ii = 1 to pts.Count-1 do // start at +1,  last = first
-            let n = pts.[ii]
-            let v = Vc.create(t, n)
-            let l = v.Length
-            let i = ii-1 // becaus loop starts at 1
-            vs.[  i] <- v
-            uvs.[ i] <- UnitVc.createUnchecked( v.X/l , v.Y/l) // no check for div by zero needed,  since minSpacing is already checked
-            bs.[  i] <- BBox(t, n, snapThreshold)
-            lens.[i] <- l
-            // overall bounding box:
-            xmin <- min xmin t.X
-            ymin <- min ymin t.Y
-            xmax <- max xmax t.X
-            ymax <- max ymax t.Y
-            // swap:
-            t <- n
-        vs, uvs,  bs , lens
+    member _.MinSegmentLength = minSegmentLength
+        
+    member _.SnapThreshold = snapThreshold           
 
-    do
+    /// Creates a deep copy
+    member _.Clone() = Loop(pts.GetRange(0,pts.Count), Array.copy unitVcts, Array.copy bboxes, Array.copy lens, Array.copy xys, area, minSegmentLength, snapThreshold, box )
+
+    /// Returns closest segment index        
+    member lo.ClosestSegment (pt:Pt) :int=  
+        let ps = lo.Points
+        let us = lo.UnitVectors
+        let ls = lo.Lengths
+        let mutable dMin  = Double.MaxValue 
+        let mutable iMin  = -1 
+        for i = 0 to lo.SegmentCount-1 do  
+            let t = ps.[i]
+            let n = ps.[i+1]
+            let u = us.[i]
+            let l = ls.[i] 
+            let d = pt.DistanceSqToLine(t, n, u, l)
+            if d < dMin then  
+                dMin  <- d 
+                iMin  <- i
+        iMin
+        
+     /// Returns closest and second closest segment index  
+     /// They might both contain the closest point. ( in the corner where they meet) 
+    member lo.ClosestSegments (pt:Pt) =  
+        let ps = lo.Points
+        let us = lo.UnitVectors
+        let ls = lo.Lengths
+        let mutable dMin  = Double.MaxValue 
+        let mutable iFst  = 0
+        let mutable iSnd  = 0 
+        for i = 0 to lo.SegmentCount-1 do  
+            let t = ps.[i]
+            let n = ps.[i+1]
+            let u = us.[i]
+            let l = ls.[i] 
+            let d = pt.DistanceSqToLine(t, n, u, l)
+            if d <= dMin then  
+                dMin  <- d 
+                iSnd <- iFst
+                iFst <- i 
+        iFst, iSnd   
+        
+    /// Returns closest Point, 
+    member lo.ClosestPoint (pt:Pt) :Pt= 
+        let i = lo.ClosestSegment(pt) 
+        let t = lo.Points.[i]
+        let u = lo.UnitVectors.[i]
+        let l = lo.Lengths.[i] 
+        pt.ClosestPointOnLine(t, u, l) 
+        
+    /// Returns Relation between point and Loop: Inside, On or outside
+    /// Tolerance for beeing on Loop is SnapThreshold    
+    member lo.ContainsPoint(pt:Pt) =  
+        // this implementation using the closest two segments is always correct.
+        // faster implementations such as counting the crossings of a horizontal ray do fail if several loop segments are on the x axis and the test point too.
+        if not <| lo.BoundingBox.Contains(pt) then  
+            PointLoopRel.Out
+        else
+            let ps = lo.Points
+            let us = lo.UnitVectors
+            let ls = lo.Lengths
+            let j, k  = lo.ClosestSegments(pt)     
+            
+            let pj = ps.[j]
+            let uj = us.[j] 
+            let lj = ls.[j]
+            let dj = pt.DistanceToLine(pj, uj, lj) 
+            if dj < snapThreshold then  
+                PointLoopRel.On
+            else 
+                let pk = ps.[k]
+                let uk = us.[k]
+                let lk = ls.[k]
+                let dk = pt.DistanceToLine(pk, uk, lk)  
+                let i =  
+                    if dj + lo.SnapThreshold < dk then // check if dj is closer than dk by more than the tolerance
+                        j
+                    else                        
+                        // explicitly compare both offset of the two closest segments 
+                        let uj90 = uj.RotatedCW * lo.SnapThreshold
+                        let ddj = min (pt.DistanceSqToLine(pj+uj90 , uj, lj)) (pt.DistanceSqToLine(pj-uj90, uj, lj)) 
+                        let uk90 = uk.RotatedCW * lo.SnapThreshold
+                        let ddk = min (pt.DistanceSqToLine(pk+uk90 , uk, lk)) (pt.DistanceSqToLine(pk-uk90, uk, lk))                         
+                        if ddj <= ddk then j else k                
+                
+                // once correct index is found check on which side the point is 
+                if Vc.cross (lo.UnitVectors.[i] , pt-lo.Points.[i] ) < 0.0 then 
+                    PointLoopRel.Out
+                else                                                             
+                    PointLoopRel.In           
+
+    /// Creates a Loop from series of points.
+    /// Checks for too short segments
+    /// Closes loop if not closed yet.
+    /// Makes it Counterclockwise.
+    /// Also check for self intersection.
+    /// Does NOT remove colinear points.
+    static member create (minSegmentLength:float) (snapThreshold:float) (points:IList<Pt>)=
+        let pts = 
+            if minSegmentLength < 0.0 then FsExGeoException.Raise $"FsEx.Geo.Loop constructor: minSegmentLength < 0.0: {minSegmentLength}" 
+            if snapThreshold    < 0.0 then FsExGeoException.Raise $"FsEx.Geo.Loop constructor: snapThreshold < 0.0: {snapThreshold}"         
+            if points.Count<3 then FsExGeoException.Raise $"FsEx.Geo.Loop constructor: Input ResizeArray needs to have a least three points, not {points.Count} " 
+                    
+            let ps= ResizeArray<Pt>(points.Count+1)
+            // check gap sizes
+            let minLenSq = minSegmentLength * minSegmentLength
+            ps.Add points.[0]
+            for i = 1 to points.Count-1 do
+                let pt = points.[i]
+                if Pt.distanceSq ps.Last pt > minLenSq then
+                    ps.Add pt
+                else
+                    // set last to average
+                    ps.Last <- (ps.Last + pt) *0.5 
+                    Debug2D.drawDot $"short segm:{i-1}" pt 
+                    #if DEBUG
+                    eprintfn $"Loop constructor: Segment {i-1} shorter than {snapThreshold} was skiped, it was just {Pt.distance ps.Last pt} long."
+                    #endif
+            // close
+            if Pt.distanceSq ps.Last ps.First > minLenSq then
+                ps.Add ps.First // add first to close loop
+            else
+                ps.Last <- ps.First // make sure they are exactly the same
+            ps
+        
+        let segCount = pts.Count-1  
+        
+        let segLastIdx = pts.Count-2
+        
+        // get Area also Reverse to make it counter clockwise if needed
+        let area =
+            let sa = Points.getSignedArea pts
+            if sa < 0. then  pts.Reverse() ;  -sa
+            else sa 
+                
+        let mutable xmin, ymin = Double.MaxValue, Double.MaxValue // for overall bounding box
+        let mutable xmax, ymax = Double.MinValue, Double.MinValue
+                
+        // loop again to precalculate vectors ,  unit vectors,   BBoxes,  and lengths
+        let  unitVcts, bboxes , lens , xys=        
+            let uvs  = Array.zeroCreate (segCount)
+            let bs   = Array.zeroCreate (segCount)
+            let lens = Array.zeroCreate (segCount)
+            let xy   = Array.zeroCreate (segCount*2)
+            let mutable xyi = 0 
+            let mutable t = pts.[0]
+            for ii = 1 to pts.Count-1 do // start at +1,  last = first
+                let n = pts.[ii]
+                let v = Vc.create(t, n)
+                let l = v.Length
+                let i = ii-1 // becaus loop starts at 1            
+                uvs.[ i] <- UnitVc.createUnchecked( v.X/l , v.Y/l) // no check for div by zero needed,  since minSpacing is already checked
+                bs.[  i] <- BBox.create(t, n, snapThreshold)
+                lens.[i] <- l
+                xy.[xyi  ] <- t.X
+                xy.[xyi+1] <- t.Y
+                xyi <- xyi + 2
+        
+                // overall bounding box:
+                xmin <- min xmin t.X
+                ymin <- min ymin t.Y
+                xmax <- max xmax t.X
+                ymax <- max ymax t.Y
+                // swap:
+                t <- n
+            uvs,  bs , lens, xy
+        
+        
         // Test for 180 U-turns
         // angle 160 degrees, dot product of unit vectors: -0.93969
         // angle 170 degrees, dot product of unit vectors: -0.984808
@@ -89,146 +246,33 @@ type Loop(points:IList<Pt>, minSegmentLength:float, snapThreshold:float) =
                 Debug2D.drawDot $"+170° turn?" pts.[ii]
                 FsExGeoException.Raise $"FsEx.Geo.Loop: Lines for Loop make a kink between 170 and 180 degrees."
             t <- n
-
-        // check for self intersection, 
-        if vcts.Length > 3 then // a triangle is cover by angle checks above
+                
+        // Check for self intersection, 
+        let inline selfXcheck(i,from,till)= 
+            // TODO quadratic O !  replace with sweep line algorithm ?
+            let ap  = pts.[i]
+            let au  = unitVcts.[i]
+            let al  = lens.[i]
+            let abb = bboxes.[i]
+            for j = from to till do
+                let bbb = bboxes.[j]
+                /// test on BBox overlap could be done here already instead of in doIntersectOrOverlapColinear
+                let bp  = pts.[j]
+                let bu  = unitVcts.[j]
+                let bl  = lens.[j]
+                if Intersect.doIntersectOrOverlapColinear(ap, au, al, abb,  bp, bu, bl, bbb, snapThreshold ) then 
+                    Debug2D.drawDot $"self X: {i} + {j}" (Intersect.getXPointOrMid(ap, au, al,  bp, bu, bl, snapThreshold))
+                    Debug2D.drawLine(ap,ap+au*al)
+                    Debug2D.drawLine(bp,bp+bu*bl)
+                    FsExGeoException.Raise $"FsEx.Geo.Loop: Loop of {points.Count} Points has self intersection."        
+        if unitVcts.Length > 3 then // a triangle is covered by angle checks above
             // checking second last and last
-            if Intersect.doIntersect( pts.[segLastIdx]  , unitVcts.[segLastIdx]  , lens.[segLastIdx]   , pts.[1], unitVcts.[1], lens.[1] , snapThreshold ) then   
-                Debug2D.drawDot $"self X last with second" pts.[segLastIdx]
-                Debug2D.drawPolyLine pts
-                FsExGeoException.Raise $"FsEx.Geo.Loop: Loop has self intersection last with second"
-            if Intersect.doIntersect( pts.[segLastIdx-1], unitVcts.[segLastIdx-1], lens.[segLastIdx-1] , pts.[0], unitVcts.[0], lens.[0] , snapThreshold ) then   
-                Debug2D.drawDot $"self X second last with first" pts.[segLastIdx-1]
-                Debug2D.drawPolyLine pts
-                FsExGeoException.Raise $"FsEx.Geo.Loop: Loop has self intersection second last with first"
-            // check each segment with all other segemnts
+            selfXcheck(segLastIdx  , 1, 1)
+            selfXcheck(segLastIdx-1, 0, 0)
             for i = 1 to segLastIdx do // start at second ,  (last and first do intersect)
                 // TODO quadratic O !  replace with sweep line algorithm ?
-                let ap = pts.[i]
-                let au = unitVcts.[i]
-                let al = lens.[i]
-                for j = i+2 to segLastIdx do
-                    let bp = pts.[j]
-                    let bu = unitVcts.[j]
-                    let bl = lens.[j]
-                    if Intersect.doIntersect(ap, au, al,  bp, bu, bl, snapThreshold ) then 
-                        Debug2D.drawDot $"self X:{i}+{j}" bp
-                        Debug2D.drawPolyLine pts
-                        FsExGeoException.Raise $"FsEx.Geo.Loop: Loop of {points.Count} Points has self intersection."
+                selfXcheck(i, i+2 , segLastIdx)   
+        
+        let box = BBox.createUnchecked(xmin-snapThreshold, ymin-snapThreshold, xmax+snapThreshold, ymax+snapThreshold) 
 
-    /// Without sign,  since loop is guaranteed to be Counter Clockwise
-    member _.Area = area
-
-    /// This list is one item shorter than Points
-    member _.BBoxes = bboxes
-
-    /// This list is one item shorter than Points
-    member _.Vectors = vcts
-
-    /// This list is one item shorter than Points
-    member _.UnitVectors = unitVcts
-
-    /// This list is one item shorter than Points
-    member _.Lengths = lens
-
-    /// This list is one item Longer than Vectors , BBoxes or Lengths
-    /// Last Point equals first Point
-    member _.Points = pts
-        
-    /// One more than Vector count 
-    member val PointCount = pts.Count
-        
-    /// One less than Points count 
-    member val VecCount = vcts.Length  
-        
-    /// The overall Bounding Box,  including snapThreshold
-    member val BoundingBox = BBox(Pt(xmin, ymin) , Pt(xmax, ymax) , snapThreshold) 
-        
-    member _.MinSegmentLength = minSegmentLength
-        
-    member _.SnapThreshold = snapThreshold
-
-    
-
-    
-
-    
-// now develeped in Geeometry2D test:
-    
-//let booleanIntersection (loopA:Loop, loopB:Loop) :ResizeArray<Loop> = 
-//    if loopA.SnapThreshold <> loopB.SnapThreshold then eprintfn $"Loop.union: loopA.SnapThreshold {loopA.SnapThreshold} <> loopB.SnapThreshold {loopB.SnapThreshold}"
-//    if loopA.MinSegmentLength <> loopB.MinSegmentLength then eprintfn $"Loop.union: loopA.MinSegmentLength {loopA.MinSegmentLength} <> loopB.MinSegmentLength {loopB.MinSegmentLength}"
-        
-//    if not <| BBoxes.overlap loopA.BoundingBox loopB.BoundingBox then  
-//        ResizeArray.empty 
-//    else 
-//        let aLen  = loopA.VecCount
-//        let bLen  = loopB.VecCount
-//        let aBox  = loopA.BBoxes
-//        let bBox  = loopB.BBoxes
-//        let aPts  = loopA.Points
-//        let bPts  = loopB.Points
-//        let aUnit = loopA.UnitVectors       
-//        let bUnit = loopB.UnitVectors       
-//        let aLens = loopA.Lengths       
-//        let bLens = loopB.Lengths         
-            
-//        let locs = ResizeArray<Location>() 
-            
-//        /// first collect just the intersection points
-//        for ai = 0 to aLen-1 do  
-//            for bi = 0 to bLen-1 do // TODO quadratic!  replace with sweep line algorithm 
-//                if BBoxes.overlap aBox.[ai] bBox.[bi] then 
-//                    match getRelation(aPts.[ai], aUnit.[ai], aLens.[ai], bPts.[bi], bUnit.[bi], bLens.[bi], loopA.SnapThreshold) with 
-//                    |NoIntersection ->  ()
-//                    |Parallel       ->  ()  // more than threshold apart 
-//                    |Colinear ->  failwith "implementation for Colinear overlap missing" //TODO
-                            
-//                    // parameters for unit vector,  might be out of bound by snapThreshold
-//                    |BfromRight (at, bt)  ->  locs.Add {aIdx = ai;  bIdx = bi;  at=at; bt=bt ; dir = ContinueOn.B} 
-//                    |BfromLeft  (at, bt)  ->  locs.Add {aIdx = ai;  bIdx = bi;  at=at; bt=bt ; dir = ContinueOn.A} // swaping a and b would yield boolean union !
-            
-//        /// second loop over points
-//        if locs.IsEmpty then 
-//            ResizeArray.empty 
-//        elif locs.Count % 2 = 1 then  
-//            failwith "implementation for odd location count missing"
-//        else 
-//            let resPts = ResizeArray<Pt>() 
-                
-//            let inline addPt(l:Location) =  
-//                resPts.Add (aPts.[l.aIdx] +  aUnit.[l.aIdx] * l.at) // TODO add clamping ?
-                
-//            let inline addPts(si, ei, fromPts:ResizeArray<Pt>) =  
-//                if si<=ei then  
-//                    for i=si to ei do resPts.Add (fromPts.[i]) 
-//                else 
-//                    for i=si to fromPts.Count-2 do resPts.Add (fromPts.[i]) // -2 because start and end are the same
-//                    for i=0  to ei              do resPts.Add (fromPts.[i]) 
-                
-                
-//            locs |> ResizeArray.sortInPlaceBy(fun l -> l.aIdx, l.at) 
-//            for t, n in Seq.thisNext locs do  
-//                addPt t
-//                match t.dir with
-//                |ContinueOn.A ->  
-//                    Debug2D.drawDot $"onA: {resPts.Count-1}" resPts.Last
-//                    addPts(t.aIdx+1, n.aIdx, aPts) ; 
-//                |ContinueOn.B ->  
-//                    Debug2D.drawDot $"onB: {resPts.Count-1}" resPts.Last
-//                    addPts(t.bIdx+1, n.bIdx, bPts) ; 
-                
-//            ResizeArray.singelton <| Loop(resPts,loopA.MinSegmentLength, loopA.SnapThreshold )  
-                            
-    
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+        Loop(pts, unitVcts, bboxes, lens, xys, area, minSegmentLength, snapThreshold, box)

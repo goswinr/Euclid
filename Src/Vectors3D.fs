@@ -2,8 +2,7 @@ namespace FsEx.Geo
 
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
-  
-  
+    
     
 /// A 3D Vector (2D Vectors are called 'Vc') 
 [<Struct; NoEquality; NoComparison>] 

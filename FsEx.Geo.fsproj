@@ -54,25 +54,24 @@
     <None Include="README.md" />
     <None Include="Doc/READMEnuget.md" Pack="true" PackagePath="" />
     <None Include="Doc/logo128.png" Pack="true" PackagePath="" />
-    <Compile Include="Src\Util.fs" />
-    <Compile Include="Src\Format.fs" />
-    <Compile Include="Src\Vectors2D.fs" />
-    <Compile Include="Src\Vectors3D.fs" />
-    <Compile Include="Src\DebugDraw.fs" />
-    <Compile Include="Src\BBox.fs" />
-    <Compile Include="Src\Rotate.fs" />
-    <Compile Include="Src\Quat.fs" />
-    <Compile Include="Src\UnitVc_members.fs" />
-    <Compile Include="Src\Vc_members.fs" />
-    <Compile Include="Src\Pt_members.fs" />
-    <Compile Include="Src\UnitVec_members.fs" />
-    <Compile Include="Src\Vec_members.fs" />
-    <Compile Include="Src\Pnt_members.fs" />
-    <Compile Include="Src\Intersect.fs" />
-    <Compile Include="Src\ResizeArray.fs" />
-    <Compile Include="Src\Points.fs" />
-    <Compile Include="Src\Loops.fs" /> <!--PackagePath = "" makes the file availabe to nuget pack tool-->
-    
+    <Compile Include="Src/Util.fs" />
+    <Compile Include="Src/Format.fs" />
+    <Compile Include="Src/Vectors2D.fs" />
+    <Compile Include="Src/Vectors3D.fs" />
+    <Compile Include="Src/DebugDraw.fs" />
+    <Compile Include="Src/BBox.fs" />
+    <Compile Include="Src/Rotate.fs" />
+    <Compile Include="Src/Quat.fs" />
+    <Compile Include="Src/UnitVc_members.fs" />
+    <Compile Include="Src/Vc_members.fs" />
+    <Compile Include="Src/Pt_members.fs" />
+    <Compile Include="Src/UnitVec_members.fs" />
+    <Compile Include="Src/Vec_members.fs" />
+    <Compile Include="Src/Pnt_members.fs" />
+    <Compile Include="Src/Intersect.fs" />
+    <Compile Include="Src/ResizeArray.fs" />
+    <Compile Include="Src/Points.fs" />
+    <Compile Include="Src/Loops.fs" /> 
     
   </ItemGroup>
 

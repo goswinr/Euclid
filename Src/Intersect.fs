@@ -5,60 +5,28 @@ namespace FsEx.Geo
 open FsEx.Geo
 #endif
 
-module Intersect =     
-    
-    open Util
-
-
-    //[<Struct>]
-    //type IntersectionParamter =
-    //    |NoParamColinear
-    //    |Param of float
-
-    ///// Retuns the parameter on vector 'va' where 'va' and 'vb' intersect as endless rays.
-    ///// If they start from points 'a' and 'b' respectivley.
-    //let getParameter (a:Pt, va:Vc, b:Pt,  vb:Vc) =
-    //    // https://www.youtube.com/watch?v=c065KoXooSw
-    //    let nom = va.Cross vb
-    //    if -zeroLenghtTol < nom && nom < zeroLenghtTol  then NoParamColinear
-    //    else Param (((b-a).Cross(vb)) / nom)
-
-
-    ///// Retuns the parameter on vector 'va' where 'va' and 'vb' intersect as endless rays.
-    ///// If they start from points 'a' and 'b' respectivley.
-    //let getParameterU (a:Pt, va:UnitVc , b :Pt ,  vb:UnitVc) =
-    //    let nom = va.Cross vb
-    //    if -zeroLenghtTol < nom && nom < zeroLenghtTol  then NoParamColinear
-    //    else Param (((b-a).Cross(vb)) / nom)
-
-
-    ///// Retuns the parameter on vector 'va' where 'va' and 'vb' intersect intersect as endless rays.
-    ///// If they start from points 'a' and 'b' respectivley.
-    ///// This might be infinity too. Does not check for colinear points !
-    //let getParameterUnChecked (a:Pt, va:UnitVc, b:Pt,  vb:UnitVc) =
-    //    ((b-a).Cross(vb)) / va.Cross vb
-        
+module Intersect =         
+    open Util        
         
     /// Retuns the parameter on vector 'va' where 'va' and 'vb' intersect intersect as endless rays.
     /// If they start from points 'a' and 'b' respectivley.
     /// Pass in  va.Cross vb  is precomputed  and inverted  
     let inline private getXPara (a:Pt, vaXvbInverse:float, b:Pt,  vb:UnitVc) =
         // https://www.youtube.com/watch?v=c065KoXooSw
-        ((b-a).Cross(vb)) * vaXvbInverse // va.Cross vb  is precomputed  and inverted 
-
+        ((b-a).Cross(vb)) * vaXvbInverse // va.Cross vb  is precomputed  and inverted
 
     let inline private isParamStillBelowZeroAfterOffsets(ap:Pt, au:UnitVc, aXbInverse:float, bp:Pt, bu:UnitVc, snapThreshold:float) =
         let n = au.RotatedCCW * snapThreshold
         // TODO would it be enough to only compute one of these two? depending on the sign of aXbInverse ?
-        getXPara(ap + n, aXbInverse,  bp, bu) < 0.0-snapThreshold
+        getXPara(ap + n, aXbInverse,  bp, bu) <  -snapThreshold //with threshold subtracted the  range faktor is 1 to 1.4 . without 0.7 to 1 of threshold
         &&
-        getXPara(ap - n, aXbInverse,  bp, bu) < 0.0-snapThreshold
+        getXPara(ap - n, aXbInverse,  bp, bu) <  -snapThreshold
 
     let inline private isParamStillMoreThanLengthAfterOffsets(ap:Pt, au:UnitVc , aXbInverse:float, al:float, bp:Pt, bu:UnitVc, snapThreshold:float) =
         let n = au.RotatedCCW * snapThreshold
-        getXPara(ap + n, aXbInverse,  bp, bu) > al+snapThreshold
+        getXPara(ap + n, aXbInverse,  bp, bu) > al + snapThreshold //with threshold added the range faktor is 1 to 1.4 . without 0.7 to 1 of threshold
         &&
-        getXPara(ap - n, aXbInverse,  bp, bu) > al+snapThreshold
+        getXPara(ap - n, aXbInverse,  bp, bu) > al + snapThreshold
 
 
     type LineLineRelation =  
@@ -70,7 +38,8 @@ module Intersect =
         |BfromLeft  of struct ( float * float) // parameters for unit vector,  might be out of bound by snapThreshold
     
     // TODO inline functions?
-
+    
+    /// A Call to this should be preceded by BBox.doOverlap
     /// For line A and line B give for each:
     /// Start point, unitized Direction, line length.
     /// And finally a tolerance: Curve A will be extendeded on both ends and offseted to both sides.
@@ -79,14 +48,14 @@ module Intersect =
         let aXb = au.Cross bu //precomputed  cross product 
         
         if abs(aXb) > zeroLenghtTol then  // not paralell
-            let aXbInverse = 1./aXb // invert only once,  then pass on as inverted value
+            let aXbInverse = 1./aXb // invert only once,  then pass it on as inverted value
             let ta = getXPara (ap, aXbInverse, bp, bu)
         
-            // parameter on first is below zero, so probably false unless closer than snapThreshold and almost colinear
+            // parameter on first is below zero, so probably no intersection  unless closer than snapThreshold and almost colinear
             if ta < -snapThreshold && isParamStillBelowZeroAfterOffsets (ap, au, aXbInverse, bp, bu, snapThreshold) then   
                 NoIntersection // no need to even check parameter on second segment
 
-            // parameter on first segment is  beyond length ,  so probaly false unless closer than snapThreshold and colinear
+            // parameter on first segment is  beyond length, so probaly no intersection  unless closer than snapThreshold and colinear
             elif ta > al+snapThreshold && isParamStillMoreThanLengthAfterOffsets(ap, au, aXbInverse, al, bp, bu, snapThreshold) then   
                 NoIntersection // no need to even check parameter on second segment
 
@@ -96,7 +65,7 @@ module Intersect =
                 let bXaInverse = -aXbInverse
                 let tb = getXPara (bp, bXaInverse, ap, au)
 
-                // parameter on second segment is  below zero ,  so probaly false unless closer than snapThreshold and colinear
+                // parameter on second segment is  below zero, so probaly no intersection  unless closer than snapThreshold and colinear
                 if tb < -snapThreshold && isParamStillBelowZeroAfterOffsets (bp, bu, bXaInverse, ap, au, snapThreshold) then  
                     NoIntersection
 
@@ -104,7 +73,7 @@ module Intersect =
                 elif tb > bl + snapThreshold && isParamStillMoreThanLengthAfterOffsets (bp, bu, bXaInverse, bl, ap, au, snapThreshold) then  
                     NoIntersection
                 else  
-                    if aXb > 0.0 then BfromRight (ta, tb) // TODO could be almost coliniear tooo, check offset  !!
+                    if aXb > 0.0 then BfromRight (ta, tb) // TODO might still be almost colinear was an intersection very far ousidse bounding boxes.
                     else              BfromLeft  (ta, tb) // TODO could be almost coliniear tooo, check offset  !!
 
         else // Colinear
@@ -117,15 +86,28 @@ module Intersect =
             else
                 Parallel // paralle distance is more than snapThreshold distance,
 
-    let doIntersect (ap:Pt, au:UnitVc, al:float, bp:Pt, bu:UnitVc, bl:float, snapThreshold:float) :bool =
-        match getRelation(ap, au, al,  bp, bu, bl, snapThreshold)   with
+    /// includes a preceding call to BBox.doOverlap    
+    let inline doIntersectOrOverlapColinear (ap:Pt, au:UnitVc, al:float, abb:BBox, bp:Pt, bu:UnitVc, bl:float, bbb:BBox, snapThreshold:float) :bool =
+        BBox.doOverlap abb bbb 
+        &&
+        match getRelation(ap, au, al, bp, bu, bl, snapThreshold)   with
         |NoIntersection -> false
         |Parallel       -> false
-        |Colinear       -> true// TODO but actual overlap needs to be confirmed via BBox
         |BfromLeft _    -> true
         |BfromRight _   -> true
+        |Colinear       -> true  
+        
     
-    
+    // Return intersection point or mid point between two lines
+    let getXPointOrMid (ap:Pt, au:UnitVc, al:float, bp:Pt, bu:UnitVc, bl:float, snapThreshold:float) : Pt =
+        match getRelation(ap, au, al,  bp, bu, bl, snapThreshold)   with
+        |NoIntersection
+        |Colinear
+        |Parallel            -> (ap + ap + bp + bp + au*al + bu*bl) * 0.25
+        |BfromLeft  (ta, _ ) -> ap + au * ta // clamp point to actually be on line even if it is not quite in case of PreStart or PostEnd
+        |BfromRight (ta, _ ) -> ap + au * ta 
+
+    (*
     type IntersectionPoint =
         |NoPoint
         |FromLeft  of Pt
@@ -139,18 +121,4 @@ module Intersect =
         |Parallel            -> NoPoint
         |BfromLeft  (ta, _ ) -> FromLeft  (ap + au * (max 0.0 (min al ta))) // clamp point to actually be on line even if it is not quite in case of PreStart or PostEnd
         |BfromRight (ta, _ ) -> FromRight (ap + au * (max 0.0 (min al ta))) 
-    
-    (*
-    /// Start and End means the intesection point is within the threshold distance of start or end point respectively
-    /// PreStart and PostEnd means intesection point is beyond the threshold distance,  but an offest by threshold distance would intersect within this 
-    type IntersectionZone =  
-        PreStart | Start | Middle | End | PostEnd
-
-    let getZone(t:float, len,  snapThreshold) =
-        if    t < -snapThreshold     then PreStart
-        elif  t <  snapThreshold     then Start
-        elif  t <  len-snapThreshold then Middle
-        elif  t <  len+snapThreshold then End
-        else                              PostEnd
     *)
-

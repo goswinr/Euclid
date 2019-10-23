@@ -99,12 +99,15 @@ type Pt =
 
     override p.ToString() = $"FsEx.Geo.Pt(X=%s{Format.float p.X}, Y=%s{Format.float p.Y})" 
 
-    static member inline ( - )  (a:Pt, b:Pt) = Vc (a.X - b.X , a.Y - b.Y )
-    static member inline ( - )  (a:Pt, b:Vc) = Pt (a.X - b.X , a.Y - b.Y )
+    static member inline ( - )  (a:Pt, b:Pt)     = Vc (a.X - b.X , a.Y - b.Y )
+    static member inline ( - )  (a:Pt, b:Vc)     = Pt (a.X - b.X , a.Y - b.Y )
+    static member inline ( - )  (a:Pt, b:UnitVc) = Pt (a.X - b.X , a.Y - b.Y )
 
-    static member inline ( + )  (v:Vc, p:Pt) = Pt (p.X + v.X , p.Y + v.Y )
-    static member inline ( + )  (p:Pt, v:Vc) = Pt (p.X + v.X , p.Y + v.Y )
-    static member inline ( + )  (a:Pt, b:Pt) = Pt (a.X + b.X , a.Y + b.Y )
+    //static member inline ( + )  (v:UnitVc, p:Pt)     = Pt (p.X + v.X , p.Y + v.Y )
+    //static member inline ( + )  (v:Vc,     p:Pt)     = Pt (p.X + v.X , p.Y + v.Y )
+    static member inline ( + )  (p:Pt,     v:Vc)     = Pt (p.X + v.X , p.Y + v.Y )
+    static member inline ( + )  (p:Pt,     v:UnitVc) = Pt (p.X + v.X , p.Y + v.Y )
+    static member inline ( + )  (a:Pt,     b:Pt)     = Pt (a.X + b.X , a.Y + b.Y )
 
     static member inline ( * )  (a:Pt  , f:float) = Pt (a.X * f , a.Y * f ) // scale Vector
     static member inline ( * )  (f:float, a:Pt  ) = Pt (a.X * f , a.Y * f ) // scale Vector   
