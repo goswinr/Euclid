@@ -27,8 +27,8 @@
     <Authors>GoswinR</Authors>
     <Copyright>Goswin Rothenthal 2021</Copyright>
 
-    <Description>An F0 extension and utility library, mostly focused on scripting.</Description>
-    <PackageDescription>An F0 extension and utility library, mostly focused on scripting.</PackageDescription><!--used on nuget.org-->
+    <Description>An F# Geometry library (without dependencies)</Description>
+    <PackageDescription>An F# Geometry library (without dependencies)</PackageDescription><!--used on nuget.org-->
 
     <WarningLevel>3</WarningLevel>
     <!-- WarningLevel 3 is default , see https://github.com/dsyme/fsharp-presentations/blob/master/design-notes/off-by-default-warnings.md -->

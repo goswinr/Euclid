@@ -39,7 +39,7 @@ module Intersect =
     
     // TODO inline functions?
     
-    /// A Call to this should be preceded by BBox.doOverlap
+    /// A Call to this should be preceded by BBox.doOverlap. to exit quickly if appart.
     /// For line A and line B give for each:
     /// Start point, unitized Direction, line length.
     /// And finally a tolerance: Curve A will be extendeded on both ends and offseted to both sides.
@@ -73,8 +73,8 @@ module Intersect =
                 elif tb > bl + snapThreshold && isParamStillMoreThanLengthAfterOffsets (bp, bu, bXaInverse, bl, ap, au, snapThreshold) then  
                     NoIntersection
                 else  
-                    if aXb > 0.0 then BfromRight (ta, tb) // TODO might still be almost colinear was an intersection very far ousidse bounding boxes.
-                    else              BfromLeft  (ta, tb) // TODO could be almost coliniear tooo, check offset  !!
+                    if aXb > 0.0 then BfromRight (ta, tb) // TODO might still be almost colinear. was an intersection very far ousidse bounding boxes.
+                    else              BfromLeft  (ta, tb) // TODO could to be almost coliniear too, check offset  !!
 
         else // Colinear
             // probaly no itersection  unless closer than snapThreshold
@@ -98,7 +98,8 @@ module Intersect =
         |Colinear       -> true  
         
     
-    // Return intersection point or mid point between two lines
+    /// Return intersection point or mid point between two lines
+    /// used mainly for dbugging
     let getXPointOrMid (ap:Pt, au:UnitVc, al:float, bp:Pt, bu:UnitVc, bl:float, snapThreshold:float) : Pt =
         match getRelation(ap, au, al,  bp, bu, bl, snapThreshold)   with
         |NoIntersection

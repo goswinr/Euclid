@@ -26,7 +26,7 @@ type Points private () =
     
 
 
-    /// Returns the closest point index form a Point list  to a given Point
+    /// Returns the closest 3D point index form a 3D point list  to a given 3D point
     static member closestPointIdx (pts:ResizeArray<Pnt>,pt:Pnt) : int = 
         if pts.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.closestPoint<Pnt>: empty List of Points: pts"
         let mutable mi = -1
@@ -39,7 +39,7 @@ type Points private () =
                 mi <- i
         mi
 
-    /// Returns the closest point index form a Point list  to a given Point
+    /// Returns the closest 2D point index form a 2D point list  to a given 2D point
     static member closestPointIdx (pts:ResizeArray<Pt>,pt:Pt) : int = 
         if pts.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.closestPoint<Pt>: empty List of Points: pts"
         let mutable mi = -1
@@ -52,57 +52,65 @@ type Points private () =
                 mi <- i
         mi
    
-    /// Returns the closest point form a Point list to a given Point
+    /// Returns the closest point form a 3D point list to a given 3D point
     static member  closestPoint (pts:ResizeArray<Pnt>, pt:Pnt) : Pnt= 
         pts.[Points.closestPointIdx (pts, pt)]
 
-    /// Returns the closest point form a Point list to a given Point
+    /// Returns the closest 2D point form a Point list to a given 2D point
     static member  closestPoint (pts:ResizeArray<Pt>, pt:Pt) : Pt= 
         pts.[Points.closestPointIdx (pts, pt)]
 
-    /// Returns the indices of the points that are closest to each other
+    /// Returns the indices of the 3D points that are closest to each other
     static member closestPointsIdx (xs:ResizeArray<Pnt>, ys:ResizeArray<Pnt>) = 
         if xs.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.closestPointsIdx<Pnt>: empty List of Points: xs"
         if ys.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.closestPointsIdx<Pnt>: empty List of Points: ys"
         let mutable xi = -1
         let mutable yj = -1
-        let mutable mid = Double.MaxValue
+        let mutable mind = Double.MaxValue
         for i=0 to xs.Count-1 do
             let pt = xs.[i]
             for j=0 to ys.Count-1 do
                 let d = Pnt.distanceSq pt ys.[j]
-                if d < mid then
-                    mid <- d
+                if d < mind then
+                    mind <- d
                     xi <- i
                     yj <- j
         xi,yj   
 
-    /// Returns the indices of the points that are closest to each other
+    /// Returns the indices of the 2D points that are closest to each other
     static member closestPointsIdx (xs:ResizeArray<Pt>, ys:ResizeArray<Pt>) = 
+        //TODO
+        // (1)
+        // the current quadratic runtime could be optimised by first sorting the points in x (or y) direction
+        // then the search loop could star when x distance is smaller than mind, and exist when it is bigger
+        // (2)
+        // alternatively a spatial hash could be used to cluster nearby objects. the challange would be to finde the right cell size for each point
+        // (3)
+        // the bounding boxes of each set could be intersected. then expanded. then used to filter both lists.
         if xs.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.closestPointsIdx<Pt>: empty List of Points: xs"
         if ys.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.closestPointsIdx<Pt>: empty List of Points: ys"
         let mutable xi = -1
         let mutable yj = -1
-        let mutable mid = Double.MaxValue
+        let mutable mind = Double.MaxValue
         for i=0 to xs.Count-1 do
             let pt = xs.[i]
             for j=0 to ys.Count-1 do
                 let d = Pt.distanceSq pt ys.[j]
-                if d < mid then
-                    mid <- d
+                if d < mind then
+                    mind <- d
                     xi <- i
                     yj <- j
         xi,yj    
 
 
-    /// Returns the smallest Distance between Point Sets
+    /// Given two lists of 3D points finds the pair that are closest to each other and returns their distance.
     static member  minDistBetweenPointSets (xs:ResizeArray<Pnt>, ys:ResizeArray<Pnt>) = 
         if xs.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.minDistBetweenPointSets<Pnt>: empty List of Points: xs"
         if ys.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.minDistBetweenPointSets<Pnt>: empty List of Points: ys"
         let (i,j) = Points.closestPointsIdx (xs, ys)
         Pnt.distance xs.[i]  ys.[j]
 
-    /// Returns the smallest Distance between Point Sets
+    /// Given two lists of 2D points finds the pair that are closest to each other and returns their distance.
     static member  minDistBetweenPointSets (xs:ResizeArray<Pt>, ys:ResizeArray<Pt>) = 
         if xs.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.minDistBetweenPointSets<Pt>: empty List of Points: xs"
         if ys.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.minDistBetweenPointSets<Pt>: empty List of Points: ys"
@@ -110,7 +118,7 @@ type Points private () =
         Pt.distance xs.[i]  ys.[j]
    
 
-    /// Find the index of the point that has the biggest distance to any point from the other set
+    /// Find the index of the 3D point that has the biggest distance to any 3D point from the other set
     /// basicaly the most lonely point in 'findPointFrom' list with respect to 'checkAgainst' list
     /// Returns findPointFromIdx * checkAgainstIdx
     static member  mostDistantPointIdx (findPointFrom:ResizeArray<Pnt>, checkAgainst:ResizeArray<Pnt>) : int*int= 
@@ -134,7 +142,7 @@ type Points private () =
                 checkAgainstIdx <-checkAgainstTempIdx
         findPointFromIdx, checkAgainstIdx
 
-    /// Find the index of the point that has the biggest distance to any point from the other set
+    /// Find the index of the 2D point that has the biggest distance to any 2D point from the other set
     /// basicaly the most lonely point in 'findPointFrom' list with respect to 'checkAgainst' list
     /// Returns findPointFromIdx * checkAgainstIdx
     static member  mostDistantPointIdx (findPointFrom:ResizeArray<Pt>, checkAgainst:ResizeArray<Pt>) : int*int= 
@@ -160,19 +168,19 @@ type Points private () =
     
 
 
-    /// find the point that has the biggest distance to any point from another set
+    /// Find the 3D point that has the biggest distance to any 3D point from another set
     static member  mostDistantPoint (findPointFrom:ResizeArray<Pnt>, checkAgainst:ResizeArray<Pnt>) = 
         let i,_ = Points.mostDistantPointIdx (findPointFrom, checkAgainst)
         findPointFrom.[i]       
        
-    /// find the point that has the biggest distance to any point from another set
+    /// Find the 2D point that has the biggest distance to any 2D point from another set
     static member  mostDistantPoint (findPointFrom:ResizeArray<Pt>, checkAgainst:ResizeArray<Pt>) = 
         let i,_ = Points.mostDistantPointIdx (findPointFrom, checkAgainst)
         findPointFrom.[i]
    
    
-    /// Culls points if they are to close to previous or next item
-    /// Last and first points stay the same
+    /// Culls 3D points if they are to close to previous or next item
+    /// Last and first 3D points stay the same
     static member  cullDuplicatePointsInSeq (pts:ResizeArray<Pnt>, tolerance)  = 
         if pts.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.cullDuplicatePointsInSeq<Pnt>: empty List of Points"
         if pts.Count = 1 then
@@ -193,8 +201,8 @@ type Points private () =
                     res.Add pt
             res
 
-    /// Culls points if they are to close to previous or next item
-    /// Last and first points stay the same
+    /// Culls 2D points if they are to close to previous or next item
+    /// Last and first 2D points stay the same
     static member  cullDuplicatePointsInSeq (pts:ResizeArray<Pt>, tolerance)  = 
         if pts.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.cullDuplicatePointsInSeq<Pt>: empty List of Points"
         if pts.Count = 1 then
@@ -217,10 +225,10 @@ type Points private () =
    
     
     
-    /// Similar to Join Polylines this tries to find continous sequences of points.
+    /// Similar to Join Polylines this tries to find continous sequences of 2D points.
     /// 'tolGap' is the maximun allowable gap between the start and the endpoint of to segments.
     /// Search starts from the segment with the most points.
-    /// Both start and end point of each point list is checked for adjacency
+    /// Both start and end point of each 2D point list is checked for adjacency
     static member findContinousPoints (ptss: ResizeArray<ResizeArray<Pt>>, tolGap:float)  = 
         let i =  ptss |> ResizeArray.maxIndBy ResizeArray.length
         let res = ptss.Pop(i)
@@ -247,10 +255,10 @@ type Points private () =
                     loop <- false
         res
        
-    /// Similar to Join Polylines this tries to find continous sequences of points.
+    /// Similar to Join Polylines this tries to find continous sequences of 3D points.
     /// 'tolGap' is the maximun allowable gap between the start and the endpoint of to segments.
     /// Search starts from the segment with the most points.
-    /// Both start and end point of each point list is checked for adjacency
+    /// Both start and end point of each 3D point list is checked for adjacency
     static member findContinousPoints (ptss: ResizeArray<ResizeArray<Pnt>>, tolGap:float)  = 
         let i =  ptss |> ResizeArray.maxIndBy ResizeArray.length
         let res = ptss.Pop(i)
