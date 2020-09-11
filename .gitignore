@@ -10,6 +10,7 @@ fsxDll_*/
 [Bb]in/ 
 
 # User-specific files
+*.lnk
 *.rsuser
 *.suo
 *.user
