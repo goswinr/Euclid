@@ -1,9 +1,7 @@
 namespace FsEx.Geo
 
 open System
-open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>]  see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
-
-    
+open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>]  see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike    
 
     
 /// A 2D Vector (3D Vectors are called 'Vec') 
@@ -50,8 +48,8 @@ type UnitVc =
     val X : float
     val Y : float
 
-    /// Unsave internal constructor,  public only for inlining.
-    [<Obsolete("Unsave internal constructor,  but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >] 
+    /// Unsave internal constructor, doesn't check or unitize the input,  public only for inlining.
+    [<Obsolete("Unsave internal constructor, doesn't check or unitize the input, but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >] 
     new (x,y) = 
         #if DEBUG
         let l = x*x + y*y // TODO : with this test all  operations are 2.5 times slower  
@@ -114,4 +112,4 @@ type Pt =
 
     static member inline ( / )  (p:Pt, f:float) = 
         if abs f > Util.zeroLenghtTol then  Pt (p.X / f , p.Y / f ) 
-        else FsExGeoDivByZeroException.Raise $"%g{f} is too small for dividing %O{p} using / operator. Tolerance:%g{Util.zeroLenghtTol}" 
+        else FsExGeoDivByZeroException.Raise $"%g{f} is too small for dividing %O{p} using '/' operator. Tolerance:%g{Util.zeroLenghtTol}" 

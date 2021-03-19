@@ -17,7 +17,7 @@ type FsExGeoDivByZeroException (s:string) =
 
 module Util =
     
-    /// Tolerance for zero length: 1e-12 in divisions
+    /// Tolerance for zero length: 1e-16 in divisions
     [<Literal>]
     let zeroLenghtTol = 1e-16 
     

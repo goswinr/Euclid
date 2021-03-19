@@ -171,7 +171,7 @@ open Util
          toDegrees (Math.Asin(2.0 *  ((q.W * q.Y) - (q.X * q.Z)))),
          toDegrees (Math.Atan2(2.0 * ((q.W * q.Z) + (q.X * q.Y)), (q.W * q.W) + (q.X * q.X) - (q.Y * q.Y) - (q.Z * q.Z)))
 
-     /// The created Rotation is Counter Clockwise looking in the direction of the Vector
+     /// The created Rotation is Clockwise looking in the direction of the Vector 
      static member createFromRadians (axis:Vec, angleInRadians)  =
          // from https://referencesource.microsoft.com/0PresentationCore/Core/CSharp/System/Windows/Media3D/Quaternion.cs,91 
          let mutable li = sqrt(axis.X*axis.X + axis.Y*axis.Y + axis.Z*axis.Z) 
@@ -181,7 +181,7 @@ open Util
          li <- 1. / li // inverse for unitizing vector:
          Quat ( axis.X * li * sa, axis.Y * li * sa, axis.Z * li * sa, cos angHalf )
      
-     /// The created Rotation is Clockwise looking in the direction of the Vector ( Right Hand Rule) 
+     /// The created Rotation is Clockwise looking in the direction of the Vector
      static member inline createFromDegree (axis : Vec, angleInDegrees) = 
          Quat.createFromRadians (axis,  toRadians angleInDegrees) 
 
