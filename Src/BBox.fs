@@ -38,6 +38,15 @@ type BBox =
 
     member inline b.Center = Pt( (b.MaxX + b.MinX)*0.5, (b.MaxY + b.MinY)*0.5 )
 
+    /// Checks that min X and Y are smaller than max X and Y.
+    /// This might happen if the box is expanded by a negative value bigger than the BBox.
+    member inline b.IsValid =   b.MinX <= b.MaxX && b.MinY <= b.MaxX
+
+    /// Checks if min X or Y are bigger than max X or Y.
+    /// This might happen if the box is expanded by a negative value bigger than the BBox.
+    member inline b.IsNotValid =   b.MinX > b.MaxX || b.MinY > b.MaxX
+
+
     /// Returns Bounding box expanded by distance
     /// Does not check overflow if distance is negative.
     member inline b.Expand(d) = 
