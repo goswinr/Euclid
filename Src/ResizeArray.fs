@@ -72,6 +72,31 @@ module AutoOpenResizeArray =
         static member inline length (rarr: ResizeArray<'T>) = 
             rarr.Count           
 
+        /// <summary>Sorts the elements of a ResizeArray, using the given projection for the keys and returning a new ResizeArray.
+        /// Elements are compared using <see cref="M:Microsoft.FSharp.Core.Operators.compare"/>.
+        /// This means "Z" is before "a". This is different from Collections.Generic.List.Sort() where "a" is before "Z" using IComparable interface.
+        /// This is NOT a stable sort, i.e. the original order of equal elements is not necessarily preserved.
+        /// For a stable sort, consider using Seq.sort.</summary>
+        /// <param name="projection">The function to transform ResizeArray elements into the type that is compared.</param>
+        /// <param name="rarr">The input ResizeArray.</param>
+        /// <returns>The sorted ResizeArray.</returns>
+        static member sortBy<'T, 'Key when 'Key : comparison> (projection : 'T -> 'Key) (rarr : ResizeArray<'T>) : ResizeArray<'T> = 
+            let r = rarr.GetRange(0,rarr.Count) // fastest way to create a shallow copy
+            r.Sort (fun x y -> Operators.compare (projection x) (projection y))
+            r
+        
+        /// <summary>Returns the index of the first element in the ResizeArray
+        /// that satisfies the given predicate.</summary>
+        /// <param name="predicate">The function to test the input elements.</param>
+        /// <param name="rarr">The input ResizeArray.</param>
+        /// <returns>The index of the first element that satisfies the predicate, or <c>None</c>.</returns>
+        static member  tryFindIndex (predicate:'T->bool) (rarr: ResizeArray<'T>) : option<int>= 
+            let elementIndex =   rarr.FindIndex (System.Predicate predicate)
+            match elementIndex with
+            | -1 ->
+                None
+            | index ->
+                Some index
 
         /// <summary>Returns a new ResizeArray with the elements in reverse order.</summary>
         /// <param name="rarr">The input ResizeArray.</param>

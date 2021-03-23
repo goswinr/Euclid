@@ -71,7 +71,8 @@
     <Compile Include="Src/Intersect.fs" />
     <Compile Include="Src/ResizeArray.fs" />
     <Compile Include="Src/Points.fs" />
-    <Compile Include="Src/Loops.fs" /> 
+    <Compile Include="Src/Loops.fs" />
+    <Compile Include="Src\Similarity.fs" /> 
     
   </ItemGroup>
 
