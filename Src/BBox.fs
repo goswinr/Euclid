@@ -96,6 +96,15 @@ type BBox =
         p.Y >= b.MinY &&
         p.Y <= b.MaxY 
     
+    /// Returns a bounding box that contains both input boxes
+    static member inline union (a:BBox) (b:BBox) =
+        BBox (min b.MinX a.MinX ,min b.MinY a.MinY,max b.MaxX a.MaxX ,max b.MaxY a.MaxY)
+    
+    /// Returns a bounding box that contains the input boxes and the point
+    static member inline unionPt (p:Pt) (b:BBox) =
+        BBox (min b.MinX p.X ,min b.MinY p.Y, max b.MaxX p.X ,max b.MaxY p.Y)
+        
+
     /// Finds min and max values for x and y.
     /// Adds the Expansion value is used to shrink lowwer bound and increase upper bound.
     /// Total size is bigger by expansion times two.
@@ -136,6 +145,21 @@ type BBox =
         let maxX = if b.X > minX then b.X else minX <- b.X ;  a.X 
         let mutable minY = a.Y  
         let maxY = if b.Y > minY then b.Y else minY <- b.Y ;  a.Y
+        BBox(minX,minY,maxX,maxY)
+
+
+    /// Finds min and max values for x and y.
+    static member inline create (ps:seq<Pt> ) =
+        if Seq.isEmpty ps then raise <| FsExGeoException("BBox.create(seq<Pt>) input is empty seq")
+        let mutable minX = Double.MaxValue
+        let mutable minY = Double.MaxValue
+        let mutable maxX = Double.MinValue
+        let mutable maxY = Double.MinValue
+        for p in ps do
+            minX <- min minX p.X 
+            minY <- min minY p.Y
+            maxX <- max maxX p.X 
+            maxY <- max maxY p.Y
         BBox(minX,minY,maxX,maxY)
     
     /// Does not verify the order of min and max values
