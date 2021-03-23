@@ -169,8 +169,8 @@ module AutoOpenPt =
         /// Gets the Y value of  Pt
         static member inline getY (pt:Pt) =  pt.Y
        
-        static member inline add        (v:Pt) (a:Pt) = a + v
-        static member inline addVc      (a:Pt) (v:Vc) = a + v
+        static member inline add        (a:Pt) (b:Pt) = a + b
+        static member inline addVc      (v:Vc) (a:Pt) = a + v
 
         static member inline midPt      (a:Pt) (b:Pt)         = (a+b) * 0.5
         static member inline scale      (f:float) (pt:Pt) = pt*f
@@ -212,7 +212,7 @@ module AutoOpenPt =
         static member inline rotateWithCenter (cen:Pt) (angDegree) (pt:Pt) = (Rotate.createFromDegrees angDegree).RotateWithCenter(cen,pt)              
        
         /// Returns a point that is at a given distance from a point in the direction of another point.
-        static member inline distPt (fromPt:Pt) ( dirPt:Pt) ( distance:float) : Pt  = 
+        static member inline distPt (fromPt:Pt, dirPt:Pt, distance:float) : Pt  = 
             let v = dirPt - fromPt
             let sc = distance/v.Length
             fromPt + v*sc
@@ -220,7 +220,7 @@ module AutoOpenPt =
        
         /// Returns a Point by evaluation a line between two point with a normalized patrameter.
         /// e.g. rel=0.5 will return the middle point, rel=1.0 the endPoint
-        static member inline divPt(fromPt:Pt)( toPt:Pt)(rel:float) : Pt  = 
+        static member inline divPt(fromPt:Pt, toPt:Pt,rel:float) : Pt  = 
             let v = toPt - fromPt
             fromPt + v*rel     
              

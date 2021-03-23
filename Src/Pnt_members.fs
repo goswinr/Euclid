@@ -94,10 +94,10 @@ module AutoOpenPnt =
         /// Gets the Z value of  Pnt
         static member inline getZ (pt:Pnt) =  pt.Z
 
-        static member inline add        (v:Vec) (a:Pnt) = a + v
-        static member inline addToPtn   (a:Pnt) (v:Vec) = a + v
+        static member inline add        (a:Pnt) (b:Pnt) = a + b
+        static member inline addVec     (v:Vec) (a:Pnt)  = a + v
    
-        static member inline midPt      (a:Pnt) (b:Pnt)         = (a+b) * 0.5
+        static member inline midPt      (a:Pnt)   (b:Pnt)         = (a+b) * 0.5
         static member inline scale      (f:float) (pt:Pnt) = pt*f
         
         static member inline shiftX     (x:float) (pt:Pnt) = Pnt (pt.X+x, pt.Y,   pt.Z)
@@ -156,20 +156,20 @@ module AutoOpenPnt =
              
        
         /// Returns a point that is at a given distance from a point in the direction of another point.
-        static member inline distPt (fromPt:Pnt) ( dirPt:Pnt) ( distance:float) : Pnt  = 
+        static member inline distPt (fromPt:Pnt, dirPt:Pnt,distance:float) : Pnt  = 
             let v = dirPt - fromPt
             let sc = distance/v.Length
             fromPt + v*sc       
        
         /// Returns a Point by evaluation a line between two point with a normalized patrameter.
         /// e.g. rel=0.5 will return the middle point, rel=1.0 the endPoint
-        static member inline divPt(fromPt:Pnt)( toPt:Pnt)(rel:float) : Pnt  = 
+        static member inline divPt(fromPt:Pnt, toPt:Pnt,rel:float) : Pnt  = 
             let v = toPt - fromPt
             fromPt + v*rel
        
         /// Returns a point that is at a given Z level,
         /// going from a point in the direction of another point.
-        static member inline extendToZLevel (fromPt:Pnt)( toPt:Pnt) (z:float) = 
+        static member inline extendToZLevel (fromPt:Pnt, toPt:Pnt,z:float) = 
             let v = toPt - fromPt
             if fromPt.Z < toPt.Z && z < fromPt.Z  then FsExGeoException.Raise $"Pnt.extendToZLevel cannot be reached for fromPt:%O{fromPt} toPt:%O{toPt} z:%g{z}" 
             if fromPt.Z > toPt.Z && z > fromPt.Z  then FsExGeoException.Raise $"Pnt.extendToZLevel cannot be reached for fromPt:%O{fromPt} toPt:%O{toPt} z:%g{z}" 
