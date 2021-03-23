@@ -64,6 +64,10 @@ module AutoOpenResizeArray =
             this.RemoveAt(index)
             v
         
+        // -------------------------------------------------------
+        // --------------------Static members --------------------
+        // -------------------------------------------------------
+
         /// this.Count
         static member inline length (rarr: ResizeArray<'T>) = 
             rarr.Count           

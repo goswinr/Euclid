@@ -2,13 +2,14 @@ namespace FsEx.Geo
 
 open System
 
+
+/// provides operations on 2D and 3D points
 [<AbstractClass; Sealed>]
 type Points private () = 
 
     // static class, use these attributes [<AbstractClass; Sealed>] to match C# static class
     // and make in visible in C# // https://stackoverflow.com/questions/13101995/defining-static-classes-in-f
     
-
     
     /// The sign is negative if the loop is clockwise.
     /// Last and first point should bethe same.
@@ -22,8 +23,7 @@ type Points private () =
          let b = n.Y + t.Y
          area <- area + a*b
          t <- n
-     area * 0.5
-    
+     area * 0.5    
 
 
     /// Returns the closest 3D point index form a 3D point list  to a given 3D point
@@ -53,11 +53,11 @@ type Points private () =
         mi
    
     /// Returns the closest point form a 3D point list to a given 3D point
-    static member  closestPoint (pts:ResizeArray<Pnt>, pt:Pnt) : Pnt= 
+    static member closestPoint (pts:ResizeArray<Pnt>, pt:Pnt) : Pnt= 
         pts.[Points.closestPointIdx (pts, pt)]
 
     /// Returns the closest 2D point form a Point list to a given 2D point
-    static member  closestPoint (pts:ResizeArray<Pt>, pt:Pt) : Pt= 
+    static member closestPoint (pts:ResizeArray<Pt>, pt:Pt) : Pt= 
         pts.[Points.closestPointIdx (pts, pt)]
 
     /// Returns the indices of the 3D points that are closest to each other
@@ -145,7 +145,7 @@ type Points private () =
     /// Find the index of the 2D point that has the biggest distance to any 2D point from the other set
     /// basicaly the most lonely point in 'findPointFrom' list with respect to 'checkAgainst' list
     /// Returns findPointFromIdx * checkAgainstIdx
-    static member  mostDistantPointIdx (findPointFrom:ResizeArray<Pt>, checkAgainst:ResizeArray<Pt>) : int*int= 
+    static member mostDistantPointIdx (findPointFrom:ResizeArray<Pt>, checkAgainst:ResizeArray<Pt>) : int*int= 
         if findPointFrom.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.mostDistantPoint<Pt>: empty List of Points: findPointFrom"
         if checkAgainst.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.mostDistantPoint<Pt>: empty List of Points: checkAgainst"
         let mutable maxd = Double.MinValue
@@ -174,14 +174,14 @@ type Points private () =
         findPointFrom.[i]       
        
     /// Find the 2D point that has the biggest distance to any 2D point from another set
-    static member  mostDistantPoint (findPointFrom:ResizeArray<Pt>, checkAgainst:ResizeArray<Pt>) = 
+    static member mostDistantPoint (findPointFrom:ResizeArray<Pt>, checkAgainst:ResizeArray<Pt>) = 
         let i,_ = Points.mostDistantPointIdx (findPointFrom, checkAgainst)
         findPointFrom.[i]
    
    
     /// Culls 3D points if they are to close to previous or next item
     /// Last and first 3D points stay the same
-    static member  cullDuplicatePointsInSeq (pts:ResizeArray<Pnt>, tolerance)  = 
+    static member cullDuplicatePointsInSeq (pts:ResizeArray<Pnt>, tolerance)  = 
         if pts.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.cullDuplicatePointsInSeq<Pnt>: empty List of Points"
         if pts.Count = 1 then
             pts
@@ -203,7 +203,7 @@ type Points private () =
 
     /// Culls 2D points if they are to close to previous or next item
     /// Last and first 2D points stay the same
-    static member  cullDuplicatePointsInSeq (pts:ResizeArray<Pt>, tolerance)  = 
+    static member cullDuplicatePointsInSeq (pts:ResizeArray<Pt>, tolerance)  = 
         if pts.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.cullDuplicatePointsInSeq<Pt>: empty List of Points"
         if pts.Count = 1 then
             pts

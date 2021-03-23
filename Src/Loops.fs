@@ -248,8 +248,8 @@ type Loop private ( pts:ResizeArray<Pt>
             t <- n
                 
         // Check for self intersection, 
-        let inline selfXcheck(i,from,till)= 
-            // TODO quadratic O !  replace with sweep line algorithm ?
+        let inline selfIntersectionCheck(i,from,till)= 
+            // TODO quadratic runtime !  replace with sweep line algorithm ?
             let ap  = pts.[i]
             let au  = unitVcts.[i]
             let al  = lens.[i]
@@ -267,12 +267,16 @@ type Loop private ( pts:ResizeArray<Pt>
                     FsExGeoException.Raise $"FsEx.Geo.Loop: Loop of {points.Count} Points has self intersection."        
         if unitVcts.Length > 3 then // a triangle is covered by angle checks above
             // checking second last and last
-            selfXcheck(segLastIdx  , 1, 1)
-            selfXcheck(segLastIdx-1, 0, 0)
+            selfIntersectionCheck(segLastIdx  , 1, 1)
+            selfIntersectionCheck(segLastIdx-1, 0, 0)
             for i = 1 to segLastIdx do // start at second ,  (last and first do intersect)
-                // TODO quadratic O !  replace with sweep line algorithm ?
-                selfXcheck(i, i+2 , segLastIdx)   
+                // TODO quadratic runtime !  replace with sweep line algorithm ?
+                selfIntersectionCheck(i, i+2 , segLastIdx)   
         
         let box = BBox.createUnchecked(xmin-snapThreshold, ymin-snapThreshold, xmax+snapThreshold, ymax+snapThreshold) 
 
         Loop(pts, unitVcts, bboxes, lens, xys, area, minSegmentLength, snapThreshold, box)
+
+
+        // see script files in Test Folder for almost working code of Loop Loop Intersection:
+        // Loop Boolean Ops 14.fsx
