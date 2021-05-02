@@ -32,14 +32,14 @@ module Intersect =
     type LineLineRelation =  
         // this DU could be also encoded via  Float NaN and infinity to avoid an extra object allocation
         |NoIntersection
-        |Colinear // within threshold,  might still not  overlap,  needs to be checked via BBox
+        |Colinear // within threshold,  might still not  overlap,  needs to be checked via BRect
         |Parallel // more than threshold apart
         |BfromRight of struct ( float * float) // parameters for unit vector,  might be out of bound by snapThreshold
         |BfromLeft  of struct ( float * float) // parameters for unit vector,  might be out of bound by snapThreshold
     
     // TODO inline functions?
     
-    /// A Call to this should be preceded by BBox.doOverlap. to exit quickly if appart.
+    /// A Call to this should be preceded by BRect.doOverlap. to exit quickly if appart.
     /// For line A and line B give for each:
     /// Start point, unitized Direction, line length.
     /// And finally a tolerance: Curve A will be extendeded on both ends and offseted to both sides.
@@ -82,13 +82,13 @@ module Intersect =
             let vab = ap-bp
             let dot = perp * vab // project vab onto unit vector
             if abs dot < snapThreshold then
-                Colinear // paralle distance is less than snapThreshold distance,  TODO but actual overlap needs to be confirmed via BBox
+                Colinear // paralle distance is less than snapThreshold distance,  TODO but actual overlap needs to be confirmed via BRect
             else
                 Parallel // paralle distance is more than snapThreshold distance,
 
-    /// includes a preceding call to BBox.doOverlap    
-    let inline doIntersectOrOverlapColinear (ap:Pt, au:UnitVc, al:float, abb:BBox, bp:Pt, bu:UnitVc, bl:float, bbb:BBox, snapThreshold:float) :bool =
-        BBox.doOverlap abb bbb 
+    /// includes a preceding call to BRect.doOverlap    
+    let inline doIntersectOrOverlapColinear (ap:Pt, au:UnitVc, al:float, abb:BRect, bp:Pt, bu:UnitVc, bl:float, bbb:BRect, snapThreshold:float) :bool =
+        BRect.doOverlap abb bbb 
         &&
         match getRelation(ap, au, al, bp, bu, bl, snapThreshold)   with
         |NoIntersection -> false

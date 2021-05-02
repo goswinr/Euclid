@@ -10,7 +10,7 @@ module Similarity2D =
 
     type SimilarityGroup =  { 
         typ:string
-        bbox:BBox
+        bbox:BRect
         points:Pt[] // must be sorted by 'X' property for binary search,  
         //duplicate points with in tolerance will most likle lead to false results(not all indices will be covered in simPts)
         } 
@@ -87,7 +87,7 @@ module Similarity2D =
         let inline sim (a:Pt) (b:Pt)  = 
             abs(a.X - b.X) < tol && abs(a.Y - b.Y) < tol
         
-        let inline simBox (a:BBox) (b:BBox)  = 
+        let inline simBox (a:BRect) (b:BRect)  = 
             sim a.MinPt b.MinPt    
             && sim a.MaxPt b.MaxPt    
         
@@ -105,9 +105,9 @@ module Similarity2D =
     /// refTex is 
     let getSimliarityData (ptss:ResizeArray<string*ResizeArray<Pt>>) : SimilarityData =         
         let sptss = ptss |> ResizeArray.sortBy fst
-        let mutable bb = BBox.create(sptss.[0] |> snd)
+        let mutable bb = BRect.create(sptss.[0] |> snd)
         for i=1 to sptss.Count-1 do  
-            bb <- BBox.create(sptss.[i] |> snd) |> BBox.union bb
+            bb <- BRect.create(sptss.[i] |> snd) |> BRect.union bb
         let shift = Vc(-bb.MinX, -bb.MinY) 
         let ept = bb.MaxPt+shift 
         
@@ -117,7 +117,7 @@ module Similarity2D =
             for n, pts in sptss do  
                 let ps = pts |> Array.ofSeq |> Array.map (Pt.addVc shift) 
                 ps |> Array.sortInPlaceBy Pt.getX
-                let bb = BBox.create(ps)
+                let bb = BRect.create(ps)
                 { 
                 typ=n
                 bbox=bb

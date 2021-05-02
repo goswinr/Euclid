@@ -10,7 +10,7 @@ open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see http
 [<Struct; NoEquality; NoComparison>] 
 [<IsReadOnly>]
 //[<IsByRefLike>]
-type BBox =
+type BRect =
     val MinX : float
     val MinY : float
     val MaxX : float
@@ -24,7 +24,7 @@ type BBox =
          MaxX = maxX
          MaxY = maxY}    
     
-    override b.ToString() = $"FsEx.Geo.BBox: width=%s{Format.float (b.MaxX - b.MinX)} , height=%s{Format.float (b.MaxY - b.MinY)} (at X=%s{Format.float b.MinX}  Y=%s{Format.float b.MinY})"
+    override b.ToString() = $"FsEx.Geo.BRect: width=%s{Format.float (b.MaxX - b.MinX)} , height=%s{Format.float (b.MaxY - b.MinY)} (at X=%s{Format.float b.MinX}  Y=%s{Format.float b.MinY})"
     
     member inline b.MinPt = Pt(b.MinX,b.MinY)
 
@@ -39,18 +39,18 @@ type BBox =
     member inline b.Center = Pt( (b.MaxX + b.MinX)*0.5, (b.MaxY + b.MinY)*0.5 )
 
     /// Checks that min X and Y are smaller than max X and Y.
-    /// This might happen if the box is expanded by a negative value bigger than the BBox.
+    /// This might happen if the box is expanded by a negative value bigger than the BRect.
     member inline b.IsValid =   b.MinX <= b.MaxX && b.MinY <= b.MaxX
 
     /// Checks if min X or Y are bigger than max X or Y.
-    /// This might happen if the box is expanded by a negative value bigger than the BBox.
+    /// This might happen if the box is expanded by a negative value bigger than the BRect.
     member inline b.IsNotValid =   b.MinX > b.MaxX || b.MinY > b.MaxX
 
 
     /// Returns Bounding box expanded by distance
     /// Does not check overflow if distance is negative.
     member inline b.Expand(d) = 
-        BBox(b.MinX-d, b.MinY-d, b.MaxX+d, b.MaxY+d)
+        BRect(b.MinX-d, b.MinY-d, b.MaxX+d, b.MaxY+d)
 
     /// As counterclockwise closed loop (last Pt = first Pt)
     /// Starting at bbox.Min
@@ -64,7 +64,7 @@ type BBox =
         a    
     
     /// Returns true if the two bounding boxes do overlap or touch
-    member inline b.OverlapsWith (a:BBox) =
+    member inline b.OverlapsWith (a:BRect) =
         not (  b.MinX > a.MaxX
             || a.MinX > b.MaxX
             || a.MinY > b.MaxY 
@@ -78,31 +78,31 @@ type BBox =
         p.Y <= b.MaxY 
 
     /// Returns true if the Box  is inside or on the other bounding box
-    member inline b.Contains (o:BBox) =
+    member inline b.Contains (o:BRect) =
         b.Contains(o.MinPt) && b.Contains(o.MaxPt)     
 
 
     /// Returns true if the two bounding boxes do overlap or touch
-    static member inline doOverlap(a:BBox) (b:BBox) =
+    static member inline doOverlap(a:BRect) (b:BRect) =
         not (  b.MinX > a.MaxX
             || a.MinX > b.MaxX
             || a.MinY > b.MaxY 
             || b.MinY > a.MaxY )
     
     /// Returns true if the point is inside or on  the bounding box
-    static member inline contains (p:Pt) (b:BBox) =
+    static member inline contains (p:Pt) (b:BRect) =
         p.X >= b.MinX &&
         p.X <= b.MaxX &&
         p.Y >= b.MinY &&
         p.Y <= b.MaxY 
     
     /// Returns a bounding box that contains both input boxes
-    static member inline union (a:BBox) (b:BBox) =
-        BBox (min b.MinX a.MinX ,min b.MinY a.MinY,max b.MaxX a.MaxX ,max b.MaxY a.MaxY)
+    static member inline union (a:BRect) (b:BRect) =
+        BRect (min b.MinX a.MinX ,min b.MinY a.MinY,max b.MaxX a.MaxX ,max b.MaxY a.MaxY)
     
     /// Returns a bounding box that contains the input boxes and the point
-    static member inline unionPt (p:Pt) (b:BBox) =
-        BBox (min b.MinX p.X ,min b.MinY p.Y, max b.MaxX p.X ,max b.MaxY p.Y)
+    static member inline unionPt (p:Pt) (b:BRect) =
+        BRect (min b.MinX p.X ,min b.MinY p.Y, max b.MaxX p.X ,max b.MaxY p.Y)
         
 
     /// Finds min and max values for x and y.
@@ -136,7 +136,7 @@ type BBox =
             minYCh <- mid
             maxYCh <- mid
 
-        BBox(minXCh, minYCh,maxXCh,maxYCh)
+        BRect(minXCh, minYCh,maxXCh,maxYCh)
     
     /// Finds min and max values for x and y.
     static member inline create (a:Pt , b:Pt ) =
@@ -145,12 +145,12 @@ type BBox =
         let maxX = if b.X > minX then b.X else minX <- b.X ;  a.X 
         let mutable minY = a.Y  
         let maxY = if b.Y > minY then b.Y else minY <- b.Y ;  a.Y
-        BBox(minX,minY,maxX,maxY)
+        BRect(minX,minY,maxX,maxY)
 
 
     /// Finds min and max values for x and y.
     static member inline create (ps:seq<Pt> ) =
-        if Seq.isEmpty ps then raise <| FsExGeoException("BBox.create(seq<Pt>) input is empty seq")
+        if Seq.isEmpty ps then raise <| FsExGeoException("BRect.create(seq<Pt>) input is empty seq")
         let mutable minX = Double.MaxValue
         let mutable minY = Double.MaxValue
         let mutable maxX = Double.MinValue
@@ -160,8 +160,8 @@ type BBox =
             minY <- min minY p.Y
             maxX <- max maxX p.X 
             maxY <- max maxY p.Y
-        BBox(minX,minY,maxX,maxY)
+        BRect(minX,minY,maxX,maxY)
     
     /// Does not verify the order of min and max values
     static member inline createUnchecked (minX,minY,maxX,maxY) = 
-        BBox(minX,minY,maxX,maxY)
+        BRect(minX,minY,maxX,maxY)

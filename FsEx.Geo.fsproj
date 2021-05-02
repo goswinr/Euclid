@@ -59,7 +59,7 @@
     <Compile Include="Src/Vectors2D.fs" />
     <Compile Include="Src/Vectors3D.fs" />
     <Compile Include="Src/DebugDraw.fs" />
-    <Compile Include="Src/BBox.fs" />
+    <Compile Include="Src/BRect.fs" />
     <Compile Include="Src/Rotate.fs" />
     <Compile Include="Src/Quat.fs" />
     <Compile Include="Src/UnitVc_members.fs" />

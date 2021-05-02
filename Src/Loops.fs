@@ -23,13 +23,13 @@ type PointLoopRel =
 /// Does NOT remove colinear points.
 type Loop private ( pts:ResizeArray<Pt>
                   , unitVcts:UnitVc[]
-                  , bboxes:BBox[] 
+                  , bboxes:BRect[] 
                   , lens:float[] 
                   , xys:float[] // TODO is this needed to be always precomputed ?
                   , area:float
                   , minSegmentLength:float
                   , snapThreshold:float
-                  , box:BBox
+                  , box:BRect
                   ) =    
 
     /// Without sign,  since loop is guaranteed to be Counter Clockwise
@@ -218,7 +218,7 @@ type Loop private ( pts:ResizeArray<Pt>
                 let l = v.Length
                 let i = ii-1 // becaus loop starts at 1            
                 uvs.[ i] <- UnitVc.createUnchecked( v.X/l , v.Y/l) // no check for div by zero needed,  since minSpacing is already checked
-                bs.[  i] <- BBox.create(t, n, snapThreshold)
+                bs.[  i] <- BRect.create(t, n, snapThreshold)
                 lens.[i] <- l
                 xy.[xyi  ] <- t.X
                 xy.[xyi+1] <- t.Y
@@ -256,7 +256,7 @@ type Loop private ( pts:ResizeArray<Pt>
             let abb = bboxes.[i]
             for j = from to till do
                 let bbb = bboxes.[j]
-                /// test on BBox overlap could be done here already instead of in doIntersectOrOverlapColinear
+                /// test on BRect overlap could be done here already instead of in doIntersectOrOverlapColinear
                 let bp  = pts.[j]
                 let bu  = unitVcts.[j]
                 let bl  = lens.[j]
@@ -273,7 +273,7 @@ type Loop private ( pts:ResizeArray<Pt>
                 // TODO quadratic runtime !  replace with sweep line algorithm ?
                 selfIntersectionCheck(i, i+2 , segLastIdx)   
         
-        let box = BBox.createUnchecked(xmin-snapThreshold, ymin-snapThreshold, xmax+snapThreshold, ymax+snapThreshold) 
+        let box = BRect.createUnchecked(xmin-snapThreshold, ymin-snapThreshold, xmax+snapThreshold, ymax+snapThreshold) 
 
         Loop(pts, unitVcts, bboxes, lens, xys, area, minSegmentLength, snapThreshold, box)
 
