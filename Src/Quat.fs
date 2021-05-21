@@ -40,7 +40,7 @@ open Util
             if w < 0.0 then w <-0.0 // clamp,  to avoid error in acos
             if w > 1.0 then w <-1.0
             (Math.Acos w) * 2.0 |>  toDegrees |> Format.float
-        $"FsEx.Geo.Quat(X=%s{Format.float q.X}, Y=%s{Format.float q.Y}, Z=%s{Format.float q.Z},W=%s{Format.float q.W}, angle: %s{deg}°)"          
+        $"FsEx.Geo.Quat(X=%s{Format.float q.X}, Y=%s{Format.float q.Y}, Z=%s{Format.float q.Z}, W=%s{Format.float q.W}, angle: %s{deg}°)"          
      
      static member inline ( * ) (l:Quat, r:Quat)  =  
          Quat(   l.W * r.X + l.X * r.W + l.Y * r.Z - l.Z * r.Y ,
@@ -93,7 +93,7 @@ open Util
          Pnt ( pt.X * xx + pt.Y * xy + pt.Z * xz
              , pt.X * yx + pt.Y * yy + pt.Z * yz    
              , pt.X * zx + pt.Y * zy + pt.Z * zz 
-             ) 
+             )      
      /// Transform a Vector        
      member q.Rotate(v:Vec)  =  
          // https://gamedev.stackexchange.com/a/28418
@@ -154,10 +154,10 @@ open Util
              ) 
      
      /// Transform a Point round a center point 
-     member q.RotateWithCenter(cen:Pnt, pt:Pnt) :Pnt =  
-         let p = pt-cen 
+     member q.RotateWithCenter(centerPt:Pnt) (ptToRotate:Pnt) :Pnt =  
+         let p = ptToRotate-centerPt 
          let r = q.Rotate(p) 
-         cen + r 
+         centerPt + r 
      
      /// The quaternion expresses a relationship between two coordinate frames, A and B say. 
      /// Returns the EulerAngles in degrees: Alpha, Beta , Gamma.
@@ -175,14 +175,15 @@ open Util
      static member createFromRadians (axis:Vec, angleInRadians)  =
          // from https://referencesource.microsoft.com/0PresentationCore/Core/CSharp/System/Windows/Media3D/Quaternion.cs,91 
          let mutable li = sqrt(axis.X*axis.X + axis.Y*axis.Y + axis.Z*axis.Z) 
-         if li <  zeroLenghtTol then FsExGeoException.Raise $"FsEx.Geo.Quat.createFromRadians failed too short axis %O{axis} and rotation:%g{toDegrees angleInRadians}°" // or return identity Quat ?
+         if li <  zeroLenghtTol then // TODO or return identity Quaternion ?
+            FsExGeoException.Raise $"FsEx.Geo.Quat.createFromRadians failed too short axis %O{axis} and rotation:%g{toDegrees angleInRadians}°" 
          let angHalf = angleInRadians * 0.5
          let sa = sin angHalf
          li <- 1. / li // inverse for unitizing vector:
          Quat ( axis.X * li * sa, axis.Y * li * sa, axis.Z * li * sa, cos angHalf )
      
      /// The created Rotation is Clockwise looking in the direction of the Vector
-     static member inline createFromDegree (axis : Vec, angleInDegrees) = 
+     static member inline createFromDegree (axis:Vec, angleInDegrees) = 
          Quat.createFromRadians (axis,  toRadians angleInDegrees) 
 
 

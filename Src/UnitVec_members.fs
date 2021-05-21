@@ -32,6 +32,8 @@ module AutoOpenUnitVec =
  
         /// The diamond angle is always positive and in the range of 0.0 to 4.0 ( for 360 degrees) 
         /// 0.0 = XAxis,  going Counter clockwise. Ignoring Z component.
+        /// This is the fastest angle computation since it does not use Math.Cos or Math.Sin.
+        /// It is usefull for radial sorting.
         member inline v.DirDiamondInXY =
             // https://stackoverflow.com/a/14675998/969070            
             #if DEBUG 
