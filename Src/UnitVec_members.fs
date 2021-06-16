@@ -110,20 +110,41 @@ module AutoOpenUnitVec =
         static member inline shiftZ     z (v:UnitVec) = Vec (v.X,   v.Y,   v.Z+z)
         static member inline setLength  f (v:UnitVec) = Vec (v.X * f , v.Y * f , v.Z * f) 
            
-       
+        /// Accepts any type that has a X, Y and Z (UPPERCASE) member that can be converted to a float. 
+        /// Does the unitizing too.
+        /// Internally this is not using reflection at runtime but F# Staticaly Resolved Type Parmeters at compile time.
+        static member inline ofXYZ vec  = 
+            let x = ( ^T : (member X : _) vec)
+            let y = ( ^T : (member Y : _) vec)
+            let z = ( ^T : (member Z : _) vec)
+            try UnitVec.create(float x, float y, float z) 
+            with e -> FsExGeoDivByZeroException.Raise "UnitVec.ofXYZ: %A could not be converted to a FsEx.Geo.UnitVec:\r\n%A" vec e
+
+        /// Accepts any type that has a x, y and z (lowercase) member that can be converted to a float. 
+        /// Does the unitizing too.
+        /// Internally this is not using reflection at runtime but F# Staticaly Resolved Type Parmeters at compile time.
+        static member inline ofxyz vec  = 
+            let x = ( ^T : (member x : _) vec)
+            let y = ( ^T : (member y : _) vec)
+            let z = ( ^T : (member z : _) vec)
+            try UnitVec.create(float x, float y, float z) 
+            with e -> FsExGeoDivByZeroException.Raise "UnitVec.ofxyz: %A could not be converted to a FsEx.Geo.UnitVec:\r\n%A" vec e
+
+        /// Does the unitizing too.
         static member inline ofPnt  (pt:Pnt) =  
             let l = sqrt (pt.X*pt.X + pt.Y*pt.Y + pt.Z*pt.Z) 
             if l <  zeroLenghtTol then FsExGeoDivByZeroException.Raise $"UnitVec.ofPnt failed on too short %O{pt}" 
             let li = 1. / l
             UnitVec.createUnchecked( li*pt.X , li*pt.Y , li*pt.Z ) 
         
+        /// Does the unitizing too.
         static member inline ofVec (v:Vec) = 
             let l = sqrt (v.X*v.X + v.Y*v.Y + v.Z*v.Z) 
             if l <  zeroLenghtTol then FsExGeoDivByZeroException.Raise $"UnitVec.ofVec failed on too short %O{v}"
             let li = 1. / l
             UnitVec.createUnchecked( li*v.X , li*v.Y , li*v.Z )  
         
-        /// Does the unitizing
+        /// Does the unitizing too.
         static member inline create (x:float, y:float, z:float) = 
             let l = sqrt(x*x  + y*y + z*z)                       
             if l < zeroLenghtTol then FsExGeoDivByZeroException.Raise $"UnitVec.create: x:%g{x}, y:%g{y} and z:%g{z} are too small for creating a Unit vector, Tolerance:%g{zeroLenghtTol}" 

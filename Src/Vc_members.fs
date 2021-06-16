@@ -141,6 +141,26 @@ module AutoOpenVc =
         static member inline XAxis  = Vc (1.0 , 0.0)
         static member inline YAxis  = Vc (0.0 , 1.0)   
 
+
+        /// Accepts any type that has a X and Y (UPPERCASE) member that can be converted to a float. 
+        /// Internally this is not using reflection at runtime but F# Staticaly Resolved Type Parmeters at compile time.
+        static member inline ofXY vec  = 
+            let x = ( ^T : (member X : _) vec)
+            let y = ( ^T : (member Y : _) vec)
+            try Vc(float x, float y) 
+            with e -> FsExGeoDivByZeroException.Raise "Vc.ofXY: %A could not be converted to a FsEx.Geo.Vc:\r\n%A" vec e
+
+        /// Accepts any type that has a x and y (lowercase) member that can be converted to a float. 
+        /// Internally this is not using reflection at runtime but F# Staticaly Resolved Type Parmeters at compile time.
+        static member inline ofxy vec  = 
+            let x = ( ^T : (member x : _) vec)
+            let y = ( ^T : (member y : _) vec)
+            try Vc(float x, float y) 
+            with e -> FsExGeoDivByZeroException.Raise "Vc.ofxy: %A could not be converted to a FsEx.Geo.Vc:\r\n%A" vec e
+
+
+
+
         //static member inline ofPt     (v:Pt)     = Vc (v.X, v.Y) 
         //static member inline ofUnitVc (v:UnitVc) = Vc (v.X, v.Y)
         //static member inline create (x:float, y:float) =  Vec( x , y )

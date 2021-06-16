@@ -56,9 +56,29 @@ module AutoOpenPnt =
         //--------------------------  Static Members  --------------------------------------------------
         //----------------------------------------------------------------------------------------------
 
+        /// Same as Pnt.Origin
         static member Zero   = Pnt ( 0. , 0. , 0.)  // needed by 'Array.sum' 
+        
+        /// Same as Pnt.Zero
         static member Origin = Pnt ( 0. , 0. , 0.) 
-    
+        
+        /// Accepts any type that has a X, Y and Z (UPPERCASE) member that can be converted to a float. 
+        /// Internally this is not using reflection at runtime but F# Staticaly Resolved Type Parmeters at compile time.
+        static member inline ofXYZ pt  = 
+            let x = ( ^T : (member X : _) pt)
+            let y = ( ^T : (member Y : _) pt)
+            let z = ( ^T : (member Z : _) pt)
+            try Pnt(float x, float y, float z) 
+            with e -> FsExGeoDivByZeroException.Raise "Pnt.ofXYZ: %A could not be converted to a FsEx.Geo.Pnt:\r\n%A" pt e
+
+        /// Accepts any type that has a x, y and z (lowercase) member that can be converted to a float. 
+        /// Internally this is not using reflection at runtime but F# Staticaly Resolved Type Parmeters at compile time.
+        static member inline ofxyz pt  = 
+            let x = ( ^T : (member x : _) pt)
+            let y = ( ^T : (member y : _) pt)
+            let z = ( ^T : (member z : _) pt)
+            try Pnt(float x, float y, float z) 
+            with e -> FsExGeoDivByZeroException.Raise "Pnt.ofxyz: %A could not be converted to a FsEx.Geo.Pnt:\r\n%A" pt e
         
         static member inline ofPt       (p:Pt)      = Pnt (p.X, p.Y, 0.0) 
         static member inline ofVec      (v:Vec)     = Pnt (v.X, v.Y, v.Z)  

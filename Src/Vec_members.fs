@@ -138,7 +138,24 @@ module AutoOpenVec =
         static member inline isTiny   tol (v:Vec) = v.IsTiny tol
         static member inline setLength  f (v:Vec) = v.WithLength f    
 
-                
+        /// Accepts any type that has a X, Y and Z (UPPERCASE) member that can be converted to a float. 
+        /// Internally this is not using reflection at runtime but F# Staticaly Resolved Type Parmeters at compile time.
+        static member inline ofXYZ vec  = 
+            let x = ( ^T : (member X : _) vec)
+            let y = ( ^T : (member Y : _) vec)
+            let z = ( ^T : (member Z : _) vec)
+            try Vec(float x, float y, float z) 
+            with e -> FsExGeoDivByZeroException.Raise "Vec.ofXYZ: %A could not be converted to a FsEx.Geo.Vec:\r\n%A" vec e
+        
+        /// Accepts any type that has a x, y and z (lowercase) member that can be converted to a float. 
+        /// Internally this is not using reflection at runtime but F# Staticaly Resolved Type Parmeters at compile time.
+        static member inline ofxyz vec  = 
+            let x = ( ^T : (member x : _) vec)
+            let y = ( ^T : (member y : _) vec)
+            let z = ( ^T : (member z : _) vec)
+            try Vec(float x, float y, float z) 
+            with e -> FsExGeoDivByZeroException.Raise "Vec.ofxyz: %A could not be converted to a FsEx.Geo.Vec:\r\n%A" vec e   
+            
         //static member inline ofPnt   (pt:Pnt) = Vec( pt.X , pt.Y , pt.Z )         
         //static member inline ofUnitVec (v:Vec) = Vec( v.X , v.Y , v.Z ) 
         //static member inline create (x:float, y:float, z:float) =  Vec( x , y , z )

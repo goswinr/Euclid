@@ -145,10 +145,30 @@ module AutoOpenPt =
         //--------------------------  Static Members  --------------------------------------------------
         //----------------------------------------------------------------------------------------------
 
-
+        
+         
+        /// Same as Pt.Origin 
         static member Zero   = Pt ( 0. , 0. )  // needed by 'Array.sum' 
+        
+        /// Same as Pt.Zero
         static member Origin = Pt ( 0. , 0. ) 
-    
+        
+        /// Accepts any type that has a X and Y (UPPERCASE) member that can be converted to a float. 
+        /// Internally this is not using reflection at runtime but F# Staticaly Resolved Type Parmeters at compile time.
+        static member inline ofXY pt  = 
+            let x = ( ^T : (member X: _) pt)
+            let y = ( ^T : (member Y: _) pt)
+            try Pt(float x, float y) 
+            with e -> FsExGeoDivByZeroException.Raise "Pt.ofXY: %A could not be converted to a FsEx.Geo.Pt:\r\n%A" pt e
+
+        /// Accepts any type that has a x and y (lowercase) member that can be converted to a float. 
+        /// Internally this is not using reflection at runtime but F# Staticaly Resolved Type Parmeters at compile time.
+        static member inline ofxy pt  = 
+            let x = ( ^T : (member x: _) pt)
+            let y = ( ^T : (member y: _) pt)
+            try Pt(float x, float y) 
+            with e -> FsExGeoDivByZeroException.Raise "Pt.ofxy: %A could not be converted to a FsEx.Geo.Pt:\r\n%A" pt e
+
         static member inline ofPnt      (p:Pnt)     = Pt (p.X, p.Y)    
         static member inline ofVec      (v:Vc)      = Pt (v.X, v.Y)  
         static member inline ofUnitVec  (v:UnitVc)  = Pt (v.X, v.Y)

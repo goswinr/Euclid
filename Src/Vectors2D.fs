@@ -78,7 +78,7 @@ type UnitVc =
         #endif
         Vc (v.X / f , v.Y / f ) 
     
-    /// Assumes correct input of unitized values     
+    /// Requires correct input of unitized values     
     static member inline createUnchecked(x,y)  = UnitVc(x,y)
 
 /// A 2D Point (3D Points are called 'Pnt') 

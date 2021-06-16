@@ -75,7 +75,7 @@ type UnitVec =
         #endif
         v * (1./f) // or Vec (v.X / f , v.Y / f , , v.Z / f) ?
     
-    /// Assumes correct input of unitized values
+    /// Requires correct input of unitized values
     static member inline createUnchecked(x,y,z)  = UnitVec(x,y,z)
 
 /// A 3D Point (2D Points are called 'Pt') 
