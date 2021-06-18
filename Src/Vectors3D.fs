@@ -2,7 +2,7 @@ namespace FsEx.Geo
 
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
-    
+open FsEx.Geo.Util    
     
 /// A 3D Vector (2D Vectors are called 'Vc') 
 [<Struct; NoEquality; NoComparison>] 
@@ -77,6 +77,15 @@ type UnitVec =
     
     /// Requires correct input of unitized values
     static member inline createUnchecked(x,y,z)  = UnitVec(x,y,z)
+
+    /// Does the unitizing too.
+    static member inline create (x:float, y:float, z:float) = 
+        // this member cant be an extension method because it is used with SRTP. 
+        // see error FS1114: The value 'FsEx.Geo.AutoOpenUnitVc.create' was marked inline but was not bound in the optimization environment
+        let l = sqrt(x*x  + y*y + z*z)                       
+        if l < zeroLenghtTol then FsExGeoDivByZeroException.Raise $"UnitVec.create: x:%g{x}, y:%g{y} and z:%g{z} are too small for creating a Unit vector, Tolerance:%g{zeroLenghtTol}" 
+        let li = 1. / l
+        UnitVec.createUnchecked( li*x , li*y , li*z ) 
 
 /// A 3D Point (2D Points are called 'Pt') 
 [<Struct; NoEquality; NoComparison>] // because its made up from floats

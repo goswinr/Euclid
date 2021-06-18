@@ -134,13 +134,8 @@ module AutoOpenUnitVc =
         static member inline ofVec  (v:Vc) = 
             let l = sqrt (v.X*v.X + v.Y*v.Y ) 
             if l <  zeroLenghtTol then FsExGeoDivByZeroException.Raise $"UnitVc.ofVc failed on too short %O{v}" 
-            UnitVc.createUnchecked( v.X / l , v.Y / l ) 
+            UnitVc.createUnchecked( v.X / l , v.Y / l )         
         
-        /// Does the unitizing too.
-        static member inline create (x:float, y:float) = 
-            let l = sqrt(x * x  + y * y)                     
-            if l < zeroLenghtTol then FsExGeoDivByZeroException.Raise $"UnitVc.create: x:%g{x} and z:%g{y} are too small for creating a Unit vector, Tolerance:%g{zeroLenghtTol}"            
-            UnitVc.createUnchecked( x/l , y/l )  
         
         static member inline make3D (v:UnitVc) = UnitVec.createUnchecked(v.X,v.Y, 0.0)
 

@@ -142,14 +142,8 @@ module AutoOpenUnitVec =
             let l = sqrt (v.X*v.X + v.Y*v.Y + v.Z*v.Z) 
             if l <  zeroLenghtTol then FsExGeoDivByZeroException.Raise $"UnitVec.ofVec failed on too short %O{v}"
             let li = 1. / l
-            UnitVec.createUnchecked( li*v.X , li*v.Y , li*v.Z )  
+            UnitVec.createUnchecked( li*v.X , li*v.Y , li*v.Z )       
         
-        /// Does the unitizing too.
-        static member inline create (x:float, y:float, z:float) = 
-            let l = sqrt(x*x  + y*y + z*z)                       
-            if l < zeroLenghtTol then FsExGeoDivByZeroException.Raise $"UnitVec.create: x:%g{x}, y:%g{y} and z:%g{z} are too small for creating a Unit vector, Tolerance:%g{zeroLenghtTol}" 
-            let li = 1. / l
-            UnitVec.createUnchecked( li*x , li*y , li*z ) 
         
         /// Project vector to World XY Plane.
         /// Use make2D to convert to 2D vector instance
