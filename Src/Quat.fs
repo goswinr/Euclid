@@ -30,7 +30,7 @@ open Util
      new (x,y,z,w) = 
          #if DEBUG
          let l = x*x  + y*y + z*z + w*w 
-         if 0.999999999 > l || l > 1.000000001 then  FsExGeoException.Raise $"FsEx.Geo.Quat Constructor failed for x:%g{x}, y:%g{y}, z:%g{z}, w:%g{w}. The length needs to be 1.0."   
+         if 0.999999999 > l || l > 1.000000001 then  FsExGeoException.Raise "FsEx.Geo.Quat Constructor failed for x:%g, y:%g, z:%g, w:%g. The length needs to be 1.0." x y z w
          #endif
          {X=x; Y=y; Z=z; W=w}
     
@@ -40,7 +40,7 @@ open Util
             if w < 0.0 then w <-0.0 // clamp,  to avoid error in acos
             if w > 1.0 then w <-1.0
             (Math.Acos w) * 2.0 |>  toDegrees |> Format.float
-        $"FsEx.Geo.Quat(X=%s{Format.float q.X}, Y=%s{Format.float q.Y}, Z=%s{Format.float q.Z}, W=%s{Format.float q.W}, angle: %s{deg}°)"          
+        sprintf "FsEx.Geo.Quat(X=%s, Y=%s, Z=%s, W=%s, angle: %s°)" (Format.float q.X) (Format.float q.Y) (Format.float q.Z) (Format.float q.W) deg
      
      static member inline ( * ) (l:Quat, r:Quat)  =  
          Quat(   l.W * r.X + l.X * r.W + l.Y * r.Z - l.Z * r.Y ,
@@ -176,7 +176,7 @@ open Util
          // from https://referencesource.microsoft.com/0PresentationCore/Core/CSharp/System/Windows/Media3D/Quaternion.cs,91 
          let mutable li = sqrt(axis.X*axis.X + axis.Y*axis.Y + axis.Z*axis.Z) 
          if li <  zeroLenghtTol then // TODO or return identity Quaternion ?
-            FsExGeoException.Raise $"FsEx.Geo.Quat.createFromRadians failed too short axis %O{axis} and rotation:%g{toDegrees angleInRadians}°" 
+            FsExGeoException.Raise "FsEx.Geo.Quat.createFromRadians failed too short axis %O and rotation:%g°" axis (toDegrees angleInRadians)
          let angHalf = angleInRadians * 0.5
          let sa = sin angHalf
          li <- 1. / li // inverse for unitizing vector:

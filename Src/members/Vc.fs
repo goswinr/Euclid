@@ -27,13 +27,13 @@ module AutoOpenVc =
 
         member inline v.WithLength (desiredLength:float) =  
             let l = sqrt(v.X*v.X+v.Y*v.Y) 
-            if l < zeroLenghtTol then FsExGeoDivByZeroException.Raise $"Vc.WithLength %g{desiredLength} : %O{v} is too small for unitizing, Tolerance:%g{zeroLenghtTol}"  
+            if l < zeroLenghtTol then FsExGeoDivByZeroException.Raise "Vc.WithLength %g : %O is too small for unitizing, Tolerance:%g" desiredLength v zeroLenghtTol
             v*(desiredLength / l)  
 
         member inline v.Unitized  = 
             let l = sqrt(v.X * v.X  + v.Y * v.Y)
             // #if DEBUG add here too? TODO ?
-            if l < zeroLenghtTol then FsExGeoDivByZeroException.Raise $"%O{v} is too small for unitizing, Tolerance:%g{zeroLenghtTol}"  
+            if l < zeroLenghtTol then FsExGeoDivByZeroException.Raise "%O is too small for unitizing, Tolerance:%g" v zeroLenghtTol
             UnitVc.createUnchecked( v.X/l , v.Y/l)          
         
         member inline v.UnitizedUnchecked =  
@@ -65,7 +65,7 @@ module AutoOpenVc =
         member inline v.DirectionDiamond =
             // https://stackoverflow.com/a/14675998/969070       
             #if DEBUG // TODO : with this test all  operations are 2.5 times slower 
-            if v.IsTiny 1e-16  then FsExGeoException.Raise $"FsEx.Geo.Vc.DirectionDiamond Failed for tiny Vector %O{v}."  
+            if v.IsTiny 1e-16  then FsExGeoException.Raise "FsEx.Geo.Vc.DirectionDiamond Failed for tiny Vector %O." v
             #endif
             if v.Y >= 0.0 then 
                 if v.X >= 0.0 then   
@@ -83,7 +83,7 @@ module AutoOpenVc =
         member inline v.Direction2PI =
             // https://stackoverflow.com/a/14675998/969070
             #if DEBUG // TODO : with this test all  operations are 2.5 times slower 
-            if v.IsTiny 1e-16  then FsExGeoException.Raise $"FsEx.Geo.Vc.Direction2PI Failed for tiny Vector %O{v}."  
+            if v.IsTiny 1e-16  then FsExGeoException.Raise "FsEx.Geo.Vc.Direction2PI Failed for tiny Vector %O." v
             #endif
             let a = Math.Atan2(v.Y, v.X) 
             if a < 0. then  
@@ -97,7 +97,7 @@ module AutoOpenVc =
         member inline v.DirectionPI =
             // https://stackoverflow.com/a/14675998/969070
             #if DEBUG // TODO : with this test all  operations are 2.5 times slower 
-            if v.IsTiny 1e-16  then FsExGeoException.Raise $"FsEx.Geo.Vc.DirectionPI Failed for tiny Vector %O{v}."  
+            if v.IsTiny 1e-16  then FsExGeoException.Raise "FsEx.Geo.Vc.DirectionPI Failed for tiny Vector %O." v
             #endif
             let a = Math.Atan2(v.Y, v.X) 
             if a < 0. then  
@@ -201,7 +201,7 @@ module AutoOpenVc =
         /// Returns vector unitized, fails on zero length vectors
         static member inline unitize (v:Vc) =  
             let l = sqrt((v.X * v.X)  + (v.Y * v.Y))            
-            if l < zeroLenghtTol then FsExGeoDivByZeroException.Raise $"%O{v} is too small for unitizing, Tolerance:%g{zeroLenghtTol}"  
+            if l < zeroLenghtTol then FsExGeoDivByZeroException.Raise "%O is too small for unitizing, Tolerance:%g" v zeroLenghtTol
             UnitVc.createUnchecked( v.X/l , v.Y/l)
     
         /// Returns vector unitized or Vc(NaN,NaN,NaN) on zero length vectors

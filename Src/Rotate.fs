@@ -21,7 +21,7 @@ type Rotate =
     new (sin, cos) = 
         #if DEBUG
         let sum = sin*sin + cos*cos in 
-        if 0.99999999 > sum || sum > 1.00000001  then  FsExGeoException.Raise $"FsEx.Geo.Rotate Constructor failed for sin:%g{sin} and cos:%g{cos}.  Because sin*sin + cos*cos needs to be 1.0."   
+        if 0.99999999 > sum || sum > 1.00000001  then  FsExGeoException.Raise "FsEx.Geo.Rotate Constructor failed for sin:%g and cos:%g.  Because sin*sin + cos*cos needs to be 1.0." sin cos
         #endif
         {sin = sin; cos = cos}      
     
@@ -31,7 +31,7 @@ type Rotate =
             if w < 0.0 then w <-0.0 // clamp,  to avoid error in asin
             if w > 1.0 then w <-1.0
             w  |> Math.Asin |> toDegrees |> Format.float
-        $"FsEx.Geo.Rotate of %s{deg}° degrees." 
+        sprintf "FsEx.Geo.Rotate of %s° degrees." deg
     
     ///Construct 2D Rotation from angle in Radians 
     static member createFromRadians alpha =  

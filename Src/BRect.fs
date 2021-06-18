@@ -24,7 +24,7 @@ type BRect =
          MaxX = maxX
          MaxY = maxY}    
     
-    override b.ToString() = $"FsEx.Geo.BRect: width=%s{Format.float (b.MaxX - b.MinX)} , height=%s{Format.float (b.MaxY - b.MinY)} (at X=%s{Format.float b.MinX}  Y=%s{Format.float b.MinY})"
+    override b.ToString() =  sprintf "FsEx.Geo.BRect: width=%s , height=%s (at X=%s  Y=%s)" (Format.float (b.MaxX - b.MinX)) (Format.float (b.MaxY - b.MinY)) (Format.float b.MinX) (Format.float b.MinY)
     
     member inline b.MinPt = Pt(b.MinX,b.MinY)
 

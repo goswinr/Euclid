@@ -29,12 +29,12 @@ module AutoOpenVec =
     
         member inline v.WithLength (desiredLength:float) =  
             let l = sqrt(v.X*v.X+v.Y*v.Y+v.Z*v.Z) 
-            if l < zeroLenghtTol then FsExGeoDivByZeroException.Raise $"Vec.WithLength %g{desiredLength} : %O{v} is too small for unitizing, Tolerance:%g{zeroLenghtTol}"  
+            if l < zeroLenghtTol then FsExGeoDivByZeroException.Raise "Vec.WithLength %g : %O is too small for unitizing, Tolerance:%g" desiredLength v zeroLenghtTol
             v*(desiredLength / l)            
             
         member inline v.Unitized =  
             let l = sqrt(v.X*v.X+v.Y*v.Y+v.Z*v.Z) 
-            if l < zeroLenghtTol then FsExGeoDivByZeroException.Raise $"%O{v} is too small for unitizing, Tolerance:%g{zeroLenghtTol}"  
+            if l < zeroLenghtTol then FsExGeoDivByZeroException.Raise "%O is too small for unitizing, Tolerance:%g" v zeroLenghtTol
             let li=1./l in 
             UnitVec.createUnchecked( li*v.X , li*v.Y ,li*v.Z )             
     
@@ -54,7 +54,7 @@ module AutoOpenVec =
             // https://stackoverflow.com/a/14675998/969070            
             #if DEBUG 
             if abs(v.X) < zeroLenghtTol && abs(v.Y) < zeroLenghtTol then 
-                FsExGeoDivByZeroException.Raise $"Vec.DirDiamondInXY: input vector is vertical or zero length:%O{v}"            
+                FsExGeoDivByZeroException.Raise "Vec.DirDiamondInXY: input vector is vertical or zero length:%O" v
             #endif
             if v.Y >= 0.0 then 
                 if v.X >= 0.0 then   
@@ -73,7 +73,7 @@ module AutoOpenVec =
             // https://stackoverflow.com/a/14675998/969070
             #if DEBUG 
             if abs(v.X) < zeroLenghtTol && abs(v.Y) < zeroLenghtTol then 
-                FsExGeoDivByZeroException.Raise $"Vec.Angle2PIInXY: input vector is vertical or zero length:%O{v}"            
+                FsExGeoDivByZeroException.Raise "Vec.Angle2PIInXY: input vector is vertical or zero length:%O" v
             #endif
             let a = Math.Atan2(v.Y, v.X) 
             if a < 0. then  
@@ -273,14 +273,14 @@ module AutoOpenVec =
         /// abs(v.X) + abs(v.Y) < zeroLenghtTol
         /// fails on tiny (shorter than zeroLenghtTol) vectors
         static member inline isVertical (v:Vec) =             
-            if v.IsTiny(zeroLenghtTol) then FsExGeoDivByZeroException.Raise $"Vec Cannot not check very tiny vector for verticality %O{v}"
+            if v.IsTiny(zeroLenghtTol) then FsExGeoDivByZeroException.Raise "Vec Cannot not check very tiny vector for verticality %O" v
             abs(v.X) + abs(v.Y) < zeroLenghtTol
 
         /// Checks if a vector is horizontal  by doing:
         /// abs(v.Z) < zeroLenghtTol
         /// Fails on tiny (shorter than zeroLenghtTol) vectors
         static member inline isHorizontal (v:Vec) =            
-             if v.IsTiny(zeroLenghtTol) then FsExGeoDivByZeroException.Raise $"Vec Cannot not check very tiny vector for horizontality %O{v}"             
+             if v.IsTiny(zeroLenghtTol) then FsExGeoDivByZeroException.Raise "Vec Cannot not check very tiny vector for horizontality %O" v
              abs(v.Z) < zeroLenghtTol     
 
         /// Unitize vector, if input vector is shorter than 1e-6 alternative vector is returned (without beeing unitized).
@@ -310,7 +310,7 @@ module AutoOpenVec =
         /// in relation to XY Plane
         /// 100% = 45 degrees
         static member inline slopePercent (v:Vec) = 
-            if abs(v.Z) < zeroLenghtTol then FsExGeoDivByZeroException.Raise $"UnitVec.slopePercent: Can't get Slope from vertical vector %O{v}" 
+            if abs(v.Z) < zeroLenghtTol then FsExGeoDivByZeroException.Raise "UnitVec.slopePercent: Can't get Slope from vertical vector %O" v
             let f = Vec(v.X, v.Y, 0.0)
             100.0 * (v.Z/f.Length)
 

@@ -25,7 +25,7 @@ module AutoOpenPnt =
         member inline pt.DistFromOriginSquareInXY = pt.X*pt.X + pt.Y*pt.Y
         member inline pt.WithDistFromOrigin (l:float) = 
             let d = pt.DistFromOrigin 
-            if d < zeroLenghtTol then FsExGeoException.Raise $"pnt.WithDistFromOrigin  %O{pt} is too small to be scaled." 
+            if d < zeroLenghtTol then FsExGeoException.Raise "pnt.WithDistFromOrigin  %O is too small to be scaled." pt
             pt * (l/d) 
         
         /// Returns the Diamond Angle from this point to another point.
@@ -37,7 +37,7 @@ module AutoOpenPnt =
             // https://stackoverflow.com/a/14675998/969070            
             let x = o.X-p.X
             let y = o.Y-p.Y
-            if abs x < 1e-16 && abs y < 1e-16 then FsExGeoException.Raise $"FsEx.Geo.Pnt.DirDiamondTo Failed for too short Distance between %O{p} and %O{o}."
+            if abs x < 1e-16 && abs y < 1e-16 then FsExGeoException.Raise "FsEx.Geo.Pnt.DirDiamondTo Failed for too short Distance between %O and %O." p o
             if y >= 0.0 then 
                 if x >= 0.0 then   
                     y/(x+y) 
@@ -193,10 +193,10 @@ module AutoOpenPnt =
         /// going from a point in the direction of another point.
         static member inline extendToZLevel (fromPt:Pnt, toPt:Pnt,z:float) = 
             let v = toPt - fromPt
-            if fromPt.Z < toPt.Z && z < fromPt.Z  then FsExGeoException.Raise $"Pnt.extendToZLevel cannot be reached for fromPt:%O{fromPt} toPt:%O{toPt} z:%g{z}" 
-            if fromPt.Z > toPt.Z && z > fromPt.Z  then FsExGeoException.Raise $"Pnt.extendToZLevel cannot be reached for fromPt:%O{fromPt} toPt:%O{toPt} z:%g{z}" 
+            if fromPt.Z < toPt.Z && z < fromPt.Z  then FsExGeoException.Raise "Pnt.extendToZLevel cannot be reached for fromPt:%O toPt:%O z:%g" fromPt toPt z
+            if fromPt.Z > toPt.Z && z > fromPt.Z  then FsExGeoException.Raise "Pnt.extendToZLevel cannot be reached for fromPt:%O toPt:%O z:%g" fromPt toPt z
             let dot = abs ( v * Vec.ZAxis)
-            if dot < 0.0001 then  FsExGeoException.Raise $"Pnt.extendToZLevel cannot be reached for fromPt:%O{fromPt} toPt:%O{toPt} because they are boyh at the same level. target z:%g{z} "
+            if dot < 0.0001 then  FsExGeoException.Raise "Pnt.extendToZLevel cannot be reached for fromPt:%O toPt:%O because they are boyh at the same level. target z:%g " fromPt toPt z
             let diffZ = abs (fromPt.Z - z)
             let fac = diffZ / dot
             fromPt + v * fac       

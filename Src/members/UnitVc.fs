@@ -127,13 +127,13 @@ module AutoOpenUnitVc =
         /// Does the unitizing too.
         static member inline ofPt  (pt:Pt) =  
             let l = sqrt (pt.X*pt.X + pt.Y*pt.Y ) 
-            if l <  zeroLenghtTol then FsExGeoDivByZeroException.Raise $"UnitVc.ofPt failed on too short %O{pt}"            
+            if l <  zeroLenghtTol then FsExGeoDivByZeroException.Raise "UnitVc.ofPt failed on too short %O" pt
             UnitVc.createUnchecked( pt.X / l , pt.Y / l ) 
         
         /// Does the unitizing too.
         static member inline ofVec  (v:Vc) = 
             let l = sqrt (v.X*v.X + v.Y*v.Y ) 
-            if l <  zeroLenghtTol then FsExGeoDivByZeroException.Raise $"UnitVc.ofVc failed on too short %O{v}" 
+            if l <  zeroLenghtTol then FsExGeoDivByZeroException.Raise "UnitVc.ofVc failed on too short %O" v
             UnitVc.createUnchecked( v.X / l , v.Y / l )         
         
         

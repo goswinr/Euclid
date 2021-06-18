@@ -165,9 +165,9 @@ type Loop private ( pts:ResizeArray<Pt>
     /// Does NOT remove colinear points.
     static member create (minSegmentLength:float) (snapThreshold:float) (points:IList<Pt>)=
         let pts = 
-            if minSegmentLength < 0.0 then FsExGeoException.Raise $"FsEx.Geo.Loop constructor: minSegmentLength < 0.0: {minSegmentLength}" 
-            if snapThreshold    < 0.0 then FsExGeoException.Raise $"FsEx.Geo.Loop constructor: snapThreshold < 0.0: {snapThreshold}"         
-            if points.Count<3 then FsExGeoException.Raise $"FsEx.Geo.Loop constructor: Input ResizeArray needs to have a least three points, not {points.Count} " 
+            if minSegmentLength < 0.0 then FsExGeoException.Raise "FsEx.Geo.Loop constructor: minSegmentLength < 0.0:  %g" minSegmentLength
+            if snapThreshold    < 0.0 then FsExGeoException.Raise "FsEx.Geo.Loop constructor: snapThreshold < 0.0:  %g" snapThreshold
+            if points.Count<3 then FsExGeoException.Raise "FsEx.Geo.Loop constructor: Input ResizeArray needs to have a least three points, not  %d " points.Count
                     
             let ps= ResizeArray<Pt>(points.Count+1)
             // check gap sizes
@@ -180,9 +180,9 @@ type Loop private ( pts:ResizeArray<Pt>
                 else
                     // set last to average
                     ps.Last <- (ps.Last + pt) *0.5 
-                    Debug2D.drawDot $"short segm:{i-1}" pt 
+                    Debug2D.drawDot (sprintf "short segm: %d" (i-1)) pt
                     #if DEBUG
-                    eprintfn $"Loop constructor: Segment {i-1} shorter than {snapThreshold} was skiped, it was just {Pt.distance ps.Last pt} long."
+                    eprintfn "Loop constructor: Segment %d shorter than %g was skiped, it was just %g long." (i-1) snapThreshold (Pt.distance ps.Last pt)
                     #endif
             // close
             if Pt.distanceSq ps.Last ps.First > minLenSq then
@@ -243,8 +243,8 @@ type Loop private ( pts:ResizeArray<Pt>
         for ii=1 to segLastIdx do
             let n = unitVcts.[ii]
             if t*n < -0.984808 then   
-                Debug2D.drawDot $"+170° turn?" pts.[ii]
-                FsExGeoException.Raise $"FsEx.Geo.Loop: Lines for Loop make a kink between 170 and 180 degrees."
+                Debug2D.drawDot "+170° turn?" pts.[ii]
+                FsExGeoException.Raise "FsEx.Geo.Loop: Lines for Loop make a kink between 170 and 180 degrees."
             t <- n
                 
         // Check for self intersection, 
@@ -261,10 +261,11 @@ type Loop private ( pts:ResizeArray<Pt>
                 let bu  = unitVcts.[j]
                 let bl  = lens.[j]
                 if Intersect.doIntersectOrOverlapColinear(ap, au, al, abb,  bp, bu, bl, bbb, snapThreshold ) then 
-                    Debug2D.drawDot $"self X: {i} + {j}" (Intersect.getXPointOrMid(ap, au, al,  bp, bu, bl, snapThreshold))
+                    Debug2D.drawDot (sprintf "self X:  %O +  %O"  i j) (Intersect.getXPointOrMid(ap, au, al,  bp, bu, bl, snapThreshold))
                     Debug2D.drawLine(ap,ap+au*al)
                     Debug2D.drawLine(bp,bp+bu*bl)
-                    FsExGeoException.Raise $"FsEx.Geo.Loop: Loop of {points.Count} Points has self intersection."        
+                    FsExGeoException.Raise "FsEx.Geo.Loop: Loop of  %O Points has self intersection." points.Count
+        
         if unitVcts.Length > 3 then // a triangle is covered by angle checks above
             // checking second last and last
             selfIntersectionCheck(segLastIdx  , 1, 1)

@@ -11,7 +11,7 @@ module AutoOpenResizeArray =
         /// Equal to this.Count - 1
         member inline this.LastIndex = 
             #if DEBUG
-            if this.Count = 0 then FsExGeoException.Raise $"FsEx.Geo.ResizeArray.LastIndex: Failed to get LastIndex of of empty ResizeArray<{typeof<'T>}>" 
+            if this.Count = 0 then FsExGeoException.Raise "FsEx.Geo.ResizeArray.LastIndex: Failed to get LastIndex of of empty ResizeArray< %O>" typeof<'T>
             #endif
             this.Count - 1
 
@@ -20,12 +20,12 @@ module AutoOpenResizeArray =
         member inline this.Last
             with get() = 
                 #if DEBUG
-                if this.Count = 0 then FsExGeoException.Raise $"FsEx.Geo.ResizeArray.Last: Failed to get last item of empty ResizeArray<{typeof<'T>}>" 
+                if this.Count = 0 then FsExGeoException.Raise "FsEx.Geo.ResizeArray.Last: Failed to get last item of empty ResizeArray< %O>" typeof<'T>
                 #endif
                 this.[this.Count - 1]
             and set (v:'T) = 
                 #if DEBUG
-                if this.Count = 0 then FsExGeoException.Raise $"FsEx.Geo.ResizeArray.Last: Failed to set last item of empty ResizeArray<{typeof<'T>}> to {v}" 
+                if this.Count = 0 then FsExGeoException.Raise "FsEx.Geo.ResizeArray.Last: Failed to set last item of empty ResizeArray< %O> to  %O" typeof<'T> v
                 #endif
                 this.[this.Count - 1] <- v
 
@@ -34,12 +34,12 @@ module AutoOpenResizeArray =
         member inline this.First
             with get() = 
                 #if DEBUG
-                if this.Count = 0 then FsExGeoException.Raise $"FsEx.Geo.ResizeArray.First: Failed to get first item of empty ResizeArray<{typeof<'T>}>" 
+                if this.Count = 0 then FsExGeoException.Raise "FsEx.Geo.ResizeArray.First: Failed to get first item of empty ResizeArray< %O>" typeof<'T>
                 #endif
                 this.[0]
             and set (v:'T) = 
                 #if DEBUG
-                if this.Count = 0 then FsExGeoException.Raise $"FsEx.Geo.ResizeArray.First: Failed to set first item of empty ResizeArray<{typeof<'T>}> to {v}" 
+                if this.Count = 0 then FsExGeoException.Raise "FsEx.Geo.ResizeArray.First: Failed to set first item of empty ResizeArray< %O> to  %O" typeof<'T> v
                 #endif
                 this.[0] <- v
 
@@ -47,7 +47,7 @@ module AutoOpenResizeArray =
         /// Get and remove last item from ResizeArray
         member this.Pop()  = 
             #if DEBUG
-            if this.Count=0 then FsExGeoException.Raise $" rarr.Pop() failed for empty ResizeArray<{typeof<'T>}>"
+            if this.Count=0 then FsExGeoException.Raise " rarr.Pop() failed for empty ResizeArray< %O>" typeof<'T>
             #endif
             let i = this.Count - 1
             let v = this.[i]
@@ -57,8 +57,8 @@ module AutoOpenResizeArray =
         /// Get and remove item at index from ResizeArray
         member this.Pop(index:int)  = 
             #if DEBUG
-            if index < 0  then FsExGeoException.Raise $"FsEx.Geo.ResizeArray.Pop{index} failed for ResizeArray<{typeof<'T>}> of{this.Count} items, index must be positive." 
-            if index >= this.Count then FsExGeoException.Raise $"FsEx.Geo.ResizeArray.Pop{index} failed for ResizeArray<{typeof<'T>}> of{this.Count} items." 
+            if index < 0  then FsExGeoException.Raise "FsEx.Geo.ResizeArray.Pop %O failed for ResizeArray< %O> of %O items, index must be positive." index typeof<'T> this.Count
+            if index >= this.Count then FsExGeoException.Raise "FsEx.Geo.ResizeArray.Pop %O failed for ResizeArray< %O> of %O items." index typeof<'T> this.Count
             #endif
             let v = this.[index]
             this.RemoveAt(index)
@@ -113,7 +113,7 @@ module AutoOpenResizeArray =
         /// <param name="rarr">The input ResizeArray.</param>        
         /// <returns>The index of the smallest element.</returns>
         static member minIndBy  (projection : 'T -> 'Key) (rarr: ResizeArray<'T>) : int = 
-            if rarr.Count = 0 then FsExGeoException.Raise $"FsEx.Geo.ResizeArray.minIndBy: Failed on empty ResizeArray<{typeof<'T>}>" 
+            if rarr.Count = 0 then FsExGeoException.Raise "FsEx.Geo.ResizeArray.minIndBy: Failed on empty ResizeArray< %O>" typeof<'T>
             let mutable f = projection rarr.[0]
             let mutable mf = f
             let mutable ii = 0
@@ -129,7 +129,7 @@ module AutoOpenResizeArray =
         /// <param name="rarr">The input ResizeArray.</param>        
         /// <returns>The index of the maximum element.</returns>
         static member  maxIndBy (projection : 'T -> 'Key) (rarr: ResizeArray<'T>) : int =
-            if rarr.Count = 0 then FsExGeoException.Raise $"FsEx.Geo.ResizeArray.maxIndBy: Failed on empty ResizeArray<{typeof<'T>}>" 
+            if rarr.Count = 0 then FsExGeoException.Raise "FsEx.Geo.ResizeArray.maxIndBy: Failed on empty ResizeArray< %O>" typeof<'T>
             let mutable f = projection rarr.[0]
             let mutable mf = f
             let mutable ii = 0

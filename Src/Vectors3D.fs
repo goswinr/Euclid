@@ -15,11 +15,11 @@ type Vec =
         
     new (x,y,z) =
         #if DEBUG
-        if Double.IsNaN x || Double.IsNaN y || Double.IsNaN z || Double.IsInfinity x || Double.IsInfinity y || Double.IsInfinity z then FsExGeoException.Raise $"FsEx.Geo.Vec Constructor failed for x:%g{x} , y:%g{y}, z:%g{z}"    
+        if Double.IsNaN x || Double.IsNaN y || Double.IsNaN z || Double.IsInfinity x || Double.IsInfinity y || Double.IsInfinity z then FsExGeoException.Raise "FsEx.Geo.Vec Constructor failed for x:%g , y:%g, z:%g"  x y z
         #endif
         {X=x; Y=y; Z=z}
         
-    override p.ToString() = $"FsEx.Geo.Vec(X=%s{Format.float p.X}, Y=%s{Format.float p.Y}, Z=%s{Format.float p.Z})" 
+    override p.ToString() = sprintf "FsEx.Geo.Vec(X=%s, Y=%s, Z=%s)" (Format.float p.X) (Format.float p.Y) (Format.float p.Z)
     
     static member inline (~- ) (v:Vec)          = Vec( -v.X , -v.Y , -v.Z)
     static member inline ( - ) (a:Vec, b:Vec)   = Vec (a.X - b.X , a.Y - b.Y , a.Z - b.Z)            
@@ -32,7 +32,7 @@ type Vec =
 
     static member inline ( / )  (v:Vec, f:float) = 
         #if DEBUG
-        if abs f < Util.zeroLenghtTol then  FsExGeoDivByZeroException.Raise $"%g{f} is too small for dividing %O{v} using / operator. Tolerance:%g{Util.zeroLenghtTol}" 
+        if abs f < Util.zeroLenghtTol then  FsExGeoDivByZeroException.Raise "%g is too small for dividing %O using / operator. Tolerance:%g" f v zeroLenghtTol
         #endif
         v * (1./f) // or Vec (v.X / f , v.Y / f , , v.Z / f) ?
     
@@ -54,11 +54,11 @@ type UnitVec =
     new (x,y,z) = 
         #if DEBUG
         let l = x*x + y*y + z*z // TODO : with this test all  operations are 2.5 times slower  
-        if 0.999999999 > l || l > 1.000000001 then  FsExGeoException.Raise $"FsEx.Geo.UnitVc Constructor failed for x:%g{x}, y:%g{y}, z:%g{z}. The length needs to be 1.0."   
+        if 0.999999999 > l || l > 1.000000001 then  FsExGeoException.Raise "FsEx.Geo.UnitVc Constructor failed for x:%g, y:%g, z:%g. The length needs to be 1.0."  x y z
         #endif
         {X=x; Y=y; Z=z}
         
-    override p.ToString() = $"FsEx.Geo.UnitVec(X=%s{Format.float p.X}, Y=%s{Format.float p.Y}, Z=%s{Format.float p.Z})" 
+    override p.ToString() = sprintf "FsEx.Geo.UnitVec(X=%s, Y=%s, Z=%s)" (Format.float p.X)(Format.float p.Y)(Format.float p.Z)
     
     static member inline ( ~- ) (v:UnitVec)            = UnitVec ( -v.X , -v.Y , -v.Z)        
     static member inline ( - )  (a:UnitVec, b:UnitVec) = Vec (a.X - b.X , a.Y - b.Y , a.Z - b.Z)            
@@ -71,7 +71,7 @@ type UnitVec =
     
     static member inline ( / )  (v:Vec, f:float) = 
         #if DEBUG
-        if abs f < Util.zeroLenghtTol then FsExGeoDivByZeroException.Raise $"%g{f} is too small for dividing %O{v} using / operator. Tolerance:%g{Util.zeroLenghtTol}" 
+        if abs f < Util.zeroLenghtTol then FsExGeoDivByZeroException.Raise "%g is too small for dividing %O using / operator. Tolerance:%g" f v zeroLenghtTol
         #endif
         v * (1./f) // or Vec (v.X / f , v.Y / f , , v.Z / f) ?
     
@@ -83,7 +83,7 @@ type UnitVec =
         // this member cant be an extension method because it is used with SRTP. 
         // see error FS1114: The value 'FsEx.Geo.AutoOpenUnitVc.create' was marked inline but was not bound in the optimization environment
         let l = sqrt(x*x  + y*y + z*z)                       
-        if l < zeroLenghtTol then FsExGeoDivByZeroException.Raise $"UnitVec.create: x:%g{x}, y:%g{y} and z:%g{z} are too small for creating a Unit vector, Tolerance:%g{zeroLenghtTol}" 
+        if l < zeroLenghtTol then FsExGeoDivByZeroException.Raise "UnitVec.create: x:%g, y:%g and z:%g are too small for creating a Unit vector, Tolerance:%g" x y z zeroLenghtTol 
         let li = 1. / l
         UnitVec.createUnchecked( li*x , li*y , li*z ) 
 
@@ -97,11 +97,11 @@ type Pnt =
     val Z : float
     new (x,y,z) = 
         #if DEBUG // with this test all Pnt operations are 2.5 times slower:
-        if Double.IsNaN x || Double.IsNaN y || Double.IsNaN z || Double.IsInfinity x || Double.IsInfinity y || Double.IsInfinity z then FsExGeoException.Raise $"FsEx.Geo.Pnt Constructor failed for x:%g{x} , y:%g{y}, z:%g{z}"    
+        if Double.IsNaN x || Double.IsNaN y || Double.IsNaN z || Double.IsInfinity x || Double.IsInfinity y || Double.IsInfinity z then FsExGeoException.Raise "FsEx.Geo.Pnt Constructor failed for x:%g, y:%g, z:%g"  x y z  
         #endif
         {X=x; Y=y; Z=z} 
     
-    override p.ToString() = $"FsEx.Geo.Pnt(X=%s{Format.float p.X}, Y=%s{Format.float p.Y}, Z=%s{Format.float p.Z})" 
+    override p.ToString() = sprintf "FsEx.Geo.Pnt(X=%s, Y=%s, Z=%s)" (Format.float p.X)(Format.float p.Y)(Format.float p.Z)
 
     static member inline ( - ) (a:Pnt, b:Pnt)     = Vec (a.X - b.X , a.Y - b.Y , a.Z - b.Z)
     static member inline ( - ) (p:Pnt, v:UnitVec) = Pnt (p.X - v.X , p.Y - v.Y , p.Z - v.Z)     
@@ -116,7 +116,7 @@ type Pnt =
 
     static member inline ( / )  (p:Pt, f:float) = 
         #if DEBUG
-        if abs f < Util.zeroLenghtTol then  FsExGeoDivByZeroException.Raise $"%g{f} is too small for dividing %O{p} using / operator. Tolerance:%g{Util.zeroLenghtTol}" 
+        if abs f < Util.zeroLenghtTol then  FsExGeoDivByZeroException.Raise "%g is too small for dividing %O using / operator. Tolerance:%g" f p zeroLenghtTol 
         #endif
         p * (1./f) // or Pnt (v.X / f , v.Y / f , , v.Z / f) ?
 

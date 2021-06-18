@@ -35,7 +35,7 @@ module AutoOpenPt =
         
         member inline pt.WithDistFromOrigin (l:float) = 
             let d = pt.DistanceFromOrigin 
-            if d < zeroLenghtTol then FsExGeoException.Raise $"pnt.WithDistFromOrigin  %O{pt} is too small to be scaled" 
+            if d < zeroLenghtTol then FsExGeoException.Raise "pnt.WithDistFromOrigin  %O is too small to be scaled" pt
             pt * (l/d) 
         
         /// Returns the Diamond Angle from this point to another point.        
@@ -47,7 +47,7 @@ module AutoOpenPt =
             // https://stackoverflow.com/a/14675998/969070            
             let x = o.X-p.X
             let y = o.Y-p.Y
-            if abs x < 1e-16 && abs y < 1e-16 then FsExGeoException.Raise $"FsEx.Geo.Pt.DirDiamondTo Failed for too short Distance between %O{p} and %O{o}."
+            if abs x < 1e-16 && abs y < 1e-16 then FsExGeoException.Raise "FsEx.Geo.Pt.DirDiamondTo Failed for too short Distance between %O and %O." p o
             if y >= 0.0 then 
                 if x >= 0.0 then   
                     y/(x+y) 
@@ -86,7 +86,7 @@ module AutoOpenPt =
             let v   = toPt   - fromPt
             let lenSq = v.LengthSq
             let lenSq =  v.LengthSq
-            if lenSq < 1e-6 then FsExGeoDivByZeroException.Raise $"Pt.closetPointOnLine: Line is too short for fromPt{fromPt} to {toPt} and {testPt}"
+            if lenSq < 1e-6 then FsExGeoDivByZeroException.Raise "Pt.closetPointOnLine: Line is too short for fromPt %O to  %O and  %O" fromPt toPt testPt
             let dot = Vc.dot (v,  dir) / lenSq
             if   dot < 0.0 then  fromPt 
             elif dot > 1.0 then  toPt
@@ -134,7 +134,7 @@ module AutoOpenPt =
             let dir = testPt - fromPt 
             let v   = toPt   - fromPt
             let lenSq =  v.LengthSq 
-            if lenSq < 1e-6 then FsExGeoDivByZeroException.Raise $"Pt.DistanceToLine: Line is too short for fromPt{fromPt} to {toPt} and {testPt}"
+            if lenSq < 1e-6 then FsExGeoDivByZeroException.Raise "Pt.DistanceToLine: Line is too short for fromPt %O to  %O and  %O" fromPt toPt testPt
             let dot = Vc.dot (v,  dir) / v.LengthSq 
             if   dot < 0.0 then testPt.DistanceTo   fromPt 
             elif dot > 1.0 then testPt.DistanceTo   toPt  
@@ -273,7 +273,7 @@ module AutoOpenPt =
         static member inline projectedParameter (fromPt:Pt, v:Vc, testPt:Pt) = 
            let dir = testPt-fromPt
            let lenSq =  v.LengthSq
-           if lenSq < 1e-6 then FsExGeoDivByZeroException.Raise $"Pt.projectedParameter: {v} is too short for fromPt{fromPt} and {testPt}"
+           if lenSq < 1e-6 then FsExGeoDivByZeroException.Raise "Pt.projectedParameter:  %O is too short for fromPt %O and  %O" v fromPt testPt
            Vc.dot (v,  dir) / v.LengthSq 
         
         /// 'fromPt' Pt  and Pt decribe an endless line. 
@@ -283,7 +283,7 @@ module AutoOpenPt =
             let dir = testPt - fromPt 
             let v   = toPt   - fromPt
             let lenSq =  v.LengthSq 
-            if lenSq < 1e-6 then FsExGeoDivByZeroException.Raise $"Pt.projectedParameter: Line is too short for fromPt{fromPt} to {toPt} and {testPt}"
+            if lenSq < 1e-6 then FsExGeoDivByZeroException.Raise "Pt.projectedParameter: Line is too short for fromPt %O to  %O and  %O" fromPt toPt testPt
             Vc.dot (v,  dir) / v.LengthSq
         
         
