@@ -70,19 +70,19 @@ type BRect =
             || a.MinY > b.MaxY 
             || b.MinY > a.MaxY )
     
-    /// Returns true if the point is inside or on the bounding box
+    /// Returns true if the point is inside or excatly on the bounding box
     member inline b.Contains (p:Pt) =
         p.X >= b.MinX &&
         p.X <= b.MaxX &&
         p.Y >= b.MinY &&
         p.Y <= b.MaxY 
 
-    /// Returns true if the Box  is inside or on the other bounding box
+    /// Returns true if the Box is inside or excatly on the other bounding box
     member inline b.Contains (o:BRect) =
         b.Contains(o.MinPt) && b.Contains(o.MaxPt)     
 
 
-    /// Returns true if the two bounding boxes do overlap or touch
+    /// Returns true if the two bounding boxes do overlap or touch excatly
     static member inline doOverlap(a:BRect) (b:BRect) =
         not (  b.MinX > a.MaxX
             || a.MinX > b.MaxX

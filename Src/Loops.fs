@@ -5,6 +5,7 @@ open System .Collections.Generic
 
 
 /// Discriminated union for the three possible relations of a point to a closed polyline Loop
+/// Points are consider on loop if they are within loop.SnapThreshold tolerance.
 [<RequireQualifiedAccess>]
 type PointLoopRel = 
     In | On | Out
@@ -15,12 +16,12 @@ type PointLoopRel =
         
 
 
-/// A counter-clockwise,  closed series of points.
-/// Checks for too short segments
-/// Closes loop if not closed yet.
-/// Makes it Counterclockwise.
-/// Also check for self intersection.
-/// Does NOT remove colinear points.
+/// A counter-clockwise, closed series of points.
+/// Checked for too short segments and duplicate points bu might have colinear points.
+/// Counterclockwise.
+/// Checked for self intersection.
+/// This class stores for each segment precomputed list of unit vectors, lengths and bounding boxes. 
+/// This is to have better performance when calculating Loop with Loop intersections or point containment.
 type Loop private ( pts:ResizeArray<Pt>
                   , unitVcts:UnitVc[]
                   , bboxes:BRect[] 
@@ -29,18 +30,23 @@ type Loop private ( pts:ResizeArray<Pt>
                   , area:float
                   , minSegmentLength:float
                   , snapThreshold:float
-                  , box:BRect
+                  , eBox:BRect
                   ) =    
 
-    /// Without sign,  since loop is guaranteed to be Counter Clockwise
+    /// Without sign, since loop is guaranteed to be Counter Clockwise
+    /// This Value is precomputed in constructor
     member _.Area = area
 
+    /// A List of precomputed Bounding Boxes for each segment.
+    /// Each Bounding Box is expanded by SnapThreshold
     /// This list is one item shorter than Points
     member _.BBoxes = bboxes
-   
+    
+    /// A List of precomputed UnitVectors for each segment.
     /// This list is one item shorter than Points
     member _.UnitVectors = unitVcts
 
+    /// A List of the lengths of each segment.
     /// This list is one item shorter than Points
     member _.Lengths = lens
     
@@ -59,15 +65,20 @@ type Loop private ( pts:ResizeArray<Pt>
     member val SegmentCount = unitVcts.Length  
         
     /// The overall Bounding Box. 
-    /// Including snapThreshold expansion.
-    member _.BoundingBox = box
-        
+    /// Including an expansion by snapThreshold.
+    member _.ExpandedBoundingBox = eBox
+    
+    /// The minimum distance between points in this loop, This is a paramter at creation.
     member _.MinSegmentLength = minSegmentLength
-        
+   
+   /// This value is used when calculating intersection or point containment. 
+   /// Points within this distance of the segment will be considered on the segment. 
+   /// This is a paramter at creation.    
     member _.SnapThreshold = snapThreshold           
 
     /// Creates a deep copy
-    member _.Clone() = Loop(pts.GetRange(0,pts.Count), Array.copy unitVcts, Array.copy bboxes, Array.copy lens, Array.copy xys, area, minSegmentLength, snapThreshold, box )
+    member _.Clone() = Loop(pts.GetRange(0,pts.Count), Array.copy unitVcts, Array.copy bboxes, Array.copy lens, Array.copy xys, 
+                            area, minSegmentLength, snapThreshold, eBox )
 
     /// Returns closest segment index        
     member lo.ClosestSegment (pt:Pt) :int=  
@@ -114,14 +125,14 @@ type Loop private ( pts:ResizeArray<Pt>
         let t = lo.Points.[i]
         let u = lo.UnitVectors.[i]
         let l = lo.Lengths.[i] 
-        pt.ClosestPointOnLine(t, u, l) 
+        pt.ClosestPointOnLine(t, u, l)    
         
     /// Returns Relation between point and Loop: Inside, On or outside
     /// Tolerance for beeing on Loop is SnapThreshold    
     member lo.ContainsPoint(pt:Pt) =  
         // this implementation using the closest two segments is always correct.
         // faster implementations such as counting the crossings of a horizontal ray do fail if several loop segments are on the x axis and the test point too.
-        if not <| lo.BoundingBox.Contains(pt) then  
+        if not <| lo.ExpandedBoundingBox.Contains(pt) then  // the bounding box includes an expansion by snap SnapThreshold
             PointLoopRel.Out
         else
             let ps = lo.Points
@@ -274,10 +285,10 @@ type Loop private ( pts:ResizeArray<Pt>
                 // TODO quadratic runtime !  replace with sweep line algorithm ?
                 selfIntersectionCheck(i, i+2 , segLastIdx)   
         
-        let box = BRect.createUnchecked(xmin-snapThreshold, ymin-snapThreshold, xmax+snapThreshold, ymax+snapThreshold) 
+        let ebox = BRect.createUnchecked(xmin-snapThreshold, ymin-snapThreshold, xmax+snapThreshold, ymax+snapThreshold) 
 
-        Loop(pts, unitVcts, bboxes, lens, xys, area, minSegmentLength, snapThreshold, box)
+        Loop(pts, unitVcts, bboxes, lens, xys, area, minSegmentLength, snapThreshold, ebox)
 
 
-        // see script files in Test Folder for almost working code of Loop Loop Intersection:
+        // see script files in Test Folder for almost always working code of Loop Loop Intersection:
         // Loop Boolean Ops 14.fsx

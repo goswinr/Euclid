@@ -286,3 +286,4 @@ type Points private () =
         res
        
 
+       // TODO add offset 3d functions

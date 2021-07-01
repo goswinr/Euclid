@@ -3,29 +3,34 @@ namespace FsEx.Geo
 open System.Collections.Generic
 
 /// For finding 2d object that are similar but not exactly the same 
-/// based on their 2D point clouds
+/// Based on their 2D point clouds.
+/// Within one list of points the order does not matter, but each location must exist only once 
+/// in order to be consider similar within the tolerance.
 /// (this could be extendet to work in 3d too)
 module Similarity2D =  
-    // also see: PANELS (10) lay Panels flat.fsx
-
-    type SimilarityGroup =  { 
-        typ:string
+    
+    /// The category is used to only compare groups of the same category.
+    /// The bounding box of the points is used as a fast and first check for similarity.
+    /// Within one list of points the order does not matter, but each location must exist only once 
+    /// in order to be consider similar within the tolerance with another SimilaritySubGroup
+    type SimilaritySubGroup =  { 
+        category:string
         bbox:BRect
         points:Pt[] // must be sorted by 'X' property for binary search,  
-        //duplicate points with in tolerance will most likle lead to false results(not all indices will be covered in simPts)
+        //duplicate points within tolerance will most likly lead to not recogniced similarity (not all indices will be covered in simPts)
         } 
     
-    type SimilarityData = {   
+    type SimilarityMainGroup = {   
         extend: Pt // represents the max value of a bounding box ,  min value must be x0, y0
-        groups: SimilarityGroup[] // must be sorted by 'typ' property for Array.forall2        
+        groups: SimilaritySubGroup[] // must be sorted by 'category' property. for Array.forall2 function       
         } 
     
-    /// returns index of a similar point or -1.    
-    /// ps[] must be sorted by 'X' property. 
+    /// Returns index of a similar point or -1.    
+    /// Points Arrat ps[] must be sorted by 'X' property. 
     let internal simPt tol (ps:Pt[]) (pt:Pt)=     
         let x = pt.X
         let y = pt.Y
-        // finds the index of a point wher x matches,  ther might be more than one match
+        // finds the index of a point where x matches,  there might be more than one match
         let rec binSearchIdx lo hi =
             if lo <= hi then
                 let mid = lo + ((hi - lo) >>> 1)
@@ -41,7 +46,7 @@ module Similarity2D =
         match binSearchIdx 0 ps.Length-1 with 
         | -1 -> -1  
         | ix ->            
-            // x is OK now search up and down if there is a Y match too
+            // x match found now search up and down if there is a Y match too
             let rec searchIdxDown i = 
                 let p = ps.[i]
                 if  abs(p.X - x)  < tol then  
@@ -79,11 +84,11 @@ module Similarity2D =
                 true
             ) //|>! printfn "simPts forall  %b"
         // the above checks that each point overlaps with another point 
-        // but they migh also cover the same point so wee need to check  that all indices are covered: 
+        // but two points from one set might also cover one single point from the other set so we need to check that all indices are covered: 
         && rs |> Array.forall id 
     
-    /// takes cleaned up data 
-    let areSimliar (tol:float) (a:SimilarityData) (b:SimilarityData) : bool = 
+    /// Takes transformed and pre sorted by category main groups
+    let areSimliar (tol:float) (a:SimilarityMainGroup) (b:SimilarityMainGroup) : bool = 
         let inline sim (a:Pt) (b:Pt)  = 
             abs(a.X - b.X) < tol && abs(a.Y - b.Y) < tol
         
@@ -94,23 +99,26 @@ module Similarity2D =
         sim a.extend b.extend                               
         && a.groups.Length = b.groups.Length                
         && (a.groups , b.groups) ||> Array.forall2 (fun x y ->  
-            x.typ=y.typ                                     
+            x.category=y.category                                    
             && x.points.Length = x.points.Length            
             && simBox x.bbox y.bbox                         
             && simPts tol x.points y.points                 
             ) 
         
-        
-    /// Position of points does not mattter,  they will be moved to origin,  but Rotation will not be checked.
-    /// refTex is 
-    let getSimliarityData (ptss:ResizeArray<string*ResizeArray<Pt>>) : SimilarityData =         
+    
+    /// The retuned SimilarityMainGroup will have the subgroups sorted by category 
+    /// and each point will be transformed by the the overal bounding box Min point to 0,0.
+    /// Input Position of points does not mattter,  they will be moved to origin by overall bounding box over all lists, 
+    /// But any similarity that could be achieved by Rotation will not be discovered.
+    /// The string is used as a unique category identifier.
+    let getSimliarityData (ptss:ResizeArray<string*ResizeArray<Pt>>) : SimilarityMainGroup =         
         let sptss = ptss |> ResizeArray.sortBy fst
+        // compute the overall bounding box and the shifting neded to move box to origin:
         let mutable bb = BRect.create(sptss.[0] |> snd)
         for i=1 to sptss.Count-1 do  
             bb <- BRect.create(sptss.[i] |> snd) |> BRect.union bb
         let shift = Vc(-bb.MinX, -bb.MinY) 
-        let ept = bb.MaxPt+shift 
-        
+        let ept = bb.MaxPt+shift         
         { 
         extend= ept
         groups=[|  
@@ -119,21 +127,22 @@ module Similarity2D =
                 ps |> Array.sortInPlaceBy Pt.getX
                 let bb = BRect.create(ps)
                 { 
-                typ=n
+                category=n
                 bbox=bb
                 points=ps
                 }
             |]
         }
     
-    /// This will group similar items together based on the SimilarityData at the same index.
-    /// SimilarityData is precomputed for better performance.
-    let getGrouped (tol,  items:ResizeArray<'T>, sims:ResizeArray<SimilarityData>) : ResizeArray<ResizeArray<'T>> =  
+    /// This will group similar generic items together based on their SimilarityMainGroup.
+    /// The list of items and precomputed SimilarityMainGroups must have the same length and correspond to each other at the same index.
+    /// SimilarityMainGroups is precomputed for better performance.
+    let getGrouped (tolerance,  items:ResizeArray<'T>, sims:ResizeArray<SimilarityMainGroup>) : ResizeArray<ResizeArray<'T>> =  
         if items.Count<>sims.Count then failwithf "Count missmatch in Similarity2D.getGrouped"
-        let unique = ResizeArray<SimilarityData>()
+        let unique = ResizeArray<SimilarityMainGroup>()
         let groups = Dictionary<int, ResizeArray<'T>>() 
         for sid, it in Seq.zip sims items do  
-            match unique|> ResizeArray.tryFindIndex (areSimliar tol sid) with
+            match unique|> ResizeArray.tryFindIndex (areSimliar tolerance sid) with
             | Some i -> 
                 groups.[i].Add it
             | None -> 

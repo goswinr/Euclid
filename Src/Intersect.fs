@@ -1,9 +1,4 @@
-#if COMPILED
 namespace FsEx.Geo
-#else
-#r "D:/Git/FsEx.Geo/bin/Debug/net472/FsEx.Geo.dll"
-open FsEx.Geo
-#endif
 
 module Intersect =         
     open Util        
@@ -12,7 +7,8 @@ module Intersect =
     /// If they start from points 'a' and 'b' respectivley.
     /// Pass in  va.Cross vb  is precomputed  and inverted  
     let inline private getXPara (a:Pt, vaXvbInverse:float, b:Pt,  vb:UnitVc) =
-        // https://www.youtube.com/watch?v=c065KoXooSw
+        // find intersection using 2D cross product :
+        // https://www.youtube.com/watch?v=c065KoXooSw and https://gist.github.com/EgoMoose/f3d22a503e0598c12d1e3926dc72fb19        
         ((b-a).Cross(vb)) * vaXvbInverse // va.Cross vb  is precomputed  and inverted
 
     let inline private isParamStillBelowZeroAfterOffsets(ap:Pt, au:UnitVc, aXbInverse:float, bp:Pt, bu:UnitVc, snapThreshold:float) =
@@ -30,14 +26,14 @@ module Intersect =
 
 
     type LineLineRelation =  
-        // this DU could be also encoded via  Float NaN and infinity to avoid an extra object allocation
+        // TODO this DU could be also encoded via Float NaN and infinity to avoid an extra object allocation, (using ref out parameters ?)
         |NoIntersection
         |Colinear // within threshold,  might still not  overlap,  needs to be checked via BRect
         |Parallel // more than threshold apart
         |BfromRight of struct ( float * float) // parameters for unit vector,  might be out of bound by snapThreshold
         |BfromLeft  of struct ( float * float) // parameters for unit vector,  might be out of bound by snapThreshold
     
-    // TODO inline functions?
+    // inline functions?
     
     /// A Call to this should be preceded by BRect.doOverlap. to exit quickly if appart.
     /// For line A and line B give for each:
@@ -86,7 +82,7 @@ module Intersect =
             else
                 Parallel // paralle distance is more than snapThreshold distance,
 
-    /// includes a preceding call to BRect.doOverlap    
+    /// This function includes a inital call to BRect.doOverlap    
     let inline doIntersectOrOverlapColinear (ap:Pt, au:UnitVc, al:float, abb:BRect, bp:Pt, bu:UnitVc, bl:float, bbb:BRect, snapThreshold:float) :bool =
         BRect.doOverlap abb bbb 
         &&
@@ -99,7 +95,7 @@ module Intersect =
         
     
     /// Return intersection point or mid point between two lines
-    /// used mainly for dbugging
+    /// (used mainly for drawing debug notes at this point )
     let getXPointOrMid (ap:Pt, au:UnitVc, al:float, bp:Pt, bu:UnitVc, bl:float, snapThreshold:float) : Pt =
         match getRelation(ap, au, al,  bp, bu, bl, snapThreshold)   with
         |NoIntersection
@@ -109,6 +105,8 @@ module Intersect =
         |BfromRight (ta, _ ) -> ap + au * ta 
 
     (*
+    see loop intesection script
+
     type IntersectionPoint =
         |NoPoint
         |FromLeft  of Pt
