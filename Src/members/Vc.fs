@@ -159,11 +159,6 @@ module AutoOpenVc =
             with e -> FsExGeoDivByZeroException.Raise "Vc.ofxy: %A could not be converted to a FsEx.Geo.Vc:\r\n%A" vec e
 
 
-
-
-        //static member inline ofPt     (v:Pt)     = Vc (v.X, v.Y) 
-        //static member inline ofUnitVc (v:UnitVc) = Vc (v.X, v.Y)
-        //static member inline create (x:float, y:float) =  Vec( x , y )
         static member inline create   (start:Pt,ende:Pt) = ende-start  
         
         
@@ -293,13 +288,18 @@ module AutoOpenVc =
         /// In Degree
         /// Range: 0.0 to 2 PI ( = 0 to 360 degrees)
         static member inline direction360 (v:Vc)  = 
-            v.Direction360
+            v.Direction360        
 
+        /// Rotate the a 2D Vector Counter Clockwise by a 2D Rotation (that has cos and sin precomputed)
+        static member inline rotateBy (r:Rotation2D) (v:Vc) = 
+            Vc(r.cos*v.X - r.sin*v.Y, 
+               r.sin*v.X + r.cos*v.Y) 
 
-        /// Rotate the 2D Point Counter Clockwise.
-        /// For better Performance precompute the Rotate2D struct and use its member to rotate.
-        static member inline rotate (angDegree) (v:Vc) = 
-            (Rotate.createFromDegrees angDegree).Rotate v
+        /// Rotate the 2D Vector in Degrees. Counter Clockwise.
+        /// For better Performance precompute the Rotate2D struct and use its member to rotate. see Vc.rotateBy
+        static member inline rotate (angDegree) (vec:Vc) = 
+            Vc.rotateBy (Rotation2D.createFromDegrees angDegree) vec  
+
         
         //static member inline ( + )  (a:Vc, b:Vc) = Pnt (a.X + b.X , a.Y + b.Y , a.Z + b.Z) // required for Seq.average
         //static member inline DivideByInt (v:Vc, i:int) = if i<>0 then v / float i else failwithf "DivideByInt 0 %O " pt  // needed by  'Array.average'

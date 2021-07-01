@@ -229,19 +229,7 @@ module AutoOpenVec =
         /// Range:  0 to 360 degrees
         static member inline angle360InXY (a:Vec, b:Vec)   = 
             Vec.angle2PiInXY (a, b) |> toDegrees
-            
-        /// Rotate the UnitVector in Degrees around X axis, from Y to Z Axis, Counter Clockwise looking from right.
-        /// For better Performance precompute the Rotate2D struct and use its member to rotate.
-        static member inline rotateOnX (angDegree) (vec:UnitVec) = (Rotate.createFromDegrees angDegree).RotateOnX vec
-    
-        /// Rotate the UnitVector in Degrees around Y axis, from Z to X Axis, Counter Clockwise looking from back.
-        /// For better Performance precompute the Rotate2D struct and use its member to rotate.
-        static member inline rotateOnY (angDegree) (vec:UnitVec) = (Rotate.createFromDegrees angDegree).RotateOnY vec 
-    
-        /// Rotate the UnitVector in Degrees around Z axis, from X to Y Axis, Counter Clockwise looking from top.
-        /// For better Performance precompute the Rotate2D struct and use its member to rotate.
-        static member inline rotateOnZ (angDegree) (vec:UnitVec) = (Rotate.createFromDegrees angDegree).RotateOnZ vec     
-
+        
         /// Returns a (not unitized) bisector vector in the middle direction. 
         /// Code : a.Unitized + b.Unitized
         static member inline bisector (a:Vec) (b:Vec) = a.Unitized + b.Unitized 
@@ -250,18 +238,29 @@ module AutoOpenVec =
         /// Flips the vector if Z part is smaller than 0.0
         static member inline flipToPointUp (v:Vec) = if v.Z < 0.0 then -v else v  
 
+        // Rotate2D: 
 
-        /// Rotate the Vector in Degrees around X axis, from Y to Z Axis, Counter Clockwise looking from right.
-        /// For better Performance precompute the Rotate2D struct and use its member to rotate.
-        static member inline rotateOnX (angDegree) (vec:Vec) = (Rotate.createFromDegrees angDegree).RotateOnX vec
+        /// Rotate the 3D Vector around X axis, from Y to Z Axis, Counter Clockwise looking from right.
+        static member rotateXBy (r:Rotation2D) (v:Vec) = Vec (v.X,  r.cos*v.Y - r.sin*v.Z, r.sin*v.Y + r.cos*v.Z)
+        
+        /// Rotate the 3D Vector around Y axis, from Z to X Axis, Counter Clockwise looking from back.
+        static member rotateYBy (r:Rotation2D) (v:Vec) = Vec ( r.sin*v.Z + r.cos*v.X,  v.Y, r.cos*v.Z - r.sin*v.X) 
+        
+        /// Rotate the 3D Vector around Z axis, from X to Y Axis, Counter Clockwise looking from top.
+        static member rotateZBy (r:Rotation2D) (v:Vec) = Vec (r.cos*v.X - r.sin*v.Y, r.sin*v.X + r.cos*v.Y,  v.Z)
+        
+        
+        /// Rotate the 3D Vector in Degrees around X axis, from Y to Z Axis, Counter Clockwise looking from right.
+        static member inline rotateX (angDegree) (v:Vec) = 
+            Vec.rotateXBy (Rotation2D.createFromDegrees angDegree) v
     
-        /// Rotate the Vector in Degrees around Y axis, from Z to X Axis, Counter Clockwise looking from back.
-        /// For better Performance precompute the Rotate2D struct and use its member to rotate.
-        static member inline rotateOnY (angDegree) (vec:Vec) = (Rotate.createFromDegrees angDegree).RotateOnY vec 
+        /// Rotate the 3D Vector in Degrees around Y axis, from Z to X Axis, Counter Clockwise looking from back.
+        static member inline rotateY (angDegree) (v:Vec) = 
+            Vec.rotateYBy  (Rotation2D.createFromDegrees angDegree) v 
     
-        /// Rotate the Vector in Degrees around Z axis, from X to Y Axis, Counter Clockwise looking from top.
-        /// For better Performance precompute the Rotate2D struct and use its member to rotate.
-        static member inline rotateOnZ (angDegree) (vec:Vec) = (Rotate.createFromDegrees angDegree).RotateOnZ vec  
+        /// Rotate the 3D Vector in Degrees around Z axis, from X to Y Axis, Counter Clockwise looking from top.
+        static member inline rotateZ (angDegree) (v:Vec) = 
+            Vec.rotateZBy  (Rotation2D.createFromDegrees angDegree) v  
 
 
 

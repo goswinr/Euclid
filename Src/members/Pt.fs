@@ -224,12 +224,26 @@ module AutoOpenPt =
         static member inline bisector (ptPrev:Pt, ptThis:Pt, ptNext:Pt) =  
             (ptPrev-ptThis).Unitized  + (ptNext-ptThis).Unitized   
         
-        /// Rotate the 2D Point Counter Clockwise.
-        /// For better Performance precompute the Rotate2D struct and use its member to rotate.
-        static member inline rotate (angDegree) (pt:Pt) = (Rotate.createFromDegrees angDegree).Rotate pt
-    
+        /// Rotate the a 2D Point Counter Clockwise by a 2D Rotation (that has cos and sin precomputed)
+        static member inline rotateBy (r:Rotation2D) (p:Pt) = 
+            Pt(r.cos*p.X - r.sin*p.Y, 
+               r.sin*p.X + r.cos*p.Y) 
+
+        /// Rotate the 2D Point in Degrees. Counter Clockwise.
+        /// For better Performance precompute the Rotate2D struct and use its member to rotate. see Vc.rotateBy
+        static member inline rotate (angDegree) (vec:Pt) = Pt.rotateBy (Rotation2D.createFromDegrees angDegree) vec 
+        
         /// Rotate the 2D Point around a center 2D Point. Counter Clockwise.
-        static member inline rotateWithCenter (cen:Pt) (angDegree) (pt:Pt) = (Rotate.createFromDegrees angDegree).RotateWithCenter(cen,pt)              
+        /// By a 2D Rotation (that has cos and sin precomputed)
+        static member inline rotateWithCenterBy (cen:Pt) (r:Rotation2D) (pt:Pt) = 
+            let x = pt.X - cen.X  
+            let y = pt.Y - cen.Y         
+            Pt (r.cos*x - r.sin*y + cen.X, 
+                r.sin*x + r.cos*y + cen.Y) 
+         
+        /// Rotate 2D Point around a center point counter clockwise. Angle given in degrees.    
+        static member inline ptWitCen  (cen:Pt)  angDegree (pt:Pt)  = 
+            Pt.rotateWithCenterBy cen (Rotation2D.createFromDegrees angDegree) pt
        
         /// Returns a point that is at a given distance from a point in the direction of another point.
         static member inline distPt (fromPt:Pt, dirPt:Pt, distance:float) : Pt  = 

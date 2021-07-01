@@ -288,13 +288,18 @@ module AutoOpenUnitVc =
         static member inline direction360 (v:UnitVc)  = 
             v.Direction360
         
+        /// Rotate the a 2D UnitVector Counter Clockwise by a 2D Rotation (that has cos and sin precomputed)
+        static member inline rotateBy (r:Rotation2D) (v:UnitVc) = 
+            UnitVc.createUnchecked (
+                r.cos*v.X - r.sin*v.Y, 
+                r.sin*v.X + r.cos*v.Y) 
 
-        /// Rotate the UnitVector in Degrees. Counter Clockwise.
-        /// For better Performance precompute the Rotate2D struct and use its member to rotate.
+        /// Rotate the 2D UnitVector in Degrees. Counter Clockwise.
+        /// For better Performance precompute the Rotate2D struct and use its member to rotate. see UnitVc.rotateBy
         static member inline rotate (angDegree) (vec:UnitVc) = 
-            (Rotate.createFromDegrees angDegree).Rotate vec  
+            UnitVc.rotateBy (Rotation2D.createFromDegrees angDegree) vec  
 
-         
+        
 
         //[<Obsolete("Unsave Member") >]
         //static member Zero = UnitVc ( 0. , 0.)  // needed by 'Array.sum' 

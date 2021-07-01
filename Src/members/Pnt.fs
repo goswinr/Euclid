@@ -11,9 +11,9 @@ module AutoOpenPnt =
     type Pnt with   
     
         member inline pt.IsOrigin = pt.X = 0.0 && pt.Y = 0.0 && pt.Z= 0.0
-        member inline v.IsAlomstOrigin tol = abs v.X < tol && abs v.Y < tol  
+        member inline pt.IsAlomstOrigin tol = abs pt.X < tol && abs pt.Y < tol  
        
-        //member inline v.IsInValid =  Double.IsNaN v.X || Double.IsNaN v.Y || Double.IsNaN v.Z || Double.IsInfinity v.X || Double.IsInfinity v.Y || Double.IsInfinity v.Z
+        //member inline pt.IsInValid =  Double.IsNaN pt.X || Double.IsNaN pt.Y || Double.IsNaN pt.Z || Double.IsInfinity pt.X || Double.IsInfinity pt.Y || Double.IsInfinity pt.Z
         
         member inline pt.WithX x = Pnt (x ,pt.Y, pt.Z) // returns new Vector with new x coordinate, y and z the same as before
         member inline pt.WithY y = Pnt (pt.X, y, pt.Z)
@@ -90,11 +90,11 @@ module AutoOpenPnt =
 
         /// Project point to World XY Plane.
         /// Use make2D to convert to 2D point instance
-        static member inline projectToXYPlane (v:Pnt) = Pnt(v.X,v.Y, 0.0)
+        static member inline projectToXYPlane (pt:Pnt) = Pnt(pt.X,pt.Y, 0.0)
         
         /// Project point to World XY Plane.
         /// Use projectToXYPlane to keep to 3D point instance
-        static member inline make2D (v:Pnt) = Pt(v.X,v.Y)
+        static member inline make2D (pt:Pnt) = Pt(pt.X,pt.Y)
     
         //static member inline DivideByInt (pt:Pnt, i:int) = if i<>0 then pt / float i else failwithf "DivideByInt 0 %O " pt  // needed by  'Array.average'
 
@@ -156,26 +156,8 @@ module AutoOpenPnt =
     
         /// For three Points decribing a plane return a normal.
         /// If the returned vector has length zero then the points are in one Line.
-        static member normalOf3Pts (a:Pnt, b:Pnt, c:Pnt) =  Vec.cross (a-b, c-b) 
-    
-        /// Rotate the Point in Degrees around X axis, from Y to Z Axis, Counter Clockwise looking from right.
-        static member inline rotateOnX (angDegree) (pt:Pnt) = (Rotate.createFromDegrees angDegree).RotateOnX pt
-    
-        /// Rotate the Point in Degrees around Y axis, from Z to X Axis, Counter Clockwise looking from back.
-        static member inline rotateOnY (angDegree) (pt:Pnt) = (Rotate.createFromDegrees angDegree).RotateOnY pt 
-    
-        /// Rotate the Point in Degrees around Z axis, from X to Y Axis, Counter Clockwise looking from top.
-        static member inline rotateOnZ (angDegree) (pt:Pnt) = (Rotate.createFromDegrees angDegree).RotateOnZ pt 
-    
-        /// Rotate the Point in Degrees around center Point and a X aligned axis, from Y to Z Axis, Counter Clockwise looking from right.
-        static member inline rotateOnXwithCenter (cen:Pnt) (angDegree) (pt:Pnt) = (Rotate.createFromDegrees angDegree).RotateOnXwithCenter(cen,pt) 
-
-        /// Rotate the Point in Degrees around center Point and a Y aligned axis, from Z to X Axis, Counter Clockwise looking from back.
-        static member inline rotateOnYwithCenter (cen:Pnt) (angDegree) (pt:Pnt) = (Rotate.createFromDegrees angDegree).RotateOnYwithCenter(cen,pt) 
-    
-        /// Rotate the Point in Degrees around center Point and a Z aligned axis, from X to Y Axis, Counter Clockwise looking from top.
-        static member inline rotateOnZwithCenter (cen:Pnt) (angDegree) (pt:Pnt) = (Rotate.createFromDegrees angDegree).RotateOnZwithCenter(cen,pt) 
-             
+        static member normalOf3Pts (a:Pnt, b:Pnt, c:Pnt) =  Vec.cross (a-b, c-b)    
+          
        
         /// Returns a point that is at a given distance from a point in the direction of another point.
         static member inline distPt (fromPt:Pnt, dirPt:Pnt,distance:float) : Pnt  = 
@@ -244,14 +226,107 @@ module AutoOpenPnt =
        
             let shift = distHor * normHor + distNormal * normFree
             fromPt +  shift, toPt + shift             
-              
-          
+                  
+    
+        /// Multiplies the Matrix with a Point (with an implicit 1 in the 4th dimension), 
+        /// So that it also works correctly for projections
+        /// See also Pnt.transformSimple for better performance
+        static member transform (m:Matrix) (p:Pnt) = 
+            // from applyMatrix4( m ) in  https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js 
+            let x = p.X
+            let y = p.Y
+            let z = p.Z
+            //let w = 1.0           
+            let x' = m.M11*x + m.M21*y + m.M31*z + m.X41 // * w
+            let y' = m.M12*x + m.M22*y + m.M32*z + m.Y42 // * w
+            let z' = m.M13*x + m.M23*y + m.M33*z + m.Z43 // * w
+            let w' = m.M14*x + m.M24*y + m.M34*z + m.M44 // * w 
+            let sc = 1.0 / w'
+           
+            Pnt(x' * sc, y'* sc, z'* sc)     
        
+        /// Partially Multiplies the Matrix with a Point. 
+        /// Use this only for affne transfomations that do NOT include a projection 
+        /// and if you need maximum performance
+        /// The fields m.M14, m.M24 and m.M34 must be 0.0 and m.M44 must be 1.0
+        /// Otherwise use Pnt.transform
+        static member transformSimple (m:Matrix) (p:Pnt) = 
+            let x = p.X
+            let y = p.Y
+            let z = p.Z 
+            Pnt(  m.M11*x + m.M21*y + m.M31*z + m.X41 
+                , m.M12*x + m.M22*y + m.M32*z + m.Y42 
+                , m.M13*x + m.M23*y + m.M33*z + m.Z43 
+                ) 
+           
+        // Multiplies the Matrix with a Point (with an implicit 1 in the 4th dimension)
+        //static member inline ( * ) (matrix:Matrix, pt:Pnt) = //TODO in main declartion ,  not extension
+        //    Pnt.transform matrix pt
 
+
+
+        // Rotate2D: 
+
+        /// Rotate the 3D Point around X axis, from Y to Z Axis, Counter Clockwise looking from right.
+        static member rotateXBy (r:Rotation2D) (p:Pnt) = Pnt (p.X,  r.cos*p.Y - r.sin*p.Z, r.sin*p.Y + r.cos*p.Z)
+        
+        /// Rotate the 3D Point around Y axis, from Z to X Axis, Counter Clockwise looking from back.
+        static member rotateYBy (r:Rotation2D) (p:Pnt) = Pnt ( r.sin*p.Z + r.cos*p.X,  p.Y, r.cos*p.Z - r.sin*p.X) 
+        
+        /// Rotate the 3D Point around Z axis, from X to Y Axis, Counter Clockwise looking from top.
+        static member rotateZBy (r:Rotation2D) (p:Pnt) = Pnt (r.cos*p.X - r.sin*p.Y, r.sin*p.X + r.cos*p.Y,  p.Z)
+        
+        /// Rotate the 3D Point around a center 3D Point and a X aligned axis, from Y to Z Axis, Counter Clockwise looking from right.
+        static member rotateXonCenterBy (cen:Pnt) (r:Rotation2D) (pt:Pnt) =  
+            let x = pt.X - cen.X 
+            let y = pt.Y - cen.Y 
+            let z = pt.Z - cen.Z
+            Pnt (x                 + cen.X,  
+                 r.cos*y - r.sin*z + cen.Y, 
+                 r.sin*y + r.cos*z + cen.Z)         
+
+        /// Rotate the 3D Point around a center Point and a Y aligned axis, from Z to X Axis, Counter Clockwise looking from back.
+        static member rotateYonCenterBy (cen:Pnt) (r:Rotation2D) (pt:Pnt) =  
+            let x = pt.X - cen.X 
+            let y = pt.Y - cen.Y 
+            let z = pt.Z - cen.Z
+            Pnt ( r.sin*z + r.cos*x + cen.X, 
+                  y                 + cen.Y, 
+                  r.cos*z - r.sin*x + cen.Z) 
+        
+        /// Rotate the 3D Point around a center Point and a Z aligned axis, from X to Y Axis, Counter Clockwise looking from top.
+        static member rotateZonCenterBy (cen:Pnt) (r:Rotation2D) (pt:Pnt) =  
+            let x = pt.X - cen.X  
+            let y = pt.Y - cen.Y 
+            let z = pt.Z - cen.Z
+            Pnt (r.cos*x - r.sin*y + cen.X, 
+                 r.sin*x + r.cos*y + cen.Y, 
+                 z                 + cen.Z)
+        
+        /// Rotate the 3D Point in Degrees around X axis, from Y to Z Axis, Counter Clockwise looking from right.
+        static member inline rotateX (angDegree) (pt:Pnt) = 
+            Pnt.rotateXBy (Rotation2D.createFromDegrees angDegree) pt
     
+        /// Rotate the 3D Point in Degrees around Y axis, from Z to X Axis, Counter Clockwise looking from back.
+        static member inline rotateY (angDegree) (pt:Pnt) = 
+            Pnt.rotateYBy  (Rotation2D.createFromDegrees angDegree) pt 
     
+        /// Rotate the 3D Point in Degrees around Z axis, from X to Y Axis, Counter Clockwise looking from top.
+        static member inline rotateZ (angDegree) (pt:Pnt) = 
+            Pnt.rotateZBy  (Rotation2D.createFromDegrees angDegree) pt 
     
+        /// Rotate the 3D Point in Degrees around center Point and a X aligned axis, from Y to Z Axis, Counter Clockwise looking from right.
+        static member inline rotateXonCenter (cen:Pnt) (angDegree) (pt:Pnt) = 
+            Pnt.rotateXonCenterBy cen (Rotation2D.createFromDegrees angDegree) pt  
+
+        /// Rotate the 3D Point in Degrees around center Point and a Y aligned axis, from Z to X Axis, Counter Clockwise looking from back.
+        static member inline rotateYonCenter (cen:Pnt) (angDegree) (pt:Pnt) = 
+            Pnt.rotateYonCenterBy cen (Rotation2D.createFromDegrees angDegree) pt 
     
+        /// Rotate the 3D Point in Degrees around center Point and a Z aligned axis, from X to Y Axis, Counter Clockwise looking from top.
+        static member inline rotateZonCenter (cen:Pnt) (angDegree) (pt:Pnt) = 
+            Pnt.rotateZonCenterBy cen (Rotation2D.createFromDegrees angDegree) pt 
+           
     
 
 
