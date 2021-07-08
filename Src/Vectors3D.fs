@@ -68,6 +68,8 @@ type UnitVec =
     static member inline ( * )  (a:UnitVec, f:float  ) = Vec (a.X * f , a.Y * f , a.Z * f) // scale Vector
     static member inline ( * )  (f:float,   a:UnitVec) = Vec (a.X * f , a.Y * f , a.Z * f) // scale Vector
     static member inline ( * )  (a:UnitVec, b:UnitVec) = a.X * b.X + a.Y * b.Y + a.Z * b.Z // dot product
+    static member inline ( * )  (a:Vec, b:UnitVec) = a.X * b.X + a.Y * b.Y + a.Z * b.Z // dot productfor projected length
+    static member inline ( * )  (a:UnitVec, b:Vec) = a.X * b.X + a.Y * b.Y + a.Z * b.Z // dot product for projected length
     
     static member inline ( / )  (v:Vec, f:float) = 
         #if DEBUG

@@ -212,8 +212,7 @@ module AutoOpenVec =
         /// Ignores vector orientation,
         /// Range: 0 to 90 degrees.
         static member inline angle90 (a:Vec) (b:Vec) = 
-            UnitVec.angle90 a.Unitized b.Unitized     
-        
+            UnitVec.angle90 a.Unitized b.Unitized 
 
         /// Returns positive angle from Vector 'a' to Vector 'b' projected in XY Plane.
         /// In Radians
@@ -366,7 +365,36 @@ module AutoOpenVec =
             let r = Vec.cross (v, hor)            
             if v.Z < 0.0 then -r else r
 
-
+        /// Multiplies the Matrix with a Vector (with an implicit 1 in the 4th dimension), 
+        /// So that it also works correctly for projections
+        /// See also Pnt.transformSimple for better performance
+        static member transform (m:Matrix) (p:Vec) = 
+            // from applyMatrix4( m ) in  https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js 
+            let x = p.X
+            let y = p.Y
+            let z = p.Z
+            //let w = 1.0           
+            let x' = m.M11*x + m.M21*y + m.M31*z + m.X41 // * w
+            let y' = m.M12*x + m.M22*y + m.M32*z + m.Y42 // * w
+            let z' = m.M13*x + m.M23*y + m.M33*z + m.Z43 // * w
+            let w' = m.M14*x + m.M24*y + m.M34*z + m.M44 // * w 
+            let sc = 1.0 / w'           
+            Vec(x' * sc, y'* sc, z'* sc)     
+       
+        /// Partially Multiplies the Matrix with a Vector. 
+        /// Use this only for affine transfomations that do NOT include a projection 
+        /// and if you need maximum performance
+        /// The fields m.M14, m.M24 and m.M34 must be 0.0 and m.M44 must be 1.0
+        /// Otherwise use Pnt.transform
+        static member transformSimple (m:Matrix) (p:Vec) = 
+            let x = p.X
+            let y = p.Y
+            let z = p.Z 
+            Vec(  m.M11*x + m.M21*y + m.M31*z + m.X41 
+                , m.M12*x + m.M22*y + m.M32*z + m.Y42 
+                , m.M13*x + m.M23*y + m.M33*z + m.Z43 
+                )
+                
         //[<Obsolete("Unsave Member") >]
         //static member inline DivideByInt (v:UnitVec, i:int) = if i<>0 then v / float i else failwithf "DivideByInt 0 %O " v // needed by  'Array.average'
 

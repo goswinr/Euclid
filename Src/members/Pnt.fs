@@ -1,6 +1,4 @@
 namespace FsEx.Geo
-open System
-
 
 
 /// Members and operators for 3D Points, Vectors and Rotations
@@ -241,8 +239,7 @@ module AutoOpenPnt =
             let y' = m.M12*x + m.M22*y + m.M32*z + m.Y42 // * w
             let z' = m.M13*x + m.M23*y + m.M33*z + m.Z43 // * w
             let w' = m.M14*x + m.M24*y + m.M34*z + m.M44 // * w 
-            let sc = 1.0 / w'
-           
+            let sc = 1.0 / w'           
             Pnt(x' * sc, y'* sc, z'* sc)     
        
         /// Partially Multiplies the Matrix with a Point. 
