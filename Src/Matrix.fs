@@ -301,7 +301,25 @@ type Matrix =
             1, 0, 0, x ,
             0, 1, 0, y ,
             0, 0, 1, z ,
-            0, 0, 0, 1 )        
+            0, 0, 0, 1 )    
+            
+    /// Sets this matrix as a translation transform:
+    /// x - the amount to translate in the X axis.
+    /// y - the amount to translate in the Y axis.
+    /// z - the amount to translate in the Z axis. 
+    /// The resulting matrix will be:
+    /// 1  0  0  x
+    /// 0  1  0  y
+    /// 0  0  1  z
+    /// 0  0  0  1
+    static member createTranslation(v:Vec ) =
+        Matrix(
+            1, 0, 0, v.X ,
+            0, 1, 0, v.Y ,
+            0, 0, 1, v.Z ,
+            0, 0, 0, 1 )    
+
+
     
     /// Creates a rotation transformation matrix around the X axis 
     /// by angle in degrees (not Radians).  
@@ -344,7 +362,7 @@ type Matrix =
     /// Creates a rotation transformation matrix around the Z axis 
     /// by angle in degrees (not Radians). 
     /// angleDegrees — Rotation angle in Degrees.
-    /// A positive  rotation will be  from X toward Y axis,  so counter-clockwise looking onto X-Y Plane
+    /// Returns a positive  rotation will be  from X toward Y axis,  so counter-clockwise looking onto X-Y Plane
     /// The resulting matrix will be:
     /// cos(θ) -sin(θ) 0 0
     /// sin(θ) cos(θ)  0 0
@@ -360,10 +378,10 @@ type Matrix =
             0,  0, 1, 0,
             0,  0, 0, 1 )
 
-    /// Creates rotation around as Axis transformation matrix: axis by angleDegrees Degrees.
+    /// Creates a rotation around an Axis transformation matrix.
     /// axis — Rotation axis, as unit vector.
     /// angleDegrees — Rotation angle in Degrees.
-    /// A positive rotation will be so clockwise looking in the direction of the axis vector
+    /// Returns a positive rotation will be so clockwise looking in the direction of the axis vector
     static member createRotationAxis( axis:UnitVec, angleDegrees:float ) =
         // Based on http://www.gamedev.net/reference/articles/article1199.asp
         let angle = Util.toRadians angleDegrees
@@ -380,6 +398,54 @@ type Matrix =
             tx * y + s * z, ty * y + c     , ty * z - s * x , 0,
             tx * z - s * y, ty * z + s * x , t  * z * z + c , 0,
             0             , 0              , 0              , 1 )
+
+    /// Creates a rotation around an Axis transformation matrix.
+    /// axis — Rotation axis, a vector of any length but 0.0 .
+    /// angleDegrees — Rotation angle in Degrees.
+    /// Returns a positive rotation will be so clockwise looking in the direction of the axis vector
+    static member createRotationAxis( axis:Vec, angleDegrees:float ) =
+        // first unitize
+        let len = sqrt (axis.X*axis.X + axis.Y*axis.Y + axis.Z*axis.Z) 
+        if len <  zeroLenghtTol then 
+            FsExGeoException.Raise "FsEx.Geo.Matrix.createRotationAxis failed on too short axis: %O and rotation: %g° degrees" axis angleDegrees
+        let sc = 1. / len
+        let x = axis.X * sc
+        let y = axis.Y * sc
+        let z = axis.Z * sc
+        // Based on http://www.gamedev.net/reference/articles/article1199.asp
+        let angle = Util.toRadians angleDegrees
+        let c = cos angle  
+        let s = sin angle 
+        let t = 1.0 - c
+        let tx = t * x
+        let ty = t * y
+        Matrix(
+            tx * x + c    , tx * y - s * z , tx * z + s * y , 0,
+            tx * y + s * z, ty * y + c     , ty * z - s * x , 0,
+            tx * z - s * y, ty * z + s * x , t  * z * z + c , 0,
+            0             , 0              , 0              , 1 )
+
+
+    /// Creates a rotation matrix around an Axis at a given center Point.
+    /// axis — Rotation axis, a vector of any length but 0.0 
+    /// cen — The center point for the rotation
+    /// angleDegrees — Rotation angle in Degrees.
+    /// Returns a positive rotation will be so clockwise looking in the direction of the axis vector
+    static member createRotationAxisCenter( axis:Vec, cen:Pnt, angleDegrees:float ) =
+        Matrix.createTranslation(-cen.X, -cen.Y, -cen.Z)
+        * Matrix.createRotationAxis(axis, angleDegrees)
+        * Matrix.createTranslation(cen.X, cen.Y, cen.Z)
+
+    /// Creates a rotation matrix around an Axis at a given center Point.
+    /// axis — Rotation axis, a Unit vector 
+    /// cen — The center point for the rotation
+    /// angleDegrees — Rotation angle in Degrees.
+    /// Returns a positive rotation will be so clockwise looking in the direction of the axis vector
+    static member createRotationAxisCenter( axis:UnitVec, cen:Pnt, angleDegrees:float ) =
+        Matrix.createTranslation(-cen.X, -cen.Y, -cen.Z)
+        * Matrix.createRotationAxis(axis, angleDegrees)
+        * Matrix.createTranslation(cen.X, cen.Y, cen.Z)
+
 
     /// Creates a scale transformation matrix:
     /// x - the amount to scale in the X axis.
@@ -421,10 +487,10 @@ type Matrix =
     /// Also called Change of Basis
     static member createToPlane(p:PPlane) =
         Matrix(
-            p.Xax.X , p.Yax.X , p.Zax.X ,  p.Pt.X , 
-            p.Xax.Y , p.Yax.Y , p.Zax.Y ,  p.Pt.Y , 
-            p.Xax.Z , p.Yax.Z , p.Zax.Z ,  p.Pt.Z , 
-            0       ,       0 ,        0,       1 )
+            p.Xax.X , p.Yax.X , p.Zax.X ,  p.Origin.X , 
+            p.Xax.Y , p.Yax.Y , p.Zax.Y ,  p.Origin.Y , 
+            p.Xax.Z , p.Yax.Z , p.Zax.Z ,  p.Origin.Z , 
+            0       ,       0 ,        0,            1 )
             
             
     /// Creates a Matrix to transform from one Plane or Coordinate System to another Plane 
@@ -432,6 +498,86 @@ type Matrix =
         let f = fromPlane |> Matrix.createToPlane |> Matrix.inverse
         let t = toPlane   |> Matrix.createToPlane 
         f*t
+    
+    /// Creates a Matrix to mirror on a Plane  
+    static member createMirror (p:PPlane) = 
+        let toPlane   =  Matrix.createToPlane p
+        let fromPlane =  toPlane.Inverse
+        let zFlip     =  Matrix.createScale(1,1,-1)  
+        fromPlane*zFlip*toPlane
+    
+    /// Create Matrix  from Quaternion
+    static member createRotationQuat( quaternion:Quaternion) =
+        let x = quaternion.X
+        let y = quaternion.Y
+        let z = quaternion.Z
+        let w = quaternion.W
+        let x2 = x + x  
+        let y2 = y + y
+        let z2 = z + z
+        let xx = x * x2
+        let xy = x * y2
+        let xz = x * z2
+        let yy = y * y2
+        let yz = y * z2
+        let zz = z * z2
+        let wx = w * x2
+        let wy = w * y2
+        let wz = w * z2        
+        Matrix (( 1. - ( yy + zz ) ) 
+                ,( xy + wz ) 
+                ,( xz - wy ) 
+                ,0
+                ,( xy - wz ) 
+                ,( 1. - ( xx + zz ) ) 
+                ,( yz + wx ) 
+                ,0                
+                ,( xz + wy ) 
+                ,( yz - wx ) 
+                ,( 1. - ( xx + yy ) ) 
+                ,0 
+                ,0 ,0 ,0 ,1 )
+
+    /// Compose rotation center Quaternion and scale to one Matrix
+    static member compose( position:Pnt, quaternion:Quaternion, scale:Vec ) =
+        let x = quaternion.X
+        let y = quaternion.Y
+        let z = quaternion.Z
+        let w = quaternion.W
+        let x2 = x + x  
+        let y2 = y + y
+        let z2 = z + z
+        let xx = x * x2
+        let xy = x * y2
+        let xz = x * z2
+        let yy = y * y2
+        let yz = y * z2
+        let zz = z * z2
+        let wx = w * x2
+        let wy = w * y2
+        let wz = w * z2
+        let sx = scale.X
+        let sy = scale.Y
+        let sz = scale.Z
+        Matrix (( 1. - ( yy + zz ) ) * sx
+                ,( xy + wz ) * sx
+                ,( xz - wy ) * sx
+                ,0
+                ,( xy - wz ) * sy
+                ,( 1. - ( xx + zz ) ) * sy
+                ,( yz + wx ) * sy
+                ,0                
+                ,( xz + wy ) * sz
+                ,( yz - wx ) * sz
+                ,( 1. - ( xx + yy ) ) * sz
+                ,0
+                ,position.X
+                ,position.Y
+                ,position.Z
+                ,1
+                )
+
+
 
 
     /// Creates a matrix from array of 16 elements in Column Major order:
@@ -459,3 +605,4 @@ type Matrix =
                 xs[ 8],  xs[ 9],  xs[10],  xs[11] , 
                 xs[12],  xs[13],  xs[14],  xs[15] )
  
+   

@@ -246,7 +246,7 @@ module AutoOpenPnt =
             Pnt(x' * sc, y'* sc, z'* sc)     
        
         /// Partially Multiplies the Matrix with a Point. 
-        /// Use this only for affne transfomations that do NOT include a projection 
+        /// Use this only for affine transfomations that do NOT include a projection 
         /// and if you need maximum performance
         /// The fields m.M14, m.M24 and m.M34 must be 0.0 and m.M44 must be 1.0
         /// Otherwise use Pnt.transform
@@ -263,9 +263,7 @@ module AutoOpenPnt =
         //static member inline ( * ) (matrix:Matrix, pt:Pnt) = //TODO in main declartion ,  not extension
         //    Pnt.transform matrix pt
 
-
-
-        // Rotate2D: 
+        // Rotate 2D and 3D: 
 
         /// Rotate the 3D Point around X axis, from Y to Z Axis, Counter Clockwise looking from right.
         static member rotateXBy (r:Rotation2D) (p:Pnt) = Pnt (p.X,  r.cos*p.Y - r.sin*p.Z, r.sin*p.Y + r.cos*p.Z)
@@ -326,8 +324,48 @@ module AutoOpenPnt =
         /// Rotate the 3D Point in Degrees around center Point and a Z aligned axis, from X to Y Axis, Counter Clockwise looking from top.
         static member inline rotateZonCenter (cen:Pnt) (angDegree) (pt:Pnt) = 
             Pnt.rotateZonCenterBy cen (Rotation2D.createFromDegrees angDegree) pt 
-           
-    
+
+        /// Rotate by Quaternion around Origin
+        static member inline rotateByQuat  (q:Quaternion) (pt:Pnt) =
+            // adapted from https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
+            let x = pt.X
+            let y = pt.Y
+            let z = pt.Z
+            let qx = q.X
+            let qy = q.Y
+            let qz = q.Z
+            let qw = q.W
+            // calculate quat * vector
+            let ix =  qw * x + qy * z - qz * y
+            let iy =  qw * y + qz * x - qx * z
+            let iz =  qw * z + qx * y - qy * x
+            let iw = -qx * x - qy * y - qz * z
+            // calculate result * inverse quat
+            Pnt( ix * qw + iw * - qx + iy * - qz - iz * - qy
+               , iy * qw + iw * - qy + iz * - qx - ix * - qz
+               , iz * qw + iw * - qz + ix * - qy - iy * - qx
+               )
+  
+        /// Rotate by Quaternion around given Center Point 
+        static member inline rotateOnCenterByQuat (cen:Pnt) (q:Quaternion) (pt:Pnt) =
+            // adapted from https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
+            let x = pt.X-cen.X
+            let y = pt.Y-cen.Y
+            let z = pt.Z-cen.Z
+            let qx = q.X
+            let qy = q.Y
+            let qz = q.Z
+            let qw = q.W
+            // calculate quat * vector
+            let ix =  qw * x + qy * z - qz * y
+            let iy =  qw * y + qz * x - qx * z
+            let iz =  qw * z + qx * y - qy * x
+            let iw = -qx * x - qy * y - qz * z
+            // calculate result * inverse quat
+            Pnt(  ix * qw + iw * - qx + iy * - qz - iz * - qy  + cen.X
+                , iy * qw + iw * - qy + iz * - qx - ix * - qz  + cen.Y
+                , iz * qw + iw * - qz + ix * - qy - iy * - qx  + cen.Z
+                )
 
 
 

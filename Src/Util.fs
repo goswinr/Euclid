@@ -33,17 +33,37 @@ module Util =
     /// Math.PI * 0.5
     let halfPi = 1.5707963267949
 
-    /// clamp value between -1.0 and +1.0
+    /// Clamp value between -1.0 and +1.0
     let inline clamp11 (x:float)= 
         if   x < -1.0 then -1.0
         elif x >  1.0 then  1.0
         else                x
     
-    /// clamp value between 0.0 and +1
+    /// Clamp value between 0.0 and +1
     let inline clamp01 (x:float)= 
         if   x <  0.0 then  0.0
         elif x >  1.0 then  1.0
-        else                x
+        else                x    
+
+    /// Tests if a number is close to 1.0 by maximum 6 steps of float increment or decrement.
+    /// So between 0.99999964 and 1.000000715.
+    /// See https://float.exposed
+    let inline isOne  x =  
+        // 1.000000715 is 6 steps bigger  than 1.0: https://float.exposed/0x3f800006
+        // 0.99999964  is 6 steps smaller than 1.0: https://float.exposed/0x3f7ffffa
+        0.999999642372131347656 < x && x < 1.00000071525573730469 
+    
+    /// Tests if a number is close to -1.0 by maximum 6 steps of float increment or decrement.
+    /// So between -0.99999964 and -1.000000715.
+    /// See https://float.exposed
+    let inline isMinusOne  x =
+        -0.999999642372131347656 > x && x > -1.00000071525573730469 
+        
+    /// Tests if a number is close to 0.0 by 1e-7
+    /// This is aproximatly the same tolerance that 6 incremets of a float are away from 1.0.
+    /// See FsEx.Geo.Util.isOne function
+    let inline isZero x = 
+        -1e-7 < x && x < 1e-7 
 
 (* module Units = 
 

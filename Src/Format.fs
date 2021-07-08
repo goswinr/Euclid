@@ -25,21 +25,21 @@ module Format =
             let NaN = "NaN"
     
             [<Literal>]
-            let AlmostZero = "≈0.0"
+            let CloseToZeroPositive = "≈0.0"
     
             [<Literal>]
-            let AlmostZeroNeg = "-≈0.0"
+            let CloseToZeroNegative = "-≈0.0"
     
             [<Literal>]
-            let RoundedToZero = "~0.0"
+            let VeryCloseToZero = "~0.0"
     
     /// Set this to change the printing of floats larger than 10'000
     let mutable thousandSeparator = '\'' // = just one quote '
     
     /// If the absolut value of a float is below this, display ±0.0
-    /// default = Double.Epsilon = no rounding down
+    /// default 1e-12
     /// This value can be set for exmaple by hosting apps that have a build in absolute tolerance like Rhino3d
-    let mutable displayAsAlmostZeroBelow = 1e-9 // Double.Epsilon
+    let mutable displayAsAlmostZeroBelow = 1e-12 // Double.Epsilon // default = Double.Epsilon = no rounding down
 
     let private addThousandSeparators (s:string) = 
         let b = Text.StringBuilder(s.Length + s.Length / 3 + 1)
@@ -88,7 +88,7 @@ module Format =
         elif x = 0.0 then "0.0" // not "0" as in sprintf "%g"
         else
             let  a = abs x
-            if   a <  displayAsAlmostZeroBelow then Literals.RoundedToZero
+            if   a <  displayAsAlmostZeroBelow then Literals.VeryCloseToZero
             elif a >= 10000.     then x.ToString("#")|> addThousandSeparators
             elif a >= 1000.      then x.ToString("#")
             elif a >= 100.       then x.ToString("0.0" , invC)
@@ -101,8 +101,8 @@ module Format =
             elif a >= 0.00001    then x.ToString("0.00000000" , invC)|> addThousandSeparators
             elif a >= 0.000001   then x.ToString("0.000000000" , invC)|> addThousandSeparators
             elif a >= 0.0000001  then x.ToString("0.0000000000" , invC)|> addThousandSeparators            
-            elif x >= 0.0        then Literals.AlmostZero
-            else                      Literals.AlmostZeroNeg
+            elif x >= 0.0        then Literals.CloseToZeroPositive
+            else                      Literals.CloseToZeroNegative
 
     /// Formating with automatic precision
     /// e.g.: 0 digits behind comma if above 1000
@@ -114,7 +114,7 @@ module Format =
         elif x = 0.0f then "0.0" // not "0" as in sprintf "%g"
         else
             let  a = abs x
-            if   a <  float32(displayAsAlmostZeroBelow) then Literals.RoundedToZero
+            if   a <  float32(displayAsAlmostZeroBelow) then Literals.VeryCloseToZero
             elif a >= 10000.f then x.ToString("#")|> addThousandSeparators
             elif a >= 1000.f   then x.ToString("#")
             elif a >= 100.f    then x.ToString("0.0" , invC)
@@ -125,5 +125,5 @@ module Format =
             elif a >= 0.001f   then x.ToString("0.000000" , invC)|> addThousandSeparators  
             elif a >= 0.0001f  then x.ToString("0.0000000" , invC)|> addThousandSeparators  
             elif a >= 0.00001f then x.ToString("0.00000000" , invC)|> addThousandSeparators  
-            elif x >= 0.0f     then Literals.AlmostZero
-            else                    Literals.AlmostZeroNeg
+            elif x >= 0.0f     then Literals.CloseToZeroPositive
+            else                    Literals.CloseToZeroNegative

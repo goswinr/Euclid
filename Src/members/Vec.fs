@@ -262,7 +262,26 @@ module AutoOpenVec =
         static member inline rotateZ (angDegree) (v:Vec) = 
             Vec.rotateZBy  (Rotation2D.createFromDegrees angDegree) v  
 
-
+        /// Rotate by Quaternion
+        static member inline rotateByQuaternion  (q:Quaternion) (v:Vec) =
+            // adapted from https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
+            let x = v.X
+            let y = v.Y
+            let z = v.Z
+            let qx = q.X
+            let qy = q.Y
+            let qz = q.Z
+            let qw = q.W
+            // calculate quat * vector
+            let ix =  qw * x + qy * z - qz * y
+            let iy =  qw * y + qz * x - qx * z
+            let iz =  qw * z + qx * y - qy * x
+            let iw = -qx * x - qy * y - qz * z
+            // calculate result * inverse quat
+            Vec( ix * qw + iw * - qx + iy * - qz - iz * - qy
+               , iy * qw + iw * - qy + iz * - qx - ix * - qz
+               , iz * qw + iw * - qz + ix * - qy - iy * - qx
+               )
 
         /// Vector length projected into X Y Plane
         /// sqrt( v.X * v.X  + v.Y * v.Y)
