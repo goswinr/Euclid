@@ -2,7 +2,7 @@ namespace FsEx.Geo
 
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
-
+open FsEx.Geo.Util
 
 /// A 4x4 Transformation Matrix.
 /// The matrix is represented in the following colum-vector syntax form:
@@ -19,8 +19,7 @@ type Matrix =
     val M13 :float ; val M23 :float ; val M33 :float; val Z43:float
     val M14 :float ; val M24 :float ; val M34 :float; val M44:float
     
-    //this iplementation is based on https://github.com/mrdoob/three.js/blob/dev/src/math/Matrix4.js
-    
+    //this iplementation is based on https://github.com/mrdoob/three.js/blob/dev/src/math/Matrix4.js    
     
     /// Create a 4x4 Transformation Matrix.
     /// This Constructor takes arguments in row-major order, 
@@ -37,17 +36,8 @@ type Matrix =
                 M12=m12 ; M22=m22 ; M32=m32 ; Y42=y42 ;
                 M13=m13 ; M23=m23 ; M33=m33 ; Z43=z43 ;
                 M14=m14 ; M24=m24 ; M34=m34 ; M44=m44 }
-
-    /// Checks if the Matrix is an Identity Matrix with a tolerance of 1e-6.
-    static member IsIdentity(m:Matrix) =
-        let inline isOne  x =  0.999909<x && x<1.000001
-        let inline isZero x = -0.000001<x && x<0.000001        
-        isOne  m.M11 && isZero m.M21 && isZero m.M31 && isZero m.X41 &&
-        isZero m.M12 && isOne  m.M22 && isZero m.M32 && isZero m.Y42 &&
-        isZero m.M13 && isZero m.M23 && isOne  m.M33 && isZero m.Z43 &&
-        isZero m.M14 && isZero m.M24 && isZero m.M34 && isOne  m.M44
     
-    /// returns elements colum-major order:
+    /// Returns the 16 elements colum-major order:
     /// [| M11 M12 M13 M14 M21 M22 M23 M24 M31 M32 M33 M34 X41 Y42 Z43 M44 |] 
     member m.ByColumns = [|  
         m.M11
@@ -68,7 +58,7 @@ type Matrix =
         m.M44 
         |]
     
-    /// returns elements in row-major order: 
+    /// Returns the 16 elements in row-major order: 
     /// [| M11 M21 M31 X41 M12 M22 M32 Y42 M13 M23 M33 Z43 M14 M24 M34 M44 |] 
     member m.ByRows = [|  
         m.M11
@@ -87,9 +77,104 @@ type Matrix =
         m.M24
         m.M34
         m.M44 
-        |]    
+        |]        
+
+    /// If the determinant of the Matrix. 
+    /// The Determinant descirbes the volume that a unit cube will have have the matrix was applied
+    member m.Determinant = 
+        let n11 = m.M11
+        let n21 = m.M21
+        let n31 = m.M31
+        let n41 = m.X41
+        let n12 = m.M12
+        let n22 = m.M22
+        let n32 = m.M32
+        let n42 = m.Y42
+        let n13 = m.M13
+        let n23 = m.M23
+        let n33 = m.M33
+        let n43 = m.Z43
+        let n14 = m.M14
+        let n24 = m.M24
+        let n34 = m.M34
+        let n44 = m.M44
+
+        let t11 = n23 * n34 * n42 - n24 * n33 * n42 + n24 * n32 * n43 - n22 * n34 * n43 - n23 * n32 * n44 + n22 * n33 * n44
+        let t12 = n14 * n33 * n42 - n13 * n34 * n42 - n14 * n32 * n43 + n12 * n34 * n43 + n13 * n32 * n44 - n12 * n33 * n44
+        let t13 = n13 * n24 * n42 - n14 * n23 * n42 + n14 * n22 * n43 - n12 * n24 * n43 - n13 * n22 * n44 + n12 * n23 * n44
+        let t14 = n14 * n23 * n32 - n13 * n24 * n32 - n14 * n22 * n33 + n12 * n24 * n33 + n13 * n22 * n34 - n12 * n23 * n34
+        n11 * t11 + n21 * t12 + n31 * t13 + n41 * t14
+
+    /// Inverts the matrix. 
+    /// If the determinant is zero the Matrix cannot be inverted. 
+    /// An Exception is raised.
+    member m.Inverse = 
+        // based on http://www.euclideanspace.com/maths/algebra/matrix/functions/inverse/fourD/index.htm        
+        let n11 = m.M11
+        let n21 = m.M21
+        let n31 = m.M31
+        let n41 = m.X41
+        let n12 = m.M12
+        let n22 = m.M22
+        let n32 = m.M32
+        let n42 = m.Y42
+        let n13 = m.M13
+        let n23 = m.M23
+        let n33 = m.M33
+        let n43 = m.Z43
+        let n14 = m.M14
+        let n24 = m.M24
+        let n34 = m.M34
+        let n44 = m.M44
+
+        let t11 = n23 * n34 * n42 - n24 * n33 * n42 + n24 * n32 * n43 - n22 * n34 * n43 - n23 * n32 * n44 + n22 * n33 * n44
+        let t12 = n14 * n33 * n42 - n13 * n34 * n42 - n14 * n32 * n43 + n12 * n34 * n43 + n13 * n32 * n44 - n12 * n33 * n44
+        let t13 = n13 * n24 * n42 - n14 * n23 * n42 + n14 * n22 * n43 - n12 * n24 * n43 - n13 * n22 * n44 + n12 * n23 * n44
+        let t14 = n14 * n23 * n32 - n13 * n24 * n32 - n14 * n22 * n33 + n12 * n24 * n33 + n13 * n22 * n34 - n12 * n23 * n34
+        let det = n11 * t11 + n21 * t12 + n31 * t13 + n41 * t14
+
+        if abs det < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Matrix has an almost zero determinant. It is smaller than 1e-12. It cannot be inverted:\r\n%O" m // TODO or return all zero matrix like threeJS ?
+
+        let detInv = 1. / det
+        
+        Matrix( t11 * detInv                                                                                                          // M11
+              ,( n24 * n33 * n41 - n23 * n34 * n41 - n24 * n31 * n43 + n21 * n34 * n43 + n23 * n31 * n44 - n21 * n33 * n44 ) * detInv // M21
+              ,( n22 * n34 * n41 - n24 * n32 * n41 + n24 * n31 * n42 - n21 * n34 * n42 - n22 * n31 * n44 + n21 * n32 * n44 ) * detInv // M31
+              ,( n23 * n32 * n41 - n22 * n33 * n41 - n23 * n31 * n42 + n21 * n33 * n42 + n22 * n31 * n43 - n21 * n32 * n43 ) * detInv // X41 
+              , t12 * detInv                                                                                                          // M12
+              ,( n13 * n34 * n41 - n14 * n33 * n41 + n14 * n31 * n43 - n11 * n34 * n43 - n13 * n31 * n44 + n11 * n33 * n44 ) * detInv // M22
+              ,( n14 * n32 * n41 - n12 * n34 * n41 - n14 * n31 * n42 + n11 * n34 * n42 + n12 * n31 * n44 - n11 * n32 * n44 ) * detInv // M32
+              ,( n12 * n33 * n41 - n13 * n32 * n41 + n13 * n31 * n42 - n11 * n33 * n42 - n12 * n31 * n43 + n11 * n32 * n43 ) * detInv // Y42 
+              , t13 * detInv                                                                                                          // M13
+              ,( n14 * n23 * n41 - n13 * n24 * n41 - n14 * n21 * n43 + n11 * n24 * n43 + n13 * n21 * n44 - n11 * n23 * n44 ) * detInv // M23
+              ,( n12 * n24 * n41 - n14 * n22 * n41 + n14 * n21 * n42 - n11 * n24 * n42 - n12 * n21 * n44 + n11 * n22 * n44 ) * detInv // M33
+              ,( n13 * n22 * n41 - n12 * n23 * n41 - n13 * n21 * n42 + n11 * n23 * n42 + n12 * n21 * n43 - n11 * n22 * n43 ) * detInv // Z43 
+              , t14 * detInv                                                                                                          // M14
+              ,( n13 * n24 * n31 - n14 * n23 * n31 + n14 * n21 * n33 - n11 * n24 * n33 - n13 * n21 * n34 + n11 * n23 * n34 ) * detInv // M24
+              ,( n14 * n22 * n31 - n12 * n24 * n31 - n14 * n21 * n32 + n11 * n24 * n32 + n12 * n21 * n34 - n11 * n22 * n34 ) * detInv // M34
+              ,( n12 * n23 * n31 - n13 * n22 * n31 + n13 * n21 * n32 - n11 * n23 * n32 - n12 * n21 * n33 + n11 * n22 * n33 ) * detInv // M44
+              )
+
+    /// Checks if the Matrix is an Identity Matrix in the form of:
+    /// 1  0  0  0
+    /// 0  1  0  0
+    /// 0  0  1  0
+    /// 0  0  0  1
+    /// Using an approximate tolerance of aporox 1e-7.
+    member m.IsIdentity =               
+        isOne  m.M11 && isZero m.M21 && isZero m.M31 && isZero m.X41 &&
+        isZero m.M12 && isOne  m.M22 && isZero m.M32 && isZero m.Y42 &&
+        isZero m.M13 && isZero m.M23 && isOne  m.M33 && isZero m.Z43 &&
+        isZero m.M14 && isZero m.M24 && isZero m.M34 && isOne  m.M44
     
-    /// Nicely formats the Matrix to a Grid of 4x4
+    /// Checks if the Matrix is an affine transformation.
+    /// That means it does not do any projection.
+    /// The fields m.M14, m.M24 and m.M34 must be 0.0 and m.M44 must be 1.0 or very close to it.
+    /// Using an approximate tolerance of 1e-7.
+    member m.IsAffine  =        
+        isZero m.M14 && isZero m.M24 && isZero m.M34 && isOne m.M44
+
+    /// Nicely formats the Matrix to a Grid of 4x4.
     override m.ToString()= 
         let ts   = m.ByRows |> Array.map ( fun x -> x.ToString("0.###")) 
         let most = ts |> Array.maxBy ( fun s -> s.Length)
@@ -99,9 +184,9 @@ type Matrix =
         |> Array.chunkBySize 4
         |> Array.map (fun es -> " " + String.concat " | " es) 
         |> String.concat Environment.NewLine
-        ) 
-        
-    ///// Nicely formats the Matrix to a Grid of 4x4 incuding field names
+        )  
+
+    //Nicely formats the Matrix to a Grid of 4x4 incuding field names.
     //override m.ToString()= 
     //    let names =[| "M11"; "M21"; "M31"; "X41"; "M12"; "M22"; "M32"; "Y42"; "M13"; "M23"; "M33"; "Z43"; "M14"; "M24"; "M34"; "M44"|]
     //    let ts   = (names, m.ByRows)  ||> Array.map2 ( fun n v -> v.ToString("0.###")) 
@@ -112,11 +197,12 @@ type Matrix =
     //    |> Array.chunkBySize 4
     //    |> Array.map (fun es -> " " + String.concat " | " es) 
     //    |> String.concat Environment.NewLine
-    //    ) 
-    
+    //    )     
+
+
     /// Multiplies matrixA with matrixB
     /// The resulting transformation will firts do matrixA and then matrixB
-    static member Multiply (matrixA:Matrix,  matrixB:Matrix) =  
+    static member multiply (matrixA:Matrix,  matrixB:Matrix) =  
         let a11 = matrixA.M11
         let a12 = matrixA.M12
         let a13 = matrixA.M13
@@ -166,95 +252,24 @@ type Matrix =
              a11 * b14 + a12 * b24 + a13 * b34 + a14 * b44 , // M14
              a21 * b14 + a22 * b24 + a23 * b34 + a24 * b44 , // M24
              a31 * b14 + a32 * b24 + a33 * b34 + a34 * b44 , // M34
-             a41 * b14 + a42 * b24 + a43 * b34 + a44 * b44 ) // M44
+             a41 * b14 + a42 * b24 + a43 * b34 + a44 * b44 ) // M44    
     
-    
-     /// Multiplies a with b
     
     /// Multiplies matrixA with matrixB
-    /// The resulting transformation will firts do matrixA and then matrixB
-    static member inline ( * ) (matrixA:Matrix,  matrixB:Matrix) = Matrix.Multiply(matrixA, matrixB)
+    /// The resulting transformation will first do matrixA and then matrixB
+    static member inline ( * ) (matrixA:Matrix,  matrixB:Matrix) = Matrix.multiply(matrixA, matrixB)
     
     /// If the determinant of the Matrix. 
     /// The Determinant descirbes the volume that a unit cube will have have the matrix was applied
-    static member Determinant (m:Matrix) = 
-        let n11 = m.M11
-        let n21 = m.M21
-        let n31 = m.M31
-        let n41 = m.X41
-        let n12 = m.M12
-        let n22 = m.M22
-        let n32 = m.M32
-        let n42 = m.Y42
-        let n13 = m.M13
-        let n23 = m.M23
-        let n33 = m.M33
-        let n43 = m.Z43
-        let n14 = m.M14
-        let n24 = m.M24
-        let n34 = m.M34
-        let n44 = m.M44
-
-        let t11 = n23 * n34 * n42 - n24 * n33 * n42 + n24 * n32 * n43 - n22 * n34 * n43 - n23 * n32 * n44 + n22 * n33 * n44
-        let t12 = n14 * n33 * n42 - n13 * n34 * n42 - n14 * n32 * n43 + n12 * n34 * n43 + n13 * n32 * n44 - n12 * n33 * n44
-        let t13 = n13 * n24 * n42 - n14 * n23 * n42 + n14 * n22 * n43 - n12 * n24 * n43 - n13 * n22 * n44 + n12 * n23 * n44
-        let t14 = n14 * n23 * n32 - n13 * n24 * n32 - n14 * n22 * n33 + n12 * n24 * n33 + n13 * n22 * n34 - n12 * n23 * n34
-        n11 * t11 + n21 * t12 + n31 * t13 + n41 * t14
+    static member inline determinant (m:Matrix) = m.Determinant
     
-    
-    /// Inverts the matrix. 
+    /// Inverses the matrix. 
     /// If the determinant is zero the Matrix cannot be inverted. 
     /// An Exception is raised.
-    static member Invert (m:Matrix) = 
-        // based on http://www.euclideanspace.com/maths/algebra/matrix/functions/inverse/fourD/index.htm
-        
-        let n11 = m.M11
-        let n21 = m.M21
-        let n31 = m.M31
-        let n41 = m.X41
-        let n12 = m.M12
-        let n22 = m.M22
-        let n32 = m.M32
-        let n42 = m.Y42
-        let n13 = m.M13
-        let n23 = m.M23
-        let n33 = m.M33
-        let n43 = m.Z43
-        let n14 = m.M14
-        let n24 = m.M24
-        let n34 = m.M34
-        let n44 = m.M44
-
-        let t11 = n23 * n34 * n42 - n24 * n33 * n42 + n24 * n32 * n43 - n22 * n34 * n43 - n23 * n32 * n44 + n22 * n33 * n44
-        let t12 = n14 * n33 * n42 - n13 * n34 * n42 - n14 * n32 * n43 + n12 * n34 * n43 + n13 * n32 * n44 - n12 * n33 * n44
-        let t13 = n13 * n24 * n42 - n14 * n23 * n42 + n14 * n22 * n43 - n12 * n24 * n43 - n13 * n22 * n44 + n12 * n23 * n44
-        let t14 = n14 * n23 * n32 - n13 * n24 * n32 - n14 * n22 * n33 + n12 * n24 * n33 + n13 * n22 * n34 - n12 * n23 * n34
-        let det = n11 * t11 + n21 * t12 + n31 * t13 + n41 * t14
-
-        if abs det < 1e-9 then FsExGeoDivByZeroException.Raise "Matrix has a almost zero determinant smaller than 1e-9. It cannot be inverted:\r\n%O" m // TODO  or return zero matrix ?
-
-        let detInv = 1. / det
-        
-        Matrix( t11 * detInv                                                                                                          // M11
-              ,( n24 * n33 * n41 - n23 * n34 * n41 - n24 * n31 * n43 + n21 * n34 * n43 + n23 * n31 * n44 - n21 * n33 * n44 ) * detInv // M21
-              ,( n22 * n34 * n41 - n24 * n32 * n41 + n24 * n31 * n42 - n21 * n34 * n42 - n22 * n31 * n44 + n21 * n32 * n44 ) * detInv // M31
-              ,( n23 * n32 * n41 - n22 * n33 * n41 - n23 * n31 * n42 + n21 * n33 * n42 + n22 * n31 * n43 - n21 * n32 * n43 ) * detInv // X41 
-              , t12 * detInv                                                                                                          // M12
-              ,( n13 * n34 * n41 - n14 * n33 * n41 + n14 * n31 * n43 - n11 * n34 * n43 - n13 * n31 * n44 + n11 * n33 * n44 ) * detInv // M22
-              ,( n14 * n32 * n41 - n12 * n34 * n41 - n14 * n31 * n42 + n11 * n34 * n42 + n12 * n31 * n44 - n11 * n32 * n44 ) * detInv // M32
-              ,( n12 * n33 * n41 - n13 * n32 * n41 + n13 * n31 * n42 - n11 * n33 * n42 - n12 * n31 * n43 + n11 * n32 * n43 ) * detInv // Y42 
-              , t13 * detInv                                                                                                          // M13
-              ,( n14 * n23 * n41 - n13 * n24 * n41 - n14 * n21 * n43 + n11 * n24 * n43 + n13 * n21 * n44 - n11 * n23 * n44 ) * detInv // M23
-              ,( n12 * n24 * n41 - n14 * n22 * n41 + n14 * n21 * n42 - n11 * n24 * n42 - n12 * n21 * n44 + n11 * n22 * n44 ) * detInv // M33
-              ,( n13 * n22 * n41 - n12 * n23 * n41 - n13 * n21 * n42 + n11 * n23 * n42 + n12 * n21 * n43 - n11 * n22 * n43 ) * detInv // Z43 
-              , t14 * detInv                                                                                                          // M14
-              ,( n13 * n24 * n31 - n14 * n23 * n31 + n14 * n21 * n33 - n11 * n24 * n33 - n13 * n21 * n34 + n11 * n23 * n34 ) * detInv // M24
-              ,( n14 * n22 * n31 - n12 * n24 * n31 - n14 * n21 * n32 + n11 * n24 * n32 + n12 * n21 * n34 - n11 * n22 * n34 ) * detInv // M34
-              ,( n12 * n23 * n31 - n13 * n22 * n31 + n13 * n21 * n32 - n11 * n23 * n32 - n12 * n21 * n33 + n11 * n22 * n33 ) * detInv // M44
-              ) 
+    static member inline inverse (m:Matrix) = m.Inverse
     
     /// Transposes this matrix.
-    static member Transpose(m:Matrix) =
+    static member transpose(m:Matrix) =
         Matrix( m.M11, m.M12, m.M13, m.M14
               , m.M21, m.M22, m.M23, m.M24
               , m.M31, m.M32, m.M33, m.M34
@@ -265,7 +280,7 @@ type Matrix =
     /// 0  1  0  0
     /// 0  0  1  0
     /// 0  0  0  1
-    static member Identity =
+    static member identity =
         Matrix(
             1, 0, 0, 0 ,
             0, 1, 0, 0 ,
@@ -414,7 +429,33 @@ type Matrix =
             
     /// Creates a Matrix to transform from one Plane or Coordinate System to another Plane 
     static member createPlaneToPlane(fromPlane:PPlane,  toPlane:PPlane) =
-        let f = fromPlane |> Matrix.createToPlane |> Matrix.Invert
+        let f = fromPlane |> Matrix.createToPlane |> Matrix.inverse
         let t = toPlane   |> Matrix.createToPlane 
         f*t
+
+
+    /// Creates a matrix from array of 16 elements in Column Major order:
+    /// [| M11 M12 M13 M14 M21 M22 M23 M24 M31 M32 M33 M34 X41 Y42 Z43 M44 |] 
+    static member createFromColumMajorArray (xs:float[]) =
+        if xs.Length <> 16 then 
+            FsExGeoException.Raise "FsEx.Geo.Matrix.createFromColumMajorArray expects an array of 16 items but got %d " xs.Length
+        else
+            Matrix ( 
+                xs[0],  xs[4],  xs[ 8],  xs[12] , 
+                xs[1],  xs[5],  xs[ 9],  xs[13] , 
+                xs[2],  xs[6],  xs[10],  xs[14] , 
+                xs[3],  xs[7],  xs[11],  xs[15] )
+
+
+    /// Creates a matrix from array of 16 elements in Row Major order:
+    /// [| M11 M21 M31 X41 M12 M22 M32 Y42 M13 M23 M33 Z43 M14 M24 M34 M44 |] 
+    static member createFromRowMajorArray (xs:float[]) =
+        if xs.Length <> 16 then 
+            FsExGeoException.Raise "FsEx.Geo.Matrix.createFromRowMajorArray expects an array of 16 items but got %d " xs.Length
+        else
+            Matrix ( 
+                xs[ 0],  xs[ 1],  xs[ 2],  xs[ 3] , 
+                xs[ 4],  xs[ 5],  xs[ 6],  xs[ 7] , 
+                xs[ 8],  xs[ 9],  xs[10],  xs[11] , 
+                xs[12],  xs[13],  xs[14],  xs[15] )
  
