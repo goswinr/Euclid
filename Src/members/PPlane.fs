@@ -33,7 +33,7 @@ module AutoOpenPPPlane =
             let z = Vec.cross (x , y)
             PPlane(origin,x.Unitized,y.Unitized,z.Unitized)
     
-        /// Builds Plane at first Point , X axis to second Point, checks for coliniear points    
+        /// Builds Plane at first Point , X axis to second Point, checks for collinear points    
         static member from3Pts (origin:Pnt) (b:Pnt) (c:Pnt) = 
             let x = b-origin
             let yt = c-origin
@@ -64,7 +64,7 @@ module AutoOpenPPPlane =
     
         /// If the transformation includes a shear the only X axis can be kept.
         /// The plane will be defined with the direction of Y Axis ( which might not be perpendicular after shearing ).
-        /// The returned PPlane has orthogonal Unitvectors
+        /// The returned PPlane has orthogonal unit vectors
         static member transform (m:Matrix) (pl:PPlane) = 
             let o  = Pnt.transform m pl.Origin
             let px = Pnt.transform m (pl.Origin+pl.Xax)

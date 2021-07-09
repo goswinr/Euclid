@@ -27,13 +27,13 @@ module AutoOpenVc =
 
         member inline v.WithLength (desiredLength:float) =  
             let l = sqrt(v.X*v.X+v.Y*v.Y) 
-            if l < zeroLenghtTol then FsExGeoDivByZeroException.Raise "Vc.WithLength %g : %O is too small for unitizing, Tolerance:%g" desiredLength v zeroLenghtTol
+            if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "Vc.WithLength %g : %O is too small for unitizing, Tolerance:%g" desiredLength v zeroLengthTol
             v*(desiredLength / l)  
 
         member inline v.Unitized  = 
             let l = sqrt(v.X * v.X  + v.Y * v.Y)
             // #if DEBUG add here too? TODO ?
-            if l < zeroLenghtTol then FsExGeoDivByZeroException.Raise "%O is too small for unitizing, Tolerance:%g" v zeroLenghtTol
+            if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "%O is too small for unitizing, Tolerance:%g" v zeroLengthTol
             UnitVc.createUnchecked( v.X/l , v.Y/l)          
         
         member inline v.UnitizedUnchecked =  
@@ -196,7 +196,7 @@ module AutoOpenVc =
         /// Returns vector unitized, fails on zero length vectors
         static member inline unitize (v:Vc) =  
             let l = sqrt((v.X * v.X)  + (v.Y * v.Y))            
-            if l < zeroLenghtTol then FsExGeoDivByZeroException.Raise "%O is too small for unitizing, Tolerance:%g" v zeroLenghtTol
+            if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "%O is too small for unitizing, Tolerance:%g" v zeroLengthTol
             UnitVc.createUnchecked( v.X/l , v.Y/l)
     
         /// Returns vector unitized or Vc(NaN,NaN,NaN) on zero length vectors
@@ -208,7 +208,7 @@ module AutoOpenVc =
         /// Range 0.0 to PI( = 0 to 180 degree)
         static member inline anglePI (a:Vc) (b:Vc) = 
             UnitVc.anglePI a.Unitized b.Unitized             
-            //    let mutable r = b.Direction2PI  - a.Direction2PI     // this does perform slightly worse than using unitising and acos for anglePI       
+            //    let mutable r = b.Direction2PI  - a.Direction2PI     // this does perform slightly worse than using unitizing and acos for anglePI       
             //    if r < 0.      then  r <- r + Util.twoPi 
             //    if r > Math.PI then  r <- Util.twoPi - r 
             //    r
@@ -217,7 +217,7 @@ module AutoOpenVc =
         /// Range 0.0 to PI/2 ( = 0 to 90 degree)
         static member inline angleHalfPI (a:Vc) (b:Vc) = 
             UnitVc.angleHalfPI a.Unitized b.Unitized             
-            //    let mutable r = b.Direction2PI  - a.Direction2PI   // this does perform slightly worse than using unitising and acos for anglePI         
+            //    let mutable r = b.Direction2PI  - a.Direction2PI   // this does perform slightly worse than using unitizing and acos for anglePI         
             //    if r < 0.      then  r <- r + Util.twoPi 
             //    if r > Math.PI then  r <- Util.twoPi - r 
             //    if r > halfPi  then  r <- Math.PI - r 

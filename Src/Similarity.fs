@@ -6,7 +6,7 @@ open System.Collections.Generic
 /// Based on their 2D point clouds.
 /// Within one list of points the order does not matter, but each location must exist only once 
 /// in order to be consider similar within the tolerance.
-/// (this could be extendet to work in 3d too)
+/// (this could be extended to work in 3d too)
 module Similarity2D =  
     
     /// The category is used to only compare groups of the same category.
@@ -17,7 +17,7 @@ module Similarity2D =
         category:string
         bbox:BRect
         points:Pt[] // must be sorted by 'X' property for binary search,  
-        //duplicate points within tolerance will most likly lead to not recogniced similarity (not all indices will be covered in simPts)
+        //duplicate points within tolerance will most likely lead to not recognized similarity (not all indices will be covered in simPts)
         } 
     
     type SimilarityMainGroup = {   
@@ -26,7 +26,7 @@ module Similarity2D =
         } 
     
     /// Returns index of a similar point or -1.    
-    /// Points Arrat ps[] must be sorted by 'X' property. 
+    /// Points Array ps[] must be sorted by 'X' property. 
     let internal simPt tol (ps:Pt[]) (pt:Pt)=     
         let x = pt.X
         let y = pt.Y
@@ -88,7 +88,7 @@ module Similarity2D =
         && rs |> Array.forall id 
     
     /// Takes transformed and pre sorted by category main groups
-    let areSimliar (tol:float) (a:SimilarityMainGroup) (b:SimilarityMainGroup) : bool = 
+    let areSimilar (tol:float) (a:SimilarityMainGroup) (b:SimilarityMainGroup) : bool = 
         let inline sim (a:Pt) (b:Pt)  = 
             abs(a.X - b.X) < tol && abs(a.Y - b.Y) < tol
         
@@ -106,14 +106,14 @@ module Similarity2D =
             ) 
         
     
-    /// The retuned SimilarityMainGroup will have the subgroups sorted by category 
-    /// and each point will be transformed by the the overal bounding box Min point to 0,0.
-    /// Input Position of points does not mattter,  they will be moved to origin by overall bounding box over all lists, 
+    /// The returned SimilarityMainGroup will have the subgroups sorted by category 
+    /// and each point will be transformed by the the overall bounding box Min point to 0,0.
+    /// Input Position of points does not matter,  they will be moved to origin by overall bounding box over all lists, 
     /// But any similarity that could be achieved by Rotation will not be discovered.
     /// The string is used as a unique category identifier.
-    let getSimliarityData (ptss:ResizeArray<string*ResizeArray<Pt>>) : SimilarityMainGroup =         
+    let getSimilarityData (ptss:ResizeArray<string*ResizeArray<Pt>>) : SimilarityMainGroup =         
         let sptss = ptss |> ResizeArray.sortBy fst
-        // compute the overall bounding box and the shifting neded to move box to origin:
+        // compute the overall bounding box and the shifting needed to move box to origin:
         let mutable bb = BRect.create(sptss.[0] |> snd)
         for i=1 to sptss.Count-1 do  
             bb <- BRect.create(sptss.[i] |> snd) |> BRect.union bb
@@ -138,11 +138,11 @@ module Similarity2D =
     /// The list of items and precomputed SimilarityMainGroups must have the same length and correspond to each other at the same index.
     /// SimilarityMainGroups is precomputed for better performance.
     let getGrouped (tolerance,  items:ResizeArray<'T>, sims:ResizeArray<SimilarityMainGroup>) : ResizeArray<ResizeArray<'T>> =  
-        if items.Count<>sims.Count then failwithf "Count missmatch in Similarity2D.getGrouped"
+        if items.Count<>sims.Count then failwithf "Count mismatch in Similarity2D.getGrouped"
         let unique = ResizeArray<SimilarityMainGroup>()
         let groups = Dictionary<int, ResizeArray<'T>>() 
         for sid, it in Seq.zip sims items do  
-            match unique|> ResizeArray.tryFindIndex (areSimliar tolerance sid) with
+            match unique|> ResizeArray.tryFindIndex (areSimilar tolerance sid) with
             | Some i -> 
                 groups.[i].Add it
             | None -> 

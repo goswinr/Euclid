@@ -9,7 +9,7 @@ module AutoOpenPnt =
     type Pnt with   
     
         member inline pt.IsOrigin = pt.X = 0.0 && pt.Y = 0.0 && pt.Z= 0.0
-        member inline pt.IsAlomstOrigin tol = abs pt.X < tol && abs pt.Y < tol  
+        member inline pt.IsAlmostOrigin tol = abs pt.X < tol && abs pt.Y < tol  
        
         //member inline pt.IsInValid =  Double.IsNaN pt.X || Double.IsNaN pt.Y || Double.IsNaN pt.Z || Double.IsInfinity pt.X || Double.IsInfinity pt.Y || Double.IsInfinity pt.Z
         
@@ -23,14 +23,14 @@ module AutoOpenPnt =
         member inline pt.DistFromOriginSquareInXY = pt.X*pt.X + pt.Y*pt.Y
         member inline pt.WithDistFromOrigin (l:float) = 
             let d = pt.DistFromOrigin 
-            if d < zeroLenghtTol then FsExGeoException.Raise "pnt.WithDistFromOrigin  %O is too small to be scaled." pt
+            if d < zeroLengthTol then FsExGeoException.Raise "pnt.WithDistFromOrigin  %O is too small to be scaled." pt
             pt * (l/d) 
         
         /// Returns the Diamond Angle from this point to another point.
         /// The diamond angle is always positive and in the range of 0.0 to 4.0 ( for 360 degrees) 
         /// 0.0 = XAxis,  going Counter clockwise. Ignoring Z component.
         /// This is the fastest angle computation since it does not use Math.Cos or Math.Sin.
-        /// It is usefull for radial sorting.
+        /// It is useful for radial sorting.
         member inline p.DirDiamondTo(o:Pnt) =
             // https://stackoverflow.com/a/14675998/969070            
             let x = o.X-p.X
@@ -61,7 +61,7 @@ module AutoOpenPnt =
         static member Origin = Pnt ( 0. , 0. , 0.) 
         
         /// Accepts any type that has a X, Y and Z (UPPERCASE) member that can be converted to a float. 
-        /// Internally this is not using reflection at runtime but F# Staticaly Resolved Type Parmeters at compile time.
+        /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
         static member inline ofXYZ pt  = 
             let x = ( ^T : (member X : _) pt)
             let y = ( ^T : (member Y : _) pt)
@@ -70,7 +70,7 @@ module AutoOpenPnt =
             with e -> FsExGeoDivByZeroException.Raise "Pnt.ofXYZ: %A could not be converted to a FsEx.Geo.Pnt:\r\n%A" pt e
 
         /// Accepts any type that has a x, y and z (lowercase) member that can be converted to a float. 
-        /// Internally this is not using reflection at runtime but F# Staticaly Resolved Type Parmeters at compile time.
+        /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
         static member inline ofxyz pt  = 
             let x = ( ^T : (member x : _) pt)
             let y = ( ^T : (member y : _) pt)
@@ -130,8 +130,8 @@ module AutoOpenPnt =
         /// Returns the horizontal distance between two points(ignoring their Z Value)
         static member inline distanceXY (a:Pnt) (b:Pnt) = let x = a.X-b.X in let y=a.Y-b.Y in sqrt(x*x + y*y)
        
-        /// Returns the squared distance bewteen two points.
-        /// This operation is slighty faster than the distance function, and sufficient for many algorithms like finding closest points.
+        /// Returns the squared distance between two points.
+        /// This operation is slightly faster than the distance function, and sufficient for many algorithms like finding closest points.
         static member inline distanceSq (a:Pnt) (b:Pnt) = let v = a-b in  v.X*v.X + v.Y*v.Y + v.Z*v.Z
 
         static member inline distFromOrigin (pt:Pnt) = pt.DistFromOrigin
@@ -152,7 +152,7 @@ module AutoOpenPnt =
         static member inline bisector (ptPrev:Pnt, ptThis:Pnt, ptNext:Pnt) =  
             (ptPrev-ptThis).Unitized  + (ptNext-ptThis).Unitized   
     
-        /// For three Points decribing a plane return a normal.
+        /// For three Points describing a plane return a normal.
         /// If the returned vector has length zero then the points are in one Line.
         static member normalOf3Pts (a:Pnt, b:Pnt, c:Pnt) =  Vec.cross (a-b, c-b)    
           
@@ -163,7 +163,7 @@ module AutoOpenPnt =
             let sc = distance/v.Length
             fromPt + v*sc       
        
-        /// Returns a Point by evaluation a line between two point with a normalized patrameter.
+        /// Returns a Point by evaluation a line between two point with a normalized parameter.
         /// e.g. rel=0.5 will return the middle point, rel=1.0 the endPoint
         static member inline divPt(fromPt:Pnt, toPt:Pnt,rel:float) : Pnt  = 
             let v = toPt - fromPt
@@ -176,7 +176,7 @@ module AutoOpenPnt =
             if fromPt.Z < toPt.Z && z < fromPt.Z  then FsExGeoException.Raise "Pnt.extendToZLevel cannot be reached for fromPt:%O toPt:%O z:%g" fromPt toPt z
             if fromPt.Z > toPt.Z && z > fromPt.Z  then FsExGeoException.Raise "Pnt.extendToZLevel cannot be reached for fromPt:%O toPt:%O z:%g" fromPt toPt z
             let dot = abs ( v * Vec.ZAxis)
-            if dot < 0.0001 then  FsExGeoException.Raise "Pnt.extendToZLevel cannot be reached for fromPt:%O toPt:%O because they are boyh at the same level. target z:%g " fromPt toPt z
+            if dot < 0.0001 then  FsExGeoException.Raise "Pnt.extendToZLevel cannot be reached for fromPt:%O toPt:%O because they are both at the same level. target z:%g " fromPt toPt z
             let diffZ = abs (fromPt.Z - z)
             let fac = diffZ / dot
             fromPt + v * fac       
@@ -200,14 +200,14 @@ module AutoOpenPnt =
             let x = toPt.Y - fromPt.Y
             let y = fromPt.X - toPt.X  // this is the same as: Vec.cross v Vec.ZAxis
             let len = sqrt(x*x + y*y)
-            if len < zeroLenghtTol then Vec.XAxis
+            if len < zeroLengthTol then Vec.XAxis
             else Vec(x/len, y/len, 0.0)
        
 
         /// Offsets two points by two given distances.
         /// The fist distance (distHor) is applied in in XY Plane
         /// The second distance (distNormal) is applied perpendicular to the line (made by the two points) and perpendicular to the horizontal offset direction.
-        /// this is in Wolrd.Z direction if both points are at the same Z level.
+        /// this is in World.Z direction if both points are at the same Z level.
         /// If points are closer than than 1e-6 units the World.XAxis is used as first direction and World.ZAxis as second direction.
         static member offsetTwoPt(    fromPt:Pnt,
                             toPt:Pnt,
@@ -243,7 +243,7 @@ module AutoOpenPnt =
             Pnt(x' * sc, y'* sc, z'* sc)     
        
         /// Partially Multiplies the Matrix with a Point. 
-        /// Use this only for affine transfomations that do NOT include a projection 
+        /// Use this only for affine transformations that do NOT include a projection 
         /// and if you need maximum performance
         /// The fields m.M14, m.M24 and m.M34 must be 0.0 and m.M44 must be 1.0
         /// Otherwise use Pnt.transform
@@ -257,7 +257,7 @@ module AutoOpenPnt =
                 ) 
            
         // Multiplies the Matrix with a Point (with an implicit 1 in the 4th dimension)
-        //static member inline ( * ) (matrix:Matrix, pt:Pnt) = //TODO in main declartion ,  not extension
+        //static member inline ( * ) (matrix:Matrix, pt:Pnt) = //TODO in main declaration ,  not extension
         //    Pnt.transform matrix pt
 
         // Rotate 2D and 3D: 

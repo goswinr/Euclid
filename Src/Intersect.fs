@@ -43,7 +43,7 @@ module Intersect =
     let getRelation (ap:Pt, au:UnitVc, al:float, bp:Pt, bu:UnitVc, bl:float, snapThreshold:float) :LineLineRelation=
         let aXb = au.Cross bu //precomputed  cross product 
         
-        if abs(aXb) > zeroLenghtTol then  // not paralell
+        if abs(aXb) > zeroLengthTol then  // not paralell
             let aXbInverse = 1./aXb // invert only once,  then pass it on as inverted value
             let ta = getXPara (ap, aXbInverse, bp, bu)
         

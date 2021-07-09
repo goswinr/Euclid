@@ -12,14 +12,14 @@ type [<Struct>] Plane = // Normals are always unitized
     /// The unitized normal of the Plane
     val Normal : UnitVec
 
-    /// Unsave internal constructor,  public only for inlining.
-    [<Obsolete("Unsave internal constructor,  but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >] 
+    /// Unsafe internal constructor,  public only for inlining.
+    [<Obsolete("Unsafe internal constructor,  but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >] 
     new (pt,n) = {Origin = pt; Normal = n} // private unchecked constructor, suply unitized values
 
     /// Create Plane, normal vector gets unitzised in constructor
     static member create(pt,normal:Vec) = 
         let l = sqrt(normal.X*normal.X+normal.Y*normal.Y+normal.Z*normal.Z) 
-        if l < zeroLenghtTol then FsExGeoDivByZeroException.Raise "FsEx.Geo.Plane.create: %O is too small for unitizing, tolerance:%g" normal zeroLenghtTol
+        if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "FsEx.Geo.Plane.create: %O is too small for unitizing, tolerance:%g" normal zeroLengthTol
         let li=1./l in 
         Plane(pt,UnitVec.createUnchecked( li*normal.X , li*normal.Y ,li*normal.Z ))
 

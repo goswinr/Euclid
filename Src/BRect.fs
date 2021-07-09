@@ -16,8 +16,8 @@ type BRect =
     val MaxX : float
     val MaxY : float
     
-    /// Unsave internal constructor,  public only for inlining.
-    [<Obsolete("Unsave internal constructor,  but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >] 
+    /// Unsafe internal constructor,  public only for inlining.
+    [<Obsolete("Unsafe internal constructor,  but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >] 
     new (minX,minY,maxX,maxY) =
         {MinX = minX
          MinY = minY

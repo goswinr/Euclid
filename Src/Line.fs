@@ -105,9 +105,9 @@ type [<Struct>] Line =
     /// Set Line end point    
     static member inline setEnd pt (ln:Line) = Line (ln.From, pt)
 
-    /// Checks if the signed volume of the parallelepipeds define by three vectors from the four corners is smaller than Util.zeroLenghtTol
+    /// Checks if the signed volume of the parallelepipeds define by three vectors from the four corners is smaller than Util.zeroLengthTol
     static member inline doLinesIntersect (l:Line) (ll:Line) =  
-        abs (Vec.determinant (l.To-l.From,ll.From-l.From,ll.To-l.From)) < zeroLenghtTol
+        abs (Vec.determinant (l.To-l.From,ll.From-l.From,ll.To-l.From)) < zeroLengthTol
 
     /// Returns the parameter on the two lines where these lines are closest to each other
     /// Fails on parallel Lines.
@@ -151,7 +151,7 @@ type [<Struct>] Line =
         let lam = lam * lam
         let v = ln.Tangent
         let f2 = lam*v.Z*v.Z - v.X*v.X - v.Y*v.Y
-        if abs f2 < zeroLenghtTol then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line.xCone failed for special case coneRadius:%g coneBaseZ:%g coneTipZ:%g %O " coneRadius coneBaseZ coneTipZ ln
+        if abs f2 < zeroLengthTol then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line.xCone failed for special case coneRadius:%g coneBaseZ:%g coneTipZ:%g %O " coneRadius coneBaseZ coneTipZ ln
         let f1 = 2.*lam*ln.From.Z*v.Z - 2.*lam*v.Z*coneTipZ - 2.*v.Y*ln.From.Y - 2.*ln.From.X*v.X
         let f0 = lam * ln.From.Z*ln.From.Z + lam*coneTipZ*coneTipZ - 2.*ln.From.Z*coneTipZ*lam - ln.From.Y*ln.From.Y - ln.From.X*ln.From.X
         let sqrtPart = sqrt(f1**2. - 4.*f2*f0)

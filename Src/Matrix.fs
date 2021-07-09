@@ -406,7 +406,7 @@ type Matrix =
     static member createRotationAxis( axis:Vec, angleDegrees:float ) =
         // first unitize
         let len = sqrt (axis.X*axis.X + axis.Y*axis.Y + axis.Z*axis.Z) 
-        if len <  zeroLenghtTol then 
+        if len <  zeroLengthTol then 
             FsExGeoException.Raise "FsEx.Geo.Matrix.createRotationAxis failed on too short axis: %O and rotation: %g° degrees" axis angleDegrees
         let sc = 1. / len
         let x = axis.X * sc

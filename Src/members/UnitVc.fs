@@ -127,13 +127,13 @@ module AutoOpenUnitVc =
         /// Does the unitizing too.
         static member inline ofPt  (pt:Pt) =  
             let l = sqrt (pt.X*pt.X + pt.Y*pt.Y ) 
-            if l <  zeroLenghtTol then FsExGeoDivByZeroException.Raise "UnitVc.ofPt failed on too short %O" pt
+            if l <  zeroLengthTol then FsExGeoDivByZeroException.Raise "UnitVc.ofPt failed on too short %O" pt
             UnitVc.createUnchecked( pt.X / l , pt.Y / l ) 
         
         /// Does the unitizing too.
         static member inline ofVec  (v:Vc) = 
             let l = sqrt (v.X*v.X + v.Y*v.Y ) 
-            if l <  zeroLenghtTol then FsExGeoDivByZeroException.Raise "UnitVc.ofVc failed on too short %O" v
+            if l <  zeroLengthTol then FsExGeoDivByZeroException.Raise "UnitVc.ofVc failed on too short %O" v
             UnitVc.createUnchecked( v.X / l , v.Y / l )         
         
         
@@ -301,9 +301,9 @@ module AutoOpenUnitVc =
 
         
 
-        //[<Obsolete("Unsave Member") >]
+        //[<Obsolete("Unsafe Member") >]
         //static member Zero = UnitVc ( 0. , 0.)  // needed by 'Array.sum' 
-        //[<Obsolete("Unsave Member") >]
+        //[<Obsolete("Unsafe Member") >]
         //static member inline DivideByInt (v:UnitVc, i:int) = if i<>0 then v / float i else failwithf "DivideByInt 0 %O " v // needed by  'Array.average'  
         
         

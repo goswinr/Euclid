@@ -29,12 +29,12 @@ module AutoOpenVec =
     
         member inline v.WithLength (desiredLength:float) =  
             let l = sqrt(v.X*v.X+v.Y*v.Y+v.Z*v.Z) 
-            if l < zeroLenghtTol then FsExGeoDivByZeroException.Raise "Vec.WithLength %g : %O is too small for unitizing, Tolerance:%g" desiredLength v zeroLenghtTol
+            if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "Vec.WithLength %g : %O is too small for unitizing, Tolerance:%g" desiredLength v zeroLengthTol
             v*(desiredLength / l)            
             
         member inline v.Unitized =  
             let l = sqrt(v.X*v.X+v.Y*v.Y+v.Z*v.Z) 
-            if l < zeroLenghtTol then FsExGeoDivByZeroException.Raise "%O is too small for unitizing, Tolerance:%g" v zeroLenghtTol
+            if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "%O is too small for unitizing, Tolerance:%g" v zeroLengthTol
             let li=1./l in 
             UnitVec.createUnchecked( li*v.X , li*v.Y ,li*v.Z )             
     
@@ -53,7 +53,7 @@ module AutoOpenVec =
         member inline v.DirDiamondInXY =
             // https://stackoverflow.com/a/14675998/969070            
             #if DEBUG 
-            if abs(v.X) < zeroLenghtTol && abs(v.Y) < zeroLenghtTol then 
+            if abs(v.X) < zeroLengthTol && abs(v.Y) < zeroLengthTol then 
                 FsExGeoDivByZeroException.Raise "Vec.DirDiamondInXY: input vector is vertical or zero length:%O" v
             #endif
             if v.Y >= 0.0 then 
@@ -72,7 +72,7 @@ module AutoOpenVec =
         member inline v.Angle2PiInXY =
             // https://stackoverflow.com/a/14675998/969070
             #if DEBUG 
-            if abs(v.X) < zeroLenghtTol && abs(v.Y) < zeroLenghtTol then 
+            if abs(v.X) < zeroLengthTol && abs(v.Y) < zeroLengthTol then 
                 FsExGeoDivByZeroException.Raise "Vec.Angle2PIInXY: input vector is vertical or zero length:%O" v
             #endif
             let a = Math.Atan2(v.Y, v.X) 
@@ -139,7 +139,7 @@ module AutoOpenVec =
         static member inline setLength  f (v:Vec) = v.WithLength f    
 
         /// Accepts any type that has a X, Y and Z (UPPERCASE) member that can be converted to a float. 
-        /// Internally this is not using reflection at runtime but F# Staticaly Resolved Type Parmeters at compile time.
+        /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
         static member inline ofXYZ vec  = 
             let x = ( ^T : (member X : _) vec)
             let y = ( ^T : (member Y : _) vec)
@@ -148,7 +148,7 @@ module AutoOpenVec =
             with e -> FsExGeoDivByZeroException.Raise "Vec.ofXYZ: %A could not be converted to a FsEx.Geo.Vec:\r\n%A" vec e
         
         /// Accepts any type that has a x, y and z (lowercase) member that can be converted to a float. 
-        /// Internally this is not using reflection at runtime but F# Staticaly Resolved Type Parmeters at compile time.
+        /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
         static member inline ofxyz vec  = 
             let x = ( ^T : (member x : _) vec)
             let y = ( ^T : (member y : _) vec)
@@ -224,7 +224,7 @@ module AutoOpenVec =
             else r + Util.twoPi 
 
         /// Returns positive angle of two Vector projected in XY Plane in Degrees
-        /// Considering positve rotation round the World ZAxis
+        /// Considering positive rotation round the World ZAxis
         /// Range:  0 to 360 degrees
         static member inline angle360InXY (a:Vec, b:Vec)   = 
             Vec.angle2PiInXY (a, b) |> toDegrees
@@ -287,20 +287,20 @@ module AutoOpenVec =
         static member inline lengthInXY(v:Vec) = sqrt(v.X * v.X  + v.Y * v.Y)
 
         /// Checks if a vector is vertical by doing:
-        /// abs(v.X) + abs(v.Y) < zeroLenghtTol
-        /// fails on tiny (shorter than zeroLenghtTol) vectors
+        /// abs(v.X) + abs(v.Y) < zeroLengthTol
+        /// fails on tiny (shorter than zeroLengthTol) vectors
         static member inline isVertical (v:Vec) =             
-            if v.IsTiny(zeroLenghtTol) then FsExGeoDivByZeroException.Raise "Vec Cannot not check very tiny vector for verticality %O" v
-            abs(v.X) + abs(v.Y) < zeroLenghtTol
+            if v.IsTiny(zeroLengthTol) then FsExGeoDivByZeroException.Raise "Vec Cannot not check very tiny vector for verticality %O" v
+            abs(v.X) + abs(v.Y) < zeroLengthTol
 
         /// Checks if a vector is horizontal  by doing:
-        /// abs(v.Z) < zeroLenghtTol
-        /// Fails on tiny (shorter than zeroLenghtTol) vectors
+        /// abs(v.Z) < zeroLengthTol
+        /// Fails on tiny (shorter than zeroLengthTol) vectors
         static member inline isHorizontal (v:Vec) =            
-             if v.IsTiny(zeroLenghtTol) then FsExGeoDivByZeroException.Raise "Vec Cannot not check very tiny vector for horizontality %O" v
-             abs(v.Z) < zeroLenghtTol     
+             if v.IsTiny(zeroLengthTol) then FsExGeoDivByZeroException.Raise "Vec Cannot not check very tiny vector for horizontality %O" v
+             abs(v.Z) < zeroLengthTol     
 
-        /// Unitize vector, if input vector is shorter than 1e-6 alternative vector is returned (without beeing unitized).
+        /// Unitize vector, if input vector is shorter than 1e-6 alternative vector is returned (without being unitized).
         static member inline unitizeWithAlternative (unitVectorAlt:Vec) (v:Vec) = 
             let l = v.LengthSq
             if l < 1e-12  then  //sqrt (1e-06)
@@ -327,7 +327,7 @@ module AutoOpenVec =
         /// in relation to XY Plane
         /// 100% = 45 degrees
         static member inline slopePercent (v:Vec) = 
-            if abs(v.Z) < zeroLenghtTol then FsExGeoDivByZeroException.Raise "UnitVec.slopePercent: Can't get Slope from vertical vector %O" v
+            if abs(v.Z) < zeroLengthTol then FsExGeoDivByZeroException.Raise "UnitVec.slopePercent: Can't get Slope from vertical vector %O" v
             let f = Vec(v.X, v.Y, 0.0)
             100.0 * (v.Z/f.Length)
 
@@ -346,8 +346,8 @@ module AutoOpenVec =
         
 
         /// Check if vector has a positive dot product with given orientation vector
-        static member inline doesOrientationMatch (orientationToCkeck:Vec) (v:Vec) = 
-            orientationToCkeck * v > 0.0        
+        static member inline doesOrientationMatch (orientationToCheck:Vec) (v:Vec) = 
+            orientationToCheck * v > 0.0        
 
         /// Returns a perpendicular horizontal vector. Rotated counterclockwise.        
         /// Just does Vec(-v.Y, v.X, 0.0) 
@@ -357,7 +357,7 @@ module AutoOpenVec =
 
 
         /// Returns a vector that is perpendicular to the given vector and in the same vertical Plane.        
-        /// Projected into the XY Plane input and output vectors are parallell and of same orientation.
+        /// Projected into the XY Plane input and output vectors are parallel and of same orientation.
         /// Not of same length, not unitized.
         /// On vertical input vector resulting vector if of zero length. 
         static member inline perpendicularInVerticalPlane (v:Vec) = 
@@ -382,7 +382,7 @@ module AutoOpenVec =
             Vec(x' * sc, y'* sc, z'* sc)     
        
         /// Partially Multiplies the Matrix with a Vector. 
-        /// Use this only for affine transfomations that do NOT include a projection 
+        /// Use this only for affine transformations that do NOT include a projection 
         /// and if you need maximum performance
         /// The fields m.M14, m.M24 and m.M34 must be 0.0 and m.M44 must be 1.0
         /// Otherwise use Pnt.transform
@@ -395,6 +395,6 @@ module AutoOpenVec =
                 , m.M13*x + m.M23*y + m.M33*z + m.Z43 
                 )
                 
-        //[<Obsolete("Unsave Member") >]
+        //[<Obsolete("Unsafe Member") >]
         //static member inline DivideByInt (v:UnitVec, i:int) = if i<>0 then v / float i else failwithf "DivideByInt 0 %O " v // needed by  'Array.average'
 

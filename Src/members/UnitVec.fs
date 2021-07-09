@@ -37,7 +37,7 @@ module AutoOpenUnitVec =
         member inline v.DirDiamondInXY =
             // https://stackoverflow.com/a/14675998/969070            
             #if DEBUG 
-            if abs(v.X) < zeroLenghtTol && abs(v.Y) < zeroLenghtTol then FsExGeoDivByZeroException.Raise "UnitVec.DirDiamondInXY: input vector is vertical or zero length:%O" v
+            if abs(v.X) < zeroLengthTol && abs(v.Y) < zeroLengthTol then FsExGeoDivByZeroException.Raise "UnitVec.DirDiamondInXY: input vector is vertical or zero length:%O" v
             #endif
             if v.Y >= 0.0 then 
                 if v.X >= 0.0 then   
@@ -55,7 +55,7 @@ module AutoOpenUnitVec =
         member inline v.Angle2PIInXY =
             // https://stackoverflow.com/a/14675998/969070
             #if DEBUG 
-            if abs(v.X) < zeroLenghtTol && abs(v.Y) < zeroLenghtTol then FsExGeoDivByZeroException.Raise "UnitVec.Angle2PIInXY: input vector is vertical or zero length:%O" v
+            if abs(v.X) < zeroLengthTol && abs(v.Y) < zeroLengthTol then FsExGeoDivByZeroException.Raise "UnitVec.Angle2PIInXY: input vector is vertical or zero length:%O" v
             #endif
             let a = Math.Atan2(v.Y, v.X) 
             if a < 0. then  
@@ -133,14 +133,14 @@ module AutoOpenUnitVec =
         /// Does the unitizing too.
         static member inline ofPnt  (pt:Pnt) =  
             let l = sqrt (pt.X*pt.X + pt.Y*pt.Y + pt.Z*pt.Z) 
-            if l <  zeroLenghtTol then FsExGeoDivByZeroException.Raise "UnitVec.ofPnt failed on too short %O" pt
+            if l <  zeroLengthTol then FsExGeoDivByZeroException.Raise "UnitVec.ofPnt failed on too short %O" pt
             let li = 1. / l
             UnitVec.createUnchecked( li*pt.X , li*pt.Y , li*pt.Z ) 
         
         /// Does the unitizing too.
         static member inline ofVec (v:Vec) = 
             let l = sqrt (v.X*v.X + v.Y*v.Y + v.Z*v.Z) 
-            if l <  zeroLenghtTol then FsExGeoDivByZeroException.Raise "UnitVec.ofVec failed on too short %O" v
+            if l <  zeroLengthTol then FsExGeoDivByZeroException.Raise "UnitVec.ofVec failed on too short %O" v
             let li = 1. / l
             UnitVec.createUnchecked( li*v.X , li*v.Y , li*v.Z )       
         
@@ -282,19 +282,19 @@ module AutoOpenUnitVec =
         static member inline lengthInXY(v:UnitVec) = sqrt(v.X * v.X  + v.Y * v.Y)
 
         /// Checks if a vector is vertical by doing:
-        /// abs(v.X) + abs(v.Y) < zeroLenghtTol
+        /// abs(v.X) + abs(v.Y) < zeroLengthTol
         static member inline isVertical (v:UnitVec) =             
-            abs(v.X) + abs(v.Y) < zeroLenghtTol
+            abs(v.X) + abs(v.Y) < zeroLengthTol
 
         /// Checks if a vector is horizontal  by doing:
-        /// abs(v.Z) < zeroLenghtTol
+        /// abs(v.Z) < zeroLengthTol
         static member inline isHorizontal (v:UnitVec) =             
-            abs(v.Z) < zeroLenghtTol     
+            abs(v.Z) < zeroLengthTol     
 
         /// Returns positive or negative slope of a vector in Radians
         /// in relation to XY Plane
         static member inline slopeRad (v:UnitVec) = 
-            v.Y |> clamp11 |> acos           
+            v.Y |> acosSafe          
 
         /// Returns positive or negative slope of a vector in Degrees
         /// in relation to XY Plane
@@ -305,7 +305,7 @@ module AutoOpenUnitVec =
         /// in relation to XY Plane
         /// 100% = 45 degrees
         static member inline slopePercent (v:UnitVec) = 
-            if abs(v.Z) < zeroLenghtTol then FsExGeoDivByZeroException.Raise "UnitVec.slopePercent: Can't get Slope from vertical vector %O" v
+            if abs(v.Z) < zeroLengthTol then FsExGeoDivByZeroException.Raise "UnitVec.slopePercent: Can't get Slope from vertical vector %O" v
             let l = UnitVec.lengthInXY v
             100.0 * (v.Z/l)
 
@@ -342,9 +342,9 @@ module AutoOpenUnitVec =
             if v.Z < 0.0 then -r else r
 
 
-        //[<Obsolete("Unsave Member") >]
+        //[<Obsolete("Unsafe Member") >]
         //static member Zero = Vec ( 0. , 0. , 0.)  // needed by 'Array.sum' 
-        //[<Obsolete("Unsave Member") >]
+        //[<Obsolete("Unsafe Member") >]
         //static member inline DivideByInt (v:UnitVec, i:int) = if i<>0 then v / float i else failwithf "DivideByInt 0 %O " v // needed by  'Array.average'  
 
 

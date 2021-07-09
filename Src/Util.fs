@@ -1,25 +1,25 @@
 namespace FsEx.Geo
-
+open System
 
 
 /// Exception in FsEx.Geo
 type FsExGeoException (s:string) = 
-   inherit System.Exception(s)
+    inherit System.Exception(s)
 
-   static member inline Raise msg = raise (new FsExGeoException(msg))
+    static member inline Raise msg = raise (new FsExGeoException(msg))
 
 /// Exception values that are too small to y a divisor
 type FsExGeoDivByZeroException (s:string) = 
-   inherit System.Exception(s)
+    inherit System.Exception(s)
 
-   static member inline Raise msg = raise (new FsExGeoDivByZeroException(msg))
+    static member inline Raise msg = raise (new FsExGeoDivByZeroException(msg))
 
 
 module Util =
     
     /// Tolerance for zero length: 1e-16 in divisions
     [<Literal>]
-    let zeroLenghtTol = 1e-16 
+    let zeroLengthTol = 1e-16 
     
     /// Converts Angels from Degrees to Radians
     let inline toRadians degrees =  0.0174532925199433 * degrees //  Math.PI / 180.
@@ -45,6 +45,15 @@ module Util =
         elif x >  1.0 then  1.0
         else                x    
 
+    /// A safe arcsine (Inverse sine) function.
+    /// It clamps the input between -1 and 1
+    let inline asinSafe a = a|> clamp11|> Math.Asin
+
+
+    /// A safe arccosine (Inverse cosine) function.
+    /// It clamps the input between -1 and 1
+    let inline acosSafe a = a|> clamp11|> Math.Acos
+
     /// Tests if a number is close to 1.0 by maximum 6 steps of float increment or decrement.
     /// So between 0.99999964 and 1.000000715.
     /// See https://float.exposed
@@ -60,7 +69,7 @@ module Util =
         -0.999999642372131347656 > x && x > -1.00000071525573730469 
         
     /// Tests if a number is close to 0.0 by 1e-7
-    /// This is aproximatly the same tolerance that 6 incremets of a float are away from 1.0.
+    /// This is approximately the same tolerance that 6 increments of a float are away from 1.0.
     /// See FsEx.Geo.Util.isOne function
     let inline isZero x = 
         -1e-7 < x && x < 1e-7 

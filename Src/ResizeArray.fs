@@ -108,7 +108,7 @@ module AutoOpenResizeArray =
                 result.Add rarr.[i]
             result
 
-        /// <summary>Returns the inedx of the smallest of all elements of the ResizeArray, compared via Operators.max on the function result.</summary>
+        /// <summary>Returns the index of the smallest of all elements of the ResizeArray, compared via Operators.max on the function result.</summary>
         /// <param name="projection">The function to transform the elements into a type supporting comparison.</param>
         /// <param name="rarr">The input ResizeArray.</param>        
         /// <returns>The index of the smallest element.</returns>
@@ -124,7 +124,7 @@ module AutoOpenResizeArray =
                     mf <- f
             ii 
           
-        /// <summary>Returns the inedx of the greatest of all elements of the ResizeArray, compared via Operators.max on the function result.</summary>
+        /// <summary>Returns the index of the greatest of all elements of the ResizeArray, compared via Operators.max on the function result.</summary>
         /// <param name="projection">The function to transform the elements into a type supporting comparison.</param>
         /// <param name="rarr">The input ResizeArray.</param>        
         /// <returns>The index of the maximum element.</returns>

@@ -35,7 +35,7 @@ module AutoOpenPt =
         
         member inline pt.WithDistFromOrigin (l:float) = 
             let d = pt.DistanceFromOrigin 
-            if d < zeroLenghtTol then FsExGeoException.Raise "pnt.WithDistFromOrigin  %O is too small to be scaled" pt
+            if d < zeroLengthTol then FsExGeoException.Raise "pnt.WithDistFromOrigin  %O is too small to be scaled" pt
             pt * (l/d) 
         
         /// Returns the Diamond Angle from this point to another point.        

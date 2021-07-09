@@ -2,7 +2,7 @@ namespace FsEx.Geo
 
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
-open Util    
+open FsEx.Geo.Util    
 
 #nowarn "44" // for hidden constructors via Obsolete Attribute
 
@@ -19,8 +19,8 @@ type Quaternion =
     val Z:float  
     val W:float
      
-    /// Unsave internal constructor,  public only for inlining.
-    [<Obsolete("Unsave internal constructor,  but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >] 
+    /// Unsafe internal constructor,  public only for inlining.
+    [<Obsolete("Unsafe internal constructor,  but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >] 
     new (x,y,z,w) = 
         #if DEBUG
         let l = x*x  + y*y + z*z + w*w 
@@ -46,12 +46,12 @@ type Quaternion =
                  
     member q.Conjugate = Quaternion (-q.X, -q.Y, -q.Z, q.W)  
      
-    /// Should allways be 1.0
+    /// Should always be 1.0
     member q.Magnitude = sqrt (q.X*q.X + q.Y*q.Y + q.Z*q.Z + q.W*q.W) 
      
     /// Returns Angle in Radians 
     member q.AngleInRadians =  
-        q.W |> Util.clamp11 |> acos |> ( * ) 2.0 
+        q.W |> acosSafe |> ( * ) 2.0 
 
     /// Returns Angle in Degree 
     member q.AngleInDegrees =  
@@ -60,7 +60,7 @@ type Quaternion =
     /// This constructor does unitizing too
     static member create (x,y,z,w)  =  
         let l = sqrt(x*x  + y*y + z*z + w*w )
-        if abs l < zeroLenghtTol then  
+        if abs l < zeroLengthTol then  
             FsExGeoException.Raise "FsEx.Geo.Quaternion create failed for x:%g, y:%g, z:%g, w:%g. The length needs to be bigge than zero" x y z w
         let sc = 1./l
         Quaternion(x*sc,y*sc,z*sc,w*sc)
@@ -69,7 +69,7 @@ type Quaternion =
     /// The vector may be of any length but zero.
     static member createFromRadians (axis:Vec, angleInRadians)  =        
         let length = sqrt(axis.X*axis.X + axis.Y*axis.Y + axis.Z*axis.Z) 
-        if length <  zeroLenghtTol then // TODO or return identity Quaternion ?
+        if length <  zeroLengthTol then // TODO or return identity Quaternion ?
             FsExGeoException.Raise "FsEx.Geo.Quaternion.createFromRadians failed too short axis: %O and rotation: %g° degrees" axis (toDegrees angleInRadians)
         let angHalf = angleInRadians * 0.5
         let sa = sin angHalf
@@ -93,7 +93,7 @@ type Quaternion =
     /// Creates a rotation from one vector to another (both of non zero length)  
     static member createFromVectors( vFrom:UnitVec, vTo:UnitVec ) =
         let mutable r = vFrom * vTo  + 1.0
-        if  r < zeroLenghtTol  then // vFrom and vTo point in opposite directions            
+        if  r < zeroLengthTol  then // vFrom and vTo point in opposite directions            
             r <- 0.0
             if  abs vFrom.X  > abs vFrom.Z   then   Quaternion.create ( -vFrom.Y  , vFrom.X   , 0       , r)
             else                                    Quaternion.create (0          ,- vFrom.Z  ,vFrom.Y  , r)
@@ -108,18 +108,18 @@ type Quaternion =
     static member createFromVectors( vFrom:Vec, vTo:Vec ) =
         let vFrom = 
             let length = sqrt(vFrom.X*vFrom.X + vFrom.Y*vFrom.Y + vFrom.Z*vFrom.Z) 
-            if length <  zeroLenghtTol then // TODO or return identity Quaternion ?
+            if length <  zeroLengthTol then // TODO or return identity Quaternion ?
                 FsExGeoException.Raise "FsEx.Geo.Quaternion.createFromVectors failed too short vector vFrom: %O" vFrom 
             let sc =  1. / length // inverse for unitizing vector:
             UnitVec.createUnchecked(vFrom.X*sc, vFrom.Y*sc, vFrom.Z*sc)
         let vTo = 
             let length = sqrt(vTo.X*vTo.X + vTo.Y*vTo.Y + vTo.Z*vTo.Z) 
-            if length <  zeroLenghtTol then // TODO or return identity Quaternion ?
+            if length <  zeroLengthTol then // TODO or return identity Quaternion ?
                 FsExGeoException.Raise "FsEx.Geo.Quaternion.createFromVectors failed too short vector vTo: %O" vTo 
             let sc =  1. / length // inverse for unitizing vector:
             UnitVec.createUnchecked(vTo.X*sc, vTo.Y*sc, vTo.Z*sc)
         let mutable r = vFrom * vTo  + 1.0
-        if  r < zeroLenghtTol  then // vFrom and vTo point in opposite directions            
+        if  r < zeroLengthTol  then // vFrom and vTo point in opposite directions            
             r <- 0.0
             if  abs vFrom.X  > abs vFrom.Z   then   Quaternion.create ( -vFrom.Y  , vFrom.X   , 0       , r)
             else                                    Quaternion.create (0          ,- vFrom.Z  ,vFrom.Y  , r)
@@ -274,15 +274,15 @@ type Quaternion =
     /// 1) Rotate Frame A about its Z axis by angle Gamma;
     /// 2) Rotate the resulting frame about its (new) Y axis by angle Beta;
     /// 3) Rotate the resulting frame about its (new) X axis by angle Alpha, to arrive at frame B.
-    /// Returns the angels in degrees as triple. For rotaiong first round the axis Z then local Y and finaly local X.
+    /// Returns the angels in degrees as triple. For rotating first round the axis Z then local Y and finally local X.
     /// see Quaternion.createFromEulerZYX(z,y,x)
     static member toEulerAnglesZYX(q:Quaternion) : float*float*float = 
         // from https://github.com/mathnet/mathnet-spatial/blob/master/src/Spatial/Euclidean/Quaternion.cs#L491
-        toDegrees <| Math.Atan2(             2.0 * (q.W*q.Z + q.X*q.Y),  q.W*q.W + q.X*q.X - q.Y*q.Y - q.Z*q.Z)
+        toDegrees <| Math.Atan2( 2.0 * (q.W*q.Z + q.X*q.Y),  q.W*q.W + q.X*q.X - q.Y*q.Y - q.Z*q.Z)
         ,
-        toDegrees <|  asin ( Util.clamp11 <| 2.0 * (q.W*q.Y - q.X*q.Z))
+        toDegrees <|  asinSafe (2.0 * (q.W*q.Y - q.X*q.Z))
         ,
-        toDegrees  <| Math.Atan2(             2.0 * (q.W*q.X + q.Y*q.Z),  q.W*q.W + q.Z*q.Z - q.X*q.X - q.Y*q.Y)
+        toDegrees  <| Math.Atan2(2.0 * (q.W*q.X + q.Y*q.Z),  q.W*q.W + q.Z*q.Z - q.X*q.X - q.Y*q.Y)
      
 
        

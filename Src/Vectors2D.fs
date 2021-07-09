@@ -32,7 +32,7 @@ type Vc =
 
     static member inline ( / )  (v:Vc, f:float) = 
         #if DEBUG
-        if abs f < Util.zeroLenghtTol then FsExGeoDivByZeroException.Raise "%g is too small for dividing %O using / operator. Tolerance:%g"  f v zeroLenghtTol
+        if abs f < Util.zeroLengthTol then FsExGeoDivByZeroException.Raise "%g is too small for dividing %O using / operator. Tolerance:%g"  f v zeroLengthTol
         #endif
         Vc (v.X / f , v.Y / f ) 
 
@@ -48,8 +48,8 @@ type UnitVc =
     val X : float
     val Y : float
 
-    /// Unsave internal constructor, doesn't check or unitize the input,  public only for inlining.
-    [<Obsolete("Unsave internal constructor, doesn't check or unitize the input, but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >] 
+    /// Unsafe internal constructor, doesn't check or unitize the input,  public only for inlining.
+    [<Obsolete("Unsafe internal constructor, doesn't check or unitize the input, but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >] 
     new (x,y) = 
         #if DEBUG
         let l = x*x + y*y // TODO : with this test all  operations are 2.5 times slower  
@@ -74,7 +74,7 @@ type UnitVc =
 
     static member inline ( / )  (v:UnitVc, f:float) = 
         #if DEBUG
-        if abs f < Util.zeroLenghtTol then  FsExGeoDivByZeroException.Raise "%g is too small for dividing %O using / operator. Tolerance:%g" f v zeroLenghtTol
+        if abs f < Util.zeroLengthTol then  FsExGeoDivByZeroException.Raise "%g is too small for dividing %O using / operator. Tolerance:%g" f v zeroLengthTol
         #endif
         Vc (v.X / f , v.Y / f ) 
     
@@ -86,7 +86,7 @@ type UnitVc =
         // this member cant be an extension method because it is used with SRTP. 
         // see error FS1114: The value 'FsEx.Geo.AutoOpenUnitVc.create' was marked inline but was not bound in the optimization environment
         let l = sqrt(x * x  + y * y)                     
-        if l < zeroLenghtTol then FsExGeoDivByZeroException.Raise "UnitVc.create: x:%g and z:%g are too small for creating a Unit vector. Tolerance:%g" x y zeroLenghtTol        
+        if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "UnitVc.create: x:%g and z:%g are too small for creating a Unit vector. Tolerance:%g" x y zeroLengthTol        
         UnitVc( x/l , y/l )  
 
 /// A 2D Point (3D Points are called 'Pnt') 
@@ -119,5 +119,5 @@ type Pt =
     static member inline ( * )  (f:float, a:Pt  ) = Pt (a.X * f , a.Y * f ) // scale Vector   
 
     static member inline ( / )  (p:Pt, f:float) = 
-        if abs f > Util.zeroLenghtTol then  Pt (p.X / f , p.Y / f ) 
-        else FsExGeoDivByZeroException.Raise "%g is too small for dividing %O using '/' operator. Tolerance:%g" f p zeroLenghtTol
+        if abs f > Util.zeroLengthTol then  Pt (p.X / f , p.Y / f ) 
+        else FsExGeoDivByZeroException.Raise "%g is too small for dividing %O using '/' operator. Tolerance:%g" f p zeroLengthTol
