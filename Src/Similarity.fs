@@ -10,18 +10,18 @@ open System.Collections.Generic
 module Similarity2D =  
     
     /// The category is used to only compare groups of the same category.
-    /// The bounding box of the points is used as a fast and first check for similarity.
+    /// The bounding Rectangle of the points is used as a fast and first check for similarity.
     /// Within one list of points the order does not matter, but each location must exist only once 
     /// in order to be consider similar within the tolerance with another SimilaritySubGroup
     type SimilaritySubGroup =  { 
         category:string
-        bbox:BRect
+        bRect:BRect
         points:Pt[] // must be sorted by 'X' property for binary search,  
         //duplicate points within tolerance will most likely lead to not recognized similarity (not all indices will be covered in simPts)
         } 
     
     type SimilarityMainGroup = {   
-        extend: Pt // represents the max value of a bounding box ,  min value must be x0, y0
+        extend: Pt // represents the max value of a bounding Rectangle ,  min value must be x0, y0
         groups: SimilaritySubGroup[] // must be sorted by 'category' property. for Array.forall2 function       
         } 
     
@@ -92,7 +92,7 @@ module Similarity2D =
         let inline sim (a:Pt) (b:Pt)  = 
             abs(a.X - b.X) < tol && abs(a.Y - b.Y) < tol
         
-        let inline simBox (a:BRect) (b:BRect)  = 
+        let inline simRect (a:BRect) (b:BRect)  = 
             sim a.MinPt b.MinPt    
             && sim a.MaxPt b.MaxPt    
         
@@ -101,19 +101,19 @@ module Similarity2D =
         && (a.groups , b.groups) ||> Array.forall2 (fun x y ->  
             x.category=y.category                                    
             && x.points.Length = x.points.Length            
-            && simBox x.bbox y.bbox                         
+            && simRect x.bRect y.bRect                         
             && simPts tol x.points y.points                 
             ) 
         
     
     /// The returned SimilarityMainGroup will have the subgroups sorted by category 
-    /// and each point will be transformed by the the overall bounding box Min point to 0,0.
-    /// Input Position of points does not matter,  they will be moved to origin by overall bounding box over all lists, 
+    /// and each point will be transformed by the the overall bounding Rectangle Min point to 0,0.
+    /// Input Position of points does not matter,  they will be moved to origin by overall bounding Rectangle over all lists, 
     /// But any similarity that could be achieved by Rotation will not be discovered.
     /// The string is used as a unique category identifier.
     let getSimilarityData (ptss:ResizeArray<string*ResizeArray<Pt>>) : SimilarityMainGroup =         
         let sptss = ptss |> ResizeArray.sortBy fst
-        // compute the overall bounding box and the shifting needed to move box to origin:
+        // compute the overall bounding Rectangle and the shifting needed to move Rectangle to origin:
         let mutable bb = BRect.create(sptss.[0] |> snd)
         for i=1 to sptss.Count-1 do  
             bb <- BRect.create(sptss.[i] |> snd) |> BRect.union bb
@@ -128,7 +128,7 @@ module Similarity2D =
                 let bb = BRect.create(ps)
                 { 
                 category=n
-                bbox=bb
+                bRect=bb
                 points=ps
                 }
             |]

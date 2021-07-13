@@ -69,7 +69,7 @@ module Intersect =
                 elif tb > bl + snapThreshold && isParamStillMoreThanLengthAfterOffsets (bp, bu, bXaInverse, bl, ap, au, snapThreshold) then  
                     NoIntersection
                 else  
-                    if aXb > 0.0 then BfromRight (ta, tb) // TODO might still be almost colinear. was an intersection very far ousidse bounding boxes.
+                    if aXb > 0.0 then BfromRight (ta, tb) // TODO might still be almost colinear. was an intersection very far ousidse bounding Rectangles.
                     else              BfromLeft  (ta, tb) // TODO could to be almost coliniear too, check offset  !!
 
         else // Colinear

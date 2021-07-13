@@ -20,27 +20,27 @@ type PointLoopRel =
 /// Checked for too short segments and duplicate points bu might have colinear points.
 /// Counterclockwise.
 /// Checked for self intersection.
-/// This class stores for each segment precomputed list of unit vectors, lengths and bounding boxes. 
+/// This class stores for each segment precomputed list of unit vectors, lengths and bounding Rectangles. 
 /// This is to have better performance when calculating Loop with Loop intersections or point containment.
 type Loop private ( pts:ResizeArray<Pt>
                   , unitVcts:UnitVc[]
-                  , bboxes:BRect[] 
+                  , bRects:BRect[] 
                   , lens:float[] 
                   , xys:float[] // TODO is this needed to be always precomputed ?
                   , area:float
                   , minSegmentLength:float
                   , snapThreshold:float
-                  , eBox:BRect
+                  , bRect:BRect
                   ) =    
 
     /// Without sign, since loop is guaranteed to be Counter Clockwise
     /// This Value is precomputed in constructor
     member _.Area = area
 
-    /// A List of precomputed Bounding Boxes for each segment.
-    /// Each Bounding Box is expanded by SnapThreshold
+    /// A List of precomputed Bounding Rectangles for each segment.
+    /// Each Bounding Rectangle is expanded by SnapThreshold
     /// This list is one item shorter than Points
-    member _.BBoxes = bboxes
+    member _.BRects = bRects
     
     /// A List of precomputed UnitVectors for each segment.
     /// This list is one item shorter than Points
@@ -57,16 +57,16 @@ type Loop private ( pts:ResizeArray<Pt>
     /// Last pair is not equal first pair.
     member _.XandYs = xys
 
-    /// This list is one item Longer than Vectors , BBoxes or Lengths
+    /// This list is one item Longer than Vectors , BRects or Lengths
     /// Last Point equals first Point
     member _.Points = pts
              
     /// One less than Points count 
     member val SegmentCount = unitVcts.Length  
         
-    /// The overall Bounding Box. 
+    /// The overall Bounding Rectangle. 
     /// Including an expansion by snapThreshold.
-    member _.ExpandedBoundingBox = eBox
+    member _.ExpandedBoundingRect = bRect
     
     /// The minimum distance between points in this loop, This is a paramter at creation.
     member _.MinSegmentLength = minSegmentLength
@@ -77,8 +77,8 @@ type Loop private ( pts:ResizeArray<Pt>
     member _.SnapThreshold = snapThreshold           
 
     /// Creates a deep copy
-    member _.Clone() = Loop(pts.GetRange(0,pts.Count), Array.copy unitVcts, Array.copy bboxes, Array.copy lens, Array.copy xys, 
-                            area, minSegmentLength, snapThreshold, eBox )
+    member _.Clone() = Loop(pts.GetRange(0,pts.Count), Array.copy unitVcts, Array.copy bRects, Array.copy lens, Array.copy xys, 
+                            area, minSegmentLength, snapThreshold, bRect )
 
     /// Returns closest segment index        
     member lo.ClosestSegment (pt:Pt) :int=  
@@ -132,7 +132,7 @@ type Loop private ( pts:ResizeArray<Pt>
     member lo.ContainsPoint(pt:Pt) =  
         // this implementation using the closest two segments is always correct.
         // faster implementations such as counting the crossings of a horizontal ray do fail if several loop segments are on the x axis and the test point too.
-        if not <| lo.ExpandedBoundingBox.Contains(pt) then  // the bounding box includes an expansion by snap SnapThreshold
+        if not <| lo.ExpandedBoundingRect.Contains(pt) then  // the bounding Rectangle includes an expansion by snap SnapThreshold
             PointLoopRel.Out
         else
             let ps = lo.Points
@@ -212,11 +212,11 @@ type Loop private ( pts:ResizeArray<Pt>
             if sa < 0. then  pts.Reverse() ;  -sa
             else sa 
                 
-        let mutable xmin, ymin = Double.MaxValue, Double.MaxValue // for overall bounding box
+        let mutable xmin, ymin = Double.MaxValue, Double.MaxValue // for overall bounding Rectangle
         let mutable xmax, ymax = Double.MinValue, Double.MinValue
                 
-        // loop again to precalculate vectors ,  unit vectors,   BBoxes,  and lengths
-        let  unitVcts, bboxes , lens , xys=        
+        // loop again to precalculate vectors ,  unit vectors,   BRects,  and lengths
+        let  unitVcts, bRects , lens , xys=        
             let uvs  = Array.zeroCreate (segCount)
             let bs   = Array.zeroCreate (segCount)
             let lens = Array.zeroCreate (segCount)
@@ -264,9 +264,9 @@ type Loop private ( pts:ResizeArray<Pt>
             let ap  = pts.[i]
             let au  = unitVcts.[i]
             let al  = lens.[i]
-            let abb = bboxes.[i]
+            let abb = bRects.[i]
             for j = from to till do
-                let bbb = bboxes.[j]
+                let bbb = bRects.[j]
                 /// test on BRect overlap could be done here already instead of in doIntersectOrOverlapColinear
                 let bp  = pts.[j]
                 let bu  = unitVcts.[j]
@@ -285,9 +285,9 @@ type Loop private ( pts:ResizeArray<Pt>
                 // TODO quadratic runtime !  replace with sweep line algorithm ?
                 selfIntersectionCheck(i, i+2 , segLastIdx)   
         
-        let ebox = BRect.createUnchecked(xmin-snapThreshold, ymin-snapThreshold, xmax+snapThreshold, ymax+snapThreshold) 
+        let erect = BRect.createUnchecked(xmin-snapThreshold, ymin-snapThreshold, xmax+snapThreshold, ymax+snapThreshold) 
 
-        Loop(pts, unitVcts, bboxes, lens, xys, area, minSegmentLength, snapThreshold, ebox)
+        Loop(pts, unitVcts, bRects, lens, xys, area, minSegmentLength, snapThreshold, erect)
 
 
         // see script files in Test Folder for almost always working code of Loop Loop Intersection:

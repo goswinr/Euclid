@@ -186,7 +186,7 @@ module AutoOpenVec =
 
         /// Returns three vectors Determinant
         /// This is also the signed volume of the Parallelepipeds define by these three vectors.
-        /// Also called scalar triple product, mixed product, box product, or in german: Spatprodukt.
+        /// Also called scalar triple product, mixed product, Box product, or in german: Spatprodukt.
         /// It is defined as the dot product of one of the vectors with the cross product of the other two.
         static member inline determinant (u:Vec, v:Vec, w:Vec) = u.X*v.Y*w.Z + v.X*w.Y*u.Z + w.X*u.Y*v.Z - w.X*v.Y*u.Z - v.X*u.Y*w.Z - u.X*w.Y*v.Z 
     

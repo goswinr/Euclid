@@ -6,7 +6,8 @@ open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see http
 
 #nowarn "44" // for hidden constructors via Obsolete Attribute  
     
-/// A 2D Bounding box
+/// A 2D Bounding Rectangle.
+/// Sometimes also called 2D Bounding Box.
 [<Struct; NoEquality; NoComparison>] 
 [<IsReadOnly>]
 //[<IsByRefLike>]
@@ -39,21 +40,21 @@ type BRect =
     member inline b.Center = Pt( (b.MaxX + b.MinX)*0.5, (b.MaxY + b.MinY)*0.5 )
 
     /// Checks that min X and Y are smaller than max X and Y.
-    /// This might happen if the box is expanded by a negative value bigger than the BRect.
+    /// This might happen if the Rectangle is expanded by a negative value bigger than the BRect.
     member inline b.IsValid =   b.MinX <= b.MaxX && b.MinY <= b.MaxX
 
     /// Checks if min X or Y are bigger than max X or Y.
-    /// This might happen if the box is expanded by a negative value bigger than the BRect.
+    /// This might happen if the Rectangle is expanded by a negative value bigger than the BRect.
     member inline b.IsNotValid =   b.MinX > b.MaxX || b.MinY > b.MaxX
 
 
-    /// Returns Bounding box expanded by distance
+    /// Returns Bounding Rectangle expanded by distance
     /// Does not check overflow if distance is negative.
     member inline b.Expand(d) = 
         BRect(b.MinX-d, b.MinY-d, b.MaxX+d, b.MaxY+d)
 
     /// As counterclockwise closed loop (last Pt = first Pt)
-    /// Starting at bbox.Min
+    /// Starting at bRect.Min
     member b.AsPolyLine = 
         let a = Array.zeroCreate 5
         a.[0] <- Pt(b.MinX, b.MinY)
@@ -63,44 +64,44 @@ type BRect =
         a.[4] <- Pt(b.MinX, b.MinY)
         a    
     
-    /// Returns true if the two bounding boxes do overlap or touch
+    /// Returns true if the two bounding Rectangles do overlap or touch
     member inline b.OverlapsWith (a:BRect) =
         not (  b.MinX > a.MaxX
             || a.MinX > b.MaxX
             || a.MinY > b.MaxY 
             || b.MinY > a.MaxY )
     
-    /// Returns true if the point is inside or excatly on the bounding box
+    /// Returns true if the point is inside or excatly on the bounding Rectangle
     member inline b.Contains (p:Pt) =
         p.X >= b.MinX &&
         p.X <= b.MaxX &&
         p.Y >= b.MinY &&
         p.Y <= b.MaxY 
 
-    /// Returns true if the Box is inside or excatly on the other bounding box
+    /// Returns true if the Rectangle is inside or excatly on the other bounding Rectangle
     member inline b.Contains (o:BRect) =
         b.Contains(o.MinPt) && b.Contains(o.MaxPt)     
 
 
-    /// Returns true if the two bounding boxes do overlap or touch excatly
+    /// Returns true if the two bounding Rectangles do overlap or touch excatly
     static member inline doOverlap(a:BRect) (b:BRect) =
         not (  b.MinX > a.MaxX
             || a.MinX > b.MaxX
             || a.MinY > b.MaxY 
             || b.MinY > a.MaxY )
     
-    /// Returns true if the point is inside or on  the bounding box
+    /// Returns true if the point is inside or on  the bounding Rectangle
     static member inline contains (p:Pt) (b:BRect) =
         p.X >= b.MinX &&
         p.X <= b.MaxX &&
         p.Y >= b.MinY &&
         p.Y <= b.MaxY 
     
-    /// Returns a bounding box that contains both input boxes
+    /// Returns a bounding Rectangle that contains both input Rectangles
     static member inline union (a:BRect) (b:BRect) =
         BRect (min b.MinX a.MinX ,min b.MinY a.MinY,max b.MaxX a.MaxX ,max b.MaxY a.MaxY)
     
-    /// Returns a bounding box that contains the input boxes and the point
+    /// Returns a bounding Rectangle that contains the input Rectangles and the point
     static member inline unionPt (p:Pt) (b:BRect) =
         BRect (min b.MinX p.X ,min b.MinY p.Y, max b.MaxX p.X ,max b.MaxY p.Y)
         
@@ -108,7 +109,7 @@ type BRect =
     /// Finds min and max values for x and y.
     /// Adds the Expansion value is used to shrink lowwer bound and increase upper bound.
     /// Total size is bigger by expansion times two.
-    /// If expansion is negative it shrinks the Box. It also makes sure that there is no overflow 
+    /// If expansion is negative it shrinks the Rectangle. It also makes sure that there is no overflow 
     /// when the negative expansion is bigger than the size.
     static member create (a:Pt , b:Pt,  expansion ) = 
         // sort min and max values ( not useing allocating tuples for swaping) 

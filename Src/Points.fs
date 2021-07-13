@@ -86,7 +86,7 @@ type Points private () =
         // (2)
         // alternatively a spatial hash could be used to cluster nearby objects. the challange would be to finde the right cell size for each point
         // (3)
-        // the bounding boxes of each set could be intersected. then expanded. then used to filter both lists.
+        // the bounding Rectangles of each set could be intersected. then expanded. then used to filter both lists.
         if xs.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.closestPointsIdx<Pt>: empty List of Points: xs"
         if ys.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.closestPointsIdx<Pt>: empty List of Points: ys"
         let mutable xi = -1
