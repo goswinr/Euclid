@@ -74,6 +74,8 @@
     <Compile Include="Src\Line.fs" />
     <Compile Include="Src\Plane.fs" />
     <Compile Include="Src/BRect.fs" />
+    <Compile Include="Src\BoundingBox.fs" />
+    <Compile Include="Src\Box.fs" />
     <Compile Include="Src/Intersect.fs" />
     <Compile Include="Src/ResizeArray.fs" />
     <Compile Include="Src/Points.fs" />
