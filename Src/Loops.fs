@@ -26,7 +26,7 @@ type Loop private ( pts:ResizeArray<Pt>
                   , unitVcts:UnitVc[]
                   , bRects:BRect[] 
                   , lens:float[] 
-                  , xys:float[] // TODO is this needed to be always precomputed ?
+                  //, xys:float[] // TODO is this needed to be always precomputed ?
                   , area:float
                   , minSegmentLength:float
                   , snapThreshold:float
@@ -50,12 +50,12 @@ type Loop private ( pts:ResizeArray<Pt>
     /// This list is one item shorter than Points
     member _.Lengths = lens
     
-    /// List of X and Y coordinates of Points.
-    /// Even indices are X
-    /// Odd  indices are Y
-    /// Length is double of SegmentCount
-    /// Last pair is not equal first pair.
-    member _.XandYs = xys
+   // List of X and Y coordinates of Points.
+   // Even indices are X
+   // Odd  indices are Y
+   // Length is double of SegmentCount
+   // Last pair is not equal first pair.
+    //member _.XandYs = xys
 
     /// This list is one item Longer than Vectors , BRects or Lengths
     /// Last Point equals first Point
@@ -77,7 +77,7 @@ type Loop private ( pts:ResizeArray<Pt>
     member _.SnapThreshold = snapThreshold           
 
     /// Creates a deep copy
-    member _.Clone() = Loop(pts.GetRange(0,pts.Count), Array.copy unitVcts, Array.copy bRects, Array.copy lens, Array.copy xys, 
+    member _.Clone() = Loop(pts.GetRange(0,pts.Count), Array.copy unitVcts, Array.copy bRects, Array.copy lens, //Array.copy xys, 
                             area, minSegmentLength, snapThreshold, bRect )
 
     /// Returns closest segment index        
@@ -216,11 +216,11 @@ type Loop private ( pts:ResizeArray<Pt>
         let mutable xmax, ymax = Double.MinValue, Double.MinValue
                 
         // loop again to precalculate vectors ,  unit vectors,   BRects,  and lengths
-        let  unitVcts, bRects , lens , xys=        
+        let  unitVcts, bRects , lens = //, xys=        
             let uvs  = Array.zeroCreate (segCount)
             let bs   = Array.zeroCreate (segCount)
             let lens = Array.zeroCreate (segCount)
-            let xy   = Array.zeroCreate (segCount*2)
+            //let xy   = Array.zeroCreate (segCount*2)
             let mutable xyi = 0 
             let mutable t = pts.[0]
             for ii = 1 to pts.Count-1 do // start at +1,  last = first
@@ -231,8 +231,8 @@ type Loop private ( pts:ResizeArray<Pt>
                 uvs.[ i] <- UnitVc.createUnchecked( v.X/l , v.Y/l) // no check for div by zero needed,  since minSpacing is already checked
                 bs.[  i] <- BRect.create(t, n, snapThreshold)
                 lens.[i] <- l
-                xy.[xyi  ] <- t.X
-                xy.[xyi+1] <- t.Y
+                //xy.[xyi  ] <- t.X
+                //xy.[xyi+1] <- t.Y
                 xyi <- xyi + 2
         
                 // overall bounding box:
@@ -242,7 +242,7 @@ type Loop private ( pts:ResizeArray<Pt>
                 ymax <- max ymax t.Y
                 // swap:
                 t <- n
-            uvs,  bs , lens, xy
+            uvs,  bs , lens//, xy
         
         
         // Test for 180 U-turns
@@ -287,7 +287,8 @@ type Loop private ( pts:ResizeArray<Pt>
         
         let erect = BRect.createUnchecked(xmin-snapThreshold, ymin-snapThreshold, xmax+snapThreshold, ymax+snapThreshold) 
 
-        Loop(pts, unitVcts, bRects, lens, xys, area, minSegmentLength, snapThreshold, erect)
+        Loop(pts, unitVcts, bRects, lens, //xys, 
+             area, minSegmentLength, snapThreshold, erect)
 
 
         // see script files in Test Folder for almost always working code of Loop Loop Intersection:
