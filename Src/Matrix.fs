@@ -506,8 +506,8 @@ type Matrix =
         let zFlip     =  Matrix.createScale(1,1,-1)  
         fromPlane*zFlip*toPlane
     
-    /// Create Matrix  from Quaternion
-    static member createRotationQuat( quaternion:Quaternion) =
+    /// Create Matrix from Quaternion
+    static member createfromQuaternion( quaternion:Quaternion) =
         let x = quaternion.X
         let y = quaternion.Y
         let z = quaternion.Z
@@ -538,7 +538,7 @@ type Matrix =
                 ,0 
                 ,0 ,0 ,0 ,1 )
 
-    /// Compose rotation center Quaternion and scale to one Matrix
+    /// Compose a center, a quaternion and scale to one Matrix
     static member compose( position:Pnt, quaternion:Quaternion, scale:Vec ) =
         let x = quaternion.X
         let y = quaternion.Y

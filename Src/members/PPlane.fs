@@ -7,9 +7,11 @@ open FsEx.Geo.Util
 module AutoOpenPPPlane =     
 
     type PPlane with  
-    
+        
+        /// Evaluate at 3D paramter
         member p.At (px:float, py:float, pz:float) = p.Origin + p.Xax*px + p.Yax*py + p.Zax*pz
-
+        
+        /// Evaluate at 2D paramter ( Z = 0.0)
         member p.AtXY (px:float, py:float) = p.Origin + p.Xax*px + p.Yax*py 
 
         /// The resulting PPlane wil have the X-Axis in direction of X. 
@@ -17,19 +19,19 @@ module AutoOpenPPPlane =
         /// The given y does not need to be perpendicular to x, just not parallel.
         static member fromPtAndXYvec (origin:Pnt) (x:Vec) (y:Vec) = 
             let z = Vec.cross (x , y)
-            if z.IsTiny 1e-6 then failwithf "Cannot construct PPlane byPtAndXYvec from %O, %O and %O" origin x y
+            if z.IsTiny 1e-6 then FsExGeoException.Raise "Cannot construct FsEx.Geo.PPlane byPtAndXYvec from %O, %O and %O" origin x y
             let y = Vec.cross (z , x)
             PPlane(origin,x.Unitized, y.Unitized, z.Unitized)
     
         static member fromPtAndYvec (origin:Pnt) (y:Vec) = 
             let x = Vec.cross (y , Vec.ZAxis)
-            if x.IsTiny 1e-6 then failwithf "Cannot construct PPlane byPtAndXYvec from %O, %O and %O" origin x y
+            if x.IsTiny 1e-6 then FsExGeoException.Raise "Cannot construct FsEx.Geo.PPlane byPtAndXYvec from %O, %O and %O" origin x y
             let z = Vec.cross (x , y)
             PPlane(origin,x.Unitized,y.Unitized,z.Unitized)
 
         static member fromPtAndXvec (origin:Pnt) (x:Vec) = 
             let y = Vec.cross (Vec.ZAxis , x)
-            if y.IsTiny 1e-6 then failwithf "Cannot construct PPlane byPtAndXYvec from a%O, x%O and %O, are a and x vertical?" origin x y
+            if y.IsTiny 1e-6 then FsExGeoException.Raise "Cannot construct FsEx.Geo.PPlane byPtAndXYvec from a%O, x%O and %O, are a and x vertical?" origin x y
             let z = Vec.cross (x , y)
             PPlane(origin,x.Unitized,y.Unitized,z.Unitized)
     
@@ -38,7 +40,7 @@ module AutoOpenPPPlane =
             let x = b-origin
             let yt = c-origin
             let z = Vec.cross (x , yt)
-            if z.IsTiny 1e-6 then failwithf "Cannot construct PPlane by3Pt from %O, %O and %O, are they colinear?" origin b c
+            if z.IsTiny 1e-6 then FsExGeoDivByZeroException.Raise "Cannot construct FsEx.Geo.PPlane by3Pt from %O, %O and %O, are they colinear?" origin b c
             let y = Vec.cross (z , x)
             PPlane(origin,x.Unitized,y.Unitized,z.Unitized)
     

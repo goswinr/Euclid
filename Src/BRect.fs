@@ -25,85 +25,85 @@ type BRect =
          MaxX = maxX
          MaxY = maxY}    
     
-    override b.ToString() =  sprintf "FsEx.Geo.BRect: width=%s , height=%s (at X=%s  Y=%s)" (Format.float (b.MaxX - b.MinX)) (Format.float (b.MaxY - b.MinY)) (Format.float b.MinX) (Format.float b.MinY)
+    override r.ToString() =  sprintf "FsEx.Geo.BRect: length(x)=%s , width(y)=%s (at X=%s  Y=%s)" (Format.float (r.MaxX - r.MinX)) (Format.float (r.MaxY - r.MinY)) (Format.float r.MinX) (Format.float r.MinY)
     
-    member inline b.MinPt = Pt(b.MinX,b.MinY)
+    member inline r.MinPt = Pt(r.MinX,r.MinY)
 
-    member inline b.MaxPt = Pt(b.MaxX,b.MaxY)
+    member inline r.MaxPt = Pt(r.MaxX,r.MaxY)
     
-    member inline b.Height = b.MaxY - b.MinY
+    /// the size in Y direction 
+    member inline r.Width  = r.MaxY - r.MinY
 
-    member inline b.Width  = b.MaxX - b.MinX
+    /// the size in X direction 
+    member inline r.Length = r.MaxX - r.MinX
 
-    member inline b.Diagonal = Vc(b.MaxX - b.MinX, b.MaxY - b.MinY)
+    member inline r.Diagonal = Vc(r.MaxX - r.MinX, r.MaxY - r.MinY)
 
-    member inline b.Center = Pt( (b.MaxX + b.MinX)*0.5, (b.MaxY + b.MinY)*0.5 )
+    member inline r.Center = Pt( (r.MaxX + r.MinX)*0.5, (r.MaxY + r.MinY)*0.5 )
+
+    /// Returns a counter clockwise array of 4 Points, starting at MinPt 
+    /// Last and first Point are NOT the same
+    member r.Polyline = [| Pt(r.MinX, r.MinY); Pt(r.MaxX, r.MinY);  Pt(r.MaxX, r.MaxY); Pt(r.MinX, r.MaxY) |]
+
+    /// Returns a counter clockwise array of 5 Points, starting at MinPt
+    /// Last and first Point are the same
+    member r.PolylineClosed = [| Pt(r.MinX, r.MinY); Pt(r.MaxX, r.MinY);  Pt(r.MaxX, r.MaxY); Pt(r.MinX, r.MaxY); Pt(r.MinX, r.MinY)|]
 
     /// Checks that min X and Y are smaller than max X and Y.
     /// This might happen if the Rectangle is expanded by a negative value bigger than the BRect.
-    member inline b.IsValid =   b.MinX <= b.MaxX && b.MinY <= b.MaxX
+    member inline r.IsValid =   r.MinX <= r.MaxX && r.MinY <= r.MaxX
 
     /// Checks if min X or Y are bigger than max X or Y.
     /// This might happen if the Rectangle is expanded by a negative value bigger than the BRect.
-    member inline b.IsNotValid =   b.MinX > b.MaxX || b.MinY > b.MaxX
+    member inline r.IsNotValid =   r.MinX > r.MaxX || r.MinY > r.MaxX
 
 
     /// Returns Bounding Rectangle expanded by distance
     /// Does not check overflow if distance is negative.
-    member inline b.Expand(d) = 
-        BRect(b.MinX-d, b.MinY-d, b.MaxX+d, b.MaxY+d)
+    member inline r.Expand(d) = 
+        BRect(r.MinX-d, r.MinY-d, r.MaxX+d, r.MaxY+d)
 
-    /// As counterclockwise closed loop (last Pt = first Pt)
-    /// Starting at bRect.Min
-    member b.AsPolyLine = 
-        let a = Array.zeroCreate 5
-        a.[0] <- Pt(b.MinX, b.MinY)
-        a.[1] <- Pt(b.MaxX, b.MinY)
-        a.[2] <- Pt(b.MaxX, b.MaxY)
-        a.[3] <- Pt(b.MinX, b.MaxY)
-        a.[4] <- Pt(b.MinX, b.MinY)
-        a    
-    
+      
     /// Returns true if the two bounding Rectangles do overlap or touch
-    member inline b.OverlapsWith (a:BRect) =
-        not (  b.MinX > a.MaxX
-            || a.MinX > b.MaxX
-            || a.MinY > b.MaxY 
-            || b.MinY > a.MaxY )
+    member inline r.OverlapsWith (a:BRect) =
+        not (  r.MinX > a.MaxX
+            || a.MinX > r.MaxX
+            || a.MinY > r.MaxY 
+            || r.MinY > a.MaxY )
     
     /// Returns true if the point is inside or excatly on the bounding Rectangle
-    member inline b.Contains (p:Pt) =
-        p.X >= b.MinX &&
-        p.X <= b.MaxX &&
-        p.Y >= b.MinY &&
-        p.Y <= b.MaxY 
+    member inline r.Contains (p:Pt) =
+        p.X >= r.MinX &&
+        p.X <= r.MaxX &&
+        p.Y >= r.MinY &&
+        p.Y <= r.MaxY 
 
     /// Returns true if the Rectangle is inside or excatly on the other bounding Rectangle
-    member inline b.Contains (o:BRect) =
-        b.Contains(o.MinPt) && b.Contains(o.MaxPt)     
+    member inline r.Contains (o:BRect) =
+        r.Contains(o.MinPt) && r.Contains(o.MaxPt)     
 
 
     /// Returns true if the two bounding Rectangles do overlap or touch excatly
-    static member inline doOverlap(a:BRect) (b:BRect) =
-        not (  b.MinX > a.MaxX
-            || a.MinX > b.MaxX
-            || a.MinY > b.MaxY 
-            || b.MinY > a.MaxY )
+    static member inline doOverlap(a:BRect) (r:BRect) =
+        not (  r.MinX > a.MaxX
+            || a.MinX > r.MaxX
+            || a.MinY > r.MaxY 
+            || r.MinY > a.MaxY )
     
     /// Returns true if the point is inside or on  the bounding Rectangle
-    static member inline contains (p:Pt) (b:BRect) =
-        p.X >= b.MinX &&
-        p.X <= b.MaxX &&
-        p.Y >= b.MinY &&
-        p.Y <= b.MaxY 
+    static member inline contains (p:Pt) (r:BRect) =
+        p.X >= r.MinX &&
+        p.X <= r.MaxX &&
+        p.Y >= r.MinY &&
+        p.Y <= r.MaxY 
     
     /// Returns a bounding Rectangle that contains both input Rectangles
     static member inline union (a:BRect) (b:BRect) =
         BRect (min b.MinX a.MinX ,min b.MinY a.MinY,max b.MaxX a.MaxX ,max b.MaxY a.MaxY)
     
     /// Returns a bounding Rectangle that contains the input Rectangles and the point
-    static member inline unionPt (p:Pt) (b:BRect) =
-        BRect (min b.MinX p.X ,min b.MinY p.Y, max b.MaxX p.X ,max b.MaxY p.Y)
+    static member inline unionPt (p:Pt) (r:BRect) =
+        BRect (min r.MinX p.X ,min r.MinY p.Y, max r.MaxX p.X ,max r.MaxY p.Y)
         
 
     /// Finds min and max values for x and y.

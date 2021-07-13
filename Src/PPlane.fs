@@ -14,9 +14,9 @@ type PPlane =
     val Zax: UnitVec 
     
     /// Create a Parametrized Plane with X, Y and Z Direction
-    new (origin,axisX,axisY, axisZ)  =  {Origin=origin; Xax=axisX; Yax=axisY; Zax=axisZ}
+    internal new (origin,axisX,axisY, axisZ)  =  {Origin=origin; Xax=axisX; Yax=axisY; Zax=axisZ}
     
-    override pl.ToString() = sprintf "PPlane(Origin=%O; Xax=%O; Yax=%O; Yax=%O;)" pl.Origin pl.Xax pl.Yax pl.Zax
+    override pl.ToString() = sprintf "FsEx.Geo.PPlane(Origin=%O; Xax=%O; Yax=%O; Yax=%O;)" pl.Origin pl.Xax pl.Yax pl.Zax
 
 
     // see extension meber in folder members
