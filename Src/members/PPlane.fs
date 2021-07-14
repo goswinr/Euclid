@@ -2,17 +2,23 @@ namespace FsEx.Geo
 
 open FsEx.Geo.Util
 
-/// Members and operators for 3D Points, Vectors and Rotations
+/// Static and Instance Members for PPlane
 [<AutoOpen>]
-module AutoOpenPPPlane =     
-
+module AutoOpenPPlane =     
+    
+    // pre allocate , used often 
+    let private worldxy = PPlane(Pnt.Origin,UnitVec.XAxis,UnitVec.YAxis,UnitVec.ZAxis)
+    
     type PPlane with  
-        
+
         /// Evaluate at 3D paramter
         member p.At (px:float, py:float, pz:float) = p.Origin + p.Xax*px + p.Yax*py + p.Zax*pz
         
         /// Evaluate at 2D paramter ( Z = 0.0)
         member p.AtXY (px:float, py:float) = p.Origin + p.Xax*px + p.Yax*py 
+
+        /// returns the World Cordinate System plane at World origin
+        static member WorldXY = worldxy
 
         /// The resulting PPlane wil have the X-Axis in direction of X. 
         /// x and y will define the plane and the side that Z will be on.

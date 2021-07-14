@@ -18,5 +18,4 @@ type PPlane =
     
     override pl.ToString() = sprintf "FsEx.Geo.PPlane(Origin=%O; Xax=%O; Yax=%O; Yax=%O;)" pl.Origin pl.Xax pl.Yax pl.Zax
 
-
-    // see extension meber in folder members
+    // see extension mebers in folder 'members'
