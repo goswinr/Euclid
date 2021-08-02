@@ -17,8 +17,11 @@ module AutoOpenPPlane =
         /// Evaluate at 2D paramter ( Z = 0.0)
         member p.AtXY (px:float, py:float) = p.Origin + p.Xax*px + p.Yax*py 
 
-        /// returns the World Cordinate System plane at World origin
-        static member WorldXY = worldxy
+        /// Returns the World Coordinate System Plane at World Origin
+        /// X axis = world X axis 
+        /// Y axis = world Y axis 
+        /// Z axis = world Z axis 
+        static member WorldTop = worldxy
 
         /// The resulting PPlane wil have the X-Axis in direction of X. 
         /// x and y will define the plane and the side that Z will be on.

@@ -80,7 +80,7 @@ type Matrix =
         |]        
 
     /// If the determinant of the Matrix. 
-    /// The Determinant descirbes the volume that a unit cube will have have the matrix was applied
+    /// The Determinant descirbes the volume that a unit cube will have after the matrix was applied
     member m.Determinant = 
         let n11 = m.M11
         let n21 = m.M21
@@ -109,7 +109,13 @@ type Matrix =
     /// If the determinant is zero the Matrix cannot be inverted. 
     /// An Exception is raised.
     member m.Inverse = 
-        // based on http://www.euclideanspace.com/maths/algebra/matrix/functions/inverse/fourD/index.htm        
+        // based on http://www.euclideanspace.com/maths/algebra/matrix/functions/inverse/fourD/index.htm 
+        //Speed Optimisation
+        //The below  program is valid for a general 4×4 matrix which will work in all circumstances but when the matrix is being used to 
+        //represent a combined rotation and translation (as described on this page) then the matrix carries a lot of redundant information. 
+        //So if we want to speed up the code on this page then, for this case only, we can take advantage of this redundant information.
+        //to invert a pure rotation then we just take the transpose of the 3x3 part of the matrix.
+        //to invert a pure translation the we just negate the translation
         let n11 = m.M11
         let n21 = m.M21
         let n31 = m.M31
@@ -133,7 +139,7 @@ type Matrix =
         let t14 = n14 * n23 * n32 - n13 * n24 * n32 - n14 * n22 * n33 + n12 * n24 * n33 + n13 * n22 * n34 - n12 * n23 * n34
         let det = n11 * t11 + n21 * t12 + n31 * t13 + n41 * t14
 
-        if abs det < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Matrix has an almost zero determinant. It is smaller than 1e-12. It cannot be inverted:\r\n%O" m // TODO or return all zero matrix like threeJS ?
+        if abs det < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Matrix has a zero or almost zero determinant. It is smaller than 1e-24. It cannot be inverted:\r\n%O" m // TODO or return all zero matrix like threeJS ?
 
         let detInv = 1. / det
         

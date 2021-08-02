@@ -8,8 +8,10 @@ module AutoOpenVec =
 
     type Vec with         
 
-        member inline v.IsZero = v.X = 0.0 && v.Y = 0.0 && v.Z= 0.0
+        member inline v.IsZero =  v.X = 0.0 && v.Y = 0.0 && v.Z= 0.0 
+
         member inline v.IsTiny tol = abs v.X < tol && abs v.Y < tol && abs v.Z < tol
+
         //member inline v.IsInValid =  Double.IsNaN v.X || Double.IsNaN v.Y || Double.IsNaN v.Z || Double.IsInfinity v.X || Double.IsInfinity v.Y || Double.IsInfinity v.Z
 
         member inline v.Length = sqrt (v.X*v.X + v.Y*v.Y + v.Z*v.Z) 
@@ -92,32 +94,45 @@ module AutoOpenVec =
         /// Returns a perpendicular horizontal vector. Rotated counterclockwise.
         /// Or Vec.Zero if input is vertical.
         /// just does Vec(-v.Y, v.X, 0.0) 
-        member inline v.PerpendicularInXY() = Vec(-v.Y, v.X, 0.0) 
-        
+        member inline v.PerpendicularInXY() = Vec(-v.Y, v.X, 0) 
+
+
+        //[<Obsolete("Unsafe Member") >]
+        //static member inline DivideByInt (v:UnitVec, i:int) = 
+        //  if i<>0 then v / float i else failwithf "DivideByInt 0 %O " v // needed by  'Array.average'
         
         //----------------------------------------------------------------------------------------------
         //--------------------------  Static Members  --------------------------------------------------
         //----------------------------------------------------------------------------------------------
         
+        /// Returns a zero length vector: Vec(0,0,0)
+        static member inline Zero   = Vec(0,0,0)  // this member is needed by Seq.sum, so that it doesnt fail on empty seq.  
         
-        static member Zero = Vec ( 0. , 0. , 0.)  // needed by 'Array.sum' 
-    
-        static member inline XAxis  = Vec (1.0 , 0.0, 0.0)
-        static member inline YAxis  = Vec (0.0 , 1.0, 0.0)
-        static member inline ZAxis  = Vec (0.0 , 0.0, 1.0)         
+        /// Returns the world X-axis with lenth one: Vec(1,0,0)
+        static member inline XAxis  = Vec(1,0,0)
 
-        /// cross product // A x B = |A|*|B|*sin(angle), direction follow right-hand rule
+        /// Returns the world Y-axis with lenth one: Vec(0,1,0)
+        static member inline YAxis  = Vec(0,1,0)
+
+        /// Returns the world Z-axis with lenth one: Vec(0,0,1)
+        static member inline ZAxis  = Vec(0,0,1)        
+
+        /// Cross product // A x B = |A|*|B|*sin(angle), direction follow right-hand rule
         static member inline cross (a:Vec, b:Vec)  = Vec (a.Y * b.Z - a.Z * b.Y ,  a.Z * b.X - a.X * b.Z ,  a.X * b.Y - a.Y * b.X )       
-        /// cross product // A x B = |A|*|B|*sin(angle), direction follow right-hand rule
+        
+        /// Cross product // A x B = |A|*|B|*sin(angle), direction follow right-hand rule
         static member inline cross (a:UnitVec, b:Vec)  = Vec (a.Y * b.Z - a.Z * b.Y ,  a.Z * b.X - a.X * b.Z ,  a.X * b.Y - a.Y * b.X ) 
-        /// cross product // A x B = |A|*|B|*sin(angle), direction follow right-hand rule
+        
+        /// Cross product // A x B = |A|*|B|*sin(angle), direction follow right-hand rule
         static member inline cross (a:Vec, b:UnitVec)  = Vec (a.Y * b.Z - a.Z * b.Y ,  a.Z * b.X - a.X * b.Z ,  a.X * b.Y - a.Y * b.X ) 
 
-        /// dot product, or scalar product
+        /// Dot product, or scalar product of two 3D vectors.
         static member inline dot  (a:Vec, b:Vec  )     = a.X * b.X + a.Y * b.Y + a.Z * b.Z
-        /// dot product, or scalar product
+        
+        /// Dot product, or scalar product of a regular 3D vector (of any length) with an 3D Unit vector.
         static member inline dot  (a:Vec, b:UnitVec  ) = a.X * b.X + a.Y * b.Y + a.Z * b.Z
-        /// dot product, or scalar product
+        
+        /// Dot product, or scalar product of an 3D Unit vector with a regular 3D vector (of any length).
         static member inline dot  (a:UnitVec, b:Vec  ) = a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
     
@@ -186,7 +201,7 @@ module AutoOpenVec =
 
         /// Returns three vectors Determinant
         /// This is also the signed volume of the Parallelepipeds define by these three vectors.
-        /// Also called scalar triple product, mixed product, Box product, or in german: Spatprodukt.
+        /// Also called scalar triple product, mixed product, Box product, or in German: Spatprodukt.
         /// It is defined as the dot product of one of the vectors with the cross product of the other two.
         static member inline determinant (u:Vec, v:Vec, w:Vec) = u.X*v.Y*w.Z + v.X*w.Y*u.Z + w.X*u.Y*v.Z - w.X*v.Y*u.Z - v.X*u.Y*w.Z - u.X*w.Y*v.Z 
     
@@ -300,31 +315,31 @@ module AutoOpenVec =
              if v.IsTiny(zeroLengthTol) then FsExGeoDivByZeroException.Raise "Vec Cannot not check very tiny vector for horizontality %O" v
              abs(v.Z) < zeroLengthTol     
 
-        /// Unitize vector, if input vector is shorter than 1e-6 alternative vector is returned (without being unitized).
-        static member inline unitizeWithAlternative (unitVectorAlt:Vec) (v:Vec) = 
+        /// Unitize vector, if input vector is shorter than 1e-6 the default Unit Vector is returned.
+        static member inline unitizeOrDefault (defaultUnitVector:UnitVec) (v:Vec) = 
             let l = v.LengthSq
             if l < 1e-12  then  //sqrt (1e-06)
-                unitVectorAlt 
+                defaultUnitVector 
             else
                 let f = 1.0 / sqrt(l)
-                Vec(v.X*f , v.Y*f , v.Z*f)    
+                UnitVec.createUnchecked(v.X*f , v.Y*f , v.Z*f)    
 
-        /// Returns positive or negative slope of a vector in Radians
-        /// in relation to XY Plane
-        static member inline slopeRad (v:Vec) = 
+        /// Returns positive or negative slope of a vector in Radians.
+        /// In relation to XY Plane.
+        static member inline slopeRadians (v:Vec) = 
             let f = Vec(v.X, v.Y, 0.0)
             if v.Z >= 0.0 then  Vec.angleHalfPI v f
             else              -(Vec.angleHalfPI v f)
 
-        /// Returns positive or negative slope of a vector in Degrees
-        /// in relation to XY Plane
-        static member inline slopeDeg (v:Vec) = 
+        /// Returns positive or negative slope of a vector in Degrees.
+        /// In relation to XY Plane.
+        static member inline slopeDegrees (v:Vec) = 
             let f = Vec(v.X, v.Y, 0.0)
             if v.Z >= 0.0 then  Vec.angle90 v f
             else              -(Vec.angle90 v f)
 
-        /// Returns positive or negative slope of a vector in Percent
-        /// in relation to XY Plane
+        /// Returns positive or negative slope of a vector in Percent.
+        /// In relation to XY Plane.
         /// 100% = 45 degrees
         static member inline slopePercent (v:Vec) = 
             if abs(v.Z) < zeroLengthTol then FsExGeoDivByZeroException.Raise "UnitVec.slopePercent: Can't get Slope from vertical vector %O" v
@@ -381,20 +396,22 @@ module AutoOpenVec =
             let sc = 1.0 / w'           
             Vec(x' * sc, y'* sc, z'* sc)     
        
-        /// Partially Multiplies the Matrix with a Vector. 
-        /// Use this only for affine transformations that do NOT include a projection 
-        /// and if you need maximum performance
-        /// The fields m.M14, m.M24 and m.M34 must be 0.0 and m.M44 must be 1.0
-        /// Otherwise use Pnt.transform
-        static member transformSimple (m:Matrix) (p:Vec) = 
-            let x = p.X
-            let y = p.Y
-            let z = p.Z 
-            Vec(  m.M11*x + m.M21*y + m.M31*z + m.X41 
-                , m.M12*x + m.M22*y + m.M32*z + m.Y42 
-                , m.M13*x + m.M23*y + m.M33*z + m.Z43 
-                )
+        // Partially Multiplies the Matrix with a Vector. 
+        // Use this only for affine transformations that do NOT include a projection 
+        // and if you need maximum performance.
+        // The fields m.M14, m.M24 and m.M34 must be 0.0 and m.M44 must be 1.0
+        // Otherwise use Vec.transform
+        //static member transformSimple (m:Matrix) (p:Vec) = 
+        //    let x = p.X
+        //    let y = p.Y
+        //    let z = p.Z 
+        //    Vec(  m.M11*x + m.M21*y + m.M31*z + m.X41 
+        //        , m.M12*x + m.M22*y + m.M32*z + m.Y42 
+        //        , m.M13*x + m.M23*y + m.M33*z + m.Z43 
+        //        )
+
+
+
                 
-        //[<Obsolete("Unsafe Member") >]
-        //static member inline DivideByInt (v:UnitVec, i:int) = if i<>0 then v / float i else failwithf "DivideByInt 0 %O " v // needed by  'Array.average'
+
 

@@ -4,7 +4,9 @@ open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
 open FsEx.Geo.Util    
     
-/// A 3D Vector (2D Vectors are called 'Vc') 
+/// A 3D Vector with any length. Made up from 3 floats: X, Y, and Z.
+/// (Unit vectors with length 1.0 are called 'UnitVec')
+/// (2D Vectors are called 'Vc') 
 [<Struct; NoEquality; NoComparison>] 
 [<IsReadOnly>]
 //[<IsByRefLike>]
@@ -12,29 +14,41 @@ type Vec =
     val X : float
     val Y : float 
     val Z : float
-        
+    
+    /// Create a new 3D Vector with any length. Made up from 3 floats: X, Y, and Z.
     new (x,y,z) =
         #if DEBUG
         if Double.IsNaN x || Double.IsNaN y || Double.IsNaN z || Double.IsInfinity x || Double.IsInfinity y || Double.IsInfinity z then FsExGeoException.Raise "FsEx.Geo.Vec Constructor failed for x:%g , y:%g, z:%g"  x y z
         #endif
         {X=x; Y=y; Z=z}
         
+    /// Format 3D vector into string including type name and nice floating point number formatting.
     override p.ToString() = sprintf "FsEx.Geo.Vec(X=%s, Y=%s, Z=%s)" (Format.float p.X) (Format.float p.Y) (Format.float p.Z)
     
+    /// Negate or inverse a 3D vectors. Returns a new 3D vector.
     static member inline (~- ) (v:Vec)          = Vec( -v.X , -v.Y , -v.Z)
+    
+    /// Subtract one 3D vectors from another. Returns a new 3D vector.
     static member inline ( - ) (a:Vec, b:Vec)   = Vec (a.X - b.X , a.Y - b.Y , a.Z - b.Z)            
 
+    /// Add two 3D vectors together. Returns a new 3D vector.
     static member inline ( + ) (a:Vec, b:Vec)   = Vec (a.X + b.X , a.Y + b.Y , a.Z + b.Z)  
 
-    static member inline ( * ) (a:Vec  , f:float) = Vec (a.X * f , a.Y * f , a.Z * f) // scale Vec
-    static member inline ( * ) (f:float, a:Vec  ) = Vec (a.X * f , a.Y * f , a.Z * f) // scale Vec
-    static member inline ( * ) (a:Vec  , b:Vec  ) = a.X * b.X + a.Y * b.Y + a.Z * b.Z // dot product              
+    /// Multiplies a 3D vector with a scalar, also called scaling a vector. Returns a new 3D vector.
+    static member inline ( * ) (a:Vec  , f:float) = Vec (a.X * f , a.Y * f , a.Z * f) 
 
+    /// Multiplies a scalar with a 3D vector, also called scaling a vector. Returns a new 3D vector. 
+    static member inline ( * ) (f:float, a:Vec  ) = Vec (a.X * f , a.Y * f , a.Z * f) 
+    
+    /// Dot product, or scalar product of two 3D vectors. Returns a float.
+    static member inline ( * ) (a:Vec  , b:Vec  ) = a.X * b.X + a.Y * b.Y + a.Z * b.Z             
+
+    /// Divides a 3D vector by a scalar, also be called dividing/scaling a vector. Returns a new 3D vector.
     static member inline ( / )  (v:Vec, f:float) = 
         #if DEBUG
         if abs f < Util.zeroLengthTol then  FsExGeoDivByZeroException.Raise "%g is too small for dividing %O using / operator. Tolerance:%g" f v zeroLengthTol
         #endif
-        v * (1./f) // or Vec (v.X / f , v.Y / f , , v.Z / f) ?
+        v * (1./f) // or Vec (v.X / f , v.Y / f , , v.Z / f) ? 
     
     
 #nowarn "44" // for hidden constructors via Obsolete Attribute    
