@@ -6,17 +6,24 @@ open FsEx.Geo.Util
 
 #nowarn "44" // for hidden constructors via Obsolete Attribute
 
-/// Quaternion, for arbitrary 3D rotations.
+/// A immutable Quaternion, for arbitrary 3D rotations.
 /// This implementation guarantees the Quaternion to be always unitized.
 [<Struct; NoEquality; NoComparison>] 
 [<IsReadOnly>]
 //[<IsByRefLike>]
 type Quaternion = 
     //  https://github.com/mrdoob/three.js/blob/dev/src/math/Quaternion.js
-     
+    
+    /// The X component of this Quaternion
     val X:float
+    
+    /// The Y component of this Quaternion
     val Y:float
+    
+    /// The Z component of this Quaternion
     val Z:float  
+    
+    /// The W component of this Quaternion
     val W:float
      
     /// Unsafe internal constructor,  public only for inlining.
@@ -29,11 +36,12 @@ type Quaternion =
         #endif
         {X=x; Y=y; Z=z; W=w}
     
+    /// Format Quaternion into string also showing angle in degree as nicely formatted floating point number.
     override q.ToString() =         
         sprintf "FsEx.Geo.Quaternion(X=%s, Y=%s, Z=%s, W=%s, angle: %s°)" 
                 (Format.float q.X) (Format.float q.Y) (Format.float q.Z) (Format.float q.W) (Format.float q.AngleInDegrees)
      
-
+    /// Multiply two Qaternions. Its like adding one rotation to the other.
     static member multiply (l:Quaternion, r:Quaternion)  =  
         Quaternion(   
             l.W * r.X + l.X * r.W + l.Y * r.Z - l.Z * r.Y ,
@@ -41,13 +49,20 @@ type Quaternion =
             l.W * r.Z + l.Z * r.W + l.X * r.Y - l.Y * r.X ,
             l.W * r.W - l.X * r.X - l.Y * r.Y - l.Z * r.Z ) 
 
+    /// Multiply two Qaternions. Its like adding one rotation to the other.
     static member inline ( * ) (l:Quaternion, r:Quaternion)  =  
         Quaternion.multiply(l,r)
-                 
+    
+    /// Returns a new Quaterion for the inverse rotation.
+    /// Same as q.Inverse 
     member q.Conjugate = Quaternion (-q.X, -q.Y, -q.Z, q.W)  
+
+    /// Returns a new Quaterion for the inverse rotation.
+    /// Same as q.Conjugate 
+    member q.Inverse = Quaternion (-q.X, -q.Y, -q.Z, q.W)  
      
-    /// Should always be 1.0
-    member q.Magnitude = sqrt (q.X*q.X + q.Y*q.Y + q.Z*q.Z + q.W*q.W) 
+    // Should always be 1.0
+    //member q.Magnitude = sqrt (q.X*q.X + q.Y*q.Y + q.Z*q.Z + q.W*q.W) 
      
     /// Returns Angle in Radians 
     member q.AngleInRadians =  
@@ -98,7 +113,7 @@ type Quaternion =
             if  abs vFrom.X  > abs vFrom.Z   then   Quaternion.create ( -vFrom.Y  , vFrom.X   , 0       , r)
             else                                    Quaternion.create (0          ,- vFrom.Z  ,vFrom.Y  , r)
         else 
-            // crossVectors( vFrom, vTo ); // inlined to avoid cyclic dependency on Vector3
+            // crossVectors( vFrom, vTo ); // inlined to avoid cyclic dependency
             Quaternion.create ( vFrom.Y * vTo.Z - vFrom.Z * vTo.Y
                               , vFrom.Z * vTo.X - vFrom.X * vTo.Z
                               , vFrom.X * vTo.Y - vFrom.Y * vTo.X
@@ -124,7 +139,7 @@ type Quaternion =
             if  abs vFrom.X  > abs vFrom.Z   then   Quaternion.create ( -vFrom.Y  , vFrom.X   , 0       , r)
             else                                    Quaternion.create (0          ,- vFrom.Z  ,vFrom.Y  , r)
         else 
-            // crossProduct:
+            // crossProduct inlined:
             Quaternion.create ( vFrom.Y * vTo.Z - vFrom.Z * vTo.Y
                               , vFrom.Z * vTo.X - vFrom.X * vTo.Z
                               , vFrom.X * vTo.Y - vFrom.Y * vTo.X

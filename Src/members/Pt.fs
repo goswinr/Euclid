@@ -226,8 +226,8 @@ module AutoOpenPt =
         
         /// Rotate the a 2D Point Counter Clockwise by a 2D Rotation (that has cos and sin precomputed)
         static member inline rotateBy (r:Rotation2D) (p:Pt) = 
-            Pt(r.cos*p.X - r.sin*p.Y, 
-               r.sin*p.X + r.cos*p.Y) 
+            Pt(r.Cos*p.X - r.Sin*p.Y, 
+               r.Sin*p.X + r.Cos*p.Y) 
 
         /// Rotate the 2D Point in Degrees. Counter Clockwise.
         /// For better Performance precompute the Rotate2D struct and use its member to rotate. see Vc.rotateBy
@@ -238,8 +238,8 @@ module AutoOpenPt =
         static member inline rotateWithCenterBy (cen:Pt) (r:Rotation2D) (pt:Pt) = 
             let x = pt.X - cen.X  
             let y = pt.Y - cen.Y         
-            Pt (r.cos*x - r.sin*y + cen.X, 
-                r.sin*x + r.cos*y + cen.Y) 
+            Pt (r.Cos*x - r.Sin*y + cen.X, 
+                r.Sin*x + r.Cos*y + cen.Y) 
          
         /// Rotate 2D Point around a center point counter clockwise. Angle given in degrees.    
         static member inline ptWitCen  (cen:Pt)  angDegree (pt:Pt)  = 

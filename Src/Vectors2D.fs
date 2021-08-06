@@ -4,34 +4,48 @@ open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>]  see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike    
 open FsEx.Geo.Util  
     
-/// A 2D Vector with any length. Made up from 2 floats: X and Y.
-/// (2D Unit vectors with length 1.0 are called 'UnitVc')
-/// (3D Vectors are called 'Vec') 
+/// A immutable 2D Vector with any length. Made up from 2 floats: X and Y.
+/// ( 2D Unit vectors with length 1.0 are called 'UnitVc' )
+/// ( 3D Vectors are called 'Vec' ) 
 [<Struct;NoEquality;NoComparison>]// because its made up from floats
 [<IsReadOnly>]
 //[<IsByRefLike>] // not used, see notes at end of file  
 type Vc =
+    /// Gets the X part of this 2D vector
     val X : float
+    
+    /// Gets the Y part of this 2D vector
     val Y : float
     
+    /// Create a new 2D Vector with any length. Made up from 2 floats: X and Y.
     new (x,y) =         
         #if DEBUG // TODO : with this test all  operations are 2.5 times slower 
         if Double.IsNaN x || Double.IsNaN y || Double.IsInfinity x || Double.IsInfinity y  then FsExGeoException.Raise "FsEx.Geo.Vc Constructor failed for x:%g , y:%g"  x y
         #endif
         {X=x; Y=y}  
     
-    override v.ToString() = sprintf "FsEx.Geo.Vc(X=%s, Y=%s)" (Format.float v.X)(Format.float v.Y)
+    /// Format 2D vector into string including type name and nice floating point number formatting of X,Y and length.
+    override v.ToString() = sprintf "FsEx.Geo.Vc(X=%s, Y=%s) Length: %s" (Format.float v.X) (Format.float v.Y) (Format.float (sqrt (v.X*v.X + v.Y*v.Y)))
     
+    /// Negate or inverse a 2D vectors. Returns a new 2D vector.
     static member inline (~- )  (v:Vc)       = Vc ( -v.X , -v.Y )
+    
+    /// Subtract one 2D vectors from another. Returns a new 2D vector.
     static member inline ( - )  (a:Vc, b:Vc) = Vc (a.X - b.X , a.Y - b.Y )
-    
+        
+    /// Add two 2D vectors together. Returns a new 2D vector.
     static member inline ( + )  (a:Vc, b:Vc) = Vc (a.X + b.X , a.Y + b.Y )
+        
+    /// Multiplies a 2D vector with a scalar, also called scaling a vector. Returns a new 2D vector.
+    static member inline ( * )  (v:Vc   , f:float) = Vc (v.X * f , v.Y * f ) 
     
+    /// Multiplies a scalar with a 2D vector, also called scaling a vector. Returns a new 2D vector. 
+    static member inline ( * )  (f:float, v:Vc  )  = Vc (v.X * f , v.Y * f ) 
+    
+    /// Dot product, or scalar product of two 2D vectors. Returns a float.
+    static member inline ( * )  (v:Vc   , b:Vc  )  = v.X * b.X + v.Y * b.Y   
 
-    static member inline ( * )  (v:Vc   , f:float) = Vc (v.X * f , v.Y * f ) // scale Vector
-    static member inline ( * )  (f:float, v:Vc  )  = Vc (v.X * f , v.Y * f ) // scale Vector
-    static member inline ( * )  (v:Vc   , b:Vc  )  = v.X * b.X + v.Y * b.Y   // dot product
-
+    /// Divides a 2D vector by a scalar, also be called dividing/scaling a vector. Returns a new 2D vector.
     static member inline ( / )  (v:Vc, f:float) = 
         #if DEBUG
         if abs f < Util.zeroLengthTol then FsExGeoDivByZeroException.Raise "%g is too small for dividing %O using / operator. Tolerance:%g"  f v zeroLengthTol
@@ -41,13 +55,16 @@ type Vc =
 
 #nowarn "44" // for internal inline constructors 
 
-/// A 2D Vector guaranteed to be unitized (3D Unit Vectors are called 'UnitVec') 
-/// This type shall only be created by unitizing a  2D vector (Vc)
+/// A immutable 2D Vector guaranteed to be unitized (3D Unit Vectors are called 'UnitVec') 
+/// Use UnitVc.create or UnitVc.createUnchecked to created instances.
 [<Struct;NoEquality;NoComparison>]// because its made up from floats
 [<IsReadOnly>]
-//[<IsByRefLike>]
+//[<IsByRefLike>]// not used, see notes at end of file  
 type UnitVc =
+    /// Gets the X part of this 2D  unit vector
     val X : float
+    
+    /// Gets the Y part of this 2D unit vector
     val Y : float
 
     /// Unsafe internal constructor, doesn't check or unitize the input,  public only for inlining.
@@ -55,35 +72,58 @@ type UnitVc =
     new (x,y) = 
         #if DEBUG
         let l = x*x + y*y // TODO : with this test all  operations are 2.5 times slower  
-        if 0.999999999 > l || l > 1.000000001 then  FsExGeoException.Raise "FsEx.Geo.UnitVc Constructor failed for x:%g and y:%g. The length needs to be 1.0." x y 
+        if not (Util.isOne l) then  FsExGeoException.Raise "FsEx.Geo.UnitVc Constructor failed for x:%g and y:%g. The length needs to be 1.0." x y 
         #endif
         {X=x; Y=y}
         
-    override v.ToString() =  sprintf "FsEx.Geo.UnitVc(X=%s, Y=%s)" (Format.float v.X)(Format.float v.Y)
-        
+    /// Format 2D unit vector into string including type name and nice floating point number formatting.
+    override v.ToString() =  sprintf "FsEx.Geo.UnitVc(X=%s, Y=%s)" (Format.float v.X)(Format.float v.Y)        
+    
+    /// Negate or inverse a 2D unit vectors. Returns a new 2D unit vector.
     static member inline (~- )  (v:UnitVc) = UnitVc( -v.X , -v.Y )
+    
+    /// Subtract one 2D unit vectors from another. Returns a new (non-unitized) 2D vector.
     static member inline ( - )  (a:UnitVc, b:UnitVc) = Vc (a.X - b.X , a.Y - b.Y )
-
+        
+    /// Add two 2D unit vectors together. Returns a new (non-unitized) 2D vector.
     static member inline ( + )  (a:UnitVc, b:UnitVc) = Vc (a.X + b.X , a.Y + b.Y )
+    
+    /// Multiplies a 2D unit vector with a scalar, also called scaling a vector. Returns a new (non-unitized) 2D vector.
     static member inline ( + )  (a:Vc,     b:UnitVc) = Vc (a.X + b.X , a.Y + b.Y )
+    
+    /// Multiplies a scalar with a 2D unit vector, also called scaling a vector. Returns a new (non-unitized) 2D vector. 
     static member inline ( + )  (a:UnitVc, b:Vc)     = Vc (a.X + b.X , a.Y + b.Y )
-
+        
+    /// Multiplies a 2D unit vector with a scalar, also called scaling a vector. Returns a new (non-unitized) 2D vector.
     static member inline ( * )  (a:UnitVc  , f:float   ) = Vc (a.X * f , a.Y * f )
+    
+    /// Multiplies a scalar with a 2D unit vector, also called scaling a vector. Returns a new (non-unitized) 2D vector. 
     static member inline ( * )  (f:float   , a:UnitVc  ) = Vc (a.X * f , a.Y * f )
+    
+    /// Dot product, or scalar product of two 2D unit vectors. 
+    /// Returns a float. This float is the cosine of the angle between the two vectors.
     static member inline ( * )  (a:UnitVc  , b:UnitVc  ) = a.X * b.X+ a.Y * b.Y  // dot product
+    
+    /// Dot product, or scalar product of a 2D unit vectors with a 2D vector  
+    /// Returns a float. This float is the projected length of the 2D vector on the direction of the unit vector
     static member inline ( * )  (a:UnitVc  , b:Vc      ) = a.X * b.X+ a.Y * b.Y  // dot product
+    
+    /// Dot product, or scalar product of a 2D unit vectors with a 2D vector  
+    /// Returns a float. This float is the projected length of the 2D vector on the direction of the unit vector
     static member inline ( * )  (a:Vc      , b:UnitVc  ) = a.X * b.X+ a.Y * b.Y  // dot product
-
+        
+    /// Divides a 2D unit vector by a scalar, also be called dividing/scaling a vector. Returns a new (non-unitized) 2D vector.
     static member inline ( / )  (v:UnitVc, f:float) = 
         #if DEBUG
         if abs f < Util.zeroLengthTol then  FsExGeoDivByZeroException.Raise "%g is too small for dividing %O using / operator. Tolerance:%g" f v zeroLengthTol
         #endif
         Vc (v.X / f , v.Y / f ) 
     
-    /// Requires correct input of unitized values     
+    /// For use as a faster constructor
+    /// Requires correct input of unitized values   
     static member inline createUnchecked(x,y)  = UnitVc(x,y) // needs #nowarn "44" // for internal inline constructors 
 
-    /// Does the unitizing too.
+    /// Create 2D unit vector. Does the unitizing too.
     static member inline create (x:float, y:float) = 
         // this member cant be an extension method because it is used with SRTP. 
         // see error FS1114: The value 'FsEx.Geo.AutoOpenUnitVc.create' was marked inline but was not bound in the optimization environment
@@ -91,35 +131,60 @@ type UnitVc =
         if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "UnitVc.create: x:%g and z:%g are too small for creating a Unit vector. Tolerance:%g" x y zeroLengthTol        
         UnitVc( x/l , y/l )  
 
-/// A 2D Point (3D Points are called 'Pnt') 
+/// A immutable 2D Point. Made up from 2 floats: X and Y.
+/// ( 3D Points are called 'Pnt' ) 
 [<Struct;NoEquality;NoComparison>]// because its made up from floats
 [<IsReadOnly>]
 //[<IsByRefLike>]
 type Pt =
+    
+    /// Gets the X part of this 2D point
     val X : float
+
+    /// Gets the Z part of this 2D point
     val Y : float
 
+    /// Create a new 2D Point. Made up from 3 floats: X, Y, and Z.
     new (x,y) =         
         #if DEBUG // TODO : with this test all  operations are 2.5 times slower    
         if Double.IsNaN x || Double.IsNaN y || Double.IsInfinity x || Double.IsInfinity y  then FsExGeoException.Raise "FsEx.Geo.Pt Constructor failed for x:%g , y:%g"  x y 
         #endif
         {X=x; Y=y}
 
+    /// Format 2D point into string including type name and nice floating point number formatting.
     override p.ToString() = sprintf "FsEx.Geo.Pt(X=%s, Y=%s)" (Format.float p.X) (Format.float p.Y)
-
+        
+    /// Subtract one 2D point from another. 
+    /// 'a-b' returns a new 2D vector from b to a. 
     static member inline ( - )  (a:Pt, b:Pt)     = Vc (a.X - b.X , a.Y - b.Y )
+    
+    /// Subtract a unit vector from a 2D point. Returns a new 2D point.
     static member inline ( - )  (a:Pt, b:Vc)     = Pt (a.X - b.X , a.Y - b.Y )
+    
+    /// Subtract a vector from a 2D point. Returns a new 2D point.
     static member inline ( - )  (a:Pt, b:UnitVc) = Pt (a.X - b.X , a.Y - b.Y )
 
     //static member inline ( + )  (v:UnitVc, p:Pt)     = Pt (p.X + v.X , p.Y + v.Y )
     //static member inline ( + )  (v:Vc,     p:Pt)     = Pt (p.X + v.X , p.Y + v.Y )
+    
+    
+    /// Add two 2D points together. Returns a new 2D point.
     static member inline ( + )  (p:Pt,     v:Vc)     = Pt (p.X + v.X , p.Y + v.Y )
+    
+    /// Add a vector to a 2D point. Returns a new 2D point.
     static member inline ( + )  (p:Pt,     v:UnitVc) = Pt (p.X + v.X , p.Y + v.Y )
+    
+    /// Add a unit vector to a 2D point. Returns a new 2D point.
     static member inline ( + )  (a:Pt,     b:Pt)     = Pt (a.X + b.X , a.Y + b.Y )
-
+    
+    /// Multiplies a 2D point with a scalar, also called scaling a point. Returns a new 2D point.
     static member inline ( * )  (a:Pt  , f:float) = Pt (a.X * f , a.Y * f ) // scale Vector
+    
+    /// Multiplies a scalar with a 2D point, also called scaling a point. Returns a new 2D point. 
     static member inline ( * )  (f:float, a:Pt  ) = Pt (a.X * f , a.Y * f ) // scale Vector   
 
+    
+    /// Divides a 2D point by a scalar, also be called dividing/scaling a point. Returns a new 2D point.
     static member inline ( / )  (p:Pt, f:float) = 
         if abs f > Util.zeroLengthTol then  Pt (p.X / f , p.Y / f ) 
         else FsExGeoDivByZeroException.Raise "%g is too small for dividing %O using '/' operator. Tolerance:%g" f p zeroLengthTol

@@ -292,8 +292,8 @@ module AutoOpenVc =
 
         /// Rotate the a 2D Vector Counter Clockwise by a 2D Rotation (that has cos and sin precomputed)
         static member inline rotateBy (r:Rotation2D) (v:Vc) = 
-            Vc(r.cos*v.X - r.sin*v.Y, 
-               r.sin*v.X + r.cos*v.Y) 
+            Vc(r.Cos*v.X - r.Sin*v.Y, 
+               r.Sin*v.X + r.Cos*v.Y) 
 
         /// Rotate the 2D Vector in Degrees. Counter Clockwise.
         /// For better Performance precompute the Rotate2D struct and use its member to rotate. see Vc.rotateBy

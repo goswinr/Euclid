@@ -231,13 +231,13 @@ module AutoOpenUnitVec =
         // Rotate2D: 
 
         /// Rotate the 3D UnitVector around X axis, from Y to Z Axis, Counter Clockwise looking from right.
-        static member rotateXBy (r:Rotation2D) (v:UnitVec) = UnitVec.createUnchecked (v.X,  r.cos*v.Y - r.sin*v.Z, r.sin*v.Y + r.cos*v.Z)
+        static member rotateXBy (r:Rotation2D) (v:UnitVec) = UnitVec.createUnchecked (v.X,  r.Cos*v.Y - r.Sin*v.Z, r.Sin*v.Y + r.Cos*v.Z)
         
         /// Rotate the 3D UnitVector around Y axis, from Z to X Axis, Counter Clockwise looking from back.
-        static member rotateYBy (r:Rotation2D) (v:UnitVec) = UnitVec.createUnchecked ( r.sin*v.Z + r.cos*v.X,  v.Y, r.cos*v.Z - r.sin*v.X) 
+        static member rotateYBy (r:Rotation2D) (v:UnitVec) = UnitVec.createUnchecked ( r.Sin*v.Z + r.Cos*v.X,  v.Y, r.Cos*v.Z - r.Sin*v.X) 
         
         /// Rotate the 3D UnitVector around Z axis, from X to Y Axis, Counter Clockwise looking from top.
-        static member rotateZBy (r:Rotation2D) (v:UnitVec) = UnitVec.createUnchecked (r.cos*v.X - r.sin*v.Y, r.sin*v.X + r.cos*v.Y,  v.Z)
+        static member rotateZBy (r:Rotation2D) (v:UnitVec) = UnitVec.createUnchecked (r.Cos*v.X - r.Sin*v.Y, r.Sin*v.X + r.Cos*v.Y,  v.Z)
         
         
         /// Rotate the 3D UnitVector in Degrees around X axis, from Y to Z Axis, Counter Clockwise looking from right.

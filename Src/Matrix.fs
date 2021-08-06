@@ -10,6 +10,7 @@ open FsEx.Geo.Util
 /// M12 M22 M32 Y42 
 /// M13 M23 M33 Z43 
 /// M14 M24 M34 M44
+/// Where X41, Y42 and Z43 refer to the translation part of the matrix.
 [<Struct; NoEquality; NoComparison>] // because its made up from floats
 [<IsReadOnly>]
 //[<IsByRefLike>]
@@ -19,7 +20,7 @@ type Matrix =
     val M13 :float ; val M23 :float ; val M33 :float; val Z43:float
     val M14 :float ; val M24 :float ; val M34 :float; val M44:float
     
-    //this iplementation is based on https://github.com/mrdoob/three.js/blob/dev/src/math/Matrix4.js    
+    // this iplementation is based on https://github.com/mrdoob/three.js/blob/dev/src/math/Matrix4.js    
     
     /// Create a 4x4 Transformation Matrix.
     /// This Constructor takes arguments in row-major order, 
@@ -28,6 +29,7 @@ type Matrix =
     /// M12 M22 M32 Y42
     /// M13 M23 M33 Z43
     /// M14 M24 M34 M44
+    /// Where X41, Y42 and Z43 refer to the translation part of the matrix.
     new ( m11,  m21,  m31,  x41, 
           m12,  m22,  m32,  y42, 
           m13,  m23,  m33,  z43, 
@@ -39,6 +41,7 @@ type Matrix =
     
     /// Returns the 16 elements colum-major order:
     /// [| M11 M12 M13 M14 M21 M22 M23 M24 M31 M32 M33 M34 X41 Y42 Z43 M44 |] 
+    /// Where X41, Y42 and Z43 refer to the translation part of the matrix.
     member m.ByColumns = [|  
         m.M11
         m.M12
@@ -60,6 +63,7 @@ type Matrix =
     
     /// Returns the 16 elements in row-major order: 
     /// [| M11 M21 M31 X41 M12 M22 M32 Y42 M13 M23 M33 Z43 M14 M24 M34 M44 |] 
+    /// Where X41, Y42 and Z43 refer to the translation part of the matrix.
     member m.ByRows = [|  
         m.M11
         m.M21
@@ -584,10 +588,9 @@ type Matrix =
                 )
 
 
-
-
     /// Creates a matrix from array of 16 elements in Column Major order:
     /// [| M11 M12 M13 M14 M21 M22 M23 M24 M31 M32 M33 M34 X41 Y42 Z43 M44 |] 
+    /// Where X41, Y42 and Z43 refer to the translation part of the matrix.
     static member createFromColumMajorArray (xs:float[]) =
         if xs.Length <> 16 then 
             FsExGeoException.Raise "FsEx.Geo.Matrix.createFromColumMajorArray expects an array of 16 items but got %d " xs.Length
@@ -601,6 +604,7 @@ type Matrix =
 
     /// Creates a matrix from array of 16 elements in Row Major order:
     /// [| M11 M21 M31 X41 M12 M22 M32 Y42 M13 M23 M33 Z43 M14 M24 M34 M44 |] 
+    /// Where X41, Y42 and Z43 refer to the translation part of the matrix.
     static member createFromRowMajorArray (xs:float[]) =
         if xs.Length <> 16 then 
             FsExGeoException.Raise "FsEx.Geo.Matrix.createFromRowMajorArray expects an array of 16 items but got %d " xs.Length

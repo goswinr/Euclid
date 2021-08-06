@@ -263,13 +263,13 @@ module AutoOpenPnt =
         // Rotate 2D and 3D: 
 
         /// Rotate the 3D Point around X axis, from Y to Z Axis, Counter Clockwise looking from right.
-        static member rotateXBy (r:Rotation2D) (p:Pnt) = Pnt (p.X,  r.cos*p.Y - r.sin*p.Z, r.sin*p.Y + r.cos*p.Z)
+        static member rotateXBy (r:Rotation2D) (p:Pnt) = Pnt (p.X,  r.Cos*p.Y - r.Sin*p.Z, r.Sin*p.Y + r.Cos*p.Z)
         
         /// Rotate the 3D Point around Y axis, from Z to X Axis, Counter Clockwise looking from back.
-        static member rotateYBy (r:Rotation2D) (p:Pnt) = Pnt ( r.sin*p.Z + r.cos*p.X,  p.Y, r.cos*p.Z - r.sin*p.X) 
+        static member rotateYBy (r:Rotation2D) (p:Pnt) = Pnt ( r.Sin*p.Z + r.Cos*p.X,  p.Y, r.Cos*p.Z - r.Sin*p.X) 
         
         /// Rotate the 3D Point around Z axis, from X to Y Axis, Counter Clockwise looking from top.
-        static member rotateZBy (r:Rotation2D) (p:Pnt) = Pnt (r.cos*p.X - r.sin*p.Y, r.sin*p.X + r.cos*p.Y,  p.Z)
+        static member rotateZBy (r:Rotation2D) (p:Pnt) = Pnt (r.Cos*p.X - r.Sin*p.Y, r.Sin*p.X + r.Cos*p.Y,  p.Z)
         
         /// Rotate the 3D Point around a center 3D Point and a X aligned axis, from Y to Z Axis, Counter Clockwise looking from right.
         static member rotateXonCenterBy (cen:Pnt) (r:Rotation2D) (pt:Pnt) =  
@@ -277,25 +277,25 @@ module AutoOpenPnt =
             let y = pt.Y - cen.Y 
             let z = pt.Z - cen.Z
             Pnt (x                 + cen.X,  
-                 r.cos*y - r.sin*z + cen.Y, 
-                 r.sin*y + r.cos*z + cen.Z)         
+                 r.Cos*y - r.Sin*z + cen.Y, 
+                 r.Sin*y + r.Cos*z + cen.Z)         
 
         /// Rotate the 3D Point around a center Point and a Y aligned axis, from Z to X Axis, Counter Clockwise looking from back.
         static member rotateYonCenterBy (cen:Pnt) (r:Rotation2D) (pt:Pnt) =  
             let x = pt.X - cen.X 
             let y = pt.Y - cen.Y 
             let z = pt.Z - cen.Z
-            Pnt ( r.sin*z + r.cos*x + cen.X, 
+            Pnt ( r.Sin*z + r.Cos*x + cen.X, 
                   y                 + cen.Y, 
-                  r.cos*z - r.sin*x + cen.Z) 
+                  r.Cos*z - r.Sin*x + cen.Z) 
         
         /// Rotate the 3D Point around a center Point and a Z aligned axis, from X to Y Axis, Counter Clockwise looking from top.
         static member rotateZonCenterBy (cen:Pnt) (r:Rotation2D) (pt:Pnt) =  
             let x = pt.X - cen.X  
             let y = pt.Y - cen.Y 
             let z = pt.Z - cen.Z
-            Pnt (r.cos*x - r.sin*y + cen.X, 
-                 r.sin*x + r.cos*y + cen.Y, 
+            Pnt (r.Cos*x - r.Sin*y + cen.X, 
+                 r.Sin*x + r.Cos*y + cen.Y, 
                  z                 + cen.Z)
         
         /// Rotate the 3D Point in Degrees around X axis, from Y to Z Axis, Counter Clockwise looking from right.

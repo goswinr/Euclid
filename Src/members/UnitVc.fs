@@ -14,13 +14,19 @@ module AutoOpenUnitVc =
         sqrt(x*x+y*y)
 
     type UnitVc with 
-
-        member inline v.WithX x = Vc (x ,v.Y) // returns new Vector with new x coordinate, y and z the same as before
+        
+        /// Returns new 2D Vector with new X coordinate, Y stays the same.
+        member inline v.WithX x = Vc (x ,v.Y) 
+        
+        /// Returns new 2D Vector with new Y coordinate, X stays the same.
         member inline v.WithY y = Vc (v.X, y)
+        
+        /// Returns new 3D Vector with Z coordinate, X and Y stay the same.
         member inline v.WithZ z = Vec (v.X, v.Y, z)        
 
-        /// Tests if dot product is bigger than 0.0
-        member inline v.MatchesOrientation (vv:UnitVc) = v*vv > 0. // direction match
+        /// Tests if dot product is bigger than 0.0.
+        /// That means the angle bewteen the two vectors is less than 90 degrees.
+        member inline v.MatchesOrientation (vv:UnitVc) = v*vv > 0.
 
          /// 2D cross product. Its Just a scalar
         member inline a.Cross (b:Vc)     = a.X*b.Y - a.Y*b.X
@@ -143,16 +149,20 @@ module AutoOpenUnitVc =
         static member inline YAxis  = UnitVc.createUnchecked (0.0 , 1.0)
 
         /// 2D cross product. Its Just a scalar
-        static member inline cross (a:UnitVc, b:UnitVc)      = a.X*b.Y - a.Y*b.X        
+        static member inline cross (a:UnitVc, b:UnitVc)      = a.X*b.Y - a.Y*b.X  
+        
         /// 2D cross product. Its Just a scalar
         static member inline cross (a:UnitVc, b:Vc)  = a.X*b.Y - a.Y*b.X
+
         /// 2D cross product. Its Just a scalar
         static member inline cross (a:Vc, b:UnitVc)  = a.X*b.Y - a.Y*b.X
         
         /// dot product, or scalar product
         static member inline dot  (a:UnitVc, b:UnitVc  ) = a.X * b.X + a.Y * b.Y 
+
         /// dot product, or scalar product
         static member inline dot  (a:Vc, b:UnitVc  ) = a.X * b.X + a.Y * b.Y 
+
         /// dot product, or scalar product
         static member inline dot  (a:UnitVc, b:Vc  ) = a.X * b.X + a.Y * b.Y 
         
@@ -291,8 +301,8 @@ module AutoOpenUnitVc =
         /// Rotate the a 2D UnitVector Counter Clockwise by a 2D Rotation (that has cos and sin precomputed)
         static member inline rotateBy (r:Rotation2D) (v:UnitVc) = 
             UnitVc.createUnchecked (
-                r.cos*v.X - r.sin*v.Y, 
-                r.sin*v.X + r.cos*v.Y) 
+                r.Cos*v.X - r.Sin*v.Y, 
+                r.Sin*v.X + r.Cos*v.Y) 
 
         /// Rotate the 2D UnitVector in Degrees. Counter Clockwise.
         /// For better Performance precompute the Rotate2D struct and use its member to rotate. see UnitVc.rotateBy
