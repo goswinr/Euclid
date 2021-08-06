@@ -199,6 +199,15 @@ module AutoOpenVec =
         /// Returns vector unitized or Vec(NaN,NaN,NaN) on zero length vectors
         static member inline unitizeUnChecked (v:Vec) = v.UnitizedUnchecked
 
+        /// Unitize vector, if input vector is shorter than 1e-6 the default Unit Vector is returned.
+        static member inline unitizeOrDefault (defaultUnitVector:UnitVec) (v:Vec) = 
+            let l = v.LengthSq
+            if l < 1e-12  then  //sqrt (1e-06)
+                defaultUnitVector 
+            else
+                let f = 1.0 / sqrt(l)
+                UnitVec.createUnchecked(v.X*f , v.Y*f , v.Z*f)  
+
         /// Returns three vectors Determinant
         /// This is also the signed volume of the Parallelepipeds define by these three vectors.
         /// Also called scalar triple product, mixed product, Box product, or in German: Spatprodukt.
@@ -315,14 +324,7 @@ module AutoOpenVec =
              if v.IsTiny(zeroLengthTol) then FsExGeoDivByZeroException.Raise "Vec Cannot not check very tiny vector for horizontality %O" v
              abs(v.Z) < zeroLengthTol     
 
-        /// Unitize vector, if input vector is shorter than 1e-6 the default Unit Vector is returned.
-        static member inline unitizeOrDefault (defaultUnitVector:UnitVec) (v:Vec) = 
-            let l = v.LengthSq
-            if l < 1e-12  then  //sqrt (1e-06)
-                defaultUnitVector 
-            else
-                let f = 1.0 / sqrt(l)
-                UnitVec.createUnchecked(v.X*f , v.Y*f , v.Z*f)    
+          
 
         /// Returns positive or negative slope of a vector in Radians.
         /// In relation to XY Plane.

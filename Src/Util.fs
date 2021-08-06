@@ -8,30 +8,34 @@ type FsExGeoException (s:string) =
 
     static member inline Raise msg = raise (new FsExGeoException(msg))
 
-/// Exception values that are too small to y a divisor
+/// Exception for attempting to divide by a 0.0 or almost 0.0 value 
+/// Almost 0.0 is defined by Util.zeroLengthTol (1e-16)
 type FsExGeoDivByZeroException (s:string) = 
     inherit System.Exception(s)
 
     static member inline Raise msg = raise (new FsExGeoDivByZeroException(msg))
 
 
+/// Math Utility functions and values for use within FsEx.Geo
 module Util =
     
     /// Tolerance for zero length: 1e-16 in divisions
     [<Literal>]
     let zeroLengthTol = 1e-16 
+
+    /// Math.PI * 2.0
+    [<Literal>]
+    let twoPi = 6.28318530717959
+    
+    /// Math.PI * 0.5
+    [<Literal>]
+    let halfPi = 1.5707963267949
     
     /// Converts Angels from Degrees to Radians
     let inline toRadians degrees =  0.0174532925199433 * degrees //  Math.PI / 180.
 
     /// Converts Angels from Radians to Degrees
     let inline toDegrees radians = 57.2957795130823 * radians  // 180. / Math.PI
-
-    /// Math.PI * 2.0
-    let twoPi = 6.28318530717959
-    
-    /// Math.PI * 0.5
-    let halfPi = 1.5707963267949
 
     /// Clamp value between -1.0 and +1.0
     let inline clamp11 (x:float)= 

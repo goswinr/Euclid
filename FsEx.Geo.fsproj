@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>net472</TargetFramework>    <!--netstandard2.0 does not support [<IsByRefLike; IsReadOnly>] -->
+    <TargetFramework>net472</TargetFramework>    <!--netstandard2.0 does not support [<IsByRefLike>] nor  [<IsReadOnly>] -->
     <LangVersion>preview</LangVersion>
     <OtherFlags>$(OtherFlags)--warnon:3390</OtherFlags>  <!-- warnon:3390 is to verify xml docstrings https://devblogs.microsoft.com/dotnet/announcing-f-5/0improved-compiler-analysis-for-library-authors -->
 

@@ -216,11 +216,11 @@ module AutoOpenPnt =
             let v = toPt - fromPt
             let normHor = 
                 Vec.cross(v, Vec.ZAxis)
-                |> Vec.unitizeWithAlternative Vec.XAxis
+                |> Vec.unitizeOrDefault UnitVec.XAxis
        
             let normFree = 
                 Vec.cross(v, normHor)
-                |> Vec.unitizeWithAlternative Vec.ZAxis
+                |> Vec.unitizeOrDefault UnitVec.ZAxis
        
             let shift = distHor * normHor + distNormal * normFree
             fromPt +  shift, toPt + shift             

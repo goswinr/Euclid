@@ -4,10 +4,12 @@ open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>]  see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike    
 open FsEx.Geo.Util  
     
-/// A 2D Vector (3D Vectors are called 'Vec') 
+/// A 2D Vector with any length. Made up from 2 floats: X and Y.
+/// (2D Unit vectors with length 1.0 are called 'UnitVc')
+/// (3D Vectors are called 'Vec') 
 [<Struct;NoEquality;NoComparison>]// because its made up from floats
 [<IsReadOnly>]
-//[<IsByRefLike>]
+//[<IsByRefLike>] // not used, see notes at end of file  
 type Vc =
     val X : float
     val Y : float
@@ -121,3 +123,32 @@ type Pt =
     static member inline ( / )  (p:Pt, f:float) = 
         if abs f > Util.zeroLengthTol then  Pt (p.X / f , p.Y / f ) 
         else FsExGeoDivByZeroException.Raise "%g is too small for dividing %O using '/' operator. Tolerance:%g" f p zeroLengthTol
+
+
+(*
+from: 
+https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
+        
+[<IsByRefLike>] is another attribute. 
+We are talking a lot about passing value types using memory location addresses instead of doing deep copies. 
+Marking struct using this attribute is basically saying "I always want to pass this value by reference". 
+This of course comes with severe limitations: it cannot be boxed (moved to managed heap) and 
+for this reason it can never be captured by closures, implement interfaces or be used as field in classes or other non-by-ref structs.
+        
+In terms of F# this basically means that this kind of structs are used mostly for code that
+is executed right away within the function body, with no computation expressions or other indirections. 
+This usually qualifies them to hot paths in our code, where CPU intensive work is expected and allocations 
+are not welcome, like:
+        
+for .. in loops - in fact many moderns .NET structures have special variants of GetEnumerator 
+that doesn't allocate any memory and is implemented as by-ref struct. 
+F# also understands that pattern - in fact you can define custom 
+GetEnumerator(): MyEnumerator method for your collection, with MyEnumerator - which can even be a ref struct - having two methods: 
+        
+Current: 'item and 
+MoveNext: unit -> bool, and F# will automatically understand how to use it in loops. 
+You can see an example implementation of it here - 
+https://github.com/Horusiath/fsharp.core.extensions/blob/62b102e84325e89b0a6c4065b973936c11adee55/src/FSharp.Core.Extensions/Vec.fs#L147
+it's a part of implementation of persistent vector data type, 
+similar to FSharpX persistent vector, but it's 4.5 times faster and not allocating anything on heap when executed in loops.
+*)

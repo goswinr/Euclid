@@ -11,10 +11,16 @@
 
 
 FsEx.Geo is a 2D and 3D Geometry library without dependencies. 
-Written in and for F# (but can be used from C# or Ironpython too.)
+Written in F# and designed for use with F#. 
+That means all types are immutable and functions are curried where apropiate.
+It is mostly focused on creating and manipulating primitives such as 
+Points, Vectors, Lines, Planes, Boxes, and Bounding boxes, and Polylines. 
+For transformations ther are Rotations, Quaternions, and 4x4 Matrices.
 
 See FsEx.Geo.Rhino for conversion to Rhino3D geometry.
 
+This Libray carries the `FsEx` prefix, but has no dependency on https://github.com/goswinr/FsEx. 
+It only has the same author.
 
 ### It Includes: 
 
@@ -26,5 +32,7 @@ See FsEx.Geo.Rhino for conversion to Rhino3D geometry.
 [MIT](https://raw.githubusercontent.com/goswinr/FsEx.Geo/main/LICENSE.txt)
 
 ### Changelog
+
 `0.0.1` 
+
 - first release
