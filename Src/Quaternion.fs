@@ -31,7 +31,7 @@ type Quaternion =
     new (x,y,z,w) = 
         #if DEBUG
         let l = x*x  + y*y + z*z + w*w 
-        if 0.99999 > l || l > 1.00001 then  
+        if isNotOne l then  
             FsExGeoException.Raise "FsEx.Geo.Quaternion Constructor failed for x:%g, y:%g, z:%g, w:%g. The length needs to be 1.0." x y z w
         #endif
         {X=x; Y=y; Z=z; W=w}

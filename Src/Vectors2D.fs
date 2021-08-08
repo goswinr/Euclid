@@ -81,7 +81,7 @@ type UnitVc =
     new (x,y) = 
         #if DEBUG
         let l = x*x + y*y // TODO : with this test all  operations are 2.5 times slower  
-        if not (Util.isOne l) then  FsExGeoException.Raise "FsEx.Geo.UnitVc Constructor failed for x:%g and y:%g. The length needs to be 1.0." x y 
+        if Util.isNotOne l then  FsExGeoException.Raise "FsEx.Geo.UnitVc Constructor failed for x:%g and y:%g. The length needs to be 1.0." x y 
         #endif
         {X=x; Y=y}
         
@@ -93,14 +93,20 @@ type UnitVc =
     
     /// Subtract one 2D unit vectors from another. Returns a new (non-unitized) 2D vector.
     static member inline ( - )  (a:UnitVc, b:UnitVc) = Vc (a.X - b.X , a.Y - b.Y )
+    
+    /// Subtract a 2D unit vectors from a 2D vector". Returns a new (non-unitized) 2D vector.
+    static member inline ( - )  (a:Vc, b:UnitVc) = Vc (a.X - b.X , a.Y - b.Y )
+    
+    /// Subtract a 2D vectors from a 2D unit vector". Returns a new (non-unitized) 2D vector.
+    static member inline ( - )  (a:UnitVc, b:Vc) = Vc (a.X - b.X , a.Y - b.Y )
         
     /// Add two 2D unit vectors together. Returns a new (non-unitized) 2D vector.
     static member inline ( + )  (a:UnitVc, b:UnitVc) = Vc (a.X + b.X , a.Y + b.Y )
     
-    /// Multiplies a 2D unit vector with a scalar, also called scaling a vector. Returns a new (non-unitized) 2D vector.
+    /// Add a 2D unit vectors and a 2D vector together. Returns a new (non-unitized) 2D vector.
     static member inline ( + )  (a:Vc,     b:UnitVc) = Vc (a.X + b.X , a.Y + b.Y )
     
-    /// Multiplies a scalar with a 2D unit vector, also called scaling a vector. Returns a new (non-unitized) 2D vector. 
+    /// Add a 2D vectors and a 2D unit vector together. Returns a new (non-unitized) 2D vector.
     static member inline ( + )  (a:UnitVc, b:Vc)     = Vc (a.X + b.X , a.Y + b.Y )
         
     /// Multiplies a 2D unit vector with a scalar, also called scaling a vector. Returns a new (non-unitized) 2D vector.
@@ -111,15 +117,15 @@ type UnitVc =
     
     /// Dot product, or scalar product of two 2D unit vectors. 
     /// Returns a float. This float is the cosine of the angle between the two vectors.
-    static member inline ( * )  (a:UnitVc  , b:UnitVc  ) = a.X * b.X+ a.Y * b.Y  // dot product
+    static member inline ( * )  (a:UnitVc  , b:UnitVc  ) = a.X * b.X+ a.Y * b.Y  
     
-    /// Dot product, or scalar product of a 2D unit vectors with a 2D vector  
+    /// Dot product, or scalar product of a 2D unit vector with a 2D vector  
     /// Returns a float. This float is the projected length of the 2D vector on the direction of the unit vector
-    static member inline ( * )  (a:UnitVc  , b:Vc      ) = a.X * b.X+ a.Y * b.Y  // dot product
+    static member inline ( * )  (a:UnitVc  , b:Vc      ) = a.X * b.X+ a.Y * b.Y  
     
-    /// Dot product, or scalar product of a 2D unit vectors with a 2D vector  
+    /// Dot product, or scalar product of a 2D vector with a 2D unit vector  
     /// Returns a float. This float is the projected length of the 2D vector on the direction of the unit vector
-    static member inline ( * )  (a:Vc      , b:UnitVc  ) = a.X * b.X+ a.Y * b.Y  // dot product
+    static member inline ( * )  (a:Vc      , b:UnitVc  ) = a.X * b.X+ a.Y * b.Y  
         
     /// Divides a 2D unit vector by a scalar, also be called dividing/scaling a vector. Returns a new (non-unitized) 2D vector.
     static member inline ( / )  (v:UnitVc, f:float) = 

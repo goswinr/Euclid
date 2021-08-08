@@ -65,6 +65,14 @@ module Util =
         // 1.000000715 is 6 steps bigger  than 1.0: https://float.exposed/0x3f800006
         // 0.99999964  is 6 steps smaller than 1.0: https://float.exposed/0x3f7ffffa
         0.999999642372131347656 < x && x < 1.00000071525573730469 
+
+    /// Tests if a number is not close to 1.0 by maximum 6 steps of float increment or decrement.
+    /// So not between 0.99999964 and 1.000000715.
+    /// See https://float.exposed
+    let inline isNotOne  x =  
+        // 1.000000715 is 6 steps bigger  than 1.0: https://float.exposed/0x3f800006
+        // 0.99999964  is 6 steps smaller than 1.0: https://float.exposed/0x3f7ffffa
+        0.999999642372131347656 > x || x > 1.00000071525573730469     
     
     /// Tests if a number is close to -1.0 by maximum 6 steps of float increment or decrement.
     /// So between -0.99999964 and -1.000000715.

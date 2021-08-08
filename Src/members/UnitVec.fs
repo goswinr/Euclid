@@ -19,15 +19,24 @@ module AutoOpenUnitVec =
 
     type UnitVec with 
 
+        /// Returns the length of the 3D vector projected into world XY plane.
         member inline v.LengthInXY =  sqrt (v.X*v.X + v.Y*v.Y)
 
+        /// Returns the squared length of the 3D vector projected into world XY plane.
+        /// The square length is faster to calculate and often good enough for use cases such as sorting vectors by length.
         member inline v.LengthSqInXY = v.X*v.X + v.Y*v.Y
 
-        member inline v.WithX x = Vec (x ,v.Y, v.Z) // returns new Vector with new x coordinate, y and z the same as before
+        /// Returns  a new 3D Vector with new X coordinate, Y and Z  stay the same.
+        member inline v.WithX x = Vec (x ,v.Y, v.Z) 
+        
+        /// Returns a new 3D Vector with new y coordinate, X and Z  stay the same.
         member inline v.WithY y = Vec (v.X, y, v.Z)
+        
+        /// Returns a new 3D Vector with new z coordinate, X and Y  stay the same.
         member inline v.WithZ z = Vec (v.X ,v.Y, z)
 
-        /// Tests if dot product is bigger than 0.0
+        /// Tests if dot product is bigger than 0.0.
+        /// That means the angle between the two vectors is less than 90 degrees
         member inline v.MatchesOrientation (vv:UnitVec) = v*vv > 0. // direction match
         
         /// The diamond angle is always positive and in the range of 0.0 to 4.0 ( for 360 degrees) 
@@ -64,52 +73,37 @@ module AutoOpenUnitVec =
                 a        
         
         /// Returns the Angle in Degrees from XAxis.  
-        /// Going Counter clockwise till 360.
+        /// Going Counter clockwise till 360. Ignoring Z component.
         member inline v.Angle360InXY =
             v.Angle2PIInXY |> toDegrees
         
-        member inline v.AsVec        = Vec(v.X, v.Y, v.Z)
-        member inline v.AsPnt        = Pnt(v.X, v.Y, v.Z)
-        member inline v.AsVc         = Vc(v.X, v.Y)        
+        /// Convert 3D unit vector to 3D Vector. 
+        member inline v.AsVec = Vec(v.X, v.Y, v.Z)
+        
+        /// Convert 3D unit vector to 3D Point. 
+        member inline v.AsPnt  = Pnt(v.X, v.Y, v.Z)
+
+        /// Convert 3D unit vector to 2D Vector, discarding the Z value. 
+        member inline v.AsVc  = Vc(v.X, v.Y)      
 
         //----------------------------------------------------------------------------------------------
         //--------------------------  Static Members  --------------------------------------------------
         //----------------------------------------------------------------------------------------------
 
-        static member inline XAxis  = UnitVec.createUnchecked (1.0 , 0.0, 0.0)        
+        /// Returns the world X-axis with length one: UnitVec(1,0,0)
+        static member inline XAxis  = UnitVec.createUnchecked (1.0 , 0.0, 0.0)
+        
+        /// Returns the world Y-axis with length one: UnitVec(0.1,0)
         static member inline YAxis  = UnitVec.createUnchecked (0.0 , 1.0, 0.0)
+        
+        /// Returns the world Z-axis with length one: UnitVec(0,0,1)
         static member inline ZAxis  = UnitVec.createUnchecked (0.0 , 0.0, 1.0)
+        
+        // These members cannot be implemented since 
+        // Array.sum and Array.average of UnitVec would return a 'Vec' and not a 'UnitVec' 
+        // static member Zero = UnitVec ( 0 , 0, 0)  // needed by 'Array.sum' 
+        // static member inline DivideByInt (v:UnitVec, i:int) = v / float i  // needed by  'Array.average' 
 
-
-        /// cross product // A x B = |A|*|B|*sin(angle), direction follow right-hand rule
-        static member inline cross (a:UnitVec, b:UnitVec)  = Vec (a.Y * b.Z - a.Z * b.Y ,  a.Z * b.X - a.X * b.Z ,  a.X * b.Y - a.Y * b.X )       
-        /// cross product // A x B = |A|*|B|*sin(angle), direction follow right-hand rule
-        static member inline cross (a:UnitVec, b:Vec)  = Vec (a.Y * b.Z - a.Z * b.Y ,  a.Z * b.X - a.X * b.Z ,  a.X * b.Y - a.Y * b.X ) 
-        /// cross product // A x B = |A|*|B|*sin(angle), direction follow right-hand rule
-        static member inline cross (a:Vec, b:UnitVec)  = Vec (a.Y * b.Z - a.Z * b.Y ,  a.Z * b.X - a.X * b.Z ,  a.X * b.Y - a.Y * b.X ) 
-
-        /// dot product, or scalar product
-        static member inline dot  (a:UnitVec, b:UnitVec  )     = a.X * b.X + a.Y * b.Y + a.Z * b.Z
-        /// dot product, or scalar product
-        static member inline dot  (a:Vec, b:UnitVec  ) = a.X * b.X + a.Y * b.Y + a.Z * b.Z
-        /// dot product, or scalar product
-        static member inline dot  (a:UnitVec, b:Vec  ) = a.X * b.X + a.Y * b.Y + a.Z * b.Z
-
-
-        static member inline getX     (v:UnitVec) = v.X
-        static member inline getY     (v:UnitVec) = v.Y
-        static member inline getZ     (v:UnitVec) = v.Z
-        static member inline setX     x (v:UnitVec) = v.WithX x
-        static member inline setY     y (v:UnitVec) = v.WithY y
-        static member inline setZ     z (v:UnitVec) = v.WithZ z
-        static member inline add      (a:UnitVec) (b:UnitVec) = b + a  
-        static member inline dirMatch (a:UnitVec) (b:UnitVec) = b.MatchesOrientation a
-        static member inline scale    (f:float) (v:UnitVec) = Vec (v.X * f , v.Y * f , v.Z * f)        
-        static member inline shiftX     x (v:UnitVec) = Vec (v.X+x, v.Y,   v.Z)
-        static member inline shiftY     y (v:UnitVec) = Vec (v.X,   v.Y+y, v.Z)
-        static member inline shiftZ     z (v:UnitVec) = Vec (v.X,   v.Y,   v.Z+z)
-        static member inline setLength  f (v:UnitVec) = Vec (v.X * f , v.Y * f , v.Z * f) 
-    
         /// Accepts any type that has a X, Y and Z (UPPERCASE) member that can be converted to a float. 
         /// Does the unitizing too.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
@@ -130,34 +124,122 @@ module AutoOpenUnitVec =
             try UnitVec.create(float x, float y, float z) 
             with e -> FsExGeoDivByZeroException.Raise "UnitVec.ofxyz: %A could not be converted to a FsEx.Geo.UnitVec:\r\n%A" vec e
 
-        /// Does the unitizing too.
+        /// Create 3D unit vector from 3D point. Does the unitizing too.
         static member inline ofPnt  (pt:Pnt) =  
             let l = sqrt (pt.X*pt.X + pt.Y*pt.Y + pt.Z*pt.Z) 
             if l <  zeroLengthTol then FsExGeoDivByZeroException.Raise "UnitVec.ofPnt failed on too short %O" pt
             let li = 1. / l
             UnitVec.createUnchecked( li*pt.X , li*pt.Y , li*pt.Z ) 
         
-        /// Does the unitizing too.
+        /// Create 3D unit vector from 3D vector. Does the unitizing too.
         static member inline ofVec (v:Vec) = 
             let l = sqrt (v.X*v.X + v.Y*v.Y + v.Z*v.Z) 
             if l <  zeroLengthTol then FsExGeoDivByZeroException.Raise "UnitVec.ofVec failed on too short %O" v
             let li = 1. / l
             UnitVec.createUnchecked( li*v.X , li*v.Y , li*v.Z )       
         
-        
-        /// Project vector to World XY Plane.
-        /// Use make2D to convert to 2D vector instance
-        static member inline projectToXYPlane (v:UnitVec) = Vec(v.X,v.Y, 0.0)
-        
-        /// Project vector to World XY Plane.
-        /// Use projectToXYPlane to keep to 3D vector instance
-        static member inline make2D (v:UnitVec) = Vc(v.X,v.Y)
-        
-        /// Same as reverse
-        static member inline flip  (v:Vec) = -v
+        /// Convert 3D unit vector to 2D point by ignoring Z value. 
+        static member inline asPt(v:UnitVec)  = Pt( v.X, v.Y)
 
-        /// Same as flip
-        static member inline reverse  (v:Vec) = -v   
+        /// Convert 3D unit vector to 2D Vector by ignoring Z value. 
+        static member inline asVc(v:UnitVec) = Vc(v.X, v.Y)
+        
+        /// Convert 3D unit vector to 2D Unit Vector by ignoring Z value and unitizing again.
+        static member inline asUnitVc(v:UnitVec) = UnitVc.create(v.X, v.Y)
+        
+        /// Convert 3D unit vector to 3D point. 
+        static member inline asPnt(v:UnitVec) = Pnt(v.X, v.Y, v.Z) 
+        
+        /// Convert 3D unit vector to 3D vector. 
+        static member inline asVec(v:UnitVec) = Vec(v.X, v.Y, v.Z) 
+
+
+        /// Cross product, of two 3D unit vectors. 
+        /// The resulting vector is perpendicular to both input vectors.
+        /// Its length is the area of the parallelogram spanned by the input vectors.
+        /// Its direction follows th right-hand rule.
+        /// A x B = |A| * |B| * sin(angle)
+        static member inline cross (a:UnitVec, b:UnitVec)  = Vec (a.Y * b.Z - a.Z * b.Y ,  a.Z * b.X - a.X * b.Z ,  a.X * b.Y - a.Y * b.X )       
+        
+        /// Cross product, of a 3D unit vectors an a 3D vector. 
+        /// The resulting vector is perpendicular to both input vectors.
+        /// Its length is the area of the parallelogram spanned by the input vectors.
+        /// Its direction follows th right-hand rule.
+        /// A x B = |A| * |B| * sin(angle)
+        static member inline cross (a:UnitVec, b:Vec)  = Vec (a.Y * b.Z - a.Z * b.Y ,  a.Z * b.X - a.X * b.Z ,  a.X * b.Y - a.Y * b.X ) 
+        
+        /// Cross product, of a 3D vector and a 3D unit vectors. 
+        /// The resulting vector is perpendicular to both input vectors.
+        /// Its length is the area of the parallelogram spanned by the input vectors.
+        /// Its direction follows th right-hand rule.
+        /// A x B = |A| * |B| * sin(angle)
+        static member inline cross (a:Vec, b:UnitVec)  = Vec (a.Y * b.Z - a.Z * b.Y ,  a.Z * b.X - a.X * b.Z ,  a.X * b.Y - a.Y * b.X ) 
+
+        /// Dot product, or scalar product of two 3D unit vectors. 
+        /// Returns a float. This float is the cosine of the angle between the two vectors.
+        static member inline dot  (a:UnitVec, b:UnitVec)   = a.X * b.X + a.Y * b.Y + a.Z * b.Z
+        
+        /// Dot product, or scalar product of a 3D unit vector with a 3D vector  
+        /// Returns a float. This float is the projected length of the 3D vector on the direction of the unit vector
+        static member inline dot  (a:UnitVec, b:Vec ) = a.X * b.X + a.Y * b.Y + a.Z * b.Z
+        
+        /// Dot product, or scalar product of a 3D vector with a 3D unit vector  
+        /// Returns a float. This float is the projected length of the 3D vector on the direction of the unit vector
+        static member inline dot  (a:Vec, b:UnitVec) = a.X * b.X + a.Y * b.Y + a.Z * b.Z
+
+        /// Gets the X part of this 3D unit vector
+        static member inline getX  (v:UnitVec) = v.X
+        
+        /// Gets the Y part of this 3D unit vector
+        static member inline getY (v:UnitVec) = v.Y
+        
+        /// Gets the Z part of this 3D unit vector
+        static member inline getZ  (v:UnitVec) = v.Z
+        
+        /// Returns new 3D Vector with new X value, Y  and Z stay the same.
+        static member inline setX  x (v:UnitVec) = v.WithX x
+        
+        /// Returns new 3D Vector with new Y value, X  and Z stay the same.
+        static member inline setY  y (v:UnitVec) = v.WithY y
+        
+        /// Returns new 3D Vector with new z value, X  and Y stay the same.
+        static member inline setZ z (v:UnitVec) = v.WithZ z
+        
+        /// Add two 3D unit vectors together. Returns a new (non-unitized) 3D vector.
+        static member inline add      (a:UnitVec) (b:UnitVec) = b + a  
+        
+        /// Tests if dot product is bigger than 0.0.
+        /// That means the angle between the two vectors is less than 90 degrees.
+        static member inline dirMatch (a:UnitVec) (b:UnitVec) = b.MatchesOrientation a
+        
+        /// Multiplies a 3D unit vector with a scalar, also called scaling a vector. 
+        /// Same as UnitVec.setLength. Returns a new (non-unitized) 3D vector.
+        static member inline scale    (f:float) (v:UnitVec) = Vec (v.X * f , v.Y * f , v.Z * f)    
+
+        /// Multiplies a 3D unit vector with a scalar, also called scaling a vector. 
+        /// Same as UnitVec.scale. Returns a new (non-unitized) 3D vector.
+        static member inline setLength(f:float) (v:UnitVec) = Vec (v.X * f , v.Y * f , v.Z * f) 
+        
+        /// Add to the X part of this 3D unit vectors together. Returns a new (non-unitized) 3D vector.
+        static member inline shiftX x (v:UnitVec) = Vec (v.X+x, v.Y,   v.Z)
+        
+        /// Add to the Y part of this 3D unit vectors together. Returns a new (non-unitized) 3D vector.
+        static member inline shiftY y (v:UnitVec) = Vec (v.X,   v.Y+y, v.Z)
+        
+        /// Add to the Z part of this 3D unit vectors together. Returns a new (non-unitized) 3D vector.
+        static member inline shiftZ z (v:UnitVec) = Vec (v.X,   v.Y,   v.Z+z)
+            
+        /// Project vector to World XY Plane.
+        /// Use Vc.ofUnitVec to convert to 2D vector instance
+        static member inline projectToXYPlane (v:UnitVec) = Vec(v.X,v.Y, 0.0)
+                    
+        /// Negate or inverse a 3D unit vectors. Returns a new 3D unit vector. 
+        /// Same as UnitVec.reverse
+        static member inline flip  (v:UnitVec) = -v
+
+        /// Negate or inverse a 3D unit vectors. Returns a new 3D unit vector. 
+        /// Same as UnitVec.flip
+        static member inline reverse  (v:UnitVec) = -v   
 
         /// Returns three vectors Determinant
         /// This is also the signed volume of the Parallelepipeds define by these three vectors.
@@ -331,7 +413,6 @@ module AutoOpenUnitVec =
         static member inline perpendicularInXY (v:UnitVec) :Vec = 
             Vec(-v.Y, v.X, 0.0) 
 
-
         /// Returns a vector that is perpendicular to the given vector and in the same vertical Plane.        
         /// Projected into the XY Plane input and output vectors are parallel and of same orientation.
         /// Not of same length, not unitized.
@@ -341,10 +422,5 @@ module AutoOpenUnitVec =
             let r = UnitVec.cross (v, hor)            
             if v.Z < 0.0 then -r else r
 
-
-        //[<Obsolete("Unsafe Member") >]
-        //static member Zero = Vec ( 0. , 0. , 0.)  // needed by 'Array.sum' 
-        //[<Obsolete("Unsafe Member") >]
-        //static member inline DivideByInt (v:UnitVec, i:int) = if i<>0 then v / float i else failwithf "DivideByInt 0 %O " v // needed by  'Array.average'  
 
 

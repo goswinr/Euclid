@@ -113,8 +113,8 @@ module AutoOpenUnitVc =
         
         /// Convert 2D unit vector to 3D Point using 0.0 as Z value. 
         member inline v.AsPnt        = Pnt(v.X, v.Y, 0.0)
-  
-     
+        
+        
         //----------------------------------------------------------------------------------------------
         //--------------------------  Static Members  --------------------------------------------------
         //----------------------------------------------------------------------------------------------
@@ -148,13 +148,13 @@ module AutoOpenUnitVc =
             try UnitVc.create(float x, float y) 
             with e -> FsExGeoDivByZeroException.Raise "UnitVc.ofxy: %A could not be converted to a FsEx.Geo.UnitVc:\r\n%A" vec e
 
-        /// Does the unitizing too.
+        /// Create 2D unit vector from 2D point. Does the unitizing too.
         static member inline ofPt  (pt:Pt) =  
             let l = sqrt (pt.X*pt.X + pt.Y*pt.Y ) 
             if l <  zeroLengthTol then FsExGeoDivByZeroException.Raise "UnitVc.ofPt failed on too short %O" pt
             UnitVc.createUnchecked( pt.X / l , pt.Y / l ) 
         
-        /// Does the unitizing too.
+        /// Create 2D unit vector from 2D vector. Does the unitizing too.
         static member inline ofVec  (v:Vc) = 
             let l = sqrt (v.X*v.X + v.Y*v.Y ) 
             if l <  zeroLengthTol then FsExGeoDivByZeroException.Raise "UnitVc.ofVc failed on too short %O" v
@@ -174,23 +174,31 @@ module AutoOpenUnitVc =
         /// Convert 2D unit vector to 3D Point using 0.0 as Z value. 
         static member inline asPnt(v:UnitVc) = Pnt(v.X, v.Y, 0.0) 
 
-        /// 2D cross product. Its Just a scalar
+
+
+        /// 2D cross product. 
+        /// Its Just a scalar equal to the area of the parallelogram spanned by the input vectors.
         static member inline cross (a:UnitVc, b:UnitVc)      = a.X*b.Y - a.Y*b.X  
         
-        /// 2D cross product. Its Just a scalar
+        /// 2D cross product.  
+        /// Its Just a scalar equal to the area of the parallelogram spanned by the input vectors.
         static member inline cross (a:UnitVc, b:Vc)  = a.X*b.Y - a.Y*b.X
 
-        /// 2D cross product. Its Just a scalar
+        /// 2D cross product.  
+        /// Its Just a scalar equal to the area of the parallelogram spanned by the input vectors.
         static member inline cross (a:Vc, b:UnitVc)  = a.X*b.Y - a.Y*b.X
         
-        /// Dot product, or scalar product
+        /// Dot product, or scalar product of two 2D unit vectors. 
+        /// Returns a float. This float is the cosine of the angle between the two vectors.
         static member inline dot  (a:UnitVc, b:UnitVc  ) = a.X * b.X + a.Y * b.Y 
 
-        /// Dot product, or scalar product
-        static member inline dot  (a:Vc, b:UnitVc  ) = a.X * b.X + a.Y * b.Y 
-
-        /// Dot product, or scalar product
+        /// Dot product, or scalar product of a 2D unit vector with a 2D vector  
+        /// Returns a float. This float is the projected length of the 2D vector on the direction of the unit vector
         static member inline dot  (a:UnitVc, b:Vc  ) = a.X * b.X + a.Y * b.Y 
+
+        /// Dot product, or scalar product of a 2D vector with a 2D unit vector  
+        /// Returns a float. This float is the projected length of the 2D vector on the direction of the unit vector
+        static member inline dot  (a:Vc, b:UnitVc  ) = a.X * b.X + a.Y * b.Y 
         
         /// Gets the X part of this 2D unit vector
         static member inline getX     (v:UnitVc) = v.X
@@ -198,13 +206,13 @@ module AutoOpenUnitVc =
         /// Gets the Y part of this 2D unit vector
         static member inline getY     (v:UnitVc) = v.Y
         
-        /// Returns new 2D Vector with new X coordinate, Y stays the same.
+        /// Returns new 2D Vector with new X value, Y stays the same.
         static member inline setX     x (v:UnitVc) = v.WithX x
         
-        /// Returns new 2D Vector with new Y coordinate, X stays the same.
+        /// Returns new 2D Vector with new Y value, X stays the same.
         static member inline setY     y (v:UnitVc) = v.WithY y
         
-        /// Returns new 3D Vector with Z coordinate, X and Y stay the same.
+        /// Returns new 3D Vector with Z value, X and Y stay the same.
         /// If you want Z to be 0.0 you can use v.AsVec or v.AsUnitVec too.
         static member inline setZ     z (v:UnitVc) = v.WithZ z
 
@@ -228,6 +236,14 @@ module AutoOpenUnitVc =
         
         /// Add to the Y part of this 2D unit vectors together. Returns a new (non-unitized) 2D vector.
         static member inline shiftY     y (v:UnitVc) = Vc (v.X,   v.Y+y)        
+
+        /// Negate or inverse a 2D unit vectors. Returns a new 2D unit vector. 
+        /// Same as UnitVc.reverse
+        static member inline flip  (v:UnitVc) = -v
+
+        /// Negate or inverse a 2D unit vectors. Returns a new 2D unit vector. 
+        /// Same as UnitVc.flip
+        static member inline reverse  (v:UnitVc) = -v   
 
         /// Returns angle between two UnitVectors in Radians.
         /// Takes vector orientation into account.
@@ -360,13 +376,18 @@ module AutoOpenUnitVc =
         static member inline rotate (angDegree) (vec:UnitVc) = 
             UnitVc.rotateBy (Rotation2D.createFromDegrees angDegree) vec  
 
-        
         /// 90 degree rotation counter clockwise
         static member inline rotated90CCW (v:UnitVc) = UnitVc.createUnchecked( -v.Y,   v.X  )
 
         /// 90 degree rotation clockwise
         static member inline rotated90CW (v:UnitVc) = UnitVc.createUnchecked(  v.Y,  -v.X  )  
 
-                
+         /// Ensure vector has a positive dot product with given orientation vector
+        static member inline matchOrientation (orientationToMatch:UnitVc) (v:UnitVc) = 
+            if orientationToMatch * v < 0.0 then -v else v
+
+        /// Check if vector has a positive dot product with given orientation vector
+        static member inline doesOrientationMatch (orientationToCheck:UnitVc) (v:UnitVc) = 
+            orientationToCheck * v > 0.0        
  
         

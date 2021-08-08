@@ -88,9 +88,9 @@ type UnitVec =
     new (x,y,z) = 
         #if DEBUG
         if Double.IsNaN x || Double.IsNaN y || Double.IsNaN z || Double.IsInfinity x || Double.IsInfinity y || Double.IsInfinity z then 
-            FsExGeoException.Raise "FsEx.Geo.UnitVc Constructor failed for x:%g, y:%g, z:%g"  x y z 
+            FsExGeoException.Raise "FsEx.Geo.UnitVec Constructor failed for x:%g, y:%g, z:%g"  x y z 
         let l = x*x + y*y + z*z // TODO : with this test all  operations are 2.5 times slower  
-        if not (Util.isOne l) then  FsExGeoException.Raise "FsEx.Geo.UnitVc Constructor failed for x:%g, y:%g, z:%g. The length needs to be 1.0."  x y z
+        if Util.isNotOne l then  FsExGeoException.Raise "FsEx.Geo.UnitVec Constructor failed for x:%g, y:%g, z:%g. The length needs to be 1.0."  x y z
         #endif
         {X=x; Y=y; Z=z}
         
@@ -103,8 +103,20 @@ type UnitVec =
     /// Subtract one 3D unit vectors from another. Returns a new (non-unitized) 3D vector.
     static member inline ( - )  (a:UnitVec, b:UnitVec) = Vec (a.X - b.X , a.Y - b.Y , a.Z - b.Z)    
     
+    /// Subtract a 3D vectors from a 3D unit vector. Returns a new (non-unitized) 3D vector.
+    static member inline ( - )  (a:UnitVec, b:Vec) = Vec (a.X - b.X , a.Y - b.Y , a.Z - b.Z)    
+    
+    /// Subtract a 3D unit vectors from a 3D vector. Returns a new (non-unitized) 3D vector.
+    static member inline ( - )  (a:Vec, b:UnitVec) = Vec (a.X - b.X , a.Y - b.Y , a.Z - b.Z)    
+    
     /// Add two 3D unit vectors together. Returns a new (non-unitized) 3D vector.
     static member inline ( + )  (a:UnitVec, b:UnitVec) = Vec (a.X + b.X , a.Y + b.Y , a.Z + b.Z)
+    
+    /// Add a 3D vectors and a 3D unit vector together. Returns a new (non-unitized) 3D vector.
+    static member inline ( + )  (a:Vec, b:UnitVec) = Vec (a.X + b.X , a.Y + b.Y , a.Z + b.Z)
+    
+    /// Add a 3D unit vectors and a 3D vector together. Returns a new (non-unitized) 3D vector.
+    static member inline ( + )  (a:UnitVec, b:Vec) = Vec (a.X + b.X , a.Y + b.Y , a.Z + b.Z)
     
     /// Multiplies a 3D unit vector with a scalar, also called scaling a vector. Returns a new (non-unitized) 3D vector.
     static member inline ( * )  (a:UnitVec, f:float  ) = Vec (a.X * f , a.Y * f , a.Z * f)

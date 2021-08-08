@@ -13,10 +13,8 @@ module AutoOpenVc =
         member inline v.IsZero = v.X = 0.0 && v.Y = 0.0 
         
         /// Returns a boolean indicating wether the absolute value of X and Y is each less than the given tolerance.
-        member inline v.IsTiny tol = abs v.X < tol && abs v.Y < tol  
-        
-        //member inline v.IsInValid =  Double.IsNaN v.X || Double.IsNaN v.Y || Double.IsNaN v.Z || Double.IsInfinity v.X || Double.IsInfinity v.Y || Double.IsInfinity v.Z
-        
+        member inline v.IsTiny tol = abs v.X < tol && abs v.Y < tol          
+    
         /// Returns the length of the 2D vector 
         member inline v.Length = sqrt (v.X*v.X + v.Y*v.Y )
         
@@ -52,9 +50,9 @@ module AutoOpenVc =
             if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "%O is too small for unitizing, Tolerance:%g" v zeroLengthTol
             UnitVc.createUnchecked( v.X/l , v.Y/l)          
         
-        member inline v.UnitizedUnchecked =  
-            let l = sqrt(v.X*v.X + v.Y*v.Y) 
-            UnitVc.createUnchecked( v.X/l , v.Y/l)   
+        //member inline v.UnitizedUnchecked =  
+        //    let l = sqrt(v.X*v.X + v.Y*v.Y) 
+        //    UnitVc.createUnchecked( v.X/l , v.Y/l)   
         
         /// Test if the 2D vector is a unit vector. 
         /// Tests if square length is within 6 float steps of 1.0
@@ -216,9 +214,8 @@ module AutoOpenVc =
             if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "%O is too small for unitizing, Tolerance:%g" v zeroLengthTol
             UnitVc.createUnchecked( v.X/l , v.Y/l)
     
-        /// Returns vector unitized or Vc(NaN,NaN,NaN) on zero length vectors
-        static member inline unitizeUnChecked (v:Vc) = 
-            v.UnitizedUnchecked
+        // Returns vector unitized or Vc(NaN,NaN,NaN) on zero length vectors
+        //static member inline unitizeUnChecked (v:Vc) =  v.UnitizedUnchecked
        
         /// Returns angle between two UnitVectors in Radians.
         /// Takes vector orientation into account.
