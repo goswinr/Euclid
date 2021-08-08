@@ -1,7 +1,8 @@
 namespace FsEx.Geo
 open System
 
-/// 
+/// When FsEx.Geo is opened this module will be auto-opened.
+/// It only contains extension members for type Vec
 [<AutoOpen>]
 module AutoOpenVec = 
     open Util
@@ -19,7 +20,7 @@ module AutoOpenVec =
         /// Returns the length of the 3D vector 
         member inline v.Length = sqrt (v.X*v.X + v.Y*v.Y + v.Z*v.Z) 
 
-        /// Returns the squared length of the 3d vector 
+        /// Returns the squared length of the 3D vector 
         /// The square length is faster to calculate and often good enough for use cases such as sorting vectors by length.
         member inline v.LengthSq = v.X*v.X + v.Y*v.Y + v.Z*v.Z
 
@@ -60,11 +61,12 @@ module AutoOpenVec =
         member inline v.UnitizedUnchecked =  
             let li = 1. / sqrt(v.X*v.X + v.Y*v.Y + v.Z*v.Z) 
             UnitVec.createUnchecked( li*v.X , li*v.Y ,li*v.Z ) 
-    
+
+        /// Test if the 3D vector is a unit vector. 
+        /// Test if the vectors square length is within 6 float steps of 1.0
+        /// So between 0.99999964 and 1.000000715.
         member inline v.IsUnit   = 
-            let l = v.Length 
-            0.999999999 < l && 
-            1.000000001 > l
+            Util.isOne v.LengthSq
         
 
         /// The diamond angle is always positive and in the range of 0.0 to 4.0 ( for 360 degrees) 

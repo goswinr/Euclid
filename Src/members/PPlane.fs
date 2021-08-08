@@ -2,7 +2,8 @@ namespace FsEx.Geo
 
 open FsEx.Geo.Util
 
-/// Static and Instance Members for PPlane
+/// When FsEx.Geo is opened this module will be auto-opened.
+/// It only contains extension members for type PPlane
 [<AutoOpen>]
 module AutoOpenPPlane =     
     

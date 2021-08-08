@@ -1,29 +1,45 @@
 namespace FsEx.Geo
 open System
 
-/// Members and operators for 2D Points, Vectors and Rotations
+/// When FsEx.Geo is opened this module will be auto-opened.
+/// It only contains extension members for type Vc
 [<AutoOpen>]
 module AutoOpenVc = 
     open Util
 
     type Vc with
 
+        /// Returns a boolean indicating wether X andY  are exactly 0.0.
         member inline v.IsZero = v.X = 0.0 && v.Y = 0.0 
+        
+        /// Returns a boolean indicating wether the absolute value of X and Y is each less than the given tolerance.
         member inline v.IsTiny tol = abs v.X < tol && abs v.Y < tol  
+        
         //member inline v.IsInValid =  Double.IsNaN v.X || Double.IsNaN v.Y || Double.IsNaN v.Z || Double.IsInfinity v.X || Double.IsInfinity v.Y || Double.IsInfinity v.Z
-
+        
+        /// Returns the length of the 2D vector 
         member inline v.Length = sqrt (v.X*v.X + v.Y*v.Y )
-        /// Length Squared
+        
+        /// Returns the squared length of the 2D vector 
+        /// The square length is faster to calculate and often good enough for use cases such as sorting vectors by length.
         member inline v.LengthSq = v.X*v.X + v.Y*v.Y         
 
-        member inline v.WithX x = Vc (x ,v.Y) // returns new Vector with new x coordinate, y and z the same as before
+        /// Returns new 2D Vector with new X coordinate, Y stays the same.
+        member inline v.WithX x = Vc (x ,v.Y) 
+
+        /// Returns new 2D Vector with new Y coordinate, X stays the same.
         member inline v.WithY y = Vc (v.X, y)
+
+        /// Returns new 3D Vector with Z coordinate, X and Y stay the same.
+        /// If you want Z to be 0.0 you can use v.AsVec too.
         member inline v.WithZ z = Vec (v.X ,v.Y, z)
-    
+        
+        /// Returns a new 2D Vector with half the length.
         member inline v.Half = Vc (v.X*0.5 ,v.Y*0.5)
     
-        /// Test for positive Dot product
-        member inline v.MatchesOrientation (vv:Vc) = v*vv > 0. // direction match
+        /// Tests if dot product is bigger than 0.0.
+        /// That means the angle between the two vectors is less than 90 degrees.
+        member inline v.MatchesOrientation (vv:Vc) = v*vv > 0. 
 
         member inline v.WithLength (desiredLength:float) =  
             let l = sqrt(v.X*v.X+v.Y*v.Y) 
@@ -40,10 +56,11 @@ module AutoOpenVc =
             let l = sqrt(v.X*v.X + v.Y*v.Y) 
             UnitVc.createUnchecked( v.X/l , v.Y/l)   
         
+        /// Test if the 2D vector is a unit vector. 
+        /// Tests if square length is within 6 float steps of 1.0
+        /// So between 0.99999964 and 1.000000715.
         member inline v.IsUnit   = 
-            let l = v.Length 
-            0.999999999 < l && 
-            1.000000001 > l
+            Util.isOne v.LengthSq
 
         /// 2D cross product. Its Just a scalar
         member inline a.Cross (b:Vc)     = a.X*b.Y - a.Y*b.X

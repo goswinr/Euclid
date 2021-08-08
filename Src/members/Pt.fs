@@ -4,7 +4,8 @@ open System
 
 
 
-/// Members and operators for 2D Points, Vectors and Rotations
+/// When FsEx.Geo is opened this module will be auto-opened.
+/// It only contains extension members for type Pt
 [<AutoOpen>]
 module AutoOpenPt = 
     open Util

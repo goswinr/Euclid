@@ -1,7 +1,8 @@
 namespace FsEx.Geo
 
 
-/// Members and operators for 3D Points, Vectors and Rotations
+/// When FsEx.Geo is opened this module will be auto-opened.
+/// It only contains extension members for type Pnt
 [<AutoOpen>]
 module AutoOpenPnt = 
     open Util
