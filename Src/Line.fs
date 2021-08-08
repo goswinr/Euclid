@@ -33,8 +33,8 @@ type [<Struct>] Line =
     
     member inline ln.Reversed = Line(ln.To, ln.From)
     
-    /// return the paramter at which a point is closest.
-    /// If it is smaller than 0.0 or bigger than 1.0 it is ouside of the line
+    /// return the parameter at which a point is closest.
+    /// If it is smaller than 0.0 or bigger than 1.0 it is outside of the line
     member inline ln.ClosestPointParameter (pt:Pnt) = 
         let v = ln.Tangent
         let len = v.LengthSq

@@ -1,32 +1,49 @@
 namespace FsEx.Geo
 open System
 
-/// Members and operators for 3D Points, Vectors and Rotations
+/// 
 [<AutoOpen>]
 module AutoOpenVec = 
     open Util
 
     type Vec with         
-
+        
+        /// Returns a boolean indicating wether X,Y and Z are exactly 0.0.
         member inline v.IsZero =  v.X = 0.0 && v.Y = 0.0 && v.Z= 0.0 
-
+        
+        /// Returns a boolean indicating wether the absolute value of X,Y and Z is each less than the given tolerance.
         member inline v.IsTiny tol = abs v.X < tol && abs v.Y < tol && abs v.Z < tol
 
         //member inline v.IsInValid =  Double.IsNaN v.X || Double.IsNaN v.Y || Double.IsNaN v.Z || Double.IsInfinity v.X || Double.IsInfinity v.Y || Double.IsInfinity v.Z
 
+        /// Returns the length of the 3D vector 
         member inline v.Length = sqrt (v.X*v.X + v.Y*v.Y + v.Z*v.Z) 
-        /// Length Squared
+
+        /// Returns the squared length of the 3d vector 
+        /// The square length is faster to calculate and often good enough for use cases such as sorting vectors by length.
         member inline v.LengthSq = v.X*v.X + v.Y*v.Y + v.Z*v.Z
+
+        /// Returns the length of the 3D vector projected into world XY plane.
         member inline v.LengthInXY =  sqrt (v.X*v.X + v.Y*v.Y)
+
+        /// Returns the squared length of the 3D vector projected into world XY plane.
+        /// The square length is faster to calculate and often good enough for use cases such as sorting vectors by length.
         member inline v.LengthSqInXY = v.X*v.X + v.Y*v.Y
 
-        member inline v.WithX x = Vec (x ,v.Y, v.Z) // returns new Vector with new x coordinate, y and z the same as before
+        /// Returns  a new 3D Vector with new X coordinate, Y and Z  stay the same.
+        member inline v.WithX x = Vec (x ,v.Y, v.Z) 
+
+        /// Returns a new 3D Vector with new y coordinate, X and Z  stay the same.
         member inline v.WithY y = Vec (v.X, y, v.Z)
+
+        /// Returns a new 3D Vector with new z coordinate, X and Y  stay the same.
         member inline v.WithZ z = Vec (v.X ,v.Y, z) 
-    
+        
+        /// Returns a new 3D Vector with half the length.
         member inline v.Half = Vec (v.X*0.5 ,v.Y*0.5, v.Z*0.5)
     
-        /// Test for positive Dot product
+        /// Tests if dot product is bigger than 0.0.
+        /// That means the angle between the two vectors is less than 90 degrees
         member inline v.MatchesOrientation (vv:Vec) = v*vv > 0. // direction match
     
         member inline v.WithLength (desiredLength:float) =  
@@ -106,15 +123,15 @@ module AutoOpenVec =
         //----------------------------------------------------------------------------------------------
         
         /// Returns a zero length vector: Vec(0,0,0)
-        static member inline Zero   = Vec(0,0,0)  // this member is needed by Seq.sum, so that it doesnt fail on empty seq.  
+        static member inline Zero   = Vec(0,0,0)  // this member is needed by Seq.sum, so that it doesn't fail on empty seq.  
         
-        /// Returns the world X-axis with lenth one: Vec(1,0,0)
+        /// Returns the world X-axis with length one: Vec(1,0,0)
         static member inline XAxis  = Vec(1,0,0)
 
-        /// Returns the world Y-axis with lenth one: Vec(0,1,0)
+        /// Returns the world Y-axis with length one: Vec(0,1,0)
         static member inline YAxis  = Vec(0,1,0)
 
-        /// Returns the world Z-axis with lenth one: Vec(0,0,1)
+        /// Returns the world Z-axis with length one: Vec(0,0,1)
         static member inline ZAxis  = Vec(0,0,1)        
 
         /// Cross product // A x B = |A|*|B|*sin(angle), direction follow right-hand rule

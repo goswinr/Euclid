@@ -6,7 +6,7 @@ open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see http
 
 #nowarn "44" // for hidden constructors via Obsolete Attribute  
     
-/// A 3D Bounding Boxangle.
+/// A 3D Bounding Box.
 /// Sometimes also called 2D Bounding Box.
 [<Struct; NoEquality; NoComparison>] 
 [<IsReadOnly>]
@@ -66,21 +66,21 @@ type BBox =
     member b.PolylineBottomClosed = [| Pnt(b.MinX, b.MinY,b.MinZ); Pnt(b.MaxX, b.MinY,b.MinZ);  Pnt(b.MaxX, b.MaxY,b.MinZ); Pnt(b.MinX, b.MaxY,b.MinZ); Pnt(b.MinX, b.MinY,b.MinZ)|]
 
     /// Checks that min X and Y are smaller than max X and Y.
-    /// This might happen if the Boxangle is expanded by a negative value bigger than the BBox.
+    /// This might happen if the Box is expanded by a negative value bigger than the BBox.
     member inline b.IsValid =   b.MinX <= b.MaxX && b.MinY <= b.MaxX && b.MinZ <= b.MaxZ
 
     /// Checks if min X or Y are bigger than max X or Y.
-    /// This might happen if the Boxangle is expanded by a negative value bigger than the BBox.
+    /// This might happen if the Box is expanded by a negative value bigger than the BBox.
     member inline b.IsNotValid =   b.MinX > b.MaxX || b.MinY > b.MaxX || b.MinZ > b.MaxZ
 
 
-    /// Returns Bounding Boxangle expanded by distance
+    /// Returns Bounding BBox expanded by distance
     /// Does not check overflow if distance is negative.
     member inline b.Expand(d) = 
         BBox(b.MinX-d, b.MinY-d, b.MaxX+d, b.MaxY+d, b.MaxZ+d, b.MaxZ+d)
 
 
-    /// Returns true if the two bounding Boxangles do overlap or touch
+    /// Returns true if the two bounding BBoxes do overlap or touch
     member inline b.OverlapsWith (a:BBox) =
         not (  b.MinX > a.MaxX
             || a.MinX > b.MaxX
@@ -90,7 +90,7 @@ type BBox =
             || b.MinZ > a.MaxZ            
             )
     
-    /// Returns true if the point is inside or excatly on the bounding Boxangle
+    /// Returns true if the point is inside or exactly on the bounding BBox
     member inline b.Contains (p:Pnt) =
         p.X >= b.MinX &&
         p.X <= b.MaxX &&
@@ -99,7 +99,7 @@ type BBox =
         p.Z >= b.MinZ &&
         p.Z <= b.MaxZ 
 
-    /// Returns true if the Boxangle is inside or excatly on the other bounding Boxangle
+    /// Returns true if the BBox is inside or exactly on the other bounding BBox
     member inline b.Contains (o:BBox) =
         b.Contains(o.MinPnt) && b.Contains(o.MaxPnt)     
 
@@ -108,13 +108,13 @@ type BBox =
     //------------------------static members---------------------------
     //-------------------------------------------------------------------
 
-    /// Returns Bounding Boxangle expanded by distance
+    /// Returns Bounding BBox expanded by distance
     /// Does not check overflow if distance is negative.
     static member expand dist (b:BBox) = 
         BBox(b.MinX-dist, b.MinY-dist, b.MaxX+dist, b.MaxY+dist, b.MaxZ+dist, b.MaxZ+dist)
 
 
-    /// Returns true if the two bounding Boxangles do overlap or touch excatly
+    /// Returns true if the two bounding BBoxes do overlap or touch exactly
     static member inline doOverlap(a:BBox) (b:BBox) =
         not (  b.MinX > a.MaxX
             || a.MinX > b.MaxX
@@ -124,7 +124,7 @@ type BBox =
             || b.MinZ > a.MaxZ             
             )
     
-    /// Returns true if the point is inside or on  the bounding Boxangle
+    /// Returns true if the point is inside or on  the bounding BBox
     static member inline contains (p:Pnt) (b:BBox) =
         p.X >= b.MinX &&
         p.X <= b.MaxX &&
@@ -133,24 +133,24 @@ type BBox =
         p.Z >= b.MinZ &&
         p.Z <= b.MaxZ 
     
-    /// Returns a bounding Boxangle that contains both input Boxangles
+    /// Returns a bounding BBox that contains both input BBoxes
     static member inline union (a:BBox) (b:BBox) =
         BBox (min b.MinX a.MinX ,min b.MinY a.MinY,min b.MinZ a.MinZ,
               max b.MaxX a.MaxX ,max b.MaxY a.MaxY,max b.MaxZ a.MaxZ)
     
-    /// Returns a bounding Boxangle that contains the input Boxangles and the point
+    /// Returns a bounding BBox that contains the input BBoxes and the point
     static member inline unionPt (p:Pnt) (b:BBox) =
         BBox (min b.MinX p.X ,min b.MinY p.Y,min b.MinZ p.Z, 
               max b.MaxX p.X ,max b.MaxY p.Y,max b.MaxZ p.Z)
         
 
     /// Finds min and max values for x ,y and z.
-    /// Adds the Expansion value is used to shrink lowwer bound and increase upper bound.
+    /// Adds the Expansion value is used to shrink lower bound and increase upper bound.
     /// Total size is bigger by expansion times two.
-    /// If expansion is negative it shrinks the Boxangle. It also makes sure that there is no overflow 
+    /// If expansion is negative it shrinks the BBox. It also makes sure that there is no overflow 
     /// when the negative expansion is bigger than the size.
     static member create (a:Pnt , b:Pnt,  expansion ) = 
-        // sort min and max values ( not useing allocating tuples for swaping) 
+        // sort min and max values ( not using allocating tuples for swapping) 
         let mutable minX = a.X  
         let maxX = if b.X > minX then b.X else minX <- b.X ;  a.X 
         let mutable minY = a.Y  
@@ -189,7 +189,7 @@ type BBox =
     
     /// Finds min and max values for x and y.
     static member inline create (a:Pnt , b:Pnt ) =
-        // sort min and max values ( not useing allocating tuples for swaping) 
+        // sort min and max values ( not using allocating tuples for swapping) 
         let mutable minX = a.X  
         let maxX = if b.X > minX then b.X else minX <- b.X ;  a.X 
         let mutable minY = a.Y  

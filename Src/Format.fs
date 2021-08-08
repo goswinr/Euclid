@@ -1,13 +1,13 @@
 namespace FsEx.Geo
     
 
-/// For formating floats with adaptive precision  
+/// For formatting floats with adaptive precision  
 module Format = 
     open System
     
     /// If the absolut value of a float is below this, display ~0.0
     /// default 1e-24
-    /// This value can be set for exmaple by hosting apps that have a build in absolute tolerance like Rhino3d
+    /// This value can be set for example by hosting apps that have a build in absolute tolerance like Rhino3d
     let mutable veryCloseToZero = 1e-24 // Double.Epsilon // default = Double.Epsilon = no rounding down
     
     module private Literals = 
@@ -86,7 +86,7 @@ module Format =
     
     let private invC = Globalization.CultureInfo.InvariantCulture
 
-    /// Formating with automatic precision
+    /// Formatting with automatic precision
     /// e.g.: 0 digits behind comma if above 1000
     /// if the value is smaller than veryCloseToZero (1e-24)  '~0.0' will be shown.
     /// if the value is smaller than  (1e-7)  '≈+0.0' will be shown.
@@ -114,7 +114,7 @@ module Format =
             elif x >= 0.0        then Literals.CloseToZeroPositive
             else                      Literals.CloseToZeroNegative
 
-    /// Formating with automatic precision
+    /// Formatting with automatic precision
     /// e.g.: 0 digits behind comma if above 1000
     /// if the value is smaller than veryCloseToZero (1e-24)  '~0.0' will be shown.
     /// if the value is smaller than  (1e-6)  '≈+0.0' will be shown.

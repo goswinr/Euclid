@@ -29,7 +29,7 @@ type Rotation2D =
         #endif
         {Sin = sin; Cos = cos}      
     
-    /// Format rotation into string showing angle in degree as nicely formatted floating point number.
+    /// Format rotation into string showing angle in degrees as nicely formatted floating point number.
     override r.ToString() =  
         let deg =  r.Sin  |> asinSafe |> toDegrees |> Format.float
         sprintf "FsEx.Geo.Rotation2D of %s° degrees." deg
@@ -57,8 +57,8 @@ type Rotation2D =
     /// Create a new Rotation that adds Rotation to the existing one 
     member inline r.Add(ro:Rotation2D) = 
         //use 2x2 matrix multiplication logic for better performance:        
-        Rotation2D ( r.Sin*ro.Cos + r.Cos*ro.Sin 
-                   , r.Cos*ro.Cos - r.Sin*ro.Sin)
+        Rotation2D  ( r.Sin*ro.Cos + r.Cos*ro.Sin 
+                    , r.Cos*ro.Cos - r.Sin*ro.Sin)
     
     /// Create a new Rotation that adds and angle in Degrees to the existing one 
     member inline r.AddDegrees(deg:float) = 

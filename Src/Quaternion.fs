@@ -41,7 +41,7 @@ type Quaternion =
         sprintf "FsEx.Geo.Quaternion(X=%s, Y=%s, Z=%s, W=%s, angle: %s°)" 
                 (Format.float q.X) (Format.float q.Y) (Format.float q.Z) (Format.float q.W) (Format.float q.AngleInDegrees)
      
-    /// Multiply two Qaternions. Its like adding one rotation to the other.
+    /// Multiply two Quaternions. Its like adding one rotation to the other.
     static member multiply (l:Quaternion, r:Quaternion)  =  
         Quaternion(   
             l.W * r.X + l.X * r.W + l.Y * r.Z - l.Z * r.Y ,
@@ -49,21 +49,21 @@ type Quaternion =
             l.W * r.Z + l.Z * r.W + l.X * r.Y - l.Y * r.X ,
             l.W * r.W - l.X * r.X - l.Y * r.Y - l.Z * r.Z ) 
 
-    /// Multiply two Qaternions. Its like adding one rotation to the other.
+    /// Multiply two Quaternions. Its like adding one rotation to the other.
     static member inline ( * ) (l:Quaternion, r:Quaternion)  =  
         Quaternion.multiply(l,r)
     
-    /// Returns a new Quaterion for the inverse rotation.
+    /// Returns a new Quaternion for the inverse rotation.
     /// Same as q.Inverse 
     member q.Conjugate = Quaternion (-q.X, -q.Y, -q.Z, q.W)  
 
-    /// Returns a new Quaterion for the inverse rotation.
+    /// Returns a new Quaternion for the inverse rotation.
     /// Same as q.Conjugate 
     member q.Inverse = Quaternion (-q.X, -q.Y, -q.Z, q.W)  
-     
+    
     // Should always be 1.0
     //member q.Magnitude = sqrt (q.X*q.X + q.Y*q.Y + q.Z*q.Z + q.W*q.W) 
-     
+    
     /// Returns Angle in Radians 
     member q.AngleInRadians =  
         q.W |> acosSafe |> ( * ) 2.0 
@@ -76,7 +76,7 @@ type Quaternion =
     static member create (x,y,z,w)  =  
         let l = sqrt(x*x  + y*y + z*z + w*w )
         if abs l < zeroLengthTol then  
-            FsExGeoException.Raise "FsEx.Geo.Quaternion create failed for x:%g, y:%g, z:%g, w:%g. The length needs to be bigge than zero" x y z w
+            FsExGeoException.Raise "FsEx.Geo.Quaternion create failed for x:%g, y:%g, z:%g, w:%g. The length needs to be bigger than zero" x y z w
         let sc = 1./l
         Quaternion(x*sc,y*sc,z*sc,w*sc)
 
@@ -96,11 +96,11 @@ type Quaternion =
         let angHalf = angleInRadians * 0.5
         let sa = sin angHalf         
         Quaternion ( axis.X  * sa, axis.Y  * sa, axis.Z  * sa, cos angHalf )
-     
+    
     /// The created Rotation is Clockwise looking in the direction of the Vector (of any length but zero).
     static member createFromDegree (axis:Vec, angleInDegrees) = 
         Quaternion.createFromRadians (axis,  toRadians angleInDegrees) 
-     
+    
     /// The created Rotation is Clockwise looking in the direction of the Unit Vector.
     static member createFromDegree (axis:UnitVec, angleInDegrees) = 
         Quaternion.createFromRadians (axis,  toRadians angleInDegrees) 

@@ -63,7 +63,7 @@ type BRect =
     member inline r.Expand(d) = 
         BRect(r.MinX-d, r.MinY-d, r.MaxX+d, r.MaxY+d)
 
-      
+    
     /// Returns true if the two bounding Rectangles do overlap or touch
     member inline r.OverlapsWith (a:BRect) =
         not (  r.MinX > a.MaxX
@@ -71,19 +71,19 @@ type BRect =
             || a.MinY > r.MaxY 
             || r.MinY > a.MaxY )
     
-    /// Returns true if the point is inside or excatly on the bounding Rectangle
+    /// Returns true if the point is inside or exactly on the bounding Rectangle
     member inline r.Contains (p:Pt) =
         p.X >= r.MinX &&
         p.X <= r.MaxX &&
         p.Y >= r.MinY &&
         p.Y <= r.MaxY 
 
-    /// Returns true if the Rectangle is inside or excatly on the other bounding Rectangle
+    /// Returns true if the Rectangle is inside or exactly on the other bounding Rectangle
     member inline r.Contains (o:BRect) =
         r.Contains(o.MinPt) && r.Contains(o.MaxPt)     
 
 
-    /// Returns true if the two bounding Rectangles do overlap or touch excatly
+    /// Returns true if the two bounding Rectangles do overlap or touch exactly
     static member inline doOverlap(a:BRect) (r:BRect) =
         not (  r.MinX > a.MaxX
             || a.MinX > r.MaxX
@@ -107,12 +107,12 @@ type BRect =
         
 
     /// Finds min and max values for x and y.
-    /// Adds the Expansion value is used to shrink lowwer bound and increase upper bound.
+    /// Adds the Expansion value is used to shrink lower bound and increase upper bound.
     /// Total size is bigger by expansion times two.
     /// If expansion is negative it shrinks the Rectangle. It also makes sure that there is no overflow 
     /// when the negative expansion is bigger than the size.
     static member create (a:Pt , b:Pt,  expansion ) = 
-        // sort min and max values ( not useing allocating tuples for swaping) 
+        // sort min and max values ( not using allocating tuples for swapping) 
         let mutable minX = a.X  
         let maxX = if b.X > minX then b.X else minX <- b.X ;  a.X 
         let mutable minY = a.Y  
@@ -141,7 +141,7 @@ type BRect =
     
     /// Finds min and max values for x and y.
     static member inline create (a:Pt , b:Pt ) =
-        // sort min and max values ( not useing allocating tuples for swaping) 
+        // sort min and max values ( not using allocating tuples for swapping) 
         let mutable minX = a.X  
         let maxX = if b.X > minX then b.X else minX <- b.X ;  a.X 
         let mutable minY = a.Y  

@@ -12,7 +12,7 @@ type Points private () =
     
     
     /// The sign is negative if the loop is clockwise.
-    /// Last and first point should bethe same.
+    /// Last and first point should be the same.
     static member getSignedArea(ps:ResizeArray<Pt>) = //
      //https://helloacm.com/sign-area-of-irregular-polygon/
      let mutable area = 0.0
@@ -66,13 +66,13 @@ type Points private () =
         if ys.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.closestPointsIdx<Pnt>: empty List of Points: ys"
         let mutable xi = -1
         let mutable yj = -1
-        let mutable mind = Double.MaxValue
+        let mutable minD = Double.MaxValue
         for i=0 to xs.Count-1 do
             let pt = xs.[i]
             for j=0 to ys.Count-1 do
                 let d = Pnt.distanceSq pt ys.[j]
-                if d < mind then
-                    mind <- d
+                if d < minD then
+                    minD <- d
                     xi <- i
                     yj <- j
         xi,yj   
@@ -81,23 +81,23 @@ type Points private () =
     static member closestPointsIdx (xs:ResizeArray<Pt>, ys:ResizeArray<Pt>) = 
         //TODO
         // (1)
-        // the current quadratic runtime could be optimised by first sorting the points in x (or y) direction
-        // then the search loop could star when x distance is smaller than mind, and exist when it is bigger
+        // the current quadratic runtime could be optimized by first sorting the points in x (or y) direction
+        // then the search loop could star when x distance is smaller than minD, and exist when it is bigger
         // (2)
-        // alternatively a spatial hash could be used to cluster nearby objects. the challange would be to finde the right cell size for each point
+        // alternatively a spatial hash could be used to cluster nearby objects. the challenge would be to finde the right cell size for each point
         // (3)
         // the bounding Rectangles of each set could be intersected. then expanded. then used to filter both lists.
         if xs.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.closestPointsIdx<Pt>: empty List of Points: xs"
         if ys.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.closestPointsIdx<Pt>: empty List of Points: ys"
         let mutable xi = -1
         let mutable yj = -1
-        let mutable mind = Double.MaxValue
+        let mutable minD = Double.MaxValue
         for i=0 to xs.Count-1 do
             let pt = xs.[i]
             for j=0 to ys.Count-1 do
                 let d = Pt.distanceSq pt ys.[j]
-                if d < mind then
-                    mind <- d
+                if d < minD then
+                    minD <- d
                     xi <- i
                     yj <- j
         xi,yj    
@@ -119,49 +119,49 @@ type Points private () =
    
 
     /// Find the index of the 3D point that has the biggest distance to any 3D point from the other set
-    /// basicaly the most lonely point in 'findPointFrom' list with respect to 'checkAgainst' list
+    /// basically the most lonely point in 'findPointFrom' list with respect to 'checkAgainst' list
     /// Returns findPointFromIdx * checkAgainstIdx
     static member  mostDistantPointIdx (findPointFrom:ResizeArray<Pnt>, checkAgainst:ResizeArray<Pnt>) : int*int= 
         if findPointFrom.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.mostDistantPoint<Pnt>: empty List of Points: findPointFrom"
         if checkAgainst.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.mostDistantPoint<Pnt>: empty List of Points: checkAgainst"
-        let mutable maxd = Double.MinValue
+        let mutable maxD = Double.MinValue
         let mutable findPointFromIdx = -1
         let mutable checkAgainstTempIdx = -1
         let mutable checkAgainstIdx = -1
         for i=0 to findPointFrom.Count-1 do
             let pt = findPointFrom.[i]
-            let mutable mind = Double.MaxValue
+            let mutable minD = Double.MaxValue
             for j=0 to checkAgainst.Count-1 do
                 let d = Pnt.distanceSq pt checkAgainst.[j]
-                if d < mind then
-                    mind <- d
+                if d < minD then
+                    minD <- d
                     checkAgainstTempIdx <-j
-            if mind > maxd then
-                maxd <- mind
+            if minD > maxD then
+                maxD <- minD
                 findPointFromIdx <-i
                 checkAgainstIdx <-checkAgainstTempIdx
         findPointFromIdx, checkAgainstIdx
 
     /// Find the index of the 2D point that has the biggest distance to any 2D point from the other set
-    /// basicaly the most lonely point in 'findPointFrom' list with respect to 'checkAgainst' list
+    /// basically the most lonely point in 'findPointFrom' list with respect to 'checkAgainst' list
     /// Returns findPointFromIdx * checkAgainstIdx
     static member mostDistantPointIdx (findPointFrom:ResizeArray<Pt>, checkAgainst:ResizeArray<Pt>) : int*int= 
         if findPointFrom.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.mostDistantPoint<Pt>: empty List of Points: findPointFrom"
         if checkAgainst.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.mostDistantPoint<Pt>: empty List of Points: checkAgainst"
-        let mutable maxd = Double.MinValue
+        let mutable maxD = Double.MinValue
         let mutable findPointFromIdx = -1
         let mutable checkAgainstTempIdx = -1
         let mutable checkAgainstIdx = -1
         for i=0 to findPointFrom.Count-1 do
             let pt = findPointFrom.[i]
-            let mutable mind = Double.MaxValue
+            let mutable minD = Double.MaxValue
             for j=0 to checkAgainst.Count-1 do
                 let d = Pt.distanceSq pt checkAgainst.[j]
-                if d < mind then
-                    mind <- d
+                if d < minD then
+                    minD <- d
                     checkAgainstTempIdx <-j
-            if mind > maxd then
-                maxd <- mind
+            if minD > maxD then
+                maxD <- minD
                 findPointFromIdx <-i
                 checkAgainstIdx <-checkAgainstTempIdx
         findPointFromIdx, checkAgainstIdx
@@ -222,14 +222,14 @@ type Points private () =
                     res.RemoveAt(res.Count-1)                        
                     res.Add pt
             res
-   
     
     
-    /// Similar to Join Polylines this tries to find continous sequences of 2D points.
-    /// 'tolGap' is the maximun allowable gap between the start and the endpoint of to segments.
+    
+    /// Similar to join polylines this tries to find continuos sequences of 2D points.
+    /// 'tolGap' is the maximum allowable gap between the start and the endpoint of to segments.
     /// Search starts from the segment with the most points.
     /// Both start and end point of each 2D point list is checked for adjacency
-    static member findContinousPoints (ptss: ResizeArray<ResizeArray<Pt>>, tolGap:float)  = 
+    static member findContinuosPoints (ptss: ResizeArray<ResizeArray<Pt>>, tolGap:float)  = 
         let i =  ptss |> ResizeArray.maxIndBy ResizeArray.length
         let res = ptss.Pop(i)
         let mutable loop = true
@@ -254,12 +254,12 @@ type Points private () =
                 else
                     loop <- false
         res
-       
-    /// Similar to Join Polylines this tries to find continous sequences of 3D points.
-    /// 'tolGap' is the maximun allowable gap between the start and the endpoint of to segments.
+
+    /// Similar to Join Polylines this tries to find continuos sequences of 3D points.
+    /// 'tolGap' is the maximum allowable gap between the start and the endpoint of to segments.
     /// Search starts from the segment with the most points.
     /// Both start and end point of each 3D point list is checked for adjacency
-    static member findContinousPoints (ptss: ResizeArray<ResizeArray<Pnt>>, tolGap:float)  = 
+    static member findContinuosPoints (ptss: ResizeArray<ResizeArray<Pnt>>, tolGap:float)  = 
         let i =  ptss |> ResizeArray.maxIndBy ResizeArray.length
         let res = ptss.Pop(i)
         let mutable loop = true
@@ -284,6 +284,6 @@ type Points private () =
                 else
                     loop <- false
         res
-       
+        
 
        // TODO add offset 3d functions

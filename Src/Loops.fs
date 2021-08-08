@@ -55,12 +55,12 @@ type Loop private ( pts:ResizeArray<Pt>
    // Odd  indices are Y
    // Length is double of SegmentCount
    // Last pair is not equal first pair.
-    //member _.XandYs = xys
+    //member _.XYs = xys
 
     /// This list is one item Longer than Vectors , BRects or Lengths
     /// Last Point equals first Point
     member _.Points = pts
-             
+    
     /// One less than Points count 
     member val SegmentCount = unitVcts.Length  
         
@@ -68,12 +68,12 @@ type Loop private ( pts:ResizeArray<Pt>
     /// Including an expansion by snapThreshold.
     member _.ExpandedBoundingRect = bRect
     
-    /// The minimum distance between points in this loop, This is a paramter at creation.
+    /// The minimum distance between points in this loop, This is a parameter at creation.
     member _.MinSegmentLength = minSegmentLength
-   
+    
    /// This value is used when calculating intersection or point containment. 
    /// Points within this distance of the segment will be considered on the segment. 
-   /// This is a paramter at creation.    
+   /// This is a parameter at creation.    
     member _.SnapThreshold = snapThreshold           
 
     /// Creates a deep copy
@@ -128,7 +128,7 @@ type Loop private ( pts:ResizeArray<Pt>
         pt.ClosestPointOnLine(t, u, l)    
         
     /// Returns Relation between point and Loop: Inside, On or outside
-    /// Tolerance for beeing on Loop is SnapThreshold    
+    /// Tolerance for being on Loop is SnapThreshold    
     member lo.ContainsPoint(pt:Pt) =  
         // this implementation using the closest two segments is always correct.
         // faster implementations such as counting the crossings of a horizontal ray do fail if several loop segments are on the x axis and the test point too.
@@ -156,9 +156,9 @@ type Loop private ( pts:ResizeArray<Pt>
                         j
                     else                        
                         // explicitly compare both offset of the two closest segments 
-                        let uj90 = uj.RotatedCW * lo.SnapThreshold
+                        let uj90 = uj.Rotated90CW * lo.SnapThreshold
                         let ddj = min (pt.DistanceSqToLine(pj+uj90 , uj, lj)) (pt.DistanceSqToLine(pj-uj90, uj, lj)) 
-                        let uk90 = uk.RotatedCW * lo.SnapThreshold
+                        let uk90 = uk.Rotated90CW * lo.SnapThreshold
                         let ddk = min (pt.DistanceSqToLine(pk+uk90 , uk, lk)) (pt.DistanceSqToLine(pk-uk90, uk, lk))                         
                         if ddj <= ddk then j else k                
                 
@@ -191,9 +191,9 @@ type Loop private ( pts:ResizeArray<Pt>
                 else
                     // set last to average
                     ps.Last <- (ps.Last + pt) *0.5 
-                    Debug2D.drawDot (sprintf "short segm: %d" (i-1)) pt
+                    Debug2D.drawDot (sprintf "short segment: %d" (i-1)) pt
                     #if DEBUG
-                    eprintfn "Loop constructor: Segment %d shorter than %g was skiped, it was just %g long." (i-1) snapThreshold (Pt.distance ps.Last pt)
+                    eprintfn "Loop constructor: Segment %d shorter than %g was skipped, it was just %g long." (i-1) snapThreshold (Pt.distance ps.Last pt)
                     #endif
             // close
             if Pt.distanceSq ps.Last ps.First > minLenSq then
@@ -212,8 +212,8 @@ type Loop private ( pts:ResizeArray<Pt>
             if sa < 0. then  pts.Reverse() ;  -sa
             else sa 
                 
-        let mutable xmin, ymin = Double.MaxValue, Double.MaxValue // for overall bounding Rectangle
-        let mutable xmax, ymax = Double.MinValue, Double.MinValue
+        let mutable xMin, yMin = Double.MaxValue, Double.MaxValue // for overall bounding Rectangle
+        let mutable xMax, yMax = Double.MinValue, Double.MinValue
                 
         // loop again to precalculate vectors ,  unit vectors,   BRects,  and lengths
         let  unitVcts, bRects , lens = //, xys=        
@@ -227,7 +227,7 @@ type Loop private ( pts:ResizeArray<Pt>
                 let n = pts.[ii]
                 let v = Vc.create(t, n)
                 let l = v.Length
-                let i = ii-1 // becaus loop starts at 1            
+                let i = ii-1 // because loop starts at 1            
                 uvs.[ i] <- UnitVc.createUnchecked( v.X/l , v.Y/l) // no check for div by zero needed,  since minSpacing is already checked
                 bs.[  i] <- BRect.create(t, n, snapThreshold)
                 lens.[i] <- l
@@ -236,10 +236,10 @@ type Loop private ( pts:ResizeArray<Pt>
                 xyi <- xyi + 2
         
                 // overall bounding box:
-                xmin <- min xmin t.X
-                ymin <- min ymin t.Y
-                xmax <- max xmax t.X
-                ymax <- max ymax t.Y
+                xMin <- min xMin t.X
+                yMin <- min yMin t.Y
+                xMax <- max xMax t.X
+                yMax <- max yMax t.Y
                 // swap:
                 t <- n
             uvs,  bs , lens//, xy
@@ -249,7 +249,7 @@ type Loop private ( pts:ResizeArray<Pt>
         // angle 160 degrees, dot product of unit vectors: -0.93969
         // angle 170 degrees, dot product of unit vectors: -0.984808
         // angle 178 degrees, dot product of unit vectors: -0.999391
-        // Check ther is no U-Turn between 170 and 180 degrees
+        // Check there is no U-Turn between 170 and 180 degrees
         let mutable t = unitVcts.[0]
         for ii=1 to segLastIdx do
             let n = unitVcts.[ii]
@@ -285,7 +285,7 @@ type Loop private ( pts:ResizeArray<Pt>
                 // TODO quadratic runtime !  replace with sweep line algorithm ?
                 selfIntersectionCheck(i, i+2 , segLastIdx)   
         
-        let erect = BRect.createUnchecked(xmin-snapThreshold, ymin-snapThreshold, xmax+snapThreshold, ymax+snapThreshold) 
+        let erect = BRect.createUnchecked(xMin-snapThreshold, yMin-snapThreshold, xMax+snapThreshold, yMax+snapThreshold) 
 
         Loop(pts, unitVcts, bRects, lens, //xys, 
              area, minSegmentLength, snapThreshold, erect)

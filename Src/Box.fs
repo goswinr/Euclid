@@ -6,7 +6,7 @@ open Util
 
 /// A 3D Box with any rotation in 3D space
 /// Described by an Origin and three Edge vectors. 
-/// Similar to PPlane, howver these Vectors are not unitized.
+/// Similar to PPlane, however these Vectors are not unitized.
 [<Struct; NoEquality; NoComparison>] // because its made up from floats
 [<IsReadOnly>]
 //[<IsByRefLike>]
@@ -34,7 +34,7 @@ type Box =
     
     member inline b.Center = b.Origin + b.Xax*0.5 + b.Yax*0.5 + b.Zax*0.5
 
-    /// Evaluataes a point of the Box,
+    /// Evaluates a point of the Box,
     /// considering the box start 0.0 and its opposite corners 1.0
     member b.EvaluateAt (x:float, y:float, z:float) = b.Origin + b.Xax*x + b.Yax*y + b.Zax*z
     
@@ -43,7 +43,7 @@ type Box =
             (Format.float b.Length)  (Format.float b.Width) (Format.float b.Height) 
             b.Origin b.Xax b.Yax b.Zax
     
-    /// Returns Bounding Boxangle expanded by distance
+    /// Returns Box expanded by distance
     /// Does not check overflow if distance is negative.
     static member expand dist (b:Box) = 
         let x = b.Xax * (dist / b.Length)
@@ -52,7 +52,7 @@ type Box =
         let o = Pnt()
         Box(b.Origin-x-y-z, b.Xax+x, b.Yax+y, b.Zax+z)
 
-    /// Returns Bounding Boxangle expanded by distance
+    /// Returns Box expanded by distance
     /// Does not check overflow if distance is negative.
     static member expandXYZ distX distY distZ (b:Box) = 
         let x = b.Xax * (distX / b.Length)

@@ -1,9 +1,18 @@
 namespace FsEx.Geo
 
+// Design notes:
+// The structs types in this file only have the constructors , ToString override and operators define in this file. 
+// For structs that need a checked and unchecked constructor ( like unit vectors) the main 'new' constructor is marked obsolete. 
+// A 'create' and 'createUnchecked' static member is provided instead.
+// All other members are implemented as extension members. see files in folder members.
+// This design however makes extension members unaccessible from see C#. To fix this all types and all members could be put into one file.
+// the types would have to be marked as recursive. This file would be very large and probably have bad editor performance. 
+
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
-open FsEx.Geo.Util    
-    
+open FsEx.Geo.Util  
+
+
 /// A immutable 3D Vector of any length. Made up from 3 floats: X, Y, and Z.
 /// ( 3D Unit vectors of length 1.0 are called 'UnitVec' )
 /// ( 2D Vectors are called 'Vc' ) 

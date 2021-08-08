@@ -5,7 +5,7 @@ open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see http
 open FsEx.Geo.Util
 
 /// A 4x4 Transformation Matrix.
-/// The matrix is represented in the following colum-vector syntax form:
+/// The matrix is represented in the following column-vector syntax form:
 /// M11 M21 M31 X41 
 /// M12 M22 M32 Y42 
 /// M13 M23 M33 Z43 
@@ -20,11 +20,11 @@ type Matrix =
     val M13 :float ; val M23 :float ; val M33 :float; val Z43:float
     val M14 :float ; val M24 :float ; val M34 :float; val M44:float
     
-    // this iplementation is based on https://github.com/mrdoob/three.js/blob/dev/src/math/Matrix4.js    
+    // this implementation is based on https://github.com/mrdoob/three.js/blob/dev/src/math/Matrix4.js    
     
     /// Create a 4x4 Transformation Matrix.
     /// This Constructor takes arguments in row-major order, 
-    /// The matrix is represented in the following colum-vector syntax form: 
+    /// The matrix is represented in the following column-vector syntax form: 
     /// M11 M21 M31 X41
     /// M12 M22 M32 Y42
     /// M13 M23 M33 Z43
@@ -39,7 +39,7 @@ type Matrix =
                 M13=m13 ; M23=m23 ; M33=m33 ; Z43=z43 ;
                 M14=m14 ; M24=m24 ; M34=m34 ; M44=m44 }
     
-    /// Returns the 16 elements colum-major order:
+    /// Returns the 16 elements column-major order:
     /// [| M11 M12 M13 M14 M21 M22 M23 M24 M31 M32 M33 M34 X41 Y42 Z43 M44 |] 
     /// Where X41, Y42 and Z43 refer to the translation part of the matrix.
     member m.ByColumns = [|  
@@ -84,7 +84,7 @@ type Matrix =
         |]        
 
     /// If the determinant of the Matrix. 
-    /// The Determinant descirbes the volume that a unit cube will have after the matrix was applied
+    /// The Determinant describes the volume that a unit cube will have after the matrix was applied
     member m.Determinant = 
         let n11 = m.M11
         let n21 = m.M21
@@ -114,7 +114,7 @@ type Matrix =
     /// An Exception is raised.
     member m.Inverse = 
         // based on http://www.euclideanspace.com/maths/algebra/matrix/functions/inverse/fourD/index.htm 
-        //Speed Optimisation
+        //Speed Optimization TODO
         //The below  program is valid for a general 4×4 matrix which will work in all circumstances but when the matrix is being used to 
         //represent a combined rotation and translation (as described on this page) then the matrix carries a lot of redundant information. 
         //So if we want to speed up the code on this page then, for this case only, we can take advantage of this redundant information.
@@ -170,7 +170,7 @@ type Matrix =
     /// 0  1  0  0
     /// 0  0  1  0
     /// 0  0  0  1
-    /// Using an approximate tolerance of aporox 1e-7.
+    /// Using an approximate tolerance of approx 1e-7.
     member m.IsIdentity =               
         isOne  m.M11 && isZero m.M21 && isZero m.M31 && isZero m.X41 &&
         isZero m.M12 && isOne  m.M22 && isZero m.M32 && isZero m.Y42 &&
@@ -196,7 +196,7 @@ type Matrix =
         |> String.concat Environment.NewLine
         )  
 
-    //Nicely formats the Matrix to a Grid of 4x4 incuding field names.
+    //Nicely formats the Matrix to a Grid of 4x4 including field names.
     //override m.ToString()= 
     //    let names =[| "M11"; "M21"; "M31"; "X41"; "M12"; "M22"; "M32"; "Y42"; "M13"; "M23"; "M33"; "Z43"; "M14"; "M24"; "M34"; "M44"|]
     //    let ts   = (names, m.ByRows)  ||> Array.map2 ( fun n v -> v.ToString("0.###")) 
@@ -211,7 +211,7 @@ type Matrix =
 
 
     /// Multiplies matrixA with matrixB
-    /// The resulting transformation will firts do matrixA and then matrixB
+    /// The resulting transformation will first do matrixA and then matrixB
     static member multiply (matrixA:Matrix,  matrixB:Matrix) =  
         let a11 = matrixA.M11
         let a12 = matrixA.M12
@@ -270,7 +270,7 @@ type Matrix =
     static member inline ( * ) (matrixA:Matrix,  matrixB:Matrix) = Matrix.multiply(matrixA, matrixB)
     
     /// If the determinant of the Matrix. 
-    /// The Determinant descirbes the volume that a unit cube will have have the matrix was applied
+    /// The Determinant describes the volume that a unit cube will have have the matrix was applied
     static member inline determinant (m:Matrix) = m.Determinant
     
     /// Inverses the matrix. 
@@ -517,7 +517,7 @@ type Matrix =
         fromPlane*zFlip*toPlane
     
     /// Create Matrix from Quaternion
-    static member createfromQuaternion( quaternion:Quaternion) =
+    static member createFromQuaternion( quaternion:Quaternion) =
         let x = quaternion.X
         let y = quaternion.Y
         let z = quaternion.Z
@@ -614,5 +614,5 @@ type Matrix =
                 xs[ 4],  xs[ 5],  xs[ 6],  xs[ 7] , 
                 xs[ 8],  xs[ 9],  xs[10],  xs[11] , 
                 xs[12],  xs[13],  xs[14],  xs[15] )
- 
-   
+
+

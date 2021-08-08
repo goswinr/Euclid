@@ -5,7 +5,7 @@ open FsEx.Geo.Util
 
 #nowarn "44" // for hidden constructors via Obsolete Attribute
 
-/// A plane difined by a point and a normal vector
+/// A plane defined by a point and a normal vector
 type [<Struct>] Plane = // Normals are always unitized
     /// The center Point of the Plane
     val Origin : Pnt
@@ -14,16 +14,16 @@ type [<Struct>] Plane = // Normals are always unitized
 
     /// Unsafe internal constructor,  public only for inlining.
     [<Obsolete("Unsafe internal constructor,  but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >] 
-    new (pt,n) = {Origin = pt; Normal = n} // private unchecked constructor, suply unitized values
+    new (pt,n) = {Origin = pt; Normal = n} // private unchecked constructor, supply unitized values
 
-    /// Create Plane, normal vector gets unitzised in constructor
+    /// Create Plane, normal vector gets unitized in constructor
     static member create(pt,normal:Vec) = 
         let l = sqrt(normal.X*normal.X+normal.Y*normal.Y+normal.Z*normal.Z) 
         if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "FsEx.Geo.Plane.create: %O is too small for unitizing, tolerance:%g" normal zeroLengthTol
         let li=1./l in 
         Plane(pt,UnitVec.createUnchecked( li*normal.X , li*normal.Y ,li*normal.Z ))
 
-    /// normal vector gets unitzised in constructor
+    /// normal vector gets unitized in constructor
     static member create(pt,normal:UnitVec) =        
         Plane(pt,normal)
 
@@ -31,22 +31,22 @@ type [<Struct>] Plane = // Normals are always unitized
         let n =  Vec.cross (c-b,a-b)
         if Vec.isTiny 1e-5 n then FsExGeoException.Raise "FsEx.Geo.Plane.createFrom3Points: the points %O, %O, %O are in one Line, no Plane found" a b c
         Plane(a, n.UnitizedUnchecked)
-       
-    /// returns signed distance of Point to plane, also indicating on which side it is.
+
+    /// Returns signed distance of Point to plane, also indicating on which side it is.
     member inline pl.DistToPt pt = pl.Normal*(pt-pl.Origin) 
 
-    /// returns the closest Point on the plane from a test point
+    /// Returns the closest Point on the plane from a test point.
     member inline pl.ClPt pt = pt - pl.Normal*(pl.DistToPt pt) 
 
-    /// returns the closest Point on the plane from a test point
+    /// Returns the closest Point on the plane from a test point.
     member pl.PlaneAtClPt pt = Plane(pt - pl.Normal*(pl.DistToPt pt), pl.Normal)
 
-    /// returns the Angle to another Plane in Degree, ignoring orientation
+    /// Returns the Angle to another Plane in Degree, ignoring orientation.
     member inline this.AngToPl (pl:Plane) = UnitVec.angle90 this.Normal pl.Normal 
 
-    /// returns the Angle to a Line in Degree, ignoring orientation
+    /// Returns the Angle to a Line in Degree, ignoring orientation.
     member inline pl.AngleToLine (ln:Line) = UnitVec.angle90 ln.Tangent.Unitized pl.Normal 
-   
+    
     override pl.ToString() = sprintf "FsEx.Geo.Plane(pt= %g, %g, %g, n=  %g, %g, %g)" pl.Origin.X  pl.Origin.Y pl.Origin.Z pl.Normal.X pl.Normal.Y pl.Normal.Z
 
     static member  normal (p:Plane) = p.Normal
@@ -57,16 +57,16 @@ type [<Struct>] Plane = // Normals are always unitized
     
     static member  angle (a:Plane) b = a.AngToPl b
 
-    /// Returns the parameter of intersection Point of infinite Line with Plane, fails if they are paralell
+    /// Returns the parameter of intersection Point of infinite Line with Plane, fails if they are parallel
     static member  intersectLineParameter  (ln:Line) (pl:Plane) = 
         let nenner = ln.Tangent * pl.Normal
-        if abs nenner < 1e-6 then FsExGeoException.Raise "FsEx.Geo.intersectLineParameter: Lines and Plane are Paralell: %O, %O" ln pl
+        if abs nenner < 1e-6 then FsExGeoException.Raise "FsEx.Geo.intersectLineParameter: Lines and Plane are Parallel: %O, %O" ln pl
         (pl.Origin - ln.From) * pl.Normal / nenner
     
-    /// Returns intersection Point of infinite Line with Plane, fails if they are paralell
+    /// Returns intersection Point of infinite Line with Plane, fails if they are parallel
     static member intersectLine (ln:Line) (pl:Plane) = ln.At <| Plane.intersectLineParameter  ln pl
     
-    /// checks if a finite Line intersects with Plane, fails if they are paralell
+    /// checks if a finite Line intersects with Plane, fails if they are parallel
     static member  inline doLinePlaneIntersect (ln:Line) (pl:Plane) = 
         let t = Plane.intersectLineParameter ln pl
         0. <= t && t <= 1.
@@ -87,7 +87,7 @@ type [<Struct>] Plane = // Normals are always unitized
         let n = pts |> Seq.thisNextLoop |> Seq.map (fun (t,n) -> (t-cen)/*(n-cen)) |> Seq.sum |> Vec.norm
         Plane(cen,n)
 
-    /// * NOT STABLE !! Difrenet seq order diffrent result ???
+    /// * NOT STABLE !! Different seq order different result ???
     static member  fitFromPts (pts:seq<Pnt>) = 
         let pts = Array.ofSeq pts
         let cen = pts |> Array.average

@@ -143,7 +143,7 @@ module AutoOpenVc =
 
 
         /// Accepts any type that has a X and Y (UPPERCASE) member that can be converted to a float. 
-        /// Internally this is not using reflection at runtime but F# Staticaly Resolved Type Parmeters at compile time.
+        /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
         static member inline ofXY vec  = 
             let x = ( ^T : (member X : _) vec)
             let y = ( ^T : (member Y : _) vec)
@@ -151,7 +151,7 @@ module AutoOpenVc =
             with e -> FsExGeoDivByZeroException.Raise "Vc.ofXY: %A could not be converted to a FsEx.Geo.Vc:\r\n%A" vec e
 
         /// Accepts any type that has a x and y (lowercase) member that can be converted to a float. 
-        /// Internally this is not using reflection at runtime but F# Staticaly Resolved Type Parmeters at compile time.
+        /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
         static member inline ofxy vec  = 
             let x = ( ^T : (member x : _) vec)
             let y = ( ^T : (member y : _) vec)
@@ -296,7 +296,7 @@ module AutoOpenVc =
                r.Sin*v.X + r.Cos*v.Y) 
 
         /// Rotate the 2D Vector in Degrees. Counter Clockwise.
-        /// For better Performance precompute the Rotate2D struct and use its member to rotate. see Vc.rotateBy
+        /// For better Performance precomputed the Rotate2D struct and use its member to rotate. see Vc.rotateBy
         static member inline rotate (angDegree) (vec:Vc) = 
             Vc.rotateBy (Rotation2D.createFromDegrees angDegree) vec  
 

@@ -10,7 +10,7 @@ module AutoOpenPnt =
     
         member inline pt.IsOrigin = pt.X = 0.0 && pt.Y = 0.0 && pt.Z= 0.0
         member inline pt.IsAlmostOrigin tol = abs pt.X < tol && abs pt.Y < tol  
-       
+        
         //member inline pt.IsInValid =  Double.IsNaN pt.X || Double.IsNaN pt.Y || Double.IsNaN pt.Z || Double.IsInfinity pt.X || Double.IsInfinity pt.Y || Double.IsInfinity pt.Z
         
         member inline pt.WithX x = Pnt (x ,pt.Y, pt.Z) // returns new Vector with new x coordinate, y and z the same as before

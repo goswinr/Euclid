@@ -7,40 +7,40 @@ open FsEx.Geo.Util
 module AutoOpenPPlane =     
     
     // pre allocate , used often 
-    let private worldxy = PPlane(Pnt.Origin,UnitVec.XAxis,UnitVec.YAxis,UnitVec.ZAxis)
+    let private worldXY = PPlane(Pnt.Origin,UnitVec.XAxis,UnitVec.YAxis,UnitVec.ZAxis)
     
     type PPlane with  
 
-        /// Evaluate at 3D paramter
+        /// Evaluate at 3D parameter
         member p.At (px:float, py:float, pz:float) = p.Origin + p.Xax*px + p.Yax*py + p.Zax*pz
         
-        /// Evaluate at 2D paramter ( Z = 0.0)
+        /// Evaluate at 2D parameter ( Z = 0.0)
         member p.AtXY (px:float, py:float) = p.Origin + p.Xax*px + p.Yax*py 
 
         /// Returns the World Coordinate System Plane at World Origin
         /// X axis = world X axis 
         /// Y axis = world Y axis 
         /// Z axis = world Z axis 
-        static member WorldTop = worldxy
+        static member WorldTop = worldXY
 
         /// The resulting PPlane wil have the X-Axis in direction of X. 
         /// x and y will define the plane and the side that Z will be on.
         /// The given y does not need to be perpendicular to x, just not parallel.
-        static member fromPtAndXYvec (origin:Pnt) (x:Vec) (y:Vec) = 
+        static member fromPtXY (origin:Pnt) (x:Vec) (y:Vec) = 
             let z = Vec.cross (x , y)
-            if z.IsTiny 1e-6 then FsExGeoException.Raise "Cannot construct FsEx.Geo.PPlane byPtAndXYvec from %O, %O and %O" origin x y
+            if z.IsTiny 1e-6 then FsExGeoException.Raise "Cannot construct FsEx.Geo.PPlane fromPtXY from origin:%O, x:%O and y:%O" origin x y
             let y = Vec.cross (z , x)
             PPlane(origin,x.Unitized, y.Unitized, z.Unitized)
     
-        static member fromPtAndYvec (origin:Pnt) (y:Vec) = 
+        static member fromPtY (origin:Pnt) (y:Vec) = 
             let x = Vec.cross (y , Vec.ZAxis)
-            if x.IsTiny 1e-6 then FsExGeoException.Raise "Cannot construct FsEx.Geo.PPlane byPtAndXYvec from %O, %O and %O" origin x y
+            if x.IsTiny 1e-6 then FsExGeoException.Raise "Cannot construct FsEx.Geo.PPlane fromPtY from %O and %O" origin  y
             let z = Vec.cross (x , y)
             PPlane(origin,x.Unitized,y.Unitized,z.Unitized)
 
-        static member fromPtAndXvec (origin:Pnt) (x:Vec) = 
+        static member fromPtX (origin:Pnt) (x:Vec) = 
             let y = Vec.cross (Vec.ZAxis , x)
-            if y.IsTiny 1e-6 then FsExGeoException.Raise "Cannot construct FsEx.Geo.PPlane byPtAndXYvec from a%O, x%O and %O, are a and x vertical?" origin x y
+            if y.IsTiny 1e-6 then FsExGeoException.Raise "Cannot construct FsEx.Geo.PPlane fromPtX from origin:%O and x:%O " origin x 
             let z = Vec.cross (x , y)
             PPlane(origin,x.Unitized,y.Unitized,z.Unitized)
     
@@ -54,7 +54,7 @@ module AutoOpenPPlane =
             PPlane(origin,x.Unitized,y.Unitized,z.Unitized)
     
         /// Builds Plane at first Point , X axis to second Point,
-        static member from2Pts (a:Pnt) (b:Pnt) = PPlane.fromPtAndXvec a (b-a)
+        static member from2Pts (a:Pnt) (b:Pnt) = PPlane.fromPtX a (b-a)
 
         static member translateX (d:float) (pl:PPlane) = PPlane(pl.Origin + pl.Xax*d, pl.Xax, pl.Yax, pl.Zax) 
     
@@ -80,7 +80,9 @@ module AutoOpenPPlane =
             let o  = Pnt.transform m pl.Origin
             let px = Pnt.transform m (pl.Origin+pl.Xax)
             let py = Pnt.transform m (pl.Origin+pl.Yax)
-            PPlane.fromPtAndXYvec  o (px-o) (py-o)
+            PPlane.fromPtXY  o (px-o) (py-o)
     
+        /// Rotate Plane 180 degrees around Z-axis if the Y Axis orientation does not match World Y (pl.Yax.Y < 0.0)
         /// To ensure that Y is always positive. For example for showing Text 
-        static member rotateZ180ifYdown (pl:PPlane) = if pl.Yax.Y < 0.0 then PPlane.rotateOnZ180 pl else pl
+        static member rotateZ180IfYNegative (pl:PPlane) = 
+            if pl.Yax.Y < 0.0 then PPlane.rotateOnZ180 pl else pl

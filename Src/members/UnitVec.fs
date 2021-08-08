@@ -8,16 +8,16 @@ open System
 module AutoOpenUnitVec = 
     open Util
 
-    /// Returns distance between the tips of two vectoers
+    /// Returns distance between the tips of two vectors
     let inline internal vecDist3(ax:float,ay:float,az:float,bx:float,by:float,bz:float) =
-         let x = bx-ax
-         let y = by-ay
-         let z = bz-az
-         sqrt(x*x+y*y+z*z)
+        let x = bx-ax
+        let y = by-ay
+        let z = bz-az
+        sqrt(x*x+y*y+z*z)
 
 
     type UnitVec with 
-               
+
         member inline v.LengthInXY =  sqrt (v.X*v.X + v.Y*v.Y)
 
         member inline v.LengthSqInXY = v.X*v.X + v.Y*v.Y
@@ -29,11 +29,10 @@ module AutoOpenUnitVec =
         /// Tests if dot product is bigger than 0.0
         member inline v.MatchesOrientation (vv:UnitVec) = v*vv > 0. // direction match
         
- 
         /// The diamond angle is always positive and in the range of 0.0 to 4.0 ( for 360 degrees) 
         /// 0.0 = XAxis,  going Counter clockwise. Ignoring Z component.
         /// This is the fastest angle computation since it does not use Math.Cos or Math.Sin.
-        /// It is usefull for radial sorting.
+        /// It is useful for radial sorting.
         member inline v.DirDiamondInXY =
             // https://stackoverflow.com/a/14675998/969070            
             #if DEBUG 
@@ -62,7 +61,7 @@ module AutoOpenUnitVec =
                 a + Util.twoPi
             else  
                 a        
-         
+        
         /// Returns the Angle in Degrees from XAxis.  
         /// Going Counter clockwise till 360.
         member inline v.Angle360InXY =
@@ -109,10 +108,10 @@ module AutoOpenUnitVec =
         static member inline shiftY     y (v:UnitVec) = Vec (v.X,   v.Y+y, v.Z)
         static member inline shiftZ     z (v:UnitVec) = Vec (v.X,   v.Y,   v.Z+z)
         static member inline setLength  f (v:UnitVec) = Vec (v.X * f , v.Y * f , v.Z * f) 
-           
+    
         /// Accepts any type that has a X, Y and Z (UPPERCASE) member that can be converted to a float. 
         /// Does the unitizing too.
-        /// Internally this is not using reflection at runtime but F# Staticaly Resolved Type Parmeters at compile time.
+        /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
         static member inline ofXYZ vec  = 
             let x = ( ^T : (member X : _) vec)
             let y = ( ^T : (member Y : _) vec)
@@ -122,7 +121,7 @@ module AutoOpenUnitVec =
 
         /// Accepts any type that has a x, y and z (lowercase) member that can be converted to a float. 
         /// Does the unitizing too.
-        /// Internally this is not using reflection at runtime but F# Staticaly Resolved Type Parmeters at compile time.
+        /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
         static member inline ofxyz vec  = 
             let x = ( ^T : (member x : _) vec)
             let y = ( ^T : (member y : _) vec)
@@ -181,7 +180,7 @@ module AutoOpenUnitVec =
             // 2*asin(|u-v|/2) gives us the angle between u and v.
             // The largest possible value of |u-v| occurs with perpendicular
             // vectors and is sqrt(2)/2 which is well away from extreme slope
-            // at +/-1. (See Windows OS Bug 01706299 for details) (form WPF refrence scource code)
+            // at +/-1. (See Windows OS Bug 01706299 for details) (form WPF reference source code)
             let dot = a * b
             if -0.98 < dot && dot < 0.98 then // threshold for switching 0.98 ? 
                 acos dot
@@ -211,7 +210,7 @@ module AutoOpenUnitVec =
             else r + Util.twoPi 
 
         /// Returns positive angle of two Vector projected in XY Plane in Degrees
-        /// Considering positve rotation round the World ZAxis
+        /// Considering positive rotation round the World ZAxis
         /// Range:  0 to 360 degrees
         static member inline angle360InXY (a:UnitVec, b:UnitVec)   = 
             UnitVec.angle2PiInXY (a, b) |> toDegrees
@@ -322,8 +321,8 @@ module AutoOpenUnitVec =
             if orientationToMatch * v < 0.0 then -v else v
 
         /// Check if vector has a positive dot product with given orientation vector
-        static member inline doesOrientationMatch (orientationToCkeck:UnitVec) (v:UnitVec) = 
-            orientationToCkeck * v > 0.0        
+        static member inline doesOrientationMatch (orientationToCheck:UnitVec) (v:UnitVec) = 
+            orientationToCheck * v > 0.0        
 
         /// Returns a perpendicular horizontal vector. Rotated counterclockwise.        
         /// Just does Vec(-v.Y, v.X, 0.0) 
@@ -333,7 +332,7 @@ module AutoOpenUnitVec =
 
 
         /// Returns a vector that is perpendicular to the given vector and in the same vertical Plane.        
-        /// Projected into the XY Plane input and output vectors are parallell and of same orientation.
+        /// Projected into the XY Plane input and output vectors are parallel and of same orientation.
         /// Not of same length, not unitized.
         /// On vertical input vector resulting vector if of zero length. 
         static member inline perpendicularInVerticalPlane (v:UnitVec) :Vec = 
