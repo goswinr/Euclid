@@ -31,7 +31,7 @@ type BBox =
          }    
     
     override b.ToString() =  
-        sprintf "FsEx.Geo.BBox: length(x)= %s width(y)=%s , height(z)=%s (at X=%s Y=%s Z=%s)" 
+        sprintf "FsEx.Geo.BBox: length(x)= %s width(y)=%s , height(z)=%s (at X=%s | Y=%s | Z=%s)" 
             (Format.float (b.MaxX - b.MinX)) (Format.float (b.MaxY - b.MinY)) (Format.float (b.MaxZ - b.MinZ)) 
             (Format.float b.MinX) (Format.float b.MinY) (Format.float b.MinZ)
     
@@ -58,11 +58,11 @@ type BBox =
                           Pnt(b.MinX, b.MinY, b.MaxZ); Pnt(b.MaxX, b.MinY, b.MaxZ);  Pnt(b.MaxX, b.MaxY, b.MaxZ); Pnt(b.MinX, b.MaxY, b.MaxZ)|]
 
     /// Returns the bottom of the Box as a counter clockwise array of 4 Points, starting at MinPt 
-    /// Last and first Point are NOT the same
+    /// Last and first point are NOT the same
     member b.PolylineBottom = [| Pnt(b.MinX, b.MinY,b.MinZ); Pnt(b.MaxX, b.MinY,b.MinZ);  Pnt(b.MaxX, b.MaxY,b.MinZ); Pnt(b.MinX, b.MaxY,b.MinZ) |]
 
     /// Returns the bottom of the Box as a counter clockwise array of 5 Points, starting at MinPt
-    /// Last and first Point are the same
+    /// Last and first point are the same
     member b.PolylineBottomClosed = [| Pnt(b.MinX, b.MinY,b.MinZ); Pnt(b.MaxX, b.MinY,b.MinZ);  Pnt(b.MaxX, b.MaxY,b.MinZ); Pnt(b.MinX, b.MaxY,b.MinZ); Pnt(b.MinX, b.MinY,b.MinZ)|]
 
     /// Checks that min X and Y are smaller than max X and Y.

@@ -5,7 +5,8 @@ open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see http
 open FsEx.Geo.Util
 
 // TODO:
-// create Rotation and Translation only Matrix class:
+// create a 3D Rotation and Translation only Matrix class.
+// No shear, no scaling, no reflection, no projection.
 // It would look like this:
 // M11 M21 M31 X41 
 // ___ M22 M32 Y42 
@@ -382,7 +383,7 @@ type Matrix =
     /// Creates a rotation transformation matrix around the Z-axis 
     /// by angle in Degrees (not Radians). 
     /// angleDegrees — Rotation angle in Degrees.
-    /// Returns a positive  rotation will be  from X toward Y-axis,  so counter-clockwise looking onto X-Y Plane
+    /// Returns a positive  rotation will be  from X toward Y-axis,  so counter-clockwise looking onto  X-Y plane
     /// The resulting matrix will be:
     /// cos(θ) -sin(θ) 0 0
     /// sin(θ) cos(θ)  0 0

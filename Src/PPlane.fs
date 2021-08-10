@@ -16,7 +16,7 @@ open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see http
 [<IsReadOnly>]
 type PPlane =  
     
-    /// The Origin 3D Point of this PPlane  
+    /// The Origin 3D point of this PPlane  
     val Origin: Pnt
     
     /// The local X-axis of this PPlane  
@@ -32,6 +32,6 @@ type PPlane =
     internal new (origin, axisX, axisY, axisZ)  =  {Origin=origin; Xax=axisX; Yax=axisY; Zax=axisZ}
     
     /// Format PPlane into string with nicely formatted floating point numbers.
-    override pl.ToString() = sprintf "FsEx.Geo.PPlane(Origin=%O; Xax=%O; Yax=%O; Yax=%O;)" pl.Origin pl.Xax pl.Yax pl.Zax
+    override pl.ToString() = sprintf "FsEx.Geo.PPlane(Origin:%s| X-ax:%s| Y-ax=%s| Z-ax:%s)" pl.Origin.AsShortString pl.Xax.AsShortString pl.Yax.AsShortString pl.Zax.AsShortString
 
     // see extension members in folder 'members'

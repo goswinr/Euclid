@@ -7,7 +7,7 @@ open FsEx.Geo.Util
 
 /// A plane defined by a point and a normal vector
 type [<Struct>] Plane = // Normals are always unitized
-    /// The center Point of the Plane
+    /// The center point of the Plane
     val Origin : Pnt
     /// The unitized normal of the Plane
     val Normal : UnitVec
@@ -15,6 +15,9 @@ type [<Struct>] Plane = // Normals are always unitized
     /// Unsafe internal constructor,  public only for inlining.
     [<Obsolete("Unsafe internal constructor,  but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >] 
     new (pt,n) = {Origin = pt; Normal = n} // private unchecked constructor, supply unitized values
+    
+    /// Format PPlane into string with nicely formatted floating point numbers.
+    override pl.ToString() = sprintf "FsEx.Geo.Plane(Origin:%s| Normal:%s)" pl.Origin.AsShortString pl.Normal.AsShortString
 
     /// Create Plane, normal vector gets unitized in constructor
     static member create(pt,normal:Vec) = 
@@ -32,13 +35,13 @@ type [<Struct>] Plane = // Normals are always unitized
         if Vec.isTiny 1e-5 n then FsExGeoException.Raise "FsEx.Geo.Plane.createFrom3Points: the points %O, %O, %O are in one Line, no Plane found" a b c
         Plane(a, n.Unitized)
 
-    /// Returns signed distance of Point to plane, also indicating on which side it is.
+    /// Returns signed distance of point to plane, also indicating on which side it is.
     member inline pl.DistToPt pt = pl.Normal*(pt-pl.Origin) 
 
-    /// Returns the closest Point on the plane from a test point.
+    /// Returns the closest point on the plane from a test point.
     member inline pl.ClPt pt = pt - pl.Normal*(pl.DistToPt pt) 
 
-    /// Returns the closest Point on the plane from a test point.
+    /// Returns the closest point on the plane from a test point.
     member pl.PlaneAtClPt pt = Plane(pt - pl.Normal*(pl.DistToPt pt), pl.Normal)
 
     /// Returns the Angle to another Plane in Degree, ignoring orientation.
@@ -47,7 +50,6 @@ type [<Struct>] Plane = // Normals are always unitized
     /// Returns the Angle to a Line in Degree, ignoring orientation.
     member inline pl.AngleToLine (ln:Line) = UnitVec.angle90 ln.Tangent.Unitized pl.Normal 
     
-    override pl.ToString() = sprintf "FsEx.Geo.Plane(pt= %g, %g, %g, n=  %g, %g, %g)" pl.Origin.X  pl.Origin.Y pl.Origin.Z pl.Normal.X pl.Normal.Y pl.Normal.Z
 
     static member  normal (p:Plane) = p.Normal
     
@@ -57,13 +59,13 @@ type [<Struct>] Plane = // Normals are always unitized
     
     static member  angle (a:Plane) b = a.AngToPl b
 
-    /// Returns the parameter of intersection Point of infinite Line with Plane, fails if they are parallel
+    /// Returns the parameter of intersection point of infinite Line with Plane, fails if they are parallel
     static member  intersectLineParameter  (ln:Line) (pl:Plane) = 
         let nenner = ln.Tangent * pl.Normal
         if abs nenner < 1e-6 then FsExGeoException.Raise "FsEx.Geo.intersectLineParameter: Lines and Plane are Parallel: %O, %O" ln pl
         (pl.Origin - ln.From) * pl.Normal / nenner
     
-    /// Returns intersection Point of infinite Line with Plane, fails if they are parallel
+    /// Returns intersection point of infinite Line with Plane, fails if they are parallel
     static member intersectLine (ln:Line) (pl:Plane) = ln.At <| Plane.intersectLineParameter  ln pl
     
     /// checks if a finite Line intersects with Plane, fails if they are parallel
@@ -74,7 +76,7 @@ type [<Struct>] Plane = // Normals are always unitized
     static member  offset dist (pl:Plane) = Plane(pl.Origin + pl.Normal*dist , pl.Normal)        
     
     /// Offset Plane by amount  in orientation towards DirPt:
-    /// in direction of Point -> distance -> Plane
+    /// in direction of point -> distance -> Plane
     static member  offsetInDir dirPt dist (pl:Plane) =
         if pl.Normal * (dirPt-pl.Origin) > 0. then Plane(pl.Origin + pl.Normal*dist , pl.Normal)
         else                              Plane(pl.Origin - pl.Normal*dist , pl.Normal)

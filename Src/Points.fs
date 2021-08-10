@@ -56,7 +56,7 @@ type Points private () =
     static member closestPoint (pts:ResizeArray<Pnt>, pt:Pnt) : Pnt= 
         pts.[Points.closestPointIdx (pts, pt)]
 
-    /// Returns the closest 2D point form a Point list to a given 2D point
+    /// Returns the closest 2D point form a point list to a given 2D point
     static member closestPoint (pts:ResizeArray<Pt>, pt:Pt) : Pt= 
         pts.[Points.closestPointIdx (pts, pt)]
 

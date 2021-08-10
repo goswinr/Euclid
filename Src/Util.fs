@@ -6,14 +6,15 @@ open System
 type FsExGeoException (s:string) = 
     inherit System.Exception(s)
 
-    static member inline Raise msg = raise (new FsExGeoException(msg))
+    static member Raise msg =  Printf.kprintf (fun s -> raise (FsExGeoException(s))) msg
+
 
 /// Exception for attempting to divide by a 0.0 or almost 0.0 value 
 /// Almost 0.0 is defined by Util.zeroLengthTol (1e-16)
 type FsExGeoDivByZeroException (s:string) = 
     inherit System.Exception(s)
 
-    static member inline Raise msg = raise (new FsExGeoDivByZeroException(msg))
+    static member Raise msg = Printf.kprintf (fun s -> raise (FsExGeoDivByZeroException(s))) msg
 
 
 /// Math Utility functions and values for use within FsEx.Geo

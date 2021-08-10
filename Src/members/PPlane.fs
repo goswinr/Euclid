@@ -45,7 +45,7 @@ module AutoOpenPPlane =
             let z = Vec.cross (x , y)
             PPlane(origin,x.Unitized,y.Unitized,z.Unitized)
     
-        /// Builds Plane at first Point , X-axis to second Point, checks for collinear points    
+        /// Builds Plane at first point , X-axis to second Point, checks for collinear points    
         static member from3Pts (origin:Pnt) (b:Pnt) (c:Pnt) = 
             let x = b-origin
             let yt = c-origin
@@ -54,7 +54,7 @@ module AutoOpenPPlane =
             let y = Vec.cross (z , x)
             PPlane(origin,x.Unitized,y.Unitized,z.Unitized)
     
-        /// Builds Plane at first Point , X-axis to second Point,
+        /// Builds Plane at first point , X-axis to second Point,
         static member from2Pts (a:Pnt) (b:Pnt) = PPlane.fromPtX a (b-a)
 
         static member translateX (d:float) (pl:PPlane) = PPlane(pl.Origin + pl.Xax*d, pl.Xax, pl.Yax, pl.Zax) 
@@ -73,16 +73,21 @@ module AutoOpenPPlane =
     
         static member rotateOnZ180 (pl:PPlane) = PPlane(pl.Origin , -pl.Xax, -pl.Yax, pl.Zax) 
 
-    
+        /// Transforms the plane by the given matrix
         /// If the transformation includes a shear the only X-axis can be kept.
         /// The plane will be defined with the direction of Y-axis ( which might not be perpendicular after shearing ).
         /// The returned PPlane has orthogonal unit vectors
         static member transform (m:Matrix) (pl:PPlane) = 
-            let o  = Pnt.transform m pl.Origin
-            let px = Pnt.transform m (pl.Origin+pl.Xax)
-            let py = Pnt.transform m (pl.Origin+pl.Yax)
-            PPlane.fromPtXY  o (px-o) (py-o)
-    
+            let o = Pnt.transform m pl.Origin
+            let x = UnitVec.transformBy3x3PartOnly m pl.Xax
+            let y = UnitVec.transformBy3x3PartOnly m pl.Yax
+            let z = UnitVec.transformBy3x3PartOnly m pl.Zax 
+            // test if any shear happened:           
+            if abs(x*y) < zeroLengthTol && abs(x*z) < zeroLengthTol && abs(y*z) < zeroLengthTol then 
+                PPlane(o,x.Unitized,y.Unitized,z.Unitized) // unitize to ignore any scaling
+            else 
+                PPlane.fromPtXY o x y
+                
         /// Rotate Plane 180 Degrees around Z-axis if the Y-axis orientation does not match World Y (pl.Yax.Y < 0.0)
         /// To ensure that Y is always positive. For example for showing Text 
         static member rotateZ180IfYNegative (pl:PPlane) = 

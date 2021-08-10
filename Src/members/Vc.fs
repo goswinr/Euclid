@@ -87,10 +87,11 @@ module AutoOpenVc =
         /// 0.0 = XAxis,  going Counter clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions
         member inline v.DirectionDiamond =
-            // https://stackoverflow.com/a/14675998/969070       
-            #if DEBUG // TODO : with this test all  operations are 2.5 times slower 
-            if v.IsTiny 1e-16  then FsExGeoException.Raise "FsEx.Geo.Vc.DirectionDiamond Failed for tiny vector %O." v
-            #endif
+            // https://stackoverflow.com/a/14675998/969070 
+            #if DEBUG 
+            if abs(v.X) < zeroLengthTol && abs(v.Y) < zeroLengthTol then // TODO : with this test all  operations are 2.5 times slower 
+                FsExGeoDivByZeroException.Raise "FsEx.Geo.Vc.DirectionDiamond: input vector is zero length: %O" v
+            #endif 
             if v.Y >= 0.0 then 
                 if v.X >= 0.0 then   
                     v.Y/(v.X+v.Y) 
@@ -106,8 +107,9 @@ module AutoOpenVc =
         /// Going Counter clockwise till two Pi.
         member inline v.Direction2Pi =
             // https://stackoverflow.com/a/14675998/969070
-            #if DEBUG // TODO : with this test all  operations are 2.5 times slower 
-            if v.IsTiny 1e-16  then FsExGeoException.Raise "FsEx.Geo.Vc.Direction2Pi Failed for tiny vector %O." v
+            #if DEBUG 
+            if abs(v.X) < zeroLengthTol && abs(v.Y) < zeroLengthTol then // TODO : with this test all  operations are 2.5 times slower 
+                FsExGeoDivByZeroException.Raise "FsEx.Geo.Vc.Direction2Pi: input vector is zero length: %O" v
             #endif
             let a = Math.Atan2(v.Y, v.X) 
             if a < 0. then  
@@ -156,7 +158,7 @@ module AutoOpenVc =
         /// If you want a different Z value use the member v.WithZ(z)
         member inline v.AsVec        = Vec(v.X, v.Y, 0.0)
         
-        /// Convert 2D vector to 3D Point using 0.0 as Z value. 
+        /// Convert 2D vector to 3D point using 0.0 as Z value. 
         member inline v.AsPnt        = Pnt(v.X, v.Y, 0.0)
 
 

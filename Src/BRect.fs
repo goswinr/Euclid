@@ -25,7 +25,7 @@ type BRect =
          MaxX = maxX
          MaxY = maxY}    
     
-    override r.ToString() =  sprintf "FsEx.Geo.BRect: length(x)=%s , width(y)=%s (at X=%s  Y=%s)" (Format.float (r.MaxX - r.MinX)) (Format.float (r.MaxY - r.MinY)) (Format.float r.MinX) (Format.float r.MinY)
+    override r.ToString() =  sprintf "FsEx.Geo.BRect: length(x)=%s , width(y)=%s (at X=%s | Y=%s)" (Format.float (r.MaxX - r.MinX)) (Format.float (r.MaxY - r.MinY)) (Format.float r.MinX) (Format.float r.MinY)
     
     member inline r.MinPt = Pt(r.MinX,r.MinY)
 
@@ -42,11 +42,11 @@ type BRect =
     member inline r.Center = Pt( (r.MaxX + r.MinX)*0.5, (r.MaxY + r.MinY)*0.5 )
 
     /// Returns a counter clockwise array of 4 Points, starting at MinPt 
-    /// Last and first Point are NOT the same
+    /// Last and first point are NOT the same
     member r.Polyline = [| Pt(r.MinX, r.MinY); Pt(r.MaxX, r.MinY);  Pt(r.MaxX, r.MaxY); Pt(r.MinX, r.MaxY) |]
 
     /// Returns a counter clockwise array of 5 Points, starting at MinPt
-    /// Last and first Point are the same
+    /// Last and first point are the same
     member r.PolylineClosed = [| Pt(r.MinX, r.MinY); Pt(r.MaxX, r.MinY);  Pt(r.MaxX, r.MaxY); Pt(r.MinX, r.MaxY); Pt(r.MinX, r.MinY)|]
 
     /// Checks that min X and Y are smaller than max X and Y.

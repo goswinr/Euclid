@@ -11,7 +11,7 @@ namespace FsEx.Geo
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>]  see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike    
 open FsEx.Geo.Util  
-    
+
 /// A immutable 2D vector with any length. Made up from 2 floats: X and Y.
 /// ( 2D Unit vectors with length 1.0 are called 'UnitVc' )
 /// ( 3D vectors are called 'Vec' ) 
@@ -35,6 +35,11 @@ type Vc =
     /// Format 2D vector into string including type name and nice floating point number formatting of X,Y and length.
     override v.ToString() = sprintf "FsEx.Geo.Vc(X=%s, Y=%s) Length: %s" (Format.float v.X) (Format.float v.Y) (Format.float (sqrt (v.X*v.X + v.Y*v.Y)))
     
+    /// Format 2D vector into string with nice floating point number formatting of X and Y
+    /// But without full type name or length as in v.ToString()
+    member v.AsShortString = sprintf "X=%s, Y=%s" (Format.float v.X) (Format.float v.Y) 
+    
+
     /// Negate or inverse a 2D vectors. Returns a new 2D vector.
     static member inline (~- )  (v:Vc)       = Vc ( -v.X , -v.Y )
     
@@ -88,6 +93,10 @@ type UnitVc =
     /// Format 2D unit vector into string including type name and nice floating point number formatting.
     override v.ToString() =  sprintf "FsEx.Geo.UnitVc(X=%s, Y=%s)" (Format.float v.X)(Format.float v.Y)        
     
+    /// Format 2D unit vector into string with nice floating point number formatting of X and Y
+    /// But without full type name as in v.ToString()
+    member v.AsShortString = sprintf "X=%s, Y=%s" (Format.float v.X) (Format.float v.Y) 
+
     /// Negate or inverse a 2D unit vectors. Returns a new 2D unit vector.
     static member inline (~- )  (v:UnitVc) = UnitVc( -v.X , -v.Y )
     
@@ -173,7 +182,11 @@ type Pt =
 
     /// Format 2D point into string including type name and nice floating point number formatting.
     override p.ToString() = sprintf "FsEx.Geo.Pt(X=%s, Y=%s)" (Format.float p.X) (Format.float p.Y)
-        
+    
+    /// Format 2D point into string with nice floating point number formatting of X and Y
+    /// But without full type name as in p.ToString()
+    member p.AsShortString = sprintf "X=%s, Y=%s" (Format.float p.X) (Format.float p.Y) 
+
     /// Subtract one 2D point from another. 
     /// 'a-b' returns a new 2D vector from b to a. 
     static member inline ( - )  (a:Pt, b:Pt)     = Vc (a.X - b.X , a.Y - b.Y )

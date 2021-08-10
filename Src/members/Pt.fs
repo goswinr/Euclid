@@ -52,11 +52,14 @@ module AutoOpenPt =
         /// It is always positive and in the range of 0.0 to 4.0 ( for 360 Degrees) 
         /// 0.0 = XAxis,  going Counter clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions
-        member inline p.DirDiamondTo(o:Pt) =
+        member inline p.DirectionDiamondTo(o:Pt) =
             // https://stackoverflow.com/a/14675998/969070            
             let x = o.X-p.X
             let y = o.Y-p.Y
-            if abs x < 1e-16 && abs y < 1e-16 then FsExGeoException.Raise "FsEx.Geo.Pt.DirDiamondTo Failed for too short Distance between %O and %O." p o
+            //#if DEBUG 
+            if abs(x) < zeroLengthTol && abs(y) < zeroLengthTol then // TODO : with this test all  operations are 2.5 times slower 
+                FsExGeoDivByZeroException.Raise "FsEx.Geo.Pt.DirectionDiamondTo failed for too short Distance between %O and %O." p o
+            //#endif            
             if y >= 0.0 then 
                 if x >= 0.0 then   
                     y/(x+y) 
@@ -71,9 +74,13 @@ module AutoOpenPt =
         /// Returns the Angle in Radians from this point to another point.
         /// 0.0 = XAxis,  going Counter clockwise till two Pi.
         member inline p.Angle2PiTo(o:Pt) =
-            // https://stackoverflow.com/a/14675998/969070            
+            // https://stackoverflow.com/a/14675998/969070 
             let x = o.X-p.X
             let y = o.Y-p.Y
+            //#if DEBUG 
+            if abs(x) < zeroLengthTol && abs(y) < zeroLengthTol then // TODO : with this test all  operations are 2.5 times slower 
+                FsExGeoDivByZeroException.Raise "FsEx.Geo.Pt.Angle2PiTo failed for too short Distance between %O and %O." p o
+            //#endif
             let a = Math.Atan2(y, x) 
             if a < 0. then  a + Util.twoPi
             else            a
@@ -90,8 +97,7 @@ module AutoOpenPt =
         member inline p.AsVec        = Vec(p.X, p.Y, 0.0)
 
         /// Returns the 2D point as 3D point. Using 0.0 for Z
-        member inline p.AsPnt        = Pnt(p.X, p.Y, 0.0)
-        
+        member inline p.AsPnt        = Pnt(p.X, p.Y, 0.0)        
 
         /// Get closest point on finit line to test point. 
         member inline testPt.ClosestPointOnLine(fromPt:Pt, toPt:Pt) = 
@@ -114,7 +120,7 @@ module AutoOpenPt =
             else                 fromPt+dot*uv 
         
         /// Squared Distance between point and finite line segment.   
-        member inline testPt.DistanceToSquareLine(fromPt:Pt, uv:UnitVc, len:float) = 
+        member inline testPt.DistanceToLineSquare(fromPt:Pt, uv:UnitVc, len:float) = 
             let dir = testPt-fromPt 
             let dot = Vc.dot (uv,  dir) 
             if   dot <= 0.0 then testPt.DistanceToSquare  fromPt 
@@ -125,7 +131,7 @@ module AutoOpenPt =
                 
         /// Squared Distance between point and finite line segment  defined by start , end,  direction and length 
         /// The last two parameters  help speed up calculations.
-        member inline testPt.DistanceToSquareLine(fromPt:Pt, toPt:Pt,  uv:UnitVc, len:float) = 
+        member inline testPt.DistanceToLineSquare(fromPt:Pt, toPt:Pt,  uv:UnitVc, len:float) = 
             let dir = testPt-fromPt 
             let dot = Vc.dot (uv,  dir) 
             if   dot <= 0.0 then testPt.DistanceToSquare fromPt 
@@ -260,16 +266,17 @@ module AutoOpenPt =
         static member inline bisector (ptPrev:Pt, ptThis:Pt, ptNext:Pt) =  
             (ptPrev-ptThis).Unitized  + (ptNext-ptThis).Unitized   
         
-        /// Rotate the a 2D Point Counter Clockwise by a 2D Rotation (that has cos and sin precomputed)
+        /// Rotate the a 2D point Counter Clockwise by a 2D Rotation (that has cos and sin precomputed)
         static member inline rotateBy (r:Rotation2D) (p:Pt) = 
             Pt( r.Cos*p.X - r.Sin*p.Y, 
                 r.Sin*p.X + r.Cos*p.Y) 
 
-        /// Rotate the 2D Point in Degrees. Counter Clockwise.
+        /// Rotate the 2D point in Degrees. Counter Clockwise.
         /// For better Performance precompute the Rotate2D struct and use its member to rotate. see Vc.rotateBy
-        static member inline rotate (angDegree) (vec:Pt) = Pt.rotateBy (Rotation2D.createFromDegrees angDegree) vec 
+        static member inline rotate (angDegree) (vec:Pt) = 
+            Pt.rotateBy (Rotation2D.createFromDegrees angDegree) vec 
         
-        /// Rotate the 2D Point around a center 2D Point. Counter Clockwise.
+        /// Rotate the 2D point around a center 2D Point. Counter Clockwise.
         /// By a 2D Rotation (that has cos and sin precomputed)
         static member inline rotateWithCenterBy (cen:Pt) (r:Rotation2D) (pt:Pt) = 
             let x = pt.X - cen.X  
@@ -277,19 +284,17 @@ module AutoOpenPt =
             Pt (r.Cos*x - r.Sin*y + cen.X, 
                 r.Sin*x + r.Cos*y + cen.Y) 
         
-        /// Rotate 2D Point around a center point counter clockwise. Angle given in Degrees.    
-        static member inline ptWithCen  (cen:Pt)  angDegree (pt:Pt)  = 
-            TODO adapt
+        /// Rotate 2D point around a center point counter clockwise. Angle given in Degrees.    
+        static member inline rotateWithCenter (cen:Pt)  angDegree (pt:Pt)  =             
             Pt.rotateWithCenterBy cen (Rotation2D.createFromDegrees angDegree) pt
         
         /// Returns a point that is at a given distance from a point in the direction of another point.
         static member inline distPt (fromPt:Pt, dirPt:Pt, distance:float) : Pt  = 
             let v = dirPt - fromPt
             let sc = distance/v.Length
-            fromPt + v*sc
+            fromPt + v*sc        
         
-        
-        /// Returns a Point by evaluation a line between two point with a normalized parameter.
+        /// Returns a point by evaluation a line between two point with a normalized parameter.
         /// e.g. rel=0.5 will return the middle point, rel=1.0 the endPoint
         static member inline divPt(fromPt:Pt, toPt:Pt,rel:float) : Pt  = 
             let v = toPt - fromPt
@@ -297,8 +302,7 @@ module AutoOpenPt =
         
         /// Applies a translation vector
         static member inline translate (shift:Vc) (pt:Pt ) = 
-            pt + shift
-        
+            pt + shift        
             
         /// Snap to point if within snapDistance
         static member snapIfClose (snapDistance) (snapTo:Pt) (pt:Pt) = 

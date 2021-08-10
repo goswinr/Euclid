@@ -58,7 +58,7 @@ type Loop private ( pts:ResizeArray<Pt>
     //member _.XYs = xys
 
     /// This list is one item Longer than Vectors , BRects or Lengths
-    /// Last Point equals first Point
+    /// Last point equals first Point
     member _.Points = pts
     
     /// One less than Points count 
@@ -92,7 +92,7 @@ type Loop private ( pts:ResizeArray<Pt>
             let n = ps.[i+1]
             let u = us.[i]
             let l = ls.[i] 
-            let d = pt.DistanceSqToLine(t, n, u, l)
+            let d = pt.DistanceToLineSquare(t, n, u, l)
             if d < dMin then  
                 dMin  <- d 
                 iMin  <- i
@@ -112,7 +112,7 @@ type Loop private ( pts:ResizeArray<Pt>
             let n = ps.[i+1]
             let u = us.[i]
             let l = ls.[i] 
-            let d = pt.DistanceSqToLine(t, n, u, l)
+            let d = pt.DistanceToLineSquare(t, n, u, l)
             if d <= dMin then  
                 dMin  <- d 
                 iSnd <- iFst
@@ -157,9 +157,9 @@ type Loop private ( pts:ResizeArray<Pt>
                     else                        
                         // explicitly compare both offset of the two closest segments 
                         let uj90 = uj.Rotate90CW * lo.SnapThreshold
-                        let ddj = min (pt.DistanceSqToLine(pj+uj90 , uj, lj)) (pt.DistanceSqToLine(pj-uj90, uj, lj)) 
+                        let ddj = min (pt.DistanceToLineSquare(pj+uj90 , uj, lj)) (pt.DistanceToLineSquare(pj-uj90, uj, lj)) 
                         let uk90 = uk.Rotate90CW * lo.SnapThreshold
-                        let ddk = min (pt.DistanceSqToLine(pk+uk90 , uk, lk)) (pt.DistanceSqToLine(pk-uk90, uk, lk))                         
+                        let ddk = min (pt.DistanceToLineSquare(pk+uk90 , uk, lk)) (pt.DistanceToLineSquare(pk-uk90, uk, lk))                         
                         if ddj <= ddk then j else k                
                 
                 // once correct index is found check on which side the point is 

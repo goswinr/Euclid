@@ -40,6 +40,10 @@ type Vec =
     /// Format 3D vector into string including type name and nice floating point number formatting of X,Y,Z and length.
     override v.ToString() = sprintf "FsEx.Geo.Vec(X=%s, Y=%s, Z=%s) Length: %s" (Format.float v.X) (Format.float v.Y) (Format.float v.Z) (Format.float (sqrt (v.X*v.X + v.Y*v.Y + v.Z*v.Z)))
     
+    /// Format 3D vector into string with nice floating point number formatting of X,Y and Z
+    /// But without full type name or length as in v.ToString()
+    member v.AsShortString = sprintf "X=%s, Y=%s, Z=%s" (Format.float v.X) (Format.float v.Y)  (Format.float v.Z) 
+
     /// Negate or inverse a 3D vectors. Returns a new 3D vector.
     static member inline (~- ) (v:Vec)          = Vec( -v.X , -v.Y , -v.Z)
     
@@ -98,6 +102,10 @@ type UnitVec =
     /// Format 3D unit vector into string including type name and nice floating point number formatting.
     override p.ToString() = sprintf "FsEx.Geo.UnitVec(X=%s, Y=%s, Z=%s)" (Format.float p.X)(Format.float p.Y)(Format.float p.Z)
     
+    /// Format 3D unit vector into string with nice floating point number formatting of X,Y and Z
+    /// But without full type name as in v.ToString()
+    member v.AsShortString = sprintf "X=%s, Y=%s, Z=%s" (Format.float v.X) (Format.float v.Y) (Format.float v.Z) 
+
     /// Negate or inverse a 3D unit vectors. Returns a new 3D unit vector.
     static member inline ( ~- ) (v:UnitVec) = UnitVec ( -v.X , -v.Y , -v.Z)   
     
@@ -184,6 +192,11 @@ type Pnt =
     /// Format 3D point into string including type name and nice floating point number formatting.
     override p.ToString() = sprintf "FsEx.Geo.Pnt(X=%s, Y=%s, Z=%s)" (Format.float p.X)(Format.float p.Y)(Format.float p.Z)
     
+    
+    /// Format 3D point into string with nice floating point number formatting of X,Y and Z
+    /// But without full type name as in v.ToString()
+    member p.AsShortString = sprintf "X=%s, Y=%s, Z=%s" (Format.float p.X) (Format.float p.Y) (Format.float p.Z) 
+
     /// Subtract one 3D point from another. 
     /// 'a-b' returns a new 3D vector from b to a. 
     static member inline ( - ) (a:Pnt, b:Pnt)     = Vec (a.X - b.X , a.Y - b.Y , a.Z - b.Z)

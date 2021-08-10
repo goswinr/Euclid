@@ -50,16 +50,19 @@ module AutoOpenPnt =
             if d < zeroLengthTol then FsExGeoException.Raise "pnt.WithDistFromOrigin  %O is too small to be scaled." pt
             pt * (l/d) 
         
-        /// Returns the Diamond Angle from this point to another point projected in XY plane.
+        /// Returns the Diamond Angle from this point to another point projected in X-Y plane.
         /// The diamond angle is always positive and in the range of 0.0 to 4.0 ( for 360 Degrees) 
         /// 0.0 = XAxis,  going Counter clockwise. Ignoring Z component.
         /// This is the fastest angle computation since it does not use Math.Cos or Math.Sin.
         /// It is useful for radial sorting.
-        member inline p.DirDiamondInXYTo(o:Pnt) =
+        member inline p.DirectionDiamondInXYTo(o:Pnt) =
             // https://stackoverflow.com/a/14675998/969070            
             let x = o.X-p.X
             let y = o.Y-p.Y
-            if abs x < 1e-16 && abs y < 1e-16 then FsExGeoException.Raise "FsEx.Geo.Pnt.DirDiamondTo Failed for too short Distance between %O and %O." p o
+            //#if DEBUG 
+            if abs(x) < zeroLengthTol && abs(y) < zeroLengthTol then // TODO : with this test all  operations are 2.5 times slower 
+                FsExGeoDivByZeroException.Raise "FsEx.Geo.Pnt.DirectionDiamondInXYTo failed for too short Distance between %O and %O." p o
+            //#endif 
             if y >= 0.0 then 
                 if x >= 0.0 then   
                     y/(x+y) 
@@ -71,17 +74,21 @@ module AutoOpenPnt =
                 else 
                     3.0 + x/(x-y)  
         
-        /// Returns the Angle in Radians from this point to another point projected in XY plane.
+        /// Returns the Angle in Radians from this point to another point projected in X-Y plane.
         /// 0.0 = XAxis,  going Counter clockwise till two Pi.
         member inline p.Angle2PiInXYTo(o:Pnt) =
             // https://stackoverflow.com/a/14675998/969070            
             let x = o.X-p.X
             let y = o.Y-p.Y
+            //#if DEBUG 
+            if abs(x) < zeroLengthTol && abs(y) < zeroLengthTol then // TODO : with this test all  operations are 2.5 times slower 
+                FsExGeoDivByZeroException.Raise "FsEx.Geo.Pnt.Angle2PiInXYTo failed for too short Distance between %O and %O." p o
+            //#endif  
             let a = Math.Atan2(y, x) 
             if a < 0. then  a + Util.twoPi
             else            a
         
-        /// Returns the Angle in Degrees from this point to another point projected in XY plane.
+        /// Returns the Angle in Degrees from this point to another point projected in X-Y plane.
         /// 0.0 = XAxis,  going Counter clockwise till 360.
         member inline p.Angle360InXYTo(o:Pnt) =
             p.Angle2PiInXYTo o |> toDegrees
@@ -113,7 +120,7 @@ module AutoOpenPnt =
             else                 fromPt+dot*uv 
         
         /// Squared Distance between point and finite line segment defined by start point, direction and length.   
-        member inline testPt.DistanceToSquareLine(fromPt:Pnt, uv:UnitVec, len:float) = 
+        member inline testPt.DistanceToLineSquare(fromPt:Pnt, uv:UnitVec, len:float) = 
             let dir = testPt-fromPt 
             let dot = Vec.dot (uv,  dir) 
             if   dot <= 0.0 then testPt.DistanceToSquare  fromPt 
@@ -122,7 +129,7 @@ module AutoOpenPnt =
                 
         /// Squared Distance between point and finite line segment defined by start point , end point,  direction and length 
         /// The last two parameters  help speed up calculations.
-        member inline testPt.DistanceToSquareLine(fromPt:Pnt, toPt:Pnt,  uv:UnitVec, len:float) = 
+        member inline testPt.DistanceToLineSquare(fromPt:Pnt, toPt:Pnt,  uv:UnitVec, len:float) = 
             let dir = testPt-fromPt 
             let dot = Vec.dot (uv,  dir) 
             if   dot <= 0.0 then testPt.DistanceToSquare fromPt 
@@ -197,7 +204,7 @@ module AutoOpenPnt =
         /// Returns a 3D point from Z level and 2D point.
         static member inline ofPtAt (z:float)  (p:Pt)  = Pnt (p.X, p.Y, z) 
 
-        /// Project point to World XY Plane.
+        /// Project point to World X-Y plane.
         /// Use make2D to convert to 2D point instance
         static member inline projectToXYPlane (pt:Pnt) = Pnt(pt.X,pt.Y, 0.0)
                 
@@ -284,7 +291,7 @@ module AutoOpenPnt =
             let sc = distance/v.Length
             fromPt + v*sc       
         
-        /// Returns a Point by evaluation a line between two point with a normalized parameter.
+        /// Returns a point by evaluation a line between two point with a normalized parameter.
         /// e.g. rel=0.5 will return the middle point, rel=1.0 the endPoint
         static member inline divPt(fromPt:Pnt, toPt:Pnt,rel:float) : Pnt  = 
             let v = toPt - fromPt
@@ -312,7 +319,7 @@ module AutoOpenPnt =
         static member snapIfClose (snapDistance) (snapTo:Pnt) (pt:Pnt) = 
             if (snapTo-pt).Length < snapDistance then snapTo else pt
         
-        /// Every line has a normal vector in XY Plane.
+        /// Every line has a normal vector in X-Y plane.
         /// If line is vertical then XAxis is returned
         /// Rotated counter clockwise in top view.
         /// result is unitized
@@ -326,7 +333,7 @@ module AutoOpenPnt =
         
 
         /// Offsets two points by two given distances.
-        /// The fist distance (distHor) is applied in in XY Plane
+        /// The fist distance (distHor) is applied in in X-Y plane
         /// The second distance (distNormal) is applied perpendicular to the line (made by the two points) and perpendicular to the horizontal offset direction.
         /// this is in World.Z direction if both points are at the same Z level.
         /// If points are closer than than 1e-6 units the World.XAxis is used as first direction and World Z-axis as second direction.
@@ -347,7 +354,7 @@ module AutoOpenPnt =
             fromPt +  shift, toPt + shift             
         
     
-        /// Multiplies the Matrix with a Point (with an implicit 1 in the 4th dimension), 
+        /// Multiplies the Matrix with a point (with an implicit 1 in the 4th dimension), 
         /// So that it also works correctly for projections
         /// See also Pnt.transformSimple for better performance
         static member transform (m:Matrix) (p:Pnt) = 
@@ -377,22 +384,22 @@ module AutoOpenPnt =
         //        , m.M13*x + m.M23*y + m.M33*z + m.Z43 
         //        ) 
             
-        // Multiplies the Matrix with a Point (with an implicit 1 in the 4th dimension)
+        // Multiplies the Matrix with a point (with an implicit 1 in the 4th dimension)
         //static member inline ( * ) (matrix:Matrix, pt:Pnt) = Pnt.transform matrix pt //TODO in main declaration ,  not extension
            
 
         // Rotate 2D and 3D: 
 
-        /// Rotate the 3D Point around X-axis, from Y to Z-axis, Counter Clockwise looking from right.
+        /// Rotate the 3D point around X-axis, from Y to Z-axis, Counter Clockwise looking from right.
         static member rotateXBy (r:Rotation2D) (p:Pnt) = Pnt (p.X,  r.Cos*p.Y - r.Sin*p.Z, r.Sin*p.Y + r.Cos*p.Z)
         
-        /// Rotate the 3D Point around Y-axis, from Z to X-axis, Counter Clockwise looking from back.
+        /// Rotate the 3D point around Y-axis, from Z to X-axis, Counter Clockwise looking from back.
         static member rotateYBy (r:Rotation2D) (p:Pnt) = Pnt ( r.Sin*p.Z + r.Cos*p.X,  p.Y, r.Cos*p.Z - r.Sin*p.X) 
         
-        /// Rotate the 3D Point around Z-axis, from X to Y-axis, Counter Clockwise looking from top.
+        /// Rotate the 3D point around Z-axis, from X to Y-axis, Counter Clockwise looking from top.
         static member rotateZBy (r:Rotation2D) (p:Pnt) = Pnt (r.Cos*p.X - r.Sin*p.Y, r.Sin*p.X + r.Cos*p.Y,  p.Z)
         
-        /// Rotate the 3D Point around a center 3D Point and a X aligned axis, from Y to Z-axis, Counter Clockwise looking from right.
+        /// Rotate the 3D point around a center 3D point and a X aligned axis, from Y to Z-axis, Counter Clockwise looking from right.
         static member rotateXonCenterBy (cen:Pnt) (r:Rotation2D) (pt:Pnt) =  
             let x = pt.X - cen.X 
             let y = pt.Y - cen.Y 
@@ -401,7 +408,7 @@ module AutoOpenPnt =
                  r.Cos*y - r.Sin*z + cen.Y, 
                  r.Sin*y + r.Cos*z + cen.Z)         
 
-        /// Rotate the 3D Point around a center Point and a Y aligned axis, from Z to X-axis, Counter Clockwise looking from back.
+        /// Rotate the 3D point around a center point and a Y aligned axis, from Z to X-axis, Counter Clockwise looking from back.
         static member rotateYonCenterBy (cen:Pnt) (r:Rotation2D) (pt:Pnt) =  
             let x = pt.X - cen.X 
             let y = pt.Y - cen.Y 
@@ -410,7 +417,7 @@ module AutoOpenPnt =
                   y                 + cen.Y, 
                   r.Cos*z - r.Sin*x + cen.Z) 
         
-        /// Rotate the 3D Point around a center Point and a Z aligned axis, from X to Y-axis, Counter Clockwise looking from top.
+        /// Rotate the 3D point around a center point and a Z aligned axis, from X to Y-axis, Counter Clockwise looking from top.
         static member rotateZonCenterBy (cen:Pnt) (r:Rotation2D) (pt:Pnt) =  
             let x = pt.X - cen.X  
             let y = pt.Y - cen.Y 
@@ -419,27 +426,27 @@ module AutoOpenPnt =
                  r.Sin*x + r.Cos*y + cen.Y, 
                  z                 + cen.Z)
         
-        /// Rotate the 3D Point in Degrees around X-axis, from Y to Z-axis, Counter Clockwise looking from right.
+        /// Rotate the 3D point in Degrees around X-axis, from Y to Z-axis, Counter Clockwise looking from right.
         static member inline rotateX (angDegree) (pt:Pnt) = 
             Pnt.rotateXBy (Rotation2D.createFromDegrees angDegree) pt
     
-        /// Rotate the 3D Point in Degrees around Y-axis, from Z to X-axis, Counter Clockwise looking from back.
+        /// Rotate the 3D point in Degrees around Y-axis, from Z to X-axis, Counter Clockwise looking from back.
         static member inline rotateY (angDegree) (pt:Pnt) = 
             Pnt.rotateYBy  (Rotation2D.createFromDegrees angDegree) pt 
     
-        /// Rotate the 3D Point in Degrees around Z-axis, from X to Y-axis, Counter Clockwise looking from top.
+        /// Rotate the 3D point in Degrees around Z-axis, from X to Y-axis, Counter Clockwise looking from top.
         static member inline rotateZ (angDegree) (pt:Pnt) = 
             Pnt.rotateZBy  (Rotation2D.createFromDegrees angDegree) pt 
     
-        /// Rotate the 3D Point in Degrees around center Point and a X aligned axis, from Y to Z-axis, Counter Clockwise looking from right.
+        /// Rotate the 3D point in Degrees around center point and a X aligned axis, from Y to Z-axis, Counter Clockwise looking from right.
         static member inline rotateXonCenter (cen:Pnt) (angDegree) (pt:Pnt) = 
             Pnt.rotateXonCenterBy cen (Rotation2D.createFromDegrees angDegree) pt  
 
-        /// Rotate the 3D Point in Degrees around center Point and a Y aligned axis, from Z to X-axis, Counter Clockwise looking from back.
+        /// Rotate the 3D point in Degrees around center point and a Y aligned axis, from Z to X-axis, Counter Clockwise looking from back.
         static member inline rotateYonCenter (cen:Pnt) (angDegree) (pt:Pnt) = 
             Pnt.rotateYonCenterBy cen (Rotation2D.createFromDegrees angDegree) pt 
     
-        /// Rotate the 3D Point in Degrees around center Point and a Z aligned axis, from X to Y-axis, Counter Clockwise looking from top.
+        /// Rotate the 3D point in Degrees around center point and a Z aligned axis, from X to Y-axis, Counter Clockwise looking from top.
         static member inline rotateZonCenter (cen:Pnt) (angDegree) (pt:Pnt) = 
             Pnt.rotateZonCenterBy cen (Rotation2D.createFromDegrees angDegree) pt 
 
@@ -464,7 +471,7 @@ module AutoOpenPnt =
                , iz * qw + iw * - qz + ix * - qy - iy * - qx
                )
     
-        /// Rotate by Quaternion around given Center Point 
+        /// Rotate by Quaternion around given Center point 
         static member inline rotateOnCenterByQuat (cen:Pnt) (q:Quaternion) (pt:Pnt) =
             // adapted from https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
             let x = pt.X-cen.X

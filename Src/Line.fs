@@ -50,7 +50,7 @@ type [<Struct>] Line =
     /// Returns closest point on infinite line, use Line.ClPtParam to check domain.
     member inline ln.ClosestPoint (p:Pnt) = ln.At (ln.ClosestPointParameter p) 
         
-    /// Line from Point at Parameter a to Point at Parameter b
+    /// Line from point at Parameter a to point at Parameter b
     member inline ln.Segment(a, b) = Line(ln.At a, ln.At b)  
     
     member inline ln.Translate (v:Vec) = Line(ln.From+v,ln.To+v) 
@@ -84,7 +84,7 @@ type [<Struct>] Line =
         if l < 1e-6 then FsExGeoDivByZeroException.Raise " Line %O to short for finding point at a Distance" ln
         ln.At (dist/l)        
 
-    /// Returns new Line from Point at Parameter a to Point at Parameter b
+    /// Returns new Line from point at Parameter a to point at Parameter b
     static member inline segment a b (ln:Line) = ln.Segment (a, b)
 
     /// Returns new Line with given length, going out from start in direction of end
