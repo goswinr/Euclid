@@ -13,9 +13,9 @@ open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see http
 open FsEx.Geo.Util  
 
 
-/// A immutable 3D Vector of any length. Made up from 3 floats: X, Y, and Z.
+/// A immutable 3D vector of any length. Made up from 3 floats: X, Y, and Z.
 /// ( 3D Unit vectors of length 1.0 are called 'UnitVec' )
-/// ( 2D Vectors are called 'Vc' ) 
+/// ( 2D vectors are called 'Vc' ) 
 [<Struct; NoEquality; NoComparison>] 
 [<IsReadOnly>]
 //[<IsByRefLike>] // not used, see notes at end of file  
@@ -29,7 +29,7 @@ type Vec =
     /// Gets the Z part of this 3D vector
     val Z : float
     
-    /// Create a new 3D Vector with any length. Made up from 3 floats: X, Y, and Z.
+    /// Create a new 3D vector with any length. Made up from 3 floats: X, Y, and Z.
     new (x,y,z) =
         #if DEBUG
         if Double.IsNaN x || Double.IsNaN y || Double.IsNaN z || Double.IsInfinity x || Double.IsInfinity y || Double.IsInfinity z then 
@@ -60,15 +60,16 @@ type Vec =
 
     /// Divides a 3D vector by a scalar, also be called dividing/scaling a vector. Returns a new 3D vector.
     static member inline ( / )  (v:Vec, f:float) = 
-        #if DEBUG
-        if abs f < Util.zeroLengthTol then  FsExGeoDivByZeroException.Raise "%g is too small for dividing %O using / operator. Tolerance:%g" f v zeroLengthTol
-        #endif
-        v * (1./f) // or Vec (v.X / f , v.Y / f , , v.Z / f) ? 
+        //#if DEBUG
+        if abs f < zeroLengthTol then  FsExGeoDivByZeroException.Raise "%g is too small for dividing %O using / operator. Tolerance:%g" f v zeroLengthTol
+        // #endif
+        //v * (1./f) // maybe faster but worse precision 
+        Vec (v.X / f , v.Y / f ,  v.Z / f) 
     
     
 #nowarn "44" // for hidden constructors via Obsolete Attribute    
         
-/// A immutable 3D Vector guaranteed to be always unitized. ( 2D Unit Vectors are called 'UnitVc' ) 
+/// A immutable 3D vector guaranteed to be always unitized. ( 2D Unit vectors are called 'UnitVc' ) 
 /// Use UnitVec.create or UnitVec.createUnchecked to created instances.
 [<Struct; NoEquality; NoComparison>]
 [<IsReadOnly>]
@@ -125,7 +126,7 @@ type UnitVec =
     static member inline ( * )  (f:float,   a:UnitVec) = Vec (a.X * f , a.Y * f , a.Z * f)
 
     /// Dot product, or scalar product of two 3D unit vectors. 
-    /// Returns a float. This float is the cosine of the angle between the two vectors.
+    /// Returns a float. This float is the Cosine of the angle between the two vectors.
     static member inline ( * )  (a:UnitVec, b:UnitVec) = a.X * b.X + a.Y * b.Y + a.Z * b.Z 
     
     /// Dot product, or scalar product of a 3D unit vectors with a 3D vector  
@@ -138,10 +139,11 @@ type UnitVec =
 
     /// Divides a 3D unit vector by a scalar, also be called dividing/scaling a vector. Returns a new (non-unitized) 3D vector.
     static member inline ( / )  (v:UnitVec, f:float) = 
-        #if DEBUG
+        //#if DEBUG
         if abs f < Util.zeroLengthTol then FsExGeoDivByZeroException.Raise "%g is too small for dividing %O using / operator. Tolerance:%g" f v zeroLengthTol
-        #endif
-        v * (1./f) // or Vec (v.X / f , v.Y / f , , v.Z / f) ?
+        //#endif
+        //v * (1./f) // maybe faster but worse precision
+        Vec (v.X / f , v.Y / f , v.Z / f) 
     
     /// For use as a faster constructor
     /// Requires correct input of unitized values
@@ -208,11 +210,12 @@ type Pnt =
     static member inline ( * )  (f:float, a:Pnt) = Pnt (a.X * f , a.Y * f , a.Z * f)
 
     /// Divides a 3D point by a scalar, also be called dividing/scaling a point. Returns a new 3D point.
-    static member inline ( / )  (p:Pt, f:float) = 
-        #if DEBUG
+    static member inline ( / )  (p:Pnt, f:float) = 
+        //#if DEBUG
         if abs f < Util.zeroLengthTol then  FsExGeoDivByZeroException.Raise "%g is too small for dividing %O using / operator. Tolerance:%g" f p zeroLengthTol 
-        #endif
-        p * (1./f) // or Pnt (v.X / f , v.Y / f , , v.Z / f) ?
+        //#endif
+        //p * (1./f) // maybe faster but worse precision
+        Pnt (p.X / f , p.Y / f ,  p.Z / f) 
 
 
 (*

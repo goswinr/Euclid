@@ -49,12 +49,12 @@ module Util =
         elif x >  1.0 then  1.0
         else                x    
 
-    /// A safe arcsine (Inverse sine) function.
+    /// A safe arcsine (Inverse Sine) function.
     /// It clamps the input between -1 and 1
     let inline asinSafe a = a|> clamp11|> Math.Asin
 
 
-    /// A safe arccosine (Inverse cosine) function.
+    /// A safe arccosine (Inverse Cosine) function.
     /// It clamps the input between -1 and 1
     let inline acosSafe a = a|> clamp11|> Math.Acos
 

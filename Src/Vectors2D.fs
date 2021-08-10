@@ -12,9 +12,9 @@ open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>]  see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike    
 open FsEx.Geo.Util  
     
-/// A immutable 2D Vector with any length. Made up from 2 floats: X and Y.
+/// A immutable 2D vector with any length. Made up from 2 floats: X and Y.
 /// ( 2D Unit vectors with length 1.0 are called 'UnitVc' )
-/// ( 3D Vectors are called 'Vec' ) 
+/// ( 3D vectors are called 'Vec' ) 
 [<Struct;NoEquality;NoComparison>]// because its made up from floats
 [<IsReadOnly>]
 //[<IsByRefLike>] // not used, see notes at end of file  
@@ -25,7 +25,7 @@ type Vc =
     /// Gets the Y part of this 2D vector
     val Y : float
     
-    /// Create a new 2D Vector with any length. Made up from 2 floats: X and Y.
+    /// Create a new 2D vector with any length. Made up from 2 floats: X and Y.
     new (x,y) =         
         #if DEBUG // TODO : with this test all  operations are 2.5 times slower 
         if Double.IsNaN x || Double.IsNaN y || Double.IsInfinity x || Double.IsInfinity y  then FsExGeoException.Raise "FsEx.Geo.Vc Constructor failed for x:%g , y:%g"  x y
@@ -55,15 +55,15 @@ type Vc =
 
     /// Divides a 2D vector by a scalar, also be called dividing/scaling a vector. Returns a new 2D vector.
     static member inline ( / )  (v:Vc, f:float) = 
-        #if DEBUG
+        //#if DEBUG
         if abs f < Util.zeroLengthTol then FsExGeoDivByZeroException.Raise "%g is too small for dividing %O using / operator. Tolerance:%g"  f v zeroLengthTol
-        #endif
+        //#endif
         Vc (v.X / f , v.Y / f ) 
 
 
 #nowarn "44" // for internal inline constructors 
 
-/// A immutable 2D Vector guaranteed to be unitized (3D Unit Vectors are called 'UnitVec') 
+/// A immutable 2D vector guaranteed to be unitized (3D Unit Vectors are called 'UnitVec') 
 /// Use UnitVc.create or UnitVc.createUnchecked to created instances.
 [<Struct;NoEquality;NoComparison>]// because its made up from floats
 [<IsReadOnly>]
@@ -121,7 +121,7 @@ type UnitVc =
     static member inline ( * )  (f:float   , a:UnitVc  ) = Vc (a.X * f , a.Y * f )
     
     /// Dot product, or scalar product of two 2D unit vectors. 
-    /// Returns a float. This float is the cosine of the angle between the two vectors.
+    /// Returns a float. This float is the Cosine of the angle between the two vectors.
     static member inline ( * )  (a:UnitVc  , b:UnitVc  ) = a.X * b.X+ a.Y * b.Y  
     
     /// Dot product, or scalar product of a 2D unit vector with a 2D vector  
@@ -134,9 +134,9 @@ type UnitVc =
         
     /// Divides a 2D unit vector by a scalar, also be called dividing/scaling a vector. Returns a new (non-unitized) 2D vector.
     static member inline ( / )  (v:UnitVc, f:float) = 
-        #if DEBUG
+        //#if DEBUG
         if abs f < Util.zeroLengthTol then  FsExGeoDivByZeroException.Raise "%g is too small for dividing %O using / operator. Tolerance:%g" f v zeroLengthTol
-        #endif
+        //#endif
         Vc (v.X / f , v.Y / f ) 
     
     /// For use as a faster constructor
@@ -210,9 +210,11 @@ type Pt =
     
     /// Divides a 2D point by a scalar, also be called dividing/scaling a point. Returns a new 2D point.
     static member inline ( / )  (p:Pt, f:float) = 
-        if abs f > Util.zeroLengthTol then  Pt (p.X / f , p.Y / f ) 
-        else FsExGeoDivByZeroException.Raise "%g is too small for dividing %O using '/' operator. Tolerance:%g" f p zeroLengthTol
-
+        //#if DEBUG
+        if abs f < Util.zeroLengthTol then  FsExGeoDivByZeroException.Raise "%g is too small for dividing %O using / operator. Tolerance:%g" f p zeroLengthTol
+        //#endif
+        Pt (p.X / f , p.Y / f ) 
+        
 
 (*
 from: 

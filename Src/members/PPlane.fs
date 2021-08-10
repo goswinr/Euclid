@@ -19,9 +19,9 @@ module AutoOpenPPlane =
         member p.AtXY (px:float, py:float) = p.Origin + p.Xax*px + p.Yax*py 
 
         /// Returns the World Coordinate System Plane at World Origin
-        /// X axis = world X axis 
-        /// Y axis = world Y axis 
-        /// Z axis = world Z axis 
+        /// X-axis = World X-axis 
+        /// Y-axis = World Y-axis 
+        /// Z-axis = World Z-axis 
         static member WorldTop = worldXY
 
         /// The resulting PPlane wil have the X-Axis in direction of X. 
@@ -45,7 +45,7 @@ module AutoOpenPPlane =
             let z = Vec.cross (x , y)
             PPlane(origin,x.Unitized,y.Unitized,z.Unitized)
     
-        /// Builds Plane at first Point , X axis to second Point, checks for collinear points    
+        /// Builds Plane at first Point , X-axis to second Point, checks for collinear points    
         static member from3Pts (origin:Pnt) (b:Pnt) (c:Pnt) = 
             let x = b-origin
             let yt = c-origin
@@ -54,7 +54,7 @@ module AutoOpenPPlane =
             let y = Vec.cross (z , x)
             PPlane(origin,x.Unitized,y.Unitized,z.Unitized)
     
-        /// Builds Plane at first Point , X axis to second Point,
+        /// Builds Plane at first Point , X-axis to second Point,
         static member from2Pts (a:Pnt) (b:Pnt) = PPlane.fromPtX a (b-a)
 
         static member translateX (d:float) (pl:PPlane) = PPlane(pl.Origin + pl.Xax*d, pl.Xax, pl.Yax, pl.Zax) 
@@ -74,8 +74,8 @@ module AutoOpenPPlane =
         static member rotateOnZ180 (pl:PPlane) = PPlane(pl.Origin , -pl.Xax, -pl.Yax, pl.Zax) 
 
     
-        /// If the transformation includes a shear the only X axis can be kept.
-        /// The plane will be defined with the direction of Y Axis ( which might not be perpendicular after shearing ).
+        /// If the transformation includes a shear the only X-axis can be kept.
+        /// The plane will be defined with the direction of Y-axis ( which might not be perpendicular after shearing ).
         /// The returned PPlane has orthogonal unit vectors
         static member transform (m:Matrix) (pl:PPlane) = 
             let o  = Pnt.transform m pl.Origin
@@ -83,7 +83,7 @@ module AutoOpenPPlane =
             let py = Pnt.transform m (pl.Origin+pl.Yax)
             PPlane.fromPtXY  o (px-o) (py-o)
     
-        /// Rotate Plane 180 degrees around Z-axis if the Y Axis orientation does not match World Y (pl.Yax.Y < 0.0)
+        /// Rotate Plane 180 Degrees around Z-axis if the Y-axis orientation does not match World Y (pl.Yax.Y < 0.0)
         /// To ensure that Y is always positive. For example for showing Text 
         static member rotateZ180IfYNegative (pl:PPlane) = 
             if pl.Yax.Y < 0.0 then PPlane.rotateOnZ180 pl else pl

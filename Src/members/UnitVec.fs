@@ -19,30 +19,42 @@ module AutoOpenUnitVec =
 
     type UnitVec with 
 
-        /// Returns the length of the 3D vector projected into world XY plane.
-        member inline v.LengthInXY =  sqrt (v.X*v.X + v.Y*v.Y)
+        /// Returns the length of the 3D vector projected into World XY plane.
+        member inline v.LengthInXY = sqrt (v.X*v.X + v.Y*v.Y)
 
-        /// Returns the squared length of the 3D vector projected into world XY plane.
+        /// Returns the squared length of the 3D vector projected into World XY plane.
         /// The square length is faster to calculate and often good enough for use cases such as sorting vectors by length.
         member inline v.LengthSqInXY = v.X*v.X + v.Y*v.Y
 
-        /// Returns  a new 3D Vector with new X coordinate, Y and Z  stay the same.
+        /// Returns  a new 3D vector with new X coordinate, Y and Z  stay the same.
         member inline v.WithX x = Vec (x ,v.Y, v.Z) 
         
-        /// Returns a new 3D Vector with new y coordinate, X and Z  stay the same.
+        /// Returns a new 3D vector with new y coordinate, X and Z  stay the same.
         member inline v.WithY y = Vec (v.X, y, v.Z)
         
-        /// Returns a new 3D Vector with new z coordinate, X and Y  stay the same.
+        /// Returns a new 3D vector with new z coordinate, X and Y  stay the same.
         member inline v.WithZ z = Vec (v.X ,v.Y, z)
 
         /// Tests if dot product is bigger than 0.0.
-        /// That means the angle between the two vectors is less than 90 degrees
+        /// That means the angle between the two vectors is less than 90 Degrees
         member inline v.MatchesOrientation (vv:UnitVec) = v*vv > 0. // direction match
         
-        /// The diamond angle is always positive and in the range of 0.0 to 4.0 ( for 360 degrees) 
+        /// Returns a perpendicular horizontal vector. Rotated counterclockwise.
+        /// Or Vec.Zero if input is vertical.
+        /// Just does Vec(-v.Y, v.X, 0.0) 
+        member inline v.PerpendicularInXY = Vec(-v.Y, v.X, 0) 
+
+        /// 90 Degree rotation counter clockwise around Z-axis.
+        member inline v.RotateOnZ90CCW = UnitVec.createUnchecked( -v.Y,   v.X ,   v.Z)
+
+        /// 90 Degree rotation clockwise around Z-axis.
+        member inline v.RotateOnZ90CW  = UnitVec.createUnchecked(  v.Y,  -v.X,   v.Z  )  
+
+        /// The diamond angle is always positive and in the range of 0.0 to 4.0 ( for 360 Degrees) 
         /// 0.0 = XAxis,  going Counter clockwise. Ignoring Z component.
         /// This is the fastest angle computation since it does not use Math.Cos or Math.Sin.
         /// It is useful for radial sorting.
+        /// For XY Plane. Considers only the X and Y components of the vector.
         member inline v.DirDiamondInXY =
             // https://stackoverflow.com/a/14675998/969070            
             #if DEBUG 
@@ -60,11 +72,12 @@ module AutoOpenUnitVec =
                     3.0 + v.X/(v.X-v.Y) 
         
         /// Returns the Angle in Radians from XAxis,  
-        /// Going Counter clockwise till two Pi. Ignoring Z component.
+        /// Going Counter clockwise till two Pi. 
+        /// For World XY Plane. Considers only the X and Y components of the vector.
         member inline v.Angle2PiInXY =
             // https://stackoverflow.com/a/14675998/969070
             #if DEBUG 
-            if abs(v.X) < zeroLengthTol && abs(v.Y) < zeroLengthTol then FsExGeoDivByZeroException.Raise "UnitVec.Angle2PIInXY: input vector is vertical or zero length:%O" v
+            if abs(v.X) < zeroLengthTol && abs(v.Y) < zeroLengthTol then FsExGeoDivByZeroException.Raise "UnitVec.Angle2PiInXY: input vector is vertical or zero length:%O" v
             #endif
             let a = Math.Atan2(v.Y, v.X) 
             if a < 0. then  
@@ -73,14 +86,77 @@ module AutoOpenUnitVec =
                 a        
         
         /// Returns the Angle in Degrees from XAxis.  
-        /// Going Counter clockwise till 360. Ignoring Z component.
+        /// Going Counter clockwise till 360. 
+        /// For World XY Plane. Considers only the X and Y components of the vector.
         member inline v.Angle360InXY =
             v.Angle2PiInXY |> toDegrees
         
-        /// Returns a perpendicular horizontal vector. Rotated counterclockwise.
-        /// Or Vec.Zero if input is vertical.
-        /// Just does Vec(-v.Y, v.X, 0.0) 
-        member inline v.PerpendicularInXY = Vec(-v.Y, v.X, 0) 
+        
+
+        /// The diamond angle.
+        /// Calculates the proportion of X to Y component. 
+        /// It is always positive and in the range of 0.0 to 4.0 ( for 360 Degrees) 
+        /// 0.0 = XAxis,  going Counter clockwise.
+        /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions. 
+        /// For World XY Plane. Considers only the X and Y components of the vector.
+        member inline v.DirectionDiamondInXY =
+            // https://stackoverflow.com/a/14675998/969070            
+            if v.Y >= 0.0 then 
+                if v.X >= 0.0 then   
+                    v.Y/(v.X+v.Y) 
+                else             
+                    1.0 - v.X/(-v.X+v.Y)
+            else
+                if v.X < 0.0 then   
+                    2.0 - v.Y/(-v.X-v.Y) 
+                else 
+                    3.0 + v.X/(v.X-v.Y) 
+
+        /// Returns the Angle in Radians from XAxis,  
+        /// Going Counter clockwise till two Pi.         
+        /// For World XY Plane. Considers only the X and Y components of the vector.
+        member inline v.Direction2PiInXY =
+            // https://stackoverflow.com/a/14675998/969070
+            let a = Math.Atan2(v.Y, v.X) 
+            if a < 0. then  
+                a + Util.twoPi
+            else  
+                a
+        
+        /// Returns the Angle in Radians from XAxis in World X-Y plane, 
+        /// Ignores orientation.
+        /// Range 0.0 to Pi. 
+        /// For World XY Plane. Considers only the X and Y components of the vector.
+        member inline v.DirectionPiInXY =
+            // https://stackoverflow.com/a/14675998/969070            
+            let a = Math.Atan2(v.Y, v.X) 
+            if a < 0. then  
+                a + Math.PI
+            else  
+                a
+        
+        /// Returns the Angle in Degrees from XAxis in World X-Y plane.  
+        /// Going Counter clockwise till 360. 
+        /// For World XY Plane. Considers only the X and Y components of the vector.
+        member inline v.Direction360InXY =
+            v.Direction2PiInXY |> toDegrees
+        
+        /// Returns the Angle in Radians from XAxis, 
+        /// Ignores orientation.
+        /// Range 0.0 to 180. 
+        /// For World XY Plane. Considers only the X and Y components of the vector.
+        member inline v.Direction180InXY =
+            v.DirectionPiInXY |> toDegrees
+        
+        /// Returns positive angle for rotating counter clockwise from this vector to vector 'b' .
+        /// In Diamond Angle. Using only proportion of X to Y components.
+        /// Range of 0.0 to 4.0 ( for 360 Degrees) 
+        /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions. 
+        /// For World XY Plane. Considers only the X and Y components of the vector.
+        member inline v.AngleDiamondInXYTo (b:UnitVec)   =              
+            let r = b.DirectionDiamondInXY - v.DirectionDiamondInXY          
+            if r >= 0. then  r
+            else r + 4.0   
 
         /// Convert 3D unit vector to 3D Vector. 
         member inline v.AsVec = Vec(v.X, v.Y, v.Z)
@@ -95,13 +171,13 @@ module AutoOpenUnitVec =
         //--------------------------  Static Members  --------------------------------------------------
         //----------------------------------------------------------------------------------------------
 
-        /// Returns the world X-axis with length one: UnitVec(1,0,0)
+        /// Returns the World X-axis with length one: UnitVec(1,0,0)
         static member inline XAxis  = UnitVec.createUnchecked (1.0 , 0.0, 0.0)
         
-        /// Returns the world Y-axis with length one: UnitVec(0.1,0)
+        /// Returns the World Y-axis with length one: UnitVec(0.1,0)
         static member inline YAxis  = UnitVec.createUnchecked (0.0 , 1.0, 0.0)
         
-        /// Returns the world Z-axis with length one: UnitVec(0,0,1)
+        /// Returns the World Z-axis with length one: UnitVec(0,0,1)
         static member inline ZAxis  = UnitVec.createUnchecked (0.0 , 0.0, 1.0)
         
         // These members cannot be implemented since 
@@ -146,10 +222,10 @@ module AutoOpenUnitVec =
         /// Convert 3D unit vector to 2D point by ignoring Z value. 
         static member inline asPt(v:UnitVec)  = Pt( v.X, v.Y)
 
-        /// Convert 3D unit vector to 2D Vector by ignoring Z value. 
+        /// Convert 3D unit vector to 2D vector by ignoring Z value. 
         static member inline asVc(v:UnitVec) = Vc(v.X, v.Y)
         
-        /// Convert 3D unit vector to 2D Unit Vector by ignoring Z value and unitizing again.
+        /// Convert 3D unit vector to 2D Unit vector by ignoring Z value and unitizing again.
         static member inline asUnitVc(v:UnitVec) = UnitVc.create(v.X, v.Y)
         
         /// Convert 3D unit vector to 3D point. 
@@ -181,7 +257,7 @@ module AutoOpenUnitVec =
         static member inline cross (a:Vec, b:UnitVec)  = Vec (a.Y * b.Z - a.Z * b.Y ,  a.Z * b.X - a.X * b.Z ,  a.X * b.Y - a.Y * b.X ) 
 
         /// Dot product, or scalar product of two 3D unit vectors. 
-        /// Returns a float. This float is the cosine of the angle between the two vectors.
+        /// Returns a float. This float is the Cosine of the angle between the two vectors.
         static member inline dot  (a:UnitVec, b:UnitVec)   = a.X * b.X + a.Y * b.Y + a.Z * b.Z
         
         /// Dot product, or scalar product of a 3D unit vector with a 3D vector  
@@ -201,20 +277,20 @@ module AutoOpenUnitVec =
         /// Gets the Z part of this 3D unit vector
         static member inline getZ  (v:UnitVec) = v.Z
         
-        /// Returns new 3D Vector with new X value, Y  and Z stay the same.
+        /// Returns new 3D vector with new X value, Y  and Z stay the same.
         static member inline setX  x (v:UnitVec) = v.WithX x
         
-        /// Returns new 3D Vector with new Y value, X  and Z stay the same.
+        /// Returns new 3D vector with new Y value, X  and Z stay the same.
         static member inline setY  y (v:UnitVec) = v.WithY y
         
-        /// Returns new 3D Vector with new z value, X  and Y stay the same.
+        /// Returns new 3D vector with new z value, X  and Y stay the same.
         static member inline setZ z (v:UnitVec) = v.WithZ z
         
         /// Add two 3D unit vectors together. Returns a new (non-unitized) 3D vector.
         static member inline add      (a:UnitVec) (b:UnitVec) = b + a  
         
         /// Tests if dot product is bigger than 0.0.
-        /// That means the angle between the two vectors is less than 90 degrees.
+        /// That means the angle between the two vectors is less than 90 Degrees.
         static member inline dirMatch (a:UnitVec) (b:UnitVec) = b.MatchesOrientation a
         
         /// Multiplies a 3D unit vector with a scalar, also called scaling a vector. 
@@ -257,10 +333,10 @@ module AutoOpenUnitVec =
         /// It is defined as the dot product of one of the vectors with the cross product of the other two.
         static member inline determinant (u:UnitVec, v:UnitVec, w:UnitVec) = u.X*v.Y*w.Z + v.X*w.Y*u.Z + w.X*u.Y*v.Z - w.X*v.Y*u.Z - v.X*u.Y*w.Z - u.X*w.Y*v.Z 
 
-        /// Returns angle between two UnitVectors in Radians.
+        /// Returns angle between two 3D unit vectors in Radians.
         /// Takes vector orientation into account. 
-        /// Range 0.0 to PI( = 0 to 180 degree)
-        static member inline anglePI (a:UnitVec) (b:UnitVec) = 
+        /// Range 0.0 to Pi( = 0 to 180 Degree)
+        static member inline anglePi (a:UnitVec) (b:UnitVec) = 
             // The "straight forward" method of acos(u.v) has large precision
             // issues when the dot product is near +/-1.  This is due to the
             // steep slope of the acos function as we approach +/- 1.  Slight
@@ -281,10 +357,10 @@ module AutoOpenUnitVec =
                 if dot < 0. then Math.PI - 2.0 * asin(vecDist3(-a.X,-a.Y,-a.Z,b.X,b.Y,b.Z) * 0.5) 
                 else                       2.0 * asin(vecDist3( a.X, a.Y, a.Z,b.X,b.Y,b.Z) * 0.5)            
 
-        /// Returns positive angle between two UnitVectors in Radians. 
+        /// Returns positive angle between two 3D unit vectors in Radians. 
         /// Ignores orientation. 
-        /// Range 0.0 to PI/2 ( = 0 to 90 degree)
-        static member inline angleHalfPI (a:UnitVec) (b:UnitVec) = 
+        /// Range 0.0 to Pi/2 ( = 0 to 90 Degree)
+        static member inline angleHalfPi (a:UnitVec) (b:UnitVec) = 
             let dot =  a * b
             let dotAbs = abs dot
             if dotAbs < 0.98 then  
@@ -293,32 +369,61 @@ module AutoOpenUnitVec =
                 if dot < 0. then 2.0 * asin(vecDist3(-a.X,-a.Y,-a.Z,b.X,b.Y,b.Z) * 0.5)
                 else             2.0 * asin(vecDist3( a.X, a.Y, a.Z,b.X,b.Y,b.Z) * 0.5) 
         
-        /// Returns positive angle from Vector 'a' to Vector 'b' projected in XY Plane.
+        /// Returns positive angle from vector 'a' to vector 'b' projected in XY Plane.
         /// In Radians
-        /// Considering counter clockwise rotation round the World ZAxis
-        /// Range: 0.0 to 2 PI ( = 0 to 360 degrees)
+        /// Considering counter clockwise rotation round the World Z-axis
+        /// Range: 0.0 to 2 Pi ( = 0 to 360 Degrees)
         static member inline angle2PiInXY (a:UnitVec, b:UnitVec)   =
-            let r = b.Angle2PIInXY  - a.Angle2PIInXY            
+            let r = b.Angle2PiInXY  - a.Angle2PiInXY            
             if r >= 0. then  r
             else r + Util.twoPi 
 
-        /// Returns positive angle of two Vector projected in XY Plane in Degrees
-        /// Considering positive rotation round the World ZAxis
-        /// Range:  0 to 360 degrees
+        /// Returns positive angle between two 3D unit vectors in Degrees,
+        /// Ignores vector orientation.
+        /// Range: 0 to 90 Degrees.
+        static member inline angle90 (a:UnitVec) (b:UnitVec) = 
+            UnitVec.angleHalfPi a b |>  toDegrees 
+        
+        /// Returns positive angle between two 3D unit vectors in Degrees. 
+        /// Takes vector orientation into account.
+        /// Range 0 to 180 Degrees.
+        static member inline angle180 (a:UnitVec) (b:UnitVec) = 
+            UnitVec.anglePi a b |>  toDegrees 
+
+        /// Returns positive angle of two vector projected in XY Plane in Degrees
+        /// Considering positive rotation round the World Z-axis
+        /// Range:  0 to 360 Degrees
         static member inline angle360InXY (a:UnitVec, b:UnitVec)   = 
             UnitVec.angle2PiInXY (a, b) |> toDegrees
-        
-        /// Returns positive angle between two UnitVectors in Degrees. 
-        /// Takes vector orientation into account.
-        /// Range 0 to 180 degrees.
-        static member inline angle180 (a:UnitVec) (b:UnitVec) = 
-            UnitVec.anglePI a b |>  toDegrees 
 
-        /// Returns positive angle between two UnitVectors in Degrees,
-        /// Ignores vector orientation.
-        /// Range: 0 to 90 degrees.
-        static member inline angle90 (a:UnitVec) (b:UnitVec) = 
-            UnitVec.angleHalfPI a b |>  toDegrees 
+        
+        /// Returns positive angle for rotating counter clockwise from vector 'a' to vector 'b' .
+        /// In Diamond Angle. Using only proportion of X to Y components.
+        /// Range of 0.0 to 4.0 ( for 360 Degrees) 
+        /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions 
+        /// For World XY Plane. Considers only the X and Y components of the vector.
+        static member inline angleDiamondInXY (a:UnitVec , b:UnitVec)   = a.AngleDiamondInXYTo(b)             
+        
+        /// The diamond angle.
+        /// Returns positive angle of 3D unit vector in World X-Y plane.
+        /// Calculates the proportion of X to Y component. 
+        /// It is always positive and in the range of 0.0 to 4.0 ( for 360 Degrees) 
+        /// 0.0 = XAxis,  going Counter clockwise.
+        /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions 
+        /// For World XY Plane. Considers only the X and Y components of the vector.
+        static member inline directionDiamondInXY(v:UnitVec) = v.DirectionDiamondInXY
+        
+        /// Returns positive angle of 3D unit vector in World X-Y plane. Counter clockwise from X-axis.
+        /// In Radians
+        /// Range: 0.0 to 2 Pi ( = 0 to 360 Degrees) 
+        /// For World XY Plane. Considers only the X and Y components of the vector.
+        static member inline direction2PiInXY (v:UnitVec)   = v.Direction2PiInXY
+
+        /// Returns positive angle of 3D unit vector in World X-Y plane. Counter clockwise from X-axis.
+        /// In Degree
+        /// Range: 0.0 to 2 Pi ( = 0 to 360 Degrees) 
+        /// For World XY Plane. Considers only the X and Y components of the vector.
+        static member inline direction360InXY (v:UnitVec)  = v.Direction360InXY
         
 
         /// Ensure vector has a positive dot product with given orientation vector
@@ -331,24 +436,30 @@ module AutoOpenUnitVec =
 
         // Rotate2D: 
 
-        /// Rotate the 3D UnitVector around X axis, from Y to Z Axis, Counter Clockwise looking from right.
-        static member rotateXBy (r:Rotation2D) (v:UnitVec) = UnitVec.createUnchecked (v.X,  r.Cos*v.Y - r.Sin*v.Z, r.Sin*v.Y + r.Cos*v.Z)
+        /// 90 Degree rotation counter clockwise around Z-axis.
+        static member inline rotateOnZ90CCW(v:UnitVec) = UnitVec.createUnchecked( -v.Y,   v.X ,   v.Z)
+
+        /// 90 Degree rotation clockwise around Z-axis.
+        static member inline rotateOnZ90CW(v:UnitVec)  = UnitVec.createUnchecked(  v.Y,  -v.X,   v.Z  )  
+
+        /// Rotate the 3D UnitVector around X-axis, from Y to Z-axis, Counter Clockwise looking from right.
+        static member inline rotateXBy (r:Rotation2D) (v:UnitVec) = UnitVec.createUnchecked (v.X,  r.Cos*v.Y - r.Sin*v.Z, r.Sin*v.Y + r.Cos*v.Z)
         
-        /// Rotate the 3D UnitVector around Y axis, from Z to X Axis, Counter Clockwise looking from back.
-        static member rotateYBy (r:Rotation2D) (v:UnitVec) = UnitVec.createUnchecked ( r.Sin*v.Z + r.Cos*v.X,  v.Y, r.Cos*v.Z - r.Sin*v.X) 
+        /// Rotate the 3D UnitVector around Y-axis, from Z to X-axis, Counter Clockwise looking from back.
+        static member inline rotateYBy (r:Rotation2D) (v:UnitVec) = UnitVec.createUnchecked ( r.Sin*v.Z + r.Cos*v.X,  v.Y, r.Cos*v.Z - r.Sin*v.X) 
         
-        /// Rotate the 3D UnitVector around Z axis, from X to Y Axis, Counter Clockwise looking from top.
-        static member rotateZBy (r:Rotation2D) (v:UnitVec) = UnitVec.createUnchecked (r.Cos*v.X - r.Sin*v.Y, r.Sin*v.X + r.Cos*v.Y,  v.Z)
+        /// Rotate the 3D UnitVector around Z-axis, from X to Y-axis, Counter Clockwise looking from top.
+        static member inline rotateZBy (r:Rotation2D) (v:UnitVec) = UnitVec.createUnchecked (r.Cos*v.X - r.Sin*v.Y, r.Sin*v.X + r.Cos*v.Y,  v.Z)
                 
-        /// Rotate the 3D UnitVector in Degrees around X axis, from Y to Z Axis, Counter Clockwise looking from right.
+        /// Rotate the 3D UnitVector in Degrees around X-axis, from Y to Z-axis, Counter Clockwise looking from right.
         static member inline rotateX (angDegree) (v:UnitVec) = 
             UnitVec.rotateXBy (Rotation2D.createFromDegrees angDegree) v
     
-        /// Rotate the 3D UnitVector in Degrees around Y axis, from Z to X Axis, Counter Clockwise looking from back.
+        /// Rotate the 3D UnitVector in Degrees around Y-axis, from Z to X-axis, Counter Clockwise looking from back.
         static member inline rotateY (angDegree) (v:UnitVec) = 
             UnitVec.rotateYBy  (Rotation2D.createFromDegrees angDegree) v 
     
-        /// Rotate the 3D UnitVector in Degrees around Z axis, from X to Y Axis, Counter Clockwise looking from top.
+        /// Rotate the 3D UnitVector in Degrees around Z-axis, from X to Y-axis, Counter Clockwise looking from top.
         static member inline rotateZ (angDegree) (v:UnitVec) = 
             UnitVec.rotateZBy  (Rotation2D.createFromDegrees angDegree) v 
 
@@ -375,7 +486,7 @@ module AutoOpenUnitVec =
         
         
         
-        /// Vector length projected into X Y Plane
+        /// vector length projected into X Y Plane
         /// sqrt( v.X * v.X  + v.Y * v.Y)
         static member inline lengthInXY(v:UnitVec) = sqrt(v.X * v.X  + v.Y * v.Y)
 
@@ -401,7 +512,7 @@ module AutoOpenUnitVec =
 
         /// Returns positive or negative slope of a vector in Percent
         /// in relation to XY Plane
-        /// 100% = 45 degrees
+        /// 100% = 45 Degrees
         static member inline slopePercent (v:UnitVec) = 
             if abs(v.Z) < zeroLengthTol then FsExGeoDivByZeroException.Raise "UnitVec.slopePercent: Can't get Slope from vertical vector %O" v
             let l = UnitVec.lengthInXY v
@@ -432,7 +543,7 @@ module AutoOpenUnitVec =
             if v.Z < 0.0 then -r else r
 
 
-        /// Multiplies the Matrix with a Vector (with an implicit 1 in the 4th dimension), 
+        /// Multiplies the Matrix with a vector (with an implicit 1 in the 4th dimension), 
         /// So that it also works correctly for projections
         /// See also Pnt.transformSimple for better performance
         static member transform (m:Matrix) (p:UnitVec) = 

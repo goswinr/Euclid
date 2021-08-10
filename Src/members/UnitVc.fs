@@ -16,18 +16,18 @@ module AutoOpenUnitVc =
 
     type UnitVc with 
         
-        /// Returns new 2D Vector with new X coordinate, Y stays the same.
+        /// Returns new 2D vector with new X coordinate, Y stays the same.
         member inline v.WithX x = Vc (x ,v.Y) 
         
-        /// Returns new 2D Vector with new Y coordinate, X stays the same.
+        /// Returns new 2D vector with new Y coordinate, X stays the same.
         member inline v.WithY y = Vc (v.X, y)
         
-        /// Returns new 3D Vector with Z coordinate, X and Y stay the same.
+        /// Returns new 3D vector with Z coordinate, X and Y stay the same.
         /// If you want Z to be 0.0 you can use v.AsVec or v.AsUnitVec too.
         member inline v.WithZ z = Vec (v.X, v.Y, z)        
 
         /// Tests if dot product is bigger than 0.0.
-        /// That means the angle between the two vectors is less than 90 degrees.
+        /// That means the angle between the two vectors is less than 90 Degrees.
         member inline v.MatchesOrientation (vv:UnitVc) = v*vv > 0.
 
         /// 2D cross product. 
@@ -38,17 +38,17 @@ module AutoOpenUnitVc =
         /// Its Just a scalar equal to the area of the parallelogram spanned by the input vectors.
         member inline a.Cross (b:UnitVc) = a.X*b.Y - a.Y*b.X
 
-        /// 90 degree rotation counter clockwise
+        /// 90 Degree rotation counter clockwise.
         member inline v.Rotate90CCW = UnitVc.createUnchecked( -v.Y,   v.X  )
 
-        /// 90 degree rotation clockwise
+        /// 90 Degree rotation clockwise.
         member inline v.Rotate90CW  = UnitVc.createUnchecked(  v.Y,  -v.X  )  
 
         /// The diamond angle.
         /// Calculates the proportion of X to Y component. 
-        /// It is always positive and in the range of 0.0 to 4.0 ( for 360 degrees) 
+        /// It is always positive and in the range of 0.0 to 4.0 ( for 360 Degrees) 
         /// 0.0 = XAxis,  going Counter clockwise.
-        /// It is the fastest angle calculation since it does not involve cosine or atan functions
+        /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions
         member inline v.DirectionDiamond =
             // https://stackoverflow.com/a/14675998/969070            
             if v.Y >= 0.0 then 
@@ -64,7 +64,7 @@ module AutoOpenUnitVc =
 
         /// Returns the Angle in Radians from XAxis,  
         /// Going Counter clockwise till two Pi.
-        member inline v.Direction2PI =
+        member inline v.Direction2Pi =
             // https://stackoverflow.com/a/14675998/969070
             let a = Math.Atan2(v.Y, v.X) 
             if a < 0. then  
@@ -75,7 +75,7 @@ module AutoOpenUnitVc =
         /// Returns the Angle in Radians from XAxis, 
         /// Ignores orientation.
         /// Range 0.0 to Pi.
-        member inline v.DirectionPI =
+        member inline v.DirectionPi =
             // https://stackoverflow.com/a/14675998/969070            
             let a = Math.Atan2(v.Y, v.X) 
             if a < 0. then  
@@ -86,18 +86,18 @@ module AutoOpenUnitVc =
         /// Returns the Angle in Degrees from XAxis.  
         /// Going Counter clockwise till 360.
         member inline v.Direction360 =
-            v.Direction2PI |> toDegrees
+            v.Direction2Pi |> toDegrees
         
         /// Returns the Angle in Radians from XAxis, 
         /// Ignores orientation.
         /// Range 0.0 to 180.
         member inline v.Direction180 =
-            v.DirectionPI |> toDegrees
+            v.DirectionPi |> toDegrees
         
-        /// Returns positive angle for rotating counter clockwise from this Vector to Vector 'b' .
+        /// Returns positive angle for rotating counter clockwise from this vector to vector 'b' .
         /// In Diamond Angle. Using only proportion of X to Y components.
-        /// Range of 0.0 to 4.0 ( for 360 degrees) 
-        /// It is the fastest angle calculation since it does not involve cosine or atan functions
+        /// Range of 0.0 to 4.0 ( for 360 Degrees) 
+        /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions
         member inline v.AngleDiamondTo (b:UnitVc)   =              
             let r = b.DirectionDiamond - v.DirectionDiamond          
             if r >= 0. then  r
@@ -106,11 +106,11 @@ module AutoOpenUnitVc =
         /// Convert 2D unit vector to 2D Point
         member inline v.AsPt         = Pt( v.X, v.Y)
 
-        /// Convert 2D unit vector to 3D Vector using 0.0 as Z value. 
+        /// Convert 2D unit vector to 3D vector using 0.0 as Z value. 
         /// If you want a different Z value use the member v.WithZ(z)
         member inline v.AsVec        = Vec(v.X, v.Y, 0.0)
         
-        /// Convert 2D unit vector to 3D Unit Vector using 0.0 as Z value.
+        /// Convert 2D unit vector to 3D Unit vector using 0.0 as Z value.
         /// If you want a different Z value use the member v.WithZ(z)
         member inline v.AsUnitVec    = UnitVec.createUnchecked(v.X, v.Y, 0.0)
         
@@ -122,10 +122,10 @@ module AutoOpenUnitVc =
         //--------------------------  Static Members  --------------------------------------------------
         //----------------------------------------------------------------------------------------------
         
-        /// Returns the world X-axis with length one: UnitVc(1,0)
+        /// Returns the World X-axis with length one: UnitVc(1,0)
         static member inline XAxis  = UnitVc.createUnchecked (1.0 , 0.0)
         
-        /// Returns the world Y-axis with length one: UnitVc(0,1)
+        /// Returns the World Y-axis with length one: UnitVc(0,1)
         static member inline YAxis  = UnitVc.createUnchecked (0.0 , 1.0)
 
         // These members cannot be implemented since 
@@ -167,11 +167,11 @@ module AutoOpenUnitVc =
         /// Convert 2D unit vector to 2D Point
         static member inline asPt(v:UnitVc)  = Pt( v.X, v.Y)
 
-        /// Convert 2D unit vector to 3D Vector using 0.0 as Z value. 
+        /// Convert 2D unit vector to 3D vector using 0.0 as Z value. 
         /// If you want a different Z value use the member w.WithZ(z)
         static member inline asVec(v:UnitVc) = Vec(v.X, v.Y, 0.0)
         
-        /// Convert 2D unit vector to 3D Unit Vector using 0.0 as Z value
+        /// Convert 2D unit vector to 3D Unit vector using 0.0 as Z value
         static member inline asUnitVec(v:UnitVc) = UnitVec.createUnchecked(v.X, v.Y, 0.0)
         
         /// Convert 2D unit vector to 3D Point using 0.0 as Z value. 
@@ -192,7 +192,7 @@ module AutoOpenUnitVc =
         static member inline cross (a:Vc, b:UnitVc)  = a.X*b.Y - a.Y*b.X
         
         /// Dot product, or scalar product of two 2D unit vectors. 
-        /// Returns a float. This float is the cosine of the angle between the two vectors.
+        /// Returns a float. This float is the Cosine of the angle between the two vectors.
         static member inline dot  (a:UnitVc, b:UnitVc  ) = a.X * b.X + a.Y * b.Y 
 
         /// Dot product, or scalar product of a 2D unit vector with a 2D vector  
@@ -209,13 +209,13 @@ module AutoOpenUnitVc =
         /// Gets the Y part of this 2D unit vector
         static member inline getY     (v:UnitVc) = v.Y
         
-        /// Returns new 2D Vector with new X value, Y stays the same.
+        /// Returns new 2D vector with new X value, Y stays the same.
         static member inline setX     x (v:UnitVc) = v.WithX x
         
-        /// Returns new 2D Vector with new Y value, X stays the same.
+        /// Returns new 2D vector with new Y value, X stays the same.
         static member inline setY     y (v:UnitVc) = v.WithY y
         
-        /// Returns new 3D Vector with Z value, X and Y stay the same.
+        /// Returns new 3D vector with Z value, X and Y stay the same.
         /// If you want Z to be 0.0 you can use v.AsVec or v.AsUnitVec too.
         static member inline setZ     z (v:UnitVc) = v.WithZ z
 
@@ -223,7 +223,7 @@ module AutoOpenUnitVc =
         static member inline add      (a:UnitVc) (b:UnitVc) = b + a  
 
         /// Tests if dot product is bigger than 0.0.
-        /// That means the angle between the two vectors is less than 90 degrees.
+        /// That means the angle between the two vectors is less than 90 Degrees.
         static member inline dirMatch (a:UnitVc) (b:UnitVc) = b.MatchesOrientation a
 
         /// Multiplies a 2D unit vector with a scalar, also called scaling a vector. 
@@ -248,11 +248,11 @@ module AutoOpenUnitVc =
         /// Same as UnitVc.flip
         static member inline reverse  (v:UnitVc) = -v   
 
-        /// Returns angle between two UnitVectors in Radians.
+        /// Returns angle between two 2D unit vectors in Radians.
         /// Takes vector orientation into account.
-        /// Ignores order of input vectors. anglePI(a,b) = anglePI(b,a)
-        /// Range 0.0 to PI( = 0 to 180 degree)
-        static member inline anglePI (a:UnitVc) (b:UnitVc) = 
+        /// Ignores order of input vectors. anglePi(a,b) = anglePi(b,a)
+        /// Range 0.0 to Pi( = 0 to 180 Degree)
+        static member inline anglePi (a:UnitVc) (b:UnitVc) = 
             // The "straight forward" method of acos(u.v) has large precision
             // issues when the dot product is near +/-1.  This is due to the
             // steep slope of the acos function as we approach +/- 1.  Slight
@@ -272,17 +272,17 @@ module AutoOpenUnitVc =
             else
                 if dot < 0. then Math.PI - 2.0 * asin(vecDist2(-a.X,-a.Y,b.X,b.Y) * 0.5) 
                 else                       2.0 * asin(vecDist2( a.X, a.Y,b.X,b.Y) * 0.5) 
-            //let mutable r = b.Direction2PI  - a.Direction2PI  // this alternative calculation is about 10x slower for unit vectors            
+            //let mutable r = b.Direction2Pi  - a.Direction2Pi  // this alternative calculation is about 10x slower for unit vectors            
             //if r < 0.      then  r <- r + Util.twoPi 
             //if r > Math.PI then  r <- Util.twoPi - r 
             //r
 
 
-        /// Returns positive angle between two UnitVectors in Radians. 
+        /// Returns positive angle between two 2D unit vectors in Radians. 
         /// Ignores orientation. 
-        /// Ignores order of input vectors. angleHalfPI(a,b) = angleHalfPI(b,a) = angleHalfPI(-b,a) = angleHalfPI(-b,-a)
-        /// Range 0.0 to PI/2 ( = 0 to 90 degree)
-        static member inline angleHalfPI (a:UnitVc) (b:UnitVc) = 
+        /// Ignores order of input vectors. angleHalfPi(a,b) = angleHalfPi(b,a) = angleHalfPi(-b,a) = angleHalfPi(-b,-a)
+        /// Range 0.0 to Pi/2 ( = 0 to 90 Degree)
+        static member inline angleHalfPi (a:UnitVc) (b:UnitVc) = 
             let dot =  a * b
             let dotAbs = abs dot
             if dotAbs < 0.98 then  
@@ -290,85 +290,68 @@ module AutoOpenUnitVc =
             else
                 if dot < 0. then 2.0 * asin(vecDist2(-a.X,-a.Y,b.X,b.Y) * 0.5)
                 else             2.0 * asin(vecDist2( a.X, a.Y,b.X,b.Y) * 0.5)         
-            //let mutable r = b.Direction2PI  - a.Direction2PI // this alternative calculation is about 10x slower for unit vectors              
+            //let mutable r = b.Direction2Pi  - a.Direction2Pi // this alternative calculation is about 10x slower for unit vectors              
             //if r < 0.      then  r <- r + Util.twoPi 
             //if r > Math.PI then  r <- Util.twoPi - r 
             //if r > halfPi  then  r <- Math.PI - r 
             //r
 
 
-        /// Returns positive angle for rotating counter clockwise from Vector 'a' to Vector 'b' .
+        /// Returns positive angle for rotating counter clockwise from vector 'a' to vector 'b' .
         /// In Radians.
-        /// Range: 0.0 to 2 PI ( = 0 to 360 degrees)
-        static member inline angle2PI (a:UnitVc , b:UnitVc)   =              
-            let r = b.Direction2PI  - a.Direction2PI            
+        /// Range: 0.0 to 2 Pi ( = 0 to 360 Degrees)
+        static member inline angle2Pi (a:UnitVc , b:UnitVc)   =              
+            let r = b.Direction2Pi  - a.Direction2Pi            
             if r >= 0. then  r
             else r + Util.twoPi 
 
-        /// Returns positive angle between two UnitVectors in Degrees,
+        /// Returns positive angle between two 2D unit vectors in Degrees,
         /// Ignores vector orientation.
         /// Ignores order of input vectors. angle90(a,b) = angle90(b,a) = angle90(-b,a) = angle90(-b,-a)
-        /// Range: 0 to 90 degrees.
+        /// Range: 0 to 90 Degrees.
         static member inline angle90 (a:UnitVc) (b:UnitVc) = 
-            UnitVc.angleHalfPI a b |>  toDegrees        
+            UnitVc.angleHalfPi a b |>  toDegrees        
             
 
-        /// Returns positive angle between two UnitVectors in Degrees. 
+        /// Returns positive angle between two 2D unit vectors in Degrees. 
         /// Takes vector orientation into account. 
         /// Ignores order of input vectors. angle180(a,b) = angle180(b,a)
-        /// Range 0 to 180 degrees.
+        /// Range 0 to 180 Degrees.
         static member inline angle180 (a:UnitVc) (b:UnitVc) = 
-            UnitVc.anglePI a b |>  toDegrees         
+            UnitVc.anglePi a b |>  toDegrees         
 
 
-        /// Returns positive angle for rotating counter clockwise from Vector 'a' to Vector 'b' .
+        /// Returns positive angle for rotating counter clockwise from vector 'a' to vector 'b' .
         /// In Degree.
-        /// Range: 0.0 to 2 PI ( = 0 to 360 degrees)
+        /// Range: 0.0 to 2 Pi ( = 0 to 360 Degrees)
         static member inline angle360 (a:UnitVc, b:UnitVc)  = 
-            UnitVc.angle2PI (a,b) |> toDegrees
+            UnitVc.angle2Pi (a,b) |> toDegrees
         
 
-        /// Returns positive angle for rotating counter clockwise from Vector 'a' to Vector 'b' .
+        /// Returns positive angle for rotating counter clockwise from vector 'a' to vector 'b' .
         /// In Diamond Angle. Using only proportion of X to Y components.
-        /// Range of 0.0 to 4.0 ( for 360 degrees) 
-        /// It is the fastest angle calculation since it does not involve cosine or atan functions
-        static member inline angleDiamond (a:UnitVc , b:UnitVc)   =              
-            let r = b.DirectionDiamond - a.DirectionDiamond          
-            if r >= 0. then  r
-            else r + 4.0 
+        /// Range of 0.0 to 4.0 ( for 360 Degrees) 
+        /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions
+        static member inline angleDiamond (a:UnitVc , b:UnitVc)   = a.AngleDiamondTo(b)             
+            
 
         /// The diamond angle.
         /// Calculates the proportion of X to Y component. 
-        /// It is always positive and in the range of 0.0 to 4.0 ( for 360 degrees) 
+        /// It is always positive and in the range of 0.0 to 4.0 ( for 360 Degrees) 
         /// 0.0 = XAxis,  going Counter clockwise.
-        /// It is the fastest angle calculation since it does not involve cosine or atan functions
-        static member inline directionDiamond(a:UnitVc) =
-            // https://stackoverflow.com/a/14675998/969070            
-            if a.Y >= 0.0 then 
-                if a.X >= 0.0 then   
-                    a.Y/(a.X+a.Y) 
-                else             
-                    1.0 - a.X/(-a.X+a.Y)
-            else
-                if a.X < 0.0 then   
-                    2.0 - a.Y/(-a.X-a.Y) 
-                else 
-                    3.0 + a.X/(a.X-a.Y)        
+        /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions
+        static member inline directionDiamond(a:UnitVc) = a.DirectionDiamond
         
-
-        /// Returns positive angle of unit vector. Counter clockwise from X Axis.
+        /// Returns positive angle of unit vector. Counter clockwise from X-axis.
         /// In Radians
-        /// Range: 0.0 to 2 PI ( = 0 to 360 degrees)
-        static member inline direction2PI (v:UnitVc)   =              
-            v.Direction2PI
+        /// Range: 0.0 to 2 Pi ( = 0 to 360 Degrees)
+        static member inline direction2Pi (v:UnitVc)   = v.Direction2Pi
 
-        /// Returns positive angle of unit vector. Counter clockwise from X Axis.
+        /// Returns positive angle of unit vector. Counter clockwise from X-axis.
         /// In Degree
-        /// Range: 0.0 to 2 PI ( = 0 to 360 degrees)
-        static member inline direction360 (v:UnitVc)  = 
-            v.Direction360
+        /// Range: 0.0 to 2 Pi ( = 0 to 360 Degrees)
+        static member inline direction360 (v:UnitVc)  = v.Direction360
         
-
         /// Ensure vector has a positive dot product with given orientation vector
         static member inline matchOrientation (orientationToMatch:UnitVc) (v:UnitVc) = 
             if orientationToMatch * v < 0.0 then -v else v
@@ -389,12 +372,12 @@ module AutoOpenUnitVc =
         static member inline rotate (angDegree) (vec:UnitVc) = 
             UnitVc.rotateBy (Rotation2D.createFromDegrees angDegree) vec  
 
-        /// 90 degree rotation counter clockwise
+        /// 90 Degree rotation counter clockwise
         static member inline rotate90CCW (v:UnitVc) = UnitVc.createUnchecked( -v.Y,   v.X  )
 
-        /// 90 degree rotation clockwise
+        /// 90 Degree rotation clockwise
         static member inline rotate90CW (v:UnitVc) = UnitVc.createUnchecked(  v.Y,  -v.X  )  
 
         
- 
+
         

@@ -131,7 +131,7 @@ type Loop private ( pts:ResizeArray<Pt>
     /// Tolerance for being on Loop is SnapThreshold    
     member lo.ContainsPoint(pt:Pt) =  
         // this implementation using the closest two segments is always correct.
-        // faster implementations such as counting the crossings of a horizontal ray do fail if several loop segments are on the x axis and the test point too.
+        // faster implementations such as counting the crossings of a horizontal ray do fail if several loop segments are on the X-axis and the test point too.
         if not <| lo.ExpandedBoundingRect.Contains(pt) then  // the bounding Rectangle includes an expansion by snap SnapThreshold
             PointLoopRel.Out
         else
@@ -156,9 +156,9 @@ type Loop private ( pts:ResizeArray<Pt>
                         j
                     else                        
                         // explicitly compare both offset of the two closest segments 
-                        let uj90 = uj.Rotated90CW * lo.SnapThreshold
+                        let uj90 = uj.Rotate90CW * lo.SnapThreshold
                         let ddj = min (pt.DistanceSqToLine(pj+uj90 , uj, lj)) (pt.DistanceSqToLine(pj-uj90, uj, lj)) 
-                        let uk90 = uk.Rotated90CW * lo.SnapThreshold
+                        let uk90 = uk.Rotate90CW * lo.SnapThreshold
                         let ddk = min (pt.DistanceSqToLine(pk+uk90 , uk, lk)) (pt.DistanceSqToLine(pk-uk90, uk, lk))                         
                         if ddj <= ddk then j else k                
                 
@@ -246,16 +246,16 @@ type Loop private ( pts:ResizeArray<Pt>
         
         
         // Test for 180 U-turns
-        // angle 160 degrees, dot product of unit vectors: -0.93969
-        // angle 170 degrees, dot product of unit vectors: -0.984808
-        // angle 178 degrees, dot product of unit vectors: -0.999391
-        // Check there is no U-Turn between 170 and 180 degrees
+        // angle 160 Degrees, dot product of unit vectors: -0.93969
+        // angle 170 Degrees, dot product of unit vectors: -0.984808
+        // angle 178 Degrees, dot product of unit vectors: -0.999391
+        // Check there is no U-Turn between 170 and 180 Degrees
         let mutable t = unitVcts.[0]
         for ii=1 to segLastIdx do
             let n = unitVcts.[ii]
             if t*n < -0.984808 then   
                 Debug2D.drawDot "+170° turn?" pts.[ii]
-                FsExGeoException.Raise "FsEx.Geo.Loop: Lines for Loop make a kink between 170 and 180 degrees."
+                FsExGeoException.Raise "FsEx.Geo.Loop: Lines for Loop make a kink between 170 and 180 Degrees."
             t <- n
                 
         // Check for self intersection, 

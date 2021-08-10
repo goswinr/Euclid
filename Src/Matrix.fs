@@ -308,9 +308,9 @@ type Matrix =
             0, 0, 0, 1 )  
     
     /// Sets this matrix as a translation transform:
-    /// x - the amount to translate in the X axis.
-    /// y - the amount to translate in the Y axis.
-    /// z - the amount to translate in the Z axis. 
+    /// x - the amount to translate in the X-axis.
+    /// y - the amount to translate in the Y-axis.
+    /// z - the amount to translate in the Z-axis. 
     /// The resulting matrix will be:
     /// 1  0  0  x
     /// 0  1  0  y
@@ -324,9 +324,9 @@ type Matrix =
             0, 0, 0, 1 )    
             
     /// Sets this matrix as a translation transform:
-    /// x - the amount to translate in the X axis.
-    /// y - the amount to translate in the Y axis.
-    /// z - the amount to translate in the Z axis. 
+    /// x - the amount to translate in the X-axis.
+    /// y - the amount to translate in the Y-axis.
+    /// z - the amount to translate in the Z-axis. 
     /// The resulting matrix will be:
     /// 1  0  0  x
     /// 0  1  0  y
@@ -341,10 +341,10 @@ type Matrix =
 
 
     
-    /// Creates a rotation transformation matrix around the X axis 
-    /// by angle in degrees (not Radians).  
+    /// Creates a rotation transformation matrix around the X-axis 
+    /// by angle in Degrees (not Radians).  
     /// angleDegrees — Rotation angle in Degrees.
-    /// A positive rotation will be  from Y towards Z axis,  so counter-clockwise looking onto Y-X Plane
+    /// A positive rotation will be  from Y towards Z-axis,  so counter-clockwise looking onto Y-X Plane
     /// The resulting matrix will be:
     /// 1 0      0        0
     /// 0 cos(θ) -sin(θ)  0
@@ -360,10 +360,10 @@ type Matrix =
             0, s,  c, 0,
             0, 0,  0, 1 ) 
     
-    /// Creates a rotation transformation matrix around the Y axis 
-    /// by angle in degrees (not Radians). 
+    /// Creates a rotation transformation matrix around the Y-axis 
+    /// by angle in Degrees (not Radians). 
     /// angleDegrees — Rotation angle in Degrees.
-    /// A positive  rotation will be  from Z towards X axis,  so counter-clockwise looking onto Z-X Plane
+    /// A positive  rotation will be  from Z towards X-axis,  so counter-clockwise looking onto Z-X Plane
     /// The resulting matrix will be:
     /// cos(θ)  0 sin(θ) 0
     /// 0       1 0      0
@@ -379,10 +379,10 @@ type Matrix =
             -s ,  0,  c,  0,
             0  ,  0,  0,  1 )
     
-    /// Creates a rotation transformation matrix around the Z axis 
-    /// by angle in degrees (not Radians). 
+    /// Creates a rotation transformation matrix around the Z-axis 
+    /// by angle in Degrees (not Radians). 
     /// angleDegrees — Rotation angle in Degrees.
-    /// Returns a positive  rotation will be  from X toward Y axis,  so counter-clockwise looking onto X-Y Plane
+    /// Returns a positive  rotation will be  from X toward Y-axis,  so counter-clockwise looking onto X-Y Plane
     /// The resulting matrix will be:
     /// cos(θ) -sin(θ) 0 0
     /// sin(θ) cos(θ)  0 0
@@ -427,7 +427,7 @@ type Matrix =
         // first unitize
         let len = sqrt (axis.X*axis.X + axis.Y*axis.Y + axis.Z*axis.Z) 
         if len <  zeroLengthTol then 
-            FsExGeoException.Raise "FsEx.Geo.Matrix.createRotationAxis failed on too short axis: %O and rotation: %g° degrees" axis angleDegrees
+            FsExGeoException.Raise "FsEx.Geo.Matrix.createRotationAxis failed on too short axis: %O and rotation: %g° Degrees" axis angleDegrees
         let sc = 1. / len
         let x = axis.X * sc
         let y = axis.Y * sc
@@ -468,9 +468,9 @@ type Matrix =
 
 
     /// Creates a scale transformation matrix:
-    /// x - the amount to scale in the X axis.
-    /// y - the amount to scale in the Y axis.
-    /// z - the amount to scale in the Z axis.
+    /// x - the amount to scale in the X-axis.
+    /// y - the amount to scale in the Y-axis.
+    /// z - the amount to scale in the Z-axis.
     /// The resulting matrix will be:
     /// x, 0, 0, 0,
     /// 0, y, 0, 0,
@@ -503,7 +503,7 @@ type Matrix =
             xz, yz,  1, 0 ,
             0 , 0 ,  0, 1 )
     
-    /// Creates a Matrix to transform from World Plane or Coordinate System to given Plane
+    /// Creates a Matrix to transform from World plane or Coordinate System to given Plane
     /// Also called Change of Basis
     static member createToPlane(p:PPlane) =
         Matrix(

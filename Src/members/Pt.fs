@@ -12,38 +12,46 @@ module AutoOpenPt =
     
     type Pt with      
         
+        /// Returns a boolean indicating wether X and Y are exactly 0.0.
         member inline pt.IsOrigin = pt.X = 0.0 && pt.Y = 0.0 
-        member inline v.IsAlmostOrigin tol = abs v.X < tol && abs v.Y < tol 
         
-        //member inline v.IsInValid =  Double.IsNaN v.X || Double.IsNaN v.Y || Double.IsNaN v.Z || Double.IsInfinity v.X || Double.IsInfinity v.Y || Double.IsInfinity v.Z
+        /// Returns a boolean indicating wether the absolute value of X and Y is each less than the given tolerance.
+        member inline pt.IsAlmostOrigin tol = abs pt.X < tol && abs pt.Y < tol 
         
-        member inline pt.WithX x = Pt (x ,pt.Y) // returns new Vector with new x coordinate, y and z the same as before
+        /// Returns new 2D point with new X coordinate, Y stays the same.
+        member inline pt.WithX x = Pt (x ,pt.Y) 
+
+        /// Returns new 2D point with new Y coordinate, X stays the same.
         member inline pt.WithY y = Pt (pt.X, y)
+
+        /// Returns new 3D point with Z coordinate, X and Y stay the same.
+        /// If you want Z to be 0.0 you can use pt.AsPnt too.
         member inline pt.WithZ z = Pnt (pt.X ,pt.Y, z)
         
         /// Returns the distance between two points
         member inline p.DistanceTo (b:Pt) = let v = p-b in sqrt(v.X*v.X + v.Y*v.Y )
-       
+        
         /// Returns the squared distance between two points.
         /// This operation is slightly faster than the distance function, and sufficient for many algorithms like finding closest points.
-        member inline p.DistanceSqTo (b:Pt) = let v = p-b in  v.X*v.X + v.Y*v.Y 
+        member inline p.DistanceToSquare (b:Pt) = let v = p-b in  v.X*v.X + v.Y*v.Y 
         
         /// Returns the distance from Origin (0,0)
         member inline pt.DistanceFromOrigin = sqrt (pt.X*pt.X + pt.Y*pt.Y ) 
         
         /// Returns the squared distance from Origin (0,0)
-        member inline pt.DistanceSqFromOriginSquare = pt.X*pt.X + pt.Y*pt.Y 
+        member inline pt.DistanceFromOriginSquare = pt.X*pt.X + pt.Y*pt.Y 
         
-        member inline pt.WithDistFromOrigin (l:float) = 
+        /// Returns new 2D point with given Distance from Origin by scaling it up or down.
+        member inline pt.WithDistanceFromOrigin (l:float) = 
             let d = pt.DistanceFromOrigin 
             if d < zeroLengthTol then FsExGeoException.Raise "pnt.WithDistFromOrigin  %O is too small to be scaled" pt
             pt * (l/d) 
         
         /// Returns the Diamond Angle from this point to another point.        
         /// Calculates the proportion of X to Y component. 
-        /// It is always positive and in the range of 0.0 to 4.0 ( for 360 degrees) 
+        /// It is always positive and in the range of 0.0 to 4.0 ( for 360 Degrees) 
         /// 0.0 = XAxis,  going Counter clockwise.
-        /// It is the fastest angle calculation since it does not involve cosine or atan functions
+        /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions
         member inline p.DirDiamondTo(o:Pt) =
             // https://stackoverflow.com/a/14675998/969070            
             let x = o.X-p.X
@@ -75,11 +83,15 @@ module AutoOpenPt =
         member inline p.Angle360To(o:Pt) =
             p.Angle2PiTo o |> toDegrees
 
+        /// Returns the 2D point as 2D vector.
         member inline p.AsVc         = Vc( p.X, p.Y)
+
+        /// Returns the 2D point as 3D vector. Using 0.0 for Z
         member inline p.AsVec        = Vec(p.X, p.Y, 0.0)
+
+        /// Returns the 2D point as 3D point. Using 0.0 for Z
         member inline p.AsPnt        = Pnt(p.X, p.Y, 0.0)
-        member inline p.AsVecWithZ z = Vec(p.X, p.Y, z)
-        member inline p.AsPntWithZ z = Pnt(p.X, p.Y, z)
+        
 
         /// Get closest point on finit line to test point. 
         member inline testPt.ClosestPointOnLine(fromPt:Pt, toPt:Pt) = 
@@ -89,46 +101,46 @@ module AutoOpenPt =
             let lenSq =  v.LengthSq
             if lenSq < 1e-6 then FsExGeoDivByZeroException.Raise "Pt.closetPointOnLine: Line is too short for fromPt %O to  %O and  %O" fromPt toPt testPt
             let dot = Vc.dot (v,  dir) / lenSq
-            if   dot < 0.0 then  fromPt 
-            elif dot > 1.0 then  toPt
+            if   dot <= 0.0 then  fromPt 
+            elif dot >= 1.0 then  toPt
             else                 fromPt+dot*v
         
         /// Get closest point on finit line to test point. 
         member inline testPt.ClosestPointOnLine(fromPt:Pt, uv:UnitVc, len:float) = 
             let dir = testPt-fromPt 
             let dot = Vc.dot (uv,  dir) 
-            if   dot < 0.0 then  fromPt 
-            elif dot > len then (fromPt+len*uv)  
+            if   dot <= 0.0 then  fromPt 
+            elif dot >= len then (fromPt+len*uv)  
             else                 fromPt+dot*uv 
         
         /// Squared Distance between point and finite line segment.   
-        member inline testPt.DistanceSqToLine(fromPt:Pt, uv:UnitVc, len:float) = 
+        member inline testPt.DistanceToSquareLine(fromPt:Pt, uv:UnitVc, len:float) = 
             let dir = testPt-fromPt 
             let dot = Vc.dot (uv,  dir) 
-            if   dot < 0.0 then testPt.DistanceSqTo  fromPt 
-            elif dot > len then testPt.DistanceSqTo (fromPt+len*uv)  
+            if   dot <= 0.0 then testPt.DistanceToSquare  fromPt 
+            elif dot >= len then testPt.DistanceToSquare (fromPt+len*uv)  
             else 
-                let actual = uv.Rotated90CCW * dir 
+                let actual = uv.Rotate90CCW * dir 
                 actual*actual
                 
         /// Squared Distance between point and finite line segment  defined by start , end,  direction and length 
         /// The last two parameters  help speed up calculations.
-        member inline testPt.DistanceSqToLine(fromPt:Pt, toPt:Pt,  uv:UnitVc, len:float) = 
+        member inline testPt.DistanceToSquareLine(fromPt:Pt, toPt:Pt,  uv:UnitVc, len:float) = 
             let dir = testPt-fromPt 
             let dot = Vc.dot (uv,  dir) 
-            if   dot < 0.0 then testPt.DistanceSqTo fromPt 
-            elif dot > len then testPt.DistanceSqTo toPt 
+            if   dot <= 0.0 then testPt.DistanceToSquare fromPt 
+            elif dot >= len then testPt.DistanceToSquare toPt 
             else 
-                let actual = uv.Rotated90CCW * dir 
+                let actual = uv.Rotate90CCW * dir 
                 actual*actual 
                 
         /// Distance between point and finite line segment  defined by start ,  direction and length.
         member inline testPt.DistanceToLine(fromPt:Pt, uv:UnitVc, len:float) = 
             let dir = testPt-fromPt 
             let dot = Vc.dot (uv,  dir) 
-            if   dot < 0.0 then testPt.DistanceSqTo  fromPt 
-            elif dot > len then testPt.DistanceSqTo  (fromPt+len*uv)  
-            else                abs (uv.Rotated90CCW * dir) 
+            if   dot <= 0.0 then testPt.DistanceToSquare  fromPt 
+            elif dot >= len then testPt.DistanceToSquare  (fromPt+len*uv)  
+            else                abs (uv.Rotate90CCW * dir) 
                 
         /// Distance between point and finite line segment  defined by start and end.
         member inline testPt.DistanceToLine(fromPt:Pt, toPt:Pt) =  
@@ -137,8 +149,8 @@ module AutoOpenPt =
             let lenSq =  v.LengthSq 
             if lenSq < 1e-6 then FsExGeoDivByZeroException.Raise "Pt.DistanceToLine: Line is too short for fromPt %O to  %O and  %O" fromPt toPt testPt
             let dot = Vc.dot (v,  dir) / v.LengthSq 
-            if   dot < 0.0 then testPt.DistanceTo   fromPt 
-            elif dot > 1.0 then testPt.DistanceTo   toPt  
+            if   dot <= 0.0 then testPt.DistanceTo   fromPt 
+            elif dot >= 1.0 then testPt.DistanceTo   toPt  
             else                testPt.DistanceTo   (fromPt + v * dot) 
 
 
@@ -153,6 +165,12 @@ module AutoOpenPt =
         
         /// Same as Pt.Zero
         static member Origin = Pt ( 0. , 0. ) 
+
+         /// Divides the 3D point by an integer.
+        /// (This member is needed by Array.average and similar functions)
+        static member inline DivideByInt (pt:Pt, i:int) = 
+            if i<>0 then  let d = float i in  Pt(pt.X/d, pt.Y/d)
+            else FsExGeoDivByZeroException.Raise "FsEx.Geo.Pt.DivideByInt 0 %O " pt  // needed by  'Array.average'
         
         /// Accepts any type that has a X and Y (UPPERCASE) member that can be converted to a float. 
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
@@ -170,58 +188,75 @@ module AutoOpenPt =
             try Pt(float x, float y) 
             with e -> FsExGeoDivByZeroException.Raise "Pt.ofxy: %A could not be converted to a FsEx.Geo.Pt:\r\n%A" pt e
 
+        /// Create 2D point from 3D point. Ignoring Z component
         static member inline ofPnt      (p:Pnt)     = Pt (p.X, p.Y)    
-        static member inline ofVec      (v:Vc)      = Pt (v.X, v.Y)  
-        static member inline ofUnitVec  (v:UnitVc)  = Pt (v.X, v.Y)
+        
+        /// Create 2D point from 2D vector. 
+        static member inline ofVc       (v:Vc)      = Pt (v.X, v.Y)  
 
-        static member inline create    (x:float, y:float) =  Pt( x , y ) 
+        /// Create 2D point from 2D unit vector. 
+        static member inline ofUnitVc  (v:UnitVc)  = Pt (v.X, v.Y)
 
-        //static member inline DivideByInt (pt:Pt, i:int) = if i<>0 then pt / float i else failwithf "DivideByInt 0 %O " pt  // needed by  'Array.average'
+        /// Create 3D point from X and Y  components.
+        static member inline create  (x:float, y:float) =  Pt( x , y ) 
 
-        /// Sets the X value and returns new Pt
+        /// Sets the X value and return new 2D point.
         static member inline setX x (pt:Pt) =  Pt(x, pt.Y)
         
-        /// Sets the Y value and returns new Pt
+        /// Sets the Y value and return new 2D point.
         static member inline setY y (pt:Pt) =  Pt(pt.X, y)   
         
-        /// Gets the X value of  Pt
+        /// Gets the X value of 2D point.
         static member inline getX (pt:Pt)  =  pt.X
         
-        /// Gets the Y value of  Pt
+        /// Gets the Y value of 2D point.
         static member inline getY (pt:Pt) =  pt.Y
-        
-        static member inline add        (a:Pt) (b:Pt) = a + b
-        static member inline addVc      (v:Vc) (a:Pt) = a + v
 
-        static member inline midPt      (a:Pt) (b:Pt)         = (a+b) * 0.5
-        static member inline scale      (f:float) (pt:Pt) = pt*f
+        /// Adds two 2D points. Returns a new 2D point.
+        static member inline add    (a:Pt) (b:Pt) = a + b
         
-        static member inline shiftX     (x:float) (pt:Pt) = Pt (pt.X+x, pt.Y)
-        static member inline shiftY     (y:float) (pt:Pt) = Pt (pt.X,   pt.Y+y)
-    
+        /// Add a 2D point to a 2D vector. Returns a new 2D point.
+        static member inline addVc  (v:Vc) (a:Pt) = a + v
+
+        /// Returns the midpoint of two 2D points.
+        static member inline midPt  (a:Pt) (b:Pt)         = (a+b) * 0.5
+
+        /// Scales a 2D point by a factor. Returns a new 2D point.
+        static member inline scale  (f:float) (pt:Pt) = pt*f
         
-        /// Returns the distance between two points
+        /// Add a float to X component of a 2D point. Returns a new 2D point.
+        static member inline shiftX (x:float) (pt:Pt) = Pt (pt.X+x, pt.Y)
+
+        /// Add a float to Y component of a 2D point. Returns a new 2D point.
+        static member inline shiftY (y:float) (pt:Pt) = Pt (pt.X,   pt.Y+y)    
+        
+        /// Returns the distance between two 2D points.
         static member inline distance (a:Pt) (b:Pt) = let v = a-b in sqrt(v.X*v.X + v.Y*v.Y )
         
-        /// Returns the squared distance between two points.
+        /// Returns the squared distance between two 2D points.
         /// This operation is slightly faster than the distance function, and sufficient for many algorithms like finding closest points.
         static member inline distanceSq (a:Pt) (b:Pt) = let v = a-b in  v.X*v.X + v.Y*v.Y 
+        
+        /// Returns the distance from World Origin. 
+        static member inline distanceFromOrigin (pt:Pt) = pt.DistanceFromOrigin
+        
+        /// Returns the square distance from World Origin. 
+        static member inline distanceFromOriginSquare (pt:Pt) = pt.DistanceFromOriginSquare
 
-        static member inline distFromOrigin (pt:Pt) = pt.DistanceFromOrigin
-        static member inline setDistFromOrigin f (pt:Pt) = pt.WithDistFromOrigin f
-        static member inline distFromOriginSquare (pt:Pt) = pt.DistanceSqFromOriginSquare
+        /// Returns a new 2D point at a given distance from World Origin by scaling the input.
+        static member inline setDistanceFromOrigin f (pt:Pt) = pt.WithDistanceFromOrigin f
     
-        /// Returns angle between three Points in Radians. Range 0.0 to Pi  
+        /// Returns angle between three 2D Points in Radians. Range 0.0 to Pi  
         static member inline anglePiPts (ptPrev:Pt, ptThis:Pt, ptNext:Pt)  =   
-            Vc.anglePI (ptPrev-ptThis) (ptNext-ptThis)
+            Vc.anglePi (ptPrev-ptThis) (ptNext-ptThis)
 
-        /// Returns angle between three Points in Degrees. Range 0.0 to 180 
+        /// Returns angle between three 2D Points in Degrees. Range 0.0 to 180 
         static member inline angle180Pts (ptPrev:Pt, ptThis:Pt, ptNext:Pt)  =   
             Pt.anglePiPts (ptPrev, ptThis, ptNext) |> toDegrees
 
         /// Returns a (not unitized) bisector vector in the middle direction from ptThis. 
         /// Code : (ptPrev-ptThis).Unitized  + (ptNext-ptThis).Unitized 
-        /// ptPrev * ptThis * ptNext ->   bisector Vector 
+        /// ptPrev * ptThis * ptNext ->   bisector vector 
         static member inline bisector (ptPrev:Pt, ptThis:Pt, ptNext:Pt) =  
             (ptPrev-ptThis).Unitized  + (ptNext-ptThis).Unitized   
         
@@ -242,8 +277,9 @@ module AutoOpenPt =
             Pt (r.Cos*x - r.Sin*y + cen.X, 
                 r.Sin*x + r.Cos*y + cen.Y) 
         
-        /// Rotate 2D Point around a center point counter clockwise. Angle given in degrees.    
-        static member inline ptWitCen  (cen:Pt)  angDegree (pt:Pt)  = 
+        /// Rotate 2D Point around a center point counter clockwise. Angle given in Degrees.    
+        static member inline ptWithCen  (cen:Pt)  angDegree (pt:Pt)  = 
+            TODO adapt
             Pt.rotateWithCenterBy cen (Rotation2D.createFromDegrees angDegree) pt
         
         /// Returns a point that is at a given distance from a point in the direction of another point.
@@ -253,7 +289,7 @@ module AutoOpenPt =
             fromPt + v*sc
         
         
-        /// Returns a Point by evaluation a line between two point with a normalized patrameter.
+        /// Returns a Point by evaluation a line between two point with a normalized parameter.
         /// e.g. rel=0.5 will return the middle point, rel=1.0 the endPoint
         static member inline divPt(fromPt:Pt, toPt:Pt,rel:float) : Pt  = 
             let v = toPt - fromPt
@@ -269,8 +305,8 @@ module AutoOpenPt =
             if (snapTo-pt).Length < snapDistance then snapTo else pt
             
         
-        /// Returns angle in degree at mid point
-        static member angelInCorner(prevPt:Pt, thisPt:Pt, nextPt:Pt) = 
+        /// Returns angle in Degrees at mid point (thisPt).
+        static member angleInCorner(prevPt:Pt, thisPt:Pt, nextPt:Pt) = 
             let a = prevPt-thisPt
             let b = nextPt-thisPt
             Vc.angle180 a b

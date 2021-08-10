@@ -6,18 +6,18 @@ open FsEx.Geo.Util
 
 #nowarn "44" // for hidden constructors via Obsolete Attribute
 
-/// 2D Counter Clockwise Rotation. It can be applied in world  X, Y or Z plane.
-/// Internally stored just as a sine and cosine value
+/// 2D Counter Clockwise Rotation. It can be applied in World  X, Y or Z plane.
+/// Internally stored just as a Sine and Cosine value
 /// For arbitrary rotations use Quaternions or 4x4 Matrix. 
 /// However this module has much better performance than the more general Matrix4x4 or a Quaternion
 [<Struct; NoEquality; NoComparison>]
 [<IsReadOnly>]
 //[<IsByRefLike>]
 type Rotation2D = 
-    /// The sine component of this rotation
+    /// The Sine component of this rotation
     val Sin : float
     
-    /// The cosine component of this rotation
+    /// The Cosine component of this rotation
     val Cos : float    
 
     /// Unsafe internal constructor,  public only for inlining.
@@ -29,10 +29,10 @@ type Rotation2D =
         #endif
         {Sin = sin; Cos = cos}      
     
-    /// Format rotation into string showing angle in degrees as nicely formatted floating point number.
+    /// Format rotation into string showing angle in Degrees as nicely formatted floating point number.
     override r.ToString() =  
         let deg =  r.Sin  |> asinSafe |> toDegrees |> Format.float
-        sprintf "FsEx.Geo.Rotation2D of %s° degrees." deg
+        sprintf "FsEx.Geo.Rotation2D of %s° Degrees." deg
     
     ///Construct 2D Rotation from angle in Radians 
     static member createFromRadians rad =  

@@ -46,7 +46,7 @@ type Quaternion =
         #endif
         {X=x; Y=y; Z=z; W=w}
     
-    /// Format Quaternion into string also showing angle in degree as nicely formatted floating point number.
+    /// Format Quaternion into string also showing angle in Degree as nicely formatted floating point number.
     override q.ToString() =         
         sprintf "FsEx.Geo.Quaternion(X=%s, Y=%s, Z=%s, W=%s, angle: %s°)" 
                 (Format.float q.X) (Format.float q.Y) (Format.float q.Z) (Format.float q.W) (Format.float q.AngleInDegrees)
@@ -95,7 +95,7 @@ type Quaternion =
     static member createFromRadians (axis:Vec, angleInRadians)  =        
         let length = sqrt(axis.X*axis.X + axis.Y*axis.Y + axis.Z*axis.Z) 
         if length <  zeroLengthTol then // TODO or return identity Quaternion ?
-            FsExGeoException.Raise "FsEx.Geo.Quaternion.createFromRadians failed too short axis: %O and rotation: %g° degrees" axis (toDegrees angleInRadians)
+            FsExGeoException.Raise "FsEx.Geo.Quaternion.createFromRadians failed too short axis: %O and rotation: %g° Degrees" axis (toDegrees angleInRadians)
         let angHalf = angleInRadians * 0.5
         let sa = sin angHalf
         let sc =  1. / length // inverse for unitizing vector:
@@ -107,7 +107,7 @@ type Quaternion =
         let sa = sin angHalf         
         Quaternion ( axis.X  * sa, axis.Y  * sa, axis.Z  * sa, cos angHalf )
     
-    /// The created Rotation is Clockwise looking in the direction of the Vector (of any length but zero).
+    /// The created Rotation is Clockwise looking in the direction of the vector (of any length but zero).
     static member createFromDegree (axis:Vec, angleInDegrees) = 
         Quaternion.createFromRadians (axis,  toRadians angleInDegrees) 
     
@@ -157,16 +157,16 @@ type Quaternion =
                               )  
 
 
-    /// Angles are given in degrees, 
+    /// Angles are given in Degrees, 
     /// The order in which to apply rotations is X-Y-Z, 
-    /// which means that the object will first be rotated around its X axis, 
-    /// then its Y axis 
-    /// and finally its Z axis. 
+    /// which means that the object will first be rotated around its X-axis, 
+    /// then its Y-axis 
+    /// and finally its Z-axis. 
     /// This  uses intrinsic Tait-Bryan angles. 
     /// This means that rotations are performed with respect to the local coordinate system. 
-    /// That is, for order X-Y-Z, the rotation is first around the local-X axis (which is the same as the world-X axis), 
-    /// then around local-Y (which may now be different from the world Y-axis), 
-    /// then local-Z (which may be different from the world Z-axis)
+    /// That is, for order X-Y-Z, the rotation is first around the local-X-axis (which is the same as the World-X-axis), 
+    /// then around local-Y (which may now be different from the World Y-axis), 
+    /// then local-Z (which may be different from the World Z-axis)
     static member createFromEulerXYZ(degreesX,degreesY,degreesZ) =
         let c1 = cos(toRadians degreesX * 0.5 )
         let c2 = cos(toRadians degreesY * 0.5 )
@@ -179,16 +179,16 @@ type Quaternion =
                   ,  c1 * c2 * s3 + s1 * s2 * c3
                   ,  c1 * c2 * c3 - s1 * s2 * s3) 
                   
-    /// Angles are given in degrees, 
+    /// Angles are given in Degrees, 
     /// The order in which to apply rotations is Y-X-Z, 
-    /// which means that the object will first be rotated around its Y axis, 
-    /// then its X axis 
-    /// and finally its Z axis. 
+    /// which means that the object will first be rotated around its Y-axis, 
+    /// then its X-axis 
+    /// and finally its Z-axis. 
     /// This  uses intrinsic Tait-Bryan angles. 
     /// This means that rotations are performed with respect to the local coordinate system. 
-    /// That is, for order Y-X-Z, the rotation is first around the local-Y axis (which is the same as the world-Y axis), 
-    /// then around local-X (which may now be different from the world X-axis), 
-    /// then local-Z (which may be different from the world Z-axis)
+    /// That is, for order Y-X-Z, the rotation is first around the local-Y-axis (which is the same as the World-Y-axis), 
+    /// then around local-X (which may now be different from the World X-axis), 
+    /// then local-Z (which may be different from the World Z-axis)
     static member createFromEulerYXZ(degreesY,degreesX,degreesZ) =
         let c1 = cos(toRadians degreesX * 0.5 )
         let c2 = cos(toRadians degreesY * 0.5 )
@@ -202,16 +202,16 @@ type Quaternion =
                   ,  c1 * c2 * c3 + s1 * s2 * s3)  
   
                 
-    /// Angles are given in degrees, 
+    /// Angles are given in Degrees, 
     /// The order in which to apply rotations is Z-X-Y, 
-    /// which means that the object will first be rotated around its Z axis, 
-    /// then its X axis 
-    /// and finally its Y axis. 
+    /// which means that the object will first be rotated around its Z-axis, 
+    /// then its X-axis 
+    /// and finally its Y-axis. 
     /// This  uses intrinsic Tait-Bryan angles. 
     /// This means that rotations are performed with respect to the local coordinate system. 
-    /// That is, for order Z-X-Y, the rotation is first around the local-Z axis (which is the same as the world-Z axis), 
-    /// then around local-X (which may now be different from the world X-axis), 
-    /// then local-Y (which may be different from the world Y-axis)
+    /// That is, for order Z-X-Y, the rotation is first around the local-Z-axis (which is the same as the World-Z-axis), 
+    /// then around local-X (which may now be different from the World X-axis), 
+    /// then local-Y (which may be different from the World Y-axis)
     static member createFromEulerZXY(degreesZ, degreesX, degreesY) =
         let c1 = cos(toRadians degreesX * 0.5 )
         let c2 = cos(toRadians degreesY * 0.5 )
@@ -225,16 +225,16 @@ type Quaternion =
                   ,  c1 * c2 * c3 - s1 * s2 * s3)             
                 
                 
-    /// Angles are given in degrees, 
+    /// Angles are given in Degrees, 
     /// The order in which to apply rotations is Z-Y-X, 
-    /// which means that the object will first be rotated around its Z axis, 
-    /// then its Y axis 
-    /// and finally its X axis. 
+    /// which means that the object will first be rotated around its Z-axis, 
+    /// then its Y-axis 
+    /// and finally its X-axis. 
     /// This  uses intrinsic Tait-Bryan angles. 
     /// This means that rotations are performed with respect to the local coordinate system. 
-    /// That is, for order Z-Y-X, the rotation is first around the local-Z axis (which is the same as the world-Z axis), 
-    /// then around local-Y (which may now be different from the world Y-axis), 
-    /// then local-X (which may be different from the world X-axis)
+    /// That is, for order Z-Y-X, the rotation is first around the local Z-axis (which is the same as the World Z-axis), 
+    /// then around local-Y (which may now be different from the World Y-axis), 
+    /// then local-X (which may be different from the World X-axis)
     static member createFromEulerZYX(degreesZ, degreesY, degreesX) =
         let c1 = cos(toRadians degreesX * 0.5 )
         let c2 = cos(toRadians degreesY * 0.5 )
@@ -247,16 +247,16 @@ type Quaternion =
                   ,  c1 * c2 * s3 - s1 * s2 * c3
                   ,  c1 * c2 * c3 + s1 * s2 * s3)             
                 
-    /// Angles are given in degrees, 
+    /// Angles are given in Degrees, 
     /// The order in which to apply rotations is Y-Z-X, 
-    /// which means that the object will first be rotated around its Y axis, 
-    /// then its Z axis 
-    /// and finally its X axis. 
+    /// which means that the object will first be rotated around its Y-axis, 
+    /// then its Z-axis 
+    /// and finally its X-axis. 
     /// This  uses intrinsic Tait-Bryan angles. 
     /// This means that rotations are performed with respect to the local coordinate system. 
-    /// That is, for order Y-Z-X, the rotation is first around the local-Y axis (which is the same as the world-Y axis), 
-    /// then around local-Z (which may now be different from the world Z-axis), 
-    /// then local-X (which may be different from the world X-axis)
+    /// That is, for order Y-Z-X, the rotation is first around the local-Y-axis (which is the same as the World-Y-axis), 
+    /// then around local-Z (which may now be different from the World Z-axis), 
+    /// then local-X (which may be different from the World X-axis)
     static member createFromEulerYZX(degreesY, degreesZ, degreesX) =
         let c1 = cos(toRadians degreesX * 0.5 )
         let c2 = cos(toRadians degreesY * 0.5 )
@@ -269,16 +269,16 @@ type Quaternion =
                   ,  c1 * c2 * s3 - s1 * s2 * c3
                   ,  c1 * c2 * c3 - s1 * s2 * s3)             
                 
-    /// Angles are given in degrees, 
+    /// Angles are given in Degrees, 
     /// The order in which to apply rotations is X-Z-Y, 
-    /// which means that the object will first be rotated around its X axis, 
-    /// then its Z axis 
-    /// and finally its Y axis. 
+    /// which means that the object will first be rotated around its X-axis, 
+    /// then its Z-axis 
+    /// and finally its Y-axis. 
     /// This  uses intrinsic Tait-Bryan angles. 
     /// This means that rotations are performed with respect to the local coordinate system. 
-    /// That is, for order X-Z-Y, the rotation is first around the local-X axis (which is the same as the world-X axis), 
-    /// then around local-Z (which may now be different from the world Z-axis), 
-    /// then local-Y (which may be different from the world Y-axis)
+    /// That is, for order X-Z-Y, the rotation is first around the local-X-axis (which is the same as the World-X-axis), 
+    /// then around local-Z (which may now be different from the World Z-axis), 
+    /// then local-Y (which may be different from the World Y-axis)
     static member createFromEulerXZY(degreesX, degreesZ, degreesY) =
         let c1 = cos(toRadians degreesX * 0.5 )
         let c2 = cos(toRadians degreesY * 0.5 )
@@ -294,12 +294,12 @@ type Quaternion =
 
 
     /// The quaternion expresses a relationship between two coordinate frames, A and B say. 
-    /// Returns the EulerAngles in degrees: Alpha, Beta , Gamma.
+    /// Returns the EulerAngles in Degrees: Alpha, Beta , Gamma.
     /// This relationship, if expressed using Euler angles, is as follows:
-    /// 1) Rotate Frame A about its Z axis by angle Gamma;
-    /// 2) Rotate the resulting frame about its (new) Y axis by angle Beta;
-    /// 3) Rotate the resulting frame about its (new) X axis by angle Alpha, to arrive at frame B.
-    /// Returns the angels in degrees as triple. For rotating first round the axis Z then local Y and finally local X.
+    /// 1) Rotate Frame A about its Z-axis by angle Gamma;
+    /// 2) Rotate the resulting frame about its (new) Y-axis by angle Beta;
+    /// 3) Rotate the resulting frame about its (new) X-axis by angle Alpha, to arrive at frame B.
+    /// Returns the angels in Degrees as triple. For rotating first round the axis Z then local Y and finally local X.
     /// see Quaternion.createFromEulerZYX(z,y,x)
     static member toEulerAnglesZYX(q:Quaternion) : float*float*float = 
         // from https://github.com/mathnet/mathnet-spatial/blob/master/src/Spatial/Euclidean/Quaternion.cs#L491

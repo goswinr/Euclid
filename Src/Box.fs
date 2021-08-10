@@ -6,7 +6,7 @@ open Util
 
 /// A 3D Box with any rotation in 3D space
 /// Described by an Origin and three Edge vectors. 
-/// Similar to PPlane, however these Vectors are not unitized.
+/// Similar to PPlane, however these vectors are not unitized.
 [<Struct; NoEquality; NoComparison>] // because its made up from floats
 [<IsReadOnly>]
 //[<IsByRefLike>]
@@ -81,8 +81,8 @@ type Box =
     static member translateZ (d:float) (pl:Box) = Box(pl.Origin + pl.Zax*d, pl.Xax, pl.Yax, pl.Zax)
 
     
-    /// If the transformation includes a shear the only X axis can be kept.
-    /// The plane will be defined with the direction of Y Axis ( which might not be perpendicular after shearing ).
+    /// If the transformation includes a shear the only X-axis can be kept.
+    /// The plane will be defined with the direction of Y-axis ( which might not be perpendicular after shearing ).
     /// The returned Box has orthogonal unit vectors
     static member transform (m:Matrix) (b:Box) = 
         let o  = Pnt.transform m b.Origin

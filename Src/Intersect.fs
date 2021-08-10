@@ -12,14 +12,14 @@ module Intersect =
         ((b-a).Cross(vb)) * vaXvbInverse // va.Cross vb  is precomputed  and inverted
 
     let inline private isParamStillBelowZeroAfterOffsets(ap:Pt, au:UnitVc, aXbInverse:float, bp:Pt, bu:UnitVc, snapThreshold:float) =
-        let n = au.Rotated90CCW * snapThreshold
+        let n = au.Rotate90CCW * snapThreshold
         // TODO would it be enough to only compute one of these two? depending on the sign of aXbInverse ?
         getXPara(ap + n, aXbInverse,  bp, bu) <  -snapThreshold //with threshold subtracted the  range factor is 1 to 1.4 . without 0.7 to 1 of threshold
         &&
         getXPara(ap - n, aXbInverse,  bp, bu) <  -snapThreshold
 
     let inline private isParamStillMoreThanLengthAfterOffsets(ap:Pt, au:UnitVc , aXbInverse:float, al:float, bp:Pt, bu:UnitVc, snapThreshold:float) =
-        let n = au.Rotated90CCW * snapThreshold
+        let n = au.Rotate90CCW * snapThreshold
         getXPara(ap + n, aXbInverse,  bp, bu) > al + snapThreshold //with threshold added the range factor is 1 to 1.4 . without 0.7 to 1 of threshold
         &&
         getXPara(ap - n, aXbInverse,  bp, bu) > al + snapThreshold
@@ -74,7 +74,7 @@ module Intersect =
 
         else // Colinear
             // probably no intersection  unless closer than snapThreshold
-            let perp = au.Rotated90CCW // unit v
+            let perp = au.Rotate90CCW // unit v
             let vab = ap-bp
             let dot = perp * vab // project vab onto unit vector
             if abs dot < snapThreshold then

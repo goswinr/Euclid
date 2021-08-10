@@ -144,7 +144,7 @@ type [<Struct>] Line =
     /// Get distance from start of line to point projected onto line, may be negative
     static member inline lengthToPtOnLine (line:Line) pt = line.Tangent.Unitized * (pt-line.From)
 
-    /// Intersects infinite line with cone that has it's Axis on ZAxis.
+    /// Intersects infinite line with cone that has it's Axis on Z-Axis.
     /// coneRadius -> coneBaseZ -> coneTipZ ->  (ln:Line) -> Parameter*Parameter on the line
     static member inline xCone coneRadius coneBaseZ coneTipZ (ln:Line) =        
         let lam = coneRadius / ( coneBaseZ-coneTipZ )
