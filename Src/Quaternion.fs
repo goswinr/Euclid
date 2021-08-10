@@ -4,6 +4,16 @@ open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
 open FsEx.Geo.Util    
 
+// TODO:
+// create Rotation and Translation only Matrix class:
+// It would look like this:
+// M11 M21 M31 X41 
+// ___ M22 M32 Y42 
+// ___ ___ M33 Z43 
+// ___ ___ ___ ___
+// would applying this be faster than using quaternion and a translation vector ?
+
+
 #nowarn "44" // for hidden constructors via Obsolete Attribute
 
 /// A immutable Quaternion, for arbitrary 3D rotations.
@@ -25,7 +35,7 @@ type Quaternion =
     
     /// The W component of this Quaternion
     val W:float
-     
+    
     /// Unsafe internal constructor,  public only for inlining.
     [<Obsolete("Unsafe internal constructor,  but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >] 
     new (x,y,z,w) = 

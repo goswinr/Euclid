@@ -30,7 +30,7 @@ type [<Struct>] Plane = // Normals are always unitized
     static member createFrom3Points (a:Pnt) (b:Pnt) (c:Pnt) =
         let n =  Vec.cross (c-b,a-b)
         if Vec.isTiny 1e-5 n then FsExGeoException.Raise "FsEx.Geo.Plane.createFrom3Points: the points %O, %O, %O are in one Line, no Plane found" a b c
-        Plane(a, n.UnitizedUnchecked)
+        Plane(a, n.Unitized)
 
     /// Returns signed distance of Point to plane, also indicating on which side it is.
     member inline pl.DistToPt pt = pl.Normal*(pt-pl.Origin) 

@@ -61,7 +61,7 @@ module AutoOpenUnitVec =
         
         /// Returns the Angle in Radians from XAxis,  
         /// Going Counter clockwise till two Pi. Ignoring Z component.
-        member inline v.Angle2PIInXY =
+        member inline v.Angle2PiInXY =
             // https://stackoverflow.com/a/14675998/969070
             #if DEBUG 
             if abs(v.X) < zeroLengthTol && abs(v.Y) < zeroLengthTol then FsExGeoDivByZeroException.Raise "UnitVec.Angle2PIInXY: input vector is vertical or zero length:%O" v
@@ -75,8 +75,13 @@ module AutoOpenUnitVec =
         /// Returns the Angle in Degrees from XAxis.  
         /// Going Counter clockwise till 360. Ignoring Z component.
         member inline v.Angle360InXY =
-            v.Angle2PIInXY |> toDegrees
+            v.Angle2PiInXY |> toDegrees
         
+        /// Returns a perpendicular horizontal vector. Rotated counterclockwise.
+        /// Or Vec.Zero if input is vertical.
+        /// Just does Vec(-v.Y, v.X, 0.0) 
+        member inline v.PerpendicularInXY = Vec(-v.Y, v.X, 0) 
+
         /// Convert 3D unit vector to 3D Vector. 
         member inline v.AsVec = Vec(v.X, v.Y, v.Z)
         
@@ -233,13 +238,18 @@ module AutoOpenUnitVec =
         /// Use Vc.ofUnitVec to convert to 2D vector instance
         static member inline projectToXYPlane (v:UnitVec) = Vec(v.X,v.Y, 0.0)
                     
-        /// Negate or inverse a 3D unit vectors. Returns a new 3D unit vector. 
-        /// Same as UnitVec.reverse
-        static member inline flip  (v:UnitVec) = -v
 
         /// Negate or inverse a 3D unit vectors. Returns a new 3D unit vector. 
         /// Same as UnitVec.flip
         static member inline reverse  (v:UnitVec) = -v   
+        
+        /// Negate or inverse a 3D unit vectors. Returns a new 3D unit vector. 
+        /// Same as UnitVec.reverse
+        static member inline flip  (v:UnitVec) = -v
+
+        /// Flips the vector if Z part is smaller than 0.0
+        static member inline flipToPointUp (v:UnitVec) = if v.Z < 0.0 then -v else v 
+
 
         /// Returns three vectors Determinant
         /// This is also the signed volume of the Parallelepipeds define by these three vectors.
@@ -310,6 +320,15 @@ module AutoOpenUnitVec =
         static member inline angle90 (a:UnitVec) (b:UnitVec) = 
             UnitVec.angleHalfPI a b |>  toDegrees 
         
+
+        /// Ensure vector has a positive dot product with given orientation vector
+        static member inline matchOrientation (orientationToMatch:UnitVec) (v:UnitVec) = 
+            if orientationToMatch * v < 0.0 then -v else v
+
+        /// Check if vector has a positive dot product with given orientation vector
+        static member inline doesOrientationMatch (orientationToCheck:UnitVec) (v:UnitVec) = 
+            orientationToCheck * v > 0.0   
+
         // Rotate2D: 
 
         /// Rotate the 3D UnitVector around X axis, from Y to Z Axis, Counter Clockwise looking from right.
@@ -320,8 +339,7 @@ module AutoOpenUnitVec =
         
         /// Rotate the 3D UnitVector around Z axis, from X to Y Axis, Counter Clockwise looking from top.
         static member rotateZBy (r:Rotation2D) (v:UnitVec) = UnitVec.createUnchecked (r.Cos*v.X - r.Sin*v.Y, r.Sin*v.X + r.Cos*v.Y,  v.Z)
-        
-        
+                
         /// Rotate the 3D UnitVector in Degrees around X axis, from Y to Z Axis, Counter Clockwise looking from right.
         static member inline rotateX (angDegree) (v:UnitVec) = 
             UnitVec.rotateXBy (Rotation2D.createFromDegrees angDegree) v
@@ -355,9 +373,7 @@ module AutoOpenUnitVec =
                                    , iz * qw + iw * - qz + ix * - qy - iy * - qx
                                    )
         
-        /// Flips the vector if Z part is smaller than 0.0
-        static member inline flipToPointUp (v:UnitVec) = if v.Z < 0.0 then -v else v 
-
+        
         
         /// Vector length projected into X Y Plane
         /// sqrt( v.X * v.X  + v.Y * v.Y)
@@ -375,13 +391,13 @@ module AutoOpenUnitVec =
 
         /// Returns positive or negative slope of a vector in Radians
         /// in relation to XY Plane
-        static member inline slopeRad (v:UnitVec) = 
+        static member inline slopeRadians (v:UnitVec) = 
             v.Y |> acosSafe          
 
         /// Returns positive or negative slope of a vector in Degrees
         /// in relation to XY Plane
-        static member inline slopeDeg (v:UnitVec) = 
-            UnitVec.slopeRad v |> toDegrees
+        static member inline slopeDegrees (v:UnitVec) = 
+            UnitVec.slopeRadians v |> toDegrees
 
         /// Returns positive or negative slope of a vector in Percent
         /// in relation to XY Plane
@@ -398,14 +414,7 @@ module AutoOpenUnitVec =
         /// Reverse vector if Z part is bigger than 0.0
         static member inline orientDown (v:UnitVec) = 
             if v.Z < 0.0 then v else -v
-
-        /// Ensure vector has a positive dot product with given orientation vector
-        static member inline matchOrientation (orientationToMatch:UnitVec) (v:UnitVec) = 
-            if orientationToMatch * v < 0.0 then -v else v
-
-        /// Check if vector has a positive dot product with given orientation vector
-        static member inline doesOrientationMatch (orientationToCheck:UnitVec) (v:UnitVec) = 
-            orientationToCheck * v > 0.0        
+     
 
         /// Returns a perpendicular horizontal vector. Rotated counterclockwise.        
         /// Just does Vec(-v.Y, v.X, 0.0) 
@@ -423,4 +432,33 @@ module AutoOpenUnitVec =
             if v.Z < 0.0 then -r else r
 
 
+        /// Multiplies the Matrix with a Vector (with an implicit 1 in the 4th dimension), 
+        /// So that it also works correctly for projections
+        /// See also Pnt.transformSimple for better performance
+        static member transform (m:Matrix) (p:UnitVec) = 
+            // from applyMatrix4( m ) in  https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js 
+            let x = p.X
+            let y = p.Y
+            let z = p.Z
+            //let w = 1.0           
+            let x' = m.M11*x + m.M21*y + m.M31*z + m.X41 // * w
+            let y' = m.M12*x + m.M22*y + m.M32*z + m.Y42 // * w
+            let z' = m.M13*x + m.M23*y + m.M33*z + m.Z43 // * w
+            let w' = m.M14*x + m.M24*y + m.M34*z + m.M44 // * w 
+            let sc = 1.0 / w'           
+            Vec(x' * sc, y'* sc, z'* sc)     
+        
+        // Partially Multiplies the Matrix with a Vector. 
+        // Use this only for affine transformations that do NOT include a projection 
+        // and if you need maximum performance.
+        // The fields m.M14, m.M24 and m.M34 must be 0.0 and m.M44 must be 1.0
+        // Otherwise use Vec.transform
+        //static member transformSimple (m:Matrix) (p:Vec) = 
+        //    let x = p.X
+        //    let y = p.Y
+        //    let z = p.Z 
+        //    Vec(  m.M11*x + m.M21*y + m.M31*z + m.X41 
+        //        , m.M12*x + m.M22*y + m.M32*z + m.Y42 
+        //        , m.M13*x + m.M23*y + m.M33*z + m.Z43 
+        //        )
 

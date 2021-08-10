@@ -39,17 +39,24 @@ module AutoOpenVc =
         /// That means the angle between the two vectors is less than 90 degrees.
         member inline v.MatchesOrientation (vv:Vc) = v*vv > 0. 
 
+        /// Returns a new 2D Vector scaled to the desired length.
         member inline v.WithLength (desiredLength:float) =  
             let l = sqrt(v.X*v.X+v.Y*v.Y) 
             if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "Vc.WithLength %g : %O is too small for unitizing, Tolerance:%g" desiredLength v zeroLengthTol
             v*(desiredLength / l)  
 
+        /// Returns the 2D Vector unitized.
+        /// Fails with FsExGeoDivByZeroException if the length of the vector is 
+        /// too small (1-e16) to unitize. 
         member inline v.Unitized  = 
             let l = sqrt(v.X * v.X  + v.Y * v.Y)
             // #if DEBUG add here too? TODO ?
             if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "%O is too small for unitizing, Tolerance:%g" v zeroLengthTol
             UnitVc.createUnchecked( v.X/l , v.Y/l)          
         
+        // Returns the 2D Vector unitized.
+        // If the length of the vector is 0.0 an invalid unit vector is returned.
+        // UnitVc(0,0,0)
         //member inline v.UnitizedUnchecked =  
         //    let l = sqrt(v.X*v.X + v.Y*v.Y) 
         //    UnitVc.createUnchecked( v.X/l , v.Y/l)   
@@ -60,17 +67,19 @@ module AutoOpenVc =
         member inline v.IsUnit   = 
             Util.isOne v.LengthSq
 
-        /// 2D cross product. Its Just a scalar
+        /// 2D cross product. 
+        /// Its Just a scalar equal to the area of the parallelogram spanned by the input vectors.
         member inline a.Cross (b:Vc)     = a.X*b.Y - a.Y*b.X
 
-        /// 2D cross product. Its Just a scalar
+        /// 2D cross product. 
+        /// Its Just a scalar equal to the area of the parallelogram spanned by the input vectors.
         member inline a.Cross (b:UnitVc) = a.X*b.Y - a.Y*b.X
 
         /// 90 degree rotation counter clockwise
-        member inline v.RotatedCCW = Vc( -v.Y,   v.X )
+        member inline v.Rotate90CCW = Vc( -v.Y,   v.X )
 
         /// 90 degree rotation clockwise
-        member inline v.RotatedCW  = Vc( v.Y,  -v.X )
+        member inline v.Rotate90CW  = Vc( v.Y,  -v.X )
 
         /// The diamond angle.
         /// Calculates the proportion of X to Y component. 
@@ -140,23 +149,36 @@ module AutoOpenVc =
             if r >= 0. then  r
             else r + 4.0 
 
+        /// Convert 2D vector to 2D Point
         member inline v.AsPt         = Pt( v.X, v.Y)
+        
+        /// Convert 2D vector to 3D Vector using 0.0 as Z value
+        /// If you want a different Z value use the member v.WithZ(z)
         member inline v.AsVec        = Vec(v.X, v.Y, 0.0)
+        
+        /// Convert 2D vector to 3D Point using 0.0 as Z value. 
         member inline v.AsPnt        = Pnt(v.X, v.Y, 0.0)
-        member inline v.AsVecWithZ z = Vec(v.X, v.Y, z)
-        member inline v.AsPntWithZ z = Pnt(v.X, v.Y, z)
+
 
         //----------------------------------------------------------------------------------------------
         //--------------------------  Static Members  --------------------------------------------------
         //----------------------------------------------------------------------------------------------
 
-        /// Vc with X=0.0 and Y=0.0
-        static member Zero = Vc(0.0 , 0.0)  // needed by 'Array.sum'
+        /// Returns the world X-axis with length one: Vc(1,0)
+        static member inline XAxis  = Vc(1,0)
+
+        /// Returns the world Y-axis with length one: Vc(0,1)
+        static member inline YAxis  = Vc(0,1)
         
-        static member inline XAxis  = Vc (1.0 , 0.0)
-        static member inline YAxis  = Vc (0.0 , 1.0)   
-
-
+        /// Returns a zero length vector: Vec(0,0)
+        static member inline Zero   = Vc(0,0)  // this member is needed by Seq.sum, so that it doesn't fail on empty seq.  
+        
+        /// Divides the vector by an integer.
+        /// (This member is needed by Array.average and similar functions)
+        static member inline DivideByInt (v:Vc, i:int) = // needed by 'Array.average'
+            if i<>0 then v / float i 
+            else FsExGeoDivByZeroException.Raise "FsEx.geo.Vc.DivideByInt is zero %O " v 
+        
         /// Accepts any type that has a X and Y (UPPERCASE) member that can be converted to a float. 
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
         static member inline ofXY vec  = 
@@ -174,49 +196,114 @@ module AutoOpenVc =
             with e -> FsExGeoDivByZeroException.Raise "Vc.ofxy: %A could not be converted to a FsEx.Geo.Vc:\r\n%A" vec e
 
 
-        static member inline create   (start:Pt,ende:Pt) = ende-start  
+         /// Create 2D vector from 2D point. 
+        static member inline ofPt  (pt:Pnt) =  Vc( pt.X , pt.Y ) 
         
+        /// Create 2D vector from 2D unit vector.
+        static member inline ofUnitVc (v:UnitVc) =  Vc(v.X, v.Y)       
         
-        /// 2D cross product. Its Just a scalar
+        /// Convert 2D vector to 2D point. 
+        static member inline asPt(v:Vc)  = Pt( v.X, v.Y)
+        
+        /// Convert 2D vector to 3D point. Using 0.0 as Z value.
+        static member inline asPnt(v:Vc) = Pnt(v.X, v.Y, 0.0) 
+
+        /// Convert 2D vector to 3D vector. Using 0.0 as Z value.
+        static member inline asVec(v:Vc) = Vec(v.X, v.Y, 0.0)        
+        
+        /// 2D Cross product, of two 2D vectors.
+        /// Its Just a scalar equal to the area of the parallelogram spanned by the input vectors.
         static member inline cross (a:Vc, b:Vc)  = a.X*b.Y - a.Y*b.X        
-        /// 2D cross product. Its Just a scalar
+        
+        /// 2D Cross product, of a 2D unit vectors an a 2D vector. 
+        /// Its Just a scalar equal to the area of the parallelogram spanned by the input vectors.
         static member inline cross (a:UnitVc, b:Vc)  = a.X*b.Y - a.Y*b.X
-        /// 2D cross product. Its Just a scalar
+        
+        /// 2D Cross product, of a 2D vectors an a 2D unit vector. 
+        /// Its Just a scalar equal to the area of the parallelogram spanned by the input vectors.
         static member inline cross (a:Vc, b:UnitVc)  = a.X*b.Y - a.Y*b.X
 
-        /// dot product, or scalar product
+        /// Dot product, or scalar product of two 2D vectors. 
+        /// Returns a float. 
         static member inline dot  (a:Vc, b:Vc  ) = a.X * b.X + a.Y * b.Y 
-        /// dot product, or scalar product
+        
+        /// Dot product, or scalar product of a 2D unit vector with a 2D vector  
+        /// Returns a float. This float is the projected length of the 2D vector on the direction of the unit vector
         static member inline dot  (a:Vc, b:UnitVc  ) = a.X * b.X + a.Y * b.Y 
-        /// dot product, or scalar product
+        
+        /// Dot product, or scalar product of a 2D vector with a 2D unit vector  
+        /// Returns a float. This float is the projected length of the 2D vector on the direction of the unit vector
         static member inline dot  (a:UnitVc, b:Vc  ) = a.X * b.X + a.Y * b.Y 
 
-        static member inline getX     (v:Vc) = v.X
-        static member inline getY     (v:Vc) = v.Y
-        static member inline setX     x (v:Vc) = v.WithX x
-        static member inline setY     y (v:Vc) = v.WithY y
-        static member inline add      (a:Vc) (b:Vc) = b + a
-        static member inline sqLength (v:Vc) = v.LengthSq
+        /// Gets the X part of this 2D vector
+        static member inline getX  (v:Vc) = v.X
+        
+        /// Gets the Y part of this 2D vector
+        static member inline getY (v:Vc) = v.Y        
+        
+        /// Returns new 2D Vector with new X value,  Y stays the same.
+        static member inline setX  x (v:Vc) = v.WithX x
+        
+        /// Returns new 2D Vector with new Y value, X  stays the same.
+        static member inline setY  y (v:Vc) = v.WithY y        
+                
+        /// Add two 2D vectors together. Returns a new 2D vector.
+        static member inline add (a:Vc) (b:Vc) = b + a  
+        
+        /// Tests if dot product is bigger than 0.0.
+        /// That means the angle between the two vectors is less than 90 degrees.
         static member inline dirMatch (a:Vc) (b:Vc) = b.MatchesOrientation a
-        static member inline scale    (f:float) (v:Vc) = v*f
-        static member inline length       (v:Vc) = v.Length
-        static member inline shiftX     x (v:Vc) = Vc (v.X+x, v.Y)
-        static member inline shiftY     y (v:Vc) = Vc (v.X,   v.Y+y)    
-        static member inline isTiny   tol (v:Vc) = v.IsTiny tol
-        static member inline setLength  f (v:Vc) = v.WithLength f    
+        
+        /// Multiplies a 2D vector with a scalar, also called scaling a vector. 
+        /// Same as Vc.setLength. Returns a new 2D vector.
+        static member inline scale  (f:float) (v:Vc) = Vc (v.X * f , v.Y * f )    
 
-        /// Returns vector reversed
-        static member inline reverse (v:Vc) = -v
+        /// Multiplies a 2D vector with a scalar, also called scaling a vector. 
+        /// Same as Vc.scale. Returns a new 2D vector.
+        static member inline setLength(f:float) (v:Vc) = Vc (v.X * f , v.Y * f ) 
+        
+        /// Add to the X part of this 2D vectors together. Returns a new 2D vector.
+        static member inline shiftX x (v:Vc) = Vc (v.X+x, v.Y)
+        
+        /// Add to the Y part of this 2D vectors together. Returns a new 2D vector.
+        static member inline shiftY y (v:Vc) = Vc (v.X,   v.Y+y)
+        
+        /// Returns a boolean indicating wether the absolute value of X and Y is each less than the given tolerance.
+        static member inline isTiny tol (v:Vc) = v.IsTiny tol
 
-        /// Returns vector unitized, fails on zero length vectors
-        static member inline unitize (v:Vc) =  
-            let l = sqrt((v.X * v.X)  + (v.Y * v.Y))            
-            if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "%O is too small for unitizing, Tolerance:%g" v zeroLengthTol
-            UnitVc.createUnchecked( v.X/l , v.Y/l)
-    
-        // Returns vector unitized or Vc(NaN,NaN,NaN) on zero length vectors
-        //static member inline unitizeUnChecked (v:Vc) =  v.UnitizedUnchecked
-       
+        /// Returns the length of the 2D vector 
+        static member inline length  (v:Vc) = v.Length
+
+        /// Returns the squared length of the 2D vector 
+        /// The square length is faster to calculate and often good enough for use cases such as sorting vectors by length.
+        static member inline lengthSq (v:Vc) = v.LengthSq
+        
+        /// Returns a new 2D vector from X and Y parts.
+        static member inline create (x:float, y:float) =  Vc( x , y  )
+        
+        /// Returns a new 2D vector from start and end point.
+        static member inline create (start:Pt,ende:Pt) = ende-start  
+
+        /// Negate or inverse a 2D vectors. Returns a new 2D vector. 
+        /// Same as Vec.flip
+        static member inline reverse  (v:Vc) = -v   
+        
+        /// Negate or inverse a 2D vectors. Returns a new 2D vector. 
+        /// Same as Vec.reverse
+        static member inline flip  (v:Vc) = -v
+
+        /// Returns 2D vector unitized, fails on zero length vectors
+        static member inline unitize (v:Vc) =  v.Unitized
+        
+        /// Unitize 2D vector, if input vector is shorter than 1e-6 the default Unit Vector is returned.
+        static member inline unitizeOrDefault (defaultUnitVector:UnitVc) (v:Vc) = 
+            let l = v.LengthSq
+            if l < 1e-12  then  // = sqrt (1e-06)
+                defaultUnitVector 
+            else
+                let f = 1.0 / sqrt(l)
+                UnitVc.createUnchecked(v.X*f , v.Y*f ) 
+
         /// Returns angle between two UnitVectors in Radians.
         /// Takes vector orientation into account.
         /// Range 0.0 to PI( = 0 to 180 degree)
@@ -257,7 +344,7 @@ module AutoOpenVc =
         /// Range 0 to 180 degrees.
         static member inline angle180 (a:Vc) (b:Vc) = 
             Vc.anglePI a b |>  toDegrees 
-           
+            
         
         /// Returns positive angle for rotating  counter clockwise from Vector 'a' to Vector 'b' .
         /// In Degree
@@ -302,7 +389,20 @@ module AutoOpenVc =
         /// In Degree
         /// Range: 0.0 to 2 PI ( = 0 to 360 degrees)
         static member inline direction360 (v:Vc)  = 
-            v.Direction360        
+            v.Direction360    
+
+        /// Returns a (not unitized) bisector vector in the middle direction. 
+        /// Code : a.Unitized + b.Unitized
+        static member inline bisector (a:Vc) (b:Vc) = a.Unitized + b.Unitized 
+
+        /// Ensure vector has a positive dot product with given orientation vector
+        static member inline matchOrientation (orientationToMatch:Vc) (v:Vc) = 
+            if orientationToMatch * v < 0.0 then -v else v
+        
+
+        /// Check if vector has a positive dot product with given orientation vector
+        static member inline doesOrientationMatch (orientationToCheck:Vc) (v:Vc) = 
+            orientationToCheck * v > 0.0        
 
         /// Rotate the a 2D Vector Counter Clockwise by a 2D Rotation (that has cos and sin precomputed)
         static member inline rotateBy (r:Rotation2D) (v:Vc) = 
@@ -314,12 +414,13 @@ module AutoOpenVc =
         static member inline rotate (angDegree) (vec:Vc) = 
             Vc.rotateBy (Rotation2D.createFromDegrees angDegree) vec  
 
-        
-        //static member inline ( + )  (a:Vc, b:Vc) = Pnt (a.X + b.X , a.Y + b.Y , a.Z + b.Z) // required for Seq.average
-        //static member inline DivideByInt (v:Vc, i:int) = if i<>0 then v / float i else failwithf "DivideByInt 0 %O " pt  // needed by  'Array.average'
-        
-        
-        
+               
+        /// 90 degree rotation counter clockwise
+        static member inline rotate90CCW (v:UnitVc) = UnitVc.createUnchecked( -v.Y,   v.X  )
+
+        /// 90 degree rotation clockwise
+        static member inline rotate90CW (v:UnitVc) = UnitVc.createUnchecked(  v.Y,  -v.X  )  
+
         
         
         

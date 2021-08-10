@@ -100,19 +100,24 @@ type UnitVc =
     /// Subtract a 2D vectors from a 2D unit vector". Returns a new (non-unitized) 2D vector.
     static member inline ( - )  (a:UnitVc, b:Vc) = Vc (a.X - b.X , a.Y - b.Y )
         
-    /// Add two 2D unit vectors together. Returns a new (non-unitized) 2D vector.
+    /// Add two 2D unit vectors together. 
+    /// Returns a new (non-unitized) 2D vector.
     static member inline ( + )  (a:UnitVc, b:UnitVc) = Vc (a.X + b.X , a.Y + b.Y )
     
-    /// Add a 2D unit vectors and a 2D vector together. Returns a new (non-unitized) 2D vector.
+    /// Add a 2D unit vectors and a 2D vector together. 
+    /// Returns a new (non-unitized) 2D vector.
     static member inline ( + )  (a:Vc,     b:UnitVc) = Vc (a.X + b.X , a.Y + b.Y )
     
-    /// Add a 2D vectors and a 2D unit vector together. Returns a new (non-unitized) 2D vector.
+    /// Add a 2D vectors and a 2D unit vector together. 
+    /// Returns a new (non-unitized) 2D vector.
     static member inline ( + )  (a:UnitVc, b:Vc)     = Vc (a.X + b.X , a.Y + b.Y )
         
-    /// Multiplies a 2D unit vector with a scalar, also called scaling a vector. Returns a new (non-unitized) 2D vector.
+    /// Multiplies a 2D unit vector with a scalar, also called scaling a vector. 
+    /// Returns a new (non-unitized) 2D vector.
     static member inline ( * )  (a:UnitVc  , f:float   ) = Vc (a.X * f , a.Y * f )
     
-    /// Multiplies a scalar with a 2D unit vector, also called scaling a vector. Returns a new (non-unitized) 2D vector. 
+    /// Multiplies a scalar with a 2D unit vector, also called scaling a vector. 
+    /// Returns a new (non-unitized) 2D vector. 
     static member inline ( * )  (f:float   , a:UnitVc  ) = Vc (a.X * f , a.Y * f )
     
     /// Dot product, or scalar product of two 2D unit vectors. 
@@ -184,19 +189,23 @@ type Pt =
     
     
     /// Add two 2D points together. Returns a new 2D point.
-    static member inline ( + )  (p:Pt,     v:Vc)     = Pt (p.X + v.X , p.Y + v.Y )
+    static member inline ( + )  (p:Pt, v:Vc) = Pt (p.X + v.X , p.Y + v.Y )
     
-    /// Add a vector to a 2D point. Returns a new 2D point.
-    static member inline ( + )  (p:Pt,     v:UnitVc) = Pt (p.X + v.X , p.Y + v.Y )
+    /// Add a vector to a 2D point. 
+    /// Returns a new 2D point.
+    static member inline ( + )  (p:Pt,v:UnitVc) = Pt (p.X + v.X , p.Y + v.Y )
     
-    /// Add a unit vector to a 2D point. Returns a new 2D point.
-    static member inline ( + )  (a:Pt,     b:Pt)     = Pt (a.X + b.X , a.Y + b.Y )
+    /// Add a unit vector to a 2D point. 
+    /// Returns a new 2D point.
+    static member inline ( + )  (a:Pt,b:Pt) = Pt (a.X + b.X , a.Y + b.Y )
     
-    /// Multiplies a 2D point with a scalar, also called scaling a point. Returns a new 2D point.
-    static member inline ( * )  (a:Pt  , f:float) = Pt (a.X * f , a.Y * f ) // scale Vector
+    /// Multiplies a 2D point with a scalar, also called scaling a point. 
+    /// Returns a new 2D point.
+    static member inline ( * )  (a:Pt, f:float) = Pt (a.X * f , a.Y * f ) 
     
-    /// Multiplies a scalar with a 2D point, also called scaling a point. Returns a new 2D point. 
-    static member inline ( * )  (f:float, a:Pt  ) = Pt (a.X * f , a.Y * f ) // scale Vector   
+    /// Multiplies a scalar with a 2D point, also called scaling a point. 
+    /// Returns a new 2D point. 
+    static member inline ( * )  (f:float, a:Pt  ) = Pt (a.X * f , a.Y * f )   
 
     
     /// Divides a 2D point by a scalar, also be called dividing/scaling a point. Returns a new 2D point.

@@ -4,6 +4,16 @@ open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
 open FsEx.Geo.Util
 
+// TODO:
+// create Rotation and Translation only Matrix class:
+// It would look like this:
+// M11 M21 M31 X41 
+// ___ M22 M32 Y42 
+// ___ ___ M33 Z43 
+// ___ ___ ___ ___
+// would applying this be faster than using quaternion and a translation vector ?
+
+
 /// A 4x4 Transformation Matrix.
 /// The matrix is represented in the following column-vector syntax form:
 /// M11 M21 M31 X41 

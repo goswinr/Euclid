@@ -30,17 +30,19 @@ module AutoOpenUnitVc =
         /// That means the angle between the two vectors is less than 90 degrees.
         member inline v.MatchesOrientation (vv:UnitVc) = v*vv > 0.
 
-         /// 2D cross product. Its Just a scalar
+        /// 2D cross product. 
+        /// Its Just a scalar equal to the area of the parallelogram spanned by the input vectors.
         member inline a.Cross (b:Vc)     = a.X*b.Y - a.Y*b.X
 
-        /// 2D cross product. Its Just a scalar
+        /// 2D cross product. 
+        /// Its Just a scalar equal to the area of the parallelogram spanned by the input vectors.
         member inline a.Cross (b:UnitVc) = a.X*b.Y - a.Y*b.X
 
         /// 90 degree rotation counter clockwise
-        member inline v.Rotated90CCW = UnitVc.createUnchecked( -v.Y,   v.X  )
+        member inline v.Rotate90CCW = UnitVc.createUnchecked( -v.Y,   v.X  )
 
         /// 90 degree rotation clockwise
-        member inline v.Rotated90CW  = UnitVc.createUnchecked(  v.Y,  -v.X  )  
+        member inline v.Rotate90CW  = UnitVc.createUnchecked(  v.Y,  -v.X  )  
 
         /// The diamond angle.
         /// Calculates the proportion of X to Y component. 
@@ -105,10 +107,11 @@ module AutoOpenUnitVc =
         member inline v.AsPt         = Pt( v.X, v.Y)
 
         /// Convert 2D unit vector to 3D Vector using 0.0 as Z value. 
-        /// If you want a different Z value use the member w.WithZ(z)
+        /// If you want a different Z value use the member v.WithZ(z)
         member inline v.AsVec        = Vec(v.X, v.Y, 0.0)
         
-        /// Convert 2D unit vector to 3D Unit Vector using 0.0 as Z value
+        /// Convert 2D unit vector to 3D Unit Vector using 0.0 as Z value.
+        /// If you want a different Z value use the member v.WithZ(z)
         member inline v.AsUnitVec    = UnitVec.createUnchecked(v.X, v.Y, 0.0)
         
         /// Convert 2D unit vector to 3D Point using 0.0 as Z value. 
@@ -365,6 +368,16 @@ module AutoOpenUnitVc =
         static member inline direction360 (v:UnitVc)  = 
             v.Direction360
         
+
+        /// Ensure vector has a positive dot product with given orientation vector
+        static member inline matchOrientation (orientationToMatch:UnitVc) (v:UnitVc) = 
+            if orientationToMatch * v < 0.0 then -v else v
+
+        /// Check if vector has a positive dot product with given orientation vector
+        static member inline doesOrientationMatch (orientationToCheck:UnitVc) (v:UnitVc) = 
+            orientationToCheck * v > 0.0
+
+
         /// Rotate the a 2D UnitVector Counter Clockwise by a 2D Rotation (that has cos and sin precomputed)
         static member inline rotateBy (r:Rotation2D) (v:UnitVc) = 
             UnitVc.createUnchecked (
@@ -377,17 +390,11 @@ module AutoOpenUnitVc =
             UnitVc.rotateBy (Rotation2D.createFromDegrees angDegree) vec  
 
         /// 90 degree rotation counter clockwise
-        static member inline rotated90CCW (v:UnitVc) = UnitVc.createUnchecked( -v.Y,   v.X  )
+        static member inline rotate90CCW (v:UnitVc) = UnitVc.createUnchecked( -v.Y,   v.X  )
 
         /// 90 degree rotation clockwise
-        static member inline rotated90CW (v:UnitVc) = UnitVc.createUnchecked(  v.Y,  -v.X  )  
+        static member inline rotate90CW (v:UnitVc) = UnitVc.createUnchecked(  v.Y,  -v.X  )  
 
-         /// Ensure vector has a positive dot product with given orientation vector
-        static member inline matchOrientation (orientationToMatch:UnitVc) (v:UnitVc) = 
-            if orientationToMatch * v < 0.0 then -v else v
-
-        /// Check if vector has a positive dot product with given orientation vector
-        static member inline doesOrientationMatch (orientationToCheck:UnitVc) (v:UnitVc) = 
-            orientationToCheck * v > 0.0        
+        
  
         

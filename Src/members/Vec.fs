@@ -114,8 +114,8 @@ module AutoOpenVec =
         
         /// Returns a perpendicular horizontal vector. Rotated counterclockwise.
         /// Or Vec.Zero if input is vertical.
-        /// just does Vec(-v.Y, v.X, 0.0) 
-        member inline v.PerpendicularInXY() = Vec(-v.Y, v.X, 0) 
+        /// Just does Vec(-v.Y, v.X, 0.0) 
+        member inline v.PerpendicularInXY = Vec(-v.Y, v.X, 0) 
         
         /// Convert 3D vector to 3D Point.
         member inline v.AsPnt = Pnt(v.X, v.Y, v.Z)
@@ -141,7 +141,7 @@ module AutoOpenVec =
         
         /// Divides the vector by an integer.
         /// (This member is needed by Array.average and similar functions)
-        static member inline DivideByInt (v:UnitVec, i:int) = // needed by 'Array.average'
+        static member inline DivideByInt (v:Vec, i:int) = // needed by 'Array.average'
             if i<>0 then v / float i 
             else FsExGeoDivByZeroException.Raise "FsEx.geo.Vec.DivideByInt is zero %O " v 
         
@@ -179,7 +179,6 @@ module AutoOpenVec =
         static member inline asPnt(v:Vec) = Pnt(v.X, v.Y, v.Z) 
         
 
-
         /// Cross product, of two 3D vectors. 
         /// The resulting vector is perpendicular to both input vectors.
         /// Its length is the area of the parallelogram spanned by the input vectors.
@@ -202,7 +201,7 @@ module AutoOpenVec =
         static member inline cross (a:Vec, b:UnitVec)  = Vec (a.Y * b.Z - a.Z * b.Y ,  a.Z * b.X - a.X * b.Z ,  a.X * b.Y - a.Y * b.X ) 
 
         /// Dot product, or scalar product of two 3D vectors. 
-        /// Returns a float. This float is the cosine of the angle between the two vectors.
+        /// Returns a float. 
         static member inline dot  (a:Vec, b:Vec)   = a.X * b.X + a.Y * b.Y + a.Z * b.Z
         
         /// Dot product, or scalar product of a 3D unit vector with a 3D vector  
@@ -254,15 +253,21 @@ module AutoOpenVec =
         
         /// Add to the Z part of this 3D vectors together. Returns a new 3D vector.
         static member inline shiftZ z (v:Vec) = Vec (v.X,   v.Y,   v.Z+z)
-         
-            
-        static member inline lengthSq (v:Vec) = v.LengthSq
-        static member inline length       (v:Vec) = v.Length
+        
+        /// Returns a boolean indicating wether the absolute value of X,Y and Z is each less than the given tolerance.
         static member inline isTiny   tol (v:Vec) = v.IsTiny tol
 
+        /// Returns the length of the 3D vector 
+        static member inline length       (v:Vec) = v.Length
 
-
+        /// Returns the squared length of the 3D vector 
+        /// The square length is faster to calculate and often good enough for use cases such as sorting vectors by length.
+        static member inline lengthSq (v:Vec) = v.LengthSq
+        
+        /// Returns a new 3D vector from X,Y and Z parts.
         static member inline create (x:float, y:float, z:float) =  Vec( x , y , z )
+        
+        /// Returns a new 3D vector from start and end point.
         static member inline create (start:Pnt,ende:Pnt) = ende-start  
         
         /// Returns a 3D vector from z value and 2D vector.
@@ -271,25 +276,28 @@ module AutoOpenVec =
         /// Project vector to World XY Plane.
         /// Use Vc.ofVec to convert to 2D vector instance
         static member inline projectToXYPlane (v:Vec) = Vec(v.X,v.Y, 0.0)
-        
- 
 
-        /// Same as reverse
+        /// Negate or inverse a 3D vectors. Returns a new 3D vector. 
+        /// Same as Vec.flip
+        static member inline reverse  (v:Vec) = -v   
+        
+        /// Negate or inverse a 3D vectors. Returns a new 3D vector. 
+        /// Same as Vec.reverse
         static member inline flip  (v:Vec) = -v
 
-        /// Same as flip
-        static member inline reverse  (v:Vec) = -v   
-
-        /// Returns vector unitized, fails on zero length vectors
+        /// Flips the vector if Z part is smaller than 0.0
+        static member inline flipToPointUp (v:Vec) = if v.Z < 0.0 then -v else v  
+        
+        /// Returns 3D vector unitized, fails on zero length vectors
         static member inline unitize (v:Vec) =  v.Unitized
     
         // Returns vector unitized or Vec(NaN,NaN,NaN) on zero length vectors
         //static member inline unitizeUnChecked (v:Vec) = v.UnitizedUnchecked
 
-        /// Unitize vector, if input vector is shorter than 1e-6 the default Unit Vector is returned.
+        /// Unitize 3D vector, if input vector is shorter than 1e-6 the default Unit Vector is returned.
         static member inline unitizeOrDefault (defaultUnitVector:UnitVec) (v:Vec) = 
             let l = v.LengthSq
-            if l < 1e-12  then  //sqrt (1e-06)
+            if l < 1e-12  then  // = sqrt (1e-06)
                 defaultUnitVector 
             else
                 let f = 1.0 / sqrt(l)
@@ -344,9 +352,15 @@ module AutoOpenVec =
         /// Code : a.Unitized + b.Unitized
         static member inline bisector (a:Vec) (b:Vec) = a.Unitized + b.Unitized 
 
+        
+        /// Ensure vector has a positive dot product with given orientation vector
+        static member inline matchOrientation (orientationToMatch:Vec) (v:Vec) = 
+            if orientationToMatch * v < 0.0 then -v else v
+        
 
-        /// Flips the vector if Z part is smaller than 0.0
-        static member inline flipToPointUp (v:Vec) = if v.Z < 0.0 then -v else v  
+        /// Check if vector has a positive dot product with given orientation vector
+        static member inline doesOrientationMatch (orientationToCheck:Vec) (v:Vec) = 
+            orientationToCheck * v > 0.0        
 
         // Rotate2D: 
 
@@ -393,6 +407,7 @@ module AutoOpenVec =
                , iz * qw + iw * - qz + ix * - qy - iy * - qx
                )
 
+
         /// Vector length projected into X Y Plane
         /// sqrt( v.X * v.X  + v.Y * v.Y)
         static member inline lengthInXY(v:Vec) = sqrt(v.X * v.X  + v.Y * v.Y)
@@ -408,10 +423,8 @@ module AutoOpenVec =
         /// abs(v.Z) < zeroLengthTol
         /// Fails on tiny (shorter than zeroLengthTol) vectors
         static member inline isHorizontal (v:Vec) =            
-             if v.IsTiny(zeroLengthTol) then FsExGeoDivByZeroException.Raise "Vec Cannot not check very tiny vector for horizontality %O" v
-             abs(v.Z) < zeroLengthTol     
-
-          
+            if v.IsTiny(zeroLengthTol) then FsExGeoDivByZeroException.Raise "Vec Cannot not check very tiny vector for horizontality %O" v
+            abs(v.Z) < zeroLengthTol  
 
         /// Returns positive or negative slope of a vector in Radians.
         /// In relation to XY Plane.
@@ -444,14 +457,7 @@ module AutoOpenVec =
         static member inline orientDown (v:Vec) = 
             if v.Z < 0.0 then v else -v
 
-        /// Ensure vector has a positive dot product with given orientation vector
-        static member inline matchOrientation (orientationToMatch:Vec) (v:Vec) = 
-            if orientationToMatch * v < 0.0 then -v else v
         
-
-        /// Check if vector has a positive dot product with given orientation vector
-        static member inline doesOrientationMatch (orientationToCheck:Vec) (v:Vec) = 
-            orientationToCheck * v > 0.0        
 
         /// Returns a perpendicular horizontal vector. Rotated counterclockwise.        
         /// Just does Vec(-v.Y, v.X, 0.0) 
@@ -484,7 +490,14 @@ module AutoOpenVec =
             let w' = m.M14*x + m.M24*y + m.M34*z + m.M44 // * w 
             let sc = 1.0 / w'           
             Vec(x' * sc, y'* sc, z'* sc)     
-       
+        
+        // TODO create Rotation and Translation only Matrix class and use it here:
+        // It would look like this:
+        // M11 M21 M31 X41 
+        // ___ M22 M32 Y42 
+        // ___ ___ M33 Z43 
+        // ___ ___ ___ ___
+
         // Partially Multiplies the Matrix with a Vector. 
         // Use this only for affine transformations that do NOT include a projection 
         // and if you need maximum performance.

@@ -57,7 +57,7 @@ module Intersect =
 
             // now checking if parameter on second line is inside too:
             else
-                // this might still be a very shallow intersection that counts as pralell
+                // this might still be a very shallow intersection that counts as prallel
                 let bXaInverse = -aXbInverse
                 let tb = getXPara (bp, bXaInverse, ap, au)
 
@@ -74,7 +74,7 @@ module Intersect =
 
         else // Colinear
             // probably no intersection  unless closer than snapThreshold
-            let perp = au.RotatedCCW // unit v
+            let perp = au.Rotated90CCW // unit v
             let vab = ap-bp
             let dot = perp * vab // project vab onto unit vector
             if abs dot < snapThreshold then
