@@ -8,7 +8,7 @@ module Format =
     /// If the absolut value of a float is below this, display ~0.0
     /// default 1e-24
     /// This value can be set for example by hosting apps that have a build in absolute tolerance like Rhino3d
-    let mutable veryCloseToZero = 1e-24 // Double.Epsilon // default = Double.Epsilon = no rounding down
+    let mutable userZeroTolerance = 1e-24 //  default = Double.Epsilon = no rounding down
     
     module private Literals = 
     
@@ -36,7 +36,7 @@ module Format =
         let CloseToZeroNegative = "≈-0.0"
     
         [<Literal>]
-        let VeryCloseToZero = "~0.0"
+        let BelowUserZeroTolerance = "~0.0"
     
     /// Set this to change the printing of floats larger than 10'000
     let mutable thousandSeparator = '\'' // = just one quote '  
@@ -88,7 +88,7 @@ module Format =
 
     /// Formatting with automatic precision
     /// e.g.: 0 digits behind comma if above 1000
-    /// if the value is smaller than veryCloseToZero (1e-24)  '~0.0' will be shown.
+    /// if the value is smaller than 'userZeroTolerance' (1e-24)  '~0.0' will be shown.
     /// if the value is smaller than  (1e-7)  '≈+0.0' will be shown.
     let float  (x:float) = 
         if   Double.IsNaN x then Literals.NaN
@@ -98,21 +98,21 @@ module Format =
         elif x = 0.0 then "0.0" // not "0" as in sprintf "%g"
         else
             let  a = abs x
-            if   a >= 10000.     then x.ToString("#")|> addThousandSeparators
-            elif a >= 1000.      then x.ToString("#")
-            elif a >= 100.       then x.ToString("0.#" , invC)
-            elif a >= 10.        then x.ToString("0.0#" , invC)
-            elif a >= 1.         then x.ToString("0.0##" , invC)
-            elif a >= 0.1        then x.ToString("0.####" , invC) 
-            elif a >= 0.01       then x.ToString("0.#####" , invC)
-            elif a >= 0.001      then x.ToString("0.######" , invC)|> addThousandSeparators
-            elif a >= 0.0001     then x.ToString("0.#######" , invC)|> addThousandSeparators
-            elif a >= 0.00001    then x.ToString("0.########" , invC)|> addThousandSeparators
-            elif a >= 0.000001   then x.ToString("0.#########" , invC)|> addThousandSeparators
-            elif a >= 0.0000001  then x.ToString("0.##########" , invC)|> addThousandSeparators            
-            elif a <  veryCloseToZero then Literals.VeryCloseToZero
-            elif x >= 0.0        then Literals.CloseToZeroPositive
-            else                      Literals.CloseToZeroNegative
+            if   a <  userZeroTolerance then Literals.BelowUserZeroTolerance // do this check up here, value might be very high
+            elif a >= 10000.       then x.ToString("#")|> addThousandSeparators
+            elif a >= 1000.        then x.ToString("#")
+            elif a >= 100.         then x.ToString("0.#" , invC)
+            elif a >= 10.          then x.ToString("0.0#" , invC)
+            elif a >= 1.           then x.ToString("0.0##" , invC)
+            elif a >= 0.1          then x.ToString("0.####" , invC) 
+            elif a >= 0.01         then x.ToString("0.#####" , invC)
+            elif a >= 0.001        then x.ToString("0.######" , invC)|> addThousandSeparators
+            elif a >= 0.000_1      then x.ToString("0.#######" , invC)|> addThousandSeparators
+            elif a >= 0.000_01     then x.ToString("0.########" , invC)|> addThousandSeparators
+            elif a >= 0.000_001    then x.ToString("0.#########" , invC)|> addThousandSeparators
+            elif a >= 0.000_000_1  then x.ToString("0.##########" , invC)|> addThousandSeparators            
+            elif x >= 0.0          then Literals.CloseToZeroPositive
+            else                        Literals.CloseToZeroNegative
 
     /// Formatting with automatic precision
     /// e.g.: 0 digits behind comma if above 1000
@@ -126,7 +126,8 @@ module Format =
         elif x = 0.0f then "0.0" // not "0" as in sprintf "%g"
         else
             let  a = abs x
-            if   a >= 10000.f   then x.ToString("#")|> addThousandSeparators
+            if   a <  float32 userZeroTolerance then Literals.BelowUserZeroTolerance // do this check up here, value might be very high
+            elif a >= 10000.f   then x.ToString("#")|> addThousandSeparators
             elif a >= 1000.f    then x.ToString("#")
             elif a >= 100.f     then x.ToString("0.#" , invC)
             elif a >= 10.f      then x.ToString("0.0#" , invC)
@@ -136,7 +137,6 @@ module Format =
             elif a >= 0.001f    then x.ToString("0.######" , invC)|> addThousandSeparators  
             elif a >= 0.0001f   then x.ToString("0.#######" , invC)|> addThousandSeparators  
             elif a >= 0.00001f  then x.ToString("0.########" , invC)|> addThousandSeparators  
-            elif a >= 0.000001f then x.ToString("0.#########" , invC)|> addThousandSeparators  
-            elif a <  float32(veryCloseToZero) then Literals.VeryCloseToZero
+            elif a >= 0.000001f then x.ToString("0.#########" , invC)|> addThousandSeparators
             elif x >= 0.0f      then Literals.CloseToZeroPositive
             else                     Literals.CloseToZeroNegative
