@@ -187,7 +187,7 @@ module AutoOpenVc =
             let x = ( ^T : (member X : _) vec)
             let y = ( ^T : (member Y : _) vec)
             try Vc(float x, float y) 
-            with e -> FsExGeoDivByZeroException.Raise "Vc.ofXY: %A could not be converted to a FsEx.Geo.Vc:\r\n%A" vec e
+            with e -> FsExGeoException.Raise "Vc.ofXY: %A could not be converted to a FsEx.Geo.Vc:\r\n%A" vec e
 
         /// Accepts any type that has a x and y (lowercase) member that can be converted to a float. 
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
@@ -195,7 +195,7 @@ module AutoOpenVc =
             let x = ( ^T : (member x : _) vec)
             let y = ( ^T : (member y : _) vec)
             try Vc(float x, float y) 
-            with e -> FsExGeoDivByZeroException.Raise "Vc.ofxy: %A could not be converted to a FsEx.Geo.Vc:\r\n%A" vec e
+            with e -> FsExGeoException.Raise "Vc.ofxy: %A could not be converted to a FsEx.Geo.Vc:\r\n%A" vec e
 
 
          /// Create 2D vector from 2D point. 

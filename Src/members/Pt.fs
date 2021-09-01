@@ -184,7 +184,7 @@ module AutoOpenPt =
             let x = ( ^T : (member X: _) pt)
             let y = ( ^T : (member Y: _) pt)
             try Pt(float x, float y) 
-            with e -> FsExGeoDivByZeroException.Raise "Pt.ofXY: %A could not be converted to a FsEx.Geo.Pt:\r\n%A" pt e
+            with e -> FsExGeoException.Raise "Pt.ofXY: %A could not be converted to a FsEx.Geo.Pt:\r\n%A" pt e
 
         /// Accepts any type that has a x and y (lowercase) member that can be converted to a float. 
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
@@ -192,7 +192,7 @@ module AutoOpenPt =
             let x = ( ^T : (member x: _) pt)
             let y = ( ^T : (member y: _) pt)
             try Pt(float x, float y) 
-            with e -> FsExGeoDivByZeroException.Raise "Pt.ofxy: %A could not be converted to a FsEx.Geo.Pt:\r\n%A" pt e
+            with e -> FsExGeoException.Raise "Pt.ofxy: %A could not be converted to a FsEx.Geo.Pt:\r\n%A" pt e
 
         /// Create 2D point from 3D point. Ignoring Z component
         static member inline ofPnt      (p:Pnt)     = Pt (p.X, p.Y)    

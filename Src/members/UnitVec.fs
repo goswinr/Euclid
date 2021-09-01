@@ -162,7 +162,7 @@ module AutoOpenUnitVec =
             let y = ( ^T : (member Y : _) vec)
             let z = ( ^T : (member Z : _) vec)
             try UnitVec.create(float x, float y, float z) 
-            with e -> FsExGeoDivByZeroException.Raise "UnitVec.ofXYZ: %A could not be converted to a FsEx.Geo.UnitVec:\r\n%A" vec e
+            with e -> FsExGeoException.Raise "UnitVec.ofXYZ: %A could not be converted to a FsEx.Geo.UnitVec:\r\n%A" vec e
 
         /// Accepts any type that has a x, y and z (lowercase) member that can be converted to a float. 
         /// Does the unitizing too.
@@ -172,7 +172,7 @@ module AutoOpenUnitVec =
             let y = ( ^T : (member y : _) vec)
             let z = ( ^T : (member z : _) vec)
             try UnitVec.create(float x, float y, float z) 
-            with e -> FsExGeoDivByZeroException.Raise "UnitVec.ofxyz: %A could not be converted to a FsEx.Geo.UnitVec:\r\n%A" vec e
+            with e -> FsExGeoException.Raise "UnitVec.ofxyz: %A could not be converted to a FsEx.Geo.UnitVec:\r\n%A" vec e
 
         /// Create 3D unit vector from 3D point. Does the unitizing too.
         static member inline ofPnt  (pt:Pnt) =  

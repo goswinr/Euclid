@@ -178,7 +178,7 @@ module AutoOpenPnt =
             let y = ( ^T : (member Y : _) pt)
             let z = ( ^T : (member Z : _) pt)
             try Pnt(float x, float y, float z) 
-            with e -> FsExGeoDivByZeroException.Raise "FsEx.Geo.Pnt.ofXYZ: %A could not be converted to a FsEx.Geo.Pnt:\r\n%A" pt e
+            with e -> FsExGeoException.Raise "FsEx.Geo.Pnt.ofXYZ: %A could not be converted to a FsEx.Geo.Pnt:\r\n%A" pt e
 
         /// Accepts any type that has a x, y and z (lowercase) member that can be converted to a float. 
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
@@ -187,7 +187,7 @@ module AutoOpenPnt =
             let y = ( ^T : (member y : _) pt)
             let z = ( ^T : (member z : _) pt)
             try Pnt(float x, float y, float z) 
-            with e -> FsExGeoDivByZeroException.Raise "FsEx.Geo.Pnt.ofxyz: %A could not be converted to a FsEx.Geo.Pnt:\r\n%A" pt e
+            with e -> FsExGeoException.Raise "FsEx.Geo.Pnt.ofxyz: %A could not be converted to a FsEx.Geo.Pnt:\r\n%A" pt e
         
         /// Create 3D point from 2D point. Using 0.0 for Z
         static member inline ofPt (p:Pt)  = Pnt (p.X, p.Y, 0.0) 
