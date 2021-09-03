@@ -42,7 +42,7 @@ type Vec =
     
     /// Format 3D vector into string with nice floating point number formatting of X,Y and Z
     /// But without full type name or length as in v.ToString()
-    member v.AsShortString = sprintf "X=%s, Y=%s, Z=%s" (Format.float v.X) (Format.float v.Y)  (Format.float v.Z) 
+    member v.AsString = sprintf "X=%s, Y=%s, Z=%s" (Format.float v.X) (Format.float v.Y)  (Format.float v.Z) 
 
     /// Negate or inverse a 3D vectors. Returns a new 3D vector.
     static member inline (~- ) (v:Vec)          = Vec( -v.X , -v.Y , -v.Z)
@@ -104,7 +104,7 @@ type UnitVec =
     
     /// Format 3D unit vector into string with nice floating point number formatting of X,Y and Z
     /// But without full type name as in v.ToString()
-    member v.AsShortString = sprintf "X=%s, Y=%s, Z=%s" (Format.float v.X) (Format.float v.Y) (Format.float v.Z) 
+    member v.AsString = sprintf "X=%s, Y=%s, Z=%s" (Format.float v.X) (Format.float v.Y) (Format.float v.Z) 
 
     /// Negate or inverse a 3D unit vectors. Returns a new 3D unit vector.
     static member inline ( ~- ) (v:UnitVec) = UnitVec ( -v.X , -v.Y , -v.Z)   
@@ -194,8 +194,8 @@ type Pnt =
     
     
     /// Format 3D point into string with nice floating point number formatting of X,Y and Z
-    /// But without full type name as in v.ToString()
-    member p.AsShortString = sprintf "X=%s, Y=%s, Z=%s" (Format.float p.X) (Format.float p.Y) (Format.float p.Z) 
+    /// But without full type name as in pt.ToString()
+    member p.AsString = sprintf "X=%s, Y=%s, Z=%s" (Format.float p.X) (Format.float p.Y) (Format.float p.Z) 
 
     /// Subtract one 3D point from another. 
     /// 'a-b' returns a new 3D vector from b to a. 
@@ -234,6 +234,8 @@ type Pnt =
 (*
 from: 
 https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
+
+netstandard2.0 does not support [<IsByRefLike>] nor  [<IsReadOnly>]
 
 [<IsByRefLike>] is another attribute. 
 We are talking a lot about passing value types using memory location addresses instead of doing deep copies. 

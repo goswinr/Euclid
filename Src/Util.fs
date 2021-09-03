@@ -6,6 +6,13 @@ open System
 type FsExGeoException (s:string) = 
     inherit System.Exception(s)
 
+
+   
+
+
+
+
+
     static member Raise msg =  Printf.kprintf (fun s -> raise (FsExGeoException(s))) msg
 
 
@@ -14,6 +21,13 @@ type FsExGeoException (s:string) =
 type FsExGeoDivByZeroException (s:string) = 
     inherit System.Exception(s)
 
+
+   
+
+
+
+
+        
     static member Raise msg = Printf.kprintf (fun s -> raise (FsExGeoDivByZeroException(s))) msg
 
 

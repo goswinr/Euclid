@@ -25,12 +25,13 @@
     </PackageReleaseNotes>
     <Authors>GoswinR</Authors>
     <Copyright>Goswin Rothenthal 2021</Copyright>
-    <Description>An F# Geometry library (without dependencies)</Description>
+    <Description>An F# 2D and 3D geometry library (without dependencies)</Description>
     <PackageDescription>An F# Geometry library (without dependencies)</PackageDescription>
     <!--used on nuget.org-->
-    <WarningLevel>3</WarningLevel>
+    <WarningLevel>5</WarningLevel>
     <!-- WarningLevel 3 is default , see https://github.com/dsyme/fsharp-presentations/blob/master/design-notes/off-by-default-warnings.md -->
   </PropertyGroup>
+  
   <PropertyGroup>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <IncludeSymbols>true</IncludeSymbols>
@@ -47,6 +48,7 @@
     <!--  -->
     <PackageTags>F# Geometry</PackageTags>
   </PropertyGroup>
+  
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="4.5.2" />
     <!-- otherwise the minimum FSharp.Core version would be forced by the SDK used for building it. this would be needlessly too high-->

@@ -6,7 +6,8 @@ open FsEx.Geo.Util
 #nowarn "44" // for hidden constructors via Obsolete Attribute
 
 /// A plane defined by a point and a normal vector
-type [<Struct>] Plane = // Normals are always unitized
+[<Struct;NoEquality;NoComparison>]// because its made up from floats
+type Plane = // Normals are always unitized
     /// The center point of the Plane
     val Origin : Pnt
     /// The unitized normal of the Plane
@@ -17,7 +18,7 @@ type [<Struct>] Plane = // Normals are always unitized
     new (pt,n) = {Origin = pt; Normal = n} // private unchecked constructor, supply unitized values
     
     /// Format PPlane into string with nicely formatted floating point numbers.
-    override pl.ToString() = sprintf "FsEx.Geo.Plane(Origin:%s| Normal:%s)" pl.Origin.AsShortString pl.Normal.AsShortString
+    override pl.ToString() = sprintf "FsEx.Geo.Plane(Origin:%s| Normal:%s)" pl.Origin.AsString pl.Normal.AsString
 
     /// Create Plane, normal vector gets unitized in constructor
     static member create(pt,normal:Vec) = 

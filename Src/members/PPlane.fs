@@ -13,10 +13,10 @@ module AutoOpenPPlane =
     type PPlane with  
 
         /// Evaluate at 3D parameter
-        member p.At (px:float, py:float, pz:float) = p.Origin + p.Xax*px + p.Yax*py + p.Zax*pz
+        member p.At (px:float, py:float, pz:float) = p.Origin + p.Xaxis*px + p.Yaxis*py + p.Zaxis*pz
         
         /// Evaluate at 2D parameter ( Z = 0.0)
-        member p.AtXY (px:float, py:float) = p.Origin + p.Xax*px + p.Yax*py 
+        member p.AtXY (px:float, py:float) = p.Origin + p.Xaxis*px + p.Yaxis*py 
 
         /// Returns the World Coordinate System Plane at World Origin
         /// X-axis = World X-axis 
@@ -57,21 +57,21 @@ module AutoOpenPPlane =
         /// Builds Plane at first point , X-axis to second Point,
         static member from2Pts (a:Pnt) (b:Pnt) = PPlane.fromPtX a (b-a)
 
-        static member translateX (d:float) (pl:PPlane) = PPlane(pl.Origin + pl.Xax*d, pl.Xax, pl.Yax, pl.Zax) 
+        static member translateX (d:float) (pl:PPlane) = PPlane(pl.Origin + pl.Xaxis*d, pl.Xaxis, pl.Yaxis, pl.Zaxis) 
     
-        static member translateY (d:float) (pl:PPlane) = PPlane(pl.Origin + pl.Yax*d, pl.Xax, pl.Yax, pl.Zax) 
+        static member translateY (d:float) (pl:PPlane) = PPlane(pl.Origin + pl.Yaxis*d, pl.Xaxis, pl.Yaxis, pl.Zaxis) 
     
         /// Same as PPlane.offset
-        static member translateZ (d:float) (pl:PPlane) = PPlane(pl.Origin + pl.Zax*d, pl.Xax, pl.Yax, pl.Zax) 
+        static member translateZ (d:float) (pl:PPlane) = PPlane(pl.Origin + pl.Zaxis*d, pl.Xaxis, pl.Yaxis, pl.Zaxis) 
     
         /// Same as PPlane.translateZ
-        static member offset (d:float) (pl:PPlane) = PPlane(pl.Origin + pl.Zax*d, pl.Xax, pl.Yax, pl.Zax) 
+        static member offset (d:float) (pl:PPlane) = PPlane(pl.Origin + pl.Zaxis*d, pl.Xaxis, pl.Yaxis, pl.Zaxis) 
 
-        static member flipOnY (pl:PPlane) = PPlane(pl.Origin , -pl.Xax, pl.Yax, -pl.Zax) 
+        static member flipOnY (pl:PPlane) = PPlane(pl.Origin , -pl.Xaxis, pl.Yaxis, -pl.Zaxis) 
     
-        static member flipOnX (pl:PPlane) = PPlane(pl.Origin , pl.Xax, -pl.Yax, -pl.Zax) 
+        static member flipOnX (pl:PPlane) = PPlane(pl.Origin , pl.Xaxis, -pl.Yaxis, -pl.Zaxis) 
     
-        static member rotateOnZ180 (pl:PPlane) = PPlane(pl.Origin , -pl.Xax, -pl.Yax, pl.Zax) 
+        static member rotateOnZ180 (pl:PPlane) = PPlane(pl.Origin , -pl.Xaxis, -pl.Yaxis, pl.Zaxis) 
 
         /// Transforms the plane by the given matrix
         /// If the transformation includes a shear the only X-axis can be kept.
@@ -79,9 +79,9 @@ module AutoOpenPPlane =
         /// The returned PPlane has orthogonal unit vectors
         static member transform (m:Matrix) (pl:PPlane) = 
             let o = Pnt.transform m pl.Origin
-            let x = UnitVec.transformBy3x3PartOnly m pl.Xax
-            let y = UnitVec.transformBy3x3PartOnly m pl.Yax
-            let z = UnitVec.transformBy3x3PartOnly m pl.Zax 
+            let x = UnitVec.transformBy3x3PartOnly m pl.Xaxis
+            let y = UnitVec.transformBy3x3PartOnly m pl.Yaxis
+            let z = UnitVec.transformBy3x3PartOnly m pl.Zaxis 
             // test if any shear happened:           
             if abs(x*y) < zeroLengthTol && abs(x*z) < zeroLengthTol && abs(y*z) < zeroLengthTol then 
                 PPlane(o,x.Unitized,y.Unitized,z.Unitized) // unitize to ignore any scaling
@@ -91,4 +91,4 @@ module AutoOpenPPlane =
         /// Rotate Plane 180 Degrees around Z-axis if the Y-axis orientation does not match World Y (pl.Yax.Y < 0.0)
         /// To ensure that Y is always positive. For example for showing Text 
         static member rotateZ180IfYNegative (pl:PPlane) = 
-            if pl.Yax.Y < 0.0 then PPlane.rotateOnZ180 pl else pl
+            if pl.Yaxis.Y < 0.0 then PPlane.rotateOnZ180 pl else pl

@@ -37,7 +37,7 @@ type Vc =
     
     /// Format 2D vector into string with nice floating point number formatting of X and Y
     /// But without full type name or length as in v.ToString()
-    member v.AsShortString = sprintf "X=%s, Y=%s" (Format.float v.X) (Format.float v.Y) 
+    member v.AsString = sprintf "X=%s, Y=%s" (Format.float v.X) (Format.float v.Y) 
     
 
     /// Negate or inverse a 2D vectors. Returns a new 2D vector.
@@ -95,7 +95,7 @@ type UnitVc =
     
     /// Format 2D unit vector into string with nice floating point number formatting of X and Y
     /// But without full type name as in v.ToString()
-    member v.AsShortString = sprintf "X=%s, Y=%s" (Format.float v.X) (Format.float v.Y) 
+    member v.AsString = sprintf "X=%s, Y=%s" (Format.float v.X) (Format.float v.Y) 
 
     /// Negate or inverse a 2D unit vectors. Returns a new 2D unit vector.
     static member inline (~- )  (v:UnitVc) = UnitVc( -v.X , -v.Y )
@@ -185,7 +185,7 @@ type Pt =
     
     /// Format 2D point into string with nice floating point number formatting of X and Y
     /// But without full type name as in p.ToString()
-    member p.AsShortString = sprintf "X=%s, Y=%s" (Format.float p.X) (Format.float p.Y) 
+    member p.AsString = sprintf "X=%s, Y=%s" (Format.float p.X) (Format.float p.Y) 
 
     /// Subtract one 2D point from another. 
     /// 'a-b' returns a new 2D vector from b to a. 
@@ -232,6 +232,8 @@ type Pt =
 (*
 from: 
 https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
+
+netstandard2.0 does not support [<IsByRefLike>] nor  [<IsReadOnly>]
         
 [<IsByRefLike>] is another attribute. 
 We are talking a lot about passing value types using memory location addresses instead of doing deep copies. 

@@ -4,7 +4,8 @@ open System
 open FsEx.Geo.Util
 
 /// a finite line in 3D represneted by a 3D start and 3D end point.
-type [<Struct>] Line =
+[<Struct;NoEquality;NoComparison>]// because its made up from floats
+type Line =
     val From : Pnt
     val To   : Pnt
     

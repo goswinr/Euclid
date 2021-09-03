@@ -10,7 +10,7 @@ namespace FsEx.Geo
 
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
 
-/// A immutable Parametrized Plane  or Frame with X, Y and Z Direction
+/// A immutable Parametrized Plane or Frame with X, Y and Z Direction.
 /// This struct is called 'PPlane' because 'Plane' refers to an un-oriented plane consisting only of a Origin and a Z-axis.
 [<Struct; NoEquality; NoComparison>] // because its made up from floats
 [<IsReadOnly>]
@@ -20,18 +20,18 @@ type PPlane =
     val Origin: Pnt
     
     /// The local X-axis of this PPlane  
-    val Xax: UnitVec 
+    val Xaxis: UnitVec 
     
     /// The local Y-axis of this PPlane  
-    val Yax: UnitVec 
+    val Yaxis: UnitVec 
     
     /// The local Z-axis of this PPlane  
-    val Zax: UnitVec 
+    val Zaxis: UnitVec 
     
     /// Internal Only. Create a Parametrized Plane with X, Y and Z Direction
-    internal new (origin, axisX, axisY, axisZ)  =  {Origin=origin; Xax=axisX; Yax=axisY; Zax=axisZ}
+    internal new (origin, axisX, axisY, axisZ)  =  {Origin=origin; Xaxis=axisX; Yaxis=axisY; Zaxis=axisZ}
     
     /// Format PPlane into string with nicely formatted floating point numbers.
-    override pl.ToString() = sprintf "FsEx.Geo.PPlane(Origin:%s| X-ax:%s| Y-ax=%s| Z-ax:%s)" pl.Origin.AsShortString pl.Xax.AsShortString pl.Yax.AsShortString pl.Zax.AsShortString
+    override pl.ToString() = sprintf "FsEx.Geo.PPlane(Origin:%s| X-ax:%s| Y-ax=%s| Z-ax:%s)" pl.Origin.AsString pl.Xaxis.AsString pl.Yaxis.AsString pl.Zaxis.AsString
 
     // see extension members in folder 'members'

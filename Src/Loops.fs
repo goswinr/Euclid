@@ -132,7 +132,8 @@ type Loop private ( pts:ResizeArray<Pt>
     member lo.ContainsPoint(pt:Pt) =  
         // this implementation using the closest two segments is always correct.
         // faster implementations such as counting the crossings of a horizontal ray do fail if several loop segments are on the X-axis and the test point too.
-        if not <| lo.ExpandedBoundingRect.Contains(pt) then  // the bounding Rectangle includes an expansion by snap SnapThreshold
+        let rect = lo.ExpandedBoundingRect
+        if not <| rect.Contains(pt) then  // the bounding Rectangle includes an expansion by snap SnapThreshold
             PointLoopRel.Out
         else
             let ps = lo.Points
@@ -229,7 +230,7 @@ type Loop private ( pts:ResizeArray<Pt>
                 let l = v.Length
                 let i = ii-1 // because loop starts at 1            
                 uvs.[ i] <- UnitVc.createUnchecked( v.X/l , v.Y/l) // no check for div by zero needed,  since minSpacing is already checked
-                bs.[  i] <- BRect.create(t, n, snapThreshold)
+                bs.[  i] <- BRect.create(t, n)|> BRect.expandSave snapThreshold
                 lens.[i] <- l
                 //xy.[xyi  ] <- t.X
                 //xy.[xyi+1] <- t.Y

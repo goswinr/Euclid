@@ -13,6 +13,7 @@ module Similarity2D =
     /// The bounding Rectangle of the points is used as a fast and first check for similarity.
     /// Within one list of points the order does not matter, but each location must exist only once 
     /// in order to be consider similar within the tolerance with another SimilaritySubGroup
+    [<NoEquality;NoComparison>]// because its made up from Pt
     type SimilaritySubGroup =  { 
         category:string
         bRect:BRect
@@ -20,6 +21,7 @@ module Similarity2D =
         //duplicate points within tolerance will most likely lead to not recognized similarity (not all indices will be covered in simPts)
         } 
     
+    [<NoEquality;NoComparison>]// because its made up from Pt
     type SimilarityMainGroup = {   
         extend: Pt // represents the max value of a bounding Rectangle ,  min value must be x0, y0
         groups: SimilaritySubGroup[] // must be sorted by 'category' property. for Array.forall2 function       

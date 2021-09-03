@@ -508,9 +508,9 @@ type Matrix =
     /// Also called Change of Basis
     static member createToPlane(p:PPlane) =
         Matrix(
-            p.Xax.X , p.Yax.X , p.Zax.X ,  p.Origin.X , 
-            p.Xax.Y , p.Yax.Y , p.Zax.Y ,  p.Origin.Y , 
-            p.Xax.Z , p.Yax.Z , p.Zax.Z ,  p.Origin.Z , 
+            p.Xaxis.X , p.Yaxis.X , p.Zaxis.X ,  p.Origin.X , 
+            p.Xaxis.Y , p.Yaxis.Y , p.Zaxis.Y ,  p.Origin.Y , 
+            p.Xaxis.Z , p.Yaxis.Z , p.Zaxis.Z ,  p.Origin.Z , 
             0       ,       0 ,        0,            1 )
             
             
