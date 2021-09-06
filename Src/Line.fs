@@ -3,10 +3,13 @@ namespace FsEx.Geo
 open System
 open FsEx.Geo.Util
 
-/// a finite line in 3D represneted by a 3D start and 3D end point.
+/// A finite line in 3D. Represented by a 3D start and 3D end point.
 [<Struct;NoEquality;NoComparison>]// because its made up from floats
 type Line =
+    /// The Start point of the Line
     val From : Pnt
+
+    /// The End point of the Line
     val To   : Pnt
     
     //Create Line from 3D start point and 3D end point.
@@ -21,9 +24,14 @@ type Line =
     /// Same as ln.Tangent
     member inline ln.Vector = ln.To-ln.From
     
+    /// Check if the line has same stating and ending point.
     member inline ln.IsZeroLength = ln.Tangent.IsZero
     
-    member inline ln.IsTiny tol = ln.Tangent.IsTiny tol
+    /// Check if line is shorten than tolerance.
+    member inline ln.IsTiny tol = ln.Tangent.Length < tol
+    
+    /// Check if line is shorten than Squared tolerance.
+    member inline ln.IsTinySq tol = ln.Tangent.LengthSq < tol
     
     /// Evaluate line at a given parameter ( parameters 0.0 to 1.0 are on the line )
     member inline ln.At (p:float) = ln.From + p*(ln.To-ln.From)
@@ -39,13 +47,13 @@ type Line =
     member inline ln.ClosestPointParameter (pt:Pnt) = 
         let v = ln.Tangent
         let len = v.LengthSq
-        if len < 1e-9 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line.ClosestPointParameter faild on very short line %A %A" ln pt
+        if len < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line.ClosestPointParameter failed on very short line %O %O" ln pt
         -((ln.From-pt) * v) / len //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
     
     /// Distance to infinite line
     member inline ln.DistanceToPoint (pt:Pnt) = 
         let len = ln.Length
-        if len < 1e-9 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line.DistanceToPoint failed on very short line %A %A" ln pt    
+        if len < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line.DistanceToPoint failed on very short line %O %O" ln pt    
         (Vec.cross(pt-ln.From,pt-ln.To)).Length / len //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
     
     /// Returns closest point on infinite line, use Line.ClPtParam to check domain.
@@ -58,8 +66,10 @@ type Line =
     
     override ln.ToString() = sprintf "FsEx.Geo.Line(%O to %O)" ln.From ln.To
 
-    //-----------------------------------------------------------------------------------
-    // STATIC MEMBERS
+    //-------------------------------------------------------------------
+    //------------------------static members---------------------------
+    //-------------------------------------------------------------------
+
 
     static member inline createFromVec (v:Vec) = Line(Pnt(0.,0.,0.),Pnt(v.X,v.Y,v.Z))
 
@@ -82,7 +92,7 @@ type Line =
     /// Finds point at given distance from line start
     static member inline pointAtDistance dist (ln:Line) = 
         let l=ln.Length in 
-        if l < 1e-6 then FsExGeoDivByZeroException.Raise " Line %O to short for finding point at a Distance" ln
+        if l < 1e-9 then FsExGeoDivByZeroException.Raise " Line %O to short for finding point at a Distance" ln
         ln.At (dist/l)        
 
     /// Returns new Line from point at Parameter a to point at Parameter b
@@ -91,7 +101,7 @@ type Line =
     /// Returns new Line with given length, going out from start in direction of end
     static member inline withLengthFromStart len (ln:Line) = Line(ln.From, Pnt.distPt(ln.From,ln.To,len))
     
-    /// Returns new Line terminationg at LineEnd with given length coming from direction of start.
+    /// Returns new Line ending at current LineEnd with given length coming from direction of start.
     static member inline withLengthToEnd len (ln:Line) = Line(Pnt.distPt (ln.To,ln.From,len) ,ln.To)
 
     static member inline closestPointParameter pt (ln:Line)  = ln.ClosestPointParameter pt
@@ -102,7 +112,7 @@ type Line =
 
     /// Set Line start point 
     static member inline setStart pt (ln:Line) = Line (pt, ln.To)   
-      
+    
     /// Set Line end point    
     static member inline setEnd pt (ln:Line) = Line (ln.From, pt)
 
@@ -114,12 +124,12 @@ type Line =
     /// Fails on parallel Lines.
     static member inline intersectLine (l:Line) (ll:Line) =        
         let ba, cd, bd = l.From - l.To , ll.From - ll.To , l.From - ll.From
-        if ba.IsTiny 1e-9 then FsExGeoException.Raise "FsEx.Geo.xLineLine: l too short: l: %O ll: %O" l ll
-        if cd.IsTiny 1e-9 then FsExGeoException.Raise "FsEx.Geo.xLineLine: ll too short:l: %O ll: %O" l ll 
+        if ba.IsTiny 1e-12 then FsExGeoException.Raise "FsEx.Geo.xLineLine: l too short: l: %O ll: %O" l ll
+        if cd.IsTiny 1e-12 then FsExGeoException.Raise "FsEx.Geo.xLineLine: ll too short:l: %O ll: %O" l ll 
         let x1, y1, z1 = - ba*ba ,   cd*ba ,   bd*ba 
         let x2, y2, z2 =   ba*cd , - cd*cd , - bd*cd
         let bAse = x2*y1 - x1*y2        
-        if abs bAse < 1e-9 then FsExGeoException.Raise "FsEx.Geo.intersectLine: Lines are parallel: l: %O ll: %O" l ll 
+        if abs bAse < 1e-12 then FsExGeoException.Raise "FsEx.Geo.intersectLine: Lines are parallel: l: %O ll: %O" l ll 
         else (y2*z1 - y1*z2)/bAse , -(x2*z1 - x1*z2)/bAse
         
     

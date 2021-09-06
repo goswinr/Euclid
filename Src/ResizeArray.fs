@@ -2,8 +2,37 @@ namespace FsEx.Geo
 
 open System
 
+module internal Array = 
+
+    /// Returns the index of the smallest element
+    let  minIndex (xs:'T[]) = 
+        if xs.Length < 1 then raise <| ArgumentException(sprintf "FsEx.Geo.Array.minIndex: Count must be at least one: %A"  xs)
+        let mutable f = xs.[0]
+        let mutable mf = f
+        let mutable ii = 0        
+        for i=1 to xs.Length-1 do
+            f <- xs.[i]
+            if f < mf then
+                ii <- i
+                mf <- f
+        ii
+
+    /// Returns the index of the biggest element
+    let  maxIndex (xs:'T[]) = 
+        if xs.Length < 1 then raise <| ArgumentException(sprintf "FsEx.Geo.Array.maxIndex: Count must be at least one: %A"  xs)
+        let mutable f = xs.[0]
+        let mutable mf = f
+        let mutable ii = 0        
+        for i=1 to xs.Length-1 do
+            f <- xs.[i]
+            if f > mf then
+                ii <- i
+                mf <- f
+        ii    
+
+
 [<AutoOpen>]
-module AutoOpenResizeArray =
+module internal AutoOpenResizeArray =
 
     type Collections.Generic.List<'T> with
     

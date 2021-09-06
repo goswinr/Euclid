@@ -14,16 +14,16 @@ type Points private () =
     /// The sign is negative if the loop is clockwise.
     /// Last and first point should be the same.
     static member getSignedArea(ps:ResizeArray<Pt>) = //
-     //https://helloacm.com/sign-area-of-irregular-polygon/
-     let mutable area = 0.0
-     let mutable t = ps.[0]
-     for i=1 to ps.Count-1 do
-         let n = ps.[i]
-         let a = t.X - n.X
-         let b = n.Y + t.Y
-         area <- area + a*b
-         t <- n
-     area * 0.5    
+        //https://helloacm.com/sign-area-of-irregular-polygon/
+        let mutable area = 0.0
+        let mutable t = ps.[0]
+        for i=1 to ps.Count-1 do
+            let n = ps.[i]
+            let a = t.X - n.X
+            let b = n.Y + t.Y
+            area <- area + a*b
+            t <- n
+        area * 0.5    
 
 
     /// Returns the closest 3D point index form a 3D point list  to a given 3D point
@@ -51,7 +51,7 @@ type Points private () =
                 mid <- d
                 mi <- i
         mi
-   
+    
     /// Returns the closest point form a 3D point list to a given 3D point
     static member closestPoint (pts:ResizeArray<Pnt>, pt:Pnt) : Pnt= 
         pts.[Points.closestPointIdx (pts, pt)]
@@ -116,7 +116,7 @@ type Points private () =
         if ys.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.minDistBetweenPointSets<Pt>: empty List of Points: ys"
         let (i,j) = Points.closestPointsIdx (xs, ys)
         Pt.distance xs.[i]  ys.[j]
-   
+    
 
     /// Find the index of the 3D point that has the biggest distance to any 3D point from the other set
     /// basically the most lonely point in 'findPointFrom' list with respect to 'checkAgainst' list
@@ -172,13 +172,13 @@ type Points private () =
     static member  mostDistantPoint (findPointFrom:ResizeArray<Pnt>, checkAgainst:ResizeArray<Pnt>) = 
         let i,_ = Points.mostDistantPointIdx (findPointFrom, checkAgainst)
         findPointFrom.[i]       
-       
+        
     /// Find the 2D point that has the biggest distance to any 2D point from another set
     static member mostDistantPoint (findPointFrom:ResizeArray<Pt>, checkAgainst:ResizeArray<Pt>) = 
         let i,_ = Points.mostDistantPointIdx (findPointFrom, checkAgainst)
         findPointFrom.[i]
-   
-   
+    
+    
     /// Culls 3D points if they are to close to previous or next item
     /// Last and first 3D points stay the same
     static member cullDuplicatePointsInSeq (pts:ResizeArray<Pnt>, tolerance)  = 

@@ -31,7 +31,6 @@
     <WarningLevel>5</WarningLevel>
     <!-- WarningLevel 3 is default , see https://github.com/dsyme/fsharp-presentations/blob/master/design-notes/off-by-default-warnings.md -->
   </PropertyGroup>
-  
   <PropertyGroup>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <IncludeSymbols>true</IncludeSymbols>
@@ -48,7 +47,6 @@
     <!--  -->
     <PackageTags>F# Geometry</PackageTags>
   </PropertyGroup>
-  
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="4.5.2" />
     <!-- otherwise the minimum FSharp.Core version would be forced by the SDK used for building it. this would be needlessly too high-->
@@ -63,6 +61,7 @@
     <Compile Include="Src/Quaternion.fs" />
     <Compile Include="Src/PPlane.fs" />
     <Compile Include="Src/Matrix.fs" />
+    
     <Compile Include="Src/members/UnitVc.fs" />
     <Compile Include="Src/members/Vc.fs" />
     <Compile Include="Src/members/Pt.fs" />
@@ -70,6 +69,7 @@
     <Compile Include="Src/members/Vec.fs" />
     <Compile Include="Src/members/Pnt.fs" />
     <Compile Include="Src/members/PPlane.fs" />
+
     <Compile Include="Src/Line.fs" />
     <Compile Include="Src/Plane.fs" />
     <Compile Include="Src/BRect.fs" />
@@ -78,6 +78,8 @@
     <Compile Include="Src/Intersect.fs" />
     <Compile Include="Src/ResizeArray.fs" />
     <Compile Include="Src/Points.fs" />
+    <Compile Include="Src/Polyline.fs" />
+
     <Compile Include="Src/Similarity.fs" />
     <Compile Include="Src/DebugDraw.fs" />
     <Compile Include="Src/Loops.fs" />
