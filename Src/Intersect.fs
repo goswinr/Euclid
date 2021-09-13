@@ -121,3 +121,28 @@ module Intersect =
         |BfromLeft  (ta, _ ) -> FromLeft  (ap + au * (max 0.0 (min al ta))) // clamp point to actually be on line even if it is not quite in case of PreStart or PostEnd
         |BfromRight (ta, _ ) -> FromRight (ap + au * (max 0.0 (min al ta))) 
     *)
+
+
+
+    /// Calculates the intersection of a finite line with a triangle 
+    /// Returns Some(Pnt) or None if no intersection found.
+    let lineTriangle(line:Line, p1 :Pnt ,p2 :Pnt, p3 :Pnt) : Pnt option  = 
+        // https://stackoverflow.com/questions/42740765/intersection-between-line-and-triangle-in-3d
+        let inline tetrahedronVolumeSigned(a:Pnt, b:Pnt, c:Pnt, d:Pnt) = 
+            // computes the signed Volume of a Tetrahedron            
+            ((Vec.cross( b-a, c-a)) * (d-a)) / 6.0
+
+        let q1 = line.From
+        let q2 = line.To
+        let s1 = sign (tetrahedronVolumeSigned(q1,p1,p2,p3))
+        let s2 = sign (tetrahedronVolumeSigned(q2,p1,p2,p3))
+        if s1 <> s2 then
+            let s3 = sign (tetrahedronVolumeSigned(q1,q2,p1,p2))
+            let s4 = sign (tetrahedronVolumeSigned(q1,q2,p2,p3))
+            let s5 = sign (tetrahedronVolumeSigned(q1,q2,p3,p1))
+            if s3 = s4 && s4 = s5 then
+                let n = Vec.cross(p2-p1,p3-p1)
+                let t = ((p1-q1) * n) / ((q2-q1) * n)
+                Some (q1 + t * (q2-q1))
+            else None
+        else None
