@@ -12,12 +12,45 @@ type Polyline =
     /// The Origin Corner of the Box.
     val Points: ResizeArray<Pnt>
 
+    /// Interal constructor. Uses input List without copying it.
     internal new (points: ResizeArray<Pnt>) = { Points = points }
 
-        /// Nicely formatted string representation of the Box including its size.
+        
+    /// Nicely formatted string representation of the Box including its size.
     override pl.ToString() = 
         if pl.Points.Count = 0 then "An empty FsEx.Geo.Polyline."
         else sprintf"FsEx.Geo.Polyline with %d points from %s to %s" pl.Points.Count pl.Points.First.AsString pl.Points.Last.AsString      
+    
+    /// Creates a copy of the Polyline
+    member inline p.Clone(): Polyline = 
+        let ps = p.Points
+        Polyline.createDirectlyUnsafe(ps.GetRange(0,ps.Count))
+
+    /// Gets first Point of Polyline
+    member p.Start = 
+        if p.Points.Count < 2 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Polyline.Start failed on polyline with less than 2 points %O" p
+        p.Points.First
+    
+    /// Gets last or end Point of Polyline
+    member p.End = 
+        if p.Points.Count < 2 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Polyline.Start failed on polyline with less than 2 points %O" p
+        p.Points.Last
+    
+    /// Reverse order of Polyline in place
+    member p.ReverseInPlace() = 
+        p.Points.Reverse()
+
+    /// Return new Polyline in reversed Order
+    member p.Reverse () = 
+        let n = p.Clone()
+        n.Points.Reverse()
+        n
+
+    /// Return new Polyline in reversed Order
+    member p.IsCounterClockwise () = 
+        let n = p.Clone()
+        n.Points.Reverse()
+        n
 
 
     /// Returns the point at a given parameter on the polyline.
@@ -101,26 +134,40 @@ type Polyline =
     //------------------------static members-----------------------------
     //-------------------------------------------------------------------
 
+
+    /// Gets first Point of Polyline
+    static member start (p:Polyline) = 
+        if p.Points.Count < 2 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Polyline.Start failed on polyline with less than 2 points %O" p
+        p.Points.First
+    
+    /// Gets last or end Point of Polyline
+    static member ende (p:Polyline) = 
+        if p.Points.Count < 2 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Polyline.Start failed on polyline with less than 2 points %O" p
+        p.Points.Last
+    
+    /// Reverse order of Polyline in place
+    static member inline reverseInPlace (p:Polyline) = p.ReverseInPlace()
+
+    /// Returns new Polyline in reversed Order
+    static member inline reverse (p:Polyline) = p.Reverse()       
+
     /// Returns the point at a given parameter on the polyline.
     /// The integer part of the parameter is the index of the segment that the point is on.
     /// The fractional part of the parameter is the parameter form 0.0 to 1.0 on the segment.
     /// The domain Polyline starts at 0.0 and ends at point count. 
-    static member evaluate (pl:Polyline) t = pl.Evaluate t
+    static member inline evaluate (pl:Polyline) t = pl.Evaluate t
 
     /// Returns the parameter on the polyline that is the closet point to the given point.
     /// The integer part of the parameter is the index of the segment that the point is on.
     /// The fractional part of the parameter is the parameter form 0.0 to 1.0 on the segment.
     /// The domain Polyline starts at 0.0 and ends at point count. 
-    static member closestParameter (pl:Polyline) (pt:Pnt) = pl.ClosetParameter pt
-
+    static member inline closestParameter (pl:Polyline) (pt:Pnt) = pl.ClosetParameter pt
 
     /// Returns the point on the polyline that is the closet point to the given point.
-    static member closestPoint (pl:Polyline) (pt:Pnt) = pl.ClosetPoint pt
-
+    static member inline closestPoint (pl:Polyline) (pt:Pnt) = pl.ClosetPoint pt
 
     /// Returns the Distance of the test point to the closest point on the polyline.
-    static member distanceTo (pl:Polyline) (pt:Pnt) = pl.DistanceTo pt
-
+    static member inline distanceTo (pl:Polyline) (pt:Pnt) = pl.DistanceTo pt
 
     /// Create a new Polyline by copying over all points.
     static member create(points: seq<Pnt>) = Polyline(ResizeArray(points))

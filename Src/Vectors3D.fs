@@ -156,7 +156,7 @@ type UnitVec =
     /// For use as a faster constructor
     /// Requires correct input of unitized values
     static member inline createUnchecked(x,y,z)  = UnitVec(x,y,z)
-
+    
     /// Create 3D unit vector. Does the unitizing too.
     static member inline create (x:float, y:float, z:float) = 
         // this member cant be an extension method because it is used with SRTP. 
@@ -164,7 +164,8 @@ type UnitVec =
         let l = sqrt(x*x  + y*y + z*z)                       
         if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "UnitVec.create: x:%g, y:%g and z:%g are too small for creating a Unit vector, Tolerance:%g" x y z zeroLengthTol 
         let li = 1. / l
-        UnitVec.createUnchecked( li*x , li*y , li*z ) 
+        UnitVec.createUnchecked( li*x , li*y , li*z )
+    
 
 /// A immutable 3D Point. Made up from 3 floats: X, Y, and Z.
 /// ( 2D Points are called 'Pt' ) 

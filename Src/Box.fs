@@ -200,7 +200,7 @@ type Box =
         let z = b.Zaxis * (distHei / b.Height)        
         Box(b.Origin-x-y-z, b.Xaxis+x*2., b.Yaxis+y*2., b.Zaxis+z*2.)
 
-    /// Give PPlane and size
+    /// Give PPlane and sizes
     static member createFromPlane (pl:PPlane,x,y,z) = 
         Box(pl.Origin, pl.Xaxis*x, pl.Yaxis*y, pl.Zaxis*z)
 

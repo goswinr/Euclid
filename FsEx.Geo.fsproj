@@ -81,6 +81,8 @@
     <Compile Include="Src/Polyline.fs" />
 
     <Compile Include="Src/Similarity.fs" />
+
+    <Compile Include="Src\Topology.fs" />
     <Compile Include="Src/DebugDraw.fs" />
     <Compile Include="Src/Loops.fs" />
   </ItemGroup>

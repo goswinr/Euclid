@@ -230,14 +230,14 @@ type Points private () =
     /// Search starts from the segment with the most points.
     /// Both start and end point of each 2D point list is checked for adjacency
     static member findContinuosPoints (ptss: ResizeArray<ResizeArray<Pt>>, tolGap:float)  = 
-        let i =  ptss |> ResizeArray.maxIndBy ResizeArray.length
+        let i =  ptss |> ResizeArray.maxIndexBy ResizeArray.length
         let res = ptss.Pop(i)
         let mutable loop = true
         while loop && ptss.Count > 0 do
             //first try to append to end
             let ende = res.[res.Count-1]
-            let si = ptss |> ResizeArray.minIndBy ( fun ps -> Pt.distanceSq ende ps.First )
-            let ei = ptss |> ResizeArray.minIndBy ( fun ps -> Pt.distanceSq ende ps.Last)
+            let si = ptss |> ResizeArray.minIndexBy ( fun ps -> Pt.distanceSq ende ps.First )
+            let ei = ptss |> ResizeArray.minIndexBy ( fun ps -> Pt.distanceSq ende ps.Last)
             let sd = Pt.distance ende ptss.[si].First
             let ed = Pt.distance ende ptss.[ei].Last
             if   sd < tolGap && sd < ed then  res.AddRange(                ptss.Pop(si))
@@ -245,8 +245,8 @@ type Points private () =
             else
                 //search from start
                 let start = res.[0]
-                let si = ptss |> ResizeArray.minIndBy ( fun ps -> Pt.distanceSq start ps.First )
-                let ei = ptss |> ResizeArray.minIndBy ( fun ps -> Pt.distanceSq start ps.Last)
+                let si = ptss |> ResizeArray.minIndexBy ( fun ps -> Pt.distanceSq start ps.First )
+                let ei = ptss |> ResizeArray.minIndexBy ( fun ps -> Pt.distanceSq start ps.Last)
                 let sd = Pt.distance start ptss.[si].First
                 let ed = Pt.distance start ptss.[ei].Last
                 if   sd < tolGap && sd < ed then res.InsertRange(0, ResizeArray.rev(ptss.Pop(si)) )
@@ -260,14 +260,14 @@ type Points private () =
     /// Search starts from the segment with the most points.
     /// Both start and end point of each 3D point list is checked for adjacency
     static member findContinuosPoints (ptss: ResizeArray<ResizeArray<Pnt>>, tolGap:float)  = 
-        let i =  ptss |> ResizeArray.maxIndBy ResizeArray.length
+        let i =  ptss |> ResizeArray.maxIndexBy ResizeArray.length
         let res = ptss.Pop(i)
         let mutable loop = true
         while loop && ptss.Count > 0 do
             //first try to append to end
             let ende = res.[res.Count-1]
-            let si = ptss |> ResizeArray.minIndBy ( fun ps -> Pnt.distanceSq ende ps.First )
-            let ei = ptss |> ResizeArray.minIndBy ( fun ps -> Pnt.distanceSq ende ps.Last)
+            let si = ptss |> ResizeArray.minIndexBy ( fun ps -> Pnt.distanceSq ende ps.First )
+            let ei = ptss |> ResizeArray.minIndexBy ( fun ps -> Pnt.distanceSq ende ps.Last)
             let sd = Pnt.distance ende ptss.[si].First
             let ed = Pnt.distance ende ptss.[ei].Last
             if   sd < tolGap && sd < ed then  res.AddRange(                ptss.Pop(si))
@@ -275,8 +275,8 @@ type Points private () =
             else
                 //search from start
                 let start = res.[0]
-                let si = ptss |> ResizeArray.minIndBy ( fun ps -> Pnt.distanceSq start ps.First )
-                let ei = ptss |> ResizeArray.minIndBy ( fun ps -> Pnt.distanceSq start ps.Last)
+                let si = ptss |> ResizeArray.minIndexBy ( fun ps -> Pnt.distanceSq start ps.First )
+                let ei = ptss |> ResizeArray.minIndexBy ( fun ps -> Pnt.distanceSq start ps.Last)
                 let sd = Pnt.distance start ptss.[si].First
                 let ed = Pnt.distance start ptss.[ei].Last
                 if   sd < tolGap && sd < ed then res.InsertRange(0, ResizeArray.rev(ptss.Pop(si)) )

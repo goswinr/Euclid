@@ -18,7 +18,7 @@ module AutoOpenUnitVec =
 
 
     type UnitVec with 
-
+        
         /// Returns the length of the 3D vector projected into World X-Y plane.
         member inline v.LengthInXY = sqrt (v.X*v.X + v.Y*v.Y)
 
@@ -138,7 +138,14 @@ module AutoOpenUnitVec =
 
         //----------------------------------------------------------------------------------------------
         //--------------------------  Static Members  --------------------------------------------------
-        //----------------------------------------------------------------------------------------------
+        //---------------------------------------------------------------------------------------------- 
+
+        /// Create 3D unit vector from start and endpoint. Does the unitizing too.
+        static member inline create (fromPnt:Pnt, toPnt:Pnt) = 
+            let x = toPnt.X - fromPnt.X
+            let y = toPnt.Y - fromPnt.Y
+            let z = toPnt.Z - fromPnt.Z
+            UnitVec.create( x , y , z )
 
         /// Returns the World X-axis with length one: UnitVec(1,0,0)
         static member inline XAxis  = UnitVec.createUnchecked (1.0 , 0.0, 0.0)

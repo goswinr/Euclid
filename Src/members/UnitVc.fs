@@ -133,6 +133,12 @@ module AutoOpenUnitVc =
         //----------------------------------------------------------------------------------------------
         //--------------------------  Static Members  --------------------------------------------------
         //----------------------------------------------------------------------------------------------
+
+        /// Create 2D unit vector from start and endpoint. Does the unitizing too.
+        static member inline create (fromPnt:Pt, toPnt:Pt) = 
+            let x = toPnt.X - fromPnt.X
+            let y = toPnt.Y - fromPnt.Y            
+            UnitVc.create( x , y  )
         
         /// Returns the World X-axis with length one: UnitVc(1,0)
         static member inline XAxis  = UnitVc.createUnchecked (1.0 , 0.0)

@@ -76,7 +76,7 @@ module internal AutoOpenResizeArray =
         /// Get and remove last item from ResizeArray
         member this.Pop()  = 
             #if DEBUG
-            if this.Count=0 then FsExGeoException.Raise " rarr.Pop() failed for empty ResizeArray< %O>" typeof<'T>
+            if this.Count=0 then FsExGeoException.Raise " this.Pop() failed for empty ResizeArray< %O>" typeof<'T>
             #endif
             let i = this.Count - 1
             let v = this.[i]
@@ -98,8 +98,8 @@ module internal AutoOpenResizeArray =
         // -------------------------------------------------------
 
         /// this.Count
-        static member inline length (rarr: ResizeArray<'T>) = 
-            rarr.Count           
+        static member inline length (xs: ResizeArray<'T>) = 
+            xs.Count           
 
         /// <summary>Sorts the elements of a ResizeArray, using the given projection for the keys and returning a new ResizeArray.
         /// Elements are compared using <see cref="M:Microsoft.FSharp.Core.Operators.compare"/>.
@@ -107,20 +107,20 @@ module internal AutoOpenResizeArray =
         /// This is NOT a stable sort, i.e. the original order of equal elements is not necessarily preserved.
         /// For a stable sort, consider using Seq.sort.</summary>
         /// <param name="projection">The function to transform ResizeArray elements into the type that is compared.</param>
-        /// <param name="rarr">The input ResizeArray.</param>
+        /// <param name="xs">The input ResizeArray.</param>
         /// <returns>The sorted ResizeArray.</returns>
-        static member sortBy<'T, 'Key when 'Key : comparison> (projection : 'T -> 'Key) (rarr : ResizeArray<'T>) : ResizeArray<'T> = 
-            let r = rarr.GetRange(0,rarr.Count) // fastest way to create a shallow copy
+        static member sortBy<'T, 'Key when 'Key : comparison> (projection : 'T -> 'Key) (xs : ResizeArray<'T>) : ResizeArray<'T> = 
+            let r = xs.GetRange(0,xs.Count) // fastest way to create a shallow copy
             r.Sort (fun x y -> Operators.compare (projection x) (projection y))
             r
         
         /// <summary>Returns the index of the first element in the ResizeArray
         /// that satisfies the given predicate.</summary>
         /// <param name="predicate">The function to test the input elements.</param>
-        /// <param name="rarr">The input ResizeArray.</param>
+        /// <param name="xs">The input ResizeArray.</param>
         /// <returns>The index of the first element that satisfies the predicate, or <c>None</c>.</returns>
-        static member  tryFindIndex (predicate:'T->bool) (rarr: ResizeArray<'T>) : option<int>= 
-            let elementIndex =   rarr.FindIndex (System.Predicate predicate)
+        static member  tryFindIndex (predicate:'T->bool) (xs: ResizeArray<'T>) : option<int>= 
+            let elementIndex =   xs.FindIndex (System.Predicate predicate)
             match elementIndex with
             | -1 ->
                 None
@@ -128,43 +128,43 @@ module internal AutoOpenResizeArray =
                 Some index
 
         /// <summary>Returns a new ResizeArray with the elements in reverse order.</summary>
-        /// <param name="rarr">The input ResizeArray.</param>
+        /// <param name="xs">The input ResizeArray.</param>
         /// <returns>The reversed ResizeArray.</returns>
-        static member rev (rarr: ResizeArray<'T>) = 
-            let len = rarr.Count
+        static member rev (xs: ResizeArray<'T>) = 
+            let len = xs.Count
             let result = ResizeArray (len)
             for i = len - 1 downto 0 do
-                result.Add rarr.[i]
+                result.Add xs.[i]
             result
 
         /// <summary>Returns the index of the smallest of all elements of the ResizeArray, compared via Operators.max on the function result.</summary>
         /// <param name="projection">The function to transform the elements into a type supporting comparison.</param>
-        /// <param name="rarr">The input ResizeArray.</param>        
+        /// <param name="xs">The input ResizeArray.</param>        
         /// <returns>The index of the smallest element.</returns>
-        static member minIndBy  (projection : 'T -> 'Key) (rarr: ResizeArray<'T>) : int = 
-            if rarr.Count = 0 then FsExGeoException.Raise "FsEx.Geo.ResizeArray.minIndBy: Failed on empty ResizeArray< %O>" typeof<'T>
-            let mutable f = projection rarr.[0]
+        static member minIndexBy  (projection : 'T -> 'Key) (xs: ResizeArray<'T>) : int = 
+            if xs.Count = 0 then FsExGeoException.Raise "FsEx.Geo.ResizeArray.minIndBy: Failed on empty ResizeArray< %O>" typeof<'T>
+            let mutable f = projection xs.[0]
             let mutable mf = f
             let mutable ii = 0
-            for i=1 to rarr.Count-1 do
-                f <- projection rarr.[i]
+            for i=1 to xs.Count-1 do
+                f <- projection xs.[i]
                 if f < mf then
                     ii <- i
                     mf <- f
             ii 
-          
-        /// <summary>Returns the index of the greatest of all elements of the ResizeArray, compared via Operators.max on the function result.</summary>
-        /// <param name="projection">The function to transform the elements into a type supporting comparison.</param>
-        /// <param name="rarr">The input ResizeArray.</param>        
-        /// <returns>The index of the maximum element.</returns>
-        static member  maxIndBy (projection : 'T -> 'Key) (rarr: ResizeArray<'T>) : int =
-            if rarr.Count = 0 then FsExGeoException.Raise "FsEx.Geo.ResizeArray.maxIndBy: Failed on empty ResizeArray< %O>" typeof<'T>
-            let mutable f = projection rarr.[0]
-            let mutable mf = f
-            let mutable ii = 0
-            for i=1 to rarr.Count-1 do
-                f <- projection rarr.[i]
-                if f > mf then
-                    ii <- i
-                    mf <- f
-            ii
+
+        /// <summary>Returns the index of the greatest of all elements of the ResizeArray, compared via Operators.max on the function result.</summary> 
+        /// <param name="projection">The function to transform the elements into a type supporting comparison.</param> 
+        /// <param name="xs">The input ResizeArray.</param>         
+        /// <returns>The index of the maximum element.</returns> 
+        static member  maxIndexBy (projection : 'T -> 'Key) (xs: ResizeArray<'T>) : int = 
+            if xs.Count = 0 then FsExGeoException.Raise "FsEx.Geo.ResizeArray.maxIndBy: Failed on empty ResizeArray< %O>" typeof<'T> 
+            let mutable f = projection xs.[0] 
+            let mutable mf = f 
+            let mutable ii = 0 
+            for i=1 to xs.Count-1 do 
+                f <- projection xs.[i] 
+                if f > mf then 
+                    ii <- i 
+                    mf <- f 
+            ii         
