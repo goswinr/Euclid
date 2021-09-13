@@ -370,7 +370,6 @@ module AutoOpenUnitVc =
         static member inline doesOrientationMatch (orientationToCheck:UnitVc) (v:UnitVc) = 
             orientationToCheck * v > 0.0
 
-
         /// Rotate the a 2D UnitVector Counter Clockwise by a 2D Rotation (that has cos and sin precomputed)
         static member inline rotateBy (r:Rotation2D) (v:UnitVc) = 
             UnitVc.createUnchecked (

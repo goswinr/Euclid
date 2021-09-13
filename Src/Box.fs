@@ -158,9 +158,13 @@ type Box =
         b.Origin + b.Xaxis * xParameter + b.Yaxis * yParameter + b.Zaxis * zParameter
 
 
-     /// Calculates the volume of the Box.
+    /// Calculates the volume of the Box.
     member inline b.Volume  =  
         b.Xaxis.Length*b.Yaxis.Length*b.Zaxis.Length 
+
+    /// Gets the Plane that this box is based on.
+    member inline b.PPlane  =  
+        PPlane.fromOriginXaxisAndYaxis b.Origin b.Xaxis b.Yaxis
 
     //-------------------------------------------------------------------
     //------------------------static members-----------------------------
