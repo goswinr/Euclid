@@ -92,9 +92,7 @@ type Line3D =
         
     /// Returns a unit vector of the line Direction
     member inline ln.UnitTangent = 
-        UnitVec.create(ln.ToX-ln.FromX,ln.ToY-ln.FromY,ln.ToZ-ln.FromZ)
-    
-    
+        UnitVec.create(ln.ToX-ln.FromX,ln.ToY-ln.FromY,ln.ToZ-ln.FromZ) 
 
     /// Check if the line has same starting and ending point.
     member inline ln.IsZeroLength = 
@@ -147,7 +145,33 @@ type Line3D =
                 ln.FromZ+v.Z,
                 ln.ToX+v.X,
                 ln.ToY+v.Y,
-                ln.ToZ+v.Z) 
+                ln.ToZ+v.Z)
+
+    /// Returns a Line3D moved by a given distance in X direction.
+    member inline ln.TranslateX (distance:float) = 
+        Line3D( ln.FromX+distance,
+                ln.FromY,
+                ln.FromZ,
+                ln.ToX+distance,
+                ln.ToY,
+                ln.ToZ)
+    /// Returns a Line3D moved by a given distance in Y direction.
+    member inline ln.TranslateY (distance:float) = 
+        Line3D( ln.FromX,
+                ln.FromY+distance,
+                ln.FromZ,
+                ln.ToX,
+                ln.ToY+distance,
+                ln.ToZ)
+                
+    /// Returns a Line3D moved by a given distance in Z direction.
+    member inline ln.TranslateZ (distance:float) = 
+        Line3D( ln.FromX,
+                ln.FromY,
+                ln.FromZ+distance,
+                ln.ToX,
+                ln.ToY,
+                ln.ToZ+distance) 
 
     /// Assumes Line3D to be infinite!
     /// Returns the parameter at which a point is closest to the infinit line.
@@ -195,15 +219,15 @@ type Line3D =
     /// Returns closest point on (finite) Line.
     member ln.ClosestPoint (p:Pnt) = 
         //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
-        let x = ln.ToX-ln.FromX
-        let y = ln.ToY-ln.FromY
-        let z = ln.ToZ-ln.FromZ
+        let x = ln.ToX - ln.FromX
+        let y = ln.ToY - ln.FromY
+        let z = ln.ToZ - ln.FromZ
         let lenSq = x*x + y*y + z*z
         if lenSq < 1e-18 then // corresponds to a line Length of 1e-9
             FsExGeoDivByZeroException.Raise "FsEx.Geo.Line3D.ClosestPoint failed on very short line %O %O" ln p
-        let u = ln.FromX-p.X
-        let v = ln.FromY-p.Y
-        let w = ln.FromZ-p.Z
+        let u = ln.FromX - p.X
+        let v = ln.FromY - p.Y
+        let w = ln.FromZ - p.Z
         let dot = x*u + y*v + z*w
         let t = -dot/lenSq
         if t<0.0 then
@@ -220,23 +244,23 @@ type Line3D =
     /// Returns Square distance from point to infinite line.
     member ln.DistanceSqFromPointInfinite(p:Pnt) =  
         //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
-        let x = ln.ToX-ln.FromX
-        let y = ln.ToY-ln.FromY
-        let z = ln.ToZ-ln.FromZ
+        let x = ln.ToX - ln.FromX
+        let y = ln.ToY - ln.FromY
+        let z = ln.ToZ - ln.FromZ
         let lenSq = x*x + y*y + z*z
         if lenSq < 1e-18 then // corresponds to a line Length of 1e-9
             FsExGeoDivByZeroException.Raise "FsEx.Geo.Line3D.DistanceFromPointInfinite failed on very short line %O %O" ln p
-        let u = ln.FromX-p.X
-        let v = ln.FromY-p.Y
-        let w = ln.FromZ-p.Z
+        let u = ln.FromX - p.X
+        let v = ln.FromY - p.Y
+        let w = ln.FromZ - p.Z
         let dot = x*u + y*v + z*w
         let t = -dot/lenSq    
         let x' = ln.FromX + x*t
         let y' = ln.FromY + y*t
         let z' = ln.FromZ + z*t
-        let u' = x'-p.X
-        let v' = y'-p.Y
-        let w' = z'-p.Z
+        let u' = x' - p.X
+        let v' = y' - p.Y
+        let w' = z' - p.Z
         u'*u' + v'*v' + w'*w'
 
     /// Assumes Line3D to be infinite!
@@ -378,6 +402,15 @@ type Line3D =
     /// Translate a Line3D by a vector. (same as Line3D.move)
     static member inline translate (v:Vec) (ln:Line3D) = ln.Translate(v)
 
+    /// Returns a Line3D moved by a given distance in X direction.
+    static member inline translateX (distance:float) (ln:Line3D) = ln.TranslateX(distance)
+
+    /// Returns a Line3D moved by a given distance in Y direction.
+    static member inline translateY (distance:double) (ln:Line3D) = ln.TranslateY(distance)
+                
+    /// Returns a Line3D moved by a given distance in Z direction.
+    static member inline translateZ (distance:double) (ln:Line3D) = ln.TranslateZ(distance)
+
     /// Translate a Line3D by a vector. (same as Line3D.translate)
     static member inline move (v:Vec) (ln:Line3D) = ln.Translate(v)
 
@@ -395,19 +428,16 @@ type Line3D =
     /// If it is smaller than 0.0 or bigger than 1.0 it is outside of the finit line.
     static member inline closestParameterInfinite (p:Pnt) (ln:Line3D)  = ln.ClosestParameterInfinite p
 
-
     /// Return the parameter at which a point is closest to the (finite) line.
     /// The result is between 0.0 and 1.0.
     static member inline closestParameter (p:Pnt) (ln:Line3D)  = ln.ClosestParameter p 
 
     /// Assumes Line3D to be infinite!
     /// Returns closest point on infinite Line.
-    static member inline closestPointInfinit (p:Pnt) (ln:Line3D)  = ln.ClosestPointInfinit p
-        
+    static member inline closestPointInfinit (p:Pnt) (ln:Line3D)  = ln.ClosestPointInfinit p        
 
     /// Returns closest point on (finite) Line.
-    static member inline closestPoint (p:Pnt) (ln:Line3D)  = ln.ClosestPoint p
-    
+    static member inline closestPoint (p:Pnt) (ln:Line3D)  = ln.ClosestPoint p    
 
     /// Assumes Line3D to be infinite!
     /// Returns Square distance from point to infinite line.
@@ -513,29 +543,38 @@ type Line3D =
                 ln.ToZ + z*len/l , 
                 ln.ToX , 
                 ln.ToY , 
-                ln.ToZ )
-    
+                ln.ToZ )    
+   
 
-    /// Checks if two finit 3D lines do intersect.
+    /// Fast check if two 3D lines are in the same 3D Plane.
+    /// This can be used as a fast check for intersection.
+    /// If you need an exact intersection test purely based on distance use Line3D.intersectLine
     /// It first calculates the signed volume of the Parallelepiped define by three vectors from the four corners of the lines.
     /// Then it checks if it is smaller than given volumeTolerance fo Parallelepiped.
-    /// Using the VolumeTolerance makes a positive result not only dependent on the distance of the two lines from each other but also on their lengths.
-    /// This is a fast check for intersection.
-    /// If you need an exact intersection test purely based on distance use Line3D.intersectLine
+    /// Using the VolumeTolerance makes a positive result not only dependent on the distance of the two lines from each other but also on their lengths. 
     static member inline doLinesIntersectTol volumeTolerance (l:Line3D) (ll:Line3D) =  
-        let ux = l.ToX-l.FromX
-        let uy = l.ToY-l.FromY
-        let uz = l.ToZ-l.FromZ
-        let vx = ll.FromX-l.FromX
-        let vy = ll.FromY-l.FromY
-        let vz = ll.FromZ-l.FromZ
-        let wx = ll.ToX-l.FromX
-        let wy = ll.ToY-l.FromY
-        let wz = ll.ToZ-l.FromZ
-        let volume = ux*vy*wz + + vx*wy*uz + wx*uy*vz - wx*vy*uz - vx*uy*wz - ux*wy*vz // determinate of 3 vectors
-        abs(volume) < volumeTolerance
+        // Two non-parallel lines p1+Rv1 and p2+Rv2 intersect if and only if (v1×v2)⋅(p1−p2)=0
+        // https://math.stackexchange.com/questions/697124/how-to-determine-if-two-lines-in-3d-intersect
+        // vector of line l:
+        let ax = l.ToX-l.FromX
+        let ay = l.ToY-l.FromY
+        let az = l.ToZ-l.FromZ
+        //vector of line ll:
+        let bx = ll.ToX-ll.FromX
+        let by = ll.ToY-ll.FromY
+        let bz = ll.ToZ-ll.FromZ
+        // cross product:
+        let cx = ay * bz - az * by   
+        let cy = az * bx - ax * bz   
+        let cz = ax * by - ay * bx 
+        // vector from start of l to start of ll:
+        let vx = l.FromX-ll.FromX
+        let vy = l.FromY-ll.FromY
+        let vz = l.FromZ-ll.FromZ
+        let dot = cx*vx + cy*vy + cz*vz
+        abs(dot) < volumeTolerance
 
-     /// Checks if two finit 3D lines do intersect.
+    /// Checks if two finit 3D lines do intersect.
     /// It first calculates the signed volume of the Parallelepiped define by three vectors from the four corners of the lines.
     /// Then it checks if it is smaller than Util.zeroLengthTol.
     /// Using the volume of the Parallelepiped makes a positive result not only dependent on the distance of the two lines from each other but also on their lengths.
@@ -550,15 +589,76 @@ type Line3D =
     /// Fails on parallel Lines.
     /// First parameter is on l, second parameter is on ll.
     static member inline intersectLineParametersInfinite (l:Line3D) (ll:Line3D) =        
-         // TODO can be optimized by inlining floats.
-        let ba, cd, bd = l.From - l.To , ll.From - ll.To , l.From - ll.From
-        //if ba.IsTiny 1e-12 then FsExGeoException.Raise "FsEx.Geo.Line3D.intersectLine: l too short:  %O other: %O" l ll
-        //if cd.IsTiny 1e-12 then FsExGeoException.Raise "FsEx.Geo.Line3D.intersectLine: ll too short: %O other: %O" ll l 
-        let x1, y1, z1 = - ba*ba ,   cd*ba ,   bd*ba 
-        let x2, y2, z2 =   ba*cd , - cd*cd , - bd*cd
-        let bAse = x2*y1 - x1*y2        
-        if abs bAse < 1e-12 then FsExGeoException.Raise "FsEx.Geo.Line3D.intersectLine: Lines are parallel l: %O and ll: %O" l ll 
-        else (y2*z1 - y1*z2)/bAse , -(x2*z1 - x1*z2)/bAse
+        //https://stackoverflow.com/a/34604574/969070 but DP and DQ in wrong order !        
+        let ax = l.FromX - l.ToX  
+        let ay = l.FromY - l.ToY  
+        let az = l.FromZ - l.ToZ
+        let bx = ll.FromX - ll.ToX 
+        let by = ll.FromY - ll.ToY 
+        let bz = ll.FromZ - ll.ToZ
+        let vx = ll.FromX - l.FromX
+        let vy = ll.FromY - l.FromY
+        let vz = ll.FromZ - l.FromZ
+        let a = ax*ax + ay*ay + az*az
+        let b = ax*bx + ay*by + az*bz
+        let c = bx*bx + by*by + bz*bz
+        let d = ax*vx + ay*vy + az*vz
+        let e = bx*vx + by*vy + bz*vz
+        let det = a*c - b*b
+        if abs det < 1e-12 then FsExGeoException.Raise "FsEx.Geo.Line3D.intersectLine: Lines are parallel l: \r\n%O and ll: \r\n%O" l ll
+        let t = (b * e - c * d) / det
+        let u = (a * e - b * d) / det
+        t,u 
+    
+
+    /// Returns the parameters at which two (finite) 3D Lines are closest to each other.
+    /// The results are both between 0.0 and 1.0.
+    /// Fails on parallel Lines.
+    /// First parameter is on l, second parameter is on ll.
+    static member inline intersectLineParameters2 (l:Line3D) (ll:Line3D) = 
+        //https://stackoverflow.com/a/34604574/969070 but DP and DQ in wrong order !        
+        let ax = l.FromX - l.ToX  
+        let ay = l.FromY - l.ToY  
+        let az = l.FromZ - l.ToZ
+        let bx = ll.FromX - ll.ToX 
+        let by = ll.FromY - ll.ToY 
+        let bz = ll.FromZ - ll.ToZ
+        let vx = ll.FromX - l.FromX
+        let vy = ll.FromY - l.FromY
+        let vz = ll.FromZ - l.FromZ
+        let a = ax*ax + ay*ay + az*az
+        let b = ax*bx + ay*by + az*bz
+        let c = bx*bx + by*by + bz*bz
+        let d = ax*vx + ay*vy + az*vz
+        let e = bx*vx + by*vy + bz*vz
+        let det = a*c - b*b
+        if abs det < 1e-12 then FsExGeoException.Raise "FsEx.Geo.Line3D.intersectLine: Lines are parallel l: \r\n%O and ll: \r\n%O" l ll
+        let t = (b * e - c * d) / det
+        let u = (a * e - b * d) / det
+        if isBetween01 t && isBetween01 u then
+            t,u 
+        else
+            t,u
+            // let tc = 
+                
+            //     if u < 0.0 then 
+            //         let x = ln.ToX-ln.FromX
+            //         let y = ln.ToY-ln.FromY
+            //         let z = ln.ToZ-ln.FromZ
+            //         let lenSq = x*x + y*y + z*z
+            //         if lenSq < 1e-18 then // corresponds to a line Length of 1e-9
+            //             FsExGeoDivByZeroException.Raise "FsEx.Geo.Line3D.ClosestParameterInfinite failed on very short line %O %O" ln p
+            //         let u = ln.FromX-p.X
+            //         let v = ln.FromY-p.Y
+            //         let w = ln.FromZ-p.Z
+            //         let dot = x*u + y*v + z*w
+            //         dot / lenSq
+                
+            //     else t
+
+
+
+
 
     /// Returns the parameters at which two (finite) 3D Lines are closest to each other.
     /// The results are both between 0.0 and 1.0.
@@ -567,6 +667,9 @@ type Line3D =
     static member inline intersectLineParameters (l:Line3D) (ll:Line3D) = 
         let a,b = Line3D.intersectLineParametersInfinite l ll
         clamp01 a, clamp01 b
+
+
+
 
     /// Assumes Lines to be infinite!    
     /// Returns the two points where these two infinite lines are closest to each other.
@@ -590,7 +693,7 @@ type Line3D =
     /// The returned point is exactly on ll.  
     static member intersectLinesInfiniteInOnePoint (l:Line3D) (ll:Line3D) : Pnt = 
         let a,b = Line3D.intersectLinesInfinite l ll
-        if Pnt.distance a b > 1e-6 then FsExGeoException.Raise "FsEx.Geo.Line3D.intersectLinesInfiniteInOnePoint: Lines are not intersecting l: %O and ll: %O" l ll
+        if Pnt.distance a b > 1e-6 then FsExGeoException.Raise "FsEx.Geo.Line3D.intersectLinesInfiniteInOnePoint: Lines are not intersecting l: \r\n%O and ll: \r\n%O" l ll
         b
     
     /// Returns the single points where these two (finite) lines actually intersect each other.
@@ -598,7 +701,7 @@ type Line3D =
     /// The returned point is exactly on ll.  
     static member intersectLinesInOnePoint (l:Line3D) (ll:Line3D) : Pnt = 
         let a,b = Line3D.intersectLines l ll
-        if Pnt.distance a b > 1e-6 then FsExGeoException.Raise "FsEx.Geo.Line3D.intersectLinesInOnePoint: Lines are not intersecting l: %O and ll: %O" l ll
+        if Pnt.distance a b > 1e-6 then FsExGeoException.Raise "FsEx.Geo.Line3D.intersectLinesInOnePoint: Lines are not intersecting l: \r\n%O and ll: \r\n%O" l ll
         b        
         
     /// Assumes Lines to be infinite!    
@@ -623,7 +726,7 @@ type Line3D =
         let z = ln.ToZ - ln.FromZ
         let lenXY = sqrt (x*x + y*y) 
         if lenXY  < 1e-12 then FsExGeoException.Raise "FsEx.Geo.Line3D.offset: Cannot offset vertical Line3D  (by %g) %O" amount ln
-        let ox = -y*amount/lenXY // unitized, horizontal , perpendicular  vector
+        let ox = -y*amount/lenXY  // unitized, horizontal , perpendicular  vector
         let oy =  x*amount/lenXY  // unitized, horizontal , perpendicular  vector
         Line3D( ln.FromX+ox,
                 ln.FromY+oy,

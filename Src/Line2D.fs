@@ -87,7 +87,7 @@ type Line2D =
     member inline ln.IsZeroLength = 
         ln.ToX = ln.FromX &&
         ln.ToY = ln.FromY 
- 
+
     /// Check if line is shorter than tolerance.
     member inline ln.IsTiny tol = 
         ln.Length < tol
@@ -127,6 +127,20 @@ type Line2D =
                 ln.FromY+v.Y,
                 ln.ToX+v.X,
                 ln.ToY+v.Y) 
+
+    /// Returns a Line2D moved by a given distance in X direction.
+    member inline ln.TranslateX (distance:float) = 
+        Line2D( ln.FromX+distance,
+                ln.FromY,
+                ln.ToX+distance,
+                ln.ToY)
+
+    /// Returns a Line2D moved by a given distance in Y direction.
+    member inline ln.TranslateY (distance:float) = 
+        Line2D( ln.FromX,
+                ln.FromY+distance,
+                ln.ToX,
+                ln.ToY+distance)
 
     /// Assumes Line2D to be infinite!
     /// Returns the parameter at which a point is closest to the infinit line.
@@ -273,7 +287,6 @@ type Line2D =
     /// Returns the End point's Y coordinate of the line.
     static member inline toY (l:Line2D) = l.ToY
 
-
     /// Set Line2D start point, returns a new line. 
     static member inline setStart (pt:Pt) (ln:Line2D) = 
         Line2D( pt.X, pt.Y, ln.ToX, ln.ToY)    
@@ -334,6 +347,12 @@ type Line2D =
     /// Translate a Line2D by a vector. (same as Line2D.move)
     static member inline translate (v:Vc) (ln:Line2D) = ln.Translate(v)
 
+    /// Returns a Line2D moved by a given distance in X direction.
+    static member inline translateX (distance:float) (ln:Line2D) = ln.TranslateX(distance)
+
+    /// Returns a Line2D moved by a given distance in Y direction.
+    static member inline translateY (distance:double) (ln:Line2D) = ln.TranslateY(distance)
+
     /// Translate a Line2D by a vector. (same as Line2D.translate)
     static member inline move (v:Vc) (ln:Line2D) = ln.Translate(v)
 
@@ -359,8 +378,7 @@ type Line2D =
         
 
     /// Returns closest point on (finite) Line.
-    static member inline closestPoint (p:Pt) (ln:Line2D)  = ln.ClosestPoint p
-    
+    static member inline closestPoint (p:Pt) (ln:Line2D)  = ln.ClosestPoint p    
 
     /// Assumes Line2D to be infinite!
     /// Returns Square distance from point to infinite line.
@@ -432,8 +450,7 @@ type Line2D =
     /// Returns new Line2D with given length, going out from start in direction of end
     static member inline withLengthFromStart len (ln:Line2D) = 
         let x = ln.ToX-ln.FromX
-        let y = ln.ToY-ln.FromY
-         
+        let y = ln.ToY-ln.FromY        
         let l = sqrt(x*x + y*y )
         if l < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line2D.withLengthFromStart %O to short for finding point at a Distance" ln        
         Line2D( ln.FromX , 

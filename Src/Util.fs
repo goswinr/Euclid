@@ -58,11 +58,15 @@ module Util =
         elif x >  1.0 then  1.0
         else                x
     
-    /// Clamp value between 0.0 and +1
+    /// Clamp value between 0.0 and +1.0
     let inline clamp01 (x:float)= 
         if   x <  0.0 then  0.0
         elif x >  1.0 then  1.0
         else                x    
+    
+    /// Check if value is between 0.0 and +1.0 inclusive.
+    let inline isBetween01 (x:float) = 
+        x >= 0.0 && x <= 1.0
 
     /// A safe arcsine (Inverse Sine) function.
     /// It clamps the input between -1 and 1
