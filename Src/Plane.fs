@@ -33,7 +33,7 @@ type Plane = // Normals are always unitized
 
     static member createFrom3Points (a:Pnt) (b:Pnt) (c:Pnt) =
         let n =  Vec.cross (c-b,a-b)
-        if Vec.isTiny 1e-5 n then FsExGeoException.Raise "FsEx.Geo.Plane.createFrom3Points: the points %O, %O, %O are in one Line, no Plane found" a b c
+        if Vec.isTiny 1e-5 n then FsExGeoException.Raise "FsEx.Geo.Plane.createFrom3Points: the points %O, %O, %O are in one Line3D, no Plane found" a b c
         Plane(a, n.Unitized)
 
     /// Returns signed distance of point to plane, also indicating on which side it is.
@@ -48,8 +48,8 @@ type Plane = // Normals are always unitized
     /// Returns the Angle to another Plane in Degree, ignoring orientation.
     member inline this.AngToPl (pl:Plane) = UnitVec.angle90 this.Normal pl.Normal 
 
-    /// Returns the Angle to a Line in Degree, ignoring orientation.
-    member inline pl.AngleToLine (ln:Line) = UnitVec.angle90 ln.Tangent.Unitized pl.Normal 
+    /// Returns the Angle to a Line3D in Degree, ignoring orientation.
+    member inline pl.AngleToLine (ln:Line3D) = UnitVec.angle90 ln.Tangent.Unitized pl.Normal 
     
 
     static member  normal (p:Plane) = p.Normal
@@ -60,17 +60,17 @@ type Plane = // Normals are always unitized
     
     static member  angle (a:Plane) b = a.AngToPl b
 
-    /// Returns the parameter of intersection point of infinite Line with Plane, fails if they are parallel
-    static member  intersectLineParameter  (ln:Line) (pl:Plane) = 
+    /// Returns the parameter of intersection point of infinite Line3D with Plane, fails if they are parallel
+    static member  intersectLineParameter  (ln:Line3D) (pl:Plane) = 
         let nenner = ln.Tangent * pl.Normal
         if abs nenner < 1e-6 then FsExGeoException.Raise "FsEx.Geo.intersectLineParameter: Lines and Plane are Parallel: %O, %O" ln pl
         (pl.Origin - ln.From) * pl.Normal / nenner
     
-    /// Returns intersection point of infinite Line with Plane, fails if they are parallel
-    static member intersectLine (ln:Line) (pl:Plane) = ln.At <| Plane.intersectLineParameter  ln pl
+    /// Returns intersection point of infinite Line3D with Plane, fails if they are parallel
+    static member intersectLine (ln:Line3D) (pl:Plane) = ln.At <| Plane.intersectLineParameter  ln pl
     
-    /// checks if a finite Line intersects with Plane, fails if they are parallel
-    static member  inline doLinePlaneIntersect (ln:Line) (pl:Plane) = 
+    /// checks if a finite Line3D intersects with Plane, fails if they are parallel
+    static member  inline doLinePlaneIntersect (ln:Line3D) (pl:Plane) = 
         let t = Plane.intersectLineParameter ln pl
         0. <= t && t <= 1.
     

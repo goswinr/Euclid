@@ -40,7 +40,7 @@ module internal AutoOpenResizeArray =
         /// Equal to this.Count - 1
         member inline this.LastIndex = 
             #if DEBUG
-            if this.Count = 0 then FsExGeoException.Raise "FsEx.Geo.ResizeArray.LastIndex: Failed to get LastIndex of of empty ResizeArray< %O>" typeof<'T>
+            if this.Count = 0 then FsExGeoException.Raise "FsEx.Geo.ResizeArray.LastIndex: Failed to get LastIndex of of empty ResizeArray<%O>" typeof<'T>
             #endif
             this.Count - 1
 
@@ -49,34 +49,54 @@ module internal AutoOpenResizeArray =
         member inline this.Last
             with get() = 
                 #if DEBUG
-                if this.Count = 0 then FsExGeoException.Raise "FsEx.Geo.ResizeArray.Last: Failed to get last item of empty ResizeArray< %O>" typeof<'T>
+                if this.Count = 0 then FsExGeoException.Raise "FsEx.Geo.ResizeArray.Last: Failed to get last item of empty ResizeArray<%O>" typeof<'T>
                 #endif
                 this.[this.Count - 1]
             and set (v:'T) = 
                 #if DEBUG
-                if this.Count = 0 then FsExGeoException.Raise "FsEx.Geo.ResizeArray.Last: Failed to set last item of empty ResizeArray< %O> to  %O" typeof<'T> v
+                if this.Count = 0 then FsExGeoException.Raise "FsEx.Geo.ResizeArray.Last: Failed to set last item of empty ResizeArray<%O> to  %O" typeof<'T> v
                 #endif
                 this.[this.Count - 1] <- v
+
+        /// Get (or set) the second last item in the FsEx.Rarr.
+        /// Equal to this.[this.Count - 2]
+        member this.SecondLast
+            with get() = 
+                if this.Count < 2 then  FsExGeoException.Raise  "FsEx.Rarr.SecondLast: Failed to get second last item of ResizeArray<%O>" typeof<'T>
+                this.[this.Count - 2]
+            and set (v:'T) = 
+                if this.Count < 2 then  FsExGeoException.Raise  "FsEx.Rarr.SecondLast: Failed to set second last item of ResizeArray<%O> to  %O" typeof<'T> v
+                this.[this.Count - 2] <- v
 
         /// Get (or set) the first item in the FsEx.Geo.ResizeArray.
         /// Equal to this.[0]
         member inline this.First
             with get() = 
                 #if DEBUG
-                if this.Count = 0 then FsExGeoException.Raise "FsEx.Geo.ResizeArray.First: Failed to get first item of empty ResizeArray< %O>" typeof<'T>
+                if this.Count = 0 then FsExGeoException.Raise "FsEx.Geo.ResizeArray.First: Failed to get first item of empty ResizeArray<%O>" typeof<'T>
                 #endif
                 this.[0]
             and set (v:'T) = 
                 #if DEBUG
-                if this.Count = 0 then FsExGeoException.Raise "FsEx.Geo.ResizeArray.First: Failed to set first item of empty ResizeArray< %O> to  %O" typeof<'T> v
+                if this.Count = 0 then FsExGeoException.Raise "FsEx.Geo.ResizeArray.First: Failed to set first item of empty ResizeArray<%O> to  %O" typeof<'T> v
                 #endif
                 this.[0] <- v
+
+        /// Get (or set) the second item in the FsEx.Rarr.
+        /// Equal to this.[1]
+        member this.Second
+            with get() = 
+                if this.Count < 2 then FsExGeoException.Raise   "FsEx.Rarr.Second: Failed to get second item of ResizeArray<%O>" typeof<'T>
+                this.[1]
+            and set (v:'T) = 
+                if this.Count < 2 then FsExGeoException.Raise   "FsEx.Rarr.Second: Failed to set second item of ResizeArray<%O> to %O" typeof<'T> v
+                this.[1] <- v    
 
 
         /// Get and remove last item from ResizeArray
         member this.Pop()  = 
             #if DEBUG
-            if this.Count=0 then FsExGeoException.Raise " this.Pop() failed for empty ResizeArray< %O>" typeof<'T>
+            if this.Count=0 then FsExGeoException.Raise " this.Pop() failed for empty ResizeArray<%O>" typeof<'T>
             #endif
             let i = this.Count - 1
             let v = this.[i]
@@ -86,8 +106,8 @@ module internal AutoOpenResizeArray =
         /// Get and remove item at index from ResizeArray
         member this.Pop(index:int)  = 
             #if DEBUG
-            if index < 0  then FsExGeoException.Raise "FsEx.Geo.ResizeArray.Pop %O failed for ResizeArray< %O> of %O items, index must be positive." index typeof<'T> this.Count
-            if index >= this.Count then FsExGeoException.Raise "FsEx.Geo.ResizeArray.Pop %O failed for ResizeArray< %O> of %O items." index typeof<'T> this.Count
+            if index < 0  then FsExGeoException.Raise "FsEx.Geo.ResizeArray.Pop %O failed for ResizeArray<%O> of %O items, index must be positive." index typeof<'T> this.Count
+            if index >= this.Count then FsExGeoException.Raise "FsEx.Geo.ResizeArray.Pop %O failed for ResizeArray<%O> of %O items." index typeof<'T> this.Count
             #endif
             let v = this.[index]
             this.RemoveAt(index)
@@ -142,7 +162,7 @@ module internal AutoOpenResizeArray =
         /// <param name="xs">The input ResizeArray.</param>        
         /// <returns>The index of the smallest element.</returns>
         static member minIndexBy  (projection : 'T -> 'Key) (xs: ResizeArray<'T>) : int = 
-            if xs.Count = 0 then FsExGeoException.Raise "FsEx.Geo.ResizeArray.minIndBy: Failed on empty ResizeArray< %O>" typeof<'T>
+            if xs.Count = 0 then FsExGeoException.Raise "FsEx.Geo.ResizeArray.minIndBy: Failed on empty ResizeArray<%O>" typeof<'T>
             let mutable f = projection xs.[0]
             let mutable mf = f
             let mutable ii = 0
@@ -158,7 +178,7 @@ module internal AutoOpenResizeArray =
         /// <param name="xs">The input ResizeArray.</param>         
         /// <returns>The index of the maximum element.</returns> 
         static member  maxIndexBy (projection : 'T -> 'Key) (xs: ResizeArray<'T>) : int = 
-            if xs.Count = 0 then FsExGeoException.Raise "FsEx.Geo.ResizeArray.maxIndBy: Failed on empty ResizeArray< %O>" typeof<'T> 
+            if xs.Count = 0 then FsExGeoException.Raise "FsEx.Geo.ResizeArray.maxIndBy: Failed on empty ResizeArray<%O>" typeof<'T> 
             let mutable f = projection xs.[0] 
             let mutable mf = f 
             let mutable ii = 0 

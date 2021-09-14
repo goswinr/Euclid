@@ -5,11 +5,17 @@ open System
 
 /// provides operations on 2D and 3D points
 [<AbstractClass; Sealed>]
+[<RequireQualifiedAccess>]
 type Points private () = 
 
     // static class, use these attributes [<AbstractClass; Sealed>] to match C# static class
     // and make in visible in C# // https://stackoverflow.com/questions/13101995/defining-static-classes-in-f
     
+    /// Checks if three points are in one line.
+    /// Its does so by checking if the cross product of the vectors between the points is below the tolerance.    
+    static member inline areInLine tol (a:Pnt) (b:Pnt) (c:Pnt) = 
+         // TODO can be optimized by inlining floats.
+        Vec.cross (b-a,c-a) |> Vec.isTiny tol
     
     /// The sign is negative if the loop is clockwise.
     /// Last and first point should be the same.

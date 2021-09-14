@@ -126,7 +126,7 @@ module Intersect =
 
     /// Calculates the intersection of a finite line with a triangle 
     /// Returns Some(Pnt) or None if no intersection found.
-    let lineTriangle(line:Line, p1 :Pnt ,p2 :Pnt, p3 :Pnt) : Pnt option  = 
+    let lineTriangle(line:Line3D, p1 :Pnt ,p2 :Pnt, p3 :Pnt) : Pnt option  = 
         // https://stackoverflow.com/questions/42740765/intersection-between-line-and-triangle-in-3d
         let inline tetrahedronVolumeSigned(a:Pnt, b:Pnt, c:Pnt, d:Pnt) = 
             // computes the signed Volume of a Tetrahedron            
@@ -146,3 +146,18 @@ module Intersect =
                 Some (q1 + t * (q2-q1))
             else None
         else None
+
+        /// Intersects infinite line with cone that has it's Axis on Z-Axis.
+    /// coneRadius -> coneBaseZ -> coneTipZ ->  (ln:Line3D) -> Parameter*Parameter on the line
+    let  lineCone (ln:Line3D, coneRadius, coneBaseZ, coneTipZ) =        
+        let lam = coneRadius / ( coneBaseZ-coneTipZ )
+        let lam = lam * lam
+        let v = ln.Tangent
+        let f2 = lam*v.Z*v.Z - v.X*v.X - v.Y*v.Y
+        if abs f2 < zeroLengthTol then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line3D.xCone failed for special case coneRadius:%g coneBaseZ:%g coneTipZ:%g %O " coneRadius coneBaseZ coneTipZ ln
+        let f1 = 2.*lam*ln.FromZ*v.Z - 2.*lam*v.Z*coneTipZ - 2.*v.Y*ln.FromY - 2.*ln.FromX*v.X
+        let f0 = lam * ln.FromZ*ln.FromZ + lam*coneTipZ*coneTipZ - 2.*ln.FromZ*coneTipZ*lam - ln.FromY*ln.FromY - ln.FromX*ln.FromX
+        let sqrtPart = sqrt(f1**2. - 4.*f2*f0)
+        let div = 1. / (2. * f2)
+        (-f1 + sqrtPart) * div ,
+        (-f1 - sqrtPart) * div

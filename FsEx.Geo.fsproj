@@ -61,7 +61,7 @@
     <Compile Include="Src/Quaternion.fs" />
     <Compile Include="Src/PPlane.fs" />
     <Compile Include="Src/Matrix.fs" />
-    
+
     <Compile Include="Src/members/UnitVc.fs" />
     <Compile Include="Src/members/Vc.fs" />
     <Compile Include="Src/members/Pt.fs" />
@@ -69,8 +69,9 @@
     <Compile Include="Src/members/Vec.fs" />
     <Compile Include="Src/members/Pnt.fs" />
     <Compile Include="Src/members/PPlane.fs" />
-
-    <Compile Include="Src/Line.fs" />
+    
+    <Compile Include="Src/Line2D.fs" />
+    <Compile Include="Src/Line3D.fs" />
     <Compile Include="Src/Plane.fs" />
     <Compile Include="Src/BRect.fs" />
     <Compile Include="Src/BoundingBox.fs" />
@@ -78,11 +79,10 @@
     <Compile Include="Src/Intersect.fs" />
     <Compile Include="Src/ResizeArray.fs" />
     <Compile Include="Src/Points.fs" />
-    <Compile Include="Src/Polyline.fs" />
-
+    <Compile Include="Src/Polyline2D.fs" />
+    <Compile Include="Src/Polyline3D.fs" />
     <Compile Include="Src/Similarity.fs" />
-
-    <Compile Include="Src\Topology.fs" />
+    <Compile Include="Src/Topology.fs" />
     <Compile Include="Src/DebugDraw.fs" />
     <Compile Include="Src/Loops.fs" />
   </ItemGroup>
