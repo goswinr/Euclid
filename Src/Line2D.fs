@@ -108,7 +108,7 @@ type Line2D =
         let y = (ln.ToY+ln.FromY)*0.5        
         Pt(x,y) 
     
-    /// returns the Line2D reversed.
+    /// Returns the Line2D reversed.
     member inline ln.Reversed = 
         Line2D(ln.ToX,ln.ToY,ln.FromX,ln.FromY)  
 
