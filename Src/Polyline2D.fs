@@ -58,12 +58,12 @@ type Polyline2D =
         n.Points.Reverse()
         n
 
-    /// Test if Polyline2D is CounterClockwise when projected in 2D. 
+    /// Test if Polyline2D is CounterClockwise in top view. 
     /// Z values are ignored.
     /// The Polyline2D does not need to be actually closed.
     /// The signed area of the Polyline2D is calculated. 
     /// If it is positive the Polyline2D is CCW.
-    member p.IsCounterClockwiseIn2D () = 
+    member p.IsCounterClockwise() = 
         //https://helloacm.com/sign-area-of-irregular-polygon/
         let ps = p.Points
         let mutable area = 0.0
@@ -83,18 +83,18 @@ type Polyline2D =
     /// The integer part of the parameter is the index of the segment that the point is on.
     /// The fractional part of the parameter is the parameter form 0.0 to 1.0 on the segment.
     /// The domain Polyline2D starts at 0.0 and ends at points.Count - 1.0 . 
-    member pl.Evaluate(t:float) =
+    member pl.EvaluateAt(t:float) =
         let i = int t
         let p = t - float i
         if   i < -1 then 
-            FsExGeoException.Raise "FsEx.Geo.Polyline2D.Evaluate: Parameter %f is less than 0.0" t
+            FsExGeoException.Raise "FsEx.Geo.Polyline2D.EvaluateAt: Parameter %f is less than 0.0" t
         elif i > pl.Points.Count then 
-            FsExGeoException.Raise "FsEx.Geo.Polyline2D.Evaluate: Parameter %f is more than than point count(%d)." t pl.Points.Count 
+            FsExGeoException.Raise "FsEx.Geo.Polyline2D.EvaluateAt: Parameter %f is more than than point count(%d)." t pl.Points.Count 
         elif i =  -1 then 
             if p > 0.9999 then pl.Points.First
-            else FsExGeoException.Raise "FsEx.Geo.Polyline2D.Evaluate: Parameter %f is less than 0.0" t
+            else FsExGeoException.Raise "FsEx.Geo.Polyline2D.EvaluateAt: Parameter %f is less than 0.0" t
         elif i = pl.Points.Count then 
-            if   p > 1e-4 then  FsExGeoException.Raise "FsEx.Geo.Polyline2D.Evaluate: Parameter %f is more than than point count(%d)." t pl.Points.Count 
+            if   p > 1e-4 then  FsExGeoException.Raise "FsEx.Geo.Polyline2D.EvaluateAt: Parameter %f is more than than point count(%d)." t pl.Points.Count 
             else pl.Points.Last
         // return point  if point is almost matching
         elif  p < zeroLengthTol then 
@@ -114,14 +114,14 @@ type Polyline2D =
         let i = int t
         let p = t - float i
         if   i < -1 then 
-            FsExGeoException.Raise "FsEx.Geo.Polyline2D.Evaluate: Parameter %f is less than 0.0" t
+            FsExGeoException.Raise "FsEx.Geo.Polyline2D.EvaluateAt: Parameter %f is less than 0.0" t
         elif i > pl.Points.Count then 
-            FsExGeoException.Raise "FsEx.Geo.Polyline2D.Evaluate: Parameter %f is more than than point count(%d)." t pl.Points.Count 
+            FsExGeoException.Raise "FsEx.Geo.Polyline2D.EvaluateAt: Parameter %f is more than than point count(%d)." t pl.Points.Count 
         elif i =  -1 then 
             if p > 0.9999 then UnitVc.create(pl.Points.First,pl.Points.Second)
-            else FsExGeoException.Raise "FsEx.Geo.Polyline2D.Evaluate: Parameter %f is less than 0.0" t
+            else FsExGeoException.Raise "FsEx.Geo.Polyline2D.EvaluateAt: Parameter %f is less than 0.0" t
         elif i = pl.Points.Count then 
-            if   p > 1e-4 then  FsExGeoException.Raise "FsEx.Geo.Polyline2D.Evaluate: Parameter %f is more than than point count(%d)." t pl.Points.Count 
+            if   p > 1e-4 then  FsExGeoException.Raise "FsEx.Geo.Polyline2D.EvaluateAt: Parameter %f is more than than point count(%d)." t pl.Points.Count 
             else UnitVc.create(pl.Points.SecondLast,pl.Points.Last)
         // return point  if point is almost matching
         else
@@ -129,11 +129,11 @@ type Polyline2D =
         
         
 
-    /// Returns the parameter on the Polyline2D that is the closet point to the given point.
+    /// Returns the parameter on the Polyline2D that is the closest point to the given point.
     /// The integer part of the parameter is the index of the segment that the point is on.
     /// The fractional part of the parameter is the parameter form 0.0 to 1.0 on the segment.
     /// The domain Polyline2D starts at 0.0 and ends at points.Count - 1.0 . 
-    member pl.ClosetParameter(pt:Pt) =
+    member pl.ClosestParameter(pt:Pt) =
         // for very large Polyline2Ds, this is could be optimized by using search R-tree        
         let ps = pl.Points
         if ps.Count < 2 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Polyline2D.ClosestParameter failed on  Polyline2D with less than 2 points %O" pl
@@ -149,7 +149,7 @@ type Polyline2D =
         for i = 0 to ts.Length-1 do 
             let p = ps[i]
             let v = vs[i]
-            // finding ClosetParameter on line segment and clamp to 0.0 to 1.0
+            // finding ClosestParameter on line segment and clamp to 0.0 to 1.0
             let len = v.LengthSq
             ts[i] <- if len < 1e-9 then 0.0 else -((p-pt) * v) / len |> Util.clamp01 //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
         
@@ -165,15 +165,15 @@ type Polyline2D =
         let t = ts.[i]
         float i + t
     
-    /// Returns the point on the Polyline2D that is the closet point to the given point.
-    member pl.ClosetPoint(pt:Pt) =
-        let t = pl.ClosetParameter pt
-        pl.Evaluate t
+    /// Returns the point on the Polyline2D that is the closest point to the given point.
+    member pl.ClosestPoint(pt:Pt) =
+        let t = pl.ClosestParameter pt
+        pl.EvaluateAt t
 
     /// Returns the Distance of the test point to the closest point on the Polyline2D.
     member pl.DistanceTo(pt:Pt) =
-        let t = pl.ClosetParameter pt
-        pl.Evaluate t  
+        let t = pl.ClosestParameter pt
+        pl.EvaluateAt t  
         |> Pt.distance pt
 
 
@@ -203,16 +203,39 @@ type Polyline2D =
     /// The integer part of the parameter is the index of the segment that the point is on.
     /// The fractional part of the parameter is the parameter form 0.0 to 1.0 on the segment.
     /// The domain Polyline2D starts at 0.0 and ends at point count. 
-    static member inline evaluate (pl:Polyline2D) t = pl.Evaluate t
+    static member inline evaluateAt (pl:Polyline2D) t = pl.EvaluateAt t
 
-    /// Returns the parameter on the Polyline2D that is the closet point to the given point.
+
+
+    /// Apply a mapping function to each point in the 2D Polyline. Return new Polyline2D.
+    static member map (mapping:Pt->Pt) (pl:Polyline2D) = pl.Points.ConvertAll (System.Converter mapping) |> Polyline2D.createDirectlyUnsafe
+
+    /// Translate a Polyline2D by a vector. (same as Polyline2D.move)
+    static member inline translate (v:Vc) (pl:Polyline2D) = pl |> Polyline2D.map (Pt.addVc v)
+
+    /// Returns a Polyline2D moved by a given distance in X direction.
+    static member inline translateX (distance:float) (pl:Polyline2D)  = pl |> Polyline2D.map (Pt.shiftX distance)
+
+    /// Returns a Polyline2D moved by a given distance in Y direction.
+    static member inline translateY (distance:double) (pl:Polyline2D) = pl |> Polyline2D.map (Pt.shiftY distance)
+
+    /// Translate a Polyline2D by a vector. (same as Polyline2D.translate)
+    static member inline move (v:Vc) (pl:Polyline2D) = Polyline2D.translate v pl
+
+    /// Rotation a Polyline2D around Z-Axis.
+    static member inline rotate (r:Rotation2D) (pl:Polyline2D) = pl |> Polyline2D.map (Pt.rotateBy r) 
+    
+    /// Rotation a Polyline2D round given Center point an a local Z Axis.
+    static member inline rotateOn (cen:Pt) (r:Rotation2D) (pl:Polyline2D) = pl |> Polyline2D.map (Pt.rotateWithCenterBy cen r) 
+
+    /// Returns the parameter on the Polyline2D that is the closest point to the given point.
     /// The integer part of the parameter is the index of the segment that the point is on.
     /// The fractional part of the parameter is the parameter form 0.0 to 1.0 on the segment.
     /// The domain Polyline2D starts at 0.0 and ends at point count. 
-    static member inline closestParameter (pl:Polyline2D) (pt:Pt) = pl.ClosetParameter pt
+    static member inline closestParameter (pl:Polyline2D) (pt:Pt) = pl.ClosestParameter pt
 
-    /// Returns the point on the Polyline2D that is the closet point to the given point.
-    static member inline closestPoint (pl:Polyline2D) (pt:Pt) = pl.ClosetPoint pt
+    /// Returns the point on the Polyline2D that is the closest point to the given point.
+    static member inline closestPoint (pl:Polyline2D) (pt:Pt) = pl.ClosestPoint pt
 
     /// Returns the Distance of the test point to the closest point on the Polyline2D.
     static member inline distanceTo (pl:Polyline2D) (pt:Pt) = pl.DistanceTo pt
@@ -227,3 +250,30 @@ type Polyline2D =
     /// Create a new empty Polyline2D without any points. 
     /// But predefined capacity
     static member empty (capacity:int) = Polyline2D(ResizeArray(capacity))
+
+    /// Returns new Polyline2D from point at Parameter a to point at Parameter b.
+    /// if 'a' is bigger 'b' then the new Polyline2D is in opposite direction.
+    /// If a parameter is within 1e-5 of an integer value, the integer value is used as parameter.
+    static member segment a b (pl:Polyline2D) = 
+        let rev = a<b
+        let u,v = if rev then b,a else a,b
+        let np = Polyline2D.empty(int(v-u)+2)
+        let nps = np.Points
+        let ps  = pl.Points
+        // first point
+        let ui = int u
+        let uf = u - float ui
+        if uf < 0.9999 then 
+            nps.Add(pl.EvaluateAt u)
+        // inner points
+        for i = int u + 1 to int v do 
+            nps.Add(ps[i])
+        // last point
+        let vi = int v
+        let vf = v - float vi
+        if vf > 1e-4 then 
+            nps.Add(pl.EvaluateAt v)
+        // reverse if necessary
+        if rev then 
+            np.ReverseInPlace()
+        np    

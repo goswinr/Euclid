@@ -154,7 +154,7 @@ type Box =
     /// Evaluate a X,Y and Z parameter of the  Box.
     ///  0.0, 0.0, 0.0 returns the Origin.
     ///  1.0, 1.0, 1.0 returns the FarCorner.
-    member inline b.Evaluate (xParameter,yParameter,zParameter) =
+    member inline b.EvaluateAt (xParameter,yParameter,zParameter) =
         b.Origin + b.Xaxis * xParameter + b.Yaxis * yParameter + b.Zaxis * zParameter
 
 

@@ -67,7 +67,7 @@ type Plane = // Normals are always unitized
         (pl.Origin - ln.From) * pl.Normal / nenner
     
     /// Returns intersection point of infinite Line3D with Plane, fails if they are parallel
-    static member intersectLine (ln:Line3D) (pl:Plane) = ln.At <| Plane.intersectLineParameter  ln pl
+    static member intersectLine (ln:Line3D) (pl:Plane) = ln.EvaluateAt <| Plane.intersectLineParameter  ln pl
     
     /// checks if a finite Line3D intersects with Plane, fails if they are parallel
     static member  inline doLinePlaneIntersect (ln:Line3D) (pl:Plane) = 

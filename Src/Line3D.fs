@@ -109,7 +109,7 @@ type Line3D =
         ln.LengthSq < tol
     
     /// Evaluate line at a given parameter ( parameters 0.0 to 1.0 are on the line ),
-    member inline ln.At (p:float) = 
+    member inline ln.EvaluateAt (p:float) = 
         let x = ln.FromX + (ln.ToX-ln.FromX)*p
         let y = ln.FromY + (ln.ToY-ln.FromY)*p
         let z = ln.FromZ + (ln.ToZ-ln.FromZ)*p
@@ -395,7 +395,7 @@ type Line3D =
     static member inline isTinySq tol (l:Line3D) = l.LengthSq < tol
 
     /// Evaluate line at a given parameter ( parameters 0.0 to 1.0 are on the line )
-    static member inline at t (ln:Line3D)  = ln.At t
+    static member inline evaluateAt t (ln:Line3D)  = ln.EvaluateAt t
     
     /// Get point at center of line
     static member inline mid (ln:Line3D) = ln.Mid
@@ -630,7 +630,7 @@ type Line3D =
     /// First point is on l, second point is on ll.
     static member inline intersectLinesInfinite (l:Line3D) (ll:Line3D) =        
         let a,b = Line3D.intersectLineParametersInfinite l ll
-        l.At a , ll.At b 
+        l.EvaluateAt a , ll.EvaluateAt b 
 
     /// Assumes Lines to be infinite!    
     /// Returns the singe points where these two infinite lines actually intersect each other.
@@ -740,7 +740,7 @@ type Line3D =
     /// First point is on l, second point is on ll.
     static member inline intersectLines (l:Line3D) (ll:Line3D) =    
         let a,b = Line3D.intersectLineParameters l ll
-        l.At a , ll.At b 
+        l.EvaluateAt a , ll.EvaluateAt b 
     
     /// Returns the single points where these two (finite) lines actually intersect each other.
     /// Fails if lines are parallel , skew, or apart by more than 1e-6 units 

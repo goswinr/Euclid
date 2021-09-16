@@ -179,7 +179,7 @@ type BRect =
     /// Evaluate a X and Y parameter of the Bounding Rectangle.
     ///  0.0, 0.0, 0.0 returns the MinPt.
     ///  1.0, 1.0, 1.0 returns the MaxPt.
-    member inline b.Evaluate (xParameter,yParameter) =
+    member inline b.EvaluateAt (xParameter,yParameter) =
         Pt (b.MinX + (b.MaxX-b.MinX) * xParameter,
             b.MinY + (b.MaxY-b.MinY) * yParameter)
 

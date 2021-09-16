@@ -58,14 +58,14 @@ module internal AutoOpenResizeArray =
                 #endif
                 this.[this.Count - 1] <- v
 
-        /// Get (or set) the second last item in the FsEx.Rarr.
+        /// Get (or set) the second last item in the FsEx.ResizeArray.
         /// Equal to this.[this.Count - 2]
         member this.SecondLast
             with get() = 
-                if this.Count < 2 then  FsExGeoException.Raise  "FsEx.Rarr.SecondLast: Failed to get second last item of ResizeArray<%O>" typeof<'T>
+                if this.Count < 2 then  FsExGeoException.Raise  "FsEx.ResizeArray.SecondLast: Failed to get second last item of ResizeArray<%O>" typeof<'T>
                 this.[this.Count - 2]
             and set (v:'T) = 
-                if this.Count < 2 then  FsExGeoException.Raise  "FsEx.Rarr.SecondLast: Failed to set second last item of ResizeArray<%O> to  %O" typeof<'T> v
+                if this.Count < 2 then  FsExGeoException.Raise  "FsEx.ResizeArray.SecondLast: Failed to set second last item of ResizeArray<%O> to  %O" typeof<'T> v
                 this.[this.Count - 2] <- v
 
         /// Get (or set) the first item in the FsEx.Geo.ResizeArray.
@@ -82,14 +82,14 @@ module internal AutoOpenResizeArray =
                 #endif
                 this.[0] <- v
 
-        /// Get (or set) the second item in the FsEx.Rarr.
+        /// Get (or set) the second item in the FsEx.ResizeArray.
         /// Equal to this.[1]
         member this.Second
             with get() = 
-                if this.Count < 2 then FsExGeoException.Raise   "FsEx.Rarr.Second: Failed to get second item of ResizeArray<%O>" typeof<'T>
+                if this.Count < 2 then FsExGeoException.Raise   "FsEx.ResizeArray.Second: Failed to get second item of ResizeArray<%O>" typeof<'T>
                 this.[1]
             and set (v:'T) = 
-                if this.Count < 2 then FsExGeoException.Raise   "FsEx.Rarr.Second: Failed to set second item of ResizeArray<%O> to %O" typeof<'T> v
+                if this.Count < 2 then FsExGeoException.Raise   "FsEx.ResizeArray.Second: Failed to set second item of ResizeArray<%O> to %O" typeof<'T> v
                 this.[1] <- v    
 
 
@@ -187,4 +187,12 @@ module internal AutoOpenResizeArray =
                 if f > mf then 
                     ii <- i 
                     mf <- f 
-            ii         
+            ii    
+
+        /// <summary>Builds a new ResizeArray whose elements are the results of applying the given function
+        /// to each of the elements of the ResizeArray.</summary>
+        /// <param name="mapping">The function to transform elements of the ResizeArray.</param>
+        /// <param name="xs">The input ResizeArray.</param>
+        /// <returns>The ResizeArray of transformed elements.</returns>
+        static member map ( mapping: 'T -> 'U) (xs: ResizeArray<'T>) : ResizeArray<'U> =             
+            xs.ConvertAll (System.Converter mapping)     

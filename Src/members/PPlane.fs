@@ -13,7 +13,7 @@ module AutoOpenPPlane =
     type PPlane with  
 
         /// Evaluate at 3D parameter
-        member p.At (px:float, py:float, pz:float) = p.Origin + p.Xaxis*px + p.Yaxis*py + p.Zaxis*pz
+        member p.EvaluateAt (px:float, py:float, pz:float) = p.Origin + p.Xaxis*px + p.Yaxis*py + p.Zaxis*pz
         
         /// Evaluate at 2D parameter ( Z = 0.0)
         member p.AtXY (px:float, py:float) = p.Origin + p.Xaxis*px + p.Yaxis*py 

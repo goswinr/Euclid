@@ -105,7 +105,7 @@ module AutoOpenPnt =
             let v   = toPt   - fromPt
             let lenSq = v.LengthSq
             let lenSq =  v.LengthSq
-            if lenSq < 1e-6 then FsExGeoDivByZeroException.Raise "Pt.closetPointOnLine: Line is too short for fromPt %O to  %O and  %O" fromPt toPt testPt
+            if lenSq < 1e-6 then FsExGeoDivByZeroException.Raise "Pt.closestPointOnLine: Line is too short for fromPt %O to  %O and  %O" fromPt toPt testPt
             let dot = Vec.dot (v,  dir) / lenSq
             if   dot <= 0.0 then  fromPt 
             elif dot >= 1.0 then  toPt

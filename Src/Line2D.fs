@@ -97,7 +97,7 @@ type Line2D =
         ln.LengthSq < tol
     
     /// Evaluate line at a given parameter ( parameters 0.0 to 1.0 are on the line ),
-    member inline ln.At (p:float) = 
+    member inline ln.EvaluateAt (p:float) = 
         let x = ln.FromX + (ln.ToX-ln.FromX)*p
         let y = ln.FromY + (ln.ToY-ln.FromY)*p        
         Pt(x,y)    
@@ -330,7 +330,7 @@ type Line2D =
     static member inline isTinySq tol (l:Line2D) = l.LengthSq < tol
 
     /// Evaluate line at a given parameter ( parameters 0.0 to 1.0 are on the line )
-    static member inline at t (ln:Line2D)  = ln.At t
+    static member inline evaluateAt t (ln:Line2D)  = ln.EvaluateAt t
     
     /// Get point at center of line
     static member inline mid (ln:Line2D) = ln.Mid
@@ -529,7 +529,7 @@ type Line2D =
     /// First point is on l, second point is on ll.
     static member inline intersectLinesInfinite (l:Line2D) (ll:Line2D) =        
         let a,b = Line2D.intersectLineParametersInfinite l ll
-        l.At a , ll.At b 
+        l.EvaluateAt a , ll.EvaluateAt b 
 
         
     /// Returns the two points where the two (finit) lines  are closest to each other.
@@ -537,7 +537,7 @@ type Line2D =
     /// First point is on l, second point is on ll.
     static member inline intersectLines (l:Line2D) (ll:Line2D) =    
         let a,b = Line2D.intersectLineParameters l ll
-        l.At a , ll.At b 
+        l.EvaluateAt a , ll.EvaluateAt b 
 
     /// Assumes Lines to be infinite!    
     /// Returns the singe points where these two infinite lines actually intersect each other.

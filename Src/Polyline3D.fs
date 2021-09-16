@@ -84,18 +84,19 @@ type Polyline3D =
     /// The integer part of the parameter is the index of the segment that the point is on.
     /// The fractional part of the parameter is the parameter form 0.0 to 1.0 on the segment.
     /// The domain Polyline3D starts at 0.0 and ends at points.Count - 1.0 . 
-    member pl.Evaluate(t:float) =
+    /// If the parameter is within 1e-5 of an integer value, the integer value is used as parameter
+    member pl.EvaluateAt(t:float) =
         let i = int t
         let p = t - float i
         if   i < -1 then 
-            FsExGeoException.Raise "FsEx.Geo.Polyline3D.Evaluate: Parameter %f is less than 0.0" t
+            FsExGeoException.Raise "FsEx.Geo.Polyline3D.EvaluateAt: Parameter %f is less than 0.0" t
         elif i > pl.Points.Count then 
-            FsExGeoException.Raise "FsEx.Geo.Polyline3D.Evaluate: Parameter %f is more than than point count(%d)." t pl.Points.Count 
+            FsExGeoException.Raise "FsEx.Geo.Polyline3D.EvaluateAt: Parameter %f is more than than point count(%d)." t pl.Points.Count 
         elif i =  -1 then 
-            if p > 0.9999 then pl.Points.First
-            else FsExGeoException.Raise "FsEx.Geo.Polyline3D.Evaluate: Parameter %f is less than 0.0" t
+            if p > 0.99999 then pl.Points.First
+            else FsExGeoException.Raise "FsEx.Geo.Polyline3D.EvaluateAt: Parameter %f is less than 0.0" t
         elif i = pl.Points.Count then 
-            if   p > 1e-4 then  FsExGeoException.Raise "FsEx.Geo.Polyline3D.Evaluate: Parameter %f is more than than point count(%d)." t pl.Points.Count 
+            if   p > 1e-5 then  FsExGeoException.Raise "FsEx.Geo.Polyline3D.EvaluateAt: Parameter %f is more than than point count(%d)." t pl.Points.Count 
             else pl.Points.Last
         // return point  if point is almost matching
         elif  p < zeroLengthTol then 
@@ -115,14 +116,14 @@ type Polyline3D =
         let i = int t
         let p = t - float i
         if   i < -1 then 
-            FsExGeoException.Raise "FsEx.Geo.Polyline3D.Evaluate: Parameter %f is less than 0.0" t
+            FsExGeoException.Raise "FsEx.Geo.Polyline3D.EvaluateAt: Parameter %f is less than 0.0" t
         elif i > pl.Points.Count then 
-            FsExGeoException.Raise "FsEx.Geo.Polyline3D.Evaluate: Parameter %f is more than than point count(%d)." t pl.Points.Count 
+            FsExGeoException.Raise "FsEx.Geo.Polyline3D.EvaluateAt: Parameter %f is more than than point count(%d)." t pl.Points.Count 
         elif i =  -1 then 
             if p > 0.9999 then UnitVec.create(pl.Points.First,pl.Points.Second)
-            else FsExGeoException.Raise "FsEx.Geo.Polyline3D.Evaluate: Parameter %f is less than 0.0" t
+            else FsExGeoException.Raise "FsEx.Geo.Polyline3D.EvaluateAt: Parameter %f is less than 0.0" t
         elif i = pl.Points.Count then 
-            if   p > 1e-4 then  FsExGeoException.Raise "FsEx.Geo.Polyline3D.Evaluate: Parameter %f is more than than point count(%d)." t pl.Points.Count 
+            if   p > 1e-4 then  FsExGeoException.Raise "FsEx.Geo.Polyline3D.EvaluateAt: Parameter %f is more than than point count(%d)." t pl.Points.Count 
             else UnitVec.create(pl.Points.SecondLast,pl.Points.Last)
         // return point  if point is almost matching
         else
@@ -130,11 +131,11 @@ type Polyline3D =
         
         
 
-    /// Returns the parameter on the Polyline3D that is the closet point to the given point.
+    /// Returns the parameter on the Polyline3D that is the closest point to the given point.
     /// The integer part of the parameter is the index of the segment that the point is on.
     /// The fractional part of the parameter is the parameter form 0.0 to 1.0 on the segment.
     /// The domain Polyline3D starts at 0.0 and ends at points.Count - 1.0 . 
-    member pl.ClosetParameter(pt:Pnt) =
+    member pl.ClosestParameter(pt:Pnt) =
         // for very large polylines, this is could be optimized by using search R-tree        
         let ps = pl.Points
         if ps.Count < 2 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Polyline3D.ClosestParameter failed on  Polyline3D with less than 2 points %O" pl
@@ -150,7 +151,7 @@ type Polyline3D =
         for i = 0 to ts.Length-1 do 
             let p = ps[i]
             let v = vs[i]
-            // finding ClosetParameter on line segment and clamp to 0.0 to 1.0
+            // finding ClosestParameter on line segment and clamp to 0.0 to 1.0
             let len = v.LengthSq
             ts[i] <- if len < 1e-9 then 0.0 else -((p-pt) * v) / len |> Util.clamp01 //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
         
@@ -166,22 +167,21 @@ type Polyline3D =
         let t = ts.[i]
         float i + t
     
-    /// Returns the point on the Polyline3D that is the closet point to the given point.
-    member pl.ClosetPoint(pt:Pnt) =
-        let t = pl.ClosetParameter pt
-        pl.Evaluate t
+    /// Returns the point on the Polyline3D that is the closest point to the given point.
+    member pl.ClosestPoint(pt:Pnt) =
+        let t = pl.ClosestParameter pt
+        pl.EvaluateAt t
 
     /// Returns the Distance of the test point to the closest point on the Polyline3D.
     member pl.DistanceTo(pt:Pnt) =
-        let t = pl.ClosetParameter pt
-        pl.Evaluate t  
+        let t = pl.ClosestParameter pt
+        pl.EvaluateAt t  
         |> Pnt.distance pt
 
 
     //-------------------------------------------------------------------
     //------------------------static members-----------------------------
     //-------------------------------------------------------------------
-
 
     /// Gets first Point of Polyline3D
     static member start (p:Polyline3D) = 
@@ -203,16 +203,44 @@ type Polyline3D =
     /// The integer part of the parameter is the index of the segment that the point is on.
     /// The fractional part of the parameter is the parameter form 0.0 to 1.0 on the segment.
     /// The domain Polyline3D starts at 0.0 and ends at point count. 
-    static member inline evaluate (pl:Polyline3D) t = pl.Evaluate t
+    static member inline evaluateAt (t:float) (pl:Polyline3D) = pl.EvaluateAt t
 
-    /// Returns the parameter on the Polyline3D that is the closet point to the given point.
+
+    /// Apply a mapping function to each point in the 3D Polyline. Return new Polyline3D.
+    static member map (mapping:Pnt->Pnt) (pl:Polyline3D) = pl.Points.ConvertAll (System.Converter mapping) |> Polyline3D.createDirectlyUnsafe
+
+    /// Translate a Polyline3D by a vector. (same as Polyline3D.move)
+    static member inline translate (v:Vec) (pl:Polyline3D) = pl |> Polyline3D.map (Pnt.addVec v)
+
+    /// Returns a Polyline3D moved by a given distance in X direction.
+    static member inline translateX (distance:float) (pl:Polyline3D)  = pl |> Polyline3D.map (Pnt.shiftX distance)
+
+    /// Returns a Polyline3D moved by a given distance in Y direction.
+    static member inline translateY (distance:double) (pl:Polyline3D) = pl |> Polyline3D.map (Pnt.shiftY distance)
+                
+    /// Returns a Polyline3D moved by a given distance in Z direction.
+    static member inline translateZ (distance:double) (pl:Polyline3D) = pl |> Polyline3D.map (Pnt.shiftZ distance)
+
+    /// Translate a Polyline3D by a vector. (same as Polyline3D.translate)
+    static member inline move (v:Vec) (pl:Polyline3D) = Polyline3D.translate v pl
+
+    /// Applies a 4x4 transformation matrix
+    static member inline transform (m:Matrix) (pl:Polyline3D) = pl |> Polyline3D.map (Pnt.transform m)     
+    
+    /// Rotation a Polyline3D around Z-Axis.
+    static member inline rotate (r:Rotation2D) (pl:Polyline3D) = pl |> Polyline3D.map (Pnt.rotateZBy r) 
+    
+    /// Rotation a Polyline3D round given Center point an a local Z Axis.
+    static member inline rotateOn (cen:Pnt) (r:Rotation2D) (pl:Polyline3D) = pl |> Polyline3D.map (Pnt.rotateZonCenterBy cen r) 
+
+    /// Returns the parameter on the Polyline3D that is the closest point to the given point.
     /// The integer part of the parameter is the index of the segment that the point is on.
     /// The fractional part of the parameter is the parameter form 0.0 to 1.0 on the segment.
     /// The domain Polyline3D starts at 0.0 and ends at point count. 
-    static member inline closestParameter (pl:Polyline3D) (pt:Pnt) = pl.ClosetParameter pt
+    static member inline closestParameter (pl:Polyline3D) (pt:Pnt) = pl.ClosestParameter pt
 
-    /// Returns the point on the Polyline3D that is the closet point to the given point.
-    static member inline closestPoint (pl:Polyline3D) (pt:Pnt) = pl.ClosetPoint pt
+    /// Returns the point on the Polyline3D that is the closest point to the given point.
+    static member inline closestPoint (pl:Polyline3D) (pt:Pnt) = pl.ClosestPoint pt
 
     /// Returns the Distance of the test point to the closest point on the Polyline3D.
     static member inline distanceTo (pl:Polyline3D) (pt:Pnt) = pl.DistanceTo pt
@@ -227,3 +255,30 @@ type Polyline3D =
     /// Create a new empty Polyline3D without any points. 
     /// But predefined capacity
     static member empty (capacity:int) = Polyline3D(ResizeArray(capacity))
+    
+    /// Returns new Polyline3D from point at Parameter a to point at Parameter b.
+    /// if 'a' is bigger 'b' then the new Polyline3D is in opposite direction.
+    /// If a parameter is within 1e-5 of an integer value, the integer value is used as parameter.
+    static member segment a b (pl:Polyline3D) = 
+        let rev = a>b
+        let u,v = if rev then b,a else a,b
+        let np = Polyline3D.empty (int(v-u)+2)
+        let nps = np.Points
+        let ps  = pl.Points
+        // first point
+        let ui = int u
+        let uf = u - float ui
+        if uf < 0.9999 then 
+            nps.Add(pl.EvaluateAt u)
+        // inner points
+        for i = int u + 1 to int v do 
+            nps.Add(ps[i])
+        // last point
+        let vi = int v
+        let vf = v - float vi
+        if vf > 1e-4 then 
+            nps.Add(pl.EvaluateAt v)
+        // reverse if necessary
+        if rev then 
+            np.ReverseInPlace()
+        np     

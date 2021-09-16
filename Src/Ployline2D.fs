@@ -84,18 +84,18 @@ type Polyline =
     /// The integer part of the parameter is the index of the segment that the point is on.
     /// The fractional part of the parameter is the parameter form 0.0 to 1.0 on the segment.
     /// The domain Polyline starts at 0.0 and ends at points.Count - 1.0 . 
-    member pl.Evaluate(t:float) =
+    member pl.EvaluateAt(t:float) =
         let i = int t
         let p = t - float i
         if   i < -1 then 
-            FsExGeoException.Raise "FsEx.Geo.Polyline.Evaluate: Parameter %f is less than 0.0" t
+            FsExGeoException.Raise "FsEx.Geo.Polyline.EvaluateAt: Parameter %f is less than 0.0" t
         elif i >= pl.Points.Count then 
-            FsExGeoException.Raise "FsEx.Geo.Polyline.Evaluate: Parameter %f is more than than point count(%d)." t pl.Points.Count 
+            FsExGeoException.Raise "FsEx.Geo.Polyline.EvaluateAt: Parameter %f is more than than point count(%d)." t pl.Points.Count 
         elif i =  -1 then 
             if p > 0.9999 then pl.Points.First
-            else FsExGeoException.Raise "FsEx.Geo.Polyline.Evaluate: Parameter %f is less than 0.0" t
+            else FsExGeoException.Raise "FsEx.Geo.Polyline.EvaluateAt: Parameter %f is less than 0.0" t
         elif i = pl.Points.Count then 
-            if   p > 1e-4 then  FsExGeoException.Raise "FsEx.Geo.Polyline.Evaluate: Parameter %f is more than than point count(%d)." t pl.Points.Count 
+            if   p > 1e-4 then  FsExGeoException.Raise "FsEx.Geo.Polyline.EvaluateAt: Parameter %f is more than than point count(%d)." t pl.Points.Count 
             else pl.Points.Last
         // return point  if point is almost matching
         elif  p < zeroLengthTol then 
@@ -115,14 +115,14 @@ type Polyline =
         let i = int t
         let p = t - float i
         if   i < -1 then 
-            FsExGeoException.Raise "FsEx.Geo.Polyline.Evaluate: Parameter %f is less than 0.0" t
+            FsExGeoException.Raise "FsEx.Geo.Polyline.EvaluateAt: Parameter %f is less than 0.0" t
         elif i >= pl.Points.Count then 
-            FsExGeoException.Raise "FsEx.Geo.Polyline.Evaluate: Parameter %f is more than than point count(%d)." t pl.Points.Count 
+            FsExGeoException.Raise "FsEx.Geo.Polyline.EvaluateAt: Parameter %f is more than than point count(%d)." t pl.Points.Count 
         elif i =  -1 then 
             if p > 0.9999 then UnitVec.create(pl.Points.First,pl.Points.Second)
-            else FsExGeoException.Raise "FsEx.Geo.Polyline.Evaluate: Parameter %f is less than 0.0" t
+            else FsExGeoException.Raise "FsEx.Geo.Polyline.EvaluateAt: Parameter %f is less than 0.0" t
         elif i = pl.Points.Count then 
-            if   p > 1e-4 then  FsExGeoException.Raise "FsEx.Geo.Polyline.Evaluate: Parameter %f is more than than point count(%d)." t pl.Points.Count 
+            if   p > 1e-4 then  FsExGeoException.Raise "FsEx.Geo.Polyline.EvaluateAt: Parameter %f is more than than point count(%d)." t pl.Points.Count 
             else UnitVec.create(pl.Points.SecondLast,pl.Points.Last)
         // return point  if point is almost matching
         else
@@ -130,11 +130,11 @@ type Polyline =
         
         
 
-    /// Returns the parameter on the polyline that is the closet point to the given point.
+    /// Returns the parameter on the polyline that is the closest point to the given point.
     /// The integer part of the parameter is the index of the segment that the point is on.
     /// The fractional part of the parameter is the parameter form 0.0 to 1.0 on the segment.
     /// The domain Polyline starts at 0.0 and ends at points.Count - 1.0 . 
-    member pl.ClosetParameter(pt:Pnt) =
+    member pl.ClosestParameter(pt:Pnt) =
         // for very large polylines, this is could be optimized by using search R-tree        
         let ps = pl.Points
         if ps.Count < 2 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Polyline.ClosestParameter failed on  polyline with less than 2 points %O" pl
@@ -150,7 +150,7 @@ type Polyline =
         for i = 0 to ts.Length-1 do 
             let p = ps[i]
             let v = vs[i]
-            // finding ClosetParameter on line segment and clamp to 0.0 to 1.0
+            // finding ClosestParameter on line segment and clamp to 0.0 to 1.0
             let len = v.LengthSq
             ts[i] <- if len < 1e-9 then 0.0 else -((p-pt) * v) / len |> Util.clamp01 //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
         
@@ -166,15 +166,15 @@ type Polyline =
         let t = ts.[i]
         float i + t
     
-    /// Returns the point on the polyline that is the closet point to the given point.
-    member pl.ClosetPoint(pt:Pnt) =
-        let t = pl.ClosetParameter pt
-        pl.Evaluate t
+    /// Returns the point on the polyline that is the closest point to the given point.
+    member pl.ClosestPoint(pt:Pnt) =
+        let t = pl.ClosestParameter pt
+        pl.EvaluateAt t
 
     /// Returns the Distance of the test point to the closest point on the polyline.
     member pl.DistanceTo(pt:Pnt) =
-        let t = pl.ClosetParameter pt
-        pl.Evaluate t  
+        let t = pl.ClosestParameter pt
+        pl.EvaluateAt t  
         |> Pnt.distance pt
 
 
@@ -204,16 +204,16 @@ type Polyline =
     /// The integer part of the parameter is the index of the segment that the point is on.
     /// The fractional part of the parameter is the parameter form 0.0 to 1.0 on the segment.
     /// The domain Polyline starts at 0.0 and ends at point count. 
-    static member inline evaluate (pl:Polyline) t = pl.Evaluate t
+    static member inline evaluateAt (pl:Polyline) t = pl.EvaluateAt t
 
-    /// Returns the parameter on the polyline that is the closet point to the given point.
+    /// Returns the parameter on the polyline that is the closest point to the given point.
     /// The integer part of the parameter is the index of the segment that the point is on.
     /// The fractional part of the parameter is the parameter form 0.0 to 1.0 on the segment.
     /// The domain Polyline starts at 0.0 and ends at point count. 
-    static member inline closestParameter (pl:Polyline) (pt:Pnt) = pl.ClosetParameter pt
+    static member inline closestParameter (pl:Polyline) (pt:Pnt) = pl.ClosestParameter pt
 
-    /// Returns the point on the polyline that is the closet point to the given point.
-    static member inline closestPoint (pl:Polyline) (pt:Pnt) = pl.ClosetPoint pt
+    /// Returns the point on the polyline that is the closest point to the given point.
+    static member inline closestPoint (pl:Polyline) (pt:Pnt) = pl.ClosestPoint pt
 
     /// Returns the Distance of the test point to the closest point on the polyline.
     static member inline distanceTo (pl:Polyline) (pt:Pnt) = pl.DistanceTo pt

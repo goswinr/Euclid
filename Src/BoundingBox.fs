@@ -260,7 +260,7 @@ type BBox =
     /// Evaluate a X,Y and Z parameter of the Bounding Box.
     ///  0.0, 0.0, 0.0 returns the MinPnt.
     ///  1.0, 1.0, 1.0 returns the MaxPnt.
-    member inline b.Evaluate (xParameter,yParameter,zParameter) =
+    member inline b.EvaluateAt (xParameter,yParameter,zParameter) =
         Pnt(b.MinX + (b.MaxX-b.MinX) * xParameter,
             b.MinY + (b.MaxY-b.MinY) * yParameter,
             b.MinZ + (b.MaxZ-b.MinZ) * zParameter)
