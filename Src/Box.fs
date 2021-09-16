@@ -209,7 +209,7 @@ type Box =
         Box(b.MinPnt, Vec.XAxis*b.Length, Vec.YAxis*b.Width, Vec.ZAxis*b.Height)
 
     /// Move the  Box by a vector.
-    static member translate (v:Vec) (pl:Box) = Box(pl.Origin + v, pl.Xaxis, pl.Yaxis, pl.Zaxis) 
+    static member move (v:Vec) (pl:Box) = Box(pl.Origin + v, pl.Xaxis, pl.Yaxis, pl.Zaxis) 
     
     /// Translate along the local X-axis of the Box
     static member translateX (distX:float) (b:Box) = 

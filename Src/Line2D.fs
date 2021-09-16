@@ -122,21 +122,21 @@ type Line2D =
                 ln.FromY + y*b) 
     
     /// Returns a Line2D moved by a vector.
-    member inline ln.Translate (v:Vc) = 
+    member inline ln.Move (v:Vc) = 
         Line2D( ln.FromX+v.X,
                 ln.FromY+v.Y,
                 ln.ToX+v.X,
                 ln.ToY+v.Y) 
 
     /// Returns a Line2D moved by a given distance in X direction.
-    member inline ln.TranslateX (distance:float) = 
+    member inline ln.MoveX (distance:float) = 
         Line2D( ln.FromX+distance,
                 ln.FromY,
                 ln.ToX+distance,
                 ln.ToY)
 
     /// Returns a Line2D moved by a given distance in Y direction.
-    member inline ln.TranslateY (distance:float) = 
+    member inline ln.MoveY (distance:float) = 
         Line2D( ln.FromX,
                 ln.FromY+distance,
                 ln.ToX,
@@ -344,17 +344,17 @@ type Line2D =
     /// Returns new Line2D from point at Parameter a to point at Parameter b
     static member inline segment a b (ln:Line2D) = ln.Segment (a, b)
     
-    /// Translate a Line2D by a vector. (same as Line2D.move)
-    static member inline translate (v:Vc) (ln:Line2D) = ln.Translate(v)
+    /// Move a Line2D by a vector. (same as Line2D.move)
+    static member inline translate (v:Vc) (ln:Line2D) = ln.Move(v)
 
     /// Returns a Line2D moved by a given distance in X direction.
-    static member inline translateX (distance:float) (ln:Line2D) = ln.TranslateX(distance)
+    static member inline moveX (distance:float) (ln:Line2D) = ln.MoveX(distance)
 
     /// Returns a Line2D moved by a given distance in Y direction.
-    static member inline translateY (distance:double) (ln:Line2D) = ln.TranslateY(distance)
+    static member inline moveY (distance:double) (ln:Line2D) = ln.MoveY(distance)
 
-    /// Translate a Line2D by a vector. (same as Line2D.translate)
-    static member inline move (v:Vc) (ln:Line2D) = ln.Translate(v)
+    /// Move a Line2D by a vector. (same as Line2D.translate)
+    static member inline move (v:Vc) (ln:Line2D) = ln.Move(v)
 
     /// Rotation a Line2D.
     static member inline rotate (r:Rotation2D) (l:Line2D) = Line2D(Pt.rotateBy r l.From, Pt.rotateBy r l.To) 

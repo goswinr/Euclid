@@ -9,7 +9,9 @@ open Util
 /// If the last point is the same as the first point, the Polyline3D is closed.
 [<Struct; NoEquality; NoComparison>] // because its made up from floats
 type Polyline3D =  
-    /// The Origin Corner of the Box.
+    
+    /// Gets the internal list of all Points of Polyline3D.
+    /// This is not a copy, so changes to the list will be reflected in the Polyline3D.
     val Points: ResizeArray<Pnt>
 
     /// Internal constructor. Uses input List without copying it.
@@ -64,7 +66,7 @@ type Polyline3D =
     /// The Polyline3D does not need to be actually closed.
     /// The signed area of the Polyline3D is calculated. 
     /// If it is positive the Polyline3D is CCW.
-    member p.IsCounterClockwiseIn2D () = 
+    member p.IsCounterClockwiseIn2D = 
         //https://helloacm.com/sign-area-of-irregular-polygon/
         let ps = p.Points
         let mutable area = 0.0
@@ -182,14 +184,18 @@ type Polyline3D =
     //-------------------------------------------------------------------
     //------------------------static members-----------------------------
     //-------------------------------------------------------------------
+    
+    /// Gets the internal list of all Points of Polyline3D.
+    /// This is not a copy, so changes to the list will be reflected in the Polyline3D.
+    static member inline pointsUnsafeInternal (p:Polyline3D) = p.Points
 
     /// Gets first Point of Polyline3D
-    static member start (p:Polyline3D) = 
+    static member inline start (p:Polyline3D) = 
         if p.Points.Count < 2 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Polyline3D.Start failed on Polyline3D with less than 2 points %O" p
         p.Points.First
     
     /// Gets last or end Point of Polyline3D
-    static member ende (p:Polyline3D) = 
+    static member inline ende (p:Polyline3D) = 
         if p.Points.Count < 2 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Polyline3D.Start failed on Polyline3D with less than 2 points %O" p
         p.Points.Last
     
@@ -209,20 +215,20 @@ type Polyline3D =
     /// Apply a mapping function to each point in the 3D Polyline. Return new Polyline3D.
     static member map (mapping:Pnt->Pnt) (pl:Polyline3D) = pl.Points.ConvertAll (System.Converter mapping) |> Polyline3D.createDirectlyUnsafe
 
-    /// Translate a Polyline3D by a vector. (same as Polyline3D.move)
+    /// Move a Polyline3D by a vector. (same as Polyline3D.move)
     static member inline translate (v:Vec) (pl:Polyline3D) = pl |> Polyline3D.map (Pnt.addVec v)
 
+    /// Move a Polyline3D by a vector. (same as Polyline3D.translate)
+    static member inline move (v:Vec) (pl:Polyline3D) = Polyline3D.translate v pl
+
     /// Returns a Polyline3D moved by a given distance in X direction.
-    static member inline translateX (distance:float) (pl:Polyline3D)  = pl |> Polyline3D.map (Pnt.shiftX distance)
+    static member inline moveX (distance:float) (pl:Polyline3D)  = pl |> Polyline3D.map (Pnt.moveX distance)
 
     /// Returns a Polyline3D moved by a given distance in Y direction.
-    static member inline translateY (distance:double) (pl:Polyline3D) = pl |> Polyline3D.map (Pnt.shiftY distance)
+    static member inline moveY (distance:double) (pl:Polyline3D) = pl |> Polyline3D.map (Pnt.moveY distance)
                 
     /// Returns a Polyline3D moved by a given distance in Z direction.
-    static member inline translateZ (distance:double) (pl:Polyline3D) = pl |> Polyline3D.map (Pnt.shiftZ distance)
-
-    /// Translate a Polyline3D by a vector. (same as Polyline3D.translate)
-    static member inline move (v:Vec) (pl:Polyline3D) = Polyline3D.translate v pl
+    static member inline moveZ (distance:double) (pl:Polyline3D) = pl |> Polyline3D.map (Pnt.moveZ distance)
 
     /// Applies a 4x4 transformation matrix
     static member inline transform (m:Matrix) (pl:Polyline3D) = pl |> Polyline3D.map (Pnt.transform m)     

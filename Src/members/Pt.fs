@@ -230,11 +230,19 @@ module AutoOpenPt =
         /// Scales a 2D point by a factor. Returns a new 2D point.
         static member inline scale  (f:float) (pt:Pt) = pt*f
         
+        /// Move point 2D by vector. Same as Pnt.move.
+        static member inline translate (shift:Vc) (pt:Pt ) = 
+            pt + shift      
+        
+        /// Move point 2D by vector. Same as Pnt.translate.
+        static member inline move (shift:Vc) (pt:Pt ) = 
+            pt + shift 
+
         /// Add a float to X component of a 2D point. Returns a new 2D point.
-        static member inline shiftX (x:float) (pt:Pt) = Pt (pt.X+x, pt.Y)
+        static member inline moveX (x:float) (pt:Pt) = Pt (pt.X+x, pt.Y)
 
         /// Add a float to Y component of a 2D point. Returns a new 2D point.
-        static member inline shiftY (y:float) (pt:Pt) = Pt (pt.X,   pt.Y+y)    
+        static member inline moveY (y:float) (pt:Pt) = Pt (pt.X,   pt.Y+y)    
         
         /// Returns the distance between two 2D points.
         static member inline distance (a:Pt) (b:Pt) = let v = a-b in sqrt(v.X*v.X + v.Y*v.Y )
@@ -299,10 +307,7 @@ module AutoOpenPt =
         static member inline divPt(fromPt:Pt, toPt:Pt,rel:float) : Pt  = 
             let v = toPt - fromPt
             fromPt + v*rel     
-        
-        /// Applies a translation vector
-        static member inline translate (shift:Vc) (pt:Pt ) = 
-            pt + shift        
+                       
             
         /// Snap to point if within snapDistance
         static member snapIfClose (snapDistance) (snapTo:Pt) (pt:Pt) = 

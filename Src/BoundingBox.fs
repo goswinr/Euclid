@@ -304,7 +304,7 @@ type BBox =
         b.ExpandZAxis(startDist, endDist)
 
     /// Move the Bounding Box by a vector.
-    static member translate (v:Vec) (b:BBox) = 
+    static member move (v:Vec) (b:BBox) = 
         BBox(b.MinX+v.X, b.MinY+v.Y, b.MinZ+v.Z, b.MaxX+v.X, b.MaxY+v.Y, b.MaxZ+v.Z)
 
     /// Returns true if the two Bounding Boxes do overlap or touch exactly

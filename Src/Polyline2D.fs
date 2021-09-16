@@ -9,7 +9,9 @@ open Util
 /// If the last point is the same as the first point, the Polyline2D is closed.
 [<Struct; NoEquality; NoComparison>] // because its made up from floats
 type Polyline2D =  
-    /// The Origin Corner of the Box.
+    
+    /// Gets the internal list of all Points of Polyline3D.
+    /// This is not a copy, so changes to the list will be reflected in the Polyline3D.
     val Points: ResizeArray<Pt>
 
     /// Internal constructor. Uses input List without copying it.
@@ -63,7 +65,7 @@ type Polyline2D =
     /// The Polyline2D does not need to be actually closed.
     /// The signed area of the Polyline2D is calculated. 
     /// If it is positive the Polyline2D is CCW.
-    member p.IsCounterClockwise() = 
+    member p.IsCounterClockwise = 
         //https://helloacm.com/sign-area-of-irregular-polygon/
         let ps = p.Points
         let mutable area = 0.0
@@ -182,14 +184,17 @@ type Polyline2D =
     //------------------------static members-----------------------------
     //-------------------------------------------------------------------
 
+    /// Gets the internal list of all Points of Polyline3D.
+    /// This is not a copy, so changes to the list will be reflected in the Polyline3D.
+    static member inline pointsUnsafeInternal (p:Polyline2D) = p.Points
 
     /// Gets first Point of Polyline2D
-    static member start (p:Polyline2D) = 
+    static member inline start (p:Polyline2D) = 
         if p.Points.Count < 2 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Polyline2D.Start failed on Polyline2D with less than 2 points %O" p
         p.Points.First
     
     /// Gets last or end Point of Polyline2D
-    static member ende (p:Polyline2D) = 
+    static member inline ende (p:Polyline2D) = 
         if p.Points.Count < 2 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Polyline2D.Start failed on Polyline2D with less than 2 points %O" p
         p.Points.Last
     
@@ -210,17 +215,17 @@ type Polyline2D =
     /// Apply a mapping function to each point in the 2D Polyline. Return new Polyline2D.
     static member map (mapping:Pt->Pt) (pl:Polyline2D) = pl.Points.ConvertAll (System.Converter mapping) |> Polyline2D.createDirectlyUnsafe
 
-    /// Translate a Polyline2D by a vector. (same as Polyline2D.move)
+    /// Move a Polyline2D by a vector. (same as Polyline2D.move)
     static member inline translate (v:Vc) (pl:Polyline2D) = pl |> Polyline2D.map (Pt.addVc v)
 
+    /// Move a Polyline2D by a vector. (same as Polyline2D.translate)
+    static member inline move (v:Vc) (pl:Polyline2D) = Polyline2D.translate v pl
+
     /// Returns a Polyline2D moved by a given distance in X direction.
-    static member inline translateX (distance:float) (pl:Polyline2D)  = pl |> Polyline2D.map (Pt.shiftX distance)
+    static member inline moveX (distance:float) (pl:Polyline2D)  = pl |> Polyline2D.map (Pt.moveX distance)
 
     /// Returns a Polyline2D moved by a given distance in Y direction.
-    static member inline translateY (distance:double) (pl:Polyline2D) = pl |> Polyline2D.map (Pt.shiftY distance)
-
-    /// Translate a Polyline2D by a vector. (same as Polyline2D.translate)
-    static member inline move (v:Vc) (pl:Polyline2D) = Polyline2D.translate v pl
+    static member inline moveY (distance:double) (pl:Polyline2D) = pl |> Polyline2D.map (Pt.moveY distance)
 
     /// Rotation a Polyline2D around Z-Axis.
     static member inline rotate (r:Rotation2D) (pl:Polyline2D) = pl |> Polyline2D.map (Pt.rotateBy r) 

@@ -278,13 +278,13 @@ module AutoOpenUnitVec =
         static member inline setLength(f:float) (v:UnitVec) = Vec (v.X * f , v.Y * f , v.Z * f) 
         
         /// Add to the X part of this 3D unit vectors together. Returns a new (non-unitized) 3D vector.
-        static member inline shiftX x (v:UnitVec) = Vec (v.X+x, v.Y,   v.Z)
+        static member inline moveX x (v:UnitVec) = Vec (v.X+x, v.Y,   v.Z)
         
         /// Add to the Y part of this 3D unit vectors together. Returns a new (non-unitized) 3D vector.
-        static member inline shiftY y (v:UnitVec) = Vec (v.X,   v.Y+y, v.Z)
+        static member inline moveY y (v:UnitVec) = Vec (v.X,   v.Y+y, v.Z)
         
         /// Add to the Z part of this 3D unit vectors together. Returns a new (non-unitized) 3D vector.
-        static member inline shiftZ z (v:UnitVec) = Vec (v.X,   v.Y,   v.Z+z)
+        static member inline moveZ z (v:UnitVec) = Vec (v.X,   v.Y,   v.Z+z)
             
         /// Project vector to World X-Y plane.
         /// Use Vc.ofUnitVec to convert to 2D vector instance

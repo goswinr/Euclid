@@ -213,7 +213,7 @@ type BRect =
         r.ExpandYAxis(startDist, endDist)  
 
     /// Move the Bounding Rectangle by a vector.
-    static member translate (v:Vc) (r:BRect) = 
+    static member move (v:Vc) (r:BRect) = 
         BRect(r.MinX+v.X, r.MinY+v.Y, r.MaxX+v.X, r.MaxY+v.Y)
 
     /// Returns true if the two Bounding Rectangles do overlap or touch exactly

@@ -57,13 +57,17 @@ module AutoOpenPPlane =
         /// Builds Plane at first point , X-axis to second Point,
         static member fromTwoPts (a:Pnt) (b:Pnt) = PPlane.fromOriginAndXaxis a (b-a)
 
+        /// Move Plane along the local X-axis by the given distance
         static member translateX (d:float) (pl:PPlane) = PPlane(pl.Origin + pl.Xaxis*d, pl.Xaxis, pl.Yaxis, pl.Zaxis) 
-    
+
+        /// Move Plane along the local Y-axis by the given distance
         static member translateY (d:float) (pl:PPlane) = PPlane(pl.Origin + pl.Yaxis*d, pl.Xaxis, pl.Yaxis, pl.Zaxis) 
-    
+
+        /// Move Plane along the local Z-axis by the given distance
         /// Same as PPlane.offset
         static member translateZ (d:float) (pl:PPlane) = PPlane(pl.Origin + pl.Zaxis*d, pl.Xaxis, pl.Yaxis, pl.Zaxis) 
-    
+        
+        /// Move Plane along the local Z-axis by the given distance
         /// Same as PPlane.translateZ
         static member offset (d:float) (pl:PPlane) = PPlane(pl.Origin + pl.Zaxis*d, pl.Xaxis, pl.Yaxis, pl.Zaxis) 
 

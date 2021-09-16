@@ -292,13 +292,13 @@ module AutoOpenVec =
         static member inline setLength(f:float) (v:Vec) = Vec (v.X * f , v.Y * f , v.Z * f) 
         
         /// Add to the X part of this 3D vectors together. Returns a new 3D vector.
-        static member inline shiftX x (v:Vec) = Vec (v.X+x, v.Y,   v.Z)
+        static member inline moveX x (v:Vec) = Vec (v.X+x, v.Y,   v.Z)
         
         /// Add to the Y part of this 3D vectors together. Returns a new 3D vector.
-        static member inline shiftY y (v:Vec) = Vec (v.X,   v.Y+y, v.Z)
+        static member inline moveY y (v:Vec) = Vec (v.X,   v.Y+y, v.Z)
         
         /// Add to the Z part of this 3D vectors together. Returns a new 3D vector.
-        static member inline shiftZ z (v:Vec) = Vec (v.X,   v.Y,   v.Z+z)
+        static member inline moveZ z (v:Vec) = Vec (v.X,   v.Y,   v.Z+z)
         
         /// Returns a boolean indicating wether the absolute value of X,Y and Z is each less than the given tolerance.
         static member inline isTiny   tol (v:Vec) = v.IsTiny tol
@@ -335,9 +335,8 @@ module AutoOpenVec =
         static member inline flipToPointUp (v:Vec) = if v.Z < 0.0 then -v else v  
         
         /// Returns 3D vector unitized, fails on zero length vectors
-        static member inline unitize (v:Vec) =  v.Unitized
-    
-       
+        static member inline unitize (v:Vec) =  v.Unitized    
+        
         /// Unitize 3D vector, if input vector is shorter than 1e-6 the default Unit vector is returned.
         static member inline unitizeOrDefault (defaultUnitVector:UnitVec) (v:Vec) = 
             let l = v.LengthSq
@@ -603,8 +602,5 @@ module AutoOpenVec =
                 , m.M13*x + m.M23*y + m.M33*z 
                 )
 
-
-
-                
 
 

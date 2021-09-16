@@ -251,10 +251,10 @@ module AutoOpenUnitVc =
         static member inline setLength  (length:float) (v:UnitVc) = Vc (v.X * length , v.Y * length ) 
         
         /// Add to the X part of this 2D unit vectors together. Returns a new (non-unitized) 2D vector.
-        static member inline shiftX     x (v:UnitVc) = Vc (v.X+x, v.Y)
+        static member inline moveX     x (v:UnitVc) = Vc (v.X+x, v.Y)
         
         /// Add to the Y part of this 2D unit vectors together. Returns a new (non-unitized) 2D vector.
-        static member inline shiftY     y (v:UnitVc) = Vc (v.X,   v.Y+y)        
+        static member inline moveY     y (v:UnitVc) = Vc (v.X,   v.Y+y)        
 
         /// Negate or inverse a 2D unit vectors. Returns a new 2D unit vector. 
         /// Same as UnitVc.reverse

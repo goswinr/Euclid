@@ -265,10 +265,10 @@ module AutoOpenVc =
         static member inline setLength(f:float) (v:Vc) = Vc (v.X * f , v.Y * f ) 
         
         /// Add to the X part of this 2D vectors together. Returns a new 2D vector.
-        static member inline shiftX x (v:Vc) = Vc (v.X+x, v.Y)
+        static member inline moveX x (v:Vc) = Vc (v.X+x, v.Y)
         
         /// Add to the Y part of this 2D vectors together. Returns a new 2D vector.
-        static member inline shiftY y (v:Vc) = Vc (v.X,   v.Y+y)
+        static member inline moveY y (v:Vc) = Vc (v.X,   v.Y+y)
         
         /// Returns a boolean indicating wether the absolute value of X and Y is each less than the given tolerance.
         static member inline isTiny tol (v:Vc) = v.IsTiny tol

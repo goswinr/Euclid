@@ -202,7 +202,7 @@ module AutoOpenPnt =
         static member inline create (x:float, y:float, z:float) =  Pnt( x , y , z ) 
 
         /// Returns a 3D point from Z level and 2D point.
-        static member inline ofPtAt (z:float)  (p:Pt)  = Pnt (p.X, p.Y, z) 
+        static member inline ofPtWithZ (z:float)  (p:Pt)  = Pnt (p.X, p.Y, z) 
 
         /// Project point to World X-Y plane.
         /// Use make2D to convert to 2D point instance
@@ -238,14 +238,22 @@ module AutoOpenPnt =
         /// Scale a 3D point by a scalar and return new 3D point.
         static member inline scale (f:float) (pt:Pnt) = pt*f
         
+        /// Move point 3D by vector. Same as Pnt.move.
+        static member inline translate (shift:Vec) (pt:Pnt ) = 
+            pt + shift      
+        
+        /// Move point 3D by vector. Same as Pnt.translate.
+        static member inline move (shift:Vec) (pt:Pnt ) = 
+            pt + shift 
+
         /// Add float to X component of a 3D point and return new 3D point.
-        static member inline shiftX (x:float) (pt:Pnt) = Pnt (pt.X+x, pt.Y,   pt.Z)
+        static member inline moveX (x:float) (pt:Pnt) = Pnt (pt.X+x, pt.Y,   pt.Z)
         
         /// Add float to Y component of a 3D point and return new 3D point.
-        static member inline shiftY (y:float) (pt:Pnt) = Pnt (pt.X,   pt.Y+y, pt.Z)
+        static member inline moveY (y:float) (pt:Pnt) = Pnt (pt.X,   pt.Y+y, pt.Z)
         
         /// Add float to Z component of a 3D point and return new 3D point.
-        static member inline shiftZ (z:float) (pt:Pnt) = Pnt (pt.X,   pt.Y,   pt.Z+z)    
+        static member inline moveZ (z:float) (pt:Pnt) = Pnt (pt.X,   pt.Y,   pt.Z+z)    
         
         /// Returns the distance between two 3D points
         static member inline distance (a:Pnt) (b:Pnt) = let v = a-b in sqrt(v.X*v.X + v.Y*v.Y + v.Z*v.Z)
@@ -308,13 +316,9 @@ module AutoOpenPnt =
             let diffZ = abs (fromPt.Z - z)
             let fac = diffZ / dot
             fromPt + v * fac       
-        
-        
-        /// Applies a translation vector
-        static member inline translate (shift:Vec) (pt:Pnt ) = 
-            pt + shift      
-        
-        
+                
+          
+
         /// Snap to point if within snapDistance
         static member snapIfClose (snapDistance) (snapTo:Pnt) (pt:Pnt) = 
             if (snapTo-pt).Length < snapDistance then snapTo else pt

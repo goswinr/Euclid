@@ -139,7 +139,7 @@ type Line3D =
                 ln.FromZ + z*b) 
     
     /// Returns a Line3D moved by a vector.
-    member inline ln.Translate (v:Vec) = 
+    member inline ln.Move (v:Vec) = 
         Line3D( ln.FromX+v.X,
                 ln.FromY+v.Y,
                 ln.FromZ+v.Z,
@@ -148,7 +148,7 @@ type Line3D =
                 ln.ToZ+v.Z)
 
     /// Returns a Line3D moved by a given distance in X direction.
-    member inline ln.TranslateX (distance:float) = 
+    member inline ln.MoveX (distance:float) = 
         Line3D( ln.FromX+distance,
                 ln.FromY,
                 ln.FromZ,
@@ -156,7 +156,7 @@ type Line3D =
                 ln.ToY,
                 ln.ToZ)
     /// Returns a Line3D moved by a given distance in Y direction.
-    member inline ln.TranslateY (distance:float) = 
+    member inline ln.MoveY (distance:float) = 
         Line3D( ln.FromX,
                 ln.FromY+distance,
                 ln.FromZ,
@@ -165,7 +165,7 @@ type Line3D =
                 ln.ToZ)
                 
     /// Returns a Line3D moved by a given distance in Z direction.
-    member inline ln.TranslateZ (distance:float) = 
+    member inline ln.MoveZ (distance:float) = 
         Line3D( ln.FromX,
                 ln.FromY,
                 ln.FromZ+distance,
@@ -409,20 +409,20 @@ type Line3D =
     /// Returns new Line3D from point at Parameter a to point at Parameter b
     static member inline segment a b (ln:Line3D) = ln.Segment (a, b)
     
-    /// Translate a Line3D by a vector. (same as Line3D.move)
-    static member inline translate (v:Vec) (ln:Line3D) = ln.Translate(v)
+    /// Move a Line3D by a vector. (same as Line3D.move)
+    static member inline translate (v:Vec) (ln:Line3D) = ln.Move(v)
 
     /// Returns a Line3D moved by a given distance in X direction.
-    static member inline translateX (distance:float) (ln:Line3D) = ln.TranslateX(distance)
+    static member inline moveX (distance:float) (ln:Line3D) = ln.MoveX(distance)
 
     /// Returns a Line3D moved by a given distance in Y direction.
-    static member inline translateY (distance:double) (ln:Line3D) = ln.TranslateY(distance)
+    static member inline moveY (distance:double) (ln:Line3D) = ln.MoveY(distance)
                 
     /// Returns a Line3D moved by a given distance in Z direction.
-    static member inline translateZ (distance:double) (ln:Line3D) = ln.TranslateZ(distance)
+    static member inline moveZ (distance:double) (ln:Line3D) = ln.MoveZ(distance)
 
-    /// Translate a Line3D by a vector. (same as Line3D.translate)
-    static member inline move (v:Vec) (ln:Line3D) = ln.Translate(v)
+    /// Move a Line3D by a vector. (same as Line3D.translate)
+    static member inline move (v:Vec) (ln:Line3D) = ln.Move(v)
 
     /// Applies a 4x4 transformation matrix
     static member inline transform (m:Matrix) (l:Line3D) = Line3D(Pnt.transform m l.From, Pnt.transform m l.To)     
