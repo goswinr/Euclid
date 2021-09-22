@@ -28,10 +28,10 @@ module AutoOpenPt =
         /// If you want Z to be 0.0 you can use pt.AsPnt too.
         member inline pt.WithZ z = Pnt (pt.X ,pt.Y, z)
         
-        /// Returns the distance between two points
+        /// Returns the distance between two 2D points
         member inline p.DistanceTo (b:Pt) = let v = p-b in sqrt(v.X*v.X + v.Y*v.Y )
         
-        /// Returns the squared distance between two points.
+        /// Returns the squared distance between two 2D points.
         /// This operation is slightly faster than the distance function, and sufficient for many algorithms like finding closest points.
         member inline p.DistanceToSquare (b:Pt) = let v = p-b in  v.X*v.X + v.Y*v.Y 
         
@@ -131,7 +131,7 @@ module AutoOpenPt =
                 
         /// Squared Distance between point and finite line segment  defined by start , end,  direction and length 
         /// The last two parameters  help speed up calculations.
-        member inline testPt.DistanceToLineSquare(fromPt:Pt, toPt:Pt,  uv:UnitVc, len:float) = 
+        member inline testPt.DistanceToLineSquare(fromPt:Pt, toPt:Pt, uv:UnitVc, len:float) = 
             let dir = testPt-fromPt 
             let dot = Vc.dot (uv,  dir) 
             if   dot <= 0.0 then testPt.DistanceToSquare fromPt 
@@ -302,7 +302,7 @@ module AutoOpenPt =
             let sc = distance/v.Length
             fromPt + v*sc        
         
-        /// Returns a point by evaluation a line between two point with a normalized parameter.
+        /// Returns a point by evaluation a line between two 2D point with a normalized parameter.
         /// e.g. rel=0.5 will return the middle point, rel=1.0 the endPoint
         static member inline divPt(fromPt:Pt, toPt:Pt,rel:float) : Pt  = 
             let v = toPt - fromPt

@@ -47,7 +47,7 @@ type Line3D =
     /// Format 3D Line into string including type name, X,Y and Z for start and end points , and Length. 
     /// Using nice floating point number formatting .
     override ln.ToString() = 
-        sprintf "FsEx.Geo.Line3D from %s, %s, %s to %s, %s, %s Length %s" 
+        sprintf "FsEx.Geo.Line3D from X=%s| Y=%s| Z=%s to X=%s| Y=%s| Z=%s Length %s" 
             (Format.float ln.FromX) 
             (Format.float ln.FromY)
             (Format.float ln.FromZ)
@@ -302,6 +302,170 @@ type Line3D =
     member inline ln.DistanceFromPoint(p:Pnt) =  
         ln.DistanceSqFromPoint(p) |> sqrt    
 
+    /// Checks if the angle between the two 3D lines is less than 180 degrees.
+    /// Calculates the dot product of two 3D lines. 
+    /// Then checks if it is positive.
+    member inline ln.MatchesOrientation180  (l:Line3D) = 
+        let dot = (l.ToX-l.FromX)*(ln.ToX-ln.FromX) + (l.ToY-l.FromY)*(ln.ToY-ln.FromY) + (l.ToZ-l.FromZ)*(ln.ToZ-ln.FromZ) 
+        dot > 0.0  
+
+    /// Checks if the angle between the a 2D line and a 2D vector is less than 180 degrees.
+    /// Calculates the dot product of both. 
+    /// Then checks if it is positive.
+    member inline ln.MatchesOrientation180  (v:Vec) = 
+        let dot = v.X*(ln.ToX-ln.FromX) + v.Y*(ln.ToY-ln.FromY) + v.Z*(ln.ToZ-ln.FromZ)
+        dot > 0.0 
+
+    /// Checks if the angle between the a 2D line and a 2D unit vector is less than 180 degrees.
+    /// Calculates the dot product of both. 
+    /// Then checks if it is positive.
+    member inline ln.MatchesOrientation180  (v:UnitVec) = 
+        let dot = v.X*(ln.ToX-ln.FromX) + v.Y*(ln.ToY-ln.FromY) + v.Z*(ln.ToZ-ln.FromZ)
+        dot > 0.0 
+
+    /// Checks if the angle between the two 3D lines is less than 90 degrees.   
+    /// Calculates the dot product of the unit vectors of the two 3D lines. 
+    /// Then checks if it is bigger than 0.707107 (cosine of  90 degrees).
+    member inline ln.MatchesOrientation90  (l:Line3D) = 
+        let dot = ln.UnitTangent*l.UnitTangent
+        dot > 0.707107
+        
+    /// Checks if two 3D lines are parallel. Ignoring orientation
+    /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
+    /// And checks if it is smaller than 1e-9
+    /// (NOTE: for very long lines a higher tolerance might be needed)
+    member inline ln.IsParallelTo  (l:Line3D) =         
+        // vector of line l:
+        let ax = l.ToX-l.FromX
+        let ay = l.ToY-l.FromY
+        let az = l.ToZ-l.FromZ
+        //vector of line ll:
+        let bx = ln.ToX-ln.FromX
+        let by = ln.ToY-ln.FromY
+        let bz = ln.ToZ-ln.FromZ
+        // cross product:
+        let x = ay * bz - az * by   
+        let y = az * bx - ax * bz   
+        let z = ax * by - ay * bx 
+        (x*x + y*y + z*z) < 3.162278e-05 // sqrt of 1e-9         
+
+    /// Checks if a 3D lines and a 3D vector are parallel. Ignoring orientation
+    /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
+    /// And checks if it is smaller than 1e-9
+    /// (NOTE: for very long lines a higher tolerance might be needed)
+    member inline ln.IsParallelTo (v:Vec) =  
+        let ax = v.X
+        let ay = v.Y
+        let az = v.Z
+        let bx = ln.ToX-ln.FromX
+        let by = ln.ToY-ln.FromY
+        let bz = ln.ToZ-ln.FromZ
+        // cross product:
+        let x = ay * bz - az * by   
+        let y = az * bx - ax * bz   
+        let z = ax * by - ay * bx 
+        (x*x + y*y + z*z) < 3.162278e-05 // sqrt of 1e-9   
+        
+    /// Checks if a 3D lines and a 3D unit vector are parallel. Ignoring orientation
+    /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
+    /// And checks if it is smaller than 1e-9
+    /// (NOTE: for very long lines a higher tolerance might be needed)
+    member inline ln.IsParallelTo (v:UnitVec) =         
+        let ax = v.X
+        let ay = v.Y
+        let az = v.Z
+        let bx = ln.ToX-ln.FromX
+        let by = ln.ToY-ln.FromY
+        let bz = ln.ToZ-ln.FromZ
+        // cross product:
+        let x = ay * bz - az * by   
+        let y = az * bx - ax * bz   
+        let z = ax * by - ay * bx 
+        (x*x + y*y + z*z) < 3.162278e-05 // sqrt of 1e-9         
+
+    /// Checks if two 3D lines are parallel and orientated the same way.
+    /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
+    /// And checks if it is smaller than 1e-9
+    /// Then calculates the dot product and checks if it is positive.
+    /// (NOTE: for very long lines a higher tolerance might be needed)
+    member inline ln.IsParallelAndOrientedTo  (l:Line3D) =         
+        // vector of line l:
+        let ax = l.ToX-l.FromX
+        let ay = l.ToY-l.FromY
+        let az = l.ToZ-l.FromZ
+        //vector of line ll:
+        let bx = ln.ToX-ln.FromX
+        let by = ln.ToY-ln.FromY
+        let bz = ln.ToZ-ln.FromZ
+        // cross product:
+        let x = ay * bz - az * by   
+        let y = az * bx - ax * bz   
+        let z = ax * by - ay * bx 
+        (x*x + y*y + z*z) < 3.162278e-05 // sqrt of 1e-9
+        && 
+        ax*bx+ay*by+az*bz > 0.0
+    
+    /// Checks if a 3D lines and a 3D vector are parallel and orientated the same way.
+    /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
+    /// And checks if it is smaller than 1e-9
+    /// Then calculates the dot product and checks if it is positive.
+    /// (NOTE: for very long lines a higher tolerance might be needed)
+    member inline ln.IsParallelAndOrientedTo (v:Vec) =         
+        let ax = v.X
+        let ay = v.Y
+        let az = v.Z
+        let bx = ln.ToX-ln.FromX
+        let by = ln.ToY-ln.FromY
+        let bz = ln.ToZ-ln.FromZ
+        // cross product:
+        let x = ay * bz - az * by   
+        let y = az * bx - ax * bz   
+        let z = ax * by - ay * bx 
+        (x*x + y*y + z*z) < 3.162278e-05 // sqrt of 1e-9 
+        && 
+        ax*bx+ay*by+az*bz > 0.0
+    
+    /// Checks if a 3D lines and a 3D unit vector are parallel and orientated the same way.
+    /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
+    /// And checks if it is smaller than 1e-9
+    /// Then calculates the dot product and checks if it is positive.
+    /// (NOTE: for very long lines a higher tolerance might be needed)
+    member inline ln.IsParallelAndOrientedTo (v:UnitVec) =         
+        let ax = v.X
+        let ay = v.Y
+        let az = v.Z
+        let bx = ln.ToX-ln.FromX
+        let by = ln.ToY-ln.FromY
+        let bz = ln.ToZ-ln.FromZ
+        // cross product:
+        let x = ay * bz - az * by   
+        let y = az * bx - ax * bz   
+        let z = ax * by - ay * bx 
+        (x*x + y*y + z*z) < 3.162278e-05 // sqrt of 1e-9 
+        && 
+        ax*bx+ay*by+az*bz > 0.0
+
+    /// Checks if two 3D lines are perpendicular. 
+    /// Calculates the dot product and checks if it is smaller than 1e-9.
+    /// (NOTE: for very long lines a higher tolerance might be needed)
+    member inline ln.IsPerpendicularTo (l:Line3D) =         
+        let dot = (l.ToX-l.FromX)*(ln.ToX-ln.FromX) + (l.ToY-l.FromY)*(ln.ToY-ln.FromY)+ (l.ToZ-l.FromZ)*(ln.ToZ-ln.FromZ) 
+        abs(dot) < 1e-9  
+
+    /// Checks if a 3D lines and a 3D vector are perpendicular. 
+    /// Calculates the dot product and checks if it is smaller than 1e-9.
+    /// (NOTE: for very long lines a higher tolerance might be needed)
+    member inline ln.IsPerpendicularTo (v:Vec) =         
+        let dot = v.X*(ln.ToX-ln.FromX) + v.Y*(ln.ToY-ln.FromY) + v.Z*(ln.ToZ-ln.FromZ)
+        abs(dot) < 1e-9  
+    
+    /// Checks if a 3D lines and a 3D unit vector are perpendicular. 
+    /// Calculates the dot product and checks if it is smaller than 1e-9.
+    /// (NOTE: for very long lines a higher tolerance might be needed)
+    member inline ln.IsPerpendicularTo (v:UnitVec) =         
+        let dot = v.X*(ln.ToX-ln.FromX) + v.Y*(ln.ToY-ln.FromY) + v.Z*(ln.ToZ-ln.FromZ)
+        abs(dot) < 1e-9 
+
     //-------------------------------------------------------------------
     //------------------------static members-----------------------------
     //-------------------------------------------------------------------
@@ -400,38 +564,70 @@ type Line3D =
     /// Get point at center of line
     static member inline mid (ln:Line3D) = ln.Mid
 
-    /// Reverse or flip  the Line3D (same as Line3D.flip)
+    /// Reverse or flip  the 3D Line  (same as Line3D.flip)
     static member inline reverse (ln:Line3D) = ln.Reversed
 
-    /// Reverse or flip  the Line3D (same as Line3D.reverse)
+    /// Reverse or flip  the 3D Line  (same as Line3D.reverse)
     static member inline flip (ln:Line3D) = ln.Reversed
     
-    /// Returns new Line3D from point at Parameter a to point at Parameter b
+    /// Returns new 3D Line  from point at Parameter a to point at Parameter b
     static member inline segment a b (ln:Line3D) = ln.Segment (a, b)
     
-    /// Move a Line3D by a vector. (same as Line3D.move)
+    /// Move a 3D Line  by a vector. (same as Line3D.move)
     static member inline translate (v:Vec) (ln:Line3D) = ln.Move(v)
 
-    /// Returns a Line3D moved by a given distance in X direction.
+    /// Returns a 3D Line  moved by a given distance in X direction.
     static member inline moveX (distance:float) (ln:Line3D) = ln.MoveX(distance)
 
-    /// Returns a Line3D moved by a given distance in Y direction.
+    /// Returns a 3D Line  moved by a given distance in Y direction.
     static member inline moveY (distance:double) (ln:Line3D) = ln.MoveY(distance)
                 
-    /// Returns a Line3D moved by a given distance in Z direction.
+    /// Returns a 3D Line  moved by a given distance in Z direction.
     static member inline moveZ (distance:double) (ln:Line3D) = ln.MoveZ(distance)
 
-    /// Move a Line3D by a vector. (same as Line3D.translate)
+    /// Move a 3D Line  by a vector. (same as Line3D.translate)
     static member inline move (v:Vec) (ln:Line3D) = ln.Move(v)
 
     /// Applies a 4x4 transformation matrix
     static member inline transform (m:Matrix) (l:Line3D) = Line3D(Pnt.transform m l.From, Pnt.transform m l.To)     
     
-    /// Rotation a Line3D around Z-Axis.
+    /// Rotation a 3D Line around Z-Axis.
     static member inline rotate (r:Rotation2D) (l:Line3D) = Line3D(Pnt.rotateZBy r l.From, Pnt.rotateZBy r l.To) 
     
-    /// Rotation a Line3D round given Center point an a local Z Axis.
+    /// Rotation a 3D Line  round given Center point an a local Z Axis.
     static member inline rotateOn (cen:Pnt) (r:Rotation2D) (l:Line3D) = Line3D(Pnt.rotateZonCenterBy cen r l.From, Pnt.rotateZonCenterBy cen r l.To) 
+
+    /// Ensure 3D Line has a positive dot product with given orientation Line
+    static member inline matchOrientation (orientationToMatch:Line3D) (l:Line3D) = 
+        if orientationToMatch.Direction * l.Direction < 0.0 then l.Reversed else l    
+
+    /// Checks if the angle between the two 3D lines is less than 180 degrees.
+    /// Calculates the dot product of two 3D lines. 
+    /// Then checks if it is positive.
+    static member inline matchesOrientation180  (l:Line3D) (ln:Line3D) = l.MatchesOrientation180 ln       
+
+    /// Checks if the angle between the two 3D lines is less than 90 degrees.   
+    /// Calculates the dot product of the unit vectors of the two 3D lines. 
+    /// Then checks if it is bigger than 0.707107 (cosine of  90 degrees).
+    static member inline matchesOrientation90  (l:Line3D) (ln:Line3D) = l.MatchesOrientation90 ln
+        
+    /// Checks if two 3D lines are parallel. Ignoring orientation
+    /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
+    /// And checks if it is smaller than 1e-9
+    /// (NOTE: for very long lines a higher tolerance might be needed)
+    static member inline isParallelTo  (l:Line3D) (ln:Line3D) =   l.IsParallelTo ln
+
+    /// Checks if two 3D lines are parallel and orientated the same way.
+    /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
+    /// And checks if it is smaller than 1e-9
+    /// Then calculates the dot product and checks if it is positive.
+    /// (NOTE: for very long lines a higher tolerance might be needed)
+    static member inline isParallelAndOrientedTo  (l:Line3D) (ln:Line3D) =  l.IsParallelAndOrientedTo ln
+        
+    /// Checks if two 3D lines are perpendicular. 
+    /// Calculates the dot product and checks if it is smaller than 1e-9.
+    /// (NOTE: for very long lines a higher tolerance might be needed)
+    static member inline isPerpendicularTo (l:Line3D) (ln:Line3D) =  l.IsPerpendicularTo ln 
 
     /// Assumes Line3D to be infinite!
     /// Returns the parameter at which a point is closest to the infinit line.
@@ -466,13 +662,7 @@ type Line3D =
     /// Get distance from start of line to point projected onto line, may be negative
     static member inline lengthToPtOnLine (line:Line3D) pt = 
         // TODO can be optimized by inlining floats.
-        line.Tangent.Unitized * (pt-line.From)  
-    
-    /// Calculates the dot product of two lines. 
-    /// Then checks if it is positive to see if the Lines are oriented the same way.
-    static member inline areInSameDirection (ll:Line3D) (l:Line3D) = 
-        let dot = (l.ToX-l.FromX)*(ll.ToX-ll.FromX) + (l.ToY-l.FromY)*(ll.ToY-ll.FromY) + (l.ToZ-l.FromZ)*(ll.ToZ-ll.FromZ)
-        dot > 0.0 
+        line.Tangent.Unitized * (pt-line.From) 
 
     /// Extend by absolute amount at start and end.
     static member inline extend (distAtStart:float) (distAtEnd:float) (ln:Line3D) = 
@@ -561,7 +751,7 @@ type Line3D =
     /// If you need an exact intersection test purely based on distance use Line3D.intersectLine
     /// It first calculates the signed volume of the Parallelepiped define by three vectors from the four corners of the lines.
     /// Then it checks if it is smaller than given volumeTolerance fo Parallelepiped.
-    /// Using the VolumeTolerance makes a positive result not only dependent on the distance of the two lines from each other but also on their lengths. 
+    /// Using the VolumeTolerance makes a positive result not only dependent on the distance of the two 3D lines from each other but also on their lengths. 
     static member inline doLinesIntersectTol volumeTolerance (l:Line3D) (ll:Line3D) =  
         // Two non-parallel lines p1+Rv1 and p2+Rv2 intersect if and only if (v1×v2)⋅(p1−p2)=0
         // https://math.stackexchange.com/questions/697124/how-to-determine-if-two-lines-in-3d-intersect
@@ -587,7 +777,7 @@ type Line3D =
     /// Checks if two finit 3D lines do intersect.
     /// It first calculates the signed volume of the Parallelepiped define by three vectors from the four corners of the lines.
     /// Then it checks if it is smaller than Util.zeroLengthTol.
-    /// Using the volume of the Parallelepiped makes a positive result not only dependent on the distance of the two lines from each other but also on their lengths.
+    /// Using the volume of the Parallelepiped makes a positive result not only dependent on the distance of the two 3D lines from each other but also on their lengths.
     /// This is a fast check for intersection.
     /// If you need an exact intersection test purely based on distance use Line3D.intersectLine
     static member inline doLinesIntersect (l:Line3D) (ll:Line3D) =  

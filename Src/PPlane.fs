@@ -32,6 +32,6 @@ type PPlane =
     internal new (origin, axisX, axisY, axisZ)  =  {Origin=origin; Xaxis=axisX; Yaxis=axisY; Zaxis=axisZ}
     
     /// Format PPlane into string with nicely formatted floating point numbers.
-    override pl.ToString() = sprintf "FsEx.Geo.PPlane(Origin:%s| X-ax:%s| Y-ax=%s| Z-ax:%s)" pl.Origin.AsString pl.Xaxis.AsString pl.Yaxis.AsString pl.Zaxis.AsString
+    override pl.ToString() = sprintf "FsEx.Geo.PPlane(Origin:%s\r\nX-axis:%s\r\n Y-axis=%s\r\n Z-axis:%s)" pl.Origin.AsString pl.Xaxis.AsString pl.Yaxis.AsString pl.Zaxis.AsString
 
     // see extension members in folder 'members'

@@ -33,11 +33,11 @@ type Vc =
         {X=x; Y=y}  
     
     /// Format 2D vector into string including type name and nice floating point number formatting of X,Y and length.
-    override v.ToString() = sprintf "FsEx.Geo.Vc(X=%s, Y=%s) Length: %s" (Format.float v.X) (Format.float v.Y) (Format.float (sqrt (v.X*v.X + v.Y*v.Y)))
+    override v.ToString() = sprintf "FsEx.Geo.Vc: X=%s| Y=%s| Length: %s" (Format.float v.X) (Format.float v.Y) (Format.float (sqrt (v.X*v.X + v.Y*v.Y)))
     
     /// Format 2D vector into string with nice floating point number formatting of X and Y
     /// But without full type name or length as in v.ToString()
-    member v.AsString = sprintf "X=%s, Y=%s" (Format.float v.X) (Format.float v.Y) 
+    member v.AsString = sprintf "X=%s| Y=%s" (Format.float v.X) (Format.float v.Y) 
     
 
     /// Negate or inverse a 2D vectors. Returns a new 2D vector.
@@ -91,11 +91,11 @@ type UnitVc =
         {X=x; Y=y}
         
     /// Format 2D unit vector into string including type name and nice floating point number formatting.
-    override v.ToString() =  sprintf "FsEx.Geo.UnitVc(X=%s, Y=%s)" (Format.float v.X)(Format.float v.Y)        
+    override v.ToString() =  sprintf "FsEx.Geo.UnitVc: X=%s| Y=%s" (Format.float v.X)(Format.float v.Y)        
     
     /// Format 2D unit vector into string with nice floating point number formatting of X and Y
     /// But without full type name as in v.ToString()
-    member v.AsString = sprintf "X=%s, Y=%s" (Format.float v.X) (Format.float v.Y) 
+    member v.AsString = sprintf "X=%s| Y=%s" (Format.float v.X) (Format.float v.Y) 
 
     /// Negate or inverse a 2D unit vectors. Returns a new 2D unit vector.
     static member inline (~- )  (v:UnitVc) = UnitVc( -v.X , -v.Y )
@@ -130,7 +130,7 @@ type UnitVc =
     static member inline ( * )  (f:float   , a:UnitVc  ) = Vc (a.X * f , a.Y * f )
     
     /// Dot product, or scalar product of two 2D unit vectors. 
-    /// Returns a float. This float is the Cosine of the angle between the two vectors.
+    /// Returns a float. This float is the Cosine of the angle between the two 2D vectors.
     static member inline ( * )  (a:UnitVc  , b:UnitVc  ) = a.X * b.X+ a.Y * b.Y  
     
     /// Dot product, or scalar product of a 2D unit vector with a 2D vector  
@@ -181,11 +181,11 @@ type Pt =
         {X=x; Y=y}
 
     /// Format 2D point into string including type name and nice floating point number formatting.
-    override p.ToString() = sprintf "FsEx.Geo.Pt(X=%s, Y=%s)" (Format.float p.X) (Format.float p.Y)
+    override p.ToString() = sprintf "FsEx.Geo.Pt: X=%s| Y=%s" (Format.float p.X) (Format.float p.Y)
     
     /// Format 2D point into string with nice floating point number formatting of X and Y
     /// But without full type name as in p.ToString()
-    member p.AsString = sprintf "X=%s, Y=%s" (Format.float p.X) (Format.float p.Y) 
+    member p.AsString = sprintf "X=%s| Y=%s" (Format.float p.X) (Format.float p.Y) 
 
     /// Subtract one 2D point from another. 
     /// 'a-b' returns a new 2D vector from b to a. 

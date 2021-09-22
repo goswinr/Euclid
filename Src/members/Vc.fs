@@ -35,10 +35,6 @@ module AutoOpenVc =
         /// Returns a new 2D vector with half the length.
         member inline v.Half = Vc (v.X*0.5 ,v.Y*0.5)
     
-        /// Tests if dot product is bigger than 0.0.
-        /// That means the angle between the two vectors is less than 90 Degrees.
-        member inline v.MatchesOrientation (vv:Vc) = v*vv > 0. 
-
         /// Returns a new 2D vector scaled to the desired length.
         member inline v.WithLength (desiredLength:float) =  
             let l = sqrt(v.X*v.X+v.Y*v.Y) 
@@ -52,14 +48,7 @@ module AutoOpenVc =
             let l = sqrt(v.X * v.X  + v.Y * v.Y)
             // #if DEBUG add here too? TODO ?
             if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "%O is too small for unitizing, Tolerance:%g" v zeroLengthTol
-            UnitVc.createUnchecked( v.X/l , v.Y/l)          
-        
-        // Returns the 2D vector unitized.
-        // If the length of the vector is 0.0 an invalid unit vector is returned.
-        // UnitVc(0,0,0)
-        //member inline v.UnitizedUnchecked =  
-        //    let l = sqrt(v.X*v.X + v.Y*v.Y) 
-        //    UnitVc.createUnchecked( v.X/l , v.Y/l)   
+            UnitVc.createUnchecked( v.X/l , v.Y/l)       
         
         /// Test if the 2D vector is a unit vector. 
         /// Tests if square length is within 6 float steps of 1.0
@@ -161,6 +150,43 @@ module AutoOpenVc =
         /// Convert 2D vector to 3D point using 0.0 as Z value. 
         member inline v.AsPnt        = Pnt(v.X, v.Y, 0.0)
 
+        /// Checks if the angle between the two 2D vectors is less than 180 degrees.
+        /// Calculates the dot product of two 2D vectors. 
+        /// Then checks if it is positive.
+        member inline v.MatchesOrientation180  (other:Vc) = 
+            v * other > 0.0  
+
+        /// Checks if the angle between the two 2D vectors is less than 90 degrees.   
+        /// Calculates the dot product of the two 2D vectors unitized. 
+        /// Then checks if it is bigger than 0.707107 (cosine of  90 degrees).
+        member inline v.MatchesOrientation90  (other:Vc) = 
+            v.Unitized * other.Unitized > 0.707107
+            
+        /// Checks if two 2D vectors are parallel. Ignoring orientation
+        /// Calculates the cross product of the two 2D vectors. (= the area of the parallelogram)
+        /// And checks if it is smaller than 1e-9
+        /// (NOTE: for very long 2D vectors a higher tolerance might be needed)
+        member inline v.IsParallelTo  (other:Vc) =                     
+            // 2D cross product. 
+            // Its Just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
+            abs(v.X*other.Y - v.Y*other.X) < 1e-9 
+
+        /// Checks if two 2D vectors are parallel and orientated the same way.
+        /// Calculates the cross product of the two 2D vectors. (= the area of the parallelogram)
+        /// And checks if it is smaller than 1e-9
+        /// Then calculates the dot product and checks if it is positive.
+        /// (NOTE: for very long 2D vectors a higher tolerance might be needed)
+        member inline v.IsParallelAndOrientedTo  (other:Vc) =
+            abs(v.X*other.Y - v.Y*other.X) < 1e-9  
+            && 
+            v.X*other.X + v.Y*other.Y > 0.0 
+            
+        /// Checks if two 2D vectors are perpendicular. 
+        /// Calculates the dot product and checks if it is smaller than 1e-9.
+        /// (NOTE: for very long 2D vectors a higher tolerance might be needed)
+        member inline v.IsPerpendicularTo (other:Vc) =     
+            abs(v.X*other.X + v.Y*other.Y) < 1e-9 
+
 
         //----------------------------------------------------------------------------------------------
         //--------------------------  Static Members  --------------------------------------------------
@@ -214,15 +240,15 @@ module AutoOpenVc =
         static member inline asVec(v:Vc) = Vec(v.X, v.Y, 0.0)        
         
         /// 2D Cross product, of two 2D vectors.
-        /// Its Just a scalar equal to the area of the parallelogram spanned by the input vectors.
+        /// Its Just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
         static member inline cross (a:Vc, b:Vc)  = a.X*b.Y - a.Y*b.X        
         
         /// 2D Cross product, of a 2D unit vectors an a 2D vector. 
-        /// Its Just a scalar equal to the area of the parallelogram spanned by the input vectors.
+        /// Its Just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
         static member inline cross (a:UnitVc, b:Vc)  = a.X*b.Y - a.Y*b.X
         
         /// 2D Cross product, of a 2D vectors an a 2D unit vector. 
-        /// Its Just a scalar equal to the area of the parallelogram spanned by the input vectors.
+        /// Its Just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
         static member inline cross (a:Vc, b:UnitVc)  = a.X*b.Y - a.Y*b.X
 
         /// Dot product, or scalar product of two 2D vectors. 
@@ -250,11 +276,7 @@ module AutoOpenVc =
         static member inline setY  y (v:Vc) = v.WithY y        
                 
         /// Add two 2D vectors together. Returns a new 2D vector.
-        static member inline add (a:Vc) (b:Vc) = b + a  
-        
-        /// Tests if dot product is bigger than 0.0.
-        /// That means the angle between the two vectors is less than 90 Degrees.
-        static member inline dirMatch (a:Vc) (b:Vc) = b.MatchesOrientation a
+        static member inline add (a:Vc) (b:Vc) = b + a   
         
         /// Multiplies a 2D vector with a scalar, also called scaling a vector. 
         /// Same as Vc.setLength. Returns a new 2D vector.
@@ -399,12 +421,45 @@ module AutoOpenVc =
 
         /// Ensure vector has a positive dot product with given orientation vector
         static member inline matchOrientation (orientationToMatch:Vc) (v:Vc) = 
-            if orientationToMatch * v < 0.0 then -v else v
-        
+            if orientationToMatch * v < 0.0 then -v else v  
 
-        /// Check if vector has a positive dot product with given orientation vector
-        static member inline doesOrientationMatch (orientationToCheck:Vc) (v:Vc) = 
-            orientationToCheck * v > 0.0        
+        /// Checks if the angle between the two 2D vectors is less than 180 degrees.
+        /// Calculates the dot product of two 2D vectors. 
+        /// Then checks if it is positive.
+        static member inline matchesOrientation180  (v:Vc) (other:Vc) = 
+            v * other > 0.0  
+
+        /// Checks if the angle between the two 2D vectors is less than 90 degrees.   
+        /// Calculates the dot product of the two 2D vectors unitized. 
+        /// Then checks if it is bigger than 0.707107 (cosine of  90 degrees).
+        static member inline matchesOrientation90  (v:Vc)  (other:Vc) = 
+            v.Unitized * other.Unitized > 0.707107
+            
+        /// Checks if two 2D vectors are parallel. Ignoring orientation
+        /// Calculates the cross product of the two 2D vectors. (= the area of the parallelogram)
+        /// And checks if it is smaller than 1e-9
+        /// (NOTE: for very long 2D vectors a higher tolerance might be needed)
+        static member inline isParallelTo  (v:Vc)  (other:Vc) =                     
+            // 2D cross product. 
+            // Its Just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
+            abs(v.X*other.Y - v.Y*other.X) < 1e-9 
+
+        /// Checks if two 2D vectors are parallel and orientated the same way.
+        /// Calculates the cross product of the two 2D vectors. (= the area of the parallelogram)
+        /// And checks if it is smaller than 1e-9
+        /// Then calculates the dot product and checks if it is positive.
+        /// (NOTE: for very long 2D vectors a higher tolerance might be needed)
+        static member inline isParallelAndOrientedTo  (v:Vc)  (other:Vc) =
+            abs(v.X*other.Y - v.Y*other.X) < 1e-9  
+            && 
+            v.X*other.X + v.Y*other.Y > 0.0 
+            
+        /// Checks if two 2D vectors are perpendicular. 
+        /// Calculates the dot product and checks if it is smaller than 1e-9.
+        /// (NOTE: for very long 2D vectors a higher tolerance might be needed)
+        static member inline isPerpendicularTo (v:Vc)  (other:Vc) =     
+            abs(v.X*other.X + v.Y*other.Y) < 1e-9     
+
 
         /// Rotate the a 2D vector Counter Clockwise by a 2D Rotation (that has cos and sin precomputed)
         static member inline rotateBy (r:Rotation2D) (v:Vc) = 

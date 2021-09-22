@@ -5,6 +5,9 @@ open FsEx.Geo.Util
 
 #nowarn "44" // for hidden constructors via Obsolete Attribute
 
+
+//TODO finish docstrings
+
 /// A plane defined by a point and a normal vector
 [<Struct;NoEquality;NoComparison>]// because its made up from floats
 type Plane = // Normals are always unitized
@@ -30,6 +33,7 @@ type Plane = // Normals are always unitized
     /// normal vector gets unitized in constructor
     static member create(pt,normal:UnitVec) =        
         Plane(pt,normal)
+
 
     static member createFrom3Points (a:Pnt) (b:Pnt) (c:Pnt) =
         let n =  Vec.cross (c-b,a-b)

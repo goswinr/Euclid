@@ -94,7 +94,7 @@ module Intersect =
         |Colinear       -> true  
         
     
-    /// Return intersection point or mid point between two lines
+    /// Return intersection point or mid point between two 2D lines
     /// (used mainly for drawing debug notes at this point )
     let getXPointOrMid (ap:Pt, au:UnitVc, al:float, bp:Pt, bu:UnitVc, bl:float, snapThreshold:float) : Pt =
         match getRelation(ap, au, al,  bp, bu, bl, snapThreshold)   with

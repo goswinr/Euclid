@@ -29,13 +29,13 @@ type BRect =
     
     /// Nicely formatted string representation of the bounding Rectangle, including its size.
     override r.ToString() =  
-        sprintf "FsEx.Geo.BRect: length(x)=%s , width(y)=%s (at X=%s | Y=%s)" 
+        sprintf "FsEx.Geo.BRect: length(x)=%s| width(y)=%s| at X=%s| Y=%s" 
             (Format.float (r.MaxX - r.MinX)) (Format.float (r.MaxY - r.MinY)) (Format.float r.MinX) (Format.float r.MinY)
     
     /// Format Bounding Rectangle into string with nice floating point number formatting of size and position
     /// But without full type name as in rect.ToString()
     member r.AsString = 
-        sprintf "len=%s , wid=%s (at X=%s | Y=%s)" 
+        sprintf "length=%s| width=%s| at X=%s| Y=%s" 
             (Format.float (r.MaxX - r.MinX)) (Format.float (r.MaxY - r.MinY)) (Format.float r.MinX) (Format.float r.MinY)
     
     /// The Point where X, Y and Z are the minimum values.
@@ -87,7 +87,7 @@ type BRect =
     member inline r.Expand(dist) : BRect = 
         let n = BRect(r.MinX-dist, r.MinY-dist, r.MaxX+dist, r.MaxY+dist)
         if dist<0. &&  (n.MinX > n.MaxX || n.MinY > n.MaxX) then 
-            FsExGeoException.Raise "BRect.Expand(dist): Negative distance %g cause an underflow, on %s" dist r.AsString
+            FsExGeoException.Raise "BRect.Expand(dist): Negative distance %g causes an underflow, on %s" dist r.AsString
         n
 
 
@@ -96,7 +96,7 @@ type BRect =
     member inline r.Expand(xDist,yDist) : BRect = 
         let n = BRect(r.MinX-xDist, r.MinY-yDist, r.MaxX+xDist, r.MaxY+yDist)
         if n.MinX > n.MaxX ||  n.MinY > n.MaxX then 
-            FsExGeoException.Raise "BRect.Expand(x,y): Negative distance(s) X %g and Y:%g  cause an underflow, on %s" xDist yDist r.AsString
+            FsExGeoException.Raise "BRect.Expand(x,y): Negative distance(s) X: %g and Y: %g cause an underflow, on %s" xDist yDist r.AsString
         n
 
     

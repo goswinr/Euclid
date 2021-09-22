@@ -51,6 +51,8 @@ open Util
 //[<IsByRefLike>]
 type Box =  
     
+    //TODO add mor functionality
+
     /// The Origin Corner of the Box.
     val Origin: Pnt
 
@@ -71,16 +73,19 @@ type Box =
 
     /// The size in X direction, same as member box.SizeX.
     member inline b.Length = b.Xaxis.Length
+
     /// The size in X direction, same as member box.Length. 
     member inline b.SizeX = b.Xaxis.Length   
 
     /// The size in Y direction, same as member box.SizeY.  
     member inline b.Width  = b.Yaxis.Length
+
     /// The size in Y direction, same as member box.Width.
     member inline b.SizeY  = b.Yaxis.Length   
 
     /// The size in Z direction, same as member box.SizeZ. 
     member inline b.Height  = b.Zaxis.Length
+
     /// The size in Z direction, same as member box.Height.
     member inline b.SizeZ  = b.Zaxis.Length    
 
@@ -209,7 +214,8 @@ type Box =
         Box(b.MinPnt, Vec.XAxis*b.Length, Vec.YAxis*b.Width, Vec.ZAxis*b.Height)
 
     /// Move the  Box by a vector.
-    static member move (v:Vec) (pl:Box) = Box(pl.Origin + v, pl.Xaxis, pl.Yaxis, pl.Zaxis) 
+    static member move (v:Vec) (pl:Box) =
+        Box(pl.Origin + v, pl.Xaxis, pl.Yaxis, pl.Zaxis) 
     
     /// Translate along the local X-axis of the Box
     static member translateX (distX:float) (b:Box) = 

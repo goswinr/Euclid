@@ -2,6 +2,8 @@ namespace FsEx.Geo
 
 open System
 
+// the below utility functions are copied over from hhttps://github.com/goswinr/FsEx
+
 module internal Array = 
 
     /// Returns the index of the smallest element

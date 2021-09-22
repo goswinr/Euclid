@@ -25,10 +25,10 @@ module AutoOpenPnt =
         /// Returns a new 3D vector with new z coordinate, X and Y  stay the same.
         member inline pt.WithZ z = Pnt (pt.X ,pt.Y, z)
 
-        /// Returns the distance between two points
+        /// Returns the distance between two 3D points
         member inline p.DistanceTo (b:Pnt) = let v = p-b in sqrt(v.X*v.X + v.Y*v.Y + v.Z*v.Z )
         
-        /// Returns the squared distance between two points.
+        /// Returns the squared distance between two 3D points.
         /// This operation is slightly faster than the distance function, and sufficient for many algorithms like finding closest points.
         member inline p.DistanceToSquare (b:Pnt) = let v = p-b in  v.X*v.X + v.Y*v.Y + v.Z*v.Z
         
@@ -299,7 +299,7 @@ module AutoOpenPnt =
             let sc = distance/v.Length
             fromPt + v*sc       
         
-        /// Returns a point by evaluation a line between two point with a normalized parameter.
+        /// Returns a point by evaluation a line between two 3D point with a normalized parameter.
         /// e.g. rel=0.5 will return the middle point, rel=1.0 the endPoint
         static member inline divPt(fromPt:Pnt, toPt:Pnt,rel:float) : Pnt  = 
             let v = toPt - fromPt
@@ -336,9 +336,9 @@ module AutoOpenPnt =
             else Vec(x/len, y/len, 0.0)
         
 
-        /// Offsets two points by two given distances.
+        /// Offsets two 3D points by two given distances.
         /// The fist distance (distHor) is applied in in X-Y plane
-        /// The second distance (distNormal) is applied perpendicular to the line (made by the two points) and perpendicular to the horizontal offset direction.
+        /// The second distance (distNormal) is applied perpendicular to the line (made by the two 3D points) and perpendicular to the horizontal offset direction.
         /// this is in World.Z direction if both points are at the same Z level.
         /// If points are closer than than 1e-6 units the World.XAxis is used as first direction and World Z-axis as second direction.
         static member offsetTwoPt(  fromPt:Pnt,

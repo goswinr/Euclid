@@ -39,7 +39,7 @@ type Line2D =
     /// Format 2D Line into string including type name, X and Y for start and end points , and Length. 
     /// Using nice floating point number formatting .
     override ln.ToString() = 
-        sprintf "FsEx.Geo.Line2D from %s, %s to %s, %s Length %s" 
+        sprintf "FsEx.Geo.Line2D from X=%s| Y=%s to X=%s| Y=%s Length %s" 
             (Format.float ln.FromX) 
             (Format.float ln.FromY)
             (Format.float ln.ToX)
@@ -50,7 +50,7 @@ type Line2D =
     /// Using nice floating point number formatting .
     /// But without full type name as in v.ToString()
     member ln.AsString = 
-        sprintf "%s, %s to %s, %s" 
+        sprintf "X=%s| Y=%s to X=%s| Y=%s" 
             (Format.float ln.FromX) 
             (Format.float ln.FromY)
             (Format.float ln.ToX)
@@ -251,7 +251,126 @@ type Line2D =
 
     /// Returns distance from point to (finite) line.
     member inline ln.DistanceFromPoint(p:Pt) =  
-        ln.DistanceSqFromPoint(p) |> sqrt    
+        ln.DistanceSqFromPoint(p) |> sqrt   
+
+    /// Checks if the angle between the two 2D lines is less than 180 degrees.
+    /// Calculates the dot product of two 2D lines. 
+    /// Then checks if it is positive.
+    member inline ln.MatchesOrientation180  (l:Line2D) = 
+        let dot = (l.ToX-l.FromX)*(ln.ToX-ln.FromX) + (l.ToY-l.FromY)*(ln.ToY-ln.FromY) 
+        dot > 0.0  
+
+    /// Checks if the angle between the a 2D line and a 2D vector is less than 180 degrees.
+    /// Calculates the dot product of both. 
+    /// Then checks if it is positive.
+    member inline ln.MatchesOrientation180  (v:Vc) = 
+        let dot = v.X*(ln.ToX-ln.FromX) + v.Y*(ln.ToY-ln.FromY) 
+        dot > 0.0 
+
+    /// Checks if the angle between the a 2D line and a 2D unit vector is less than 180 degrees.
+    /// Calculates the dot product of both. 
+    /// Then checks if it is positive.
+    member inline ln.MatchesOrientation180  (v:UnitVc) = 
+        let dot = v.X*(ln.ToX-ln.FromX) + v.Y*(ln.ToY-ln.FromY) 
+        dot > 0.0 
+
+    /// Checks if the angle between the two 2D lines is less than 90 degrees.   
+    /// Calculates the dot product of the unit vectors of the two 2D lines. 
+    /// Then checks if it is bigger than 0.707107 (cosine of  90 degrees).
+    member inline ln.MatchesOrientation90  (l:Line2D) = 
+        let dot = ln.UnitTangent*l.UnitTangent
+        dot > 0.707107
+        
+    /// Checks if two 2D lines are parallel. Ignoring orientation
+    /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
+    /// And checks if it is smaller than 1e-9
+    /// (NOTE: for very long lines a higher tolerance might be needed)
+    member inline ln.IsParallelTo  (l:Line2D) =         
+        let cross = (l.ToX-l.FromX)*(ln.ToY-ln.FromY) - (l.ToY-l.FromY)*(ln.ToX-ln.FromX)
+        abs(cross) < 1e-9 
+
+    /// Checks if a 2D lines and a 2D vector are parallel. Ignoring orientation
+    /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
+    /// And checks if it is smaller than 1e-9
+    /// (NOTE: for very long lines a higher tolerance might be needed)
+    member inline ln.IsParallelTo (v:Vc) =         
+        let cross = v.X*(ln.ToY-ln.FromY) - v.Y*(ln.ToX-ln.FromX)
+        abs(cross) < 1e-9  
+        
+    /// Checks if a 2D lines and a 2D unit vector are parallel. Ignoring orientation
+    /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
+    /// And checks if it is smaller than 1e-9
+    /// (NOTE: for very long lines a higher tolerance might be needed)
+    member inline ln.IsParallelTo (v:UnitVc) =         
+        let cross = v.X*(ln.ToY-ln.FromY) - v.Y*(ln.ToX-ln.FromX)
+        abs(cross) < 1e-9             
+
+    /// Checks if two 2D lines are parallel and orientated the same way.
+    /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
+    /// And checks if it is smaller than 1e-9
+    /// Then calculates the dot product and checks if it is positive.
+    /// (NOTE: for very long lines a higher tolerance might be needed)
+    member inline ln.IsParallelAndOrientedTo  (l:Line2D) =         
+        let ax = l.ToX-l.FromX
+        let ay = l.ToY-l.FromY        
+        let bx = ln.ToX-ln.FromX
+        let by = ln.ToY-ln.FromY       
+        // 2D cross product. 
+        // Its Just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
+        let cross = abs(ax*by - ay*bx )
+        cross < 1e-9 && ax*bx+ay*by > 0.0
+
+    /// Checks if a 2D lines and a 2D vector are parallel and orientated the same way.
+    /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
+    /// And checks if it is smaller than 1e-9
+    /// Then calculates the dot product and checks if it is positive.
+    /// (NOTE: for very long lines a higher tolerance might be needed)
+    member inline ln.IsParallelAndOrientedTo (v:Vc) =         
+        let ax = v.X
+        let ay = v.Y       
+        let bx = ln.ToX-ln.FromX
+        let by = ln.ToY-ln.FromY       
+        // 2D cross product. 
+        // Its Just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
+        let cross = abs(ax*by - ay*bx )
+        cross < 1e-9 && ax*bx+ay*by > 0.0
+    
+    /// Checks if a 2D lines and a 2D unit vector are parallel and orientated the same way.
+    /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
+    /// And checks if it is smaller than 1e-9
+    /// Then calculates the dot product and checks if it is positive.
+    /// (NOTE: for very long lines a higher tolerance might be needed)
+    member inline ln.IsParallelAndOrientedTo (v:UnitVc) =         
+        let ax = v.X
+        let ay = v.Y       
+        let bx = ln.ToX-ln.FromX
+        let by = ln.ToY-ln.FromY       
+        // 2D cross product. 
+        // Its Just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
+        let cross = abs(ax*by - ay*bx )
+        cross < 1e-9 && ax*bx+ay*by > 0.0    
+        
+    /// Checks if two 2D lines are perpendicular. 
+    /// Calculates the dot product and checks if it is smaller than 1e-9.
+    /// (NOTE: for very long lines a higher tolerance might be needed)
+    member inline ln.IsPerpendicularTo (l:Line2D) =         
+        let dot = (l.ToX-l.FromX)*(ln.ToX-ln.FromX) + (l.ToY-l.FromY)*(ln.ToY-ln.FromY) 
+        abs(dot) < 1e-9   
+
+    /// Checks if a 2D lines and a 2D vector are perpendicular. 
+    /// Calculates the dot product and checks if it is smaller than 1e-9.
+    /// (NOTE: for very long lines a higher tolerance might be needed)
+    member inline ln.IsPerpendicularTo (v:Vc) =         
+        let dot = v.X*(ln.ToX-ln.FromX) + v.Y*(ln.ToY-ln.FromY) 
+        abs(dot) < 1e-9  
+    
+    /// Checks if a 2D lines and a 2D unit vector are perpendicular. 
+    /// Calculates the dot product and checks if it is smaller than 1e-9.
+    /// (NOTE: for very long lines a higher tolerance might be needed)
+    member inline ln.IsPerpendicularTo (v:UnitVc) =         
+        let dot = v.X*(ln.ToX-ln.FromX) + v.Y*(ln.ToY-ln.FromY) 
+        abs(dot) < 1e-9      
+         
 
     //-------------------------------------------------------------------
     //------------------------static members-----------------------------
@@ -362,6 +481,38 @@ type Line2D =
     /// Rotation a Line2D around a given Center.
     static member inline rotateOn (cen:Pt) (r:Rotation2D) (l:Line2D) = Line2D(Pt.rotateWithCenterBy cen r l.From, Pt.rotateWithCenterBy cen r l.To) 
 
+    /// Ensure 2D Line has a positive dot product with given orientation Line
+    static member inline matchOrientation (orientationToMatch:Line2D) (l:Line2D) = 
+        if orientationToMatch.Vector * l.Vector < 0.0 then l.Reversed else l  
+
+    /// Checks if the angle between the two 2D lines is less than 180 degrees.
+    /// Calculates the dot product of two 2D lines. 
+    /// Then checks if it is positive.
+    static member inline matchesOrientation180  (l:Line2D) (ln:Line2D) = l.MatchesOrientation180 ln       
+
+    /// Checks if the angle between the two 2D lines is less than 90 degrees.   
+    /// Calculates the dot product of the unit vectors of the two 2D lines. 
+    /// Then checks if it is bigger than 0.707107 (cosine of  90 degrees).
+    static member inline matchesOrientation90  (l:Line2D) (ln:Line2D) = l.MatchesOrientation90 ln
+        
+    /// Checks if two 2D lines are parallel. Ignoring orientation
+    /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
+    /// And checks if it is smaller than 1e-9
+    /// (NOTE: for very long lines a higher tolerance might be needed)
+    static member inline isParallelTo  (l:Line2D) (ln:Line2D) =   l.IsParallelTo ln
+
+    /// Checks if two 2D lines are parallel and orientated the same way.
+    /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
+    /// And checks if it is smaller than 1e-9
+    /// Then calculates the dot product and checks if it is positive.
+    /// (NOTE: for very long lines a higher tolerance might be needed)
+    static member inline isParallelAndOrientedTo  (l:Line2D) (ln:Line2D) =  l.IsParallelAndOrientedTo ln
+        
+    /// Checks if two 2D lines are perpendicular. 
+    /// Calculates the dot product and checks if it is smaller than 1e-9.
+    /// (NOTE: for very long lines a higher tolerance might be needed)
+    static member inline isPerpendicularTo (l:Line2D) (ln:Line2D) =  l.IsPerpendicularTo ln
+
     /// Assumes Line2D to be infinite!
     /// Returns the parameter at which a point is closest to the infinit line.
     /// If it is smaller than 0.0 or bigger than 1.0 it is outside of the finit line.
@@ -398,12 +549,7 @@ type Line2D =
     static member inline lengthToPtOnLine (line:Line2D) pt = 
         // TODO can be optimized by inlining floats.
         line.Tangent.Unitized * (pt-line.From)  
-    
-    /// Calculates the dot product of two lines. 
-    /// Then checks if it is positive to see if the Lines are oriented the same way.
-    static member inline areInSameDirection (ll:Line2D) (l:Line2D) = 
-        let dot = (l.ToX-l.FromX)*(ll.ToX-ll.FromX) + (l.ToY-l.FromY)*(ll.ToY-ll.FromY) 
-        dot > 0.0 
+        
 
     /// Extend by absolute amount at start and end.
     static member inline extend (distAtStart:float) (distAtEnd:float) (ln:Line2D) = 

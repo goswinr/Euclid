@@ -8,7 +8,7 @@ open System
 module AutoOpenUnitVc = 
     open Util
 
-    /// Returns distance between the tips of two vectors
+    /// Returns distance between the tips of two 2D vectors
     let inline internal vecDist2(ax:float,ay:float,bx:float,by:float) =
         let x = bx-ax
         let y = by-ay
@@ -26,16 +26,12 @@ module AutoOpenUnitVc =
         /// If you want Z to be 0.0 you can use v.AsVec or v.AsUnitVec too.
         member inline v.WithZ z = Vec (v.X, v.Y, z)        
 
-        /// Tests if dot product is bigger than 0.0.
-        /// That means the angle between the two vectors is less than 90 Degrees.
-        member inline v.MatchesOrientation (vv:UnitVc) = v*vv > 0.
-
         /// 2D cross product. 
-        /// Its Just a scalar equal to the area of the parallelogram spanned by the input vectors.
+        /// Its Just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
         member inline a.Cross (b:Vc)     = a.X*b.Y - a.Y*b.X
 
         /// 2D cross product. 
-        /// Its Just a scalar equal to the area of the parallelogram spanned by the input vectors.
+        /// Its Just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
         member inline a.Cross (b:UnitVc) = a.X*b.Y - a.Y*b.X
 
         /// 90 Degree rotation counter clockwise.
@@ -129,6 +125,38 @@ module AutoOpenUnitVc =
         /// Convert 2D unit vector to 3D point using 0.0 as Z value. 
         member inline v.AsPnt        = Pnt(v.X, v.Y, 0.0)
         
+        /// Checks if the angle between the two 2D unit vectors is less than 180 degrees.
+        /// Calculates the dot product of two 2D unit vectors. 
+        /// Then checks if it is positive.
+        member inline v.MatchesOrientation180  (other:UnitVc) = 
+            v * other > 0.0  
+
+        /// Checks if the angle between the two 2D unit vectors is less than 90 degrees.   
+        /// Calculates the dot product of the two 2D unit vectors . 
+        /// Then checks if it is bigger than 0.707107 (cosine of  90 degrees).
+        member inline v.MatchesOrientation90  (other:UnitVc) = 
+            v* other > 0.707107
+            
+        /// Checks if two 2D unit vectors are parallel. Ignoring orientation
+        /// Calculates the cross product of the two 2D vectors. (= the area of the parallelogram)
+        /// And checks if it is smaller than 1e-9
+        member inline v.IsParallelTo  (other:UnitVc) = 
+            abs(v.X*other.Y - v.Y*other.X) < 1e-9 
+
+        /// Checks if two 2D unit vectors are parallel and orientated the same way.
+        /// Calculates the cross product of the two 2D vectors. (= the area of the parallelogram)
+        /// And checks if it is smaller than 1e-9
+        /// Then calculates the dot product and checks if it is positive.
+        member inline v.IsParallelAndOrientedTo  (other:UnitVc) =
+            abs(v.X*other.Y - v.Y*other.X) < 1e-9  
+            && 
+            v.X*other.X + v.Y*other.Y > 0.0 
+            
+        /// Checks if two 2D unit vectors are perpendicular. 
+        /// Calculates the dot product and checks if it is smaller than 1e-9.
+        /// (NOTE: for very long 2D unit vectors a higher tolerance might be needed)
+        member inline v.IsPerpendicularTo (other:UnitVc) =     
+            abs(v.X*other.X + v.Y*other.Y) < 1e-9 
         
         //----------------------------------------------------------------------------------------------
         //--------------------------  Static Members  --------------------------------------------------
@@ -208,7 +236,7 @@ module AutoOpenUnitVc =
         static member inline cross (a:Vc, b:UnitVc)  = a.X*b.Y - a.Y*b.X
         
         /// Dot product, or scalar product of two 2D unit vectors. 
-        /// Returns a float. This float is the Cosine of the angle between the two vectors.
+        /// Returns a float. This float is the Cosine of the angle between the two 2D unit vectors.
         static member inline dot  (a:UnitVc, b:UnitVc  ) = a.X * b.X + a.Y * b.Y 
 
         /// Dot product, or scalar product of a 2D unit vector with a 2D vector  
@@ -238,10 +266,7 @@ module AutoOpenUnitVc =
         /// Add two 2D unit vectors together. Returns a new (non-unitized) 2D vector.
         static member inline add      (a:UnitVc) (b:UnitVc) = b + a  
 
-        /// Tests if dot product is bigger than 0.0.
-        /// That means the angle between the two vectors is less than 90 Degrees.
-        static member inline dirMatch (a:UnitVc) (b:UnitVc) = b.MatchesOrientation a
-
+        
         /// Multiplies a 2D unit vector with a scalar, also called scaling a vector. 
         /// Same as UnitVc.setLength. Returns a new (non-unitized) 2D vector.
         static member inline scale      (scale:float) (v:UnitVc) = Vc (v.X * scale , v.Y * scale )        
@@ -367,14 +392,42 @@ module AutoOpenUnitVc =
         /// In Degree
         /// Range: 0.0 to 2 Pi ( = 0 to 360 Degrees)
         static member inline direction360 (v:UnitVc)  = v.Direction360
-        
+    
         /// Ensure vector has a positive dot product with given orientation vector
         static member inline matchOrientation (orientationToMatch:UnitVc) (v:UnitVc) = 
-            if orientationToMatch * v < 0.0 then -v else v
+            if orientationToMatch * v < 0.0 then -v else v  
 
-        /// Check if vector has a positive dot product with given orientation vector
-        static member inline doesOrientationMatch (orientationToCheck:UnitVc) (v:UnitVc) = 
-            orientationToCheck * v > 0.0
+        /// Checks if the angle between the two 2D unit vectors is less than 180 degrees.
+        /// Calculates the dot product of two 2D unit vectors. 
+        /// Then checks if it is positive.
+        static member inline matchesOrientation180  (v:UnitVc) (other:UnitVc) = 
+            v * other > 0.0  
+
+        /// Checks if the angle between the two 2D unit vectors is less than 90 degrees.   
+        /// Calculates the dot product of the two 2D unit vectors unitized. 
+        /// Then checks if it is bigger than 0.707107 (cosine of  90 degrees).
+        static member inline matchesOrientation90  (v:UnitVc)  (other:UnitVc) = 
+            v * other > 0.707107
+            
+        /// Checks if two 2D unit vectors are parallel. Ignoring orientation
+        /// Calculates the cross product of the two 2D unit vectors. (= the area of the parallelogram)
+        /// And checks if it is smaller than 1e-9
+        static member inline isParallelTo  (v:UnitVc)  (other:UnitVc) =  
+            abs(v.X*other.Y - v.Y*other.X) < 1e-9 
+
+        /// Checks if two 2D unit vectors are parallel and orientated the same way.
+        /// Calculates the cross product of the two 2D unit vectors. (= the area of the parallelogram)
+        /// And checks if it is smaller than 1e-9
+        /// Then calculates the dot product and checks if it is positive.
+        static member inline isParallelAndOrientedTo  (v:UnitVc)  (other:UnitVc) =
+            abs(v.X*other.Y - v.Y*other.X) < 1e-9  
+            && 
+            v.X*other.X + v.Y*other.Y > 0.0 
+            
+        /// Checks if two 2D unit vectors are perpendicular. 
+        /// Calculates the dot product and checks if it is smaller than 1e-9.
+        static member inline isPerpendicularTo (v:UnitVc)  (other:UnitVc) =     
+            abs(v.X*other.X + v.Y*other.Y) < 1e-9     
 
         /// Rotate the a 2D UnitVector Counter Clockwise by a 2D Rotation (that has cos and sin precomputed)
         static member inline rotateBy (r:Rotation2D) (v:UnitVc) = 

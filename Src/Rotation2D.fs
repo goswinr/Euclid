@@ -14,6 +14,7 @@ open FsEx.Geo.Util
 [<IsReadOnly>]
 //[<IsByRefLike>]
 type Rotation2D = 
+    
     /// The Sine component of this rotation
     val Sin : float
     
@@ -25,7 +26,7 @@ type Rotation2D =
     new (sin, cos) = 
         #if DEBUG
         let sum = sin*sin + cos*cos in 
-        if 0.99999999 > sum || sum > 1.00000001  then  FsExGeoException.Raise "FsEx.Geo.Rotate Constructor failed for sin:%g and cos:%g.  Because sin*sin + cos*cos needs to be 1.0." sin cos
+        if 0.99999 > sum || sum > 1.00001  then  FsExGeoException.Raise "FsEx.Geo.Rotate Constructor failed for sin:%g and cos:%g.  Because sin*sin + cos*cos needs to be 1.0." sin cos
         #endif
         {Sin = sin; Cos = cos}      
     

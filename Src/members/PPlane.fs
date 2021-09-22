@@ -7,6 +7,8 @@ open FsEx.Geo.Util
 [<AutoOpen>]
 module AutoOpenPPlane =     
     
+    //TODO finish docstrings
+
     // pre allocate , used often 
     let private worldXY = PPlane(Pnt.Origin,UnitVec.XAxis,UnitVec.YAxis,UnitVec.ZAxis)
     

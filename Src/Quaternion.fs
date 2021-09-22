@@ -48,7 +48,7 @@ type Quaternion =
     
     /// Format Quaternion into string also showing angle in Degree as nicely formatted floating point number.
     override q.ToString() =         
-        sprintf "FsEx.Geo.Quaternion(X=%s, Y=%s, Z=%s, W=%s, angle: %s°)" 
+        sprintf "FsEx.Geo.Quaternion(X=%s| Y=%s| Z=%s, W=%s| angle: %s°)" 
                 (Format.float q.X) (Format.float q.Y) (Format.float q.Z) (Format.float q.W) (Format.float q.AngleInDegrees)
      
     /// Multiply two Quaternions. Its like adding one rotation to the other.

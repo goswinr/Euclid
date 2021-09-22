@@ -41,10 +41,6 @@ module AutoOpenVec =
         /// Returns a new 3D vector with half the length.
         member inline v.Half = Vec (v.X*0.5 ,v.Y*0.5, v.Z*0.5)
     
-        /// Tests if dot product is bigger than 0.0.
-        /// That means the angle between the two vectors is less than 90 Degrees
-        member inline v.MatchesOrientation (vv:Vec) = v*vv > 0. // direction match
-
         /// Returns a new 3D vector scaled to the desired length.
         member inline v.WithLength (desiredLength:float) =  
             let l = sqrt(v.X*v.X+v.Y*v.Y+v.Z*v.Z) 
@@ -169,6 +165,48 @@ module AutoOpenVec =
         /// Convert 3D vector to 2D Vector, discarding the Z value. 
         member inline v.AsVc  = Vc(v.X, v.Y)        
         
+
+        /// Checks if the angle between the two 3D vectors is less than 180 degrees.
+        /// Calculates the dot product of two 3D vectors. 
+        /// Then checks if it is positive.
+        member inline v.MatchesOrientation180  (other:Vec) = 
+            v * other > 0.0  
+
+        /// Checks if the angle between the two 3D vectors is less than 90 degrees.   
+        /// Calculates the dot product of the two 3D vectors unitized. 
+        /// Then checks if it is bigger than 0.707107 (cosine of  90 degrees).
+        member inline v.MatchesOrientation90  (other:Vec) = 
+            v.Unitized * other.Unitized > 0.707107
+            
+        /// Checks if two 3D vectors are parallel. Ignoring orientation
+        /// Calculates the cross product of the two 3D vectors. (It's length is the volume of the parallelepiped)
+        /// And checks if it is smaller than 1e-9.
+        /// (NOTE: for very long 3D vectors a higher tolerance might be needed)
+        member inline v.IsParallelTo  (other:Vec) =                     
+            let x =  v.Y * other.Z - v.Z * other.Y   
+            let y =  v.Z * other.X - v.X * other.Z   
+            let z =  v.X * other.Y - v.Y * other.X 
+            (x*x + y*y + z*z) < 3.162278e-05 // sqrt of 1e-9
+
+        /// Checks if two 3D vectors are parallel and orientated the same way.
+        /// Calculates the cross product of the two 3D vectors. (It's length is the volume of the parallelepiped)
+        /// And checks if it is smaller than 1e-9.
+        /// Then calculates the dot product and checks if it is positive.
+        /// (NOTE: for very long 3D vectors a higher tolerance might be needed)
+        member inline v.IsParallelAndOrientedTo  (other:Vec) =
+            let x =  v.Y * other.Z - v.Z * other.Y   
+            let y =  v.Z * other.X - v.X * other.Z   
+            let z =  v.X * other.Y - v.Y * other.X 
+            (x*x + y*y + z*z) < 3.162278e-05 // sqrt of 1e-9
+            && 
+            v.X*other.X + v.Y*other.Y + v.Z*other.Z > 0.0 
+            
+        /// Checks if two 3D vectors are perpendicular. 
+        /// Calculates the dot product and checks if it is smaller than 1e-9.
+        /// (NOTE: for very long 3D vectors a higher tolerance might be needed)
+        member inline v.IsPerpendicularTo (other:Vec) =     
+            abs(v.X*other.X + v.Y*other.Y + v.Z*other.Z) < 1e-9 
+
         //----------------------------------------------------------------------------------------------
         //--------------------------  Static Members  --------------------------------------------------
         //----------------------------------------------------------------------------------------------
@@ -279,10 +317,6 @@ module AutoOpenVec =
         /// Add two 3D vectors together. Returns a new 3D vector.
         static member inline add      (a:Vec) (b:Vec) = b + a  
         
-        /// Tests if dot product is bigger than 0.0.
-        /// That means the angle between the two vectors is less than 90 Degrees.
-        static member inline dirMatch (a:Vec) (b:Vec) = b.MatchesOrientation a
-        
         /// Multiplies a 3D vector with a scalar, also called scaling a vector. 
         /// Same as Vec.setLength. Returns a new 3D vector.
         static member inline scale    (f:float) (v:Vec) = Vec (v.X * f , v.Y * f , v.Z * f)    
@@ -352,25 +386,25 @@ module AutoOpenVec =
         /// It is defined as the dot product of one of the vectors with the cross product of the other two.
         static member inline determinant (u:Vec, v:Vec, w:Vec) = u.X*v.Y*w.Z + v.X*w.Y*u.Z + w.X*u.Y*v.Z - w.X*v.Y*u.Z - v.X*u.Y*w.Z - u.X*w.Y*v.Z 
     
-        /// Returns positive angle between two vectors in Radians.
+        /// Returns positive angle between two 3D vectors in Radians.
         /// Takes vector orientation into account,
         /// Range 0.0 to Pi( = 0 to 180 Degree).
         static member inline anglePi (a:Vec) (b:Vec) = 
             UnitVec.anglePi a.Unitized b.Unitized 
 
-        /// Returns positive angle between two vectors in Degrees.
+        /// Returns positive angle between two 3D vectors in Degrees.
         /// Takes vector orientation into account,
         /// Range 0 to 180 Degrees.
         static member inline angle180 (a:Vec) (b:Vec) = 
             UnitVec.angle180 a.Unitized b.Unitized 
 
-        /// Returns positive angle between two vectors in Radians.
+        /// Returns positive angle between two 3D vectors in Radians.
         /// Ignores vector orientation,
         /// Range: 0.0 to Pi/2 ( = 0 to 90 Degrees) 
         static member inline angleHalfPi (a:Vec) (b:Vec) = 
             UnitVec.angleHalfPi a.Unitized b.Unitized 
 
-        /// Returns positive angle between two vectors in Degrees.
+        /// Returns positive angle between two 3D vectors in Degrees.
         /// Ignores vector orientation,
         /// Range: 0 to 90 Degrees.
         static member inline angle90 (a:Vec) (b:Vec) = 
@@ -385,7 +419,7 @@ module AutoOpenVec =
             if r >= 0. then  r
             else r + Util.twoPi 
 
-        /// Returns positive angle of two vector projected in  X-Y plane. 
+        /// Returns positive angle of two 3D vector projected in  X-Y plane. 
         /// In Degrees
         /// Considering positive rotation round the World Z-axis
         /// Range: 0 to 360 Degrees
@@ -425,14 +459,39 @@ module AutoOpenVec =
         static member inline bisector (a:Vec) (b:Vec) = a.Unitized + b.Unitized 
 
         
-        /// Ensure vector has a positive dot product with given orientation vector
+        /// Ensure vector has a positive dot product with given orientation vector.
         static member inline matchOrientation (orientationToMatch:Vec) (v:Vec) = 
             if orientationToMatch * v < 0.0 then -v else v
         
 
-        /// Check if vector has a positive dot product with given orientation vector
-        static member inline doesOrientationMatch (orientationToCheck:Vec) (v:Vec) = 
-            orientationToCheck * v > 0.0        
+        /// Checks if the angle between the two 3D vectors is less than 180 degrees.
+        /// Calculates the dot product of two 3D vectors. 
+        /// Then checks if it is positive.
+        static member inline matchesOrientation180 (other:Vec) (v:Vec) = v.MatchesOrientation180 other             
+
+        /// Checks if the angle between the two 3D vectors is less than 90 degrees.   
+        /// Calculates the dot product of the two 3D vectors unitized. 
+        /// Then checks if it is bigger than 0.707107 (cosine of  90 degrees).
+        static member inline matchesOrientation90 (other:Vec) (v:Vec) = v.MatchesOrientation90 other           
+            
+        /// Checks if two 3D vectors are parallel. Ignoring orientation
+        /// Calculates the cross product of the two 3D vectors. (It's length is the volume of the parallelepiped)
+        /// And checks if it is smaller than 1e-9.
+        /// (NOTE: for very long 3D vectors a higher tolerance might be needed)
+        static member inline isParallelTo (other:Vec) (v:Vec) =   v.IsParallelTo other
+
+        /// Checks if two 3D vectors are parallel and orientated the same way.
+        /// Calculates the cross product of the two 3D vectors. (It's length is the volume of the parallelepiped)
+        /// And checks if it is smaller than 1e-9.
+        /// Then calculates the dot product and checks if it is positive.
+        /// (NOTE: for very long 3D vectors a higher tolerance might be needed)
+        static member inline isParallelAndOrientedTo (other:Vec) (v:Vec) = v.IsParallelAndOrientedTo other
+        
+        /// Checks if two 3D vectors are perpendicular. 
+        /// Calculates the dot product and checks if it is smaller than 1e-9.
+        /// (NOTE: for very long 3D vectors a higher tolerance might be needed)
+        static member inline isPerpendicularTo (other:Vec) (v:Vec) =  v.IsPerpendicularTo other
+        
 
         // Rotate2D: 
 

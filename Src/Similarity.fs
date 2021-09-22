@@ -2,34 +2,40 @@ namespace FsEx.Geo
 
 open System.Collections.Generic
 
-/// For finding 2d object that are similar but not exactly the same 
+/// For finding 2D object that are similar but not exactly the same 
 /// Based on their 2D point clouds.
 /// Within one list of points the order does not matter, but each location must exist only once 
 /// in order to be consider similar within the tolerance.
-/// (this could be extended to work in 3d too)
+/// (This module could be extended to work in 3d too)
 module Similarity2D =  
     
-    /// The category is used to only compare groups of the same category.
-    /// The bounding Rectangle of the points is used as a fast and first check for similarity.
-    /// Within one list of points the order does not matter, but each location must exist only once 
-    /// in order to be consider similar within the tolerance with another SimilaritySubGroup
+    /// A type used inside ObjectToCheck. 
+    /// It represent a group of similar input.
+    /// The 'category' string is used to only compare groups of the same category.
+    /// The 'bounding Rectangle' of the points is used as a fast and first check for similarity.
+    /// Within one 'list of points' the order does not matter, but each location must exist only once 
+    /// in order to be consider similar within the tolerance with another GroupInsideObjectToCheck
     [<NoEquality;NoComparison>]// because its made up from Pt
-    type SimilaritySubGroup =  { 
+    type GroupInsideObjectToCheck =  { 
         category:string
         bRect:BRect
         points:Pt[] // must be sorted by 'X' property for binary search,  
         //duplicate points within tolerance will most likely lead to not recognized similarity (not all indices will be covered in simPts)
         } 
     
+    /// A type to represent on object that shall be compared to other objects.
+    /// 'extend' (just a 2D point)  represents the max value of a bounding Rectangle,  min value must be x=0 and y=0. 
+    /// This is used for a very fast initial similarity check.
+    /// 'groups' (an array of GroupInsideObjectToCheck) must be sorted by 'category' property. 
     [<NoEquality;NoComparison>]// because its made up from Pt
-    type SimilarityMainGroup = {   
+    type ObjectToCheck = {   
         extend: Pt // represents the max value of a bounding Rectangle ,  min value must be x0, y0
-        groups: SimilaritySubGroup[] // must be sorted by 'category' property. for Array.forall2 function       
+        groups: GroupInsideObjectToCheck[] // must be sorted by 'category' property. for Array.forall2 function       
         } 
     
     /// Returns index of a similar point or -1.    
     /// Points Array ps[] must be sorted by 'X' property. 
-    let internal simPt tol (ps:Pt[]) (pt:Pt)=     
+    let private simPt tol (ps:Pt[]) (pt:Pt)=     
         let x = pt.X
         let y = pt.Y
         // finds the index of a point where x matches,  there might be more than one match
@@ -75,8 +81,8 @@ module Similarity2D =
                 searchIdxUp ix      
             | ixy ->  
                 ixy 
-      
-    let internal simPts tol (ps:Pt[]) (cs:Pt[]) = 
+    
+    let private simPts tol (ps:Pt[]) (cs:Pt[]) = 
         let rs = Array.zeroCreate ps.Length //to later check that all indices are covered
         ps |> Array.forall( fun p ->  
             match simPt tol cs p with 
@@ -90,7 +96,7 @@ module Similarity2D =
         && rs |> Array.forall id 
     
     /// Takes transformed and pre sorted by category main groups
-    let areSimilar (tol:float) (a:SimilarityMainGroup) (b:SimilarityMainGroup) : bool = 
+    let areSimilar (tol:float) (a:ObjectToCheck) (b:ObjectToCheck) : bool = 
         let inline sim (a:Pt) (b:Pt)  = 
             abs(a.X - b.X) < tol && abs(a.Y - b.Y) < tol
         
@@ -108,12 +114,12 @@ module Similarity2D =
             ) 
         
     
-    /// The returned SimilarityMainGroup will have the subgroups sorted by category 
+    /// The returned ObjectToCheck will have the subgroups sorted by category 
     /// and each point will be transformed by the the overall bounding Rectangle Min point to 0,0.
     /// Input Position of points does not matter,  they will be moved to origin by overall bounding Rectangle over all lists, 
     /// But any similarity that could be achieved by Rotation will not be discovered.
     /// The string is used as a unique category identifier.
-    let getSimilarityData (ptss:ResizeArray<string*ResizeArray<Pt>>) : SimilarityMainGroup =         
+    let getSimilarityData (ptss:ResizeArray<string*ResizeArray<Pt>>) : ObjectToCheck =         
         let sptss = ptss |> ResizeArray.sortBy fst
         // compute the overall bounding Rectangle and the shifting needed to move Rectangle to origin:
         let mutable bb = BRect.create(sptss.[0] |> snd)
@@ -136,12 +142,12 @@ module Similarity2D =
             |]
         }
     
-    /// This will group similar generic items together based on their SimilarityMainGroup.
+    /// This will group similar generic items together based on their ObjectToCheck.
     /// The list of items and precomputed SimilarityMainGroups must have the same length and correspond to each other at the same index.
     /// SimilarityMainGroups is precomputed for better performance.
-    let getGrouped (tolerance,  items:ResizeArray<'T>, sims:ResizeArray<SimilarityMainGroup>) : ResizeArray<ResizeArray<'T>> =  
+    let getGrouped (tolerance,  items:ResizeArray<'T>, sims:ResizeArray<ObjectToCheck>) : ResizeArray<ResizeArray<'T>> =  
         if items.Count<>sims.Count then failwithf "Count mismatch in Similarity2D.getGrouped"
-        let unique = ResizeArray<SimilarityMainGroup>()
+        let unique = ResizeArray<ObjectToCheck>()
         let groups = Dictionary<int, ResizeArray<'T>>() 
         for sid, it in Seq.zip sims items do  
             match unique|> ResizeArray.tryFindIndex (areSimilar tolerance sid) with

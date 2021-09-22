@@ -9,7 +9,7 @@ open System
 module AutoOpenUnitVec = 
     open Util
 
-    /// Returns distance between the tips of two vectors
+    /// Returns distance between the tips of two 3D unit vectors
     let inline internal vecDist3(ax:float,ay:float,az:float,bx:float,by:float,bz:float) =
         let x = bx-ax
         let y = by-ay
@@ -35,10 +35,7 @@ module AutoOpenUnitVec =
         /// Returns a new 3D vector with new z coordinate, X and Y  stay the same.
         member inline v.WithZ z = Vec (v.X ,v.Y, z)
 
-        /// Tests if dot product is bigger than 0.0.
-        /// That means the angle between the two vectors is less than 90 Degrees
-        member inline v.MatchesOrientation (vv:UnitVec) = v*vv > 0. // direction match
-        
+       
         /// Returns a perpendicular horizontal vector. Rotated counterclockwise.
         /// Or Vec.Zero if input is vertical.
         /// Just does Vec(-v.Y, v.X, 0.0) 
@@ -135,6 +132,46 @@ module AutoOpenUnitVec =
 
         /// Convert 3D unit vector to 2D Vector, discarding the Z value. 
         member inline v.AsVc  = Vc(v.X, v.Y)      
+
+        
+        /// Checks if the angle between the two 3D unit vectors is less than 180 degrees.
+        /// Calculates the dot product of two 3D unit vectors. 
+        /// Then checks if it is positive.
+        member inline v.MatchesOrientation180  (other:UnitVec) = 
+            v * other > 0.0  
+
+        /// Checks if the angle between the two 3D unit vectors is less than 90 degrees.   
+        /// Calculates the dot product of the two 3D unit vectors unitized. 
+        /// Then checks if it is bigger than 0.707107 (cosine of  90 degrees).
+        member inline v.MatchesOrientation90  (other:UnitVec) = 
+            v * other > 0.707107
+            
+        /// Checks if two 3D unit vectors are parallel. Ignoring orientation
+        /// Calculates the cross product of the two 3D unit vectors. (It's length is the volume of the parallelepiped)
+        /// And checks if it is smaller than 1e-9.        
+        member inline v.IsParallelTo  (other:UnitVec) =                     
+            let x =  v.Y * other.Z - v.Z * other.Y   
+            let y =  v.Z * other.X - v.X * other.Z   
+            let z =  v.X * other.Y - v.Y * other.X 
+            (x*x + y*y + z*z) < 3.162278e-05 // sqrt of 1e-9
+
+        /// Checks if two 3D unit vectors are parallel and orientated the same way.
+        /// Calculates the cross product of the two 3D unit vectors. (It's length is the volume of the parallelepiped)
+        /// And checks if it is smaller than 1e-9.
+        /// Then calculates the dot product and checks if it is positive.
+        member inline v.IsParallelAndOrientedTo  (other:UnitVec) =
+            let x =  v.Y * other.Z - v.Z * other.Y   
+            let y =  v.Z * other.X - v.X * other.Z   
+            let z =  v.X * other.Y - v.Y * other.X 
+            (x*x + y*y + z*z) < 3.162278e-05 // sqrt of 1e-9
+            && 
+            v.X*other.X + v.Y*other.Y + v.Z*other.Z > 0.0 
+            
+        /// Checks if two 3D unit vectors are perpendicular. 
+        /// Calculates the dot product and checks if it is smaller than 1e-9.
+        member inline v.IsPerpendicularTo (other:UnitVec) =     
+            abs(v.X*other.X + v.Y*other.Y + v.Z*other.Z) < 1e-9 
+
 
         //----------------------------------------------------------------------------------------------
         //--------------------------  Static Members  --------------------------------------------------
@@ -233,7 +270,7 @@ module AutoOpenUnitVec =
         static member inline cross (a:Vec, b:UnitVec)  = Vec (a.Y * b.Z - a.Z * b.Y ,  a.Z * b.X - a.X * b.Z ,  a.X * b.Y - a.Y * b.X ) 
 
         /// Dot product, or scalar product of two 3D unit vectors. 
-        /// Returns a float. This float is the Cosine of the angle between the two vectors.
+        /// Returns a float. This float is the Cosine of the angle between the two 3D unit vectors.
         static member inline dot  (a:UnitVec, b:UnitVec)   = a.X * b.X + a.Y * b.Y + a.Z * b.Z
         
         /// Dot product, or scalar product of a 3D unit vector with a 3D vector  
@@ -264,10 +301,6 @@ module AutoOpenUnitVec =
         
         /// Add two 3D unit vectors together. Returns a new (non-unitized) 3D vector.
         static member inline add      (a:UnitVec) (b:UnitVec) = b + a  
-        
-        /// Tests if dot product is bigger than 0.0.
-        /// That means the angle between the two vectors is less than 90 Degrees.
-        static member inline dirMatch (a:UnitVec) (b:UnitVec) = b.MatchesOrientation a
         
         /// Multiplies a 3D unit vector with a scalar, also called scaling a vector. 
         /// Same as UnitVec.setLength. Returns a new (non-unitized) 3D vector.
@@ -366,7 +399,7 @@ module AutoOpenUnitVec =
         static member inline angle180 (a:UnitVec) (b:UnitVec) = 
             UnitVec.anglePi a b |>  toDegrees 
 
-        /// Returns positive angle of two vector projected in X-Y plane in Degrees
+        /// Returns positive angle of two 3D unit vector projected in X-Y plane in Degrees
         /// Considering positive rotation round the World Z-axis
         /// Range:  0 to 360 Degrees
         static member inline angle360InXY (a:UnitVec, b:UnitVec)   = 
@@ -399,16 +432,37 @@ module AutoOpenUnitVec =
         /// In Degree
         /// Range: 0.0 to 2 Pi ( = 0 to 360 Degrees) 
         /// For World X-Y plane. Considers only the X and Y components of the vector.
-        static member inline direction360InXY (v:UnitVec)  = v.Direction360InXY
-        
+        static member inline direction360InXY (v:UnitVec)  = v.Direction360InXY        
 
-        /// Ensure vector has a positive dot product with given orientation vector
+    
+        /// Ensure vector has a positive dot product with given orientation vector.
         static member inline matchOrientation (orientationToMatch:UnitVec) (v:UnitVec) = 
-            if orientationToMatch * v < 0.0 then -v else v
+            if orientationToMatch * v < 0.0 then -v else v        
 
-        /// Check if vector has a positive dot product with given orientation vector
-        static member inline doesOrientationMatch (orientationToCheck:UnitVec) (v:UnitVec) = 
-            orientationToCheck * v > 0.0   
+        /// Checks if the angle between the two 3D unit vectors is less than 180 degrees.
+        /// Calculates the dot product of two 3D unit vectors. 
+        /// Then checks if it is positive.
+        static member inline matchesOrientation180 (other:UnitVec) (v:UnitVec) = v.MatchesOrientation180 other             
+
+        /// Checks if the angle between the two 3D unit vectors is less than 90 degrees.   
+        /// Calculates the dot product of the two 3D unit vectors unitized. 
+        static member inline matchesOrientation90 (other:UnitVec) (v:UnitVec) = v.MatchesOrientation90 other           
+            
+        /// Checks if two 3D unit vectors are parallel. Ignoring orientation
+        /// Calculates the cross product of the two 3D unit vectors. (It's length is the volume of the parallelepiped)
+        /// And checks if it is smaller than 1e-9.
+        static member inline isParallelTo (other:UnitVec) (v:UnitVec) =   v.IsParallelTo other
+
+        /// Checks if two 3D unit vectors are parallel and orientated the same way.
+        /// Calculates the cross product of the two 3D unit vectors. (It's length is the volume of the parallelepiped)
+        /// And checks if it is smaller than 1e-9.
+        /// Then calculates the dot product and checks if it is positive.
+        static member inline isParallelAndOrientedTo (other:UnitVec) (v:UnitVec) = v.IsParallelAndOrientedTo other
+        
+        /// Checks if two 3D unit vectors are perpendicular. 
+        /// Calculates the dot product and checks if it is smaller than 1e-9.
+        static member inline isPerpendicularTo (other:UnitVec) (v:UnitVec) =  v.IsPerpendicularTo other
+        
 
         // Rotate2D: 
 
