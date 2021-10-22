@@ -56,6 +56,19 @@ type Plane = // Normals are always unitized
     member inline pl.AngleToLine (ln:Line3D) = UnitVec.angle90 ln.Tangent.Unitized pl.Normal 
     
 
+    //----------------------------------------------------------------------------------------------
+    //--------------------------  Static Members  --------------------------------------------------
+    //----------------------------------------------------------------------------------------------
+
+
+
+    /// Checks if two 3D  Planes are equal within tolerance.
+    static member equals tol (a:Plane) (b:Plane) =
+        let tt = tol*tol
+        Pnt.distanceSq a.Origin b.Origin < tt &&
+        UnitVec.differenceSq a.Normal b.Normal < tt 
+
+
     static member  normal (p:Plane) = p.Normal
     
     static member  pt (a:Plane) = a.Origin

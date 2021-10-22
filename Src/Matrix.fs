@@ -221,6 +221,35 @@ type Matrix =
     //    )     
 
 
+
+
+    //----------------------------------------------------------------------------------------------
+    //--------------------------  Static Members  --------------------------------------------------
+    //----------------------------------------------------------------------------------------------
+
+
+    /// Checks if two Matrices are equal within tolerance.
+    /// By comparing the fields M11 to M44 each with the given tolerance.
+    static member equals tol (a:Matrix) (b:Matrix) =        
+        abs(a.M11-b.M11) < tol &&
+        abs(a.M12-b.M12) < tol &&
+        abs(a.M13-b.M13) < tol &&
+        abs(a.M14-b.M14) < tol &&
+        abs(a.M21-b.M21) < tol &&
+        abs(a.M22-b.M22) < tol &&
+        abs(a.M23-b.M23) < tol &&
+        abs(a.M24-b.M24) < tol &&
+        abs(a.M31-b.M31) < tol &&
+        abs(a.M32-b.M32) < tol &&
+        abs(a.M33-b.M33) < tol &&
+        abs(a.M34-b.M34) < tol &&
+        abs(a.X41-b.X41) < tol &&
+        abs(a.Y42-b.Y42) < tol &&
+        abs(a.Z43-b.Z43) < tol &&
+        abs(a.M44-b.M44) < tol
+
+
+
     /// Multiplies matrixA with matrixB
     /// The resulting transformation will first do matrixA and then matrixB
     static member multiply (matrixA:Matrix,  matrixB:Matrix) =  

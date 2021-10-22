@@ -16,9 +16,11 @@ open FsEx.Geo.Util
 type Rotation2D = 
     
     /// The Sine component of this rotation
+    /// The range of these field is -1.0 to +1.0
     val Sin : float
     
     /// The Cosine component of this rotation
+    /// The range of these field is -1.0 to +1.0
     val Cos : float    
 
     /// Unsafe internal constructor,  public only for inlining.
@@ -35,6 +37,19 @@ type Rotation2D =
         let deg =  r.Sin  |> asinSafe |> toDegrees |> Format.float
         sprintf "FsEx.Geo.Rotation2D of %s° Degrees." deg
     
+
+
+    //----------------------------------------------------------------------------------------------
+    //--------------------------  Static Members  --------------------------------------------------
+    //----------------------------------------------------------------------------------------------
+
+    /// Checks if two 2D Rotations are equal within tolerance.
+    /// By comparing the fields Sin and Cos each with the given tolerance.
+    /// The range of these field is -1.0 to +1.0
+    static member equals tol (a:Rotation2D) (b:Rotation2D) =        
+        abs(a.Sin-b.Sin) < tol &&
+        abs(a.Cos-b.Cos) < tol 
+
     ///Construct 2D Rotation from angle in Radians 
     static member createFromRadians rad =  
         Rotation2D (sin rad, cos rad)
@@ -70,4 +85,4 @@ type Rotation2D =
         r.Add(Rotation2D.createFromRadians rad)
 
     
-   
+    

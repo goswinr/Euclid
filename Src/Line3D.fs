@@ -471,6 +471,13 @@ type Line3D =
     //-------------------------------------------------------------------
 
     
+    /// Checks if two 3D Lines are equal within tolerance.
+    /// Identical Lines in opposite directions are not considered equal.
+    static member equals tol (a:Line3D) (b:Line3D) =
+        let tt = tol*tol
+        Pnt.distanceSq a.From b.From < tt &&
+        Pnt.distanceSq a.To b.To < tt
+
     /// Creates a 2D line from 3D line. Ignoring Z value.
     static member inline toLine2D (ln:Line3D) = Line2D( ln.FromX,ln.FromY,ln.ToX,ln.ToY)
 

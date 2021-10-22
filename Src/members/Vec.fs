@@ -223,6 +223,13 @@ module AutoOpenVec =
         /// Returns a zero length vector: Vec(0,0,0)
         static member inline Zero   = Vec(0,0,0)  // this member is needed by Seq.sum, so that it doesn't fail on empty seq.  
         
+        /// Returns the distance between the tips of two 3D vectors.
+        static member inline difference (a:Vec) (b:Vec) = let v = a-b in sqrt(v.X*v.X + v.Y*v.Y + v.Z*v.Z)
+                
+        /// Returns the squared distance between the tips of two 3D vectors.
+        /// This operation is slightly faster than Vec.difference  and sufficient for many algorithms like finding closest points.
+        static member inline differenceSq (a:Vec) (b:Vec) = let v = a-b in  v.X*v.X + v.Y*v.Y + v.Z*v.Z
+
         /// Divides the vector by an integer.
         /// (This member is needed by Array.average and similar functions)
         static member inline DivideByInt (v:Vec, i:int) = // needed by 'Array.average'

@@ -193,6 +193,13 @@ module AutoOpenUnitVec =
         /// Returns the World Z-axis with length one: UnitVec(0,0,1)
         static member inline ZAxis  = UnitVec.createUnchecked (0.0 , 0.0, 1.0)
         
+        /// Returns the distance between the tips of two 3D unit vectors.
+        static member inline difference (a:UnitVec) (b:UnitVec) = let v = a-b in sqrt(v.X*v.X + v.Y*v.Y + v.Z*v.Z)
+                
+        /// Returns the squared distance between the tips of two 3D unit vectors.
+        /// This operation is slightly faster than Vec.difference  and sufficient for many algorithms like finding closest points.
+        static member inline differenceSq (a:UnitVec) (b:UnitVec) = let v = a-b in  v.X*v.X + v.Y*v.Y + v.Z*v.Z
+
         // These members cannot be implemented since 
         // Array.sum and Array.average of UnitVec would return a 'Vec' and not a 'UnitVec' 
         // static member Zero = UnitVec ( 0 , 0, 0)  // needed by 'Array.sum' 

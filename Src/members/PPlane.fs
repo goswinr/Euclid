@@ -17,8 +17,20 @@ module AutoOpenPPlane =
         /// Evaluate at 3D parameter
         member p.EvaluateAt (px:float, py:float, pz:float) = p.Origin + p.Xaxis*px + p.Yaxis*py + p.Zaxis*pz
         
-        /// Evaluate at 2D parameter ( Z = 0.0)
-        member p.AtXY (px:float, py:float) = p.Origin + p.Xaxis*px + p.Yaxis*py 
+        /// Evaluate at 2D parameter ( Z parameter = 0.0)
+        member p.EvaluateAtXY (px:float, py:float) = p.Origin + p.Xaxis*px + p.Yaxis*py 
+
+        //----------------------------------------------------------------------------------------------
+        //--------------------------  Static Members  --------------------------------------------------
+        //----------------------------------------------------------------------------------------------
+
+        /// Checks if two 3D Parametrized Planes are equal within tolerance.
+        static member equals tol (a:PPlane) (b:PPlane) =
+            let tt = tol*tol
+            Pnt.distanceSq a.Origin b.Origin < tt &&
+            UnitVec.differenceSq a.Xaxis b.Xaxis < tt &&
+            UnitVec.differenceSq a.Yaxis b.Yaxis < tt &&
+            UnitVec.differenceSq a.Zaxis b.Zaxis < tt
 
         /// Returns the World Coordinate System Plane at World Origin
         /// X-axis = World X-axis 

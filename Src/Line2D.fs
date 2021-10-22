@@ -370,11 +370,19 @@ type Line2D =
     member inline ln.IsPerpendicularTo (v:UnitVc) =         
         let dot = v.X*(ln.ToX-ln.FromX) + v.Y*(ln.ToY-ln.FromY) 
         abs(dot) < 1e-9      
-         
+        
 
     //-------------------------------------------------------------------
     //------------------------static members-----------------------------
     //-------------------------------------------------------------------
+
+
+    /// Checks if two 2D Lines are equal within tolerance.
+    /// Identical Lines in opposite directions are not considered equal.
+    static member equals tol (a:Line2D) (b:Line2D) =
+        let tt = tol*tol
+        Pt.distanceSq a.From b.From < tt &&
+        Pt.distanceSq a.To b.To < tt
 
     /// Creates a line starting at World Origin and going to along the given Vector.
     static member inline createFromVec (v:Vc) = Line2D(0.,0.,v.X,v.Y)

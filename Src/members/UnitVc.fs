@@ -174,6 +174,13 @@ module AutoOpenUnitVc =
         /// Returns the World Y-axis with length one: UnitVc(0,1)
         static member inline YAxis  = UnitVc.createUnchecked (0.0 , 1.0)
 
+        /// Returns the distance between the tips of two 2D unit vectors.
+        static member inline difference (a:UnitVc) (b:UnitVc) = let v = a-b in sqrt(v.X*v.X + v.Y*v.Y )
+                
+        /// Returns the squared distance between the tips of two 2D unit vectors.
+        /// This operation is slightly faster than Vec.difference  and sufficient for many algorithms like finding closest points.
+        static member inline differenceSq (a:UnitVc) (b:UnitVc) = let v = a-b in  v.X*v.X + v.Y*v.Y 
+
         // These members cannot be implemented since 
         // Array.sum and Array.average of UnitVc would return a 'Vc' and not a 'UnitVc' 
         // static member Zero = UnitVc ( 0. , 0.)  // needed by 'Array.sum' 

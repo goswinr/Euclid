@@ -262,7 +262,7 @@ module AutoOpenPnt =
         static member inline distanceXY (a:Pnt) (b:Pnt) = let x = a.X-b.X in let y=a.Y-b.Y in sqrt(x*x + y*y)
         
         /// Returns the squared distance between two 3D points.
-        /// This operation is slightly faster than the distance function, and sufficient for many algorithms like finding closest points.
+        /// This operation is slightly faster than the Pnt.distance function, and sufficient for many algorithms like finding closest points.
         static member inline distanceSq (a:Pnt) (b:Pnt) = let v = a-b in  v.X*v.X + v.Y*v.Y + v.Z*v.Z
 
         /// Returns the distance from World Origin. 

@@ -8,8 +8,7 @@
     <OtherFlags>$(OtherFlags)--warnon:3390</OtherFlags>
     <!-- warnon:3390 is to verify xml docstrings https://devblogs.microsoft.com/dotnet/announcing-f-5/0improved-compiler-analysis-for-library-authors -->
     <NeutralLanguage>en</NeutralLanguage>
-    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
-    <!--to only have the english resources-->
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>    <!--to only have the english resources-->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <RootNamespace>FsEx.Geo</RootNamespace>
     <AssemblyName>FsEx.Geo</AssemblyName>
@@ -24,9 +23,9 @@
       - first release
     </PackageReleaseNotes>
     <Authors>GoswinR</Authors>
-    <Copyright>Goswin Rothenthal 2021</Copyright>
-    <Description>An F# 2D and 3D geometry library (without dependencies)</Description>
-    <PackageDescription>An F# Geometry library (without dependencies)</PackageDescription>
+    <Copyright>Goswin Rothenthal 2019</Copyright>
+    <Description>A 2D and 3D geometry library written in and for F#</Description>
+    <PackageDescription>A 2D and 3D geometry library written in and for F#</PackageDescription>
     <!--used on nuget.org-->
     <WarningLevel>5</WarningLevel>
     <!-- WarningLevel 3 is default , see https://github.com/dsyme/fsharp-presentations/blob/master/design-notes/off-by-default-warnings.md -->
@@ -61,7 +60,6 @@
     <Compile Include="Src/Quaternion.fs" />
     <Compile Include="Src/PPlane.fs" />
     <Compile Include="Src/Matrix.fs" />
-
     <Compile Include="Src/members/UnitVc.fs" />
     <Compile Include="Src/members/Vc.fs" />
     <Compile Include="Src/members/Pt.fs" />
@@ -69,12 +67,12 @@
     <Compile Include="Src/members/Vec.fs" />
     <Compile Include="Src/members/Pnt.fs" />
     <Compile Include="Src/members/PPlane.fs" />
-    
     <Compile Include="Src/Line2D.fs" />
     <Compile Include="Src/Line3D.fs" />
     <Compile Include="Src/Plane.fs" />
     <Compile Include="Src/BRect.fs" />
     <Compile Include="Src/BoundingBox.fs" />
+    <Compile Include="Src/Rect3D.fs" />
     <Compile Include="Src/Box.fs" />
     <Compile Include="Src/Intersect.fs" />
     <Compile Include="Src/ResizeArray.fs" />
