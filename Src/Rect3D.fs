@@ -4,7 +4,7 @@ open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
 open Util
 
-/// A immutable planar 3D Rectangle with any rotation in 3D space.
+/// An immutable planar 3D Rectangle with any rotation in 3D space.
 /// Described by an Origin and two Edge vectors.
 /// Similar to PPlane, however the two vectors are not unitized.
 /// The X and Y axes are also called Length, Width.
@@ -352,7 +352,7 @@ type Rect3D =
 
     /// Gets the Plane that this 3D rectangle is based on.
     member inline r.PPlane  =
-        PPlane.fromOriginXaxisAndYaxis r.Origin r.Xaxis r.Yaxis
+        PPlane.createOriginXaxisYaxis r.Origin r.Xaxis r.Yaxis
 
     //-------------------------------------------------------------------
     //------------------------static members-----------------------------
@@ -443,14 +443,11 @@ type Rect3D =
         if len = zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Rect3D.offset: rect is to small for offsetting zero length in Rect3D: %s" r.AsString
         Rect3D(r.Origin + z*(offsetDistance/len), r.Xaxis, r.Yaxis)
 
-    /// Transform the 3D Rectangle by the given matrix.
-    /// If the transformation includes a shear or projection
-    /// that would make the edges non perpendicular it fails with an FsExGeoException.
+    /// Transform the 3D Rectangle by the given OrthoMatrix.
     /// The returned 3D Rectangle is guaranteed to have orthogonal vectors.
-    static member transform (m:Matrix) (r:Rect3D) =
-        let o  = Pnt.transform m r.Origin
-        let x = Vec.transform m r.Xaxis
-        let y = Vec.transform m r.Yaxis
-        if abs(x*y) > zeroLengthTol then  FsExGeoException.Raise "FsEx.Geo.Rect3D.transform failed because the edges are not perpendicular to each other anymore after transforming with:\r\n%O" m
+    static member transform (m:OrthoMatrix) (r:Rect3D) =
+        let o  = Pnt.transformOrtho m r.Origin
+        let x = Vec.rotateOrtho m r.Xaxis
+        let y = Vec.rotateOrtho m r.Yaxis
         Rect3D(o,x,y)
 

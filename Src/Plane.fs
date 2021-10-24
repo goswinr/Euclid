@@ -8,7 +8,7 @@ open FsEx.Geo.Util
 
 //TODO finish docstrings
 
-/// A plane defined by a point and a normal vector
+/// An immutable plane defined by a point and a normal vector
 [<Struct;NoEquality;NoComparison>]// because its made up from floats
 type Plane = // Normals are always unitized
     /// The center point of the Plane

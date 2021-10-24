@@ -4,7 +4,7 @@ open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
 open Util
 
-/// A immutable 3D Box with any rotation in 3D space
+/// An immutable 3D Box with any rotation in 3D space
 /// Described by an Origin and three Edge vectors.
 /// Similar to PPlane, however the three vectors are not unitized.
 /// The X, Y and Z axes are also called Length, Width and Height.
@@ -446,7 +446,7 @@ type Box =
 
     /// Gets the Plane that this box is based on.
     member inline b.PPlane  =
-        PPlane.fromOriginXaxisAndYaxis b.Origin b.Xaxis b.Yaxis
+        PPlane.createOriginXaxisYaxis b.Origin b.Xaxis b.Yaxis
 
     //-------------------------------------------------------------------
     //------------------------static members-----------------------------
@@ -523,17 +523,12 @@ type Box =
         if len = zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Box.translateZ: box.Zaxis is zero length in Box: %s" b.AsString
         Box(b.Origin + z*(distZ/len), b.Xaxis, b.Yaxis, z)
 
-    /// Transform the Box by the given matrix.
-    /// If the transformation includes a shear or projection
-    /// that would make the edges non perpendicular it fails with an FsExGeoException.
+    /// Transform the Box by the given OrthoMatrix.
     /// The returned Box is guaranteed to have orthogonal vectors.
-    static member transform (m:Matrix) (b:Box) =
-        let o  = Pnt.transform m b.Origin
-        let x = Vec.transform m b.Xaxis
-        let y = Vec.transform m b.Yaxis
-        let z = Vec.transform m b.Zaxis
-        if abs(x*y) > zeroLengthTol then  FsExGeoException.Raise "FsEx.Geo.Box.transform failed because the edges are not perpendicular to each other anymore after transforming with:\r\n%O" m
-        if abs(x*z) > zeroLengthTol then  FsExGeoException.Raise "FsEx.Geo.Box.transform failed because the edges are not perpendicular to each other anymore after transforming with:\r\n%O" m
-        if abs(y*z) > zeroLengthTol then  FsExGeoException.Raise "FsEx.Geo.Box.transform failed because the edges are not perpendicular to each other anymore after transforming with:\r\n%O" m
+    static member transform (m:OrthoMatrix) (b:Box) =
+        let o  = Pnt.transformOrtho m b.Origin
+        let x = Vec.rotateOrtho m b.Xaxis
+        let y = Vec.rotateOrtho m b.Yaxis
+        let z = Vec.rotateOrtho m b.Zaxis
         Box(o,x,y,z)
 

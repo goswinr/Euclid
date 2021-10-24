@@ -3,7 +3,7 @@ namespace FsEx.Geo
 open System
 open FsEx.Geo.Util
 
-/// A finite line in 2D. Represented by a 2D start and 2D end point.
+/// An immutable finite line in 2D. Represented by a 2D start and 2D end point.
 [<Struct;NoEquality;NoComparison>]// because its made up from floats
 type Line2D =
     /// Returns the X coordinate of the start point of the line.

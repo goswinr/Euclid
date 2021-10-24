@@ -13,7 +13,7 @@ open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see http
 open FsEx.Geo.Util  
 
 
-/// A immutable 3D vector of any length. Made up from 3 floats: X, Y, and Z.
+/// An immutable 3D vector of any length. Made up from 3 floats: X, Y, and Z.
 /// ( 3D Unit vectors of length 1.0 are called 'UnitVec' )
 /// ( 2D vectors are called 'Vc' ) 
 [<Struct; NoEquality; NoComparison>] 
@@ -73,7 +73,7 @@ type Vec =
     
 #nowarn "44" // for hidden constructors via Obsolete Attribute    
         
-/// A immutable 3D vector guaranteed to be always unitized. ( 2D Unit vectors are called 'UnitVc' ) 
+/// An immutable 3D vector guaranteed to be always unitized. ( 2D Unit vectors are called 'UnitVc' ) 
 /// Use UnitVec.create or UnitVec.createUnchecked to created instances.
 [<Struct; NoEquality; NoComparison>]
 [<IsReadOnly>]
@@ -153,8 +153,8 @@ type UnitVec =
         //v * (1./f) // maybe faster but worse precision
         Vec (v.X / f , v.Y / f , v.Z / f) 
     
-    /// For use as a faster constructor
-    /// Requires correct input of unitized values
+    /// For use as a faster internal constructor.
+    /// Requires correct input of unitized values.
     static member inline createUnchecked(x,y,z)  = UnitVec(x,y,z)
     
     /// Create 3D unit vector. Does the unitizing too.
@@ -167,7 +167,7 @@ type UnitVec =
         UnitVec.createUnchecked( li*x , li*y , li*z )
     
 
-/// A immutable 3D Point. Made up from 3 floats: X, Y, and Z.
+/// An immutable 3D Point. Made up from 3 floats: X, Y, and Z.
 /// ( 2D Points are called 'Pt' ) 
 [<Struct; NoEquality; NoComparison>] // because its made up from floats
 [<IsReadOnly>]

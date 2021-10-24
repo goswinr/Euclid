@@ -2,21 +2,11 @@ namespace FsEx.Geo
 
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
-open FsEx.Geo.Util    
-
-// TODO:
-// create Rotation and Translation only Matrix class:
-// It would look like this:
-// M11 M21 M31 X41 
-// ___ M22 M32 Y42 
-// ___ ___ M33 Z43 
-// ___ ___ ___ ___
-// would applying this be faster than using quaternion and a translation vector ?
-
+open FsEx.Geo.Util  
 
 #nowarn "44" // for hidden constructors via Obsolete Attribute
 
-/// A immutable Quaternion, for arbitrary 3D rotations.
+/// An immutable unitized Quaternion, for arbitrary 3D rotations.
 /// This implementation guarantees the Quaternion to be always unitized.
 [<Struct; NoEquality; NoComparison>] 
 [<IsReadOnly>]
@@ -50,7 +40,7 @@ type Quaternion =
     override q.ToString() =         
         sprintf "FsEx.Geo.Quaternion(X=%s| Y=%s| Z=%s, W=%s| angle: %s°)" 
                 (Format.float q.X) (Format.float q.Y) (Format.float q.Z) (Format.float q.W) (Format.float q.AngleInDegrees)
-     
+    
     /// Multiply two Quaternions. Its like adding one rotation to the other.
     static member multiply (l:Quaternion, r:Quaternion)  =  
         Quaternion(   
@@ -74,11 +64,11 @@ type Quaternion =
     // Should always be 1.0
     //member q.Magnitude = sqrt (q.X*q.X + q.Y*q.Y + q.Z*q.Z + q.W*q.W) 
     
-    /// Returns Angle in Radians 
+    /// Returns the Angle in Radians 
     member q.AngleInRadians =  
         q.W |> acosSafe |> ( * ) 2.0 
 
-    /// Returns Angle in Degree 
+    /// Returns the Angle in Degree 
     member q.AngleInDegrees =  
         q.AngleInRadians |>  toDegrees
     
@@ -150,11 +140,11 @@ type Quaternion =
             else                                    Quaternion.create (0          ,- vFrom.Z  ,vFrom.Y  , r)
         else 
             // crossProduct inlined:
-            Quaternion.create ( vFrom.Y * vTo.Z - vFrom.Z * vTo.Y
-                              , vFrom.Z * vTo.X - vFrom.X * vTo.Z
-                              , vFrom.X * vTo.Y - vFrom.Y * vTo.X
-                              , r
-                              )  
+            Quaternion.create   ( vFrom.Y * vTo.Z - vFrom.Z * vTo.Y
+                                , vFrom.Z * vTo.X - vFrom.X * vTo.Z
+                                , vFrom.X * vTo.Y - vFrom.Y * vTo.X
+                                , r
+                                )  
 
 
     /// Angles are given in Degrees, 
@@ -174,11 +164,12 @@ type Quaternion =
         let s1 = sin(toRadians degreesX * 0.5 )
         let s2 = sin(toRadians degreesY * 0.5 )
         let s3 = sin(toRadians degreesZ * 0.5 ) 
-        Quaternion(  s1 * c2 * c3 + c1 * s2 * s3
-                  ,  c1 * s2 * c3 - s1 * c2 * s3
-                  ,  c1 * c2 * s3 + s1 * s2 * c3
-                  ,  c1 * c2 * c3 - s1 * s2 * s3) 
-                  
+        Quaternion  (  s1 * c2 * c3 + c1 * s2 * s3
+                    ,  c1 * s2 * c3 - s1 * c2 * s3
+                    ,  c1 * c2 * s3 + s1 * s2 * c3
+                    ,  c1 * c2 * c3 - s1 * s2 * s3
+                    ) 
+
     /// Angles are given in Degrees, 
     /// The order in which to apply rotations is Y-X-Z, 
     /// which means that the object will first be rotated around its Y-axis, 
@@ -196,11 +187,12 @@ type Quaternion =
         let s1 = sin(toRadians degreesX * 0.5 )
         let s2 = sin(toRadians degreesY * 0.5 )
         let s3 = sin(toRadians degreesZ * 0.5 ) 
-        Quaternion(  s1 * c2 * c3 + c1 * s2 * s3
-                  ,  c1 * s2 * c3 - s1 * c2 * s3
-                  ,  c1 * c2 * s3 - s1 * s2 * c3
-                  ,  c1 * c2 * c3 + s1 * s2 * s3)  
-  
+        Quaternion  (  s1 * c2 * c3 + c1 * s2 * s3
+                    ,  c1 * s2 * c3 - s1 * c2 * s3
+                    ,  c1 * c2 * s3 - s1 * s2 * c3
+                    ,  c1 * c2 * c3 + s1 * s2 * s3
+                    )  
+
                 
     /// Angles are given in Degrees, 
     /// The order in which to apply rotations is Z-X-Y, 
@@ -308,6 +300,4 @@ type Quaternion =
         toDegrees <|  asinSafe (2.0 * (q.W*q.Y - q.X*q.Z))
         ,
         toDegrees  <| Math.Atan2(2.0 * (q.W*q.X + q.Y*q.Z),  q.W*q.W + q.Z*q.Z - q.X*q.X - q.Y*q.Y)
-     
 
-       

@@ -580,14 +580,14 @@ module AutoOpenUnitVec =
             if v.Z < 0.0 then -r else r
 
 
-        /// Multiplies the Matrix with a vector (with an implicit 1 in the 4th dimension), 
-        /// So that it also works correctly for projections
-        /// See also Pnt.transformSimple for better performance
-        static member transform (m:Matrix) (p:UnitVec) = 
+        /// Multiplies a Matrix with a 3D vector (with an implicit 1 in the 4th dimension, 
+        /// So that it also works correctly for projections.)
+        /// /// The restulting vector is not unitized.
+        static member transform (m:Matrix) (v:UnitVec) = 
             // from applyMatrix4( m ) in  https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js 
-            let x = p.X
-            let y = p.Y
-            let z = p.Z
+            let x = v.X
+            let y = v.Y
+            let z = v.Z
             //let w = 1.0           
             let x' = m.M11*x + m.M21*y + m.M31*z + m.X41 // * w
             let y' = m.M12*x + m.M22*y + m.M32*z + m.Y42 // * w
@@ -596,28 +596,25 @@ module AutoOpenUnitVec =
             let sc = 1.0 / w'           
             Vec(x' * sc, y'* sc, z'* sc)     
         
-        // Partially Multiplies the Matrix with a Vector. 
-        // Use this only for affine transformations that do NOT include a projection 
-        // and if you need maximum performance.
-        // The fields m.M14, m.M24 and m.M34 must be 0.0 and m.M44 must be 1.0
-        // Otherwise use Vec.transform
-        //static member transformSimple (m:Matrix) (p:Vec) = 
-        //    let x = p.X
-        //    let y = p.Y
-        //    let z = p.Z 
-        //    Vec(  m.M11*x + m.M21*y + m.M31*z + m.X41 
-        //        , m.M12*x + m.M22*y + m.M32*z + m.Y42 
-        //        , m.M13*x + m.M23*y + m.M33*z + m.Z43 
-        //        )
-
-        /// Multiplies only the 3x3 part of the 4x4 Matrix with a unit vector. 
-        /// This excludes any translation or projection transformation.
-        /// Rotation, scale, and shear are applied.
-        static member transformBy3x3PartOnly (m:Matrix) (p:UnitVec) = 
-            let x = p.X
-            let y = p.Y
-            let z = p.Z 
-            Vec(  m.M11*x + m.M21*y + m.M31*z 
-                , m.M12*x + m.M22*y + m.M32*z 
-                , m.M13*x + m.M23*y + m.M33*z 
+        /// Multiplies (or applies) an OrthoMatrix to a 3D Vector . 
+        /// The resulting vector is not unitized if Matrix is translating too.
+        static member transformOrtho (m:OrthoMatrix) (v:UnitVec) = 
+            let x = v.X
+            let y = v.Y
+            let z = v.Z 
+            Vec(  m.M11*x + m.M21*y + m.M31*z + m.X41 
+                , m.M12*x + m.M22*y + m.M32*z + m.Y42 
+                , m.M13*x + m.M23*y + m.M33*z + m.Z43 
                 )
+        
+        /// Multiplies (or applies) onl the 3x3 rotation p[0art of an OrthoMatrix to a 3D Unit Vector . 
+        /// The resulting vector is unitized too.
+        static member rotateOrtho (m:OrthoMatrix) (v:UnitVec) = 
+            let x = v.X
+            let y = v.Y
+            let z = v.Z 
+            UnitVec.createUnchecked (
+                      m.M11*x + m.M21*y + m.M31*z 
+                    , m.M12*x + m.M22*y + m.M32*z 
+                    , m.M13*x + m.M23*y + m.M33*z 
+                    )

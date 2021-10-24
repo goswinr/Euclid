@@ -7,7 +7,7 @@ open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see http
 #nowarn "44" // for hidden constructors via Obsolete Attribute
 
 
-/// A 3D Bounding Box.
+/// An immutable 3D Bounding Box.
 /// This implementation guarantees the box to be always valid.
 /// That means the Min X, Y and Z values are always smaller or equal than the respective Max values
 ///         

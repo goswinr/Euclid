@@ -84,10 +84,24 @@ module Util =
         // 1.000000715 is 6 steps bigger  than 1.0: https://float.exposed/0x3f800006
         // 0.99999964  is 6 steps smaller than 1.0: https://float.exposed/0x3f7ffffa
         0.999999642372131347656 < x && x < 1.00000071525573730469 
-
         
+    /// Tests if a the square root of a number is close to 1.0 by maximum 6 steps of float increment or decrement.
+    /// So between 0.99999964 and 1.000000715.
+    /// See https://float.exposed
+    let inline isOneSq  x =  
+        // 1.00000143 is 12 steps bigger  than 1.0: https://float.exposed/0x3f80000c
+        // 0.99999928 is 12 steps smaller than 1.0: https://float.exposed/0x3f7ffff4
+        0.999999284744262695313 < x && x < 1.00000143051147460938 
+        
+    /// Tests if a the square root of a number is NOT close to 1.0 by maximum 6 steps of float increment or decrement.
+    /// So not between 0.99999964 and 1.000000715.
+    /// See https://float.exposed
+    let inline isNotOneSq  x =  
+        // 1.00000143 is 12 steps bigger  than 1.0: https://float.exposed/0x3f80000c
+        // 0.99999928 is 12 steps smaller than 1.0: https://float.exposed/0x3f7ffff4
+        0.999999284744262695313 < x && x < 1.00000143051147460938            
 
-    /// Tests if a number is not close to 1.0 by maximum 6 steps of float increment or decrement.
+    /// Tests if a number is NOT close to 1.0 by maximum 6 steps of float increment or decrement.
     /// So not between 0.99999964 and 1.000000715.
     /// See https://float.exposed
     let inline isNotOne  x =  
@@ -106,6 +120,15 @@ module Util =
     /// See FsEx.Geo.Util.isOne function
     let inline isZero x = 
         -1e-7 < x && x < 1e-7 
+
+
+    /// Tests if a number is NOT close to 0.0 by 1e-7
+    /// This is approximately the same tolerance that 6 increments of a float are away from 1.0.
+    /// See FsEx.Geo.Util.isOne function
+    let inline isNotZero x = 
+        x < -1e-7  ||  x > 1e-7 
+
+
 
 (* module Units = 
 

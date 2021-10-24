@@ -3,7 +3,7 @@ namespace FsEx.Geo
 open System
 open FsEx.Geo.Util
 
-/// A finite line in 3D. Represented by a 3D start and 3D end point.
+/// An immutable finite line in 3D. Represented by a 3D start and 3D end point.
 [<Struct;NoEquality;NoComparison>]// because its made up from floats
 type Line3D =
     /// Returns the X coordinate of the start point of the line.

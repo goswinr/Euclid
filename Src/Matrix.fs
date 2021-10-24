@@ -4,18 +4,7 @@ open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
 open FsEx.Geo.Util
 
-// TODO:
-// create a 3D Rotation and Translation only Matrix class.
-// No shear, no scaling, no reflection, no projection.
-// It would look like this:
-// M11 M21 M31 X41 
-// ___ M22 M32 Y42 
-// ___ ___ M33 Z43 
-// ___ ___ ___ ___
-// would applying this be faster than using quaternion and a translation vector ?
-
-
-/// A 4x4 Transformation Matrix.
+/// An immutable 4x4 Transformation Matrix.
 /// The matrix is represented in the following column-vector syntax form:
 /// M11 M21 M31 X41 
 /// M12 M22 M32 Y42 
@@ -53,49 +42,56 @@ type Matrix =
     /// Returns the 16 elements column-major order:
     /// [| M11 M12 M13 M14 M21 M22 M23 M24 M31 M32 M33 M34 X41 Y42 Z43 M44 |] 
     /// Where X41, Y42 and Z43 refer to the translation part of the matrix.
-    member m.ByColumns = [|  
-        m.M11
-        m.M12
-        m.M13
-        m.M14
-        m.M21
-        m.M22
-        m.M23
-        m.M24
-        m.M31
-        m.M32
-        m.M33
-        m.M34
-        m.X41
-        m.Y42
-        m.Z43
-        m.M44 
-        |]
-    
+    member m.ByColumns = 
+        [| m.M11; m.M12; m.M13; m.M14; m.M21; m.M22; m.M23; m.M24; m.M31; m.M32; m.M33; m.M34; m.X41; m.Y42; m.Z43; m.M44 |] 
+
     /// Returns the 16 elements in row-major order: 
     /// [| M11 M21 M31 X41 M12 M22 M32 Y42 M13 M23 M33 Z43 M14 M24 M34 M44 |] 
     /// Where X41, Y42 and Z43 refer to the translation part of the matrix.
-    member m.ByRows = [|  
-        m.M11
-        m.M21
-        m.M31
-        m.X41 
-        m.M12
-        m.M22
-        m.M32
-        m.Y42 
-        m.M13
-        m.M23
-        m.M33
-        m.Z43 
-        m.M14
-        m.M24
-        m.M34
-        m.M44 
-        |]        
+    member m.ByRows =  
+        [| m.M11; m.M21; m.M31; m.X41; m.M12; m.M22; m.M32; m.Y42; m.M13; m.M23; m.M33; m.Z43; m.M14; m.M24; m.M34; m.M44 |] 
+   
+    /// Nicely formats the Matrix to a Grid of 4x4.
+    override m.ToString()= 
+        let ts   = m.ByRows |> Array.map ( fun x -> x.ToString("0.###")) 
+        let most = ts |> Array.maxBy ( fun s -> s.Length)
+        "4x4 Colum-Vector Transformation Matrix:\r\n" + (
+        ts   
+        |> Array.map ( fun x -> String(' ', most.Length-x.Length) + x ) 
+        |> Array.chunkBySize 4
+        |> Array.map (fun es -> " " + String.concat " | " es) 
+        |> String.concat Environment.NewLine
+        )    
 
-    /// If the determinant of the Matrix. 
-    /// The Determinant describes the volume that a unit cube will have after the matrix was applied
+    //Nicely formats the Matrix to a Grid of 4x4 including field names.
+    //override m.ToString()= 
+    //    let names =[| "M11"; "M21"; "M31"; "X41"; "M12"; "M22"; "M32"; "Y42"; "M13"; "M23"; "M33"; "Z43"; "M14"; "M24"; "M34"; "M44"|]
+    //    let ts   = (names, m.ByRows)  ||> Array.map2 ( fun n v -> v.ToString("0.###")) 
+    //    let most = ts |> Array.maxBy ( fun s -> s.Length)
+    //    "Colum-Vector Transformation Matrix:\r\n" + (
+    //    (names, ts) 
+    //    ||> Array.map2 ( fun n v ->n + ": " + String(' ', most.Length-v.Length) + v ) 
+    //    |> Array.chunkBySize 4
+    //    |> Array.map (fun es -> " " + String.concat " | " es) 
+    //    |> String.concat Environment.NewLine
+    //    )     
+
+
+    /// Returns the first column vector. M11, M12 and M13
+    member m.ColumnVector1 = Vec(m.M11, m.M12, m.M13)  
+    
+    /// Returns the second column vector. M21, M22 and M23
+    member m.ColumnVector2 = Vec(m.M21, m.M22, m.M23) 
+    
+    /// Returns the third column vector. M31, M32 and M33
+    member m.ColumnVector3 = Vec(m.M31, m.M32, m.M33) 
+    
+    /// Returns the translation or forth column vector. X41, Y42 and Z43
+    member m.Translation = Vec(m.X41, m.Y42, m.Z43)   
+
+
+    /// The determinant of the Matrix. 
+    /// The Determinant describes the signed volume that a unit cube will have after the matrix was applied
     member m.Determinant = 
         let n11 = m.M11
         let n21 = m.M21
@@ -158,23 +154,23 @@ type Matrix =
 
         let detInv = 1. / det
         
-        Matrix( t11 * detInv                                                                                                          // M11
-              ,( n24 * n33 * n41 - n23 * n34 * n41 - n24 * n31 * n43 + n21 * n34 * n43 + n23 * n31 * n44 - n21 * n33 * n44 ) * detInv // M21
-              ,( n22 * n34 * n41 - n24 * n32 * n41 + n24 * n31 * n42 - n21 * n34 * n42 - n22 * n31 * n44 + n21 * n32 * n44 ) * detInv // M31
-              ,( n23 * n32 * n41 - n22 * n33 * n41 - n23 * n31 * n42 + n21 * n33 * n42 + n22 * n31 * n43 - n21 * n32 * n43 ) * detInv // X41 
-              , t12 * detInv                                                                                                          // M12
-              ,( n13 * n34 * n41 - n14 * n33 * n41 + n14 * n31 * n43 - n11 * n34 * n43 - n13 * n31 * n44 + n11 * n33 * n44 ) * detInv // M22
-              ,( n14 * n32 * n41 - n12 * n34 * n41 - n14 * n31 * n42 + n11 * n34 * n42 + n12 * n31 * n44 - n11 * n32 * n44 ) * detInv // M32
-              ,( n12 * n33 * n41 - n13 * n32 * n41 + n13 * n31 * n42 - n11 * n33 * n42 - n12 * n31 * n43 + n11 * n32 * n43 ) * detInv // Y42 
-              , t13 * detInv                                                                                                          // M13
-              ,( n14 * n23 * n41 - n13 * n24 * n41 - n14 * n21 * n43 + n11 * n24 * n43 + n13 * n21 * n44 - n11 * n23 * n44 ) * detInv // M23
-              ,( n12 * n24 * n41 - n14 * n22 * n41 + n14 * n21 * n42 - n11 * n24 * n42 - n12 * n21 * n44 + n11 * n22 * n44 ) * detInv // M33
-              ,( n13 * n22 * n41 - n12 * n23 * n41 - n13 * n21 * n42 + n11 * n23 * n42 + n12 * n21 * n43 - n11 * n22 * n43 ) * detInv // Z43 
-              , t14 * detInv                                                                                                          // M14
-              ,( n13 * n24 * n31 - n14 * n23 * n31 + n14 * n21 * n33 - n11 * n24 * n33 - n13 * n21 * n34 + n11 * n23 * n34 ) * detInv // M24
-              ,( n14 * n22 * n31 - n12 * n24 * n31 - n14 * n21 * n32 + n11 * n24 * n32 + n12 * n21 * n34 - n11 * n22 * n34 ) * detInv // M34
-              ,( n12 * n23 * n31 - n13 * n22 * n31 + n13 * n21 * n32 - n11 * n23 * n32 - n12 * n21 * n33 + n11 * n22 * n33 ) * detInv // M44
-              )
+        Matrix  (   t11 * detInv                                                                                                         // M11
+                , ( n24 * n33 * n41 - n23 * n34 * n41 - n24 * n31 * n43 + n21 * n34 * n43 + n23 * n31 * n44 - n21 * n33 * n44 ) * detInv // M21
+                , ( n22 * n34 * n41 - n24 * n32 * n41 + n24 * n31 * n42 - n21 * n34 * n42 - n22 * n31 * n44 + n21 * n32 * n44 ) * detInv // M31
+                , ( n23 * n32 * n41 - n22 * n33 * n41 - n23 * n31 * n42 + n21 * n33 * n42 + n22 * n31 * n43 - n21 * n32 * n43 ) * detInv // X41 
+                ,   t12 * detInv                                                                                                         // M12
+                , ( n13 * n34 * n41 - n14 * n33 * n41 + n14 * n31 * n43 - n11 * n34 * n43 - n13 * n31 * n44 + n11 * n33 * n44 ) * detInv // M22
+                , ( n14 * n32 * n41 - n12 * n34 * n41 - n14 * n31 * n42 + n11 * n34 * n42 + n12 * n31 * n44 - n11 * n32 * n44 ) * detInv // M32
+                , ( n12 * n33 * n41 - n13 * n32 * n41 + n13 * n31 * n42 - n11 * n33 * n42 - n12 * n31 * n43 + n11 * n32 * n43 ) * detInv // Y42 
+                ,   t13 * detInv                                                                                                         // M13
+                , ( n14 * n23 * n41 - n13 * n24 * n41 - n14 * n21 * n43 + n11 * n24 * n43 + n13 * n21 * n44 - n11 * n23 * n44 ) * detInv // M23
+                , ( n12 * n24 * n41 - n14 * n22 * n41 + n14 * n21 * n42 - n11 * n24 * n42 - n12 * n21 * n44 + n11 * n22 * n44 ) * detInv // M33
+                , ( n13 * n22 * n41 - n12 * n23 * n41 - n13 * n21 * n42 + n11 * n23 * n42 + n12 * n21 * n43 - n11 * n22 * n43 ) * detInv // Z43 
+                ,   t14 * detInv                                                                                                         // M14
+                , ( n13 * n24 * n31 - n14 * n23 * n31 + n14 * n21 * n33 - n11 * n24 * n33 - n13 * n21 * n34 + n11 * n23 * n34 ) * detInv // M24
+                , ( n14 * n22 * n31 - n12 * n24 * n31 - n14 * n21 * n32 + n11 * n24 * n32 + n12 * n21 * n34 - n11 * n22 * n34 ) * detInv // M34
+                , ( n12 * n23 * n31 - n13 * n22 * n31 + n13 * n21 * n32 - n11 * n23 * n32 - n12 * n21 * n33 + n11 * n22 * n33 ) * detInv // M44
+                )
 
     /// Checks if the Matrix is an Identity Matrix in the form of:
     /// 1  0  0  0
@@ -195,32 +191,71 @@ type Matrix =
     member m.IsAffine  =        
         isZero m.M14 && isZero m.M24 && isZero m.M34 && isOne m.M44
 
-    /// Nicely formats the Matrix to a Grid of 4x4.
-    override m.ToString()= 
-        let ts   = m.ByRows |> Array.map ( fun x -> x.ToString("0.###")) 
-        let most = ts |> Array.maxBy ( fun s -> s.Length)
-        "Colum-Vector Transformation Matrix:\r\n" + (
-        ts   
-        |> Array.map ( fun x -> String(' ', most.Length-x.Length) + x ) 
-        |> Array.chunkBySize 4
-        |> Array.map (fun es -> " " + String.concat " | " es) 
-        |> String.concat Environment.NewLine
-        )  
+    /// Checks if the Matrix is an affine transformation.
+    /// That means it does not do any projection.
+    /// The fields m.M14, m.M24 and m.M34 must be 0.0 and m.M44 must be 1.0 or very close to it.
+    /// Using an approximate tolerance of 1e-7.
+    member m.IsProjecting  =        
+        isNotZero m.M14 || isNotZero m.M24 || isNotZero m.M34 || isNotOne m.M44    
 
-    //Nicely formats the Matrix to a Grid of 4x4 including field names.
-    //override m.ToString()= 
-    //    let names =[| "M11"; "M21"; "M31"; "X41"; "M12"; "M22"; "M32"; "Y42"; "M13"; "M23"; "M33"; "Z43"; "M14"; "M24"; "M34"; "M44"|]
-    //    let ts   = (names, m.ByRows)  ||> Array.map2 ( fun n v -> v.ToString("0.###")) 
-    //    let most = ts |> Array.maxBy ( fun s -> s.Length)
-    //    "Colum-Vector Transformation Matrix:\r\n" + (
-    //    (names, ts) 
-    //    ||> Array.map2 ( fun n v ->n + ": " + String(' ', most.Length-v.Length) + v ) 
-    //    |> Array.chunkBySize 4
-    //    |> Array.map (fun es -> " " + String.concat " | " es) 
-    //    |> String.concat Environment.NewLine
-    //    )     
+    /// Returns if matrix is orthogonal.
+    /// It might also be mirroring or scaling, but not shearing or projecting.
+    /// It must be affine and the dot products of the three column vectors must be zero.
+    member m.IsOrthogonal = 
+        m.IsAffine &&
+        (
+        let x = Vec(m.M11, m.M12, m.M13)
+        let y = Vec(m.M21, m.M22, m.M23)
+        let z = Vec(m.M31, m.M32, m.M33)
+        Util.isZero (x * y) && 
+        Util.isZero (x * z) && 
+        Util.isZero (y * z) 
+        )
+    
+    /// Returns if matrix is mirroring or reflection.
+    /// It might also be rotating, translating  or scaling, but not projecting.
+    /// It must be affine and the determinate of the 3x3 part must be negative.
+    /// Same as m.IsReflecting.
+    member m.IsMirroring = 
+        m.IsAffine &&
+        (
+        let x = Vec(m.M11, m.M12, m.M13)
+        let y = Vec(m.M21, m.M22, m.M23)
+        let z = Vec(m.M31, m.M32, m.M33)
+         // defined here again, because Vec extension members are not in scope here
+        let inline cross (a:Vec) (b:Vec)  = Vec (a.Y * b.Z - a.Z * b.Y ,  a.Z * b.X - a.X * b.Z ,  a.X * b.Y - a.Y * b.X ) // could be inlined here for performance
+        ( cross x y) * z  < 0.0
+        )
+    
+    /// Returns if matrix is mirroring or reflection.
+    /// It might also be rotating, translating  or scaling, but not projecting.
+    /// It must be affine and the determinate of the 3x3 part must be negative
+    /// Same as m.IsMirroring.
+    member m.IsReflecting = m.IsMirroring
 
-
+    /// Returns if matrix is scaling.
+    /// It might also be rotating, translating or reflecting, but not projecting.
+    /// It must be affine and the 3 column vector must have a length other than one.    
+    member m.IsScaling = 
+        m.IsAffine &&
+        (        
+        let inline sqLen    (v:Vec) = v.X*v.X + v.Y*v.Y + v.Z*v.Z // defined here again, because Vec extension members are not in scope here
+        Util.isNotOneSq (sqLen (Vec(m.M11, m.M12, m.M13))) || // exclude scaling
+        Util.isNotOneSq (sqLen (Vec(m.M21, m.M22, m.M23))) || 
+        Util.isNotOneSq (sqLen (Vec(m.M31, m.M32, m.M33))) 
+        )
+    
+    /// Returns true if matrix is translating.
+    /// It might also be rotating, scaling and  reflecting, but not projecting.
+    member m.IsTranslating = m.IsAffine && (isNotZero m.X41 || isNotZero m.Y42|| isNotZero m.Z43 )
+    
+    /// Returns true if matrix is only translating.
+    /// It might not be rotating, scaling, reflecting, or projecting.
+    member m.IsOnlyTranslating = 
+        isOne  m.M11 && isZero m.M21 && isZero m.M31 && 
+        isZero m.M12 && isOne  m.M22 && isZero m.M32 && 
+        isZero m.M13 && isZero m.M23 && isOne  m.M33 && 
+        isZero m.M14 && isZero m.M24 && isZero m.M34 && isOne  m.M44
 
 
     //----------------------------------------------------------------------------------------------
@@ -515,12 +550,12 @@ type Matrix =
 
 
     /// Creates a shear transformation matrix:
-    /// xy - the amount to shear X by Y.
-    /// xz - the amount to shear X by Z.
-    /// yx - the amount to shear Y by X.
-    /// yz - the amount to shear Y by Z.
-    /// zx - the amount to shear Z by X.
-    /// zy - the amount to shear Z by Y.
+    /// xy - the amount to shear a X unit vector a long Y axis.
+    /// xz - the amount to shear a X unit vector a long Z axis.
+    /// yx - the amount to shear a Y unit vector a long X axis.
+    /// yz - the amount to shear a Y unit vector a long Z axis.
+    /// zx - the amount to shear a Z unit vector a long X axis.
+    /// zy - the amount to shear a Z unit vector a long Y axis.
     /// The resulting matrix will be:
     /// 1,   yx,  zx,  0,
     /// xy,   1,  zy,  0,
@@ -598,7 +633,7 @@ type Matrix =
         let y2 = y + y
         let z2 = z + z
         let xx = x * x2
-        let xy = x * y2
+        let xy = x * y2 //
         let xz = x * z2
         let yy = y * y2
         let yz = y * z2
@@ -621,7 +656,7 @@ type Matrix =
                 ,( yz - wx ) * sz
                 ,( 1. - ( xx + yy ) ) * sz
                 ,0
-                ,position.X
+                ,position.X // LOOks like the arguments her are in wong order !!!!!
                 ,position.Y
                 ,position.Z
                 ,1

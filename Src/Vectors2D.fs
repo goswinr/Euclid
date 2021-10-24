@@ -12,7 +12,7 @@ open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>]  see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike    
 open FsEx.Geo.Util  
 
-/// A immutable 2D vector with any length. Made up from 2 floats: X and Y.
+/// An immutable immutable 2D vector with any length. Made up from 2 floats: X and Y.
 /// ( 2D Unit vectors with length 1.0 are called 'UnitVc' )
 /// ( 3D vectors are called 'Vec' ) 
 [<Struct;NoEquality;NoComparison>]// because its made up from floats
@@ -68,7 +68,7 @@ type Vc =
 
 #nowarn "44" // for internal inline constructors 
 
-/// A immutable 2D vector guaranteed to be unitized (3D Unit Vectors are called 'UnitVec') 
+/// An immutable 2D vector guaranteed to be unitized (3D Unit Vectors are called 'UnitVec') 
 /// Use UnitVc.create or UnitVc.createUnchecked to created instances.
 [<Struct;NoEquality;NoComparison>]// because its made up from floats
 [<IsReadOnly>]
@@ -160,7 +160,7 @@ type UnitVc =
         if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "UnitVc.create: x:%g and z:%g are too small for creating a Unit vector. Tolerance:%g" x y zeroLengthTol        
         UnitVc( x/l , y/l )  
 
-/// A immutable 2D Point. Made up from 2 floats: X and Y.
+/// An immutable 2D Point. Made up from 2 floats: X and Y.
 /// ( 3D Points are called 'Pnt' ) 
 [<Struct;NoEquality;NoComparison>]// because its made up from floats
 [<IsReadOnly>]

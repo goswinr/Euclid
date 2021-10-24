@@ -6,7 +6,7 @@ open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see http
 
 #nowarn "44" // for hidden constructors via Obsolete Attribute
 
-/// A 2D Bounding Rectangle.
+/// An immutable 2D Bounding Rectangle.
 /// Sometimes also called 2D Bounding Box.
 /// This implementation guarantees the rectangle to be always valid.
 /// That means the Min X and Y values are always smaller or equal than the respective Max values

@@ -10,7 +10,7 @@ namespace FsEx.Geo
 
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
 
-/// A immutable Parametrized Plane or Frame with X, Y and Z Direction.
+/// An immutable Parametrized Plane or Frame with X, Y and Z Direction.
 /// This struct is called 'PPlane' because 'Plane' refers to an un-oriented plane consisting only of a Origin and a Z-axis.
 [<Struct; NoEquality; NoComparison>] // because its made up from floats
 [<IsReadOnly>]
@@ -36,7 +36,10 @@ type PPlane =
     override pl.ToString() = 
         sprintf "FsEx.Geo.PPlane(Origin:%s\r\nX-axis:%s\r\n Y-axis=%s\r\n Z-axis:%s)" pl.Origin.AsString pl.Xaxis.AsString pl.Yaxis.AsString pl.Zaxis.AsString
 
-    
+    /// For use as a faster internal constructor.
+    /// Requires correct input of unitized perpendicular vectors.
+    static member createUnchecked (origin: Pnt, axisX: UnitVec, axisY: UnitVec, axisZ: UnitVec) = 
+        new PPlane(origin, axisX, axisY, axisZ)
     
     
     // see extension members in folder 'members'
