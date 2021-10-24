@@ -5,11 +5,21 @@ open Util
 
 # nowarn "52" // copying of structs
 
+/// OptionalAttribute for member parameters
+type internal OPT = Runtime.InteropServices.OptionalAttribute
+
+/// DefaultParameterValueAttribute for member parameters
+type internal DEF =  Runtime.InteropServices.DefaultParameterValueAttribute
+
+
 /// A mutable 3D Polyline.
 /// If the last point is the same as the first point, the Polyline3D is closed.
 [<Struct; NoEquality; NoComparison>] // because its made up from floats
 type Polyline3D =  
     
+
+
+
     /// Gets the internal list of all Points of Polyline3D.
     /// This is not a copy, so changes to the list will be reflected in the Polyline3D.
     val Points: ResizeArray<Pnt>
@@ -288,3 +298,150 @@ type Polyline3D =
         if rev then 
             np.ReverseInPlace()
         np     
+    
+    /// <summary>Offsets a Polyline in 3D space by finding the local offset in each corner.</summary>
+    /// <param name="polyLine"> A 3D polyLine. Auto detects if given points are from a closed Polyline (first point = last point) and loops them.</param>
+    /// <param name="offsetDistances">Offset distances can vary per segment, Positive distance is offset inwards, negative outwards.
+    ///     Distances Sequence  must have exact count , be a singleton ( for repeating) or empty seq ( for ignoring)</param>
+    /// <param name="normalDistances">Normal distances define a perpendicular offset at each corner.
+    ///     Distances Sequence  must have exact count , be a singleton ( for repeating) or empty seq ( for ignoring)</param>
+    /// <param name="loop">Consider last point and first point to be from a closed loop, even if they are not at the same location.</param>
+    /// <returns>A list of points that has the same length as the input list.</returns>
+    static member offset(   polyLine:Polyline3D,  // or IList so it can take a Point3dList class too
+                            offsetDistances: float seq,
+                            [<OPT;DEF(null:seq<float>)>] normalDistances: float seq,
+                            [<OPT;DEF(false)>] loop:bool) :Polyline3D  = 
+        let points = polyLine.Points
+        let offDists0  = Array.ofSeq offsetDistances
+        let normDists0 = Array.ofSeq (if isNull normalDistances then Seq.empty<float> else normalDistances)
+        let pointk = points.Count
+        let lastIndex = pointk - 1
+        let lenDist = offDists0.Length
+        let lenDistNorm = normDists0.Length
+        if pointk < 2 then
+            FsExGeoException.Raise "FsEx.Geo.Polyline.OffsetPoints needs at least two points but %O given" polyLine
+        elif pointk = 2 then
+            let offDist = 
+                if   lenDist = 0 then 0.0
+                elif lenDist = 1 then offDists0.[0]
+                else FsExGeoException.Raise "FsEx.Geo.Polyline.OffsetPoints: offsetDistances has %d items but should have 1 or 0 for 2 given points %O" lenDist polyLine 
+            let normDist = 
+                if   lenDistNorm = 0 then 0.0
+                elif lenDistNorm = 1 then normDists0.[0]
+                else FsExGeoException.Raise "FsEx.Geo.Polyline.OffsetPoints: normalDistances has %d items but should have 1 or 0 for 2 given points %O" lenDistNorm polyLine
+            let a, b = Pnt.offsetTwoPt(points.[0], points.[1] , offDist, normDist)
+            let r = Polyline3D.empty 2
+            r.Points.Add(a)
+            r.Points.Add(b)
+            r
+        else // regular case more than 2 points
+            let lastIsFirst = (points.[0] - points.Last).Length < 1e-6 //auto detect closed polyline points
+            let distsNeeded = 
+                if lastIsFirst then pointk - 1
+                elif loop      then pointk
+                else                pointk - 1
+            let distsNeededNorm = 
+                if lastIsFirst then pointk - 1
+                elif loop      then pointk
+                else                pointk   // not -1 !!
+            let  offDists = 
+                if   lenDist = 0 then             Array.create distsNeeded 0.0
+                elif lenDist = 1 then             Array.create distsNeeded offDists0.[0]
+                elif lenDist = distsNeeded then   offDists0
+                else FsExGeoException.Raise "OffsetPoints: offsetDistances has %d items but should have %d (lastIsFirst=%b) (loop=%b)" lenDist distsNeeded lastIsFirst loop
+            let normDists = 
+                if   lenDistNorm = 0 then                 Array.create distsNeededNorm 0.0
+                elif lenDistNorm = 1 then                 Array.create distsNeededNorm normDists0.[0]
+                elif lenDistNorm = distsNeededNorm then   normDists0
+                else FsExGeoException.Raise "FsEx.Geo.Polyline.OffsetPoints: normalDistances has %d items but should have %d (lastIsFirst=%b) (loop=%b)" lenDist distsNeededNorm lastIsFirst loop
+            let refNormal = Points.normalOfPoints(points) //to have good starting direction, first kink might be in bad direction
+            let Pts = ResizeArray<Pnt>(pointk)
+            let Ns = ResizeArray<Vec>(pointk)
+            for i, p, t, n in Seq.iPrevThisNext(points) do
+                // first one:
+                if i=0 then
+                    if lastIsFirst then
+                        let prev = points.GetNeg(-2) // because -1 is same as 0
+                        let struct( _, _, pt, N) = Points.findOffsetCorner(prev, t, n, offDists.Last, offDists.[0], refNormal)
+                        Pts.Add pt
+                        Ns.Add N
+                    else
+                        let struct( _, sn, pt, N) = Points.findOffsetCorner(p, t, n, offDists.Last, offDists.[0], refNormal)
+                        Ns.Add N
+                        if loop then Pts.Add pt
+                        else         Pts.Add (t + sn)
+                // last one:
+                elif i = lastIndex  then
+                    if lastIsFirst then
+                        let struct(_, _, pt, N) = Points.findOffsetCorner(p, t, points.[1], offDists.[i-1], offDists.[0], refNormal)
+                        Pts.Add pt
+                        Ns.Add N
+                    elif loop then
+                        let struct( _, _, pt, N) = Points.findOffsetCorner(p, t, n, offDists.[i-1], offDists.[i], refNormal)
+                        Pts.Add pt
+                        Ns.Add N
+                    else
+                        let struct( sp, _, _, N) = Points.findOffsetCorner(p, t, n, offDists.[i-1], offDists.[i-1], refNormal) // or any next off dist since only sp is used
+                        Pts.Add (t + sp)
+                        Ns.Add N
+                else
+                    let struct( _, _, pt, N ) = Points.findOffsetCorner(p, t, n, offDists.[i-1], offDists.[i], refNormal)
+                    Pts.Add pt
+                    Ns.Add N
+            if lenDistNorm > 0 then
+                for i=0 to  distsNeededNorm-1 do // ns might be shorter than pts if lastIsFirst= true
+                    let n = Ns.[i]
+                    if n <> Vec.Zero then
+                        Pts.[i] <- Pts.[i] + n * normDists.[i]
+
+            let rec searchBack i (ns:ResizeArray<Vec>) = 
+                let ii = saveIdx (i) ns.Count
+                let v = ns.[ii]
+                if v <> Vec.Zero || i < -ns.Count then ii
+                else searchBack (i-1) ns
+
+            let rec  searchForward i (ns:ResizeArray<Vec>) = 
+                let ii = saveIdx (i) ns.Count
+                let v = ns.[ii]
+                if v <> Vec.Zero || i > (2 * ns.Count) then ii
+                else searchForward (i + 1) ns
+
+            // fix collinear segments by nearest neighbors that are ok
+            for i, n in Seq.indexed Ns do // ns might be shorter than pts if lastIsFirst= true
+                if n = Vec.Zero then
+                    let pi = searchBack (i-1) Ns
+                    let ppt = Pts.[pi]
+                    let pln = Line3D(points.[pi], points.[saveIdx (pi + 1) pointk])
+                    let pclp = pln.ClosestPoint(ppt, limitToFiniteSegment=false)
+                    let pv = ppt - pclp
+
+                    let ni = searchForward (i + 1) Ns
+                    let npt = Pts.[ni]
+                    let nln = Line3D(points.[ni], points.[saveIdx (ni-1) pointk])
+                    let nclp = nln.ClosestPoint(npt, limitToFiniteSegment=false)
+                    let nv = npt - nclp
+                    //print (pi,"prev i")
+                    //print (i,"is collinear")
+                    //print (ni,"next i")
+                    if offDists.[pi] <> offDists.[saveIdx (ni-1) distsNeeded] then
+                        FsExGeoException.Raise "FsEx.Geo.Polyline.OffsetPoints: can't fix collinear at index %d with index %d and %d because offset distances are mismatching: %f, %f" i pi ni offDists.[pi] offDists.[saveIdx (ni-1) pointk]
+                    Pts.[i] <- points.[i] + (nv + pv)*0.5
+            if lastIsFirst then Pts.[lastIndex] <- Pts.[0]
+            Pts
+
+
+    /// Offsets a Polyline in 3D space by finding th local offset in each corner.
+    /// Positive distance is offset inwards, negative outwards.
+    /// Normal distances define a perpendicular offset at each corner.
+    /// Auto detects if given points are from a closed Polyline (first point = last point) and loops them
+    /// Auto detects points from closed polylines and loops them
+    static member OffsetPoints(     points:Point3d IList,
+                                    offsetDistance: float,
+                                    [<OPT;DEF(0.0)>]normalDistance: float ,
+                                    [<OPT;DEF(false)>]loop:bool) :Point3d  Rarr  = 
+
+        if normalDistance = 0.0 then Scripting.OffsetPoints(points,[offsetDistance],[]              , loop)
+        else                         Scripting.OffsetPoints(points,[offsetDistance],[normalDistance], loop)
+
+
+

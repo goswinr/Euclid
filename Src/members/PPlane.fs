@@ -73,6 +73,40 @@ module AutoOpenPPlane =
 
         (*
 
+            /// WorldXY rotated 180 degrees round Z Axis
+        static member WorldMinusXMinusY= 
+            Plane(Point3d.Origin, -Vector3d.XAxis, -Vector3d.YAxis)
+
+        /// WorldXY rotated 90 degrees round Z Axis counter clockwise from top
+        static member WorldYMinusX= 
+            Plane(Point3d.Origin, Vector3d.YAxis, -Vector3d.XAxis)
+
+        /// WorldXY rotated 270 degrees round Z Axis counter clockwise from top
+        static member WorldMinusYX= 
+            Plane(Point3d.Origin, -Vector3d.YAxis, Vector3d.XAxis)
+
+        /// WorldXY rotated 180 degrees round X Axis, Z points down now
+        static member WorldXMinusY= 
+            Plane(Point3d.Origin, Vector3d.XAxis, -Vector3d.YAxis)
+
+            
+        ///<summary>Returns Rhino's world XY Plane.</summary>
+        ///<returns>(Plane) Rhino's world XY Plane.</returns>
+        static member WorldXYPlane() : Plane = 
+            Plane.WorldXY
+
+
+        ///<summary>Returns Rhino's world YZ Plane.</summary>
+        ///<returns>(Plane) Rhino's world YZ Plane.</returns>
+        static member WorldYZPlane() : Plane = 
+            Plane.WorldYZ
+
+
+        ///<summary>Returns Rhino's world ZX Plane.</summary>
+        ///<returns>(Plane) Rhino's world ZX Plane.</returns>
+        static member WorldZXPlane() : Plane = 
+            Plane.WorldZX    
+
         /// Return a new plane with given Origin
         let inline setOrig (pt:Point3d) (pl:Plane) =   
             let mutable p = pl.Clone()
