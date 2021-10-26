@@ -121,7 +121,22 @@ module internal AutoOpenResizeArray =
 
         /// this.Count
         static member inline length (xs: ResizeArray<'T>) = 
-            xs.Count           
+            xs.Count    
+
+        /// Yields looped Seq from (first, second)  up to (last, first).
+        /// The resulting seq has the same element count as the input Rarr.
+        static member thisNext (rarr:ResizeArray<'T>) = 
+            if rarr.Count <= 2 then FsExGeoException.Raise "FsEx.Geo.ResizeArray.thisNext input has less than two items:\r\n%O" rarr
+            seq {   for i = 0 to rarr.Count-2 do  rarr.[i], rarr.[i+1]
+                    rarr.[rarr.Count-1], rarr.[0] }       
+
+        /// Yields looped Seq from (1, last, first, second)  up to (lastIndex, second-last, last, first)
+        /// The resulting seq has the same element count as the input Rarr.
+        static member iPrevThisNext (rarr:ResizeArray<'T>) = 
+            if rarr.Count <= 3 then FsExGeoException.Raise "FsEx.Geo.ResizeArray.iPrevThisNext input has less than three items:\r\n%O" rarr
+            seq {   0, rarr.[rarr.Count-1], rarr.[0], rarr.[1]
+                    for i = 0 to rarr.Count-3 do  i+1, rarr.[i], rarr.[i+1], rarr.[i+2]
+                    rarr.Count-1, rarr.[rarr.Count-2],rarr.[rarr.Count-1], rarr.[0] }
 
         /// <summary>Sorts the elements of a ResizeArray, using the given projection for the keys and returning a new ResizeArray.
         /// Elements are compared using <see cref="M:Microsoft.FSharp.Core.Operators.compare"/>.

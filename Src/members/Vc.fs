@@ -10,8 +10,11 @@ module AutoOpenVc =
     type Vc with
 
         /// Returns a boolean indicating wether X and Y are exactly 0.0.
-        member inline v.IsZero = v.X = 0.0 && v.Y = 0.0 
+        member inline v.IsZero = v.X = 0.0 && v.Y = 0.0         
         
+        /// Returns a boolean indicating if any of  X and Y is not exactly 0.0.
+        member inline v.IsNotZero =  v.X <> 0.0 || v.Y <> 0.0   
+
         /// Returns a boolean indicating wether the absolute value of X and Y is each less than the given tolerance.
         member inline v.IsTiny tol = abs v.X < tol && abs v.Y < tol          
     
@@ -478,18 +481,55 @@ module AutoOpenVc =
         static member inline rotate (angDegree) (vec:Vc) = 
             Vc.rotateBy (Rotation2D.createFromDegrees angDegree) vec  
 
-               
+        
         /// 90 Degree rotation counter clockwise
         static member inline rotate90CCW (v:UnitVc) = UnitVc.createUnchecked( -v.Y,   v.X  )
 
         /// 90 Degree rotation clockwise
         static member inline rotate90CW (v:UnitVc) = UnitVc.createUnchecked(  v.Y,  -v.X  )  
 
-        
-        
-        
-        
-        
-        
-        
+            
+        /// Checks if Angle between two vectors is Below one Degree
+        /// Ignores vector orientation
+        /// Fails on zero length vectors, tolerance 1e-12
+        static member inline isAngleBelow1Degree(a:Vc, b:Vc) = 
+            let sa = a.LengthSq
+            if sa < 1e-6 then
+                FsExGeoException.Raise "FsEx.Geo.Vc Duplicate points: isAngleBelow1Degree: prevPt - thisPt: %s.LengthSq < 1e-6; nextPt - thisPt:%s " a.AsString b.AsString
+            let sb = b.LengthSq
+            if sb < 1e-6 then
+                FsExGeoException.Raise "FsEx.Geo.Vc Duplicate points: isAngleBelow1Degree: nextPt - thisPt: %s.LengthSq < 1e-6; prevPt - thisPt:%s " b.AsString a.AsString
+            let lena = sqrt sa
+            let lenb = sqrt sb
+            if lena < 1e-5 then
+                FsExGeoException.Raise "FsEx.Geo.Vc Duplicate points: isAngleBelow1Degree: prevPt - thisPt: %s < 1e-5: %f; nextPt - thisPt:%s " a.AsString 1e-5 b.AsString
+            if lenb < 1e-5 then
+                FsExGeoException.Raise "FsEx.Geo.Vc Duplicate points: isAngleBelow1Degree: nextPt - thisPt: %s < 1e-5: %f; prevPt - thisPt:%s " b.AsString 1e-5 a.AsString
+            let au = a * (1.0 / lena)
+            let bu = b * (1.0 / lenb)
+            abs(bu*au) > 0.999847695156391 // = cosine of 1 degree (2 degrees would be =  0.999390827019096)
+
+            
+
+        /// Checks if Angle between two vectors is Below 0.25 Degrees
+        /// Ignores vector orientation
+        /// Fails on zero length vectors, tolerance 1e-12
+        static member inline isAngleBelowQuatreDegree(a:Vc, b:Vc) =          
+            let sa = a.LengthSq
+            if sa < 1e-6 then
+                FsExGeoException.Raise "FsEx.Geo.Vc Duplicate points: isAngleBelowQuatreDegree: prevPt - thisPt: %s.LengthSq < 1e-6; nextPt - thisPt:%s " a.AsString b.AsString
+            let sb = b.LengthSq
+            if sb < 1e-6 then
+                FsExGeoException.Raise "FsEx.Geo.Vc Duplicate points: isAngleBelowQuatreDegree: nextPt - thisPt: %s.LengthSq < 1e-6; prevPt - thisPt:%s " b.AsString a.AsString
+            let lena = sqrt sa
+            let lenb = sqrt sb
+            if lena < 1e-5 then
+                FsExGeoException.Raise "FsEx.Geo.Vc Duplicate points: isAngleBelowQuatreDegree: prevPt - thisPt: %s < 1e-5: %f; nextPt - thisPt:%s " a.AsString 1e-5 b.AsString
+            if lenb < 1e-5 then
+                FsExGeoException.Raise "FsEx.Geo.Vc Duplicate points: isAngleBelowQuatreDegree: nextPt - thisPt: %s < 1e-5: %f; prevPt - thisPt:%s " b.AsString 1e-5 a.AsString
+            let au = a * (1.0 / lena)
+            let bu = b * (1.0 / lenb)
+            abs(bu*au) > 0.999990480720734 // = cosine of 0.25 degree: printfn "%.18f" (cos( 0.25 * (System.Math.PI / 180.))) // for fsi: printfn "%.18f" (cos( 0.25 * (System.Math.PI / 180.)))
+
+
 

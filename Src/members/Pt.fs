@@ -15,6 +15,9 @@ module AutoOpenPt =
         /// Returns a boolean indicating wether X and Y are exactly 0.0.
         member inline pt.IsOrigin = pt.X = 0.0 && pt.Y = 0.0 
         
+        /// Returns a boolean indicating if any of  X and Y is not exactly 0.0.
+        member inline v.IsNotOrigin =  v.X <> 0.0 || v.Y <> 0.0  
+
         /// Returns a boolean indicating wether the absolute value of X and Y is each less than the given tolerance.
         member inline pt.IsAlmostOrigin tol = abs pt.X < tol && abs pt.Y < tol 
         

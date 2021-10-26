@@ -198,7 +198,7 @@ type Line3D =
         
     /// Assumes Line3D to be infinite!
     /// Returns closest point on infinite Line.
-    member ln.ClosestPointInfinit (p:Pnt) = 
+    member ln.ClosestPointInfinite (p:Pnt) = 
         //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
         let x = ln.FromX - ln.ToX
         let y = ln.FromY - ln.ToY
@@ -647,7 +647,7 @@ type Line3D =
 
     /// Assumes Line3D to be infinite!
     /// Returns closest point on infinite Line.
-    static member inline closestPointInfinit (p:Pnt) (ln:Line3D)  = ln.ClosestPointInfinit p        
+    static member inline closestPointInfinit (p:Pnt) (ln:Line3D)  = ln.ClosestPointInfinite p        
 
     /// Returns closest point on (finite) Line.
     static member inline closestPoint (p:Pnt) (ln:Line3D)  = ln.ClosestPoint p    
@@ -754,12 +754,12 @@ type Line3D =
    
 
     /// Fast check if two 3D lines are in the same 3D Plane.
-    /// This can be used as a fast check for intersection.
+    /// This can be used as a fast check to exclude intersection.
     /// If you need an exact intersection test purely based on distance use Line3D.intersectLine
     /// It first calculates the signed volume of the Parallelepiped define by three vectors from the four corners of the lines.
     /// Then it checks if it is smaller than given volumeTolerance fo Parallelepiped.
     /// Using the VolumeTolerance makes a positive result not only dependent on the distance of the two 3D lines from each other but also on their lengths. 
-    static member inline doLinesIntersectTol volumeTolerance (l:Line3D) (ll:Line3D) =  
+    static member inline areInSamePlaneTol volumeTolerance (l:Line3D) (ll:Line3D) =  
         // Two non-parallel lines p1+Rv1 and p2+Rv2 intersect if and only if (v1×v2)⋅(p1−p2)=0
         // https://math.stackexchange.com/questions/697124/how-to-determine-if-two-lines-in-3d-intersect
         // vector of line l:
@@ -781,14 +781,14 @@ type Line3D =
         let dot = cx*vx + cy*vy + cz*vz
         abs(dot) < volumeTolerance
 
-    /// Checks if two finit 3D lines do intersect.
-    /// It first calculates the signed volume of the Parallelepiped define by three vectors from the four corners of the lines.
-    /// Then it checks if it is smaller than Util.zeroLengthTol.
-    /// Using the volume of the Parallelepiped makes a positive result not only dependent on the distance of the two 3D lines from each other but also on their lengths.
-    /// This is a fast check for intersection.
+    /// Fast check if two 3D lines are in the same 3D Plane.
+    /// This can be used as a fast check to exclude intersection.
     /// If you need an exact intersection test purely based on distance use Line3D.intersectLine
-    static member inline doLinesIntersect (l:Line3D) (ll:Line3D) =  
-        Line3D.doLinesIntersectTol Util.zeroLengthTol l ll
+    /// It first calculates the signed volume of the Parallelepiped define by three vectors from the four corners of the lines.    /// 
+    /// Then it checks if it is smaller than Util.zeroLengthTol.
+    /// Using the volume of the Parallelepiped makes a positive result not only dependent on the distance of the two 3D lines from each other but also on their lengths.    
+    static member inline areInSamePlane (l:Line3D) (ll:Line3D) =  
+        Line3D.areInSamePlaneTol Util.zeroLengthTol l ll
 
     /// Assumes Lines to be infinite!
     /// Returns the parameters at which two infinite 3D Lines are closest to each other.
@@ -817,8 +817,10 @@ type Line3D =
             let u = (a * e - b * d) / det
             t,u 
         else // parallel
+            
             //TODO still return two parameters where their distance to each other is minimal(middle point of overlap)
             FsExGeoException.Raise "FsEx.Geo.Line3D.intersectLineParametersInfinite: Lines are parallel l: \r\n%O and ll: \r\n%O" l ll
+
         
     
     /// Assumes Lines to be infinite!    
@@ -955,9 +957,6 @@ type Line3D =
         Pnt.distance a b 
     *)
 
-
-
-    
     
 
     /// Offset line in XY Plane to left side in line direction

@@ -290,6 +290,66 @@ type Points private () =
                 else
                     loop <- false
         res
-        
+    
+    /// Finds the center, mean or average point.
+    static member center (pts: ResizeArray<Pnt>) = 
+        let mutable sum = Pnt.Origin
+        for pt in pts do  sum <- sum + pt
+        sum / float pts.Count   
 
-       // TODO add offset 3d functions
+    /// Finds the mean normal of many points.
+    /// It finds the center point and then takes cross-products iterating all points in pairs of two.
+    /// The first two points define the orientation of the normal.
+    /// So it considers the current order of points too, if counterclockwise in xy Plane the normal in z orientation.
+    static member normalOfPoints(pts: ResizeArray<Pnt>) : UnitVec  = 
+        if pts.Count <= 2 then
+            FsExGeoException.Raise "FsEx.Geo.Points.NormalOfPoints can't find normal of two or less points %O" pts
+        elif pts.Count = 3  then
+            let a = pts.[0] - pts.[1]
+            let b = pts.[2] - pts.[1]
+            let v= Vec.cross(b, a)
+            if v.IsTiny(1e-6) then FsExGeoException.Raise "FsEx.Geo.Points.NormalOfPoints: three points are in a line  %O" pts
+            else
+                v.Unitized
+        else
+            let cen = pts |> Points.center
+            let mutable v = Vec.Zero
+            for t, n in ResizeArray.thisNext pts do
+                let a = t-cen
+                let b = n-cen
+                let x = Vec.cross(a, b)  |> Vec.matchOrientation v // TODO do this matching?
+                v <- v + x
+            if v.IsTiny(1e-3) then FsExGeoException.Raise "FsEx.Geo.Points.NormalOfPoints: points are in a line or sphere without clear normal  %O" pts
+            else
+                v.Unitized
+    
+    //
+    /// Finds the inner offset point in a corner ( defined by a Polyline from 3 points ( prevPt, thisPt and nextPt)
+    /// The offset from first and second segment are given separately and can vary (prevDist and nextDist).
+    /// Use negative distance for outer offset
+    /// The orientation parameter is an approximate orientation vector. It might flip the offset side if the dot product with the local normal is negative.
+    /// Returns a Value tuple of :
+    ///   - the first segment offset vector in actual length  ,
+    ///   - second segment offset vector,
+    ///   - the offset corner,
+    ///   - and the unitized normal at the corner. Flipped if needed to match orientation of the orientation input vector (positive dot product)
+    /// If Points are  collinear returns: Vec.Zero, Vec.Zero, Pnt.Origin, Vec.Zero
+    /// To check if the return values are this sentinel or a real result look at the normal vector.
+    static member findOffsetCorner( prevPt:Pnt,
+                                    thisPt:Pnt,
+                                    nextPt:Pnt,
+                                    prevDist:float,
+                                    nextDist:float,
+                                    orientation:Vec) : struct(Vec* Vec * Pnt * Vec) = 
+        let vp = prevPt - thisPt
+        let vn = nextPt - thisPt
+        if Vec.isAngleBelowQuatreDegree(vp, vn) then // TODO refine error criteria
+            struct(Vec.Zero, Vec.Zero, Pnt.Origin, Vec.Zero)
+        else
+            let n  = Vec.cross(vp, vn) |> Vec.matchOrientation orientation
+            let sp = Vec.cross(vp, n) |> Vec.setLength prevDist// the offset vectors
+            let sn = Vec.cross(n, vn) |> Vec.setLength nextDist// the offset vectors
+            let lp = Line3D(thisPt + sp , thisPt + sp + vp)  
+            let ln = Line3D(thisPt + sn , thisPt + sn + vn)  
+            let tp , tn = Line3D.intersectLineParametersInfinite lp ln //could also be solved with trigonometry functions ??            
+            struct(sp, sn, lp.EvaluateAt(tp), n.Unitized*1.0 )  // return the unit vector as Vec ( because it might be Vec.Zero too)

@@ -128,9 +128,23 @@ module Util =
     let inline isNotZero x = 
         x < -1e-7  ||  x > 1e-7 
 
+    /// Any int will give a valid index for given collection size.
+    /// Converts negative indices to positive ones and loops to start after last index is reached.
+    /// Returns a valid index for a collection of 'length' items for any integer
+    let inline saveIdx i length = 
+        let t = i % length
+        if t >= 0 then t
+        else           t + length
 
 
-(* module Units = 
+(* 
+    /// A standard Unset value. Use this value rather than Double.NaN when a bogus floating point value is required.
+    /// This is equivalent to openNURBS ON_UNSET_VALUE
+    [<Literal>]
+    let UnsetValue = -1.23432101234321E+308
+
+
+module Units = 
 
     /// Degree (of Angle) 
     [<Measure>] type deg 
