@@ -107,9 +107,10 @@ type OrthoMatrix =
         n11 * t11 + n21 * t12 + n31 * t13 
 
     /// Inverts the OrthoMatrix. 
-    /// If the determinant is zero the Matrix cannot be inverted. 
-    /// An Exception is raised.
+    /// OrthoMatrices have always determinant 1.0 so the can always be inverted.
     member m.Inverse =         
+        // this order would actually need to be transposed when comparing to three.js, but its transposed in the output too, so its correct.
+        // The internal array in three.js is column major.         
         let n11 = m.M11
         let n21 = m.M21
         let n31 = m.M31
@@ -147,10 +148,6 @@ type OrthoMatrix =
         isOne  m.M11 && isZero m.M21 && isZero m.M31 && isZero m.X41 &&
         isZero m.M12 && isOne  m.M22 && isZero m.M32 && isZero m.Y42 &&
         isZero m.M13 && isZero m.M23 && isOne  m.M33 && isZero m.Z43 
-        
-
-    
-
 
     //----------------------------------------------------------------------------------------------
     //--------------------------  Static Members  --------------------------------------------------
@@ -437,7 +434,6 @@ type OrthoMatrix =
             else
                 None           
 
-
     /// Create Matrix from Quaternion
     static member createFromQuaternion( quaternion:Quaternion) =
         let x = quaternion.X
@@ -455,57 +451,23 @@ type OrthoMatrix =
         let zz = z * z2
         let wx = w * x2
         let wy = w * y2
-        let wz = w * z2        
-        OrthoMatrix(( 1. - ( yy + zz ) ) 
-                ,( xy + wz ) 
-                ,( xz - wy ) 
-                ,0
-                ,( xy - wz ) 
-                ,( 1. - ( xx + zz ) ) 
-                ,( yz + wx ) 
-                ,0                
-                ,( xz + wy ) 
-                ,( yz - wx ) 
-                ,( 1. - ( xx + yy ) ) 
-                ,0 )
+        let wz = w * z2
+        // the sequence is reordered here, when compared to Three js
+        OrthoMatrix (( 1. - ( yy + zz ) )                      
+                    ,( xy - wz )                      
+                    ,( xz + wy )                      
+                    ,0                       
+                    ,( xy + wz )                      
+                    ,( 1. - ( xx + zz ) )                      
+                    ,0                       
+                    ,( yz - wx )                      
+                    ,( xz - wy )                      
+                    ,( yz + wx )                      
+                    ,( 1. - ( xx + yy ) )                      
+                    ,0)
     
         
-    (*
-    /// Compose a center, a quaternion and scale to one Matrix
-    static member compose( position:Pnt, quaternion:Quaternion) =
-        let x = quaternion.X
-        let y = quaternion.Y
-        let z = quaternion.Z
-        let w = quaternion.W
-        let x2 = x + x  
-        let y2 = y + y
-        let z2 = z + z
-        let xx = x * x2
-        let xy = x * y2
-        let xz = x * z2
-        let yy = y * y2
-        let yz = y * z2
-        let zz = z * z2
-        let wx = w * x2
-        let wy = w * y2
-        let wz = w * z2
-        OrthoMatrix(( 1. - ( yy + zz ) ) 
-                ,( xy + wz ) 
-                ,( xz - wy ) 
-                ,0
-                ,( xy - wz ) 
-                ,( 1. - ( xx + zz ) ) 
-                ,( yz + wx ) 
-                ,0                
-                ,( xz + wy ) 
-                ,( yz - wx ) 
-                ,( 1. - ( xx + yy ) ) 
-                ,0
-                ,position.X
-                ,position.Y  wrong order !
-                ,position.Z
-                ,1
-                )
+    (*    
     
         
     these need verifications with dot products of column vectors to be all 0.0  

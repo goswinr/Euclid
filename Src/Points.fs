@@ -323,8 +323,8 @@ type Points private () =
             else
                 v.Unitized
     
-    //
-    /// Finds the inner offset point in a corner ( defined by a Polyline from 3 points ( prevPt, thisPt and nextPt)
+    /// This function is mostly used inside of Polyline3D.offset.
+    /// It finds the inner offset point in a corner ( defined by a Polyline from 3 points ( prevPt, thisPt and nextPt)
     /// The offset from first and second segment are given separately and can vary (prevDist and nextDist).
     /// Use negative distance for outer offset
     /// The orientation parameter is an approximate orientation vector. It might flip the offset side if the dot product with the local normal is negative.
@@ -347,9 +347,9 @@ type Points private () =
             struct(Vec.Zero, Vec.Zero, Pnt.Origin, Vec.Zero)
         else
             let n  = Vec.cross(vp, vn) |> Vec.matchOrientation orientation
-            let sp = Vec.cross(vp, n) |> Vec.setLength prevDist// the offset vectors
-            let sn = Vec.cross(n, vn) |> Vec.setLength nextDist// the offset vectors
-            let lp = Line3D(thisPt + sp , thisPt + sp + vp)  
-            let ln = Line3D(thisPt + sn , thisPt + sn + vn)  
+            let sp = Vec.cross(vp, n)  |> Vec.setLength prevDist// the offset vectors
+            let sn = Vec.cross(n, vn)  |> Vec.setLength nextDist// the offset vectors
+            let lp = Line3D(prevPt + sp , thisPt + sp)  
+            let ln = Line3D(thisPt + sn , nextPt + sn)  
             let tp , tn = Line3D.intersectLineParametersInfinite lp ln //could also be solved with trigonometry functions ??            
             struct(sp, sn, lp.EvaluateAt(tp), n.Unitized*1.0 )  // return the unit vector as Vec ( because it might be Vec.Zero too)

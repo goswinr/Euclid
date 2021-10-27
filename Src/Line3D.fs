@@ -832,7 +832,7 @@ type Line3D =
         l.EvaluateAt a , ll.EvaluateAt b 
 
     /// Assumes Lines to be infinite!    
-    /// Returns the singe points where these two infinite lines actually intersect each other.
+    /// Returns the single points where these two infinite lines actually intersect each other.
     /// Fails if lines are parallel or skew by more than 1e-6 units 
     /// The returned point is exactly on ll.  
     static member intersectLinesInfiniteInOnePoint (l:Line3D) (ll:Line3D) : Pnt = 

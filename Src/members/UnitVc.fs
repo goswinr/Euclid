@@ -272,7 +272,6 @@ module AutoOpenUnitVc =
 
         /// Add two 2D unit vectors together. Returns a new (non-unitized) 2D vector.
         static member inline add      (a:UnitVc) (b:UnitVc) = b + a  
-
         
         /// Multiplies a 2D unit vector with a scalar, also called scaling a vector. 
         /// Same as UnitVc.setLength. Returns a new (non-unitized) 2D vector.

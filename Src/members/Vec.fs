@@ -17,13 +17,9 @@ module AutoOpenVec =
         
         /// Returns a boolean indicating wether the absolute value of X,Y and Z is each less than the given tolerance.
         member inline v.IsTiny tol = abs v.X < tol && abs v.Y < tol && abs v.Z < tol
-
-        /// Returns the length of the 3D vector 
-        member inline v.Length = sqrt (v.X*v.X + v.Y*v.Y + v.Z*v.Z) 
-
-        /// Returns the squared length of the 3D vector 
-        /// The square length is faster to calculate and often good enough for use cases such as sorting vectors by length.
-        member inline v.LengthSq = v.X*v.X + v.Y*v.Y + v.Z*v.Z
+        
+        //member inline v.Length moved to Vec type declaration
+        //member inline v.LengthSq moved to Vec type declaration
 
         /// Returns the length of the 3D vector projected into World X-Y plane.
         member inline v.LengthInXY =  sqrt (v.X*v.X + v.Y*v.Y)
@@ -45,8 +41,9 @@ module AutoOpenVec =
         member inline v.Half = Vec (v.X*0.5 ,v.Y*0.5, v.Z*0.5)
     
         /// Returns a new 3D vector scaled to the desired length.
+        /// Same as Vec.setLength.
         member inline v.WithLength (desiredLength:float) =  
-            let l = sqrt(v.X*v.X+v.Y*v.Y+v.Z*v.Z) 
+            let l = v.Length 
             if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "Vec.WithLength %g : %O is too small for unitizing, Tolerance:%g" desiredLength v zeroLengthTol
             v*(desiredLength / l)            
         
@@ -54,7 +51,7 @@ module AutoOpenVec =
         /// Fails with FsExGeoDivByZeroException if the length of the vector is 
         /// too small (1-e16) to unitize.    
         member inline v.Unitized =  
-            let l = sqrt(v.X*v.X+v.Y*v.Y+v.Z*v.Z) 
+            let l = v.Length 
             if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "%O is too small for unitizing, Tolerance:%g" v zeroLengthTol
             let li=1./l in 
             UnitVec.createUnchecked( li*v.X , li*v.Y ,li*v.Z )             
@@ -84,7 +81,6 @@ module AutoOpenVec =
         member inline v.RotateOnZ90CW  = Vec(  v.Y,  -v.X,   v.Z  )  
         
         
-
         /// The diamond angle.
         /// Calculates the proportion of X to Y component. 
         /// It is always positive and in the range of 0.0 to 4.0 ( for 360 Degrees) 
@@ -272,13 +268,8 @@ module AutoOpenVec =
         /// Convert 3D vector to 3D point. 
         static member inline asPnt(v:Vec) = Pnt(v.X, v.Y, v.Z) 
         
-
-        /// Cross product, of two 3D vectors. 
-        /// The resulting vector is perpendicular to both input vectors.
-        /// Its length is the area of the parallelogram spanned by the input vectors.
-        /// Its direction follows th right-hand rule.
-        /// A x B = |A| * |B| * sin(angle)
-        static member inline cross (a:Vec, b:Vec)  = Vec (a.Y * b.Z - a.Z * b.Y ,  a.Z * b.X - a.X * b.Z ,  a.X * b.Y - a.Y * b.X )       
+   
+        //static member inline cross (a:Vec, b:Vec)  moved to Vec type declaration
         
         /// Cross product, of a 3D unit vectors an a 3D vector. 
         /// The resulting vector is perpendicular to both input vectors.
@@ -325,15 +316,18 @@ module AutoOpenVec =
         static member inline setZ z (v:Vec) = v.WithZ z
         
         /// Add two 3D vectors together. Returns a new 3D vector.
-        static member inline add      (a:Vec) (b:Vec) = b + a  
+        static member inline add  (a:Vec) (b:Vec) = b + a  
         
         /// Multiplies a 3D vector with a scalar, also called scaling a vector. 
-        /// Same as Vec.setLength. Returns a new 3D vector.
-        static member inline scale    (f:float) (v:Vec) = Vec (v.X * f , v.Y * f , v.Z * f)    
+        /// Returns a new 3D vector.
+        static member inline scale (f:float) (v:Vec) = Vec (v.X * f , v.Y * f , v.Z * f)    
 
-        /// Multiplies a 3D vector with a scalar, also called scaling a vector. 
-        /// Same as Vec.scale. Returns a new 3D vector.
-        static member inline setLength(f:float) (v:Vec) = Vec (v.X * f , v.Y * f , v.Z * f) 
+        /// Returns a new 3D vector scaled to the desired length.
+        /// Same as vec.WithLength. Returns a new 3D vector.
+        static member inline setLength(desiredLength:float) (v:Vec) = 
+            let l = v.Length
+            if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "Vec.setLength %g : %O is too small for unitizing, Tolerance:%g" desiredLength v zeroLengthTol
+            v * (desiredLength / l) 
         
         /// Add to the X part of this 3D vectors together. Returns a new 3D vector.
         static member inline moveX x (v:Vec) = Vec (v.X+x, v.Y,   v.Z)
@@ -348,7 +342,7 @@ module AutoOpenVec =
         static member inline isTiny   tol (v:Vec) = v.IsTiny tol
 
         /// Returns the length of the 3D vector 
-        static member inline length       (v:Vec) = v.Length
+        static member inline length  (v:Vec) = v.Length
 
         /// Returns the squared length of the 3D vector 
         /// The square length is faster to calculate and often good enough for use cases such as sorting vectors by length.

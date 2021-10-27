@@ -106,6 +106,13 @@ type UnitVec =
     /// But without full type name as in v.ToString()
     member v.AsString = sprintf "X=%s| Y=%s| Z=%s" (Format.float v.X) (Format.float v.Y) (Format.float v.Z) 
 
+     /// Returns the length of the 3D vector 
+    member inline v.Length = sqrt (v.X*v.X + v.Y*v.Y + v.Z*v.Z) 
+
+    /// Returns the squared length of the 3D vector 
+    /// The square length is faster to calculate and often good enough for use cases such as sorting vectors by length.
+    member inline v.LengthSq = v.X*v.X + v.Y*v.Y + v.Z*v.Z
+
     /// Negate or inverse a 3D unit vectors. Returns a new 3D unit vector.
     static member inline ( ~- ) (v:UnitVec) = UnitVec ( -v.X , -v.Y , -v.Z)   
     
@@ -153,6 +160,14 @@ type UnitVec =
         //v * (1./f) // maybe faster but worse precision
         Vec (v.X / f , v.Y / f , v.Z / f) 
     
+
+    /// Cross product, of two 3D vectors. 
+    /// The resulting vector is perpendicular to both input vectors.
+    /// Its length is the area of the parallelogram spanned by the input vectors.
+    /// Its direction follows th right-hand rule.
+    /// A x B = |A| * |B| * sin(angle)
+    static member inline cross (a:Vec, b:Vec)  = Vec (a.Y * b.Z - a.Z * b.Y ,  a.Z * b.X - a.X * b.Z ,  a.X * b.Y - a.Y * b.X )  
+   
     /// For use as a faster internal constructor.
     /// Requires correct input of unitized values.
     static member inline createUnchecked(x,y,z)  = UnitVec(x,y,z)

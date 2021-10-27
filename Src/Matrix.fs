@@ -30,10 +30,10 @@ type Matrix =
     /// M13 M23 M33 Z43
     /// M14 M24 M34 M44
     /// Where X41, Y42 and Z43 refer to the translation part of the matrix.
-    new ( m11,  m21,  m31,  x41, 
-          m12,  m22,  m32,  y42, 
-          m13,  m23,  m33,  z43, 
-          m14,  m24,  m34,  m44) = {
+    new (   m11,  m21,  m31,  x41, 
+            m12,  m22,  m32,  y42, 
+            m13,  m23,  m33,  z43, 
+            m14,  m24,  m34,  m44) = {
                 M11=m11 ; M21=m21 ; M31=m31 ; X41=x41 ;
                 M12=m12 ; M22=m22 ; M32=m32 ; Y42=y42 ;
                 M13=m13 ; M23=m23 ; M33=m33 ; Z43=z43 ;
@@ -50,7 +50,7 @@ type Matrix =
     /// Where X41, Y42 and Z43 refer to the translation part of the matrix.
     member m.ByRows =  
         [| m.M11; m.M21; m.M31; m.X41; m.M12; m.M22; m.M32; m.Y42; m.M13; m.M23; m.M33; m.Z43; m.M14; m.M24; m.M34; m.M44 |] 
-   
+    
     /// Nicely formats the Matrix to a Grid of 4x4.
     override m.ToString()= 
         let ts   = m.ByRows |> Array.map ( fun x -> x.ToString("0.###")) 
@@ -96,76 +96,83 @@ type Matrix =
         let n11 = m.M11
         let n21 = m.M21
         let n31 = m.M31
-        let n41 = m.X41
+        let x41 = m.X41
         let n12 = m.M12
         let n22 = m.M22
         let n32 = m.M32
-        let n42 = m.Y42
+        let y42 = m.Y42
         let n13 = m.M13
         let n23 = m.M23
         let n33 = m.M33
-        let n43 = m.Z43
+        let z43 = m.Z43
         let n14 = m.M14
         let n24 = m.M24
         let n34 = m.M34
         let n44 = m.M44
 
-        let t11 = n23 * n34 * n42 - n24 * n33 * n42 + n24 * n32 * n43 - n22 * n34 * n43 - n23 * n32 * n44 + n22 * n33 * n44
-        let t12 = n14 * n33 * n42 - n13 * n34 * n42 - n14 * n32 * n43 + n12 * n34 * n43 + n13 * n32 * n44 - n12 * n33 * n44
-        let t13 = n13 * n24 * n42 - n14 * n23 * n42 + n14 * n22 * n43 - n12 * n24 * n43 - n13 * n22 * n44 + n12 * n23 * n44
+        let t11 = n23 * n34 * y42 - n24 * n33 * y42 + n24 * n32 * z43 - n22 * n34 * z43 - n23 * n32 * n44 + n22 * n33 * n44
+        let t12 = n14 * n33 * y42 - n13 * n34 * y42 - n14 * n32 * z43 + n12 * n34 * z43 + n13 * n32 * n44 - n12 * n33 * n44
+        let t13 = n13 * n24 * y42 - n14 * n23 * y42 + n14 * n22 * z43 - n12 * n24 * z43 - n13 * n22 * n44 + n12 * n23 * n44
         let t14 = n14 * n23 * n32 - n13 * n24 * n32 - n14 * n22 * n33 + n12 * n24 * n33 + n13 * n22 * n34 - n12 * n23 * n34
-        n11 * t11 + n21 * t12 + n31 * t13 + n41 * t14
+        n11 * t11 + n21 * t12 + n31 * t13 + x41 * t14
+
+
 
     /// Inverts the matrix. 
     /// If the determinant is zero the Matrix cannot be inverted. 
     /// An Exception is raised.
     member m.Inverse = 
         // based on http://www.euclideanspace.com/maths/algebra/matrix/functions/inverse/fourD/index.htm 
+
         //Speed Optimization TODO
         //The below  program is valid for a general 4×4 matrix which will work in all circumstances but when the matrix is being used to 
         //represent a combined rotation and translation (as described on this page) then the matrix carries a lot of redundant information. 
         //So if we want to speed up the code on this page then, for this case only, we can take advantage of this redundant information.
         //to invert a pure rotation then we just take the transpose of the 3x3 part of the matrix.
         //to invert a pure translation the we just negate the translation
+
+        // this order would actually need to be transposed when comparing to three.js, but its transposed in the output too, so its correct.
+        // The internal array in three.js is column major.  
         let n11 = m.M11
         let n21 = m.M21
         let n31 = m.M31
-        let n41 = m.X41
+        let x41 = m.X41
         let n12 = m.M12
         let n22 = m.M22
         let n32 = m.M32
-        let n42 = m.Y42
+        let y42 = m.Y42
         let n13 = m.M13
         let n23 = m.M23
         let n33 = m.M33
-        let n43 = m.Z43
-        let n14 = m.M14
-        let n24 = m.M24
-        let n34 = m.M34
+        let z43 = m.Z43
+        let n14 = m.M14 // x translation in three.js
+        let n24 = m.M24 // y translation in three.js
+        let n34 = m.M34 // z translation in three.js
         let n44 = m.M44
 
-        let t11 = n23 * n34 * n42 - n24 * n33 * n42 + n24 * n32 * n43 - n22 * n34 * n43 - n23 * n32 * n44 + n22 * n33 * n44
-        let t12 = n14 * n33 * n42 - n13 * n34 * n42 - n14 * n32 * n43 + n12 * n34 * n43 + n13 * n32 * n44 - n12 * n33 * n44
-        let t13 = n13 * n24 * n42 - n14 * n23 * n42 + n14 * n22 * n43 - n12 * n24 * n43 - n13 * n22 * n44 + n12 * n23 * n44
+        let t11 = n23 * n34 * y42 - n24 * n33 * y42 + n24 * n32 * z43 - n22 * n34 * z43 - n23 * n32 * n44 + n22 * n33 * n44
+        let t12 = n14 * n33 * y42 - n13 * n34 * y42 - n14 * n32 * z43 + n12 * n34 * z43 + n13 * n32 * n44 - n12 * n33 * n44
+        let t13 = n13 * n24 * y42 - n14 * n23 * y42 + n14 * n22 * z43 - n12 * n24 * z43 - n13 * n22 * n44 + n12 * n23 * n44
         let t14 = n14 * n23 * n32 - n13 * n24 * n32 - n14 * n22 * n33 + n12 * n24 * n33 + n13 * n22 * n34 - n12 * n23 * n34
-        let det = n11 * t11 + n21 * t12 + n31 * t13 + n41 * t14
+        let det = n11 * t11 + n21 * t12 + n31 * t13 + x41 * t14
 
         if abs det < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Matrix has a zero or almost zero determinant. It is smaller than 1e-24. It cannot be inverted:\r\n%O" m // TODO or return all zero matrix like threeJS ?
 
         let detInv = 1. / det
         
+        // this order would actually need to be transposed when comparing to three.js, but since input is transposed it is correct.
         Matrix  (   t11 * detInv                                                                                                         // M11
-                , ( n24 * n33 * n41 - n23 * n34 * n41 - n24 * n31 * n43 + n21 * n34 * n43 + n23 * n31 * n44 - n21 * n33 * n44 ) * detInv // M21
-                , ( n22 * n34 * n41 - n24 * n32 * n41 + n24 * n31 * n42 - n21 * n34 * n42 - n22 * n31 * n44 + n21 * n32 * n44 ) * detInv // M31
-                , ( n23 * n32 * n41 - n22 * n33 * n41 - n23 * n31 * n42 + n21 * n33 * n42 + n22 * n31 * n43 - n21 * n32 * n43 ) * detInv // X41 
+                , ( n24 * n33 * x41 - n23 * n34 * x41 - n24 * n31 * z43 + n21 * n34 * z43 + n23 * n31 * n44 - n21 * n33 * n44 ) * detInv // M21
+                , ( n22 * n34 * x41 - n24 * n32 * x41 + n24 * n31 * y42 - n21 * n34 * y42 - n22 * n31 * n44 + n21 * n32 * n44 ) * detInv // M31
+                , ( n23 * n32 * x41 - n22 * n33 * x41 - n23 * n31 * y42 + n21 * n33 * y42 + n22 * n31 * z43 - n21 * n32 * z43 ) * detInv // X41 
                 ,   t12 * detInv                                                                                                         // M12
-                , ( n13 * n34 * n41 - n14 * n33 * n41 + n14 * n31 * n43 - n11 * n34 * n43 - n13 * n31 * n44 + n11 * n33 * n44 ) * detInv // M22
-                , ( n14 * n32 * n41 - n12 * n34 * n41 - n14 * n31 * n42 + n11 * n34 * n42 + n12 * n31 * n44 - n11 * n32 * n44 ) * detInv // M32
-                , ( n12 * n33 * n41 - n13 * n32 * n41 + n13 * n31 * n42 - n11 * n33 * n42 - n12 * n31 * n43 + n11 * n32 * n43 ) * detInv // Y42 
+                , ( n13 * n34 * x41 - n14 * n33 * x41 + n14 * n31 * z43 - n11 * n34 * z43 - n13 * n31 * n44 + n11 * n33 * n44 ) * detInv // M22
+                , ( n14 * n32 * x41 - n12 * n34 * x41 - n14 * n31 * y42 + n11 * n34 * y42 + n12 * n31 * n44 - n11 * n32 * n44 ) * detInv // M32
+                , ( n12 * n33 * x41 - n13 * n32 * x41 + n13 * n31 * y42 - n11 * n33 * y42 - n12 * n31 * z43 + n11 * n32 * z43 ) * detInv // Y42 
                 ,   t13 * detInv                                                                                                         // M13
-                , ( n14 * n23 * n41 - n13 * n24 * n41 - n14 * n21 * n43 + n11 * n24 * n43 + n13 * n21 * n44 - n11 * n23 * n44 ) * detInv // M23
-                , ( n12 * n24 * n41 - n14 * n22 * n41 + n14 * n21 * n42 - n11 * n24 * n42 - n12 * n21 * n44 + n11 * n22 * n44 ) * detInv // M33
-                , ( n13 * n22 * n41 - n12 * n23 * n41 - n13 * n21 * n42 + n11 * n23 * n42 + n12 * n21 * n43 - n11 * n22 * n43 ) * detInv // Z43 
+                , ( n14 * n23 * x41 - n13 * n24 * x41 - n14 * n21 * z43 + n11 * n24 * z43 + n13 * n21 * n44 - n11 * n23 * n44 ) * detInv // M23
+                , ( n12 * n24 * x41 - n14 * n22 * x41 + n14 * n21 * y42 - n11 * n24 * y42 - n12 * n21 * n44 + n11 * n22 * n44 ) * detInv // M33
+                , ( n13 * n22 * x41 - n12 * n23 * x41 - n13 * n21 * y42 + n11 * n23 * y42 + n12 * n21 * z43 - n11 * n22 * z43 ) * detInv // Z43 
                 ,   t14 * detInv                                                                                                         // M14
                 , ( n13 * n24 * n31 - n14 * n23 * n31 + n14 * n21 * n33 - n11 * n24 * n33 - n13 * n21 * n34 + n11 * n23 * n34 ) * detInv // M24
                 , ( n14 * n22 * n31 - n12 * n24 * n31 - n14 * n21 * n32 + n11 * n24 * n32 + n12 * n21 * n34 - n11 * n22 * n34 ) * detInv // M34
@@ -355,10 +362,10 @@ type Matrix =
     
     /// Transposes this matrix.
     static member transpose(m:Matrix) =
-        Matrix( m.M11, m.M12, m.M13, m.M14
-              , m.M21, m.M22, m.M23, m.M24
-              , m.M31, m.M32, m.M33, m.M34
-              , m.X41, m.Y42, m.Z43, m.M44 )    
+        Matrix  ( m.M11, m.M12, m.M13, m.M14
+                , m.M21, m.M22, m.M23, m.M24
+                , m.M31, m.M32, m.M33, m.M34
+                , m.X41, m.Y42, m.Z43, m.M44 )    
     
     /// Returns the Identity matrix:
     /// 1  0  0  0
@@ -608,59 +615,25 @@ type Matrix =
         let zz = z * z2
         let wx = w * x2
         let wy = w * y2
-        let wz = w * z2        
-        Matrix (( 1. - ( yy + zz ) ) 
-                ,( xy + wz ) 
-                ,( xz - wy ) 
-                ,0
-                ,( xy - wz ) 
-                ,( 1. - ( xx + zz ) ) 
-                ,( yz + wx ) 
-                ,0                
-                ,( xz + wy ) 
-                ,( yz - wx ) 
-                ,( 1. - ( xx + yy ) ) 
-                ,0 
-                ,0 ,0 ,0 ,1 )
-
-    /// Compose a center, a quaternion and scale to one Matrix
-    static member compose( position:Pnt, quaternion:Quaternion, scale:Vec ) =
-        let x = quaternion.X
-        let y = quaternion.Y
-        let z = quaternion.Z
-        let w = quaternion.W
-        let x2 = x + x  
-        let y2 = y + y
-        let z2 = z + z
-        let xx = x * x2
-        let xy = x * y2 //
-        let xz = x * z2
-        let yy = y * y2
-        let yz = y * z2
-        let zz = z * z2
-        let wx = w * x2
-        let wy = w * y2
-        let wz = w * z2
-        let sx = scale.X
-        let sy = scale.Y
-        let sz = scale.Z
-        Matrix (( 1. - ( yy + zz ) ) * sx
-                ,( xy + wz ) * sx
-                ,( xz - wy ) * sx
-                ,0
-                ,( xy - wz ) * sy
-                ,( 1. - ( xx + zz ) ) * sy
-                ,( yz + wx ) * sy
-                ,0                
-                ,( xz + wy ) * sz
-                ,( yz - wx ) * sz
-                ,( 1. - ( xx + yy ) ) * sz
-                ,0
-                ,position.X // LOOks like the arguments her are in wong order !!!!!
-                ,position.Y
-                ,position.Z
-                ,1
-                )
+        let wz = w * z2     
+        // the sequence is reordered here, when compared to Three js
+        Matrix  (                         
+                 ( 1. - ( yy + zz ) )                      
+                ,( xy - wz )                      
+                ,( xz + wy )                      
+                ,0                       
+                ,( xy + wz )                      
+                ,( 1. - ( xx + zz ) )                      
+                ,0                       
+                ,( yz - wx )                      
+                ,( xz - wy )                      
+                ,( yz + wx )                      
+                ,( 1. - ( xx + yy ) )                      
+                ,0                       
+                ,0                       
+                ,0                                     
+                ,0                       
+                ,1 )
 
 
     /// Creates a matrix from array of 16 elements in Column Major order:

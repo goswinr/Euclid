@@ -39,8 +39,9 @@ module AutoOpenVc =
         member inline v.Half = Vc (v.X*0.5 ,v.Y*0.5)
     
         /// Returns a new 2D vector scaled to the desired length.
+        /// Same as Vc.setLength
         member inline v.WithLength (desiredLength:float) =  
-            let l = sqrt(v.X*v.X+v.Y*v.Y) 
+            let l = v.Length
             if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "Vc.WithLength %g : %O is too small for unitizing, Tolerance:%g" desiredLength v zeroLengthTol
             v*(desiredLength / l)  
 
@@ -292,9 +293,12 @@ module AutoOpenVc =
         /// Same as Vc.setLength. Returns a new 2D vector.
         static member inline scale  (f:float) (v:Vc) = Vc (v.X * f , v.Y * f )    
 
-        /// Multiplies a 2D vector with a scalar, also called scaling a vector. 
-        /// Same as Vc.scale. Returns a new 2D vector.
-        static member inline setLength(f:float) (v:Vc) = Vc (v.X * f , v.Y * f ) 
+        /// Returns a new 3D vector scaled to the desired length.
+        /// Same as vc.WithLength. Returns a new 3D vector.
+        static member inline setLength(desiredLength:float) (v:Vc) = 
+            let l = v.Length
+            if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "Vc.setLength %g : %O is too small for unitizing, Tolerance:%g" desiredLength v zeroLengthTol
+            v * (desiredLength / l)  
         
         /// Add to the X part of this 2D vectors together. Returns a new 2D vector.
         static member inline moveX x (v:Vc) = Vc (v.X+x, v.Y)
