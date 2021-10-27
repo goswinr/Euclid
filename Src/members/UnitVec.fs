@@ -34,7 +34,6 @@ module AutoOpenUnitVec =
         
         /// Returns a new 3D vector with new z coordinate, X and Y  stay the same.
         member inline v.WithZ z = Vec (v.X ,v.Y, z)
-
        
         /// Returns a perpendicular horizontal vector. Rotated counterclockwise.
         /// Or Vec.Zero if input is vertical.
@@ -254,13 +253,8 @@ module AutoOpenUnitVec =
         /// Convert 3D unit vector to 3D vector. 
         static member inline asVec(v:UnitVec) = Vec(v.X, v.Y, v.Z) 
 
-
-        /// Cross product, of two 3D unit vectors. 
-        /// The resulting vector is perpendicular to both input vectors.
-        /// Its length is the area of the parallelogram spanned by the input vectors.
-        /// Its direction follows th right-hand rule.
-        /// A x B = |A| * |B| * sin(angle)
-        static member inline cross (a:UnitVec, b:UnitVec)  = Vec (a.Y * b.Z - a.Z * b.Y ,  a.Z * b.X - a.X * b.Z ,  a.X * b.Y - a.Y * b.X )       
+        
+        //static member inline cross (a:UnitVec, b:UnitVec)  moved to Vec type declaration
         
         /// Cross product, of a 3D unit vectors an a 3D vector. 
         /// The resulting vector is perpendicular to both input vectors.

@@ -470,6 +470,29 @@ type Matrix =
             0,  0, 1, 0,
             0,  0, 0, 1 )
 
+     /// Creates a rotation around an Axis transformation matrix.
+    /// axis — Rotation axis, as unit vector.
+    /// angleDegrees — Rotation angle in Degrees.
+    /// Returns a positive rotation will be so clockwise looking in the direction of the axis vector
+    static member createVecToVec( fromVec:UnitVec, toVec:UnitVec ) =
+        let c = fromVec*toVec  // dot
+        let s = sqrt(c*c + 1.) // pythagoras
+        let t = 1.0 - c        
+        let axis0 = Vec.cross(fromVec, toVec)
+        let len = axis0.Length
+        if len <  zeroLengthTol then 
+            FsExGeoException.Raise "FsEx.Geo.Matrix.createVecToVec failed to find axis on colinear vectors: %O and %O" fromVec toVec
+        let x = axis.X
+        let y = axis.Y
+        let z = axis.Z
+        let tx = t * x
+        let ty = t * y
+        Matrix(
+            tx * x + c    , tx * y - s * z , tx * z + s * y , 0,
+            tx * y + s * z, ty * y + c     , ty * z - s * x , 0,
+            tx * z - s * y, ty * z + s * x , t  * z * z + c , 0,
+            0             , 0              , 0              , 1 )       
+
     /// Creates a rotation around an Axis transformation matrix.
     /// axis — Rotation axis, as unit vector.
     /// angleDegrees — Rotation angle in Degrees.

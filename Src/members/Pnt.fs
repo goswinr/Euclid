@@ -324,7 +324,8 @@ module AutoOpenPnt =
 
         /// Snap to point if within snapDistance
         static member snapIfClose (snapDistance) (snapTo:Pnt) (pt:Pnt) = 
-            if (snapTo-pt).Length < snapDistance then snapTo else pt
+            let v = snapTo-pt
+            if v.Length < snapDistance then snapTo else pt
         
         /// Every line has a normal vector in X-Y plane.
         /// If line is vertical then XAxis is returned
