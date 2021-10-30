@@ -269,7 +269,7 @@ module AutoOpenVec =
         static member inline asPnt(v:Vec) = Pnt(v.X, v.Y, v.Z) 
         
    
-        //static member inline cross (a:Vec, b:Vec)  moved to Vec type declaration
+        //static member inline cross (a:Vec, b:Vec)  //moved to Vec type declaration
         
         /// Cross product, of a 3D unit vectors an a 3D vector. 
         /// The resulting vector is perpendicular to both input vectors.
@@ -285,9 +285,8 @@ module AutoOpenVec =
         /// A x B = |A| * |B| * sin(angle)
         static member inline cross (a:Vec, b:UnitVec)  = Vec (a.Y * b.Z - a.Z * b.Y ,  a.Z * b.X - a.X * b.Z ,  a.X * b.Y - a.Y * b.X ) 
 
-        /// Dot product, or scalar product of two 3D vectors. 
-        /// Returns a float. 
-        static member inline dot  (a:Vec, b:Vec)   = a.X * b.X + a.Y * b.Y + a.Z * b.Z
+        
+        //static member inline dot  (a:Vec, b:Vec)   //moved to Vec type declaration
         
         /// Dot product, or scalar product of a 3D unit vector with a 3D vector  
         /// Returns a float. This float is the projected length of the 3D vector on the direction of the unit vector

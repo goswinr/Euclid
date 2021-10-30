@@ -70,6 +70,8 @@ type Vc =
 
 /// An immutable 2D vector guaranteed to be unitized (3D Unit Vectors are called 'UnitVec') 
 /// Use UnitVc.create or UnitVc.createUnchecked to created instances.
+/// Note: Never use the default constructor UnitVc() as it will create an invalid zero length vector.
+/// Use UnitVc.create or UnitVc.createUnchecked instead.
 [<Struct;NoEquality;NoComparison>]// because its made up from floats
 [<IsReadOnly>]
 //[<IsByRefLike>]// not used, see notes at end of file  
@@ -85,8 +87,11 @@ type UnitVc =
     [<Obsolete("Unsafe internal constructor, doesn't check or unitize the input, but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >] 
     new (x,y) = 
         #if DEBUG
-        let l = x*x + y*y // TODO : with this test all  operations are 2.5 times slower  
-        if Util.isNotOne l then  FsExGeoException.Raise "FsEx.Geo.UnitVc Constructor failed for x:%g and y:%g. The length needs to be 1.0." x y 
+        if Double.IsNaN x || Double.IsNaN y || Double.IsInfinity x || Double.IsInfinity y  then 
+            FsExGeoException.Raise "FsEx.Geo.UnitVc Constructor failed for x:%g, y:%g"  x y  
+        let lenSq = x*x + y*y // TODO : with this test all  operations are 2.5 times slower  
+        if Util.isNotOneSq lenSq then  
+            FsExGeoException.Raise "FsEx.Geo.UnitVc Constructor failed for x:%g and y:%g. The length needs to be 1.0." x y 
         #endif
         {X=x; Y=y}
         
@@ -98,7 +103,7 @@ type UnitVc =
     member v.AsString = sprintf "X=%s| Y=%s" (Format.float v.X) (Format.float v.Y) 
 
     /// Negate or inverse a 2D unit vectors. Returns a new 2D unit vector.
-    static member inline (~- )  (v:UnitVc) = UnitVc( -v.X , -v.Y )
+    static member inline ( ~- )  (v:UnitVc) = UnitVc( -v.X , -v.Y )
     
     /// Subtract one 2D unit vectors from another. Returns a new (non-unitized) 2D vector.
     static member inline ( - )  (a:UnitVc, b:UnitVc) = Vc (a.X - b.X , a.Y - b.Y )

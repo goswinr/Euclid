@@ -69,6 +69,8 @@
     <Compile Include="Src/members/Vec.fs" />
     <Compile Include="Src/members/Pnt.fs" />
     <Compile Include="Src/members/PPlane.fs" />
+    <Compile Include="Src\members\Matrix.fs" />
+    <Compile Include="Src\members\Quaternion.fs" />
     <Compile Include="Src/Line2D.fs" />
     <Compile Include="Src/Line3D.fs" />
     <Compile Include="Src/Plane.fs" />

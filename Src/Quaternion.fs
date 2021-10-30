@@ -71,6 +71,11 @@ type Quaternion =
     /// Returns the Angle in Degree 
     member q.AngleInDegrees =  
         q.AngleInRadians |>  toDegrees
+
+    /// Returns the rotation axis of this Quaternion.
+    /// This is just q.X, q.Y and q.Z.
+    /// The lenght of this vector is less than one.
+    member q.Axis = Vec(q.X, q.Y, q.Z)
     
     /// This constructor does unitizing too
     static member create (x,y,z,w)  =  
@@ -79,6 +84,10 @@ type Quaternion =
             FsExGeoException.Raise "FsEx.Geo.Quaternion create failed for x:%g, y:%g, z:%g, w:%g. The length needs to be bigger than zero" x y z w
         let sc = 1./l
         Quaternion(x*sc,y*sc,z*sc,w*sc)
+
+    /// This constructor does do any unitizing
+    static member createDirectlyUnchecked (x,y,z,w)  =  
+        Quaternion(x,y,z,w)
 
     /// The created Rotation is Clockwise looking in the direction of the vector.
     /// The vector may be of any length but zero.
@@ -119,20 +128,27 @@ type Quaternion =
                               , vFrom.X * vTo.Y - vFrom.Y * vTo.X
                               , r
                               )  
+    
     /// Creates a rotation from one unit vector to another 
-    static member createFromVectors( vFrom:Vec, vTo:Vec ) =
+    static member createFromVectors( vecFrom:Vec, vecTo:Vec ) =
         let vFrom = 
-            let length = sqrt(vFrom.X*vFrom.X + vFrom.Y*vFrom.Y + vFrom.Z*vFrom.Z) 
+            let x = vecFrom.X
+            let y = vecFrom.Y
+            let z = vecFrom.Z
+            let length = sqrt(x*x + y*y + z*z) 
             if length <  zeroLengthTol then // TODO or return identity Quaternion ?
-                FsExGeoException.Raise "FsEx.Geo.Quaternion.createFromVectors failed too short vector vFrom: %O" vFrom 
+                FsExGeoException.Raise "FsEx.Geo.Quaternion.createFromVectors failed too short vector vecFrom: %O" vecFrom 
             let sc =  1. / length // inverse for unitizing vector:
-            UnitVec.createUnchecked(vFrom.X*sc, vFrom.Y*sc, vFrom.Z*sc)
+            UnitVec.createUnchecked(x*sc, y*sc, z*sc)
         let vTo = 
-            let length = sqrt(vTo.X*vTo.X + vTo.Y*vTo.Y + vTo.Z*vTo.Z) 
+            let x = vecTo.X
+            let y = vecTo.Y
+            let z = vecTo.Z
+            let length = sqrt(x*x + y*y + z*z) 
             if length <  zeroLengthTol then // TODO or return identity Quaternion ?
-                FsExGeoException.Raise "FsEx.Geo.Quaternion.createFromVectors failed too short vector vTo: %O" vTo 
+                FsExGeoException.Raise "FsEx.Geo.Quaternion.createFromVectors failed too short vector vecTo: %O" vecTo 
             let sc =  1. / length // inverse for unitizing vector:
-            UnitVec.createUnchecked(vTo.X*sc, vTo.Y*sc, vTo.Z*sc)
+            UnitVec.createUnchecked(x*sc, y*sc, z*sc)
         let mutable r = vFrom * vTo  + 1.0
         if  r < zeroLengthTol  then // vFrom and vTo point in opposite directions            
             r <- 0.0

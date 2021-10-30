@@ -1,12 +1,12 @@
 namespace FsEx.Geo
 
 // Design notes:
-// The structs types in this file only have the constructors , ToString override and operators define in this file. 
+// The structs types in this file only have the constructors , the ToString override and operators define in this file. 
 // For structs that need a checked and unchecked constructor ( like unit vectors) the main 'new' constructor is marked obsolete. 
 // A 'create' and 'createUnchecked' static member is provided instead.
-// All other members are implemented as extension members. see files in folder members.
+// All other members are implemented as extension members. see files in folder 'members'.
 // This design however makes extension members unaccessible from see C#. To fix this all types and all members could be put into one file.
-// the types would have to be marked as recursive. This file would be very large and probably have bad editor performance. 
+// The types would have to be marked as recursive. This file would be very large and probably have bad editor performance. 
 
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
@@ -50,7 +50,7 @@ type Vec =
     /// Returns the squared length of the 3D vector 
     /// The square length is faster to calculate and often good enough for use cases such as sorting vectors by length.
     member inline v.LengthSq = v.X*v.X + v.Y*v.Y + v.Z*v.Z
-
+    
     /// Negate or inverse a 3D vectors. Returns a new 3D vector.
     static member inline (~- ) (v:Vec)          = Vec( -v.X , -v.Y , -v.Z)
     
@@ -77,6 +77,9 @@ type Vec =
         //v * (1./f) // maybe faster but worse precision 
         Vec (v.X / f , v.Y / f ,  v.Z / f) 
     
+    /// Dot product, or scalar product of two 3D vectors. 
+    /// Returns a float. 
+    static member inline dot  (a:Vec, b:Vec)   = a.X * b.X + a.Y * b.Y + a.Z * b.Z
     
     /// Cross product, of two 3D vectors. 
     /// The resulting vector is perpendicular to both input vectors.
@@ -84,11 +87,16 @@ type Vec =
     /// Its direction follows th right-hand rule.
     /// A x B = |A| * |B| * sin(angle)
     static member inline cross (a:Vec, b:Vec)  = Vec (a.Y * b.Z - a.Z * b.Y ,  a.Z * b.X - a.X * b.Z ,  a.X * b.Y - a.Y * b.X ) 
+
+
+
     
 #nowarn "44" // for hidden constructors via Obsolete Attribute    
         
 /// An immutable 3D vector guaranteed to be always unitized. ( 2D Unit vectors are called 'UnitVc' ) 
 /// Use UnitVec.create or UnitVec.createUnchecked to created instances.
+/// Note: Never use the default constructor UnitVec() as it will create an invalid zero length vector. 
+/// Use UnitVec.create or UnitVec.createUnchecked instead.
 [<Struct; NoEquality; NoComparison>]
 [<IsReadOnly>]
 //[<IsByRefLike>] // not used, see notes at end of file  
@@ -108,8 +116,9 @@ type UnitVec =
         #if DEBUG
         if Double.IsNaN x || Double.IsNaN y || Double.IsNaN z || Double.IsInfinity x || Double.IsInfinity y || Double.IsInfinity z then 
             FsExGeoException.Raise "FsEx.Geo.UnitVec Constructor failed for x:%g, y:%g, z:%g"  x y z 
-        let l = x*x + y*y + z*z // TODO : with this test all  operations are 2.5 times slower  
-        if Util.isNotOne l then  FsExGeoException.Raise "FsEx.Geo.UnitVec Constructor failed for x:%g, y:%g, z:%g. The length needs to be 1.0."  x y z
+        let lenSq = x*x + y*y + z*z // TODO : with this test all  operations are 2.5 times slower  
+        if Util.isNotOneSq lenSq then  
+            FsExGeoException.Raise "FsEx.Geo.UnitVec Constructor failed for x:%g, y:%g, z:%g. The length needs to be 1.0."  x y z
         #endif
         {X=x; Y=y; Z=z}
         
@@ -119,7 +128,6 @@ type UnitVec =
     /// Format 3D unit vector into string with nice floating point number formatting of X,Y and Z
     /// But without full type name as in v.ToString()
     member v.AsString = sprintf "X=%s| Y=%s| Z=%s" (Format.float v.X) (Format.float v.Y) (Format.float v.Z) 
-
     
     /// Negate or inverse a 3D unit vectors. Returns a new 3D unit vector.
     static member inline ( ~- ) (v:UnitVec) = UnitVec ( -v.X , -v.Y , -v.Z)   
@@ -166,8 +174,11 @@ type UnitVec =
         if abs f < Util.zeroLengthTol then FsExGeoDivByZeroException.Raise "%g is too small for dividing %O using / operator. Tolerance:%g" f v zeroLengthTol
         //#endif
         //v * (1./f) // maybe faster but worse precision
-        Vec (v.X / f , v.Y / f , v.Z / f) 
-    
+        Vec (v.X / f , v.Y / f , v.Z / f)     
+
+    /// Dot product, or scalar product of two 3D unit vectors. 
+    /// Returns a float. This float of unit vectors is the Cosine of the angle between the two vectors.
+    static member inline dot  (a:UnitVec, b:UnitVec)   = a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
     /// Cross product, of two 3D vectors. 
     /// The resulting vector is perpendicular to both input vectors.
@@ -175,7 +186,7 @@ type UnitVec =
     /// Its direction follows th right-hand rule.
     /// A x B = |A| * |B| * sin(angle)
     static member inline cross (a:UnitVec, b:UnitVec)  = Vec (a.Y * b.Z - a.Z * b.Y ,  a.Z * b.X - a.X * b.Z ,  a.X * b.Y - a.Y * b.X )  
-   
+    
     /// For use as a faster internal constructor.
     /// Requires correct input of unitized values.
     static member inline createUnchecked(x,y,z)  = UnitVec(x,y,z)

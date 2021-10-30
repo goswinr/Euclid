@@ -470,28 +470,6 @@ type Matrix =
             0,  0, 1, 0,
             0,  0, 0, 1 )
 
-     /// Creates a rotation around an Axis transformation matrix.
-    /// axis — Rotation axis, as unit vector.
-    /// angleDegrees — Rotation angle in Degrees.
-    /// Returns a positive rotation will be so clockwise looking in the direction of the axis vector
-    static member createVecToVec( fromVec:UnitVec, toVec:UnitVec ) =
-        let c = fromVec*toVec  // dot
-        let s = sqrt(c*c + 1.) // pythagoras
-        let t = 1.0 - c        
-        let axis0 = Vec.cross(fromVec, toVec)
-        let len = axis0.Length
-        if len <  zeroLengthTol then 
-            FsExGeoException.Raise "FsEx.Geo.Matrix.createVecToVec failed to find axis on colinear vectors: %O and %O" fromVec toVec
-        let x = axis.X
-        let y = axis.Y
-        let z = axis.Z
-        let tx = t * x
-        let ty = t * y
-        Matrix(
-            tx * x + c    , tx * y - s * z , tx * z + s * y , 0,
-            tx * y + s * z, ty * y + c     , ty * z - s * x , 0,
-            tx * z - s * y, ty * z + s * x , t  * z * z + c , 0,
-            0             , 0              , 0              , 1 )       
 
     /// Creates a rotation around an Axis transformation matrix.
     /// axis — Rotation axis, as unit vector.
@@ -578,6 +556,69 @@ type Matrix =
             0, 0, z, 0,
             0, 0, 0, 1 )
 
+    /// Creates a rotation from one vectors direction to another vectors direction.
+    /// Fails on colinear vectors.
+    static member createVecToVec( fromVec:UnitVec, toVec:UnitVec ) =
+        let c = fromVec*toVec  // dot to find cos
+        let s = sqrt(1. - c*c ) // pythagoras to find sine
+        let t = 1.0 - c        
+        let axis0 = UnitVec.cross(fromVec, toVec) 
+        let len = axis0.Length
+        if len <  zeroLengthTol then 
+            FsExGeoException.Raise "FsEx.Geo.Matrix.createVecToVec failed to find rotation axis on colinear vectors: %O and %O" fromVec toVec
+        let axis = axis0 / len
+        let x = axis.X
+        let y = axis.Y
+        let z = axis.Z
+        let tx = t * x
+        let ty = t * y
+        Matrix(
+            tx * x + c    , tx * y - s * z , tx * z + s * y , 0,
+            tx * y + s * z, ty * y + c     , ty * z - s * x , 0,
+            tx * z - s * y, ty * z + s * x , t  * z * z + c , 0,
+            0             , 0              , 0              , 1 )   
+            
+    /// Creates a rotation from one vectors direction to another vectors direction.
+    /// Ignores the vectors length. Fails on colinear vectors.
+    static member createVecToVec(vecFrom:Vec, vecTo:Vec ) =
+        let fu = 
+            let x = vecFrom.X
+            let y = vecFrom.Y
+            let z = vecFrom.Z
+            let length = sqrt(x*x + y*y + z*z) 
+            if length <  zeroLengthTol then 
+                FsExGeoException.Raise "FsEx.Geo.Matrix.createVecToVec failed. too short vector vecFrom: %O" vecFrom 
+            let sc =  1. / length // inverse for unitizing vector:
+            UnitVec.createUnchecked(x*sc, y*sc, z*sc)
+        let tu = 
+            let x = vecTo.X
+            let y = vecTo.Y
+            let z = vecTo.Z
+            let length = sqrt(x*x + y*y + z*z) 
+            if length <  zeroLengthTol then
+                FsExGeoException.Raise "FsEx.Geo.Matrix.createVecToVec failed. too short vector vecTo: %O" vecTo 
+            let sc =  1. / length // inverse for unitizing vector:
+            UnitVec.createUnchecked(x*sc, y*sc, z*sc)        
+        let c =  fu * tu  // dot to find cosine
+        let s = sqrt(1. - c*c) // pythagoras to fins sine
+        let t = 1.0 - c        
+        let axis = Vec.cross(vecFrom, vecTo) 
+        let len = axis.Length
+        if len <  Util.zeroLengthTol then 
+            FsExGeoException.Raise "FsEx.Geo.Matrix.createVecToVec failed to find rotation axis on colinear or zero length vectors: %O and %O" vecFrom vecTo
+        let sc = 1. / len
+        let x = axis.X * sc
+        let y = axis.Y * sc
+        let z = axis.Z * sc
+        let tx = t * x
+        let ty = t * y
+        Matrix(
+            tx * x + c    , tx * y - s * z , tx * z + s * y , 0,
+            tx * y + s * z, ty * y + c     , ty * z - s * x , 0,
+            tx * z - s * y, ty * z + s * x , t  * z * z + c , 0,
+            0             , 0              , 0              , 1 )               
+
+
 
     /// Creates a shear transformation matrix:
     /// xy - the amount to shear a X unit vector a long Y axis.
@@ -657,7 +698,8 @@ type Matrix =
                 ,0                                     
                 ,0                       
                 ,1 )
-
+    
+    
 
     /// Creates a matrix from array of 16 elements in Column Major order:
     /// [| M11 M12 M13 M14 M21 M22 M23 M24 M31 M32 M33 M34 X41 Y42 Z43 M44 |] 
@@ -687,3 +729,16 @@ type Matrix =
                 xs[12],  xs[13],  xs[14],  xs[15] )
 
 
+    /// Add a vector translation to an existing matrix
+    static member addTranslation (v:Vec) (m:Matrix) =
+        Matrix( m.M11,  m.M21,  m.M31,  m.X41 + v.X, 
+                m.M12,  m.M22,  m.M32,  m.Y42 + v.Y, 
+                m.M13,  m.M23,  m.M33,  m.Z43 + v.Z, 
+                m.M14,  m.M24,  m.M34,  m.M44) 
+    
+    /// Add a X, Y and Z translation to an existing matrix
+    static member addTranslationXYZ x y z  (m:Matrix) =
+        Matrix( m.M11,  m.M21,  m.M31,  m.X41 + x, 
+                m.M12,  m.M22,  m.M32,  m.Y42 + y, 
+                m.M13,  m.M23,  m.M33,  m.Z43 + z, 
+                m.M14,  m.M24,  m.M34,  m.M44) 

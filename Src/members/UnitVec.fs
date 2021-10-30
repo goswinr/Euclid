@@ -10,7 +10,7 @@ module AutoOpenUnitVec =
     open Util
 
     /// Returns distance between the tips of two 3D unit vectors
-    let inline internal vecDist3(ax:float,ay:float,az:float,bx:float,by:float,bz:float) =
+    let inline private vecDist3(ax:float,ay:float,az:float,bx:float,by:float,bz:float) =
         let x = bx-ax
         let y = by-ay
         let z = bz-az
@@ -34,7 +34,7 @@ module AutoOpenUnitVec =
         
         /// Returns a new 3D vector with new z coordinate, X and Y  stay the same.
         member inline v.WithZ z = Vec (v.X ,v.Y, z)
-       
+        
         /// Returns a perpendicular horizontal vector. Rotated counterclockwise.
         /// Or Vec.Zero if input is vertical.
         /// Just does Vec(-v.Y, v.X, 0.0) 
@@ -252,7 +252,6 @@ module AutoOpenUnitVec =
         
         /// Convert 3D unit vector to 3D vector. 
         static member inline asVec(v:UnitVec) = Vec(v.X, v.Y, v.Z) 
-
         
         //static member inline cross (a:UnitVec, b:UnitVec)  moved to Vec type declaration
         
@@ -270,9 +269,7 @@ module AutoOpenUnitVec =
         /// A x B = |A| * |B| * sin(angle)
         static member inline cross (a:Vec, b:UnitVec)  = Vec (a.Y * b.Z - a.Z * b.Y ,  a.Z * b.X - a.X * b.Z ,  a.X * b.Y - a.Y * b.X ) 
 
-        /// Dot product, or scalar product of two 3D unit vectors. 
-        /// Returns a float. This float is the Cosine of the angle between the two 3D unit vectors.
-        static member inline dot  (a:UnitVec, b:UnitVec)   = a.X * b.X + a.Y * b.Y + a.Z * b.Z
+        //static member inline dot  (a:UnitVec, b:UnitVec)  //moved to Vec type declaration
         
         /// Dot product, or scalar product of a 3D unit vector with a 3D vector  
         /// Returns a float. This float is the projected length of the 3D vector on the direction of the unit vector
@@ -323,7 +320,7 @@ module AutoOpenUnitVec =
         /// Project vector to World X-Y plane.
         /// Use Vc.ofUnitVec to convert to 2D vector instance
         static member inline projectToXYPlane (v:UnitVec) = Vec(v.X,v.Y, 0.0)
-                    
+        
 
         /// Negate or inverse a 3D unit vectors. Returns a new 3D unit vector. 
         /// Same as UnitVec.flip
@@ -335,7 +332,6 @@ module AutoOpenUnitVec =
 
         /// Flips the vector if Z part is smaller than 0.0
         static member inline flipToPointUp (v:UnitVec) = if v.Z < 0.0 then -v else v 
-
 
         /// Returns three vectors Determinant
         /// This is also the signed volume of the Parallelepipeds define by these three vectors.
