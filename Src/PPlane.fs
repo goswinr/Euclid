@@ -12,6 +12,8 @@ open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see http
 
 /// An immutable Parametrized Plane or Frame with X, Y and Z Direction.
 /// This struct is called 'PPlane' because 'Plane' refers to an un-oriented plane consisting only of a Origin and a Z-axis.
+/// Note: Never use the struct default constructor PPlane() as it will create an invalid zero length PPlane. 
+/// Use PPlane.create or PPlane.createUnchecked instead.
 [<Struct; NoEquality; NoComparison>] // because its made up from floats
 [<IsReadOnly>]
 type PPlane =  

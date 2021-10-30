@@ -95,7 +95,7 @@ type Vec =
         
 /// An immutable 3D vector guaranteed to be always unitized. ( 2D Unit vectors are called 'UnitVc' ) 
 /// Use UnitVec.create or UnitVec.createUnchecked to created instances.
-/// Note: Never use the default constructor UnitVec() as it will create an invalid zero length vector. 
+/// Note: Never use the struct default constructor UnitVec() as it will create an invalid zero length vector. 
 /// Use UnitVec.create or UnitVec.createUnchecked instead.
 [<Struct; NoEquality; NoComparison>]
 [<IsReadOnly>]

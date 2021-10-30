@@ -10,6 +10,8 @@ open FsEx.Geo.Util
 /// Internally stored just as a Sine and Cosine value
 /// For arbitrary rotations use Quaternions or 4x4 Matrix. 
 /// However this module has much better performance than the more general Matrix4x4 or a Quaternion
+/// Note: Never use the struct default constructor Rotation2D() as it will create an invalid zero Rotation2D. 
+/// Use Rotation2D.create or Rotation2D.createUnchecked instead.
 [<Struct; NoEquality; NoComparison>]
 [<IsReadOnly>]
 //[<IsByRefLike>]
@@ -35,29 +37,7 @@ type Rotation2D =
     /// Format rotation into string showing angle in Degrees as nicely formatted floating point number.
     override r.ToString() =  
         let deg =  r.Sin  |> asinSafe |> toDegrees |> Format.float
-        sprintf "FsEx.Geo.Rotation2D of %s° Degrees." deg
-    
-
-
-    //----------------------------------------------------------------------------------------------
-    //--------------------------  Static Members  --------------------------------------------------
-    //----------------------------------------------------------------------------------------------
-
-    /// Checks if two 2D Rotations are equal within tolerance.
-    /// By comparing the fields Sin and Cos each with the given tolerance.
-    /// The range of these field is -1.0 to +1.0
-    static member equals tol (a:Rotation2D) (b:Rotation2D) =        
-        abs(a.Sin-b.Sin) < tol &&
-        abs(a.Cos-b.Cos) < tol 
-
-    ///Construct 2D Rotation from angle in Radians 
-    static member createFromRadians rad =  
-        Rotation2D (sin rad, cos rad)
-    
-    /// Construct 2D Rotation from angle in Degree 
-    static member createFromDegrees deg = 
-        let rad = toRadians deg
-        Rotation2D (sin rad, cos rad)     
+        sprintf "FsEx.Geo.Rotation2D of %s° Degrees." deg    
     
     /// Returns the angle represented by this Rotation in Radians
     member inline r.InRadians = 
@@ -83,6 +63,33 @@ type Rotation2D =
     /// Create a new Rotation that adds and angle in Radians to the existing one 
     member inline r.AddRadians(rad:float) = 
         r.Add(Rotation2D.createFromRadians rad)
+        
+    //----------------------------------------------------------------------------------------------
+    //--------------------------  Static Members  --------------------------------------------------
+    //----------------------------------------------------------------------------------------------
+
+    /// Checks if two 2D Rotations are equal within tolerance.
+    /// By comparing the fields Sin and Cos each with the given tolerance.
+    /// The range of these field is -1.0 to +1.0
+    static member equals tol (a:Rotation2D) (b:Rotation2D) =        
+        abs(a.Sin-b.Sin) < tol &&
+        abs(a.Cos-b.Cos) < tol 
+
+    ///Construct 2D Rotation from angle in Radians 
+    static member createFromRadians rad =  
+        Rotation2D (sin rad, cos rad)
+    
+    /// Construct 2D Rotation from angle in Degree 
+    static member createFromDegrees deg = 
+        let rad = toRadians deg
+        Rotation2D (sin rad, cos rad) 
+        
+    /// Construct 2D Rotation from sine and corresponding cosine directly.
+    /// Input is unchecked and not validated.   
+    static member createUnchecked (sine,cosine) =         
+        Rotation2D (sine,cosine)         
+    
+    
 
     
     

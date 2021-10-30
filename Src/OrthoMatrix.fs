@@ -14,6 +14,8 @@ open FsEx.Geo.Util
 /// M13 M23 M33 Z43  
 /// Where X41, Y42 and Z43 refer to the translation part of the OrthoMatrix.
 /// The Determinant of this matrix is always 1.0.
+/// Note: Never use the struct default constructor OrthoMatrix() as it will create an invalid zero OrthoMatrix. 
+/// Use OrthoMatrix.create or OrthoMatrix.createUnchecked instead.
 [<Struct; NoEquality; NoComparison>] // because its made up from floats
 [<IsReadOnly>]
 //[<IsByRefLike>]
@@ -396,7 +398,7 @@ type OrthoMatrix =
     /// Fails on colinear vectors.
     static member createVecToVec( fromVec:UnitVec, toVec:UnitVec ) =
         let c = fromVec*toVec  // dot to find cos
-        let s = sqrt(1. - c*c ) // pythagoras to find sine
+        let s = sqrt(1. - c*c ) // Pythagoras to find sine
         let t = 1.0 - c        
         let axis0 = UnitVec.cross(fromVec, toVec) 
         let len = axis0.Length
@@ -435,7 +437,7 @@ type OrthoMatrix =
             let sc =  1. / length // inverse for unitizing vector:
             UnitVec.createUnchecked(x*sc, y*sc, z*sc)        
         let c =  fu * tu  // dot to find cosine
-        let s = sqrt(1. - c*c) // pythagoras to fins sine
+        let s = sqrt(1. - c*c) // Pythagoras to fins sine
         let t = 1.0 - c        
         let axis = Vec.cross(vecFrom, vecTo) 
         let len = axis.Length
@@ -523,56 +525,54 @@ type OrthoMatrix =
                     ,( xz - wy )                      
                     ,( yz + wx )                      
                     ,( 1. - ( xx + yy ) )                      
-                    ,0)
-    
-        
-    (*    
-    
-        
-    these need verifications with dot products of column vectors to be all 0.0  
-    and for not being reflection cross of x and y to be 1.0 in dot with z
-    OR is the determinant -1.0 on reflecting matrices ?????????
+                    ,0)    
 
-
-    
-
-    /// Creates a matrix from array of 16 elements in Column Major order:
-    /// [| M11 M12 M13 M14 M21 M22 M23 M24 M31 M32 M33 M34 X41 Y42 Z43 M44 |] 
-    /// Where X41, Y42 and Z43 refer to the translation part of the OrthoMatrix.
-    static member createFromColumMajorArray (xs:float[]) =
-        if xs.Length <> 16 then 
-            FsExGeoException.Raise "FsEx.Geo.OrthoMatrix.createFromColumMajorArray expects an array of 16 items but got %d " xs.Length
-        else
-            OrthoMatrix( 
-                xs[0],  xs[4],  xs[ 8],  xs[12] , 
-                xs[1],  xs[5],  xs[ 9],  xs[13] , 
-                xs[2],  xs[6],  xs[10],  xs[14] , 
-                xs[3],  xs[7],  xs[11],  xs[15] )
-
-
-    /// Creates a matrix from array of 16 elements in Row Major order:
-    /// [| M11 M21 M31 X41 M12 M22 M32 Y42 M13 M23 M33 Z43 M14 M24 M34 M44 |] 
-    /// Where X41, Y42 and Z43 refer to the translation part of the OrthoMatrix.
-    static member createFromRowMajorArray (xs:float[]) =
-        if xs.Length <> 16 then 
-            FsExGeoException.Raise "FsEx.Geo.OrthoMatrix.createFromRowMajorArray expects an array of 16 items but got %d " xs.Length
-        else
-            OrthoMatrix( 
-                xs[ 0],  xs[ 1],  xs[ 2],  xs[ 3] , 
-                xs[ 4],  xs[ 5],  xs[ 6],  xs[ 7] , 
-                xs[ 8],  xs[ 9],  xs[10],  xs[11] , 
-                xs[12],  xs[13],  xs[14],  xs[15] )
-
-*)
 
     /// Add a vector translation to an existing matrix
     static member addTranslation (v:Vec) (m:OrthoMatrix) =
-        OrthoMatrix( m.M11,  m.M21,  m.M31,  m.X41 + v.X, 
-                     m.M12,  m.M22,  m.M32,  m.Y42 + v.Y, 
-                     m.M13,  m.M23,  m.M33,  m.Z43 + v.Z) 
+        OrthoMatrix(m.M11,  m.M21,  m.M31,  m.X41 + v.X, 
+                    m.M12,  m.M22,  m.M32,  m.Y42 + v.Y, 
+                    m.M13,  m.M23,  m.M33,  m.Z43 + v.Z) 
     
     /// Add a X, Y and Z translation to an existing matrix
     static member addTranslationXYZ x y z  (m:OrthoMatrix) =
-        OrthoMatrix( m.M11,  m.M21,  m.M31,  m.X41 + x, 
-                     m.M12,  m.M22,  m.M32,  m.Y42 + y, 
-                     m.M13,  m.M23,  m.M33,  m.Z43 + z) 
+        OrthoMatrix(m.M11,  m.M21,  m.M31,  m.X41 + x, 
+                    m.M12,  m.M22,  m.M32,  m.Y42 + y, 
+                    m.M13,  m.M23,  m.M33,  m.Z43 + z) 
+
+
+    // ----------------------------------------------
+    // operators for matrix multiplication:
+    // ----------------------------------------------
+    
+    /// Multiplies (or applies) an OrthoMatrix to a 3D point. 
+    static member inline  ( * ) (v:Vec, m:OrthoMatrix) = 
+        let x = v.X
+        let y = v.Y
+        let z = v.Z 
+        Vec(  m.M11*x + m.M21*y + m.M31*z + m.X41 
+            , m.M12*x + m.M22*y + m.M32*z + m.Y42 
+            , m.M13*x + m.M23*y + m.M33*z + m.Z43 
+            )
+    
+    /// Multiplies (or applies) an OrthoMatrix to a 3D Vector . 
+    /// The resulting vector is not unitized if Matrix is translating too.
+    static member inline  ( * ) (v:UnitVec, m:OrthoMatrix) = 
+        let x = v.X
+        let y = v.Y
+        let z = v.Z 
+        Vec(  m.M11*x + m.M21*y + m.M31*z + m.X41 
+            , m.M12*x + m.M22*y + m.M32*z + m.Y42 
+            , m.M13*x + m.M23*y + m.M33*z + m.Z43 
+            ) 
+    
+    /// Multiplies (or applies) an OrthoMatrix to a 3D vector. 
+    static member inline  ( * ) (v:Pnt, m:OrthoMatrix) = 
+        let x = v.X
+        let y = v.Y
+        let z = v.Z 
+        Pnt(  m.M11*x + m.M21*y + m.M31*z + m.X41 
+            , m.M12*x + m.M22*y + m.M32*z + m.Y42 
+            , m.M13*x + m.M23*y + m.M33*z + m.Z43 
+            )                     
+

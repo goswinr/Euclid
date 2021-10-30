@@ -6,13 +6,16 @@ open FsEx.Geo.Util
 #nowarn "44" // for hidden constructors via Obsolete Attribute
 
 
-//TODO finish docstrings
-
 /// An immutable plane defined by a point and a normal vector
+/// As opposed to the PPlane this plane is not parametrized in a X, Y and Z direction.
+/// Note: Never use the struct default constructor Plane() as it will create an invalid zero Plane. 
+/// Use Plane.create or Plane.createUnchecked instead.
 [<Struct;NoEquality;NoComparison>]// because its made up from floats
 type Plane = // Normals are always unitized
+    
     /// The center point of the Plane
     val Origin : Pnt
+    
     /// The unitized normal of the Plane
     val Normal : UnitVec
 
@@ -34,25 +37,25 @@ type Plane = // Normals are always unitized
     static member create(pt,normal:UnitVec) =        
         Plane(pt,normal)
 
-
+    /// Create Plane from 3 points.
     static member createFrom3Points (a:Pnt) (b:Pnt) (c:Pnt) =
         let n =  Vec.cross (c-b,a-b)
         if Vec.isTiny 1e-5 n then FsExGeoException.Raise "FsEx.Geo.Plane.createFrom3Points: the points %O, %O, %O are in one Line3D, no Plane found" a b c
         Plane(a, n.Unitized)
 
     /// Returns signed distance of point to plane, also indicating on which side it is.
-    member inline pl.DistToPt pt = pl.Normal*(pt-pl.Origin) 
+    member inline pl.DistanceToPt pt = pl.Normal*(pt-pl.Origin) 
 
     /// Returns the closest point on the plane from a test point.
-    member inline pl.ClPt pt = pt - pl.Normal*(pl.DistToPt pt) 
+    member inline pl.ClosestPoint pt = pt - pl.Normal*(pl.DistanceToPt pt) 
 
     /// Returns the closest point on the plane from a test point.
-    member pl.PlaneAtClPt pt = Plane(pt - pl.Normal*(pl.DistToPt pt), pl.Normal)
+    member pl.PlaneAtClPt pt = Plane(pt - pl.Normal*(pl.DistanceToPt pt), pl.Normal)
 
-    /// Returns the Angle to another Plane in Degree, ignoring orientation.
-    member inline this.AngToPl (pl:Plane) = UnitVec.angle90 this.Normal pl.Normal 
+    /// Returns the Angle to another Plane in Degree, ignoring the normal's orientation. 0- 90 degrees
+    member inline this.AngleToPlane (pl:Plane) = UnitVec.angle90 this.Normal pl.Normal 
 
-    /// Returns the Angle to a Line3D in Degree, ignoring orientation.
+    /// Returns the Angle to a Line3D in Degree, ignoring the normal's orientation. 0- 90 degrees
     member inline pl.AngleToLine (ln:Line3D) = UnitVec.angle90 ln.Tangent.Unitized pl.Normal 
     
 
@@ -68,14 +71,17 @@ type Plane = // Normals are always unitized
         Pnt.distanceSq a.Origin b.Origin < tt &&
         UnitVec.differenceSq a.Normal b.Normal < tt 
 
-
+    /// Gets the Planes normal. a unitized vector.
     static member  normal (p:Plane) = p.Normal
     
-    static member  pt (a:Plane) = a.Origin
+    /// Gets the Planes origin.
+    static member  origin (a:Plane) = a.Origin
     
-    static member  xyPlane = Plane(Pnt.Origin,UnitVec.ZAxis)
+    /// Gets the Plane at world origin with normal in world Z direction.
+    static member  xyPlane = Plane(Pnt.Origin,UnitVec.Zaxis)
     
-    static member  angle (a:Plane) b = a.AngToPl b
+    /// Returns the Angle to another Plane in Degree, ignoring the normal's orientation. 0- 90 degrees
+    static member angleTo (a:Plane) b = a.AngleToPlane b
 
     /// Returns the parameter of intersection point of infinite Line3D with Plane, fails if they are parallel
     static member  intersectLineParameter  (ln:Line3D) (pl:Plane) = 
@@ -91,7 +97,8 @@ type Plane = // Normals are always unitized
         let t = Plane.intersectLineParameter ln pl
         0. <= t && t <= 1.
     
-    static member  offset dist (pl:Plane) = Plane(pl.Origin + pl.Normal*dist , pl.Normal)        
+    static member  offset dist (pl:Plane) = 
+        Plane(pl.Origin + pl.Normal*dist , pl.Normal)        
     
     /// Offset Plane by amount  in orientation towards DirPt:
     /// in direction of point -> distance -> Plane
@@ -99,7 +106,9 @@ type Plane = // Normals are always unitized
         if pl.Normal * (dirPt-pl.Origin) > 0. then Plane(pl.Origin + pl.Normal*dist , pl.Normal)
         else                              Plane(pl.Origin - pl.Normal*dist , pl.Normal)
     
-    static member  distToPt (pt:Pnt) (pl:Plane) = pl.DistToPt pt
+    /// Returns signed distance of point to plane, also indicating on which side it is.
+    static member  distToPt (pt:Pnt) (pl:Plane) =
+        pl.DistanceToPt pt
     
     (*
     static member  fitFromConvexPts (pts:seq<Pnt>) =
@@ -126,7 +135,3 @@ type Plane = // Normals are always unitized
         pts|> Seq.exists (fun p -> pl.DistToPt p > tol) |> not
     *)
 
-
-    
-
-  

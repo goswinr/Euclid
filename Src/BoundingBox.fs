@@ -398,26 +398,26 @@ type BBox =
 
     /// Returns Bounding Box expanded only in X direction by different distance for start(minX) and end (maxX).
     /// Does check for underflow if distance is negative and raises FsExGeoException.
-    member inline b.ExpandXAxis(startDist, endDist) : BBox =
+    member inline b.ExpandXaxis(startDist, endDist) : BBox =
         let n = BBox(b.MinX-startDist, b.MinY, b.MinZ, b.MaxX+endDist, b.MaxY, b.MaxZ)
         if n.MinX > n.MaxX  then
-            FsExGeoException.Raise "BBox.ExpandXAxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist b.AsString
+            FsExGeoException.Raise "BBox.ExpandXaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist b.AsString
         n
 
     /// Returns Bounding Box expanded  only in Y direction by different distance for start(minY) and end (maxY).
     /// Does check for underflow if distance is negative and raises FsExGeoException.
-    member inline b.ExpandYAxis(startDist, endDist) : BBox =
+    member inline b.ExpandYaxis(startDist, endDist) : BBox =
         let n = BBox(b.MinX, b.MinY-startDist, b.MinZ, b.MaxX, b.MaxY+endDist, b.MaxZ)
         if n.MinY > n.MaxY  then
-            FsExGeoException.Raise "BBox.ExpandYAxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist b.AsString
+            FsExGeoException.Raise "BBox.ExpandYaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist b.AsString
         n
 
     /// Returns Bounding Box expanded  only in Z direction by different distance for start(minZ) and end (maxZ).
     /// Does check for underflow if distance is negative and raises FsExGeoException.
-    member inline b.ExpandZAxis(startDist, endDist) : BBox =
+    member inline b.ExpandZaxis(startDist, endDist) : BBox =
         let n = BBox(b.MinX, b.MinY, b.MinZ-startDist, b.MaxX, b.MaxY, b.MaxZ+endDist)
         if n.MinZ > n.MaxZ  then
-            FsExGeoException.Raise "BBox.ExpandYAxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist b.AsString
+            FsExGeoException.Raise "BBox.ExpandYaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist b.AsString
         n
 
     /// Returns true if the two Bounding Boxes do overlap or touch.
@@ -510,19 +510,19 @@ type BBox =
 
     /// Returns Bounding Rectangle expanded  only in X direction by different distance for start(minX) and end (maxX).
     /// Does check for underflow if distance is negative and raises FsExGeoException.
-    static member expandXAxis startDist endDist (b:BBox) =
-        b.ExpandXAxis(startDist, endDist)
+    static member expandXaxis startDist endDist (b:BBox) =
+        b.ExpandXaxis(startDist, endDist)
 
 
     /// Returns Bounding Rectangle expanded  only in Y direction by different distance for start(minY) and end (maxY).
     /// Does check for underflow if distance is negative and raises FsExGeoException.
-    static member expandYAxis startDist endDist (b:BBox) =
-        b.ExpandYAxis(startDist, endDist)
+    static member expandYaxis startDist endDist (b:BBox) =
+        b.ExpandYaxis(startDist, endDist)
 
     /// Returns Bounding Rectangle expanded  only in Z direction by different distance for start(minZ) and end (maxZ).
     /// Does check for underflow if distance is negative and raises FsExGeoException.
-    static member expandZAxis startDist endDist (b:BBox) =
-        b.ExpandZAxis(startDist, endDist)
+    static member expandZaxis startDist endDist (b:BBox) =
+        b.ExpandZaxis(startDist, endDist)
 
     /// Move the Bounding Box by a vector.
     static member move (v:Vec) (b:BBox) =

@@ -57,7 +57,7 @@ module Intersect =
 
             // now checking if parameter on second line is inside too:
             else
-                // this might still be a very shallow intersection that counts as prallel
+                // this might still be a very shallow intersection that counts as parallel
                 let bXaInverse = -aXbInverse
                 let tb = getXPara (bp, bXaInverse, ap, au)
 

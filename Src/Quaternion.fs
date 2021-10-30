@@ -8,6 +8,8 @@ open FsEx.Geo.Util
 
 /// An immutable unitized Quaternion, for arbitrary 3D rotations.
 /// This implementation guarantees the Quaternion to be always unitized.
+/// Note: Never use the struct default constructor Quaternion() as it will create an invalid zero length Quaternion. 
+/// Use Quaternion.create or Quaternion.createUnchecked instead.
 [<Struct; NoEquality; NoComparison>] 
 [<IsReadOnly>]
 //[<IsByRefLike>]
@@ -74,7 +76,7 @@ type Quaternion =
 
     /// Returns the rotation axis of this Quaternion.
     /// This is just q.X, q.Y and q.Z.
-    /// The lenght of this vector is less than one.
+    /// The length of this vector is less than one.
     member q.Axis = Vec(q.X, q.Y, q.Z)
     
     /// This constructor does unitizing too
@@ -122,7 +124,7 @@ type Quaternion =
             if  abs vFrom.X  > abs vFrom.Z   then   Quaternion.create ( -vFrom.Y  , vFrom.X   , 0       , r)
             else                                    Quaternion.create (0          ,- vFrom.Z  ,vFrom.Y  , r)
         else 
-            // crossVectors( vFrom, vTo ); // inlined to avoid cyclic dependency
+            // cross Vectors( vFrom, vTo ); // inlined to avoid cyclic dependency
             Quaternion.create ( vFrom.Y * vTo.Z - vFrom.Z * vTo.Y
                               , vFrom.Z * vTo.X - vFrom.X * vTo.Z
                               , vFrom.X * vTo.Y - vFrom.Y * vTo.X
@@ -317,3 +319,72 @@ type Quaternion =
         ,
         toDegrees  <| Math.Atan2(2.0 * (q.W*q.X + q.Y*q.Z),  q.W*q.W + q.Z*q.Z - q.X*q.X - q.Y*q.Y)
 
+
+    // ----------------------------------------------
+    // operators for Quaternion multiplication:
+    // ----------------------------------------------    
+    
+    
+    /// Rotate by Quaternion around Origin
+    /// Multiplies (or applies) a Quaternion to a 3D vector.
+    static member inline  ( * ) ( v:Vec, q:Quaternion) = 
+        // adapted from https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
+        let x = v.X
+        let y = v.Y
+        let z = v.Z
+        let qx = q.X
+        let qy = q.Y
+        let qz = q.Z
+        let qw = q.W
+        // calculate quat * vector
+        let ix =  qw * x + qy * z - qz * y
+        let iy =  qw * y + qz * x - qx * z
+        let iz =  qw * z + qx * y - qy * x
+        let iw = -qx * x - qy * y - qz * z
+        // calculate result * inverse quat
+        Vec ( ix * qw + iw * - qx + iy * - qz - iz * - qy
+            , iy * qw + iw * - qy + iz * - qx - ix * - qz
+            , iz * qw + iw * - qz + ix * - qy - iy * - qx )
+    
+    /// Rotate by Quaternion around Origin
+    /// Multiplies (or applies) a Quaternion to a 3D unit vector.
+    static member inline  ( * ) ( v:UnitVec, q:Quaternion) = 
+        // adapted from https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
+        let x = v.X
+        let y = v.Y
+        let z = v.Z
+        let qx = q.X
+        let qy = q.Y
+        let qz = q.Z
+        let qw = q.W
+        // calculate quat * vector
+        let ix =  qw * x + qy * z - qz * y
+        let iy =  qw * y + qz * x - qx * z
+        let iz =  qw * z + qx * y - qy * x
+        let iw = -qx * x - qy * y - qz * z
+        // calculate result * inverse quat
+        UnitVec ( ix * qw + iw * - qx + iy * - qz - iz * - qy
+                , iy * qw + iw * - qy + iz * - qx - ix * - qz
+                , iz * qw + iw * - qz + ix * - qy - iy * - qx )
+
+
+    /// Rotate by Quaternion around Origin
+    /// Multiplies (or applies) a Quaternion to a 3D point.
+    static member inline  ( * ) ( p:Pnt, q:Quaternion) = 
+        // adapted from https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
+        let x = p.X
+        let y = p.Y
+        let z = p.Z
+        let qx = q.X
+        let qy = q.Y
+        let qz = q.Z
+        let qw = q.W
+        // calculate quat * vector
+        let ix =  qw * x + qy * z - qz * y
+        let iy =  qw * y + qz * x - qx * z
+        let iz =  qw * z + qx * y - qy * x
+        let iw = -qx * x - qy * y - qz * z
+        // calculate result * inverse quat
+        Pnt ( ix * qw + iw * - qx + iy * - qz - iz * - qy
+            , iy * qw + iw * - qy + iz * - qx - ix * - qz
+            , iz * qw + iw * - qz + ix * - qy - iy * - qx )            

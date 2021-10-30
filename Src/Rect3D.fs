@@ -193,13 +193,13 @@ type Rect3D =
     /// Creates a unitized version of the local X-Axis
     member inline r.XaxisUnit =
         let len = r.Xaxis.Length
-        if len = zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Rect3D.XaxisUnit: rect XAxis is too small for unitizing: %s" r.AsString
+        if len = zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Rect3D.XaxisUnit: rect Xaxis is too small for unitizing: %s" r.AsString
         r.Xaxis*(1./len)
 
     /// Creates a unitized version of the local Y-Axis
     member inline r.YaxisUnit =
         let len = r.Yaxis.Length
-        if len = zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Rect3D.XaxisUnit: rect YAxis is too small for unitizing: %s" r.AsString
+        if len = zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Rect3D.XaxisUnit: rect Yaxis is too small for unitizing: %s" r.AsString
         r.Yaxis*(1./len)
 
     /// Returns the Normal; resulting from the cross product of r.Xaxis with r.Yaxis
@@ -397,7 +397,7 @@ type Rect3D =
 
     /// Give 2D Bounding Rect
     static member createFromBoundingRect (b:BRect) =
-        Rect3D(b.MinPt.AsPnt, Vec.XAxis*b.Length, Vec.YAxis*b.Width)
+        Rect3D(b.MinPt.AsPnt, Vec.Xaxis*b.Length, Vec.Yaxis*b.Width)
 
     /// Move the 3D Rectangle by a vector.
     static member move (v:Vec) (r:Rect3D) =

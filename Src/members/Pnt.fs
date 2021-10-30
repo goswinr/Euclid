@@ -55,7 +55,7 @@ module AutoOpenPnt =
         
         /// Returns the Diamond Angle from this point to another point projected in X-Y plane.
         /// The diamond angle is always positive and in the range of 0.0 to 4.0 ( for 360 Degrees) 
-        /// 0.0 = XAxis,  going Counter clockwise. Ignoring Z component.
+        /// 0.0 = Xaxis,  going Counter clockwise. Ignoring Z component.
         /// This is the fastest angle computation since it does not use Math.Cos or Math.Sin.
         /// It is useful for radial sorting.
         member inline p.DirectionDiamondInXYTo(o:Pnt) =
@@ -78,7 +78,7 @@ module AutoOpenPnt =
                     3.0 + x/(x-y)  
         
         /// Returns the Angle in Radians from this point to another point projected in X-Y plane.
-        /// 0.0 = XAxis,  going Counter clockwise till two Pi.
+        /// 0.0 = Xaxis,  going Counter clockwise till two Pi.
         member inline p.Angle2PiInXYTo(o:Pnt) =
             // https://stackoverflow.com/a/14675998/969070            
             let x = o.X-p.X
@@ -92,7 +92,7 @@ module AutoOpenPnt =
             else            a
         
         /// Returns the Angle in Degrees from this point to another point projected in X-Y plane.
-        /// 0.0 = XAxis,  going Counter clockwise till 360.
+        /// 0.0 = Xaxis,  going Counter clockwise till 360.
         member inline p.Angle360InXYTo(o:Pnt) =
             p.Angle2PiInXYTo o |> toDegrees
 
@@ -314,7 +314,7 @@ module AutoOpenPnt =
             let v = toPt - fromPt
             if fromPt.Z < toPt.Z && z < fromPt.Z  then FsExGeoException.Raise "Pnt.extendToZLevel cannot be reached for fromPt:%O toPt:%O z:%g" fromPt toPt z
             if fromPt.Z > toPt.Z && z > fromPt.Z  then FsExGeoException.Raise "Pnt.extendToZLevel cannot be reached for fromPt:%O toPt:%O z:%g" fromPt toPt z
-            let dot = abs ( v * Vec.ZAxis)
+            let dot = abs ( v * Vec.Zaxis)
             if dot < 0.0001 then  FsExGeoException.Raise "Pnt.extendToZLevel cannot be reached for fromPt:%O toPt:%O because they are both at the same level. target z:%g " fromPt toPt z
             let diffZ = abs (fromPt.Z - z)
             let fac = diffZ / dot
@@ -328,15 +328,15 @@ module AutoOpenPnt =
             if v.Length < snapDistance then snapTo else pt
         
         /// Every line has a normal vector in X-Y plane.
-        /// If line is vertical then XAxis is returned
+        /// If line is vertical then Xaxis is returned
         /// Rotated counter clockwise in top view.
         /// result is unitized
         /// see also : Vec.perpendicularVecInXY
         static member normalOfTwoPointsInXY(fromPt:Pnt, toPt:Pnt) = 
             let x = toPt.Y - fromPt.Y
-            let y = fromPt.X - toPt.X  // this is the same as: Vec.cross v Vec.ZAxis
+            let y = fromPt.X - toPt.X  // this is the same as: Vec.cross v Vec.Zaxis
             let len = sqrt(x*x + y*y)
-            if len < zeroLengthTol then Vec.XAxis
+            if len < zeroLengthTol then Vec.Xaxis
             else Vec(x/len, y/len, 0.0)
         
 
@@ -344,19 +344,19 @@ module AutoOpenPnt =
         /// The fist distance (distHor) is applied in in X-Y plane
         /// The second distance (distNormal) is applied perpendicular to the line (made by the two 3D points) and perpendicular to the horizontal offset direction.
         /// this is in World.Z direction if both points are at the same Z level.
-        /// If points are closer than than 1e-6 units the World.XAxis is used as first direction and World Z-axis as second direction.
+        /// If points are closer than than 1e-6 units the World.Xaxis is used as first direction and World Z-axis as second direction.
         static member offsetTwoPt(  fromPt:Pnt,
                                     toPt:Pnt,
                                     distHor:float,
                                     distNormal:float) : Pnt*Pnt= 
             let v = toPt - fromPt
             let normHor = 
-                Vec.cross(v, Vec.ZAxis)
-                |> Vec.unitizeOrDefault UnitVec.XAxis
+                Vec.cross(v, Vec.Zaxis)
+                |> Vec.unitizeOrDefault UnitVec.Xaxis
         
             let normFree = 
                 Vec.cross(v, normHor)
-                |> Vec.unitizeOrDefault UnitVec.ZAxis
+                |> Vec.unitizeOrDefault UnitVec.Zaxis
         
             let shift = distHor * normHor + distNormal * normFree
             fromPt +  shift, toPt + shift             
@@ -365,31 +365,12 @@ module AutoOpenPnt =
         /// Multiplies (or applies) a Matrix to a 3D point (with an implicit 1 in the 4th dimension, 
         /// so that it also works correctly for projections.)
         static member transform (m:Matrix) (p:Pnt) = 
-            // from applyMatrix4( m ) in  https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js 
-            let x = p.X
-            let y = p.Y
-            let z = p.Z
-            //let w = 1.0           
-            let x' = m.M11*x + m.M21*y + m.M31*z + m.X41 // * w
-            let y' = m.M12*x + m.M22*y + m.M32*z + m.Y42 // * w
-            let z' = m.M13*x + m.M23*y + m.M33*z + m.Z43 // * w
-            let w' = m.M14*x + m.M24*y + m.M34*z + m.M44 // * w 
-            let sc = 1.0 / w'           
-            Pnt(x' * sc, y'* sc, z'* sc)  
-
+            p*m // operator * is defined in Matrix.fs
+            
         /// Multiplies (or applies) an OrthoMatrix to a 3D point. 
         static member transformOrtho (m:OrthoMatrix) (p:Pnt) = 
-            let x = p.X
-            let y = p.Y
-            let z = p.Z 
-            Pnt(  m.M11*x + m.M21*y + m.M31*z + m.X41 
-                , m.M12*x + m.M22*y + m.M32*z + m.Y42 
-                , m.M13*x + m.M23*y + m.M33*z + m.Z43 
-                ) 
+            p*m // operator * is defined in OrthoMatrix.fs
             
-        // Multiplies the Matrix with a point (with an implicit 1 in the 4th dimension)
-        //static member inline ( * ) (matrix:Matrix, pt:Pnt) = Pnt.transform matrix pt //TODO in main declaration ,  not extension
-    
 
         // Rotate 2D and 3D: 
 
@@ -407,27 +388,27 @@ module AutoOpenPnt =
             let x = pt.X - cen.X 
             let y = pt.Y - cen.Y 
             let z = pt.Z - cen.Z
-            Pnt (x                 + cen.X,  
-                 r.Cos*y - r.Sin*z + cen.Y, 
-                 r.Sin*y + r.Cos*z + cen.Z)         
+            Pnt  (  x                 + cen.X,  
+                    r.Cos*y - r.Sin*z + cen.Y, 
+                    r.Sin*y + r.Cos*z + cen.Z)         
 
         /// Rotate the 3D point around a center point and a Y aligned axis, from Z to X-axis, Counter Clockwise looking from back.
         static member rotateYonCenterBy (cen:Pnt) (r:Rotation2D) (pt:Pnt) =  
             let x = pt.X - cen.X 
             let y = pt.Y - cen.Y 
             let z = pt.Z - cen.Z
-            Pnt ( r.Sin*z + r.Cos*x + cen.X, 
-                  y                 + cen.Y, 
-                  r.Cos*z - r.Sin*x + cen.Z) 
+            Pnt (   r.Sin*z + r.Cos*x + cen.X, 
+                    y                 + cen.Y, 
+                    r.Cos*z - r.Sin*x + cen.Z) 
         
         /// Rotate the 3D point around a center point and a Z aligned axis, from X to Y-axis, Counter Clockwise looking from top.
         static member rotateZonCenterBy (cen:Pnt) (r:Rotation2D) (pt:Pnt) =  
             let x = pt.X - cen.X  
             let y = pt.Y - cen.Y 
             let z = pt.Z - cen.Z
-            Pnt (r.Cos*x - r.Sin*y + cen.X, 
-                 r.Sin*x + r.Cos*y + cen.Y, 
-                 z                 + cen.Z)
+            Pnt (   r.Cos*x - r.Sin*y + cen.X, 
+                    r.Sin*x + r.Cos*y + cen.Y, 
+                    z                 + cen.Z)
         
         /// Rotate the 3D point in Degrees around X-axis, from Y to Z-axis, Counter Clockwise looking from right.
         static member inline rotateX (angDegree) (pt:Pnt) = 
@@ -454,25 +435,8 @@ module AutoOpenPnt =
             Pnt.rotateZonCenterBy cen (Rotation2D.createFromDegrees angDegree) pt 
 
         /// Rotate by Quaternion around Origin
-        static member inline rotateByQuat  (q:Quaternion) (pt:Pnt) =
-            // adapted from https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
-            let x = pt.X
-            let y = pt.Y
-            let z = pt.Z
-            let qx = q.X
-            let qy = q.Y
-            let qz = q.Z
-            let qw = q.W
-            // calculate quat * vector
-            let ix =  qw * x + qy * z - qz * y
-            let iy =  qw * y + qz * x - qx * z
-            let iz =  qw * z + qx * y - qy * x
-            let iw = -qx * x - qy * y - qz * z
-            // calculate result * inverse quat
-            Pnt( ix * qw + iw * - qx + iy * - qz - iz * - qy
-               , iy * qw + iw * - qy + iz * - qx - ix * - qz
-               , iz * qw + iw * - qz + ix * - qy - iy * - qx
-               )
+        static member inline rotateByQuaternion  (q:Quaternion) (pt:Pnt) =
+            pt*q  // operator * is defined in Quaternion.fs   
     
         /// Rotate by Quaternion around given Center point 
         static member inline rotateOnCenterByQuat (cen:Pnt) (q:Quaternion) (pt:Pnt) =

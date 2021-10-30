@@ -77,7 +77,7 @@ module AutoOpenVc =
         /// The diamond angle.
         /// Calculates the proportion of X to Y component. 
         /// It is always positive and in the range of 0.0 to 4.0 ( for 360 Degrees) 
-        /// 0.0 = XAxis,  going Counter clockwise.
+        /// 0.0 = Xaxis,  going Counter clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions
         member inline v.DirectionDiamond =
             // https://stackoverflow.com/a/14675998/969070 
@@ -96,7 +96,7 @@ module AutoOpenVc =
                 else 
                     3.0 + v.X/(v.X-v.Y) 
         
-        /// Returns the Angle in Radians from XAxis,  
+        /// Returns the Angle in Radians from Xaxis,  
         /// Going Counter clockwise till two Pi.
         member inline v.Direction2Pi =
             // https://stackoverflow.com/a/14675998/969070
@@ -110,7 +110,7 @@ module AutoOpenVc =
             else  
                 a
         
-        /// Returns the Angle in Radians from XAxis, 
+        /// Returns the Angle in Radians from Xaxis, 
         /// Ignores orientation.
         /// Range 0.0 to Pi.
         member inline v.DirectionPi =
@@ -124,12 +124,12 @@ module AutoOpenVc =
             else  
                 a
 
-        /// Returns the Angle in Degrees from XAxis.  
+        /// Returns the Angle in Degrees from Xaxis.  
         /// Going Counter clockwise till 360.
         member inline v.Direction360 =
             v.Direction2Pi |> toDegrees
         
-        /// Returns the Angle in Radians from XAxis, 
+        /// Returns the Angle in Radians from Xaxis, 
         /// Ignores orientation.
         /// Range 0.0 to 180.
         member inline v.Direction180 =
@@ -197,10 +197,10 @@ module AutoOpenVc =
         //----------------------------------------------------------------------------------------------
 
         /// Returns the World X-axis with length one: Vc(1,0)
-        static member inline XAxis  = Vc(1,0)
+        static member inline Xaxis  = Vc(1,0)
 
         /// Returns the World Y-axis with length one: Vc(0,1)
-        static member inline YAxis  = Vc(0,1)
+        static member inline Yaxis  = Vc(0,1)
         
         /// Returns a zero length vector: Vec(0,0)
         static member inline Zero   = Vc(0,0)  // this member is needed by Seq.sum, so that it doesn't fail on empty seq.  
@@ -402,7 +402,7 @@ module AutoOpenVc =
         /// The diamond angle.
         /// Calculates the proportion of X to Y component. 
         /// It is always positive and in the range of 0.0 to 4.0 ( for 360 Degrees) 
-        /// 0.0 = XAxis,  going Counter clockwise.
+        /// 0.0 = Xaxis,  going Counter clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions
         static member inline directionDiamond(a:Vc) =
             // https://stackoverflow.com/a/14675998/969070           

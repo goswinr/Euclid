@@ -127,18 +127,18 @@ type BRect =
 
     /// Returns Bounding Rectangle expanded only in X direction by different distance for start(minX) and end (maxX).
     /// Does check for underflow if distance is negative and raises FsExGeoException.
-    member inline r.ExpandXAxis(startDist, endDist) : BRect =
+    member inline r.ExpandXaxis(startDist, endDist) : BRect =
         let n = BRect(r.MinX-startDist, r.MinY, r.MaxX+endDist, r.MaxY)
         if n.MinX > n.MaxX  then
-            FsExGeoException.Raise "BRect.ExpandXAxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist r.AsString
+            FsExGeoException.Raise "BRect.ExpandXaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist r.AsString
         n
 
     /// Returns Bounding Rectangle expanded  only in Y direction by different distance for start(minY) and end (maxY).
     /// Does check for underflow if distance is negative and raises FsExGeoException.
-    member inline r.ExpandYAxis(startDist, endDist) : BRect =
+    member inline r.ExpandYaxis(startDist, endDist) : BRect =
         let n = BRect(r.MinX, r.MinY-startDist, r.MaxX, r.MaxY+endDist)
         if n.MinY > n.MaxY  then
-            FsExGeoException.Raise "BRect.ExpandYAxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist r.AsString
+            FsExGeoException.Raise "BRect.ExpandYaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist r.AsString
         n
 
     /// Returns true if the two Bounding Rectangles do overlap or touch.
@@ -210,14 +210,14 @@ type BRect =
 
     /// Returns Bounding Rectangle expanded  only in X direction by different distance for start(minX) and end (maxX).
     /// Does check for underflow if distance is negative and raises FsExGeoException.
-    static member expandXAxis startDist endDist (r:BRect) =
-        r.ExpandXAxis(startDist, endDist)
+    static member expandXaxis startDist endDist (r:BRect) =
+        r.ExpandXaxis(startDist, endDist)
 
 
     /// Returns Bounding Rectangle expanded  only in Y direction by different distance for start(minY) and end (maxY).
     /// Does check for underflow if distance is negative and raises FsExGeoException.
-    static member expandYAxis startDist endDist (r:BRect) =
-        r.ExpandYAxis(startDist, endDist)
+    static member expandYaxis startDist endDist (r:BRect) =
+        r.ExpandYaxis(startDist, endDist)
 
     /// Move the Bounding Rectangle by a vector.
     static member move (v:Vc) (r:BRect) =

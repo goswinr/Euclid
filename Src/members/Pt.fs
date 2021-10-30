@@ -53,7 +53,7 @@ module AutoOpenPt =
         /// Returns the Diamond Angle from this point to another point.        
         /// Calculates the proportion of X to Y component. 
         /// It is always positive and in the range of 0.0 to 4.0 ( for 360 Degrees) 
-        /// 0.0 = XAxis,  going Counter clockwise.
+        /// 0.0 = Xaxis,  going Counter clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions
         member inline p.DirectionDiamondTo(o:Pt) =
             // https://stackoverflow.com/a/14675998/969070            
@@ -75,7 +75,7 @@ module AutoOpenPt =
                     3.0 + x/(x-y) 
 
         /// Returns the Angle in Radians from this point to another point.
-        /// 0.0 = XAxis,  going Counter clockwise till two Pi.
+        /// 0.0 = Xaxis,  going Counter clockwise till two Pi.
         member inline p.Angle2PiTo(o:Pt) =
             // https://stackoverflow.com/a/14675998/969070 
             let x = o.X-p.X
@@ -89,7 +89,7 @@ module AutoOpenPt =
             else            a
         
         /// Returns the Angle in Degrees from this point to another point.
-        /// 0.0 = XAxis,  going Counter clockwise till 360.
+        /// 0.0 = Xaxis,  going Counter clockwise till 360.
         member inline p.Angle360To(o:Pt) =
             p.Angle2PiTo o |> toDegrees
 

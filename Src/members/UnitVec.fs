@@ -47,7 +47,7 @@ module AutoOpenUnitVec =
         member inline v.RotateOnZ90CW  = UnitVec.createUnchecked(  v.Y,  -v.X,   v.Z  )  
 
         /// The diamond angle is always positive and in the range of 0.0 to 4.0 ( for 360 Degrees) 
-        /// 0.0 = XAxis,  going Counter clockwise. Ignoring Z component.
+        /// 0.0 = Xaxis,  going Counter clockwise. Ignoring Z component.
         /// This is the fastest angle computation since it does not use Math.Cos or Math.Sin.
         /// It is useful for radial sorting.
         /// For X-Y plane. Considers only the X and Y components of the vector.
@@ -69,7 +69,7 @@ module AutoOpenUnitVec =
                     3.0 + v.X/(v.X-v.Y) 
         
 
-        /// Returns the Angle in Radians from XAxis,  
+        /// Returns the Angle in Radians from Xaxis,  
         /// Going Counter clockwise till two Pi.         
         /// For World X-Y plane. Considers only the X and Y components of the vector.
         member inline v.Direction2PiInXY =
@@ -84,7 +84,7 @@ module AutoOpenUnitVec =
             else  
                 a
         
-        /// Returns the Angle in Radians from XAxis in World  X-Y plane, 
+        /// Returns the Angle in Radians from Xaxis in World  X-Y plane, 
         /// Ignores orientation.
         /// Range 0.0 to Pi. 
         /// For World X-Y plane. Considers only the X and Y components of the vector.
@@ -100,13 +100,13 @@ module AutoOpenUnitVec =
             else  
                 a
         
-        /// Returns the Angle in Degrees from XAxis in World  X-Y plane.  
+        /// Returns the Angle in Degrees from Xaxis in World  X-Y plane.  
         /// Going Counter clockwise till 360. 
         /// For World X-Y plane. Considers only the X and Y components of the vector.
         member inline v.Direction360InXY =
             v.Direction2PiInXY |> toDegrees
         
-        /// Returns the Angle in Radians from XAxis, 
+        /// Returns the Angle in Radians from Xaxis, 
         /// Ignores orientation.
         /// Range 0.0 to 180. 
         /// For World X-Y plane. Considers only the X and Y components of the vector.
@@ -184,13 +184,13 @@ module AutoOpenUnitVec =
             UnitVec.create( x , y , z )
 
         /// Returns the World X-axis with length one: UnitVec(1,0,0)
-        static member inline XAxis  = UnitVec.createUnchecked (1.0 , 0.0, 0.0)
+        static member inline Xaxis  = UnitVec.createUnchecked (1.0 , 0.0, 0.0)
         
         /// Returns the World Y-axis with length one: UnitVec(0.1,0)
-        static member inline YAxis  = UnitVec.createUnchecked (0.0 , 1.0, 0.0)
+        static member inline Yaxis  = UnitVec.createUnchecked (0.0 , 1.0, 0.0)
         
         /// Returns the World Z-axis with length one: UnitVec(0,0,1)
-        static member inline ZAxis  = UnitVec.createUnchecked (0.0 , 0.0, 1.0)
+        static member inline Zaxis  = UnitVec.createUnchecked (0.0 , 0.0, 1.0)
         
         /// Returns the distance between the tips of two 3D unit vectors.
         static member inline difference (a:UnitVec) (b:UnitVec) = let v = a-b in sqrt(v.X*v.X + v.Y*v.Y + v.Z*v.Z)
@@ -414,7 +414,7 @@ module AutoOpenUnitVec =
         /// Returns positive angle of 3D unit vector in World  X-Y plane.
         /// Calculates the proportion of X to Y component. 
         /// It is always positive and in the range of 0.0 to 4.0 ( for 360 Degrees) 
-        /// 0.0 = XAxis,  going Counter clockwise.
+        /// 0.0 = Xaxis,  going Counter clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions 
         /// For World X-Y plane. Considers only the X and Y components of the vector.
         static member inline directionDiamondInXY(v:UnitVec) = v.DirectionDiamondInXY
@@ -492,25 +492,7 @@ module AutoOpenUnitVec =
 
         /// Rotate by Quaternion
         static member inline rotateByQuaternion  (q:Quaternion) (v:UnitVec) =
-            // adapted from https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
-            let x = v.X
-            let y = v.Y
-            let z = v.Z
-            let qx = q.X
-            let qy = q.Y
-            let qz = q.Z
-            let qw = q.W
-            // calculate quat * vector
-            let ix =  qw * x + qy * z - qz * y
-            let iy =  qw * y + qz * x - qx * z
-            let iz =  qw * z + qx * y - qy * x
-            let iw = -qx * x - qy * y - qz * z
-            // calculate result * inverse quat
-            UnitVec.createUnchecked( ix * qw + iw * - qx + iy * - qz - iz * - qy
-                                   , iy * qw + iw * - qy + iz * - qx - ix * - qz
-                                   , iz * qw + iw * - qz + ix * - qy - iy * - qx
-                                   )
-        
+            v*q  // operator * is defined in Quaternion.fs       
         
         
         /// vector length projected into X Y Plane
@@ -552,7 +534,7 @@ module AutoOpenUnitVec =
         /// Reverse vector if Z part is bigger than 0.0
         static member inline orientDown (v:UnitVec) = 
             if v.Z < 0.0 then v else -v
-     
+    
 
         /// Returns a perpendicular horizontal vector. Rotated counterclockwise.        
         /// Just does Vec(-v.Y, v.X, 0.0) 
@@ -572,32 +554,16 @@ module AutoOpenUnitVec =
 
         /// Multiplies a Matrix with a 3D vector (with an implicit 1 in the 4th dimension, 
         /// So that it also works correctly for projections.)
-        /// /// The restulting vector is not unitized.
+        /// The resulting vector is not unitized.
         static member transform (m:Matrix) (v:UnitVec) = 
-            // from applyMatrix4( m ) in  https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js 
-            let x = v.X
-            let y = v.Y
-            let z = v.Z
-            //let w = 1.0           
-            let x' = m.M11*x + m.M21*y + m.M31*z + m.X41 // * w
-            let y' = m.M12*x + m.M22*y + m.M32*z + m.Y42 // * w
-            let z' = m.M13*x + m.M23*y + m.M33*z + m.Z43 // * w
-            let w' = m.M14*x + m.M24*y + m.M34*z + m.M44 // * w 
-            let sc = 1.0 / w'           
-            Vec(x' * sc, y'* sc, z'* sc)     
+            v*m // operator * is defined in Matrix.fs
         
         /// Multiplies (or applies) an OrthoMatrix to a 3D Vector . 
         /// The resulting vector is not unitized if Matrix is translating too.
         static member transformOrtho (m:OrthoMatrix) (v:UnitVec) = 
-            let x = v.X
-            let y = v.Y
-            let z = v.Z 
-            Vec(  m.M11*x + m.M21*y + m.M31*z + m.X41 
-                , m.M12*x + m.M22*y + m.M32*z + m.Y42 
-                , m.M13*x + m.M23*y + m.M33*z + m.Z43 
-                )
+            v*m // operator * is defined in OrthoMatrix.fs
         
-        /// Multiplies (or applies) onl the 3x3 rotation p[0art of an OrthoMatrix to a 3D Unit Vector . 
+        /// Multiplies (or applies) onl the 3x3 rotation part of an OrthoMatrix to a 3D Unit Vector . 
         /// The resulting vector is unitized too.
         static member rotateOrtho (m:OrthoMatrix) (v:UnitVec) = 
             let x = v.X

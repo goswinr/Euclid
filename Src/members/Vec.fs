@@ -84,7 +84,7 @@ module AutoOpenVec =
         /// The diamond angle.
         /// Calculates the proportion of X to Y component. 
         /// It is always positive and in the range of 0.0 to 4.0 ( for 360 Degrees) 
-        /// 0.0 = XAxis,  going Counter clockwise.
+        /// 0.0 = Xaxis,  going Counter clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions. 
         /// For World X-Y plane. Considers only the X and Y components of the vector.
         member inline v.DirectionDiamondInXY =
@@ -104,7 +104,7 @@ module AutoOpenVec =
                 else 
                     3.0 + v.X/(v.X-v.Y) 
 
-        /// Returns the Angle in Radians from XAxis,  
+        /// Returns the Angle in Radians from Xaxis,  
         /// Going Counter clockwise till two Pi.         
         /// For World X-Y plane. Considers only the X and Y components of the vector.
         member inline v.Direction2PiInXY =
@@ -119,7 +119,7 @@ module AutoOpenVec =
             else  
                 a
 
-        /// Returns the Angle in Radians from XAxis, 
+        /// Returns the Angle in Radians from Xaxis, 
         /// Ignores orientation.
         /// Range 0.0 to Pi. 
         /// For World X-Y plane. Considers only the X and Y components of the vector.
@@ -135,13 +135,13 @@ module AutoOpenVec =
             else  
                 a
         
-        /// Returns the Angle in Degrees from XAxis.  
+        /// Returns the Angle in Degrees from Xaxis.  
         /// Going Counter clockwise till 360. 
         /// For World X-Y plane. Considers only the X and Y components of the vector.
         member inline v.Direction360InXY =
             v.Direction2PiInXY |> toDegrees
         
-        /// Returns the Angle in Radians from XAxis, 
+        /// Returns the Angle in Radians from Xaxis, 
         /// Ignores orientation.
         /// Range 0.0 to 180. 
         /// For World X-Y plane. Considers only the X and Y components of the vector.
@@ -211,13 +211,13 @@ module AutoOpenVec =
         //----------------------------------------------------------------------------------------------
         
         /// Returns the World X-axis with length one: Vec(1,0,0)
-        static member inline XAxis  = Vec(1,0,0)
+        static member inline Xaxis  = Vec(1,0,0)
 
         /// Returns the World Y-axis with length one: Vec(0,1,0)
-        static member inline YAxis  = Vec(0,1,0)
+        static member inline Yaxis  = Vec(0,1,0)
 
         /// Returns the World Z-axis with length one: Vec(0,0,1)
-        static member inline ZAxis  = Vec(0,0,1)        
+        static member inline Zaxis  = Vec(0,0,1)        
 
         /// Returns a zero length vector: Vec(0,0,0)
         static member inline Zero   = Vec(0,0,0)  // this member is needed by Seq.sum, so that it doesn't fail on empty seq.  
@@ -415,7 +415,7 @@ module AutoOpenVec =
 
         /// Returns positive angle from vector 'a' to vector 'b' projected in  X-Y plane.
         /// In Radians
-        /// Considering counter clockwise rotation round the World ZAxis
+        /// Considering counter clockwise rotation round the World Zaxis
         /// Range: 0.0 to 2 Pi ( = 0 to 360 Degrees)
         static member inline angle2PiInXY (a:Vec, b:Vec)   =
             let r = b.Direction2PiInXY  - a.Direction2PiInXY            
@@ -440,7 +440,7 @@ module AutoOpenVec =
         /// Returns positive angle of 3D vector in World  X-Y plane.
         /// Calculates the proportion of X to Y component. 
         /// It is always positive and in the range of 0.0 to 4.0 ( for 360 Degrees) 
-        /// 0.0 = XAxis,  going Counter clockwise.
+        /// 0.0 = Xaxis,  going Counter clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions 
         /// For World X-Y plane. Considers only the X and Y components of the vector.
         static member inline directionDiamondInXY(v:Vec) = v.DirectionDiamondInXY
@@ -528,25 +528,7 @@ module AutoOpenVec =
 
         /// Rotate by Quaternion
         static member inline rotateByQuaternion  (q:Quaternion) (v:Vec) =
-            // adapted from https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
-            let x = v.X
-            let y = v.Y
-            let z = v.Z
-            let qx = q.X
-            let qy = q.Y
-            let qz = q.Z
-            let qw = q.W
-            // calculate quat * vector
-            let ix =  qw * x + qy * z - qz * y
-            let iy =  qw * y + qz * x - qx * z
-            let iz =  qw * z + qx * y - qy * x
-            let iw = -qx * x - qy * y - qz * z
-            // calculate result * inverse quat
-            Vec( ix * qw + iw * - qx + iy * - qz - iz * - qy
-               , iy * qw + iw * - qy + iz * - qx - ix * - qz
-               , iz * qw + iw * - qz + ix * - qy - iy * - qx
-               )
-
+            v*q  // operator * is defined in Quaternion.fs   
 
         /// vector length projected into X Y Plane
         /// sqrt( v.X * v.X  + v.Y * v.Y)
@@ -596,7 +578,6 @@ module AutoOpenVec =
         /// Reverse vector if Z part is bigger than 0.0
         static member inline orientDown (v:Vec) = 
             if v.Z < 0.0 then v else -v
-
         
 
         /// Returns a perpendicular horizontal vector. Rotated counterclockwise.        
@@ -618,27 +599,11 @@ module AutoOpenVec =
         /// Multiplies a Matrix with a 3D vector (with an implicit 1 in the 4th dimension, 
         /// So that it also works correctly for projections.)
         static member transform (m:Matrix) (v:Vec) = 
-            // from applyMatrix4( m ) in  https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js 
-            let x = v.X
-            let y = v.Y
-            let z = v.Z
-            //let w = 1.0           
-            let x' = m.M11*x + m.M21*y + m.M31*z + m.X41 // * w
-            let y' = m.M12*x + m.M22*y + m.M32*z + m.Y42 // * w
-            let z' = m.M13*x + m.M23*y + m.M33*z + m.Z43 // * w
-            let w' = m.M14*x + m.M24*y + m.M34*z + m.M44 // * w 
-            let sc = 1.0 / w'           
-            Vec(x' * sc, y'* sc, z'* sc)     
+            v*m // operator * is defined in Matrix.fs
         
         /// Multiplies (or applies) an OrthoMatrix to a 3D Vector . 
         static member transformOrtho (m:OrthoMatrix) (v:Vec) = 
-            let x = v.X
-            let y = v.Y
-            let z = v.Z 
-            Vec(  m.M11*x + m.M21*y + m.M31*z + m.X41 
-                , m.M12*x + m.M22*y + m.M32*z + m.Y42 
-                , m.M13*x + m.M23*y + m.M33*z + m.Z43 
-                )
+            v*m // operator * is defined in OrthoMatrix.fs
         
         /// Multiplies (or applies) only the 3x3 rotation part of an OrthoMatrix to a 3D Unit Vector . 
         /// The resulting vector has the same length as the input.

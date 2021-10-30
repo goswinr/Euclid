@@ -11,6 +11,8 @@ open FsEx.Geo.Util
 /// M13 M23 M33 Z43 
 /// M14 M24 M34 M44
 /// Where X41, Y42 and Z43 refer to the translation part of the matrix.
+/// Note: Never use the struct default constructor Matrix() as it will create an invalid zero Matrix. 
+/// Use Matrix.create or Matrix.createUnchecked instead.
 [<Struct; NoEquality; NoComparison>] // because its made up from floats
 [<IsReadOnly>]
 //[<IsByRefLike>]
@@ -560,7 +562,7 @@ type Matrix =
     /// Fails on colinear vectors.
     static member createVecToVec( fromVec:UnitVec, toVec:UnitVec ) =
         let c = fromVec*toVec  // dot to find cos
-        let s = sqrt(1. - c*c ) // pythagoras to find sine
+        let s = sqrt(1. - c*c ) // Pythagoras to find sine
         let t = 1.0 - c        
         let axis0 = UnitVec.cross(fromVec, toVec) 
         let len = axis0.Length
@@ -600,7 +602,7 @@ type Matrix =
             let sc =  1. / length // inverse for unitizing vector:
             UnitVec.createUnchecked(x*sc, y*sc, z*sc)        
         let c =  fu * tu  // dot to find cosine
-        let s = sqrt(1. - c*c) // pythagoras to fins sine
+        let s = sqrt(1. - c*c) // Pythagoras to find sine
         let t = 1.0 - c        
         let axis = Vec.cross(vecFrom, vecTo) 
         let len = axis.Length
@@ -742,3 +744,53 @@ type Matrix =
                 m.M12,  m.M22,  m.M32,  m.Y42 + y, 
                 m.M13,  m.M23,  m.M33,  m.Z43 + z, 
                 m.M14,  m.M24,  m.M34,  m.M44) 
+    
+    // ----------------------------------------------
+    // operators for matrix multiplication:
+    // ----------------------------------------------
+    
+    /// Multiplies (or applies) a Matrix to a 3D vector (with an implicit 1 in the 4th dimension, 
+    /// so that it also works correctly for projections.)
+    static member inline  ( * ) (v:Vec, m:Matrix) = 
+        // from applyMatrix4( m ) in  https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js 
+        let x = v.X
+        let y = v.Y
+        let z = v.Z
+        //let w = 1.0           
+        let x' = m.M11*x + m.M21*y + m.M31*z + m.X41 // * w
+        let y' = m.M12*x + m.M22*y + m.M32*z + m.Y42 // * w
+        let z' = m.M13*x + m.M23*y + m.M33*z + m.Z43 // * w
+        let w' = m.M14*x + m.M24*y + m.M34*z + m.M44 // * w 
+        let sc = 1.0 / w'           
+        Vec(x' * sc, y'* sc, z'* sc) 
+    
+    /// Multiplies a Matrix with a 3D vector (with an implicit 1 in the 4th dimension, 
+    /// So that it also works correctly for projections.)
+    /// The resulting vector is not unitized.
+    static member inline  ( * ) (v:UnitVec, m:Matrix) = 
+        // from applyMatrix4( m ) in  https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js 
+        let x = v.X
+        let y = v.Y
+        let z = v.Z
+        //let w = 1.0           
+        let x' = m.M11*x + m.M21*y + m.M31*z + m.X41 // * w
+        let y' = m.M12*x + m.M22*y + m.M32*z + m.Y42 // * w
+        let z' = m.M13*x + m.M23*y + m.M33*z + m.Z43 // * w
+        let w' = m.M14*x + m.M24*y + m.M34*z + m.M44 // * w 
+        let sc = 1.0 / w'           
+        Vec(x' * sc, y'* sc, z'* sc) 
+    
+    /// Multiplies (or applies) a Matrix to a 3D point (with an implicit 1 in the 4th dimension, 
+    /// so that it also works correctly for projections.)
+    static member inline  ( * ) (v:Pnt, m:Matrix) = 
+        // from applyMatrix4( m ) in  https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js 
+        let x = v.X
+        let y = v.Y
+        let z = v.Z
+        //let w = 1.0           
+        let x' = m.M11*x + m.M21*y + m.M31*z + m.X41 // * w
+        let y' = m.M12*x + m.M22*y + m.M32*z + m.Y42 // * w
+        let z' = m.M13*x + m.M23*y + m.M33*z + m.Z43 // * w
+        let w' = m.M14*x + m.M24*y + m.M34*z + m.M44 // * w 
+        let sc = 1.0 / w'           
+        Pnt(x' * sc, y'* sc, z'* sc) 

@@ -234,19 +234,19 @@ type Box =
     /// Creates a unitized version of the local X-Axis
     member inline r.XaxisUnit =
         let len = r.Xaxis.Length
-        if len = zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Box.XaxisUnit: rect XAxis is too small for unitizing: %s" r.AsString
+        if len = zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Box.XaxisUnit: rect Xaxis is too small for unitizing: %s" r.AsString
         r.Xaxis*(1./len)
 
     /// Creates a unitized version of the local Y-Axis
     member inline r.YaxisUnit =
         let len = r.Yaxis.Length
-        if len = zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Box.XaxisUnit: rect YAxis is too small for unitizing: %s" r.AsString
+        if len = zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Box.XaxisUnit: rect Yaxis is too small for unitizing: %s" r.AsString
         r.Yaxis*(1./len)
 
     /// Creates a unitized version of the local Z-Axis
     member inline r.ZaxisUnit =
         let len = r.Zaxis.Length
-        if len = zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Box.XaxisUnit: rect ZAxis is too small for unitizing: %s" r.AsString
+        if len = zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Box.XaxisUnit: rect Zaxis is too small for unitizing: %s" r.AsString
         r.Zaxis*(1./len)
 
     /// The corner diagonally opposite of corner from Origin.
@@ -496,7 +496,7 @@ type Box =
 
     /// Give 3D Bounding Box
     static member createFromBoundingBox (b:BBox) =
-        Box(b.MinPnt, Vec.XAxis*b.Length, Vec.YAxis*b.Width, Vec.ZAxis*b.Height)
+        Box(b.MinPnt, Vec.Xaxis*b.Length, Vec.Yaxis*b.Width, Vec.Zaxis*b.Height)
 
     /// Move the  Box by a vector.
     static member move (v:Vec) (b:Box) =
