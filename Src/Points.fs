@@ -308,7 +308,7 @@ type Points private () =
             let a = pts.[0] - pts.[1]
             let b = pts.[2] - pts.[1]
             let v= Vec.cross(b, a)
-            if v.IsTiny(1e-6) then FsExGeoException.Raise "FsEx.Geo.Points.NormalOfPoints: three points are in a line  %O" pts
+            if v.IsTiny(1e-12) then FsExGeoException.Raise "FsEx.Geo.Points.NormalOfPoints: three points are in a line  %O" pts
             else
                 v.Unitized
         else
@@ -319,7 +319,7 @@ type Points private () =
                 let b = n-cen
                 let x = Vec.cross(a, b)  |> Vec.matchOrientation v // TODO do this matching?
                 v <- v + x
-            if v.IsTiny(1e-3) then FsExGeoException.Raise "FsEx.Geo.Points.NormalOfPoints: points are in a line or sphere without clear normal  %O" pts
+            if v.IsTiny(1e-12) then FsExGeoException.Raise "FsEx.Geo.Points.NormalOfPoints: points are in a line or sphere without clear normal  %O" pts
             else
                 v.Unitized
     

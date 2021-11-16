@@ -123,13 +123,12 @@ type Polyline2D =
             if p > 0.9999 then UnitVc.create(pl.Points.First,pl.Points.Second)
             else FsExGeoException.Raise "FsEx.Geo.Polyline2D.EvaluateAt: Parameter %f is less than 0.0" t
         elif i = pl.Points.Count then 
-            if   p > 1e-4 then  FsExGeoException.Raise "FsEx.Geo.Polyline2D.EvaluateAt: Parameter %f is more than than point count(%d)." t pl.Points.Count 
+            if   p > 1e-5 then  FsExGeoException.Raise "FsEx.Geo.Polyline2D.EvaluateAt: Parameter %f is more than than point count(%d)." t pl.Points.Count 
             else UnitVc.create(pl.Points.SecondLast,pl.Points.Last)
         // return point  if point is almost matching
         else
             UnitVc.create(pl.Points.[i],pl.Points.[i+1])
-        
-        
+                
 
     /// Returns the parameter on the Polyline2D that is the closest point to the given point.
     /// The integer part of the parameter is the index of the segment that the point is on.
@@ -209,8 +208,6 @@ type Polyline2D =
     /// The fractional part of the parameter is the parameter form 0.0 to 1.0 on the segment.
     /// The domain Polyline2D starts at 0.0 and ends at point count. 
     static member inline evaluateAt (pl:Polyline2D) t = pl.EvaluateAt t
-
-
 
     /// Apply a mapping function to each point in the 2D Polyline. Return new Polyline2D.
     static member map (mapping:Pt->Pt) (pl:Polyline2D) = pl.Points.ConvertAll (System.Converter mapping) |> Polyline2D.createDirectlyUnsafe

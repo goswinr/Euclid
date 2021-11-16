@@ -2,6 +2,9 @@ namespace FsEx.Geo
 
 open System
 open FsEx.Geo.Util
+open System.Threading.Tasks
+
+
 
 /// An immutable finite line in 3D. Represented by a 3D start and 3D end point.
 [<Struct;NoEquality;NoComparison>]// because its made up from floats
@@ -99,14 +102,14 @@ type Line3D =
         ln.ToX = ln.FromX &&
         ln.ToY = ln.FromY &&
         ln.ToZ = ln.FromZ    
- 
+    
     /// Check if line is shorter than tolerance.
     member inline ln.IsTiny tol = 
         ln.Length < tol
     
     /// Check if line is shorter than Squared tolerance.
     member inline ln.IsTinySq tol = 
-        ln.LengthSq < tol
+        ln.LengthSq < tol    
     
     /// Evaluate line at a given parameter ( parameters 0.0 to 1.0 are on the line ),
     member inline ln.EvaluateAt (p:float) = 
@@ -174,8 +177,9 @@ type Line3D =
                 ln.ToZ+distance) 
 
     /// Assumes Line3D to be infinite!
-    /// Returns the parameter at which a point is closest to the infinit line.
+    /// Returns the parameter at which a point is closest to the infinite line.
     /// If it is smaller than 0.0 or bigger than 1.0 it is outside of the finit line.
+    /// Fails on curves shorter than  1e-9 units. (ln.ClosestParameter does not)
     member ln.ClosestParameterInfinite (p:Pnt) = 
         //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
         let x = ln.FromX - ln.ToX
@@ -192,12 +196,27 @@ type Line3D =
 
     /// Return the parameter at which a point is closest to the (finite) line.
     /// The result is between 0.0 and 1.0.
+    /// Does not fails on very short curves.
     member inline ln.ClosestParameter (p:Pnt) = 
-        ln.ClosestParameterInfinite(p)
-        |> Util.clamp01  
+        //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
+        let x = ln.FromX - ln.ToX
+        let y = ln.FromY - ln.ToY
+        let z = ln.FromZ - ln.ToZ
+        let u = ln.FromX-p.X
+        let v = ln.FromY-p.Y
+        let w = ln.FromZ-p.Z
+        let dot = x*u + y*v + z*w
+        let lenSq = x*x + y*y + z*z
+        if lenSq < 1e-18 then // corresponds to a line Length of 1e-9
+            if dot < 0.0 then 0.0 else 1.0
+        else
+            dot / lenSq |> Util.clamp01
+        
+        
         
     /// Assumes Line3D to be infinite!
     /// Returns closest point on infinite Line.
+    /// Fails on curves shorter than  1e-9 units. (ln.ClosestPoint does not.)
     member ln.ClosestPointInfinite (p:Pnt) = 
         //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
         let x = ln.FromX - ln.ToX
@@ -217,31 +236,13 @@ type Line3D =
         Pnt(x', y', z')
 
     /// Returns closest point on (finite) Line.
+    /// Does not fails on very short curves. 
     member ln.ClosestPoint (p:Pnt) = 
-        //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
-        let x = ln.FromX - ln.ToX
-        let y = ln.FromY - ln.ToY
-        let z = ln.FromZ - ln.ToZ
-        let lenSq = x*x + y*y + z*z
-        if lenSq < 1e-18 then // corresponds to a line Length of 1e-9
-            FsExGeoDivByZeroException.Raise "FsEx.Geo.Line3D.ClosestPoint failed on very short line %O %O" ln p
-        let u = ln.FromX - p.X
-        let v = ln.FromY - p.Y
-        let w = ln.FromZ - p.Z
-        let dot = x*u + y*v + z*w
-        let t = dot/lenSq
-        if t<0.0 then
-            Pnt(ln.FromX, ln.FromY, ln.FromZ)
-        elif t>1.0 then
-            Pnt(ln.ToX, ln.ToY, ln.ToZ)
-        else
-            let x' = ln.FromX - x*t
-            let y' = ln.FromY - y*t
-            let z' = ln.FromZ - z*t
-            Pnt(x', y', z')
+        ln.EvaluateAt(ln.ClosestParameter(p))
 
     /// Assumes Line3D to be infinite!
     /// Returns Square distance from point to infinite line.
+    /// Fails on curves shorter than  1e-9 units. (ln.DistanceSqFromPoint does not.)
     member ln.DistanceSqFromPointInfinite(p:Pnt) =  
         //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
         let x = ln.FromX - ln.ToX
@@ -265,38 +266,16 @@ type Line3D =
 
     /// Assumes Line3D to be infinite!
     /// Returns distance from point to infinite line.
+    /// Fails on curves shorter than  1e-9 units. (ln.DistanceFromPoint does not.)
     member inline ln.DistanceFromPointInfinite(p:Pnt) =   
         ln.DistanceSqFromPointInfinite(p) |> sqrt   
     
-    /// Returns Square distance from point to (finite) line.
+    /// Returns Square distance from point to finite line.
     member ln.DistanceSqFromPoint(p:Pnt) =  
-        //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
-        let x = ln.FromX - ln.ToX
-        let y = ln.FromY - ln.ToY
-        let z = ln.FromZ - ln.ToZ
-        let lenSq = x*x + y*y + z*z
-        if lenSq < 1e-18 then // corresponds to a line Length of 1e-9
-            FsExGeoDivByZeroException.Raise "FsEx.Geo.Line3D.DistanceSqFromPoint failed on very short line %O %O" ln p
-        let u = ln.FromX-p.X
-        let v = ln.FromY-p.Y
-        let w = ln.FromZ-p.Z
-        let dot = x*u + y*v + z*w
-        let t = dot/lenSq
-        if t<0.0 then
-            u*u + v*v + w*w
-        elif t>1.0 then
-            let u = ln.ToX-p.X
-            let v = ln.ToY-p.Y
-            let w = ln.ToZ-p.Z
-            u*u + v*v + w*w
-        else
-            let x' = ln.FromX - x*t
-            let y' = ln.FromY - y*t
-            let z' = ln.FromZ - z*t
-            let u = x'-p.X
-            let v = y'-p.Y
-            let w = z'-p.Z
-            u*u + v*v + w*w
+        p
+        |> ln.ClosestParameter
+        |> ln.EvaluateAt
+        |> Pnt.distanceSq p
 
     /// Returns distance from point to (finite) line.
     member inline ln.DistanceFromPoint(p:Pnt) =  
@@ -330,142 +309,56 @@ type Line3D =
         let dot = ln.UnitTangent*l.UnitTangent
         dot > 0.707107
         
-    /// Checks if two 3D lines are parallel. Ignoring orientation
-    /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
-    /// And checks if it is smaller than 1e-9
-    /// (NOTE: for very long lines a higher tolerance might be needed)
-    member inline ln.IsParallelTo  (l:Line3D) =         
-        // vector of line l:
-        let ax = l.ToX-l.FromX
-        let ay = l.ToY-l.FromY
-        let az = l.ToZ-l.FromZ
-        //vector of line ll:
-        let bx = ln.ToX-ln.FromX
-        let by = ln.ToY-ln.FromY
-        let bz = ln.ToZ-ln.FromZ
-        // cross product:
-        let x = ay * bz - az * by   
-        let y = az * bx - ax * bz   
-        let z = ax * by - ay * bx 
-        (x*x + y*y + z*z) < 3.162278e-05 // sqrt of 1e-9         
+    /// Checks if Angle between two vectors is Below 0.25 Degree.
+    /// Ignores vector orientation.
+    /// Fails on zero length vectors, tolerance 1e-12.
+    /// Same as isAngleBelowQuatreDegree
+    member inline ln.IsParallelTo( other:Line3D) = 
+        let a = ln.Vector
+        let b = other.Vector
+        let sa = a.LengthSq
+        if sa < 1e-24 then  FsExGeoException.Raise "FsEx.Geo.Vec.IsParallelTo: Vec a is too short: %s. Vec b:%s " a.AsString b.AsString
+        let sb = b.LengthSq
+        if sb < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vec.IsParallelTo: Vec b is too short: %s. Vec a:%s " b.AsString a.AsString 
+        let au = a * (1.0 / sqrt sa )
+        let bu = b * (1.0 / sqrt sb )
+        abs(bu*au) > 0.999990480720734 // = cosine of 0.25 degrees:            
+        // for fsi: printfn "%.18f" (cos( 0.25 * (System.Math.PI / 180.)))
+    
 
-    /// Checks if a 3D lines and a 3D vector are parallel. Ignoring orientation
-    /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
-    /// And checks if it is smaller than 1e-9
-    /// (NOTE: for very long lines a higher tolerance might be needed)
-    member inline ln.IsParallelTo (v:Vec) =  
-        let ax = v.X
-        let ay = v.Y
-        let az = v.Z
-        let bx = ln.ToX-ln.FromX
-        let by = ln.ToY-ln.FromY
-        let bz = ln.ToZ-ln.FromZ
-        // cross product:
-        let x = ay * bz - az * by   
-        let y = az * bx - ax * bz   
-        let z = ax * by - ay * bx 
-        (x*x + y*y + z*z) < 3.162278e-05 // sqrt of 1e-9   
+    /// Checks if Angle between two vectors is Below 0.25 Degree.
+    /// Takes vector orientation into account too.
+    /// Fails on zero length vectors, tolerance 1e-12.        
+    member inline ln.IsParallelAndOrientedTo  (other:Line3D) = 
+        let a = ln.Vector
+        let b = other.Vector
+        let sa = a.LengthSq
+        if sa < 1e-24 then  FsExGeoException.Raise "FsEx.Geo.Vec.IsParallelAndOrientedTo: Vec a is too short: %s. Vec b:%s " a.AsString b.AsString
+        let sb = b.LengthSq
+        if sb < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vec.IsParallelAndOrientedTo: Vec b is too short: %s. Vec a:%s " b.AsString a.AsString 
+        let au = a * (1.0 / sqrt sa )
+        let bu = b * (1.0 / sqrt sb )
+        bu*au > 0.999990480720734 // = cosine of 0.25 degrees:            
+        // for fsi: printfn "%.18f" (cos( 0.25 * (System.Math.PI / 180.)))
         
-    /// Checks if a 3D lines and a 3D unit vector are parallel. Ignoring orientation
-    /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
-    /// And checks if it is smaller than 1e-9
-    /// (NOTE: for very long lines a higher tolerance might be needed)
-    member inline ln.IsParallelTo (v:UnitVec) =         
-        let ax = v.X
-        let ay = v.Y
-        let az = v.Z
-        let bx = ln.ToX-ln.FromX
-        let by = ln.ToY-ln.FromY
-        let bz = ln.ToZ-ln.FromZ
-        // cross product:
-        let x = ay * bz - az * by   
-        let y = az * bx - ax * bz   
-        let z = ax * by - ay * bx 
-        (x*x + y*y + z*z) < 3.162278e-05 // sqrt of 1e-9         
+    /// Checks if Angle between two vectors is between 98.75 and 90.25 Degree.
+    /// Ignores vector orientation.
+    /// Fails on zero length vectors, tolerance 1e-12. 
+    member inline ln.IsPerpendicularTo (other:Line3D) = 
+        let a = ln.Vector
+        let b = other.Vector
+        let sa = a.LengthSq
+        if sa < 1e-24 then  FsExGeoException.Raise "FsEx.Geo.Vec.IsPerpendicularTo: Vec a is too short: %s. Vec b:%s " a.AsString b.AsString
+        let sb = b.LengthSq
+        if sb < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vec.IsPerpendicularTo: Vec b is too short: %s. Vec a:%s " b.AsString a.AsString 
+        let au = a * (1.0 / sqrt sa )
+        let bu = b * (1.0 / sqrt sb )
+        let d = bu*au            
+        -0.004363309284746460 < d && d  < 0.004363309284746580 // = cosine of 98.75 and 90.25 degrees          
+        // for fsi: printfn "%.18f" (cos( 89.75 * (System.Math.PI / 180.)));printfn "%.18f" (cos( 90.25 * (System.Math.PI / 180.)))
+            
 
-    /// Checks if two 3D lines are parallel and orientated the same way.
-    /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
-    /// And checks if it is smaller than 1e-9
-    /// Then calculates the dot product and checks if it is positive.
-    /// (NOTE: for very long lines a higher tolerance might be needed)
-    member inline ln.IsParallelAndOrientedTo  (l:Line3D) =         
-        // vector of line l:
-        let ax = l.ToX-l.FromX
-        let ay = l.ToY-l.FromY
-        let az = l.ToZ-l.FromZ
-        //vector of line ll:
-        let bx = ln.ToX-ln.FromX
-        let by = ln.ToY-ln.FromY
-        let bz = ln.ToZ-ln.FromZ
-        // cross product:
-        let x = ay * bz - az * by   
-        let y = az * bx - ax * bz   
-        let z = ax * by - ay * bx 
-        (x*x + y*y + z*z) < 3.162278e-05 // sqrt of 1e-9
-        && 
-        ax*bx+ay*by+az*bz > 0.0
     
-    /// Checks if a 3D lines and a 3D vector are parallel and orientated the same way.
-    /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
-    /// And checks if it is smaller than 1e-9
-    /// Then calculates the dot product and checks if it is positive.
-    /// (NOTE: for very long lines a higher tolerance might be needed)
-    member inline ln.IsParallelAndOrientedTo (v:Vec) =         
-        let ax = v.X
-        let ay = v.Y
-        let az = v.Z
-        let bx = ln.ToX-ln.FromX
-        let by = ln.ToY-ln.FromY
-        let bz = ln.ToZ-ln.FromZ
-        // cross product:
-        let x = ay * bz - az * by   
-        let y = az * bx - ax * bz   
-        let z = ax * by - ay * bx 
-        (x*x + y*y + z*z) < 3.162278e-05 // sqrt of 1e-9 
-        && 
-        ax*bx+ay*by+az*bz > 0.0
-    
-    /// Checks if a 3D lines and a 3D unit vector are parallel and orientated the same way.
-    /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
-    /// And checks if it is smaller than 1e-9
-    /// Then calculates the dot product and checks if it is positive.
-    /// (NOTE: for very long lines a higher tolerance might be needed)
-    member inline ln.IsParallelAndOrientedTo (v:UnitVec) =         
-        let ax = v.X
-        let ay = v.Y
-        let az = v.Z
-        let bx = ln.ToX-ln.FromX
-        let by = ln.ToY-ln.FromY
-        let bz = ln.ToZ-ln.FromZ
-        // cross product:
-        let x = ay * bz - az * by   
-        let y = az * bx - ax * bz   
-        let z = ax * by - ay * bx 
-        (x*x + y*y + z*z) < 3.162278e-05 // sqrt of 1e-9 
-        && 
-        ax*bx+ay*by+az*bz > 0.0
-
-    /// Checks if two 3D lines are perpendicular. 
-    /// Calculates the dot product and checks if it is smaller than 1e-9.
-    /// (NOTE: for very long lines a higher tolerance might be needed)
-    member inline ln.IsPerpendicularTo (l:Line3D) =         
-        let dot = (l.ToX-l.FromX)*(ln.ToX-ln.FromX) + (l.ToY-l.FromY)*(ln.ToY-ln.FromY)+ (l.ToZ-l.FromZ)*(ln.ToZ-ln.FromZ) 
-        abs(dot) < 1e-9  
-
-    /// Checks if a 3D lines and a 3D vector are perpendicular. 
-    /// Calculates the dot product and checks if it is smaller than 1e-9.
-    /// (NOTE: for very long lines a higher tolerance might be needed)
-    member inline ln.IsPerpendicularTo (v:Vec) =         
-        let dot = v.X*(ln.ToX-ln.FromX) + v.Y*(ln.ToY-ln.FromY) + v.Z*(ln.ToZ-ln.FromZ)
-        abs(dot) < 1e-9  
-    
-    /// Checks if a 3D lines and a 3D unit vector are perpendicular. 
-    /// Calculates the dot product and checks if it is smaller than 1e-9.
-    /// (NOTE: for very long lines a higher tolerance might be needed)
-    member inline ln.IsPerpendicularTo (v:UnitVec) =         
-        let dot = v.X*(ln.ToX-ln.FromX) + v.Y*(ln.ToY-ln.FromY) + v.Z*(ln.ToZ-ln.FromZ)
-        abs(dot) < 1e-9 
-
     //-------------------------------------------------------------------
     //------------------------static members-----------------------------
     //-------------------------------------------------------------------
@@ -637,7 +530,7 @@ type Line3D =
     static member inline isPerpendicularTo (l:Line3D) (ln:Line3D) =  l.IsPerpendicularTo ln 
 
     /// Assumes Line3D to be infinite!
-    /// Returns the parameter at which a point is closest to the infinit line.
+    /// Returns the parameter at which a point is closest to the infinite line.
     /// If it is smaller than 0.0 or bigger than 1.0 it is outside of the finit line.
     static member inline closestParameterInfinite (p:Pnt) (ln:Line3D)  = ln.ClosestParameterInfinite p
 
@@ -647,7 +540,7 @@ type Line3D =
 
     /// Assumes Line3D to be infinite!
     /// Returns closest point on infinite Line.
-    static member inline closestPointInfinit (p:Pnt) (ln:Line3D)  = ln.ClosestPointInfinite p        
+    static member inline closestPointInfinite (p:Pnt) (ln:Line3D)  = ln.ClosestPointInfinite p        
 
     /// Returns closest point on (finite) Line.
     static member inline closestPoint (p:Pnt) (ln:Line3D)  = ln.ClosestPoint p    
@@ -751,10 +644,11 @@ type Line3D =
                 ln.ToX , 
                 ln.ToY , 
                 ln.ToZ )    
-   
+    
+    (*  not very useful because it's hard to find the correct tolerance:
 
     /// Fast check if two 3D lines are in the same 3D Plane.
-    /// This can be used as a fast check to exclude intersection.
+    /// This can be used as a fast check to exclude intersection. Infinite lines in the same plane do intersect (unless parallel) 
     /// If you need an exact intersection test purely based on distance use Line3D.intersectLine
     /// It first calculates the signed volume of the Parallelepiped define by three vectors from the four corners of the lines.
     /// Then it checks if it is smaller than given volumeTolerance fo Parallelepiped.
@@ -780,22 +674,14 @@ type Line3D =
         let vz = l.FromZ-ll.FromZ
         let dot = cx*vx + cy*vy + cz*vz
         abs(dot) < volumeTolerance
-
-    /// Fast check if two 3D lines are in the same 3D Plane.
-    /// This can be used as a fast check to exclude intersection.
-    /// If you need an exact intersection test purely based on distance use Line3D.intersectLine
-    /// It first calculates the signed volume of the Parallelepiped define by three vectors from the four corners of the lines.    /// 
-    /// Then it checks if it is smaller than Util.zeroLengthTol.
-    /// Using the volume of the Parallelepiped makes a positive result not only dependent on the distance of the two 3D lines from each other but also on their lengths.    
-    static member inline areInSamePlane (l:Line3D) (ll:Line3D) =  
-        Line3D.areInSamePlaneTol Util.zeroLengthTol l ll
+    *)
 
     /// Assumes Lines to be infinite!
-    /// Returns the parameters at which two infinite 3D Lines are closest to each other.
+    /// Returns either the parameters at which two infinite 3D Lines are closest to each other.
     /// If it is smaller than 0.0 or bigger than 1.0 it is outside of the finit line.    
-    /// Fails on parallel Lines.
+    /// Or if the lines are parallel within approx 0.25 degrees then The Parallel Union Case.
     /// First parameter is on l, second parameter is on ll.
-    static member inline intersectLineParametersInfinite (l:Line3D) (ll:Line3D) =        
+    static member inline intersectLineParametersInfinite (l:Line3D) (ll:Line3D) : LineIntersectionParameter =        
         //https://stackoverflow.com/a/34604574/969070 but DP and DQ are in wrong order !        
         let ax = l.FromX - l.ToX  
         let ay = l.FromY - l.ToY  
@@ -806,30 +692,68 @@ type Line3D =
         let vx = ll.FromX - l.FromX
         let vy = ll.FromY - l.FromY
         let vz = ll.FromZ - l.FromZ
-        let a = ax*ax + ay*ay + az*az
+        let a = ax*ax + ay*ay + az*az // square length
         let b = ax*bx + ay*by + az*bz
-        let c = bx*bx + by*by + bz*bz
-        let d = ax*vx + ay*vy + az*vz
-        let e = bx*vx + by*vy + bz*vz
-        let det = a*c - b*b
-        if abs det > 1e-12 then //not parallel
+        let c = bx*bx + by*by + bz*bz // square length        
+        let ac = a*c // never negative
+        let bb = b*b // never negative
+        let det = ac - bb
+        let rel = det/(ac+bb)
+        if rel > 1.5e-6 then //not parallel  // 1.5e-6 for 0.1deg  // 1e-5 for 0.25deg // 1.5e-4 for 1.0 deg
+            let d = ax*vx + ay*vy + az*vz
+            let e = bx*vx + by*vy + bz*vz            
             let t = (b * e - c * d) / det
             let u = (a * e - b * d) / det
-            t,u 
-        else // parallel
-            
-            //TODO still return two parameters where their distance to each other is minimal(middle point of overlap)
-            FsExGeoException.Raise "FsEx.Geo.Line3D.intersectLineParametersInfinite: Lines are parallel l: \r\n%O and ll: \r\n%O" l ll
+            TwoParameters (t,u) 
+        else 
+            LineIntersectionParameter.Parallel
+        
+        (*
 
+            // FsExGeoException.Raise "FsEx.Geo.Line3D.intersectLineParametersInfinite: Lines are parallel l: \r\n%O and k: \r\n%O" l k
+            // The lines are parallel . 
+            // Still return two parameters,  in the middle of their overlap, or distance apart.
+            let lv  =  l.Direction // Vec(ax,ay,az)
+            let llv = ll.Direction //Vec(bx,by,bz)
+            let flip = lv*llv < 0.0
+            //make a new line k that is oriented the same way
+            let k = if flip then ll.Reversed else ll
+            let l0k0 = Vec.create(l.From,k.From)
+            let l0k1 = Vec.create(l.From,k.To)
+            let l1k0 = Vec.create(l.To  ,k.From)
+            let l1k1 = Vec.create(l.To  ,k.To)
+            // check if vectors between lines are in same orientation as line
+            let d00 = lv * l0k0 > 0.
+            let d01 = lv * l0k1 > 0.
+            let d10 = lv * l1k0 > 0.
+            let d11 = lv * l1k1 > 0.
+            // full logic:
+            // if   not d00 && not d01 && not d10 && not d11 then let p = Pnt.midPt l.From ll.To   in  l.ClosestParameter(p),ll.ClosestParameter(p) // l starts after k ends
+            // elif not d00 &&     d01 && not d10 && not d11 then let p = Pnt.midPt l.From ll.To   in  l.ClosestParameter(p),ll.ClosestParameter(p) // k is overlapping l start
+            // elif     d00 &&     d01 && not d10 && not d11 then 0.5  , ll.ClosestParameter(l.Mid) // l is on both ends shorter than k                
+            // elif not d00 &&     d01 && not d10 &&     d11 then l.ClosestParameter(ll.Mid), 0.5   // k is on both ends shorter than l                
+            // elif     d00 &&     d01 && not d10 &&     d11 then let p = Pnt.midPt l.To   ll.From in  l.ClosestParameter(p),ll.ClosestParameter(p) // k is overlapping l end 
+            // elif     d00 &&     d01 &&     d10 &&     d11 then let p = Pnt.midPt l.To   ll.From in  l.ClosestParameter(p),ll.ClosestParameter(p) // k starts after l ends
+            // else
+            //     failwith "Bad case in intersectLineParametersInfinite2"
+
+            // optimized logic
+            if   not d00 &&        not d10 && not d11 then let p = Pnt.midPt l.From k.To  in l.ClosestParameterInfinite(p),ll.ClosestParameterInfinite(p) // l starts after k ends or k is overlapping l start            
+            elif     d00 && d01 && not d10 && not d11 then l.ClosestParameterInfinite(ll.Mid), 0.5  // l is on both ends shorter than k                
+            elif not d00 && d01 && not d10 &&     d11 then 0.5  , ll.ClosestParameterInfinite(l.Mid)  // k is on both ends shorter than l                
+            else let p = Pnt.midPt l.To   k.From in       l.ClosestParameterInfinite(p),ll.ClosestParameterInfinite(p) // k is overlapping l end or // k starts after l ends
+        *)
+            
         
     
     /// Assumes Lines to be infinite!    
     /// Returns the two points where these two infinite lines are closest to each other.
-    /// Fails on parallel Lines.
+    /// Or if the lines are parallel within approx 0.25 degrees then The Parallel Union Case.
     /// First point is on l, second point is on ll.
-    static member inline intersectLinesInfinite (l:Line3D) (ll:Line3D) =        
-        let a,b = Line3D.intersectLineParametersInfinite l ll
-        l.EvaluateAt a , ll.EvaluateAt b 
+    static member inline intersectLinesInfinite (l:Line3D) (ll:Line3D) =  
+        match Line3D.intersectLineParametersInfinite l ll with 
+        |TwoParameters (a,b)                ->  TwoPoints (l.EvaluateAt a , ll.EvaluateAt b )
+        |LineIntersectionParameter.Parallel -> LineIntersectionPoints.Parallel
 
     /// Assumes Lines to be infinite!    
     /// Returns the single points where these two infinite lines actually intersect each other.
@@ -837,12 +761,13 @@ type Line3D =
     /// The returned point is exactly on ll.  
     static member intersectLinesInfiniteInOnePoint (l:Line3D) (ll:Line3D) : Pnt = 
         let a,b = Line3D.intersectLinesInfinite l ll
-        if Pnt.distance a b > 1e-6 then FsExGeoException.Raise "FsEx.Geo.Line3D.intersectLinesInfiniteInOnePoint: Lines are not intersecting l: \r\n%O and ll: \r\n%O" l ll
+        if Pnt.distanceSq a b > 1e-12 then FsExGeoException.Raise "FsEx.Geo.Line3D.intersectLinesInfiniteInOnePoint: Lines are not intersecting l: \r\n%O and ll: \r\n%O" l ll
         b    
         
     /// Assumes Lines to be infinite!    
     /// Returns the distance between two infinite lines.
-    /// Fails on parallel Lines.    
+    /// Does NOT fail on parallel Lines. 
+    /// Still returns their distance apart.   
     static member inline distanceBetweenInfiniteLines l ll =
         // TODO make it not fail on Parallel lines !
         let a,b = Line3D.intersectLinesInfinite l ll

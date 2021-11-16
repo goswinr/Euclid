@@ -145,31 +145,29 @@ module AutoOpenUnitVec =
         member inline v.MatchesOrientation90  (other:UnitVec) = 
             v * other > 0.707107
             
-        /// Checks if two 3D unit vectors are parallel. Ignoring orientation
-        /// Calculates the cross product of the two 3D unit vectors. (It's length is the volume of the parallelepiped)
-        /// And checks if it is smaller than 1e-9.        
-        member inline v.IsParallelTo  (other:UnitVec) =                     
-            let x =  v.Y * other.Z - v.Z * other.Y   
-            let y =  v.Z * other.X - v.X * other.Z   
-            let z =  v.X * other.Y - v.Y * other.X 
-            (x*x + y*y + z*z) < 3.162278e-05 // sqrt of 1e-9
+        /// Checks if Angle between two vectors is Below 0.25 Degree.
+        /// Ignores vector orientation.
+        /// Fails on zero length vectors, tolerance 1e-12.
+        /// Same as isAngleBelowQuatreDegree
+        member inline a.IsParallelTo( b:UnitVec) =             
+            abs(b*a) > 0.999990480720734 // = cosine of 0.25 degrees:            
+            // for fsi: printfn "%.18f" (cos( 0.25 * (System.Math.PI / 180.)))
+        
 
-        /// Checks if two 3D unit vectors are parallel and orientated the same way.
-        /// Calculates the cross product of the two 3D unit vectors. (It's length is the volume of the parallelepiped)
-        /// And checks if it is smaller than 1e-9.
-        /// Then calculates the dot product and checks if it is positive.
-        member inline v.IsParallelAndOrientedTo  (other:UnitVec) =
-            let x =  v.Y * other.Z - v.Z * other.Y   
-            let y =  v.Z * other.X - v.X * other.Z   
-            let z =  v.X * other.Y - v.Y * other.X 
-            (x*x + y*y + z*z) < 3.162278e-05 // sqrt of 1e-9
-            && 
-            v.X*other.X + v.Y*other.Y + v.Z*other.Z > 0.0 
+        /// Checks if Angle between two vectors is Below 0.25 Degree.
+        /// Takes vector orientation into account too.
+        /// Fails on zero length vectors, tolerance 1e-12.        
+        member inline a.IsParallelAndOrientedTo  (b:UnitVec) =            
+            b*a > 0.999990480720734 // = cosine of 0.25 degrees:            
+            // for fsi: printfn "%.18f" (cos( 0.25 * (System.Math.PI / 180.)))
             
-        /// Checks if two 3D unit vectors are perpendicular. 
-        /// Calculates the dot product and checks if it is smaller than 1e-9.
-        member inline v.IsPerpendicularTo (other:UnitVec) =     
-            abs(v.X*other.X + v.Y*other.Y + v.Z*other.Z) < 1e-9 
+        /// Checks if Angle between two vectors is between 98.75 and 90.25 Degree.
+        /// Ignores vector orientation.
+        /// Fails on zero length vectors, tolerance 1e-12. 
+        member inline a.IsPerpendicularTo (b:UnitVec) =     
+            let d = b*a            
+            -0.004363309284746460 < d && d  < 0.004363309284746580 // = cosine of 98.75 and 90.25 degrees          
+            // for fsi: printfn "%.18f" (cos( 89.75 * (System.Math.PI / 180.)));printfn "%.18f" (cos( 90.25 * (System.Math.PI / 180.)))
 
 
         //----------------------------------------------------------------------------------------------
@@ -445,19 +443,21 @@ module AutoOpenUnitVec =
         /// Calculates the dot product of the two 3D unit vectors unitized. 
         static member inline matchesOrientation90 (other:UnitVec) (v:UnitVec) = v.MatchesOrientation90 other           
             
-        /// Checks if two 3D unit vectors are parallel. Ignoring orientation
-        /// Calculates the cross product of the two 3D unit vectors. (It's length is the volume of the parallelepiped)
-        /// And checks if it is smaller than 1e-9.
+        /// Checks if Angle between two vectors is Below 0.25 Degree.
+        /// Ignores vector orientation.
+        /// Fails on zero length vectors, tolerance 1e-12.
+        /// Same as isAngleBelowQuatreDegree
         static member inline isParallelTo (other:UnitVec) (v:UnitVec) =   v.IsParallelTo other
 
-        /// Checks if two 3D unit vectors are parallel and orientated the same way.
-        /// Calculates the cross product of the two 3D unit vectors. (It's length is the volume of the parallelepiped)
-        /// And checks if it is smaller than 1e-9.
-        /// Then calculates the dot product and checks if it is positive.
+        
+        /// Checks if Angle between two vectors is between 98.75 and 90.25 Degree.
+        /// Ignores vector orientation.
+        /// Fails on zero length vectors, tolerance 1e-12. 
         static member inline isParallelAndOrientedTo (other:UnitVec) (v:UnitVec) = v.IsParallelAndOrientedTo other
         
-        /// Checks if two 3D unit vectors are perpendicular. 
-        /// Calculates the dot product and checks if it is smaller than 1e-9.
+        /// Checks if Angle between two vectors is between 98.75 and 90.25 Degree.
+        /// Ignores vector orientation.
+        /// Fails on zero length vectors, tolerance 1e-12. 
         static member inline isPerpendicularTo (other:UnitVec) (v:UnitVec) =  v.IsPerpendicularTo other
         
 
@@ -574,3 +574,26 @@ module AutoOpenUnitVec =
                     , m.M12*x + m.M22*y + m.M32*z 
                     , m.M13*x + m.M23*y + m.M33*z 
                     )
+        
+        /// Checks if Angle between two vectors is Below one Degree.
+        /// Ignores vector orientation.
+        /// Fails on zero length vectors, tolerance 1e-12.
+        static member isAngleBelow1Degree(a:UnitVec, b:UnitVec) = 
+            abs(b*a) > 0.999847695156391 // = cosine of 1 degree 
+
+            
+        /// Checks if Angle between two vectors is Below 0.25 Degree.
+        /// Ignores vector orientation.
+        /// Fails on zero length vectors, tolerance 1e-12.
+        /// Same as Vec.isParallelTo
+        static member isAngleBelowQuatreDegree(a:UnitVec, b:UnitVec) = 
+            abs(b*a) > 0.999990480720734 // = cosine of 0.25 degrees:            
+            // for fsi: printfn "%.18f" (cos( 0.25 * (System.Math.PI / 180.)))
+
+
+        /// Checks if Angle between two vectors is Below 5 Degrees.
+        /// Ignores vector orientation.
+        /// Fails on zero length vectors, tolerance 1e-12.
+        static member isAngleBelow5Degree(a:UnitVec, b:UnitVec) = 
+            abs(b*a) > 0.996194698091746 // = cosine of 5 degrees:            
+            // for fsi: printfn "%.18f" (cos( 5.0 * (System.Math.PI / 180.)))

@@ -176,35 +176,52 @@ module AutoOpenVec =
         /// Then checks if it is bigger than 0.707107 (cosine of  90 degrees).
         member inline v.MatchesOrientation90  (other:Vec) = 
             v.Unitized * other.Unitized > 0.707107
-            
-        /// Checks if two 3D vectors are parallel. Ignoring orientation
-        /// Calculates the cross product of the two 3D vectors. (It's length is the volume of the parallelepiped)
-        /// And checks if it is smaller than 1e-9.
-        /// (NOTE: for very long 3D vectors a higher tolerance might be needed)
-        member inline v.IsParallelTo  (other:Vec) =                     
-            let x =  v.Y * other.Z - v.Z * other.Y   
-            let y =  v.Z * other.X - v.X * other.Z   
-            let z =  v.X * other.Y - v.Y * other.X 
-            (x*x + y*y + z*z) < 3.162278e-05 // sqrt of 1e-9
 
-        /// Checks if two 3D vectors are parallel and orientated the same way.
-        /// Calculates the cross product of the two 3D vectors. (It's length is the volume of the parallelepiped)
-        /// And checks if it is smaller than 1e-9.
-        /// Then calculates the dot product and checks if it is positive.
-        /// (NOTE: for very long 3D vectors a higher tolerance might be needed)
-        member inline v.IsParallelAndOrientedTo  (other:Vec) =
-            let x =  v.Y * other.Z - v.Z * other.Y   
-            let y =  v.Z * other.X - v.X * other.Z   
-            let z =  v.X * other.Y - v.Y * other.X 
-            (x*x + y*y + z*z) < 3.162278e-05 // sqrt of 1e-9
-            && 
-            v.X*other.X + v.Y*other.Y + v.Z*other.Z > 0.0 
+
+
+        /// Checks if Angle between two vectors is Below 0.25 Degree.
+        /// Ignores vector orientation.
+        /// Fails on zero length vectors, tolerance 1e-12.
+        /// Same as isAngleBelowQuatreDegree
+        member inline a.IsParallelTo( b:Vec) = 
+            let sa = a.LengthSq
+            if sa < 1e-24 then  FsExGeoException.Raise "FsEx.Geo.Vec.IsParallelTo: Vec a is too short: %s. Vec b:%s " a.AsString b.AsString
+            let sb = b.LengthSq
+            if sb < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vec.IsParallelTo: Vec b is too short: %s. Vec a:%s " b.AsString a.AsString 
+            let au = a * (1.0 / sqrt sa )
+            let bu = b * (1.0 / sqrt sb )
+            abs(bu*au) > 0.999990480720734 // = cosine of 0.25 degrees:            
+            // for fsi: printfn "%.18f" (cos( 0.25 * (System.Math.PI / 180.)))
+        
+
+        /// Checks if Angle between two vectors is Below 0.25 Degree.
+        /// Takes vector orientation into account too.
+        /// Fails on zero length vectors, tolerance 1e-12.        
+        member inline a.IsParallelAndOrientedTo  (b:Vec) =
+            let sa = a.LengthSq
+            if sa < 1e-24 then  FsExGeoException.Raise "FsEx.Geo.Vec.IsParallelAndOrientedTo: Vec a is too short: %s. Vec b:%s " a.AsString b.AsString
+            let sb = b.LengthSq
+            if sb < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vec.IsParallelAndOrientedTo: Vec b is too short: %s. Vec a:%s " b.AsString a.AsString 
+            let au = a * (1.0 / sqrt sa )
+            let bu = b * (1.0 / sqrt sb )
+            bu*au > 0.999990480720734 // = cosine of 0.25 degrees:            
+            // for fsi: printfn "%.18f" (cos( 0.25 * (System.Math.PI / 180.)))
             
-        /// Checks if two 3D vectors are perpendicular. 
-        /// Calculates the dot product and checks if it is smaller than 1e-9.
-        /// (NOTE: for very long 3D vectors a higher tolerance might be needed)
-        member inline v.IsPerpendicularTo (other:Vec) =     
-            abs(v.X*other.X + v.Y*other.Y + v.Z*other.Z) < 1e-9 
+        /// Checks if Angle between two vectors is between 98.75 and 90.25 Degree.
+        /// Ignores vector orientation.
+        /// Fails on zero length vectors, tolerance 1e-12. 
+        member inline a.IsPerpendicularTo (b:Vec) =     
+            let sa = a.LengthSq
+            if sa < 1e-24 then  FsExGeoException.Raise "FsEx.Geo.Vec.IsPerpendicularTo: Vec a is too short: %s. Vec b:%s " a.AsString b.AsString
+            let sb = b.LengthSq
+            if sb < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vec.IsPerpendicularTo: Vec b is too short: %s. Vec a:%s " b.AsString a.AsString 
+            let au = a * (1.0 / sqrt sa )
+            let bu = b * (1.0 / sqrt sb )
+            let d = bu*au            
+            -0.004363309284746460 < d && d  < 0.004363309284746580 // = cosine of 98.75 and 90.25 degrees          
+            // for fsi: printfn "%.18f" (cos( 89.75 * (System.Math.PI / 180.)));printfn "%.18f" (cos( 90.25 * (System.Math.PI / 180.)))
+
+            
 
         //----------------------------------------------------------------------------------------------
         //--------------------------  Static Members  --------------------------------------------------
@@ -477,22 +494,21 @@ module AutoOpenVec =
         /// Then checks if it is bigger than 0.707107 (cosine of  90 degrees).
         static member inline matchesOrientation90 (other:Vec) (v:Vec) = v.MatchesOrientation90 other           
             
-        /// Checks if two 3D vectors are parallel. Ignoring orientation
-        /// Calculates the cross product of the two 3D vectors. (It's length is the volume of the parallelepiped)
-        /// And checks if it is smaller than 1e-9.
-        /// (NOTE: for very long 3D vectors a higher tolerance might be needed)
+        /// Checks if Angle between two vectors is Below 0.25 Degree.
+        /// Ignores vector orientation.
+        /// Fails on zero length vectors, tolerance 1e-12.
+        /// Same as isAngleBelowQuatreDegree
         static member inline isParallelTo (other:Vec) (v:Vec) =   v.IsParallelTo other
 
-        /// Checks if two 3D vectors are parallel and orientated the same way.
-        /// Calculates the cross product of the two 3D vectors. (It's length is the volume of the parallelepiped)
-        /// And checks if it is smaller than 1e-9.
-        /// Then calculates the dot product and checks if it is positive.
-        /// (NOTE: for very long 3D vectors a higher tolerance might be needed)
+        
+        /// Checks if Angle between two vectors is between 98.75 and 90.25 Degree.
+        /// Ignores vector orientation.
+        /// Fails on zero length vectors, tolerance 1e-12. 
         static member inline isParallelAndOrientedTo (other:Vec) (v:Vec) = v.IsParallelAndOrientedTo other
         
-        /// Checks if two 3D vectors are perpendicular. 
-        /// Calculates the dot product and checks if it is smaller than 1e-9.
-        /// (NOTE: for very long 3D vectors a higher tolerance might be needed)
+        /// Checks if Angle between two vectors is between 98.75 and 90.25 Degree.
+        /// Ignores vector orientation.
+        /// Fails on zero length vectors, tolerance 1e-12. 
         static member inline isPerpendicularTo (other:Vec) (v:Vec) =  v.IsPerpendicularTo other
         
 
@@ -511,8 +527,7 @@ module AutoOpenVec =
         static member rotateYBy (r:Rotation2D) (v:Vec) = Vec ( r.Sin*v.Z + r.Cos*v.X,  v.Y, r.Cos*v.Z - r.Sin*v.X) 
         
         /// Rotate the 3D vector around Z-axis, from X to Y-axis, Counter Clockwise looking from top.
-        static member rotateZBy (r:Rotation2D) (v:Vec) = Vec (r.Cos*v.X - r.Sin*v.Y, r.Sin*v.X + r.Cos*v.Y,  v.Z)
-        
+        static member rotateZBy (r:Rotation2D) (v:Vec) = Vec (r.Cos*v.X - r.Sin*v.Y, r.Sin*v.X + r.Cos*v.Y,  v.Z)        
         
         /// Rotate the 3D vector in Degrees around X-axis, from Y to Z-axis, Counter Clockwise looking from right.
         static member inline rotateX (angDegree) (v:Vec) = 
@@ -616,46 +631,43 @@ module AutoOpenVec =
                 , m.M13*x + m.M23*y + m.M33*z 
                 )
 
-        /// Checks if Angle between two vectors is Below one Degree
-        /// Ignores vector orientation
-        /// Fails on zero length vectors, tolerance 1e-12
+        /// Checks if Angle between two vectors is Below one Degree.
+        /// Ignores vector orientation.
+        /// Fails on zero length vectors, tolerance 1e-12.
         static member  isAngleBelow1Degree(a:Vec, b:Vec) = 
             let sa = a.LengthSq
-            if sa < 1e-6 then
-                FsExGeoException.Raise "FsEx.Geo.Vec Duplicate points: isAngleBelow1Degree: prevPt - thisPt: %s.LengthSq < 1e-6; nextPt - thisPt:%s " a.AsString b.AsString
-            let sb = b.LengthSq
-            if sb < 1e-6 then
-                FsExGeoException.Raise "FsEx.Geo.Vec Duplicate points: isAngleBelow1Degree: nextPt - thisPt: %s.LengthSq < 1e-6; prevPt - thisPt:%s " b.AsString a.AsString
-            let lena = sqrt sa
-            let lenb = sqrt sb
-            if lena < 1e-5 then
-                FsExGeoException.Raise "FsEx.Geo.Vec Duplicate points: isAngleBelow1Degree: prevPt - thisPt: %s < 1e-5: %f; nextPt - thisPt:%s " a.AsString 1e-5 b.AsString
-            if lenb < 1e-5 then
-                FsExGeoException.Raise "FsEx.Geo.Vec Duplicate points: isAngleBelow1Degree: nextPt - thisPt: %s < 1e-5: %f; prevPt - thisPt:%s " b.AsString 1e-5 a.AsString
-            let au = a * (1.0 / lena)
-            let bu = b * (1.0 / lenb)
-            abs(bu*au) > 0.999847695156391 // = cosine of 1 degree (2 degrees would be =  0.999390827019096)
+            if sa < 1e-24 then   FsExGeoException.Raise "FsEx.Geo.Vec.isAngleBelow1Degree: Vec a is too short: %s. Vec b:%s " a.AsString b.AsString
+            let sb = b.LengthSq            
+            if sb < 1e-24 then   FsExGeoException.Raise "FsEx.Geo.Vec.isAngleBelow1Degree: Vec b is too short: %s. Vec a:%s " b.AsString a.AsString 
+            let au = a * (1.0 / sqrt sa )
+            let bu = b * (1.0 / sqrt sb )
+            abs(bu*au) > 0.999847695156391 // = cosine of 1 degree 
 
             
-
-        /// Checks if Angle between two vectors is Below 0.25 Degrees
-        /// Ignores vector orientation
-        /// Fails on zero length vectors, tolerance 1e-12
-        static member  isAngleBelowQuatreDegree(a:Vec, b:Vec) =          
+        /// Checks if Angle between two vectors is Below 0.25 Degree.
+        /// Ignores vector orientation.
+        /// Fails on zero length vectors, tolerance 1e-12.
+        /// Same as Vec.isParallelTo
+        static member  isAngleBelowQuatreDegree(a:Vec, b:Vec) = 
             let sa = a.LengthSq
-            if sa < 1e-6 then
-                FsExGeoException.Raise "FsEx.Geo.Vec Duplicate points: isAngleBelowQuatreDegree: prevPt - thisPt: %s.LengthSq < 1e-6; nextPt - thisPt:%s " a.AsString b.AsString
+            if sa < 1e-24 then   FsExGeoException.Raise "FsEx.Geo.Vec.isAngleBelowQuatreDegree: Vec a is too short: %s. Vec b:%s " a.AsString b.AsString
             let sb = b.LengthSq
-            if sb < 1e-6 then
-                FsExGeoException.Raise "FsEx.Geo.Vec Duplicate points: isAngleBelowQuatreDegree: nextPt - thisPt: %s.LengthSq < 1e-6; prevPt - thisPt:%s " b.AsString a.AsString
-            let lena = sqrt sa
-            let lenb = sqrt sb
-            if lena < 1e-5 then
-                FsExGeoException.Raise "FsEx.Geo.Vec Duplicate points: isAngleBelowQuatreDegree: prevPt - thisPt: %s < 1e-5: %f; nextPt - thisPt:%s " a.AsString 1e-5 b.AsString
-            if lenb < 1e-5 then
-                FsExGeoException.Raise "FsEx.Geo.Vec Duplicate points: isAngleBelowQuatreDegree: nextPt - thisPt: %s < 1e-5: %f; prevPt - thisPt:%s " b.AsString 1e-5 a.AsString
-            let au = a * (1.0 / lena)
-            let bu = b * (1.0 / lenb)
-            abs(bu*au) > 0.999990480720734 // = cosine of 0.25 degree: printfn "%.18f" (cos( 0.25 * (System.Math.PI / 180.))) // for fsi: printfn "%.18f" (cos( 0.25 * (System.Math.PI / 180.)))
+            if sb < 1e-24 then   FsExGeoException.Raise "FsEx.Geo.Vec.isAngleBelowQuatreDegree: Vec b is too short: %s. Vec a:%s " b.AsString a.AsString 
+            let au = a * (1.0 / sqrt sa )
+            let bu = b * (1.0 / sqrt sb )
+            abs(bu*au) > 0.999990480720734 // = cosine of 0.25 degrees:            
+            // for fsi: printfn "%.18f" (cos( 0.25 * (System.Math.PI / 180.)))
 
-        
+
+        /// Checks if Angle between two vectors is Below 5 Degrees.
+        /// Ignores vector orientation.
+        /// Fails on zero length vectors, tolerance 1e-12.
+        static member  isAngleBelow5Degree(a:Vec, b:Vec) = 
+            let sa = a.LengthSq
+            if sa < 1e-24 then   FsExGeoException.Raise "FsEx.Geo.Vec.isAngleBelowQuatreDegree: Vec a is too short: %s. Vec b:%s " a.AsString b.AsString
+            let sb = b.LengthSq
+            if sb < 1e-24 then   FsExGeoException.Raise "FsEx.Geo.Vec.isAngleBelowQuatreDegree: Vec b is too short: %s. Vec a:%s " b.AsString a.AsString 
+            let au = a * (1.0 / sqrt sa )
+            let bu = b * (1.0 / sqrt sb )
+            abs(bu*au) > 0.996194698091746 // = cosine of 5 degrees:            
+            // for fsi: printfn "%.18f" (cos( 5.0 * (System.Math.PI / 180.)))

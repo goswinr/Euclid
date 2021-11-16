@@ -451,7 +451,27 @@ module AutoOpenUnitVc =
 
         /// 90 Degree rotation clockwise
         static member inline rotate90CW (v:UnitVc) = UnitVc.createUnchecked(  v.Y,  -v.X  )  
-
         
 
-        
+        /// Checks if Angle between two vectors is Below one Degree.
+        /// Ignores vector orientation.
+        /// Fails on zero length vectors, tolerance 1e-12.
+        static member isAngleBelow1Degree(a:UnitVc, b:UnitVc) = 
+            abs(b*a) > 0.999847695156391 // = cosine of 1 degree 
+
+            
+        /// Checks if Angle between two vectors is Below 0.25 Degree.
+        /// Ignores vector orientation.
+        /// Fails on zero length vectors, tolerance 1e-12.
+        /// Same as Vec.isParallelTo
+        static member isAngleBelowQuatreDegree(a:UnitVc, b:UnitVc) = 
+            abs(b*a) > 0.999990480720734 // = cosine of 0.25 degrees:            
+            // for fsi: printfn "%.18f" (cos( 0.25 * (System.Math.PI / 180.)))
+
+
+        /// Checks if Angle between two vectors is Below 5 Degrees.
+        /// Ignores vector orientation.
+        /// Fails on zero length vectors, tolerance 1e-12.
+        static member isAngleBelow5Degree(a:UnitVc, b:UnitVc) = 
+            abs(b*a) > 0.996194698091746 // = cosine of 5 degrees:            
+            // for fsi: printfn "%.18f" (cos( 5.0 * (System.Math.PI / 180.)))

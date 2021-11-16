@@ -40,7 +40,7 @@ type Plane = // Normals are always unitized
     /// Create Plane from 3 points.
     static member createFrom3Points (a:Pnt) (b:Pnt) (c:Pnt) =
         let n =  Vec.cross (c-b,a-b)
-        if Vec.isTiny 1e-5 n then FsExGeoException.Raise "FsEx.Geo.Plane.createFrom3Points: the points %O, %O, %O are in one Line3D, no Plane found" a b c
+        if Vec.isTiny 1e-12 n then FsExGeoException.Raise "FsEx.Geo.Plane.createFrom3Points: the points %O, %O, %O are (almost) in one Line3D, no Plane found" a b c
         Plane(a, n.Unitized)
 
     /// Returns signed distance of point to plane, also indicating on which side it is.

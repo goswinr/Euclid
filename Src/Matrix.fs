@@ -158,7 +158,7 @@ type Matrix =
         let t14 = n14 * n23 * n32 - n13 * n24 * n32 - n14 * n22 * n33 + n12 * n24 * n33 + n13 * n22 * n34 - n12 * n23 * n34
         let det = n11 * t11 + n21 * t12 + n31 * t13 + x41 * t14
 
-        if abs det < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Matrix has a zero or almost zero determinant. It is smaller than 1e-24. It cannot be inverted:\r\n%O" m // TODO or return all zero matrix like threeJS ?
+        if abs det < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Matrix has a zero or almost zero Determinant. It is smaller than 1e-24. It cannot be inverted:\r\n%O" m // TODO or return all zero matrix like threeJS ?
 
         let detInv = 1. / det
         
@@ -353,12 +353,12 @@ type Matrix =
     /// The resulting transformation will first do matrixA and then matrixB
     static member inline ( * ) (matrixA:Matrix,  matrixB:Matrix) = Matrix.multiply(matrixA, matrixB)
     
-    /// If the determinant of the Matrix. 
+    /// If the Determinant of the Matrix. 
     /// The Determinant describes the volume that a unit cube will have have the matrix was applied
     static member inline determinant (m:Matrix) = m.Determinant
     
     /// Inverses the matrix. 
-    /// If the determinant is zero the Matrix cannot be inverted. 
+    /// If the Determinant is zero the Matrix cannot be inverted. 
     /// An Exception is raised.
     static member inline inverse (m:Matrix) = m.Inverse
     

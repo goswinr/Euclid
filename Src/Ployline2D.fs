@@ -36,11 +36,11 @@ type Polyline =
         if p.Points.Count < 2 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Polyline.Start failed on polyline with less than 2 points %O" p
         p.Points.Last
 
-    /// Tests if Polyline is closed within 1e-16 units tolerance.
+    /// Tests if Polyline is closed within 1e-12 units tolerance.
     member p.IsClosed = 
         if p.Points.Count < 2 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Polyline.IsClosed failed on polyline with less than 2 points %O" p
         let v = p.Start  - p.End 
-        v.LengthSq < 1e-32 //Util.zeroLengthTol**2
+        v.LengthSq < 1e-24 //Util.zeroLengthTol**2
 
     /// Tests if Polyline is closed within given tolerance.
     member p.IsAlmostClosed(tolerance) = 

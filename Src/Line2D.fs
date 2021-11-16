@@ -3,6 +3,30 @@ namespace FsEx.Geo
 open System
 open FsEx.Geo.Util
 
+/// The result line parameters from computing the line line intersection.
+[<Struct>]
+type LineIntersectionParameter =  
+    
+    /// The parameters on the first and second line.
+    |TwoParameters of struct(float*float)
+    
+    /// The lines are parallel, congruent or identical.
+    |Parallel 
+
+/// The resulting points from computing the line line intersection.
+/// The points are on the first and the second line respectively.
+/// If the lines actually intersect both points are the same.
+/// Otherwise it is where they are closest to each other.
+[<Struct; NoEquality; NoComparison>]
+type LineIntersectionPoints =  
+    
+    /// The points on the first and second line.
+    |TwoPoints of struct(Pnt*Pnt)
+    
+    /// The lines are parallel, congruent or identical.
+    |Parallel 
+    
+
 /// An immutable finite line in 2D. Represented by a 2D start and 2D end point.
 [<Struct;NoEquality;NoComparison>]// because its made up from floats
 type Line2D =
@@ -143,7 +167,7 @@ type Line2D =
                 ln.ToY+distance)
 
     /// Assumes Line2D to be infinite!
-    /// Returns the parameter at which a point is closest to the infinit line.
+    /// Returns the parameter at which a point is closest to the infinite line.
     /// If it is smaller than 0.0 or bigger than 1.0 it is outside of the finit line.
     member ln.ClosestParameterInfinite (p:Pt) = 
         //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
@@ -165,7 +189,7 @@ type Line2D =
         
     /// Assumes Line2D to be infinite!
     /// Returns closest point on infinite Line.
-    member ln.ClosestPointInfinit (p:Pt) = 
+    member ln.ClosestPointInfinite (p:Pt) = 
         //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY        
@@ -281,95 +305,7 @@ type Line2D =
         let dot = ln.UnitTangent*l.UnitTangent
         dot > 0.707107
         
-    /// Checks if two 2D lines are parallel. Ignoring orientation
-    /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
-    /// And checks if it is smaller than 1e-9
-    /// (NOTE: for very long lines a higher tolerance might be needed)
-    member inline ln.IsParallelTo  (l:Line2D) =         
-        let cross = (l.ToX-l.FromX)*(ln.ToY-ln.FromY) - (l.ToY-l.FromY)*(ln.ToX-ln.FromX)
-        abs(cross) < 1e-9 
 
-    /// Checks if a 2D lines and a 2D vector are parallel. Ignoring orientation
-    /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
-    /// And checks if it is smaller than 1e-9
-    /// (NOTE: for very long lines a higher tolerance might be needed)
-    member inline ln.IsParallelTo (v:Vc) =         
-        let cross = v.X*(ln.ToY-ln.FromY) - v.Y*(ln.ToX-ln.FromX)
-        abs(cross) < 1e-9  
-        
-    /// Checks if a 2D lines and a 2D unit vector are parallel. Ignoring orientation
-    /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
-    /// And checks if it is smaller than 1e-9
-    /// (NOTE: for very long lines a higher tolerance might be needed)
-    member inline ln.IsParallelTo (v:UnitVc) =         
-        let cross = v.X*(ln.ToY-ln.FromY) - v.Y*(ln.ToX-ln.FromX)
-        abs(cross) < 1e-9             
-
-    /// Checks if two 2D lines are parallel and orientated the same way.
-    /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
-    /// And checks if it is smaller than 1e-9
-    /// Then calculates the dot product and checks if it is positive.
-    /// (NOTE: for very long lines a higher tolerance might be needed)
-    member inline ln.IsParallelAndOrientedTo  (l:Line2D) =         
-        let ax = l.ToX-l.FromX
-        let ay = l.ToY-l.FromY        
-        let bx = ln.ToX-ln.FromX
-        let by = ln.ToY-ln.FromY       
-        // 2D cross product. 
-        // Its Just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
-        let cross = abs(ax*by - ay*bx )
-        cross < 1e-9 && ax*bx+ay*by > 0.0
-
-    /// Checks if a 2D lines and a 2D vector are parallel and orientated the same way.
-    /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
-    /// And checks if it is smaller than 1e-9
-    /// Then calculates the dot product and checks if it is positive.
-    /// (NOTE: for very long lines a higher tolerance might be needed)
-    member inline ln.IsParallelAndOrientedTo (v:Vc) =         
-        let ax = v.X
-        let ay = v.Y       
-        let bx = ln.ToX-ln.FromX
-        let by = ln.ToY-ln.FromY       
-        // 2D cross product. 
-        // Its Just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
-        let cross = abs(ax*by - ay*bx )
-        cross < 1e-9 && ax*bx+ay*by > 0.0
-    
-    /// Checks if a 2D lines and a 2D unit vector are parallel and orientated the same way.
-    /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
-    /// And checks if it is smaller than 1e-9
-    /// Then calculates the dot product and checks if it is positive.
-    /// (NOTE: for very long lines a higher tolerance might be needed)
-    member inline ln.IsParallelAndOrientedTo (v:UnitVc) =         
-        let ax = v.X
-        let ay = v.Y       
-        let bx = ln.ToX-ln.FromX
-        let by = ln.ToY-ln.FromY       
-        // 2D cross product. 
-        // Its Just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
-        let cross = abs(ax*by - ay*bx )
-        cross < 1e-9 && ax*bx+ay*by > 0.0    
-        
-    /// Checks if two 2D lines are perpendicular. 
-    /// Calculates the dot product and checks if it is smaller than 1e-9.
-    /// (NOTE: for very long lines a higher tolerance might be needed)
-    member inline ln.IsPerpendicularTo (l:Line2D) =         
-        let dot = (l.ToX-l.FromX)*(ln.ToX-ln.FromX) + (l.ToY-l.FromY)*(ln.ToY-ln.FromY) 
-        abs(dot) < 1e-9   
-
-    /// Checks if a 2D lines and a 2D vector are perpendicular. 
-    /// Calculates the dot product and checks if it is smaller than 1e-9.
-    /// (NOTE: for very long lines a higher tolerance might be needed)
-    member inline ln.IsPerpendicularTo (v:Vc) =         
-        let dot = v.X*(ln.ToX-ln.FromX) + v.Y*(ln.ToY-ln.FromY) 
-        abs(dot) < 1e-9  
-    
-    /// Checks if a 2D lines and a 2D unit vector are perpendicular. 
-    /// Calculates the dot product and checks if it is smaller than 1e-9.
-    /// (NOTE: for very long lines a higher tolerance might be needed)
-    member inline ln.IsPerpendicularTo (v:UnitVc) =         
-        let dot = v.X*(ln.ToX-ln.FromX) + v.Y*(ln.ToY-ln.FromY) 
-        abs(dot) < 1e-9      
         
 
     //-------------------------------------------------------------------
@@ -522,7 +458,7 @@ type Line2D =
     static member inline isPerpendicularTo (l:Line2D) (ln:Line2D) =  l.IsPerpendicularTo ln
 
     /// Assumes Line2D to be infinite!
-    /// Returns the parameter at which a point is closest to the infinit line.
+    /// Returns the parameter at which a point is closest to the infinite line.
     /// If it is smaller than 0.0 or bigger than 1.0 it is outside of the finit line.
     static member inline closestParameterInfinite (p:Pt) (ln:Line2D)  = ln.ClosestParameterInfinite p
 
@@ -533,7 +469,7 @@ type Line2D =
 
     /// Assumes Line2D to be infinite!
     /// Returns closest point on infinite Line.
-    static member inline closestPointInfinit (p:Pt) (ln:Line2D)  = ln.ClosestPointInfinit p
+    static member inline closestPointInfinite (p:Pt) (ln:Line2D)  = ln.ClosestPointInfinite p
         
 
     /// Returns closest point on (finite) Line.
@@ -556,8 +492,7 @@ type Line2D =
     /// Get distance from start of line to point projected onto line, may be negative
     static member inline lengthToPtOnLine (line:Line2D) pt = 
         // TODO can be optimized by inlining floats.
-        line.Tangent.Unitized * (pt-line.From)  
-        
+        line.Tangent.Unitized * (pt-line.From)          
 
     /// Extend by absolute amount at start and end.
     static member inline extend (distAtStart:float) (distAtEnd:float) (ln:Line2D) = 
