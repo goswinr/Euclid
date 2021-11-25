@@ -741,18 +741,18 @@ type Line3D =
             TwoParam (0.5, 0.5) 
         else
             let rel = det/div
-            if rel > 1.5e-6 then //normal case , not parallel  // 1.5e-6 for 0.1deg  // 1e-5 for 0.25deg // 1.5e-4 for 1.0 deg
+            if rel < 1e-5 then // parallel  // 1.5e-6 for 0.1deg  // 1e-5 for 0.25deg // 1.5e-4 for 1.0 deg
+                IntersectionParamInfinite.Parallel        
+            else 
                 let d = ax*vx + ay*vy + az*vz
                 let e = bx*vx + by*vy + bz*vz            
                 let t = (b * e - c * d) / det
                 let u = (a * e - b * d) / det
                 TwoParam (t,u) 
-            else 
-                IntersectionParamInfinite.Parallel        
     
     
     /// Assumes Lines to be infinite.    
-    /// Returns the one Point where the two lines intersect or are maximum the given tolerance apart
+    /// Returns the one Point where the two lines intersect or are maximum the given tolerance apart.
     /// Or the two points where these two infinite lines are closest to each other.
     /// Else if the lines are parallel within approx 0.25 degrees then The Parallel Union Case.    
     static member inline intersectionInfiniteTol tolerance (l:Line3D) (ll:Line3D) : IntersectionPointsInfinite3D =  
@@ -781,8 +781,8 @@ type Line3D =
     static member intersectionInOnePointInfinite (l:Line3D) (ll:Line3D) : Pnt = 
         match Line3D.intersectionInfiniteTol 1e-6 l ll with 
         |IntersectionPointsInfinite3D.OnePoint p  -> p
-        |IntersectionPointsInfinite3D.TwoPoints _ -> FsExGeoException.Raise "FsEx.Geo.Line3D.intersectLinesInfiniteInOnePoint: Lines are skew l: \r\n%O and ll: \r\n%O" l ll
-        |IntersectionPointsInfinite3D.Parallel    -> FsExGeoException.Raise "FsEx.Geo.Line3D.intersectLinesInfiniteInOnePoint: Lines are parallel l: \r\n%O and ll: \r\n%O" l ll
+        |IntersectionPointsInfinite3D.TwoPoints _ -> FsExGeoException.Raise "FsEx.Geo.Line3D.intersectionInOnePointInfinite: Lines are skew l: \r\n%O and ll: \r\n%O" l ll
+        |IntersectionPointsInfinite3D.Parallel    -> FsExGeoException.Raise "FsEx.Geo.Line3D.intersectionInOnePointInfinite: Lines are parallel l: \r\n%O and ll: \r\n%O" l ll
         
     /// Assumes Lines to be infinite.    
     /// Returns the distance between two infinite lines.
@@ -925,9 +925,9 @@ type Line3D =
     static member intersectionInOnePoint (l:Line3D) (ll:Line3D) : Pnt = 
         match Line3D.intersection l ll with 
         |IntersectionPoints3D.OnePoint(a) -> a
-        |IntersectionPoints3D.TwoPointsSkew (_,_,d) -> FsExGeoException.Raise "FsEx.Geo.Line3D.intersectionInOnePointInfinite: Lines are skew by %g l: \r\n%O and ll: \r\n%O" d l ll
-        |IntersectionPoints3D.TwoPointsApart _ -> FsExGeoException.Raise "FsEx.Geo.Line3D.intersectionInOnePointInfinite: Lines are apart l: \r\n%O and ll: \r\n%O" l ll
-        |IntersectionPoints3D.Parallel _       -> FsExGeoException.Raise "FsEx.Geo.Line3D.intersectionInOnePointInfinite: Lines are parallel l: \r\n%O and ll: \r\n%O" l ll
+        |IntersectionPoints3D.TwoPointsSkew (_,_,d) -> FsExGeoException.Raise "FsEx.Geo.Line3D.intersectionInOnePoint: Lines are skew by %g l: \r\n%O and ll: \r\n%O" d l ll
+        |IntersectionPoints3D.TwoPointsApart _ -> FsExGeoException.Raise "FsEx.Geo.Line3D.intersectionInOnePoint: Lines are apart l: \r\n%O and ll: \r\n%O" l ll
+        |IntersectionPoints3D.Parallel _       -> FsExGeoException.Raise "FsEx.Geo.Line3D.intersectionInOnePoint: Lines are parallel l: \r\n%O and ll: \r\n%O" l ll
 
 
     /// Returns the distance between two (finite) 3D lines.
