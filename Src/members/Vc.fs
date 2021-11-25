@@ -165,32 +165,55 @@ module AutoOpenVc =
         /// Then checks if it is bigger than 0.707107 (cosine of  90 degrees).
         member inline v.MatchesOrientation90  (other:Vc) = 
             v.Unitized * other.Unitized > 0.707107
-            
-        /// Checks if two 2D vectors are parallel. Ignoring orientation
-        /// Calculates the cross product of the two 2D vectors. (= the area of the parallelogram)
-        /// And checks if it is smaller than 1e-9
-        /// (NOTE: for very long 2D vectors a higher tolerance might be needed)
-        member inline v.IsParallelTo  (other:Vc) =                     
-            // 2D cross product. 
-            // Its Just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
-            abs(v.X*other.Y - v.Y*other.X) < 1e-9 
 
-        /// Checks if two 2D vectors are parallel and orientated the same way.
-        /// Calculates the cross product of the two 2D vectors. (= the area of the parallelogram)
-        /// And checks if it is smaller than 1e-9
-        /// Then calculates the dot product and checks if it is positive.
-        /// (NOTE: for very long 2D vectors a higher tolerance might be needed)
-        member inline v.IsParallelAndOrientedTo  (other:Vc) =
-            abs(v.X*other.Y - v.Y*other.X) < 1e-9  
-            && 
-            v.X*other.X + v.Y*other.Y > 0.0 
+        /// Checks if two 2D vectors are parallel.
+        /// Ignores the line orientation.
+        /// The default angle tolerance is 0.25 degrees.  
+        /// This tolerance can be customized by an optional minium cosine value.
+        /// See FsEx.Geo.Cosine module.
+        /// Fails on lines shorter than 1e-12.    
+        member inline a.IsParallelTo( b:Vc, [<OPT;DEF(Cosine.``0.25``)>] minCosine ) = 
+            let sa = a.LengthSq
+            if sa < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vc.IsParallelTo: Vc 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
+            let sb = b.LengthSq
+            if sb < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vc.IsParallelTo: Vc 'other' is too short: %s. 'ln':%s " b.AsString a.AsString  
+            let au = a * (1.0 / sqrt sa )
+            let bu = b * (1.0 / sqrt sb )
+            abs(bu*au) > minCosine // 0.999990480720734 = cosine of 0.25 degrees:            
             
-        /// Checks if two 2D vectors are perpendicular. 
-        /// Calculates the dot product and checks if it is smaller than 1e-9.
-        /// (NOTE: for very long 2D vectors a higher tolerance might be needed)
-        member inline v.IsPerpendicularTo (other:Vc) =     
-            abs(v.X*other.X + v.Y*other.Y) < 1e-9 
-
+            
+        /// Checks if two 2D vectors are parallel.
+        /// Takes the line orientation into account too.
+        /// The default angle tolerance is 0.25 degrees.  
+        /// This tolerance can be customized by an optional minium cosine value.
+        /// See FsEx.Geo.Cosine module.
+        /// Fails on lines shorter than 1e-12.       
+        member inline a.IsParallelAndOrientedTo  (b:Vc, [<OPT;DEF(Cosine.``0.25``)>] minCosine ) = 
+            let sa = a.LengthSq
+            if sa < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vc.IsParallelAndOrientedTo: Vc 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
+            let sb = b.LengthSq
+            if sb < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vc.IsParallelAndOrientedTo: Vc 'other' is too short: %s. 'ln':%s " b.AsString a.AsString 
+            let au = a * (1.0 / sqrt sa )
+            let bu = b * (1.0 / sqrt sb )
+            bu*au >  minCosine // 0.999990480720734 = cosine of 0.25 degrees:    
+            
+        
+        /// Checks if two 2D vectors are perpendicular to each other.
+        /// The default angle tolerance is 89.75 to  90.25 degrees.   
+        /// This tolerance can be customized by an optional minium cosine value.
+        /// The default cosine is 0.0043633 ( = 89.75 deg )
+        /// See FsEx.Geo.Cosine module.
+        /// Fails on lines shorter than 1e-12.  
+        member inline a.IsPerpendicularTo (b:Vc, [<OPT;DEF(Cosine.``89.75``)>] maxCosine ) = 
+            let sa = a.LengthSq
+            if sa < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vc.IsPerpendicularTo: Vc 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
+            let sb = b.LengthSq
+            if sb < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vc.IsPerpendicularTo: Vc 'other' is too short: %s. 'ln':%s " b.AsString a.AsString 
+            let au = a * (1.0 / sqrt sa )
+            let bu = b * (1.0 / sqrt sb )
+            let d = bu*au            
+            -maxCosine < d && d  < maxCosine // = cosine of 98.75 and 90.25 degrees 
+    
 
         //----------------------------------------------------------------------------------------------
         //--------------------------  Static Members  --------------------------------------------------
@@ -449,36 +472,27 @@ module AutoOpenVc =
         static member inline matchesOrientation90  (v:Vc)  (other:Vc) = 
             v.Unitized * other.Unitized > 0.707107
             
-        /// Checks if two 2D vectors are parallel. Ignoring orientation
-        /// Calculates the cross product of the two 2D vectors. (= the area of the parallelogram)
-        /// And checks if it is smaller than 1e-9
-        /// (NOTE: for very long 2D vectors a higher tolerance might be needed)
-        static member inline isParallelTo  (v:Vc)  (other:Vc) =                     
-            // 2D cross product. 
-            // Its Just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
-            abs(v.X*other.Y - v.Y*other.X) < 1e-9 
-
-        /// Checks if two 2D vectors are parallel and orientated the same way.
-        /// Calculates the cross product of the two 2D vectors. (= the area of the parallelogram)
-        /// And checks if it is smaller than 1e-9
-        /// Then calculates the dot product and checks if it is positive.
-        /// (NOTE: for very long 2D vectors a higher tolerance might be needed)
-        static member inline isParallelAndOrientedTo  (v:Vc)  (other:Vc) =
-            abs(v.X*other.Y - v.Y*other.X) < 1e-9  
-            && 
-            v.X*other.X + v.Y*other.Y > 0.0 
-            
-        /// Checks if two 2D vectors are perpendicular. 
-        /// Calculates the dot product and checks if it is smaller than 1e-9.
-        /// (NOTE: for very long 2D vectors a higher tolerance might be needed)
-        static member inline isPerpendicularTo (v:Vc)  (other:Vc) =     
-            abs(v.X*other.X + v.Y*other.Y) < 1e-9     
+        /// Checks if Angle between two vectors is Below 0.25 Degree.
+        /// Ignores vector orientation.
+        /// Fails on zero length vectors, tolerance 1e-12.
+        /// Same as isAngleBelowQuatreDegree
+        static member inline isParallelTo (other:Vc) (v:Vc) =   v.IsParallelTo other
+        
+        /// Checks if Angle between two vectors is between 98.75 and 90.25 Degree.
+        /// Ignores vector orientation.
+        /// Fails on zero length vectors, tolerance 1e-12. 
+        static member inline isParallelAndOrientedTo (other:Vc) (v:Vc) = v.IsParallelAndOrientedTo other
+        
+        /// Checks if Angle between two vectors is between 98.75 and 90.25 Degree.
+        /// Ignores vector orientation.
+        /// Fails on zero length vectors, tolerance 1e-12. 
+        static member inline isPerpendicularTo (other:Vc) (v:Vc) =  v.IsPerpendicularTo other    
 
 
         /// Rotate the a 2D vector Counter Clockwise by a 2D Rotation (that has cos and sin precomputed)
         static member inline rotateBy (r:Rotation2D) (v:Vc) = 
-            Vc(r.Cos*v.X - r.Sin*v.Y, 
-               r.Sin*v.X + r.Cos*v.Y) 
+            Vc( r.Cos*v.X - r.Sin*v.Y, 
+                r.Sin*v.X + r.Cos*v.Y) 
 
         /// Rotate the 2D vector in Degrees. Counter Clockwise.
         /// For better Performance precomputed the Rotate2D struct and use its member to rotate. see Vc.rotateBy

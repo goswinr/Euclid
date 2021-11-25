@@ -1,31 +1,92 @@
 namespace FsEx.Geo
 
-open System
 open FsEx.Geo.Util
 
-/// The result line parameters from computing the line line intersection.
-[<Struct>]
-type LineIntersectionParameter =  
-    
-    /// The parameters on the first and second line.
-    |TwoParameters of struct(float*float)
-    
-    /// The lines are parallel, congruent or identical.
-    |Parallel 
+/// A module for the result types of Line intersections.
+module LineIntersectionTypes = 
 
-/// The resulting points from computing the line line intersection.
-/// The points are on the first and the second line respectively.
-/// If the lines actually intersect both points are the same.
-/// Otherwise it is where they are closest to each other.
-[<Struct; NoEquality; NoComparison>]
-type LineIntersectionPoints =  
-    
-    /// The points on the first and second line.
-    |TwoPoints of struct(Pnt*Pnt)
-    
-    /// The lines are parallel, congruent or identical.
-    |Parallel 
-    
+    /// The result line parameters from computing the intersection of two infinite 2D or 3D lines.
+    [<Struct>]
+    type IntersectionParamInfinite =  
+        
+        /// The parameters on the first and second line.
+        |TwoParam of struct(float*float)
+        
+        /// The lines are parallel, congruent or identical.
+        |Parallel 
+
+
+    /// The result line parameters from computing the intersection of two finite 2D or 3D lines.
+    //[<Struct>]
+    type IntersectionParam =  
+        
+        /// The finite lines are intersecting each other at these parameters on the first and second line.
+        |Intersecting of struct(float*float)
+
+        /// The finite lines are NOT intersecting.
+        /// But are closest to each other at these parameters on the first and second line.
+        |Apart of struct(float*float)
+        
+        /// The finite lines are parallel, congruent or identical.
+        /// Within 0.25 degrees.
+        /// Returns two parameters, in the middle of their overlap, or distance apart.
+        |Parallel of struct(float*float)
+        
+
+    /// The result from computing the intersection of two infinite 2D lines.
+    [<Struct; NoEquality; NoComparison>]
+    type IntersectionPointsInfinite2D =  
+
+        /// The points of 2D intersection.
+        |Point of Pt
+        
+        /// The lines are parallel, congruent or identical.
+        |Parallel
+
+        
+    /// The resulting point from computing the intersection of two infinite 3D lines.
+    /// These points may well be outside of the finite input line.
+    /// The points are on the first and the second line respectively.
+    /// If the lines actually intersect both points are the same.
+    /// Otherwise it is where they are closest to each other.
+    // [<Struct>]
+    [<NoEquality; NoComparison>]
+    type IntersectionPointsInfinite3D =  
+        /// The points on the first and second line.
+        | OnePoint of Pnt
+
+        /// The points on the first and second line.
+        | TwoPoints of struct(Pnt*Pnt)
+        
+        /// The lines are parallel, congruent or identical.
+        | Parallel
+
+    /// The resulting point(s) from computing the intersection of two finite 3D lines.
+    /// These point(s) are always on the finite input line.
+    /// The points are on the first and the second line respectively.
+    /// If the lines actually intersect both points are the same.
+    /// Otherwise it is where they are closest to each other.
+    /// For parallel lines it still returns two parameters, in the middle of their overlap, or distance apart.
+    /// First point is on l, second point is on ll .
+    // [<Struct>]
+    [<NoEquality; NoComparison>]
+    type IntersectionPoints3D =  
+        /// The points on the first and second line.
+        | OnePoint of Pnt
+
+        /// The intersection points are both within the domain 0.0 to 1.0 . 
+        /// But the lines are skew by given distance.
+        | TwoPointsSkew of struct(Pnt*Pnt*float)
+
+        /// The skew or actual intersection points are outside of the domain 0.0 to 1.0 
+        | TwoPointsApart of struct(Pnt*Pnt)
+
+        /// The lines are parallel, congruent or identical.
+        /// Within 0.25 degrees. 
+        /// Returns two points, in the middle of their overlap, or distance apart.
+        | Parallel of struct(Pnt*Pnt)
+
+open LineIntersectionTypes        
 
 /// An immutable finite line in 2D. Represented by a 2D start and 2D end point.
 [<Struct;NoEquality;NoComparison>]// because its made up from floats
@@ -135,6 +196,10 @@ type Line2D =
     /// Returns the Line2D reversed.
     member inline ln.Reversed = 
         Line2D(ln.ToX,ln.ToY,ln.FromX,ln.FromY)  
+    
+    /// returns the lines Bounding Rectangle
+    member inline ln.BoundingRect = 
+        BRect.create ( ln.From, ln.To)
 
     /// Returns a Line2D from point at Parameter a to point at Parameter b
     member inline ln.Segment(a, b) = 
@@ -168,114 +233,96 @@ type Line2D =
 
     /// Assumes Line2D to be infinite!
     /// Returns the parameter at which a point is closest to the infinite line.
-    /// If it is smaller than 0.0 or bigger than 1.0 it is outside of the finit line.
+    /// If it is smaller than 0.0 or bigger than 1.0 it is outside of the finite line.
+    /// Fails on curves shorter than  1e-9 units. (ln.ClosestParameter does not)
     member ln.ClosestParameterInfinite (p:Pt) = 
         //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
-        let x = ln.ToX-ln.FromX
-        let y = ln.ToY-ln.FromY        
+        let x = ln.FromX - ln.ToX
+        let y = ln.FromY - ln.ToY
         let lenSq = x*x + y*y 
         if lenSq < 1e-18 then // corresponds to a line Length of 1e-9
             FsExGeoDivByZeroException.Raise "FsEx.Geo.Line2D.ClosestParameterInfinite failed on very short line %O %O" ln p
         let u = ln.FromX-p.X
-        let v = ln.FromY-p.Y        
+        let v = ln.FromY-p.Y
         let dot = x*u + y*v 
-        -dot / lenSq
+        dot / lenSq
 
     /// Return the parameter at which a point is closest to the (finite) line.
     /// The result is between 0.0 and 1.0.
+    /// Does not fails on very short curves.
     member inline ln.ClosestParameter (p:Pt) = 
-        ln.ClosestParameterInfinite(p)
-        |> Util.clamp01  
-        
-    /// Assumes Line2D to be infinite!
-    /// Returns closest point on infinite Line.
-    member ln.ClosestPointInfinite (p:Pt) = 
         //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
-        let x = ln.ToX-ln.FromX
-        let y = ln.ToY-ln.FromY        
-        let lenSq = x*x + y*y 
-        if lenSq < 1e-18 then // corresponds to a line Length of 1e-9
-            FsExGeoDivByZeroException.Raise "FsEx.Geo.Line2D.ClosestPoint failed on very short line %O %O" ln p
-        let u = ln.FromX-p.X
-        let v = ln.FromY-p.Y        
-        let dot = x*u + y*v 
-        let t = -dot/lenSq        
-        let x' = ln.FromX + x*t
-        let y' = ln.FromY + y*t        
-        Pt(x', y')
-
-    /// Returns closest point on (finite) Line.
-    member ln.ClosestPoint (p:Pt) = 
-        //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
-        let x = ln.ToX-ln.FromX
-        let y = ln.ToY-ln.FromY         
-        let lenSq = x*x + y*y 
-        if lenSq < 1e-18 then // corresponds to a line Length of 1e-9
-            FsExGeoDivByZeroException.Raise "FsEx.Geo.Line2D.ClosestPoint failed on very short line %O %O" ln p
-        let u = ln.FromX-p.X
-        let v = ln.FromY-p.Y        
-        let dot = x*u + y*v 
-        let t = -dot/lenSq
-        if t<0.0 then
-            Pt(ln.FromX, ln.FromY)
-        elif t>1.0 then
-            Pt(ln.ToX, ln.ToY)
-        else
-            let x' = ln.FromX + x*t
-            let y' = ln.FromY + y*t            
-            Pt(x', y')
-
-    /// Assumes Line2D to be infinite!
-    /// Returns Square distance from point to infinite line.
-    member ln.DistanceSqFromPointInfinite(p:Pt) =  
-        //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
-        let x = ln.ToX-ln.FromX
-        let y = ln.ToY-ln.FromY         
-        let lenSq = x*x + y*y 
-        if lenSq < 1e-18 then // corresponds to a line Length of 1e-9
-            FsExGeoDivByZeroException.Raise "FsEx.Geo.Line2D.DistanceFromPointInfinite failed on very short line %O %O" ln p
-        let u = ln.FromX-p.X
-        let v = ln.FromY-p.Y        
-        let dot = x*u + y*v 
-        let t = -dot/lenSq    
-        let x' = ln.FromX + x*t
-        let y' = ln.FromY + y*t        
-        let u' = x'-p.X
-        let v' = y'-p.Y        
-        u'*u' + v'*v' 
-    /// Assumes Line2D to be infinite!
-    /// Returns distance from point to infinite line.
-    member inline ln.DistanceFromPointInfinite(p:Pt) =   
-        ln.DistanceSqFromPointInfinite(p) |> sqrt   
-    
-    /// Returns Square distance from point to (finite) line.
-    member ln.DistanceSqFromPoint(p:Pt) =  
-        //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
-        let x = ln.ToX-ln.FromX
-        let y = ln.ToY-ln.FromY         
-        let lenSq = x*x + y*y 
-        if lenSq < 1e-18 then // corresponds to a line Length of 1e-9
-            FsExGeoDivByZeroException.Raise "FsEx.Geo.Line2D.DistanceSqFromPoint failed on very short line %O %O" ln p
+        let x = ln.FromX - ln.ToX
+        let y = ln.FromY - ln.ToY
         let u = ln.FromX-p.X
         let v = ln.FromY-p.Y
         let dot = x*u + y*v 
-        let t = -dot/lenSq
-        if t<0.0 then
-            u*u + v*v 
-        elif t>1.0 then
-            let u = ln.ToX-p.X
-            let v = ln.ToY-p.Y
-            u*u + v*v 
+        let lenSq = x*x + y*y 
+        if lenSq < 1e-18 then // corresponds to a line Length of 1e-9
+            if dot < 0.0 then 0.0 else 1.0
         else
-            let x' = ln.FromX + x*t
-            let y' = ln.FromY + y*t
-            let u = x'-p.X
-            let v = y'-p.Y
-            u*u + v*v 
+            dot / lenSq |> Util.clampBetweenZeroAndOne
+        
+    /// Assumes Line2D to be infinite!
+    /// Returns closest point on infinite Line.
+    /// Fails on curves shorter than  1e-9 units. (ln.ClosestPoint does not.)
+    member ln.ClosestPointInfinite (p:Pt) = 
+        //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
+        let x = ln.FromX - ln.ToX
+        let y = ln.FromY - ln.ToY
+        let lenSq = x*x + y*y 
+        if lenSq < 1e-18 then // corresponds to a line Length of 1e-9
+            FsExGeoDivByZeroException.Raise "FsEx.Geo.Line2D.ClosestPoint failed on very short line %O %O" ln p
+        let u = ln.FromX-p.X
+        let v = ln.FromY-p.Y
+        let dot = x*u + y*v 
+        let t = dot/lenSq        
+        let x' = ln.FromX - x*t
+        let y' = ln.FromY - y*t
+        Pt(x', y')
+
+    /// Returns closest point on (finite) Line.
+    /// Does not fails on very short curves. 
+    member ln.ClosestPoint (p:Pt) = 
+        ln.EvaluateAt(ln.ClosestParameter(p))
+
+    /// Assumes Line2D to be infinite!
+    /// Returns Square distance from point to infinite line.
+    /// Fails on curves shorter than  1e-9 units. (ln.DistanceSqFromPoint does not.)
+    member ln.DistanceSqFromPointInfinite(p:Pt) =  
+        //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
+        let x = ln.FromX - ln.ToX
+        let y = ln.FromY - ln.ToY
+        let lenSq = x*x + y*y 
+        if lenSq < 1e-18 then // corresponds to a line Length of 1e-9
+            FsExGeoDivByZeroException.Raise "FsEx.Geo.Line2D.DistanceFromPointInfinite failed on very short line %O %O" ln p
+        let u = ln.FromX - p.X
+        let v = ln.FromY - p.Y
+        let dot = x*u + y*v 
+        let t = dot/lenSq    
+        let x' = ln.FromX - x*t
+        let y' = ln.FromY - y*t
+        let u' = x' - p.X
+        let v' = y' - p.Y
+        u'*u' + v'*v' 
+
+    /// Assumes Line2D to be infinite!
+    /// Returns distance from point to infinite line.
+    /// Fails on curves shorter than  1e-9 units. (ln.DistanceFromPoint does not.)
+    member inline ln.DistanceFromPointInfinite(p:Pt) =   
+        ln.DistanceSqFromPointInfinite(p) |> sqrt   
+    
+    /// Returns Square distance from point to finite line.
+    member ln.DistanceSqFromPoint(p:Pt) =  
+        p
+        |> ln.ClosestParameter
+        |> ln.EvaluateAt
+        |> Pt.distanceSq p
 
     /// Returns distance from point to (finite) line.
     member inline ln.DistanceFromPoint(p:Pt) =  
-        ln.DistanceSqFromPoint(p) |> sqrt   
+        ln.DistanceSqFromPoint(p) |> sqrt    
+
 
     /// Checks if the angle between the two 2D lines is less than 180 degrees.
     /// Calculates the dot product of two 2D lines. 
@@ -303,11 +350,65 @@ type Line2D =
     /// Then checks if it is bigger than 0.707107 (cosine of  90 degrees).
     member inline ln.MatchesOrientation90  (l:Line2D) = 
         let dot = ln.UnitTangent*l.UnitTangent
-        dot > 0.707107
-        
+        dot > Cosine.``45.0``
+                
 
-        
 
+    /// Checks if two 2D lines are parallel.
+    /// Ignores the line orientation.
+    /// The default angle tolerance is 0.25 degrees.  
+    /// This tolerance can be customized by an optional minium cosine value.
+    /// See FsEx.Geo.Cosine module.
+    /// Fails on lines shorter than 1e-12.    
+    member inline ln.IsParallelTo( other:Line2D, [<OPT;DEF(Cosine.``0.25``)>] minCosine ) = 
+        let a = ln.Vector
+        let b = other.Vector
+        let sa = a.LengthSq
+        if sa < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Line2D.IsParallelTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
+        let sb = b.LengthSq
+        if sb < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Line2D.IsParallelTo: Line2D 'other' is too short: %s. 'ln':%s " b.AsString a.AsString  
+        let au = a * (1.0 / sqrt sa )
+        let bu = b * (1.0 / sqrt sb )
+        abs(bu*au) > minCosine // 0.999990480720734 = cosine of 0.25 degrees:            
+        
+        
+    /// Checks if two 2D lines are parallel.
+    /// Takes the line orientation into account too.
+    /// The default angle tolerance is 0.25 degrees.  
+    /// This tolerance can be customized by an optional minium cosine value.
+    /// See FsEx.Geo.Cosine module.
+    /// Fails on lines shorter than 1e-12.       
+    member inline ln.IsParallelAndOrientedTo  (other:Line2D, [<OPT;DEF(Cosine.``0.25``)>] minCosine ) = 
+        let a = ln.Vector
+        let b = other.Vector
+        let sa = a.LengthSq
+        if sa < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Line2D.IsParallelAndOrientedTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
+        let sb = b.LengthSq
+        if sb < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Line2D.IsParallelAndOrientedTo: Line2D 'other' is too short: %s. 'ln':%s " b.AsString a.AsString 
+        let au = a * (1.0 / sqrt sa )
+        let bu = b * (1.0 / sqrt sb )
+        bu*au >  minCosine // 0.999990480720734 = cosine of 0.25 degrees:    
+        
+    
+    /// Checks if two 2D lines are perpendicular to each other.
+    /// The default angle tolerance is 89.75 to  90.25 degrees.   
+    /// This tolerance can be customized by an optional minium cosine value.
+    /// The default cosine is 0.0043633 ( = 89.75 deg )
+    /// See FsEx.Geo.Cosine module.
+    /// Fails on lines shorter than 1e-12.  
+    member inline ln.IsPerpendicularTo (other:Line2D, [<OPT;DEF(Cosine.``89.75``)>] maxCosine ) = 
+        let a = ln.Vector
+        let b = other.Vector
+        let sa = a.LengthSq
+        if sa < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Line2D.IsPerpendicularTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
+        let sb = b.LengthSq
+        if sb < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Line2D.IsPerpendicularTo: Line2D 'other' is too short: %s. 'ln':%s " b.AsString a.AsString 
+        let au = a * (1.0 / sqrt sa )
+        let bu = b * (1.0 / sqrt sb )
+        let d = bu*au            
+        -maxCosine < d && d  < maxCosine // = cosine of 98.75 and 90.25 degrees          
+        
+            
     //-------------------------------------------------------------------
     //------------------------static members-----------------------------
     //-------------------------------------------------------------------
@@ -459,7 +560,7 @@ type Line2D =
 
     /// Assumes Line2D to be infinite!
     /// Returns the parameter at which a point is closest to the infinite line.
-    /// If it is smaller than 0.0 or bigger than 1.0 it is outside of the finit line.
+    /// If it is smaller than 0.0 or bigger than 1.0 it is outside of the finite line.
     static member inline closestParameterInfinite (p:Pt) (ln:Line2D)  = ln.ClosestParameterInfinite p
 
 
@@ -563,7 +664,7 @@ type Line2D =
 
         TODO !!!!!!!! adapt:
 
-    /// Checks if two finit 2D lines do intersect.
+    /// Checks if two finite 2D lines do intersect.
     /// It first calculates the signed volume of the Parallelepiped define by three vectors from the four corners of the lines.
     /// Then it checks if it is smaller than given volumeTolerance fo Parallelepiped.
     /// Using the VolumeTolerance makes a positive result not only dependent on the distance of the two lines from each other but also on their lengths.
@@ -579,7 +680,7 @@ type Line2D =
         let volume = ux*vy*wz + + vx*wy*uz + wx*uy*vz - wx*vy*uz - vx*uy*wz - ux*wy*vz // determinate of 3 vectors
         abs(volume) < volumeTolerance
 
-     /// Checks if two finit 2D lines do intersect.
+     /// Checks if two finite 2D lines do intersect.
     /// It first calculates the signed volume of the Parallelepiped define by three vectors from the four corners of the lines.
     /// Then it checks if it is smaller than Util.zeroLengthTol.
     /// Using the volume of the Parallelepiped makes a positive result not only dependent on the distance of the two lines from each other but also on their lengths.
@@ -590,7 +691,7 @@ type Line2D =
 
     /// Assumes Lines to be infinite!
     /// Returns the parameters at which two infinite 2D Lines are closest to each other.
-    /// If it is smaller than 0.0 or bigger than 1.0 it is outside of the finit line.    
+    /// If it is smaller than 0.0 or bigger than 1.0 it is outside of the finite line.    
     /// Fails on parallel Lines.
     /// First parameter is on l, second parameter is on ll.
     static member inline intersectLineParametersInfinite (l:Line2D) (ll:Line2D) =        
@@ -610,7 +711,7 @@ type Line2D =
     /// First parameter is on l, second parameter is on ll.
     static member inline intersectLineParameters (l:Line2D) (ll:Line2D) = 
         let a,b = Line2D.intersectLineParametersInfinite l ll
-        clamp01 a, clamp01 b
+        clampBetweenZeroAndOne a, clampBetweenZeroAndOne b
 
     /// Assumes Lines to be infinite!    
     /// Returns the two points where these two infinite lines are closest to each other.

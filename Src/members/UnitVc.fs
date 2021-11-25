@@ -137,26 +137,32 @@ module AutoOpenUnitVc =
         member inline v.MatchesOrientation90  (other:UnitVc) = 
             v* other > 0.707107
             
-        /// Checks if two 2D unit vectors are parallel. Ignoring orientation
-        /// Calculates the cross product of the two 2D vectors. (= the area of the parallelogram)
-        /// And checks if it is smaller than 1e-9
-        member inline v.IsParallelTo  (other:UnitVc) = 
-            abs(v.X*other.Y - v.Y*other.X) < 1e-9 
-
-        /// Checks if two 2D unit vectors are parallel and orientated the same way.
-        /// Calculates the cross product of the two 2D vectors. (= the area of the parallelogram)
-        /// And checks if it is smaller than 1e-9
-        /// Then calculates the dot product and checks if it is positive.
-        member inline v.IsParallelAndOrientedTo  (other:UnitVc) =
-            abs(v.X*other.Y - v.Y*other.X) < 1e-9  
-            && 
-            v.X*other.X + v.Y*other.Y > 0.0 
+        /// Checks if two 3D unit vectors are parallel.
+        /// Ignores the line orientation.
+        /// The default angle tolerance is 0.25 degrees.  
+        /// This tolerance can be customized by an optional minium cosine value.
+        /// See FsEx.Geo.Cosine module.
+        member inline a.IsParallelTo( b:UnitVc, [<OPT;DEF(Cosine.``0.25``)>] minCosine ) = 
+            abs(b*a) > minCosine // 0.999990480720734 = cosine of 0.25 degrees:            
             
-        /// Checks if two 2D unit vectors are perpendicular. 
-        /// Calculates the dot product and checks if it is smaller than 1e-9.
-        /// (NOTE: for very long 2D unit vectors a higher tolerance might be needed)
-        member inline v.IsPerpendicularTo (other:UnitVc) =     
-            abs(v.X*other.X + v.Y*other.Y) < 1e-9 
+            
+        /// Checks if two 3D unit vectors are parallel.
+        /// Takes the line orientation into account too.
+        /// The default angle tolerance is 0.25 degrees.  
+        /// This tolerance can be customized by an optional minium cosine value.
+        /// See FsEx.Geo.Cosine module.
+        member inline a.IsParallelAndOrientedTo  (b:UnitVc, [<OPT;DEF(Cosine.``0.25``)>] minCosine ) = 
+            b*a >  minCosine // 0.999990480720734 = cosine of 0.25 degrees:    
+            
+        
+        /// Checks if two 3D unit vectors are perpendicular to each other.
+        /// The default angle tolerance is 89.75 to  90.25 degrees.   
+        /// This tolerance can be customized by an optional minium cosine value.
+        /// The default cosine is 0.0043633 ( = 89.75 deg )
+        /// See FsEx.Geo.Cosine module.
+        member inline a.IsPerpendicularTo (b:UnitVc, [<OPT;DEF(Cosine.``89.75``)>] maxCosine ) =             
+            let d = b*a            
+            -maxCosine < d && d  < maxCosine // = cosine of 98.75 and 90.25 degrees 
         
         //----------------------------------------------------------------------------------------------
         //--------------------------  Static Members  --------------------------------------------------
@@ -407,33 +413,29 @@ module AutoOpenUnitVc =
         /// Calculates the dot product of two 2D unit vectors. 
         /// Then checks if it is positive.
         static member inline matchesOrientation180  (v:UnitVc) (other:UnitVc) = 
-            v * other > 0.0  
+            v.MatchesOrientation180(other) 
 
         /// Checks if the angle between the two 2D unit vectors is less than 90 degrees.   
         /// Calculates the dot product of the two 2D unit vectors unitized. 
         /// Then checks if it is bigger than 0.707107 (cosine of  90 degrees).
         static member inline matchesOrientation90  (v:UnitVc)  (other:UnitVc) = 
-            v * other > 0.707107
+            v.MatchesOrientation90(other)
             
-        /// Checks if two 2D unit vectors are parallel. Ignoring orientation
-        /// Calculates the cross product of the two 2D unit vectors. (= the area of the parallelogram)
-        /// And checks if it is smaller than 1e-9
-        static member inline isParallelTo  (v:UnitVc)  (other:UnitVc) =  
-            abs(v.X*other.Y - v.Y*other.X) < 1e-9 
+            
+        /// Checks if Angle between two vectors is Below 0.25 Degree.
+        /// Ignores vector orientation.
+        /// Same as isAngleBelowQuatreDegree
+        static member inline isParallelTo (other:UnitVc) (v:UnitVc) =   v.IsParallelTo other
 
-        /// Checks if two 2D unit vectors are parallel and orientated the same way.
-        /// Calculates the cross product of the two 2D unit vectors. (= the area of the parallelogram)
-        /// And checks if it is smaller than 1e-9
-        /// Then calculates the dot product and checks if it is positive.
-        static member inline isParallelAndOrientedTo  (v:UnitVc)  (other:UnitVc) =
-            abs(v.X*other.Y - v.Y*other.X) < 1e-9  
-            && 
-            v.X*other.X + v.Y*other.Y > 0.0 
-            
-        /// Checks if two 2D unit vectors are perpendicular. 
-        /// Calculates the dot product and checks if it is smaller than 1e-9.
-        static member inline isPerpendicularTo (v:UnitVc)  (other:UnitVc) =     
-            abs(v.X*other.X + v.Y*other.Y) < 1e-9     
+        
+        /// Checks if Angle between two vectors is between 98.75 and 90.25 Degree.
+        /// Ignores vector orientation.
+        static member inline isParallelAndOrientedTo (other:UnitVc) (v:UnitVc) = v.IsParallelAndOrientedTo other
+        
+        /// Checks if Angle between two vectors is between 98.75 and 90.25 Degree.
+        /// Ignores vector orientation.
+        static member inline isPerpendicularTo (other:UnitVc) (v:UnitVc) =  v.IsPerpendicularTo other
+        
 
         /// Rotate the a 2D UnitVector Counter Clockwise by a 2D Rotation (that has cos and sin precomputed)
         static member inline rotateBy (r:Rotation2D) (v:UnitVc) = 
@@ -452,26 +454,22 @@ module AutoOpenUnitVc =
         /// 90 Degree rotation clockwise
         static member inline rotate90CW (v:UnitVc) = UnitVc.createUnchecked(  v.Y,  -v.X  )  
         
-
         /// Checks if Angle between two vectors is Below one Degree.
         /// Ignores vector orientation.
-        /// Fails on zero length vectors, tolerance 1e-12.
+        /// USe Vec.isParallelTo for custom tolerance
         static member isAngleBelow1Degree(a:UnitVc, b:UnitVc) = 
-            abs(b*a) > 0.999847695156391 // = cosine of 1 degree 
+            abs(b*a) > Cosine.``1.0``
 
             
         /// Checks if Angle between two vectors is Below 0.25 Degree.
         /// Ignores vector orientation.
-        /// Fails on zero length vectors, tolerance 1e-12.
-        /// Same as Vec.isParallelTo
+        /// USe Vec.isParallelTo for custom tolerance
         static member isAngleBelowQuatreDegree(a:UnitVc, b:UnitVc) = 
-            abs(b*a) > 0.999990480720734 // = cosine of 0.25 degrees:            
-            // for fsi: printfn "%.18f" (cos( 0.25 * (System.Math.PI / 180.)))
+            abs(b*a) > Cosine.``0.25``
 
 
         /// Checks if Angle between two vectors is Below 5 Degrees.
         /// Ignores vector orientation.
-        /// Fails on zero length vectors, tolerance 1e-12.
+        /// USe Vec.isParallelTo for custom tolerance
         static member isAngleBelow5Degree(a:UnitVc, b:UnitVc) = 
-            abs(b*a) > 0.996194698091746 // = cosine of 5 degrees:            
-            // for fsi: printfn "%.18f" (cos( 5.0 * (System.Math.PI / 180.)))
+            abs(b*a) > Cosine.``5.0``

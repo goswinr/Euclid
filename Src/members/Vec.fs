@@ -179,47 +179,53 @@ module AutoOpenVec =
 
 
 
-        /// Checks if Angle between two vectors is Below 0.25 Degree.
-        /// Ignores vector orientation.
-        /// Fails on zero length vectors, tolerance 1e-12.
-        /// Same as isAngleBelowQuatreDegree
-        member inline a.IsParallelTo( b:Vec) = 
+        /// Checks if two 3D vectors are parallel.
+        /// Ignores the line orientation.
+        /// The default angle tolerance is 0.25 degrees.  
+        /// This tolerance can be customized by an optional minium cosine value.
+        /// See FsEx.Geo.Cosine module.
+        /// Fails on lines shorter than 1e-12.    
+        member inline a.IsParallelTo( b:Vec, [<OPT;DEF(Cosine.``0.25``)>] minCosine ) = 
             let sa = a.LengthSq
-            if sa < 1e-24 then  FsExGeoException.Raise "FsEx.Geo.Vec.IsParallelTo: Vec a is too short: %s. Vec b:%s " a.AsString b.AsString
+            if sa < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vec.IsParallelTo: Vec 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
             let sb = b.LengthSq
-            if sb < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vec.IsParallelTo: Vec b is too short: %s. Vec a:%s " b.AsString a.AsString 
+            if sb < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vec.IsParallelTo: Vec 'other' is too short: %s. 'ln':%s " b.AsString a.AsString  
             let au = a * (1.0 / sqrt sa )
             let bu = b * (1.0 / sqrt sb )
-            abs(bu*au) > 0.999990480720734 // = cosine of 0.25 degrees:            
-            // for fsi: printfn "%.18f" (cos( 0.25 * (System.Math.PI / 180.)))
-        
-
-        /// Checks if Angle between two vectors is Below 0.25 Degree.
-        /// Takes vector orientation into account too.
-        /// Fails on zero length vectors, tolerance 1e-12.        
-        member inline a.IsParallelAndOrientedTo  (b:Vec) =
-            let sa = a.LengthSq
-            if sa < 1e-24 then  FsExGeoException.Raise "FsEx.Geo.Vec.IsParallelAndOrientedTo: Vec a is too short: %s. Vec b:%s " a.AsString b.AsString
-            let sb = b.LengthSq
-            if sb < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vec.IsParallelAndOrientedTo: Vec b is too short: %s. Vec a:%s " b.AsString a.AsString 
-            let au = a * (1.0 / sqrt sa )
-            let bu = b * (1.0 / sqrt sb )
-            bu*au > 0.999990480720734 // = cosine of 0.25 degrees:            
-            // for fsi: printfn "%.18f" (cos( 0.25 * (System.Math.PI / 180.)))
+            abs(bu*au) > minCosine // 0.999990480720734 = cosine of 0.25 degrees:            
             
-        /// Checks if Angle between two vectors is between 98.75 and 90.25 Degree.
-        /// Ignores vector orientation.
-        /// Fails on zero length vectors, tolerance 1e-12. 
-        member inline a.IsPerpendicularTo (b:Vec) =     
+            
+        /// Checks if two 3D vectors are parallel.
+        /// Takes the line orientation into account too.
+        /// The default angle tolerance is 0.25 degrees.  
+        /// This tolerance can be customized by an optional minium cosine value.
+        /// See FsEx.Geo.Cosine module.
+        /// Fails on lines shorter than 1e-12.       
+        member inline a.IsParallelAndOrientedTo  (b:Vec, [<OPT;DEF(Cosine.``0.25``)>] minCosine ) = 
             let sa = a.LengthSq
-            if sa < 1e-24 then  FsExGeoException.Raise "FsEx.Geo.Vec.IsPerpendicularTo: Vec a is too short: %s. Vec b:%s " a.AsString b.AsString
+            if sa < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vec.IsParallelAndOrientedTo: Vec 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
             let sb = b.LengthSq
-            if sb < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vec.IsPerpendicularTo: Vec b is too short: %s. Vec a:%s " b.AsString a.AsString 
+            if sb < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vec.IsParallelAndOrientedTo: Vec 'other' is too short: %s. 'ln':%s " b.AsString a.AsString 
+            let au = a * (1.0 / sqrt sa )
+            let bu = b * (1.0 / sqrt sb )
+            bu*au >  minCosine // 0.999990480720734 = cosine of 0.25 degrees:    
+            
+        
+        /// Checks if two 3D vectors are perpendicular to each other.
+        /// The default angle tolerance is 89.75 to  90.25 degrees.   
+        /// This tolerance can be customized by an optional minium cosine value.
+        /// The default cosine is 0.0043633 ( = 89.75 deg )
+        /// See FsEx.Geo.Cosine module.
+        /// Fails on lines shorter than 1e-12.  
+        member inline a.IsPerpendicularTo (b:Vec, [<OPT;DEF(Cosine.``89.75``)>] maxCosine ) = 
+            let sa = a.LengthSq
+            if sa < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vec.IsPerpendicularTo: Vec 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
+            let sb = b.LengthSq
+            if sb < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vec.IsPerpendicularTo: Vec 'other' is too short: %s. 'ln':%s " b.AsString a.AsString 
             let au = a * (1.0 / sqrt sa )
             let bu = b * (1.0 / sqrt sb )
             let d = bu*au            
-            -0.004363309284746460 < d && d  < 0.004363309284746580 // = cosine of 98.75 and 90.25 degrees          
-            // for fsi: printfn "%.18f" (cos( 89.75 * (System.Math.PI / 180.)));printfn "%.18f" (cos( 90.25 * (System.Math.PI / 180.)))
+            -maxCosine < d && d  < maxCosine // = cosine of 98.75 and 90.25 degrees  
 
             
 
@@ -545,13 +551,13 @@ module AutoOpenVec =
         static member inline rotateByQuaternion  (q:Quaternion) (v:Vec) =
             v*q  // operator * is defined in Quaternion.fs   
 
-        /// vector length projected into X Y Plane
+        /// Returns the vector length projected into X Y Plane
         /// sqrt( v.X * v.X  + v.Y * v.Y)
         static member inline lengthInXY(v:Vec) = sqrt(v.X * v.X  + v.Y * v.Y)
 
         /// Checks if a vector is vertical by doing:
         /// abs(v.X) + abs(v.Y) < zeroLengthTol
-        /// fails on tiny (shorter than zeroLengthTol) vectors
+        /// Fails on tiny (shorter than zeroLengthTol) vectors
         static member inline isVertical (v:Vec) =             
             if v.IsTiny(zeroLengthTol) then FsExGeoDivByZeroException.Raise "Vec Cannot not check very tiny vector for verticality %O" v
             abs(v.X) + abs(v.Y) < zeroLengthTol

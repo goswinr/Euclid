@@ -1,7 +1,8 @@
 namespace FsEx.Geo
 
 open System
-
+open System.Threading.Tasks
+open FsEx.Geo.LineIntersectionTypes
 
 /// provides operations on 2D and 3D points
 [<AbstractClass; Sealed>]
@@ -343,13 +344,11 @@ type Points private () =
                                     orientation:Vec) : struct(Vec* Vec * Pnt * Vec) = 
         let vp = prevPt - thisPt
         let vn = nextPt - thisPt
-        if Vec.isAngleBelowQuatreDegree(vp, vn) then // TODO refine error criteria
-            struct(Vec.Zero, Vec.Zero, Pnt.Origin, Vec.Zero)
-        else
-            let n  = Vec.cross(vp, vn) |> Vec.matchOrientation orientation
-            let sp = Vec.cross(vp, n)  |> Vec.setLength prevDist// the offset vectors
-            let sn = Vec.cross(n, vn)  |> Vec.setLength nextDist// the offset vectors
-            let lp = Line3D(prevPt + sp , thisPt + sp)  
-            let ln = Line3D(thisPt + sn , nextPt + sn)  
-            let tp , tn = Line3D.intersectLineParametersInfinite lp ln //could also be solved with trigonometry functions ??            
-            struct(sp, sn, lp.EvaluateAt(tp), n.Unitized*1.0 )  // return the unit vector as Vec ( because it might be Vec.Zero too)
+        let n  = Vec.cross(vp, vn) |> Vec.matchOrientation orientation
+        let sp = Vec.cross(vp, n)  |> Vec.setLength prevDist// the offset vectors
+        let sn = Vec.cross(n, vn)  |> Vec.setLength nextDist// the offset vectors
+        let lp = Line3D(prevPt + sp , thisPt + sp)  
+        let ln = Line3D(thisPt + sn , nextPt + sn)  
+        match Line3D.intersectionParamInfinite lp ln with //could also be solved with trigonometry functions ??   
+        |IntersectionParamInfinite.Parallel -> struct(Vec.Zero, Vec.Zero, Pnt.Origin, Vec.Zero)
+        |TwoParam (tp,tn)                   -> struct(sp, sn, lp.EvaluateAt tp, n.Unitized*1.0 )  // return the unit vector as Vec ( because it might be Vec.Zero too)

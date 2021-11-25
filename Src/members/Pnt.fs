@@ -102,7 +102,7 @@ module AutoOpenPnt =
         /// Returns the 3D point as 2D point. 
         member inline p.AsPt        = Pt(p.X,p.Y)
 
-        /// Get closest point on finit line to test point. 
+        /// Get closest point on finite line to test point. 
         member inline testPt.ClosestPointOnLine(fromPt:Pnt, toPt:Pnt) = 
             let dir = testPt - fromPt
             let v   = toPt   - fromPt
@@ -114,7 +114,7 @@ module AutoOpenPnt =
             elif dot >= 1.0 then  toPt
             else                 fromPt+dot*v
         
-        /// Get closest point on finit line to test point. 
+        /// Get closest point on finite line to test point. 
         member inline testPt.ClosestPointOnLine(fromPt:Pnt, uv:UnitVec, len:float) = 
             let dir = testPt-fromPt 
             let dot = Vec.dot (uv,  dir) 

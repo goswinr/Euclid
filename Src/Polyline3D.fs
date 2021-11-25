@@ -5,11 +5,7 @@ open Util
 
 # nowarn "52" // copying of structs
 
-/// OptionalAttribute for member parameters
-type internal OPT = Runtime.InteropServices.OptionalAttribute
 
-/// DefaultParameterValueAttribute for member parameters
-type internal DEF =  Runtime.InteropServices.DefaultParameterValueAttribute
 
 
 /// A mutable 3D Polyline.
@@ -165,7 +161,7 @@ type Polyline3D =
             let v = vs[i]
             // finding ClosestParameter on line segment and clamp to 0.0 to 1.0
             let len = v.LengthSq
-            ts[i] <- if len < 1e-9 then 0.0 else -((p-pt) * v) / len |> Util.clamp01 //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
+            ts[i] <- if len < 1e-9 then 0.0 else -((p-pt) * v) / len |> Util.clampBetweenZeroAndOne //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
         
         // square distances per segment
         let ds = Array.zeroCreate (ps.Count-1)
@@ -314,13 +310,13 @@ type Polyline3D =
         let points = polyLine.Points
         let offDists0  = Array.ofSeq offsetDistances
         let normDists0 = Array.ofSeq (if isNull normalDistances then Seq.empty<float> else normalDistances)
-        let pointk = points.Count
-        let lastIndex = pointk - 1
+        let pointCount = points.Count
+        let lastIndex = pointCount - 1
         let lenDist = offDists0.Length
         let lenDistNorm = normDists0.Length
-        if pointk < 2 then
+        if pointCount < 2 then
             FsExGeoException.Raise "FsEx.Geo.Polyline.OffsetPoints needs at least two points but %O given" polyLine
-        elif pointk = 2 then
+        elif pointCount = 2 then
             let offDist = 
                 if   lenDist = 0 then 0.0
                 elif lenDist = 1 then offDists0.[0]
@@ -337,26 +333,26 @@ type Polyline3D =
         else // regular case more than 2 points
             let lastIsFirst = (points.[0] - points.Last).Length < 1e-6 //auto detect closed polyline points
             let distsNeeded = 
-                if lastIsFirst then pointk - 1
-                elif loop      then pointk
-                else                pointk - 1
+                if lastIsFirst then pointCount - 1
+                elif loop      then pointCount
+                else                pointCount - 1
             let distsNeededNorm = 
-                if lastIsFirst then pointk - 1
-                elif loop      then pointk
-                else                pointk   // not -1 !!
+                if lastIsFirst then pointCount - 1
+                elif loop      then pointCount
+                else                pointCount   // not -1 !!
             let  offDists = 
                 if   lenDist = 0 then             Array.create distsNeeded 0.0
                 elif lenDist = 1 then             Array.create distsNeeded offDists0.[0]
                 elif lenDist = distsNeeded then   offDists0
-                else FsExGeoException.Raise "OffsetPoints: offsetDistances has %d items but should have %d (lastIsFirst=%b) (loop=%b)" lenDist distsNeeded lastIsFirst loop
+                else FsExGeoException.Raise "FsEx.Geo.Polyline.OffsetPoints: offsetDistances has %d items but should have %d (lastIsFirst=%b) (loop=%b)" lenDist distsNeeded lastIsFirst loop
             let normDists = 
                 if   lenDistNorm = 0 then                 Array.create distsNeededNorm 0.0
                 elif lenDistNorm = 1 then                 Array.create distsNeededNorm normDists0.[0]
                 elif lenDistNorm = distsNeededNorm then   normDists0
                 else FsExGeoException.Raise "FsEx.Geo.Polyline.OffsetPoints: normalDistances has %d items but should have %d (lastIsFirst=%b) (loop=%b)" lenDist distsNeededNorm lastIsFirst loop
             let refNormal = Points.normalOfPoints(points)*1.0 //to have good starting direction, first kink might be in bad direction
-            let Pts = ResizeArray<Pnt>(pointk)
-            let Ns = ResizeArray<Vec>(pointk)
+            let Pts = ResizeArray<Pnt>(pointCount)
+            let Ns = ResizeArray<Vec>(pointCount)
             for i, p, t, n in ResizeArray.iPrevThisNext(points) do
                 // first one:
                 if i=0 then
@@ -413,20 +409,20 @@ type Polyline3D =
                 if n.IsZero  then
                     let pi = searchBack (i-1) Ns
                     let ppt = Pts.[pi]
-                    let pln = Line3D(points.[pi], points.[saveIdx (pi + 1) pointk])
-                    let pclp = pln.ClosestPointInfinite(ppt)
-                    let pv = ppt - pclp
+                    let pln = Line3D(points.[pi], points.[saveIdx (pi + 1) pointCount])
+                    let pClp = pln.ClosestPointInfinite(ppt)
+                    let pv = ppt - pClp
 
                     let ni = searchForward (i + 1) Ns
                     let npt = Pts.[ni]
-                    let nln = Line3D(points.[ni], points.[saveIdx (ni-1) pointk])
-                    let nclp = nln.ClosestPointInfinite(npt)
-                    let nv = npt - nclp
+                    let nln = Line3D(points.[ni], points.[saveIdx (ni-1) pointCount])
+                    let nClp = nln.ClosestPointInfinite(npt)
+                    let nv = npt - nClp
                     //print (pi,"prev i")
                     //print (i,"is collinear")
                     //print (ni,"next i")
                     if offDists.[pi] <> offDists.[saveIdx (ni-1) distsNeeded] then
-                        FsExGeoException.Raise "FsEx.Geo.Polyline.OffsetPoints: can't fix collinear at index %d with index %d and %d because offset distances are mismatching: %f, %f" i pi ni offDists.[pi] offDists.[saveIdx (ni-1) pointk]
+                        FsExGeoException.Raise "FsEx.Geo.Polyline.OffsetPoints: can't fix collinear at index %d with index %d and %d because offset distances are mismatching: %f, %f" i pi ni offDists.[pi] offDists.[saveIdx (ni-1) pointCount]
                     Pts.[i] <- points.[i] + (nv + pv)*0.5
             if lastIsFirst then Pts.[lastIndex] <- Pts.[0]
             Polyline3D.createDirectlyUnsafe Pts

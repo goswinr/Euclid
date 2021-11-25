@@ -152,7 +152,7 @@ type Polyline =
             let v = vs[i]
             // finding ClosestParameter on line segment and clamp to 0.0 to 1.0
             let len = v.LengthSq
-            ts[i] <- if len < 1e-9 then 0.0 else -((p-pt) * v) / len |> Util.clamp01 //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
+            ts[i] <- if len < 1e-9 then 0.0 else -((p-pt) * v) / len |> Util.clampBetweenZeroAndOne //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
         
         // square distances per segment
         let ds = Array.zeroCreate (ps.Count-1)

@@ -71,11 +71,11 @@
     <Compile Include="Src/members/PPlane.fs" />
     <Compile Include="Src\members\Matrix.fs" />
     <Compile Include="Src\members\Quaternion.fs" />
+    <Compile Include="Src/BRect.fs" />
+    <Compile Include="Src/BoundingBox.fs" />
     <Compile Include="Src/Line2D.fs" />
     <Compile Include="Src/Line3D.fs" />
     <Compile Include="Src/Plane.fs" />
-    <Compile Include="Src/BRect.fs" />
-    <Compile Include="Src/BoundingBox.fs" />
     <Compile Include="Src/Rect3D.fs" />
     <Compile Include="Src/Box.fs" />
     <Compile Include="Src/Intersect.fs" />

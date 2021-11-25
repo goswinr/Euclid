@@ -144,30 +144,34 @@ module AutoOpenUnitVec =
         /// Then checks if it is bigger than 0.707107 (cosine of  90 degrees).
         member inline v.MatchesOrientation90  (other:UnitVec) = 
             v * other > 0.707107
-            
-        /// Checks if Angle between two vectors is Below 0.25 Degree.
-        /// Ignores vector orientation.
-        /// Fails on zero length vectors, tolerance 1e-12.
-        /// Same as isAngleBelowQuatreDegree
-        member inline a.IsParallelTo( b:UnitVec) =             
-            abs(b*a) > 0.999990480720734 // = cosine of 0.25 degrees:            
-            // for fsi: printfn "%.18f" (cos( 0.25 * (System.Math.PI / 180.)))
-        
 
-        /// Checks if Angle between two vectors is Below 0.25 Degree.
-        /// Takes vector orientation into account too.
-        /// Fails on zero length vectors, tolerance 1e-12.        
-        member inline a.IsParallelAndOrientedTo  (b:UnitVec) =            
-            b*a > 0.999990480720734 // = cosine of 0.25 degrees:            
-            // for fsi: printfn "%.18f" (cos( 0.25 * (System.Math.PI / 180.)))
+        /// Checks if two 3D unit vectors are parallel.
+        /// Ignores the line orientation.
+        /// The default angle tolerance is 0.25 degrees.  
+        /// This tolerance can be customized by an optional minium cosine value.
+        /// See FsEx.Geo.Cosine module.
+        member inline a.IsParallelTo( b:UnitVec, [<OPT;DEF(Cosine.``0.25``)>] minCosine ) = 
+            abs(b*a) > minCosine // 0.999990480720734 = cosine of 0.25 degrees:            
             
-        /// Checks if Angle between two vectors is between 98.75 and 90.25 Degree.
-        /// Ignores vector orientation.
-        /// Fails on zero length vectors, tolerance 1e-12. 
-        member inline a.IsPerpendicularTo (b:UnitVec) =     
+            
+        /// Checks if two 3D unit vectors are parallel.
+        /// Takes the line orientation into account too.
+        /// The default angle tolerance is 0.25 degrees.  
+        /// This tolerance can be customized by an optional minium cosine value.
+        /// See FsEx.Geo.Cosine module.  
+        member inline a.IsParallelAndOrientedTo  (b:UnitVec, [<OPT;DEF(Cosine.``0.25``)>] minCosine ) = 
+            b*a >  minCosine // 0.999990480720734 = cosine of 0.25 degrees:    
+            
+        
+        /// Checks if two 3D unit vectors are perpendicular to each other.
+        /// The default angle tolerance is 89.75 to  90.25 degrees.   
+        /// This tolerance can be customized by an optional minium cosine value.
+        /// The default cosine is 0.0043633 ( = 89.75 deg )
+        /// See FsEx.Geo.Cosine module. 
+        member inline a.IsPerpendicularTo (b:UnitVec, [<OPT;DEF(Cosine.``89.75``)>] maxCosine ) =             
             let d = b*a            
-            -0.004363309284746460 < d && d  < 0.004363309284746580 // = cosine of 98.75 and 90.25 degrees          
-            // for fsi: printfn "%.18f" (cos( 89.75 * (System.Math.PI / 180.)));printfn "%.18f" (cos( 90.25 * (System.Math.PI / 180.)))
+            -maxCosine < d && d  < maxCosine // = cosine of 98.75 and 90.25 degrees 
+
 
 
         //----------------------------------------------------------------------------------------------
@@ -445,19 +449,16 @@ module AutoOpenUnitVec =
             
         /// Checks if Angle between two vectors is Below 0.25 Degree.
         /// Ignores vector orientation.
-        /// Fails on zero length vectors, tolerance 1e-12.
         /// Same as isAngleBelowQuatreDegree
         static member inline isParallelTo (other:UnitVec) (v:UnitVec) =   v.IsParallelTo other
 
         
         /// Checks if Angle between two vectors is between 98.75 and 90.25 Degree.
         /// Ignores vector orientation.
-        /// Fails on zero length vectors, tolerance 1e-12. 
         static member inline isParallelAndOrientedTo (other:UnitVec) (v:UnitVec) = v.IsParallelAndOrientedTo other
         
         /// Checks if Angle between two vectors is between 98.75 and 90.25 Degree.
         /// Ignores vector orientation.
-        /// Fails on zero length vectors, tolerance 1e-12. 
         static member inline isPerpendicularTo (other:UnitVec) (v:UnitVec) =  v.IsPerpendicularTo other
         
 
@@ -470,13 +471,16 @@ module AutoOpenUnitVec =
         static member inline rotateOnZ90CW(v:UnitVec)  = UnitVec.createUnchecked(  v.Y,  -v.X,   v.Z  )  
 
         /// Rotate the 3D UnitVector around X-axis, from Y to Z-axis, Counter Clockwise looking from right.
-        static member inline rotateXBy (r:Rotation2D) (v:UnitVec) = UnitVec.createUnchecked (v.X,  r.Cos*v.Y - r.Sin*v.Z, r.Sin*v.Y + r.Cos*v.Z)
+        static member inline rotateXBy (r:Rotation2D) (v:UnitVec) =
+            UnitVec.createUnchecked (v.X,  r.Cos*v.Y - r.Sin*v.Z, r.Sin*v.Y + r.Cos*v.Z)
         
         /// Rotate the 3D UnitVector around Y-axis, from Z to X-axis, Counter Clockwise looking from back.
-        static member inline rotateYBy (r:Rotation2D) (v:UnitVec) = UnitVec.createUnchecked ( r.Sin*v.Z + r.Cos*v.X,  v.Y, r.Cos*v.Z - r.Sin*v.X) 
+        static member inline rotateYBy (r:Rotation2D) (v:UnitVec) = 
+            UnitVec.createUnchecked ( r.Sin*v.Z + r.Cos*v.X,  v.Y, r.Cos*v.Z - r.Sin*v.X) 
         
         /// Rotate the 3D UnitVector around Z-axis, from X to Y-axis, Counter Clockwise looking from top.
-        static member inline rotateZBy (r:Rotation2D) (v:UnitVec) = UnitVec.createUnchecked (r.Cos*v.X - r.Sin*v.Y, r.Sin*v.X + r.Cos*v.Y,  v.Z)
+        static member inline rotateZBy (r:Rotation2D) (v:UnitVec) = 
+            UnitVec.createUnchecked (r.Cos*v.X - r.Sin*v.Y, r.Sin*v.X + r.Cos*v.Y,  v.Z)
                 
         /// Rotate the 3D UnitVector in Degrees around X-axis, from Y to Z-axis, Counter Clockwise looking from right.
         static member inline rotateX (angDegree) (v:UnitVec) = 
@@ -577,23 +581,20 @@ module AutoOpenUnitVec =
         
         /// Checks if Angle between two vectors is Below one Degree.
         /// Ignores vector orientation.
-        /// Fails on zero length vectors, tolerance 1e-12.
+        /// USe Vec.isParallelTo for custom tolerance
         static member isAngleBelow1Degree(a:UnitVec, b:UnitVec) = 
-            abs(b*a) > 0.999847695156391 // = cosine of 1 degree 
+            abs(b*a) > Cosine.``1.0``
 
             
         /// Checks if Angle between two vectors is Below 0.25 Degree.
         /// Ignores vector orientation.
-        /// Fails on zero length vectors, tolerance 1e-12.
-        /// Same as Vec.isParallelTo
+        /// USe Vec.isParallelTo for custom tolerance
         static member isAngleBelowQuatreDegree(a:UnitVec, b:UnitVec) = 
-            abs(b*a) > 0.999990480720734 // = cosine of 0.25 degrees:            
-            // for fsi: printfn "%.18f" (cos( 0.25 * (System.Math.PI / 180.)))
+            abs(b*a) > Cosine.``0.25``
 
 
         /// Checks if Angle between two vectors is Below 5 Degrees.
         /// Ignores vector orientation.
-        /// Fails on zero length vectors, tolerance 1e-12.
+        /// USe Vec.isParallelTo for custom tolerance
         static member isAngleBelow5Degree(a:UnitVec, b:UnitVec) = 
-            abs(b*a) > 0.996194698091746 // = cosine of 5 degrees:            
-            // for fsi: printfn "%.18f" (cos( 5.0 * (System.Math.PI / 180.)))
+            abs(b*a) > Cosine.``5.0``
