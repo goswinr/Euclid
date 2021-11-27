@@ -249,9 +249,9 @@ type Matrix =
         m.IsAffine &&
         (        
         let inline sqLen    (v:Vec) = v.X*v.X + v.Y*v.Y + v.Z*v.Z // defined here again, because Vec extension members are not in scope here
-        Util.isNotOneSq (sqLen (Vec(m.M11, m.M12, m.M13))) || // exclude scaling
-        Util.isNotOneSq (sqLen (Vec(m.M21, m.M22, m.M23))) || 
-        Util.isNotOneSq (sqLen (Vec(m.M31, m.M32, m.M33))) 
+        Util.isNotOne (sqLen (Vec(m.M11, m.M12, m.M13))) || // exclude scaling
+        Util.isNotOne (sqLen (Vec(m.M21, m.M22, m.M23))) || 
+        Util.isNotOne (sqLen (Vec(m.M31, m.M32, m.M33))) 
         )
     
     /// Returns true if matrix is translating.

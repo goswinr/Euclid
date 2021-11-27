@@ -484,6 +484,17 @@ type BBox =
     member b.asRect =
         BRect.createUnchecked(b.MinX,b.MinY,b.MaxX,b.MaxY)
 
+    
+    /// Returns a Bounding Box that contains both input Bounding Box.
+    member b.Union (a:BBox)  =
+        BBox   (min b.MinX a.MinX ,min b.MinY a.MinY,min b.MinZ a.MinZ,
+                max b.MaxX a.MaxX ,max b.MaxY a.MaxY,max b.MaxZ a.MaxZ)
+
+    /// Returns a bounding Bounding Box that contains the input Bounding Box and the point.
+    member b.Union (p:Pnt)  =
+        BBox   (min b.MinX p.X ,min b.MinY p.Y,min b.MinZ p.Z,
+                max b.MaxX p.X ,max b.MaxY p.Y,max b.MaxZ p.Z)
+
     //-------------------------------------------------------------------
     //------------------------static members---------------------------
     //-------------------------------------------------------------------
@@ -528,7 +539,7 @@ type BBox =
     static member move (v:Vec) (b:BBox) =
         BBox(b.MinX+v.X, b.MinY+v.Y, b.MinZ+v.Z, b.MaxX+v.X, b.MaxY+v.Y, b.MaxZ+v.Z)
 
-    /// Returns true if the two Bounding Boxes do overlap or touch exactly
+    /// Returns true if the two Bounding Boxes do overlap or touch exactly.
     static member inline doOverlap(a:BBox) (b:BBox) =
         b.OverlapsWith(a)
 
@@ -542,23 +553,23 @@ type BBox =
     static member inline contains (boxInside:BBox) (surroundingBox:BBox) =
         surroundingBox.Contains(boxInside)
 
-    /// Returns true if the point is inside or on the Bounding Box
+    /// Returns true if the point is inside or on the Bounding Box.
     static member inline containsPnt (pt:Pnt) (box:BBox) =
         box.Contains(pt)
 
-    /// Returns a Bounding Box that contains both input Bounding Box
+    /// Returns a Bounding Box that contains both input Bounding Box.
     static member inline union (a:BBox) (b:BBox) =
         BBox   (min b.MinX a.MinX ,min b.MinY a.MinY,min b.MinZ a.MinZ,
                 max b.MaxX a.MaxX ,max b.MaxY a.MaxY,max b.MaxZ a.MaxZ)
 
-    /// Returns a bounding Bounding Box that contains the input Bounding Box and the point
+    /// Returns a bounding Bounding Box that contains the input Bounding Box and the point.
     static member inline unionPt (p:Pnt) (b:BBox) =
         BBox   (min b.MinX p.X ,min b.MinY p.Y,min b.MinZ p.Z,
                 max b.MaxX p.X ,max b.MaxY p.Y,max b.MaxZ p.Z)
 
     /// Finds min and max values for x, y and z.
     static member inline create (a:Pnt , b:Pnt ) =
-        // sort min and max values ( not using allocating tuples for swapping)
+        // sort min and max values ( not using allocating tuples for swapping).
         let mutable minX = a.X
         let maxX = if b.X > minX then b.X else minX <- b.X ;  a.X
         let mutable minY = a.Y
@@ -586,7 +597,7 @@ type BBox =
             maxZ <- max maxZ p.Z
         BBox(minX,minY,minZ,maxX,maxY,maxZ)
 
-    /// Does not verify the order of min and max values
+    /// Does not verify the order of min and max values.
     static member inline createUnchecked (minX,minY,minZ,maxX,maxY,maxZ) =
         BBox(minX,minY,minZ,maxX,maxY,maxZ)
 

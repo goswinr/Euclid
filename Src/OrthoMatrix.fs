@@ -481,9 +481,9 @@ type OrthoMatrix =
             let z = Vec(m.M31, m.M32, m.M33)
             let inline sqLen    (v:Vec) = v.X*v.X + v.Y*v.Y + v.Z*v.Z // defined here again, because Vec extension members are not in scope here
             let inline cross (a:Vec) (b:Vec)  = Vec (a.Y * b.Z - a.Z * b.Y ,  a.Z * b.X - a.X * b.Z ,  a.X * b.Y - a.Y * b.X )
-            if  Util.isOneSq (sqLen x) && // exclude scaling
-                Util.isOneSq (sqLen y) && 
-                Util.isOneSq (sqLen z) &&
+            if  Util.isOne (sqLen x) && // exclude scaling
+                Util.isOne (sqLen y) && 
+                Util.isOne (sqLen z) &&
                 Util.isZero (x * y)    && // orthogonal if dot product of row or column vectors is be zero
                 Util.isZero (x * z)    && 
                 Util.isZero (y * z)    &&

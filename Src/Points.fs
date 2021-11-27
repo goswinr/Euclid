@@ -350,5 +350,6 @@ type Points private () =
         let lp = Line3D(prevPt + sp , thisPt + sp)  
         let ln = Line3D(thisPt + sn , nextPt + sn)  
         match Line3D.intersectionParamInfinite lp ln with //could also be solved with trigonometry functions ??   
-        |IntersectionParamInfinite.Parallel -> struct(Vec.Zero, Vec.Zero, Pnt.Origin, Vec.Zero)
-        |TwoParam (tp,tn)                   -> struct(sp, sn, lp.EvaluateAt tp, n.Unitized*1.0 )  // return the unit vector as Vec ( because it might be Vec.Zero too)
+        | IntersectionParamInfinite.Parallel 
+        | IntersectionParamInfinite.Coincident -> struct(Vec.Zero, Vec.Zero, Pnt.Origin, Vec.Zero)
+        | TwoParam (tp,tn)                     -> struct(sp, sn, lp.EvaluateAt tp, n.Unitized*1.0 )  // return the unit vector as Vec ( because it might be Vec.Zero too)

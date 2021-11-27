@@ -90,7 +90,7 @@ type UnitVc =
         if Double.IsNaN x || Double.IsNaN y || Double.IsInfinity x || Double.IsInfinity y  then 
             FsExGeoException.Raise "FsEx.Geo.UnitVc Constructor failed for x:%g, y:%g"  x y  
         let lenSq = x*x + y*y // TODO : with this test all  operations are 2.5 times slower  
-        if Util.isNotOneSq lenSq then  
+        if Util.isNotOne lenSq then  
             FsExGeoException.Raise "FsEx.Geo.UnitVc Constructor failed for x:%g and y:%g. The length needs to be 1.0." x y 
         #endif
         {X=x; Y=y}

@@ -708,7 +708,8 @@ type Line3D =
         let len = ln.Length
         let k = int (len / maxSegmentLength) + 1
         Line3D.divide k ln
-            
+
+type Line3D with            
     //----------------------------------------------------------------------------------------------------------------
     //------------------------------Line Line Intersection : ----------------------------------------------------
     //----------------------------------------------------------------------------------------------------------------
@@ -750,7 +751,8 @@ type Line3D =
                 let u = (a * e - b * d) / det
                 TwoParam (t,u) 
     
-    
+    (*
+
     /// Assumes Lines to be infinite.    
     /// Returns the one Point where the two lines intersect or are maximum the given tolerance apart.
     /// Or the two points where these two infinite lines are closest to each other.
@@ -802,6 +804,9 @@ type Line3D =
     /// For parallel lines it still returns two parameters, in the middle of their overlap, or distance apart.
     /// First parameter is on l, second parameter is on ll.
     static member inline intersectionParam (l:Line3D) (ll:Line3D) : IntersectionParam = 
+        // possible results :  
+        // | Intersecting | IntersectingEndsBoth  | IntersectingEndsFirst | IntersectingEndsSecond | (only 3D Skew) | Apart   
+        // | Parallel  | Overlapping | Continuation  | CoincidentApart | Identical
         match Line3D.intersectionParamInfinite l ll with 
         | IntersectionParamInfinite.TwoParam ( u0 , v0 ) -> 
             /// numerical error tolerance check:
@@ -940,6 +945,7 @@ type Line3D =
             let a  =  l.EvaluateAt u 
             let b  = ll.EvaluateAt v 
             IntersectionPoints3D.Parallel (a,b)
+    *)
 
 
     (*  not very useful because it's hard to find the correct tolerance:

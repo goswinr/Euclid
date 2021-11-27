@@ -90,55 +90,56 @@ module Util =
     /// It clamps the input between -1 and 1
     let inline acosSafe a = a|> clampBetweenMinusOneAndOne|> Math.Acos
 
-    /// Tests if a number is close to 1.0 by maximum 6 steps of float increment or decrement.
-    /// So between 0.99999964 and 1.000000715.
-    /// See https://float.exposed
-    let inline isOne  x =  
-        // 1.000000715 is 6 steps bigger  than 1.0: https://float.exposed/0x3f800006
-        // 0.99999964  is 6 steps smaller than 1.0: https://float.exposed/0x3f7ffffa
-        0.999999642372131347656 < x && x < 1.00000071525573730469 
-        
-    /// Tests if a the square root of a number is close to 1.0 by maximum 6 steps of float increment or decrement.
-    /// So between 0.99999964 and 1.000000715.
-    /// See https://float.exposed
-    let inline isOneSq  x =  
-        // 1.00000143 is 12 steps bigger  than 1.0: https://float.exposed/0x3f80000c
-        // 0.99999928 is 12 steps smaller than 1.0: https://float.exposed/0x3f7ffff4
-        0.999999284744262695313 < x && x < 1.00000143051147460938 
-        
-    /// Tests if a the square root of a number is NOT close to 1.0 by maximum 6 steps of float increment or decrement.
-    /// So not between 0.99999964 and 1.000000715.
-    /// See https://float.exposed
-    let inline isNotOneSq  x =  
-        // 1.00000143 is 12 steps bigger  than 1.0: https://float.exposed/0x3f80000c
-        // 0.99999928 is 12 steps smaller than 1.0: https://float.exposed/0x3f7ffff4
-        0.999999284744262695313 < x && x < 1.00000143051147460938            
+    /// The float number that is 9 increments bigger than 1.0.
+    /// This is approx 1.0 + 1e-6
+    /// see https://float.exposed/0x3f800009
+    [<Literal>]
+    let ``1.0 + 1e-6`` = 1.00000107288360595703
 
-    /// Tests if a number is NOT close to 1.0 by maximum 6 steps of float increment or decrement.
-    /// So not between 0.99999964 and 1.000000715.
-    /// See https://float.exposed
-    let inline isNotOne  x =  
-        // 1.000000715 is 6 steps bigger  than 1.0: https://float.exposed/0x3f800006
-        // 0.99999964  is 6 steps smaller than 1.0: https://float.exposed/0x3f7ffffa
-        0.999999642372131347656 > x || x > 1.00000071525573730469     
+    /// The float number that is 16 increments smaller than 1.0.
+    /// This is approx 1.0 - 1e-6
+    /// see https://float.exposed/0x3f7ffff0
+    [<Literal>]
+    let ``1.0 - 1e-6`` = 0.99999904632568359375
+
+   /// The float number that is 9 increments smaller than -1.0.
+    /// This is approx -1.0 + 1e-6
+    /// see https://float.exposed/0xbf800009
+    [<Literal>]
+    let ``-1.0 + 1e-6`` = -1.00000107288360595703
+
+    /// The float number that is 16 increments bigger than 1.0.
+    /// This is approx 1.0 - 1e-6
+    /// see https://float.exposed/0xbf7ffff0
+    [<Literal>]
+    let ``-1.0 - 1e-6`` = -0.99999904632568359375 
+
+    /// Tests if a number is close to 1.0 by a 1e-6 tolerance.
+    /// This is a float increment of 6 steps or decrement of 16 steps.   
+    let inline isOne  x = 
+        ``1.0 - 1e-6`` < x && x < ``1.0 + 1e-6`` 
+
+    /// Tests if a number is NOT close to 1.0 by a 1e-6 tolerance.
+    /// This is a float increment of 6 steps or decrement of 16 steps.   
+    let inline isNotOne  x = 
+        ``1.0 - 1e-6`` > x || x > ``1.0 + 1e-6``     
     
-    /// Tests if a number is close to -1.0 by maximum 6 steps of float increment or decrement.
-    /// So between -0.99999964 and -1.000000715.
-    /// See https://float.exposed
-    let inline isMinusOne  x =
-        -0.999999642372131347656 > x && x > -1.00000071525573730469 
-        
-    /// Tests if a number is close to 0.0 by 1e-7
+    /// Tests if a number is close to minus 1.0 by a 1e-6 tolerance.
+    /// This is a float increment of 6 steps or decrement of 16 steps.   
+    let inline isMinusOne  x = 
+        ``-1.0 - 1e-6`` > x && x > ``-1.0 + 1e-6``     
+
+    /// Tests if a number is close to 0.0 by 1e-6
     /// This is approximately the same tolerance that 6 increments of a float are away from 1.0.
     /// See FsEx.Geo.Util.isOne function
     let inline isZero x = 
-        -1e-7 < x && x < 1e-7 
+        -1e-6 < x && x < 1e-6 
 
-    /// Tests if a number is NOT close to 0.0 by 1e-7
+    /// Tests if a number is NOT close to 0.0 by 1e-6
     /// This is approximately the same tolerance that 6 increments of a float are away from 1.0.
     /// See FsEx.Geo.Util.isOne function
     let inline isNotZero x = 
-        x < -1e-7  ||  x > 1e-7 
+        x < -1e-6  ||  x > 1e-6 
     
     /// Check if value is between 0.0 and +1.0 inclusive.
     let inline isBetweenZeroAndOne (x:float) = 
@@ -153,11 +154,9 @@ module Util =
         elif isBetweenZeroAndOne x then Between
         else Outside
         
-    /// Check if value is between 0.0 and +1.0 inclusive tolerance.
-    /// A number is still one if it is maximum 6 steps of float increment bigger than 1.0.
-    /// So between 0.99999964 and 1.000000715. Same step size for zero.
+    /// Check if value is between 0.0 and +1.0 inclusive a tolerance of 1e-6 .
     let inline isBetweenZeroAndOneTolerant (x:float) = 
-        -1e-7 < x && x < 1.00000071525573730469 
+        -1e-6 < x && x < ``1.0 + 1e-6`` 
 
     /// Any int will give a valid index for given collection size.
     /// Converts negative indices to positive ones and loops to start after last index is reached.

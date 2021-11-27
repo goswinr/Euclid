@@ -187,6 +187,14 @@ type BRect =
     member inline r.Area  =
         r.SizeX*r.SizeY
 
+    /// Returns a bounding Rectangle that contains both input Rectangles.
+    member inline r.Union  (b:BRect) =
+        BRect (min b.MinX r.MinX ,min b.MinY r.MinY,max b.MaxX r.MaxX ,max b.MaxY r.MaxY)
+
+    /// Returns a bounding Rectangle that contains the input Rectangles and the point.
+    member inline r.Union (p:Pt)  =
+        BRect (min r.MinX p.X ,min r.MinY p.Y, max r.MaxX p.X ,max r.MaxY p.Y)
+
     //-------------------------------------------------------------------
     //------------------------static members---------------------------
     //-------------------------------------------------------------------
@@ -223,7 +231,7 @@ type BRect =
     static member move (v:Vc) (r:BRect) =
         BRect(r.MinX+v.X, r.MinY+v.Y, r.MaxX+v.X, r.MaxY+v.Y)
 
-    /// Returns true if the two Bounding Rectangles do overlap or touch exactly
+    /// Returns true if the two Bounding Rectangles do overlap or touch exactly.
     static member inline doOverlap(a:BRect) (b:BRect) =
         b.OverlapsWith(a)
 
@@ -237,16 +245,16 @@ type BRect =
     static member inline contains (rectInside:BRect) (surroundingRect:BRect) =
         surroundingRect.Contains(rectInside)
 
-    /// Returns true if the point is inside or on  the bounding Rectangle
+    /// Returns true if the point is inside or on  the bounding Rectangle.
     static member inline containsPt (pt:Pt) (rect:BRect) =
         rect.Contains(pt)
 
 
-    /// Returns a bounding Rectangle that contains both input Rectangles
+    /// Returns a bounding Rectangle that contains both input Rectangles.
     static member inline union (a:BRect) (b:BRect) =
         BRect (min b.MinX a.MinX ,min b.MinY a.MinY,max b.MaxX a.MaxX ,max b.MaxY a.MaxY)
 
-    /// Returns a bounding Rectangle that contains the input Rectangles and the point
+    /// Returns a bounding Rectangle that contains the input Rectangles and the point.
     static member inline unionPt (p:Pt) (r:BRect) =
         BRect (min r.MinX p.X ,min r.MinY p.Y, max r.MaxX p.X ,max r.MaxY p.Y)
 
@@ -274,7 +282,7 @@ type BRect =
             maxY <- max maxY p.Y
         BRect(minX,minY,maxX,maxY)
 
-    /// Does not verify the order of min and max values
+    /// Does not verify the order of min and max values.
     static member inline createUnchecked (minX,minY,maxX,maxY) =
         BRect(minX,minY,maxX,maxY)
 

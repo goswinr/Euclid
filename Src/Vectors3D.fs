@@ -117,7 +117,7 @@ type UnitVec =
         if Double.IsNaN x || Double.IsNaN y || Double.IsNaN z || Double.IsInfinity x || Double.IsInfinity y || Double.IsInfinity z then 
             FsExGeoException.Raise "FsEx.Geo.UnitVec Constructor failed for x:%g, y:%g, z:%g"  x y z 
         let lenSq = x*x + y*y + z*z // TODO : with this test all  operations are 2.5 times slower  
-        if Util.isNotOneSq lenSq then  
+        if Util.isNotOne lenSq then  
             FsExGeoException.Raise "FsEx.Geo.UnitVec Constructor failed for x:%g, y:%g, z:%g. The length needs to be 1.0."  x y z
         #endif
         {X=x; Y=y; Z=z}
