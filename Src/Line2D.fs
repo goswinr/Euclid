@@ -25,6 +25,45 @@ module LineIntersectionTypes =
         | Coincident
 
 
+    /// For infinite 2D lines.
+    /// The result from computing the intersection of two infinite 2D lines.
+    [<Struct>]
+    [<NoEquality; NoComparison>]
+    type IntersectionPointsInfinite2D =  
+
+        /// The points of 2D intersection.
+        | Point of xPoint:Pt
+        
+        /// The lines are parallel within 0.25 degrees.
+        | Parallel
+
+        /// The lines are coincident or maybe even identical.
+        /// As infinite lines they have infinitely many points in common.
+        /// They might still not have the same start and end points in their finit definition.
+        | Coincident
+    
+    /// For infinite 3D lines.
+    /// The result from computing the intersection of two infinite 2D lines.
+    // [<Struct>]
+    [<NoEquality; NoComparison>]
+    type IntersectionPointsInfinite3D =  
+        
+        /// The lines are skew by mor than 1e-6. or the given tolerance
+        /// Contains the points on the first and second 
+        /// line where they are closest to each other.
+        | TwoPoints of skewPoints : struct(Pnt*Pnt)
+
+        /// The 3D lines are intersection in exactly one point.
+        | OnePoint of xPoint : Pnt
+        
+        /// The lines are parallel within 0.25 degrees.
+        | Parallel
+
+        /// The lines are coincident or maybe even identical.
+        /// As infinite lines they have infinitely many points in common.        
+        | Coincident
+    
+
     /// For finite 2D or 3D lines.
     /// An enumeration of all possible results from computing the intersection. 
     /// For finite lines there are much mor cases than for infinite lines
@@ -93,102 +132,15 @@ module LineIntersectionTypes =
         /// The returned parameters still indicate where the lines start and end.
         | IdenticalFlipped
         
+    /// Return true if the IntersectionKind is represented by one Point. 
+    /// Not two like in skew or none like in parallel.
+    let isIntersectionOnePoint k =
+        match k with        
+        | Intersecting | IntersectingEndsBoth | IntersectingEndsFirst 
+        | IntersectingEndsSecond  | Continuation | ContinuationFlipped -> true
+        | Skew | Apart | IntersectionKind.Parallel  
+        | Overlapping  | CoincidentApart | Identical| IdenticalFlipped -> false
         
-
-    /// The result from computing the intersection of two infinite 2D lines.
-    [<Struct>]
-    [<NoEquality; NoComparison>]
-    type IntersectionPointsInfinite2D =  
-
-        /// The points of 2D intersection.
-        |Point of xPoint:Pt
-        
-        /// The lines are parallel within 0.25 degrees.
-        |Parallel
-
-        /// The lines are coincident or maybe even identical.
-        /// As infinite lines they have infinitely many points in common.
-        /// They might still not have the same start and end points in their finit definition.
-        |Coincident
-    
-    /// The resulting point from computing the intersection of two infinite 3D lines.
-    /// These points may well be outside of the finite input line.
-    /// The points are on the first and the second line respectively.
-    /// If the lines actually intersect both points are the same.
-    /// Otherwise it is where they are closest to each other.
-    // [<Struct>]
-    [<NoEquality; NoComparison>]
-    type IntersectionPointsInfinite3D =  
-        /// The points on the first and second line.
-        | OnePoint of xPoint : Pnt
-
-        /// The points on the first and second line.
-        | TwoPoints of skewPoints : struct(Pnt*Pnt)
-        
-        /// The lines are parallel within 0.25 degrees.
-        | Parallel
-    
-    (*
-
-        
-        /// The resulting point(s) from computing the intersection of two finite 2D lines.
-        /// These point(s) are always on the finite input line.
-        /// The points are on the first and the second line respectively.
-        /// If the lines actually intersect both points are the same.
-        /// Otherwise it is where they are closest to each other.
-        /// For parallel lines it still returns two parameters, in the middle of their overlap, or distance apart.
-        /// First point is on l, second point is on ll .
-        //[<Struct>]
-        [<NoEquality; NoComparison>]
-        type IntersectionPoints2D =  
-            /// The points on the first and second line.
-            | OnePoint of xPoint : Pt
-
-            /// Actual intersection points are outside of the domain 0.0 to 1.0 
-            | TwoPoints of apartPoints : struct(Pt*Pt)
-
-            /// The lines are parallel within 0.25 degrees.
-            /// Returns one point on each line, if they overlap than in the middle of the overlap, otherwise at the closest line endpoints.
-            | Parallel of middlePoints : struct(Pt*Pt)
-
-            /// The lines are parallel within 0.25 degrees, coincident and overlapping
-            /// Returns two points, at start and end of overlap.
-            | Overlapping of overlapPoints : struct(Pt*Pt)
-
-            ///The Lines are coincident and the ends are meeting in exactly one point
-            | Continuation of jointPoint : Pt
-            
-            ///The Lines are coincident but ends are apart. Return the two closest ends.
-            | CoincidentApart of endPoints : struct(Pt*Pt)
-
-            
-        
-
-        /// The resulting point(s) from computing the intersection of two finite 3D lines.
-        /// These point(s) are always on the finite input line.
-        /// The points are on the first and the second line respectively.
-        /// If the lines actually intersect both points are the same.
-        /// Otherwise it is where they are closest to each other.
-        /// For parallel lines it still returns two parameters, in the middle of their overlap, or distance apart.
-        /// First point is on l, second point is on ll .
-        // [<Struct>]
-        [<NoEquality; NoComparison>]
-        type IntersectionPoints3D =  
-            /// The points on the first and second line.
-            | OnePoint of xPoint : Pnt
-
-            /// The intersection points are both within the domain 0.0 to 1.0 . 
-            /// But the lines are skew by given distance.
-            | TwoPointsSkew of skewPoints : struct(Pnt*Pnt*float)
-
-            /// The skew or actual intersection points are outside of the domain 0.0 to 1.0 
-            | TwoPointsApart of apartPoints : struct(Pnt*Pnt)
-
-            /// The lines are parallel within 0.25 degrees.
-            /// Returns two points, in the middle of their overlap, or distance apart.
-            | Parallel of middlePoints :struct(Pnt*Pnt)
-    *)
-
 open LineIntersectionTypes        
 open System.Runtime.InteropServices
 
@@ -815,7 +767,7 @@ type Line2D =
         let k = int (len / maxSegmentLength) + 1
         Line2D.divide k ln
             
-type Line2D  with // delete for folding only
+
     //----------------------------------------------------------------------------------------------------------------
     //------------------------------Line Line Intersection : ----------------------------------------------------
     //----------------------------------------------------------------------------------------------------------------
@@ -870,7 +822,7 @@ type Line2D  with // delete for folding only
     /// Returns the one Point where the two lines intersect.
     /// Else if the lines are parallel within approx 0.25 degrees then The Parallel Union Case.  
     /// Or if the parallel lines are closer than 1e-6 than Coincident Union Case.  
-    static member inline intersectionInfiniteTol  (l:Line2D) (ll:Line2D) : IntersectionPointsInfinite2D =  
+    static member inline intersectionInfinite  (l:Line2D) (ll:Line2D) : IntersectionPointsInfinite2D =  
         match Line2D.intersectionParamInfinite l ll with 
         |TwoParam (u,v)                       -> IntersectionPointsInfinite2D.Point (l.EvaluateAt u)
         |IntersectionParamInfinite.Parallel   -> IntersectionPointsInfinite2D.Parallel
@@ -879,35 +831,67 @@ type Line2D  with // delete for folding only
 
     /// Assumes Lines to be infinite.    
     /// Returns the single points where these two infinite lines actually intersect each other.
-    static member intersectionInOnePointInfinite (l:Line2D) (ll:Line2D) : Pt = 
-        match Line2D.intersectionInfiniteTol l ll with 
+    /// Raises an Exception if lines are parallel or coincident
+    static member intersectionPointInfinite (l:Line2D) (ll:Line2D) : Pt = 
+        match Line2D.intersectionInfinite l ll with 
         |IntersectionPointsInfinite2D.Point p  -> p
-        |IntersectionPointsInfinite2D.Coincident  -> FsExGeoException.Raise "FsEx.Geo.Line2D.intersectionInOnePointInfinite: Lines are coincident l: \r\n%O and ll: \r\n%O" l ll
-        |IntersectionPointsInfinite2D.Parallel    -> FsExGeoException.Raise "FsEx.Geo.Line2D.intersectionInOnePointInfinite: Lines are parallel l: \r\n%O and ll: \r\n%O" l ll
+        |IntersectionPointsInfinite2D.Coincident  -> FsExGeoException.Raise "FsEx.Geo.Line2D.intersectionPointInfinite: Lines are coincident l: \r\n%O and ll: \r\n%O" l ll
+        |IntersectionPointsInfinite2D.Parallel    -> FsExGeoException.Raise "FsEx.Geo.Line2D.intersectionPointInfinite: Lines are parallel l: \r\n%O and ll: \r\n%O" l ll
         
     /// Assumes Lines to be infinite.    
     /// Returns the distance between two infinite lines.
-    /// Does NOT fail on parallel Lines. 
-    /// Still returns their distance apart.   
+    /// Unless they are parallel and not coinciding the result is 0.0.   
     static member inline distanceBetweenInfiniteLines l ll =
         match Line2D.intersectionParamInfinite l ll with 
-        |TwoParam (u,v) ->
-            let a =  l.EvaluateAt u
-            let b = ll.EvaluateAt v
-            Pt.distance a b 
-        |IntersectionParamInfinite.Parallel 
-        |IntersectionParamInfinite.Coincident  -> 
-                l.DistanceFromPointInfinite ll.From
+        |IntersectionParamInfinite.Coincident  
+        |TwoParam _ -> 0.0
+        |IntersectionParamInfinite.Parallel ->  l.DistanceFromPointInfinite ll.From
 
     /// Returns the intersection kind and the parameters at which two (finite) 2D Lines are closest to each other.
     /// The results are both between 0.0 and 1.0.
     /// For parallel and coincident lines it still returns two parameters, in the middle of their overlap, or distance apart.
     /// First parameter is on l, second parameter is on ll.
     /// The possible result cases are:  
-    /// General Cases:
-    /// | Intersecting | IntersectingEndsBoth | IntersectingEndsFirst | IntersectingEndsSecond | Skew | Apart 
-    /// and Parallel Cases:
-    /// | Parallel | Overlapping | CoincidentApart | Continuation | ContinuationFlipped| Identical| IdenticalFlipped
+    /// 
+    /// | Intersecting : The finite lines are intersecting each other in one point.
+    /// | IntersectingEndsBoth: The finite lines are intersecting each other at one of their end or start points point. 
+    /// | IntersectingEndsFirst: The finite lines are intersecting. The first line is touching the second one with its end or start point.       
+    /// | IntersectingEndsSecond:  The finite lines are intersecting. The second line is touching the first one with its end or start point.        
+    /// 
+    /// | Skew:  The finite lines are skew to each other.
+    /// Their closest points to each other are within the line.
+    /// The returned parameters are between 0.0 and 1.0
+    /// 
+    /// | Apart: The finite lines are not intersecting nor skew.
+    /// At least one of the parameters of closets points would be outside of  the range 0.0 and 1.0.
+    /// The returned parameters  still indicate where the finite lines are closest to each other.
+    /// 
+    ///------- Parallel and other special cases for finite lines: ---------------
+    /// 
+    /// | Parallel : The finite lines are parallel. Within 0.25 degrees.
+    /// The returned parameters are in the middle of their overlap, 
+    /// or in the middle of their distance apart.
+    /// 
+    /// | Overlapping 
+    /// The lines are coincident,  overlapping and parallel within 0.25 degrees.
+    /// The returned parameters are at start and end of overlap.    
+    /// 
+    /// | CoincidentApart: The Lines are coincident, parallel within 0.25 degrees.  But ends are apart. 
+    /// The returned parameters still indicate where the lines are closest to each other.
+    /// 
+    /// | Continuation : The Lines are coincident, parallel within 0.25 degrees. 
+    /// The ends are meeting in exactly one point. And Oriented the same way.
+    /// The returned parameters indicate which ends these are.    
+    /// 
+    /// | ContinuationFlipped: The Lines are coincident, parallel within 0.25 degrees.
+    /// The ends are meeting in exactly one point. But orientation is flipped.
+    /// The returned parameters indicate which ends these are.
+    /// 
+    /// | Identical: The Lines are identical , in orientation too with in 1-e6 tolerance.
+    /// The returned parameters still indicate where the lines start and end.
+    /// 
+    /// | IdenticalFlipped: The Lines are identical. But orientation is flipped.
+    /// The returned parameters still indicate where the lines start and end.        
     static member inline intersectionParam (l:Line2D) (ll:Line2D) : IntersectionKind*float*float =         
         match Line2D.intersectionParamInfinite l ll with 
         | IntersectionParamInfinite.TwoParam ( u0 , v0 ) -> 
@@ -915,7 +899,7 @@ type Line2D  with // delete for folding only
             let uz = isZeroOneOrBetween u0
             let vz = isZeroOneOrBetween v0
             let u =  match uz with Zero -> 0.0 |One -> 1.0 |Between |Outside -> u0
-            let v =  match vz with Zero -> 0.0 |One -> 1.0 |Between |Outside -> u0             
+            let v =  match vz with Zero -> 0.0 |One -> 1.0 |Between |Outside -> v0             
             if uz=Zero || uz=One then 
                 if vz=Zero || vz=One then 
                     IntersectingEndsBoth , u ,v
@@ -923,7 +907,7 @@ type Line2D  with // delete for folding only
                     IntersectingEndsFirst, u ,v
             elif vz=Zero || vz=One then 
                 IntersectingEndsSecond, u,v
-            elif  isBetweenZeroAndOne u && isBetweenZeroAndOne v then  
+            elif  isBetweenZeroAndOne u && isBetweenZeroAndOne v then 
                 Intersecting, u , v
             else 
                 // finite Lines are not intersection, still find their closest Points:
@@ -941,47 +925,52 @@ type Line2D  with // delete for folding only
             let flip = lv*llv < 0.0 
             let k = if flip then ll.Reversed else ll
             let l0k0 = Vc.create(l.From,k.From)
+            let l0k1 = Vc.create(l.From,k.To)
+            let l1k0 = Vc.create(l.To  ,k.From)
             let l1k1 = Vc.create(l.To  ,k.To)
             // check if vectors between lines are in same orientation as line:
             let d00 = lv * l0k0 > 0.
+            let d01 = lv * l0k1 > 0.
             let d11 = lv * l1k1 > 0.
+            let d10 = lv * l1k0 > 0.  
 
+            // there are many valid parameters
+            // Parameters are at the end or start of line l when possible
             // Full logic:
-            // Parameters are  in the middle of their overlap, or distance apart.
-            //let l0k1 = Vc.create(l.From,k.To)
-            //let l1k0 = Vc.create(l.To  ,k.From)
-            //let d01 = lv * l0k1 > 0.
-            //let d10 = lv * l1k0 > 0.            
-            // if   not d00 && not d01 && not d10 && not d11 then let p = Pt.midPt l.From k.To   in  l.ClosestParameter(p),ll.ClosestParameter(p) // l starts after k ends
-            // elif not d00 &&     d01 && not d10 && not d11 then let p = Pt.midPt l.From k.To   in  l.ClosestParameter(p),ll.ClosestParameter(p) // k is overlapping l start
-            // elif     d00 &&     d01 && not d10 && not d11 then 0.5  , ll.ClosestParameter(l.Mid) // l is on both ends shorter than k                
-            // elif not d00 &&     d01 && not d10 &&     d11 then l.ClosestParameter(ll.Mid), 0.5   // k is on both ends shorter than l                
-            // elif     d00 &&     d01 && not d10 &&     d11 then let p = Pt.midPt l.To   k.From in  l.ClosestParameter(p),ll.ClosestParameter(p) // k is overlapping l end 
-            // elif     d00 &&     d01 &&     d10 &&     d11 then let p = Pt.midPt l.To   k.From in  l.ClosestParameter(p),ll.ClosestParameter(p) // k starts after l ends
-            // else failwith "Bad case in intersectLineParametersInfinite"
-
-            // Optimized logic:
-            // Parameters are in the middle of their overlap, or distance apart.
-            //if       d00 && not d11 then IntersectionKind.Parallel, l.ClosestParameter ll.Mid, 0.5  // l is on both ends shorter than k                
-            //elif not d00 &&     d11 then IntersectionKind.Parallel,  0.5 ,ll.ClosestParameter l.Mid  // k is on both ends shorter than l                
-            //else 
-            //    let l0k1 = Vc.create(l.From,k.To)
-            //    let d01 = lv * l0k1 > 0.
-            //    let p = 
-            //        if d01 then  Pt.midPt l.To   k.From
-            //        else         Pt.midPt l.From k.To
-            //    IntersectionKind.Parallel , l.ClosestParameter p, ll.ClosestParameter p  
+            //let u, v = 
+            //    if   not d00 && not d01 && not d10 && not d11 then  
+            //                                                        Printfn.gray "// l starts after k ends"
+            //                                                        0.0, if flip then 0.0 else  1.0 
+            //    elif not d00 &&     d01 && not d10 && not d11 then  
+            //                                                        Printfn.gray "// k is overlapping l start"
+            //                                                        0.0, ll.ClosestParameter(l.From) 
+            //    elif     d00 &&     d01 && not d10 && not d11 then  
+            //                                                        Printfn.gray "// k is on both ends shorter than l  "
+            //                                                        l.ClosestParameter(ll.From), 0.0                 
+            //    elif not d00 &&     d01 && not d10 &&     d11 then  
+            //                                                        Printfn.gray "// l is on both ends shorter than k  "
+            //                                                        0.0  , ll.ClosestParameter(l.From)               
+            //    elif     d00 &&     d01 && not d10 &&     d11 then  
+            //                                                        Printfn.gray "// k is overlapping l end "
+            //                                                        1.0  , ll.ClosestParameter(l.To)   
+            //    elif     d00 &&     d01 &&     d10 &&     d11 then  
+            //                                                        Printfn.gray "// k starts after l ends"
+            //                                                        1.0, if flip then 1.0 else  0.0 
+            //    else failwith "Bad case in intersectLineParametersInfinite"
+            //IntersectionKind.Parallel , u, v 
             
-
-            // Optimized logic-2, like in Coincident case below.
-            // Does NOT return  in the middle of their overlap, or distance apart.
-            // But points always on the lines
-            // Precalculating the mid point is actually not needed:  
-            if   not d00 &&  not d11 then IntersectionKind.Parallel , 0.0                       , if flip then 0.0 else 1.0   // l starts after k ends //k is overlapping l start            
-            elif     d00 &&  not d11 then IntersectionKind.Parallel , 0.0                       , ll.ClosestParameter(l.To)   // l is on both ends shorter than k                
-            elif not d00 &&      d11 then IntersectionKind.Parallel , l.ClosestParameter(k.From), if flip then 0.0 else 1.0   // k is on both ends shorter than l                
-            elif     d00 &&      d11 then IntersectionKind.Parallel , 1.0                       , if flip then 1.0 else 0.0  // k is overlapping l end // k starts after l ends             
-            else failwith "Bad case in IntersectionParamInfinite.Parallel in intersectionParam" // TODO delete, just use else on last line?
+            // Optimized logic: 
+            if d01 then 
+                if d10 then  
+                    IntersectionKind.Parallel ,1.0, if flip then 1.0 else  0.0   // k starts after l ends 
+                else 
+                    if d00 then 
+                        if d11 then IntersectionKind.Parallel ,1.0 , ll.ClosestParameter(l.To)   // k is overlapping l end  
+                        else        IntersectionKind.Parallel ,l.ClosestParameter(ll.From), 0.0  // k is on both ends shorter than l 
+                    else  
+                        IntersectionKind.Parallel ,0.0 , ll.ClosestParameter(l.From) // k is overlapping l start // l is on both ends shorter than k  
+            else  
+                IntersectionKind.Parallel ,0.0 , if flip then 0.0 else  1.0  // l starts after k ends 
         
         
         | IntersectionParamInfinite.Coincident ->
@@ -1013,15 +1002,41 @@ type Line2D  with // delete for folding only
                 let d00 = lv * l0k0 > 0.
                 let d01 = lv * l0k1 > 0.
                 let d10 = lv * l1k0 > 0.
-                let d11 = lv * l1k1 > 0.
-                if   not d00 && not d01 && not d10 && not d11 then CoincidentApart, 0.0                       , if flip then 0.0 else 1.0   // l starts after k ends
-                elif not d00 &&     d01 && not d10 && not d11 then Overlapping    , 0.0                       , if flip then 0.0 else 1.0   // k is overlapping l start
-                elif     d00 &&     d01 && not d10 && not d11 then Overlapping    , 0.0                       , ll.ClosestParameter(l.To)   // l is on both ends shorter than k                
-                elif not d00 &&     d01 && not d10 &&     d11 then Overlapping    , l.ClosestParameter(k.From), if flip then 0.0 else 1.0   // k is on both ends shorter than l                
-                elif     d00 &&     d01 && not d10 &&     d11 then Overlapping    , 1.0                       ,  if flip then 1.0 else 0.0  // k is overlapping l end 
-                elif     d00 &&     d01 &&     d10 &&     d11 then CoincidentApart, 1.0                       ,  if flip then 1.0 else 0.0  // k starts after l ends
-                else failwith "Bad case in IntersectionParamInfinite.Coincident in intersectionParam" // TODO delete, just use else on last line?
+                let d11 = lv * l1k1 > 0. 
+                // Full logic:
+                //if   not d00 && not d01 && not d10 && not d11 then  
+                //                                                    Printfn.gray "// l starts after k ends"
+                //                                                    CoincidentApart,0.0, if flip then 0.0 else  1.0 
+                //elif not d00 &&     d01 && not d10 && not d11 then  
+                //                                                    Printfn.gray "// k is overlapping l start"
+                //                                                    Overlapping    ,0.0, if flip then 0.0 else  1.0 
+                //elif     d00 &&     d01 && not d10 && not d11 then  
+                //                                                    Printfn.gray "// k is on both ends shorter than l  "
+                //                                                    Overlapping    ,l.ClosestParameter(ll.From), 1.0                 
+                //elif not d00 &&     d01 && not d10 &&     d11 then  
+                //                                                    Printfn.gray "// l is on both ends shorter than k  "
+                //                                                    Overlapping    ,0.0  , ll.ClosestParameter(l.To)               
+                //elif     d00 &&     d01 && not d10 &&     d11 then  
+                //                                                    Printfn.gray "// k is overlapping l end "
+                //                                                    Overlapping    ,1.0  , if flip then 1.0 else  0.0   
+                //elif     d00 &&     d01 &&     d10 &&     d11 then  
+                //                                                    Printfn.gray "// k starts after l ends"
+                //                                                    CoincidentApart,1.0, if flip then 1.0 else  0.0 
+                //else failwith "Bad case in intersectLineParametersInfinite"
 
+                if d01 then  
+                    if d10 then 
+                        CoincidentApart, 1.0  , if flip then 1.0 else  0.0   // k starts after l ends
+                    else  
+                        if d11 then 
+                            if  d00 then Overlapping  , 1.0  , if flip then 1.0 else  0.0  // k is overlapping l end 
+                            else         Overlapping  , 0.0  , ll.ClosestParameter(l.To)   // l is on both ends shorter than k              
+                        else
+                            if d00 then Overlapping , l.ClosestParameter(ll.From), 1.0   // k is on both ends shorter than l               
+                            else        Overlapping , 0.0 , if flip then 0.0 else  1.0   // k is overlapping l start 
+                else 
+                    CoincidentApart, 0.0 , if flip then 0.0 else  1.0    // l starts after k ends
+                
 
     
     /// Returns the intersection kind and the points at which two (finite) 2D Lines are closest to each other.
@@ -1029,43 +1044,88 @@ type Line2D  with // delete for folding only
     /// For parallel and coincident lines it still returns two parameters, in the middle of their overlap, or distance apart.
     /// First parameter is on l, second parameter is on ll.
     /// The possible result cases are:  
-    /// General Cases:
-    /// | Intersecting | IntersectingEndsBoth | IntersectingEndsFirst | IntersectingEndsSecond | Skew | Apart 
-    /// and Parallel Cases:
-    /// | Parallel | Overlapping | CoincidentApart | Continuation | ContinuationFlipped| Identical| IdenticalFlipped
+    /// 
+    /// | Intersecting : The finite lines are intersecting each other in one point.
+    /// | IntersectingEndsBoth: The finite lines are intersecting each other at one of their end or start points point. 
+    /// | IntersectingEndsFirst: The finite lines are intersecting. The first line is touching the second one with its end or start point.       
+    /// | IntersectingEndsSecond:  The finite lines are intersecting. The second line is touching the first one with its end or start point.        
+    /// 
+    /// | Skew:  The finite lines are skew to each other.
+    /// Their closest points to each other are within the line.
+    /// The returned parameters are between 0.0 and 1.0
+    /// 
+    /// | Apart: The finite lines are not intersecting nor skew.
+    /// At least one of the parameters of closets points would be outside of  the range 0.0 and 1.0.
+    /// The returned parameters  still indicate where the finite lines are closest to each other.
+    /// 
+    ///------- Parallel and other special cases for finite lines: ---------------
+    /// 
+    /// | Parallel : The finite lines are parallel. Within 0.25 degrees.
+    /// The returned parameters are in the middle of their overlap, 
+    /// or in the middle of their distance apart.
+    /// 
+    /// | Overlapping 
+    /// The lines are coincident,  overlapping and parallel within 0.25 degrees.
+    /// The returned parameters are at start and end of overlap.    
+    /// 
+    /// | CoincidentApart: The Lines are coincident, parallel within 0.25 degrees.  But ends are apart. 
+    /// The returned parameters still indicate where the lines are closest to each other.
+    /// 
+    /// | Continuation : The Lines are coincident, parallel within 0.25 degrees. 
+    /// The ends are meeting in exactly one point. And Oriented the same way.
+    /// The returned parameters indicate which ends these are.    
+    /// 
+    /// | ContinuationFlipped: The Lines are coincident, parallel within 0.25 degrees.
+    /// The ends are meeting in exactly one point. But orientation is flipped.
+    /// The returned parameters indicate which ends these are.
+    /// 
+    /// | Identical: The Lines are identical , in orientation too with in 1-e6 tolerance.
+    /// The returned parameters still indicate where the lines start and end.
+    /// 
+    /// | IdenticalFlipped: The Lines are identical. But orientation is flipped.
+    /// The returned parameters still indicate where the lines start and end.
     static member inline intersection  (l:Line2D) (ll:Line2D) : IntersectionKind*Pt*Pt =  
         let k,u,v =  Line2D.intersectionParam l ll
-        let a  =  l.EvaluateAt u 
-        let b  = ll.EvaluateAt v 
-        k,a,b
-        
-
-
-    /// Returns the single points where these two finite lines actually intersect each other.
-    /// Fails if lines are parallel or skew by more than 1e-6 units. 
-    /// The returned point is in the middle between l and ll.  
-    static member intersectionPoint (l:Line2D) (ll:Line2D) : Pt = 
-        let k,a,b =  Line2D.intersection l ll
         match k with        
         | Intersecting | IntersectingEndsBoth | IntersectingEndsFirst | IntersectingEndsSecond 
         | Continuation | ContinuationFlipped -> 
-            a
-        | Skew | Apart 
-        | IntersectionKind.Parallel | Overlapping | CoincidentApart | Identical| IdenticalFlipped -> 
-            FsExGeoException.Raise "FsEx.Geo.Line2D.intersectionPoint: Lines are '%A' l: \r\n%O and ll: \r\n%O" k l ll
+            let p = l.EvaluateAt u
+            k,p,p // return same point twice ?
+        | Skew | Apart  | IntersectionKind.Parallel 
+        | Overlapping | CoincidentApart | Identical| IdenticalFlipped -> 
+            let a  =  l.EvaluateAt u 
+            let b  = ll.EvaluateAt v 
+            k,a,b            
 
+
+    /// Returns the single points where these two finite lines actually intersect each other. Or None
+    /// Unless the coincident lines ar continuing each other and just touching in one point.      
+    static member intersectionPoint (l:Line2D) (ll:Line2D) : option<Pt> = 
+        let k,u,v =  Line2D.intersectionParam l ll
+        match k with        
+        | Intersecting | IntersectingEndsBoth | IntersectingEndsFirst | IntersectingEndsSecond 
+        | Continuation | ContinuationFlipped -> 
+            Some(l.EvaluateAt u)
+        | Skew | Apart  | IntersectionKind.Parallel 
+        | Overlapping | CoincidentApart | Identical| IdenticalFlipped ->              
+            // Raises an Exception if lines are apart, parallel or coincident. 
+            //FsExGeoException.Raise "FsEx.Geo.Line2D.intersectionPoint: Lines are '%A' l: \r\n%O and ll: \r\n%O" k l ll
+            None
 
     /// Returns the distance between two finite 2D lines.
     /// For parallel lines the distance is calculate form the actual finit elements. (like in the other cases.) 
     /// So it is maybe bigger than the parallel offset.
-    /// For Coincident lines it always returns 0.0 even if there is actually a distance less than 1-e6.
+    /// For Coincident and intersecting lines it always returns 0.0 even if there is actually a distance less than 1-e6.
     static member inline distanceBetweenLines l ll : float=
-        let k,a,b =  Line2D.intersection l ll
+        let k,u,v =  Line2D.intersectionParam l ll
         match k with        
-        | Intersecting | IntersectingEndsBoth | IntersectingEndsFirst | IntersectingEndsSecond | Skew | Apart| IntersectionKind.Parallel  -> 
+        | Intersecting | IntersectingEndsBoth | IntersectingEndsFirst | IntersectingEndsSecond 
+        | Continuation | ContinuationFlipped | Overlapping   | Identical| IdenticalFlipped -> 
+            0.0           
+        | Skew | Apart  | IntersectionKind.Parallel | CoincidentApart ->
+            let a  =  l.EvaluateAt u 
+            let b  = ll.EvaluateAt v 
             Pt.distance a b
-        | Continuation | ContinuationFlipped | Overlapping | CoincidentApart | Identical| IdenticalFlipped ->
-            0.0
         
 
 

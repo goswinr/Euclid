@@ -736,22 +736,32 @@ type Line3D with
         let c = bx*bx + by*by + bz*bz // square length        
         let ac = a*c // square of square length  , never negative
         let bb = b*b // never negative
-        let det = ac - bb
+        let discriminant = ac - bb
         let div = ac+bb // never negative
         if div < 2e-48 then // both lines shorter than 1e-12 ! (2 * 1e-12 * 1e-12 * 1e-12 * 1e-12)
             TwoParam (0.5, 0.5) 
         else
-            let rel = det/div
-            if rel < 1e-5 then // parallel  // 1.5e-6 for 0.1deg  // 1e-5 for 0.25deg // 1.5e-4 for 1.0 deg
-                IntersectionParamInfinite.Parallel        
+            let e = bx*vx + by*vy + bz*vz  
+            // getting the relation between the sum and the subtraction gives a good estimate of the angle between the lines
+            // see file 'Calculate Angle constants for Line3D intersection.fsx' in Docs folder.
+            // 1.5e-6 for 0.1  degree  
+            // 1e-5   for 0.25 degree 
+            // 1.5e-4 for 1.0  degree   
+            let rel = discriminant/div
+            if rel < 1e-5 then //parallel               
+                let t = e / c //closest parameter of l.From on ll
+                let p = ll.EvaluateAt(t) //TODO could be inlined to optimize 
+                if Pnt.distanceSq p l.From < 1e-12 then // square of 1e-6
+                    IntersectionParamInfinite.Coincident
+                else   
+                    IntersectionParamInfinite.Parallel        
             else 
                 let d = ax*vx + ay*vy + az*vz
-                let e = bx*vx + by*vy + bz*vz            
-                let t = (b * e - c * d) / det
-                let u = (a * e - b * d) / det
+                let t = (b * e - c * d) / discriminant
+                let u = (a * e - b * d) / discriminant
                 TwoParam (t,u) 
     
-    (*
+    
 
     /// Assumes Lines to be infinite.    
     /// Returns the one Point where the two lines intersect or are maximum the given tolerance apart.
@@ -766,8 +776,8 @@ type Line3D with
                 IntersectionPointsInfinite3D.TwoPoints (a,b)
             else 
                 IntersectionPointsInfinite3D.OnePoint (Pnt.midPt a b)
-        |IntersectionParamInfinite.Parallel -> 
-            IntersectionPointsInfinite3D.Parallel
+        |IntersectionParamInfinite.Parallel   ->  IntersectionPointsInfinite3D.Parallel
+        |IntersectionParamInfinite.Coincident ->  IntersectionPointsInfinite3D.Coincident
 
     /// Assumes Lines to be infinite.    
     /// Returns the one Point where the two infinite lines intersect or are maximum the 1e-6 units apart.
@@ -780,12 +790,13 @@ type Line3D with
     /// Returns the single points where these two infinite lines actually intersect each other.
     /// Fails if lines are parallel or skew by more than 1e-6 units 
     /// The returned point is in the middle between l and ll.  
-    static member intersectionInOnePointInfinite (l:Line3D) (ll:Line3D) : Pnt = 
+    static member intersectionPointInfinite (l:Line3D) (ll:Line3D) : Pnt = 
         match Line3D.intersectionInfiniteTol 1e-6 l ll with 
         |IntersectionPointsInfinite3D.OnePoint p  -> p
-        |IntersectionPointsInfinite3D.TwoPoints _ -> FsExGeoException.Raise "FsEx.Geo.Line3D.intersectionInOnePointInfinite: Lines are skew l: \r\n%O and ll: \r\n%O" l ll
-        |IntersectionPointsInfinite3D.Parallel    -> FsExGeoException.Raise "FsEx.Geo.Line3D.intersectionInOnePointInfinite: Lines are parallel l: \r\n%O and ll: \r\n%O" l ll
-        
+        |IntersectionPointsInfinite3D.TwoPoints _ -> FsExGeoException.Raise "FsEx.Geo.Line3D.intersectionPointInfinite: Lines are skew l: \r\n%O and ll: \r\n%O" l ll
+        |IntersectionPointsInfinite3D.Parallel    -> FsExGeoException.Raise "FsEx.Geo.Line3D.intersectionPointInfinite: Lines are parallel l: \r\n%O and ll: \r\n%O" l ll
+        |IntersectionPointsInfinite3D.Coincident  -> FsExGeoException.Raise "FsEx.Geo.Line3D.intersectionPointInfinite: Lines are coincident l: \r\n%O and ll: \r\n%O" l ll
+
     /// Assumes Lines to be infinite.    
     /// Returns the distance between two infinite lines.
     /// Does NOT fail on parallel Lines. 
@@ -945,7 +956,7 @@ type Line3D with
             let a  =  l.EvaluateAt u 
             let b  = ll.EvaluateAt v 
             IntersectionPoints3D.Parallel (a,b)
-    *)
+    
 
 
     (*  not very useful because it's hard to find the correct tolerance:
