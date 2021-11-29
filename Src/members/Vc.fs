@@ -547,3 +547,29 @@ module AutoOpenVc =
             let bu = b * (1.0 / sqrt sb )
             abs(bu*au) > 0.996194698091746 // = cosine of 5 degrees:            
             // for fsi: printfn "%.18f" (cos( 5.0 * (System.Math.PI / 180.)))
+
+        
+        /// Returns the parameters at which two infinite 2D Lines intersect to each other.
+        /// The lines are defined by a start point and a vector.
+        /// Returns ValueNone on zero length or parallel vectors.
+        /// Return order corresponds to input order.
+        static member inline intersection (a:Pt,b:Pt,va:Vc,vb:Vc) : ValueOption<float*float> =        
+            //https://stackoverflow.com/a/34604574/969070 but DP and DQ are in wrong order !        
+            let ax = -a.X 
+            let ay = -a.Y
+            let bx = -b.X
+            let by = -b.Y
+            let vx = b.X - a.X
+            let vy = b.Y - a.Y
+            let a' = ax*ax + ay*ay // square length
+            let b' = ax*bx + ay*by // dot product of lines
+            let c' = bx*bx + by*by // square length        
+            let e' = bx*vx + by*vy
+            let d' = ax*vx + ay*vy            
+            let discriminant = a'*c' - b'*b'        
+            if abs discriminant > 1e-16 then        
+                let t = (b' * e' - c' * d') / discriminant
+                let u = (a' * e' - b' * d') / discriminant            
+                ValueSome (t,u) 
+            else
+                ValueNone

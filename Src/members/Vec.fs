@@ -677,3 +677,46 @@ module AutoOpenVec =
             let bu = b * (1.0 / sqrt sb )
             abs(bu*au) > 0.996194698091746 // = cosine of 5 degrees:            
             // for fsi: printfn "%.18f" (cos( 5.0 * (System.Math.PI / 180.)))
+
+        /// Returns the parameters at which two infinite 2D Lines intersect to each other.
+        /// The lines are defined by a start point and a vector.
+        /// Returns ValueNone on zero length or parallel vectors.
+        /// Return order corresponds to input order.
+        /// There is an optional tolerance for the internally calculated relative Angle Discriminant. 
+        /// It may not be zero. The bigger it is the earlier the intersection fails for too short or almmost parallel segments.
+        /// See module FsEx.Geo.Util.RelAngleDiscriminant
+        static member inline intersection (a:Pnt,b:Pnt,va:Vec,vb:Vec, [<OPT;DEF(RelAngleDiscriminant.``0.25``)>] relAngleDiscriminant:float) : ValueOption<float*float> =        
+            //https://stackoverflow.com/a/34604574/969070 but DP and DQ are in wrong order !        
+            let ax = -a.X 
+            let ay = -a.Y
+            let az = -a.Z
+            let bx = -b.X
+            let by = -b.Y
+            let bz = -b.Z
+            let vx = b.X - a.X
+            let vy = b.Y - a.Y
+            let vz = b.Z - a.Z
+            let a = ax*ax + ay*ay + az*az // square length
+            let b = ax*bx + ay*by + az*bz
+            let c = bx*bx + by*by + bz*bz // square length        
+            let ac = a*c // square of square length  , never negative
+            let bb = b*b // never negative
+            let discriminant = ac - bb
+            let div = ac+bb // never negative
+            if div < 2e-48 then // both lines shorter than 1e-12 ! (2 * 1e-12 * 1e-12 * 1e-12 * 1e-12)
+                ValueSome (0.5, 0.5) 
+            else
+                let e = bx*vx + by*vy + bz*vz  
+                // getting the relation between the sum and the subtraction gives a good estimate of the angle between the lines
+                // see file 'Calculate Angle constants for Line3D intersection.fsx' in Docs folder.
+                // 1.5e-6 for 0.1  degree  
+                // 1e-5   for 0.25 degree 
+                // 1.5e-4 for 1.0  degree   
+                let rel = discriminant/div
+                if rel < relAngleDiscriminant then //parallel               
+                    ValueNone      
+                else 
+                    let d = ax*vx + ay*vy + az*vz
+                    let t = (b * e - c * d) / discriminant
+                    let u = (a * e - b * d) / discriminant
+                    ValueSome (t,u)

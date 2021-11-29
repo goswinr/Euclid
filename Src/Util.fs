@@ -303,6 +303,129 @@ module Cosine =
     let ``179.95`` = -0.999999619228249
 
 
+/// Precalculated relative angle discriminant values for faster checking the angles in line line intersection.
+[<RequireQualifiedAccess>]
+module RelAngleDiscriminant = 
+    //the value from 
+    // let intersectLines (l:Line3D) (ll:Line3D) =        
+    //     //https://stackoverflow.com/a/34604574/969070 but DP and DQ are in wrong order !        
+    //     let ax = l.FromX - l.ToX  
+    //     let ay = l.FromY - l.ToY  
+    //     let az = l.FromZ - l.ToZ
+    //     let bx = ll.FromX - ll.ToX 
+    //     let by = ll.FromY - ll.ToY 
+    //     let bz = ll.FromZ - ll.ToZ
+    //     let vx = ll.FromX - l.FromX
+    //     let vy = ll.FromY - l.FromY
+    //     let vz = ll.FromZ - l.FromZ
+    //     let a = ax*ax + ay*ay + az*az // square length
+    //     let b = ax*bx + ay*by + az*bz
+    //     let c = bx*bx + by*by + bz*bz // square length
+    //     let d = ax*vx + ay*vy + az*vz
+    //     let e = bx*vx + by*vy + bz*vz
+    //     let ac = a*c
+    //     let bb = b*b
+    //     let discriminant = ac - bb
+    //     // Getting this relation between the sum and the subtraction gives a very good estimate of the angle between the lines.
+    //     let relAngleDiscriminant = discriminant/(ac+bb)     //     
+    //     if relAngleDiscriminant > 1.5e-6 then //not parallel //1e-5 for 0.25deg,  //1.5e-6 for 0.1deg,  //1.5e-4 for 1.0 deg
+    //         let t = (b * e - c * d) / discriminant
+    //         let u = (a * e - b * d) / discriminant
+    //         Some (t,u) 
+    //     else 
+    //         None  
+
+
+    /// The discriminant for an angle of 0.01 degrees.
+    /// This is exactly 0.00000001523087105503
+    [<Literal>]
+    let ``0.01`` = 0.00000001523087105503
+    
+    /// The discriminant for an angle of 0.05 degrees.
+    /// This is exactly 0.00000038077182295694
+    [<Literal>]
+    let ``0.05`` = 0.00000038077182295694
+    
+    /// The discriminant for an angle of 0.1 degrees.
+    /// This is exactly 0.00000152308787225459
+    [<Literal>]
+    let ``0.1`` = 0.00000152308787225459
+    
+    /// The discriminant for an angle of 0.25 degrees.
+    /// This is exactly 0.0000095193245737169
+    [<Literal>]
+    let ``0.25`` = 0.0000095193245737169
+    
+    /// The discriminant for an angle of 0.5 degrees.
+    /// This is exactly 0.0000380776607551118
+    [<Literal>]
+    let ``0.5`` = 0.0000380776607551118
+    
+    /// The discriminant for an angle of 1.0 degrees.
+    /// This is exactly 0.000152316441991339
+    [<Literal>]
+    let ``1.0`` = 0.000152316441991339
+    
+    /// The discriminant for an angle of 3.0 degrees.
+    /// This is exactly 0.00137140433203749
+    [<Literal>]
+    let ``3.0`` = 0.00137140433203749
+    
+    /// The discriminant for an angle of 5.0 degrees.
+    /// This is exactly 0.00381254201694116
+    [<Literal>]
+    let ``5.0`` = 0.00381254201694116
+    
+    /// The discriminant for an angle of 10.0 degrees.
+    /// This is exactly 0.0153076356505349
+    [<Literal>]
+    let ``10.0`` = 0.0153076356505349
+    
+    /// The discriminant for an angle of 30.0 degrees.
+    /// This is exactly 0.142857142857143
+    [<Literal>]
+    let ``30.0`` = 0.142857142857143
+    
+    /// The discriminant for an angle of 45.0 degrees.
+    /// This is exactly 0.333333333333334
+    [<Literal>]
+    let ``45.0`` = 0.333333333333334
+    
+    /// The discriminant for an angle of 60.0 degrees.
+    /// This is exactly 0.6
+    [<Literal>]
+    let ``60.0`` = 0.6
+    
+    /// The discriminant for an angle of 87.0 degrees.
+    /// This is exactly 0.994536859196742
+    [<Literal>]
+    let ``87.0`` = 0.994536859196742
+    
+    /// The discriminant for an angle of 89.0 degrees.
+    /// This is exactly 0.999391012508458
+    [<Literal>]
+    let ``89.0`` = 0.999391012508458
+    
+    /// The discriminant for an angle of 89.75 degrees.
+    /// This is exactly 0.999961923789084
+    [<Literal>]
+    let ``89.75`` = 0.999961923789084
+    
+    /// The discriminant for an angle of 89.9 degrees.
+    /// This is exactly 0.999993907676349
+    [<Literal>]
+    let ``89.9`` = 0.999993907676349
+    
+    /// The discriminant for an angle of 89.95 degrees.
+    /// This is exactly 0.999998476914448
+    [<Literal>]
+    let ``89.95`` = 0.999998476914448
+    
+    /// The discriminant for an angle of 89.99 degrees.
+    /// This is exactly 0.999999939076519
+    [<Literal>]
+    let ``89.99`` = 0.999999939076519
+
 (* 
     /// A standard Unset value. Use this value rather than Double.NaN when a bogus floating point value is required.
     /// This is equivalent to openNURBS ON_UNSET_VALUE
