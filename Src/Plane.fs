@@ -1,7 +1,9 @@
 namespace FsEx.Geo
 
 open System
-open FsEx.Geo.Util
+open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>]
+open FsEx.Geo.Util      
+
 
 #nowarn "44" // for hidden constructors via Obsolete Attribute
 
@@ -11,6 +13,7 @@ open FsEx.Geo.Util
 /// Note: Never use the struct default constructor Plane() as it will create an invalid zero Plane. 
 /// Use Plane.create or Plane.createUnchecked instead.
 [<Struct;NoEquality;NoComparison>]// because its made up from floats
+[<IsReadOnly>]
 type Plane = // Normals are always unitized
     
     /// The center point of the Plane

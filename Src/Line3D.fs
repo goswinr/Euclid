@@ -1,10 +1,13 @@
 namespace FsEx.Geo
 
+     
+open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>]
 open FsEx.Geo.Util
 open FsEx.Geo.LineIntersectionTypes  
 
 /// An immutable finite line in 3D. Represented by a 3D start and 3D end point.
 [<Struct;NoEquality;NoComparison>]// because its made up from floats
+[<IsReadOnly>]
 type Line3D =
     /// Returns the X coordinate of the start point of the line.
     val FromX:float
@@ -285,8 +288,8 @@ type Line3D =
     /// Checks if the angle between the two 3D lines is less than 180 degrees.
     /// Calculates the dot product of two 3D lines. 
     /// Then checks if it is positive.
-    member inline ln.MatchesOrientation180  (l:Line3D) = 
-        let dot = (l.ToX-l.FromX)*(ln.ToX-ln.FromX) + (l.ToY-l.FromY)*(ln.ToY-ln.FromY) + (l.ToZ-l.FromZ)*(ln.ToZ-ln.FromZ) 
+    member inline ln.MatchesOrientation180  (otherLn:Line3D) = 
+        let dot = (otherLn.ToX-otherLn.FromX)*(ln.ToX-ln.FromX) + (otherLn.ToY-otherLn.FromY)*(ln.ToY-ln.FromY) + (otherLn.ToZ-otherLn.FromZ)*(ln.ToZ-ln.FromZ) 
         dot > 0.0  
 
     /// Checks if the angle between the a 3D line and a 3D vector is less than 180 degrees.
@@ -306,8 +309,8 @@ type Line3D =
     /// Checks if the angle between the two 3D lines is less than 90 degrees.   
     /// Calculates the dot product of the unit vectors of the two 3D lines. 
     /// Then checks if it is bigger than 0.707107 (cosine of  90 degrees).
-    member inline ln.MatchesOrientation90  (l:Line3D) = 
-        let dot = ln.UnitTangent*l.UnitTangent
+    member inline ln.MatchesOrientation90  (otherLn:Line3D) = 
+        let dot = ln.UnitTangent*otherLn.UnitTangent
         dot > 0.707107
         
     /// Checks if two 3D lines are parallel.
@@ -715,63 +718,91 @@ type Line3D with
     //----------------------------------------------------------------------------------------------------------------
 
 
-    /// Assumes Lines to be infinite.
-    /// Returns either the parameters at which two infinite 3D Lines are closest to each other.
-    /// If it is smaller than 0.0 or bigger than 1.0 it is outside of the finite line.    
-    /// Or if the lines are parallel within approx 0.25 degrees then The Parallel Union Case.
-    /// First parameter is on l, second parameter is on ll.
-    static member inline intersectionParamInfinite(l:Line3D , ll:Line3D) : IntersectionParamInfinite =        
+    ///<summary> Intersects two infinite 3D lines.</summary>
+    ///<param name="lnA"> The first line.</param>
+    ///<param name="lnB"> The second line.</param>
+    ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
+    ///  If one or both vectors are shorter than 'TooShort' union case is returned .</param>
+    ///<param name="relAngleDiscriminant"> This is an optional tolerance for the internally calculated relative Angle Discriminant. 
+    /// The default value corresponds to approx 0.25 degree. Below this angle the 'Parallel' or 'Coincident' union case is returned. 
+    /// See module FsEx.Geo.Util.RelAngleDiscriminant</param>   
+    ///<param name="coincidentTolerance" > Is an optional distance tolerance. 1e-6 by default.
+    ///  If parallel lines are closer than this the  'Coincident' union case is returned .</param>   
+    ///<returns> An IntersectionParamInfinite Discriminated Union with the following cases:  
+    ///         
+    /// | TwoParam of twoParams : struct(float*float):
+    /// The infinite lines are intersecting  or skew.
+    /// They have each one point where they are intersecting each other.  
+    /// Or are closest to each other in skew case.
+    /// The tuple's order corresponds to the input order.
+    ///     
+    /// | Parallel: 
+    /// The lines are parallel within 0.25 degrees.
+    /// They have no points in common
+    ///     
+    /// | Coincident:
+    /// The lines are coincident (or maybe even identical) .
+    /// As infinite lines they have infinitely many points in common.
+    /// They might still not have the same start and end points in their finit definition.
+    /// 
+    /// | TooShort:
+    /// One or both input lines is shorter than the given minimum Length tolerance. </returns>
+    static member inline intersectionParamInfinite( lnA:Line3D , 
+                                                    lnB:Line3D ,
+                                                    [<OPT;DEF(1e-6)>] tooShortTolerance:float,
+                                                    [<OPT;DEF(RelAngleDiscriminant.``0.25``)>] relAngleDiscriminant:float,
+                                                    [<OPT;DEF(1e-6)>] coincidentTolerance:float
+                                                    ) : IntersectionParamInfinite =        
         //https://stackoverflow.com/a/34604574/969070 but DP and DQ are in wrong order !        
-        let ax = l.FromX - l.ToX  
-        let ay = l.FromY - l.ToY  
-        let az = l.FromZ - l.ToZ
-        let bx = ll.FromX - ll.ToX 
-        let by = ll.FromY - ll.ToY 
-        let bz = ll.FromZ - ll.ToZ
-        let vx = ll.FromX - l.FromX
-        let vy = ll.FromY - l.FromY
-        let vz = ll.FromZ - l.FromZ
-        let a = ax*ax + ay*ay + az*az // square length
-        let b = ax*bx + ay*by + az*bz
-        let c = bx*bx + by*by + bz*bz // square length        
-        let ac = a*c // square of square length  , never negative
-        let bb = b*b // never negative
-        let discriminant = ac - bb
-        let div = ac+bb // never negative
-        if div < 2e-48 then // both lines shorter than 1e-12 ! (2 * 1e-12 * 1e-12 * 1e-12 * 1e-12)
-            TwoParam (0.5, 0.5) 
-        else
-            let e = bx*vx + by*vy + bz*vz  
+        let ax = lnA.FromX - lnA.ToX  
+        let ay = lnA.FromY - lnA.ToY  
+        let az = lnA.FromZ - lnA.ToZ
+        let bx = lnB.FromX - lnB.ToX 
+        let by = lnB.FromY - lnB.ToY 
+        let bz = lnB.FromZ - lnB.ToZ
+        let vx = lnB.FromX - lnA.FromX
+        let vy = lnB.FromY - lnA.FromY
+        let vz = lnB.FromZ - lnA.FromZ
+        let a = ax*ax + ay*ay + az*az // square length of A
+        let b = ax*bx + ay*by + az*bz // dot product of both lines
+        let c = bx*bx + by*by + bz*bz // square length of B    
+        if a < tooShortTolerance * tooShortTolerance then  // vec A too short
+            IntersectionParamInfinite.TooShort
+        elif c < tooShortTolerance * tooShortTolerance then  // vec B too short
+            IntersectionParamInfinite.TooShort
+        else   
+            let ac = a*c // square of square length  , never negative
+            let bb = b*b // never negative
+            let discriminant = ac - bb // never negative , the dot product cannot be bigger than the two square length multiplied with each other 
+            let div = ac+bb // never negative                          
             // getting the relation between the sum and the subtraction gives a good estimate of the angle between the lines
-            // see file 'Calculate Angle constants for Line3D intersection.fsx' in Docs folder.
-            // 1.5e-6 for 0.1  degree  
-            // 1e-5   for 0.25 degree 
-            // 1.5e-4 for 1.0  degree   
+            // see module FsEx.Geo.Util.RelAngleDiscriminant    
             let rel = discriminant/div
-            if rel < 1e-5 then //parallel               
-                let t = e / c //closest parameter of l.From on ll
-                let p = ll.EvaluateAt(t) //TODO could be inlined to optimize 
-                if Pnt.distanceSq p l.From < 1e-12 then // square of 1e-6
+            if rel < relAngleDiscriminant then //parallel               
+                let e = bx*vx + by*vy + bz*vz  
+                let t = e / c // c is already checked for being non zero. get closest parameter of lnA.From on lnB
+                let p = lnB.EvaluateAt(t) //TODO could be inlined to optimize 
+                if Pnt.distanceSq p lnA.From < coincidentTolerance*coincidentTolerance then 
                     IntersectionParamInfinite.Coincident
                 else   
-                    IntersectionParamInfinite.Parallel        
+                    IntersectionParamInfinite.Parallel       
             else 
+                let e = bx*vx + by*vy + bz*vz  
                 let d = ax*vx + ay*vy + az*vz
                 let t = (b * e - c * d) / discriminant
                 let u = (a * e - b * d) / discriminant
-                TwoParam (t,u) 
-    
+                TwoParam (t,u)
     
 
     /// Assumes Lines to be infinite.    
     /// Returns the one Point where the two lines intersect or are maximum the given tolerance apart.
     /// Or the two points where these two infinite lines are closest to each other.
     /// Else if the lines are parallel within approx 0.25 degrees then The Parallel Union Case.    
-    static member inline intersectionInfiniteTol tolerance (l:Line3D , ll:Line3D) : IntersectionPointsInfinite3D =  
-        match Line3D.intersectionParamInfinite(l , ll) with 
+    static member inline intersectionInfiniteTol tolerance (lnA:Line3D , lnB:Line3D) : IntersectionPointsInfinite3D =  
+        match Line3D.intersectionParamInfinite(lnA , lnB) with 
         |TwoParam (u,v) ->
-            let a =  l.EvaluateAt u
-            let b = ll.EvaluateAt v
+            let a =  lnA.EvaluateAt u
+            let b = lnB.EvaluateAt v
             if Pnt.distanceSq a b > tolerance*tolerance then 
                 IntersectionPointsInfinite3D.TwoPoints (a,b)
             else 
@@ -783,30 +814,30 @@ type Line3D with
     /// Returns the one Point where the two infinite lines intersect or are maximum the 1e-6 units apart.
     /// Or the two points where these two infinite lines are closest to each other.
     /// Else if the lines are parallel within approx 0.25 degrees then The Parallel Union Case.    
-    static member inline intersectionInfinite  (l:Line3D , ll:Line3D) : IntersectionPointsInfinite3D=  
-        Line3D.intersectionInfiniteTol 1e-6(l , ll)            
+    static member inline intersectionInfinite  (lnA:Line3D , lnB:Line3D) : IntersectionPointsInfinite3D=  
+        Line3D.intersectionInfiniteTol 1e-6(lnA , lnB)            
 
     /// Assumes Lines to be infinite.    
     /// Returns the single points where these two infinite lines actually intersect each other.
     /// Fails if lines are parallel or skew by more than 1e-6 units 
-    /// The returned point is in the middle between l and ll.  
-    static member intersectionPointInfinite (l:Line3D , ll:Line3D) : Pnt = 
-        match Line3D.intersectionInfiniteTol 1e-6(l , ll) with 
+    /// The returned point is in the middle between lnA and lnB.  
+    static member intersectionPointInfinite (lnA:Line3D , lnB:Line3D) : Pnt = 
+        match Line3D.intersectionInfiniteTol 1e-6(lnA , lnB) with 
         |IntersectionPointsInfinite3D.OnePoint p  -> p
-        |IntersectionPointsInfinite3D.TwoPoints _ -> FsExGeoException.Raise "FsEx.Geo.Line3D.intersectionPointInfinite: Lines are skew l: \r\n%O and ll: \r\n%O" l ll
-        |IntersectionPointsInfinite3D.Parallel    -> FsExGeoException.Raise "FsEx.Geo.Line3D.intersectionPointInfinite: Lines are parallel l: \r\n%O and ll: \r\n%O" l ll
-        |IntersectionPointsInfinite3D.Coincident  -> FsExGeoException.Raise "FsEx.Geo.Line3D.intersectionPointInfinite: Lines are coincident l: \r\n%O and ll: \r\n%O" l ll
+        |IntersectionPointsInfinite3D.TwoPoints _ -> FsExGeoException.Raise "FsEx.Geo.Line3D.intersectionPointInfinite: Lines are skew lnA: \r\n%O and lnB: \r\n%O" lnA lnB
+        |IntersectionPointsInfinite3D.Parallel    -> FsExGeoException.Raise "FsEx.Geo.Line3D.intersectionPointInfinite: Lines are parallel lnA: \r\n%O and lnB: \r\n%O" lnA lnB
+        |IntersectionPointsInfinite3D.Coincident  -> FsExGeoException.Raise "FsEx.Geo.Line3D.intersectionPointInfinite: Lines are coincident lnA: \r\n%O and lnB: \r\n%O" lnA lnB
 
     /// Assumes Lines to be infinite.    
     /// Returns the distance between two infinite lines.
     /// Unless the lines are skew or parallel this returns 0.0.  
-    static member inline distanceBetweenInfiniteLines(l , ll) =
-        match Line3D.intersectionParamInfinite(l , ll) with 
+    static member inline distanceBetweenInfiniteLines(lnA , lnB) =
+        match Line3D.intersectionParamInfinite(lnA , lnB) with 
         |IntersectionParamInfinite.Coincident ->  0.0        
-        |IntersectionParamInfinite.Parallel   ->  l.DistanceFromPointInfinite ll.From
+        |IntersectionParamInfinite.Parallel   ->  lnA.DistanceFromPointInfinite lnB.From
         |TwoParam (u,v) ->
-            let a =  l.EvaluateAt u
-            let b = ll.EvaluateAt v
+            let a =  lnA.EvaluateAt u
+            let b = lnB.EvaluateAt v
             Pnt.distance a b 
 
     
@@ -816,7 +847,7 @@ type Line3D with
     /// (or Continuation Case if lines are colinear in one point)
     /// The results are both between 0.0 and 1.0.
     /// For parallel and coincident lines it still returns two parameters, in the middle of their overlap, or distance apart.
-    /// First parameter is on l, second parameter is on ll.
+    /// First parameter is on lnA, second parameter is on lnB.
     /// The possible result cases are:  
     /// 
     /// | Intersecting : The finite lines are intersecting each other in one point.
@@ -858,8 +889,8 @@ type Line3D with
     /// 
     /// | IdenticalFlipped: The Lines are identical. But orientation is flipped.
     /// The returned parameters still indicate where the lines start and end.        
-    static member inline intersectionParam (l:Line3D , ll:Line3D, [<OPT;DEF(1e-6)>] tolerance:float) : IntersectionKind*float*float =         
-        match Line3D.intersectionParamInfinite(l , ll) with 
+    static member inline intersectionParam (lnA:Line3D , lnB:Line3D, [<OPT;DEF(1e-6)>] tolerance:float) : IntersectionKind*float*float =         
+        match Line3D.intersectionParamInfinite(lnA , lnB) with 
         | IntersectionParamInfinite.TwoParam ( u0 , v0 ) -> 
             /// numerical error tolerance check to also find an intersection that happens just after the line end:
             let ur = isZeroOneOrBetween u0
@@ -867,8 +898,8 @@ type Line3D with
             let u =  match ur with Zero -> 0.0 |One -> 1.0 |Between |Outside -> u0
             let v =  match vr with Zero -> 0.0 |One -> 1.0 |Between |Outside -> v0 
             
-            let a = l.EvaluateAt(u)
-            let b = l.EvaluateAt(v)
+            let a = lnA.EvaluateAt(u)
+            let b = lnA.EvaluateAt(v)
             let d = Pnt.distanceSq a b
             if d < tolerance*tolerance then
                 if ur=Zero || ur=One then 
@@ -884,23 +915,23 @@ type Line3D with
                     Skew, u , v
             else
                 // finite Lines are not intersection, still find their closest Points:
-                let pu = l.EvaluateAt  u
-                let vt = Line3D.closestParameter pu ll
-                let pv = ll.EvaluateAt vt
-                let ut = Line3D.closestParameter pv l 
+                let pu = lnA.EvaluateAt  u
+                let vt = Line3D.closestParameter pu lnB
+                let pv = lnB.EvaluateAt vt
+                let ut = Line3D.closestParameter pv lnA 
                 Apart,ut ,vt
         
         | IntersectionParamInfinite.Parallel ->
             
-            let lv  =  l.Direction 
-            let llv = ll.Direction            
+            let lv  =  lnA.Direction 
+            let llv = lnB.Direction            
             //make a new line k that is oriented the same way:
             let flip = lv*llv < 0.0 
-            let k = if flip then ll.Reversed else ll
-            let l0k0 = Vec.create(l.From,k.From)
-            let l0k1 = Vec.create(l.From,k.To)
-            let l1k0 = Vec.create(l.To  ,k.From)
-            let l1k1 = Vec.create(l.To  ,k.To)
+            let k = if flip then lnB.Reversed else lnB
+            let l0k0 = Vec.create(lnA.From,k.From)
+            let l0k1 = Vec.create(lnA.From,k.To)
+            let l1k0 = Vec.create(lnA.To  ,k.From)
+            let l1k1 = Vec.create(lnA.To  ,k.To)
             // check if vectors between lines are in same orientation as line:
             let d00 = lv * l0k0 > 0.
             let d01 = lv * l0k1 > 0.
@@ -908,26 +939,26 @@ type Line3D with
             let d10 = lv * l1k0 > 0.  
 
             // there are many valid parameters
-            // Parameters are at the end or start of line l when possible
+            // Parameters are at the end or start of line lnA when possible
             // Full logic:
             //let u, v = 
             //    if   not d00 && not d01 && not d10 && not d11 then  
-            //                                                        Printfn.gray "// l starts after k ends"
+            //                                                        Printfn.gray "// lnA starts after k ends"
             //                                                        0.0, if flip then 0.0 else  1.0 
             //    elif not d00 &&     d01 && not d10 && not d11 then  
-            //                                                        Printfn.gray "// k is overlapping l start"
-            //                                                        0.0, ll.ClosestParameter(l.From) 
+            //                                                        Printfn.gray "// k is overlapping lnA start"
+            //                                                        0.0, lnB.ClosestParameter(lnA.From) 
             //    elif     d00 &&     d01 && not d10 && not d11 then  
-            //                                                        Printfn.gray "// k is on both ends shorter than l  "
-            //                                                        l.ClosestParameter(ll.From), 0.0                 
+            //                                                        Printfn.gray "// k is on both ends shorter than lnA  "
+            //                                                        lnA.ClosestParameter(lnB.From), 0.0                 
             //    elif not d00 &&     d01 && not d10 &&     d11 then  
-            //                                                        Printfn.gray "// l is on both ends shorter than k  "
-            //                                                        0.0  , ll.ClosestParameter(l.From)               
+            //                                                        Printfn.gray "// lnA is on both ends shorter than k  "
+            //                                                        0.0  , lnB.ClosestParameter(lnA.From)               
             //    elif     d00 &&     d01 && not d10 &&     d11 then  
-            //                                                        Printfn.gray "// k is overlapping l end "
-            //                                                        1.0  , ll.ClosestParameter(l.To)   
+            //                                                        Printfn.gray "// k is overlapping lnA end "
+            //                                                        1.0  , lnB.ClosestParameter(lnA.To)   
             //    elif     d00 &&     d01 &&     d10 &&     d11 then  
-            //                                                        Printfn.gray "// k starts after l ends"
+            //                                                        Printfn.gray "// k starts after lnA ends"
             //                                                        1.0, if flip then 1.0 else  0.0 
             //    else failwith "Bad case in intersectLineParametersInfinite"
             //IntersectionKind.Parallel , u, v 
@@ -935,27 +966,27 @@ type Line3D with
             // Optimized logic: 
             if d01 then 
                 if d10 then  
-                    IntersectionKind.Parallel ,1.0, if flip then 1.0 else  0.0   // k starts after l ends 
+                    IntersectionKind.Parallel ,1.0, if flip then 1.0 else  0.0   // k starts after lnA ends 
                 else 
                     if d00 then 
-                        if d11 then IntersectionKind.Parallel ,1.0 , ll.ClosestParameter(l.To)   // k is overlapping l end  
-                        else        IntersectionKind.Parallel ,l.ClosestParameter(ll.From), 0.0  // k is on both ends shorter than l 
+                        if d11 then IntersectionKind.Parallel ,1.0 , lnB.ClosestParameter(lnA.To)   // k is overlapping lnA end  
+                        else        IntersectionKind.Parallel ,lnA.ClosestParameter(lnB.From), 0.0  // k is on both ends shorter than lnA 
                     else  
-                        IntersectionKind.Parallel ,0.0 , ll.ClosestParameter(l.From) // k is overlapping l start // l is on both ends shorter than k  
+                        IntersectionKind.Parallel ,0.0 , lnB.ClosestParameter(lnA.From) // k is overlapping lnA start // lnA is on both ends shorter than k  
             else  
-                IntersectionKind.Parallel ,0.0 , if flip then 0.0 else  1.0  // l starts after k ends 
+                IntersectionKind.Parallel ,0.0 , if flip then 0.0 else  1.0  // lnA starts after k ends 
         
         
         | IntersectionParamInfinite.Coincident ->
             // cases Overlapping | Continuation  | CoincidentApart | Identical
-            let lv  =  l.Direction // Vec(ax,ay,az)
-            let llv = ll.Direction //Vec(bx,by,bz) 
+            let lv  =  lnA.Direction // Vec(ax,ay,az)
+            let llv = lnB.Direction //Vec(bx,by,bz) 
             let flip = lv*llv < 0.0 
-            let k = if flip then ll.Reversed else ll
-            let l0k0 = Vec.create(l.From,k.From)
-            let l0k1 = Vec.create(l.From,k.To)
-            let l1k0 = Vec.create(l.To  ,k.From)
-            let l1k1 = Vec.create(l.To  ,k.To)
+            let k = if flip then lnB.Reversed else lnB
+            let l0k0 = Vec.create(lnA.From,k.From)
+            let l0k1 = Vec.create(lnA.From,k.To)
+            let l1k0 = Vec.create(lnA.To  ,k.From)
+            let l1k1 = Vec.create(lnA.To  ,k.To)
             let z00 = l0k0.LengthSq < 1e-12 // the sqrt of 1e-6
             let z01 = l0k1.LengthSq < 1e-12 
             let z10 = l1k0.LengthSq < 1e-12 
@@ -978,37 +1009,37 @@ type Line3D with
                 let d11 = lv * l1k1 > 0. 
                 // Full logic:
                 //if   not d00 && not d01 && not d10 && not d11 then  
-                //                                                    Printfn.gray "// l starts after k ends"
+                //                                                    Printfn.gray "// lnA starts after k ends"
                 //                                                    CoincidentApart,0.0, if flip then 0.0 else  1.0 
                 //elif not d00 &&     d01 && not d10 && not d11 then  
-                //                                                    Printfn.gray "// k is overlapping l start"
+                //                                                    Printfn.gray "// k is overlapping lnA start"
                 //                                                    Overlapping    ,0.0, if flip then 0.0 else  1.0 
                 //elif     d00 &&     d01 && not d10 && not d11 then  
-                //                                                    Printfn.gray "// k is on both ends shorter than l  "
-                //                                                    Overlapping    ,l.ClosestParameter(ll.From), 1.0                 
+                //                                                    Printfn.gray "// k is on both ends shorter than lnA  "
+                //                                                    Overlapping    ,lnA.ClosestParameter(lnB.From), 1.0                 
                 //elif not d00 &&     d01 && not d10 &&     d11 then  
-                //                                                    Printfn.gray "// l is on both ends shorter than k  "
-                //                                                    Overlapping    ,0.0  , ll.ClosestParameter(l.To)               
+                //                                                    Printfn.gray "// lnA is on both ends shorter than k  "
+                //                                                    Overlapping    ,0.0  , lnB.ClosestParameter(lnA.To)               
                 //elif     d00 &&     d01 && not d10 &&     d11 then  
-                //                                                    Printfn.gray "// k is overlapping l end "
+                //                                                    Printfn.gray "// k is overlapping lnA end "
                 //                                                    Overlapping    ,1.0  , if flip then 1.0 else  0.0   
                 //elif     d00 &&     d01 &&     d10 &&     d11 then  
-                //                                                    Printfn.gray "// k starts after l ends"
+                //                                                    Printfn.gray "// k starts after lnA ends"
                 //                                                    CoincidentApart,1.0, if flip then 1.0 else  0.0 
                 //else failwith "Bad case in intersectLineParametersInfinite"
 
                 if d01 then  
                     if d10 then 
-                        CoincidentApart, 1.0  , if flip then 1.0 else  0.0   // k starts after l ends
+                        CoincidentApart, 1.0  , if flip then 1.0 else  0.0   // k starts after lnA ends
                     else  
                         if d11 then 
-                            if  d00 then Overlapping  , 1.0  , if flip then 1.0 else  0.0  // k is overlapping l end 
-                            else         Overlapping  , 0.0  , ll.ClosestParameter(l.To)   // l is on both ends shorter than k              
+                            if  d00 then Overlapping  , 1.0  , if flip then 1.0 else  0.0  // k is overlapping lnA end 
+                            else         Overlapping  , 0.0  , lnB.ClosestParameter(lnA.To)   // lnA is on both ends shorter than k              
                         else
-                            if d00 then Overlapping , l.ClosestParameter(ll.From), 1.0   // k is on both ends shorter than l               
-                            else        Overlapping , 0.0 , if flip then 0.0 else  1.0   // k is overlapping l start 
+                            if d00 then Overlapping , lnA.ClosestParameter(lnB.From), 1.0   // k is on both ends shorter than lnA               
+                            else        Overlapping , 0.0 , if flip then 0.0 else  1.0   // k is overlapping lnA start 
                 else 
-                    CoincidentApart, 0.0 , if flip then 0.0 else  1.0    // l starts after k ends        
+                    CoincidentApart, 0.0 , if flip then 0.0 else  1.0    // lnA starts after k ends        
 
     
     /// Returns the intersection kind and the points at which two (finite) 3D Lines are intersecting or closest to each other.
@@ -1018,7 +1049,7 @@ type Line3D with
     /// one of the Intersecting Cases is returned. (or Continuation Case if lines are colinear in one point)
     /// The results are both between 0.0 and 1.0.
     /// For parallel and coincident lines it still returns two points, in the middle of their overlap, or distance apart.
-    /// First point is on l, second point is on ll.
+    /// First point is on lnA, second point is on lnB.
     /// The possible result cases are:  
     /// 
     /// | Intersecting : The finite lines are intersecting each other in one point.
@@ -1060,17 +1091,17 @@ type Line3D with
     /// 
     /// | IdenticalFlipped: The Lines are identical. But orientation is flipped.
     /// The returned points still indicate where the lines start and end. 
-    static member inline intersection  (l:Line3D , ll:Line3D, [<OPT;DEF(1e-6)>] tolerance:float) : IntersectionKind*Pnt*Pnt =  
-        let k,u,v =  Line3D.intersectionParam(l , ll, tolerance)
+    static member inline intersection  (lnA:Line3D , lnB:Line3D, [<OPT;DEF(1e-6)>] tolerance:float) : IntersectionKind*Pnt*Pnt =  
+        let k,u,v =  Line3D.intersectionParam(lnA , lnB, tolerance)
         match k with        
         | Intersecting | IntersectingEndsBoth | IntersectingEndsFirst | IntersectingEndsSecond 
         | Continuation | ContinuationFlipped -> 
-            let p = l.EvaluateAt u
+            let p = lnA.EvaluateAt u
             k,p,p // return same point twice ?
         | Skew | Apart  | IntersectionKind.Parallel 
         | Overlapping | CoincidentApart | Identical| IdenticalFlipped -> 
-            let a  =  l.EvaluateAt u 
-            let b  = ll.EvaluateAt v 
+            let a  =  lnA.EvaluateAt u 
+            let b  = lnB.EvaluateAt v 
             k,a,b            
 
 
@@ -1078,31 +1109,31 @@ type Line3D with
     /// The threshold for intersection can be given as an optional tolerance input. The default is 1e-16.
     /// If the two points ar within this distance a point is returned. 
     /// This might also be the  Continuation Case if lines are colinear in one point.
-    static member intersectionPoint (l:Line3D , ll:Line3D,[<OPT;DEF(1e-6)>] tolerance:float) : option<Pnt> = 
-        let k,u,v =  Line3D.intersectionParam(l , ll, tolerance)
+    static member intersectionPoint (lnA:Line3D , lnB:Line3D,[<OPT;DEF(1e-6)>] tolerance:float) : option<Pnt> = 
+        let k,u,v =  Line3D.intersectionParam(lnA , lnB, tolerance)
         match k with        
         | Intersecting | IntersectingEndsBoth | IntersectingEndsFirst | IntersectingEndsSecond 
         | Continuation | ContinuationFlipped -> 
-            Some(l.EvaluateAt u)
+            Some(lnA.EvaluateAt u)
         | Skew | Apart  | IntersectionKind.Parallel 
         | Overlapping | CoincidentApart | Identical| IdenticalFlipped ->              
             // Raises an Exception if lines are apart, parallel or coincident. 
-            //FsExGeoException.Raise "FsEx.Geo.Line3D.intersectionPoint: Lines are '%A' l: \r\n%O and ll: \r\n%O" k l ll
+            //FsExGeoException.Raise "FsEx.Geo.Line3D.intersectionPoint: Lines are '%A' lnA: \r\n%O and lnB: \r\n%O" k lnA lnB
             None
 
     /// Returns the distance between two finite 3D lines.
     /// For parallel lines the distance is calculate form the actual finit elements. (like in the other cases.) 
     /// So it is maybe bigger than the parallel offset.
     /// For Coincident and intersecting lines below a tolerance of 1e-16 this always returns 0.0.
-    static member inline distanceBetweenLines(l , ll) : float=
-        let k,u,v =  Line3D.intersectionParam(l , ll, 1e-16) // use lower tolerance here to not snap to 0.0
+    static member inline distanceBetweenLines(lnA , lnB) : float=
+        let k,u,v =  Line3D.intersectionParam(lnA , lnB, 1e-16) // use lower tolerance here to not snap to 0.0
         match k with        
         | Intersecting | IntersectingEndsBoth | IntersectingEndsFirst | IntersectingEndsSecond 
         | Continuation | ContinuationFlipped | Overlapping   | Identical| IdenticalFlipped -> 
             0.0           
         | Skew | Apart  | IntersectionKind.Parallel | CoincidentApart ->
-            let a  =  l.EvaluateAt u 
-            let b  = ll.EvaluateAt v 
+            let a  =  lnA.EvaluateAt u 
+            let b  = lnB.EvaluateAt v 
             Pnt.distance a b
         
 
@@ -1118,25 +1149,25 @@ type Line3D with
     /// It first calculates the signed volume of the Parallelepiped define by three vectors from the four corners of the lines.
     /// Then it checks if it is smaller than given volumeTolerance fo Parallelepiped.
     /// Using the VolumeTolerance makes a positive result not only dependent on the distance of the two 3D lines from each other but also on their lengths. 
-    static member inline areInSamePlaneTol volumeTolerance (l:Line3D , ll:Line3D) =  
+    static member inline areInSamePlaneTol volumeTolerance (lnA:Line3D , lnB:Line3D) =  
         // Two non-parallel lines p1+Rv1 and p2+Rv2 intersect if and only if (v1×v2)⋅(p1−p2)=0
         // https://math.stackexchange.com/questions/697124/how-to-determine-if-two-lines-in-3d-intersect
-        // vector of line l:
-        let ax = l.ToX-l.FromX
-        let ay = l.ToY-l.FromY
-        let az = l.ToZ-l.FromZ
-        //vector of line ll:
-        let bx = ll.ToX-ll.FromX
-        let by = ll.ToY-ll.FromY
-        let bz = ll.ToZ-ll.FromZ
+        // vector of line lnA:
+        let ax = lnA.ToX-lnA.FromX
+        let ay = lnA.ToY-lnA.FromY
+        let az = lnA.ToZ-lnA.FromZ
+        //vector of line lnB:
+        let bx = lnB.ToX-lnB.FromX
+        let by = lnB.ToY-lnB.FromY
+        let bz = lnB.ToZ-lnB.FromZ
         // cross product:
         let cx = ay * bz - az * by   
         let cy = az * bx - ax * bz   
         let cz = ax * by - ay * bx 
-        // vector from start of l to start of ll:
-        let vx = l.FromX-ll.FromX
-        let vy = l.FromY-ll.FromY
-        let vz = l.FromZ-ll.FromZ
+        // vector from start of lnA to start of lnB:
+        let vx = lnA.FromX-lnB.FromX
+        let vy = lnA.FromY-lnB.FromY
+        let vz = lnA.FromZ-lnB.FromZ
         let dot = cx*vx + cy*vy + cz*vz
         abs(dot) < volumeTolerance
     *)

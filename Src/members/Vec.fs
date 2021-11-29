@@ -678,44 +678,56 @@ module AutoOpenVec =
             abs(bu*au) > 0.996194698091746 // = cosine of 5 degrees:            
             // for fsi: printfn "%.18f" (cos( 5.0 * (System.Math.PI / 180.)))
 
-        /// Returns the parameters at which two infinite 2D Lines intersect to each other.
-        /// The lines are defined by a start point and a vector.
-        /// Returns ValueNone on zero length or parallel vectors.
-        /// Return order corresponds to input order.
-        /// There is an optional tolerance for the internally calculated relative Angle Discriminant. 
-        /// It may not be zero. The bigger it is the earlier the intersection fails for too short or almmost parallel segments.
-        /// See module FsEx.Geo.Util.RelAngleDiscriminant
-        static member inline intersection (a:Pnt,b:Pnt,va:Vec,vb:Vec, [<OPT;DEF(RelAngleDiscriminant.``0.25``)>] relAngleDiscriminant:float) : ValueOption<float*float> =        
+        ///<summary> Intersects two infinite 3D lines.
+        /// The lines are defined by a start point and a vector.</summary>       
+        ///<param name="ptA"> The start point of the first line.</param>
+        ///<param name="ptB"> The start point of the second line.</param>
+        ///<param name="vA" > The vector of the first line.</param>
+        ///<param name="vB" > The vector of the second line.</param>
+        ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
+        ///  If one or both vectors are shorter than this ValueNone is returned .</param>
+        ///<param name="relAngleDiscriminant"> This is an optional tolerance for the internally calculated relative Angle Discriminant. 
+        /// The default value corresponds to approx 0.25 degree. Below this angle vectors are considered parallel. 
+        /// See module FsEx.Geo.Util.RelAngleDiscriminant</param>      
+        ///<returns> For (almost) zero length or (almost) parallel vectors: ValueNone
+        /// Else ValueSome with a tuple of the  parameters at which the two infinite 2D Lines intersect to each other. 
+        /// The tuple's order corresponds to the input order.</returns>
+        static member intersection( ptA:Pnt, 
+                                    ptB:Pnt, 
+                                    vA:Vec, 
+                                    vB:Vec, 
+                                    [<OPT;DEF(1e-6)>] tooShortTolerance:float,
+                                    [<OPT;DEF(RelAngleDiscriminant.``0.25``)>] relAngleDiscriminant:float
+                                    ) : ValueOption<float*float> =        
             //https://stackoverflow.com/a/34604574/969070 but DP and DQ are in wrong order !        
-            let ax = -a.X 
-            let ay = -a.Y
-            let az = -a.Z
-            let bx = -b.X
-            let by = -b.Y
-            let bz = -b.Z
-            let vx = b.X - a.X
-            let vy = b.Y - a.Y
-            let vz = b.Z - a.Z
-            let a = ax*ax + ay*ay + az*az // square length
-            let b = ax*bx + ay*by + az*bz
-            let c = bx*bx + by*by + bz*bz // square length        
-            let ac = a*c // square of square length  , never negative
-            let bb = b*b // never negative
-            let discriminant = ac - bb
-            let div = ac+bb // never negative
-            if div < 2e-48 then // both lines shorter than 1e-12 ! (2 * 1e-12 * 1e-12 * 1e-12 * 1e-12)
-                ValueSome (0.5, 0.5) 
-            else
-                let e = bx*vx + by*vy + bz*vz  
+            let ax = -vA.X 
+            let ay = -vA.Y
+            let az = -vA.Z
+            let bx = -vB.X
+            let by = -vB.Y
+            let bz = -vB.Z
+            let vx = ptB.X - ptA.X
+            let vy = ptB.Y - ptA.Y
+            let vz = ptB.Z - ptA.Z
+            let a = ax*ax + ay*ay + az*az // square length of A
+            let b = ax*bx + ay*by + az*bz // dot product of both lines
+            let c = bx*bx + by*by + bz*bz // square length of B    
+            if a < tooShortTolerance * tooShortTolerance then  // vec A too short
+                ValueNone
+            elif c < tooShortTolerance * tooShortTolerance then  // vec B too short
+                ValueNone
+            else   
+                let ac = a*c // square of square length  , never negative
+                let bb = b*b // never negative
+                let discriminant = ac - bb // never negative , the dot product cannot be bigger than the two square length multiplied with each other 
+                let div = ac+bb // never negative                          
                 // getting the relation between the sum and the subtraction gives a good estimate of the angle between the lines
-                // see file 'Calculate Angle constants for Line3D intersection.fsx' in Docs folder.
-                // 1.5e-6 for 0.1  degree  
-                // 1e-5   for 0.25 degree 
-                // 1.5e-4 for 1.0  degree   
+                // see module FsEx.Geo.Util.RelAngleDiscriminant    
                 let rel = discriminant/div
                 if rel < relAngleDiscriminant then //parallel               
                     ValueNone      
                 else 
+                    let e = bx*vx + by*vy + bz*vz  
                     let d = ax*vx + ay*vy + az*vz
                     let t = (b * e - c * d) / discriminant
                     let u = (a * e - b * d) / discriminant
