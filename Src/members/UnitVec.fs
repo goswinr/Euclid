@@ -562,7 +562,7 @@ module AutoOpenUnitVec =
         static member transform (m:Matrix) (v:UnitVec) = 
             v*m // operator * is defined in Matrix.fs
         
-        /// Multiplies (or applies) an OrthoMatrix to a 3D Vector . 
+        /// Multiplies (or applies) an OrthoMatrix to a 3D Unit Vector . 
         /// The resulting vector is not unitized if Matrix is translating too.
         static member transformOrtho (m:OrthoMatrix) (v:UnitVec) = 
             v*m // operator * is defined in OrthoMatrix.fs

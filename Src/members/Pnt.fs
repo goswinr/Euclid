@@ -371,8 +371,17 @@ module AutoOpenPnt =
         static member transformOrtho (m:OrthoMatrix) (p:Pnt) = 
             p*m // operator * is defined in OrthoMatrix.fs
             
-
         // Rotate 2D and 3D: 
+
+        /// Multiplies (or applies) only the 3x3 rotation part of an OrthoMatrix to a 3D point. 
+        static member rotateOrtho (m:OrthoMatrix) (v:Pnt) = 
+            let x = v.X
+            let y = v.Y
+            let z = v.Z 
+            Pnt ( m.M11*x + m.M21*y + m.M31*z 
+                , m.M12*x + m.M22*y + m.M32*z 
+                , m.M13*x + m.M23*y + m.M33*z 
+                )        
 
         /// Rotate the 3D point around X-axis, from Y to Z-axis, Counter Clockwise looking from right.
         static member rotateXBy (r:Rotation2D) (p:Pnt) = Pnt (p.X,  r.Cos*p.Y - r.Sin*p.Z, r.Sin*p.Y + r.Cos*p.Z)

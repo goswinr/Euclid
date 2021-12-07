@@ -467,7 +467,6 @@ type BBox =
         (xTouch   && yOverlap && zOverlap)
 
 
-
     /// Evaluate a X,Y and Z parameter of the Bounding Box.
     ///  0.0, 0.0, 0.0 returns the MinPnt.
     ///  1.0, 1.0, 1.0 returns the MaxPnt.
@@ -481,19 +480,34 @@ type BBox =
         b.SizeX*b.SizeY*b.SizeZ
 
     /// Returns the 2D part of this Bounding Box as a Bounding Rectangle.
-    member b.asRect =
+    member inline b.asRect =
         BRect.createUnchecked(b.MinX,b.MinY,b.MaxX,b.MaxY)
 
     
     /// Returns a Bounding Box that contains both input Bounding Box.
-    member b.Union (a:BBox)  =
+    member inline b.Union (a:BBox)  =
         BBox   (min b.MinX a.MinX ,min b.MinY a.MinY,min b.MinZ a.MinZ,
                 max b.MaxX a.MaxX ,max b.MaxY a.MaxY,max b.MaxZ a.MaxZ)
 
     /// Returns a bounding Bounding Box that contains the input Bounding Box and the point.
-    member b.Union (p:Pnt)  =
+    member inline b.Union (p:Pnt)  =
         BBox   (min b.MinX p.X ,min b.MinY p.Y,min b.MinZ p.Z,
                 max b.MaxX p.X ,max b.MaxY p.Y,max b.MaxZ p.Z)
+
+    /// Returns the intersection of two Bounding Boxes.
+    /// The returned Box is the volume inside both input boxes.
+    /// Returns ValueNone if the two boxes do not overlap.
+    member inline b.Intersection (a:BBox)  =
+        let mutable minX = max a.MinX b.MinX
+        let mutable minY = max a.MinY b.MinY
+        let mutable minZ = max a.MinZ b.MinZ
+        let mutable maxX = min a.MaxX b.MaxX
+        let mutable maxY = min a.MaxY b.MaxY
+        let mutable maxZ = min a.MaxZ b.MaxZ
+        if minX <= maxX && minY <= maxY && minZ <= maxZ then
+            ValueSome (BBox(minX,minY,minZ,maxX,maxY,maxZ))
+        else
+            ValueNone
 
     //-------------------------------------------------------------------
     //------------------------static members---------------------------
@@ -566,6 +580,13 @@ type BBox =
     static member inline unionPt (p:Pnt) (b:BBox) =
         BBox   (min b.MinX p.X ,min b.MinY p.Y,min b.MinZ p.Z,
                 max b.MaxX p.X ,max b.MaxY p.Y,max b.MaxZ p.Z)
+
+    /// Returns the intersection of two Bounding Boxes.
+    /// The returned Box is the volume inside both input boxes.
+    /// Returns ValueNone if the two boxes do not overlap.
+    static member inline intersection (a:BBox) (b:BBox) = 
+        a.Intersection(b)
+
 
     /// Finds min and max values for x, y and z.
     static member inline create (a:Pnt , b:Pnt ) =

@@ -145,7 +145,7 @@ type OrthoMatrix =
     /// 1  0  0  0
     /// 0  1  0  0
     /// 0  0  1  0
-    /// Using an approximate tolerance of approx 1e-7.
+    /// Using an approximate tolerance of 1e-6.
     member m.IsIdentity =               
         isOne  m.M11 && isZero m.M21 && isZero m.M31 && isZero m.X41 &&
         isZero m.M12 && isOne  m.M22 && isZero m.M32 && isZero m.Y42 &&

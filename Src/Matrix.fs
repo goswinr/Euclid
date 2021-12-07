@@ -57,7 +57,7 @@ type Matrix =
     override m.ToString()= 
         let ts   = m.ByRows |> Array.map ( fun x -> x.ToString("0.###")) 
         let most = ts |> Array.maxBy ( fun s -> s.Length)
-        "4x4 Colum-Vector Transformation Matrix:\r\n" + (
+        "4x4 Column-Vector Transformation Matrix:\r\n" + (
         ts   
         |> Array.map ( fun x -> String(' ', most.Length-x.Length) + x ) 
         |> Array.chunkBySize 4
@@ -186,7 +186,7 @@ type Matrix =
     /// 0  1  0  0
     /// 0  0  1  0
     /// 0  0  0  1
-    /// Using an approximate tolerance of approx 1e-7.
+    /// Using an approximate tolerance of 1e-6.
     member m.IsIdentity =               
         isOne  m.M11 && isZero m.M21 && isZero m.M31 && isZero m.X41 &&
         isZero m.M12 && isOne  m.M22 && isZero m.M32 && isZero m.Y42 &&
@@ -196,14 +196,14 @@ type Matrix =
     /// Checks if the Matrix is an affine transformation.
     /// That means it does not do any projection.
     /// The fields m.M14, m.M24 and m.M34 must be 0.0 and m.M44 must be 1.0 or very close to it.
-    /// Using an approximate tolerance of 1e-7.
+    /// Using an approximate tolerance of 1e-6.
     member m.IsAffine  =        
         isZero m.M14 && isZero m.M24 && isZero m.M34 && isOne m.M44
 
     /// Checks if the Matrix is an affine transformation.
     /// That means it does not do any projection.
     /// The fields m.M14, m.M24 and m.M34 must be 0.0 and m.M44 must be 1.0 or very close to it.
-    /// Using an approximate tolerance of 1e-7.
+    /// Using an approximate tolerance of 1e-6.
     member m.IsProjecting  =        
         isNotZero m.M14 || isNotZero m.M24 || isNotZero m.M34 || isNotOne m.M44    
 

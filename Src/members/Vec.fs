@@ -49,7 +49,7 @@ module AutoOpenVec =
         
         /// Returns the 3D vector unitized.
         /// Fails with FsExGeoDivByZeroException if the length of the vector is 
-        /// too small (1-e16) to unitize.    
+        /// too small (1e-16) to unitize.    
         member inline v.Unitized =  
             let l = v.Length 
             if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "%O is too small for unitizing, Tolerance:%g" v zeroLengthTol
@@ -626,7 +626,7 @@ module AutoOpenVec =
         static member transformOrtho (m:OrthoMatrix) (v:Vec) = 
             v*m // operator * is defined in OrthoMatrix.fs
         
-        /// Multiplies (or applies) only the 3x3 rotation part of an OrthoMatrix to a 3D Unit Vector . 
+        /// Multiplies (or applies) only the 3x3 rotation part of an OrthoMatrix to a 3D Vector . 
         /// The resulting vector has the same length as the input.
         static member rotateOrtho (m:OrthoMatrix) (v:Vec) = 
             let x = v.X
@@ -679,7 +679,9 @@ module AutoOpenVec =
             // for fsi: printfn "%.18f" (cos( 5.0 * (System.Math.PI / 180.)))
 
         ///<summary> Intersects two infinite 3D lines.
-        /// The lines are defined by a start point and a vector.</summary>       
+        /// The lines are defined by a start point and a vector.
+        /// 'ValueNone' is returned, if the angle between the vectors is less than 0.25 degrees 
+        /// or any of them is shorter than 1e-6. These tolerances can be adjusted with optional parameters. </summary>       
         ///<param name="ptA"> The start point of the first line.</param>
         ///<param name="ptB"> The start point of the second line.</param>
         ///<param name="vA" > The vector of the first line.</param>
@@ -688,16 +690,16 @@ module AutoOpenVec =
         ///  If one or both vectors are shorter than this ValueNone is returned .</param>
         ///<param name="relAngleDiscriminant"> This is an optional tolerance for the internally calculated relative Angle Discriminant. 
         /// The default value corresponds to approx 0.25 degree. Below this angle vectors are considered parallel. 
-        /// See module FsEx.Geo.Util.RelAngleDiscriminant</param>      
+        /// Use the module FsEx.Geo.Util.RelAngleDiscriminant to set another tolerance here.</param>      
         ///<returns> For (almost) zero length or (almost) parallel vectors: ValueNone
-        /// Else ValueSome with a tuple of the  parameters at which the two infinite 2D Lines intersect to each other. 
+        /// Else ValueSome with a tuple of the  parameters at which the two infinite 2D lines intersect to each other. 
         /// The tuple's order corresponds to the input order.</returns>
         static member intersection( ptA:Pnt, 
                                     ptB:Pnt, 
                                     vA:Vec, 
                                     vB:Vec, 
                                     [<OPT;DEF(1e-6)>] tooShortTolerance:float,
-                                    [<OPT;DEF(RelAngleDiscriminant.``0.25``)>] relAngleDiscriminant:float
+                                    [<OPT;DEF(RelAngleDiscriminant.``0.25``)>] relAngleDiscriminant:float<RelAngleDiscriminant.relAngDiscr>
                                     ) : ValueOption<float*float> =        
             //https://stackoverflow.com/a/34604574/969070 but DP and DQ are in wrong order !        
             let ax = -vA.X 
@@ -724,7 +726,7 @@ module AutoOpenVec =
                 // getting the relation between the sum and the subtraction gives a good estimate of the angle between the lines
                 // see module FsEx.Geo.Util.RelAngleDiscriminant    
                 let rel = discriminant/div
-                if rel < relAngleDiscriminant then //parallel               
+                if rel < float relAngleDiscriminant then //parallel               
                     ValueNone      
                 else 
                     let e = bx*vx + by*vy + bz*vz  

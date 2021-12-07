@@ -47,7 +47,7 @@ module AutoOpenVc =
 
         /// Returns the 2D vector unitized.
         /// Fails with FsExGeoDivByZeroException if the length of the vector is 
-        /// too small (1-e16) to unitize. 
+        /// too small (1e-16) to unitize. 
         member inline v.Unitized  = 
             let l = sqrt(v.X * v.X  + v.Y * v.Y)
             // #if DEBUG add here too? TODO ?
@@ -567,7 +567,7 @@ module AutoOpenVc =
                                     vA:Vc, 
                                     vB:Vc, 
                                     [<OPT;DEF(1e-6)>] tooShortTolerance:float,
-                                    [<OPT;DEF(RelAngleDiscriminant.``0.25``)>] relAngleDiscriminant:float
+                                    [<OPT;DEF(RelAngleDiscriminant.``0.25``)>] relAngleDiscriminant:float<RelAngleDiscriminant.relAngDiscr>
                                     ) : ValueOption<float*float> =        
             //https://stackoverflow.com/a/34604574/969070 but DP and DQ are in wrong order !        
             let ax = -vA.X 
@@ -591,7 +591,7 @@ module AutoOpenVc =
                 // getting the relation between the sum and the subtraction gives a good estimate of the angle between the lines
                 // see module FsEx.Geo.Util.RelAngleDiscriminant  
                 let rel = discriminant / div
-                if rel < relAngleDiscriminant then //parallel               
+                if rel < float relAngleDiscriminant then //parallel               
                     ValueNone      
                 else 
                     let e = bx*vx + by*vy 

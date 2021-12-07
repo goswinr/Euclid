@@ -27,7 +27,7 @@ type BRect =
          MaxX = maxX
          MaxY = maxY}
 
-    /// Nicely formatted string representation of the bounding Rectangle, including its size.
+    /// Nicely formatted string representation of the Bounding Rectangle, including its size.
     override r.ToString() =
         sprintf "FsEx.Geo.BRect: length(x)=%s| width(y)=%s| at X=%s| Y=%s"
             (Format.float (r.MaxX - r.MinX)) (Format.float (r.MaxY - r.MinY)) (Format.float r.MinX) (Format.float r.MinY)
@@ -157,14 +157,14 @@ type BRect =
             || r.MinY > a.MaxY - tol
             )
 
-    /// Returns true if the point is inside or exactly on the bounding Rectangle.
+    /// Returns true if the point is inside or exactly on the Bounding Rectangle.
     member inline r.Contains (p:Pt) =
         p.X >= r.MinX &&
         p.X <= r.MaxX &&
         p.Y >= r.MinY &&
         p.Y <= r.MaxY
 
-    /// Returns true if the Rectangle is inside or exactly on the other bounding Rectangle.
+    /// Returns true if the Rectangle is inside or exactly on the other Bounding Rectangle.
     member inline r.Contains (o:BRect) =
         r.Contains(o.MinPt) && r.Contains(o.MaxPt)
 
@@ -187,13 +187,27 @@ type BRect =
     member inline r.Area  =
         r.SizeX*r.SizeY
 
-    /// Returns a bounding Rectangle that contains both input Rectangles.
+    /// Returns a Bounding Rectangle that contains both input Rectangles.
     member inline r.Union  (b:BRect) =
         BRect (min b.MinX r.MinX ,min b.MinY r.MinY,max b.MaxX r.MaxX ,max b.MaxY r.MaxY)
 
-    /// Returns a bounding Rectangle that contains the input Rectangles and the point.
+    /// Returns a Bounding Rectangle that contains the input Rectangles and the point.
     member inline r.Union (p:Pt)  =
         BRect (min r.MinX p.X ,min r.MinY p.Y, max r.MaxX p.X ,max r.MaxY p.Y)
+
+
+    /// Returns the intersection of two Bounding Rectangles.
+    /// The returned Rectangle is the volume inside both input Rectangle.
+    /// Returns ValueNone if the two Rectangles do not overlap.
+    member inline b.Intersection (a:BRect)  =
+        let mutable minX = max a.MinX b.MinX
+        let mutable minY = max a.MinY b.MinY
+        let mutable maxX = min a.MaxX b.MaxX
+        let mutable maxY = min a.MaxY b.MaxY
+        if minX <= maxX && minY <= maxY then
+            ValueSome (BRect(minX,minY,maxX,maxY))
+        else
+            ValueNone   
 
     //-------------------------------------------------------------------
     //------------------------static members---------------------------
@@ -240,24 +254,36 @@ type BRect =
     static member inline doOverlapMoreThan tol (a:BRect) (b:BRect) =
         b.OverlapsWith(a,tol)
 
-    /// Returns true if the Bounding Rectangle is inside or exactly on the other bounding Rectangle.
+    /// Returns true if the Bounding Rectangle is inside or exactly on the other Bounding Rectangle.
     /// Argument order matters!
     static member inline contains (rectInside:BRect) (surroundingRect:BRect) =
         surroundingRect.Contains(rectInside)
 
-    /// Returns true if the point is inside or on  the bounding Rectangle.
+    /// Returns true if the point is inside or on  the Bounding Rectangle.
     static member inline containsPt (pt:Pt) (rect:BRect) =
         rect.Contains(pt)
 
 
-    /// Returns a bounding Rectangle that contains both input Rectangles.
+    /// Returns a Bounding Rectangle that contains both input Rectangles.
     static member inline union (a:BRect) (b:BRect) =
         BRect (min b.MinX a.MinX ,min b.MinY a.MinY,max b.MaxX a.MaxX ,max b.MaxY a.MaxY)
 
-    /// Returns a bounding Rectangle that contains the input Rectangles and the point.
+    /// Returns a Bounding Rectangle that contains the input Rectangles and the point.
     static member inline unionPt (p:Pt) (r:BRect) =
         BRect (min r.MinX p.X ,min r.MinY p.Y, max r.MaxX p.X ,max r.MaxY p.Y)
 
+    /// Returns the intersection of two Bounding Rectangles.
+    /// The returned Rectangle is the volume inside both input Rectangle.
+    /// Returns ValueNone if the two Rectangles do not overlap.
+    static member inline intersection (a:BRect) (b:BRect)  =
+        let mutable minX = max a.MinX b.MinX
+        let mutable minY = max a.MinY b.MinY
+        let mutable maxX = min a.MaxX b.MaxX
+        let mutable maxY = min a.MaxY b.MaxY
+        if minX <= maxX && minY <= maxY then
+            ValueSome (BRect(minX,minY,maxX,maxY))
+        else
+            ValueNone 
 
     /// Finds min and max values for x and y.
     static member inline create (a:Pt , b:Pt ) =

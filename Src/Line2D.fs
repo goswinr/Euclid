@@ -1,160 +1,8 @@
 namespace FsEx.Geo
-
-/// A module for the result types of 2D and 3D Line-Line-intersections.
-module LineIntersectionTypes = 
-
-    /// For infinite 2D or 3D lines.
-    /// The result line parameters from computing the intersection.
-    [<Struct>]
-    type IntersectionParamInfinite =  
-        
-        /// The infinite lines are intersecting (2D and 3D) or skew (3D only) 
-        /// They have each one point where they are touching each other. ( Or are closest to each other. 3D only)
-        /// Contains the parameters on the first and second line.
-        | TwoParam of twoParams : struct(float*float)
-        
-        /// The lines are parallel within 0.25 degrees.
-        /// They have no points in common
-        | Parallel 
-        
-        /// The lines are coincident (or maybe even identical) .
-        /// As infinite lines they have infinitely many points in common.
-        /// They might still not have the same start and end points in their finit definition.
-        | Coincident
-
-        /// One or both input lines is shorter than the given minimum Length tolerance.
-        | TooShort
-
-
-    /// For infinite 2D lines.
-    /// The result from computing the intersection of two infinite 2D lines.
-    [<Struct>]
-    [<NoEquality; NoComparison>]
-    type IntersectionPointsInfinite2D =  
-
-        /// The points of 2D intersection.
-        | Point of xPoint:Pt
-        
-        /// The lines are parallel within 0.25 degrees.
-        | Parallel
-
-        /// The lines are coincident or maybe even identical.
-        /// As infinite lines they have infinitely many points in common.
-        /// They might still not have the same start and end points in their finit definition.
-        | Coincident
-        
-        /// One or both input lines is shorter than the given minimum Length tolerance.
-        | TooShort
-    
-    /// For infinite 3D lines.
-    /// The result from computing the intersection of two infinite 2D lines.
-    // [<Struct>]
-    [<NoEquality; NoComparison>]
-    type IntersectionPointsInfinite3D =  
-        
-        /// The lines are skew by mor than 1e-6. or the given tolerance
-        /// Contains the points on the first and second 
-        /// line where they are closest to each other.
-        | TwoPoints of skewPoints : struct(Pnt*Pnt)
-
-        /// The 3D lines are intersection in exactly one point.
-        | OnePoint of xPoint : Pnt
-        
-        /// The lines are parallel within 0.25 degrees.
-        | Parallel
-
-        /// The lines are coincident or maybe even identical.
-        /// As infinite lines they have infinitely many points in common.        
-        | Coincident
-        
-        /// One or both input lines is shorter than the given minimum Length tolerance.
-        | TooShort
-    
-
-    /// For finite 2D or 3D lines.
-    /// An enumeration of all possible results from computing the intersection. 
-    /// For finite lines there are much mor cases than for infinite lines
-    /// General Cases:
-    /// | Intersecting | IntersectingEndsBoth | IntersectingEndsFirst | IntersectingEndsSecond | Skew | Apart 
-    /// Parallel Cases:
-    /// | Parallel | Overlapping | CoincidentApart | Continuation | ContinuationFlipped| Identical| IdenticalFlipped
-    type IntersectionKind =
-
-        /// The finite lines are intersecting each other in one point.        
-        | Intersecting 
-
-        /// The finite lines are intersecting each other at one of their end or start points point.        
-        | IntersectingEndsBoth 
-        
-        /// The finite lines are intersecting. The first line is touching the second one with its end or start point.        
-        | IntersectingEndsFirst 
-
-        /// The finite lines are intersecting. The second line is touching the first one with its end or start point.        
-        | IntersectingEndsSecond
-
-        /// The finite lines are skew to each other.
-        /// Their closest points to each other are within the line.
-        /// The returned parameters are between 0.0 and 1.0
-        | Skew 
-
-        /// The finite lines are not intersecting nor skew.
-        /// At least one of the parameters of closets points would be outside of  the range 0.0 and 1.0.
-        /// The returned parameters  still indicate where the finite lines are closest to each other.
-        | Apart        
-
-        //------- Parallel and other special cases for finite lines: ---------------
-
-        /// The finite lines are parallel.
-        /// Within 0.25 degrees.
-        /// The returned parameters are in the middle of their overlap, 
-        /// or in the middle of their distance apart.
-        | Parallel 
-
-        /// The lines are coincident,  overlapping and parallel within 0.25 degrees.
-        /// The returned parameters are at start and end of overlap.
-        | Overlapping 
-        
-        /// The Lines are coincident, parallel within 0.25 degrees. 
-        /// But ends are apart. 
-        /// The returned parameters still indicate where the lines are closest to each other.
-        | CoincidentApart 
-
-        /// The Lines are coincident, parallel within 0.25 degrees. 
-        /// The ends are meeting in exactly one point.
-        /// And Oriented the same way.
-        /// The returned parameters indicate which ends these are.
-        | Continuation 
-        
-        /// The Lines are coincident, parallel within 0.25 degrees.
-        /// The ends are meeting in exactly one point.
-        /// But orientation is flipped
-        /// The returned parameters indicate which ends these are.
-        | ContinuationFlipped
-
-        /// The Lines are identical , in orientation too with in 1-e6 tolerance.
-        /// The returned parameters still indicate where the lines start and end.
-        | Identical
-
-        /// The Lines are identical. But orientation is flipped
-        /// The returned parameters still indicate where the lines start and end.
-        | IdenticalFlipped
-
-        /// One or both input lines is shorter than the given minimum Length tolerance.
-        | TooShort
-        
-    /// Return true if the IntersectionKind is represented by one Point. 
-    /// Not two like in skew or none like in parallel.
-    let isIntersectionOnePoint k =
-        match k with        
-        | Intersecting | IntersectingEndsBoth | IntersectingEndsFirst 
-        | IntersectingEndsSecond  | Continuation | ContinuationFlipped -> true
-        | Skew | Apart | IntersectionKind.Parallel  
-        | Overlapping  | CoincidentApart | Identical| IdenticalFlipped
-        | TooShort -> false
         
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>]
 open FsEx.Geo.Util
-open LineIntersectionTypes         
+open FsEx.Geo.LineIntersectionTypes         
 
 /// An immutable finite line in 2D. Represented by a 2D start and 2D end point.
 [<Struct;NoEquality;NoComparison>]// because its made up from floats
@@ -665,6 +513,7 @@ type Line2D =
         line.Tangent.Unitized * (pt-line.From)          
 
     /// Extend by absolute amount at start and end.
+    /// Fails on lines shorter than 1e-12.
     static member inline extend (distAtStart:float) (distAtEnd:float) (ln:Line2D) = 
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY         
@@ -676,6 +525,7 @@ type Line2D =
                 ln.ToY   + y*distAtEnd/l)
     
     /// Extend by absolute amount at start.
+    /// Fails on lines shorter than 1e-12.
     static member inline extendStart (distAtStart:float)  (ln:Line2D) = 
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY         
@@ -687,6 +537,7 @@ type Line2D =
                 ln.ToY   )
     
     /// Extend by absolute amount at end.
+    /// Fails on lines shorter than 1e-12.
     static member inline extendEnd  (distAtEnd:float) (ln:Line2D) = 
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY         
@@ -698,6 +549,7 @@ type Line2D =
                 ln.ToY   + y*distAtEnd/l )  
 
     /// Finds point at given distance from line start
+    /// Fails on lines shorter than 1e-12.
     static member inline pointAtDistance dist (ln:Line2D) = 
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY         
@@ -706,7 +558,8 @@ type Line2D =
         Pt(ln.FromX + x*dist/len, 
             ln.FromY + y*dist/len)
     
-    /// Returns new Line2D with given length, going out from start in direction of end
+    /// Returns new Line2D with given length, going out from start in direction of end.
+    /// Fails on lines shorter than 1e-12.
     static member inline withLengthFromStart len (ln:Line2D) = 
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY        
@@ -718,6 +571,7 @@ type Line2D =
                 ln.FromY + y*len/l ) 
     
     /// Returns new Line2D ending at current LineEnd with given length coming from direction of start.
+    /// Fails on lines shorter than 1e-12.
     static member inline withLengthToEnd len (ln:Line2D) = 
         let x = ln.FromX-ln.ToX
         let y = ln.FromY-ln.ToY
@@ -729,7 +583,8 @@ type Line2D =
                 ln.ToY )
         
 
-    /// Offset line in XY Plane to left side in line direction
+    /// Offset line in XY Plane to left side in line direction.
+    /// Fails on lines shorter than 1e-12.
     static member offset amount (ln:Line2D) = 
         let x = ln.ToX - ln.FromX
         let y = ln.ToY - ln.FromY
@@ -789,13 +644,13 @@ type Line2D =
     ///<param name="lnA"> The first line.</param>
     ///<param name="lnB"> The second line.</param>
     ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
-    ///  If one or both vectors are shorter than 'TooShort' union case is returned .</param>
+    ///  If one or both lines are shorter than the 'TooShort' union case is returned .</param>
     ///<param name="relAngleDiscriminant"> This is an optional tolerance for the internally calculated relative Angle Discriminant. 
-    /// The default value corresponds to approx 0.25 degree. Below this angle the 'Parallel' or 'Coincident' union case is returned. 
-    /// See module FsEx.Geo.Util.RelAngleDiscriminant</param>   
+    /// The default value is '0.00000952' this corresponds to approx 0.25 degree. Below this angle the 'Parallel' or 'Coincident' union case is returned. 
+    /// Use the module FsEx.Geo.Util.RelAngleDiscriminant to set another tolerance here.</param>   
     ///<param name="coincidentTolerance" > Is an optional distance tolerance. 1e-6 by default.
-    ///  If parallel lines are closer than this the  'Coincident' union case is returned .</param>    
-    ///<returns> An IntersectionParamInfinite Discriminated Union with the following cases:  
+    ///  If parallel lines are closer than this the 'Coincident' union case is returned .</param>     
+    ///<returns> An IntersectionParam Discriminated Union with the following cases:  
     ///         
     /// | TwoParam of twoParams : struct(float*float):
     /// The infinite lines are intersecting.
@@ -816,9 +671,9 @@ type Line2D =
     static member inline intersectionParamInfinite( lnA:Line2D , 
                                                     lnB:Line2D ,
                                                     [<OPT;DEF(1e-6)>] tooShortTolerance:float,
-                                                    [<OPT;DEF(RelAngleDiscriminant.``0.25``)>] relAngleDiscriminant:float,
+                                                    [<OPT;DEF(RelAngleDiscriminant.``0.25``)>] relAngleDiscriminant:float<RelAngleDiscriminant.relAngDiscr>,
                                                     [<OPT;DEF(1e-6)>] coincidentTolerance:float
-                                                    ) : IntersectionParamInfinite =        
+                                                    ) : IntersectionParam =        
         //https://stackoverflow.com/a/34604574/969070 but DP and DQ are in wrong order !        
         let ax = lnA.FromX - lnA.ToX  
         let ay = lnA.FromY - lnA.ToY 
@@ -829,10 +684,14 @@ type Line2D =
         let a = ax*ax + ay*ay  // square length of A
         let b = ax*bx + ay*by  // dot product of both lines
         let c = bx*bx + by*by  // square length of B    
-        if a < tooShortTolerance * tooShortTolerance then  // vec A too short
-            IntersectionParamInfinite.TooShort
-        elif c < tooShortTolerance * tooShortTolerance then  // vec B too short
-            IntersectionParamInfinite.TooShort
+        let shortSq = tooShortTolerance * tooShortTolerance
+        if a < shortSq then  // vec A too short            
+            if c < shortSq then 
+                IntersectionParam.TooShortBoth
+            else
+                IntersectionParam.TooShortA
+        elif c < shortSq then  // vec B too short
+            IntersectionParam.TooShortB
         else   
             let ac = a*c // square of square length  , never negative
             let bb = b*b // never negative
@@ -841,14 +700,14 @@ type Line2D =
             // getting the relation between the sum and the subtraction gives a good estimate of the angle between the lines
             // see module FsEx.Geo.Util.RelAngleDiscriminant    
             let rel = discriminant/div
-            if rel < relAngleDiscriminant then //parallel               
+            if rel < float relAngleDiscriminant then //parallel               
                 let e = bx*vx + by*vy  
                 let t = e / c // c is already checked for being non zero. get closest parameter of lnA.From on lnB
                 let p = lnB.EvaluateAt(t) //TODO could be inlined to optimize 
                 if Pt.distanceSq p lnA.From < coincidentTolerance*coincidentTolerance then 
-                    IntersectionParamInfinite.Coincident
+                    IntersectionParam.Coincident
                 else   
-                    IntersectionParamInfinite.Parallel       
+                    IntersectionParam.Parallel       
             else 
                 let e = bx*vx + by*vy
                 let d = ax*vx + ay*vy 
@@ -859,36 +718,75 @@ type Line2D =
     
     
     
-    /// Assumes Lines to be infinite.    
-    /// Returns the one Point where the two lines intersect.
-    /// Else if the lines are parallel within approx 0.25 degrees then The Parallel Union Case.  
-    /// Or if the parallel lines are closer than 1e-6 than Coincident Union Case.  
-    static member inline intersectionInfinite  (lnA:Line2D , lnB:Line2D) : IntersectionPointsInfinite2D =  
-        match Line2D.intersectionParamInfinite(lnA,lnB) with 
-        |TwoParam (u,v)                       -> IntersectionPointsInfinite2D.Point (lnA.EvaluateAt u)
-        |IntersectionParamInfinite.Parallel   -> IntersectionPointsInfinite2D.Parallel
-        |IntersectionParamInfinite.Coincident -> IntersectionPointsInfinite2D.Coincident
+    ///<summary> Gets the points at which two infinite 2D lines intersect. Or are closest to each other.</summary>
+    ///<param name="lnA"> The first line.</param>
+    ///<param name="lnB"> The second line.</param>
+    ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
+    ///  If one or both lines are shorter than the 'TooShort' union case is returned .</param>
+    ///<param name="relAngleDiscriminant"> This is an optional tolerance for the internally calculated relative Angle Discriminant. 
+    /// The default value is '0.00000952' this corresponds to approx 0.25 degree. Below this angle the 'Parallel' or 'Coincident' union case is returned. 
+    /// Use the module FsEx.Geo.Util.RelAngleDiscriminant to set another tolerance here.</param>   
+    ///<param name="coincidentTolerance" > Is an optional distance tolerance. 1e-6 by default.
+    ///  If parallel lines are closer than this the 'Coincident' union case is returned .</param>   
+    ///<returns> An IntersectionPoints3D Discriminated Union with the following cases:
+    /// 
+    /// | Point of xPoint : Pnt
+    ///     The points of 2D intersection.
+    ///        
+    /// | Parallel:
+    ///     The lines are parallel, within the given tolerance.
+    /// 
+    /// | Coincident:
+    ///     The lines are coincident or maybe even identical.
+    ///     As infinite lines they have infinitely many points in common.
+    /// 
+    /// | TooShort:
+    ///     One or both input lines is shorter than the given minimum Length tolerance.
+    /// </returns>  
+    static member inline intersectionInfinite  (lnA:Line2D , 
+                                                lnB:Line2D,
+                                                [<OPT;DEF(1e-6)>] tooShortTolerance:float,
+                                                [<OPT;DEF(RelAngleDiscriminant.``0.25``)>] relAngleDiscriminant:float<RelAngleDiscriminant.relAngDiscr>,
+                                                [<OPT;DEF(1e-6)>] coincidentTolerance:float
+                                                ) : IntersectionPoints2D =  
+        match Line2D.intersectionParamInfinite(lnA,lnB,tooShortTolerance, relAngleDiscriminant , coincidentTolerance) with 
+        |TwoParam (u,v)                       -> IntersectionPoints2D.Point (lnA.EvaluateAt u)
+        |IntersectionParam.Parallel   -> IntersectionPoints2D.Parallel
+        |IntersectionParam.Coincident -> IntersectionPoints2D.Coincident
+        |IntersectionParam.TooShortA
+        |IntersectionParam.TooShortB
+        |IntersectionParam.TooShortBoth  ->  IntersectionPoints2D.TooShort
 
+    ///<summary>Gets the single points where these two infinite 2D lines actually intersect each other.
+    /// The returned point is on line A. </summary>
+    ///<param name="lnA"> The first line.</param>
+    ///<param name="lnB"> The second line.</param>
+    ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
+    ///  If one or both lines are shorter than the 'TooShort' union case is returned .</param>
+    ///<param name="relAngleDiscriminant"> This is an optional tolerance for the internally calculated relative Angle Discriminant. 
+    /// The default value is '0.00000952' this corresponds to approx 0.25 degree. Below this angle the 'Parallel' or 'Coincident' union case is returned. 
+    /// Use the module FsEx.Geo.Util.RelAngleDiscriminant to set another tolerance here.</param>   
+    ///<param name="coincidentTolerance" > Is an optional distance tolerance. 1e-6 by default.
+    ///  If parallel lines are closer than this the 'Coincident' union case is returned .</param> 
+    /// <returns> A single 3D point</returns>  
+    static member intersectionPointInfinite(lnA:Line2D , 
+                                            lnB:Line2D ,
+                                            [<OPT;DEF(1e-6)>] tooShortTolerance:float,
+                                            [<OPT;DEF(RelAngleDiscriminant.``0.25``)>] relAngleDiscriminant:float<RelAngleDiscriminant.relAngDiscr>,
+                                            [<OPT;DEF(1e-6)>] coincidentTolerance:float
+                                            ) : Pt = 
+        match Line2D.intersectionInfinite(lnA , lnB, tooShortTolerance, relAngleDiscriminant, coincidentTolerance) with 
+        |IntersectionPoints2D.Point p     -> p
+        |IntersectionPoints2D.Parallel    -> FsExGeoException.Raise "FsEx.Geo.Line2D.intersectionPointInfinite: Lines are parallel lnA: \r\n%O and lnB: \r\n%O" lnA lnB
+        |IntersectionPoints2D.Coincident  -> FsExGeoException.Raise "FsEx.Geo.Line2D.intersectionPointInfinite: Lines are coincident lnA: \r\n%O and lnB: \r\n%O" lnA lnB
+        |IntersectionPoints2D.TooShort    -> FsExGeoException.Raise "FsEx.Geo.Line2D.intersectionPointInfinite: Lines are tooShort lnA: \r\n%O and lnB: \r\n%O" lnA lnB
+    
 
-    /// Assumes Lines to be infinite.    
-    /// Returns the single points where these two infinite lines actually intersect each other.
-    /// Raises an Exception if lines are parallel or coincident
-    static member intersectionPointInfinite (lnA:Line2D , lnB:Line2D) : Pt = 
-        match Line2D.intersectionInfinite(lnA,lnB) with 
-        |IntersectionPointsInfinite2D.Point p  -> p
-        |IntersectionPointsInfinite2D.Coincident  -> FsExGeoException.Raise "FsEx.Geo.Line2D.intersectionPointInfinite: Lines are coincident lnA: \r\n%O and lnB: \r\n%O" lnA lnB
-        |IntersectionPointsInfinite2D.Parallel    -> FsExGeoException.Raise "FsEx.Geo.Line2D.intersectionPointInfinite: Lines are parallel lnA: \r\n%O and lnB: \r\n%O" lnA lnB
+    //static member  distanceBetweenInfiniteLines(lnA , lnB) = // doesn't make sense for 2D lines
         
-    /// Assumes Lines to be infinite.    
-    /// Returns the distance between two infinite lines.
-    /// Unless they are parallel and not coinciding the result is 0.0.   
-    static member inline distanceBetweenInfiniteLines(lnA,lnB) =
-        match Line2D.intersectionParamInfinite(lnA,lnB) with 
-        |IntersectionParamInfinite.Coincident  
-        |TwoParam _ -> 0.0
-        |IntersectionParamInfinite.Parallel ->  lnA.DistanceFromPointInfinite lnB.From
 
-    /// Returns the intersection kind and the parameters at which two (finite) 2D Lines are intersect or are closest to each other.
+
+    /// <summary>Returns the intersection kind and the parameters at which two (finite) 2D Lines are intersect or are closest to each other.
     /// The results are both between 0.0 and 1.0.
     /// For parallel and coincident lines it still returns two parameters, in the middle of their overlap, or distance apart.
     /// First parameter is on lnA, second parameter is on lnB.
@@ -926,14 +824,42 @@ type Line2D =
     /// The ends are meeting in exactly one point. But orientation is flipped.
     /// The returned parameters indicate which ends these are.
     /// 
-    /// | Identical: The Lines are identical , in orientation too with in 1-e6 tolerance.
+    /// | Identical: The Lines are identical , in orientation too with in 1e-6 tolerance.
     /// The returned parameters still indicate where the lines start and end.
     /// 
     /// | IdenticalFlipped: The Lines are identical. But orientation is flipped.
-    /// The returned parameters still indicate where the lines start and end.        
-    static member inline intersectionParam (lnA:Line2D , lnB:Line2D) : IntersectionKind*float*float =         
-        match Line2D.intersectionParamInfinite(lnA,lnB) with 
-        | IntersectionParamInfinite.TwoParam ( u0 , v0 ) -> 
+    /// The returned parameters still indicate where the lines start and end.   
+    ///
+    /// ------------------------------Error Cases: -----------------------------
+    /// 
+    /// | TooShortA
+    /// Input line A is shorter than the given minimum Length tolerance.
+    /// The returned parameters are 0.5 for line A and the closets point to lineB from the middle of line A.
+    /// 
+    /// | TooShortB
+    /// Input line B is shorter than the given minimum Length tolerance.
+    /// The returned parameters are the closets point to lineA from the middle of line B and 0.5 for line B
+    /// 
+    /// | TooShortBoth     
+    /// Both input lines are shorter than the given minimum Length tolerance.  
+    /// The returned parameters are 0.5 and 0.5 for both lines.</summary>
+    ///<param name="lnA"> The first line.</param>
+    ///<param name="lnB"> The second line.</param>
+    ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
+    ///  If one or both lines are shorter than the 'TooShort' union case is returned .</param>
+    ///<param name="relAngleDiscriminant"> This is an optional tolerance for the internally calculated relative Angle Discriminant. 
+    /// The default value is '0.00000952' this corresponds to approx 0.25 degree. Below this angle the 'Parallel' or 'Coincident' union case is returned. 
+    /// Use the module FsEx.Geo.Util.RelAngleDiscriminant to set another tolerance here.</param>   
+    ///<param name="coincidentTolerance" > Is an optional distance tolerance. 1e-6 by default.
+    ///  If parallel lines are closer than this the 'Coincident' union case is returned .</param>       
+    static member inline intersectionParam (lnA:Line2D , 
+                                            lnB:Line2D ,
+                                            [<OPT;DEF(1e-6)>] tooShortTolerance:float,
+                                            [<OPT;DEF(RelAngleDiscriminant.``0.25``)>] relAngleDiscriminant:float<RelAngleDiscriminant.relAngDiscr>,
+                                            [<OPT;DEF(1e-6)>] coincidentTolerance:float
+                                            ) : IntersectionKind*float*float =         
+        match Line2D.intersectionParamInfinite(lnA,lnB, tooShortTolerance, relAngleDiscriminant, coincidentTolerance) with 
+        | IntersectionParam.TwoParam ( u0 , v0 ) -> 
             /// numerical error tolerance check to also find an intersection that happens just after the line end:
             let ur = isZeroOneOrBetween u0
             let vr = isZeroOneOrBetween v0
@@ -956,7 +882,7 @@ type Line2D =
                 let ut = Line2D.closestParameter pv lnA 
                 Apart, ut ,vt
         
-        | IntersectionParamInfinite.Parallel ->
+        | IntersectionParam.Parallel ->
             
             let lv  =  lnA.Direction 
             let llv = lnB.Direction            
@@ -1012,7 +938,7 @@ type Line2D =
                 IntersectionKind.Parallel ,0.0 , if flip then 0.0 else  1.0  // lnA starts after k ends 
         
         
-        | IntersectionParamInfinite.Coincident ->
+        | IntersectionParam.Coincident ->
             // cases Overlapping | Continuation  | CoincidentApart | Identical
             let lv  =  lnA.Direction // Vec(ax,ay,az)
             let llv = lnB.Direction //Vec(bx,by,bz) 
@@ -1022,10 +948,11 @@ type Line2D =
             let l0k1 = Vc.create(lnA.From,k.To)
             let l1k0 = Vc.create(lnA.To  ,k.From)
             let l1k1 = Vc.create(lnA.To  ,k.To)
-            let z00 = l0k0.LengthSq < 1e-12 // the sqrt of 1e-6
-            let z01 = l0k1.LengthSq < 1e-12 
-            let z10 = l1k0.LengthSq < 1e-12 
-            let z11 = l1k1.LengthSq < 1e-12 
+            let coTolSq = coincidentTolerance*coincidentTolerance
+            let z00 = l0k0.LengthSq < coTolSq
+            let z01 = l0k1.LengthSq < coTolSq
+            let z10 = l1k0.LengthSq < coTolSq
+            let z11 = l1k1.LengthSq < coTolSq 
             
             if z00 && z11 then 
                 if flip then IdenticalFlipped , 0.0 , 0.0 
@@ -1076,9 +1003,11 @@ type Line2D =
                 else 
                     CoincidentApart, 0.0 , if flip then 0.0 else  1.0    // lnA starts after k ends
                 
-
+        |IntersectionParam.TooShortA     -> TooShortA    , 0.5 , lnB.ClosestParameter lnA.Mid
+        |IntersectionParam.TooShortB     -> TooShortB    , lnA.ClosestParameter lnB.Mid, 0.5
+        |IntersectionParam.TooShortBoth  -> TooShortBoth , 0.5, 0.5
     
-    /// Returns the intersection kind and the points at which two (finite) 2D Lines are intersecting or closest to each other.
+    /// <summary>Returns the intersection kind and the points at which two (finite) 2D Lines are intersecting or closest to each other.
     /// The results are both between 0.0 and 1.0.
     /// For parallel and coincident lines it still returns two points, in the middle of their overlap, or distance apart.
     /// First point is on lnA, second point is on lnB.
@@ -1116,20 +1045,49 @@ type Line2D =
     /// The ends are meeting in exactly one point. But orientation is flipped.
     /// The returned points indicate which ends these are.
     /// 
-    /// | Identical: The Lines are identical , in orientation too with in 1-e6 tolerance.
+    /// | Identical: The Lines are identical , in orientation too with in 1e-6 tolerance.
     /// The returned points still indicate where the lines start and end.
     /// 
     /// | IdenticalFlipped: The Lines are identical. But orientation is flipped.
     /// The returned points still indicate where the lines start and end.
-    static member inline intersection  (lnA:Line2D , lnB:Line2D) : IntersectionKind*Pt*Pt =  
-        let k,u,v =  Line2D.intersectionParam(lnA,lnB)
+    ///
+    /// ------------------------------Error Cases: -----------------------------
+    /// 
+    /// | TooShortA
+    /// Input line A is shorter than the given minimum Length tolerance.
+    /// The returned parameters are 0.5 for line A and the closets point to lineB from the middle of line A.
+    /// 
+    /// | TooShortB
+    /// Input line B is shorter than the given minimum Length tolerance.
+    /// The returned parameters are the closets point to lineA from the middle of line B and 0.5 for line B
+    /// 
+    /// | TooShortBoth     
+    /// Both input lines are shorter than the given minimum Length tolerance.  
+    /// The returned parameters are 0.5 and 0.5 for both lines.</summary>
+    ///<param name="lnA"> The first line.</param>
+    ///<param name="lnB"> The second line.</param>
+    ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
+    ///  If one or both lines are shorter than the 'TooShort' union case is returned .</param>
+    ///<param name="relAngleDiscriminant"> This is an optional tolerance for the internally calculated relative Angle Discriminant. 
+    /// The default value is '0.00000952' this corresponds to approx 0.25 degree. Below this angle the 'Parallel' or 'Coincident' union case is returned. 
+    /// Use the module FsEx.Geo.Util.RelAngleDiscriminant to set another tolerance here.</param>   
+    ///<param name="coincidentTolerance" > Is an optional distance tolerance. 1e-6 by default.
+    ///  If parallel lines are closer than this the 'Coincident' union case is returned .</param>
+    static member inline intersection  (lnA:Line2D , 
+                                        lnB:Line2D ,
+                                        [<OPT;DEF(1e-6)>] tooShortTolerance:float,
+                                        [<OPT;DEF(RelAngleDiscriminant.``0.25``)>] relAngleDiscriminant:float<RelAngleDiscriminant.relAngDiscr>,
+                                        [<OPT;DEF(1e-6)>] coincidentTolerance:float
+                                        ) : IntersectionKind*Pt*Pt =  
+        let k,u,v =  Line2D.intersectionParam(lnA,lnB, tooShortTolerance, relAngleDiscriminant, coincidentTolerance)
         match k with        
         | Intersecting | IntersectingEndsBoth | IntersectingEndsFirst | IntersectingEndsSecond 
         | Continuation | ContinuationFlipped -> 
             let p = lnA.EvaluateAt u
             k,p,p // return same point twice ?
         | Skew | Apart  | IntersectionKind.Parallel 
-        | Overlapping | CoincidentApart | Identical| IdenticalFlipped -> 
+        | Overlapping | CoincidentApart | Identical| IdenticalFlipped 
+        | TooShortA | TooShortB | TooShortBoth -> // TODO or check if the zero length line is actually on the other line ?
             let a  =  lnA.EvaluateAt u 
             let b  = lnB.EvaluateAt v 
             k,a,b            
@@ -1145,21 +1103,24 @@ type Line2D =
             Some(lnA.EvaluateAt u)
         | Skew | Apart  | IntersectionKind.Parallel 
         | Overlapping | CoincidentApart | Identical| IdenticalFlipped ->              
-            // Raises an Exception if lines are apart, parallel or coincident. 
-            //FsExGeoException.Raise "FsEx.Geo.Line2D.intersectionPoint: Lines are '%A' lnA: \r\n%O and lnB: \r\n%O" k(lnA,lnB)
+            None
+        | TooShortA | TooShortB -> // TODO or check if the short line or zero length line is still exactly on the other line ?
+            None
+        | TooShortBoth -> // TODO or return a point if two zero length lines are on the same point?
             None
 
     /// Returns the distance between two finite 2D lines.
     /// For parallel lines the distance is calculate form the actual finit elements. (like in the other cases.) 
     /// So it is maybe bigger than the parallel offset.
-    /// For Coincident and intersecting lines it always returns 0.0 even if there is actually a distance less than 1-e6.
+    /// For Coincident and intersecting lines it always returns 0.0 even if there is actually a distance less than 1e-6.
     static member inline distanceBetweenLines(lnA,lnB) : float=
         let k,u,v =  Line2D.intersectionParam(lnA,lnB)
         match k with        
         | Intersecting | IntersectingEndsBoth | IntersectingEndsFirst | IntersectingEndsSecond 
         | Continuation | ContinuationFlipped | Overlapping   | Identical| IdenticalFlipped -> 
             0.0           
-        | Skew | Apart  | IntersectionKind.Parallel | CoincidentApart ->
+        | Skew | Apart  | IntersectionKind.Parallel | CoincidentApart 
+        | TooShortA | TooShortB | TooShortBoth -> 
             let a  =  lnA.EvaluateAt u 
             let b  = lnB.EvaluateAt v 
             Pt.distance a b

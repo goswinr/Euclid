@@ -302,10 +302,16 @@ module Cosine =
     [<Literal>]
     let ``179.95`` = -0.999999619228249
 
-
 /// Precalculated relative angle discriminant values for faster checking the angles in line line intersection.
 [<RequireQualifiedAccess>]
 module RelAngleDiscriminant = 
+
+    /// The Unit Of Measure for 
+    /// the precalculated relative angle discriminant values.
+    /// This UoM helps to avoid that angle values are used directly in the Line Intersection functions.
+    [<Measure>] 
+    type relAngDiscr 
+
     //the value from 
     // let intersectLines (l:Line3D) (ll:Line3D) =        
     //     //https://stackoverflow.com/a/34604574/969070 but DP and DQ are in wrong order !        
@@ -332,99 +338,99 @@ module RelAngleDiscriminant =
     //         let t = (b * e - c * d) / discriminant
     //         let u = (a * e - b * d) / discriminant
     //         Some (t,u) 
-    //     else 
-    //         None  
-
-
+    //     else  
+    //         None 
+    
+    
     /// The discriminant for an angle of 0.01 degrees.
-    /// This is exactly 0.00000001523087105503
+    /// This is exactly 0.00000001523087101891
     [<Literal>]
-    let ``0.01`` = 0.00000001523087105503
+    let ``0.01`` = 0.00000001523087101891<relAngDiscr>
     
     /// The discriminant for an angle of 0.05 degrees.
-    /// This is exactly 0.00000038077182295694
+    /// This is exactly 0.0000003807718230973
     [<Literal>]
-    let ``0.05`` = 0.00000038077182295694
+    let ``0.05`` = 0.0000003807718230973<relAngDiscr>
     
     /// The discriminant for an angle of 0.1 degrees.
-    /// This is exactly 0.00000152308787225459
+    /// This is exactly 0.00000152308787227638
     [<Literal>]
-    let ``0.1`` = 0.00000152308787225459
+    let ``0.1`` = 0.00000152308787227638<relAngDiscr>
     
     /// The discriminant for an angle of 0.25 degrees.
-    /// This is exactly 0.0000095193245737169
+    /// This is exactly 0.00000951932457379627
     [<Literal>]
-    let ``0.25`` = 0.0000095193245737169
+    let ``0.25`` = 0.00000951932457379627<relAngDiscr>
     
     /// The discriminant for an angle of 0.5 degrees.
-    /// This is exactly 0.0000380776607551118
+    /// This is exactly 0.0000380776607551941
     [<Literal>]
-    let ``0.5`` = 0.0000380776607551118
+    let ``0.5`` = 0.0000380776607551941<relAngDiscr>
     
     /// The discriminant for an angle of 1.0 degrees.
-    /// This is exactly 0.000152316441991339
+    /// This is exactly 0.000152316441991406
     [<Literal>]
-    let ``1.0`` = 0.000152316441991339
+    let ``1.0`` = 0.000152316441991406<relAngDiscr>
     
     /// The discriminant for an angle of 3.0 degrees.
-    /// This is exactly 0.00137140433203749
+    /// This is exactly 0.00137140433203738
     [<Literal>]
-    let ``3.0`` = 0.00137140433203749
+    let ``3.0`` = 0.00137140433203738<relAngDiscr>
     
     /// The discriminant for an angle of 5.0 degrees.
-    /// This is exactly 0.00381254201694116
+    /// This is exactly 0.00381254201694106
     [<Literal>]
-    let ``5.0`` = 0.00381254201694116
+    let ``5.0`` = 0.00381254201694106<relAngDiscr>
     
     /// The discriminant for an angle of 10.0 degrees.
-    /// This is exactly 0.0153076356505349
+    /// This is exactly 0.0153076356505348
     [<Literal>]
-    let ``10.0`` = 0.0153076356505349
+    let ``10.0`` = 0.0153076356505348<relAngDiscr>
     
     /// The discriminant for an angle of 30.0 degrees.
     /// This is exactly 0.142857142857143
     [<Literal>]
-    let ``30.0`` = 0.142857142857143
+    let ``30.0`` = 0.142857142857143<relAngDiscr>
     
     /// The discriminant for an angle of 45.0 degrees.
-    /// This is exactly 0.333333333333334
+    /// This is exactly 0.333333333333333
     [<Literal>]
-    let ``45.0`` = 0.333333333333334
+    let ``45.0`` = 0.333333333333333<relAngDiscr>
     
     /// The discriminant for an angle of 60.0 degrees.
     /// This is exactly 0.6
     [<Literal>]
-    let ``60.0`` = 0.6
+    let ``60.0`` = 0.6<relAngDiscr>
     
     /// The discriminant for an angle of 87.0 degrees.
     /// This is exactly 0.994536859196742
     [<Literal>]
-    let ``87.0`` = 0.994536859196742
+    let ``87.0`` = 0.994536859196742<relAngDiscr>
     
     /// The discriminant for an angle of 89.0 degrees.
-    /// This is exactly 0.999391012508458
+    /// This is exactly 0.999391012508459
     [<Literal>]
-    let ``89.0`` = 0.999391012508458
+    let ``89.0`` = 0.999391012508459<relAngDiscr>
     
     /// The discriminant for an angle of 89.75 degrees.
     /// This is exactly 0.999961923789084
     [<Literal>]
-    let ``89.75`` = 0.999961923789084
+    let ``89.75`` = 0.999961923789084<relAngDiscr>
     
     /// The discriminant for an angle of 89.9 degrees.
     /// This is exactly 0.999993907676349
     [<Literal>]
-    let ``89.9`` = 0.999993907676349
+    let ``89.9`` = 0.999993907676349<relAngDiscr>
     
     /// The discriminant for an angle of 89.95 degrees.
     /// This is exactly 0.999998476914448
     [<Literal>]
-    let ``89.95`` = 0.999998476914448
+    let ``89.95`` = 0.999998476914448<relAngDiscr>
     
     /// The discriminant for an angle of 89.99 degrees.
     /// This is exactly 0.999999939076519
     [<Literal>]
-    let ``89.99`` = 0.999999939076519
+    let ``89.99`` = 0.999999939076519<relAngDiscr>
 
 (* 
     /// A standard Unset value. Use this value rather than Double.NaN when a bogus floating point value is required.
