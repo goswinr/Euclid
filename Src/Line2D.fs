@@ -788,7 +788,7 @@ type Line2D =
 
     /// <summary>Returns the intersection kind and the parameters at which two (finite) 2D Lines are intersect or are closest to each other.
     /// The results are both between 0.0 and 1.0.
-    /// For parallel and coincident lines it still returns two parameters, in the middle of their overlap, or distance apart.
+    /// For parallel and coincident lines it still returns the two end points that are closest to each otherr or a point in the middle of their overlap.
     /// First parameter is on lnA, second parameter is on lnB.
     /// The possible result cases are:  
     /// 
@@ -807,7 +807,7 @@ type Line2D =
     /// 
     /// | Parallel : The finite lines are parallel. Within 0.25 degrees.
     /// The returned parameters are in the middle of their overlap, 
-    /// or in the middle of their distance apart.
+    /// or the two end points that are closest to each other.
     /// 
     /// | Overlapping 
     /// The lines are coincident,  overlapping and parallel within 0.25 degrees.
@@ -1009,7 +1009,7 @@ type Line2D =
     
     /// <summary>Returns the intersection kind and the points at which two (finite) 2D Lines are intersecting or closest to each other.
     /// The results are both between 0.0 and 1.0.
-    /// For parallel and coincident lines it still returns two points, in the middle of their overlap, or distance apart.
+    /// For parallel and coincident lines it still returns the two end points that are closest to each other or a point in the middle of their overlap.
     /// First point is on lnA, second point is on lnB.
     /// The possible result cases are:  
     /// 
@@ -1018,17 +1018,17 @@ type Line2D =
     /// | IntersectingEndsFirst: The finite lines are intersecting. The first line is touching the second one with its end or start point.       
     /// | IntersectingEndsSecond:  The finite lines are intersecting. The second line is touching the first one with its end or start point.        
     /// 
-    /// | Skew: (only applicable for 3D lines)
+    /// | Skew: (but only applicable for 3D lines)
     /// 
     /// | Apart: The finite lines are not intersecting.
     /// At least one of the points of closets points would be outside of  the range 0.0 and 1.0.
-    /// The returned points  still indicate where the finite lines are closest to each other.
+    /// The returned points still indicate where the finite lines are closest to each other.
     /// 
     ///------- Parallel and other special cases for finite lines: ---------------
     /// 
     /// | Parallel : The finite lines are parallel. Within 0.25 degrees.
     /// The returned points are in the middle of their overlap, 
-    /// or in the middle of their distance apart.
+    /// or the two end points that are closest to each other.
     /// 
     /// | Overlapping 
     /// The lines are coincident,  overlapping and parallel within 0.25 degrees.

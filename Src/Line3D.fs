@@ -915,7 +915,7 @@ type Line3D =
     /// If the two points ar within this distance one of the Intersecting Cases is returned. 
     /// (or Continuation Case if lines are colinear in one point)
     /// The results are both between 0.0 and 1.0.
-    /// For parallel and coincident lines it still returns two parameters, in the middle of their overlap, or distance apart.
+    /// For parallel and coincident lines it still returns the two end points that are closest to each other or a point in the middle of their overlap.
     /// First parameter is on lnA, second parameter is on lnB.
     /// The possible result cases are:  
     /// 
@@ -936,7 +936,7 @@ type Line3D =
     ///  
     /// | Parallel : The finite lines are parallel. Within 0.25 degrees.
     /// The returned parameters are in the middle of their overlap, 
-    /// or in the middle of their distance apart.
+    /// or the two end points that are closest to each other.
     /// 
     /// | Overlapping 
     /// The lines are coincident,  overlapping and parallel within 0.25 degrees.
@@ -1152,7 +1152,7 @@ type Line3D =
     /// (or Continuation Case if lines are colinear in one point)
     /// one of the Intersecting Cases is returned. (or Continuation Case if lines are colinear in one point)
     /// The results are both between 0.0 and 1.0.
-    /// For parallel and coincident lines it still returns two points, in the middle of their overlap, or distance apart.
+    /// For parallel and coincident lines it still returns the two end points that are closest to each other or a point in the middle of their overlap.
     /// First point is on lnA, second point is on lnB.
     /// The possible result cases are:  
     /// 
@@ -1173,7 +1173,7 @@ type Line3D =
     /// 
     /// | Parallel : The finite lines are parallel. Within 0.25 degrees.
     /// The returned points are in the middle of their overlap, 
-    /// or in the middle of their distance apart.
+    /// or the two end points that are closest to each other.
     /// 
     /// | Overlapping 
     /// The lines are coincident,  overlapping and parallel within 0.25 degrees.

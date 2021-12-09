@@ -113,7 +113,7 @@ module LineIntersectionTypes =
         /// The finite lines are parallel.
         /// Within 0.25 degrees.
         /// The returned parameters are in the middle of their overlap, 
-        /// or in the middle of their distance apart.
+        /// or the two end points that are closest to each other.
         | Parallel 
 
         /// The lines are coincident,  overlapping and parallel within 0.25 degrees.
