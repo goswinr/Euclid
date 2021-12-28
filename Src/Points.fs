@@ -8,15 +8,64 @@ open FsEx.Geo.LineIntersectionTypes
 [<AbstractClass; Sealed>]
 [<RequireQualifiedAccess>]
 type Points private () = 
-
     // static class, use these attributes [<AbstractClass; Sealed>] to match C# static class
     // and make in visible in C# // https://stackoverflow.com/questions/13101995/defining-static-classes-in-f
+
     
     /// Checks if three points are in one line.
-    /// Its does so by checking if the cross product of the vectors between the points is below the tolerance.    
-    static member inline areInLine tol (a:Pnt) (b:Pnt) (c:Pnt) = 
-         // TODO can be optimized by inlining floats.
-        Vec.cross (b-a,c-a) |> Vec.isTiny tol
+    /// This is a very fast check, but it is hard to find an appropriate tolerance. (Default is 0.001)
+    /// First it creates the cross product of the vectors between the points.
+    /// It then checks if the square length of this cross product vector is below the tolerance.
+    /// The square length of a cross product is equal to the square area of the parallelogram described by the two input vectors. 
+    /// Also returns true if the points are equal.  
+    /// See Points.areInLine function too.
+    static member inline areInLineFast (a:Pnt,b:Pnt,c:Pnt, [<OPT;DEF(0.001)>] maxSquareAreaParallelogram:float  ) = 
+         // TODO could be optimized by inlining floats.
+        Vec.cross (b-a,c-a) |> Vec.lengthSq <  maxSquareAreaParallelogram
+
+    /// Checks if three points are in one line. Within the distance tolerance. 1e-6 by default.
+    /// Also returns true if the points are equal within 1e-9 units.     
+    static member inline areInLine (a:Pnt,b:Pnt,c:Pnt, [<OPT;DEF(1e-6)>] distanceTolerance:float  ) = 
+        //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
+         // first try line a to b
+        let x = a.X - b.X
+        let y = a.Y - b.Y
+        let z = a.Z - b.Z
+        let lenSq = x*x + y*y + z*z
+        if lenSq > 1e-18 then // corresponds to a line Length of 1e-9        
+            let u = a.X - c.X
+            let v = a.Y - c.Y
+            let w = a.Z - c.Z
+            let dot = x*u + y*v + z*w
+            let t = dot/lenSq    
+            let x' = a.X - x*t
+            let y' = a.Y - y*t
+            let z' = a.Z - z*t
+            let u' = x' - c.X
+            let v' = y' - c.Y
+            let w' = z' - c.Z
+            u'*u' + v'*v' + w'*w' < distanceTolerance*distanceTolerance
+        else // next try line a to c
+            let x = a.X - c.X
+            let y = a.Y - c.Y
+            let z = a.Z - c.Z
+            let lenSq = x*x + y*y + z*z
+            if lenSq > 1e-18 then // corresponds to a line Length of 1e-9        
+                let u = a.X - b.X
+                let v = a.Y - b.Y
+                let w = a.Z - b.Z
+                let dot = x*u + y*v + z*w
+                let t = dot/lenSq    
+                let x' = a.X - x*t
+                let y' = a.Y - y*t
+                let z' = a.Z - z*t
+                let u' = x' - b.X
+                let v' = y' - b.Y
+                let w' = z' - b.Z
+                u'*u' + v'*v' + w'*w' < distanceTolerance*distanceTolerance
+            else
+                true // all points equal within 1e-9
+
     
     /// The sign is negative if the loop is clockwise.
     /// Last and first point should be the same.
@@ -300,55 +349,253 @@ type Points private () =
 
     /// Finds the mean normal of many points.
     /// It finds the center point and then takes cross-products iterating all points in pairs of two.
-    /// The first two points define the orientation of the normal.
-    /// So it considers the current order of points too, if counterclockwise in xy Plane the normal in z orientation.
-    static member normalOfPoints(pts: ResizeArray<Pnt>) : UnitVec  = 
+    /// The first three points define the orientation of the normal.
+    /// So it considers the current order of points too.
+    /// If the order is counterclockwise in the World X-Y plane then the normal is in world Z orientation.
+    static member normalOfPoints(pts: ResizeArray<Pnt>) : Vec  = 
         if pts.Count <= 2 then
-            FsExGeoException.Raise "FsEx.Geo.Points.NormalOfPoints can't find normal of two or less points %O" pts
+            FsExGeoException.Raise "FsEx.Geo.Points.normalOfPoints can't find normal of two or less points %O" pts
         elif pts.Count = 3  then
             let a = pts.[0] - pts.[1]
             let b = pts.[2] - pts.[1]
             let v= Vec.cross(b, a)
-            if v.IsTiny(1e-12) then FsExGeoException.Raise "FsEx.Geo.Points.NormalOfPoints: three points are in a line  %O" pts
+            if v.LengthSq < 1e-12 then 
+                FsExGeoException.Raise "FsEx.Geo.Points.normalOfPoints: three points are in a line  %O" pts
             else
-                v.Unitized
+                v
         else
             let cen = pts |> Points.center
             let mutable v = Vec.Zero
-            for t, n in ResizeArray.thisNext pts do
+            let mutable t = pts.[0]
+            for i=1 to pts.Count-1 do 
+                let n = pts.[i]
                 let a = t-cen
                 let b = n-cen
                 let x = Vec.cross(a, b)  |> Vec.matchOrientation v // TODO do this matching?
                 v <- v + x
-            if v.IsTiny(1e-12) then FsExGeoException.Raise "FsEx.Geo.Points.NormalOfPoints: points are in a line or sphere without clear normal  %O" pts
+                t<-n
+            if v.LengthSq < 1e-12 then 
+                FsExGeoException.Raise "FsEx.Geo.Points.normalOfPoints: points are in a line or sphere without clear normal  %O" pts
             else
-                v.Unitized
+                v
+
+    /// Finds the mean normal of many points.
+    /// It finds the center point and then takes cross-products iterating all points in pairs of two.
+    /// The first three points define the orientation of the normal.
+    /// So it considers the current order of points too.
+    /// If the order is counterclockwise in the World X-Y plane then the normal is in world Z orientation.
+    static member normalOfPoints(pts:Pnt []) : Vec  = 
+        if pts.Length <= 2 then
+            FsExGeoException.Raise "FsEx.Geo.Points.normalOfPoints can't find normal of two or less points %O" pts
+        elif pts.Length = 3  then
+            let a = pts.[0] - pts.[1]
+            let b = pts.[2] - pts.[1]
+            let v= Vec.cross(b, a)
+            if v.LengthSq < 1e-12 then FsExGeoException.Raise "FsEx.Geo.Points.normalOfPoints: three points are in a line  %O" pts
+            else
+                v
+        else
+            let mutable cen = Pnt.Origin
+            for i=0 to pts.Length-1 do  cen <- cen + pts.[i]
+            cen <- cen / float pts.Length            
+            let mutable v = Vec.Zero
+            let mutable t = pts.[0]
+            for i=1 to pts.Length-1 do 
+                let n = pts.[i]                
+                let x = Vec.cross(t-cen, n-cen)  |> Vec.matchOrientation v // TODO do this matching?
+                v <- v + x
+                t <- n
+            if v.LengthSq < 1e-12 then 
+                FsExGeoException.Raise "FsEx.Geo.Points.normalOfPoints: points are in a line or sphere without clear normal  %O" pts
+            else
+                v
+
+                
     
-    /// This function is mostly used inside of Polyline3D.offset.
+
+    /// It finds the inner offset point in a corner ( defined a point, a previous vector to this point and a next vector from this point)
+    /// The offset from first and second segment are given separately and can vary (prevDist and nextDist).
+    /// Use negative distance for outer offset. 
+    /// If Points are collinear by 0.25 degrees or less than 1-e6 units apart returns: ValueNone
+    /// /// Use negative distances to get outside offset.
+    static member offsetInCorner(   thisPt:Pnt,
+                                    prevToThis:Vec,
+                                    thisToNext:Vec,
+                                    prevDist:float,
+                                    nextDist:float) : ValueOption<Pnt> =         
+        let ax = prevToThis.X 
+        let ay = prevToThis.Y
+        let az = prevToThis.Z
+        let bx = thisToNext.X
+        let by = thisToNext.Y
+        let bz = thisToNext.Z 
+        let a = ax*ax + ay*ay + az*az // square length of A
+        let c = bx*bx + by*by + bz*bz // square length of B    
+        if c < 1e-12 then  
+            ValueNone
+        elif a < 1e-12 then 
+            ValueNone
+        else   
+            let b = ax*bx + ay*by + az*bz // dot product of both lines
+            let ac = a*c // square of square length , never negative
+            let bb = b*b // square of square dot product, never negative
+            let discriminant = ac - bb // never negative , the dot product cannot be bigger than the two square length multiplied with each other 
+            let div = ac+bb // never negative                          
+            let rel = discriminant/div
+            if rel < float RelAngleDiscriminant.``0.25`` then //parallel 
+                ValueNone
+            else 
+                let n  = Vec.cross(prevToThis, thisToNext)             
+                let offP = thisPt + (Vec.cross(n,prevToThis)  |> Vec.setLength prevDist)  
+                let offN = thisPt + (Vec.cross(n,thisToNext)  |> Vec.setLength nextDist ) 
+                let vx = offN.X - offP.X
+                let vy = offN.Y - offP.Y
+                let vz = offN.Z - offP.Z                    
+                let e = bx*vx + by*vy + bz*vz  
+                let d = ax*vx + ay*vy + az*vz
+                let t = (c * d - b * e ) / discriminant
+                ValueSome <|  offP + t * prevToThis  
+    
     /// It finds the inner offset point in a corner ( defined by a Polyline from 3 points ( prevPt, thisPt and nextPt)
     /// The offset from first and second segment are given separately and can vary (prevDist and nextDist).
-    /// Use negative distance for outer offset
-    /// The orientation parameter is an approximate orientation vector. It might flip the offset side if the dot product with the local normal is negative.
-    /// Returns a Value tuple of :
-    ///   - the first segment offset vector in actual length  ,
-    ///   - second segment offset vector,
-    ///   - the offset corner,
-    ///   - and the unitized normal at the corner. Flipped if needed to match orientation of the orientation input vector (positive dot product)
-    /// If Points are  collinear returns: Vec.Zero, Vec.Zero, Pnt.Origin, Vec.Zero
-    /// To check if the return values are this sentinel or a real result look at the normal vector.
-    static member findOffsetCorner( prevPt:Pnt,
+    /// Use negative distance for outer offset.
+    /// If Points are collinear by 0.25 degrees or less than 1-e6 units apart returns: ValueNone
+    /// Use negative distances to get outside offset.
+    static member offsetInCorner(   prevPt:Pnt,
                                     thisPt:Pnt,
                                     nextPt:Pnt,
                                     prevDist:float,
+                                    nextDist:float) : ValueOption<Pnt> = 
+        let prevV = thisPt - prevPt
+        let nextV = nextPt - thisPt
+        Points.offsetInCorner(thisPt, prevV, nextV, prevDist, nextDist)
+
+    
+    /// It finds the inner offset point in a corner ( defined a point, a previous vector to this point and a next vector from this point)
+    /// The offset from first and second segment are given separately and can vary (prevDist and nextDist).
+    /// Use negative distance for outer offset. 
+    /// If Points are collinear by 0.25 degrees or less than 1-e6 units apart returns: ValueNone
+    /// Use negative distances to get outside offset.
+    /// The 'referenceNormal' is' An approximate orientation Normal to help find the correct offset side, To be in Z Axis orientation for counter clockwise loops in 2D.
+    /// Returns the offset point , the unitized normal vector aligned with the referenceNormal  , the shift direction for prev and next line.
+    static member offsetInCornerEx(   thisPt:Pnt,
+                                        prevToThis:Vec,
+                                        thisToNext:Vec,
+                                        prevDist:float,
+                                        nextDist:float,
+                                        referenceNormal:Vec) : ValueOption<Pnt*UnitVec*Vec*Vec> =         
+        let ax = prevToThis.X 
+        let ay = prevToThis.Y
+        let az = prevToThis.Z
+        let bx = thisToNext.X
+        let by = thisToNext.Y
+        let bz = thisToNext.Z 
+        let a = ax*ax + ay*ay + az*az // square length of A
+        let c = bx*bx + by*by + bz*bz // square length of B    
+        if c < 1e-12 then  
+            ValueNone
+        elif a < 1e-12 then 
+            ValueNone
+        else   
+            let b = ax*bx + ay*by + az*bz // dot product of both lines
+            let ac = a*c // square of square length , never negative
+            let bb = b*b // square of square dot product, never negative
+            let discriminant = ac - bb // never negative , the dot product cannot be bigger than the two square length multiplied with each other 
+            let div = ac+bb // never negative                          
+            let rel = discriminant/div
+            if rel < float RelAngleDiscriminant.``0.25`` then //parallel 
+                ValueNone
+            else 
+                let n  = Vec.cross(prevToThis, thisToNext) |> Vec.matchOrientation referenceNormal 
+                let prevShift =  Vec.cross(n,prevToThis)  |> Vec.setLength prevDist
+                let nextShift =  Vec.cross(n,thisToNext)  |> Vec.setLength nextDist    
+                let offP = thisPt + prevShift
+                let offN = thisPt + nextShift
+                let vx = offN.X - offP.X
+                let vy = offN.Y - offP.Y
+                let vz = offN.Z - offP.Z                    
+                let e = bx*vx + by*vy + bz*vz  
+                let d = ax*vx + ay*vy + az*vz
+                let t = (c * d - b * e ) / discriminant
+                let pt =  offP + t * prevToThis  
+                ValueSome (pt,n.Unitized,prevShift,nextShift)
+    
+    /// It finds the inner offset point in a corner ( defined by a Polyline from 3 points ( prevPt, thisPt and nextPt)
+    /// The offset from first and second segment are given separately and can vary (prevDist and nextDist).
+    /// Use negative distance for outer offset. 
+    /// If Points are collinear by 0.25 degrees or less than 1-e6 units apart returns: ValueNone
+    /// Use negative distances to get outside offset.
+    /// The 'referenceNormal' is' An approximate orientation Normal to help find the correct offset side, To be in Z Axis orientation for counter clockwise loops in 2D.
+    /// Returns the offset point , the unitized normal vector aligned with the referenceNormal  , the shift direction for prev and next line.
+    static member offsetInCornerEx(   prevPt:Pnt,
+                                        thisPt:Pnt,
+                                        nextPt:Pnt,
+                                        prevDist:float,
+                                        nextDist:float,
+                                        referenceNormal:Vec) : ValueOption<Pnt*UnitVec*Vec*Vec> =  
+        let prevV = thisPt - prevPt
+        let nextV = nextPt - thisPt
+        Points.offsetInCornerEx(thisPt, prevV, nextV, prevDist, nextDist,referenceNormal)    
+    
+    /// It finds the inner offset point in a corner ( defined a point, a previous vector to this point and a next vector from this point)
+    /// The offset from first and second segment are given separately and can vary (prevDist and nextDist).
+    /// Use negative distance for outer offset. 
+    /// If Points are collinear by 0.25 degrees or less than 1-e6 units apart returns: ValueNone
+    /// Use negative distances to get outside offset.
+    /// 'referenceOrient' is positive for counterclockwise loops otherwise negative.
+    /// Returns the offset point ,  the shift direction for prev and next line.
+    static member offsetInCornerEx2D(   thisPt:Pt,
+                                        prevToThis:Vc,
+                                        thisToNext:Vc,
+                                        prevDist:float,
+                                        nextDist:float,
+                                        referenceOrient:float) : ValueOption<Pt*Vc*Vc> =         
+        let ax = prevToThis.X 
+        let ay = prevToThis.Y
+        let bx = thisToNext.X
+        let by = thisToNext.Y
+        let a = ax*ax + ay*ay // square length of A
+        let c = bx*bx + by*by // square length of B    
+        if c < 1e-12 then  
+            ValueNone
+        elif a < 1e-12 then 
+            ValueNone
+        else   
+            let b = ax*bx + ay*by // dot product of both lines
+            let ac = a*c // square of square length , never negative
+            let bb = b*b // square of square dot product, never negative
+            let discriminant = ac - bb // never negative , the dot product cannot be bigger than the two square length multiplied with each other 
+            let div = ac+bb // never negative                          
+            let rel = discriminant/div
+            if rel < float RelAngleDiscriminant.``0.25`` then //parallel 
+                ValueNone
+            else 
+                let n  = Vc.cross(prevToThis, thisToNext) |> Util.matchSign referenceOrient 
+                let prevShift =  prevToThis.Rotate90CCW |> Vc.setLength (if n>0. then prevDist else -prevDist)
+                let nextShift =  thisToNext.Rotate90CCW |> Vc.setLength (if n>0. then nextDist else -nextDist)
+                let offP = thisPt + prevShift
+                let offN = thisPt + nextShift
+                let vx = offN.X - offP.X
+                let vy = offN.Y - offP.Y                    
+                let e = bx*vx + by*vy   
+                let d = ax*vx + ay*vy 
+                let t = (c * d - b * e ) / discriminant
+                let pt =  offP + t * prevToThis  
+                ValueSome (pt,prevShift,nextShift)
+    
+    /// It finds the inner offset point in a corner ( defined by a Polyline from 3 points ( prevPt, thisPt and nextPt)
+    /// The offset from first and second segment are given separately and can vary (prevDist and nextDist).
+    /// Use negative distance for outer offset. 
+    /// If Points are collinear by 0.25 degrees or less than 1-e6 units apart returns: ValueNone
+    /// Use negative distances to get outside offset.
+    /// 'referenceOrient' is positive for counterclockwise loops otherwise negative.
+    /// Returns the offset point , the shift direction for prev and next line.
+    static member offsetInCornerEx2D( prevPt:Pt,
+                                    thisPt:Pt,
+                                    nextPt:Pt,
+                                    prevDist:float,
                                     nextDist:float,
-                                    orientation:Vec) : struct(Vec* Vec * Pnt * Vec) = 
-        let vp = prevPt - thisPt
-        let vn = nextPt - thisPt
-        let n  = Vec.cross(vp, vn) |> Vec.matchOrientation orientation
-        let sp = Vec.cross(vp, n)  |> Vec.setLength prevDist// the offset vectors
-        let sn = Vec.cross(n, vn)  |> Vec.setLength nextDist// the offset vectors
-        let thisShiftPrev = thisPt + sp
-        let thisShiftNext = thisPt + sn        
-        match Vec.intersection(thisShiftPrev,thisShiftNext, vp, vn) with 
-        |ValueSome (tp,_) ->  struct(sp, sn, thisShiftPrev + tp * vp, n.Unitized*1.0 )  // return the unit vector as Vec ( because it might be Vec.Zero too)
-        |ValueNone ->         struct(Vec.Zero, Vec.Zero, Pnt.Origin, Vec.Zero)
+                                    referenceOrient:float) : ValueOption<Pt*Vc*Vc> =  
+        let prevV = thisPt - prevPt
+        let nextV = nextPt - thisPt
+        Points.offsetInCornerEx2D(thisPt, prevV, nextV, prevDist, nextDist,referenceOrient)  

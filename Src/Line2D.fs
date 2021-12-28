@@ -32,7 +32,7 @@ type Line2D =
         let y = ln.ToY-ln.FromY        
         sqrt(x*x + y*y)
 
-     /// Returns the Square length of the line.
+     /// Returns the square length of the line.
     member inline ln.LengthSq = 
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY        
@@ -80,7 +80,7 @@ type Line2D =
     member inline ln.Tangent = 
         Vc(ln.ToX-ln.FromX,ln.ToY-ln.FromY)
         
-    /// Returns a unit vector of the line Direction
+    /// Returns a unit-vector of the line Direction
     member inline ln.UnitTangent = 
         UnitVc.create(ln.ToX-ln.FromX, ln.ToY-ln.FromY)   
     
@@ -94,7 +94,7 @@ type Line2D =
     member inline ln.IsTiny tol = 
         ln.Length < tol
     
-    /// Check if line is shorter than Squared tolerance.
+    /// Check if line is shorter than squared tolerance.
     member inline ln.IsTinySq tol = 
         ln.LengthSq < tol
     
@@ -204,7 +204,7 @@ type Line2D =
         ln.EvaluateAt(ln.ClosestParameter(p))
 
     /// Assumes Line2D to be infinite!
-    /// Returns Square distance from point to infinite line.
+    /// Returns square distance from point to infinite line.
     /// Fails on curves shorter than  1e-9 units. (ln.DistanceSqFromPoint does not.)
     member ln.DistanceSqFromPointInfinite(p:Pt) =  
         //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
@@ -229,7 +229,7 @@ type Line2D =
     member inline ln.DistanceFromPointInfinite(p:Pt) =   
         ln.DistanceSqFromPointInfinite(p) |> sqrt   
     
-    /// Returns Square distance from point to finite line.
+    /// Returns square distance from point to finite line.
     member ln.DistanceSqFromPoint(p:Pt) =  
         p
         |> ln.ClosestParameter
@@ -255,7 +255,7 @@ type Line2D =
         let dot = v.X*(ln.ToX-ln.FromX) + v.Y*(ln.ToY-ln.FromY) 
         dot > 0.0 
 
-    /// Checks if the angle between the a 2D line and a 2D unit vector is less than 180 degrees.
+    /// Checks if the angle between the a 2D line and a 2D unit-vector is less than 180 degrees.
     /// Calculates the dot product of both. 
     /// Then checks if it is positive.
     member inline ln.MatchesOrientation180  (v:UnitVc) = 
@@ -267,7 +267,7 @@ type Line2D =
     /// Then checks if it is bigger than 0.707107 (cosine of  90 degrees).
     member inline ln.MatchesOrientation90  (l:Line2D) = 
         let dot = ln.UnitTangent*l.UnitTangent
-        dot > Cosine.``45.0``
+        dot > float Cosine.``45.0``
                 
 
 
@@ -277,7 +277,7 @@ type Line2D =
     /// This tolerance can be customized by an optional minium cosine value.
     /// See FsEx.Geo.Cosine module.
     /// Fails on lines shorter than 1e-12.    
-    member inline ln.IsParallelTo( other:Line2D, [<OPT;DEF(Cosine.``0.25``)>] minCosine ) = 
+    member inline ln.IsParallelTo( other:Line2D, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) = 
         let a = ln.Vector
         let b = other.Vector
         let sa = a.LengthSq
@@ -286,7 +286,7 @@ type Line2D =
         if sb < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Line2D.IsParallelTo: Line2D 'other' is too short: %s. 'ln':%s " b.AsString a.AsString  
         let au = a * (1.0 / sqrt sa )
         let bu = b * (1.0 / sqrt sb )
-        abs(bu*au) > minCosine // 0.999990480720734 = cosine of 0.25 degrees:            
+        abs(bu*au) > float minCosine           
         
         
     /// Checks if two 2D lines are parallel.
@@ -295,7 +295,7 @@ type Line2D =
     /// This tolerance can be customized by an optional minium cosine value.
     /// See FsEx.Geo.Cosine module.
     /// Fails on lines shorter than 1e-12.       
-    member inline ln.IsParallelAndOrientedTo  (other:Line2D, [<OPT;DEF(Cosine.``0.25``)>] minCosine ) = 
+    member inline ln.IsParallelAndOrientedTo  (other:Line2D, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) = 
         let a = ln.Vector
         let b = other.Vector
         let sa = a.LengthSq
@@ -304,7 +304,7 @@ type Line2D =
         if sb < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Line2D.IsParallelAndOrientedTo: Line2D 'other' is too short: %s. 'ln':%s " b.AsString a.AsString 
         let au = a * (1.0 / sqrt sa )
         let bu = b * (1.0 / sqrt sb )
-        bu*au >  minCosine // 0.999990480720734 = cosine of 0.25 degrees:    
+        bu*au > float minCosine    
         
     
     /// Checks if two 2D lines are perpendicular to each other.
@@ -313,7 +313,7 @@ type Line2D =
     /// The default cosine is 0.0043633 ( = 89.75 deg )
     /// See FsEx.Geo.Cosine module.
     /// Fails on lines shorter than 1e-12.  
-    member inline ln.IsPerpendicularTo (other:Line2D, [<OPT;DEF(Cosine.``89.75``)>] maxCosine ) = 
+    member inline ln.IsPerpendicularTo (other:Line2D, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) = 
         let a = ln.Vector
         let b = other.Vector
         let sa = a.LengthSq
@@ -323,8 +323,47 @@ type Line2D =
         let au = a * (1.0 / sqrt sa )
         let bu = b * (1.0 / sqrt sb )
         let d = bu*au            
-        -maxCosine < d && d  < maxCosine // = cosine of 98.75 and 90.25 degrees          
+        float -maxCosine < d && d  < float maxCosine // = cosine of 98.75 and 90.25 degrees          
         
+    /// Checks if two 2D lines are coincident within the distance tolerance. 1e-6 by default.
+    /// This means that lines are parallel within the angle tolerance
+    /// and the distance of second start to the first line is less than the distance tolerance.  
+    /// Also returns false on zero length lines (shorter than 1e-12). 
+    /// The default angle tolerance is 0.25 degrees.  
+    /// This tolerance can be customized by an optional minium cosine value.
+    /// See FsEx.Geo.Cosine module.
+    member inline ln.IsCoincidentTo (other:Line2D, 
+                                    [<OPT;DEF(1e-6)>] distanceTolerance:float, 
+                                    [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine>) =          
+        let a = ln.Vector
+        let b = other.Vector
+        let sa = a.LengthSq
+        if sa < 1e-24 then 
+            false
+        else
+            let sb = b.LengthSq
+            if sb < 1e-24 then 
+                false
+            else 
+                let au = a * (1.0 / sqrt sa )
+                let bu = b * (1.0 / sqrt sb )
+                abs(bu*au) > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:  
+                && 
+                let pX = other.FromX
+                let pY = other.FromY
+                //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
+                let x = a.X
+                let y = a.Y
+                let u = ln.FromX - pX
+                let v = ln.FromY - pY
+                let dot = x*u + y*v 
+                let t = dot/sa    
+                let x' = ln.FromX - x*t
+                let y' = ln.FromY - y*t
+                let u' = x' - pX
+                let v' = y' - pY
+                u'*u' + v'*v'  < distanceTolerance * distanceTolerance  
+
             
     //-------------------------------------------------------------------
     //------------------------static members-----------------------------
@@ -333,15 +372,20 @@ type Line2D =
 
     /// Checks if two 2D Lines are equal within tolerance.
     /// Identical Lines in opposite directions are not considered equal.
-    static member equals tol (a:Line2D) (b:Line2D) =
+    static member inline equals tol (a:Line2D) (b:Line2D) =
         let tt = tol*tol
         Pt.distanceSq a.From b.From < tt &&
         Pt.distanceSq a.To b.To < tt
 
-    /// Creates a line starting at World Origin and going to along the given Vector.
+    /// Checks if two 2D lines are coincident within tolerance.
+    /// This means that lines are parallel within 0.25 degrees
+    /// and the distance of second start point to the first line is less than 1e-6.
+    static member inline areCoincident (a:Line2D) (b:Line2D) = a.IsCoincidentTo(b)
+
+    /// Creates a line starting at World Origin and going to along the given vector.
     static member inline createFromVec (v:Vc) = Line2D(0.,0.,v.X,v.Y)
 
-    /// Creates a line starting at given Point and going to along the given Vector.
+    /// Creates a line starting at given point and going to along the given vector.
     static member inline createFromPtAndVc (p:Pt,v:Vc) =  Line2D(p.X, p.Y, p.X+v.X, p.Y+v.Y) 
 
     /// Returns the Start point of the line. Same as Line2D.from
@@ -391,14 +435,14 @@ type Line2D =
     static member inline tangent (ln:Line2D) = 
         Vc(ln.ToX-ln.FromX,ln.ToY-ln.FromY)
         
-    /// Returns a unit vector of the line Direction
+    /// Returns a unit-vector of the line Direction
     static member inline unitTangent (ln:Line2D) = 
         UnitVc.create(ln.ToX - ln.FromX, ln.ToY-ln.FromY)
 
     /// Returns the length of the line.
     static member inline length (l:Line2D) = l.Length
 
-    /// Returns the Square length of the line.
+    /// Returns the square length of the line.
     static member inline lengthSq (l:Line2D) = l.LengthSq  
 
     /// Check if the line has same starting and ending point.
@@ -407,7 +451,7 @@ type Line2D =
     /// Check if line is shorter than tolerance.
     static member inline isTiny tol (l:Line2D) = l.Length < tol        
     
-    /// Check if line is shorter than Squared tolerance.
+    /// Check if line is shorter than squared tolerance.
     static member inline isTinySq tol (l:Line2D) = l.LengthSq < tol
 
     /// Evaluate line at a given parameter ( parameters 0.0 to 1.0 are on the line )
@@ -494,14 +538,14 @@ type Line2D =
     static member inline closestPoint (p:Pt) (ln:Line2D)  = ln.ClosestPoint p    
 
     /// Assumes Line2D to be infinite!
-    /// Returns Square distance from point to infinite line.
+    /// Returns the square distance from point to infinite line.
     static member inline distanceSqFromPointInfinite(p:Pt) (ln:Line2D)  = ln.DistanceSqFromPointInfinite p
     
     /// Assumes Line2D to be infinite!
     /// Returns distance from point to infinite line.
     static member inline distanceFromPointInfinite(p:Pt) (ln:Line2D)  = ln.DistanceFromPointInfinite p   
         
-    /// Returns Square distance from point to (finite) line.
+    /// Returns the square distance from point to (finite) line.
     static member inline distanceSqFromPoint(p:Pt) (ln:Line2D)  = ln.DistanceSqFromPoint p
     
     /// Returns distance from point to (finite) line.
@@ -518,7 +562,7 @@ type Line2D =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY         
         let l = sqrt(x*x + y*y )
-        if l < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line2D.extend %O to short for finding point at a Distance" ln        
+        if l < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line2D.extend %O to short for finding point at a distance" ln        
         Line2D( ln.FromX - x*distAtStart/l, 
                 ln.FromY - y*distAtStart/l, 
                 ln.ToX   + x*distAtEnd/l, 
@@ -530,7 +574,7 @@ type Line2D =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY         
         let l = sqrt(x*x + y*y )
-        if l < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line2D.extendStart %O to short for finding point at a Distance" ln        
+        if l < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line2D.extendStart %O to short for finding point at a distance" ln        
         Line2D( ln.FromX - x*distAtStart/l, 
                 ln.FromY - y*distAtStart/l,
                 ln.ToX   , 
@@ -542,7 +586,7 @@ type Line2D =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY         
         let l = sqrt(x*x + y*y )
-        if l < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line2D.extendEnd %O to short for finding point at a Distance" ln        
+        if l < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line2D.extendEnd %O to short for finding point at a distance" ln        
         Line2D( ln.FromX , 
                 ln.FromY , 
                 ln.ToX   + x*distAtEnd/l, 
@@ -554,7 +598,7 @@ type Line2D =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY         
         let len = sqrt(x*x + y*y )
-        if len < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line2D.pointAtDistance %O to short for finding point at a Distance" ln        
+        if len < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line2D.pointAtDistance %O to short for finding point at a distance" ln        
         Pt(ln.FromX + x*dist/len, 
             ln.FromY + y*dist/len)
     
@@ -564,7 +608,7 @@ type Line2D =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY        
         let l = sqrt(x*x + y*y )
-        if l < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line2D.withLengthFromStart %O to short for finding point at a Distance" ln        
+        if l < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line2D.withLengthFromStart %O to short for finding point at a distance" ln        
         Line2D( ln.FromX , 
                 ln.FromY , 
                 ln.FromX + x*len/l , 
@@ -576,7 +620,7 @@ type Line2D =
         let x = ln.FromX-ln.ToX
         let y = ln.FromY-ln.ToY
         let l = sqrt(x*x + y*y )
-        if l < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line2D.withLengthToEnd %O to short for finding point at a Distance" ln
+        if l < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line2D.withLengthToEnd %O to short for finding point at a distance" ln
         Line2D( ln.ToX + x*len/l , 
                 ln.ToY + y*len/l , 
                 ln.ToX , 
@@ -643,13 +687,13 @@ type Line2D =
     ///<summary> Intersects two infinite 2D lines.</summary>
     ///<param name="lnA"> The first line.</param>
     ///<param name="lnB"> The second line.</param>
-    ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
-    ///  If one or both lines are shorter than the 'TooShort' union case is returned .</param>
     ///<param name="relAngleDiscriminant"> This is an optional tolerance for the internally calculated relative Angle Discriminant. 
     /// The default value is '0.00000952' this corresponds to approx 0.25 degree. Below this angle the 'Parallel' or 'Coincident' union case is returned. 
     /// Use the module FsEx.Geo.Util.RelAngleDiscriminant to set another tolerance here.</param>   
     ///<param name="coincidentTolerance" > Is an optional distance tolerance. 1e-6 by default.
     ///  If parallel lines are closer than this the 'Coincident' union case is returned .</param>     
+    ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
+    ///  If one or both lines are shorter than the 'TooShort' union case is returned .</param>
     ///<returns> An IntersectionParam Discriminated Union with the following cases:  
     ///         
     /// | TwoParam of twoParams : struct(float*float):
@@ -670,19 +714,16 @@ type Line2D =
     /// One or both input lines is shorter than the given minimum Length tolerance. </returns>
     static member inline intersectionParamInfinite( lnA:Line2D , 
                                                     lnB:Line2D ,
-                                                    [<OPT;DEF(1e-6)>] tooShortTolerance:float,
                                                     [<OPT;DEF(RelAngleDiscriminant.``0.25``)>] relAngleDiscriminant:float<RelAngleDiscriminant.relAngDiscr>,
-                                                    [<OPT;DEF(1e-6)>] coincidentTolerance:float
+                                                    [<OPT;DEF(1e-6)>] coincidentTolerance:float,
+                                                    [<OPT;DEF(1e-6)>] tooShortTolerance:float
                                                     ) : IntersectionParam =        
         //https://stackoverflow.com/a/34604574/969070 but DP and DQ are in wrong order !        
         let ax = lnA.FromX - lnA.ToX  
         let ay = lnA.FromY - lnA.ToY 
         let bx = lnB.FromX - lnB.ToX 
-        let by = lnB.FromY - lnB.ToY 
-        let vx = lnB.FromX - lnA.FromX
-        let vy = lnB.FromY - lnA.FromY
+        let by = lnB.FromY - lnB.ToY         
         let a = ax*ax + ay*ay  // square length of A
-        let b = ax*bx + ay*by  // dot product of both lines
         let c = bx*bx + by*by  // square length of B    
         let shortSq = tooShortTolerance * tooShortTolerance
         if a < shortSq then  // vec A too short            
@@ -693,6 +734,9 @@ type Line2D =
         elif c < shortSq then  // vec B too short
             IntersectionParam.TooShortB
         else   
+            let b = ax*bx + ay*by  // dot product of both lines
+            let vx = lnB.FromX - lnA.FromX
+            let vy = lnB.FromY - lnA.FromY
             let ac = a*c // square of square length  , never negative
             let bb = b*b // never negative
             let discriminant = ac - bb // never negative , the dot product cannot be bigger than the two square length multiplied with each other 
@@ -721,14 +765,14 @@ type Line2D =
     ///<summary> Gets the points at which two infinite 2D lines intersect. Or are closest to each other.</summary>
     ///<param name="lnA"> The first line.</param>
     ///<param name="lnB"> The second line.</param>
-    ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
-    ///  If one or both lines are shorter than the 'TooShort' union case is returned .</param>
     ///<param name="relAngleDiscriminant"> This is an optional tolerance for the internally calculated relative Angle Discriminant. 
     /// The default value is '0.00000952' this corresponds to approx 0.25 degree. Below this angle the 'Parallel' or 'Coincident' union case is returned. 
     /// Use the module FsEx.Geo.Util.RelAngleDiscriminant to set another tolerance here.</param>   
     ///<param name="coincidentTolerance" > Is an optional distance tolerance. 1e-6 by default.
     ///  If parallel lines are closer than this the 'Coincident' union case is returned .</param>   
     ///<returns> An IntersectionPoints3D Discriminated Union with the following cases:
+    ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
+    ///  If one or both lines are shorter than the 'TooShort' union case is returned .</param>
     /// 
     /// | Point of xPoint : Pnt
     ///     The points of 2D intersection.
@@ -745,11 +789,11 @@ type Line2D =
     /// </returns>  
     static member inline intersectionInfinite  (lnA:Line2D , 
                                                 lnB:Line2D,
-                                                [<OPT;DEF(1e-6)>] tooShortTolerance:float,
                                                 [<OPT;DEF(RelAngleDiscriminant.``0.25``)>] relAngleDiscriminant:float<RelAngleDiscriminant.relAngDiscr>,
-                                                [<OPT;DEF(1e-6)>] coincidentTolerance:float
+                                                [<OPT;DEF(1e-6)>] coincidentTolerance:float,
+                                                [<OPT;DEF(1e-6)>] tooShortTolerance:float
                                                 ) : IntersectionPoints2D =  
-        match Line2D.intersectionParamInfinite(lnA,lnB,tooShortTolerance, relAngleDiscriminant , coincidentTolerance) with 
+        match Line2D.intersectionParamInfinite(lnA,lnB, relAngleDiscriminant , coincidentTolerance, tooShortTolerance) with 
         |TwoParam (u,v)                       -> IntersectionPoints2D.Point (lnA.EvaluateAt u)
         |IntersectionParam.Parallel   -> IntersectionPoints2D.Parallel
         |IntersectionParam.Coincident -> IntersectionPoints2D.Coincident
@@ -761,21 +805,21 @@ type Line2D =
     /// The returned point is on line A. </summary>
     ///<param name="lnA"> The first line.</param>
     ///<param name="lnB"> The second line.</param>
-    ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
-    ///  If one or both lines are shorter than the 'TooShort' union case is returned .</param>
     ///<param name="relAngleDiscriminant"> This is an optional tolerance for the internally calculated relative Angle Discriminant. 
     /// The default value is '0.00000952' this corresponds to approx 0.25 degree. Below this angle the 'Parallel' or 'Coincident' union case is returned. 
     /// Use the module FsEx.Geo.Util.RelAngleDiscriminant to set another tolerance here.</param>   
     ///<param name="coincidentTolerance" > Is an optional distance tolerance. 1e-6 by default.
     ///  If parallel lines are closer than this the 'Coincident' union case is returned .</param> 
+    ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
+    ///  If one or both lines are shorter than the 'TooShort' union case is returned .</param>
     /// <returns> A single 3D point</returns>  
     static member intersectionPointInfinite(lnA:Line2D , 
                                             lnB:Line2D ,
-                                            [<OPT;DEF(1e-6)>] tooShortTolerance:float,
                                             [<OPT;DEF(RelAngleDiscriminant.``0.25``)>] relAngleDiscriminant:float<RelAngleDiscriminant.relAngDiscr>,
-                                            [<OPT;DEF(1e-6)>] coincidentTolerance:float
+                                            [<OPT;DEF(1e-6)>] coincidentTolerance:float,
+                                            [<OPT;DEF(1e-6)>] tooShortTolerance:float
                                             ) : Pt = 
-        match Line2D.intersectionInfinite(lnA , lnB, tooShortTolerance, relAngleDiscriminant, coincidentTolerance) with 
+        match Line2D.intersectionInfinite(lnA , lnB, relAngleDiscriminant, coincidentTolerance, tooShortTolerance) with 
         |IntersectionPoints2D.Point p     -> p
         |IntersectionPoints2D.Parallel    -> FsExGeoException.Raise "FsEx.Geo.Line2D.intersectionPointInfinite: Lines are parallel lnA: \r\n%O and lnB: \r\n%O" lnA lnB
         |IntersectionPoints2D.Coincident  -> FsExGeoException.Raise "FsEx.Geo.Line2D.intersectionPointInfinite: Lines are coincident lnA: \r\n%O and lnB: \r\n%O" lnA lnB
@@ -788,7 +832,7 @@ type Line2D =
 
     /// <summary>Returns the intersection kind and the parameters at which two (finite) 2D Lines are intersect or are closest to each other.
     /// The results are both between 0.0 and 1.0.
-    /// For parallel and coincident lines it still returns the two end points that are closest to each otherr or a point in the middle of their overlap.
+    /// For parallel and coincident lines it still returns the two end points that are closest to each other or a point in the middle of their overlap.
     /// First parameter is on lnA, second parameter is on lnB.
     /// The possible result cases are:  
     /// 
@@ -845,20 +889,20 @@ type Line2D =
     /// The returned parameters are 0.5 and 0.5 for both lines.</summary>
     ///<param name="lnA"> The first line.</param>
     ///<param name="lnB"> The second line.</param>
-    ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
-    ///  If one or both lines are shorter than the 'TooShort' union case is returned .</param>
     ///<param name="relAngleDiscriminant"> This is an optional tolerance for the internally calculated relative Angle Discriminant. 
     /// The default value is '0.00000952' this corresponds to approx 0.25 degree. Below this angle the 'Parallel' or 'Coincident' union case is returned. 
     /// Use the module FsEx.Geo.Util.RelAngleDiscriminant to set another tolerance here.</param>   
     ///<param name="coincidentTolerance" > Is an optional distance tolerance. 1e-6 by default.
     ///  If parallel lines are closer than this the 'Coincident' union case is returned .</param>       
+    ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
+    ///  If one or both lines are shorter than the 'TooShort' union case is returned .</param>
     static member inline intersectionParam (lnA:Line2D , 
-                                            lnB:Line2D ,
-                                            [<OPT;DEF(1e-6)>] tooShortTolerance:float,
+                                            lnB:Line2D,
                                             [<OPT;DEF(RelAngleDiscriminant.``0.25``)>] relAngleDiscriminant:float<RelAngleDiscriminant.relAngDiscr>,
-                                            [<OPT;DEF(1e-6)>] coincidentTolerance:float
+                                            [<OPT;DEF(1e-6)>] coincidentTolerance:float ,
+                                            [<OPT;DEF(1e-6)>] tooShortTolerance:float
                                             ) : IntersectionKind*float*float =         
-        match Line2D.intersectionParamInfinite(lnA,lnB, tooShortTolerance, relAngleDiscriminant, coincidentTolerance) with 
+        match Line2D.intersectionParamInfinite(lnA,lnB, relAngleDiscriminant, coincidentTolerance, tooShortTolerance) with 
         | IntersectionParam.TwoParam ( u0 , v0 ) -> 
             /// numerical error tolerance check to also find an intersection that happens just after the line end:
             let ur = isZeroOneOrBetween u0
@@ -1066,20 +1110,20 @@ type Line2D =
     /// The returned parameters are 0.5 and 0.5 for both lines.</summary>
     ///<param name="lnA"> The first line.</param>
     ///<param name="lnB"> The second line.</param>
-    ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
-    ///  If one or both lines are shorter than the 'TooShort' union case is returned .</param>
     ///<param name="relAngleDiscriminant"> This is an optional tolerance for the internally calculated relative Angle Discriminant. 
     /// The default value is '0.00000952' this corresponds to approx 0.25 degree. Below this angle the 'Parallel' or 'Coincident' union case is returned. 
     /// Use the module FsEx.Geo.Util.RelAngleDiscriminant to set another tolerance here.</param>   
     ///<param name="coincidentTolerance" > Is an optional distance tolerance. 1e-6 by default.
     ///  If parallel lines are closer than this the 'Coincident' union case is returned .</param>
+    ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
+    ///  If one or both lines are shorter than the 'TooShort' union case is returned .</param>
     static member inline intersection  (lnA:Line2D , 
                                         lnB:Line2D ,
-                                        [<OPT;DEF(1e-6)>] tooShortTolerance:float,
                                         [<OPT;DEF(RelAngleDiscriminant.``0.25``)>] relAngleDiscriminant:float<RelAngleDiscriminant.relAngDiscr>,
-                                        [<OPT;DEF(1e-6)>] coincidentTolerance:float
+                                        [<OPT;DEF(1e-6)>] coincidentTolerance:float,
+                                        [<OPT;DEF(1e-6)>] tooShortTolerance:float
                                         ) : IntersectionKind*Pt*Pt =  
-        let k,u,v =  Line2D.intersectionParam(lnA,lnB, tooShortTolerance, relAngleDiscriminant, coincidentTolerance)
+        let k,u,v =  Line2D.intersectionParam(lnA,lnB, relAngleDiscriminant, coincidentTolerance, tooShortTolerance)
         match k with        
         | Intersecting | IntersectingEndsBoth | IntersectingEndsFirst | IntersectingEndsSecond 
         | Continuation | ContinuationFlipped -> 

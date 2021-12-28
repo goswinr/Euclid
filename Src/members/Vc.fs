@@ -12,18 +12,19 @@ module AutoOpenVc =
         /// Returns a boolean indicating wether X and Y are exactly 0.0.
         member inline v.IsZero = v.X = 0.0 && v.Y = 0.0         
         
-        /// Returns a boolean indicating if any of  X and Y is not exactly 0.0.
+        /// Returns a boolean indicating if any of X and Y is not exactly 0.0.
         member inline v.IsNotZero =  v.X <> 0.0 || v.Y <> 0.0   
 
-        /// Returns a boolean indicating wether the absolute value of X and Y is each less than the given tolerance.
-        member inline v.IsTiny tol = abs v.X < tol && abs v.Y < tol          
-    
-        /// Returns the length of the 2D vector 
-        member inline v.Length = sqrt (v.X*v.X + v.Y*v.Y )
+        /// Check if the 2D vector is shorter than the tolerance.
+        member inline v.IsTiny tol = 
+            v.Length < tol
         
-        /// Returns the squared length of the 2D vector 
-        /// The square length is faster to calculate and often good enough for use cases such as sorting vectors by length.
-        member inline v.LengthSq = v.X*v.X + v.Y*v.Y         
+        /// Check if the 2D vector is shorter than the squared tolerance.
+        member inline v.IsTinySq tol = 
+            v.LengthSq < tol  
+        
+        //member inline v.Length moved to Vc type declaration
+        //member inline v.LengthSq moved to Vc type declaration
 
         /// Returns new 2D vector with new X coordinate, Y stays the same.
         member inline v.WithX x = Vc (x ,v.Y) 
@@ -42,7 +43,8 @@ module AutoOpenVc =
         /// Same as Vc.setLength
         member inline v.WithLength (desiredLength:float) =  
             let l = v.Length
-            if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "Vc.WithLength %g : %O is too small for unitizing, Tolerance:%g" desiredLength v zeroLengthTol
+            if l < zeroLengthTol then 
+                FsExGeoDivByZeroException.Raise "FsEx.Geo.Vc.WithLength %g : %O is too small for unitizing, Tolerance:%g" desiredLength v zeroLengthTol
             v*(desiredLength / l)  
 
         /// Returns the 2D vector unitized.
@@ -51,10 +53,11 @@ module AutoOpenVc =
         member inline v.Unitized  = 
             let l = sqrt(v.X * v.X  + v.Y * v.Y)
             // #if DEBUG add here too? TODO ?
-            if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "%O is too small for unitizing, Tolerance:%g" v zeroLengthTol
+            if l < zeroLengthTol then 
+                FsExGeoDivByZeroException.Raise "FsEx.Geo.Vc.Unitized %O is too small for unitizing, Tolerance:%g" v zeroLengthTol
             UnitVc.createUnchecked( v.X/l , v.Y/l)       
         
-        /// Test if the 2D vector is a unit vector. 
+        /// Test if the 2D vector is a unit-vector. 
         /// Tests if square length is within 6 float steps of 1.0
         /// So between 0.99999964 and 1.000000715.
         member inline v.IsUnit   = 
@@ -116,7 +119,7 @@ module AutoOpenVc =
         member inline v.DirectionPi =
             // https://stackoverflow.com/a/14675998/969070
             #if DEBUG // TODO : with this test all  operations are 2.5 times slower 
-            if v.IsTiny 1e-16  then FsExGeoException.Raise "FsEx.Geo.Vc.DirectionPi Failed for tiny vector %O." v
+            if v.LengthSq < 1e-24  then FsExGeoException.Raise "FsEx.Geo.Vc.DirectionPi Failed for tiny vector %O." v
             #endif
             let a = Math.Atan2(v.Y, v.X) 
             if a < 0. then  
@@ -144,7 +147,7 @@ module AutoOpenVc =
             if r >= 0. then  r
             else r + 4.0 
 
-        /// Convert 2D vector to 2D Point
+        /// Convert 2D vector to 2D point
         member inline v.AsPt         = Pt( v.X, v.Y)
         
         /// Convert 2D vector to 3D vector using 0.0 as Z value
@@ -172,14 +175,14 @@ module AutoOpenVc =
         /// This tolerance can be customized by an optional minium cosine value.
         /// See FsEx.Geo.Cosine module.
         /// Fails on lines shorter than 1e-12.    
-        member inline a.IsParallelTo( b:Vc, [<OPT;DEF(Cosine.``0.25``)>] minCosine ) = 
+        member inline a.IsParallelTo( b:Vc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) = 
             let sa = a.LengthSq
             if sa < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vc.IsParallelTo: Vc 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
             let sb = b.LengthSq
             if sb < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vc.IsParallelTo: Vc 'other' is too short: %s. 'ln':%s " b.AsString a.AsString  
             let au = a * (1.0 / sqrt sa )
             let bu = b * (1.0 / sqrt sb )
-            abs(bu*au) > minCosine // 0.999990480720734 = cosine of 0.25 degrees:            
+            abs(bu*au) > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:            
             
             
         /// Checks if two 2D vectors are parallel.
@@ -188,14 +191,14 @@ module AutoOpenVc =
         /// This tolerance can be customized by an optional minium cosine value.
         /// See FsEx.Geo.Cosine module.
         /// Fails on lines shorter than 1e-12.       
-        member inline a.IsParallelAndOrientedTo  (b:Vc, [<OPT;DEF(Cosine.``0.25``)>] minCosine ) = 
+        member inline a.IsParallelAndOrientedTo  (b:Vc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) = 
             let sa = a.LengthSq
             if sa < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vc.IsParallelAndOrientedTo: Vc 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
             let sb = b.LengthSq
             if sb < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vc.IsParallelAndOrientedTo: Vc 'other' is too short: %s. 'ln':%s " b.AsString a.AsString 
             let au = a * (1.0 / sqrt sa )
             let bu = b * (1.0 / sqrt sb )
-            bu*au >  minCosine // 0.999990480720734 = cosine of 0.25 degrees:    
+            bu*au > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:    
             
         
         /// Checks if two 2D vectors are perpendicular to each other.
@@ -204,7 +207,7 @@ module AutoOpenVc =
         /// The default cosine is 0.0043633 ( = 89.75 deg )
         /// See FsEx.Geo.Cosine module.
         /// Fails on lines shorter than 1e-12.  
-        member inline a.IsPerpendicularTo (b:Vc, [<OPT;DEF(Cosine.``89.75``)>] maxCosine ) = 
+        member inline a.IsPerpendicularTo (b:Vc, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) = 
             let sa = a.LengthSq
             if sa < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vc.IsPerpendicularTo: Vc 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
             let sb = b.LengthSq
@@ -212,7 +215,7 @@ module AutoOpenVc =
             let au = a * (1.0 / sqrt sa )
             let bu = b * (1.0 / sqrt sb )
             let d = bu*au            
-            -maxCosine < d && d  < maxCosine // = cosine of 98.75 and 90.25 degrees 
+            float -maxCosine < d && d  < float maxCosine // = cosine of 98.75 and 90.25 degrees 
     
 
         //----------------------------------------------------------------------------------------------
@@ -247,7 +250,7 @@ module AutoOpenVc =
             let x = ( ^T : (member X : _) vec)
             let y = ( ^T : (member Y : _) vec)
             try Vc(float x, float y) 
-            with e -> FsExGeoException.Raise "Vc.ofXY: %A could not be converted to a FsEx.Geo.Vc:\r\n%A" vec e
+            with e -> FsExGeoException.Raise "FsEx.Geo.Vc.ofXY: %A could not be converted to a FsEx.Geo.Vc:\r\n%A" vec e
 
         /// Accepts any type that has a x and y (lowercase) member that can be converted to a float. 
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
@@ -255,13 +258,13 @@ module AutoOpenVc =
             let x = ( ^T : (member x : _) vec)
             let y = ( ^T : (member y : _) vec)
             try Vc(float x, float y) 
-            with e -> FsExGeoException.Raise "Vc.ofxy: %A could not be converted to a FsEx.Geo.Vc:\r\n%A" vec e
+            with e -> FsExGeoException.Raise "FsEx.Geo.Vc.ofxy: %A could not be converted to a FsEx.Geo.Vc:\r\n%A" vec e
 
 
          /// Create 2D vector from 2D point. 
         static member inline ofPt  (pt:Pnt) =  Vc( pt.X , pt.Y ) 
         
-        /// Create 2D vector from 2D unit vector.
+        /// Create 2D vector from 2D unit-vector.
         static member inline ofUnitVc (v:UnitVc) =  Vc(v.X, v.Y)       
         
         /// Convert 2D vector to 2D point. 
@@ -281,7 +284,7 @@ module AutoOpenVc =
         /// Its Just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
         static member inline cross (a:UnitVc, b:Vc)  = a.X*b.Y - a.Y*b.X
         
-        /// 2D Cross product, of a 2D vectors an a 2D unit vector. 
+        /// 2D Cross product, of a 2D vectors an a 2D unit-vector. 
         /// Its Just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
         static member inline cross (a:Vc, b:UnitVc)  = a.X*b.Y - a.Y*b.X
 
@@ -289,12 +292,12 @@ module AutoOpenVc =
         /// Returns a float. 
         static member inline dot  (a:Vc, b:Vc  ) = a.X * b.X + a.Y * b.Y 
         
-        /// Dot product, or scalar product of a 2D unit vector with a 2D vector  
-        /// Returns a float. This float is the projected length of the 2D vector on the direction of the unit vector
+        /// Dot product, or scalar product of a 2D unit-vector with a 2D vector  
+        /// Returns a float. This float is the projected length of the 2D vector on the direction of the unit-vector
         static member inline dot  (a:Vc, b:UnitVc  ) = a.X * b.X + a.Y * b.Y 
         
-        /// Dot product, or scalar product of a 2D vector with a 2D unit vector  
-        /// Returns a float. This float is the projected length of the 2D vector on the direction of the unit vector
+        /// Dot product, or scalar product of a 2D vector with a 2D unit-vector  
+        /// Returns a float. This float is the projected length of the 2D vector on the direction of the unit-vector
         static member inline dot  (a:UnitVc, b:Vc  ) = a.X * b.X + a.Y * b.Y 
 
         /// Gets the X part of this 2D vector
@@ -320,7 +323,7 @@ module AutoOpenVc =
         /// Same as vc.WithLength. Returns a new 3D vector.
         static member inline setLength(desiredLength:float) (v:Vc) = 
             let l = v.Length
-            if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "Vc.setLength %g : %O is too small for unitizing, Tolerance:%g" desiredLength v zeroLengthTol
+            if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "FsEx.Geo.Vc.setLength %g : %O is too small for unitizing, Tolerance:%g" desiredLength v zeroLengthTol
             v * (desiredLength / l)  
         
         /// Add to the X part of this 2D vectors together. Returns a new 2D vector.
@@ -328,9 +331,14 @@ module AutoOpenVc =
         
         /// Add to the Y part of this 2D vectors together. Returns a new 2D vector.
         static member inline moveY y (v:Vc) = Vc (v.X,   v.Y+y)
+            
+        /// Check if the 2D vector is shorter than the tolerance.
+        static member inline isTiny tol (v:Vc) = 
+            v.Length < tol
         
-        /// Returns a boolean indicating wether the absolute value of X and Y is each less than the given tolerance.
-        static member inline isTiny tol (v:Vc) = v.IsTiny tol
+        /// Check if the 2D vector is shorter than the squared tolerance.
+        static member inline isTinySq tol (v:Vc) = 
+            v.LengthSq < tol
 
         /// Returns the length of the 2D vector 
         static member inline length  (v:Vc) = v.Length
@@ -356,7 +364,7 @@ module AutoOpenVc =
         /// Returns 2D vector unitized, fails on zero length vectors
         static member inline unitize (v:Vc) =  v.Unitized
         
-        /// Unitize 2D vector, if input vector is shorter than 1e-6 the default Unit vector is returned.
+        /// Unitize 2D vector, if input vector is shorter than 1e-6 the default unit-vector is returned.
         static member inline unitizeOrDefault (defaultUnitVector:UnitVc) (v:Vc) = 
             let l = v.LengthSq
             if l < 1e-12  then  // = sqrt (1e-06)
@@ -486,7 +494,7 @@ module AutoOpenVc =
         /// Checks if Angle between two vectors is between 98.75 and 90.25 Degree.
         /// Ignores vector orientation.
         /// Fails on zero length vectors, tolerance 1e-12. 
-        static member inline isPerpendicularTo (other:Vc) (v:Vc) =  v.IsPerpendicularTo other    
+        static member inline isPerpendicularTo (other:Vc) (v:Vc) =  v.IsPerpendicularTo(other)
 
 
         /// Rotate the a 2D vector Counter Clockwise by a 2D Rotation (that has cos and sin precomputed)
@@ -501,10 +509,10 @@ module AutoOpenVc =
 
         
         /// 90 Degree rotation counter clockwise
-        static member inline rotate90CCW (v:UnitVc) = UnitVc.createUnchecked( -v.Y,   v.X  )
+        static member inline rotate90CCW (v:Vc) = Vc( -v.Y,   v.X  )
 
         /// 90 Degree rotation clockwise
-        static member inline rotate90CW (v:UnitVc) = UnitVc.createUnchecked(  v.Y,  -v.X  )  
+        static member inline rotate90CW (v:Vc) = Vc(  v.Y,  -v.X  )  
             
         /// Checks if Angle between two vectors is Below one Degree.
         /// Ignores vector orientation.

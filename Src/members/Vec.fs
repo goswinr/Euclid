@@ -15,9 +15,14 @@ module AutoOpenVec =
         /// Returns a boolean indicating if any of  X,Y and Z is not exactly 0.0.
         member inline v.IsNotZero =  v.X <> 0.0 || v.Y <> 0.0 || v.Z <> 0.0         
         
-        /// Returns a boolean indicating wether the absolute value of X,Y and Z is each less than the given tolerance.
-        member inline v.IsTiny tol = abs v.X < tol && abs v.Y < tol && abs v.Z < tol
+        /// Check if the 3D vector is shorter than the tolerance.
+        member inline v.IsTiny tol = 
+            v.Length < tol
         
+        /// Check if the 3D vector is shorter than the squared tolerance.
+        member inline v.IsTinySq tol = 
+            v.LengthSq < tol 
+
         //member inline v.Length moved to Vec type declaration
         //member inline v.LengthSq moved to Vec type declaration
 
@@ -44,26 +49,28 @@ module AutoOpenVec =
         /// Same as Vec.setLength.
         member inline v.WithLength (desiredLength:float) =  
             let l = v.Length 
-            if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "Vec.WithLength %g : %O is too small for unitizing, Tolerance:%g" desiredLength v zeroLengthTol
-            v*(desiredLength / l)            
+            if l < zeroLengthTol then 
+                FsExGeoDivByZeroException.Raise "FsEx.Geo.Vec.WithLength %g : %O is too small for unitizing, Tolerance:%g" desiredLength v zeroLengthTol
+            v * (desiredLength / l)            
         
         /// Returns the 3D vector unitized.
         /// Fails with FsExGeoDivByZeroException if the length of the vector is 
         /// too small (1e-16) to unitize.    
         member inline v.Unitized =  
             let l = v.Length 
-            if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "%O is too small for unitizing, Tolerance:%g" v zeroLengthTol
-            let li=1./l in 
+            if l < zeroLengthTol then 
+                FsExGeoDivByZeroException.Raise "FsEx.Geo.Vec.Unitized: %O is too small for unitizing, Tolerance:%g" v zeroLengthTol
+            let li = 1. / l 
             UnitVec.createUnchecked( li*v.X , li*v.Y ,li*v.Z )             
 
         // Returns the 3D vector unitized.
-        // If the length of the vector is 0.0 an invalid unit vector is returned.
+        // If the length of the vector is 0.0 an invalid unit-vector is returned.
         // UnitVec(0,0,0)
         //member inline v.UnitizedUnchecked =  
         //    let li = 1. / sqrt(v.X*v.X + v.Y*v.Y + v.Z*v.Z) 
         //    UnitVec.createUnchecked( li*v.X , li*v.Y ,li*v.Z ) 
 
-        /// Test if the 3D vector is a unit vector. 
+        /// Test if the 3D vector is a unit-vector. 
         /// Test if the vectors square length is within 6 float steps of 1.0
         /// So between 0.99999964 and 1.000000715.
         member inline v.IsUnit   = 
@@ -158,10 +165,10 @@ module AutoOpenVec =
             if r >= 0. then  r
             else r + 4.0   
         
-        /// Convert 3D vector to 3D Point.
+        /// Convert 3D vector to 3D point.
         member inline v.AsPnt = Pnt(v.X, v.Y, v.Z)
 
-        /// Convert 3D vector to 2D Vector, discarding the Z value. 
+        /// Convert 3D vector to 2D vector, discarding the Z value. 
         member inline v.AsVc  = Vc(v.X, v.Y)        
         
 
@@ -185,14 +192,14 @@ module AutoOpenVec =
         /// This tolerance can be customized by an optional minium cosine value.
         /// See FsEx.Geo.Cosine module.
         /// Fails on lines shorter than 1e-12.    
-        member inline a.IsParallelTo( b:Vec, [<OPT;DEF(Cosine.``0.25``)>] minCosine ) = 
+        member inline a.IsParallelTo( b:Vec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) = 
             let sa = a.LengthSq
             if sa < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vec.IsParallelTo: Vec 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
             let sb = b.LengthSq
             if sb < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vec.IsParallelTo: Vec 'other' is too short: %s. 'ln':%s " b.AsString a.AsString  
             let au = a * (1.0 / sqrt sa )
             let bu = b * (1.0 / sqrt sb )
-            abs(bu*au) > minCosine // 0.999990480720734 = cosine of 0.25 degrees:            
+            abs(bu*au) > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:            
             
             
         /// Checks if two 3D vectors are parallel.
@@ -201,14 +208,14 @@ module AutoOpenVec =
         /// This tolerance can be customized by an optional minium cosine value.
         /// See FsEx.Geo.Cosine module.
         /// Fails on lines shorter than 1e-12.       
-        member inline a.IsParallelAndOrientedTo  (b:Vec, [<OPT;DEF(Cosine.``0.25``)>] minCosine ) = 
+        member inline a.IsParallelAndOrientedTo  (b:Vec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) = 
             let sa = a.LengthSq
             if sa < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vec.IsParallelAndOrientedTo: Vec 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
             let sb = b.LengthSq
             if sb < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vec.IsParallelAndOrientedTo: Vec 'other' is too short: %s. 'ln':%s " b.AsString a.AsString 
             let au = a * (1.0 / sqrt sa )
             let bu = b * (1.0 / sqrt sb )
-            bu*au >  minCosine // 0.999990480720734 = cosine of 0.25 degrees:    
+            bu*au > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:    
             
         
         /// Checks if two 3D vectors are perpendicular to each other.
@@ -217,7 +224,7 @@ module AutoOpenVec =
         /// The default cosine is 0.0043633 ( = 89.75 deg )
         /// See FsEx.Geo.Cosine module.
         /// Fails on lines shorter than 1e-12.  
-        member inline a.IsPerpendicularTo (b:Vec, [<OPT;DEF(Cosine.``89.75``)>] maxCosine ) = 
+        member inline a.IsPerpendicularTo (b:Vec, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) = 
             let sa = a.LengthSq
             if sa < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vec.IsPerpendicularTo: Vec 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
             let sb = b.LengthSq
@@ -225,7 +232,7 @@ module AutoOpenVec =
             let au = a * (1.0 / sqrt sa )
             let bu = b * (1.0 / sqrt sb )
             let d = bu*au            
-            -maxCosine < d && d  < maxCosine // = cosine of 98.75 and 90.25 degrees  
+            float -maxCosine < d && d  < float maxCosine // = cosine of 98.75 and 90.25 degrees  
 
             
 
@@ -279,7 +286,7 @@ module AutoOpenVec =
         /// Create 3D vector from 3D point. 
         static member inline ofPnt  (pt:Pnt) =  Vec( pt.X , pt.Y , pt.Z ) 
         
-        /// Create 3D vector from 3D unit vector.
+        /// Create 3D vector from 3D unit-vector.
         static member inline ofUnitVec (v:UnitVec) =  Vec(v.X, v.Y, v.Z)       
         
         /// Convert 3D vector to 2D point by ignoring Z value. 
@@ -311,12 +318,12 @@ module AutoOpenVec =
         
         //static member inline dot  (a:Vec, b:Vec)   //moved to Vec type declaration
         
-        /// Dot product, or scalar product of a 3D unit vector with a 3D vector  
-        /// Returns a float. This float is the projected length of the 3D vector on the direction of the unit vector
+        /// Dot product, or scalar product of a 3D unit-vector with a 3D vector  
+        /// Returns a float. This float is the projected length of the 3D vector on the direction of the unit-vector
         static member inline dot  (a:UnitVec, b:Vec ) = a.X * b.X + a.Y * b.Y + a.Z * b.Z
         
-        /// Dot product, or scalar product of a 3D vector with a 3D unit vector  
-        /// Returns a float. This float is the projected length of the 3D vector on the direction of the unit vector
+        /// Dot product, or scalar product of a 3D vector with a 3D unit-vector  
+        /// Returns a float. This float is the projected length of the 3D vector on the direction of the unit-vector
         static member inline dot  (a:Vec, b:UnitVec) = a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
         /// Gets the X part of this 3D vector
@@ -348,7 +355,7 @@ module AutoOpenVec =
         /// Same as vec.WithLength. Returns a new 3D vector.
         static member inline setLength(desiredLength:float) (v:Vec) = 
             let l = v.Length
-            if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "Vec.setLength %g : %O is too small for unitizing, Tolerance:%g" desiredLength v zeroLengthTol
+            if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "FsEx.Geo.Vec.setLength %g : %O is too small for unitizing, Tolerance:%g" desiredLength v zeroLengthTol
             v * (desiredLength / l) 
         
         /// Add to the X part of this 3D vectors together. Returns a new 3D vector.
@@ -360,8 +367,13 @@ module AutoOpenVec =
         /// Add to the Z part of this 3D vectors together. Returns a new 3D vector.
         static member inline moveZ z (v:Vec) = Vec (v.X,   v.Y,   v.Z+z)
         
-        /// Returns a boolean indicating wether the absolute value of X,Y and Z is each less than the given tolerance.
-        static member inline isTiny   tol (v:Vec) = v.IsTiny tol
+        /// Check if the 3D vector is shorter than the tolerance.
+        static member inline isTiny tol (v:Vec) = 
+            v.Length < tol
+        
+        /// Check if the 3D vector is shorter than the squared tolerance.
+        static member inline isTinySq tol (v:Vec) = 
+            v.LengthSq < tol
 
         /// Returns the length of the 3D vector 
         static member inline length  (v:Vec) = v.Length
@@ -397,7 +409,7 @@ module AutoOpenVec =
         /// Returns 3D vector unitized, fails on zero length vectors
         static member inline unitize (v:Vec) =  v.Unitized    
         
-        /// Unitize 3D vector, if input vector is shorter than 1e-6 the default Unit vector is returned.
+        /// Unitize 3D vector, if input vector is shorter than 1e-6 the default unit-vector is returned.
         static member inline unitizeOrDefault (defaultUnitVector:UnitVec) (v:Vec) = 
             let l = v.LengthSq
             if l < 1e-12  then  // = sqrt (1e-06)
@@ -559,14 +571,14 @@ module AutoOpenVec =
         /// abs(v.X) + abs(v.Y) < zeroLengthTol
         /// Fails on tiny (shorter than zeroLengthTol) vectors
         static member inline isVertical (v:Vec) =             
-            if v.IsTiny(zeroLengthTol) then FsExGeoDivByZeroException.Raise "Vec Cannot not check very tiny vector for verticality %O" v
+            if v.LengthSq < 1e-16 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Vec.isVertical cannot not check very tiny vector for verticality %O" v
             abs(v.X) + abs(v.Y) < zeroLengthTol
 
         /// Checks if a vector is horizontal  by doing:
         /// abs(v.Z) < zeroLengthTol
         /// Fails on tiny (shorter than zeroLengthTol) vectors
         static member inline isHorizontal (v:Vec) =            
-            if v.IsTiny(zeroLengthTol) then FsExGeoDivByZeroException.Raise "Vec Cannot not check very tiny vector for horizontality %O" v
+            if v.LengthSq < 1e-16 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Vec.isHorizontal Cannot not check very tiny vector for horizontality %O" v
             abs(v.Z) < zeroLengthTol  
 
         /// Returns positive or negative slope of a vector in Radians.
@@ -587,7 +599,7 @@ module AutoOpenVec =
         /// In relation to X-Y plane.
         /// 100% = 45 Degrees
         static member inline slopePercent (v:Vec) = 
-            if abs(v.Z) < zeroLengthTol then FsExGeoDivByZeroException.Raise "UnitVec.slopePercent: Can't get Slope from vertical vector %O" v
+            if abs(v.Z) < zeroLengthTol then FsExGeoDivByZeroException.Raise "FsEx.Geo.Vec.slopePercent: Can't get Slope from vertical vector %O" v
             let f = Vec(v.X, v.Y, 0.0)
             100.0 * (v.Z/f.Length)
 
@@ -622,11 +634,11 @@ module AutoOpenVec =
         static member transform (m:Matrix) (v:Vec) = 
             v*m // operator * is defined in Matrix.fs
         
-        /// Multiplies (or applies) an OrthoMatrix to a 3D Vector . 
+        /// Multiplies (or applies) an OrthoMatrix to a 3D vector . 
         static member transformOrtho (m:OrthoMatrix) (v:Vec) = 
             v*m // operator * is defined in OrthoMatrix.fs
         
-        /// Multiplies (or applies) only the 3x3 rotation part of an OrthoMatrix to a 3D Vector . 
+        /// Multiplies (or applies) only the 3x3 rotation part of an OrthoMatrix to a 3D vector . 
         /// The resulting vector has the same length as the input.
         static member rotateOrtho (m:OrthoMatrix) (v:Vec) = 
             let x = v.X
@@ -694,7 +706,7 @@ module AutoOpenVec =
         ///<returns> For (almost) zero length or (almost) parallel vectors: ValueNone
         /// Else ValueSome with a tuple of the  parameters at which the two infinite 2D lines intersect to each other. 
         /// The tuple's order corresponds to the input order.</returns>
-        static member intersection( ptA:Pnt, 
+        static member inline intersection( ptA:Pnt, 
                                     ptB:Pnt, 
                                     vA:Vec, 
                                     vB:Vec, 
@@ -702,25 +714,22 @@ module AutoOpenVec =
                                     [<OPT;DEF(RelAngleDiscriminant.``0.25``)>] relAngleDiscriminant:float<RelAngleDiscriminant.relAngDiscr>
                                     ) : ValueOption<float*float> =        
             //https://stackoverflow.com/a/34604574/969070 but DP and DQ are in wrong order !        
-            let ax = -vA.X 
-            let ay = -vA.Y
-            let az = -vA.Z
-            let bx = -vB.X
-            let by = -vB.Y
-            let bz = -vB.Z
-            let vx = ptB.X - ptA.X
-            let vy = ptB.Y - ptA.Y
-            let vz = ptB.Z - ptA.Z
+            let ax = vA.X 
+            let ay = vA.Y
+            let az = vA.Z
+            let bx = vB.X
+            let by = vB.Y
+            let bz = vB.Z 
             let a = ax*ax + ay*ay + az*az // square length of A
-            let b = ax*bx + ay*by + az*bz // dot product of both lines
             let c = bx*bx + by*by + bz*bz // square length of B    
             if a < tooShortTolerance * tooShortTolerance then  // vec A too short
                 ValueNone
             elif c < tooShortTolerance * tooShortTolerance then  // vec B too short
                 ValueNone
             else   
-                let ac = a*c // square of square length  , never negative
-                let bb = b*b // never negative
+                let b = ax*bx + ay*by + az*bz // dot product of both lines
+                let ac = a*c // square of square length , never negative
+                let bb = b*b // square of square dot product, never negative
                 let discriminant = ac - bb // never negative , the dot product cannot be bigger than the two square length multiplied with each other 
                 let div = ac+bb // never negative                          
                 // getting the relation between the sum and the subtraction gives a good estimate of the angle between the lines
@@ -729,8 +738,52 @@ module AutoOpenVec =
                 if rel < float relAngleDiscriminant then //parallel               
                     ValueNone      
                 else 
+                    let vx = ptB.X - ptA.X
+                    let vy = ptB.Y - ptA.Y
+                    let vz = ptB.Z - ptA.Z                    
                     let e = bx*vx + by*vy + bz*vz  
                     let d = ax*vx + ay*vy + az*vz
-                    let t = (b * e - c * d) / discriminant
-                    let u = (a * e - b * d) / discriminant
+                    let t = (c * d - b * e ) / discriminant
+                    let u = (b * d - a * e ) / discriminant
                     ValueSome (t,u)
+
+        ///<summary> Similar and aligned to to Vec.intersection this function checks if two 3D vectors intersect.
+        /// 'false' is returned, if the angle between the vectors is less than 0.25 degrees 
+        /// or any of them is shorter than 1e-6. These tolerances can be adjusted with optional parameters.
+        /// The function Vec.areParallel does the same thing but with a more precises way of calculating parallel lines </summary>
+        ///<param name="vA" > The vector of the first line.</param>
+        ///<param name="vB" > The vector of the second line.</param>
+        ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
+        ///  If one or both vectors are shorter than this ValueNone is returned .</param>
+        ///<param name="relAngleDiscriminant"> This is an optional tolerance for the internally calculated relative Angle Discriminant. 
+        /// The default value corresponds to approx 0.25 degree. Below this angle vectors are considered parallel. 
+        /// Use the module FsEx.Geo.Util.RelAngleDiscriminant to set another tolerance here.</param>      
+        ///<returns> For (almost) zero length or (almost) parallel vectors: 'false' else 'true'.</returns>
+        static member inline doIntersect (  vA:Vec, 
+                                            vB:Vec, 
+                                            [<OPT;DEF(1e-6)>] tooShortTolerance:float,
+                                            [<OPT;DEF(RelAngleDiscriminant.``0.25``)>] relAngleDiscriminant:float<RelAngleDiscriminant.relAngDiscr>
+                                            ) : bool =        
+            //https://stackoverflow.com/a/34604574/969070 but DP and DQ are in wrong order !        
+            let ax = vA.X 
+            let ay = vA.Y
+            let az = vA.Z
+            let bx = vB.X
+            let by = vB.Y
+            let bz = vB.Z 
+            let a = ax*ax + ay*ay + az*az // square length of A
+            let c = bx*bx + by*by + bz*bz // square length of B    
+            if a < tooShortTolerance * tooShortTolerance then  // vec A too short
+                false
+            elif c < tooShortTolerance * tooShortTolerance then  // vec B too short
+                false
+            else   
+                let b = ax*bx + ay*by + az*bz // dot product of both lines
+                let ac = a*c // square of square length  , never negative
+                let bb = b*b // never negative
+                let discriminant = ac - bb // never negative , the dot product cannot be bigger than the two square length multiplied with each other 
+                let div = ac+bb // never negative                          
+                // getting the relation between the sum and the subtraction gives a good estimate of the angle between the lines
+                // see module FsEx.Geo.Util.RelAngleDiscriminant    
+                let rel = discriminant/div
+                rel > float relAngleDiscriminant 

@@ -44,10 +44,10 @@ module AutoOpenPt =
         /// Returns the squared distance from Origin (0,0)
         member inline pt.DistanceFromOriginSquare = pt.X*pt.X + pt.Y*pt.Y 
         
-        /// Returns new 2D point with given Distance from Origin by scaling it up or down.
+        /// Returns new 2D point with given distance from Origin by scaling it up or down.
         member inline pt.WithDistanceFromOrigin (l:float) = 
             let d = pt.DistanceFromOrigin 
-            if d < zeroLengthTol then FsExGeoException.Raise "pnt.WithDistFromOrigin  %O is too small to be scaled" pt
+            if d < zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Pt.WithDistFromOrigin  %O is too small to be scaled" pt
             pt * (l/d) 
         
         /// Returns the Diamond Angle from this point to another point.        
@@ -61,7 +61,7 @@ module AutoOpenPt =
             let y = o.Y-p.Y
             //#if DEBUG 
             if abs(x) < zeroLengthTol && abs(y) < zeroLengthTol then // TODO : with this test all  operations are 2.5 times slower 
-                FsExGeoDivByZeroException.Raise "FsEx.Geo.Pt.DirectionDiamondTo failed for too short Distance between %O and %O." p o
+                FsExGeoDivByZeroException.Raise "FsEx.Geo.Pt.DirectionDiamondTo failed for too short distance between %O and %O." p o
             //#endif            
             if y >= 0.0 then 
                 if x >= 0.0 then   
@@ -82,7 +82,7 @@ module AutoOpenPt =
             let y = o.Y-p.Y
             //#if DEBUG 
             if abs(x) < zeroLengthTol && abs(y) < zeroLengthTol then // TODO : with this test all  operations are 2.5 times slower 
-                FsExGeoDivByZeroException.Raise "FsEx.Geo.Pt.Angle2PiTo failed for too short Distance between %O and %O." p o
+                FsExGeoDivByZeroException.Raise "FsEx.Geo.Pt.Angle2PiTo failed for too short distance between %O and %O." p o
             //#endif
             let a = Math.Atan2(y, x) 
             if a < 0. then  a + Util.twoPi
@@ -108,7 +108,7 @@ module AutoOpenPt =
             let v   = toPt   - fromPt
             let lenSq = v.LengthSq
             let lenSq =  v.LengthSq
-            if lenSq < 1e-6 then FsExGeoDivByZeroException.Raise "Pt.closestPointOnLine: Line is too short for fromPt %O to  %O and  %O" fromPt toPt testPt
+            if lenSq < 1e-6 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Pt.closestPointOnLine: Line is too short for fromPt %O to  %O and  %O" fromPt toPt testPt
             let dot = Vc.dot (v,  dir) / lenSq
             if   dot <= 0.0 then  fromPt 
             elif dot >= 1.0 then  toPt
@@ -122,7 +122,7 @@ module AutoOpenPt =
             elif dot >= len then (fromPt+len*uv)  
             else                 fromPt+dot*uv 
         
-        /// Squared Distance between point and finite line segment.   
+        /// Returns the squared distance between point and finite line segment.   
         member inline testPt.DistanceToLineSquare(fromPt:Pt, uv:UnitVc, len:float) = 
             let dir = testPt-fromPt 
             let dot = Vc.dot (uv,  dir) 
@@ -132,7 +132,7 @@ module AutoOpenPt =
                 let actual = uv.Rotate90CCW * dir 
                 actual*actual
                 
-        /// Squared Distance between point and finite line segment  defined by start , end,  direction and length 
+        /// Returns the squared distance between point and finite line segment  defined by start , end,  direction and length 
         /// The last two parameters  help speed up calculations.
         member inline testPt.DistanceToLineSquare(fromPt:Pt, toPt:Pt, uv:UnitVc, len:float) = 
             let dir = testPt-fromPt 
@@ -143,7 +143,7 @@ module AutoOpenPt =
                 let actual = uv.Rotate90CCW * dir 
                 actual*actual 
                 
-        /// Distance between point and finite line segment  defined by start ,  direction and length.
+        /// Returns the distance between point and finite line segment  defined by start ,  direction and length.
         member inline testPt.DistanceToLine(fromPt:Pt, uv:UnitVc, len:float) = 
             let dir = testPt-fromPt 
             let dot = Vc.dot (uv,  dir) 
@@ -151,12 +151,12 @@ module AutoOpenPt =
             elif dot >= len then testPt.DistanceToSquare  (fromPt+len*uv)  
             else                abs (uv.Rotate90CCW * dir) 
                 
-        /// Distance between point and finite line segment  defined by start and end.
+        /// Returns the distance between point and finite line segment  defined by start and end.
         member inline testPt.DistanceToLine(fromPt:Pt, toPt:Pt) =  
             let dir = testPt - fromPt 
             let v   = toPt   - fromPt
             let lenSq =  v.LengthSq 
-            if lenSq < 1e-6 then FsExGeoDivByZeroException.Raise "Pt.DistanceToLine: Line is too short for fromPt %O to  %O and  %O" fromPt toPt testPt
+            if lenSq < 1e-6 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Pt.DistanceToLine: Line is too short for fromPt %O to  %O and  %O" fromPt toPt testPt
             let dot = Vc.dot (v,  dir) / v.LengthSq 
             if   dot <= 0.0 then testPt.DistanceTo   fromPt 
             elif dot >= 1.0 then testPt.DistanceTo   toPt  
@@ -187,7 +187,7 @@ module AutoOpenPt =
             let x = ( ^T : (member X: _) pt)
             let y = ( ^T : (member Y: _) pt)
             try Pt(float x, float y) 
-            with e -> FsExGeoException.Raise "Pt.ofXY: %A could not be converted to a FsEx.Geo.Pt:\r\n%A" pt e
+            with e -> FsExGeoException.Raise "FsEx.Geo.Pt.ofXY: %A could not be converted to a FsEx.Geo.Pt:\r\n%A" pt e
 
         /// Accepts any type that has a x and y (lowercase) member that can be converted to a float. 
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
@@ -195,7 +195,7 @@ module AutoOpenPt =
             let x = ( ^T : (member x: _) pt)
             let y = ( ^T : (member y: _) pt)
             try Pt(float x, float y) 
-            with e -> FsExGeoException.Raise "Pt.ofxy: %A could not be converted to a FsEx.Geo.Pt:\r\n%A" pt e
+            with e -> FsExGeoException.Raise "FsEx.Geo.Pt.ofxy: %A could not be converted to a FsEx.Geo.Pt:\r\n%A" pt e
 
         /// Create 2D point from 3D point. Ignoring Z component
         static member inline ofPnt      (p:Pnt)     = Pt (p.X, p.Y)    
@@ -203,7 +203,7 @@ module AutoOpenPt =
         /// Create 2D point from 2D vector. 
         static member inline ofVc       (v:Vc)      = Pt (v.X, v.Y)  
 
-        /// Create 2D point from 2D unit vector. 
+        /// Create 2D point from 2D unit-vector. 
         static member inline ofUnitVc  (v:UnitVc)  = Pt (v.X, v.Y)
 
         /// Create 3D point from X and Y  components.
@@ -287,7 +287,7 @@ module AutoOpenPt =
         static member inline rotate (angDegree) (vec:Pt) = 
             Pt.rotateBy (Rotation2D.createFromDegrees angDegree) vec 
         
-        /// Rotate the 2D point around a center 2D Point. Counter Clockwise.
+        /// Rotate the 2D point around a center 2D point. Counter Clockwise.
         /// By a 2D Rotation (that has cos and sin precomputed)
         static member inline rotateWithCenterBy (cen:Pt) (r:Rotation2D) (pt:Pt) = 
             let x = pt.X - cen.X  
@@ -314,7 +314,8 @@ module AutoOpenPt =
             
         /// Snap to point if within snapDistance
         static member snapIfClose (snapDistance) (snapTo:Pt) (pt:Pt) = 
-            if (snapTo-pt).Length < snapDistance then snapTo else pt
+            let v = snapTo-pt
+            if v.Length < snapDistance then snapTo else pt
             
         
         /// Returns angle in Degrees at mid point (thisPt).
@@ -325,7 +326,7 @@ module AutoOpenPt =
 
         /// 'fromPt' Pt  and UnitVc describe an endless line. 
         /// testPt gets projected on to this line.
-        /// Returns the parameter (or scaling for unit vector) on this line of the projection
+        /// Returns the parameter (or scaling for unit-vector) on this line of the projection
         static member inline projectedParameter (fromPt:Pt, uv:UnitVc, testPt:Pt) = 
             let dir = testPt-fromPt
             Vc.dot (dir,  uv) 
@@ -336,7 +337,7 @@ module AutoOpenPt =
         static member inline projectedParameter (fromPt:Pt, v:Vc, testPt:Pt) = 
             let dir = testPt-fromPt
             let lenSq =  v.LengthSq
-            if lenSq < 1e-6 then FsExGeoDivByZeroException.Raise "Pt.projectedParameter:  %O is too short for fromPt %O and  %O" v fromPt testPt
+            if lenSq < 1e-6 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Pt.projectedParameter:  %O is too short for fromPt %O and  %O" v fromPt testPt
             Vc.dot (v,  dir) / v.LengthSq 
         
         /// 'fromPt' Pt  and Pt describe an endless line. 
@@ -346,7 +347,7 @@ module AutoOpenPt =
             let dir = testPt - fromPt 
             let v   = toPt   - fromPt
             let lenSq =  v.LengthSq 
-            if lenSq < 1e-6 then FsExGeoDivByZeroException.Raise "Pt.projectedParameter: Line is too short for fromPt %O to  %O and  %O" fromPt toPt testPt
+            if lenSq < 1e-6 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Pt.projectedParameter: Line is too short for fromPt %O to  %O and  %O" fromPt toPt testPt
             Vc.dot (v,  dir) / v.LengthSq
         
         

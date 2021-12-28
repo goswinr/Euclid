@@ -30,8 +30,8 @@ module Intersect =
         |NoIntersection
         |Colinear // within threshold,  might still not  overlap,  needs to be checked via BRect
         |Parallel // more than threshold apart
-        |BfromRight of struct ( float * float) // parameters for unit vector,  might be out of bound by snapThreshold
-        |BfromLeft  of struct ( float * float) // parameters for unit vector,  might be out of bound by snapThreshold
+        |BfromRight of struct ( float * float) // parameters for unit-vector,  might be out of bound by snapThreshold
+        |BfromLeft  of struct ( float * float) // parameters for unit-vector,  might be out of bound by snapThreshold
     
     // inline functions?
     
@@ -76,7 +76,7 @@ module Intersect =
             // probably no intersection  unless closer than snapThreshold
             let perp = au.Rotate90CCW // unit v
             let vab = ap-bp
-            let dot = perp * vab // project vab onto unit vector
+            let dot = perp * vab // project vab onto unit-vector
             if abs dot < snapThreshold then
                 Colinear // parallel distance is less than snapThreshold distance,  TODO but actual overlap needs to be confirmed via BRect
             else

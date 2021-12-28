@@ -111,18 +111,18 @@ module AutoOpenUnitVc =
             if r >= 0. then  r
             else r + 4.0   
         
-        /// Convert 2D unit vector to 2D Point
+        /// Convert 2D unit-vector to 2D point
         member inline v.AsPt         = Pt( v.X, v.Y)
 
-        /// Convert 2D unit vector to 3D vector using 0.0 as Z value. 
+        /// Convert 2D unit-vector to 3D vector using 0.0 as Z value. 
         /// If you want a different Z value use the member v.WithZ(z)
         member inline v.AsVec        = Vec(v.X, v.Y, 0.0)
         
-        /// Convert 2D unit vector to 3D Unit vector using 0.0 as Z value.
+        /// Convert 2D unit-vector to 3D unit-vector using 0.0 as Z value.
         /// If you want a different Z value use the member v.WithZ(z)
         member inline v.AsUnitVec    = UnitVec.createUnchecked(v.X, v.Y, 0.0)
         
-        /// Convert 2D unit vector to 3D point using 0.0 as Z value. 
+        /// Convert 2D unit-vector to 3D point using 0.0 as Z value. 
         member inline v.AsPnt        = Pnt(v.X, v.Y, 0.0)
         
         /// Checks if the angle between the two 2D unit vectors is less than 180 degrees.
@@ -142,8 +142,8 @@ module AutoOpenUnitVc =
         /// The default angle tolerance is 0.25 degrees.  
         /// This tolerance can be customized by an optional minium cosine value.
         /// See FsEx.Geo.Cosine module.
-        member inline a.IsParallelTo( b:UnitVc, [<OPT;DEF(Cosine.``0.25``)>] minCosine ) = 
-            abs(b*a) > minCosine // 0.999990480720734 = cosine of 0.25 degrees:            
+        member inline a.IsParallelTo( b:UnitVc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) = 
+            abs(b*a) > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:            
             
             
         /// Checks if two 3D unit vectors are parallel.
@@ -151,8 +151,8 @@ module AutoOpenUnitVc =
         /// The default angle tolerance is 0.25 degrees.  
         /// This tolerance can be customized by an optional minium cosine value.
         /// See FsEx.Geo.Cosine module.
-        member inline a.IsParallelAndOrientedTo  (b:UnitVc, [<OPT;DEF(Cosine.``0.25``)>] minCosine ) = 
-            b*a >  minCosine // 0.999990480720734 = cosine of 0.25 degrees:    
+        member inline a.IsParallelAndOrientedTo  (b:UnitVc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) = 
+            b*a > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:    
             
         
         /// Checks if two 3D unit vectors are perpendicular to each other.
@@ -160,15 +160,15 @@ module AutoOpenUnitVc =
         /// This tolerance can be customized by an optional minium cosine value.
         /// The default cosine is 0.0043633 ( = 89.75 deg )
         /// See FsEx.Geo.Cosine module.
-        member inline a.IsPerpendicularTo (b:UnitVc, [<OPT;DEF(Cosine.``89.75``)>] maxCosine ) =             
+        member inline a.IsPerpendicularTo (b:UnitVc, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) =             
             let d = b*a            
-            -maxCosine < d && d  < maxCosine // = cosine of 98.75 and 90.25 degrees 
+            float -maxCosine < d && d  < float maxCosine // = cosine of 98.75 and 90.25 degrees 
         
         //----------------------------------------------------------------------------------------------
         //--------------------------  Static Members  --------------------------------------------------
         //----------------------------------------------------------------------------------------------
 
-        /// Create 2D unit vector from start and endpoint. Does the unitizing too.
+        /// Create 2D unit-vector from start and endpoint. Does the unitizing too.
         static member inline create (fromPnt:Pt, toPnt:Pt) = 
             let x = toPnt.X - fromPnt.X
             let y = toPnt.Y - fromPnt.Y            
@@ -199,7 +199,7 @@ module AutoOpenUnitVc =
             let x = ( ^T : (member X : _) vec)
             let y = ( ^T : (member Y : _) vec)
             try UnitVc.create(float x, float y) 
-            with e -> FsExGeoException.Raise "UnitVc.ofXY: %A could not be converted to a FsEx.Geo.UnitVc:\r\n%A" vec e
+            with e -> FsExGeoException.Raise "FsEx.Geo.UnitVc.ofXY: %A could not be converted to a FsEx.Geo.UnitVc:\r\n%A" vec e
 
         /// Accepts any type that has a x and y (lowercase) member that can be converted to a float. 
         /// Does the unitizing too.
@@ -208,32 +208,32 @@ module AutoOpenUnitVc =
             let x = ( ^T : (member x : _) vec)
             let y = ( ^T : (member y : _) vec)
             try UnitVc.create(float x, float y) 
-            with e -> FsExGeoException.Raise "UnitVc.ofxy: %A could not be converted to a FsEx.Geo.UnitVc:\r\n%A" vec e
+            with e -> FsExGeoException.Raise "FsEx.Geo.UnitVc.ofxy: %A could not be converted to a FsEx.Geo.UnitVc:\r\n%A" vec e
 
-        /// Create 2D unit vector from 2D point. Does the unitizing too.
+        /// Create 2D unit-vector from 2D point. Does the unitizing too.
         static member inline ofPt  (pt:Pt) =  
             let l = sqrt (pt.X*pt.X + pt.Y*pt.Y ) 
-            if l <  zeroLengthTol then FsExGeoDivByZeroException.Raise "UnitVc.ofPt failed on too short %O" pt
+            if l <  zeroLengthTol then FsExGeoDivByZeroException.Raise "FsEx.Geo.UnitVc.ofPt failed on too short %O" pt
             UnitVc.createUnchecked( pt.X / l , pt.Y / l ) 
         
-        /// Create 2D unit vector from 2D vector. Does the unitizing too.
+        /// Create 2D unit-vector from 2D vector. Does the unitizing too.
         static member inline ofVec  (v:Vc) = 
             let l = sqrt (v.X*v.X + v.Y*v.Y ) 
-            if l <  zeroLengthTol then FsExGeoDivByZeroException.Raise "UnitVc.ofVc failed on too short %O" v
+            if l <  zeroLengthTol then FsExGeoDivByZeroException.Raise "FsEx.Geo.UnitVc.ofVc failed on too short %O" v
             UnitVc.createUnchecked( v.X / l , v.Y / l )         
         
         
-        /// Convert 2D unit vector to 2D Point
+        /// Convert 2D unit-vector to 2D point
         static member inline asPt(v:UnitVc)  = Pt( v.X, v.Y)
 
-        /// Convert 2D unit vector to 3D vector using 0.0 as Z value. 
+        /// Convert 2D unit-vector to 3D vector using 0.0 as Z value. 
         /// If you want a different Z value use the member w.WithZ(z)
         static member inline asVec(v:UnitVc) = Vec(v.X, v.Y, 0.0)
         
-        /// Convert 2D unit vector to 3D Unit vector using 0.0 as Z value
+        /// Convert 2D unit-vector to 3D unit-vector using 0.0 as Z value
         static member inline asUnitVec(v:UnitVc) = UnitVec.createUnchecked(v.X, v.Y, 0.0)
         
-        /// Convert 2D unit vector to 3D point using 0.0 as Z value. 
+        /// Convert 2D unit-vector to 3D point using 0.0 as Z value. 
         static member inline asPnt(v:UnitVc) = Pnt(v.X, v.Y, 0.0) 
 
         /// 2D cross product. 
@@ -252,18 +252,18 @@ module AutoOpenUnitVc =
         /// Returns a float. This float is the Cosine of the angle between the two 2D unit vectors.
         static member inline dot  (a:UnitVc, b:UnitVc  ) = a.X * b.X + a.Y * b.Y 
 
-        /// Dot product, or scalar product of a 2D unit vector with a 2D vector  
-        /// Returns a float. This float is the projected length of the 2D vector on the direction of the unit vector
+        /// Dot product, or scalar product of a 2D unit-vector with a 2D vector  
+        /// Returns a float. This float is the projected length of the 2D vector on the direction of the unit-vector
         static member inline dot  (a:UnitVc, b:Vc  ) = a.X * b.X + a.Y * b.Y 
 
-        /// Dot product, or scalar product of a 2D vector with a 2D unit vector  
-        /// Returns a float. This float is the projected length of the 2D vector on the direction of the unit vector
+        /// Dot product, or scalar product of a 2D vector with a 2D unit-vector  
+        /// Returns a float. This float is the projected length of the 2D vector on the direction of the unit-vector
         static member inline dot  (a:Vc, b:UnitVc  ) = a.X * b.X + a.Y * b.Y 
         
-        /// Gets the X part of this 2D unit vector
+        /// Gets the X part of this 2D unit-vector
         static member inline getX     (v:UnitVc) = v.X
 
-        /// Gets the Y part of this 2D unit vector
+        /// Gets the Y part of this 2D unit-vector
         static member inline getY     (v:UnitVc) = v.Y
         
         /// Returns new 2D vector with new X value, Y stays the same.
@@ -279,11 +279,11 @@ module AutoOpenUnitVc =
         /// Add two 2D unit vectors together. Returns a new (non-unitized) 2D vector.
         static member inline add      (a:UnitVc) (b:UnitVc) = b + a  
         
-        /// Multiplies a 2D unit vector with a scalar, also called scaling a vector. 
+        /// Multiplies a 2D unit-vector with a scalar, also called scaling a vector. 
         /// Same as UnitVc.setLength. Returns a new (non-unitized) 2D vector.
         static member inline scale      (scale:float) (v:UnitVc) = Vc (v.X * scale , v.Y * scale )        
         
-        /// Multiplies a 2D unit vector with a scalar, also called scaling a vector. 
+        /// Multiplies a 2D unit-vector with a scalar, also called scaling a vector. 
         /// Same as UnitVc.setLength. Returns a new (non-unitized) 2D vector.
         static member inline setLength  (length:float) (v:UnitVc) = Vc (v.X * length , v.Y * length ) 
         
@@ -293,11 +293,11 @@ module AutoOpenUnitVc =
         /// Add to the Y part of this 2D unit vectors together. Returns a new (non-unitized) 2D vector.
         static member inline moveY     y (v:UnitVc) = Vc (v.X,   v.Y+y)        
 
-        /// Negate or inverse a 2D unit vectors. Returns a new 2D unit vector. 
+        /// Negate or inverse a 2D unit vectors. Returns a new 2D unit-vector. 
         /// Same as UnitVc.reverse
         static member inline flip  (v:UnitVc) = -v
 
-        /// Negate or inverse a 2D unit vectors. Returns a new 2D unit vector. 
+        /// Negate or inverse a 2D unit vectors. Returns a new 2D unit-vector. 
         /// Same as UnitVc.flip
         static member inline reverse  (v:UnitVc) = -v   
 
@@ -395,12 +395,12 @@ module AutoOpenUnitVc =
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions
         static member inline directionDiamond(a:UnitVc) = a.DirectionDiamond
         
-        /// Returns positive angle of unit vector. Counter clockwise from X-axis.
+        /// Returns positive angle of unit-vector. Counter clockwise from X-axis.
         /// In Radians
         /// Range: 0.0 to 2 Pi ( = 0 to 360 Degrees)
         static member inline direction2Pi (v:UnitVc)   = v.Direction2Pi
 
-        /// Returns positive angle of unit vector. Counter clockwise from X-axis.
+        /// Returns positive angle of unit-vector. Counter clockwise from X-axis.
         /// In Degree
         /// Range: 0.0 to 2 Pi ( = 0 to 360 Degrees)
         static member inline direction360 (v:UnitVc)  = v.Direction360
@@ -458,18 +458,18 @@ module AutoOpenUnitVc =
         /// Ignores vector orientation.
         /// USe Vec.isParallelTo for custom tolerance
         static member isAngleBelow1Degree(a:UnitVc, b:UnitVc) = 
-            abs(b*a) > Cosine.``1.0``
+            abs(b*a) > float Cosine.``1.0``
 
             
         /// Checks if Angle between two vectors is Below 0.25 Degree.
         /// Ignores vector orientation.
         /// USe Vec.isParallelTo for custom tolerance
         static member isAngleBelowQuatreDegree(a:UnitVc, b:UnitVc) = 
-            abs(b*a) > Cosine.``0.25``
+            abs(b*a) > float Cosine.``0.25``
 
 
         /// Checks if Angle between two vectors is Below 5 Degrees.
         /// Ignores vector orientation.
         /// USe Vec.isParallelTo for custom tolerance
         static member isAngleBelow5Degree(a:UnitVc, b:UnitVc) = 
-            abs(b*a) > Cosine.``5.0``
+            abs(b*a) > float Cosine.``5.0``

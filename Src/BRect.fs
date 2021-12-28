@@ -38,10 +38,10 @@ type BRect =
         sprintf "length=%s| width=%s| at X=%s| Y=%s"
             (Format.float (r.MaxX - r.MinX)) (Format.float (r.MaxY - r.MinY)) (Format.float r.MinX) (Format.float r.MinY)
 
-    /// The Point where X, Y and Z are the minimum values.
+    /// The point where X, Y and Z are the minimum values.
     member inline r.MinPt = Pt(r.MinX,r.MinY)
 
-    /// The Point where X, Y and Z are the maximum values.
+    /// The point where X, Y and Z are the maximum values.
     member inline r.MaxPt = Pt(r.MaxX,r.MaxY)
 
     /// The size in X direction, same as member rect.SizeX.
@@ -87,20 +87,20 @@ type BRect =
     member inline r.Expand(dist) : BRect =
         let n = BRect(r.MinX-dist, r.MinY-dist, r.MaxX+dist, r.MaxY+dist)
         if dist<0. &&  (n.MinX > n.MaxX || n.MinY > n.MaxX) then
-            FsExGeoException.Raise "BRect.Expand(dist): Negative distance %g causes an underflow, on %s" dist r.AsString
+            FsExGeoException.Raise "FsEx.Geo.BRect.Expand(dist): Negative distance %g causes an underflow, on %s" dist r.AsString
         n
 
 
-    /// Returns Bounding Rectangle expanded by a distance for X and Y Axis each.
+    /// Returns Bounding Rectangle expanded by a distance for X and Y-axis each.
     /// Does check for underflow if distance is negative and raises FsExGeoException.
     member inline r.Expand(xDist,yDist) : BRect =
         let n = BRect(r.MinX-xDist, r.MinY-yDist, r.MaxX+xDist, r.MaxY+yDist)
         if n.MinX > n.MaxX ||  n.MinY > n.MaxX then
-            FsExGeoException.Raise "BRect.Expand(x,y): Negative distance(s) X: %g and Y: %g cause an underflow, on %s" xDist yDist r.AsString
+            FsExGeoException.Raise "FsEx.Geo.BRect.Expand(x,y): Negative distance(s) X: %g and Y: %g cause an underflow, on %s" xDist yDist r.AsString
         n
 
 
-    /// Returns Bounding Rectangle expanded by a distance for X and Y Axis each.
+    /// Returns Bounding Rectangle expanded by a distance for X and Y-axis each.
     /// If expansion is negative it shrinks the Rectangle. It also makes sure that there is no underflow.
     /// When the negative expansion is bigger than the size, Min and Max values will be both in the middle from where they were before.
     member inline b.ExpandSave(xDist,yDist) : BRect =
@@ -130,7 +130,7 @@ type BRect =
     member inline r.ExpandXaxis(startDist, endDist) : BRect =
         let n = BRect(r.MinX-startDist, r.MinY, r.MaxX+endDist, r.MaxY)
         if n.MinX > n.MaxX  then
-            FsExGeoException.Raise "BRect.ExpandXaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist r.AsString
+            FsExGeoException.Raise "FsEx.Geo.BRect.ExpandXaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist r.AsString
         n
 
     /// Returns Bounding Rectangle expanded  only in Y direction by different distance for start(minY) and end (maxY).
@@ -138,7 +138,7 @@ type BRect =
     member inline r.ExpandYaxis(startDist, endDist) : BRect =
         let n = BRect(r.MinX, r.MinY-startDist, r.MaxX, r.MaxY+endDist)
         if n.MinY > n.MaxY  then
-            FsExGeoException.Raise "BRect.ExpandYaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist r.AsString
+            FsExGeoException.Raise "FsEx.Geo.BRect.ExpandYaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist r.AsString
         n
 
     /// Returns true if the two Bounding Rectangles do overlap or touch.

@@ -28,6 +28,61 @@ type Plane = // Normals are always unitized
     
     /// Format PPlane into string with nicely formatted floating point numbers.
     override pl.ToString() = sprintf "FsEx.Geo.Plane(Origin:%s| Normal:%s)" pl.Origin.AsString pl.Normal.AsString
+    
+    /// Returns signed distance of point to plane, also indicating on which side it is.
+    member inline pl.DistanceToPt pt = pl.Normal*(pt-pl.Origin) 
+
+    /// Returns the closest point on the plane from a test point.
+    member inline pl.ClosestPoint pt = pt - pl.Normal*(pl.DistanceToPt pt) 
+
+    /// First finds the closet point on plane from a test point.
+    /// Then returns a new plane with Origin at this point and the same Normal.
+    member inline pl.PlaneAtClPt pt = Plane(pt - pl.Normal*(pl.DistanceToPt pt), pl.Normal)
+
+    /// Returns the Angle to another Plane in Degree, ignoring the normal's orientation.
+    /// So between 0 to 90 degrees
+    member inline this.AngleToPlane (pl:Plane) = UnitVec.angle90 this.Normal pl.Normal 
+    
+    /// Returns the Angle to 3D vector in Degree, ignoring the plane's orientation.
+    /// So between 0 to 90 degrees
+    member inline pl.AngleToVec (v:Vec) = UnitVec.angle90 v.Unitized pl.Normal 
+
+    /// Returns the Angle to 3D unit-vector in Degree, ignoring the plane's orientation. 
+    /// So between 0 to 90 degrees
+    member inline pl.AngleToVec (v:UnitVec) = UnitVec.angle90 v pl.Normal 
+
+    /// Returns the Angle to a Line3D in Degree, ignoring the normal's orientation.
+    /// So between 0 to 90 degrees
+    member inline pl.AngleToLine (ln:Line3D) = UnitVec.angle90 ln.Tangent.Unitized pl.Normal 
+    
+    /// Checks if two Planes are coincident within the distance tolerance. 1e-6 by default.
+    /// This means that their Z-axes are parallel within the angle tolerance
+    /// and the distance of second origin to the first plane is less than the distance tolerance.
+    /// The default angle tolerance is 0.25 degrees.  
+    /// This tolerance can be customized by an optional minium cosine value.
+    /// See FsEx.Geo.Cosine module.
+    member inline pl.IsCoincidentTo (other:Plane, 
+                                    [<OPT;DEF(1e-6)>] distanceTolerance:float, 
+                                    [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine>) =          
+        pl.Normal.IsParallelTo(other.Normal,minCosine)
+        && 
+        pl.DistanceToPt other.Origin < distanceTolerance
+
+
+    //----------------------------------------------------------------------------------------------
+    //--------------------------  Static Members  --------------------------------------------------
+    //----------------------------------------------------------------------------------------------
+
+    /// Checks if two 3D  Planes are equal within tolerance.
+    static member equals tol (a:Plane) (b:Plane) =
+        let tt = tol*tol
+        Pnt.distanceSq a.Origin b.Origin < tt &&
+        UnitVec.differenceSq a.Normal b.Normal < tt 
+
+    /// Checks if two 3D Parametrized Planes are coincident.
+    /// This means that the Z-axes are parallel within 0.25 degrees
+    /// and the distance of  second origin to the first plane is less than 1e-6 units tolerance.
+    static member inline areCoincident tol (a:Plane) (b:Plane) = a.IsCoincidentTo (b)
 
     /// Create Plane, normal vector gets unitized in constructor
     static member create(pt,normal:Vec) = 
@@ -36,81 +91,78 @@ type Plane = // Normals are always unitized
         let li=1./l in 
         Plane(pt,UnitVec.createUnchecked( li*normal.X , li*normal.Y ,li*normal.Z ))
 
-    /// normal vector gets unitized in constructor
-    static member create(pt,normal:UnitVec) =        
+    /// Create Plane from already normalized input vector
+    static member inline create(pt,normal:UnitVec) =        
         Plane(pt,normal)
 
     /// Create Plane from 3 points.
-    static member createFrom3Points (a:Pnt) (b:Pnt) (c:Pnt) =
+    static member inline createFrom3Points (a:Pnt) (b:Pnt) (c:Pnt) =
         let n =  Vec.cross (c-b,a-b)
-        if Vec.isTiny 1e-12 n then FsExGeoException.Raise "FsEx.Geo.Plane.createFrom3Points: the points %O, %O, %O are (almost) in one Line3D, no Plane found" a b c
+        if n.LengthSq < 1e-12 then FsExGeoException.Raise "FsEx.Geo.Plane.createFrom3Points: the points %O, %O, %O are (almost) in one Line3D, no Plane found" a b c
         Plane(a, n.Unitized)
 
-    /// Returns signed distance of point to plane, also indicating on which side it is.
-    member inline pl.DistanceToPt pt = pl.Normal*(pt-pl.Origin) 
-
-    /// Returns the closest point on the plane from a test point.
-    member inline pl.ClosestPoint pt = pt - pl.Normal*(pl.DistanceToPt pt) 
-
-    /// Returns the closest point on the plane from a test point.
-    member pl.PlaneAtClPt pt = Plane(pt - pl.Normal*(pl.DistanceToPt pt), pl.Normal)
-
-    /// Returns the Angle to another Plane in Degree, ignoring the normal's orientation. 0- 90 degrees
-    member inline this.AngleToPlane (pl:Plane) = UnitVec.angle90 this.Normal pl.Normal 
-
-    /// Returns the Angle to a Line3D in Degree, ignoring the normal's orientation. 0- 90 degrees
-    member inline pl.AngleToLine (ln:Line3D) = UnitVec.angle90 ln.Tangent.Unitized pl.Normal 
-    
-
-    //----------------------------------------------------------------------------------------------
-    //--------------------------  Static Members  --------------------------------------------------
-    //----------------------------------------------------------------------------------------------
-
-
-
-    /// Checks if two 3D  Planes are equal within tolerance.
-    static member equals tol (a:Plane) (b:Plane) =
-        let tt = tol*tol
-        Pnt.distanceSq a.Origin b.Origin < tt &&
-        UnitVec.differenceSq a.Normal b.Normal < tt 
-
-    /// Gets the Planes normal. a unitized vector.
-    static member  normal (p:Plane) = p.Normal
+    /// Gets the Planes normal. A unitized vector.
+    static member inline normal (p:Plane) = p.Normal
     
     /// Gets the Planes origin.
-    static member  origin (a:Plane) = a.Origin
+    static member inline origin (a:Plane) = a.Origin
     
     /// Gets the Plane at world origin with normal in world Z direction.
-    static member  xyPlane = Plane(Pnt.Origin,UnitVec.Zaxis)
+    static member inline xyPlane = Plane(Pnt.Origin,UnitVec.Zaxis)
     
-    /// Returns the Angle to another Plane in Degree, ignoring the normal's orientation. 0- 90 degrees
-    static member angleTo (a:Plane) b = a.AngleToPlane b
+    /// Returns the Angle to another Plane in Degree, ignoring the normal's orientation.
+    /// So between 0 to 90 degrees
+    static member inline angleTo (a:Plane) b = a.AngleToPlane b
 
-    /// Returns the parameter of intersection point of infinite Line3D with Plane, fails if they are parallel
-    static member  intersectLineParameter  (ln:Line3D) (pl:Plane) = 
-        let nenner = ln.Tangent * pl.Normal
-        if abs nenner < 1e-6 then FsExGeoException.Raise "FsEx.Geo.intersectLineParameter: Lines and Plane are Parallel: %O, %O" ln pl
-        (pl.Origin - ln.From) * pl.Normal / nenner
+    /// Returns the line of intersection between two planes.
+    /// Fails if they are parallel.
+    static member intersect  (a:Plane) (b:Plane) = 
+        let bn = b.Normal
+        let an = a.Normal
+        let ao = a.Origin
+        let v = UnitVec.cross (an,bn)
+        if v.LengthSq < 1e-18 then 
+            FsExGeoException.Raise "FsEx.Geo.Plane.intersect: Planes are parallel or coincident: %O, %O" a b
+        let pa = Vec.cross(v, an)
+        let nenner = pa * bn
+        let t = ((b.Origin - ao ) * bn) / nenner
+        let xpt = ao + pa * t
+        Line3D.createFromPntAndVec (xpt, v)
+
+    /// Returns the parameter of intersection point of infinite Line3D with Plane.
+    /// Fails if they are parallel.
+    static member intersectLineParameter  (ln:Line3D) (pl:Plane) = 
+        let n = pl.Normal
+        let nenner = ln.Tangent * n
+        if abs nenner < 1e-9 then 
+            FsExGeoException.Raise "FsEx.Geo.Plane.intersectLineParameter: Line and Plane are parallel or line has zero length: %O, %O" ln pl
+        ((pl.Origin - ln.From) * pl.Normal) / nenner
     
-    /// Returns intersection point of infinite Line3D with Plane, fails if they are parallel
-    static member intersectLine (ln:Line3D) (pl:Plane) = ln.EvaluateAt <| Plane.intersectLineParameter  ln pl
+    /// Returns intersection point of infinite Line3D with Plane.
+    /// Fails if they are parallel.
+    static member intersectLine (ln:Line3D) (pl:Plane) = 
+        ln.EvaluateAt <| Plane.intersectLineParameter  ln pl
     
-    /// checks if a finite Line3D intersects with Plane, fails if they are parallel
-    static member  inline doLinePlaneIntersect (ln:Line3D) (pl:Plane) = 
-        let t = Plane.intersectLineParameter ln pl
+    /// Checks if a finite Line3D intersects with Plane in one point.
+    /// Returns false for parallel and coincident lines.
+    static member inline doLinePlaneIntersect (ln:Line3D) (pl:Plane) = 
+        let n = pl.Normal
+        let nenner = ln.Tangent * n
+        let t = ((pl.Origin - ln.From) * n)  / nenner // if nenner is 0.0 then 't' is Infinity
         0. <= t && t <= 1.
     
-    static member  offset dist (pl:Plane) = 
+    /// Returns a new plane offset along the normal vector.
+    static member inline offset dist (pl:Plane) = 
         Plane(pl.Origin + pl.Normal*dist , pl.Normal)        
     
-    /// Offset Plane by amount  in orientation towards DirPt:
+    /// Offset Plane by amount in orientation towards DirPt:
     /// in direction of point -> distance -> Plane
-    static member  offsetInDir dirPt dist (pl:Plane) =
+    static member inline offsetInDir dirPt dist (pl:Plane) =
         if pl.Normal * (dirPt-pl.Origin) > 0. then Plane(pl.Origin + pl.Normal*dist , pl.Normal)
-        else                              Plane(pl.Origin - pl.Normal*dist , pl.Normal)
+        else                                       Plane(pl.Origin - pl.Normal*dist , pl.Normal)
     
     /// Returns signed distance of point to plane, also indicating on which side it is.
-    static member  distToPt (pt:Pnt) (pl:Plane) =
+    static member inline distToPt (pt:Pnt) (pl:Plane) =
         pl.DistanceToPt pt
     
     (*

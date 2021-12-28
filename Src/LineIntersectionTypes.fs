@@ -156,7 +156,7 @@ module LineIntersectionTypes =
         /// Both input lines are shorter than the given minimum Length tolerance.
         | TooShortBoth
         
-    /// Return true if the IntersectionKind is represented by one Point. 
+    /// Return true if the IntersectionKind is represented by one point. 
     /// Not two points like in skew or no point like in parallel.
     /// Also returns false for the special cases of too short lines.
     let isIntersectionOnePoint k =

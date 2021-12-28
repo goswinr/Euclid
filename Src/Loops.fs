@@ -16,22 +16,22 @@ type PointLoopRel =
         
 
 
-/// A counter-clockwise, closed series of points.
+/// A counter-clockwise, closed series of 2D points.
 /// Checked for too short segments and duplicate points bu might have colinear points.
 /// Counterclockwise.
 /// Checked for self intersection.
 /// This class stores for each segment precomputed list of unit vectors, lengths and bounding Rectangles. 
 /// This is to have better performance when calculating Loop with Loop intersections or point containment.
-type Loop private ( pts:ResizeArray<Pt>
-                  , unitVcts:UnitVc[]
-                  , bRects:BRect[] 
-                  , lens:float[] 
-                  //, xys:float[] // TODO is this needed to be always precomputed ?
-                  , area:float
-                  , minSegmentLength:float
-                  , snapThreshold:float
-                  , bRect:BRect
-                  ) =    
+type Loop private   ( pts:ResizeArray<Pt>
+                    , unitVcts:UnitVc[]
+                    , bRects:BRect[] 
+                    , lens:float[] 
+                    //, xys:float[] // TODO is this needed to be always precomputed ?
+                    , area:float
+                    , minSegmentLength:float
+                    , snapThreshold:float
+                    , bRect:BRect
+                    ) =    
 
     /// Without sign, since loop is guaranteed to be Counter Clockwise
     /// This Value is precomputed in constructor
@@ -58,7 +58,7 @@ type Loop private ( pts:ResizeArray<Pt>
     //member _.XYs = xys
 
     /// This list is one item Longer than Vectors , BRects or Lengths
-    /// Last point equals first Point
+    /// Last point equals first point
     member _.Points = pts
     
     /// One less than Points count 
@@ -119,7 +119,7 @@ type Loop private ( pts:ResizeArray<Pt>
                 iFst <- i 
         iFst, iSnd   
         
-    /// Returns closest Point, 
+    /// Returns the closest point. 
     member lo.ClosestPoint (pt:Pt) :Pt= 
         let i = lo.ClosestSegment(pt) 
         let t = lo.Points.[i]

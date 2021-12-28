@@ -71,7 +71,7 @@ type Box =
     member inline b.SizeZ  = b.Zaxis.Length
 
 
-    /// Returns Point 0 of the box, same box.Origin.
+    /// Returns point 0 of the box, same box.Origin.
     /// 
     ///   local        local
     ///   Z-Axis       Y-Axis
@@ -91,7 +91,7 @@ type Box =
     ///   0               1
     member inline b.Pt0  = b.Origin
 
-    /// Returns Point 1 of the box.
+    /// Returns point 1 of the box.
     /// 
     ///   local        local
     ///   Z-Axis       Y-Axis
@@ -111,7 +111,7 @@ type Box =
     ///   0               1
     member inline b.Pt1  = b.Origin + b.Xaxis
 
-    /// Returns Point 2 of the box.
+    /// Returns point 2 of the box.
     /// 
     ///   local        local
     ///   Z-Axis       Y-Axis
@@ -131,7 +131,7 @@ type Box =
     ///   0               1
     member inline b.Pt2  = b.Origin + b.Xaxis + b.Yaxis
 
-    /// Returns Point 3 of the box.
+    /// Returns point 3 of the box.
     /// 
     ///   local        local
     ///   Z-Axis       Y-Axis
@@ -151,7 +151,7 @@ type Box =
     ///   0               1
     member inline b.Pt3  = b.Origin + b.Yaxis
 
-    /// Returns Point 4 of the box.
+    /// Returns point 4 of the box.
     /// 
     ///   local        local
     ///   Z-Axis       Y-Axis
@@ -171,7 +171,7 @@ type Box =
     ///   0               1
     member inline b.Pt4  = b.Origin + b.Zaxis
 
-    /// Returns Point 5 of the box.
+    /// Returns point 5 of the box.
     /// 
     ///   local        local
     ///   Z-Axis       Y-Axis
@@ -191,7 +191,7 @@ type Box =
     ///   0               1
     member inline b.Pt5  = b.Origin + b.Xaxis + b.Zaxis
 
-    /// Returns Point 6 of the box.
+    /// Returns point 6 of the box.
     /// 
     ///   local        local
     ///   Z-Axis       Y-Axis
@@ -211,7 +211,7 @@ type Box =
     ///   0               1
     member inline b.Pt6  = b.Origin + b.Xaxis + b.Yaxis + b.Zaxis    
 
-    /// Returns Point 7 of the box.
+    /// Returns point 7 of the box.
     /// 
     ///   local        local
     ///   Z-Axis       Y-Axis
@@ -446,7 +446,7 @@ type Box =
 
     /// Gets the Plane that this box is based on.
     member inline b.PPlane  =
-        PPlane.createOriginXaxisYaxis b.Origin b.Xaxis b.Yaxis
+        PPlane.createOriginXaxisYaxis (b.Origin, b.Xaxis, b.Yaxis)
 
     //-------------------------------------------------------------------
     //------------------------static members-----------------------------
@@ -477,7 +477,7 @@ type Box =
 
     /// Returns Box expanded by respective distances on all six sides
     /// Does check for overflow if distance is negative and fails.
-    /// distLen, distWid and  distHei are for x, y and Z axis respectively.
+    /// distLen, distWid and  distHei are for x, y and Z-axis respectively.
     static member expandXYZ distLen distWid distHei (b:Box) =
         let len = b.Length
         let wid = b.Width

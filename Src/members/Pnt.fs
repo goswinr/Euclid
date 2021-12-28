@@ -47,10 +47,10 @@ module AutoOpenPnt =
         /// Returns the projected square distance from Origin (0,0,0). Ignoring the Z component.
         member inline pt.DistanceInXYFromOriginSquare = pt.X*pt.X + pt.Y*pt.Y
         
-        /// Returns new 3D point with given Distance from Origin by scaling it up or down.
+        /// Returns new 3D point with given distance from Origin by scaling it up or down.
         member inline pt.WithDistanceFromOrigin (l:float) = 
             let d = pt.DistanceFromOrigin 
-            if d < zeroLengthTol then FsExGeoException.Raise "pnt.WithDistFromOrigin  %O is too small to be scaled." pt
+            if d < zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Pnt.WithDistFromOrigin  %O is too small to be scaled." pt
             pt * (l/d) 
         
         /// Returns the Diamond Angle from this point to another point projected in X-Y plane.
@@ -64,7 +64,7 @@ module AutoOpenPnt =
             let y = o.Y-p.Y
             //#if DEBUG 
             if abs(x) < zeroLengthTol && abs(y) < zeroLengthTol then // TODO : with this test all  operations are 2.5 times slower 
-                FsExGeoDivByZeroException.Raise "FsEx.Geo.Pnt.DirectionDiamondInXYTo failed for too short Distance between %O and %O." p o
+                FsExGeoDivByZeroException.Raise "FsEx.Geo.Pnt.DirectionDiamondInXYTo failed for too short distance between %O and %O." p o
             //#endif 
             if y >= 0.0 then 
                 if x >= 0.0 then   
@@ -85,7 +85,7 @@ module AutoOpenPnt =
             let y = o.Y-p.Y
             //#if DEBUG 
             if abs(x) < zeroLengthTol && abs(y) < zeroLengthTol then // TODO : with this test all  operations are 2.5 times slower 
-                FsExGeoDivByZeroException.Raise "FsEx.Geo.Pnt.Angle2PiInXYTo failed for too short Distance between %O and %O." p o
+                FsExGeoDivByZeroException.Raise "FsEx.Geo.Pnt.Angle2PiInXYTo failed for too short distance between %O and %O." p o
             //#endif  
             let a = Math.Atan2(y, x) 
             if a < 0. then  a + Util.twoPi
@@ -108,7 +108,7 @@ module AutoOpenPnt =
             let v   = toPt   - fromPt
             let lenSq = v.LengthSq
             let lenSq =  v.LengthSq
-            if lenSq < 1e-6 then FsExGeoDivByZeroException.Raise "Pt.closestPointOnLine: Line is too short for fromPt %O to  %O and  %O" fromPt toPt testPt
+            if lenSq < 1e-6 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Pnt.closestPointOnLine: Line is too short for fromPt %O to  %O and  %O" fromPt toPt testPt
             let dot = Vec.dot (v,  dir) / lenSq
             if   dot <= 0.0 then  fromPt 
             elif dot >= 1.0 then  toPt
@@ -122,7 +122,7 @@ module AutoOpenPnt =
             elif dot >= len then (fromPt+len*uv)  
             else                 fromPt+dot*uv 
         
-        /// Squared Distance between point and finite line segment defined by start point, direction and length.   
+        /// Returns the squared distance between point and finite line segment defined by start point, direction and length.   
         member inline testPt.DistanceToLineSquare(fromPt:Pnt, uv:UnitVec, len:float) = 
             let dir = testPt-fromPt 
             let dot = Vec.dot (uv,  dir) 
@@ -130,7 +130,7 @@ module AutoOpenPnt =
             elif dot >= len then testPt.DistanceToSquare (fromPt+len*uv)  
             else                 testPt.DistanceToSquare (fromPt+dot*uv) 
                 
-        /// Squared Distance between point and finite line segment defined by start point , end point,  direction and length 
+        /// Returns the squared distance between point and finite line segment defined by start point , end point,  direction and length 
         /// The last two parameters  help speed up calculations.
         member inline testPt.DistanceToLineSquare(fromPt:Pnt, toPt:Pnt,  uv:UnitVec, len:float) = 
             let dir = testPt-fromPt 
@@ -139,7 +139,7 @@ module AutoOpenPnt =
             elif dot >= len then testPt.DistanceToSquare toPt 
             else                 testPt.DistanceToSquare (fromPt+dot*uv) 
                 
-        /// Distance between point and finite line segment defined by start point, direction and length.
+        /// Returns the distance between point and finite line segment defined by start point, direction and length.
         member inline testPt.DistanceToLine(fromPt:Pnt, uv:UnitVec, len:float) = 
             let dir = testPt-fromPt 
             let dot = Vec.dot (uv,  dir) 
@@ -147,12 +147,12 @@ module AutoOpenPnt =
             elif dot >= len then testPt.DistanceToSquare (fromPt+len*uv)  
             else                 testPt.DistanceToSquare (fromPt+dot*uv) 
                 
-        /// Distance between point and finite line segment  defined by start and end.
+        /// Returns the distance between point and finite line segment  defined by start and end.
         member inline testPt.DistanceToLine(fromPt:Pnt, toPt:Pnt) =  
             let dir = testPt - fromPt 
             let v   = toPt   - fromPt
             let lenSq =  v.LengthSq 
-            if lenSq < 1e-6 then FsExGeoDivByZeroException.Raise "Pnt.DistanceToLine: Line is too short for fromPt %O to  %O and  %O" fromPt toPt testPt
+            if lenSq < 1e-6 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Pnt.DistanceToLine: Line is too short for fromPt %O to  %O and  %O" fromPt toPt testPt
             let dot = Vec.dot (v,  dir) / v.LengthSq 
             if   dot <= 0.0 then testPt.DistanceTo   fromPt 
             elif dot >= 1.0 then testPt.DistanceTo   toPt  
@@ -198,7 +198,7 @@ module AutoOpenPnt =
         /// Create 3D point from 3D vector.
         static member inline ofVec (v:Vec)  = Pnt (v.X, v.Y, v.Z)  
         
-        /// Create 3D point from 3D unit vector.
+        /// Create 3D point from 3D unit-vector.
         static member inline ofUnitVec  (v:UnitVec) = Pnt (v.X, v.Y, v.Z)                  
         
         /// Create 3D point from X, Y and Z components.
@@ -312,10 +312,10 @@ module AutoOpenPnt =
         /// going from a point in the direction of another point.
         static member inline extendToZLevel (fromPt:Pnt, toPt:Pnt,z:float) = 
             let v = toPt - fromPt
-            if fromPt.Z < toPt.Z && z < fromPt.Z  then FsExGeoException.Raise "Pnt.extendToZLevel cannot be reached for fromPt:%O toPt:%O z:%g" fromPt toPt z
-            if fromPt.Z > toPt.Z && z > fromPt.Z  then FsExGeoException.Raise "Pnt.extendToZLevel cannot be reached for fromPt:%O toPt:%O z:%g" fromPt toPt z
+            if fromPt.Z < toPt.Z && z < fromPt.Z  then FsExGeoException.Raise "FsEx.Geo.Pnt.extendToZLevel cannot be reached for fromPt:%O toPt:%O z:%g" fromPt toPt z
+            if fromPt.Z > toPt.Z && z > fromPt.Z  then FsExGeoException.Raise "FsEx.Geo.Pnt.extendToZLevel cannot be reached for fromPt:%O toPt:%O z:%g" fromPt toPt z
             let dot = abs ( v * Vec.Zaxis)
-            if dot < 0.0001 then  FsExGeoException.Raise "Pnt.extendToZLevel cannot be reached for fromPt:%O toPt:%O because they are both at the same level. target z:%g " fromPt toPt z
+            if dot < 0.0001 then  FsExGeoException.Raise "FsEx.Geo.Pnt.extendToZLevel cannot be reached for fromPt:%O toPt:%O because they are both at the same level. target z:%g " fromPt toPt z
             let diffZ = abs (fromPt.Z - z)
             let fac = diffZ / dot
             fromPt + v * fac       
@@ -341,10 +341,12 @@ module AutoOpenPnt =
         
 
         /// Offsets two 3D points by two given distances.
-        /// The fist distance (distHor) is applied in in X-Y plane
-        /// The second distance (distNormal) is applied perpendicular to the line (made by the two 3D points) and perpendicular to the horizontal offset direction.
-        /// this is in World.Z direction if both points are at the same Z level.
-        /// If points are closer than than 1e-6 units the World.Xaxis is used as first direction and World Z-axis as second direction.
+        /// The fist distance (distHor) is applied in in X-Y plane.
+        /// The second distance (distNormal) is applied perpendicular to the line (made by the two 3D points) 
+        /// and perpendicular to the horizontal offset direction.
+        /// This is in World.Z direction if both points are at the same Z level.
+        /// If points are closer than than 1e-6 units the World.Xaxis is used 
+        /// as first direction and World Z-axis as second direction.
         static member offsetTwoPt(  fromPt:Pnt,
                                     toPt:Pnt,
                                     distHor:float,
@@ -365,13 +367,13 @@ module AutoOpenPnt =
         /// Multiplies (or applies) a Matrix to a 3D point (with an implicit 1 in the 4th dimension, 
         /// so that it also works correctly for projections.)
         static member transform (m:Matrix) (p:Pnt) = 
-            p*m // operator * is defined in Matrix.fs
+            p * m // operator * is defined in Matrix.fs
             
         /// Multiplies (or applies) an OrthoMatrix to a 3D point. 
         static member transformOrtho (m:OrthoMatrix) (p:Pnt) = 
-            p*m // operator * is defined in OrthoMatrix.fs
+            p * m // operator * is defined in OrthoMatrix.fs
             
-        // Rotate 2D and 3D: 
+        // --------------- Rotate 2D and 3D: ----------------------------
 
         /// Multiplies (or applies) only the 3x3 rotation part of an OrthoMatrix to a 3D point. 
         static member rotateOrtho (m:OrthoMatrix) (v:Pnt) = 
@@ -393,7 +395,7 @@ module AutoOpenPnt =
         static member rotateZBy (r:Rotation2D) (p:Pnt) = Pnt (r.Cos*p.X - r.Sin*p.Y, r.Sin*p.X + r.Cos*p.Y,  p.Z)
         
         /// Rotate the 3D point around a center 3D point and a X aligned axis, from Y to Z-axis, Counter Clockwise looking from right.
-        static member rotateXonCenterBy (cen:Pnt) (r:Rotation2D) (pt:Pnt) =  
+        static member rotateXwithCenterBy (cen:Pnt) (r:Rotation2D) (pt:Pnt) =  
             let x = pt.X - cen.X 
             let y = pt.Y - cen.Y 
             let z = pt.Z - cen.Z
@@ -402,7 +404,7 @@ module AutoOpenPnt =
                     r.Sin*y + r.Cos*z + cen.Z)         
 
         /// Rotate the 3D point around a center point and a Y aligned axis, from Z to X-axis, Counter Clockwise looking from back.
-        static member rotateYonCenterBy (cen:Pnt) (r:Rotation2D) (pt:Pnt) =  
+        static member rotateYwithCenterBy (cen:Pnt) (r:Rotation2D) (pt:Pnt) =  
             let x = pt.X - cen.X 
             let y = pt.Y - cen.Y 
             let z = pt.Z - cen.Z
@@ -411,7 +413,7 @@ module AutoOpenPnt =
                     r.Cos*z - r.Sin*x + cen.Z) 
         
         /// Rotate the 3D point around a center point and a Z aligned axis, from X to Y-axis, Counter Clockwise looking from top.
-        static member rotateZonCenterBy (cen:Pnt) (r:Rotation2D) (pt:Pnt) =  
+        static member rotateZwithCenterBy (cen:Pnt) (r:Rotation2D) (pt:Pnt) =  
             let x = pt.X - cen.X  
             let y = pt.Y - cen.Y 
             let z = pt.Z - cen.Z
@@ -432,23 +434,23 @@ module AutoOpenPnt =
             Pnt.rotateZBy  (Rotation2D.createFromDegrees angDegree) pt 
     
         /// Rotate the 3D point in Degrees around center point and a X aligned axis, from Y to Z-axis, Counter Clockwise looking from right.
-        static member inline rotateXonCenter (cen:Pnt) (angDegree) (pt:Pnt) = 
-            Pnt.rotateXonCenterBy cen (Rotation2D.createFromDegrees angDegree) pt  
+        static member inline rotateXwithCenter (cen:Pnt) (angDegree) (pt:Pnt) = 
+            Pnt.rotateXwithCenterBy cen (Rotation2D.createFromDegrees angDegree) pt  
 
         /// Rotate the 3D point in Degrees around center point and a Y aligned axis, from Z to X-axis, Counter Clockwise looking from back.
-        static member inline rotateYonCenter (cen:Pnt) (angDegree) (pt:Pnt) = 
-            Pnt.rotateYonCenterBy cen (Rotation2D.createFromDegrees angDegree) pt 
+        static member inline rotateYwithCenter (cen:Pnt) (angDegree) (pt:Pnt) = 
+            Pnt.rotateYwithCenterBy cen (Rotation2D.createFromDegrees angDegree) pt 
     
         /// Rotate the 3D point in Degrees around center point and a Z aligned axis, from X to Y-axis, Counter Clockwise looking from top.
-        static member inline rotateZonCenter (cen:Pnt) (angDegree) (pt:Pnt) = 
-            Pnt.rotateZonCenterBy cen (Rotation2D.createFromDegrees angDegree) pt 
+        static member inline rotateZwithCenter (cen:Pnt) (angDegree) (pt:Pnt) = 
+            Pnt.rotateZwithCenterBy cen (Rotation2D.createFromDegrees angDegree) pt 
 
         /// Rotate by Quaternion around Origin
         static member inline rotateByQuaternion  (q:Quaternion) (pt:Pnt) =
             pt*q  // operator * is defined in Quaternion.fs   
     
         /// Rotate by Quaternion around given Center point 
-        static member inline rotateOnCenterByQuat (cen:Pnt) (q:Quaternion) (pt:Pnt) =
+        static member inline rotatewithCenterByQuat (cen:Pnt) (q:Quaternion) (pt:Pnt) =
             // adapted from https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
             let x = pt.X-cen.X
             let y = pt.Y-cen.Y
@@ -474,9 +476,9 @@ module AutoOpenPnt =
             let b = nextPt-thisPt
             Vec.angle180 a b
 
-        /// 'fromPt' point  and uv unit vector describe an endless line. 
+        /// 'fromPt' point  and uv unit-vector describe an endless line. 
         /// testPt gets projected on to this line.
-        /// Returns the parameter (or scaling for unit vector) on this line of the projection
+        /// Returns the parameter (or scaling for unit-vector) on this line of the projection
         static member inline projectedParameter (fromPt:Pnt, uv:UnitVec, testPt:Pnt) = 
             let dir = testPt-fromPt
             Vec.dot (dir,  uv) 

@@ -120,7 +120,7 @@ type Rect3D =
     ///  0-Origin       1
     member inline r.YCorner = r.Origin + r.Yaxis
 
-    /// Returns Point 0 of the 3D rectangle. Same as member rect.Origin.
+    /// Returns point 0 of the 3D rectangle. Same as member rect.Origin.
     ///
     ///   local
     ///   Y-Axis
@@ -138,7 +138,7 @@ type Rect3D =
     member inline r.Pt0 = r.Origin
 
 
-    /// Returns Point 1 of the 3D rectangle.
+    /// Returns point 1 of the 3D rectangle.
     ///
     ///   local
     ///   Y-Axis
@@ -156,7 +156,7 @@ type Rect3D =
     member inline r.Pt1 = r.Origin + r.Xaxis 
 
 
-    /// Returns Point 2 of the 3D rectangle. Same as rect.FarCorner.
+    /// Returns point 2 of the 3D rectangle. Same as rect.FarCorner.
     ///
     ///   local
     ///   Y-Axis
@@ -173,7 +173,7 @@ type Rect3D =
     ///  0-Origin       1
     member inline r.Pt2 = r.Origin + r.Xaxis + r.Yaxis
 
-    /// Returns Point 3 of the 3D rectangle.
+    /// Returns point 3 of the 3D rectangle.
     ///
     ///   local
     ///   Y-Axis
@@ -352,7 +352,7 @@ type Rect3D =
 
     /// Gets the Plane that this 3D rectangle is based on.
     member inline r.PPlane  =
-        PPlane.createOriginXaxisYaxis r.Origin r.Xaxis r.Yaxis
+        PPlane.createOriginXaxisYaxis (r.Origin, r.Xaxis, r.Yaxis)
 
     //-------------------------------------------------------------------
     //------------------------static members-----------------------------
@@ -381,7 +381,7 @@ type Rect3D =
 
     /// Returns the 3D Rectangle expanded by respective distances on all six sides
     /// Does check for overflow if distance is negative and fails.
-    /// distLen, distWid  are for x, y axis respectively.
+    /// distLen, distWid  are for x, Y-axis respectively.
     static member expandXYZ distLen distWid  (r:Rect3D) =
         let len = r.Length
         let wid = r.Width
@@ -436,7 +436,7 @@ type Rect3D =
         Rect3D(r.Origin + y*(distY/len), r.Xaxis, y)
 
     /// Offset or Translate along the local Z-axis.
-    /// The local Z-axis is calculated from cross product of X and Y axis of the 3D Rectangle.
+    /// The local Z-axis is calculated from cross product of X and Y-axis of the 3D Rectangle.
     static member offset (offsetDistance :float) (r:Rect3D) =
         let z = Vec.cross(r.Xaxis,r.Yaxis)
         let len = z.Length

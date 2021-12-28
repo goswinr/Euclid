@@ -61,10 +61,10 @@ type BBox =
             (Format.float (b.MaxX - b.MinX)) (Format.float (b.MaxY - b.MinY)) (Format.float (b.MaxZ - b.MinZ))
             (Format.float b.MinX) (Format.float b.MinY) (Format.float b.MinZ)
 
-    /// The Point where X, Y and Z are the minimum values.
+    /// The point where X, Y and Z are the minimum values.
     member inline b.MinPnt = Pnt(b.MinX,b.MinY,b.MinZ)
 
-    /// The Point where X, Y and Z are the maximum values.
+    /// The point where X, Y and Z are the maximum values.
     member inline b.MaxPnt = Pnt(b.MaxX,b.MaxY,b.MinZ)
 
     /// The size in X direction, same as member box.SizeX.
@@ -88,7 +88,7 @@ type BBox =
     /// The center of the bounding box.
     member inline b.Center = Pnt( (b.MaxX + b.MinX)*0.5, (b.MaxY + b.MinY)*0.5, (b.MaxZ + b.MinZ)*0.5  )
 
-    /// Returns Point 0 of the bounding box, same as member box.MinPnt.
+    /// Returns point 0 of the bounding box, same as member box.MinPnt.
     ///        
     ///   Z-Axis       Y-Axis
     ///   ^           /
@@ -107,7 +107,7 @@ type BBox =
     ///   0 MinPt         1
     member inline b.Pt0 = Pnt(b.MinX,b.MinY,b.MinZ)
 
-    /// Returns Point 1 of the bounding box.
+    /// Returns point 1 of the bounding box.
     ///        
     ///   Z-Axis       Y-Axis
     ///   ^           /
@@ -126,7 +126,7 @@ type BBox =
     ///   0 MinPt         1
     member inline b.Pt1 = Pnt(b.MaxX,b.MinY,b.MinZ)
 
-    /// Returns Point 2 of the bounding box.
+    /// Returns point 2 of the bounding box.
     ///         
     ///   Z-Axis       Y-Axis
     ///   ^           /
@@ -145,7 +145,7 @@ type BBox =
     ///   0 MinPt         1
     member inline b.Pt2 = Pnt(b.MaxX,b.MaxY,b.MinZ)
 
-    /// Returns Point 3 of the bounding box.
+    /// Returns point 3 of the bounding box.
     ///         
     ///   Z-Axis       Y-Axis
     ///   ^           /
@@ -164,7 +164,7 @@ type BBox =
     ///   0 MinPt         1
     member inline b.Pt3 = Pnt(b.MinX,b.MaxY,b.MinZ)
     
-    /// Returns Point 4 of the bounding box.
+    /// Returns point 4 of the bounding box.
     ///         
     ///   Z-Axis       Y-Axis
     ///   ^           /
@@ -183,7 +183,7 @@ type BBox =
     ///   0 MinPt         1
     member inline b.Pt4 = Pnt(b.MinX,b.MinY,b.MaxZ)
     
-    /// Returns Point 5 of the bounding box.
+    /// Returns point 5 of the bounding box.
     ///         
     ///   Z-Axis       Y-Axis
     ///   ^           /
@@ -202,7 +202,7 @@ type BBox =
     ///   0 MinPt         1
     
     member inline b.Pt5 = Pnt(b.MaxX,b.MinY,b.MaxZ)
-    /// Returns Point 6 of the bounding box.
+    /// Returns point 6 of the bounding box.
     ///         
     ///   Z-Axis       Y-Axis
     ///   ^           /
@@ -221,7 +221,7 @@ type BBox =
     ///   0 MinPt         1
     member inline b.Pt6 = Pnt(b.MaxX,b.MaxY,b.MaxZ)
 
-    /// Returns Point 7 of the bounding box.
+    /// Returns point 7 of the bounding box.
     ///         
     ///   Z-Axis       Y-Axis
     ///   ^           /
@@ -261,7 +261,7 @@ type BBox =
     member b.Corners = [|b.Pt0; b.Pt1; b.Pt2; b.Pt3; b.Pt4; b.Pt5; b.Pt6; b.Pt7|]
 
     /// Returns the bottom of the Box as a counter clockwise array of 4 Points.
-    /// Starting at MinPt.  Point 0, 1, 2 and 3.
+    /// Starting at MinPt. Point 0, 1, 2 and 3.
     /// Last and first point are NOT the same.
     ///         
     ///   Z-Axis       Y-Axis
@@ -283,7 +283,7 @@ type BBox =
         
 
     /// Returns the bottom of the Box as a counter clockwise array of 5 Points, starting at MinPt
-    /// Starting at MinPt.  Point 0, 1, 2, 3 and again 0.
+    /// Starting at MinPt. Point 0, 1, 2, 3 and again 0.
     /// Last and first point are the same
     ///         
     ///   Z-Axis       Y-Axis
@@ -304,7 +304,7 @@ type BBox =
     member b.BottomPointsClosed = [|b.Pt0; b.Pt1; b.Pt2; b.Pt3; b.Pt0|]
 
     /// Returns the bottom of the Box as a counter clockwise array of 4 Points.
-    /// Staring at Point 4 then 5, 6 and 7.
+    /// Staring at point 4 then 5, 6 and 7.
     /// Last and first point are NOT the same.
     ///         
     ///   Z-Axis       Y-Axis
@@ -325,7 +325,7 @@ type BBox =
     member b.TopPoints = [|b.Pt4; b.Pt5; b.Pt6; b.Pt7|]        
 
     /// Returns the bottom of the Box as a counter clockwise array of 5 Points.
-    /// Starting Point 4 then 5, 6 ,7 and again 4.
+    /// Starting point 4 then 5, 6 ,7 and again 4.
     /// Last and first point are the same
     ///         
     ///   Z-Axis       Y-Axis
@@ -352,19 +352,19 @@ type BBox =
         let n = BBox(   b.MinX-dist, b.MinY-dist, b.MinZ-dist,
                         b.MaxX+dist, b.MaxY+dist, b.MaxZ+dist)
         if dist<0. &&  (n.MinX > n.MaxX ||  n.MinY > n.MaxX ||  n.MinZ > n.MaxZ) then
-            FsExGeoException.Raise "BBox.Expand(dist): Negative distance %g cause an underflow, on %s" dist b.AsString
+            FsExGeoException.Raise "FsEx.Geo.BBox.Expand(dist): Negative distance %g cause an underflow, on %s" dist b.AsString
         n
 
-    /// Returns Bounding Box expanded by a distance for X , Y and Z Axis each.
+    /// Returns Bounding Box expanded by a distance for X , Y and Z-axis each.
     /// Does check for underflow if distance is negative and raises FsExGeoException.
     member inline b.Expand(xDist,yDist,zDist) : BBox =
         let n = BBox(   b.MinX-xDist, b.MinY-yDist, b.MinZ-zDist,
                         b.MaxX+xDist, b.MaxY+yDist, b.MaxZ+zDist)
         if n.MinX > n.MaxX ||  n.MinY > n.MaxX ||  n.MinZ > n.MaxZ then
-            FsExGeoException.Raise "BBox.Expand(x,y,z): Negative distance(s) X %g Y: %g and Z:%g cause an underflow, on %s" xDist yDist zDist b.AsString
+            FsExGeoException.Raise "FsEx.Geo.BBox.Expand(x,y,z): Negative distance(s) X %g Y: %g and Z:%g cause an underflow, on %s" xDist yDist zDist b.AsString
         n
 
-    /// Returns Bounding Box expanded by a distance for X , Y and Z Axis each.
+    /// Returns Bounding Box expanded by a distance for X , Y and Z-axis each.
     /// If expansion is negative it shrinks the Box. It also makes sure that there is no underflow.
     /// When the negative expansion is bigger than the size, Min and Max values will be both in the middle from where they were before.
     member inline b.ExpandSave(xDist,yDist,zDist) : BBox =
@@ -401,7 +401,7 @@ type BBox =
     member inline b.ExpandXaxis(startDist, endDist) : BBox =
         let n = BBox(b.MinX-startDist, b.MinY, b.MinZ, b.MaxX+endDist, b.MaxY, b.MaxZ)
         if n.MinX > n.MaxX  then
-            FsExGeoException.Raise "BBox.ExpandXaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist b.AsString
+            FsExGeoException.Raise "FsEx.Geo.BBox.ExpandXaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist b.AsString
         n
 
     /// Returns Bounding Box expanded  only in Y direction by different distance for start(minY) and end (maxY).
@@ -409,7 +409,7 @@ type BBox =
     member inline b.ExpandYaxis(startDist, endDist) : BBox =
         let n = BBox(b.MinX, b.MinY-startDist, b.MinZ, b.MaxX, b.MaxY+endDist, b.MaxZ)
         if n.MinY > n.MaxY  then
-            FsExGeoException.Raise "BBox.ExpandYaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist b.AsString
+            FsExGeoException.Raise "FsEx.Geo.BBox.ExpandYaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist b.AsString
         n
 
     /// Returns Bounding Box expanded  only in Z direction by different distance for start(minZ) and end (maxZ).
@@ -417,7 +417,7 @@ type BBox =
     member inline b.ExpandZaxis(startDist, endDist) : BBox =
         let n = BBox(b.MinX, b.MinY, b.MinZ-startDist, b.MaxX, b.MaxY, b.MaxZ+endDist)
         if n.MinZ > n.MaxZ  then
-            FsExGeoException.Raise "BBox.ExpandYaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist b.AsString
+            FsExGeoException.Raise "FsEx.Geo.BBox.ExpandYaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist b.AsString
         n
 
     /// Returns true if the two Bounding Boxes do overlap or touch.

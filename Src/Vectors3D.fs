@@ -72,7 +72,7 @@ type Vec =
     /// Divides a 3D vector by a scalar, also be called dividing/scaling a vector. Returns a new 3D vector.
     static member inline ( / )  (v:Vec, f:float) = 
         //#if DEBUG
-        if abs f < zeroLengthTol then  FsExGeoDivByZeroException.Raise "%g is too small for dividing %O using / operator. Tolerance:%g" f v zeroLengthTol
+        if abs f < zeroLengthTol then  FsExGeoDivByZeroException.Raise "FsEx.Geo.Vec divide operator: %g is too small for dividing %O using / operator. Tolerance:%g" f v zeroLengthTol
         // #endif
         //v * (1./f) // maybe faster but worse precision 
         Vec (v.X / f , v.Y / f ,  v.Z / f) 
@@ -101,13 +101,13 @@ type Vec =
 [<IsReadOnly>]
 //[<IsByRefLike>] // not used, see notes at end of file  
 type UnitVec =  
-    /// Gets the X part of this 3D  unit vector
+    /// Gets the X part of this 3D  unit-vector
     val X : float
 
-    /// Gets the Y part of this 3D unit vector
+    /// Gets the Y part of this 3D unit-vector
     val Y : float 
 
-    /// Gets the Z part of this 3D unit vector
+    /// Gets the Z part of this 3D unit-vector
     val Z : float 
 
     /// Unsafe internal constructor, doesn't check or unitize the input, public only for inlining.
@@ -122,20 +122,20 @@ type UnitVec =
         #endif
         {X=x; Y=y; Z=z}
         
-    /// Format 3D unit vector into string including type name and nice floating point number formatting.
+    /// Format 3D unit-vector into string including type name and nice floating point number formatting.
     override p.ToString() = sprintf "FsEx.Geo.UnitVec: X=%s| Y=%s| Z=%s" (Format.float p.X)(Format.float p.Y)(Format.float p.Z)
     
-    /// Format 3D unit vector into string with nice floating point number formatting of X,Y and Z
+    /// Format 3D unit-vector into string with nice floating point number formatting of X,Y and Z
     /// But without full type name as in v.ToString()
     member v.AsString = sprintf "X=%s| Y=%s| Z=%s" (Format.float v.X) (Format.float v.Y) (Format.float v.Z) 
     
-    /// Negate or inverse a 3D unit vectors. Returns a new 3D unit vector.
+    /// Negate or inverse a 3D unit vectors. Returns a new 3D unit-vector.
     static member inline ( ~- ) (v:UnitVec) = UnitVec ( -v.X , -v.Y , -v.Z)   
     
     /// Subtract one 3D unit vectors from another. Returns a new (non-unitized) 3D vector.
     static member inline ( - )  (a:UnitVec, b:UnitVec) = Vec (a.X - b.X , a.Y - b.Y , a.Z - b.Z)    
     
-    /// Subtract a 3D vectors from a 3D unit vector. Returns a new (non-unitized) 3D vector.
+    /// Subtract a 3D vectors from a 3D unit-vector. Returns a new (non-unitized) 3D vector.
     static member inline ( - )  (a:UnitVec, b:Vec) = Vec (a.X - b.X , a.Y - b.Y , a.Z - b.Z)    
     
     /// Subtract a 3D unit vectors from a 3D vector. Returns a new (non-unitized) 3D vector.
@@ -144,16 +144,16 @@ type UnitVec =
     /// Add two 3D unit vectors together. Returns a new (non-unitized) 3D vector.
     static member inline ( + )  (a:UnitVec, b:UnitVec) = Vec (a.X + b.X , a.Y + b.Y , a.Z + b.Z)
     
-    /// Add a 3D vectors and a 3D unit vector together. Returns a new (non-unitized) 3D vector.
+    /// Add a 3D vectors and a 3D unit-vector together. Returns a new (non-unitized) 3D vector.
     static member inline ( + )  (a:Vec, b:UnitVec) = Vec (a.X + b.X , a.Y + b.Y , a.Z + b.Z)
     
     /// Add a 3D unit vectors and a 3D vector together. Returns a new (non-unitized) 3D vector.
     static member inline ( + )  (a:UnitVec, b:Vec) = Vec (a.X + b.X , a.Y + b.Y , a.Z + b.Z)
     
-    /// Multiplies a 3D unit vector with a scalar, also called scaling a vector. Returns a new (non-unitized) 3D vector.
+    /// Multiplies a 3D unit-vector with a scalar, also called scaling a vector. Returns a new (non-unitized) 3D vector.
     static member inline ( * )  (a:UnitVec, f:float  ) = Vec (a.X * f , a.Y * f , a.Z * f)
 
-    /// Multiplies a scalar with a 3D unit vector, also called scaling a vector. Returns a new (non-unitized) 3D vector. 
+    /// Multiplies a scalar with a 3D unit-vector, also called scaling a vector. Returns a new (non-unitized) 3D vector. 
     static member inline ( * )  (f:float,   a:UnitVec) = Vec (a.X * f , a.Y * f , a.Z * f)
 
     /// Dot product, or scalar product of two 3D unit vectors. 
@@ -161,17 +161,18 @@ type UnitVec =
     static member inline ( * )  (a:UnitVec, b:UnitVec) = a.X * b.X + a.Y * b.Y + a.Z * b.Z 
     
     /// Dot product, or scalar product of a 3D unit vectors with a 3D vector  
-    /// Returns a float. This float is the projected length of the 3D vector on the direction of the unit vector
+    /// Returns a float. This float is the projected length of the 3D vector on the direction of the unit-vector
     static member inline ( * )  (a:UnitVec, b:Vec) = a.X * b.X + a.Y * b.Y + a.Z * b.Z 
     
     /// Dot product, or scalar product of a 3D unit vectors with a 3D vector  
-    /// Returns a float. This float is the projected length of the 3D vector on the direction of the unit vector
+    /// Returns a float. This float is the projected length of the 3D vector on the direction of the unit-vector
     static member inline ( * )  (a:Vec, b:UnitVec) = a.X * b.X + a.Y * b.Y + a.Z * b.Z 
 
-    /// Divides a 3D unit vector by a scalar, also be called dividing/scaling a vector. Returns a new (non-unitized) 3D vector.
+    /// Divides a 3D unit-vector by a scalar, also be called dividing/scaling a vector. Returns a new (non-unitized) 3D vector.
     static member inline ( / )  (v:UnitVec, f:float) = 
         //#if DEBUG
-        if abs f < Util.zeroLengthTol then FsExGeoDivByZeroException.Raise "%g is too small for dividing %O using / operator. Tolerance:%g" f v zeroLengthTol
+        if abs f < Util.zeroLengthTol then 
+            FsExGeoDivByZeroException.Raise "FsEx.Geo.UnitVec divide Operator: %g is too small for dividing %O using / operator. Tolerance:%g" f v zeroLengthTol
         //#endif
         //v * (1./f) // maybe faster but worse precision
         Vec (v.X / f , v.Y / f , v.Z / f)     
@@ -191,17 +192,17 @@ type UnitVec =
     /// Requires correct input of unitized values.
     static member inline createUnchecked(x,y,z)  = UnitVec(x,y,z)
     
-    /// Create 3D unit vector. Does the unitizing too.
+    /// Create 3D unit-vector. Does the unitizing too.
     static member inline create (x:float, y:float, z:float) = 
         // this member cant be an extension method because it is used with SRTP. 
         // see error FS1114: The value 'FsEx.Geo.AutoOpenUnitVc.create' was marked inline but was not bound in the optimization environment
         let l = sqrt(x*x  + y*y + z*z)                       
-        if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "UnitVec.create: x:%g, y:%g and z:%g are too small for creating a Unit vector, Tolerance:%g" x y z zeroLengthTol 
+        if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "FsEx.Geo.UnitVec.create: x:%g, y:%g and z:%g are too small for creating a unit-vector, Tolerance:%g" x y z zeroLengthTol 
         let li = 1. / l
         UnitVec.createUnchecked( li*x , li*y , li*z )
     
 
-/// An immutable 3D Point. Made up from 3 floats: X, Y, and Z.
+/// An immutable 3D point. Made up from 3 floats: X, Y, and Z.
 /// ( 2D Points are called 'Pt' ) 
 [<Struct; NoEquality; NoComparison>] // because its made up from floats
 [<IsReadOnly>]
@@ -217,7 +218,7 @@ type Pnt =
     /// Gets the Z part of this 3D point
     val Z : float
 
-    /// Create a new 3D Point. Made up from 3 floats: X, Y, and Z.
+    /// Create a new 3D point. Made up from 3 floats: X, Y, and Z.
     new (x,y,z) = 
         #if DEBUG // with this test all Pnt operations are 2.5 times slower:
         if Double.IsNaN x || Double.IsNaN y || Double.IsNaN z || Double.IsInfinity x || Double.IsInfinity y || Double.IsInfinity z then FsExGeoException.Raise "FsEx.Geo.Pnt Constructor failed for x:%g, y:%g, z:%g"  x y z  
@@ -236,7 +237,7 @@ type Pnt =
     /// 'a-b' returns a new 3D vector from b to a. 
     static member inline ( - ) (a:Pnt, b:Pnt)     = Vec (a.X - b.X , a.Y - b.Y , a.Z - b.Z)
 
-    /// Subtract a unit vector from a 3D point. Returns a new 3D point.
+    /// Subtract a unit-vector from a 3D point. Returns a new 3D point.
     static member inline ( - ) (p:Pnt, v:UnitVec) = Pnt (p.X - v.X , p.Y - v.Y , p.Z - v.Z)  
     
     /// Subtract a vector from a 3D point. Returns a new 3D point.
@@ -248,7 +249,7 @@ type Pnt =
     /// Add a vector to a 3D point. Returns a new 3D point.
     static member inline ( + ) (p:Pnt, v:Vec)     = Pnt (p.X + v.X , p.Y + v.Y , p.Z + v.Z)  
     
-    /// Add a unit vector to a 3D point. Returns a new 3D point.
+    /// Add a unit-vector to a 3D point. Returns a new 3D point.
     static member inline ( + ) (p:Pnt, v:UnitVec) = Pnt (p.X + v.X , p.Y + v.Y , p.Z + v.Z)  
 
     /// Multiplies a 3D point with a scalar, also called scaling a point. Returns a new 3D point.
@@ -260,7 +261,8 @@ type Pnt =
     /// Divides a 3D point by a scalar, also be called dividing/scaling a point. Returns a new 3D point.
     static member inline ( / )  (p:Pnt, f:float) = 
         //#if DEBUG
-        if abs f < Util.zeroLengthTol then  FsExGeoDivByZeroException.Raise "%g is too small for dividing %O using / operator. Tolerance:%g" f p zeroLengthTol 
+        if abs f < Util.zeroLengthTol then  
+            FsExGeoDivByZeroException.Raise "FsEx.Geo.Pnt divide operator: %g is too small for dividing %O using / operator. Tolerance:%g" f p zeroLengthTol 
         //#endif
         //p * (1./f) // maybe faster but worse precision
         Pnt (p.X / f , p.Y / f ,  p.Z / f) 

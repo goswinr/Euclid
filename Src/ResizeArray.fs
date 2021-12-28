@@ -64,10 +64,10 @@ module internal AutoOpenResizeArray =
         /// Equal to this.[this.Count - 2]
         member this.SecondLast
             with get() = 
-                if this.Count < 2 then  FsExGeoException.Raise  "FsEx.ResizeArray.SecondLast: Failed to get second last item of ResizeArray<%O>" typeof<'T>
+                if this.Count < 2 then  FsExGeoException.Raise "FsEx.ResizeArray.SecondLast: Failed to get second last item of ResizeArray<%O>" typeof<'T>
                 this.[this.Count - 2]
             and set (v:'T) = 
-                if this.Count < 2 then  FsExGeoException.Raise  "FsEx.ResizeArray.SecondLast: Failed to set second last item of ResizeArray<%O> to  %O" typeof<'T> v
+                if this.Count < 2 then  FsExGeoException.Raise "FsEx.ResizeArray.SecondLast: Failed to set second last item of ResizeArray<%O> to  %O" typeof<'T> v
                 this.[this.Count - 2] <- v
 
         /// Get (or set) the first item in the FsEx.Geo.ResizeArray.
@@ -88,17 +88,17 @@ module internal AutoOpenResizeArray =
         /// Equal to this.[1]
         member this.Second
             with get() = 
-                if this.Count < 2 then FsExGeoException.Raise   "FsEx.ResizeArray.Second: Failed to get second item of ResizeArray<%O>" typeof<'T>
+                if this.Count < 2 then FsExGeoException.Raise "FsEx.ResizeArray.Second: Failed to get second item of ResizeArray<%O>" typeof<'T>
                 this.[1]
             and set (v:'T) = 
-                if this.Count < 2 then FsExGeoException.Raise   "FsEx.ResizeArray.Second: Failed to set second item of ResizeArray<%O> to %O" typeof<'T> v
+                if this.Count < 2 then FsExGeoException.Raise "FsEx.ResizeArray.Second: Failed to set second item of ResizeArray<%O> to %O" typeof<'T> v
                 this.[1] <- v    
 
 
         /// Get and remove last item from ResizeArray
         member this.Pop()  = 
             #if DEBUG
-            if this.Count=0 then FsExGeoException.Raise " this.Pop() failed for empty ResizeArray<%O>" typeof<'T>
+            if this.Count=0 then FsExGeoException.Raise "FsEx.Geo.ResizeArray.Pop() failed for empty ResizeArray<%O>" typeof<'T>
             #endif
             let i = this.Count - 1
             let v = this.[i]
@@ -118,6 +118,11 @@ module internal AutoOpenResizeArray =
         // -------------------------------------------------------
         // --------------------Static members --------------------
         // -------------------------------------------------------
+        /// just like Array.create
+        static member inline create (count:int) (x:'T) = 
+            let r = new ResizeArray<'T>(count)
+            for i=0 to count-1 do r.Add(x)
+            r
 
         /// this.Count
         static member inline length (xs: ResizeArray<'T>) = 

@@ -12,13 +12,6 @@ type internal DEF =  Runtime.InteropServices.DefaultParameterValueAttribute
 type FsExGeoException (s:string) = 
     inherit System.Exception(s)
 
-
-   
-
-
-
-
-
     static member Raise msg =  Printf.kprintf (fun s -> raise (FsExGeoException(s))) msg
 
 
@@ -26,13 +19,6 @@ type FsExGeoException (s:string) =
 /// Almost 0.0 is defined by Util.zeroLengthTol (1e-16)
 type FsExGeoDivByZeroException (s:string) = 
     inherit System.Exception(s)
-
-
-   
-
-
-
-
         
     static member Raise msg = Printf.kprintf (fun s -> raise (FsExGeoDivByZeroException(s))) msg
 
@@ -50,6 +36,8 @@ module Util =
         |Between
         |Outside
 
+    /// Test is a value is not null.
+    let inline notNull x =  match x with null -> false | _ -> true
 
     /// Tolerance for zero length: 1e-16 in divisions
     [<Literal>]
@@ -157,6 +145,11 @@ module Util =
     /// Check if value is between 0.0 and +1.0 inclusive a tolerance of 1e-6 .
     let inline isBetweenZeroAndOneTolerant (x:float) = 
         -1e-6 < x && x < ``1.0 + 1e-6`` 
+    
+    /// Match the sign (+ or -) to a given number. 
+    let matchSign (signedValue:float) (numToMatch:float) = 
+        if   sign signedValue = sign numToMatch then numToMatch
+        else -numToMatch
 
     /// Any int will give a valid index for given collection size.
     /// Converts negative indices to positive ones and loops to start after last index is reached.
@@ -170,137 +163,143 @@ module Util =
 [<RequireQualifiedAccess>]
 module Cosine = 
     
+    /// The Unit Of Measure for 
+    /// the precalculated cosine values.
+    /// This UoM helps to avoid that degree or radians angle values are used in the parallel or orthogonality tests.
+    [<Measure>] 
+    type cosine 
+
     // for fsi: printfn "%.18f" (cos( 0.25 * (System.Math.PI / 180.)))
 
     /// The cosine of an angle of 0.01 degrees.
     /// This is exactly 0.999999984769129
     [<Literal>]
-    let ``0.01`` = 0.999999984769129
+    let ``0.01`` = 0.999999984769129<cosine>
     
     /// The cosine of an angle of 0.05 degrees.
     /// This is exactly 0.999999619228249
     [<Literal>]
-    let ``0.05`` = 0.999999619228249
+    let ``0.05`` = 0.999999619228249<cosine>
     
     /// The cosine of an angle of 0.1 degrees.
     /// This is exactly 0.999998476913288
     [<Literal>]
-    let ``0.1`` = 0.999998476913288
+    let ``0.1`` = 0.999998476913288<cosine>
     
     /// The cosine of an angle of 0.25 degrees.
     /// This is exactly 0.999990480720734
     [<Literal>]
-    let ``0.25`` = 0.999990480720734
+    let ``0.25`` = 0.999990480720734<cosine>
     
     /// The cosine of an angle of 0.5 degrees.
     /// This is exactly 0.999961923064171
     [<Literal>]
-    let ``0.5`` = 0.999961923064171
+    let ``0.5`` = 0.999961923064171<cosine>
     
     /// The cosine of an angle of 1.0 degrees.
     /// This is exactly 0.999847695156391
     [<Literal>]
-    let ``1.0`` = 0.999847695156391
+    let ``1.0`` = 0.999847695156391<cosine>
     
     /// The cosine of an angle of 3.0 degrees.
     /// This is exactly 0.998629534754574
     [<Literal>]
-    let ``3.0`` = 0.998629534754574
+    let ``3.0`` = 0.998629534754574<cosine>
     
     /// The cosine of an angle of 5.0 degrees.
     /// This is exactly 0.996194698091746
     [<Literal>]
-    let ``5.0`` = 0.996194698091746
+    let ``5.0`` = 0.996194698091746<cosine>
     
     /// The cosine of an angle of 10.0 degrees.
     /// This is exactly 0.984807753012208
     [<Literal>]
-    let ``10.0`` = 0.984807753012208
+    let ``10.0`` = 0.984807753012208<cosine>
     
     /// The cosine of an angle of 45.0 degrees.
     /// This is exactly 0.707106781186548
     [<Literal>]
-    let ``45.0`` = 0.707106781186548
+    let ``45.0`` = 0.707106781186548<cosine>
     
     /// The cosine of an angle of 60.0 degrees.
     /// This is exactly 0.5
     [<Literal>]
-    let ``60.0`` = 0.5
+    let ``60.0`` = 0.5<cosine>
     
     /// The cosine of an angle of 87.0 degrees.
     /// This is exactly 0.052335956242944
     [<Literal>]
-    let ``87.0`` = 0.052335956242944
+    let ``87.0`` = 0.052335956242944<cosine>
     
     /// The cosine of an angle of 89.0 degrees.
     /// This is exactly 0.0174524064372836
     [<Literal>]
-    let ``89.0`` = 0.0174524064372836
+    let ``89.0`` = 0.0174524064372836<cosine>
     
     /// The cosine of an angle of 89.75 degrees.
     /// This is exactly 0.00436330928474658
     [<Literal>]
-    let ``89.75`` = 0.00436330928474658
+    let ``89.75`` = 0.00436330928474658<cosine>
     
     /// The cosine of an angle of 89.9 degrees.
     /// This is exactly 0.00174532836589826
     [<Literal>]
-    let ``89.9`` = 0.00174532836589826
+    let ``89.9`` = 0.00174532836589826<cosine>
     
     /// The cosine of an angle of 90.1 degrees.
     /// This is exactly -0.00174532836589814
     [<Literal>]
-    let ``90.1`` = -0.00174532836589814
+    let ``90.1`` = -0.00174532836589814<cosine>
     
     /// The cosine of an angle of 90.25 degrees.
     /// This is exactly -0.00436330928474646
     [<Literal>]
-    let ``90.25`` = -0.00436330928474646
+    let ``90.25`` = -0.00436330928474646<cosine>
     
     /// The cosine of an angle of 91.0 degrees.
     /// This is exactly -0.0174524064372835
     [<Literal>]
-    let ``91.0`` = -0.0174524064372835
+    let ``91.0`` = -0.0174524064372835<cosine>
     
     /// The cosine of an angle of 93.0 degrees.
     /// This is exactly -0.0523359562429438
     [<Literal>]
-    let ``93.0`` = -0.0523359562429438
+    let ``93.0`` = -0.0523359562429438<cosine>
     
     /// The cosine of an angle of 120.0 degrees.
     /// This is exactly -0.5
     [<Literal>]
-    let ``120.0`` = -0.5
+    let ``120.0`` = -0.5<cosine>
     
     /// The cosine of an angle of 135.0 degrees.
     /// This is exactly -0.707106781186547
     [<Literal>]
-    let ``135.0`` = -0.707106781186547
+    let ``135.0`` = -0.707106781186547<cosine>
     
     /// The cosine of an angle of 177.0 degrees.
     /// This is exactly -0.998629534754574
     [<Literal>]
-    let ``177.0`` = -0.998629534754574
+    let ``177.0`` = -0.998629534754574<cosine>
     
     /// The cosine of an angle of 179.0 degrees.
     /// This is exactly -0.999847695156391
     [<Literal>]
-    let ``179.0`` = -0.999847695156391
+    let ``179.0`` = -0.999847695156391<cosine>
     
     /// The cosine of an angle of 179.75 degrees.
     /// This is exactly -0.999990480720734
     [<Literal>]
-    let ``179.75`` = -0.999990480720734
+    let ``179.75`` = -0.999990480720734<cosine>
     
     /// The cosine of an angle of 179.9 degrees.
     /// This is exactly -0.999998476913288
     [<Literal>]
-    let ``179.9`` = -0.999998476913288
+    let ``179.9`` = -0.999998476913288<cosine>
     
     /// The cosine of an angle of 179.95 degrees.
     /// This is exactly -0.999999619228249
     [<Literal>]
-    let ``179.95`` = -0.999999619228249
+    let ``179.95`` = -0.999999619228249<cosine>
 
 /// Precalculated relative angle discriminant values for faster checking the angles in line line intersection.
 [<RequireQualifiedAccess>]

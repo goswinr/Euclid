@@ -474,7 +474,7 @@ type Matrix =
 
 
     /// Creates a rotation around an Axis transformation matrix.
-    /// axis — Rotation axis, as unit vector.
+    /// axis — Rotation axis, as unit-vector.
     /// angleDegrees — Rotation angle in Degrees.
     /// Returns a positive rotation will be so clockwise looking in the direction of the axis vector
     static member createRotationAxis( axis:UnitVec, angleDegrees:float ) =
@@ -521,7 +521,7 @@ type Matrix =
             0             , 0              , 0              , 1 )
 
 
-    /// Creates a rotation matrix around an Axis at a given center Point.
+    /// Creates a rotation matrix around an Axis at a given center point.
     /// axis — Rotation axis, a vector of any length but 0.0 
     /// cen — The center point for the rotation
     /// angleDegrees — Rotation angle in Degrees.
@@ -531,8 +531,8 @@ type Matrix =
         * Matrix.createRotationAxis(axis, angleDegrees)
         * Matrix.createTranslation(cen.X, cen.Y, cen.Z)
 
-    /// Creates a rotation matrix around an Axis at a given center Point.
-    /// axis — Rotation axis, a Unit vector 
+    /// Creates a rotation matrix around an Axis at a given center point.
+    /// axis — Rotation axis, a unit-vector 
     /// cen — The center point for the rotation
     /// angleDegrees — Rotation angle in Degrees.
     /// Returns a positive rotation will be so clockwise looking in the direction of the axis vector
@@ -623,12 +623,12 @@ type Matrix =
 
 
     /// Creates a shear transformation matrix:
-    /// xy - the amount to shear a X unit vector a long Y axis.
-    /// xz - the amount to shear a X unit vector a long Z axis.
-    /// yx - the amount to shear a Y unit vector a long X axis.
-    /// yz - the amount to shear a Y unit vector a long Z axis.
-    /// zx - the amount to shear a Z unit vector a long X axis.
-    /// zy - the amount to shear a Z unit vector a long Y axis.
+    /// xy - the amount to shear a X unit-vector a long Y-axis.
+    /// xz - the amount to shear a X unit-vector a long Z-axis.
+    /// yx - the amount to shear a Y unit-vector a long X-axis.
+    /// yz - the amount to shear a Y unit-vector a long Z-axis.
+    /// zx - the amount to shear a Z unit-vector a long X-axis.
+    /// zy - the amount to shear a Z unit-vector a long Y-axis.
     /// The resulting matrix will be:
     /// 1,   yx,  zx,  0,
     /// xy,   1,  zy,  0,

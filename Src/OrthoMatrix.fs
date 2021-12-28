@@ -329,7 +329,7 @@ type OrthoMatrix =
             0,  0, 1, 0 )
 
     /// Creates a rotation around an Axis transformation OrthoMatrix.
-    /// axis — Rotation axis, as unit vector.
+    /// axis — Rotation axis, as unit-vector.
     /// angleDegrees — Rotation angle in Degrees.
     /// Returns a positive rotation will be so clockwise looking in the direction of the axis vector
     static member createRotationAxis( axis:UnitVec, angleDegrees:float ) =
@@ -374,7 +374,7 @@ type OrthoMatrix =
             tx * z - s * y, ty * z + s * x , t  * z * z + c , 0 )
 
 
-    /// Creates a rotation matrix around an Axis at a given center Point.
+    /// Creates a rotation matrix around an Axis at a given center point.
     /// axis — Rotation axis, a vector of any length but 0.0 
     /// cen — The center point for the rotation
     /// angleDegrees — Rotation angle in Degrees.
@@ -384,8 +384,8 @@ type OrthoMatrix =
         * OrthoMatrix.createRotationAxis(axis, angleDegrees)
         * OrthoMatrix.createTranslation(cen.X, cen.Y, cen.Z)
 
-    /// Creates a rotation matrix around an Axis at a given center Point.
-    /// axis — Rotation axis, a Unit vector 
+    /// Creates a rotation matrix around an Axis at a given center point.
+    /// axis — Rotation axis, a unit-vector 
     /// cen — The center point for the rotation
     /// angleDegrees — Rotation angle in Degrees.
     /// Returns a positive rotation will be so clockwise looking in the direction of the axis vector
@@ -403,7 +403,7 @@ type OrthoMatrix =
         let axis0 = UnitVec.cross(fromVec, toVec) 
         let len = axis0.Length
         if len <  zeroLengthTol then 
-            FsExGeoException.Raise "FsEx.Geo.Matrix.createVecToVec failed to find rotation axis on colinear vectors: %O and %O" fromVec toVec
+            FsExGeoException.Raise "FsEx.Geo.OrthoMatrix.createVecToVec failed to find rotation axis on colinear vectors: %O and %O" fromVec toVec
         let axis = axis0 / len
         let x = axis.X
         let y = axis.Y
@@ -424,7 +424,7 @@ type OrthoMatrix =
             let z = vecFrom.Z
             let length = sqrt(x*x + y*y + z*z) 
             if length <  zeroLengthTol then 
-                FsExGeoException.Raise "FsEx.Geo.Matrix.createVecToVec failed. too short vector vecFrom: %O" vecFrom 
+                FsExGeoException.Raise "FsEx.Geo.OrthoMatrix.createVecToVec failed. too short vector vecFrom: %O" vecFrom 
             let sc =  1. / length // inverse for unitizing vector:
             UnitVec.createUnchecked(x*sc, y*sc, z*sc)
         let tu = 
@@ -433,7 +433,7 @@ type OrthoMatrix =
             let z = vecTo.Z
             let length = sqrt(x*x + y*y + z*z) 
             if length <  zeroLengthTol then
-                FsExGeoException.Raise "FsEx.Geo.Matrix.createVecToVec failed. too short vector vecTo: %O" vecTo 
+                FsExGeoException.Raise "FsEx.Geo.OrthoMatrix.createVecToVec failed. too short vector vecTo: %O" vecTo 
             let sc =  1. / length // inverse for unitizing vector:
             UnitVec.createUnchecked(x*sc, y*sc, z*sc)        
         let c =  fu * tu  // dot to find cosine
@@ -442,7 +442,7 @@ type OrthoMatrix =
         let axis = Vec.cross(vecFrom, vecTo) 
         let len = axis.Length
         if len <  Util.zeroLengthTol then 
-            FsExGeoException.Raise "FsEx.Geo.Matrix.createVecToVec failed to find rotation axis on colinear or zero length vectors: %O and %O" vecFrom vecTo
+            FsExGeoException.Raise "FsEx.Geo.OrthoMatrix.createVecToVec failed to find rotation axis on colinear or zero length vectors: %O and %O" vecFrom vecTo
         let sc = 1. / len
         let x = axis.X * sc
         let y = axis.Y * sc
@@ -555,7 +555,7 @@ type OrthoMatrix =
             , m.M13*x + m.M23*y + m.M33*z + m.Z43 
             )
     
-    /// Multiplies (or applies) an OrthoMatrix to a 3D Vector . 
+    /// Multiplies (or applies) an OrthoMatrix to a 3D vector . 
     /// The resulting vector is not unitized if Matrix is translating too.
     static member inline  ( * ) (v:UnitVec, m:OrthoMatrix) = 
         let x = v.X

@@ -102,7 +102,7 @@ type Quaternion =
         let sc =  1. / length // inverse for unitizing vector:
         Quaternion ( axis.X * sc * sa, axis.Y * sc * sa, axis.Z * sc * sa, cos angHalf )
 
-    /// The created Rotation is Clockwise looking in the direction of the Unit Vector.
+    /// The created Rotation is Clockwise looking in the direction of the unit-vector.
     static member createFromRadians (axis:UnitVec, angleInRadians)  =         
         let angHalf = angleInRadians * 0.5
         let sa = sin angHalf         
@@ -112,7 +112,7 @@ type Quaternion =
     static member createFromDegree (axis:Vec, angleInDegrees) = 
         Quaternion.createFromRadians (axis,  toRadians angleInDegrees) 
     
-    /// The created Rotation is Clockwise looking in the direction of the Unit Vector.
+    /// The created Rotation is Clockwise looking in the direction of the unit-vector.
     static member createFromDegree (axis:UnitVec, angleInDegrees) = 
         Quaternion.createFromRadians (axis,  toRadians angleInDegrees) 
 
@@ -131,7 +131,7 @@ type Quaternion =
                               , r
                               )  
     
-    /// Creates a rotation from one unit vector to another 
+    /// Creates a rotation from one unit-vector to another 
     static member createFromVectors( vecFrom:Vec, vecTo:Vec ) =
         let vFrom = 
             let x = vecFrom.X
@@ -347,7 +347,7 @@ type Quaternion =
             , iz * qw + iw * - qz + ix * - qy - iy * - qx )
     
     /// Rotate by Quaternion around Origin
-    /// Multiplies (or applies) a Quaternion to a 3D unit vector.
+    /// Multiplies (or applies) a Quaternion to a 3D unit-vector.
     static member inline  ( * ) ( v:UnitVec, q:Quaternion) = 
         // adapted from https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
         let x = v.X
