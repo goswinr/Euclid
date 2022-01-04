@@ -4,14 +4,14 @@ open System
 
 // the below utility functions are copied over from hhttps://github.com/goswinr/FsEx
 
-module internal Array = 
+module internal Array =
 
-    /// Returns the index of the smallest element
-    let  minIndex (xs:'T[]) = 
+    /// Returns the index of the smallest element.
+    let  minIndex (xs:'T[]) =
         if xs.Length < 1 then raise <| ArgumentException(sprintf "FsEx.Geo.Array.minIndex: Count must be at least one: %A"  xs)
         let mutable f = xs.[0]
         let mutable mf = f
-        let mutable ii = 0        
+        let mutable ii = 0
         for i=1 to xs.Length-1 do
             f <- xs.[i]
             if f < mf then
@@ -19,28 +19,28 @@ module internal Array =
                 mf <- f
         ii
 
-    /// Returns the index of the biggest element
-    let  maxIndex (xs:'T[]) = 
+    /// Returns the index of the biggest element.
+    let  maxIndex (xs:'T[]) =
         if xs.Length < 1 then raise <| ArgumentException(sprintf "FsEx.Geo.Array.maxIndex: Count must be at least one: %A"  xs)
         let mutable f = xs.[0]
         let mutable mf = f
-        let mutable ii = 0        
+        let mutable ii = 0
         for i=1 to xs.Length-1 do
             f <- xs.[i]
             if f > mf then
                 ii <- i
                 mf <- f
-        ii    
+        ii
 
 
 [<AutoOpen>]
 module internal AutoOpenResizeArray =
 
     type Collections.Generic.List<'T> with
-    
+
         /// Gets the index of the last item in the FsEx.Geo.ResizeArray.
         /// Equal to this.Count - 1
-        member inline this.LastIndex = 
+        member inline this.LastIndex =
             #if DEBUG
             if this.Count = 0 then FsExGeoException.Raise "FsEx.Geo.ResizeArray.LastIndex: Failed to get LastIndex of of empty ResizeArray<%O>" typeof<'T>
             #endif
@@ -49,12 +49,12 @@ module internal AutoOpenResizeArray =
         /// Get (or set) the last item in the FsEx.Geo.ResizeArray.
         /// Equal to this.[this.Count - 1]
         member inline this.Last
-            with get() = 
+            with get() =
                 #if DEBUG
                 if this.Count = 0 then FsExGeoException.Raise "FsEx.Geo.ResizeArray.Last: Failed to get last item of empty ResizeArray<%O>" typeof<'T>
                 #endif
                 this.[this.Count - 1]
-            and set (v:'T) = 
+            and set (v:'T) =
                 #if DEBUG
                 if this.Count = 0 then FsExGeoException.Raise "FsEx.Geo.ResizeArray.Last: Failed to set last item of empty ResizeArray<%O> to  %O" typeof<'T> v
                 #endif
@@ -63,22 +63,22 @@ module internal AutoOpenResizeArray =
         /// Get (or set) the second last item in the FsEx.ResizeArray.
         /// Equal to this.[this.Count - 2]
         member this.SecondLast
-            with get() = 
+            with get() =
                 if this.Count < 2 then  FsExGeoException.Raise "FsEx.ResizeArray.SecondLast: Failed to get second last item of ResizeArray<%O>" typeof<'T>
                 this.[this.Count - 2]
-            and set (v:'T) = 
+            and set (v:'T) =
                 if this.Count < 2 then  FsExGeoException.Raise "FsEx.ResizeArray.SecondLast: Failed to set second last item of ResizeArray<%O> to  %O" typeof<'T> v
                 this.[this.Count - 2] <- v
 
         /// Get (or set) the first item in the FsEx.Geo.ResizeArray.
         /// Equal to this.[0]
         member inline this.First
-            with get() = 
+            with get() =
                 #if DEBUG
                 if this.Count = 0 then FsExGeoException.Raise "FsEx.Geo.ResizeArray.First: Failed to get first item of empty ResizeArray<%O>" typeof<'T>
                 #endif
                 this.[0]
-            and set (v:'T) = 
+            and set (v:'T) =
                 #if DEBUG
                 if this.Count = 0 then FsExGeoException.Raise "FsEx.Geo.ResizeArray.First: Failed to set first item of empty ResizeArray<%O> to  %O" typeof<'T> v
                 #endif
@@ -87,16 +87,16 @@ module internal AutoOpenResizeArray =
         /// Get (or set) the second item in the FsEx.ResizeArray.
         /// Equal to this.[1]
         member this.Second
-            with get() = 
+            with get() =
                 if this.Count < 2 then FsExGeoException.Raise "FsEx.ResizeArray.Second: Failed to get second item of ResizeArray<%O>" typeof<'T>
                 this.[1]
-            and set (v:'T) = 
+            and set (v:'T) =
                 if this.Count < 2 then FsExGeoException.Raise "FsEx.ResizeArray.Second: Failed to set second item of ResizeArray<%O> to %O" typeof<'T> v
-                this.[1] <- v    
+                this.[1] <- v
 
 
-        /// Get and remove last item from ResizeArray
-        member this.Pop()  = 
+        /// Get and remove last item from ResizeArray.
+        member this.Pop()  =
             #if DEBUG
             if this.Count=0 then FsExGeoException.Raise "FsEx.Geo.ResizeArray.Pop() failed for empty ResizeArray<%O>" typeof<'T>
             #endif
@@ -105,8 +105,8 @@ module internal AutoOpenResizeArray =
             this.RemoveAt(i)
             v
 
-        /// Get and remove item at index from ResizeArray
-        member this.Pop(index:int)  = 
+        /// Get and remove item at index from ResizeArray.
+        member this.Pop(index:int)  =
             #if DEBUG
             if index < 0  then FsExGeoException.Raise "FsEx.Geo.ResizeArray.Pop %O failed for ResizeArray<%O> of %O items, index must be positive." index typeof<'T> this.Count
             if index >= this.Count then FsExGeoException.Raise "FsEx.Geo.ResizeArray.Pop %O failed for ResizeArray<%O> of %O items." index typeof<'T> this.Count
@@ -114,30 +114,30 @@ module internal AutoOpenResizeArray =
             let v = this.[index]
             this.RemoveAt(index)
             v
-        
+
         // -------------------------------------------------------
         // --------------------Static members --------------------
         // -------------------------------------------------------
-        /// just like Array.create
-        static member inline create (count:int) (x:'T) = 
+        /// just like Array.create.
+        static member inline create (count:int) (x:'T) =
             let r = new ResizeArray<'T>(count)
             for i=0 to count-1 do r.Add(x)
             r
 
-        /// this.Count
-        static member inline length (xs: ResizeArray<'T>) = 
-            xs.Count    
+        /// this.Count.
+        static member inline length (xs: ResizeArray<'T>) =
+            xs.Count
 
         /// Yields looped Seq from (first, second)  up to (last, first).
         /// The resulting seq has the same element count as the input Rarr.
-        static member thisNext (rarr:ResizeArray<'T>) = 
+        static member thisNext (rarr:ResizeArray<'T>) =
             if rarr.Count <= 2 then FsExGeoException.Raise "FsEx.Geo.ResizeArray.thisNext input has less than two items:\r\n%O" rarr
             seq {   for i = 0 to rarr.Count-2 do  rarr.[i], rarr.[i+1]
-                    rarr.[rarr.Count-1], rarr.[0] }       
+                    rarr.[rarr.Count-1], rarr.[0] }
 
         /// Yields looped Seq from (1, last, first, second)  up to (lastIndex, second-last, last, first)
         /// The resulting seq has the same element count as the input Rarr.
-        static member iPrevThisNext (rarr:ResizeArray<'T>) = 
+        static member iPrevThisNext (rarr:ResizeArray<'T>) =
             if rarr.Count <= 3 then FsExGeoException.Raise "FsEx.Geo.ResizeArray.iPrevThisNext input has less than three items:\r\n%O" rarr
             seq {   0, rarr.[rarr.Count-1], rarr.[0], rarr.[1]
                     for i = 0 to rarr.Count-3 do  i+1, rarr.[i], rarr.[i+1], rarr.[i+2]
@@ -151,17 +151,17 @@ module internal AutoOpenResizeArray =
         /// <param name="projection">The function to transform ResizeArray elements into the type that is compared.</param>
         /// <param name="xs">The input ResizeArray.</param>
         /// <returns>The sorted ResizeArray.</returns>
-        static member sortBy<'T, 'Key when 'Key : comparison> (projection : 'T -> 'Key) (xs : ResizeArray<'T>) : ResizeArray<'T> = 
+        static member sortBy<'T, 'Key when 'Key : comparison> (projection : 'T -> 'Key) (xs : ResizeArray<'T>) : ResizeArray<'T> =
             let r = xs.GetRange(0,xs.Count) // fastest way to create a shallow copy
             r.Sort (fun x y -> Operators.compare (projection x) (projection y))
             r
-        
+
         /// <summary>Returns the index of the first element in the ResizeArray
         /// that satisfies the given predicate.</summary>
         /// <param name="predicate">The function to test the input elements.</param>
         /// <param name="xs">The input ResizeArray.</param>
         /// <returns>The index of the first element that satisfies the predicate, or <c>None</c>.</returns>
-        static member  tryFindIndex (predicate:'T->bool) (xs: ResizeArray<'T>) : option<int>= 
+        static member  tryFindIndex (predicate:'T->bool) (xs: ResizeArray<'T>) : option<int>=
             let elementIndex =   xs.FindIndex (System.Predicate predicate)
             match elementIndex with
             | -1 ->
@@ -172,7 +172,7 @@ module internal AutoOpenResizeArray =
         /// <summary>Returns a new ResizeArray with the elements in reverse order.</summary>
         /// <param name="xs">The input ResizeArray.</param>
         /// <returns>The reversed ResizeArray.</returns>
-        static member rev (xs: ResizeArray<'T>) = 
+        static member rev (xs: ResizeArray<'T>) =
             let len = xs.Count
             let result = ResizeArray (len)
             for i = len - 1 downto 0 do
@@ -181,9 +181,9 @@ module internal AutoOpenResizeArray =
 
         /// <summary>Returns the index of the smallest of all elements of the ResizeArray, compared via Operators.max on the function result.</summary>
         /// <param name="projection">The function to transform the elements into a type supporting comparison.</param>
-        /// <param name="xs">The input ResizeArray.</param>        
+        /// <param name="xs">The input ResizeArray.</param>
         /// <returns>The index of the smallest element.</returns>
-        static member minIndexBy  (projection : 'T -> 'Key) (xs: ResizeArray<'T>) : int = 
+        static member minIndexBy  (projection : 'T -> 'Key) (xs: ResizeArray<'T>) : int =
             if xs.Count = 0 then FsExGeoException.Raise "FsEx.Geo.ResizeArray.minIndBy: Failed on empty ResizeArray<%O>" typeof<'T>
             let mutable f = projection xs.[0]
             let mutable mf = f
@@ -193,28 +193,28 @@ module internal AutoOpenResizeArray =
                 if f < mf then
                     ii <- i
                     mf <- f
-            ii 
+            ii
 
-        /// <summary>Returns the index of the greatest of all elements of the ResizeArray, compared via Operators.max on the function result.</summary> 
-        /// <param name="projection">The function to transform the elements into a type supporting comparison.</param> 
-        /// <param name="xs">The input ResizeArray.</param>         
-        /// <returns>The index of the maximum element.</returns> 
-        static member  maxIndexBy (projection : 'T -> 'Key) (xs: ResizeArray<'T>) : int = 
-            if xs.Count = 0 then FsExGeoException.Raise "FsEx.Geo.ResizeArray.maxIndBy: Failed on empty ResizeArray<%O>" typeof<'T> 
-            let mutable f = projection xs.[0] 
-            let mutable mf = f 
-            let mutable ii = 0 
-            for i=1 to xs.Count-1 do 
-                f <- projection xs.[i] 
-                if f > mf then 
-                    ii <- i 
-                    mf <- f 
-            ii    
+        /// <summary>Returns the index of the greatest of all elements of the ResizeArray, compared via Operators.max on the function result.</summary>
+        /// <param name="projection">The function to transform the elements into a type supporting comparison.</param>
+        /// <param name="xs">The input ResizeArray.</param>
+        /// <returns>The index of the maximum element.</returns>
+        static member  maxIndexBy (projection : 'T -> 'Key) (xs: ResizeArray<'T>) : int =
+            if xs.Count = 0 then FsExGeoException.Raise "FsEx.Geo.ResizeArray.maxIndBy: Failed on empty ResizeArray<%O>" typeof<'T>
+            let mutable f = projection xs.[0]
+            let mutable mf = f
+            let mutable ii = 0
+            for i=1 to xs.Count-1 do
+                f <- projection xs.[i]
+                if f > mf then
+                    ii <- i
+                    mf <- f
+            ii
 
         /// <summary>Builds a new ResizeArray whose elements are the results of applying the given function
         /// to each of the elements of the ResizeArray.</summary>
         /// <param name="mapping">The function to transform elements of the ResizeArray.</param>
         /// <param name="xs">The input ResizeArray.</param>
         /// <returns>The ResizeArray of transformed elements.</returns>
-        static member map ( mapping: 'T -> 'U) (xs: ResizeArray<'T>) : ResizeArray<'U> =             
-            xs.ConvertAll (System.Converter mapping)     
+        static member map ( mapping: 'T -> 'U) (xs: ResizeArray<'T>) : ResizeArray<'U> =
+            xs.ConvertAll (System.Converter mapping)

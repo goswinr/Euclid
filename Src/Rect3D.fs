@@ -64,7 +64,7 @@ type Rect3D =
             r.Origin.AsString r.Xaxis.AsString r.Yaxis.AsString
 
 
-    /// Format the 3D Rectangle into string with nice floating point number formatting of X,Y and Z size only
+    /// Format the 3D Rectangle into string with nice floating point number formatting of X,Y and Z size only.
     /// But without type name as in v.ToString()
     member r.AsString = sprintf "%s x %s" (Format.float r.Length)  (Format.float r.Width)
 
@@ -153,7 +153,7 @@ type Rect3D =
     ///   |            |       local
     ///   +------------+-----> X-Axis
     ///  0-Origin       1
-    member inline r.Pt1 = r.Origin + r.Xaxis 
+    member inline r.Pt1 = r.Origin + r.Xaxis
 
 
     /// Returns point 2 of the 3D rectangle. Same as rect.FarCorner.
@@ -190,29 +190,29 @@ type Rect3D =
     ///  0-Origin       1
     member inline r.Pt3 = r.Origin  + r.Yaxis
 
-    /// Creates a unitized version of the local X-Axis
+    /// Creates a unitized version of the local X-Axis.
     member inline r.XaxisUnit =
         let len = r.Xaxis.Length
         if len = zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Rect3D.XaxisUnit: rect Xaxis is too small for unitizing: %s" r.AsString
         r.Xaxis*(1./len)
 
-    /// Creates a unitized version of the local Y-Axis
+    /// Creates a unitized version of the local Y-Axis.
     member inline r.YaxisUnit =
         let len = r.Yaxis.Length
         if len = zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Rect3D.XaxisUnit: rect Yaxis is too small for unitizing: %s" r.AsString
         r.Yaxis*(1./len)
 
-    /// Returns the Normal; resulting from the cross product of r.Xaxis with r.Yaxis
+    /// Returns the Normal; resulting from the cross product of r.Xaxis with r.Yaxis.
     member inline r.Normal = Vec.cross(r.Xaxis, r.Yaxis)
 
-    /// Returns the unitized Normal; resulting from the cross product of r.Xaxis with r.Yaxis
+    /// Returns the unitized Normal; resulting from the cross product of r.Xaxis with r.Yaxis.
     member r.NormalUnit =
         let z = Vec.cross(r.Xaxis,r.Yaxis)
         let len = z.Length
         if len = zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Rect3D.NormalUnit: rect is too small for finding a normal vector: %s" r.AsString
         z*(1./len)
 
-    
+
     /// Returns the diagonal vector of the 3D Rectangle.
     /// From Origin to FarCorner.
     member inline r.Diagonal = r.Xaxis + r.Yaxis
@@ -241,7 +241,7 @@ type Rect3D =
 
     /// Returns the Rectangle rotated 90 degrees clockwise around its center.
     /// The normal of the rectangle stays the same.
-    /// Origin will be at point 3, X-axis  to to point 0, Y-axis  to point 2.    
+    /// Origin will be at point 3, X-axis to to point 0, Y-axis to point 2.
     ///   local
     ///   Y-Axis
     ///   ^
@@ -254,13 +254,13 @@ type Rect3D =
     ///   |            |
     ///   |            |       local
     ///   +------------+-----> X-Axis
-    ///  0-Origin       1 
+    ///  0-Origin       1
     member r.RotatedCW90 = Rect3D(r.Origin + r.Yaxis , -r.Yaxis, r.Xaxis)
 
 
     /// Returns the Rectangle rotated 180 degrees around its center.
     /// The normal of the rectangle stays the same.
-    /// Origin will be at point 2, X-axis  to to point 3, Y-axis  to point 1.    
+    /// Origin will be at point 2, X-axis to to point 3, Y-axis to point 1.
     ///   local
     ///   Y-Axis
     ///   ^
@@ -278,7 +278,7 @@ type Rect3D =
 
     /// Returns the Rectangle rotated 90 degrees counter clockwise around its center.
     /// The normal of the rectangle stays the same.
-    /// Origin will be at point 1, X-axis  to to point 2, Y-axis  to point 0.    
+    /// Origin will be at point 1, X-axis to to point 2, Y-axis to point 0.
     ///   local
     ///   Y-Axis
     ///   ^
@@ -291,12 +291,12 @@ type Rect3D =
     ///   |            |
     ///   |            |       local
     ///   +------------+-----> X-Axis
-    ///  0-Origin       1 
+    ///  0-Origin       1
     member r.RotatedCCW90 = Rect3D(r.Origin + r.Xaxis , r.Yaxis, -r.Xaxis)
-    
+
 
     /// Returns the 4 corners of the 3D Rectangle in counter clockwise order, starting at Origin.
-    /// Returns an array of 4 Points: point 0 then 1, 2 and  3.
+    /// Returns an array of 4 Points: point 0 then 1, 2 and 3.
     ///
     ///   local
     ///   Y-Axis
@@ -318,7 +318,7 @@ type Rect3D =
 
     /// Returns the 4 corners of the 3D Rectangle als closed loop in counter clockwise order, starting at Origin.
     /// First and last point are the same.
-    /// Returns an array of 5 Points: point 0 then 1, 2, 3 and  again 0.
+    /// Returns an array of 5 Points: point 0 then 1, 2, 3 and again 0.
     ///
     ///   local
     ///   Y-Axis
@@ -336,10 +336,10 @@ type Rect3D =
     member r.CornersClosed :Pnt[] =
         let p0 = r.Origin
         let p1 = p0 + r.Xaxis
-        [| p0  ; p1 ; p1 + r.Yaxis; p0 + r.Yaxis; p0|]        
-    
+        [| p0  ; p1 ; p1 + r.Yaxis; p0 + r.Yaxis; p0|]
 
-    /// Evaluate a X,Y and Z parameter of the  the 3D Rectangle.
+
+    /// Evaluate a X,Y and Z parameter of the the 3D Rectangle.
     ///  0.0, 0.0, 0.0 returns the Origin.
     ///  1.0, 1.0, 1.0 returns the FarCorner.
     member inline r.EvaluateAt (xParameter:float,yParameter:float) =
@@ -379,9 +379,9 @@ type Rect3D =
         let y = r.Yaxis * (dist / wid)
         Rect3D(r.Origin-x-y, r.Xaxis+x*2., r.Yaxis+y*2.)
 
-    /// Returns the 3D Rectangle expanded by respective distances on all six sides
+    /// Returns the 3D Rectangle expanded by respective distances on all six sides.
     /// Does check for overflow if distance is negative and fails.
-    /// distLen, distWid  are for x, Y-axis respectively.
+    /// distLen, distWid are for x, Y-axis respectively.
     static member expandXYZ distLen distWid  (r:Rect3D) =
         let len = r.Length
         let wid = r.Width
@@ -391,11 +391,11 @@ type Rect3D =
         let y = r.Yaxis * (distWid / r.Width )
         Rect3D(r.Origin-x-y, r.Xaxis+x*2., r.Yaxis+y*2.)
 
-    /// Give PPlane and sizes
+    /// Give PPlane and sizes.
     static member createFromPlane (pl:PPlane,x,y) =
         Rect3D(pl.Origin, pl.Xaxis*x, pl.Yaxis*y)
 
-    /// Give 2D Bounding Rect
+    /// Give 2D Bounding Rect.
     static member createFromBoundingRect (b:BRect) =
         Rect3D(b.MinPt.AsPnt, Vec.Xaxis*b.Length, Vec.Yaxis*b.Width)
 
@@ -418,17 +418,17 @@ type Rect3D =
     ///   |            |
     ///   |            |       local
     ///   +------------+-----> X-Axis
-    ///  0-Origin       1    
-    static member flip (r:Rect3D) = Rect3D(r.Origin + r.Xaxis + r.Yaxis, -r.Yaxis, -r.Xaxis)  
+    ///  0-Origin       1
+    static member flip (r:Rect3D) = Rect3D(r.Origin + r.Xaxis + r.Yaxis, -r.Yaxis, -r.Xaxis)
 
-    /// Translate along the local X-axis of the 3D Rectangle
+    /// Translate along the local X-axis of the 3D Rectangle.
     static member translateX (distX:float) (r:Rect3D) =
         let x = r.Xaxis
         let len = x.Length
         if len = zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Rect3D.translateX: rect.Xaxis is zero length in Rect3D: %s" r.AsString
         Rect3D(r.Origin + x*(distX/len), x, r.Yaxis)
 
-    /// Translate along the local Y-axis of the 3D Rectangle
+    /// Translate along the local Y-axis of the 3D Rectangle.
     static member translateY (distY:float) (r:Rect3D) =
         let y = r.Yaxis
         let len = y.Length

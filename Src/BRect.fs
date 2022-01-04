@@ -9,7 +9,7 @@ open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see http
 /// An immutable 2D Bounding Rectangle.
 /// Sometimes also called 2D Bounding Box.
 /// This implementation guarantees the rectangle to be always valid.
-/// That means the Min X and Y values are always smaller or equal than the respective Max values
+/// That means the Min X and Y values are always smaller or equal than the respective Max values.
 [<Struct; NoEquality; NoComparison>]
 [<IsReadOnly>]
 //[<IsByRefLike>]
@@ -32,7 +32,7 @@ type BRect =
         sprintf "FsEx.Geo.BRect: length(x)=%s| width(y)=%s| at X=%s| Y=%s"
             (Format.float (r.MaxX - r.MinX)) (Format.float (r.MaxY - r.MinY)) (Format.float r.MinX) (Format.float r.MinY)
 
-    /// Format Bounding Rectangle into string with nice floating point number formatting of size and position
+    /// Format Bounding Rectangle into string with nice floating point number formatting of size and position.
     /// But without full type name as in rect.ToString()
     member r.AsString =
         sprintf "length=%s| width=%s| at X=%s| Y=%s"
@@ -60,7 +60,7 @@ type BRect =
     /// The center of the bounding rect.
     member inline r.Center = Pt( (r.MaxX + r.MinX)*0.5, (r.MaxY + r.MinY)*0.5)
 
-    /// Returns the corners of the Bounding Rectangle  in counter clockwise order, starting at MinPt
+    /// Returns the corners of the Bounding Rectangle in counter clockwise order, starting at MinPt.
     ///  Returns an array of 4 Points. Same as member rect.Polyline.
     ///
     /// 3 +------------+ 2
@@ -73,12 +73,12 @@ type BRect =
     ///
     member r.Corners = [| Pt(r.MinX, r.MinY); Pt(r.MaxX, r.MinY);  Pt(r.MaxX, r.MaxY); Pt(r.MinX, r.MaxY) |]
 
-    /// Returns a counter clockwise array of 4 Points, starting at MinPt
+    /// Returns a counter clockwise array of 4 Points, starting at MinPt.
     /// Last and first point are NOT the same Same as member rect.Corners.
     member r.Polyline = [| Pt(r.MinX, r.MinY); Pt(r.MaxX, r.MinY);  Pt(r.MaxX, r.MaxY); Pt(r.MinX, r.MaxY) |]
 
-    /// Returns a counter clockwise array of 5 Points, starting at MinPt
-    /// Last and first point are the same
+    /// Returns a counter clockwise array of 5 Points, starting at MinPt.
+    /// Last and first point are the same.
     member r.PolylineClosed = [| Pt(r.MinX, r.MinY); Pt(r.MaxX, r.MinY);  Pt(r.MaxX, r.MaxY); Pt(r.MinX, r.MaxY); Pt(r.MinX, r.MinY)|]
 
 
@@ -129,15 +129,15 @@ type BRect =
     /// Does check for underflow if distance is negative and raises FsExGeoException.
     member inline r.ExpandXaxis(startDist, endDist) : BRect =
         let n = BRect(r.MinX-startDist, r.MinY, r.MaxX+endDist, r.MaxY)
-        if n.MinX > n.MaxX  then
+        if n.MinX > n.MaxX then
             FsExGeoException.Raise "FsEx.Geo.BRect.ExpandXaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist r.AsString
         n
 
-    /// Returns Bounding Rectangle expanded  only in Y direction by different distance for start(minY) and end (maxY).
+    /// Returns Bounding Rectangle expanded only in Y direction by different distance for start(minY) and end (maxY).
     /// Does check for underflow if distance is negative and raises FsExGeoException.
     member inline r.ExpandYaxis(startDist, endDist) : BRect =
         let n = BRect(r.MinX, r.MinY-startDist, r.MaxX, r.MaxY+endDist)
-        if n.MinY > n.MaxY  then
+        if n.MinY > n.MaxY then
             FsExGeoException.Raise "FsEx.Geo.BRect.ExpandYaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist r.AsString
         n
 
@@ -168,7 +168,7 @@ type BRect =
     member inline r.Contains (o:BRect) =
         r.Contains(o.MinPt) && r.Contains(o.MaxPt)
 
-    /// Test if Bounding Rectangles are only touching each other from the Outside within a given tolerance
+    /// Test if Bounding Rectangles are only touching each other from the Outside within a given tolerance.
     member b.IsTouching (a:BRect, tol) =
         let xOverlap =  not ( b.MinX > a.MaxX + tol || a.MinX > b.MaxX + tol)
         let yOverlap =  not ( a.MinY > b.MaxY + tol || b.MinY > a.MaxY + tol)
@@ -207,18 +207,18 @@ type BRect =
         if minX <= maxX && minY <= maxY then
             ValueSome (BRect(minX,minY,maxX,maxY))
         else
-            ValueNone   
+            ValueNone
 
     //-------------------------------------------------------------------
     //------------------------static members---------------------------
     //-------------------------------------------------------------------
-    
+
     /// Checks if two 3D Bounding Boxes are equal within tolerance.
-    static member equals tol (a:BRect) (b:BRect) =        
+    static member equals tol (a:BRect) (b:BRect) =
         abs(a.MinX-b.MinX)<tol &&
         abs(a.MinY-b.MinY)<tol &&
         abs(a.MaxX-b.MaxX)<tol &&
-        abs(a.MaxY-b.MaxY)<tol 
+        abs(a.MaxY-b.MaxY)<tol
 
     /// Returns Bounding Rectangle expanded by distance.
     /// Does check for underflow if distance is negative and raises FsExGeoException.
@@ -230,13 +230,13 @@ type BRect =
     static member expandSave dist (r:BRect) =
         r.Expand dist
 
-    /// Returns Bounding Rectangle expanded  only in X direction by different distance for start(minX) and end (maxX).
+    /// Returns Bounding Rectangle expanded only in X direction by different distance for start(minX) and end (maxX).
     /// Does check for underflow if distance is negative and raises FsExGeoException.
     static member expandXaxis startDist endDist (r:BRect) =
         r.ExpandXaxis(startDist, endDist)
 
 
-    /// Returns Bounding Rectangle expanded  only in Y direction by different distance for start(minY) and end (maxY).
+    /// Returns Bounding Rectangle expanded only in Y direction by different distance for start(minY) and end (maxY).
     /// Does check for underflow if distance is negative and raises FsExGeoException.
     static member expandYaxis startDist endDist (r:BRect) =
         r.ExpandYaxis(startDist, endDist)
@@ -259,7 +259,7 @@ type BRect =
     static member inline contains (rectInside:BRect) (surroundingRect:BRect) =
         surroundingRect.Contains(rectInside)
 
-    /// Returns true if the point is inside or on  the Bounding Rectangle.
+    /// Returns true if the point is inside or on the Bounding Rectangle.
     static member inline containsPt (pt:Pt) (rect:BRect) =
         rect.Contains(pt)
 
@@ -283,7 +283,7 @@ type BRect =
         if minX <= maxX && minY <= maxY then
             ValueSome (BRect(minX,minY,maxX,maxY))
         else
-            ValueNone 
+            ValueNone
 
     /// Finds min and max values for x and y.
     static member inline create (a:Pt , b:Pt ) =

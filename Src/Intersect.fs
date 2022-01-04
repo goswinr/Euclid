@@ -1,14 +1,14 @@
 namespace FsEx.Geo
 
-module Intersect =         
-    open Util        
-        
+module Intersect =
+    open Util
+
     /// Returns the parameter on vector 'va' where 'va' and 'vb' intersect intersect as endless rays.
     /// If they start from points 'a' and 'b' respectively.
-    /// Pass in  va.Cross vb  is precomputed  and inverted  
+    /// Pass in va.Cross vb is precomputed and inverted.
     let inline private getXPara (a:Pt, vaXvbInverse:float, b:Pt,  vb:UnitVc) =
         // find intersection using 2D cross product :
-        // https://www.youtube.com/watch?v=c065KoXooSw and https://gist.github.com/EgoMoose/f3d22a503e0598c12d1e3926dc72fb19        
+        // https://www.youtube.com/watch?v=c065KoXooSw and https://gist.github.com/EgoMoose/f3d22a503e0598c12d1e3926dc72fb19
         ((b-a).Cross(vb)) * vaXvbInverse // va.Cross vb  is precomputed  and inverted
 
     let inline private isParamStillBelowZeroAfterOffsets(ap:Pt, au:UnitVc, aXbInverse:float, bp:Pt, bu:UnitVc, snapThreshold:float) =
@@ -25,34 +25,34 @@ module Intersect =
         getXPara(ap - n, aXbInverse,  bp, bu) > al + snapThreshold
 
 
-    type LineLineRelation =  
+    type LineLineRelation =
         // TODO this DU could be also encoded via Float NaN and infinity to avoid an extra object allocation, (using ref out parameters ?)
         |NoIntersection
         |Colinear // within threshold,  might still not  overlap,  needs to be checked via BRect
         |Parallel // more than threshold apart
         |BfromRight of struct ( float * float) // parameters for unit-vector,  might be out of bound by snapThreshold
         |BfromLeft  of struct ( float * float) // parameters for unit-vector,  might be out of bound by snapThreshold
-    
+
     // inline functions?
-    
+
     /// A Call to this should be preceded by BRect.doOverlap. to exit quickly if apart.
     /// For line A and line B give for each:
     /// Start point, unitized Direction, line length.
     /// And finally a tolerance: Curve A will be extended on both ends and offset to both sides.
     /// These offsets will also be checked with curve B that is also extended by this amount.
     let getRelation (ap:Pt, au:UnitVc, al:float, bp:Pt, bu:UnitVc, bl:float, snapThreshold:float) :LineLineRelation=
-        let aXb = au.Cross bu //precomputed  cross product 
-        
+        let aXb = au.Cross bu //precomputed  cross product
+
         if abs(aXb) > zeroLengthTol then  // not parallel
             let aXbInverse = 1./aXb // invert only once,  then pass it on as inverted value
             let ta = getXPara (ap, aXbInverse, bp, bu)
-        
+
             // parameter on first is below zero, so probably no intersection  unless closer than snapThreshold and almost colinear
-            if ta < -snapThreshold && isParamStillBelowZeroAfterOffsets (ap, au, aXbInverse, bp, bu, snapThreshold) then   
+            if ta < -snapThreshold && isParamStillBelowZeroAfterOffsets (ap, au, aXbInverse, bp, bu, snapThreshold) then
                 NoIntersection // no need to even check parameter on second segment
 
             // parameter on first segment is  beyond length, so probably no intersection  unless closer than snapThreshold and colinear
-            elif ta > al+snapThreshold && isParamStillMoreThanLengthAfterOffsets(ap, au, aXbInverse, al, bp, bu, snapThreshold) then   
+            elif ta > al+snapThreshold && isParamStillMoreThanLengthAfterOffsets(ap, au, aXbInverse, al, bp, bu, snapThreshold) then
                 NoIntersection // no need to even check parameter on second segment
 
             // now checking if parameter on second line is inside too:
@@ -62,13 +62,13 @@ module Intersect =
                 let tb = getXPara (bp, bXaInverse, ap, au)
 
                 // parameter on second segment is  below zero, so probably no intersection  unless closer than snapThreshold and colinear
-                if tb < -snapThreshold && isParamStillBelowZeroAfterOffsets (bp, bu, bXaInverse, ap, au, snapThreshold) then  
+                if tb < -snapThreshold && isParamStillBelowZeroAfterOffsets (bp, bu, bXaInverse, ap, au, snapThreshold) then
                     NoIntersection
 
                 // parameter on second segment is  beyond length ,  so probably false unless closer than snapThreshold and colinear
-                elif tb > bl + snapThreshold && isParamStillMoreThanLengthAfterOffsets (bp, bu, bXaInverse, bl, ap, au, snapThreshold) then  
+                elif tb > bl + snapThreshold && isParamStillMoreThanLengthAfterOffsets (bp, bu, bXaInverse, bl, ap, au, snapThreshold) then
                     NoIntersection
-                else  
+                else
                     if aXb > 0.0 then BfromRight (ta, tb) // TODO might still be almost colinear. was an intersection very far outside bounding Rectangles.
                     else              BfromLeft  (ta, tb) // TODO could to be almost colinear too, check offset  !!
 
@@ -82,19 +82,19 @@ module Intersect =
             else
                 Parallel // parallel distance is more than snapThreshold distance,
 
-    /// This function includes a initial call to BRect.doOverlap    
+    /// This function includes a initial call to BRect.doOverlap.
     let inline doIntersectOrOverlapColinear (ap:Pt, au:UnitVc, al:float, abb:BRect, bp:Pt, bu:UnitVc, bl:float, bbb:BRect, snapThreshold:float) :bool =
-        BRect.doOverlap abb bbb 
+        BRect.doOverlap abb bbb
         &&
         match getRelation(ap, au, al, bp, bu, bl, snapThreshold)   with
         |NoIntersection -> false
         |Parallel       -> false
         |BfromLeft _    -> true
         |BfromRight _   -> true
-        |Colinear       -> true  
-        
-    
-    /// Return intersection point or mid point between two 2D lines
+        |Colinear       -> true
+
+
+    /// Return intersection point or mid point between two 2D lines.
     /// (used mainly for drawing debug notes at this point )
     let getXPointOrMid (ap:Pt, au:UnitVc, al:float, bp:Pt, bu:UnitVc, bl:float, snapThreshold:float) : Pt =
         match getRelation(ap, au, al,  bp, bu, bl, snapThreshold)   with
@@ -102,7 +102,7 @@ module Intersect =
         |Colinear
         |Parallel            -> (ap + ap + bp + bp + au*al + bu*bl) * 0.25
         |BfromLeft  (ta, _ ) -> ap + au * ta // clamp point to actually be on line even if it is not quite in case of PreStart or PostEnd
-        |BfromRight (ta, _ ) -> ap + au * ta 
+        |BfromRight (ta, _ ) -> ap + au * ta
 
     (*
     see loop intersection script
@@ -111,25 +111,25 @@ module Intersect =
         |NoPoint
         |FromLeft  of Pt
         |FromRight of Pt
-    
-    /// Does also clamp point to actually be on line even if it is not quite in case of PreStart or PostEnd
+
+    /// Does also clamp point to actually be on line even if it is not quite in case of PreStart or PostEnd.
     let getIntersectionPoint (ap:Pt, au:UnitVc, al:float, bp:Pt, bu:UnitVc, bl:float, snapThreshold:float) : IntersectionPoint =
         match getRelation(ap, au, al,  bp, bu, bl, snapThreshold)   with
         |NoIntersection
         |Colinear
         |Parallel            -> NoPoint
         |BfromLeft  (ta, _ ) -> FromLeft  (ap + au * (max 0.0 (min al ta))) // clamp point to actually be on line even if it is not quite in case of PreStart or PostEnd
-        |BfromRight (ta, _ ) -> FromRight (ap + au * (max 0.0 (min al ta))) 
+        |BfromRight (ta, _ ) -> FromRight (ap + au * (max 0.0 (min al ta)))
     *)
 
 
 
-    /// Calculates the intersection of a finite line with a triangle 
+    /// Calculates the intersection of a finite line with a triangle.
     /// Returns Some(Pnt) or None if no intersection found.
-    let lineTriangle(line:Line3D, p1 :Pnt ,p2 :Pnt, p3 :Pnt) : Pnt option  = 
+    let lineTriangle(line:Line3D, p1 :Pnt ,p2 :Pnt, p3 :Pnt) : Pnt option  =
         // https://stackoverflow.com/questions/42740765/intersection-between-line-and-triangle-in-3d
-        let inline tetrahedronVolumeSigned(a:Pnt, b:Pnt, c:Pnt, d:Pnt) = 
-            // computes the signed Volume of a Tetrahedron            
+        let inline tetrahedronVolumeSigned(a:Pnt, b:Pnt, c:Pnt, d:Pnt) =
+            // computes the signed Volume of a Tetrahedron
             ((Vec.cross( b-a, c-a)) * (d-a)) / 6.0
 
         let q1 = line.From
@@ -147,9 +147,9 @@ module Intersect =
             else None
         else None
 
-        /// Intersects infinite line with cone that has it's Axis on Z-Axis.
-    /// coneRadius -> coneBaseZ -> coneTipZ ->  (ln:Line3D) -> Parameter*Parameter on the line
-    let  lineCone (ln:Line3D, coneRadius, coneBaseZ, coneTipZ) =        
+    /// Intersects infinite line with cone that has it's Axis on Z-Axis.
+    /// coneRadius -> coneBaseZ -> coneTipZ ->  (ln:Line3D) -> Parameter*Parameter on the line.
+    let  lineCone (ln:Line3D, coneRadius, coneBaseZ, coneTipZ) =
         let lam = coneRadius / ( coneBaseZ-coneTipZ )
         let lam = lam * lam
         let v = ln.Tangent
