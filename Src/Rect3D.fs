@@ -440,7 +440,7 @@ type Rect3D =
     static member offset (offsetDistance :float) (r:Rect3D) =
         let z = Vec.cross(r.Xaxis,r.Yaxis)
         let len = z.Length
-        if len = zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Rect3D.offset: rect is to small for offsetting zero length in Rect3D: %s" r.AsString
+        if len = zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Rect3D.offset: rect is too small for offsetting zero length in Rect3D: %s" r.AsString
         Rect3D(r.Origin + z*(offsetDistance/len), r.Xaxis, r.Yaxis)
 
     /// Transform the 3D Rectangle by the given OrthoMatrix.

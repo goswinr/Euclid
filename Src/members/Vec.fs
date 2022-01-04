@@ -649,58 +649,59 @@ module AutoOpenVec =
 
         /// Multiplies a Matrix with a 3D vector (with an implicit 1 in the 4th dimension,
         /// So that it also works correctly for projections.)
-        static member transform (m:Matrix) (v:Vec) =
+        static member inline transform (m:Matrix) (v:Vec) =
             v.Transform(m)
 
         /// Multiplies (or applies) an OrthoMatrix to a 3D vector .
-        static member transformOrtho (m:OrthoMatrix) (v:Vec) =
+        static member inline  transformOrtho (m:OrthoMatrix) (v:Vec) =
             v.TransformOrtho(m)
 
         /// Multiplies (or applies) only the 3x3 rotation part of an OrthoMatrix to a 3D vector .
         /// The resulting vector has the same length as the input.
-        static member rotateOrtho (m:OrthoMatrix) (v:Vec) =
+        static member inline rotateOrtho (m:OrthoMatrix) (v:Vec) =
             v.RotateOrtho(m)
 
-        /// Checks if Angle between two vectors is Below one Degree.
+        /// Checks if Angle between two vectors is less than one Degree.
         /// Ignores vector orientation.
         /// Fails on zero length vectors, tolerance 1e-12.
-        static member  isAngleBelow1Degree(a:Vec, b:Vec) =
+        static member inline isAngleLessThan1Degree(a:Vec, b:Vec) =
             let sa = a.LengthSq
-            if sa < 1e-24 then   FsExGeoException.Raise "FsEx.Geo.Vec.isAngleBelow1Degree: Vec a is too short: %s. Vec b:%s " a.AsString b.AsString
+            if sa < 1e-24 then   FsExGeoException.Raise "FsEx.Geo.Vec.isAngleLessThan1Degree: Vec a is too short: %s. Vec b:%s " a.AsString b.AsString
             let sb = b.LengthSq
-            if sb < 1e-24 then   FsExGeoException.Raise "FsEx.Geo.Vec.isAngleBelow1Degree: Vec b is too short: %s. Vec a:%s " b.AsString a.AsString
+            if sb < 1e-24 then   FsExGeoException.Raise "FsEx.Geo.Vec.isAngleLessThan1Degree: Vec b is too short: %s. Vec a:%s " b.AsString a.AsString
             let au = a * (1.0 / sqrt sa )
             let bu = b * (1.0 / sqrt sb )
-            abs(bu*au) > 0.999847695156391 // = cosine of 1 degree
+            abs(bu*au) > float Cosine.``1.0``
 
 
-        /// Checks if Angle between two vectors is Below 0.25 Degree.
+        /// Checks if Angle between two vectors is less than 0.25 Degree.
         /// Ignores vector orientation.
         /// Fails on zero length vectors, tolerance 1e-12.
         /// Same as Vec.isParallelTo.
-        static member  isAngleBelowQuatreDegree(a:Vec, b:Vec) =
+        static member inline isAngleLessThanQuatreDegree(a:Vec, b:Vec) =
             let sa = a.LengthSq
-            if sa < 1e-24 then   FsExGeoException.Raise "FsEx.Geo.Vec.isAngleBelowQuatreDegree: Vec a is too short: %s. Vec b:%s " a.AsString b.AsString
+            if sa < 1e-24 then   FsExGeoException.Raise "FsEx.Geo.Vec.isAngleLessThanQuatreDegree: Vec a is too short: %s. Vec b:%s " a.AsString b.AsString
             let sb = b.LengthSq
-            if sb < 1e-24 then   FsExGeoException.Raise "FsEx.Geo.Vec.isAngleBelowQuatreDegree: Vec b is too short: %s. Vec a:%s " b.AsString a.AsString
+            if sb < 1e-24 then   FsExGeoException.Raise "FsEx.Geo.Vec.isAngleLessThanQuatreDegree: Vec b is too short: %s. Vec a:%s " b.AsString a.AsString
             let au = a * (1.0 / sqrt sa )
             let bu = b * (1.0 / sqrt sb )
-            abs(bu*au) > 0.999990480720734 // = cosine of 0.25 degrees:
-            // for fsi: printfn "%.18f" (cos( 0.25 * (System.Math.PI / 180.)))
+            abs(bu*au) > float Cosine.``0.25``
 
 
-        /// Checks if Angle between two vectors is Below 5 Degrees.
+        /// Checks if Angle between two vectors is less than 5 Degrees.
         /// Ignores vector orientation.
         /// Fails on zero length vectors, tolerance 1e-12.
-        static member  isAngleBelow5Degree(a:Vec, b:Vec) =
+        static member inline isAngleLessThan5Degree(a:Vec, b:Vec) =
             let sa = a.LengthSq
-            if sa < 1e-24 then   FsExGeoException.Raise "FsEx.Geo.Vec.isAngleBelowQuatreDegree: Vec a is too short: %s. Vec b:%s " a.AsString b.AsString
+            if sa < 1e-24 then   FsExGeoException.Raise "FsEx.Geo.Vec.isAngleLessThanQuatreDegree: Vec a is too short: %s. Vec b:%s " a.AsString b.AsString
             let sb = b.LengthSq
-            if sb < 1e-24 then   FsExGeoException.Raise "FsEx.Geo.Vec.isAngleBelowQuatreDegree: Vec b is too short: %s. Vec a:%s " b.AsString a.AsString
+            if sb < 1e-24 then   FsExGeoException.Raise "FsEx.Geo.Vec.isAngleLessThanQuatreDegree: Vec b is too short: %s. Vec a:%s " b.AsString a.AsString
             let au = a * (1.0 / sqrt sa )
             let bu = b * (1.0 / sqrt sb )
-            abs(bu*au) > 0.996194698091746 // = cosine of 5 degrees:
-            // for fsi: printfn "%.18f" (cos( 5.0 * (System.Math.PI / 180.)))
+            abs(bu*au) > float Cosine.``5.0``
+
+
+        
 
         ///<summary> Intersects two infinite 3D lines.
         /// The lines are defined by a start point and a vector.

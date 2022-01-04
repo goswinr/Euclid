@@ -593,22 +593,4 @@ module AutoOpenUnitVec =
         static member rotateOrtho (m:OrthoMatrix) (v:UnitVec) =
             v.RotateOrtho(m)
 
-        /// Checks if Angle between two vectors is Below one Degree.
-        /// Ignores vector orientation.
-        /// Use Vec.isParallelTo for custom tolerance.
-        static member isAngleBelow1Degree(a:UnitVec, b:UnitVec) =
-            abs(b*a) > float Cosine.``1.0``
-
-
-        /// Checks if Angle between two vectors is Below 0.25 Degree.
-        /// Ignores vector orientation.
-        /// Use Vec.isParallelTo for custom tolerance.
-        static member isAngleBelowQuatreDegree(a:UnitVec, b:UnitVec) =
-            abs(b*a) > float Cosine.``0.25``
-
-
-        /// Checks if Angle between two vectors is Below 5 Degrees.
-        /// Ignores vector orientation.
-        /// Use Vec.isParallelTo for custom tolerance.
-        static member isAngleBelow5Degree(a:UnitVec, b:UnitVec) =
-            abs(b*a) > float Cosine.``5.0``
+   

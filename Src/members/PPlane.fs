@@ -7,7 +7,6 @@ open FsEx.Geo.Util
 [<AutoOpen>]
 module AutoOpenPPlane =
 
-
     // pre allocate , used often
     let private worldXY = PPlane(Pnt.Origin, UnitVec.Xaxis, UnitVec.Yaxis, UnitVec.Zaxis)
 
@@ -129,126 +128,6 @@ module AutoOpenPPlane =
         static member (*inline*) WorldBottom =
             PPlane(Pnt.Origin, UnitVec.Xaxis, -UnitVec.Yaxis, -UnitVec.Zaxis)
 
-        /// Creates a Parametrized Plane from a point and vector representing the X-axis.
-        /// The resulting PPlane will have the X-Axis in direction of X vector.
-        /// The X and Y vectors will define the plane and the side that Z will be on.
-        /// The given Y vector does not need to be perpendicular to the X vector , just not parallel.
-        static member createOriginXaxisYaxis (origin:Pnt,x:Vec,y:Vec) =
-            let z = Vec.cross (x , y)
-            if z.LengthSq < 1e-12 then
-                FsExGeoException.Raise "FsEx.Geo.PPlane.createOriginXaxisYaxis failed for origin:%O, x:%O and y:%O" origin x y
-            let y = Vec.cross (z , x)
-            PPlane(origin, x.Unitized, y.Unitized, z.Unitized)
-
-        /// Creates a Parametrized Plane from a point and a unit-vector representing the X-axis.
-        /// The resulting PPlane will have the X-Axis in direction of X vector.
-        /// The X and Y vectors will define the plane and the side that Z will be on.
-        /// The given Y vector does not need to be perpendicular to the X vector , just not parallel.
-        static member createOriginXaxisYaxis (origin:Pnt,x:UnitVec,y:UnitVec) =
-            let z = UnitVec.cross (x , y)
-            if z.LengthSq < 1e-12 then
-                FsExGeoException.Raise "FsEx.Geo.PPlane.createOriginXaxisYaxis failed for origin:%O, x:%O and y:%O" origin x y
-            let y = Vec.cross (z , x)
-            PPlane(origin, x, y.Unitized, z.Unitized)
-
-        /// Creates a Parametrized Plane from a point and vector representing the Z-axis.
-        /// The X-axis will be found by taking the cross product of the World Y-axis and the given Z-axis.
-        /// If this fails the cross product of the World X-axis and the given Z-axis will be used.
-        static member createOriginZaxis (origin:Pnt,z:Vec) =
-            let x = Vec.cross (Vec.Yaxis , z)
-            if x.LengthSq < 1e-12 then
-                let x = Vec.cross (Vec.Xaxis , z)
-                let y = Vec.cross (z, x)
-                PPlane(origin,x.Unitized,y.Unitized,z.Unitized)
-            else
-                let y = Vec.cross (z, x)
-                PPlane(origin,x.Unitized,y.Unitized,z.Unitized)
-
-        /// Creates a Parametrized Plane from a point and unit-vector representing the Z-axis.
-        /// The X-axis will be found by taking the cross product of the World Y-axis and the given Z-axis.
-        /// If this fails the cross product of the World X-axis and the given Z-axis will be used.
-        static member createOriginZaxis (origin:Pnt,z:UnitVec) =
-            let x = Vec.cross (Vec.Yaxis , z)
-            if x.LengthSq < 1e-12 then
-                let x = Vec.cross (Vec.Xaxis , z)
-                let y = Vec.cross (z, x)
-                PPlane(origin,x.Unitized,y.Unitized,z)
-            else
-                let y = Vec.cross (z, x)
-                PPlane(origin,x.Unitized,y.Unitized,z)
-
-        /// Creates a Parametrized Plane from a point and vector representing the Y-axis.
-        /// The Z-axis will be found by taking the cross product of the World X-axis with the given Y-axis.
-        /// If this fails the cross product of the World Y-axis and the given Y-axis will be used.
-        static member createOriginYaxis (origin:Pnt,y:Vec) =
-            let z = Vec.cross (Vec.Xaxis , y)
-            if z.LengthSq < 1e-12 then
-                let z = Vec.cross (Vec.Yaxis , y)
-                let x = Vec.cross (y, z)
-                PPlane(origin,x.Unitized,y.Unitized,z.Unitized)
-            else
-                let x = Vec.cross (y, z)
-                PPlane(origin,x.Unitized,y.Unitized,z.Unitized)
-
-        /// Creates a Parametrized Plane from a point and unit-vector representing the Y-axis.
-        /// The Z-axis will be found by taking the cross product of the World X-axis with the given Y-axis.
-        /// If this fails the cross product of the World Y-axis and the given Y-axis will be used.
-        static member createOriginYaxis (origin:Pnt,y:UnitVec) =
-            let z = Vec.cross (Vec.Xaxis , y)
-            if z.LengthSq < 1e-12 then
-                let z = Vec.cross (Vec.Yaxis , y)
-                let x = Vec.cross (y, z)
-                PPlane(origin,x.Unitized,y,z.Unitized)
-            else
-                let x = Vec.cross (y, z)
-                PPlane(origin,x.Unitized,y,z.Unitized)
-
-
-
-        /// Creates a Parametrized Plane from a point and vector representing the X-axis.
-        /// The Z-axis will be found by taking the cross product of the given X-axis and the World Y-axis.
-        /// If this fails the cross product of the given X-axis and the World X-axis will be used.
-        static member createOriginXaxis (origin:Pnt,x:Vec) =
-            let z = Vec.cross (x , Vec.Yaxis)
-            if z.LengthSq < 1e-12 then
-                let z = Vec.cross (x , Vec.Xaxis)
-                let y = Vec.cross (z, x)
-                PPlane(origin,x.Unitized,y.Unitized,z.Unitized)
-            else
-                let y = Vec.cross (z, x)
-                PPlane(origin,x.Unitized,y.Unitized,z.Unitized)
-
-        /// Creates a Parametrized Plane from a point and unit-vector representing the X-axis.
-        /// The Z-axis will be found by taking the cross product of the given X-axis and the World Y-axis.
-        /// If this fails the cross product of the given X-axis and the World X-axis will be used.
-        static member createOriginXaxis (origin:Pnt,x:UnitVec) =
-            let z = Vec.cross (x , Vec.Yaxis)
-            if z.LengthSq < 1e-12 then
-                let z = Vec.cross (x , Vec.Xaxis)
-                let y = Vec.cross (z, x)
-                PPlane(origin,x,y.Unitized,z.Unitized)
-            else
-                let y = Vec.cross (z, x)
-                PPlane(origin,x,y.Unitized,z.Unitized)
-
-
-        /// Builds Plane at first point , X-axis to second point, checks for collinear points.
-        static member createThreePoints (origin:Pnt) (b:Pnt) (c:Pnt) =
-            let x = b-origin
-            let yt = c-origin
-            let z = Vec.cross (x , yt)
-            if z.LengthSq < 1e-12 then
-                FsExGeoException.Raise "FsEx.Geo.PPlane.createThreePoints failed for %O, %O and %O, are they colinear?" origin b c
-            let y = Vec.cross (z , x)
-            PPlane(origin,x.Unitized,y.Unitized,z.Unitized)
-
-        /// Builds Plane at first point.
-        /// The resulting PPlane will have the X-Axis in direction of the second point.
-        /// The Y-axis will be found by taking the cross product of the World Z-axis and the X-axis.
-        /// If this fails the cross product of the World Y-axis and the given X-axis will be used.
-        static member inline createTwoPts (a:Pnt) (b:Pnt) =
-            PPlane.createOriginXaxis (a, b-a)
-
         /// WorldXY rotated 180 degrees round Z-axis.
         static member (*inline*) WorldMinusXMinusY=
             PPlane(Pnt.Origin, -UnitVec.Xaxis, -UnitVec.Yaxis, UnitVec.Zaxis)
@@ -264,6 +143,102 @@ module AutoOpenPPlane =
         /// WorldXY rotated 180 degrees round X-axis, Z points down now.
         static member (*inline*) WorldXMinusY=
             PPlane(Pnt.Origin, UnitVec.Xaxis, -UnitVec.Yaxis, -UnitVec.Zaxis)
+            
+        /// Builds Plane at first point , X-axis to second point, 
+        /// Y-axis to third point or at lest in plane with third point. 
+        /// Fails if points are closer than 1e-5.
+        static member createThreePoints (origin:Pnt) (xPt:Pnt) (yPt:Pnt) =
+            let x  = xPt-origin
+            let y  = yPt-origin
+            let lx = x.Length
+            let ly = y.Length
+            if lx < 1e-5 then FsExGeoException.Raise "FsEx.Geo.PPlane.createThreePoints the distance between origin %s and xPt %s is too small" origin.AsString xPt.AsString
+            if ly < 1e-5 then FsExGeoException.Raise "FsEx.Geo.PPlane.createThreePoints the distance between origin %s and yPt %s is too small" origin.AsString yPt.AsString
+            let xf = 1./lx
+            let yf = 1./ly
+            let xu = UnitVec.createUnchecked(x.X*xf, x.Y*xf, x.Z*xf)
+            let yu = UnitVec.createUnchecked(y.X*yf, y.Y*yf, y.Z*yf)            
+            if xu.IsParallelTo(yu, Cosine.``1.0``) then FsExGeoException.Raise "FsEx.Geo.PPlane.createThreePoints failed. The points are colinear by less than 1.0 degree, origin %s and xPt %s and yPt %s" origin.AsString xPt.AsString yPt.AsString            
+            let z = UnitVec.cross (xu , yu)
+            let y' = Vec.cross (z , x)
+            PPlane(origin, xu, y'.Unitized, z.Unitized)
+
+        /// Creates a Parametrized Plane from a point and a unit-vector representing the X-axis.
+        /// The resulting PPlane will have the X-Axis in direction of X vector.
+        /// The X and Y vectors will define the plane and the side that Z will be on.
+        /// The given Y vector does not need to be perpendicular to the X vector , just not parallel.
+        /// Fails if the vectors are shorter than 1e-5.
+        static member createOriginXaxisYaxis (origin:Pnt, xAxis:UnitVec, yAxis:UnitVec) =
+            if xAxis.IsParallelTo(yAxis, Cosine.``1.0``) then 
+                FsExGeoException.Raise "FsEx.Geo.PPlane.createOriginXaxisYaxis failed. The vectors are colinear by less than 1.0 degrees, origin %s and xAxis%s and yAxis %s" origin.AsString xAxis.AsString yAxis.AsString
+            let z = UnitVec.cross (xAxis , yAxis)
+            let y = Vec.cross (z , xAxis)
+            PPlane(origin, xAxis, y.Unitized, z.Unitized)
+
+        /// Creates a Parametrized Plane from a point and vector representing the X-axis.
+        /// The resulting PPlane will have the X-Axis in direction of X vector.
+        /// The X and Y vectors will define the plane and the side that Z will be on.
+        /// The given Y vector does not need to be perpendicular to the X vector , just not parallel.
+        /// Fails if the vectors are shorter than 1e-5.
+        static member createOriginXaxisYaxis (origin:Pnt, xAxis:Vec, yAxis:Vec) =
+            let lx = xAxis.Length
+            let ly = yAxis.Length
+            if lx < 1e-5 then FsExGeoException.Raise "FsEx.Geo.PPlane.createOriginXaxisYaxis the X-axis is too small. origin %s X-Axis %s" origin.AsString xAxis.AsString     
+            if ly < 1e-5 then FsExGeoException.Raise "FsEx.Geo.PPlane.createOriginXaxisYaxis the Y-axis is too small. origin %s Y-Axis %s" origin.AsString yAxis.AsString   
+            let xf = 1./lx
+            let yf = 1./ly
+            let xu = UnitVec.createUnchecked(xAxis.X*xf, xAxis.Y*xf, xAxis.Z*xf)
+            let yu = UnitVec.createUnchecked(yAxis.X*yf, yAxis.Y*yf, yAxis.Z*yf)  
+            PPlane.createOriginXaxisYaxis (origin, xu, yu)           
+
+        /// Creates a Parametrized Plane from a point and unit-vector representing the normal or Z-axis.
+        /// The X-axis will be found by taking the cross product of the World Y-axis and the given Z-axis.
+        /// If this fails the cross product of the World X-axis and the given Z-axis will be used.
+        /// Fails if the vectors are shorter than 1e-5.
+        static member createOriginNormal (origin:Pnt, normal:UnitVec) =
+            if normal.IsParallelTo(UnitVec.Yaxis, Cosine.``0.5``) then 
+                let x = Vec.cross (Vec.Xaxis , normal)
+                let y = Vec.cross (normal, x)
+                PPlane(origin,x.Unitized,y.Unitized,normal)
+            else
+                let x = Vec.cross (Vec.Yaxis , normal)
+                let y = Vec.cross (normal, x)
+                PPlane(origin, x.Unitized, y.Unitized, normal)
+
+        /// Creates a Parametrized Plane from a point and vector representing the normal or Z-axis.
+        /// The X-axis will be found by taking the cross product of the World Y-axis and the given Z-axis.
+        /// If this fails the cross product of the World X-axis and the given Z-axis will be used.
+        /// Fails if the vectors are shorter than 1e-5.
+        static member createOriginNormal (origin:Pnt, normal:Vec) =
+            let len = normal.Length
+            if len < 1e-5 then FsExGeoException.Raise "FsEx.Geo.PPlane.createOriginNormal the Z-axis is too small. origin %s Z-Axis %s" origin.AsString normal.AsString    
+            let f = 1./len
+            PPlane.createOriginNormal (origin, UnitVec.createUnchecked(normal.X*f, normal.Y*f, normal.Z*f))
+
+        /// Creates a Parametrized Plane from a point and unit-vector representing the Z-axis.
+        /// The given X vector does not need to be perpendicular to the normal vector, just not parallel.
+        /// Fails if the vectors are shorter than 1e-5 or normal and X are parallel.
+        static member createOriginNormalXaxis (origin:Pnt, normal:UnitVec, xAxis:UnitVec) =
+            if normal.IsParallelTo(xAxis, Cosine.``1.0``) then
+                FsExGeoException.Raise "FsEx.Geo.PPlane.createOriginNormalXaxis failed. The vectors are colinear by less than 1.0 degrees, origin %s and normal %s and normal %s" origin.AsString normal.AsString xAxis.AsString   
+            let y = UnitVec.cross (normal , xAxis)
+            let x = Vec.cross (y, normal)
+            PPlane(origin, xAxis, y.Unitized, normal)
+
+        /// Creates a Parametrized Plane from a point and unit-vector representing the Z-axis.
+        /// The given X vector does not need to be perpendicular to the normal vector, just not parallel.
+        /// Fails if the vectors are shorter than 1e-5 or normal and X are parallel.
+        static member createOriginNormalXaxis (origin:Pnt, normal:Vec, xAxis:Vec) =
+            let lx = xAxis.Length
+            let ln = normal.Length
+            if lx < 1e-5 then FsExGeoException.Raise "FsEx.Geo.PPlane.createOriginNormalXaxis the X-axis is too small. origin %s X-Axis %s" origin.AsString xAxis.AsString     
+            if ln < 1e-5 then FsExGeoException.Raise "FsEx.Geo.PPlane.createOriginNormalXaxis the normal is too small. origin %s Normal %s" origin.AsString normal.AsString   
+            let xf = 1./lx
+            let nf = 1./ln
+            let xu = UnitVec.createUnchecked(xAxis.X*xf,  xAxis.Y*xf,  xAxis.Z*xf)
+            let nu = UnitVec.createUnchecked(normal.X*nf, normal.Y*nf, normal.Z*nf) 
+            PPlane.createOriginNormalXaxis (origin, nu, xu)
+
 
         /// Return a new plane with given Origin.
         static member (*inline*) setOrigin (pt:Pnt) (pl:PPlane) =
@@ -350,3 +325,4 @@ module AutoOpenPPlane =
             if pl.Yaxis.Y < 0.0 then PPlane.rotateOnZ180 pl else pl
 
 
+        
