@@ -44,18 +44,18 @@ type Matrix =
     /// Returns the 16 elements column-major order:
     /// [| M11 M12 M13 M14 M21 M22 M23 M24 M31 M32 M33 M34 X41 Y42 Z43 M44 |]
     /// Where X41, Y42 and Z43 refer to the translation part of the matrix.
-    member m.ByColumns =
+    member m.ToArrayByColumns =
         [| m.M11; m.M12; m.M13; m.M14; m.M21; m.M22; m.M23; m.M24; m.M31; m.M32; m.M33; m.M34; m.X41; m.Y42; m.Z43; m.M44 |]
 
     /// Returns the 16 elements in row-major order:
     /// [| M11 M21 M31 X41 M12 M22 M32 Y42 M13 M23 M33 Z43 M14 M24 M34 M44 |]
     /// Where X41, Y42 and Z43 refer to the translation part of the matrix.
-    member m.ByRows =
+    member m.ToArrayByRows =
         [| m.M11; m.M21; m.M31; m.X41; m.M12; m.M22; m.M32; m.Y42; m.M13; m.M23; m.M33; m.Z43; m.M14; m.M24; m.M34; m.M44 |]
 
     /// Nicely formats the Matrix to a Grid of 4x4.
     override m.ToString()=
-        let ts   = m.ByRows |> Array.map ( fun x -> x.ToString("0.###"))
+        let ts   = m.ToArrayByRows |> Array.map ( fun x -> x.ToString("0.###"))
         let most = ts |> Array.maxBy ( fun s -> s.Length)
         "4x4 Column-Vector Transformation Matrix:\r\n" + (
         ts
@@ -270,6 +270,16 @@ type Matrix =
     //----------------------------------------------------------------------------------------------
     //--------------------------  Static Members  --------------------------------------------------
     //----------------------------------------------------------------------------------------------
+    
+        /// Returns the 16 elements column-major order:
+    /// [| M11 M12 M13 M14 M21 M22 M23 M24 M31 M32 M33 M34 X41 Y42 Z43 M44 |]
+    /// Where X41, Y42 and Z43 refer to the translation part of the matrix.
+    static member inline toArrayByColumns (m:Matrix) = m.ToArrayByColumns
+    
+    /// Returns the 16 elements in row-major order:
+    /// [| M11 M21 M31 X41 M12 M22 M32 Y42 M13 M23 M33 Z43 M14 M24 M34 M44 |]
+    /// Where X41, Y42 and Z43 refer to the translation part of the matrix.
+    static member inline toArrayByRows (m:Matrix) = m.ToArrayByRows
 
 
     /// Checks if two Matrices are equal within tolerance.

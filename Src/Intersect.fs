@@ -1,7 +1,19 @@
 namespace FsEx.Geo
 
+
+/// The result of a line cone intersection test.
+/// This is the return type of the function Intersection.lineCone.
+[<RequireQualifiedAccess>]
+type XLineCone =
+    | NoIntersection
+    | Tangential 
+    | Touching of float
+    | Intersecting of float*float
+
+
 module Intersect =
     open Util
+    open Format
 
     /// Returns the parameter on vector 'va' where 'va' and 'vb' intersect intersect as endless rays.
     /// If they start from points 'a' and 'b' respectively.
@@ -125,39 +137,77 @@ module Intersect =
 
 
     /// Calculates the intersection of a finite line with a triangle.
-    /// Returns Some(Pnt) or None if no intersection found.
-    let lineTriangle(line:Line3D, p1 :Pnt ,p2 :Pnt, p3 :Pnt) : Pnt option  =
+    /// Returns Some(Pnt) or None if no intersection was found, 
+    /// or if the input line has near zero length,
+    /// or or if input triangle has near zero area.
+    /// This algorithm still returns an intersection even if line and triangle are almost parallel.
+    /// Since it is using the triple product it is be hard to find an appropriate tolerance for 
+    /// considering lines and triangles parallel based on the volume of the Tetrahedron between them.
+    let lineTriangle(line:Line3D, p1 :Pnt ,p2 :Pnt, p3 :Pnt) : Pnt option  =  
         // https://stackoverflow.com/questions/42740765/intersection-between-line-and-triangle-in-3d
         let inline tetrahedronVolumeSigned(a:Pnt, b:Pnt, c:Pnt, d:Pnt) =
             // computes the signed Volume of a Tetrahedron
-            ((Vec.cross( b-a, c-a)) * (d-a)) / 6.0
+            //((Vec.cross( b-a, c-a)) * (d-a)) / 6.0 // the actual volume of Volume of a Tetrahedron
+            Vec.cross(b-a, c-a) * (d-a) // divide by 6.0 is not needed,  because we only need the sign of the result
 
         let q1 = line.From
         let q2 = line.To
         let s1 = sign (tetrahedronVolumeSigned(q1,p1,p2,p3))
         let s2 = sign (tetrahedronVolumeSigned(q2,p1,p2,p3))
-        if s1 <> s2 then
+        // if line and triangle are exactly in the same plane s1 and s2 are both 0
+        // It is hard to say at which very small volume it should be considers flat.
+        // TODO add a tolerance parameter for tangential triangles and lines
+        if s1 = s2 then
+            None
+        else
             let s3 = sign (tetrahedronVolumeSigned(q1,q2,p1,p2))
             let s4 = sign (tetrahedronVolumeSigned(q1,q2,p2,p3))
             let s5 = sign (tetrahedronVolumeSigned(q1,q2,p3,p1))
             if s3 = s4 && s4 = s5 then
                 let n = Vec.cross(p2-p1,p3-p1)
-                let t = ((p1-q1) * n) / ((q2-q1) * n)
-                Some (q1 + t * (q2-q1))
+                let v = q2-q1
+                let div = v * n
+                if abs div < 1e-24 then 
+                    None
+                else
+                    let t = ((p1-q1) * n) / div
+                    // this extra check should not be needed, 
+                    // but probably helps to deal with potential numerical precision issues:
+                    if isBetweenZeroAndOne t then 
+                        Some (q1 + v * t)
+                    else
+                        None                    
             else None
-        else None
+        
 
-    /// Intersects infinite line with cone that has it's Axis on Z-Axis.
-    /// coneRadius -> coneBaseZ -> coneTipZ ->  (ln:Line3D) -> Parameter*Parameter on the line.
-    let  lineCone (ln:Line3D, coneRadius, coneBaseZ, coneTipZ) =
-        let lam = coneRadius / ( coneBaseZ-coneTipZ )
+
+
+
+    /// Intersects an infinite line with an infinite double cone that has it's Axis on Z-Axis.
+    /// coneRadius -> coneBaseZ -> coneTipZ ->  (ln:Line3D) -> XConeLine
+    /// Returns the parameter(s) on the line.
+    let  lineCone (ln:Line3D, coneRadius, coneBaseZ, coneTipZ) =        
+        let h = coneBaseZ-coneTipZ 
+        if abs h < 1e-12 then FsExGeoException.Raise "FsEx.Geo.Intersection.lineCone: cone has zero height: coneRadius: %g, coneBaseZ: %g, coneTipZ: %g" coneRadius coneBaseZ coneTipZ
+        let lam = coneRadius / h
         let lam = lam * lam
         let v = ln.Tangent
         let f2 = lam*v.Z*v.Z - v.X*v.X - v.Y*v.Y
-        if abs f2 < zeroLengthTol then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line3D.xCone failed for special case coneRadius:%g coneBaseZ:%g coneTipZ:%g %O " coneRadius coneBaseZ coneTipZ ln
-        let f1 = 2.*lam*ln.FromZ*v.Z - 2.*lam*v.Z*coneTipZ - 2.*v.Y*ln.FromY - 2.*ln.FromX*v.X
-        let f0 = lam * ln.FromZ*ln.FromZ + lam*coneTipZ*coneTipZ - 2.*ln.FromZ*coneTipZ*lam - ln.FromY*ln.FromY - ln.FromX*ln.FromX
-        let sqrtPart = sqrt(f1**2. - 4.*f2*f0)
-        let div = 1. / (2. * f2)
-        (-f1 + sqrtPart) * div ,
-        (-f1 - sqrtPart) * div
+        if abs f2 < 1e-16 then 
+            XLineCone.Tangential
+        else
+            let f1 = 2.*lam*ln.FromZ*v.Z - 2.*lam*v.Z*coneTipZ - 2.*v.Y*ln.FromY - 2.*ln.FromX*v.X
+            let f0 = lam * ln.FromZ*ln.FromZ + lam*coneTipZ*coneTipZ - 2.*ln.FromZ*coneTipZ*lam - ln.FromY*ln.FromY - ln.FromX*ln.FromX
+            let part = f1**2. - 4.* f2 * f0
+            if part < 0.0 then  
+                XLineCone.NoIntersection 
+            else 
+                let sqrtPart = sqrt(part)        
+                let div = 1. / (2. * f2)
+                let u = (-f1 + sqrtPart) * div
+                let v = (-f1 - sqrtPart) * div
+                if abs(u-v) < 1e-12 then
+                    XLineCone.Touching ((u+v)*0.5)
+                else
+                    XLineCone.Intersecting (u,v)
+                
