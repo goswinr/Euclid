@@ -191,7 +191,7 @@ module AutoOpenVec =
         /// The default angle tolerance is 0.25 degrees.
         /// This tolerance can be customized by an optional minium cosine value.
         /// See FsEx.Geo.Cosine module.
-        /// Fails on lines shorter than 1e-12.
+        /// Fails on vectors shorter than 1e-12.
         member inline a.IsParallelTo( b:Vec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
             let sa = a.LengthSq
             if sa < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vec.IsParallelTo: Vec 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
@@ -207,7 +207,7 @@ module AutoOpenVec =
         /// The default angle tolerance is 0.25 degrees.
         /// This tolerance can be customized by an optional minium cosine value.
         /// See FsEx.Geo.Cosine module.
-        /// Fails on lines shorter than 1e-12.
+        /// Fails on vectors shorter than 1e-12.
         member inline a.IsParallelAndOrientedTo  (b:Vec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
             let sa = a.LengthSq
             if sa < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vec.IsParallelAndOrientedTo: Vec 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
@@ -223,7 +223,7 @@ module AutoOpenVec =
         /// This tolerance can be customized by an optional minium cosine value.
         /// The default cosine is 0.0043633 ( = 89.75 deg )
         /// See FsEx.Geo.Cosine module.
-        /// Fails on lines shorter than 1e-12.
+        /// Fails on vectors shorter than 1e-12.
         member inline a.IsPerpendicularTo (b:Vec, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) =
             let sa = a.LengthSq
             if sa < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vec.IsPerpendicularTo: Vec 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
@@ -534,18 +534,18 @@ module AutoOpenVec =
         /// Ignores vector orientation.
         /// Fails on zero length vectors, tolerance 1e-12.
         /// Same as isAngleBelowQuatreDegree.
-        static member inline isParallelTo (other:Vec) (v:Vec) =   v.IsParallelTo other
+        static member inline  areParallel (other:Vec) (v:Vec) =   v.IsParallelTo other
 
 
         /// Checks if Angle between two vectors is between 98.75 and 90.25 Degree.
         /// Ignores vector orientation.
         /// Fails on zero length vectors, tolerance 1e-12.
-        static member inline isParallelAndOrientedTo (other:Vec) (v:Vec) = v.IsParallelAndOrientedTo other
+        static member inline areParallelAndMatchOrientation (other:Vec) (v:Vec) = v.IsParallelAndOrientedTo other
 
         /// Checks if Angle between two vectors is between 98.75 and 90.25 Degree.
         /// Ignores vector orientation.
         /// Fails on zero length vectors, tolerance 1e-12.
-        static member inline isPerpendicularTo (other:Vec) (v:Vec) =  v.IsPerpendicularTo other
+        static member inline arePerpendicular(other:Vec) (v:Vec) =  v.IsPerpendicularTo other
 
 
         // Rotate2D:
@@ -677,7 +677,7 @@ module AutoOpenVec =
         /// Checks if Angle between two vectors is less than 0.25 Degree.
         /// Ignores vector orientation.
         /// Fails on zero length vectors, tolerance 1e-12.
-        /// Same as Vec.isParallelTo.
+        /// Same as Vec. areParallel.
         static member inline isAngleLessThanQuatreDegree(a:Vec, b:Vec) =
             let sa = a.LengthSq
             if sa < 1e-24 then   FsExGeoException.Raise "FsEx.Geo.Vec.isAngleLessThanQuatreDegree: Vec a is too short: %s. Vec b:%s " a.AsString b.AsString

@@ -76,6 +76,15 @@ type Polyline3D =
         let n = p.Duplicate()
         n.Points.Reverse()
         n
+    
+    /// Close the Polyline2D if it is not already closed.
+    /// If the ends are closer than the tolerance. The last point is set to equal the first point.
+    /// Else the start point is added to the end of the Polyline2D.
+    member p.CloseIfOpen(toleranceForAddingPoint) =
+        if p.IsAlmostClosed(toleranceForAddingPoint) then 
+            p.Points.Last <- p.Start
+        else
+            p.Points.Add p.Start
 
     /// Test if Polyline3D is CounterClockwise when projected in 2D.
     /// Z values are ignored.

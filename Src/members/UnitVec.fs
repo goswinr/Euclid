@@ -471,16 +471,16 @@ module AutoOpenUnitVec =
         /// Checks if Angle between two vectors is Below 0.25 Degree.
         /// Ignores vector orientation.
         /// Same as isAngleBelowQuatreDegree.
-        static member inline isParallelTo (other:UnitVec) (v:UnitVec) =   v.IsParallelTo other
+        static member inline  areParallel (other:UnitVec) (v:UnitVec) =   v.IsParallelTo other
 
 
         /// Checks if Angle between two vectors is between 98.75 and 90.25 Degree.
         /// Ignores vector orientation.
-        static member inline isParallelAndOrientedTo (other:UnitVec) (v:UnitVec) = v.IsParallelAndOrientedTo other
+        static member inline areParallelAndMatchOrientation (other:UnitVec) (v:UnitVec) = v.IsParallelAndOrientedTo other
 
         /// Checks if Angle between two vectors is between 98.75 and 90.25 Degree.
         /// Ignores vector orientation.
-        static member inline isPerpendicularTo (other:UnitVec) (v:UnitVec) =  v.IsPerpendicularTo other
+        static member inline arePerpendicular(other:UnitVec) (v:UnitVec) =  v.IsPerpendicularTo other
 
 
         // Rotate2D:

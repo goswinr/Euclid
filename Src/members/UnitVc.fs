@@ -425,16 +425,16 @@ module AutoOpenUnitVc =
         /// Checks if Angle between two vectors is Below 0.25 Degree.
         /// Ignores vector orientation.
         /// Same as isAngleBelowQuatreDegree.
-        static member inline isParallelTo (other:UnitVc) (v:UnitVc) =   v.IsParallelTo other
+        static member inline  areParallel (other:UnitVc) (v:UnitVc) =   v.IsParallelTo other
 
 
         /// Checks if Angle between two vectors is between 98.75 and 90.25 Degree.
         /// Ignores vector orientation.
-        static member inline isParallelAndOrientedTo (other:UnitVc) (v:UnitVc) = v.IsParallelAndOrientedTo other
+        static member inline areParallelAndMatchOrientation (other:UnitVc) (v:UnitVc) = v.IsParallelAndOrientedTo other
 
         /// Checks if Angle between two vectors is between 98.75 and 90.25 Degree.
         /// Ignores vector orientation.
-        static member inline isPerpendicularTo (other:UnitVc) (v:UnitVc) =  v.IsPerpendicularTo other
+        static member inline arePerpendicular(other:UnitVc) (v:UnitVc) =  v.IsPerpendicularTo other
 
 
         /// Rotate the a 2D UnitVector Counter Clockwise by a 2D Rotation (that has cos and sin precomputed)
@@ -456,20 +456,20 @@ module AutoOpenUnitVc =
 
         /// Checks if Angle between two vectors is Below one Degree.
         /// Ignores vector orientation.
-        /// Use Vec.isParallelTo for custom tolerance.
+        /// Use Vec. areParallel for custom tolerance.
         static member isAngleBelow1Degree(a:UnitVc, b:UnitVc) =
             abs(b*a) > float Cosine.``1.0``
 
 
         /// Checks if Angle between two vectors is Below 0.25 Degree.
         /// Ignores vector orientation.
-        /// Use Vec.isParallelTo for custom tolerance.
+        /// Use Vec. areParallel for custom tolerance.
         static member isAngleBelowQuatreDegree(a:UnitVc, b:UnitVc) =
             abs(b*a) > float Cosine.``0.25``
 
 
         /// Checks if Angle between two vectors is Below 5 Degrees.
         /// Ignores vector orientation.
-        /// Use Vec.isParallelTo for custom tolerance.
+        /// Use Vec. areParallel for custom tolerance.
         static member isAngleBelow5Degree(a:UnitVc, b:UnitVc) =
             abs(b*a) > float Cosine.``5.0``

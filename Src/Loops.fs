@@ -57,7 +57,7 @@ type Loop private   ( pts:ResizeArray<Pt>
    // Last pair is not equal first pair.
     //member _.XYs = xys
 
-    /// This list is one item Longer than Vectors , BRects or Lengths.
+    /// This list is one item Longer than vectors , BRects or Lengths.
     /// Last point equals first point.
     member _.Points = pts
 

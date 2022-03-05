@@ -78,6 +78,7 @@
     <Compile Include="Src/Line3D.fs" />
     <Compile Include="Src/Plane.fs" />
     <Compile Include="Src/PPlane-Ext.fs" />
+    <Compile Include="Src/Rect2D.fs" />
     <Compile Include="Src/Rect3D.fs" />
     <Compile Include="Src/Box.fs" />
     <Compile Include="Src/Intersect.fs" />

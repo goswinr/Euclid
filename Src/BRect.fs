@@ -61,7 +61,7 @@ type BRect =
     member inline r.Center = Pt( (r.MaxX + r.MinX)*0.5, (r.MaxY + r.MinY)*0.5)
 
     /// Returns the corners of the Bounding Rectangle in counter clockwise order, starting at MinPt.
-    ///  Returns an array of 4 Points. Same as member rect.Polyline.
+    /// Returns an array of 4 Points. 
     ///
     /// 3 +------------+ 2
     ///   |            |
@@ -71,15 +71,22 @@ type BRect =
     ///   |            |
     /// 0 +------------+ 1
     ///
-    member r.Corners = [| Pt(r.MinX, r.MinY); Pt(r.MaxX, r.MinY);  Pt(r.MaxX, r.MaxY); Pt(r.MinX, r.MaxY) |]
+    member r.Corners = 
+        [| Pt(r.MinX, r.MinY); Pt(r.MaxX, r.MinY);  Pt(r.MaxX, r.MaxY); Pt(r.MinX, r.MaxY) |]
 
-    /// Returns a counter clockwise array of 4 Points, starting at MinPt.
-    /// Last and first point are NOT the same Same as member rect.Corners.
-    member r.Polyline = [| Pt(r.MinX, r.MinY); Pt(r.MaxX, r.MinY);  Pt(r.MaxX, r.MaxY); Pt(r.MinX, r.MaxY) |]
 
     /// Returns a counter clockwise array of 5 Points, starting at MinPt.
     /// Last and first point are the same.
-    member r.PolylineClosed = [| Pt(r.MinX, r.MinY); Pt(r.MaxX, r.MinY);  Pt(r.MaxX, r.MaxY); Pt(r.MinX, r.MaxY); Pt(r.MinX, r.MinY)|]
+    ///  
+    /// 3 +------------+ 2
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    /// 0 +------------+ 1
+    member r.CornersLooped = 
+        [| Pt(r.MinX, r.MinY); Pt(r.MaxX, r.MinY);  Pt(r.MaxX, r.MaxY); Pt(r.MinX, r.MaxY); Pt(r.MinX, r.MinY)|]
 
 
     /// Returns Bounding Rectangle expanded by distance.

@@ -163,6 +163,7 @@ type Matrix =
         let detInv = 1. / det
 
         // this order would actually need to be transposed when comparing to three.js, but since input is transposed it is correct.
+        // TODO optimize: common sub expressions could be precalculated
         Matrix  (   t11 * detInv                                                                                                         // M11
                 , ( n24 * n33 * x41 - n23 * n34 * x41 - n24 * n31 * z43 + n21 * n34 * z43 + n23 * n31 * n44 - n21 * n33 * n44 ) * detInv // M21
                 , ( n22 * n34 * x41 - n24 * n32 * x41 + n24 * n31 * y42 - n21 * n34 * y42 - n22 * n31 * n44 + n21 * n32 * n44 ) * detInv // M31
@@ -240,7 +241,8 @@ type Matrix =
     /// It might also be rotating, translating or scaling, but not projecting.
     /// It must be affine and the determinate of the 3x3 part must be negative.
     /// Same as m.IsMirroring.
-    member m.IsReflecting = m.IsMirroring
+    member m.IsReflecting = 
+        m.IsMirroring
 
     /// Returns if matrix is scaling.
     /// It might also be rotating, translating or reflecting, but not projecting.
@@ -274,12 +276,14 @@ type Matrix =
         /// Returns the 16 elements column-major order:
     /// [| M11 M12 M13 M14 M21 M22 M23 M24 M31 M32 M33 M34 X41 Y42 Z43 M44 |]
     /// Where X41, Y42 and Z43 refer to the translation part of the matrix.
-    static member inline toArrayByColumns (m:Matrix) = m.ToArrayByColumns
+    static member inline toArrayByColumns (m:Matrix) = 
+        m.ToArrayByColumns
     
     /// Returns the 16 elements in row-major order:
     /// [| M11 M21 M31 X41 M12 M22 M32 Y42 M13 M23 M33 Z43 M14 M24 M34 M44 |]
     /// Where X41, Y42 and Z43 refer to the translation part of the matrix.
-    static member inline toArrayByRows (m:Matrix) = m.ToArrayByRows
+    static member inline toArrayByRows (m:Matrix) = 
+        m.ToArrayByRows
 
 
     /// Checks if two Matrices are equal within tolerance.
@@ -361,16 +365,19 @@ type Matrix =
 
     /// Multiplies matrixA with matrixB.
     /// The resulting transformation will first do matrixA and then matrixB.
-    static member inline ( * ) (matrixA:Matrix,  matrixB:Matrix) = Matrix.multiply(matrixA, matrixB)
+    static member inline ( * ) (matrixA:Matrix,  matrixB:Matrix) = 
+        Matrix.multiply(matrixA, matrixB)
 
     /// If the Determinant of the Matrix.
     /// The Determinant describes the volume that a unit cube will have have the matrix was applied.
-    static member inline determinant (m:Matrix) = m.Determinant
+    static member inline determinant (m:Matrix) = 
+        m.Determinant
 
     /// Inverses the matrix.
     /// If the Determinant is zero the Matrix cannot be inverted.
     /// An Exception is raised.
-    static member inline inverse (m:Matrix) = m.Inverse
+    static member inline inverse (m:Matrix) = 
+        m.Inverse
 
     /// Transposes this matrix.
     static member transpose(m:Matrix) =

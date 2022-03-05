@@ -505,19 +505,19 @@ type Line2D =
     /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
     /// And checks if it is smaller than 1e-9
     /// (NOTE: for very long lines a higher tolerance might be needed)
-    static member inline isParallelTo  (l:Line2D) (ln:Line2D) =   l.IsParallelTo ln
+    static member inline  areParallel  (l:Line2D) (ln:Line2D) =   l.IsParallelTo ln
 
     /// Checks if two 2D lines are parallel and orientated the same way.
     /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
     /// And checks if it is smaller than 1e-9
     /// Then calculates the dot product and checks if it is positive.
     /// (NOTE: for very long lines a higher tolerance might be needed)
-    static member inline isParallelAndOrientedTo  (l:Line2D) (ln:Line2D) =  l.IsParallelAndOrientedTo ln
+    static member inline areParallelAndMatchOrientation  (l:Line2D) (ln:Line2D) =  l.IsParallelAndOrientedTo ln
 
     /// Checks if two 2D lines are perpendicular.
     /// Calculates the dot product and checks if it is smaller than 1e-9.
     /// (NOTE: for very long lines a higher tolerance might be needed)
-    static member inline isPerpendicularTo (l:Line2D) (ln:Line2D) =  l.IsPerpendicularTo ln
+    static member inline arePerpendicular(l:Line2D) (ln:Line2D) =  l.IsPerpendicularTo ln
 
     /// Assumes Line2D to be infinite!
     /// Returns the parameter at which a point is closest to the infinite line.
@@ -830,7 +830,7 @@ type Line2D =
 
 
 
-    /// <summary>Returns the intersection kind and the parameters at which two (finite) 2D Lines are intersect or are closest to each other.
+    /// <summary>Returns the intersection kind and the parameters at which two (finite) 2D Lines intersect or are closest to each other.
     /// The results are both between 0.0 and 1.0.
     /// For parallel and coincident lines it still returns the two end points that are closest to each other or a point in the middle of their overlap.
     /// First parameter is on lnA, second parameter is on lnB.

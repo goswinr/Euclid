@@ -592,19 +592,19 @@ type Line3D =
     /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
     /// And checks if it is smaller than 1e-9
     /// (NOTE: for very long lines a higher tolerance might be needed)
-    static member inline isParallelTo  (l:Line3D) (ln:Line3D) =   l.IsParallelTo ln
+    static member inline  areParallel  (l:Line3D) (ln:Line3D) =   l.IsParallelTo ln
 
     /// Checks if two 3D lines are parallel and orientated the same way.
     /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
     /// And checks if it is smaller than 1e-9
     /// Then calculates the dot product and checks if it is positive.
     /// (NOTE: for very long lines a higher tolerance might be needed)
-    static member inline isParallelAndOrientedTo  (l:Line3D) (ln:Line3D) =  l.IsParallelAndOrientedTo ln
+    static member inline areParallelAndMatchOrientation  (l:Line3D) (ln:Line3D) =  l.IsParallelAndOrientedTo ln
 
     /// Checks if two 3D lines are perpendicular.
     /// Calculates the dot product and checks if it is smaller than 1e-9.
     /// (NOTE: for very long lines a higher tolerance might be needed)
-    static member inline isPerpendicularTo (l:Line3D) (ln:Line3D) =  l.IsPerpendicularTo(ln)
+    static member inline arePerpendicular(l:Line3D) (ln:Line3D) =  l.IsPerpendicularTo(ln)
 
     /// Assumes Line3D to be infinite.
     /// Returns the parameter at which a point is closest to the infinite line.

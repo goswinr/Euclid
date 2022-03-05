@@ -78,12 +78,20 @@ type Polyline2D =
         n.Points.Reverse()
         n
 
-    /// Test if Polyline2D is CounterClockwise when projected in 2D.
-    /// Z values are ignored.
-    /// The Polyline2D does not need to be actually closed.
-    /// The signed area of the Polyline2D is calculated.
-    /// If it is positive the Polyline2D is CCW.
-    member p.IsCounterClockwiseIn2D =
+    /// Close the Polyline2D if it is not already closed.
+    /// If the ends are closer than the tolerance. The last point is set to equal the first point.
+    /// Else the start point is added to the end of the Polyline2D.
+    member p.CloseIfOpen(toleranceForAddingPoint) =
+        if p.IsAlmostClosed(toleranceForAddingPoint) then 
+            p.Points.Last <- p.Start
+        else
+            p.Points.Add p.Start
+
+    /// The signed area of the Polyline2D .
+    /// If it is positive the Polyline2D is Counter Clockwise.
+    /// Polyline does not need to be exactly closed. But then result might be wrong. Or without meaning.
+    /// For self intersecting Polylines the result is also invalid.
+    member p.SignedArea =
         //https://helloacm.com/sign-area-of-irregular-polygon/
         let ps = p.Points
         let mutable area = 0.0
@@ -94,6 +102,21 @@ type Polyline2D =
             let b = n.Y + t.Y
             area <- area + a*b
             t <- n
+        area 
+        
+    /// The area of the Polyline2D.
+    /// Fails if Polyline is not exactly closed.
+    /// For self intersecting Polylines the result is invalid.
+    member p.Area =
+        if not p.IsClosed then FsExGeoException.Raise "FsEx.Geo.Polyline2D.Area failed on Polyline2D that is not exactly closed %O" p
+        abs(p.SignedArea)
+
+    /// Test if Polyline2D is CounterClockwise.
+    /// The Polyline2D does not need to be actually closed.
+    /// The signed area of the Polyline2D is calculated.
+    /// If it is positive the Polyline2D is Counter Clockwise.
+    member p.IsCounterClockwise =            
+        let  area = p.SignedArea       
         if   abs(area) < Util.zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Polyline2D.IsCounterClockwiseIn2D: Polyline2D as area 0.0: %O" p
         else area > 0.0
 

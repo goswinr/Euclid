@@ -124,7 +124,7 @@ type Quaternion =
             if  abs vFrom.X  > abs vFrom.Z   then   Quaternion.create ( -vFrom.Y  , vFrom.X   , 0       , r)
             else                                    Quaternion.create (0          ,- vFrom.Z  ,vFrom.Y  , r)
         else
-            // cross Vectors( vFrom, vTo ); // inlined to avoid cyclic dependency
+            // cross vectors( vFrom, vTo ); // inlined to avoid cyclic dependency
             Quaternion.create ( vFrom.Y * vTo.Z - vFrom.Z * vTo.Y
                               , vFrom.Z * vTo.X - vFrom.X * vTo.Z
                               , vFrom.X * vTo.Y - vFrom.Y * vTo.X
