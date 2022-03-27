@@ -836,10 +836,10 @@ type Line2D =
     /// First parameter is on lnA, second parameter is on lnB.
     /// The possible result cases are:
     ///
-    /// | Intersecting : The finite lines are intersecting each other in one point.
-    /// | IntersectingEndsBoth: The finite lines are intersecting each other at one of their end or start points point.
-    /// | IntersectingEndsFirst: The finite lines are intersecting. The first line is touching the second one with its end or start point.
-    /// | IntersectingEndsSecond:  The finite lines are intersecting. The second line is touching the first one with its end or start point.
+    /// | Intersecting : The finite lines are intersecting each other in one point inside both lines.
+    /// | IntersectingEndsBoth:   The finite lines are intersecting each other at one of their end or start points point.
+    /// | IntersectingEndsFirst:  The finite lines are intersecting. The first line is touching the second one with its end or start point.
+    /// | IntersectingEndsSecond: The finite lines are intersecting. The second line is touching the first one with its end or start point.
     ///
     /// | Skew: (only applicable for 3D lines)
     ///
@@ -903,28 +903,30 @@ type Line2D =
                                             [<OPT;DEF(1e-6)>] tooShortTolerance:float
                                             ) : IntersectionKind*float*float =
         match Line2D.intersectionParamInfinite(lnA,lnB, relAngleDiscriminant, coincidentTolerance, tooShortTolerance) with
-        | IntersectionParam.TwoParam ( u0 , v0 ) ->
+        | IntersectionParam.TwoParam ( u , v ) ->
             /// numerical error tolerance check to also find an intersection that happens just after the line end:
-            let ur = isZeroOneOrBetween u0
-            let vr = isZeroOneOrBetween v0
-            let u =  match ur with Zero -> 0.0 |One -> 1.0 |Between |Outside -> u0
-            let v =  match vr with Zero -> 0.0 |One -> 1.0 |Between |Outside -> v0
-            if ur=Zero || ur=One then
-                if vr=Zero || vr=One then
-                    IntersectingEndsBoth , u ,v
-                else
-                    IntersectingEndsFirst, u ,v
-            elif vr=Zero || vr=One then
-                IntersectingEndsSecond, u,v
-            elif  isBetweenZeroAndOne u && isBetweenZeroAndOne v then
-                Intersecting, u , v
-            else
+            let ur = isZeroOneOrBetween u
+            let vr = isZeroOneOrBetween v
+
+            let inline fix01 zt1 x = match zt1 with Zero -> 0.0 |One -> 1.0 |Between |Outside -> x
+            
+            if   ur = Outside || vr = Outside then 
                 // finite Lines are not intersecting, still find their closest Points:
                 let pu = lnA.EvaluateAt  u
                 let vt = Line2D.closestParameter pu lnB
                 let pv = lnB.EvaluateAt vt
                 let ut = Line2D.closestParameter pv lnA
                 Apart, ut ,vt
+            elif ur = Zero || ur = One then                 
+                if vr = Zero || vr = One then                     
+                    IntersectingEndsBoth,(fix01 ur u), (fix01 vr  v)
+                else                          
+                    IntersectingEndsFirst, (fix01 ur u), v
+            elif vr = Zero || vr = One then
+                IntersectingEndsSecond, u, (fix01 vr  v)
+            else 
+                Intersecting, u, v
+            
 
         | IntersectionParam.Parallel ->
 
@@ -1130,9 +1132,9 @@ type Line2D =
             let p = lnA.EvaluateAt u
             k,p,p // return same point twice ?
         | Skew | Apart  | IntersectionKind.Parallel
-        | Overlapping | CoincidentApart | Identical| IdenticalFlipped
+        | Overlapping | CoincidentApart | Identical | IdenticalFlipped
         | TooShortA | TooShortB | TooShortBoth -> // TODO or check if the zero length line is actually on the other line ?
-            let a  =  lnA.EvaluateAt u
+            let a  = lnA.EvaluateAt u
             let b  = lnB.EvaluateAt v
             k,a,b
 

@@ -980,10 +980,10 @@ type Line3D =
     /// First parameter is on lnA, second parameter is on lnB.
     /// The possible result cases are:
     ///
-    /// | Intersecting : The finite lines are intersecting each other in one point.
-    /// | IntersectingEndsBoth: The finite lines are intersecting each other at one of their end or start points point.
-    /// | IntersectingEndsFirst: The finite lines are intersecting. The first line is touching the second one with its end or start point.
-    /// | IntersectingEndsSecond:  The finite lines are intersecting. The second line is touching the first one with its end or start point.
+    /// | Intersecting : The finite lines are intersecting each other in one point inside both lines.
+    /// | IntersectingEndsBoth:   The finite lines are intersecting each other at one of their end or start points point.
+    /// | IntersectingEndsFirst:  The finite lines are intersecting. The first line is touching the second one with its end or start point.
+    /// | IntersectingEndsSecond: The finite lines are intersecting. The second line is touching the first one with its end or start point.
     ///
     /// | Skew:  The finite lines are skew to each other.
     /// Their closest points to each other are within the line.
@@ -1052,35 +1052,35 @@ type Line3D =
                                             [<OPT;DEF(1e-6)>] tooShortTolerance:float
                                             ) :  IntersectionKind*float*float =
         match Line3D.intersectionParamInfinite(lnA , lnB, relAngleDiscriminant, coincidentTolerance, tooShortTolerance) with
-        | IntersectionParam.TwoParam ( u0 , v0 ) ->
+        | IntersectionParam.TwoParam ( u , v ) ->
             /// numerical error tolerance check to also find an intersection that happens just after the line end:
-            let ur = isZeroOneOrBetween u0
-            let vr = isZeroOneOrBetween v0
-            let u =  match ur with Zero -> 0.0 |One -> 1.0 |Between |Outside -> u0
-            let v =  match vr with Zero -> 0.0 |One -> 1.0 |Between |Outside -> v0
+            let ur = isZeroOneOrBetween u
+            let vr = isZeroOneOrBetween v
 
-            let a = lnA.EvaluateAt(u)
-            let b = lnA.EvaluateAt(v)
-            let d = Pnt.distanceSq a b
-            if d < skewTolerance*skewTolerance then
-                if ur=Zero || ur=One then
-                    if vr=Zero || vr=One then
-                        IntersectingEndsBoth , u ,v
-                    else
-                        IntersectingEndsFirst, u ,v
-                elif vr=Zero || vr=One then
-                    IntersectingEndsSecond, u,v
-                else
-                    Intersecting, u , v
-            elif isBetweenZeroAndOne u && isBetweenZeroAndOne v then
-                    Skew, u , v
-            else
-                // finite Lines are not intersection, still find their closest Points:
+            let inline fix01 zt1 x = match zt1 with Zero -> 0.0 |One -> 1.0 |Between |Outside -> x
+            
+            if   ur = Outside || vr = Outside then 
+                // finite Lines are not intersecting, still find their closest Points:
                 let pu = lnA.EvaluateAt  u
                 let vt = Line3D.closestParameter pu lnB
                 let pv = lnB.EvaluateAt vt
                 let ut = Line3D.closestParameter pv lnA
-                Apart,ut ,vt
+                Apart, ut ,vt
+            else
+                let a = lnA.EvaluateAt(u)
+                let b = lnA.EvaluateAt(v)
+                let d = Pnt.distanceSq a b
+                if d > skewTolerance*skewTolerance then
+                    Skew, u , v
+                elif ur = Zero || ur = One then                 
+                    if vr = Zero || vr = One then                     
+                        IntersectingEndsBoth,(fix01 ur u), (fix01 vr  v)
+                    else                          
+                        IntersectingEndsFirst, (fix01 ur u), v
+                elif vr = Zero || vr = One then
+                    IntersectingEndsSecond, u, (fix01 vr  v)
+                else 
+                    Intersecting, u, v       
 
         | IntersectionParam.Parallel ->
 
