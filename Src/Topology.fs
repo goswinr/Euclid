@@ -34,12 +34,13 @@ type Topology private () =
 
     // TODO !! This does not recognize if there are actually two loops not just one
 
+    // functions have 2D or 3D suffix because the overloads resolution sometimes fails when used in scripts.
 
     /// Sorts elements in place to be in a circular structure.
     /// for each line end point it finds the next closest line start point.
     /// (Does not check other line end points that might be closer)
     /// Line3D is used as an abstraction to hold start and end of arbitrary object.
-    static member sortToLoop(getLine: 'T -> Line3D, xs:ResizeArray<'T>)  =
+    static member sortToLoop3D(getLine: 'T -> Line3D, xs:ResizeArray<'T>)  =
         for i = 0 to xs.Count - 2 do // only run till second last
             let thisLine = getLine xs.[i]
             //  TODO could be optimized using a R-Tree for very large lists instead of minBy function
@@ -51,7 +52,7 @@ type Topology private () =
     /// for each line end point it finds the next closest line start point.
     /// (Does not check other line end points that might be closer)
     /// Line2D is used as an abstraction to hold start and end of arbitrary object.
-    static member sortToLoop(getLine: 'T -> Line2D, xs:ResizeArray<'T>)  =
+    static member sortToLoop2D(getLine: 'T -> Line2D, xs:ResizeArray<'T>)  =
         for i = 0 to xs.Count - 2 do // only run till second last
             let thisLine = getLine xs.[i]
             //  TODO could be optimized using a R-Tree for very large lists instead of minBy function
@@ -65,7 +66,7 @@ type Topology private () =
     /// Reverses the input in place where required.
     /// To reverse a 'T in place it uses the reverseInPlace function that takes the index of the element and the element itself as parameter.
     /// (They might not be need both however to reverse an element)
-    static member sortToLoopWithReversing (getLine: 'T -> Line3D, reverseInPlace: int -> 'T -> unit, xs:ResizeArray<'T>) : unit =
+    static member sortToLoopWithReversing3D (getLine: 'T -> Line3D, reverseInPlace: int -> 'T -> unit, xs:ResizeArray<'T>) : unit =
         for i = 0 to xs.Count - 2 do // only run till second last
             let thisLine = getLine xs.[i]
             // TODO could be optimized using a R-Tree for very large lists instead of minBy function
@@ -86,7 +87,7 @@ type Topology private () =
     /// Reverses the input in place where required.
     /// To reverse a 'T in place it uses the reverseInPlace function that takes the index of the element and the element itself as parameter.
     /// (They might not be need both however to reverse an element)
-    static member sortToLoopWithReversing (getLine: 'T -> Line2D, reverseInPlace: int -> 'T -> unit, xs:ResizeArray<'T>) : unit =
+    static member sortToLoopWithReversing2D (getLine: 'T -> Line2D, reverseInPlace: int -> 'T -> unit, xs:ResizeArray<'T>) : unit =
         for i = 0 to xs.Count - 2 do // only run till second last
             let thisLine = getLine xs.[i]
             // TODO could be optimized using a R-Tree for very large lists instead of minBy function
