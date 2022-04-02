@@ -1155,8 +1155,8 @@ type Line3D =
             let z11 = l1k1.LengthSq < coTolSq
 
             if z00 && z11 then
-                if flip then IdenticalFlipped , 0.0 , 0.0
-                else         Identical        , 0.0 , 1.0
+                if flip then IdenticalFlipped , 0.0 , 1.0
+                else         Identical        , 0.0 , 0.0
             elif z10  then
                 if flip then ContinuationFlipped , 1.0 , 1.0
                 else         Continuation        , 1.0 , 0.0

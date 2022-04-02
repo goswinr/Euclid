@@ -364,6 +364,19 @@ type Line2D =
                 let v' = y' - pY
                 u'*u' + v'*v'  < distanceTolerance * distanceTolerance
 
+    /// Check if a given point is on the right side of the infinite line.
+    /// Also returns false if the point is on the line.
+    member inline ln.IsPointOnRight(pt:Pt) =
+        let lv = ln.Vector.Rotate90CW
+        let pv = pt - ln.From
+        lv*pv > 0.0 
+        
+    /// Check if a given point is on the left side of the infinite line.
+    /// Also returns false if the point is on the line.
+    member inline ln.IsPointOnLeft(pt:Pt) = 
+        let lv = ln.Vector.Rotate90CCW
+        let pv = pt - ln.From
+        lv*pv > 0.0 
 
     //-------------------------------------------------------------------
     //------------------------static members-----------------------------
@@ -1001,8 +1014,8 @@ type Line2D =
             let z11 = l1k1.LengthSq < coTolSq
 
             if z00 && z11 then
-                if flip then IdenticalFlipped , 0.0 , 0.0
-                else         Identical        , 0.0 , 1.0
+                if flip then IdenticalFlipped , 0.0 , 1.0
+                else         Identical        , 0.0 , 0.0
             elif z10  then
                 if flip then ContinuationFlipped , 1.0 , 1.0
                 else         Continuation        , 1.0 , 0.0
