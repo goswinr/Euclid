@@ -185,6 +185,57 @@ module AutoOpenVec =
             v.Unitized * other.Unitized > 0.707107
 
 
+        /// Checks if 3D vector is parallel to the world X axis.
+        /// Tolerance is 1e-6.
+        /// Fails on vectors shorter than 1e-6.
+        member inline v.IsXAligned =
+            let x = abs (v.X)
+            let y = abs (v.Y)
+            let z = abs (v.Z)
+            if x+y+z < 1e-6 then FsExGeoException.Raise "FsEx.Geo.Vec.IsXAligned cannot not check very tiny vector. (tolerance 1e-6)  %O" v
+            else y < 1e-6 && z < 1e-6      
+
+        /// Checks if 3D vector is parallel to the world Y axis.
+        /// Tolerance is 1e-6.
+        /// Fails on vectors shorter than 1e-6.
+        member inline v.IsYAligned =
+            let x = abs (v.X)
+            let y = abs (v.Y)
+            let z = abs (v.Z)
+            if x+y+z < 1e-6 then FsExGeoException.Raise "FsEx.Geo.Vec.IsYAligned cannot not check very tiny vector. (tolerance 1e-6)  %O" v
+            else x < 1e-6 && z < 1e-6
+
+        /// Checks if 3D vector is parallel to the world Z axis.
+        /// Tolerance is 1e-6.
+        /// Fails on vectors shorter than 1e-6.
+        /// Same as v.IsVertical
+        member inline v.IsZAligned =
+            let x = abs (v.X)
+            let y = abs (v.Y)
+            let z = abs (v.Z)
+            if x+y+z < 1e-6 then FsExGeoException.Raise "FsEx.Geo.Vec.IsZAligned cannot not check very tiny vector. (tolerance 1e-6)  %O" v
+            else x < 1e-6 && y < 1e-6
+
+        /// Checks if 3D vector is parallel to the world Z axis.
+        /// Tolerance is 1e-6.
+        /// Fails on vectors shorter than 1e-6.
+        /// Same as v.IsZAligned
+        member inline v.IsVertical =  
+            let x = abs (v.X)
+            let y = abs (v.Y)
+            let z = abs (v.Z)
+            if x+y+z < 1e-6 then FsExGeoException.Raise "FsEx.Geo.Vec.IsVertical cannot not check very tiny vector. (tolerance 1e-6)  %O" v
+            else x < 1e-6 && y < 1e-6
+
+        /// Checks if 3D vector is horizontal (Z component is almost zero).
+        /// Tolerance is 1e-6.
+        /// Fails on vectors shorter than 1e-6.
+        member inline v.IsHorizontal =
+            let x = abs (v.X)
+            let y = abs (v.Y)
+            let z = abs (v.Z)
+            if x+y+z < 1e-6 then FsExGeoException.Raise "FsEx.Geo.Vec.IsHorizontal cannot not check very tiny vector. (tolerance 1e-6)  %O" v
+            else z < 1e-6
 
         /// Checks if two 3D vectors are parallel.
         /// Ignores the line orientation.
@@ -585,20 +636,33 @@ module AutoOpenVec =
         /// sqrt( v.X * v.X  + v.Y * v.Y)
         static member inline lengthInXY(v:Vec) = sqrt(v.X * v.X  + v.Y * v.Y)
 
-        /// Checks if a vector is vertical by doing:
-        /// abs(v.X) + abs(v.Y) < zeroLengthTol.
-        /// Fails on tiny (shorter than zeroLengthTol) vectors.
-        static member inline isVertical (v:Vec) =
-            if v.LengthSq < 1e-16 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Vec.isVertical cannot not check very tiny vector for verticality %O" v
-            abs(v.X) + abs(v.Y) < zeroLengthTol
-
-        /// Checks if a vector is horizontal by doing:
-        /// abs(v.Z) < zeroLengthTol.
-        /// Fails on tiny (shorter than zeroLengthTol) vectors.
-        static member inline isHorizontal (v:Vec) =
-            if v.LengthSq < 1e-16 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Vec.isHorizontal Cannot not check very tiny vector for horizontality %O" v
-            abs(v.Z) < zeroLengthTol
-
+        /// Checks if 3D vector is parallel to the world X axis.
+        /// Tolerance is 1e-6.
+        /// Fails on vectors shorter than 1e-6.
+        static member inline isXAligned (v:Vec) = v.IsXAligned
+        
+        /// Checks if 3D vector is parallel to the world Y axis.
+        /// Tolerance is 1e-6.
+        /// Fails on vectors shorter than 1e-6.
+        static member inline isYAligned (v:Vec) = v.IsYAligned
+        
+        /// Checks if 3D vector is parallel to the world Z axis.
+        /// Tolerance is 1e-6.
+        /// Fails on vectors shorter than 1e-6.
+        /// Same as ln.IsVertical
+        static member inline isZAligned (v:Vec) = v.IsZAligned
+        
+        /// Checks if 3D vector is parallel to the world Z axis.
+        /// Tolerance is 1e-6.
+        /// Fails on vectors shorter than 1e-6.
+        /// Same as ln.IsZAligned
+        static member inline isVertical (v:Vec) =  v.IsVertical
+                
+        /// Checks if line is horizontal (Z component is almost zero).
+        /// Tolerance is 1e-6.
+        /// Fails on lines shorter than 1e-6.
+        static member inline isHorizontal (v:Vec) = v.IsHorizontal
+            
         /// Returns positive or negative slope of a vector in Radians.
         /// In relation to X-Y plane.
         static member inline slopeRadians (v:Vec) =

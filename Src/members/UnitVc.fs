@@ -137,6 +137,20 @@ module AutoOpenUnitVc =
         member inline v.MatchesOrientation90  (other:UnitVc) =
             v* other > 0.707107
 
+        /// Checks if 2D unit vector is parallel to the world X axis.
+        /// Tolerance is 1e-6.
+        member inline v.IsXAligned =
+            let x = abs (v.X)
+            let y = abs (v.Y)
+            y < 1e-6       
+
+        /// Checks if 2D unit vector is parallel to the world Y axis.
+        /// Tolerance is 1e-6.
+        member inline v.IsYAligned =
+            let x = abs (v.X)
+            let y = abs (v.Y)
+            x < 1e-6 
+
         /// Checks if two 3D unit vectors are parallel.
         /// Ignores the line orientation.
         /// The default angle tolerance is 0.25 degrees.
@@ -453,6 +467,14 @@ module AutoOpenUnitVc =
 
         /// 90 Degree rotation clockwise.
         static member inline rotate90CW (v:UnitVc) = UnitVc.createUnchecked(  v.Y,  -v.X  )
+        
+        // Checks if 2D unit vector is parallel to the world X axis.
+        /// Tolerance is 1e-6.
+        static member inline isXAligned (v:UnitVc) = v.IsXAligned
+        
+        /// Checks if 2D unit vector is parallel to the world Y axis.
+        /// Tolerance is 1e-6.
+        static member inline isYAligned (v:UnitVc) = v.IsYAligned
 
         /// Checks if Angle between two vectors is Below one Degree.
         /// Ignores vector orientation.

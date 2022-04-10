@@ -96,22 +96,77 @@ type Line3D =
     /// Returns a unit-vector of the line Direction.
     member inline ln.UnitTangent =
         UnitVec.create(ln.ToX-ln.FromX,ln.ToY-ln.FromY,ln.ToZ-ln.FromZ)
+    
+    /// Checks if line is parallel to the world X axis.
+    /// Tolerance is 1e-6.
+    /// Fails on lines shorter than 1e-6.
+    member inline ln.IsXAligned =
+        let x = abs (ln.ToX-ln.FromX)
+        let y = abs (ln.ToY-ln.FromY)
+        let z = abs (ln.ToZ-ln.FromZ)
+        if x+y+z < 1e-6 then FsExGeoException.Raise "FsEx.Geo.Line3D.IsXAligned cannot not check very tiny Line. (tolerance 1e-6)  %O" ln
+        else y < 1e-6 && z < 1e-6      
+        
 
-    /// Check if the line has exactly the same starting and ending point.
+    /// Checks if 3D line is parallel to the world Y axis.
+    /// Tolerance is 1e-6.
+    /// Fails on lines shorter than 1e-6.
+    member inline ln.IsYAligned =
+        let x = abs (ln.ToX-ln.FromX)
+        let y = abs (ln.ToY-ln.FromY)
+        let z = abs (ln.ToZ-ln.FromZ)
+        if x+y+z < 1e-6 then FsExGeoException.Raise "FsEx.Geo.Line3D.IsYAligned cannot not check very tiny Line. (tolerance 1e-6)  %O" ln
+        else x < 1e-6 && z < 1e-6
+
+    /// Checks if 3D line is parallel to the world Z axis.
+    /// Tolerance is 1e-6.
+    /// Fails on lines shorter than 1e-6.
+    /// Same as ln.IsVertical
+    member inline ln.IsZAligned =
+        let x = abs (ln.ToX-ln.FromX)
+        let y = abs (ln.ToY-ln.FromY)
+        let z = abs (ln.ToZ-ln.FromZ)
+        if x+y+z < 1e-6 then FsExGeoException.Raise "FsEx.Geo.Line3D.IsZAligned cannot not check very tiny Line. (tolerance 1e-6)  %O" ln
+        else x < 1e-6 && y < 1e-6
+
+
+     /// Checks if 3D line is parallel to the world Z axis.
+    /// Tolerance is 1e-6.
+    /// Fails on lines shorter than 1e-6.
+    /// Same as ln.IsZAligned
+    member inline ln.IsVertical =  
+        let x = abs (ln.ToX-ln.FromX)
+        let y = abs (ln.ToY-ln.FromY)
+        let z = abs (ln.ToZ-ln.FromZ)
+        if x+y+z < 1e-6 then FsExGeoException.Raise "FsEx.Geo.Line3D.IsVertical cannot not check very tiny Line. (tolerance 1e-6)  %O" ln
+        else x < 1e-6 && y < 1e-6
+
+    /// Checks if 3D line is horizontal.
+    /// Tolerance is 1e-6.
+    /// Fails on lines shorter than 1e-6.
+    member inline ln.IsHorizontal =
+        let x = abs (ln.ToX-ln.FromX)
+        let y = abs (ln.ToY-ln.FromY)
+        let z = abs (ln.ToZ-ln.FromZ)
+        if x+y+z < 1e-6 then FsExGeoException.Raise "FsEx.Geo.Line3D.IsHorizontal cannot not check very tiny Line. (tolerance 1e-6)  %O" ln
+        else z < 1e-6
+        
+
+    /// Check if the 3D line has exactly the same starting and ending point.
     member inline ln.IsZeroLength =
         ln.ToX = ln.FromX &&
         ln.ToY = ln.FromY &&
         ln.ToZ = ln.FromZ
 
-    /// Check if line is shorter than tolerance.
+    /// Check if 3D line is shorter than tolerance.
     member inline ln.IsTiny tol =
         ln.Length < tol
 
-    /// Check if line is shorter than the squared tolerance.
+    /// Check if 3D line is shorter than the squared tolerance.
     member inline ln.IsTinySq tol =
         ln.LengthSq < tol
 
-    /// Evaluate line at a given parameter.
+    /// Evaluate 3D line at a given parameter.
     /// Parameters 0.0 to 1.0 are on the line.
     member inline ln.EvaluateAt (p:float) =
         Pnt(ln.FromX + (ln.ToX-ln.FromX)*p,
@@ -119,18 +174,18 @@ type Line3D =
             ln.FromZ + (ln.ToZ-ln.FromZ)*p)
 
 
-    /// Returns the midpoint of the line,
+    /// Returns the midpoint of the 3D line,
     member inline ln.Mid =
         Pnt((ln.ToX+ln.FromX)*0.5,
             (ln.ToY+ln.FromY)*0.5,
             (ln.ToZ+ln.FromZ)*0.5)
 
 
-    /// returns the Line3D reversed.
+    /// Returns the 3D line reversed.
     member inline ln.Reversed =
         Line3D(ln.ToX,ln.ToY,ln.ToZ,ln.FromX,ln.FromY,ln.FromZ)
 
-    /// returns the lines Bounding Box.
+    /// Returns the lines Bounding Box.
     member inline ln.BoundingBox =
         BBox.create ( ln.From, ln.To)
 
@@ -527,6 +582,33 @@ type Line3D =
 
     /// Check if line is shorter than squared tolerance.
     static member inline isTinySq tol (l:Line3D) = l.LengthSq < tol
+
+    /// Checks if 3D line is parallel to the world X axis.
+    /// Tolerance is 1e-6.
+    /// Fails on lines shorter than 1e-6.
+    static member inline isXAligned (l:Line3D) = l.IsXAligned
+    
+    /// Checks if 3D line is parallel to the world Y axis.
+    /// Tolerance is 1e-6.
+    /// Fails on lines shorter than 1e-6.
+    static member inline isYAligned (l:Line3D) = l.IsYAligned
+    
+    /// Checks if 3D line is parallel to the world Z axis.
+    /// Tolerance is 1e-6.
+    /// Fails on lines shorter than 1e-6.
+    /// Same as ln.IsVertical
+    static member inline isZAligned (l:Line3D) = l.IsZAligned
+    
+    /// Checks if 3D line is parallel to the world Z axis.
+    /// Tolerance is 1e-6.
+    /// Fails on lines shorter than 1e-6.
+    /// Same as ln.IsZAligned
+    static member inline isVertical (l:Line3D) = l.IsVertical
+        
+    /// Checks if 3D line is horizontal (Z component is almost zero).
+    /// Tolerance is 1e-6.
+    /// Fails on lines shorter than 1e-6.
+    static member inline isHorizontal (l:Line3D) = l.IsHorizontal
 
     /// Evaluate line at a given parameter ( parameters 0.0 to 1.0 are on the line )
     static member inline evaluateAt t (ln:Line3D)  = ln.EvaluateAt t

@@ -145,6 +145,48 @@ module AutoOpenUnitVec =
         member inline v.MatchesOrientation90  (other:UnitVec) =
             v * other > 0.707107
 
+        /// Checks if 3D unit vector is parallel to the world X axis.
+        /// Tolerance is 1e-6.        
+        member inline v.IsXAligned =
+            let x = abs (v.X)
+            let y = abs (v.Y)
+            let z = abs (v.Z)            
+            y < 1e-6 && z < 1e-6      
+
+        /// Checks if 3D unit vector is parallel to the world Y axis.
+        /// Tolerance is 1e-6.        
+        member inline v.IsYAligned =
+            let x = abs (v.X)
+            let y = abs (v.Y)
+            let z = abs (v.Z)            
+            x < 1e-6 && z < 1e-6
+
+        /// Checks if 3D unit vector is parallel to the world Z axis.
+        /// Tolerance is 1e-6.        
+        /// Same as v.IsVertical
+        member inline v.IsZAligned =
+            let x = abs (v.X)
+            let y = abs (v.Y)
+            let z = abs (v.Z)
+            x < 1e-6 && y < 1e-6
+
+        /// Checks if 3D unit vector is parallel to the world Z axis.
+        /// Tolerance is 1e-6.
+        /// Same as v.IsZAligned
+        member inline v.IsVertical =  
+            let x = abs (v.X)
+            let y = abs (v.Y)
+            let z = abs (v.Z)
+            x < 1e-6 && y < 1e-6
+
+        /// Checks if 3D unit vector is horizontal (Z component is almost zero).
+        /// Tolerance is 1e-6.
+        member inline v.IsHorizontal =
+            let x = abs (v.X)
+            let y = abs (v.Y)
+            let z = abs (v.Z)
+            z < 1e-6
+
         /// Checks if two 3D unit vectors are parallel.
         /// Ignores the line orientation.
         /// The default angle tolerance is 0.25 degrees.
@@ -519,20 +561,30 @@ module AutoOpenUnitVec =
         static member inline rotateByQuaternion  (q:Quaternion) (v:UnitVec) =
             v*q  // operator * is defined in Quaternion.fs
 
-
-        /// vector length projected into X Y Plane.
+        /// Returns vector length projected into X Y Plane.
         /// sqrt( v.X * v.X  + v.Y * v.Y)
         static member inline lengthInXY(v:UnitVec) = sqrt(v.X * v.X  + v.Y * v.Y)
 
-        /// Checks if a vector is vertical by doing:
-        /// abs(v.X) + abs(v.Y) < zeroLengthTol.
-        static member inline isVertical (v:UnitVec) =
-            abs(v.X) + abs(v.Y) < zeroLengthTol
-
-        /// Checks if a vector is horizontal by doing:
-        /// abs(v.Z) < zeroLengthTol.
-        static member inline isHorizontal (v:UnitVec) =
-            abs(v.Z) < zeroLengthTol
+        /// Checks if 3D unit vector is parallel to the world X axis.
+        /// Tolerance is 1e-6.
+        static member inline isXAligned (v:UnitVec) = v.IsXAligned
+        
+        /// Checks if 3D unit vector is parallel to the world Y axis.
+        /// Tolerance is 1e-6.
+        static member inline isYAligned (v:UnitVec) = v.IsYAligned
+        
+        /// Checks if 3D unit vector is parallel to the world Z axis.
+        /// Same as ln.IsVertical
+        static member inline isZAligned (v:UnitVec) = v.IsZAligned
+        
+        /// Checks if 3D unit vector is parallel to the world Z axis.
+        /// Tolerance is 1e-6.
+        /// Same as ln.IsZAligned
+        static member inline isVertical (v:UnitVec) =  v.IsVertical        
+        
+        /// Checks if 3D vector is horizontal (Z component is almost zero).
+        /// Tolerance is 1e-6.
+        static member inline isHorizontal (v:UnitVec) = v.IsHorizontal
 
         /// Returns positive or negative slope of a vector in Radians.
         /// in relation to X-Y plane.

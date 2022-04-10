@@ -84,6 +84,23 @@ type Line2D =
     member inline ln.UnitTangent =
         UnitVc.create(ln.ToX-ln.FromX, ln.ToY-ln.FromY)
 
+    /// Checks if 2D line is parallel to the world X axis.
+    /// Deviation Tolerance is 1e-6.
+    /// Fails on lines shorter than 1e-6.
+    member inline ln.IsXAligned =
+        let x = abs (ln.ToX-ln.FromX)
+        let y = abs (ln.ToY-ln.FromY)
+        if x+y < 1e-6 then FsExGeoException.Raise "FsEx.Geo.Line2D.IsXAligned cannot not check very tiny Line. (tolerance 1e-6)  %O" ln
+        else y < 1e-6 
+
+    /// Checks if 2D line is parallel to the world Y axis.
+    /// Tolerance is 1e-6.
+    /// Fails on lines shorter than 1e-6.
+    member inline ln.IsYAligned =
+        let x = abs (ln.ToX-ln.FromX)
+        let y = abs (ln.ToY-ln.FromY)
+        if x+y < 1e-6 then FsExGeoException.Raise "FsEx.Geo.Line2D.IsYAligned cannot not check very tiny Line. (tolerance 1e-6)  %O" ln
+        else x < 1e-6
 
     /// Check if the line has same starting and ending point.
     member inline ln.IsZeroLength =
@@ -466,6 +483,16 @@ type Line2D =
 
     /// Check if line is shorter than squared tolerance.
     static member inline isTinySq tol (l:Line2D) = l.LengthSq < tol
+
+    /// Checks if 2D line is parallel to the world X axis.
+    /// Tolerance is 1e-6.
+    /// Fails on lines shorter than 1e-6.
+    static member inline isXAligned (l:Line2D) = l.IsXAligned
+    
+    /// Checks if 2D line is parallel to the world Y axis.
+    /// Tolerance is 1e-6.
+    /// Fails on lines shorter than 1e-6.
+    static member inline isYAligned (l:Line2D) = l.IsYAligned
 
     /// Evaluate line at a given parameter ( parameters 0.0 to 1.0 are on the line )
     static member inline evaluateAt t (ln:Line2D)  = ln.EvaluateAt t
