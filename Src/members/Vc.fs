@@ -9,11 +9,22 @@ module AutoOpenVc =
 
     type Vc with
 
+        /// Convert 2D vector to 2D point.
+        member inline v.AsPt         = Pt( v.X, v.Y)
+
+        /// Convert 2D vector to 3D vector using 0.0 as Z value.
+        /// If you want a different Z value use the member v.WithZ(z)
+        member inline v.AsVec        = Vec(v.X, v.Y, 0.0)
+
+        /// Convert 2D vector to 3D point using 0.0 as Z value.
+        member inline v.AsPnt        = Pnt(v.X, v.Y, 0.0)
+        
         /// Returns a boolean indicating wether X and Y are exactly 0.0.
         member inline v.IsZero = v.X = 0.0 && v.Y = 0.0
 
         /// Returns a boolean indicating if any of X and Y is not exactly 0.0.
         member inline v.IsNotZero =  v.X <> 0.0 || v.Y <> 0.0
+
 
         /// Check if the 2D vector is shorter than the tolerance.
         member inline v.IsTiny tol =
@@ -35,6 +46,8 @@ module AutoOpenVc =
         /// Returns new 3D vector with Z coordinate, X and Y stay the same.
         /// If you want Z to be 0.0 you can use v.AsVec too.
         member inline v.WithZ z = Vec (v.X ,v.Y, z)
+
+
 
         /// Returns a new 2D vector with half the length.
         member inline v.Half = Vc (v.X*0.5 ,v.Y*0.5)
@@ -147,15 +160,7 @@ module AutoOpenVc =
             if r >= 0. then  r
             else r + 4.0
 
-        /// Convert 2D vector to 2D point.
-        member inline v.AsPt         = Pt( v.X, v.Y)
 
-        /// Convert 2D vector to 3D vector using 0.0 as Z value.
-        /// If you want a different Z value use the member v.WithZ(z)
-        member inline v.AsVec        = Vec(v.X, v.Y, 0.0)
-
-        /// Convert 2D vector to 3D point using 0.0 as Z value.
-        member inline v.AsPnt        = Pnt(v.X, v.Y, 0.0)
 
         /// Checks if the angle between the two 2D vectors is less than 180 degrees.
         /// Calculates the dot product of two 2D vectors.

@@ -19,6 +19,15 @@ module AutoOpenUnitVec =
 
     type UnitVec with
 
+        /// Convert 3D unit-vector to 3D vector.
+        member inline v.AsVec = Vec(v.X, v.Y, v.Z)
+
+        /// Convert 3D unit-vector to 3D point.
+        member inline v.AsPnt  = Pnt(v.X, v.Y, v.Z)
+
+        /// Convert 3D unit-vector to 2D vector, discarding the Z value.
+        member inline v.AsVc  = Vc(v.X, v.Y)
+
         /// Returns the length of the 3D vector projected into World X-Y plane.
         member inline v.LengthInXY = sqrt (v.X*v.X + v.Y*v.Y)
 
@@ -122,15 +131,6 @@ module AutoOpenUnitVec =
             let r = b.DirectionDiamondInXY - v.DirectionDiamondInXY
             if r >= 0. then  r
             else r + 4.0
-
-        /// Convert 3D unit-vector to 3D vector.
-        member inline v.AsVec = Vec(v.X, v.Y, v.Z)
-
-        /// Convert 3D unit-vector to 3D point.
-        member inline v.AsPnt  = Pnt(v.X, v.Y, v.Z)
-
-        /// Convert 3D unit-vector to 2D vector, discarding the Z value.
-        member inline v.AsVc  = Vc(v.X, v.Y)
 
 
         /// Checks if the angle between the two 3D unit vectors is less than 180 degrees.

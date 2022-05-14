@@ -15,8 +15,25 @@ module AutoOpenUnitVc =
         sqrt(x*x+y*y)
 
     type UnitVc with
+        
+        /// Convert 2D unit-vector to 2D point.
+        member inline v.AsPt         = Pt( v.X, v.Y)
 
+        /// Convert 2D unit-vector to 2D vector
+        member inline v.AsVc        = Vc(v.X, v.Y)
+
+        /// Convert 2D unit-vector to 3D vector using 0.0 as Z value.
+        /// If you want a different Z value use the member v.WithZ(z)
+        member inline v.AsVec        = Vec(v.X, v.Y, 0.0)
+
+        /// Convert 2D unit-vector to 3D unit-vector using 0.0 as Z value.
+        /// If you want a different Z value use the member v.WithZ(z)
+        member inline v.AsUnitVec    = UnitVec.createUnchecked(v.X, v.Y, 0.0)
+
+        /// Convert 2D unit-vector to 3D point using 0.0 as Z value.
+        member inline v.AsPnt        = Pnt(v.X, v.Y, 0.0)
         /// Returns new 2D vector with new X coordinate, Y stays the same.
+        /// 
         member inline v.WithX x = Vc (x ,v.Y)
 
         /// Returns new 2D vector with new Y coordinate, X stays the same.
@@ -111,19 +128,7 @@ module AutoOpenUnitVc =
             if r >= 0. then  r
             else r + 4.0
 
-        /// Convert 2D unit-vector to 2D point.
-        member inline v.AsPt         = Pt( v.X, v.Y)
 
-        /// Convert 2D unit-vector to 3D vector using 0.0 as Z value.
-        /// If you want a different Z value use the member v.WithZ(z)
-        member inline v.AsVec        = Vec(v.X, v.Y, 0.0)
-
-        /// Convert 2D unit-vector to 3D unit-vector using 0.0 as Z value.
-        /// If you want a different Z value use the member v.WithZ(z)
-        member inline v.AsUnitVec    = UnitVec.createUnchecked(v.X, v.Y, 0.0)
-
-        /// Convert 2D unit-vector to 3D point using 0.0 as Z value.
-        member inline v.AsPnt        = Pnt(v.X, v.Y, 0.0)
 
         /// Checks if the angle between the two 2D unit vectors is less than 180 degrees.
         /// Calculates the dot product of two 2D unit vectors.

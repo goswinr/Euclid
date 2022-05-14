@@ -10,6 +10,12 @@ module AutoOpenPnt =
 
     type Pnt with
 
+        /// Returns the 3D point as 3D vector.
+        member inline p.AsVec       = Vec(p.X,p.Y,p.Z)
+
+        /// Returns the 3D point as 2D point.
+        member inline p.AsPt        = Pt(p.X,p.Y)
+
         /// Returns a boolean indicating wether X , Y and Z are exactly 0.0.
         member inline pt.IsOrigin = pt.X = 0.0 && pt.Y = 0.0 && pt.Z= 0.0
 
@@ -95,12 +101,6 @@ module AutoOpenPnt =
         /// 0.0 = Xaxis,  going Counter clockwise till 360.
         member inline p.Angle360InXYTo(o:Pnt) =
             p.Angle2PiInXYTo o |> toDegrees
-
-        /// Returns the 3D point as 3D vector.
-        member inline p.AsVec       = Vec(p.X,p.Y,p.Z)
-
-        /// Returns the 3D point as 2D point.
-        member inline p.AsPt        = Pt(p.X,p.Y)
 
         /// Get closest point on finite line to test point.
         member inline testPt.ClosestPointOnLine(fromPt:Pnt, toPt:Pnt) =

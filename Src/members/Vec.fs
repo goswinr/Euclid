@@ -9,6 +9,12 @@ module AutoOpenVec =
 
     type Vec with
 
+        /// Convert 3D vector to 3D point.
+        member inline v.AsPnt = Pnt(v.X, v.Y, v.Z)
+
+        /// Convert 3D vector to 2D vector, discarding the Z value.
+        member inline v.AsVc  = Vc(v.X, v.Y)
+
         /// Returns a boolean indicating wether X,Y and Z are all exactly 0.0.
         member inline v.IsZero =  v.X = 0.0 && v.Y = 0.0 && v.Z = 0.0
 
@@ -164,12 +170,6 @@ module AutoOpenVec =
             let r = b.DirectionDiamondInXY - v.DirectionDiamondInXY
             if r >= 0. then  r
             else r + 4.0
-
-        /// Convert 3D vector to 3D point.
-        member inline v.AsPnt = Pnt(v.X, v.Y, v.Z)
-
-        /// Convert 3D vector to 2D vector, discarding the Z value.
-        member inline v.AsVc  = Vc(v.X, v.Y)
 
 
         /// Checks if the angle between the two 3D vectors is less than 180 degrees.

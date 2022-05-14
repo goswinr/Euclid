@@ -85,7 +85,7 @@ type Line2D =
         UnitVc.create(ln.ToX-ln.FromX, ln.ToY-ln.FromY)
 
     /// Checks if 2D line is parallel to the world X axis.
-    /// Deviation Tolerance is 1e-6.
+    /// Deviation tolerance is 1e-6.
     /// Fails on lines shorter than 1e-6.
     member inline ln.IsXAligned =
         let x = abs (ln.ToX-ln.FromX)
@@ -94,7 +94,7 @@ type Line2D =
         else y < 1e-6 
 
     /// Checks if 2D line is parallel to the world Y axis.
-    /// Tolerance is 1e-6.
+    /// Deviation tolerance is 1e-6.
     /// Fails on lines shorter than 1e-6.
     member inline ln.IsYAligned =
         let x = abs (ln.ToX-ln.FromX)
