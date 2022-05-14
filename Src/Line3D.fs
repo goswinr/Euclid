@@ -219,6 +219,96 @@ type Line3D =
                 ln.FromY + y*b,
                 ln.FromZ + z*b)
 
+    /// Extend 3D line by absolute amount at start and end.
+    /// Fails on lines shorter than 1e-12.
+    member inline ln.Extend (distAtStart:float, distAtEnd:float)  =
+        let x = ln.ToX-ln.FromX
+        let y = ln.ToY-ln.FromY
+        let z = ln.ToZ-ln.FromZ
+        let l = sqrt(x*x + y*y + z*z)
+        if l < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line3D.Extend %O to short for finding point at a distance." ln
+        Line3D( ln.FromX - x*distAtStart/l,
+                ln.FromY - y*distAtStart/l,
+                ln.FromZ - z*distAtStart/l,
+                ln.ToX   + x*distAtEnd/l,
+                ln.ToY   + y*distAtEnd/l,
+                ln.ToZ   + z*distAtEnd/l )
+
+    /// Extend 3D line by absolute amount at start.
+    /// Fails on lines shorter than 1e-12.
+    member inline ln.ExtendStart (distAtStart:float) =
+        let x = ln.ToX-ln.FromX
+        let y = ln.ToY-ln.FromY
+        let z = ln.ToZ-ln.FromZ
+        let l = sqrt(x*x + y*y + z*z)
+        if l < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line3D.ExtendStart %O to short for finding point at a distance." ln
+        Line3D( ln.FromX - x*distAtStart/l,
+                ln.FromY - y*distAtStart/l,
+                ln.FromZ - z*distAtStart/l,
+                ln.ToX   ,
+                ln.ToY   ,
+                ln.ToZ   )
+
+    /// Extend 3D line by absolute amount at end.
+    /// Fails on lines shorter than 1e-12.
+    member inline ln.ExtendEnd  (distAtEnd:float)  =
+        let x = ln.ToX-ln.FromX
+        let y = ln.ToY-ln.FromY
+        let z = ln.ToZ-ln.FromZ
+        let l = sqrt(x*x + y*y + z*z)
+        if l < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line3D.ExtendEnd %O to short for finding point at a distance." ln
+        Line3D( ln.FromX ,
+                ln.FromY ,
+                ln.FromZ ,
+                ln.ToX   + x*distAtEnd/l,
+                ln.ToY   + y*distAtEnd/l,
+                ln.ToZ   + z*distAtEnd/l )
+
+    /// Shrink 3D line by absolute amount at start and end.
+    /// Fails on lines shorter than 1e-12.
+    member inline ln.Shrink (distAtStart:float, distAtEnd:float)  =
+        let x = ln.ToX-ln.FromX
+        let y = ln.ToY-ln.FromY
+        let z = ln.ToZ-ln.FromZ
+        let l = sqrt(x*x + y*y + z*z)
+        if l < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line3D.Shrink %O to short for finding point at a distance." ln
+        Line3D( ln.FromX + x*distAtStart/l,
+                ln.FromY + y*distAtStart/l,
+                ln.FromZ + z*distAtStart/l,
+                ln.ToX   - x*distAtEnd/l,
+                ln.ToY   - y*distAtEnd/l,
+                ln.ToZ   - z*distAtEnd/l )
+
+    /// Shrink 3D line by absolute amount at start.
+    /// Fails on lines shorter than 1e-12.
+    member inline ln.ShrinkStart (distAtStart:float) =
+        let x = ln.ToX-ln.FromX
+        let y = ln.ToY-ln.FromY
+        let z = ln.ToZ-ln.FromZ
+        let l = sqrt(x*x + y*y + z*z)
+        if l < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line3D.ShrinkStart %O to short for finding point at a distance." ln
+        Line3D( ln.FromX + x*distAtStart/l,
+                ln.FromY + y*distAtStart/l,
+                ln.FromZ + z*distAtStart/l,
+                ln.ToX   ,
+                ln.ToY   ,
+                ln.ToZ   )
+
+    /// Shrink 3D line by absolute amount at end.
+    /// Fails on lines shorter than 1e-12.
+    member inline ln.ShrinkEnd  (distAtEnd:float)  =
+        let x = ln.ToX-ln.FromX
+        let y = ln.ToY-ln.FromY
+        let z = ln.ToZ-ln.FromZ
+        let l = sqrt(x*x + y*y + z*z)
+        if l < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line3D.ShrinkEnd %O to short for finding point at a distance." ln
+        Line3D( ln.FromX ,
+                ln.FromY ,
+                ln.FromZ ,
+                ln.ToX   - x*distAtEnd/l,
+                ln.ToY   - y*distAtEnd/l,
+                ln.ToZ   - z*distAtEnd/l )
+
     /// Returns a Line3D moved by a vector.
     member inline ln.Move (v:Vec) =
         Line3D( ln.FromX + v.X,
@@ -743,50 +833,35 @@ type Line3D =
         if l < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line3D.lengthToPtOnLine %O to short for finding length to point." ln
         (t/l) * (pt-ln.From)
 
-    /// Extend by absolute amount at start and end.
+    /// Extend 3D line by absolute amount at start and end.
     /// Fails on lines shorter than 1e-12.
     static member inline extend (distAtStart:float) (distAtEnd:float) (ln:Line3D) =
-        let x = ln.ToX-ln.FromX
-        let y = ln.ToY-ln.FromY
-        let z = ln.ToZ-ln.FromZ
-        let l = sqrt(x*x + y*y + z*z)
-        if l < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line3D.extend %O to short for finding point at a distance." ln
-        Line3D( ln.FromX - x*distAtStart/l,
-                ln.FromY - y*distAtStart/l,
-                ln.FromZ - z*distAtStart/l,
-                ln.ToX   + x*distAtEnd/l,
-                ln.ToY   + y*distAtEnd/l,
-                ln.ToZ   + z*distAtEnd/l )
+        ln.Extend(distAtStart, distAtEnd)
 
-    /// Extend by absolute amount at start.
+    /// Extend 3D line by absolute amount at start.
     /// Fails on lines shorter than 1e-12.
     static member inline extendStart (distAtStart:float)  (ln:Line3D) =
-        let x = ln.ToX-ln.FromX
-        let y = ln.ToY-ln.FromY
-        let z = ln.ToZ-ln.FromZ
-        let l = sqrt(x*x + y*y + z*z)
-        if l < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line3D.extendStart %O to short for finding point at a distance." ln
-        Line3D( ln.FromX - x*distAtStart/l,
-                ln.FromY - y*distAtStart/l,
-                ln.FromZ - z*distAtStart/l,
-                ln.ToX   ,
-                ln.ToY   ,
-                ln.ToZ   )
+        ln.ExtendStart(distAtStart)
 
-    /// Extend by absolute amount at end.
+    /// Extend 3D line by absolute amount at end.
     /// Fails on lines shorter than 1e-12.
     static member inline extendEnd  (distAtEnd:float) (ln:Line3D) =
-        let x = ln.ToX-ln.FromX
-        let y = ln.ToY-ln.FromY
-        let z = ln.ToZ-ln.FromZ
-        let l = sqrt(x*x + y*y + z*z)
-        if l < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line3D.extendEnd %O to short for finding point at a distance." ln
-        Line3D( ln.FromX ,
-                ln.FromY ,
-                ln.FromZ ,
-                ln.ToX   + x*distAtEnd/l,
-                ln.ToY   + y*distAtEnd/l,
-                ln.ToZ   + z*distAtEnd/l )
+        ln.ExtendEnd(distAtEnd)
+
+    /// Shrink 3D line by absolute amount at start and end.
+    /// Fails on lines shorter than 1e-12.
+    static member inline shrink (distAtStart:float) (distAtEnd:float) (ln:Line3D) =
+        ln.Shrink(distAtStart, distAtEnd)
+
+    /// Shrink 3D line by absolute amount at start.
+    /// Fails on lines shorter than 1e-12.
+    static member inline shrinkStart (distAtStart:float)  (ln:Line3D) =
+        ln.ShrinkStart(distAtStart)
+
+    /// Shrink 3D line by absolute amount at end.
+    /// Fails on lines shorter than 1e-12.
+    static member inline shrinkEnd  (distAtEnd:float) (ln:Line3D) =
+        ln.ShrinkEnd(distAtEnd)    
 
     /// Finds point at given distance from line start.
     /// Fails on lines shorter than 1e-12.

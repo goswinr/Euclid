@@ -272,10 +272,10 @@ type Loop private   ( pts:ResizeArray<Pt>
                 let bp  = pts.[j]
                 let bu  = unitVcts.[j]
                 let bl  = lens.[j]
-                if Intersect.doIntersectOrOverlapColinear(ap, au, al, abb,  bp, bu, bl, bbb, snapThreshold ) then
-                    Debug2D.drawDot (sprintf "self X:  %O +  %O"  i j) (Intersect.getXPointOrMid(ap, au, al,  bp, bu, bl, snapThreshold))
-                    Debug2D.drawLine(ap,ap+au*al)
-                    Debug2D.drawLine(bp,bp+bu*bl)
+                if Intersect.doIntersectOrOverlapColinear(ap, au, al, abb, bp, bu, bl, bbb, snapThreshold ) then
+                    Debug2D.drawDot (sprintf "self X:  %O +  %O"  i j) (Intersect.getXPointOrMid(ap, au, al, bp, bu, bl, snapThreshold))
+                    Debug2D.drawLineFromTo(ap, ap+au*al)
+                    Debug2D.drawLineFromTo(bp, bp+bu*bl)
                     FsExGeoException.Raise "FsEx.Geo.Loop: Loop of  %O Points has self intersection." points.Count
 
         if unitVcts.Length > 3 then // a triangle is covered by angle checks above

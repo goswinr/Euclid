@@ -30,12 +30,12 @@ type Polyline2D =
 
     /// Gets first point of the Polyline2D
     member p.Start =
-        if p.Points.Count < 2 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Polyline2D.Start failed on Polyline2D with less than 2 points %O" p
+        if p.Points.Count < 2 then FsExGeoException.Raise "FsEx.Geo.Polyline2D.Start failed on Polyline2D with less than 2 points %O" p
         p.Points.First
 
     /// Gets last or end point of the Polyline2D
     member p.End =
-        if p.Points.Count < 2 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Polyline2D.Start failed on Polyline2D with less than 2 points %O" p
+        if p.Points.Count < 2 then FsExGeoException.Raise "FsEx.Geo.Polyline2D.Start failed on Polyline2D with less than 2 points %O" p
         p.Points.Last
 
     /// Gets the count of points in the Polyline2D
@@ -44,7 +44,7 @@ type Polyline2D =
         /// Gets the length of the Polyline2D
     member p.Length =
         let ps = p.Points
-        if ps.Count < 2 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Polyline3D.Length failed on Polyline2D with less than 2 points %O" p
+        if ps.Count < 2 then FsExGeoException.Raise "FsEx.Geo.Polyline3D.Length failed on Polyline2D with less than 2 points %O" p
         let mutable l = 0.0
         let mutable prev = ps.[0]
         for i = 1 to ps.Count-1 do
@@ -58,13 +58,13 @@ type Polyline2D =
 
     /// Tests if Polyline2D start and end points are exactly the same.
     member inline p.IsClosed =
-        if p.Points.Count < 2 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Polyline3D.IsClosed failed on Polyline2D with less than 2 points %O" p
+        if p.Points.Count < 2 then FsExGeoException.Raise "FsEx.Geo.Polyline3D.IsClosed failed on Polyline2D with less than 2 points %O" p
         let v = p.Start  - p.End
         v.IsZero
 
     /// Tests if Polyline2D is closed within given tolerance.
     member p.IsAlmostClosed(tolerance) =
-        if p.Points.Count < 2 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Polyline2D.IsAlmostClosed failed on Polyline2D with less than 2 points %O" p
+        if p.Points.Count < 2 then FsExGeoException.Raise "FsEx.Geo.Polyline2D.IsAlmostClosed failed on Polyline2D with less than 2 points %O" p
         let v = p.Start  - p.End
         v.LengthSq < tolerance*tolerance
 
@@ -117,7 +117,7 @@ type Polyline2D =
     /// If it is positive the Polyline2D is Counter Clockwise.
     member p.IsCounterClockwise =            
         let  area = p.SignedArea       
-        if   abs(area) < Util.zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Polyline2D.IsCounterClockwiseIn2D: Polyline2D as area 0.0: %O" p
+        if   abs(area) < Util.zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Polyline2D.IsCounterClockwiseIn2D: Polyline2D the area is zero: %O" p
         else area > 0.0
 
 
@@ -180,7 +180,7 @@ type Polyline2D =
     member pl.ClosestParameter(pt:Pt) =
         // for very large polylines, this is could be optimized by using search R-tree
         let ps = pl.Points
-        if ps.Count < 2 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Polyline2D.ClosestParameter failed on  Polyline2D with less than 2 points %O" pl
+        if ps.Count < 2 then FsExGeoException.Raise "FsEx.Geo.Polyline2D.ClosestParameter failed on  Polyline2D with less than 2 points %O" pl
         // vectors of the segments
         let vs = Array.zeroCreate (ps.Count-1)
         for i = 0 to vs.Length-1 do
@@ -231,12 +231,12 @@ type Polyline2D =
 
     /// Gets first point of the Polyline2D
     static member inline start (p:Polyline2D) =
-        if p.Points.Count < 2 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Polyline2D.Start failed on Polyline2D with less than 2 points %O" p
+        if p.Points.Count < 2 then FsExGeoException.Raise "FsEx.Geo.Polyline2D.Start failed on Polyline2D with less than 2 points %O" p
         p.Points.First
 
     /// Gets last or end point of the Polyline2D
     static member inline ende (p:Polyline2D) =
-        if p.Points.Count < 2 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Polyline2D.Start failed on Polyline2D with less than 2 points %O" p
+        if p.Points.Count < 2 then FsExGeoException.Raise "FsEx.Geo.Polyline2D.Start failed on Polyline2D with less than 2 points %O" p
         p.Points.Last
 
     /// Reverse order of the Polyline2D in place.
@@ -335,7 +335,7 @@ type Polyline2D =
     /// The input vectors are the vectors for each segment of the polyline.
     /// From first and second point up to last and first point.
     static member findOuterCornerAndRefNormal(pts:ResizeArray<Pt>, vs:Vc[])=
-        if pts.Count <> vs.Length then FsExGeoDivByZeroException.Raise "FsEx.Geo.Polyline2D.findOuterCornerAndRefNormal pts (%d) and vs(%d) must have the same length." pts.Count vs.Length
+        if pts.Count <> vs.Length then FsExGeoException.Raise "FsEx.Geo.Polyline2D.findOuterCornerAndRefNormal pts (%d) and vs(%d) must have the same length." pts.Count vs.Length
         let us = Array.zeroCreate vs.Length
         // mark very short segments with 0, 0, 0:
         for i=0 to vs.Length-1 do
@@ -388,7 +388,7 @@ type Polyline2D =
     /// Start point and end point may not be equal, all arrays of same length.
     /// 'referenceOrient' is positive for counterclockwise loops otherwise negative.
     static member  offsetCore( pts:ResizeArray<Pt>, offD:ResizeArray<float>,  referenceOrient:float, fixColinearLooped, allowObliqueOffsetOnColinearSegments) : ResizeArray<Pt>  =
-        if  pts.Count <> offD.Count   then FsExGeoDivByZeroException.Raise "FsEx.Geo.Polyline2D.offsetCore pts(%d) and offD(%d) must have the same length." pts.Count offD.Count
+        if  pts.Count <> offD.Count   then FsExGeoException.Raise "FsEx.Geo.Polyline2D.offsetCore pts(%d) and offD(%d) must have the same length." pts.Count offD.Count
         let lenTolSq =  1e-12 // square length tolerance
         let lenPts   = pts.Count
         let lastIdx  = lenPts - 1

@@ -161,6 +161,81 @@ type Line2D =
                 ln.FromX + x*b,
                 ln.FromY + y*b)
 
+
+    /// Extend 2D line by absolute amount at start and end.
+    /// Fails on lines shorter than 1e-12.
+    member inline ln.Extend (distAtStart:float, distAtEnd:float)  =
+        let x = ln.ToX-ln.FromX
+        let y = ln.ToY-ln.FromY
+        let l = sqrt(x*x + y*y )
+        if l < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line2D.Extend %O to short for finding point at a distance." ln
+        Line2D( ln.FromX - x*distAtStart/l,
+                ln.FromY - y*distAtStart/l,
+                ln.ToX   + x*distAtEnd/l,
+                ln.ToY   + y*distAtEnd/l)
+
+    /// Extend 2D line by absolute amount at start.
+    /// Fails on lines shorter than 1e-12.
+    member inline ln.ExtendStart (distAtStart:float)  =
+        let x = ln.ToX-ln.FromX
+        let y = ln.ToY-ln.FromY
+        let l = sqrt(x*x + y*y )
+        if l < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line2D.ExtendStart %O to short for finding point at a distance." ln
+        Line2D( ln.FromX - x*distAtStart/l,
+                ln.FromY - y*distAtStart/l,
+                ln.ToX   ,
+                ln.ToY   )
+
+    /// Extend 2D line by absolute amount at end.
+    /// Fails on lines shorter than 1e-12.
+    member inline ln.ExtendEnd  (distAtEnd:float)  =
+        let x = ln.ToX-ln.FromX
+        let y = ln.ToY-ln.FromY
+        let l = sqrt(x*x + y*y )
+        if l < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line2D.ExtendEnd %O to short for finding point at a distance." ln
+        Line2D( ln.FromX ,
+                ln.FromY ,
+                ln.ToX   + x*distAtEnd/l,
+                ln.ToY   + y*distAtEnd/l )
+    
+    /// Shrink 2D line by absolute amount at start and end.
+    /// Fails on lines shorter than 1e-12.
+    member inline ln.Shrink (distAtStart:float, distAtEnd:float)  =
+        let x = ln.ToX-ln.FromX
+        let y = ln.ToY-ln.FromY
+        let l = sqrt(x*x + y*y )
+        if l < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line2D.Shrink %O to short for finding point at a distance." ln
+        Line2D( ln.FromX + x*distAtStart/l,
+                ln.FromY + y*distAtStart/l,
+                ln.ToX   - x*distAtEnd/l,
+                ln.ToY   - y*distAtEnd/l)
+
+    /// Shrink 2D line by absolute amount at start.
+    /// Fails on lines shorter than 1e-12.
+    member inline ln.ShrinkStart (distAtStart:float)  =
+        let x = ln.ToX-ln.FromX
+        let y = ln.ToY-ln.FromY
+        let l = sqrt(x*x + y*y )
+        if l < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line2D.ShrinkStart %O to short for finding point at a distance." ln
+        Line2D( ln.FromX + x*distAtStart/l,
+                ln.FromY + y*distAtStart/l,
+                ln.ToX   ,
+                ln.ToY   )
+
+    /// Shrink 2D line by absolute amount at end.
+    /// Fails on lines shorter than 1e-12.
+    member inline ln.ShrinkEnd  (distAtEnd:float)  =
+        let x = ln.ToX-ln.FromX
+        let y = ln.ToY-ln.FromY
+        let l = sqrt(x*x + y*y )
+        if l < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line2D.ShrinkEnd %O to short for finding point at a distance." ln
+        Line2D( ln.FromX ,
+                ln.FromY ,
+                ln.ToX   - x*distAtEnd/l,
+                ln.ToY   - y*distAtEnd/l )
+
+
+
     /// Returns a Line2D moved by a vector.
     member inline ln.Move (v:Vc) =
         Line2D( ln.FromX+v.X,
@@ -613,41 +688,38 @@ type Line2D =
         // TODO can be optimized by inlining floats.
         line.Tangent.Unitized * (pt-line.From)
 
-    /// Extend by absolute amount at start and end.
+    /// Extend 2D line by absolute amount at start and end.
     /// Fails on lines shorter than 1e-12.
     static member inline extend (distAtStart:float) (distAtEnd:float) (ln:Line2D) =
-        let x = ln.ToX-ln.FromX
-        let y = ln.ToY-ln.FromY
-        let l = sqrt(x*x + y*y )
-        if l < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line2D.extend %O to short for finding point at a distance." ln
-        Line2D( ln.FromX - x*distAtStart/l,
-                ln.FromY - y*distAtStart/l,
-                ln.ToX   + x*distAtEnd/l,
-                ln.ToY   + y*distAtEnd/l)
+        ln.Extend(distAtStart, distAtEnd)
 
-    /// Extend by absolute amount at start.
+    /// Extend 2D line by absolute amount at start.
     /// Fails on lines shorter than 1e-12.
     static member inline extendStart (distAtStart:float)  (ln:Line2D) =
-        let x = ln.ToX-ln.FromX
-        let y = ln.ToY-ln.FromY
-        let l = sqrt(x*x + y*y )
-        if l < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line2D.extendStart %O to short for finding point at a distance." ln
-        Line2D( ln.FromX - x*distAtStart/l,
-                ln.FromY - y*distAtStart/l,
-                ln.ToX   ,
-                ln.ToY   )
+        ln.ExtendStart(distAtStart)
 
-    /// Extend by absolute amount at end.
+    /// Extend 2D line by absolute amount at end.
     /// Fails on lines shorter than 1e-12.
     static member inline extendEnd  (distAtEnd:float) (ln:Line2D) =
-        let x = ln.ToX-ln.FromX
-        let y = ln.ToY-ln.FromY
-        let l = sqrt(x*x + y*y )
-        if l < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line2D.extendEnd %O to short for finding point at a distance." ln
-        Line2D( ln.FromX ,
-                ln.FromY ,
-                ln.ToX   + x*distAtEnd/l,
-                ln.ToY   + y*distAtEnd/l )
+        ln.ExtendEnd(distAtEnd)
+
+    /// Shrink 2D line by absolute amount at start and end.
+    /// Fails on lines shorter than 1e-12.
+    static member inline shrink (distAtStart:float) (distAtEnd:float) (ln:Line2D) =
+        ln.Shrink(distAtStart, distAtEnd)
+
+    /// Shrink 2D line by absolute amount at start.
+    /// Fails on lines shorter than 1e-12.
+    static member inline shrinkStart (distAtStart:float)  (ln:Line2D) =
+        ln.ShrinkStart(distAtStart)
+
+    /// Shrink 2D line by absolute amount at end.
+    /// Fails on lines shorter than 1e-12.
+    static member inline shrinkEnd  (distAtEnd:float) (ln:Line2D) =
+        ln.ShrinkEnd(distAtEnd)
+
+
+        
 
     /// Finds point at given distance from line start.
     /// Fails on lines shorter than 1e-12.
