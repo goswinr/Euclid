@@ -117,19 +117,36 @@ type Line2D =
 
     /// Evaluate line at a given parameter ( parameters 0.0 to 1.0 are on the line ),
     member inline ln.EvaluateAt (p:float) =
-        let x = ln.FromX + (ln.ToX-ln.FromX)*p
-        let y = ln.FromY + (ln.ToY-ln.FromY)*p
-        Pt(x,y)
+        Pt  ( ln.FromX + (ln.ToX-ln.FromX)*p
+            , ln.FromY + (ln.ToY-ln.FromY)*p)        
+
+    /// Returns the length of the line segment from the start point to the given parameter.
+    /// This length is negative if the parameter is negative.
+    member inline ln.LengthTillParam (p:float) =
+        let x = (ln.ToX - ln.FromX)*p
+        let y = (ln.ToY - ln.FromY)*p
+        let l = sqrt(x*x + y*y)
+        if p> 0.0 then l else -l
+
+    /// Returns the length of the line segment from the given parameter till the line End.
+    /// This length is negative if the parameter is bigger than 1.0.
+    member inline ln.LengthFromParam (t:float) =
+        let p = 1.0-t
+        let x = (ln.ToX - ln.FromX)*p
+        let y = (ln.ToY - ln.FromY)*p
+        let l = sqrt(x*x + y*y)
+        if p> 0.0 then l else -l    
+        
 
     /// Returns the midpoint of the line,
     member inline ln.Mid =
-        let x = (ln.ToX+ln.FromX)*0.5
-        let y = (ln.ToY+ln.FromY)*0.5
+        let x = (ln.ToX + ln.FromX)*0.5
+        let y = (ln.ToY + ln.FromY)*0.5
         Pt(x,y)
 
     /// Returns the Line2D reversed.
     member inline ln.Reversed =
-        Line2D(ln.ToX,ln.ToY,ln.FromX,ln.FromY)
+        Line2D(ln.ToX, ln.ToY, ln.FromX, ln.FromY)
 
     /// Returns the lines Bounding Rectangle.
     member inline ln.BoundingRect =

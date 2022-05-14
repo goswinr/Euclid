@@ -173,17 +173,35 @@ type Line3D =
             ln.FromY + (ln.ToY-ln.FromY)*p,
             ln.FromZ + (ln.ToZ-ln.FromZ)*p)
 
+    /// Returns the length of the line segment from the start point to the given parameter.
+    /// This length is negative if the parameter is negative.
+    member inline ln.LengthTillParam (p:float) =
+        let x = (ln.ToX - ln.FromX)*p
+        let y = (ln.ToY - ln.FromY)*p
+        let z = (ln.ToZ - ln.FromZ)*p
+        let l = sqrt(x*x + y*y + z*z)
+        if p> 0.0 then l else -l
+
+    /// Returns the length of the line segment from the given parameter till the line End.
+    /// This length is negative if the parameter is bigger than 1.0.
+    member inline ln.LengthFromParam (t:float) =
+        let p = 1.0-t
+        let x = (ln.ToX - ln.FromX)*p
+        let y = (ln.ToY - ln.FromY)*p
+        let z = (ln.ToZ - ln.FromZ)*p
+        let l = sqrt(x*x + y*y + z*z)
+        if p> 0.0 then l else -l 
 
     /// Returns the midpoint of the 3D line,
     member inline ln.Mid =
-        Pnt((ln.ToX+ln.FromX)*0.5,
-            (ln.ToY+ln.FromY)*0.5,
-            (ln.ToZ+ln.FromZ)*0.5)
+        Pnt((ln.ToX + ln.FromX)*0.5,
+            (ln.ToY + ln.FromY)*0.5,
+            (ln.ToZ + ln.FromZ)*0.5)
 
 
     /// Returns the 3D line reversed.
     member inline ln.Reversed =
-        Line3D(ln.ToX,ln.ToY,ln.ToZ,ln.FromX,ln.FromY,ln.FromZ)
+        Line3D(ln.ToX, ln.ToY, ln.ToZ, ln.FromX, ln.FromY, ln.FromZ)
 
     /// Returns the lines Bounding Box.
     member inline ln.BoundingBox =
