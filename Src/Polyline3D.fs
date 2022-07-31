@@ -81,7 +81,9 @@ type Polyline3D =
     /// If the ends are closer than the tolerance. The last point is set to equal the first point.
     /// Else the start point is added to the end of the Polyline2D.
     member p.CloseIfOpen(toleranceForAddingPoint) =
-        if p.IsAlmostClosed(toleranceForAddingPoint) then 
+        if p.Points.Count < 2 then FsExGeoException.Raise "FsEx.Geo.Polyline3D.CloseIfOpen failed on Polyline3D with less than 2 points %O" p
+        let v = p.Start  - p.End
+        if v.LengthSq < toleranceForAddingPoint*toleranceForAddingPoint then 
             p.Points.Last <- p.Start
         else
             p.Points.Add p.Start

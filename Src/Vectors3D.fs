@@ -31,17 +31,17 @@ type Vec =
     val Z : float
 
     /// Create a new 3D vector with any length. Made up from 3 floats: X, Y, and Z.
-    new (x,y,z) =
+    new (x, y,z) =
         #if DEBUG
         if Double.IsNaN x || Double.IsNaN y || Double.IsNaN z || Double.IsInfinity x || Double.IsInfinity y || Double.IsInfinity z then
             FsExGeoException.Raise "FsEx.Geo.Vec Constructor failed for x:%g , y:%g, z:%g"  x y z
         #endif
         {X=x; Y=y; Z=z}
 
-    /// Format 3D vector into string including type name and nice floating point number formatting of X,Y,Z and length.
+    /// Format 3D vector into string including type name and nice floating point number formatting of X, Y,Z and length.
     override v.ToString() = sprintf "FsEx.Geo.Vec: X=%s| Y=%s| Z=%s| Length: %s" (Format.float v.X) (Format.float v.Y) (Format.float v.Z) (Format.float (sqrt (v.X*v.X + v.Y*v.Y + v.Z*v.Z)))
 
-    /// Format 3D vector into string with nice floating point number formatting of X,Y and Z.
+    /// Format 3D vector into string with nice floating point number formatting of X, Y and Z.
     /// But without full type name or length as in v.ToString()
     member v.AsString = sprintf "X=%s| Y=%s| Z=%s" (Format.float v.X) (Format.float v.Y)  (Format.float v.Z)
 
@@ -113,7 +113,7 @@ type UnitVec =
 
     /// Unsafe internal constructor, doesn't check or unitize the input, public only for inlining.
     [<Obsolete("Unsafe internal constructor,  but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >]
-    new (x,y,z) =
+    new (x, y,z) =
         #if DEBUG
         if Double.IsNaN x || Double.IsNaN y || Double.IsNaN z || Double.IsInfinity x || Double.IsInfinity y || Double.IsInfinity z then
             FsExGeoException.Raise "FsEx.Geo.UnitVec Constructor failed for x:%g, y:%g, z:%g"  x y z
@@ -126,7 +126,7 @@ type UnitVec =
     /// Format 3D unit-vector into string including type name and nice floating point number formatting.
     override p.ToString() = sprintf "FsEx.Geo.UnitVec: X=%s| Y=%s| Z=%s" (Format.float p.X)(Format.float p.Y)(Format.float p.Z)
 
-    /// Format 3D unit-vector into string with nice floating point number formatting of X,Y and Z
+    /// Format 3D unit-vector into string with nice floating point number formatting of X, Y and Z
     /// But without full type name as in v.ToString()
     member v.AsString = sprintf "X=%s| Y=%s| Z=%s" (Format.float v.X) (Format.float v.Y) (Format.float v.Z)
 
@@ -191,7 +191,7 @@ type UnitVec =
 
     /// For use as a faster internal constructor.
     /// Requires correct input of unitized values.
-    static member inline createUnchecked(x,y,z)  = UnitVec(x,y,z)
+    static member inline createUnchecked(x, y,z)  = UnitVec(x, y,z)
 
     /// Create 3D unit-vector. Does the unitizing too.
     static member inline create (x:float, y:float, z:float) =
@@ -220,7 +220,7 @@ type Pnt =
     val Z : float
 
     /// Create a new 3D point. Made up from 3 floats: X, Y, and Z.
-    new (x,y,z) =
+    new (x, y,z) =
         #if DEBUG // with this test all Pnt operations are 2.5 times slower:
         if Double.IsNaN x || Double.IsNaN y || Double.IsNaN z || Double.IsInfinity x || Double.IsInfinity y || Double.IsInfinity z then FsExGeoException.Raise "FsEx.Geo.Pnt Constructor failed for x:%g, y:%g, z:%g"  x y z
         #endif
@@ -230,7 +230,7 @@ type Pnt =
     override p.ToString() = sprintf "FsEx.Geo.Pnt: X=%s| Y=%s| Z=%s" (Format.float p.X)(Format.float p.Y)(Format.float p.Z)
 
 
-    /// Format 3D point into string with nice floating point number formatting of X,Y and Z
+    /// Format 3D point into string with nice floating point number formatting of X, Y and Z
     /// But without full type name as in pt.ToString()
     member p.AsString = sprintf "X=%s| Y=%s| Z=%s" (Format.float p.X) (Format.float p.Y) (Format.float p.Z)
 

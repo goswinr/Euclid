@@ -15,10 +15,10 @@ module AutoOpenVec =
         /// Convert 3D vector to 2D vector, discarding the Z value.
         member inline v.AsVc  = Vc(v.X, v.Y)
 
-        /// Returns a boolean indicating wether X,Y and Z are all exactly 0.0.
+        /// Returns a boolean indicating wether X, Y and Z are all exactly 0.0.
         member inline v.IsZero =  v.X = 0.0 && v.Y = 0.0 && v.Z = 0.0
 
-        /// Returns a boolean indicating if any of X,Y and Z is not exactly 0.0.
+        /// Returns a boolean indicating if any of X, Y and Z is not exactly 0.0.
         member inline v.IsNotZero =  v.X <> 0.0 || v.Y <> 0.0 || v.Z <> 0.0
 
         /// Check if the 3D vector is shorter than the tolerance.
@@ -451,7 +451,7 @@ module AutoOpenVec =
         /// The square length is faster to calculate and often good enough for use cases such as sorting vectors by length.
         static member inline lengthSq (v:Vec) = v.LengthSq
 
-        /// Returns a new 3D vector from X,Y and Z parts.
+        /// Returns a new 3D vector from X, Y and Z parts.
         static member inline create (x:float, y:float, z:float) =  Vec( x , y , z )
 
         /// Returns a new 3D vector from start and end point.

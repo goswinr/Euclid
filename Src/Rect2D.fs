@@ -63,7 +63,7 @@ type Rect2D =
             r.Origin.AsString r.Xaxis.AsString r.Yaxis.AsString
 
 
-    /// Format the 2D Rectangle into string with nice floating point number formatting of X,Y and Z size only.
+    /// Format the 2D Rectangle into string with nice floating point number formatting of X, Y and Z size only.
     /// But without type name as in v.ToString()
     member r.AsString = sprintf "%s x %s" (Format.float r.Length)  (Format.float r.Width)
 
@@ -309,7 +309,7 @@ type Rect2D =
         [| p0  ; p1 ; p1 + r.Yaxis; p0 + r.Yaxis; p0|]
 
 
-    /// Evaluate a X,Y and Z parameter of the the 2D Rectangle.
+    /// Evaluate a X, Y and Z parameter of the the 2D Rectangle.
     ///  0.0, 0.0, 0.0 returns the Origin.
     ///  1.0, 1.0, 1.0 returns the FarCorner.
     member inline r.EvaluateAt (xParameter:float,yParameter:float) =
@@ -363,11 +363,11 @@ type Rect2D =
     /// Checks for perpendicularity.
     /// Fails on vectors shorter than 1e-9.
     static member create(origin,x:Vc,y:Vc) =        
-        if Vc.cross(x,y) = 0.0 then 
+        if Vc.cross(x, y) = 0.0 then 
             let yr = x.Rotate90CCW
             if yr*y < 0.0 then
                     FsExGeoException.Raise "FsEx.Geo.Rect2D.create: Vc 'y' has the wrong orientation : %s. 'ln':%s " y.AsString x.AsString 
-            Rect2D(origin,x,y)
+            Rect2D(origin,x, y)
         else            
             let lx = x.Length
             if lx < 1e-9 then FsExGeoException.Raise "FsEx.Geo.Rect2D.create: Vc 'x' is too short: %s. 'other':%s " x.AsString y.AsString
@@ -388,7 +388,7 @@ type Rect2D =
     /// Does not check for counter-clockwise order of x and y.
     /// Does not check for perpendicularity.
     static member createUnchecked (origin,x:Vc,y:Vc) =        
-        Rect2D(origin,x,y)
+        Rect2D(origin,x, y)
             
     /// Create a 2D Rectangle from a Line and a  right and left Offset.
     /// The left offset is in the direction of the future Y-axis.
@@ -400,7 +400,7 @@ type Rect2D =
         let y = x.Rotate90CCW
         let o = line.From - y * (offRight / len)
         let y = y * ((offLeft + offRight) / len)
-        Rect2D(o,x,y)   
+        Rect2D(o,x, y)   
 
     /// Give 2D Bounding Rect.
     static member createFromBRect (b:BRect) =

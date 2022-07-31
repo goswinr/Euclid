@@ -265,7 +265,7 @@ type Box =
             b.Origin.AsString b.Xaxis.AsString b.Yaxis.AsString b.Zaxis.AsString
 
 
-    /// Format Box into string with nice floating point number formatting of X,Y and Z size only.
+    /// Format Box into string with nice floating point number formatting of X, Y and Z size only.
     /// But without type name as in v.ToString()
     member b.AsString = sprintf "%s x %s x %s" (Format.float b.Length)  (Format.float b.Width) (Format.float b.Height)
 
@@ -433,7 +433,7 @@ type Box =
     ///   0               1
     member b.LeftFace  =  Rect3D(b.Origin + b.Xaxis, b.Yaxis, b.Zaxis)
 
-    /// Evaluate a X,Y and Z parameter of the Box.
+    /// Evaluate a X, Y and Z parameter of the Box.
     ///  0.0, 0.0, 0.0 returns the Origin.
     ///  1.0, 1.0, 1.0 returns the FarCorner.
     member inline b.EvaluateAt (xParameter:float,yParameter:float,zParameter:float) =
@@ -477,7 +477,7 @@ type Box =
 
     /// Returns Box expanded by respective distances on all six sides.
     /// Does check for overflow if distance is negative and fails.
-    /// distLen, distWid and distHei are for x, y and Z-axis respectively.
+    /// distLen, distWid and distHei are for X, Y and Z-axis respectively.
     static member expandXYZ distLen distWid distHei (b:Box) =
         let len = b.Length
         let wid = b.Width
@@ -530,5 +530,5 @@ type Box =
         let x = Vec.rotateOrtho m b.Xaxis
         let y = Vec.rotateOrtho m b.Yaxis
         let z = Vec.rotateOrtho m b.Zaxis
-        Box(o,x,y,z)
+        Box(o,x, y,z)
 

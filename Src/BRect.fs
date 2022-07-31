@@ -103,7 +103,7 @@ type BRect =
     member inline r.Expand(xDist,yDist) : BRect =
         let n = BRect(r.MinX-xDist, r.MinY-yDist, r.MaxX+xDist, r.MaxY+yDist)
         if n.MinX > n.MaxX ||  n.MinY > n.MaxX then
-            FsExGeoException.Raise "FsEx.Geo.BRect.Expand(x,y): Negative distance(s) X: %g and Y: %g cause an underflow, on %s" xDist yDist r.AsString
+            FsExGeoException.Raise "FsEx.Geo.BRect.Expand(x, y): Negative distance(s) X: %g and Y: %g cause an underflow, on %s" xDist yDist r.AsString
         n
 
 

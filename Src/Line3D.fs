@@ -30,7 +30,7 @@ type Line3D =
     //Create Line3D from 3D start point and 3D end point.
     new (a:Pnt,b:Pnt) = {FromX=a.X; FromY=a.Y; FromZ=a.Z; ToX=b.X; ToY=b.Y; ToZ=b.Z}
 
-    //Create Line3D from 3D start point's x,y and z  and 3D end point's x,y and z.
+    //Create Line3D from 3D start point's x, y and z and 3D end point's x, y and z.
     new (a,b,c,u,v,w) = {FromX=a; FromY=b; FromZ=c; ToX=u; ToY=v; ToZ=w}
 
     /// Returns the length of the line.
@@ -47,7 +47,7 @@ type Line3D =
         let z = ln.ToZ-ln.FromZ
         x*x + y*y + z*z
 
-    /// Format 3D Line into string including type name, X,Y and Z for start and end points , and Length.
+    /// Format 3D Line into string including type name, X, Y and Z for start and end points , and Length.
     /// Using nice floating point number formatting .
     override ln.ToString() =
         sprintf "FsEx.Geo.Line3D from X=%s| Y=%s| Z=%s to X=%s| Y=%s| Z=%s Length %s"
@@ -59,7 +59,7 @@ type Line3D =
             (Format.float ln.ToZ)
             (Format.float ln.Length)
 
-    /// Format 3D Line into string from X,Y and Z for start and end points.
+    /// Format 3D Line into string from X, Y and Z for start and end points.
     /// Using nice floating point number formatting .
     /// But without full type name as in v.ToString()
     member ln.AsString =
@@ -94,8 +94,14 @@ type Line3D =
         Vec(ln.ToX-ln.FromX,ln.ToY-ln.FromY,ln.ToZ-ln.FromZ)
 
     /// Returns a unit-vector of the line Direction.
-    member inline ln.UnitTangent =
-        UnitVec.create(ln.ToX-ln.FromX,ln.ToY-ln.FromY,ln.ToZ-ln.FromZ)
+    member inline ln.UnitTangent = 
+        let x = ln.ToX-ln.FromX
+        let y = ln.ToY-ln.FromY
+        let z = ln.ToZ-ln.FromZ
+        let l = sqrt(x * x  + y * y + z * z)
+        if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line3D.UnitTangent: x:%g, y:%g and z:%g are too small for creating a unit-vector. Tolerance:%g" x y z zeroLengthTol
+        let s = 1.0 / l
+        UnitVec.createUnchecked (x*s,y*s,z*s)
     
     /// Checks if line is parallel to the world X axis.
     /// Tolerance is 1e-6.
@@ -673,8 +679,7 @@ type Line3D =
         Vec(ln.ToX-ln.FromX,ln.ToY-ln.FromY,ln.ToZ-ln.FromZ)
 
     /// Returns a unit-vector of the line Direction.
-    static member inline unitTangent (ln:Line3D) =
-        UnitVec.create(ln.ToX-ln.FromX,ln.ToY-ln.FromY,ln.ToZ-ln.FromZ)
+    static member inline unitTangent (ln:Line3D) = ln.UnitTangent
 
     /// Returns the length of the line.
     static member inline length (l:Line3D) = l.Length

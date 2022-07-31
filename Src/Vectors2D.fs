@@ -27,13 +27,13 @@ type Vc =
     val Y : float
 
     /// Create a new 2D vector with any length. Made up from 2 floats: X and Y.
-    new (x,y) =
+    new (x, y) =
         #if DEBUG // TODO : with this test all  operations are 2.5 times slower
         if Double.IsNaN x || Double.IsNaN y || Double.IsInfinity x || Double.IsInfinity y  then FsExGeoException.Raise "FsEx.Geo.Vc Constructor failed for x:%g , y:%g"  x y
         #endif
         {X=x; Y=y}
 
-    /// Format 2D vector into string including type name and nice floating point number formatting of X,Y and length.
+    /// Format 2D vector into string including type name and nice floating point number formatting of X, Y and length.
     override v.ToString() = sprintf "FsEx.Geo.Vc: X=%s| Y=%s| Length: %s" (Format.float v.X) (Format.float v.Y) (Format.float (sqrt (v.X*v.X + v.Y*v.Y)))
 
     /// Format 2D vector into string with nice floating point number formatting of X and Y
@@ -93,7 +93,7 @@ type UnitVc =
 
     /// Unsafe internal constructor, doesn't check or unitize the input,  public only for inlining.
     [<Obsolete("Unsafe internal constructor, doesn't check or unitize the input, but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >]
-    new (x,y) =
+    new (x, y) =
         #if DEBUG
         if Double.IsNaN x || Double.IsNaN y || Double.IsInfinity x || Double.IsInfinity y  then
             FsExGeoException.Raise "FsEx.Geo.UnitVc Constructor failed for x:%g, y:%g"  x y
@@ -163,14 +163,14 @@ type UnitVc =
 
     /// For use as a faster constructor.
     /// Requires correct input of unitized values.
-    static member inline createUnchecked(x,y)  = UnitVc(x,y) // needs #nowarn "44" // for internal inline constructors
+    static member inline createUnchecked(x, y)  = UnitVc(x, y) // needs #nowarn "44" // for internal inline constructors
 
     /// Create 2D unit-vector. Does the unitizing too.
     static member inline create (x:float, y:float) =
-        // this member cant be an extension method because it is used with SRTP.
+        // this member cant be an extension method because it is used with SRTP in UnitV.ofXY
         // see error FS1114: The value 'FsEx.Geo.AutoOpenUnitVc.create' was marked inline but was not bound in the optimization environment
         let l = sqrt(x * x  + y * y)
-        if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "FsEx.Geo.UnitVc.create: x:%g and z:%g are too small for creating a unit-vector. Tolerance:%g" x y zeroLengthTol
+        if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "FsEx.Geo.UnitVc.create: x:%g and y:%g are too small for creating a unit-vector. Tolerance:%g" x y zeroLengthTol
         UnitVc( x/l , y/l )
 
 /// An immutable 2D point. Made up from 2 floats: X and Y.
@@ -187,7 +187,7 @@ type Pt =
     val Y : float
 
     /// Create a new 2D point. Made up from 3 floats: X, Y, and Z.
-    new (x,y) =
+    new (x, y) =
         #if DEBUG // TODO : with this test all  operations are 2.5 times slower
         if Double.IsNaN x || Double.IsNaN y || Double.IsInfinity x || Double.IsInfinity y  then FsExGeoException.Raise "FsEx.Geo.Pt Constructor failed for x:%g , y:%g"  x y
         #endif

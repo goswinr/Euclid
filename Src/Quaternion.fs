@@ -30,7 +30,7 @@ type Quaternion =
 
     /// Unsafe internal constructor,  public only for inlining.
     [<Obsolete("Unsafe internal constructor,  but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >]
-    new (x,y,z,w) =
+    new (x, y,z,w) =
         #if DEBUG
         let l = x*x  + y*y + z*z + w*w
         if isNotOne l then
@@ -80,7 +80,7 @@ type Quaternion =
     member q.Axis = Vec(q.X, q.Y, q.Z)
 
     /// This constructor does unitizing too.
-    static member create (x,y,z,w)  =
+    static member create (x, y,z,w)  =
         let l = sqrt(x*x  + y*y + z*z + w*w )
         if abs l < zeroLengthTol then
             FsExGeoException.Raise "FsEx.Geo.Quaternion create failed for x:%g, y:%g, z:%g, w:%g. The length needs to be bigger than zero." x y z w
@@ -88,8 +88,8 @@ type Quaternion =
         Quaternion(x*sc,y*sc,z*sc,w*sc)
 
     /// This constructor does do any unitizing.
-    static member createDirectlyUnchecked (x,y,z,w)  =
-        Quaternion(x,y,z,w)
+    static member createDirectlyUnchecked (x, y,z,w)  =
+        Quaternion(x, y,z,w)
 
     /// The created Rotation is Clockwise looking in the direction of the vector.
     /// The vector may be of any length but zero.

@@ -361,7 +361,7 @@ type BBox =
         let n = BBox(   b.MinX-xDist, b.MinY-yDist, b.MinZ-zDist,
                         b.MaxX+xDist, b.MaxY+yDist, b.MaxZ+zDist)
         if n.MinX > n.MaxX ||  n.MinY > n.MaxX ||  n.MinZ > n.MaxZ then
-            FsExGeoException.Raise "FsEx.Geo.BBox.Expand(x,y,z): Negative distance(s) X %g Y: %g and Z:%g cause an underflow, on %s" xDist yDist zDist b.AsString
+            FsExGeoException.Raise "FsEx.Geo.BBox.Expand(x, y,z): Negative distance(s) X %g Y: %g and Z:%g cause an underflow, on %s" xDist yDist zDist b.AsString
         n
 
     /// Returns Bounding Box expanded by a distance for X , Y and Z-axis each.
@@ -467,7 +467,7 @@ type BBox =
         (xTouch   && yOverlap && zOverlap)
 
 
-    /// Evaluate a X,Y and Z parameter of the Bounding Box.
+    /// Evaluate a X, Y and Z parameter of the Bounding Box.
     ///  0.0, 0.0, 0.0 returns the MinPnt.
     ///  1.0, 1.0, 1.0 returns the MaxPnt.
     member inline b.EvaluateAt (xParameter,yParameter,zParameter) =

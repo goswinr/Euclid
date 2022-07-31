@@ -19,7 +19,7 @@ module AutoOpenPnt =
         /// Returns a boolean indicating wether X , Y and Z are exactly 0.0.
         member inline pt.IsOrigin = pt.X = 0.0 && pt.Y = 0.0 && pt.Z= 0.0
 
-        /// Returns a boolean indicating if any of X,Y and Z is not exactly 0.0.
+        /// Returns a boolean indicating if any of X, Y and Z is not exactly 0.0.
         member inline v.IsNotOrigin =  v.X <> 0.0 || v.Y <> 0.0 || v.Z <> 0.0
 
         /// Returns a boolean indicating wether the absolute value of X, Y and Z is each less than the given tolerance.

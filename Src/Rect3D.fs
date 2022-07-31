@@ -64,7 +64,7 @@ type Rect3D =
             r.Origin.AsString r.Xaxis.AsString r.Yaxis.AsString
 
 
-    /// Format the 3D Rectangle into string with nice floating point number formatting of X,Y and Z size only.
+    /// Format the 3D Rectangle into string with nice floating point number formatting of X, Y and Z size only.
     /// But without type name as in v.ToString()
     member r.AsString = sprintf "%s x %s" (Format.float r.Length)  (Format.float r.Width)
 
@@ -339,7 +339,7 @@ type Rect3D =
         [| p0  ; p1 ; p1 + r.Yaxis; p0 + r.Yaxis; p0|]
 
 
-    /// Evaluate a X,Y and Z parameter of the the 3D Rectangle.
+    /// Evaluate a X, Y and Z parameter of the the 3D Rectangle.
     ///  0.0, 0.0, 0.0 returns the Origin.
     ///  1.0, 1.0, 1.0 returns the FarCorner.
     member inline r.EvaluateAt (xParameter:float,yParameter:float) =
@@ -385,14 +385,14 @@ type Rect3D =
     static member expandXY distLen distWid  (r:Rect3D) =
         let len = r.Length
         let wid = r.Width
-        if len <= distLen * -2.0 then FsExGeoException.Raise "FsEx.Geo.Rect3D.expandXYZ: the 3D Rectangle %s is too small to expand by negative distance distLen %s"  r.AsString (Format.float distLen)
-        if wid <= distWid * -2.0 then FsExGeoException.Raise "FsEx.Geo.Rect3D.expandXYZ: the 3D Rectangle %s is too small to expand by negative distance distWid %s"  r.AsString (Format.float distWid)
+        if len <= distLen * -2.0 then FsExGeoException.Raise "FsEx.Geo.Rect3D.expandXY: the 3D Rectangle %s is too small to expand by negative distance distLen %s"  r.AsString (Format.float distLen)
+        if wid <= distWid * -2.0 then FsExGeoException.Raise "FsEx.Geo.Rect3D.expandXY: the 3D Rectangle %s is too small to expand by negative distance distWid %s"  r.AsString (Format.float distWid)
         let x = r.Xaxis * (distLen / r.Length)
         let y = r.Yaxis * (distWid / r.Width )
         Rect3D(r.Origin-x-y, r.Xaxis+x*2., r.Yaxis+y*2.)
 
     /// Give PPlane and sizes.
-    static member createFromPlane (pl:PPlane,x,y) =
+    static member createFromPlane (pl:PPlane,x, y) =
         Rect3D(pl.Origin, pl.Xaxis*x, pl.Yaxis*y)
 
     /// Give 2D Bounding Rect.
@@ -453,5 +453,5 @@ type Rect3D =
         let o  = Pnt.transformOrtho m r.Origin
         let x = Vec.rotateOrtho m r.Xaxis
         let y = Vec.rotateOrtho m r.Yaxis
-        Rect3D(o,x,y)
+        Rect3D(o,x, y)
 

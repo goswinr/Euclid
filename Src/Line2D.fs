@@ -82,7 +82,11 @@ type Line2D =
 
     /// Returns a unit-vector of the line Direction.
     member inline ln.UnitTangent =
-        UnitVc.create(ln.ToX-ln.FromX, ln.ToY-ln.FromY)
+        let x = ln.ToX-ln.FromX
+        let y = ln.ToY-ln.FromY
+        let l = sqrt(x * x  + y * y)
+        if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line2D.UnitTangent: x:%g and y:%g are too small for creating a unit-vector. Tolerance:%g" x y zeroLengthTol
+        UnitVc.createUnchecked (x/l, y/l)
 
     /// Checks if 2D line is parallel to the world X axis.
     /// Deviation tolerance is 1e-6.
@@ -142,7 +146,7 @@ type Line2D =
     member inline ln.Mid =
         let x = (ln.ToX + ln.FromX)*0.5
         let y = (ln.ToY + ln.FromY)*0.5
-        Pt(x,y)
+        Pt(x, y)
 
     /// Returns the Line2D reversed.
     member inline ln.Reversed =
@@ -558,8 +562,7 @@ type Line2D =
         Vc(ln.ToX-ln.FromX,ln.ToY-ln.FromY)
 
     /// Returns a unit-vector of the line Direction.
-    static member inline unitTangent (ln:Line2D) =
-        UnitVc.create(ln.ToX - ln.FromX, ln.ToY-ln.FromY)
+    static member inline unitTangent (ln:Line2D) = ln.UnitTangent
 
     /// Returns the length of the line.
     static member inline length (l:Line2D) = l.Length
