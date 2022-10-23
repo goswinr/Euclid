@@ -63,11 +63,7 @@ module AutoOpenUnitVc =
         /// 0.0 = Xaxis,  going Counter clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         member inline v.DirectionDiamond =
-            // https://stackoverflow.com/a/14675998/969070
-            #if DEBUG
-            if abs(v.X) < zeroLengthTol && abs(v.Y) < zeroLengthTol then
-                FsExGeoDivByZeroException.Raise "FsEx.Geo.UnitVc.DirectionDiamondInXY: input vector is zero length:%O" v
-            #endif
+            // https://stackoverflow.com/a/14675998/969070           
             if v.Y >= 0.0 then
                 if v.X >= 0.0 then
                     v.Y/(v.X+v.Y)
@@ -82,11 +78,7 @@ module AutoOpenUnitVc =
         /// Returns the Angle in Radians from Xaxis,
         /// Going Counter clockwise till two Pi.
         member inline v.Direction2Pi =
-            // https://stackoverflow.com/a/14675998/969070
-            #if DEBUG
-            if abs(v.X) < zeroLengthTol && abs(v.Y) < zeroLengthTol then
-                FsExGeoDivByZeroException.Raise "FsEx.Geo.UnitVc.Direction2Pi: input vector is zero length: %O" v
-            #endif
+            // https://stackoverflow.com/a/14675998/969070            
             let a = Math.Atan2(v.Y, v.X)
             if a < 0. then
                 a + Util.twoPi
@@ -97,11 +89,7 @@ module AutoOpenUnitVc =
         /// Ignores orientation.
         /// Range 0.0 to Pi.
         member inline v.DirectionPi =
-            // https://stackoverflow.com/a/14675998/969070
-            #if DEBUG
-            if abs(v.X) < zeroLengthTol && abs(v.Y) < zeroLengthTol then
-                FsExGeoDivByZeroException.Raise "FsEx.Geo.UnitVc.DirectionPi: input vector is zero length: %O" v
-            #endif
+            // https://stackoverflow.com/a/14675998/969070            
             let a = Math.Atan2(v.Y, v.X)
             if a < 0. then
                 a + Math.PI
@@ -127,20 +115,18 @@ module AutoOpenUnitVc =
             let r = b.DirectionDiamond - v.DirectionDiamond
             if r >= 0. then  r
             else r + 4.0
-
-
-
+       
         /// Checks if the angle between the two 2D unit vectors is less than 180 degrees.
         /// Calculates the dot product of two 2D unit vectors.
-        /// Then checks if it is positive.
-        member inline v.MatchesOrientation180  (other:UnitVc) =
-            v * other > 0.0
+        /// Then checks if it is bigger than 1e-12.
+        member inline v.MatchesOrientation (other:UnitVc) =
+            v * other > 1e-12
 
-        /// Checks if the angle between the two 2D unit vectors is less than 90 degrees.
-        /// Calculates the dot product of the two 2D unit vectors .
-        /// Then checks if it is bigger than 0.707107 (cosine of 90 degrees).
-        member inline v.MatchesOrientation90  (other:UnitVc) =
-            v* other > 0.707107
+        /// Checks if the angle between the two 2D unit vectors is more than 180 degrees.
+        /// Calculates the dot product of two 2D unit vectors.
+        /// Then checks if it is smaller than -1e-12. 
+        member inline v.IsOppositeOrientation (other:UnitVc) =
+            v * other < -1e-12 
 
         /// Checks if 2D unit vector is parallel to the world X axis.
         /// Tolerance is 1e-6.
@@ -430,15 +416,15 @@ module AutoOpenUnitVc =
 
         /// Checks if the angle between the two 2D unit vectors is less than 180 degrees.
         /// Calculates the dot product of two 2D unit vectors.
-        /// Then checks if it is positive.
-        static member inline matchesOrientation180  (v:UnitVc) (other:UnitVc) =
-            v.MatchesOrientation180(other)
+        /// Then checks if it is bigger than 1e-12.
+        static member inline matchesOrientation (other:UnitVc) (v:UnitVc)  =
+            v * other > 1e-12
 
-        /// Checks if the angle between the two 2D unit vectors is less than 90 degrees.
-        /// Calculates the dot product of the two 2D unit vectors unitized.
-        /// Then checks if it is bigger than 0.707107 (cosine of 90 degrees).
-        static member inline matchesOrientation90  (v:UnitVc)  (other:UnitVc) =
-            v.MatchesOrientation90(other)
+        /// Checks if the angle between the two 2D unit vectors is more than 180 degrees.
+        /// Calculates the dot product of two 2D unit vectors.
+        /// Then checks if it is smaller than -1e-12. 
+        static member inline isOppositeOrientation (other:UnitVc) (v:UnitVc)  =
+            v * other < -1e-12 
 
 
         /// Checks if Angle between two vectors is Below 0.25 Degree.

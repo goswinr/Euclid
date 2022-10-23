@@ -124,7 +124,7 @@ module AutoOpenVec =
             // https://stackoverflow.com/a/14675998/969070
             #if DEBUG
             if abs(v.X) < zeroLengthTol && abs(v.Y) < zeroLengthTol then // TODO : with this test all  operations are 2.5 times slower
-                FsExGeoDivByZeroException.Raise "FsEx.Geo.Vec.Direction2PiInXY: input vector is zero length: %O" v
+                FsExGeoDivByZeroException.Raise "FsEx.Geo.Vec.Direction2PiInXY: input vector is zero length or vertical: %O" v
             #endif
             let a = Math.Atan2(v.Y, v.X)
             if a < 0. then
@@ -140,7 +140,7 @@ module AutoOpenVec =
             // https://stackoverflow.com/a/14675998/969070
             #if DEBUG
             if abs(v.X) < zeroLengthTol && abs(v.Y) < zeroLengthTol then // TODO : with this test all  operations are 2.5 times slower
-                FsExGeoDivByZeroException.Raise "FsEx.Geo.Vec.DirectionPiInXY: input vector is zero length: %O" v
+                FsExGeoDivByZeroException.Raise "FsEx.Geo.Vec.DirectionPiInXY: input vector is zero length or vertical: %O" v
             #endif
             let a = Math.Atan2(v.Y, v.X)
             if a < 0. then
@@ -171,19 +171,20 @@ module AutoOpenVec =
             if r >= 0. then  r
             else r + 4.0
 
-
         /// Checks if the angle between the two 3D vectors is less than 180 degrees.
         /// Calculates the dot product of two 3D vectors.
-        /// Then checks if it is positive.
-        member inline v.MatchesOrientation180  (other:Vec) =
-            v * other > 0.0
+        /// Then checks if it is bigger than 1e-12. 
+        /// If any of the two vectors is zero length returns false.
+        member inline v.MatchesOrientation (other:Vec) =
+            v * other > 1e-12
 
-        /// Checks if the angle between the two 3D vectors is less than 90 degrees.
-        /// Calculates the dot product of the two 3D vectors unitized.
-        /// Then checks if it is bigger than 0.707107 (cosine of 90 degrees).
-        member inline v.MatchesOrientation90  (other:Vec) =
-            v.Unitized * other.Unitized > 0.707107
 
+        /// Checks if the angle between the two 3D vectors is more than 180 degrees.
+        /// Calculates the dot product of two 3D vectors.
+        /// Then checks if it is smaller than -1e-12. 
+        /// If any of the two vectors is zero length returns false.
+        member inline v.IsOppositeOrientation (other:Vec) =
+            v * other < -1e-12    
 
         /// Checks if 3D vector is parallel to the world X axis.
         /// Tolerance is 1e-6.
@@ -573,19 +574,25 @@ module AutoOpenVec =
 
         /// Checks if the angle between the two 3D vectors is less than 180 degrees.
         /// Calculates the dot product of two 3D vectors.
-        /// Then checks if it is positive.
-        static member inline matchesOrientation180 (other:Vec) (v:Vec) = v.MatchesOrientation180 other
+        /// Then checks if it is bigger than 1e-12. 
+        /// If any of the two vectors is zero length returns false.
+        static member inline matchesOrientation (v:Vec)  (other:Vec) =
+            v * other > 1e-12
 
-        /// Checks if the angle between the two 3D vectors is less than 90 degrees.
-        /// Calculates the dot product of the two 3D vectors unitized.
-        /// Then checks if it is bigger than 0.707107 (cosine of 90 degrees).
-        static member inline matchesOrientation90 (other:Vec) (v:Vec) = v.MatchesOrientation90 other
 
+        /// Checks if the angle between the two 3D vectors is more than 180 degrees.
+        /// Calculates the dot product of two 3D vectors.
+        /// Then checks if it is smaller than -1e-12. 
+        /// If any of the two vectors is zero length returns false.
+        static member inline isOppositeOrientation (v:Vec) (other:Vec) =
+            v * other < -1e-12 
+
+    
         /// Checks if Angle between two vectors is Below 0.25 Degree.
         /// Ignores vector orientation.
         /// Fails on zero length vectors, tolerance 1e-12.
         /// Same as isAngleBelowQuatreDegree.
-        static member inline  areParallel (other:Vec) (v:Vec) =   v.IsParallelTo other
+        static member inline areParallel (other:Vec) (v:Vec) =   v.IsParallelTo other
 
 
         /// Checks if Angle between two vectors is between 98.75 and 90.25 Degree.

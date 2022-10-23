@@ -47,8 +47,6 @@ module AutoOpenVc =
         /// If you want Z to be 0.0 you can use v.AsVec too.
         member inline v.WithZ z = Vec (v.X ,v.Y, z)
 
-
-
         /// Returns a new 2D vector with half the length.
         member inline v.Half = Vc (v.X*0.5 ,v.Y*0.5)
 
@@ -161,18 +159,20 @@ module AutoOpenVc =
             else r + 4.0
 
 
-
         /// Checks if the angle between the two 2D vectors is less than 180 degrees.
         /// Calculates the dot product of two 2D vectors.
-        /// Then checks if it is positive.
-        member inline v.MatchesOrientation180  (other:Vc) =
-            v * other > 0.0
+        /// Then checks if it is bigger than 1e-12. 
+        /// If any of the two vectors is zero length returns false.
+        member inline v.MatchesOrientation (other:Vc) =
+            v * other > 1e-12
 
-        /// Checks if the angle between the two 2D vectors is less than 90 degrees.
-        /// Calculates the dot product of the two 2D vectors unitized.
-        /// Then checks if it is bigger than 0.707107 (cosine of 90 degrees).
-        member inline v.MatchesOrientation90  (other:Vc) =
-            v.Unitized * other.Unitized > 0.707107
+
+        /// Checks if the angle between the two 2D vectors is more than 180 degrees.
+        /// Calculates the dot product of two 2D vectors.
+        /// Then checks if it is smaller than -1e-12. 
+        /// If any of the two vectors is zero length returns false.
+        member inline v.IsOppositeOrientation (other:Vc) =
+            v * other < -1e-12 
 
 
         /// Checks if 2D vector is parallel to the world X axis.
@@ -343,8 +343,8 @@ module AutoOpenVc =
         /// Same as Vc.setLength. Returns a new 2D vector.
         static member inline scale  (f:float) (v:Vc) = Vc (v.X * f , v.Y * f )
 
-        /// Returns a new 3D vector scaled to the desired length.
-        /// Same as vc.WithLength. Returns a new 3D vector.
+        /// Returns a new 2D vector scaled to the desired length.
+        /// Same as vc.WithLength. Returns a new 2D vector.
         static member inline setLength(desiredLength:float) (v:Vc) =
             let l = v.Length
             if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "FsEx.Geo.Vc.setLength %g : %O is too small for unitizing, Tolerance:%g" desiredLength v zeroLengthTol
@@ -494,15 +494,18 @@ module AutoOpenVc =
 
         /// Checks if the angle between the two 2D vectors is less than 180 degrees.
         /// Calculates the dot product of two 2D vectors.
-        /// Then checks if it is positive.
-        static member inline matchesOrientation180  (v:Vc) (other:Vc) =
-            v * other > 0.0
+        /// Then checks if it is bigger than 1e-12. 
+        /// If any of the two vectors is zero length returns false.
+        static member inline matchesOrientation (v:Vc)  (other:Vc) =
+            v * other > 1e-12
 
-        /// Checks if the angle between the two 2D vectors is less than 90 degrees.
-        /// Calculates the dot product of the two 2D vectors unitized.
-        /// Then checks if it is bigger than 0.707107 (cosine of 90 degrees).
-        static member inline matchesOrientation90  (v:Vc)  (other:Vc) =
-            v.Unitized * other.Unitized > 0.707107
+
+        /// Checks if the angle between the two 2D vectors is more than 180 degrees.
+        /// Calculates the dot product of two 2D vectors.
+        /// Then checks if it is smaller than -1e-12. 
+        /// If any of the two vectors is zero length returns false.
+        static member inline isOppositeOrientation (v:Vc) (other:Vc) =
+            v * other < -1e-12 
 
         /// Checks if Angle between two vectors is Below 0.25 Degree.
         /// Ignores vector orientation.

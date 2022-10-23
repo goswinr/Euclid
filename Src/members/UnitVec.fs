@@ -64,7 +64,7 @@ module AutoOpenUnitVec =
             // https://stackoverflow.com/a/14675998/969070
             #if DEBUG
             if abs(v.X) < zeroLengthTol && abs(v.Y) < zeroLengthTol then
-                FsExGeoDivByZeroException.Raise "FsEx.Geo.UnitVec.DirectionDiamondInXY: input vector is vertical or zero length:%O" v
+                FsExGeoDivByZeroException.Raise "FsEx.Geo.UnitVec.DirectionDiamondInXY: input 3D unit vector is vertical:%O" v
             #endif
             if v.Y >= 0.0 then
                 if v.X >= 0.0 then
@@ -81,11 +81,12 @@ module AutoOpenUnitVec =
         /// Returns the Angle in Radians from Xaxis,
         /// Going Counter clockwise till two Pi.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
+        /// Fails if vector is vertical.
         member inline v.Direction2PiInXY =
             // https://stackoverflow.com/a/14675998/969070
             #if DEBUG
             if abs(v.X) < zeroLengthTol && abs(v.Y) < zeroLengthTol then
-                FsExGeoDivByZeroException.Raise "FsEx.Geo.UnitVec.Direction2PiInXY: input vector is zero length: %O" v
+                FsExGeoDivByZeroException.Raise "FsEx.Geo.UnitVec.Direction2PiInXY: input 3D unit vector is vertical: %O" v
             #endif
             let a = Math.Atan2(v.Y, v.X)
             if a < 0. then
@@ -97,11 +98,12 @@ module AutoOpenUnitVec =
         /// Ignores orientation.
         /// Range 0.0 to Pi.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
+        /// Fails if vector is vertical.
         member inline v.DirectionPiInXY =
             // https://stackoverflow.com/a/14675998/969070
             #if DEBUG
             if abs(v.X) < zeroLengthTol && abs(v.Y) < zeroLengthTol then
-                FsExGeoDivByZeroException.Raise "FsEx.Geo.UnitVec.DirectionPiInXY: input vector is zero length: %O" v
+                FsExGeoDivByZeroException.Raise "FsEx.Geo.UnitVec.DirectionPiInXY: input 3D unit vector is vertical: %O" v
             #endif
             let a = Math.Atan2(v.Y, v.X)
             if a < 0. then
@@ -135,15 +137,15 @@ module AutoOpenUnitVec =
 
         /// Checks if the angle between the two 3D unit vectors is less than 180 degrees.
         /// Calculates the dot product of two 3D unit vectors.
-        /// Then checks if it is positive.
-        member inline v.MatchesOrientation180  (other:UnitVec) =
-            v * other > 0.0
+        /// Then checks if it is bigger than 1e-12.
+        member inline v.MatchesOrientation (other:UnitVec) =
+            v * other > 1e-12
 
-        /// Checks if the angle between the two 3D unit vectors is less than 90 degrees.
-        /// Calculates the dot product of the two 3D unit vectors unitized.
-        /// Then checks if it is bigger than 0.707107 (cosine of 90 degrees).
-        member inline v.MatchesOrientation90  (other:UnitVec) =
-            v * other > 0.707107
+        /// Checks if the angle between the two 3D unit vectors is more than 180 degrees.
+        /// Calculates the dot product of two 3D unit vectors.
+        /// Then checks if it is smaller than -1e-12. 
+        member inline v.IsOppositeOrientation (other:UnitVec) =
+            v * other < -1e-12 
 
         /// Checks if 3D unit vector is parallel to the world X axis.
         /// Tolerance is 1e-6.        
@@ -501,14 +503,18 @@ module AutoOpenUnitVec =
         static member inline matchOrientation (orientationToMatch:UnitVec) (v:UnitVec) =
             if orientationToMatch * v < 0.0 then -v else v
 
+
         /// Checks if the angle between the two 3D unit vectors is less than 180 degrees.
         /// Calculates the dot product of two 3D unit vectors.
-        /// Then checks if it is positive.
-        static member inline matchesOrientation180 (other:UnitVec) (v:UnitVec) = v.MatchesOrientation180 other
+        /// Then checks if it is bigger than 1e-12.
+        static member inline matchesOrientation (other:UnitVec)  (v:UnitVec) =
+            v * other > 1e-12
 
-        /// Checks if the angle between the two 3D unit vectors is less than 90 degrees.
-        /// Calculates the dot product of the two 3D unit vectors unitized.
-        static member inline matchesOrientation90 (other:UnitVec) (v:UnitVec) = v.MatchesOrientation90 other
+        /// Checks if the angle between the two 3D unit vectors is more than 180 degrees.
+        /// Calculates the dot product of two 3D unit vectors.
+        /// Then checks if it is smaller than -1e-12. 
+        static member inline isOppositeOrientation  (other:UnitVec) (v:UnitVec) =
+            v * other < -1e-12 
 
         /// Checks if Angle between two vectors is Below 0.25 Degree.
         /// Ignores vector orientation.
