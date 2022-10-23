@@ -366,20 +366,20 @@ type Rect2D =
         if Vc.cross(x, y) = 0.0 then 
             let yr = x.Rotate90CCW
             if yr*y < 0.0 then
-                    FsExGeoException.Raise "FsEx.Geo.Rect2D.create: Vc 'y' has the wrong orientation : %s. 'ln':%s " y.AsString x.AsString 
+                    FsExGeoException.Raise "FsEx.Geo.Rect2D.create: Vc 'y' has the wrong orientation : %s. 'x':%s " y.AsString x.AsString 
             Rect2D(origin,x, y)
         else            
             let lx = x.Length
-            if lx < 1e-9 then FsExGeoException.Raise "FsEx.Geo.Rect2D.create: Vc 'x' is too short: %s. 'other':%s " x.AsString y.AsString
+            if lx < 1e-9 then FsExGeoException.Raise "FsEx.Geo.Rect2D.create: Vc 'x' is too short: %s. 'z':%s " x.AsString y.AsString
             let ly = y.Length
-            if ly < 1e-9 then FsExGeoException.Raise "FsEx.Geo.Rect2D.create: Vc 'y' is too short: %s. 'ln':%s " y.AsString x.AsString            
+            if ly < 1e-9 then FsExGeoException.Raise "FsEx.Geo.Rect2D.create: Vc 'y' is too short: %s. 'x':%s " y.AsString x.AsString            
             let xu = x * (1.0 / lx)
             let yu = y * (1.0 / ly)
             let d = xu*yu
             if float -Cosine.``0.5`` < d && d  < float Cosine.``0.5`` then //x.IsPerpendicularTo( y, Cosine.``0.05``)
                 let yr = x.Rotate90CCW * (ly/lx)
                 if yr*y < 0.0 then
-                    FsExGeoException.Raise "FsEx.Geo.Rect2D.create: Vc 'y' has the wrong orientation : %s. 'ln':%s " y.AsString x.AsString   
+                    FsExGeoException.Raise "FsEx.Geo.Rect2D.create: Vc 'y' has the wrong orientation : %s. 'x':%s " y.AsString x.AsString   
                 Rect2D(origin,x,yr)
             else
                 FsExGeoException.Raise "FsEx.Geo.Rect2D.create: the X-axis %s and Y-axis %s are not perpendicular"  x.AsString y.AsString

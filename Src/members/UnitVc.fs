@@ -142,31 +142,31 @@ module AutoOpenUnitVc =
             let y = abs (v.Y)
             x < 1e-6 
 
-        /// Checks if two 3D unit vectors are parallel.
+        /// Checks if two 2D unit vectors are parallel.
         /// Ignores the line orientation.
         /// The default angle tolerance is 0.25 degrees.
         /// This tolerance can be customized by an optional minium cosine value.
         /// See FsEx.Geo.Cosine module.
-        member inline a.IsParallelTo( b:UnitVc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
-            abs(b*a) > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
+        member inline this.IsParallelTo( other:UnitVc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
+            abs(other*this) > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
 
 
-        /// Checks if two 3D unit vectors are parallel.
+        /// Checks if two 2D unit vectors are parallel.
         /// Takes the line orientation into account too.
         /// The default angle tolerance is 0.25 degrees.
         /// This tolerance can be customized by an optional minium cosine value.
         /// See FsEx.Geo.Cosine module.
-        member inline a.IsParallelAndOrientedTo  (b:UnitVc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
-            b*a > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
+        member inline this.IsParallelAndOrientedTo  (other:UnitVc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
+            other*this > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
 
 
-        /// Checks if two 3D unit vectors are perpendicular to each other.
+        /// Checks if two 2D unit vectors are perpendicular to each other.
         /// The default angle tolerance is 89.75 to 90.25 degrees.
         /// This tolerance can be customized by an optional minium cosine value.
         /// The default cosine is 0.0043633 ( = 89.75 deg )
         /// See FsEx.Geo.Cosine module.
-        member inline a.IsPerpendicularTo (b:UnitVc, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) =
-            let d = b*a
+        member inline this.IsPerpendicularTo (other:UnitVc, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) =
+            let d = other*this
             float -maxCosine < d && d  < float maxCosine // = cosine of 98.75 and 90.25 degrees
 
         //----------------------------------------------------------------------------------------------
@@ -231,14 +231,14 @@ module AutoOpenUnitVc =
         /// Convert 2D unit-vector to 2D point.
         static member inline asPt(v:UnitVc)  = Pt( v.X, v.Y)
 
-        /// Convert 2D unit-vector to 3D vector using 0.0 as Z value.
+        /// Convert 2D unit-vector to 2D vector using 0.0 as Z value.
         /// If you want a different Z value use the member w.WithZ(z)
         static member inline asVec(v:UnitVc) = Vec(v.X, v.Y, 0.0)
 
-        /// Convert 2D unit-vector to 3D unit-vector using 0.0 as Z value.
+        /// Convert 2D unit-vector to 2D unit-vector using 0.0 as Z value.
         static member inline asUnitVec(v:UnitVc) = UnitVec.createUnchecked(v.X, v.Y, 0.0)
 
-        /// Convert 2D unit-vector to 3D point using 0.0 as Z value.
+        /// Convert 2D unit-vector to 2D point using 0.0 as Z value.
         static member inline asPnt(v:UnitVc) = Pnt(v.X, v.Y, 0.0)
 
         /// 2D cross product.

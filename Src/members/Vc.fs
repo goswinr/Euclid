@@ -199,13 +199,13 @@ module AutoOpenVc =
         /// This tolerance can be customized by an optional minium cosine value.
         /// See FsEx.Geo.Cosine module.
         /// Fails on vectors shorter than 1e-12.
-        member inline a.IsParallelTo( b:Vc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
-            let sa = a.LengthSq
-            if sa < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vc.IsParallelTo: Vc 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
-            let sb = b.LengthSq
-            if sb < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vc.IsParallelTo: Vc 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
-            let au = a * (1.0 / sqrt sa )
-            let bu = b * (1.0 / sqrt sb )
+        member inline this.IsParallelTo( other:Vc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
+            let sa = this.LengthSq
+            if sa < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vc.IsParallelTo: Vc 'this' is too short: %s. 'other':%s " this.AsString other.AsString
+            let sb = other.LengthSq
+            if sb < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vc.IsParallelTo: Vc 'other' is too short: %s. 'this':%s " other.AsString this.AsString
+            let au = this * (1.0 / sqrt sa )
+            let bu = other * (1.0 / sqrt sb )
             abs(bu*au) > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
 
 
@@ -215,13 +215,13 @@ module AutoOpenVc =
         /// This tolerance can be customized by an optional minium cosine value.
         /// See FsEx.Geo.Cosine module.
         /// Fails on vectors shorter than 1e-12.
-        member inline a.IsParallelAndOrientedTo  (b:Vc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
-            let sa = a.LengthSq
-            if sa < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vc.IsParallelAndOrientedTo: Vc 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
-            let sb = b.LengthSq
-            if sb < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vc.IsParallelAndOrientedTo: Vc 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
-            let au = a * (1.0 / sqrt sa )
-            let bu = b * (1.0 / sqrt sb )
+        member inline this.IsParallelAndOrientedTo  (other:Vc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
+            let sa = this.LengthSq
+            if sa < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vc.IsParallelAndOrientedTo: Vc 'this' is too short: %s. 'other':%s " this.AsString other.AsString
+            let sb = other.LengthSq
+            if sb < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vc.IsParallelAndOrientedTo: Vc 'other' is too short: %s. 'this':%s " other.AsString this.AsString
+            let au = this * (1.0 / sqrt sa )
+            let bu = other * (1.0 / sqrt sb )
             bu*au > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
 
 
@@ -231,13 +231,13 @@ module AutoOpenVc =
         /// The default cosine is 0.0043633 ( = 89.75 deg )
         /// See FsEx.Geo.Cosine module.
         /// Fails on vectors shorter than 1e-12.
-        member inline a.IsPerpendicularTo (b:Vc, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) =
-            let sa = a.LengthSq
-            if sa < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vc.IsPerpendicularTo: Vc 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
-            let sb = b.LengthSq
-            if sb < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vc.IsPerpendicularTo: Vc 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
-            let au = a * (1.0 / sqrt sa )
-            let bu = b * (1.0 / sqrt sb )
+        member inline this.IsPerpendicularTo (other:Vc, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) =
+            let sa = this.LengthSq
+            if sa < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vc.IsPerpendicularTo: Vc 'this' is too short: %s. 'other':%s " this.AsString other.AsString
+            let sb = other.LengthSq
+            if sb < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vc.IsPerpendicularTo: Vc 'other' is too short: %s. 'this':%s " other.AsString this.AsString
+            let au = this * (1.0 / sqrt sa )
+            let bu = other * (1.0 / sqrt sb )
             let d = bu*au
             float -maxCosine < d && d  < float maxCosine // = cosine of 98.75 and 90.25 degrees
 

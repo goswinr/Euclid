@@ -54,7 +54,7 @@ type BRect =
     /// The size in Y direction, same as member rect.Width.
     member inline r.SizeY  = r.MaxY - r.MinY
 
-    /// The diagonal 3D vector of the bounding rect. From MinPt to MaxPt.
+    /// The diagonal 2D vector of the bounding rect. From MinPt to MaxPt.
     member inline r.Diagonal = Vc(r.MaxX - r.MinX, r.MaxY - r.MinY)
 
     /// The center of the bounding rect.
@@ -220,7 +220,7 @@ type BRect =
     //------------------------static members---------------------------
     //-------------------------------------------------------------------
 
-    /// Checks if two 3D Bounding Boxes are equal within tolerance.
+    /// Checks if two 2D Bounding Rectangle are equal within tolerance.
     static member equals tol (a:BRect) (b:BRect) =
         abs(a.MinX-b.MinX)<tol &&
         abs(a.MinY-b.MinY)<tol &&
@@ -241,7 +241,6 @@ type BRect =
     /// Does check for underflow if distance is negative and raises FsExGeoException.
     static member expandXaxis startDist endDist (r:BRect) =
         r.ExpandXaxis(startDist, endDist)
-
 
     /// Returns Bounding Rectangle expanded only in Y direction by different distance for start(minY) and end (maxY).
     /// Does check for underflow if distance is negative and raises FsExGeoException.

@@ -944,7 +944,7 @@ type Line2D =
     ///  If parallel lines are closer than this the 'Coincident' union case is returned .</param>
     ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
     ///  If one or both lines are shorter than the 'TooShort' union case is returned .</param>
-    /// <returns> A single 3D point</returns>
+    /// <returns> A single 2D point</returns>
     static member intersectionPointInfinite(lnA:Line2D ,
                                             lnB:Line2D ,
                                             [<OPT;DEF(RelAngleDiscriminant.``0.25``)>] relAngleDiscriminant:float<RelAngleDiscriminant.relAngDiscr>,

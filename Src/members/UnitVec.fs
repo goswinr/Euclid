@@ -194,8 +194,8 @@ module AutoOpenUnitVec =
         /// The default angle tolerance is 0.25 degrees.
         /// This tolerance can be customized by an optional minium cosine value.
         /// See FsEx.Geo.Cosine module.
-        member inline a.IsParallelTo( b:UnitVec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
-            abs(b*a) > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
+        member inline this.IsParallelTo( other:UnitVec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
+            abs(other*this) > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
 
 
         /// Checks if two 3D unit vectors are parallel.
@@ -203,8 +203,8 @@ module AutoOpenUnitVec =
         /// The default angle tolerance is 0.25 degrees.
         /// This tolerance can be customized by an optional minium cosine value.
         /// See FsEx.Geo.Cosine module.
-        member inline a.IsParallelAndOrientedTo  (b:UnitVec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
-            b*a > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
+        member inline this.IsParallelAndOrientedTo  (other:UnitVec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
+            other*this > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
 
 
         /// Checks if two 3D unit vectors are perpendicular to each other.
@@ -212,8 +212,8 @@ module AutoOpenUnitVec =
         /// This tolerance can be customized by an optional minium cosine value.
         /// The default cosine is 0.0043633 ( = 89.75 deg )
         /// See FsEx.Geo.Cosine module.
-        member inline a.IsPerpendicularTo (b:UnitVec, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) =
-            let d = b*a
+        member inline this.IsPerpendicularTo (other:UnitVec, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) =
+            let d = other*this
             float -maxCosine < d && d  < float maxCosine // = cosine of 98.75 and 90.25 degrees
 
         /// Multiplies a Matrix with a 3D vector (with an implicit 1 in the 4th dimension,
