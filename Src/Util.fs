@@ -26,16 +26,6 @@ type FsExGeoDivByZeroException (s:string) =
 /// Math Utility functions and values for use within FsEx.Geo.
 module Util =
 
-    /// A type to represent the result of testing if a float is close to zero, close to one or in between.
-    /// A number is close to 1.0 by maximum 6 steps of float increment or decrement.
-    /// So between 0.99999964 and 1.000000715. Same step size for zero.
-    /// This can be used for clamping the domain on a line.
-    type ZeroToOne =
-        |Zero
-        |One
-        |Between
-        |Outside
-
     /// Test is a value is not null.
     let inline notNull x =  match x with null -> false | _ -> true
 
@@ -52,7 +42,7 @@ module Util =
     let halfPi = 1.5707963267949
 
     /// Converts Angels from Degrees to Radians.
-    let inline toRadians degrees =  0.0174532925199433 * degrees //  Math.PI / 180.
+    let inline toRadians degrees = 0.0174532925199433 * degrees //  Math.PI / 180.
 
     /// Converts Angels from Radians to Degrees.
     let inline toDegrees radians = 57.2957795130823 * radians  // 180. / Math.PI
@@ -71,12 +61,12 @@ module Util =
 
     /// A safe arcsine (Inverse Sine) function.
     /// It clamps the input between -1 and 1
-    let inline asinSafe a = a|> clampBetweenMinusOneAndOne|> Math.Asin
+    let inline asinSafe a = a |> clampBetweenMinusOneAndOne |> Math.Asin
 
 
     /// A safe arccosine (Inverse Cosine) function.
     /// It clamps the input between -1 and 1
-    let inline acosSafe a = a|> clampBetweenMinusOneAndOne|> Math.Acos
+    let inline acosSafe a = a |> clampBetweenMinusOneAndOne |> Math.Acos
 
     /// The float number that is 9 increments bigger than 1.0.
     /// This is approx 1.0 + 1e-6
@@ -132,19 +122,11 @@ module Util =
     /// Check if value is between 0.0 and +1.0 inclusive.
     let inline isBetweenZeroAndOne (x:float) =
         x >= 0.0 && x <= 1.0
-
-    /// Tests if a float is close to zero, close to one or in between.
-    /// A number is close to 1.0 by maximum 6 steps of float increment or decrement.
-    /// So between 0.99999964 and 1.000000715. Same step size for zero.
-    let inline isZeroOneOrBetween  (x:float) =
-        if   isZero      x then Zero
-        elif isOne       x then One
-        elif isBetweenZeroAndOne x then Between
-        else Outside
-
+    
     /// Check if value is between 0.0 and +1.0 inclusive a tolerance of 1e-6 .
     let inline isBetweenZeroAndOneTolerant (x:float) =
         -1e-6 < x && x < ``1.0 + 1e-6``
+    
 
     /// Match the sign (+ or -) to a given number.
     let matchSign (signedValue:float) (numToMatch:float) =

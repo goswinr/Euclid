@@ -171,3 +171,23 @@ module LineIntersectionTypes =
         | Skew | Apart | IntersectionKind.Parallel
         | Overlapping  | CoincidentApart | Identical| IdenticalFlipped
         |TooShortA |TooShortB | TooShortBoth-> false
+
+    /// A type to represent the result of testing if a float is close to zero, close to one or in between.
+    /// A number is close to 1.0 by maximum 6 steps of float increment or decrement.
+    /// So between 0.99999964 and 1.000000715. Same step size for zero.
+    /// This can be used for clamping the domain on a line.
+    type ZeroToOne =
+        |Zero
+        |One
+        |Between
+        |Outside
+
+    /// Tests if a float is close to 0.0, close to 1.0 in between or outside.
+    /// The tolerance is approximately 1e-6 for each side. 
+    /// That is 6 steps of float increment from 1.0.
+    /// So between 0.99999964 and 1.000000715. Same step size for zero.
+    let inline isZeroOneOrBetween  (x:float) =
+        if   Util.isZero              x then Zero
+        elif Util.isOne               x then One
+        elif Util.isBetweenZeroAndOne x then Between
+        else Outside
