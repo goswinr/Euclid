@@ -1,8 +1,8 @@
-namespace FsEx.Geo
+namespace Euclid
 
 open System
 
-/// When FsEx.Geo is opened this module will be auto-opened.
+/// When Euclid is opened this module will be auto-opened.
 /// It only contains extension members for type Pnt.
 [<AutoOpen>]
 module AutoOpenPnt =
@@ -56,7 +56,7 @@ module AutoOpenPnt =
         /// Returns new 3D point with given distance from Origin by scaling it up or down.
         member inline pt.WithDistanceFromOrigin (l:float) =
             let d = pt.DistanceFromOrigin
-            if d < zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Pnt.WithDistFromOrigin  %O is too small to be scaled." pt
+            if d < zeroLengthTol then EuclidException.Raise "Euclid.Pnt.WithDistFromOrigin  %O is too small to be scaled." pt
             pt * (l/d)
 
         /// Returns the Diamond Angle from this point to another point projected in X-Y plane.
@@ -70,7 +70,7 @@ module AutoOpenPnt =
             let y = o.Y-p.Y
             //#if DEBUG
             if abs(x) < zeroLengthTol && abs(y) < zeroLengthTol then // TODO : with this test all  operations are 2.5 times slower
-                FsExGeoDivByZeroException.Raise "FsEx.Geo.Pnt.DirectionDiamondInXYTo failed for too short distance between %O and %O." p o
+                EuclidDivByZeroException.Raise "Euclid.Pnt.DirectionDiamondInXYTo failed for too short distance between %O and %O." p o
             //#endif
             if y >= 0.0 then
                 if x >= 0.0 then
@@ -91,7 +91,7 @@ module AutoOpenPnt =
             let y = o.Y-p.Y
             //#if DEBUG
             if abs(x) < zeroLengthTol && abs(y) < zeroLengthTol then // TODO : with this test all  operations are 2.5 times slower
-                FsExGeoDivByZeroException.Raise "FsEx.Geo.Pnt.Angle2PiInXYTo failed for too short distance between %O and %O." p o
+                EuclidDivByZeroException.Raise "Euclid.Pnt.Angle2PiInXYTo failed for too short distance between %O and %O." p o
             //#endif
             let a = Math.Atan2(y, x)
             if a < 0. then  a + Util.twoPi
@@ -108,7 +108,7 @@ module AutoOpenPnt =
             let v   = toPt   - fromPt
             let lenSq = v.LengthSq
             let lenSq =  v.LengthSq
-            if lenSq < 1e-6 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Pnt.closestPointOnLine: Line is too short for fromPt %O to  %O and  %O" fromPt toPt testPt
+            if lenSq < 1e-6 then EuclidDivByZeroException.Raise "Euclid.Pnt.closestPointOnLine: Line is too short for fromPt %O to  %O and  %O" fromPt toPt testPt
             let dot = Vec.dot (v,  dir) / lenSq
             if   dot <= 0.0 then  fromPt
             elif dot >= 1.0 then  toPt
@@ -155,7 +155,7 @@ module AutoOpenPnt =
             let dir = testPt - fromPt
             let v   = toPt   - fromPt
             let lenSq =  v.LengthSq
-            if lenSq < 1e-6 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Pnt.DistanceToLine: Line is too short for fromPt %O to  %O and  %O" fromPt toPt testPt
+            if lenSq < 1e-6 then EuclidDivByZeroException.Raise "Euclid.Pnt.DistanceToLine: Line is too short for fromPt %O to  %O and  %O" fromPt toPt testPt
             let dot = Vec.dot (v,  dir) / v.LengthSq
             if   dot <= 0.0 then testPt.DistanceTo   fromPt
             elif dot >= 1.0 then testPt.DistanceTo   toPt
@@ -194,7 +194,7 @@ module AutoOpenPnt =
         /// (This member is needed by Array.average and similar functions)
         static member inline DivideByInt (pt:Pnt, i:int) =
             if i<>0 then  let d = float i in  Pnt(pt.X/d, pt.Y/d, pt.Z/d)
-            else FsExGeoDivByZeroException.Raise "FsEx.Geo.Pnt.DivideByInt 0 %O " pt  // needed by  'Array.average'
+            else EuclidDivByZeroException.Raise "Euclid.Pnt.DivideByInt 0 %O " pt  // needed by  'Array.average'
 
         /// Accepts any type that has a X, Y and Z (UPPERCASE) member that can be converted to a float.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
@@ -203,7 +203,7 @@ module AutoOpenPnt =
             let y = ( ^T : (member Y : _) pt)
             let z = ( ^T : (member Z : _) pt)
             try Pnt(float x, float y, float z)
-            with e -> FsExGeoException.Raise "FsEx.Geo.Pnt.ofXYZ: %A could not be converted to a FsEx.Geo.Pnt:\r\n%A" pt e
+            with e -> EuclidException.Raise "Euclid.Pnt.ofXYZ: %A could not be converted to a Euclid.Pnt:\r\n%A" pt e
 
         /// Accepts any type that has a x, y and z (lowercase) member that can be converted to a float.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
@@ -212,7 +212,7 @@ module AutoOpenPnt =
             let y = ( ^T : (member y : _) pt)
             let z = ( ^T : (member z : _) pt)
             try Pnt(float x, float y, float z)
-            with e -> FsExGeoException.Raise "FsEx.Geo.Pnt.ofxyz: %A could not be converted to a FsEx.Geo.Pnt:\r\n%A" pt e
+            with e -> EuclidException.Raise "Euclid.Pnt.ofxyz: %A could not be converted to a Euclid.Pnt:\r\n%A" pt e
 
         /// Create 3D point from 2D point. Using 0.0 for Z
         static member inline ofPt (p:Pt)  = Pnt (p.X, p.Y, 0.0)
@@ -334,10 +334,10 @@ module AutoOpenPnt =
         /// going from a point in the direction of another point.
         static member inline extendToZLevel (fromPt:Pnt, toPt:Pnt,z:float) =
             let v = toPt - fromPt
-            if fromPt.Z < toPt.Z && z < fromPt.Z  then FsExGeoException.Raise "FsEx.Geo.Pnt.extendToZLevel cannot be reached for fromPt:%O toPt:%O z:%g" fromPt toPt z
-            if fromPt.Z > toPt.Z && z > fromPt.Z  then FsExGeoException.Raise "FsEx.Geo.Pnt.extendToZLevel cannot be reached for fromPt:%O toPt:%O z:%g" fromPt toPt z
+            if fromPt.Z < toPt.Z && z < fromPt.Z  then EuclidException.Raise "Euclid.Pnt.extendToZLevel cannot be reached for fromPt:%O toPt:%O z:%g" fromPt toPt z
+            if fromPt.Z > toPt.Z && z > fromPt.Z  then EuclidException.Raise "Euclid.Pnt.extendToZLevel cannot be reached for fromPt:%O toPt:%O z:%g" fromPt toPt z
             let dot = abs ( v * Vec.Zaxis)
-            if dot < 0.0001 then  FsExGeoException.Raise "FsEx.Geo.Pnt.extendToZLevel cannot be reached for fromPt:%O toPt:%O because they are both at the same level. target z:%g " fromPt toPt z
+            if dot < 0.0001 then  EuclidException.Raise "Euclid.Pnt.extendToZLevel cannot be reached for fromPt:%O toPt:%O because they are both at the same level. target z:%g " fromPt toPt z
             let diffZ = abs (fromPt.Z - z)
             let fac = diffZ / dot
             fromPt + v * fac
@@ -505,7 +505,7 @@ module AutoOpenPnt =
         static member inline projectedParameter (fromPt:Pnt, v:Vec, testPt:Pnt) =
             let dir = testPt-fromPt
             let lenSq =  v.LengthSq
-            if lenSq < 1e-6 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Pnt.projectedParameter:  %O is too short for fromPt %O and  %O" v fromPt testPt
+            if lenSq < 1e-6 then EuclidDivByZeroException.Raise "Euclid.Pnt.projectedParameter:  %O is too short for fromPt %O and  %O" v fromPt testPt
             Vec.dot (v,  dir) / v.LengthSq
 
         /// 'fromPt' point and 'toPt' point describe an endless line.
@@ -515,5 +515,5 @@ module AutoOpenPnt =
             let dir = testPt - fromPt
             let v   = toPt   - fromPt
             let lenSq =  v.LengthSq
-            if lenSq < 1e-6 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Pnt.projectedParameter: Line is too short for fromPt %O to  %O and  %O" fromPt toPt testPt
+            if lenSq < 1e-6 then EuclidDivByZeroException.Raise "Euclid.Pnt.projectedParameter: Line is too short for fromPt %O to  %O and  %O" fromPt toPt testPt
             Vec.dot (v,  dir) / v.LengthSq

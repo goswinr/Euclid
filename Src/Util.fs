@@ -1,4 +1,4 @@
-namespace FsEx.Geo
+namespace Euclid
 open System
 
 
@@ -8,22 +8,22 @@ type internal OPT = Runtime.InteropServices.OptionalAttribute
 /// DefaultParameterValueAttribute for member parameters.
 type internal DEF =  Runtime.InteropServices.DefaultParameterValueAttribute
 
-/// Exception in FsEx.Geo.
-type FsExGeoException (s:string) =
+/// Exception in Euclid.
+type EuclidException (s:string) =
     inherit System.Exception(s)
 
-    static member Raise msg =  Printf.kprintf (fun s -> raise (FsExGeoException(s))) msg
+    static member Raise msg =  Printf.kprintf (fun s -> raise (EuclidException(s))) msg
 
 
 /// Exception for attempting to divide by a 0.0 or almost 0.0 value.
 /// Almost 0.0 is defined by Util.zeroLengthTol (1e-16)
-type FsExGeoDivByZeroException (s:string) =
+type EuclidDivByZeroException (s:string) =
     inherit System.Exception(s)
 
-    static member Raise msg = Printf.kprintf (fun s -> raise (FsExGeoDivByZeroException(s))) msg
+    static member Raise msg = Printf.kprintf (fun s -> raise (EuclidDivByZeroException(s))) msg
 
 
-/// Math Utility functions and values for use within FsEx.Geo.
+/// Math Utility functions and values for use within Euclid.
 module Util =
 
     /// Test is a value is not null.
@@ -109,13 +109,13 @@ module Util =
 
     /// Tests if a number is close to 0.0 by 1e-6
     /// This is approximately the same tolerance that 6 increments of a float are away from 1.0.
-    /// See FsEx.Geo.Util.isOne function.
+    /// See Euclid.Util.isOne function.
     let inline isZero x =
         -1e-6 < x && x < 1e-6
 
     /// Tests if a number is NOT close to 0.0 by 1e-6
     /// This is approximately the same tolerance that 6 increments of a float are away from 1.0.
-    /// See FsEx.Geo.Util.isOne function.
+    /// See Euclid.Util.isOne function.
     let inline isNotZero x =
         x < -1e-6  ||  x > 1e-6
 

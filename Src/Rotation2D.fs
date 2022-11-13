@@ -1,8 +1,8 @@
-namespace FsEx.Geo
+namespace Euclid
 
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
-open FsEx.Geo.Util
+open Euclid.Util
 
 #nowarn "44" // for hidden constructors via Obsolete Attribute
 
@@ -30,14 +30,14 @@ type Rotation2D =
     new (sin, cos) =
         #if DEBUG
         let sum = sin*sin + cos*cos in
-        if 0.99999 > sum || sum > 1.00001  then  FsExGeoException.Raise "FsEx.Geo.Rotate Constructor failed for sin:%g and cos:%g.  Because sin*sin + cos*cos needs to be 1.0." sin cos
+        if 0.99999 > sum || sum > 1.00001  then  EuclidException.Raise "Euclid.Rotate Constructor failed for sin:%g and cos:%g.  Because sin*sin + cos*cos needs to be 1.0." sin cos
         #endif
         {Sin = sin; Cos = cos}
 
     /// Format rotation into string showing angle in Degrees as nicely formatted floating point number.
     override r.ToString() =
         let deg =  r.Sin  |> asinSafe |> toDegrees |> Format.float
-        sprintf "FsEx.Geo.Rotation2D of %s° Degrees." deg
+        sprintf "Euclid.Rotation2D of %s° Degrees." deg
 
     /// Returns the angle represented by this Rotation in Radians.
     member inline r.InRadians =

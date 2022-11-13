@@ -1,8 +1,8 @@
-namespace FsEx.Geo
+namespace Euclid
 
 open System
 open System.Threading.Tasks
-open FsEx.Geo.LineIntersectionTypes
+open Euclid.LineIntersectionTypes
 
 /// Provides operations on 2D and 3D points.
 [<AbstractClass; Sealed>]
@@ -84,7 +84,7 @@ type Points private () =
 
     /// Returns the closest 3D point index form a 3D point list to a given 3D point.
     static member closestPointIdx (pts:ResizeArray<Pnt>,pt:Pnt) : int =
-        if pts.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.closestPoint<Pnt>: empty List of Points: pts"
+        if pts.Count = 0 then EuclidException.Raise "Euclid.Points.closestPoint<Pnt>: empty List of Points: pts"
         let mutable mi = -1
         let mutable mid = Double.MaxValue
         for i=0 to pts.Count - 1 do
@@ -97,7 +97,7 @@ type Points private () =
 
     /// Returns the closest 2D point index form a 2D point list to a given 2D point.
     static member closestPointIdx (pts:ResizeArray<Pt>,pt:Pt) : int =
-        if pts.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.closestPoint<Pt>: empty List of Points: pts"
+        if pts.Count = 0 then EuclidException.Raise "Euclid.Points.closestPoint<Pt>: empty List of Points: pts"
         let mutable mi = -1
         let mutable mid = Double.MaxValue
         for i=0 to pts.Count - 1 do
@@ -118,8 +118,8 @@ type Points private () =
 
     /// Returns the indices of the 3D points that are closest to each other.
     static member closestPointsIdx (xs:ResizeArray<Pnt>, ys:ResizeArray<Pnt>) =
-        if xs.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.closestPointsIdx<Pnt>: empty List of Points: xs"
-        if ys.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.closestPointsIdx<Pnt>: empty List of Points: ys"
+        if xs.Count = 0 then EuclidException.Raise "Euclid.Points.closestPointsIdx<Pnt>: empty List of Points: xs"
+        if ys.Count = 0 then EuclidException.Raise "Euclid.Points.closestPointsIdx<Pnt>: empty List of Points: ys"
         let mutable xi = -1
         let mutable yj = -1
         let mutable minD = Double.MaxValue
@@ -143,8 +143,8 @@ type Points private () =
         // alternatively a spatial hash could be used to cluster nearby objects. the challenge would be to finde the right cell size for each point
         // (3)
         // the bounding Rectangles of each set could be intersected. then expanded. then used to filter both lists.
-        if xs.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.closestPointsIdx<Pt>: empty List of Points: xs"
-        if ys.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.closestPointsIdx<Pt>: empty List of Points: ys"
+        if xs.Count = 0 then EuclidException.Raise "Euclid.Points.closestPointsIdx<Pt>: empty List of Points: xs"
+        if ys.Count = 0 then EuclidException.Raise "Euclid.Points.closestPointsIdx<Pt>: empty List of Points: ys"
         let mutable xi = -1
         let mutable yj = -1
         let mutable minD = Double.MaxValue
@@ -161,15 +161,15 @@ type Points private () =
 
     /// Given two lists of 3D points finds the pair that are closest to each other and returns their distance.
     static member  minDistBetweenPointSets (xs:ResizeArray<Pnt>, ys:ResizeArray<Pnt>) =
-        if xs.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.minDistBetweenPointSets<Pnt>: empty List of Points: xs"
-        if ys.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.minDistBetweenPointSets<Pnt>: empty List of Points: ys"
+        if xs.Count = 0 then EuclidException.Raise "Euclid.Points.minDistBetweenPointSets<Pnt>: empty List of Points: xs"
+        if ys.Count = 0 then EuclidException.Raise "Euclid.Points.minDistBetweenPointSets<Pnt>: empty List of Points: ys"
         let (i,j) = Points.closestPointsIdx (xs, ys)
         Pnt.distance xs.[i]  ys.[j]
 
     /// Given two lists of 2D points finds the pair that are closest to each other and returns their distance.
     static member  minDistBetweenPointSets (xs:ResizeArray<Pt>, ys:ResizeArray<Pt>) =
-        if xs.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.minDistBetweenPointSets<Pt>: empty List of Points: xs"
-        if ys.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.minDistBetweenPointSets<Pt>: empty List of Points: ys"
+        if xs.Count = 0 then EuclidException.Raise "Euclid.Points.minDistBetweenPointSets<Pt>: empty List of Points: xs"
+        if ys.Count = 0 then EuclidException.Raise "Euclid.Points.minDistBetweenPointSets<Pt>: empty List of Points: ys"
         let (i,j) = Points.closestPointsIdx (xs, ys)
         Pt.distance xs.[i]  ys.[j]
 
@@ -178,8 +178,8 @@ type Points private () =
     /// Basically the most lonely point in 'findPointFrom' list with respect to 'checkAgainst' list.
     /// Returns findPointFromIdx * checkAgainstIdx
     static member  mostDistantPointIdx (findPointFrom:ResizeArray<Pnt>, checkAgainst:ResizeArray<Pnt>) : int*int=
-        if findPointFrom.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.mostDistantPoint<Pnt>: empty List of Points: findPointFrom"
-        if checkAgainst.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.mostDistantPoint<Pnt>: empty List of Points: checkAgainst"
+        if findPointFrom.Count = 0 then EuclidException.Raise "Euclid.Points.mostDistantPoint<Pnt>: empty List of Points: findPointFrom"
+        if checkAgainst.Count = 0 then EuclidException.Raise "Euclid.Points.mostDistantPoint<Pnt>: empty List of Points: checkAgainst"
         let mutable maxD = Double.MinValue
         let mutable findPointFromIdx = -1
         let mutable checkAgainstTempIdx = -1
@@ -202,8 +202,8 @@ type Points private () =
     /// Basically the most lonely point in 'findPointFrom' list with respect to 'checkAgainst' list.
     /// Returns findPointFromIdx * checkAgainstIdx
     static member mostDistantPointIdx (findPointFrom:ResizeArray<Pt>, checkAgainst:ResizeArray<Pt>) : int*int=
-        if findPointFrom.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.mostDistantPoint<Pt>: empty List of Points: findPointFrom"
-        if checkAgainst.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.mostDistantPoint<Pt>: empty List of Points: checkAgainst"
+        if findPointFrom.Count = 0 then EuclidException.Raise "Euclid.Points.mostDistantPoint<Pt>: empty List of Points: findPointFrom"
+        if checkAgainst.Count = 0 then EuclidException.Raise "Euclid.Points.mostDistantPoint<Pt>: empty List of Points: checkAgainst"
         let mutable maxD = Double.MinValue
         let mutable findPointFromIdx = -1
         let mutable checkAgainstTempIdx = -1
@@ -238,7 +238,7 @@ type Points private () =
     /// Culls 3D points if they are to close to previous or next item.
     /// Last and first 3D points stay the same.
     static member cullDuplicatePointsInSeq (pts:ResizeArray<Pnt>, tolerance)  =
-        if pts.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.cullDuplicatePointsInSeq<Pnt>: empty List of Points"
+        if pts.Count = 0 then EuclidException.Raise "Euclid.Points.cullDuplicatePointsInSeq<Pnt>: empty List of Points"
         if pts.Count = 1 then
             pts
         else
@@ -260,7 +260,7 @@ type Points private () =
     /// Culls 2D points if they are to close to previous or next item.
     /// Last and first 2D points stay the same.
     static member cullDuplicatePointsInSeq (pts:ResizeArray<Pt>, tolerance)  =
-        if pts.Count = 0 then FsExGeoException.Raise "FsEx.Geo.Points.cullDuplicatePointsInSeq<Pt>: empty List of Points"
+        if pts.Count = 0 then EuclidException.Raise "Euclid.Points.cullDuplicatePointsInSeq<Pt>: empty List of Points"
         if pts.Count = 1 then
             pts
         else
@@ -354,13 +354,13 @@ type Points private () =
     /// If the order is counterclockwise in the World X-Y plane then the normal is in world Z orientation.
     static member normalOfPoints(pts: ResizeArray<Pnt>) : Vec  =
         if pts.Count <= 2 then
-            FsExGeoException.Raise "FsEx.Geo.Points.normalOfPoints can't find normal of two or less points %O" pts
+            EuclidException.Raise "Euclid.Points.normalOfPoints can't find normal of two or less points %O" pts
         elif pts.Count = 3  then
             let a = pts.[0] - pts.[1]
             let b = pts.[2] - pts.[1]
             let v= Vec.cross(b, a)
             if v.LengthSq < 1e-12 then
-                FsExGeoException.Raise "FsEx.Geo.Points.normalOfPoints: three points are in a line  %O" pts
+                EuclidException.Raise "Euclid.Points.normalOfPoints: three points are in a line  %O" pts
             else
                 v
         else
@@ -375,7 +375,7 @@ type Points private () =
                 v <- v + x
                 t<-n
             if v.LengthSq < 1e-12 then
-                FsExGeoException.Raise "FsEx.Geo.Points.normalOfPoints: points are in a line or sphere without clear normal  %O" pts
+                EuclidException.Raise "Euclid.Points.normalOfPoints: points are in a line or sphere without clear normal  %O" pts
             else
                 v
 
@@ -386,12 +386,12 @@ type Points private () =
     /// If the order is counterclockwise in the World X-Y plane then the normal is in world Z orientation.
     static member normalOfPoints(pts:Pnt []) : Vec  =
         if pts.Length <= 2 then
-            FsExGeoException.Raise "FsEx.Geo.Points.normalOfPoints can't find normal of two or less points %O" pts
+            EuclidException.Raise "Euclid.Points.normalOfPoints can't find normal of two or less points %O" pts
         elif pts.Length = 3  then
             let a = pts.[0] - pts.[1]
             let b = pts.[2] - pts.[1]
             let v= Vec.cross(b, a)
-            if v.LengthSq < 1e-12 then FsExGeoException.Raise "FsEx.Geo.Points.normalOfPoints: three points are in a line  %O" pts
+            if v.LengthSq < 1e-12 then EuclidException.Raise "Euclid.Points.normalOfPoints: three points are in a line  %O" pts
             else
                 v
         else
@@ -406,7 +406,7 @@ type Points private () =
                 v <- v + x
                 t <- n
             if v.LengthSq < 1e-12 then
-                FsExGeoException.Raise "FsEx.Geo.Points.normalOfPoints: points are in a line or sphere without clear normal  %O" pts
+                EuclidException.Raise "Euclid.Points.normalOfPoints: points are in a line or sphere without clear normal  %O" pts
             else
                 v
 

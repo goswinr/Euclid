@@ -1,8 +1,8 @@
-namespace FsEx.Geo
+namespace Euclid
 
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
-open FsEx.Geo.Util
+open Euclid.Util
 
 /// An immutable 4x3 Orthogonal matrix. For only Rotation and Translation in 3D space.
 /// This matrix guarantees to NOT scale, shear, flip, mirror, reflect or project.
@@ -356,7 +356,7 @@ type OrthoMatrix =
         // first unitize
         let len = sqrt (axis.X*axis.X + axis.Y*axis.Y + axis.Z*axis.Z)
         if len <  zeroLengthTol then
-            FsExGeoException.Raise "FsEx.Geo.OrthoMatrix.createRotationAxis failed on too short axis: %O and rotation: %g° Degrees." axis angleDegrees
+            EuclidException.Raise "Euclid.OrthoMatrix.createRotationAxis failed on too short axis: %O and rotation: %g° Degrees." axis angleDegrees
         let sc = 1. / len
         let x = axis.X * sc
         let y = axis.Y * sc
@@ -403,7 +403,7 @@ type OrthoMatrix =
         let axis0 = UnitVec.cross(fromVec, toVec)
         let len = axis0.Length
         if len <  zeroLengthTol then
-            FsExGeoException.Raise "FsEx.Geo.OrthoMatrix.createVecToVec failed to find rotation axis on colinear vectors: %O and %O" fromVec toVec
+            EuclidException.Raise "Euclid.OrthoMatrix.createVecToVec failed to find rotation axis on colinear vectors: %O and %O" fromVec toVec
         let axis = axis0 / len
         let x = axis.X
         let y = axis.Y
@@ -424,7 +424,7 @@ type OrthoMatrix =
             let z = vecFrom.Z
             let length = sqrt(x*x + y*y + z*z)
             if length <  zeroLengthTol then
-                FsExGeoException.Raise "FsEx.Geo.OrthoMatrix.createVecToVec failed. too short vector vecFrom: %O" vecFrom
+                EuclidException.Raise "Euclid.OrthoMatrix.createVecToVec failed. too short vector vecFrom: %O" vecFrom
             let sc =  1. / length // inverse for unitizing vector:
             UnitVec.createUnchecked(x*sc, y*sc, z*sc)
         let tu =
@@ -433,7 +433,7 @@ type OrthoMatrix =
             let z = vecTo.Z
             let length = sqrt(x*x + y*y + z*z)
             if length <  zeroLengthTol then
-                FsExGeoException.Raise "FsEx.Geo.OrthoMatrix.createVecToVec failed. too short vector vecTo: %O" vecTo
+                EuclidException.Raise "Euclid.OrthoMatrix.createVecToVec failed. too short vector vecTo: %O" vecTo
             let sc =  1. / length // inverse for unitizing vector:
             UnitVec.createUnchecked(x*sc, y*sc, z*sc)
         let c =  fu * tu  // dot to find cosine
@@ -442,7 +442,7 @@ type OrthoMatrix =
         let axis = Vec.cross(vecFrom, vecTo)
         let len = axis.Length
         if len <  Util.zeroLengthTol then
-            FsExGeoException.Raise "FsEx.Geo.OrthoMatrix.createVecToVec failed to find rotation axis on colinear or zero length vectors: %O and %O" vecFrom vecTo
+            EuclidException.Raise "Euclid.OrthoMatrix.createVecToVec failed to find rotation axis on colinear or zero length vectors: %O and %O" vecFrom vecTo
         let sc = 1. / len
         let x = axis.X * sc
         let y = axis.Y * sc

@@ -1,9 +1,9 @@
-namespace FsEx.Geo
+namespace Euclid
 
 
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>]
-open FsEx.Geo.Util
-open FsEx.Geo.LineIntersectionTypes
+open Euclid.Util
+open Euclid.LineIntersectionTypes
 
 /// An immutable finite line in 3D. Represented by a 3D start and 3D end point.
 [<Struct;NoEquality;NoComparison>]// because its made up from floats
@@ -50,7 +50,7 @@ type Line3D =
     /// Format 3D Line into string including type name, X, Y and Z for start and end points , and Length.
     /// Using nice floating point number formatting .
     override ln.ToString() =
-        sprintf "FsEx.Geo.Line3D from X=%s| Y=%s| Z=%s to X=%s| Y=%s| Z=%s Length %s"
+        sprintf "Euclid.Line3D from X=%s| Y=%s| Z=%s to X=%s| Y=%s| Z=%s Length %s"
             (Format.float ln.FromX)
             (Format.float ln.FromY)
             (Format.float ln.FromZ)
@@ -99,32 +99,32 @@ type Line3D =
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let l = sqrt(x * x  + y * y + z * z)
-        if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line3D.UnitTangent: x:%g, y:%g and z:%g are too small for creating a unit-vector. Tolerance:%g" x y z zeroLengthTol
+        if l < zeroLengthTol then EuclidDivByZeroException.Raise "Euclid.Line3D.UnitTangent: x:%g, y:%g and z:%g are too small for creating a unit-vector. Tolerance:%g" x y z zeroLengthTol
         let s = 1.0 / l
         UnitVec.createUnchecked (x*s,y*s,z*s)
     
-    /// Checks if line is parallel to the world X axis.
+    /// Checks if line is parallel to the world X axis. Ignoring orientation.
     /// Tolerance is 1e-6.
     /// Fails on lines shorter than 1e-6.
     member inline ln.IsXAligned =
         let x = abs (ln.ToX-ln.FromX)
         let y = abs (ln.ToY-ln.FromY)
         let z = abs (ln.ToZ-ln.FromZ)
-        if x+y+z < 1e-6 then FsExGeoException.Raise "FsEx.Geo.Line3D.IsXAligned cannot not check very tiny Line. (tolerance 1e-6)  %O" ln
+        if x+y+z < 1e-6 then EuclidException.Raise "Euclid.Line3D.IsXAligned cannot not check very tiny Line. (tolerance 1e-6)  %O" ln
         else y < 1e-6 && z < 1e-6      
         
 
-    /// Checks if 3D line is parallel to the world Y axis.
+    /// Checks if 3D line is parallel to the world Y axis. Ignoring orientation.
     /// Tolerance is 1e-6.
     /// Fails on lines shorter than 1e-6.
     member inline ln.IsYAligned =
         let x = abs (ln.ToX-ln.FromX)
         let y = abs (ln.ToY-ln.FromY)
         let z = abs (ln.ToZ-ln.FromZ)
-        if x+y+z < 1e-6 then FsExGeoException.Raise "FsEx.Geo.Line3D.IsYAligned cannot not check very tiny Line. (tolerance 1e-6)  %O" ln
+        if x+y+z < 1e-6 then EuclidException.Raise "Euclid.Line3D.IsYAligned cannot not check very tiny Line. (tolerance 1e-6)  %O" ln
         else x < 1e-6 && z < 1e-6
 
-    /// Checks if 3D line is parallel to the world Z axis.
+    /// Checks if 3D line is parallel to the world Z axis. Ignoring orientation.
     /// Tolerance is 1e-6.
     /// Fails on lines shorter than 1e-6.
     /// Same as ln.IsVertical
@@ -132,11 +132,11 @@ type Line3D =
         let x = abs (ln.ToX-ln.FromX)
         let y = abs (ln.ToY-ln.FromY)
         let z = abs (ln.ToZ-ln.FromZ)
-        if x+y+z < 1e-6 then FsExGeoException.Raise "FsEx.Geo.Line3D.IsZAligned cannot not check very tiny Line. (tolerance 1e-6)  %O" ln
+        if x+y+z < 1e-6 then EuclidException.Raise "Euclid.Line3D.IsZAligned cannot not check very tiny Line. (tolerance 1e-6)  %O" ln
         else x < 1e-6 && y < 1e-6
 
 
-     /// Checks if 3D line is parallel to the world Z axis.
+     /// Checks if 3D line is parallel to the world Z axis. Ignoring orientation.
     /// Tolerance is 1e-6.
     /// Fails on lines shorter than 1e-6.
     /// Same as ln.IsZAligned
@@ -144,7 +144,7 @@ type Line3D =
         let x = abs (ln.ToX-ln.FromX)
         let y = abs (ln.ToY-ln.FromY)
         let z = abs (ln.ToZ-ln.FromZ)
-        if x+y+z < 1e-6 then FsExGeoException.Raise "FsEx.Geo.Line3D.IsVertical cannot not check very tiny Line. (tolerance 1e-6)  %O" ln
+        if x+y+z < 1e-6 then EuclidException.Raise "Euclid.Line3D.IsVertical cannot not check very tiny Line. (tolerance 1e-6)  %O" ln
         else x < 1e-6 && y < 1e-6
 
     /// Checks if 3D line is horizontal.
@@ -154,7 +154,7 @@ type Line3D =
         let x = abs (ln.ToX-ln.FromX)
         let y = abs (ln.ToY-ln.FromY)
         let z = abs (ln.ToZ-ln.FromZ)
-        if x+y+z < 1e-6 then FsExGeoException.Raise "FsEx.Geo.Line3D.IsHorizontal cannot not check very tiny Line. (tolerance 1e-6)  %O" ln
+        if x+y+z < 1e-6 then EuclidException.Raise "Euclid.Line3D.IsHorizontal cannot not check very tiny Line. (tolerance 1e-6)  %O" ln
         else z < 1e-6
         
 
@@ -232,7 +232,7 @@ type Line3D =
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let l = sqrt(x*x + y*y + z*z)
-        if l < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line3D.Extend %O to short for finding point at a distance." ln
+        if l < 1e-12 then EuclidDivByZeroException.Raise "Euclid.Line3D.Extend %O to short for finding point at a distance." ln
         Line3D( ln.FromX - x*distAtStart/l,
                 ln.FromY - y*distAtStart/l,
                 ln.FromZ - z*distAtStart/l,
@@ -247,7 +247,7 @@ type Line3D =
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let l = sqrt(x*x + y*y + z*z)
-        if l < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line3D.ExtendStart %O to short for finding point at a distance." ln
+        if l < 1e-12 then EuclidDivByZeroException.Raise "Euclid.Line3D.ExtendStart %O to short for finding point at a distance." ln
         Line3D( ln.FromX - x*distAtStart/l,
                 ln.FromY - y*distAtStart/l,
                 ln.FromZ - z*distAtStart/l,
@@ -262,7 +262,7 @@ type Line3D =
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let l = sqrt(x*x + y*y + z*z)
-        if l < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line3D.ExtendEnd %O to short for finding point at a distance." ln
+        if l < 1e-12 then EuclidDivByZeroException.Raise "Euclid.Line3D.ExtendEnd %O to short for finding point at a distance." ln
         Line3D( ln.FromX ,
                 ln.FromY ,
                 ln.FromZ ,
@@ -277,7 +277,7 @@ type Line3D =
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let l = sqrt(x*x + y*y + z*z)
-        if l < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line3D.Shrink %O to short for finding point at a distance." ln
+        if l < 1e-12 then EuclidDivByZeroException.Raise "Euclid.Line3D.Shrink %O to short for finding point at a distance." ln
         Line3D( ln.FromX + x*distAtStart/l,
                 ln.FromY + y*distAtStart/l,
                 ln.FromZ + z*distAtStart/l,
@@ -292,7 +292,7 @@ type Line3D =
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let l = sqrt(x*x + y*y + z*z)
-        if l < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line3D.ShrinkStart %O to short for finding point at a distance." ln
+        if l < 1e-12 then EuclidDivByZeroException.Raise "Euclid.Line3D.ShrinkStart %O to short for finding point at a distance." ln
         Line3D( ln.FromX + x*distAtStart/l,
                 ln.FromY + y*distAtStart/l,
                 ln.FromZ + z*distAtStart/l,
@@ -307,7 +307,7 @@ type Line3D =
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let l = sqrt(x*x + y*y + z*z)
-        if l < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line3D.ShrinkEnd %O to short for finding point at a distance." ln
+        if l < 1e-12 then EuclidDivByZeroException.Raise "Euclid.Line3D.ShrinkEnd %O to short for finding point at a distance." ln
         Line3D( ln.FromX ,
                 ln.FromY ,
                 ln.FromZ ,
@@ -361,7 +361,7 @@ type Line3D =
         let z = ln.FromZ - ln.ToZ
         let lenSq = x*x + y*y + z*z
         if lenSq < 1e-18 then // corresponds to a line Length of 1e-9
-            FsExGeoDivByZeroException.Raise "FsEx.Geo.Line3D.ClosestParameterInfinite failed on very short line %O %O" ln p
+            EuclidDivByZeroException.Raise "Euclid.Line3D.ClosestParameterInfinite failed on very short line %O %O" ln p
         let u = ln.FromX-p.X
         let v = ln.FromY-p.Y
         let w = ln.FromZ-p.Z
@@ -398,7 +398,7 @@ type Line3D =
         let z = ln.FromZ - ln.ToZ
         let lenSq = x*x + y*y + z*z
         if lenSq < 1e-18 then // corresponds to a line Length of 1e-9
-            FsExGeoDivByZeroException.Raise "FsEx.Geo.Line3D.ClosestPoint failed on very short line %O %O" ln p
+            EuclidDivByZeroException.Raise "Euclid.Line3D.ClosestPoint failed on very short line %O %O" ln p
         let u = ln.FromX-p.X
         let v = ln.FromY-p.Y
         let w = ln.FromZ-p.Z
@@ -424,7 +424,7 @@ type Line3D =
         let z = ln.FromZ - ln.ToZ
         let lenSq = x*x + y*y + z*z
         if lenSq < 1e-18 then // corresponds to a line Length of 1e-9
-            FsExGeoDivByZeroException.Raise "FsEx.Geo.Line3D.DistanceFromPointInfinite failed on very short line %O %O" ln p
+            EuclidDivByZeroException.Raise "Euclid.Line3D.DistanceFromPointInfinite failed on very short line %O %O" ln p
         let u = ln.FromX - p.X
         let v = ln.FromY - p.Y
         let w = ln.FromZ - p.Z
@@ -487,33 +487,34 @@ type Line3D =
     /// Ignores the line orientation.
     /// The default angle tolerance is 0.25 degrees.
     /// This tolerance can be customized by an optional minium cosine value.
-    /// See FsEx.Geo.Cosine module.
+    /// See Euclid.Cosine module.
     /// Fails on lines shorter than 1e-12.
     member inline ln.IsParallelTo( other:Line3D, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
         let a = ln.Vector
         let b = other.Vector
         let sa = a.LengthSq
-        if sa < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Line3D.IsParallelTo: Line3D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
+        if sa < 1e-24 then EuclidException.Raise "Euclid.Line3D.IsParallelTo: Line3D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
         let sb = b.LengthSq
-        if sb < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Line3D.IsParallelTo: Line3D 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
+        if sb < 1e-24 then EuclidException.Raise "Euclid.Line3D.IsParallelTo: Line3D 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
         let au = a * (1.0 / sqrt sa )
         let bu = b * (1.0 / sqrt sb )
         abs(bu*au) > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
-
+    
+    // TODO add two overloads to compare with Vec and UnitVec for these 3 functions ?
 
     /// Checks if two 3D lines are parallel.
     /// Takes the line orientation into account too.
     /// The default angle tolerance is 0.25 degrees.
     /// This tolerance can be customized by an optional minium cosine value.
-    /// See FsEx.Geo.Cosine module.
+    /// See Euclid.Cosine module.
     /// Fails on lines shorter than 1e-12.
     member inline ln.IsParallelAndOrientedTo  (other:Line3D, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
         let a = ln.Vector
         let b = other.Vector
         let sa = a.LengthSq
-        if sa < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Line3D.IsParallelAndOrientedTo: Line3D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
+        if sa < 1e-24 then EuclidException.Raise "Euclid.Line3D.IsParallelAndOrientedTo: Line3D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
         let sb = b.LengthSq
-        if sb < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Line3D.IsParallelAndOrientedTo: Line3D 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
+        if sb < 1e-24 then EuclidException.Raise "Euclid.Line3D.IsParallelAndOrientedTo: Line3D 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
         let au = a * (1.0 / sqrt sa )
         let bu = b * (1.0 / sqrt sb )
         bu*au > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
@@ -523,15 +524,15 @@ type Line3D =
     /// The default angle tolerance is 89.75 to 90.25 degrees.
     /// This tolerance can be customized by an optional minium cosine value.
     /// The default cosine is 0.0043633 ( = 89.75 deg )
-    /// See FsEx.Geo.Cosine module.
+    /// See Euclid.Cosine module.
     /// Fails on lines shorter than 1e-12.
     member inline ln.IsPerpendicularTo (other:Line3D, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) =
         let a = ln.Vector
         let b = other.Vector
         let sa = a.LengthSq
-        if sa < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Line3D.IsPerpendicularTo: Line3D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
+        if sa < 1e-24 then EuclidException.Raise "Euclid.Line3D.IsPerpendicularTo: Line3D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
         let sb = b.LengthSq
-        if sb < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Line3D.IsPerpendicularTo: Line3D 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
+        if sb < 1e-24 then EuclidException.Raise "Euclid.Line3D.IsPerpendicularTo: Line3D 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
         let au = a * (1.0 / sqrt sa )
         let bu = b * (1.0 / sqrt sb )
         let d = bu*au
@@ -544,7 +545,7 @@ type Line3D =
     /// Also returns false on zero length lines (shorter than 1e-12).
     /// The default angle tolerance is 0.25 degrees.
     /// This tolerance can be customized by an optional minium cosine value.
-    /// See FsEx.Geo.Cosine module.
+    /// See Euclid.Cosine module.
     member inline ln.IsCoincidentTo (other:Line3D,
                                     [<OPT;DEF(1e-6)>] distanceTolerance:float,
                                     [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine>) =
@@ -696,23 +697,23 @@ type Line3D =
     /// Check if line is shorter than squared tolerance.
     static member inline isTinySq tol (l:Line3D) = l.LengthSq < tol
 
-    /// Checks if 3D line is parallel to the world X axis.
+    /// Checks if 3D line is parallel to the world X axis. Ignoring orientation.
     /// Tolerance is 1e-6.
     /// Fails on lines shorter than 1e-6.
     static member inline isXAligned (l:Line3D) = l.IsXAligned
     
-    /// Checks if 3D line is parallel to the world Y axis.
+    /// Checks if 3D line is parallel to the world Y axis. Ignoring orientation.
     /// Tolerance is 1e-6.
     /// Fails on lines shorter than 1e-6.
     static member inline isYAligned (l:Line3D) = l.IsYAligned
     
-    /// Checks if 3D line is parallel to the world Z axis.
+    /// Checks if 3D line is parallel to the world Z axis. Ignoring orientation.
     /// Tolerance is 1e-6.
     /// Fails on lines shorter than 1e-6.
     /// Same as ln.IsVertical
     static member inline isZAligned (l:Line3D) = l.IsZAligned
     
-    /// Checks if 3D line is parallel to the world Z axis.
+    /// Checks if 3D line is parallel to the world Z axis. Ignoring orientation.
     /// Tolerance is 1e-6.
     /// Fails on lines shorter than 1e-6.
     /// Same as ln.IsZAligned
@@ -835,7 +836,7 @@ type Line3D =
     static member inline lengthToPtOnLine (ln:Line3D) pt =
         let t = ln.Vector
         let l = t.Length
-        if l < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line3D.lengthToPtOnLine %O to short for finding length to point." ln
+        if l < 1e-12 then EuclidDivByZeroException.Raise "Euclid.Line3D.lengthToPtOnLine %O to short for finding length to point." ln
         (t/l) * (pt-ln.From)
 
     /// Extend 3D line by absolute amount at start and end.
@@ -875,7 +876,7 @@ type Line3D =
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let len = sqrt(x*x + y*y + z*z)
-        if len < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line3D.pointAtDistance %O to short for finding point at a distance." ln
+        if len < 1e-12 then EuclidDivByZeroException.Raise "Euclid.Line3D.pointAtDistance %O to short for finding point at a distance." ln
         Pnt(ln.FromX + x*dist/len,
             ln.FromY + y*dist/len,
             ln.FromZ + z*dist/len)
@@ -887,7 +888,7 @@ type Line3D =
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let l = sqrt(x*x + y*y + z*z)
-        if l < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line3D.withLengthFromStart %O to short for finding point at a distance." ln
+        if l < 1e-12 then EuclidDivByZeroException.Raise "Euclid.Line3D.withLengthFromStart %O to short for finding point at a distance." ln
         Line3D( ln.FromX ,
                 ln.FromY ,
                 ln.FromZ ,
@@ -902,7 +903,7 @@ type Line3D =
         let y = ln.FromY-ln.ToY
         let z = ln.FromZ-ln.ToZ
         let l = sqrt(x*x + y*y + z*z)
-        if l < 1e-12 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Line3D.withLengthToEnd %O to short for finding point at a distance." ln
+        if l < 1e-12 then EuclidDivByZeroException.Raise "Euclid.Line3D.withLengthToEnd %O to short for finding point at a distance." ln
         Line3D( ln.ToX + x*len/l ,
                 ln.ToY + y*len/l ,
                 ln.ToZ + z*len/l ,
@@ -917,7 +918,7 @@ type Line3D =
         let y = ln.ToY - ln.FromY
         let z = ln.ToZ - ln.FromZ
         let lenXY = sqrt (x*x + y*y)
-        if lenXY  < 1e-12 then FsExGeoException.Raise "FsEx.Geo.Line3D.offset: Cannot offset vertical Line3D  (by %g) %O" amount ln
+        if lenXY  < 1e-12 then EuclidException.Raise "Euclid.Line3D.offset: Cannot offset vertical Line3D  (by %g) %O" amount ln
         let ox = -y*amount/lenXY  // unitized, horizontal , perpendicular  vector
         let oy =  x*amount/lenXY  // unitized, horizontal , perpendicular  vector
         Line3D( ln.FromX+ox,
@@ -931,7 +932,7 @@ type Line3D =
     /// Includes start and endpoint of line.
     static member divide (segments:int) (ln:Line3D) =
         match segments with
-        | x when x < 1 -> FsExGeoException.Raise "FsEx.Geo.Line3D.divide failed for %d segments. Minimum one. for %O"  segments ln
+        | x when x < 1 -> EuclidException.Raise "Euclid.Line3D.divide failed for %d segments. Minimum one. for %O"  segments ln
         | 1 -> [|ln.From;  ln.To|]
         | k ->
             let x = ln.ToX - ln.FromX
@@ -955,7 +956,7 @@ type Line3D =
     static member divideMinLength (minSegmentLength:float) (ln:Line3D) =
         let len = ln.Length
         if len < minSegmentLength then
-            FsExGeoException.Raise "FsEx.Geo.Line3D.divideMinLength minSegmentLength %g is bigger than line length %g for %O"  minSegmentLength len ln
+            EuclidException.Raise "Euclid.Line3D.divideMinLength minSegmentLength %g is bigger than line length %g for %O"  minSegmentLength len ln
         let k = int (len / minSegmentLength)
         Line3D.divide k ln
 
@@ -977,7 +978,7 @@ type Line3D =
     ///<param name="lnB"> The second line.</param>
     ///<param name="relAngleDiscriminant"> This is an optional tolerance for the internally calculated relative Angle Discriminant.
     /// The default value is '0.00000952' this corresponds to approx 0.25 degree. Below this angle the 'Parallel' or 'Coincident' union case is returned.
-    /// Use the module FsEx.Geo.Util.RelAngleDiscriminant to set another tolerance here.</param>
+    /// Use the module Euclid.Util.RelAngleDiscriminant to set another tolerance here.</param>
     ///<param name="coincidentTolerance" > Is an optional distance tolerance. 1e-6 by default.
     ///  If parallel lines are closer than this the 'Coincident' union case is returned .</param>
     ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
@@ -1034,7 +1035,7 @@ type Line3D =
             let discriminant = ac - bb // never negative , the dot product cannot be bigger than the two square length multiplied with each other
             let div = ac+bb // never negative
             // getting the relation between the sum and the subtraction gives a good estimate of the angle between the lines
-            // see module FsEx.Geo.Util.RelAngleDiscriminant
+            // see module Euclid.Util.RelAngleDiscriminant
             let rel = discriminant/div
             if rel < float relAngleDiscriminant then //parallel
                 let e = bx*vx + by*vy + bz*vz
@@ -1058,7 +1059,7 @@ type Line3D =
     ///  If skew lines are closer than this distance they are considered intersecting in one point. The returned point is on line A.</param>
     ///<param name="relAngleDiscriminant"> This is an optional tolerance for the internally calculated relative Angle Discriminant.
     /// The default value is '0.00000952' this corresponds to approx 0.25 degree. Below this angle the 'Parallel' or 'Coincident' union case is returned.
-    /// Use the module FsEx.Geo.Util.RelAngleDiscriminant to set another tolerance here.</param>
+    /// Use the module Euclid.Util.RelAngleDiscriminant to set another tolerance here.</param>
     ///<param name="coincidentTolerance" > Is an optional distance tolerance. 1e-6 by default.
     ///  If parallel lines are closer than this the 'Coincident' union case is returned .</param>
     ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
@@ -1112,7 +1113,7 @@ type Line3D =
     ///  If skew lines are closer than this distance they are considered intersecting in one point. The returned point is on line A.</param>
     ///<param name="relAngleDiscriminant"> This is an optional tolerance for the internally calculated relative Angle Discriminant.
     /// The default value is '0.00000952' this corresponds to approx 0.25 degree. Below this angle the 'Parallel' or 'Coincident' union case is returned.
-    /// Use the module FsEx.Geo.Util.RelAngleDiscriminant to set another tolerance here.</param>
+    /// Use the module Euclid.Util.RelAngleDiscriminant to set another tolerance here.</param>
     ///<param name="coincidentTolerance" > Is an optional distance tolerance. 1e-6 by default.
     ///  If parallel lines are closer than this the 'Coincident' union case is returned .</param>
     ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
@@ -1127,10 +1128,10 @@ type Line3D =
                                             ) : Pnt =
         match Line3D.intersectionInfinite(lnA , lnB, skewTolerance, relAngleDiscriminant, coincidentTolerance, tooShortTolerance) with
         |IntersectionPoints3D.OnePoint p  -> p
-        |IntersectionPoints3D.TwoPoints _ -> FsExGeoException.Raise "FsEx.Geo.Line3D.intersectionPointInfinite: Lines are skew lnA: \r\n%O and lnB: \r\n%O" lnA lnB
-        |IntersectionPoints3D.Parallel    -> FsExGeoException.Raise "FsEx.Geo.Line3D.intersectionPointInfinite: Lines are parallel lnA: \r\n%O and lnB: \r\n%O" lnA lnB
-        |IntersectionPoints3D.Coincident  -> FsExGeoException.Raise "FsEx.Geo.Line3D.intersectionPointInfinite: Lines are coincident lnA: \r\n%O and lnB: \r\n%O" lnA lnB
-        |IntersectionPoints3D.TooShort    -> FsExGeoException.Raise "FsEx.Geo.Line3D.intersectionPointInfinite: Lines are tooShort lnA: \r\n%O and lnB: \r\n%O" lnA lnB
+        |IntersectionPoints3D.TwoPoints _ -> EuclidException.Raise "Euclid.Line3D.intersectionPointInfinite: Lines are skew lnA: \r\n%O and lnB: \r\n%O" lnA lnB
+        |IntersectionPoints3D.Parallel    -> EuclidException.Raise "Euclid.Line3D.intersectionPointInfinite: Lines are parallel lnA: \r\n%O and lnB: \r\n%O" lnA lnB
+        |IntersectionPoints3D.Coincident  -> EuclidException.Raise "Euclid.Line3D.intersectionPointInfinite: Lines are coincident lnA: \r\n%O and lnB: \r\n%O" lnA lnB
+        |IntersectionPoints3D.TooShort    -> EuclidException.Raise "Euclid.Line3D.intersectionPointInfinite: Lines are tooShort lnA: \r\n%O and lnB: \r\n%O" lnA lnB
 
     /// Assumes Lines to be infinite.
     /// Returns the distance between two infinite 3D lines. At their closest point.
@@ -1141,9 +1142,9 @@ type Line3D =
     static member inline distanceBetweenInfiniteLines(lnA , lnB) =
         match Line3D.intersectionParamInfinite(lnA , lnB) with
         |IntersectionParam.Coincident    ->  0.0
-        |IntersectionParam.TooShortA     ->  FsExGeoException.Raise "FsEx.Geo.Line3D.distanceBetweenInfiniteLines: Line A is tooShort lnA: \r\n%O and lnB: \r\n%O" lnA lnB
-        |IntersectionParam.TooShortB     ->  FsExGeoException.Raise "FsEx.Geo.Line3D.distanceBetweenInfiniteLines: Line B is  tooShort lnA: \r\n%O and lnB: \r\n%O" lnA lnB
-        |IntersectionParam.TooShortBoth  ->  FsExGeoException.Raise "FsEx.Geo.Line3D.distanceBetweenInfiniteLines: both Lines are tooShort lnA: \r\n%O and lnB: \r\n%O" lnA lnB
+        |IntersectionParam.TooShortA     ->  EuclidException.Raise "Euclid.Line3D.distanceBetweenInfiniteLines: Line A is tooShort lnA: \r\n%O and lnB: \r\n%O" lnA lnB
+        |IntersectionParam.TooShortB     ->  EuclidException.Raise "Euclid.Line3D.distanceBetweenInfiniteLines: Line B is  tooShort lnA: \r\n%O and lnB: \r\n%O" lnA lnB
+        |IntersectionParam.TooShortBoth  ->  EuclidException.Raise "Euclid.Line3D.distanceBetweenInfiniteLines: both Lines are tooShort lnA: \r\n%O and lnB: \r\n%O" lnA lnB
         |IntersectionParam.Parallel      -> lnA.DistanceFromPointInfinite lnB.From
         |TwoParam (u,v) -> // skew or intersecting
             let a =  lnA.EvaluateAt u
@@ -1219,7 +1220,7 @@ type Line3D =
     ///  If skew lines are closer than this distance they are considered intersecting in one point. The returned point is on line A.</param>
     ///<param name="relAngleDiscriminant"> This is an optional tolerance for the internally calculated relative Angle Discriminant.
     /// The default value is '0.00000952' this corresponds to approx 0.25 degree. Below this angle the 'Parallel' or 'Coincident' union case is returned.
-    /// Use the module FsEx.Geo.Util.RelAngleDiscriminant to set another tolerance here.</param>
+    /// Use the module Euclid.Util.RelAngleDiscriminant to set another tolerance here.</param>
     ///<param name="coincidentTolerance" > Is an optional distance tolerance. 1e-6 by default.
     ///  If parallel lines are closer than this the 'Coincident' union case is returned .</param>
     ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
@@ -1456,7 +1457,7 @@ type Line3D =
     ///  If skew lines are closer than this distance they are considered intersecting in one point. The returned point is on line A.</param>
     ///<param name="relAngleDiscriminant"> This is an optional tolerance for the internally calculated relative Angle Discriminant.
     /// The default value is '0.00000952' this corresponds to approx 0.25 degree. Below this angle the 'Parallel' or 'Coincident' union case is returned.
-    /// Use the module FsEx.Geo.Util.RelAngleDiscriminant to set another tolerance here.</param>
+    /// Use the module Euclid.Util.RelAngleDiscriminant to set another tolerance here.</param>
     ///<param name="coincidentTolerance" > Is an optional distance tolerance. 1e-6 by default.
     ///  If parallel lines are closer than this the 'Coincident' union case is returned .</param>
     ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
@@ -1492,7 +1493,7 @@ type Line3D =
     ///  If skew lines are closer than this distance they are considered intersecting in one point. The returned point is on line A.</param>
     ///<param name="relAngleDiscriminant"> This is an optional tolerance for the internally calculated relative Angle Discriminant.
     /// The default value is '0.00000952' this corresponds to approx 0.25 degree. Below this angle the 'Parallel' or 'Coincident' union case is returned.
-    /// Use the module FsEx.Geo.Util.RelAngleDiscriminant to set another tolerance here.</param>
+    /// Use the module Euclid.Util.RelAngleDiscriminant to set another tolerance here.</param>
     ///<param name="coincidentTolerance" > Is an optional distance tolerance. 1e-6 by default.
     ///  If parallel lines are closer than this the 'Coincident' union case is returned .</param>
     ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.

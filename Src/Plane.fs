@@ -1,8 +1,8 @@
-namespace FsEx.Geo
+namespace Euclid
 
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>]
-open FsEx.Geo.Util
+open Euclid.Util
 
 
 #nowarn "44" // for hidden constructors via Obsolete Attribute
@@ -27,7 +27,7 @@ type Plane = // Normals are always unitized
     new (pt,n) = {Origin = pt; Normal = n} // private unchecked constructor, supply unitized values
 
     /// Format PPlane into string with nicely formatted floating point numbers.
-    override pl.ToString() = sprintf "FsEx.Geo.Plane(Origin:%s| Normal:%s)" pl.Origin.AsString pl.Normal.AsString
+    override pl.ToString() = sprintf "Euclid.Plane(Origin:%s| Normal:%s)" pl.Origin.AsString pl.Normal.AsString
 
     /// Returns signed distance of point to plane, also indicating on which side it is.
     member inline pl.DistanceToPt pt = pl.Normal*(pt-pl.Origin)
@@ -60,7 +60,7 @@ type Plane = // Normals are always unitized
     /// and the distance of second origin to the first plane is less than the distance tolerance.
     /// The default angle tolerance is 0.25 degrees.
     /// This tolerance can be customized by an optional minium cosine value.
-    /// See FsEx.Geo.Cosine module.
+    /// See Euclid.Cosine module.
     member inline pl.IsCoincidentTo (other:Plane,
                                     [<OPT;DEF(1e-6)>] distanceTolerance:float,
                                     [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine>) =
@@ -87,7 +87,7 @@ type Plane = // Normals are always unitized
     /// Create Plane, normal vector gets unitized in constructor.
     static member create(pt,normal:Vec) =
         let l = sqrt(normal.X*normal.X+normal.Y*normal.Y+normal.Z*normal.Z)
-        if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "FsEx.Geo.Plane.create: %O is too small for unitizing, tolerance:%g" normal zeroLengthTol
+        if l < zeroLengthTol then EuclidDivByZeroException.Raise "Euclid.Plane.create: %O is too small for unitizing, tolerance:%g" normal zeroLengthTol
         let li=1./l in
         Plane(pt,UnitVec.createUnchecked( li*normal.X , li*normal.Y ,li*normal.Z ))
 
@@ -98,7 +98,7 @@ type Plane = // Normals are always unitized
     /// Create Plane from 3 points.
     static member inline createFrom3Points (a:Pnt) (b:Pnt) (c:Pnt) =
         let n =  Vec.cross (c-b,a-b)
-        if n.LengthSq < 1e-12 then FsExGeoException.Raise "FsEx.Geo.Plane.createFrom3Points: the points %O, %O, %O are (almost) in one Line3D, no Plane found." a b c
+        if n.LengthSq < 1e-12 then EuclidException.Raise "Euclid.Plane.createFrom3Points: the points %O, %O, %O are (almost) in one Line3D, no Plane found." a b c
         Plane(a, n.Unitized)
 
     /// Gets the Planes normal. A unitized vector.
@@ -122,7 +122,7 @@ type Plane = // Normals are always unitized
         let ao = a.Origin
         let v = UnitVec.cross (an,bn)
         if v.LengthSq < 1e-18 then
-            FsExGeoException.Raise "FsEx.Geo.Plane.intersect: Planes are parallel or coincident: %O, %O" a b
+            EuclidException.Raise "Euclid.Plane.intersect: Planes are parallel or coincident: %O, %O" a b
         let pa = Vec.cross(v, an)
         let nenner = pa * bn
         let t = ((b.Origin - ao ) * bn) / nenner
@@ -135,7 +135,7 @@ type Plane = // Normals are always unitized
         let n = pl.Normal
         let nenner = ln.Tangent * n
         if abs nenner < 1e-9 then
-            FsExGeoException.Raise "FsEx.Geo.Plane.intersectLineParameter: Line and Plane are parallel or line has zero length: %O, %O" ln pl
+            EuclidException.Raise "Euclid.Plane.intersectLineParameter: Line and Plane are parallel or line has zero length: %O, %O" ln pl
         ((pl.Origin - ln.From) * pl.Normal) / nenner
 
     /// Returns intersection point of infinite Line3D with Plane.

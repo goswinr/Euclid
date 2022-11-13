@@ -1,4 +1,4 @@
-namespace FsEx.Geo
+namespace Euclid
 
 open System
 open Util
@@ -19,8 +19,8 @@ type Polyline3D =
 
     /// Nicely formatted string representation of the Box including its size.
     override pl.ToString() =
-        if pl.Points.Count = 0 then "An empty FsEx.Geo.Polyline3D."
-        else sprintf"FsEx.Geo.Polyline3D with %d points from %s to %s" pl.Points.Count pl.Points.First.AsString pl.Points.Last.AsString
+        if pl.Points.Count = 0 then "An empty Euclid.Polyline3D."
+        else sprintf"Euclid.Polyline3D with %d points from %s to %s" pl.Points.Count pl.Points.First.AsString pl.Points.Last.AsString
 
     /// Creates a copy of the Polyline3D
     member inline p.Duplicate(): Polyline3D =
@@ -29,12 +29,12 @@ type Polyline3D =
 
     /// Gets first point of the Polyline3D
     member inline p.Start =
-        if p.Points.Count < 2 then FsExGeoException.Raise "FsEx.Geo.Polyline3D.Start failed on Polyline3D with less than 2 points %O" p
+        if p.Points.Count < 2 then EuclidException.Raise "Euclid.Polyline3D.Start failed on Polyline3D with less than 2 points %O" p
         p.Points.First
 
     /// Gets last or end point of the Polyline3D
     member inline p.End =
-        if p.Points.Count < 2 then FsExGeoException.Raise "FsEx.Geo.Polyline3D.Start failed on Polyline3D with less than 2 points %O" p
+        if p.Points.Count < 2 then EuclidException.Raise "Euclid.Polyline3D.Start failed on Polyline3D with less than 2 points %O" p
         p.Points.Last
 
     /// Gets the count of points in the Polyline3D
@@ -43,7 +43,7 @@ type Polyline3D =
     /// Gets the length of the Polyline3D
     member p.Length =
         let ps = p.Points
-        if ps.Count < 2 then FsExGeoException.Raise "FsEx.Geo.Polyline3D.Length failed on Polyline3D with less than 2 points %O" p
+        if ps.Count < 2 then EuclidException.Raise "Euclid.Polyline3D.Length failed on Polyline3D with less than 2 points %O" p
         let mutable l = 0.0
         let mutable prev = ps.[0]
         for i = 1 to ps.Count-1 do
@@ -57,13 +57,13 @@ type Polyline3D =
 
     /// Tests if Polyline3D start and end points are exactly the same.
     member inline p.IsClosed =
-        if p.Points.Count < 2 then FsExGeoException.Raise "FsEx.Geo.Polyline3D.IsClosed failed on Polyline3D with less than 2 points %O" p
+        if p.Points.Count < 2 then EuclidException.Raise "Euclid.Polyline3D.IsClosed failed on Polyline3D with less than 2 points %O" p
         let v = p.Start  - p.End
         v.IsZero
 
     /// Tests if Polyline3D is closed within given tolerance.
     member p.IsAlmostClosed(tolerance) =
-        if p.Points.Count < 2 then FsExGeoException.Raise "FsEx.Geo.Polyline3D.IsAlmostClosed failed on Polyline3D with less than 2 points %O" p
+        if p.Points.Count < 2 then EuclidException.Raise "Euclid.Polyline3D.IsAlmostClosed failed on Polyline3D with less than 2 points %O" p
         let v = p.Start  - p.End
         v.LengthSq < tolerance*tolerance
 
@@ -81,7 +81,7 @@ type Polyline3D =
     /// If the ends are closer than the tolerance. The last point is set to equal the first point.
     /// Else the start point is added to the end of the Polyline2D.
     member p.CloseIfOpen(toleranceForAddingPoint) =
-        if p.Points.Count < 2 then FsExGeoException.Raise "FsEx.Geo.Polyline3D.CloseIfOpen failed on Polyline3D with less than 2 points %O" p
+        if p.Points.Count < 2 then EuclidException.Raise "Euclid.Polyline3D.CloseIfOpen failed on Polyline3D with less than 2 points %O" p
         let v = p.Start  - p.End
         if v.LengthSq < toleranceForAddingPoint*toleranceForAddingPoint then 
             p.Points.Last <- p.Start
@@ -104,7 +104,7 @@ type Polyline3D =
             let b = n.Y + t.Y
             area <- area + a*b
             t <- n
-        if   abs(area) < Util.zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Polyline3D.IsCounterClockwiseIn2D: Polyline3D the area is zero: %O" p
+        if   abs(area) < Util.zeroLengthTol then EuclidException.Raise "Euclid.Polyline3D.IsCounterClockwiseIn2D: Polyline3D the area is zero: %O" p
         else area > 0.0
 
 
@@ -118,14 +118,14 @@ type Polyline3D =
         let i = int t
         let p = t - float i
         if   i < -1 then
-            FsExGeoException.Raise "FsEx.Geo.Polyline3D.EvaluateAt: Parameter %f is less than 0.0" t
+            EuclidException.Raise "Euclid.Polyline3D.EvaluateAt: Parameter %f is less than 0.0" t
         elif i > pl.Points.Count then
-            FsExGeoException.Raise "FsEx.Geo.Polyline3D.EvaluateAt: Parameter %f is more than than point count(%d)." t pl.Points.Count
+            EuclidException.Raise "Euclid.Polyline3D.EvaluateAt: Parameter %f is more than than point count(%d)." t pl.Points.Count
         elif i =  -1 then
             if p > 0.99999 then pl.Points.First
-            else FsExGeoException.Raise "FsEx.Geo.Polyline3D.EvaluateAt: Parameter %f is less than 0.0" t
+            else EuclidException.Raise "Euclid.Polyline3D.EvaluateAt: Parameter %f is less than 0.0" t
         elif i = pl.Points.Count then
-            if   p > 1e-5 then  FsExGeoException.Raise "FsEx.Geo.Polyline3D.EvaluateAt: Parameter %f is more than than point count(%d)." t pl.Points.Count
+            if   p > 1e-5 then  EuclidException.Raise "Euclid.Polyline3D.EvaluateAt: Parameter %f is more than than point count(%d)." t pl.Points.Count
             else pl.Points.Last
         // return point  if point is almost matching
         elif  p < zeroLengthTol then
@@ -145,14 +145,14 @@ type Polyline3D =
         let i = int t
         let p = t - float i
         if   i < -1 then
-            FsExGeoException.Raise "FsEx.Geo.Polyline3D.EvaluateAt: Parameter %f is less than 0.0" t
+            EuclidException.Raise "Euclid.Polyline3D.EvaluateAt: Parameter %f is less than 0.0" t
         elif i > pl.Points.Count then
-            FsExGeoException.Raise "FsEx.Geo.Polyline3D.EvaluateAt: Parameter %f is more than than point count(%d)." t pl.Points.Count
+            EuclidException.Raise "Euclid.Polyline3D.EvaluateAt: Parameter %f is more than than point count(%d)." t pl.Points.Count
         elif i =  -1 then
             if p > 0.9999 then UnitVec.create(pl.Points.First,pl.Points.Second)
-            else FsExGeoException.Raise "FsEx.Geo.Polyline3D.EvaluateAt: Parameter %f is less than 0.0" t
+            else EuclidException.Raise "Euclid.Polyline3D.EvaluateAt: Parameter %f is less than 0.0" t
         elif i = pl.Points.Count then
-            if   p > 1e-4 then  FsExGeoException.Raise "FsEx.Geo.Polyline3D.EvaluateAt: Parameter %f is more than than point count(%d)." t pl.Points.Count
+            if   p > 1e-4 then  EuclidException.Raise "Euclid.Polyline3D.EvaluateAt: Parameter %f is more than than point count(%d)." t pl.Points.Count
             else UnitVec.create(pl.Points.SecondLast,pl.Points.Last)
         // return point  if point is almost matching
         else
@@ -167,7 +167,7 @@ type Polyline3D =
     member pl.ClosestParameter(pt:Pnt) =
         // for very large polylines, this is could be optimized by using search R-tree
         let ps = pl.Points
-        if ps.Count < 2 then FsExGeoException.Raise "FsEx.Geo.Polyline3D.ClosestParameter failed on  Polyline3D with less than 2 points %O" pl
+        if ps.Count < 2 then EuclidException.Raise "Euclid.Polyline3D.ClosestParameter failed on  Polyline3D with less than 2 points %O" pl
         // vectors of the segments
         let vs = Array.zeroCreate (ps.Count-1)
         for i = 0 to vs.Length-1 do
@@ -217,12 +217,12 @@ type Polyline3D =
 
     /// Gets first point of the Polyline3D
     static member inline start (p:Polyline3D) =
-        if p.Points.Count < 2 then FsExGeoException.Raise "FsEx.Geo.Polyline3D.Start failed on Polyline3D with less than 2 points %O" p
+        if p.Points.Count < 2 then EuclidException.Raise "Euclid.Polyline3D.Start failed on Polyline3D with less than 2 points %O" p
         p.Points.First
 
     /// Gets last or end point of the Polyline3D
     static member inline ende (p:Polyline3D) =
-        if p.Points.Count < 2 then FsExGeoException.Raise "FsEx.Geo.Polyline3D.Start failed on Polyline3D with less than 2 points %O" p
+        if p.Points.Count < 2 then EuclidException.Raise "Euclid.Polyline3D.Start failed on Polyline3D with less than 2 points %O" p
         p.Points.Last
 
     /// Reverse order of the Polyline3D in place.
@@ -325,7 +325,7 @@ type Polyline3D =
     /// The input vectors are the vectors for each segment of the polyline.
     /// From first and second point up to last and first point.
     static member findOuterCornerAndRefNormal(pts:ResizeArray<Pnt>, vs:Vec[])=
-        if pts.Count <> vs.Length then FsExGeoException.Raise "FsEx.Geo.Polyline3D.findOuterCornerAndRefNormal pts (%d) and vs(%d) must have the same length." pts.Count vs.Length
+        if pts.Count <> vs.Length then EuclidException.Raise "Euclid.Polyline3D.findOuterCornerAndRefNormal pts (%d) and vs(%d) must have the same length." pts.Count vs.Length
         let us = Array.zeroCreate vs.Length
         // mark very short segments with 0, 0, 0:
         for i=0 to vs.Length-1 do
@@ -378,8 +378,8 @@ type Polyline3D =
     /// Start point and end point may not be equal, all arrays of same length.
     /// 'referenceNormal' to be in Z Axis for counter clockwise loops in 2D or if it is Vec.Zero it wil be calculated add hoc.
     static member  offsetCore( pts:ResizeArray<Pnt>, offD:ResizeArray<float>, normD:ResizeArray<float>, referenceNormal:Vec, fixColinearLooped, allowObliqueOffsetOnColinearSegments) : ResizeArray<Pnt>  =
-        if notNull offD && pts.Count <> offD.Count   then FsExGeoException.Raise "FsEx.Geo.Polyline3D.offsetCore pts(%d) and offD(%d) must have the same length." pts.Count offD.Count
-        if notNull normD && pts.Count <> normD.Count then FsExGeoException.Raise "FsEx.Geo.Polyline3D.offsetCore pts(%d) and normD(%d) must have the same length." pts.Count normD.Count
+        if notNull offD && pts.Count <> offD.Count   then EuclidException.Raise "Euclid.Polyline3D.offsetCore pts(%d) and offD(%d) must have the same length." pts.Count offD.Count
+        if notNull normD && pts.Count <> normD.Count then EuclidException.Raise "Euclid.Polyline3D.offsetCore pts(%d) and normD(%d) must have the same length." pts.Count normD.Count
         let lenTolSq =  1e-12 // square length tolerance
         let lenPts   = pts.Count
         let lastIdx  = lenPts - 1
@@ -460,7 +460,7 @@ type Polyline3D =
             let rec searchBack i  =
                 let ii = saveIdx (i) colinear.Length
                 if not colinear.[ii] then ii
-                elif i < -colinear.Length then FsExGeoException.Raise "FsEx.Geo.Polyline3D.offsetCore : all %d points for offset are colinear within 0.25 degree or identical. " pts.Count
+                elif i < -colinear.Length then EuclidException.Raise "Euclid.Polyline3D.offsetCore : all %d points for offset are colinear within 0.25 degree or identical. " pts.Count
                 else searchBack (i - 1)
 
             let rec  searchForward i =
@@ -473,12 +473,12 @@ type Polyline3D =
                     let pi = searchBack    (i - 1)
                     let ni = searchForward (i + 1)
                     if pi = ni then //  does this ever happen ? it is either all colinear ( caught in searchBack) or at least three points are not colinear ??
-                        FsExGeoException.Raise "FsEx.Geo.Polyline3D.offsetCore : all %d points for offset are colinear within 0.25 degree or identical. " pts.Count
+                        EuclidException.Raise "Euclid.Polyline3D.offsetCore : all %d points for offset are colinear within 0.25 degree or identical. " pts.Count
                     let ln = Line3D(res.[pi], res.[ni])
                     res.[i] <- ln.ClosestPointInfinite(pts.[i])
                     // TODO add safety check? could be omitted. offset is then averaged out.
                     if not allowObliqueOffsetOnColinearSegments && abs (offD.[pi] - offD.[ni]) > 1e-9 then
-                        FsExGeoException.Raise "FsEx.Geo.Polyline3D.offsetCore: can't offset collinear segment at index %d with different offset distances from index %d and %d\r\n these distances are not the same: %f and %f" i pi ni offD.[pi]  offD.[ni]
+                        EuclidException.Raise "Euclid.Polyline3D.offsetCore: can't offset collinear segment at index %d with different offset distances from index %d and %d\r\n these distances are not the same: %f and %f" i pi ni offD.[pi]  offD.[ni]
         else
             let rec searchBack i  =
                 if i<0 then -1
@@ -496,21 +496,21 @@ type Polyline3D =
                     let ni = searchForward (i+1)
                     if pi = -1 then
                         if ni = -1 then
-                            FsExGeoException.Raise "FsEx.Geo.Polyline3D.offsetCore : all %d points for offset are colinear within 0.25 degree or identical. " pts.Count
+                            EuclidException.Raise "Euclid.Polyline3D.offsetCore : all %d points for offset are colinear within 0.25 degree or identical. " pts.Count
                         else // colinear start, get frame
                             match Points.offsetInCornerEx (pts[ni-1], pts[ni], pts[ni+1],  offD.[ni-1],  offD.[ni], refNorm) with
-                            |ValueNone -> FsExGeoException.Raise "FsEx.Geo.Polyline3D.offsetCore :offsetInCornerEx-1 failed unexpectedly."
+                            |ValueNone -> EuclidException.Raise "Euclid.Polyline3D.offsetCore :offsetInCornerEx-1 failed unexpectedly."
                             |ValueSome ( x, n, prevShift,_) -> res.[i] <- pts.[i] + prevShift + if isNull normD then Vec.Zero else n * normD.[i]
                     elif ni = -1 then  // colinear end, get frame
                         match Points.offsetInCornerEx (pts[pi-1], pts[pi], pts[pi+1],  offD.[pi-1],  offD.[pi], refNorm) with
-                        |ValueNone -> FsExGeoException.Raise "FsEx.Geo.Polyline3D.offsetCore :offsetInCornerEx-1 failed unexpectedly."
+                        |ValueNone -> EuclidException.Raise "Euclid.Polyline3D.offsetCore :offsetInCornerEx-1 failed unexpectedly."
                         |ValueSome ( x, n, _,nextShift) -> res.[i] <- pts.[i] + nextShift + if isNull normD then Vec.Zero else n * normD.[i]
                     else
                         let ln = Line3D(res.[pi], res.[ni])
                         res.[i] <- ln.ClosestPointInfinite(pts.[i])
                         // TODO add safety check? could be omitted. offset is then averaged out.
                         if not allowObliqueOffsetOnColinearSegments && abs (offD.[pi] - offD.[ni]) > 1e-9 then
-                            FsExGeoException.Raise "FsEx.Geo.Polyline3D.offsetCore: can't offset collinear segment at index %d with different offset distances from index %d and %d\r\n these distances are not the same: %f and %f" i pi ni offD.[pi]  offD.[ni]
+                            EuclidException.Raise "Euclid.Polyline3D.offsetCore: can't offset collinear segment at index %d with different offset distances from index %d and %d\r\n these distances are not the same: %f and %f" i pi ni offD.[pi]  offD.[ni]
         res
 
 
@@ -548,7 +548,7 @@ type Polyline3D =
         let points = polyLine.Points
         // (1) Fail if polyline has less than one point
         if points.Count < 2 then
-            FsExGeoException.Raise "FsEx.Geo.Polyline3D.offset needs at least two points but %O given." polyLine
+            EuclidException.Raise "Euclid.Polyline3D.offset needs at least two points but %O given." polyLine
 
         let getWithLength len (xs:seq<float>) : Result<ResizeArray<float>,int> =
             if isNull xs then Ok null
@@ -565,12 +565,12 @@ type Polyline3D =
             let pts =  points.GetRange(0, points.Count-1) // remove last point
             let offD =
                 match getWithLength pts.Count offsetDistances with
-                |Error k  -> FsExGeoException.Raise "FsEx.Geo.Polyline3D.offset: offsetDistances has %d items but should have 0, 1 or %d for %d given points \r\nin closed Polyline3D with identical start and end:\r\n%O" k pts.Count points.Count polyLine
+                |Error k  -> EuclidException.Raise "Euclid.Polyline3D.offset: offsetDistances has %d items but should have 0, 1 or %d for %d given points \r\nin closed Polyline3D with identical start and end:\r\n%O" k pts.Count points.Count polyLine
                 |Ok    ds -> ds
 
             let normD =
                 match getWithLength pts.Count normalDistances with
-                |Error k  -> FsExGeoException.Raise "FsEx.Geo.Polyline3D.offset: normalDistances has %d items but should have 0, 1 or %d for %d given points \r\nin closed Polyline3D with identical start and end:\r\n%O" k pts.Count points.Count polyLine
+                |Error k  -> EuclidException.Raise "Euclid.Polyline3D.offset: normalDistances has %d items but should have 0, 1 or %d for %d given points \r\nin closed Polyline3D with identical start and end:\r\n%O" k pts.Count points.Count polyLine
                 |Ok    ds -> ds
 
             let res = Polyline3D.offsetCore(pts, offD, normD, refNormal, fixColinearLooped=true, allowObliqueOffsetOnColinearSegments=obliqueOffsets)
@@ -581,12 +581,12 @@ type Polyline3D =
         elif loop then
             let offD =
                 match getWithLength points.Count offsetDistances with
-                |Error k  -> FsExGeoException.Raise "FsEx.Geo.Polyline3D.offset: offsetDistances has %d items but should have 0, 1 or %d for %d given points \r\nin open Polyline3D with start and end apart and loop set to '%b :\r\n%O" k points.Count points.Count loop polyLine
+                |Error k  -> EuclidException.Raise "Euclid.Polyline3D.offset: offsetDistances has %d items but should have 0, 1 or %d for %d given points \r\nin open Polyline3D with start and end apart and loop set to '%b :\r\n%O" k points.Count points.Count loop polyLine
                 |Ok    ds -> ds
 
             let normD =
                 match getWithLength points.Count normalDistances with
-                |Error k  -> FsExGeoException.Raise "FsEx.Geo.Polyline3D.offset: normalDistances has %d items but should have 0, 1 or %d for %d given points \r\nin closed Polyline3D with start and end apart and loop set to '%b :\r\n%O" k points.Count points.Count loop polyLine
+                |Error k  -> EuclidException.Raise "Euclid.Polyline3D.offset: normalDistances has %d items but should have 0, 1 or %d for %d given points \r\nin closed Polyline3D with start and end apart and loop set to '%b :\r\n%O" k points.Count points.Count loop polyLine
                 |Ok    ds -> ds
 
             Polyline3D.offsetCore(points, offD, normD,refNormal, fixColinearLooped=true, allowObliqueOffsetOnColinearSegments=obliqueOffsets)
@@ -597,14 +597,14 @@ type Polyline3D =
             let pts =  points
             let offD =
                 match getWithLength (points.Count-1) offsetDistances with
-                |Error k  -> FsExGeoException.Raise "FsEx.Geo.Polyline3D.offset: offsetDistances has %d items but should have 0, 1 or %d for %d given points \r\nin open Polyline3D with start and end apart and loop set to '%b :\r\n%O" k points.Count points.Count loop polyLine
+                |Error k  -> EuclidException.Raise "Euclid.Polyline3D.offset: offsetDistances has %d items but should have 0, 1 or %d for %d given points \r\nin open Polyline3D with start and end apart and loop set to '%b :\r\n%O" k points.Count points.Count loop polyLine
                 |Ok    ds ->
                     if notNull ds then ds.Add ds.[0] // make same length as points
                     ds
 
             let normD =
                 match getWithLength points.Count normalDistances with
-                |Error k  -> FsExGeoException.Raise "FsEx.Geo.Polyline3D.offset: normalDistances has %d items but should have 0, 1 or %d for %d given points \r\nin closed Polyline3D with start and end apart and loop set to '%b :\r\n%O" k points.Count points.Count loop polyLine
+                |Error k  -> EuclidException.Raise "Euclid.Polyline3D.offset: normalDistances has %d items but should have 0, 1 or %d for %d given points \r\nin closed Polyline3D with start and end apart and loop set to '%b :\r\n%O" k points.Count points.Count loop polyLine
                 |Ok    ds -> ds
 
             let res = Polyline3D.offsetCore(points, offD, normD, refNormal, fixColinearLooped=false, allowObliqueOffsetOnColinearSegments=obliqueOffsets)

@@ -1,4 +1,4 @@
-namespace FsEx.Geo
+namespace Euclid
 
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
@@ -50,7 +50,7 @@ type BBox =
 
     /// Nicely formatted string representation of the BoundingBox, including its size.
     override b.ToString() =
-        sprintf "FsEx.Geo.BBox: length(x)= %s width(y)=%s , height(z)=%s (at X=%s | Y=%s | Z=%s)"
+        sprintf "Euclid.BBox: length(x)= %s width(y)=%s , height(z)=%s (at X=%s | Y=%s | Z=%s)"
             (Format.float (b.MaxX - b.MinX)) (Format.float (b.MaxY - b.MinY)) (Format.float (b.MaxZ - b.MinZ))
             (Format.float b.MinX) (Format.float b.MinY) (Format.float b.MinZ)
 
@@ -347,21 +347,21 @@ type BBox =
 
 
     /// Returns Bounding Box expanded by distance.
-    /// Does check for underflow if distance is negative and raises FsExGeoException.
+    /// Does check for underflow if distance is negative and raises EuclidException.
     member inline b.Expand(dist) : BBox =
         let n = BBox(   b.MinX-dist, b.MinY-dist, b.MinZ-dist,
                         b.MaxX+dist, b.MaxY+dist, b.MaxZ+dist)
         if dist<0. &&  (n.MinX > n.MaxX ||  n.MinY > n.MaxX ||  n.MinZ > n.MaxZ) then
-            FsExGeoException.Raise "FsEx.Geo.BBox.Expand(dist): Negative distance %g cause an underflow, on %s" dist b.AsString
+            EuclidException.Raise "Euclid.BBox.Expand(dist): Negative distance %g cause an underflow, on %s" dist b.AsString
         n
 
     /// Returns Bounding Box expanded by a distance for X , Y and Z-axis each.
-    /// Does check for underflow if distance is negative and raises FsExGeoException.
+    /// Does check for underflow if distance is negative and raises EuclidException.
     member inline b.Expand(xDist,yDist,zDist) : BBox =
         let n = BBox(   b.MinX-xDist, b.MinY-yDist, b.MinZ-zDist,
                         b.MaxX+xDist, b.MaxY+yDist, b.MaxZ+zDist)
         if n.MinX > n.MaxX ||  n.MinY > n.MaxX ||  n.MinZ > n.MaxZ then
-            FsExGeoException.Raise "FsEx.Geo.BBox.Expand(x, y,z): Negative distance(s) X %g Y: %g and Z:%g cause an underflow, on %s" xDist yDist zDist b.AsString
+            EuclidException.Raise "Euclid.BBox.Expand(x, y,z): Negative distance(s) X %g Y: %g and Z:%g cause an underflow, on %s" xDist yDist zDist b.AsString
         n
 
     /// Returns Bounding Box expanded by a distance for X , Y and Z-axis each.
@@ -397,27 +397,27 @@ type BBox =
         b.ExpandSave(dist,dist,dist)
 
     /// Returns Bounding Box expanded only in X direction by different distance for start(minX) and end (maxX).
-    /// Does check for underflow if distance is negative and raises FsExGeoException.
+    /// Does check for underflow if distance is negative and raises EuclidException.
     member inline b.ExpandXaxis(startDist, endDist) : BBox =
         let n = BBox(b.MinX-startDist, b.MinY, b.MinZ, b.MaxX+endDist, b.MaxY, b.MaxZ)
         if n.MinX > n.MaxX then
-            FsExGeoException.Raise "FsEx.Geo.BBox.ExpandXaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist b.AsString
+            EuclidException.Raise "Euclid.BBox.ExpandXaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist b.AsString
         n
 
     /// Returns Bounding Box expanded only in Y direction by different distance for start(minY) and end (maxY).
-    /// Does check for underflow if distance is negative and raises FsExGeoException.
+    /// Does check for underflow if distance is negative and raises EuclidException.
     member inline b.ExpandYaxis(startDist, endDist) : BBox =
         let n = BBox(b.MinX, b.MinY-startDist, b.MinZ, b.MaxX, b.MaxY+endDist, b.MaxZ)
         if n.MinY > n.MaxY then
-            FsExGeoException.Raise "FsEx.Geo.BBox.ExpandYaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist b.AsString
+            EuclidException.Raise "Euclid.BBox.ExpandYaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist b.AsString
         n
 
     /// Returns Bounding Box expanded only in Z direction by different distance for start(minZ) and end (maxZ).
-    /// Does check for underflow if distance is negative and raises FsExGeoException.
+    /// Does check for underflow if distance is negative and raises EuclidException.
     member inline b.ExpandZaxis(startDist, endDist) : BBox =
         let n = BBox(b.MinX, b.MinY, b.MinZ-startDist, b.MaxX, b.MaxY, b.MaxZ+endDist)
         if n.MinZ > n.MaxZ then
-            FsExGeoException.Raise "FsEx.Geo.BBox.ExpandYaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist b.AsString
+            EuclidException.Raise "Euclid.BBox.ExpandYaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist b.AsString
         n
 
     /// Returns true if the two Bounding Boxes do overlap or touch.
@@ -524,28 +524,28 @@ type BBox =
 
 
     /// Returns Bounding Box expanded by distance.
-    /// Does check for underflow if distance is negative and raises FsExGeoException.
+    /// Does check for underflow if distance is negative and raises EuclidException.
     static member expand dist (b:BBox) =
         b.Expand dist
 
     /// Returns Bounding Box expanded by distance.
-    /// Does check for underflow if distance is negative and raises FsExGeoException.
+    /// Does check for underflow if distance is negative and raises EuclidException.
     static member expandSave dist (b:BBox) =
         b.Expand dist
 
     /// Returns Bounding Rectangle expanded only in X direction by different distance for start(minX) and end (maxX).
-    /// Does check for underflow if distance is negative and raises FsExGeoException.
+    /// Does check for underflow if distance is negative and raises EuclidException.
     static member expandXaxis startDist endDist (b:BBox) =
         b.ExpandXaxis(startDist, endDist)
 
 
     /// Returns Bounding Rectangle expanded only in Y direction by different distance for start(minY) and end (maxY).
-    /// Does check for underflow if distance is negative and raises FsExGeoException.
+    /// Does check for underflow if distance is negative and raises EuclidException.
     static member expandYaxis startDist endDist (b:BBox) =
         b.ExpandYaxis(startDist, endDist)
 
     /// Returns Bounding Rectangle expanded only in Z direction by different distance for start(minZ) and end (maxZ).
-    /// Does check for underflow if distance is negative and raises FsExGeoException.
+    /// Does check for underflow if distance is negative and raises EuclidException.
     static member expandZaxis startDist endDist (b:BBox) =
         b.ExpandZaxis(startDist, endDist)
 
@@ -602,7 +602,7 @@ type BBox =
 
     /// Finds min and max values for x, y and z.
     static member inline create (ps:seq<Pnt> ) =
-        if Seq.isEmpty ps then raise <| FsExGeoException("BBox.create(seq<Pt>) input is empty seq")
+        if Seq.isEmpty ps then raise <| EuclidException("Euclid.BBox.create(seq<Pt>) input is empty seq")
         let mutable minX = Double.MaxValue
         let mutable minY = Double.MaxValue
         let mutable minZ = Double.MaxValue
@@ -616,6 +616,19 @@ type BBox =
             maxX <- max maxX p.X
             maxY <- max maxY p.Y
             maxZ <- max maxZ p.Z
+        BBox(minX,minY,minZ,maxX,maxY,maxZ)
+
+    /// Creates a Bounding Box from a center point and the total X , Y and Z size.
+    static member inline createFromCenter (center:Pnt, sizeX, sizeY , sizeZ ) =
+        if sizeX < 0. then EuclidException.Raise "Euclid.BBox.createFromCenter sizeX is negative: %g , sizeY is: %g, , sizeZ is: %g, center: %O"  sizeX sizeY sizeZ center.AsString
+        if sizeY < 0. then EuclidException.Raise "Euclid.BBox.createFromCenter sizeY is negative: %g , sizeX is: %g, , sizeZ is: %g, center: %O"  sizeY sizeX sizeZ center.AsString
+        if sizeZ < 0. then EuclidException.Raise "Euclid.BBox.createFromCenter sizeZ is negative: %g , sizeX is: %g, , sizeY is: %g, center: %O"  sizeZ sizeX sizeY center.AsString        
+        let minX = center.X - sizeX*0.5
+        let minY = center.Y - sizeY*0.5
+        let maxX = center.X + sizeX*0.5
+        let maxY = center.Y + sizeY*0.5
+        let minZ = center.Z - sizeZ*0.5
+        let maxZ = center.Z + sizeZ*0.5
         BBox(minX,minY,minZ,maxX,maxY,maxZ)
 
     /// Does not verify the order of min and max values.

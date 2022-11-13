@@ -1,8 +1,8 @@
-namespace FsEx.Geo
+namespace Euclid
 
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
-open FsEx.Geo.Util
+open Euclid.Util
 
 #nowarn "44" // for hidden constructors via Obsolete Attribute
 
@@ -34,13 +34,13 @@ type Quaternion =
         #if DEBUG
         let l = x*x  + y*y + z*z + w*w
         if isNotOne l then
-            FsExGeoException.Raise "FsEx.Geo.Quaternion Constructor failed for x:%g, y:%g, z:%g, w:%g. The length needs to be 1.0." x y z w
+            EuclidException.Raise "Euclid.Quaternion Constructor failed for x:%g, y:%g, z:%g, w:%g. The length needs to be 1.0." x y z w
         #endif
         {X=x; Y=y; Z=z; W=w}
 
     /// Format Quaternion into string also showing angle in Degree as nicely formatted floating point number.
     override q.ToString() =
-        sprintf "FsEx.Geo.Quaternion(X=%s| Y=%s| Z=%s, W=%s| angle: %s°)"
+        sprintf "Euclid.Quaternion(X=%s| Y=%s| Z=%s, W=%s| angle: %s°)"
                 (Format.float q.X) (Format.float q.Y) (Format.float q.Z) (Format.float q.W) (Format.float q.AngleInDegrees)
 
     /// Multiply two Quaternions. Its like adding one rotation to the other.
@@ -83,7 +83,7 @@ type Quaternion =
     static member create (x, y,z,w)  =
         let l = sqrt(x*x  + y*y + z*z + w*w )
         if abs l < zeroLengthTol then
-            FsExGeoException.Raise "FsEx.Geo.Quaternion create failed for x:%g, y:%g, z:%g, w:%g. The length needs to be bigger than zero." x y z w
+            EuclidException.Raise "Euclid.Quaternion create failed for x:%g, y:%g, z:%g, w:%g. The length needs to be bigger than zero." x y z w
         let sc = 1./l
         Quaternion(x*sc,y*sc,z*sc,w*sc)
 
@@ -96,7 +96,7 @@ type Quaternion =
     static member createFromRadians (axis:Vec, angleInRadians)  =
         let length = sqrt(axis.X*axis.X + axis.Y*axis.Y + axis.Z*axis.Z)
         if length <  zeroLengthTol then // TODO or return identity Quaternion ?
-            FsExGeoException.Raise "FsEx.Geo.Quaternion.createFromRadians failed too short axis: %O and rotation: %g° Degrees." axis (toDegrees angleInRadians)
+            EuclidException.Raise "Euclid.Quaternion.createFromRadians failed too short axis: %O and rotation: %g° Degrees." axis (toDegrees angleInRadians)
         let angHalf = angleInRadians * 0.5
         let sa = sin angHalf
         let sc =  1. / length // inverse for unitizing vector:
@@ -139,7 +139,7 @@ type Quaternion =
             let z = vecFrom.Z
             let length = sqrt(x*x + y*y + z*z)
             if length <  zeroLengthTol then // TODO or return identity Quaternion ?
-                FsExGeoException.Raise "FsEx.Geo.Quaternion.createFromVectors failed too short vector vecFrom: %O" vecFrom
+                EuclidException.Raise "Euclid.Quaternion.createFromVectors failed too short vector vecFrom: %O" vecFrom
             let sc =  1. / length // inverse for unitizing vector:
             UnitVec.createUnchecked(x*sc, y*sc, z*sc)
         let vTo =
@@ -148,7 +148,7 @@ type Quaternion =
             let z = vecTo.Z
             let length = sqrt(x*x + y*y + z*z)
             if length <  zeroLengthTol then // TODO or return identity Quaternion ?
-                FsExGeoException.Raise "FsEx.Geo.Quaternion.createFromVectors failed too short vector vecTo: %O" vecTo
+                EuclidException.Raise "Euclid.Quaternion.createFromVectors failed too short vector vecTo: %O" vecTo
             let sc =  1. / length // inverse for unitizing vector:
             UnitVec.createUnchecked(x*sc, y*sc, z*sc)
         let mutable r = vFrom * vTo  + 1.0

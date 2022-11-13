@@ -1,4 +1,4 @@
-namespace FsEx.Geo
+namespace Euclid
 
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
@@ -58,7 +58,7 @@ type Rect2D =
 
     /// Nicely formatted string representation of the 2D Rectangle including its size.
     override r.ToString() =
-        sprintf "FsEx.Geo.Rect2D %s x %s  (Origin:%s| X-ax:%s| Y-ax:%s)"
+        sprintf "Euclid.Rect2D %s x %s  (Origin:%s| X-ax:%s| Y-ax:%s)"
             (Format.float r.Length)  (Format.float r.Width)
             r.Origin.AsString r.Xaxis.AsString r.Yaxis.AsString
 
@@ -191,13 +191,13 @@ type Rect2D =
     /// Creates a unitized version of the local X-Axis.
     member inline r.XaxisUnit =
         let len = r.Xaxis.Length
-        if len = zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Rect2D.XaxisUnit: rect Xaxis is too small for unitizing: %s" r.AsString
+        if len = zeroLengthTol then EuclidException.Raise "Euclid.Rect2D.XaxisUnit: rect Xaxis is too small for unitizing: %s" r.AsString
         r.Xaxis*(1./len)
 
     /// Creates a unitized version of the local Y-Axis.
     member inline r.YaxisUnit =
         let len = r.Yaxis.Length
-        if len = zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Rect2D.XaxisUnit: rect Yaxis is too small for unitizing: %s" r.AsString
+        if len = zeroLengthTol then EuclidException.Raise "Euclid.Rect2D.XaxisUnit: rect Yaxis is too small for unitizing: %s" r.AsString
         r.Yaxis*(1./len)
     
 
@@ -335,13 +335,13 @@ type Rect2D =
 
 
     /// Returns the 2D Rectangle expanded by distance on all six sides.
-    /// Does check for underflow if distance is negative and raises FsExGeoException.
+    /// Does check for underflow if distance is negative and raises EuclidException.
     static member expand dist (r:Rect2D) =
         let len = r.Length
         let wid = r.Width
         let d = dist * -2.0
         if len<=d || wid<=d  then
-            FsExGeoException.Raise "FsEx.Geo.Rect2D.expand: the 2D Rectangle %s is too small to expand by negative distance %s"  r.AsString (Format.float dist)
+            EuclidException.Raise "Euclid.Rect2D.expand: the 2D Rectangle %s is too small to expand by negative distance %s"  r.AsString (Format.float dist)
         let x = r.Xaxis * (dist / len)
         let y = r.Yaxis * (dist / wid)
         Rect2D(r.Origin-x-y, r.Xaxis+x*2., r.Yaxis+y*2.)
@@ -352,8 +352,8 @@ type Rect2D =
     static member expandXY distLen distWid  (r:Rect2D) =
         let len = r.Length
         let wid = r.Width
-        if len <= distLen * -2.0 then FsExGeoException.Raise "FsEx.Geo.Rect2D.expandXYZ: the 2D Rectangle %s is too small to expand by negative distance distLen %s"  r.AsString (Format.float distLen)
-        if wid <= distWid * -2.0 then FsExGeoException.Raise "FsEx.Geo.Rect2D.expandXYZ: the 2D Rectangle %s is too small to expand by negative distance distWid %s"  r.AsString (Format.float distWid)
+        if len <= distLen * -2.0 then EuclidException.Raise "Euclid.Rect2D.expandXY: the 2D Rectangle %s is too small to expand by negative distance distLen %s"  r.AsString (Format.float distLen)
+        if wid <= distWid * -2.0 then EuclidException.Raise "Euclid.Rect2D.expandXY: the 2D Rectangle %s is too small to expand by negative distance distWid %s"  r.AsString (Format.float distWid)
         let x = r.Xaxis * (distLen / r.Length)
         let y = r.Yaxis * (distWid / r.Width )
         Rect2D(r.Origin-x-y, r.Xaxis+x*2., r.Yaxis+y*2.)
@@ -366,23 +366,38 @@ type Rect2D =
         if Vc.cross(x, y) = 0.0 then 
             let yr = x.Rotate90CCW
             if yr*y < 0.0 then
-                    FsExGeoException.Raise "FsEx.Geo.Rect2D.create: Vc 'y' has the wrong orientation : %s. 'x':%s " y.AsString x.AsString 
+                    EuclidException.Raise "Euclid.Rect2D.create(origin,x:Vc,y:Vc): Vc 'y' has the wrong orientation : %s. 'x':%s " y.AsString x.AsString 
             Rect2D(origin,x, y)
         else            
             let lx = x.Length
-            if lx < 1e-9 then FsExGeoException.Raise "FsEx.Geo.Rect2D.create: Vc 'x' is too short: %s. 'z':%s " x.AsString y.AsString
+            if lx < 1e-9 then EuclidException.Raise "Euclid.Rect2D.create(origin,x:Vc,y:Vc): Vc 'x' is too short: %s. 'z':%s " x.AsString y.AsString
             let ly = y.Length
-            if ly < 1e-9 then FsExGeoException.Raise "FsEx.Geo.Rect2D.create: Vc 'y' is too short: %s. 'x':%s " y.AsString x.AsString            
+            if ly < 1e-9 then EuclidException.Raise "Euclid.Rect2D.create(origin,x:Vc,y:Vc): Vc 'y' is too short: %s. 'x':%s " y.AsString x.AsString            
             let xu = x * (1.0 / lx)
             let yu = y * (1.0 / ly)
             let d = xu*yu
             if float -Cosine.``0.5`` < d && d  < float Cosine.``0.5`` then //x.IsPerpendicularTo( y, Cosine.``0.05``)
                 let yr = x.Rotate90CCW * (ly/lx)
                 if yr*y < 0.0 then
-                    FsExGeoException.Raise "FsEx.Geo.Rect2D.create: Vc 'y' has the wrong orientation : %s. 'x':%s " y.AsString x.AsString   
+                    EuclidException.Raise "Euclid.Rect2D.create(origin,x:Vc,y:Vc): Vc 'y' has the wrong orientation : %s. 'x':%s " y.AsString x.AsString   
                 Rect2D(origin,x,yr)
             else
-                FsExGeoException.Raise "FsEx.Geo.Rect2D.create: the X-axis %s and Y-axis %s are not perpendicular"  x.AsString y.AsString
+                EuclidException.Raise "Euclid.Rect2D.create(origin,x:Vc,y:Vc): the X-axis %s and Y-axis %s are not perpendicular"  x.AsString y.AsString
+
+    /// Creates a Bounding Rectangle from a origin point, the X vector and Y size.
+    static member create (origin:Pt, x:Vc, sizeY ) =
+        if sizeY < 0. then EuclidException.Raise "Euclid.Rect2D.create(origin:Pt, x:Vc, sizeY ) sizeY is negative: %g , x is: %O, origin: %O"  sizeY  x.AsString  origin.AsString
+        let y = x.Rotate90CCW * sizeY
+        Rect2D(origin, x, y)
+
+    /// Creates a Bounding Rectangle from a origin point, the X direction , the total X and Y size.
+    static member create (origin:Pt, directionX:UnitVc, sizeX, sizeY ) =
+        if sizeX < 0. then EuclidException.Raise "Euclid.Rect2D.create(origin:Pt, directionX:UnitVc, sizeX, sizeY ) sizeX is negative: %g , sizeY is: %g, origin: %O"  sizeX sizeY  origin.AsString
+        if sizeY < 0. then EuclidException.Raise "Euclid.Rect2D.create(origin:Pt, directionX:UnitVc, sizeX, sizeY ) sizeY is negative: %g , sizeX is: %g, origin: %O"  sizeY sizeX  origin.AsString
+        let x = directionX * sizeX
+        let y = directionX.Rotate90CCW * sizeY
+        Rect2D(origin, x, y)
+    
 
     /// Create a 2D Rectangle from the origin point and X-edge and Y edge.
     /// Does not check for counter-clockwise order of x and y.
@@ -393,10 +408,10 @@ type Rect2D =
     /// Create a 2D Rectangle from a Line and a  right and left Offset.
     /// The left offset is in the direction of the future Y-axis.
     static member createFromLine(line:Line2D, offRight, offLeft) =
-        if -offRight >= offLeft then FsExGeoException.Raise "FsEx.Geo.Rect2D.createFromLine: flipped Rect2D : minus offRight %g must be smaller than offLeft %g .  " offRight  offLeft 
+        if -offRight >= offLeft then EuclidException.Raise "Euclid.Rect2D.createFromLine: flipped Rect2D : minus offRight %g must be smaller than offLeft %g .  " offRight  offLeft 
         let x = line.Vector
         let len = x.Length
-        if len < 1e-9 then FsExGeoException.Raise "FsEx.Geo.Rect2D.createFromLine: Line too short: %s.  " line.AsString
+        if len < 1e-9 then EuclidException.Raise "Euclid.Rect2D.createFromLine: Line too short: %s.  " line.AsString
         let y = x.Rotate90CCW
         let o = line.From - y * (offRight / len)
         let y = y * ((offLeft + offRight) / len)
@@ -405,6 +420,20 @@ type Rect2D =
     /// Give 2D Bounding Rect.
     static member createFromBRect (b:BRect) =
         Rect2D(b.MinPt, Vc.Xaxis*b.Length, Vc.Yaxis*b.Width)
+
+    /// Creates a Bounding Rectangle from a center point, the X direction , the total X and Y size.
+    static member createFromCenter (center:Pt, directionX:UnitVc, sizeX, sizeY ) =
+        if sizeX < 0. then EuclidException.Raise "Euclid.Rect2D.createFromCenter(center:Pt, directionX:UnitVc, sizeX, sizeY ) sizeX is negative: %g , sizeY is: %g, center: %O"  sizeX sizeY  center.AsString
+        if sizeY < 0. then EuclidException.Raise "Euclid.Rect2D.createFromCenter(center:Pt, directionX:UnitVc, sizeX, sizeY ) sizeY is negative: %g , sizeX is: %g, center: %O"  sizeY sizeX  center.AsString
+        let x = directionX * sizeX
+        let y = directionX.Rotate90CCW * sizeY
+        Rect2D(center - x * 0.5 - y * 0.5, x, y)
+
+    /// Creates a Bounding Rectangle from a center point, the X vector and Y size.
+    static member createFromCenter (center:Pt, x:Vc, sizeY ) =
+        if sizeY < 0. then EuclidException.Raise "Euclid.Rect2D.createFromCenter(center:Pt, x:Vc, sizeY ) sizeY is negative: %g , x is: %O, center: %O"  sizeY  x.AsString  center.AsString
+        let y = x.Rotate90CCW * sizeY
+        Rect2D(center - x * 0.5 - y * 0.5, x, y)
 
 
     /// Returns the Rectangle flipped. Or rotated 180 around its diagonal from point 1 to 3.
@@ -429,14 +458,14 @@ type Rect2D =
     static member translateX (distX:float) (r:Rect2D) =
         let x = r.Xaxis
         let len = x.Length
-        if len = zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Rect2D.translateX: rect.Xaxis is zero length in Rect2D: %s" r.AsString
+        if len = zeroLengthTol then EuclidException.Raise "Euclid.Rect2D.translateX: rect.Xaxis is zero length in Rect2D: %s" r.AsString
         Rect2D(r.Origin + x*(distX/len), x, r.Yaxis)
 
     /// Translate along the local Y-axis of the 2D Rectangle.
     static member translateY (distY:float) (r:Rect2D) =
         let y = r.Yaxis
         let len = y.Length
-        if len = zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Rect2D.translateY: rect.Yaxis is zero length in Rect2D: %s" r.AsString
+        if len = zeroLengthTol then EuclidException.Raise "Euclid.Rect2D.translateY: rect.Yaxis is zero length in Rect2D: %s" r.AsString
         Rect2D(r.Origin + y*(distY/len), r.Xaxis, y)
 
     /// Translate by a 2D vector.(Same as Rect2D.move)

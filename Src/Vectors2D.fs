@@ -1,4 +1,4 @@
-namespace FsEx.Geo
+namespace Euclid
 
 // Design notes:
 // The structs types in this file only have the constructors , ToString override and operators define in this file.
@@ -10,7 +10,7 @@ namespace FsEx.Geo
 
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>]  see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
-open FsEx.Geo.Util
+open Euclid.Util
 
 /// An immutable immutable 2D vector with any length. Made up from 2 floats: X and Y.
 /// ( 2D Unit vectors with length 1.0 are called 'UnitVc' )
@@ -29,12 +29,12 @@ type Vc =
     /// Create a new 2D vector with any length. Made up from 2 floats: X and Y.
     new (x, y) =
         #if DEBUG // TODO : with this test all  operations are 2.5 times slower
-        if Double.IsNaN x || Double.IsNaN y || Double.IsInfinity x || Double.IsInfinity y  then FsExGeoException.Raise "FsEx.Geo.Vc Constructor failed for x:%g , y:%g"  x y
+        if Double.IsNaN x || Double.IsNaN y || Double.IsInfinity x || Double.IsInfinity y  then EuclidException.Raise "Euclid.Vc Constructor failed for x:%g , y:%g"  x y
         #endif
         {X=x; Y=y}
 
     /// Format 2D vector into string including type name and nice floating point number formatting of X, Y and length.
-    override v.ToString() = sprintf "FsEx.Geo.Vc: X=%s| Y=%s| Length: %s" (Format.float v.X) (Format.float v.Y) (Format.float (sqrt (v.X*v.X + v.Y*v.Y)))
+    override v.ToString() = sprintf "Euclid.Vc: X=%s| Y=%s| Length: %s" (Format.float v.X) (Format.float v.Y) (Format.float (sqrt (v.X*v.X + v.Y*v.Y)))
 
     /// Format 2D vector into string with nice floating point number formatting of X and Y
     /// But without full type name or length as in v.ToString()
@@ -62,7 +62,7 @@ type Vc =
     /// Divides a 2D vector by a scalar, also be called dividing/scaling a vector. Returns a new 2D vector.
     static member inline ( / )  (v:Vc, f:float) =
         //#if DEBUG
-        if abs f < Util.zeroLengthTol then FsExGeoDivByZeroException.Raise "FsEx.Geo.Vc: divide operator: %g is too small for dividing %O using / operator. Tolerance:%g"  f v zeroLengthTol
+        if abs f < Util.zeroLengthTol then EuclidDivByZeroException.Raise "Euclid.Vc: divide operator: %g is too small for dividing %O using / operator. Tolerance:%g"  f v zeroLengthTol
         //#endif
         Vc (v.X / f , v.Y / f )
 
@@ -96,15 +96,15 @@ type UnitVc =
     new (x, y) =
         #if DEBUG
         if Double.IsNaN x || Double.IsNaN y || Double.IsInfinity x || Double.IsInfinity y  then
-            FsExGeoException.Raise "FsEx.Geo.UnitVc Constructor failed for x:%g, y:%g"  x y
+            EuclidException.Raise "Euclid.UnitVc Constructor failed for x:%g, y:%g"  x y
         let lenSq = x*x + y*y // TODO : with this test all  operations are 2.5 times slower
         if Util.isNotOne lenSq then
-            FsExGeoException.Raise "FsEx.Geo.UnitVc Constructor failed for x:%g and y:%g. The length needs to be 1.0." x y
+            EuclidException.Raise "Euclid.UnitVc Constructor failed for x:%g and y:%g. The length needs to be 1.0." x y
         #endif
         {X=x; Y=y}
 
     /// Format 2D unit-vector into string including type name and nice floating point number formatting.
-    override v.ToString() =  sprintf "FsEx.Geo.UnitVc: X=%s| Y=%s" (Format.float v.X)(Format.float v.Y)
+    override v.ToString() =  sprintf "Euclid.UnitVc: X=%s| Y=%s" (Format.float v.X)(Format.float v.Y)
 
     /// Format 2D unit-vector into string with nice floating point number formatting of X and Y
     /// But without full type name as in v.ToString()
@@ -157,7 +157,7 @@ type UnitVc =
     /// Divides a 2D unit-vector by a scalar, also be called dividing/scaling a vector. Returns a new (non-unitized) 2D vector.
     static member inline ( / )  (v:UnitVc, f:float) =
         //#if DEBUG
-        if abs f < Util.zeroLengthTol then  FsExGeoDivByZeroException.Raise "FsEx.Geo.UnitVc divide operator: %g is too small for dividing %O using / operator. Tolerance:%g" f v zeroLengthTol
+        if abs f < Util.zeroLengthTol then  EuclidDivByZeroException.Raise "Euclid.UnitVc divide operator: %g is too small for dividing %O using / operator. Tolerance:%g" f v zeroLengthTol
         //#endif
         Vc (v.X / f , v.Y / f )
 
@@ -168,9 +168,9 @@ type UnitVc =
     /// Create 2D unit-vector. Does the unitizing too.
     static member inline create (x:float, y:float) =
         // this member cant be an extension method because it is used with SRTP in UnitV.ofXY
-        // see error FS1114: The value 'FsEx.Geo.AutoOpenUnitVc.create' was marked inline but was not bound in the optimization environment
+        // see error FS1114: The value 'Euclid.AutoOpenUnitVc.create' was marked inline but was not bound in the optimization environment
         let l = sqrt(x * x  + y * y)
-        if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "FsEx.Geo.UnitVc.create: x:%g and y:%g are too small for creating a unit-vector. Tolerance:%g" x y zeroLengthTol
+        if l < zeroLengthTol then EuclidDivByZeroException.Raise "Euclid.UnitVc.create: x:%g and y:%g are too small for creating a unit-vector. Tolerance:%g" x y zeroLengthTol
         UnitVc( x/l , y/l )
 
 /// An immutable 2D point. Made up from 2 floats: X and Y.
@@ -189,12 +189,12 @@ type Pt =
     /// Create a new 2D point. Made up from 3 floats: X, Y, and Z.
     new (x, y) =
         #if DEBUG // TODO : with this test all  operations are 2.5 times slower
-        if Double.IsNaN x || Double.IsNaN y || Double.IsInfinity x || Double.IsInfinity y  then FsExGeoException.Raise "FsEx.Geo.Pt Constructor failed for x:%g , y:%g"  x y
+        if Double.IsNaN x || Double.IsNaN y || Double.IsInfinity x || Double.IsInfinity y  then EuclidException.Raise "Euclid.Pt Constructor failed for x:%g , y:%g"  x y
         #endif
         {X=x; Y=y}
 
     /// Format 2D point into string including type name and nice floating point number formatting.
-    override p.ToString() = sprintf "FsEx.Geo.Pt: X=%s| Y=%s" (Format.float p.X) (Format.float p.Y)
+    override p.ToString() = sprintf "Euclid.Pt: X=%s| Y=%s" (Format.float p.X) (Format.float p.Y)
 
     /// Format 2D point into string with nice floating point number formatting of X and Y
     /// But without full type name as in p.ToString()
@@ -238,7 +238,7 @@ type Pt =
     static member inline ( / )  (p:Pt, f:float) =
         //#if DEBUG
         if abs f < Util.zeroLengthTol then
-            FsExGeoDivByZeroException.Raise "FsEx.Geo.Vc divide Operator: %g is too small for dividing %O using / operator. Tolerance:%g" f p zeroLengthTol
+            EuclidDivByZeroException.Raise "Euclid.Vc divide Operator: %g is too small for dividing %O using / operator. Tolerance:%g" f p zeroLengthTol
         //#endif
         Pt (p.X / f , p.Y / f )
 

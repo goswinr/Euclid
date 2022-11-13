@@ -1,4 +1,4 @@
-namespace FsEx.Geo
+namespace Euclid
 
 
 /// By default the function in this module do nothing. But they are called in case of some errors within this library's Loop module.

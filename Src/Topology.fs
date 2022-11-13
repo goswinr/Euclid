@@ -1,11 +1,10 @@
-namespace FsEx.Geo
+namespace Euclid
 
 #nowarn "52" // copying of structs
 
 
 module internal TopologyUtil =
-
-    // The same function exist on FsEX.Rarr module too but with extra error checking.
+    
     // Swap the values of two given indices in Rarr
     let inline swap i j (xs:ResizeArray<'T>) :unit =
         if i<>j then
@@ -13,8 +12,8 @@ module internal TopologyUtil =
             xs.[i] <- xs.[j]
             xs.[j] <- ti
 
-    // The same function exist on FsEX.Rarr module too but with extra error checking.
-    // Like Rarr.minIndexBy but starting to search only from a given index
+    
+    // Like minIndexBy. But starting to search only from a given index
     let inline  minIndexByFrom  (compareBy: 'T -> 'U)  fromIdx (xs:ResizeArray<'T>) : int =
         let mutable idx = fromIdx
         let mutable mi = compareBy xs.[fromIdx]

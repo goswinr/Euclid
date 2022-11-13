@@ -1,8 +1,8 @@
-namespace FsEx.Geo
+namespace Euclid
 
-open FsEx.Geo.Util
+open Euclid.Util
 
-/// When FsEx.Geo is opened this module will be auto-opened.
+/// When Euclid is opened this module will be auto-opened.
 /// It only contains extension members for type Matrix.
 [<AutoOpen>]
 module AutoOpenMatrix =

@@ -1,4 +1,4 @@
-namespace FsEx.Geo
+namespace Euclid
 
 open System.Collections.Generic
 

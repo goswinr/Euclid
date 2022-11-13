@@ -1,7 +1,7 @@
-namespace FsEx.Geo
+namespace Euclid
 open System
 
-/// When FsEx.Geo is opened this module will be auto-opened.
+/// When Euclid is opened this module will be auto-opened.
 /// It only contains extension members for type Vec.
 [<AutoOpen>]
 module AutoOpenVec =
@@ -56,16 +56,16 @@ module AutoOpenVec =
         member inline v.WithLength (desiredLength:float) =
             let l = v.Length
             if l < zeroLengthTol then
-                FsExGeoDivByZeroException.Raise "FsEx.Geo.Vec.WithLength %g : %O is too small for unitizing, Tolerance:%g" desiredLength v zeroLengthTol
+                EuclidDivByZeroException.Raise "Euclid.Vec.WithLength %g : %O is too small for unitizing, Tolerance:%g" desiredLength v zeroLengthTol
             v * (desiredLength / l)
 
         /// Returns the 3D vector unitized.
-        /// Fails with FsExGeoDivByZeroException if the length of the vector is
+        /// Fails with EuclidDivByZeroException if the length of the vector is
         /// too small (1e-16) to unitize.
         member inline v.Unitized =
             let l = v.Length
             if l < zeroLengthTol then
-                FsExGeoDivByZeroException.Raise "FsEx.Geo.Vec.Unitized: %O is too small for unitizing, Tolerance:%g" v zeroLengthTol
+                EuclidDivByZeroException.Raise "Euclid.Vec.Unitized: %O is too small for unitizing, Tolerance:%g" v zeroLengthTol
             let li = 1. / l
             UnitVec.createUnchecked( li*v.X , li*v.Y ,li*v.Z )
 
@@ -103,7 +103,7 @@ module AutoOpenVec =
             // https://stackoverflow.com/a/14675998/969070
             #if DEBUG
             if abs(v.X) < zeroLengthTol && abs(v.Y) < zeroLengthTol then
-                FsExGeoDivByZeroException.Raise "FsEx.Geo.Vec.DirectionDiamondInXY: input vector is vertical or zero length:%O" v
+                EuclidDivByZeroException.Raise "Euclid.Vec.DirectionDiamondInXY: input vector is vertical or zero length:%O" v
             #endif
             if v.Y >= 0.0 then
                 if v.X >= 0.0 then
@@ -123,7 +123,7 @@ module AutoOpenVec =
             // https://stackoverflow.com/a/14675998/969070
             #if DEBUG
             if abs(v.X) < zeroLengthTol && abs(v.Y) < zeroLengthTol then // TODO : with this test all  operations are 2.5 times slower
-                FsExGeoDivByZeroException.Raise "FsEx.Geo.Vec.Direction2PiInXY: input vector is zero length or vertical: %O" v
+                EuclidDivByZeroException.Raise "Euclid.Vec.Direction2PiInXY: input vector is zero length or vertical: %O" v
             #endif
             let a = Math.Atan2(v.Y, v.X)
             if a < 0. then
@@ -139,7 +139,7 @@ module AutoOpenVec =
             // https://stackoverflow.com/a/14675998/969070
             #if DEBUG
             if abs(v.X) < zeroLengthTol && abs(v.Y) < zeroLengthTol then // TODO : with this test all  operations are 2.5 times slower
-                FsExGeoDivByZeroException.Raise "FsEx.Geo.Vec.DirectionPiInXY: input vector is zero length or vertical: %O" v
+                EuclidDivByZeroException.Raise "Euclid.Vec.DirectionPiInXY: input vector is zero length or vertical: %O" v
             #endif
             let a = Math.Atan2(v.Y, v.X)
             if a < 0. then
@@ -185,27 +185,27 @@ module AutoOpenVec =
         member inline v.IsOppositeOrientation (other:Vec) =
             v * other < -1e-12    
 
-        /// Checks if 3D vector is parallel to the world X axis.
+        /// Checks if 3D vector is parallel to the world X axis. Ignoring orientation.
         /// Tolerance is 1e-6.
         /// Fails on vectors shorter than 1e-6.
         member inline v.IsXAligned =
             let x = abs (v.X)
             let y = abs (v.Y)
             let z = abs (v.Z)
-            if x+y+z < 1e-6 then FsExGeoException.Raise "FsEx.Geo.Vec.IsXAligned cannot not check very tiny vector. (tolerance 1e-6)  %O" v
+            if x+y+z < 1e-6 then EuclidException.Raise "Euclid.Vec.IsXAligned cannot not check very tiny vector. (tolerance 1e-6)  %O" v
             else y < 1e-6 && z < 1e-6      
 
-        /// Checks if 3D vector is parallel to the world Y axis.
+        /// Checks if 3D vector is parallel to the world Y axis. Ignoring orientation.
         /// Tolerance is 1e-6.
         /// Fails on vectors shorter than 1e-6.
         member inline v.IsYAligned =
             let x = abs (v.X)
             let y = abs (v.Y)
             let z = abs (v.Z)
-            if x+y+z < 1e-6 then FsExGeoException.Raise "FsEx.Geo.Vec.IsYAligned cannot not check very tiny vector. (tolerance 1e-6)  %O" v
+            if x+y+z < 1e-6 then EuclidException.Raise "Euclid.Vec.IsYAligned cannot not check very tiny vector. (tolerance 1e-6)  %O" v
             else x < 1e-6 && z < 1e-6
 
-        /// Checks if 3D vector is parallel to the world Z axis.
+        /// Checks if 3D vector is parallel to the world Z axis. Ignoring orientation.
         /// Tolerance is 1e-6.
         /// Fails on vectors shorter than 1e-6.
         /// Same as v.IsVertical
@@ -213,10 +213,10 @@ module AutoOpenVec =
             let x = abs (v.X)
             let y = abs (v.Y)
             let z = abs (v.Z)
-            if x+y+z < 1e-6 then FsExGeoException.Raise "FsEx.Geo.Vec.IsZAligned cannot not check very tiny vector. (tolerance 1e-6)  %O" v
+            if x+y+z < 1e-6 then EuclidException.Raise "Euclid.Vec.IsZAligned cannot not check very tiny vector. (tolerance 1e-6)  %O" v
             else x < 1e-6 && y < 1e-6
 
-        /// Checks if 3D vector is parallel to the world Z axis.
+        /// Checks if 3D vector is parallel to the world Z axis. Ignoring orientation.
         /// Tolerance is 1e-6.
         /// Fails on vectors shorter than 1e-6.
         /// Same as v.IsZAligned
@@ -224,7 +224,7 @@ module AutoOpenVec =
             let x = abs (v.X)
             let y = abs (v.Y)
             let z = abs (v.Z)
-            if x+y+z < 1e-6 then FsExGeoException.Raise "FsEx.Geo.Vec.IsVertical cannot not check very tiny vector. (tolerance 1e-6)  %O" v
+            if x+y+z < 1e-6 then EuclidException.Raise "Euclid.Vec.IsVertical cannot not check very tiny vector. (tolerance 1e-6)  %O" v
             else x < 1e-6 && y < 1e-6
 
         /// Checks if 3D vector is horizontal (Z component is almost zero).
@@ -234,56 +234,96 @@ module AutoOpenVec =
             let x = abs (v.X)
             let y = abs (v.Y)
             let z = abs (v.Z)
-            if x+y+z < 1e-6 then FsExGeoException.Raise "FsEx.Geo.Vec.IsHorizontal cannot not check very tiny vector. (tolerance 1e-6)  %O" v
+            if x+y+z < 1e-6 then EuclidException.Raise "Euclid.Vec.IsHorizontal cannot not check very tiny vector. (tolerance 1e-6)  %O" v
             else z < 1e-6
 
         /// Checks if two 3D vectors are parallel.
         /// Ignores the line orientation.
         /// The default angle tolerance is 0.25 degrees.
         /// This tolerance can be customized by an optional minium cosine value.
-        /// See FsEx.Geo.Cosine module.
+        /// See Euclid.Cosine module.
         /// Fails on vectors shorter than 1e-12.
-        member inline this.IsParallelTo( other:Vec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
+        member inline this.IsParallelTo(other:Vec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
             let sa = this.LengthSq
-            if sa < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vec.IsParallelTo: Vec 'this' is too short: %s. 'other':%s " this.AsString other.AsString
+            if sa < 1e-24 then EuclidException.Raise "Euclid.Vec.IsParallelTo: Vec 'this' is too short: %s. 'other':%s " this.AsString other.AsString
             let sb = other.LengthSq
-            if sb < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vec.IsParallelTo: Vec 'other' is too short: %s. 'this':%s " other.AsString this.AsString
+            if sb < 1e-24 then EuclidException.Raise "Euclid.Vec.IsParallelTo: Vec 'other' is too short: %s. 'this':%s " other.AsString this.AsString
             let au = this * (1.0 / sqrt sa )
             let bu = other * (1.0 / sqrt sb )
             abs(bu*au) > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
+
+        /// Checks if this 3D vectors and a 3D unit vector are parallel.
+        /// Ignores the line orientation.
+        /// The default angle tolerance is 0.25 degrees.
+        /// This tolerance can be customized by an optional minium cosine value.
+        /// See Euclid.Cosine module.
+        /// Fails on vectors shorter than 1e-12.
+        member inline this.IsParallelTo(other:UnitVec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
+            let sa = this.LengthSq
+            if sa < 1e-24 then EuclidException.Raise "Euclid.Vec.IsParallelTo: Vec 'this' is too short: %s. 'other':%s " this.AsString other.AsString
+            let au = this * (1.0 / sqrt sa )
+            abs(other*au) > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
+
+            
 
 
         /// Checks if two 3D vectors are parallel.
         /// Takes the line orientation into account too.
         /// The default angle tolerance is 0.25 degrees.
         /// This tolerance can be customized by an optional minium cosine value.
-        /// See FsEx.Geo.Cosine module.
+        /// See Euclid.Cosine module.
         /// Fails on vectors shorter than 1e-12.
         member inline this.IsParallelAndOrientedTo  (other:Vec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
             let sa = this.LengthSq
-            if sa < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vec.IsParallelAndOrientedTo: Vec 'this' is too short: %s. 'other':%s " this.AsString other.AsString
+            if sa < 1e-24 then EuclidException.Raise "Euclid.Vec.IsParallelAndOrientedTo: Vec 'this' is too short: %s. 'other':%s " this.AsString other.AsString
             let sb = other.LengthSq
-            if sb < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vec.IsParallelAndOrientedTo: Vec 'other' is too short: %s. 'this':%s " other.AsString this.AsString
+            if sb < 1e-24 then EuclidException.Raise "Euclid.Vec.IsParallelAndOrientedTo: Vec 'other' is too short: %s. 'this':%s " other.AsString this.AsString
             let au = this * (1.0 / sqrt sa )
             let bu = other * (1.0 / sqrt sb )
             bu*au > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
+        
+        /// Checks if this 3D vectors and a 3D unit vector are parallel.
+        /// Takes the line orientation into account too.
+        /// The default angle tolerance is 0.25 degrees.
+        /// This tolerance can be customized by an optional minium cosine value.
+        /// See Euclid.Cosine module.
+        /// Fails on vectors shorter than 1e-12.
+        member inline this.IsParallelAndOrientedTo  (other:UnitVec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
+            let sa = this.LengthSq
+            if sa < 1e-24 then EuclidException.Raise "Euclid.Vec.IsParallelAndOrientedTo: Vec 'this' is too short: %s. 'other':%s " this.AsString other.AsString
+            let au = this * (1.0 / sqrt sa )
+            other*au > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:            
 
 
         /// Checks if two 3D vectors are perpendicular to each other.
         /// The default angle tolerance is 89.75 to 90.25 degrees.
         /// This tolerance can be customized by an optional minium cosine value.
         /// The default cosine is 0.0043633 ( = 89.75 deg )
-        /// See FsEx.Geo.Cosine module.
+        /// See Euclid.Cosine module.
         /// Fails on vectors shorter than 1e-12.
         member inline this.IsPerpendicularTo (other:Vec, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) =
             let sa = this.LengthSq
-            if sa < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vec.IsPerpendicularTo: Vec 'this' is too short: %s. 'other':%s " this.AsString other.AsString
+            if sa < 1e-24 then EuclidException.Raise "Euclid.Vec.IsPerpendicularTo: Vec 'this' is too short: %s. 'other':%s " this.AsString other.AsString
             let sb = other.LengthSq
-            if sb < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Vec.IsPerpendicularTo: Vec 'other' is too short: %s. 'this':%s " other.AsString this.AsString
+            if sb < 1e-24 then EuclidException.Raise "Euclid.Vec.IsPerpendicularTo: Vec 'other' is too short: %s. 'this':%s " other.AsString this.AsString
             let au = this * (1.0 / sqrt sa )
             let bu = other * (1.0 / sqrt sb )
             let d = bu*au
             float -maxCosine < d && d  < float maxCosine // = cosine of 98.75 and 90.25 degrees
+
+        /// Checks if this 3D vectors and a 3D unit vector are perpendicular to each other.
+        /// The default angle tolerance is 89.75 to 90.25 degrees.
+        /// This tolerance can be customized by an optional minium cosine value.
+        /// The default cosine is 0.0043633 ( = 89.75 deg )
+        /// See Euclid.Cosine module.
+        /// Fails on vectors shorter than 1e-12.
+        member inline this.IsPerpendicularTo (other:UnitVec, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) =
+            let sa = this.LengthSq
+            if sa < 1e-24 then EuclidException.Raise "Euclid.Vec.IsPerpendicularTo: Vec 'this' is too short: %s. 'other':%s " this.AsString other.AsString            
+            let au = this * (1.0 / sqrt sa )
+            let d = other*au
+            float -maxCosine < d && d  < float maxCosine // = cosine of 98.75 and 90.25 degrees
+            
 
         /// Multiplies a Matrix with a 3D vector (with an implicit 1 in the 4th dimension,
         /// So that it also works correctly for projections.)
@@ -332,7 +372,7 @@ module AutoOpenVec =
         /// (This member is needed by Array.average and similar functions)
         static member inline DivideByInt (v:Vec, i:int) = // needed by 'Array.average'
             if i<>0 then v / float i
-            else FsExGeoDivByZeroException.Raise "FsEx.Geo.Vec.DivideByInt is zero %O " v
+            else EuclidDivByZeroException.Raise "Euclid.Vec.DivideByInt is zero %O " v
 
                 /// Accepts any type that has a X, Y and Z (UPPERCASE) member that can be converted to a float.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
@@ -341,7 +381,7 @@ module AutoOpenVec =
             let y = ( ^T : (member Y : _) vec)
             let z = ( ^T : (member Z : _) vec)
             try Vec(float x, float y, float z)
-            with e -> FsExGeoException.Raise "FsEx.Geo.Vec.ofXYZ: %A could not be converted to a FsEx.Geo.Vec:\r\n%A" vec e
+            with e -> EuclidException.Raise "Euclid.Vec.ofXYZ: %A could not be converted to a Euclid.Vec:\r\n%A" vec e
 
         /// Accepts any type that has a x, y and z (lowercase) member that can be converted to a float.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
@@ -350,7 +390,7 @@ module AutoOpenVec =
             let y = ( ^T : (member y : _) vec)
             let z = ( ^T : (member z : _) vec)
             try Vec(float x, float y, float z)
-            with e -> FsExGeoException.Raise "FsEx.Geo.Vec.ofxyz: %A could not be converted to a FsEx.Geo.Vec:\r\n%A" vec e
+            with e -> EuclidException.Raise "Euclid.Vec.ofxyz: %A could not be converted to a Euclid.Vec:\r\n%A" vec e
 
         /// Create 3D vector from 3D point.
         static member inline ofPnt  (pt:Pnt) =  Vec( pt.X , pt.Y , pt.Z )
@@ -424,7 +464,7 @@ module AutoOpenVec =
         /// Same as vec.WithLength. Returns a new 3D vector.
         static member inline setLength(desiredLength:float) (v:Vec) =
             let l = v.Length
-            if l < zeroLengthTol then FsExGeoDivByZeroException.Raise "FsEx.Geo.Vec.setLength %g : %O is too small for unitizing, Tolerance:%g" desiredLength v zeroLengthTol
+            if l < zeroLengthTol then EuclidDivByZeroException.Raise "Euclid.Vec.setLength %g : %O is too small for unitizing, Tolerance:%g" desiredLength v zeroLengthTol
             v * (desiredLength / l)
 
         /// Add to the X part of this 3D vectors together. Returns a new 3D vector.
@@ -642,23 +682,23 @@ module AutoOpenVec =
         /// sqrt( v.X * v.X  + v.Y * v.Y)
         static member inline lengthInXY(v:Vec) = sqrt(v.X * v.X  + v.Y * v.Y)
 
-        /// Checks if 3D vector is parallel to the world X axis.
+        /// Checks if 3D vector is parallel to the world X axis. Ignoring orientation.
         /// Tolerance is 1e-6.
         /// Fails on vectors shorter than 1e-6.
         static member inline isXAligned (v:Vec) = v.IsXAligned
         
-        /// Checks if 3D vector is parallel to the world Y axis.
+        /// Checks if 3D vector is parallel to the world Y axis. Ignoring orientation.
         /// Tolerance is 1e-6.
         /// Fails on vectors shorter than 1e-6.
         static member inline isYAligned (v:Vec) = v.IsYAligned
         
-        /// Checks if 3D vector is parallel to the world Z axis.
+        /// Checks if 3D vector is parallel to the world Z axis. Ignoring orientation.
         /// Tolerance is 1e-6.
         /// Fails on vectors shorter than 1e-6.
         /// Same as ln.IsVertical
         static member inline isZAligned (v:Vec) = v.IsZAligned
         
-        /// Checks if 3D vector is parallel to the world Z axis.
+        /// Checks if 3D vector is parallel to the world Z axis. Ignoring orientation.
         /// Tolerance is 1e-6.
         /// Fails on vectors shorter than 1e-6.
         /// Same as ln.IsZAligned
@@ -687,7 +727,7 @@ module AutoOpenVec =
         /// In relation to X-Y plane.
         /// 100% = 45 Degrees.
         static member inline slopePercent (v:Vec) =
-            if abs(v.Z) < zeroLengthTol then FsExGeoDivByZeroException.Raise "FsEx.Geo.Vec.slopePercent: Can't get Slope from vertical vector %O" v
+            if abs(v.Z) < zeroLengthTol then EuclidDivByZeroException.Raise "Euclid.Vec.slopePercent: Can't get Slope from vertical vector %O" v
             let f = Vec(v.X, v.Y, 0.0)
             100.0 * (v.Z/f.Length)
 
@@ -736,9 +776,9 @@ module AutoOpenVec =
         /// Fails on zero length vectors, tolerance 1e-12.
         static member inline isAngleLessThan1Degree(a:Vec, b:Vec) =
             let sa = a.LengthSq
-            if sa < 1e-24 then   FsExGeoException.Raise "FsEx.Geo.Vec.isAngleLessThan1Degree: Vec a is too short: %s. Vec b:%s " a.AsString b.AsString
+            if sa < 1e-24 then   EuclidException.Raise "Euclid.Vec.isAngleLessThan1Degree: Vec a is too short: %s. Vec b:%s " a.AsString b.AsString
             let sb = b.LengthSq
-            if sb < 1e-24 then   FsExGeoException.Raise "FsEx.Geo.Vec.isAngleLessThan1Degree: Vec b is too short: %s. Vec a:%s " b.AsString a.AsString
+            if sb < 1e-24 then   EuclidException.Raise "Euclid.Vec.isAngleLessThan1Degree: Vec b is too short: %s. Vec a:%s " b.AsString a.AsString
             let au = a * (1.0 / sqrt sa )
             let bu = b * (1.0 / sqrt sb )
             abs(bu*au) > float Cosine.``1.0``
@@ -750,9 +790,9 @@ module AutoOpenVec =
         /// Same as Vec. areParallel.
         static member inline isAngleLessThanQuatreDegree(a:Vec, b:Vec) =
             let sa = a.LengthSq
-            if sa < 1e-24 then   FsExGeoException.Raise "FsEx.Geo.Vec.isAngleLessThanQuatreDegree: Vec a is too short: %s. Vec b:%s " a.AsString b.AsString
+            if sa < 1e-24 then   EuclidException.Raise "Euclid.Vec.isAngleLessThanQuatreDegree: Vec a is too short: %s. Vec b:%s " a.AsString b.AsString
             let sb = b.LengthSq
-            if sb < 1e-24 then   FsExGeoException.Raise "FsEx.Geo.Vec.isAngleLessThanQuatreDegree: Vec b is too short: %s. Vec a:%s " b.AsString a.AsString
+            if sb < 1e-24 then   EuclidException.Raise "Euclid.Vec.isAngleLessThanQuatreDegree: Vec b is too short: %s. Vec a:%s " b.AsString a.AsString
             let au = a * (1.0 / sqrt sa )
             let bu = b * (1.0 / sqrt sb )
             abs(bu*au) > float Cosine.``0.25``
@@ -763,9 +803,9 @@ module AutoOpenVec =
         /// Fails on zero length vectors, tolerance 1e-12.
         static member inline isAngleLessThan5Degree(a:Vec, b:Vec) =
             let sa = a.LengthSq
-            if sa < 1e-24 then   FsExGeoException.Raise "FsEx.Geo.Vec.isAngleLessThanQuatreDegree: Vec a is too short: %s. Vec b:%s " a.AsString b.AsString
+            if sa < 1e-24 then   EuclidException.Raise "Euclid.Vec.isAngleLessThanQuatreDegree: Vec a is too short: %s. Vec b:%s " a.AsString b.AsString
             let sb = b.LengthSq
-            if sb < 1e-24 then   FsExGeoException.Raise "FsEx.Geo.Vec.isAngleLessThanQuatreDegree: Vec b is too short: %s. Vec a:%s " b.AsString a.AsString
+            if sb < 1e-24 then   EuclidException.Raise "Euclid.Vec.isAngleLessThanQuatreDegree: Vec b is too short: %s. Vec a:%s " b.AsString a.AsString
             let au = a * (1.0 / sqrt sa )
             let bu = b * (1.0 / sqrt sb )
             abs(bu*au) > float Cosine.``5.0``
@@ -785,7 +825,7 @@ module AutoOpenVec =
         ///  If one or both vectors are shorter than this ValueNone is returned .</param>
         ///<param name="relAngleDiscriminant"> This is an optional tolerance for the internally calculated relative Angle Discriminant.
         /// The default value corresponds to approx 0.25 degree. Below this angle vectors are considered parallel.
-        /// Use the module FsEx.Geo.Util.RelAngleDiscriminant to set another tolerance here.</param>
+        /// Use the module Euclid.Util.RelAngleDiscriminant to set another tolerance here.</param>
         ///<returns> For (almost) zero length or (almost) parallel vectors: ValueNone
         /// Else ValueSome with a tuple of the parameters at which the two infinite 2D lines intersect to each other.
         /// The tuple's order corresponds to the input order.</returns>
@@ -816,7 +856,7 @@ module AutoOpenVec =
                 let discriminant = ac - bb // never negative , the dot product cannot be bigger than the two square length multiplied with each other
                 let div = ac+bb // never negative
                 // getting the relation between the sum and the subtraction gives a good estimate of the angle between the lines
-                // see module FsEx.Geo.Util.RelAngleDiscriminant
+                // see module Euclid.Util.RelAngleDiscriminant
                 let rel = discriminant/div
                 if rel < float relAngleDiscriminant then //parallel
                     ValueNone
@@ -840,7 +880,7 @@ module AutoOpenVec =
         ///  If one or both vectors are shorter than this ValueNone is returned .</param>
         ///<param name="relAngleDiscriminant"> This is an optional tolerance for the internally calculated relative Angle Discriminant.
         /// The default value corresponds to approx 0.25 degree. Below this angle vectors are considered parallel.
-        /// Use the module FsEx.Geo.Util.RelAngleDiscriminant to set another tolerance here.</param>
+        /// Use the module Euclid.Util.RelAngleDiscriminant to set another tolerance here.</param>
         ///<returns> For (almost) zero length or (almost) parallel vectors: 'false' else 'true'.</returns>
         static member inline doIntersect (  vA:Vec,
                                             vB:Vec,
@@ -867,6 +907,6 @@ module AutoOpenVec =
                 let discriminant = ac - bb // never negative , the dot product cannot be bigger than the two square length multiplied with each other
                 let div = ac+bb // never negative
                 // getting the relation between the sum and the subtraction gives a good estimate of the angle between the lines
-                // see module FsEx.Geo.Util.RelAngleDiscriminant
+                // see module Euclid.Util.RelAngleDiscriminant
                 let rel = discriminant/div
                 rel > float relAngleDiscriminant

@@ -1,8 +1,8 @@
-namespace FsEx.Geo
+namespace Euclid
 
-open FsEx.Geo.Util
+open Euclid.Util
 
-/// When FsEx.Geo is opened this module will be auto-opened.
+/// When Euclid is opened this module will be auto-opened.
 /// It only contains extension members for type PPlane.
 [<AutoOpen>]
 module AutoOpenPPlane2 =
@@ -33,7 +33,7 @@ module AutoOpenPPlane2 =
             let ao = a.Origin
             let v = UnitVec.cross (an,bn)
             if v.LengthSq < 1e-18 then
-                FsExGeoException.Raise "FsEx.Geo.PPlane.intersect: Planes are parallel or coincident: %O, %O" a b
+                EuclidException.Raise "Euclid.PPlane.intersect: Planes are parallel or coincident: %O, %O" a b
             let pa = Vec.cross(v, an)
             let nenner = pa * bn
             let t = ((b.Origin - ao ) * bn) / nenner
@@ -47,7 +47,7 @@ module AutoOpenPPlane2 =
             let z = pl.Zaxis
             let nenner = ln.Tangent * z
             if abs nenner < 1e-9 then
-                FsExGeoException.Raise "FsEx.Geo.PPlane.intersectLineParameter: Line and Plane are parallel or line has zero length: %O, %O" ln pl
+                EuclidException.Raise "Euclid.PPlane.intersectLineParameter: Line and Plane are parallel or line has zero length: %O, %O" ln pl
             ((pl.Origin - ln.From) * z) / nenner
 
 
@@ -59,7 +59,7 @@ module AutoOpenPPlane2 =
             let v = ln.Tangent
             let nenner = v * z
             if abs nenner < 1e-9 then
-                FsExGeoException.Raise "FsEx.Geo.PPlane.intersectLineParameters: Line and Plane are parallel or line has zero length: %O, %O" ln pl
+                EuclidException.Raise "Euclid.PPlane.intersectLineParameters: Line and Plane are parallel or line has zero length: %O, %O" ln pl
             let t = ((pl.Origin - ln.From) * z) / nenner
             let xpt = ln.From + v * t
             let v = xpt-pl.Origin

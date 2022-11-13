@@ -1,4 +1,4 @@
-namespace FsEx.Geo
+namespace Euclid
 
 open System
 open System .Collections.Generic
@@ -177,9 +177,9 @@ type Loop private   ( pts:ResizeArray<Pt>
     /// Does NOT remove colinear points.
     static member create (minSegmentLength:float) (snapThreshold:float) (points:IList<Pt>)=
         let pts =
-            if minSegmentLength < 0.0 then FsExGeoException.Raise "FsEx.Geo.Loop constructor: minSegmentLength < 0.0:  %g" minSegmentLength
-            if snapThreshold    < 0.0 then FsExGeoException.Raise "FsEx.Geo.Loop constructor: snapThreshold < 0.0:  %g" snapThreshold
-            if points.Count<3 then FsExGeoException.Raise "FsEx.Geo.Loop constructor: Input ResizeArray needs to have a least three points, not  %d " points.Count
+            if minSegmentLength < 0.0 then EuclidException.Raise "Euclid.Loop constructor: minSegmentLength < 0.0:  %g" minSegmentLength
+            if snapThreshold    < 0.0 then EuclidException.Raise "Euclid.Loop constructor: snapThreshold < 0.0:  %g" snapThreshold
+            if points.Count<3 then EuclidException.Raise "Euclid.Loop constructor: Input ResizeArray needs to have a least three points, not  %d " points.Count
 
             let ps= ResizeArray<Pt>(points.Count+1)
             // check gap sizes
@@ -256,7 +256,7 @@ type Loop private   ( pts:ResizeArray<Pt>
             let n = unitVcts.[ii]
             if t*n < -0.984808 then
                 Debug2D.drawDot "+170° turn?" pts.[ii]
-                FsExGeoException.Raise "FsEx.Geo.Loop: Lines for Loop make a kink between 170 and 180 Degrees."
+                EuclidException.Raise "Euclid.Loop: Lines for Loop make a kink between 170 and 180 Degrees."
             t <- n
 
         // Check for self intersection,
@@ -276,7 +276,7 @@ type Loop private   ( pts:ResizeArray<Pt>
                     Debug2D.drawDot (sprintf "self X:  %O +  %O"  i j) (Intersect.getXPointOrMid(ap, au, al, bp, bu, bl, snapThreshold))
                     Debug2D.drawLineFromTo(ap, ap+au*al)
                     Debug2D.drawLineFromTo(bp, bp+bu*bl)
-                    FsExGeoException.Raise "FsEx.Geo.Loop: Loop of  %O Points has self intersection." points.Count
+                    EuclidException.Raise "Euclid.Loop: Loop of  %O Points has self intersection." points.Count
 
         if unitVcts.Length > 3 then // a triangle is covered by angle checks above
             // checking second last and last

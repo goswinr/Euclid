@@ -1,8 +1,8 @@
-namespace FsEx.Geo
+namespace Euclid
 
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
-open FsEx.Geo.Util
+open Euclid.Util
 
 /// An immutable 4x4 Transformation Matrix.
 /// The matrix is represented in the following column-vector syntax form:
@@ -158,7 +158,7 @@ type Matrix =
         let t14 = n14 * n23 * n32 - n13 * n24 * n32 - n14 * n22 * n33 + n12 * n24 * n33 + n13 * n22 * n34 - n12 * n23 * n34
         let det = n11 * t11 + n21 * t12 + n31 * t13 + x41 * t14
 
-        if abs det < 1e-24 then FsExGeoException.Raise "FsEx.Geo.Matrix has a zero or almost zero Determinant. It is smaller than 1e-24. It cannot be inverted:\r\n%O" m // TODO or return all zero matrix like threeJS ?
+        if abs det < 1e-24 then EuclidException.Raise "Euclid.Matrix has a zero or almost zero Determinant. It is smaller than 1e-24. It cannot be inverted:\r\n%O" m // TODO or return all zero matrix like threeJS ?
 
         let detInv = 1. / det
 
@@ -519,7 +519,7 @@ type Matrix =
         // first unitize
         let len = sqrt (axis.X*axis.X + axis.Y*axis.Y + axis.Z*axis.Z)
         if len <  zeroLengthTol then
-            FsExGeoException.Raise "FsEx.Geo.Matrix.createRotationAxis failed on too short axis: %O and rotation: %g° Degrees." axis angleDegrees
+            EuclidException.Raise "Euclid.Matrix.createRotationAxis failed on too short axis: %O and rotation: %g° Degrees." axis angleDegrees
         let sc = 1. / len
         let x = axis.X * sc
         let y = axis.Y * sc
@@ -584,7 +584,7 @@ type Matrix =
         let axis0 = UnitVec.cross(fromVec, toVec)
         let len = axis0.Length
         if len <  zeroLengthTol then
-            FsExGeoException.Raise "FsEx.Geo.Matrix.createVecToVec failed to find rotation axis on colinear vectors: %O and %O" fromVec toVec
+            EuclidException.Raise "Euclid.Matrix.createVecToVec failed to find rotation axis on colinear vectors: %O and %O" fromVec toVec
         let axis = axis0 / len
         let x = axis.X
         let y = axis.Y
@@ -606,7 +606,7 @@ type Matrix =
             let z = vecFrom.Z
             let length = sqrt(x*x + y*y + z*z)
             if length <  zeroLengthTol then
-                FsExGeoException.Raise "FsEx.Geo.Matrix.createVecToVec failed. too short vector vecFrom: %O" vecFrom
+                EuclidException.Raise "Euclid.Matrix.createVecToVec failed. too short vector vecFrom: %O" vecFrom
             let sc =  1. / length // inverse for unitizing vector:
             UnitVec.createUnchecked(x*sc, y*sc, z*sc)
         let tu =
@@ -615,7 +615,7 @@ type Matrix =
             let z = vecTo.Z
             let length = sqrt(x*x + y*y + z*z)
             if length <  zeroLengthTol then
-                FsExGeoException.Raise "FsEx.Geo.Matrix.createVecToVec failed. too short vector vecTo: %O" vecTo
+                EuclidException.Raise "Euclid.Matrix.createVecToVec failed. too short vector vecTo: %O" vecTo
             let sc =  1. / length // inverse for unitizing vector:
             UnitVec.createUnchecked(x*sc, y*sc, z*sc)
         let c =  fu * tu  // dot to find cosine
@@ -624,7 +624,7 @@ type Matrix =
         let axis = Vec.cross(vecFrom, vecTo)
         let len = axis.Length
         if len <  Util.zeroLengthTol then
-            FsExGeoException.Raise "FsEx.Geo.Matrix.createVecToVec failed to find rotation axis on colinear or zero length vectors: %O and %O" vecFrom vecTo
+            EuclidException.Raise "Euclid.Matrix.createVecToVec failed to find rotation axis on colinear or zero length vectors: %O and %O" vecFrom vecTo
         let sc = 1. / len
         let x = axis.X * sc
         let y = axis.Y * sc
@@ -725,7 +725,7 @@ type Matrix =
     /// Where X41, Y42 and Z43 refer to the translation part of the matrix.
     static member createFromColumMajorArray (xs:float[]) =
         if xs.Length <> 16 then
-            FsExGeoException.Raise "FsEx.Geo.Matrix.createFromColumMajorArray expects an array of 16 items but got %d " xs.Length
+            EuclidException.Raise "Euclid.Matrix.createFromColumMajorArray expects an array of 16 items but got %d " xs.Length
         else
             Matrix (
                 xs[0],  xs[4],  xs[ 8],  xs[12] ,
@@ -739,7 +739,7 @@ type Matrix =
     /// Where X41, Y42 and Z43 refer to the translation part of the matrix.
     static member createFromRowMajorArray (xs:float[]) =
         if xs.Length <> 16 then
-            FsExGeoException.Raise "FsEx.Geo.Matrix.createFromRowMajorArray expects an array of 16 items but got %d " xs.Length
+            EuclidException.Raise "Euclid.Matrix.createFromRowMajorArray expects an array of 16 items but got %d " xs.Length
         else
             Matrix (
                 xs[ 0],  xs[ 1],  xs[ 2],  xs[ 3] ,

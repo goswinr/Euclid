@@ -1,8 +1,8 @@
-namespace FsEx.Geo
+namespace Euclid
 
-open FsEx.Geo.Util
+open Euclid.Util
 
-/// When FsEx.Geo is opened this module will be auto-opened.
+/// When Euclid is opened this module will be auto-opened.
 /// It only contains extension members for type PPlane.
 [<AutoOpen>]
 module AutoOpenPPlane =
@@ -52,7 +52,7 @@ module AutoOpenPPlane =
         /// and the distance of second origin to the first plane is less than the distance tolerance.
         /// The default angle tolerance is 0.25 degrees.
         /// This tolerance can be customized by an optional minium cosine value.
-        /// See FsEx.Geo.Cosine module.
+        /// See Euclid.Cosine module.
         member inline pl.IsCoincidentTo (other:PPlane,
                                         [<OPT;DEF(1e-6)>] distanceTolerance:float,
                                         [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine>) =
@@ -152,13 +152,13 @@ module AutoOpenPPlane =
             let y  = yPt-origin
             let lx = x.Length
             let ly = y.Length
-            if lx < 1e-5 then FsExGeoException.Raise "FsEx.Geo.PPlane.createThreePoints the distance between origin %s and xPt %s is too small" origin.AsString xPt.AsString
-            if ly < 1e-5 then FsExGeoException.Raise "FsEx.Geo.PPlane.createThreePoints the distance between origin %s and yPt %s is too small" origin.AsString yPt.AsString
+            if lx < 1e-5 then EuclidException.Raise "Euclid.PPlane.createThreePoints the distance between origin %s and xPt %s is too small" origin.AsString xPt.AsString
+            if ly < 1e-5 then EuclidException.Raise "Euclid.PPlane.createThreePoints the distance between origin %s and yPt %s is too small" origin.AsString yPt.AsString
             let xf = 1./lx
             let yf = 1./ly
             let xu = UnitVec.createUnchecked(x.X*xf, x.Y*xf, x.Z*xf)
             let yu = UnitVec.createUnchecked(y.X*yf, y.Y*yf, y.Z*yf)            
-            if xu.IsParallelTo(yu, Cosine.``1.0``) then FsExGeoException.Raise "FsEx.Geo.PPlane.createThreePoints failed. The points are colinear by less than 1.0 degree, origin %s and xPt %s and yPt %s" origin.AsString xPt.AsString yPt.AsString            
+            if xu.IsParallelTo(yu, Cosine.``1.0``) then EuclidException.Raise "Euclid.PPlane.createThreePoints failed. The points are colinear by less than 1.0 degree, origin %s and xPt %s and yPt %s" origin.AsString xPt.AsString yPt.AsString            
             let z = UnitVec.cross (xu , yu)
             let y' = Vec.cross (z , x)
             PPlane(origin, xu, y'.Unitized, z.Unitized)
@@ -170,7 +170,7 @@ module AutoOpenPPlane =
         /// Fails if the vectors are shorter than 1e-5.
         static member createOriginXaxisYaxis (origin:Pnt, xAxis:UnitVec, yAxis:UnitVec) =
             if xAxis.IsParallelTo(yAxis, Cosine.``1.0``) then 
-                FsExGeoException.Raise "FsEx.Geo.PPlane.createOriginXaxisYaxis failed. The vectors are colinear by less than 1.0 degrees, origin %s and xAxis%s and yAxis %s" origin.AsString xAxis.AsString yAxis.AsString
+                EuclidException.Raise "Euclid.PPlane.createOriginXaxisYaxis failed. The vectors are colinear by less than 1.0 degrees, origin %s and xAxis%s and yAxis %s" origin.AsString xAxis.AsString yAxis.AsString
             let z = UnitVec.cross (xAxis , yAxis)
             let y = Vec.cross (z , xAxis)
             PPlane(origin, xAxis, y.Unitized, z.Unitized)
@@ -183,8 +183,8 @@ module AutoOpenPPlane =
         static member createOriginXaxisYaxis (origin:Pnt, xAxis:Vec, yAxis:Vec) =
             let lx = xAxis.Length
             let ly = yAxis.Length
-            if lx < 1e-5 then FsExGeoException.Raise "FsEx.Geo.PPlane.createOriginXaxisYaxis the X-axis is too small. origin %s X-Axis %s" origin.AsString xAxis.AsString     
-            if ly < 1e-5 then FsExGeoException.Raise "FsEx.Geo.PPlane.createOriginXaxisYaxis the Y-axis is too small. origin %s Y-Axis %s" origin.AsString yAxis.AsString   
+            if lx < 1e-5 then EuclidException.Raise "Euclid.PPlane.createOriginXaxisYaxis the X-axis is too small. origin %s X-Axis %s" origin.AsString xAxis.AsString     
+            if ly < 1e-5 then EuclidException.Raise "Euclid.PPlane.createOriginXaxisYaxis the Y-axis is too small. origin %s Y-Axis %s" origin.AsString yAxis.AsString   
             let xf = 1./lx
             let yf = 1./ly
             let xu = UnitVec.createUnchecked(xAxis.X*xf, xAxis.Y*xf, xAxis.Z*xf)
@@ -211,7 +211,7 @@ module AutoOpenPPlane =
         /// Fails if the vectors are shorter than 1e-5.
         static member createOriginNormal (origin:Pnt, normal:Vec) =
             let len = normal.Length
-            if len < 1e-5 then FsExGeoException.Raise "FsEx.Geo.PPlane.createOriginNormal the Z-axis is too small. origin %s Z-Axis %s" origin.AsString normal.AsString    
+            if len < 1e-5 then EuclidException.Raise "Euclid.PPlane.createOriginNormal the Z-axis is too small. origin %s Z-Axis %s" origin.AsString normal.AsString    
             let f = 1./len
             PPlane.createOriginNormal (origin, UnitVec.createUnchecked(normal.X*f, normal.Y*f, normal.Z*f))
 
@@ -220,7 +220,7 @@ module AutoOpenPPlane =
         /// Fails if the vectors are shorter than 1e-5 or normal and X are parallel.
         static member createOriginNormalXaxis (origin:Pnt, normal:UnitVec, xAxis:UnitVec) =
             if normal.IsParallelTo(xAxis, Cosine.``1.0``) then
-                FsExGeoException.Raise "FsEx.Geo.PPlane.createOriginNormalXaxis failed. The vectors are colinear by less than 1.0 degrees, origin %s and normal %s and normal %s" origin.AsString normal.AsString xAxis.AsString   
+                EuclidException.Raise "Euclid.PPlane.createOriginNormalXaxis failed. The vectors are colinear by less than 1.0 degrees, origin %s and normal %s and normal %s" origin.AsString normal.AsString xAxis.AsString   
             let y = UnitVec.cross (normal , xAxis)
             let x = Vec.cross (y, normal)
             PPlane(origin, xAxis, y.Unitized, normal)
@@ -231,8 +231,8 @@ module AutoOpenPPlane =
         static member createOriginNormalXaxis (origin:Pnt, normal:Vec, xAxis:Vec) =
             let lx = xAxis.Length
             let ln = normal.Length
-            if lx < 1e-5 then FsExGeoException.Raise "FsEx.Geo.PPlane.createOriginNormalXaxis the X-axis is too small. origin %s X-Axis %s" origin.AsString xAxis.AsString     
-            if ln < 1e-5 then FsExGeoException.Raise "FsEx.Geo.PPlane.createOriginNormalXaxis the normal is too small. origin %s Normal %s" origin.AsString normal.AsString   
+            if lx < 1e-5 then EuclidException.Raise "Euclid.PPlane.createOriginNormalXaxis the X-axis is too small. origin %s X-Axis %s" origin.AsString xAxis.AsString     
+            if ln < 1e-5 then EuclidException.Raise "Euclid.PPlane.createOriginNormalXaxis the normal is too small. origin %s Normal %s" origin.AsString normal.AsString   
             let xf = 1./lx
             let nf = 1./ln
             let xu = UnitVec.createUnchecked(xAxis.X*xf,  xAxis.Y*xf,  xAxis.Z*xf)

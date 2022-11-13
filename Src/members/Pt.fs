@@ -1,10 +1,10 @@
-namespace FsEx.Geo
+namespace Euclid
 
 open System
 
 
 
-/// When FsEx.Geo is opened this module will be auto-opened.
+/// When Euclid is opened this module will be auto-opened.
 /// It only contains extension members for type Pt.
 [<AutoOpen>]
 module AutoOpenPt =
@@ -56,7 +56,7 @@ module AutoOpenPt =
         /// Returns new 2D point with given distance from Origin by scaling it up or down.
         member inline pt.WithDistanceFromOrigin (l:float) =
             let d = pt.DistanceFromOrigin
-            if d < zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Pt.WithDistFromOrigin  %O is too small to be scaled." pt
+            if d < zeroLengthTol then EuclidException.Raise "Euclid.Pt.WithDistFromOrigin  %O is too small to be scaled." pt
             pt * (l/d)
 
         /// Returns the Diamond Angle from this point to another point.
@@ -70,7 +70,7 @@ module AutoOpenPt =
             let y = o.Y-p.Y
             //#if DEBUG
             if abs(x) < zeroLengthTol && abs(y) < zeroLengthTol then // TODO : with this test all  operations are 2.5 times slower
-                FsExGeoDivByZeroException.Raise "FsEx.Geo.Pt.DirectionDiamondTo failed for too short distance between %O and %O." p o
+                EuclidDivByZeroException.Raise "Euclid.Pt.DirectionDiamondTo failed for too short distance between %O and %O." p o
             //#endif
             if y >= 0.0 then
                 if x >= 0.0 then
@@ -91,7 +91,7 @@ module AutoOpenPt =
             let y = o.Y-p.Y
             //#if DEBUG
             if abs(x) < zeroLengthTol && abs(y) < zeroLengthTol then // TODO : with this test all  operations are 2.5 times slower
-                FsExGeoDivByZeroException.Raise "FsEx.Geo.Pt.Angle2PiTo failed for too short distance between %O and %O." p o
+                EuclidDivByZeroException.Raise "Euclid.Pt.Angle2PiTo failed for too short distance between %O and %O." p o
             //#endif
             let a = Math.Atan2(y, x)
             if a < 0. then  a + Util.twoPi
@@ -108,7 +108,7 @@ module AutoOpenPt =
             let v   = toPt   - fromPt
             let lenSq = v.LengthSq
             let lenSq =  v.LengthSq
-            if lenSq < 1e-6 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Pt.closestPointOnLine: Line is too short for fromPt %O to  %O and  %O" fromPt toPt testPt
+            if lenSq < 1e-6 then EuclidDivByZeroException.Raise "Euclid.Pt.closestPointOnLine: Line is too short for fromPt %O to  %O and  %O" fromPt toPt testPt
             let dot = Vc.dot (v,  dir) / lenSq
             if   dot <= 0.0 then  fromPt
             elif dot >= 1.0 then  toPt
@@ -157,7 +157,7 @@ module AutoOpenPt =
             let dir = testPt - fromPt
             let v   = toPt   - fromPt
             let lenSq =  v.LengthSq
-            if lenSq < 1e-6 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Pt.DistanceToLine: Line is too short for fromPt %O to  %O and  %O" fromPt toPt testPt
+            if lenSq < 1e-6 then EuclidDivByZeroException.Raise "Euclid.Pt.DistanceToLine: Line is too short for fromPt %O to  %O and  %O" fromPt toPt testPt
             let dot = Vc.dot (v,  dir) / v.LengthSq
             if   dot <= 0.0 then testPt.DistanceTo   fromPt
             elif dot >= 1.0 then testPt.DistanceTo   toPt
@@ -180,7 +180,7 @@ module AutoOpenPt =
         /// (This member is needed by Array.average and similar functions)
         static member inline DivideByInt (pt:Pt, i:int) =
             if i<>0 then  let d = float i in  Pt(pt.X/d, pt.Y/d)
-            else FsExGeoDivByZeroException.Raise "FsEx.Geo.Pt.DivideByInt 0 %O " pt  // needed by  'Array.average'
+            else EuclidDivByZeroException.Raise "Euclid.Pt.DivideByInt 0 %O " pt  // needed by  'Array.average'
 
         /// Accepts any type that has a X and Y (UPPERCASE) member that can be converted to a float.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
@@ -188,7 +188,7 @@ module AutoOpenPt =
             let x = ( ^T : (member X: _) pt)
             let y = ( ^T : (member Y: _) pt)
             try Pt(float x, float y)
-            with e -> FsExGeoException.Raise "FsEx.Geo.Pt.ofXY: %A could not be converted to a FsEx.Geo.Pt:\r\n%A" pt e
+            with e -> EuclidException.Raise "Euclid.Pt.ofXY: %A could not be converted to a Euclid.Pt:\r\n%A" pt e
 
         /// Accepts any type that has a x and y (lowercase) member that can be converted to a float.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
@@ -196,7 +196,7 @@ module AutoOpenPt =
             let x = ( ^T : (member x: _) pt)
             let y = ( ^T : (member y: _) pt)
             try Pt(float x, float y)
-            with e -> FsExGeoException.Raise "FsEx.Geo.Pt.ofxy: %A could not be converted to a FsEx.Geo.Pt:\r\n%A" pt e
+            with e -> EuclidException.Raise "Euclid.Pt.ofxy: %A could not be converted to a Euclid.Pt:\r\n%A" pt e
 
         /// Create 2D point from 3D point. Ignoring Z component.
         static member inline ofPnt      (p:Pnt)     = Pt (p.X, p.Y)
@@ -339,7 +339,7 @@ module AutoOpenPt =
         static member inline projectedParameter (fromPt:Pt, v:Vc, testPt:Pt) =
             let dir = testPt-fromPt
             let lenSq =  v.LengthSq
-            if lenSq < 1e-6 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Pt.projectedParameter:  %O is too short for fromPt %O and  %O" v fromPt testPt
+            if lenSq < 1e-6 then EuclidDivByZeroException.Raise "Euclid.Pt.projectedParameter:  %O is too short for fromPt %O and  %O" v fromPt testPt
             Vc.dot (v,  dir) / v.LengthSq
 
         /// 'fromPt' Pt and Pt describe an endless line.
@@ -349,7 +349,7 @@ module AutoOpenPt =
             let dir = testPt - fromPt
             let v   = toPt   - fromPt
             let lenSq =  v.LengthSq
-            if lenSq < 1e-6 then FsExGeoDivByZeroException.Raise "FsEx.Geo.Pt.projectedParameter: Line is too short for fromPt %O to  %O and  %O" fromPt toPt testPt
+            if lenSq < 1e-6 then EuclidDivByZeroException.Raise "Euclid.Pt.projectedParameter: Line is too short for fromPt %O to  %O and  %O" fromPt toPt testPt
             Vc.dot (v,  dir) / v.LengthSq
 
 

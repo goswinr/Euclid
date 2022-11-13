@@ -1,4 +1,4 @@
-namespace FsEx.Geo
+namespace Euclid
 
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
@@ -59,7 +59,7 @@ type Rect3D =
 
     /// Nicely formatted string representation of the 3D Rectangle including its size.
     override r.ToString() =
-        sprintf "FsEx.Geo.Rect3D %s x %s  (Origin:%s| X-ax:%s| Y-ax:%s)"
+        sprintf "Euclid.Rect3D %s x %s  (Origin:%s| X-ax:%s| Y-ax:%s)"
             (Format.float r.Length)  (Format.float r.Width)
             r.Origin.AsString r.Xaxis.AsString r.Yaxis.AsString
 
@@ -193,13 +193,13 @@ type Rect3D =
     /// Creates a unitized version of the local X-Axis.
     member inline r.XaxisUnit =
         let len = r.Xaxis.Length
-        if len = zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Rect3D.XaxisUnit: rect Xaxis is too small for unitizing: %s" r.AsString
+        if len = zeroLengthTol then EuclidException.Raise "Euclid.Rect3D.XaxisUnit: rect Xaxis is too small for unitizing: %s" r.AsString
         r.Xaxis*(1./len)
 
     /// Creates a unitized version of the local Y-Axis.
     member inline r.YaxisUnit =
         let len = r.Yaxis.Length
-        if len = zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Rect3D.XaxisUnit: rect Yaxis is too small for unitizing: %s" r.AsString
+        if len = zeroLengthTol then EuclidException.Raise "Euclid.Rect3D.XaxisUnit: rect Yaxis is too small for unitizing: %s" r.AsString
         r.Yaxis*(1./len)
 
     /// Returns the Normal; resulting from the cross product of r.Xaxis with r.Yaxis.
@@ -209,7 +209,7 @@ type Rect3D =
     member r.NormalUnit =
         let z = Vec.cross(r.Xaxis,r.Yaxis)
         let len = z.Length
-        if len = zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Rect3D.NormalUnit: rect is too small for finding a normal vector: %s" r.AsString
+        if len = zeroLengthTol then EuclidException.Raise "Euclid.Rect3D.NormalUnit: rect is too small for finding a normal vector: %s" r.AsString
         z*(1./len)
 
 
@@ -367,37 +367,51 @@ type Rect3D =
         Vec.differenceSq a.Yaxis b.Yaxis < tt
 
 
-    /// Returns the 3D Rectangle expanded by distance on all six sides.
-    /// Does check for underflow if distance is negative and raises FsExGeoException.
+    /// Returns the 3D Rectangle expanded by distance on all four sides.
+    /// Does check for underflow if distance is negative and raises EuclidException.
     static member expand dist (r:Rect3D) =
         let len = r.Length
         let wid = r.Width
         let d = dist * -2.0
         if len<=d || wid<=d  then
-            FsExGeoException.Raise "FsEx.Geo.Rect3D.expand: the 3D Rectangle %s is too small to expand by negative distance %s"  r.AsString (Format.float dist)
+            EuclidException.Raise "Euclid.Rect3D.expand: the 3D Rectangle %s is too small to expand by negative distance %s"  r.AsString (Format.float dist)
         let x = r.Xaxis * (dist / len)
         let y = r.Yaxis * (dist / wid)
         Rect3D(r.Origin-x-y, r.Xaxis+x*2., r.Yaxis+y*2.)
 
-    /// Returns the 3D Rectangle expanded by respective distances on all six sides.
+    /// Returns the 3D Rectangle expanded by respective distances on all four sides.
     /// Does check for overflow if distance is negative and fails.
-    /// distLen, distWid are for x, Y-axis respectively.
-    static member expandXY distLen distWid  (r:Rect3D) =
+    /// distLen, distWidth are for the local  X and Y-axis respectively.
+    static member expandXY distLen distWidth  (r:Rect3D) =
         let len = r.Length
         let wid = r.Width
-        if len <= distLen * -2.0 then FsExGeoException.Raise "FsEx.Geo.Rect3D.expandXY: the 3D Rectangle %s is too small to expand by negative distance distLen %s"  r.AsString (Format.float distLen)
-        if wid <= distWid * -2.0 then FsExGeoException.Raise "FsEx.Geo.Rect3D.expandXY: the 3D Rectangle %s is too small to expand by negative distance distWid %s"  r.AsString (Format.float distWid)
-        let x = r.Xaxis * (distLen / r.Length)
-        let y = r.Yaxis * (distWid / r.Width )
+        if len <= distLen   * -2.0 then EuclidException.Raise "Euclid.Rect3D.expandXY: the 3D Rectangle %s is too small to expand by negative distance distLen %s"  r.AsString (Format.float distLen)
+        if wid <= distWidth * -2.0 then EuclidException.Raise "Euclid.Rect3D.expandXY: the 3D Rectangle %s is too small to expand by negative distance distWidth %s"  r.AsString (Format.float distWidth)
+        let x = r.Xaxis * (distLen   / r.Length)
+        let y = r.Yaxis * (distWidth / r.Width )
         Rect3D(r.Origin-x-y, r.Xaxis+x*2., r.Yaxis+y*2.)
 
     /// Give PPlane and sizes.
-    static member createFromPlane (pl:PPlane,x, y) =
-        Rect3D(pl.Origin, pl.Xaxis*x, pl.Yaxis*y)
+    /// The Rect3D's Origin will be at the plane's Origin.
+    static member createFromPlane (pl:PPlane,sizeX:float, sizeY:float ) =
+        if sizeX < 0. then EuclidException.Raise "Euclid.Rect3D.createFromPlane sizeX is negative: %g , sizeY is: %g, plane: %O"  sizeX sizeY  pl
+        if sizeY < 0. then EuclidException.Raise "Euclid.Rect3D.createFromPlane sizeY is negative: %g , sizeX is: %g, plane: %O"  sizeY sizeX  pl
+        Rect3D(pl.Origin, pl.Xaxis*sizeX, pl.Yaxis*sizeY)
+
+    /// Give PPlane and sizes.
+    /// The Rect3D's Center will be at the plane's Origin.
+    static member createCenteredFromPlane (pl:PPlane,sizeX:float, sizeY:float ) =
+        if sizeX < 0. then EuclidException.Raise "Euclid.Rect3D.createCenteredFromPlane sizeX is negative: %g , sizeY is: %g, plane: %O"  sizeX sizeY  pl
+        if sizeY < 0. then EuclidException.Raise "Euclid.Rect3D.createCenteredFromPlane sizeY is negative: %g , sizeX is: %g, plane: %O"  sizeY sizeX  pl
+        let x = pl.Xaxis*sizeX
+        let y = pl.Yaxis*sizeY
+        Rect3D(pl.Origin- x*0.5 - y*0.5, x, y)
+        
 
     /// Give 2D Bounding Rect.
-    static member createFromBoundingRect (b:BRect) =
+    static member createFromBRect (b:BRect) =
         Rect3D(b.MinPt.AsPnt, Vec.Xaxis*b.Length, Vec.Yaxis*b.Width)
+    
 
     /// Move the 3D Rectangle by a vector.
     static member move (v:Vec) (r:Rect3D) =
@@ -425,14 +439,14 @@ type Rect3D =
     static member translateX (distX:float) (r:Rect3D) =
         let x = r.Xaxis
         let len = x.Length
-        if len = zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Rect3D.translateX: rect.Xaxis is zero length in Rect3D: %s" r.AsString
+        if len = zeroLengthTol then EuclidException.Raise "Euclid.Rect3D.translateX: rect.Xaxis is zero length in Rect3D: %s" r.AsString
         Rect3D(r.Origin + x*(distX/len), x, r.Yaxis)
 
     /// Translate along the local Y-axis of the 3D Rectangle.
     static member translateY (distY:float) (r:Rect3D) =
         let y = r.Yaxis
         let len = y.Length
-        if len = zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Rect3D.translateY: rect.Yaxis is zero length in Rect3D: %s" r.AsString
+        if len = zeroLengthTol then EuclidException.Raise "Euclid.Rect3D.translateY: rect.Yaxis is zero length in Rect3D: %s" r.AsString
         Rect3D(r.Origin + y*(distY/len), r.Xaxis, y)
 
     /// Translate by a 3D vector.
@@ -444,7 +458,7 @@ type Rect3D =
     static member offset (offsetDistance :float) (r:Rect3D) =
         let z = Vec.cross(r.Xaxis,r.Yaxis)
         let len = z.Length
-        if len = zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Rect3D.offset: rect is too small for offsetting zero length in Rect3D: %s" r.AsString
+        if len = zeroLengthTol then EuclidException.Raise "Euclid.Rect3D.offset: rect is too small for offsetting zero length in Rect3D: %s" r.AsString
         Rect3D(r.Origin + z*(offsetDistance/len), r.Xaxis, r.Yaxis)
 
     /// Transform the 3D Rectangle by the given OrthoMatrix.

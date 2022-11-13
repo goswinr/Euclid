@@ -1,4 +1,4 @@
-namespace FsEx.Geo
+namespace Euclid
 
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
@@ -234,19 +234,19 @@ type Box =
     /// Creates a unitized version of the local X-Axis.
     member inline r.XaxisUnit =
         let len = r.Xaxis.Length
-        if len = zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Box.XaxisUnit: rect Xaxis is too small for unitizing: %s" r.AsString
+        if len = zeroLengthTol then EuclidException.Raise "Euclid.Box.XaxisUnit: rect Xaxis is too small for unitizing: %s" r.AsString
         r.Xaxis*(1./len)
 
     /// Creates a unitized version of the local Y-Axis.
     member inline r.YaxisUnit =
         let len = r.Yaxis.Length
-        if len = zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Box.XaxisUnit: rect Yaxis is too small for unitizing: %s" r.AsString
+        if len = zeroLengthTol then EuclidException.Raise "Euclid.Box.XaxisUnit: rect Yaxis is too small for unitizing: %s" r.AsString
         r.Yaxis*(1./len)
 
     /// Creates a unitized version of the local Z-Axis.
     member inline r.ZaxisUnit =
         let len = r.Zaxis.Length
-        if len = zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Box.XaxisUnit: rect Zaxis is too small for unitizing: %s" r.AsString
+        if len = zeroLengthTol then EuclidException.Raise "Euclid.Box.XaxisUnit: rect Zaxis is too small for unitizing: %s" r.AsString
         r.Zaxis*(1./len)
 
     /// The corner diagonally opposite of corner from Origin.
@@ -260,7 +260,7 @@ type Box =
 
     /// Nicely formatted string representation of the Box including its size.
     override b.ToString() =
-        sprintf "FsEx.Geo.Box %s x %s x %s (Origin:%s| X-ax:%s| Y-ax:%s| Z-ax:%s)"
+        sprintf "Euclid.Box %s x %s x %s (Origin:%s| X-ax:%s| Y-ax:%s| Z-ax:%s)"
             (Format.float b.Length)  (Format.float b.Width) (Format.float b.Height)
             b.Origin.AsString b.Xaxis.AsString b.Yaxis.AsString b.Zaxis.AsString
 
@@ -462,14 +462,14 @@ type Box =
         Vec.differenceSq a.Zaxis b.Zaxis < tt
 
     /// Returns Box expanded by distance on all six sides.
-    /// Does check for underflow if distance is negative and raises FsExGeoException.
+    /// Does check for underflow if distance is negative and raises EuclidException.
     static member expand dist (b:Box) =
         let len = b.Length
         let wid = b.Width
         let hei = b.Height
         let d = dist * -2.0
         if len<=d || wid<=d || hei<=d then
-            FsExGeoException.Raise "FsEx.Geo.Box.expand: Box %s is too small to expand by negative distance %s"  b.AsString (Format.float dist)
+            EuclidException.Raise "Euclid.Box.expand: Box %s is too small to expand by negative distance %s"  b.AsString (Format.float dist)
         let x = b.Xaxis * (dist / len)
         let y = b.Yaxis * (dist / wid)
         let z = b.Zaxis * (dist / hei)
@@ -482,9 +482,9 @@ type Box =
         let len = b.Length
         let wid = b.Width
         let hei = b.Height
-        if len <= distLen * -2.0 then FsExGeoException.Raise "FsEx.Geo.Box.expandXYZ: Box %s is too small to expand by negative distance distLen %s"  b.AsString (Format.float distLen)
-        if wid <= distWid * -2.0 then FsExGeoException.Raise "FsEx.Geo.Box.expandXYZ: Box %s is too small to expand by negative distance distWid %s"  b.AsString (Format.float distWid)
-        if hei <= distHei * -2.0 then FsExGeoException.Raise "FsEx.Geo.Box.expandXYZ: Box %s is too small to expand by negative distance distHei %s"  b.AsString (Format.float distHei)
+        if len <= distLen * -2.0 then EuclidException.Raise "Euclid.Box.expandXYZ: Box %s is too small to expand by negative distance distLen %s"  b.AsString (Format.float distLen)
+        if wid <= distWid * -2.0 then EuclidException.Raise "Euclid.Box.expandXYZ: Box %s is too small to expand by negative distance distWid %s"  b.AsString (Format.float distWid)
+        if hei <= distHei * -2.0 then EuclidException.Raise "Euclid.Box.expandXYZ: Box %s is too small to expand by negative distance distHei %s"  b.AsString (Format.float distHei)
         let x = b.Xaxis * (distLen / b.Length)
         let y = b.Yaxis * (distWid / b.Width )
         let z = b.Zaxis * (distHei / b.Height)
@@ -506,21 +506,21 @@ type Box =
     static member translateX (distX:float) (b:Box) =
         let x = b.Xaxis
         let len = x.Length
-        if len = zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Box.translateX: box.Xaxis is zero length in Box: %s" b.AsString
+        if len = zeroLengthTol then EuclidException.Raise "Euclid.Box.translateX: box.Xaxis is zero length in Box: %s" b.AsString
         Box(b.Origin + x*(distX/len), x, b.Yaxis, b.Zaxis)
 
     /// Translate along the local Y-axis of the Box.
     static member translateY (distY:float) (b:Box) =
         let y = b.Yaxis
         let len = y.Length
-        if len = zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Box.translateY: box.Yaxis is zero length in Box: %s" b.AsString
+        if len = zeroLengthTol then EuclidException.Raise "Euclid.Box.translateY: box.Yaxis is zero length in Box: %s" b.AsString
         Box(b.Origin + y*(distY/len), b.Xaxis, y, b.Zaxis)
 
     /// Translate along the local Z-axis of the Box.
     static member translateZ (distZ:float) (b:Box) =
         let z = b.Zaxis
         let len = z.Length
-        if len = zeroLengthTol then FsExGeoException.Raise "FsEx.Geo.Box.translateZ: box.Zaxis is zero length in Box: %s" b.AsString
+        if len = zeroLengthTol then EuclidException.Raise "Euclid.Box.translateZ: box.Zaxis is zero length in Box: %s" b.AsString
         Box(b.Origin + z*(distZ/len), b.Xaxis, b.Yaxis, z)
 
     /// Transform the Box by the given OrthoMatrix.

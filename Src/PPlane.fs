@@ -1,4 +1,4 @@
-namespace FsEx.Geo
+namespace Euclid
 
 // Design notes:
 // The structs types in this file only have the constructors , ToString override and operators define in this file.
@@ -36,7 +36,7 @@ type PPlane =
 
     /// Format PPlane into string with nicely formatted floating point numbers.
     override pl.ToString() =
-        sprintf "FsEx.Geo.PPlane(Origin:%s\r\nX-axis:%s\r\n Y-axis=%s\r\n Z-axis:%s)" pl.Origin.AsString pl.Xaxis.AsString pl.Yaxis.AsString pl.Zaxis.AsString
+        sprintf "Euclid.PPlane(Origin:%s\r\nX-axis:%s\r\n Y-axis=%s\r\n Z-axis:%s)" pl.Origin.AsString pl.Xaxis.AsString pl.Yaxis.AsString pl.Zaxis.AsString
 
     /// For use as a faster internal constructor.
     /// Requires correct input of unitized perpendicular vectors.

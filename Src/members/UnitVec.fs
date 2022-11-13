@@ -1,9 +1,9 @@
-namespace FsEx.Geo
+namespace Euclid
 
 open System
 
 
-/// When FsEx.Geo is opened this module will be auto-opened.
+/// When Euclid is opened this module will be auto-opened.
 /// It only contains extension members for type UnitVec.
 [<AutoOpen>]
 module AutoOpenUnitVec =
@@ -64,7 +64,7 @@ module AutoOpenUnitVec =
             // https://stackoverflow.com/a/14675998/969070
             #if DEBUG
             if abs(v.X) < zeroLengthTol && abs(v.Y) < zeroLengthTol then
-                FsExGeoDivByZeroException.Raise "FsEx.Geo.UnitVec.DirectionDiamondInXY: input 3D unit vector is vertical:%O" v
+                EuclidDivByZeroException.Raise "Euclid.UnitVec.DirectionDiamondInXY: input 3D unit vector is vertical:%O" v
             #endif
             if v.Y >= 0.0 then
                 if v.X >= 0.0 then
@@ -86,7 +86,7 @@ module AutoOpenUnitVec =
             // https://stackoverflow.com/a/14675998/969070
             #if DEBUG
             if abs(v.X) < zeroLengthTol && abs(v.Y) < zeroLengthTol then
-                FsExGeoDivByZeroException.Raise "FsEx.Geo.UnitVec.Direction2PiInXY: input 3D unit vector is vertical: %O" v
+                EuclidDivByZeroException.Raise "Euclid.UnitVec.Direction2PiInXY: input 3D unit vector is vertical: %O" v
             #endif
             let a = Math.Atan2(v.Y, v.X)
             if a < 0. then
@@ -103,7 +103,7 @@ module AutoOpenUnitVec =
             // https://stackoverflow.com/a/14675998/969070
             #if DEBUG
             if abs(v.X) < zeroLengthTol && abs(v.Y) < zeroLengthTol then
-                FsExGeoDivByZeroException.Raise "FsEx.Geo.UnitVec.DirectionPiInXY: input 3D unit vector is vertical: %O" v
+                EuclidDivByZeroException.Raise "Euclid.UnitVec.DirectionPiInXY: input 3D unit vector is vertical: %O" v
             #endif
             let a = Math.Atan2(v.Y, v.X)
             if a < 0. then
@@ -147,7 +147,7 @@ module AutoOpenUnitVec =
         member inline v.IsOppositeOrientation (other:UnitVec) =
             v * other < -1e-12 
 
-        /// Checks if 3D unit vector is parallel to the world X axis.
+        /// Checks if 3D unit vector is parallel to the world X axis. Ignoring orientation.
         /// Tolerance is 1e-6.        
         member inline v.IsXAligned =
             let x = abs (v.X)
@@ -155,7 +155,7 @@ module AutoOpenUnitVec =
             let z = abs (v.Z)            
             y < 1e-6 && z < 1e-6      
 
-        /// Checks if 3D unit vector is parallel to the world Y axis.
+        /// Checks if 3D unit vector is parallel to the world Y axis. Ignoring orientation.
         /// Tolerance is 1e-6.        
         member inline v.IsYAligned =
             let x = abs (v.X)
@@ -163,7 +163,7 @@ module AutoOpenUnitVec =
             let z = abs (v.Z)            
             x < 1e-6 && z < 1e-6
 
-        /// Checks if 3D unit vector is parallel to the world Z axis.
+        /// Checks if 3D unit vector is parallel to the world Z axis. Ignoring orientation.
         /// Tolerance is 1e-6.        
         /// Same as v.IsVertical
         member inline v.IsZAligned =
@@ -172,7 +172,7 @@ module AutoOpenUnitVec =
             let z = abs (v.Z)
             x < 1e-6 && y < 1e-6
 
-        /// Checks if 3D unit vector is parallel to the world Z axis.
+        /// Checks if 3D unit vector is parallel to the world Z axis. Ignoring orientation.
         /// Tolerance is 1e-6.
         /// Same as v.IsZAligned
         member inline v.IsVertical =  
@@ -193,28 +193,64 @@ module AutoOpenUnitVec =
         /// Ignores the line orientation.
         /// The default angle tolerance is 0.25 degrees.
         /// This tolerance can be customized by an optional minium cosine value.
-        /// See FsEx.Geo.Cosine module.
-        member inline this.IsParallelTo( other:UnitVec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
+        /// See Euclid.Cosine module.
+        member inline this.IsParallelTo(other:UnitVec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
             abs(other*this) > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
 
+        /// Checks if this 3D unit vectors and a 3D vector are parallel.
+        /// Ignores the line orientation.
+        /// The default angle tolerance is 0.25 degrees.
+        /// This tolerance can be customized by an optional minium cosine value.
+        /// See Euclid.Cosine module.
+        member inline this.IsParallelTo(other:Vec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
+            let sb = other.LengthSq
+            if sb < 1e-24 then EuclidException.Raise "Euclid.UnitVec.IsParallelTo: Vec 'other' is too short: %s. 'this':%s " other.AsString this.AsString            
+            let ou = other * (1.0 / sqrt sb )
+            abs(ou*this) > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:            
 
+ 
         /// Checks if two 3D unit vectors are parallel.
         /// Takes the line orientation into account too.
         /// The default angle tolerance is 0.25 degrees.
         /// This tolerance can be customized by an optional minium cosine value.
-        /// See FsEx.Geo.Cosine module.
+        /// See Euclid.Cosine module.
         member inline this.IsParallelAndOrientedTo  (other:UnitVec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
             other*this > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
+
+        /// Checks if this 3D unit vectors and a 3D vector are parallel.
+        /// Takes the line orientation into account too.
+        /// The default angle tolerance is 0.25 degrees.
+        /// This tolerance can be customized by an optional minium cosine value.
+        /// See Euclid.Cosine module.
+        member inline this.IsParallelAndOrientedTo  (other:Vec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
+            let sb = other.LengthSq
+            if sb < 1e-24 then EuclidException.Raise "Euclid.UnitVec.IsParallelAndOrientedTo: Vec 'other' is too short: %s. 'this':%s " other.AsString this.AsString            
+            let ou = other * (1.0 / sqrt sb ) 
+            ou*this > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:            
 
 
         /// Checks if two 3D unit vectors are perpendicular to each other.
         /// The default angle tolerance is 89.75 to 90.25 degrees.
         /// This tolerance can be customized by an optional minium cosine value.
         /// The default cosine is 0.0043633 ( = 89.75 deg )
-        /// See FsEx.Geo.Cosine module.
+        /// See Euclid.Cosine module.
         member inline this.IsPerpendicularTo (other:UnitVec, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) =
             let d = other*this
             float -maxCosine < d && d  < float maxCosine // = cosine of 98.75 and 90.25 degrees
+
+        /// Checks if this 3D unit vectors and a 3D vector are perpendicular to each other.
+        /// The default angle tolerance is 89.75 to 90.25 degrees.
+        /// This tolerance can be customized by an optional minium cosine value.
+        /// The default cosine is 0.0043633 ( = 89.75 deg )
+        /// See Euclid.Cosine module.
+        member inline this.IsPerpendicularTo (other:Vec, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) =
+            let sb = other.LengthSq
+            if sb < 1e-24 then EuclidException.Raise "Euclid.UnitVec.IsPerpendicularTo: Vec 'other' is too short: %s. 'this':%s " other.AsString this.AsString            
+            let ou = other * (1.0 / sqrt sb )
+            let d = ou*this
+            float -maxCosine < d && d  < float maxCosine // = cosine of 98.75 and 90.25 degrees
+
+            
 
         /// Multiplies a Matrix with a 3D vector (with an implicit 1 in the 4th dimension,
         /// So that it also works correctly for projections.)
@@ -279,7 +315,7 @@ module AutoOpenUnitVec =
             let y = ( ^T : (member Y : _) vec)
             let z = ( ^T : (member Z : _) vec)
             try UnitVec.create(float x, float y, float z)
-            with e -> FsExGeoException.Raise "FsEx.Geo.UnitVec.ofXYZ: %A could not be converted to a FsEx.Geo.UnitVec:\r\n%A" vec e
+            with e -> EuclidException.Raise "Euclid.UnitVec.ofXYZ: %A could not be converted to a Euclid.UnitVec:\r\n%A" vec e
 
         /// Accepts any type that has a x, y and z (lowercase) member that can be converted to a float.
         /// Does the unitizing too.
@@ -289,19 +325,19 @@ module AutoOpenUnitVec =
             let y = ( ^T : (member y : _) vec)
             let z = ( ^T : (member z : _) vec)
             try UnitVec.create(float x, float y, float z)
-            with e -> FsExGeoException.Raise "FsEx.Geo.UnitVec.ofxyz: %A could not be converted to a FsEx.Geo.UnitVec:\r\n%A" vec e
+            with e -> EuclidException.Raise "Euclid.UnitVec.ofxyz: %A could not be converted to a Euclid.UnitVec:\r\n%A" vec e
 
         /// Create 3D unit-vector from 3D point. Does the unitizing too.
         static member inline ofPnt  (pt:Pnt) =
             let l = sqrt (pt.X*pt.X + pt.Y*pt.Y + pt.Z*pt.Z)
-            if l <  zeroLengthTol then FsExGeoDivByZeroException.Raise "FsEx.Geo.UnitVec.ofPnt failed on too short %O" pt
+            if l <  zeroLengthTol then EuclidDivByZeroException.Raise "Euclid.UnitVec.ofPnt failed on too short %O" pt
             let li = 1. / l
             UnitVec.createUnchecked( li*pt.X , li*pt.Y , li*pt.Z )
 
         /// Create 3D unit-vector from 3D vector. Does the unitizing too.
         static member inline ofVec (v:Vec) =
             let l = sqrt (v.X*v.X + v.Y*v.Y + v.Z*v.Z)
-            if l <  zeroLengthTol then FsExGeoDivByZeroException.Raise "FsEx.Geo.UnitVec.ofVec failed on too short %O" v
+            if l <  zeroLengthTol then EuclidDivByZeroException.Raise "Euclid.UnitVec.ofVec failed on too short %O" v
             let li = 1. / l
             UnitVec.createUnchecked( li*v.X , li*v.Y , li*v.Z )
 
@@ -571,19 +607,19 @@ module AutoOpenUnitVec =
         /// sqrt( v.X * v.X  + v.Y * v.Y)
         static member inline lengthInXY(v:UnitVec) = sqrt(v.X * v.X  + v.Y * v.Y)
 
-        /// Checks if 3D unit vector is parallel to the world X axis.
+        /// Checks if 3D unit vector is parallel to the world X axis. Ignoring orientation.
         /// Tolerance is 1e-6.
         static member inline isXAligned (v:UnitVec) = v.IsXAligned
         
-        /// Checks if 3D unit vector is parallel to the world Y axis.
+        /// Checks if 3D unit vector is parallel to the world Y axis. Ignoring orientation.
         /// Tolerance is 1e-6.
         static member inline isYAligned (v:UnitVec) = v.IsYAligned
         
-        /// Checks if 3D unit vector is parallel to the world Z axis.
+        /// Checks if 3D unit vector is parallel to the world Z axis. Ignoring orientation.
         /// Same as ln.IsVertical
         static member inline isZAligned (v:UnitVec) = v.IsZAligned
         
-        /// Checks if 3D unit vector is parallel to the world Z axis.
+        /// Checks if 3D unit vector is parallel to the world Z axis. Ignoring orientation.
         /// Tolerance is 1e-6.
         /// Same as ln.IsZAligned
         static member inline isVertical (v:UnitVec) =  v.IsVertical        
@@ -606,7 +642,7 @@ module AutoOpenUnitVec =
         /// in relation to X-Y plane.
         /// 100% = 45 Degrees.
         static member inline slopePercent (v:UnitVec) =
-            if abs(v.Z) < zeroLengthTol then FsExGeoDivByZeroException.Raise "FsEx.Geo.UnitVec.slopePercent: Can't get Slope from vertical vector %O" v
+            if abs(v.Z) < zeroLengthTol then EuclidDivByZeroException.Raise "Euclid.UnitVec.slopePercent: Can't get Slope from vertical vector %O" v
             let l = UnitVec.lengthInXY v
             100.0 * (v.Z/l)
 

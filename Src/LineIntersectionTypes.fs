@@ -1,4 +1,4 @@
-namespace FsEx.Geo
+namespace Euclid
 
 /// A module for the result types of 2D and 3D Line-Line-intersections.
 module LineIntersectionTypes =

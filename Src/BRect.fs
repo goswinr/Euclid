@@ -1,4 +1,4 @@
-namespace FsEx.Geo
+namespace Euclid
 
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
@@ -29,7 +29,7 @@ type BRect =
 
     /// Nicely formatted string representation of the Bounding Rectangle, including its size.
     override r.ToString() =
-        sprintf "FsEx.Geo.BRect: length(x)=%s| width(y)=%s| at X=%s| Y=%s"
+        sprintf "Euclid.BRect: length(x)=%s| width(y)=%s| at X=%s| Y=%s"
             (Format.float (r.MaxX - r.MinX)) (Format.float (r.MaxY - r.MinY)) (Format.float r.MinX) (Format.float r.MinY)
 
     /// Format Bounding Rectangle into string with nice floating point number formatting of size and position.
@@ -90,20 +90,20 @@ type BRect =
 
 
     /// Returns Bounding Rectangle expanded by distance.
-    /// Does check for underflow if distance is negative and raises FsExGeoException.
+    /// Does check for underflow if distance is negative and raises EuclidException.
     member inline r.Expand(dist) : BRect =
         let n = BRect(r.MinX-dist, r.MinY-dist, r.MaxX+dist, r.MaxY+dist)
         if dist<0. &&  (n.MinX > n.MaxX || n.MinY > n.MaxX) then
-            FsExGeoException.Raise "FsEx.Geo.BRect.Expand(dist): Negative distance %g causes an underflow, on %s" dist r.AsString
+            EuclidException.Raise "Euclid.BRect.Expand(dist): Negative distance %g causes an underflow, on %s" dist r.AsString
         n
 
 
     /// Returns Bounding Rectangle expanded by a distance for X and Y-axis each.
-    /// Does check for underflow if distance is negative and raises FsExGeoException.
+    /// Does check for underflow if distance is negative and raises EuclidException.
     member inline r.Expand(xDist,yDist) : BRect =
         let n = BRect(r.MinX-xDist, r.MinY-yDist, r.MaxX+xDist, r.MaxY+yDist)
         if n.MinX > n.MaxX ||  n.MinY > n.MaxX then
-            FsExGeoException.Raise "FsEx.Geo.BRect.Expand(x, y): Negative distance(s) X: %g and Y: %g cause an underflow, on %s" xDist yDist r.AsString
+            EuclidException.Raise "Euclid.BRect.Expand(x, y): Negative distance(s) X: %g and Y: %g cause an underflow, on %s" xDist yDist r.AsString
         n
 
 
@@ -133,19 +133,19 @@ type BRect =
         b.ExpandSave(dist,dist)
 
     /// Returns Bounding Rectangle expanded only in X direction by different distance for start(minX) and end (maxX).
-    /// Does check for underflow if distance is negative and raises FsExGeoException.
+    /// Does check for underflow if distance is negative and raises EuclidException.
     member inline r.ExpandXaxis(startDist, endDist) : BRect =
         let n = BRect(r.MinX-startDist, r.MinY, r.MaxX+endDist, r.MaxY)
         if n.MinX > n.MaxX then
-            FsExGeoException.Raise "FsEx.Geo.BRect.ExpandXaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist r.AsString
+            EuclidException.Raise "Euclid.BRect.ExpandXaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist r.AsString
         n
 
     /// Returns Bounding Rectangle expanded only in Y direction by different distance for start(minY) and end (maxY).
-    /// Does check for underflow if distance is negative and raises FsExGeoException.
+    /// Does check for underflow if distance is negative and raises EuclidException.
     member inline r.ExpandYaxis(startDist, endDist) : BRect =
         let n = BRect(r.MinX, r.MinY-startDist, r.MaxX, r.MaxY+endDist)
         if n.MinY > n.MaxY then
-            FsExGeoException.Raise "FsEx.Geo.BRect.ExpandYaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist r.AsString
+            EuclidException.Raise "Euclid.BRect.ExpandYaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist r.AsString
         n
 
     /// Returns true if the two Bounding Rectangles do overlap or touch.
@@ -228,22 +228,22 @@ type BRect =
         abs(a.MaxY-b.MaxY)<tol
 
     /// Returns Bounding Rectangle expanded by distance.
-    /// Does check for underflow if distance is negative and raises FsExGeoException.
+    /// Does check for underflow if distance is negative and raises EuclidException.
     static member expand dist (r:BRect) =
         r.Expand dist
 
     /// Returns Bounding Rectangle expanded by distance.
-    /// Does check for underflow if distance is negative and raises FsExGeoException.
+    /// Does check for underflow if distance is negative and raises EuclidException.
     static member expandSave dist (r:BRect) =
         r.Expand dist
 
     /// Returns Bounding Rectangle expanded only in X direction by different distance for start(minX) and end (maxX).
-    /// Does check for underflow if distance is negative and raises FsExGeoException.
+    /// Does check for underflow if distance is negative and raises EuclidException.
     static member expandXaxis startDist endDist (r:BRect) =
         r.ExpandXaxis(startDist, endDist)
 
     /// Returns Bounding Rectangle expanded only in Y direction by different distance for start(minY) and end (maxY).
-    /// Does check for underflow if distance is negative and raises FsExGeoException.
+    /// Does check for underflow if distance is negative and raises EuclidException.
     static member expandYaxis startDist endDist (r:BRect) =
         r.ExpandYaxis(startDist, endDist)
 
@@ -302,7 +302,7 @@ type BRect =
 
     /// Finds min and max values for x and y.
     static member inline create (ps:seq<Pt> ) =
-        if Seq.isEmpty ps then raise <| FsExGeoException("BRect.create(seq<Pt>) input is empty seq")
+        if Seq.isEmpty ps then raise <| EuclidException("Euclid.BRect.create(seq<Pt>) input is empty seq")
         let mutable minX = Double.MaxValue
         let mutable minY = Double.MaxValue
         let mutable maxX = Double.MinValue
@@ -313,6 +313,17 @@ type BRect =
             maxX <- max maxX p.X
             maxY <- max maxY p.Y
         BRect(minX,minY,maxX,maxY)
+
+    /// Creates a Bounding Rectangle from a center point and the total X and Y size.
+    static member inline createFromCenter (center:Pt, sizeX, sizeY ) =
+        if sizeX < 0. then EuclidException.Raise "Euclid.BRect.createFromCenter sizeX is negative: %g , sizeY is: %g, center: %O"  sizeX sizeY  center.AsString
+        if sizeY < 0. then EuclidException.Raise "Euclid.BRect.createFromCenter sizeY is negative: %g , sizeX is: %g, center: %O"  sizeY sizeX  center.AsString
+        let minX = center.X - sizeX*0.5
+        let minY = center.Y - sizeY*0.5
+        let maxX = center.X + sizeX*0.5
+        let maxY = center.Y + sizeY*0.5
+        BRect(minX,minY,maxX,maxY)
+        
 
     /// Does not verify the order of min and max values.
     static member inline createUnchecked (minX,minY,maxX,maxY) =

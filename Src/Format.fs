@@ -1,4 +1,4 @@
-namespace FsEx.Geo
+namespace Euclid
 
 
 /// For formatting floats with adaptive precision.
