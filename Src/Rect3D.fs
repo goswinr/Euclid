@@ -351,8 +351,11 @@ type Rect3D =
         r.Xaxis.Length*r.Yaxis.Length
 
     /// Gets the Plane that this 3D rectangle is based on.
-    member inline r.PPlane  =
-        PPlane.createOriginXaxisYaxis (r.Origin, r.Xaxis, r.Yaxis)
+    member inline r.Plane  =
+        let x = r.Xaxis.Unitized
+        let y = r.Yaxis.Unitized
+        let z = UnitVec.cross(x,y).Unitized
+        PPlane.createUnchecked (r.Origin, x,y,z)
 
     //-------------------------------------------------------------------
     //------------------------static members-----------------------------

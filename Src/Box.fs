@@ -3,6 +3,10 @@ namespace Euclid
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
 open Util
+open AutoOpenPt
+open AutoOpenUnitVec
+open AutoOpenUnitVec
+open AutoOpenUnitVc
 
 /// An immutable 3D Box with any rotation in 3D space.
 /// Described by an Origin and three Edge vectors.
@@ -445,8 +449,11 @@ type Box =
         b.Xaxis.Length*b.Yaxis.Length*b.Zaxis.Length
 
     /// Gets the Plane that this box is based on.
-    member inline b.PPlane  =
-        PPlane.createOriginXaxisYaxis (b.Origin, b.Xaxis, b.Yaxis)
+    member inline b.Plane  =
+        let x = b.Xaxis.Unitized
+        let y = b.Yaxis.Unitized
+        let z = b.Zaxis.Unitized
+        PPlane.createUnchecked (b.Origin, x,y,z)
 
     //-------------------------------------------------------------------
     //------------------------static members-----------------------------
@@ -498,6 +505,22 @@ type Box =
     static member createFromBoundingBox (b:BBox) =
         Box(b.MinPnt, Vec.Xaxis*b.Length, Vec.Yaxis*b.Width, Vec.Zaxis*b.Height)
 
+    /// Give 2D Rectangle and Z lower and upper position.
+    static member createFromRect2D (r:Rect2D, zLow, zHigh) =
+        Box(r.Origin.WithZ zLow, 
+            r.Xaxis.AsVec,
+            r.Yaxis.AsVec, 
+            Vec.Zaxis*(zHigh-zLow))
+
+     /// Give 2D Rectangle and Z lower and upper position.
+    static member createFromRect3D (r:Rect3D, zLow, zHigh) =
+        let z = Vec.cross(r.Xaxis,r.Yaxis)
+        Box(r.Origin  + z.WithLength(zLow), 
+            r.Xaxis,
+            r.Yaxis, 
+            z.WithLength(zHigh-zLow)
+            ) 
+
     /// Move the Box by a vector.
     static member move (v:Vec) (b:Box) =
         Box(b.Origin + v, b.Xaxis, b.Yaxis, b.Zaxis)
@@ -526,9 +549,9 @@ type Box =
     /// Transform the Box by the given OrthoMatrix.
     /// The returned Box is guaranteed to have orthogonal vectors.
     static member transform (m:OrthoMatrix) (b:Box) =
-        let o  = Pnt.transformOrtho m b.Origin
+        let o = Pnt.transformOrtho m b.Origin
         let x = Vec.rotateOrtho m b.Xaxis
         let y = Vec.rotateOrtho m b.Yaxis
         let z = Vec.rotateOrtho m b.Zaxis
-        Box(o,x, y,z)
+        Box(o,x,y,z)
 

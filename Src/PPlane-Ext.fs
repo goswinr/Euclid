@@ -72,7 +72,7 @@ module AutoOpenPPlane2 =
 
         /// Checks if a finite Line3D intersects with Plane in one point.
         /// Returns false for parallel and coincident lines.
-        static member  inline doLinePlaneIntersect (ln:Line3D) (pl:PPlane) =
+        static member inline doLinePlaneIntersect (ln:Line3D) (pl:PPlane) =
             let nenner = ln.Tangent * pl.Zaxis
             let t = ((pl.Origin - ln.From) * pl.Zaxis) / nenner // if nenner is 0.0 then 't' is Infinity
             0. <= t && t <= 1.

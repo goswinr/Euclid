@@ -76,7 +76,7 @@ type Vc =
 
 #nowarn "44" // for internal inline constructors
 
-/// An immutable 2D vector guaranteed to be unitized (3D Unit ectors are called 'UnitVec')
+/// An immutable 2D vector guaranteed to be unitized (3D Unit vectors are called 'UnitVec')
 /// Use UnitVc.create or UnitVc.createUnchecked to created instances.
 /// Note: Never use the default constructor UnitVc() as it will create an invalid zero length vector.
 /// Use UnitVc.create or UnitVc.createUnchecked instead.

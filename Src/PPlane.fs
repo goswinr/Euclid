@@ -7,11 +7,13 @@ namespace Euclid
 // All other members are implemented as extension members. see files in folder members.
 // This design however makes extension members unaccessible from see C#. To fix this all types and all members could be put into one file.
 // the types would have to be marked as recursive. This file would be very large and probably have bad editor performance.
-
+open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
 
+#nowarn "44" // for internal inline constructors
+
 /// An immutable Parametrized Plane or Frame with X, Y and Z Direction.
-/// This struct is called 'PPlane' because 'Plane' refers to an un-oriented plane consisting only of a Origin and a Z-axis.
+/// This struct is called 'PPlane' because 'PPlane' refers to an un-oriented plane consisting only of a Origin and a Z-axis.
 /// Note: Never use the struct default constructor PPlane() as it will create an invalid zero length PPlane.
 /// Use PPlane.create or PPlane.createUnchecked instead.
 [<Struct; NoEquality; NoComparison>] // because its made up from floats
@@ -30,8 +32,9 @@ type PPlane =
     /// The local Z-axis of this PPlane.
     val Zaxis: UnitVec
 
-    /// Unchecked Internal Constructor Only. Create a Parametrized Plane with X, Y and Z Direction.
-    internal new (origin, axisX, axisY, axisZ)  =
+    /// Unsafe internal constructor, doesn't check the input is perpendicular,  public only for inlining.
+    [<Obsolete("Unsafe internal constructor, doesn't check the input is perpendicular, but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >]
+    new (origin, axisX, axisY, axisZ)  =
         {Origin=origin; Xaxis=axisX; Yaxis=axisY; Zaxis=axisZ}
 
     /// Format PPlane into string with nicely formatted floating point numbers.
@@ -40,8 +43,10 @@ type PPlane =
 
     /// For use as a faster internal constructor.
     /// Requires correct input of unitized perpendicular vectors.
-    static member createUnchecked (origin: Pnt, axisX: UnitVec, axisY: UnitVec, axisZ: UnitVec) =
+    static member inline createUnchecked (origin: Pnt, axisX: UnitVec, axisY: UnitVec, axisZ: UnitVec) =
         new PPlane(origin, axisX, axisY, axisZ)
 
 
+    
+   
     // see extension members in folder 'members'

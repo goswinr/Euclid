@@ -8,9 +8,20 @@ open Euclid.Util
 module AutoOpenPPlane =
 
     // pre allocate , used often
-    let private worldXY = PPlane(Pnt.Origin, UnitVec.Xaxis, UnitVec.Yaxis, UnitVec.Zaxis)
+    let private worldXY = PPlane.createUnchecked(Pnt.Origin, UnitVec.Xaxis, UnitVec.Yaxis, UnitVec.Zaxis)
 
     type PPlane with
+
+                
+        /// Checks if two Parametrized Planes are equal within tolerance distance 
+        /// for the tips of its units vectors and its origin.    
+        static member equals tol (a:PPlane) (b:PPlane) =
+            let tt = tol*tol
+            Pnt.distanceSq a.Origin b.Origin < tt &&
+            UnitVec.differenceSq a.Xaxis b.Xaxis < tt &&
+            UnitVec.differenceSq a.Yaxis b.Yaxis < tt 
+            // UnitVec.differenceSq a.Zaxis b.Zaxis < tt // redundant
+
 
         /// Returns signed distance of point to plane, also indicating on which side it is.
         member inline pl.DistanceToPt pt = pl.Zaxis*(pt-pl.Origin)
@@ -26,8 +37,8 @@ module AutoOpenPPlane =
         /// First finds the closet point on plane from a test point.
         /// Then returns a new plane with Origin at this point and the same Axes vectors.
         member inline pl.PlaneAtClPt pt =
-            let o = pl.ClosestPoint pt
-            PPlane.setOrigin o pl
+            let o = pl.ClosestPoint pt            
+            PPlane.createUnchecked(o, pl.Xaxis, pl.Yaxis, pl.Zaxis)
 
         /// Returns the Angle to another Plane in Degree, ignoring the plane's orientation.
         /// So between 0 to 90 degrees.
@@ -84,65 +95,65 @@ module AutoOpenPPlane =
         /// Y-axis = World Y-axis
         /// Z-axis = World Z-axis
         /// same as PPlane.WorldTop
-        static member (*inline*) WorldXY = worldXY
+        static member WorldXY = worldXY
 
         /// Returns the World Coordinate System Plane at World Origin.
         /// X-axis = World X-axis
         /// Y-axis = World Y-axis
         /// Z-axis = World Z-axis
         /// same as PPlane.WorldXY
-        static member (*inline*) WorldTop = worldXY
+        static member WorldTop = worldXY
 
         /// Returns the Coordinate System Plane of a Front view.
         /// X-axis = World X-axis
         /// Y-axis = World Z-axis
         /// Z-axis = minus World Y-axis
-        static member (*inline*) WorldFront =
-            PPlane(Pnt.Origin, UnitVec.Xaxis, UnitVec.Zaxis, -UnitVec.Yaxis)
+        static member inline WorldFront =
+            PPlane.createUnchecked(Pnt.Origin, UnitVec.Xaxis, UnitVec.Zaxis, -UnitVec.Yaxis)
 
         /// Returns the Coordinate System Plane of a Right view.
         /// X-axis = World Y-axis
         /// Y-axis = World Z-axis
         /// Z-axis = World X-axis
-        static member (*inline*) WorldRight =
-            PPlane(Pnt.Origin, UnitVec.Yaxis, UnitVec.Zaxis, UnitVec.Xaxis)
+        static member inline WorldRight =
+            PPlane.createUnchecked(Pnt.Origin, UnitVec.Yaxis, UnitVec.Zaxis, UnitVec.Xaxis)
 
         /// Returns the Coordinate System Plane of a Left view.
         /// X-axis = minus World Y-axis
         /// Y-axis = World Z-axis
         /// Z-axis = minus World X-axis
-        static member (*inline*) WorldLeft =
-            PPlane(Pnt.Origin, -UnitVec.Yaxis, UnitVec.Zaxis, -UnitVec.Xaxis)
+        static member inline WorldLeft =
+            PPlane.createUnchecked(Pnt.Origin, -UnitVec.Yaxis, UnitVec.Zaxis, -UnitVec.Xaxis)
 
         /// Returns the Coordinate System Plane of a Back view.
         /// X-axis = minus World X-axis
         /// Y-axis = World Z-axis
         /// Z-axis = World Y-axis
-        static member (*inline*) WorldBack =
-            PPlane(Pnt.Origin, -UnitVec.Xaxis, UnitVec.Zaxis, UnitVec.Yaxis)
+        static member inline WorldBack =
+            PPlane.createUnchecked(Pnt.Origin, -UnitVec.Xaxis, UnitVec.Zaxis, UnitVec.Yaxis)
 
         /// Returns the Coordinate System Plane of a Bottom view.
         /// X-axis = World X-axis
         /// Y-axis = minus World Y-axis
         /// Z-axis = minus World Z-axis
-        static member (*inline*) WorldBottom =
-            PPlane(Pnt.Origin, UnitVec.Xaxis, -UnitVec.Yaxis, -UnitVec.Zaxis)
+        static member inline WorldBottom =
+            PPlane.createUnchecked(Pnt.Origin, UnitVec.Xaxis, -UnitVec.Yaxis, -UnitVec.Zaxis)
 
         /// WorldXY rotated 180 degrees round Z-axis.
-        static member (*inline*) WorldMinusXMinusY=
-            PPlane(Pnt.Origin, -UnitVec.Xaxis, -UnitVec.Yaxis, UnitVec.Zaxis)
+        static member inline WorldMinusXMinusY=
+            PPlane.createUnchecked(Pnt.Origin, -UnitVec.Xaxis, -UnitVec.Yaxis, UnitVec.Zaxis)
 
         /// WorldXY rotated 90 degrees round Z-axis counter clockwise from top.
-        static member (*inline*) WorldYMinusX=
-            PPlane(Pnt.Origin, UnitVec.Yaxis, -UnitVec.Xaxis,UnitVec.Zaxis)
+        static member inline WorldYMinusX=
+            PPlane.createUnchecked(Pnt.Origin, UnitVec.Yaxis, -UnitVec.Xaxis,UnitVec.Zaxis)
 
         /// WorldXY rotated 270 degrees round Z-axis counter clockwise from top.
-        static member (*inline*) WorldMinusYX=
-            PPlane(Pnt.Origin, -UnitVec.Yaxis, UnitVec.Xaxis,UnitVec.Zaxis)
+        static member inline WorldMinusYX=
+            PPlane.createUnchecked(Pnt.Origin, -UnitVec.Yaxis, UnitVec.Xaxis,UnitVec.Zaxis)
 
         /// WorldXY rotated 180 degrees round X-axis, Z points down now.
-        static member (*inline*) WorldXMinusY=
-            PPlane(Pnt.Origin, UnitVec.Xaxis, -UnitVec.Yaxis, -UnitVec.Zaxis)
+        static member inline WorldXMinusY=
+            PPlane.createUnchecked(Pnt.Origin, UnitVec.Xaxis, -UnitVec.Yaxis, -UnitVec.Zaxis)
             
         /// Builds Plane at first point , X-axis to second point, 
         /// Y-axis to third point or at lest in plane with third point. 
@@ -161,7 +172,7 @@ module AutoOpenPPlane =
             if xu.IsParallelTo(yu, Cosine.``1.0``) then EuclidException.Raise "Euclid.PPlane.createThreePoints failed. The points are colinear by less than 1.0 degree, origin %s and xPt %s and yPt %s" origin.AsString xPt.AsString yPt.AsString            
             let z = UnitVec.cross (xu , yu)
             let y' = Vec.cross (z , x)
-            PPlane(origin, xu, y'.Unitized, z.Unitized)
+            PPlane.createUnchecked(origin, xu, y'.Unitized, z.Unitized)
 
         /// Creates a Parametrized Plane from a point and a unit-vector representing the X-axis.
         /// The resulting PPlane will have the X-Axis in direction of X vector.
@@ -173,7 +184,7 @@ module AutoOpenPPlane =
                 EuclidException.Raise "Euclid.PPlane.createOriginXaxisYaxis failed. The vectors are colinear by less than 1.0 degrees, origin %s and xAxis%s and yAxis %s" origin.AsString xAxis.AsString yAxis.AsString
             let z = UnitVec.cross (xAxis , yAxis)
             let y = Vec.cross (z , xAxis)
-            PPlane(origin, xAxis, y.Unitized, z.Unitized)
+            PPlane.createUnchecked(origin, xAxis, y.Unitized, z.Unitized)
 
         /// Creates a Parametrized Plane from a point and vector representing the X-axis.
         /// The resulting PPlane will have the X-Axis in direction of X vector.
@@ -199,11 +210,11 @@ module AutoOpenPPlane =
             if normal.IsParallelTo(UnitVec.Yaxis, Cosine.``0.5``) then 
                 let x = Vec.cross (Vec.Xaxis , normal)
                 let y = Vec.cross (normal, x)
-                PPlane(origin,x.Unitized,y.Unitized,normal)
+                PPlane.createUnchecked(origin,x.Unitized,y.Unitized,normal)
             else
                 let x = Vec.cross (Vec.Yaxis , normal)
                 let y = Vec.cross (normal, x)
-                PPlane(origin, x.Unitized, y.Unitized, normal)
+                PPlane.createUnchecked(origin, x.Unitized, y.Unitized, normal)
 
         /// Creates a Parametrized Plane from a point and vector representing the normal or Z-axis.
         /// The X-axis will be found by taking the cross product of the World Y-axis and the given Z-axis.
@@ -223,7 +234,7 @@ module AutoOpenPPlane =
                 EuclidException.Raise "Euclid.PPlane.createOriginNormalXaxis failed. The vectors are colinear by less than 1.0 degrees, origin %s and normal %s and normal %s" origin.AsString normal.AsString xAxis.AsString   
             let y = UnitVec.cross (normal , xAxis)
             let x = Vec.cross (y, normal)
-            PPlane(origin, xAxis, y.Unitized, normal)
+            PPlane.createUnchecked(origin, xAxis, y.Unitized, normal)
 
         /// Creates a Parametrized Plane from a point and unit-vector representing the Z-axis.
         /// The given X vector does not need to be perpendicular to the normal vector, just not parallel.
@@ -241,74 +252,76 @@ module AutoOpenPPlane =
 
 
         /// Return a new plane with given Origin.
-        static member (*inline*) setOrigin (pt:Pnt) (pl:PPlane) =
-            PPlane(pt, pl.Xaxis, pl.Yaxis, pl.Zaxis)
+        static member inline setOrigin (pt:Pnt) (pl:PPlane) =
+            PPlane.createUnchecked(pt, pl.Xaxis, pl.Yaxis, pl.Zaxis)
 
         /// Return a new plane with given Origin X value changed.
-        static member (*inline*) setOriginX (x:float) (pl:PPlane) =
-            PPlane(pl.Origin |> Pnt.setX x, pl.Xaxis, pl.Yaxis, pl.Zaxis)
+        static member inline setOriginX (x:float) (pl:PPlane) =
+            PPlane.createUnchecked(pl.Origin |> Pnt.setX x, pl.Xaxis, pl.Yaxis, pl.Zaxis)
 
         /// Return a new plane with given Origin Y value changed.
-        static member (*inline*) setOriginY (y:float) (pl:PPlane) =
-            PPlane(pl.Origin |> Pnt.setY y, pl.Xaxis, pl.Yaxis, pl.Zaxis)
+        static member inline setOriginY (y:float) (pl:PPlane) =
+            PPlane.createUnchecked(pl.Origin |> Pnt.setY y, pl.Xaxis, pl.Yaxis, pl.Zaxis)
 
         /// Return a new plane with given Origin Z value changed.
-        static member (*inline*) setOriginZ (z:float) (pl:PPlane) =
-            PPlane(pl.Origin |> Pnt.setZ z, pl.Xaxis, pl.Yaxis, pl.Zaxis)
+        static member inline setOriginZ (z:float) (pl:PPlane) =
+            PPlane.createUnchecked(pl.Origin |> Pnt.setZ z, pl.Xaxis, pl.Yaxis, pl.Zaxis)
 
         /// Return a new plane with Origin translated by Vec.
-        static member (*inline*) translateBy (v:Vec) (pl:PPlane) =
-            PPlane(pl.Origin + v , pl.Xaxis, pl.Yaxis, pl.Zaxis)
+        static member inline translateBy (v:Vec) (pl:PPlane) =
+            PPlane.createUnchecked(pl.Origin + v , pl.Xaxis, pl.Yaxis, pl.Zaxis)
 
         /// Return a new plane with Origin translated in World X direction.
-        static member (*inline*) translateByWorldX (x:float) (pl:PPlane) =
-            PPlane(pl.Origin |> Pnt.moveX x, pl.Xaxis, pl.Yaxis, pl.Zaxis)
+        static member inline translateByWorldX (x:float) (pl:PPlane) =
+            PPlane.createUnchecked(pl.Origin |> Pnt.moveX x, pl.Xaxis, pl.Yaxis, pl.Zaxis)
 
         /// Return a new plane with Origin translated in World Y direction.
-        static member (*inline*) translateByWorldY (y:float) (pl:PPlane) =
-            PPlane(pl.Origin |> Pnt.moveY y, pl.Xaxis, pl.Yaxis, pl.Zaxis)
+        static member inline translateByWorldY (y:float) (pl:PPlane) =
+            PPlane.createUnchecked(pl.Origin |> Pnt.moveY y, pl.Xaxis, pl.Yaxis, pl.Zaxis)
 
         /// Return a new plane with Origin translated in World Z direction.
-        static member (*inline*) translateByWorldZ (z:float) (pl:PPlane) =
-            PPlane(pl.Origin |> Pnt.moveZ z, pl.Xaxis, pl.Yaxis, pl.Zaxis)
+        static member inline translateByWorldZ (z:float) (pl:PPlane) =
+            PPlane.createUnchecked(pl.Origin |> Pnt.moveZ z, pl.Xaxis, pl.Yaxis, pl.Zaxis)
 
-        /// Rotate about Z-axis by angle in degree.
+        /// Rotate about Z-axis of the Plane by angle in degree.
         /// Counter clockwise in top view (for WorldXY Plane).
-        static member (*inline*) rotateZ (angDegree:float) (pl:PPlane) =
-            let q = Quaternion.createFromDegree (pl.Zaxis, angDegree)
-            PPlane(pl.Origin , pl.Xaxis*q, pl.Yaxis*q, pl.Zaxis)
+        static member inline rotateZ (angDegree:float) (pl:PPlane) =
+            let m = OrthoMatrix.createRotationAxisCenter (pl.Zaxis, pl.Origin, angDegree)
+            let x = UnitVec.rotateOrtho m pl.Xaxis
+            let y = UnitVec.rotateOrtho m pl.Yaxis            
+            PPlane.createUnchecked(pl.Origin , x, y, pl.Zaxis )
 
         /// Move Plane along the local X-axis by the given distance.
-        static member (*inline*) translateX (d:float) (pl:PPlane) =
-            PPlane(pl.Origin + pl.Xaxis*d, pl.Xaxis, pl.Yaxis, pl.Zaxis)
+        static member inline translateX (d:float) (pl:PPlane) =
+            PPlane.createUnchecked(pl.Origin + pl.Xaxis*d, pl.Xaxis, pl.Yaxis, pl.Zaxis)
 
         /// Move Plane along the local Y-axis by the given distance.
-        static member (*inline*) translateY (d:float) (pl:PPlane) =
-            PPlane(pl.Origin + pl.Yaxis*d, pl.Xaxis, pl.Yaxis, pl.Zaxis)
+        static member inline translateY (d:float) (pl:PPlane) =
+            PPlane.createUnchecked(pl.Origin + pl.Yaxis*d, pl.Xaxis, pl.Yaxis, pl.Zaxis)
 
         /// Move Plane along the local Z-axis by the given distance.
         /// Same as PPlane.offset.
-        static member (*inline*) translateZ (d:float) (pl:PPlane) =
-            PPlane(pl.Origin + pl.Zaxis*d, pl.Xaxis, pl.Yaxis, pl.Zaxis)
+        static member inline translateZ (d:float) (pl:PPlane) =
+            PPlane.createUnchecked(pl.Origin + pl.Zaxis*d, pl.Xaxis, pl.Yaxis, pl.Zaxis)
 
         /// Move Plane along the local Z-axis by the given distance.
         /// Same as PPlane.translateZ.
-        static member (*inline*) offset (d:float) (pl:PPlane) =
-            PPlane(pl.Origin + pl.Zaxis*d, pl.Xaxis, pl.Yaxis, pl.Zaxis)
+        static member inline offset (d:float) (pl:PPlane) =
+            PPlane.createUnchecked(pl.Origin + pl.Zaxis*d, pl.Xaxis, pl.Yaxis, pl.Zaxis)
 
         /// Rotate the Plane 180 degrees on its Y-axis.
         /// Called flip because Z-axis points in the opposite direction.
-        static member (*inline*) flipOnY (pl:PPlane) =
-            PPlane(pl.Origin , -pl.Xaxis, pl.Yaxis, -pl.Zaxis)
+        static member inline flipOnY (pl:PPlane) =
+            PPlane.createUnchecked(pl.Origin , -pl.Xaxis, pl.Yaxis, -pl.Zaxis)
 
         /// Rotate the Plane 180 degrees on its X-axis.
         /// Called flip because Z-axis points in the opposite direction.
-        static member (*inline*) flipOnX (pl:PPlane) =
-            PPlane(pl.Origin , pl.Xaxis, -pl.Yaxis, -pl.Zaxis)
+        static member inline flipOnX (pl:PPlane) =
+            PPlane.createUnchecked(pl.Origin , pl.Xaxis, -pl.Yaxis, -pl.Zaxis)
 
         /// Rotate the Plane 180 degrees on its Z-axis.
-        static member (*inline*) rotateOnZ180 (pl:PPlane) =
-            PPlane(pl.Origin , -pl.Xaxis, -pl.Yaxis, pl.Zaxis)
+        static member inline rotateOnZ180 (pl:PPlane) =
+            PPlane.createUnchecked(pl.Origin , -pl.Xaxis, -pl.Yaxis, pl.Zaxis)
 
         /// Transforms the plane by the given OrthoMatrix.
         /// The returned PPlane has orthogonal unit vectors.
@@ -321,7 +334,7 @@ module AutoOpenPPlane =
 
         /// Rotate Plane 180 Degrees around Z-axis if the Y-axis orientation does not match World Y (pl.Yax.Y < 0.0)
         /// To ensure that Y is always positive. For example for showing Text.
-        static member (*inline*) rotateZ180IfYNegative (pl:PPlane) =
+        static member inline rotateZ180IfYNegative (pl:PPlane) =
             if pl.Yaxis.Y < 0.0 then PPlane.rotateOnZ180 pl else pl
 
 
