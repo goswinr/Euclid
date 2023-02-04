@@ -104,7 +104,7 @@ type Line3D =
         UnitVec.createUnchecked (x*s,y*s,z*s)
     
     /// Checks if line is parallel to the world X axis. Ignoring orientation.
-    /// Tolerance is 1e-6.
+    /// The absolute deviation tolerance along Y and Z axis is 1e-6.
     /// Fails on lines shorter than 1e-6.
     member inline ln.IsXAligned =
         let x = abs (ln.ToX-ln.FromX)
@@ -115,7 +115,7 @@ type Line3D =
         
 
     /// Checks if 3D line is parallel to the world Y axis. Ignoring orientation.
-    /// Tolerance is 1e-6.
+    /// The absolute deviation tolerance along X and Z axis is 1e-6.
     /// Fails on lines shorter than 1e-6.
     member inline ln.IsYAligned =
         let x = abs (ln.ToX-ln.FromX)
@@ -125,7 +125,7 @@ type Line3D =
         else x < 1e-6 && z < 1e-6
 
     /// Checks if 3D line is parallel to the world Z axis. Ignoring orientation.
-    /// Tolerance is 1e-6.
+    /// The absolute deviation tolerance along X and Y axis is 1e-6.
     /// Fails on lines shorter than 1e-6.
     /// Same as ln.IsVertical
     member inline ln.IsZAligned =
@@ -136,8 +136,8 @@ type Line3D =
         else x < 1e-6 && y < 1e-6
 
 
-     /// Checks if 3D line is parallel to the world Z axis. Ignoring orientation.
-    /// Tolerance is 1e-6.
+    /// Checks if 3D line is parallel to the world Z axis. Ignoring orientation.
+    /// The absolute deviation tolerance along X and Y axis is 1e-6.
     /// Fails on lines shorter than 1e-6.
     /// Same as ln.IsZAligned
     member inline ln.IsVertical =  
@@ -148,7 +148,7 @@ type Line3D =
         else x < 1e-6 && y < 1e-6
 
     /// Checks if 3D line is horizontal.
-    /// Tolerance is 1e-6.
+    /// The absolute deviation tolerance along Z axis is 1e-6.
     /// Fails on lines shorter than 1e-6.
     member inline ln.IsHorizontal =
         let x = abs (ln.ToX-ln.FromX)

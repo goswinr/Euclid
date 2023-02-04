@@ -129,17 +129,15 @@ module AutoOpenUnitVc =
             v * other < -1e-12 
 
         /// Checks if 2D unit vector is parallel to the world X axis. Ignoring orientation.
-        /// Tolerance is 1e-6.
+        /// The absolute deviation tolerance along Y axis is 1e-6.
         member inline v.IsXAligned =
-            let x = abs (v.X)
             let y = abs (v.Y)
             y < 1e-6       
 
         /// Checks if 2D unit vector is parallel to the world Y axis. Ignoring orientation.
-        /// Tolerance is 1e-6.
+        /// The absolute deviation tolerance along X axis is 1e-6.
         member inline v.IsYAligned =
             let x = abs (v.X)
-            let y = abs (v.Y)
             x < 1e-6 
 
         /// Checks if two 2D unit vectors are parallel.

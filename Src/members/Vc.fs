@@ -176,7 +176,7 @@ module AutoOpenVc =
 
 
         /// Checks if 2D vector is parallel to the world X axis. Ignoring orientation.
-        /// Tolerance is 1e-6.
+        /// The absolute deviation tolerance along Y axis is 1e-6.
         /// Fails on vectors shorter than 1e-6.
         member inline v.IsXAligned =
             let x = abs (v.X)
@@ -185,7 +185,7 @@ module AutoOpenVc =
             else y < 1e-6       
 
         /// Checks if 2D vector is parallel to the world Y axis. Ignoring orientation.
-        /// Tolerance is 1e-6.
+        /// The absolute deviation tolerance along X axis is 1e-6.
         /// Fails on vectors shorter than 1e-6.
         member inline v.IsYAligned =
             let x = abs (v.X)

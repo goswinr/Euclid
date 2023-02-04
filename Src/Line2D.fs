@@ -89,7 +89,7 @@ type Line2D =
         UnitVc.createUnchecked (x/l, y/l)
 
     /// Checks if 2D line is parallel to the world X axis. Ignoring orientation.
-    /// Deviation tolerance is 1e-6.
+    /// The absolute deviation tolerance along Y axis is 1e-6.
     /// Fails on lines shorter than 1e-6.
     member inline ln.IsXAligned =
         let x = abs (ln.ToX-ln.FromX)
@@ -98,7 +98,7 @@ type Line2D =
         else y < 1e-6 
 
     /// Checks if 2D line is parallel to the world Y axis. Ignoring orientation.
-    /// Deviation tolerance is 1e-6.
+    /// The absolute deviation tolerance along X axis is 1e-6.
     /// Fails on lines shorter than 1e-6.
     member inline ln.IsYAligned =
         let x = abs (ln.ToX-ln.FromX)

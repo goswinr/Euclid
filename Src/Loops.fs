@@ -10,15 +10,14 @@ open System .Collections.Generic
 type PointLoopRel =
     In | On | Out
 
-    member r.IsInside =  r= PointLoopRel.In
+    member r.IsInside =  r = PointLoopRel.In
 
-    member r.IsOutside = r= PointLoopRel.Out
+    member r.IsOutside = r = PointLoopRel.Out
 
 
 
 /// A counter-clockwise, closed series of 2D points.
-/// Checked for too short segments and duplicate points bu might have colinear points.
-/// Counterclockwise.
+/// Checked for too short segments and duplicate points but might have colinear points.
 /// Checked for self intersection.
 /// This class stores for each segment precomputed list of unit vectors, lengths and bounding Rectangles.
 /// This is to have better performance when calculating Loop with Loop intersections or point containment.
@@ -55,7 +54,7 @@ type Loop private   ( pts:ResizeArray<Pt>
    // Odd  indices are Y
    // Length is double of SegmentCount
    // Last pair is not equal first pair.
-    //member _.XYs = xys
+   //member _.XYs = xys
 
     /// This list is one item Longer than vectors , BRects or Lengths.
     /// Last point equals first point.
@@ -291,6 +290,3 @@ type Loop private   ( pts:ResizeArray<Pt>
         Loop(   pts, unitVcts, bRects, lens, //xys,
                 area, minSegmentLength, snapThreshold, erect)
 
-
-        // see script files in Test Folder for almost always working code of Loop Loop Intersection:
-        // Loop Boolean Ops 14.fsx
