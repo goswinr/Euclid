@@ -20,10 +20,10 @@ type Line2D =
     /// Returns the Y coordinate of the end point of the line.
     val ToY  :float
 
-    //Create Line2D from 2D start point and 2D end point.
+    ///Create Line2D from 2D start point and 2D end point.
     new (a:Pt,b:Pt) = {FromX=a.X; FromY=a.Y; ToX=b.X; ToY=b.Y}
 
-    //Create Line2D from 2D start point's x and y  and 2D end point's x and y .
+    ///Create Line2D from 2D start point's x and y  and 2D end point's x and y .
     new (a,b,u,v) = {FromX=a; FromY=b;  ToX=u; ToY=v}
 
     /// Returns the length of the line.

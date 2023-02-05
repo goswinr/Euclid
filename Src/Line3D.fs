@@ -27,10 +27,10 @@ type Line3D =
     /// Returns the Z coordinate of the end point of the line.
     val ToZ  :float
 
-    //Create Line3D from 3D start point and 3D end point.
+    /// Create Line3D from 3D start point and 3D end point.
     new (a:Pnt,b:Pnt) = {FromX=a.X; FromY=a.Y; FromZ=a.Z; ToX=b.X; ToY=b.Y; ToZ=b.Z}
 
-    //Create Line3D from 3D start point's x, y and z and 3D end point's x, y and z.
+    /// Create Line3D from 3D start point's x, y and z and 3D end point's x, y and z.
     new (a,b,c,u,v,w) = {FromX=a; FromY=b; FromZ=c; ToX=u; ToY=v; ToZ=w}
 
     /// Returns the length of the line.

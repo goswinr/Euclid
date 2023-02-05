@@ -14,7 +14,7 @@ module AutoOpenPPlane2 =
     type PPlane with
 
 
-        // Returns the Angle to a Line3D in Degree, ignoring the normal's orientation.
+        /// Returns the Angle to a Line3D in Degree, ignoring the normal's orientation.
         /// So between 0 to 90 degrees.
         member inline pl.AngleToLine (ln:Line3D) = UnitVec.angle90 ln.Tangent.Unitized pl.Zaxis
 

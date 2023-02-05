@@ -75,7 +75,7 @@ type OrthoMatrix =
     //    |> String.concat Environment.NewLine
     //    )
 
-     /// Returns the first column vector. M11, M12 and M13
+    /// Returns the first column vector. M11, M12 and M13
     member m.ColumnVector1 = Vec(m.M11, m.M12, m.M13)
 
     /// Returns the second column vector. M21, M22 and M23
