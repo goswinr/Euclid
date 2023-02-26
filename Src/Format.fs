@@ -66,7 +66,7 @@ module Format =
 
         match s.IndexOf('.') with
         | -1 ->
-            match s.IndexOf("e",StringComparison.OrdinalIgnoreCase) with
+            match s.IndexOf("e") with //,StringComparison.OrdinalIgnoreCase) // not supported by Fable complier 
             | -1 -> doBeforeComma start (s.Length-1)
             | e -> // if float is in scientific notation don't insert comas into it too:
                 doBeforeComma start (s.Length-1)
@@ -76,7 +76,7 @@ module Format =
                 doBeforeComma start (i-1)
             add '.'
             if i < s.Length then
-                match s.IndexOf("e",StringComparison.OrdinalIgnoreCase) with
+                match s.IndexOf("e") with //,StringComparison.OrdinalIgnoreCase) with // not supported by Fable complier 
                 | -1 -> doAfterComma (i+1) (s.Length-1)
                 | e -> // if float is in scientific notation don't insert comas into it too:
                     doAfterComma (i+1) (e-1)

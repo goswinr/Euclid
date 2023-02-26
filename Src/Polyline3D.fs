@@ -239,7 +239,7 @@ type Polyline3D =
 
 
     /// Apply a mapping function to each point in the 3D Polyline. Return new Polyline3D.
-    static member map (mapping:Pnt->Pnt) (pl:Polyline3D) = pl.Points.ConvertAll (System.Converter mapping) |> Polyline3D.createDirectlyUnsafe
+    static member map (mapping:Pnt->Pnt) (pl:Polyline3D) = pl.Points |> ResizeArray.map mapping |> Polyline3D.createDirectlyUnsafe
 
     /// Move a Polyline3D by a vector. (same as Polyline3D.move)
     static member inline translate (v:Vec) (pl:Polyline3D) = pl |> Polyline3D.map (Pnt.addVec v)
@@ -641,3 +641,8 @@ type Polyline3D =
                             [<OPT;DEF(Vec())>] refNormal:Vec) : Polyline3D  =
         if normalDistance = 0.0 then Polyline3D.offset(polyLine,[offsetDistance],[]              , loop, refNormal, false)
         else                         Polyline3D.offset(polyLine,[offsetDistance],[normalDistance], loop, refNormal, false)
+
+
+// TODO the above two methods fail with fable 4
+// see https://github.com/fable-compiler/Fable/issues/3326
+// should they use use F# style optional parameters?

@@ -253,9 +253,8 @@ type Polyline2D =
     /// The domain Polyline2D starts at 0.0 and ends at point count.
     static member inline evaluateAt (t:float) (pl:Polyline2D) = pl.EvaluateAt t
 
-
     /// Apply a mapping function to each point in the 2D Polyline2D. Return new Polyline2D.
-    static member map (mapping:Pt->Pt) (pl:Polyline2D) = pl.Points.ConvertAll (System.Converter mapping) |> Polyline2D.createDirectlyUnsafe
+    static member map (mapping:Pt->Pt) (pl:Polyline2D) = pl.Points |> ResizeArray.map mapping |> Polyline2D.createDirectlyUnsafe
 
     /// Move a Polyline2D by a vector. (same as Polyline2D.move)
     static member inline translate (v:Vc) (pl:Polyline2D) = pl |> Polyline2D.map (Pt.addVc v)

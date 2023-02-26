@@ -145,10 +145,16 @@ module Intersect =
     /// considering lines and triangles parallel based on the volume of the Tetrahedron between them.
     let lineTriangle(line:Line3D, p1 :Pnt ,p2 :Pnt, p3 :Pnt) : Pnt option  =  
         // https://stackoverflow.com/questions/42740765/intersection-between-line-and-triangle-in-3d
-        let inline tetrahedronVolumeSigned(a:Pnt, b:Pnt, c:Pnt, d:Pnt) =
+        let inline tetrahedronVolumeSigned(a:Pnt, b:Pnt, c:Pnt, d:Pnt) : float=
             // computes the signed Volume of a Tetrahedron
             //((Vec.cross( b-a, c-a)) * (d-a)) / 6.0 // the actual volume of Volume of a Tetrahedron
             Vec.cross(b-a, c-a) * (d-a) // divide by 6.0 is not needed,  because we only need the sign of the result
+
+        let inline sign (x:float) = 
+            if   x = 0 then 0
+            elif x > 0 then 1
+            else           -1
+
 
         let q1 = line.From
         let q2 = line.To

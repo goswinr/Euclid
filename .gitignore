@@ -6,6 +6,11 @@
 #build results, bin folder:
 [Bb]in/ 
 
+
+# Fable
+*.fs.js
+
+
 # Paket dependency manager
 .paket/paket.exe
 paket-files/
