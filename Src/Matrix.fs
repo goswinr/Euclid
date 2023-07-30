@@ -3,6 +3,8 @@ namespace Euclid
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
 open Euclid.Util
+open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
+
 
 /// An immutable 4x4 Transformation Matrix.
 /// The matrix is represented in the following column-vector syntax form:
@@ -16,11 +18,13 @@ open Euclid.Util
 [<Struct; NoEquality; NoComparison>] // because its made up from floats
 [<IsReadOnly>]
 //[<IsByRefLike>]
+[<DataContract>] // for using DataMember on fields
 type Matrix =
-    val M11 :float ; val M21 :float ; val M31 :float; val X41:float
-    val M12 :float ; val M22 :float ; val M32 :float; val Y42:float
-    val M13 :float ; val M23 :float ; val M33 :float; val Z43:float
-    val M14 :float ; val M24 :float ; val M34 :float; val M44:float
+    //[<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
+    [<DataMember>] val M11 :float ; [<DataMember>] val M21 :float ; [<DataMember>] val M31 :float; [<DataMember>] val X41:float
+    [<DataMember>] val M12 :float ; [<DataMember>] val M22 :float ; [<DataMember>] val M32 :float; [<DataMember>] val Y42:float
+    [<DataMember>] val M13 :float ; [<DataMember>] val M23 :float ; [<DataMember>] val M33 :float; [<DataMember>] val Z43:float
+    [<DataMember>] val M14 :float ; [<DataMember>] val M24 :float ; [<DataMember>] val M34 :float; [<DataMember>] val M44:float
 
     // this implementation is based on https://github.com/mrdoob/three.js/blob/dev/src/math/Matrix4.js
 

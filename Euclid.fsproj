@@ -17,20 +17,23 @@
     <Title>Euclid</Title>
     <Product>Euclid</Product>
     <PackageId>Euclid</PackageId>
-    <Version>0.2.1</Version>
-    <AssemblyVersion>0.2.1</AssemblyVersion>
-    <FileVersion>0.2.1</FileVersion>
+    <Version>0.3.0</Version>
+    <AssemblyVersion>0.3.0</AssemblyVersion>
+    <FileVersion>0.3.0</FileVersion>
     <PackageReleaseNotes>
-      - fix fable support
+      - add DataMember Attributes
+      - more functions
+      - add static members for Array.average
     </PackageReleaseNotes>
     <Authors>GoswinR</Authors>
     <Copyright>Goswin Rothenthal 2019</Copyright>
-    <Description>A 2D and 3D geometry library written in and for F#</Description>
-    <PackageDescription>A 2D and 3D geometry library written in and for F#</PackageDescription>
+    <Description>A 2D and 3D geometry library written in and for F# (and Fable)</Description>
+    <PackageDescription>A 2D and 3D geometry library written in and for F# (and Fable)</PackageDescription>
     <!--used on nuget.org-->
     <WarningLevel>5</WarningLevel>
     <!-- WarningLevel 3 is default , see https://github.com/dsyme/fsharp-presentations/blob/master/design-notes/off-by-default-warnings.md -->
   </PropertyGroup>
+  
   <PropertyGroup>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <IncludeSymbols>true</IncludeSymbols>
@@ -44,8 +47,6 @@
     <PackageIcon>logo128.png</PackageIcon>
     <PackageReadmeFile>READMEnuget.md</PackageReadmeFile>    
     <PackageTags>fsharp;geometry;fable;fable-library;fable-all</PackageTags>
-  
-    
   </PropertyGroup>
 
   <ItemGroup>

@@ -141,6 +141,13 @@ module AutoOpenUnitVec =
         member inline v.MatchesOrientation (other:UnitVec) =
             v * other > 1e-12
 
+        /// Checks if the angle between the this 3D unit vectors and a 3D vector is less than 180 degrees.
+        /// Calculates the dot product of two 3D unit vectors.
+        /// Then checks if it is bigger than 1e-12.
+        member inline v.MatchesOrientation (other:Vec) =            
+            if other.LengthSq < 1e-24 then EuclidException.Raise "Euclid.UnitVec.MatchesOrientation: Vec 'other' is too short: %O. 'this':%O " other v 
+            v * other > 1e-12
+
         /// Checks if the angle between the two 3D unit vectors is more than 180 degrees.
         /// Calculates the dot product of two 3D unit vectors.
         /// Then checks if it is smaller than -1e-12. 
@@ -297,15 +304,11 @@ module AutoOpenUnitVec =
         /// This operation is slightly faster than Vec.difference and sufficient for many algorithms like finding closest points.
         static member inline differenceSq (a:UnitVec) (b:UnitVec) = let v = a-b in  v.X*v.X + v.Y*v.Y + v.Z*v.Z
 
-        // These members cannot be implemented since
-        // Array.sum and Array.average of UnitVec would return a 'Vec' and not a 'UnitVec'
-        // static member Zero = UnitVec ( 0 , 0, 0)  // needed by 'Array.sum'
-        // static member inline DivideByInt (v:UnitVec, i:int) = v / float i  // needed by  'Array.average'
 
         /// Accepts any type that has a X, Y and Z (UPPERCASE) member that can be converted to a float.
         /// Does the unitizing too.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
-        static member inline ofXYZ vec  =
+        static member inline createFromXYZ vec  =
             let x = ( ^T : (member X : _) vec)
             let y = ( ^T : (member Y : _) vec)
             let z = ( ^T : (member Z : _) vec)
@@ -315,7 +318,7 @@ module AutoOpenUnitVec =
         /// Accepts any type that has a x, y and z (lowercase) member that can be converted to a float.
         /// Does the unitizing too.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
-        static member inline ofxyz vec  =
+        static member inline createFromxyz vec  =
             let x = ( ^T : (member x : _) vec)
             let y = ( ^T : (member y : _) vec)
             let z = ( ^T : (member z : _) vec)
@@ -323,14 +326,14 @@ module AutoOpenUnitVec =
             with e -> EuclidException.Raise "Euclid.UnitVec.ofxyz: %A could not be converted to a Euclid.UnitVec:\r\n%A" vec e
 
         /// Create 3D unit-vector from 3D point. Does the unitizing too.
-        static member inline ofPnt  (pt:Pnt) =
+        static member inline createFromPnt  (pt:Pnt) =
             let l = sqrt (pt.X*pt.X + pt.Y*pt.Y + pt.Z*pt.Z)
             if l <  zeroLengthTol then EuclidDivByZeroException.Raise "Euclid.UnitVec.ofPnt failed on too short %O" pt
             let li = 1. / l
             UnitVec.createUnchecked( li*pt.X , li*pt.Y , li*pt.Z )
 
         /// Create 3D unit-vector from 3D vector. Does the unitizing too.
-        static member inline ofVec (v:Vec) =
+        static member inline createFromVec (v:Vec) =
             let l = sqrt (v.X*v.X + v.Y*v.Y + v.Z*v.Z)
             if l <  zeroLengthTol then EuclidDivByZeroException.Raise "Euclid.UnitVec.ofVec failed on too short %O" v
             let li = 1. / l
@@ -528,11 +531,15 @@ module AutoOpenUnitVec =
         /// Range: 0.0 to 2 Pi ( = 0 to 360 Degrees)
         /// For World X-Y plane. Considers only the X and Y components of the vector.
         static member inline direction360InXY (v:UnitVec)  = v.Direction360InXY
+      
 
+        /// Ensure that the 3D unit vector has a positive dot product with given 3D orientation unit vector.
+        static member inline matchOrientation (orientationToMatch:UnitVec) (vecToFlip:UnitVec) =
+            if orientationToMatch * vecToFlip < 0.0 then -vecToFlip else vecToFlip
 
-        /// Ensure vector has a positive dot product with given orientation vector.
-        static member inline matchOrientation (orientationToMatch:UnitVec) (v:UnitVec) =
-            if orientationToMatch * v < 0.0 then -v else v
+        /// Ensure that the 3D unit vector has a positive dot product with given 3D orientation vector.
+        static member inline matchVcOrientation (orientationToMatch:Vec) (vecToFlip:UnitVec) =
+            if orientationToMatch * vecToFlip < 0.0 then -vecToFlip else vecToFlip            
 
 
         /// Checks if the angle between the two 3D unit vectors is less than 180 degrees.

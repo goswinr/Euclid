@@ -2,17 +2,19 @@ namespace Euclid
 
 open System
 open Util
+open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 
 # nowarn "52" // copying of structs
 
 /// A mutable 2D Polyline.
 /// If the last point is the same as the first point, the Polyline2D is closed.
 [<Struct; NoEquality; NoComparison>] // because its made up from floats
+[<DataContract>] // for using DataMember on fields
 type Polyline2D =
 
     /// Gets the internal list of all Points of the Polyline2D.
     /// This is not a copy, so changes to the list will be reflected in the Polyline2D.
-    val Points: ResizeArray<Pt>
+    [<DataMember>] val Points: ResizeArray<Pt>
 
     /// Internal constructor. Uses input List without copying it.
     internal new (points: ResizeArray<Pt>) = { Points = points }

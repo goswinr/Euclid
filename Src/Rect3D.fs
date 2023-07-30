@@ -3,6 +3,8 @@ namespace Euclid
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
 open Util
+open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
+
 
 /// An immutable planar 3D Rectangle with any rotation in 3D space.
 /// Described by an Origin and two Edge vectors.
@@ -28,18 +30,21 @@ open Util
 [<Struct; NoEquality; NoComparison>] // because its made up from floats
 [<IsReadOnly>]
 //[<IsByRefLike>]
+[<DataContract>] // for using DataMember on fields
 type Rect3D =
+    
+    //[<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
 
     /// The Origin Corner of the 3D Rectangle.
-    val Origin: Pnt
+    [<DataMember>] val Origin: Pnt
 
     /// The edge vector representing the X-axis of the 3D Rectangle.
     /// Also called Length.
-    val Xaxis: Vec
+    [<DataMember>] val Xaxis: Vec
 
     /// The edge vector representing the Y-axis of the 3D Rectangle.
     /// Also called Width.
-    val Yaxis: Vec
+    [<DataMember>] val Yaxis: Vec
 
     /// Unchecked Internal Constructor Only.
     /// Create a Parametrized Plane with X, Y and Z Direction.

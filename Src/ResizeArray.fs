@@ -176,10 +176,14 @@ module internal AutoOpenResizeArrayExtensions =
         /// Equal to this.[this.Count - 2]
         member inline this.SecondLast
             with get() =
+                #if DEBUG
                 if this.Count < 2 then  EuclidException.Raise "Euclid.ResizeArray.SecondLast: Failed to get second last item of ResizeArray<%O>" typeof<'T>
+                #endif
                 this.[this.Count - 2]
             and set (v:'T) =
+                #if DEBUG
                 if this.Count < 2 then  EuclidException.Raise "Euclid.ResizeArray.SecondLast: Failed to set second last item of ResizeArray<%O> to  %O" typeof<'T> v
+                #endif
                 this.[this.Count - 2] <- v
 
         /// Get (or set) the first item in the Euclid.ResizeArray.
@@ -200,10 +204,14 @@ module internal AutoOpenResizeArrayExtensions =
         /// Equal to this.[1]
         member inline this.Second
             with get() =
+                #if DEBUG
                 if this.Count < 2 then EuclidException.Raise "Euclid.ResizeArray.Second: Failed to get second item of ResizeArray<%O>" typeof<'T>
+                #endif
                 this.[1]
             and set (v:'T) =
+                #if DEBUG
                 if this.Count < 2 then EuclidException.Raise "Euclid.ResizeArray.Second: Failed to set second item of ResizeArray<%O> to %O" typeof<'T> v
+                #endif
                 this.[1] <- v
 
 

@@ -4,6 +4,8 @@ open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
 open Util
 open AutoOpenPt
+open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
+
 
 /// An immutable 2D Rectangle with any rotation in 2D space.
 /// Described by an Origin and two Edge vectors.
@@ -27,18 +29,21 @@ open AutoOpenPt
 [<Struct; NoEquality; NoComparison>] // because its made up from floats
 [<IsReadOnly>]
 //[<IsByRefLike>]
+[<DataContract>] // for using DataMember on fields
 type Rect2D =
 
+    //[<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
+
     /// The Origin Corner of the 2D Rectangle.
-    val Origin: Pt
+    [<DataMember>] val Origin: Pt
 
     /// The Edge vector representing the X-axis of the 2D Rectangle.
     /// Also called Length.
-    val Xaxis: Vc
+    [<DataMember>] val Xaxis: Vc
 
     /// The Edge vector representing the Y-axis of the 2D Rectangle.
     /// Also called Width.
-    val Yaxis: Vc
+    [<DataMember>] val Yaxis: Vc
 
     /// Unchecked Internal Constructor Only.
     /// Create a Parametrized Plane with X, Y and Z Direction.
@@ -187,6 +192,100 @@ type Rect2D =
     ///   +------------+-----> X-Axis
     ///  0-Origin       1
     member inline r.Pt3 = r.Origin  + r.Yaxis
+
+
+    /// Returns the local X side as the 2D line from point 0 to 1 of the 2D rectangle.
+    ///
+    ///   local
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-Axis
+    ///  0-Origin       1
+    member inline r.EdgeX = Line2D (r.Origin , r.Origin + r.Xaxis)
+
+
+    /// Returns the local X aligned far side as the 2D line from point 3 to 2 of the 2D rectangle.
+    ///
+    ///   local
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-Axis
+    ///  0-Origin       1
+    member inline r.EdgeXFar = 
+        let s = r.Origin + r.Yaxis
+        Line2D (s , s + r.Xaxis)
+    
+
+    /// Returns the local Y side as 2D line from point 0 to 3 of the 2D rectangle.
+    ///
+    ///   local
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-Axis
+    ///  0-Origin       1
+    member inline r.EdgeY = Line2D (r.Origin , r.Origin + r.Yaxis) 
+
+    /// Returns the local Y aligned far side as 2D line from point 1 to 2 of the 2D rectangle.
+    ///
+    ///   local
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-Axis
+    ///  0-Origin       1
+    member inline r.EdgeYFar = 
+        let s = r.Origin + r.Xaxis
+        Line2D (s , s + r.Yaxis)
+
+
+    /// Returns the diagonal 2D line from point 0 to 2 of the 2D rectangle.
+    ///
+    ///   local
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-Axis
+    ///  0-Origin       1
+    member inline r.DiagonalLine = Line2D (r.Origin , r.Origin + r.Yaxis + r.Xaxis) 
+    
 
     /// Creates a unitized version of the local X-Axis.
     member inline r.XaxisUnit =
@@ -434,7 +533,35 @@ type Rect2D =
         if sizeY < 0. then EuclidException.Raise "Euclid.Rect2D.createFromCenter(center:Pt, x:Vc, sizeY ) sizeY is negative: %g , x is: %O, center: %O"  sizeY  x.AsString  center.AsString
         let y = x.Rotate90CCW * sizeY
         Rect2D(center - x * 0.5 - y * 0.5, x, y)
-
+    
+    /// Creates a Bounding Rectangle from three points, the Origin, the point in X Axis direction
+    /// and a point for the length in Y Axis direction. If Y-point is not perpendicular to X-point, 
+    /// the Y-point will be projected on the perpendicular Y axis.
+    /// Fails if the point Y is on right side of the X-axis.
+    /// 
+    ///   local
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-Axis
+    ///  0-Origin       1
+    static member createThreePoints (origin:Pt, x:Pt, y:Pt ) =
+        let xv = x - origin
+        if xv.LengthSq < 1e-9 then EuclidException.Raise "Euclid.Rect2D.createThreePoints: X-Point %s too close to origin: %s." origin.AsString x.AsString 
+        let yv = y - origin
+        if yv.LengthSq < 1e-9 then EuclidException.Raise "Euclid.Rect2D.createThreePoints: Y-Point %s too close to origin: %s." origin.AsString y.AsString
+        let y0 = xv.Rotate90CCW
+        if y0 * yv < 0. then EuclidException.Raise "Euclid.Rect2D.createThreePoints: Y-Point %s is on right side but should be on the left of X-Point %s." origin.AsString y.AsString
+        let yu = y0.Unitized
+        let y = yu * (yv * yu) // get the y point projected on the y axis
+        Rect2D(origin, xv, y)
 
     /// Returns the Rectangle flipped. Or rotated 180 around its diagonal from point 1 to 3.
     /// Origin will be at point 2, X-axis points down to to point 1, Y-axis points left to point 3.

@@ -173,17 +173,38 @@ module AutoOpenVec =
         /// Checks if the angle between the two 3D vectors is less than 180 degrees.
         /// Calculates the dot product of two 3D vectors.
         /// Then checks if it is bigger than 1e-12. 
-        /// If any of the two vectors is zero length returns false.
+        /// Fails if any of the two vectors is zero length.
         member inline v.MatchesOrientation (other:Vec) =
+            if v.LengthSq     < 1e-24 then EuclidException.Raise "Euclid.Vec.MatchesOrientation: Vec 'this' is too short: %s. 'other':%s " v.AsString other.AsString
+            if other.LengthSq < 1e-24 then EuclidException.Raise "Euclid.Vec.MatchesOrientation: Vec 'other' is too short: %s. 'this':%s " other.AsString v.AsString
+            v * other > 1e-12
+
+        /// Checks if the angle between this 3D vectors and a 3D unit vector is less than 180 degrees.
+        /// Calculates the dot product of two 3D vectors.
+        /// Then checks if it is bigger than 1e-12.
+        /// Fails if the vector is zero length.
+        member inline v.MatchesOrientation (other:UnitVec) =
+            if v.LengthSq < 1e-24 then EuclidException.Raise "Euclid.Vec.MatchesOrientation: Vec 'this' is too short: %s. 'other':%s " v.AsString other.AsString
             v * other > 1e-12
 
 
         /// Checks if the angle between the two 3D vectors is more than 180 degrees.
         /// Calculates the dot product of two 3D vectors.
         /// Then checks if it is smaller than -1e-12. 
-        /// If any of the two vectors is zero length returns false.
+        /// Fails if any of the two vectors is zero length.
         member inline v.IsOppositeOrientation (other:Vec) =
+            if v.LengthSq     < 1e-24 then EuclidException.Raise "Euclid.Vec.IsOppositeOrientation: Vec 'this' is too short: %s. 'other':%s " v.AsString other.AsString
+            if other.LengthSq < 1e-24 then EuclidException.Raise "Euclid.Vec.IsOppositeOrientation: Vec 'other' is too short: %s. 'this':%s " other.AsString v.AsString
             v * other < -1e-12    
+
+        /// Checks if the angle between this 3D vectors and a 3D unit vector is more than 180 degrees.
+        /// Calculates the dot product of two 3D vectors.
+        /// Then checks if it is smaller than -1e-12.
+        /// Fails if the vector is zero length.
+        member inline v.IsOppositeOrientation (other:UnitVec) =
+            if v.LengthSq < 1e-24 then EuclidException.Raise "Euclid.Vec.IsOppositeOrientation: Vec 'this' is too short: %s. 'other':%s " v.AsString other.AsString
+            v * other < -1e-12
+        
 
         /// Checks if 3D vector is parallel to the world X axis. Ignoring orientation.
         /// The absolute deviation tolerance along Y and Z axis is 1e-6.
@@ -358,8 +379,6 @@ module AutoOpenVec =
         /// Returns the World Z-axis with length one: Vec(0,0,1)
         static member inline Zaxis  = Vec(0,0,1)
 
-        /// Returns a zero length vector: Vec(0,0,0)
-        static member inline Zero   = Vec(0,0,0)  // this member is needed by Seq.sum, so that it doesn't fail on empty seq.
 
         /// Returns the distance between the tips of two 3D vectors.
         static member inline difference (a:Vec) (b:Vec) = let v = a-b in sqrt(v.X*v.X + v.Y*v.Y + v.Z*v.Z)
@@ -368,15 +387,10 @@ module AutoOpenVec =
         /// This operation is slightly faster than Vec.difference and sufficient for many algorithms like finding closest points.
         static member inline differenceSq (a:Vec) (b:Vec) = let v = a-b in  v.X*v.X + v.Y*v.Y + v.Z*v.Z
 
-        /// Divides the vector by an integer.
-        /// (This member is needed by Array.average and similar functions)
-        static member inline DivideByInt (v:Vec, i:int) = // needed by 'Array.average'
-            if i<>0 then v / float i
-            else EuclidDivByZeroException.Raise "Euclid.Vec.DivideByInt is zero %O " v
 
-                /// Accepts any type that has a X, Y and Z (UPPERCASE) member that can be converted to a float.
+        /// Accepts any type that has a X, Y and Z (UPPERCASE) member that can be converted to a float.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
-        static member inline ofXYZ vec  =
+        static member inline createFromXYZ vec  =
             let x = ( ^T : (member X : _) vec)
             let y = ( ^T : (member Y : _) vec)
             let z = ( ^T : (member Z : _) vec)
@@ -385,7 +399,7 @@ module AutoOpenVec =
 
         /// Accepts any type that has a x, y and z (lowercase) member that can be converted to a float.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
-        static member inline ofxyz vec  =
+        static member inline createFromxyz vec  =
             let x = ( ^T : (member x : _) vec)
             let y = ( ^T : (member y : _) vec)
             let z = ( ^T : (member z : _) vec)
@@ -393,10 +407,10 @@ module AutoOpenVec =
             with e -> EuclidException.Raise "Euclid.Vec.ofxyz: %A could not be converted to a Euclid.Vec:\r\n%A" vec e
 
         /// Create 3D vector from 3D point.
-        static member inline ofPnt  (pt:Pnt) =  Vec( pt.X , pt.Y , pt.Z )
+        static member inline createFromPnt  (pt:Pnt) =  Vec( pt.X , pt.Y , pt.Z )
 
         /// Create 3D vector from 3D unit-vector.
-        static member inline ofUnitVec (v:UnitVec) =  Vec(v.X, v.Y, v.Z)
+        static member inline createFromUnitVec (v:UnitVec) =  Vec(v.X, v.Y, v.Z)
 
         /// Convert 3D vector to 2D point by ignoring Z value.
         static member inline asPt(v:Vec)  = Pt( v.X, v.Y)
@@ -498,7 +512,7 @@ module AutoOpenVec =
         static member inline create (start:Pnt,ende:Pnt) = ende-start
 
         /// Returns a 3D vector from z value and 2D vector.
-        static member inline ofVcWithZ  (z:float)  (v:Vc)  = Vec (v.X, v.Y, z)
+        static member inline createFromVcWithZ  (z:float)  (v:Vc)  = Vec (v.X, v.Y, z)
 
         /// Project vector to World X-Y plane.
         /// Use Vc.ofVec to convert to 2D vector instance.
@@ -605,10 +619,13 @@ module AutoOpenVec =
         /// Code : a.Unitized + b.Unitized.
         static member inline bisector (a:Vec) (b:Vec) = a.Unitized + b.Unitized
 
+        /// Ensure that the 3D  vector has a positive dot product with given 3D orientation vector.
+        static member inline matchOrientation (orientationToMatch:Vec) (vecToFlip:Vec) =
+            if orientationToMatch * vecToFlip < 0.0 then -vecToFlip else vecToFlip
 
-        /// Ensure vector has a positive dot product with given orientation vector.
-        static member inline matchOrientation (orientationToMatch:Vec) (v:Vec) =
-            if orientationToMatch * v < 0.0 then -v else v
+        /// Ensure that the 3D vector has a positive dot product with given 3D orientation unit vector.
+        static member inline matchUnitVcOrientation (orientationToMatch:UnitVec) (vecToFlip:Vec) =
+            if orientationToMatch * vecToFlip < 0.0 then -vecToFlip else vecToFlip            
 
 
         /// Checks if the angle between the two 3D vectors is less than 180 degrees.

@@ -15,10 +15,11 @@ module AutoOpenPt =
         /// Returns the 2D point as 2D vector.
         member inline p.AsVc         = Vc( p.X, p.Y)
 
-        /// Returns the 2D point as 3D vector. Using 0.0 for Z
+        /// Returns the 2D point as 3D vector. Using 0.0 for Z.
         member inline p.AsVec        = Vec(p.X, p.Y, 0.0)
 
-        /// Returns the 2D point as 3D point. Using 0.0 for Z
+        /// Returns the 2D point as 3D point. Using 0.0 for Z.
+        /// Use the member pt.WithZ to set Z to a different value.
         member inline p.AsPnt        = Pnt(p.X, p.Y, 0.0)
 
         /// Returns a boolean indicating wether X and Y are exactly 0.0.
@@ -169,22 +170,9 @@ module AutoOpenPt =
         //----------------------------------------------------------------------------------------------
 
 
-
-        /// Same as Pt.Origin.
-        static member Zero   = Pt ( 0. , 0. )  // needed by 'Array.sum'
-
-        /// Same as Pt.Zero.
-        static member Origin = Pt ( 0. , 0. )
-
-         /// Divides the 3D point by an integer.
-        /// (This member is needed by Array.average and similar functions)
-        static member inline DivideByInt (pt:Pt, i:int) =
-            if i<>0 then  let d = float i in  Pt(pt.X/d, pt.Y/d)
-            else EuclidDivByZeroException.Raise "Euclid.Pt.DivideByInt 0 %O " pt  // needed by  'Array.average'
-
         /// Accepts any type that has a X and Y (UPPERCASE) member that can be converted to a float.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
-        static member inline ofXY pt  =
+        static member inline createFromXY pt  =
             let x = ( ^T : (member X: _) pt)
             let y = ( ^T : (member Y: _) pt)
             try Pt(float x, float y)
@@ -192,20 +180,20 @@ module AutoOpenPt =
 
         /// Accepts any type that has a x and y (lowercase) member that can be converted to a float.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
-        static member inline ofxy pt  =
+        static member inline createFromxy pt  =
             let x = ( ^T : (member x: _) pt)
             let y = ( ^T : (member y: _) pt)
             try Pt(float x, float y)
             with e -> EuclidException.Raise "Euclid.Pt.ofxy: %A could not be converted to a Euclid.Pt:\r\n%A" pt e
 
         /// Create 2D point from 3D point. Ignoring Z component.
-        static member inline ofPnt      (p:Pnt)     = Pt (p.X, p.Y)
+        static member inline createFromPnt      (p:Pnt)     = Pt (p.X, p.Y)
 
         /// Create 2D point from 2D vector.
-        static member inline ofVc       (v:Vc)      = Pt (v.X, v.Y)
+        static member inline createFromVc       (v:Vc)      = Pt (v.X, v.Y)
 
         /// Create 2D point from 2D unit-vector.
-        static member inline ofUnitVc  (v:UnitVc)  = Pt (v.X, v.Y)
+        static member inline createFromUnitVc  (v:UnitVc)  = Pt (v.X, v.Y)
 
         /// Create 3D point from X and Y components.
         static member inline create  (x:float, y:float) =  Pt( x , y )

@@ -11,6 +11,7 @@ namespace Euclid
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
 open Euclid.Util
+open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 
 
 /// An immutable 3D vector of any length. Made up from 3 floats: X, Y, and Z.
@@ -19,16 +20,19 @@ open Euclid.Util
 [<Struct; NoEquality; NoComparison>]
 [<IsReadOnly>]
 //[<IsByRefLike>] // not used, see notes at end of file
+[<DataContract>] // for using DataMember on fields  
 type Vec =
+    
+    //[<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
 
     /// Gets the X part of this 3D vector.
-    val X : float
+    [<DataMember>] val X : float
 
     /// Gets the Y part of this 3D vector.
-    val Y : float
+    [<DataMember>] val Y : float
 
     /// Gets the Z part of this 3D vector.
-    val Z : float
+    [<DataMember>] val Z : float
 
     /// Create a new 3D vector with any length. Made up from 3 floats: X, Y, and Z.
     new (x, y,z) =
@@ -88,9 +92,20 @@ type Vec =
     /// Its direction follows th right-hand rule.
     /// A x B = |A| * |B| * sin(angle)
     static member inline cross (a:Vec, b:Vec)  = Vec (a.Y * b.Z - a.Z * b.Y ,  a.Z * b.X - a.X * b.Z ,  a.X * b.Y - a.Y * b.X )
+    
+    //-----------------------------------------------------------------------------------------------------
+    // These static members can't be extension methods to be useful for Array.sum and Array.average :
+    //-----------------------------------------------------------------------------------------------------
 
 
-
+    /// Divides the vector by an integer.
+    /// (This member is needed by Array.average and similar functions)
+    static member inline DivideByInt (v:Vec, i:int) = // needed by 'Array.average'
+        if i<>0 then v / float i
+        else EuclidDivByZeroException.Raise "Euclid.Vec.DivideByInt is zero %O " v
+    
+    /// Returns a zero length vector: Vec(0,0,0)
+    static member inline Zero   = Vec(0,0,0)  // this member is needed by Seq.sum, so that it doesn't fail on empty seq.
 
 #nowarn "44" // for hidden constructors via Obsolete Attribute
 
@@ -101,15 +116,17 @@ type Vec =
 [<Struct; NoEquality; NoComparison>]
 [<IsReadOnly>]
 //[<IsByRefLike>] // not used, see notes at end of file
+[<DataContract>] // for using DataMember on fields  
 type UnitVec =
+
     /// Gets the X part of this 3D unit-vector.
-    val X : float
+    [<DataMember>] val X : float
 
     /// Gets the Y part of this 3D unit-vector.
-    val Y : float
+    [<DataMember>] val Y : float
 
     /// Gets the Z part of this 3D unit-vector.
-    val Z : float
+    [<DataMember>] val Z : float
 
     /// Unsafe internal constructor, doesn't check or unitize the input, public only for inlining.
     [<Obsolete("Unsafe internal constructor,  but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >]
@@ -202,22 +219,27 @@ type UnitVec =
         let li = 1. / l
         UnitVec.createUnchecked( li*x , li*y , li*z )
 
+    // These members cannot be implemented since
+    // Array.sum and Array.average of UnitVec would return a 'Vec' and not a 'UnitVec'
+    // static member Zero = UnitVec ( 0 , 0, 0)  // needed by 'Array.sum'
+    // static member inline DivideByInt (v:UnitVec, i:int) = v / float i  // needed by  'Array.average'
 
 /// An immutable 3D point. Made up from 3 floats: X, Y, and Z.
 /// ( 2D Points are called 'Pt' )
 [<Struct; NoEquality; NoComparison>] // because its made up from floats
 [<IsReadOnly>]
 //[<IsByRefLike>]
+[<DataContract>] // for using DataMember on fields  
 type Pnt =
 
     /// Gets the X part of this 3D point.
-    val X : float
+    [<DataMember>] val X : float
 
     /// Gets the Y part of this 3D point.
-    val Y : float
+    [<DataMember>] val Y : float
 
     /// Gets the Z part of this 3D point.
-    val Z : float
+    [<DataMember>] val Z : float
 
     /// Create a new 3D point. Made up from 3 floats: X, Y, and Z.
     new (x, y,z) =
@@ -268,6 +290,22 @@ type Pnt =
         //p * (1./f) // maybe faster but worse precision
         Pnt (p.X / f , p.Y / f ,  p.Z / f)
 
+    //-----------------------------------------------------------------------------------------------------
+    // These static members can't be extension methods to be useful for Array.sum and Array.average :
+    //-----------------------------------------------------------------------------------------------------
+
+
+    /// Same as Pnt.Origin.
+    static member Zero   = Pnt ( 0. , 0. , 0.)  // needed by 'Array.sum'
+
+    /// Same as Pnt.Zero.
+    static member Origin = Pnt ( 0. , 0. , 0.)
+
+    /// Divides the 3D point by an integer.
+    /// (This member is needed by Array.average and similar functions)
+    static member inline DivideByInt (pt:Pnt, i:int) =
+        if i<>0 then  let d = float i in  Pnt(pt.X/d, pt.Y/d, pt.Z/d)
+        else EuclidDivByZeroException.Raise "Euclid.Pnt.DivideByInt 0 %O " pt  // needed by  'Array.average'
 
 (*
 from:

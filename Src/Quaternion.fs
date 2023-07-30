@@ -3,6 +3,8 @@ namespace Euclid
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
 open Euclid.Util
+open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
+
 
 #nowarn "44" // for hidden constructors via Obsolete Attribute
 
@@ -13,20 +15,23 @@ open Euclid.Util
 [<Struct; NoEquality; NoComparison>]
 [<IsReadOnly>]
 //[<IsByRefLike>]
+[<DataContract>] // for using DataMember on fields
 type Quaternion =
     //  https://github.com/mrdoob/three.js/blob/dev/src/math/Quaternion.js
 
+    //[<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
+
     /// The X component of this Quaternion.
-    val X:float
+    [<DataMember>] val X:float
 
     /// The Y component of this Quaternion.
-    val Y:float
+    [<DataMember>] val Y:float
 
     /// The Z component of this Quaternion.
-    val Z:float
+    [<DataMember>] val Z:float
 
     /// The W component of this Quaternion.
-    val W:float
+    [<DataMember>] val W:float
 
     /// Unsafe internal constructor,  public only for inlining.
     [<Obsolete("Unsafe internal constructor,  but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >]

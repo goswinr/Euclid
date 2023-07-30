@@ -9,6 +9,8 @@ namespace Euclid
 // the types would have to be marked as recursive. This file would be very large and probably have bad editor performance.
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
+open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
+
 
 #nowarn "44" // for internal inline constructors
 
@@ -18,19 +20,21 @@ open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see http
 /// Use PPlane.create or PPlane.createUnchecked instead.
 [<Struct; NoEquality; NoComparison>] // because its made up from floats
 [<IsReadOnly>]
+[<DataContract>] // for using DataMember on fields
 type PPlane =
+    //[<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
 
     /// The Origin 3D point of this PPlane.
-    val Origin: Pnt
+    [<DataMember>] val Origin: Pnt
 
     /// The local X-axis of this PPlane.
-    val Xaxis: UnitVec
+    [<DataMember>] val Xaxis: UnitVec
 
     /// The local Y-axis of this PPlane.
-    val Yaxis: UnitVec
+    [<DataMember>] val Yaxis: UnitVec
 
     /// The local Z-axis of this PPlane.
-    val Zaxis: UnitVec
+    [<DataMember>] val Zaxis: UnitVec
 
     /// Unsafe internal constructor, doesn't check the input is perpendicular,  public only for inlining.
     [<Obsolete("Unsafe internal constructor, doesn't check the input is perpendicular, but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >]

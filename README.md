@@ -27,6 +27,14 @@ for now see [full API documentation on fuget.org](https://www.fuget.org/packages
 
 ### Release Notes
 
+`0.3.0`
+- add DataMember Attributes
+- more functions
+- add static members for Array.average
+
+`0.2.1`
+- fix fable support
+
 `0.2.0`
 - fable support
 - improved xml documentation

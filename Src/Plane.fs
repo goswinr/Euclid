@@ -3,6 +3,7 @@ namespace Euclid
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>]
 open Euclid.Util
+open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 
 
 #nowarn "44" // for hidden constructors via Obsolete Attribute
@@ -14,13 +15,16 @@ open Euclid.Util
 /// Use Plane.create or Plane.createUnchecked instead.
 [<Struct;NoEquality;NoComparison>]// because its made up from floats
 [<IsReadOnly>]
+[<DataContract>] // for using DataMember on fields
 type Plane = // Normals are always unitized
 
+    //[<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
+
     /// The center point of the Plane.
-    val Origin : Pnt
+    [<DataMember>] val Origin : Pnt
 
     /// The unitized normal of the Plane.
-    val Normal : UnitVec
+    [<DataMember>] val Normal : UnitVec
 
     /// Unsafe internal constructor,  public only for inlining.
     [<Obsolete("Unsafe internal constructor,  but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >]
@@ -87,7 +91,7 @@ type Plane = // Normals are always unitized
     /// Create Plane, normal vector gets unitized in constructor.
     static member create(pt,normal:Vec) =
         let l = sqrt(normal.X*normal.X+normal.Y*normal.Y+normal.Z*normal.Z)
-        if l < zeroLengthTol then EuclidDivByZeroException.Raise "Euclid.Plane.create: %O is too small for unitizing, tolerance:%g" normal zeroLengthTol
+        if l < zeroLengthTol then EuclidException.Raise "Euclid.Plane.create: %O is too small for unitizing, tolerance:%g" normal zeroLengthTol
         let li=1./l in
         Plane(pt,UnitVec.createUnchecked( li*normal.X , li*normal.Y ,li*normal.Z ))
 

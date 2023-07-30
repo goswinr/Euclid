@@ -2,17 +2,19 @@ namespace Euclid
 
 open System
 open Util
+open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 
 # nowarn "52" // copying of structs
 
 /// A mutable 3D Polyline.
 /// If the last point is the same as the first point, the Polyline3D is closed.
 [<Struct; NoEquality; NoComparison>] // because its made up from floats
+[<DataContract>] // for using DataMember on fields
 type Polyline3D =
 
     /// Gets the internal list of all Points of the Polyline3D.
     /// This is not a copy, so changes to the list will be reflected in the Polyline3D.
-    val Points: ResizeArray<Pnt>
+    [<DataMember>] val Points: ResizeArray<Pnt>
 
     /// Internal constructor. Uses input List without copying it.
     internal new (points: ResizeArray<Pnt>) = { Points = points }

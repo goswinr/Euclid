@@ -184,21 +184,10 @@ module AutoOpenPnt =
         //--------------------------  Static Members  --------------------------------------------------
         //----------------------------------------------------------------------------------------------
 
-        /// Same as Pnt.Origin.
-        static member Zero   = Pnt ( 0. , 0. , 0.)  // needed by 'Array.sum'
-
-        /// Same as Pnt.Zero.
-        static member Origin = Pnt ( 0. , 0. , 0.)
-
-        /// Divides the 3D point by an integer.
-        /// (This member is needed by Array.average and similar functions)
-        static member inline DivideByInt (pt:Pnt, i:int) =
-            if i<>0 then  let d = float i in  Pnt(pt.X/d, pt.Y/d, pt.Z/d)
-            else EuclidDivByZeroException.Raise "Euclid.Pnt.DivideByInt 0 %O " pt  // needed by  'Array.average'
 
         /// Accepts any type that has a X, Y and Z (UPPERCASE) member that can be converted to a float.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
-        static member inline ofXYZ pt  =
+        static member inline createFromXYZ pt  =
             let x = ( ^T : (member X : _) pt)
             let y = ( ^T : (member Y : _) pt)
             let z = ( ^T : (member Z : _) pt)
@@ -207,7 +196,7 @@ module AutoOpenPnt =
 
         /// Accepts any type that has a x, y and z (lowercase) member that can be converted to a float.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
-        static member inline ofxyz pt  =
+        static member inline createFromxyz pt  =
             let x = ( ^T : (member x : _) pt)
             let y = ( ^T : (member y : _) pt)
             let z = ( ^T : (member z : _) pt)
@@ -215,19 +204,19 @@ module AutoOpenPnt =
             with e -> EuclidException.Raise "Euclid.Pnt.ofxyz: %A could not be converted to a Euclid.Pnt:\r\n%A" pt e
 
         /// Create 3D point from 2D point. Using 0.0 for Z
-        static member inline ofPt (p:Pt)  = Pnt (p.X, p.Y, 0.0)
+        static member inline createFromPt (p:Pt)  = Pnt (p.X, p.Y, 0.0)
 
         /// Create 3D point from 3D vector.
-        static member inline ofVec (v:Vec)  = Pnt (v.X, v.Y, v.Z)
+        static member inline createFromVec (v:Vec)  = Pnt (v.X, v.Y, v.Z)
 
         /// Create 3D point from 3D unit-vector.
-        static member inline ofUnitVec  (v:UnitVec) = Pnt (v.X, v.Y, v.Z)
+        static member inline createFromUnitVec  (v:UnitVec) = Pnt (v.X, v.Y, v.Z)
 
         /// Create 3D point from X, Y and Z components.
         static member inline create (x:float, y:float, z:float) =  Pnt( x , y , z )
 
         /// Returns a 3D point from Z level and 2D point.
-        static member inline ofPtWithZ (z:float)  (p:Pt)  = Pnt (p.X, p.Y, z)
+        static member inline createFromPtWithZ (z:float)  (p:Pt)  = Pnt (p.X, p.Y, z)
 
         /// Project point to World X-Y plane.
         /// Use make2D to convert to 2D point instance.

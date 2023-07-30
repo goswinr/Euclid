@@ -7,6 +7,8 @@ open AutoOpenPt
 open AutoOpenUnitVec
 open AutoOpenUnitVec
 open AutoOpenUnitVc
+open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
+
 
 /// An immutable 3D Box with any rotation in 3D space.
 /// Described by an Origin and three Edge vectors.
@@ -35,22 +37,24 @@ open AutoOpenUnitVc
 [<Struct; NoEquality; NoComparison>] // because its made up from floats
 [<IsReadOnly>]
 //[<IsByRefLike>]
+[<DataContract>] // for using DataMember on fields
 type Box =
 
+    //[<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
     /// The Origin Corner of the Box.
-    val Origin: Pnt
+    [<DataMember>] val Origin: Pnt
 
     /// The Edge vector representing the X-axis of the Box.
     /// Also called Length.
-    val Xaxis: Vec
+    [<DataMember>] val Xaxis: Vec
 
     /// The Edge vector representing the Y-axis of the Box.
     /// Also called Width.
-    val Yaxis: Vec
+    [<DataMember>] val Yaxis: Vec
 
     /// The Edge vector representing the Z-axis of the Box.
     /// Also called Height.
-    val Zaxis: Vec
+    [<DataMember>] val Zaxis: Vec
 
     /// Unchecked Internal Constructor Only.
     /// Create a Parametrized Plane with X, Y and Z Direction.

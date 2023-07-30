@@ -122,11 +122,26 @@ module AutoOpenUnitVc =
         member inline v.MatchesOrientation (other:UnitVc) =
             v * other > 1e-12
 
+        /// Checks if the angle between the this 2D unit vectors and a 2D vector is less than 180 degrees.
+        /// Calculates the dot product of two 2D unit vectors.
+        /// Then checks if it is bigger than 1e-12.
+        member inline v.MatchesOrientation (other:Vc) =
+            if other.LengthSq < 1e-24 then EuclidException.Raise "Euclid.UnitVc.MatchesOrientation: Vc 'other' is too short: %O. 'this':%O " other v 
+            v * other > 1e-12
+            
+
         /// Checks if the angle between the two 2D unit vectors is more than 180 degrees.
         /// Calculates the dot product of two 2D unit vectors.
         /// Then checks if it is smaller than -1e-12. 
         member inline v.IsOppositeOrientation (other:UnitVc) =
             v * other < -1e-12 
+
+        /// Checks if the angle between the this 2D unit vectors and a 2D vector is more than 180 degrees.
+        /// Calculates the dot product of two 2D unit vectors.
+        /// Then checks if it is smaller than -1e-12.
+        member inline v.IsOppositeOrientation (other:Vc) =
+            if other.LengthSq < 1e-24 then EuclidException.Raise "Euclid.UnitVc.IsOppositeOrientation: Vc 'other' is too short: %O. 'this':%O " other v 
+            v * other < -1e-12    
 
         /// Checks if 2D unit vector is parallel to the world X axis. Ignoring orientation.
         /// The absolute deviation tolerance along Y axis is 1e-6.
@@ -227,15 +242,11 @@ module AutoOpenUnitVc =
         /// This operation is slightly faster than Vec.difference and sufficient for many algorithms like finding closest points.
         static member inline differenceSq (a:UnitVc) (b:UnitVc) = let v = a-b in  v.X*v.X + v.Y*v.Y
 
-        // These members cannot be implemented since
-        // Array.sum and Array.average of UnitVc would return a 'Vc' and not a 'UnitVc'
-        // static member Zero = UnitVc ( 0. , 0.)  // needed by 'Array.sum'
-        // static member inline DivideByInt (v:UnitVc, i:int) = v / float i  // needed by  'Array.average'
 
         /// Accepts any type that has a X and Y (UPPERCASE) member that can be converted to a float.
         /// Does the unitizing too.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
-        static member inline ofXY vec  =
+        static member inline createFromXY vec  =
             let x = ( ^T : (member X : _) vec)
             let y = ( ^T : (member Y : _) vec)
             try UnitVc.create(float x, float y)
@@ -244,22 +255,22 @@ module AutoOpenUnitVc =
         /// Accepts any type that has a x and y (lowercase) member that can be converted to a float.
         /// Does the unitizing too.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
-        static member inline ofxy vec  =
+        static member inline createFromxy vec  =
             let x = ( ^T : (member x : _) vec)
             let y = ( ^T : (member y : _) vec)
             try UnitVc.create(float x, float y)
             with e -> EuclidException.Raise "Euclid.UnitVc.ofxy: %A could not be converted to a Euclid.UnitVc:\r\n%A" vec e
 
         /// Create 2D unit-vector from 2D point. Does the unitizing too.
-        static member inline ofPt  (pt:Pt) =
+        static member inline createFromPt  (pt:Pt) =
             let l = sqrt (pt.X*pt.X + pt.Y*pt.Y )
-            if l <  zeroLengthTol then EuclidDivByZeroException.Raise "Euclid.UnitVc.ofPt failed on too short %O" pt
+            if l <  zeroLengthTol then EuclidException.Raise "Euclid.UnitVc.ofPt failed on too short %O" pt
             UnitVc.createUnchecked( pt.X / l , pt.Y / l )
 
         /// Create 2D unit-vector from 2D vector. Does the unitizing too.
-        static member inline ofVec  (v:Vc) =
+        static member inline createFromVec  (v:Vc) =
             let l = sqrt (v.X*v.X + v.Y*v.Y )
-            if l <  zeroLengthTol then EuclidDivByZeroException.Raise "Euclid.UnitVc.ofVc failed on too short %O" v
+            if l <  zeroLengthTol then EuclidException.Raise "Euclid.UnitVc.ofVc failed on too short %O" v
             UnitVc.createUnchecked( v.X / l , v.Y / l )
 
 
@@ -445,9 +456,14 @@ module AutoOpenUnitVc =
         /// Range: 0.0 to 2 Pi ( = 0 to 360 Degrees)
         static member inline direction360 (v:UnitVc)  = v.Direction360
 
-        /// Ensure vector has a positive dot product with given orientation vector.
-        static member inline matchOrientation (orientationToMatch:UnitVc) (v:UnitVc) =
-            if orientationToMatch * v < 0.0 then -v else v
+        /// Ensure that the 2D unit vector has a positive dot product with given 2D orientation unit vector.
+        static member inline matchOrientation (orientationToMatch:UnitVc) (vecToFlip:UnitVc) =
+            if orientationToMatch * vecToFlip < 0.0 then -vecToFlip else vecToFlip
+
+        /// Ensure that the 2D unit vector has a positive dot product with given 2D orientation vector.
+        static member inline matchVcOrientation (orientationToMatch:Vc) (vecToFlip:UnitVc) =
+            if orientationToMatch * vecToFlip < 0.0 then -vecToFlip else vecToFlip
+
 
         /// Checks if the angle between the two 2D unit vectors is less than 180 degrees.
         /// Calculates the dot product of two 2D unit vectors.

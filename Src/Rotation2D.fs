@@ -3,6 +3,7 @@ namespace Euclid
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
 open Euclid.Util
+open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 
 #nowarn "44" // for hidden constructors via Obsolete Attribute
 
@@ -15,15 +16,18 @@ open Euclid.Util
 [<Struct; NoEquality; NoComparison>]
 [<IsReadOnly>]
 //[<IsByRefLike>]
+[<DataContract>] // for using DataMember on fields
 type Rotation2D =
+    
+    //[<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
 
     /// The Sine component of this rotation.
     /// The range of these field is -1.0 to +1.0
-    val Sin : float
+    [<DataMember>] val Sin : float
 
     /// The Cosine component of this rotation.
     /// The range of these field is -1.0 to +1.0
-    val Cos : float
+    [<DataMember>] val Cos : float
 
     /// Unsafe internal constructor,  public only for inlining.
     [<Obsolete("Unsafe internal constructor,  but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >]

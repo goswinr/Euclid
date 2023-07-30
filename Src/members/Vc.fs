@@ -110,7 +110,7 @@ module AutoOpenVc =
                 else
                     3.0 + v.X/(v.X-v.Y)
 
-        /// Returns the Angle in Radians from Xaxis,
+        /// Returns the Angle in Radians from Xaxis.
         /// Going Counter clockwise till two Pi.
         member inline v.Direction2Pi =
             // https://stackoverflow.com/a/14675998/969070
@@ -124,7 +124,8 @@ module AutoOpenVc =
             else
                 a
 
-        /// Returns the Angle in Radians from Xaxis,
+        /// Returns the Angle in Radians from Xaxis.
+        /// Going Counter clockwise till two Pi.
         /// Ignores orientation.
         /// Range 0.0 to Pi.
         member inline v.DirectionPi =
@@ -162,17 +163,36 @@ module AutoOpenVc =
         /// Checks if the angle between the two 2D vectors is less than 180 degrees.
         /// Calculates the dot product of two 2D vectors.
         /// Then checks if it is bigger than 1e-12. 
-        /// If any of the two vectors is zero length returns false.
+        /// Fails if any of the two vectors is zero length.
         member inline v.MatchesOrientation (other:Vc) =
+            if v.LengthSq     < 1e-24 then EuclidException.Raise "Euclid.Vc.MatchesOrientation: Vc 'this' is too short: %s. 'other':%s " v.AsString other.AsString
+            if other.LengthSq < 1e-24 then EuclidException.Raise "Euclid.Vc.MatchesOrientation: Vc 'other' is too short: %s. 'this':%s " other.AsString v.AsString
             v * other > 1e-12
 
+        /// Checks if the angle between this 2D vectors and a 2D unit vector is less than 180 degrees.
+        /// Calculates the dot product of two 2D vectors.
+        /// Then checks if it is bigger than 1e-12. 
+        /// Fails if the vector is zero length.
+        member inline v.MatchesOrientation (other:UnitVc) =
+            if v.LengthSq     < 1e-24 then EuclidException.Raise "Euclid.Vc.MatchesOrientation: Vc 'this' is too short: %s. 'other':%s " v.AsString other.AsString
+            v * other > 1e-12
 
         /// Checks if the angle between the two 2D vectors is more than 180 degrees.
         /// Calculates the dot product of two 2D vectors.
         /// Then checks if it is smaller than -1e-12. 
-        /// If any of the two vectors is zero length returns false.
+        /// Fails if any of the two vectors is zero length .
         member inline v.IsOppositeOrientation (other:Vc) =
+            if v.LengthSq     < 1e-24 then EuclidException.Raise "Euclid.Vc.IsOppositeOrientation: Vc 'this' is too short: %s. 'other':%s " v.AsString other.AsString
+            if other.LengthSq < 1e-24 then EuclidException.Raise "Euclid.Vc.IsOppositeOrientation: Vc 'other' is too short: %s. 'this':%s " other.AsString v.AsString
             v * other < -1e-12 
+        
+        /// Checks if the angle between this 2D vectors and a 2D unit vector is more than 180 degrees.
+        /// Calculates the dot product of two 2D vectors.
+        /// Then checks if it is smaller than -1e-12.
+        /// Fails if the vector is zero length.
+        member inline v.IsOppositeOrientation (other:UnitVc) =
+            if v.LengthSq     < 1e-24 then EuclidException.Raise "Euclid.Vc.IsOppositeOrientation: Vc 'this' is too short: %s. 'other':%s " v.AsString other.AsString
+            v * other < -1e-12
 
 
         /// Checks if 2D vector is parallel to the world X axis. Ignoring orientation.
@@ -220,8 +240,6 @@ module AutoOpenVc =
             let au = this * (1.0 / sqrt sa )
             abs(other*au) > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
             
-
-
 
         /// Checks if two 2D vectors are parallel.
         /// Takes the line orientation into account too.
@@ -293,8 +311,7 @@ module AutoOpenVc =
         /// Returns the World Y-axis with length one: Vc(0,1)
         static member inline Yaxis  = Vc(0,1)
 
-        /// Returns a zero length vector: Vec(0,0)
-        static member inline Zero   = Vc(0,0)  // this member is needed by Seq.sum, so that it doesn't fail on empty seq.
+
 
         /// Returns the distance between the tips of two 2D vectors.
         static member inline difference (a:Vc) (b:Vc) = let v = a-b in sqrt(v.X*v.X + v.Y*v.Y )
@@ -303,15 +320,11 @@ module AutoOpenVc =
         /// This operation is slightly faster than Vec.difference and sufficient for many algorithms like finding closest points.
         static member inline differenceSq (a:Vc) (b:Vc) = let v = a-b in  v.X*v.X + v.Y*v.Y
 
-        /// Divides the vector by an integer.
-        /// (This member is needed by Array.average and similar functions)
-        static member inline DivideByInt (v:Vc, i:int) = // needed by 'Array.average'
-            if i<>0 then v / float i
-            else EuclidDivByZeroException.Raise "Euclid.Vc.DivideByInt is zero %O " v
+
 
         /// Accepts any type that has a X and Y (UPPERCASE) member that can be converted to a float.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
-        static member inline ofXY vec  =
+        static member inline createFromXY vec  =
             let x = ( ^T : (member X : _) vec)
             let y = ( ^T : (member Y : _) vec)
             try Vc(float x, float y)
@@ -319,7 +332,7 @@ module AutoOpenVc =
 
         /// Accepts any type that has a x and y (lowercase) member that can be converted to a float.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
-        static member inline ofxy vec  =
+        static member inline createFromxy vec  =
             let x = ( ^T : (member x : _) vec)
             let y = ( ^T : (member y : _) vec)
             try Vc(float x, float y)
@@ -327,10 +340,10 @@ module AutoOpenVc =
 
 
          /// Create 2D vector from 2D point.
-        static member inline ofPt  (pt:Pnt) =  Vc( pt.X , pt.Y )
+        static member inline createFromPt  (pt:Pnt) =  Vc( pt.X , pt.Y )
 
         /// Create 2D vector from 2D unit-vector.
-        static member inline ofUnitVc (v:UnitVc) =  Vc(v.X, v.Y)
+        static member inline createFromUnitVc (v:UnitVc) =  Vc(v.X, v.Y)
 
         /// Convert 2D vector to 2D point.
         static member inline asPt(v:Vc)  = Pt( v.X, v.Y)
@@ -529,9 +542,13 @@ module AutoOpenVc =
         /// Code : a.Unitized + b.Unitized
         static member inline bisector (a:Vc) (b:Vc) = a.Unitized + b.Unitized
 
-        /// Ensure vector has a positive dot product with given orientation vector.
-        static member inline matchOrientation (orientationToMatch:Vc) (v:Vc) =
-            if orientationToMatch * v < 0.0 then -v else v
+        /// Ensure that the 2D  vector has a positive dot product with given 2D orientation vector.
+        static member inline matchOrientation (orientationToMatch:Vc) (vecToFlip:Vc) =
+            if orientationToMatch * vecToFlip < 0.0 then -vecToFlip else vecToFlip
+
+        /// Ensure that the 2D vector has a positive dot product with given 2D orientation unit vector.
+        static member inline matchUnitVcOrientation (orientationToMatch:UnitVc) (vecToFlip:Vc) =
+            if orientationToMatch * vecToFlip < 0.0 then -vecToFlip else vecToFlip            
 
         /// Checks if the angle between the two 2D vectors is less than 180 degrees.
         /// Calculates the dot product of two 2D vectors.
@@ -539,7 +556,6 @@ module AutoOpenVc =
         /// If any of the two vectors is zero length returns false.
         static member inline matchesOrientation (v:Vc)  (other:Vc) =
             v * other > 1e-12
-
 
         /// Checks if the angle between the two 2D vectors is more than 180 degrees.
         /// Calculates the dot product of two 2D vectors.
@@ -552,7 +568,7 @@ module AutoOpenVc =
         /// Ignores vector orientation.
         /// Fails on zero length vectors, tolerance 1e-12.
         /// Same as isAngleBelowQuatreDegree.
-        static member inline  areParallel (other:Vc) (v:Vc) =   v.IsParallelTo other
+        static member inline areParallel (other:Vc) (v:Vc) =  v.IsParallelTo other
 
         /// Checks if Angle between two vectors is between 98.75 and 90.25 Degree.
         /// Ignores vector orientation.

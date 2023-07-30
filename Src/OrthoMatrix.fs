@@ -3,6 +3,8 @@ namespace Euclid
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
 open Euclid.Util
+open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
+
 
 /// An immutable 4x3 Orthogonal matrix. For only Rotation and Translation in 3D space.
 /// This matrix guarantees to NOT scale, shear, flip, mirror, reflect or project.
@@ -19,10 +21,12 @@ open Euclid.Util
 [<Struct; NoEquality; NoComparison>] // because its made up from floats
 [<IsReadOnly>]
 //[<IsByRefLike>]
+[<DataContract>] // for using DataMember on fields
 type OrthoMatrix =
-    val M11 :float ; val M21 :float ; val M31 :float; val X41:float
-    val M12 :float ; val M22 :float ; val M32 :float; val Y42:float
-    val M13 :float ; val M23 :float ; val M33 :float; val Z43:float
+    //[<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
+    [<DataMember>] val M11 :float ; [<DataMember>] val M21 :float ; [<DataMember>] val M31 :float; [<DataMember>] val X41:float
+    [<DataMember>] val M12 :float ; [<DataMember>] val M22 :float ; [<DataMember>] val M32 :float; [<DataMember>] val Y42:float
+    [<DataMember>] val M13 :float ; [<DataMember>] val M23 :float ; [<DataMember>] val M33 :float; [<DataMember>] val Z43:float
 
     /// Create immutable a 4x3 Transformation Matrix. For only Rotation and Translation in 3D space.
     /// This Constructor takes arguments in row-major order,

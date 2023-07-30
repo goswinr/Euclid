@@ -2,6 +2,7 @@ namespace Euclid
 
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
+open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 
 
 #nowarn "44" // for hidden constructors via Obsolete Attribute
@@ -13,11 +14,13 @@ open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see http
 [<Struct; NoEquality; NoComparison>]
 [<IsReadOnly>]
 //[<IsByRefLike>]
-type BRect =
-    val MinX : float
-    val MinY : float
-    val MaxX : float
-    val MaxY : float
+[<DataContract>] // for using DataMember on fields
+type BRect =    
+    //[<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
+    [<DataMember>] val MinX : float
+    [<DataMember>] val MinY : float
+    [<DataMember>] val MaxX : float
+    [<DataMember>] val MaxY : float
 
     /// Unsafe internal constructor,  public only for inlining.
     [<Obsolete("Unsafe internal constructor,  but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >]
