@@ -14,11 +14,11 @@ module AutoOpenPPlane2 =
     type PPlane with
 
 
-        /// Returns the Angle to a Line3D in Degree, ignoring the normal's orientation.
+        /// Returns the angle to a Line3D in Degree, ignoring the normal's orientation.
         /// So between 0 to 90 degrees.
         member inline pl.AngleToLine (ln:Line3D) = UnitVec.angle90 ln.Tangent.Unitized pl.Zaxis
 
-        member inline pl.AsPlane = Plane.create(pl.Origin,pl.Zaxis)
+        member inline pl.AsPlane = Plane.create(pl.Origin, pl.Zaxis)
 
         //----------------------------------------------------------------------------------------------
         //--------------------------  Static Members  --------------------------------------------------
@@ -27,11 +27,11 @@ module AutoOpenPPlane2 =
 
         /// Returns the line of intersection between two planes.
         /// Fails if they are parallel.
-        static member  intersect  (a:PPlane) (b:PPlane) =
+        static member intersect  (a:PPlane) (b:PPlane) =
             let bn = b.Zaxis
             let an = a.Zaxis
             let ao = a.Origin
-            let v = UnitVec.cross (an,bn)
+            let v = UnitVec.cross (an, bn)
             if v.LengthSq < 1e-18 then
                 EuclidException.Raise "Euclid.PPlane.intersect: Planes are parallel or coincident: %O, %O" a b
             let pa = Vec.cross(v, an)
@@ -43,7 +43,7 @@ module AutoOpenPPlane2 =
         /// Returns the parameter on the Line.
         /// The parameter is the intersection point of the infinite Line3D with the PPlane.
         /// Fails if they are parallel or coincident.
-        static member  intersectLineParameter  (ln:Line3D) (pl:PPlane) =
+        static member intersectLineParameter  (ln:Line3D) (pl:PPlane) =
             let z = pl.Zaxis
             let nenner = ln.Tangent * z
             if abs nenner < 1e-9 then
@@ -54,7 +54,7 @@ module AutoOpenPPlane2 =
         /// Returns the line parameter and the X and Y parameters on the Plane.
         /// The parameters is the intersection point of the infinite Line3D with the PPlane.
         /// Fails if they are parallel or coincident.
-        static member  intersectLineParameters  (ln:Line3D) (pl:PPlane) =
+        static member intersectLineParameters  (ln:Line3D) (pl:PPlane) =
             let z = pl.Zaxis
             let v = ln.Tangent
             let nenner = v * z

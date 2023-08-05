@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -31,13 +31,13 @@
     <PackageDescription>A 2D and 3D geometry library written in and for F# (and Fable)</PackageDescription>
     <!--used on nuget.org-->
     <WarningLevel>5</WarningLevel>
-    <!-- WarningLevel 3 is default , see https://github.com/dsyme/fsharp-presentations/blob/master/design-notes/off-by-default-warnings.md -->
+    <!-- WarningLevel 3 is default, see https://github.com/dsyme/fsharp-presentations/blob/master/design-notes/off-by-default-warnings.md -->
   </PropertyGroup>
   
   <PropertyGroup>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <IncludeSymbols>true</IncludeSymbols>
-    <!-- <SymbolPackageFormat>snupkg</SymbolPackageFormat> -->    
+    <!-- <SymbolPackageFormat>snupkg</SymbolPackageFormat> -->
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -45,40 +45,40 @@
     <RepositoryUrl>https://github.com/goswinr/Euclid</RepositoryUrl>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <PackageIcon>logo128.png</PackageIcon>
-    <PackageReadmeFile>READMEnuget.md</PackageReadmeFile>    
+    <PackageReadmeFile>READMEnuget.md</PackageReadmeFile>
     <PackageTags>fsharp;geometry;fable;fable-library;fable-all</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
-
-    <PackageReference Update="FSharp.Core" Version="4.5.2" />
-    <!-- otherwise the minimum FSharp.Core version would be forced by the SDK used for building it. this would be needlessly too high-->
-    
-    
+    <PackageReference Update="FSharp.Core" Version="4.5.2" />    <!-- otherwise the minimum FSharp.Core version would be forced by the SDK used for building it. This would be needlessly too high-->
     <None Include="README.md" />
     <None Include="Doc/READMEnuget.md" Pack="true" PackagePath="" />
     <None Include="Doc/logo128.png" Pack="true" PackagePath="" />
-    <Content Include="*.fsproj; **\*.fs; **\*.fsi" PackagePath="fable\" /><!--so that it can be used with Fable-->
+    <Content Include="*.fsproj; **\*.fs; **\*.fsi" PackagePath="fable\" />    <!--so that it can be used with Fable-->
 
     <Compile Include="Src/Util.fs" />
     <Compile Include="Src/Format.fs" />
-    <Compile Include="Src/Vectors2D.fs" />
-    <Compile Include="Src/Vectors3D.fs" />
+    <Compile Include="Src/Vc.fs" />
+    <Compile Include="Src/UnitVc.fs" />
+    <Compile Include="Src/Pt.fs" />
+    <Compile Include="Src/Vec.fs" />
+    <Compile Include="Src/UnitVec.fs" />
+    <Compile Include="Src/Pnt.fs" />
     <Compile Include="Src/Rotation2D.fs" />
     <Compile Include="Src/Quaternion.fs" />
     <Compile Include="Src/PPlane.fs" />
     <Compile Include="Src/Matrix.fs" />
-    <Compile Include="Src/OrthoMatrix.fs" />
+    <Compile Include="Src/RigidMatrix.fs" />
 
-    <Compile Include="Src/members/UnitVc.fs" />
-    <Compile Include="Src/members/Vc.fs" />
-    <Compile Include="Src/members/Pt.fs" />
-    <Compile Include="Src/members/UnitVec.fs" />
-    <Compile Include="Src/members/Vec.fs" />
-    <Compile Include="Src/members/Pnt.fs" />
-    <Compile Include="Src/members/PPlane.fs" />
-    <Compile Include="Src/members/Matrix.fs" />
-    <Compile Include="Src/members/Quaternion.fs" />
+    <Compile Include="Src/TypeExtensions/UnitVc.fs" />
+    <Compile Include="Src/TypeExtensions/Vc.fs" />
+    <Compile Include="Src/TypeExtensions/Pt.fs" />
+    <Compile Include="Src/TypeExtensions/UnitVec.fs" />
+    <Compile Include="Src/TypeExtensions/Vec.fs" />
+    <Compile Include="Src/TypeExtensions/Pnt.fs" />
+    <Compile Include="Src/TypeExtensions/PPlane.fs" />
+    <Compile Include="Src/TypeExtensions/Matrix.fs" />
+    <Compile Include="Src/TypeExtensions/Quaternion.fs" />
 
     <Compile Include="Src/BRect.fs" />
     <Compile Include="Src/BBox.fs" />
@@ -99,6 +99,5 @@
     <Compile Include="Src/Topology.fs" />
     <Compile Include="Src/DebugDraw.fs" />
     <Compile Include="Src/Loops.fs" />
-
   </ItemGroup>
 </Project>

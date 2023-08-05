@@ -3,10 +3,6 @@ namespace Euclid
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
 open Util
-open AutoOpenPt
-open AutoOpenUnitVec
-open AutoOpenUnitVec
-open AutoOpenUnitVc
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 
 
@@ -58,7 +54,7 @@ type Box =
 
     /// Unchecked Internal Constructor Only.
     /// Create a Parametrized Plane with X, Y and Z Direction.
-    internal new (origin,axisX,axisY,axisZ)  =  {Origin=origin; Xaxis=axisX; Yaxis=axisY; Zaxis=axisZ}
+    internal new (origin, axisX, axisY, axisZ) = {Origin=origin; Xaxis=axisX; Yaxis=axisY; Zaxis=axisZ}
 
     /// The size in X direction, same as member box.SizeX.
     member inline b.Length = b.Xaxis.Length
@@ -67,16 +63,16 @@ type Box =
     member inline b.SizeX = b.Xaxis.Length
 
     /// The size in Y direction, same as member box.SizeY.
-    member inline b.Width  = b.Yaxis.Length
+    member inline b.Width = b.Yaxis.Length
 
     /// The size in Y direction, same as member box.Width.
-    member inline b.SizeY  = b.Yaxis.Length
+    member inline b.SizeY = b.Yaxis.Length
 
     /// The size in Z direction, same as member box.SizeZ.
-    member inline b.Height  = b.Zaxis.Length
+    member inline b.Height = b.Zaxis.Length
 
     /// The size in Z direction, same as member box.Height.
-    member inline b.SizeZ  = b.Zaxis.Length
+    member inline b.SizeZ = b.Zaxis.Length
 
 
     /// Returns point 0 of the box, same box.Origin.
@@ -97,7 +93,7 @@ type Box =
     ///   |/              |/     local
     ///   +---------------+----> X-Axis
     ///   0               1
-    member inline b.Pt0  = b.Origin
+    member inline b.Pt0 = b.Origin
 
     /// Returns point 1 of the box.
     ///
@@ -117,7 +113,7 @@ type Box =
     ///   |/              |/     local
     ///   +---------------+----> X-Axis
     ///   0               1
-    member inline b.Pt1  = b.Origin + b.Xaxis
+    member inline b.Pt1 = b.Origin + b.Xaxis
 
     /// Returns point 2 of the box.
     ///
@@ -137,7 +133,7 @@ type Box =
     ///   |/              |/     local
     ///   +---------------+----> X-Axis
     ///   0               1
-    member inline b.Pt2  = b.Origin + b.Xaxis + b.Yaxis
+    member inline b.Pt2 = b.Origin + b.Xaxis + b.Yaxis
 
     /// Returns point 3 of the box.
     ///
@@ -157,7 +153,7 @@ type Box =
     ///   |/              |/     local
     ///   +---------------+----> X-Axis
     ///   0               1
-    member inline b.Pt3  = b.Origin + b.Yaxis
+    member inline b.Pt3 = b.Origin + b.Yaxis
 
     /// Returns point 4 of the box.
     ///
@@ -177,7 +173,7 @@ type Box =
     ///   |/              |/     local
     ///   +---------------+----> X-Axis
     ///   0               1
-    member inline b.Pt4  = b.Origin + b.Zaxis
+    member inline b.Pt4 = b.Origin + b.Zaxis
 
     /// Returns point 5 of the box.
     ///
@@ -197,7 +193,7 @@ type Box =
     ///   |/              |/     local
     ///   +---------------+----> X-Axis
     ///   0               1
-    member inline b.Pt5  = b.Origin + b.Xaxis + b.Zaxis
+    member inline b.Pt5 = b.Origin + b.Xaxis + b.Zaxis
 
     /// Returns point 6 of the box.
     ///
@@ -217,7 +213,7 @@ type Box =
     ///   |/              |/     local
     ///   +---------------+----> X-Axis
     ///   0               1
-    member inline b.Pt6  = b.Origin + b.Xaxis + b.Yaxis + b.Zaxis
+    member inline b.Pt6 = b.Origin + b.Xaxis + b.Yaxis + b.Zaxis
 
     /// Returns point 7 of the box.
     ///
@@ -237,24 +233,24 @@ type Box =
     ///   |/              |/     local
     ///   +---------------+----> X-Axis
     ///   0               1
-    member inline b.Pt7  = b.Origin + b.Yaxis + b.Zaxis
+    member inline b.Pt7 = b.Origin + b.Yaxis + b.Zaxis
 
     /// Creates a unitized version of the local X-Axis.
     member inline r.XaxisUnit =
         let len = r.Xaxis.Length
-        if len = zeroLengthTol then EuclidException.Raise "Euclid.Box.XaxisUnit: rect Xaxis is too small for unitizing: %s" r.AsString
+        if len = zeroLengthTolerance then EuclidException.Raise "Euclid.Box.XaxisUnit: rect Xaxis is too small for unitizing: %s" r.AsString
         r.Xaxis*(1./len)
 
     /// Creates a unitized version of the local Y-Axis.
     member inline r.YaxisUnit =
         let len = r.Yaxis.Length
-        if len = zeroLengthTol then EuclidException.Raise "Euclid.Box.XaxisUnit: rect Yaxis is too small for unitizing: %s" r.AsString
+        if len = zeroLengthTolerance then EuclidException.Raise "Euclid.Box.XaxisUnit: rect Yaxis is too small for unitizing: %s" r.AsString
         r.Yaxis*(1./len)
 
     /// Creates a unitized version of the local Z-Axis.
     member inline r.ZaxisUnit =
         let len = r.Zaxis.Length
-        if len = zeroLengthTol then EuclidException.Raise "Euclid.Box.XaxisUnit: rect Zaxis is too small for unitizing: %s" r.AsString
+        if len = zeroLengthTolerance then EuclidException.Raise "Euclid.Box.XaxisUnit: rect Zaxis is too small for unitizing: %s" r.AsString
         r.Zaxis*(1./len)
 
     /// The corner diagonally opposite of corner from Origin.
@@ -277,7 +273,7 @@ type Box =
     /// But without type name as in v.ToString()
     member b.AsString = sprintf "%s x %s x %s" (Format.float b.Length)  (Format.float b.Width) (Format.float b.Height)
 
-    /// Returns the bottom corners of the Box in counter clockwise order, starting at Origin.
+    /// Returns the bottom corners of the Box in Counter-Clockwise order, starting at Origin.
     /// Then the top corners staring above Origin. Returns an array of 8 Points.
     ///
     ///   local        local
@@ -312,7 +308,7 @@ type Box =
             p4 + b.Yaxis
         |]
 
-    /// Returns the top face of the Box in counter clockwise order, looking from above.
+    /// Returns the top face of the Box in Counter-Clockwise order, looking from above.
     /// Returns Origin at point 4, X-Axis at point 5, Y-Axis at point 7.
     ///
     ///   local        local
@@ -331,10 +327,10 @@ type Box =
     ///   |/              |/     local
     ///   +---------------+----> X-Axis
     ///   0               1
-    member b.TopFace :Rect3D = Rect3D(b.Origin + b.Zaxis , b.Xaxis, b.Yaxis)
+    member b.TopFace :Rect3D = Rect3D(b.Origin + b.Zaxis, b.Xaxis, b.Yaxis)
 
 
-    /// Returns the bottom face of the Box in counter clockwise order, looking from above.
+    /// Returns the bottom face of the Box in Counter-Clockwise order, looking from above.
     /// Returns Origin at point 0, X-Axis at point 1, Y-Axis at point 3.
     ///
     ///   local        local
@@ -353,11 +349,11 @@ type Box =
     ///   |/              |/     local
     ///   +---------------+----> X-Axis
     ///   0               1
-    member b.BottomFace  =  Rect3D(b.Origin , b.Xaxis, b.Yaxis)
+    member b.BottomFace = Rect3D(b.Origin, b.Xaxis, b.Yaxis)
 
 
 
-    /// Returns the front face of the Box in counter clockwise order, looking from front.
+    /// Returns the front face of the Box in Counter-Clockwise order, looking from front.
     /// Returns Origin at point 0, X-Axis at point 1, Y-Axis at point 4.
     ///
     ///   local        local
@@ -376,9 +372,9 @@ type Box =
     ///   |/              |/     local
     ///   +---------------+----> X-Axis
     ///   0               1
-    member b.FrontFace  =  Rect3D(b.Origin , b.Xaxis, b.Zaxis)
+    member b.FrontFace = Rect3D(b.Origin, b.Xaxis, b.Zaxis)
 
-    /// Returns the back face of the Box in counter clockwise order, looking from front.
+    /// Returns the back face of the Box in Counter-Clockwise order, looking from front.
     /// Returns Origin at point 3, X-Axis at point 2, Y-Axis at point 7.
     ///
     ///   local        local
@@ -397,9 +393,9 @@ type Box =
     ///   |/              |/     local
     ///   +---------------+----> X-Axis
     ///   0               1
-    member b.BackFace  =  Rect3D(b.Origin + b.Yaxis, b.Xaxis, b.Zaxis)
+    member b.BackFace = Rect3D(b.Origin + b.Yaxis, b.Xaxis, b.Zaxis)
 
-    /// Returns the right face of the Box in counter clockwise order, looking from right.
+    /// Returns the right face of the Box in Counter-Clockwise order, looking from right.
     /// Returns Origin at point 1, X-Axis at point 2, Y-Axis at point 5.
     ///
     ///   local        local
@@ -418,9 +414,9 @@ type Box =
     ///   |/              |/     local
     ///   +---------------+----> X-Axis
     ///   0               1
-    member b.RightFace  =  Rect3D(b.Origin + b.Xaxis, b.Yaxis, b.Zaxis)
+    member b.RightFace = Rect3D(b.Origin + b.Xaxis, b.Yaxis, b.Zaxis)
 
-    /// Returns the right face of the Box in counter clockwise order, looking from right.
+    /// Returns the right face of the Box in Counter-Clockwise order, looking from right.
     /// Returns Origin at point 1, X-Axis at point 2, Y-Axis at point 5.
     ///
     ///   local        local
@@ -439,25 +435,25 @@ type Box =
     ///   |/              |/     local
     ///   +---------------+----> X-Axis
     ///   0               1
-    member b.LeftFace  =  Rect3D(b.Origin + b.Xaxis, b.Yaxis, b.Zaxis)
+    member b.LeftFace = Rect3D(b.Origin + b.Xaxis, b.Yaxis, b.Zaxis)
 
     /// Evaluate a X, Y and Z parameter of the Box.
     ///  0.0, 0.0, 0.0 returns the Origin.
     ///  1.0, 1.0, 1.0 returns the FarCorner.
-    member inline b.EvaluateAt (xParameter:float,yParameter:float,zParameter:float) =
+    member inline b.EvaluateAt (xParameter:float, yParameter:float, zParameter:float) =
         b.Origin + b.Xaxis * xParameter + b.Yaxis * yParameter + b.Zaxis * zParameter
 
 
     /// Calculates the volume of the Box.
-    member inline b.Volume  =
+    member inline b.Volume =
         b.Xaxis.Length*b.Yaxis.Length*b.Zaxis.Length
 
     /// Gets the Plane that this box is based on.
-    member inline b.Plane  =
+    member inline b.Plane =
         let x = b.Xaxis.Unitized
         let y = b.Yaxis.Unitized
         let z = b.Zaxis.Unitized
-        PPlane.createUnchecked (b.Origin, x,y,z)
+        PPlane.createUnchecked (b.Origin, x, y, z)
 
     //-------------------------------------------------------------------
     //------------------------static members-----------------------------
@@ -518,12 +514,12 @@ type Box =
 
      /// Give 2D Rectangle and Z lower and upper position.
     static member createFromRect3D (r:Rect3D, zLow, zHigh) =
-        let z = Vec.cross(r.Xaxis,r.Yaxis)
+        let z = Vec.cross(r.Xaxis, r.Yaxis)
         Box(r.Origin  + z.WithLength(zLow), 
             r.Xaxis,
             r.Yaxis, 
             z.WithLength(zHigh-zLow)
-            ) 
+        ) 
 
     /// Move the Box by a vector.
     static member move (v:Vec) (b:Box) =
@@ -533,29 +529,29 @@ type Box =
     static member translateX (distX:float) (b:Box) =
         let x = b.Xaxis
         let len = x.Length
-        if len = zeroLengthTol then EuclidException.Raise "Euclid.Box.translateX: box.Xaxis is zero length in Box: %s" b.AsString
+        if len = zeroLengthTolerance then EuclidException.Raise "Euclid.Box.translateX: box.Xaxis is zero length in Box: %s" b.AsString
         Box(b.Origin + x*(distX/len), x, b.Yaxis, b.Zaxis)
 
     /// Translate along the local Y-axis of the Box.
     static member translateY (distY:float) (b:Box) =
         let y = b.Yaxis
         let len = y.Length
-        if len = zeroLengthTol then EuclidException.Raise "Euclid.Box.translateY: box.Yaxis is zero length in Box: %s" b.AsString
+        if len = zeroLengthTolerance then EuclidException.Raise "Euclid.Box.translateY: box.Yaxis is zero length in Box: %s" b.AsString
         Box(b.Origin + y*(distY/len), b.Xaxis, y, b.Zaxis)
 
     /// Translate along the local Z-axis of the Box.
     static member translateZ (distZ:float) (b:Box) =
         let z = b.Zaxis
         let len = z.Length
-        if len = zeroLengthTol then EuclidException.Raise "Euclid.Box.translateZ: box.Zaxis is zero length in Box: %s" b.AsString
+        if len = zeroLengthTolerance then EuclidException.Raise "Euclid.Box.translateZ: box.Zaxis is zero length in Box: %s" b.AsString
         Box(b.Origin + z*(distZ/len), b.Xaxis, b.Yaxis, z)
 
-    /// Transform the Box by the given OrthoMatrix.
+    /// Transform the Box by the given RigidMatrix.
     /// The returned Box is guaranteed to have orthogonal vectors.
-    static member transform (m:OrthoMatrix) (b:Box) =
-        let o = Pnt.transformOrtho m b.Origin
-        let x = Vec.rotateOrtho m b.Xaxis
-        let y = Vec.rotateOrtho m b.Yaxis
-        let z = Vec.rotateOrtho m b.Zaxis
-        Box(o,x,y,z)
+    static member transform (m:RigidMatrix) (b:Box) =
+        let o = Pnt.transformRigid m b.Origin
+        let x = Vec.transformRigid m b.Xaxis
+        let y = Vec.transformRigid m b.Yaxis
+        let z = Vec.transformRigid m b.Zaxis
+        Box(o, x, y, z)
 

@@ -26,10 +26,10 @@ type Line2D =
     [<DataMember>] val ToY  :float
 
     ///Create Line2D from 2D start point and 2D end point.
-    new (a:Pt,b:Pt) = {FromX=a.X; FromY=a.Y; ToX=b.X; ToY=b.Y}
+    new (a:Pt, b:Pt) = {FromX=a.X; FromY=a.Y; ToX=b.X; ToY=b.Y}
 
     ///Create Line2D from 2D start point's x and y  and 2D end point's x and y .
-    new (a,b,u,v) = {FromX=a; FromY=b;  ToX=u; ToY=v}
+    new (a, b, u, v) = {FromX=a; FromY=b;  ToX=u; ToY=v}
 
     /// Returns the length of the line.
     member inline ln.Length =
@@ -43,7 +43,7 @@ type Line2D =
         let y = ln.ToY-ln.FromY
         x*x + y*y
 
-    /// Format 2D Line into string including type name, X and Y for start and end points , and Length.
+    /// Format 2D Line into string including type name, X and Y for start and end points, and Length.
     /// Using nice floating point number formatting .
     override ln.ToString() =
         sprintf "Euclid.Line2D from X=%s| Y=%s to X=%s| Y=%s Length %s"
@@ -65,51 +65,51 @@ type Line2D =
 
 
     /// The Start point of the 2D Line2D,
-    member inline ln.From = Pt(ln.FromX,ln.FromY)
+    member inline ln.From = Pt(ln.FromX, ln.FromY)
 
     /// The End point of the 2D Line2D,
-    member inline ln.To   = Pt(ln.ToX,ln.ToY)
+    member inline ln.To = Pt(ln.ToX, ln.ToY)
 
     /// Same as ln.Vector or ln.Tangent.
     /// The returned vector has the same length as the Line2D.
     member inline ln.Direction =
-        Vc(ln.ToX-ln.FromX,ln.ToY-ln.FromY)
+        Vc(ln.ToX-ln.FromX, ln.ToY-ln.FromY)
 
     /// Same as ln.Tangent or ln.Direction.
     /// The returned vector has the same length as the Line2D.
     member inline ln.Vector =
-        Vc(ln.ToX-ln.FromX,ln.ToY-ln.FromY)
+        Vc(ln.ToX-ln.FromX, ln.ToY-ln.FromY)
 
     /// Same as ln.Vector or ln.Direction.
     /// The returned vector has the same length as the Line2D.
     member inline ln.Tangent =
-        Vc(ln.ToX-ln.FromX,ln.ToY-ln.FromY)
+        Vc(ln.ToX-ln.FromX, ln.ToY-ln.FromY)
 
     /// Returns a unit-vector of the line Direction.
     member inline ln.UnitTangent =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
         let l = sqrt(x * x  + y * y)
-        if l < zeroLengthTol then EuclidException.Raise "Euclid.Line2D.UnitTangent: x:%g and y:%g are too small for creating a unit-vector. Tolerance:%g" x y zeroLengthTol
+        if l < zeroLengthTolerance then EuclidException.Raise "Euclid.Line2D.UnitTangent: x:%g and y:%g are too small for creating a unit-vector. Tolerance:%g" x y zeroLengthTolerance
         UnitVc.createUnchecked (x/l, y/l)
 
     /// Checks if 2D line is parallel to the world X axis. Ignoring orientation.
-    /// The absolute deviation tolerance along Y axis is 1e-6.
+    /// The absolute deviation tolerance along Y axis is 1e-9.
     /// Fails on lines shorter than 1e-6.
     member inline ln.IsXAligned =
         let x = abs (ln.ToX-ln.FromX)
         let y = abs (ln.ToY-ln.FromY)
-        if x+y < 1e-6 then EuclidException.Raise "Euclid.Line2D.IsXAligned cannot not check very tiny Line. (tolerance 1e-6)  %O" ln
-        else y < 1e-6 
+        if x+y < 1e-6 then EuclidException.Raise "Euclid.Line2D.IsXAligned cannot not check very tiny Line. (tolerance 1e-6) %O" ln
+        else y < 1e-9 
 
     /// Checks if 2D line is parallel to the world Y axis. Ignoring orientation.
-    /// The absolute deviation tolerance along X axis is 1e-6.
+    /// The absolute deviation tolerance along X axis is 1e-9.
     /// Fails on lines shorter than 1e-6.
     member inline ln.IsYAligned =
         let x = abs (ln.ToX-ln.FromX)
         let y = abs (ln.ToY-ln.FromY)
-        if x+y < 1e-6 then EuclidException.Raise "Euclid.Line2D.IsYAligned cannot not check very tiny Line. (tolerance 1e-6)  %O" ln
-        else x < 1e-6
+        if x+y < 1e-6 then EuclidException.Raise "Euclid.Line2D.IsYAligned cannot not check very tiny Line. (tolerance 1e-6) %O" ln
+        else x < 1e-9
 
     /// Check if the line has same starting and ending point.
     member inline ln.IsZeroLength =
@@ -172,74 +172,74 @@ type Line2D =
 
 
     /// Extend 2D line by absolute amount at start and end.
-    /// Fails on lines shorter than 1e-12.
-    member inline ln.Extend (distAtStart:float, distAtEnd:float)  =
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    member inline ln.Extend (distAtStart:float, distAtEnd:float) =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
         let l = sqrt(x*x + y*y )
-        if l < 1e-12 then EuclidException.Raise "Euclid.Line2D.Extend %O to short for finding point at a distance." ln
+        if l < zeroLengthTolerance then EuclidException.Raise "Euclid.Line2D.Extend %O to short for finding point at a distance." ln
         Line2D( ln.FromX - x*distAtStart/l,
                 ln.FromY - y*distAtStart/l,
                 ln.ToX   + x*distAtEnd/l,
                 ln.ToY   + y*distAtEnd/l)
 
     /// Extend 2D line by absolute amount at start.
-    /// Fails on lines shorter than 1e-12.
-    member inline ln.ExtendStart (distAtStart:float)  =
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    member inline ln.ExtendStart (distAtStart:float) =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
         let l = sqrt(x*x + y*y )
-        if l < 1e-12 then EuclidException.Raise "Euclid.Line2D.ExtendStart %O to short for finding point at a distance." ln
+        if l < zeroLengthTolerance then EuclidException.Raise "Euclid.Line2D.ExtendStart %O to short for finding point at a distance." ln
         Line2D( ln.FromX - x*distAtStart/l,
                 ln.FromY - y*distAtStart/l,
-                ln.ToX   ,
+                ln.ToX,
                 ln.ToY   )
 
     /// Extend 2D line by absolute amount at end.
-    /// Fails on lines shorter than 1e-12.
-    member inline ln.ExtendEnd  (distAtEnd:float)  =
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    member inline ln.ExtendEnd (distAtEnd:float) =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
         let l = sqrt(x*x + y*y )
-        if l < 1e-12 then EuclidException.Raise "Euclid.Line2D.ExtendEnd %O to short for finding point at a distance." ln
-        Line2D( ln.FromX ,
-                ln.FromY ,
+        if l < zeroLengthTolerance then EuclidException.Raise "Euclid.Line2D.ExtendEnd %O to short for finding point at a distance." ln
+        Line2D( ln.FromX,
+                ln.FromY,
                 ln.ToX   + x*distAtEnd/l,
                 ln.ToY   + y*distAtEnd/l )
     
     /// Shrink 2D line by absolute amount at start and end.
-    /// Fails on lines shorter than 1e-12.
-    member inline ln.Shrink (distAtStart:float, distAtEnd:float)  =
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    member inline ln.Shrink (distAtStart:float, distAtEnd:float) =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
         let l = sqrt(x*x + y*y )
-        if l < 1e-12 then EuclidException.Raise "Euclid.Line2D.Shrink %O to short for finding point at a distance." ln
+        if l < zeroLengthTolerance then EuclidException.Raise "Euclid.Line2D.Shrink %O to short for finding point at a distance." ln
         Line2D( ln.FromX + x*distAtStart/l,
                 ln.FromY + y*distAtStart/l,
                 ln.ToX   - x*distAtEnd/l,
                 ln.ToY   - y*distAtEnd/l)
 
     /// Shrink 2D line by absolute amount at start.
-    /// Fails on lines shorter than 1e-12.
-    member inline ln.ShrinkStart (distAtStart:float)  =
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    member inline ln.ShrinkStart (distAtStart:float) =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
         let l = sqrt(x*x + y*y )
-        if l < 1e-12 then EuclidException.Raise "Euclid.Line2D.ShrinkStart %O to short for finding point at a distance." ln
+        if l < zeroLengthTolerance then EuclidException.Raise "Euclid.Line2D.ShrinkStart %O to short for finding point at a distance." ln
         Line2D( ln.FromX + x*distAtStart/l,
                 ln.FromY + y*distAtStart/l,
-                ln.ToX   ,
+                ln.ToX,
                 ln.ToY   )
 
     /// Shrink 2D line by absolute amount at end.
-    /// Fails on lines shorter than 1e-12.
-    member inline ln.ShrinkEnd  (distAtEnd:float)  =
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    member inline ln.ShrinkEnd (distAtEnd:float) =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
         let l = sqrt(x*x + y*y )
-        if l < 1e-12 then EuclidException.Raise "Euclid.Line2D.ShrinkEnd %O to short for finding point at a distance." ln
-        Line2D( ln.FromX ,
-                ln.FromY ,
+        if l < zeroLengthTolerance then EuclidException.Raise "Euclid.Line2D.ShrinkEnd %O to short for finding point at a distance." ln
+        Line2D( ln.FromX,
+                ln.FromY,
                 ln.ToX   - x*distAtEnd/l,
                 ln.ToY   - y*distAtEnd/l )
 
@@ -281,7 +281,7 @@ type Line2D =
         let dot = x*u + y*v
         dot / lenSq
 
-    /// Return the parameter at which a point is closest to the (finite) line.
+    /// Returns the parameter at which a point is closest to the (finite) line.
     /// The result is between 0.0 and 1.0.
     /// Does not fails on very short curves.
     member inline ln.ClosestParameter (p:Pt) =
@@ -361,29 +361,29 @@ type Line2D =
     /// Checks if the angle between the two 2D lines is less than 180 degrees.
     /// Calculates the dot product of two 2D lines.
     /// Then checks if it is bigger than 1e-12.
-    member inline ln.MatchesOrientation180  (l:Line2D) =
+    member inline ln.MatchesOrientation180 (l:Line2D) =
         let dot = (l.ToX-l.FromX)*(ln.ToX-ln.FromX) + (l.ToY-l.FromY)*(ln.ToY-ln.FromY)
         dot > 1e-12
 
     /// Checks if the angle between the a 2D line and a 2D vector is less than 180 degrees.
     /// Calculates the dot product of both.
     /// Then checks if it is bigger than 1e-12.
-    member inline ln.MatchesOrientation180  (v:Vc) =
-        if v.LengthSq < 1e-24 then EuclidException.Raise "Euclid.Line2D.MatchesOrientation180: Vc 'v' is too short: %s. 'ln':%s " v.AsString ln.AsString
+    member inline ln.MatchesOrientation180 (v:Vc) =
+        if v.LengthSq < zeroLengthTolSquared then EuclidException.Raise "Euclid.Line2D.MatchesOrientation180: Vc 'v' is too short: %s. 'ln':%s " v.AsString ln.AsString
         let dot = v.X*(ln.ToX-ln.FromX) + v.Y*(ln.ToY-ln.FromY)
         dot > 1e-12
 
     /// Checks if the angle between the a 2D line and a 2D unit-vector is less than 180 degrees.
     /// Calculates the dot product of both.
     /// Then checks if it is bigger than 1e-12.
-    member inline ln.MatchesOrientation180  (v:UnitVc) =
+    member inline ln.MatchesOrientation180 (v:UnitVc) =
         let dot = v.X*(ln.ToX-ln.FromX) + v.Y*(ln.ToY-ln.FromY)
         dot > 1e-12
 
     /// Checks if the angle between the two 2D lines is less than 90 degrees.
     /// Calculates the dot product of the unit vectors of the two 2D lines.
     /// Then checks if it is bigger than 0.707107 (cosine of 90 degrees).
-    member inline ln.MatchesOrientation90  (l:Line2D) =
+    member inline ln.MatchesOrientation90 (l:Line2D) =
         let dot = ln.UnitTangent*l.UnitTangent
         dot > float Cosine.``45.0``
 
@@ -393,14 +393,14 @@ type Line2D =
     /// The default angle tolerance is 0.25 degrees.
     /// This tolerance can be customized by an optional minium cosine value.
     /// See Euclid.Cosine module.
-    /// Fails on lines shorter than 1e-12.
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
     member inline ln.IsParallelTo( other:Line2D, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
         let a = ln.Vector
         let b = other.Vector
         let sa = a.LengthSq
-        if sa < 1e-24 then EuclidException.Raise "Euclid.Line2D.IsParallelTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
+        if sa <  zeroLengthTolSquared then EuclidException.Raise "Euclid.Line2D.IsParallelTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
         let sb = b.LengthSq
-        if sb < 1e-24 then EuclidException.Raise "Euclid.Line2D.IsParallelTo: Line2D 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
+        if sb <  zeroLengthTolSquared then EuclidException.Raise "Euclid.Line2D.IsParallelTo: Line2D 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
         let au = a * (1.0 / sqrt sa )
         let bu = b * (1.0 / sqrt sb )
         abs(bu*au) > float minCosine
@@ -411,14 +411,14 @@ type Line2D =
     /// The default angle tolerance is 0.25 degrees.
     /// This tolerance can be customized by an optional minium cosine value.
     /// See Euclid.Cosine module.
-    /// Fails on lines or vectors shorter than 1e-12.
+    /// Fails on lines or vectors shorter than Util.zeroLengthTolerance (1e-12).
     member inline ln.IsParallelTo( other:Vc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
         let a = ln.Vector
         let b = other
         let sa = a.LengthSq
-        if sa < 1e-24 then EuclidException.Raise "Euclid.Line2D.IsParallelTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
+        if sa <  zeroLengthTolSquared then EuclidException.Raise "Euclid.Line2D.IsParallelTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
         let sb = b.LengthSq
-        if sb < 1e-24 then EuclidException.Raise "Euclid.Line2D.IsParallelTo: Vc 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
+        if sb <  zeroLengthTolSquared then EuclidException.Raise "Euclid.Line2D.IsParallelTo: Vc 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
         let au = a * (1.0 / sqrt sa )
         let bu = b * (1.0 / sqrt sb )
         abs(bu*au) > float minCosine
@@ -428,11 +428,11 @@ type Line2D =
     /// The default angle tolerance is 0.25 degrees.
     /// This tolerance can be customized by an optional minium cosine value.
     /// See Euclid.Cosine module.
-    /// Fails on lines shorter than 1e-12.
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
     member inline ln.IsParallelTo( other:UnitVc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
         let a = ln.Vector
         let sa = a.LengthSq
-        if sa < 1e-24 then EuclidException.Raise "Euclid.Line2D.IsParallelTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString other.AsString        
+        if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Line2D.IsParallelTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString other.AsString        
         let au = a * (1.0 / sqrt sa )
         abs(other*au) > float minCosine  
 
@@ -442,14 +442,14 @@ type Line2D =
     /// The default angle tolerance is 0.25 degrees.
     /// This tolerance can be customized by an optional minium cosine value.
     /// See Euclid.Cosine module.
-    /// Fails on lines shorter than 1e-12.
-    member inline ln.IsParallelAndOrientedTo  (other:Line2D, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    member inline ln.IsParallelAndOrientedTo (other:Line2D, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
         let a = ln.Vector
         let b = other.Vector
         let sa = a.LengthSq
-        if sa < 1e-24 then EuclidException.Raise "Euclid.Line2D.IsParallelAndOrientedTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
+        if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Line2D.IsParallelAndOrientedTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
         let sb = b.LengthSq
-        if sb < 1e-24 then EuclidException.Raise "Euclid.Line2D.IsParallelAndOrientedTo: Line2D 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
+        if sb < zeroLengthTolSquared then EuclidException.Raise "Euclid.Line2D.IsParallelAndOrientedTo: Line2D 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
         let au = a * (1.0 / sqrt sa )
         let bu = b * (1.0 / sqrt sb )
         bu*au > float minCosine
@@ -460,13 +460,13 @@ type Line2D =
     /// This tolerance can be customized by an optional minium cosine value.
     /// See Euclid.Cosine module.
     /// Fails on lines  or vectors shorter than 1e-12.
-    member inline ln.IsParallelAndOrientedTo  (other:Vc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
+    member inline ln.IsParallelAndOrientedTo (other:Vc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
         let a = ln.Vector
         let b = other
         let sa = a.LengthSq
-        if sa < 1e-24 then EuclidException.Raise "Euclid.Line2D.IsParallelAndOrientedTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
+        if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Line2D.IsParallelAndOrientedTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
         let sb = b.LengthSq
-        if sb < 1e-24 then EuclidException.Raise "Euclid.Line2D.IsParallelAndOrientedTo: Vc 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
+        if sb < zeroLengthTolSquared then EuclidException.Raise "Euclid.Line2D.IsParallelAndOrientedTo: Vc 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
         let au = a * (1.0 / sqrt sa )
         let bu = b * (1.0 / sqrt sb )
         bu*au > float minCosine
@@ -477,11 +477,11 @@ type Line2D =
     /// The default angle tolerance is 0.25 degrees.
     /// This tolerance can be customized by an optional minium cosine value.
     /// See Euclid.Cosine module.
-    /// Fails on lines shorter than 1e-12.
-    member inline ln.IsParallelAndOrientedTo  (other:UnitVc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    member inline ln.IsParallelAndOrientedTo (other:UnitVc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
         let a = ln.Vector
         let sa = a.LengthSq
-        if sa < 1e-24 then EuclidException.Raise "Euclid.Line2D.IsParallelAndOrientedTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString other.AsString        
+        if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Line2D.IsParallelAndOrientedTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString other.AsString        
         let au = a * (1.0 / sqrt sa )
         other*au > float minCosine
     
@@ -492,14 +492,14 @@ type Line2D =
     /// This tolerance can be customized by an optional minium cosine value.
     /// The default cosine is 0.0043633 ( = 89.75 deg )
     /// See Euclid.Cosine module.
-    /// Fails on lines shorter than 1e-12.
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
     member inline ln.IsPerpendicularTo (other:Line2D, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) =
         let a = ln.Vector
         let b = other.Vector
         let sa = a.LengthSq
-        if sa < 1e-24 then EuclidException.Raise "Euclid.Line2D.IsPerpendicularTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
+        if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Line2D.IsPerpendicularTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
         let sb = b.LengthSq
-        if sb < 1e-24 then EuclidException.Raise "Euclid.Line2D.IsPerpendicularTo: Line2D 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
+        if sb < zeroLengthTolSquared then EuclidException.Raise "Euclid.Line2D.IsPerpendicularTo: Line2D 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
         let au = a * (1.0 / sqrt sa )
         let bu = b * (1.0 / sqrt sb )
         let d = bu*au
@@ -511,14 +511,14 @@ type Line2D =
     /// This tolerance can be customized by an optional minium cosine value.
     /// The default cosine is 0.0043633 ( = 89.75 deg )
     /// See Euclid.Cosine module.
-    /// Fails on lines or vectors shorter than 1e-12.
+    /// Fails on lines or vectors shorter than Util.zeroLengthTolerance (1e-12).
     member inline ln.IsPerpendicularTo (other:Vc, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) =
         let a = ln.Vector
         let b = other
         let sa = a.LengthSq
-        if sa < 1e-24 then EuclidException.Raise "Euclid.Line2D.IsPerpendicularTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
+        if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Line2D.IsPerpendicularTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
         let sb = b.LengthSq
-        if sb < 1e-24 then EuclidException.Raise "Euclid.Line2D.IsPerpendicularTo: Vc 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
+        if sb < zeroLengthTolSquared then EuclidException.Raise "Euclid.Line2D.IsPerpendicularTo: Vc 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
         let au = a * (1.0 / sqrt sa )
         let bu = b * (1.0 / sqrt sb )
         let d = bu*au
@@ -529,11 +529,11 @@ type Line2D =
     /// This tolerance can be customized by an optional minium cosine value.
     /// The default cosine is 0.0043633 ( = 89.75 deg )
     /// See Euclid.Cosine module.
-    /// Fails on lines shorter than 1e-12.
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
     member inline ln.IsPerpendicularTo (other:UnitVc, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) =
         let a = ln.Vector
         let sa = a.LengthSq
-        if sa < 1e-24 then EuclidException.Raise "Euclid.Line2D.IsPerpendicularTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString other.AsString        
+        if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Line2D.IsPerpendicularTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString other.AsString        
         let au = a * (1.0 / sqrt sa )
         let d = other*au
         float -maxCosine < d && d  < float maxCosine // = cosine of 98.75 and 90.25 degrees
@@ -542,7 +542,7 @@ type Line2D =
     /// Checks if two 2D lines are coincident within the distance tolerance. 1e-6 by default.
     /// This means that lines are parallel within the angle tolerance
     /// and the distance of second start to the first line is less than the distance tolerance.
-    /// Also returns false on zero length lines (shorter than 1e-12).
+    /// Also returns false on lines shorter than Util.zeroLengthTolerance (1e-12).
     /// The default angle tolerance is 0.25 degrees.
     /// This tolerance can be customized by an optional minium cosine value.
     /// See Euclid.Cosine module.
@@ -552,11 +552,11 @@ type Line2D =
         let a = ln.Vector
         let b = other.Vector
         let sa = a.LengthSq
-        if sa < 1e-24 then
+        if sa < zeroLengthTolSquared then
             false
         else
             let sb = b.LengthSq
-            if sb < 1e-24 then
+            if sb < zeroLengthTolSquared then
                 false
             else
                 let au = a * (1.0 / sqrt sa )
@@ -612,10 +612,10 @@ type Line2D =
     static member inline areCoincident (a:Line2D) (b:Line2D) = a.IsCoincidentTo(b)
 
     /// Creates a line starting at World Origin and going to along the given vector.
-    static member inline createFromVec (v:Vc) = Line2D(0.,0.,v.X,v.Y)
+    static member inline createFromVec (v:Vc) = Line2D(0., 0., v.X, v.Y)
 
     /// Creates a line starting at given point and going to along the given vector.
-    static member inline createFromPtAndVc (p:Pt,v:Vc) =  Line2D(p.X, p.Y, p.X+v.X, p.Y+v.Y)
+    static member inline createFromPtAndVc (p:Pt, v:Vc) = Line2D(p.X, p.Y, p.X+v.X, p.Y+v.Y)
 
     /// Returns the Start point of the line. Same as Line2D.from.
     static member inline start (l:Line2D) = l.From
@@ -652,17 +652,17 @@ type Line2D =
     /// Same as Line2D.vector or Line2D.tangent.
     /// The returned vector has the same length as the Line2D.
     static member inline direction (ln:Line2D) =
-        Vc(ln.ToX-ln.FromX,ln.ToY-ln.FromY)
+        Vc(ln.ToX-ln.FromX, ln.ToY-ln.FromY)
 
     /// Same as Line2D.tangent or Line2D.direction.
     /// The returned vector has the same length as the Line2D.
     static member inline vector (ln:Line2D) =
-        Vc(ln.ToX-ln.FromX,ln.ToY-ln.FromY)
+        Vc(ln.ToX-ln.FromX, ln.ToY-ln.FromY)
 
     /// Same as Line2D.vector or Line2D.direction.
     /// The returned vector has the same length as the Line2D.
     static member inline tangent (ln:Line2D) =
-        Vc(ln.ToX-ln.FromX,ln.ToY-ln.FromY)
+        Vc(ln.ToX-ln.FromX, ln.ToY-ln.FromY)
 
     /// Returns a unit-vector of the line Direction.
     static member inline unitTangent (ln:Line2D) = ln.UnitTangent
@@ -693,7 +693,7 @@ type Line2D =
     static member inline isYAligned (l:Line2D) = l.IsYAligned
 
     /// Evaluate line at a given parameter ( parameters 0.0 to 1.0 are on the line )
-    static member inline evaluateAt t (ln:Line2D)  = ln.EvaluateAt t
+    static member inline evaluateAt t (ln:Line2D) = ln.EvaluateAt t
 
     /// Get point at center of line.
     static member inline mid (ln:Line2D) = ln.Mid
@@ -741,62 +741,62 @@ type Line2D =
     /// Checks if the angle between the two 2D lines is less than 180 degrees.
     /// Calculates the dot product of two 2D lines.
     /// Then checks if it is positive.
-    static member inline matchesOrientation180  (l:Line2D) (ln:Line2D) = l.MatchesOrientation180 ln
+    static member inline matchesOrientation180 (l:Line2D) (ln:Line2D) = l.MatchesOrientation180 ln
 
     /// Checks if the angle between the two 2D lines is less than 90 degrees.
     /// Calculates the dot product of the unit vectors of the two 2D lines.
     /// Then checks if it is bigger than 0.707107 (cosine of 90 degrees).
-    static member inline matchesOrientation90  (l:Line2D) (ln:Line2D) = l.MatchesOrientation90 ln
+    static member inline matchesOrientation90 (l:Line2D) (ln:Line2D) = l.MatchesOrientation90 ln
 
     /// Checks if two 2D lines are parallel. Ignoring orientation.
     /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
     /// And checks if it is smaller than 1e-9
     /// (NOTE: for very long lines a higher tolerance might be needed)
-    static member inline  areParallel  (l:Line2D) (ln:Line2D) =   l.IsParallelTo ln
+    static member inline  areParallel (l:Line2D) (ln:Line2D) = l.IsParallelTo ln
 
     /// Checks if two 2D lines are parallel and orientated the same way.
     /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
     /// And checks if it is smaller than 1e-9
     /// Then calculates the dot product and checks if it is positive.
     /// (NOTE: for very long lines a higher tolerance might be needed)
-    static member inline areParallelAndMatchOrientation  (l:Line2D) (ln:Line2D) =  l.IsParallelAndOrientedTo ln
+    static member inline areParallelAndMatchOrientation (l:Line2D) (ln:Line2D) = l.IsParallelAndOrientedTo ln
 
     /// Checks if two 2D lines are perpendicular.
     /// Calculates the dot product and checks if it is smaller than 1e-9.
     /// (NOTE: for very long lines a higher tolerance might be needed)
-    static member inline arePerpendicular(l:Line2D) (ln:Line2D) =  l.IsPerpendicularTo ln
+    static member inline arePerpendicular(l:Line2D) (ln:Line2D) = l.IsPerpendicularTo ln
 
     /// Assumes Line2D to be infinite!
     /// Returns the parameter at which a point is closest to the infinite line.
     /// If it is smaller than 0.0 or bigger than 1.0 it is outside of the finite line.
-    static member inline closestParameterInfinite (p:Pt) (ln:Line2D)  = ln.ClosestParameterInfinite p
+    static member inline closestParameterInfinite (p:Pt) (ln:Line2D) = ln.ClosestParameterInfinite p
 
 
-    /// Return the parameter at which a point is closest to the (finite) line.
+    /// Returns the parameter at which a point is closest to the (finite) line.
     /// The result is between 0.0 and 1.0.
-    static member inline closestParameter (p:Pt) (ln:Line2D)  = ln.ClosestParameter p
+    static member inline closestParameter (p:Pt) (ln:Line2D) = ln.ClosestParameter p
 
     /// Assumes Line2D to be infinite!
     /// Returns closest point on infinite Line.
-    static member inline closestPointInfinite (p:Pt) (ln:Line2D)  = ln.ClosestPointInfinite p
+    static member inline closestPointInfinite (p:Pt) (ln:Line2D) = ln.ClosestPointInfinite p
 
 
     /// Returns closest point on (finite) Line.
-    static member inline closestPoint (p:Pt) (ln:Line2D)  = ln.ClosestPoint p
+    static member inline closestPoint (p:Pt) (ln:Line2D) = ln.ClosestPoint p
 
     /// Assumes Line2D to be infinite!
     /// Returns the square distance from point to infinite line.
-    static member inline distanceSqFromPointInfinite(p:Pt) (ln:Line2D)  = ln.DistanceSqFromPointInfinite p
+    static member inline distanceSqFromPointInfinite(p:Pt) (ln:Line2D) = ln.DistanceSqFromPointInfinite p
 
     /// Assumes Line2D to be infinite!
     /// Returns distance from point to infinite line.
-    static member inline distanceFromPointInfinite(p:Pt) (ln:Line2D)  = ln.DistanceFromPointInfinite p
+    static member inline distanceFromPointInfinite(p:Pt) (ln:Line2D) = ln.DistanceFromPointInfinite p
 
     /// Returns the square distance from point to (finite) line.
-    static member inline distanceSqFromPoint(p:Pt) (ln:Line2D)  = ln.DistanceSqFromPoint p
+    static member inline distanceSqFromPoint(p:Pt) (ln:Line2D) = ln.DistanceSqFromPoint p
 
     /// Returns distance from point to (finite) line.
-    static member inline distanceFromPoint(p:Pt) (ln:Line2D)  = ln.DistanceFromPoint p
+    static member inline distanceFromPoint(p:Pt) (ln:Line2D) = ln.DistanceFromPoint p
 
     /// Get distance from start of line to point projected onto line, may be negative.
     static member inline lengthToPtOnLine (line:Line2D) pt =
@@ -804,81 +804,81 @@ type Line2D =
         line.Tangent.Unitized * (pt-line.From)
 
     /// Extend 2D line by absolute amount at start and end.
-    /// Fails on lines shorter than 1e-12.
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
     static member inline extend (distAtStart:float) (distAtEnd:float) (ln:Line2D) =
         ln.Extend(distAtStart, distAtEnd)
 
     /// Extend 2D line by absolute amount at start.
-    /// Fails on lines shorter than 1e-12.
-    static member inline extendStart (distAtStart:float)  (ln:Line2D) =
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    static member inline extendStart (distAtStart:float) (ln:Line2D) =
         ln.ExtendStart(distAtStart)
 
     /// Extend 2D line by absolute amount at end.
-    /// Fails on lines shorter than 1e-12.
-    static member inline extendEnd  (distAtEnd:float) (ln:Line2D) =
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    static member inline extendEnd (distAtEnd:float) (ln:Line2D) =
         ln.ExtendEnd(distAtEnd)
 
     /// Shrink 2D line by absolute amount at start and end.
-    /// Fails on lines shorter than 1e-12.
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
     static member inline shrink (distAtStart:float) (distAtEnd:float) (ln:Line2D) =
         ln.Shrink(distAtStart, distAtEnd)
 
     /// Shrink 2D line by absolute amount at start.
-    /// Fails on lines shorter than 1e-12.
-    static member inline shrinkStart (distAtStart:float)  (ln:Line2D) =
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    static member inline shrinkStart (distAtStart:float) (ln:Line2D) =
         ln.ShrinkStart(distAtStart)
 
     /// Shrink 2D line by absolute amount at end.
-    /// Fails on lines shorter than 1e-12.
-    static member inline shrinkEnd  (distAtEnd:float) (ln:Line2D) =
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    static member inline shrinkEnd (distAtEnd:float) (ln:Line2D) =
         ln.ShrinkEnd(distAtEnd)
 
         
 
     /// Finds point at given distance from line start.
-    /// Fails on lines shorter than 1e-12.
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
     static member inline pointAtDistance dist (ln:Line2D) =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
         let len = sqrt(x*x + y*y )
-        if len < 1e-12 then EuclidException.Raise "Euclid.Line2D.pointAtDistance %O to short for finding point at a distance." ln
+        if len < zeroLengthTolerance then EuclidException.Raise "Euclid.Line2D.pointAtDistance %O to short for finding point at a distance." ln
         Pt(ln.FromX + x*dist/len,
             ln.FromY + y*dist/len)
 
     /// Returns new Line2D with given length, going out from start in direction of end.
-    /// Fails on lines shorter than 1e-12.
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
     static member inline withLengthFromStart len (ln:Line2D) =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
         let l = sqrt(x*x + y*y )
-        if l < 1e-12 then EuclidException.Raise "Euclid.Line2D.withLengthFromStart %O to short for finding point at a distance." ln
-        Line2D( ln.FromX ,
-                ln.FromY ,
-                ln.FromX + x*len/l ,
+        if l < zeroLengthTolerance then EuclidException.Raise "Euclid.Line2D.withLengthFromStart %O to short for finding point at a distance." ln
+        Line2D( ln.FromX,
+                ln.FromY,
+                ln.FromX + x*len/l,
                 ln.FromY + y*len/l )
 
     /// Returns new Line2D ending at current LineEnd with given length coming from direction of start.
-    /// Fails on lines shorter than 1e-12.
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
     static member inline withLengthToEnd len (ln:Line2D) =
         let x = ln.FromX-ln.ToX
         let y = ln.FromY-ln.ToY
         let l = sqrt(x*x + y*y )
-        if l < 1e-12 then EuclidException.Raise "Euclid.Line2D.withLengthToEnd %O to short for finding point at a distance." ln
-        Line2D( ln.ToX + x*len/l ,
-                ln.ToY + y*len/l ,
-                ln.ToX ,
+        if l < zeroLengthTolerance then EuclidException.Raise "Euclid.Line2D.withLengthToEnd %O to short for finding point at a distance." ln
+        Line2D( ln.ToX + x*len/l,
+                ln.ToY + y*len/l,
+                ln.ToX,
                 ln.ToY )
 
 
-    /// Offset line in XY Plane to left side in line direction.
-    /// Fails on lines shorter than 1e-12.
+    /// Offset line in XY-Plane to left side in line direction.
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
     static member offset amount (ln:Line2D) =
         let x = ln.ToX - ln.FromX
         let y = ln.ToY - ln.FromY
         let lenXY = sqrt (x*x + y*y)
-        if lenXY  < 1e-12 then EuclidException.Raise "Euclid.Line2D.offset: Cannot offset vertical Line2D  (by %g) %O" amount ln
-        let ox = -y*amount/lenXY // unitized, horizontal , perpendicular  vector
-        let oy =  x*amount/lenXY  // unitized, horizontal , perpendicular  vector
+        if lenXY  < zeroLengthTolerance then EuclidException.Raise "Euclid.Line2D.offset: Cannot offset vertical Line2D (by %g) %O" amount ln
+        let ox = -y*amount/lenXY // unitized, horizontal, perpendicular  vector
+        let oy =  x*amount/lenXY  // unitized, horizontal, perpendicular  vector
         Line2D( ln.FromX+ox,
                 ln.FromY+oy,
                 ln.ToX+ox,
@@ -960,8 +960,8 @@ type Line2D =
     ///
     /// | TooShort:
     /// One or both input lines is shorter than the given minimum Length tolerance. </returns>
-    static member inline intersectionParamInfinite( lnA:Line2D ,
-                                                    lnB:Line2D ,
+    static member inline intersectionParamInfinite( lnA:Line2D,
+                                                    lnB:Line2D,
                                                     [<OPT;DEF(RelAngleDiscriminant.``0.25``)>] relAngleDiscriminant:float<RelAngleDiscriminant.relAngDiscr>,
                                                     [<OPT;DEF(1e-6)>] coincidentTolerance:float,
                                                     [<OPT;DEF(1e-6)>] tooShortTolerance:float
@@ -985,9 +985,9 @@ type Line2D =
             let b = ax*bx + ay*by  // dot product of both lines
             let vx = lnB.FromX - lnA.FromX
             let vy = lnB.FromY - lnA.FromY
-            let ac = a*c // square of square length  , never negative
+            let ac = a*c // square of square length, never negative
             let bb = b*b // never negative
-            let discriminant = ac - bb // never negative , the dot product cannot be bigger than the two square length multiplied with each other
+            let discriminant = ac - bb // never negative, the dot product cannot be bigger than the two square length multiplied with each other
             let div = ac+bb // never negative
             // getting the relation between the sum and the subtraction gives a good estimate of the angle between the lines
             // see module Euclid.Util.RelAngleDiscriminant
@@ -1005,7 +1005,7 @@ type Line2D =
                 let d = ax*vx + ay*vy
                 let t = (b * e - c * d) / discriminant
                 let u = (a * e - b * d) / discriminant
-                TwoParam (t,u)
+                TwoParam (t, u)
 
 
     ///<summary> Gets the points at which two infinite 2D lines intersect. Or are closest to each other.</summary>
@@ -1033,14 +1033,14 @@ type Line2D =
     /// | TooShort:
     ///     One or both input lines is shorter than the given minimum Length tolerance.
     /// </returns>
-    static member inline intersectionInfinite  (lnA:Line2D ,
+    static member inline intersectionInfinite  (lnA:Line2D,
                                                 lnB:Line2D,
                                                 [<OPT;DEF(RelAngleDiscriminant.``0.25``)>] relAngleDiscriminant:float<RelAngleDiscriminant.relAngDiscr>,
                                                 [<OPT;DEF(1e-6)>] coincidentTolerance:float,
                                                 [<OPT;DEF(1e-6)>] tooShortTolerance:float
                                                 ) : IntersectionPoints2D =
-        match Line2D.intersectionParamInfinite(lnA,lnB, relAngleDiscriminant , coincidentTolerance, tooShortTolerance) with
-        |TwoParam (u,v)                       -> IntersectionPoints2D.Point (lnA.EvaluateAt u)
+        match Line2D.intersectionParamInfinite(lnA, lnB, relAngleDiscriminant, coincidentTolerance, tooShortTolerance) with
+        |TwoParam (u, v)                       -> IntersectionPoints2D.Point (lnA.EvaluateAt u)
         |IntersectionParam.Parallel   -> IntersectionPoints2D.Parallel
         |IntersectionParam.Coincident -> IntersectionPoints2D.Coincident
         |IntersectionParam.TooShortA
@@ -1059,20 +1059,20 @@ type Line2D =
     ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
     ///  If one or both lines are shorter than the 'TooShort' union case is returned .</param>
     /// <returns> A single 2D point</returns>
-    static member intersectionPointInfinite(lnA:Line2D ,
-                                            lnB:Line2D ,
+    static member intersectionPointInfinite(lnA:Line2D,
+                                            lnB:Line2D,
                                             [<OPT;DEF(RelAngleDiscriminant.``0.25``)>] relAngleDiscriminant:float<RelAngleDiscriminant.relAngDiscr>,
                                             [<OPT;DEF(1e-6)>] coincidentTolerance:float,
                                             [<OPT;DEF(1e-6)>] tooShortTolerance:float
                                             ) : Pt =
-        match Line2D.intersectionInfinite(lnA , lnB, relAngleDiscriminant, coincidentTolerance, tooShortTolerance) with
+        match Line2D.intersectionInfinite(lnA, lnB, relAngleDiscriminant, coincidentTolerance, tooShortTolerance) with
         |IntersectionPoints2D.Point p     -> p
         |IntersectionPoints2D.Parallel    -> EuclidException.Raise "Euclid.Line2D.intersectionPointInfinite: Lines are parallel lnA: \r\n%O and lnB: \r\n%O" lnA lnB
         |IntersectionPoints2D.Coincident  -> EuclidException.Raise "Euclid.Line2D.intersectionPointInfinite: Lines are coincident lnA: \r\n%O and lnB: \r\n%O" lnA lnB
         |IntersectionPoints2D.TooShort    -> EuclidException.Raise "Euclid.Line2D.intersectionPointInfinite: Lines are tooShort lnA: \r\n%O and lnB: \r\n%O" lnA lnB
 
 
-    //static member  distanceBetweenInfiniteLines(lnA , lnB) = // doesn't make sense for 2D lines
+    //static member distanceBetweenInfiniteLines(lnA, lnB) = // doesn't make sense for 2D lines
 
 
 
@@ -1114,7 +1114,7 @@ type Line2D =
     /// The ends are meeting in exactly one point. But orientation is flipped.
     /// The returned parameters indicate which ends these are.
     ///
-    /// | Identical: The Lines are identical , in orientation too with in 1e-6 tolerance.
+    /// | Identical: The Lines are identical, in orientation too with in 1e-6 tolerance.
     /// The returned parameters still indicate where the lines start and end.
     ///
     /// | IdenticalFlipped: The Lines are identical. But orientation is flipped.
@@ -1142,14 +1142,14 @@ type Line2D =
     ///  If parallel lines are closer than this the 'Coincident' union case is returned .</param>
     ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
     ///  If one or both lines are shorter than the 'TooShort' union case is returned .</param>
-    static member inline intersectionParam (lnA:Line2D ,
+    static member inline intersectionParam (lnA:Line2D,
                                             lnB:Line2D,
                                             [<OPT;DEF(RelAngleDiscriminant.``0.25``)>] relAngleDiscriminant:float<RelAngleDiscriminant.relAngDiscr>,
-                                            [<OPT;DEF(1e-6)>] coincidentTolerance:float ,
+                                            [<OPT;DEF(1e-6)>] coincidentTolerance:float,
                                             [<OPT;DEF(1e-6)>] tooShortTolerance:float
                                             ) : IntersectionKind*float*float =
-        match Line2D.intersectionParamInfinite(lnA,lnB, relAngleDiscriminant, coincidentTolerance, tooShortTolerance) with
-        | IntersectionParam.TwoParam ( u , v ) ->
+        match Line2D.intersectionParamInfinite(lnA, lnB, relAngleDiscriminant, coincidentTolerance, tooShortTolerance) with
+        | IntersectionParam.TwoParam ( u, v ) ->
             /// numerical error tolerance check to also find an intersection that happens just after the line end:
             let ur = isZeroOneOrBetween u
             let vr = isZeroOneOrBetween v
@@ -1162,7 +1162,7 @@ type Line2D =
                 let vt = Line2D.closestParameter pu lnB
                 let pv = lnB.EvaluateAt vt
                 let ut = Line2D.closestParameter pv lnA
-                Apart, ut ,vt
+                Apart, ut, vt
             elif ur = Zero || ur = One then                 
                 if vr = Zero || vr = One then                     
                     IntersectingEndsBoth,(fix01 ur u), (fix01 vr  v)
@@ -1176,15 +1176,15 @@ type Line2D =
 
         | IntersectionParam.Parallel ->
 
-            let lv  =  lnA.Direction
+            let lv  = lnA.Direction
             let llv = lnB.Direction
             //make a new line k that is oriented the same way:
             let flip = lv*llv < 0.0
             let k = if flip then lnB.Reversed else lnB
-            let l0k0 = Vc.create(lnA.From,k.From)
-            let l0k1 = Vc.create(lnA.From,k.To)
-            let l1k0 = Vc.create(lnA.To  ,k.From)
-            let l1k1 = Vc.create(lnA.To  ,k.To)
+            let l0k0 = Vc.create(lnA.From, k.From)
+            let l0k1 = Vc.create(lnA.From, k.To)
+            let l1k0 = Vc.create(lnA.To  , k.From)
+            let l1k1 = Vc.create(lnA.To  , k.To)
             // check if vectors between lines are in same orientation as line:
             let d00 = lv * l0k0 > 0.
             let d01 = lv * l0k1 > 0.
@@ -1214,32 +1214,32 @@ type Line2D =
             //                                                        Printfn.gray "// k starts after lnA ends"
             //                                                        1.0, if flip then 1.0 else  0.0
             //    else failwith "Bad case in intersectLineParametersInfinite"
-            //IntersectionKind.Parallel , u, v
+            //IntersectionKind.Parallel, u, v
 
             // Optimized logic:
             if d01 then
                 if d10 then
-                    IntersectionKind.Parallel ,1.0, if flip then 1.0 else  0.0   // k starts after lnA ends
+                    IntersectionKind.Parallel, 1.0, if flip then 1.0 else  0.0   // k starts after lnA ends
                 else
                     if d00 then
-                        if d11 then IntersectionKind.Parallel ,1.0 , lnB.ClosestParameter(lnA.To)   // k is overlapping lnA end
-                        else        IntersectionKind.Parallel ,lnA.ClosestParameter(lnB.From), 0.0  // k is on both ends shorter than lnA
+                        if d11 then IntersectionKind.Parallel, 1.0, lnB.ClosestParameter(lnA.To)   // k is overlapping lnA end
+                        else        IntersectionKind.Parallel, lnA.ClosestParameter(lnB.From), 0.0  // k is on both ends shorter than lnA
                     else
-                        IntersectionKind.Parallel ,0.0 , lnB.ClosestParameter(lnA.From) // k is overlapping lnA start // lnA is on both ends shorter than k
+                        IntersectionKind.Parallel, 0.0, lnB.ClosestParameter(lnA.From) // k is overlapping lnA start // lnA is on both ends shorter than k
             else
-                IntersectionKind.Parallel ,0.0 , if flip then 0.0 else  1.0  // lnA starts after k ends
+                IntersectionKind.Parallel, 0.0, if flip then 0.0 else  1.0  // lnA starts after k ends
 
 
         | IntersectionParam.Coincident ->
             // cases Overlapping | Continuation  | CoincidentApart | Identical
-            let lv  =  lnA.Direction // Vec(ax,ay,az)
-            let llv = lnB.Direction //Vec(bx,by,bz)
+            let lv  = lnA.Direction // Vec(ax, ay, az)
+            let llv = lnB.Direction //Vec(bx, by, bz)
             let flip = lv*llv < 0.0
             let k = if flip then lnB.Reversed else lnB
-            let l0k0 = Vc.create(lnA.From,k.From)
-            let l0k1 = Vc.create(lnA.From,k.To)
-            let l1k0 = Vc.create(lnA.To  ,k.From)
-            let l1k1 = Vc.create(lnA.To  ,k.To)
+            let l0k0 = Vc.create(lnA.From, k.From)
+            let l0k1 = Vc.create(lnA.From, k.To)
+            let l1k0 = Vc.create(lnA.To  , k.From)
+            let l1k1 = Vc.create(lnA.To  , k.To)
             let coTolSq = coincidentTolerance*coincidentTolerance
             let z00 = l0k0.LengthSq < coTolSq
             let z01 = l0k1.LengthSq < coTolSq
@@ -1264,31 +1264,31 @@ type Line2D =
                 // Full logic:
                 //if   not d00 && not d01 && not d10 && not d11 then
                 //                                                    Printfn.gray "// lnA starts after k ends"
-                //                                                    CoincidentApart,0.0, if flip then 0.0 else  1.0
+                //                                                    CoincidentApart, 0.0, if flip then 0.0 else  1.0
                 //elif not d00 &&     d01 && not d10 && not d11 then
                 //                                                    Printfn.gray "// k is overlapping lnA start"
-                //                                                    Overlapping    ,0.0, if flip then 0.0 else  1.0
+                //                                                    Overlapping    , 0.0, if flip then 0.0 else  1.0
                 //elif     d00 &&     d01 && not d10 && not d11 then
                 //                                                    Printfn.gray "// k is on both ends shorter than lnA  "
-                //                                                    Overlapping    ,lnA.ClosestParameter(lnB.From), 1.0
+                //                                                    Overlapping    , lnA.ClosestParameter(lnB.From), 1.0
                 //elif not d00 &&     d01 && not d10 &&     d11 then
                 //                                                    Printfn.gray "// lnA is on both ends shorter than k  "
-                //                                                    Overlapping    ,0.0  , lnB.ClosestParameter(lnA.To)
+                //                                                    Overlapping    , 0.0  , lnB.ClosestParameter(lnA.To)
                 //elif     d00 &&     d01 && not d10 &&     d11 then
                 //                                                    Printfn.gray "// k is overlapping lnA end "
-                //                                                    Overlapping    ,1.0  , if flip then 1.0 else  0.0
+                //                                                    Overlapping    , 1.0  , if flip then 1.0 else  0.0
                 //elif     d00 &&     d01 &&     d10 &&     d11 then
                 //                                                    Printfn.gray "// k starts after lnA ends"
-                //                                                    CoincidentApart,1.0, if flip then 1.0 else  0.0
+                //                                                    CoincidentApart, 1.0, if flip then 1.0 else  0.0
                 //else failwith "Bad case in intersectLineParametersInfinite"
 
                 if d01 then
                     if d10 then
-                        CoincidentApart, 1.0  , if flip then 1.0 else  0.0   // k starts after lnA ends
+                        CoincidentApart, 1.0, if flip then 1.0 else  0.0   // k starts after lnA ends
                     else
                         if d11 then
-                            if  d00 then Overlapping  , 1.0  , if flip then 1.0 else  0.0  // k is overlapping lnA end
-                            else         Overlapping  , 0.0  , lnB.ClosestParameter(lnA.To)   // lnA is on both ends shorter than k
+                            if  d00 then Overlapping, 1.0, if flip then 1.0 else  0.0  // k is overlapping lnA end
+                            else         Overlapping, 0.0, lnB.ClosestParameter(lnA.To)   // lnA is on both ends shorter than k
                         else
                             if d00 then Overlapping , lnA.ClosestParameter(lnB.From), 1.0   // k is on both ends shorter than lnA
                             else        Overlapping , 0.0 , if flip then 0.0 else  1.0   // k is overlapping lnA start
@@ -1337,7 +1337,7 @@ type Line2D =
     /// The ends are meeting in exactly one point. But orientation is flipped.
     /// The returned points indicate which ends these are.
     ///
-    /// | Identical: The Lines are identical , in orientation too with in 1e-6 tolerance.
+    /// | Identical: The Lines are identical, in orientation too with in 1e-6 tolerance.
     /// The returned points still indicate where the lines start and end.
     ///
     /// | IdenticalFlipped: The Lines are identical. But orientation is flipped.
@@ -1365,30 +1365,30 @@ type Line2D =
     ///  If parallel lines are closer than this the 'Coincident' union case is returned .</param>
     ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
     ///  If one or both lines are shorter than the 'TooShort' union case is returned .</param>
-    static member inline intersection  (lnA:Line2D ,
-                                        lnB:Line2D ,
+    static member inline intersection  (lnA:Line2D,
+                                        lnB:Line2D,
                                         [<OPT;DEF(RelAngleDiscriminant.``0.25``)>] relAngleDiscriminant:float<RelAngleDiscriminant.relAngDiscr>,
                                         [<OPT;DEF(1e-6)>] coincidentTolerance:float,
                                         [<OPT;DEF(1e-6)>] tooShortTolerance:float
                                         ) : IntersectionKind*Pt*Pt =
-        let k,u,v =  Line2D.intersectionParam(lnA,lnB, relAngleDiscriminant, coincidentTolerance, tooShortTolerance)
+        let k, u, v = Line2D.intersectionParam(lnA, lnB, relAngleDiscriminant, coincidentTolerance, tooShortTolerance)
         match k with
         | Intersecting | IntersectingEndsBoth | IntersectingEndsFirst | IntersectingEndsSecond
         | Continuation | ContinuationFlipped ->
             let p = lnA.EvaluateAt u
-            k,p,p // return same point twice ?
+            k, p, p // return same point twice ?
         | Skew | Apart  | IntersectionKind.Parallel
         | Overlapping | CoincidentApart | Identical | IdenticalFlipped
         | TooShortA | TooShortB | TooShortBoth -> // TODO or check if the zero length line is actually on the other line ?
-            let a  = lnA.EvaluateAt u
-            let b  = lnB.EvaluateAt v
-            k,a,b
+            let a = lnA.EvaluateAt u
+            let b = lnB.EvaluateAt v
+            k, a, b
 
 
     /// Returns the single points where these two finite lines actually intersect each other. Or None.
     /// Unless the coincident lines ar continuing each other and just touching in one point.
-    static member intersectionPoint (lnA:Line2D , lnB:Line2D) : option<Pt> =
-        let k,u,v =  Line2D.intersectionParam(lnA,lnB)
+    static member intersectionPoint (lnA:Line2D, lnB:Line2D) : option<Pt> =
+        let k, u, v = Line2D.intersectionParam(lnA, lnB)
         match k with
         | Intersecting | IntersectingEndsBoth | IntersectingEndsFirst | IntersectingEndsSecond
         | Continuation | ContinuationFlipped ->
@@ -1405,16 +1405,16 @@ type Line2D =
     /// For parallel lines the distance is calculate form the actual finit elements. (like in the other cases.)
     /// So it is maybe bigger than the parallel offset.
     /// For Coincident and intersecting lines it always returns 0.0 even if there is actually a distance less than 1e-6.
-    static member inline distanceBetweenLines(lnA,lnB) : float=
-        let k,u,v =  Line2D.intersectionParam(lnA,lnB)
+    static member inline distanceBetweenLines(lnA, lnB) : float=
+        let k, u, v = Line2D.intersectionParam(lnA, lnB)
         match k with
         | Intersecting | IntersectingEndsBoth | IntersectingEndsFirst | IntersectingEndsSecond
         | Continuation | ContinuationFlipped | Overlapping   | Identical| IdenticalFlipped ->
             0.0
         | Skew | Apart  | IntersectionKind.Parallel | CoincidentApart
         | TooShortA | TooShortB | TooShortBoth ->
-            let a  =  lnA.EvaluateAt u
-            let b  = lnB.EvaluateAt v
+            let a = lnA.EvaluateAt u
+            let b = lnB.EvaluateAt v
             Pt.distance a b
 
 

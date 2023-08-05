@@ -12,8 +12,7 @@ type XLineCone =
 
 
 module Intersect =
-    open Util
-    open Format
+    open Util    
 
     /// Returns the parameter on vector 'va' where 'va' and 'vb' intersect intersect as endless rays.
     /// If they start from points 'a' and 'b' respectively.
@@ -26,15 +25,15 @@ module Intersect =
     let inline private isParamStillBelowZeroAfterOffsets(ap:Pt, au:UnitVc, aXbInverse:float, bp:Pt, bu:UnitVc, snapThreshold:float) =
         let n = au.Rotate90CCW * snapThreshold
         // TODO would it be enough to only compute one of these two? depending on the sign of aXbInverse ?
-        getXPara(ap + n, aXbInverse,  bp, bu) <  -snapThreshold //with threshold subtracted the  range factor is 1 to 1.4 . without 0.7 to 1 of threshold
+        getXPara(ap + n, aXbInverse, bp, bu) <  -snapThreshold //with threshold subtracted the  range factor is 1 to 1.4 . without 0.7 to 1 of threshold
         &&
-        getXPara(ap - n, aXbInverse,  bp, bu) <  -snapThreshold
+        getXPara(ap - n, aXbInverse, bp, bu) <  -snapThreshold
 
-    let inline private isParamStillMoreThanLengthAfterOffsets(ap:Pt, au:UnitVc , aXbInverse:float, al:float, bp:Pt, bu:UnitVc, snapThreshold:float) =
+    let inline private isParamStillMoreThanLengthAfterOffsets(ap:Pt, au:UnitVc, aXbInverse:float, al:float, bp:Pt, bu:UnitVc, snapThreshold:float) =
         let n = au.Rotate90CCW * snapThreshold
-        getXPara(ap + n, aXbInverse,  bp, bu) > al + snapThreshold //with threshold added the range factor is 1 to 1.4 . without 0.7 to 1 of threshold
+        getXPara(ap + n, aXbInverse, bp, bu) > al + snapThreshold //with threshold added the range factor is 1 to 1.4 . without 0.7 to 1 of threshold
         &&
-        getXPara(ap - n, aXbInverse,  bp, bu) > al + snapThreshold
+        getXPara(ap - n, aXbInverse, bp, bu) > al + snapThreshold
 
 
     type LineLineRelation =
@@ -42,8 +41,8 @@ module Intersect =
         |NoIntersection
         |Colinear // within threshold,  might still not  overlap,  needs to be checked via BRect
         |Parallel // more than threshold apart
-        |BfromRight of struct ( float * float) // parameters for unit-vector,  might be out of bound by snapThreshold
-        |BfromLeft  of struct ( float * float) // parameters for unit-vector,  might be out of bound by snapThreshold
+        |BfromRight of struct (float * float) // parameters for unit-vector,  might be out of bound by snapThreshold
+        |BfromLeft  of struct (float * float) // parameters for unit-vector,  might be out of bound by snapThreshold
 
     // inline functions?
 
@@ -55,7 +54,7 @@ module Intersect =
     let getRelation (ap:Pt, au:UnitVc, al:float, bp:Pt, bu:UnitVc, bl:float, snapThreshold:float) :LineLineRelation=
         let aXb = au.Cross bu //precomputed  cross product
 
-        if abs(aXb) > zeroLengthTol then  // not parallel
+        if abs(aXb) > zeroLengthTolerance then  // not parallel
             let aXbInverse = 1./aXb // invert only once,  then pass it on as inverted value
             let ta = getXPara (ap, aXbInverse, bp, bu)
 
@@ -77,7 +76,7 @@ module Intersect =
                 if tb < -snapThreshold && isParamStillBelowZeroAfterOffsets (bp, bu, bXaInverse, ap, au, snapThreshold) then
                     NoIntersection
 
-                // parameter on second segment is  beyond length ,  so probably false unless closer than snapThreshold and colinear
+                // parameter on second segment is  beyond length,  so probably false unless closer than snapThreshold and colinear
                 elif tb > bl + snapThreshold && isParamStillMoreThanLengthAfterOffsets (bp, bu, bXaInverse, bl, ap, au, snapThreshold) then
                     NoIntersection
                 else
@@ -106,15 +105,15 @@ module Intersect =
         |Colinear       -> true
 
 
-    /// Return intersection point or mid point between two 2D lines.
+    /// Returns the intersection point or mid point between two 2D lines.
     /// (used mainly for drawing debug notes at this point )
     let getXPointOrMid (ap:Pt, au:UnitVc, al:float, bp:Pt, bu:UnitVc, bl:float, snapThreshold:float) : Pt =
         match getRelation(ap, au, al,  bp, bu, bl, snapThreshold)   with
         |NoIntersection
         |Colinear
         |Parallel            -> (ap + ap + bp + bp + au*al + bu*bl) * 0.25
-        |BfromLeft  (ta, _ ) -> ap + au * ta // clamp point to actually be on line even if it is not quite in case of PreStart or PostEnd
-        |BfromRight (ta, _ ) -> ap + au * ta
+        |BfromLeft  (ta, _ ) ->  ap + au * ta // clamp point to actually be on line even if it is not quite in case of PreStart or PostEnd
+        |BfromRight (ta, _ ) ->  ap + au * ta
 
     (*
     see loop intersection script
@@ -134,8 +133,6 @@ module Intersect =
         |BfromRight (ta, _ ) -> FromRight (ap + au * (max 0.0 (min al ta)))
     *)
 
-
-
     /// Calculates the intersection of a finite line with a triangle.
     /// Returns Some(Pnt) or None if no intersection was found, 
     /// or if the input line has near zero length,
@@ -143,7 +140,7 @@ module Intersect =
     /// This algorithm still returns an intersection even if line and triangle are almost parallel.
     /// Since it is using the triple product it is be hard to find an appropriate tolerance for 
     /// considering lines and triangles parallel based on the volume of the Tetrahedron between them.
-    let lineTriangle(line:Line3D, p1 :Pnt ,p2 :Pnt, p3 :Pnt) : Pnt option  =  
+    let lineTriangle(line:Line3D, p1 :Pnt, p2:Pnt, p3:Pnt) : Pnt option = 
         // https://stackoverflow.com/questions/42740765/intersection-between-line-and-triangle-in-3d
         let inline tetrahedronVolumeSigned(a:Pnt, b:Pnt, c:Pnt, d:Pnt) : float=
             // computes the signed Volume of a Tetrahedron
@@ -155,25 +152,24 @@ module Intersect =
             elif x > 0 then 1
             else           -1
 
-
         let q1 = line.From
         let q2 = line.To
-        let s1 = sign (tetrahedronVolumeSigned(q1,p1,p2,p3))
-        let s2 = sign (tetrahedronVolumeSigned(q2,p1,p2,p3))
+        let s1 = sign (tetrahedronVolumeSigned(q1, p1, p2, p3))
+        let s2 = sign (tetrahedronVolumeSigned(q2, p1, p2, p3))
         // if line and triangle are exactly in the same plane s1 and s2 are both 0
         // It is hard to say at which very small volume it should be considers flat.
         // TODO add a tolerance parameter for tangential triangles and lines
         if s1 = s2 then
             None
         else
-            let s3 = sign (tetrahedronVolumeSigned(q1,q2,p1,p2))
-            let s4 = sign (tetrahedronVolumeSigned(q1,q2,p2,p3))
-            let s5 = sign (tetrahedronVolumeSigned(q1,q2,p3,p1))
+            let s3 = sign (tetrahedronVolumeSigned(q1, q2, p1, p2))
+            let s4 = sign (tetrahedronVolumeSigned(q1, q2, p2, p3))
+            let s5 = sign (tetrahedronVolumeSigned(q1, q2, p3, p1))
             if s3 = s4 && s4 = s5 then
-                let n = Vec.cross(p2-p1,p3-p1)
+                let n = Vec.cross(p2-p1, p3-p1)
                 let v = q2-q1
                 let div = v * n
-                if abs div < 1e-24 then 
+                if abs div < zeroLengthTolSquared then 
                     None
                 else
                     let t = ((p1-q1) * n) / div
@@ -184,15 +180,11 @@ module Intersect =
                     else
                         None                    
             else None
-        
-
-
-
 
     /// Intersects an infinite line with an infinite double cone that has it's Axis on Z-Axis.
     /// coneRadius -> coneBaseZ -> coneTipZ ->  (ln:Line3D) -> XConeLine
     /// Returns the parameter(s) on the line.
-    let  lineCone (ln:Line3D, coneRadius, coneBaseZ, coneTipZ) =        
+    let  lineCone (ln:Line3D, coneRadius, coneBaseZ, coneTipZ) = 
         let h = coneBaseZ-coneTipZ 
         if abs h < 1e-12 then EuclidException.Raise "Euclid.Intersection.lineCone: cone has zero height: coneRadius: %g, coneBaseZ: %g, coneTipZ: %g" coneRadius coneBaseZ coneTipZ
         let lam = coneRadius / h
@@ -203,7 +195,7 @@ module Intersect =
             XLineCone.Tangential
         else
             let f1 = 2.*lam*ln.FromZ*v.Z - 2.*lam*v.Z*coneTipZ - 2.*v.Y*ln.FromY - 2.*ln.FromX*v.X
-            let f0 = lam * ln.FromZ*ln.FromZ + lam*coneTipZ*coneTipZ - 2.*ln.FromZ*coneTipZ*lam - ln.FromY*ln.FromY - ln.FromX*ln.FromX
+            let f0 = lam*ln.FromZ*ln.FromZ + lam*coneTipZ*coneTipZ - 2.*ln.FromZ*coneTipZ*lam - ln.FromY*ln.FromY - ln.FromX*ln.FromX
             let part = f1**2. - 4.* f2 * f0
             if part < 0.0 then  
                 XLineCone.NoIntersection 
@@ -215,5 +207,5 @@ module Intersect =
                 if abs(u-v) < 1e-12 then
                     XLineCone.Touching ((u+v)*0.5)
                 else
-                    XLineCone.Intersecting (u,v)
+                    XLineCone.Intersecting (u, v)
                 

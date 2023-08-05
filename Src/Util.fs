@@ -6,32 +6,40 @@ open System
 type internal OPT = Runtime.InteropServices.OptionalAttribute
 
 /// DefaultParameterValueAttribute for member parameters.
-type internal DEF =  Runtime.InteropServices.DefaultParameterValueAttribute
+type internal DEF = Runtime.InteropServices.DefaultParameterValueAttribute
 
 /// Exception in Euclid.
 type EuclidException (s:string) =
-    inherit System.Exception(s)
+    inherit Exception(s)
 
-    static member Raise msg =  Printf.kprintf (fun s -> raise (EuclidException(s))) msg
+    static member Raise msg = Printf.kprintf (fun s -> raise (EuclidException(s))) msg
 
+    /// This function is much smaller when it gets inlined compared to the Raise (Printf.kprintf) version
+    static member Throw1 msg v = raise (EuclidException(msg + ": " + v.ToString()))
 
 /// Exception for attempting to divide by a 0.0 or almost 0.0 value.
-/// Almost 0.0 is defined by Util.zeroLengthTol (1e-16)
+/// Almost 0.0 is defined by Util.zeroLengthTolerance as 1e-12.
 type EuclidDivByZeroException (s:string) =
-    inherit System.Exception(s)
+    inherit Exception(s)
 
     static member Raise msg = Printf.kprintf (fun s -> raise (EuclidDivByZeroException(s))) msg
-
+    
+    /// This function is much smaller when it gets inlined compared to the Raise (Printf.kprintf) version
+    static member Throw1 msg v = raise (EuclidDivByZeroException(msg + ": " + v.ToString()))
 
 /// Math Utility functions and values for use within Euclid.
 module Util =
 
     /// Test is a value is not null.
-    let inline notNull x =  match x with null -> false | _ -> true
+    let inline notNull x = match x with null -> false | _ -> true
 
-    /// Tolerance for zero length: 1e-16 in divisions.
+    /// Tolerance for zero length: 1e-12 in divisions and unitizing of vectors.
     [<Literal>]
-    let zeroLengthTol = 1e-16
+    let zeroLengthTolerance = 1e-12
+
+    /// Squared Tolerance for zero length in divisions.: 1e-12 * 1e-12 = 1e-24 
+    [<Literal>]
+    let zeroLengthTolSquared = zeroLengthTolerance * zeroLengthTolerance
 
     /// Math.PI * 2.0
     [<Literal>]
@@ -61,12 +69,13 @@ module Util =
 
     /// A safe arcsine (Inverse Sine) function.
     /// It clamps the input between -1 and 1
-    let inline asinSafe a = a |> clampBetweenMinusOneAndOne |> Math.Asin
-
+    let inline asinSafe a = // TODO fail if 'a' is bigger than  1.01 or smaller than -1.01 ??
+        a |> clampBetweenMinusOneAndOne |> Math.Asin
 
     /// A safe arccosine (Inverse Cosine) function.
     /// It clamps the input between -1 and 1
-    let inline acosSafe a = a |> clampBetweenMinusOneAndOne |> Math.Acos
+    let inline acosSafe a = // TODO fail if 'a' is bigger than  1.01 or smaller than -1.01 ??
+        a |> clampBetweenMinusOneAndOne |> Math.Acos
 
     /// The float number that is 9 increments bigger than 1.0.
     /// This is approx 1.0 + 1e-6
@@ -318,7 +327,7 @@ module RelAngleDiscriminant =
     //     if relAngleDiscriminant > 1.5e-6 then //not parallel //1e-5 for 0.25deg,  //1.5e-6 for 0.1deg,  //1.5e-4 for 1.0 deg
     //         let t = (b * e - c * d) / discriminant
     //         let u = (a * e - b * d) / discriminant
-    //         Some (t,u)
+    //         Some (t, u)
     //     else
     //         None
 
@@ -429,10 +438,10 @@ module Units =
     [<Measure>] type rad
 
     /// Converts Angels from Degrees to Radians.
-    let inline toRadians (degrees:float<deg>)  : float<rad> =  0.0174532925199433<rad/deg> * degrees
+    let inline toRadians (degrees:float<deg>)  : float<rad> = 0.0174532925199433<rad/deg> * degrees
 
     /// Converts Angels from Radians to Degrees.
-    let inline toDegrees (radians: float<rad>) :float<deg>  = 57.2957795130823<deg/rad> * radians
+    let inline toDegrees (radians: float<rad>) :float<deg> = 57.2957795130823<deg/rad> * radians
 
     *)
 

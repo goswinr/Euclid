@@ -48,7 +48,7 @@ type Rect3D =
 
     /// Unchecked Internal Constructor Only.
     /// Create a Parametrized Plane with X, Y and Z Direction.
-    internal new (origin,axisX,axisY)  =  {Origin=origin; Xaxis=axisX; Yaxis=axisY}
+    internal new (origin, axisX, axisY) ={Origin=origin; Xaxis=axisX; Yaxis=axisY}
 
     /// The size in X direction, same as member rect.SizeX.
     member inline r.Length = r.Xaxis.Length
@@ -57,21 +57,21 @@ type Rect3D =
     member inline r.SizeX = r.Xaxis.Length
 
     /// The size in Y direction, same as member rect.SizeY.
-    member inline r.Width  = r.Yaxis.Length
+    member inline r.Width = r.Yaxis.Length
 
     /// The size in Y direction, same as member rect.Width.
-    member inline r.SizeY  = r.Yaxis.Length
+    member inline r.SizeY = r.Yaxis.Length
 
     /// Nicely formatted string representation of the 3D Rectangle including its size.
     override r.ToString() =
-        sprintf "Euclid.Rect3D %s x %s  (Origin:%s| X-ax:%s| Y-ax:%s)"
-            (Format.float r.Length)  (Format.float r.Width)
+        sprintf "Euclid.Rect3D %s x %s (Origin:%s| X-ax:%s| Y-ax:%s)"
+           (Format.float r.Length) (Format.float r.Width)
             r.Origin.AsString r.Xaxis.AsString r.Yaxis.AsString
 
 
     /// Format the 3D Rectangle into string with nice floating point number formatting of X, Y and Z size only.
     /// But without type name as in v.ToString()
-    member r.AsString = sprintf "%s x %s" (Format.float r.Length)  (Format.float r.Width)
+    member r.AsString = sprintf "%s x %s" (Format.float r.Length) (Format.float r.Width)
 
     /// Returns the corner diagonally opposite of corner from Origin (point 2).
     ///
@@ -198,13 +198,13 @@ type Rect3D =
     /// Creates a unitized version of the local X-Axis.
     member inline r.XaxisUnit =
         let len = r.Xaxis.Length
-        if len = zeroLengthTol then EuclidException.Raise "Euclid.Rect3D.XaxisUnit: rect Xaxis is too small for unitizing: %s" r.AsString
+        if len = zeroLengthTolerance then EuclidException.Raise "Euclid.Rect3D.XaxisUnit: rect Xaxis is too small for unitizing: %s" r.AsString
         r.Xaxis*(1./len)
 
     /// Creates a unitized version of the local Y-Axis.
     member inline r.YaxisUnit =
         let len = r.Yaxis.Length
-        if len = zeroLengthTol then EuclidException.Raise "Euclid.Rect3D.XaxisUnit: rect Yaxis is too small for unitizing: %s" r.AsString
+        if len = zeroLengthTolerance then EuclidException.Raise "Euclid.Rect3D.XaxisUnit: rect Yaxis is too small for unitizing: %s" r.AsString
         r.Yaxis*(1./len)
 
     /// Returns the Normal; resulting from the cross product of r.Xaxis with r.Yaxis.
@@ -212,9 +212,9 @@ type Rect3D =
 
     /// Returns the unitized Normal; resulting from the cross product of r.Xaxis with r.Yaxis.
     member r.NormalUnit =
-        let z = Vec.cross(r.Xaxis,r.Yaxis)
+        let z = Vec.cross(r.Xaxis, r.Yaxis)
         let len = z.Length
-        if len = zeroLengthTol then EuclidException.Raise "Euclid.Rect3D.NormalUnit: rect is too small for finding a normal vector: %s" r.AsString
+        if len = zeroLengthTolerance then EuclidException.Raise "Euclid.Rect3D.NormalUnit: rect is too small for finding a normal vector: %s" r.AsString
         z*(1./len)
 
 
@@ -260,7 +260,7 @@ type Rect3D =
     ///   |            |       local
     ///   +------------+-----> X-Axis
     ///  0-Origin       1
-    member r.RotatedCW90 = Rect3D(r.Origin + r.Yaxis , -r.Yaxis, r.Xaxis)
+    member r.RotatedCW90 = Rect3D(r.Origin + r.Yaxis, -r.Yaxis, r.Xaxis)
 
 
     /// Returns the Rectangle rotated 180 degrees around its center.
@@ -279,9 +279,9 @@ type Rect3D =
     ///   |            |       local
     ///   +------------+-----> X-Axis
     ///  0-Origin       1
-    member r.Rotated180 = Rect3D(r.Origin + r.Yaxis + r.Xaxis , -r.Xaxis, -r.Yaxis)
+    member r.Rotated180 = Rect3D(r.Origin + r.Yaxis + r.Xaxis, -r.Xaxis, -r.Yaxis)
 
-    /// Returns the Rectangle rotated 90 degrees counter clockwise around its center.
+    /// Returns the Rectangle rotated 90 degrees Counter-Clockwise around its center.
     /// The normal of the rectangle stays the same.
     /// Origin will be at point 1, X-axis to to point 2, Y-axis to point 0.
     ///   local
@@ -297,10 +297,10 @@ type Rect3D =
     ///   |            |       local
     ///   +------------+-----> X-Axis
     ///  0-Origin       1
-    member r.RotatedCCW90 = Rect3D(r.Origin + r.Xaxis , r.Yaxis, -r.Xaxis)
+    member r.RotatedCCW90 = Rect3D(r.Origin + r.Xaxis, r.Yaxis, -r.Xaxis)
 
 
-    /// Returns the 4 corners of the 3D Rectangle in counter clockwise order, starting at Origin.
+    /// Returns the 4 corners of the 3D Rectangle in Counter-Clockwise order, starting at Origin.
     /// Returns an array of 4 Points: point 0 then 1, 2 and 3.
     ///
     ///   local
@@ -321,7 +321,7 @@ type Rect3D =
         let p1 = p0 + r.Xaxis
         [| p0  ; p1 ; p1 + r.Yaxis; p0 + r.Yaxis|]
 
-    /// Returns the 4 corners of the 3D Rectangle als closed loop in counter clockwise order, starting at Origin.
+    /// Returns the 4 corners of the 3D Rectangle als closed loop in Counter-Clockwise order, starting at Origin.
     /// First and last point are the same.
     /// Returns an array of 5 Points: point 0 then 1, 2, 3 and again 0.
     ///
@@ -347,20 +347,20 @@ type Rect3D =
     /// Evaluate a X, Y and Z parameter of the the 3D Rectangle.
     ///  0.0, 0.0, 0.0 returns the Origin.
     ///  1.0, 1.0, 1.0 returns the FarCorner.
-    member inline r.EvaluateAt (xParameter:float,yParameter:float) =
+    member inline r.EvaluateAt (xParameter:float, yParameter:float) =
         r.Origin + r.Xaxis * xParameter + r.Yaxis * yParameter
 
 
     /// Calculates the volume of the 3D Rectangle.
-    member inline r.Area  =
+    member inline r.Area =
         r.Xaxis.Length*r.Yaxis.Length
 
     /// Gets the Plane that this 3D rectangle is based on.
-    member inline r.Plane  =
+    member inline r.Plane =
         let x = r.Xaxis.Unitized
         let y = r.Yaxis.Unitized
-        let z = UnitVec.cross(x,y).Unitized
-        PPlane.createUnchecked (r.Origin, x,y,z)
+        let z = UnitVec.cross(x, y).Unitized
+        PPlane.createUnchecked (r.Origin, x, y, z)
 
     //-------------------------------------------------------------------
     //------------------------static members-----------------------------
@@ -390,7 +390,7 @@ type Rect3D =
     /// Returns the 3D Rectangle expanded by respective distances on all four sides.
     /// Does check for overflow if distance is negative and fails.
     /// distLen, distWidth are for the local  X and Y-axis respectively.
-    static member expandXY distLen distWidth  (r:Rect3D) =
+    static member expandXY distLen distWidth (r:Rect3D) =
         let len = r.Length
         let wid = r.Width
         if len <= distLen   * -2.0 then EuclidException.Raise "Euclid.Rect3D.expandXY: the 3D Rectangle %s is too small to expand by negative distance distLen %s"  r.AsString (Format.float distLen)
@@ -401,16 +401,16 @@ type Rect3D =
 
     /// Give PPlane and sizes.
     /// The Rect3D's Origin will be at the plane's Origin.
-    static member createFromPlane (pl:PPlane,sizeX:float, sizeY:float ) =
-        if sizeX < 0. then EuclidException.Raise "Euclid.Rect3D.createFromPlane sizeX is negative: %g , sizeY is: %g, plane: %O"  sizeX sizeY  pl
-        if sizeY < 0. then EuclidException.Raise "Euclid.Rect3D.createFromPlane sizeY is negative: %g , sizeX is: %g, plane: %O"  sizeY sizeX  pl
+    static member createFromPlane (pl:PPlane, sizeX:float, sizeY:float ) =
+        if sizeX < 0. then EuclidException.Raise "Euclid.Rect3D.createFromPlane sizeX is negative: %g, sizeY is: %g, plane: %O"  sizeX sizeY  pl
+        if sizeY < 0. then EuclidException.Raise "Euclid.Rect3D.createFromPlane sizeY is negative: %g, sizeX is: %g, plane: %O"  sizeY sizeX  pl
         Rect3D(pl.Origin, pl.Xaxis*sizeX, pl.Yaxis*sizeY)
 
     /// Give PPlane and sizes.
     /// The Rect3D's Center will be at the plane's Origin.
-    static member createCenteredFromPlane (pl:PPlane,sizeX:float, sizeY:float ) =
-        if sizeX < 0. then EuclidException.Raise "Euclid.Rect3D.createCenteredFromPlane sizeX is negative: %g , sizeY is: %g, plane: %O"  sizeX sizeY  pl
-        if sizeY < 0. then EuclidException.Raise "Euclid.Rect3D.createCenteredFromPlane sizeY is negative: %g , sizeX is: %g, plane: %O"  sizeY sizeX  pl
+    static member createCenteredFromPlane (pl:PPlane, sizeX:float, sizeY:float ) =
+        if sizeX < 0. then EuclidException.Raise "Euclid.Rect3D.createCenteredFromPlane sizeX is negative: %g, sizeY is: %g, plane: %O"  sizeX sizeY  pl
+        if sizeY < 0. then EuclidException.Raise "Euclid.Rect3D.createCenteredFromPlane sizeY is negative: %g, sizeX is: %g, plane: %O"  sizeY sizeX  pl
         let x = pl.Xaxis*sizeX
         let y = pl.Yaxis*sizeY
         Rect3D(pl.Origin- x*0.5 - y*0.5, x, y)
@@ -447,14 +447,14 @@ type Rect3D =
     static member translateX (distX:float) (r:Rect3D) =
         let x = r.Xaxis
         let len = x.Length
-        if len = zeroLengthTol then EuclidException.Raise "Euclid.Rect3D.translateX: rect.Xaxis is zero length in Rect3D: %s" r.AsString
+        if len = zeroLengthTolerance then EuclidException.Raise "Euclid.Rect3D.translateX: rect.Xaxis is zero length in Rect3D: %s" r.AsString
         Rect3D(r.Origin + x*(distX/len), x, r.Yaxis)
 
     /// Translate along the local Y-axis of the 3D Rectangle.
     static member translateY (distY:float) (r:Rect3D) =
         let y = r.Yaxis
         let len = y.Length
-        if len = zeroLengthTol then EuclidException.Raise "Euclid.Rect3D.translateY: rect.Yaxis is zero length in Rect3D: %s" r.AsString
+        if len = zeroLengthTolerance then EuclidException.Raise "Euclid.Rect3D.translateY: rect.Yaxis is zero length in Rect3D: %s" r.AsString
         Rect3D(r.Origin + y*(distY/len), r.Xaxis, y)
 
     /// Translate by a 3D vector.
@@ -464,16 +464,16 @@ type Rect3D =
     /// Offset or Translate along the local Z-axis.
     /// The local Z-axis is calculated from cross product of X and Y-axis of the 3D Rectangle.
     static member offset (offsetDistance :float) (r:Rect3D) =
-        let z = Vec.cross(r.Xaxis,r.Yaxis)
+        let z = Vec.cross(r.Xaxis, r.Yaxis)
         let len = z.Length
-        if len = zeroLengthTol then EuclidException.Raise "Euclid.Rect3D.offset: rect is too small for offsetting zero length in Rect3D: %s" r.AsString
+        if len = zeroLengthTolerance then EuclidException.Raise "Euclid.Rect3D.offset: rect is too small for offsetting zero length in Rect3D: %s" r.AsString
         Rect3D(r.Origin + z*(offsetDistance/len), r.Xaxis, r.Yaxis)
 
-    /// Transform the 3D Rectangle by the given OrthoMatrix.
+    /// Transform the 3D Rectangle by the given RigidMatrix.
     /// The returned 3D Rectangle is guaranteed to have orthogonal vectors.
-    static member transform (m:OrthoMatrix) (r:Rect3D) =
-        let o  = Pnt.transformOrtho m r.Origin
-        let x = Vec.rotateOrtho m r.Xaxis
-        let y = Vec.rotateOrtho m r.Yaxis
-        Rect3D(o,x, y)
+    static member transform (m:RigidMatrix) (r:Rect3D) =
+        let o = Pnt.transformRigid m r.Origin
+        let x = Vec.transformRigid m r.Xaxis
+        let y = Vec.transformRigid m r.Yaxis
+        Rect3D(o, x, y)
 

@@ -2,6 +2,8 @@ namespace Euclid
 
 open System
 
+#nowarn "44" // to skip Obsolete warnings (members just needs to be public for inlining, but should be hidden)
+
 /// When Euclid is opened this module will be auto-opened.
 /// It only contains extension members for type UnitVc.
 [<AutoOpen>]
@@ -9,7 +11,7 @@ module AutoOpenUnitVc =
     open Util
 
     /// Returns distance between the tips of two 2D vectors.
-    let inline internal vecDist2(ax:float,ay:float,bx:float,by:float) =
+    let inline internal vecDist2(ax:float, ay:float, bx:float, by:float) =
         let x = bx-ax
         let y = by-ay
         sqrt(x*x+y*y)
@@ -17,24 +19,24 @@ module AutoOpenUnitVc =
     type UnitVc with
         
         /// Convert 2D unit-vector to 2D point.
-        member inline v.AsPt         = Pt( v.X, v.Y)
+        member inline v.AsPt = Pt( v.X, v.Y)
 
         /// Convert 2D unit-vector to 2D vector
-        member inline v.AsVc        = Vc(v.X, v.Y)
+        member inline v.AsVc = Vc(v.X, v.Y)
 
         /// Convert 2D unit-vector to 3D vector using 0.0 as Z value.
         /// If you want a different Z value use the member v.WithZ(z)
-        member inline v.AsVec        = Vec(v.X, v.Y, 0.0)
+        member inline v.AsVec = Vec(v.X, v.Y, 0.0)
 
         /// Convert 2D unit-vector to 3D unit-vector using 0.0 as Z value.
         /// If you want a different Z value use the member v.WithZ(z)
-        member inline v.AsUnitVec    = UnitVec.createUnchecked(v.X, v.Y, 0.0)
+        member inline v.AsUnitVec = UnitVec.createUnchecked(v.X, v.Y, 0.0)
 
         /// Convert 2D unit-vector to 3D point using 0.0 as Z value.
-        member inline v.AsPnt        = Pnt(v.X, v.Y, 0.0)
+        member inline v.AsPnt = Pnt(v.X, v.Y, 0.0)
         /// Returns new 2D vector with new X coordinate, Y stays the same.
         /// 
-        member inline v.WithX x = Vc (x ,v.Y)
+        member inline v.WithX x = Vc (x, v.Y)
 
         /// Returns new 2D vector with new Y coordinate, X stays the same.
         member inline v.WithY y = Vc (v.X, y)
@@ -45,22 +47,22 @@ module AutoOpenUnitVc =
 
         /// 2D cross product.
         /// Its Just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
-        member inline a.Cross (b:Vc)     = a.X*b.Y - a.Y*b.X
+        member inline a.Cross (b:Vc) = a.X*b.Y - a.Y*b.X
 
         /// 2D cross product.
         /// Its Just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
         member inline a.Cross (b:UnitVc) = a.X*b.Y - a.Y*b.X
 
-        /// 90 Degree rotation counter clockwise.
+        /// 90 Degree rotation Counter-Clockwise.
         member inline v.Rotate90CCW = UnitVc.createUnchecked( -v.Y,   v.X  )
 
         /// 90 Degree rotation clockwise.
-        member inline v.Rotate90CW  = UnitVc.createUnchecked(  v.Y,  -v.X  )
+        member inline v.Rotate90CW = UnitVc.createUnchecked(  v.Y,  -v.X  )
 
         /// The diamond angle.
         /// Calculates the proportion of X to Y component.
         /// It is always positive and in the range of 0.0 to 4.0 ( for 360 Degrees)
-        /// 0.0 = Xaxis,  going Counter clockwise.
+        /// 0.0 = Xaxis,  going Counter-Clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         member inline v.DirectionDiamond =
             // https://stackoverflow.com/a/14675998/969070           
@@ -75,8 +77,8 @@ module AutoOpenUnitVc =
                 else
                     3.0 + v.X/(v.X-v.Y)
 
-        /// Returns the Angle in Radians from Xaxis,
-        /// Going Counter clockwise till two Pi.
+        /// Returns the angle in Radians from X-axis,
+        /// Going Counter-Clockwise till two Pi.
         member inline v.Direction2Pi =
             // https://stackoverflow.com/a/14675998/969070            
             let a = Math.Atan2(v.Y, v.X)
@@ -85,7 +87,7 @@ module AutoOpenUnitVc =
             else
                 a
 
-        /// Returns the Angle in Radians from Xaxis,
+        /// Returns the angle in Radians from X-axis,
         /// Ignores orientation.
         /// Range 0.0 to Pi.
         member inline v.DirectionPi =
@@ -96,22 +98,22 @@ module AutoOpenUnitVc =
             else
                 a
 
-        /// Returns the Angle in Degrees from Xaxis.
-        /// Going Counter clockwise till 360.
+        /// Returns the angle in Degrees from X-axis.
+        /// Going Counter-Clockwise till 360.
         member inline v.Direction360 =
             v.Direction2Pi |> toDegrees
 
-        /// Returns the Angle in Radians from Xaxis,
+        /// Returns the angle in Radians from X-axis,
         /// Ignores orientation.
         /// Range 0.0 to 180.
         member inline v.Direction180 =
             v.DirectionPi |> toDegrees
 
-        /// Returns positive angle for rotating counter clockwise from this vector to vector 'b' .
+        /// Returns positive angle for rotating Counter-Clockwise from this vector to vector 'b' .
         /// In Diamond Angle. Using only proportion of X to Y components.
         /// Range of 0.0 to 4.0 ( for 360 Degrees)
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
-        member inline v.AngleDiamondTo (b:UnitVc)   =
+        member inline v.AngleDiamondTo (b:UnitVc) =
             let r = b.DirectionDiamond - v.DirectionDiamond
             if r >= 0. then  r
             else r + 4.0
@@ -126,34 +128,34 @@ module AutoOpenUnitVc =
         /// Calculates the dot product of two 2D unit vectors.
         /// Then checks if it is bigger than 1e-12.
         member inline v.MatchesOrientation (other:Vc) =
-            if other.LengthSq < 1e-24 then EuclidException.Raise "Euclid.UnitVc.MatchesOrientation: Vc 'other' is too short: %O. 'this':%O " other v 
+            if other.LengthSq < zeroLengthTolSquared then EuclidException.Raise "Euclid.UnitVc.MatchesOrientation: Vc 'other' is too short: %O. 'this':%O " other v 
             v * other > 1e-12
             
 
         /// Checks if the angle between the two 2D unit vectors is more than 180 degrees.
         /// Calculates the dot product of two 2D unit vectors.
-        /// Then checks if it is smaller than -1e-12. 
+        /// Then checks if it is smaller than minus 1e-12. 
         member inline v.IsOppositeOrientation (other:UnitVc) =
             v * other < -1e-12 
 
         /// Checks if the angle between the this 2D unit vectors and a 2D vector is more than 180 degrees.
         /// Calculates the dot product of two 2D unit vectors.
-        /// Then checks if it is smaller than -1e-12.
+        /// Then checks if it is smaller than minus 1e-12.
         member inline v.IsOppositeOrientation (other:Vc) =
-            if other.LengthSq < 1e-24 then EuclidException.Raise "Euclid.UnitVc.IsOppositeOrientation: Vc 'other' is too short: %O. 'this':%O " other v 
+            if other.LengthSq < zeroLengthTolSquared then EuclidException.Raise "Euclid.UnitVc.IsOppositeOrientation: Vc 'other' is too short: %O. 'this':%O " other v 
             v * other < -1e-12    
 
         /// Checks if 2D unit vector is parallel to the world X axis. Ignoring orientation.
-        /// The absolute deviation tolerance along Y axis is 1e-6.
+        /// The absolute deviation tolerance along Y axis is 1e-9.
         member inline v.IsXAligned =
             let y = abs (v.Y)
-            y < 1e-6       
+            y < 1e-9       
 
         /// Checks if 2D unit vector is parallel to the world Y axis. Ignoring orientation.
-        /// The absolute deviation tolerance along X axis is 1e-6.
+        /// The absolute deviation tolerance along X axis is 1e-9.
         member inline v.IsYAligned =
             let x = abs (v.X)
-            x < 1e-6 
+            x < 1e-9 
 
         /// Checks if two 2D unit vectors are parallel.
         /// Ignores the line orientation.
@@ -170,7 +172,7 @@ module AutoOpenUnitVc =
         /// See Euclid.Cosine module.
         member inline this.IsParallelTo( other:Vc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
             let ol = other.LengthSq
-            if ol < 1e-24 then EuclidException.Raise "Euclid.UnitVc.IsParallelTo: Vc 'other' is too short: %s. 'this':%s " other.AsString this.AsString
+            if ol < zeroLengthTolSquared then EuclidException.Raise "Euclid.UnitVc.IsParallelTo: Vc 'other' is too short: %s. 'this':%s " other.AsString this.AsString
             let ou = other * (1.0 / sqrt ol )
             abs(ou*this) > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
 
@@ -181,7 +183,7 @@ module AutoOpenUnitVc =
         /// The default angle tolerance is 0.25 degrees.
         /// This tolerance can be customized by an optional minium cosine value.
         /// See Euclid.Cosine module.
-        member inline this.IsParallelAndOrientedTo  (other:UnitVc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
+        member inline this.IsParallelAndOrientedTo (other:UnitVc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
             other*this > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
 
         /// Checks if this 2D unit vectors and a 2D vector are parallel.
@@ -189,9 +191,9 @@ module AutoOpenUnitVc =
         /// The default angle tolerance is 0.25 degrees.
         /// This tolerance can be customized by an optional minium cosine value.
         /// See Euclid.Cosine module.
-        member inline this.IsParallelAndOrientedTo  (other:Vc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
+        member inline this.IsParallelAndOrientedTo (other:Vc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
             let ol = other.LengthSq
-            if ol < 1e-24 then EuclidException.Raise "Euclid.UnitVc.IsParallelAndOrientedTo: Vc 'other' is too short: %s. 'this':%s " other.AsString this.AsString
+            if ol < zeroLengthTolSquared then EuclidException.Raise "Euclid.UnitVc.IsParallelAndOrientedTo: Vc 'other' is too short: %s. 'this':%s " other.AsString this.AsString
             let ou = other * (1.0 / sqrt ol )            
             ou*this > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
             
@@ -213,7 +215,7 @@ module AutoOpenUnitVc =
         /// See Euclid.Cosine module.
         member inline this.IsPerpendicularTo (other:Vc, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) =
             let ol = other.LengthSq
-            if ol < 1e-24 then EuclidException.Raise "Euclid.UnitVc.IsPerpendicularTo: Vc 'other' is too short: %s. 'this':%s " other.AsString this.AsString
+            if ol < zeroLengthTolSquared then EuclidException.Raise "Euclid.UnitVc.IsPerpendicularTo: Vc 'other' is too short: %s. 'this':%s " other.AsString this.AsString
             let ou = other * (1.0 / sqrt ol )            
             let d = ou*this
             float -maxCosine < d && d  < float maxCosine // = cosine of 98.75 and 90.25 degrees
@@ -227,13 +229,13 @@ module AutoOpenUnitVc =
         static member inline create (fromPnt:Pt, toPnt:Pt) =
             let x = toPnt.X - fromPnt.X
             let y = toPnt.Y - fromPnt.Y
-            UnitVc.create( x , y  )
+            UnitVc.create( x, y)
 
-        /// Returns the World X-axis with length one: UnitVc(1,0)
-        static member inline Xaxis  = UnitVc.createUnchecked (1.0 , 0.0)
+        /// Returns the World X-axis with length one: UnitVc(1, 0)
+        static member inline Xaxis = UnitVc.createUnchecked (1.0, 0.0)
 
-        /// Returns the World Y-axis with length one: UnitVc(0,1)
-        static member inline Yaxis  = UnitVc.createUnchecked (0.0 , 1.0)
+        /// Returns the World Y-axis with length one: UnitVc(0, 1)
+        static member inline Yaxis = UnitVc.createUnchecked (0.0, 1.0)
 
         /// Returns the distance between the tips of two 2D unit vectors.
         static member inline difference (a:UnitVc) (b:UnitVc) = let v = a-b in sqrt(v.X*v.X + v.Y*v.Y )
@@ -242,40 +244,46 @@ module AutoOpenUnitVc =
         /// This operation is slightly faster than Vec.difference and sufficient for many algorithms like finding closest points.
         static member inline differenceSq (a:UnitVc) (b:UnitVc) = let v = a-b in  v.X*v.X + v.Y*v.Y
 
-
+        /// A separate function to compose the error message that does not get inlined.
+        [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
+        static member failedCreateFromMembersXY(v:'T,e:exn) = EuclidException.Raise "Euclid.UnitVc.createFromMembersXY: %A could not be converted to a Euclid.UnitVc:\r\n%A" v e
         /// Accepts any type that has a X and Y (UPPERCASE) member that can be converted to a float.
         /// Does the unitizing too.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
-        static member inline createFromXY vec  =
+        static member inline createFromMembersXY vec =
             let x = ( ^T : (member X : _) vec)
             let y = ( ^T : (member Y : _) vec)
             try UnitVc.create(float x, float y)
-            with e -> EuclidException.Raise "Euclid.UnitVc.ofXY: %A could not be converted to a Euclid.UnitVc:\r\n%A" vec e
+            with e -> UnitVc.failedCreateFromMembersXY(vec,e)
 
+
+        /// A separate function to compose the error message that does not get inlined.
+        [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
+        static member failedCreateFromMembersxy(v:'T,e:exn) = EuclidException.Raise "Euclid.UnitVc.createFromMembersxy: %A could not be converted to a Euclid.UnitVc:\r\n%A" v e
         /// Accepts any type that has a x and y (lowercase) member that can be converted to a float.
         /// Does the unitizing too.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
-        static member inline createFromxy vec  =
+        static member inline createFromMembersxy vec =
             let x = ( ^T : (member x : _) vec)
             let y = ( ^T : (member y : _) vec)
             try UnitVc.create(float x, float y)
-            with e -> EuclidException.Raise "Euclid.UnitVc.ofxy: %A could not be converted to a Euclid.UnitVc:\r\n%A" vec e
+            with e -> UnitVc.failedCreateFromMembersxy(vec,e)
 
         /// Create 2D unit-vector from 2D point. Does the unitizing too.
-        static member inline createFromPt  (pt:Pt) =
+        static member inline createFromPt (pt:Pt) =
             let l = sqrt (pt.X*pt.X + pt.Y*pt.Y )
-            if l <  zeroLengthTol then EuclidException.Raise "Euclid.UnitVc.ofPt failed on too short %O" pt
-            UnitVc.createUnchecked( pt.X / l , pt.Y / l )
+            if l <  zeroLengthTolerance then EuclidException.Raise "Euclid.UnitVc.createFromPt failed on too close to Origin to give a meaningful direction %O" pt
+            UnitVc.createUnchecked( pt.X / l, pt.Y / l )
 
         /// Create 2D unit-vector from 2D vector. Does the unitizing too.
-        static member inline createFromVec  (v:Vc) =
+        static member inline createFromVec (v:Vc) =
             let l = sqrt (v.X*v.X + v.Y*v.Y )
-            if l <  zeroLengthTol then EuclidException.Raise "Euclid.UnitVc.ofVc failed on too short %O" v
-            UnitVc.createUnchecked( v.X / l , v.Y / l )
+            if l <  zeroLengthTolerance then EuclidException.Raise "Euclid.UnitVc.createFromVec failed on too short %O" v
+            UnitVc.createUnchecked( v.X / l, v.Y / l )
 
 
         /// Convert 2D unit-vector to 2D point.
-        static member inline asPt(v:UnitVc)  = Pt( v.X, v.Y)
+        static member inline asPt(v:UnitVc) = Pt( v.X, v.Y)
 
         /// Convert 2D unit-vector to 2D vector using 0.0 as Z value.
         /// If you want a different Z value use the member w.WithZ(z)
@@ -289,72 +297,72 @@ module AutoOpenUnitVc =
 
         /// 2D cross product.
         /// Its Just a scalar equal to the area of the parallelogram spanned by the input vectors.
-        static member inline cross (a:UnitVc, b:UnitVc)      = a.X*b.Y - a.Y*b.X
+        static member inline cross (a:UnitVc, b:UnitVc) = a.X*b.Y - a.Y*b.X
 
         /// 2D cross product.
         /// Its Just a scalar equal to the area of the parallelogram spanned by the input vectors.
-        static member inline cross (a:UnitVc, b:Vc)  = a.X*b.Y - a.Y*b.X
+        static member inline cross (a:UnitVc, b:Vc) = a.X*b.Y - a.Y*b.X
 
         /// 2D cross product.
         /// Its Just a scalar equal to the area of the parallelogram spanned by the input vectors.
-        static member inline cross (a:Vc, b:UnitVc)  = a.X*b.Y - a.Y*b.X
+        static member inline cross (a:Vc, b:UnitVc) = a.X*b.Y - a.Y*b.X
 
         /// Dot product, or scalar product of two 2D unit vectors.
         /// Returns a float. This float is the Cosine of the angle between the two 2D unit vectors.
-        static member inline dot  (a:UnitVc, b:UnitVc  ) = a.X * b.X + a.Y * b.Y
+        static member inline dot (a:UnitVc, b:UnitVc  ) = a.X * b.X + a.Y * b.Y
 
         /// Dot product, or scalar product of a 2D unit-vector with a 2D vector.
         /// Returns a float. This float is the projected length of the 2D vector on the direction of the unit-vector.
-        static member inline dot  (a:UnitVc, b:Vc  ) = a.X * b.X + a.Y * b.Y
+        static member inline dot (a:UnitVc, b:Vc  ) = a.X * b.X + a.Y * b.Y
 
         /// Dot product, or scalar product of a 2D vector with a 2D unit-vector.
         /// Returns a float. This float is the projected length of the 2D vector on the direction of the unit-vector.
-        static member inline dot  (a:Vc, b:UnitVc  ) = a.X * b.X + a.Y * b.Y
+        static member inline dot (a:Vc, b:UnitVc  ) = a.X * b.X + a.Y * b.Y
 
         /// Gets the X part of this 2D unit-vector.
-        static member inline getX     (v:UnitVc) = v.X
+        static member inline getX (v:UnitVc) = v.X
 
         /// Gets the Y part of this 2D unit-vector.
-        static member inline getY     (v:UnitVc) = v.Y
+        static member inline getY (v:UnitVc) = v.Y
 
         /// Returns new 2D vector with new X value, Y stays the same.
-        static member inline setX     x (v:UnitVc) = v.WithX x
+        static member inline withX x (v:UnitVc) = v.WithX x
 
         /// Returns new 2D vector with new Y value, X stays the same.
-        static member inline setY     y (v:UnitVc) = v.WithY y
+        static member inline withY y (v:UnitVc) = v.WithY y
 
         /// Returns new 3D vector with Z value, X and Y stay the same.
         /// If you want Z to be 0.0 you can use v.AsVec or v.AsUnitVec too.
-        static member inline setZ     z (v:UnitVc) = v.WithZ z
+        static member inline withZ z (v:UnitVc) = v.WithZ z
 
         /// Add two 2D unit vectors together. Returns a new (non-unitized) 2D vector.
-        static member inline add      (a:UnitVc) (b:UnitVc) = b + a
+        static member inline add (a:UnitVc) (b:UnitVc) = b + a
 
         /// Multiplies a 2D unit-vector with a scalar, also called scaling a vector.
-        /// Same as UnitVc.setLength. Returns a new (non-unitized) 2D vector.
-        static member inline scale      (scale:float) (v:UnitVc) = Vc (v.X * scale , v.Y * scale )
+        /// Same as UnitVc.withLength. Returns a new (non-unitized) 2D vector.
+        static member inline scale (scale:float) (v:UnitVc) = Vc (v.X * scale, v.Y * scale )
 
         /// Multiplies a 2D unit-vector with a scalar, also called scaling a vector.
-        /// Same as UnitVc.setLength. Returns a new (non-unitized) 2D vector.
-        static member inline setLength  (length:float) (v:UnitVc) = Vc (v.X * length , v.Y * length )
+        /// Same as UnitVc.withLength. Returns a new (non-unitized) 2D vector.
+        static member inline withLength (length:float) (v:UnitVc) = Vc (v.X * length, v.Y * length )
 
         /// Add to the X part of this 2D unit vectors together. Returns a new (non-unitized) 2D vector.
-        static member inline moveX     x (v:UnitVc) = Vc (v.X+x, v.Y)
+        static member inline moveX x (v:UnitVc) = Vc (v.X+x, v.Y)
 
         /// Add to the Y part of this 2D unit vectors together. Returns a new (non-unitized) 2D vector.
-        static member inline moveY     y (v:UnitVc) = Vc (v.X,   v.Y+y)
+        static member inline moveY y (v:UnitVc) = Vc (v.X,   v.Y+y)
 
         /// Negate or inverse a 2D unit vectors. Returns a new 2D unit-vector.
         /// Same as UnitVc.reverse.
-        static member inline flip  (v:UnitVc) = -v
+        static member inline flip (v:UnitVc) = -v
 
         /// Negate or inverse a 2D unit vectors. Returns a new 2D unit-vector.
         /// Same as UnitVc.flip.
-        static member inline reverse  (v:UnitVc) = -v
+        static member inline reverse (v:UnitVc) = -v
 
         /// Returns angle between two 2D unit vectors in Radians.
         /// Takes vector orientation into account.
-        /// Ignores order of input vectors. anglePi(a,b) = anglePi(b,a)
+        /// Ignores order of input vectors. anglePi(a, b) = anglePi(b, a)
         /// Range 0.0 to Pi( = 0 to 180 Degree)
         static member inline anglePi (a:UnitVc) (b:UnitVc) =
             // The "straight forward" method of acos(u.v) has large precision
@@ -374,8 +382,8 @@ module AutoOpenUnitVc =
             if -0.98 < dot && dot < 0.98 then // threshold for switching 0.98 ?
                 acos dot
             else
-                if dot < 0. then Math.PI - 2.0 * asin(vecDist2(-a.X,-a.Y,b.X,b.Y) * 0.5)
-                else                       2.0 * asin(vecDist2( a.X, a.Y,b.X,b.Y) * 0.5)
+                if dot < 0. then Math.PI - 2.0 * asin(vecDist2(-a.X, -a.Y, b.X, b.Y) * 0.5)
+                else                       2.0 * asin(vecDist2( a.X,  a.Y, b.X, b.Y) * 0.5)
             //let mutable r = b.Direction2Pi  - a.Direction2Pi  // this alternative calculation is about 10x slower for unit vectors
             //if r < 0.      then  r <- r + Util.twoPi
             //if r > Math.PI then  r <- Util.twoPi - r
@@ -384,16 +392,16 @@ module AutoOpenUnitVc =
 
         /// Returns positive angle between two 2D unit vectors in Radians.
         /// Ignores orientation.
-        /// Ignores order of input vectors. angleHalfPi(a,b) = angleHalfPi(b,a) = angleHalfPi(-b,a) = angleHalfPi(-b,-a)
+        /// Ignores order of input vectors. angleHalfPi(a, b) = angleHalfPi(b, a) = angleHalfPi(-b, a) = angleHalfPi(-b, -a)
         /// Range 0.0 to Pi/2 ( = 0 to 90 Degree)
         static member inline angleHalfPi (a:UnitVc) (b:UnitVc) =
-            let dot =  a * b
+            let dot = a * b
             let dotAbs = abs dot
             if dotAbs < 0.98 then
                 acos dotAbs
             else
-                if dot < 0. then 2.0 * asin(vecDist2(-a.X,-a.Y,b.X,b.Y) * 0.5)
-                else             2.0 * asin(vecDist2( a.X, a.Y,b.X,b.Y) * 0.5)
+                if dot < 0. then 2.0 * asin(vecDist2(-a.X, -a.Y, b.X, b.Y) * 0.5)
+                else             2.0 * asin(vecDist2( a.X,  a.Y, b.X, b.Y) * 0.5)
             //let mutable r = b.Direction2Pi  - a.Direction2Pi // this alternative calculation is about 10x slower for unit vectors
             //if r < 0.      then  r <- r + Util.twoPi
             //if r > Math.PI then  r <- Util.twoPi - r
@@ -401,17 +409,17 @@ module AutoOpenUnitVc =
             //r
 
 
-        /// Returns positive angle for rotating counter clockwise from vector 'a' to vector 'b' .
+        /// Returns positive angle for rotating Counter-Clockwise from vector 'a' to vector 'b' .
         /// In Radians.
         /// Range: 0.0 to 2 Pi ( = 0 to 360 Degrees)
-        static member inline angle2Pi (a:UnitVc , b:UnitVc)   =
+        static member inline angle2Pi (a:UnitVc, b:UnitVc) =
             let r = b.Direction2Pi  - a.Direction2Pi
             if r >= 0. then  r
             else r + Util.twoPi
 
         /// Returns positive angle between two 2D unit vectors in Degrees,
         /// Ignores vector orientation.
-        /// Ignores order of input vectors. angle90(a,b) = angle90(b,a) = angle90(-b,a) = angle90(-b,-a)
+        /// Ignores order of input vectors. angle90(a, b) = angle90(b, a) = angle90(-b, a) = angle90(-b, -a)
         /// Range: 0 to 90 Degrees.
         static member inline angle90 (a:UnitVc) (b:UnitVc) =
             UnitVc.angleHalfPi a b |>  toDegrees
@@ -419,42 +427,42 @@ module AutoOpenUnitVc =
 
         /// Returns positive angle between two 2D unit vectors in Degrees.
         /// Takes vector orientation into account.
-        /// Ignores order of input vectors. angle180(a,b) = angle180(b,a)
+        /// Ignores order of input vectors. angle180(a, b) = angle180(b, a)
         /// Range 0 to 180 Degrees.
         static member inline angle180 (a:UnitVc) (b:UnitVc) =
             UnitVc.anglePi a b |>  toDegrees
 
 
-        /// Returns positive angle for rotating counter clockwise from vector 'a' to vector 'b' .
+        /// Returns positive angle for rotating Counter-Clockwise from vector 'a' to vector 'b' .
         /// In Degree.
         /// Range: 0.0 to 2 Pi ( = 0 to 360 Degrees)
-        static member inline angle360 (a:UnitVc, b:UnitVc)  =
-            UnitVc.angle2Pi (a,b) |> toDegrees
+        static member inline angle360 (a:UnitVc, b:UnitVc) =
+            UnitVc.angle2Pi (a, b) |> toDegrees
 
 
-        /// Returns positive angle for rotating counter clockwise from vector 'a' to vector 'b' .
+        /// Returns positive angle for rotating Counter-Clockwise from vector 'a' to vector 'b' .
         /// In Diamond Angle. Using only proportion of X to Y components.
         /// Range of 0.0 to 4.0 ( for 360 Degrees)
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
-        static member inline angleDiamond (a:UnitVc , b:UnitVc)   = a.AngleDiamondTo(b)
+        static member inline angleDiamond (a:UnitVc, b:UnitVc) = a.AngleDiamondTo(b)
 
 
         /// The diamond angle.
         /// Calculates the proportion of X to Y component.
         /// It is always positive and in the range of 0.0 to 4.0 ( for 360 Degrees)
-        /// 0.0 = Xaxis,  going Counter clockwise.
+        /// 0.0 = Xaxis,  going Counter-Clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         static member inline directionDiamond(a:UnitVc) = a.DirectionDiamond
 
-        /// Returns positive angle of unit-vector. Counter clockwise from X-axis.
+        /// Returns positive angle of unit-vector. Counter-Clockwise from X-axis.
         /// In Radians.
         /// Range: 0.0 to 2 Pi ( = 0 to 360 Degrees)
-        static member inline direction2Pi (v:UnitVc)   = v.Direction2Pi
+        static member inline direction2Pi (v:UnitVc) = v.Direction2Pi
 
-        /// Returns positive angle of unit-vector. Counter clockwise from X-axis.
+        /// Returns positive angle of unit-vector. Counter-Clockwise from X-axis.
         /// In Degree.
         /// Range: 0.0 to 2 Pi ( = 0 to 360 Degrees)
-        static member inline direction360 (v:UnitVc)  = v.Direction360
+        static member inline direction360 (v:UnitVc) = v.Direction360
 
         /// Ensure that the 2D unit vector has a positive dot product with given 2D orientation unit vector.
         static member inline matchOrientation (orientationToMatch:UnitVc) (vecToFlip:UnitVc) =
@@ -468,20 +476,20 @@ module AutoOpenUnitVc =
         /// Checks if the angle between the two 2D unit vectors is less than 180 degrees.
         /// Calculates the dot product of two 2D unit vectors.
         /// Then checks if it is bigger than 1e-12.
-        static member inline matchesOrientation (other:UnitVc) (v:UnitVc)  =
-            v * other > 1e-12
+        static member inline matchesOrientation (other:UnitVc) (v:UnitVc) =
+            v.MatchesOrientation other
 
         /// Checks if the angle between the two 2D unit vectors is more than 180 degrees.
         /// Calculates the dot product of two 2D unit vectors.
         /// Then checks if it is smaller than -1e-12. 
-        static member inline isOppositeOrientation (other:UnitVc) (v:UnitVc)  =
-            v * other < -1e-12 
+        static member inline isOppositeOrientation (other:UnitVc) (v:UnitVc) =
+            v.IsOppositeOrientation other
 
 
         /// Checks if Angle between two vectors is Below 0.25 Degree.
         /// Ignores vector orientation.
         /// Same as isAngleBelowQuatreDegree.
-        static member inline  areParallel (other:UnitVc) (v:UnitVc) =   v.IsParallelTo other
+        static member inline  areParallel (other:UnitVc) (v:UnitVc) = v.IsParallelTo other
 
 
         /// Checks if Angle between two vectors is between 98.75 and 90.25 Degree.
@@ -490,7 +498,7 @@ module AutoOpenUnitVc =
 
         /// Checks if Angle between two vectors is between 98.75 and 90.25 Degree.
         /// Ignores vector orientation.
-        static member inline arePerpendicular(other:UnitVc) (v:UnitVc) =  v.IsPerpendicularTo other
+        static member inline arePerpendicular(other:UnitVc) (v:UnitVc) = v.IsPerpendicularTo other
 
 
         /// Rotate the a 2D UnitVector Counter Clockwise by a 2D Rotation (that has cos and sin precomputed)
@@ -504,7 +512,7 @@ module AutoOpenUnitVc =
         static member inline rotate (angDegree) (vec:UnitVc) =
             UnitVc.rotateBy (Rotation2D.createFromDegrees angDegree) vec
 
-        /// 90 Degree rotation counter clockwise.
+        /// 90 Degree rotation Counter-Clockwise.
         static member inline rotate90CCW (v:UnitVc) = UnitVc.createUnchecked( -v.Y,   v.X  )
 
         /// 90 Degree rotation clockwise.

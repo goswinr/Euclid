@@ -10,7 +10,7 @@ open System .Collections.Generic
 type PointLoopRel =
     In | On | Out
 
-    member r.IsInside =  r = PointLoopRel.In
+    member r.IsInside = r = PointLoopRel.In
 
     member r.IsOutside = r = PointLoopRel.Out
 
@@ -56,7 +56,7 @@ type Loop private   ( pts:ResizeArray<Pt>
    // Last pair is not equal first pair.
    //member _.XYs = xys
 
-    /// This list is one item Longer than vectors , BRects or Lengths.
+    /// This list is one item Longer than vectors, BRects or Lengths.
     /// Last point equals first point.
     member _.Points = pts
 
@@ -76,7 +76,7 @@ type Loop private   ( pts:ResizeArray<Pt>
     member _.SnapThreshold = snapThreshold
 
     /// Creates a deep copy.
-    member _.Clone() = Loop(pts.GetRange(0,pts.Count), Array.copy unitVcts, Array.copy bRects, Array.copy lens, //Array.copy xys,
+    member _.Clone() = Loop(pts.GetRange(0, pts.Count), Array.copy unitVcts, Array.copy bRects, Array.copy lens, //Array.copy xys,
                             area, minSegmentLength, snapThreshold, bRect )
 
     /// Returns closest segment index.
@@ -84,8 +84,8 @@ type Loop private   ( pts:ResizeArray<Pt>
         let ps = lo.Points
         let us = lo.UnitVectors
         let ls = lo.Lengths
-        let mutable dMin  = Double.MaxValue
-        let mutable iMin  = -1
+        let mutable dMin = Double.MaxValue
+        let mutable iMin = -1
         for i = 0 to lo.SegmentCount-1 do
             let t = ps.[i]
             let n = ps.[i+1]
@@ -103,9 +103,9 @@ type Loop private   ( pts:ResizeArray<Pt>
         let ps = lo.Points
         let us = lo.UnitVectors
         let ls = lo.Lengths
-        let mutable dMin  = Double.MaxValue
-        let mutable iFst  = 0
-        let mutable iSnd  = 0
+        let mutable dMin = Double.MaxValue
+        let mutable iFst = 0
+        let mutable iSnd = 0
         for i = 0 to lo.SegmentCount-1 do
             let t = ps.[i]
             let n = ps.[i+1]
@@ -138,7 +138,7 @@ type Loop private   ( pts:ResizeArray<Pt>
             let ps = lo.Points
             let us = lo.UnitVectors
             let ls = lo.Lengths
-            let j, k  = lo.ClosestSegments(pt)
+            let j, k = lo.ClosestSegments(pt)
 
             let pj = ps.[j]
             let uj = us.[j]
@@ -157,13 +157,13 @@ type Loop private   ( pts:ResizeArray<Pt>
                     else
                         // explicitly compare both offset of the two closest segments
                         let uj90 = uj.Rotate90CW * lo.SnapThreshold
-                        let ddj = min (pt.DistanceToLineSquare(pj+uj90 , uj, lj)) (pt.DistanceToLineSquare(pj-uj90, uj, lj))
+                        let ddj = min (pt.DistanceToLineSquare(pj+uj90, uj, lj)) (pt.DistanceToLineSquare(pj-uj90, uj, lj))
                         let uk90 = uk.Rotate90CW * lo.SnapThreshold
-                        let ddk = min (pt.DistanceToLineSquare(pk+uk90 , uk, lk)) (pt.DistanceToLineSquare(pk-uk90, uk, lk))
+                        let ddk = min (pt.DistanceToLineSquare(pk+uk90, uk, lk)) (pt.DistanceToLineSquare(pk-uk90, uk, lk))
                         if ddj <= ddk then j else k
 
                 // once correct index is found check on which side the point is
-                if Vc.cross (lo.UnitVectors.[i] , pt-lo.Points.[i] ) < 0.0 then
+                if Vc.cross (lo.UnitVectors.[i], pt-lo.Points.[i] ) < 0.0 then
                     PointLoopRel.Out
                 else
                     PointLoopRel.In
@@ -206,7 +206,7 @@ type Loop private   ( pts:ResizeArray<Pt>
 
         let segLastIdx = pts.Count-2
 
-        // get Area also Reverse to make it counter clockwise if needed
+        // get Area also Reverse to make it Counter-Clockwise if needed
         let area =
             let sa = Points.getSignedArea pts
             if sa < 0. then  pts.Reverse() ;  -sa
@@ -215,12 +215,12 @@ type Loop private   ( pts:ResizeArray<Pt>
         let mutable xMin, yMin = Double.MaxValue, Double.MaxValue // for overall bounding Rectangle
         let mutable xMax, yMax = Double.MinValue, Double.MinValue
 
-        // loop again to precalculate vectors ,  unit vectors,   BRects,  and lengths
-        let  unitVcts, bRects , lens = //, xys=
+        // loop again to precalculate vectors,  unit vectors,   BRects,  and lengths
+        let  unitVcts, bRects, lens = //, xys=
             let uvs  = Array.zeroCreate (segCount)
             let bs   = Array.zeroCreate (segCount)
             let lens = Array.zeroCreate (segCount)
-            //let xy   = Array.zeroCreate (segCount*2)
+            //let xy = Array.zeroCreate (segCount*2)
             let mutable xyi = 0
             let mutable t = pts.[0]
             for ii = 1 to pts.Count-1 do // start at +1,  last = first
@@ -228,7 +228,7 @@ type Loop private   ( pts:ResizeArray<Pt>
                 let v = Vc.create(t, n)
                 let l = v.Length
                 let i = ii-1 // because loop starts at 1
-                uvs.[ i] <- UnitVc.createUnchecked( v.X/l , v.Y/l) // no check for div by zero needed,  since minSpacing is already checked
+                uvs.[ i] <- UnitVc.createUnchecked( v.X/l, v.Y/l) // no check for div by zero needed,  since minSpacing is already checked
                 bs.[  i] <- BRect.create(t, n)|> BRect.expandSave snapThreshold
                 lens.[i] <- l
                 //xy.[xyi  ] <- t.X
@@ -242,7 +242,7 @@ type Loop private   ( pts:ResizeArray<Pt>
                 yMax <- max yMax t.Y
                 // swap:
                 t <- n
-            uvs,  bs , lens//, xy
+            uvs,  bs, lens//, xy
 
 
         // Test for 180 U-turns
@@ -259,31 +259,31 @@ type Loop private   ( pts:ResizeArray<Pt>
             t <- n
 
         // Check for self intersection,
-        let inline selfIntersectionCheck(i,from,till)=
+        let inline selfIntersectionCheck(i, from, till)=
             // TODO quadratic runtime !  replace with sweep line algorithm ?
-            let ap  = pts.[i]
-            let au  = unitVcts.[i]
-            let al  = lens.[i]
+            let ap = pts.[i]
+            let au = unitVcts.[i]
+            let al = lens.[i]
             let abb = bRects.[i]
             for j = from to till do
                 let bbb = bRects.[j]
                 // test on BRect overlap could be done here already instead of in doIntersectOrOverlapColinear.
-                let bp  = pts.[j]
-                let bu  = unitVcts.[j]
-                let bl  = lens.[j]
+                let bp = pts.[j]
+                let bu = unitVcts.[j]
+                let bl = lens.[j]
                 if Intersect.doIntersectOrOverlapColinear(ap, au, al, abb, bp, bu, bl, bbb, snapThreshold ) then
-                    Debug2D.drawDot (sprintf "self X:  %O +  %O"  i j) (Intersect.getXPointOrMid(ap, au, al, bp, bu, bl, snapThreshold))
+                    Debug2D.drawDot (sprintf "self X: %O + %O"  i j) (Intersect.getXPointOrMid(ap, au, al, bp, bu, bl, snapThreshold))
                     Debug2D.drawLineFromTo(ap, ap+au*al)
                     Debug2D.drawLineFromTo(bp, bp+bu*bl)
-                    EuclidException.Raise "Euclid.Loop: Loop of  %O Points has self intersection." points.Count
+                    EuclidException.Raise "Euclid.Loop: Loop of %O Points has self intersection." points.Count
 
         if unitVcts.Length > 3 then // a triangle is covered by angle checks above
             // checking second last and last
             selfIntersectionCheck(segLastIdx  , 1, 1)
             selfIntersectionCheck(segLastIdx-1, 0, 0)
-            for i = 1 to segLastIdx do // start at second ,  (last and first do intersect)
+            for i = 1 to segLastIdx do // start at second,  (last and first do intersect)
                 // TODO quadratic runtime !  replace with sweep line algorithm ?
-                selfIntersectionCheck(i, i+2 , segLastIdx)
+                selfIntersectionCheck(i, i+2, segLastIdx)
 
         let erect = BRect.createUnchecked(xMin-snapThreshold, yMin-snapThreshold, xMax+snapThreshold, yMax+snapThreshold)
 

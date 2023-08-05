@@ -66,7 +66,7 @@ module Format =
 
         match s.IndexOf('.') with
         | -1 ->
-            match s.IndexOf("e") with //,StringComparison.OrdinalIgnoreCase) // not supported by Fable complier 
+            match s.IndexOf("e") with //, StringComparison.OrdinalIgnoreCase) // not supported by Fable complier 
             | -1 -> doBeforeComma start (s.Length-1)
             | e -> // if float is in scientific notation don't insert comas into it too:
                 doBeforeComma start (s.Length-1)
@@ -76,7 +76,7 @@ module Format =
                 doBeforeComma start (i-1)
             add '.'
             if i < s.Length then
-                match s.IndexOf("e") with //,StringComparison.OrdinalIgnoreCase) with // not supported by Fable complier 
+                match s.IndexOf("e") with //, StringComparison.OrdinalIgnoreCase) with // not supported by Fable complier 
                 | -1 -> doAfterComma (i+1) (s.Length-1)
                 | e -> // if float is in scientific notation don't insert comas into it too:
                     doAfterComma (i+1) (e-1)
@@ -101,16 +101,16 @@ module Format =
             if   a <  userZeroTolerance then Literals.BelowUserZeroTolerance // do this check up here, value might be very high
             elif a >= 10000.       then x.ToString("#")|> addThousandSeparators
             elif a >= 1000.        then x.ToString("#")
-            elif a >= 100.         then x.ToString("0.#" , invC)
-            elif a >= 10.          then x.ToString("0.0#" , invC)
-            elif a >= 1.           then x.ToString("0.0##" , invC)
-            elif a >= 0.1          then x.ToString("0.####" , invC)
-            elif a >= 0.01         then x.ToString("0.#####" , invC)
-            elif a >= 0.001        then x.ToString("0.######" , invC)|> addThousandSeparators
-            elif a >= 0.000_1      then x.ToString("0.#######" , invC)|> addThousandSeparators
-            elif a >= 0.000_01     then x.ToString("0.########" , invC)|> addThousandSeparators
-            elif a >= 0.000_001    then x.ToString("0.#########" , invC)|> addThousandSeparators
-            elif a >= 0.000_000_1  then x.ToString("0.##########" , invC)|> addThousandSeparators
+            elif a >= 100.         then x.ToString("0.#", invC)
+            elif a >= 10.          then x.ToString("0.0#", invC)
+            elif a >= 1.           then x.ToString("0.0##", invC)
+            elif a >= 0.1          then x.ToString("0.####", invC)
+            elif a >= 0.01         then x.ToString("0.#####", invC)
+            elif a >= 0.001        then x.ToString("0.######", invC)|> addThousandSeparators
+            elif a >= 0.000_1      then x.ToString("0.#######", invC)|> addThousandSeparators
+            elif a >= 0.000_01     then x.ToString("0.########", invC)|> addThousandSeparators
+            elif a >= 0.000_001    then x.ToString("0.#########", invC)|> addThousandSeparators
+            elif a >= 0.000_000_1  then x.ToString("0.##########", invC)|> addThousandSeparators
             elif x >= 0.0          then Literals.CloseToZeroPositive
             else                        Literals.CloseToZeroNegative
 
@@ -129,14 +129,14 @@ module Format =
             if   a <  float32 userZeroTolerance then Literals.BelowUserZeroTolerance // do this check up here, value might be very high
             elif a >= 10000.f   then x.ToString("#")|> addThousandSeparators
             elif a >= 1000.f    then x.ToString("#")
-            elif a >= 100.f     then x.ToString("0.#" , invC)
-            elif a >= 10.f      then x.ToString("0.0#" , invC)
-            elif a >= 1.f       then x.ToString("0.0##" , invC)
-            elif a >= 0.1f      then x.ToString("0.####" , invC)
-            elif a >= 0.01f     then x.ToString("0.#####" , invC)
-            elif a >= 0.001f    then x.ToString("0.######" , invC)|> addThousandSeparators
-            elif a >= 0.0001f   then x.ToString("0.#######" , invC)|> addThousandSeparators
-            elif a >= 0.00001f  then x.ToString("0.########" , invC)|> addThousandSeparators
-            elif a >= 0.000001f then x.ToString("0.#########" , invC)|> addThousandSeparators
+            elif a >= 100.f     then x.ToString("0.#", invC)
+            elif a >= 10.f      then x.ToString("0.0#", invC)
+            elif a >= 1.f       then x.ToString("0.0##", invC)
+            elif a >= 0.1f      then x.ToString("0.####", invC)
+            elif a >= 0.01f     then x.ToString("0.#####", invC)
+            elif a >= 0.001f    then x.ToString("0.######", invC)|> addThousandSeparators
+            elif a >= 0.0001f   then x.ToString("0.#######", invC)|> addThousandSeparators
+            elif a >= 0.00001f  then x.ToString("0.########", invC)|> addThousandSeparators
+            elif a >= 0.000001f then x.ToString("0.#########", invC)|> addThousandSeparators
             elif x >= 0.0f      then Literals.CloseToZeroPositive
             else                     Literals.CloseToZeroNegative

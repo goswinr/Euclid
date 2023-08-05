@@ -9,9 +9,9 @@ module AutoOpenQuaternion =
 
   type Quaternion with
 
-    /// If the matrix is affine and has no shear or scaling it retuns the rotation defined in its 3x3 part.
+    /// If the matrix is affine and has no shear or scaling it returns the rotation defined in its 3x3 part.
     static member tryCreateFromMatrix( matrix:Matrix) : option<Quaternion> =
-        match OrthoMatrix.tryCreateFromMatrix(matrix) with
+        match RigidMatrix.tryCreateFromMatrix(matrix) with
         |None -> None
         |Some m ->
             // http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/index.htm
@@ -57,8 +57,8 @@ module AutoOpenQuaternion =
                     0.25 * s         ,
                     ( m21 - m12 ) / s)
 
-    /// Returns the rotation defined in and Orthomatrix's 3x3 part.
-    static member createFromOrthoMatrix( orthoMatrix:OrthoMatrix) : Quaternion =
+    /// Returns the rotation defined in and RigidMatrix's 3x3 part.
+    static member createFromRigidMatrix( orthoMatrix:RigidMatrix) : Quaternion =
         // http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/index.htm
         // assumes the upper 3x3 of m is a pure rotation matrix (i.e, unscaled)
         let m11 = orthoMatrix.M11

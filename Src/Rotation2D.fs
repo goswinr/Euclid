@@ -7,7 +7,7 @@ open System.Runtime.Serialization // for serialization of struct fields only but
 
 #nowarn "44" // for hidden constructors via Obsolete Attribute
 
-/// 2D Counter Clockwise Rotation. It can be applied in World X, Y or Z plane.
+/// 2D Counter Clockwise rotation. It can be applied in World X, Y or Z plane.
 /// Internally stored just as a Sine and Cosine value.
 /// For arbitrary rotations use Quaternions or 4x4 Matrix.
 /// However this module has much better performance than the more general Matrix4x4 or a Quaternion.
@@ -40,31 +40,31 @@ type Rotation2D =
 
     /// Format rotation into string showing angle in Degrees as nicely formatted floating point number.
     override r.ToString() =
-        let deg =  r.Sin  |> asinSafe |> toDegrees |> Format.float
+        let deg = r.Sin  |> asinSafe |> toDegrees |> Format.float
         sprintf "Euclid.Rotation2D of %s° Degrees." deg
 
-    /// Returns the angle represented by this Rotation in Radians.
+    /// Returns the angle represented by this 2D Rotation in Radians.
     member inline r.InRadians =
         r.Sin  |>  asinSafe
 
-    /// Returns the angle represented by this Rotation in Degrees.
+    /// Returns the angle represented by this 2D Rotation in Degrees.
     member inline r.InDegrees =
         r.InRadians|> toDegrees
 
-    /// Returns the Rotation in the opposite direction.
+    /// Returns the 2D Rotation in the opposite direction.
     member inline r.Inverse = Rotation2D (-r.Sin, r.Cos )
 
-    /// Create a new Rotation that adds Rotation to the existing one.
+    /// Create a new 2D Rotation that adds 2D Rotation to the existing one.
     member inline r.Add(ro:Rotation2D) =
         //use 2x2 matrix multiplication logic for better performance:
         Rotation2D  ( r.Sin*ro.Cos + r.Cos*ro.Sin
                     , r.Cos*ro.Cos - r.Sin*ro.Sin)
 
-    /// Create a new Rotation that adds and angle in Degrees to the existing one.
+    /// Create a new 2D Rotation that adds and angle in Degrees to the existing one.
     member inline r.AddDegrees(deg:float) =
         r.Add(Rotation2D.createFromDegrees deg)
 
-    /// Create a new Rotation that adds and angle in Radians to the existing one.
+    /// Create a new 2D Rotation that adds and angle in Radians to the existing one.
     member inline r.AddRadians(rad:float) =
         r.Add(Rotation2D.createFromRadians rad)
 
@@ -90,8 +90,8 @@ type Rotation2D =
 
     /// Construct 2D Rotation from sine and corresponding cosine directly.
     /// Input is unchecked and not validated.
-    static member createUnchecked (sine,cosine) =
-        Rotation2D (sine,cosine)
+    static member createUnchecked (sine, cosine) =
+        Rotation2D (sine, cosine)
 
 
 

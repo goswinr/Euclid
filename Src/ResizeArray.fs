@@ -58,7 +58,7 @@ module internal ResizeArray =
             if rarr.Count <= 3 then EuclidException.Raise "Euclid.ResizeArray.iPrevThisNext input has less than three items:\r\n%O" rarr
             seq {   0, rarr.[rarr.Count-1], rarr.[0], rarr.[1]
                     for i = 0 to rarr.Count-3 do  i+1, rarr.[i], rarr.[i+1], rarr.[i+2]
-                    rarr.Count-1, rarr.[rarr.Count-2],rarr.[rarr.Count-1], rarr.[0] }
+                    rarr.Count-1, rarr.[rarr.Count-2], rarr.[rarr.Count-1], rarr.[0] }
 
         /// <summary>Sorts the elements of a ResizeArray, using the given projection for the keys and returning a new ResizeArray.
         /// Elements are compared using <see cref="M:Microsoft.FSharp.Core.Operators.compare"/>.
@@ -69,7 +69,7 @@ module internal ResizeArray =
         /// <param name="xs">The input ResizeArray.</param>
         /// <returns>The sorted ResizeArray.</returns>
         let inline sortBy<'T, 'Key when 'Key : comparison> (projection : 'T -> 'Key) (xs : ResizeArray<'T>) : ResizeArray<'T> =
-            let r = xs.GetRange(0,xs.Count) // fastest way to create a shallow copy
+            let r = xs.GetRange(0, xs.Count) // fastest way to create a shallow copy
             r.Sort (fun x y -> Operators.compare (projection x) (projection y))
             r
 
@@ -79,7 +79,7 @@ module internal ResizeArray =
         /// <param name="xs">The input ResizeArray.</param>
         /// <returns>The index of the first element that satisfies the predicate, or <c>None</c>.</returns>
         let inline tryFindIndex (predicate:'T->bool) (xs: ResizeArray<'T>) : option<int>=
-            let elementIndex =   xs.FindIndex (System.Predicate predicate)
+            let elementIndex = xs.FindIndex (System.Predicate predicate)
             match elementIndex with
             | -1 ->
                 None
@@ -100,7 +100,7 @@ module internal ResizeArray =
         /// <param name="projection">The function to transform the elements into a type supporting comparison.</param>
         /// <param name="xs">The input ResizeArray.</param>
         /// <returns>The index of the smallest element.</returns>
-        let inline minIndexBy  (projection : 'T -> 'Key) (xs: ResizeArray<'T>) : int =
+        let inline minIndexBy (projection : 'T -> 'Key) (xs: ResizeArray<'T>) : int =
             if xs.Count = 0 then EuclidException.Raise "Euclid.ResizeArray.minIndBy: Failed on empty ResizeArray<%O>" typeof<'T> 
             let mutable f = projection xs.[0]
             let mutable mf = f
@@ -168,7 +168,7 @@ module internal AutoOpenResizeArrayExtensions =
                 this.[this.Count - 1]
             and set (v:'T) =
                 #if DEBUG
-                if this.Count = 0 then EuclidException.Raise "Euclid.ResizeArray.Last: Failed to set last item of empty ResizeArray<%O> to  %O" typeof<'T> v
+                if this.Count = 0 then EuclidException.Raise "Euclid.ResizeArray.Last: Failed to set last item of empty ResizeArray<%O> to %O" typeof<'T> v
                 #endif
                 this.[this.Count - 1] <- v
 
@@ -182,7 +182,7 @@ module internal AutoOpenResizeArrayExtensions =
                 this.[this.Count - 2]
             and set (v:'T) =
                 #if DEBUG
-                if this.Count < 2 then  EuclidException.Raise "Euclid.ResizeArray.SecondLast: Failed to set second last item of ResizeArray<%O> to  %O" typeof<'T> v
+                if this.Count < 2 then  EuclidException.Raise "Euclid.ResizeArray.SecondLast: Failed to set second last item of ResizeArray<%O> to %O" typeof<'T> v
                 #endif
                 this.[this.Count - 2] <- v
 
@@ -196,7 +196,7 @@ module internal AutoOpenResizeArrayExtensions =
                 this.[0]
             and set (v:'T) =
                 #if DEBUG
-                if this.Count = 0 then EuclidException.Raise "Euclid.ResizeArray.First: Failed to set first item of empty ResizeArray<%O> to  %O" typeof<'T> v
+                if this.Count = 0 then EuclidException.Raise "Euclid.ResizeArray.First: Failed to set first item of empty ResizeArray<%O> to %O" typeof<'T> v
                 #endif
                 this.[0] <- v
 
@@ -216,7 +216,7 @@ module internal AutoOpenResizeArrayExtensions =
 
 
         /// Get and remove last item from ResizeArray.
-        member inline this.Pop()  =
+        member inline this.Pop() =
             #if DEBUG
             if this.Count=0 then EuclidException.Raise "Euclid.ResizeArray.Pop() failed for empty ResizeArray<%O>" typeof<'T>
             #endif
@@ -226,7 +226,7 @@ module internal AutoOpenResizeArrayExtensions =
             v
 
         /// Get and remove item at index from ResizeArray.
-        member inline this.Pop(index:int)  =
+        member inline this.Pop(index:int) =
             #if DEBUG
             if index < 0  then EuclidException.Raise "Euclid.ResizeArray.Pop %O failed for ResizeArray<%O> of %O items, index must be positive." index typeof<'T> this.Count
             if index >= this.Count then EuclidException.Raise "Euclid.ResizeArray.Pop %O failed for ResizeArray<%O> of %O items." index typeof<'T> this.Count

@@ -145,7 +145,7 @@ module LineIntersectionTypes =
         /// The returned parameters still indicate where the lines start and end.
         | Identical
 
-        /// The Lines are identical within the tolerance  (default 1e-6 distance and 0.25 degrees).. But orientation is flipped.
+        /// The Lines are identical within the tolerance (default 1e-6 distance and 0.25 degrees).. But orientation is flipped.
         /// The returned parameters still indicate where the lines start and end.
         | IdenticalFlipped
 
@@ -160,7 +160,7 @@ module LineIntersectionTypes =
         /// Both input lines are shorter than the given minimum length tolerance (default 1e-6).
         | TooShortBoth
 
-    /// Return true if the IntersectionKind is represented by one point.
+    /// Returns true if the IntersectionKind is represented by one point.
     /// Not two points like in skew or no point like in parallel.
     /// Also returns false for the special cases of too short lines.
     let isIntersectionOnePoint k =
@@ -186,7 +186,7 @@ module LineIntersectionTypes =
     /// The tolerance is approximately 1e-6 for each side. 
     /// That is 6 steps of float increment from 1.0.
     /// So between 0.99999964 and 1.000000715. Same step size for zero.
-    let inline isZeroOneOrBetween  (x:float) =
+    let inline isZeroOneOrBetween (x:float) =
         if   Util.isZero              x then Zero
         elif Util.isOne               x then One
         elif Util.isBetweenZeroAndOne x then Between

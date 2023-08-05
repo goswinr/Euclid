@@ -16,7 +16,7 @@ module Similarity2D =
     /// Within one 'list of points' the order does not matter, but each location must exist only once
     /// in order to be consider similar within the tolerance with another GroupInsideObjectToCheck.
     [<NoEquality;NoComparison>]// because its made up from Pt
-    type GroupInsideObjectToCheck =  {
+    type GroupInsideObjectToCheck = {
         category:string
         bRect:BRect
         points:Pt[] // must be sorted by 'X' property for binary search,
@@ -29,7 +29,7 @@ module Similarity2D =
     /// 'groups' (an array of GroupInsideObjectToCheck) must be sorted by 'category' property.
     [<NoEquality;NoComparison>]// because its made up from Pt
     type ObjectToCheck = {
-        extend: Pt // represents the max value of a bounding Rectangle ,  min value must be x0, y0
+        extend: Pt // represents the max value of a bounding Rectangle,  min value must be x0, y0
         groups: GroupInsideObjectToCheck[] // must be sorted by 'category' property. for Array.forall2 function
         }
 
@@ -97,16 +97,16 @@ module Similarity2D =
 
     /// Takes transformed and pre sorted by category main groups.
     let areSimilar (tol:float) (a:ObjectToCheck) (b:ObjectToCheck) : bool =
-        let inline sim (a:Pt) (b:Pt)  =
+        let inline sim (a:Pt) (b:Pt) =
             abs(a.X - b.X) < tol && abs(a.Y - b.Y) < tol
 
-        let inline simRect (a:BRect) (b:BRect)  =
+        let inline simRect (a:BRect) (b:BRect) =
             sim a.MinPt b.MinPt
             && sim a.MaxPt b.MaxPt
 
         sim a.extend b.extend
         && a.groups.Length = b.groups.Length
-        && (a.groups , b.groups) ||> Array.forall2 (fun x y ->
+        && (a.groups, b.groups) ||> Array.forall2 (fun x y ->
             x.category=y.category
             && x.points.Length = x.points.Length
             && simRect x.bRect y.bRect
@@ -115,9 +115,9 @@ module Similarity2D =
 
 
     /// The returned ObjectToCheck will have the subgroups sorted by category
-    /// and each point will be transformed by the the overall bounding Rectangle Min point to 0,0.
+    /// and each point will be transformed by the the overall bounding Rectangle Min point to 0, 0.
     /// Input Position of points does not matter,  they will be moved to origin by overall bounding Rectangle over all lists,
-    /// But any similarity that could be achieved by Rotation will not be discovered.
+    /// But any similarity that could be achieved by rotation will not be discovered.
     /// The string is used as a unique category identifier.
     let getSimilarityData (ptss:ResizeArray<string*ResizeArray<Pt>>) : ObjectToCheck =
         let sptss = ptss |> ResizeArray.sortBy fst

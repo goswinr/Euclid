@@ -19,13 +19,13 @@ type Points private () =
     /// The square length of a cross product is equal to the square area of the parallelogram described by the two input vectors.
     /// Also returns true if the points are equal.
     /// See Points.areInLine function too.
-    static member inline areInLineFast (a:Pnt,b:Pnt,c:Pnt, [<OPT;DEF(0.001)>] maxSquareAreaParallelogram:float  ) =
+    static member inline areInLineFast (a:Pnt, b:Pnt, c:Pnt, [<OPT;DEF(0.001)>] maxSquareAreaParallelogram:float  ) =
          // TODO could be optimized by inlining floats.
-        Vec.cross (b-a,c-a) |> Vec.lengthSq <  maxSquareAreaParallelogram
+        Vec.cross (b-a, c-a) |> Vec.lengthSq <  maxSquareAreaParallelogram
 
     /// Checks if three points are in one line. Within the distance tolerance. 1e-6 by default.
     /// Also returns true if the points are equal within 1e-9 units.
-    static member inline areInLine (a:Pnt,b:Pnt,c:Pnt, [<OPT;DEF(1e-6)>] distanceTolerance:float  ) =
+    static member inline areInLine (a:Pnt, b:Pnt, c:Pnt, [<OPT;DEF(1e-6)>] distanceTolerance:float  ) =
         //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
          // first try line a to b
         let x = a.X - b.X
@@ -83,7 +83,7 @@ type Points private () =
 
 
     /// Returns the closest 3D point index form a 3D point list to a given 3D point.
-    static member closestPointIdx (pts:ResizeArray<Pnt>,pt:Pnt) : int =
+    static member closestPointIdx (pts:ResizeArray<Pnt>, pt:Pnt) : int =
         if pts.Count = 0 then EuclidException.Raise "Euclid.Points.closestPoint<Pnt>: empty List of Points: pts"
         let mutable mi = -1
         let mutable mid = Double.MaxValue
@@ -96,7 +96,7 @@ type Points private () =
         mi
 
     /// Returns the closest 2D point index form a 2D point list to a given 2D point.
-    static member closestPointIdx (pts:ResizeArray<Pt>,pt:Pt) : int =
+    static member closestPointIdx (pts:ResizeArray<Pt>, pt:Pt) : int =
         if pts.Count = 0 then EuclidException.Raise "Euclid.Points.closestPoint<Pt>: empty List of Points: pts"
         let mutable mi = -1
         let mutable mid = Double.MaxValue
@@ -131,7 +131,7 @@ type Points private () =
                     minD <- d
                     xi <- i
                     yj <- j
-        xi,yj
+        xi, yj
 
     /// Returns the indices of the 2D points that are closest to each other.
     static member closestPointsIdx (xs:ResizeArray<Pt>, ys:ResizeArray<Pt>) =
@@ -156,28 +156,28 @@ type Points private () =
                     minD <- d
                     xi <- i
                     yj <- j
-        xi,yj
+        xi, yj
 
 
     /// Given two lists of 3D points finds the pair that are closest to each other and returns their distance.
-    static member  minDistBetweenPointSets (xs:ResizeArray<Pnt>, ys:ResizeArray<Pnt>) =
+    static member minDistBetweenPointSets (xs:ResizeArray<Pnt>, ys:ResizeArray<Pnt>) =
         if xs.Count = 0 then EuclidException.Raise "Euclid.Points.minDistBetweenPointSets<Pnt>: empty List of Points: xs"
         if ys.Count = 0 then EuclidException.Raise "Euclid.Points.minDistBetweenPointSets<Pnt>: empty List of Points: ys"
-        let (i,j) = Points.closestPointsIdx (xs, ys)
+        let (i, j) = Points.closestPointsIdx (xs, ys)
         Pnt.distance xs.[i]  ys.[j]
 
     /// Given two lists of 2D points finds the pair that are closest to each other and returns their distance.
-    static member  minDistBetweenPointSets (xs:ResizeArray<Pt>, ys:ResizeArray<Pt>) =
+    static member minDistBetweenPointSets (xs:ResizeArray<Pt>, ys:ResizeArray<Pt>) =
         if xs.Count = 0 then EuclidException.Raise "Euclid.Points.minDistBetweenPointSets<Pt>: empty List of Points: xs"
         if ys.Count = 0 then EuclidException.Raise "Euclid.Points.minDistBetweenPointSets<Pt>: empty List of Points: ys"
-        let (i,j) = Points.closestPointsIdx (xs, ys)
+        let (i, j) = Points.closestPointsIdx (xs, ys)
         Pt.distance xs.[i]  ys.[j]
 
 
     /// Find the index of the 3D point that has the biggest distance to any 3D point from the other set.
     /// Basically the most lonely point in 'findPointFrom' list with respect to 'checkAgainst' list.
     /// Returns findPointFromIdx * checkAgainstIdx
-    static member  mostDistantPointIdx (findPointFrom:ResizeArray<Pnt>, checkAgainst:ResizeArray<Pnt>) : int*int=
+    static member mostDistantPointIdx (findPointFrom:ResizeArray<Pnt>, checkAgainst:ResizeArray<Pnt>) : int*int=
         if findPointFrom.Count = 0 then EuclidException.Raise "Euclid.Points.mostDistantPoint<Pnt>: empty List of Points: findPointFrom"
         if checkAgainst.Count = 0 then EuclidException.Raise "Euclid.Points.mostDistantPoint<Pnt>: empty List of Points: checkAgainst"
         let mutable maxD = Double.MinValue
@@ -225,26 +225,26 @@ type Points private () =
 
 
     /// Find the 3D point that has the biggest distance to any 3D point from another set.
-    static member  mostDistantPoint (findPointFrom:ResizeArray<Pnt>, checkAgainst:ResizeArray<Pnt>) =
-        let i,_ = Points.mostDistantPointIdx (findPointFrom, checkAgainst)
+    static member mostDistantPoint (findPointFrom:ResizeArray<Pnt>, checkAgainst:ResizeArray<Pnt>) =
+        let i, _ = Points.mostDistantPointIdx (findPointFrom, checkAgainst)
         findPointFrom.[i]
 
     /// Find the 2D point that has the biggest distance to any 2D point from another set.
     static member mostDistantPoint (findPointFrom:ResizeArray<Pt>, checkAgainst:ResizeArray<Pt>) =
-        let i,_ = Points.mostDistantPointIdx (findPointFrom, checkAgainst)
+        let i, _ = Points.mostDistantPointIdx (findPointFrom, checkAgainst)
         findPointFrom.[i]
 
 
     /// Culls 3D points if they are to close to previous or next item.
     /// Last and first 3D points stay the same.
-    static member cullDuplicatePointsInSeq (pts:ResizeArray<Pnt>, tolerance)  =
+    static member cullDuplicatePointsInSeq (pts:ResizeArray<Pnt>, tolerance) =
         if pts.Count = 0 then EuclidException.Raise "Euclid.Points.cullDuplicatePointsInSeq<Pnt>: empty List of Points"
         if pts.Count = 1 then
             pts
         else
             let tolSq = tolerance*tolerance
-            let res  =  ResizeArray(pts.Count)
-            let mutable last  = pts.[0]
+            let res = ResizeArray(pts.Count)
+            let mutable last = pts.[0]
             res.Add last
             let iLast = pts.Count-1
             for i = 1  to iLast do
@@ -259,14 +259,14 @@ type Points private () =
 
     /// Culls 2D points if they are to close to previous or next item.
     /// Last and first 2D points stay the same.
-    static member cullDuplicatePointsInSeq (pts:ResizeArray<Pt>, tolerance)  =
+    static member cullDuplicatePointsInSeq (pts:ResizeArray<Pt>, tolerance) =
         if pts.Count = 0 then EuclidException.Raise "Euclid.Points.cullDuplicatePointsInSeq<Pt>: empty List of Points"
         if pts.Count = 1 then
             pts
         else
             let tolSq = tolerance*tolerance
-            let res  =  ResizeArray(pts.Count)
-            let mutable last  = pts.[0]
+            let res = ResizeArray(pts.Count)
+            let mutable last = pts.[0]
             res.Add last
             let iLast = pts.Count-1
             for i = 1  to iLast do
@@ -285,8 +285,8 @@ type Points private () =
     /// 'tolGap' is the maximum allowable gap between the start and the endpoint of to segments.
     /// Search starts from the segment with the most points.
     /// Both start and end point of each 2D point list is checked for adjacency.
-    static member findContinuosPoints (ptss: ResizeArray<ResizeArray<Pt>>, tolGap:float)  =
-        let i =  ptss |> ResizeArray.maxIndexBy ResizeArray.length
+    static member findContinuosPoints (ptss: ResizeArray<ResizeArray<Pt>>, tolGap:float) =
+        let i = ptss |> ResizeArray.maxIndexBy ResizeArray.length
         let res = ptss.Pop(i)
         let mutable loop = true
         while loop && ptss.Count > 0 do
@@ -315,8 +315,8 @@ type Points private () =
     /// 'tolGap' is the maximum allowable gap between the start and the endpoint of to segments.
     /// Search starts from the segment with the most points.
     /// Both start and end point of each 3D point list is checked for adjacency.
-    static member findContinuosPoints (ptss: ResizeArray<ResizeArray<Pnt>>, tolGap:float)  =
-        let i =  ptss |> ResizeArray.maxIndexBy ResizeArray.length
+    static member findContinuosPoints (ptss: ResizeArray<ResizeArray<Pnt>>, tolGap:float) =
+        let i = ptss |> ResizeArray.maxIndexBy ResizeArray.length
         let res = ptss.Pop(i)
         let mutable loop = true
         while loop && ptss.Count > 0 do
@@ -352,7 +352,7 @@ type Points private () =
     /// The first three points define the orientation of the normal.
     /// So it considers the current order of points too.
     /// If the order is counterclockwise in the World X-Y plane then the normal is in world Z orientation.
-    static member normalOfPoints(pts: ResizeArray<Pnt>) : Vec  =
+    static member normalOfPoints(pts: ResizeArray<Pnt>) : Vec =
         if pts.Count <= 2 then
             EuclidException.Raise "Euclid.Points.normalOfPoints can't find normal of two or less points %O" pts
         elif pts.Count = 3  then
@@ -360,7 +360,7 @@ type Points private () =
             let b = pts.[2] - pts.[1]
             let v= Vec.cross(b, a)
             if v.LengthSq < 1e-12 then
-                EuclidException.Raise "Euclid.Points.normalOfPoints: three points are in a line  %O" pts
+                EuclidException.Raise "Euclid.Points.normalOfPoints: three points are in a line %O" pts
             else
                 v
         else
@@ -375,7 +375,7 @@ type Points private () =
                 v <- v + x
                 t<-n
             if v.LengthSq < 1e-12 then
-                EuclidException.Raise "Euclid.Points.normalOfPoints: points are in a line or sphere without clear normal  %O" pts
+                EuclidException.Raise "Euclid.Points.normalOfPoints: points are in a line or sphere without clear normal %O" pts
             else
                 v
 
@@ -384,14 +384,14 @@ type Points private () =
     /// The first three points define the orientation of the normal.
     /// So it considers the current order of points too.
     /// If the order is counterclockwise in the World X-Y plane then the normal is in world Z orientation.
-    static member normalOfPoints(pts:Pnt []) : Vec  =
+    static member normalOfPoints(pts:Pnt []) : Vec =
         if pts.Length <= 2 then
             EuclidException.Raise "Euclid.Points.normalOfPoints can't find normal of two or less points %O" pts
         elif pts.Length = 3  then
             let a = pts.[0] - pts.[1]
             let b = pts.[2] - pts.[1]
             let v= Vec.cross(b, a)
-            if v.LengthSq < 1e-12 then EuclidException.Raise "Euclid.Points.normalOfPoints: three points are in a line  %O" pts
+            if v.LengthSq < 1e-12 then EuclidException.Raise "Euclid.Points.normalOfPoints: three points are in a line %O" pts
             else
                 v
         else
@@ -406,7 +406,7 @@ type Points private () =
                 v <- v + x
                 t <- n
             if v.LengthSq < 1e-12 then
-                EuclidException.Raise "Euclid.Points.normalOfPoints: points are in a line or sphere without clear normal  %O" pts
+                EuclidException.Raise "Euclid.Points.normalOfPoints: points are in a line or sphere without clear normal %O" pts
             else
                 v
 
@@ -437,17 +437,17 @@ type Points private () =
             ValueNone
         else
             let b = ax*bx + ay*by + az*bz // dot product of both lines
-            let ac = a*c // square of square length , never negative
+            let ac = a*c // square of square length, never negative
             let bb = b*b // square of square dot product, never negative
-            let discriminant = ac - bb // never negative , the dot product cannot be bigger than the two square length multiplied with each other
+            let discriminant = ac - bb // never negative, the dot product cannot be bigger than the two square length multiplied with each other
             let div = ac+bb // never negative
             let rel = discriminant/div
             if rel < float RelAngleDiscriminant.``0.25`` then //parallel
                 ValueNone
             else
-                let n  = Vec.cross(prevToThis, thisToNext)
-                let offP = thisPt + (Vec.cross(n,prevToThis)  |> Vec.setLength prevDist)
-                let offN = thisPt + (Vec.cross(n,thisToNext)  |> Vec.setLength nextDist )
+                let n = Vec.cross(prevToThis, thisToNext)
+                let offP = thisPt + (Vec.cross(n, prevToThis)  |> Vec.withLength prevDist)
+                let offN = thisPt + (Vec.cross(n, thisToNext)  |> Vec.withLength nextDist )
                 let vx = offN.X - offP.X
                 let vy = offN.Y - offP.Y
                 let vz = offN.Z - offP.Z
@@ -476,8 +476,8 @@ type Points private () =
     /// Use negative distance for outer offset.
     /// If Points are collinear by 0.25 degrees or less than 1-e6 units apart returns: ValueNone.
     /// Use negative distances to get outside offset.
-    /// The 'referenceNormal' is' An approximate orientation Normal to help find the correct offset side, To be in Z Axis orientation for counter clockwise loops in 2D.
-    /// Returns the offset point , the unitized normal vector aligned with the referenceNormal  , the shift direction for prev and next line.
+    /// The 'referenceNormal' is' An approximate orientation Normal to help find the correct offset side, To be in Z Axis orientation for Counter-Clockwise loops in 2D.
+    /// Returns the offset point, the unitized normal vector aligned with the referenceNormal, the shift direction for prev and next line.
     static member offsetInCornerEx(   thisPt:Pnt,
                                         prevToThis:Vec,
                                         thisToNext:Vec,
@@ -498,17 +498,17 @@ type Points private () =
             ValueNone
         else
             let b = ax*bx + ay*by + az*bz // dot product of both lines
-            let ac = a*c // square of square length , never negative
+            let ac = a*c // square of square length, never negative
             let bb = b*b // square of square dot product, never negative
-            let discriminant = ac - bb // never negative , the dot product cannot be bigger than the two square length multiplied with each other
+            let discriminant = ac - bb // never negative, the dot product cannot be bigger than the two square length multiplied with each other
             let div = ac+bb // never negative
             let rel = discriminant/div
             if rel < float RelAngleDiscriminant.``0.25`` then //parallel
                 ValueNone
             else
-                let n  = Vec.cross(prevToThis, thisToNext) |> Vec.matchOrientation referenceNormal
-                let prevShift =  Vec.cross(n,prevToThis)  |> Vec.setLength prevDist
-                let nextShift =  Vec.cross(n,thisToNext)  |> Vec.setLength nextDist
+                let n = Vec.cross(prevToThis, thisToNext) |> Vec.matchOrientation referenceNormal
+                let prevShift = Vec.cross(n, prevToThis)  |> Vec.withLength prevDist
+                let nextShift = Vec.cross(n, thisToNext)  |> Vec.withLength nextDist
                 let offP = thisPt + prevShift
                 let offN = thisPt + nextShift
                 let vx = offN.X - offP.X
@@ -517,16 +517,16 @@ type Points private () =
                 let e = bx*vx + by*vy + bz*vz
                 let d = ax*vx + ay*vy + az*vz
                 let t = (c * d - b * e ) / discriminant
-                let pt =  offP + t * prevToThis
-                ValueSome (pt,n.Unitized,prevShift,nextShift)
+                let pt = offP + t * prevToThis
+                ValueSome (pt, n.Unitized, prevShift, nextShift)
 
     /// It finds the inner offset point in a corner ( defined by a Polyline from 3 points ( prevPt, thisPt and nextPt)
     /// The offset from first and second segment are given separately and can vary (prevDist and nextDist).
     /// Use negative distance for outer offset.
     /// If Points are collinear by 0.25 degrees or less than 1-e6 units apart returns: ValueNone.
     /// Use negative distances to get outside offset.
-    /// The 'referenceNormal' is' An approximate orientation Normal to help find the correct offset side, To be in Z Axis orientation for counter clockwise loops in 2D.
-    /// Returns the offset point , the unitized normal vector aligned with the referenceNormal  , the shift direction for prev and next line.
+    /// The 'referenceNormal' is' An approximate orientation Normal to help find the correct offset side, To be in Z Axis orientation for Counter-Clockwise loops in 2D.
+    /// Returns the offset point, the unitized normal vector aligned with the referenceNormal, the shift direction for prev and next line.
     static member offsetInCornerEx(   prevPt:Pnt,
                                         thisPt:Pnt,
                                         nextPt:Pnt,
@@ -535,7 +535,7 @@ type Points private () =
                                         referenceNormal:Vec) : ValueOption<Pnt*UnitVec*Vec*Vec> =
         let prevV = thisPt - prevPt
         let nextV = nextPt - thisPt
-        Points.offsetInCornerEx(thisPt, prevV, nextV, prevDist, nextDist,referenceNormal)
+        Points.offsetInCornerEx(thisPt, prevV, nextV, prevDist, nextDist, referenceNormal)
 
     /// It finds the inner offset point in a corner ( defined a point, a previous vector to this point and a next vector from this point)
     /// The offset from first and second segment are given separately and can vary (prevDist and nextDist).
@@ -543,7 +543,7 @@ type Points private () =
     /// If Points are collinear by 0.25 degrees or less than 1-e6 units apart returns: ValueNone.
     /// Use negative distances to get outside offset.
     /// 'referenceOrient' is positive for counterclockwise loops otherwise negative.
-    /// Returns the offset point ,  the shift direction for prev and next line.
+    /// Returns the offset point,  the shift direction for prev and next line.
     static member offsetInCornerEx2D(   thisPt:Pt,
                                         prevToThis:Vc,
                                         thisToNext:Vc,
@@ -562,17 +562,17 @@ type Points private () =
             ValueNone
         else
             let b = ax*bx + ay*by // dot product of both lines
-            let ac = a*c // square of square length , never negative
+            let ac = a*c // square of square length, never negative
             let bb = b*b // square of square dot product, never negative
-            let discriminant = ac - bb // never negative , the dot product cannot be bigger than the two square length multiplied with each other
+            let discriminant = ac - bb // never negative, the dot product cannot be bigger than the two square length multiplied with each other
             let div = ac+bb // never negative
             let rel = discriminant/div
             if rel < float RelAngleDiscriminant.``0.25`` then //parallel
                 ValueNone
             else
-                let n  = Vc.cross(prevToThis, thisToNext) |> Util.matchSign referenceOrient
-                let prevShift =  prevToThis.Rotate90CCW |> Vc.setLength (if n>0. then prevDist else -prevDist)
-                let nextShift =  thisToNext.Rotate90CCW |> Vc.setLength (if n>0. then nextDist else -nextDist)
+                let n = Vc.cross(prevToThis, thisToNext) |> Util.matchSign referenceOrient
+                let prevShift = prevToThis.Rotate90CCW |> Vc.withLength (if n>0. then prevDist else -prevDist)
+                let nextShift = thisToNext.Rotate90CCW |> Vc.withLength (if n>0. then nextDist else -nextDist)
                 let offP = thisPt + prevShift
                 let offN = thisPt + nextShift
                 let vx = offN.X - offP.X
@@ -580,8 +580,8 @@ type Points private () =
                 let e = bx*vx + by*vy
                 let d = ax*vx + ay*vy
                 let t = (c * d - b * e ) / discriminant
-                let pt =  offP + t * prevToThis
-                ValueSome (pt,prevShift,nextShift)
+                let pt = offP + t * prevToThis
+                ValueSome (pt, prevShift, nextShift)
 
     /// It finds the inner offset point in a corner ( defined by a Polyline from 3 points ( prevPt, thisPt and nextPt)
     /// The offset from first and second segment are given separately and can vary (prevDist and nextDist).
@@ -589,7 +589,7 @@ type Points private () =
     /// If Points are collinear by 0.25 degrees or less than 1-e6 units apart returns: ValueNone.
     /// Use negative distances to get outside offset.
     /// 'referenceOrient' is positive for counterclockwise loops otherwise negative.
-    /// Returns the offset point , the shift direction for prev and next line.
+    /// Returns the offset point, the shift direction for prev and next line.
     static member offsetInCornerEx2D( prevPt:Pt,
                                     thisPt:Pt,
                                     nextPt:Pt,
@@ -598,4 +598,4 @@ type Points private () =
                                     referenceOrient:float) : ValueOption<Pt*Vc*Vc> =
         let prevV = thisPt - prevPt
         let nextV = nextPt - thisPt
-        Points.offsetInCornerEx2D(thisPt, prevV, nextV, prevDist, nextDist,referenceOrient)
+        Points.offsetInCornerEx2D(thisPt, prevV, nextV, prevDist, nextDist, referenceOrient)

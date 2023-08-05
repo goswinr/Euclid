@@ -43,7 +43,7 @@ type BBox =
 
     /// Unsafe internal constructor,  public only for inlining.
     [<Obsolete("Unsafe internal constructor,  but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >]
-    new (minX,minY,minZ,maxX,maxY,maxZ) =
+    new (minX, minY, minZ, maxX, maxY, maxZ) =
         {MinX = minX
          MinY = minY
          MinZ = minZ
@@ -54,22 +54,22 @@ type BBox =
 
     /// Nicely formatted string representation of the BoundingBox, including its size.
     override b.ToString() =
-        sprintf "Euclid.BBox: length(x)= %s width(y)=%s , height(z)=%s (at X=%s | Y=%s | Z=%s)"
+        sprintf "Euclid.BBox: length(x)= %s width(y)=%s, height(z)=%s (at X=%s | Y=%s | Z=%s)"
             (Format.float (b.MaxX - b.MinX)) (Format.float (b.MaxY - b.MinY)) (Format.float (b.MaxZ - b.MinZ))
             (Format.float b.MinX) (Format.float b.MinY) (Format.float b.MinZ)
 
     /// Format BoundingBox into string with nice floating point number formatting of size and position.
     /// But without full type name as in bbox.ToString()
     member b.AsString =
-        sprintf "len= %s wid=%s , hei=%s (at X=%s | Y=%s | Z=%s)"
+        sprintf "len= %s wid=%s, hei=%s (at X=%s | Y=%s | Z=%s)"
             (Format.float (b.MaxX - b.MinX)) (Format.float (b.MaxY - b.MinY)) (Format.float (b.MaxZ - b.MinZ))
             (Format.float b.MinX) (Format.float b.MinY) (Format.float b.MinZ)
 
     /// The point where X, Y and Z are the minimum values.
-    member inline b.MinPnt = Pnt(b.MinX,b.MinY,b.MinZ)
+    member inline b.MinPnt = Pnt(b.MinX, b.MinY, b.MinZ)
 
     /// The point where X, Y and Z are the maximum values.
-    member inline b.MaxPnt = Pnt(b.MaxX,b.MaxY,b.MinZ)
+    member inline b.MaxPnt = Pnt(b.MaxX, b.MaxY, b.MinZ)
 
     /// The size in X direction, same as member box.SizeX.
     member inline b.Length = b.MaxX - b.MinX
@@ -77,14 +77,14 @@ type BBox =
     member inline b.SizeX = b.MaxX - b.MinX
 
     /// The size in Y direction, same as member box.SizeY.
-    member inline b.Width  = b.MaxY - b.MinY
+    member inline b.Width = b.MaxY - b.MinY
     /// The size in Y direction, same as member box.Width.
-    member inline b.SizeY  = b.MaxY - b.MinY
+    member inline b.SizeY = b.MaxY - b.MinY
 
     /// The size in Z direction, same as member box.SizeZ.
-    member inline b.Height  = b.MaxZ - b.MinZ
+    member inline b.Height = b.MaxZ - b.MinZ
     /// The size in Z direction, same as member box.Height.
-    member inline b.SizeZ  = b.MaxZ - b.MinZ
+    member inline b.SizeZ = b.MaxZ - b.MinZ
 
     /// The diagonal 3D vector of the bounding box. From MinPnt to MaxPnt.
     member inline b.Diagonal = Vec(b.MaxX - b.MinX, b.MaxY - b.MinY, b.MaxZ - b.MinZ)
@@ -109,7 +109,7 @@ type BBox =
     ///   |/              |/
     ///   +---------------+----> X-Axis
     ///   0 MinPt         1
-    member inline b.Pt0 = Pnt(b.MinX,b.MinY,b.MinZ)
+    member inline b.Pt0 = Pnt(b.MinX, b.MinY, b.MinZ)
 
     /// Returns point 1 of the bounding box.
     ///
@@ -128,7 +128,7 @@ type BBox =
     ///   |/              |/
     ///   +---------------+----> X-Axis
     ///   0 MinPt         1
-    member inline b.Pt1 = Pnt(b.MaxX,b.MinY,b.MinZ)
+    member inline b.Pt1 = Pnt(b.MaxX, b.MinY, b.MinZ)
 
     /// Returns point 2 of the bounding box.
     ///
@@ -147,7 +147,7 @@ type BBox =
     ///   |/              |/
     ///   +---------------+----> X-Axis
     ///   0 MinPt         1
-    member inline b.Pt2 = Pnt(b.MaxX,b.MaxY,b.MinZ)
+    member inline b.Pt2 = Pnt(b.MaxX, b.MaxY, b.MinZ)
 
     /// Returns point 3 of the bounding box.
     ///
@@ -166,7 +166,7 @@ type BBox =
     ///   |/              |/
     ///   +---------------+----> X-Axis
     ///   0 MinPt         1
-    member inline b.Pt3 = Pnt(b.MinX,b.MaxY,b.MinZ)
+    member inline b.Pt3 = Pnt(b.MinX, b.MaxY, b.MinZ)
 
     /// Returns point 4 of the bounding box.
     ///
@@ -185,7 +185,7 @@ type BBox =
     ///   |/              |/
     ///   +---------------+----> X-Axis
     ///   0 MinPt         1
-    member inline b.Pt4 = Pnt(b.MinX,b.MinY,b.MaxZ)
+    member inline b.Pt4 = Pnt(b.MinX, b.MinY, b.MaxZ)
 
     /// Returns point 5 of the bounding box.
     ///
@@ -205,7 +205,7 @@ type BBox =
     ///   +---------------+----> X-Axis
     ///   0 MinPt         1
 
-    member inline b.Pt5 = Pnt(b.MaxX,b.MinY,b.MaxZ)
+    member inline b.Pt5 = Pnt(b.MaxX, b.MinY, b.MaxZ)
     /// Returns point 6 of the bounding box.
     ///
     ///   Z-Axis       Y-Axis
@@ -223,7 +223,7 @@ type BBox =
     ///   |/              |/
     ///   +---------------+----> X-Axis
     ///   0 MinPt         1
-    member inline b.Pt6 = Pnt(b.MaxX,b.MaxY,b.MaxZ)
+    member inline b.Pt6 = Pnt(b.MaxX, b.MaxY, b.MaxZ)
 
     /// Returns point 7 of the bounding box.
     ///
@@ -242,9 +242,9 @@ type BBox =
     ///   |/              |/
     ///   +---------------+----> X-Axis
     ///   0 MinPt         1
-    member inline b.Pt7 = Pnt(b.MinX,b.MaxY,b.MaxZ)
+    member inline b.Pt7 = Pnt(b.MinX, b.MaxY, b.MaxZ)
 
-    /// Returns the bottom corners of the Bounding Box in counter clockwise order, starting at MinPt.
+    /// Returns the bottom corners of the Bounding Box in Counter-Clockwise order, starting at MinPt.
     /// Then the top corners staring above MinPt. Returns an array of 8 Points.
     ///
     ///   Z-Axis       Y-Axis
@@ -264,7 +264,7 @@ type BBox =
     ///   0 MinPt         1
     member b.Corners = [|b.Pt0; b.Pt1; b.Pt2; b.Pt3; b.Pt4; b.Pt5; b.Pt6; b.Pt7|]
 
-    /// Returns the bottom of the Box as a counter clockwise array of 4 Points.
+    /// Returns the bottom of the Box as a Counter-Clockwise array of 4 Points.
     /// Starting at MinPt. Point 0, 1, 2 and 3.
     /// Last and first point are NOT the same.
     ///
@@ -286,7 +286,7 @@ type BBox =
     member b.BottomPoints = [|b.Pt0; b.Pt1; b.Pt2; b.Pt3|]
 
 
-    /// Returns the bottom of the Box as a counter clockwise array of 5 Points, starting at MinPt.
+    /// Returns the bottom of the Box as a Counter-Clockwise array of 5 Points, starting at MinPt.
     /// Starting at MinPt. Point 0, 1, 2, 3 and again 0.
     /// Last and first point are the same.
     ///
@@ -307,7 +307,7 @@ type BBox =
     ///   0 MinPt         1
     member b.BottomPointsClosed = [|b.Pt0; b.Pt1; b.Pt2; b.Pt3; b.Pt0|]
 
-    /// Returns the bottom of the Box as a counter clockwise array of 4 Points.
+    /// Returns the bottom of the Box as a Counter-Clockwise array of 4 Points.
     /// Staring at point 4 then 5, 6 and 7.
     /// Last and first point are NOT the same.
     ///
@@ -328,8 +328,8 @@ type BBox =
     ///   0 MinPt         1
     member b.TopPoints = [|b.Pt4; b.Pt5; b.Pt6; b.Pt7|]
 
-    /// Returns the bottom of the Box as a counter clockwise array of 5 Points.
-    /// Starting point 4 then 5, 6 ,7 and again 4.
+    /// Returns the bottom of the Box as a Counter-Clockwise array of 5 Points.
+    /// Starting point 4 then 5, 6, 7 and again 4.
     /// Last and first point are the same.
     ///
     ///   Z-Axis       Y-Axis
@@ -359,19 +359,19 @@ type BBox =
             EuclidException.Raise "Euclid.BBox.Expand(dist): Negative distance %g cause an underflow, on %s" dist b.AsString
         n
 
-    /// Returns Bounding Box expanded by a distance for X , Y and Z-axis each.
+    /// Returns Bounding Box expanded by a distance for X, Y and Z-axis each.
     /// Does check for underflow if distance is negative and raises EuclidException.
-    member inline b.Expand(xDist,yDist,zDist) : BBox =
+    member inline b.Expand(xDist, yDist, zDist) : BBox =
         let n = BBox(   b.MinX-xDist, b.MinY-yDist, b.MinZ-zDist,
                         b.MaxX+xDist, b.MaxY+yDist, b.MaxZ+zDist)
         if n.MinX > n.MaxX ||  n.MinY > n.MaxX ||  n.MinZ > n.MaxZ then
-            EuclidException.Raise "Euclid.BBox.Expand(x, y,z): Negative distance(s) X %g Y: %g and Z:%g cause an underflow, on %s" xDist yDist zDist b.AsString
+            EuclidException.Raise "Euclid.BBox.Expand(x, y, z): Negative distance(s) X %g Y: %g and Z:%g cause an underflow, on %s" xDist yDist zDist b.AsString
         n
 
-    /// Returns Bounding Box expanded by a distance for X , Y and Z-axis each.
+    /// Returns Bounding Box expanded by a distance for X, Y and Z-axis each.
     /// If expansion is negative it shrinks the Box. It also makes sure that there is no underflow.
     /// When the negative expansion is bigger than the size, Min and Max values will be both in the middle from where they were before.
-    member inline b.ExpandSave(xDist,yDist,zDist) : BBox =
+    member inline b.ExpandSave(xDist, yDist, zDist) : BBox =
         let mutable minXCh = b.MinX - xDist
         let mutable maxXCh = b.MaxX + xDist
         if minXCh > maxXCh then  // Overflow! Set both to the same mid point
@@ -398,7 +398,7 @@ type BBox =
     /// If expansion is negative it shrinks the Box. It also makes sure that there is no underflow.
     /// When the negative expansion is bigger than the size, Min and Max values will be both in the middle from where they were before.
     member inline b.ExpandSave(dist) : BBox =
-        b.ExpandSave(dist,dist,dist)
+        b.ExpandSave(dist, dist, dist)
 
     /// Returns Bounding Box expanded only in X direction by different distance for start(minX) and end (maxX).
     /// Does check for underflow if distance is negative and raises EuclidException.
@@ -460,12 +460,12 @@ type BBox =
 
     /// Test if Bounding Boxes are only touching each other from the Outside within a given tolerance.
     member b.IsTouching (a:BBox, tol) =
-        let xOverlap =  not ( b.MinX > a.MaxX + tol || a.MinX > b.MaxX + tol)
-        let yOverlap =  not ( a.MinY > b.MaxY + tol || b.MinY > a.MaxY + tol)
-        let zOverlap =  not ( a.MinZ > b.MaxZ + tol || b.MinZ > a.MaxZ + tol)
-        let xTouch   =  abs(b.MinX - a.MaxX)  < tol || abs(a.MinX - b.MaxX) < tol
-        let yTouch   =  abs(a.MinY - b.MaxY)  < tol || abs(b.MinY - a.MaxY) < tol
-        let zTouch   =  abs(a.MinZ - b.MaxZ)  < tol || abs(b.MinZ - a.MaxZ) < tol
+        let xOverlap = not ( b.MinX > a.MaxX + tol || a.MinX > b.MaxX + tol)
+        let yOverlap = not ( a.MinY > b.MaxY + tol || b.MinY > a.MaxY + tol)
+        let zOverlap = not ( a.MinZ > b.MaxZ + tol || b.MinZ > a.MaxZ + tol)
+        let xTouch   = abs(b.MinX - a.MaxX)  < tol || abs(a.MinX - b.MaxX) < tol
+        let yTouch   = abs(a.MinY - b.MaxY)  < tol || abs(b.MinY - a.MaxY) < tol
+        let zTouch   = abs(a.MinZ - b.MaxZ)  < tol || abs(b.MinZ - a.MaxZ) < tol
         (xOverlap && yOverlap && zTouch  ) ||
         (xOverlap && yTouch   && zOverlap) ||
         (xTouch   && yOverlap && zOverlap)
@@ -474,34 +474,34 @@ type BBox =
     /// Evaluate a X, Y and Z parameter of the Bounding Box.
     ///  0.0, 0.0, 0.0 returns the MinPnt.
     ///  1.0, 1.0, 1.0 returns the MaxPnt.
-    member inline b.EvaluateAt (xParameter,yParameter,zParameter) =
+    member inline b.EvaluateAt (xParameter, yParameter, zParameter) =
         Pnt(b.MinX + (b.MaxX-b.MinX) * xParameter,
             b.MinY + (b.MaxY-b.MinY) * yParameter,
             b.MinZ + (b.MaxZ-b.MinZ) * zParameter)
 
     /// Returns the volume of the Bounding Box.
-    member inline b.Volume  =
+    member inline b.Volume =
         b.SizeX*b.SizeY*b.SizeZ
 
     /// Returns the 2D part of this Bounding Box as a Bounding Rectangle.
     member inline b.asRect =
-        BRect.createUnchecked(b.MinX,b.MinY,b.MaxX,b.MaxY)
+        BRect.createUnchecked(b.MinX, b.MinY, b.MaxX, b.MaxY)
 
 
     /// Returns a Bounding Box that contains both input Bounding Box.
-    member inline b.Union (a:BBox)  =
-        BBox   (min b.MinX a.MinX ,min b.MinY a.MinY,min b.MinZ a.MinZ,
-                max b.MaxX a.MaxX ,max b.MaxY a.MaxY,max b.MaxZ a.MaxZ)
+    member inline b.Union (a:BBox) =
+        BBox   (min b.MinX a.MinX, min b.MinY a.MinY, min b.MinZ a.MinZ,
+                max b.MaxX a.MaxX, max b.MaxY a.MaxY, max b.MaxZ a.MaxZ)
 
     /// Returns a bounding Bounding Box that contains the input Bounding Box and the point.
-    member inline b.Union (p:Pnt)  =
-        BBox   (min b.MinX p.X ,min b.MinY p.Y,min b.MinZ p.Z,
-                max b.MaxX p.X ,max b.MaxY p.Y,max b.MaxZ p.Z)
+    member inline b.Union (p:Pnt) =
+        BBox   (min b.MinX p.X, min b.MinY p.Y, min b.MinZ p.Z,
+                max b.MaxX p.X, max b.MaxY p.Y, max b.MaxZ p.Z)
 
     /// Returns the intersection of two Bounding Boxes.
     /// The returned Box is the volume inside both input boxes.
     /// Returns ValueNone if the two boxes do not overlap.
-    member inline b.Intersection (a:BBox)  =
+    member inline b.Intersection (a:BBox) =
         let mutable minX = max a.MinX b.MinX
         let mutable minY = max a.MinY b.MinY
         let mutable minZ = max a.MinZ b.MinZ
@@ -509,7 +509,7 @@ type BBox =
         let mutable maxY = min a.MaxY b.MaxY
         let mutable maxZ = min a.MaxZ b.MaxZ
         if minX <= maxX && minY <= maxY && minZ <= maxZ then
-            ValueSome (BBox(minX,minY,minZ,maxX,maxY,maxZ))
+            ValueSome (BBox(minX, minY, minZ, maxX, maxY, maxZ))
         else
             ValueNone
 
@@ -564,7 +564,7 @@ type BBox =
     /// Returns true if the two Bounding Boxes do overlap more than a given tolerance distance.
     /// Returns false if the two Bounding Boxes are just touching.
     static member inline doOverlapMoreThan tol (a:BBox) (b:BBox) =
-        b.OverlapsWith(a,tol)
+        b.OverlapsWith(a, tol)
 
     /// Returns true if the Bounding Box is inside or exactly on the other bounding Box.
     /// Argument order matters!
@@ -577,13 +577,13 @@ type BBox =
 
     /// Returns a Bounding Box that contains both input Bounding Box.
     static member inline union (a:BBox) (b:BBox) =
-        BBox   (min b.MinX a.MinX ,min b.MinY a.MinY,min b.MinZ a.MinZ,
-                max b.MaxX a.MaxX ,max b.MaxY a.MaxY,max b.MaxZ a.MaxZ)
+        BBox   (min b.MinX a.MinX, min b.MinY a.MinY, min b.MinZ a.MinZ,
+                max b.MaxX a.MaxX, max b.MaxY a.MaxY, max b.MaxZ a.MaxZ)
 
     /// Returns a bounding Bounding Box that contains the input Bounding Box and the point.
     static member inline unionPt (p:Pnt) (b:BBox) =
-        BBox   (min b.MinX p.X ,min b.MinY p.Y,min b.MinZ p.Z,
-                max b.MaxX p.X ,max b.MaxY p.Y,max b.MaxZ p.Z)
+        BBox   (min b.MinX p.X, min b.MinY p.Y, min b.MinZ p.Z,
+                max b.MaxX p.X, max b.MaxY p.Y, max b.MaxZ p.Z)
 
     /// Returns the intersection of two Bounding Boxes.
     /// The returned Box is the volume inside both input boxes.
@@ -593,7 +593,7 @@ type BBox =
 
 
     /// Finds min and max values for x, y and z.
-    static member inline create (a:Pnt , b:Pnt ) =
+    static member inline create (a:Pnt, b:Pnt ) =
         // sort min and max values ( not using allocating tuples for swapping).
         let mutable minX = a.X
         let maxX = if b.X > minX then b.X else minX <- b.X ;  a.X
@@ -601,7 +601,7 @@ type BBox =
         let maxY = if b.Y > minY then b.Y else minY <- b.Y ;  a.Y
         let mutable minZ = a.Z
         let maxZ = if b.Z > minZ then b.Z else minZ <- b.Z ;  a.Z
-        BBox(minX,minY,minZ,maxX,maxY,maxZ)
+        BBox(minX, minY, minZ, maxX, maxY, maxZ)
 
 
     /// Finds min and max values for x, y and z.
@@ -620,24 +620,24 @@ type BBox =
             maxX <- max maxX p.X
             maxY <- max maxY p.Y
             maxZ <- max maxZ p.Z
-        BBox(minX,minY,minZ,maxX,maxY,maxZ)
+        BBox(minX, minY, minZ, maxX, maxY, maxZ)
 
-    /// Creates a Bounding Box from a center point and the total X , Y and Z size.
-    static member inline createFromCenter (center:Pnt, sizeX, sizeY , sizeZ ) =
-        if sizeX < 0. then EuclidException.Raise "Euclid.BBox.createFromCenter sizeX is negative: %g , sizeY is: %g, , sizeZ is: %g, center: %O"  sizeX sizeY sizeZ center.AsString
-        if sizeY < 0. then EuclidException.Raise "Euclid.BBox.createFromCenter sizeY is negative: %g , sizeX is: %g, , sizeZ is: %g, center: %O"  sizeY sizeX sizeZ center.AsString
-        if sizeZ < 0. then EuclidException.Raise "Euclid.BBox.createFromCenter sizeZ is negative: %g , sizeX is: %g, , sizeY is: %g, center: %O"  sizeZ sizeX sizeY center.AsString        
+    /// Creates a Bounding Box from a center point and the total X, Y and Z size.
+    static member inline createFromCenter (center:Pnt, sizeX, sizeY, sizeZ ) =
+        if sizeX < 0. then EuclidException.Raise "Euclid.BBox.createFromCenter sizeX is negative: %g, sizeY is: %g, sizeZ is: %g, center: %O"  sizeX sizeY sizeZ center.AsString
+        if sizeY < 0. then EuclidException.Raise "Euclid.BBox.createFromCenter sizeY is negative: %g, sizeX is: %g, sizeZ is: %g, center: %O"  sizeY sizeX sizeZ center.AsString
+        if sizeZ < 0. then EuclidException.Raise "Euclid.BBox.createFromCenter sizeZ is negative: %g, sizeX is: %g, sizeY is: %g, center: %O"  sizeZ sizeX sizeY center.AsString        
         let minX = center.X - sizeX*0.5
         let minY = center.Y - sizeY*0.5
         let maxX = center.X + sizeX*0.5
         let maxY = center.Y + sizeY*0.5
         let minZ = center.Z - sizeZ*0.5
         let maxZ = center.Z + sizeZ*0.5
-        BBox(minX,minY,minZ,maxX,maxY,maxZ)
+        BBox(minX, minY, minZ, maxX, maxY, maxZ)
 
     /// Does not verify the order of min and max values.
-    static member inline createUnchecked (minX,minY,minZ,maxX,maxY,maxZ) =
-        BBox(minX,minY,minZ,maxX,maxY,maxZ)
+    static member inline createUnchecked (minX, minY, minZ, maxX, maxY, maxZ) =
+        BBox(minX, minY, minZ, maxX, maxY, maxZ)
 
     /// Returns the volume of the Bounding Box.
     static member inline volume (b:BBox) =
@@ -645,4 +645,4 @@ type BBox =
 
     /// Returns the 2D part of this Bounding Box as a Bounding Rectangle.
     static member inline toRect (b:BBox) =
-        BRect.createUnchecked(b.MinX,b.MinY,b.MaxX,b.MaxY)
+        BRect.createUnchecked(b.MinX, b.MinY, b.MaxX, b.MaxY)

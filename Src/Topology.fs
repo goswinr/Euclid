@@ -39,7 +39,7 @@ type Topology private () =
     /// for each line end point it finds the next closest line start point.
     /// (Does not check other line end points that might be closer)
     /// Line3D is used as an abstraction to hold start and end of arbitrary object.
-    static member inline sortToLoop3D(getLine: 'T -> Line3D, xs:ResizeArray<'T>)  =
+    static member inline sortToLoop3D(getLine: 'T -> Line3D, xs:ResizeArray<'T>) =
         for i = 0 to xs.Count - 2 do // only run till second last
             let thisLine = getLine xs.[i]
             //  TODO could be optimized using a R-Tree for very large lists instead of minBy function
@@ -51,7 +51,7 @@ type Topology private () =
     /// for each line end point it finds the next closest line start point.
     /// (Does not check other line end points that might be closer)
     /// Line2D is used as an abstraction to hold start and end of arbitrary object.
-    static member inline sortToLoop2D(getLine: 'T -> Line2D, xs:ResizeArray<'T>)  =
+    static member inline sortToLoop2D(getLine: 'T -> Line2D, xs:ResizeArray<'T>) =
         for i = 0 to xs.Count - 2 do // only run till second last
             let thisLine = getLine xs.[i]
             //  TODO could be optimized using a R-Tree for very large lists instead of minBy function

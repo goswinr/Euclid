@@ -5,8 +5,7 @@ open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see http
 open Euclid.Util
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 
-
-/// An immutable 4x4 Transformation Matrix.
+/// An immutable 4x4 transformation matrix.
 /// The matrix is represented in the following column-vector syntax form:
 /// M11 M21 M31 X41
 /// M12 M22 M32 Y42
@@ -27,6 +26,9 @@ type Matrix =
     [<DataMember>] val M14 :float ; [<DataMember>] val M24 :float ; [<DataMember>] val M34 :float; [<DataMember>] val M44:float
 
     // this implementation is based on https://github.com/mrdoob/three.js/blob/dev/src/math/Matrix4.js
+    // see also https://github.com/MonoGame/MonoGame/blob/develop/MonoGame.Framework/Matrix.cs
+    // and https://github.com/vimaec/Math3D/blob/dev/src/Matrix4x4.cs
+
 
     /// Create a 4x4 Transformation Matrix.
     /// This Constructor takes arguments in row-major order,
@@ -57,9 +59,15 @@ type Matrix =
     member m.ToArrayByRows =
         [| m.M11; m.M21; m.M31; m.X41; m.M12; m.M22; m.M32; m.Y42; m.M13; m.M23; m.M33; m.Z43; m.M14; m.M24; m.M34; m.M44 |]
 
-    /// Nicely formats the Matrix to a Grid of 4x4.
+    /// Nicely formats the Matrix to a Grid of 4x4 
+    /// the following column-vector syntax form:
+    /// M11 M21 M31 X41
+    /// M12 M22 M32 Y42
+    /// M13 M23 M33 Z43
+    /// M14 M24 M34 M44
+    /// Where X41, Y42 and Z43 refer to the translation part of the matrix.
     override m.ToString()=
-        let ts   = m.ToArrayByRows |> Array.map ( fun x -> x.ToString("0.###"))
+        let ts = m.ToArrayByRows |> Array.map ( fun x -> x.ToString("0.###"))
         let most = ts |> Array.maxBy ( fun s -> s.Length)
         "4x4 Column-Vector Transformation Matrix:\r\n" + (
         ts
@@ -72,7 +80,7 @@ type Matrix =
     //Nicely formats the Matrix to a Grid of 4x4 including field names.
     //override m.ToString()=
     //    let names =[| "M11"; "M21"; "M31"; "X41"; "M12"; "M22"; "M32"; "Y42"; "M13"; "M23"; "M33"; "Z43"; "M14"; "M24"; "M34"; "M44"|]
-    //    let ts   = (names, m.ByRows)  ||> Array.map2 ( fun n v -> v.ToString("0.###"))
+    //    let ts = (names, m.ByRows)  ||> Array.map2 ( fun n v -> v.ToString("0.###"))
     //    let most = ts |> Array.maxBy ( fun s -> s.Length)
     //    "Colum-Vector Transformation Matrix:\r\n" + (
     //    (names, ts)
@@ -116,18 +124,40 @@ type Matrix =
         let n34 = m.M34
         let n44 = m.M44
 
-        let t11 = n23 * n34 * y42 - n24 * n33 * y42 + n24 * n32 * z43 - n22 * n34 * z43 - n23 * n32 * n44 + n22 * n33 * n44
+        // let t11 = n23 * n34 * y42 - n24 * n33 * y42 + n24 * n32 * z43 - n22 * n34 * z43 - n23 * n32 * n44 + n22 * n33 * n44
+        // let t12 = n14 * n33 * y42 - n13 * n34 * y42 - n14 * n32 * z43 + n12 * n34 * z43 + n13 * n32 * n44 - n12 * n33 * n44
+        // let t13 = n13 * n24 * y42 - n14 * n23 * y42 + n14 * n22 * z43 - n12 * n24 * z43 - n13 * n22 * n44 + n12 * n23 * n44
+        // let t14 = n14 * n23 * n32 - n13 * n24 * n32 - n14 * n22 * n33 + n12 * n24 * n33 + n13 * n22 * n34 - n12 * n23 * n34 
+
+        // common sub expressions extracted:
+        let n23n34 = n23 * n34
+        let n24n33 = n24 * n33
+        let n24n32 = n24 * n32
+        let n22n34 = n22 * n34 
+        let n23n32 = n23 * n32 
+        let n22n33 = n22 * n33
+
+        let t11 = n23n34 * y42 - n24n33 * y42 + n24n32 * z43 - n22n34 * z43 - n23n32 * n44 + n22n33 * n44
         let t12 = n14 * n33 * y42 - n13 * n34 * y42 - n14 * n32 * z43 + n12 * n34 * z43 + n13 * n32 * n44 - n12 * n33 * n44
         let t13 = n13 * n24 * y42 - n14 * n23 * y42 + n14 * n22 * z43 - n12 * n24 * z43 - n13 * n22 * n44 + n12 * n23 * n44
-        let t14 = n14 * n23 * n32 - n13 * n24 * n32 - n14 * n22 * n33 + n12 * n24 * n33 + n13 * n22 * n34 - n12 * n23 * n34
+        let t14 = n14 * n23n32 - n13 * n24n32 - n14 * n22n33 + n12 * n24n33 + n13 * n22n34 - n12 * n23n34
+
         n11 * t11 + n21 * t12 + n31 * t13 + x41 * t14
 
 
+    /// A separate function to compose the error message that does not get inlined.
+    member private m.FailedInverse() =
+        EuclidException.Raise "Euclid.Matrix has a zero or almost zero Determinant. It is smaller than 1e-16. It cannot be inverted:\r\n%O" m // TODO or return all zero matrix like threeJS ?
 
     /// Inverts the matrix.
     /// If the determinant is zero the Matrix cannot be inverted.
     /// An Exception is raised.
     member m.Inverse =
+        // Use Laplace expansion theorem to calculate the inverse of a 4x4 matrix        
+        // 1. Calculate the 2x2 determinants needed the 4x4 determinant based on the 2x2 determinants 
+        // 3. Create the adjugate matrix, which satisfies: A * adj(A) = det(A) * I
+        // 4. Divide adjugate matrix with the determinant to find the inverse
+
         // based on http://www.euclideanspace.com/maths/algebra/matrix/functions/inverse/fourD/index.htm
 
         //Speed Optimization TODO
@@ -156,37 +186,72 @@ type Matrix =
         let n34 = m.M34 // z translation in three.js
         let n44 = m.M44
 
-        let t11 = n23 * n34 * y42 - n24 * n33 * y42 + n24 * n32 * z43 - n22 * n34 * z43 - n23 * n32 * n44 + n22 * n33 * n44
-        let t12 = n14 * n33 * y42 - n13 * n34 * y42 - n14 * n32 * z43 + n12 * n34 * z43 + n13 * n32 * n44 - n12 * n33 * n44
-        let t13 = n13 * n24 * y42 - n14 * n23 * y42 + n14 * n22 * z43 - n12 * n24 * z43 - n13 * n22 * n44 + n12 * n23 * n44
-        let t14 = n14 * n23 * n32 - n13 * n24 * n32 - n14 * n22 * n33 + n12 * n24 * n33 + n13 * n22 * n34 - n12 * n23 * n34
-        let det = n11 * t11 + n21 * t12 + n31 * t13 + x41 * t14
+        // common sub expressions extracted:
+        let n23n34 = n23 * n34
+        let n24n33 = n24 * n33
+        let n24n32 = n24 * n32
+        let n22n34 = n22 * n34
+        let n23n32 = n23 * n32
+        let n22n33 = n22 * n33
+        
+        let n33y42 = n33 * y42
+        let n34y42 = n34 * y42
+        let n32z43 = n32 * z43
+        let n34z43 = n34 * z43
+        let n32n44 = n32 * n44
+        let n33n44 = n33 * n44
+        let n13n24 = n13 * n24
+        let n14n23 = n14 * n23
+        let n14n22 = n14 * n22
+        let n12n24 = n12 * n24
+        let n13n22 = n13 * n22
+        let n12n23 = n12 * n23
 
-        if abs det < 1e-24 then EuclidException.Raise "Euclid.Matrix has a zero or almost zero Determinant. It is smaller than 1e-24. It cannot be inverted:\r\n%O" m // TODO or return all zero matrix like threeJS ?
+        let t11 = n23n34 * y42  -  n24n33 * y42  -  n24n32 * z43  -  n22n34 * z43  -  n23n32 * n44  -  n22n33 * n44
+        let t12 = n14 * n33y42  -  n13 * n34y42  -  n14 * n32z43  -  n12 * n34z43  -  n13 * n32n44  -  n12 * n33n44
+        let t13 = n13n24 * y42  -  n14n23 * y42  -  n14n22 * z43  -  n12n24 * z43  -  n13n22 * n44  -  n12n23 * n44
+        let t14 = n14 * n23n32  -  n13 * n24n32  -  n14 * n22n33  -  n12 * n24n33  -  n13 * n22n34  -  n12 * n23n34
+        let det = n11 * t11  -  n21 * t12  -  n31 * t13  -  x41 * t14
 
+        if abs(det) < 1e-16 then m.FailedInverse() 
         let detInv = 1. / det
+        
+        // 4 common sub expressions extracted:
+        let n31z43 = n31 * z43
+        let n31y42 = n31 * y42
+        let n31n44 = n31 * n44 
+        let n14n21 = n14 * n21
+        let n13n21 = n13 * n21
+        let n12n21 = n12 * n21    
 
-        // this order would actually need to be transposed when comparing to three.js, but since input is transposed it is correct.
-        // TODO optimize: common sub expressions could be precalculated
-        Matrix  (   t11 * detInv                                                                                                         // M11
-                , ( n24 * n33 * x41 - n23 * n34 * x41 - n24 * n31 * z43 + n21 * n34 * z43 + n23 * n31 * n44 - n21 * n33 * n44 ) * detInv // M21
-                , ( n22 * n34 * x41 - n24 * n32 * x41 + n24 * n31 * y42 - n21 * n34 * y42 - n22 * n31 * n44 + n21 * n32 * n44 ) * detInv // M31
-                , ( n23 * n32 * x41 - n22 * n33 * x41 - n23 * n31 * y42 + n21 * n33 * y42 + n22 * n31 * z43 - n21 * n32 * z43 ) * detInv // X41
-                ,   t12 * detInv                                                                                                         // M12
-                , ( n13 * n34 * x41 - n14 * n33 * x41 + n14 * n31 * z43 - n11 * n34 * z43 - n13 * n31 * n44 + n11 * n33 * n44 ) * detInv // M22
-                , ( n14 * n32 * x41 - n12 * n34 * x41 - n14 * n31 * y42 + n11 * n34 * y42 + n12 * n31 * n44 - n11 * n32 * n44 ) * detInv // M32
-                , ( n12 * n33 * x41 - n13 * n32 * x41 + n13 * n31 * y42 - n11 * n33 * y42 - n12 * n31 * z43 + n11 * n32 * z43 ) * detInv // Y42
-                ,   t13 * detInv                                                                                                         // M13
-                , ( n14 * n23 * x41 - n13 * n24 * x41 - n14 * n21 * z43 + n11 * n24 * z43 + n13 * n21 * n44 - n11 * n23 * n44 ) * detInv // M23
-                , ( n12 * n24 * x41 - n14 * n22 * x41 + n14 * n21 * y42 - n11 * n24 * y42 - n12 * n21 * n44 + n11 * n22 * n44 ) * detInv // M33
-                , ( n13 * n22 * x41 - n12 * n23 * x41 - n13 * n21 * y42 + n11 * n23 * y42 + n12 * n21 * z43 - n11 * n22 * z43 ) * detInv // Z43
-                ,   t14 * detInv                                                                                                         // M14
-                , ( n13 * n24 * n31 - n14 * n23 * n31 + n14 * n21 * n33 - n11 * n24 * n33 - n13 * n21 * n34 + n11 * n23 * n34 ) * detInv // M24
-                , ( n14 * n22 * n31 - n12 * n24 * n31 - n14 * n21 * n32 + n11 * n24 * n32 + n12 * n21 * n34 - n11 * n22 * n34 ) * detInv // M34
-                , ( n12 * n23 * n31 - n13 * n22 * n31 + n13 * n21 * n32 - n11 * n23 * n32 - n12 * n21 * n33 + n11 * n22 * n33 ) * detInv // M44
+        // 2 common sub expressions extracted:
+        let n34x41 = n34 * x41
+        let n33x41 = n33 * x41
+        let n11n24 = n11 * n24
+        let n11n23 = n11 * n23
+        let n11n22 = n11 * n22
+        let n32x41 = n32 * x41
+
+        // this order would actually need to be transposed when comparing to three.js, but since input is transposed it is correct.       
+        Matrix  (   t11 * detInv                                                                                                 // M11
+                , ( n24n33 * x41  -  n23n34 * x41  -  n24 * n31z43  -  n21 * n34z43  -  n23 * n31n44  -  n21 * n33n44 ) * detInv // M21
+                , ( n22n34 * x41  -  n24n32 * x41  -  n24 * n31y42  -  n21 * n34y42  -  n22 * n31n44  -  n21 * n32n44 ) * detInv // M31
+                , ( n23n32 * x41  -  n22n33 * x41  -  n23 * n31y42  -  n21 * n33y42  -  n22 * n31z43  -  n21 * n32z43 ) * detInv // X41
+                ,   t12 * detInv                                                                                                 // M12
+                , ( n13 * n34x41  -  n14 * n33x41  -  n14 * n31z43  -  n11 * n34z43  -  n13 * n31n44  -  n11 * n33n44 ) * detInv // M22
+                , ( n14 * n32x41  -  n12 * n34x41  -  n14 * n31y42  -  n11 * n34y42  -  n12 * n31n44  -  n11 * n32n44 ) * detInv // M32
+                , ( n12 * n33x41  -  n13 * n32x41  -  n13 * n31y42  -  n11 * n33y42  -  n12 * n31z43  -  n11 * n32z43 ) * detInv // Y42
+                ,   t13 * detInv                                                                                                 // M13
+                , ( n14n23 * x41  -  n13n24 * x41  -  n14n21 * z43  -  n11n24 * z43  -  n13n21 * n44  -  n11n23 * n44 ) * detInv // M23
+                , ( n12n24 * x41  -  n14n22 * x41  -  n14n21 * y42  -  n11n24 * y42  -  n12n21 * n44  -  n11n22 * n44 ) * detInv // M33
+                , ( n13n22 * x41  -  n12n23 * x41  -  n13n21 * y42  -  n11n23 * y42  -  n12n21 * z43  -  n11n22 * z43 ) * detInv // Z43
+                ,   t14 * detInv                                                                                                 // M14
+                , ( n13n24 * n31  -  n14n23 * n31  -  n14n21 * n33  -  n11 * n24n33  -  n13n21 * n34  -  n11 * n23n34 ) * detInv // M24
+                , ( n14n22 * n31  -  n12n24 * n31  -  n14n21 * n32  -  n11 * n24n32  -  n12n21 * n34  -  n11 * n22n34 ) * detInv // M34
+                , ( n12n23 * n31  -  n13n22 * n31  -  n13n21 * n32  -  n11 * n23n32  -  n12n21 * n33  -  n11 * n22n33 ) * detInv // M44
                 )
 
-    /// Checks if the Matrix is an Identity Matrix in the form of:
+    /// Checks if the Matrix is an identity matrix in the form of:
     /// 1  0  0  0
     /// 0  1  0  0
     /// 0  0  1  0
@@ -202,17 +267,17 @@ type Matrix =
     /// That means it does not do any projection.
     /// The fields m.M14, m.M24 and m.M34 must be 0.0 and m.M44 must be 1.0 or very close to it.
     /// Using an approximate tolerance of 1e-6.
-    member m.IsAffine  =
+    member m.IsAffine =
         isZero m.M14 && isZero m.M24 && isZero m.M34 && isOne m.M44
 
     /// Checks if the Matrix is an affine transformation.
     /// That means it does not do any projection.
     /// The fields m.M14, m.M24 and m.M34 must be 0.0 and m.M44 must be 1.0 or very close to it.
     /// Using an approximate tolerance of 1e-6.
-    member m.IsProjecting  =
+    member m.IsProjecting =
         isNotZero m.M14 || isNotZero m.M24 || isNotZero m.M34 || isNotOne m.M44
 
-    /// Returns if matrix is orthogonal.
+    /// Returns if the Matrix is orthogonal.
     /// It might also be mirroring or scaling, but not shearing or projecting.
     /// It must be affine and the dot products of the three column vectors must be zero.
     member m.IsOrthogonal =
@@ -226,7 +291,7 @@ type Matrix =
         Util.isZero (y * z)
         )
 
-    /// Returns if matrix is mirroring or reflection.
+    /// Returns if the Matrix is mirroring or reflection.
     /// It might also be rotating, translating or scaling, but not projecting.
     /// It must be affine and the determinate of the 3x3 part must be negative.
     /// Same as m.IsReflecting.
@@ -236,19 +301,17 @@ type Matrix =
         let x = Vec(m.M11, m.M12, m.M13)
         let y = Vec(m.M21, m.M22, m.M23)
         let z = Vec(m.M31, m.M32, m.M33)
-         // defined here again, because Vec extension members are not in scope here
-        let inline cross (a:Vec) (b:Vec)  = Vec (a.Y * b.Z - a.Z * b.Y ,  a.Z * b.X - a.X * b.Z ,  a.X * b.Y - a.Y * b.X ) // could be inlined here for performance
-        ( cross x y) * z  < 0.0
+        (Vec.cross (x, y)) * z  < 0.0
         )
 
-    /// Returns if matrix is mirroring or reflection.
+    /// Returns if the Matrix is mirroring or reflection.
     /// It might also be rotating, translating or scaling, but not projecting.
     /// It must be affine and the determinate of the 3x3 part must be negative.
     /// Same as m.IsMirroring.
     member m.IsReflecting = 
         m.IsMirroring
 
-    /// Returns if matrix is scaling.
+    /// Returns if the Matrix is scaling.
     /// It might also be rotating, translating or reflecting, but not projecting.
     /// It must be affine and the 3 column vector must have a length other than one.
     member m.IsScaling =
@@ -260,11 +323,11 @@ type Matrix =
         Util.isNotOne (sqLen (Vec(m.M31, m.M32, m.M33)))
         )
 
-    /// Returns true if matrix is translating.
+    /// Returns true if the Matrix is translating.
     /// It might also be rotating, scaling and reflecting, but not projecting.
     member m.IsTranslating = m.IsAffine && (isNotZero m.X41 || isNotZero m.Y42|| isNotZero m.Z43 )
 
-    /// Returns true if matrix is only translating.
+    /// Returns true if the Matrix is only translating.
     /// It might not be rotating, scaling, reflecting, or projecting.
     member m.IsOnlyTranslating =
         isOne  m.M11 && isZero m.M21 && isZero m.M31 &&
@@ -277,7 +340,7 @@ type Matrix =
     //--------------------------  Static Members  --------------------------------------------------
     //----------------------------------------------------------------------------------------------
     
-        /// Returns the 16 elements column-major order:
+    /// Returns the 16 elements column-major order:
     /// [| M11 M12 M13 M14 M21 M22 M23 M24 M31 M32 M33 M34 X41 Y42 Z43 M44 |]
     /// Where X41, Y42 and Z43 refer to the translation part of the matrix.
     static member inline toArrayByColumns (m:Matrix) = 
@@ -290,7 +353,7 @@ type Matrix =
         m.ToArrayByRows
 
 
-    /// Checks if two Matrices are equal within tolerance.
+    /// Checks if two matrices are equal within tolerance.
     /// By comparing the fields M11 to M44 each with the given tolerance.
     static member equals tol (a:Matrix) (b:Matrix) =
         abs(a.M11-b.M11) < tol &&
@@ -372,25 +435,25 @@ type Matrix =
     static member inline ( * ) (matrixA:Matrix,  matrixB:Matrix) = 
         Matrix.multiply(matrixA, matrixB)
 
-    /// If the Determinant of the Matrix.
-    /// The Determinant describes the volume that a unit cube will have have the matrix was applied.
+    /// If the determinant of the Matrix.
+    /// The determinant describes the volume that a unit cube will have have the matrix was applied.
     static member inline determinant (m:Matrix) = 
         m.Determinant
 
     /// Inverses the matrix.
-    /// If the Determinant is zero the Matrix cannot be inverted.
-    /// An Exception is raised.
+    /// If the determinant is zero the Matrix cannot be inverted.
+    /// An exception is raised.
     static member inline inverse (m:Matrix) = 
         m.Inverse
 
-    /// Transposes this matrix.
+    /// Transposes the Matrix.
     static member transpose(m:Matrix) =
         Matrix  ( m.M11, m.M12, m.M13, m.M14
                 , m.M21, m.M22, m.M23, m.M24
                 , m.M31, m.M32, m.M33, m.M34
                 , m.X41, m.Y42, m.Z43, m.M44 )
 
-    /// Returns the Identity matrix:
+    /// Returns the identity matrix:
     /// 1  0  0  0
     /// 0  1  0  0
     /// 0  0  1  0
@@ -402,7 +465,7 @@ type Matrix =
             0, 0, 1, 0 ,
             0, 0, 0, 1 )
 
-    /// Sets this matrix as a translation transform:
+    /// Creates a translation matrix:
     /// x - the amount to translate in the X-axis.
     /// y - the amount to translate in the Y-axis.
     /// z - the amount to translate in the Z-axis.
@@ -418,14 +481,12 @@ type Matrix =
             0, 0, 1, z ,
             0, 0, 0, 1 )
 
-    /// Sets this matrix as a translation transform:
-    /// x - the amount to translate in the X-axis.
-    /// y - the amount to translate in the Y-axis.
-    /// z - the amount to translate in the Z-axis.
+    /// Creates a translation matrix:
+    /// Vec - the vector by which to translate.
     /// The resulting matrix will be:
-    /// 1  0  0  x
-    /// 0  1  0  y
-    /// 0  0  1  z
+    /// 1  0  0  v.X
+    /// 0  1  0  v.Y
+    /// 0  0  1  v.Z
     /// 0  0  0  1
     static member createTranslation(v:Vec ) =
         Matrix(
@@ -488,13 +549,13 @@ type Matrix =
         let c = cos angle
         let s = sin angle
         Matrix(
-            c, -s, 0, 0,
-            s,  c, 0, 0,
-            0,  0, 1, 0,
-            0,  0, 0, 1 )
+            c, -s,  0,  0,
+            s,  c,  0,  0,
+            0,  0,  1,  0,
+            0,  0,  0,  1 )
 
 
-    /// Creates a rotation around an Axis transformation matrix.
+    /// Creates a rotation around an axis transformation matrix.
     /// axis — Rotation axis, as unit-vector.
     /// angleDegrees — Rotation angle in Degrees.
     /// Returns a positive rotation will be so clockwise looking in the direction of the axis vector.
@@ -515,14 +576,14 @@ type Matrix =
             tx * z - s * y, ty * z + s * x , t  * z * z + c , 0,
             0             , 0              , 0              , 1 )
 
-    /// Creates a rotation around an Axis transformation matrix.
+    /// Creates a rotation around an axis transformation matrix.
     /// axis — Rotation axis, a vector of any length but 0.0 .
     /// angleDegrees — Rotation angle in Degrees.
     /// Returns a positive rotation will be so clockwise looking in the direction of the axis vector.
     static member createRotationAxis( axis:Vec, angleDegrees:float ) =
         // first unitize
         let len = sqrt (axis.X*axis.X + axis.Y*axis.Y + axis.Z*axis.Z)
-        if len <  zeroLengthTol then
+        if len <  zeroLengthTolerance then
             EuclidException.Raise "Euclid.Matrix.createRotationAxis failed on too short axis: %O and rotation: %g° Degrees." axis angleDegrees
         let sc = 1. / len
         let x = axis.X * sc
@@ -541,8 +602,8 @@ type Matrix =
             tx * z - s * y, ty * z + s * x , t  * z * z + c , 0,
             0             , 0              , 0              , 1 )
 
-
-    /// Creates a rotation matrix around an Axis at a given center point.
+   
+    /// Creates a rotation matrix around an axis at a given center point.
     /// axis — Rotation axis, a vector of any length but 0.0
     /// cen — The center point for the rotation.
     /// angleDegrees — Rotation angle in Degrees.
@@ -552,7 +613,7 @@ type Matrix =
         * Matrix.createRotationAxis(axis, angleDegrees)
         * Matrix.createTranslation(cen.X, cen.Y, cen.Z)
 
-    /// Creates a rotation matrix around an Axis at a given center point.
+    /// Creates a rotation matrix around an axis at a given center point.
     /// axis — Rotation axis, a unit-vector.
     /// cen — The center point for the rotation.
     /// angleDegrees — Rotation angle in Degrees.
@@ -580,66 +641,84 @@ type Matrix =
             0, 0, 0, 1 )
 
     /// Creates a rotation from one vectors direction to another vectors direction.
-    /// Fails on colinear vectors.
-    static member createVecToVec( fromVec:UnitVec, toVec:UnitVec ) =
-        let c = fromVec*toVec  // dot to find cos
-        let s = sqrt(1. - c*c ) // Pythagoras to find sine
-        let t = 1.0 - c
-        let axis0 = UnitVec.cross(fromVec, toVec)
-        let len = axis0.Length
-        if len <  zeroLengthTol then
-            EuclidException.Raise "Euclid.Matrix.createVecToVec failed to find rotation axis on colinear vectors: %O and %O" fromVec toVec
-        let axis = axis0 / len
-        let x = axis.X
-        let y = axis.Y
-        let z = axis.Z
-        let tx = t * x
-        let ty = t * y
-        Matrix(
-            tx * x + c    , tx * y - s * z , tx * z + s * y , 0,
-            tx * y + s * z, ty * y + c     , ty * z - s * x , 0,
-            tx * z - s * y, ty * z + s * x , t  * z * z + c , 0,
-            0             , 0              , 0              , 1 )
+    /// If the tips of the two vectors are closer than 1e-9 the identity matrix is returned.
+    /// If the tips of the two vectors are almost exactly opposite, deviating less than 1e-6 from line, 
+    /// there is no valid unique 180 degree rotation that can be found, so an exception is raised.
+    static member createVecToVec( vecFrom:UnitVec, vecTo:UnitVec ) =
+        let v = vecFrom - vecTo
+        if v.LengthSq < 1e-18 then // the vectors are almost the same
+            Matrix.identity
+        else
+            let v = vecFrom + vecTo
+            if v.LengthSq < 1e-12 then // the vectors are almost exactly opposite
+                EuclidException.Raise "Euclid.Matrix.createVecToVec failed to find a rotation axis for (almost) colinear unit vectors in opposite directions: %O and %O" vecFrom vecTo         
+            else
+                let axis0 = UnitVec.cross(vecFrom, vecTo)
+                let len = axis0.Length  
+                let axis = axis0 / len
+                let x = axis.X
+                let y = axis.Y
+                let z = axis.Z
+                let c = vecFrom * vecTo  // dot to find cos
+                let s = sqrt(1. - c*c ) // Pythagoras to find sine
+                let t = 1.0 - c
+                let tx = t * x
+                let ty = t * y  
+                Matrix(
+                    tx * x + c    , tx * y - s * z , tx * z + s * y , 0,
+                    tx * y + s * z, ty * y + c     , ty * z - s * x , 0,
+                    tx * z - s * y, ty * z + s * x , t  * z * z + c , 0,
+                    0             , 0              , 0              , 1 )
 
     /// Creates a rotation from one vectors direction to another vectors direction.
-    /// Ignores the vectors length. Fails on colinear vectors.
+    /// If the tips of the two vectors unitized are closer than 1e-9 the identity matrix is returned.
+    /// If the tips of the two vectors are almost exactly opposite, deviating less than 1e-6 from line (unitized), 
+    /// there is no valid unique 180 degree rotation that can be found, so an exception is raised.
     static member createVecToVec(vecFrom:Vec, vecTo:Vec ) =
         let fu =
             let x = vecFrom.X
             let y = vecFrom.Y
             let z = vecFrom.Z
             let length = sqrt(x*x + y*y + z*z)
-            if length <  zeroLengthTol then
-                EuclidException.Raise "Euclid.Matrix.createVecToVec failed. too short vector vecFrom: %O" vecFrom
-            let sc =  1. / length // inverse for unitizing vector:
+            if length <  zeroLengthTolerance then
+                EuclidException.Raise "Euclid.Matrix.createVecToVec failed. The vector is too short: vecFrom: %O" vecFrom
+            let sc = 1. / length // inverse for unitizing vector:
             UnitVec.createUnchecked(x*sc, y*sc, z*sc)
         let tu =
             let x = vecTo.X
             let y = vecTo.Y
             let z = vecTo.Z
             let length = sqrt(x*x + y*y + z*z)
-            if length <  zeroLengthTol then
-                EuclidException.Raise "Euclid.Matrix.createVecToVec failed. too short vector vecTo: %O" vecTo
-            let sc =  1. / length // inverse for unitizing vector:
+            if length <  zeroLengthTolerance then
+                EuclidException.Raise "Euclid.Matrix.createVecToVec failed. The vector is too short: vecTo: %O" vecTo
+            let sc = 1. / length // inverse for unitizing vector:
             UnitVec.createUnchecked(x*sc, y*sc, z*sc)
-        let c =  fu * tu  // dot to find cosine
-        let s = sqrt(1. - c*c) // Pythagoras to find sine
-        let t = 1.0 - c
-        let axis = Vec.cross(vecFrom, vecTo)
-        let len = axis.Length
-        if len <  Util.zeroLengthTol then
-            EuclidException.Raise "Euclid.Matrix.createVecToVec failed to find rotation axis on colinear or zero length vectors: %O and %O" vecFrom vecTo
-        let sc = 1. / len
-        let x = axis.X * sc
-        let y = axis.Y * sc
-        let z = axis.Z * sc
-        let tx = t * x
-        let ty = t * y
-        Matrix(
-            tx * x + c    , tx * y - s * z , tx * z + s * y , 0,
-            tx * y + s * z, ty * y + c     , ty * z - s * x , 0,
-            tx * z - s * y, ty * z + s * x , t  * z * z + c , 0,
-            0             , 0              , 0              , 1 )
+        
+        let v = fu - tu
+        if v.LengthSq < 1e-18 then // the vectors are almost the same
+            Matrix.identity
+        else
+            let v = fu + tu
+            if v.LengthSq < 1e-12 then // the vectors are almost exactly opposite
+                EuclidException.Raise "Euclid.Matrix.createVecToVec failed to find a rotation axis for (almost) colinear vectors in opposite directions: %O and %O" vecFrom vecTo      
+            else
+                let axis0 = UnitVec.cross(fu, tu)
+                let len = axis0.Length  
+                let axis = axis0 / len
+                let x = axis.X
+                let y = axis.Y
+                let z = axis.Z
+                let c = fu * tu  // dot to find cos
+                let s = sqrt(1. - c*c ) // Pythagoras to find sine
+                let t = 1.0 - c
+                let tx = t * x
+                let ty = t * y  
+                Matrix(
+                    tx * x + c    , tx * y - s * z , tx * z + s * y , 0,
+                    tx * y + s * z, ty * y + c     , ty * z - s * x , 0,
+                    tx * z - s * y, ty * z + s * x , t  * z * z + c , 0,
+                    0             , 0              , 0              , 1 )
+
 
 
 
@@ -669,7 +748,7 @@ type Matrix =
             p.Xaxis.X , p.Yaxis.X , p.Zaxis.X ,  p.Origin.X ,
             p.Xaxis.Y , p.Yaxis.Y , p.Zaxis.Y ,  p.Origin.Y ,
             p.Xaxis.Z , p.Yaxis.Z , p.Zaxis.Z ,  p.Origin.Z ,
-            0       ,       0 ,        0,            1 )
+            0       ,           0 ,          0,           1 )
 
 
     /// Creates a Matrix to transform from one Plane or Coordinate System to another Plane.
@@ -680,9 +759,9 @@ type Matrix =
 
     /// Creates a Matrix to mirror on a Plane.
     static member createMirror (p:PPlane) =
-        let toPlane   =  Matrix.createToPlane p
-        let fromPlane =  toPlane.Inverse
-        let zFlip     =  Matrix.createScale(1,1,-1)
+        let toPlane   = Matrix.createToPlane p
+        let fromPlane = toPlane.Inverse
+        let zFlip     = Matrix.createScale(1, 1, -1)
         fromPlane*zFlip*toPlane
 
     /// Create Matrix from Quaternion.
@@ -704,23 +783,22 @@ type Matrix =
         let wy = w * y2
         let wz = w * z2
         // the sequence is reordered here, when compared to Three js
-        Matrix  (
-                 ( 1. - ( yy + zz ) )
-                ,( xy - wz )
-                ,( xz + wy )
-                ,0
-                ,( xy + wz )
-                ,( 1. - ( xx + zz ) )
-                ,0
-                ,( yz - wx )
-                ,( xz - wy )
-                ,( yz + wx )
-                ,( 1. - ( xx + yy ) )
-                ,0
-                ,0
-                ,0
-                ,0
-                ,1 )
+        Matrix  ( ( 1. - ( yy + zz ) )
+                , ( xy - wz )
+                , ( xz + wy )
+                , 0
+                , ( xy + wz )
+                , ( 1. - ( xx + zz ) )
+                , 0
+                , ( yz - wx )
+                , ( xz - wy )
+                , ( yz + wx )
+                , ( 1. - ( xx + yy ) )
+                , 0
+                , 0
+                , 0
+                , 0
+                , 1 )
 
 
 
@@ -760,7 +838,7 @@ type Matrix =
                 m.M14,  m.M24,  m.M34,  m.M44)
 
     /// Add a X, Y and Z translation to an existing matrix.
-    static member addTranslationXYZ x y z  (m:Matrix) =
+    static member addTranslationXYZ x y z (m:Matrix) =
         Matrix( m.M11,  m.M21,  m.M31,  m.X41 + x,
                 m.M12,  m.M22,  m.M32,  m.Y42 + y,
                 m.M13,  m.M23,  m.M33,  m.Z43 + z,
@@ -770,40 +848,41 @@ type Matrix =
     // operators for matrix multiplication:
     // ----------------------------------------------
 
-    /// Multiplies (or applies) a Matrix to a 3D vector (with an implicit 1 in the 4th dimension,
-    /// so that it also works correctly for projections.)
-    static member inline  ( * ) (v:Vec, m:Matrix) =
+    /// Multiplies (or applies) a Matrix to a 3D vector 
+    /// Since a 3D vector represents a direction or an offset in space, but not a location,
+    /// the implicit the 4th dimension is 0.0 so that all translations are ignored. (Homogeneous Vector)
+    static member inline ( * ) (v:Vec, m:Matrix) =
         // from applyMatrix4( m ) in  https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
         let x = v.X
         let y = v.Y
         let z = v.Z
-        //let w = 1.0
-        let x' = m.M11*x + m.M21*y + m.M31*z + m.X41 // * w
-        let y' = m.M12*x + m.M22*y + m.M32*z + m.Y42 // * w
-        let z' = m.M13*x + m.M23*y + m.M33*z + m.Z43 // * w
-        let w' = m.M14*x + m.M24*y + m.M34*z + m.M44 // * w
+        //let w = 0.0
+        let x' = m.M11*x + m.M21*y + m.M31*z //+ m.X41 * w
+        let y' = m.M12*x + m.M22*y + m.M32*z //+ m.Y42 * w
+        let z' = m.M13*x + m.M23*y + m.M33*z //+ m.Z43 * w
+        let w' = m.M14*x + m.M24*y + m.M34*z //+ m.M44 * w
         let sc = 1.0 / w'
         Vec(x' * sc, y'* sc, z'* sc)
 
-    /// Multiplies a Matrix with a 3D vector (with an implicit 1 in the 4th dimension,
-    /// So that it also works correctly for projections.)
-    /// The resulting vector is not unitized.
-    static member inline  ( * ) (v:UnitVec, m:Matrix) =
+    /// Multiplies a Matrix with a 3D vector 
+    /// Since a 3D vector represents a direction or an offset in space, but not a location,
+    /// the implicit the 4th dimension is 0.0 so that all translations are ignored. (Homogeneous Vector)
+    static member inline ( * ) (v:UnitVec, m:Matrix) =
         // from applyMatrix4( m ) in  https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
         let x = v.X
         let y = v.Y
         let z = v.Z
-        //let w = 1.0
-        let x' = m.M11*x + m.M21*y + m.M31*z + m.X41 // * w
-        let y' = m.M12*x + m.M22*y + m.M32*z + m.Y42 // * w
-        let z' = m.M13*x + m.M23*y + m.M33*z + m.Z43 // * w
-        let w' = m.M14*x + m.M24*y + m.M34*z + m.M44 // * w
+        //let w = 0.0
+        let x' = m.M11*x + m.M21*y + m.M31*z //+ m.X41 * w
+        let y' = m.M12*x + m.M22*y + m.M32*z //+ m.Y42 * w
+        let z' = m.M13*x + m.M23*y + m.M33*z //+ m.Z43 * w
+        let w' = m.M14*x + m.M24*y + m.M34*z //+ m.M44 * w
         let sc = 1.0 / w'
         Vec(x' * sc, y'* sc, z'* sc)
 
     /// Multiplies (or applies) a Matrix to a 3D point (with an implicit 1 in the 4th dimension,
     /// so that it also works correctly for projections.)
-    static member inline  ( * ) (p:Pnt, m:Matrix) =
+    static member inline ( * ) (p:Pnt, m:Matrix) =
         // from applyMatrix4( m ) in  https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
         let x = p.X
         let y = p.Y
@@ -815,3 +894,32 @@ type Matrix =
         let w' = m.M14*x + m.M24*y + m.M34*z + m.M44 // * w
         let sc = 1.0 / w'
         Pnt(x' * sc, y'* sc, z'* sc)
+
+
+    /// <summary>
+    /// Creates a perspective projection matrix from the given view volume dimensions.
+    /// </summary>
+    /// <param name="width">Width of the view volume at the near view plane.</param>
+    /// <param name="height">Height of the view volume at the near view plane.</param>
+    /// <param name="nearPlaneDistance">Distance to the near view plane.</param>
+    /// <param name="farPlaneDistance">Distance to the far view plane.</param>
+    /// <returns>The perspective projection matrix.</returns>
+    static member createPerspective(width, height,  nearPlaneDistance,  farPlaneDistance) =
+        // from https://github.com/vimaec/Math3D/blob/dev/src/Matrix4x4.cs#L762
+
+        //     if (nearPlaneDistance <= 0.0f)
+        //         throw new ArgumentOutOfRangeException(nameof(nearPlaneDistance))
+
+        //     if (farPlaneDistance <= 0.0f)
+        //         throw new ArgumentOutOfRangeException(nameof(farPlaneDistance))
+
+        //     if (nearPlaneDistance >= farPlaneDistance)
+        //         throw new ArgumentOutOfRangeException(nameof(nearPlaneDistance))
+        
+        let negFarRange = if Double.IsPositiveInfinity(farPlaneDistance) then -1.0 else  farPlaneDistance / (nearPlaneDistance - farPlaneDistance)
+        Matrix( 
+            2.0 * nearPlaneDistance / width , 0                                , 0          ,                               0,
+            0                               , 2.0 * nearPlaneDistance / height , 0          ,                               0,
+            0                               , 0                                , negFarRange, nearPlaneDistance * negFarRange,
+            0                               , 0                                , -1         ,                               0
+            )

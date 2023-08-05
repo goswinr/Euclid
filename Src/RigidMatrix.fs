@@ -5,36 +5,35 @@ open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see http
 open Euclid.Util
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 
-
-/// An immutable 4x3 Orthogonal matrix. For only Rotation and Translation in 3D space.
+/// An immutable 4x3 rigid matrix. For only rotation and translation in 3D space.
 /// This matrix guarantees to NOT scale, shear, flip, mirror, reflect or project.
 /// Angles are preserved. Lengths are preserved. Area is preserved. Volume is preserved.
-/// An orthogonal matrix is a matrix whose 3x3 columns and rows are orthogonal unit vectors.
+/// A rigid matrix is a matrix whose 3x3 columns and rows are orthogonal unit vectors.
 /// The matrix is represented in the following column-vector syntax form:
 /// M11 M21 M31 X41
 /// M12 M22 M32 Y42
 /// M13 M23 M33 Z43
-/// Where X41, Y42 and Z43 refer to the translation part of the OrthoMatrix.
+/// Where X41, Y42 and Z43 refer to the translation part of the RigidMatrix.
 /// The Determinant of this matrix is always 1.0.
-/// Note: Never use the struct default constructor OrthoMatrix() as it will create an invalid zero OrthoMatrix.
-/// Use OrthoMatrix.create or OrthoMatrix.createUnchecked instead.
+/// Note: Never use the struct default constructor RigidMatrix() as it will create an invalid zero RigidMatrix.
+/// Use RigidMatrix.create or RigidMatrix.createUnchecked instead.
 [<Struct; NoEquality; NoComparison>] // because its made up from floats
 [<IsReadOnly>]
 //[<IsByRefLike>]
 [<DataContract>] // for using DataMember on fields
-type OrthoMatrix =
+type RigidMatrix =
     //[<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
     [<DataMember>] val M11 :float ; [<DataMember>] val M21 :float ; [<DataMember>] val M31 :float; [<DataMember>] val X41:float
     [<DataMember>] val M12 :float ; [<DataMember>] val M22 :float ; [<DataMember>] val M32 :float; [<DataMember>] val Y42:float
     [<DataMember>] val M13 :float ; [<DataMember>] val M23 :float ; [<DataMember>] val M33 :float; [<DataMember>] val Z43:float
 
-    /// Create immutable a 4x3 Transformation Matrix. For only Rotation and Translation in 3D space.
+    /// Create immutable a 4x3 Transformation Matrix. For only rotation and translation in 3D space.
     /// This Constructor takes arguments in row-major order,
     /// The matrix is represented in the following column-vector syntax form:
     /// M11 M21 M31 X41
     /// M12 M22 M32 Y42
     /// M13 M23 M33 Z43
-        /// Where X41, Y42 and Z43 refer to the translation part of the OrthoMatrix.
+        /// Where X41, Y42 and Z43 refer to the translation part of the RigidMatrix.
         internal new(   m11,  m21,  m31,  x41,
                         m12,  m22,  m32,  y42,
                         m13,  m23,  m33,  z43) = {
@@ -44,21 +43,21 @@ type OrthoMatrix =
 
     /// Returns the 12 elements column-major order:
     /// [| M11 M12 M13 M21 M22 M23 M31 M32 M33 X41 Y42 Z43 |]
-    /// Where X41, Y42 and Z43 refer to the translation part of the OrthoMatrix.
+    /// Where X41, Y42 and Z43 refer to the translation part of the RigidMatrix.
     member m.ByColumns =
         [| m.M11; m.M12; m.M13; m.M21; m.M22; m.M23; m.M31; m.M32; m.M33; m.X41; m.Y42; m.Z43 |]
 
     /// Returns the 12 elements in row-major order:
     /// [| M11 M21 M31 X41 M12 M22 M32 Y42 M13 M23 M33 Z43 |]
-    /// Where X41, Y42 and Z43 refer to the translation part of the OrthoMatrix.
+    /// Where X41, Y42 and Z43 refer to the translation part of the RigidMatrix.
     member m.ByRows =
         [| m.M11; m.M21; m.M31; m.X41; m.M12; m.M22; m.M32; m.Y42; m.M13; m.M23; m.M33; m.Z43 |]
 
     /// Nicely formats the Matrix to a Grid of 4x3.
     override m.ToString()=
-        let ts   = m.ByRows |> Array.map ( fun x -> x.ToString("0.###"))
+        let ts = m.ByRows |> Array.map ( fun x -> x.ToString("0.###"))
         let most = ts |> Array.maxBy ( fun s -> s.Length)
-        "4x3 Colum-Vector Orthogonal Transformation Matrix:\r\n" + (
+        "4x3 Colum-Vector Rigid Transformation Matrix:\r\n" + (
         ts
         |> Array.map ( fun x -> String(' ', most.Length-x.Length) + x )
         |> Array.chunkBySize 4
@@ -69,9 +68,9 @@ type OrthoMatrix =
     //Nicely formats the Matrix to a Grid of 4x3 including field names.
     //override m.ToString()=
     //    let names =[| "M11"; "M21"; "M31"; "X41"; "M12"; "M22"; "M32"; "Y42"; "M13"; "M23"; "M33"; "Z43"; "M14"; "M24"; "M34"; "M44"|]
-    //    let ts   = (names, m.ByRows)  ||> Array.map2 ( fun n v -> v.ToString("0.###"))
+    //    let ts = (names, m.ByRows)  ||> Array.map2 ( fun n v -> v.ToString("0.###"))
     //    let most = ts |> Array.maxBy ( fun s -> s.Length)
-    //    "Colum-Vector Orthogonal Transformation Matrix:\r\n" + (
+    //    "Colum-Vector Rigid Transformation Matrix:\r\n" + (
     //    (names, ts)
     //    ||> Array.map2 ( fun n v ->n + ": " + String(' ', most.Length-v.Length) + v )
     //    |> Array.chunkBySize 4
@@ -92,57 +91,70 @@ type OrthoMatrix =
     member m.Translation = Vec(m.X41, m.Y42, m.Z43)
 
 
-    /// The Determinant of an Ortho Matrix is always 1.0
+    /// The Determinant of an Rigid Matrix is always 1.0
     /// The Determinant describes the volume that a unit cube will have after the matrix was applied.
     member m.Determinant =
         let n11 = m.M11
         let n21 = m.M21
         let n31 = m.M31
-        let n41 = m.X41
+        //let n41 = m.X41
         let n12 = m.M12
         let n22 = m.M22
         let n32 = m.M32
-        let n42 = m.Y42
+        //let n42 = m.Y42
         let n13 = m.M13
         let n23 = m.M23
         let n33 = m.M33
-        let n43 = m.Z43
+        //let n43 = m.Z43
         let t11 =  - n23 * n32  + n22 * n33
         let t12 =    n13 * n32  - n12 * n33
         let t13 =  - n13 * n22  + n12 * n23
         n11 * t11 + n21 * t12 + n31 * t13
 
-    /// Inverts the OrthoMatrix.
-    /// OrthoMatrices have always determinant 1.0 so the can always be inverted.
+
+    /// Inverts the RigidMatrix.
+    /// Rigid matrices have always determinant 1.0 so the can always be inverted.
     member m.Inverse =
-        // this order would actually need to be transposed when comparing to three.js, but its transposed in the output too, so its correct.
-        // The internal array in three.js is column major.
+        // simplified from Matrix.Inverse in Matrix.fs:
         let n11 = m.M11
         let n21 = m.M21
         let n31 = m.M31
-        let n41 = m.X41
+        let x41 = m.X41
         let n12 = m.M12
         let n22 = m.M22
         let n32 = m.M32
-        let n42 = m.Y42
+        let y42 = m.Y42
         let n13 = m.M13
         let n23 = m.M23
         let n33 = m.M33
-        let n43 = m.Z43
+        let z43 = m.Z43
+               
+        let n33y42 = n33*y42
+        let n32z43 = n32*z43
+        let n13n22 = n13*n22
+        let n12n23 = n12*n23
+        let n31z43 = n31*z43
+        let n31y42 = n31*y42
+        let n13n21 = n13*n21
+        let n12n21 = n12*n21  
+        let n33x41 = n33*x41
+        let n11n23 = n11*n23
+        let n11n22 = n11*n22
+        let n32x41 = n32*x41
 
-        OrthoMatrix
-              ( -n23*n32  + n22*n33                                                                 // M11
-              , n23*n31 - n21*n33                                                                   // M21
-              , -n22*n31 + n21*n32                                                                  // M31
-              , n23*n32*n41 - n22*n33*n41 - n23*n31*n42 + n21*n33*n42 + n22*n31*n43 - n21*n32*n43   // X41
-              , n13*n32  - n12*n33                                                                  // M12
-              , -n13*n31 + n11*n33                                                                  // M22
-              , n12*n31 - n11*n32                                                                   // M32
-              , n12*n33*n41 - n13*n32*n41 + n13*n31*n42 - n11*n33*n42 - n12*n31*n43 + n11*n32*n43   // Y42
-              , -n13*n22  + n12*n23                                                                 // M13
-              , n13*n21 - n11*n23                                                                   // M23
-              , -n12*n21 + n11*n22                                                                  // M33
-              , n13*n22*n41 - n12*n23*n41 - n13*n21*n42 + n11*n23*n42 + n12*n21*n43 - n11*n22*n43   // Z43
+        RigidMatrix
+              (  n22*n33 - n23*n32                                                             // M11
+              ,  n23*n31 - n21*n33                                                             // M21
+              ,  n21*n32 - n22*n31                                                             // M31
+              ,  n23*n32x41 - n22*n33x41 - n23*n31y42 + n21*n33y42 + n22*n31z43 - n21*n32z43   // X41
+              ,  n13*n32 - n12*n33                                                             // M12
+              ,  n11*n33 - n13*n31                                                             // M22
+              ,  n12*n31 - n11*n32                                                             // M32
+              ,  n12*n33x41 - n13*n32x41 + n13*n31y42 - n11*n33y42 - n12*n31z43 + n11*n32z43   // Y42
+              ,  n12n23 - n13n22                                                               // M13
+              ,  n13n21 - n11n23                                                               // M23
+              ,  n11n22 - n12n21                                                               // M33
+              ,  n13n22*x41 - n12n23*x41 - n13n21*y42 + n11n23*y42 + n12n21*z43 - n11n22*z43   // Z43
               )
 
     /// Checks if the Matrix is an Identity Matrix in the form of:
@@ -162,7 +174,7 @@ type OrthoMatrix =
 
     /// Checks if two Matrices are equal within tolerance.
     /// By comparing the fields M11 to M44 each with the given tolerance.
-    static member equals tol (a:OrthoMatrix) (b:OrthoMatrix) =
+    static member equals tol (a:RigidMatrix) (b:RigidMatrix) =
         abs(a.M11-b.M11) < tol &&
         abs(a.M12-b.M12) < tol &&
         abs(a.M13-b.M13) < tol &&
@@ -180,7 +192,7 @@ type OrthoMatrix =
 
     /// Multiplies matrixA with matrixB.
     /// The resulting transformation will first do matrixA and then matrixB.
-    static member multiply (matrixA:OrthoMatrix,  matrixB:OrthoMatrix) =
+    static member multiply (matrixA:RigidMatrix,  matrixB:RigidMatrix) =
         let a11 = matrixA.M11
         let a12 = matrixA.M12
         let a13 = matrixA.M13
@@ -206,47 +218,45 @@ type OrthoMatrix =
         let b41 = matrixB.X41
         let b42 = matrixB.Y42
         let b43 = matrixB.Z43
-        OrthoMatrix(
-             a11*b11 + a12*b21 + a13*b31 ,       // M11
-             a21*b11 + a22*b21 + a23*b31 ,       // M21
-             a31*b11 + a32*b21 + a33*b31 ,       // M31
+        RigidMatrix(
+             a11*b11 + a12*b21 + a13*b31       , // M11
+             a21*b11 + a22*b21 + a23*b31       , // M21
+             a31*b11 + a32*b21 + a33*b31       , // M31
              a41*b11 + a42*b21 + a43*b31 + b41 , // X41
-             a11*b12 + a12*b22 + a13*b32 ,       // M12
-             a21*b12 + a22*b22 + a23*b32 ,       // M22
-             a31*b12 + a32*b22 + a33*b32 ,       // M32
+             a11*b12 + a12*b22 + a13*b32       , // M12
+             a21*b12 + a22*b22 + a23*b32       , // M22
+             a31*b12 + a32*b22 + a33*b32       , // M32
              a41*b12 + a42*b22 + a43*b32 + b42 , // Y42
-             a11*b13 + a12*b23 + a13*b33 ,       // M13
-             a21*b13 + a22*b23 + a23*b33 ,       // M23
-             a31*b13 + a32*b23 + a33*b33 ,       // M33
+             a11*b13 + a12*b23 + a13*b33       , // M13
+             a21*b13 + a22*b23 + a23*b33       , // M23
+             a31*b13 + a32*b23 + a33*b33       , // M33
              a41*b13 + a42*b23 + a43*b33 + b43 ) // Z43
 
 
     /// Multiplies matrixA with matrixB.
     /// The resulting transformation will first do matrixA and then matrixB.
-    static member inline ( * ) (matrixA:OrthoMatrix,  matrixB:OrthoMatrix) = OrthoMatrix.multiply(matrixA, matrixB)
+    static member inline ( * ) (matrixA:RigidMatrix,  matrixB:RigidMatrix) = RigidMatrix.multiply(matrixA, matrixB)
 
-    /// If the determinant of the OrthoMatrix.
+    /// The Determinant of an Rigid Matrix is always 1.0
     /// The Determinant describes the volume that a unit cube will have have the matrix was applied.
-    static member inline determinant (m:OrthoMatrix) = m.Determinant
+    static member inline determinant (m:RigidMatrix) = m.Determinant
 
-    /// Inverses the OrthoMatrix.
-    /// If the determinant is zero the Matrix cannot be inverted.
-    /// An Exception is raised.
-    static member inline inverse (m:OrthoMatrix) = m.Inverse
+    /// Inverses the RigidMatrix.
+    /// An RigidMatrix can always be inverted. (as opposed to a general Matrix)
+    static member inline inverse (m:RigidMatrix) = m.Inverse
 
 
-    /// Returns the Identity matrix:
+    /// Returns the Identity RigidMatrix:
     /// 1  0  0  0
     /// 0  1  0  0
     /// 0  0  1  0
-    /// 0  0  0  1
     static member identity =
-        OrthoMatrix(
+        RigidMatrix(
             1, 0, 0, 0 ,
             0, 1, 0, 0 ,
             0, 0, 1, 0 )
 
-    /// Sets this matrix as a translation transform:
+    /// Creates a translation RigidMatrix:
     /// x - the amount to translate in the X-axis.
     /// y - the amount to translate in the Y-axis.
     /// z - the amount to translate in the Z-axis.
@@ -254,85 +264,78 @@ type OrthoMatrix =
     /// 1  0  0  x
     /// 0  1  0  y
     /// 0  0  1  z
-    /// 0  0  0  1
     static member createTranslation( x, y, z ) =
-        OrthoMatrix(
+        RigidMatrix(
             1, 0, 0, x ,
             0, 1, 0, y ,
             0, 0, 1, z )
 
-    /// Sets this matrix as a translation transform:
-    /// x - the amount to translate in the X-axis.
-    /// y - the amount to translate in the Y-axis.
-    /// z - the amount to translate in the Z-axis.
-    /// The resulting matrix will be:
-    /// 1  0  0  x
-    /// 0  1  0  y
-    /// 0  0  1  z
-    /// 0  0  0  1
+    /// Creates a translation RigidMatrix:    
+    /// Vec - the vector by which to translate.
+    /// The resulting RigidMatrix will be:
+    /// 1  0  0  v.X
+    /// 0  1  0  v.Y
+    /// 0  0  1  v.Z
     static member createTranslation(v:Vec ) =
-        OrthoMatrix(
+        RigidMatrix(
             1, 0, 0, v.X ,
             0, 1, 0, v.Y ,
             0, 0, 1, v.Z  )
 
 
 
-    /// Creates a rotation transformation matrix around the X-axis
+    /// Creates a rotation around the X-axis RigidMatrix
     /// by angle in Degrees (not Radians).
     /// angleDegrees — Rotation angle in Degrees.
     /// A positive rotation will be from Y towards Z-axis,  so counter-clockwise looking onto Y-X Plane.
-    /// The resulting matrix will be:
+    /// The resulting RigidMatrix will be:
     /// 1 0      0        0
     /// 0 cos(θ) -sin(θ)  0
     /// 0 sin(θ) cos(θ)   0
-    /// 0 0      0        1
     static member createRotationX( angleDegrees ) =
         let angle = Util.toRadians angleDegrees
         let c = cos angle
         let s = sin angle
-        OrthoMatrix(
+        RigidMatrix(
             1, 0,  0, 0,
             0, c, -s, 0,
             0, s,  c, 0 )
 
-    /// Creates a rotation transformation matrix around the Y-axis
+    /// Creates a rotation around the Y-axis RigidMatrix
     /// by angle in Degrees (not Radians).
     /// angleDegrees — Rotation angle in Degrees.
     /// A positive rotation will be from Z towards X-axis,  so counter-clockwise looking onto Z-X Plane.
-    /// The resulting matrix will be:
+    /// The resulting RigidMatrix will be:
     /// cos(θ)  0 sin(θ) 0
     /// 0       1 0      0
     /// -sin(θ) 0 cos(θ) 0
-    /// 0       0 0      1
     static member createRotationY( angleDegrees ) =
         let angle = Util.toRadians angleDegrees
         let c = cos angle
         let s = sin angle
-        OrthoMatrix(
+        RigidMatrix(
             c  ,  0,  s,  0,
             0  ,  1,  0,  0,
             -s ,  0,  c,  0 )
 
-    /// Creates a rotation transformation matrix around the Z-axis
+    /// Creates a rotation around the Z-axis RigidMatrix
     /// by angle in Degrees (not Radians).
     /// angleDegrees — Rotation angle in Degrees.
     /// Returns a positive rotation will be from X toward Y-axis,  so counter-clockwise looking onto X-Y plane.
-    /// The resulting matrix will be:
+    /// The resulting RigidMatrix will be:
     /// cos(θ) -sin(θ) 0 0
     /// sin(θ) cos(θ)  0 0
     /// 0      0       1 0
-    /// 0      0       0 1
     static member createRotationZ( angleDegrees ) =
         let angle = Util.toRadians angleDegrees
         let c = cos angle
         let s = sin angle
-        OrthoMatrix(
+        RigidMatrix(
             c, -s, 0, 0,
             s,  c, 0, 0,
             0,  0, 1, 0 )
 
-    /// Creates a rotation around an Axis transformation OrthoMatrix.
+    /// Creates a rotation around an Axis RigidMatrix.
     /// axis — Rotation axis, as unit-vector.
     /// angleDegrees — Rotation angle in Degrees.
     /// Returns a positive rotation will be so clockwise looking in the direction of the axis vector.
@@ -347,20 +350,20 @@ type OrthoMatrix =
         let z = axis.Z
         let tx = t * x
         let ty = t * y
-        OrthoMatrix(
+        RigidMatrix(
             tx * x + c    , tx * y - s * z , tx * z + s * y , 0,
             tx * y + s * z, ty * y + c     , ty * z - s * x , 0,
             tx * z - s * y, ty * z + s * x , t  * z * z + c , 0 )
 
-    /// Creates a rotation around an Axis transformation OrthoMatrix.
+    /// Creates a rotation around an Axis RigidMatrix.
     /// axis — Rotation axis, a vector of any length but 0.0 .
     /// angleDegrees — Rotation angle in Degrees.
     /// Returns a positive rotation will be so clockwise looking in the direction of the axis vector.
     static member createRotationAxis( axis:Vec, angleDegrees:float ) =
         // first unitize
         let len = sqrt (axis.X*axis.X + axis.Y*axis.Y + axis.Z*axis.Z)
-        if len <  zeroLengthTol then
-            EuclidException.Raise "Euclid.OrthoMatrix.createRotationAxis failed on too short axis: %O and rotation: %g° Degrees." axis angleDegrees
+        if len <  zeroLengthTolerance then
+            EuclidException.Raise "Euclid.RigidMatrix.createRotationAxis failed on too short axis: %O and rotation: %g° Degrees." axis angleDegrees
         let sc = 1. / len
         let x = axis.X * sc
         let y = axis.Y * sc
@@ -372,7 +375,7 @@ type OrthoMatrix =
         let t = 1.0 - c
         let tx = t * x
         let ty = t * y
-        OrthoMatrix(
+        RigidMatrix(
             tx * x + c    , tx * y - s * z , tx * z + s * y , 0,
             tx * y + s * z, ty * y + c     , ty * z - s * x , 0,
             tx * z - s * y, ty * z + s * x , t  * z * z + c , 0 )
@@ -384,9 +387,9 @@ type OrthoMatrix =
     /// angleDegrees — Rotation angle in Degrees.
     /// Returns a positive rotation will be so clockwise looking in the direction of the axis vector.
     static member createRotationAxisCenter( axis:Vec, cen:Pnt, angleDegrees:float ) =
-        OrthoMatrix.createTranslation(-cen.X, -cen.Y, -cen.Z)
-        * OrthoMatrix.createRotationAxis(axis, angleDegrees)
-        * OrthoMatrix.createTranslation(cen.X, cen.Y, cen.Z)
+        RigidMatrix.createTranslation(-cen.X, -cen.Y, -cen.Z)
+        * RigidMatrix.createRotationAxis(axis, angleDegrees)
+        * RigidMatrix.createTranslation(cen.X, cen.Y, cen.Z)
 
     /// Creates a rotation matrix around an Axis at a given center point.
     /// axis — Rotation axis, a unit-vector.
@@ -394,88 +397,108 @@ type OrthoMatrix =
     /// angleDegrees — Rotation angle in Degrees.
     /// Returns a positive rotation will be so clockwise looking in the direction of the axis vector.
     static member createRotationAxisCenter( axis:UnitVec, cen:Pnt, angleDegrees:float ) =
-        OrthoMatrix.createTranslation(-cen.X, -cen.Y, -cen.Z)
-        * OrthoMatrix.createRotationAxis(axis, angleDegrees)
-        * OrthoMatrix.createTranslation(cen.X, cen.Y, cen.Z)
+        RigidMatrix.createTranslation(-cen.X, -cen.Y, -cen.Z)
+        * RigidMatrix.createRotationAxis(axis, angleDegrees)
+        * RigidMatrix.createTranslation(cen.X, cen.Y, cen.Z)
 
-        /// Creates a rotation from one vectors direction to another vectors direction.
-    /// Fails on colinear vectors.
-    static member createVecToVec( fromVec:UnitVec, toVec:UnitVec ) =
-        let c = fromVec*toVec  // dot to find cos
-        let s = sqrt(1. - c*c ) // Pythagoras to find sine
-        let t = 1.0 - c
-        let axis0 = UnitVec.cross(fromVec, toVec)
-        let len = axis0.Length
-        if len <  zeroLengthTol then
-            EuclidException.Raise "Euclid.OrthoMatrix.createVecToVec failed to find rotation axis on colinear vectors: %O and %O" fromVec toVec
-        let axis = axis0 / len
-        let x = axis.X
-        let y = axis.Y
-        let z = axis.Z
-        let tx = t * x
-        let ty = t * y
-        OrthoMatrix(
-            tx * x + c    , tx * y - s * z , tx * z + s * y , 0,
-            tx * y + s * z, ty * y + c     , ty * z - s * x , 0,
-            tx * z - s * y, ty * z + s * x , t  * z * z + c , 0 )
 
     /// Creates a rotation from one vectors direction to another vectors direction.
-    /// Ignores the vectors length. Fails on colinear vectors.
+    /// If the tips of the two vectors are closer than 1e-9 the identity matrix is returned.
+    /// If the tips of the two vectors are almost exactly opposite, deviating less than 1e-6 from line, 
+    /// there is no valid unique 180 degree rotation that can be found, so an exception is raised.
+    static member createVecToVec( vecFrom:UnitVec, vecTo:UnitVec ) =
+        let v = vecFrom - vecTo
+        if v.LengthSq < 1e-18 then // the vectors are almost the same
+            RigidMatrix.identity
+        else
+            let v = vecFrom + vecTo
+            if v.LengthSq < 1e-12 then // the vectors are almost exactly opposite
+                EuclidException.Raise "Euclid.RigidMatrix.createVecToVec failed to find a rotation axis for (almost) colinear unit vectors in opposite directions: %O and %O" vecFrom vecTo         
+            else
+                let axis0 = UnitVec.cross(vecFrom, vecTo)
+                let len = axis0.Length  
+                let axis = axis0 / len
+                let x = axis.X
+                let y = axis.Y
+                let z = axis.Z
+                let c = vecFrom * vecTo  // dot to find cos
+                let s = sqrt(1. - c*c ) // Pythagoras to find sine
+                let t = 1.0 - c
+                let tx = t * x
+                let ty = t * y  
+                RigidMatrix(
+                    tx * x + c    , tx * y - s * z , tx * z + s * y , 0 ,
+                    tx * y + s * z, ty * y + c     , ty * z - s * x , 0 ,
+                    tx * z - s * y, ty * z + s * x , t  * z * z + c , 0 )
+
+    /// Creates a rotation from one vectors direction to another vectors direction.
+    /// If the tips of the two vectors unitized are closer than 1e-9 the identity matrix is returned.
+    /// If the tips of the two vectors are almost exactly opposite, deviating less than 1e-6 from line (unitized), 
+    /// there is no valid unique 180 degree rotation that can be found, so an exception is raised.
     static member createVecToVec(vecFrom:Vec, vecTo:Vec ) =
         let fu =
             let x = vecFrom.X
             let y = vecFrom.Y
             let z = vecFrom.Z
             let length = sqrt(x*x + y*y + z*z)
-            if length <  zeroLengthTol then
-                EuclidException.Raise "Euclid.OrthoMatrix.createVecToVec failed. too short vector vecFrom: %O" vecFrom
-            let sc =  1. / length // inverse for unitizing vector:
+            if length <  zeroLengthTolerance then
+                EuclidException.Raise "Euclid.RigidMatrix.createVecToVec failed. The vector is too short: vecFrom: %O" vecFrom
+            let sc = 1. / length // inverse for unitizing vector:
             UnitVec.createUnchecked(x*sc, y*sc, z*sc)
         let tu =
             let x = vecTo.X
             let y = vecTo.Y
             let z = vecTo.Z
             let length = sqrt(x*x + y*y + z*z)
-            if length <  zeroLengthTol then
-                EuclidException.Raise "Euclid.OrthoMatrix.createVecToVec failed. too short vector vecTo: %O" vecTo
-            let sc =  1. / length // inverse for unitizing vector:
+            if length <  zeroLengthTolerance then
+                EuclidException.Raise "Euclid.RigidMatrix.createVecToVec failed. The vector is too short: vecTo: %O" vecTo
+            let sc = 1. / length // inverse for unitizing vector:
             UnitVec.createUnchecked(x*sc, y*sc, z*sc)
-        let c =  fu * tu  // dot to find cosine
-        let s = sqrt(1. - c*c) // Pythagoras to fins sine
-        let t = 1.0 - c
-        let axis = Vec.cross(vecFrom, vecTo)
-        let len = axis.Length
-        if len <  Util.zeroLengthTol then
-            EuclidException.Raise "Euclid.OrthoMatrix.createVecToVec failed to find rotation axis on colinear or zero length vectors: %O and %O" vecFrom vecTo
-        let sc = 1. / len
-        let x = axis.X * sc
-        let y = axis.Y * sc
-        let z = axis.Z * sc
-        let tx = t * x
-        let ty = t * y
-        OrthoMatrix(
-            tx * x + c    , tx * y - s * z , tx * z + s * y , 0,
-            tx * y + s * z, ty * y + c     , ty * z - s * x , 0,
-            tx * z - s * y, ty * z + s * x , t  * z * z + c , 0 )
+        
+        let v = fu - tu
+        if v.LengthSq < 1e-18 then // the vectors are almost the same
+            RigidMatrix.identity
+        else
+            let v = fu + tu
+            if v.LengthSq < 1e-12 then // the vectors are almost exactly opposite
+                EuclidException.Raise "Euclid.RigidMatrix.createVecToVec failed to find a rotation axis for (almost) colinear vectors in opposite directions: %O and %O" vecFrom vecTo      
+            else
+                let axis0 = UnitVec.cross(fu, tu)
+                let len = axis0.Length  
+                let axis = axis0 / len
+                let x = axis.X
+                let y = axis.Y
+                let z = axis.Z
+                let c = fu * tu  // dot to find cos
+                let s = sqrt(1. - c*c ) // Pythagoras to find sine
+                let t = 1.0 - c
+                let tx = t * x
+                let ty = t * y  
+                RigidMatrix(
+                    tx * x + c    , tx * y - s * z , tx * z + s * y , 0 ,
+                    tx * y + s * z, ty * y + c     , ty * z - s * x , 0 ,
+                    tx * z - s * y, ty * z + s * x , t  * z * z + c , 0 )
 
-    /// Creates a Matrix to transform from World plane or Coordinate System to given Plane.
+
+
+    /// Creates a RigidMatrix to transform from World plane or Coordinate System to given Plane.
     /// Also called Change of Basis.
     static member createToPlane(p:PPlane) =
-        OrthoMatrix(
+        RigidMatrix(
             p.Xaxis.X , p.Yaxis.X , p.Zaxis.X ,  p.Origin.X ,
             p.Xaxis.Y , p.Yaxis.Y , p.Zaxis.Y ,  p.Origin.Y ,
             p.Xaxis.Z , p.Yaxis.Z , p.Zaxis.Z ,  p.Origin.Z )
 
 
-    /// Creates a Matrix to transform from one Plane or Coordinate System to another Plane.
+    /// Creates a RigidMatrix to transform from one Plane or Coordinate System to another Plane.
     static member createPlaneToPlane(fromPlane:PPlane,  toPlane:PPlane) =
-        let f = fromPlane |> OrthoMatrix.createToPlane |> OrthoMatrix.inverse
-        let t = toPlane   |> OrthoMatrix.createToPlane
+        let f = fromPlane |> RigidMatrix.createToPlane |> RigidMatrix.inverse
+        let t = toPlane   |> RigidMatrix.createToPlane
         f*t
 
-    /// Create a 3x4 OrthoMatrix from a general 4x4 Matrix.
-    /// Returns None if the input Matrix does scale, shear, flip, mirror, reflect or project.
-    /// However Translation is allowed.
+    /// Tries to create a 3x4 RigidMatrix from a general 4x4 matrix.
+    /// Returns None if the input matrix does scale, shear, flip, mirror, reflect or project.
+    /// However, translation is allowed.
     static member tryCreateFromMatrix (m:Matrix) =
         if m.IsProjecting then
             None
@@ -483,23 +506,35 @@ type OrthoMatrix =
             let x = Vec(m.M11, m.M12, m.M13)
             let y = Vec(m.M21, m.M22, m.M23)
             let z = Vec(m.M31, m.M32, m.M33)
-            let inline sqLen    (v:Vec) = v.X*v.X + v.Y*v.Y + v.Z*v.Z // defined here again, because Vec extension members are not in scope here
-            let inline cross (a:Vec) (b:Vec)  = Vec (a.Y * b.Z - a.Z * b.Y ,  a.Z * b.X - a.X * b.Z ,  a.X * b.Y - a.Y * b.X )
-            if  Util.isOne (sqLen x) && // exclude scaling
+            let inline sqLen    (v:Vec) = v.X*v.X + v.Y*v.Y + v.Z*v.Z // defined here again, because Vec extension members are not in scope here            
+            if  
+                Util.isZero m.M14 && // last row is 0, 0, 0, 1       
+                Util.isZero m.M24 && // last row is 0, 0, 0, 1       
+                Util.isZero m.M34 && // last row is 0, 0, 0, 1       
+                Util.isOne  m.M44 && // last row is 0, 0, 0, 1
+                Util.isOne (sqLen x) && // exclude scaling
                 Util.isOne (sqLen y) &&
                 Util.isOne (sqLen z) &&
-                Util.isZero (x * y)    && // orthogonal if dot product of row or column vectors is be zero
+                Util.isZero (x * y)    && // orthogonal if dot product of row or column vectors is zero
                 Util.isZero (x * z)    &&
                 Util.isZero (y * z)    &&
-                Util.isOne  (( cross x y) * z ) then // check reflecting ( would be -1)
-                    Some (OrthoMatrix(  m.M11,  m.M21,  m.M31,  m.X41,
+                Util.isOne  (( Vec.cross (x, y)) * z ) then // check it's not reflecting ( would be -1)
+                    Some (RigidMatrix(  m.M11,  m.M21,  m.M31,  m.X41,
                                         m.M12,  m.M22,  m.M32,  m.Y42,
                                         m.M13,  m.M23,  m.M33,  m.Z43)
                         )
             else
                 None
 
-    /// Create Matrix from Quaternion.
+    /// Tries to create a 3x4 RigidMatrix from a general 4x4 matrix.
+    /// Fails if the input matrix does scale, shear, flip, mirror, reflect or project.
+    /// However, translation is allowed.
+    static member createFromMatrix (m:Matrix) =
+        match RigidMatrix.tryCreateFromMatrix m with
+        | Some m -> m
+        | None -> EuclidException.Raise "Euclid.RigidMatrix.createFromMatrix failed. The input matrix does scale, shear, flip, mirror, reflect or project: %O" m     
+
+    /// Create a RigidMatrix from a Quaternion.
     static member createFromQuaternion( quaternion:Quaternion) =
         let x = quaternion.X
         let y = quaternion.Y
@@ -518,29 +553,29 @@ type OrthoMatrix =
         let wy = w * y2
         let wz = w * z2
         // the sequence is reordered here, when compared to Three js
-        OrthoMatrix (( 1. - ( yy + zz ) )
-                    ,( xy - wz )
-                    ,( xz + wy )
-                    ,0
-                    ,( xy + wz )
-                    ,( 1. - ( xx + zz ) )
-                    ,0
-                    ,( yz - wx )
-                    ,( xz - wy )
-                    ,( yz + wx )
-                    ,( 1. - ( xx + yy ) )
-                    ,0)
+        RigidMatrix ( ( 1. - ( yy + zz ) )
+                    , ( xy - wz )
+                    , ( xz + wy )
+                    , 0
+                    , ( xy + wz )
+                    , ( 1. - ( xx + zz ) )
+                    , 0
+                    , ( yz - wx )
+                    , ( xz - wy )
+                    , ( yz + wx )
+                    , ( 1. - ( xx + yy ) )
+                    , 0)
 
 
-    /// Add a vector translation to an existing matrix.
-    static member addTranslation (v:Vec) (m:OrthoMatrix) =
-        OrthoMatrix(m.M11,  m.M21,  m.M31,  m.X41 + v.X,
+    /// Add a vector translation to an existing RigidMatrix.
+    static member addTranslation (v:Vec) (m:RigidMatrix) =
+        RigidMatrix(m.M11,  m.M21,  m.M31,  m.X41 + v.X,
                     m.M12,  m.M22,  m.M32,  m.Y42 + v.Y,
                     m.M13,  m.M23,  m.M33,  m.Z43 + v.Z)
 
-    /// Add a X, Y and Z translation to an existing matrix.
-    static member addTranslationXYZ x y z  (m:OrthoMatrix) =
-        OrthoMatrix(m.M11,  m.M21,  m.M31,  m.X41 + x,
+    /// Add a X, Y and Z translation to an existing RigidMatrix.
+    static member addTranslationXYZ x y z  (m:RigidMatrix) =
+        RigidMatrix(m.M11,  m.M21,  m.M31,  m.X41 + x,
                     m.M12,  m.M22,  m.M32,  m.Y42 + y,
                     m.M13,  m.M23,  m.M33,  m.Z43 + z)
 
@@ -549,29 +584,32 @@ type OrthoMatrix =
     // operators for matrix multiplication:
     // ----------------------------------------------
 
-    /// Multiplies (or applies) an OrthoMatrix to a 3D point.
-    static member inline  ( * ) (v:Vec, m:OrthoMatrix) =
+    /// Multiplies (or applies) a RigidMatrix to a 3D point.
+    /// Since a 3D vector represents a direction or an offset in space, but not a location,
+    /// all translations are ignored. (Homogeneous Vector)
+    static member inline ( * ) (v:Vec, m:RigidMatrix) =
         let x = v.X
         let y = v.Y
         let z = v.Z
-        Vec(  m.M11*x + m.M21*y + m.M31*z + m.X41
-            , m.M12*x + m.M22*y + m.M32*z + m.Y42
-            , m.M13*x + m.M23*y + m.M33*z + m.Z43
+        Vec(  m.M11*x + m.M21*y + m.M31*z //+ m.X41
+            , m.M12*x + m.M22*y + m.M32*z //+ m.Y42
+            , m.M13*x + m.M23*y + m.M33*z //+ m.Z43
             )
 
-    /// Multiplies (or applies) an OrthoMatrix to a 3D vector .
-    /// The resulting vector is not unitized if Matrix is translating too.
-    static member inline  ( * ) (v:UnitVec, m:OrthoMatrix) =
+    /// Multiplies (or applies) a RigidMatrix to a 3D vector .
+    /// Since a 3D vector represents a direction or an offset in space, but not a location,
+    /// all translations are ignored. (Homogeneous Vector)
+    static member inline ( * ) (v:UnitVec, m:RigidMatrix) =
         let x = v.X
         let y = v.Y
         let z = v.Z
-        Vec(  m.M11*x + m.M21*y + m.M31*z + m.X41
-            , m.M12*x + m.M22*y + m.M32*z + m.Y42
-            , m.M13*x + m.M23*y + m.M33*z + m.Z43
+        UnitVec.createUnchecked(  m.M11*x + m.M21*y + m.M31*z //+ m.X41
+            , m.M12*x + m.M22*y + m.M32*z //+ m.Y42
+            , m.M13*x + m.M23*y + m.M33*z //+ m.Z43
             )
 
-    /// Multiplies (or applies) an OrthoMatrix to a 3D vector.
-    static member inline  ( * ) (v:Pnt, m:OrthoMatrix) =
+    /// Multiplies (or applies) a RigidMatrix to a 3D vector.
+    static member inline ( * ) (v:Pnt, m:RigidMatrix) =
         let x = v.X
         let y = v.Y
         let z = v.Z

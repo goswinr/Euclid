@@ -7,9 +7,9 @@ open Euclid
 open System
 
 
-let x    = Vc(3, 0)
-let y'   = Vc(1, 9) 
-let y    = Vc(0, 9) 
+let x = Vc(3, 0)
+let y' = Vc(1, 9) 
+let y = Vc(0, 9) 
 let y'' = Vc(-1, 9) 
 
 printfn "\nDirectionPi:"

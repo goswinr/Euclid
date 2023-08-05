@@ -28,7 +28,7 @@ type Plane = // Normals are always unitized
 
     /// Unsafe internal constructor,  public only for inlining.
     [<Obsolete("Unsafe internal constructor,  but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >]
-    new (pt,n) = {Origin = pt; Normal = n} // private unchecked constructor, supply unitized values
+    new (pt, n) = {Origin = pt; Normal = n} // private unchecked constructor, supply unitized values
 
     /// Format PPlane into string with nicely formatted floating point numbers.
     override pl.ToString() = sprintf "Euclid.Plane(Origin:%s| Normal:%s)" pl.Origin.AsString pl.Normal.AsString
@@ -43,19 +43,19 @@ type Plane = // Normals are always unitized
     /// Then returns a new plane with Origin at this point and the same Normal.
     member inline pl.PlaneAtClPt pt = Plane(pt - pl.Normal*(pl.DistanceToPt pt), pl.Normal)
 
-    /// Returns the Angle to another Plane in Degree, ignoring the normal's orientation.
+    /// Returns the angle to another Plane in Degree, ignoring the normal's orientation.
     /// So between 0 to 90 degrees.
     member inline this.AngleToPlane (pl:Plane) = UnitVec.angle90 this.Normal pl.Normal
 
-    /// Returns the Angle to 3D vector in Degree, ignoring the plane's orientation.
+    /// Returns the angle to 3D vector in Degree, ignoring the plane's orientation.
     /// So between 0 to 90 degrees.
     member inline pl.AngleToVec (v:Vec) = UnitVec.angle90 v.Unitized pl.Normal
 
-    /// Returns the Angle to 3D unit-vector in Degree, ignoring the plane's orientation.
+    /// Returns the angle to 3D unit-vector in Degree, ignoring the plane's orientation.
     /// So between 0 to 90 degrees.
     member inline pl.AngleToVec (v:UnitVec) = UnitVec.angle90 v pl.Normal
 
-    /// Returns the Angle to a Line3D in Degree, ignoring the normal's orientation.
+    /// Returns the angle to a Line3D in Degree, ignoring the normal's orientation.
     /// So between 0 to 90 degrees.
     member inline pl.AngleToLine (ln:Line3D) = UnitVec.angle90 ln.Tangent.Unitized pl.Normal
 
@@ -68,7 +68,7 @@ type Plane = // Normals are always unitized
     member inline pl.IsCoincidentTo (other:Plane,
                                     [<OPT;DEF(1e-6)>] distanceTolerance:float,
                                     [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine>) =
-        pl.Normal.IsParallelTo(other.Normal,minCosine)
+        pl.Normal.IsParallelTo(other.Normal, minCosine)
         &&
         pl.DistanceToPt other.Origin < distanceTolerance
 
@@ -89,20 +89,20 @@ type Plane = // Normals are always unitized
     static member inline areCoincident tol (a:Plane) (b:Plane) = a.IsCoincidentTo (b)
 
     /// Create Plane, normal vector gets unitized in constructor.
-    static member create(pt,normal:Vec) =
+    static member create(pt, normal:Vec) =
         let l = sqrt(normal.X*normal.X+normal.Y*normal.Y+normal.Z*normal.Z)
-        if l < zeroLengthTol then EuclidException.Raise "Euclid.Plane.create: %O is too small for unitizing, tolerance:%g" normal zeroLengthTol
+        if l < zeroLengthTolerance then EuclidException.Raise "Euclid.Plane.create: %O is too small for unitizing, tolerance:%g" normal zeroLengthTolerance
         let li=1./l in
-        Plane(pt,UnitVec.createUnchecked( li*normal.X , li*normal.Y ,li*normal.Z ))
+        Plane(pt, UnitVec.createUnchecked( li*normal.X, li*normal.Y, li*normal.Z ))
 
     /// Create Plane from already normalized input vector.
-    static member inline create(pt,normal:UnitVec) =
-        Plane(pt,normal)
+    static member inline create(pt, normal:UnitVec) =
+        Plane(pt, normal)
 
     /// Create Plane from 3 points.
     static member inline createFrom3Points (a:Pnt) (b:Pnt) (c:Pnt) =
-        let n =  Vec.cross (c-b,a-b)
-        if n.LengthSq < 1e-12 then EuclidException.Raise "Euclid.Plane.createFrom3Points: the points %O, %O, %O are (almost) in one Line3D, no Plane found." a b c
+        let n = Vec.cross (c-b, a-b)
+        if n.LengthSq < 1e-12 then EuclidException.Raise "Euclid.Plane.createFrom3Points: the points %O, %O, %O are (almost) in one Line or one Point, no Plane found." a b c
         Plane(a, n.Unitized)
 
     /// Gets the Planes normal. A unitized vector.
@@ -112,9 +112,9 @@ type Plane = // Normals are always unitized
     static member inline origin (a:Plane) = a.Origin
 
     /// Gets the Plane at world origin with normal in world Z direction.
-    static member inline xyPlane = Plane(Pnt.Origin,UnitVec.Zaxis)
+    static member inline xyPlane = Plane(Pnt.Origin, UnitVec.Zaxis)
 
-    /// Returns the Angle to another Plane in Degree, ignoring the normal's orientation.
+    /// Returns the angle to another Plane in Degree, ignoring the normal's orientation.
     /// So between 0 to 90 degrees.
     static member inline angleTo (a:Plane) b = a.AngleToPlane b
 
@@ -124,7 +124,7 @@ type Plane = // Normals are always unitized
         let bn = b.Normal
         let an = a.Normal
         let ao = a.Origin
-        let v = UnitVec.cross (an,bn)
+        let v = UnitVec.cross (an, bn)
         if v.LengthSq < 1e-18 then
             EuclidException.Raise "Euclid.Plane.intersect: Planes are parallel or coincident: %O, %O" a b
         let pa = Vec.cross(v, an)
@@ -157,40 +157,40 @@ type Plane = // Normals are always unitized
 
     /// Returns a new plane offset along the normal vector.
     static member inline offset dist (pl:Plane) =
-        Plane(pl.Origin + pl.Normal*dist , pl.Normal)
+        Plane(pl.Origin + pl.Normal*dist, pl.Normal)
 
     /// Offset Plane by amount in orientation towards DirPt:
     /// In direction of point -> distance -> Plane.
     static member inline offsetInDir dirPt dist (pl:Plane) =
-        if pl.Normal * (dirPt-pl.Origin) > 0. then Plane(pl.Origin + pl.Normal*dist , pl.Normal)
-        else                                       Plane(pl.Origin - pl.Normal*dist , pl.Normal)
+        if pl.Normal * (dirPt-pl.Origin) > 0. then Plane(pl.Origin + pl.Normal*dist, pl.Normal)
+        else                                       Plane(pl.Origin - pl.Normal*dist, pl.Normal)
 
     /// Returns signed distance of point to plane, also indicating on which side it is.
     static member inline distToPt (pt:Pnt) (pl:Plane) =
         pl.DistanceToPt pt
 
     (*
-    static member  fitFromConvexPts (pts:seq<Pnt>) =
+    static member fitFromConvexPts (pts:seq<Pnt>) =
         let cen = pts |> Seq.average
-        let n = pts |> Seq.thisNextLoop |> Seq.map (fun (t,n) -> (t-cen)/*(n-cen)) |> Seq.sum |> Vec.norm
-        Plane(cen,n)
+        let n = pts |> Seq.thisNextLoop |> Seq.map (fun (t, n) -> (t-cen)/*(n-cen)) |> Seq.sum |> Vec.norm
+        Plane(cen, n)
 
     /// * NOT STABLE !! Different seq order different result ???
-    static member  fitFromPts (pts:seq<Pnt>) =
+    static member fitFromPts (pts:seq<Pnt>) =
         let pts = Array.ofSeq pts
         let cen = pts |> Array.average
         let mutable Normal = Vec()
-        for t,n in Array.thisNextLoop pts do
+        for t, n in Array.thisNextLoop pts do
             let v = (t-cen)/*(n-cen)
             if Vec.dirMatch v Normal then Normal <- Normal + v
             else                     Normal <- Normal - v
         Plane.byNormal cen Normal
 
-    static member  arePtsPlanar tol (pts:seq<Pnt>)=
+    static member arePtsPlanar tol (pts:seq<Pnt>)=
         let pl = pts|> Plane.fitFromPts
         pts|> Seq.exists (fun p -> pl.DistToPt p > tol) |> not
 
-    static member  arePtsInPlane tol (pl:Plane) (pts:seq<Pnt>)=
+    static member arePtsInPlane tol (pl:Plane) (pts:seq<Pnt>)=
         pts|> Seq.exists (fun p -> pl.DistToPt p > tol) |> not
     *)
 

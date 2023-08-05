@@ -15,7 +15,7 @@ open System.Runtime.Serialization // for serialization of struct fields only but
 [<IsReadOnly>]
 //[<IsByRefLike>]
 [<DataContract>] // for using DataMember on fields
-type BRect =    
+type BRect = 
     //[<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
     [<DataMember>] val MinX : float
     [<DataMember>] val MinY : float
@@ -24,7 +24,7 @@ type BRect =
 
     /// Unsafe internal constructor,  public only for inlining.
     [<Obsolete("Unsafe internal constructor,  but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >]
-    new (minX,minY,maxX,maxY) =
+    new (minX, minY, maxX, maxY) =
         {MinX = minX
          MinY = minY
          MaxX = maxX
@@ -42,10 +42,10 @@ type BRect =
             (Format.float (r.MaxX - r.MinX)) (Format.float (r.MaxY - r.MinY)) (Format.float r.MinX) (Format.float r.MinY)
 
     /// The point where X, Y and Z are the minimum values.
-    member inline r.MinPt = Pt(r.MinX,r.MinY)
+    member inline r.MinPt = Pt(r.MinX, r.MinY)
 
     /// The point where X, Y and Z are the maximum values.
-    member inline r.MaxPt = Pt(r.MaxX,r.MaxY)
+    member inline r.MaxPt = Pt(r.MaxX, r.MaxY)
 
     /// The size in X direction, same as member rect.SizeX.
     member inline r.Length = r.MaxX - r.MinX
@@ -53,9 +53,9 @@ type BRect =
     member inline r.SizeX = r.MaxX - r.MinX
 
     /// The size in Y direction, same as member rect.SizeY.
-    member inline r.Width  = r.MaxY - r.MinY
+    member inline r.Width = r.MaxY - r.MinY
     /// The size in Y direction, same as member rect.Width.
-    member inline r.SizeY  = r.MaxY - r.MinY
+    member inline r.SizeY = r.MaxY - r.MinY
 
     /// The diagonal 2D vector of the bounding rect. From MinPt to MaxPt.
     member inline r.Diagonal = Vc(r.MaxX - r.MinX, r.MaxY - r.MinY)
@@ -63,7 +63,7 @@ type BRect =
     /// The center of the bounding rect.
     member inline r.Center = Pt( (r.MaxX + r.MinX)*0.5, (r.MaxY + r.MinY)*0.5)
 
-    /// Returns the corners of the Bounding Rectangle in counter clockwise order, starting at MinPt.
+    /// Returns the corners of the Bounding Rectangle in Counter-Clockwise order, starting at MinPt.
     /// Returns an array of 4 Points. 
     ///
     /// 3 +------------+ 2
@@ -78,7 +78,7 @@ type BRect =
         [| Pt(r.MinX, r.MinY); Pt(r.MaxX, r.MinY);  Pt(r.MaxX, r.MaxY); Pt(r.MinX, r.MaxY) |]
 
 
-    /// Returns a counter clockwise array of 5 Points, starting at MinPt.
+    /// Returns a Counter-Clockwise array of 5 Points, starting at MinPt.
     /// Last and first point are the same.
     ///  
     /// 3 +------------+ 2
@@ -103,7 +103,7 @@ type BRect =
 
     /// Returns Bounding Rectangle expanded by a distance for X and Y-axis each.
     /// Does check for underflow if distance is negative and raises EuclidException.
-    member inline r.Expand(xDist,yDist) : BRect =
+    member inline r.Expand(xDist, yDist) : BRect =
         let n = BRect(r.MinX-xDist, r.MinY-yDist, r.MaxX+xDist, r.MaxY+yDist)
         if n.MinX > n.MaxX ||  n.MinY > n.MaxX then
             EuclidException.Raise "Euclid.BRect.Expand(x, y): Negative distance(s) X: %g and Y: %g cause an underflow, on %s" xDist yDist r.AsString
@@ -113,7 +113,7 @@ type BRect =
     /// Returns Bounding Rectangle expanded by a distance for X and Y-axis each.
     /// If expansion is negative it shrinks the Rectangle. It also makes sure that there is no underflow.
     /// When the negative expansion is bigger than the size, Min and Max values will be both in the middle from where they were before.
-    member inline b.ExpandSave(xDist,yDist) : BRect =
+    member inline b.ExpandSave(xDist, yDist) : BRect =
         let mutable minXCh = b.MinX - xDist
         let mutable maxXCh = b.MaxX + xDist
         if minXCh > maxXCh then  // Overflow! Set both to the same mid point
@@ -133,7 +133,7 @@ type BRect =
     /// If expansion is negative it shrinks the Rectangle. It also makes sure that there is no underflow.
     /// When the negative expansion is bigger than the size, Min and Max values will be both in the middle from where they were before.
     member inline b.ExpandSave(dist) : BRect =
-        b.ExpandSave(dist,dist)
+        b.ExpandSave(dist, dist)
 
     /// Returns Bounding Rectangle expanded only in X direction by different distance for start(minX) and end (maxX).
     /// Does check for underflow if distance is negative and raises EuclidException.
@@ -160,7 +160,7 @@ type BRect =
 
     /// Returns true if the two Bounding Rectangles do overlap more than a given tolerance distance.
     /// Returns false if the two Bounding Rectangles are just touching.
-    member inline r.OverlapsWith (a:BRect,tol) =
+    member inline r.OverlapsWith (a:BRect, tol) =
         not (  r.MinX > a.MaxX - tol
             || a.MinX > r.MaxX - tol
             || a.MinY > r.MaxY - tol
@@ -180,42 +180,42 @@ type BRect =
 
     /// Test if Bounding Rectangles are only touching each other from the Outside within a given tolerance.
     member b.IsTouching (a:BRect, tol) =
-        let xOverlap =  not ( b.MinX > a.MaxX + tol || a.MinX > b.MaxX + tol)
-        let yOverlap =  not ( a.MinY > b.MaxY + tol || b.MinY > a.MaxY + tol)
-        let xTouch   =  abs(b.MinX - a.MaxX)  < tol || abs(a.MinX - b.MaxX) < tol
-        let yTouch   =  abs(a.MinY - b.MaxY)  < tol || abs(b.MinY - a.MaxY) < tol
+        let xOverlap = not ( b.MinX > a.MaxX + tol || a.MinX > b.MaxX + tol)
+        let yOverlap = not ( a.MinY > b.MaxY + tol || b.MinY > a.MaxY + tol)
+        let xTouch   = abs(b.MinX - a.MaxX)  < tol || abs(a.MinX - b.MaxX) < tol
+        let yTouch   = abs(a.MinY - b.MaxY)  < tol || abs(b.MinY - a.MaxY) < tol
         (xOverlap && yTouch ) || (xTouch && yOverlap )
 
     /// Evaluate a X and Y parameter of the Bounding Rectangle.
     ///  0.0, 0.0, 0.0 returns the MinPt.
     ///  1.0, 1.0, 1.0 returns the MaxPt.
-    member inline b.EvaluateAt (xParameter,yParameter) =
+    member inline b.EvaluateAt (xParameter, yParameter) =
         Pt (b.MinX + (b.MaxX-b.MinX) * xParameter,
             b.MinY + (b.MaxY-b.MinY) * yParameter)
 
     /// Returns the area of the Bounding Rectangle.
-    member inline r.Area  =
+    member inline r.Area =
         r.SizeX*r.SizeY
 
     /// Returns a Bounding Rectangle that contains both input Rectangles.
     member inline r.Union  (b:BRect) =
-        BRect (min b.MinX r.MinX ,min b.MinY r.MinY,max b.MaxX r.MaxX ,max b.MaxY r.MaxY)
+        BRect (min b.MinX r.MinX, min b.MinY r.MinY, max b.MaxX r.MaxX, max b.MaxY r.MaxY)
 
     /// Returns a Bounding Rectangle that contains the input Rectangles and the point.
-    member inline r.Union (p:Pt)  =
-        BRect (min r.MinX p.X ,min r.MinY p.Y, max r.MaxX p.X ,max r.MaxY p.Y)
+    member inline r.Union (p:Pt) =
+        BRect (min r.MinX p.X, min r.MinY p.Y, max r.MaxX p.X, max r.MaxY p.Y)
 
 
     /// Returns the intersection of two Bounding Rectangles.
     /// The returned Rectangle is the volume inside both input Rectangle.
     /// Returns ValueNone if the two Rectangles do not overlap.
-    member inline b.Intersection (a:BRect)  =
+    member inline b.Intersection (a:BRect) =
         let mutable minX = max a.MinX b.MinX
         let mutable minY = max a.MinY b.MinY
         let mutable maxX = min a.MaxX b.MaxX
         let mutable maxY = min a.MaxY b.MaxY
         if minX <= maxX && minY <= maxY then
-            ValueSome (BRect(minX,minY,maxX,maxY))
+            ValueSome (BRect(minX, minY, maxX, maxY))
         else
             ValueNone
 
@@ -261,7 +261,7 @@ type BRect =
     /// Returns true if the two Bounding Rectangles do overlap more than a given tolerance distance.
     /// Returns false if the two Bounding Rectangles are just touching.
     static member inline doOverlapMoreThan tol (a:BRect) (b:BRect) =
-        b.OverlapsWith(a,tol)
+        b.OverlapsWith(a, tol)
 
     /// Returns true if the Bounding Rectangle is inside or exactly on the other Bounding Rectangle.
     /// Argument order matters!
@@ -275,33 +275,33 @@ type BRect =
 
     /// Returns a Bounding Rectangle that contains both input Rectangles.
     static member inline union (a:BRect) (b:BRect) =
-        BRect (min b.MinX a.MinX ,min b.MinY a.MinY,max b.MaxX a.MaxX ,max b.MaxY a.MaxY)
+        BRect (min b.MinX a.MinX, min b.MinY a.MinY, max b.MaxX a.MaxX, max b.MaxY a.MaxY)
 
     /// Returns a Bounding Rectangle that contains the input Rectangles and the point.
     static member inline unionPt (p:Pt) (r:BRect) =
-        BRect (min r.MinX p.X ,min r.MinY p.Y, max r.MaxX p.X ,max r.MaxY p.Y)
+        BRect (min r.MinX p.X, min r.MinY p.Y, max r.MaxX p.X, max r.MaxY p.Y)
 
     /// Returns the intersection of two Bounding Rectangles.
     /// The returned Rectangle is the volume inside both input Rectangle.
     /// Returns ValueNone if the two Rectangles do not overlap.
-    static member inline intersection (a:BRect) (b:BRect)  =
+    static member inline intersection (a:BRect) (b:BRect) =
         let mutable minX = max a.MinX b.MinX
         let mutable minY = max a.MinY b.MinY
         let mutable maxX = min a.MaxX b.MaxX
         let mutable maxY = min a.MaxY b.MaxY
         if minX <= maxX && minY <= maxY then
-            ValueSome (BRect(minX,minY,maxX,maxY))
+            ValueSome (BRect(minX, minY, maxX, maxY))
         else
             ValueNone
 
     /// Finds min and max values for x and y.
-    static member inline create (a:Pt , b:Pt ) =
+    static member inline create (a:Pt, b:Pt ) =
         // sort min and max values ( not using allocating tuples for swapping)
         let mutable minX = a.X
         let maxX = if b.X > minX then b.X else minX <- b.X ;  a.X
         let mutable minY = a.Y
         let maxY = if b.Y > minY then b.Y else minY <- b.Y ;  a.Y
-        BRect(minX,minY,maxX,maxY)
+        BRect(minX, minY, maxX, maxY)
 
     /// Finds min and max values for x and y.
     static member inline create (ps:seq<Pt> ) =
@@ -315,22 +315,22 @@ type BRect =
             minY <- min minY p.Y
             maxX <- max maxX p.X
             maxY <- max maxY p.Y
-        BRect(minX,minY,maxX,maxY)
+        BRect(minX, minY, maxX, maxY)
 
     /// Creates a Bounding Rectangle from a center point and the total X and Y size.
     static member inline createFromCenter (center:Pt, sizeX, sizeY ) =
-        if sizeX < 0. then EuclidException.Raise "Euclid.BRect.createFromCenter sizeX is negative: %g , sizeY is: %g, center: %O"  sizeX sizeY  center.AsString
-        if sizeY < 0. then EuclidException.Raise "Euclid.BRect.createFromCenter sizeY is negative: %g , sizeX is: %g, center: %O"  sizeY sizeX  center.AsString
+        if sizeX < 0. then EuclidException.Raise "Euclid.BRect.createFromCenter sizeX is negative: %g, sizeY is: %g, center: %O"  sizeX sizeY  center.AsString
+        if sizeY < 0. then EuclidException.Raise "Euclid.BRect.createFromCenter sizeY is negative: %g, sizeX is: %g, center: %O"  sizeY sizeX  center.AsString
         let minX = center.X - sizeX*0.5
         let minY = center.Y - sizeY*0.5
         let maxX = center.X + sizeX*0.5
         let maxY = center.Y + sizeY*0.5
-        BRect(minX,minY,maxX,maxY)
+        BRect(minX, minY, maxX, maxY)
         
 
     /// Does not verify the order of min and max values.
-    static member inline createUnchecked (minX,minY,maxX,maxY) =
-        BRect(minX,minY,maxX,maxY)
+    static member inline createUnchecked (minX, minY, maxX, maxY) =
+        BRect(minX, minY, maxX, maxY)
 
     /// Returns the area of the Bounding Rectangle.
     static member inline area  (r:BRect) =

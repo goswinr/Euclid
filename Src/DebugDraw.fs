@@ -15,7 +15,7 @@ module Debug2D =
 
     /// By default this function does nothing. But it is called in case of some errors within this library's Loop module.
     /// Set this mutable function object from your 2D or 3D environment if you want debug objects to be drawn.
-    let mutable drawLineFromTo = fun (a:Pt,b:Pt) -> ()
+    let mutable drawLineFromTo = fun (a:Pt, b:Pt) -> ()
     
     /// By default this function does nothing. But it is called in case of some errors within this library's Loop module.
     /// Set this mutable function object from your 2D or 3D environment if you want debug objects to be drawn.
@@ -60,7 +60,7 @@ module Debug3D =
 
     /// By default this function does nothing. But it is called in case of some errors within this library's Loop module.
     /// Set this mutable function object from your 3D environment if you want debug objects to be drawn.
-    let mutable drawLineFromTo = fun (a:Pnt,b:Pnt) -> ()
+    let mutable drawLineFromTo = fun (a:Pnt, b:Pnt) -> ()
 
     /// By default this function does nothing. But it is called in case of some errors within this library's Loop module.
     /// Set this mutable function object from your 3D environment if you want debug objects to be drawn.

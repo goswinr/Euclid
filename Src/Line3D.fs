@@ -34,10 +34,10 @@ type Line3D =
     [<DataMember>] val ToZ  :float
 
     /// Create Line3D from 3D start point and 3D end point.
-    new (a:Pnt,b:Pnt) = {FromX=a.X; FromY=a.Y; FromZ=a.Z; ToX=b.X; ToY=b.Y; ToZ=b.Z}
+    new (a:Pnt, b:Pnt) = {FromX=a.X; FromY=a.Y; FromZ=a.Z; ToX=b.X; ToY=b.Y; ToZ=b.Z}
 
     /// Create Line3D from 3D start point's x, y and z and 3D end point's x, y and z.
-    new (a,b,c,u,v,w) = {FromX=a; FromY=b; FromZ=c; ToX=u; ToY=v; ToZ=w}
+    new (a, b, c, u, v, w) = {FromX=a; FromY=b; FromZ=c; ToX=u; ToY=v; ToZ=w}
 
     /// Returns the length of the line.
     member inline ln.Length =
@@ -53,7 +53,7 @@ type Line3D =
         let z = ln.ToZ-ln.FromZ
         x*x + y*y + z*z
 
-    /// Format 3D Line into string including type name, X, Y and Z for start and end points , and Length.
+    /// Format 3D Line into string including type name, X, Y and Z for start and end points, and Length.
     /// Using nice floating point number formatting .
     override ln.ToString() =
         sprintf "Euclid.Line3D from X=%s| Y=%s| Z=%s to X=%s| Y=%s| Z=%s Length %s"
@@ -79,25 +79,25 @@ type Line3D =
 
 
     /// The Start point of the 3D Line3D,
-    member inline ln.From = Pnt(ln.FromX,ln.FromY,ln.FromZ)
+    member inline ln.From = Pnt(ln.FromX, ln.FromY, ln.FromZ)
 
     /// The End point of the 3D Line3D,
-    member inline ln.To   = Pnt(ln.ToX,ln.ToY,ln.ToZ)
+    member inline ln.To = Pnt(ln.ToX, ln.ToY, ln.ToZ)
 
     /// Same as ln.Vector or ln.Tangent.
     /// The returned vector has the same length as the Line3D.
     member inline ln.Direction =
-        Vec(ln.ToX-ln.FromX,ln.ToY-ln.FromY,ln.ToZ-ln.FromZ)
+        Vec(ln.ToX-ln.FromX, ln.ToY-ln.FromY, ln.ToZ-ln.FromZ)
 
     /// Same as ln.Tangent or ln.Direction.
     /// The returned vector has the same length as the Line3D.
     member inline ln.Vector =
-        Vec(ln.ToX-ln.FromX,ln.ToY-ln.FromY,ln.ToZ-ln.FromZ)
+        Vec(ln.ToX-ln.FromX, ln.ToY-ln.FromY, ln.ToZ-ln.FromZ)
 
     /// Same as ln.Vector or ln.Direction.
     /// The returned vector has the same length as the Line3D.
     member inline ln.Tangent =
-        Vec(ln.ToX-ln.FromX,ln.ToY-ln.FromY,ln.ToZ-ln.FromZ)
+        Vec(ln.ToX-ln.FromX, ln.ToY-ln.FromY, ln.ToZ-ln.FromZ)
 
     /// Returns a unit-vector of the line Direction.
     member inline ln.UnitTangent = 
@@ -105,63 +105,63 @@ type Line3D =
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let l = sqrt(x * x  + y * y + z * z)
-        if l < zeroLengthTol then EuclidException.Raise "Euclid.Line3D.UnitTangent: x:%g, y:%g and z:%g are too small for creating a unit-vector. Tolerance:%g" x y z zeroLengthTol
+        if l < zeroLengthTolerance then EuclidException.Raise "Euclid.Line3D.UnitTangent: x:%g, y:%g and z:%g are too small for creating a unit-vector. Tolerance:%g" x y z zeroLengthTolerance
         let s = 1.0 / l
-        UnitVec.createUnchecked (x*s,y*s,z*s)
+        UnitVec.createUnchecked (x*s, y*s, z*s)
     
     /// Checks if line is parallel to the world X axis. Ignoring orientation.
-    /// The absolute deviation tolerance along Y and Z axis is 1e-6.
+    /// The absolute deviation tolerance along Y and Z axis is 1e-9.
     /// Fails on lines shorter than 1e-6.
     member inline ln.IsXAligned =
         let x = abs (ln.ToX-ln.FromX)
         let y = abs (ln.ToY-ln.FromY)
         let z = abs (ln.ToZ-ln.FromZ)
-        if x+y+z < 1e-6 then EuclidException.Raise "Euclid.Line3D.IsXAligned cannot not check very tiny Line. (tolerance 1e-6)  %O" ln
-        else y < 1e-6 && z < 1e-6      
+        if x+y+z < 1e-6 then EuclidException.Raise "Euclid.Line3D.IsXAligned cannot not check very tiny Line. (tolerance 1e-6) %O" ln
+        else y < 1e-9 && z < 1e-9      
         
 
     /// Checks if 3D line is parallel to the world Y axis. Ignoring orientation.
-    /// The absolute deviation tolerance along X and Z axis is 1e-6.
+    /// The absolute deviation tolerance along X and Z axis is 1e-9.
     /// Fails on lines shorter than 1e-6.
     member inline ln.IsYAligned =
         let x = abs (ln.ToX-ln.FromX)
         let y = abs (ln.ToY-ln.FromY)
         let z = abs (ln.ToZ-ln.FromZ)
-        if x+y+z < 1e-6 then EuclidException.Raise "Euclid.Line3D.IsYAligned cannot not check very tiny Line. (tolerance 1e-6)  %O" ln
-        else x < 1e-6 && z < 1e-6
+        if x+y+z < 1e-6 then EuclidException.Raise "Euclid.Line3D.IsYAligned cannot not check very tiny Line. (tolerance 1e-6) %O" ln
+        else x < 1e-9 && z < 1e-9
 
     /// Checks if 3D line is parallel to the world Z axis. Ignoring orientation.
-    /// The absolute deviation tolerance along X and Y axis is 1e-6.
+    /// The absolute deviation tolerance along X and Y axis is 1e-9.
     /// Fails on lines shorter than 1e-6.
     /// Same as ln.IsVertical
     member inline ln.IsZAligned =
         let x = abs (ln.ToX-ln.FromX)
         let y = abs (ln.ToY-ln.FromY)
         let z = abs (ln.ToZ-ln.FromZ)
-        if x+y+z < 1e-6 then EuclidException.Raise "Euclid.Line3D.IsZAligned cannot not check very tiny Line. (tolerance 1e-6)  %O" ln
-        else x < 1e-6 && y < 1e-6
+        if x+y+z < 1e-6 then EuclidException.Raise "Euclid.Line3D.IsZAligned cannot not check very tiny Line. (tolerance 1e-6) %O" ln
+        else x < 1e-9 && y < 1e-9
 
 
     /// Checks if 3D line is parallel to the world Z axis. Ignoring orientation.
-    /// The absolute deviation tolerance along X and Y axis is 1e-6.
+    /// The absolute deviation tolerance along X and Y axis is 1e-9.
     /// Fails on lines shorter than 1e-6.
     /// Same as ln.IsZAligned
-    member inline ln.IsVertical =  
+    member inline ln.IsVertical = 
         let x = abs (ln.ToX-ln.FromX)
         let y = abs (ln.ToY-ln.FromY)
         let z = abs (ln.ToZ-ln.FromZ)
-        if x+y+z < 1e-6 then EuclidException.Raise "Euclid.Line3D.IsVertical cannot not check very tiny Line. (tolerance 1e-6)  %O" ln
-        else x < 1e-6 && y < 1e-6
+        if x+y+z < 1e-6 then EuclidException.Raise "Euclid.Line3D.IsVertical cannot not check very tiny Line. (tolerance 1e-6) %O" ln
+        else x < 1e-9 && y < 1e-9
 
     /// Checks if 3D line is horizontal.
-    /// The absolute deviation tolerance along Z axis is 1e-6.
+    /// The absolute deviation tolerance along Z axis is 1e-9.
     /// Fails on lines shorter than 1e-6.
     member inline ln.IsHorizontal =
         let x = abs (ln.ToX-ln.FromX)
         let y = abs (ln.ToY-ln.FromY)
         let z = abs (ln.ToZ-ln.FromZ)
-        if x+y+z < 1e-6 then EuclidException.Raise "Euclid.Line3D.IsHorizontal cannot not check very tiny Line. (tolerance 1e-6)  %O" ln
-        else z < 1e-6
+        if x+y+z < 1e-6 then EuclidException.Raise "Euclid.Line3D.IsHorizontal cannot not check very tiny Line. (tolerance 1e-6) %O" ln
+        else z < 1e-9
         
 
     /// Check if the 3D line has exactly the same starting and ending point.
@@ -232,13 +232,13 @@ type Line3D =
                 ln.FromZ + z*b)
 
     /// Extend 3D line by absolute amount at start and end.
-    /// Fails on lines shorter than 1e-12.
-    member inline ln.Extend (distAtStart:float, distAtEnd:float)  =
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    member inline ln.Extend (distAtStart:float, distAtEnd:float) =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let l = sqrt(x*x + y*y + z*z)
-        if l < 1e-12 then EuclidException.Raise "Euclid.Line3D.Extend %O to short for finding point at a distance." ln
+        if l < zeroLengthTolerance then EuclidException.Raise "Euclid.Line3D.Extend %O to short for finding point at a distance." ln
         Line3D( ln.FromX - x*distAtStart/l,
                 ln.FromY - y*distAtStart/l,
                 ln.FromZ - z*distAtStart/l,
@@ -247,43 +247,43 @@ type Line3D =
                 ln.ToZ   + z*distAtEnd/l )
 
     /// Extend 3D line by absolute amount at start.
-    /// Fails on lines shorter than 1e-12.
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
     member inline ln.ExtendStart (distAtStart:float) =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let l = sqrt(x*x + y*y + z*z)
-        if l < 1e-12 then EuclidException.Raise "Euclid.Line3D.ExtendStart %O to short for finding point at a distance." ln
+        if l < zeroLengthTolerance then EuclidException.Raise "Euclid.Line3D.ExtendStart %O to short for finding point at a distance." ln
         Line3D( ln.FromX - x*distAtStart/l,
                 ln.FromY - y*distAtStart/l,
                 ln.FromZ - z*distAtStart/l,
-                ln.ToX   ,
-                ln.ToY   ,
+                ln.ToX,
+                ln.ToY,
                 ln.ToZ   )
 
     /// Extend 3D line by absolute amount at end.
-    /// Fails on lines shorter than 1e-12.
-    member inline ln.ExtendEnd  (distAtEnd:float)  =
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    member inline ln.ExtendEnd (distAtEnd:float) =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let l = sqrt(x*x + y*y + z*z)
-        if l < 1e-12 then EuclidException.Raise "Euclid.Line3D.ExtendEnd %O to short for finding point at a distance." ln
-        Line3D( ln.FromX ,
-                ln.FromY ,
-                ln.FromZ ,
+        if l < zeroLengthTolerance then EuclidException.Raise "Euclid.Line3D.ExtendEnd %O to short for finding point at a distance." ln
+        Line3D( ln.FromX,
+                ln.FromY,
+                ln.FromZ,
                 ln.ToX   + x*distAtEnd/l,
                 ln.ToY   + y*distAtEnd/l,
                 ln.ToZ   + z*distAtEnd/l )
 
     /// Shrink 3D line by absolute amount at start and end.
-    /// Fails on lines shorter than 1e-12.
-    member inline ln.Shrink (distAtStart:float, distAtEnd:float)  =
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    member inline ln.Shrink (distAtStart:float, distAtEnd:float) =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let l = sqrt(x*x + y*y + z*z)
-        if l < 1e-12 then EuclidException.Raise "Euclid.Line3D.Shrink %O to short for finding point at a distance." ln
+        if l < zeroLengthTolerance then EuclidException.Raise "Euclid.Line3D.Shrink %O to short for finding point at a distance." ln
         Line3D( ln.FromX + x*distAtStart/l,
                 ln.FromY + y*distAtStart/l,
                 ln.FromZ + z*distAtStart/l,
@@ -292,31 +292,31 @@ type Line3D =
                 ln.ToZ   - z*distAtEnd/l )
 
     /// Shrink 3D line by absolute amount at start.
-    /// Fails on lines shorter than 1e-12.
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
     member inline ln.ShrinkStart (distAtStart:float) =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let l = sqrt(x*x + y*y + z*z)
-        if l < 1e-12 then EuclidException.Raise "Euclid.Line3D.ShrinkStart %O to short for finding point at a distance." ln
+        if l < zeroLengthTolerance then EuclidException.Raise "Euclid.Line3D.ShrinkStart %O to short for finding point at a distance." ln
         Line3D( ln.FromX + x*distAtStart/l,
                 ln.FromY + y*distAtStart/l,
                 ln.FromZ + z*distAtStart/l,
-                ln.ToX   ,
-                ln.ToY   ,
+                ln.ToX,
+                ln.ToY,
                 ln.ToZ   )
 
     /// Shrink 3D line by absolute amount at end.
-    /// Fails on lines shorter than 1e-12.
-    member inline ln.ShrinkEnd  (distAtEnd:float)  =
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    member inline ln.ShrinkEnd (distAtEnd:float) =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let l = sqrt(x*x + y*y + z*z)
-        if l < 1e-12 then EuclidException.Raise "Euclid.Line3D.ShrinkEnd %O to short for finding point at a distance." ln
-        Line3D( ln.FromX ,
-                ln.FromY ,
-                ln.FromZ ,
+        if l < zeroLengthTolerance then EuclidException.Raise "Euclid.Line3D.ShrinkEnd %O to short for finding point at a distance." ln
+        Line3D( ln.FromX,
+                ln.FromY,
+                ln.FromZ,
                 ln.ToX   - x*distAtEnd/l,
                 ln.ToY   - y*distAtEnd/l,
                 ln.ToZ   - z*distAtEnd/l )
@@ -374,7 +374,7 @@ type Line3D =
         let dot = x*u + y*v + z*w
         dot / lenSq
 
-    /// Return the parameter at which a point is closest to the (finite) line.
+    /// Returns the parameter at which a point is closest to the (finite) line.
     /// The result is between 0.0 and 1.0.
     /// Does not fails on very short curves.
     member inline ln.ClosestParameter (p:Pnt) =
@@ -464,29 +464,29 @@ type Line3D =
     /// Checks if the angle between the two 3D lines is less than 180 degrees.
     /// Calculates the dot product of two 3D lines.
     /// Then checks if it is bigger than 1e-12.
-    member inline ln.MatchesOrientation180  (otherLn:Line3D) =
+    member inline ln.MatchesOrientation180 (otherLn:Line3D) =
         let dot = (otherLn.ToX-otherLn.FromX)*(ln.ToX-ln.FromX) + (otherLn.ToY-otherLn.FromY)*(ln.ToY-ln.FromY) + (otherLn.ToZ-otherLn.FromZ)*(ln.ToZ-ln.FromZ)
         dot > 1e-12
 
     /// Checks if the angle between the a 3D line and a 3D vector is less than 180 degrees.
     /// Calculates the dot product of both.
     /// Then checks if it is bigger than 1e-12.
-    member inline ln.MatchesOrientation180  (v:Vec) =
-        if v.LengthSq < 1e-24 then EuclidException.Raise "Euclid.Line3D.MatchesOrientation180: Vec 'v' is too short: %s. 'ln':%s " v.AsString ln.AsString
+    member inline ln.MatchesOrientation180 (v:Vec) =
+        if v.LengthSq < zeroLengthTolSquared then EuclidException.Raise "Euclid.Line3D.MatchesOrientation180: Vec 'v' is too short: %s. 'ln':%s " v.AsString ln.AsString
         let dot = v.X*(ln.ToX-ln.FromX) + v.Y*(ln.ToY-ln.FromY) + v.Z*(ln.ToZ-ln.FromZ)
         dot > 1e-12
 
     /// Checks if the angle between the a 3D line and a 3D unit-vector is less than 180 degrees.
     /// Calculates the dot product of both.
     /// Then checks if it is bigger than 1e-12.
-    member inline ln.MatchesOrientation180  (v:UnitVec) =
+    member inline ln.MatchesOrientation180 (v:UnitVec) =
         let dot = v.X*(ln.ToX-ln.FromX) + v.Y*(ln.ToY-ln.FromY) + v.Z*(ln.ToZ-ln.FromZ)
         dot > 1e-12
 
     /// Checks if the angle between the two 3D lines is less than 90 degrees.
     /// Calculates the dot product of the unit vectors of the two 3D lines.
     /// Then checks if it is bigger than 0.707107 (cosine of 90 degrees).
-    member inline ln.MatchesOrientation90  (otherLn:Line3D) =
+    member inline ln.MatchesOrientation90 (otherLn:Line3D) =
         let dot = ln.UnitTangent*otherLn.UnitTangent
         dot > 0.707107
 
@@ -495,14 +495,14 @@ type Line3D =
     /// The default angle tolerance is 0.25 degrees.
     /// This tolerance can be customized by an optional minium cosine value.
     /// See Euclid.Cosine module.
-    /// Fails on lines shorter than 1e-12.
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
     member inline ln.IsParallelTo( other:Line3D, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
         let a = ln.Vector
         let b = other.Vector
         let sa = a.LengthSq
-        if sa < 1e-24 then EuclidException.Raise "Euclid.Line3D.IsParallelTo: Line3D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
+        if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Line3D.IsParallelTo: Line3D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
         let sb = b.LengthSq
-        if sb < 1e-24 then EuclidException.Raise "Euclid.Line3D.IsParallelTo: Line3D 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
+        if sb < zeroLengthTolSquared then EuclidException.Raise "Euclid.Line3D.IsParallelTo: Line3D 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
         let au = a * (1.0 / sqrt sa )
         let bu = b * (1.0 / sqrt sb )
         abs(bu*au) > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
@@ -512,14 +512,14 @@ type Line3D =
     /// The default angle tolerance is 0.25 degrees.
     /// This tolerance can be customized by an optional minium cosine value.
     /// See Euclid.Cosine module.
-    /// Fails on lines or vectors shorter than 1e-12.
+    /// Fails on lines or vectors shorter than Util.zeroLengthTolerance (1e-12).
     member inline ln.IsParallelTo( other:Vec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
         let a = ln.Vector
         let b = other
         let sa = a.LengthSq
-        if sa < 1e-24 then EuclidException.Raise "Euclid.Line2D.IsParallelTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
+        if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Line2D.IsParallelTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
         let sb = b.LengthSq
-        if sb < 1e-24 then EuclidException.Raise "Euclid.Line2D.IsParallelTo: Vec 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
+        if sb < zeroLengthTolSquared then EuclidException.Raise "Euclid.Line2D.IsParallelTo: Vec 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
         let au = a * (1.0 / sqrt sa )
         let bu = b * (1.0 / sqrt sb )
         abs(bu*au) > float minCosine
@@ -529,11 +529,11 @@ type Line3D =
     /// The default angle tolerance is 0.25 degrees.
     /// This tolerance can be customized by an optional minium cosine value.
     /// See Euclid.Cosine module.
-    /// Fails on lines shorter than 1e-12.
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
     member inline ln.IsParallelTo( other:UnitVec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
         let a = ln.Vector
         let sa = a.LengthSq
-        if sa < 1e-24 then EuclidException.Raise "Euclid.Line3D.IsParallelTo: Line3D 'ln' is too short: %s. 'other':%s " a.AsString other.AsString
+        if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Line3D.IsParallelTo: Line3D 'ln' is too short: %s. 'other':%s " a.AsString other.AsString
         let au = a * (1.0 / sqrt sa )
         abs(other*au) > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
 
@@ -543,14 +543,14 @@ type Line3D =
     /// The default angle tolerance is 0.25 degrees.
     /// This tolerance can be customized by an optional minium cosine value.
     /// See Euclid.Cosine module.
-    /// Fails on lines shorter than 1e-12.
-    member inline ln.IsParallelAndOrientedTo  (other:Line3D, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    member inline ln.IsParallelAndOrientedTo (other:Line3D, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
         let a = ln.Vector
         let b = other.Vector
         let sa = a.LengthSq
-        if sa < 1e-24 then EuclidException.Raise "Euclid.Line3D.IsParallelAndOrientedTo: Line3D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
+        if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Line3D.IsParallelAndOrientedTo: Line3D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
         let sb = b.LengthSq
-        if sb < 1e-24 then EuclidException.Raise "Euclid.Line3D.IsParallelAndOrientedTo: Line3D 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
+        if sb < zeroLengthTolSquared then EuclidException.Raise "Euclid.Line3D.IsParallelAndOrientedTo: Line3D 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
         let au = a * (1.0 / sqrt sa )
         let bu = b * (1.0 / sqrt sb )
         bu*au > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
@@ -560,14 +560,14 @@ type Line3D =
     /// The default angle tolerance is 0.25 degrees.
     /// This tolerance can be customized by an optional minium cosine value.
     /// See Euclid.Cosine module.
-    /// Fails on lines or vectors shorter than 1e-12.
-    member inline ln.IsParallelAndOrientedTo  (other:Vec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
+    /// Fails on lines or vectors shorter than Util.zeroLengthTolerance (1e-12).
+    member inline ln.IsParallelAndOrientedTo (other:Vec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
         let a = ln.Vector
         let b = other
         let sa = a.LengthSq
-        if sa < 1e-24 then EuclidException.Raise "Euclid.Line2D.IsParallelAndOrientedTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
+        if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Line2D.IsParallelAndOrientedTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
         let sb = b.LengthSq
-        if sb < 1e-24 then EuclidException.Raise "Euclid.Line2D.IsParallelAndOrientedTo: Vec 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
+        if sb < zeroLengthTolSquared then EuclidException.Raise "Euclid.Line2D.IsParallelAndOrientedTo: Vec 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
         let au = a * (1.0 / sqrt sa )
         let bu = b * (1.0 / sqrt sb )
         bu*au > float minCosine
@@ -577,11 +577,11 @@ type Line3D =
     /// The default angle tolerance is 0.25 degrees.
     /// This tolerance can be customized by an optional minium cosine value.
     /// See Euclid.Cosine module.
-    /// Fails on lines shorter than 1e-12.
-    member inline ln.IsParallelAndOrientedTo  (other:UnitVec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    member inline ln.IsParallelAndOrientedTo (other:UnitVec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
         let a = ln.Vector
         let sa = a.LengthSq
-        if sa < 1e-24 then EuclidException.Raise "Euclid.Line3D.IsParallelAndOrientedTo: Line3D 'ln' is too short: %s. 'other':%s " a.AsString other.AsString
+        if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Line3D.IsParallelAndOrientedTo: Line3D 'ln' is too short: %s. 'other':%s " a.AsString other.AsString
         let au = a * (1.0 / sqrt sa )
         other*au > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
 
@@ -591,14 +591,14 @@ type Line3D =
     /// This tolerance can be customized by an optional minium cosine value.
     /// The default cosine is 0.0043633 ( = 89.75 deg )
     /// See Euclid.Cosine module.
-    /// Fails on lines shorter than 1e-12.
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
     member inline ln.IsPerpendicularTo (other:Line3D, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) =
         let a = ln.Vector
         let b = other.Vector
         let sa = a.LengthSq
-        if sa < 1e-24 then EuclidException.Raise "Euclid.Line3D.IsPerpendicularTo: Line3D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
+        if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Line3D.IsPerpendicularTo: Line3D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
         let sb = b.LengthSq
-        if sb < 1e-24 then EuclidException.Raise "Euclid.Line3D.IsPerpendicularTo: Line3D 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
+        if sb < zeroLengthTolSquared then EuclidException.Raise "Euclid.Line3D.IsPerpendicularTo: Line3D 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
         let au = a * (1.0 / sqrt sa )
         let bu = b * (1.0 / sqrt sb )
         let d = bu*au
@@ -610,14 +610,14 @@ type Line3D =
     /// This tolerance can be customized by an optional minium cosine value.
     /// The default cosine is 0.0043633 ( = 89.75 deg )
     /// See Euclid.Cosine module.
-    /// Fails on lines or vectors shorter than 1e-12.
+    /// Fails on lines or vectors shorter than Util.zeroLengthTolerance (1e-12).
     member inline ln.IsPerpendicularTo (other:Vec, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) =
         let a = ln.Vector
         let b = other
         let sa = a.LengthSq
-        if sa < 1e-24 then EuclidException.Raise "Euclid.Line2D.IsPerpendicularTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
+        if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Line2D.IsPerpendicularTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
         let sb = b.LengthSq
-        if sb < 1e-24 then EuclidException.Raise "Euclid.Line2D.IsPerpendicularTo: Vec 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
+        if sb < zeroLengthTolSquared then EuclidException.Raise "Euclid.Line2D.IsPerpendicularTo: Vec 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
         let au = a * (1.0 / sqrt sa )
         let bu = b * (1.0 / sqrt sb )
         let d = bu*au
@@ -628,11 +628,11 @@ type Line3D =
     /// This tolerance can be customized by an optional minium cosine value.
     /// The default cosine is 0.0043633 ( = 89.75 deg )
     /// See Euclid.Cosine module.
-    /// Fails on lines shorter than 1e-12.
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
     member inline ln.IsPerpendicularTo (other:UnitVec, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) =
         let a = ln.Vector
         let sa = a.LengthSq
-        if sa < 1e-24 then EuclidException.Raise "Euclid.Line3D.IsPerpendicularTo: Line3D 'ln' is too short: %s. 'other':%s " a.AsString other.AsString
+        if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Line3D.IsPerpendicularTo: Line3D 'ln' is too short: %s. 'other':%s " a.AsString other.AsString
         let au = a * (1.0 / sqrt sa )
         let d = other*au
         float -maxCosine < d && d  < float maxCosine // = cosine of 98.75 and 90.25 degrees
@@ -641,7 +641,7 @@ type Line3D =
     /// Checks if two 3D lines are coincident within the distance tolerance. 1e-6 by default.
     /// This means that lines are parallel within the angle tolerance.
     /// and the distance of second start to the first line is less than the distance tolerance.
-    /// Also returns false on zero length lines (shorter than 1e-12).
+    /// Also returns false on lines shorter than Util.zeroLengthTolerance (1e-12).
     /// The default angle tolerance is 0.25 degrees.
     /// This tolerance can be customized by an optional minium cosine value.
     /// See Euclid.Cosine module.
@@ -651,11 +651,11 @@ type Line3D =
         let a = ln.Vector
         let b = other.Vector
         let sa = a.LengthSq
-        if sa < 1e-24 then
+        if sa < zeroLengthTolSquared then
             false
         else
             let sb = b.LengthSq
-            if sb < 1e-24 then
+            if sb < zeroLengthTolSquared then
                 false
             else
                 let au = a * (1.0 / sqrt sa )
@@ -685,12 +685,12 @@ type Line3D =
     /// Applies or multiplies a 4x4 transformation matrix to a 3D line.
     member inline l.Transform (m:Matrix) = Line3D(l.From*m, l.To*m)
 
-    /// Multiplies (or applies) an OrthoMatrix to a 3D line .
-    member inline l.TransformOrtho (m:OrthoMatrix) = Line3D(l.From*m, l.To*m)
+    /// Multiplies (or applies) a RigidMatrix to a 3D line .
+    member inline l.TransformRigid (m:RigidMatrix) = Line3D(l.From*m, l.To*m)
 
-    /// Multiplies (or applies) only the 3x3 rotation part of an OrthoMatrix to a 3D line .
+    /// Multiplies (or applies) only the 3x3 rotation part of a RigidMatrix to a 3D line .
     /// The resulting line has the same length as the input.
-    member inline l.RotateOrtho (m:OrthoMatrix) = Line3D(Pnt.rotateOrtho m l.From, Pnt.rotateOrtho m l.To)
+    member inline l.RotateRigid (m:RigidMatrix) = Line3D(Pnt.rotateRigid m l.From, Pnt.rotateRigid m l.To)
 
 
     //-------------------------------------------------------------------
@@ -711,19 +711,19 @@ type Line3D =
     static member inline areCoincident (a:Line3D) (b:Line3D) = a.IsCoincidentTo(b)
 
     /// Creates a 2D line from 3D line. Ignoring Z value.
-    static member inline toLine2D (ln:Line3D) = Line2D( ln.FromX,ln.FromY,ln.ToX,ln.ToY)
+    static member inline toLine2D (ln:Line3D) = Line2D( ln.FromX, ln.FromY, ln.ToX, ln.ToY)
 
     /// Creates a 3D line from 2D line. Setting Z to 0.0
-    static member inline createFromLine2D (ln:Line2D) = Line3D( ln.FromX,ln.FromY,0.,ln.ToX,ln.ToY,0.)
+    static member inline createFromLine2D (ln:Line2D) = Line3D( ln.FromX, ln.FromY, 0., ln.ToX, ln.ToY, 0.)
 
     /// Creates a 3D line from 2D line. Setting Z to given value.
-    static member inline createFromLine2DwithZ (zLevel) (ln:Line2D) = Line3D( ln.FromX,ln.FromY,zLevel,ln.ToX,ln.ToY,zLevel)
+    static member inline createFromLine2DwithZ (zLevel) (ln:Line2D) = Line3D( ln.FromX, ln.FromY, zLevel, ln.ToX, ln.ToY, zLevel)
 
     /// Creates a line starting at World Origin and going to along the given vector.
-    static member inline createFromVec (v:Vec) = Line3D(0.,0.,0.,v.X,v.Y,v.Z)
+    static member inline createFromVec (v:Vec) = Line3D(0., 0., 0., v.X, v.Y, v.Z)
 
     /// Creates a line starting at given point and going to along the given vector.
-    static member inline createFromPntAndVec (p:Pnt,v:Vec) =  Line3D(p.X, p.Y, p.Z, p.X+v.X, p.Y+v.Y, p.Z+v.Z)
+    static member inline createFromPntAndVec (p:Pnt, v:Vec) = Line3D(p.X, p.Y, p.Z, p.X+v.X, p.Y+v.Y, p.Z+v.Z)
 
     /// Returns the Start point of the line. Same as Line3D.from.
     static member inline start (l:Line3D) = l.From
@@ -766,17 +766,17 @@ type Line3D =
     /// Same as Line3D.vector or Line3D.tangent.
     /// The returned vector has the same length as the Line3D.
     static member inline direction (ln:Line3D) =
-        Vec(ln.ToX-ln.FromX,ln.ToY-ln.FromY,ln.ToZ-ln.FromZ)
+        Vec(ln.ToX-ln.FromX, ln.ToY-ln.FromY, ln.ToZ-ln.FromZ)
 
     /// Same as Line3D.tangent or Line3D.direction.
     /// The returned vector has the same length as the Line3D.
     static member inline vector (ln:Line3D) =
-        Vec(ln.ToX-ln.FromX,ln.ToY-ln.FromY,ln.ToZ-ln.FromZ)
+        Vec(ln.ToX-ln.FromX, ln.ToY-ln.FromY, ln.ToZ-ln.FromZ)
 
     /// Same as Line3D.vector or Line3D.direction.
     /// The returned vector has the same length as the Line3D.
     static member inline tangent (ln:Line3D) =
-        Vec(ln.ToX-ln.FromX,ln.ToY-ln.FromY,ln.ToZ-ln.FromZ)
+        Vec(ln.ToX-ln.FromX, ln.ToY-ln.FromY, ln.ToZ-ln.FromZ)
 
     /// Returns a unit-vector of the line Direction.
     static member inline unitTangent (ln:Line3D) = ln.UnitTangent
@@ -824,15 +824,15 @@ type Line3D =
     static member inline isHorizontal (l:Line3D) = l.IsHorizontal
 
     /// Evaluate line at a given parameter ( parameters 0.0 to 1.0 are on the line )
-    static member inline evaluateAt t (ln:Line3D)  = ln.EvaluateAt t
+    static member inline evaluateAt t (ln:Line3D) = ln.EvaluateAt t
 
     /// Get point at center of line.
     static member inline mid (ln:Line3D) = ln.Mid
 
-    /// Reverse or flip the 3D Line  (same as Line3D.flip)
+    /// Reverse or flip the 3D Line (same as Line3D.flip)
     static member inline reverse (ln:Line3D) = ln.Reversed
 
-    /// Reverse or flip the 3D Line  (same as Line3D.reverse)
+    /// Reverse or flip the 3D Line (same as Line3D.reverse)
     static member inline flip (ln:Line3D) = ln.Reversed
 
     /// Returns new 3D Line from point at Parameter a to point at Parameter b.
@@ -856,12 +856,12 @@ type Line3D =
     /// Applies or multiplies a 4x4 transformation matrix to a 3D line.
     static member inline transform (m:Matrix) (ln:Line3D) = ln.Transform m
 
-    /// Multiplies (or applies) an OrthoMatrix to a 3D line .
-    static member inline transformOrtho (m:OrthoMatrix) (ln:Line3D)  = ln.TransformOrtho m
+    /// Multiplies (or applies) a RigidMatrix to a 3D line .
+    static member inline transformRigid (m:RigidMatrix) (ln:Line3D) = ln.TransformRigid m
 
-    /// Multiplies (or applies) only the 3x3 rotation part of an OrthoMatrix to a 3D line.
+    /// Multiplies (or applies) only the 3x3 rotation part of a RigidMatrix to a 3D line.
     /// The resulting line has the same length as the input.
-    static member inline rotateOrtho (m:OrthoMatrix) (ln:Line3D)  = ln.RotateOrtho m
+    static member inline rotateRigid (m:RigidMatrix) (ln:Line3D) = ln.RotateRigid m
 
     /// Rotation a 3D Line around Z-Axis.
     static member inline rotate (r:Rotation2D) (ln:Line3D) = Line3D(Pnt.rotateZBy r ln.From, Pnt.rotateZBy r ln.To)
@@ -884,150 +884,151 @@ type Line3D =
     /// Checks if the angle between the two 3D lines is less than 180 degrees.
     /// Calculates the dot product of two 3D lines.
     /// Then checks if it is positive.
-    static member inline matchesOrientation180  (l:Line3D) (ln:Line3D) = l.MatchesOrientation180 ln
+    static member inline matchesOrientation180 (l:Line3D) (ln:Line3D) = l.MatchesOrientation180 ln
 
     /// Checks if the angle between the two 3D lines is less than 90 degrees.
     /// Calculates the dot product of the unit vectors of the two 3D lines.
     /// Then checks if it is bigger than 0.707107 (cosine of 90 degrees).
-    static member inline matchesOrientation90  (l:Line3D) (ln:Line3D) = l.MatchesOrientation90 ln
+    static member inline matchesOrientation90 (l:Line3D) (ln:Line3D) = l.MatchesOrientation90 ln
 
     /// Checks if two 3D lines are parallel. Ignoring orientation.
     /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
     /// And checks if it is smaller than 1e-9
     /// (NOTE: for very long lines a higher tolerance might be needed)
-    static member inline  areParallel  (l:Line3D) (ln:Line3D) =   l.IsParallelTo ln
+    static member inline  areParallel (l:Line3D) (ln:Line3D) = l.IsParallelTo ln
 
     /// Checks if two 3D lines are parallel and orientated the same way.
     /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
     /// And checks if it is smaller than 1e-9
     /// Then calculates the dot product and checks if it is positive.
     /// (NOTE: for very long lines a higher tolerance might be needed)
-    static member inline areParallelAndMatchOrientation  (l:Line3D) (ln:Line3D) =  l.IsParallelAndOrientedTo ln
+    static member inline areParallelAndMatchOrientation (l:Line3D) (ln:Line3D) = l.IsParallelAndOrientedTo ln
 
     /// Checks if two 3D lines are perpendicular.
     /// Calculates the dot product and checks if it is smaller than 1e-9.
     /// (NOTE: for very long lines a higher tolerance might be needed)
-    static member inline arePerpendicular(l:Line3D) (ln:Line3D) =  l.IsPerpendicularTo(ln)
+    static member inline arePerpendicular(l:Line3D) (ln:Line3D) = l.IsPerpendicularTo(ln)
 
     /// Assumes Line3D to be infinite.
     /// Returns the parameter at which a point is closest to the infinite line.
     /// If it is smaller than 0.0 or bigger than 1.0 it is outside of the finite line.
-    static member inline closestParameterInfinite (p:Pnt) (ln:Line3D)  = ln.ClosestParameterInfinite p
+    static member inline closestParameterInfinite (p:Pnt) (ln:Line3D) = ln.ClosestParameterInfinite p
 
-    /// Return the parameter at which a point is closest to the (finite) line.
+    /// Returns the parameter at which a point is closest to the (finite) line.
     /// The result is between 0.0 and 1.0.
-    static member inline closestParameter (p:Pnt) (ln:Line3D)  = ln.ClosestParameter p
+    static member inline closestParameter (p:Pnt) (ln:Line3D) = ln.ClosestParameter p
 
     /// Assumes Line3D to be infinite.
     /// Returns closest point on infinite Line.
-    static member inline closestPointInfinite (p:Pnt) (ln:Line3D)  = ln.ClosestPointInfinite p
+    static member inline closestPointInfinite (p:Pnt) (ln:Line3D) = ln.ClosestPointInfinite p
 
     /// Returns closest point on (finite) Line.
-    static member inline closestPoint (p:Pnt) (ln:Line3D)  = ln.ClosestPoint p
+    static member inline closestPoint (p:Pnt) (ln:Line3D) = ln.ClosestPoint p
 
     /// Assumes Line3D to be infinite.
     /// Returns the square distance from point to infinite line.
-    static member inline distanceSqFromPointInfinite(p:Pnt) (ln:Line3D)  = ln.DistanceSqFromPointInfinite p
+    static member inline distanceSqFromPointInfinite(p:Pnt) (ln:Line3D) = ln.DistanceSqFromPointInfinite p
 
     /// Assumes Line3D to be infinite.
     /// Returns distance from point to infinite line.
-    static member inline distanceFromPointInfinite(p:Pnt) (ln:Line3D)  = ln.DistanceFromPointInfinite p
+    static member inline distanceFromPointInfinite(p:Pnt) (ln:Line3D) = ln.DistanceFromPointInfinite p
 
     /// Returns the square distance from point to (finite) line.
-    static member inline distanceSqFromPoint(p:Pnt) (ln:Line3D)  = ln.DistanceSqFromPoint p
+    static member inline distanceSqFromPoint(p:Pnt) (ln:Line3D) = ln.DistanceSqFromPoint p
 
     /// Returns distance from point to (finite) line.
-    static member inline distanceFromPoint(p:Pnt) (ln:Line3D)  = ln.DistanceFromPoint p
+    static member inline distanceFromPoint(p:Pnt) (ln:Line3D) = ln.DistanceFromPoint p
 
     /// Get distance from start of line to point projected onto line, may be negative.
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
     static member inline lengthToPtOnLine (ln:Line3D) pt =
         let t = ln.Vector
         let l = t.Length
-        if l < 1e-12 then EuclidException.Raise "Euclid.Line3D.lengthToPtOnLine %O to short for finding length to point." ln
+        if l < zeroLengthTolerance then EuclidException.Raise "Euclid.Line3D.lengthToPtOnLine %O to short for finding length to point." ln
         (t/l) * (pt-ln.From)
 
     /// Extend 3D line by absolute amount at start and end.
-    /// Fails on lines shorter than 1e-12.
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
     static member inline extend (distAtStart:float) (distAtEnd:float) (ln:Line3D) =
         ln.Extend(distAtStart, distAtEnd)
 
     /// Extend 3D line by absolute amount at start.
-    /// Fails on lines shorter than 1e-12.
-    static member inline extendStart (distAtStart:float)  (ln:Line3D) =
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    static member inline extendStart (distAtStart:float) (ln:Line3D) =
         ln.ExtendStart(distAtStart)
 
     /// Extend 3D line by absolute amount at end.
-    /// Fails on lines shorter than 1e-12.
-    static member inline extendEnd  (distAtEnd:float) (ln:Line3D) =
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    static member inline extendEnd (distAtEnd:float) (ln:Line3D) =
         ln.ExtendEnd(distAtEnd)
 
     /// Shrink 3D line by absolute amount at start and end.
-    /// Fails on lines shorter than 1e-12.
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
     static member inline shrink (distAtStart:float) (distAtEnd:float) (ln:Line3D) =
         ln.Shrink(distAtStart, distAtEnd)
 
     /// Shrink 3D line by absolute amount at start.
-    /// Fails on lines shorter than 1e-12.
-    static member inline shrinkStart (distAtStart:float)  (ln:Line3D) =
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    static member inline shrinkStart (distAtStart:float) (ln:Line3D) =
         ln.ShrinkStart(distAtStart)
 
     /// Shrink 3D line by absolute amount at end.
-    /// Fails on lines shorter than 1e-12.
-    static member inline shrinkEnd  (distAtEnd:float) (ln:Line3D) =
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    static member inline shrinkEnd (distAtEnd:float) (ln:Line3D) =
         ln.ShrinkEnd(distAtEnd)    
 
     /// Finds point at given distance from line start.
-    /// Fails on lines shorter than 1e-12.
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
     static member inline pointAtDistance dist (ln:Line3D) =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let len = sqrt(x*x + y*y + z*z)
-        if len < 1e-12 then EuclidException.Raise "Euclid.Line3D.pointAtDistance %O to short for finding point at a distance." ln
+        if len < zeroLengthTolerance then EuclidException.Raise "Euclid.Line3D.pointAtDistance %O to short for finding point at a distance." ln
         Pnt(ln.FromX + x*dist/len,
             ln.FromY + y*dist/len,
             ln.FromZ + z*dist/len)
 
     /// Returns new Line3D with given length, going out from start in direction of end.
-    /// Fails on lines shorter than 1e-12.
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
     static member inline withLengthFromStart len (ln:Line3D) =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let l = sqrt(x*x + y*y + z*z)
-        if l < 1e-12 then EuclidException.Raise "Euclid.Line3D.withLengthFromStart %O to short for finding point at a distance." ln
-        Line3D( ln.FromX ,
-                ln.FromY ,
-                ln.FromZ ,
-                ln.FromX + x*len/l ,
-                ln.FromY + y*len/l ,
+        if l < zeroLengthTolerance then EuclidException.Raise "Euclid.Line3D.withLengthFromStart %O to short for finding point at a distance." ln
+        Line3D( ln.FromX,
+                ln.FromY,
+                ln.FromZ,
+                ln.FromX + x*len/l,
+                ln.FromY + y*len/l,
                 ln.FromZ + z*len/l )
 
     /// Returns new Line3D ending at current LineEnd with given length coming from direction of start.
-    /// Fails on lines shorter than 1e-12.
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
     static member inline withLengthToEnd len (ln:Line3D) =
         let x = ln.FromX-ln.ToX
         let y = ln.FromY-ln.ToY
         let z = ln.FromZ-ln.ToZ
         let l = sqrt(x*x + y*y + z*z)
-        if l < 1e-12 then EuclidException.Raise "Euclid.Line3D.withLengthToEnd %O to short for finding point at a distance." ln
-        Line3D( ln.ToX + x*len/l ,
-                ln.ToY + y*len/l ,
-                ln.ToZ + z*len/l ,
-                ln.ToX ,
-                ln.ToY ,
+        if l < zeroLengthTolerance then EuclidException.Raise "Euclid.Line3D.withLengthToEnd %O to short for finding point at a distance." ln
+        Line3D( ln.ToX + x*len/l,
+                ln.ToY + y*len/l,
+                ln.ToZ + z*len/l,
+                ln.ToX,
+                ln.ToY,
                 ln.ToZ )
 
-    /// Offset line in XY Plane to left side in line direction.
-    /// Fails on lines shorter than 1e-12.
+    /// Offset line in XY-Plane to left side in line direction.
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
     static member offset amount (ln:Line3D) =
         let x = ln.ToX - ln.FromX
         let y = ln.ToY - ln.FromY
         let z = ln.ToZ - ln.FromZ
         let lenXY = sqrt (x*x + y*y)
-        if lenXY  < 1e-12 then EuclidException.Raise "Euclid.Line3D.offset: Cannot offset vertical Line3D  (by %g) %O" amount ln
-        let ox = -y*amount/lenXY  // unitized, horizontal , perpendicular  vector
-        let oy =  x*amount/lenXY  // unitized, horizontal , perpendicular  vector
+        if lenXY  < zeroLengthTolerance then EuclidException.Raise "Euclid.Line3D.offset: Cannot offset vertical Line3D (by %g) %O" amount ln
+        let ox = -y*amount/lenXY  // unitized, horizontal, perpendicular  vector
+        let oy =  x*amount/lenXY  // unitized, horizontal, perpendicular  vector
         Line3D( ln.FromX+ox,
                 ln.FromY+oy,
                 ln.FromZ,
@@ -1115,8 +1116,8 @@ type Line3D =
     ///
     /// | TooShort:
     /// One or both input lines is shorter than the given minimum Length tolerance. </returns>
-    static member inline intersectionParamInfinite( lnA:Line3D ,
-                                                    lnB:Line3D ,
+    static member inline intersectionParamInfinite( lnA:Line3D,
+                                                    lnB:Line3D,
                                                     [<OPT;DEF(RelAngleDiscriminant.``0.25``)>] relAngleDiscriminant:float<RelAngleDiscriminant.relAngDiscr>,
                                                     [<OPT;DEF(1e-6)>] coincidentTolerance:float,
                                                     [<OPT;DEF(1e-6)>] tooShortTolerance:float
@@ -1143,9 +1144,9 @@ type Line3D =
             let vx = lnB.FromX - lnA.FromX
             let vy = lnB.FromY - lnA.FromY
             let vz = lnB.FromZ - lnA.FromZ
-            let ac = a*c // square of square length  , never negative
+            let ac = a*c // square of square length, never negative
             let bb = b*b // never negative
-            let discriminant = ac - bb // never negative , the dot product cannot be bigger than the two square length multiplied with each other
+            let discriminant = ac - bb // never negative, the dot product cannot be bigger than the two square length multiplied with each other
             let div = ac+bb // never negative
             // getting the relation between the sum and the subtraction gives a good estimate of the angle between the lines
             // see module Euclid.Util.RelAngleDiscriminant
@@ -1163,7 +1164,7 @@ type Line3D =
                 let d = ax*vx + ay*vy + az*vz
                 let t = (b * e - c * d) / discriminant
                 let u = (a * e - b * d) / discriminant
-                TwoParam (t,u)
+                TwoParam (t, u)
 
     ///<summary> Gets the points at which two infinite 3D lines intersect. Or are closest to each other.</summary>
     ///<param name="lnA"> The first line.</param>
@@ -1197,19 +1198,19 @@ type Line3D =
     /// | TooShort:
     ///     One or both input lines is shorter than the given minimum Length tolerance.
     /// </returns>
-    static member inline intersectionInfinite ( lnA:Line3D ,
-                                                lnB:Line3D ,
+    static member inline intersectionInfinite ( lnA:Line3D,
+                                                lnB:Line3D,
                                                 [<OPT;DEF(1e-6)>] skewTolerance:float,
                                                 [<OPT;DEF(RelAngleDiscriminant.``0.25``)>] relAngleDiscriminant:float<RelAngleDiscriminant.relAngDiscr>,
                                                 [<OPT;DEF(1e-6)>] coincidentTolerance:float,
                                                 [<OPT;DEF(1e-6)>] tooShortTolerance:float
                                                 ) : IntersectionPoints3D =
-        match Line3D.intersectionParamInfinite(lnA , lnB, relAngleDiscriminant, coincidentTolerance, tooShortTolerance) with
-        |TwoParam (u,v) ->
-            let a =  lnA.EvaluateAt u
+        match Line3D.intersectionParamInfinite(lnA, lnB, relAngleDiscriminant, coincidentTolerance, tooShortTolerance) with
+        |TwoParam (u, v) ->
+            let a = lnA.EvaluateAt u
             let b = lnB.EvaluateAt v
             if Pnt.distanceSq a b > skewTolerance*skewTolerance then
-                IntersectionPoints3D.TwoPoints (a,b)
+                IntersectionPoints3D.TwoPoints (a, b)
             else
                 IntersectionPoints3D.OnePoint a // or (Pnt.midPt a b) ?
         |IntersectionParam.Parallel   ->  IntersectionPoints3D.Parallel
@@ -1232,14 +1233,14 @@ type Line3D =
     ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
     ///  If one or both lines are shorter than the 'TooShort' union case is returned .</param>
     /// <returns> A single 3D point</returns>
-    static member intersectionPointInfinite(lnA:Line3D ,
-                                            lnB:Line3D ,
+    static member intersectionPointInfinite(lnA:Line3D,
+                                            lnB:Line3D,
                                             [<OPT;DEF(1e-6)>] skewTolerance:float,
                                             [<OPT;DEF(RelAngleDiscriminant.``0.25``)>] relAngleDiscriminant:float<RelAngleDiscriminant.relAngDiscr>,
                                             [<OPT;DEF(1e-6)>] coincidentTolerance:float,
                                             [<OPT;DEF(1e-6)>] tooShortTolerance:float
                                             ) : Pnt =
-        match Line3D.intersectionInfinite(lnA , lnB, skewTolerance, relAngleDiscriminant, coincidentTolerance, tooShortTolerance) with
+        match Line3D.intersectionInfinite(lnA, lnB, skewTolerance, relAngleDiscriminant, coincidentTolerance, tooShortTolerance) with
         |IntersectionPoints3D.OnePoint p  -> p
         |IntersectionPoints3D.TwoPoints _ -> EuclidException.Raise "Euclid.Line3D.intersectionPointInfinite: Lines are skew lnA: \r\n%O and lnB: \r\n%O" lnA lnB
         |IntersectionPoints3D.Parallel    -> EuclidException.Raise "Euclid.Line3D.intersectionPointInfinite: Lines are parallel lnA: \r\n%O and lnB: \r\n%O" lnA lnB
@@ -1252,15 +1253,15 @@ type Line3D =
     /// Unless the lines are skew or parallel this returns 0.0.
     /// Uses the default tolerances from the Line3D.intersectionParamInfinite function.
     /// to detect parallel and coincident lines.
-    static member inline distanceBetweenInfiniteLines(lnA , lnB) =
-        match Line3D.intersectionParamInfinite(lnA , lnB) with
+    static member inline distanceBetweenInfiniteLines(lnA, lnB) =
+        match Line3D.intersectionParamInfinite(lnA, lnB) with
         |IntersectionParam.Coincident    ->  0.0
         |IntersectionParam.TooShortA     ->  EuclidException.Raise "Euclid.Line3D.distanceBetweenInfiniteLines: Line A is tooShort lnA: \r\n%O and lnB: \r\n%O" lnA lnB
         |IntersectionParam.TooShortB     ->  EuclidException.Raise "Euclid.Line3D.distanceBetweenInfiniteLines: Line B is  tooShort lnA: \r\n%O and lnB: \r\n%O" lnA lnB
         |IntersectionParam.TooShortBoth  ->  EuclidException.Raise "Euclid.Line3D.distanceBetweenInfiniteLines: both Lines are tooShort lnA: \r\n%O and lnB: \r\n%O" lnA lnB
         |IntersectionParam.Parallel      -> lnA.DistanceFromPointInfinite lnB.From
-        |TwoParam (u,v) -> // skew or intersecting
-            let a =  lnA.EvaluateAt u
+        |TwoParam (u, v) -> // skew or intersecting
+            let a = lnA.EvaluateAt u
             let b = lnB.EvaluateAt v
             Pnt.distance a b
 
@@ -1308,7 +1309,7 @@ type Line3D =
     /// The ends are meeting in exactly one point. But orientation is flipped.
     /// The returned parameters indicate which ends these are.
     ///
-    /// | Identical: The Lines are identical , in orientation too with in 1e-6 tolerance.
+    /// | Identical: The Lines are identical, in orientation too with in 1e-6 tolerance.
     /// The returned parameters still indicate where the lines start and end.
     ///
     /// | IdenticalFlipped: The Lines are identical. But orientation is flipped.
@@ -1338,15 +1339,15 @@ type Line3D =
     ///  If parallel lines are closer than this the 'Coincident' union case is returned .</param>
     ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
     ///  If one or both lines are shorter than the 'TooShort' union case is returned .</param>
-    static member inline intersectionParam (lnA:Line3D ,
+    static member inline intersectionParam (lnA:Line3D,
                                             lnB:Line3D,
                                             [<OPT;DEF(1e-6)>] skewTolerance:float,
                                             [<OPT;DEF(RelAngleDiscriminant.``0.25``)>] relAngleDiscriminant:float<RelAngleDiscriminant.relAngDiscr>,
                                             [<OPT;DEF(1e-6)>] coincidentTolerance:float,
                                             [<OPT;DEF(1e-6)>] tooShortTolerance:float
                                             ) :  IntersectionKind*float*float =
-        match Line3D.intersectionParamInfinite(lnA , lnB, relAngleDiscriminant, coincidentTolerance, tooShortTolerance) with
-        | IntersectionParam.TwoParam ( u , v ) ->
+        match Line3D.intersectionParamInfinite(lnA, lnB, relAngleDiscriminant, coincidentTolerance, tooShortTolerance) with
+        | IntersectionParam.TwoParam ( u, v ) ->
             /// numerical error tolerance check to also find an intersection that happens just after the line end:
             let ur = isZeroOneOrBetween u
             let vr = isZeroOneOrBetween v
@@ -1359,16 +1360,16 @@ type Line3D =
                 let vt = Line3D.closestParameter pu lnB
                 let pv = lnB.EvaluateAt vt
                 let ut = Line3D.closestParameter pv lnA
-                Apart, ut ,vt
+                Apart, ut, vt
             else
                 let a = lnA.EvaluateAt(u)
                 let b = lnA.EvaluateAt(v)
                 let d = Pnt.distanceSq a b
                 if d > skewTolerance*skewTolerance then
-                    Skew, u , v
+                    Skew, u, v
                 elif ur = Zero || ur = One then                 
                     if vr = Zero || vr = One then                     
-                        IntersectingEndsBoth,(fix01 ur u), (fix01 vr  v)
+                        IntersectingEndsBoth, (fix01 ur u), (fix01 vr  v)
                     else                          
                         IntersectingEndsFirst, (fix01 ur u), v
                 elif vr = Zero || vr = One then
@@ -1378,15 +1379,15 @@ type Line3D =
 
         | IntersectionParam.Parallel ->
 
-            let lv  =  lnA.Direction
+            let lv = lnA.Direction
             let llv = lnB.Direction
             //make a new line k that is oriented the same way:
             let flip = lv*llv < 0.0
             let k = if flip then lnB.Reversed else lnB
-            let l0k0 = Vec.create(lnA.From,k.From)
-            let l0k1 = Vec.create(lnA.From,k.To)
-            let l1k0 = Vec.create(lnA.To  ,k.From)
-            let l1k1 = Vec.create(lnA.To  ,k.To)
+            let l0k0 = Vec.create(lnA.From, k.From)
+            let l0k1 = Vec.create(lnA.From, k.To)
+            let l1k0 = Vec.create(lnA.To  , k.From)
+            let l1k1 = Vec.create(lnA.To  , k.To)
             // check if vectors between lines are in same orientation as line:
             let d00 = lv * l0k0 > 0.
             let d01 = lv * l0k1 > 0.
@@ -1416,7 +1417,7 @@ type Line3D =
             //                                                        Printfn.gray "// k starts after lnA ends"
             //                                                        1.0, if flip then 1.0 else  0.0
             //    else failwith "Bad case in intersectLineParametersInfinite"
-            //IntersectionKind.Parallel , u, v
+            //IntersectionKind.Parallel, u, v
 
             // Optimized logic:
             if d01 then
@@ -1424,24 +1425,24 @@ type Line3D =
                     IntersectionKind.Parallel, 1.0, if flip then 1.0 else  0.0   // k starts after lnA ends
                 else
                     if d00 then
-                        if d11 then IntersectionKind.Parallel ,1.0 , lnB.ClosestParameter(lnA.To)   // k is overlapping lnA end
-                        else        IntersectionKind.Parallel ,lnA.ClosestParameter(lnB.From), 0.0  // k is on both ends shorter than lnA
+                        if d11 then IntersectionKind.Parallel, 1.0, lnB.ClosestParameter(lnA.To)   // k is overlapping lnA end
+                        else        IntersectionKind.Parallel, lnA.ClosestParameter(lnB.From), 0.0  // k is on both ends shorter than lnA
                     else
-                        IntersectionKind.Parallel, 0.0 , lnB.ClosestParameter(lnA.From) // k is overlapping lnA start // lnA is on both ends shorter than k
+                        IntersectionKind.Parallel, 0.0, lnB.ClosestParameter(lnA.From) // k is overlapping lnA start // lnA is on both ends shorter than k
             else
-                IntersectionKind.Parallel, 0.0 , if flip then 0.0 else  1.0  // lnA starts after k ends
+                IntersectionKind.Parallel, 0.0, if flip then 0.0 else  1.0  // lnA starts after k ends
 
 
         | IntersectionParam.Coincident ->
             // cases Overlapping | Continuation  | CoincidentApart | Identical
-            let lv  =  lnA.Direction // Vec(ax,ay,az)
-            let llv = lnB.Direction //Vec(bx,by,bz)
+            let lv = lnA.Direction // Vec(ax, ay, az)
+            let llv = lnB.Direction //Vec(bx, by, bz)
             let flip = lv*llv < 0.0
             let k = if flip then lnB.Reversed else lnB
-            let l0k0 = Vec.create(lnA.From,k.From)
-            let l0k1 = Vec.create(lnA.From,k.To)
-            let l1k0 = Vec.create(lnA.To  ,k.From)
-            let l1k1 = Vec.create(lnA.To  ,k.To)
+            let l0k0 = Vec.create(lnA.From, k.From)
+            let l0k1 = Vec.create(lnA.From, k.To)
+            let l1k0 = Vec.create(lnA.To  , k.From)
+            let l1k1 = Vec.create(lnA.To  , k.To)
             let coTolSq = coincidentTolerance*coincidentTolerance
             let z00 = l0k0.LengthSq < coTolSq
             let z01 = l0k1.LengthSq < coTolSq
@@ -1466,22 +1467,22 @@ type Line3D =
                 // Full logic:
                 //if   not d00 && not d01 && not d10 && not d11 then
                 //                                                    Printfn.gray "// lnA starts after k ends"
-                //                                                    CoincidentApart,0.0, if flip then 0.0 else  1.0
+                //                                                    CoincidentApart, 0.0, if flip then 0.0 else  1.0
                 //elif not d00 &&     d01 && not d10 && not d11 then
                 //                                                    Printfn.gray "// k is overlapping lnA start"
-                //                                                    Overlapping    ,0.0, if flip then 0.0 else  1.0
+                //                                                    Overlapping    , 0.0, if flip then 0.0 else  1.0
                 //elif     d00 &&     d01 && not d10 && not d11 then
                 //                                                    Printfn.gray "// k is on both ends shorter than lnA  "
-                //                                                    Overlapping    ,lnA.ClosestParameter(lnB.From), 1.0
+                //                                                    Overlapping    , lnA.ClosestParameter(lnB.From), 1.0
                 //elif not d00 &&     d01 && not d10 &&     d11 then
                 //                                                    Printfn.gray "// lnA is on both ends shorter than k  "
-                //                                                    Overlapping    ,0.0  , lnB.ClosestParameter(lnA.To)
+                //                                                    Overlapping    , 0.0  , lnB.ClosestParameter(lnA.To)
                 //elif     d00 &&     d01 && not d10 &&     d11 then
                 //                                                    Printfn.gray "// k is overlapping lnA end "
-                //                                                    Overlapping    ,1.0  , if flip then 1.0 else  0.0
+                //                                                    Overlapping    , 1.0  , if flip then 1.0 else  0.0
                 //elif     d00 &&     d01 &&     d10 &&     d11 then
                 //                                                    Printfn.gray "// k starts after lnA ends"
-                //                                                    CoincidentApart,1.0, if flip then 1.0 else  0.0
+                //                                                    CoincidentApart, 1.0, if flip then 1.0 else  0.0
                 //else failwith "Bad case in intersectLineParametersInfinite"
 
                 if d01 then
@@ -1492,10 +1493,10 @@ type Line3D =
                             if  d00 then Overlapping  , 1.0  , if flip then 1.0 else  0.0  // k is overlapping lnA end
                             else         Overlapping  , 0.0  , lnB.ClosestParameter(lnA.To)   // lnA is on both ends shorter than k
                         else
-                            if d00 then Overlapping , lnA.ClosestParameter(lnB.From), 1.0   // k is on both ends shorter than lnA
-                            else        Overlapping , 0.0 , if flip then 0.0 else  1.0   // k is overlapping lnA start
+                            if d00 then Overlapping, lnA.ClosestParameter(lnB.From), 1.0   // k is on both ends shorter than lnA
+                            else        Overlapping, 0.0, if flip then 0.0 else  1.0   // k is overlapping lnA start
                 else
-                    CoincidentApart, 0.0 , if flip then 0.0 else  1.0    // lnA starts after k ends
+                    CoincidentApart, 0.0, if flip then 0.0 else  1.0    // lnA starts after k ends
 
         |IntersectionParam.TooShortA     -> TooShortA    , 0.5 , lnB.ClosestParameter lnA.Mid
         |IntersectionParam.TooShortB     -> TooShortB    , lnA.ClosestParameter lnB.Mid, 0.5
@@ -1545,7 +1546,7 @@ type Line3D =
     /// The ends are meeting in exactly one point. But orientation is flipped.
     /// The returned points indicate which ends these are.
     ///
-    /// | Identical: The Lines are identical , in orientation too with in 1e-6 tolerance.
+    /// | Identical: The Lines are identical, in orientation too with in 1e-6 tolerance.
     /// The returned points still indicate where the lines start and end.
     ///
     /// | IdenticalFlipped: The Lines are identical. But orientation is flipped.
@@ -1575,25 +1576,25 @@ type Line3D =
     ///  If parallel lines are closer than this the 'Coincident' union case is returned .</param>
     ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
     ///  If one or both lines are shorter than the 'TooShort' union case is returned .</param>
-    static member inline intersection  (lnA:Line3D ,
+    static member inline intersection  (lnA:Line3D,
                                         lnB:Line3D,
                                         [<OPT;DEF(1e-6)>] skewTolerance:float,
                                         [<OPT;DEF(RelAngleDiscriminant.``0.25``)>] relAngleDiscriminant:float<RelAngleDiscriminant.relAngDiscr>,
                                         [<OPT;DEF(1e-6)>] coincidentTolerance:float,
                                         [<OPT;DEF(1e-6)>] tooShortTolerance:float
                                         ) : IntersectionKind*Pnt*Pnt =
-        let k,u,v =  Line3D.intersectionParam(lnA , lnB, skewTolerance, relAngleDiscriminant, coincidentTolerance, tooShortTolerance)
+        let k, u, v = Line3D.intersectionParam(lnA, lnB, skewTolerance, relAngleDiscriminant, coincidentTolerance, tooShortTolerance)
         match k with
         | Intersecting | IntersectingEndsBoth | IntersectingEndsFirst | IntersectingEndsSecond
         | Continuation | ContinuationFlipped ->
             let p = lnA.EvaluateAt u
-            k,p,p // return same point twice ?
+            k, p, p // return same point twice ?
         | Skew | Apart  | IntersectionKind.Parallel
         | Overlapping | CoincidentApart | Identical| IdenticalFlipped
         | TooShortA | TooShortB | TooShortBoth -> // TODO or check if the zero length line is actually on the other line ?
-            let a  =  lnA.EvaluateAt u
-            let b  = lnB.EvaluateAt v
-            k,a,b
+            let a =  lnA.EvaluateAt u
+            let b = lnB.EvaluateAt v
+            k, a, b
 
 
     /// <summary>Returns the single points where these two finite lines actually intersect each other. Or None
@@ -1611,14 +1612,14 @@ type Line3D =
     ///  If parallel lines are closer than this the 'Coincident' union case is returned .</param>
     ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
     ///  If one or both lines are shorter than the 'TooShort' union case is returned .</param>
-    static member intersectionPoint (lnA:Line3D ,
+    static member intersectionPoint (lnA:Line3D,
                                     lnB:Line3D,
                                     [<OPT;DEF(1e-6)>] skewTolerance:float,
                                     [<OPT;DEF(RelAngleDiscriminant.``0.25``)>] relAngleDiscriminant:float<RelAngleDiscriminant.relAngDiscr>,
                                     [<OPT;DEF(1e-6)>] coincidentTolerance:float,
                                     [<OPT;DEF(1e-6)>] tooShortTolerance:float
                                     ) :  option<Pnt> =
-        let k,u,v =  Line3D.intersectionParam(lnA , lnB, skewTolerance, relAngleDiscriminant, coincidentTolerance, tooShortTolerance)
+        let k, u, v = Line3D.intersectionParam(lnA, lnB, skewTolerance, relAngleDiscriminant, coincidentTolerance, tooShortTolerance)
         match k with
         | Intersecting | IntersectingEndsBoth | IntersectingEndsFirst | IntersectingEndsSecond
         | Continuation | ContinuationFlipped ->
@@ -1635,16 +1636,16 @@ type Line3D =
     /// For parallel lines the distance is calculate form the actual finit elements. (like in the other cases.)
     /// So it is maybe bigger than the parallel offset.
     /// For Coincident and intersecting lines below a tolerance of 1e-16 this always returns 0.0.
-    static member inline distanceBetweenLines(lnA , lnB) : float=
-        let k,u,v =  Line3D.intersectionParam(lnA , lnB, 1e-16) // use lower skew tolerance here to not return 0.0 if it actually bigger
+    static member inline distanceBetweenLines(lnA, lnB) : float=
+        let k, u, v = Line3D.intersectionParam(lnA, lnB, 1e-16) // use lower skew tolerance here to not return 0.0 if it actually bigger
         match k with
         | Intersecting | IntersectingEndsBoth | IntersectingEndsFirst | IntersectingEndsSecond
         | Continuation | ContinuationFlipped | Overlapping   | Identical| IdenticalFlipped ->
             0.0
         | Skew | Apart  | IntersectionKind.Parallel | CoincidentApart
         | TooShortA | TooShortB | TooShortBoth ->
-            let a  = lnA.EvaluateAt u
-            let b  = lnB.EvaluateAt v
+            let a = lnA.EvaluateAt u
+            let b = lnB.EvaluateAt v
             Pnt.distance a b
 
 
@@ -1656,7 +1657,7 @@ type Line3D =
     /// It first calculates the signed volume of the Parallelepiped define by three vectors from the four corners of the lines.
     /// Then it checks if it is smaller than given volumeTolerance fo Parallelepiped.
     /// Using the VolumeTolerance makes a positive result not only dependent on the distance of the two 3D lines from each other but also on their lengths.
-    static member inline areInSamePlaneTol volumeTolerance (lnA:Line3D , lnB:Line3D) =
+    static member inline areInSamePlaneTol volumeTolerance (lnA:Line3D, lnB:Line3D) =
         // Two non-parallel lines p1+Rv1 and p2+Rv2 intersect if and only if (v1×v2)⋅(p1−p2)=0
         // https://math.stackexchange.com/questions/697124/how-to-determine-if-two-lines-in-3d-intersect
         // vector of line lnA:
