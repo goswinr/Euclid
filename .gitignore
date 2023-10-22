@@ -9,7 +9,7 @@
 
 # Fable
 *.fs.js
-
+fable_modules/
 
 # Paket dependency manager
 .paket/paket.exe

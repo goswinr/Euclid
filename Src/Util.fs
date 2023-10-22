@@ -1,3 +1,11 @@
+// a workaround for Fable compiler to not fail on DataContract attribute
+// see https://github.com/fable-compiler/Fable/issues/2253
+#if FABLE_COMPILER 
+namespace System.Runtime.Serialization
+type DataContract() = inherit System.Attribute() // just shadow the real attribute
+type DataMember()   = inherit System.Attribute() // just shadow the real attribute
+#endif
+
 namespace Euclid
 open System
 
