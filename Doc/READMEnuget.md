@@ -34,6 +34,14 @@ For the full API see [fuget.org](https://www.fuget.org/packages/Euclid) for now.
 [MIT](https://raw.githubusercontent.com/goswinr/Euclid/main/LICENSE.txt)
 
 ### Release Notes
+`0.4.0`
+- add Line.withLengthFromMid
+- rename isAngleLessThan functions
+- add spherical interpolation (slerp) for vectors
+- rename Length to Width on Boxes and Rects
+- rename Width to Height2D on Rects
+- rename Width to Depth on Boxes
+- add EdgeMethods on Rects and Boxes
 
 `0.3.0`
 - renamed OrthoMatrix to RigidMatrix

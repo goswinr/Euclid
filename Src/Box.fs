@@ -9,13 +9,13 @@ open System.Runtime.Serialization // for serialization of struct fields only but
 /// An immutable 3D Box with any rotation in 3D space.
 /// Described by an Origin and three Edge vectors.
 /// Similar to PPlane, however the three vectors are not unitized.
-/// The X, Y and Z axes are also called Length, Width and Height.
+/// The X, Y and Z axes are also called Width, Depth and Height3D.
 /// This implementation guarantees the box to be always valid.
 /// That means the Min X, Y and Z axes cannot be flipped individually.
 /// However the length of one of these axes might still be zero.
 ///
 ///   local        local
-///   Z-Axis       Y-Axis
+///   Z-Axis       Y-Axis (Depth)
 ///   ^           /
 ///   |   7      /        6
 ///   |   +---------------+
@@ -28,7 +28,7 @@ open System.Runtime.Serialization // for serialization of struct fields only but
 ///   |  / 3          |  / 2
 ///   | /             | /
 ///   |/              |/     local
-///   +---------------+----> X-Axis
+///   +---------------+----> X-Axis (Width)
 ///   0               1
 [<Struct; NoEquality; NoComparison>] // because its made up from floats
 [<IsReadOnly>]
@@ -41,11 +41,11 @@ type Box =
     [<DataMember>] val Origin: Pnt
 
     /// The Edge vector representing the X-axis of the Box.
-    /// Also called Length.
+    /// Also called Width.
     [<DataMember>] val Xaxis: Vec
 
     /// The Edge vector representing the Y-axis of the Box.
-    /// Also called Width.
+    /// Also called Depth.
     [<DataMember>] val Yaxis: Vec
 
     /// The Edge vector representing the Z-axis of the Box.
@@ -57,28 +57,39 @@ type Box =
     internal new (origin, axisX, axisY, axisZ) = {Origin=origin; Xaxis=axisX; Yaxis=axisY; Zaxis=axisZ}
 
     /// The size in X direction, same as member box.SizeX.
-    member inline b.Length = b.Xaxis.Length
+    member inline b.Width = b.Xaxis.Length
 
-    /// The size in X direction, same as member box.Length.
+    /// The size in X direction, same as member box.Width.
     member inline b.SizeX = b.Xaxis.Length
 
     /// The size in Y direction, same as member box.SizeY.
-    member inline b.Width = b.Yaxis.Length
+    member inline b.Depth = b.Yaxis.Length
 
-    /// The size in Y direction, same as member box.Width.
+    /// The size in Y direction, same as member box.Depth.
     member inline b.SizeY = b.Yaxis.Length
 
     /// The size in Z direction, same as member box.SizeZ.
-    member inline b.Height = b.Zaxis.Length
+    member inline b.Height3D = b.Zaxis.Length
 
-    /// The size in Z direction, same as member box.Height.
+    /// The size in Z direction, same as member box.Height3D.
     member inline b.SizeZ = b.Zaxis.Length
 
+
+    /// Nicely formatted string representation of the Box including its size.
+    override b.ToString() =
+        sprintf "Euclid.Box %s x %s x %s (Origin:%s| X-ax:%s| Y-ax:%s| Z-ax:%s)"
+            (Format.float b.SizeX) (Format.float b.SizeY) (Format.float b.SizeZ)
+            b.Origin.AsString b.Xaxis.AsString b.Yaxis.AsString b.Zaxis.AsString
+
+
+    /// Format Box into string with nice floating point number formatting of X, Y and Z size only.
+    /// But without type name as in v.ToString()
+    member b.AsString = sprintf "%s x %s x %s" (Format.float b.SizeX)  (Format.float b.SizeY) (Format.float b.SizeZ)
 
     /// Returns point 0 of the box, same box.Origin.
     ///
     ///   local        local
-    ///   Z-Axis       Y-Axis
+    ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -91,14 +102,14 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-Axis (Width)
     ///   0               1
     member inline b.Pt0 = b.Origin
 
     /// Returns point 1 of the box.
     ///
     ///   local        local
-    ///   Z-Axis       Y-Axis
+    ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -111,14 +122,14 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-Axis (Width)
     ///   0               1
     member inline b.Pt1 = b.Origin + b.Xaxis
 
     /// Returns point 2 of the box.
     ///
     ///   local        local
-    ///   Z-Axis       Y-Axis
+    ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -131,14 +142,14 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-Axis (Width)
     ///   0               1
     member inline b.Pt2 = b.Origin + b.Xaxis + b.Yaxis
 
     /// Returns point 3 of the box.
     ///
     ///   local        local
-    ///   Z-Axis       Y-Axis
+    ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -151,14 +162,14 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-Axis (Width)
     ///   0               1
     member inline b.Pt3 = b.Origin + b.Yaxis
 
     /// Returns point 4 of the box.
     ///
     ///   local        local
-    ///   Z-Axis       Y-Axis
+    ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -171,14 +182,14 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-Axis (Width)
     ///   0               1
     member inline b.Pt4 = b.Origin + b.Zaxis
 
     /// Returns point 5 of the box.
     ///
     ///   local        local
-    ///   Z-Axis       Y-Axis
+    ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -191,14 +202,14 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-Axis (Width)
     ///   0               1
     member inline b.Pt5 = b.Origin + b.Xaxis + b.Zaxis
 
     /// Returns point 6 of the box.
     ///
     ///   local        local
-    ///   Z-Axis       Y-Axis
+    ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -211,14 +222,14 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-Axis (Width)
     ///   0               1
     member inline b.Pt6 = b.Origin + b.Xaxis + b.Yaxis + b.Zaxis
 
     /// Returns point 7 of the box.
     ///
     ///   local        local
-    ///   Z-Axis       Y-Axis
+    ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -231,7 +242,7 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-Axis (Width)
     ///   0               1
     member inline b.Pt7 = b.Origin + b.Yaxis + b.Zaxis
 
@@ -262,22 +273,12 @@ type Box =
     /// The center of the Box.
     member inline b.Center = b.Origin + b.Xaxis*0.5 + b.Yaxis*0.5 + b.Zaxis*0.5
 
-    /// Nicely formatted string representation of the Box including its size.
-    override b.ToString() =
-        sprintf "Euclid.Box %s x %s x %s (Origin:%s| X-ax:%s| Y-ax:%s| Z-ax:%s)"
-            (Format.float b.Length)  (Format.float b.Width) (Format.float b.Height)
-            b.Origin.AsString b.Xaxis.AsString b.Yaxis.AsString b.Zaxis.AsString
-
-
-    /// Format Box into string with nice floating point number formatting of X, Y and Z size only.
-    /// But without type name as in v.ToString()
-    member b.AsString = sprintf "%s x %s x %s" (Format.float b.Length)  (Format.float b.Width) (Format.float b.Height)
 
     /// Returns the bottom corners of the Box in Counter-Clockwise order, starting at Origin.
     /// Then the top corners staring above Origin. Returns an array of 8 Points.
     ///
     ///   local        local
-    ///   Z-Axis       Y-Axis
+    ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -290,9 +291,9 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-Axis (Width)
     ///   0               1
-    member b.Corners :Pnt[] =
+    member b.Points :Pnt[] =
         let p0 = b.Origin
         let p1 = p0 + b.Xaxis
         let p4 = p0 + b.Zaxis
@@ -312,7 +313,7 @@ type Box =
     /// Returns Origin at point 4, X-Axis at point 5, Y-Axis at point 7.
     ///
     ///   local        local
-    ///   Z-Axis       Y-Axis
+    ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -325,7 +326,7 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-Axis (Width)
     ///   0               1
     member b.TopFace :Rect3D = Rect3D(b.Origin + b.Zaxis, b.Xaxis, b.Yaxis)
 
@@ -334,7 +335,7 @@ type Box =
     /// Returns Origin at point 0, X-Axis at point 1, Y-Axis at point 3.
     ///
     ///   local        local
-    ///   Z-Axis       Y-Axis
+    ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -347,7 +348,7 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-Axis (Width)
     ///   0               1
     member b.BottomFace = Rect3D(b.Origin, b.Xaxis, b.Yaxis)
 
@@ -357,7 +358,7 @@ type Box =
     /// Returns Origin at point 0, X-Axis at point 1, Y-Axis at point 4.
     ///
     ///   local        local
-    ///   Z-Axis       Y-Axis
+    ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -370,7 +371,7 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-Axis (Width)
     ///   0               1
     member b.FrontFace = Rect3D(b.Origin, b.Xaxis, b.Zaxis)
 
@@ -378,7 +379,7 @@ type Box =
     /// Returns Origin at point 3, X-Axis at point 2, Y-Axis at point 7.
     ///
     ///   local        local
-    ///   Z-Axis       Y-Axis
+    ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -391,7 +392,7 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-Axis (Width)
     ///   0               1
     member b.BackFace = Rect3D(b.Origin + b.Yaxis, b.Xaxis, b.Zaxis)
 
@@ -399,7 +400,7 @@ type Box =
     /// Returns Origin at point 1, X-Axis at point 2, Y-Axis at point 5.
     ///
     ///   local        local
-    ///   Z-Axis       Y-Axis
+    ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -412,7 +413,7 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-Axis (Width)
     ///   0               1
     member b.RightFace = Rect3D(b.Origin + b.Xaxis, b.Yaxis, b.Zaxis)
 
@@ -420,7 +421,7 @@ type Box =
     /// Returns Origin at point 1, X-Axis at point 2, Y-Axis at point 5.
     ///
     ///   local        local
-    ///   Z-Axis       Y-Axis
+    ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -433,7 +434,7 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-Axis (Width)
     ///   0               1
     member b.LeftFace = Rect3D(b.Origin + b.Xaxis, b.Yaxis, b.Zaxis)
 
@@ -471,14 +472,14 @@ type Box =
     /// Returns Box expanded by distance on all six sides.
     /// Does check for underflow if distance is negative and raises EuclidException.
     static member expand dist (b:Box) =
-        let len = b.Length
-        let wid = b.Width
-        let hei = b.Height
+        let siX = b.SizeX
+        let siY = b.SizeY
+        let hei = b.SizeZ
         let d = dist * -2.0
-        if len<=d || wid<=d || hei<=d then
+        if siX<=d || siY<=d || hei<=d then
             EuclidException.Raise "Euclid.Box.expand: Box %s is too small to expand by negative distance %s"  b.AsString (Format.float dist)
-        let x = b.Xaxis * (dist / len)
-        let y = b.Yaxis * (dist / wid)
+        let x = b.Xaxis * (dist / siX)
+        let y = b.Yaxis * (dist / siY)
         let z = b.Zaxis * (dist / hei)
         Box(b.Origin-x-y-z, b.Xaxis+x*2., b.Yaxis+y*2., b.Zaxis+z*2.)
 
@@ -486,15 +487,15 @@ type Box =
     /// Does check for overflow if distance is negative and fails.
     /// distLen, distWid and distHei are for X, Y and Z-axis respectively.
     static member expandXYZ distLen distWid distHei (b:Box) =
-        let len = b.Length
-        let wid = b.Width
-        let hei = b.Height
-        if len <= distLen * -2.0 then EuclidException.Raise "Euclid.Box.expandXYZ: Box %s is too small to expand by negative distance distLen %s"  b.AsString (Format.float distLen)
-        if wid <= distWid * -2.0 then EuclidException.Raise "Euclid.Box.expandXYZ: Box %s is too small to expand by negative distance distWid %s"  b.AsString (Format.float distWid)
+        let siX = b.SizeX
+        let siY = b.SizeY
+        let hei = b.SizeZ
+        if siX <= distLen * -2.0 then EuclidException.Raise "Euclid.Box.expandXYZ: Box %s is too small to expand by negative distance distLen %s"  b.AsString (Format.float distLen)
+        if siY <= distWid * -2.0 then EuclidException.Raise "Euclid.Box.expandXYZ: Box %s is too small to expand by negative distance distWid %s"  b.AsString (Format.float distWid)
         if hei <= distHei * -2.0 then EuclidException.Raise "Euclid.Box.expandXYZ: Box %s is too small to expand by negative distance distHei %s"  b.AsString (Format.float distHei)
-        let x = b.Xaxis * (distLen / b.Length)
-        let y = b.Yaxis * (distWid / b.Width )
-        let z = b.Zaxis * (distHei / b.Height)
+        let x = b.Xaxis * (distLen / b.SizeX)
+        let y = b.Yaxis * (distWid / b.SizeY )
+        let z = b.Zaxis * (distHei / b.SizeZ)
         Box(b.Origin-x-y-z, b.Xaxis+x*2., b.Yaxis+y*2., b.Zaxis+z*2.)
 
     /// Give PPlane and x, y and Z size.
@@ -503,23 +504,23 @@ type Box =
 
     /// Give 3D Bounding Box.
     static member createFromBoundingBox (b:BBox) =
-        Box(b.MinPnt, Vec.Xaxis*b.Length, Vec.Yaxis*b.Width, Vec.Zaxis*b.Height)
+        Box(b.MinPnt, Vec.Xaxis*b.SizeX, Vec.Yaxis*b.SizeY, Vec.Zaxis*b.SizeZ)
 
     /// Give 2D Rectangle and Z lower and upper position.
     static member createFromRect2D (r:Rect2D, zLow, zHigh) =
-        Box(r.Origin.WithZ zLow, 
+        Box(r.Origin.WithZ zLow,
             r.Xaxis.AsVec,
-            r.Yaxis.AsVec, 
+            r.Yaxis.AsVec,
             Vec.Zaxis*(zHigh-zLow))
 
      /// Give 2D Rectangle and Z lower and upper position.
     static member createFromRect3D (r:Rect3D, zLow, zHigh) =
         let z = Vec.cross(r.Xaxis, r.Yaxis)
-        Box(r.Origin  + z.WithLength(zLow), 
+        Box(r.Origin  + z.WithLength(zLow),
             r.Xaxis,
-            r.Yaxis, 
+            r.Yaxis,
             z.WithLength(zHigh-zLow)
-        ) 
+        )
 
     /// Move the Box by a vector.
     static member move (v:Vec) (b:Box) =

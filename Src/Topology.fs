@@ -14,7 +14,7 @@ module internal TopologyUtil =
 
     
     // Like minIndexBy. But starting to search only from a given index
-    let inline  minIndexByFrom  (compareBy: 'T -> 'U)  fromIdx (xs:ResizeArray<'T>) : int =
+    let inline minIndexByFrom  (compareBy: 'T -> 'U)  fromIdx (xs:ResizeArray<'T>) : int =
         let mutable idx = fromIdx
         let mutable mi = compareBy xs.[fromIdx]
         for j = fromIdx + 1 to xs.LastIndex do

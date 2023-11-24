@@ -69,8 +69,8 @@ type Quaternion =
     /// Same as q.Conjugate.
     member inline q.Inverse = Quaternion (-q.X, -q.Y, -q.Z, q.W)
 
-    // Should always be 1.0
-    //member q.Magnitude = sqrt (q.X*q.X + q.Y*q.Y + q.Z*q.Z + q.W*q.W)
+    [<Obsolete("The Magnitude is always one. This function only exist for testing.")>]
+    member q.Magnitude = sqrt (q.X*q.X + q.Y*q.Y + q.Z*q.Z + q.W*q.W)
 
     /// Returns the angle in Radians.
     member inline q.AngleInRadians =
@@ -85,6 +85,65 @@ type Quaternion =
     /// The length of this vector is less than one.
     member inline q.Axis = Vec(q.X, q.Y, q.Z)
 
+    /// Get a new Quaternion that rotates around the same axis 
+    /// but with the different angle. In Radians.
+    member q.setAngleInRadians (angleInRadians) =
+        let length = sqrt(q.X*q.X + q.Y*q.Y + q.Z*q.Z)
+        if length <  zeroLengthTolerance then
+            EuclidException.Throw1 "Euclid.Quaternion.setAngleInRadians failed. The length of the axis is too short:" q.Axis
+        let sc = 1. / length // inverse for unitizing vector:
+        let angHalf = angleInRadians * 0.5
+        let sa = sc * sin (angHalf)
+        Quaternion ( q.X * sa, 
+                     q.Y * sa, 
+                     q.Z * sa, 
+                     cos (angHalf) )
+    
+    /// Get a new Quaternion that rotates around the same axis
+    /// but with the different angle. In Degree.
+    member inline q.setAngleInDegrees (angleInDegrees) =
+        q.setAngleInRadians (toRadians angleInDegrees)
+    
+    (* TODO the interpolation follows a Cone. is that correct ?
+
+    /// Does a spherical linear interpolation between quaternions. 
+    /// 'rel' represents the amount of rotation between this quaternion (where rel is 0) 
+    /// and the other (where rel is 1). 
+    /// The parameter 'rel' is NOT clamped.    
+    member q.Slerp (other:Quaternion, rel) =
+        if   rel = 0.0 then q
+        elif rel = 1.0 then other
+        else
+            let x = q.X
+            let y = q.Y
+            let z = q.Z
+            let w = q.W
+            let x2 = other.X
+            let y2 = other.Y
+            let z2 = other.Z
+            let w2 = other.W
+            let cosHalfTheta = w * w2 + x * x2 + y * y2 + z * z2        
+            let sqrSinHalfTheta = 1.0 - cosHalfTheta * cosHalfTheta
+            if sqrSinHalfTheta <= 1e-18 then
+                let s = 1.0 - rel
+                Quaternion ( s * x + rel * x2, s * y + rel * y2, s * z + rel * z2,s * w + rel * w2)
+            else
+                let sinHalfTheta = sqrt sqrSinHalfTheta
+                let halfTheta = atan2 sinHalfTheta cosHalfTheta
+                let ratioA = sin ((1.0 - rel) * halfTheta) / sinHalfTheta
+                let ratioB = sin (rel * halfTheta) / sinHalfTheta
+                Quaternion (
+                    x * ratioA + x2 * ratioB, 
+                    y * ratioA + y2 * ratioB, 
+                    z * ratioA + z2 * ratioB,
+                    w * ratioA + w2 * ratioB 
+                    )
+    *)
+
+    //-----------------------------------------------
+    //------------static members---------------------
+    //-----------------------------------------------
+
     /// This constructor does unitizing too.
     static member create (x, y, z, w) =
         let l = sqrt(x*x  + y*y + z*z + w*w )
@@ -97,11 +156,12 @@ type Quaternion =
     static member inline createDirectlyUnchecked (x, y, z, w) =
         Quaternion(x, y, z, w)
 
-    /// The identity quaternion that does not doe any rotation.
+    /// The identity quaternion that does not do any rotation.
     /// This is Quaternion(x=0, y=0, z=0, w=1)
     static member inline identity =
         Quaternion(0, 0, 0, 1)
 
+   
     /// The created rotation is Clockwise looking in the direction of the vector.
     /// The vector may be of any length but zero.
     static member createFromRadians (axis:Vec, angleInRadians) =
@@ -186,7 +246,6 @@ type Quaternion =
                                   , fu * tu  + 1.0
                                   )
 
-   
     /// Angles are given in Degrees,
     /// The order in which to apply rotations is X-Y-Z,
     /// which means that the object will first be rotated around its X-axis,
@@ -343,7 +402,7 @@ type Quaternion =
 
     /// Rotate by Quaternion around Origin.
     /// Multiplies (or applies) a Quaternion to a 3D vector.
-    static member inline  ( * ) ( v:Vec, q:Quaternion) =
+    static member inline ( * ) ( v:Vec, q:Quaternion) =
         // adapted from https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
         let x = v.X
         let y = v.Y
@@ -352,19 +411,18 @@ type Quaternion =
         let qy = q.Y
         let qz = q.Z
         let qw = q.W
-        // calculate quat * vector
-        let ix =  qw * x + qy * z - qz * y
-        let iy =  qw * y + qz * x - qx * z
-        let iz =  qw * z + qx * y - qy * x
-        let iw = -qx * x - qy * y - qz * z
-        // calculate result * inverse quat
-        Vec ( ix * qw + iw * - qx + iy * - qz - iz * - qy
-            , iy * qw + iw * - qy + iz * - qx - ix * - qz
-            , iz * qw + iw * - qz + ix * - qy - iy * - qx )
+        // t = 2 * cross( q.xyz, v );
+        let tx = 2.0 * ( qy * z - qz * y )
+        let ty = 2.0 * ( qz * x - qx * z )
+        let tz = 2.0 * ( qx * y - qy * x )
+        // v + q.w * t + cross( q.xyz, t );
+        Vec    ( x + qw * tx + qy * tz - qz * ty ,
+                 y + qw * ty + qz * tx - qx * tz ,
+                 z + qw * tz + qx * ty - qy * tx )
 
     /// Rotate by Quaternion around Origin.
     /// Multiplies (or applies) a Quaternion to a 3D unit-vector.
-    static member inline  ( * ) ( v:UnitVec, q:Quaternion) =
+    static member inline ( * ) ( v:UnitVec, q:Quaternion) =
         // adapted from https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
         let x = v.X
         let y = v.Y
@@ -373,20 +431,19 @@ type Quaternion =
         let qy = q.Y
         let qz = q.Z
         let qw = q.W
-        // calculate quat * vector
-        let ix =  qw * x + qy * z - qz * y
-        let iy =  qw * y + qz * x - qx * z
-        let iz =  qw * z + qx * y - qy * x
-        let iw = -qx * x - qy * y - qz * z
-        // calculate result * inverse quat
-        UnitVec ( ix * qw + iw * - qx + iy * - qz - iz * - qy
-                , iy * qw + iw * - qy + iz * - qx - ix * - qz
-                , iz * qw + iw * - qz + ix * - qy - iy * - qx )
+        // t = 2 * cross( q.xyz, v );
+        let tx = 2.0 * ( qy * z - qz * y )
+        let ty = 2.0 * ( qz * x - qx * z )
+        let tz = 2.0 * ( qx * y - qy * x )
+        // v + q.w * t + cross( q.xyz, t );
+        UnitVec( x + qw * tx + qy * tz - qz * ty ,
+                 y + qw * ty + qz * tx - qx * tz ,
+                 z + qw * tz + qx * ty - qy * tx )
 
 
     /// Rotate by Quaternion around Origin.
     /// Multiplies (or applies) a Quaternion to a 3D point.
-    static member inline  ( * ) ( p:Pnt, q:Quaternion) =
+    static member inline ( * ) ( p:Pnt, q:Quaternion) =
         // adapted from https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
         let x = p.X
         let y = p.Y
@@ -395,12 +452,17 @@ type Quaternion =
         let qy = q.Y
         let qz = q.Z
         let qw = q.W
-        // calculate quat * vector
-        let ix =  qw * x + qy * z - qz * y
-        let iy =  qw * y + qz * x - qx * z
-        let iz =  qw * z + qx * y - qy * x
-        let iw = -qx * x - qy * y - qz * z
-        // calculate result * inverse quat
-        Pnt ( ix * qw + iw * - qx + iy * - qz - iz * - qy
-            , iy * qw + iw * - qy + iz * - qx - ix * - qz
-            , iz * qw + iw * - qz + ix * - qy - iy * - qx )
+        // t = 2 * cross( q.xyz, v );
+        let tx = 2.0 * ( qy * z - qz * y )
+        let ty = 2.0 * ( qz * x - qx * z )
+        let tz = 2.0 * ( qx * y - qy * x )
+        // v + q.w * t + cross( q.xyz, t );
+        Pnt( x + qw * tx + qy * tz - qz * ty ,
+             y + qw * ty + qz * tx - qx * tz ,
+             z + qw * tz + qx * ty - qy * tx )
+
+    
+    //static member inline ( * ) ( p:Line3D, q:Quaternion) = // defined in Line3D.fs
+
+    //static member inline slerp (start:Quaternion, ende:Quaternion, rel) = start.Slerp(ende, rel)
+        

@@ -23,7 +23,7 @@ type EuclidException (s:string) =
     static member Raise msg = Printf.kprintf (fun s -> raise (EuclidException(s))) msg
 
     /// This function is much smaller when it gets inlined compared to the Raise (Printf.kprintf) version
-    static member Throw1 msg v = raise (EuclidException(msg + ": " + v.ToString()))
+    static member Throw1 msg (v:'T) = raise (EuclidException(msg + ": " + v.ToString()))
 
 /// Exception for attempting to divide by a 0.0 or almost 0.0 value.
 /// Almost 0.0 is defined by Util.zeroLengthTolerance as 1e-12.
@@ -33,7 +33,7 @@ type EuclidDivByZeroException (s:string) =
     static member Raise msg = Printf.kprintf (fun s -> raise (EuclidDivByZeroException(s))) msg
     
     /// This function is much smaller when it gets inlined compared to the Raise (Printf.kprintf) version
-    static member Throw1 msg v = raise (EuclidDivByZeroException(msg + ": " + v.ToString()))
+    static member Throw1 msg (v:'T) = raise (EuclidDivByZeroException(msg + ": " + v.ToString()))
 
 /// Math Utility functions and values for use within Euclid.
 module Util =

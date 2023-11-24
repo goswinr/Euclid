@@ -116,7 +116,7 @@ module internal ResizeArray =
         /// <param name="projection">The function to transform the elements into a type supporting comparison.</param>
         /// <param name="xs">The input ResizeArray.</param>
         /// <returns>The index of the maximum element.</returns>
-        let inline  maxIndexBy (projection : 'T -> 'Key) (xs: ResizeArray<'T>) : int =
+        let inline maxIndexBy (projection : 'T -> 'Key) (xs: ResizeArray<'T>) : int =
             if xs.Count = 0 then EuclidException.Raise "Euclid.ResizeArray.maxIndBy: Failed on empty ResizeArray<%O>" typeof<'T>
             let mutable f = projection xs.[0]
             let mutable mf = f

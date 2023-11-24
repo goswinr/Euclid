@@ -11,17 +11,31 @@ open System.Runtime.Serialization // for serialization of struct fields only but
 /// Sometimes also called 2D Bounding Box.
 /// This implementation guarantees the rectangle to be always valid.
 /// That means the Min X and Y values are always smaller or equal than the respective Max values.
+///
+///   Y-Axis (Height2D)
+///   ^
+///   |
+///   |             2 max X,Y
+/// 3 +------------+
+///   |            |
+///   |            |
+///   |            |
+///   |            |
+///   |            |       local
+///   +------------+-----> X-Axis (Width)
+///  0-min X,Y      1
 [<Struct; NoEquality; NoComparison>]
 [<IsReadOnly>]
 //[<IsByRefLike>]
 [<DataContract>] // for using DataMember on fields
-type BRect = 
+type BRect =
     //[<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
     [<DataMember>] val MinX : float
     [<DataMember>] val MinY : float
     [<DataMember>] val MaxX : float
     [<DataMember>] val MaxY : float
 
+    
     /// Unsafe internal constructor,  public only for inlining.
     [<Obsolete("Unsafe internal constructor,  but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >]
     new (minX, minY, maxX, maxY) =
@@ -32,29 +46,29 @@ type BRect =
 
     /// Nicely formatted string representation of the Bounding Rectangle, including its size.
     override r.ToString() =
-        sprintf "Euclid.BRect: length(x)=%s| width(y)=%s| at X=%s| Y=%s"
+        sprintf "Euclid.BRect: sizeX=%s| sizeY=%s| at X=%s| Y=%s"
             (Format.float (r.MaxX - r.MinX)) (Format.float (r.MaxY - r.MinY)) (Format.float r.MinX) (Format.float r.MinY)
 
     /// Format Bounding Rectangle into string with nice floating point number formatting of size and position.
     /// But without full type name as in rect.ToString()
     member r.AsString =
-        sprintf "length=%s| width=%s| at X=%s| Y=%s"
+        sprintf "sizeX=%s| sizeY=%s| at X=%s| Y=%s"
             (Format.float (r.MaxX - r.MinX)) (Format.float (r.MaxY - r.MinY)) (Format.float r.MinX) (Format.float r.MinY)
 
     /// The point where X, Y and Z are the minimum values.
     member inline r.MinPt = Pt(r.MinX, r.MinY)
 
     /// The point where X, Y and Z are the maximum values.
-    member inline r.MaxPt = Pt(r.MaxX, r.MaxY)
+    member inline r.MaxPt = Pt() //Pt(r.MaxX, r.MaxY)
 
     /// The size in X direction, same as member rect.SizeX.
-    member inline r.Length = r.MaxX - r.MinX
-    /// The size in X direction, same as member rect.Length.
+    member inline r.Width = r.MaxX - r.MinX
+    /// The size in X direction, same as member rect.Width.
     member inline r.SizeX = r.MaxX - r.MinX
 
     /// The size in Y direction, same as member rect.SizeY.
-    member inline r.Width = r.MaxY - r.MinY
-    /// The size in Y direction, same as member rect.Width.
+    member inline r.Height2D = r.MaxY - r.MinY
+    /// The size in Y direction, same as member rect.Height2D.
     member inline r.SizeY = r.MaxY - r.MinY
 
     /// The diagonal 2D vector of the bounding rect. From MinPt to MaxPt.
@@ -64,33 +78,105 @@ type BRect =
     member inline r.Center = Pt( (r.MaxX + r.MinX)*0.5, (r.MaxY + r.MinY)*0.5)
 
     /// Returns the corners of the Bounding Rectangle in Counter-Clockwise order, starting at MinPt.
-    /// Returns an array of 4 Points. 
+    /// Returns an array of 4 Points.
     ///
-    /// 3 +------------+ 2
+    ///   Y-Axis (Height2D)
+    ///   ^
+    ///   |
+    ///   |             2 max X,Y
+    /// 3 +------------+
     ///   |            |
     ///   |            |
     ///   |            |
     ///   |            |
-    ///   |            |
-    /// 0 +------------+ 1
-    ///
-    member r.Corners = 
+    ///   |            |       local
+    ///   +------------+-----> X-Axis (Width)
+    ///  0-min X,Y      1
+    member r.Points =
         [| Pt(r.MinX, r.MinY); Pt(r.MaxX, r.MinY);  Pt(r.MaxX, r.MaxY); Pt(r.MinX, r.MaxY) |]
 
 
     /// Returns a Counter-Clockwise array of 5 Points, starting at MinPt.
     /// Last and first point are the same.
-    ///  
-    /// 3 +------------+ 2
+    ///
+    ///   Y-Axis (Height2D)
+    ///   ^
+    ///   |
+    ///   |             2 max X,Y
+    /// 3 +------------+
     ///   |            |
     ///   |            |
     ///   |            |
     ///   |            |
     ///   |            |
-    /// 0 +------------+ 1
-    member r.CornersLooped = 
+    ///   +------------+-----> X-Axis (Width)
+    ///  0-min X,Y      1
+    member r.PointsLooped =
         [| Pt(r.MinX, r.MinY); Pt(r.MaxX, r.MinY);  Pt(r.MaxX, r.MaxY); Pt(r.MinX, r.MaxY); Pt(r.MinX, r.MinY)|]
 
+    /// The bottom Edge. The line from point 0 to 1
+    ///
+    ///   Y-Axis (Height2D)
+    ///   ^
+    ///   |
+    ///   |             2 max X,Y
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   +------------+-----> X-Axis (Width)
+    ///  0-min X,Y      1
+    member r.Edge01 = Line2D(r.MinX,r.MinY,r.MaxX,r.MinY)
+
+    /// The right Edge. The line from point 1 to 2
+    ///
+    ///   Y-Axis (Height2D)
+    ///   ^
+    ///   |
+    ///   |             2 max X,Y
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   +------------+-----> X-Axis (Width)
+    ///  0-min X,Y      1
+    member r.Edge12 = Line2D(r.MaxX,r.MinY,r.MaxX,r.MaxY)
+
+    /// The top Edge. The line from point 2 to 3
+    ///
+    ///   Y-Axis (Height2D)
+    ///   ^
+    ///   |
+    ///   |             2 max X,Y
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   +------------+-----> X-Axis (Width)
+    ///  0-min X,Y      1
+    member r.Edge23 = Line2D(r.MaxX,r.MaxY,r.MinY,r.MaxX)
+
+    /// The left Edge. The line from point 3 to 0
+    ///
+    ///   Y-Axis (Height2D)
+    ///   ^
+    ///   |
+    ///   |             2 max X,Y
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   +------------+-----> X-Axis (Width)
+    ///  0-min X,Y      1
+    member r.Edge30 = Line2D(r.MinX,r.MaxY,r.MinX,r.MinY)
 
     /// Returns Bounding Rectangle expanded by distance.
     /// Does check for underflow if distance is negative and raises EuclidException.
@@ -326,7 +412,7 @@ type BRect =
         let maxX = center.X + sizeX*0.5
         let maxY = center.Y + sizeY*0.5
         BRect(minX, minY, maxX, maxY)
-        
+
 
     /// Does not verify the order of min and max values.
     static member inline createUnchecked (minX, minY, maxX, maxY) =
@@ -334,4 +420,11 @@ type BRect =
 
     /// Returns the area of the Bounding Rectangle.
     static member inline area  (r:BRect) =
-        r.SizeX*r.SizeY
+        r.SizeX * r.SizeY
+
+    static member createFromLine (l:Line2D) =
+        let minX = min l.FromX l.ToX
+        let maxX = max l.FromX l.ToX
+        let minY = min l.FromY l.ToY
+        let maxY = max l.FromY l.ToY
+        BRect(minX, minY, maxX, maxY)

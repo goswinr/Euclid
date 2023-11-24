@@ -115,23 +115,7 @@ module Intersect =
         |BfromLeft  (ta, _ ) ->  ap + au * ta // clamp point to actually be on line even if it is not quite in case of PreStart or PostEnd
         |BfromRight (ta, _ ) ->  ap + au * ta
 
-    (*
-    see loop intersection script
-
-    type IntersectionPoint =
-        |NoPoint
-        |FromLeft  of Pt
-        |FromRight of Pt
-
-    /// Does also clamp point to actually be on line even if it is not quite in case of PreStart or PostEnd.
-    let getIntersectionPoint (ap:Pt, au:UnitVc, al:float, bp:Pt, bu:UnitVc, bl:float, snapThreshold:float) : IntersectionPoint =
-        match getRelation(ap, au, al,  bp, bu, bl, snapThreshold)   with
-        |NoIntersection
-        |Colinear
-        |Parallel            -> NoPoint
-        |BfromLeft  (ta, _ ) -> FromLeft  (ap + au * (max 0.0 (min al ta))) // clamp point to actually be on line even if it is not quite in case of PreStart or PostEnd
-        |BfromRight (ta, _ ) -> FromRight (ap + au * (max 0.0 (min al ta)))
-    *)
+    
 
     /// Calculates the intersection of a finite line with a triangle.
     /// Returns Some(Pnt) or None if no intersection was found, 
@@ -184,7 +168,7 @@ module Intersect =
     /// Intersects an infinite line with an infinite double cone that has it's Axis on Z-Axis.
     /// coneRadius -> coneBaseZ -> coneTipZ ->  (ln:Line3D) -> XConeLine
     /// Returns the parameter(s) on the line.
-    let  lineCone (ln:Line3D, coneRadius, coneBaseZ, coneTipZ) = 
+    let lineCone (ln:Line3D, coneRadius, coneBaseZ, coneTipZ) = 
         let h = coneBaseZ-coneTipZ 
         if abs h < 1e-12 then EuclidException.Raise "Euclid.Intersection.lineCone: cone has zero height: coneRadius: %g, coneBaseZ: %g, coneTipZ: %g" coneRadius coneBaseZ coneTipZ
         let lam = coneRadius / h

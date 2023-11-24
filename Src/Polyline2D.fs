@@ -4,7 +4,6 @@ open System
 open Util
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 
-# nowarn "52" // copying of structs
 
 /// A mutable 2D Polyline.
 /// If the last point is the same as the first point, the Polyline2D is closed.
@@ -22,8 +21,12 @@ type Polyline2D =
 
     /// Nicely formatted string representation of the Box including its size.
     override pl.ToString() =
-        if pl.Points.Count = 0 then "An empty Euclid.Polyline2D."
-        else sprintf"Euclid.Polyline2D with %d points from %s to %s" pl.Points.Count pl.Points.First.AsString pl.Points.Last.AsString
+        if pl.Points.Count = 0 then 
+            "Euclid.Polyline2D with 0 points"
+        else 
+            let f = pl.Points.First
+            let l = pl.Points.Last
+            sprintf"Euclid.Polyline2D with %d points from %s to %s" pl.Points.Count f.AsString l.AsString
 
     /// Creates a copy of the Polyline2D
     member inline p.Duplicate(): Polyline2D =
@@ -51,7 +54,7 @@ type Polyline2D =
         let mutable prev = ps.[0]
         for i = 1 to ps.Count-1 do
             let t = ps.[i]
-            l <- l + (t - prev).Length
+            l <- l + Pt.distance prev t
             prev <- t
         l
 
@@ -275,7 +278,7 @@ type Polyline2D =
     static member inline rotate (r:Rotation2D) (pl:Polyline2D) = pl |> Polyline2D.map (Pt.rotateBy r)
 
     /// Rotation a Polyline2D round given Center point an a local Z-axis.
-    static member inline rotateOn (cen:Pt) (r:Rotation2D) (pl:Polyline2D) = pl |> Polyline2D.map (Pt.rotateWithCenterBy cen r)
+    static member inline rotateWithCenter (cen:Pt) (r:Rotation2D) (pl:Polyline2D) = pl |> Polyline2D.map (Pt.rotateWithCenterBy cen r)
 
     /// Returns the parameter on the Polyline2D that is the closest point to the given point.
     /// The integer part of the parameter is the index of the segment that the point is on.

@@ -4,7 +4,6 @@ open Util
 
 #nowarn "44" // to skip Obsolete warnings (members just needs to be public for inlining, but should be hidden)
 
-
 /// When Euclid is opened this module will be auto-opened.
 /// It only contains extension members for type Vc.
 [<AutoOpen>]
@@ -71,8 +70,7 @@ module AutoOpenVc =
         /// Fails with EuclidDivByZeroException if the length of the vector is
         /// too small (1e-16) to unitize.
         member inline v.Unitized =
-            let l = sqrt(v.X * v.X  + v.Y * v.Y)
-            // #if DEBUG add here too? TODO ?
+            let l = sqrt(v.X * v.X  + v.Y * v.Y)            
             if l < zeroLengthTolerance then v.FailedUnitized() // don't compose error msg directly here to keep inlined code small.                
             UnitVc.createUnchecked( v.X/l, v.Y/l)
 
@@ -112,14 +110,14 @@ module AutoOpenVc =
             //#endif
             if v.Y >= 0.0 then
                 if v.X >= 0.0 then
-                    v.Y/(v.X+v.Y)
+                    v.Y / (v.X + v.Y)
                 else
-                    1.0 - v.X/(-v.X+v.Y)
+                    1.0 - v.X / (-v.X + v.Y)
             else
                 if v.X < 0.0 then
-                    2.0 - v.Y/(-v.X-v.Y)
+                    2.0 - v.Y / (-v.X - v.Y)
                 else
-                    3.0 + v.X/(v.X-v.Y)
+                    3.0 + v.X / (v.X - v.Y)
         
 
         /// A separate function to compose the error message that does not get inlined.
@@ -189,7 +187,7 @@ module AutoOpenVc =
             v * other > 1e-12
 
         /// Checks if the angle between this 2D vectors and a 2D unit vector is less than 180 degrees.
-        /// Calculates the dot product of two 2D vectors.
+        /// Calculates the dot product of a 2D vector and a unit vectors.
         /// Then checks if it is bigger than 1e-12. 
         /// Fails if the vector is shorter than zeroLengthTolerance  (1e-12).
         member inline v.MatchesOrientation (other:UnitVc) =
@@ -206,7 +204,7 @@ module AutoOpenVc =
             v * other < -1e-12 
         
         /// Checks if the angle between this 2D vectors and a 2D unit vector is more than 180 degrees.
-        /// Calculates the dot product of two 2D vectors.
+        /// Calculates the dot product of a 2D vector and a unit vectors.
         /// Then checks if it is smaller than minus 1e-12.
         /// Fails if the vector is shorter than zeroLengthTolerance  (1e-12).
         member inline v.IsOppositeOrientation (other:UnitVc) =
@@ -335,7 +333,7 @@ module AutoOpenVc =
         static member inline difference (a:Vc) (b:Vc) = let v = a-b in sqrt(v.X*v.X + v.Y*v.Y )
 
         /// Returns the squared distance between the tips of two 2D vectors.
-        /// This operation is slightly faster than Vec.difference and sufficient for many algorithms like finding closest points.
+        /// This operation is slightly faster than Vc.difference and sufficient for many algorithms like finding closest vectors.
         static member inline differenceSq (a:Vc) (b:Vc) = let v = a-b in  v.X*v.X + v.Y*v.Y
 
         /// A separate function to compose the error message that does not get inlined.
@@ -451,11 +449,11 @@ module AutoOpenVc =
         static member inline create (start:Pt, ende:Pt) = ende-start
 
         /// Negate or inverse a 2D vectors. Returns a new 2D vector.
-        /// Same as Vec.flip.
+        /// Same as Vc.flip.
         static member inline reverse (v:Vc) = -v
 
         /// Negate or inverse a 2D vectors. Returns a new 2D vector.
-        /// Same as Vec.reverse.
+        /// Same as Vc.reverse.
         static member inline flip (v:Vc) = -v
 
         /// Returns 2D vector unitized, fails on zero length vectors.
@@ -617,7 +615,51 @@ module AutoOpenVc =
 
         /// 90 Degree rotation clockwise.
         static member inline rotate90CW (v:Vc) = Vc(  v.Y,  -v.X  )
-
+        
+        /// Linearly interpolates between two vectors.
+        /// e.g. rel=0.5 will return the middle vector, rel=1.0 the end vector, 
+        /// rel=1.5 a vector half the distance beyond the end vector.        
+        static member lerp (start:Vc, ende:Vc, rel:float) =
+            start + rel * (ende - start) 
+                
+        /// Spherically interpolates between start and end by amount rel (0.0 to 1.0). 
+        /// The difference between this and linear interpolation (aka, "lerp") is that the vectors are treated as directions rather than points in space. 
+        /// The direction of the returned vector is interpolated by the angle and its magnitude is interpolated between the magnitudes of start and end.
+        /// Interpolation continues before and after the range of 0.0 and 0.1
+        static member slerp (start:Vc, ende:Vc, rel:float) = 
+            // https://en.wikipedia.org/wiki/Slerp
+            // implementation tested in Rhino!
+            let sLen = start.Length
+            let eLen = ende.Length
+            if sLen < zeroLengthTolerance then EuclidDivByZeroException.Throw1 "Euclid.Vec.slerp: Can't interpolate from zero length vector:" start
+            if eLen < zeroLengthTolerance then EuclidDivByZeroException.Throw1 "Euclid.Vec.slerp: Can't interpolate to zero length vector:" ende
+            let fs = 1.0 / sLen
+            let fe = 1.0 / eLen
+            let su  = start*fs
+            let eu  = ende*fe
+            let dot = su*eu
+            if dot > float Cosine.``0.05`` then  // vectors are in the same direction interpolate length only
+                Vc.lerp(start, ende, rel )
+            elif dot < float Cosine.``179.95`` then  
+                EuclidDivByZeroException.Throw1 "Euclid.Vec.slerp: Can't interpolate vectors in opposite directions:" ende
+            else
+                let ang = acos(dot) // the angel between the two vectors 
+                let perp = eu - su*dot |> Vc.unitize // a vector perpendicular to start and in the same plane with ende. 
+                let theta = ang*rel // the angle part we want for the result 
+                let theta360 = (theta+Util.twoPi) % Util.twoPi // make sure it is i the range 0.0 to 2 Pi ( 360 degrees)
+                let cosine = cos (theta360) 
+                let sine   = sqrt(1.0 - cosine*cosine) 
+                let res =  //unitized result vector 
+                    if theta360 < Math.PI then  // in the range 0 to 180 degrees,  only applicable if rel is beyond 0.0 or 0.1
+                        su * cosine + perp * sine
+                    else  
+                        su * cosine - perp * sine
+                let lenRel = sLen + rel * (eLen-sLen)
+                if lenRel < 0.0 then  
+                    Vc.Zero // otherwise the vector would get flipped and grow again , only applicable if rel is beyond 0.0 or 0.1
+                else
+                    res * abs lenRel
+        
         // Checks if 2D vector is parallel to the world X axis. Ignoring orientation.
         /// Tolerance is 1e-6.
         /// Fails on vectors shorter than 1e-6.
@@ -628,46 +670,31 @@ module AutoOpenVc =
         /// Fails on vectors shorter than 1e-6.
         static member inline isYAligned (v:Vc) = v.IsYAligned
 
-        /// Checks if Angle between two vectors is Below one Degree.
+        /// Checks if Angle between two vectors is less than given Cosine.
         /// Ignores vector orientation.
+        /// Use the Euclid.Cosine module to get some precomputed cosine values
         /// Fails on zero length vectors, tolerance 1e-12.
-        static member isAngleBelow1Degree(a:Vc, b:Vc) =
+        static member inline isAngleLessThan (cosineValue: float<Cosine.cosine>) (a:Vc) (b:Vc) =
             let sa = a.LengthSq
-            if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vc.isAngleBelow1Degree: Vc a is too short: %s. Vc b:%s " a.AsString b.AsString
+            if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vc.isAngleLessThan: Vc a is too short: %s. Vc b:%s " a.AsString b.AsString
             let sb = b.LengthSq
-            if sb < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vc.isAngleBelow1Degree: Vc b is too short: %s. Vc a:%s " b.AsString a.AsString
+            if sb < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vc.isAngleLessThan: Vc b is too short: %s. Vc a:%s " b.AsString a.AsString
             let au = a * (1.0 / sqrt sa )
             let bu = b * (1.0 / sqrt sb )
-            abs(bu*au) > 0.999847695156391 // = cosine of 1 degree
+            abs(bu*au) > float cosineValue
 
-
-        /// Checks if Angle between two vectors is Below 0.25 Degree.
+        /// Checks if Angle between two vectors is more than given Cosine.
         /// Ignores vector orientation.
+        /// Use the Euclid.Cosine module to get some precomputed cosine values.
         /// Fails on zero length vectors, tolerance 1e-12.
-        /// Same as Vec. areParallel.
-        static member isAngleBelowQuatreDegree(a:Vc, b:Vc) =
+        static member inline isAngleMoreThan (cosineValue: float<Cosine.cosine>) (a:Vc) (b:Vc) =
             let sa = a.LengthSq
-            if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vc.isAngleBelowQuatreDegree: Vc a is too short: %s. Vc b:%s " a.AsString b.AsString
+            if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vc.isAngleMoreThan: Vc a is too short: %s. Vc b:%s " a.AsString b.AsString
             let sb = b.LengthSq
-            if sb < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vc.isAngleBelowQuatreDegree: Vc b is too short: %s. Vc a:%s " b.AsString a.AsString
+            if sb < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vc.isAngleMoreThan: Vc b is too short: %s. Vc a:%s " b.AsString a.AsString
             let au = a * (1.0 / sqrt sa )
             let bu = b * (1.0 / sqrt sb )
-            abs(bu*au) > 0.999990480720734 // = cosine of 0.25 degrees:
-            // for fsi: printfn "%.18f" (cos( 0.25 * (System.Math.PI / 180.)))
-
-
-        /// Checks if Angle between two vectors is Below 5 Degrees.
-        /// Ignores vector orientation.
-        /// Fails on zero length vectors, tolerance 1e-12.
-        static member isAngleBelow5Degree(a:Vc, b:Vc) =
-            let sa = a.LengthSq
-            if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vc.isAngleBelowQuatreDegree: Vc a is too short: %s. Vc b:%s " a.AsString b.AsString
-            let sb = b.LengthSq
-            if sb < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vc.isAngleBelowQuatreDegree: Vc b is too short: %s. Vc a:%s " b.AsString a.AsString
-            let au = a * (1.0 / sqrt sa )
-            let bu = b * (1.0 / sqrt sb )
-            abs(bu*au) > 0.996194698091746 // = cosine of 5 degrees:
-            // for fsi: printfn "%.18f" (cos( 5.0 * (System.Math.PI / 180.)))
+            abs(bu*au) < float cosineValue  
 
 
         ///<summary> Intersects two infinite 2D lines.

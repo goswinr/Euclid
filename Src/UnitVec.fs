@@ -119,7 +119,11 @@ type UnitVec =
     /// For use as a faster internal constructor.
     /// Requires correct input of unitized values.
     static member inline createUnchecked(x, y, z) = UnitVec(x, y, z)
-
+    
+    /// For use as a faster internal constructor.
+    /// Requires correct input of unitized values.
+    static member inline createUnchecked(v:Vec) = UnitVec(v.X, v.Y, v.Z)
+    
     /// A separate function to compose the error message that does not get inlined.
     [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
     static member failedCreate (x:float, y:float, z:float) = EuclidDivByZeroException.Raise "Euclid.UnitVec.create: x:%g, y:%g and z:%g are too small for creating a unit-vector, Tolerance:%g" x y z zeroLengthTolerance

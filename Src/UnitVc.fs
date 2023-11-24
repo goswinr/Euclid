@@ -107,6 +107,10 @@ type UnitVc =
     /// For use as a faster constructor.
     /// Requires correct input of unitized values.
     static member inline createUnchecked(x, y) = UnitVc(x, y) // needs #nowarn "44" // for internal inline constructors
+    
+    /// For use as a faster constructor.
+    /// Requires correct input of unitized values.
+    static member inline createUnchecked(v:Vc) = UnitVc(v.X, v.Y) // needs #nowarn "44" // for internal inline constructors
 
     /// A separate function to compose the error message that does not get inlined.
     [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]

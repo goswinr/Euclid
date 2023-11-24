@@ -265,7 +265,7 @@ type Polyline3D =
     static member inline rotate (r:Rotation2D) (pl:Polyline3D) = pl |> Polyline3D.map (Pnt.rotateZBy r)
 
     /// Rotation a Polyline3D round given Center point an a local Z-axis.
-    static member inline rotateOn (cen:Pnt) (r:Rotation2D) (pl:Polyline3D) = pl |> Polyline3D.map (Pnt.rotateZwithCenterBy cen r)
+    static member inline rotateWithCenter (cen:Pnt) (r:Rotation2D) (pl:Polyline3D) = pl |> Polyline3D.map (Pnt.rotateZwithCenterBy cen r)
 
     /// Returns the parameter on the Polyline3D that is the closest point to the given point.
     /// The integer part of the parameter is the index of the segment that the point is on.

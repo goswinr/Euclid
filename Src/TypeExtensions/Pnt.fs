@@ -22,7 +22,7 @@ module AutoOpenPnt =
         member inline pt.IsOrigin = pt.X = 0.0 && pt.Y = 0.0 && pt.Z= 0.0
 
         /// Returns a boolean indicating if any of X, Y and Z is not exactly 0.0.
-        member inline v.IsNotOrigin = v.X <> 0.0 || v.Y <> 0.0 || v.Z <> 0.0
+        member inline p.IsNotOrigin = p.X <> 0.0 || p.Y <> 0.0 || p.Z <> 0.0
 
         /// Returns a boolean indicating wether the absolute value of X, Y and Z is each less than the given tolerance.
         member inline pt.IsAlmostOrigin tol = abs pt.X < tol && abs pt.Y < tol
@@ -37,11 +37,19 @@ module AutoOpenPnt =
         member inline pt.WithZ z = Pnt (pt.X, pt.Y, z)
 
         /// Returns the distance between two 3D points.
-        member inline p.DistanceTo (b:Pnt) = let v = p-b in sqrt(v.X*v.X + v.Y*v.Y + v.Z*v.Z )
+        member inline p.DistanceTo (b:Pnt) = 
+            let x = p.X-b.X
+            let y = p.Y-b.Y
+            let z = p.Z-b.Z
+            sqrt(x*x + y*y + z*z)
 
         /// Returns the squared distance between two 3D points.
         /// This operation is slightly faster than the distance function, and sufficient for many algorithms like finding closest points.
-        member inline p.DistanceToSquare (b:Pnt) = let v = p-b in  v.X*v.X + v.Y*v.Y + v.Z*v.Z
+        member inline p.DistanceToSquare (b:Pnt) = 
+            let x = p.X-b.X
+            let y = p.Y-b.Y
+            let z = p.Z-b.Z
+            x*x + y*y + z*z
 
         /// Returns the distance from Origin (0, 0, 0)
         member inline pt.DistanceFromOrigin = sqrt (pt.X*pt.X + pt.Y*pt.Y + pt.Z*pt.Z)
@@ -187,7 +195,7 @@ module AutoOpenPnt =
             p * m // operator * is defined in RigidMatrix.fs
 
         /// Multiplies (or applies) only the 3x3 rotation part of a RigidMatrix to a 3D point.
-        member inline p.RotateRigid (m:RigidMatrix) =
+        member inline p.TransformRigidRotateOnly (m:RigidMatrix) =
             let x = p.X
             let y = p.Y
             let z = p.Z
@@ -328,18 +336,38 @@ module AutoOpenPnt =
         /// If the returned vector has length zero then the points are in one Line.
         static member normalOf3Pts (a:Pnt, b:Pnt, c:Pnt) = Vec.cross (a-b, c-b)
 
+        static member failedDistPt (fromPt:Pnt, dirPt:Pnt, distance:float) = EuclidDivByZeroException.Raise "Euclid.Pnt.distPt: distance form %O to %O is too small to scale to distance: %g" fromPt dirPt distance
 
         /// Returns a point that is at a given distance from a 3D point in the direction of another point.
         static member inline distPt (fromPt:Pnt, dirPt:Pnt, distance:float) : Pnt =
-            let v = dirPt - fromPt
-            let sc = distance/v.Length
-            fromPt + v*sc
+            let x = dirPt.X - fromPt.X
+            let y = dirPt.Y - fromPt.Y
+            let z = dirPt.Z - fromPt.Z
+            let len = sqrt(x*x + y*y + z*z)
+            if len < zeroLengthTolerance then Pnt.failedDistPt(fromPt, dirPt, distance)
+            let fac = distance / len
+            Pnt(fromPt.X + x*fac, 
+                fromPt.Y + y*fac, 
+                fromPt.Z + z*fac)
+            
 
-        /// Returns a point by evaluation a line between two 3D point with a normalized parameter.
-        /// e.g. rel=0.5 will return the middle point, rel=1.0 the endPoint
+        /// Linearly interpolates between two 3D points.
+        /// e.g. rel=0.5 will return the middle point, rel=1.0 the endPoint, 
+        /// rel=3.0 a point three times the distance beyond the end point.
+        /// Same as Pnt.lerp.
         static member inline divPt(fromPt:Pnt, toPt:Pnt, rel:float) : Pnt =
-            let v = toPt - fromPt
-            fromPt + v*rel
+            Pnt(fromPt.X + (toPt.X-fromPt.X)*rel,
+                fromPt.Y + (toPt.Y-fromPt.Y)*rel,
+                fromPt.Z + (toPt.Z-fromPt.Z)*rel)
+        
+        
+        /// Linearly interpolates between two 3D points.
+        /// e.g. rel=0.5 will return the middle point, rel=1.0 the endPoint, 
+        /// rel=3.0 a point three times the distance beyond the end point.
+        /// Same as Pnt.divPt.
+        static member inline lerp(fromPt:Pnt, toPt:Pnt, rel:float) : Pnt =
+            Pnt.divPt(fromPt, toPt, rel)            
+           
 
         /// Returns a point that is at a given Z level,
         /// going from a point in the direction of another point.
@@ -408,18 +436,18 @@ module AutoOpenPnt =
 
         /// Multiplies (or applies) a Matrix to a 3D point (with an implicit 1 in the 4th dimension,
         /// so that it also works correctly for projections.)
-        static member transform (m:Matrix) (p:Pnt) =
+        static member inline transform (m:Matrix) (p:Pnt) =
             p.Transform m
 
         /// Multiplies (or applies) a RigidMatrix to a 3D point.
-        static member transformRigid (m:RigidMatrix) (p:Pnt) =
+        static member inline transformRigid (m:RigidMatrix) (p:Pnt) =
             p.TransformRigid m
 
         // --------------- Rotate 2D and 3D: ----------------------------
 
         /// Multiplies (or applies) only the 3x3 rotation part of a RigidMatrix to a 3D point.
-        static member rotateRigid (m:RigidMatrix) (p:Pnt) =
-            p.RotateRigid m
+        static member transformRigidRotateOnly (m:RigidMatrix) (p:Pnt) =
+            p.TransformRigidRotateOnly m
 
         /// Rotate the 3D point around X-axis, from Y to Z-axis, Counter Clockwise looking from right.
         static member rotateXBy (r:Rotation2D) (p:Pnt) = Pnt (p.X,  r.Cos*p.Y - r.Sin*p.Z, r.Sin*p.Y + r.Cos*p.Z)

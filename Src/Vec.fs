@@ -62,7 +62,7 @@ type Vec =
     member inline v.LengthSq = v.X*v.X + v.Y*v.Y + v.Z*v.Z
 
     /// Negate or inverse a 3D vectors. Returns a new 3D vector.
-    static member inline (~- ) (v:Vec) = Vec( -v.X, -v.Y, -v.Z)
+    static member inline ( ~- ) (v:Vec) = Vec( -v.X, -v.Y, -v.Z)
 
     /// Subtract one 3D vectors from another. Returns a new 3D vector.
     static member inline ( - ) (a:Vec, b:Vec) = Vec (a.X - b.X, a.Y - b.Y, a.Z - b.Z)
@@ -98,7 +98,10 @@ type Vec =
     /// Its length is the area of the parallelogram spanned by the input vectors.
     /// Its direction follows th right-hand rule.
     /// A x B = |A| * |B| * sin(angle)
-    static member inline cross (a:Vec, b:Vec) = Vec (a.Y * b.Z - a.Z * b.Y,  a.Z * b.X - a.X * b.Z,  a.X * b.Y - a.Y * b.X )
+    static member inline cross (a:Vec, b:Vec) = 
+        Vec (a.Y * b.Z - a.Z * b.Y,  
+             a.Z * b.X - a.X * b.Z,  
+             a.X * b.Y - a.Y * b.X )
     
     //-----------------------------------------------------------------------------------------------------
     // These static members can't be extension methods to be useful for Array.sum and Array.average :

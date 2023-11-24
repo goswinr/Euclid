@@ -45,7 +45,7 @@ type Vc =
     member v.AsString = sprintf "X=%s| Y=%s" (Format.float v.X) (Format.float v.Y)
 
     /// Negate or inverse a 2D vectors. Returns a new 2D vector.
-    static member inline (~- ) (v:Vc) = Vc ( -v.X, -v.Y )
+    static member inline ( ~- ) (v:Vc) = Vc ( -v.X, -v.Y )
 
     /// Subtract one 2D vectors from another. Returns a new 2D vector.
     static member inline ( - ) (a:Vc, b:Vc) = Vc (a.X - b.X, a.Y - b.Y )
@@ -77,6 +77,7 @@ type Vc =
     /// Returns the squared length of the 2D vector.
     /// The square length is faster to calculate and often good enough for use cases such as sorting vectors by length.
     member inline v.LengthSq = v.X*v.X + v.Y*v.Y
+
     
     //-----------------------------------------------------------------------------------------------------
     // These static members can't be extension methods to be useful for Array.sum and Array.average :

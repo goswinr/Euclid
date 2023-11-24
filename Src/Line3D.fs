@@ -33,11 +33,11 @@ type Line3D =
     /// Returns the Z coordinate of the end point of the line.
     [<DataMember>] val ToZ  :float
 
-    /// Create Line3D from 3D start point and 3D end point.
-    new (a:Pnt, b:Pnt) = {FromX=a.X; FromY=a.Y; FromZ=a.Z; ToX=b.X; ToY=b.Y; ToZ=b.Z}
+    /// Create Line3D from 3D start point and 3D end point.    
+    new (fromPt:Pnt, toPt:Pnt) = {FromX=fromPt.X; FromY=fromPt.Y; FromZ=fromPt.Z; ToX=toPt.X; ToY=toPt.Y; ToZ=toPt.Z}   
 
-    /// Create Line3D from 3D start point's x, y and z and 3D end point's x, y and z.
-    new (a, b, c, u, v, w) = {FromX=a; FromY=b; FromZ=c; ToX=u; ToY=v; ToZ=w}
+    /// Create Line3D from 3D start point's x, y and z and 3D end point's x, y and z. 
+    new (fromX, fromY, fromZ, toX, toY, toZ) = {FromX=fromX; FromY=fromY; FromZ=fromZ; ToX=toX; ToY=toY; ToZ=toZ}
 
     /// Returns the length of the line.
     member inline ln.Length =
@@ -215,10 +215,7 @@ type Line3D =
     member inline ln.Reversed =
         Line3D(ln.ToX, ln.ToY, ln.ToZ, ln.FromX, ln.FromY, ln.FromZ)
 
-    /// Returns the lines Bounding Box.
-    member inline ln.BoundingBox =
-        BBox.create ( ln.From, ln.To)
-
+   
     /// Returns a Line3D from point at Parameter a to point at Parameter b.
     member inline ln.Segment(a, b) =
         let x = ln.ToX-ln.FromX
@@ -688,10 +685,60 @@ type Line3D =
     /// Multiplies (or applies) a RigidMatrix to a 3D line .
     member inline l.TransformRigid (m:RigidMatrix) = Line3D(l.From*m, l.To*m)
 
-    /// Multiplies (or applies) only the 3x3 rotation part of a RigidMatrix to a 3D line .
+    /// Multiplies (or applies) a Quaternion to a 3D line .
     /// The resulting line has the same length as the input.
-    member inline l.RotateRigid (m:RigidMatrix) = Line3D(Pnt.rotateRigid m l.From, Pnt.rotateRigid m l.To)
+    member inline l.Rotate (q:Quaternion) = 
+        // adapted from https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
+        let u = l.FromX
+        let v = l.FromY
+        let w = l.FromZ
+        let x = l.ToX
+        let y = l.ToY
+        let z = l.ToZ  
+        let qx = q.X
+        let qy = q.Y
+        let qz = q.Z
+        let qw = q.W
+        let tu = 2.0 * ( qy * w - qz * v )
+        let tv = 2.0 * ( qz * u - qx * w )
+        let tw = 2.0 * ( qx * v - qy * u )
+        let tx = 2.0 * ( qy * z - qz * y )
+        let ty = 2.0 * ( qz * x - qx * z )
+        let tz = 2.0 * ( qx * y - qy * x )        
+        Line3D( u + qw * tu + qy * tw - qz * tv ,
+                v + qw * tv + qz * tu - qx * tw ,
+                w + qw * tw + qx * tv - qy * tu ,
+                x + qw * tx + qy * tz - qz * ty ,
+                y + qw * ty + qz * tx - qx * tz ,
+                z + qw * tz + qx * ty - qy * tx )
 
+    /// Multiplies (or applies) a Quaternion to a 3D line around a given center point.
+    /// The resulting line has the same length as the input.
+    member inline l.RotateWithCenter (cen:Pnt, q:Quaternion) = 
+        let u = l.FromX - cen.X
+        let v = l.FromY - cen.Y
+        let w = l.FromZ - cen.Z
+        let x = l.ToX - cen.X
+        let y = l.ToY - cen.Y
+        let z = l.ToZ - cen.Z 
+        let qx = q.X
+        let qy = q.Y
+        let qz = q.Z
+        let qw = q.W
+        let tu = 2.0 * ( qy * w - qz * v )
+        let tv = 2.0 * ( qz * u - qx * w )
+        let tw = 2.0 * ( qx * v - qy * u )
+        let tx = 2.0 * ( qy * z - qz * y )
+        let ty = 2.0 * ( qz * x - qx * z )
+        let tz = 2.0 * ( qx * y - qy * x )        
+        Line3D( u + qw * tu + qy * tw - qz * tv + cen.X ,
+                v + qw * tv + qz * tu - qx * tw + cen.Y,
+                w + qw * tw + qx * tv - qy * tu + cen.Z ,
+                x + qw * tx + qy * tz - qz * ty + cen.X ,
+                y + qw * ty + qz * tx - qx * tz + cen.Y ,
+                z + qw * tz + qx * ty - qy * tx + cen.Z )
+    
+    
 
     //-------------------------------------------------------------------
     //------------------------static members-----------------------------
@@ -859,15 +906,20 @@ type Line3D =
     /// Multiplies (or applies) a RigidMatrix to a 3D line .
     static member inline transformRigid (m:RigidMatrix) (ln:Line3D) = ln.TransformRigid m
 
-    /// Multiplies (or applies) only the 3x3 rotation part of a RigidMatrix to a 3D line.
+    /// Multiplies (or applies) a Quaternion to a 3D line.
     /// The resulting line has the same length as the input.
-    static member inline rotateRigid (m:RigidMatrix) (ln:Line3D) = ln.RotateRigid m
+    static member inline rotate(q:Quaternion) (ln:Line3D) = ln.Rotate q
+
+    /// Multiplies (or applies) a Quaternion to a 3D line around a given center point.
+    /// The resulting line has the same length as the input.
+    static member inline rotateWithCenter (cen:Pnt) (q:Quaternion) (ln:Line3D) = ln.RotateWithCenter (cen, q)
+    
 
     /// Rotation a 3D Line around Z-Axis.
-    static member inline rotate (r:Rotation2D) (ln:Line3D) = Line3D(Pnt.rotateZBy r ln.From, Pnt.rotateZBy r ln.To)
+    static member inline rotate2D (r:Rotation2D) (ln:Line3D) = Line3D(Pnt.rotateZBy r ln.From, Pnt.rotateZBy r ln.To)
 
     /// Rotation a 3D Line round given Center point an a local Z-axis.
-    static member inline rotateOn (cen:Pnt) (r:Rotation2D) (ln:Line3D) = Line3D(Pnt.rotateZwithCenterBy cen r ln.From, Pnt.rotateZwithCenterBy cen r ln.To)
+    static member inline rotate2dOn (cen:Pnt) (r:Rotation2D) (ln:Line3D) = Line3D(Pnt.rotateZwithCenterBy cen r ln.From, Pnt.rotateZwithCenterBy cen r ln.To)
 
     /// Ensure 3D Line has a positive dot product with given orientation Line.
     static member inline matchOrientation (orientationToMatch:Line3D) (lineToFlip:Line3D) =
@@ -895,7 +947,7 @@ type Line3D =
     /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
     /// And checks if it is smaller than 1e-9
     /// (NOTE: for very long lines a higher tolerance might be needed)
-    static member inline  areParallel (l:Line3D) (ln:Line3D) = l.IsParallelTo ln
+    static member inline areParallel (l:Line3D) (ln:Line3D) = l.IsParallelTo ln
 
     /// Checks if two 3D lines are parallel and orientated the same way.
     /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
@@ -985,9 +1037,10 @@ type Line3D =
         let z = ln.ToZ-ln.FromZ
         let len = sqrt(x*x + y*y + z*z)
         if len < zeroLengthTolerance then EuclidException.Raise "Euclid.Line3D.pointAtDistance %O to short for finding point at a distance." ln
-        Pnt(ln.FromX + x*dist/len,
-            ln.FromY + y*dist/len,
-            ln.FromZ + z*dist/len)
+        let f = dist/len
+        Pnt(ln.FromX + x*f,
+            ln.FromY + y*f,
+            ln.FromZ + z*f)
 
     /// Returns new Line3D with given length, going out from start in direction of end.
     /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
@@ -997,12 +1050,13 @@ type Line3D =
         let z = ln.ToZ-ln.FromZ
         let l = sqrt(x*x + y*y + z*z)
         if l < zeroLengthTolerance then EuclidException.Raise "Euclid.Line3D.withLengthFromStart %O to short for finding point at a distance." ln
+        let f = len/l
         Line3D( ln.FromX,
                 ln.FromY,
                 ln.FromZ,
-                ln.FromX + x*len/l,
-                ln.FromY + y*len/l,
-                ln.FromZ + z*len/l )
+                ln.FromX + x*f,
+                ln.FromY + y*f,
+                ln.FromZ + z*f )
 
     /// Returns new Line3D ending at current LineEnd with given length coming from direction of start.
     /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
@@ -1012,12 +1066,29 @@ type Line3D =
         let z = ln.FromZ-ln.ToZ
         let l = sqrt(x*x + y*y + z*z)
         if l < zeroLengthTolerance then EuclidException.Raise "Euclid.Line3D.withLengthToEnd %O to short for finding point at a distance." ln
-        Line3D( ln.ToX + x*len/l,
-                ln.ToY + y*len/l,
-                ln.ToZ + z*len/l,
+        let f = len/l
+        Line3D( ln.ToX + x*f,
+                ln.ToY + y*f,
+                ln.ToZ + z*f,
                 ln.ToX,
                 ln.ToY,
                 ln.ToZ )
+
+    /// Returns new Line3D with given length. Missing length is added to or subtracted from both the end and start of the line.
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    static member inline withLengthFromMid len (ln:Line3D) =
+        let x = ln.FromX-ln.ToX
+        let y = ln.FromY-ln.ToY
+        let z = ln.FromZ-ln.ToZ
+        let l = sqrt(x*x + y*y + z*z)
+        if l < zeroLengthTolerance then EuclidException.Raise "Euclid.Line3D.withLengthFromMid %O to short for finding point at a distance." ln
+        let f = (len/l + 1.0) * 0.5
+        Line3D( ln.ToX   + x*f,
+                ln.ToY   + y*f,
+                ln.ToZ   + z*f,
+                ln.FromX - x*f,
+                ln.FromY - y*f,
+                ln.FromZ - z*f )   
 
     /// Offset line in XY-Plane to left side in line direction.
     /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
@@ -1394,9 +1465,9 @@ type Line3D =
             let d11 = lv * l1k1 > 0.
             let d10 = lv * l1k0 > 0.
 
+            // Full logic:
             // there are many valid parameters
             // Parameters are at the end or start of line lnA when possible
-            // Full logic:
             //let u, v =
             //    if   not d00 && not d01 && not d10 && not d11 then
             //                                                        Printfn.gray "// lnA starts after k ends"
@@ -1649,36 +1720,6 @@ type Line3D =
             Pnt.distance a b
 
 
-    (*  not very useful because it's hard to find the correct tolerance:
-
-    /// Fast check if two 3D lines are in the same 3D Plane.
-    /// This can be used as a fast check to exclude intersection. Infinite lines in the same plane do intersect (unless parallel)
-    /// If you need an exact intersection test purely based on distance use Line3D.intersectLine.
-    /// It first calculates the signed volume of the Parallelepiped define by three vectors from the four corners of the lines.
-    /// Then it checks if it is smaller than given volumeTolerance fo Parallelepiped.
-    /// Using the VolumeTolerance makes a positive result not only dependent on the distance of the two 3D lines from each other but also on their lengths.
-    static member inline areInSamePlaneTol volumeTolerance (lnA:Line3D, lnB:Line3D) =
-        // Two non-parallel lines p1+Rv1 and p2+Rv2 intersect if and only if (v1×v2)⋅(p1−p2)=0
-        // https://math.stackexchange.com/questions/697124/how-to-determine-if-two-lines-in-3d-intersect
-        // vector of line lnA:
-        let ax = lnA.ToX-lnA.FromX
-        let ay = lnA.ToY-lnA.FromY
-        let az = lnA.ToZ-lnA.FromZ
-        //vector of line lnB:
-        let bx = lnB.ToX-lnB.FromX
-        let by = lnB.ToY-lnB.FromY
-        let bz = lnB.ToZ-lnB.FromZ
-        // cross product:
-        let cx = ay * bz - az * by
-        let cy = az * bx - ax * bz
-        let cz = ax * by - ay * bx
-        // vector from start of lnA to start of lnB:
-        let vx = lnA.FromX-lnB.FromX
-        let vy = lnA.FromY-lnB.FromY
-        let vz = lnA.FromZ-lnB.FromZ
-        let dot = cx*vx + cy*vy + cz*vz
-        abs(dot) < volumeTolerance
-    *)
-
-
-
+    /// Rotate by Quaternion around Origin.
+    /// Multiplies (or applies) a Quaternion to a 3D line.
+    static member inline ( * ) ( ln:Line3D, q:Quaternion) =  ln.Rotate(q)

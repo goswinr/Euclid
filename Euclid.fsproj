@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <TargetFrameworks>net472;net6.0</TargetFrameworks>
-    <!--netstandard2.0 does not support [<IsByRefLike>] nor  [<IsReadOnly>] -->
+    <!--netstandard2.0 does not support [<IsByRefLike>] nor [<IsReadOnly>] -->
     <LangVersion>preview</LangVersion>
     <OtherFlags>$(OtherFlags)--warnon:3390</OtherFlags>
     <!-- warnon:3390 is to verify xml docstrings https://devblogs.microsoft.com/dotnet/announcing-f-5/0improved-compiler-analysis-for-library-authors -->
@@ -11,21 +11,24 @@
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
     <!--to only have the english resources-->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Configuration>Release</Configuration>
     <RootNamespace>Euclid</RootNamespace>
     <AssemblyName>Euclid</AssemblyName>
     <AssemblyTitle>Euclid</AssemblyTitle>
     <Title>Euclid</Title>
     <Product>Euclid</Product>
     <PackageId>Euclid</PackageId>
-    <Version>0.3.0</Version>
-    <AssemblyVersion>0.3.0</AssemblyVersion>
-    <FileVersion>0.3.0</FileVersion>
+    <Version>0.4.0</Version>
+    <AssemblyVersion>0.4.0</AssemblyVersion>
+    <FileVersion>0.4.0</FileVersion>
     <PackageReleaseNotes>
-      - renamed OrthoMatrix to RigidMatrix
-      - add DataMember Attributes for serialization
-      - ofXZY functions renamed to createFromMembersXYZ
-      - add DivideByInt static members for Array.average and Array.sum for functions
-      - fixed typos, improve documentation
+      - add Line.withLengthFromMid
+      - rename isAngleLessThan functions
+      - add spherical interpolation (slerp) for vectors
+      - rename Length to Width on Boxes and Rects
+      - rename Width to Height2D on Rects
+      - rename Width to Depth on Boxes
+      - add EdgeMethods on Rects and Boxes
     </PackageReleaseNotes>
     <Authors>GoswinR</Authors>
     <Copyright>Goswin Rothenthal 2019</Copyright>
@@ -35,7 +38,6 @@
     <WarningLevel>5</WarningLevel>
     <!-- WarningLevel 3 is default, see https://github.com/dsyme/fsharp-presentations/blob/master/design-notes/off-by-default-warnings.md -->
   </PropertyGroup>
-  
   <PropertyGroup>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <IncludeSymbols>true</IncludeSymbols>
@@ -50,14 +52,14 @@
     <PackageReadmeFile>READMEnuget.md</PackageReadmeFile>
     <PackageTags>fsharp;geometry;fable;fable-library;fable-all</PackageTags>
   </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.5.2" />    <!-- otherwise the minimum FSharp.Core version would be forced by the SDK used for building it. This would be needlessly too high-->
+    <PackageReference Update="FSharp.Core" Version="4.5.2" />
+    <!-- otherwise the minimum FSharp.Core version would be forced by the SDK used for building it. This would be needlessly too high-->
     <None Include="README.md" />
     <None Include="Doc/READMEnuget.md" Pack="true" PackagePath="" />
     <None Include="Doc/logo128.png" Pack="true" PackagePath="" />
-    <Content Include="*.fsproj; **\*.fs; **\*.fsi" PackagePath="fable\" />    <!--so that it can be used with Fable-->
-
+    <Content Include="*.fsproj; **\*.fs; **\*.fsi" PackagePath="fable\" />
+    <!--so that it can be used with Fable-->
     <Compile Include="Src/Util.fs" />
     <Compile Include="Src/Format.fs" />
     <Compile Include="Src/Vc.fs" />
@@ -71,7 +73,6 @@
     <Compile Include="Src/PPlane.fs" />
     <Compile Include="Src/Matrix.fs" />
     <Compile Include="Src/RigidMatrix.fs" />
-
     <Compile Include="Src/TypeExtensions/UnitVc.fs" />
     <Compile Include="Src/TypeExtensions/Vc.fs" />
     <Compile Include="Src/TypeExtensions/Pt.fs" />
@@ -81,12 +82,11 @@
     <Compile Include="Src/TypeExtensions/PPlane.fs" />
     <Compile Include="Src/TypeExtensions/Matrix.fs" />
     <Compile Include="Src/TypeExtensions/Quaternion.fs" />
-
-    <Compile Include="Src/BRect.fs" />
-    <Compile Include="Src/BBox.fs" />
     <Compile Include="Src/LineIntersectionTypes.fs" />
     <Compile Include="Src/Line2D.fs" />
     <Compile Include="Src/Line3D.fs" />
+    <Compile Include="Src/BRect.fs" />
+    <Compile Include="Src/BBox.fs" />
     <Compile Include="Src/Plane.fs" />
     <Compile Include="Src/PPlane-Ext.fs" />
     <Compile Include="Src/Rect2D.fs" />

@@ -565,13 +565,21 @@ type RigidMatrix =
                     , ( yz + wx )
                     , ( 1. - ( xx + yy ) )
                     , 0)
-
+    
+    
+    /// Removes the translation part by setting X41, Y42 and Z43 to 0.0.
+    static member removeTranslation (v:Vec) (m:RigidMatrix) =
+        RigidMatrix(m.M11,  m.M21,  m.M31,  0.0,
+                    m.M12,  m.M22,  m.M32,  0.0,
+                    m.M13,  m.M23,  m.M33,  0.0)
 
     /// Add a vector translation to an existing RigidMatrix.
     static member addTranslation (v:Vec) (m:RigidMatrix) =
         RigidMatrix(m.M11,  m.M21,  m.M31,  m.X41 + v.X,
                     m.M12,  m.M22,  m.M32,  m.Y42 + v.Y,
                     m.M13,  m.M23,  m.M33,  m.Z43 + v.Z)
+
+                    
 
     /// Add a X, Y and Z translation to an existing RigidMatrix.
     static member addTranslationXYZ x y z  (m:RigidMatrix) =
@@ -591,9 +599,9 @@ type RigidMatrix =
         let x = v.X
         let y = v.Y
         let z = v.Z
-        Vec(  m.M11*x + m.M21*y + m.M31*z //+ m.X41
-            , m.M12*x + m.M22*y + m.M32*z //+ m.Y42
-            , m.M13*x + m.M23*y + m.M33*z //+ m.Z43
+        Vec(  m.M11*x + m.M21*y + m.M31*z // + m.X41
+            , m.M12*x + m.M22*y + m.M32*z // + m.Y42
+            , m.M13*x + m.M23*y + m.M33*z // + m.Z43
             )
 
     /// Multiplies (or applies) a RigidMatrix to a 3D vector .
@@ -603,9 +611,10 @@ type RigidMatrix =
         let x = v.X
         let y = v.Y
         let z = v.Z
-        UnitVec.createUnchecked(  m.M11*x + m.M21*y + m.M31*z //+ m.X41
-            , m.M12*x + m.M22*y + m.M32*z //+ m.Y42
-            , m.M13*x + m.M23*y + m.M33*z //+ m.Z43
+        UnitVec.createUnchecked(  
+              m.M11*x + m.M21*y + m.M31*z // + m.X41
+            , m.M12*x + m.M22*y + m.M32*z // + m.Y42
+            , m.M13*x + m.M23*y + m.M33*z // + m.Z43
             )
 
     /// Multiplies (or applies) a RigidMatrix to a 3D vector.

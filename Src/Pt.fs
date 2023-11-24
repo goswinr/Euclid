@@ -30,7 +30,7 @@ type Pt =
     /// Gets the Z part of this 2D point.
     [<DataMember>] val Y : float
 
-    /// Create a new 2D point. Made up from 3 floats: X, Y, and Z.
+    /// Create a new 2D point. Made up from 2 floats: X and Y.
     new (x, y) =
         #if DEBUG // TODO : with this test all  operations are 2.5 times slower
         if Double.IsNaN x || Double.IsNaN y || Double.IsInfinity x || Double.IsInfinity y  then EuclidException.Raise "Euclid.Pt Constructor failed for x:%g, y:%g"  x y
@@ -66,7 +66,7 @@ type Pt =
 
     /// Add a unit-vector to a 2D point.
     /// Returns a new 2D point.
-    static member inline ( + ) (a:Pt, b:Pt) = Pt (a.X + b.X, a.Y + b.Y )
+    static member inline ( + ) (a:Pt, b:Pt) = Pt (a.X + b.X, a.Y + b.Y ) // required for Seq.average and Pnt.midPt
 
     /// Multiplies a 2D point with a scalar, also called scaling a point.
     /// Returns a new 2D point.

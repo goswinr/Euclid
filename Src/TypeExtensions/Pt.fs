@@ -26,7 +26,7 @@ module AutoOpenPt =
         member inline pt.IsOrigin = pt.X = 0.0 && pt.Y = 0.0
 
         /// Returns a boolean indicating if any of X and Y is not exactly 0.0.
-        member inline v.IsNotOrigin = v.X <> 0.0 || v.Y <> 0.0
+        member inline p.IsNotOrigin = p.X <> 0.0 || p.Y <> 0.0
 
         /// Returns a boolean indicating wether the absolute value of X and Y is each less than the given tolerance.
         member inline pt.IsAlmostOrigin tol = abs pt.X < tol && abs pt.Y < tol
@@ -42,11 +42,17 @@ module AutoOpenPt =
         member inline pt.WithZ z = Pnt (pt.X, pt.Y, z)
 
         /// Returns the distance between two 2D points.
-        member inline p.DistanceTo (b:Pt) = let v = p-b in sqrt(v.X*v.X + v.Y*v.Y )
+        member inline p.DistanceTo (b:Pt) =
+            let x = p.X-b.X
+            let y = p.Y-b.Y
+            sqrt(x*x + y*y ) 
 
         /// Returns the squared distance between two 2D points.
         /// This operation is slightly faster than the distance function, and sufficient for many algorithms like finding closest points.
-        member inline p.DistanceToSquare (b:Pt) = let v = p-b in  v.X*v.X + v.Y*v.Y
+        member inline p.DistanceToSquare (b:Pt) = 
+            let x = p.X-b.X
+            let y = p.Y-b.Y
+            x*x + y*y
 
         /// Returns the distance from Origin (0, 0)
         member inline pt.DistanceFromOrigin = sqrt (pt.X*pt.X + pt.Y*pt.Y )
@@ -131,7 +137,7 @@ module AutoOpenPt =
             let dot = Vc.dot (uv,  dir)
             if   dot <= 0.0 then  fromPt
             elif dot >= len then (fromPt+len*uv)
-            else                 fromPt+dot*uv
+            else                  fromPt+dot*uv
 
         /// Returns the squared distance between point and finite line segment.
         member inline testPt.DistanceToLineSquare(fromPt:Pt, uv:UnitVc, len:float) =
@@ -242,11 +248,11 @@ module AutoOpenPt =
         /// Scales a 2D point by a factor. Returns a new 2D point.
         static member inline scale (f:float) (pt:Pt) = pt*f
 
-        /// Move point 2D by vector. Same as Pnt.move.
+        /// Move point 2D by vector. Same as Pt.move.
         static member inline translate (shift:Vc) (pt:Pt ) =
             pt + shift
 
-        /// Move point 2D by vector. Same as Pnt.translate.
+        /// Move point 2D by vector. Same as Pt.translate.
         static member inline move (shift:Vc) (pt:Pt ) =
             pt + shift
 
@@ -287,14 +293,14 @@ module AutoOpenPt =
            (ptPrev-ptThis).Unitized  + (ptNext-ptThis).Unitized
 
         /// Rotate the a 2D point Counter Clockwise by a 2D Rotation (that has cos and sin precomputed)
-        static member inline rotateBy (r:Rotation2D) (p:Pt) =
+        static member inline rotateBy (r:Rotation2D) (p:Pt) : Pt =
             Pt( r.Cos*p.X - r.Sin*p.Y,
                 r.Sin*p.X + r.Cos*p.Y)
 
         /// Rotate the 2D point in Degrees. Counter Clockwise.
         /// For better Performance precompute the Rotate2D struct and use its member to rotate. 
         /// see Vc.rotateBy.
-        static member inline rotate (angDegree) (vec:Pt) =
+        static member inline rotate (angDegree) (vec:Pt) : Pt =
             Pt.rotateBy (Rotation2D.createFromDegrees angDegree) vec
 
         /// Rotate the 2D point around a center 2D point. Counter Clockwise.
@@ -309,18 +315,33 @@ module AutoOpenPt =
         static member inline rotateWithCenter (cen:Pt)  angDegree (pt:Pt) =
             Pt.rotateWithCenterBy cen (Rotation2D.createFromDegrees angDegree) pt
 
-        /// Returns a point that is at a given distance from a point in the direction of another point.
+        static member failedDistPt (fromPt:Pt, dirPt:Pt, distance:float) = EuclidDivByZeroException.Raise "Euclid.Pt.distPt: distance form %O to %O is too small to scale to distance: %g" fromPt dirPt distance
+
+        /// Returns a point that is at a given distance from a 2D point in the direction of another point.
         static member inline distPt (fromPt:Pt, dirPt:Pt, distance:float) : Pt =
-            let v = dirPt - fromPt
-            let sc = distance/v.Length
-            fromPt + v*sc
+            let x = dirPt.X - fromPt.X
+            let y = dirPt.Y - fromPt.Y
+            let len = sqrt(x*x + y*y )
+            if len < zeroLengthTolerance then Pt.failedDistPt(fromPt, dirPt, distance)
+            let fac = distance / len
+            Pt(fromPt.X + x*fac, 
+               fromPt.Y + y*fac)
 
-        /// Returns a point by evaluation a line between two 2D point with a normalized parameter.
-        /// e.g. rel=0.5 will return the middle point, rel=1.0 the endPoint.
+        /// Linearly interpolates between two 2D points.
+        /// e.g. rel=0.5 will return the middle point, rel=1.0 the endPoint, 
+        /// rel=3.0 a point three times the distance beyond the end point.
+        /// Same as Pt.lerp.
         static member inline divPt(fromPt:Pt, toPt:Pt, rel:float) : Pt =
-            let v = toPt - fromPt
-            fromPt + v*rel
-
+            Pt( fromPt.X + (toPt.X-fromPt.X)*rel,
+                fromPt.Y + (toPt.Y-fromPt.Y)*rel)
+        
+        
+        /// Linearly interpolates between two 2D points.
+        /// e.g. rel=0.5 will return the middle point, rel=1.0 the endPoint, 
+        /// rel=3.0 a point three times the distance beyond the end point.
+        /// Same as Pt.divPt.
+        static member inline lerp(fromPt:Pt, toPt:Pt, rel:float) : Pt =
+            Pt.divPt(fromPt, toPt, rel)
 
         /// Snaps to a point if it is within the snapDistance.
         /// otherwise returns the original point.

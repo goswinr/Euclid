@@ -25,11 +25,11 @@ type Line2D =
     /// Returns the Y coordinate of the end point of the line.
     [<DataMember>] val ToY  :float
 
-    ///Create Line2D from 2D start point and 2D end point.
-    new (a:Pt, b:Pt) = {FromX=a.X; FromY=a.Y; ToX=b.X; ToY=b.Y}
+    /// Create Line2D from 2D start point and 2D end point.
+    new (fromPt:Pt, toPt:Pt) = {FromX=fromPt.X; FromY=fromPt.Y; ToX=toPt.X; ToY=toPt.Y; }
 
-    ///Create Line2D from 2D start point's x and y  and 2D end point's x and y .
-    new (a, b, u, v) = {FromX=a; FromY=b;  ToX=u; ToY=v}
+    /// Create Line2D from 2D start point's x and y  and 2D end point's x and y .
+    new (fromX, fromY, toX, toY) = {FromX=fromX; FromY=fromY;  ToX=toX; ToY=toY}
 
     /// Returns the length of the line.
     member inline ln.Length =
@@ -100,7 +100,7 @@ type Line2D =
         let x = abs (ln.ToX-ln.FromX)
         let y = abs (ln.ToY-ln.FromY)
         if x+y < 1e-6 then EuclidException.Raise "Euclid.Line2D.IsXAligned cannot not check very tiny Line. (tolerance 1e-6) %O" ln
-        else y < 1e-9 
+        else y < 1e-9
 
     /// Checks if 2D line is parallel to the world Y axis. Ignoring orientation.
     /// The absolute deviation tolerance along X axis is 1e-9.
@@ -127,7 +127,7 @@ type Line2D =
     /// Evaluate line at a given parameter ( parameters 0.0 to 1.0 are on the line ),
     member inline ln.EvaluateAt (p:float) =
         Pt  ( ln.FromX + (ln.ToX-ln.FromX)*p
-            , ln.FromY + (ln.ToY-ln.FromY)*p)        
+            , ln.FromY + (ln.ToY-ln.FromY)*p)
 
     /// Returns the length of the line segment from the start point to the given parameter.
     /// This length is negative if the parameter is negative.
@@ -144,8 +144,8 @@ type Line2D =
         let x = (ln.ToX - ln.FromX)*p
         let y = (ln.ToY - ln.FromY)*p
         let l = sqrt(x*x + y*y)
-        if p> 0.0 then l else -l    
-        
+        if p> 0.0 then l else -l
+
 
     /// Returns the midpoint of the line,
     member inline ln.Mid =
@@ -157,9 +157,8 @@ type Line2D =
     member inline ln.Reversed =
         Line2D(ln.ToX, ln.ToY, ln.FromX, ln.FromY)
 
-    /// Returns the lines Bounding Rectangle.
-    member inline ln.BoundingRect =
-        BRect.create ( ln.From, ln.To)
+    // Returns the lines Bounding Rectangle.
+    //member inline ln.BoundingRect = BRect.create ( ln.From, ln.To)
 
     /// Returns a Line2D from point at Parameter a to point at Parameter b.
     member inline ln.Segment(a, b) =
@@ -206,7 +205,7 @@ type Line2D =
                 ln.FromY,
                 ln.ToX   + x*distAtEnd/l,
                 ln.ToY   + y*distAtEnd/l )
-    
+
     /// Shrink 2D line by absolute amount at start and end.
     /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
     member inline ln.Shrink (distAtStart:float, distAtEnd:float) =
@@ -422,8 +421,8 @@ type Line2D =
         let au = a * (1.0 / sqrt sa )
         let bu = b * (1.0 / sqrt sb )
         abs(bu*au) > float minCosine
-    
-    /// Checks if a 2D lines is parallel to a 2D unit vector.  
+
+    /// Checks if a 2D lines is parallel to a 2D unit vector.
     /// Ignores the line orientation.
     /// The default angle tolerance is 0.25 degrees.
     /// This tolerance can be customized by an optional minium cosine value.
@@ -432,9 +431,9 @@ type Line2D =
     member inline ln.IsParallelTo( other:UnitVc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
         let a = ln.Vector
         let sa = a.LengthSq
-        if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Line2D.IsParallelTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString other.AsString        
+        if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Line2D.IsParallelTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString other.AsString
         let au = a * (1.0 / sqrt sa )
-        abs(other*au) > float minCosine  
+        abs(other*au) > float minCosine
 
 
     /// Checks if two 2D lines are parallel.
@@ -481,10 +480,10 @@ type Line2D =
     member inline ln.IsParallelAndOrientedTo (other:UnitVc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
         let a = ln.Vector
         let sa = a.LengthSq
-        if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Line2D.IsParallelAndOrientedTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString other.AsString        
+        if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Line2D.IsParallelAndOrientedTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString other.AsString
         let au = a * (1.0 / sqrt sa )
         other*au > float minCosine
-    
+
 
 
     /// Checks if two 2D lines are perpendicular to each other.
@@ -533,7 +532,7 @@ type Line2D =
     member inline ln.IsPerpendicularTo (other:UnitVc, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) =
         let a = ln.Vector
         let sa = a.LengthSq
-        if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Line2D.IsPerpendicularTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString other.AsString        
+        if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Line2D.IsPerpendicularTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString other.AsString
         let au = a * (1.0 / sqrt sa )
         let d = other*au
         float -maxCosine < d && d  < float maxCosine // = cosine of 98.75 and 90.25 degrees
@@ -584,15 +583,15 @@ type Line2D =
     member inline ln.IsPointOnRight(pt:Pt) =
         let lv = ln.Vector.Rotate90CW
         let pv = pt - ln.From
-        lv*pv > 0.0 
-        
+        lv*pv > 0.0
+
     /// Looking in the direction of the line.
     /// Check if a given point is on the left side of the infinite line.
     /// Also returns false if the point is on the line.
-    member inline ln.IsPointOnLeft(pt:Pt) = 
+    member inline ln.IsPointOnLeft(pt:Pt) =
         let lv = ln.Vector.Rotate90CCW
         let pv = pt - ln.From
-        lv*pv > 0.0 
+        lv*pv > 0.0
 
     //-------------------------------------------------------------------
     //------------------------static members-----------------------------
@@ -686,7 +685,7 @@ type Line2D =
     /// Tolerance is 1e-6.
     /// Fails on lines shorter than 1e-6.
     static member inline isXAligned (l:Line2D) = l.IsXAligned
-    
+
     /// Checks if 2D line is parallel to the world Y axis. Ignoring orientation.
     /// Tolerance is 1e-6.
     /// Fails on lines shorter than 1e-6.
@@ -720,15 +719,37 @@ type Line2D =
     static member inline move (v:Vc) (ln:Line2D) = ln.Move(v)
 
     /// Rotation a Line2D.
-    static member inline rotate (r:Rotation2D) (ln:Line2D) = Line2D(Pt.rotateBy r ln.From, Pt.rotateBy r ln.To)
+    static member inline rotate (r:Rotation2D) (ln:Line2D) =
+        let fx = ln.FromX
+        let fy = ln.FromY
+        let tx = ln.ToX
+        let ty = ln.ToY
+        let c = r.Cos
+        let s = r.Sin
+        Line2D( c*fx - s*fy,
+                s*fx + c*fy,
+                c*tx - s*ty,
+                s*tx + c*ty)
 
     /// Rotation a Line2D around a given Center.
-    static member inline rotateOn (cen:Pt) (r:Rotation2D) (ln:Line2D) = Line2D(Pt.rotateWithCenterBy cen r ln.From, Pt.rotateWithCenterBy cen r ln.To)
+    static member inline rotateWithCenter (cen:Pt) (r:Rotation2D) (ln:Line2D) =
+        let cx = cen.X
+        let cy = cen.Y
+        let fx = ln.FromX - cx
+        let fy = ln.FromY - cy
+        let tx = ln.ToX - cx
+        let ty = ln.ToY - cy
+        let c = r.Cos
+        let s = r.Sin
+        Line2D( c*fx - s*fy + cx,
+                s*fx + c*fy + cy,
+                c*tx - s*ty + cx,
+                s*tx + c*ty + cy)
 
     /// Ensure 2D Line has a positive dot product with given orientation Line.
     static member inline matchOrientation (orientationToMatch:Line2D) (lineToFlip:Line2D) =
         if orientationToMatch.Vector * lineToFlip.Vector < 0.0 then lineToFlip.Reversed else lineToFlip
-  
+
     /// Ensure 2D Line has a positive dot product with given orientation 2D vector.
     static member inline matchVcOrientation (orientationToMatch:Vc) (lineToFlip:Line2D) =
         if orientationToMatch * lineToFlip.Vector < 0.0 then lineToFlip.Reversed else lineToFlip
@@ -752,7 +773,7 @@ type Line2D =
     /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
     /// And checks if it is smaller than 1e-9
     /// (NOTE: for very long lines a higher tolerance might be needed)
-    static member inline  areParallel (l:Line2D) (ln:Line2D) = l.IsParallelTo ln
+    static member inline areParallel (l:Line2D) (ln:Line2D) = l.IsParallelTo ln
 
     /// Checks if two 2D lines are parallel and orientated the same way.
     /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
@@ -833,7 +854,7 @@ type Line2D =
     static member inline shrinkEnd (distAtEnd:float) (ln:Line2D) =
         ln.ShrinkEnd(distAtEnd)
 
-        
+
 
     /// Finds point at given distance from line start.
     /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
@@ -868,6 +889,20 @@ type Line2D =
                 ln.ToY + y*len/l,
                 ln.ToX,
                 ln.ToY )
+
+
+    /// Returns new Line2D with given length. Missing length is added to or subtracted from both the end and start of the line.
+    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    static member inline withLengthFromMid len (ln:Line2D) =
+        let x = ln.FromX-ln.ToX
+        let y = ln.FromY-ln.ToY
+        let l = sqrt(x*x + y*y )
+        if l < zeroLengthTolerance then EuclidException.Raise "Euclid.Line2D.withLengthFromMid %O to short for finding point at a distance." ln
+        let f = (len/l + 1.0) * 0.5
+        Line2D( ln.ToX   + x*f,
+                ln.ToY   + y*f,
+                ln.FromX - x*f,
+                ln.FromY - y*f)
 
 
     /// Offset line in XY-Plane to left side in line direction.
@@ -1155,24 +1190,24 @@ type Line2D =
             let vr = isZeroOneOrBetween v
 
             let inline fix01 zt1 x = match zt1 with Zero -> 0.0 |One -> 1.0 |Between |Outside -> x
-            
-            if   ur = Outside || vr = Outside then 
+
+            if   ur = Outside || vr = Outside then
                 // finite Lines are not intersecting, still find their closest Points:
                 let pu = lnA.EvaluateAt  u
                 let vt = Line2D.closestParameter pu lnB
                 let pv = lnB.EvaluateAt vt
                 let ut = Line2D.closestParameter pv lnA
                 Apart, ut, vt
-            elif ur = Zero || ur = One then                 
-                if vr = Zero || vr = One then                     
+            elif ur = Zero || ur = One then
+                if vr = Zero || vr = One then
                     IntersectingEndsBoth,(fix01 ur u), (fix01 vr  v)
-                else                          
+                else
                     IntersectingEndsFirst, (fix01 ur u), v
             elif vr = Zero || vr = One then
                 IntersectingEndsSecond, u, (fix01 vr  v)
-            else 
+            else
                 Intersecting, u, v
-            
+
 
         | IntersectionParam.Parallel ->
 

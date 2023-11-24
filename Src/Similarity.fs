@@ -90,7 +90,7 @@ module Similarity2D =
             |  i ->
                 rs.[i] <- true
                 true
-            ) //|>! printfn "simPts forall  %b"
+            ) // |>! printfn "simPts forall  %b"
         // the above checks that each point overlaps with another point
         // but two points from one set might also cover one single point from the other set so we need to check that all indices are covered:
         && rs |> Array.forall id

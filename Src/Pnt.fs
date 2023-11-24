@@ -96,7 +96,7 @@ type Pnt =
 
     /// Divides the 3D point by an integer.
     /// (This member is needed by Array.average and similar functions)
-    static member  DivideByInt (pt:Pnt, i:int) = // needed by  'Array.average' 
+    static member DivideByInt (pt:Pnt, i:int) = // needed by  'Array.average' 
         if i=0 then EuclidDivByZeroException.Raise "Euclid.Pnt.DivideByInt 0 %O" pt 
         let d = float i  
         Pnt(pt.X/d, pt.Y/d, pt.Z/d)

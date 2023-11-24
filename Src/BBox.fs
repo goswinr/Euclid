@@ -12,8 +12,9 @@ open System.Runtime.Serialization // for serialization of struct fields only but
 /// An immutable 3D Bounding Box.
 /// This implementation guarantees the box to be always valid.
 /// That means the Min X, Y and Z values are always smaller or equal than the respective Max values.
+/// The X, Y and Z axes are also called Width, Depth and Height3D.
 ///
-///   Z-Axis       Y-Axis
+///   Z-Axis       Y-Axis (Depth)
 ///   ^           /
 ///   |   7      /        6 MaxPt
 ///   |   +---------------+
@@ -26,7 +27,7 @@ open System.Runtime.Serialization // for serialization of struct fields only but
 ///   |  / 3          |  / 2
 ///   | /             | /
 ///   |/              |/
-///   +---------------+----> X-Axis
+///   +---------------+----> X-Axis (Width)
 ///   0 MinPt         1
 [<Struct; NoEquality; NoComparison>]
 [<IsReadOnly>]
@@ -54,14 +55,14 @@ type BBox =
 
     /// Nicely formatted string representation of the BoundingBox, including its size.
     override b.ToString() =
-        sprintf "Euclid.BBox: length(x)= %s width(y)=%s, height(z)=%s (at X=%s | Y=%s | Z=%s)"
+        sprintf "Euclid.BBox; Size: x=%s | y=%s | z=%s (at X=%s | Y=%s | Z=%s)"
             (Format.float (b.MaxX - b.MinX)) (Format.float (b.MaxY - b.MinY)) (Format.float (b.MaxZ - b.MinZ))
             (Format.float b.MinX) (Format.float b.MinY) (Format.float b.MinZ)
 
     /// Format BoundingBox into string with nice floating point number formatting of size and position.
     /// But without full type name as in bbox.ToString()
     member b.AsString =
-        sprintf "len= %s wid=%s, hei=%s (at X=%s | Y=%s | Z=%s)"
+        sprintf "Size: x=%s | y=%s | z=%s (at X=%s | Y=%s | Z=%s)"
             (Format.float (b.MaxX - b.MinX)) (Format.float (b.MaxY - b.MinY)) (Format.float (b.MaxZ - b.MinZ))
             (Format.float b.MinX) (Format.float b.MinY) (Format.float b.MinZ)
 
@@ -72,18 +73,18 @@ type BBox =
     member inline b.MaxPnt = Pnt(b.MaxX, b.MaxY, b.MinZ)
 
     /// The size in X direction, same as member box.SizeX.
-    member inline b.Length = b.MaxX - b.MinX
-    /// The size in X direction, same as member box.Length.
+    member inline b.Width = b.MaxX - b.MinX
+    /// The size in X direction, same as member box.Width.
     member inline b.SizeX = b.MaxX - b.MinX
 
     /// The size in Y direction, same as member box.SizeY.
-    member inline b.Width = b.MaxY - b.MinY
-    /// The size in Y direction, same as member box.Width.
+    member inline b.Depth = b.MaxY - b.MinY
+    /// The size in Y direction, same as member box.Depth.
     member inline b.SizeY = b.MaxY - b.MinY
 
     /// The size in Z direction, same as member box.SizeZ.
-    member inline b.Height = b.MaxZ - b.MinZ
-    /// The size in Z direction, same as member box.Height.
+    member inline b.Height3D = b.MaxZ - b.MinZ
+    /// The size in Z direction, same as member box.Height3D.
     member inline b.SizeZ = b.MaxZ - b.MinZ
 
     /// The diagonal 3D vector of the bounding box. From MinPnt to MaxPnt.
@@ -94,7 +95,7 @@ type BBox =
 
     /// Returns point 0 of the bounding box, same as member box.MinPnt.
     ///
-    ///   Z-Axis       Y-Axis
+    ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6 MaxPt
     ///   |   +---------------+
@@ -107,13 +108,13 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-Axis (Width)
     ///   0 MinPt         1
     member inline b.Pt0 = Pnt(b.MinX, b.MinY, b.MinZ)
 
     /// Returns point 1 of the bounding box.
     ///
-    ///   Z-Axis       Y-Axis
+    ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6 MaxPt
     ///   |   +---------------+
@@ -126,13 +127,13 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-Axis (Width)
     ///   0 MinPt         1
     member inline b.Pt1 = Pnt(b.MaxX, b.MinY, b.MinZ)
 
     /// Returns point 2 of the bounding box.
     ///
-    ///   Z-Axis       Y-Axis
+    ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6 MaxPt
     ///   |   +---------------+
@@ -145,13 +146,13 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-Axis (Width)
     ///   0 MinPt         1
     member inline b.Pt2 = Pnt(b.MaxX, b.MaxY, b.MinZ)
 
     /// Returns point 3 of the bounding box.
     ///
-    ///   Z-Axis       Y-Axis
+    ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6 MaxPt
     ///   |   +---------------+
@@ -164,13 +165,13 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-Axis (Width)
     ///   0 MinPt         1
     member inline b.Pt3 = Pnt(b.MinX, b.MaxY, b.MinZ)
 
     /// Returns point 4 of the bounding box.
     ///
-    ///   Z-Axis       Y-Axis
+    ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6 MaxPt
     ///   |   +---------------+
@@ -183,13 +184,13 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-Axis (Width)
     ///   0 MinPt         1
     member inline b.Pt4 = Pnt(b.MinX, b.MinY, b.MaxZ)
 
     /// Returns point 5 of the bounding box.
     ///
-    ///   Z-Axis       Y-Axis
+    ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6 MaxPt
     ///   |   +---------------+
@@ -202,13 +203,13 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-Axis (Width)
     ///   0 MinPt         1
 
     member inline b.Pt5 = Pnt(b.MaxX, b.MinY, b.MaxZ)
     /// Returns point 6 of the bounding box.
     ///
-    ///   Z-Axis       Y-Axis
+    ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6 MaxPt
     ///   |   +---------------+
@@ -221,13 +222,13 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-Axis (Width)
     ///   0 MinPt         1
     member inline b.Pt6 = Pnt(b.MaxX, b.MaxY, b.MaxZ)
 
     /// Returns point 7 of the bounding box.
     ///
-    ///   Z-Axis       Y-Axis
+    ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6 MaxPt
     ///   |   +---------------+
@@ -240,14 +241,14 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-Axis (Width)
     ///   0 MinPt         1
     member inline b.Pt7 = Pnt(b.MinX, b.MaxY, b.MaxZ)
 
     /// Returns the bottom corners of the Bounding Box in Counter-Clockwise order, starting at MinPt.
     /// Then the top corners staring above MinPt. Returns an array of 8 Points.
     ///
-    ///   Z-Axis       Y-Axis
+    ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6 MaxPt
     ///   |   +---------------+
@@ -260,15 +261,15 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-Axis (Width)
     ///   0 MinPt         1
-    member b.Corners = [|b.Pt0; b.Pt1; b.Pt2; b.Pt3; b.Pt4; b.Pt5; b.Pt6; b.Pt7|]
+    member b.Points = [|b.Pt0; b.Pt1; b.Pt2; b.Pt3; b.Pt4; b.Pt5; b.Pt6; b.Pt7|]
 
     /// Returns the bottom of the Box as a Counter-Clockwise array of 4 Points.
     /// Starting at MinPt. Point 0, 1, 2 and 3.
     /// Last and first point are NOT the same.
     ///
-    ///   Z-Axis       Y-Axis
+    ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6 MaxPt
     ///   |   +---------------+
@@ -281,7 +282,7 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-Axis (Width)
     ///   0 MinPt         1
     member b.BottomPoints = [|b.Pt0; b.Pt1; b.Pt2; b.Pt3|]
 
@@ -290,7 +291,7 @@ type BBox =
     /// Starting at MinPt. Point 0, 1, 2, 3 and again 0.
     /// Last and first point are the same.
     ///
-    ///   Z-Axis       Y-Axis
+    ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6 MaxPt
     ///   |   +---------------+
@@ -303,15 +304,15 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-Axis (Width)
     ///   0 MinPt         1
-    member b.BottomPointsClosed = [|b.Pt0; b.Pt1; b.Pt2; b.Pt3; b.Pt0|]
+    member b.BottomPointsLooped = [|b.Pt0; b.Pt1; b.Pt2; b.Pt3; b.Pt0|]
 
     /// Returns the bottom of the Box as a Counter-Clockwise array of 4 Points.
     /// Staring at point 4 then 5, 6 and 7.
     /// Last and first point are NOT the same.
     ///
-    ///   Z-Axis       Y-Axis
+    ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6 MaxPt
     ///   |   +---------------+
@@ -324,7 +325,7 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-Axis (Width)
     ///   0 MinPt         1
     member b.TopPoints = [|b.Pt4; b.Pt5; b.Pt6; b.Pt7|]
 
@@ -332,7 +333,7 @@ type BBox =
     /// Starting point 4 then 5, 6, 7 and again 4.
     /// Last and first point are the same.
     ///
-    ///   Z-Axis       Y-Axis
+    ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6 MaxPt
     ///   |   +---------------+
@@ -345,11 +346,68 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-Axis (Width)
     ///   0 MinPt         1
-    member b.TopPointsClosed = [|b.Pt4; b.Pt5; b.Pt6; b.Pt7; b.Pt4|]
+    member b.TopPointsLooped = [|b.Pt4; b.Pt5; b.Pt6; b.Pt7; b.Pt4|]
 
 
+    /// Returns the X aligned Edge from point 0 to 1.
+    member inline b.Edge01 = Line3D(b.Pt0, b.Pt1)
+
+    /// Returns the Y aligned Edge from point 1 to 2.
+    member inline b.Edge12 = Line3D(b.Pt1, b.Pt2)
+
+    /// Returns the X aligned Edge from point 3 to 2.
+    member inline b.Edge32 = Line3D(b.Pt3, b.Pt2)
+
+    /// Returns the Y aligned Edge from point 0 to 3.
+    member inline b.Edge03 = Line3D(b.Pt0, b.Pt3)
+
+    /// Returns the Z aligned Edge from point 0 to 4.
+    member inline b.Edge04 = Line3D(b.Pt0, b.Pt4)
+
+    /// Returns the Z aligned Edge from point 1 to 5.
+    member inline b.Edge15 = Line3D(b.Pt1, b.Pt5)
+
+    /// Returns the Z aligned Edge from point 2 to 6.
+    member inline b.Edge26 = Line3D(b.Pt2, b.Pt6)
+
+    /// Returns the Z aligned Edge from point 3 to 7.
+    member inline b.Edge37 = Line3D(b.Pt3, b.Pt7)
+
+    /// Returns the X aligned Edge from point 4 to 5.
+    member inline b.Edge45 = Line3D(b.Pt4, b.Pt5)
+
+    /// Returns the Y aligned Edge from point 5 to 6.
+    member inline b.Edge56 = Line3D(b.Pt5, b.Pt6)
+
+    /// Returns the X aligned Edge from point 7 to 6.
+    member inline b.Edge76= Line3D(b.Pt7, b.Pt6)
+
+    /// Returns the Y aligned Edge from point 4 to 7.
+    member inline b.Edge47 = Line3D(b.Pt4, b.Pt7)
+
+    /// Returns the 12 Edges of the Bounding Box as an array of 12 Lines.
+    /// Pair is this order: 
+    /// 0-1, 1-2, 3-2, 0-3, 0-4, 1-5, 2-6, 3-7, 4-5, 5-6, 7-6, 4-7
+    ///
+    ///   Z-Axis       Y-Axis (Depth)
+    ///   ^           /
+    ///   |   7      /        6 MaxPt
+    ///   |   +---------------+
+    ///   |  /|    /         /|
+    ///   | / |   /         / |
+    /// 4 |/  |  /       5 /  |
+    ///   +---------------+   |
+    ///   |   |/          |   |
+    ///   |   +-----------|---+
+    ///   |  / 3          |  / 2
+    ///   | /             | /
+    ///   |/              |/
+    ///   +---------------+----> X-Axis (Width)
+    ///   0 MinPt         1
+    member b.Edges = [| b.Edge01; b.Edge12; b.Edge32; b.Edge03; b.Edge04; b.Edge15; b.Edge26; b.Edge37; b.Edge45; b.Edge56; b.Edge76; b.Edge47 |]
+    
     /// Returns Bounding Box expanded by distance.
     /// Does check for underflow if distance is negative and raises EuclidException.
     member inline b.Expand(dist) : BBox =
@@ -626,7 +684,7 @@ type BBox =
     static member inline createFromCenter (center:Pnt, sizeX, sizeY, sizeZ ) =
         if sizeX < 0. then EuclidException.Raise "Euclid.BBox.createFromCenter sizeX is negative: %g, sizeY is: %g, sizeZ is: %g, center: %O"  sizeX sizeY sizeZ center.AsString
         if sizeY < 0. then EuclidException.Raise "Euclid.BBox.createFromCenter sizeY is negative: %g, sizeX is: %g, sizeZ is: %g, center: %O"  sizeY sizeX sizeZ center.AsString
-        if sizeZ < 0. then EuclidException.Raise "Euclid.BBox.createFromCenter sizeZ is negative: %g, sizeX is: %g, sizeY is: %g, center: %O"  sizeZ sizeX sizeY center.AsString        
+        if sizeZ < 0. then EuclidException.Raise "Euclid.BBox.createFromCenter sizeZ is negative: %g, sizeX is: %g, sizeY is: %g, center: %O"  sizeZ sizeX sizeY center.AsString
         let minX = center.X - sizeX*0.5
         let minY = center.Y - sizeY*0.5
         let maxX = center.X + sizeX*0.5
@@ -646,3 +704,14 @@ type BBox =
     /// Returns the 2D part of this Bounding Box as a Bounding Rectangle.
     static member inline toRect (b:BBox) =
         BRect.createUnchecked(b.MinX, b.MinY, b.MaxX, b.MaxY)
+    
+    static member inline createFromLine (l:Line3D) =
+        let minX = min l.FromX l.ToX
+        let maxX = max l.FromX l.ToX
+        let minY = min l.FromY l.ToY
+        let maxY = max l.FromY l.ToY
+        let minZ = min l.FromZ l.ToZ
+        let maxZ = max l.FromZ l.ToZ
+        BBox(minX, minY, minZ, maxX, maxY, maxZ)
+
+        
