@@ -59,7 +59,7 @@ type Polyline2D =
         l
 
     /// Gets Bounding Rectangle of the Polyline2D
-    member p.BoundingRectangle = BRect.create p.Points
+    member p.BoundingRectangle = BRect.createFromIList p.Points
 
     /// Tests if Polyline2D start and end points are exactly the same.
     member inline p.IsClosed =

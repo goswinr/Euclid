@@ -37,6 +37,10 @@ For the full API see [fuget.org](https://www.fuget.org/packages/Euclid) for now.
 [MIT](https://raw.githubusercontent.com/goswinr/Euclid/main/LICENSE.txt)
 
 ### Release Notes
+`0.4.1`
+- fix bug in rect.Edge23
+- add BBox.createFromIList
+
 `0.4.0`
 - add Line.withLengthFromMid
 - rename isAngleLessThan functions

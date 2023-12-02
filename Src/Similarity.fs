@@ -122,9 +122,9 @@ module Similarity2D =
     let getSimilarityData (ptss:ResizeArray<string*ResizeArray<Pt>>) : ObjectToCheck =
         let sptss = ptss |> ResizeArray.sortBy fst
         // compute the overall bounding Rectangle and the shifting needed to move Rectangle to origin:
-        let mutable bb = BRect.create(sptss.[0] |> snd)
+        let mutable bb = BRect.createFromIList(sptss.[0] |> snd)
         for i=1 to sptss.Count-1 do
-            bb <- BRect.create(sptss.[i] |> snd) |> BRect.union bb
+            bb <- BRect.createFromIList(sptss.[i] |> snd) |> BRect.union bb
         let shift = Vc(-bb.MinX, -bb.MinY)
         let ept = bb.MaxPt+shift
         {
@@ -133,7 +133,7 @@ module Similarity2D =
             for n, pts in sptss do
                 let ps = pts |> Array.ofSeq |> Array.map (Pt.addVc shift)
                 ps |> Array.sortInPlaceBy Pt.getX
-                let bb = BRect.create(ps)
+                let bb = BRect.createFromIList(ps)
                 {
                 category=n
                 bRect=bb

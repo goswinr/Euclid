@@ -35,7 +35,7 @@ type BRect =
     [<DataMember>] val MaxX : float
     [<DataMember>] val MaxY : float
 
-    
+
     /// Unsafe internal constructor,  public only for inlining.
     [<Obsolete("Unsafe internal constructor,  but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >]
     new (minX, minY, maxX, maxY) =
@@ -77,21 +77,86 @@ type BRect =
     /// The center of the bounding rect.
     member inline r.Center = Pt( (r.MaxX + r.MinX)*0.5, (r.MaxY + r.MinY)*0.5)
 
+    /// Returns the point (0) or minX, minY.
+    ///
+    ///   Y-Axis (Height2D)
+    ///   ^
+    ///   |
+    ///   |             2 = max X,Y
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   +------------+-----> X-Axis (Width)
+    ///  0 = min X,Y      1
+    member r.Pt0 = Pt(r.MinX, r.MinY)
+
+    /// Returns the point (1) or maxX, minY.
+    /// 
+    ///   Y-Axis (Height2D)
+    ///   ^
+    ///   |
+    ///   |             2 = max X,Y
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   +------------+-----> X-Axis (Width)
+    ///  0 = min X,Y      1
+    member r.Pt1 = Pt(r.MaxX, r.MinY)
+
+    /// Returns the point (2) or maxX, maxY.
+    /// 
+    ///   Y-Axis (Height2D)
+    ///   ^
+    ///   |
+    ///   |             2 = max X,Y
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   +------------+-----> X-Axis (Width)
+    ///  0 = min X,Y      1
+    member r.Pt2 = Pt(r.MaxX, r.MaxY)
+
+    /// Returns the point (3) or minX, maxY.
+    /// 
+    ///   Y-Axis (Height2D)
+    ///   ^
+    ///   |
+    ///   |             2 = max X,Y
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   +------------+-----> X-Axis (Width)
+    ///  0 = min X,Y      1
+    member r.Pt3 = Pt(r.MinX, r.MaxY)
+
+    
     /// Returns the corners of the Bounding Rectangle in Counter-Clockwise order, starting at MinPt.
     /// Returns an array of 4 Points.
     ///
     ///   Y-Axis (Height2D)
     ///   ^
     ///   |
-    ///   |             2 max X,Y
+    ///   |             2  = max X,Y
     /// 3 +------------+
     ///   |            |
     ///   |            |
     ///   |            |
     ///   |            |
-    ///   |            |       local
+    ///   |            |
     ///   +------------+-----> X-Axis (Width)
-    ///  0-min X,Y      1
+    ///  0 = min X,Y    1
     member r.Points =
         [| Pt(r.MinX, r.MinY); Pt(r.MaxX, r.MinY);  Pt(r.MaxX, r.MaxY); Pt(r.MinX, r.MaxY) |]
 
@@ -102,7 +167,7 @@ type BRect =
     ///   Y-Axis (Height2D)
     ///   ^
     ///   |
-    ///   |             2 max X,Y
+    ///   |             2  = max X,Y
     /// 3 +------------+
     ///   |            |
     ///   |            |
@@ -110,7 +175,7 @@ type BRect =
     ///   |            |
     ///   |            |
     ///   +------------+-----> X-Axis (Width)
-    ///  0-min X,Y      1
+    ///  0 = min X,Y    1
     member r.PointsLooped =
         [| Pt(r.MinX, r.MinY); Pt(r.MaxX, r.MinY);  Pt(r.MaxX, r.MaxY); Pt(r.MinX, r.MaxY); Pt(r.MinX, r.MinY)|]
 
@@ -119,7 +184,7 @@ type BRect =
     ///   Y-Axis (Height2D)
     ///   ^
     ///   |
-    ///   |             2 max X,Y
+    ///   |             2  = max X,Y
     /// 3 +------------+
     ///   |            |
     ///   |            |
@@ -127,7 +192,7 @@ type BRect =
     ///   |            |
     ///   |            |
     ///   +------------+-----> X-Axis (Width)
-    ///  0-min X,Y      1
+    ///  0 = min X,Y    1
     member r.Edge01 = Line2D(r.MinX,r.MinY,r.MaxX,r.MinY)
 
     /// The right Edge. The line from point 1 to 2
@@ -135,7 +200,7 @@ type BRect =
     ///   Y-Axis (Height2D)
     ///   ^
     ///   |
-    ///   |             2 max X,Y
+    ///   |             2  = max X,Y
     /// 3 +------------+
     ///   |            |
     ///   |            |
@@ -143,7 +208,7 @@ type BRect =
     ///   |            |
     ///   |            |
     ///   +------------+-----> X-Axis (Width)
-    ///  0-min X,Y      1
+    ///  0 = min X,Y    1
     member r.Edge12 = Line2D(r.MaxX,r.MinY,r.MaxX,r.MaxY)
 
     /// The top Edge. The line from point 2 to 3
@@ -151,7 +216,7 @@ type BRect =
     ///   Y-Axis (Height2D)
     ///   ^
     ///   |
-    ///   |             2 max X,Y
+    ///   |             2  = max X,Y
     /// 3 +------------+
     ///   |            |
     ///   |            |
@@ -159,15 +224,15 @@ type BRect =
     ///   |            |
     ///   |            |
     ///   +------------+-----> X-Axis (Width)
-    ///  0-min X,Y      1
-    member r.Edge23 = Line2D(r.MaxX,r.MaxY,r.MinY,r.MaxX)
+    ///  0 = min X,Y    1
+    member r.Edge23 = Line2D(r.MaxX,r.MaxY,r.MinX,r.MaxY)
 
     /// The left Edge. The line from point 3 to 0
     ///
     ///   Y-Axis (Height2D)
     ///   ^
     ///   |
-    ///   |             2 max X,Y
+    ///   |             2  = max X,Y
     /// 3 +------------+
     ///   |            |
     ///   |            |
@@ -175,7 +240,7 @@ type BRect =
     ///   |            |
     ///   |            |
     ///   +------------+-----> X-Axis (Width)
-    ///  0-min X,Y      1
+    ///  0 = min X,Y    1
     member r.Edge30 = Line2D(r.MinX,r.MaxY,r.MinX,r.MinY)
 
     /// Returns Bounding Rectangle expanded by distance.
@@ -390,8 +455,8 @@ type BRect =
         BRect(minX, minY, maxX, maxY)
 
     /// Finds min and max values for x and y.
-    static member inline create (ps:seq<Pt> ) =
-        if Seq.isEmpty ps then raise <| EuclidException("Euclid.BRect.create(seq<Pt>) input is empty seq")
+    static member inline createFromSeq (ps:seq<Pt> ) =
+        if Seq.isEmpty ps then raise <| EuclidException("Euclid.BRect.createFromSeq: seq<Pt> is empty.")
         let mutable minX = Double.MaxValue
         let mutable minY = Double.MaxValue
         let mutable maxX = Double.MinValue
@@ -402,6 +467,21 @@ type BRect =
             maxX <- max maxX p.X
             maxY <- max maxY p.Y
         BRect(minX, minY, maxX, maxY)
+
+    /// Finds min and max values for x and y.
+    static member inline createFromIList (ps:Collections.Generic.IList<Pt> ) =
+        if ps.Count = 0 then raise <| EuclidException("Euclid.BRect.createFromIList: IList<Pt> is empty.")
+        let mutable minX = Double.MaxValue
+        let mutable minY = Double.MaxValue
+        let mutable maxX = Double.MinValue
+        let mutable maxY = Double.MinValue
+        for i = 0 to ps.Count-1 do
+            let p = ps.[i]
+            minX <- min minX p.X
+            minY <- min minY p.Y
+            maxX <- max maxX p.X
+            maxY <- max maxY p.Y
+        BRect(minX, minY, maxX, maxY)    
 
     /// Creates a Bounding Rectangle from a center point and the total X and Y size.
     static member inline createFromCenter (center:Pt, sizeX, sizeY ) =

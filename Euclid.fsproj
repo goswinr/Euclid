@@ -12,23 +12,20 @@
     <!--to only have the english resources-->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Configuration>Release</Configuration>
+
     <RootNamespace>Euclid</RootNamespace>
     <AssemblyName>Euclid</AssemblyName>
     <AssemblyTitle>Euclid</AssemblyTitle>
     <Title>Euclid</Title>
     <Product>Euclid</Product>
     <PackageId>Euclid</PackageId>
-    <Version>0.4.0</Version>
-    <AssemblyVersion>0.4.0</AssemblyVersion>
-    <FileVersion>0.4.0</FileVersion>
+    
+    <Version>0.4.1</Version>
+    <AssemblyVersion>0.4.1</AssemblyVersion>
+    <FileVersion>0.4.1</FileVersion>
     <PackageReleaseNotes>
-      - add Line.withLengthFromMid
-      - rename isAngleLessThan functions
-      - add spherical interpolation (slerp) for vectors
-      - rename Length to Width on Boxes and Rects
-      - rename Width to Height2D on Rects
-      - rename Width to Depth on Boxes
-      - add EdgeMethods on Rects and Boxes
+      - fix bug in rect.Edge23
+      - add BBox.createFromIList
     </PackageReleaseNotes>
     <Authors>GoswinR</Authors>
     <Copyright>Goswin Rothenthal 2019</Copyright>

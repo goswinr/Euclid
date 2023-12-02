@@ -55,7 +55,7 @@ type Polyline3D =
         l
 
     /// Gets Bounding Box of the Polyline3D
-    member inline p.BoundingBox = BBox.create p.Points
+    member inline p.BoundingBox = BBox.createFromIList p.Points
 
     /// Tests if Polyline3D start and end points are exactly the same.
     member inline p.IsClosed =

@@ -663,8 +663,8 @@ type BBox =
 
 
     /// Finds min and max values for x, y and z.
-    static member inline create (ps:seq<Pnt> ) =
-        if Seq.isEmpty ps then raise <| EuclidException("Euclid.BBox.create(seq<Pt>) input is empty seq")
+    static member inline createFromSeq (ps:seq<Pnt> ) =
+        if Seq.isEmpty ps then raise <| EuclidException("Euclid.BBox.createFromSeq: seq<Pt> is empty.")
         let mutable minX = Double.MaxValue
         let mutable minY = Double.MaxValue
         let mutable minZ = Double.MaxValue
@@ -679,6 +679,26 @@ type BBox =
             maxY <- max maxY p.Y
             maxZ <- max maxZ p.Z
         BBox(minX, minY, minZ, maxX, maxY, maxZ)
+    
+    /// Finds min and max values for x, y and z.
+    static member inline createFromIList (ps:Collections.Generic.IList<Pnt> ) =
+        if Seq.isEmpty ps then raise <| EuclidException("Euclid.BBox.createFromIList: IList<Pt> is empty.")
+        let mutable minX = Double.MaxValue
+        let mutable minY = Double.MaxValue
+        let mutable minZ = Double.MaxValue
+        let mutable maxX = Double.MinValue
+        let mutable maxY = Double.MinValue
+        let mutable maxZ = Double.MinValue
+        for i=0 to ps.Count-1 do
+            let p = ps.[i]
+            minX <- min minX p.X
+            minY <- min minY p.Y
+            minZ <- min minZ p.Z
+            maxX <- max maxX p.X
+            maxY <- max maxY p.Y
+            maxZ <- max maxZ p.Z
+        BBox(minX, minY, minZ, maxX, maxY, maxZ)
+        
 
     /// Creates a Bounding Box from a center point and the total X, Y and Z size.
     static member inline createFromCenter (center:Pnt, sizeX, sizeY, sizeZ ) =
