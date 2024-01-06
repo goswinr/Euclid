@@ -78,8 +78,8 @@ module AutoOpenPnt =
         member p.FailedDirectionDiamondInXYTo(o) = EuclidDivByZeroException.Raise "Euclid.Pnt.DirectionDiamondInXYTo failed for too short distance between %O and %O." p o
             
         /// Returns the Diamond Angle from this point to another point projected in X-Y plane.
-        /// The diamond angle is always positive and in the range of 0.0 to 4.0 ( for 360 Degrees)
-        /// 0.0 = Xaxis,  going Counter-Clockwise. Ignoring Z component.
+        /// The diamond angle is always positive and in the range of 0.0 to 4.0 (for 360 Degrees)
+        /// 0.0 = Xaxis, going Counter-Clockwise. Ignoring Z component.
         /// This is the fastest angle computation since it does not use Math.Cos or Math.Sin.
         /// It is useful for radial sorting.
         member inline p.DirectionDiamondInXYTo(o:Pnt) =
@@ -115,7 +115,7 @@ module AutoOpenPnt =
             else            a
 
         /// Returns the angle in Degrees from this point to another point projected in X-Y plane.
-        /// 0.0 = Xaxis,  going Counter-Clockwise till 360.
+        /// 0.0 = Xaxis, going Counter-Clockwise till 360.
         member inline p.Angle360InXYTo(o:Pnt) =
             p.Angle2PiInXYTo o |> toDegrees
         
@@ -130,7 +130,7 @@ module AutoOpenPnt =
             let lenSq = v.LengthSq
             let lenSq = v.LengthSq
             if lenSq < zeroLengthTolSquared then testPt.FailedAngle360InXYTo(fromPt, toPt)
-            let dot = Vec.dot (v,  dir) / lenSq
+            let dot = Vec.dot (v, dir) / lenSq
             if   dot <= 0.0 then  fromPt
             elif dot >= 1.0 then  toPt
             else                 fromPt+dot*v
@@ -138,7 +138,7 @@ module AutoOpenPnt =
         /// Get closest point on finite line to test point.
         member inline testPt.ClosestPointOnLine(fromPt:Pnt, uv:UnitVec, len:float) =
             let dir = testPt-fromPt
-            let dot = Vec.dot (uv,  dir)
+            let dot = Vec.dot (uv, dir)
             if   dot <= 0.0 then  fromPt
             elif dot >= len then (fromPt+len*uv)
             else                 fromPt+dot*uv
@@ -147,17 +147,17 @@ module AutoOpenPnt =
         /// start point, direction and length.
         member inline testPt.DistanceToLineSquare(fromPt:Pnt, uv:UnitVec, len:float) =
             let dir = testPt-fromPt
-            let dot = Vec.dot (uv,  dir)
+            let dot = Vec.dot (uv, dir)
             if   dot <= 0.0 then testPt.DistanceToSquare  fromPt
             elif dot >= len then testPt.DistanceToSquare (fromPt+len*uv)
             else                 testPt.DistanceToSquare (fromPt+dot*uv)
 
         /// Returns the squared distance between point and finite line segment defined by 
-        /// start point, end point,  direction and length.
+        /// start point, end point, direction and length.
         /// The last two parameters help speed up calculations.
-        member inline testPt.DistanceToLineSquare(fromPt:Pnt, toPt:Pnt,  uv:UnitVec, len:float) =
+        member inline testPt.DistanceToLineSquare(fromPt:Pnt, toPt:Pnt, uv:UnitVec, len:float) =
             let dir = testPt-fromPt
-            let dot = Vec.dot (uv,  dir)
+            let dot = Vec.dot (uv, dir)
             if   dot <= 0.0 then testPt.DistanceToSquare fromPt
             elif dot >= len then testPt.DistanceToSquare toPt
             else                 testPt.DistanceToSquare (fromPt+dot*uv)
@@ -166,7 +166,7 @@ module AutoOpenPnt =
         /// start point, direction and length.
         member inline testPt.DistanceToLine(fromPt:Pnt, uv:UnitVec, len:float) =
             let dir = testPt-fromPt
-            let dot = Vec.dot (uv,  dir)
+            let dot = Vec.dot (uv, dir)
             if   dot <= 0.0 then testPt.DistanceToSquare fromPt
             elif dot >= len then testPt.DistanceToSquare (fromPt+len*uv)
             else                 testPt.DistanceToSquare (fromPt+dot*uv)
@@ -180,7 +180,7 @@ module AutoOpenPnt =
             let v   = toPt   - fromPt
             let lenSq = v.LengthSq
             if lenSq < zeroLengthTolSquared then testPt.FailedDistanceToLine(fromPt, toPt)
-            let dot = Vec.dot (v,  dir) / v.LengthSq
+            let dot = Vec.dot (v, dir) / v.LengthSq
             if   dot <= 0.0 then testPt.DistanceTo   fromPt
             elif dot >= 1.0 then testPt.DistanceTo   toPt
             else                 testPt.DistanceTo   (fromPt + v * dot)
@@ -188,11 +188,11 @@ module AutoOpenPnt =
         /// Multiplies (or applies) a Matrix to a 3D point (with an implicit 1 in the 4th dimension,
         /// so that it also works correctly for projections.)
         member inline p.Transform (m:Matrix) =
-            p * m // operator * is defined in Matrix.fs
+            p *** m // operator * is defined in Matrix.fs
 
         /// Multiplies (or applies) a RigidMatrix to a 3D point.
         member inline p.TransformRigid (m:RigidMatrix) =
-            p * m // operator * is defined in RigidMatrix.fs
+            p *** m // operator * is defined in RigidMatrix.fs
 
         /// Multiplies (or applies) only the 3x3 rotation part of a RigidMatrix to a 3D point.
         member inline p.TransformRigidRotateOnly (m:RigidMatrix) =
@@ -207,6 +207,13 @@ module AutoOpenPnt =
         //----------------------------------------------------------------------------------------------
         //--------------------------  Static Members  --------------------------------------------------
         //----------------------------------------------------------------------------------------------
+
+        /// Checks if two 3D points are equal within tolerance.
+        /// Use a tolerance of 0.0 to check for an exact match.
+        static member inline equals (tol:float) (a:Pnt) (b:Pnt) =            
+            abs (a.X-b.X) <= tol &&
+            abs (a.Y-b.Y) <= tol &&
+            abs (a.Z-b.Z) <= tol
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
@@ -243,7 +250,7 @@ module AutoOpenPnt =
         static member inline createFromUnitVec (v:UnitVec) = Pnt (v.X, v.Y, v.Z)
 
         /// Create 3D point from X, Y and Z components.
-        static member inline create (x:float, y:float, z:float) = Pnt( x, y, z )
+        static member inline create (x:float, y:float, z:float) = Pnt(x, y, z)
 
         /// Returns a 3D point from Z level and 2D point.
         static member inline createFromPtWithZ (z:float) (p:Pt) = Pnt (p.X, p.Y, z)
@@ -283,21 +290,21 @@ module AutoOpenPnt =
         static member inline scale (f:float) (pt:Pnt) = pt*f
 
         /// Move point 3D by vector. Same as Pnt.move.
-        static member inline translate (shift:Vec) (pt:Pnt ) =
+        static member inline translate (shift:Vec) (pt:Pnt) =
             pt + shift
 
         /// Move point 3D by vector. Same as Pnt.translate.
-        static member inline move (shift:Vec) (pt:Pnt ) =
+        static member inline move (shift:Vec) (pt:Pnt) =
             pt + shift
 
         /// Add float to X component of a 3D point and return new 3D point.
-        static member inline moveX (x:float) (pt:Pnt) = Pnt (pt.X+x, pt.Y,   pt.Z)
+        static member inline moveX (x:float) (pt:Pnt) = Pnt (pt.X+x, pt.Y, pt.Z)
 
         /// Add float to Y component of a 3D point and return new 3D point.
-        static member inline moveY (y:float) (pt:Pnt) = Pnt (pt.X,   pt.Y+y, pt.Z)
+        static member inline moveY (y:float) (pt:Pnt) = Pnt (pt.X, pt.Y+y, pt.Z)
 
         /// Add float to Z component of a 3D point and return new 3D point.
-        static member inline moveZ (z:float) (pt:Pnt) = Pnt (pt.X,   pt.Y,   pt.Z+z)
+        static member inline moveZ (z:float) (pt:Pnt) = Pnt (pt.X, pt.Y, pt.Z+z)
 
         /// Returns the distance between two 3D points.
         static member inline distance (a:Pnt) (b:Pnt) = let v = a-b in sqrt(v.X*v.X + v.Y*v.Y + v.Z*v.Z)
@@ -333,7 +340,7 @@ module AutoOpenPnt =
             (ptPrev-ptThis).Unitized  + (ptNext-ptThis).Unitized
 
         /// For three Points describing a plane return a normal.
-        /// If the returned vector has length zero then the points are in one Line.
+        /// If the returned vector has length zero then the points are in one line.
         static member normalOf3Pts (a:Pnt, b:Pnt, c:Pnt) = Vec.cross (a-b, c-b)
 
         static member failedDistPt (fromPt:Pnt, dirPt:Pnt, distance:float) = EuclidDivByZeroException.Raise "Euclid.Pnt.distPt: distance form %O to %O is too small to scale to distance: %g" fromPt dirPt distance
@@ -375,7 +382,7 @@ module AutoOpenPnt =
             let v = toPt - fromPt
             if fromPt.Z < toPt.Z && z < fromPt.Z  then EuclidException.Raise "Euclid.Pnt.extendToZLevel cannot be reached for fromPt:%O toPt:%O z:%g" fromPt toPt z
             if fromPt.Z > toPt.Z && z > fromPt.Z  then EuclidException.Raise "Euclid.Pnt.extendToZLevel cannot be reached for fromPt:%O toPt:%O z:%g" fromPt toPt z
-            let dot = abs ( v * Vec.Zaxis)
+            let dot = abs (v *** Vec.Zaxis)
             if dot < 0.0001 then  EuclidException.Raise "Euclid.Pnt.extendToZLevel cannot be reached for fromPt:%O toPt:%O because they are both at the same level. target z:%g " fromPt toPt z
             let diffZ = abs (fromPt.Z - z)
             let fac = diffZ / dot
@@ -389,7 +396,7 @@ module AutoOpenPnt =
 
         /// Snaps the points coordinate to the given precision.
         /// e.g. snap 0.1 Pnt(0.123, 0.456, 0) -> Pnt(0.1, 0.5, 0) 
-        /// e.g. snap 10  Pnt(3    , 19   , 0) -> Pnt(0  , 20 , 0 ) 
+        /// e.g. snap 10  Pnt(3    , 19   , 0) -> Pnt(0  , 20 , 0) 
         /// does: (Math.Round (x/precision)) * precision     
         static member inline snap (precision) (pt:Pnt) =
             if precision < zeroLengthTolerance then EuclidDivByZeroException.Throw1 "Euclid.Pt.snap: precision too small or negative" precision
@@ -450,13 +457,13 @@ module AutoOpenPnt =
             p.TransformRigidRotateOnly m
 
         /// Rotate the 3D point around X-axis, from Y to Z-axis, Counter Clockwise looking from right.
-        static member rotateXBy (r:Rotation2D) (p:Pnt) = Pnt (p.X,  r.Cos*p.Y - r.Sin*p.Z, r.Sin*p.Y + r.Cos*p.Z)
+        static member rotateXBy (r:Rotation2D) (p:Pnt) = Pnt (p.X, r.Cos*p.Y - r.Sin*p.Z, r.Sin*p.Y + r.Cos*p.Z)
 
         /// Rotate the 3D point around Y-axis, from Z to X-axis, Counter Clockwise looking from back.
-        static member rotateYBy (r:Rotation2D) (p:Pnt) = Pnt ( r.Sin*p.Z + r.Cos*p.X,  p.Y, r.Cos*p.Z - r.Sin*p.X)
+        static member rotateYBy (r:Rotation2D) (p:Pnt) = Pnt (r.Sin*p.Z + r.Cos*p.X, p.Y, r.Cos*p.Z - r.Sin*p.X)
 
         /// Rotate the 3D point around Z-axis, from X to Y-axis, Counter Clockwise looking from top.
-        static member rotateZBy (r:Rotation2D) (p:Pnt) = Pnt (r.Cos*p.X - r.Sin*p.Y, r.Sin*p.X + r.Cos*p.Y,  p.Z)
+        static member rotateZBy (r:Rotation2D) (p:Pnt) = Pnt (r.Cos*p.X - r.Sin*p.Y, r.Sin*p.X + r.Cos*p.Y, p.Z)
 
         /// Rotate the 3D point around a center 3D point and a X aligned axis, from Y to Z-axis, Counter Clockwise looking from right.
         static member rotateXwithCenterBy (cen:Pnt) (r:Rotation2D) (pt:Pnt) =
@@ -511,7 +518,7 @@ module AutoOpenPnt =
 
         /// Rotate by Quaternion around Origin
         static member inline rotateByQuaternion (q:Quaternion) (pt:Pnt) =
-            pt*q  // operator * is defined in Quaternion.fs
+            pt *** q  // operator * is defined in Quaternion.fs
 
         /// Rotate by Quaternion around given Center point.
         static member inline rotateWithCenterByQuat (cen:Pnt) (q:Quaternion) (pt:Pnt) =
@@ -545,7 +552,7 @@ module AutoOpenPnt =
         /// Returns the parameter (or scaling for unit-vector) on this line of the projection.
         static member inline projectedParameter (fromPt:Pnt, uv:UnitVec, testPt:Pnt) =
             let dir = testPt-fromPt
-            Vec.dot (dir,  uv)
+            Vec.dot (dir, uv)
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
@@ -558,7 +565,7 @@ module AutoOpenPnt =
             let dir = testPt-fromPt
             let lenSq = v.LengthSq
             if lenSq < zeroLengthTolSquared then Pnt.failedProjectedParameter(fromPt, v, testPt)
-            Vec.dot (v,  dir) / lenSq
+            Vec.dot (v, dir) / lenSq
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
@@ -572,4 +579,4 @@ module AutoOpenPnt =
             let v   = toPt   - fromPt
             let lenSq = v.LengthSq
             if lenSq < zeroLengthTolSquared then Pnt.failedProjectedParameter(fromPt, toPt, testPt)
-            Vec.dot (v,  dir) / lenSq
+            Vec.dot (v, dir) / lenSq

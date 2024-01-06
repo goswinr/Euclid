@@ -168,7 +168,18 @@ module Cosine =
     [<Measure>]
     type cosine
 
-    // for fsi: printfn "%.18f" (cos( 0.25 * (System.Math.PI / 180.)))
+    (* for fsi: 
+    let print(degree) = 
+        let radians = degree * (System.Math.PI  / 180.)
+        let v =  cos(radians)
+        
+        printfn $"""
+        /// The cosine of an angle of {degree} degrees.
+        /// This is exactly %.20f{v}
+        [<Literal>]
+        let ``{degree}`` = %.20f{v}<cosine>
+        """
+    *)
 
     /// The cosine of an angle of 0.01 degrees.
     /// This is exactly 0.999999984769129
@@ -306,7 +317,7 @@ module RelAngleDiscriminant =
 
     /// The Unit Of Measure for
     /// the precalculated relative angle discriminant values.
-    /// This UoM helps to avoid that angle values are used directly in the Line Intersection functions.
+    /// This UoM helps to avoid that angle values are used directly in the line Intersection functions.
     [<Measure>]
     type relAngDiscr
 
@@ -332,7 +343,7 @@ module RelAngleDiscriminant =
     //     let discriminant = ac - bb
     //     // Getting this relation between the sum and the subtraction gives a very good estimate of the angle between the lines.
     //     let relAngleDiscriminant = discriminant/(ac+bb)     //
-    //     if relAngleDiscriminant > 1.5e-6 then //not parallel //1e-5 for 0.25deg,  //1.5e-6 for 0.1deg,  //1.5e-4 for 1.0 deg
+    //     if relAngleDiscriminant > 1.5e-6 then //not parallel //1e-5 for 0.25deg, //1.5e-6 for 0.1deg, //1.5e-4 for 1.0 deg
     //         let t = (b * e - c * d) / discriminant
     //         let u = (a * e - b * d) / discriminant
     //         Some (t, u)

@@ -1,6 +1,6 @@
 namespace Euclid
 
-/// A module for the result types of 2D and 3D Line-Line-intersections.
+/// A module for the result types of 2D and 3D line-line-intersections.
 module LineIntersectionTypes =
 
     /// For infinite 2D or 3D lines.
@@ -9,7 +9,7 @@ module LineIntersectionTypes =
     type IntersectionParam =
 
         /// The infinite lines are intersecting (2D and 3D) or skew (3D only)
-        /// They have each one point where they are touching each other. ( Or are closest to each other. 3D only)
+        /// They have each one point where they are touching each other. (Or are closest to each other. 3D only)
         /// Contains the parameters on the first and second line.
         | TwoParam of twoParams : struct(float*float)
 
@@ -123,29 +123,29 @@ module LineIntersectionTypes =
         /// The returned parameters are at start and end of overlap.
         | Overlapping
 
-        /// The Lines are coincident, parallel within the tolerance (default 1e-6 distance and 0.25 degrees).
+        /// The lines are coincident, parallel within the tolerance (default 1e-6 distance and 0.25 degrees).
         /// They are part of the same infinite line, but not overlapping.
         /// The ends are apart.
         /// The returned parameters still indicate where the lines are closest to each other.
         | CoincidentApart
 
-        /// The Lines are coincident, parallel within the tolerance (default 1e-6 distance and 0.25 degrees).
+        /// The lines are coincident, parallel within the tolerance (default 1e-6 distance and 0.25 degrees).
         /// The ends are meeting in exactly one point.
         /// And Oriented the same way.
         /// The returned parameters indicate which ends these are.
         | Continuation
 
-        /// The Lines are coincident, parallel  within the tolerance (default 1e-6 distance and 0.25 degrees).
+        /// The lines are coincident, parallel  within the tolerance (default 1e-6 distance and 0.25 degrees).
         /// The ends are meeting in exactly one point.
         /// But orientation is flipped.
         /// The returned parameters indicate which ends these are.
         | ContinuationFlipped
 
-        /// The Lines are identical in position and orientation within the tolerance (default 1e-6 distance and 0.25 degrees).
+        /// The lines are identical in position and orientation within the tolerance (default 1e-6 distance and 0.25 degrees).
         /// The returned parameters still indicate where the lines start and end.
         | Identical
 
-        /// The Lines are identical within the tolerance (default 1e-6 distance and 0.25 degrees).. But orientation is flipped.
+        /// The lines are identical within the tolerance (default 1e-6 distance and 0.25 degrees).. But orientation is flipped.
         /// The returned parameters still indicate where the lines start and end.
         | IdenticalFlipped
 

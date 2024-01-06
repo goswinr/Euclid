@@ -2,7 +2,7 @@ namespace Euclid
 
 // Design notes:
 // The structs types in this file only have the constructors, ToString override and operators define in this file.
-// For structs that need a checked and unchecked constructor ( like unit vectors) the main 'new' constructor is marked obsolete.
+// For structs that need a checked and unchecked constructor (like unit vectors) the main 'new' constructor is marked obsolete.
 // A 'create' and 'createUnchecked' static member is provided instead.
 // All other members are implemented as extension members. see files in folder members.
 // This design however makes extension members unaccessible from see C#. To fix this all types and all members could be put into one file.
@@ -32,7 +32,7 @@ type UnitVc =
     /// Gets the Y part of this 2D unit-vector.
     [<DataMember>] val Y : float
 
-    /// Unsafe internal constructor, doesn't check or unitize the input,  public only for inlining.
+    /// Unsafe internal constructor, doesn't check or unitize the input, public only for inlining.
     [<Obsolete("Unsafe internal constructor, doesn't check or unitize the input (unless compiled in DEBUG mode), but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >]
     new (x, y) =
         #if DEBUG
@@ -52,48 +52,53 @@ type UnitVc =
     member v.AsString = sprintf "X=%s| Y=%s" (Format.float v.X) (Format.float v.Y)
 
     /// Negate or inverse a 2D unit vectors. Returns a new 2D unit-vector.
-    static member inline ( ~- ) (v:UnitVc) = UnitVc( -v.X, -v.Y )
+    static member inline ( ~- ) (v:UnitVc) = UnitVc( -v.X, -v.Y)
 
     /// Subtract one 2D unit vectors from another. Returns a new (non-unitized) 2D vector.
-    static member inline ( - ) (a:UnitVc, b:UnitVc) = Vc (a.X - b.X, a.Y - b.Y )
+    static member inline ( - ) (a:UnitVc, b:UnitVc) = Vc (a.X - b.X, a.Y - b.Y)
 
     /// Subtract a 2D unit vectors from a 2D vector". Returns a new (non-unitized) 2D vector.
-    static member inline ( - ) (a:Vc, b:UnitVc) = Vc (a.X - b.X, a.Y - b.Y )
+    static member inline ( - ) (a:Vc, b:UnitVc) = Vc (a.X - b.X, a.Y - b.Y)
 
     /// Subtract a 2D vectors from a 2D unit-vector". Returns a new (non-unitized) 2D vector.
-    static member inline ( - ) (a:UnitVc, b:Vc) = Vc (a.X - b.X, a.Y - b.Y )
+    static member inline ( - ) (a:UnitVc, b:Vc) = Vc (a.X - b.X, a.Y - b.Y)
 
     /// Add two 2D unit vectors together.
     /// Returns a new (non-unitized) 2D vector.
-    static member inline ( + ) (a:UnitVc, b:UnitVc) = Vc (a.X + b.X, a.Y + b.Y )
+    static member inline ( + ) (a:UnitVc, b:UnitVc) = Vc (a.X + b.X, a.Y + b.Y)
 
     /// Add a 2D unit vectors and a 2D vector together.
     /// Returns a new (non-unitized) 2D vector.
-    static member inline ( + ) (a:Vc,     b:UnitVc) = Vc (a.X + b.X, a.Y + b.Y )
+    static member inline ( + ) (a:Vc, b:UnitVc) = Vc (a.X + b.X, a.Y + b.Y)
 
     /// Add a 2D vectors and a 2D unit-vector together.
     /// Returns a new (non-unitized) 2D vector.
-    static member inline ( + ) (a:UnitVc, b:Vc) = Vc (a.X + b.X, a.Y + b.Y )
+    static member inline ( + ) (a:UnitVc, b:Vc) = Vc (a.X + b.X, a.Y + b.Y)
 
     /// Multiplies a 2D unit-vector with a scalar, also called scaling a vector.
     /// Returns a new (non-unitized) 2D vector.
-    static member inline ( * ) (a:UnitVc, f:float   ) = Vc (a.X * f, a.Y * f )
+    static member inline ( * ) (a:UnitVc, f:float) = Vc (a.X * f, a.Y * f)
 
     /// Multiplies a scalar with a 2D unit-vector, also called scaling a vector.
     /// Returns a new (non-unitized) 2D vector.
-    static member inline ( * ) (f:float, a:UnitVc  ) = Vc (a.X * f, a.Y * f )
+    static member inline ( * ) (f:float, a:UnitVc) = Vc (a.X * f, a.Y * f)
 
     /// Dot product, or scalar product of two 2D unit vectors.
     /// Returns a float. This float is the Cosine of the angle between the two 2D vectors.
-    static member inline ( * ) (a:UnitVc, b:UnitVc  ) = a.X * b.X+ a.Y * b.Y
+    static member inline ( *** ) (a:UnitVc, b:UnitVc) = a.X * b.X+ a.Y * b.Y
 
     /// Dot product, or scalar product of a 2D unit-vector with a 2D vector.
     /// Returns a float. This float is the projected length of the 2D vector on the direction of the unit-vector.
-    static member inline ( * ) (a:UnitVc, b:Vc      ) = a.X * b.X+ a.Y * b.Y
+    static member inline ( *** ) (a:UnitVc, b:Vc) = a.X * b.X+ a.Y * b.Y
 
     /// Dot product, or scalar product of a 2D vector with a 2D unit-vector.
     /// Returns a float. This float is the projected length of the 2D vector on the direction of the unit-vector.
-    static member inline ( * ) (a:Vc, b:UnitVc  ) = a.X * b.X+ a.Y * b.Y
+    static member inline ( *** ) (a:Vc, b:UnitVc) = a.X * b.X+ a.Y * b.Y
+
+    /// 2D cross product.
+    /// Its Just a scalar equal to the area of the parallelogram spanned by the input vectors.
+    /// For unit vectors this is the same as the sine of the angle between the two vectors. (while the dot product is the cosine)
+    static member inline cross (a:UnitVc, b:UnitVc) = a.X*b.Y - a.Y*b.X
     
     /// A separate function to compose the error message that does not get inlined.
     [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
@@ -102,7 +107,7 @@ type UnitVc =
     /// Divides a 2D unit-vector by a scalar, also be called dividing/scaling a vector. Returns a new (non-unitized) 2D vector.
     static member inline ( / ) (v:UnitVc, f:float) = 
         if abs f < zeroLengthTolerance then v.FailedDivide(f) // don't compose error msg directly here to keep inlined code small.        
-        Vc (v.X / f, v.Y / f )    
+        Vc (v.X / f, v.Y / f)    
 
     /// For use as a faster constructor.
     /// Requires correct input of unitized values.
@@ -122,9 +127,9 @@ type UnitVc =
         // see error FS1114: The value 'Euclid.AutoOpenUnitVc.create' was marked inline but was not bound in the optimization environment
         let l = sqrt(x * x  + y * y)
         if l < zeroLengthTolerance then UnitVc.failedCreate(x, y) // don't compose error msg directly here to keep inlined code small.
-        UnitVc( x/l, y/l )
+        UnitVc(x/l, y/l)
 
         
     // These members cannot be implemented since Array.sum and Array.average of UnitVc would return a 'Vc' and not a 'UnitVc'
-    // static member Zero = UnitVc ( 0., 0.)  // needed by 'Array.sum'
+    // static member Zero = UnitVc (0., 0.)  // needed by 'Array.sum'
     // static member inline DivideByInt (v:UnitVc, i:int) = v / float i  // needed by  'Array.average'

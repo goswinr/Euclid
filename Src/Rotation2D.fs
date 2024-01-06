@@ -29,8 +29,8 @@ type Rotation2D =
     /// The range of these field is -1.0 to +1.0
     [<DataMember>] val Cos : float
 
-    /// Unsafe internal constructor,  public only for inlining.
-    [<Obsolete("Unsafe internal constructor,  but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >]
+    /// Unsafe internal constructor, public only for inlining.
+    [<Obsolete("Unsafe internal constructor, but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >]
     new (sin, cos) =
         #if DEBUG
         let sum = sin*sin + cos*cos in
@@ -52,7 +52,7 @@ type Rotation2D =
         r.InRadians|> toDegrees
 
     /// Returns the 2D Rotation in the opposite direction.
-    member inline r.Inverse = Rotation2D (-r.Sin, r.Cos )
+    member inline r.Inverse = Rotation2D (-r.Sin, r.Cos)
 
     /// Create a new 2D Rotation that adds 2D Rotation to the existing one.
     member inline r.Add(ro:Rotation2D) =
@@ -75,9 +75,10 @@ type Rotation2D =
     /// Checks if two 2D Rotations are equal within tolerance.
     /// By comparing the fields Sin and Cos each with the given tolerance.
     /// The range of these field is -1.0 to +1.0
-    static member equals tol (a:Rotation2D) (b:Rotation2D) =
-        abs(a.Sin-b.Sin) < tol &&
-        abs(a.Cos-b.Cos) < tol
+    /// Use a tolerance of 0.0 to check for an exact match.
+    static member equals (tol:float) (a:Rotation2D) (b:Rotation2D) =
+        abs(a.Sin-b.Sin) <= tol &&
+        abs(a.Cos-b.Cos) <= tol
 
     ///Construct 2D Rotation from angle in Radians
     static member createFromRadians rad =
@@ -93,7 +94,21 @@ type Rotation2D =
     static member createUnchecked (sine, cosine) =
         Rotation2D (sine, cosine)
 
-
-
-
+    static member createFromVectors (a:UnitVc,b:UnitVc) =
+        let dot = a *** b
+        let cross = UnitVc.cross(a, b)
+        Rotation2D (cross, dot)    
+    
+    static member createFromVectors (a:Vc,b:Vc) =
+        let la = a.Length
+        let lb = b.Length
+        if la < zeroLengthTolerance || lb < zeroLengthTolerance then
+            EuclidException.Raise "Euclid.Rotation2D.createFromVectors failed because one of the input vectors is too shorter than zeroLengthTolerance: a: %s, b: %s" a.AsString b.AsString
+        let ax = a.X/la
+        let ay = a.Y/la
+        let bx = b.X/lb
+        let by = b.Y/lb
+        let dot = ax*bx + ay*by
+        let cross = ax*by - ay*bx
+        Rotation2D (cross, dot)
 

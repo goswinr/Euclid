@@ -12,19 +12,8 @@ module AutoOpenPPlane =
 
     type PPlane with
 
-                
-        /// Checks if two Parametrized Planes are equal within tolerance distance 
-        /// for the tips of its units vectors and its origin.    
-        static member equals tol (a:PPlane) (b:PPlane) =
-            let tt = tol*tol
-            Pnt.distanceSq a.Origin b.Origin < tt &&
-            UnitVec.differenceSq a.Xaxis b.Xaxis < tt &&
-            UnitVec.differenceSq a.Yaxis b.Yaxis < tt 
-            // UnitVec.differenceSq a.Zaxis b.Zaxis < tt // redundant
-
-
         /// Returns signed distance of point to plane, also indicating on which side it is.
-        member inline pl.DistanceToPt pt = pl.Zaxis*(pt-pl.Origin)
+        member inline pl.DistanceToPt pt = pl.Zaxis *** (pt-pl.Origin)
 
         /// Returns the closest point on the plane from a test point.
         member inline pl.ClosestPoint pt = pt - pl.Zaxis*(pl.DistanceToPt pt)
@@ -32,7 +21,7 @@ module AutoOpenPPlane =
         /// Returns the X, Y and Z parameters of a point with regards to the plane.
         member inline pl.PointParameters pt =
             let v = pt-pl.Origin
-            pl.Xaxis*v, pl.Yaxis*v, pl.Zaxis*v
+            pl.Xaxis *** v, pl.Yaxis *** v, pl.Zaxis *** v
 
         /// First finds the closet point on plane from a test point.
         /// Then returns a new plane with Origin at this point and the same Axes vectors.
@@ -55,7 +44,7 @@ module AutoOpenPPlane =
         /// Evaluate at 3D parameter.
         member inline p.EvaluateAt (px:float, py:float, pz:float) = p.Origin + p.Xaxis*px + p.Yaxis*py + p.Zaxis*pz
 
-        /// Evaluate at 2D parameter ( Z parameter = 0.0)
+        /// Evaluate at 2D parameter (Z parameter = 0.0)
         member inline p.EvaluateAtXY (px:float, py:float) = p.Origin + p.Xaxis*px + p.Yaxis*py
 
         /// Checks if two PPlanes are coincident within the distance tolerance. 1e-6 by default.
@@ -76,19 +65,29 @@ module AutoOpenPPlane =
         //--------------------------  Static Members  --------------------------------------------------
         //----------------------------------------------------------------------------------------------
 
-        /// Checks if two 3D Parametrized Planes are equal within tolerance.
-        static member inline equals tol (a:PPlane) (b:PPlane) =
-            let tt = tol*tol
-            Pnt.distanceSq a.Origin b.Origin < tt &&
-            UnitVec.differenceSq a.Xaxis b.Xaxis < tt &&
-            UnitVec.differenceSq a.Yaxis b.Yaxis < tt &&
-            UnitVec.differenceSq a.Zaxis b.Zaxis < tt
+        /// Checks if two Parametrized Planes are equal within tolerance distance 
+        /// For the tips of its units vectors and its origin. 
+        /// Use a tolerance of 0.0 to check for an exact match.
+        static member inline equals (tol:float) (a:PPlane) (b:PPlane) =
+            abs (a.Origin.X - b.Origin.X) <= tol &&
+            abs (a.Origin.Y - b.Origin.Y) <= tol &&
+            abs (a.Origin.Z - b.Origin.Z) <= tol &&
+            abs (a.Xaxis.X - b.Xaxis.X) <= tol &&
+            abs (a.Xaxis.Y - b.Xaxis.Y) <= tol &&
+            abs (a.Xaxis.Z - b.Xaxis.Z) <= tol &&
+            abs (a.Yaxis.X - b.Yaxis.X) <= tol &&
+            abs (a.Yaxis.Y - b.Yaxis.Y) <= tol &&
+            abs (a.Yaxis.Z - b.Yaxis.Z) <= tol //&&
+            //abs (a.Zaxis.X - b.Zaxis.X) <= tol &&
+            //abs (a.Zaxis.Y - b.Zaxis.Y) <= tol &&
+            //abs (a.Zaxis.Z - b.Zaxis.Z) <= tol
 
 
-        /// Checks if two 3D Parametrized Planes are coincident.
+
+        /// Checks if two 3D Parametrized Planes are coincident within the distance tolerance..
         /// This means that the Z-axes are parallel within 0.25 degrees
-        /// and the distance of second origin to the first plane is less than 1e-6 units tolerance.
-        static member inline areCoincident tol (a:PPlane) (b:PPlane) = a.IsCoincidentTo (b)
+        /// and the distance of second origin to the first plane is less than the tolerance.
+        static member inline areCoincident tol (a:PPlane) (b:PPlane) = a.IsCoincidentTo (b,tol)
 
         /// Returns the World Coordinate System Plane at World Origin.
         /// X-axis = World X-axis
@@ -208,12 +207,12 @@ module AutoOpenPPlane =
         /// If this fails because they are coincident, the cross product of the World Y-axis and the given normal (or Z-axis) will be used.        
         static member createOriginNormal (origin:Pnt, normal:UnitVec) =
             if normal.IsParallelTo(UnitVec.Zaxis, Cosine.``0.5``) then 
-                let x = Vec.cross (Vec.Zaxis, normal)
-                let y = Vec.cross (normal, x)
-                PPlane.createUnchecked(origin, x.Unitized, y.Unitized, normal)
-            else
                 let y = Vec.cross (normal,Vec.Xaxis)
                 let x = Vec.cross (y, normal)
+                PPlane.createUnchecked(origin, x.Unitized, y.Unitized, normal)
+            else
+                let x = Vec.cross (Vec.Zaxis, normal)
+                let y = Vec.cross (normal, x)
                 PPlane.createUnchecked(origin, x.Unitized, y.Unitized, normal)
             
         /// Creates a Parametrized Plane from a point and vector representing the normal (or Z-axis).
@@ -247,7 +246,7 @@ module AutoOpenPPlane =
             if ln < 1e-5 then EuclidException.Raise "Euclid.PPlane.createOriginNormalXaxis the normal is too small. origin %s Normal %s" origin.AsString normal.AsString   
             let xf = 1./lx
             let nf = 1./ln
-            let xu = UnitVec.createUnchecked(xAxis.X*xf,  xAxis.Y*xf,  xAxis.Z*xf)
+            let xu = UnitVec.createUnchecked(xAxis.X *xf,  xAxis.Y*xf,  xAxis.Z*xf)
             let nu = UnitVec.createUnchecked(normal.X*nf, normal.Y*nf, normal.Z*nf) 
             PPlane.createOriginNormalXaxis (origin, nu, xu)
 
@@ -290,7 +289,7 @@ module AutoOpenPPlane =
             let m = RigidMatrix.createRotationAxisCenter (pl.Zaxis, pl.Origin, angDegree)
             let x = UnitVec.transformRigid m pl.Xaxis
             let y = UnitVec.transformRigid m pl.Yaxis            
-            PPlane.createUnchecked(pl.Origin, x, y, pl.Zaxis )
+            PPlane.createUnchecked(pl.Origin, x, y, pl.Zaxis)
 
         /// Move Plane along the local X-axis by the given distance.
         static member inline translateX (d:float) (pl:PPlane) =

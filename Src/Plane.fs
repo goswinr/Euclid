@@ -26,15 +26,15 @@ type Plane = // Normals are always unitized
     /// The unitized normal of the Plane.
     [<DataMember>] val Normal : UnitVec
 
-    /// Unsafe internal constructor,  public only for inlining.
-    [<Obsolete("Unsafe internal constructor,  but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >]
+    /// Unsafe internal constructor, public only for inlining.
+    [<Obsolete("Unsafe internal constructor, but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >]
     new (pt, n) = {Origin = pt; Normal = n} // private unchecked constructor, supply unitized values
 
     /// Format PPlane into string with nicely formatted floating point numbers.
     override pl.ToString() = sprintf "Euclid.Plane(Origin:%s| Normal:%s)" pl.Origin.AsString pl.Normal.AsString
 
     /// Returns signed distance of point to plane, also indicating on which side it is.
-    member inline pl.DistanceToPt pt = pl.Normal*(pt-pl.Origin)
+    member inline pl.DistanceToPt pt = pl.Normal *** (pt-pl.Origin)
 
     /// Returns the closest point on the plane from a test point.
     member inline pl.ClosestPoint pt = pt - pl.Normal*(pl.DistanceToPt pt)
@@ -78,10 +78,16 @@ type Plane = // Normals are always unitized
     //----------------------------------------------------------------------------------------------
 
     /// Checks if two 3D Planes are equal within tolerance.
-    static member equals tol (a:Plane) (b:Plane) =
-        let tt = tol*tol
-        Pnt.distanceSq a.Origin b.Origin < tt &&
-        UnitVec.differenceSq a.Normal b.Normal < tt
+    /// The same tolerance is used for the origin and the tips of the normal.
+    /// Use a tolerance of 0.0 to check for an exact match.
+    static member equals (tol:float) (a:Plane) (b:Plane) =
+        abs (a.Origin.X - b.Origin.X) <= tol &&
+        abs (a.Origin.Y - b.Origin.Y) <= tol &&
+        abs (a.Origin.Z - b.Origin.Z) <= tol &&
+        abs (a.Normal.X - b.Normal.X) <= tol &&
+        abs (a.Normal.Y - b.Normal.Y) <= tol &&
+        abs (a.Normal.Z - b.Normal.Z) <= tol
+        
 
     /// Checks if two 3D Parametrized Planes are coincident.
     /// This means that the Z-axes are parallel within 0.25 degrees
@@ -93,7 +99,7 @@ type Plane = // Normals are always unitized
         let l = sqrt(normal.X*normal.X+normal.Y*normal.Y+normal.Z*normal.Z)
         if l < zeroLengthTolerance then EuclidException.Raise "Euclid.Plane.create: %O is too small for unitizing, tolerance:%g" normal zeroLengthTolerance
         let li=1./l in
-        Plane(pt, UnitVec.createUnchecked( li*normal.X, li*normal.Y, li*normal.Z ))
+        Plane(pt, UnitVec.createUnchecked(li*normal.X, li*normal.Y, li*normal.Z))
 
     /// Create Plane from already normalized input vector.
     static member inline create(pt, normal:UnitVec) =
@@ -102,7 +108,7 @@ type Plane = // Normals are always unitized
     /// Create Plane from 3 points.
     static member inline createFrom3Points (a:Pnt) (b:Pnt) (c:Pnt) =
         let n = Vec.cross (c-b, a-b)
-        if n.LengthSq < 1e-12 then EuclidException.Raise "Euclid.Plane.createFrom3Points: the points %O, %O, %O are (almost) in one Line or one Point, no Plane found." a b c
+        if n.LengthSq < 1e-12 then EuclidException.Raise "Euclid.Plane.createFrom3Points: the points %O, %O, %O are (almost) in one line or one Point, no Plane found." a b c
         Plane(a, n.Unitized)
 
     /// Gets the Planes normal. A unitized vector.
@@ -128,8 +134,8 @@ type Plane = // Normals are always unitized
         if v.LengthSq < 1e-18 then
             EuclidException.Raise "Euclid.Plane.intersect: Planes are parallel or coincident: %O, %O" a b
         let pa = Vec.cross(v, an)
-        let nenner = pa * bn
-        let t = ((b.Origin - ao ) * bn) / nenner
+        let nenner = pa *** bn
+        let t = ((b.Origin - ao) *** bn) / nenner
         let xpt = ao + pa * t
         Line3D.createFromPntAndVec (xpt, v)
 
@@ -137,10 +143,10 @@ type Plane = // Normals are always unitized
     /// Fails if they are parallel.
     static member intersectLineParameter  (ln:Line3D) (pl:Plane) =
         let n = pl.Normal
-        let nenner = ln.Tangent * n
+        let nenner = ln.Tangent *** n
         if abs nenner < 1e-9 then
             EuclidException.Raise "Euclid.Plane.intersectLineParameter: Line and Plane are parallel or line has zero length: %O, %O" ln pl
-        ((pl.Origin - ln.From) * pl.Normal) / nenner
+        ((pl.Origin - ln.From) *** pl.Normal) / nenner
 
     /// Returns intersection point of infinite Line3D with Plane.
     /// Fails if they are parallel.
@@ -151,8 +157,8 @@ type Plane = // Normals are always unitized
     /// Returns false for parallel and coincident lines.
     static member inline doLinePlaneIntersect (ln:Line3D) (pl:Plane) =
         let n = pl.Normal
-        let nenner = ln.Tangent * n
-        let t = ((pl.Origin - ln.From) * n)  / nenner // if nenner is 0.0 then 't' is Infinity
+        let nenner = ln.Tangent *** n
+        let t = ((pl.Origin - ln.From) *** n)  / nenner // if nenner is 0.0 then 't' is Infinity
         0. <= t && t <= 1.
 
     /// Returns a new plane offset along the normal vector.

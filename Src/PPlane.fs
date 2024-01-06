@@ -2,7 +2,7 @@ namespace Euclid
 
 // Design notes:
 // The structs types in this file only have the constructors, ToString override and operators define in this file.
-// For structs that need a checked and unchecked constructor ( like unit vectors) the main 'new' constructor is marked obsolete.
+// For structs that need a checked and unchecked constructor (like unit vectors) the main 'new' constructor is marked obsolete.
 // A 'create' and 'createUnchecked' static member is provided instead.
 // All other members are implemented as extension members. see files in folder members.
 // This design however makes extension members unaccessible from see C#. To fix this all types and all members could be put into one file.
@@ -36,7 +36,7 @@ type PPlane =
     /// The local Z-axis of this PPlane.
     [<DataMember>] val Zaxis: UnitVec
 
-    /// Unsafe internal constructor, doesn't check the input is perpendicular,  public only for inlining.
+    /// Unsafe internal constructor, doesn't check the input is perpendicular, public only for inlining.
     [<Obsolete("Unsafe internal constructor, doesn't check the input is perpendicular, but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >]
     new (origin, axisX, axisY, axisZ) =
         {Origin=origin; Xaxis=axisX; Yaxis=axisY; Zaxis=axisZ}

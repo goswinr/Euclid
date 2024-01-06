@@ -2,7 +2,7 @@ namespace Euclid
 
 // Design notes:
 // The structs types in this file only have the constructors, the ToString override and operators define in this file.
-// For structs that need a checked and unchecked constructor ( like unit vectors) the main 'new' constructor is marked obsolete.
+// For structs that need a checked and unchecked constructor (like unit vectors) the main 'new' constructor is marked obsolete.
 // A 'create' and 'createUnchecked' static member is provided instead.
 // All other members are implemented as extension members. see files in folder 'members'.
 // This design however makes extension members unaccessible from see C#. To fix this all types and all members could be put into one file.
@@ -18,7 +18,7 @@ open System.Runtime.Serialization // for serialization of struct fields only but
 
 /// An immutable 3D point. Made up from 3 floats: X, Y, and Z.
 /// A 3D point represents a location in space, but not direction or an offset. (use Vec for that.)
-/// ( 2D Points are called 'Pt' )
+/// (2D Points are called 'Pt' )
 [<Struct; NoEquality; NoComparison>] // because its made up from floats
 [<IsReadOnly>]
 //[<IsByRefLike>]
@@ -82,17 +82,17 @@ type Pnt =
     static member inline ( / ) (p:Pnt, f:float) =
         if abs f < Util.zeroLengthTolerance then p.FailedDivide(f) // don't compose error msg directly here to keep inlined code small.        
         //p * (1./f) // maybe faster but worse precision
-        Pnt (p.X / f, p.Y / f,  p.Z / f)
+        Pnt (p.X / f, p.Y / f, p.Z / f)
 
     //-----------------------------------------------------------------------------------------------------
     // These static members can't be extension methods to be useful for Array.sum and Array.average :
     //-----------------------------------------------------------------------------------------------------
 
     /// Same as Pnt.Origin.
-    static member inline Zero = Pnt ( 0., 0., 0.)  // needed by 'Array.sum'
+    static member inline Zero = Pnt (0., 0., 0.)  // needed by 'Array.sum'
 
     /// Same as Pnt.Zero.
-    static member inline Origin = Pnt ( 0. , 0., 0.)
+    static member inline Origin = Pnt (0. , 0., 0.)
 
     /// Divides the 3D point by an integer.
     /// (This member is needed by Array.average and similar functions)

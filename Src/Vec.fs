@@ -2,7 +2,7 @@ namespace Euclid
 
 // Design notes:
 // The structs types in this file only have the constructors, the ToString override and operators define in this file.
-// For structs that need a checked and unchecked constructor ( like unit vectors) the main 'new' constructor is marked obsolete.
+// For structs that need a checked and unchecked constructor (like unit vectors) the main 'new' constructor is marked obsolete.
 // A 'create' and 'createUnchecked' static member is provided instead.
 // All other members are implemented as extension members. see files in folder 'members'.
 // This design however makes extension members unaccessible from see C#. To fix this all types and all members could be put into one file.
@@ -20,8 +20,8 @@ open System.Runtime.Serialization // for serialization of struct fields only but
 /// An immutable 3D vector of any length. Made up from 3 floats: X, Y, and Z.
 /// A 3D vector represents a direction or an offset in space, but not a location.
 /// A 4x4 transformation matrix applied to a vector will only rotate and scale the vector but not translate it.
-/// ( 3D Unit vectors of length 1.0 are called 'UnitVec' )
-/// ( 2D vectors are called 'Vc' )
+/// (3D Unit vectors of length 1.0 are called 'UnitVec' )
+/// (2D vectors are called 'Vc' )
 [<Struct; NoEquality; NoComparison>]
 [<IsReadOnly>]
 //[<IsByRefLike>] // not used, see notes at end of file
@@ -48,7 +48,7 @@ type Vec =
         {X=x; Y=y; Z=z}
 
     /// Format 3D vector into string including type name and nice floating point number formatting of X, Y, Z and length.
-    override v.ToString() = sprintf "Euclid.Vec: X=%s|Y=%s|Z=%s|Length: %s" (Format.float v.X) (Format.float v.Y) (Format.float v.Z) (Format.float (sqrt (v.X*v.X + v.Y*v.Y + v.Z*v.Z)))
+    override v.ToString() = sprintf "Euclid.Vec: X=%s|Y=%s|Z=%s|length: %s" (Format.float v.X) (Format.float v.Y) (Format.float v.Z) (Format.float (sqrt (v.X*v.X + v.Y*v.Y + v.Z*v.Z)))
 
     /// Format 3D vector into string with nice floating point number formatting of X, Y and Z.
     /// But without full type name or length as in v.ToString()
@@ -74,10 +74,10 @@ type Vec =
     static member inline ( * ) (a:Vec, f:float) = Vec (a.X * f, a.Y * f, a.Z * f)
 
     /// Multiplies a scalar with a 3D vector, also called scaling a vector. Returns a new 3D vector.
-    static member inline ( * ) (f:float, a:Vec  ) = Vec (a.X * f, a.Y * f, a.Z * f)
+    static member inline ( * ) (f:float, a:Vec) = Vec (a.X * f, a.Y * f, a.Z * f)
 
     /// Dot product, or scalar product of two 3D vectors. Returns a float.
-    static member inline ( * ) (a:Vec, b:Vec  ) = a.X * b.X + a.Y * b.Y + a.Z * b.Z
+    static member inline ( *** ) (a:Vec, b:Vec) = a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
     /// A separate function to compose the error message that does not get inlined.
     [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
@@ -86,7 +86,7 @@ type Vec =
     /// Divides a 3D vector by a scalar, also be called dividing/scaling a vector. Returns a new 3D vector.
     static member inline ( / ) (v:Vec, f:float) =
         if abs f < zeroLengthTolerance then v.FailedDivide(f) // don't compose error msg directly here to keep inlined code small.
-        Vec (v.X / f, v.Y / f,  v.Z / f )
+        Vec (v.X / f, v.Y / f, v.Z / f)
 
 
     /// Dot product, or scalar product of two 3D vectors.
@@ -99,9 +99,9 @@ type Vec =
     /// Its direction follows th right-hand rule.
     /// A x B = |A| * |B| * sin(angle)
     static member inline cross (a:Vec, b:Vec) = 
-        Vec (a.Y * b.Z - a.Z * b.Y,  
-             a.Z * b.X - a.X * b.Z,  
-             a.X * b.Y - a.Y * b.X )
+        Vec (a.Y * b.Z - a.Z * b.Y, 
+             a.Z * b.X - a.X * b.Z, 
+             a.X * b.Y - a.Y * b.X)
     
     //-----------------------------------------------------------------------------------------------------
     // These static members can't be extension methods to be useful for Array.sum and Array.average :

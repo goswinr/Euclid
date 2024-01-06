@@ -13,7 +13,7 @@ module AutoOpenPt =
     type Pt with
 
         /// Returns the 2D point as 2D vector.
-        member inline p.AsVc = Vc( p.X, p.Y)
+        member inline p.AsVc = Vc(p.X, p.Y)
 
         /// Returns the 2D point as 3D vector. Using 0.0 for Z.
         member inline p.AsVec = Vec(p.X, p.Y, 0.0)
@@ -45,7 +45,7 @@ module AutoOpenPt =
         member inline p.DistanceTo (b:Pt) =
             let x = p.X-b.X
             let y = p.Y-b.Y
-            sqrt(x*x + y*y ) 
+            sqrt(x*x + y*y) 
 
         /// Returns the squared distance between two 2D points.
         /// This operation is slightly faster than the distance function, and sufficient for many algorithms like finding closest points.
@@ -55,7 +55,7 @@ module AutoOpenPt =
             x*x + y*y
 
         /// Returns the distance from Origin (0, 0)
-        member inline pt.DistanceFromOrigin = sqrt (pt.X*pt.X + pt.Y*pt.Y )
+        member inline pt.DistanceFromOrigin = sqrt (pt.X*pt.X + pt.Y*pt.Y)
 
         /// Returns the squared distance from Origin (0, 0)
         member inline pt.DistanceFromOriginSquare = pt.X*pt.X + pt.Y*pt.Y
@@ -76,8 +76,8 @@ module AutoOpenPt =
 
         /// Returns the Diamond Angle from this point to another point.
         /// Calculates the proportion of X to Y component.
-        /// It is always positive and in the range of 0.0 to 4.0 ( for 360 Degrees)
-        /// 0.0 = Xaxis,  going Counter-Clockwise.
+        /// It is always positive and in the range of 0.0 to 4.0 (for 360 Degrees)
+        /// 0.0 = Xaxis, going Counter-Clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         member inline p.DirectionDiamondTo(o:Pt) =
             // https://stackoverflow.com/a/14675998/969070
@@ -100,7 +100,7 @@ module AutoOpenPt =
         member p.FailedAngle2PiTo(o) = EuclidDivByZeroException.Raise "Euclid.Pt.Angle2PiTo failed for too short distance between %O and %O." p o
 
         /// Returns the angle in Radians from this point to another point.
-        /// 0.0 = Xaxis,  going Counter-Clockwise till two Pi.
+        /// 0.0 = Xaxis, going Counter-Clockwise till two Pi.
         member inline p.Angle2PiTo(o:Pt) =
             // https://stackoverflow.com/a/14675998/969070
             let x = o.X-p.X
@@ -111,7 +111,7 @@ module AutoOpenPt =
             else            a
 
         /// Returns the angle in Degrees from this point to another point.
-        /// 0.0 = Xaxis,  going Counter-Clockwise till 360.
+        /// 0.0 = Xaxis, going Counter-Clockwise till 360.
         member inline p.Angle360To(o:Pt) =
             p.Angle2PiTo o |> toDegrees
 
@@ -126,7 +126,7 @@ module AutoOpenPt =
             let lenSq = v.LengthSq
             let lenSq = v.LengthSq
             if lenSq < zeroLengthTolSquared then testPt.FailedClosestPointOnLine(fromPt, toPt) // don't compose error msg directly here to keep inlined code small.
-            let dot = Vc.dot (v,  dir) / lenSq
+            let dot = Vc.dot (v, dir) / lenSq
             if   dot <= 0.0 then  fromPt
             elif dot >= 1.0 then  toPt
             else                  fromPt + dot*v
@@ -134,7 +134,7 @@ module AutoOpenPt =
         /// Get closest point on finite line to test point.
         member inline testPt.ClosestPointOnLine(fromPt:Pt, uv:UnitVc, len:float) =
             let dir = testPt-fromPt
-            let dot = Vc.dot (uv,  dir)
+            let dot = Vc.dot (uv, dir)
             if   dot <= 0.0 then  fromPt
             elif dot >= len then (fromPt+len*uv)
             else                  fromPt+dot*uv
@@ -142,32 +142,32 @@ module AutoOpenPt =
         /// Returns the squared distance between point and finite line segment.
         member inline testPt.DistanceToLineSquare(fromPt:Pt, uv:UnitVc, len:float) =
             let dir = testPt-fromPt
-            let dot = Vc.dot (uv,  dir)
+            let dot = Vc.dot (uv, dir)
             if   dot <= 0.0 then testPt.DistanceToSquare  fromPt
             elif dot >= len then testPt.DistanceToSquare (fromPt+len*uv)
             else
-                let actual = uv.Rotate90CCW * dir
+                let actual = uv.Rotate90CCW *** dir
                 actual*actual
 
         /// Returns the squared distance between point and finite line segment defined by 
-        /// start, end,  direction and length.
+        /// start, end, direction and length.
         /// The last two parameters help speed up calculations.
         member inline testPt.DistanceToLineSquare(fromPt:Pt, toPt:Pt, uv:UnitVc, len:float) =
             let dir = testPt-fromPt
-            let dot = Vc.dot (uv,  dir)
+            let dot = Vc.dot (uv, dir)
             if   dot <= 0.0 then testPt.DistanceToSquare fromPt
             elif dot >= len then testPt.DistanceToSquare toPt
             else
-                let actual = uv.Rotate90CCW * dir
+                let actual = uv.Rotate90CCW *** dir
                 actual*actual
 
-        /// Returns the distance between point and finite line segment defined by start,  direction and length.
+        /// Returns the distance between point and finite line segment defined by start, direction and length.
         member inline testPt.DistanceToLine(fromPt:Pt, uv:UnitVc, len:float) =
             let dir = testPt-fromPt
-            let dot = Vc.dot (uv,  dir)
+            let dot = Vc.dot (uv, dir)
             if   dot <= 0.0 then testPt.DistanceToSquare  fromPt
             elif dot >= len then testPt.DistanceToSquare (fromPt+len*uv)
-            else                abs (uv.Rotate90CCW * dir)
+            else                abs (uv.Rotate90CCW *** dir)
         
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
@@ -179,7 +179,7 @@ module AutoOpenPt =
             let v   = toPt   - fromPt
             let lenSq = v.LengthSq
             if lenSq < zeroLengthTolSquared then testPt.FailedDistanceToLine(fromPt, toPt) // don't compose error msg directly here to keep inlined code small.
-            let dot = Vc.dot (v,  dir) / v.LengthSq
+            let dot = Vc.dot (v, dir) / v.LengthSq
             if   dot <= 0.0 then testPt.DistanceTo   fromPt
             elif dot >= 1.0 then testPt.DistanceTo   toPt
             else                testPt.DistanceTo  (fromPt + v * dot)
@@ -188,6 +188,13 @@ module AutoOpenPt =
         //----------------------------------------------------------------------------------------------
         //--------------------------  Static Members  --------------------------------------------------
         //----------------------------------------------------------------------------------------------
+
+        /// Checks if two 2D points are equal within tolerance.
+        /// Use a tolerance of 0.0 to check for an exact match.
+        static member inline equals (tol:float) (a:Pt) (b:Pt) =            
+            abs (a.X-b.X) <= tol &&
+            abs (a.Y-b.Y) <= tol 
+
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
         static member failedCreateFromMembersXY(pt:'T,e:exn) = EuclidException.Raise "Euclid.Pt.createFromMembersXY: %A could not be converted to a Euclid.Pt:\r\n%A" pt e
@@ -222,7 +229,7 @@ module AutoOpenPt =
         static member inline createFromUnitVc (v:UnitVc) = Pt (v.X, v.Y)
 
         /// Create 3D point from X and Y components.
-        static member inline create (x:float, y:float) = Pt( x, y )
+        static member inline create (x:float, y:float) = Pt(x, y)
 
         /// Sets the X value and returns new 2D point.
         static member inline withX x (pt:Pt) = Pt(x, pt.Y)
@@ -249,21 +256,21 @@ module AutoOpenPt =
         static member inline scale (f:float) (pt:Pt) = pt*f
 
         /// Move point 2D by vector. Same as Pt.move.
-        static member inline translate (shift:Vc) (pt:Pt ) =
+        static member inline translate (shift:Vc) (pt:Pt) =
             pt + shift
 
         /// Move point 2D by vector. Same as Pt.translate.
-        static member inline move (shift:Vc) (pt:Pt ) =
+        static member inline move (shift:Vc) (pt:Pt) =
             pt + shift
 
         /// Add a float to X component of a 2D point. Returns a new 2D point.
         static member inline moveX (x:float) (pt:Pt) = Pt (pt.X+x, pt.Y)
 
         /// Add a float to Y component of a 2D point. Returns a new 2D point.
-        static member inline moveY (y:float) (pt:Pt) = Pt (pt.X,   pt.Y+y)
+        static member inline moveY (y:float) (pt:Pt) = Pt (pt.X, pt.Y+y)
 
         /// Returns the distance between two 2D points.
-        static member inline distance (a:Pt) (b:Pt) = let v = a-b in sqrt(v.X*v.X + v.Y*v.Y )
+        static member inline distance (a:Pt) (b:Pt) = let v = a-b in sqrt(v.X*v.X + v.Y*v.Y)
 
         /// Returns the squared distance between two 2D points.
         /// This operation is slightly faster than the distance function, and sufficient for many algorithms like finding closest points.
@@ -294,7 +301,7 @@ module AutoOpenPt =
 
         /// Rotate the a 2D point Counter Clockwise by a 2D Rotation (that has cos and sin precomputed)
         static member inline rotateBy (r:Rotation2D) (p:Pt) : Pt =
-            Pt( r.Cos*p.X - r.Sin*p.Y,
+            Pt(r.Cos*p.X - r.Sin*p.Y,
                 r.Sin*p.X + r.Cos*p.Y)
 
         /// Rotate the 2D point in Degrees. Counter Clockwise.
@@ -321,7 +328,7 @@ module AutoOpenPt =
         static member inline distPt (fromPt:Pt, dirPt:Pt, distance:float) : Pt =
             let x = dirPt.X - fromPt.X
             let y = dirPt.Y - fromPt.Y
-            let len = sqrt(x*x + y*y )
+            let len = sqrt(x*x + y*y)
             if len < zeroLengthTolerance then Pt.failedDistPt(fromPt, dirPt, distance)
             let fac = distance / len
             Pt(fromPt.X + x*fac, 
@@ -332,7 +339,7 @@ module AutoOpenPt =
         /// rel=3.0 a point three times the distance beyond the end point.
         /// Same as Pt.lerp.
         static member inline divPt(fromPt:Pt, toPt:Pt, rel:float) : Pt =
-            Pt( fromPt.X + (toPt.X-fromPt.X)*rel,
+            Pt(fromPt.X + (toPt.X-fromPt.X)*rel,
                 fromPt.Y + (toPt.Y-fromPt.Y)*rel)
         
         
@@ -369,7 +376,7 @@ module AutoOpenPt =
         /// Returns the parameter (or scaling for unit-vector) on this line of the projection.
         static member inline projectedParameter (fromPt:Pt, uv:UnitVc, testPt:Pt) =
             let dir = testPt-fromPt
-            Vc.dot (dir,  uv)
+            Vc.dot (dir, uv)
 
         
         /// A separate function to compose the error message that does not get inlined.        
@@ -382,7 +389,7 @@ module AutoOpenPt =
             let dir = testPt-fromPt
             let lenSq = vec.LengthSq
             if lenSq < zeroLengthTolSquared then Pt.failedProjectedParameter(fromPt, vec, testPt)
-            Vc.dot (vec,  dir) / lenSq
+            Vc.dot (vec, dir) / lenSq
 
 
         /// A separate function to compose the error message that does not get inlined.
@@ -396,7 +403,7 @@ module AutoOpenPt =
             let v   = toPt   - fromPt
             let lenSq = v.LengthSq
             if lenSq < zeroLengthTolSquared then Pt.failedProjectedParameter(fromPt, toPt, testPt) // don't compose error msg directly here to keep inlined code small.
-            Vc.dot (v,  dir) / lenSq
+            Vc.dot (v, dir) / lenSq
 
 
 

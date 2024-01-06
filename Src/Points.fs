@@ -19,13 +19,13 @@ type Points private () =
     /// The square length of a cross product is equal to the square area of the parallelogram described by the two input vectors.
     /// Also returns true if the points are equal.
     /// See Points.areInLine function too.
-    static member inline areInLineFast (a:Pnt, b:Pnt, c:Pnt, [<OPT;DEF(0.001)>] maxSquareAreaParallelogram:float  ) =
+    static member inline areInLineFast (a:Pnt, b:Pnt, c:Pnt, [<OPT;DEF(0.001)>] maxSquareAreaParallelogram:float) =
          // TODO could be optimized by inlining floats.
         Vec.cross (b-a, c-a) |> Vec.lengthSq <  maxSquareAreaParallelogram
 
     /// Checks if three points are in one line. Within the distance tolerance. 1e-6 by default.
     /// Also returns true if the points are equal within 1e-9 units.
-    static member inline areInLine (a:Pnt, b:Pnt, c:Pnt, [<OPT;DEF(1e-6)>] distanceTolerance:float  ) =
+    static member inline areInLine (a:Pnt, b:Pnt, c:Pnt, [<OPT;DEF(1e-6)>] distanceTolerance:float) =
         //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
          // first try line a to b
         let x = a.X - b.X
@@ -292,8 +292,8 @@ type Points private () =
         while loop && ptss.Count > 0 do
             //first try to append to end
             let ende = res.[res.Count-1]
-            let si = ptss |> ResizeArray.minIndexBy ( fun ps -> Pt.distanceSq ende ps.First )
-            let ei = ptss |> ResizeArray.minIndexBy ( fun ps -> Pt.distanceSq ende ps.Last)
+            let si = ptss |> ResizeArray.minIndexBy (fun ps -> Pt.distanceSq ende ps.First)
+            let ei = ptss |> ResizeArray.minIndexBy (fun ps -> Pt.distanceSq ende ps.Last)
             let sd = Pt.distance ende ptss.[si].First
             let ed = Pt.distance ende ptss.[ei].Last
             if   sd < tolGap && sd < ed then  res.AddRange(                ptss.Pop(si))
@@ -301,8 +301,8 @@ type Points private () =
             else
                 //search from start
                 let start = res.[0]
-                let si = ptss |> ResizeArray.minIndexBy ( fun ps -> Pt.distanceSq start ps.First )
-                let ei = ptss |> ResizeArray.minIndexBy ( fun ps -> Pt.distanceSq start ps.Last)
+                let si = ptss |> ResizeArray.minIndexBy (fun ps -> Pt.distanceSq start ps.First)
+                let ei = ptss |> ResizeArray.minIndexBy (fun ps -> Pt.distanceSq start ps.Last)
                 let sd = Pt.distance start ptss.[si].First
                 let ed = Pt.distance start ptss.[ei].Last
                 if   sd < tolGap && sd < ed then res.InsertRange(0, ResizeArray.rev(ptss.Pop(si)) )
@@ -322,8 +322,8 @@ type Points private () =
         while loop && ptss.Count > 0 do
             //first try to append to end
             let ende = res.[res.Count-1]
-            let si = ptss |> ResizeArray.minIndexBy ( fun ps -> Pnt.distanceSq ende ps.First )
-            let ei = ptss |> ResizeArray.minIndexBy ( fun ps -> Pnt.distanceSq ende ps.Last)
+            let si = ptss |> ResizeArray.minIndexBy (fun ps -> Pnt.distanceSq ende ps.First)
+            let ei = ptss |> ResizeArray.minIndexBy (fun ps -> Pnt.distanceSq ende ps.Last)
             let sd = Pnt.distance ende ptss.[si].First
             let ed = Pnt.distance ende ptss.[ei].Last
             if   sd < tolGap && sd < ed then  res.AddRange(                ptss.Pop(si))
@@ -331,8 +331,8 @@ type Points private () =
             else
                 //search from start
                 let start = res.[0]
-                let si = ptss |> ResizeArray.minIndexBy ( fun ps -> Pnt.distanceSq start ps.First )
-                let ei = ptss |> ResizeArray.minIndexBy ( fun ps -> Pnt.distanceSq start ps.Last)
+                let si = ptss |> ResizeArray.minIndexBy (fun ps -> Pnt.distanceSq start ps.First)
+                let ei = ptss |> ResizeArray.minIndexBy (fun ps -> Pnt.distanceSq start ps.Last)
                 let sd = Pnt.distance start ptss.[si].First
                 let ed = Pnt.distance start ptss.[ei].Last
                 if   sd < tolGap && sd < ed then res.InsertRange(0, ResizeArray.rev(ptss.Pop(si)) )
@@ -413,7 +413,7 @@ type Points private () =
 
 
 
-    /// It finds the inner offset point in a corner ( defined a point, a previous vector to this point and a next vector from this point)
+    /// It finds the inner offset point in a corner (defined a point, a previous vector to this point and a next vector from this point)
     /// The offset from first and second segment are given separately and can vary (prevDist and nextDist).
     /// Use negative distance for outer offset.
     /// If Points are collinear by 0.25 degrees or less than 1-e6 units apart returns: ValueNone.
@@ -447,16 +447,16 @@ type Points private () =
             else
                 let n = Vec.cross(prevToThis, thisToNext)
                 let offP = thisPt + (Vec.cross(n, prevToThis)  |> Vec.withLength prevDist)
-                let offN = thisPt + (Vec.cross(n, thisToNext)  |> Vec.withLength nextDist )
+                let offN = thisPt + (Vec.cross(n, thisToNext)  |> Vec.withLength nextDist)
                 let vx = offN.X - offP.X
                 let vy = offN.Y - offP.Y
                 let vz = offN.Z - offP.Z
                 let e = bx*vx + by*vy + bz*vz
                 let d = ax*vx + ay*vy + az*vz
-                let t = (c * d - b * e ) / discriminant
+                let t = (c * d - b * e) / discriminant
                 ValueSome <|  offP + t * prevToThis
 
-    /// It finds the inner offset point in a corner ( defined by a Polyline from 3 points ( prevPt, thisPt and nextPt)
+    /// It finds the inner offset point in a corner (defined by a Polyline from 3 points (prevPt, thisPt and nextPt)
     /// The offset from first and second segment are given separately and can vary (prevDist and nextDist).
     /// Use negative distance for outer offset.
     /// If Points are collinear by 0.25 degrees or less than 1-e6 units apart returns: ValueNone.
@@ -471,7 +471,7 @@ type Points private () =
         Points.offsetInCorner(thisPt, prevV, nextV, prevDist, nextDist)
 
 
-    /// It finds the inner offset point in a corner ( defined a point, a previous vector to this point and a next vector from this point)
+    /// It finds the inner offset point in a corner (defined a point, a previous vector to this point and a next vector from this point)
     /// The offset from first and second segment are given separately and can vary (prevDist and nextDist).
     /// Use negative distance for outer offset.
     /// If Points are collinear by 0.25 degrees or less than 1-e6 units apart returns: ValueNone.
@@ -516,11 +516,11 @@ type Points private () =
                 let vz = offN.Z - offP.Z
                 let e = bx*vx + by*vy + bz*vz
                 let d = ax*vx + ay*vy + az*vz
-                let t = (c * d - b * e ) / discriminant
+                let t = (c * d - b * e) / discriminant
                 let pt = offP + t * prevToThis
                 ValueSome (pt, n.Unitized, prevShift, nextShift)
 
-    /// It finds the inner offset point in a corner ( defined by a Polyline from 3 points ( prevPt, thisPt and nextPt)
+    /// It finds the inner offset point in a corner (defined by a Polyline from 3 points (prevPt, thisPt and nextPt)
     /// The offset from first and second segment are given separately and can vary (prevDist and nextDist).
     /// Use negative distance for outer offset.
     /// If Points are collinear by 0.25 degrees or less than 1-e6 units apart returns: ValueNone.
@@ -537,13 +537,13 @@ type Points private () =
         let nextV = nextPt - thisPt
         Points.offsetInCornerEx(thisPt, prevV, nextV, prevDist, nextDist, referenceNormal)
 
-    /// It finds the inner offset point in a corner ( defined a point, a previous vector to this point and a next vector from this point)
+    /// It finds the inner offset point in a corner (defined a point, a previous vector to this point and a next vector from this point)
     /// The offset from first and second segment are given separately and can vary (prevDist and nextDist).
     /// Use negative distance for outer offset.
     /// If Points are collinear by 0.25 degrees or less than 1-e6 units apart returns: ValueNone.
     /// Use negative distances to get outside offset.
     /// 'referenceOrient' is positive for counterclockwise loops otherwise negative.
-    /// Returns the offset point,  the shift direction for prev and next line.
+    /// Returns the offset point, the shift direction for prev and next line.
     static member offsetInCornerEx2D(   thisPt:Pt,
                                         prevToThis:Vc,
                                         thisToNext:Vc,
@@ -579,18 +579,18 @@ type Points private () =
                 let vy = offN.Y - offP.Y
                 let e = bx*vx + by*vy
                 let d = ax*vx + ay*vy
-                let t = (c * d - b * e ) / discriminant
+                let t = (c * d - b * e) / discriminant
                 let pt = offP + t * prevToThis
                 ValueSome (pt, prevShift, nextShift)
 
-    /// It finds the inner offset point in a corner ( defined by a Polyline from 3 points ( prevPt, thisPt and nextPt)
+    /// It finds the inner offset point in a corner (defined by a Polyline from 3 points (prevPt, thisPt and nextPt)
     /// The offset from first and second segment are given separately and can vary (prevDist and nextDist).
     /// Use negative distance for outer offset.
     /// If Points are collinear by 0.25 degrees or less than 1-e6 units apart returns: ValueNone.
     /// Use negative distances to get outside offset.
     /// 'referenceOrient' is positive for counterclockwise loops otherwise negative.
     /// Returns the offset point, the shift direction for prev and next line.
-    static member offsetInCornerEx2D( prevPt:Pt,
+    static member offsetInCornerEx2D(prevPt:Pt,
                                     thisPt:Pt,
                                     nextPt:Pt,
                                     prevDist:float,

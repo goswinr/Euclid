@@ -133,7 +133,7 @@ module internal ResizeArray =
         /// <param name="mapping">The function to transform elements of the ResizeArray.</param>
         /// <param name="xs">The input ResizeArray.</param>
         /// <returns>The ResizeArray of transformed elements.</returns>
-        let inline map ( mapping: 'T -> 'U) (xs: ResizeArray<'T>) : ResizeArray<'U> =
+        let inline map (mapping: 'T -> 'U) (xs: ResizeArray<'T>) : ResizeArray<'U> =
             #if FABLE_COMPILER
             let r = ResizeArray(xs.Count)
             for x in xs do

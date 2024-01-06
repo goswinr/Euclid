@@ -35,20 +35,20 @@ module AutoOpenPPlane2 =
             if v.LengthSq < 1e-18 then
                 EuclidException.Raise "Euclid.PPlane.intersect: Planes are parallel or coincident: %O, %O" a b
             let pa = Vec.cross(v, an)
-            let nenner = pa * bn
-            let t = ((b.Origin - ao ) * bn) / nenner
+            let nenner = pa *** bn
+            let t = ((b.Origin - ao) *** bn) / nenner
             let xpt = ao + pa * t
             Line3D.createFromPntAndVec (xpt, v)
 
-        /// Returns the parameter on the Line.
+        /// Returns the parameter on the line.
         /// The parameter is the intersection point of the infinite Line3D with the PPlane.
         /// Fails if they are parallel or coincident.
         static member intersectLineParameter  (ln:Line3D) (pl:PPlane) =
             let z = pl.Zaxis
-            let nenner = ln.Tangent * z
+            let nenner = ln.Tangent *** z
             if abs nenner < 1e-9 then
                 EuclidException.Raise "Euclid.PPlane.intersectLineParameter: Line and Plane are parallel or line has zero length: %O, %O" ln pl
-            ((pl.Origin - ln.From) * z) / nenner
+            ((pl.Origin - ln.From) *** z) / nenner
 
 
         /// Returns the line parameter and the X and Y parameters on the Plane.
@@ -57,13 +57,13 @@ module AutoOpenPPlane2 =
         static member intersectLineParameters  (ln:Line3D) (pl:PPlane) =
             let z = pl.Zaxis
             let v = ln.Tangent
-            let nenner = v * z
+            let nenner = v *** z
             if abs nenner < 1e-9 then
                 EuclidException.Raise "Euclid.PPlane.intersectLineParameters: Line and Plane are parallel or line has zero length: %O, %O" ln pl
-            let t = ((pl.Origin - ln.From) * z) / nenner
+            let t = ((pl.Origin - ln.From) *** z) / nenner
             let xpt = ln.From + v * t
             let v = xpt-pl.Origin
-            t, pl.Xaxis*v, pl.Yaxis*v
+            t, pl.Xaxis *** v, pl.Yaxis *** v
 
         /// Returns intersection point of infinite Line3D with Plane.
         /// Fails if they are parallel.
@@ -73,6 +73,6 @@ module AutoOpenPPlane2 =
         /// Checks if a finite Line3D intersects with Plane in one point.
         /// Returns false for parallel and coincident lines.
         static member inline doLinePlaneIntersect (ln:Line3D) (pl:PPlane) =
-            let nenner = ln.Tangent * pl.Zaxis
-            let t = ((pl.Origin - ln.From) * pl.Zaxis) / nenner // if nenner is 0.0 then 't' is Infinity
+            let nenner = ln.Tangent *** pl.Zaxis
+            let t = ((pl.Origin - ln.From) *** pl.Zaxis) / nenner // if nenner is 0.0 then 't' is Infinity
             0. <= t && t <= 1.

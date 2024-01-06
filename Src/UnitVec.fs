@@ -2,7 +2,7 @@ namespace Euclid
 
 // Design notes:
 // The structs types in this file only have the constructors, the ToString override and operators define in this file.
-// For structs that need a checked and unchecked constructor ( like unit vectors) the main 'new' constructor is marked obsolete.
+// For structs that need a checked and unchecked constructor (like unit vectors) the main 'new' constructor is marked obsolete.
 // A 'create' and 'createUnchecked' static member is provided instead.
 // All other members are implemented as extension members. see files in folder 'members'.
 // This design however makes extension members unaccessible from see C#. To fix this all types and all members could be put into one file.
@@ -19,7 +19,7 @@ open System.Runtime.Serialization // for serialization of struct fields only but
 /// An immutable 3D vector guaranteed to be always unitized. 
 /// A 3D vector represents a direction or an offset in space, but not a location.
 /// A 4x4 transformation matrix applied to a vector will only rotate and scale the vector but not translate it.
-/// ( 2D Unit vectors are called 'UnitVc' )
+/// (2D Unit vectors are called 'UnitVc' )
 /// Use UnitVec.create or UnitVec.createUnchecked to created instances.
 /// Note: Never use the struct default constructor UnitVec() as it will create an invalid zero length vector.
 /// Use UnitVec.create or UnitVec.createUnchecked instead.
@@ -79,22 +79,22 @@ type UnitVec =
     static member inline ( + ) (a:UnitVec, b:Vec) = Vec (a.X + b.X, a.Y + b.Y, a.Z + b.Z)
 
     /// Multiplies a 3D unit-vector with a scalar, also called scaling a vector. Returns a new (non-unitized) 3D vector.
-    static member inline ( * ) (a:UnitVec, f:float  ) = Vec (a.X * f, a.Y * f, a.Z * f)
+    static member inline ( * ) (a:UnitVec, f:float) = Vec (a.X * f, a.Y * f, a.Z * f)
 
     /// Multiplies a scalar with a 3D unit-vector, also called scaling a vector. Returns a new (non-unitized) 3D vector.
-    static member inline ( * ) (f:float,   a:UnitVec) = Vec (a.X * f, a.Y * f, a.Z * f)
+    static member inline ( * ) (f:float, a:UnitVec) = Vec (a.X * f, a.Y * f, a.Z * f)
 
     /// Dot product, or scalar product of two 3D unit vectors.
     /// Returns a float. This float is the Cosine of the angle between the two 3D vectors.
-    static member inline ( * ) (a:UnitVec, b:UnitVec) = a.X * b.X + a.Y * b.Y + a.Z * b.Z
+    static member inline ( *** ) (a:UnitVec, b:UnitVec) = a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
     /// Dot product, or scalar product of a 3D unit vectors with a 3D vector.
     /// Returns a float. This float is the projected length of the 3D vector on the direction of the unit-vector.
-    static member inline ( * ) (a:UnitVec, b:Vec) = a.X * b.X + a.Y * b.Y + a.Z * b.Z
+    static member inline ( *** ) (a:UnitVec, b:Vec) = a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
     /// Dot product, or scalar product of a 3D unit vectors with a 3D vector.
     /// Returns a float. This float is the projected length of the 3D vector on the direction of the unit-vector.
-    static member inline ( * ) (a:Vec, b:UnitVec) = a.X * b.X + a.Y * b.Y + a.Z * b.Z
+    static member inline ( *** ) (a:Vec, b:UnitVec) = a.X * b.X + a.Y * b.Y + a.Z * b.Z
     
     /// A separate function to compose the error message that does not get inlined.
     [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
@@ -103,7 +103,7 @@ type UnitVec =
     /// Divides a 3D unit-vector by a scalar, also be called dividing/scaling a vector. Returns a new (non-unitized) 3D vector.
     static member inline ( / ) (v:UnitVec, f:float) =
         if abs f < zeroLengthTolerance then v.FailedDivide(f) // don't compose error msg directly here to keep inlined code small.
-        Vec (v.X / f, v.Y / f,  v.Z / f )
+        Vec (v.X / f, v.Y / f, v.Z / f)
 
     /// Dot product, or scalar product of two 3D unit vectors.
     /// Returns a float. This float of unit vectors is the Cosine of the angle between the two vectors.
@@ -114,7 +114,7 @@ type UnitVec =
     /// Its length is the area of the parallelogram spanned by the input vectors.
     /// Its direction follows th right-hand rule.
     /// A x B = |A| * |B| * sin(angle)
-    static member inline cross (a:UnitVec, b:UnitVec) = Vec (a.Y * b.Z - a.Z * b.Y,  a.Z * b.X - a.X * b.Z,  a.X * b.Y - a.Y * b.X )
+    static member inline cross (a:UnitVec, b:UnitVec) = Vec (a.Y * b.Z - a.Z * b.Y, a.Z * b.X - a.X * b.Z, a.X * b.Y - a.Y * b.X)
 
     /// For use as a faster internal constructor.
     /// Requires correct input of unitized values.
@@ -135,9 +135,9 @@ type UnitVec =
         let l = sqrt(x*x  + y*y + z*z)
         if l < zeroLengthTolerance then UnitVec.failedCreate(x, y, z) // don't compose error msg directly here to keep inlined code small.
         let li = 1. / l
-        UnitVec.createUnchecked( li*x, li*y, li*z )
+        UnitVec.createUnchecked(li*x, li*y, li*z)
 
     // These members cannot be implemented since
     // Array.sum and Array.average of UnitVec would return a 'Vec' and not a 'UnitVec'
-    // static member Zero = UnitVec ( 0, 0, 0)  // needed by 'Array.sum'
+    // static member Zero = UnitVec (0, 0, 0)  // needed by 'Array.sum'
     // static member inline DivideByInt (v:UnitVec, i:int) = v / float i  // needed by  'Array.average'

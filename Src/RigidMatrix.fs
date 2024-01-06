@@ -34,9 +34,9 @@ type RigidMatrix =
     /// M12 M22 M32 Y42
     /// M13 M23 M33 Z43
         /// Where X41, Y42 and Z43 refer to the translation part of the RigidMatrix.
-        internal new(   m11,  m21,  m31,  x41,
-                        m12,  m22,  m32,  y42,
-                        m13,  m23,  m33,  z43) = {
+        internal new(   m11, m21, m31, x41,
+                        m12, m22, m32, y42,
+                        m13, m23, m33, z43) = {
                             M11=m11 ; M21=m21 ; M31=m31 ; X41=x41 ;
                             M12=m12 ; M22=m22 ; M32=m32 ; Y42=y42 ;
                             M13=m13 ; M23=m23 ; M33=m33 ; Z43=z43 }
@@ -55,11 +55,11 @@ type RigidMatrix =
 
     /// Nicely formats the Matrix to a Grid of 4x3.
     override m.ToString()=
-        let ts = m.ByRows |> Array.map ( fun x -> x.ToString("0.###"))
-        let most = ts |> Array.maxBy ( fun s -> s.Length)
+        let ts = m.ByRows |> Array.map (fun x -> x.ToString("0.###"))
+        let most = ts |> Array.maxBy (fun s -> s.Length)
         "4x3 Colum-Vector Rigid Transformation Matrix:\r\n" + (
         ts
-        |> Array.map ( fun x -> String(' ', most.Length-x.Length) + x )
+        |> Array.map (fun x -> String(' ', most.Length-x.Length) + x)
         |> Array.chunkBySize 4
         |> Array.map (fun es -> " " + String.concat " | " es)
         |> String.concat Environment.NewLine
@@ -68,11 +68,11 @@ type RigidMatrix =
     //Nicely formats the Matrix to a Grid of 4x3 including field names.
     //override m.ToString()=
     //    let names =[| "M11"; "M21"; "M31"; "X41"; "M12"; "M22"; "M32"; "Y42"; "M13"; "M23"; "M33"; "Z43"; "M14"; "M24"; "M34"; "M44"|]
-    //    let ts = (names, m.ByRows)  ||> Array.map2 ( fun n v -> v.ToString("0.###"))
-    //    let most = ts |> Array.maxBy ( fun s -> s.Length)
+    //    let ts = (names, m.ByRows)  ||> Array.map2 (fun n v -> v.ToString("0.###"))
+    //    let most = ts |> Array.maxBy (fun s -> s.Length)
     //    "Colum-Vector Rigid Transformation Matrix:\r\n" + (
     //    (names, ts)
-    //    ||> Array.map2 ( fun n v ->n + ": " + String(' ', most.Length-v.Length) + v )
+    //    ||> Array.map2 (fun n v ->n + ": " + String(' ', most.Length-v.Length) + v)
     //    |> Array.chunkBySize 4
     //    |> Array.map (fun es -> " " + String.concat " | " es)
     //    |> String.concat Environment.NewLine
@@ -174,25 +174,26 @@ type RigidMatrix =
 
     /// Checks if two Matrices are equal within tolerance.
     /// By comparing the fields M11 to M44 each with the given tolerance.
-    static member equals tol (a:RigidMatrix) (b:RigidMatrix) =
-        abs(a.M11-b.M11) < tol &&
-        abs(a.M12-b.M12) < tol &&
-        abs(a.M13-b.M13) < tol &&
-        abs(a.M21-b.M21) < tol &&
-        abs(a.M22-b.M22) < tol &&
-        abs(a.M23-b.M23) < tol &&
-        abs(a.M31-b.M31) < tol &&
-        abs(a.M32-b.M32) < tol &&
-        abs(a.M33-b.M33) < tol &&
-        abs(a.X41-b.X41) < tol &&
-        abs(a.Y42-b.Y42) < tol &&
-        abs(a.Z43-b.Z43) < tol
+    /// Use a tolerance of 0.0 to check for an exact match.
+    static member equals (tol:float) (a:RigidMatrix) (b:RigidMatrix) =
+        abs(a.M11-b.M11) <= tol &&
+        abs(a.M12-b.M12) <= tol &&
+        abs(a.M13-b.M13) <= tol &&
+        abs(a.M21-b.M21) <= tol &&
+        abs(a.M22-b.M22) <= tol &&
+        abs(a.M23-b.M23) <= tol &&
+        abs(a.M31-b.M31) <= tol &&
+        abs(a.M32-b.M32) <= tol &&
+        abs(a.M33-b.M33) <= tol &&
+        abs(a.X41-b.X41) <= tol &&
+        abs(a.Y42-b.Y42) <= tol &&
+        abs(a.Z43-b.Z43) <= tol
 
 
 
     /// Multiplies matrixA with matrixB.
     /// The resulting transformation will first do matrixA and then matrixB.
-    static member multiply (matrixA:RigidMatrix,  matrixB:RigidMatrix) =
+    static member multiply (matrixA:RigidMatrix, matrixB:RigidMatrix) =
         let a11 = matrixA.M11
         let a12 = matrixA.M12
         let a13 = matrixA.M13
@@ -230,12 +231,12 @@ type RigidMatrix =
              a11*b13 + a12*b23 + a13*b33       , // M13
              a21*b13 + a22*b23 + a23*b33       , // M23
              a31*b13 + a32*b23 + a33*b33       , // M33
-             a41*b13 + a42*b23 + a43*b33 + b43 ) // Z43
+             a41*b13 + a42*b23 + a43*b33 + b43) // Z43
 
 
     /// Multiplies matrixA with matrixB.
     /// The resulting transformation will first do matrixA and then matrixB.
-    static member inline ( * ) (matrixA:RigidMatrix,  matrixB:RigidMatrix) = RigidMatrix.multiply(matrixA, matrixB)
+    static member inline ( *** ) (matrixA:RigidMatrix, matrixB:RigidMatrix) = RigidMatrix.multiply(matrixA, matrixB)
 
     /// The Determinant of an Rigid Matrix is always 1.0
     /// The Determinant describes the volume that a unit cube will have have the matrix was applied.
@@ -252,9 +253,9 @@ type RigidMatrix =
     /// 0  0  1  0
     static member identity =
         RigidMatrix(
-            1, 0, 0, 0 ,
-            0, 1, 0, 0 ,
-            0, 0, 1, 0 )
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0)
 
     /// Creates a translation RigidMatrix:
     /// x - the amount to translate in the X-axis.
@@ -264,11 +265,11 @@ type RigidMatrix =
     /// 1  0  0  x
     /// 0  1  0  y
     /// 0  0  1  z
-    static member createTranslation( x, y, z ) =
+    static member createTranslation(x, y, z) =
         RigidMatrix(
-            1, 0, 0, x ,
-            0, 1, 0, y ,
-            0, 0, 1, z )
+            1, 0, 0, x,
+            0, 1, 0, y,
+            0, 0, 1, z)
 
     /// Creates a translation RigidMatrix:    
     /// Vec - the vector by which to translate.
@@ -276,70 +277,70 @@ type RigidMatrix =
     /// 1  0  0  v.X
     /// 0  1  0  v.Y
     /// 0  0  1  v.Z
-    static member createTranslation(v:Vec ) =
+    static member createTranslation(v:Vec) =
         RigidMatrix(
-            1, 0, 0, v.X ,
-            0, 1, 0, v.Y ,
-            0, 0, 1, v.Z  )
+            1, 0, 0, v.X,
+            0, 1, 0, v.Y,
+            0, 0, 1, v.Z)
 
 
 
     /// Creates a rotation around the X-axis RigidMatrix
     /// by angle in Degrees (not Radians).
     /// angleDegrees — Rotation angle in Degrees.
-    /// A positive rotation will be from Y towards Z-axis,  so counter-clockwise looking onto Y-X Plane.
+    /// A positive rotation will be from Y towards Z-axis, so counter-clockwise looking onto Y-X Plane.
     /// The resulting RigidMatrix will be:
     /// 1 0      0        0
     /// 0 cos(θ) -sin(θ)  0
     /// 0 sin(θ) cos(θ)   0
-    static member createRotationX( angleDegrees ) =
+    static member createRotationX(angleDegrees) =
         let angle = Util.toRadians angleDegrees
         let c = cos angle
         let s = sin angle
         RigidMatrix(
             1, 0,  0, 0,
             0, c, -s, 0,
-            0, s,  c, 0 )
+            0, s,  c, 0)
 
     /// Creates a rotation around the Y-axis RigidMatrix
     /// by angle in Degrees (not Radians).
     /// angleDegrees — Rotation angle in Degrees.
-    /// A positive rotation will be from Z towards X-axis,  so counter-clockwise looking onto Z-X Plane.
+    /// A positive rotation will be from Z towards X-axis, so counter-clockwise looking onto Z-X Plane.
     /// The resulting RigidMatrix will be:
     /// cos(θ)  0 sin(θ) 0
     /// 0       1 0      0
     /// -sin(θ) 0 cos(θ) 0
-    static member createRotationY( angleDegrees ) =
+    static member createRotationY(angleDegrees) =
         let angle = Util.toRadians angleDegrees
         let c = cos angle
         let s = sin angle
         RigidMatrix(
             c  ,  0,  s,  0,
             0  ,  1,  0,  0,
-            -s ,  0,  c,  0 )
+            -s ,  0,  c,  0)
 
     /// Creates a rotation around the Z-axis RigidMatrix
     /// by angle in Degrees (not Radians).
     /// angleDegrees — Rotation angle in Degrees.
-    /// Returns a positive rotation will be from X toward Y-axis,  so counter-clockwise looking onto X-Y plane.
+    /// Returns a positive rotation will be from X toward Y-axis, so counter-clockwise looking onto X-Y plane.
     /// The resulting RigidMatrix will be:
     /// cos(θ) -sin(θ) 0 0
     /// sin(θ) cos(θ)  0 0
     /// 0      0       1 0
-    static member createRotationZ( angleDegrees ) =
+    static member createRotationZ(angleDegrees) =
         let angle = Util.toRadians angleDegrees
         let c = cos angle
         let s = sin angle
         RigidMatrix(
             c, -s, 0, 0,
             s,  c, 0, 0,
-            0,  0, 1, 0 )
+            0,  0, 1, 0)
 
     /// Creates a rotation around an Axis RigidMatrix.
     /// axis — Rotation axis, as unit-vector.
     /// angleDegrees — Rotation angle in Degrees.
     /// Returns a positive rotation will be so clockwise looking in the direction of the axis vector.
-    static member createRotationAxis( axis:UnitVec, angleDegrees:float ) =
+    static member createRotationAxis(axis:UnitVec, angleDegrees:float) =
         // Based on http://www.gamedev.net/reference/articles/article1199.asp
         let angle = Util.toRadians angleDegrees
         let c = cos angle
@@ -353,13 +354,13 @@ type RigidMatrix =
         RigidMatrix(
             tx * x + c    , tx * y - s * z , tx * z + s * y , 0,
             tx * y + s * z, ty * y + c     , ty * z - s * x , 0,
-            tx * z - s * y, ty * z + s * x , t  * z * z + c , 0 )
+            tx * z - s * y, ty * z + s * x , t  * z * z + c , 0)
 
     /// Creates a rotation around an Axis RigidMatrix.
     /// axis — Rotation axis, a vector of any length but 0.0 .
     /// angleDegrees — Rotation angle in Degrees.
     /// Returns a positive rotation will be so clockwise looking in the direction of the axis vector.
-    static member createRotationAxis( axis:Vec, angleDegrees:float ) =
+    static member createRotationAxis(axis:Vec, angleDegrees:float) =
         // first unitize
         let len = sqrt (axis.X*axis.X + axis.Y*axis.Y + axis.Z*axis.Z)
         if len <  zeroLengthTolerance then
@@ -378,7 +379,7 @@ type RigidMatrix =
         RigidMatrix(
             tx * x + c    , tx * y - s * z , tx * z + s * y , 0,
             tx * y + s * z, ty * y + c     , ty * z - s * x , 0,
-            tx * z - s * y, ty * z + s * x , t  * z * z + c , 0 )
+            tx * z - s * y, ty * z + s * x , t  * z * z + c , 0)
 
 
     /// Creates a rotation matrix around an Axis at a given center point.
@@ -386,27 +387,27 @@ type RigidMatrix =
     /// cen — The center point for the rotation.
     /// angleDegrees — Rotation angle in Degrees.
     /// Returns a positive rotation will be so clockwise looking in the direction of the axis vector.
-    static member createRotationAxisCenter( axis:Vec, cen:Pnt, angleDegrees:float ) =
+    static member createRotationAxisCenter(axis:Vec, cen:Pnt, angleDegrees:float) =
         RigidMatrix.createTranslation(-cen.X, -cen.Y, -cen.Z)
-        * RigidMatrix.createRotationAxis(axis, angleDegrees)
-        * RigidMatrix.createTranslation(cen.X, cen.Y, cen.Z)
+        *** RigidMatrix.createRotationAxis(axis, angleDegrees)
+        *** RigidMatrix.createTranslation(cen.X, cen.Y, cen.Z)
 
     /// Creates a rotation matrix around an Axis at a given center point.
     /// axis — Rotation axis, a unit-vector.
     /// cen — The center point for the rotation.
     /// angleDegrees — Rotation angle in Degrees.
     /// Returns a positive rotation will be so clockwise looking in the direction of the axis vector.
-    static member createRotationAxisCenter( axis:UnitVec, cen:Pnt, angleDegrees:float ) =
+    static member createRotationAxisCenter(axis:UnitVec, cen:Pnt, angleDegrees:float) =
         RigidMatrix.createTranslation(-cen.X, -cen.Y, -cen.Z)
-        * RigidMatrix.createRotationAxis(axis, angleDegrees)
-        * RigidMatrix.createTranslation(cen.X, cen.Y, cen.Z)
+        *** RigidMatrix.createRotationAxis(axis, angleDegrees)
+        *** RigidMatrix.createTranslation(cen.X, cen.Y, cen.Z)
 
 
     /// Creates a rotation from one vectors direction to another vectors direction.
     /// If the tips of the two vectors are closer than 1e-9 the identity matrix is returned.
     /// If the tips of the two vectors are almost exactly opposite, deviating less than 1e-6 from line, 
     /// there is no valid unique 180 degree rotation that can be found, so an exception is raised.
-    static member createVecToVec( vecFrom:UnitVec, vecTo:UnitVec ) =
+    static member createVecToVec(vecFrom:UnitVec, vecTo:UnitVec) =
         let v = vecFrom - vecTo
         if v.LengthSq < 1e-18 then // the vectors are almost the same
             RigidMatrix.identity
@@ -421,21 +422,21 @@ type RigidMatrix =
                 let x = axis.X
                 let y = axis.Y
                 let z = axis.Z
-                let c = vecFrom * vecTo  // dot to find cos
-                let s = sqrt(1. - c*c ) // Pythagoras to find sine
+                let c = vecFrom *** vecTo  // dot to find cos
+                let s = sqrt(1. - c*c) // Pythagoras to find sine
                 let t = 1.0 - c
                 let tx = t * x
                 let ty = t * y  
                 RigidMatrix(
                     tx * x + c    , tx * y - s * z , tx * z + s * y , 0 ,
                     tx * y + s * z, ty * y + c     , ty * z - s * x , 0 ,
-                    tx * z - s * y, ty * z + s * x , t  * z * z + c , 0 )
+                    tx * z - s * y, ty * z + s * x , t  * z * z + c , 0)
 
     /// Creates a rotation from one vectors direction to another vectors direction.
     /// If the tips of the two vectors unitized are closer than 1e-9 the identity matrix is returned.
     /// If the tips of the two vectors are almost exactly opposite, deviating less than 1e-6 from line (unitized), 
     /// there is no valid unique 180 degree rotation that can be found, so an exception is raised.
-    static member createVecToVec(vecFrom:Vec, vecTo:Vec ) =
+    static member createVecToVec(vecFrom:Vec, vecTo:Vec) =
         let fu =
             let x = vecFrom.X
             let y = vecFrom.Y
@@ -469,15 +470,15 @@ type RigidMatrix =
                 let x = axis.X
                 let y = axis.Y
                 let z = axis.Z
-                let c = fu * tu  // dot to find cos
-                let s = sqrt(1. - c*c ) // Pythagoras to find sine
+                let c = fu *** tu  // dot to find cos
+                let s = sqrt(1. - c*c) // Pythagoras to find sine
                 let t = 1.0 - c
                 let tx = t * x
                 let ty = t * y  
                 RigidMatrix(
                     tx * x + c    , tx * y - s * z , tx * z + s * y , 0 ,
                     tx * y + s * z, ty * y + c     , ty * z - s * x , 0 ,
-                    tx * z - s * y, ty * z + s * x , t  * z * z + c , 0 )
+                    tx * z - s * y, ty * z + s * x , t  * z * z + c , 0)
 
 
 
@@ -487,14 +488,14 @@ type RigidMatrix =
         RigidMatrix(
             p.Xaxis.X , p.Yaxis.X , p.Zaxis.X ,  p.Origin.X ,
             p.Xaxis.Y , p.Yaxis.Y , p.Zaxis.Y ,  p.Origin.Y ,
-            p.Xaxis.Z , p.Yaxis.Z , p.Zaxis.Z ,  p.Origin.Z )
+            p.Xaxis.Z , p.Yaxis.Z , p.Zaxis.Z ,  p.Origin.Z)
 
 
     /// Creates a RigidMatrix to transform from one Plane or Coordinate System to another Plane.
-    static member createPlaneToPlane(fromPlane:PPlane,  toPlane:PPlane) =
+    static member createPlaneToPlane(fromPlane:PPlane, toPlane:PPlane) =
         let f = fromPlane |> RigidMatrix.createToPlane |> RigidMatrix.inverse
         let t = toPlane   |> RigidMatrix.createToPlane
-        f*t
+        f *** t
 
     /// Tries to create a 3x4 RigidMatrix from a general 4x4 matrix.
     /// Returns None if the input matrix does scale, shear, flip, mirror, reflect or project.
@@ -515,13 +516,13 @@ type RigidMatrix =
                 Util.isOne (sqLen x) && // exclude scaling
                 Util.isOne (sqLen y) &&
                 Util.isOne (sqLen z) &&
-                Util.isZero (x * y)    && // orthogonal if dot product of row or column vectors is zero
-                Util.isZero (x * z)    &&
-                Util.isZero (y * z)    &&
-                Util.isOne  (( Vec.cross (x, y)) * z ) then // check it's not reflecting ( would be -1)
-                    Some (RigidMatrix(  m.M11,  m.M21,  m.M31,  m.X41,
-                                        m.M12,  m.M22,  m.M32,  m.Y42,
-                                        m.M13,  m.M23,  m.M33,  m.Z43)
+                Util.isZero (x *** y)    && // orthogonal if dot product of row or column vectors is zero
+                Util.isZero (x *** z)    &&
+                Util.isZero (y *** z)    &&
+                Util.isOne  ((Vec.cross (x, y)) *** z) then // check it's not reflecting (would be -1)
+                    Some (RigidMatrix(  m.M11, m.M21, m.M31, m.X41,
+                                        m.M12, m.M22, m.M32, m.Y42,
+                                        m.M13, m.M23, m.M33, m.Z43)
                         )
             else
                 None
@@ -535,7 +536,7 @@ type RigidMatrix =
         | None -> EuclidException.Raise "Euclid.RigidMatrix.createFromMatrix failed. The input matrix does scale, shear, flip, mirror, reflect or project: %O" m     
 
     /// Create a RigidMatrix from a Quaternion.
-    static member createFromQuaternion( quaternion:Quaternion) =
+    static member createFromQuaternion(quaternion:Quaternion) =
         let x = quaternion.X
         let y = quaternion.Y
         let z = quaternion.Z
@@ -553,39 +554,39 @@ type RigidMatrix =
         let wy = w * y2
         let wz = w * z2
         // the sequence is reordered here, when compared to Three js
-        RigidMatrix ( ( 1. - ( yy + zz ) )
-                    , ( xy - wz )
-                    , ( xz + wy )
+        RigidMatrix ( (1. - (yy + zz) )
+                    , (xy - wz)
+                    , (xz + wy)
                     , 0
-                    , ( xy + wz )
-                    , ( 1. - ( xx + zz ) )
+                    , (xy + wz)
+                    , (1. - (xx + zz) )
                     , 0
-                    , ( yz - wx )
-                    , ( xz - wy )
-                    , ( yz + wx )
-                    , ( 1. - ( xx + yy ) )
+                    , (yz - wx)
+                    , (xz - wy)
+                    , (yz + wx)
+                    , (1. - (xx + yy) )
                     , 0)
     
     
     /// Removes the translation part by setting X41, Y42 and Z43 to 0.0.
     static member removeTranslation (v:Vec) (m:RigidMatrix) =
-        RigidMatrix(m.M11,  m.M21,  m.M31,  0.0,
-                    m.M12,  m.M22,  m.M32,  0.0,
-                    m.M13,  m.M23,  m.M33,  0.0)
+        RigidMatrix(m.M11, m.M21, m.M31, 0.0,
+                    m.M12, m.M22, m.M32, 0.0,
+                    m.M13, m.M23, m.M33, 0.0)
 
     /// Add a vector translation to an existing RigidMatrix.
     static member addTranslation (v:Vec) (m:RigidMatrix) =
-        RigidMatrix(m.M11,  m.M21,  m.M31,  m.X41 + v.X,
-                    m.M12,  m.M22,  m.M32,  m.Y42 + v.Y,
-                    m.M13,  m.M23,  m.M33,  m.Z43 + v.Z)
+        RigidMatrix(m.M11, m.M21, m.M31, m.X41 + v.X,
+                    m.M12, m.M22, m.M32, m.Y42 + v.Y,
+                    m.M13, m.M23, m.M33, m.Z43 + v.Z)
 
                     
 
     /// Add a X, Y and Z translation to an existing RigidMatrix.
     static member addTranslationXYZ x y z  (m:RigidMatrix) =
-        RigidMatrix(m.M11,  m.M21,  m.M31,  m.X41 + x,
-                    m.M12,  m.M22,  m.M32,  m.Y42 + y,
-                    m.M13,  m.M23,  m.M33,  m.Z43 + z)
+        RigidMatrix(m.M11, m.M21, m.M31, m.X41 + x,
+                    m.M12, m.M22, m.M32, m.Y42 + y,
+                    m.M13, m.M23, m.M33, m.Z43 + z)
 
 
     // ----------------------------------------------
@@ -595,7 +596,7 @@ type RigidMatrix =
     /// Multiplies (or applies) a RigidMatrix to a 3D point.
     /// Since a 3D vector represents a direction or an offset in space, but not a location,
     /// all translations are ignored. (Homogeneous Vector)
-    static member inline ( * ) (v:Vec, m:RigidMatrix) =
+    static member inline ( *** ) (v:Vec, m:RigidMatrix) =
         let x = v.X
         let y = v.Y
         let z = v.Z
@@ -607,7 +608,7 @@ type RigidMatrix =
     /// Multiplies (or applies) a RigidMatrix to a 3D vector .
     /// Since a 3D vector represents a direction or an offset in space, but not a location,
     /// all translations are ignored. (Homogeneous Vector)
-    static member inline ( * ) (v:UnitVec, m:RigidMatrix) =
+    static member inline ( *** ) (v:UnitVec, m:RigidMatrix) =
         let x = v.X
         let y = v.Y
         let z = v.Z
@@ -618,7 +619,7 @@ type RigidMatrix =
             )
 
     /// Multiplies (or applies) a RigidMatrix to a 3D vector.
-    static member inline ( * ) (v:Pnt, m:RigidMatrix) =
+    static member inline ( *** ) (v:Pnt, m:RigidMatrix) =
         let x = v.X
         let y = v.Y
         let z = v.Z

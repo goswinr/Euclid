@@ -58,7 +58,7 @@ type Polyline2D =
             prev <- t
         l
 
-    /// Gets Bounding Rectangle of the Polyline2D
+    /// Gets bounding rectangle of the Polyline2D
     member p.BoundingRectangle = BRect.createFromIList p.Points
 
     /// Tests if Polyline2D start and end points are exactly the same.
@@ -202,7 +202,7 @@ type Polyline2D =
             let v = vs[i]
             // finding ClosestParameter on line segment and clamp to 0.0 to 1.0
             let len = v.LengthSq
-            ts[i] <- if len < 1e-9 then 0.0 else -((p-pt) * v) / len |> Util.clampBetweenZeroAndOne //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
+            ts[i] <- if len < 1e-9 then 0.0 else -((p-pt) *** v) / len |> Util.clampBetweenZeroAndOne //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
 
         // square distances per segment
         let ds = Array.zeroCreate (ps.Count-1)
@@ -297,11 +297,11 @@ type Polyline2D =
 
     /// Create a new Polyline2D by using the provided ResizeArray directly.
     /// All later changes to the ResizeArray will be reflected in the Polyline2D.
-    static member createDirectlyUnsafe (points: ResizeArray<Pt>) = Polyline2D( points )
+    static member createDirectlyUnsafe (points: ResizeArray<Pt>) = Polyline2D(points)
 
     /// Create a new empty Polyline2D without any points.
     /// But predefined capacity.
-    static member empty (capacity:int) = Polyline2D(ResizeArray(capacity))
+    static member createEmpty (capacity:int) = Polyline2D(ResizeArray(capacity))
 
     /// Returns new Polyline2D from point at Parameter a to point at Parameter b.
     /// if 'a' is bigger 'b' then the new Polyline2D is in opposite direction.
@@ -309,7 +309,7 @@ type Polyline2D =
     static member segment a b (pl:Polyline2D) =
         let rev = a>b
         let u, v = if rev then b, a else a, b
-        let np = Polyline2D.empty (int(v-u)+2)
+        let np = Polyline2D.createEmpty (int(v-u)+2)
         let nps = np.Points
         let ps  = pl.Points
         // first point
@@ -393,7 +393,7 @@ type Polyline2D =
     /// The inner core routine of Points.offset. This function considers input a closed polyline.
     /// Start point and end point may not be equal, all arrays of same length.
     /// 'referenceOrient' is positive for counterclockwise loops otherwise negative.
-    static member offsetCore( pts:ResizeArray<Pt>, offD:ResizeArray<float>,  referenceOrient:float, fixColinearLooped, allowObliqueOffsetOnColinearSegments) : ResizeArray<Pt> =
+    static member offsetCore(pts:ResizeArray<Pt>, offD:ResizeArray<float>,  referenceOrient:float, fixColinearLooped, allowObliqueOffsetOnColinearSegments) : ResizeArray<Pt> =
         if  pts.Count <> offD.Count   then EuclidException.Raise "Euclid.Polyline2D.offsetCore pts(%d) and offD(%d) must have the same length." pts.Count offD.Count
         let lenTolSq = 1e-12 // local squared length tolerance
         let lenPts = pts.Count
@@ -457,7 +457,7 @@ type Polyline2D =
                         let vy = offN.Y - offP.Y
                         let e = bx*vx + by*vy
                         let d = ax*vx + ay*vy
-                        let t = (c * d - b * e ) / discriminant
+                        let t = (c * d - b * e) / discriminant
                         res.[i] <- offP + t * prevV
                         prevOff <- thisOff
                         prevV <- nextV
@@ -481,7 +481,7 @@ type Polyline2D =
                 if colinear.[i]  then
                     let pi = searchBack    (i - 1)
                     let ni = searchForward (i + 1)
-                    if pi = ni then //  does this ever happen ? it is either all colinear ( caught in searchBack) or at least three points are not colinear ??
+                    if pi = ni then //  does this ever happen ? it is either all colinear (caught in searchBack) or at least three points are not colinear ??
                         EuclidException.Raise "Euclid.Polyline2D.offsetCore : all %d points for offset are colinear within 0.25 degree or identical. " pts.Count
                     let ln = Line2D(res.[pi], res.[ni])
                     res.[i] <- ln.ClosestPointInfinite(pts.[i])
@@ -509,11 +509,11 @@ type Polyline2D =
                         else // colinear start, get frame
                             match Points.offsetInCornerEx2D (pts[ni-1], pts[ni], pts[ni+1],  offD.[ni-1],  offD.[ni], refNorm) with
                             |ValueNone -> EuclidException.Raise "Euclid.Polyline2D.offsetCore :offsetInCornerEx-1 failed unexpectedly."
-                            |ValueSome ( x, prevShift, _) -> res.[i] <- pts.[i] + prevShift
+                            |ValueSome (x, prevShift, _) -> res.[i] <- pts.[i] + prevShift
                     elif ni = -1 then  // colinear end, get frame
                         match Points.offsetInCornerEx2D (pts[pi-1], pts[pi], pts[pi+1],  offD.[pi-1],  offD.[pi], refNorm) with
                         |ValueNone -> EuclidException.Raise "Euclid.Polyline2D.offsetCore :offsetInCornerEx-1 failed unexpectedly."
-                        |ValueSome ( x, _, nextShift) -> res.[i] <- pts.[i] + nextShift
+                        |ValueSome (x, _, nextShift) -> res.[i] <- pts.[i] + nextShift
                     else
                         let ln = Line2D(res.[pi], res.[ni])
                         res.[i] <- ln.ClosestPointInfinite(pts.[i])
@@ -566,7 +566,7 @@ type Polyline2D =
                 |Error k  -> EuclidException.Raise "Euclid.Polyline2D.offset: offsetDistances has %d items but should have 0, 1 or %d for %d given points \r\nin closed Polyline2D with identical start and end:\r\n%O" k pts.Count points.Count polyLine
                 |Ok    ds -> ds
 
-            let res = Polyline2D.offsetCore(pts, offD,  referenceOrient, fixColinearLooped=true, allowObliqueOffsetOnColinearSegments=obliqueOffsets)
+            let res = Polyline2D.offsetCore(pts, offD, referenceOrient, fixColinearLooped=true, allowObliqueOffsetOnColinearSegments=obliqueOffsets)
             res.Add(res.[0])     // set last equal first
             Polyline2D.createDirectlyUnsafe res
 
@@ -590,7 +590,7 @@ type Polyline2D =
                     if notNull ds then ds.Add ds.[0] // make same length as points
                     ds
 
-            let res = Polyline2D.offsetCore(points, offD,  referenceOrient, fixColinearLooped=false, allowObliqueOffsetOnColinearSegments=obliqueOffsets)
+            let res = Polyline2D.offsetCore(points, offD, referenceOrient, fixColinearLooped=false, allowObliqueOffsetOnColinearSegments=obliqueOffsets)
 
             // (4.1) fix ends if not looped
             // TODO if the normal offset is not constant, then the end points will not be exactly correct

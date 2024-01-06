@@ -462,12 +462,21 @@ type Box =
 
     /// Checks if two 3D Boxes are equal within tolerance.
     /// Does not recognize congruent boxes with different rotation as equal.
-    static member equals tol (a:Box) (b:Box) =
-        let tt = tol*tol
-        Pnt.distanceSq a.Origin b.Origin < tt &&
-        Vec.differenceSq a.Xaxis b.Xaxis < tt &&
-        Vec.differenceSq a.Yaxis b.Yaxis < tt &&
-        Vec.differenceSq a.Zaxis b.Zaxis < tt
+    /// Use a tolerance of 0.0 to check for an exact match.
+    static member equals (tol:float) (a:Box) (b:Box) =
+        abs (a.Origin.X - b.Origin.X) <= tol &&
+        abs (a.Origin.Y - b.Origin.Y) <= tol &&
+        abs (a.Origin.Z - b.Origin.Z) <= tol &&
+        abs (a.Xaxis.X  - b.Xaxis.X ) <= tol &&
+        abs (a.Xaxis.Y  - b.Xaxis.Y ) <= tol &&
+        abs (a.Xaxis.Z  - b.Xaxis.Z ) <= tol &&
+        abs (a.Yaxis.X  - b.Yaxis.X ) <= tol &&
+        abs (a.Yaxis.Y  - b.Yaxis.Y ) <= tol &&
+        abs (a.Yaxis.Z  - b.Yaxis.Z ) <= tol &&
+        abs (a.Zaxis.X  - b.Zaxis.X ) <= tol &&
+        abs (a.Zaxis.Y  - b.Zaxis.Y ) <= tol &&
+        abs (a.Zaxis.Z  - b.Zaxis.Z ) <= tol
+        
 
     /// Returns Box expanded by distance on all six sides.
     /// Does check for underflow if distance is negative and raises EuclidException.
@@ -498,22 +507,22 @@ type Box =
         let z = b.Zaxis * (distHei / b.SizeZ)
         Box(b.Origin-x-y-z, b.Xaxis+x*2., b.Yaxis+y*2., b.Zaxis+z*2.)
 
-    /// Give PPlane and x, y and Z size.
+    /// Creates a 3D box from PPlane and x, y and Z size.
     static member createFromPlane (pl:PPlane, x, y, z) =
         Box(pl.Origin, pl.Xaxis*x, pl.Yaxis*y, pl.Zaxis*z)
 
-    /// Give 3D Bounding Box.
+    /// Creates a 3D box from a 3D a bounding box.
     static member createFromBoundingBox (b:BBox) =
         Box(b.MinPnt, Vec.Xaxis*b.SizeX, Vec.Yaxis*b.SizeY, Vec.Zaxis*b.SizeZ)
 
-    /// Give 2D Rectangle and Z lower and upper position.
+    /// Creates a 3D box from a 2D rectangle and Z lower and upper position.
     static member createFromRect2D (r:Rect2D, zLow, zHigh) =
         Box(r.Origin.WithZ zLow,
             r.Xaxis.AsVec,
             r.Yaxis.AsVec,
             Vec.Zaxis*(zHigh-zLow))
 
-     /// Give 2D Rectangle and Z lower and upper position.
+     /// Creates a 3D box from a 3D rectangle and Z lower and upper position.
     static member createFromRect3D (r:Rect3D, zLow, zHigh) =
         let z = Vec.cross(r.Xaxis, r.Yaxis)
         Box(r.Origin  + z.WithLength(zLow),
@@ -522,25 +531,25 @@ type Box =
             z.WithLength(zHigh-zLow)
         )
 
-    /// Move the Box by a vector.
+    /// Creates a 3D box moved by a vector.
     static member move (v:Vec) (b:Box) =
         Box(b.Origin + v, b.Xaxis, b.Yaxis, b.Zaxis)
 
-    /// Translate along the local X-axis of the Box.
+    /// Creates a 3D box translated along the local X-axis of the Box.
     static member translateX (distX:float) (b:Box) =
         let x = b.Xaxis
         let len = x.Length
         if len = zeroLengthTolerance then EuclidException.Raise "Euclid.Box.translateX: box.Xaxis is zero length in Box: %s" b.AsString
         Box(b.Origin + x*(distX/len), x, b.Yaxis, b.Zaxis)
 
-    /// Translate along the local Y-axis of the Box.
+    /// Creates a 3D box translated along the local Y-axis of the Box.
     static member translateY (distY:float) (b:Box) =
         let y = b.Yaxis
         let len = y.Length
         if len = zeroLengthTolerance then EuclidException.Raise "Euclid.Box.translateY: box.Yaxis is zero length in Box: %s" b.AsString
         Box(b.Origin + y*(distY/len), b.Xaxis, y, b.Zaxis)
 
-    /// Translate along the local Z-axis of the Box.
+    /// Creates a 3D box translated along the local Z-axis of the Box.
     static member translateZ (distZ:float) (b:Box) =
         let z = b.Zaxis
         let len = z.Length
@@ -548,7 +557,7 @@ type Box =
         Box(b.Origin + z*(distZ/len), b.Xaxis, b.Yaxis, z)
 
     /// Transform the Box by the given RigidMatrix.
-    /// The returned Box is guaranteed to have orthogonal vectors.
+    /// The returned Box is guaranteed to have still orthogonal vectors.
     static member transform (m:RigidMatrix) (b:Box) =
         let o = Pnt.transformRigid m b.Origin
         let x = Vec.transformRigid m b.Xaxis

@@ -36,8 +36,8 @@ type Loop private   ( pts:ResizeArray<Pt>
     /// This Value is precomputed in constructor.
     member _.Area = area
 
-    /// A List of precomputed Bounding Rectangles for each segment.
-    /// Each Bounding Rectangle is expanded by the SnapThreshold.
+    /// A List of precomputed bounding rectangles for each segment.
+    /// Each bounding rectangle is expanded by the SnapThreshold.
     /// This list is one item shorter than Points.
     member _.BRects = bRects
 
@@ -57,13 +57,13 @@ type Loop private   ( pts:ResizeArray<Pt>
    //member _.XYs = xys
 
     /// This list is one item Longer than vectors, BRects or Lengths.
-    /// Last point equals first point.
+    /// Last point equals the first point.
     member _.Points = pts
 
     /// One less than Points count.
     member val SegmentCount = unitVcts.Length
 
-    /// The overall Bounding Rectangle.
+    /// The overall bounding rectangle.
     /// Including an expansion by snapThreshold.
     member _.ExpandedBoundingRect = bRect
 
@@ -77,7 +77,7 @@ type Loop private   ( pts:ResizeArray<Pt>
 
     /// Creates a deep copy.
     member _.Clone() = Loop(pts.GetRange(0, pts.Count), Array.copy unitVcts, Array.copy bRects, Array.copy lens, //Array.copy xys,
-                            area, minSegmentLength, snapThreshold, bRect )
+                            area, minSegmentLength, snapThreshold, bRect)
 
     /// Returns closest segment index.
     member lo.ClosestSegment (pt:Pt) :int=
@@ -215,7 +215,7 @@ type Loop private   ( pts:ResizeArray<Pt>
         let mutable xMin, yMin = Double.MaxValue, Double.MaxValue // for overall bounding Rectangle
         let mutable xMax, yMax = Double.MinValue, Double.MinValue
 
-        // loop again to precalculate vectors,  unit vectors,   BRects,  and lengths
+        // loop again to precalculate vectors, unit vectors, BRects, and lengths
         let  unitVcts, bRects, lens = //, xys=
             let uvs  = Array.zeroCreate (segCount)
             let bs   = Array.zeroCreate (segCount)
@@ -223,12 +223,12 @@ type Loop private   ( pts:ResizeArray<Pt>
             //let xy = Array.zeroCreate (segCount*2)
             let mutable xyi = 0
             let mutable t = pts.[0]
-            for ii = 1 to pts.Count-1 do // start at +1,  last = first
+            for ii = 1 to pts.Count-1 do // start at +1, last = first
                 let n = pts.[ii]
                 let v = Vc.create(t, n)
                 let l = v.Length
                 let i = ii-1 // because loop starts at 1
-                uvs.[ i] <- UnitVc.createUnchecked( v.X/l, v.Y/l) // no check for div by zero needed,  since minSpacing is already checked
+                uvs.[ i] <- UnitVc.createUnchecked( v.X/l, v.Y/l) // no check for div by zero needed, since minSpacing is already checked
                 bs.[  i] <- BRect.create(t, n)|> BRect.expandSave snapThreshold
                 lens.[i] <- l
                 //xy.[xyi  ] <- t.X
@@ -242,7 +242,7 @@ type Loop private   ( pts:ResizeArray<Pt>
                 yMax <- max yMax t.Y
                 // swap:
                 t <- n
-            uvs,  bs, lens//, xy
+            uvs, bs, lens//, xy
 
 
         // Test for 180 U-turns
@@ -253,7 +253,7 @@ type Loop private   ( pts:ResizeArray<Pt>
         let mutable t = unitVcts.[0]
         for ii=1 to segLastIdx do
             let n = unitVcts.[ii]
-            if t*n < -0.984808 then
+            if t *** n < -0.984808 then
                 Debug2D.drawDot "+170° turn?" pts.[ii]
                 EuclidException.Raise "Euclid.Loop: Lines for Loop make a kink between 170 and 180 Degrees."
             t <- n
@@ -271,7 +271,7 @@ type Loop private   ( pts:ResizeArray<Pt>
                 let bp = pts.[j]
                 let bu = unitVcts.[j]
                 let bl = lens.[j]
-                if Intersect.doIntersectOrOverlapColinear(ap, au, al, abb, bp, bu, bl, bbb, snapThreshold ) then
+                if Intersect.doIntersectOrOverlapColinear(ap, au, al, abb, bp, bu, bl, bbb, snapThreshold) then
                     Debug2D.drawDot (sprintf "self X: %O + %O"  i j) (Intersect.getXPointOrMid(ap, au, al, bp, bu, bl, snapThreshold))
                     Debug2D.drawLineFromTo(ap, ap+au*al)
                     Debug2D.drawLineFromTo(bp, bp+bu*bl)
@@ -281,7 +281,7 @@ type Loop private   ( pts:ResizeArray<Pt>
             // checking second last and last
             selfIntersectionCheck(segLastIdx  , 1, 1)
             selfIntersectionCheck(segLastIdx-1, 0, 0)
-            for i = 1 to segLastIdx do // start at second,  (last and first do intersect)
+            for i = 1 to segLastIdx do // start at second, (last and first do intersect)
                 // TODO quadratic runtime !  replace with sweep line algorithm ?
                 selfIntersectionCheck(i, i+2, segLastIdx)
 

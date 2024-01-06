@@ -75,14 +75,14 @@ module AutoOpenVec =
             let l = v.Length
             if l < zeroLengthTolerance then v.FailedUnitized() // don't compose error msg directly here to keep inlined code small.
             let li = 1. / l
-            UnitVec.createUnchecked( li*v.X, li*v.Y, li*v.Z )
+            UnitVec.createUnchecked(li*v.X, li*v.Y, li*v.Z)
 
         // Returns the 3D vector unitized.
         // If the length of the vector is 0.0 an invalid unit-vector is returned.
         // UnitVec(0, 0, 0)
         //member inline v.UnitizedUnchecked =
         //    let li = 1. / sqrt(v.X*v.X + v.Y*v.Y + v.Z*v.Z)
-        //    UnitVec.createUnchecked( li*v.X, li*v.Y, li*v.Z )
+        //    UnitVec.createUnchecked(li*v.X, li*v.Y, li*v.Z)
 
         /// Test if the 3D vector is a unit-vector.
         /// Test if the vectors square length is within 6 float steps of 1.0
@@ -96,18 +96,18 @@ module AutoOpenVec =
         member inline v.PerpendicularInXY = Vec(-v.Y, v.X, 0)
 
         /// 90 Degree rotation Counter-Clockwise around Z-axis.
-        member inline v.RotateOnZ90CCW = Vec( -v.Y,   v.X,   v.Z)
+        member inline v.RotateOnZ90CCW = Vec( -v.Y, v.X, v.Z)
 
         /// 90 Degree rotation clockwise around Z-axis.
-        member inline v.RotateOnZ90CW = Vec( v.Y,  -v.X,   v.Z)
+        member inline v.RotateOnZ90CW = Vec(v.Y, -v.X, v.Z)
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
         member v.FailedDirectionDiamondInXY() = EuclidDivByZeroException.Raise "Euclid.Vec.DirectionDiamondInXY: input vector is vertical or zero length:%O" v
         /// The diamond angle.
         /// Calculates the proportion of X to Y component.
-        /// It is always positive and in the range of 0.0 to 4.0 ( for 360 Degrees)
-        /// 0.0 = Xaxis,  going Counter-Clockwise.
+        /// It is always positive and in the range of 0.0 to 4.0 (for 360 Degrees)
+        /// 0.0 = Xaxis, going Counter-Clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
         member inline v.DirectionDiamondInXY =
@@ -161,7 +161,7 @@ module AutoOpenVec =
         member inline v.Direction360InXY =
             v.Direction2PiInXY |> toDegrees
 
-        /// Returns the angle in Radians from X-axis,
+        /// Returns the angle in Degrees from X-axis,
         /// Ignores orientation.
         /// Range 0.0 to 180.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
@@ -170,7 +170,7 @@ module AutoOpenVec =
 
         /// Returns positive angle for rotating Counter-Clockwise from this vector to vector 'b' .
         /// In Diamond Angle. Using only proportion of X to Y components.
-        /// Range of 0.0 to 4.0 ( for 360 Degrees)
+        /// Range of 0.0 to 4.0 (for 360 Degrees)
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
         member inline v.AngleDiamondInXYTo (b:Vec) =
@@ -185,7 +185,7 @@ module AutoOpenVec =
         member inline v.MatchesOrientation (other:Vec) =
             if v.LengthSq     < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vec.MatchesOrientation: Vec 'this' is too short: %s. 'other':%s " v.AsString other.AsString
             if other.LengthSq < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vec.MatchesOrientation: Vec 'other' is too short: %s. 'this':%s " other.AsString v.AsString
-            v * other > 1e-12
+            v *** other > 1e-12
 
         /// Checks if the angle between this 3D vectors and a 3D unit vector is less than 180 degrees.
         /// Calculates the dot product of two 3D vectors.
@@ -193,7 +193,7 @@ module AutoOpenVec =
         /// Fails if the vector is shorter than zeroLengthTolerance  (1e-12).
         member inline v.MatchesOrientation (other:UnitVec) =
             if v.LengthSq < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vec.MatchesOrientation: Vec 'this' is too short: %s. 'other':%s " v.AsString other.AsString
-            v * other > 1e-12
+            v *** other > 1e-12
 
 
         /// Checks if the angle between the two 3D vectors is more than 180 degrees.
@@ -203,7 +203,7 @@ module AutoOpenVec =
         member inline v.IsOppositeOrientation (other:Vec) =
             if v.LengthSq     < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vec.IsOppositeOrientation: Vec 'this' is too short: %s. 'other':%s " v.AsString other.AsString
             if other.LengthSq < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vec.IsOppositeOrientation: Vec 'other' is too short: %s. 'this':%s " other.AsString v.AsString
-            v * other < -1e-12    
+            v *** other < -1e-12    
 
         /// Checks if the angle between this 3D vectors and a 3D unit vector is more than 180 degrees.
         /// Calculates the dot product of a 3D vector and a unit vectors.
@@ -211,7 +211,7 @@ module AutoOpenVec =
         /// Fails if the vector is shorter than zeroLengthTolerance  (1e-12).
         member inline v.IsOppositeOrientation (other:UnitVec) =
             if v.LengthSq < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vec.IsOppositeOrientation: Vec 'this' is too short: %s. 'other':%s " v.AsString other.AsString
-            v * other < -1e-12
+            v *** other < -1e-12
         
 
         /// Checks if 3D vector is parallel to the world X axis. Ignoring orientation.
@@ -277,9 +277,9 @@ module AutoOpenVec =
             if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vec.IsParallelTo: Vec 'this' is too short: %s. 'other':%s " this.AsString other.AsString
             let sb = other.LengthSq
             if sb < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vec.IsParallelTo: Vec 'other' is too short: %s. 'this':%s " other.AsString this.AsString
-            let au = this * (1.0 / sqrt sa )
-            let bu = other * (1.0 / sqrt sb )
-            abs(bu*au) > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
+            let au = this  * (1.0 / sqrt sa)
+            let bu = other * (1.0 / sqrt sb)
+            abs(bu *** au) > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
 
         /// Checks if this 3D vectors and a 3D unit vector are parallel.
         /// Ignores the line orientation.
@@ -290,8 +290,8 @@ module AutoOpenVec =
         member inline this.IsParallelTo(other:UnitVec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
             let sa = this.LengthSq
             if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vec.IsParallelTo: Vec 'this' is too short: %s. 'other':%s " this.AsString other.AsString
-            let au = this * (1.0 / sqrt sa )
-            abs(other*au) > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
+            let au = this * (1.0 / sqrt sa)
+            abs(other *** au) > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
 
             
 
@@ -307,9 +307,9 @@ module AutoOpenVec =
             if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vec.IsParallelAndOrientedTo: Vec 'this' is too short: %s. 'other':%s " this.AsString other.AsString
             let sb = other.LengthSq
             if sb < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vec.IsParallelAndOrientedTo: Vec 'other' is too short: %s. 'this':%s " other.AsString this.AsString
-            let au = this * (1.0 / sqrt sa )
-            let bu = other * (1.0 / sqrt sb )
-            bu*au > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
+            let au = this  * (1.0 / sqrt sa)
+            let bu = other * (1.0 / sqrt sb)
+            bu *** au > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
         
         /// Checks if this 3D vectors and a 3D unit vector are parallel.
         /// Takes the line orientation into account too.
@@ -320,14 +320,14 @@ module AutoOpenVec =
         member inline this.IsParallelAndOrientedTo (other:UnitVec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
             let sa = this.LengthSq
             if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vec.IsParallelAndOrientedTo: Vec 'this' is too short: %s. 'other':%s " this.AsString other.AsString
-            let au = this * (1.0 / sqrt sa )
-            other*au > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:            
+            let au = this * (1.0 / sqrt sa)
+            other *** au > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:            
 
 
         /// Checks if two 3D vectors are perpendicular to each other.
         /// The default angle tolerance is 89.75 to 90.25 degrees.
         /// This tolerance can be customized by an optional minium cosine value.
-        /// The default cosine is 0.0043633 ( = 89.75 deg )
+        /// The default cosine is 0.0043633 ( = 89.75 deg)
         /// See Euclid.Cosine module.
         /// Fails on vectors shorter than Util.zeroLengthTolerance (1e-12).
         member inline this.IsPerpendicularTo (other:Vec, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) =
@@ -335,22 +335,22 @@ module AutoOpenVec =
             if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vec.IsPerpendicularTo: Vec 'this' is too short: %s. 'other':%s " this.AsString other.AsString
             let sb = other.LengthSq
             if sb < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vec.IsPerpendicularTo: Vec 'other' is too short: %s. 'this':%s " other.AsString this.AsString
-            let au = this * (1.0 / sqrt sa )
-            let bu = other * (1.0 / sqrt sb )
-            let d = bu*au
+            let au = this  * (1.0 / sqrt sa)
+            let bu = other * (1.0 / sqrt sb)
+            let d = bu *** au
             float -maxCosine < d && d  < float maxCosine // = cosine of 98.75 and 90.25 degrees
 
         /// Checks if this 3D vectors and a 3D unit vector are perpendicular to each other.
         /// The default angle tolerance is 89.75 to 90.25 degrees.
         /// This tolerance can be customized by an optional minium cosine value.
-        /// The default cosine is 0.0043633 ( = 89.75 deg )
+        /// The default cosine is 0.0043633 ( = 89.75 deg)
         /// See Euclid.Cosine module.
         /// Fails on vectors shorter than Util.zeroLengthTolerance (1e-12).
         member inline this.IsPerpendicularTo (other:UnitVec, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) =
             let sa = this.LengthSq
             if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vec.IsPerpendicularTo: Vec 'this' is too short: %s. 'other':%s " this.AsString other.AsString            
-            let au = this * (1.0 / sqrt sa )
-            let d = other*au
+            let au = this * (1.0 / sqrt sa)
+            let d = other *** au
             float -maxCosine < d && d  < float maxCosine // = cosine of 98.75 and 90.25 degrees
             
 
@@ -358,13 +358,13 @@ module AutoOpenVec =
         /// Since a 3D vector represents a direction or an offset in space, but not a location,
         /// all translations are ignored. (Homogeneous Vector)
         member inline v.Transform (m:Matrix) =
-            v*m // operator * is defined in Matrix.fs
+            v *** m // operator * is defined in Matrix.fs
 
         /// Multiplies (or applies) a RigidMatrix to a 3D vector. 
         /// Since a 3D vector represents a direction or an offset in space, but not a location,
         /// all translations are ignored. (Homogeneous Vector)
         member inline v.TransformRigid (m:RigidMatrix) =
-            v*m // operator * is defined in RigidMatrix.fs
+            v *** m // operator * is defined in RigidMatrix.fs
 
 
         //----------------------------------------------------------------------------------------------
@@ -379,6 +379,14 @@ module AutoOpenVec =
 
         /// Returns the World Z-axis with length one: Vec(0, 0, 1)
         static member inline Zaxis = Vec(0, 0, 1)
+
+        /// Checks if two 3D vectors are equal within tolerance.
+        /// Identical vectors in opposite directions are not considered equal.
+        /// Use a tolerance of 0.0 to check for an exact match.
+        static member inline equals (tol:float) (a:Vec) (b:Vec) =            
+            abs (a.X-b.X) <= tol &&
+            abs (a.Y-b.Y) <= tol &&
+            abs (a.Z-b.Z) <= tol
 
         /// Returns the distance between the tips of two 3D vectors.
         static member inline difference (a:Vec) (b:Vec) = let v = a-b in sqrt(v.X*v.X + v.Y*v.Y + v.Z*v.Z)
@@ -412,13 +420,13 @@ module AutoOpenVec =
             with e -> Vec.failedCreateFromMembersxyz (vec, e)
 
         /// Create 3D vector from 3D point.
-        static member inline createFromPnt (pt:Pnt) = Vec( pt.X, pt.Y, pt.Z )
+        static member inline createFromPnt (pt:Pnt) = Vec(pt.X, pt.Y, pt.Z)
 
         /// Create 3D vector from 3D unit-vector.
         static member inline createFromUnitVec (v:UnitVec) = Vec(v.X, v.Y, v.Z)
 
         /// Convert 3D vector to 2D point by ignoring Z value.
-        static member inline asPt(v:Vec) = Pt( v.X, v.Y)
+        static member inline asPt(v:Vec) = Pt(v.X, v.Y)
 
         /// Convert 3D vector to 2D vector by ignoring Z value.
         static member inline asVc(v:Vec) = Vc(v.X, v.Y)
@@ -432,21 +440,21 @@ module AutoOpenVec =
         /// Its length is the area of the parallelogram spanned by the input vectors.
         /// Its direction follows th right-hand rule.
         /// A x B = |A| * |B| * sin(angle)
-        static member inline cross (a:UnitVec, b:Vec) = Vec (a.Y * b.Z - a.Z * b.Y,  a.Z * b.X - a.X * b.Z,  a.X * b.Y - a.Y * b.X )
+        static member inline cross (a:UnitVec, b:Vec) = Vec (a.Y * b.Z - a.Z * b.Y, a.Z * b.X - a.X * b.Z, a.X * b.Y - a.Y * b.X)
 
         /// Cross product, of a 3D vector and a 3D unit vectors.
         /// The resulting vector is perpendicular to both input vectors.
         /// Its length is the area of the parallelogram spanned by the input vectors.
         /// Its direction follows th right-hand rule.
         /// A x B = |A| * |B| * sin(angle)
-        static member inline cross (a:Vec, b:UnitVec) = Vec (a.Y * b.Z - a.Z * b.Y,  a.Z * b.X - a.X * b.Z,  a.X * b.Y - a.Y * b.X )
+        static member inline cross (a:Vec, b:UnitVec) = Vec (a.Y * b.Z - a.Z * b.Y, a.Z * b.X - a.X * b.Z, a.X * b.Y - a.Y * b.X)
 
 
         //static member inline dot (a:Vec, b:Vec)   //moved to Vec type declaration
 
         /// Dot product, or scalar product of a 3D unit-vector with a 3D vector.
         /// Returns a float. This float is the projected length of the 3D vector on the direction of the unit-vector.
-        static member inline dot (a:UnitVec, b:Vec ) = a.X * b.X + a.Y * b.Y + a.Z * b.Z
+        static member inline dot (a:UnitVec, b:Vec) = a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
         /// Dot product, or scalar product of a 3D vector with a 3D unit-vector.
         /// Returns a float. This float is the projected length of the 3D vector on the direction of the unit-vector.
@@ -482,13 +490,13 @@ module AutoOpenVec =
         static member inline withLength(desiredLength:float) (v:Vec) = v.WithLength desiredLength
 
         /// Add to the X part of this 3D vectors together. Returns a new 3D vector.
-        static member inline moveX x (v:Vec) = Vec (v.X+x, v.Y,   v.Z)
+        static member inline moveX x (v:Vec) = Vec (v.X+x, v.Y, v.Z)
 
         /// Add to the Y part of this 3D vectors together. Returns a new 3D vector.
-        static member inline moveY y (v:Vec) = Vec (v.X,   v.Y+y, v.Z)
+        static member inline moveY y (v:Vec) = Vec (v.X, v.Y+y, v.Z)
 
         /// Add to the Z part of this 3D vectors together. Returns a new 3D vector.
-        static member inline moveZ z (v:Vec) = Vec (v.X,   v.Y,   v.Z+z)
+        static member inline moveZ z (v:Vec) = Vec (v.X, v.Y, v.Z+z)
 
         /// Check if the 3D vector is shorter than the tolerance.
         static member inline isTiny tol (v:Vec) =
@@ -506,7 +514,7 @@ module AutoOpenVec =
         static member inline lengthSq (v:Vec) = v.LengthSq
 
         /// Returns a new 3D vector from X, Y and Z parts.
-        static member inline create (x:float, y:float, z:float) = Vec( x, y, z )
+        static member inline create (x:float, y:float, z:float) = Vec(x, y, z)
 
         /// Returns a new 3D vector from start and end point.
         static member inline create (start:Pnt, ende:Pnt) = ende-start
@@ -589,7 +597,7 @@ module AutoOpenVec =
 
         /// Returns positive angle for rotating Counter-Clockwise from vector 'a' to vector 'b' .
         /// In Diamond Angle. Using only proportion of X to Y components.
-        /// Range of 0.0 to 4.0 ( for 360 Degrees)
+        /// Range of 0.0 to 4.0 (for 360 Degrees)
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
         static member inline angleDiamondInXY (a:Vec, b:Vec) = a.AngleDiamondInXYTo(b)
@@ -597,8 +605,8 @@ module AutoOpenVec =
         /// The diamond angle.
         /// Returns positive angle of 3D vector in World X-Y plane.
         /// Calculates the proportion of X to Y component.
-        /// It is always positive and in the range of 0.0 to 4.0 ( for 360 Degrees)
-        /// 0.0 = Xaxis,  going Counter-Clockwise.
+        /// It is always positive and in the range of 0.0 to 4.0 (for 360 Degrees)
+        /// 0.0 = Xaxis, going Counter-Clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
         static member inline directionDiamondInXY(v:Vec) = v.DirectionDiamondInXY
@@ -621,11 +629,11 @@ module AutoOpenVec =
 
         /// Ensure that the 3D  vector has a positive dot product with given 3D orientation vector.
         static member inline matchOrientation (orientationToMatch:Vec) (vecToFlip:Vec) =
-            if orientationToMatch * vecToFlip < 0.0 then -vecToFlip else vecToFlip
+            if orientationToMatch *** vecToFlip < 0.0 then -vecToFlip else vecToFlip
 
         /// Ensure that the 3D vector has a positive dot product with given 3D orientation unit vector.
         static member inline matchUnitVecOrientation (orientationToMatch:UnitVec) (vecToFlip:Vec) =
-            if orientationToMatch * vecToFlip < 0.0 then -vecToFlip else vecToFlip            
+            if orientationToMatch *** vecToFlip < 0.0 then -vecToFlip else vecToFlip            
 
 
         /// Checks if the angle between the two 3D vectors is less than 180 degrees.
@@ -647,7 +655,6 @@ module AutoOpenVec =
         /// Checks if Angle between two vectors is Below 0.25 Degree.
         /// Ignores vector orientation.
         /// Fails on zero length vectors, tolerance 1e-12.
-        /// Same as isAngleBelowQuatreDegree.
         static member inline areParallel (other:Vec) (v:Vec) = v.IsParallelTo other
 
 
@@ -665,19 +672,19 @@ module AutoOpenVec =
         // Rotate2D:
 
         /// 90 Degree rotation Counter-Clockwise around Z-axis.
-        static member inline rotateOnZ90CCW(v:Vec) = Vec( -v.Y,   v.X,   v.Z)
+        static member inline rotateOnZ90CCW(v:Vec) = Vec( -v.Y, v.X, v.Z)
 
         /// 90 Degree rotation clockwise around Z-axis.
-        static member inline rotateOnZ90CW(v:Vec) = Vec(  v.Y,  -v.X,   v.Z  )
+        static member inline rotateOnZ90CW(v:Vec) = Vec(  v.Y, -v.X, v.Z)
 
         /// Rotate the 3D vector around X-axis, from Y to Z-axis, Counter Clockwise looking from right.
-        static member rotateXBy (r:Rotation2D) (v:Vec) = Vec (v.X,  r.Cos*v.Y - r.Sin*v.Z, r.Sin*v.Y + r.Cos*v.Z)
+        static member rotateXBy (r:Rotation2D) (v:Vec) = Vec (v.X, r.Cos*v.Y - r.Sin*v.Z, r.Sin*v.Y + r.Cos*v.Z)
 
         /// Rotate the 3D vector around Y-axis, from Z to X-axis, Counter Clockwise looking from back.
-        static member rotateYBy (r:Rotation2D) (v:Vec) = Vec ( r.Sin*v.Z + r.Cos*v.X,  v.Y, r.Cos*v.Z - r.Sin*v.X)
+        static member rotateYBy (r:Rotation2D) (v:Vec) = Vec (r.Sin*v.Z + r.Cos*v.X, v.Y, r.Cos*v.Z - r.Sin*v.X)
 
         /// Rotate the 3D vector around Z-axis, from X to Y-axis, Counter Clockwise looking from top.
-        static member rotateZBy (r:Rotation2D) (v:Vec) = Vec (r.Cos*v.X - r.Sin*v.Y, r.Sin*v.X + r.Cos*v.Y,  v.Z)
+        static member rotateZBy (r:Rotation2D) (v:Vec) = Vec (r.Cos*v.X - r.Sin*v.Y, r.Sin*v.X + r.Cos*v.Y, v.Z)
 
         /// Rotate the 3D vector in Degrees around X-axis, from Y to Z-axis, Counter Clockwise looking from right.
         static member inline rotateX (angDegree) (v:Vec) =
@@ -693,7 +700,7 @@ module AutoOpenVec =
 
         /// Rotate by Quaternion.
         static member inline rotateByQuaternion (q:Quaternion) (v:Vec) =
-            v*q  // operator * is defined in Quaternion.fs
+            v *** q  // operator * is defined in Quaternion.fs
 
         /// Linearly interpolates between two vectors.
         /// e.g. rel=0.5 will return the middle vector, rel=1.0 the end vector, 
@@ -714,22 +721,22 @@ module AutoOpenVec =
             if eLen < zeroLengthTolerance then EuclidDivByZeroException.Throw1 "Euclid.Vec.slerp: Can't interpolate to zero length vector:" ende
             let fs = 1.0 / sLen
             let fe = 1.0 / eLen
-            let su  = start*fs
-            let eu  = ende*fe
-            let dot = su*eu
-            if dot > float Cosine.``0.05`` then  // vectors are in the same direction interpolate length only
-                Vec.lerp(start, ende, rel )
+            let su  = start * fs //unitized start vector
+            let eu  = ende  * fe //unitized end   vector
+            let dot = su *** eu
+            if dot > float Cosine.``0.05`` then  // vectors are in the same direction interpolate linear only
+                Vec.lerp(start, ende, rel)
             elif dot < float Cosine.``179.95`` then  
                 EuclidDivByZeroException.Throw1 "Euclid.Vec.slerp: Can't interpolate vectors in opposite directions:" ende
             else
                 let ang = acos(dot) // the angel between the two vectors 
                 let perp = eu - su*dot |> Vec.unitize // a vector perpendicular to start and in the same plane with ende. 
                 let theta = ang*rel // the angle part we want for the result 
-                let theta360 = (theta+Util.twoPi) % Util.twoPi // make sure it is i the range 0.0 to 2 Pi ( 360 degrees)
+                let theta360 = (theta+Util.twoPi) % Util.twoPi // make sure it is i the range 0.0 to 2 Pi (360 degrees)
                 let cosine = cos (theta360) 
                 let sine   = sqrt(1.0 - cosine*cosine) 
                 let res =  //unitized result vector 
-                    if theta360 < Math.PI then  // in the range 0 to 180 degrees,  only applicable if rel is beyond 0.0 or 0.1
+                    if theta360 < Math.PI then  // in the range 0 to 180 degrees, only applicable if rel is beyond 0.0 or 0.1
                         su * cosine + perp * sine
                     else  
                         su * cosine - perp * sine
@@ -741,7 +748,7 @@ module AutoOpenVec =
 
 
         /// Returns the vector length projected into X Y Plane.
-        /// sqrt( v.X * v.X  + v.Y * v.Y)
+        /// sqrt(v.X * v.X  + v.Y * v.Y)
         static member inline lengthInXY(v:Vec) = sqrt(v.X * v.X  + v.Y * v.Y)
 
         /// Checks if 3D vector is parallel to the world X axis. Ignoring orientation.
@@ -773,22 +780,21 @@ module AutoOpenVec =
             
         /// Returns positive or negative slope of a vector in Radians.
         /// In relation to X-Y plane.
+        /// Range -1.57 to +1.57 Radians.
         static member inline slopeRadians (v:Vec) =
-            let f = Vec(v.X, v.Y, 0.0)
-            if v.Z >= 0.0 then  Vec.angleHalfPi v f
-            else              -(Vec.angleHalfPi v f)
+            let len2D = sqrt(v.X*v.X + v.Y*v.Y)
+            Math.Atan2(v.Z, len2D)            
 
         /// Returns positive or negative slope of a vector in Degrees.
         /// In relation to X-Y plane.
+        /// Range -90 to +90 Degrees.
         static member inline slopeDegrees (v:Vec) =
-            let f = Vec(v.X, v.Y, 0.0)
-            if v.Z >= 0.0 then  Vec.angle90 v f
-            else              -(Vec.angle90 v f)
+            Vec.slopeRadians v |> toDegrees
 
         /// Returns positive or negative slope of a vector in Percent.
         /// In relation to X-Y plane.
         /// 100% = 45 Degrees.
-        /// Returns positive (or negative) Infinity if line is vertical.
+        /// Returns positive (or negative) Infinity if line is vertical or input has length zero.
         static member inline slopePercent (v:Vec) =
             //if abs(v.Z) < zeroLengthTolerance then EuclidDivByZeroException.Raise "Euclid.Vec.slopePercent: Can't get Slope from vertical vector %O" v
             let len2D = sqrt(v.X*v.X + v.Y*v.Y)            
@@ -831,30 +837,57 @@ module AutoOpenVec =
 
         
         /// Checks if Angle between two vectors is less than given Cosine.
-        /// Ignores vector orientation.
-        /// Use the Euclid.Cosine module to get some precomputed cosine values.
+        /// Ignores vector orientation. The angle between two vectors can be 0 to 90 degrees ignoring their direction.
+        /// Use the Euclid.Cosine module to get some precomputed cosine values
         /// Fails on zero length vectors, tolerance 1e-12.
-        static member inline isAngleLessThan (cosineValue: float<Cosine.cosine>) (a:Vec) (b:Vec) =
+        static member inline isAngle90Below (cosineValue: float<Cosine.cosine>) (a:Vec) (b:Vec) =
             let sa = a.LengthSq
-            if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vec.isAngleLessThan: Vec a is too short: %s. Vec b:%s " a.AsString b.AsString
+            if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vec.isAngle90Below: Vec a is too short: %s. Vec b:%s " a.AsString b.AsString
             let sb = b.LengthSq
-            if sb < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vec.isAngleLessThan: Vec b is too short: %s. Vec a:%s " b.AsString a.AsString
-            let au = a * (1.0 / sqrt sa )
-            let bu = b * (1.0 / sqrt sb )
-            abs(bu*au) > float cosineValue
+            if sb < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vec.isAngle90Below: Vec b is too short: %s. Vec a:%s " b.AsString a.AsString
+            let au = a * (1.0 / sqrt sa)
+            let bu = b * (1.0 / sqrt sb)
+            abs(bu *** au) > float cosineValue
 
         /// Checks if Angle between two vectors is more than given Cosine.
-        /// Ignores vector orientation.
+        /// Ignores vector orientation. The angle between two vectors can be 0 to 90 degrees ignoring their direction.
         /// Use the Euclid.Cosine module to get some precomputed cosine values.
         /// Fails on zero length vectors, tolerance 1e-12.
-        static member inline isAngleMoreThan (cosineValue: float<Cosine.cosine>) (a:Vec) (b:Vec) =
+        static member inline isAngle90Above(cosineValue: float<Cosine.cosine>) (a:Vec) (b:Vec) =
             let sa = a.LengthSq
-            if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vec.isAngleMoreThan: Vec a is too short: %s. Vec b:%s " a.AsString b.AsString
+            if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vec.isAngle90Above: Vec a is too short: %s. Vec b:%s " a.AsString b.AsString
             let sb = b.LengthSq
-            if sb < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vec.isAngleMoreThan: Vec b is too short: %s. Vec a:%s " b.AsString a.AsString
-            let au = a * (1.0 / sqrt sa )
-            let bu = b * (1.0 / sqrt sb )
-            abs(bu*au) < float cosineValue  
+            if sb < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vec.isAngle90Above: Vec b is too short: %s. Vec a:%s " b.AsString a.AsString
+            let au = a * (1.0 / sqrt sa)
+            let bu = b * (1.0 / sqrt sb)
+            abs(bu *** au) < float cosineValue 
+
+            
+        /// Checks if Angle between two vectors is less than given Cosine.
+        /// Does not ignores vector orientation.The angle between two vectors can be 0 to 180 degrees.
+        /// Use the Euclid.Cosine module to get some precomputed cosine values
+        /// Fails on zero length vectors, tolerance 1e-12.
+        static member inline isAngle180Below (cosineValue: float<Cosine.cosine>) (a:Vec) (b:Vec) =
+            let sa = a.LengthSq
+            if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vec.isAngle180Below: Vec a is too short: %s. Vec b:%s " a.AsString b.AsString
+            let sb = b.LengthSq
+            if sb < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vec.isAngle180Below: Vec b is too short: %s. Vec a:%s " b.AsString a.AsString
+            let au = a * (1.0 / sqrt sa)
+            let bu = b * (1.0 / sqrt sb)
+            bu *** au > float cosineValue
+
+        /// Checks if Angle between two vectors is more than given Cosine.
+        /// Does not ignores vector orientation.The angle between two vectors can be 0 to 180 degrees.
+        /// Use the Euclid.Cosine module to get some precomputed cosine values.
+        /// Fails on zero length vectors, tolerance 1e-12.
+        static member inline isAngle180Above(cosineValue: float<Cosine.cosine>) (a:Vec) (b:Vec) =
+            let sa = a.LengthSq
+            if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vec.isAngle180Above: Vec a is too short: %s. Vec b:%s " a.AsString b.AsString
+            let sb = b.LengthSq
+            if sb < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vec.isAngle180Above: Vec b is too short: %s. Vec a:%s " b.AsString a.AsString
+            let au = a * (1.0 / sqrt sa)
+            let bu = b * (1.0 / sqrt sb)
+            bu *** au < float cosineValue  
        
 
         ///<summary> Intersects two infinite 3D lines.
@@ -866,7 +899,7 @@ module AutoOpenVec =
         ///<param name="vA" > The vector of the first line.</param>
         ///<param name="vB" > The vector of the second line.</param>
         ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
-        ///  If one or both vectors are shorter than this ValueNone is returned .</param>
+        ///  If one or both vectors are shorter than this ValueNone is returned.</param>
         ///<param name="relAngleDiscriminant"> This is an optional tolerance for the internally calculated relative Angle Discriminant.
         /// The default value corresponds to approx 0.25 degree. Below this angle vectors are considered parallel.
         /// Use the module Euclid.Util.RelAngleDiscriminant to set another tolerance here.</param>
@@ -910,8 +943,8 @@ module AutoOpenVec =
                     let vz = ptB.Z - ptA.Z
                     let e = bx*vx + by*vy + bz*vz
                     let d = ax*vx + ay*vy + az*vz
-                    let t = (c * d - b * e ) / discriminant
-                    let u = (b * d - a * e ) / discriminant
+                    let t = (c * d - b * e) / discriminant
+                    let u = (b * d - a * e) / discriminant
                     ValueSome (t, u)
 
        

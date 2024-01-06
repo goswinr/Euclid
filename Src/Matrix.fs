@@ -38,10 +38,10 @@ type Matrix =
     /// M13 M23 M33 Z43
     /// M14 M24 M34 M44
     /// Where X41, Y42 and Z43 refer to the translation part of the matrix.
-    new (   m11,  m21,  m31,  x41,
-            m12,  m22,  m32,  y42,
-            m13,  m23,  m33,  z43,
-            m14,  m24,  m34,  m44) = {
+    new (   m11, m21, m31, x41,
+            m12, m22, m32, y42,
+            m13, m23, m33, z43,
+            m14, m24, m34, m44) = {
                 M11=m11 ; M21=m21 ; M31=m31 ; X41=x41 ;
                 M12=m12 ; M22=m22 ; M32=m32 ; Y42=y42 ;
                 M13=m13 ; M23=m23 ; M33=m33 ; Z43=z43 ;
@@ -67,11 +67,11 @@ type Matrix =
     /// M14 M24 M34 M44
     /// Where X41, Y42 and Z43 refer to the translation part of the matrix.
     override m.ToString()=
-        let ts = m.ToArrayByRows |> Array.map ( fun x -> x.ToString("0.###"))
-        let most = ts |> Array.maxBy ( fun s -> s.Length)
+        let ts = m.ToArrayByRows |> Array.map (fun x -> x.ToString("0.###"))
+        let most = ts |> Array.maxBy (fun s -> s.Length)
         "4x4 Column-Vector Transformation Matrix:\r\n" + (
         ts
-        |> Array.map ( fun x -> String(' ', most.Length-x.Length) + x )
+        |> Array.map (fun x -> String(' ', most.Length-x.Length) + x)
         |> Array.chunkBySize 4
         |> Array.map (fun es -> " " + String.concat " | " es)
         |> String.concat Environment.NewLine
@@ -80,11 +80,11 @@ type Matrix =
     //Nicely formats the Matrix to a Grid of 4x4 including field names.
     //override m.ToString()=
     //    let names =[| "M11"; "M21"; "M31"; "X41"; "M12"; "M22"; "M32"; "Y42"; "M13"; "M23"; "M33"; "Z43"; "M14"; "M24"; "M34"; "M44"|]
-    //    let ts = (names, m.ByRows)  ||> Array.map2 ( fun n v -> v.ToString("0.###"))
-    //    let most = ts |> Array.maxBy ( fun s -> s.Length)
+    //    let ts = (names, m.ByRows)  ||> Array.map2 (fun n v -> v.ToString("0.###"))
+    //    let most = ts |> Array.maxBy (fun s -> s.Length)
     //    "Colum-Vector Transformation Matrix:\r\n" + (
     //    (names, ts)
-    //    ||> Array.map2 ( fun n v ->n + ": " + String(' ', most.Length-v.Length) + v )
+    //    ||> Array.map2 (fun n v ->n + ": " + String(' ', most.Length-v.Length) + v)
     //    |> Array.chunkBySize 4
     //    |> Array.map (fun es -> " " + String.concat " | " es)
     //    |> String.concat Environment.NewLine
@@ -286,9 +286,9 @@ type Matrix =
         let x = Vec(m.M11, m.M12, m.M13)
         let y = Vec(m.M21, m.M22, m.M23)
         let z = Vec(m.M31, m.M32, m.M33)
-        Util.isZero (x * y) &&
-        Util.isZero (x * z) &&
-        Util.isZero (y * z)
+        Util.isZero (x *** y) &&
+        Util.isZero (x *** z) &&
+        Util.isZero (y *** z)
         )
 
     /// Returns if the Matrix is mirroring or reflection.
@@ -301,7 +301,7 @@ type Matrix =
         let x = Vec(m.M11, m.M12, m.M13)
         let y = Vec(m.M21, m.M22, m.M23)
         let z = Vec(m.M31, m.M32, m.M33)
-        (Vec.cross (x, y)) * z  < 0.0
+        (Vec.cross (x, y)) *** z  < 0.0
         )
 
     /// Returns if the Matrix is mirroring or reflection.
@@ -325,7 +325,7 @@ type Matrix =
 
     /// Returns true if the Matrix is translating.
     /// It might also be rotating, scaling and reflecting, but not projecting.
-    member m.IsTranslating = m.IsAffine && (isNotZero m.X41 || isNotZero m.Y42|| isNotZero m.Z43 )
+    member m.IsTranslating = m.IsAffine && (isNotZero m.X41 || isNotZero m.Y42|| isNotZero m.Z43)
 
     /// Returns true if the Matrix is only translating.
     /// It might not be rotating, scaling, reflecting, or projecting.
@@ -355,29 +355,30 @@ type Matrix =
 
     /// Checks if two matrices are equal within tolerance.
     /// By comparing the fields M11 to M44 each with the given tolerance.
-    static member equals tol (a:Matrix) (b:Matrix) =
-        abs(a.M11-b.M11) < tol &&
-        abs(a.M12-b.M12) < tol &&
-        abs(a.M13-b.M13) < tol &&
-        abs(a.M14-b.M14) < tol &&
-        abs(a.M21-b.M21) < tol &&
-        abs(a.M22-b.M22) < tol &&
-        abs(a.M23-b.M23) < tol &&
-        abs(a.M24-b.M24) < tol &&
-        abs(a.M31-b.M31) < tol &&
-        abs(a.M32-b.M32) < tol &&
-        abs(a.M33-b.M33) < tol &&
-        abs(a.M34-b.M34) < tol &&
-        abs(a.X41-b.X41) < tol &&
-        abs(a.Y42-b.Y42) < tol &&
-        abs(a.Z43-b.Z43) < tol &&
-        abs(a.M44-b.M44) < tol
+    /// Use a tolerance of 0.0 to check for an exact match.
+    static member equals (tol:float) (a:Matrix) (b:Matrix) =
+        abs(a.M11-b.M11) <= tol &&
+        abs(a.M12-b.M12) <= tol &&
+        abs(a.M13-b.M13) <= tol &&
+        abs(a.M14-b.M14) <= tol &&
+        abs(a.M21-b.M21) <= tol &&
+        abs(a.M22-b.M22) <= tol &&
+        abs(a.M23-b.M23) <= tol &&
+        abs(a.M24-b.M24) <= tol &&
+        abs(a.M31-b.M31) <= tol &&
+        abs(a.M32-b.M32) <= tol &&
+        abs(a.M33-b.M33) <= tol &&
+        abs(a.M34-b.M34) <= tol &&
+        abs(a.X41-b.X41) <= tol &&
+        abs(a.Y42-b.Y42) <= tol &&
+        abs(a.Z43-b.Z43) <= tol &&
+        abs(a.M44-b.M44) <= tol
 
 
 
     /// Multiplies matrixA with matrixB.
     /// The resulting transformation will first do matrixA and then matrixB.
-    static member multiply (matrixA:Matrix,  matrixB:Matrix) =
+    static member multiply (matrixA:Matrix, matrixB:Matrix) =
         let a11 = matrixA.M11
         let a12 = matrixA.M12
         let a13 = matrixA.M13
@@ -432,7 +433,7 @@ type Matrix =
 
     /// Multiplies matrixA with matrixB.
     /// The resulting transformation will first do matrixA and then matrixB.
-    static member inline ( * ) (matrixA:Matrix,  matrixB:Matrix) = 
+    static member inline ( *** ) (matrixA:Matrix, matrixB:Matrix) = 
         Matrix.multiply(matrixA, matrixB)
 
     /// If the determinant of the Matrix.
@@ -451,7 +452,7 @@ type Matrix =
         Matrix  ( m.M11, m.M12, m.M13, m.M14
                 , m.M21, m.M22, m.M23, m.M24
                 , m.M31, m.M32, m.M33, m.M34
-                , m.X41, m.Y42, m.Z43, m.M44 )
+                , m.X41, m.Y42, m.Z43, m.M44)
 
     /// Returns the identity matrix:
     /// 1  0  0  0
@@ -460,10 +461,10 @@ type Matrix =
     /// 0  0  0  1
     static member identity =
         Matrix(
-            1, 0, 0, 0 ,
-            0, 1, 0, 0 ,
-            0, 0, 1, 0 ,
-            0, 0, 0, 1 )
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1)
 
     /// Creates a translation matrix:
     /// x - the amount to translate in the X-axis.
@@ -474,12 +475,12 @@ type Matrix =
     /// 0  1  0  y
     /// 0  0  1  z
     /// 0  0  0  1
-    static member createTranslation( x, y, z ) =
+    static member createTranslation(x, y, z) =
         Matrix(
-            1, 0, 0, x ,
-            0, 1, 0, y ,
-            0, 0, 1, z ,
-            0, 0, 0, 1 )
+            1, 0, 0, x,
+            0, 1, 0, y,
+            0, 0, 1, z,
+            0, 0, 0, 1)
 
     /// Creates a translation matrix:
     /// Vec - the vector by which to translate.
@@ -488,25 +489,25 @@ type Matrix =
     /// 0  1  0  v.Y
     /// 0  0  1  v.Z
     /// 0  0  0  1
-    static member createTranslation(v:Vec ) =
+    static member createTranslation(v:Vec) =
         Matrix(
-            1, 0, 0, v.X ,
-            0, 1, 0, v.Y ,
-            0, 0, 1, v.Z ,
-            0, 0, 0, 1 )
+            1, 0, 0, v.X,
+            0, 1, 0, v.Y,
+            0, 0, 1, v.Z,
+            0, 0, 0, 1  )
 
 
 
     /// Creates a rotation transformation matrix around the X-axis
     /// by angle in Degrees (not Radians).
     /// angleDegrees — Rotation angle in Degrees.
-    /// A positive rotation will be from Y towards Z-axis,  so counter-clockwise looking onto Y-X Plane.
+    /// A positive rotation will be from Y towards Z-axis, so counter-clockwise looking onto Y-X Plane.
     /// The resulting matrix will be:
     /// 1 0      0        0
     /// 0 cos(θ) -sin(θ)  0
     /// 0 sin(θ) cos(θ)   0
     /// 0 0      0        1
-    static member createRotationX( angleDegrees ) =
+    static member createRotationX(angleDegrees) =
         let angle = Util.toRadians angleDegrees
         let c = cos angle
         let s = sin angle
@@ -514,18 +515,18 @@ type Matrix =
             1, 0,  0, 0,
             0, c, -s, 0,
             0, s,  c, 0,
-            0, 0,  0, 1 )
+            0, 0,  0, 1)
 
     /// Creates a rotation transformation matrix around the Y-axis
     /// by angle in Degrees (not Radians).
     /// angleDegrees — Rotation angle in Degrees.
-    /// A positive rotation will be from Z towards X-axis,  so counter-clockwise looking onto Z-X Plane.
+    /// A positive rotation will be from Z towards X-axis, so counter-clockwise looking onto Z-X Plane.
     /// The resulting matrix will be:
     /// cos(θ)  0 sin(θ) 0
     /// 0       1 0      0
     /// -sin(θ) 0 cos(θ) 0
     /// 0       0 0      1
-    static member createRotationY( angleDegrees ) =
+    static member createRotationY(angleDegrees) =
         let angle = Util.toRadians angleDegrees
         let c = cos angle
         let s = sin angle
@@ -533,18 +534,18 @@ type Matrix =
             c  ,  0,  s,  0,
             0  ,  1,  0,  0,
             -s ,  0,  c,  0,
-            0  ,  0,  0,  1 )
+            0  ,  0,  0,  1)
 
     /// Creates a rotation transformation matrix around the Z-axis
     /// by angle in Degrees (not Radians).
     /// angleDegrees — Rotation angle in Degrees.
-    /// Returns a positive rotation will be from X toward Y-axis,  so counter-clockwise looking onto X-Y plane.
+    /// Returns a positive rotation will be from X toward Y-axis, so counter-clockwise looking onto X-Y plane.
     /// The resulting matrix will be:
     /// cos(θ) -sin(θ) 0 0
     /// sin(θ) cos(θ)  0 0
     /// 0      0       1 0
     /// 0      0       0 1
-    static member createRotationZ( angleDegrees ) =
+    static member createRotationZ(angleDegrees) =
         let angle = Util.toRadians angleDegrees
         let c = cos angle
         let s = sin angle
@@ -552,14 +553,14 @@ type Matrix =
             c, -s,  0,  0,
             s,  c,  0,  0,
             0,  0,  1,  0,
-            0,  0,  0,  1 )
+            0,  0,  0,  1)
 
 
     /// Creates a rotation around an axis transformation matrix.
     /// axis — Rotation axis, as unit-vector.
     /// angleDegrees — Rotation angle in Degrees.
     /// Returns a positive rotation will be so clockwise looking in the direction of the axis vector.
-    static member createRotationAxis( axis:UnitVec, angleDegrees:float ) =
+    static member createRotationAxis(axis:UnitVec, angleDegrees:float) =
         // Based on http://www.gamedev.net/reference/articles/article1199.asp
         let angle = Util.toRadians angleDegrees
         let c = cos angle
@@ -574,13 +575,13 @@ type Matrix =
             tx * x + c    , tx * y - s * z , tx * z + s * y , 0,
             tx * y + s * z, ty * y + c     , ty * z - s * x , 0,
             tx * z - s * y, ty * z + s * x , t  * z * z + c , 0,
-            0             , 0              , 0              , 1 )
+            0             , 0              , 0              , 1)
 
     /// Creates a rotation around an axis transformation matrix.
     /// axis — Rotation axis, a vector of any length but 0.0 .
     /// angleDegrees — Rotation angle in Degrees.
     /// Returns a positive rotation will be so clockwise looking in the direction of the axis vector.
-    static member createRotationAxis( axis:Vec, angleDegrees:float ) =
+    static member createRotationAxis(axis:Vec, angleDegrees:float) =
         // first unitize
         let len = sqrt (axis.X*axis.X + axis.Y*axis.Y + axis.Z*axis.Z)
         if len <  zeroLengthTolerance then
@@ -600,7 +601,7 @@ type Matrix =
             tx * x + c    , tx * y - s * z , tx * z + s * y , 0,
             tx * y + s * z, ty * y + c     , ty * z - s * x , 0,
             tx * z - s * y, ty * z + s * x , t  * z * z + c , 0,
-            0             , 0              , 0              , 1 )
+            0             , 0              , 0              , 1)
 
    
     /// Creates a rotation matrix around an axis at a given center point.
@@ -608,20 +609,20 @@ type Matrix =
     /// cen — The center point for the rotation.
     /// angleDegrees — Rotation angle in Degrees.
     /// Returns a positive rotation will be so clockwise looking in the direction of the axis vector.
-    static member createRotationAxisCenter( axis:Vec, cen:Pnt, angleDegrees:float ) =
+    static member createRotationAxisCenter(axis:Vec, cen:Pnt, angleDegrees:float) =
         Matrix.createTranslation(-cen.X, -cen.Y, -cen.Z)
-        * Matrix.createRotationAxis(axis, angleDegrees)
-        * Matrix.createTranslation(cen.X, cen.Y, cen.Z)
+        *** Matrix.createRotationAxis(axis, angleDegrees)
+        *** Matrix.createTranslation(cen.X, cen.Y, cen.Z)
 
     /// Creates a rotation matrix around an axis at a given center point.
     /// axis — Rotation axis, a unit-vector.
     /// cen — The center point for the rotation.
     /// angleDegrees — Rotation angle in Degrees.
     /// Returns a positive rotation will be so clockwise looking in the direction of the axis vector.
-    static member createRotationAxisCenter( axis:UnitVec, cen:Pnt, angleDegrees:float ) =
+    static member createRotationAxisCenter(axis:UnitVec, cen:Pnt, angleDegrees:float) =
         Matrix.createTranslation(-cen.X, -cen.Y, -cen.Z)
-        * Matrix.createRotationAxis(axis, angleDegrees)
-        * Matrix.createTranslation(cen.X, cen.Y, cen.Z)
+        *** Matrix.createRotationAxis(axis, angleDegrees)
+        *** Matrix.createTranslation(cen.X, cen.Y, cen.Z)
 
 
     /// Creates a scale transformation matrix:
@@ -633,18 +634,18 @@ type Matrix =
     /// 0, y, 0, 0,
     /// 0, 0, z, 0,
     /// 0, 0, 0, 1
-    static member createScale( x, y, z ) =
+    static member createScale(x, y, z) =
         Matrix(
             x, 0, 0, 0,
             0, y, 0, 0,
             0, 0, z, 0,
-            0, 0, 0, 1 )
+            0, 0, 0, 1)
 
     /// Creates a rotation from one vectors direction to another vectors direction.
     /// If the tips of the two vectors are closer than 1e-9 the identity matrix is returned.
     /// If the tips of the two vectors are almost exactly opposite, deviating less than 1e-6 from line, 
     /// there is no valid unique 180 degree rotation that can be found, so an exception is raised.
-    static member createVecToVec( vecFrom:UnitVec, vecTo:UnitVec ) =
+    static member createVecToVec(vecFrom:UnitVec, vecTo:UnitVec) =
         let v = vecFrom - vecTo
         if v.LengthSq < 1e-18 then // the vectors are almost the same
             Matrix.identity
@@ -659,8 +660,8 @@ type Matrix =
                 let x = axis.X
                 let y = axis.Y
                 let z = axis.Z
-                let c = vecFrom * vecTo  // dot to find cos
-                let s = sqrt(1. - c*c ) // Pythagoras to find sine
+                let c = vecFrom *** vecTo  // dot to find cos
+                let s = sqrt(1. - c*c) // Pythagoras to find sine
                 let t = 1.0 - c
                 let tx = t * x
                 let ty = t * y  
@@ -668,13 +669,13 @@ type Matrix =
                     tx * x + c    , tx * y - s * z , tx * z + s * y , 0,
                     tx * y + s * z, ty * y + c     , ty * z - s * x , 0,
                     tx * z - s * y, ty * z + s * x , t  * z * z + c , 0,
-                    0             , 0              , 0              , 1 )
+                    0             , 0              , 0              , 1)
 
     /// Creates a rotation from one vectors direction to another vectors direction.
     /// If the tips of the two vectors unitized are closer than 1e-9 the identity matrix is returned.
     /// If the tips of the two vectors are almost exactly opposite, deviating less than 1e-6 from line (unitized), 
     /// there is no valid unique 180 degree rotation that can be found, so an exception is raised.
-    static member createVecToVec(vecFrom:Vec, vecTo:Vec ) =
+    static member createVecToVec(vecFrom:Vec, vecTo:Vec) =
         let fu =
             let x = vecFrom.X
             let y = vecFrom.Y
@@ -708,8 +709,8 @@ type Matrix =
                 let x = axis.X
                 let y = axis.Y
                 let z = axis.Z
-                let c = fu * tu  // dot to find cos
-                let s = sqrt(1. - c*c ) // Pythagoras to find sine
+                let c = fu *** tu  // dot to find cos
+                let s = sqrt(1. - c*c) // Pythagoras to find sine
                 let t = 1.0 - c
                 let tx = t * x
                 let ty = t * y  
@@ -717,7 +718,7 @@ type Matrix =
                     tx * x + c    , tx * y - s * z , tx * z + s * y , 0,
                     tx * y + s * z, ty * y + c     , ty * z - s * x , 0,
                     tx * z - s * y, ty * z + s * x , t  * z * z + c , 0,
-                    0             , 0              , 0              , 1 )
+                    0             , 0              , 0              , 1)
 
 
 
@@ -734,38 +735,38 @@ type Matrix =
     /// xy,   1,  zy,  0,
     /// xz,  yz,   1,  0,
     /// 0,    0,   0,  1
-    static member createShear( xy, xz, yx, yz, zx, zy ) =
+    static member createShear(xy, xz, yx, yz, zx, zy) =
         Matrix(
-            1,  yx, zx, 0 ,
-            xy, 1 , zy, 0 ,
-            xz, yz,  1, 0 ,
-            0 , 0 ,  0, 1 )
+            1,  yx, zx, 0,
+            xy, 1 , zy, 0,
+            xz, yz,  1, 0,
+            0 , 0 ,  0, 1)
 
     /// Creates a Matrix to transform from World plane or Coordinate System to given Plane.
     /// Also called Change of Basis.
     static member createToPlane(p:PPlane) =
         Matrix(
-            p.Xaxis.X , p.Yaxis.X , p.Zaxis.X ,  p.Origin.X ,
-            p.Xaxis.Y , p.Yaxis.Y , p.Zaxis.Y ,  p.Origin.Y ,
-            p.Xaxis.Z , p.Yaxis.Z , p.Zaxis.Z ,  p.Origin.Z ,
-            0       ,           0 ,          0,           1 )
+            p.Xaxis.X, p.Yaxis.X, p.Zaxis.X,  p.Origin.X,
+            p.Xaxis.Y, p.Yaxis.Y, p.Zaxis.Y,  p.Origin.Y,
+            p.Xaxis.Z, p.Yaxis.Z, p.Zaxis.Z,  p.Origin.Z,
+            0        ,         0,         0,           1)
 
 
     /// Creates a Matrix to transform from one Plane or Coordinate System to another Plane.
-    static member createPlaneToPlane(fromPlane:PPlane,  toPlane:PPlane) =
+    static member createPlaneToPlane(fromPlane:PPlane, toPlane:PPlane) =
         let f = fromPlane |> Matrix.createToPlane |> Matrix.inverse
         let t = toPlane   |> Matrix.createToPlane
-        f*t
+        f *** t
 
     /// Creates a Matrix to mirror on a Plane.
     static member createMirror (p:PPlane) =
         let toPlane   = Matrix.createToPlane p
         let fromPlane = toPlane.Inverse
         let zFlip     = Matrix.createScale(1, 1, -1)
-        fromPlane*zFlip*toPlane
+        fromPlane *** zFlip *** toPlane
 
     /// Create Matrix from Quaternion.
-    static member createFromQuaternion( quaternion:Quaternion) =
+    static member createFromQuaternion(quaternion:Quaternion) =
         let x = quaternion.X
         let y = quaternion.Y
         let z = quaternion.Z
@@ -783,22 +784,22 @@ type Matrix =
         let wy = w * y2
         let wz = w * z2
         // the sequence is reordered here, when compared to Three js
-        Matrix  ( ( 1. - ( yy + zz ) )
-                , ( xy - wz )
-                , ( xz + wy )
+        Matrix  ( (1. - (yy + zz) )
+                , (xy - wz)
+                , (xz + wy)
                 , 0
-                , ( xy + wz )
-                , ( 1. - ( xx + zz ) )
+                , (xy + wz)
+                , (1. - (xx + zz) )
                 , 0
-                , ( yz - wx )
-                , ( xz - wy )
-                , ( yz + wx )
-                , ( 1. - ( xx + yy ) )
-                , 0
-                , 0
+                , (yz - wx)
+                , (xz - wy)
+                , (yz + wx)
+                , (1. - (xx + yy) )
                 , 0
                 , 0
-                , 1 )
+                , 0
+                , 0
+                , 1)
 
 
 
@@ -851,8 +852,8 @@ type Matrix =
     /// Multiplies (or applies) a Matrix to a 3D vector 
     /// Since a 3D vector represents a direction or an offset in space, but not a location,
     /// the implicit the 4th dimension is 0.0 so that all translations are ignored. (Homogeneous Vector)
-    static member inline ( * ) (v:Vec, m:Matrix) =
-        // from applyMatrix4( m ) in  https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
+    static member inline ( *** ) (v:Vec, m:Matrix) =
+        // from applyMatrix4(m) in  https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
         let x = v.X
         let y = v.Y
         let z = v.Z
@@ -867,8 +868,8 @@ type Matrix =
     /// Multiplies a Matrix with a 3D vector 
     /// Since a 3D vector represents a direction or an offset in space, but not a location,
     /// the implicit the 4th dimension is 0.0 so that all translations are ignored. (Homogeneous Vector)
-    static member inline ( * ) (v:UnitVec, m:Matrix) =
-        // from applyMatrix4( m ) in  https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
+    static member inline ( *** ) (v:UnitVec, m:Matrix) =
+        // from applyMatrix4(m) in  https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
         let x = v.X
         let y = v.Y
         let z = v.Z
@@ -882,8 +883,8 @@ type Matrix =
 
     /// Multiplies (or applies) a Matrix to a 3D point (with an implicit 1 in the 4th dimension,
     /// so that it also works correctly for projections.)
-    static member inline ( * ) (p:Pnt, m:Matrix) =
-        // from applyMatrix4( m ) in  https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
+    static member inline ( *** ) (p:Pnt, m:Matrix) =
+        // from applyMatrix4(m) in  https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
         let x = p.X
         let y = p.Y
         let z = p.Z
@@ -904,7 +905,7 @@ type Matrix =
     /// <param name="nearPlaneDistance">Distance to the near view plane.</param>
     /// <param name="farPlaneDistance">Distance to the far view plane.</param>
     /// <returns>The perspective projection matrix.</returns>
-    static member createPerspective(width, height,  nearPlaneDistance,  farPlaneDistance) =
+    static member createPerspective(width, height, nearPlaneDistance, farPlaneDistance) =
         // from https://github.com/vimaec/Math3D/blob/dev/src/Matrix4x4.cs#L762
 
         //     if (nearPlaneDistance <= 0.0f)

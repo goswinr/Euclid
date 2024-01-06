@@ -54,7 +54,7 @@ type Polyline3D =
             prev <- t
         l
 
-    /// Gets Bounding Box of the Polyline3D
+    /// Gets the a bounding box of the Polyline3D
     member inline p.BoundingBox = BBox.createFromIList p.Points
 
     /// Tests if Polyline3D start and end points are exactly the same.
@@ -184,7 +184,7 @@ type Polyline3D =
             let v = vs[i]
             // finding ClosestParameter on line segment and clamp to 0.0 to 1.0
             let len = v.LengthSq
-            ts[i] <- if len < 1e-9 then 0.0 else -((p-pt) * v) / len |> Util.clampBetweenZeroAndOne //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
+            ts[i] <- if len < 1e-9 then 0.0 else -((p-pt) *** v) / len |> Util.clampBetweenZeroAndOne //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
 
         // square distances per segment
         let ds = Array.zeroCreate (ps.Count-1)
@@ -284,11 +284,11 @@ type Polyline3D =
 
     /// Create a new Polyline3D by using the provided ResizeArray directly.
     /// All later changes to the ResizeArray will be reflected in the Polyline3D.
-    static member createDirectlyUnsafe (points: ResizeArray<Pnt>) = Polyline3D( points )
+    static member createDirectlyUnsafe (points: ResizeArray<Pnt>) = Polyline3D(points)
 
     /// Create a new empty Polyline3D without any points.
     /// But predefined capacity.
-    static member empty (capacity:int) = Polyline3D(ResizeArray(capacity))
+    static member createEmpty (capacity:int) = Polyline3D(ResizeArray(capacity))
 
     /// Returns new Polyline3D from point at Parameter a to point at Parameter b.
     /// if 'a' is bigger 'b' then the new Polyline3D is in opposite direction.
@@ -296,7 +296,7 @@ type Polyline3D =
     static member segment a b (pl:Polyline3D) =
         let rev = a>b
         let u, v = if rev then b, a else a, b
-        let np = Polyline3D.empty (int(v-u)+2)
+        let np = Polyline3D.createEmpty (int(v-u)+2)
         let nps = np.Points
         let ps  = pl.Points
         // first point
@@ -359,7 +359,7 @@ type Polyline3D =
                         loop(i+1)
                     else
                         let c = UnitVec.cross(prevU, thisU)
-                        if c*ref>0.0 then
+                        if c *** ref>0.0 then
                             posAngSum <- posAngSum + ang
                             if posIdx= -1 then posIdx <- i
                         else
@@ -379,7 +379,7 @@ type Polyline3D =
     /// The inner core routine of Points.offset. This function considers input a closed polyline.
     /// Start point and end point may not be equal, all arrays of same length.
     /// 'referenceNormal' to be in Z Axis for Counter-Clockwise loops in 2D or if it is Vec.Zero it wil be calculated add hoc.
-    static member offsetCore( pts:ResizeArray<Pnt>, offD:ResizeArray<float>, normD:ResizeArray<float>, referenceNormal:Vec, fixColinearLooped, allowObliqueOffsetOnColinearSegments) : ResizeArray<Pnt>  =
+    static member offsetCore(pts:ResizeArray<Pnt>, offD:ResizeArray<float>, normD:ResizeArray<float>, referenceNormal:Vec, fixColinearLooped, allowObliqueOffsetOnColinearSegments) : ResizeArray<Pnt>  =
         if notNull offD && pts.Count <> offD.Count   then EuclidException.Raise "Euclid.Polyline3D.offsetCore pts(%d) and offD(%d) must have the same length." pts.Count offD.Count
         if notNull normD && pts.Count <> normD.Count then EuclidException.Raise "Euclid.Polyline3D.offsetCore pts(%d) and normD(%d) must have the same length." pts.Count normD.Count
         let lenTolSq = 1e-12 // square length tolerance
@@ -439,13 +439,13 @@ type Polyline3D =
                             let thisOff = offD.[i]
                             let thisPt = pts.[i]
                             let offP = thisPt + (Vec.cross(n, prevV)  |> Vec.withLength prevOff)  // not always the same as lastIdx !
-                            let offN = thisPt + (Vec.cross(n, nextV)  |> Vec.withLength thisOff )
+                            let offN = thisPt + (Vec.cross(n, nextV)  |> Vec.withLength thisOff)
                             let vx = offN.X - offP.X
                             let vy = offN.Y - offP.Y
                             let vz = offN.Z - offP.Z
                             let e = bx*vx + by*vy + bz*vz
                             let d = ax*vx + ay*vy + az*vz
-                            let t = (c * d - b * e ) / discriminant
+                            let t = (c * d - b * e) / discriminant
                             res.[i] <- offP + t * prevV
                             prevOff <- thisOff
 
@@ -474,7 +474,7 @@ type Polyline3D =
                 if colinear.[i]  then
                     let pi = searchBack    (i - 1)
                     let ni = searchForward (i + 1)
-                    if pi = ni then //  does this ever happen ? it is either all colinear ( caught in searchBack) or at least three points are not colinear ??
+                    if pi = ni then //  does this ever happen ? it is either all colinear (caught in searchBack) or at least three points are not colinear ??
                         EuclidException.Raise "Euclid.Polyline3D.offsetCore : all %d points for offset are colinear within 0.25 degree or identical. " pts.Count
                     let ln = Line3D(res.[pi], res.[ni])
                     res.[i] <- ln.ClosestPointInfinite(pts.[i])
@@ -502,11 +502,11 @@ type Polyline3D =
                         else // colinear start, get frame
                             match Points.offsetInCornerEx (pts[ni-1], pts[ni], pts[ni+1],  offD.[ni-1],  offD.[ni], refNorm) with
                             |ValueNone -> EuclidException.Raise "Euclid.Polyline3D.offsetCore :offsetInCornerEx-1 failed unexpectedly."
-                            |ValueSome ( x, n, prevShift, _) -> res.[i] <- pts.[i] + prevShift + if isNull normD then Vec.Zero else n * normD.[i]
+                            |ValueSome (x, n, prevShift, _) -> res.[i] <- pts.[i] + prevShift + if isNull normD then Vec.Zero else n * normD.[i]
                     elif ni = -1 then  // colinear end, get frame
                         match Points.offsetInCornerEx (pts[pi-1], pts[pi], pts[pi+1],  offD.[pi-1],  offD.[pi], refNorm) with
                         |ValueNone -> EuclidException.Raise "Euclid.Polyline3D.offsetCore :offsetInCornerEx-1 failed unexpectedly."
-                        |ValueSome ( x, n, _, nextShift) -> res.[i] <- pts.[i] + nextShift + if isNull normD then Vec.Zero else n * normD.[i]
+                        |ValueSome (x, n, _, nextShift) -> res.[i] <- pts.[i] + nextShift + if isNull normD then Vec.Zero else n * normD.[i]
                     else
                         let ln = Line3D(res.[pi], res.[ni])
                         res.[i] <- ln.ClosestPointInfinite(pts.[i])
@@ -528,7 +528,7 @@ type Polyline3D =
     /// </param>
     /// <param name="normalDistances">Optional. Normal distances defined as a perpendicular offset at each corner.
     ///    Unlike offsetDistances this list of distances must have the same item count as number of points in the polyline.
-    ///    Except if the input polyline is already closed. Then distances list shall have one less. ( independent of 'loop' parameter )
+    ///    Except if the input polyline is already closed. Then distances list shall have one less. (independent of 'loop' parameter)
     ///    A empty list for no normal offset or singleton for constant offset is allowed too.
     /// </param>
     /// <param name="loop">Optional. Consider last point and first point to be from a closed loop, even if they are not at the same location.</param>

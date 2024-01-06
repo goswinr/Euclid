@@ -24,12 +24,12 @@ module Similarity2D =
         }
 
     /// A type to represent on object that shall be compared to other objects.
-    /// 'extend' (just a 2D point)  represents the max value of a bounding Rectangle,  min value must be x=0 and y=0.
+    /// 'extend' (just a 2D point)  represents the max value of a bounding Rectangle, min value must be x=0 and y=0.
     /// This is used for a very fast initial similarity check.
     /// 'groups' (an array of GroupInsideObjectToCheck) must be sorted by 'category' property.
     [<NoEquality;NoComparison>]// because its made up from Pt
     type ObjectToCheck = {
-        extend: Pt // represents the max value of a bounding Rectangle,  min value must be x0, y0
+        extend: Pt // represents the max value of a bounding Rectangle, min value must be x0, y0
         groups: GroupInsideObjectToCheck[] // must be sorted by 'category' property. for Array.forall2 function
         }
 
@@ -38,7 +38,7 @@ module Similarity2D =
     let private simPt tol (ps:Pt[]) (pt:Pt)=
         let x = pt.X
         let y = pt.Y
-        // finds the index of a point where x matches,  there might be more than one match
+        // finds the index of a point where x matches, there might be more than one match
         let rec binSearchIdx lo hi =
             if lo <= hi then
                 let mid = lo + ((hi - lo) >>> 1)
@@ -84,7 +84,7 @@ module Similarity2D =
 
     let private simPts tol (ps:Pt[]) (cs:Pt[]) =
         let rs = Array.zeroCreate ps.Length //to later check that all indices are covered
-        ps |> Array.forall( fun p ->
+        ps |> Array.forall(fun p ->
             match simPt tol cs p with
             | -1 -> false
             |  i ->
@@ -115,8 +115,8 @@ module Similarity2D =
 
 
     /// The returned ObjectToCheck will have the subgroups sorted by category
-    /// and each point will be transformed by the the overall bounding Rectangle Min point to 0, 0.
-    /// Input Position of points does not matter,  they will be moved to origin by overall bounding Rectangle over all lists,
+    /// and each point will be transformed by the overall bounding Rectangle Min point to 0, 0.
+    /// Input Position of points does not matter, they will be moved to origin by overall bounding Rectangle over all lists,
     /// But any similarity that could be achieved by rotation will not be discovered.
     /// The string is used as a unique category identifier.
     let getSimilarityData (ptss:ResizeArray<string*ResizeArray<Pt>>) : ObjectToCheck =
@@ -145,7 +145,7 @@ module Similarity2D =
     /// This will group similar generic items together based on their ObjectToCheck.
     /// The list of items and precomputed SimilarityMainGroups must have the same length and correspond to each other at the same index.
     /// SimilarityMainGroups is precomputed for better performance.
-    let getGrouped (tolerance,  items:ResizeArray<'T>, sims:ResizeArray<ObjectToCheck>) : ResizeArray<ResizeArray<'T>> =
+    let getGrouped (tolerance, items:ResizeArray<'T>, sims:ResizeArray<ObjectToCheck>) : ResizeArray<ResizeArray<'T>> =
         if items.Count<>sims.Count then failwithf "Count mismatch in Similarity2D.getGrouped"
         let unique = ResizeArray<ObjectToCheck>()
         let groups = Dictionary<int, ResizeArray<'T>>()

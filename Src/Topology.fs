@@ -43,7 +43,7 @@ type Topology private () =
         for i = 0 to xs.Count - 2 do // only run till second last
             let thisLine = getLine xs.[i]
             //  TODO could be optimized using a R-Tree for very large lists instead of minBy function
-            let nextIdx = xs |> minIndexByFrom (fun c -> Pnt.distanceSq (getLine c).From thisLine.To ) (i+1)
+            let nextIdx = xs |> minIndexByFrom (fun c -> Pnt.distanceSq (getLine c).From thisLine.To) (i+1)
             xs |> swap (i+1) nextIdx
 
 
@@ -55,7 +55,7 @@ type Topology private () =
         for i = 0 to xs.Count - 2 do // only run till second last
             let thisLine = getLine xs.[i]
             //  TODO could be optimized using a R-Tree for very large lists instead of minBy function
-            let nextIdx = xs |> minIndexByFrom (fun c -> Pt.distanceSq (getLine c).From  thisLine.To ) (i+1)
+            let nextIdx = xs |> minIndexByFrom (fun c -> Pt.distanceSq (getLine c).From  thisLine.To) (i+1)
             xs |> swap (i+1) nextIdx
 
 
@@ -69,8 +69,8 @@ type Topology private () =
         for i = 0 to xs.Count - 2 do // only run till second last
             let thisLine = getLine xs.[i]
             // TODO could be optimized using a R-Tree for very large lists instead of minBy function
-            let nextIdxSt = xs |> minIndexByFrom (fun c -> Pnt.distanceSq (getLine c).From  thisLine.To ) (i+1)
-            let nextIdxEn = xs |> minIndexByFrom (fun c -> Pnt.distanceSq (getLine c).To    thisLine.To ) (i+1)
+            let nextIdxSt = xs |> minIndexByFrom (fun c -> Pnt.distanceSq (getLine c).From  thisLine.To) (i+1)
+            let nextIdxEn = xs |> minIndexByFrom (fun c -> Pnt.distanceSq (getLine c).To    thisLine.To) (i+1)
             // check if closest endpoint is closer than closest start-point
             if  Pnt.distanceSq (getLine xs.[nextIdxSt]).From  thisLine.To <=
                 Pnt.distanceSq (getLine xs.[nextIdxEn]).To    thisLine.To then
@@ -90,8 +90,8 @@ type Topology private () =
         for i = 0 to xs.Count - 2 do // only run till second last
             let thisLine = getLine xs.[i]
             // TODO could be optimized using a R-Tree for very large lists instead of minBy function
-            let nextIdxSt = xs |> minIndexByFrom (fun c -> Pt.distanceSq (getLine c).From   thisLine.To ) (i+1)
-            let nextIdxEn = xs |> minIndexByFrom (fun c -> Pt.distanceSq (getLine c).To     thisLine.To ) (i+1)
+            let nextIdxSt = xs |> minIndexByFrom (fun c -> Pt.distanceSq (getLine c).From   thisLine.To) (i+1)
+            let nextIdxEn = xs |> minIndexByFrom (fun c -> Pt.distanceSq (getLine c).To     thisLine.To) (i+1)
             // check if closest endpoint is closer than closest start-point
             if  Pt.distanceSq (getLine xs.[nextIdxSt]).From   thisLine.To <=
                 Pt.distanceSq (getLine xs.[nextIdxEn]).To     thisLine.To then

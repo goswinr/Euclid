@@ -34,6 +34,17 @@ For the full API see [fuget.org](https://www.fuget.org/packages/Euclid) for now.
 [MIT](https://raw.githubusercontent.com/goswinr/Euclid/main/LICENSE.txt)
 
 ### Release Notes
+    
+`0.5.0`
+- allow equality checks to use zero tolerance.
+- better docstring
+- add more angle calculation functions
+- rename distanceFromPoint to distanceToPt
+- add rotateByQuarterCircle
+- add ExtendRel functions for Lines
+- use *** as operator for dot product, and matrix multiplication
+- add splitting with gap to Lines and Rects
+
 `0.4.1`
 - fix bug in rect.Edge23
 - add BBox.createFromIList

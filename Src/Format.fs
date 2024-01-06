@@ -90,7 +90,7 @@ module Format =
     /// e.g.: 0 digits behind comma if above 1000
     /// if the value is smaller than 'userZeroTolerance' (1e-24)  '~0.0' will be shown.
     /// if the value is smaller than  (1e-7)  '≈+0.0' will be shown.
-    let float  (x:float) =
+    let float (x:float) =
         if   Double.IsNaN x then Literals.NaN
         elif x = Double.NegativeInfinity then Literals.NegativeInfinity
         elif x = Double.PositiveInfinity then Literals.PositiveInfinity
@@ -98,19 +98,33 @@ module Format =
         elif x = 0.0 then "0.0" // not "0" as in sprintf "%g"
         else
             let  a = abs x
-            if   a <  userZeroTolerance then Literals.BelowUserZeroTolerance // do this check up here, value might be very high
-            elif a >= 10000.       then x.ToString("#")|> addThousandSeparators
-            elif a >= 1000.        then x.ToString("#")
-            elif a >= 100.         then x.ToString("0.#", invC)
-            elif a >= 10.          then x.ToString("0.0#", invC)
-            elif a >= 1.           then x.ToString("0.0##", invC)
-            elif a >= 0.1          then x.ToString("0.####", invC)
-            elif a >= 0.01         then x.ToString("0.#####", invC)
-            elif a >= 0.001        then x.ToString("0.######", invC)|> addThousandSeparators
-            elif a >= 0.000_1      then x.ToString("0.#######", invC)|> addThousandSeparators
-            elif a >= 0.000_01     then x.ToString("0.########", invC)|> addThousandSeparators
-            elif a >= 0.000_001    then x.ToString("0.#########", invC)|> addThousandSeparators
-            elif a >= 0.000_000_1  then x.ToString("0.##########", invC)|> addThousandSeparators
+            if   a <  userZeroTolerance then Literals.BelowUserZeroTolerance // do this check up here, this user value might be very high
+            // elif a >= 10000.       then x.ToString("#")|> addThousandSeparators
+            // elif a >= 1000.        then x.ToString("#")
+            // elif a >= 100.         then x.ToString("0.#", invC)
+            // elif a >= 10.          then x.ToString("0.0#", invC)
+            // elif a >= 1.           then x.ToString("0.0##", invC)
+            // elif a >= 0.1          then x.ToString("0.####", invC)
+            // elif a >= 0.01         then x.ToString("0.#####", invC)
+            // elif a >= 0.001        then x.ToString("0.######", invC)|> addThousandSeparators
+            // elif a >= 0.000_1      then x.ToString("0.#######", invC)|> addThousandSeparators
+            // elif a >= 0.000_01     then x.ToString("0.########", invC)|> addThousandSeparators
+            // elif a >= 0.000_001    then x.ToString("0.#########", invC)|> addThousandSeparators
+            // elif a >= 0.000_000_1  then x.ToString("0.##########", invC)|> addThousandSeparators
+            //works better in Fable:  (but may have trailing zeros)
+            elif a >= 10000.       then sprintf "%.0f"  x |> addThousandSeparators
+            elif a >= 1000.        then sprintf "%.0f"  x 
+            elif a >= 100.         then sprintf "%.1f"  x
+            elif a >= 10.          then sprintf "%.2f"  x
+            elif a >= 1.           then sprintf "%.3f"  x
+            elif a >= 0.1          then sprintf "%.4f"  x
+            elif a >= 0.01         then sprintf "%.5f"  x 
+            elif a >= 0.001        then sprintf "%.6f"  x |> addThousandSeparators
+            elif a >= 0.000_1      then sprintf "%.7f"  x |> addThousandSeparators
+            elif a >= 0.000_01     then sprintf "%.8f"  x |> addThousandSeparators
+            elif a >= 0.000_001    then sprintf "%.9f"  x |> addThousandSeparators
+            elif a >= 0.000_000_1  then sprintf "%.10f" x |> addThousandSeparators
+
             elif x >= 0.0          then Literals.CloseToZeroPositive
             else                        Literals.CloseToZeroNegative
 
@@ -126,17 +140,30 @@ module Format =
         elif x = 0.0f then "0.0" // not "0" as in sprintf "%g"
         else
             let  a = abs x
-            if   a <  float32 userZeroTolerance then Literals.BelowUserZeroTolerance // do this check up here, value might be very high
-            elif a >= 10000.f   then x.ToString("#")|> addThousandSeparators
-            elif a >= 1000.f    then x.ToString("#")
-            elif a >= 100.f     then x.ToString("0.#", invC)
-            elif a >= 10.f      then x.ToString("0.0#", invC)
-            elif a >= 1.f       then x.ToString("0.0##", invC)
-            elif a >= 0.1f      then x.ToString("0.####", invC)
-            elif a >= 0.01f     then x.ToString("0.#####", invC)
-            elif a >= 0.001f    then x.ToString("0.######", invC)|> addThousandSeparators
-            elif a >= 0.0001f   then x.ToString("0.#######", invC)|> addThousandSeparators
-            elif a >= 0.00001f  then x.ToString("0.########", invC)|> addThousandSeparators
-            elif a >= 0.000001f then x.ToString("0.#########", invC)|> addThousandSeparators
+            if   a <  float32 userZeroTolerance then Literals.BelowUserZeroTolerance // do this check up here, this user value might be very high
+            // elif a >= 10000.f   then x.ToString("#")|> addThousandSeparators
+            // elif a >= 1000.f    then x.ToString("#")
+            // elif a >= 100.f     then x.ToString("0.#", invC)
+            // elif a >= 10.f      then x.ToString("0.0#", invC)
+            // elif a >= 1.f       then x.ToString("0.0##", invC)
+            // elif a >= 0.1f      then x.ToString("0.####", invC)
+            // elif a >= 0.01f     then x.ToString("0.#####", invC)
+            // elif a >= 0.001f    then x.ToString("0.######", invC)|> addThousandSeparators
+            // elif a >= 0.0001f   then x.ToString("0.#######", invC)|> addThousandSeparators
+            // elif a >= 0.00001f  then x.ToString("0.########", invC)|> addThousandSeparators
+            // elif a >= 0.000001f then x.ToString("0.#########", invC)|> addThousandSeparators            
+            //works better in Fable: (but may have trailing zeros)
+            elif a >= 10000.f       then sprintf "%.0f"  x |> addThousandSeparators
+            elif a >= 1000.f        then sprintf "%.0f"  x 
+            elif a >= 100.f         then sprintf "%.1f"  x
+            elif a >= 10.f          then sprintf "%.2f"  x
+            elif a >= 1.f           then sprintf "%.3f"  x
+            elif a >= 0.1f          then sprintf "%.4f"  x
+            elif a >= 0.01f         then sprintf "%.5f"  x 
+            elif a >= 0.001f        then sprintf "%.6f"  x |> addThousandSeparators
+            elif a >= 0.000_1f      then sprintf "%.7f"  x |> addThousandSeparators
+            elif a >= 0.000_01f     then sprintf "%.8f"  x |> addThousandSeparators
+            elif a >= 0.000_001f    then sprintf "%.9f"  x |> addThousandSeparators
+            elif a >= 0.000_000_1f  then sprintf "%.10f" x |> addThousandSeparators
             elif x >= 0.0f      then Literals.CloseToZeroPositive
             else                     Literals.CloseToZeroNegative
