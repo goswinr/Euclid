@@ -1,7 +1,7 @@
 namespace Euclid
 
 open System
-open Util
+open UtilEuclid
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 
 # nowarn "52" // copying of structs
@@ -106,7 +106,7 @@ type Polyline3D =
             let b = n.Y + t.Y
             area <- area + a*b
             t <- n
-        if   abs(area) < Util.zeroLengthTolerance then EuclidException.Raise "Euclid.Polyline3D.IsCounterClockwiseIn2D: Polyline3D the area is zero: %O" p
+        if   abs(area) < UtilEuclid.zeroLengthTolerance then EuclidException.Raise "Euclid.Polyline3D.IsCounterClockwiseIn2D: Polyline3D the area is zero: %O" p
         else area > 0.0
 
 
@@ -184,7 +184,7 @@ type Polyline3D =
             let v = vs[i]
             // finding ClosestParameter on line segment and clamp to 0.0 to 1.0
             let len = v.LengthSq
-            ts[i] <- if len < 1e-9 then 0.0 else -((p-pt) *** v) / len |> Util.clampBetweenZeroAndOne //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
+            ts[i] <- if len < 1e-9 then 0.0 else -((p-pt) *** v) / len |> UtilEuclid.clampBetweenZeroAndOne //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
 
         // square distances per segment
         let ds = Array.zeroCreate (ps.Count-1)
@@ -194,7 +194,7 @@ type Polyline3D =
             let t = ts[i]
             ds[i] <- Pnt.distanceSq pt (p + v*t)
 
-        let i = Array.minIndex ds
+        let i = Arr.minIndex ds
         let t = ts.[i]
         float i + t
 
@@ -241,7 +241,7 @@ type Polyline3D =
 
 
     /// Apply a mapping function to each point in the 3D Polyline. Returns new Polyline3D.
-    static member map (mapping:Pnt->Pnt) (pl:Polyline3D) = pl.Points |> ResizeArray.map mapping |> Polyline3D.createDirectlyUnsafe
+    static member map (mapping:Pnt->Pnt) (pl:Polyline3D) = pl.Points |> ResizeArr.map mapping |> Polyline3D.createDirectlyUnsafe
 
     /// Move a Polyline3D by a vector. (same as Polyline3D.move)
     static member inline translate (v:Vec) (pl:Polyline3D) = pl |> Polyline3D.map (Pnt.addVec v)
@@ -558,7 +558,7 @@ type Polyline3D =
                 let ds = ResizeArray(xs)
                 if   ds.Count = 0               then Ok  null
                 elif ds.Count = 1 && ds.[0]=0.0 then Ok  null
-                elif ds.Count = 1               then Ok  (ResizeArray.create len ds.[0])
+                elif ds.Count = 1               then Ok  (ResizeArr.create len ds.[0])
                 elif ds.Count = len             then Ok  ds
                 else Error(ds.Count)
 

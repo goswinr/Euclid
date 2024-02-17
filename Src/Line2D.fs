@@ -1,7 +1,7 @@
 namespace Euclid
 
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>]
-open Euclid.Util
+open Euclid.UtilEuclid
 open Euclid.LineIntersectionTypes
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 
@@ -171,7 +171,7 @@ type Line2D =
 
 
     /// Extend 2D line by absolute amount at start and end.
-    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.Extend (distAtStart:float, distAtEnd:float) =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
@@ -183,7 +183,7 @@ type Line2D =
                 ln.ToY   + y*distAtEnd/l)
 
     /// Extend 2D line by absolute amount at start.
-    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.ExtendStart (distAtStart:float) =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
@@ -195,7 +195,7 @@ type Line2D =
                 ln.ToY)
 
     /// Extend 2D line by absolute amount at end.
-    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.ExtendEnd (distAtEnd:float) =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
@@ -208,7 +208,7 @@ type Line2D =
 
     /// Extend 2D line by relative amount at start and end.
     /// A relative amount of 0.5 extends the line by half its length on each side.
-    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.ExtendRel (relAtStart:float, relAtEnd:float) =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
@@ -221,7 +221,7 @@ type Line2D =
 
     /// Extend 2D line by relative amount at start.
     /// A relative amount of 0.5 extends the line by half its length.
-    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.ExtendStartRel (relAtStart:float) =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
@@ -234,7 +234,7 @@ type Line2D =
 
     /// Extend 2D line by relative amount at end.
     /// A relative amount of 0.5 extends the line by half its length.
-    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.ExtendEndRel (relAtEnd:float) =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
@@ -246,7 +246,7 @@ type Line2D =
                 ln.ToY   + y*relAtEnd)
 
     /// Shrink 2D line by absolute amount at start and end.
-    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.Shrink (distAtStart:float, distAtEnd:float) =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
@@ -258,7 +258,7 @@ type Line2D =
                 ln.ToY   - y*distAtEnd/l)
 
     /// Shrink 2D line by absolute amount at start.
-    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.ShrinkStart (distAtStart:float) =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
@@ -270,7 +270,7 @@ type Line2D =
                 ln.ToY)
 
     /// Shrink 2D line by absolute amount at end.
-    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.ShrinkEnd (distAtEnd:float) =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
@@ -333,7 +333,7 @@ type Line2D =
         if lenSq < 1e-18 then // corresponds to a line Length of 1e-9
             if dot < 0.0 then 0.0 else 1.0
         else
-            dot / lenSq |> Util.clampBetweenZeroAndOne
+            dot / lenSq |> UtilEuclid.clampBetweenZeroAndOne
 
     /// Assumes Line2D to be infinite!
     /// Returns closest point on infinite line.
@@ -431,7 +431,7 @@ type Line2D =
     /// The default angle tolerance is 0.25 degrees.
     /// This tolerance can be customized by an optional minium cosine value.
     /// See Euclid.Cosine module.
-    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.IsParallelTo( other:Line2D, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
         let a = ln.Vector
         let b = other.Vector
@@ -449,7 +449,7 @@ type Line2D =
     /// The default angle tolerance is 0.25 degrees.
     /// This tolerance can be customized by an optional minium cosine value.
     /// See Euclid.Cosine module.
-    /// Fails on lines or vectors shorter than Util.zeroLengthTolerance (1e-12).
+    /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.IsParallelTo( other:Vc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
         let a = ln.Vector
         let b = other
@@ -466,7 +466,7 @@ type Line2D =
     /// The default angle tolerance is 0.25 degrees.
     /// This tolerance can be customized by an optional minium cosine value.
     /// See Euclid.Cosine module.
-    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.IsParallelTo( other:UnitVc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
         let a = ln.Vector
         let sa = a.LengthSq
@@ -480,7 +480,7 @@ type Line2D =
     /// The default angle tolerance is 0.25 degrees.
     /// This tolerance can be customized by an optional minium cosine value.
     /// See Euclid.Cosine module.
-    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.IsParallelAndOrientedTo (other:Line2D, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
         let a = ln.Vector
         let b = other.Vector
@@ -515,7 +515,7 @@ type Line2D =
     /// The default angle tolerance is 0.25 degrees.
     /// This tolerance can be customized by an optional minium cosine value.
     /// See Euclid.Cosine module.
-    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.IsParallelAndOrientedTo (other:UnitVc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
         let a = ln.Vector
         let sa = a.LengthSq
@@ -530,7 +530,7 @@ type Line2D =
     /// This tolerance can be customized by an optional minium cosine value.
     /// The default cosine is 0.0043633 ( = 89.75 deg)
     /// See Euclid.Cosine module.
-    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.IsPerpendicularTo (other:Line2D, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) =
         let a = ln.Vector
         let b = other.Vector
@@ -549,7 +549,7 @@ type Line2D =
     /// This tolerance can be customized by an optional minium cosine value.
     /// The default cosine is 0.0043633 ( = 89.75 deg)
     /// See Euclid.Cosine module.
-    /// Fails on lines or vectors shorter than Util.zeroLengthTolerance (1e-12).
+    /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.IsPerpendicularTo (other:Vc, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) =
         let a = ln.Vector
         let b = other
@@ -567,7 +567,7 @@ type Line2D =
     /// This tolerance can be customized by an optional minium cosine value.
     /// The default cosine is 0.0043633 ( = 89.75 deg)
     /// See Euclid.Cosine module.
-    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.IsPerpendicularTo (other:UnitVc, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) =
         let a = ln.Vector
         let sa = a.LengthSq
@@ -580,7 +580,7 @@ type Line2D =
     /// Checks if two 2D lines are coincident within the distance tolerance. 1e-6 by default.
     /// This means that lines are parallel within the angle tolerance
     /// and the distance of second start to the first line is less than the distance tolerance.
-    /// Also returns false on lines shorter than Util.zeroLengthTolerance (1e-12).
+    /// Also returns false on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     /// The default angle tolerance is 0.25 degrees.
     /// This tolerance can be customized by an optional minium cosine value.
     /// See Euclid.Cosine module.
@@ -866,58 +866,58 @@ type Line2D =
         line.Tangent.Unitized *** (pt-line.From)
 
     /// Extend 2D line by absolute amount at start and end.
-    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     static member inline extend (distAtStart:float) (distAtEnd:float) (ln:Line2D) =
         ln.Extend(distAtStart, distAtEnd)
 
     /// Extend 2D line by absolute amount at start.
-    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     static member inline extendStart (distAtStart:float) (ln:Line2D) =
         ln.ExtendStart(distAtStart)
 
     /// Extend 2D line by absolute amount at end.
-    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     static member inline extendEnd (distAtEnd:float) (ln:Line2D) =
         ln.ExtendEnd(distAtEnd)
 
 
     /// Extend 2D line by relative amount at start and end.
     /// A relative amount of 0.5 extends the line by half its length on each side.
-    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     static member inline extendRel (relAtStart:float) (relAtEnd:float) (ln:Line2D) =
         ln.ExtendRel(relAtStart, relAtEnd)
     
     /// Extend 2D line by relative amount at start.
     /// A relative amount of 0.5 extends the line by half its length.
-    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     static member inline extendStartRel (relAtStart:float) (ln:Line2D) =
         ln.ExtendStartRel(relAtStart)
 
     /// Extend 2D line by relative amount at end.
     /// A relative amount of 0.5 extends the line by half its length.
-    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     static member inline extendEndRel (relAtEnd:float) (ln:Line2D) =
         ln.ExtendEndRel(relAtEnd)
 
     /// Shrink 2D line by absolute amount at start and end.
-    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     static member inline shrink (distAtStart:float) (distAtEnd:float) (ln:Line2D) =
         ln.Shrink(distAtStart, distAtEnd)
 
     /// Shrink 2D line by absolute amount at start.
-    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     static member inline shrinkStart (distAtStart:float) (ln:Line2D) =
         ln.ShrinkStart(distAtStart)
 
     /// Shrink 2D line by absolute amount at end.
-    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     static member inline shrinkEnd (distAtEnd:float) (ln:Line2D) =
         ln.ShrinkEnd(distAtEnd)
 
 
 
     /// Finds point at given distance from line start.
-    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     static member inline pointAtDistance dist (ln:Line2D) =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
@@ -927,7 +927,7 @@ type Line2D =
             ln.FromY + y*dist/len)
 
     /// Returns new Line2D with given length, going out from start in direction of end.
-    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     static member inline withLengthFromStart len (ln:Line2D) =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
@@ -939,7 +939,7 @@ type Line2D =
                 ln.FromY + y*len/l)
 
     /// Returns new Line2D ending at current LineEnd with given length coming from direction of start.
-    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     static member inline withLengthToEnd len (ln:Line2D) =
         let x = ln.FromX-ln.ToX
         let y = ln.FromY-ln.ToY
@@ -952,7 +952,7 @@ type Line2D =
 
 
     /// Returns new Line2D with given length. Missing length is added to or subtracted from both the end and start of the line.
-    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     static member inline withLengthFromMid len (ln:Line2D) =
         let x = ln.FromX-ln.ToX
         let y = ln.FromY-ln.ToY
@@ -966,7 +966,7 @@ type Line2D =
 
 
     /// Offset line in XY-Plane to left side in line direction.
-    /// Fails on lines shorter than Util.zeroLengthTolerance (1e-12).
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     static member offset amount (ln:Line2D) =
         let x = ln.ToX - ln.FromX
         let y = ln.ToY - ln.FromY
@@ -1090,7 +1090,7 @@ type Line2D =
     ///<param name="lnB"> The second line.</param>
     ///<param name="relAngleDiscriminant"> This is an optional tolerance for the internally calculated relative Angle Discriminant.
     /// The default value is '0.00000952' this corresponds to approx 0.25 degree. Below this angle the 'Parallel' or 'Coincident' union case is returned.
-    /// Use the module Euclid.Util.RelAngleDiscriminant to set another tolerance here.</param>
+    /// Use the module Euclid.UtilEuclid.RelAngleDiscriminant to set another tolerance here.</param>
     ///<param name="coincidentTolerance" > Is an optional distance tolerance. 1e-6 by default.
     ///  If parallel lines are closer than this, then the 'Coincident' union case is returned.</param>
     ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
@@ -1143,7 +1143,7 @@ type Line2D =
             let discriminant = ac - bb // never negative, the dot product cannot be bigger than the two square length multiplied with each other
             let div = ac+bb // never negative
             // getting the relation between the sum and the subtraction gives a good estimate of the angle between the lines
-            // see module Euclid.Util.RelAngleDiscriminant
+            // see module Euclid.UtilEuclid.RelAngleDiscriminant
             let rel = discriminant/div
             if rel < float relAngleDiscriminant then //parallel
                 let e = bx*vx + by*vy
@@ -1166,7 +1166,7 @@ type Line2D =
     ///<param name="lnB"> The second line.</param>
     ///<param name="relAngleDiscriminant"> This is an optional tolerance for the internally calculated relative Angle Discriminant.
     /// The default value is '0.00000952' this corresponds to approx 0.25 degree. Below this angle the 'Parallel' or 'Coincident' union case is returned.
-    /// Use the module Euclid.Util.RelAngleDiscriminant to set another tolerance here.</param>
+    /// Use the module Euclid.UtilEuclid.RelAngleDiscriminant to set another tolerance here.</param>
     ///<param name="coincidentTolerance" > Is an optional distance tolerance. 1e-6 by default.
     ///  If parallel lines are closer than this, then the 'Coincident' union case is returned.</param>
     ///<returns> An IntersectionPoints3D Discriminated Union with the following cases:
@@ -1206,7 +1206,7 @@ type Line2D =
     ///<param name="lnB"> The second line.</param>
     ///<param name="relAngleDiscriminant"> This is an optional tolerance for the internally calculated relative Angle Discriminant.
     /// The default value is '0.00000952' this corresponds to approx 0.25 degree. Below this angle an EuclidException is raised.
-    /// Use the module Euclid.Util.RelAngleDiscriminant to set another tolerance here.</param>
+    /// Use the module Euclid.UtilEuclid.RelAngleDiscriminant to set another tolerance here.</param>
     ///<param name="coincidentTolerance" > Is an optional distance tolerance. 1e-6 by default.
     ///  If parallel lines are closer than this, then an EuclidException is raised.</param>
     ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
@@ -1290,7 +1290,7 @@ type Line2D =
     ///<param name="lnB"> The second line.</param>
     ///<param name="relAngleDiscriminant"> This is an optional tolerance for the internally calculated relative Angle Discriminant.
     /// The default value is '0.00000952' this corresponds to approx 0.25 degree. Below this angle the 'Parallel' or 'Coincident' union case is returned.
-    /// Use the module Euclid.Util.RelAngleDiscriminant to set another tolerance here.</param>
+    /// Use the module Euclid.UtilEuclid.RelAngleDiscriminant to set another tolerance here.</param>
     ///<param name="coincidentTolerance" > Is an optional distance tolerance. 1e-6 by default.
     ///  If parallel lines are closer than this, then the 'Coincident' union case is returned.</param>
     ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
@@ -1513,7 +1513,7 @@ type Line2D =
     ///<param name="lnB"> The second line.</param>
     ///<param name="relAngleDiscriminant"> This is an optional tolerance for the internally calculated relative Angle Discriminant.
     /// The default value is '0.00000952' this corresponds to approx 0.25 degree. Below this angle the 'Parallel' or 'Coincident' union case is returned.
-    /// Use the module Euclid.Util.RelAngleDiscriminant to set another tolerance here.</param>
+    /// Use the module Euclid.UtilEuclid.RelAngleDiscriminant to set another tolerance here.</param>
     ///<param name="coincidentTolerance" > Is an optional distance tolerance. 1e-6 by default.
     ///  If parallel lines are closer than this, then the 'Coincident' union case is returned.</param>
     ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.

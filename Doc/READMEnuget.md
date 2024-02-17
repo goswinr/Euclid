@@ -2,18 +2,18 @@
 
 # Euclid
 
-![code size](https://img.shields.io/github/languages/code-size/goswinr/Euclid.svg) 
+![code size](https://img.shields.io/github/languages/code-size/goswinr/Euclid.svg)
 
 ![Logo](https://raw.githubusercontent.com/goswinr/Euclid/main/Doc/logo128.png)
 
-Euclid is a 2D and 3D geometry library without dependencies. 
-It is mostly focused on creating and manipulating primitives such as 
-points, vectors, lines, planes, boxes, and bounding boxes, and polylines. 
+Euclid is a 2D and 3D geometry library without dependencies.
+It is mostly focused on creating and manipulating primitives such as
+points, vectors, lines, planes, boxes, and bounding boxes, and polylines.
 For transformations of those there are rotations, quaternions, 4x4 and rigid ortho normal 4x3 matrices.
 
 Written in F# and designed for use with F#.
 All primitive types are immutable and functions are curried where appropriate.
-This library is intended to be used for design, construction and manufacturing too. 
+This library is intended to be used for design, construction and manufacturing too.
 So it is using double precision floating point numbers for all values. (While most geometry libraries for games use single precision floats.)
 
 This library can be used in JavaScript via [Fable](https://fable.io/) too.
@@ -33,8 +33,21 @@ For the full API see [fuget.org](https://www.fuget.org/packages/Euclid) for now.
 ### License
 [MIT](https://raw.githubusercontent.com/goswinr/Euclid/main/LICENSE.txt)
 
+### Build
+Just run `dotnet build` in the root directory.
+
+### Test
+To just run once: `dotnet run Tests\Euclid.Tests.fsproj`
+To run and watch the tests use: `dotnet watch --project Tests\Euclid.Tests.fsproj run`
+
 ### Release Notes
-    
+
+`0.6.1`
+- remove reflection form error messages for nicer Fable output
+- rename Rect.Rotate to Rect.RotateOrientation
+- add Rect.grid
+- fix Rect.subdivide
+
 `0.5.0`
 - allow equality checks to use zero tolerance.
 - better docstring

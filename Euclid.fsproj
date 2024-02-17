@@ -19,19 +19,14 @@
     <Title>Euclid</Title>
     <Product>Euclid</Product>
     <PackageId>Euclid</PackageId>
-    
-    <Version>0.5.0</Version>
-    <AssemblyVersion>0.5.0</AssemblyVersion>
-    <FileVersion>0.5.0</FileVersion>
+    <Version>0.6.1</Version>
+    <AssemblyVersion>0.6.1</AssemblyVersion>
+    <FileVersion>0.6.1</FileVersion>
     <PackageReleaseNotes>
-      - allow equality checks to use zero tolerance.
-      - better docstring
-      - add more angle calculation functions
-      - rename distanceFromPoint to distanceToPt
-      - add rotateByQuarterCircle
-      - add ExtendRel functions for Lines
-      - use *** as operator for dot product, and matrix multiplication
-      - add splitting with gap to Lines and Rects
+      - remove reflection form error messages for nicer Fable output
+      - rename Rect.Rotate to Rect.RotateOrientation
+      - add Rect.grid
+      - fix Rect.subdivide
     </PackageReleaseNotes>
     <Authors>GoswinR</Authors>
     <Copyright>Goswin Rothenthal 2019</Copyright>
@@ -64,7 +59,7 @@
     <None Include="Doc/logo128.png"    Pack="true" PackagePath="" />
     <Content Include="*.fsproj; **/*.fs; **/*.fsi" PackagePath="fable/" />
     <!--so that it can be used with Fable-->
-    <Compile Include="Src/Util.fs" />
+    <Compile Include="Src/UtilEuclid.fs" />
     <Compile Include="Src/Format.fs" />
     <Compile Include="Src/Vc.fs" />
     <Compile Include="Src/UnitVc.fs" />
@@ -97,7 +92,7 @@
     <Compile Include="Src/Rect3D.fs" />
     <Compile Include="Src/Box.fs" />
     <Compile Include="Src/Intersect.fs" />
-    <Compile Include="Src/ResizeArray.fs" />
+    <Compile Include="Src/ResizeArr.fs" />
     <Compile Include="Src/Points.fs" />
     <Compile Include="Src/Polyline2D.fs" />
     <Compile Include="Src/Polyline3D.fs" />

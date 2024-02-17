@@ -10,7 +10,7 @@ namespace Euclid
 
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
-open Euclid.Util
+open Euclid.UtilEuclid
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 
 #nowarn "44" // to skip Obsolete warnings (members just needs to be public for inlining, but should be hidden)
@@ -80,7 +80,7 @@ type Pnt =
         
     /// Divides a 3D point by a scalar, also be called dividing/scaling a point. Returns a new 3D point.
     static member inline ( / ) (p:Pnt, f:float) =
-        if abs f < Util.zeroLengthTolerance then p.FailedDivide(f) // don't compose error msg directly here to keep inlined code small.        
+        if abs f < UtilEuclid.zeroLengthTolerance then p.FailedDivide(f) // don't compose error msg directly here to keep inlined code small.        
         //p * (1./f) // maybe faster but worse precision
         Pnt (p.X / f, p.Y / f, p.Z / f)
 

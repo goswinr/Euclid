@@ -12,7 +12,7 @@ type XLineCone =
 
 
 module Intersect =
-    open Util    
+    open UtilEuclid    
 
     /// Returns the parameter on vector 'va' where 'va' and 'vb' intersect intersect as endless rays.
     /// If they start from points 'a' and 'b' respectively.

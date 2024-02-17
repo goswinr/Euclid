@@ -1,7 +1,7 @@
 namespace Euclid
 
 open System
-open Util
+open UtilEuclid
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 
 
@@ -124,7 +124,7 @@ type Polyline2D =
     /// If it is positive the Polyline2D is Counter Clockwise.
     member p.IsCounterClockwise =
         let  area = p.SignedArea       
-        if   abs(area) < Util.zeroLengthTolerance then EuclidException.Raise "Euclid.Polyline2D.IsCounterClockwiseIn2D: Polyline2D the area is zero: %O" p
+        if   abs(area) < UtilEuclid.zeroLengthTolerance then EuclidException.Raise "Euclid.Polyline2D.IsCounterClockwiseIn2D: Polyline2D the area is zero: %O" p
         else area > 0.0
 
 
@@ -202,7 +202,7 @@ type Polyline2D =
             let v = vs[i]
             // finding ClosestParameter on line segment and clamp to 0.0 to 1.0
             let len = v.LengthSq
-            ts[i] <- if len < 1e-9 then 0.0 else -((p-pt) *** v) / len |> Util.clampBetweenZeroAndOne //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
+            ts[i] <- if len < 1e-9 then 0.0 else -((p-pt) *** v) / len |> UtilEuclid.clampBetweenZeroAndOne //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
 
         // square distances per segment
         let ds = Array.zeroCreate (ps.Count-1)
@@ -212,7 +212,7 @@ type Polyline2D =
             let t = ts[i]
             ds[i] <- Pt.distanceSq pt (p + v*t)
 
-        let i = Array.minIndex ds
+        let i = Arr.minIndex ds
         let t = ts.[i]
         float i + t
 
@@ -259,7 +259,7 @@ type Polyline2D =
     static member inline evaluateAt (t:float) (pl:Polyline2D) = pl.EvaluateAt t
 
     /// Apply a mapping function to each point in the 2D Polyline2D. Returns new Polyline2D.
-    static member map (mapping:Pt->Pt) (pl:Polyline2D) = pl.Points |> ResizeArray.map mapping |> Polyline2D.createDirectlyUnsafe
+    static member map (mapping:Pt->Pt) (pl:Polyline2D) = pl.Points |> ResizeArr.map mapping |> Polyline2D.createDirectlyUnsafe
 
     /// Move a Polyline2D by a vector. (same as Polyline2D.move)
     static member inline translate (v:Vc) (pl:Polyline2D) = pl |> Polyline2D.map (Pt.addVc v)
@@ -554,7 +554,7 @@ type Polyline2D =
             if isNull xs then Error(-1)
             else
                 let ds = ResizeArray(xs)
-                if   ds.Count = 1               then Ok  (ResizeArray.create len ds.[0])
+                if   ds.Count = 1               then Ok  (ResizeArr.create len ds.[0])
                 elif ds.Count = len             then Ok  ds
                 else Error(ds.Count)
 

@@ -8,7 +8,7 @@ open System
 /// It only contains extension members for type Pnt.
 [<AutoOpen>]
 module AutoOpenPnt =
-    open Util
+    open UtilEuclid
 
     type Pnt with
 
@@ -111,7 +111,7 @@ module AutoOpenPnt =
             let y = o.Y-p.Y
             if abs(x) < zeroLengthTolerance && abs(y) < zeroLengthTolerance then p.FailedAngle2PiInXYTo(o)// don't compose error msg directly here to keep inlined code small.                
             let a = Math.Atan2(y, x)
-            if a < 0. then  a + Util.twoPi
+            if a < 0. then  a + UtilEuclid.twoPi
             else            a
 
         /// Returns the angle in Degrees from this point to another point projected in X-Y plane.

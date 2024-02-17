@@ -2,7 +2,7 @@ namespace Euclid
 
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
-open Euclid.Util
+open Euclid.UtilEuclid
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 
 /// An immutable 4x3 rigid matrix. For only rotation and translation in 3D space.
@@ -294,7 +294,7 @@ type RigidMatrix =
     /// 0 cos(θ) -sin(θ)  0
     /// 0 sin(θ) cos(θ)   0
     static member createRotationX(angleDegrees) =
-        let angle = Util.toRadians angleDegrees
+        let angle = UtilEuclid.toRadians angleDegrees
         let c = cos angle
         let s = sin angle
         RigidMatrix(
@@ -311,7 +311,7 @@ type RigidMatrix =
     /// 0       1 0      0
     /// -sin(θ) 0 cos(θ) 0
     static member createRotationY(angleDegrees) =
-        let angle = Util.toRadians angleDegrees
+        let angle = UtilEuclid.toRadians angleDegrees
         let c = cos angle
         let s = sin angle
         RigidMatrix(
@@ -328,7 +328,7 @@ type RigidMatrix =
     /// sin(θ) cos(θ)  0 0
     /// 0      0       1 0
     static member createRotationZ(angleDegrees) =
-        let angle = Util.toRadians angleDegrees
+        let angle = UtilEuclid.toRadians angleDegrees
         let c = cos angle
         let s = sin angle
         RigidMatrix(
@@ -342,7 +342,7 @@ type RigidMatrix =
     /// Returns a positive rotation will be so clockwise looking in the direction of the axis vector.
     static member createRotationAxis(axis:UnitVec, angleDegrees:float) =
         // Based on http://www.gamedev.net/reference/articles/article1199.asp
-        let angle = Util.toRadians angleDegrees
+        let angle = UtilEuclid.toRadians angleDegrees
         let c = cos angle
         let s = sin angle
         let t = 1.0 - c
@@ -370,7 +370,7 @@ type RigidMatrix =
         let y = axis.Y * sc
         let z = axis.Z * sc
         // Based on http://www.gamedev.net/reference/articles/article1199.asp
-        let angle = Util.toRadians angleDegrees
+        let angle = UtilEuclid.toRadians angleDegrees
         let c = cos angle
         let s = sin angle
         let t = 1.0 - c
@@ -509,17 +509,17 @@ type RigidMatrix =
             let z = Vec(m.M31, m.M32, m.M33)
             let inline sqLen    (v:Vec) = v.X*v.X + v.Y*v.Y + v.Z*v.Z // defined here again, because Vec extension members are not in scope here            
             if  
-                Util.isZero m.M14 && // last row is 0, 0, 0, 1       
-                Util.isZero m.M24 && // last row is 0, 0, 0, 1       
-                Util.isZero m.M34 && // last row is 0, 0, 0, 1       
-                Util.isOne  m.M44 && // last row is 0, 0, 0, 1
-                Util.isOne (sqLen x) && // exclude scaling
-                Util.isOne (sqLen y) &&
-                Util.isOne (sqLen z) &&
-                Util.isZero (x *** y)    && // orthogonal if dot product of row or column vectors is zero
-                Util.isZero (x *** z)    &&
-                Util.isZero (y *** z)    &&
-                Util.isOne  ((Vec.cross (x, y)) *** z) then // check it's not reflecting (would be -1)
+                UtilEuclid.isZero m.M14 && // last row is 0, 0, 0, 1       
+                UtilEuclid.isZero m.M24 && // last row is 0, 0, 0, 1       
+                UtilEuclid.isZero m.M34 && // last row is 0, 0, 0, 1       
+                UtilEuclid.isOne  m.M44 && // last row is 0, 0, 0, 1
+                UtilEuclid.isOne (sqLen x) && // exclude scaling
+                UtilEuclid.isOne (sqLen y) &&
+                UtilEuclid.isOne (sqLen z) &&
+                UtilEuclid.isZero (x *** y)    && // orthogonal if dot product of row or column vectors is zero
+                UtilEuclid.isZero (x *** z)    &&
+                UtilEuclid.isZero (y *** z)    &&
+                UtilEuclid.isOne  ((Vec.cross (x, y)) *** z) then // check it's not reflecting (would be -1)
                     Some (RigidMatrix(  m.M11, m.M21, m.M31, m.X41,
                                         m.M12, m.M22, m.M32, m.Y42,
                                         m.M13, m.M23, m.M33, m.Z43)

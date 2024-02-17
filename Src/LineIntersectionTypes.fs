@@ -187,7 +187,7 @@ module LineIntersectionTypes =
     /// That is 6 steps of float increment from 1.0.
     /// So between 0.99999964 and 1.000000715. Same step size for zero.
     let inline isZeroOneOrBetween (x:float) =
-        if   Util.isZero              x then Zero
-        elif Util.isOne               x then One
-        elif Util.isBetweenZeroAndOne x then Between
+        if   UtilEuclid.isZero              x then Zero
+        elif UtilEuclid.isOne               x then One
+        elif UtilEuclid.isBetweenZeroAndOne x then Between
         else Outside

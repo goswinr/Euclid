@@ -1,8 +1,10 @@
 #Folders
 obj/
-bin/ 
+bin/
 fable_modules/
-
+dist/TS/
+distTS/
 
 # File
 *.fs.js
+*.idea

@@ -2,7 +2,7 @@ namespace Euclid
 
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
-open Euclid.Util
+open Euclid.UtilEuclid
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 
 /// An immutable 4x4 transformation matrix.
@@ -286,9 +286,9 @@ type Matrix =
         let x = Vec(m.M11, m.M12, m.M13)
         let y = Vec(m.M21, m.M22, m.M23)
         let z = Vec(m.M31, m.M32, m.M33)
-        Util.isZero (x *** y) &&
-        Util.isZero (x *** z) &&
-        Util.isZero (y *** z)
+        UtilEuclid.isZero (x *** y) &&
+        UtilEuclid.isZero (x *** z) &&
+        UtilEuclid.isZero (y *** z)
         )
 
     /// Returns if the Matrix is mirroring or reflection.
@@ -318,9 +318,9 @@ type Matrix =
         m.IsAffine &&
         (
         let inline sqLen    (v:Vec) = v.X*v.X + v.Y*v.Y + v.Z*v.Z // defined here again, because Vec extension members are not in scope here
-        Util.isNotOne (sqLen (Vec(m.M11, m.M12, m.M13))) || // exclude scaling
-        Util.isNotOne (sqLen (Vec(m.M21, m.M22, m.M23))) ||
-        Util.isNotOne (sqLen (Vec(m.M31, m.M32, m.M33)))
+        UtilEuclid.isNotOne (sqLen (Vec(m.M11, m.M12, m.M13))) || // exclude scaling
+        UtilEuclid.isNotOne (sqLen (Vec(m.M21, m.M22, m.M23))) ||
+        UtilEuclid.isNotOne (sqLen (Vec(m.M31, m.M32, m.M33)))
         )
 
     /// Returns true if the Matrix is translating.
@@ -508,7 +508,7 @@ type Matrix =
     /// 0 sin(θ) cos(θ)   0
     /// 0 0      0        1
     static member createRotationX(angleDegrees) =
-        let angle = Util.toRadians angleDegrees
+        let angle = UtilEuclid.toRadians angleDegrees
         let c = cos angle
         let s = sin angle
         Matrix(
@@ -527,7 +527,7 @@ type Matrix =
     /// -sin(θ) 0 cos(θ) 0
     /// 0       0 0      1
     static member createRotationY(angleDegrees) =
-        let angle = Util.toRadians angleDegrees
+        let angle = UtilEuclid.toRadians angleDegrees
         let c = cos angle
         let s = sin angle
         Matrix(
@@ -546,7 +546,7 @@ type Matrix =
     /// 0      0       1 0
     /// 0      0       0 1
     static member createRotationZ(angleDegrees) =
-        let angle = Util.toRadians angleDegrees
+        let angle = UtilEuclid.toRadians angleDegrees
         let c = cos angle
         let s = sin angle
         Matrix(
@@ -562,7 +562,7 @@ type Matrix =
     /// Returns a positive rotation will be so clockwise looking in the direction of the axis vector.
     static member createRotationAxis(axis:UnitVec, angleDegrees:float) =
         // Based on http://www.gamedev.net/reference/articles/article1199.asp
-        let angle = Util.toRadians angleDegrees
+        let angle = UtilEuclid.toRadians angleDegrees
         let c = cos angle
         let s = sin angle
         let t = 1.0 - c
@@ -591,7 +591,7 @@ type Matrix =
         let y = axis.Y * sc
         let z = axis.Z * sc
         // Based on http://www.gamedev.net/reference/articles/article1199.asp
-        let angle = Util.toRadians angleDegrees
+        let angle = UtilEuclid.toRadians angleDegrees
         let c = cos angle
         let s = sin angle
         let t = 1.0 - c

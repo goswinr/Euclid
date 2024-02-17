@@ -1,6 +1,6 @@
 namespace Euclid
 
-open Euclid.Util
+open Euclid.UtilEuclid
 
 /// When Euclid is opened this module will be auto-opened.
 /// It only contains extension members for type PPlane.

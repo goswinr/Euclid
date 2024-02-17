@@ -312,6 +312,7 @@ type BRect =
             || r.MinY > a.MaxY)
 
     /// Returns true if the two bounding rectangles do overlap more than a given tolerance distance.
+    /// Use a negative tolerance to count touching if they are apart by abs(tolerance)
     /// Returns false if the two bounding rectangles are just touching or apart.
     member inline r.OverlapsWith (a:BRect, tol) =
         not (  r.MinX > a.MaxX - tol
@@ -413,6 +414,7 @@ type BRect =
         b.OverlapsWith(a)
 
     /// Returns true if the two bounding rectangles do overlap more than a given tolerance distance.
+    /// Use a negative tolerance to count touching if they are apart by abs(tolerance)
     /// Returns false if the two bounding rectangles are just touching or apart.
     static member inline doOverlapMoreThan tol (a:BRect) (b:BRect) =
         b.OverlapsWith(a, tol)

@@ -1,6 +1,6 @@
 namespace Euclid
 open System
-open Util
+open UtilEuclid
 
 #nowarn "44" // to skip Obsolete warnings (members just needs to be public for inlining, but should be hidden)
 
@@ -78,7 +78,7 @@ module AutoOpenVc =
         /// Tests if square length is within 6 float steps of 1.0
         /// So between 0.99999964 and 1.000000715.
         member inline v.IsUnit =
-            Util.isOne v.LengthSq
+            UtilEuclid.isOne v.LengthSq
 
         /// 2D cross product.
         /// Its Just a scalar equal to the area of the parallelogram spanned by the input vectors.
@@ -143,7 +143,7 @@ module AutoOpenVc =
             //#endif
             let a = Math.Atan2(v.Y, v.X)
             if a < 0. then
-                a + Util.twoPi
+                a + UtilEuclid.twoPi
             else
                 a
 
@@ -245,7 +245,7 @@ module AutoOpenVc =
         /// The default angle tolerance is 0.25 degrees.
         /// This tolerance can be customized by an optional minium cosine value.
         /// See Euclid.Cosine module.
-        /// Fails on vectors shorter than Util.zeroLengthTolerance (1e-12).
+        /// Fails on vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
         member inline this.IsParallelTo(other:Vc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
             let sa = this.LengthSq
             if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vc.IsParallelTo: Vc 'this' is too short: %s. 'other':%s " this.AsString other.AsString
@@ -260,7 +260,7 @@ module AutoOpenVc =
         /// The default angle tolerance is 0.25 degrees.
         /// This tolerance can be customized by an optional minium cosine value.
         /// See Euclid.Cosine module.
-        /// Fails on vectors shorter than Util.zeroLengthTolerance (1e-12).
+        /// Fails on vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
         member inline this.IsParallelTo(other:UnitVc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
             let sa = this.LengthSq
             if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vc.IsParallelTo: Vc 'this' is too short: %s. 'other':%s " this.AsString other.AsString
@@ -273,7 +273,7 @@ module AutoOpenVc =
         /// The default angle tolerance is 0.25 degrees.
         /// This tolerance can be customized by an optional minium cosine value.
         /// See Euclid.Cosine module.
-        /// Fails on vectors shorter than Util.zeroLengthTolerance (1e-12).
+        /// Fails on vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
         member inline this.IsParallelAndOrientedTo (other:Vc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
             let sa = this.LengthSq
             if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vc.IsParallelAndOrientedTo: Vc 'this' is too short: %s. 'other':%s " this.AsString other.AsString
@@ -288,7 +288,7 @@ module AutoOpenVc =
         /// The default angle tolerance is 0.25 degrees.
         /// This tolerance can be customized by an optional minium cosine value.
         /// See Euclid.Cosine module.
-        /// Fails on vectors shorter than Util.zeroLengthTolerance (1e-12).
+        /// Fails on vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
         member inline this.IsParallelAndOrientedTo (other:UnitVc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
             let sa = this.LengthSq
             if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vc.IsParallelAndOrientedTo: Vc 'this' is too short: %s. 'other':%s " this.AsString other.AsString
@@ -302,7 +302,7 @@ module AutoOpenVc =
         /// This tolerance can be customized by an optional minium cosine value.
         /// The default cosine is 0.0043633 ( = 89.75 deg)
         /// See Euclid.Cosine module.
-        /// Fails on vectors shorter than Util.zeroLengthTolerance (1e-12).
+        /// Fails on vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
         member inline this.IsPerpendicularTo (other:Vc, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) =
             let sa = this.LengthSq
             if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vc.IsPerpendicularTo: Vc 'this' is too short: %s. 'other':%s " this.AsString other.AsString
@@ -318,7 +318,7 @@ module AutoOpenVc =
         /// This tolerance can be customized by an optional minium cosine value.
         /// The default cosine is 0.0043633 ( = 89.75 deg)
         /// See Euclid.Cosine module.
-        /// Fails on vectors shorter than Util.zeroLengthTolerance (1e-12).
+        /// Fails on vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
         member inline this.IsPerpendicularTo (other:UnitVc, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) =
             let sa = this.LengthSq
             if sa < zeroLengthTolSquared then EuclidException.Raise "Euclid.Vc.IsPerpendicularTo: Vc 'this' is too short: %s. 'other':%s " this.AsString other.AsString
@@ -491,8 +491,8 @@ module AutoOpenVc =
         static member inline anglePi (a:Vc) (b:Vc) =
             UnitVc.anglePi a.Unitized b.Unitized
             //    let mutable r = b.Direction2Pi  - a.Direction2Pi     // this does perform slightly worse than using unitizing and acos for anglePi
-            //    if r < 0.      then  r <- r + Util.twoPi
-            //    if r > Math.PI then  r <- Util.twoPi - r
+            //    if r < 0.      then  r <- r + UtilEuclid.twoPi
+            //    if r > Math.PI then  r <- UtilEuclid.twoPi - r
             //    r
 
         /// Returns positive angle between two 2D vectors in Radians. Ignores orientation.
@@ -500,8 +500,8 @@ module AutoOpenVc =
         static member inline angleHalfPi (a:Vc) (b:Vc) =
             UnitVc.angleHalfPi a.Unitized b.Unitized
             //    let mutable r = b.Direction2Pi  - a.Direction2Pi   // this does perform slightly worse than using unitizing and acos for anglePi
-            //    if r < 0.      then  r <- r + Util.twoPi
-            //    if r > Math.PI then  r <- Util.twoPi - r
+            //    if r < 0.      then  r <- r + UtilEuclid.twoPi
+            //    if r > Math.PI then  r <- UtilEuclid.twoPi - r
             //    if r > halfPi  then  r <- Math.PI - r
             //    r
 
@@ -512,7 +512,7 @@ module AutoOpenVc =
         static member inline angle2Pi (a:Vc, b:Vc) =
             let r = b.Direction2Pi  - a.Direction2Pi
             if r >= 0. then  r
-            else r + Util.twoPi
+            else r + UtilEuclid.twoPi
 
         /// Returns positive angle between two 2D vectors in Degrees,
         /// Ignores vector orientation.
@@ -772,7 +772,7 @@ module AutoOpenVc =
                 let ang = acos(dot) // the angel between the two vectors 
                 let perp = eu - su*dot |> Vc.unitize // a vector perpendicular to start and in the same plane with ende. 
                 let theta = ang*rel // the angle part we want for the result 
-                let theta360 = (theta+Util.twoPi) % Util.twoPi // make sure it is i the range 0.0 to 2 Pi (360 degrees)
+                let theta360 = (theta+UtilEuclid.twoPi) % UtilEuclid.twoPi // make sure it is i the range 0.0 to 2 Pi (360 degrees)
                 let cosine = cos (theta360) 
                 let sine   = sqrt(1.0 - cosine*cosine) 
                 let res =  //unitized result vector 
@@ -809,7 +809,7 @@ module AutoOpenVc =
         ///  If one or both vectors are shorter than this ValueNone is returned.</param>
         ///<param name="relAngleDiscriminant"> This is an optional tolerance for the internally calculated relative Angle Discriminant.
         /// The default value corresponds to approx 0.25 degree. Below this angle vectors are considered parallel.
-        /// See module Euclid.Util.RelAngleDiscriminant</param>
+        /// See module Euclid.UtilEuclid.RelAngleDiscriminant</param>
         ///<returns> For (almost) zero length or (almost) parallel vectors: ValueNone
         /// Else ValueSome with a tuple of the parameters at which the two infinite 2D Lines intersect to each other.
         /// The tuple's order corresponds to the input order.</returns>
@@ -840,7 +840,7 @@ module AutoOpenVc =
                 let discriminant = ac - bb // never negative, the dot product cannot be bigger than the two square length multiplied with each other
                 let div          = ac + bb // never negative
                 // getting the relation between the sum and the subtraction gives a good estimate of the angle between the lines
-                // see module Euclid.Util.RelAngleDiscriminant
+                // see module Euclid.UtilEuclid.RelAngleDiscriminant
                 let rel = discriminant / div
                 if rel < float relAngleDiscriminant then //parallel
                     ValueNone

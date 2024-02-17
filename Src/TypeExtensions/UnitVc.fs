@@ -8,7 +8,7 @@ open System
 /// It only contains extension members for type UnitVc.
 [<AutoOpen>]
 module AutoOpenUnitVc =
-    open Util
+    open UtilEuclid
 
     /// Returns distance between the tips of two 2D vectors.
     let inline internal vecDist2(ax:float, ay:float, bx:float, by:float) =
@@ -109,7 +109,7 @@ module AutoOpenUnitVc =
             // https://stackoverflow.com/a/14675998/969070            
             let a = Math.Atan2(v.Y, v.X)
             if a < 0. then
-                a + Util.twoPi
+                a + UtilEuclid.twoPi
             else
                 a
 
@@ -421,8 +421,8 @@ module AutoOpenUnitVc =
                 if dot < 0. then Math.PI - 2.0 * asin(vecDist2(-a.X, -a.Y, b.X, b.Y) * 0.5)
                 else                       2.0 * asin(vecDist2( a.X,  a.Y, b.X, b.Y) * 0.5)
             //let mutable r = b.Direction2Pi  - a.Direction2Pi  // this alternative calculation is about 10x slower for unit vectors
-            //if r < 0.      then  r <- r + Util.twoPi
-            //if r > Math.PI then  r <- Util.twoPi - r
+            //if r < 0.      then  r <- r + UtilEuclid.twoPi
+            //if r > Math.PI then  r <- UtilEuclid.twoPi - r
             //r
 
 
@@ -439,8 +439,8 @@ module AutoOpenUnitVc =
                 if dot < 0. then 2.0 * asin(vecDist2(-a.X, -a.Y, b.X, b.Y) * 0.5)
                 else             2.0 * asin(vecDist2( a.X,  a.Y, b.X, b.Y) * 0.5)
             //let mutable r = b.Direction2Pi  - a.Direction2Pi // this alternative calculation is about 10x slower for unit vectors
-            //if r < 0.      then  r <- r + Util.twoPi
-            //if r > Math.PI then  r <- Util.twoPi - r
+            //if r < 0.      then  r <- r + UtilEuclid.twoPi
+            //if r > Math.PI then  r <- UtilEuclid.twoPi - r
             //if r > halfPi  then  r <- Math.PI - r
             //r
 
@@ -451,7 +451,7 @@ module AutoOpenUnitVc =
         static member inline angle2Pi (a:UnitVc, b:UnitVc) =
             let r = b.Direction2Pi  - a.Direction2Pi
             if r >= 0. then  r
-            else r + Util.twoPi
+            else r + UtilEuclid.twoPi
 
         /// Returns positive angle between two 2D unit vectors in Degrees,
         /// Ignores vector orientation.
@@ -634,7 +634,7 @@ module AutoOpenUnitVc =
                 let p = ende - start*dot  // a vector perpendicular to start and in the same plane with ende. 
                 let perp = UnitVc.create(p.X, p.Y)
                 let theta = ang*rel // the angle part we want for the result 
-                let theta360 = (theta+Util.twoPi) % Util.twoPi // make sure it is i the range 0.0 to 2 Pi (360 degrees)
+                let theta360 = (theta+UtilEuclid.twoPi) % UtilEuclid.twoPi // make sure it is i the range 0.0 to 2 Pi (360 degrees)
                 let cosine = cos (theta360) 
                 let sine   = sqrt(1.0 - cosine*cosine)                 
                 if theta360 < Math.PI then  // in the range 0 to 180 degrees, only applicable if rel is beyond 0.0 or 0.1
@@ -660,7 +660,7 @@ module AutoOpenUnitVc =
         ///<param name="vB" > The unit vector of the second line.</param>
         ///<param name="relAngleDiscriminant"> This is an optional tolerance for the internally calculated relative Angle Discriminant.
         /// The default value corresponds to approx 0.25 degree. Below this angle vectors are considered parallel.
-        /// See module Euclid.Util.RelAngleDiscriminant</param>
+        /// See module Euclid.UtilEuclid.RelAngleDiscriminant</param>
         ///<returns> For (almost) zero length or (almost) parallel vectors: ValueNone
         /// Else ValueSome with a tuple of the parameters at which the two infinite 2D Lines intersect to each other.
         /// The tuple's order corresponds to the input order.</returns>
@@ -682,7 +682,7 @@ module AutoOpenUnitVc =
             let discriminant = 1.0 - bb // never negative, the dot product cannot be bigger than the two square length multiplied with each other
             let div          = 1.0 + bb // never negative
             // getting the relation between the sum and the subtraction gives a good estimate of the angle between the lines
-            // see module Euclid.Util.RelAngleDiscriminant
+            // see module Euclid.UtilEuclid.RelAngleDiscriminant
             let rel = discriminant / div
             if rel < float relAngleDiscriminant then //parallel
                 ValueNone

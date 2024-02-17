@@ -281,61 +281,63 @@ type Points private () =
 
 
 
+
     /// Similar to join polylines this tries to find continuos sequences of 2D points.
     /// 'tolGap' is the maximum allowable gap between the start and the endpoint of to segments.
     /// Search starts from the segment with the most points.
     /// Both start and end point of each 2D point list is checked for adjacency.
     static member findContinuosPoints (ptss: ResizeArray<ResizeArray<Pt>>, tolGap:float) =
-        let i = ptss |> ResizeArray.maxIndexBy ResizeArray.length
+        let i = ptss |> ResizeArr.maxIndexBy ResizeArr.length
         let res = ptss.Pop(i)
         let mutable loop = true
         while loop && ptss.Count > 0 do
             //first try to append to end
             let ende = res.[res.Count-1]
-            let si = ptss |> ResizeArray.minIndexBy (fun ps -> Pt.distanceSq ende ps.First)
-            let ei = ptss |> ResizeArray.minIndexBy (fun ps -> Pt.distanceSq ende ps.Last)
+            let si = ptss |> ResizeArr.minIndexBy (fun ps -> Pt.distanceSq ende ps.First)
+            let ei = ptss |> ResizeArr.minIndexBy (fun ps -> Pt.distanceSq ende ps.Last)
             let sd = Pt.distance ende ptss.[si].First
             let ed = Pt.distance ende ptss.[ei].Last
             if   sd < tolGap && sd < ed then  res.AddRange(                ptss.Pop(si))
-            elif ed < tolGap && ed < sd then  res.AddRange(ResizeArray.rev(ptss.Pop(ei)) )
+            elif ed < tolGap && ed < sd then  res.AddRange(ResizeArr.rev(ptss.Pop(ei)) )
             else
                 //search from start
                 let start = res.[0]
-                let si = ptss |> ResizeArray.minIndexBy (fun ps -> Pt.distanceSq start ps.First)
-                let ei = ptss |> ResizeArray.minIndexBy (fun ps -> Pt.distanceSq start ps.Last)
+                let si = ptss |> ResizeArr.minIndexBy (fun ps -> Pt.distanceSq start ps.First)
+                let ei = ptss |> ResizeArr.minIndexBy (fun ps -> Pt.distanceSq start ps.Last)
                 let sd = Pt.distance start ptss.[si].First
                 let ed = Pt.distance start ptss.[ei].Last
-                if   sd < tolGap && sd < ed then res.InsertRange(0, ResizeArray.rev(ptss.Pop(si)) )
+                if   sd < tolGap && sd < ed then res.InsertRange(0, ResizeArr.rev(ptss.Pop(si)) )
                 elif ed < tolGap && ed < sd then res.InsertRange(0,                 ptss.Pop(ei))
                 else
                     loop <- false
         res
+
 
     /// Similar to Join Polylines this tries to find continuos sequences of 3D points.
     /// 'tolGap' is the maximum allowable gap between the start and the endpoint of to segments.
     /// Search starts from the segment with the most points.
     /// Both start and end point of each 3D point list is checked for adjacency.
     static member findContinuosPoints (ptss: ResizeArray<ResizeArray<Pnt>>, tolGap:float) =
-        let i = ptss |> ResizeArray.maxIndexBy ResizeArray.length
+        let i = ptss |> ResizeArr.maxIndexBy ResizeArr.length
         let res = ptss.Pop(i)
         let mutable loop = true
         while loop && ptss.Count > 0 do
             //first try to append to end
             let ende = res.[res.Count-1]
-            let si = ptss |> ResizeArray.minIndexBy (fun ps -> Pnt.distanceSq ende ps.First)
-            let ei = ptss |> ResizeArray.minIndexBy (fun ps -> Pnt.distanceSq ende ps.Last)
+            let si = ptss |> ResizeArr.minIndexBy (fun ps -> Pnt.distanceSq ende ps.First)
+            let ei = ptss |> ResizeArr.minIndexBy (fun ps -> Pnt.distanceSq ende ps.Last)
             let sd = Pnt.distance ende ptss.[si].First
             let ed = Pnt.distance ende ptss.[ei].Last
             if   sd < tolGap && sd < ed then  res.AddRange(                ptss.Pop(si))
-            elif ed < tolGap && ed < sd then  res.AddRange(ResizeArray.rev(ptss.Pop(ei)) )
+            elif ed < tolGap && ed < sd then  res.AddRange(ResizeArr.rev(ptss.Pop(ei)) )
             else
                 //search from start
                 let start = res.[0]
-                let si = ptss |> ResizeArray.minIndexBy (fun ps -> Pnt.distanceSq start ps.First)
-                let ei = ptss |> ResizeArray.minIndexBy (fun ps -> Pnt.distanceSq start ps.Last)
+                let si = ptss |> ResizeArr.minIndexBy (fun ps -> Pnt.distanceSq start ps.First)
+                let ei = ptss |> ResizeArr.minIndexBy (fun ps -> Pnt.distanceSq start ps.Last)
                 let sd = Pnt.distance start ptss.[si].First
                 let ed = Pnt.distance start ptss.[ei].Last
-                if   sd < tolGap && sd < ed then res.InsertRange(0, ResizeArray.rev(ptss.Pop(si)) )
+                if   sd < tolGap && sd < ed then res.InsertRange(0, ResizeArr.rev(ptss.Pop(si)) )
                 elif ed < tolGap && ed < sd then res.InsertRange(0,                 ptss.Pop(ei))
                 else
                     loop <- false
@@ -570,7 +572,7 @@ type Points private () =
             if rel < float RelAngleDiscriminant.``0.25`` then //parallel
                 ValueNone
             else
-                let n = Vc.cross(prevToThis, thisToNext) |> Util.matchSign referenceOrient
+                let n = Vc.cross(prevToThis, thisToNext) |> UtilEuclid.matchSign referenceOrient
                 let prevShift = prevToThis.Rotate90CCW |> Vc.withLength (if n>0. then prevDist else -prevDist)
                 let nextShift = thisToNext.Rotate90CCW |> Vc.withLength (if n>0. then nextDist else -nextDist)
                 let offP = thisPt + prevShift

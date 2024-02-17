@@ -2,7 +2,7 @@ namespace Euclid
 
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
-open Util
+open UtilEuclid
 
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 
@@ -47,7 +47,7 @@ type Rect2D =
 
     /// Unchecked Internal Constructor Only.
     /// Create a Parametrized Plane with X, Y and Z Direction.
-    internal new (origin:Pt, axisX:Vc, axisY:Vc) =         
+    internal new (origin:Pt, axisX:Vc, axisY:Vc) =
         #if DEBUG
         let lenX = axisX.Length
         let lenY = axisY.Length
@@ -56,7 +56,7 @@ type Rect2D =
         //just using zeroLengthTolerance 1e-12 seems too strict for dot product check:
         if abs (axisX *** axisY) > (lenX+lenY)*1e-9 then EuclidException.Raise "Euclid.Rect2D(): X-axis and Y-axis are not perpendicular\r\n(dot=%g) > 1e-10 \r\n%O and \r\n%O" (abs (axisX *** axisY)) axisX axisY
         if Vc.cross(axisX, axisY) < 0.0 then EuclidException.Raise "Euclid.Rect2D(): X-axis and Y-axis are not counter clockwise: %O and %O" axisX axisY
-        #endif 
+        #endif
         {Origin=origin; Xaxis=axisX; Yaxis=axisY}
 
     /// The size in X direction, same as member rect.SizeX.
@@ -278,7 +278,7 @@ type Rect2D =
     ///   +------------+-----> X-Axis (Width)
     ///  0-Origin       1
     member inline r.Edge30 = Line2D (r.Origin + r.Yaxis, r.Origin)
-    
+
     /// Returns the local X side as the 2D line from point 0 to 1 of the 2D rectangle.
     ///
     ///   local
@@ -295,7 +295,7 @@ type Rect2D =
     ///   +------------+-----> X-Axis (Width)
     ///  0-Origin       1
     member inline r.EdgeX = r.Edge01
-    
+
     /// Returns the local Y side as 2D line from point 0 to 3 of the 2D rectangle.
     /// This is the reverse of Edge30.
     ///
@@ -353,8 +353,8 @@ type Rect2D =
     member inline r.Center = r.Origin + r.Xaxis*0.5 + r.Yaxis*0.5
 
 
-    /// Returns the Rectangle rotated 90 degrees clockwise around its center.
-    /// The normal of the rectangle stays the same.
+    /// Returns the same rectangle with a new orientation rotated by 90 degrees clockwise around its center.
+    /// This only changes the internal representation of the rectangle, the appearance is not changed.
     /// Origin will be at point 3, X-axis to to point 0, Y-axis to point 2.
     ///   local
     ///   Y-Axis (Height2D)
@@ -369,11 +369,12 @@ type Rect2D =
     ///   |            |       local
     ///   +------------+-----> X-Axis (Width)
     ///  0-Origin       1
-    member r.RotatedCW90 = Rect2D(r.Origin + r.Yaxis, -r.Yaxis, r.Xaxis)
+    member r.RotateOrientation90CW = Rect2D(r.Origin + r.Yaxis, -r.Yaxis, r.Xaxis)
 
 
     /// Returns the Rectangle rotated 180 degrees around its center.
-    /// The normal of the rectangle stays the same.
+    /// Returns the same rectangle with a new orientation rotated by 180 degrees around its center.
+    /// This only changes the internal representation of the rectangle, the appearance is not changed.
     /// Origin will be at point 2, X-axis to to point 3, Y-axis to point 1.
     ///   local
     ///   Y-Axis (Height2D)
@@ -388,10 +389,10 @@ type Rect2D =
     ///   |            |       local
     ///   +------------+-----> X-Axis (Width)
     ///  0-Origin       1
-    member r.Rotated180 = Rect2D(r.Origin + r.Yaxis + r.Xaxis, -r.Xaxis, -r.Yaxis)
+    member r.RotateOrientation180 = Rect2D(r.Origin + r.Yaxis + r.Xaxis, -r.Xaxis, -r.Yaxis)
 
-    /// Returns the Rectangle rotated 90 degrees Counter-Clockwise around its center.
-    /// The normal of the rectangle stays the same.
+    /// Returns the same rectangle with a new orientation rotated by 90 degrees counter clockwise around its center.
+    /// This only changes the internal representation of the rectangle, the appearance is not changed.
     /// Origin will be at point 1, X-axis to to point 2, Y-axis to point 0.
     ///   local
     ///   Y-Axis (Height2D)
@@ -406,7 +407,7 @@ type Rect2D =
     ///   |            |       local
     ///   +------------+-----> X-Axis (Width)
     ///  0-Origin       1
-    member r.RotatedCCW90 = Rect2D(r.Origin + r.Xaxis, r.Yaxis, -r.Xaxis)
+    member r.RotateOrientation90CCW = Rect2D(r.Origin + r.Xaxis, r.Yaxis, -r.Xaxis)
 
 
     /// Returns the 4 corners of the 2D Rectangle in Counter-Clockwise order, starting at Origin.
@@ -475,7 +476,7 @@ type Rect2D =
         let p3 = p0 + r.Yaxis
         [| Line2D(p0, p1); Line2D(p1, p2); Line2D(p2, p3); Line2D(p3, p0)|]
 
-    /// Returns one of the 4 Edges as 2D Line: 
+    /// Returns one of the 4 Edges as 2D Line:
     /// Edge 0: from point  0 to 1
     /// Edge 1: from point  1 to 2
     /// Edge 2: from point  2 to 3
@@ -508,14 +509,14 @@ type Rect2D =
     member inline r.EvaluateAt (xParameter:float, yParameter:float) =
         r.Origin + r.Xaxis * xParameter + r.Yaxis * yParameter
 
-    /// Evaluate a point at X and Y distance on the respective axes of the 2D Rectangle.  
+    /// Evaluate a point at X and Y distance on the respective axes of the 2D Rectangle.
     member inline r.EvaluateDist (xDistance:float, yDistance:float) =
         let lx = r.Xaxis.Length
         let ly = r.Yaxis.Length
-        if lx < zeroLengthTolerance || ly < zeroLengthTolerance then 
-            EuclidException.Raise "Euclid.Rect2D.EvaluateDist: rect Xaxis or Yaxis is too small for evaluating distance: %s" r.AsString        
+        if lx < zeroLengthTolerance || ly < zeroLengthTolerance then
+            EuclidException.Raise "Euclid.Rect2D.EvaluateDist: rect Xaxis or Yaxis is too small for evaluating distance: %s" r.AsString
         r.Origin + r.Xaxis * (xDistance/lx) + r.Yaxis * (yDistance/ly)
-        
+
 
 
     /// Calculates the volume of the 2D Rectangle.
@@ -537,7 +538,7 @@ type Rect2D =
         abs (a.Xaxis.Y -  b.Xaxis.Y ) <= tol &&
         abs (a.Yaxis.X -  b.Yaxis.X ) <= tol &&
         abs (a.Yaxis.Y -  b.Yaxis.Y ) <= tol
-        
+
 
 
     /// Returns the 2D Rectangle expanded by distance on all six sides.
@@ -574,7 +575,7 @@ type Rect2D =
         //zeroLengthTolerance seems too strict for dot product:
         if abs (x *** y) > 1e-10 then EuclidException.Raise "Euclid.Rect2D.create(origin, x:Vc, y:Vc): X-axis and Y-axis are not perpendicular (dot=%g): \r\n%O and\r\n%O" (abs (x *** y)) x y
         if Vc.cross(x,y) < 0.0 then EuclidException.Raise "Euclid.Rect2D.create(origin, x:Vc, y:Vc): X-axis and Y-axis are not counter clockwise:\r\n%O and\r\n%O" x y
-        Rect2D(origin, x, y)   
+        Rect2D(origin, x, y)
 
 
     /// Creates a 2D rectangle from a origin point, the X vector and Y size.
@@ -629,11 +630,11 @@ type Rect2D =
         Rect2D(center - x * 0.5 - y * 0.5, x, y)
 
     /// Creates a 2D rectangle from three points. Fails on bad input.
-    /// The Origin, a point in X-axis direction and length, and a point for the length in Y-axis direction. 
+    /// The Origin, a point in X-axis direction and length, and a point for the length in Y-axis direction.
     /// Origin and x-point define the X-axis orientation of the Rectangle.
     /// The y-point only defines the length and side of the Y axis.
     /// If the y-point is on the left side of the X-axis the origin will be at point 0, X at point 1.
-    /// If the y-point is on the right side of the X-axis, the X-axis will be reversed. the origin will be at point x, and the end of the x-Axis at the origin. 
+    /// If the y-point is on the right side of the X-axis, the X-axis will be reversed. the origin will be at point x, and the end of the x-Axis at the origin.
     /// E.G if called with points (origin=3,x=2,y=0) the origin will be at 2, X at 3, and y at 1.
     ///
     ///   local
@@ -655,22 +656,22 @@ type Rect2D =
         let y = yPt - origin
         if y.LengthSq < 1e-9 then EuclidException.Raise "Euclid.Rect2D.createThreePoints: Y-Point %s too close to origin: %s." origin.AsString y.AsString
         let yu = x.Rotate90CCW.Unitized
-        //if y0 * yv < 0. then EuclidException.Raise "Euclid.Rect2D.createThreePoints: Y-Point %s is on right side but should be on the left of X-Point %s." origin.AsString y.AsString        
+        //if y0 * yv < 0. then EuclidException.Raise "Euclid.Rect2D.createThreePoints: Y-Point %s is on right side but should be on the left of X-Point %s." origin.AsString y.AsString
         let dot = yu *** y
-        if abs dot < 1e-9 then EuclidException.Raise "Euclid.Rect2D.createThreePoints: Y-Point %s is too close to Xaxis." y.AsString 
+        if abs dot < 1e-9 then EuclidException.Raise "Euclid.Rect2D.createThreePoints: Y-Point %s is too close to Xaxis." y.AsString
         let yr = yu * dot // get the y point projected on the y axis
-        if dot > 0. then 
+        if dot > 0. then
             Rect2D(origin, x, yr) //point is on left side of X-axis
         else
            //Rect2D(origin + y, xv, -y) //alternative valid result: If the point Y is on the right side of the X-axis the origin will be at point 3, X at point 2.
            Rect2D(xPt, -x, yr) //the origin will be at point x, and the end of the x-Axis at the origin.
 
     /// Tries to create a 2D rectangle from three points. Returns None on bad input.
-    /// The Origin, a point in X-axis direction and length, and a point for the length in Y-axis direction. 
+    /// The Origin, a point in X-axis direction and length, and a point for the length in Y-axis direction.
     /// Origin and x-point define the X-axis orientation of the Rectangle.
     /// The y-point only defines the length and side of the Y axis.
     /// If the y-point is on the left side of the X-axis the origin will be at point 0, X at point 1.
-    /// If the y-point is on the right side of the X-axis, the X-axis will be reversed. the origin will be at point x, and the end of the x-Axis at the origin. 
+    /// If the y-point is on the right side of the X-axis, the X-axis will be reversed. the origin will be at point x, and the end of the x-Axis at the origin.
     /// E.G if called with points (origin=3,x=2,y=0) the origin will be at 2, X at 3, and y at 1.
     ///
     ///   local
@@ -694,12 +695,12 @@ type Rect2D =
             if y.LengthSq < 1e-9 then None
             else
                 let yu = x.Rotate90CCW.Unitized
-                //if y0 * yv < 0. then EuclidException.Raise "Euclid.Rect2D.createThreePoints: Y-Point %s is on right side but should be on the left of X-Point %s." origin.AsString y.AsString        
+                //if y0 * yv < 0. then EuclidException.Raise "Euclid.Rect2D.createThreePoints: Y-Point %s is on right side but should be on the left of X-Point %s." origin.AsString y.AsString
                 let dot = yu *** y
-                if abs dot < 1e-9 then None 
+                if abs dot < 1e-9 then None
                 else
                     let yr = yu * dot // get the y point projected on the y axis
-                    if dot > 0. then 
+                    if dot > 0. then
                         Some <| Rect2D(origin, x, yr) //point is on left side of X-axis
                     else
                     //Rect2D(origin + y, xv, -y) //alternative valid result: If the point Y is on the right side of the X-axis the origin will be at point 3, X at point 2.
@@ -736,7 +737,7 @@ type Rect2D =
     /// Rotation of a Rect2D. around a given Center.
     static member rotateWithCenter (cen:Pt) (rot:Rotation2D) (rect:Rect2D) =
         Rect2D(Pt.rotateWithCenterBy cen rot rect.Origin, Vc.rotateBy rot rect.Xaxis, Vc.rotateBy rot rect.Yaxis)
-    
+
     /// Offset a Rect2D inwards by a given distance.
     /// A negative distance will offset outwards.
     /// Fails if the distance is larger than half the size of the rectangle.
@@ -753,7 +754,7 @@ type Rect2D =
     /// Negative distances will offset outwards.
     /// The distance array is for Edge01, Edge12, Edge23 and Edge30 respectively.
     /// Fails if the distance is larger than half the size of the rectangle.
-    ///     
+    ///
     ///   local
     ///   Y-Axis (Height2D)
     ///   ^
@@ -782,8 +783,8 @@ type Rect2D =
 
     ///<summary>Offsets a local Rect2D at one of the four corners.</summary>
     ///<param name="rect">The 2D Rectangle</param>
-    ///<param name="corner">The Index of the corner to Offset
-    /// 
+    ///<param name="corner">The Index of the corner to offset
+    ///
     ///   local
     ///   Y-Axis (Height2D)
     ///   ^
@@ -804,48 +805,102 @@ type Rect2D =
     ///<returns>A new 2D Rectangle. It will always have the same x and y axis orientation as the input rectangle. Independent of negative or positive offsets</returns>
     static member offsetCorner (rect:Rect2D, corner:int, xOffset:float, yOffset:float, xWidth:float, yHeight:float) =
         let xa = rect.Xaxis
-        let ya = rect.Yaxis        
+        let ya = rect.Yaxis
         let xl = xa.Length
-        let yl = ya.Length  
+        let yl = ya.Length
         if xl < zeroLengthTolerance || yl < zeroLengthTolerance then
             EuclidException.Raise "Euclid.Rect2D.offsetCorner: the 2D Rectangle %s is too small to offsetCorner"  rect.AsString
         let xv = xa * (xWidth/xl)
         let yv = ya * (yHeight/yl)
         match corner with
-        | 0 -> 
-            let x = xa * (if xOffset > 0. then xOffset / xl else (xOffset-xWidth) / xl)
-            let y = ya * (if yOffset > 0. then yOffset / yl else (yOffset-yHeight) / yl)
+        | 0 ->
+            let x = xa * xOffset / xl
+            let y = ya * yOffset / yl
             Rect2D(rect.Origin + x + y, xv, yv)
         | 1 ->
-            let x = xa * (if xOffset > 0. then (xl-xOffset-xWidth) / xl else (xl + xOffset)    / xl)
-            let y = ya * (if yOffset > 0. then yOffset / yl             else (yOffset-yHeight) / yl)
+            let x = xa * (xl-xOffset-xWidth) / xl
+            let y = ya * yOffset             / yl
             Rect2D(rect.Origin + x + y, xv, yv)
         | 2 ->
-            let x = xa * (if xOffset > 0. then (xl-xOffset-xWidth)  / xl else (xl+xOffset) / xl)
-            let y = ya * (if yOffset > 0. then (yl-yOffset-yHeight) / yl else (yl+yOffset) / yl)
+            let x = xa * (xl-xOffset-xWidth)  / xl
+            let y = ya * (yl-yOffset-yHeight) / yl
             Rect2D(rect.Origin + x + y, xv, yv)
         | 3 ->
-            let x = xa * (if xOffset > 0. then xOffset              / xl else (xOffset-xWidth) / xl)
-            let y = ya * (if yOffset > 0. then (yl-yOffset-yHeight) / yl else (yl+yOffset)     / yl)
+            let x = xa *xOffset              / xl
+            let y = ya *(yl-yOffset-yHeight) / yl
             Rect2D(rect.Origin + x + y, xv, yv)
-        | _ -> 
+        | _ ->
             EuclidException.Raise "Euclid.Rect2D.offsetCorner: corner %i out of range 0..3" corner
 
-    
+    ///<summary>Offsets a local Rect2D at one of the four corners.</summary>
+    ///<param name="rect">The 2D Rectangle</param>
+    ///<param name="edgeIdx">The Index of the edge to offset
+    ///
+    ///   local
+    ///   Y-Axis (Height2D)
+    ///   ^
+    ///   |
+    ///   |      2
+    ///   +------------+
+    ///   |            |
+    ///   |            |
+    ///  3|            |1
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-Axis (Width)
+    ///         0</param>
+    ///<param name="offEdge">The local offset distances parallel to the edge.</param>
+    ///<param name="width">The width. this is like the next offset to be applied to offEdge</param>
+    ///<param name="offStart">The local offset distances perpendicular to the edge at the start.</param>
+    ///<param name="offEnd">The local offset distances perpendicular to the edge at the end.</param>
+    ///<returns>A new 2D Rectangle. It will always have the same x and y axis orientation as the input rectangle. Independent of negative or positive offsets</returns>
+    static member offsetEdge (rect:Rect2D, edgeIdx:int, offEdge:float, width:float, offStart:float, offEnd:float) =
+        let x = rect.Xaxis
+        let y = rect.Yaxis
+        let lx = x.Length
+        let ly = y.Length
+        let inline xLen l = x * (l / lx)
+        let inline yLen l = y * (l / ly)
+        let inline orig xx yy = rect.Origin + xLen xx + yLen yy
+        if lx < zeroLengthTolerance || ly < zeroLengthTolerance then
+            EuclidException.Raise "Euclid.Rect2D.offsetEdge: the 2D Rectangle %s is too small to offsetCorner"  rect.AsString
+        match edgeIdx with
+        | 0 ->  Rect2D( orig offStart offEdge
+                      , xLen (lx-offStart-offEnd)
+                      , yLen width  )
+
+        | 1 -> Rect2D( orig (lx-offEdge-width) offStart
+                      , xLen width
+                      , yLen (ly-offStart-offEnd)  )
+
+        | 2 -> Rect2D( orig offEnd (ly-offEdge-width)
+                      , xLen (lx-offStart-offEnd)
+                      , yLen width   )
+
+        | 3 -> Rect2D( orig offEdge offEnd
+                      , xLen width
+                      , yLen (ly-offStart-offEnd)  )
+        | _ ->
+            EuclidException.Raise "Euclid.Rect2D.offsetCorner: corner %i out of range 0..3" edgeIdx
+
+
+
     /// Divides a 2D Rectangle into a grid of sub-rectangles. The sub-rectangles are returned as an array of arrays.
     /// The gap between the sub-rectangles is given in x and y direction. It does not apply to the outer edges of the 2D Rectangle.
+    /// The returned array has xCount elements, each element is an array of yCount sub-rectangles.
     static member subDivide (rect:Rect2D, xCount:int, yCount:int, xGap:float, yGap:float)=
         if xCount <= 0 || yCount <= 0 then
             EuclidException.Raise "Euclid.Rect2D.subDivide: xCount %d and yCount %d must be 1 or more" xCount yCount
         let xa = rect.Xaxis
-        let ya = rect.Yaxis        
+        let ya = rect.Yaxis
         let xl = xa.Length
-        let yl = ya.Length          
+        let yl = ya.Length
         let lx1 = (xl - xGap * float (xCount-1) )/ float xCount
         let ly1 = (yl - yGap * float (yCount-1) )/ float yCount
         if lx1 < zeroLengthTolerance || ly1 < zeroLengthTolerance then
             [||]
         else
+            let o = rect.Origin
             let vx = xa * (lx1/xl)
             let vy = ya * (ly1/yl)
             let rss = Array.zeroCreate xCount
@@ -854,34 +909,87 @@ type Rect2D =
                 for iy = 0 to yCount-1 do
                     let x = xa * (xGap * float ix / xl + lx1 * float ix / xl)
                     let y = ya * (yGap * float iy / yl + ly1 * float iy / yl)
-                    rs.[iy] <- Rect2D(rect.Origin + x + y, vx, vy)
+                    rs.[iy] <- Rect2D(o + x + y, vx, vy)
                 rss.[ix] <- rs
-            rss 
+            rss
+
 
     /// Divides a a 2D Rectangle into a grid of sub-rectangles.
-    /// It will create as many sub-rectangles as possible respecting the minimum side length for x and y.    /// 
-    /// The input minSegmentLength is multiplied by factor 1.000001 of to avoid numerical errors.
+    /// The gap between the sub-rectangles is given in x and y direction. It does not apply to the outer edges of the 2D Rectangle.
+    /// It will create as many sub-rectangles as possible respecting the minimum side length for x and y.
+    /// The input minSegmentLength is multiplied by factor 0.9999 of to avoid numerical errors.
     /// That means in an edge case there are more segments returned, not fewer.
-    static member subDivideMinLength (rect:Rect2D, xMinLen:float, yMinLen:float, xGap:float, yGap:float) = 
+    /// The returned array is divided along the x-axis. The sub-array is divided along the y-axis.
+    static member subDivideMinLength (rect:Rect2D, xMinLen:float, yMinLen:float, xGap:float, yGap:float) =
         let xLen = rect.Xaxis.Length
         let yLen = rect.Yaxis.Length
         if xLen < xMinLen  then EuclidException.Raise "Euclid.Rect2D.subDivideMinLength: xMinLen %g is bigger than rect X-axis length %g for %O"  xMinLen xLen rect
         if yLen < yMinLen  then EuclidException.Raise "Euclid.Rect2D.subDivideMinLength: yMinLen %g is bigger than rect Y-axis length %g for %O"  yMinLen yLen rect
-        let xCount = int (xLen / (xMinLen*1.0000009536)) // 8 float steps above 1.0 https://float.exposed/0x3f800008
-        let yCount = int (yLen / (yMinLen*1.0000009536)) // 8 float steps above 1.0 https://float.exposed/0x3f800008
+        let xCount = int (xLen / (xMinLen*0.9999))
+        let yCount = int (yLen / (yMinLen*0.9999))
         Rect2D.subDivide (rect, xCount, yCount, xGap, yGap)
 
 
     /// Divides a a 2D Rectangle into a grid of sub-rectangles.
+    /// The gap between the sub-rectangles is given in x and y direction. It does not apply to the outer edges of the 2D Rectangle.
     /// It will create as few as segments as possible respecting the maximum segment length.
-    /// The input maxSegmentLength is multiplied by factor 0.999999 of to avoid numerical errors.
+    /// The input maxSegmentLength is multiplied by factor 1.00001 of to avoid numerical errors.
     /// That means in an edge case there are fewer segments returned, not more.
+    /// The returned array is divided along the x-axis. The sub-array is divided along the y-axis.
     static member subDivideMaxLength (rect:Rect2D, xMaxLen:float, yMaxLen:float, xGap:float, yGap:float) =
         let xLen = rect.Xaxis.Length
-        let yLen = rect.Yaxis.Length        
-        let xCount = 1 + int (xLen / (xMaxLen*0.999999523)) // 8 float steps below 1.0 https://float.exposed/0x3f7ffff8
-        let yCount = 1 + int (yLen / (yMaxLen*0.999999523)) // 8 float steps below 1.0 https://float.exposed/0x3f7ffff8
+        let yLen = rect.Yaxis.Length
+        let xCount = 1 + int (xLen / (xMaxLen*1.00001))
+        let yCount = 1 + int (yLen / (yMaxLen*1.00001))
         Rect2D.subDivide (rect, xCount, yCount, xGap, yGap)
-        
-        
-        
+
+
+    /// Divides a 2D Rectangle into a grid of points. The points are returned as an array of arrays.
+    /// A xCount and yCount of 2 will only return just the 4 corners of the rectangle.
+    /// A xCount and yCount of 3 will return 9 points, including the 4 corners, the 4 mid points on the edges and the center.
+    static member grid (rect:Rect2D, xCount:int, yCount:int) : Pt[][]=
+        if xCount <= 1 || yCount <= 1 then
+            EuclidException.Raise "Euclid.Rect2D.grid: xCount %d and yCount %d must be 2 or more" xCount yCount
+        let xa = rect.Xaxis
+        let ya = rect.Yaxis
+        let xl = xa.Length
+        let yl = ya.Length
+        let lx1 = xl / float (xCount-1)
+        let ly1 = yl / float (yCount-1)
+        let o = rect.Origin
+        let rss = Array.zeroCreate xCount
+        for ix = 0 to xCount-1 do
+            let rs = Array.zeroCreate yCount
+            for iy = 0 to yCount-1 do
+                let x = xa * (lx1 * float ix / xl)
+                let y = ya * (ly1 * float iy / yl)
+                rs.[iy] <- o + x + y
+            rss.[ix] <- rs
+        rss
+
+    /// Divides a a 2D Rectangle into a grid of points.
+    /// It will create as many points as possible respecting the minimum side length for x and y.
+    /// The input minSegmentLength is multiplied by factor 0.9999 of to avoid numerical errors.
+    /// That means in an edge case there are more segments returned, not fewer.
+    /// The returned array is divided along the x-axis. The sub-array is divided along the y-axis.
+    static member gridMinLength (rect:Rect2D, xMinLen:float, yMinLen:float) =
+        let xLen = rect.Xaxis.Length
+        let yLen = rect.Yaxis.Length
+        if xLen < xMinLen  then EuclidException.Raise "Euclid.Rect2D.gridMinLength: xMinLen %g is bigger than rect X-axis length %g for %O"  xMinLen xLen rect
+        if yLen < yMinLen  then EuclidException.Raise "Euclid.Rect2D.gridMinLength: yMinLen %g is bigger than rect Y-axis length %g for %O"  yMinLen yLen rect
+        let xCount = 1 + int (xLen / (xMinLen*0.9999))
+        let yCount = 1 + int (yLen / (yMinLen*0.9999))
+        Rect2D.grid (rect, xCount, yCount)
+
+
+    /// Divides a a 2D Rectangle into a grid of points.
+    /// It will create as few as points as possible respecting the maximum segment length.
+    /// The input maxSegmentLength is multiplied by factor 1.0001 of to avoid numerical errors.
+    /// That means in an edge case there are fewer segments returned, not more.
+    /// The returned array is divided along the x-axis. The sub-array is divided along the y-axis.
+    static member gridMaxLength (rect:Rect2D, xMaxLen:float, yMaxLen:float) =
+        let xLen = rect.Xaxis.Length
+        let yLen = rect.Yaxis.Length
+        let xCount = 2 + int (xLen / (xMaxLen*1.00001))
+        let yCount = 2 + int (yLen / (yMaxLen*1.00001))
+        Rect2D.grid (rect, xCount, yCount)

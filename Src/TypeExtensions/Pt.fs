@@ -8,7 +8,7 @@ open System
 /// It only contains extension members for type Pt.
 [<AutoOpen>]
 module AutoOpenPt =
-    open Util
+    open UtilEuclid
 
     type Pt with
 
@@ -107,7 +107,7 @@ module AutoOpenPt =
             let y = o.Y-p.Y
             if abs(x) < zeroLengthTolerance && abs(y) < zeroLengthTolerance then p.FailedAngle2PiTo(o)                
             let a = Math.Atan2(y, x)
-            if a < 0. then  a + Util.twoPi
+            if a < 0. then  a + UtilEuclid.twoPi
             else            a
 
         /// Returns the angle in Degrees from this point to another point.

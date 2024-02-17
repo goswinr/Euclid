@@ -10,7 +10,7 @@ namespace Euclid
 
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>]  see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
-open Euclid.Util
+open Euclid.UtilEuclid
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 
 #nowarn "44" // for internal inline constructors and hidden obsolete members for error cases
@@ -39,7 +39,7 @@ type UnitVc =
         if Double.IsNaN x || Double.IsNaN y || Double.IsInfinity x || Double.IsInfinity y  then
             EuclidException.Raise "Euclid.UnitVc Constructor failed for x:%g, y:%g"  x y
         let lenSq = x*x + y*y // TODO : with this test all  operations are 2.5 times slower
-        if Util.isNotOne lenSq then
+        if UtilEuclid.isNotOne lenSq then
             EuclidException.Raise "Euclid.UnitVc Constructor failed for x:%g and y:%g. The length needs to be 1.0." x y
         #endif
         {X=x; Y=y}

@@ -120,7 +120,7 @@ module Similarity2D =
     /// But any similarity that could be achieved by rotation will not be discovered.
     /// The string is used as a unique category identifier.
     let getSimilarityData (ptss:ResizeArray<string*ResizeArray<Pt>>) : ObjectToCheck =
-        let sptss = ptss |> ResizeArray.sortBy fst
+        let sptss = ptss |> ResizeArr.sortBy fst
         // compute the overall bounding Rectangle and the shifting needed to move Rectangle to origin:
         let mutable bb = BRect.createFromIList(sptss.[0] |> snd)
         for i=1 to sptss.Count-1 do
@@ -150,7 +150,7 @@ module Similarity2D =
         let unique = ResizeArray<ObjectToCheck>()
         let groups = Dictionary<int, ResizeArray<'T>>()
         for sid, it in Seq.zip sims items do
-            match unique|> ResizeArray.tryFindIndex (areSimilar tolerance sid) with
+            match unique|> ResizeArr.tryFindIndex (areSimilar tolerance sid) with
             | Some i ->
                 groups.[i].Add it
             | None ->

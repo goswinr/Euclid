@@ -8,7 +8,7 @@ open System
 /// It only contains extension members for type UnitVec.
 [<AutoOpen>]
 module AutoOpenUnitVec =
-    open Util
+    open UtilEuclid
 
     /// Returns distance between the tips of two 3D unit vectors.
     let inline private vecDist3(ax:float, ay:float, az:float, bx:float, by:float, bz:float) =
@@ -93,7 +93,7 @@ module AutoOpenUnitVec =
             if abs(v.X) < zeroLengthTolerance && abs(v.Y) < zeroLengthTolerance then v.FailedDirection2PiInXY() // don't compose error msg directly here to keep inlined code small.
             let a = Math.Atan2(v.Y, v.X)
             if a < 0. then
-                a + Util.twoPi
+                a + UtilEuclid.twoPi
             else
                 a
 
@@ -523,7 +523,7 @@ module AutoOpenUnitVec =
         static member inline angle2PiInXY (a:UnitVec, b:UnitVec) =
             let r = b.Direction2PiInXY  - a.Direction2PiInXY
             if r >= 0. then  r
-            else r + Util.twoPi
+            else r + UtilEuclid.twoPi
 
         /// Returns positive angle between two 3D unit vectors in Degrees,
         /// Ignores vector orientation.
@@ -777,7 +777,7 @@ module AutoOpenUnitVec =
                 let p = ende - start*dot  // a vector perpendicular to start and in the same plane with ende. 
                 let perp = UnitVec.create(p.X, p.Y, p.Z)
                 let theta = ang*rel // the angle part we want for the result 
-                let theta360 = (theta+Util.twoPi) % Util.twoPi // make sure it is i the range 0.0 to 2 Pi (360 degrees)
+                let theta360 = (theta+UtilEuclid.twoPi) % UtilEuclid.twoPi // make sure it is i the range 0.0 to 2 Pi (360 degrees)
                 let cosine = cos (theta360) 
                 let sine   = sqrt(1.0 - cosine*cosine)                 
                 let vx = start * cosine 
@@ -798,7 +798,7 @@ module AutoOpenUnitVec =
         ///<param name="vB" > The unit vector of the second line.</param>
         ///<param name="relAngleDiscriminant"> This is an optional tolerance for the internally calculated relative Angle Discriminant.
         /// The default value corresponds to approx 0.25 degree. Below this angle vectors are considered parallel.
-        /// Use the module Euclid.Util.RelAngleDiscriminant to set another tolerance here.</param>
+        /// Use the module Euclid.UtilEuclid.RelAngleDiscriminant to set another tolerance here.</param>
         ///<returns> For (almost) zero length or (almost) parallel vectors: ValueNone
         /// Else ValueSome with a tuple of the parameters at which the two infinite 2D lines intersect to each other.
         /// The tuple's order corresponds to the input order.</returns>
@@ -820,7 +820,7 @@ module AutoOpenUnitVec =
             let discriminant = 1.0 - bb // never negative, the dot product cannot be bigger than the two square length multiplied with each other
             let div = bb // never negative
             // getting the relation between the sum and the subtraction gives a good estimate of the angle between the lines
-            // see module Euclid.Util.RelAngleDiscriminant
+            // see module Euclid.UtilEuclid.RelAngleDiscriminant
             let rel = discriminant/div
             if rel < float relAngleDiscriminant then //parallel
                 ValueNone
