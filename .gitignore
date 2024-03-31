@@ -2,6 +2,8 @@
 obj/
 bin/
 fable_modules/
+Tests/node_modules/
+Tests/dist/
 dist/TS/
 distTS/
 

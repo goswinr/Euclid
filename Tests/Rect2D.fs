@@ -1,18 +1,21 @@
 module Tests
 
-open Expecto
 open Euclid
+
+#if FABLE_COMPILER
+open Fable.Mocha
+#else
+open Expecto
+#endif
 
 let inline eq a b = Pt.distance a b < 1e-9
 
+let o = Pt.Origin
+let x = Vc.Xaxis
+let y = Vc.Yaxis
+let rect = Rect2D.create(o,x,y)
 
-[<Tests>]
-let rect2D =
-  let o = Pt.Origin
-  let x = Vc.Xaxis
-  let y = Vc.Yaxis
-  let rect = Rect2D.create(o,x,y)
-
+let rect2DTests =
   testList "samples" [
 
     test "Rect2D.grid" {

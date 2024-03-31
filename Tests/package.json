@@ -1,0 +1,10 @@
+{
+  "type": "module",
+  "scripts": {
+    "pretest": "fable ../Euclid.fsproj --verbose && dotnet fable --verbose -o dist/tests --nocache" ,
+    "test": "mocha dist/tests"
+  },
+  "dependencies": {
+    "mocha": "^10.2.0"
+  }
+}

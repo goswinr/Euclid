@@ -1,22 +1,19 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
-    <GenerateProgramFile>false</GenerateProgramFile>
+    <!-- Exe = console app -->
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
   </PropertyGroup>
-
   <ItemGroup>
-    <ProjectReference Include="..\Euclid.fsproj" />
-    <Compile Include="Sample.fs" />
+    <!-- <Reference Include="netstandard" /> -->
+    <PackageReference Include="NETStandard.Library" Version="2.0.3" />
+    <ProjectReference Include="../Euclid.fsproj" />
+    <Compile Include="Rect2D.fs" />
     <Compile Include="Main.fs" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="Expecto" Version="10.1.0" />
-    <PackageReference Include="YoloDev.Expecto.TestSdk" Version="0.14.3" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
+    <PackageReference Include="Fable.Mocha" Version="2.17.0" />
   </ItemGroup>
-
-
 </Project>
