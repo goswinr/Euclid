@@ -3,8 +3,9 @@ namespace Euclid
 open System
 
 
-module internal Arr
- =
+
+
+module internal Arr =
 
     /// Returns the index of the smallest element.
     let minIndex (xs:'T[]) =
@@ -34,7 +35,7 @@ module internal Arr
 
 // written with lowercase so that it does not get shadowed by the ResizeArray library if used together with it in Fable.
 module internal ResizeArr =
-        
+
 
         /// just like Array.create.
         let inline create (count:int) (x:'T) =
@@ -143,8 +144,8 @@ module internal ResizeArr =
             #else
             xs.ConvertAll (System.Converter mapping) // not supported in Fable
             #endif
-            
-            
+
+
 
 [<AutoOpen>]
 module internal AutoOpenResizeArrayExtensions =

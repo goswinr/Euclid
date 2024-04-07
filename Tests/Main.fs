@@ -1,10 +1,12 @@
-﻿module Euclid.Tests
+module Euclid.Tests
 
 #if FABLE_COMPILER
 
 open Fable.Mocha
-Mocha.runTests Tests.rect2DTests //|> ignore
 
+Mocha.runTests Rect2D.tests
+|||
+Mocha.runTests Polyline.tests
 
 
 
@@ -14,7 +16,9 @@ open Expecto
 [<EntryPoint>]
 let main argv =
 
-    runTestsWithCLIArgs [] [||] Tests.rect2DTests
+    runTestsWithCLIArgs [] [||] Rect2D.tests
+    |||
+    runTestsWithCLIArgs [] [||] Polyline.tests
     |||
     0
 

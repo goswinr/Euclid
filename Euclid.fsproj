@@ -2,7 +2,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFrameworks>net472;net6.0</TargetFrameworks>
+    <TargetFramework>net6.0</TargetFramework>
+    <!-- <TargetFrameworks>net472;net6.0</TargetFrameworks> -->
     <!--netstandard2.0 does not support [<IsByRefLike>] nor [<IsReadOnly>] -->
     <LangVersion>preview</LangVersion>
     <OtherFlags>$(OtherFlags)--warnon:3390</OtherFlags>
@@ -19,14 +20,11 @@
     <Title>Euclid</Title>
     <Product>Euclid</Product>
     <PackageId>Euclid</PackageId>
-    <Version>0.6.1</Version>
-    <AssemblyVersion>0.6.1</AssemblyVersion>
-    <FileVersion>0.6.1</FileVersion>
+    <Version>0.7.0</Version>
+    <AssemblyVersion>0.7.0</AssemblyVersion>
+    <FileVersion>0.7.0</FileVersion>
     <PackageReleaseNotes>
-      - remove reflection form error messages for nicer Fable output
-      - rename Rect.Rotate to Rect.RotateOrientation
-      - add Rect.grid
-      - fix Rect.subdivide
+      - refactor 2D offset
     </PackageReleaseNotes>
     <Authors>GoswinR</Authors>
     <Copyright>Goswin Rothenthal 2019</Copyright>
@@ -52,7 +50,7 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- otherwise the minimum FSharp.Core version would be forced by the SDK used for building it. This would be needlessly too high-->
-    <PackageReference Update="FSharp.Core" Version="4.5.2" />
+    <PackageReference Update="FSharp.Core" Version="5.0.2" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
     <None Include="README.md" />
     <None Include="Doc/READMEnuget.md" Pack="true" PackagePath="" />

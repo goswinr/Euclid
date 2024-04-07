@@ -43,7 +43,27 @@ Just run `dotnet build` in the root directory.
 To just run once: `dotnet run Tests\Euclid.Tests.fsproj`
 To run and watch the tests use: `dotnet watch --project Tests\Euclid.Tests.fsproj run`
 
+or:
+
+```bash
+cd Tests
+```
+
+For testing with .NET using Expecto run
+
+```bash
+dotnet run
+```
+
+for testing with Fable.Mocha run
+
+```bash
+npm test
+```
+
 ### Release Notes
+`0.7.0`
+- refactor offset
 
 `0.6.1`
 - remove reflection form error messages for nicer Fable output

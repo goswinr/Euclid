@@ -10,6 +10,7 @@
     <PackageReference Include="NETStandard.Library" Version="2.0.3" />
     <ProjectReference Include="../Euclid.fsproj" />
     <Compile Include="Rect2D.fs" />
+    <Compile Include="Polyline.fs" />
     <Compile Include="Main.fs" />
   </ItemGroup>
   <ItemGroup>
