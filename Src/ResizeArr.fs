@@ -47,6 +47,16 @@ module internal ResizeArr =
         let inline length (xs: ResizeArray<'T>) =
             xs.Count
 
+        let init (count:int) (f:int->'T) =
+            let r = new ResizeArray<'T>(count)
+            for i=0 to count-1 do r.Add(f i)
+            r
+
+        let singleton (x:'T) =
+            let r = new ResizeArray<'T>(1)
+            r.Add(x)
+            r
+
         /// Yields looped Seq from (first, second)  up to (last, first).
         /// The resulting seq has the same element count as the input Rarr.
         let thisNext (rarr:ResizeArray<'T>) =

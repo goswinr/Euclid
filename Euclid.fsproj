@@ -25,6 +25,7 @@
     <FileVersion>0.7.0</FileVersion>
     <PackageReleaseNotes>
       - refactor 2D offset
+      - add Topology sorting
     </PackageReleaseNotes>
     <Authors>GoswinR</Authors>
     <Copyright>Goswin Rothenthal 2019</Copyright>

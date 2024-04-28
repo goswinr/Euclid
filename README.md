@@ -64,6 +64,7 @@ npm test
 ### Release Notes
 `0.7.0`
 - refactor offset
+- add Topology sorting
 
 `0.6.1`
 - remove reflection form error messages for nicer Fable output

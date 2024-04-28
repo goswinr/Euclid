@@ -1,4 +1,4 @@
-module Euclid.Tests
+﻿module Euclid.Tests
 
 #if FABLE_COMPILER
 
@@ -7,6 +7,8 @@ open Fable.Mocha
 Mocha.runTests Rect2D.tests
 |||
 Mocha.runTests Polyline.tests
+|||
+Mocha.runTests Topo.tests
 
 
 
@@ -20,6 +22,6 @@ let main argv =
     |||
     runTestsWithCLIArgs [] [||] Polyline.tests
     |||
-    0
+    runTestsWithCLIArgs [] [||] Topo.tests
 
 #endif

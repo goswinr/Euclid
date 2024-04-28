@@ -33,14 +33,12 @@ For the full API see [fuget.org](https://www.fuget.org/packages/Euclid) for now.
 ### License
 [MIT](https://raw.githubusercontent.com/goswinr/Euclid/main/LICENSE.txt)
 
-### Build
-Just run `dotnet build` in the root directory.
-
-### Test
-To just run once: `dotnet run Tests\Euclid.Tests.fsproj`
-To run and watch the tests use: `dotnet watch --project Tests\Euclid.Tests.fsproj run`
 
 ### Release Notes
+
+`0.7.0`
+- refactor offset
+- add Topology sorting
 
 `0.6.1`
 - remove reflection form error messages for nicer Fable output
