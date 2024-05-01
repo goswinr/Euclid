@@ -566,10 +566,10 @@ type Rect2D =
         Rect2D(r.Origin - x - y, r.Xaxis + x * 2., r.Yaxis + y * 2.)
 
     /// Create a 2D Rectangle from the origin point, an x-edge and an y-edge.
-    /// Checks for counter-clockwise order of x and y.
-    /// Checks for perpendicularity.
+    /// Fails if x and y are not in counter-clockwise order.
+    /// Fails if x and y are not perpendicularity.
     /// Fails on vectors shorter than 1e-9.
-    static member create(origin, x:Vc, y:Vc) =
+    static member createFromVectors(origin, x:Vc, y:Vc) =
         if x.LengthSq < 1e-9 then EuclidException.Raise "Euclid.Rect2D.create(origin, x:Vc, y:Vc): X-axis is too short:\r\n%O" y
         if y.LengthSq < 1e-9 then EuclidException.Raise "Euclid.Rect2D.create(origin, x:Vc, y:Vc): Y-axis is too short:\r\n%O" y
         //zeroLengthTolerance seems too strict for dot product:
@@ -579,13 +579,15 @@ type Rect2D =
 
 
     /// Creates a 2D rectangle from a origin point, the X vector and Y size.
-    static member create (origin:Pt, x:Vc, sizeY) =
+    /// Fails on negative Y size.
+    static member createFromXVectorAndWidth (origin:Pt, x:Vc, sizeY) =
         if sizeY < 0. then EuclidException.Raise "Euclid.Rect2D.create(origin:Pt, x:Vc, sizeY) sizeY is negative: %g, x is: %O, origin: %O"  sizeY  x.AsString  origin.AsString
         let y = x.Rotate90CCW * sizeY
         Rect2D(origin, x, y)
 
-    /// Creates a 2D rectangle from a origin point, the X direction, the total X and Y size.
-    static member create (origin:Pt, directionX:UnitVc, sizeX, sizeY) =
+    /// Creates a 2D rectangle from an origin point, the X direction as unit vector, the size in  X and Y direction.
+    /// Fails on negative sizes.
+    static member createFromDirectionAndSizes (origin:Pt, directionX:UnitVc, sizeX, sizeY) =
         if sizeX < 0. then EuclidException.Raise "Euclid.Rect2D.create(origin:Pt, directionX:UnitVc, sizeX, sizeY) sizeX is negative: %g, sizeY is: %g, origin: %O"  sizeX sizeY  origin.AsString
         if sizeY < 0. then EuclidException.Raise "Euclid.Rect2D.create(origin:Pt, directionX:UnitVc, sizeX, sizeY) sizeY is negative: %g, sizeX is: %g, origin: %O"  sizeY sizeX  origin.AsString
         let x = directionX * sizeX
@@ -615,21 +617,23 @@ type Rect2D =
     static member createFromBRect (b:BRect) =
         Rect2D(b.MinPt, Vc.Xaxis*b.SizeX, Vc.Yaxis*b.SizeY)
 
-    /// Creates a 2D rectangle from a center point, the X direction, the total X and Y size.
-    static member createFromCenter (center:Pt, directionX:UnitVc, sizeX, sizeY) =
+    /// Creates a 2D rectangle from a center point, the X direction, the X and the Y size.
+    /// Fails on negative sizes.
+    static member createFromCenterAndDirection (center:Pt, directionX:UnitVc, sizeX, sizeY) =
         if sizeX < 0. then EuclidException.Raise "Euclid.Rect2D.createFromCenter(center:Pt, directionX:UnitVc, sizeX, sizeY) sizeX is negative: %g, sizeY is: %g, center: %O"  sizeX sizeY  center.AsString
         if sizeY < 0. then EuclidException.Raise "Euclid.Rect2D.createFromCenter(center:Pt, directionX:UnitVc, sizeX, sizeY) sizeY is negative: %g, sizeX is: %g, center: %O"  sizeY sizeX  center.AsString
         let x = directionX * sizeX
         let y = directionX.Rotate90CCW * sizeY
         Rect2D(center - x * 0.5 - y * 0.5, x, y)
 
-    /// Creates a 2D rectangle from a center point, the X vector and Y size.
-    static member createFromCenter (center:Pt, x:Vc, sizeY) =
+    /// Creates a 2D rectangle from a center point, the X vector and the Y size.
+    /// Fails on negative Y size.
+    static member createFromCenterAndVector (center:Pt, x:Vc, sizeY) =
         if sizeY < 0. then EuclidException.Raise "Euclid.Rect2D.createFromCenter(center:Pt, x:Vc, sizeY) sizeY is negative: %g, x is: %O, center: %O"  sizeY  x.AsString  center.AsString
         let y = x.Rotate90CCW * sizeY
         Rect2D(center - x * 0.5 - y * 0.5, x, y)
 
-    /// Creates a 2D rectangle from three points. Fails on bad input.
+    /// Creates a 2D rectangle from three points. Fails if points are too close to each other or all colinear.
     /// The Origin, a point in X-axis direction and length, and a point for the length in Y-axis direction.
     /// Origin and x-point define the X-axis orientation of the Rectangle.
     /// The y-point only defines the length and side of the Y axis.
@@ -666,7 +670,7 @@ type Rect2D =
            //Rect2D(origin + y, xv, -y) //alternative valid result: If the point Y is on the right side of the X-axis the origin will be at point 3, X at point 2.
            Rect2D(xPt, -x, yr) //the origin will be at point x, and the end of the x-Axis at the origin.
 
-    /// Tries to create a 2D rectangle from three points. Returns None on bad input.
+    /// Tries to create a 2D rectangle from three points. Returns None if points are too close to each other or all colinear.
     /// The Origin, a point in X-axis direction and length, and a point for the length in Y-axis direction.
     /// Origin and x-point define the X-axis orientation of the Rectangle.
     /// The y-point only defines the length and side of the Y axis.

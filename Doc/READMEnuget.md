@@ -35,6 +35,9 @@ For the full API see [fuget.org](https://www.fuget.org/packages/Euclid) for now.
 
 
 ### Release Notes
+`0.8.0`
+- fix line splitting
+- rename Rect.create functions
 
 `0.7.0`
 - refactor offset

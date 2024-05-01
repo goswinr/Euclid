@@ -601,9 +601,9 @@ type Rect3D =
         Rect3D(r.Origin-x-y, r.Xaxis+x*2., r.Yaxis+y*2.)
 
     /// Create a 3D Rectangle from the origin point, an x-edge and an y-edge.
-    /// Checks for perpendicularity.
+    /// Fails if x and y are not perpendicularity.
     /// Fails on vectors shorter than 1e-9.
-    static member create(origin, x:Vec, y:Vec) =
+    static member createFromVectors(origin, x:Vec, y:Vec) =
         if x.LengthSq < 1e-9 then EuclidException.Raise "Euclid.Rect3D.create(origin, x:Vec, y:Vec): X-axis is too short:\r\n%O" y
         if y.LengthSq < 1e-9 then EuclidException.Raise "Euclid.Rect3D.create(origin, x:Vec, y:Vec): Y-axis is too short:\r\n%O" y
         //zeroLengthTolerance seems too strict for dot product:
@@ -612,6 +612,7 @@ type Rect3D =
 
     /// Give PPlane and sizes.
     /// The Rect3D's Origin will be at the plane's Origin.
+    /// Fails on negative sizes.
     static member createFromPlane (pl:PPlane, sizeX:float, sizeY:float) =
         if sizeX < 0. then EuclidException.Raise "Euclid.Rect3D.createFromPlane sizeX is negative: %g, sizeY is: %g, plane: %O"  sizeX sizeY  pl
         if sizeY < 0. then EuclidException.Raise "Euclid.Rect3D.createFromPlane sizeY is negative: %g, sizeX is: %g, plane: %O"  sizeY sizeX  pl
@@ -619,6 +620,7 @@ type Rect3D =
 
     /// Give PPlane and sizes.
     /// The Rect3D's Center will be at the plane's Origin.
+    /// Fails on negative sizes.
     static member createCenteredFromPlane (pl:PPlane, sizeX:float, sizeY:float) =
         if sizeX < 0. then EuclidException.Raise "Euclid.Rect3D.createCenteredFromPlane sizeX is negative: %g, sizeY is: %g, plane: %O"  sizeX sizeY  pl
         if sizeY < 0. then EuclidException.Raise "Euclid.Rect3D.createCenteredFromPlane sizeY is negative: %g, sizeX is: %g, plane: %O"  sizeY sizeX  pl
@@ -636,10 +638,10 @@ type Rect3D =
     static member createUnchecked (origin, x:Vec, y:Vec) =
         Rect3D(origin, x, y)
 
-    /// Creates a 3D rectangle from three points. Fails on bad input.
+    /// Creates a 3D rectangle from three points. Fails if points are too close to each other or all colinear.
     /// The Origin, a point in X-axis direction and length, and a point for the length in Y-axis direction.
     /// Origin and x-point define the X-axis orientation of the Rectangle.
-    /// The y-point only defines the length and side of the Y axis.    ///
+    /// The y-point only defines the length and side of the Y axis.
     ///
     ///   local
     ///   Y-Axis (Height2D)
@@ -665,7 +667,7 @@ type Rect3D =
         let yr = yu * (yu *** y) // get the y point projected on the y axis
         Rect3D(origin, x, yr)
 
-    /// Tries to create a 3D rectangle from three points. Returns None on bad input.
+    /// Tries to create a 3D rectangle from three points. Returns None if points are too close to each other or all colinear..
     /// The Origin, a point in X-axis direction and length, and a point for the length in Y-axis direction.
     /// Origin and x-point define the X-axis orientation of the Rectangle.
     /// The y-point only defines the length and side of the Y axis.

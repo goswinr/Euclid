@@ -2,9 +2,6 @@ namespace Euclid
 
 open System
 
-
-
-
 module internal Arr =
 
     /// Returns the index of the smallest element.
@@ -47,12 +44,12 @@ module internal ResizeArr =
         let inline length (xs: ResizeArray<'T>) =
             xs.Count
 
-        let init (count:int) (f:int->'T) =
+        let inline init (count:int) (f:int->'T) =
             let r = new ResizeArray<'T>(count)
             for i=0 to count-1 do r.Add(f i)
             r
 
-        let singleton (x:'T) =
+        let inline singleton (x:'T) =
             let r = new ResizeArray<'T>(1)
             r.Add(x)
             r

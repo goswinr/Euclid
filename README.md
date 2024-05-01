@@ -62,6 +62,11 @@ npm test
 ```
 
 ### Release Notes
+
+`0.8.0`
+- fix line splitting
+- rename Rect.create functions
+
 `0.7.0`
 - refactor offset
 - add Topology sorting

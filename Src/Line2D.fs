@@ -640,11 +640,11 @@ type Line2D =
     /// Checks if two 2D Lines are equal within tolerance.
     /// Identical Lines in opposite directions are not considered equal.
     /// Use a tolerance of 0.0 to check for an exact match.
-    static member inline equals (tol:float) (a:Line2D) (b:Line2D) =        
+    static member inline equals (tol:float) (a:Line2D) (b:Line2D) =
         abs (a.FromX - b.FromX) <= tol &&
         abs (a.FromY - b.FromY) <= tol &&
         abs (a.ToX   - b.ToX  ) <= tol &&
-        abs (a.ToY   - b.ToY  ) <= tol 
+        abs (a.ToY   - b.ToY  ) <= tol
 
     /// Checks if two 2D lines are coincident within tolerance.
     /// This means that lines are parallel within 0.25 degrees
@@ -886,7 +886,7 @@ type Line2D =
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     static member inline extendRel (relAtStart:float) (relAtEnd:float) (ln:Line2D) =
         ln.ExtendRel(relAtStart, relAtEnd)
-    
+
     /// Extend 2D line by relative amount at start.
     /// A relative amount of 0.5 extends the line by half its length.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -1023,40 +1023,42 @@ type Line2D =
         Line2D.divide k ln
 
 
-    
+
     /// Divides a 2D line into given amount of segments.
     /// Includes a gap between the segments. But not at the start or end.
-    /// Returns an array of 2D Lines
+    /// Returns an array of 2D Lines.
+    /// Returns an empty array if the length of the line is less than gap-size x segment-count-minus-1.
     static member split (gap:float) (segments:int) (ln:Line2D) : Line2D[] =
         if segments <= 0  then
             EuclidException.Raise "Euclid.Line2D.split failed for %d segments. Minimum is one. for %O"  segments ln
         let v = ln.Vector
         let len = v.Length
-        let segLen = (len - gap * float (segments-1)) / float segments
+        let lenMinusGaps = len - gap * float (segments-1)
+        let segLen = lenMinusGaps / float segments
         if segLen < zeroLengthTolerance then
             [||]
         else
-            let lns = Array.zeroCreate segments 
-            let vx = v.X 
-            let vy = v.Y 
+            let lns = Array.zeroCreate segments
+            let vx = v.X
+            let vy = v.Y
             let x = ln.FromX
             let y = ln.FromY
             for i = 0 to segments-1 do
                 let g = float i
                 let s = float (i+1)
-                let sf = g*segLen + g*gap
-                let ef = s*segLen + g*gap
+                let sf = (g*segLen + g*gap)/len
+                let ef = (s*segLen + g*gap)/len
                 let xs = x + vx*sf
                 let ys = y + vy*sf
                 let xe = x + vx*ef
                 let ye = y + vy*ef
                 lns.[i] <- Line2D(xs,ys,xe,ye)
             // correct last point to avoid numerical errors
-            lns.[segments-1] <- Line2D.setEnd ln.To lns.[segments-1]              
+            lns.[segments-1] <- Line2D.setEnd ln.To lns.[segments-1]
             lns
 
     /// Divides a 2D line into as many as segments as possible respecting the minimum segment length and the gap.
-    /// Includes a gap between the segments.
+    /// Includes a gap between the segments. But not at the start or end.
     /// Returns an array of 2D Lines
     /// The input minSegmentLength is multiplied by factor 1.000001 of to avoid numerical errors.
     /// That means in an edge case there are more segments returned, not fewer.
@@ -1069,7 +1071,7 @@ type Line2D =
 
 
     /// Divides a 2D line into as few as segments as possible respecting the maximum segment length and the gap.
-    /// Includes a gap between the segments.
+    /// Includes a gap between the segments. But not at the start or end.
     /// Returns an array of 2D Lines
     /// The input maxSegmentLength is multiplied by factor 0.999999 of to avoid numerical errors.
     /// That means in an edge case there are fewer segments returned, not more.
@@ -1078,7 +1080,7 @@ type Line2D =
         let k = int ((len+gap) / (maxSegmentLength+gap)*0.999999523) + 1 // 8 float steps below 1.0 https://float.exposed/0x3f7ffff8
         Line2D.split gap k ln
 
-            
+
 
     //-----------------------------------------------------------------------------------------------------------
     //------------------------------Line Line Intersection : ----------------------------------------------------
@@ -1556,8 +1558,8 @@ type Line2D =
             None
         | TooShortBoth -> // TODO or return a point if two zero length lines are on the same point?
             None
-           
-        
+
+
 
     /// Returns the distance between two finite 2D lines.
     /// For parallel lines the distance is calculate form the actual finit elements. (like in the other cases.)

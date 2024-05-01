@@ -20,12 +20,12 @@
     <Title>Euclid</Title>
     <Product>Euclid</Product>
     <PackageId>Euclid</PackageId>
-    <Version>0.7.0</Version>
-    <AssemblyVersion>0.7.0</AssemblyVersion>
-    <FileVersion>0.7.0</FileVersion>
+    <Version>0.7.1</Version>
+    <AssemblyVersion>0.7.1</AssemblyVersion>
+    <FileVersion>0.7.1</FileVersion>
     <PackageReleaseNotes>
-      - refactor 2D offset
-      - add Topology sorting
+      - fix line splitting
+      - rename Rect.create functions
     </PackageReleaseNotes>
     <Authors>GoswinR</Authors>
     <Copyright>Goswin Rothenthal 2019</Copyright>
