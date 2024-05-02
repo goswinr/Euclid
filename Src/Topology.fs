@@ -79,7 +79,7 @@ module Topology  =
     /// To reverse a 'T in place it uses the reverseInPlace function that takes the index of the element and the element itself as parameter.
     /// e.g. the reverseInPlace function might just update an item at the given index in the array.
     /// Depending on the structure of 'T the index might not be need  to reverse an element in place.
-    static member sortToLoopWithReversing3D (getLine: 'T -> Line3D, reverseInPlace: int -> 'T -> unit, xs:ResizeArray<'T>) : unit =
+    let sortToLoopWithReversing3D (getLine: 'T -> Line3D, reverseInPlace: int -> 'T -> unit, xs:ResizeArray<'T>) : unit =
         for i = 0 to xs.Count - 2 do // only run till second last
             let thisLine = getLine xs.[i]
             // TODO could be optimized using a R-Tree for very large lists instead of minBy function
@@ -102,7 +102,7 @@ module Topology  =
     /// Reverses the input in place where required.
     /// e.g. the reverseInPlace function might just update an item at the given index in the array.
     /// Depending on the structure of 'T the index might not be need  to reverse an element in place.
-    static member sortToLoopWithReversing2D (getLine: 'T -> Line2D, reverseInPlace: int -> 'T -> unit, xs:ResizeArray<'T>) : unit =
+    let sortToLoopWithReversing2D (getLine: 'T -> Line2D, reverseInPlace: int -> 'T -> unit, xs:ResizeArray<'T>) : unit =
         for i = 0 to xs.Count - 2 do // only run till second last
             let thisLine = getLine xs.[i]
             // TODO could be optimized using a R-Tree for very large lists instead of minBy function
