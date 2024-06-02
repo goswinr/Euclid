@@ -19,7 +19,7 @@ All primitive types are immutable and functions are curried where appropriate.
 This library is intended to be used for design, construction and manufacturing too.
 So it is using double precision floating point numbers for all values. (While most geometry libraries for games use single precision floats.)
 
-This library can be compiled todo JavaScript via [Fable](https://fable.io/) too.
+This library can be compiled to JavaScript via [Fable](https://fable.io/) too.
 
 See [Euclid.Rhino](https://github.com/goswinr/Euclid.Rhino) for converting form and to [Rhino3D](https://www.rhino3d.com/) geometry.
 
