@@ -37,7 +37,7 @@ module AutoOpenPnt =
         member inline pt.WithZ z = Pnt (pt.X, pt.Y, z)
 
         /// Returns the distance between two 3D points.
-        member inline p.DistanceTo (b:Pnt) = 
+        member inline p.DistanceTo (b:Pnt) =
             let x = p.X-b.X
             let y = p.Y-b.Y
             let z = p.Z-b.Z
@@ -45,7 +45,7 @@ module AutoOpenPnt =
 
         /// Returns the squared distance between two 3D points.
         /// This operation is slightly faster than the distance function, and sufficient for many algorithms like finding closest points.
-        member inline p.DistanceToSquare (b:Pnt) = 
+        member inline p.DistanceToSquare (b:Pnt) =
             let x = p.X-b.X
             let y = p.Y-b.Y
             let z = p.Z-b.Z
@@ -66,17 +66,17 @@ module AutoOpenPnt =
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
         member p.FailedWithDistanceFromOrigin(l) = EuclidException.Raise "Euclid.Pnt.WithDistFromOrigin %O is too small to be scaled to length %g." p l
-        
+
         /// Returns new 3D point with given distance from Origin by scaling it up or down.
         member inline pt.WithDistanceFromOrigin (l:float) =
             let d = pt.DistanceFromOrigin
-            if d < zeroLengthTolerance then pt.FailedWithDistanceFromOrigin l // don't compose error msg directly here to keep inlined code small.            
+            if isTooTiny d then pt.FailedWithDistanceFromOrigin l // don't compose error msg directly here to keep inlined code small.
             pt * (l/d)
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
         member p.FailedDirectionDiamondInXYTo(o) = EuclidDivByZeroException.Raise "Euclid.Pnt.DirectionDiamondInXYTo failed for too short distance between %O and %O." p o
-            
+
         /// Returns the Diamond Angle from this point to another point projected in X-Y plane.
         /// The diamond angle is always positive and in the range of 0.0 to 4.0 (for 360 Degrees)
         /// 0.0 = Xaxis, going Counter-Clockwise. Ignoring Z component.
@@ -85,8 +85,8 @@ module AutoOpenPnt =
         member inline p.DirectionDiamondInXYTo(o:Pnt) =
             // https://stackoverflow.com/a/14675998/969070
             let x = o.X-p.X
-            let y = o.Y-p.Y           
-            if abs(x) < zeroLengthTolerance && abs(y) < zeroLengthTolerance then p.FailedDirectionDiamondInXYTo(o) // don't compose error msg directly here to keep inlined code small.                
+            let y = o.Y-p.Y
+            if isTooTiny (abs(x) + abs(y)) then p.FailedDirectionDiamondInXYTo(o) // don't compose error msg directly here to keep inlined code small.
             if y >= 0.0 then
                 if x >= 0.0 then
                     y/(x+y)
@@ -109,7 +109,7 @@ module AutoOpenPnt =
             // https://stackoverflow.com/a/14675998/969070
             let x = o.X-p.X
             let y = o.Y-p.Y
-            if abs(x) < zeroLengthTolerance && abs(y) < zeroLengthTolerance then p.FailedAngle2PiInXYTo(o)// don't compose error msg directly here to keep inlined code small.                
+            if isTooTiny (abs(x) + abs(y)) then p.FailedAngle2PiInXYTo(o)// don't compose error msg directly here to keep inlined code small.
             let a = Math.Atan2(y, x)
             if a < 0. then  a + UtilEuclid.twoPi
             else            a
@@ -118,7 +118,7 @@ module AutoOpenPnt =
         /// 0.0 = Xaxis, going Counter-Clockwise till 360.
         member inline p.Angle360InXYTo(o:Pnt) =
             p.Angle2PiInXYTo o |> toDegrees
-        
+
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
         member p.FailedAngle360InXYTo(fromPt:Pnt, toPt:Pnt) = EuclidDivByZeroException.Raise "Euclid.Pnt.closestPointOnLine: Line is too short for fromPt %O to %O and %O" fromPt toPt p
@@ -129,7 +129,7 @@ module AutoOpenPnt =
             let v   = toPt   - fromPt
             let lenSq = v.LengthSq
             let lenSq = v.LengthSq
-            if lenSq < zeroLengthTolSquared then testPt.FailedAngle360InXYTo(fromPt, toPt)
+            if isTooTinySq(lenSq) then testPt.FailedAngle360InXYTo(fromPt, toPt)
             let dot = Vec.dot (v, dir) / lenSq
             if   dot <= 0.0 then  fromPt
             elif dot >= 1.0 then  toPt
@@ -143,7 +143,7 @@ module AutoOpenPnt =
             elif dot >= len then (fromPt+len*uv)
             else                 fromPt+dot*uv
 
-        /// Returns the squared distance between point and finite line segment defined by 
+        /// Returns the squared distance between point and finite line segment defined by
         /// start point, direction and length.
         member inline testPt.DistanceToLineSquare(fromPt:Pnt, uv:UnitVec, len:float) =
             let dir = testPt-fromPt
@@ -152,7 +152,7 @@ module AutoOpenPnt =
             elif dot >= len then testPt.DistanceToSquare (fromPt+len*uv)
             else                 testPt.DistanceToSquare (fromPt+dot*uv)
 
-        /// Returns the squared distance between point and finite line segment defined by 
+        /// Returns the squared distance between point and finite line segment defined by
         /// start point, end point, direction and length.
         /// The last two parameters help speed up calculations.
         member inline testPt.DistanceToLineSquare(fromPt:Pnt, toPt:Pnt, uv:UnitVec, len:float) =
@@ -162,7 +162,7 @@ module AutoOpenPnt =
             elif dot >= len then testPt.DistanceToSquare toPt
             else                 testPt.DistanceToSquare (fromPt+dot*uv)
 
-        /// Returns the distance between point and finite line segment defined by 
+        /// Returns the distance between point and finite line segment defined by
         /// start point, direction and length.
         member inline testPt.DistanceToLine(fromPt:Pnt, uv:UnitVec, len:float) =
             let dir = testPt-fromPt
@@ -170,7 +170,7 @@ module AutoOpenPnt =
             if   dot <= 0.0 then testPt.DistanceToSquare fromPt
             elif dot >= len then testPt.DistanceToSquare (fromPt+len*uv)
             else                 testPt.DistanceToSquare (fromPt+dot*uv)
-        
+
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
         member p.FailedDistanceToLine(fromPt:Pnt, toPt:Pnt) = EuclidDivByZeroException.Raise "Euclid.Pnt.DistanceToLine: Line is too short for fromPt %O to %O and %O" fromPt toPt p
@@ -179,7 +179,7 @@ module AutoOpenPnt =
             let dir = testPt - fromPt
             let v   = toPt   - fromPt
             let lenSq = v.LengthSq
-            if lenSq < zeroLengthTolSquared then testPt.FailedDistanceToLine(fromPt, toPt)
+            if isTooTinySq(lenSq) then testPt.FailedDistanceToLine(fromPt, toPt)
             let dot = Vec.dot (v, dir) / v.LengthSq
             if   dot <= 0.0 then testPt.DistanceTo   fromPt
             elif dot >= 1.0 then testPt.DistanceTo   toPt
@@ -210,7 +210,7 @@ module AutoOpenPnt =
 
         /// Checks if two 3D points are equal within tolerance.
         /// Use a tolerance of 0.0 to check for an exact match.
-        static member inline equals (tol:float) (a:Pnt) (b:Pnt) =            
+        static member inline equals (tol:float) (a:Pnt) (b:Pnt) =
             abs (a.X-b.X) <= tol &&
             abs (a.Y-b.Y) <= tol &&
             abs (a.Z-b.Z) <= tol
@@ -351,30 +351,30 @@ module AutoOpenPnt =
             let y = dirPt.Y - fromPt.Y
             let z = dirPt.Z - fromPt.Z
             let len = sqrt(x*x + y*y + z*z)
-            if len < zeroLengthTolerance then Pnt.failedDistPt(fromPt, dirPt, distance)
+            if isTooTiny len then Pnt.failedDistPt(fromPt, dirPt, distance)
             let fac = distance / len
-            Pnt(fromPt.X + x*fac, 
-                fromPt.Y + y*fac, 
+            Pnt(fromPt.X + x*fac,
+                fromPt.Y + y*fac,
                 fromPt.Z + z*fac)
-            
+
 
         /// Linearly interpolates between two 3D points.
-        /// e.g. rel=0.5 will return the middle point, rel=1.0 the endPoint, 
+        /// e.g. rel=0.5 will return the middle point, rel=1.0 the endPoint,
         /// rel=3.0 a point three times the distance beyond the end point.
         /// Same as Pnt.lerp.
         static member inline divPt(fromPt:Pnt, toPt:Pnt, rel:float) : Pnt =
             Pnt(fromPt.X + (toPt.X-fromPt.X)*rel,
                 fromPt.Y + (toPt.Y-fromPt.Y)*rel,
                 fromPt.Z + (toPt.Z-fromPt.Z)*rel)
-        
-        
+
+
         /// Linearly interpolates between two 3D points.
-        /// e.g. rel=0.5 will return the middle point, rel=1.0 the endPoint, 
+        /// e.g. rel=0.5 will return the middle point, rel=1.0 the endPoint,
         /// rel=3.0 a point three times the distance beyond the end point.
         /// Same as Pnt.divPt.
         static member inline lerp(fromPt:Pnt, toPt:Pnt, rel:float) : Pnt =
-            Pnt.divPt(fromPt, toPt, rel)            
-           
+            Pnt.divPt(fromPt, toPt, rel)
+
 
         /// Returns a point that is at a given Z level,
         /// going from a point in the direction of another point.
@@ -395,25 +395,25 @@ module AutoOpenPnt =
             if v.Length < snapDistance then snapTo else pt
 
         /// Snaps the points coordinate to the given precision.
-        /// e.g. snap 0.1 Pnt(0.123, 0.456, 0) -> Pnt(0.1, 0.5, 0) 
-        /// e.g. snap 10  Pnt(3    , 19   , 0) -> Pnt(0  , 20 , 0) 
-        /// does: (Math.Round (x/precision)) * precision     
+        /// e.g. snap 0.1 Pnt(0.123, 0.456, 0) -> Pnt(0.1, 0.5, 0)
+        /// e.g. snap 10  Pnt(3    , 19   , 0) -> Pnt(0  , 20 , 0)
+        /// does: (Math.Round (x/precision)) * precision
         static member inline snap (precision) (pt:Pnt) =
-            if precision < zeroLengthTolerance then EuclidDivByZeroException.Throw1 "Euclid.Pt.snap: precision too small or negative" precision
+            if isTooTiny (precision) then EuclidDivByZeroException.Throw1 "Euclid.Pt.snap: precision too small or negative" precision
             Pnt( (Math.Round (pt.X/precision)) * precision,
                  (Math.Round (pt.Y/precision)) * precision,
-                 (Math.Round (pt.Z/precision)) * precision)       
+                 (Math.Round (pt.Z/precision)) * precision)
 
         /// Every line has a normal vector in X-Y plane.
-        /// If line is vertical then Xaxis is returned.
         /// Rotated Counter-Clockwise in top view.
         /// The result is unitized.
+        /// If line is vertical then Xaxis is returned.
         /// see also : Vec.perpendicularVecInXY.
         static member normalOfTwoPointsInXY(fromPt:Pnt, toPt:Pnt) =
             let x = toPt.Y - fromPt.Y
             let y = fromPt.X - toPt.X  // this is the same as: Vec.cross v Vec.Zaxis
             let len = sqrt(x*x + y*y)
-            if len < zeroLengthTolerance then Vec.Xaxis
+            if isTooTiny len then Vec.Xaxis
             else Vec(x/len, y/len, 0.0)
 
 
@@ -557,20 +557,20 @@ module AutoOpenPnt =
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
         static member failedProjectedParameter(fromPt:Pnt, v:Vec, testPt:Pnt)= EuclidDivByZeroException.Raise "Euclid.Pnt.projectedParameter: %O is too short for fromPt %O and %O" v fromPt testPt
-                
+
         /// 'fromPt' point and 'v' vector describe an endless 3D line.
         /// 'testPt' gets projected onto this line.
         /// Returns the parameter (or scaling for vector) on this line of the projection.
         static member inline projectedParameter (fromPt:Pnt, v:Vec, testPt:Pnt) =
             let dir = testPt-fromPt
             let lenSq = v.LengthSq
-            if lenSq < zeroLengthTolSquared then Pnt.failedProjectedParameter(fromPt, v, testPt)
+            if isTooTinySq(lenSq) then Pnt.failedProjectedParameter(fromPt, v, testPt)
             Vec.dot (v, dir) / lenSq
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
         static member failedProjectedParameter(fromPt:Pnt, toPt:Pnt, testPt:Pnt)= EuclidDivByZeroException.Raise "Euclid.Pnt.projectedParameter: Line is too short for fromPt %O to %O and %O" fromPt toPt testPt
-        
+
         /// 'fromPt' point and 'toPt' point describe an endless 3D line.
         /// 'testPt' gets projected onto this line.
         /// Returns the parameter (or scaling for vector) on this line of the projection.
@@ -578,5 +578,5 @@ module AutoOpenPnt =
             let dir = testPt - fromPt
             let v   = toPt   - fromPt
             let lenSq = v.LengthSq
-            if lenSq < zeroLengthTolSquared then Pnt.failedProjectedParameter(fromPt, toPt, testPt)
+            if isTooTinySq(lenSq) then Pnt.failedProjectedParameter(fromPt, toPt, testPt)
             Vec.dot (v, dir) / lenSq

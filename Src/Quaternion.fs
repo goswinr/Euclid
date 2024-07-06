@@ -85,31 +85,31 @@ type Quaternion =
     /// The length of this vector is less than one.
     member inline q.Axis = Vec(q.X, q.Y, q.Z)
 
-    /// Get a new Quaternion that rotates around the same axis 
+    /// Get a new Quaternion that rotates around the same axis
     /// but with the different angle. In Radians.
     member q.setAngleInRadians (angleInRadians) =
         let length = sqrt(q.X*q.X + q.Y*q.Y + q.Z*q.Z)
-        if length <  zeroLengthTolerance then
+        if isTooTiny(length) then
             EuclidException.Throw1 "Euclid.Quaternion.setAngleInRadians failed. The length of the axis is too short:" q.Axis
         let sc = 1. / length // inverse for unitizing vector:
         let angHalf = angleInRadians * 0.5
         let sa = sc * sin (angHalf)
-        Quaternion ( q.X * sa, 
-                     q.Y * sa, 
-                     q.Z * sa, 
+        Quaternion ( q.X * sa,
+                     q.Y * sa,
+                     q.Z * sa,
                      cos (angHalf) )
-    
+
     /// Get a new Quaternion that rotates around the same axis
     /// but with the different angle. In Degree.
     member inline q.setAngleInDegrees (angleInDegrees) =
         q.setAngleInRadians (toRadians angleInDegrees)
-    
+
     (* TODO the interpolation follows a Cone. is that correct ?
 
-    /// Does a spherical linear interpolation between quaternions. 
-    /// 'rel' represents the amount of rotation between this quaternion (where rel is 0) 
-    /// and the other (where rel is 1). 
-    /// The parameter 'rel' is NOT clamped.    
+    /// Does a spherical linear interpolation between quaternions.
+    /// 'rel' represents the amount of rotation between this quaternion (where rel is 0)
+    /// and the other (where rel is 1).
+    /// The parameter 'rel' is NOT clamped.
     member q.Slerp (other:Quaternion, rel) =
         if   rel = 0.0 then q
         elif rel = 1.0 then other
@@ -122,7 +122,7 @@ type Quaternion =
             let y2 = other.Y
             let z2 = other.Z
             let w2 = other.W
-            let cosHalfTheta = w * w2 + x * x2 + y * y2 + z * z2        
+            let cosHalfTheta = w * w2 + x * x2 + y * y2 + z * z2
             let sqrSinHalfTheta = 1.0 - cosHalfTheta * cosHalfTheta
             if sqrSinHalfTheta <= 1e-18 then
                 let s = 1.0 - rel
@@ -133,10 +133,10 @@ type Quaternion =
                 let ratioA = sin ((1.0 - rel) * halfTheta) / sinHalfTheta
                 let ratioB = sin (rel * halfTheta) / sinHalfTheta
                 Quaternion (
-                    x * ratioA + x2 * ratioB, 
-                    y * ratioA + y2 * ratioB, 
+                    x * ratioA + x2 * ratioB,
+                    y * ratioA + y2 * ratioB,
                     z * ratioA + z2 * ratioB,
-                    w * ratioA + w2 * ratioB 
+                    w * ratioA + w2 * ratioB
                     )
     *)
 
@@ -147,7 +147,7 @@ type Quaternion =
     /// This constructor does unitizing too.
     static member create (x, y, z, w) =
         let l = sqrt(x*x  + y*y + z*z + w*w)
-        if abs l < zeroLengthTolerance then
+        if isTooTiny (abs l) then
             EuclidException.Raise "Euclid.Quaternion create failed for x:%g, y:%g, z:%g, w:%g. The length needs to be bigger than zero." x y z w
         let sc = 1./l
         Quaternion(x*sc, y*sc, z*sc, w*sc)
@@ -161,12 +161,12 @@ type Quaternion =
     static member inline identity =
         Quaternion(0, 0, 0, 1)
 
-   
+
     /// The created rotation is Clockwise looking in the direction of the vector.
     /// The vector may be of any length but zero.
     static member createFromRadians (axis:Vec, angleInRadians) =
         let length = sqrt(axis.X*axis.X + axis.Y*axis.Y + axis.Z*axis.Z)
-        if length <  zeroLengthTolerance then 
+        if isTooTiny(length) then
             EuclidException.Raise "Euclid.Quaternion.createFromRadians failed too short axis: %O and rotation: %g° Degrees." axis (toDegrees angleInRadians)
         let angHalf = angleInRadians * 0.5
         let sa = sin angHalf
@@ -189,16 +189,16 @@ type Quaternion =
 
     /// Creates a rotation from one vectors direction to another vectors direction.
     /// If the tips of the two vectors are closer than 1e-9 then an identity Quaternion is returned.
-    /// If the tips of the two vectors are almost exactly opposite, deviating less than 1e-6 from line, 
+    /// If the tips of the two vectors are almost exactly opposite, deviating less than 1e-6 from line,
     /// there is no valid unique 180 degree rotation that can be found, so an exception is raised.
     static member inline createVecToVec(vecFrom:UnitVec, vecTo:UnitVec) =
         let v = vecFrom - vecTo
-        if v.LengthSq < 1e-18 then // the vectors are almost the same
+        if v.LengthSq < 1e-24 then // the vectors are almost the same
             Quaternion.identity
         else
             let v = vecFrom + vecTo
-            if v.LengthSq < 1e-12 then // the vectors are almost exactly opposite
-                EuclidException.Raise "Euclid.Quaternion.createVecToVec failed to find a rotation axis for (almost) colinear unit vectors in opposite directions: %O and %O" vecFrom vecTo         
+            if isTooSmallSq v.LengthSq then // the vectors are almost exactly opposite
+                EuclidException.Raise "Euclid.Quaternion.createVecToVec failed to find a rotation axis for (almost) colinear unit-vectors in opposite directions: %O and %O" vecFrom vecTo
             else
                 // cross vectors(vFrom, vTo); // inlined to avoid cyclic dependency
                 Quaternion.create ( vecFrom.Y * vecTo.Z - vecFrom.Z * vecTo.Y
@@ -209,7 +209,7 @@ type Quaternion =
 
     /// Creates a rotation from one vectors direction to another vectors direction.
     /// If the tips of the two vectors unitized are closer than 1e-9 the identity Quaternion is returned.
-    /// If the tips of the two vectors unitized are almost exactly opposite, deviating less than 1e-6 from line (unitized), 
+    /// If the tips of the two vectors unitized are almost exactly opposite, deviating less than 1e-6 from line (unitized),
     /// there is no valid unique 180 degree rotation that can be found, so an exception is raised.
     static member createVecToVec(vecFrom:Vec, vecTo:Vec) =
         let fu =
@@ -217,7 +217,7 @@ type Quaternion =
             let y = vecFrom.Y
             let z = vecFrom.Z
             let length = sqrt(x*x + y*y + z*z)
-            if length <  zeroLengthTolerance then
+            if isTooTiny(length) then
                 EuclidException.Raise "Euclid.Quaternion.createVecToVec failed. The vector is too short: vecFrom: %O" vecFrom
             let sc = 1. / length // inverse for unitizing vector:
             UnitVec.createUnchecked(x*sc, y*sc, z*sc)
@@ -226,18 +226,18 @@ type Quaternion =
             let y = vecTo.Y
             let z = vecTo.Z
             let length = sqrt(x*x + y*y + z*z)
-            if length <  zeroLengthTolerance then
+            if isTooTiny(length) then
                 EuclidException.Raise "Euclid.Quaternion.createVecToVec failed. The vector is too short: vecTo: %O" vecTo
             let sc = 1. / length // inverse for unitizing vector:
             UnitVec.createUnchecked(x*sc, y*sc, z*sc)
-        
+
         let v = fu - tu
-        if v.LengthSq < 1e-18 then // the vectors are almost the same
+        if v.LengthSq < 1e-24 then // the vectors are almost the same
             Quaternion.identity
         else
             let v = fu + tu
-            if v.LengthSq < 1e-12 then // the vectors are almost exactly opposite
-                EuclidException.Raise "Euclid.Quaternion.createVecToVec failed to find a rotation axis for (almost) colinear vectors in opposite directions: %O and %O" vecFrom vecTo      
+            if isTooSmallSq v.LengthSq then // the vectors are almost exactly opposite
+                EuclidException.Raise "Euclid.Quaternion.createVecToVec failed to find a rotation axis for (almost) colinear  (or NaN) vectors in opposite directions: %O and %O" vecFrom vecTo
             else
                 // cross vectors( vFrom, vTo); // inlined to avoid cyclic dependency
                 Quaternion.create ( fu.Y * tu.Z - fu.Z * tu.Y
@@ -461,8 +461,7 @@ type Quaternion =
              y + qw * ty + qz * tx - qx * tz,
              z + qw * tz + qx * ty - qy * tx)
 
-    
+
     //static member inline ( *** ) ( p:Line3D, q:Quaternion) = // defined in Line3D.fs
 
     //static member inline slerp (start:Quaternion, ende:Quaternion, rel) = start.Slerp(ende, rel)
-        

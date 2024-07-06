@@ -26,20 +26,20 @@ module AutoOpenPPlane =
         /// First finds the closet point on plane from a test point.
         /// Then returns a new plane with Origin at this point and the same Axes vectors.
         member inline pl.PlaneAtClPt pt =
-            let o = pl.ClosestPoint pt            
+            let o = pl.ClosestPoint pt
             PPlane.createUnchecked(o, pl.Xaxis, pl.Yaxis, pl.Zaxis)
 
         /// Returns the angle to another Plane in Degree, ignoring the plane's orientation.
         /// So between 0 to 90 degrees.
-        member inline this.AngleToPlane (pl:PPlane) = UnitVec.angle90 this.Zaxis pl.Zaxis
+        member inline this.Angle90ToPlane (pl:PPlane) = UnitVec.angle90 this.Zaxis pl.Zaxis
 
         /// Returns the angle to 3D vector in Degree, ignoring the plane's orientation.
         /// So between 0 to 90 degrees.
-        member inline pl.AngleToVec (v:Vec) = UnitVec.angle90 v.Unitized pl.Zaxis
+        member inline pl.Angle90ToVec (v:Vec) = UnitVec.angle90 v.Unitized pl.Zaxis
 
         /// Returns the angle to 3D unit-vector in Degree, ignoring the plane's orientation.
         /// So between 0 to 90 degrees.
-        member inline pl.AngleToVec (v:UnitVec) = UnitVec.angle90 v pl.Zaxis
+        member inline pl.Angle90ToVec (v:UnitVec) = UnitVec.angle90 v pl.Zaxis
 
         /// Evaluate at 3D parameter.
         member inline p.EvaluateAt (px:float, py:float, pz:float) = p.Origin + p.Xaxis*px + p.Yaxis*py + p.Zaxis*pz
@@ -65,8 +65,8 @@ module AutoOpenPPlane =
         //--------------------------  Static Members  --------------------------------------------------
         //----------------------------------------------------------------------------------------------
 
-        /// Checks if two Parametrized Planes are equal within tolerance distance 
-        /// For the tips of its units vectors and its origin. 
+        /// Checks if two Parametrized Planes are equal within tolerance distance
+        /// For the tips of its units vectors and its origin.
         /// Use a tolerance of 0.0 to check for an exact match.
         static member inline equals (tol:float) (a:PPlane) (b:PPlane) =
             abs (a.Origin.X - b.Origin.X) <= tol &&
@@ -153,22 +153,22 @@ module AutoOpenPPlane =
         /// WorldXY rotated 180 degrees round X-axis, Z points down now.
         static member inline WorldXMinusY=
             PPlane.createUnchecked(Pnt.Origin, UnitVec.Xaxis, -UnitVec.Yaxis, -UnitVec.Zaxis)
-            
-        /// Builds Plane at first point, X-axis to second point, 
-        /// Y-axis to third point or at lest in plane with third point. 
+
+        /// Builds Plane at first point, X-axis to second point,
+        /// Y-axis to third point or at lest in plane with third point.
         /// Fails if points are closer than 1e-5.
         static member createThreePoints (origin:Pnt) (xPt:Pnt) (yPt:Pnt) =
             let x = xPt-origin
             let y = yPt-origin
             let lx = x.Length
             let ly = y.Length
-            if lx < 1e-5 then EuclidException.Raise "Euclid.PPlane.createThreePoints the distance between origin %s and xPt %s is too small" origin.AsString xPt.AsString
-            if ly < 1e-5 then EuclidException.Raise "Euclid.PPlane.createThreePoints the distance between origin %s and yPt %s is too small" origin.AsString yPt.AsString
+            if isTooSmall (lx) then  EuclidException.Raise "Euclid.PPlane.createThreePoints the distance between origin %s and xPt %s is too small" origin.AsString xPt.AsString
+            if isTooSmall (ly) then  EuclidException.Raise "Euclid.PPlane.createThreePoints the distance between origin %s and yPt %s is too small" origin.AsString yPt.AsString
             let xf = 1./lx
             let yf = 1./ly
             let xu = UnitVec.createUnchecked(x.X*xf, x.Y*xf, x.Z*xf)
-            let yu = UnitVec.createUnchecked(y.X*yf, y.Y*yf, y.Z*yf)            
-            if xu.IsParallelTo(yu, Cosine.``1.0``) then EuclidException.Raise "Euclid.PPlane.createThreePoints failed. The points are colinear by less than 1.0 degree, origin %s and xPt %s and yPt %s" origin.AsString xPt.AsString yPt.AsString            
+            let yu = UnitVec.createUnchecked(y.X*yf, y.Y*yf, y.Z*yf)
+            if xu.IsParallelTo(yu, Cosine.``1.0``) then EuclidException.Raise "Euclid.PPlane.createThreePoints failed. The points are colinear by less than 1.0 degree, origin %s and xPt %s and yPt %s" origin.AsString xPt.AsString yPt.AsString
             let z = UnitVec.cross (xu, yu)
             let y' = Vec.cross (z, x)
             PPlane.createUnchecked(origin, xu, y'.Unitized, z.Unitized)
@@ -179,7 +179,7 @@ module AutoOpenPPlane =
         /// The given Y vector does not need to be perpendicular to the X vector, just not parallel.
         /// Fails if the vectors are shorter than 1e-5.
         static member createOriginXaxisYaxis (origin:Pnt, xAxis:UnitVec, yAxis:UnitVec) =
-            if xAxis.IsParallelTo(yAxis, Cosine.``1.0``) then 
+            if xAxis.IsParallelTo(yAxis, Cosine.``1.0``) then
                 EuclidException.Raise "Euclid.PPlane.createOriginXaxisYaxis failed. The vectors are colinear by less than 1.0 degrees, origin %s and xAxis%s and yAxis %s" origin.AsString xAxis.AsString yAxis.AsString
             let z = UnitVec.cross (xAxis, yAxis)
             let y = Vec.cross (z, xAxis)
@@ -193,20 +193,20 @@ module AutoOpenPPlane =
         static member createOriginXaxisYaxis (origin:Pnt, xAxis:Vec, yAxis:Vec) =
             let lx = xAxis.Length
             let ly = yAxis.Length
-            if lx < 1e-5 then EuclidException.Raise "Euclid.PPlane.createOriginXaxisYaxis the X-axis is too small. origin %s X-Axis %s" origin.AsString xAxis.AsString     
-            if ly < 1e-5 then EuclidException.Raise "Euclid.PPlane.createOriginXaxisYaxis the Y-axis is too small. origin %s Y-Axis %s" origin.AsString yAxis.AsString   
+            if isTooSmall (lx) then  EuclidException.Raise "Euclid.PPlane.createOriginXaxisYaxis the X-axis is too small. origin %s X-Axis %s" origin.AsString xAxis.AsString
+            if isTooSmall (ly) then  EuclidException.Raise "Euclid.PPlane.createOriginXaxisYaxis the Y-axis is too small. origin %s Y-Axis %s" origin.AsString yAxis.AsString
             let xf = 1./lx
             let yf = 1./ly
             let xu = UnitVec.createUnchecked(xAxis.X*xf, xAxis.Y*xf, xAxis.Z*xf)
-            let yu = UnitVec.createUnchecked(yAxis.X*yf, yAxis.Y*yf, yAxis.Z*yf)  
-            PPlane.createOriginXaxisYaxis (origin, xu, yu)           
+            let yu = UnitVec.createUnchecked(yAxis.X*yf, yAxis.Y*yf, yAxis.Z*yf)
+            PPlane.createOriginXaxisYaxis (origin, xu, yu)
 
         /// Creates a Parametrized Plane from a point and unit-vector representing the normal (or Z-axis).
         /// The X-axis will be found by taking the cross product of the World Z-axis and the given normal (or Z-axis).
         /// This will make the X-axis horizontal.
-        /// If this fails because they are coincident, the cross product of the World Y-axis and the given normal (or Z-axis) will be used.        
+        /// If this fails because they are coincident, the cross product of the World Y-axis and the given normal (or Z-axis) will be used.
         static member createOriginNormal (origin:Pnt, normal:UnitVec) =
-            if normal.IsParallelTo(UnitVec.Zaxis, Cosine.``0.5``) then 
+            if normal.IsParallelTo(UnitVec.Zaxis, Cosine.``0.5``) then
                 let y = Vec.cross (normal,Vec.Xaxis)
                 let x = Vec.cross (y, normal)
                 PPlane.createUnchecked(origin, x.Unitized, y.Unitized, normal)
@@ -214,7 +214,7 @@ module AutoOpenPPlane =
                 let x = Vec.cross (Vec.Zaxis, normal)
                 let y = Vec.cross (normal, x)
                 PPlane.createUnchecked(origin, x.Unitized, y.Unitized, normal)
-            
+
         /// Creates a Parametrized Plane from a point and vector representing the normal (or Z-axis).
         /// The X-axis will be found by taking the cross product of the World Z-axis and the given normal (or Z-axis).
         /// This will make the X-axis horizontal.
@@ -222,7 +222,7 @@ module AutoOpenPPlane =
         /// Fails if the vectors are shorter than 1e-5.
         static member createOriginNormal (origin:Pnt, normal:Vec) =
             let len = normal.Length
-            if len < 1e-5 then EuclidException.Raise "Euclid.PPlane.createOriginNormal the Z-axis is too small. origin %s Z-Axis %s" origin.AsString normal.AsString    
+            if isTooSmall (len) then  EuclidException.Raise "Euclid.PPlane.createOriginNormal the Z-axis is too small. origin %s Z-Axis %s" origin.AsString normal.AsString
             let f = 1./len
             PPlane.createOriginNormal (origin, UnitVec.createUnchecked(normal.X*f, normal.Y*f, normal.Z*f))
 
@@ -231,7 +231,7 @@ module AutoOpenPPlane =
         /// Fails if the vectors are shorter than 1e-5 or normal and X are parallel.
         static member createOriginNormalXaxis (origin:Pnt, normal:UnitVec, xAxis:UnitVec) =
             if normal.IsParallelTo(xAxis, Cosine.``1.0``) then
-                EuclidException.Raise "Euclid.PPlane.createOriginNormalXaxis failed. The vectors are colinear by less than 1.0 degrees, origin %s and normal %s and normal %s" origin.AsString normal.AsString xAxis.AsString   
+                EuclidException.Raise "Euclid.PPlane.createOriginNormalXaxis failed. The vectors are colinear by less than 1.0 degrees, origin %s and normal %s and normal %s" origin.AsString normal.AsString xAxis.AsString
             let y = UnitVec.cross (normal, xAxis)
             let x = Vec.cross (y, normal)
             PPlane.createUnchecked(origin, xAxis, y.Unitized, normal)
@@ -242,12 +242,12 @@ module AutoOpenPPlane =
         static member createOriginNormalXaxis (origin:Pnt, normal:Vec, xAxis:Vec) =
             let lx = xAxis.Length
             let ln = normal.Length
-            if lx < 1e-5 then EuclidException.Raise "Euclid.PPlane.createOriginNormalXaxis the X-axis is too small. origin %s X-Axis %s" origin.AsString xAxis.AsString     
-            if ln < 1e-5 then EuclidException.Raise "Euclid.PPlane.createOriginNormalXaxis the normal is too small. origin %s Normal %s" origin.AsString normal.AsString   
+            if isTooSmall (lx) then  EuclidException.Raise "Euclid.PPlane.createOriginNormalXaxis the X-axis is too small. origin %s X-Axis %s" origin.AsString xAxis.AsString
+            if isTooSmall (ln) then  EuclidException.Raise "Euclid.PPlane.createOriginNormalXaxis the normal is too small. origin %s Normal %s" origin.AsString normal.AsString
             let xf = 1./lx
             let nf = 1./ln
             let xu = UnitVec.createUnchecked(xAxis.X *xf,  xAxis.Y*xf,  xAxis.Z*xf)
-            let nu = UnitVec.createUnchecked(normal.X*nf, normal.Y*nf, normal.Z*nf) 
+            let nu = UnitVec.createUnchecked(normal.X*nf, normal.Y*nf, normal.Z*nf)
             PPlane.createOriginNormalXaxis (origin, nu, xu)
 
 
@@ -288,7 +288,7 @@ module AutoOpenPPlane =
         static member inline rotateZ (angDegree:float) (pl:PPlane) =
             let m = RigidMatrix.createRotationAxisCenter (pl.Zaxis, pl.Origin, angDegree)
             let x = UnitVec.transformRigid m pl.Xaxis
-            let y = UnitVec.transformRigid m pl.Yaxis            
+            let y = UnitVec.transformRigid m pl.Yaxis
             PPlane.createUnchecked(pl.Origin, x, y, pl.Zaxis)
 
         /// Move Plane along the local X-axis by the given distance.
@@ -324,7 +324,7 @@ module AutoOpenPPlane =
             PPlane.createUnchecked(pl.Origin, -pl.Xaxis, -pl.Yaxis, pl.Zaxis)
 
         /// Transforms the plane by the given RigidMatrix.
-        /// The returned PPlane has orthogonal unit vectors.
+        /// The returned PPlane has orthogonal unit-vectors.
         static member transform (m:RigidMatrix) (pl:PPlane) =
             let o = Pnt.transformRigid m pl.Origin
             let x = UnitVec.transformRigid m pl.Xaxis
@@ -338,4 +338,3 @@ module AutoOpenPPlane =
             if pl.Yaxis.Y < 0.0 then PPlane.rotateOnZ180 pl else pl
 
 
-        

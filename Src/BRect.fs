@@ -3,7 +3,7 @@ namespace Euclid
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
-
+open UtilEuclid
 
 #nowarn "44" // for hidden constructors via Obsolete Attribute
 
@@ -75,8 +75,8 @@ type BRect =
     member inline r.Diagonal = Vc(r.MaxX - r.MinX, r.MaxY - r.MinY)
 
     /// The center of the bounding rect.
-    member inline r.Center = 
-        Pt( (r.MaxX + r.MinX) * 0.5, 
+    member inline r.Center =
+        Pt( (r.MaxX + r.MinX) * 0.5,
             (r.MaxY + r.MinY) * 0.5)
 
     /// Returns the point (0) or minX, minY.
@@ -96,7 +96,7 @@ type BRect =
     member r.Pt0 = Pt(r.MinX, r.MinY)
 
     /// Returns the point (1) or maxX, minY.
-    /// 
+    ///
     ///   Y-Axis (Height2D)
     ///   ^
     ///   |
@@ -112,7 +112,7 @@ type BRect =
     member r.Pt1 = Pt(r.MaxX, r.MinY)
 
     /// Returns the point (2) or maxX, maxY.
-    /// 
+    ///
     ///   Y-Axis (Height2D)
     ///   ^
     ///   |
@@ -128,7 +128,7 @@ type BRect =
     member r.Pt2 = Pt(r.MaxX, r.MaxY)
 
     /// Returns the point (3) or minX, maxY.
-    /// 
+    ///
     ///   Y-Axis (Height2D)
     ///   ^
     ///   |
@@ -143,7 +143,7 @@ type BRect =
     ///  0 = min X,Y      1
     member r.Pt3 = Pt(r.MinX, r.MaxY)
 
-    
+
     /// Returns the corners of this bounding rectangle in Counter-Clockwise order, starting at MinPt.
     /// Returns an array of 4 Points.
     ///
@@ -486,12 +486,12 @@ type BRect =
             minY <- min minY p.Y
             maxX <- max maxX p.X
             maxY <- max maxY p.Y
-        BRect(minX, minY, maxX, maxY)    
+        BRect(minX, minY, maxX, maxY)
 
     /// Creates a bounding rectangle from a center point and the total X and Y size.
     static member inline createFromCenter (center:Pt, sizeX, sizeY) =
-        if sizeX < 0. then EuclidException.Raise "Euclid.BRect.createFromCenter sizeX is negative: %g, sizeY is: %g, center: %O"  sizeX sizeY  center.AsString
-        if sizeY < 0. then EuclidException.Raise "Euclid.BRect.createFromCenter sizeY is negative: %g, sizeX is: %g, center: %O"  sizeY sizeX  center.AsString
+        if isNegative(sizeX) then EuclidException.Raise "Euclid.BRect.createFromCenter sizeX is negative: %g, sizeY is: %g, center: %O"  sizeX sizeY  center.AsString
+        if isNegative(sizeY) then EuclidException.Raise "Euclid.BRect.createFromCenter sizeY is negative: %g, sizeX is: %g, center: %O"  sizeY sizeX  center.AsString
         let minX = center.X - sizeX*0.5
         let minY = center.Y - sizeY*0.5
         let maxX = center.X + sizeX*0.5

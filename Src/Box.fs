@@ -249,19 +249,19 @@ type Box =
     /// Creates a unitized version of the local X-Axis.
     member inline r.XaxisUnit =
         let len = r.Xaxis.Length
-        if len = zeroLengthTolerance then EuclidException.Raise "Euclid.Box.XaxisUnit: rect Xaxis is too small for unitizing: %s" r.AsString
+        if isTooTiny len then EuclidException.Raise "Euclid.Box.XaxisUnit: rect Xaxis is too small for unitizing: %s" r.AsString
         r.Xaxis*(1./len)
 
     /// Creates a unitized version of the local Y-Axis.
     member inline r.YaxisUnit =
         let len = r.Yaxis.Length
-        if len = zeroLengthTolerance then EuclidException.Raise "Euclid.Box.XaxisUnit: rect Yaxis is too small for unitizing: %s" r.AsString
+        if isTooTiny len then EuclidException.Raise "Euclid.Box.XaxisUnit: rect Yaxis is too small for unitizing: %s" r.AsString
         r.Yaxis*(1./len)
 
     /// Creates a unitized version of the local Z-Axis.
     member inline r.ZaxisUnit =
         let len = r.Zaxis.Length
-        if len = zeroLengthTolerance then EuclidException.Raise "Euclid.Box.XaxisUnit: rect Zaxis is too small for unitizing: %s" r.AsString
+        if isTooTiny len then EuclidException.Raise "Euclid.Box.XaxisUnit: rect Zaxis is too small for unitizing: %s" r.AsString
         r.Zaxis*(1./len)
 
     /// The corner diagonally opposite of corner from Origin.
@@ -476,7 +476,7 @@ type Box =
         abs (a.Zaxis.X  - b.Zaxis.X ) <= tol &&
         abs (a.Zaxis.Y  - b.Zaxis.Y ) <= tol &&
         abs (a.Zaxis.Z  - b.Zaxis.Z ) <= tol
-        
+
 
     /// Returns Box expanded by distance on all six sides.
     /// Does check for underflow if distance is negative and raises EuclidException.
@@ -539,21 +539,21 @@ type Box =
     static member translateX (distX:float) (b:Box) =
         let x = b.Xaxis
         let len = x.Length
-        if len = zeroLengthTolerance then EuclidException.Raise "Euclid.Box.translateX: box.Xaxis is zero length in Box: %s" b.AsString
+        if isTooTiny len then EuclidException.Raise "Euclid.Box.translateX: box.Xaxis is zero length in Box: %s" b.AsString
         Box(b.Origin + x*(distX/len), x, b.Yaxis, b.Zaxis)
 
     /// Creates a 3D box translated along the local Y-axis of the Box.
     static member translateY (distY:float) (b:Box) =
         let y = b.Yaxis
         let len = y.Length
-        if len = zeroLengthTolerance then EuclidException.Raise "Euclid.Box.translateY: box.Yaxis is zero length in Box: %s" b.AsString
+        if isTooTiny len then EuclidException.Raise "Euclid.Box.translateY: box.Yaxis is zero length in Box: %s" b.AsString
         Box(b.Origin + y*(distY/len), b.Xaxis, y, b.Zaxis)
 
     /// Creates a 3D box translated along the local Z-axis of the Box.
     static member translateZ (distZ:float) (b:Box) =
         let z = b.Zaxis
         let len = z.Length
-        if len = zeroLengthTolerance then EuclidException.Raise "Euclid.Box.translateZ: box.Zaxis is zero length in Box: %s" b.AsString
+        if isTooTiny len then EuclidException.Raise "Euclid.Box.translateZ: box.Zaxis is zero length in Box: %s" b.AsString
         Box(b.Origin + z*(distZ/len), b.Xaxis, b.Yaxis, z)
 
     /// Transform the Box by the given RigidMatrix.

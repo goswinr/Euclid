@@ -1,14 +1,14 @@
 // a workaround for Fable compiler to not fail on DataContract attribute
 // see https://github.com/fable-compiler/Fable/issues/2253
-#if FABLE_COMPILER 
+#if FABLE_COMPILER
 namespace System.Runtime.Serialization
 type DataContract() = inherit System.Attribute() // just shadow the real attribute
 type DataMember()   = inherit System.Attribute() // just shadow the real attribute
 #endif
 
 namespace Euclid
-open System
 
+open System
 
 /// OptionalAttribute for member parameters.
 type internal OPT = Runtime.InteropServices.OptionalAttribute
@@ -31,7 +31,7 @@ type EuclidDivByZeroException (s:string) =
     inherit Exception(s)
 
     static member Raise msg = Printf.kprintf (fun s -> raise (EuclidDivByZeroException(s))) msg
-    
+
     /// This function is much smaller when it gets inlined compared to the Raise (Printf.kprintf) version
     static member Throw1 msg (v:'T) = raise (EuclidDivByZeroException(msg + ": " + v.ToString()))
 
@@ -45,23 +45,55 @@ module UtilEuclid =
     [<Literal>]
     let zeroLengthTolerance = 1e-12
 
-    /// Squared Tolerance for zero length in divisions.: 1e-12 * 1e-12 = 1e-24 
+    /// Squared Tolerance for zero length in divisions.: 1e-12 * 1e-12 = 1e-24
     [<Literal>]
-    let zeroLengthTolSquared = zeroLengthTolerance * zeroLengthTolerance
+    let private zeroLengthTolSquared = zeroLengthTolerance * zeroLengthTolerance
+
+    /// Returns true for values smaller than 1e-6 and for NaN
+    let inline isTooSmall x =
+        // use 'not' to catch a NaN too ( a cross product of infinit long vectors can give a NaN length)
+        not ( x > 1e-6 )
+
+    /// Returns true for values smaller than 1e-12 (square of 1e-6)  and for NaN
+    let inline isTooSmallSq x =
+        // use 'not' to catch a NaN too ( a cross product of infinit long vectors can give a NaN length)
+        not ( x > 1e-12 )
+
+    /// Returns true for values smaller than 1e-12 and for NaN
+    /// uses UtilEuclid.zeroLengthTolerance
+    let inline isTooTiny x =
+        // use 'not' to catch a NaN too ( a cross product of infinit long vectors can give a NaN length)
+        not ( x > zeroLengthTolerance )
+
+    /// Returns true for values smaller than 1e-24 (square of 1e-12) and for NaN
+    /// uses UtilEuclid.zeroLengthTolSquared
+    let inline isTooTinySq x =
+        // use 'not' to catch a NaN too ( a cross product of infinit long vectors can give a NaN length)
+        not ( x > zeroLengthTolSquared)
+
+    /// Returns true for negative number and for NaN
+    /// 0.0  and -0.0 is not negative.
+    let inline isNegative x =
+        not (x >= 0.0)
+
 
     /// Math.PI * 2.0
+    /// This is equal to 360 degrees in radians.
     [<Literal>]
-    let twoPi = 6.28318530717959
+    let twoPi = 6.2831853071795862 //(Math.PI*2.0).ToString("R")
 
     /// Math.PI * 0.5
+    /// This is equal to 90 degrees in radians.
     [<Literal>]
-    let halfPi = 1.5707963267949
+    let halfPi = 1.5707963267948966 // (Math.PI*0.5).ToString("R")
 
     /// Converts Angels from Degrees to Radians.
-    let inline toRadians degrees = 0.0174532925199433 * degrees //  Math.PI / 180.
+    /// By multiplying with 0.0174... (PI / 180.)
+    let inline toRadians degrees = 0.017453292519943295 * degrees //  (Math.PI / 180.).ToString("R")
 
     /// Converts Angels from Radians to Degrees.
-    let inline toDegrees radians = 57.2957795130823 * radians  // 180. / Math.PI
+    /// By multiplying with 57.29... (180. / PI)
+    let inline toDegrees radians = 57.295779513082323 * radians  // (180. / Math.PI).ToString("R")
 
     /// Clamp value between -1.0 and +1.0
     let inline clampBetweenMinusOneAndOne (x:float)=
@@ -116,8 +148,9 @@ module UtilEuclid =
 
     /// Tests if a number is NOT close to 1.0 by a 1e-6 tolerance.
     /// This is a float increment of 6 steps or decrement of 16 steps.
-    let inline isNotOne  x =
-        ``1.0 - 1e-6`` > x || x > ``1.0 + 1e-6``
+    /// Also returns true for NaN.
+    let inline isNotOne x = not (isOne x)
+
 
     /// Tests if a number is close to minus 1.0 by a 1e-6 tolerance.
     /// This is a float increment of 6 steps or decrement of 16 steps.
@@ -133,17 +166,17 @@ module UtilEuclid =
     /// Tests if a number is NOT close to 0.0 by 1e-6
     /// This is approximately the same tolerance that 6 increments of a float are away from 1.0.
     /// See Euclid.UtilEuclid.isOne function.
-    let inline isNotZero x =
-        x < -1e-6  ||  x > 1e-6
+    /// Also returns true for NaN.
+    let inline isNotZero x = not (isZero x)
 
     /// Check if value is between 0.0 and +1.0 inclusive.
     let inline isBetweenZeroAndOne (x:float) =
         x >= 0.0 && x <= 1.0
-    
+
     /// Check if value is between 0.0 and +1.0 inclusive a tolerance of 1e-6 .
     let inline isBetweenZeroAndOneTolerant (x:float) =
         -1e-6 < x && x < ``1.0 + 1e-6``
-    
+
 
     /// Match the sign (+ or -) to a given number.
     let matchSign (signedValue:float) (numToMatch:float) =
@@ -158,7 +191,7 @@ module UtilEuclid =
         if t >= 0 then t
         else           t + length
 
-/// Precalculated cosine values for faster checking the angles of dot products of unit vectors.
+/// Precalculated cosine values for faster checking the angles of dot products of unit-vectors.
 [<RequireQualifiedAccess>]
 module Cosine =
 
@@ -168,11 +201,11 @@ module Cosine =
     [<Measure>]
     type cosine
 
-    (* for fsi: 
-    let print(degree) = 
+    (* for fsi:
+    let print(degree) =
         let radians = degree * (System.Math.PI  / 180.)
         let v =  cos(radians)
-        
+
         printfn $"""
         /// The cosine of an angle of {degree} degrees.
         /// This is exactly %.20f{v}
@@ -442,10 +475,11 @@ module RelAngleDiscriminant =
     let ``89.99`` = 0.999999939076519<relAngDiscr>
 
 (*
-    /// A standard Unset value. Use this value rather than Double.NaN when a bogus floating point value is required.
-    /// This is equivalent to openNURBS ON_UNSET_VALUE
-    [<Literal>]
-    let UnsetValue = -1.23432101234321E+308
+
+/// A standard Unset value. Use this value rather than Double.NaN when a bogus floating point value is required.
+/// This is equivalent to openNURBS ON_UNSET_VALUE
+[<Literal>]
+let UnsetValue = -1.23432101234321E+308
 
 
 module Units =

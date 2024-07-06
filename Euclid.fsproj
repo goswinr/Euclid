@@ -1,9 +1,8 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
-    <!-- <TargetFrameworks>net472;net6.0</TargetFrameworks> -->
+    <TargetFrameworks>net472;net6.0</TargetFrameworks>
     <!--netstandard2.0 does not support [<IsByRefLike>] nor [<IsReadOnly>] -->
     <LangVersion>preview</LangVersion>
     <OtherFlags>$(OtherFlags)--warnon:3390</OtherFlags>
@@ -20,12 +19,13 @@
     <Title>Euclid</Title>
     <Product>Euclid</Product>
     <PackageId>Euclid</PackageId>
-    <Version>0.8.0</Version>
-    <AssemblyVersion>0.8.0</AssemblyVersion>
-    <FileVersion>0.8.0</FileVersion>
+    <Version>0.9.0</Version>
+    <AssemblyVersion>0.9.0</AssemblyVersion>
+    <FileVersion>0.9.0</FileVersion>
     <PackageReleaseNotes>
-      - fix line splitting
-      - rename Rect.create functions
+      - add suffix '90' to angel functions in Plane module
+      - improve precision of Pi literals
+      - include NaN check in isTiny functions
     </PackageReleaseNotes>
     <Authors>GoswinR</Authors>
     <Copyright>Goswin Rothenthal 2019</Copyright>
@@ -52,6 +52,7 @@
   <ItemGroup>
     <!-- otherwise the minimum FSharp.Core version would be forced by the SDK used for building it. This would be needlessly too high-->
     <PackageReference Update="FSharp.Core" Version="5.0.2" />
+    <PackageReference Include="Fable.Core" Version="4.3.0"  Condition="$(DefineConstants.Contains('FABLE_COMPILER'))" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
     <None Include="README.md" />
     <None Include="Doc/READMEnuget.md" Pack="true" PackagePath="" />

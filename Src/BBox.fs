@@ -3,7 +3,7 @@ namespace Euclid
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
-
+open UtilEuclid
 
 
 #nowarn "44" // for hidden constructors via Obsolete Attribute
@@ -388,7 +388,7 @@ type BBox =
     member inline b.Edge47 = Line3D(b.Pt4, b.Pt7)
 
     /// Returns the 12 Edges of this bounding box as an array of 12 Lines.
-    /// Pair is this order: 
+    /// Pair is this order:
     /// 0-1, 1-2, 3-2, 0-3, 0-4, 1-5, 2-6, 3-7, 4-5, 5-6, 7-6, 4-7
     ///
     ///   Z-Axis       Y-Axis (Depth)
@@ -407,7 +407,7 @@ type BBox =
     ///   +---------------+----> X-Axis (Width)
     ///   0 MinPt         1
     member b.Edges = [| b.Edge01; b.Edge12; b.Edge32; b.Edge03; b.Edge04; b.Edge15; b.Edge26; b.Edge37; b.Edge45; b.Edge56; b.Edge76; b.Edge47 |]
-    
+
     /// Returns a bounding box expanded by distance.
     /// Does check for underflow if distance is negative and raises EuclidException.
     member inline b.Expand(dist) : BBox =
@@ -681,7 +681,7 @@ type BBox =
             maxY <- max maxY p.Y
             maxZ <- max maxZ p.Z
         BBox(minX, minY, minZ, maxX, maxY, maxZ)
-    
+
     /// Finds min and max values for x, y and z.
     /// Creates a bounding box from the points.
     static member inline createFromIList (ps:Collections.Generic.IList<Pnt> ) =
@@ -701,13 +701,13 @@ type BBox =
             maxY <- max maxY p.Y
             maxZ <- max maxZ p.Z
         BBox(minX, minY, minZ, maxX, maxY, maxZ)
-        
+
 
     /// Creates a bounding box from a center point and the total X, Y and Z size.
     static member inline createFromCenter (center:Pnt, sizeX, sizeY, sizeZ) =
-        if sizeX < 0. then EuclidException.Raise "Euclid.BBox.createFromCenter sizeX is negative: %g, sizeY is: %g, sizeZ is: %g, center: %O"  sizeX sizeY sizeZ center.AsString
-        if sizeY < 0. then EuclidException.Raise "Euclid.BBox.createFromCenter sizeY is negative: %g, sizeX is: %g, sizeZ is: %g, center: %O"  sizeY sizeX sizeZ center.AsString
-        if sizeZ < 0. then EuclidException.Raise "Euclid.BBox.createFromCenter sizeZ is negative: %g, sizeX is: %g, sizeY is: %g, center: %O"  sizeZ sizeX sizeY center.AsString
+        if isNegative(sizeX) then EuclidException.Raise "Euclid.BBox.createFromCenter sizeX is negative: %g, sizeY is: %g, sizeZ is: %g, center: %O"  sizeX sizeY sizeZ center.AsString
+        if isNegative(sizeY) then EuclidException.Raise "Euclid.BBox.createFromCenter sizeY is negative: %g, sizeX is: %g, sizeZ is: %g, center: %O"  sizeY sizeX sizeZ center.AsString
+        if isNegative(sizeZ) then EuclidException.Raise "Euclid.BBox.createFromCenter sizeZ is negative: %g, sizeX is: %g, sizeY is: %g, center: %O"  sizeZ sizeX sizeY center.AsString
         let minX = center.X - sizeX*0.5
         let minY = center.Y - sizeY*0.5
         let maxX = center.X + sizeX*0.5
@@ -727,7 +727,7 @@ type BBox =
     /// Returns the 2D part of a bounding box as a bounding rectangle.
     static member inline toRect (b:BBox) =
         BRect.createUnchecked(b.MinX, b.MinY, b.MaxX, b.MaxY)
-    
+
     static member inline createFromLine (l:Line3D) =
         let minX = min l.FromX l.ToX
         let maxX = max l.FromX l.ToX
@@ -737,4 +737,3 @@ type BBox =
         let maxZ = max l.FromZ l.ToZ
         BBox(minX, minY, minZ, maxX, maxY, maxZ)
 
-        

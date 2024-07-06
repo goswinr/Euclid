@@ -78,14 +78,14 @@ type Polyline3D =
         let n = p.Duplicate()
         n.Points.Reverse()
         n
-    
+
     /// Close the Polyline2D if it is not already closed.
     /// If the ends are closer than the tolerance. The last point is set to equal the first point.
     /// Else the start point is added to the end of the Polyline2D.
     member p.CloseIfOpen(toleranceForAddingPoint) =
         if p.Points.Count < 2 then EuclidException.Raise "Euclid.Polyline3D.CloseIfOpen failed on Polyline3D with less than 2 points %O" p
         let v = p.Start  - p.End
-        if v.LengthSq < toleranceForAddingPoint*toleranceForAddingPoint then 
+        if v.LengthSq < toleranceForAddingPoint*toleranceForAddingPoint then
             p.Points.Last <- p.Start
         else
             p.Points.Add p.Start
@@ -130,7 +130,7 @@ type Polyline3D =
             if   p > 1e-5 then  EuclidException.Raise "Euclid.Polyline3D.EvaluateAt: Parameter %f is more than than point count(%d)." t pl.Points.Count
             else pl.Points.Last
         // return point  if point is almost matching
-        elif  p < zeroLengthTolerance then
+        elif isTooTiny (p) then
             pl.Points.[i]
         elif  p > 0.99999964 then // 0.99999964  is 6 steps smaller than 1.0: https://float.exposed/0x3f7ffffa
             pl.Points.[i+1]
@@ -401,7 +401,10 @@ type Polyline3D =
         let colinear: bool[] = Array.zeroCreate lenPts
         let res = pts.GetRange(0, lenPts) // copy
         //(2.1) find last valid vector
-        let prevVIdx = vs |> Array.findIndexBack (fun v -> v.LengthSq > lenTolSq)
+        let prevVIdx =
+            vs
+            |> Array.tryFindIndexBack (fun v -> v.LengthSq > lenTolSq)
+            |> Option.defaultWith (fun _ -> EuclidException.Raise "Euclid.Polyline3D.offsetCore: invalid Polyline3D, all points are in the same location" )
         for i=prevVIdx+1 to lastIdx do colinear.[i]<-true
         let mutable prevV = vs.[prevVIdx]
         let mutable prevOff = if notNull offD then offD.[prevVIdx] else 0.0
@@ -467,7 +470,7 @@ type Polyline3D =
 
             let rec  searchForward i =
                 let ii = saveIdx (i) colinear.Length
-                if not colinear.[ii] then ii // no need to check for endless lop here because check is done in searchBack that is called first
+                if not colinear.[ii] then ii // no need to check for endless loop here because check is done in searchBack that is called first
                 else searchForward (i + 1)
 
             for i = 0 to colinear.Length-1 do
@@ -496,7 +499,9 @@ type Polyline3D =
                 if colinear.[i]  then
                     let pi = searchBack    (i-1)
                     let ni = searchForward (i+1)
-                    if pi = -1 then
+                    if pi = ni then //  does this ever happen ? it is either all colinear (caught in searchBack) or at least three points are not colinear ??
+                        EuclidException.Raise "Euclid.Polyline3D.offsetCore : all %d points for offset are colinear within 0.25 degree or identical. " pts.Count
+                    elif pi = -1 then
                         if ni = -1 then
                             EuclidException.Raise "Euclid.Polyline3D.offsetCore : all %d points for offset are colinear within 0.25 degree or identical. " pts.Count
                         else // colinear start, get frame
@@ -645,6 +650,5 @@ type Polyline3D =
         else                         Polyline3D.offset(polyLine, [offsetDistance], [normalDistance], loop, refNormal, false)
 
 
-// TODO the above two methods fail with fable 4
+// the above two methods do not fail anymore with fable
 // see https://github.com/fable-compiler/Fable/issues/3326
-// should they use use F# style optional parameters?

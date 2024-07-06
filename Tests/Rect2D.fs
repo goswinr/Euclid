@@ -13,7 +13,7 @@ let inline eq a b = Pt.distance a b < 1e-9
 let o = Pt.Origin
 let x = Vc.Xaxis
 let y = Vc.Yaxis
-let rect = Rect2D.create(o,x,y)
+let rect = Rect2D.createFromVectors(o,x,y)
 
 let tests =
   testList "samples" [

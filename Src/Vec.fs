@@ -2,7 +2,7 @@ namespace Euclid
 
 // Design notes:
 // The structs types in this file only have the constructors, the ToString override and operators define in this file.
-// For structs that need a checked and unchecked constructor (like unit vectors) the main 'new' constructor is marked obsolete.
+// For structs that need a checked and unchecked constructor (like unit-vectors) the main 'new' constructor is marked obsolete.
 // A 'create' and 'createUnchecked' static member is provided instead.
 // All other members are implemented as extension members. see files in folder 'members'.
 // This design however makes extension members unaccessible from see C#. To fix this all types and all members could be put into one file.
@@ -20,14 +20,14 @@ open System.Runtime.Serialization // for serialization of struct fields only but
 /// An immutable 3D vector of any length. Made up from 3 floats: X, Y, and Z.
 /// A 3D vector represents a direction or an offset in space, but not a location.
 /// A 4x4 transformation matrix applied to a vector will only rotate and scale the vector but not translate it.
-/// (3D Unit vectors of length 1.0 are called 'UnitVec' )
+/// (3D unit-vectors of length 1.0 are called 'UnitVec' )
 /// (2D vectors are called 'Vc' )
 [<Struct; NoEquality; NoComparison>]
 [<IsReadOnly>]
 //[<IsByRefLike>] // not used, see notes at end of file
-[<DataContract>] // for using DataMember on fields  
+[<DataContract>] // for using DataMember on fields
 type Vec =
-    
+
     //[<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
 
     /// Gets the X part of this 3D vector.
@@ -82,10 +82,10 @@ type Vec =
     /// A separate function to compose the error message that does not get inlined.
     [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
     member v.FailedDivide(f) = EuclidDivByZeroException.Raise "Euclid.Vec: divide operator: %g is too small for dividing %O using the '/' operator. Tolerance:%g"  f v zeroLengthTolerance
-        
+
     /// Divides a 3D vector by a scalar, also be called dividing/scaling a vector. Returns a new 3D vector.
     static member inline ( / ) (v:Vec, f:float) =
-        if abs f < zeroLengthTolerance then v.FailedDivide(f) // don't compose error msg directly here to keep inlined code small.
+        if isTooTiny (abs f) then v.FailedDivide(f) // don't compose error msg directly here to keep inlined code small.
         Vec (v.X / f, v.Y / f, v.Z / f)
 
 

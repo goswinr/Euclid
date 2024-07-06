@@ -145,8 +145,8 @@ module internal ResizeArr =
         let map (mapping: 'T -> 'U) (xs: ResizeArray<'T>) : ResizeArray<'U> =
             #if FABLE_COMPILER
             let r = ResizeArray(xs.Count)
-            for x in xs do
-                r.Add(mapping x)
+            for i = 0 to xs.Count - 1 do
+                r.Add(mapping xs.[i])
             r
             #else
             xs.ConvertAll (System.Converter mapping) // not supported in Fable

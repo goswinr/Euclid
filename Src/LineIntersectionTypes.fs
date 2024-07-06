@@ -1,5 +1,6 @@
 namespace Euclid
 
+
 /// A module for the result types of 2D and 3D line-line-intersections.
 module LineIntersectionTypes =
 
@@ -163,7 +164,7 @@ module LineIntersectionTypes =
     /// Returns true if the IntersectionKind is represented by one point.
     /// Not two points like in skew or no point like in parallel.
     /// Also returns false for the special cases of too short lines.
-    let isIntersectionOnePoint k =
+    let isIntersectionOnePoint (k:IntersectionKind) =
         match k with
         | Intersecting | IntersectingEndsBoth | IntersectingEndsFirst
         | IntersectingEndsSecond  | Continuation | ContinuationFlipped -> true
@@ -183,7 +184,7 @@ module LineIntersectionTypes =
         |Outside
 
     /// Tests if a float is close to 0.0, close to 1.0 in between or outside.
-    /// The tolerance is approximately 1e-6 for each side. 
+    /// The tolerance is approximately 1e-6 for each side.
     /// That is 6 steps of float increment from 1.0.
     /// So between 0.99999964 and 1.000000715. Same step size for zero.
     let inline isZeroOneOrBetween (x:float) =

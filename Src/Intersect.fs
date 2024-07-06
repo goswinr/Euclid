@@ -6,13 +6,13 @@ namespace Euclid
 [<RequireQualifiedAccess>]
 type XLineCone =
     | NoIntersection
-    | Tangential 
+    | Tangential
     | Touching of float
     | Intersecting of float*float
 
 
 module Intersect =
-    open UtilEuclid    
+    open UtilEuclid
 
     /// Returns the parameter on vector 'va' where 'va' and 'vb' intersect intersect as endless rays.
     /// If they start from points 'a' and 'b' respectively.
@@ -52,7 +52,7 @@ module Intersect =
     /// And finally a tolerance: Curve A will be extended on both ends and offset to both sides.
     /// These offsets will also be checked with curve B that is also extended by this amount.
     let getRelation (ap:Pt, au:UnitVc, al:float, bp:Pt, bu:UnitVc, bl:float, snapThreshold:float) :LineLineRelation=
-        let aXb = au.Cross bu //precomputed  cross product
+        let aXb = au.Cross bu //precomputed cross product
 
         if abs(aXb) > zeroLengthTolerance then  // not parallel
             let aXbInverse = 1./aXb // invert only once, then pass it on as inverted value
@@ -115,23 +115,23 @@ module Intersect =
         |BfromLeft  (ta, _) ->  ap + au * ta // clamp point to actually be on line even if it is not quite in case of PreStart or PostEnd
         |BfromRight (ta, _) ->  ap + au * ta
 
-    
+
 
     /// Calculates the intersection of a finite line with a triangle.
-    /// Returns Some(Pnt) or None if no intersection was found, 
+    /// Returns Some(Pnt) or None if no intersection was found,
     /// or if the input line has near zero length,
     /// or or if input triangle has near zero area.
     /// This algorithm still returns an intersection even if line and triangle are almost parallel.
-    /// Since it is using the triple product it is be hard to find an appropriate tolerance for 
+    /// Since it is using the triple product it is be hard to find an appropriate tolerance for
     /// considering lines and triangles parallel based on the volume of the Tetrahedron between them.
-    let lineTriangle(line:Line3D, p1 :Pnt, p2:Pnt, p3:Pnt) : Pnt option = 
+    let lineTriangle(line:Line3D, p1 :Pnt, p2:Pnt, p3:Pnt) : Pnt option =
         // https://stackoverflow.com/questions/42740765/intersection-between-line-and-triangle-in-3d
         let inline tetrahedronVolumeSigned(a:Pnt, b:Pnt, c:Pnt, d:Pnt) : float=
             // computes the signed Volume of a Tetrahedron
             //((Vec.cross(b-a, c-a)) * (d-a)) / 6.0 // the actual volume of Volume of a Tetrahedron
             Vec.cross(b-a, c-a) *** (d-a) // divide by 6.0 is not needed, because we only need the sign of the result
 
-        let inline sign (x:float) = 
+        let inline sign (x:float) =
             if   x = 0 then 0
             elif x > 0 then 1
             else           -1
@@ -153,43 +153,43 @@ module Intersect =
                 let n = Vec.cross(p2-p1, p3-p1)
                 let v = q2-q1
                 let div = v *** n
-                if abs div < zeroLengthTolSquared then 
+                if isTooTinySq(abs(div)) then
                     None
                 else
                     let t = ((p1-q1) *** n) / div
-                    // this extra check should not be needed, 
+                    // this extra check should not be needed,
                     // but probably helps to deal with potential numerical precision issues:
-                    if isBetweenZeroAndOne t then 
+                    if isBetweenZeroAndOne t then
                         Some (q1 + v * t)
                     else
-                        None                    
+                        None
             else None
 
     /// Intersects an infinite line with an infinite double cone that has it's Axis on Z-Axis.
     /// coneRadius -> coneBaseZ -> coneTipZ ->  (ln:Line3D) -> XConeLine
     /// Returns the parameter(s) on the line.
-    let lineCone (ln:Line3D, coneRadius, coneBaseZ, coneTipZ) = 
-        let h = coneBaseZ-coneTipZ 
-        if abs h < 1e-12 then EuclidException.Raise "Euclid.Intersection.lineCone: cone has zero height: coneRadius: %g, coneBaseZ: %g, coneTipZ: %g" coneRadius coneBaseZ coneTipZ
+    let lineCone (ln:Line3D, coneRadius, coneBaseZ, coneTipZ) =
+        let h = coneBaseZ-coneTipZ
+        if isTooTiny( abs h )then EuclidException.Raise "Euclid.Intersection.lineCone: cone has zero height: coneRadius: %g, coneBaseZ: %g, coneTipZ: %g" coneRadius coneBaseZ coneTipZ
         let lam = coneRadius / h
         let lam = lam * lam
         let v = ln.Tangent
         let f2 = lam*v.Z*v.Z - v.X*v.X - v.Y*v.Y
-        if abs f2 < 1e-16 then 
+        if isTooTiny(abs f2) then
             XLineCone.Tangential
         else
             let f1 = 2.*lam*ln.FromZ*v.Z - 2.*lam*v.Z*coneTipZ - 2.*v.Y*ln.FromY - 2.*ln.FromX*v.X
             let f0 = lam*ln.FromZ*ln.FromZ + lam*coneTipZ*coneTipZ - 2.*ln.FromZ*coneTipZ*lam - ln.FromY*ln.FromY - ln.FromX*ln.FromX
             let part = f1**2. - 4.* f2 * f0
-            if part < 0.0 then  
-                XLineCone.NoIntersection 
-            else 
-                let sqrtPart = sqrt(part)        
+            if part < 0.0 then
+                XLineCone.NoIntersection
+            else
+                let sqrtPart = sqrt(part)
                 let div = 1. / (2. * f2)
                 let u = (-f1 + sqrtPart) * div
                 let v = (-f1 - sqrtPart) * div
-                if abs(u-v) < 1e-12 then
+                if isTooTiny(abs(u-v)) then
                     XLineCone.Touching ((u+v)*0.5)
                 else
                     XLineCone.Intersecting (u, v)
-                
+

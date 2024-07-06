@@ -3,6 +3,7 @@ namespace Euclid
 open System
 open System.Threading.Tasks
 open Euclid.LineIntersectionTypes
+open UtilEuclid
 
 /// Provides operations on 2D and 3D points.
 [<AbstractClass; Sealed>]
@@ -12,59 +13,89 @@ type Points private () =
     // and make in visible in C# // https://stackoverflow.com/questions/13101995/defining-static-classes-in-f
 
 
+    /// Returns the double square area of a triangle.
+    /// This is the fastest way to get a comparison or sorting value for the area of a triangle.
+    /// This is just the square length of the cross product vector.
+    /// The length of a cross product vector is equal to the area of the parallelogram described by the two input vectors.
+    static member inline areaTriangleDoubleSq (a:Pnt, b:Pnt, c:Pnt) :float =
+        // 2 edges of the triangle as vectors
+        let vX = b.X - a.X
+        let vY = b.Y - a.Y
+        let vZ = b.Z - a.Z
+        let wX = c.X - a.X
+        let wY = c.Y - a.Y
+        let wZ = c.Z - a.Z
+        // cross product of the two edges
+        let x = vY * wZ - vZ * wY
+        let y = vZ * wX - vX * wZ
+        let z = vX * wY - vY * wX
+        // the square length of the cross product is the square area of the parallelogram described by the two input vectors.
+        x*x + y*y + z*z
+
+    /// Returns the area of a triangle described by 3 points.
+    static member inline areaTriangle (a:Pnt, b:Pnt, c:Pnt) :float =
+        Points.areaTriangleDoubleSq(a, b, c) |> sqrt |>  ( * ) 0.5
+
+
     /// Checks if three points are in one line.
     /// This is a very fast check, but it is hard to find an appropriate tolerance. (Default is 0.001)
-    /// First it creates the cross product of the vectors between the points.
-    /// It then checks if the square length of this cross product vector is below the tolerance.
-    /// The square length of a cross product is equal to the square area of the parallelogram described by the two input vectors.
-    /// Also returns true if the points are equal.
+    /// This tolerance is the square area of the parallelogram described by two vectors created from the 3 points.
+    /// So it also returns true if the points are equal or very close to each other.
+    /// Returns false for NaN input values.
     /// See Points.areInLine function too.
     static member inline areInLineFast (a:Pnt, b:Pnt, c:Pnt, [<OPT;DEF(0.001)>] maxSquareAreaParallelogram:float) =
-         // TODO could be optimized by inlining floats.
-        Vec.cross (b-a, c-a) |> Vec.lengthSq <  maxSquareAreaParallelogram
+        let doubleSqArea = Points.areaTriangleDoubleSq(a, b, c)
+        doubleSqArea < maxSquareAreaParallelogram
 
-    /// Checks if three points are in one line. Within the distance tolerance. 1e-6 by default.
-    /// Also returns true if the points are equal within 1e-9 units.
-    static member inline areInLine (a:Pnt, b:Pnt, c:Pnt, [<OPT;DEF(1e-6)>] distanceTolerance:float) =
-        //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
-         // first try line a to b
-        let x = a.X - b.X
-        let y = a.Y - b.Y
-        let z = a.Z - b.Z
-        let lenSq = x*x + y*y + z*z
-        if lenSq > 1e-18 then // corresponds to a line Length of 1e-9
-            let u = a.X - c.X
-            let v = a.Y - c.Y
-            let w = a.Z - c.Z
+
+    /// Checks if three points are in one line. With a maximum deviation of the given distance tolerance. 1e-6 by default.
+    /// Fails if any of the points are closer than the given distance tolerance to each other.
+    static member areInLine (a:Pnt, b:Pnt, c:Pnt, [<OPT;DEF(1e-6)>] distanceTolerance:float) =
+
+        let inline  distanceSqLineToPntInfinite(lnFrom:Pnt, lnTo:Pnt, p:Pnt,  lnSqLen:float) =
+            // rewritten from  as Line3D.distanceLineToPntInfinite
+            // http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
+            let x = lnFrom.X - lnTo.X
+            let y = lnFrom.Y - lnTo.Y
+            let z = lnFrom.Z - lnTo.Z
+
+            let u = lnFrom.X - p.X
+            let v = lnFrom.Y - p.Y
+            let w = lnFrom.Z - p.Z
+
             let dot = x*u + y*v + z*w
-            let t = dot/lenSq
-            let x' = a.X - x*t
-            let y' = a.Y - y*t
-            let z' = a.Z - z*t
-            let u' = x' - c.X
-            let v' = y' - c.Y
-            let w' = z' - c.Z
-            u'*u' + v'*v' + w'*w' < distanceTolerance*distanceTolerance
-        else // next try line a to c
-            let x = a.X - c.X
-            let y = a.Y - c.Y
-            let z = a.Z - c.Z
-            let lenSq = x*x + y*y + z*z
-            if lenSq > 1e-18 then // corresponds to a line Length of 1e-9
-                let u = a.X - b.X
-                let v = a.Y - b.Y
-                let w = a.Z - b.Z
-                let dot = x*u + y*v + z*w
-                let t = dot/lenSq
-                let x' = a.X - x*t
-                let y' = a.Y - y*t
-                let z' = a.Z - z*t
-                let u' = x' - b.X
-                let v' = y' - b.Y
-                let w' = z' - b.Z
-                u'*u' + v'*v' + w'*w' < distanceTolerance*distanceTolerance
-            else
-                true // all points equal within 1e-9
+
+            let t = dot/lnSqLen
+            let x' = lnFrom.X - x * t
+            let y' = lnFrom.Y - y * t
+            let z' = lnFrom.Z - z * t
+            let u' = x' - p.X
+            let v' = y' - p.Y
+            let w' = z' - p.Z
+            u'*u' + v'*v' + w'*w'
+
+        let ab = b-a
+        let bc = c-b
+        let ca = a-c
+        let abLenSq = ab.LengthSq
+        let bcLenSq = bc.LengthSq
+        let caLenSq = ca.LengthSq
+        let distSq = distanceTolerance*distanceTolerance
+        if not(distSq < abLenSq) then EuclidException.Raise "Euclid.Points.areInLine failed on very short line %O to %O " a b
+        if not(distSq < bcLenSq) then EuclidException.Raise "Euclid.Points.areInLine failed on very short line %O to %O " b c
+        if not(distSq < caLenSq) then EuclidException.Raise "Euclid.Points.areInLine failed on very short line %O to %O " c a
+        let dotA = ab *** ca
+        let dotB = bc *** ab
+        let dotC = ca *** bc
+        // the corner with the biggest dot product is the one with the biggest angle,
+        // so the one with the closest distance to the opposite line in this triangle
+        if dotA > dotB && dotA > dotC then
+            distanceSqLineToPntInfinite(b, c, a, bcLenSq) < distSq
+        elif dotB > dotA && dotB > dotC then
+            distanceSqLineToPntInfinite(c, a, b, caLenSq) < distSq
+        else
+            distanceSqLineToPntInfinite(a, b, c, abLenSq) < distSq
+
 
 
     /// The sign is negative if the loop is clockwise.
@@ -346,7 +377,9 @@ type Points private () =
     /// Finds the center, mean or average point.
     static member center (pts: ResizeArray<Pnt>) =
         let mutable sum = Pnt.Origin
-        for pt in pts do  sum <- sum + pt
+        for i = 0 to pts.Count-1 do
+            let pt = pts.[i]
+            sum <- sum + pt
         sum / float pts.Count
 
     /// Finds the mean normal of many points.
@@ -361,7 +394,7 @@ type Points private () =
             let a = pts.[0] - pts.[1]
             let b = pts.[2] - pts.[1]
             let v= Vec.cross(b, a)
-            if v.LengthSq < 1e-12 then
+            if isTooSmallSq v.LengthSq  then
                 EuclidException.Raise "Euclid.Points.normalOfPoints: three points are in a line %O" pts
             else
                 v
@@ -376,7 +409,7 @@ type Points private () =
                 let x = Vec.cross(a, b)  |> Vec.matchOrientation v // TODO do this matching?
                 v <- v + x
                 t<-n
-            if v.LengthSq < 1e-12 then
+            if isTooSmallSq v.LengthSq  then
                 EuclidException.Raise "Euclid.Points.normalOfPoints: points are in a line or sphere without clear normal %O" pts
             else
                 v
@@ -393,7 +426,8 @@ type Points private () =
             let a = pts.[0] - pts.[1]
             let b = pts.[2] - pts.[1]
             let v= Vec.cross(b, a)
-            if v.LengthSq < 1e-12 then EuclidException.Raise "Euclid.Points.normalOfPoints: three points are in a line %O" pts
+            if isTooSmallSq v.LengthSq  then
+                EuclidException.Raise "Euclid.Points.normalOfPoints: three points are in a line %O" pts
             else
                 v
         else
@@ -407,7 +441,7 @@ type Points private () =
                 let x = Vec.cross(t-cen, n-cen)  |> Vec.matchOrientation v // TODO do this matching?
                 v <- v + x
                 t <- n
-            if v.LengthSq < 1e-12 then
+            if isTooSmallSq v.LengthSq  then
                 EuclidException.Raise "Euclid.Points.normalOfPoints: points are in a line or sphere without clear normal %O" pts
             else
                 v
@@ -433,9 +467,9 @@ type Points private () =
         let bz = thisToNext.Z
         let a = ax*ax + ay*ay + az*az // square length of A
         let c = bx*bx + by*by + bz*bz // square length of B
-        if c < 1e-12 then
+        if isTooSmallSq c then
             ValueNone
-        elif a < 1e-12 then
+        elif isTooSmallSq c  then
             ValueNone
         else
             let b = ax*bx + ay*by + az*bz // dot product of both lines
@@ -494,9 +528,9 @@ type Points private () =
         let bz = thisToNext.Z
         let a = ax*ax + ay*ay + az*az // square length of A
         let c = bx*bx + by*by + bz*bz // square length of B
-        if c < 1e-12 then
+        if isTooSmallSq (c) then
             ValueNone
-        elif a < 1e-12 then
+        elif isTooSmallSq (a) then
             ValueNone
         else
             let b = ax*bx + ay*by + az*bz // dot product of both lines
@@ -558,9 +592,9 @@ type Points private () =
         let by = thisToNext.Y
         let a = ax*ax + ay*ay // square length of A
         let c = bx*bx + by*by // square length of B
-        if c < 1e-12 then
+        if isTooSmallSq (c) then
             ValueNone
-        elif a < 1e-12 then
+        elif isTooSmallSq (a) then 
             ValueNone
         else
             let b = ax*bx + ay*by // dot product of both lines

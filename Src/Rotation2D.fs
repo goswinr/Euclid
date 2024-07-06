@@ -18,7 +18,7 @@ open System.Runtime.Serialization // for serialization of struct fields only but
 //[<IsByRefLike>]
 [<DataContract>] // for using DataMember on fields
 type Rotation2D =
-    
+
     //[<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
 
     /// The Sine component of this rotation.
@@ -97,12 +97,12 @@ type Rotation2D =
     static member createFromVectors (a:UnitVc,b:UnitVc) =
         let dot = a *** b
         let cross = UnitVc.cross(a, b)
-        Rotation2D (cross, dot)    
-    
+        Rotation2D (cross, dot)
+
     static member createFromVectors (a:Vc,b:Vc) =
         let la = a.Length
         let lb = b.Length
-        if la < zeroLengthTolerance || lb < zeroLengthTolerance then
+        if isTooTiny (la) || isTooTiny (lb) then
             EuclidException.Raise "Euclid.Rotation2D.createFromVectors failed because one of the input vectors is too shorter than zeroLengthTolerance: a: %s, b: %s" a.AsString b.AsString
         let ax = a.X/la
         let ay = a.Y/la

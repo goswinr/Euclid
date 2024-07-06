@@ -8,7 +8,7 @@ open System.Runtime.Serialization // for serialization of struct fields only but
 /// An immutable 4x3 rigid matrix. For only rotation and translation in 3D space.
 /// This matrix guarantees to NOT scale, shear, flip, mirror, reflect or project.
 /// Angles are preserved. Lengths are preserved. Area is preserved. Volume is preserved.
-/// A rigid matrix is a matrix whose 3x3 columns and rows are orthogonal unit vectors.
+/// A rigid matrix is a matrix whose 3x3 columns and rows are orthogonal unit-vectors.
 /// The matrix is represented in the following column-vector syntax form:
 /// M11 M21 M31 X41
 /// M12 M22 M32 Y42
@@ -128,7 +128,7 @@ type RigidMatrix =
         let n23 = m.M23
         let n33 = m.M33
         let z43 = m.Z43
-               
+
         let n33y42 = n33*y42
         let n32z43 = n32*z43
         let n13n22 = n13*n22
@@ -136,7 +136,7 @@ type RigidMatrix =
         let n31z43 = n31*z43
         let n31y42 = n31*y42
         let n13n21 = n13*n21
-        let n12n21 = n12*n21  
+        let n12n21 = n12*n21
         let n33x41 = n33*x41
         let n11n23 = n11*n23
         let n11n22 = n11*n22
@@ -271,7 +271,7 @@ type RigidMatrix =
             0, 1, 0, y,
             0, 0, 1, z)
 
-    /// Creates a translation RigidMatrix:    
+    /// Creates a translation RigidMatrix:
     /// Vec - the vector by which to translate.
     /// The resulting RigidMatrix will be:
     /// 1  0  0  v.X
@@ -363,7 +363,7 @@ type RigidMatrix =
     static member createRotationAxis(axis:Vec, angleDegrees:float) =
         // first unitize
         let len = sqrt (axis.X*axis.X + axis.Y*axis.Y + axis.Z*axis.Z)
-        if len <  zeroLengthTolerance then
+        if isTooTiny(len) then
             EuclidException.Raise "Euclid.RigidMatrix.createRotationAxis failed on too short axis: %O and rotation: %g° Degrees." axis angleDegrees
         let sc = 1. / len
         let x = axis.X * sc
@@ -405,19 +405,19 @@ type RigidMatrix =
 
     /// Creates a rotation from one vectors direction to another vectors direction.
     /// If the tips of the two vectors are closer than 1e-9 the identity matrix is returned.
-    /// If the tips of the two vectors are almost exactly opposite, deviating less than 1e-6 from line, 
+    /// If the tips of the two vectors are almost exactly opposite, deviating less than 1e-6 from line,
     /// there is no valid unique 180 degree rotation that can be found, so an exception is raised.
     static member createVecToVec(vecFrom:UnitVec, vecTo:UnitVec) =
         let v = vecFrom - vecTo
-        if v.LengthSq < 1e-18 then // the vectors are almost the same
+        if v.LengthSq < 1e-24 then // the vectors are almost the same
             RigidMatrix.identity
         else
             let v = vecFrom + vecTo
-            if v.LengthSq < 1e-12 then // the vectors are almost exactly opposite
-                EuclidException.Raise "Euclid.RigidMatrix.createVecToVec failed to find a rotation axis for (almost) colinear unit vectors in opposite directions: %O and %O" vecFrom vecTo         
+            if isTooSmallSq v.LengthSq then // the vectors are almost exactly opposite
+                EuclidException.Raise "Euclid.RigidMatrix.createVecToVec failed to find a rotation axis for (almost) colinear unit-vectors in opposite directions: %O and %O" vecFrom vecTo
             else
                 let axis0 = UnitVec.cross(vecFrom, vecTo)
-                let len = axis0.Length  
+                let len = axis0.Length
                 let axis = axis0 / len
                 let x = axis.X
                 let y = axis.Y
@@ -426,7 +426,7 @@ type RigidMatrix =
                 let s = sqrt(1. - c*c) // Pythagoras to find sine
                 let t = 1.0 - c
                 let tx = t * x
-                let ty = t * y  
+                let ty = t * y
                 RigidMatrix(
                     tx * x + c    , tx * y - s * z , tx * z + s * y , 0 ,
                     tx * y + s * z, ty * y + c     , ty * z - s * x , 0 ,
@@ -434,7 +434,7 @@ type RigidMatrix =
 
     /// Creates a rotation from one vectors direction to another vectors direction.
     /// If the tips of the two vectors unitized are closer than 1e-9 the identity matrix is returned.
-    /// If the tips of the two vectors are almost exactly opposite, deviating less than 1e-6 from line (unitized), 
+    /// If the tips of the two vectors are almost exactly opposite, deviating less than 1e-6 from line (unitized),
     /// there is no valid unique 180 degree rotation that can be found, so an exception is raised.
     static member createVecToVec(vecFrom:Vec, vecTo:Vec) =
         let fu =
@@ -442,7 +442,7 @@ type RigidMatrix =
             let y = vecFrom.Y
             let z = vecFrom.Z
             let length = sqrt(x*x + y*y + z*z)
-            if length <  zeroLengthTolerance then
+            if isTooTiny(length) then
                 EuclidException.Raise "Euclid.RigidMatrix.createVecToVec failed. The vector is too short: vecFrom: %O" vecFrom
             let sc = 1. / length // inverse for unitizing vector:
             UnitVec.createUnchecked(x*sc, y*sc, z*sc)
@@ -451,21 +451,21 @@ type RigidMatrix =
             let y = vecTo.Y
             let z = vecTo.Z
             let length = sqrt(x*x + y*y + z*z)
-            if length <  zeroLengthTolerance then
+            if isTooTiny(length) then
                 EuclidException.Raise "Euclid.RigidMatrix.createVecToVec failed. The vector is too short: vecTo: %O" vecTo
             let sc = 1. / length // inverse for unitizing vector:
             UnitVec.createUnchecked(x*sc, y*sc, z*sc)
-        
+
         let v = fu - tu
-        if v.LengthSq < 1e-18 then // the vectors are almost the same
+        if v.LengthSq < 1e-24 then // the vectors are almost the same
             RigidMatrix.identity
         else
             let v = fu + tu
-            if v.LengthSq < 1e-12 then // the vectors are almost exactly opposite
-                EuclidException.Raise "Euclid.RigidMatrix.createVecToVec failed to find a rotation axis for (almost) colinear vectors in opposite directions: %O and %O" vecFrom vecTo      
+            if isTooSmallSq v.LengthSq then // the vectors are almost exactly opposite
+                EuclidException.Raise "Euclid.RigidMatrix.createVecToVec failed to find a rotation axis for (almost) colinear vectors in opposite directions: %O and %O" vecFrom vecTo
             else
                 let axis0 = UnitVec.cross(fu, tu)
-                let len = axis0.Length  
+                let len = axis0.Length
                 let axis = axis0 / len
                 let x = axis.X
                 let y = axis.Y
@@ -474,7 +474,7 @@ type RigidMatrix =
                 let s = sqrt(1. - c*c) // Pythagoras to find sine
                 let t = 1.0 - c
                 let tx = t * x
-                let ty = t * y  
+                let ty = t * y
                 RigidMatrix(
                     tx * x + c    , tx * y - s * z , tx * z + s * y , 0 ,
                     tx * y + s * z, ty * y + c     , ty * z - s * x , 0 ,
@@ -507,11 +507,11 @@ type RigidMatrix =
             let x = Vec(m.M11, m.M12, m.M13)
             let y = Vec(m.M21, m.M22, m.M23)
             let z = Vec(m.M31, m.M32, m.M33)
-            let inline sqLen    (v:Vec) = v.X*v.X + v.Y*v.Y + v.Z*v.Z // defined here again, because Vec extension members are not in scope here            
-            if  
-                UtilEuclid.isZero m.M14 && // last row is 0, 0, 0, 1       
-                UtilEuclid.isZero m.M24 && // last row is 0, 0, 0, 1       
-                UtilEuclid.isZero m.M34 && // last row is 0, 0, 0, 1       
+            let inline sqLen    (v:Vec) = v.X*v.X + v.Y*v.Y + v.Z*v.Z // defined here again, because Vec extension members are not in scope here
+            if
+                UtilEuclid.isZero m.M14 && // last row is 0, 0, 0, 1
+                UtilEuclid.isZero m.M24 && // last row is 0, 0, 0, 1
+                UtilEuclid.isZero m.M34 && // last row is 0, 0, 0, 1
                 UtilEuclid.isOne  m.M44 && // last row is 0, 0, 0, 1
                 UtilEuclid.isOne (sqLen x) && // exclude scaling
                 UtilEuclid.isOne (sqLen y) &&
@@ -533,7 +533,7 @@ type RigidMatrix =
     static member createFromMatrix (m:Matrix) =
         match RigidMatrix.tryCreateFromMatrix m with
         | Some m -> m
-        | None -> EuclidException.Raise "Euclid.RigidMatrix.createFromMatrix failed. The input matrix does scale, shear, flip, mirror, reflect or project: %O" m     
+        | None -> EuclidException.Raise "Euclid.RigidMatrix.createFromMatrix failed. The input matrix does scale, shear, flip, mirror, reflect or project: %O" m
 
     /// Create a RigidMatrix from a Quaternion.
     static member createFromQuaternion(quaternion:Quaternion) =
@@ -566,8 +566,8 @@ type RigidMatrix =
                     , (yz + wx)
                     , (1. - (xx + yy) )
                     , 0)
-    
-    
+
+
     /// Removes the translation part by setting X41, Y42 and Z43 to 0.0.
     static member removeTranslation (v:Vec) (m:RigidMatrix) =
         RigidMatrix(m.M11, m.M21, m.M31, 0.0,
@@ -580,7 +580,7 @@ type RigidMatrix =
                     m.M12, m.M22, m.M32, m.Y42 + v.Y,
                     m.M13, m.M23, m.M33, m.Z43 + v.Z)
 
-                    
+
 
     /// Add a X, Y and Z translation to an existing RigidMatrix.
     static member addTranslationXYZ x y z  (m:RigidMatrix) =
@@ -612,7 +612,7 @@ type RigidMatrix =
         let x = v.X
         let y = v.Y
         let z = v.Z
-        UnitVec.createUnchecked(  
+        UnitVec.createUnchecked(
               m.M11*x + m.M21*y + m.M31*z // + m.X41
             , m.M12*x + m.M22*y + m.M32*z // + m.Y42
             , m.M13*x + m.M23*y + m.M33*z // + m.Z43

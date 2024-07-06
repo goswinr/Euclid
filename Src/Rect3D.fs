@@ -52,8 +52,8 @@ type Rect3D =
         #if DEBUG
         let lenX = axisX.Length
         let lenY = axisY.Length
-        if lenX < 1e-9 then EuclidException.Raise "Euclid.Rect3D(): X-axis is too short: %O" axisX
-        if lenY < 1e-9 then EuclidException.Raise "Euclid.Rect3D(): Y-axis is too short: %O" axisY
+        if isTooSmall (lenX) then  EuclidException.Raise "Euclid.Rect3D(): X-axis is too short: %O" axisX
+        if isTooSmall (lenY) then  EuclidException.Raise "Euclid.Rect3D(): Y-axis is too short: %O" axisY
         //just using zeroLengthTolerance 1e-12 seems too strict for dot product check:
         if abs (axisX *** axisY) > (lenX+lenY)*1e-9 then EuclidException.Raise "Euclid.Rect3D(): X-axis and Y-axis are not perpendicular\r\n(dot=%g) > 1e-10 \r\n%O and \r\n%O" (abs (axisX *** axisY)) axisX axisY
         #endif
@@ -334,13 +334,13 @@ type Rect3D =
     /// Creates a unitized version of the local X-Axis.
     member inline r.XaxisUnit =
         let len = r.Xaxis.Length
-        if len = zeroLengthTolerance then EuclidException.Raise "Euclid.Rect3D.XaxisUnit: rect Xaxis is too small for unitizing: %s" r.AsString
+        if isTooTiny len then EuclidException.Raise "Euclid.Rect3D.XaxisUnit: rect Xaxis is too small for unitizing: %s" r.AsString
         r.Xaxis*(1./len)
 
     /// Creates a unitized version of the local Y-Axis.
     member inline r.YaxisUnit =
         let len = r.Yaxis.Length
-        if len = zeroLengthTolerance then EuclidException.Raise "Euclid.Rect3D.XaxisUnit: rect Yaxis is too small for unitizing: %s" r.AsString
+        if isTooTiny len then EuclidException.Raise "Euclid.Rect3D.XaxisUnit: rect Yaxis is too small for unitizing: %s" r.AsString
         r.Yaxis*(1./len)
 
     /// Returns the Normal
@@ -352,7 +352,7 @@ type Rect3D =
     member r.NormalUnit =
         let z = Vec.cross(r.Xaxis, r.Yaxis)
         let len = z.Length
-        if len = zeroLengthTolerance then EuclidException.Raise "Euclid.Rect3D.NormalUnit: rect is too small for finding a normal vector: %s" r.AsString
+        if isTooTiny len then EuclidException.Raise "Euclid.Rect3D.NormalUnit: rect is too small for finding a normal vector: %s" r.AsString
         z*(1./len)
 
     /// Returns the diagonal vector of the 3D Rectangle.
@@ -542,7 +542,7 @@ type Rect3D =
     member inline r.EvaluateDist (xDistance:float, yDistance:float) =
         let lx = r.Xaxis.Length
         let ly = r.Yaxis.Length
-        if lx < zeroLengthTolerance || ly < zeroLengthTolerance then
+        if isTooTiny (lx) || isTooTiny (ly) then
             EuclidException.Raise "Euclid.Rect3D.EvaluateDist: rect Xaxis or Yaxis is too small for evaluating distance: %s" r.AsString
         r.Origin + r.Xaxis * (xDistance/lx) + r.Yaxis * (yDistance/ly)
 
@@ -604,26 +604,26 @@ type Rect3D =
     /// Fails if x and y are not perpendicularity.
     /// Fails on vectors shorter than 1e-9.
     static member createFromVectors(origin, x:Vec, y:Vec) =
-        if x.LengthSq < 1e-9 then EuclidException.Raise "Euclid.Rect3D.create(origin, x:Vec, y:Vec): X-axis is too short:\r\n%O" y
-        if y.LengthSq < 1e-9 then EuclidException.Raise "Euclid.Rect3D.create(origin, x:Vec, y:Vec): Y-axis is too short:\r\n%O" y
+        if isTooSmallSq(x.LengthSq)then EuclidException.Raise "Euclid.Rect3D.createFromVectors(origin, x:Vec, y:Vec): X-axis is too short:\r\n%O" y
+        if isTooSmallSq(y.LengthSq) then EuclidException.Raise "Euclid.Rect3D.createFromVectors(origin, x:Vec, y:Vec): Y-axis is too short:\r\n%O" y
         //zeroLengthTolerance seems too strict for dot product:
-        if abs (x *** y) > 1e-10 then EuclidException.Raise "Euclid.Rect3D.create(origin, x:Vec, y:Vec): X-axis and Y-axis are not perpendicular (dot=%g): \r\n%O and\r\n%O" (abs (x *** y)) x y
+        if abs (x *** y) > 1e-10 then EuclidException.Raise "Euclid.Rect3D.createFromVectors(origin, x:Vec, y:Vec): X-axis and Y-axis are not perpendicular (dot=%g): \r\n%O and\r\n%O" (abs (x *** y)) x y
         Rect3D(origin, x, y)
 
     /// Give PPlane and sizes.
     /// The Rect3D's Origin will be at the plane's Origin.
     /// Fails on negative sizes.
     static member createFromPlane (pl:PPlane, sizeX:float, sizeY:float) =
-        if sizeX < 0. then EuclidException.Raise "Euclid.Rect3D.createFromPlane sizeX is negative: %g, sizeY is: %g, plane: %O"  sizeX sizeY  pl
-        if sizeY < 0. then EuclidException.Raise "Euclid.Rect3D.createFromPlane sizeY is negative: %g, sizeX is: %g, plane: %O"  sizeY sizeX  pl
+        if isNegative(sizeX) then EuclidException.Raise "Euclid.Rect3D.createFromPlane sizeX is negative: %g, sizeY is: %g, plane: %O"  sizeX sizeY  pl
+        if isNegative(sizeY) then EuclidException.Raise "Euclid.Rect3D.createFromPlane sizeY is negative: %g, sizeX is: %g, plane: %O"  sizeY sizeX  pl
         Rect3D(pl.Origin, pl.Xaxis*sizeX, pl.Yaxis*sizeY)
 
     /// Give PPlane and sizes.
     /// The Rect3D's Center will be at the plane's Origin.
     /// Fails on negative sizes.
     static member createCenteredFromPlane (pl:PPlane, sizeX:float, sizeY:float) =
-        if sizeX < 0. then EuclidException.Raise "Euclid.Rect3D.createCenteredFromPlane sizeX is negative: %g, sizeY is: %g, plane: %O"  sizeX sizeY  pl
-        if sizeY < 0. then EuclidException.Raise "Euclid.Rect3D.createCenteredFromPlane sizeY is negative: %g, sizeX is: %g, plane: %O"  sizeY sizeX  pl
+        if isNegative(sizeX) then EuclidException.Raise "Euclid.Rect3D.createCenteredFromPlane sizeX is negative: %g, sizeY is: %g, plane: %O"  sizeX sizeY  pl
+        if isNegative(sizeY) then EuclidException.Raise "Euclid.Rect3D.createCenteredFromPlane sizeY is negative: %g, sizeX is: %g, plane: %O"  sizeY sizeX  pl
         let x = pl.Xaxis*sizeX
         let y = pl.Yaxis*sizeY
         Rect3D(pl.Origin- x*0.5 - y*0.5, x, y)
@@ -658,11 +658,11 @@ type Rect3D =
     ///  0-Origin       1
     static member createFrom3Points (origin:Pnt, xPt:Pnt, yPt:Pnt) =
         let x = xPt - origin
-        if x.LengthSq < 1e-9 then EuclidException.Raise "Euclid.Rect3D.createThreePoints: X-Point %s too close to origin: %s." origin.AsString x.AsString
+        if isTooSmallSq x.LengthSq  then EuclidException.Raise "Euclid.Rect3D.createThreePoints: X-Point %s too close to origin: %s." origin.AsString x.AsString
         let y = yPt - origin
-        if y.LengthSq < 1e-9 then EuclidException.Raise "Euclid.Rect3D.createThreePoints: Y-Point %s too close to origin: %s." origin.AsString y.AsString
+        if isTooSmallSq y.LengthSq  then EuclidException.Raise "Euclid.Rect3D.createThreePoints: Y-Point %s too close to origin: %s." origin.AsString y.AsString
         let z = Vec.cross(x,y)
-        if z.LengthSq < 1e-12 then EuclidException.Raise "Euclid.Rect3D.createThreePoints: Y-Point %s is too close to Xaxis." y.AsString
+        if isTooSmallSq z.LengthSq  then EuclidException.Raise "Euclid.Rect3D.createThreePoints: Y-Point %s is too close to Xaxis." y.AsString
         let yu = Vec.cross(z, x).Unitized
         let yr = yu * (yu *** y) // get the y point projected on the y axis
         Rect3D(origin, x, yr)
@@ -687,13 +687,13 @@ type Rect3D =
     ///  0-Origin       1
     static member tryCreateFrom3Points (origin:Pnt, xPt:Pnt, yPt:Pnt) =
         let x = xPt - origin
-        if x.LengthSq < 1e-9 then None
+        if isTooSmallSq x.LengthSq  then None
         else
             let y = yPt - origin
-            if y.LengthSq < 1e-9 then None
+            if isTooSmallSq y.LengthSq  then None
             else
                 let z = Vec.cross(x,y)
-                if z.LengthSq < 1e-12 then None
+                if isTooSmallSq z.LengthSq  then None
                 else
                     let yu = Vec.cross(z, x).Unitized
                     let yr = yu * (yu *** y) // get the y point projected on the y axis
@@ -722,14 +722,14 @@ type Rect3D =
     static member translateX (distX:float) (r:Rect3D) =
         let x = r.Xaxis
         let len = x.Length
-        if len = zeroLengthTolerance then EuclidException.Raise "Euclid.Rect3D.translateX: rect.Xaxis is zero length in Rect3D: %s" r.AsString
+        if isTooTiny len then EuclidException.Raise "Euclid.Rect3D.translateX: rect.Xaxis is zero length in Rect3D: %s" r.AsString
         Rect3D(r.Origin + x*(distX/len), x, r.Yaxis)
 
     /// Translate along the local Y-axis of the 3D Rectangle.
     static member translateY (distY:float) (r:Rect3D) =
         let y = r.Yaxis
         let len = y.Length
-        if len = zeroLengthTolerance then EuclidException.Raise "Euclid.Rect3D.translateY: rect.Yaxis is zero length in Rect3D: %s" r.AsString
+        if isTooTiny len then EuclidException.Raise "Euclid.Rect3D.translateY: rect.Yaxis is zero length in Rect3D: %s" r.AsString
         Rect3D(r.Origin + y*(distY/len), r.Xaxis, y)
 
     /// Translate by a 3D vector.(same as Rect3D.move)
@@ -754,7 +754,7 @@ type Rect3D =
     static member offsetZ (offsetDistance :float) (r:Rect3D) =
         let z = Vec.cross(r.Xaxis, r.Yaxis)
         let len = z.Length
-        if len = zeroLengthTolerance then EuclidException.Raise "Euclid.Rect3D.offsetZ: rect is too small for offsetting zero length in Rect3D: %s" r.AsString
+        if isTooTiny len then EuclidException.Raise "Euclid.Rect3D.offsetZ: rect is too small for offsetting zero length in Rect3D: %s" r.AsString
         Rect3D(r.Origin + z*(offsetDistance/len), r.Xaxis, r.Yaxis)
 
     /// Offset a Rect3D like a Polyline inwards by a given distance.
@@ -826,7 +826,7 @@ type Rect3D =
         let ya = rect.Yaxis
         let xl = xa.Length
         let yl = ya.Length
-        if xl < zeroLengthTolerance || yl < zeroLengthTolerance then
+        if isTooTiny (xl) || isTooTiny (yl) then
             EuclidException.Raise "Euclid.Rect3D.offsetCorner: the 3D Rectangle %s is too small to offsetCorner"  rect.AsString
         let xv = xa * (xWidth/xl)
         let yv = ya * (yHeight/yl)
@@ -880,7 +880,7 @@ type Rect3D =
         let inline xLen l = x * (l / lx)
         let inline yLen l = y * (l / ly)
         let inline orig xx yy = rect.Origin + xLen xx + yLen yy
-        if lx < zeroLengthTolerance || ly < zeroLengthTolerance then
+        if isTooTiny (lx) || isTooTiny (ly) then
             EuclidException.Raise "Euclid.Rect3D.offsetEdge: the 3D Rectangle %s is too small to offsetCorner"  rect.AsString
         match edgeIdx with
         | 0 ->  Rect3D( orig offStart offEdge
@@ -915,7 +915,7 @@ type Rect3D =
         let yl = ya.Length
         let lx1 = (xl - xGap * float (xCount-1) )/ float xCount
         let ly1 = (yl - yGap * float (yCount-1) )/ float yCount
-        if lx1 < zeroLengthTolerance || ly1 < zeroLengthTolerance then
+        if isTooTiny (lx1) || isTooTiny (ly1) then
             [||]
         else
             let o = rect.Origin

@@ -1,33 +1,23 @@
 namespace Euclid
 
-// Design notes:
-// The structs types in this file only have the constructors, ToString override and operators define in this file.
-// For structs that need a checked and unchecked constructor (like unit vectors) the main 'new' constructor is marked obsolete.
-// A 'create' and 'createUnchecked' static member is provided instead.
-// All other members are implemented as extension members. see files in folder members.
-// This design however makes extension members unaccessible from see C#. To fix this all types and all members could be put into one file.
-// the types would have to be marked as recursive. This file would be very large and probably have bad editor performance.
-
+// Design notes: see file Pt.fs for more details
 open System
-open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>]  see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
+open System.Runtime.CompilerServices
 open Euclid.UtilEuclid
-open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
+open System.Runtime.Serialization
 
 #nowarn "44" // for internal inline constructors and hidden obsolete members for error cases
 
-/// An immutable 2D vector with any length. Made up from 2 floats: X and Y.
-/// (2D Unit vectors with length 1.0 are called 'UnitVc' )
-/// (3D vectors are called 'Vec' )
-[<Struct;NoEquality;NoComparison>]// because its made up from floats
-[<IsReadOnly>]
-//[<IsByRefLike>] // not used, see notes at end of file
-[<DataContract>] // for using DataMember on fields 
+/// <summary>Vc is an immutable 2D vector with any length. Made up from 2 floats: X and Y.</summary>
+/// <remarks>2D unit-vectors with length 1.0 are called 'UnitVc'.
+/// 3D vectors are called 'Vec'.</remarks>///
+[<Struct;DataContract;NoEquality;NoComparison;IsReadOnly>] //[<IsByRefLike>]
 type Vc =
 
-    /// Gets the X part of this 2D vector.
+    /// <summary>Gets the X part of this 2D vector.</summary>
     [<DataMember>] val X : float
 
-    /// Gets the Y part of this 2D vector.
+    /// <summary>Gets the X part of this 2D vector.</summary>
     [<DataMember>] val Y : float
 
     /// Create a new 2D vector with any length. Made up from 2 floats: X and Y.
@@ -36,6 +26,7 @@ type Vc =
         if Double.IsNaN x || Double.IsNaN y || Double.IsInfinity x || Double.IsInfinity y  then EuclidException.Raise "Euclid.Vc Constructor failed for x:%g, y:%g"  x y
         #endif
         {X=x; Y=y}
+
 
     /// Format 2D vector into string including type name and nice floating point number formatting of X, Y and length.
     override v.ToString() = sprintf "Euclid.Vc: X=%s|Y=%s|length: %s" (Format.float v.X) (Format.float v.Y) (Format.float (sqrt (v.X*v.X + v.Y*v.Y)))
@@ -64,11 +55,12 @@ type Vc =
 
     /// A separate function to compose the error message that does not get inlined.
     [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-    member v.FailedDivide(f) = EuclidDivByZeroException.Raise "Euclid.Vc: divide operator: %g is too small for dividing %O using the '/' operator. Tolerance:%g"  f v zeroLengthTolerance
-        
+    member v.FailedDivide(f) =
+        EuclidDivByZeroException.Raise "Euclid.Vc: divide operator: %g is too small for dividing %O using the '/' operator. Tolerance:%g"  f v zeroLengthTolerance
+
     /// Divides a 2D vector by a scalar, also be called dividing/scaling a vector. Returns a new 2D vector.
-    static member inline ( / ) (v:Vc, f:float) = 
-        if abs f < zeroLengthTolerance then v.FailedDivide(f) // don't compose error msg directly here to keep inlined code small.        
+    static member inline ( / ) (v:Vc, f:float) =
+        if isTooTiny (abs f) then v.FailedDivide(f) // don't compose error msg directly here to keep inlined code small.
         Vc (v.X / f, v.Y / f)
 
     /// Returns the length of the 2D vector.
@@ -78,11 +70,11 @@ type Vc =
     /// The square length is faster to calculate and often good enough for use cases such as sorting vectors by length.
     member inline v.LengthSq = v.X*v.X + v.Y*v.Y
 
-    
+
     //-----------------------------------------------------------------------------------------------------
     // These static members can't be extension methods to be useful for Array.sum and Array.average :
     //-----------------------------------------------------------------------------------------------------
-    
+
     /// Returns a zero length vector: Vec(0, 0)
     static member inline Zero = Vc(0, 0)  // this member is needed by Seq.sum, so that it doesn't fail on empty seq.
 
@@ -90,6 +82,6 @@ type Vc =
     /// (This member is needed by Array.average and similar functions)
     static member DivideByInt (v:Vc, i:int) = // needed by 'Array.average'
         if i = 0 then EuclidDivByZeroException.Raise "Euclid.Vc.DivideByInt is zero %O" v
-        let d = float i 
+        let d = float i
         Vc(v.X/d, v.Y/d)
-              
+

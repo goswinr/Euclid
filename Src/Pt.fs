@@ -2,32 +2,38 @@ namespace Euclid
 
 // Design notes:
 // The structs types in this file only have the constructors, ToString override and operators define in this file.
-// For structs that need a checked and unchecked constructor (like unit vectors) the main 'new' constructor is marked obsolete.
+// For structs that need a checked and unchecked constructor (like unit-vectors) the main 'new' constructor is marked obsolete.
 // A 'create' and 'createUnchecked' static member is provided instead.
 // All other members are implemented as extension members. see files in folder members.
 // This design however makes extension members unaccessible from see C#. To fix this all types and all members could be put into one file.
 // the types would have to be marked as recursive. This file would be very large and probably have bad editor performance.
 
+// the attributes [<IsByRefLike; IsReadOnly>]  are for potential performance optimization.
+// see https://www.bartoszsypytkowski.com/writing-high-performance-f-code/
+// see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
+
+// The attributes [<DataContract>] is for using DataMember on fields for serialization.
+// [<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
+
 open System
-open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>]  see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
+open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>]
 open Euclid.UtilEuclid
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 
 #nowarn "44" // for internal inline constructors and hidden obsolete members for error cases
 
 
-/// An immutable 2D point. Made up from 2 floats: X and Y.
-/// (3D Points are called 'Pnt' )
+/// <summary> Pt is an immutable 2D point. Made up from 2 floats: X and Y.</summary>
+/// <remarks> 3D Points are called 'Pnt' </remarks>
 [<Struct;NoEquality;NoComparison>]// because its made up from floats
-[<IsReadOnly>]
-//[<IsByRefLike>]
-[<DataContract>] // for using DataMember on fields  
+[<IsReadOnly>] //[<IsByRefLike>]
+[<DataContract>] // for using DataMember on fields
 type Pt =
 
-    /// Gets the X part of this 2D point.
+    /// <summary>Gets the X part of this 2D point.</summary>
     [<DataMember>] val X : float
 
-    /// Gets the Z part of this 2D point.
+    /// <summary>Gets the X part of this 2D point.</summary>
     [<DataMember>] val Y : float
 
     /// Create a new 2D point. Made up from 2 floats: X and Y.
@@ -36,6 +42,7 @@ type Pt =
         if Double.IsNaN x || Double.IsNaN y || Double.IsInfinity x || Double.IsInfinity y  then EuclidException.Raise "Euclid.Pt Constructor failed for x:%g, y:%g"  x y
         #endif
         {X=x; Y=y}
+
 
     /// Format 2D point into string including type name and nice floating point number formatting.
     override p.ToString() = sprintf "Euclid.Pt: X=%s|Y=%s" (Format.float p.X) (Format.float p.Y)
@@ -79,12 +86,12 @@ type Pt =
     /// A separate function to compose the error message that does not get inlined.
     [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
     member p.FailedDivide(f) = EuclidDivByZeroException.Raise "Euclid.Pt: divide operator: %g is too small for dividing %O using the '/' operator. Tolerance:%g"  f p zeroLengthTolerance
-        
+
     /// Divides a 2D vector by a scalar, also be called dividing/scaling a vector. Returns a new 2D vector.
     static member inline ( / ) (p:Pt, f:float) =
-        if abs f < zeroLengthTolerance then p.FailedDivide(f) // don't compose error msg directly here to keep inlined code small.
+        if isTooTiny (abs f) then p.FailedDivide(f) // don't compose error msg directly here to keep inlined code small.
         Pt (p.X / f, p.Y / f)
-    
+
 
     //-----------------------------------------------------------------------------------------------------
     // These static members can't be extension methods to be useful for Array.sum and Array.average :
@@ -94,12 +101,12 @@ type Pt =
     /// (This member is needed by Array.average and similar functions)
     static member DivideByInt (pt:Pt, i:int) = // needed by  'Array.average'`
         if i = 0 then EuclidDivByZeroException.Raise "Euclid.Pt.DivideByInt is zero %O" pt
-        let d = float i 
+        let d = float i
         Pt(pt.X/d, pt.Y/d)
-        
+
 
     /// Same as Pt.Origin.
-    static member inline Zero = Pt (0., 0. )  // needed by 'Array.sum' . 
+    static member inline Zero = Pt (0., 0. )  // needed by 'Array.sum' .
 
     /// Same as Pt.Zero.
     static member inline Origin = Pt (0., 0. )

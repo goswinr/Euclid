@@ -2,6 +2,7 @@ namespace Euclid
 
 open System
 open System .Collections.Generic
+open UtilEuclid
 
 
 /// Discriminated union for the three possible relations of a point to a closed polyline Loop.
@@ -19,7 +20,7 @@ type PointLoopRel =
 /// A counter-clockwise, closed series of 2D points.
 /// Checked for too short segments and duplicate points but might have colinear points.
 /// Checked for self intersection.
-/// This class stores for each segment precomputed list of unit vectors, lengths and bounding Rectangles.
+/// This class stores for each segment precomputed list of unit-vectors, lengths and bounding Rectangles.
 /// This is to have better performance when calculating Loop with Loop intersections or point containment.
 type Loop private   ( pts:ResizeArray<Pt>
                     , unitVcts:UnitVc[]
@@ -176,8 +177,8 @@ type Loop private   ( pts:ResizeArray<Pt>
     /// Does NOT remove colinear points.
     static member create (minSegmentLength:float) (snapThreshold:float) (points:IList<Pt>)=
         let pts =
-            if minSegmentLength < 0.0 then EuclidException.Raise "Euclid.Loop constructor: minSegmentLength < 0.0:  %g" minSegmentLength
-            if snapThreshold    < 0.0 then EuclidException.Raise "Euclid.Loop constructor: snapThreshold < 0.0:  %g" snapThreshold
+            if isNegative(minSegmentLength) then EuclidException.Raise "Euclid.Loop constructor: minSegmentLength < 0.0:  %g" minSegmentLength
+            if isNegative(snapThreshold)    then EuclidException.Raise "Euclid.Loop constructor: snapThreshold < 0.0:  %g" snapThreshold
             if points.Count<3 then EuclidException.Raise "Euclid.Loop constructor: Input ResizeArray needs to have a least three points, not  %d " points.Count
 
             let ps= ResizeArray<Pt>(points.Count+1)
@@ -215,7 +216,7 @@ type Loop private   ( pts:ResizeArray<Pt>
         let mutable xMin, yMin = Double.MaxValue, Double.MaxValue // for overall bounding Rectangle
         let mutable xMax, yMax = Double.MinValue, Double.MinValue
 
-        // loop again to precalculate vectors, unit vectors, BRects, and lengths
+        // loop again to precalculate vectors, unit-vectors, BRects, and lengths
         let  unitVcts, bRects, lens = //, xys=
             let uvs  = Array.zeroCreate (segCount)
             let bs   = Array.zeroCreate (segCount)
@@ -246,9 +247,9 @@ type Loop private   ( pts:ResizeArray<Pt>
 
 
         // Test for 180 U-turns
-        // angle 160 Degrees, dot product of unit vectors: -0.93969
-        // angle 170 Degrees, dot product of unit vectors: -0.984808
-        // angle 178 Degrees, dot product of unit vectors: -0.999391
+        // angle 160 Degrees, dot product of unit-vectors: -0.93969
+        // angle 170 Degrees, dot product of unit-vectors: -0.984808
+        // angle 178 Degrees, dot product of unit-vectors: -0.999391
         // Check there is no U-Turn between 170 and 180 Degrees
         let mutable t = unitVcts.[0]
         for ii=1 to segLastIdx do

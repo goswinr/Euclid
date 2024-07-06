@@ -35,6 +35,12 @@ For the full API see [fuget.org](https://www.fuget.org/packages/Euclid) for now.
 
 
 ### Release Notes
+
+`0.9.0`
+- add suffix '90' to angel functions in Plane module
+- improve precision of Pi literals
+- include NaN check in isTiny functions
+
 `0.8.0`
 - fix line splitting
 - rename Rect.create functions

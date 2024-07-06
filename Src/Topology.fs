@@ -171,6 +171,8 @@ module Topology  =
             // advance main while loop
             idx <- idx + 1
 
+        // reverse the backward list
+        // and add forward list to it
         loops
         |> ResizeArr.map (fun l ->
             l.backward.Reverse()

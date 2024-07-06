@@ -29,7 +29,9 @@ This library assumes a right handed coordinate system with the Z-axis pointing u
 Just like Rhino3D, SketchUp, Revit, AutoCAD and Blender have it. But [unlike](https://twitter.com/FreyaHolmer/status/1325556229410861056) Unity or Unreal Engine.
 
 In this library a point is a position in space, a vector is a direction in space.
-A 4x4 transformation matrix applied to a vector will only rotate and scale the vector but not translate it. ( = Homogeneous coordinates)
+A 4x4 transformation matrix applied to a vector will only rotate and scale the vector but not translate it.
+( You could think of this as a Homogeneous-coordinate-system where the last value is 0 ( mot 1), thus [disabling translation(https://www.youtube.com/watch?v=o-xwmTODTUI&t=216s)]. )
+
 
 For the full API see [fuget.org](https://www.fuget.org/packages/Euclid) for now.
 
@@ -62,6 +64,11 @@ npm test
 ```
 
 ### Release Notes
+
+`0.9.0`
+- add suffix '90' to angel functions in Plane module
+- improve precision of Pi literals
+- include NaN check in isTiny functions
 
 `0.8.0`
 - fix line splitting
