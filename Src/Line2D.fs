@@ -5,6 +5,23 @@ open Euclid.UtilEuclid
 open Euclid.LineIntersectionTypes
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 open UtilEuclid
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
+
+// #if FABLE_COMPILER
+// // compile in Fable to a plain old javascript object, not a class.
+
+// open Fable.Core
+// type Line2D[<ParamObject; Emit("$0")>](fromX, fromY, toX, toY) =
+//     new (fromPt:Pt, toPt:Pt) = Line2D(fromPt.X, fromPt.Y, toPt.X, toPt.Y)
+//     member inline this.FromX = fromX
+//     member inline this.FromY = fromY
+//     member inline this.ToX = toX
+//     member inline this.ToY = toY
+
+// #else
 
 /// An immutable finite line in 2D. Represented by a 2D start and 2D end point.
 [<Struct;DataContract;NoEquality;NoComparison;IsReadOnly>] //[<IsByRefLike>]
@@ -28,6 +45,7 @@ type Line2D =
 
     /// Create Line2D from 2D start point's x and y  and 2D end point's x and y .
     new (fromX, fromY, toX, toY) = {FromX=fromX; FromY=fromY;  ToX=toX; ToY=toY}
+// #endif
 
     /// Returns the length of the line.
     member inline ln.Length =

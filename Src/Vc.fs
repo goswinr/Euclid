@@ -8,6 +8,7 @@ open System.Runtime.Serialization
 
 #nowarn "44" // for internal inline constructors and hidden obsolete members for error cases
 
+<<<<<<< Updated upstream
 /// <summary>Vc is an immutable 2D vector with any length. Made up from 2 floats: X and Y.</summary>
 /// <remarks>2D unit-vectors with length 1.0 are called 'UnitVc'.
 /// 3D vectors are called 'Vec'.</remarks>///
@@ -19,6 +20,28 @@ type Vc =
 
     /// <summary>Gets the X part of this 2D vector.</summary>
     [<DataMember>] val Y : float
+=======
+#if FABLE_COMPILER
+// compile in Fable to a plain old javascript object, not a class.
+/// (3D vectors are called 'Vec' )
+[<Struct;NoEquality;NoComparison>]// because its made up from floats
+[<IsReadOnly>]
+type Vc[<ParamObject; Emit("$0")>](x:float, y:float) =
+    member inline this.X = x // the js object will use lowercase x, these inline members are just so that in all code below 'X' gets replaced with 'x'
+    member inline this.Y = y
+#else
+/// When compiled with Fable it is turned into a plain JS object:
+/// { x:number, y:number } with lowercase x and y props.
+type Vc =
+
+    /// Gets the X part of this 2D vector.
+    /// <remarks>When serialized and in Fable compiled JS it is a lowercase 'x'</remarks>
+    [<DataMember(Name = "x")>] val X : float
+
+    /// Gets the Y part of this 2D vector.
+    /// <remarks>When serialized and in Fable compiled JS it is a lowercase 'x'</remarks>
+    [<DataMember(Name = "y")>] val Y : float
+>>>>>>> Stashed changes
 
     /// Create a new 2D vector with any length. Made up from 2 floats: X and Y.
     new (x, y) =
@@ -26,6 +49,8 @@ type Vc =
         if Double.IsNaN x || Double.IsNaN y || Double.IsInfinity x || Double.IsInfinity y  then EuclidException.Raise "Euclid.Vc Constructor failed for x:%g, y:%g"  x y
         #endif
         {X=x; Y=y}
+#endif
+
 
 
     /// Format 2D vector into string including type name and nice floating point number formatting of X, Y and length.

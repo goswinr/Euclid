@@ -22,6 +22,7 @@ open System.Runtime.Serialization // for serialization of struct fields only but
 
 #nowarn "44" // for internal inline constructors and hidden obsolete members for error cases
 
+<<<<<<< Updated upstream
 
 /// <summary> Pt is an immutable 2D point. Made up from 2 floats: X and Y.</summary>
 /// <remarks> 3D Points are called 'Pnt' </remarks>
@@ -35,6 +36,29 @@ type Pt =
 
     /// <summary>Gets the X part of this 2D point.</summary>
     [<DataMember>] val Y : float
+=======
+#if FABLE_COMPILER
+// compile in Fable to a plain old javascript object, not a class.
+// for this to work correctly the variables need a different name ( lowercase ) and the inline members are needed.
+[<Struct;NoEquality;NoComparison>]// because its made up from floats
+open Fable.Core
+//[<IsByRefLike>]
+[<DataContract>] // for using DataMember on fields
+    member inline this.X = x // the js object will use lowercase x, these inline members are just so that in all code below 'X' gets replaced with 'x'
+    member inline this.Y = y // the js object will use lowercase y, these inline members are just so that in all code below 'Y' gets replaced with 'y'
+#else
+/// When compiled with Fable it is turned into a plain JS object:
+/// { x:number, y:number } with lowercase x and y props.
+type Pt =
+
+    /// Gets the X part of this 2D point.
+    /// <remarks>When serialized and in Fable compiled JS it is a lowercase 'x'</remarks>
+    [<DataMember(Name = "x")>] val X : float
+
+    /// Gets the Z part of this 2D point.
+    /// <remarks>When serialized and in Fable compiled JS it is a lowercase 'x'</remarks>
+    [<DataMember(Name = "y")>] val Y : float
+>>>>>>> Stashed changes
 
     /// Create a new 2D point. Made up from 2 floats: X and Y.
     new (x, y) =
@@ -42,6 +66,7 @@ type Pt =
         if Double.IsNaN x || Double.IsNaN y || Double.IsInfinity x || Double.IsInfinity y  then EuclidException.Raise "Euclid.Pt Constructor failed for x:%g, y:%g"  x y
         #endif
         {X=x; Y=y}
+#endif
 
 
     /// Format 2D point into string including type name and nice floating point number formatting.

@@ -40,6 +40,7 @@ For the full API see [fuget.org](https://www.fuget.org/packages/Euclid) for now.
 
 ### Build
 Just run `dotnet build` in the root directory.
+or for Fable: `dotnet fable --test:MSBuildCracker --noCache`
 
 ### Test
 To just run once: `dotnet run Tests\Euclid.Tests.fsproj`

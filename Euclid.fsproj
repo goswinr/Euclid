@@ -23,9 +23,13 @@
     <AssemblyVersion>0.9.0</AssemblyVersion>
     <FileVersion>0.9.0</FileVersion>
     <PackageReleaseNotes>
+<<<<<<< Updated upstream
       - add suffix '90' to angel functions in Plane module
       - improve precision of Pi literals
       - include NaN check in isTiny functions
+=======
+      - use plain old javascript objects in Fable
+>>>>>>> Stashed changes
     </PackageReleaseNotes>
     <Authors>GoswinR</Authors>
     <Copyright>Goswin Rothenthal 2019</Copyright>

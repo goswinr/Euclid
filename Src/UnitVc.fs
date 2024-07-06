@@ -9,6 +9,7 @@ open System.Runtime.Serialization
 
 #nowarn "44" // for internal inline constructors and hidden obsolete members for error cases
 
+<<<<<<< Updated upstream
 /// <summary>UnitVc is an immutable 2D unit-vector. it is guaranteed to be unitized.
 /// Never use the struct default constructor UnitVc()!
 /// It will create an invalid zero length vector.
@@ -22,6 +23,29 @@ type UnitVc =
 
     /// <summary>Gets the X part of this 2D unit-vector.</summary>
     [<DataMember>] val Y : float
+=======
+#if FABLE_COMPILER
+// compile in Fable to a plain old javascript object, not a class.
+/// Use UnitVc.create or UnitVc.createUnchecked to created instances.
+open Fable.Core
+/// Use UnitVc.create or UnitVc.createUnchecked instead.
+type UnitVc[<ParamObject; Emit("$0")>](x:float, y:float) =
+    member inline this.X = x // the js object will use lowercase x, these inline members are just so that in all code below 'X' gets replaced with 'x'
+    member inline this.Y = y
+[<DataContract>] // for using DataMember on fields  
+#else
+/// When compiled with Fable it is turned into a plain JS object:
+/// { x:number, y:number } with lowercase x and y props.
+type UnitVc =
+
+    /// Gets the X part of this 2D unit-vector.
+    /// <remarks>When serialized and in Fable compiled JS it is a lowercase 'x'</remarks>
+    [<DataMember(Name = "x")>] val X : float
+
+    /// Gets the Y part of this 2D unit-vector.
+    /// <remarks>When serialized and in Fable compiled JS it is a lowercase 'x'</remarks>
+    [<DataMember(Name = "y")>] val Y : float
+>>>>>>> Stashed changes
 
     /// Unsafe internal constructor, doesn't check or unitize the input, public only for inlining.
     [<Obsolete("Unsafe internal constructor, doesn't check or unitize the input (unless compiled in DEBUG mode), but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >]
@@ -30,6 +54,7 @@ type UnitVc =
         if Double.IsNaN x || Double.IsNaN y || Double.IsInfinity x || Double.IsInfinity y  then EuclidException.Raise "Euclid.Vc Constructor failed for x:%g, y:%g"  x y
         #endif
         {X=x; Y=y}
+#endif
 
     /// Format 2D unit-vector into string including type name and nice floating point number formatting.
     override v.ToString() = sprintf "Euclid.UnitVc: X=%s|Y=%s" (Format.float v.X)(Format.float v.Y)
