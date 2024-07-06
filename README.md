@@ -16,6 +16,8 @@ For transformations of those there are rotations, quaternions, 4x4 and rigid ort
 
 Written in F# and designed for use with F#.
 All primitive types are immutable and functions are curried where appropriate.
+Many functions exist as both a lowercase static member and a uppercase methods or property.
+e.g.: `Vec.unitized(v)` is the same as the `v.Unitized` property.
 This library is intended to be used for design, construction and manufacturing too.
 So it is using double precision floating point numbers for all values. (While most geometry libraries for games use single precision floats.)
 
