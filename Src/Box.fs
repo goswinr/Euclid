@@ -9,13 +9,12 @@ open System.Runtime.Serialization // for serialization of struct fields only but
 /// An immutable 3D Box with any rotation in 3D space.
 /// Described by an Origin and three Edge vectors.
 /// Similar to PPlane, however the three vectors are not unitized.
-/// The X, Y and Z axes are also called Width, Depth and Height3D.
 /// This implementation guarantees the box to be always valid.
 /// That means the Min X, Y and Z axes cannot be flipped individually.
 /// However the length of one of these axes might still be zero.
 ///
 ///   local        local
-///   Z-Axis       Y-Axis (Depth)
+///   Z-Axis       Y-Axis
 ///   ^           /
 ///   |   7      /        6
 ///   |   +---------------+
@@ -28,7 +27,7 @@ open System.Runtime.Serialization // for serialization of struct fields only but
 ///   |  / 3          |  / 2
 ///   | /             | /
 ///   |/              |/     local
-///   +---------------+----> X-Axis (Width)
+///   +---------------+----> X-Axis
 ///   0               1
 [<Struct; NoEquality; NoComparison>] // because its made up from floats
 [<IsReadOnly>]
@@ -41,15 +40,12 @@ type Box =
     [<DataMember>] val Origin: Pnt
 
     /// The Edge vector representing the X-axis of the Box.
-    /// Also called Width.
     [<DataMember>] val Xaxis: Vec
 
     /// The Edge vector representing the Y-axis of the Box.
-    /// Also called Depth.
     [<DataMember>] val Yaxis: Vec
 
     /// The Edge vector representing the Z-axis of the Box.
-    /// Also called Height.
     [<DataMember>] val Zaxis: Vec
 
     /// Unchecked Internal Constructor Only.
@@ -57,21 +53,24 @@ type Box =
     internal new (origin, axisX, axisY, axisZ) = {Origin=origin; Xaxis=axisX; Yaxis=axisY; Zaxis=axisZ}
 
     /// The size in X direction, same as member box.SizeX.
+    [<Obsolete("use SizeX")>]
     member inline b.Width = b.Xaxis.Length
 
-    /// The size in X direction, same as member box.Width.
+    /// The size in X direction.
     member inline b.SizeX = b.Xaxis.Length
 
     /// The size in Y direction, same as member box.SizeY.
+    [<Obsolete("use SizeY")>]
     member inline b.Depth = b.Yaxis.Length
 
-    /// The size in Y direction, same as member box.Depth.
+    /// The size in Y direction.
     member inline b.SizeY = b.Yaxis.Length
 
     /// The size in Z direction, same as member box.SizeZ.
+    [<Obsolete("use SizeZ")>]
     member inline b.Height3D = b.Zaxis.Length
 
-    /// The size in Z direction, same as member box.Height3D.
+    /// The size in Z direction.
     member inline b.SizeZ = b.Zaxis.Length
 
 
@@ -89,7 +88,7 @@ type Box =
     /// Returns point 0 of the box, same box.Origin.
     ///
     ///   local        local
-    ///   Z-Axis       Y-Axis (Depth)
+    ///   Z-Axis       Y-Axis
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -102,14 +101,14 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis (Width)
+    ///   +---------------+----> X-Axis
     ///   0               1
     member inline b.Pt0 = b.Origin
 
     /// Returns point 1 of the box.
     ///
     ///   local        local
-    ///   Z-Axis       Y-Axis (Depth)
+    ///   Z-Axis       Y-Axis
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -122,14 +121,14 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis (Width)
+    ///   +---------------+----> X-Axis
     ///   0               1
     member inline b.Pt1 = b.Origin + b.Xaxis
 
     /// Returns point 2 of the box.
     ///
     ///   local        local
-    ///   Z-Axis       Y-Axis (Depth)
+    ///   Z-Axis       Y-Axis
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -142,14 +141,14 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis (Width)
+    ///   +---------------+----> X-Axis
     ///   0               1
     member inline b.Pt2 = b.Origin + b.Xaxis + b.Yaxis
 
     /// Returns point 3 of the box.
     ///
     ///   local        local
-    ///   Z-Axis       Y-Axis (Depth)
+    ///   Z-Axis       Y-Axis
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -162,14 +161,14 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis (Width)
+    ///   +---------------+----> X-Axis
     ///   0               1
     member inline b.Pt3 = b.Origin + b.Yaxis
 
     /// Returns point 4 of the box.
     ///
     ///   local        local
-    ///   Z-Axis       Y-Axis (Depth)
+    ///   Z-Axis       Y-Axis
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -182,14 +181,14 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis (Width)
+    ///   +---------------+----> X-Axis
     ///   0               1
     member inline b.Pt4 = b.Origin + b.Zaxis
 
     /// Returns point 5 of the box.
     ///
     ///   local        local
-    ///   Z-Axis       Y-Axis (Depth)
+    ///   Z-Axis       Y-Axis
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -202,14 +201,14 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis (Width)
+    ///   +---------------+----> X-Axis
     ///   0               1
     member inline b.Pt5 = b.Origin + b.Xaxis + b.Zaxis
 
     /// Returns point 6 of the box.
     ///
     ///   local        local
-    ///   Z-Axis       Y-Axis (Depth)
+    ///   Z-Axis       Y-Axis
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -222,14 +221,14 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis (Width)
+    ///   +---------------+----> X-Axis
     ///   0               1
     member inline b.Pt6 = b.Origin + b.Xaxis + b.Yaxis + b.Zaxis
 
     /// Returns point 7 of the box.
     ///
     ///   local        local
-    ///   Z-Axis       Y-Axis (Depth)
+    ///   Z-Axis       Y-Axis
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -242,7 +241,7 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis (Width)
+    ///   +---------------+----> X-Axis
     ///   0               1
     member inline b.Pt7 = b.Origin + b.Yaxis + b.Zaxis
 
@@ -278,7 +277,7 @@ type Box =
     /// Then the top corners staring above Origin. Returns an array of 8 Points.
     ///
     ///   local        local
-    ///   Z-Axis       Y-Axis (Depth)
+    ///   Z-Axis       Y-Axis
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -291,7 +290,7 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis (Width)
+    ///   +---------------+----> X-Axis
     ///   0               1
     member b.Points :Pnt[] =
         let p0 = b.Origin
@@ -313,7 +312,7 @@ type Box =
     /// Returns Origin at point 4, X-Axis at point 5, Y-Axis at point 7.
     ///
     ///   local        local
-    ///   Z-Axis       Y-Axis (Depth)
+    ///   Z-Axis       Y-Axis
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -326,7 +325,7 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis (Width)
+    ///   +---------------+----> X-Axis
     ///   0               1
     member b.TopFace :Rect3D = Rect3D(b.Origin + b.Zaxis, b.Xaxis, b.Yaxis)
 
@@ -335,7 +334,7 @@ type Box =
     /// Returns Origin at point 0, X-Axis at point 1, Y-Axis at point 3.
     ///
     ///   local        local
-    ///   Z-Axis       Y-Axis (Depth)
+    ///   Z-Axis       Y-Axis
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -348,7 +347,7 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis (Width)
+    ///   +---------------+----> X-Axis
     ///   0               1
     member b.BottomFace = Rect3D(b.Origin, b.Xaxis, b.Yaxis)
 
@@ -358,7 +357,7 @@ type Box =
     /// Returns Origin at point 0, X-Axis at point 1, Y-Axis at point 4.
     ///
     ///   local        local
-    ///   Z-Axis       Y-Axis (Depth)
+    ///   Z-Axis       Y-Axis
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -371,7 +370,7 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis (Width)
+    ///   +---------------+----> X-Axis
     ///   0               1
     member b.FrontFace = Rect3D(b.Origin, b.Xaxis, b.Zaxis)
 
@@ -379,7 +378,7 @@ type Box =
     /// Returns Origin at point 3, X-Axis at point 2, Y-Axis at point 7.
     ///
     ///   local        local
-    ///   Z-Axis       Y-Axis (Depth)
+    ///   Z-Axis       Y-Axis
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -392,7 +391,7 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis (Width)
+    ///   +---------------+----> X-Axis
     ///   0               1
     member b.BackFace = Rect3D(b.Origin + b.Yaxis, b.Xaxis, b.Zaxis)
 
@@ -400,7 +399,7 @@ type Box =
     /// Returns Origin at point 1, X-Axis at point 2, Y-Axis at point 5.
     ///
     ///   local        local
-    ///   Z-Axis       Y-Axis (Depth)
+    ///   Z-Axis       Y-Axis
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -413,7 +412,7 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis (Width)
+    ///   +---------------+----> X-Axis
     ///   0               1
     member b.RightFace = Rect3D(b.Origin + b.Xaxis, b.Yaxis, b.Zaxis)
 
@@ -421,7 +420,7 @@ type Box =
     /// Returns Origin at point 1, X-Axis at point 2, Y-Axis at point 5.
     ///
     ///   local        local
-    ///   Z-Axis       Y-Axis (Depth)
+    ///   Z-Axis       Y-Axis
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -434,7 +433,7 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis (Width)
+    ///   +---------------+----> X-Axis
     ///   0               1
     member b.LeftFace = Rect3D(b.Origin + b.Xaxis, b.Yaxis, b.Zaxis)
 

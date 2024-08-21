@@ -9,13 +9,12 @@ open System.Runtime.Serialization // for serialization of struct fields only but
 /// An immutable planar 3D Rectangle with any rotation in 3D space.
 /// Described by an Origin and two Edge vectors.
 /// Similar to PPlane, however the two vectors are not unitized.
-/// The X and Y axes are also called Width, Height2D.
 /// This implementation guarantees the 3D Rectangle to be always valid.
 /// That means the  X and Y axes are always perpendicular to each other.
 /// However the length of one of these axes might still be zero.
 ///
 ///   local
-///   Y-Axis (Height2D)
+///   Y-Axis
 ///   ^
 ///   |
 ///   |             2
@@ -25,7 +24,7 @@ open System.Runtime.Serialization // for serialization of struct fields only but
 ///   |            |
 ///   |            |
 ///   |            |       local
-///   +------------+-----> X-Axis (Width)
+///   +------------+-----> X-Axis
 ///  0-Origin       1
 [<Struct; NoEquality; NoComparison>] // because its made up from floats
 [<IsReadOnly>]
@@ -43,7 +42,6 @@ type Rect3D =
     [<DataMember>] val Xaxis: Vec
 
     /// The edge vector representing the Y-axis of the 3D Rectangle.
-    /// Also called Height2D.
     [<DataMember>] val Yaxis: Vec
 
     /// Unchecked Internal Constructor Only.
@@ -60,15 +58,17 @@ type Rect3D =
         {Origin=origin; Xaxis=axisX; Yaxis=axisY}
 
     /// The size in X direction, same as member rect.SizeX.
+    [<Obsolete("use SizeX")>]
     member inline r.Width = r.Xaxis.Length
 
-    /// The size in X direction, same as member rect.Width.
+    /// The size in X direction
     member inline r.SizeX = r.Xaxis.Length
 
     /// The size in Y direction, same as member rect.SizeY.
+    [<Obsolete("use SizeY")>]
     member inline r.Height2D = r.Yaxis.Length
 
-    /// The size in Y direction, same as member rect.Height2D.
+    /// The size in Y direction
     member inline r.SizeY = r.Yaxis.Length
 
     /// Nicely formatted string representation of the 3D Rectangle including its size.
@@ -85,7 +85,7 @@ type Rect3D =
     /// Returns the corner diagonally opposite of corner from Origin (point 2).
     ///
     ///   local
-    ///   Y-Axis (Height2D)
+    ///   Y-Axis
     ///   ^
     ///   |
     ///   |             2
@@ -95,14 +95,14 @@ type Rect3D =
     ///   |            |
     ///   |            |
     ///   |            |       local
-    ///   +------------+-----> X-Axis (Width)
+    ///   +------------+-----> X-Axis
     ///  0-Origin       1
     member inline r.FarCorner = r.Origin + r.Xaxis + r.Yaxis
 
     /// Returns the corner at end of X-axis (point 1).
     ///
     ///   local
-    ///   Y-Axis (Height2D)
+    ///   Y-Axis
     ///   ^
     ///   |
     ///   |             2
@@ -112,7 +112,7 @@ type Rect3D =
     ///   |            |
     ///   |            |
     ///   |            |       local
-    ///   +------------+-----> X-Axis (Width)
+    ///   +------------+-----> X-Axis
     ///  0-Origin       1
     member inline r.XCorner = r.Origin + r.Xaxis
 
@@ -120,7 +120,7 @@ type Rect3D =
     /// Returns the corner at end of Y-axis (point 3).
     ///
     ///   local
-    ///   Y-Axis (Height2D)
+    ///   Y-Axis
     ///   ^
     ///   |
     ///   |             2
@@ -130,14 +130,14 @@ type Rect3D =
     ///   |            |
     ///   |            |
     ///   |            |       local
-    ///   +------------+-----> X-Axis (Width)
+    ///   +------------+-----> X-Axis
     ///  0-Origin       1
     member inline r.YCorner = r.Origin + r.Yaxis
 
     /// Returns point 0 of the 3D rectangle. Same as member rect.Origin.
     ///
     ///   local
-    ///   Y-Axis (Height2D)
+    ///   Y-Axis
     ///   ^
     ///   |
     ///   |             2
@@ -147,7 +147,7 @@ type Rect3D =
     ///   |            |
     ///   |            |
     ///   |            |       local
-    ///   +------------+-----> X-Axis (Width)
+    ///   +------------+-----> X-Axis
     ///  0-Origin       1
     member inline r.Pt0 = r.Origin
 
@@ -155,7 +155,7 @@ type Rect3D =
     /// Returns point 1 of the 3D rectangle.
     ///
     ///   local
-    ///   Y-Axis (Height2D)
+    ///   Y-Axis
     ///   ^
     ///   |
     ///   |             2
@@ -165,7 +165,7 @@ type Rect3D =
     ///   |            |
     ///   |            |
     ///   |            |       local
-    ///   +------------+-----> X-Axis (Width)
+    ///   +------------+-----> X-Axis
     ///  0-Origin       1
     member inline r.Pt1 = r.Origin + r.Xaxis
 
@@ -173,7 +173,7 @@ type Rect3D =
     /// Returns point 2 of the 3D rectangle. Same as rect.FarCorner.
     ///
     ///   local
-    ///   Y-Axis (Height2D)
+    ///   Y-Axis
     ///   ^
     ///   |
     ///   |             2
@@ -183,14 +183,14 @@ type Rect3D =
     ///   |            |
     ///   |            |
     ///   |            |       local
-    ///   +------------+-----> X-Axis (Width)
+    ///   +------------+-----> X-Axis
     ///  0-Origin       1
     member inline r.Pt2 = r.Origin + r.Xaxis + r.Yaxis
 
     /// Returns point 3 of the 3D rectangle.
     ///
     ///   local
-    ///   Y-Axis (Height2D)
+    ///   Y-Axis
     ///   ^
     ///   |
     ///   |             2
@@ -200,14 +200,14 @@ type Rect3D =
     ///   |            |
     ///   |            |
     ///   |            |       local
-    ///   +------------+-----> X-Axis (Width)
+    ///   +------------+-----> X-Axis
     ///  0-Origin       1
     member inline r.Pt3 = r.Origin  + r.Yaxis
 
     /// Returns a 3D line from point 0 to 1 of the 2D rectangle.
     ///
     ///   local
-    ///   Y-Axis (Height2D)
+    ///   Y-Axis
     ///   ^
     ///   |
     ///   |             2
@@ -217,14 +217,14 @@ type Rect3D =
     ///   |            |
     ///   |            |
     ///   |            |       local
-    ///   +------------+-----> X-Axis (Width)
+    ///   +------------+-----> X-Axis
     ///  0-Origin       1
     member inline r.Edge01 = Line3D (r.Origin, r.Origin + r.Xaxis)
 
     /// Returns a 3D line from point 1 to 2 of the 2D rectangle.
     ///
     ///   local
-    ///   Y-Axis (Height2D)
+    ///   Y-Axis
     ///   ^
     ///   |
     ///   |             2
@@ -234,7 +234,7 @@ type Rect3D =
     ///   |            |
     ///   |            |
     ///   |            |       local
-    ///   +------------+-----> X-Axis (Width)
+    ///   +------------+-----> X-Axis
     ///  0-Origin       1
     member inline r.Edge12 =
         let s = r.Origin + r.Xaxis
@@ -245,7 +245,7 @@ type Rect3D =
     /// Returns a 3D line from point 2 to 3 of the 2D rectangle.
     ///
     ///   local
-    ///   Y-Axis (Height2D)
+    ///   Y-Axis
     ///   ^
     ///   |
     ///   |             2
@@ -255,7 +255,7 @@ type Rect3D =
     ///   |            |
     ///   |            |
     ///   |            |       local
-    ///   +------------+-----> X-Axis (Width)
+    ///   +------------+-----> X-Axis
     ///  0-Origin       1
     member inline r.Edge23 =
         let p3 = r.Origin + r.Yaxis
@@ -265,7 +265,7 @@ type Rect3D =
     /// Returns a 3D line from point 3 to 0 of the 2D rectangle.
     ///
     ///   local
-    ///   Y-Axis (Height2D)
+    ///   Y-Axis
     ///   ^
     ///   |
     ///   |             2
@@ -275,14 +275,14 @@ type Rect3D =
     ///   |            |
     ///   |            |
     ///   |            |       local
-    ///   +------------+-----> X-Axis (Width)
+    ///   +------------+-----> X-Axis
     ///  0-Origin       1
     member inline r.Edge30 = Line3D (r.Origin + r.Yaxis, r.Origin)
 
     /// Returns the local X side as the 2D line from point 0 to 1 of the 2D rectangle.
     ///
     ///   local
-    ///   Y-Axis (Height2D)
+    ///   Y-Axis
     ///   ^
     ///   |
     ///   |             2
@@ -292,7 +292,7 @@ type Rect3D =
     ///   |            |
     ///   |            |
     ///   |            |       local
-    ///   +------------+-----> X-Axis (Width)
+    ///   +------------+-----> X-Axis
     ///  0-Origin       1
     member inline r.EdgeX = r.Edge01
 
@@ -300,7 +300,7 @@ type Rect3D =
     /// This is the reverse of Edge30.
     ///
     ///   local
-    ///   Y-Axis (Height2D)
+    ///   Y-Axis
     ///   ^
     ///   |
     ///   |             2
@@ -310,14 +310,14 @@ type Rect3D =
     ///   |            |
     ///   |            |
     ///   |            |       local
-    ///   +------------+-----> X-Axis (Width)
+    ///   +------------+-----> X-Axis
     ///  0-Origin       1
     member inline r.EdgeY = Line3D (r.Origin, r.Origin + r.Yaxis)
 
     /// Returns the diagonal 3D line from point 0 to 2 of the 2D rectangle.
     ///
     ///   local
-    ///   Y-Axis (Height2D)
+    ///   Y-Axis
     ///   ^
     ///   |
     ///   |             2
@@ -327,7 +327,7 @@ type Rect3D =
     ///   |            |
     ///   |            |
     ///   |            |       local
-    ///   +------------+-----> X-Axis (Width)
+    ///   +------------+-----> X-Axis
     ///  0-Origin       1
     member inline r.DiagonalLine = Line3D (r.Origin, r.Origin + r.Yaxis + r.Xaxis)
 
@@ -367,7 +367,7 @@ type Rect3D =
     /// Origin will be at point 2, X-axis points down to to point 1, Y-axis points left to point 3.
     ///
     ///   local
-    ///   Y-Axis (Height2D)
+    ///   Y-Axis
     ///   ^
     ///   |
     ///   |             2
@@ -377,7 +377,7 @@ type Rect3D =
     ///   |            |
     ///   |            |
     ///   |            |       local
-    ///   +------------+-----> X-Axis (Width)
+    ///   +------------+-----> X-Axis
     ///  0-Origin       1
     member r.Flipped = Rect3D(r.Origin + r.Xaxis + r.Yaxis, -r.Yaxis, -r.Xaxis)
 
@@ -385,7 +385,7 @@ type Rect3D =
     /// This only changes the internal representation of the rectangle, the appearance is not changed.
     /// Origin will be at point 3, X-axis to to point 0, Y-axis to point 2.
     ///   local
-    ///   Y-Axis (Height2D)
+    ///   Y-Axis
     ///   ^
     ///   |
     ///   |             2
@@ -395,7 +395,7 @@ type Rect3D =
     ///   |            |
     ///   |            |
     ///   |            |       local
-    ///   +------------+-----> X-Axis (Width)
+    ///   +------------+-----> X-Axis
     ///  0-Origin       1
     member r.RotateOrientation90CW = Rect3D(r.Origin + r.Yaxis, -r.Yaxis, r.Xaxis)
 
@@ -405,7 +405,7 @@ type Rect3D =
     /// This only changes the internal representation of the rectangle, the appearance is not changed.
     /// Origin will be at point 2, X-axis to to point 3, Y-axis to point 1.
     ///   local
-    ///   Y-Axis (Height2D)
+    ///   Y-Axis
     ///   ^
     ///   |
     ///   |             2
@@ -415,7 +415,7 @@ type Rect3D =
     ///   |            |
     ///   |            |
     ///   |            |       local
-    ///   +------------+-----> X-Axis (Width)
+    ///   +------------+-----> X-Axis
     ///  0-Origin       1
     member r.RotateOrientation180 = Rect3D(r.Origin + r.Yaxis + r.Xaxis, -r.Xaxis, -r.Yaxis)
 
@@ -423,7 +423,7 @@ type Rect3D =
     /// This only changes the internal representation of the rectangle, the appearance is not changed.
     /// Origin will be at point 1, X-axis to to point 2, Y-axis to point 0.
     ///   local
-    ///   Y-Axis (Height2D)
+    ///   Y-Axis
     ///   ^
     ///   |
     ///   |             2
@@ -433,7 +433,7 @@ type Rect3D =
     ///   |            |
     ///   |            |
     ///   |            |       local
-    ///   +------------+-----> X-Axis (Width)
+    ///   +------------+-----> X-Axis
     ///  0-Origin       1
     member r.RotateOrientation90CCW = Rect3D(r.Origin + r.Xaxis, r.Yaxis, -r.Xaxis)
 
@@ -442,7 +442,7 @@ type Rect3D =
     /// Returns an array of 4 Points: point 0 then 1, 2 and 3.
     ///
     ///   local
-    ///   Y-Axis (Height2D)
+    ///   Y-Axis
     ///   ^
     ///   |
     ///   |             2
@@ -452,7 +452,7 @@ type Rect3D =
     ///   |            |
     ///   |            |
     ///   |            |       local
-    ///   +------------+-----> X-Axis (Width)
+    ///   +------------+-----> X-Axis
     ///  0-Origin       1
     member r.Points :Pnt[] =
         let p0 = r.Origin
@@ -464,7 +464,7 @@ type Rect3D =
     /// Returns an array of 5 Points: point 0 then 1, 2, 3 and again 0.
     ///
     ///   local
-    ///   Y-Axis (Height2D)
+    ///   Y-Axis
     ///   ^
     ///   |
     ///   |             2
@@ -474,7 +474,7 @@ type Rect3D =
     ///   |            |
     ///   |            |
     ///   |            |       local
-    ///   +------------+-----> X-Axis (Width)
+    ///   +------------+-----> X-Axis
     ///  0-Origin       1
     member r.PointsLooped :Pnt[] =
         let p0 = r.Origin
@@ -485,7 +485,7 @@ type Rect3D =
     /// Returns an array of 4 Lines: from point 0 to 1, 1 to 2 to 3 and 3 to 0.
     ///
     ///   local
-    ///   Y-Axis (Height2D)
+    ///   Y-Axis
     ///   ^
     ///   |
     ///   |             2
@@ -495,7 +495,7 @@ type Rect3D =
     ///   |            |
     ///   |            |
     ///   |            |       local
-    ///   +------------+-----> X-Axis (Width)
+    ///   +------------+-----> X-Axis
     ///  0-Origin       1
     member r.Edges :Line3D[] =
         let p0 = r.Origin
@@ -511,7 +511,7 @@ type Rect3D =
     /// Edge 3: from point  3 to 0
     ///
     ///   local
-    ///   Y-Axis (Height2D)
+    ///   Y-Axis
     ///   ^
     ///   |
     ///   |             2
@@ -521,7 +521,7 @@ type Rect3D =
     ///   |            |
     ///   |            |
     ///   |            |       local
-    ///   +------------+-----> X-Axis (Width)
+    ///   +------------+-----> X-Axis
     ///  0-Origin       1
     member r.GetEdge i =
         match i with
@@ -644,7 +644,7 @@ type Rect3D =
     /// The y-point only defines the length and side of the Y axis.
     ///
     ///   local
-    ///   Y-Axis (Height2D)
+    ///   Y-Axis
     ///   ^
     ///   |
     ///   |             2
@@ -654,7 +654,7 @@ type Rect3D =
     ///   |            |
     ///   |            |
     ///   |            |       local
-    ///   +------------+-----> X-Axis (Width)
+    ///   +------------+-----> X-Axis
     ///  0-Origin       1
     static member createFrom3Points (origin:Pnt, xPt:Pnt, yPt:Pnt) =
         let x = xPt - origin
@@ -673,7 +673,7 @@ type Rect3D =
     /// The y-point only defines the length and side of the Y axis.
     ///
     ///   local
-    ///   Y-Axis (Height2D)
+    ///   Y-Axis
     ///   ^
     ///   |
     ///   |             2
@@ -683,7 +683,7 @@ type Rect3D =
     ///   |            |
     ///   |            |
     ///   |            |       local
-    ///   +------------+-----> X-Axis (Width)
+    ///   +------------+-----> X-Axis
     ///  0-Origin       1
     static member tryCreateFrom3Points (origin:Pnt, xPt:Pnt, yPt:Pnt) =
         let x = xPt - origin
@@ -704,7 +704,7 @@ type Rect3D =
     /// Origin will be at point 2, X-axis points down to to point 1, Y-axis points left to point 3.
     ///
     ///   local
-    ///   Y-Axis (Height2D)
+    ///   Y-Axis
     ///   ^
     ///   |
     ///   |             2
@@ -714,7 +714,7 @@ type Rect3D =
     ///   |            |
     ///   |            |
     ///   |            |       local
-    ///   +------------+-----> X-Axis (Width)
+    ///   +------------+-----> X-Axis
     ///  0-Origin       1
     static member flip (r:Rect3D) = Rect3D(r.Origin + r.Xaxis + r.Yaxis, -r.Yaxis, -r.Xaxis)
 
@@ -774,7 +774,7 @@ type Rect3D =
     /// Fails if the distance is larger than half the size of the rectangle.
     ///
     ///   local
-    ///   Y-Axis (Height2D)
+    ///   Y-Axis
     ///   ^
     ///   |
     ///   |             2
@@ -784,7 +784,7 @@ type Rect3D =
     ///   |            |
     ///   |            |
     ///   |            |       local
-    ///   +------------+-----> X-Axis (Width)
+    ///   +------------+-----> X-Axis
     ///  0-Origin       1
     static member offsetVar (dist:float[]) (rect:Rect3D) =
         if dist.Length <> 4 then EuclidException.Raise "Euclid.Rect3D.offsetVar: the distance array must have 4 elements, but has %i" dist.Length
@@ -804,7 +804,7 @@ type Rect3D =
     ///<param name="corner">The Index of the corner to Offset
     ///
     ///   local
-    ///   Y-Axis (Height2D)
+    ///   Y-Axis
     ///   ^
     ///   |
     ///   |             2
@@ -814,7 +814,7 @@ type Rect3D =
     ///   |            |
     ///   |            |
     ///   |            |       local
-    ///   +------------+-----> X-Axis (Width)
+    ///   +------------+-----> X-Axis
     ///  0-Origin       1 </param>
     ///<param name="xOffset">The local offset distances in x direction. (Applies to the y side.) Positive values offset to the inside of the rectangle, negative values will offset outwards.</param>
     ///<param name="yOffset">The local offset distances in y direction. (Applies to the x side.) Positive values offset to the inside of the rectangle, negative values will offset outwards.</param>
@@ -855,7 +855,7 @@ type Rect3D =
     ///<param name="edgeIdx">The Index of the edge to offset
     ///
     ///   local
-    ///   Y-Axis (Height3D)
+    ///   Y-Axis
     ///   ^
     ///   |
     ///   |      2
@@ -865,10 +865,10 @@ type Rect3D =
     ///  3|            |1
     ///   |            |
     ///   |            |       local
-    ///   +------------+-----> X-Axis (Width)
+    ///   +------------+-----> X-Axis
     ///         0</param>
     ///<param name="offEdge">The local offset distances parallel to the edge.</param>
-    ///<param name="width">The width. this is like the next offset to be applied to offEdge</param>
+    ///<param name="width">The width of the new rectangle. This is like the second offset to be applied to the first offset of offEdge</param>
     ///<param name="offStart">The local offset distances perpendicular to the edge at the start.</param>
     ///<param name="offEnd">The local offset distances perpendicular to the edge at the end.</param>
     ///<returns>A new 3D Rectangle. It will always have the same x and y axis orientation as the input rectangle. Independent of negative or positive offsets</returns>
