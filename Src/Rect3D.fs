@@ -590,14 +590,14 @@ type Rect3D =
 
     /// Returns the 3D Rectangle expanded by respective distances on all four sides.
     /// Does check for overflow if distance is negative and fails.
-    /// distLen, distWidth are for the local  X and Y-axis respectively.
-    static member expandXY distLen distWidth (r:Rect3D) =
+    /// distX, distY are for the local X and Y-axis respectively.
+    static member expandXY distX distY (r:Rect3D) =
         let siX = r.SizeX
         let siY = r.SizeY
-        if siX <= distLen   * -2.0 then EuclidException.Raise "Euclid.Rect3D.expandXY: the 3D Rectangle %s is too small to expand by negative distance distLen %s"  r.AsString (Format.float distLen)
-        if siY <= distWidth * -2.0 then EuclidException.Raise "Euclid.Rect3D.expandXY: the 3D Rectangle %s is too small to expand by negative distance distWidth %s"  r.AsString (Format.float distWidth)
-        let x = r.Xaxis * (distLen   / r.SizeX)
-        let y = r.Yaxis * (distWidth / r.SizeY)
+        if siX <= distX * -2.0 then EuclidException.Raise "Euclid.Rect3D.expandXY: the 3D Rectangle %s is too small to expand by negative distance distX %s"  r.AsString (Format.float distX)
+        if siY <= distY * -2.0 then EuclidException.Raise "Euclid.Rect3D.expandXY: the 3D Rectangle %s is too small to expand by negative distance distY %s"  r.AsString (Format.float distY)
+        let x = r.Xaxis * (distX   / r.SizeX)
+        let y = r.Yaxis * (distY / r.SizeY)
         Rect3D(r.Origin-x-y, r.Xaxis+x*2., r.Yaxis+y*2.)
 
     /// Create a 3D Rectangle from the origin point, an x-edge and an y-edge.

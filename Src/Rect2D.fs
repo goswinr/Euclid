@@ -541,7 +541,7 @@ type Rect2D =
 
 
 
-    /// Returns the 2D Rectangle expanded by distance on all six sides.
+    /// Returns the 2D Rectangle expanded by distance on all four sides.
     /// Does check for underflow if distance is negative and raises EuclidException.
     static member expand dist (r:Rect2D) =
         let siX = r.SizeX
@@ -555,14 +555,14 @@ type Rect2D =
 
     /// Returns the 2D Rectangle expanded by respective distances on all six sides.
     /// Does check for overflow if distance is negative and fails.
-    /// distLen, distWid are for x, Y-axis respectively.
-    static member expandXY distLen distWid (r:Rect2D) =
+    /// distX, distY are for the local X and Y-axis respectively.
+    static member expandXY distX distY (r:Rect2D) =
         let siX = r.SizeX
         let siY = r.SizeY
-        if siX <= distLen * -2.0 then EuclidException.Raise "Euclid.Rect2D.expandXY: the 2D Rectangle %s is too small to expand by negative distance distLen %s" r.AsString (Format.float distLen)
-        if siY <= distWid * -2.0 then EuclidException.Raise "Euclid.Rect2D.expandXY: the 2D Rectangle %s is too small to expand by negative distance distWid %s" r.AsString (Format.float distWid)
-        let x = r.Xaxis * (distLen / r.SizeX)
-        let y = r.Yaxis * (distWid / r.SizeY)
+        if siX <= distX * -2.0 then EuclidException.Raise "Euclid.Rect2D.expandXY: the 2D Rectangle %s is too small to expand by negative distance distX %s" r.AsString (Format.float distX)
+        if siY <= distY * -2.0 then EuclidException.Raise "Euclid.Rect2D.expandXY: the 2D Rectangle %s is too small to expand by negative distance distY %s" r.AsString (Format.float distY)
+        let x = r.Xaxis * (distX / r.SizeX)
+        let y = r.Yaxis * (distY / r.SizeY)
         Rect2D(r.Origin - x - y, r.Xaxis + x * 2., r.Yaxis + y * 2.)
 
     /// Create a 2D Rectangle from the origin point, an x-edge and an y-edge.

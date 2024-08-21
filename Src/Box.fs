@@ -493,17 +493,17 @@ type Box =
 
     /// Returns Box expanded by respective distances on all six sides.
     /// Does check for overflow if distance is negative and fails.
-    /// distLen, distWid and distHei are for X, Y and Z-axis respectively.
-    static member expandXYZ distLen distWid distHei (b:Box) =
+    /// distX, distY and distZ are for X, Y and Z-axis respectively.
+    static member expandXYZ distX distY distZ (b:Box) =
         let siX = b.SizeX
         let siY = b.SizeY
         let hei = b.SizeZ
-        if siX <= distLen * -2.0 then EuclidException.Raise "Euclid.Box.expandXYZ: Box %s is too small to expand by negative distance distLen %s"  b.AsString (Format.float distLen)
-        if siY <= distWid * -2.0 then EuclidException.Raise "Euclid.Box.expandXYZ: Box %s is too small to expand by negative distance distWid %s"  b.AsString (Format.float distWid)
-        if hei <= distHei * -2.0 then EuclidException.Raise "Euclid.Box.expandXYZ: Box %s is too small to expand by negative distance distHei %s"  b.AsString (Format.float distHei)
-        let x = b.Xaxis * (distLen / b.SizeX)
-        let y = b.Yaxis * (distWid / b.SizeY )
-        let z = b.Zaxis * (distHei / b.SizeZ)
+        if siX <= distX * -2.0 then EuclidException.Raise "Euclid.Box.expandXYZ: Box %s is too small to expand by negative distance distX %s"  b.AsString (Format.float distX)
+        if siY <= distY * -2.0 then EuclidException.Raise "Euclid.Box.expandXYZ: Box %s is too small to expand by negative distance distY %s"  b.AsString (Format.float distY)
+        if hei <= distZ * -2.0 then EuclidException.Raise "Euclid.Box.expandXYZ: Box %s is too small to expand by negative distance distZ %s"  b.AsString (Format.float distZ)
+        let x = b.Xaxis * (distX / b.SizeX)
+        let y = b.Yaxis * (distY / b.SizeY )
+        let z = b.Zaxis * (distZ / b.SizeZ)
         Box(b.Origin-x-y-z, b.Xaxis+x*2., b.Yaxis+y*2., b.Zaxis+z*2.)
 
     /// Creates a 3D box from PPlane and x, y and Z size.
