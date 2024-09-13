@@ -312,7 +312,7 @@ type Line2D =
         let x = ln.FromX - ln.ToX
         let y = ln.FromY - ln.ToY
         let lenSq = x*x + y*y
-        if isTooSmallSq(lenSq) then 
+        if isTooSmallSq(lenSq) then
             EuclidException.Raise "Euclid.Line2D.ClosestParameterInfinite failed on very short line %O for point %O" ln p
         let u = ln.FromX-p.X
         let v = ln.FromY-p.Y
@@ -330,7 +330,7 @@ type Line2D =
         let v = ln.FromY-p.Y
         let dot = x*u + y*v
         let lenSq = x*x + y*y
-        if isTooSmallSq (lenSq) then 
+        if isTooSmallSq (lenSq) then
             if dot < 0.0 then 0.0 else 1.0
         else
             dot / lenSq |> UtilEuclid.clampBetweenZeroAndOne
@@ -343,7 +343,7 @@ type Line2D =
         let x = ln.FromX - ln.ToX
         let y = ln.FromY - ln.ToY
         let lenSq = x*x + y*y
-        if isTooSmallSq(lenSq) then 
+        if isTooSmallSq(lenSq) then
             EuclidException.Raise "Euclid.Line2D.ClosestPointInfinite failed on very short line %O for point %O" ln p
         let u = ln.FromX-p.X
         let v = ln.FromY-p.Y
@@ -366,7 +366,7 @@ type Line2D =
         let x = ln.FromX - ln.ToX
         let y = ln.FromY - ln.ToY
         let lenSq = x*x + y*y
-        if isTooSmallSq(lenSq) then 
+        if isTooSmallSq(lenSq) then
             EuclidException.Raise "Euclid.Line2D.DistanceToPtInfinite failed on very short line %O for point %O" ln p
         let u = ln.FromX - p.X
         let v = ln.FromY - p.Y
@@ -1082,6 +1082,38 @@ type Line2D =
         let k = int ((len+gap) / (maxSegmentLength+gap)*0.999999523) + 1 // 8 float steps below 1.0 https://float.exposed/0x3f7ffff8
         Line2D.split gap k ln
 
+    /// Divides a 2D line into segments of given length.
+    /// Includes start and end point
+    /// Adds end point only if there is a remainder bigger than 1% of the segment length.
+    static member  divideEvery dist (l:Line2D) =
+        let len = l.Length
+        let div = len / dist
+        let floor = System.Math.Floor div
+        let step = 1.0 / floor
+        let count = int floor
+        let pts = ResizeArray<Pt>(count + 2)
+        pts.Add l.From
+        for i = 1 to count do
+            pts.Add <| l.EvaluateAt (step * float i)
+        if div - floor > 0.01 then
+            pts.Add l.To // add end point only if there is a remainder bigger than 1%
+        pts
+
+    /// Divides a 2D line into segments of given length.
+    /// Excludes start and end point
+    /// Adds last div point before end only if there is a remainder bigger than 1% of the segment length.
+    static member  divideInsideEvery dist (l:Line2D) =
+        let len = l.Length
+        let div = len / dist
+        let floor = System.Math.Floor div
+        let step = 1.0 / floor
+        let count = int floor
+        let pts = ResizeArray<Pt>(count)
+        for i = 1 to count - 1 do
+            pts.Add <| l.EvaluateAt (step * float i)
+        if div - floor > 0.01 then
+            pts.Add <| l.EvaluateAt (step * floor) // add last div point only if there is a remainder bigger than 1%
+        pts
 
 
     //-----------------------------------------------------------------------------------------------------------

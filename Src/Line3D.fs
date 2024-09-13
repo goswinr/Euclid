@@ -1289,6 +1289,40 @@ type Line3D =
         let k = int ((len+gap) / (maxSegmentLength+gap)*0.999999523) + 1 // 8 float steps below 1.0 https://float.exposed/0x3f7ffff8
         Line3D.split gap k ln
 
+
+    /// Divides a 2D line into segments of given length.
+    /// Includes start and end point
+    /// Adds end point only if there is a remainder bigger than 1% of the segment length.
+    static member  divideEvery dist (l:Line3D) =
+        let len = l.Length
+        let div = len / dist
+        let floor = System.Math.Floor div
+        let step = 1.0 / floor
+        let count = int floor
+        let pts = ResizeArray<Pnt>(count + 2)
+        pts.Add l.From
+        for i = 1 to count do
+            pts.Add <| l.EvaluateAt (step * float i)
+        if div - floor > 0.01 then
+            pts.Add l.To // add end point only if there is a remainder bigger than 1%
+        pts
+
+    /// Divides a 2D line into segments of given length.
+    /// Excludes start and end point
+    /// Adds last div point before end only if there is a remainder bigger than 1% of the segment length.
+    static member  divideInsideEvery dist (l:Line3D) =
+        let len = l.Length
+        let div = len / dist
+        let floor = System.Math.Floor div
+        let step = 1.0 / floor
+        let count = int floor
+        let pts = ResizeArray<Pnt>(count)
+        for i = 1 to count - 1 do
+            pts.Add <| l.EvaluateAt (step * float i)
+        if div - floor > 0.01 then
+            pts.Add <| l.EvaluateAt (step * floor) // add last div point only if there is a remainder bigger than 1%
+        pts
+
     //----------------------------------------------------------------------------------------------------------------
     //------------------------------Line Line Intersection : ----------------------------------------------------
     //----------------------------------------------------------------------------------------------------------------
