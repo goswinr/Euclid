@@ -6,7 +6,7 @@ open System.Runtime.Serialization // for serialization of struct fields only but
 open System.Collections.Generic // forIList
 
 /// A mutable 2D Polyline.
-/// If the last point is the same as the first point, the Polyline2D is closed.
+/// If the last point is the same as the first point, the Polyline2D is considered closed.
 [<Struct; NoEquality; NoComparison>] // because its made up from floats
 [<DataContract>] // for using DataMember on fields
 type Polyline2D =
@@ -44,7 +44,8 @@ type Polyline2D =
         p.Points.Last
 
     /// Gets the count of points in the Polyline2D
-    member inline p.PointCount = p.Points.Count
+    member inline p.PointCount =
+        p.Points.Count
 
         /// Gets the length of the Polyline2D
     member p.Length =
@@ -59,7 +60,8 @@ type Polyline2D =
         l
 
     /// Gets bounding rectangle of the Polyline2D
-    member p.BoundingRectangle = BRect.createFromIList p.Points
+    member p.BoundingRectangle =
+        BRect.createFromIList p.Points
 
     /// Tests if Polyline2D start and end points are exactly the same.
     member inline p.IsClosed =
@@ -128,7 +130,6 @@ type Polyline2D =
         else area > 0.0
 
 
-
     /// Returns the point at a given parameter on the Polyline2D.
     /// The integer part of the parameter is the index of the segment that the point is on.
     /// The fractional part of the parameter is the parameter form 0.0 to 1.0 on the segment.
@@ -177,7 +178,6 @@ type Polyline2D =
         // return point  if point is almost matching
         else
             UnitVc.create(pl.Points.[i], pl.Points.[i+1])
-
 
 
     /// Returns the parameter on the Polyline2D that is the closest point to the given point.
@@ -247,61 +247,77 @@ type Polyline2D =
         p.Points.Last
 
     /// Reverse order of the Polyline2D in place.
-    static member inline reverseInPlace (p:Polyline2D) = p.ReverseInPlace()
+    static member inline reverseInPlace (p:Polyline2D) =
+        p.ReverseInPlace()
 
     /// Returns new Polyline2D in reversed Order.
-    static member inline reverse (p:Polyline2D) = p.Reverse()
+    static member inline reverse (p:Polyline2D) =
+        p.Reverse()
 
     /// Returns the point at a given parameter on the Polyline2D.
     /// The integer part of the parameter is the index of the segment that the point is on.
     /// The fractional part of the parameter is the parameter form 0.0 to 1.0 on the segment.
     /// The domain Polyline2D starts at 0.0 and ends at point count.
-    static member inline evaluateAt (t:float) (pl:Polyline2D) = pl.EvaluateAt t
+    static member inline evaluateAt (t:float) (pl:Polyline2D) =
+        pl.EvaluateAt t
 
     /// Apply a mapping function to each point in the 2D Polyline2D. Returns new Polyline2D.
-    static member map (mapping:Pt->Pt) (pl:Polyline2D) = pl.Points |> ResizeArr.map mapping |> Polyline2D.createDirectlyUnsafe
+    static member map (mapping:Pt->Pt) (pl:Polyline2D) =
+        pl.Points |> ResizeArr.map mapping |> Polyline2D.createDirectlyUnsafe
 
     /// Move a Polyline2D by a vector. (same as Polyline2D.move)
-    static member inline translate (v:Vc) (pl:Polyline2D) = pl |> Polyline2D.map (Pt.addVc v)
+    static member inline translate (v:Vc) (pl:Polyline2D) =
+        pl |> Polyline2D.map (Pt.addVc v)
 
     /// Move a Polyline2D by a vector. (same as Polyline2D.translate)
-    static member inline move (v:Vc) (pl:Polyline2D) = Polyline2D.translate v pl
+    static member inline move (v:Vc) (pl:Polyline2D) =
+        Polyline2D.translate v pl
 
     /// Returns a Polyline2D moved by a given distance in X direction.
-    static member inline moveX (distance:float) (pl:Polyline2D) = pl |> Polyline2D.map (Pt.moveX distance)
+    static member inline moveX (distance:float) (pl:Polyline2D) =
+        pl |> Polyline2D.map (Pt.moveX distance)
 
     /// Returns a Polyline2D moved by a given distance in Y direction.
-    static member inline moveY (distance:double) (pl:Polyline2D) = pl |> Polyline2D.map (Pt.moveY distance)
+    static member inline moveY (distance:double) (pl:Polyline2D) =
+        pl |> Polyline2D.map (Pt.moveY distance)
 
 
     /// Rotation a Polyline2D around Z-Axis.
-    static member inline rotate (r:Rotation2D) (pl:Polyline2D) = pl |> Polyline2D.map (Pt.rotateBy r)
+    static member inline rotate (r:Rotation2D) (pl:Polyline2D) =
+        pl |> Polyline2D.map (Pt.rotateBy r)
 
     /// Rotation a Polyline2D round given Center point an a local Z-axis.
-    static member inline rotateWithCenter (cen:Pt) (r:Rotation2D) (pl:Polyline2D) = pl |> Polyline2D.map (Pt.rotateWithCenterBy cen r)
+    static member inline rotateWithCenter (cen:Pt) (r:Rotation2D) (pl:Polyline2D) =
+        pl |> Polyline2D.map (Pt.rotateWithCenterBy cen r)
 
     /// Returns the parameter on the Polyline2D that is the closest point to the given point.
     /// The integer part of the parameter is the index of the segment that the point is on.
     /// The fractional part of the parameter is the parameter form 0.0 to 1.0 on the segment.
     /// The domain Polyline2D starts at 0.0 and ends at point count.
-    static member inline closestParameter (pl:Polyline2D) (pt:Pt) = pl.ClosestParameter pt
+    static member inline closestParameter (pl:Polyline2D) (pt:Pt) =
+        pl.ClosestParameter pt
 
     /// Returns the point on the Polyline2D that is the closest point to the given point.
-    static member inline closestPoint (pl:Polyline2D) (pt:Pt) = pl.ClosestPoint pt
+    static member inline closestPoint (pl:Polyline2D) (pt:Pt) =
+        pl.ClosestPoint pt
 
     /// Returns the distance of the test point to the closest point on the Polyline2D.
-    static member inline distanceTo (pl:Polyline2D) (pt:Pt) = pl.DistanceTo pt
+    static member inline distanceTo (pl:Polyline2D) (pt:Pt) =
+        pl.DistanceTo pt
 
     /// Create a new Polyline2D by copying over all points.
-    static member create(points: seq<Pt>) = Polyline2D(ResizeArray(points))
+    static member create(points: seq<Pt>) =
+        Polyline2D(ResizeArray(points))
 
     /// Create a new Polyline2D by using the provided ResizeArray directly.
     /// All later changes to the ResizeArray will be reflected in the Polyline2D.
-    static member createDirectlyUnsafe (points: ResizeArray<Pt>) = Polyline2D(points)
+    static member createDirectlyUnsafe (points: ResizeArray<Pt>) =
+        Polyline2D(points)
 
     /// Create a new empty Polyline2D without any points.
     /// But predefined capacity.
-    static member createEmpty (capacity:int) = Polyline2D(ResizeArray(capacity))
+    static member createEmpty (capacity:int) =
+        Polyline2D(ResizeArray(capacity))
 
     /// Returns new Polyline2D from point at Parameter a to point at Parameter b.
     /// if 'a' is bigger 'b' then the new Polyline2D is in opposite direction.

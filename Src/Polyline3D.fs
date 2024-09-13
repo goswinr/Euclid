@@ -17,7 +17,8 @@ type Polyline3D =
     [<DataMember>] val Points: ResizeArray<Pnt>
 
     /// Internal constructor. Uses input List without copying it.
-    internal new (points: ResizeArray<Pnt>) = { Points = points }
+    internal new (points: ResizeArray<Pnt>) =
+        { Points = points }
 
     /// Nicely formatted string representation of the Box including its size.
     override pl.ToString() =
@@ -55,7 +56,8 @@ type Polyline3D =
         l
 
     /// Gets the a bounding box of the Polyline3D
-    member inline p.BoundingBox = BBox.createFromIList p.Points
+    member inline p.BoundingBox =
+        BBox.createFromIList p.Points
 
     /// Tests if Polyline3D start and end points are exactly the same.
     member inline p.IsClosed =
@@ -215,7 +217,8 @@ type Polyline3D =
 
     /// Gets the internal list of all Points of the Polyline3D.
     /// This is not a copy, so changes to the list will be reflected in the Polyline3D.
-    static member inline pointsUnsafeInternal (p:Polyline3D) = p.Points
+    static member inline pointsUnsafeInternal (p:Polyline3D) =
+        p.Points
 
     /// Gets first point of the Polyline3D
     static member inline start (p:Polyline3D) =
@@ -228,67 +231,84 @@ type Polyline3D =
         p.Points.Last
 
     /// Reverse order of the Polyline3D in place.
-    static member inline reverseInPlace (p:Polyline3D) = p.ReverseInPlace()
+    static member inline reverseInPlace (p:Polyline3D) =
+        p.ReverseInPlace()
 
     /// Returns new Polyline3D in reversed Order.
-    static member inline reverse (p:Polyline3D) = p.Reverse()
+    static member inline reverse (p:Polyline3D) =
+        p.Reverse()
 
     /// Returns the point at a given parameter on the Polyline3D.
     /// The integer part of the parameter is the index of the segment that the point is on.
     /// The fractional part of the parameter is the parameter form 0.0 to 1.0 on the segment.
     /// The domain Polyline3D starts at 0.0 and ends at point count.
-    static member inline evaluateAt (t:float) (pl:Polyline3D) = pl.EvaluateAt t
+    static member inline evaluateAt (t:float) (pl:Polyline3D) =
+        pl.EvaluateAt t
 
 
     /// Apply a mapping function to each point in the 3D Polyline. Returns new Polyline3D.
-    static member map (mapping:Pnt->Pnt) (pl:Polyline3D) = pl.Points |> ResizeArr.map mapping |> Polyline3D.createDirectlyUnsafe
+    static member map (mapping:Pnt->Pnt) (pl:Polyline3D) =
+        pl.Points |> ResizeArr.map mapping |> Polyline3D.createDirectlyUnsafe
 
     /// Move a Polyline3D by a vector. (same as Polyline3D.move)
-    static member inline translate (v:Vec) (pl:Polyline3D) = pl |> Polyline3D.map (Pnt.addVec v)
+    static member inline translate (v:Vec) (pl:Polyline3D) =
+        pl |> Polyline3D.map (Pnt.addVec v)
 
     /// Move a Polyline3D by a vector. (same as Polyline3D.translate)
     static member inline move (v:Vec) (pl:Polyline3D) = Polyline3D.translate v pl
 
     /// Returns a Polyline3D moved by a given distance in X direction.
-    static member inline moveX (distance:float) (pl:Polyline3D) = pl |> Polyline3D.map (Pnt.moveX distance)
+    static member inline moveX (distance:float) (pl:Polyline3D) =
+        pl |> Polyline3D.map (Pnt.moveX distance)
 
     /// Returns a Polyline3D moved by a given distance in Y direction.
-    static member inline moveY (distance:double) (pl:Polyline3D) = pl |> Polyline3D.map (Pnt.moveY distance)
+    static member inline moveY (distance:double) (pl:Polyline3D) =
+        pl |> Polyline3D.map (Pnt.moveY distance)
 
     /// Returns a Polyline3D moved by a given distance in Z direction.
-    static member inline moveZ (distance:double) (pl:Polyline3D) = pl |> Polyline3D.map (Pnt.moveZ distance)
+    static member inline moveZ (distance:double) (pl:Polyline3D) =
+        pl |> Polyline3D.map (Pnt.moveZ distance)
 
     /// Applies a 4x4 transformation matrix.
-    static member inline transform (m:Matrix) (pl:Polyline3D) = pl |> Polyline3D.map (Pnt.transform m)
+    static member inline transform (m:Matrix) (pl:Polyline3D) =
+        pl |> Polyline3D.map (Pnt.transform m)
 
     /// Rotation a Polyline3D around Z-Axis.
-    static member inline rotate (r:Rotation2D) (pl:Polyline3D) = pl |> Polyline3D.map (Pnt.rotateZBy r)
+    static member inline rotate (r:Rotation2D) (pl:Polyline3D) =
+        pl |> Polyline3D.map (Pnt.rotateZBy r)
 
     /// Rotation a Polyline3D round given Center point an a local Z-axis.
-    static member inline rotateWithCenter (cen:Pnt) (r:Rotation2D) (pl:Polyline3D) = pl |> Polyline3D.map (Pnt.rotateZwithCenterBy cen r)
+    static member inline rotateWithCenter (cen:Pnt) (r:Rotation2D) (pl:Polyline3D) =
+        pl |> Polyline3D.map (Pnt.rotateZwithCenterBy cen r)
 
     /// Returns the parameter on the Polyline3D that is the closest point to the given point.
     /// The integer part of the parameter is the index of the segment that the point is on.
     /// The fractional part of the parameter is the parameter form 0.0 to 1.0 on the segment.
     /// The domain Polyline3D starts at 0.0 and ends at point count.
-    static member inline closestParameter (pl:Polyline3D) (pt:Pnt) = pl.ClosestParameter pt
+    static member inline closestParameter (pl:Polyline3D) (pt:Pnt) =
+        pl.ClosestParameter pt
 
     /// Returns the point on the Polyline3D that is the closest point to the given point.
-    static member inline closestPoint (pl:Polyline3D) (pt:Pnt) = pl.ClosestPoint pt
+    static member inline closestPoint (pl:Polyline3D) (pt:Pnt) =
+        pl.ClosestPoint pt
 
     /// Returns the distance of the test point to the closest point on the Polyline3D.
-    static member inline distanceTo (pl:Polyline3D) (pt:Pnt) = pl.DistanceTo pt
+    static member inline distanceTo (pl:Polyline3D) (pt:Pnt) =
+        pl.DistanceTo pt
 
     /// Create a new Polyline3D by copying over all points.
-    static member create(points: seq<Pnt>) = Polyline3D(ResizeArray(points))
+    static member create(points: seq<Pnt>) =
+        Polyline3D(ResizeArray(points))
 
     /// Create a new Polyline3D by using the provided ResizeArray directly.
     /// All later changes to the ResizeArray will be reflected in the Polyline3D.
-    static member createDirectlyUnsafe (points: ResizeArray<Pnt>) = Polyline3D(points)
+    static member createDirectlyUnsafe (points: ResizeArray<Pnt>) =
+        Polyline3D(points)
 
     /// Create a new empty Polyline3D without any points.
     /// But predefined capacity.
-    static member createEmpty (capacity:int) = Polyline3D(ResizeArray(capacity))
+    static member createEmpty (capacity:int) =
+        Polyline3D(ResizeArray(capacity))
 
     /// Returns new Polyline3D from point at Parameter a to point at Parameter b.
     /// if 'a' is bigger 'b' then the new Polyline3D is in opposite direction.
