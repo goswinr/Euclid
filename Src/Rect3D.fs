@@ -4,7 +4,7 @@ open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
 open UtilEuclid
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
-
+open System.Collections.Generic
 
 /// An immutable planar 3D Rectangle with any rotation in 3D space.
 /// Described by an Origin and two Edge vectors.
@@ -658,14 +658,19 @@ type Rect3D =
     ///  0-Origin       1
     static member createFrom3Points (origin:Pnt, xPt:Pnt, yPt:Pnt) =
         let x = xPt - origin
-        if isTooSmallSq x.LengthSq  then EuclidException.Raise "Euclid.Rect3D.createThreePoints: X-Point %s too close to origin: %s." origin.AsString x.AsString
+        if isTooSmallSq x.LengthSq  then EuclidException.Raise "Euclid.Rect3D.createFrom3Points: X-Point %s too close to origin: %s." origin.AsString x.AsString
         let y = yPt - origin
-        if isTooSmallSq y.LengthSq  then EuclidException.Raise "Euclid.Rect3D.createThreePoints: Y-Point %s too close to origin: %s." origin.AsString y.AsString
+        if isTooSmallSq y.LengthSq  then EuclidException.Raise "Euclid.Rect3D.createFrom3Points: Y-Point %s too close to origin: %s." origin.AsString y.AsString
         let z = Vec.cross(x,y)
-        if isTooSmallSq z.LengthSq  then EuclidException.Raise "Euclid.Rect3D.createThreePoints: Y-Point %s is too close to Xaxis." y.AsString
+        if isTooSmallSq z.LengthSq  then EuclidException.Raise "Euclid.Rect3D.createFrom3Points: Y-Point %s is too close to Xaxis." y.AsString
         let yu = Vec.cross(z, x).Unitized
         let yr = yu * (yu *** y) // get the y point projected on the y axis
         Rect3D(origin, x, yr)
+
+    // Finds the oriented bounding box of a set of points in the direction of a vector
+    //static member createFromDirAndPoints (dirX:Vec) (pts:IList<Pnt>) =
+    // TODO: implement in 3D too?  would need additional parameter for orientation
+
 
     /// Tries to create a 3D rectangle from three points. Returns None if points are too close to each other or all colinear..
     /// The Origin, a point in X-axis direction and length, and a point for the length in Y-axis direction.

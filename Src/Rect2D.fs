@@ -3,6 +3,7 @@ namespace Euclid
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
 open UtilEuclid
+open System.Collections.Generic
 
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 
@@ -620,8 +621,8 @@ type Rect2D =
     /// Creates a 2D rectangle from a center point, the X direction, the X and the Y size.
     /// Fails on negative sizes.
     static member createFromCenterAndDirection (center:Pt, directionX:UnitVc, sizeX, sizeY) =
-        if isNegative(sizeX) then EuclidException.Raise "Euclid.Rect2D.createFromCenter(center:Pt, directionX:UnitVc, sizeX, sizeY) sizeX is negative: %g, sizeY is: %g, center: %O"  sizeX sizeY  center.AsString
-        if isNegative(sizeY) then EuclidException.Raise "Euclid.Rect2D.createFromCenter(center:Pt, directionX:UnitVc, sizeX, sizeY) sizeY is negative: %g, sizeX is: %g, center: %O"  sizeY sizeX  center.AsString
+        if isNegative(sizeX) then EuclidException.Raise "Euclid.Rect2D.createFromCenterAndDirection(center:Pt, directionX:UnitVc, sizeX, sizeY) sizeX is negative: %g, sizeY is: %g, center: %O"  sizeX sizeY  center.AsString
+        if isNegative(sizeY) then EuclidException.Raise "Euclid.Rect2D.createFromCenterAndDirection(center:Pt, directionX:UnitVc, sizeX, sizeY) sizeY is negative: %g, sizeX is: %g, center: %O"  sizeY sizeX  center.AsString
         let x = directionX * sizeX
         let y = directionX.Rotate90CCW * sizeY
         Rect2D(center - x * 0.5 - y * 0.5, x, y)
@@ -629,7 +630,7 @@ type Rect2D =
     /// Creates a 2D rectangle from a center point, the X vector and the Y size.
     /// Fails on negative Y size.
     static member createFromCenterAndVector (center:Pt, x:Vc, sizeY) =
-        if isNegative(sizeY) then EuclidException.Raise "Euclid.Rect2D.createFromCenter(center:Pt, x:Vc, sizeY) sizeY is negative: %g, x is: %O, center: %O"  sizeY  x.AsString  center.AsString
+        if isNegative(sizeY) then EuclidException.Raise "Euclid.Rect2D.createFromCenterAndVector(center:Pt, x:Vc, sizeY) sizeY is negative: %g, x is: %O, center: %O"  sizeY  x.AsString  center.AsString
         let y = x.Rotate90CCW * sizeY
         Rect2D(center - x * 0.5 - y * 0.5, x, y)
 
@@ -656,19 +657,47 @@ type Rect2D =
     ///  0-Origin       1
     static member createFrom3Points (origin:Pt, xPt:Pt, yPt:Pt) =
         let x = xPt - origin
-        if isTooSmallSq x.LengthSq  then EuclidException.Raise "Euclid.Rect2D.createThreePoints: X-Point %s too close to origin: %s." origin.AsString x.AsString
+        if isTooSmallSq x.LengthSq  then EuclidException.Raise "Euclid.Rect2D.createFrom3Points: X-Point %s too close to origin: %s." origin.AsString x.AsString
         let y = yPt - origin
-        if isTooSmallSq y.LengthSq  then EuclidException.Raise "Euclid.Rect2D.createThreePoints: Y-Point %s too close to origin: %s." origin.AsString y.AsString
+        if isTooSmallSq y.LengthSq  then EuclidException.Raise "Euclid.Rect2D.createFrom3Points: Y-Point %s too close to origin: %s." origin.AsString y.AsString
         let yu = x.Rotate90CCW.Unitized
-        //if y0 * yv < 0. then EuclidException.Raise "Euclid.Rect2D.createThreePoints: Y-Point %s is on right side but should be on the left of X-Point %s." origin.AsString y.AsString
+        //if y0 * yv < 0. then EuclidException.Raise "Euclid.Rect2D.createFrom3Points: Y-Point %s is on right side but should be on the left of X-Point %s." origin.AsString y.AsString
         let dot = yu *** y
-        if isTooSmall (abs dot) then  EuclidException.Raise "Euclid.Rect2D.createThreePoints: Y-Point %s is too close to Xaxis." y.AsString
+        if isTooSmall (abs dot) then  EuclidException.Raise "Euclid.Rect2D.createFrom3Points: Y-Point %s is too close to Xaxis." y.AsString
         let yr = yu * dot // get the y point projected on the y axis
         if dot > 0. then
             Rect2D(origin, x, yr) //point is on left side of X-axis
         else
            //Rect2D(origin + y, xv, -y) //alternative valid result: If the point Y is on the right side of the X-axis the origin will be at point 3, X at point 2.
            Rect2D(xPt, -x, yr) //the origin will be at point x, and the end of the x-Axis at the origin.
+
+
+    /// Finds the oriented bounding box of a set of points in the direction of a vector
+    static member createFromDirAndPoints (dirX:Vc) (pts:IList<Pt>) =
+        if isTooSmallSq dirX.LengthSq then EuclidException.Raise "Euclid.Rect2D.createFromDirAndPoints: dirX %s too short" dirX.AsString
+        let p0 = pts.[0]
+        let x = Line2D(p0, p0 + dirX)
+        let y = Line2D(p0, p0 + dirX.Rotate90CCW)
+        let mutable minX = Double.MaxValue
+        let mutable minY = Double.MaxValue
+        let mutable maxX = Double.MinValue
+        let mutable maxY = Double.MinValue
+        for i = 0 to pts.Count-1 do
+            let p = pts.[i]
+            let px = x.ClosestParameterInfinite p
+            if px < minX then
+                minX <- px
+            if px > maxX then
+                maxX <- px
+            let py = y.ClosestParameterInfinite p
+            if py < minY then
+                minY <- py
+            if py > maxY then
+                maxY <- py
+        let vx = x.EvaluateAt(maxX) - x.EvaluateAt(minX)
+        let vy = y.EvaluateAt(maxY) - y.EvaluateAt(minY)
+        let o = p0 + x.Vector * minX + y.Vector * minY
+        Rect2D.createUnchecked(o, vx, vy)
 
     /// Tries to create a 2D rectangle from three points. Returns None if points are too close to each other or all colinear.
     /// The Origin, a point in X-axis direction and length, and a point for the length in Y-axis direction.
