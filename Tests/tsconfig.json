@@ -1,0 +1,40 @@
+{
+  // see https://fable.io/blog/2023/2023-04-20-Better_Typed_than_Sorry.html#compilation-options
+  "compilerOptions": {
+     "target": "ESNext",
+     "useDefineForClassFields": true,
+     "lib": [ "DOM",  "DOM.Iterable",  "ESNext"],
+     "module": "ESNext",
+
+     "skipLibCheck": true, // skip type checking of all declaration files
+     "esModuleInterop": false,
+     "allowSyntheticDefaultImports": true,
+     "strict": false,
+     "forceConsistentCasingInFileNames": true, // so that it works on casesensitive file systems like linux
+     "isolatedModules": true,
+
+     // Tells TypeScript to read JS files, as
+     // normally they are ignored as source files
+     "allowJs": false,
+
+     // Generate d.ts files
+     // "declarationDir": "./_ts", // where to put the _ts files
+     "declaration": true,
+
+     // This compiler run should
+     // only output d.ts files
+     "emitDeclarationOnly": true,
+
+     // Types should go into this directory. Removing this would place the .d.ts files next to the .js files
+     "outDir": "./dist/", // this must not be a subpath of the "include" directory
+
+     // go to js file when using IDE functions like
+     // "Go to Definition" in VSCode
+     // "declarationMap": true,
+
+     //  "noEmit": false, // false by default ?
+     // "types": [ "node"  ],// so that 'Buffer' is recognized, see //https://github.com/aws/aws-sdk-js/issues/1271#issuecomment-267472623
+  }
+  , "include": [ "./_ts/Src/" ]
+  // , "exclude": ["fable_modules/"]
+}

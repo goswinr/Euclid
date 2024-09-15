@@ -19,13 +19,14 @@
     <Title>Euclid</Title>
     <Product>Euclid</Product>
     <PackageId>Euclid</PackageId>
-    <Version>0.9.0</Version>
-    <AssemblyVersion>0.9.0</AssemblyVersion>
-    <FileVersion>0.9.0</FileVersion>
+    <Version>0.10.0</Version>
+    <AssemblyVersion>0.10.0</AssemblyVersion>
+    <FileVersion>0.10.0</FileVersion>
     <PackageReleaseNotes>
-      - add suffix '90' to angel functions in Plane module
-      - improve precision of Pi literals
-      - include NaN check in isTiny functions
+      - add Line.divideEvery
+      - add Rect.createFromDirAndPoints
+      - rename Width and Height to SizeX and SizeY for Rect and Box
+      - check TS build via Fable
     </PackageReleaseNotes>
     <Authors>GoswinR</Authors>
     <Copyright>Goswin Rothenthal 2019</Copyright>
@@ -48,6 +49,7 @@
     <PackageIcon>logo128.png</PackageIcon>
     <PackageReadmeFile>READMEnuget.md</PackageReadmeFile>
     <PackageTags>fsharp;geometry;fable;fable-library;fable-all</PackageTags>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
   <ItemGroup>
     <!-- otherwise the minimum FSharp.Core version would be forced by the SDK used for building it. This would be needlessly too high-->

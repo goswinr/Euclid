@@ -10,6 +10,7 @@ Mocha.runTests Polyline.tests
 |||
 Mocha.runTests Topo.tests
 
+|> printfn "Fable.Mocha completed. with %A"
 
 
 #else

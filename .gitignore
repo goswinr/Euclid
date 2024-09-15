@@ -4,9 +4,11 @@ bin/
 fable_modules/
 Tests/node_modules/
 Tests/dist/
+Tests/_ts/
 dist/TS/
 distTS/
 
 # File
 *.fs.js
+*.fs.ts
 *.idea

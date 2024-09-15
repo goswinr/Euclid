@@ -66,6 +66,11 @@ npm test
 ```
 
 ### Release Notes
+`0.10.0`
+- add Line.divideEvery
+- add Rect.createFromDirAndPoints
+- rename Width and Height to SizeX and SizeY for Rect and Box
+- check TS build via Fable
 
 `0.9.0`
 - add suffix '90' to angel functions in Plane module

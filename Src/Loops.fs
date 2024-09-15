@@ -192,8 +192,8 @@ type Loop private   ( pts:ResizeArray<Pt>
                 else
                     // set last to average
                     ps.Last <- (ps.Last + pt) *0.5
-                    Debug2D.drawDot (sprintf "short segment: %d" (i-1)) pt
                     #if DEBUG
+                    Debug2D.drawDot (sprintf "short segment: %d" (i-1), pt)
                     eprintfn "Loop constructor: Segment %d shorter than %g was skipped, it was just %g long." (i-1) snapThreshold (Pt.distance ps.Last pt)
                     #endif
             // close
@@ -254,8 +254,8 @@ type Loop private   ( pts:ResizeArray<Pt>
         let mutable t = unitVcts.[0]
         for ii=1 to segLastIdx do
             let n = unitVcts.[ii]
-            if t *** n < -0.984808 then
-                Debug2D.drawDot "+170° turn?" pts.[ii]
+            if t *** n < float Cosine.``177.0`` then
+                Debug2D.drawDot ("+170° turn?", pts.[ii])
                 EuclidException.Raise "Euclid.Loop: Lines for Loop make a kink between 170 and 180 Degrees."
             t <- n
 
@@ -273,7 +273,7 @@ type Loop private   ( pts:ResizeArray<Pt>
                 let bu = unitVcts.[j]
                 let bl = lens.[j]
                 if Intersect.doIntersectOrOverlapColinear(ap, au, al, abb, bp, bu, bl, bbb, snapThreshold) then
-                    Debug2D.drawDot (sprintf "self X: %O + %O"  i j) (Intersect.getXPointOrMid(ap, au, al, bp, bu, bl, snapThreshold))
+                    Debug2D.drawDot (sprintf "self X: %O + %O"  i j, Intersect.getXPointOrMid(ap, au, al, bp, bu, bl, snapThreshold))
                     Debug2D.drawLineFromTo(ap, ap+au*al)
                     Debug2D.drawLineFromTo(bp, bp+bu*bl)
                     EuclidException.Raise "Euclid.Loop: Loop of %O Points has self intersection." points.Count

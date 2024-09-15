@@ -7,7 +7,7 @@ module Debug2D =
 
     /// By default this function does nothing. But it is called in case of some errors within this library's Loop module.
     /// Set this mutable function object from your 2D or 3D environment if you want debug objects to be drawn.
-    let mutable drawDot = fun (msg:string) (pt:Pt) -> ()
+    let mutable drawDot = fun (msg:string, pt:Pt) -> () // a curried function cant be set in Fable ??
 
     /// By default this function does nothing. But it is called in case of some errors within this library's Loop module.
     /// Set this mutable function object from your 2D or 3D environment if you want debug objects to be drawn.
@@ -16,10 +16,10 @@ module Debug2D =
     /// By default this function does nothing. But it is called in case of some errors within this library's Loop module.
     /// Set this mutable function object from your 2D or 3D environment if you want debug objects to be drawn.
     let mutable drawLineFromTo = fun (a:Pt, b:Pt) -> ()
-    
+
     /// By default this function does nothing. But it is called in case of some errors within this library's Loop module.
     /// Set this mutable function object from your 2D or 3D environment if you want debug objects to be drawn.
-    let mutable drawLine = fun (ln:Line2D) -> ()    
+    let mutable drawLine = fun (ln:Line2D) -> ()
 
     /// By default this function does nothing. But it is called in case of some errors within this library's Loop module.
     /// Set this mutable function object from your 2D or 3D environment if you want debug objects to be drawn.
@@ -39,7 +39,7 @@ module Debug2D =
 
     /// By default this function does nothing. But it is called in case of some errors within this library's Loop module.
     /// Set this mutable function object from your 2D or 3D environment if you want debug objects to be drawn.
-    let mutable drawLineLayer = fun (ln:Line2D, layer:string) -> ()    
+    let mutable drawLineLayer = fun (ln:Line2D, layer:string) -> ()
 
     /// By default this function does nothing. But it is called in case of some errors within this library's Loop module.
     /// Set this mutable function object from your 2D or 3D environment if you want debug objects to be drawn.
@@ -52,7 +52,7 @@ module Debug3D =
 
     /// By default this function does nothing. But it is called in case of some errors within this library's Loop module.
     /// Set this mutable function object from your 3D environment if you want debug objects to be drawn.
-    let mutable drawDot = fun (msg:string) (pt:Pnt) -> ()
+    let mutable drawDot = fun (msg:string, pt:Pnt) -> () // a curried function cant be set in Fable ??
 
     /// By default this function does nothing. But it is called in case of some errors within this library's Loop module.
     /// Set this mutable function object from your 3D environment if you want debug objects to be drawn.
@@ -65,7 +65,7 @@ module Debug3D =
     /// By default this function does nothing. But it is called in case of some errors within this library's Loop module.
     /// Set this mutable function object from your 3D environment if you want debug objects to be drawn.
     let mutable drawLine = fun (ln:Line3D) -> ()
-    
+
 
     /// By default this function does nothing. But it is called in case of some errors within this library's Loop module.
     /// Set this mutable function object from your 3D environment if you want debug objects to be drawn.
@@ -85,7 +85,7 @@ module Debug3D =
 
     /// By default this function does nothing. But it is called in case of some errors within this library's Loop module.
     /// Set this mutable function object from your 3D environment if you want debug objects to be drawn.
-    let mutable drawLineLayer = fun (ln:Line3D, layer:string) -> ()    
+    let mutable drawLineLayer = fun (ln:Line3D, layer:string) -> ()
 
     /// By default this function does nothing. But it is called in case of some errors within this library's Loop module.
     /// Set this mutable function object from your 3D environment if you want debug objects to be drawn.
