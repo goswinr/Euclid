@@ -50,11 +50,11 @@ type Rect2D =
         #if DEBUG
         let lenX = axisX.Length
         let lenY = axisY.Length
-        if isTooSmall lenX then  EuclidException.Raise "Euclid.Rect2D(): X-axis is too short: %O" axisX
-        if isTooSmall lenY then  EuclidException.Raise "Euclid.Rect2D(): Y-axis is too short: %O" axisY
+        if isTooSmall lenX then  EuclidException.Raise "internal Euclid.Rect2D(): X-axis is too short: %O" axisX
+        if isTooSmall lenY then  EuclidException.Raise "internal Euclid.Rect2D(): Y-axis is too short: %O" axisY
         //just using zeroLengthTolerance 1e-12 seems too strict for dot product check:
-        if abs (axisX *** axisY) > (lenX+lenY)*1e-9 then EuclidException.Raise "Euclid.Rect2D(): X-axis and Y-axis are not perpendicular\r\n(dot=%g) > 1e-10 \r\n%O and \r\n%O" (abs (axisX *** axisY)) axisX axisY
-        if isNegative(Vc.cross(axisX, axisY) ) then EuclidException.Raise "Euclid.Rect2D(): X-axis and Y-axis are not counter clockwise: %O and %O" axisX axisY
+        if abs (axisX *** axisY) > (lenX+lenY) * 1e-9 then EuclidException.Raise "internal Euclid.Rect2D(): X-axis and Y-axis are not perpendicular\r\n(dot=%g) > 1e-10 \r\n%O and \r\n%O" (abs (axisX *** axisY)) axisX axisY
+        if isNegative(Vc.cross(axisX, axisY) ) then EuclidException.Raise "internal Euclid.Rect2D(): X-axis and Y-axis are not counter clockwise: %O and %O" axisX axisY
         #endif
         {Origin=origin; Xaxis=axisX; Yaxis=axisY}
 
@@ -524,10 +524,28 @@ type Rect2D =
     member inline r.Area =
         r.Xaxis.Length * r.Yaxis.Length
 
+    /// Check for point containment in the 2D Rectangle.
+    /// By doing 4 dot products with the sides of the rectangle.
+    /// A point exactly on the edge of the Box is considered inside.
+    member r.Contains(p:Pt) =
+        let v = p - r.Origin
+        v *** r.Xaxis >= 0.
+        &&
+        v *** r.Yaxis >= 0.
+        &&
+        (p - r.Pt3) *** r.Yaxis <= 0.
+        &&
+        (p - r.Pt1) *** r.Xaxis <= 0.
+
 
     //-------------------------------------------------------------------
     //------------------------static members-----------------------------
     //-------------------------------------------------------------------
+
+    /// Check for point containment in the 2D Rectangle.
+    /// By doing 4 dot products with the sides of the rectangle.
+    /// A point exactly on the edge of the Box is considered inside.
+    static member inline contains (p:Pt) (r:Rect2D) = r.Contains p
 
     /// Checks if two 2D Rectangles are equal within tolerance.
     /// Does not recognize congruent rectangles with different rotation as equal.
@@ -548,7 +566,7 @@ type Rect2D =
         let siX = r.SizeX
         let siY = r.SizeY
         let d = dist * -2.0
-        if siX<=d || siY<=d  then
+        if siX <= d || siY <= d  then
             EuclidException.Raise "Euclid.Rect2D.expand: the 2D Rectangle %s is too small to expand by negative distance %s" r.AsString (Format.float dist)
         let x = r.Xaxis * (dist / siX)
         let y = r.Yaxis * (dist / siY)
@@ -673,7 +691,7 @@ type Rect2D =
 
 
     /// Finds the oriented bounding box of a set of points in the direction of a vector
-    static member createFromDirAndPoints (dirX:Vc) (pts:IList<Pt>) =
+    static member createFromDirAndPoints (dirX:Vc) (pts:IList<Pt>) :Rect2D =
         if isTooSmallSq dirX.LengthSq then EuclidException.Raise "Euclid.Rect2D.createFromDirAndPoints: dirX %s too short" dirX.AsString
         let p0 = pts.[0]
         let x = Line2D(p0, p0 + dirX)
@@ -720,7 +738,7 @@ type Rect2D =
     ///   |            |       local
     ///   +------------+-----> X-Axis
     ///  0-Origin       1
-    static member tryCreateFrom3Points (origin:Pt, xPt:Pt, yPt:Pt) =
+    static member tryCreateFrom3Points (origin:Pt, xPt:Pt, yPt:Pt) :Rect2D option=
         let x = xPt - origin
         if isTooSmallSq x.LengthSq  then None
         else
@@ -730,16 +748,14 @@ type Rect2D =
                 let yu = x.Rotate90CCW.Unitized
                 //if y0 * yv < 0. then EuclidException.Raise "Euclid.Rect2D.createThreePoints: Y-Point %s is on right side but should be on the left of X-Point %s." origin.AsString y.AsString
                 let dot = yu *** y
-                if abs dot < 1e-9 then None
+                if isTooSmall (abs dot) then None
                 else
                     let yr = yu * dot // get the y point projected on the y axis
                     if dot > 0. then
                         Some <| Rect2D(origin, x, yr) //point is on left side of X-axis
                     else
-                    //Rect2D(origin + y, xv, -y) //alternative valid result: If the point Y is on the right side of the X-axis the origin will be at point 3, X at point 2.
+                        //Rect2D(origin + y, xv, -y) //alternative valid result: If the point Y is on the right side of the X-axis the origin will be at point 3, X at point 2.
                         Some <| Rect2D(xPt, -x, yr) //the origin will be at point x, and the end of the x-Axis at the origin.
-
-
 
     /// Translate along the local X-axis of the 2D Rectangle.
     static member translateX (distX:float) (r:Rect2D) =

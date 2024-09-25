@@ -455,9 +455,32 @@ type Box =
         let z = b.Zaxis.Unitized
         PPlane.createUnchecked (b.Origin, x, y, z)
 
+
+    /// Check for point containment in the Box.
+    /// By doing 6 dot products with the sides of the rectangle.
+    /// A point exactly on the edge of the Box is considered inside.
+    member b.Contains(p:Pnt) = 
+        let v = p - b.Origin
+        v *** b.Xaxis >= 0.
+        &&
+        v *** b.Yaxis >= 0.
+        &&
+        v *** b.Zaxis >= 0.
+        &&
+        (p - b.Pt3) *** b.Yaxis <= 0.
+        &&
+        (p - b.Pt1) *** b.Xaxis <= 0.
+        &&
+        (p - b.Pt4) *** b.Zaxis <= 0.
+
     //-------------------------------------------------------------------
     //------------------------static members-----------------------------
     //-------------------------------------------------------------------
+
+    /// Check for point containment in the Box.
+    /// By doing 6 dot products with the sides of the rectangle.
+    /// A point exactly on the edge of the Box is considered inside.
+    static member inline contains (p:Pnt) (b:Box) = b.Contains p
 
     /// Checks if two 3D Boxes are equal within tolerance.
     /// Does not recognize congruent boxes with different rotation as equal.

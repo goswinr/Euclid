@@ -642,7 +642,7 @@ type Matrix =
             0, 0, 0, 1)
 
     /// Creates a rotation from one vectors direction to another vectors direction.
-    /// If the tips of the two vectors are closer than 1e-9 the identity matrix is returned.
+    /// If the tips of the two vectors are closer than 1e-12 the identity matrix is returned.
     /// If the tips of the two vectors are almost exactly opposite, deviating less than 1e-6 from line,
     /// there is no valid unique 180 degree rotation that can be found, so an exception is raised.
     static member createVecToVec(vecFrom:UnitVec, vecTo:UnitVec) =
@@ -672,7 +672,7 @@ type Matrix =
                     0             , 0              , 0              , 1)
 
     /// Creates a rotation from one vectors direction to another vectors direction.
-    /// If the tips of the two vectors unitized are closer than 1e-9 the identity matrix is returned.
+    /// If the tips of the two vectors unitized are closer than 1e-12 the identity matrix is returned.
     /// If the tips of the two vectors are almost exactly opposite, deviating less than 1e-6 from line (unitized),
     /// there is no valid unique 180 degree rotation that can be found, so an exception is raised.
     static member createVecToVec(vecFrom:Vec, vecTo:Vec) =

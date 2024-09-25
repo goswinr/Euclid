@@ -66,6 +66,10 @@ npm test
 ```
 
 ### Release Notes
+`0.11.0`
+- add Box and Rect.contains Pt
+- fix bad tolerance in Rect2D.tryCreateFrom3Points
+
 `0.10.0`
 - add Line.divideEvery
 - add Rect.createFromDirAndPoints

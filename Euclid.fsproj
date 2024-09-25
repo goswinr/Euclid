@@ -19,14 +19,12 @@
     <Title>Euclid</Title>
     <Product>Euclid</Product>
     <PackageId>Euclid</PackageId>
-    <Version>0.10.0</Version>
-    <AssemblyVersion>0.10.0</AssemblyVersion>
-    <FileVersion>0.10.0</FileVersion>
+    <Version>0.11.0</Version>
+    <AssemblyVersion>0.11.0</AssemblyVersion>
+    <FileVersion>0.11.0</FileVersion>
     <PackageReleaseNotes>
-      - add Line.divideEvery
-      - add Rect.createFromDirAndPoints
-      - rename Width and Height to SizeX and SizeY for Rect and Box
-      - check TS build via Fable
+      - add Box and Rect.contains Pt
+      - fix bad tolerance in Rect2D.tryCreateFrom3Points
     </PackageReleaseNotes>
     <Authors>GoswinR</Authors>
     <Copyright>Goswin Rothenthal 2019</Copyright>
