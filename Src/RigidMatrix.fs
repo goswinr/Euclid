@@ -569,7 +569,7 @@ type RigidMatrix =
 
 
     /// Removes the translation part by setting X41, Y42 and Z43 to 0.0.
-    static member removeTranslation (v:Vec) (m:RigidMatrix) =
+    static member removeTranslation (m:RigidMatrix) =
         RigidMatrix(m.M11, m.M21, m.M31, 0.0,
                     m.M12, m.M22, m.M32, 0.0,
                     m.M13, m.M23, m.M33, 0.0)

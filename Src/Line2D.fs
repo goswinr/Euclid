@@ -1229,7 +1229,7 @@ type Line2D =
                                                 [<OPT;DEF(1e-6)>] tooShortTolerance:float
                                                 ) : IntersectionPoints2D =
         match Line2D.intersectionParamInfinite(lnA, lnB, relAngleDiscriminant, coincidentTolerance, tooShortTolerance) with
-        |TwoParam (u, v)                 -> IntersectionPoints2D.Point (lnA.EvaluateAt u)
+        |TwoParam (u, _)                 -> IntersectionPoints2D.Point (lnA.EvaluateAt u)
         |IntersectionParam.Parallel      -> IntersectionPoints2D.Parallel
         |IntersectionParam.Coincident    -> IntersectionPoints2D.Coincident
         |IntersectionParam.TooShortA
@@ -1580,7 +1580,7 @@ type Line2D =
         // Just using Line2D.intersectionParamInfinite(lnA, lnB) would be not be enough.
         // The calculation of the IntersectionKind is actually not needed to also cover the case
         // where the lines are coincident and continuing each other
-        let k, u, v = Line2D.intersectionParam(lnA, lnB)
+        let k, u, _ = Line2D.intersectionParam(lnA, lnB)
         match k with
         | Intersecting | IntersectingEndsBoth | IntersectingEndsFirst | IntersectingEndsSecond
         | Continuation | ContinuationFlipped ->

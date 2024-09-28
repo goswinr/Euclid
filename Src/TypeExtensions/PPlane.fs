@@ -228,13 +228,13 @@ module AutoOpenPPlane =
 
         /// Creates a Parametrized Plane from a point and unit-vector representing the Z-axis.
         /// The given X vector does not need to be perpendicular to the normal vector, just not parallel.
-        /// Fails if the vectors are shorter than 1e-5 or normal and X are parallel.
+        /// Fails if the vectors are shorter than 1e-5 or normal and xAxis are parallel.
         static member createOriginNormalXaxis (origin:Pnt, normal:UnitVec, xAxis:UnitVec) =
             if normal.IsParallelTo(xAxis, Cosine.``1.0``) then
                 EuclidException.Raise "Euclid.PPlane.createOriginNormalXaxis failed. The vectors are colinear by less than 1.0 degrees, origin %s and normal %s and normal %s" origin.AsString normal.AsString xAxis.AsString
             let y = UnitVec.cross (normal, xAxis)
             let x = Vec.cross (y, normal)
-            PPlane.createUnchecked(origin, xAxis, y.Unitized, normal)
+            PPlane.createUnchecked(origin, x.Unitized, y.Unitized, normal)
 
         /// Creates a Parametrized Plane from a point and unit-vector representing the Z-axis.
         /// The given X vector does not need to be perpendicular to the normal vector, just not parallel.

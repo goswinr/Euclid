@@ -556,11 +556,11 @@ type Polyline2D =
                         else // colinear start, get frame
                             match Points.offsetInCornerEx2D (pts[ni-1], pts[ni], pts[ni+1],  getOffDist(ni-1),  getOffDist(ni), refNorm) with
                             |ValueNone -> EuclidException.Raise "Euclid.Polyline2D.offsetCore :offsetInCornerEx-1 failed unexpectedly."
-                            |ValueSome (x, prevShift, _) -> res.[i] <- pts.[i] + prevShift
+                            |ValueSome (_, prevShift, _) -> res.[i] <- pts.[i] + prevShift
                     elif ni = -1 then  // colinear end, get frame
                         match Points.offsetInCornerEx2D (pts[pi-1], pts[pi], pts[pi+1],  getOffDist(pi-1),  getOffDist(pi), refNorm) with
                         |ValueNone -> EuclidException.Raise "Euclid.Polyline2D.offsetCore :offsetInCornerEx-1 failed unexpectedly."
-                        |ValueSome (x, _, nextShift) -> res.[i] <- pts.[i] + nextShift
+                        |ValueSome (_, _, nextShift) -> res.[i] <- pts.[i] + nextShift
                     else
                         let ln = Line2D(res.[pi], res.[ni])
                         res.[i] <- ln.ClosestPointInfinite(pts.[i])

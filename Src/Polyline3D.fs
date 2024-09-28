@@ -527,11 +527,11 @@ type Polyline3D =
                         else // colinear start, get frame
                             match Points.offsetInCornerEx (pts[ni-1], pts[ni], pts[ni+1],  offD.[ni-1],  offD.[ni], refNorm) with
                             |ValueNone -> EuclidException.Raise "Euclid.Polyline3D.offsetCore :offsetInCornerEx-1 failed unexpectedly."
-                            |ValueSome (x, n, prevShift, _) -> res.[i] <- pts.[i] + prevShift + if isNull normD then Vec.Zero else n * normD.[i]
+                            |ValueSome (_, n, prevShift, _) -> res.[i] <- pts.[i] + prevShift + if isNull normD then Vec.Zero else n * normD.[i]
                     elif ni = -1 then  // colinear end, get frame
                         match Points.offsetInCornerEx (pts[pi-1], pts[pi], pts[pi+1],  offD.[pi-1],  offD.[pi], refNorm) with
                         |ValueNone -> EuclidException.Raise "Euclid.Polyline3D.offsetCore :offsetInCornerEx-1 failed unexpectedly."
-                        |ValueSome (x, n, _, nextShift) -> res.[i] <- pts.[i] + nextShift + if isNull normD then Vec.Zero else n * normD.[i]
+                        |ValueSome (_, n, _, nextShift) -> res.[i] <- pts.[i] + nextShift + if isNull normD then Vec.Zero else n * normD.[i]
                     else
                         let ln = Line3D(res.[pi], res.[ni])
                         res.[i] <- ln.ClosestPointInfinite(pts.[i])
@@ -621,7 +621,6 @@ type Polyline3D =
 
         // (4)  open, no looping desired
         else
-            let pts = points
             let offD =
                 match getWithLength (points.Count-1) offsetDistances with
                 |Error k  -> EuclidException.Raise "Euclid.Polyline3D.offset: offsetDistances has %d items but should have 0, 1 or %d for %d given points \r\nin open Polyline3D with start and end apart and loop set to '%b :\r\n%O" k points.Count points.Count loop polyLine

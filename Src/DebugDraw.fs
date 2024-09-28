@@ -1,5 +1,7 @@
 namespace Euclid
 
+#nowarn "1182"  //warn on unused variables
+
 
 /// By default the function in this module do nothing. But they are called in case of some errors within this library's Loop module.
 /// Set these mutable function object from your 2D or 3D environment if you want debug objects to be drawn.

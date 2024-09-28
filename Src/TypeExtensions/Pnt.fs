@@ -128,7 +128,6 @@ module AutoOpenPnt =
             let dir = testPt - fromPt
             let v   = toPt   - fromPt
             let lenSq = v.LengthSq
-            let lenSq = v.LengthSq
             if isTooTinySq(lenSq) then testPt.FailedAngle360InXYTo(fromPt, toPt)
             let dot = Vec.dot (v, dir) / lenSq
             if   dot <= 0.0 then  fromPt

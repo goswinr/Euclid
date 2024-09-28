@@ -1167,12 +1167,12 @@ type Line3D =
                 ln.FromY - y*f,
                 ln.FromZ - z*f)
 
-    /// Offset line in XY-Plane to left side in line direction.
-    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    static member offset amount (ln:Line3D) =
+    /// Offset line parallel to XY-Plane to left side in line direction.
+    /// Z values are not changed.
+    /// Fails on vertical lines or lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    static member offsetXY amount (ln:Line3D) =
         let x = ln.ToX - ln.FromX
         let y = ln.ToY - ln.FromY
-        let z = ln.ToZ - ln.FromZ
         let lenXY = sqrt (x*x + y*y)
         if isTooTiny (lenXY ) then EuclidException.Raise "Euclid.Line3D.offset: Cannot offset vertical Line3D (by %g) %O" amount ln
         let ox = -y*amount/lenXY  // unitized, horizontal, perpendicular  vector
@@ -1861,7 +1861,7 @@ type Line3D =
                                     [<OPT;DEF(1e-6)>] coincidentTolerance:float,
                                     [<OPT;DEF(1e-6)>] tooShortTolerance:float
                                     ) :  option<Pnt> =
-        let k, u, v = Line3D.intersectionParam(lnA, lnB, skewTolerance, relAngleDiscriminant, coincidentTolerance, tooShortTolerance)
+        let k, u, _ = Line3D.intersectionParam(lnA, lnB, skewTolerance, relAngleDiscriminant, coincidentTolerance, tooShortTolerance)
         match k with
         | Intersecting | IntersectingEndsBoth | IntersectingEndsFirst | IntersectingEndsSecond
         | Continuation | ContinuationFlipped ->

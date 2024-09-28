@@ -92,7 +92,7 @@ type Plane = // Normals are always unitized
     /// Checks if two 3D Parametrized Planes are coincident.
     /// This means that the Z-axes are parallel within 0.25 degrees
     /// and the distance of second origin to the first plane is less than 1e-6 units tolerance.
-    static member inline areCoincident tol (a:Plane) (b:Plane) = a.IsCoincidentTo (b)
+    static member inline areCoincident (a:Plane) (b:Plane) = a.IsCoincidentTo (b)
 
     /// Create Plane, normal vector gets unitized in constructor.
     static member create(pt, normal:Vec) =

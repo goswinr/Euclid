@@ -124,7 +124,6 @@ module AutoOpenPt =
             let dir = testPt - fromPt
             let v   = toPt   - fromPt
             let lenSq = v.LengthSq
-            let lenSq = v.LengthSq
             if isTooTinySq(lenSq) then testPt.FailedClosestPointOnLine(fromPt, toPt) // don't compose error msg directly here to keep inlined code small.
             let dot = Vc.dot (v, dir) / lenSq
             if   dot <= 0.0 then  fromPt
