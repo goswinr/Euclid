@@ -309,8 +309,8 @@ type Box =
         |]
 
     /// Returns the top face of the Box in Counter-Clockwise order, looking from above.
-    /// Returns Origin at point 4, X-Axis at point 5, Y-Axis at point 7.
-    ///
+    /// Returns Origin at point 4, X-Axis to point 5, Y-Axis to point 7.
+    /// The normal of the Rect3D points away from the Box.
     ///   local        local
     ///   Z-Axis       Y-Axis
     ///   ^           /
@@ -331,7 +331,8 @@ type Box =
 
 
     /// Returns the bottom face of the Box in Counter-Clockwise order, looking from above.
-    /// Returns Origin at point 0, X-Axis at point 1, Y-Axis at point 3.
+    /// Returns Origin at point 0, X-Axis to point 1, Y-Axis to point 3.
+    /// The normal of the Rect3D points into the Box.
     ///
     ///   local        local
     ///   Z-Axis       Y-Axis
@@ -354,7 +355,8 @@ type Box =
 
 
     /// Returns the front face of the Box in Counter-Clockwise order, looking from front.
-    /// Returns Origin at point 0, X-Axis at point 1, Y-Axis at point 4.
+    /// Returns Origin at point 0, X-Axis to point 1, Y-Axis to point 4.
+    /// The normal of the Rect3D points away from the Box.
     ///
     ///   local        local
     ///   Z-Axis       Y-Axis
@@ -375,7 +377,8 @@ type Box =
     member b.FrontFace = Rect3D(b.Origin, b.Xaxis, b.Zaxis)
 
     /// Returns the back face of the Box in Counter-Clockwise order, looking from front.
-    /// Returns Origin at point 3, X-Axis at point 2, Y-Axis at point 7.
+    /// Returns Origin at point 3, X-Axis to point 2, Y-Axis to point 7.
+    /// The normal of the Rect3D points into the Box.
     ///
     ///   local        local
     ///   Z-Axis       Y-Axis
@@ -396,7 +399,8 @@ type Box =
     member b.BackFace = Rect3D(b.Origin + b.Yaxis, b.Xaxis, b.Zaxis)
 
     /// Returns the right face of the Box in Counter-Clockwise order, looking from right.
-    /// Returns Origin at point 1, X-Axis at point 2, Y-Axis at point 5.
+    /// Returns Origin at point 1, X-Axis to point 2, Y-Axis to point 5.
+    /// The normal of the Rect3D points away from the Box.
     ///
     ///   local        local
     ///   Z-Axis       Y-Axis
@@ -416,8 +420,9 @@ type Box =
     ///   0               1
     member b.RightFace = Rect3D(b.Origin + b.Xaxis, b.Yaxis, b.Zaxis)
 
-    /// Returns the right face of the Box in Counter-Clockwise order, looking from right.
-    /// Returns Origin at point 1, X-Axis at point 2, Y-Axis at point 5.
+    /// Returns the left face of the Box in Counter-Clockwise order, looking from right.
+    /// Returns Origin at point 0, X-Axis to point 3, Y-Axis to point 4.
+    /// The normal of the Rect3D points into the Box.
     ///
     ///   local        local
     ///   Z-Axis       Y-Axis
@@ -435,7 +440,7 @@ type Box =
     ///   |/              |/     local
     ///   +---------------+----> X-Axis
     ///   0               1
-    member b.LeftFace = Rect3D(b.Origin + b.Xaxis, b.Yaxis, b.Zaxis)
+    member b.LeftFace = Rect3D(b.Origin, b.Yaxis, b.Zaxis)
 
     /// Evaluate a X, Y and Z parameter of the Box.
     ///  0.0, 0.0, 0.0 returns the Origin.
@@ -459,7 +464,7 @@ type Box =
     /// Check for point containment in the Box.
     /// By doing 6 dot products with the sides of the rectangle.
     /// A point exactly on the edge of the Box is considered inside.
-    member b.Contains(p:Pnt) = 
+    member b.Contains(p:Pnt) =
         let v = p - b.Origin
         v *** b.Xaxis >= 0.
         &&

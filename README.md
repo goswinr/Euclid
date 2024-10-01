@@ -66,6 +66,9 @@ npm test
 ```
 
 ### Release Notes
+`0.11.1`
+- fix Polyline2D.Area
+
 `0.11.0`
 - add Box and Rect.contains Pt
 - fix bad tolerance in Rect2D.tryCreateFrom3Points

@@ -65,12 +65,18 @@ type Rect2D =
     /// The size in X direction
     member inline r.SizeX = r.Xaxis.Length
 
+   /// The squared size in X direction
+    member inline r.SizeXSq = r.Xaxis.LengthSq
+
     /// The size in Y direction, same as member rect.SizeY.
     [<Obsolete("use SizeY")>]
     member inline r.Height2D = r.Yaxis.Length
 
     /// The size in Y direction
     member inline r.SizeY = r.Yaxis.Length
+
+    /// The squared size in Y direction
+    member inline r.SizeYSq = r.Yaxis.LengthSq
 
     /// Nicely formatted string representation of the 2D Rectangle including its size.
     override r.ToString() =

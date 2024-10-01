@@ -35,6 +35,9 @@ For the full API see [fuget.org](https://www.fuget.org/packages/Euclid) for now.
 
 
 ### Release Notes
+`0.11.1`
+- fix Polyline2D.Area
+
 `0.11.0`
 - add Box and Rect.contains Pt
 - fix bad tolerance in Rect2D.tryCreateFrom3Points

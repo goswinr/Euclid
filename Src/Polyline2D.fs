@@ -109,9 +109,9 @@ type Polyline2D =
             let n = ps.[i]
             let a = t.X - n.X
             let b = n.Y + t.Y
-            area <- area + a*b
+            area <- area + (a * b)
             t <- n
-        area
+        area * 0.5
 
     /// The area of the Polyline2D.
     /// Fails if Polyline is not exactly closed.

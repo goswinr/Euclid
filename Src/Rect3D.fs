@@ -64,12 +64,18 @@ type Rect3D =
     /// The size in X direction
     member inline r.SizeX = r.Xaxis.Length
 
+    /// The squared size in X direction
+    member inline r.SizeXSq = r.Xaxis.LengthSq
+
     /// The size in Y direction, same as member rect.SizeY.
     [<Obsolete("use SizeY")>]
     member inline r.Height2D = r.Yaxis.Length
 
     /// The size in Y direction
     member inline r.SizeY = r.Yaxis.Length
+
+    /// The squared size in Y direction
+    member inline r.SizeYSq = r.Yaxis.LengthSq
 
     /// Nicely formatted string representation of the 3D Rectangle including its size.
     override r.ToString() =
@@ -81,6 +87,7 @@ type Rect3D =
     /// Format the 3D Rectangle into string with nice floating point number formatting of X, Y and Z size only.
     /// But without type name as in v.ToString()
     member r.AsString = sprintf "%s x %s" (Format.float r.SizeX) (Format.float r.SizeY)
+
 
     /// Returns the corner diagonally opposite of corner from Origin (point 2).
     ///
