@@ -119,7 +119,6 @@ type Line3D =
         if isTooSmall (x+y+z) then EuclidException.Raise "Euclid.Line3D.IsXAligned cannot not check very short line. (tolerance 1e-6) %O" ln
         else y < 1e-9 && z < 1e-9
 
-
     /// Checks if 3D line is parallel to the world Y axis. Ignoring orientation.
     /// The absolute deviation tolerance along X and Z axis is 1e-9.
     /// Fails on lines shorter than 1e-6.
@@ -141,7 +140,6 @@ type Line3D =
         if isTooSmall (x+y+z) then EuclidException.Raise "Euclid.Line3D.IsZAligned cannot not check very short line. (tolerance 1e-6) %O" ln
         else x < 1e-9 && y < 1e-9
 
-
     /// Checks if 3D line is parallel to the world Z axis. Ignoring orientation.
     /// The absolute deviation tolerance along X and Y axis is 1e-9.
     /// Fails on lines shorter than 1e-6.
@@ -162,7 +160,6 @@ type Line3D =
         let z = abs (ln.ToZ-ln.FromZ)
         if isTooSmall (x+y+z) then EuclidException.Raise "Euclid.Line3D.IsHorizontal cannot not check very short line. (tolerance 1e-6) %O" ln
         else z < 1e-9
-
 
     /// Check if the 3D line has exactly the same starting and ending point.
     member inline ln.IsZeroLength =
@@ -186,6 +183,22 @@ type Line3D =
         Pnt(ln.FromX + (ln.ToX-ln.FromX)*p,
             ln.FromY + (ln.ToY-ln.FromY)*p,
             ln.FromZ + (ln.ToZ-ln.FromZ)*p)
+
+    /// Evaluate line at a given parameters (parameters 0.0 to 1.0 are on the line),
+    /// Return a new line from evaluated points.
+    member inline ln.SubLine (start:float, ende:float) =
+        let fromX = ln.FromX
+        let fromY = ln.FromY
+        let fromZ = ln.FromZ
+        let x = ln.ToX - fromX
+        let y = ln.ToY - fromY
+        let z = ln.ToZ - fromZ
+        Line3D( fromX + x * start,
+                fromY + y * start,
+                fromZ + z * start,
+                fromX + x * ende ,
+                fromY + y * ende ,
+                fromZ + z * ende )
 
     /// Returns the length of the line segment from the start point to the given parameter.
     /// This length is negative if the parameter is negative.
@@ -211,7 +224,6 @@ type Line3D =
         Pnt((ln.ToX + ln.FromX)*0.5,
             (ln.ToY + ln.FromY)*0.5,
             (ln.ToZ + ln.FromZ)*0.5)
-
 
     /// Returns the 3D line reversed.
     member inline ln.Reversed =

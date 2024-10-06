@@ -61,7 +61,6 @@ type Line2D =
             (Format.float ln.ToX)
             (Format.float ln.ToY)
 
-
     /// The Start point of the 2D Line2D,
     member inline ln.From = Pt(ln.FromX, ln.FromY)
 
@@ -128,6 +127,18 @@ type Line2D =
     member inline ln.EvaluateAt (p:float) =
         Pt  (ln.FromX + (ln.ToX-ln.FromX)*p,
              ln.FromY + (ln.ToY-ln.FromY)*p)
+
+    /// Evaluate line at a given parameters (parameters 0.0 to 1.0 are on the line),
+    /// Return a new line from evaluated points.
+    member inline ln.SubLine (start:float, ende:float) =
+        let fromX = ln.FromX
+        let fromY = ln.FromY
+        let x = ln.ToX-fromX
+        let y = ln.ToY-fromY
+        Line2D( fromX + x * start,
+                fromY + y * start,
+                fromX + x * ende ,
+                fromY + y * ende )
 
     /// Returns the length of the line segment from the start point to the given parameter.
     /// This length is negative if the parameter is negative.
@@ -340,17 +351,19 @@ type Line2D =
     /// Fails on curves shorter than 1e-9 units. (ln.ClosestPoint does not.)
     member ln.ClosestPointInfinite (p:Pt) =
         //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
-        let x = ln.FromX - ln.ToX
-        let y = ln.FromY - ln.ToY
+        let fromX = ln.FromX
+        let fromY = ln.FromY
+        let x = fromX - ln.ToX
+        let y = fromY - ln.ToY
         let lenSq = x*x + y*y
         if isTooSmallSq(lenSq) then
             EuclidException.Raise "Euclid.Line2D.ClosestPointInfinite failed on very short line %O for point %O" ln p
-        let u = ln.FromX-p.X
-        let v = ln.FromY-p.Y
+        let u = fromX - p.X
+        let v = fromY - p.Y
         let dot = x*u + y*v
         let t = dot/lenSq
-        let x' = ln.FromX - x*t
-        let y' = ln.FromY - y*t
+        let x' = fromX - x*t
+        let y' = fromY - y*t
         Pt(x', y')
 
     /// Returns closest point on (finite) line.
@@ -363,17 +376,19 @@ type Line2D =
     /// Fails on curves shorter than 1e-9 units. (ln.DistanceSqFromPoint does not.)
     member ln.DistanceSqFromPointInfinite(p:Pt) =
         //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
-        let x = ln.FromX - ln.ToX
-        let y = ln.FromY - ln.ToY
+        let fromX = ln.FromX
+        let fromY = ln.FromY
+        let x = fromX - ln.ToX
+        let y = fromY - ln.ToY
         let lenSq = x*x + y*y
         if isTooSmallSq(lenSq) then
             EuclidException.Raise "Euclid.Line2D.DistanceToPtInfinite failed on very short line %O for point %O" ln p
-        let u = ln.FromX - p.X
-        let v = ln.FromY - p.Y
+        let u = fromX - p.X
+        let v = fromY - p.Y
         let dot = x*u + y*v
         let t = dot/lenSq
-        let x' = ln.FromX - x*t
-        let y' = ln.FromY - y*t
+        let x' = fromX - x*t
+        let y' = fromY - y*t
         let u' = x' - p.X
         let v' = y' - p.Y
         u'*u' + v'*v'
@@ -973,7 +988,7 @@ type Line2D =
         let x = ln.ToX - ln.FromX
         let y = ln.ToY - ln.FromY
         let lenXY = sqrt (x*x + y*y)
-        if isTooTiny (lenXY ) then EuclidException.Raise "Euclid.Line2D.offset: Cannot offset vertical Line2D (by %g) %O" amount ln
+        if isTooTiny (lenXY ) then EuclidException.Raise "Euclid.Line2D.offset: Cannot offset too short Line2D (by %g) %O" amount ln
         let ox = -y*amount/lenXY // unitized, horizontal, perpendicular  vector
         let oy =  x*amount/lenXY  // unitized, horizontal, perpendicular  vector
         Line2D( ln.FromX+ox,
