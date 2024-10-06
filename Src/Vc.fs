@@ -29,29 +29,37 @@ type Vc =
 
 
     /// Format 2D vector into string including type name and nice floating point number formatting of X, Y and length.
-    override v.ToString() = sprintf "Euclid.Vc: X=%s|Y=%s|length: %s" (Format.float v.X) (Format.float v.Y) (Format.float (sqrt (v.X*v.X + v.Y*v.Y)))
+    override v.ToString() =
+        sprintf "Euclid.Vc: X=%s|Y=%s|length: %s" (Format.float v.X) (Format.float v.Y) (Format.float (sqrt (v.X*v.X + v.Y*v.Y)))
 
     /// Format 2D vector into string with nice floating point number formatting of X and Y
     /// But without full type name or length as in v.ToString()
-    member v.AsString = sprintf "X=%s| Y=%s" (Format.float v.X) (Format.float v.Y)
+    member v.AsString =
+        sprintf "X=%s| Y=%s" (Format.float v.X) (Format.float v.Y)
 
     /// Negate or inverse a 2D vectors. Returns a new 2D vector.
-    static member inline ( ~- ) (v:Vc) = Vc ( -v.X, -v.Y)
+    static member inline ( ~- ) (v:Vc) =
+        Vc ( -v.X, -v.Y)
 
     /// Subtract one 2D vectors from another. Returns a new 2D vector.
-    static member inline ( - ) (a:Vc, b:Vc) = Vc (a.X - b.X, a.Y - b.Y)
+    static member inline ( - ) (a:Vc, b:Vc) =
+        Vc (a.X - b.X, a.Y - b.Y)
 
     /// Add two 2D vectors together. Returns a new 2D vector.
-    static member inline ( + ) (a:Vc, b:Vc) = Vc (a.X + b.X, a.Y + b.Y)
+    static member inline ( + ) (a:Vc, b:Vc) =
+        Vc (a.X + b.X, a.Y + b.Y)
 
     /// Multiplies a 2D vector with a scalar, also called scaling a vector. Returns a new 2D vector.
-    static member inline ( * ) (v:Vc, f:float) = Vc (v.X * f, v.Y * f)
+    static member inline ( * ) (v:Vc, f:float) =
+        Vc (v.X * f, v.Y * f)
 
     /// Multiplies a scalar with a 2D vector, also called scaling a vector. Returns a new 2D vector.
-    static member inline ( * ) (f:float, v:Vc) = Vc (v.X * f, v.Y * f)
+    static member inline ( * ) (f:float, v:Vc) =
+        Vc (v.X * f, v.Y * f)
 
     /// Dot product, or scalar product of two 2D vectors. Returns a float.
-    static member inline ( *** ) (v:Vc, b:Vc) = v.X * b.X + v.Y * b.Y
+    static member inline ( *** ) (v:Vc, b:Vc) =
+        v.X * b.X + v.Y * b.Y
 
     /// A separate function to compose the error message that does not get inlined.
     [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
@@ -64,19 +72,25 @@ type Vc =
         Vc (v.X / f, v.Y / f)
 
     /// Returns the length of the 2D vector.
-    member inline v.Length = sqrt (v.X*v.X + v.Y*v.Y)
+    member inline v.Length =
+        let x = v.X
+        let y = v.Y
+        sqrt (x*x + y*y)
 
     /// Returns the squared length of the 2D vector.
     /// The square length is faster to calculate and often good enough for use cases such as sorting vectors by length.
-    member inline v.LengthSq = v.X*v.X + v.Y*v.Y
-
+    member inline v.LengthSq =
+        let x = v.X
+        let y = v.Y
+        x*x + y*y
 
     //-----------------------------------------------------------------------------------------------------
     // These static members can't be extension methods to be useful for Array.sum and Array.average :
     //-----------------------------------------------------------------------------------------------------
 
     /// Returns a zero length vector: Vec(0, 0)
-    static member inline Zero = Vc(0, 0)  // this member is needed by Seq.sum, so that it doesn't fail on empty seq.
+    static member inline Zero =
+        Vc(0, 0)  // this member is needed by Seq.sum, so that it doesn't fail on empty seq.
 
     /// Divides the vector by an integer.
     /// (This member is needed by Array.average and similar functions)

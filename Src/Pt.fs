@@ -45,43 +45,53 @@ type Pt =
 
 
     /// Format 2D point into string including type name and nice floating point number formatting.
-    override p.ToString() = sprintf "Euclid.Pt: X=%s|Y=%s" (Format.float p.X) (Format.float p.Y)
+    override p.ToString() =
+        sprintf "Euclid.Pt: X=%s|Y=%s" (Format.float p.X) (Format.float p.Y)
 
     /// Format 2D point into string with nice floating point number formatting of X and Y
     /// But without full type name as in p.ToString()
-    member p.AsString = sprintf "X=%s|Y=%s" (Format.float p.X) (Format.float p.Y)
+    member p.AsString =
+        sprintf "X=%s|Y=%s" (Format.float p.X) (Format.float p.Y)
 
     /// Subtract one 2D point from another.
     /// 'a-b' returns a new 2D vector from b to a.
-    static member inline ( - ) (a:Pt, b:Pt) = Vc (a.X - b.X, a.Y - b.Y)
+    static member inline ( - ) (a:Pt, b:Pt) =
+        Vc (a.X - b.X, a.Y - b.Y)
 
     /// Subtract a unit-vector from a 2D point. Returns a new 2D point.
-    static member inline ( - ) (a:Pt, b:Vc) = Pt (a.X - b.X, a.Y - b.Y)
+    static member inline ( - ) (a:Pt, b:Vc) =
+        Pt (a.X - b.X, a.Y - b.Y)
 
     /// Subtract a vector from a 2D point. Returns a new 2D point.
-    static member inline ( - ) (a:Pt, b:UnitVc) = Pt (a.X - b.X, a.Y - b.Y)
+    static member inline ( - ) (a:Pt, b:UnitVc) =
+        Pt (a.X - b.X, a.Y - b.Y)
 
     //static member inline ( + ) (v:UnitVc, p:Pt) = Pt (p.X + v.X, p.Y + v.Y)
     //static member inline ( + ) (v:Vc,     p:Pt) = Pt (p.X + v.X, p.Y + v.Y)
 
     /// Add two 2D points together. Returns a new 2D point.
-    static member inline ( + ) (p:Pt, v:Vc) = Pt (p.X + v.X, p.Y + v.Y)
+    static member inline ( + ) (p:Pt, v:Vc) =
+        Pt (p.X + v.X, p.Y + v.Y)
 
     /// Add a vector to a 2D point.
     /// Returns a new 2D point.
-    static member inline ( + ) (p:Pt, v:UnitVc) = Pt (p.X + v.X, p.Y + v.Y)
+    static member inline ( + ) (p:Pt, v:UnitVc) =
+        Pt (p.X + v.X, p.Y + v.Y)
 
     /// Add a unit-vector to a 2D point.
     /// Returns a new 2D point.
-    static member inline ( + ) (a:Pt, b:Pt) = Pt (a.X + b.X, a.Y + b.Y) // required for Seq.average and Pnt.midPt
+    static member inline ( + ) (a:Pt, b:Pt) =
+        Pt (a.X + b.X, a.Y + b.Y) // required for Seq.average and Pnt.midPt
 
     /// Multiplies a 2D point with a scalar, also called scaling a point.
     /// Returns a new 2D point.
-    static member inline ( * ) (a:Pt, f:float) = Pt (a.X * f, a.Y * f)
+    static member inline ( * ) (a:Pt, f:float) =
+        Pt (a.X * f, a.Y * f)
 
     /// Multiplies a scalar with a 2D point, also called scaling a point.
     /// Returns a new 2D point.
-    static member inline ( * ) (f:float, a:Pt) = Pt (a.X * f, a.Y * f)
+    static member inline ( * ) (f:float, a:Pt) =
+        Pt (a.X * f, a.Y * f)
 
     /// A separate function to compose the error message that does not get inlined.
     [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
@@ -106,10 +116,12 @@ type Pt =
 
 
     /// Same as Pt.Origin.
-    static member inline Zero = Pt (0., 0. )  // needed by 'Array.sum' .
+    static member inline Zero =
+        Pt (0., 0. )  // needed by 'Array.sum' .
 
     /// Same as Pt.Zero.
-    static member inline Origin = Pt (0., 0. )
+    static member inline Origin =
+        Pt (0., 0. )
 
 (*
 from:

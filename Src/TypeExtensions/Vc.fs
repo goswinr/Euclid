@@ -12,20 +12,25 @@ module AutoOpenVc =
     type Vc with
 
         /// Convert 2D vector to 2D point.
-        member inline v.AsPt = Pt(v.X, v.Y)
+        member inline v.AsPt =
+            Pt(v.X, v.Y)
 
         /// Convert 2D vector to 3D vector using 0.0 as Z value.
         /// If you want a different Z value use the member v.WithZ(z)
-        member inline v.AsVec = Vec(v.X, v.Y, 0.0)
+        member inline v.AsVec =
+            Vec(v.X, v.Y, 0.0)
 
         /// Convert 2D vector to 3D point using 0.0 as Z value.
-        member inline v.AsPnt = Pnt(v.X, v.Y, 0.0)
+        member inline v.AsPnt =
+            Pnt(v.X, v.Y, 0.0)
 
         /// Returns a boolean indicating wether X and Y are exactly 0.0.
-        member inline v.IsZero = v.X = 0.0 && v.Y = 0.0
+        member inline v.IsZero =
+            v.X = 0.0 && v.Y = 0.0
 
         /// Returns a boolean indicating if any of X and Y is not exactly 0.0.
-        member inline v.IsNotZero = v.X <> 0.0 || v.Y <> 0.0
+        member inline v.IsNotZero =
+            v.X <> 0.0 || v.Y <> 0.0
 
         /// Check if the 2D vector is shorter than the tolerance.
         /// Also checks if any component is a NaN.
@@ -41,17 +46,21 @@ module AutoOpenVc =
         //member inline v.LengthSq moved to Vc type declaration
 
         /// Returns new 2D vector with new X coordinate, Y stays the same.
-        member inline v.WithX x = Vc (x, v.Y)
+        member inline v.WithX x =
+            Vc (x, v.Y)
 
         /// Returns new 2D vector with new Y coordinate, X stays the same.
-        member inline v.WithY y = Vc (v.X, y)
+        member inline v.WithY y =
+            Vc (v.X, y)
 
         /// Returns new 3D vector with Z coordinate, X and Y stay the same.
         /// If you want Z to be 0.0 you can use v.AsVec too.
-        member inline v.WithZ z = Vec (v.X, v.Y, z)
+        member inline v.WithZ z =
+            Vec (v.X, v.Y, z)
 
         /// Returns a new 2D vector with half the length.
-        member inline v.Half = Vc (v.X*0.5, v.Y*0.5)
+        member inline v.Half =
+            Vc (v.X*0.5, v.Y*0.5)
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
@@ -101,10 +110,12 @@ module AutoOpenVc =
             v.RotateBy (Rotation2D.createFromDegrees angDegree)
 
         /// 90 Degree rotation Counter-Clockwise.
-        member inline v.Rotate90CCW = Vc( -v.Y, v.X)
+        member inline v.Rotate90CCW =
+            Vc( -v.Y, v.X)
 
         /// 90 Degree rotation clockwise.
-        member inline v.Rotate90CW = Vc(v.Y, -v.X)
+        member inline v.Rotate90CW =
+            Vc(v.Y, -v.X)
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
@@ -335,10 +346,12 @@ module AutoOpenVc =
         //----------------------------------------------------------------------------------------------
 
         /// Returns the World X-axis with length one: Vc(1, 0)
-        static member inline Xaxis = Vc(1, 0)
+        static member inline Xaxis =
+            Vc(1, 0)
 
         /// Returns the World Y-axis with length one: Vc(0, 1)
-        static member inline Yaxis = Vc(0, 1)
+        static member inline Yaxis =
+            Vc(0, 1)
 
         /// Checks if two 2D vectors are equal within tolerance.
         /// Identical vectors in opposite directions are not considered equal.
@@ -347,13 +360,16 @@ module AutoOpenVc =
             abs (a.X-b.X) <= tol &&
             abs (a.Y-b.Y) <= tol
 
-
         /// Returns the distance between the tips of two 2D vectors.
-        static member inline difference (a:Vc) (b:Vc) = let v = a-b in sqrt(v.X*v.X + v.Y*v.Y)
+        static member inline difference (a:Vc) (b:Vc) =
+            let v = a-b
+            sqrt(v.X*v.X + v.Y*v.Y)
 
         /// Returns the squared distance between the tips of two 2D vectors.
         /// This operation is slightly faster than Vc.difference and sufficient for many algorithms like finding closest vectors.
-        static member inline differenceSq (a:Vc) (b:Vc) = let v = a-b in  v.X*v.X + v.Y*v.Y
+        static member inline differenceSq (a:Vc) (b:Vc) =
+            let v = a-b
+            v.X*v.X + v.Y*v.Y
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
@@ -379,43 +395,54 @@ module AutoOpenVc =
 
 
          /// Create 2D vector from 2D point.
-        static member inline createFromPt (pt:Pnt) = Vc(pt.X, pt.Y)
+        static member inline createFromPt (pt:Pnt) =
+            Vc(pt.X, pt.Y)
 
         /// Create 2D vector from 2D unit-vector.
-        static member inline createFromUnitVc (v:UnitVc) = Vc(v.X, v.Y)
+        static member inline createFromUnitVc (v:UnitVc) =
+            Vc(v.X, v.Y)
 
         /// Convert 2D vector to 2D point.
-        static member inline asPt(v:Vc) = Pt(v.X, v.Y)
+        static member inline asPt(v:Vc) =
+            Pt(v.X, v.Y)
 
         /// Convert 2D vector to 3D point. Using 0.0 as Z value.
-        static member inline asPnt(v:Vc) = Pnt(v.X, v.Y, 0.0)
+        static member inline asPnt(v:Vc) =
+            Pnt(v.X, v.Y, 0.0)
 
         /// Convert 2D vector to 3D vector. Using 0.0 as Z value.
-        static member inline asVec(v:Vc) = Vec(v.X, v.Y, 0.0)
+        static member inline asVec(v:Vc) =
+            Vec(v.X, v.Y, 0.0)
 
         /// 2D Cross product, of two 2D vectors.
         /// Its Just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
-        static member inline cross (a:Vc, b:Vc) = a.X*b.Y - a.Y*b.X
+        static member inline cross (a:Vc, b:Vc) =
+            a.X*b.Y - a.Y*b.X
 
         /// 2D Cross product, of a 2D unit-vectors an a 2D vector.
         /// Its Just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
-        static member inline cross (a:UnitVc, b:Vc) = a.X*b.Y - a.Y*b.X
+        static member inline cross (a:UnitVc, b:Vc) =
+            a.X*b.Y - a.Y*b.X
 
         /// 2D Cross product, of a 2D vectors an a 2D unit-vector.
         /// Its Just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
-        static member inline cross (a:Vc, b:UnitVc) = a.X*b.Y - a.Y*b.X
+        static member inline cross (a:Vc, b:UnitVc) =
+            a.X*b.Y - a.Y*b.X
 
         /// Dot product, or scalar product of two 2D vectors.
         /// Returns a float.
-        static member inline dot (a:Vc, b:Vc) = a.X * b.X + a.Y * b.Y
+        static member inline dot (a:Vc, b:Vc) =
+            a.X * b.X + a.Y * b.Y
 
         /// Dot product, or scalar product of a 2D unit-vector with a 2D vector.
         /// Returns a float. This float is the projected length of the 2D vector on the direction of the unit-vector.
-        static member inline dot (a:Vc, b:UnitVc) = a.X * b.X + a.Y * b.Y
+        static member inline dot (a:Vc, b:UnitVc) =
+            a.X * b.X + a.Y * b.Y
 
         /// Dot product, or scalar product of a 2D vector with a 2D unit-vector.
         /// Returns a float. This float is the projected length of the 2D vector on the direction of the unit-vector.
-        static member inline dot (a:UnitVc, b:Vc) = a.X * b.X + a.Y * b.Y
+        static member inline dot (a:UnitVc, b:Vc) =
+            a.X * b.X + a.Y * b.Y
 
         /// Gets the X part of this 2D vector.
         static member inline getX (v:Vc) = v.X
@@ -434,17 +461,21 @@ module AutoOpenVc =
 
         /// Multiplies a 2D vector with a scalar, also called scaling a vector.
         /// Same as Vc.withLength. Returns a new 2D vector.
-        static member inline scale (f:float) (v:Vc) = Vc (v.X * f, v.Y * f)
+        static member inline scale (f:float) (v:Vc) =
+            Vc (v.X * f, v.Y * f)
 
         /// Returns a new 2D vector scaled to the desired length.
         /// Same as vc.WithLength. Returns a new 2D vector.
-        static member inline withLength(desiredLength:float) (v:Vc) = v.WithLength desiredLength
+        static member inline withLength(desiredLength:float) (v:Vc) =
+            v.WithLength desiredLength
 
         /// Add to the X part of this 2D vectors together. Returns a new 2D vector.
-        static member inline moveX x (v:Vc) = Vc (v.X+x, v.Y)
+        static member inline moveX x (v:Vc) =
+            Vc (v.X+x, v.Y)
 
         /// Add to the Y part of this 2D vectors together. Returns a new 2D vector.
-        static member inline moveY y (v:Vc) = Vc (v.X, v.Y+y)
+        static member inline moveY y (v:Vc) =
+            Vc (v.X, v.Y+y)
 
         /// Check if the 2D vector is shorter than the tolerance.
         /// Also checks if any component is a NaN.
@@ -457,28 +488,35 @@ module AutoOpenVc =
             not (v.LengthSq > tol)
 
         /// Returns the length of the 2D vector.
-        static member inline length (v:Vc) = v.Length
+        static member inline length (v:Vc) =
+            v.Length
 
         /// Returns the squared length of the 2D vector.
         /// The square length is faster to calculate and often good enough for use cases such as sorting vectors by length.
-        static member inline lengthSq (v:Vc) = v.LengthSq
+        static member inline lengthSq (v:Vc) =
+            v.LengthSq
 
         /// Returns a new 2D vector from X and Y parts.
-        static member inline create (x:float, y:float) = Vc(x, y)
+        static member inline create (x:float, y:float) =
+            Vc(x, y)
 
         /// Returns a new 2D vector from start and end point.
-        static member inline create (start:Pt, ende:Pt) = ende-start
+        static member inline create (start:Pt, ende:Pt) =
+            ende-start
 
         /// Negate or inverse a 2D vectors. Returns a new 2D vector.
         /// Same as Vc.flip.
-        static member inline reverse (v:Vc) = -v
+        static member inline reverse (v:Vc) =
+            -v
 
         /// Negate or inverse a 2D vectors. Returns a new 2D vector.
         /// Same as Vc.reverse.
-        static member inline flip (v:Vc) = -v
+        static member inline flip (v:Vc) =
+            -v
 
         /// Returns 2D vector unitized, fails on zero length vectors.
-        static member inline unitize (v:Vc) = v.Unitized
+        static member inline unitize (v:Vc) =
+            v.Unitized
 
         /// Unitize 2D vector, if input vector is shorter than 1e-6 the default unit-vector is returned.
         static member inline unitizeOrDefault (defaultUnitVector:UnitVc) (v:Vc) =
@@ -700,17 +738,20 @@ module AutoOpenVc =
         /// Checks if Angle between two vectors is Below 0.25 Degree.
         /// Ignores vector orientation.
         /// Fails on zero length vectors, tolerance 1e-12.
-        static member inline areParallel (other:Vc) (v:Vc) = v.IsParallelTo other
+        static member inline areParallel (other:Vc) (v:Vc) =
+            v.IsParallelTo other
 
         /// Checks if Angle between two vectors is between 98.75 and 90.25 Degree.
         /// Ignores vector orientation.
         /// Fails on zero length vectors, tolerance 1e-12.
-        static member inline areParallelAndMatchOrientation (other:Vc) (v:Vc) = v.IsParallelAndOrientedTo other
+        static member inline areParallelAndMatchOrientation (other:Vc) (v:Vc) =
+            v.IsParallelAndOrientedTo other
 
         /// Checks if Angle between two vectors is between 98.75 and 90.25 Degree.
         /// Ignores vector orientation.
         /// Fails on zero length vectors, tolerance 1e-12.
-        static member inline arePerpendicular(other:Vc) (v:Vc) = v.IsPerpendicularTo(other)
+        static member inline arePerpendicular(other:Vc) (v:Vc) =
+            v.IsPerpendicularTo(other)
 
 
         /// Rotate the a 2D vector Counter Clockwise by a 2D Rotation (that has cos and sin precomputed)
@@ -725,11 +766,12 @@ module AutoOpenVc =
 
 
         /// 90 Degree rotation Counter-Clockwise.
-        static member inline rotate90CCW (v:Vc) = Vc( -v.Y, v.X)
+        static member inline rotate90CCW (v:Vc) =
+            Vc( -v.Y, v.X)
 
         /// 90 Degree rotation clockwise.
-        static member inline rotate90CW (v:Vc) = Vc( v.Y, -v.X)
-
+        static member inline rotate90CW (v:Vc) =
+            Vc( v.Y, -v.X)
 
 
         /// Rotates a vector by a given number of quarter-circles (i.e. multiples of 90
@@ -793,14 +835,14 @@ module AutoOpenVc =
         // Checks if 2D vector is parallel to the world X axis. Ignoring orientation.
         /// Tolerance is 1e-6.
         /// Fails on vectors shorter than 1e-6.
-        static member inline isXAligned (v:Vc) = v.IsXAligned
+        static member inline isXAligned (v:Vc) =
+            v.IsXAligned
 
         /// Checks if 2D vector is parallel to the world Y axis. Ignoring orientation.
         /// Tolerance is 1e-6.
         /// Fails on vectors shorter than 1e-6.
-        static member inline isYAligned (v:Vc) = v.IsYAligned
-
-
+        static member inline isYAligned (v:Vc) =
+            v.IsYAligned
 
 
         ///<summary> Intersects two infinite 2D lines.
@@ -817,7 +859,7 @@ module AutoOpenVc =
         ///<returns> For (almost) zero length or (almost) parallel vectors: ValueNone
         /// Else ValueSome with a tuple of the parameters at which the two infinite 2D Lines intersect to each other.
         /// The tuple's order corresponds to the input order.</returns>
-        static member intersection(ptA:Pt,
+        static member intersection( ptA:Pt,
                                     ptB:Pt,
                                     vA:Vc,
                                     vB:Vc,

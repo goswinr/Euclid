@@ -12,16 +12,20 @@ module AutoOpenVec =
     type Vec with
 
         /// Convert 3D vector to 3D point.
-        member inline v.AsPnt = Pnt(v.X, v.Y, v.Z)
+        member inline v.AsPnt =
+            Pnt(v.X, v.Y, v.Z)
 
         /// Convert 3D vector to 2D vector, discarding the Z value.
-        member inline v.AsVc = Vc(v.X, v.Y)
+        member inline v.AsVc =
+            Vc(v.X, v.Y)
 
         /// Returns a boolean indicating wether X, Y and Z are all exactly 0.0.
-        member inline v.IsZero = v.X = 0.0 && v.Y = 0.0 && v.Z = 0.0
+        member inline v.IsZero =
+            v.X = 0.0 && v.Y = 0.0 && v.Z = 0.0
 
         /// Returns a boolean indicating if any of X, Y and Z is not exactly 0.0.
-        member inline v.IsNotZero = not v.IsZero
+        member inline v.IsNotZero =
+            not v.IsZero
 
         /// Check if the 3D vector is shorter than the tolerance.
         /// Also checks if any component is a NaN.
@@ -35,28 +39,33 @@ module AutoOpenVec =
 
 
         /// Returns the length of the 3D vector projected into World X-Y plane.
-        member inline v.LengthInXY = sqrt (v.X*v.X + v.Y*v.Y)
+        member inline v.LengthInXY =
+            sqrt (v.X*v.X + v.Y*v.Y)
 
         /// Returns the squared length of the 3D vector projected into World X-Y plane.
         /// The square length is faster to calculate and often good enough for use cases such as sorting vectors by length.
-        member inline v.LengthSqInXY = v.X*v.X + v.Y*v.Y
+        member inline v.LengthSqInXY =
+            v.X*v.X + v.Y*v.Y
 
         /// Returns  a new 3D vector with new X coordinate, Y and Z stay the same.
-        member inline v.WithX x = Vec (x, v.Y, v.Z)
+        member inline v.WithX x =
+            Vec (x, v.Y, v.Z)
 
         /// Returns a new 3D vector with new y coordinate, X and Z stay the same.
-        member inline v.WithY y = Vec (v.X, y, v.Z)
+        member inline v.WithY y =
+            Vec (v.X, y, v.Z)
 
         /// Returns a new 3D vector with new z coordinate, X and Y stay the same.
-        member inline v.WithZ z = Vec (v.X, v.Y, z)
+        member inline v.WithZ z =
+            Vec (v.X, v.Y, z)
 
         /// Returns a new 3D vector with half the length.
-        member inline v.Half = Vec (v.X*0.5, v.Y*0.5, v.Z*0.5)
+        member inline v.Half =
+            Vec (v.X*0.5, v.Y*0.5, v.Z*0.5)
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
         member v.FailedWithLength(desiredLength) = EuclidDivByZeroException.Raise "Euclid.Vec.WithLength %g : %O is too small for unitizing, Tolerance:%g" desiredLength v zeroLengthTolerance
-
         /// Returns a new 3D vector scaled to the desired length.
         /// Same as Vec.withLength.
         member inline v.WithLength (desiredLength:float) =
@@ -64,10 +73,9 @@ module AutoOpenVec =
             if isTooTiny l then v.FailedWithLength desiredLength // don't compose error msg directly here to keep inlined code small.
             v * (desiredLength / l)
 
-           /// A separate function to compose the error message that does not get inlined.
+        /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
         member v.FailedUnitized() = EuclidDivByZeroException.Raise "Euclid.Vec.Unitized %O is too small for unitizing, Tolerance:%g" v zeroLengthTolerance
-
         /// Returns the 3D vector unitized.
         /// Fails with EuclidDivByZeroException if the length of the vector is
         /// too small (1e-16) to unitize.
@@ -93,13 +101,16 @@ module AutoOpenVec =
         /// Returns a perpendicular horizontal vector. Rotated counterclockwise.
         /// Or Vec.Zero if input is vertical.
         /// Just does Vec(-v.Y, v.X, 0.0)
-        member inline v.PerpendicularInXY = Vec(-v.Y, v.X, 0)
+        member inline v.PerpendicularInXY =
+            Vec(-v.Y, v.X, 0)
 
         /// 90 Degree rotation Counter-Clockwise around Z-axis.
-        member inline v.RotateOnZ90CCW = Vec( -v.Y, v.X, v.Z)
+        member inline v.RotateOnZ90CCW =
+            Vec( -v.Y, v.X, v.Z)
 
         /// 90 Degree rotation clockwise around Z-axis.
-        member inline v.RotateOnZ90CW = Vec(v.Y, -v.X, v.Z)
+        member inline v.RotateOnZ90CW =
+            Vec(v.Y, -v.X, v.Z)
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
@@ -372,13 +383,16 @@ module AutoOpenVec =
         //----------------------------------------------------------------------------------------------
 
         /// Returns the World X-axis with length one: Vec(1, 0, 0)
-        static member inline Xaxis = Vec(1, 0, 0)
+        static member inline Xaxis =
+            Vec(1, 0, 0)
 
         /// Returns the World Y-axis with length one: Vec(0, 1, 0)
-        static member inline Yaxis = Vec(0, 1, 0)
+        static member inline Yaxis =
+            Vec(0, 1, 0)
 
         /// Returns the World Z-axis with length one: Vec(0, 0, 1)
-        static member inline Zaxis = Vec(0, 0, 1)
+        static member inline Zaxis =
+            Vec(0, 0, 1)
 
         /// Checks if two 3D vectors are equal within tolerance.
         /// Identical vectors in opposite directions are not considered equal.
@@ -389,11 +403,19 @@ module AutoOpenVec =
             abs (a.Z-b.Z) <= tol
 
         /// Returns the distance between the tips of two 3D vectors.
-        static member inline difference (a:Vec) (b:Vec) = let v = a-b in sqrt(v.X*v.X + v.Y*v.Y + v.Z*v.Z)
+        static member inline difference (a:Vec) (b:Vec) =
+            let x = a.X - b.X
+            let y = a.Y - b.Y
+            let z = a.Z - b.Z
+            sqrt (x*x + y*y + z*z)
 
         /// Returns the squared distance between the tips of two 3D vectors.
         /// This operation is slightly faster than Vec.difference and sufficient for many algorithms like finding closest vectors.
-        static member inline differenceSq (a:Vec) (b:Vec) = let v = a-b in  v.X*v.X + v.Y*v.Y + v.Z*v.Z
+        static member inline differenceSq (a:Vec) (b:Vec) =
+            let x = a.X - b.X
+            let y = a.Y - b.Y
+            let z = a.Z - b.Z
+            x*x + y*y + z*z
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
@@ -420,19 +442,23 @@ module AutoOpenVec =
             with e -> Vec.failedCreateFromMembersxyz (vec, e)
 
         /// Create 3D vector from 3D point.
-        static member inline createFromPnt (pt:Pnt) = Vec(pt.X, pt.Y, pt.Z)
+        static member inline createFromPnt (pt:Pnt) =
+            Vec(pt.X, pt.Y, pt.Z)
 
         /// Create 3D vector from 3D unit-vector.
         static member inline createFromUnitVec (v:UnitVec) = Vec(v.X, v.Y, v.Z)
 
         /// Convert 3D vector to 2D point by ignoring Z value.
-        static member inline asPt(v:Vec) = Pt(v.X, v.Y)
+        static member inline asPt(v:Vec) =
+            Pt(v.X, v.Y)
 
         /// Convert 3D vector to 2D vector by ignoring Z value.
-        static member inline asVc(v:Vec) = Vc(v.X, v.Y)
+        static member inline asVc(v:Vec) =
+            Vc(v.X, v.Y)
 
         /// Convert 3D vector to 3D point.
-        static member inline asPnt(v:Vec) = Pnt(v.X, v.Y, v.Z)
+        static member inline asPnt(v:Vec) =
+            Pnt(v.X, v.Y, v.Z)
 
 
         /// Cross product, of a 3D unit-vectors an a 3D vector.
@@ -440,63 +466,79 @@ module AutoOpenVec =
         /// Its length is the area of the parallelogram spanned by the input vectors.
         /// Its direction follows th right-hand rule.
         /// A x B = |A| * |B| * sin(angle)
-        static member inline cross (a:UnitVec, b:Vec) = Vec (a.Y * b.Z - a.Z * b.Y, a.Z * b.X - a.X * b.Z, a.X * b.Y - a.Y * b.X)
+        static member inline cross (a:UnitVec, b:Vec) =
+            Vec (a.Y * b.Z - a.Z * b.Y, a.Z * b.X - a.X * b.Z, a.X * b.Y - a.Y * b.X)
 
         /// Cross product, of a 3D vector and a 3D unit-vectors.
         /// The resulting vector is perpendicular to both input vectors.
         /// Its length is the area of the parallelogram spanned by the input vectors.
         /// Its direction follows th right-hand rule.
         /// A x B = |A| * |B| * sin(angle)
-        static member inline cross (a:Vec, b:UnitVec) = Vec (a.Y * b.Z - a.Z * b.Y, a.Z * b.X - a.X * b.Z, a.X * b.Y - a.Y * b.X)
+        static member inline cross (a:Vec, b:UnitVec) =
+            Vec (a.Y * b.Z - a.Z * b.Y, a.Z * b.X - a.X * b.Z, a.X * b.Y - a.Y * b.X)
 
 
         //static member inline dot (a:Vec, b:Vec)   //moved to Vec type declaration
 
         /// Dot product, or scalar product of a 3D unit-vector with a 3D vector.
         /// Returns a float. This float is the projected length of the 3D vector on the direction of the unit-vector.
-        static member inline dot (a:UnitVec, b:Vec) = a.X * b.X + a.Y * b.Y + a.Z * b.Z
+        static member inline dot (a:UnitVec, b:Vec) =
+            a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
         /// Dot product, or scalar product of a 3D vector with a 3D unit-vector.
         /// Returns a float. This float is the projected length of the 3D vector on the direction of the unit-vector.
-        static member inline dot (a:Vec, b:UnitVec) = a.X * b.X + a.Y * b.Y + a.Z * b.Z
+        static member inline dot (a:Vec, b:UnitVec) =
+            a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
         /// Gets the X part of this 3D vector.
-        static member inline getX (v:Vec) = v.X
+        static member inline getX (v:Vec) =
+            v.X
 
         /// Gets the Y part of this 3D vector.
-        static member inline getY (v:Vec) = v.Y
+        static member inline getY (v:Vec) =
+            v.Y
 
         /// Gets the Z part of this 3D vector.
-        static member inline getZ (v:Vec) = v.Z
+        static member inline getZ (v:Vec) =
+            v.Z
 
         /// Returns new 3D vector with new X value, Y and Z stay the same.
-        static member inline withX  x (v:Vec) = v.WithX x
+        static member inline withX  x (v:Vec) =
+            v.WithX x
 
         /// Returns new 3D vector with new Y value, X and Z stay the same.
-        static member inline withY  y (v:Vec) = v.WithY y
+        static member inline withY  y (v:Vec) =
+            v.WithY y
 
         /// Returns new 3D vector with new z value, X and Y stay the same.
-        static member inline withZ z (v:Vec) = v.WithZ z
+        static member inline withZ z (v:Vec) =
+            v.WithZ z
 
         /// Add two 3D vectors together. Returns a new 3D vector.
-        static member inline add (a:Vec) (b:Vec) = b + a
+        static member inline add (a:Vec) (b:Vec) =
+            b + a
 
         /// Multiplies a 3D vector with a scalar, also called scaling a vector.
         /// Returns a new 3D vector.
-        static member inline scale (f:float) (v:Vec) = Vec (v.X * f, v.Y * f, v.Z * f)
+        static member inline scale (f:float) (v:Vec) =
+            Vec (v.X * f, v.Y * f, v.Z * f)
 
         /// Returns a new 3D vector scaled to the desired length.
         /// Same as vec.WithLength. Returns a new 3D vector.
-        static member inline withLength(desiredLength:float) (v:Vec) = v.WithLength desiredLength
+        static member inline withLength(desiredLength:float) (v:Vec) =
+            v.WithLength desiredLength
 
         /// Add to the X part of this 3D vectors together. Returns a new 3D vector.
-        static member inline moveX x (v:Vec) = Vec (v.X+x, v.Y, v.Z)
+        static member inline moveX x (v:Vec) =
+            Vec (v.X+x, v.Y, v.Z)
 
         /// Add to the Y part of this 3D vectors together. Returns a new 3D vector.
-        static member inline moveY y (v:Vec) = Vec (v.X, v.Y+y, v.Z)
+        static member inline moveY y (v:Vec) =
+            Vec (v.X, v.Y+y, v.Z)
 
         /// Add to the Z part of this 3D vectors together. Returns a new 3D vector.
-        static member inline moveZ z (v:Vec) = Vec (v.X, v.Y, v.Z+z)
+        static member inline moveZ z (v:Vec) =
+            Vec (v.X, v.Y, v.Z+z)
 
         /// Check if the 3D vector is shorter than the tolerance.
         /// Also checks if any component is a NaN.
@@ -509,38 +551,48 @@ module AutoOpenVec =
             not (v.LengthSq > tol)
 
         /// Returns the length of the 3D vector.
-        static member inline length (v:Vec) = v.Length
+        static member inline length (v:Vec) =
+            v.Length
 
         /// Returns the squared length of the 3D vector.
         /// The square length is faster to calculate and often good enough for use cases such as sorting vectors by length.
-        static member inline lengthSq (v:Vec) = v.LengthSq
+        static member inline lengthSq (v:Vec) =
+            v.LengthSq
 
         /// Returns a new 3D vector from X, Y and Z parts.
-        static member inline create (x:float, y:float, z:float) = Vec(x, y, z)
+        static member inline create (x:float, y:float, z:float) =
+            Vec(x, y, z)
 
         /// Returns a new 3D vector from start and end point.
-        static member inline create (start:Pnt, ende:Pnt) = ende-start
+        static member inline create (start:Pnt, ende:Pnt) =
+            ende-start
 
         /// Returns a 3D vector from z value and 2D vector.
-        static member inline createFromVcWithZ (z:float) (v:Vc) = Vec (v.X, v.Y, z)
+        static member inline createFromVcWithZ (z:float) (v:Vc) =
+            Vec (v.X, v.Y, z)
 
         /// Project vector to World X-Y plane.
         /// Use Vc.ofVec to convert to a 2D vector.
-        static member inline projectToXYPlane (v:Vec) = Vec(v.X, v.Y, 0.0)
+        static member inline projectToXYPlane (v:Vec) =
+            Vec(v.X, v.Y, 0.0)
 
         /// Negate or inverse a 3D vectors. Returns a new 3D vector.
         /// Same as Vec.flip.
-        static member inline reverse (v:Vec) = -v
+        static member inline reverse (v:Vec) =
+            -v
 
         /// Negate or inverse a 3D vectors. Returns a new 3D vector.
         /// Same as Vec.reverse.
-        static member inline flip (v:Vec) = -v
+        static member inline flip (v:Vec) =
+            -v
 
         /// Flips the vector if Z part is smaller than 0.0
-        static member inline flipToPointUp (v:Vec) = if v.Z < 0.0 then -v else v
+        static member inline flipToPointUp (v:Vec) =
+            if v.Z < 0.0 then -v else v
 
         /// Returns 3D vector unitized, fails on zero length vectors.
-        static member inline unitize (v:Vec) = v.Unitized
+        static member inline unitize (v:Vec) =
+            v.Unitized
 
         /// Unitize 3D vector, if input vector is shorter than 1e-6 the default unit-vector is returned.
         static member inline unitizeOrDefault (defaultUnitVector:UnitVec) (v:Vec) =
@@ -555,7 +607,8 @@ module AutoOpenVec =
         /// This is also the signed volume of the Parallelepipeds define by these three vectors.
         /// Also called scalar triple product, mixed product, Box product, or in German: Spatprodukt.
         /// It is defined as the dot product of one of the vectors with the cross product of the other two.
-        static member inline determinant (u:Vec, v:Vec, w:Vec) = u.X*v.Y*w.Z + v.X*w.Y*u.Z + w.X*u.Y*v.Z - w.X*v.Y*u.Z - v.X*u.Y*w.Z - u.X*w.Y*v.Z
+        static member inline determinant (u:Vec, v:Vec, w:Vec) =
+            u.X*v.Y*w.Z + v.X*w.Y*u.Z + w.X*u.Y*v.Z - w.X*v.Y*u.Z - v.X*u.Y*w.Z - u.X*w.Y*v.Z
 
         /// Returns positive angle between two 3D vectors in Radians.
         /// Takes vector orientation into account,
@@ -602,7 +655,8 @@ module AutoOpenVec =
         /// Range of 0.0 to 4.0 (for 360 Degrees)
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
-        static member inline angleDiamondInXY (a:Vec, b:Vec) = a.AngleDiamondInXYTo(b)
+        static member inline angleDiamondInXY (a:Vec, b:Vec) =
+            a.AngleDiamondInXYTo(b)
 
         /// The diamond angle.
         /// Returns positive angle of 3D vector in World X-Y plane.
@@ -611,23 +665,27 @@ module AutoOpenVec =
         /// 0.0 = Xaxis, going Counter-Clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
-        static member inline directionDiamondInXY(v:Vec) = v.DirectionDiamondInXY
+        static member inline directionDiamondInXY(v:Vec) =
+            v.DirectionDiamondInXY
 
         /// Returns positive angle of 3D vector in World X-Y plane. Counter-Clockwise from X-axis.
         /// In Radians.
         /// Range: 0.0 to 2 Pi ( = 0 to 360 Degrees)
         /// For World X-Y plane. Considers only the X and Y components of the vector.
-        static member inline direction2PiInXY (v:Vec) = v.Direction2PiInXY
+        static member inline direction2PiInXY (v:Vec) =
+            v.Direction2PiInXY
 
         /// Returns positive angle of 3D vector in World X-Y plane. Counter-Clockwise from X-axis.
         /// In Degree.
         /// Range: 0.0 to 2 Pi ( = 0 to 360 Degrees)
         /// For World X-Y plane. Considers only the X and Y components of the vector.
-        static member inline direction360InXY (v:Vec) = v.Direction360InXY
+        static member inline direction360InXY (v:Vec) =
+            v.Direction360InXY
 
         /// Returns a (not unitized) bisector vector in the middle direction.
         /// Code : a.Unitized + b.Unitized.
-        static member inline bisector (a:Vec) (b:Vec) = a.Unitized + b.Unitized
+        static member inline bisector (a:Vec) (b:Vec) =
+            a.Unitized + b.Unitized
 
         /// Ensure that the 3D  vector has a positive dot product with given 3D orientation vector.
         static member inline matchOrientation (orientationToMatch:Vec) (vecToFlip:Vec) =
@@ -657,36 +715,44 @@ module AutoOpenVec =
         /// Checks if Angle between two vectors is Below 0.25 Degree.
         /// Ignores vector orientation.
         /// Fails on zero length vectors, tolerance 1e-12.
-        static member inline areParallel (other:Vec) (v:Vec) = v.IsParallelTo other
+        static member inline areParallel (other:Vec) (v:Vec) =
+            v.IsParallelTo other
 
 
         /// Checks if Angle between two vectors is between 98.75 and 90.25 Degree.
         /// Ignores vector orientation.
         /// Fails on zero length vectors, tolerance 1e-12.
-        static member inline areParallelAndMatchOrientation (other:Vec) (v:Vec) = v.IsParallelAndOrientedTo other
+        static member inline areParallelAndMatchOrientation (other:Vec) (v:Vec) =
+            v.IsParallelAndOrientedTo other
 
         /// Checks if Angle between two vectors is between 98.75 and 90.25 Degree.
         /// Ignores vector orientation.
         /// Fails on zero length vectors, tolerance 1e-12.
-        static member inline arePerpendicular (other:Vec) (v:Vec) = v.IsPerpendicularTo other
+        static member inline arePerpendicular (other:Vec) (v:Vec) =
+            v.IsPerpendicularTo other
 
 
         // Rotate2D:
 
         /// 90 Degree rotation Counter-Clockwise around Z-axis.
-        static member inline rotateOnZ90CCW(v:Vec) = Vec( -v.Y, v.X, v.Z)
+        static member inline rotateOnZ90CCW(v:Vec) =
+            Vec( -v.Y, v.X, v.Z)
 
         /// 90 Degree rotation clockwise around Z-axis.
-        static member inline rotateOnZ90CW(v:Vec) = Vec(  v.Y, -v.X, v.Z)
+        static member inline rotateOnZ90CW(v:Vec) =
+            Vec(  v.Y, -v.X, v.Z)
 
         /// Rotate the 3D vector around X-axis, from Y to Z-axis, Counter Clockwise looking from right.
-        static member rotateXBy (r:Rotation2D) (v:Vec) = Vec (v.X, r.Cos*v.Y - r.Sin*v.Z, r.Sin*v.Y + r.Cos*v.Z)
+        static member rotateXBy (r:Rotation2D) (v:Vec) =
+            Vec (v.X, r.Cos*v.Y - r.Sin*v.Z, r.Sin*v.Y + r.Cos*v.Z)
 
         /// Rotate the 3D vector around Y-axis, from Z to X-axis, Counter Clockwise looking from back.
-        static member rotateYBy (r:Rotation2D) (v:Vec) = Vec (r.Sin*v.Z + r.Cos*v.X, v.Y, r.Cos*v.Z - r.Sin*v.X)
+        static member rotateYBy (r:Rotation2D) (v:Vec) =
+            Vec (r.Sin*v.Z + r.Cos*v.X, v.Y, r.Cos*v.Z - r.Sin*v.X)
 
         /// Rotate the 3D vector around Z-axis, from X to Y-axis, Counter Clockwise looking from top.
-        static member rotateZBy (r:Rotation2D) (v:Vec) = Vec (r.Cos*v.X - r.Sin*v.Y, r.Sin*v.X + r.Cos*v.Y, v.Z)
+        static member rotateZBy (r:Rotation2D) (v:Vec) =
+            Vec (r.Cos*v.X - r.Sin*v.Y, r.Sin*v.X + r.Cos*v.Y, v.Z)
 
         /// Rotate the 3D vector in Degrees around X-axis, from Y to Z-axis, Counter Clockwise looking from right.
         static member inline rotateX (angDegree) (v:Vec) =
@@ -751,34 +817,40 @@ module AutoOpenVec =
 
         /// Returns the vector length projected into X Y Plane.
         /// sqrt(v.X * v.X  + v.Y * v.Y)
-        static member inline lengthInXY(v:Vec) = sqrt(v.X * v.X  + v.Y * v.Y)
+        static member inline lengthInXY(v:Vec) =
+            sqrt(v.X * v.X  + v.Y * v.Y)
 
         /// Checks if 3D vector is parallel to the world X axis. Ignoring orientation.
         /// Tolerance is 1e-6.
         /// Fails on vectors shorter than 1e-6.
-        static member inline isXAligned (v:Vec) = v.IsXAligned
+        static member inline isXAligned (v:Vec) =
+            v.IsXAligned
 
         /// Checks if 3D vector is parallel to the world Y axis. Ignoring orientation.
         /// Tolerance is 1e-6.
         /// Fails on vectors shorter than 1e-6.
-        static member inline isYAligned (v:Vec) = v.IsYAligned
+        static member inline isYAligned (v:Vec) =
+            v.IsYAligned
 
         /// Checks if 3D vector is parallel to the world Z axis. Ignoring orientation.
         /// Tolerance is 1e-6.
         /// Fails on vectors shorter than 1e-6.
         /// Same as ln.IsVertical
-        static member inline isZAligned (v:Vec) = v.IsZAligned
+        static member inline isZAligned (v:Vec) =
+            v.IsZAligned
 
         /// Checks if 3D vector is parallel to the world Z axis. Ignoring orientation.
         /// Tolerance is 1e-6.
         /// Fails on vectors shorter than 1e-6.
         /// Same as ln.IsZAligned
-        static member inline isVertical (v:Vec) = v.IsVertical
+        static member inline isVertical (v:Vec) =
+            v.IsVertical
 
         /// Checks if line is horizontal (Z component is almost zero).
         /// Tolerance is 1e-6.
         /// Fails on lines shorter than 1e-6.
-        static member inline isHorizontal (v:Vec) = v.IsHorizontal
+        static member inline isHorizontal (v:Vec) =
+            v.IsHorizontal
 
         /// Returns positive or negative slope of a vector in Radians.
         /// In relation to X-Y plane.

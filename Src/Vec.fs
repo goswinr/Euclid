@@ -48,36 +48,46 @@ type Vec =
         {X=x; Y=y; Z=z}
 
     /// Format 3D vector into string including type name and nice floating point number formatting of X, Y, Z and length.
-    override v.ToString() = sprintf "Euclid.Vec: X=%s|Y=%s|Z=%s|length: %s" (Format.float v.X) (Format.float v.Y) (Format.float v.Z) (Format.float (sqrt (v.X*v.X + v.Y*v.Y + v.Z*v.Z)))
+    override v.ToString() =
+        sprintf "Euclid.Vec: X=%s|Y=%s|Z=%s|length: %s" (Format.float v.X) (Format.float v.Y) (Format.float v.Z) (Format.float (sqrt (v.X*v.X + v.Y*v.Y + v.Z*v.Z)))
 
     /// Format 3D vector into string with nice floating point number formatting of X, Y and Z.
     /// But without full type name or length as in v.ToString()
-    member v.AsString = sprintf "X=%s|Y=%s|Z=%s" (Format.float v.X) (Format.float v.Y) (Format.float v.Z)
+    member v.AsString =
+        sprintf "X=%s|Y=%s|Z=%s" (Format.float v.X) (Format.float v.Y) (Format.float v.Z)
 
     /// Returns the length of the 3D vector.
-    member inline v.Length = sqrt (v.X*v.X + v.Y*v.Y + v.Z*v.Z)
+    member inline v.Length =
+        sqrt (v.X*v.X + v.Y*v.Y + v.Z*v.Z)
 
     /// Returns the squared length of the 3D vector.
     /// The square length is faster to calculate and often good enough for use cases such as sorting vectors by length.
-    member inline v.LengthSq = v.X*v.X + v.Y*v.Y + v.Z*v.Z
+    member inline v.LengthSq =
+        v.X*v.X + v.Y*v.Y + v.Z*v.Z
 
     /// Negate or inverse a 3D vectors. Returns a new 3D vector.
-    static member inline ( ~- ) (v:Vec) = Vec( -v.X, -v.Y, -v.Z)
+    static member inline ( ~- ) (v:Vec) =
+        Vec( -v.X, -v.Y, -v.Z)
 
     /// Subtract one 3D vectors from another. Returns a new 3D vector.
-    static member inline ( - ) (a:Vec, b:Vec) = Vec (a.X - b.X, a.Y - b.Y, a.Z - b.Z)
+    static member inline ( - ) (a:Vec, b:Vec) =
+        Vec (a.X - b.X, a.Y - b.Y, a.Z - b.Z)
 
     /// Add two 3D vectors together. Returns a new 3D vector.
-    static member inline ( + ) (a:Vec, b:Vec) = Vec (a.X + b.X, a.Y + b.Y, a.Z + b.Z)
+    static member inline ( + ) (a:Vec, b:Vec) =
+        Vec (a.X + b.X, a.Y + b.Y, a.Z + b.Z)
 
     /// Multiplies a 3D vector with a scalar, also called scaling a vector. Returns a new 3D vector.
-    static member inline ( * ) (a:Vec, f:float) = Vec (a.X * f, a.Y * f, a.Z * f)
+    static member inline ( * ) (a:Vec, f:float) =
+        Vec (a.X * f, a.Y * f, a.Z * f)
 
     /// Multiplies a scalar with a 3D vector, also called scaling a vector. Returns a new 3D vector.
-    static member inline ( * ) (f:float, a:Vec) = Vec (a.X * f, a.Y * f, a.Z * f)
+    static member inline ( * ) (f:float, a:Vec) =
+        Vec (a.X * f, a.Y * f, a.Z * f)
 
     /// Dot product, or scalar product of two 3D vectors. Returns a float.
-    static member inline ( *** ) (a:Vec, b:Vec) = a.X * b.X + a.Y * b.Y + a.Z * b.Z
+    static member inline ( *** ) (a:Vec, b:Vec) =
+        a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
     /// A separate function to compose the error message that does not get inlined.
     [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
@@ -91,7 +101,8 @@ type Vec =
 
     /// Dot product, or scalar product of two 3D vectors.
     /// Returns a float.
-    static member inline dot (a:Vec, b:Vec) = a.X * b.X + a.Y * b.Y + a.Z * b.Z
+    static member inline dot (a:Vec, b:Vec) =
+        a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
     /// Cross product, of two 3D vectors.
     /// The resulting vector is perpendicular to both input vectors.
@@ -115,5 +126,6 @@ type Vec =
         Vec(v.X/d, v.Y/d, v.Z/d)
 
     /// Returns a zero length vector: Vec(0, 0, 0)
-    static member inline Zero = Vec(0, 0, 0)  // this member is needed by Seq.sum, so that it doesn't fail on empty seq.
+    static member inline Zero =
+        Vec(0, 0, 0)  // this member is needed by Seq.sum, so that it doesn't fail on empty seq.
 

@@ -21,46 +21,56 @@ module AutoOpenUnitVec =
     type UnitVec with
 
         /// Convert 3D unit-vector to 3D vector.
-        member inline v.AsVec = Vec(v.X, v.Y, v.Z)
+        member inline v.AsVec =
+            Vec(v.X, v.Y, v.Z)
 
         /// Convert 3D unit-vector to 3D point.
-        member inline v.AsPnt = Pnt(v.X, v.Y, v.Z)
+        member inline v.AsPnt =
+            Pnt(v.X, v.Y, v.Z)
 
         /// Convert 3D unit-vector to 2D vector, discarding the Z value.
-        member inline v.AsVc = Vc(v.X, v.Y)
+        member inline v.AsVc =
+            Vc(v.X, v.Y)
 
         /// Returns the length of the 3D vector projected into World X-Y plane.
-        member inline v.LengthInXY = sqrt (v.X*v.X + v.Y*v.Y)
+        member inline v.LengthInXY =
+            sqrt (v.X*v.X + v.Y*v.Y)
 
         /// Returns the squared length of the 3D vector projected into World X-Y plane.
         /// The square length is faster to calculate and often good enough for use cases such as sorting vectors by length.
-        member inline v.LengthSqInXY = v.X*v.X + v.Y*v.Y
+        member inline v.LengthSqInXY =
+            v.X*v.X + v.Y*v.Y
 
         /// Returns a new 3D vector with new X coordinate, Y and Z stay the same.
-        member inline v.WithX x = Vec (x, v.Y, v.Z)
+        member inline v.WithX x =
+            Vec (x, v.Y, v.Z)
 
         /// Returns a new 3D vector with new y coordinate, X and Z stay the same.
-        member inline v.WithY y = Vec (v.X, y, v.Z)
+        member inline v.WithY y =
+            Vec (v.X, y, v.Z)
 
         /// Returns a new 3D vector with new z coordinate, X and Y stay the same.
-        member inline v.WithZ z = Vec (v.X, v.Y, z)
+        member inline v.WithZ z =
+            Vec (v.X, v.Y, z)
 
         /// Returns a perpendicular horizontal vector. Rotated counterclockwise.
         /// Or Vec.Zero if input is vertical.
         /// Just does Vec(-v.Y, v.X, 0.0)
-        member inline v.PerpendicularInXY = Vec(-v.Y, v.X, 0)
+        member inline v.PerpendicularInXY =
+            Vec(-v.Y, v.X, 0)
 
         /// 90 Degree rotation Counter-Clockwise around Z-axis.
-        member inline v.RotateOnZ90CCW = UnitVec.createUnchecked( -v.Y, v.X, v.Z)
+        member inline v.RotateOnZ90CCW =
+            UnitVec.createUnchecked( -v.Y, v.X, v.Z)
 
         /// 90 Degree rotation clockwise around Z-axis.
-        member inline v.RotateOnZ90CW = UnitVec.createUnchecked(  v.Y, -v.X, v.Z)
+        member inline v.RotateOnZ90CW =
+            UnitVec.createUnchecked(  v.Y, -v.X, v.Z)
 
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
         member v.FailedDirectionDiamondInXY() = EuclidDivByZeroException.Raise "Euclid.UnitVec.DirectionDiamondInXY: input 3D unit-vector is vertical:%O" v
-
         /// The diamond angle is always positive and in the range of 0.0 to 4.0 (for 360 Degrees)
         /// 0.0 = Xaxis, going Counter-Clockwise. Ignoring Z component.
         /// This is the fastest angle computation since it does not use Math.Cos or Math.Sin.
@@ -83,7 +93,6 @@ module AutoOpenUnitVec =
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
         member v.FailedDirection2PiInXY() = EuclidDivByZeroException.Raise "Euclid.UnitVec.Direction2PiInXY: input 3D unit-vector is vertical:%O" v
-
         /// Returns the angle in Radians from X-axis,
         /// Going Counter-Clockwise till two Pi.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
@@ -100,7 +109,6 @@ module AutoOpenUnitVec =
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
         member v.FailedDirectionPiInXY() = EuclidDivByZeroException.Raise "Euclid.UnitVec.DirectionPiInXY: input 3D unit-vector is vertical:%O" v
-
         /// Returns the angle in Radians from X-axis in World X-Y plane,
         /// Ignores orientation.
         /// Range 0.0 to Pi.
@@ -300,13 +308,16 @@ module AutoOpenUnitVec =
 
 
         /// Returns the World X-axis with length one: UnitVec(1, 0, 0)
-        static member inline Xaxis = UnitVec.createUnchecked (1.0, 0.0, 0.0)
+        static member inline Xaxis =
+            UnitVec.createUnchecked (1.0, 0.0, 0.0)
 
         /// Returns the World Y-axis with length one: UnitVec(0.1, 0)
-        static member inline Yaxis = UnitVec.createUnchecked (0.0, 1.0, 0.0)
+        static member inline Yaxis =
+            UnitVec.createUnchecked (0.0, 1.0, 0.0)
 
         /// Returns the World Z-axis with length one: UnitVec(0, 0, 1)
-        static member inline Zaxis = UnitVec.createUnchecked (0.0, 0.0, 1.0)
+        static member inline Zaxis =
+            UnitVec.createUnchecked (0.0, 0.0, 1.0)
 
         /// Checks if two 3D unit-vectors are equal within tolerance.
         /// Identical unit-vectors in opposite directions are not considered equal.
@@ -317,16 +328,23 @@ module AutoOpenUnitVec =
             abs (a.Z-b.Z) <= tol
 
         /// Returns the distance between the tips of two 3D unit-vectors.
-        static member inline difference (a:UnitVec) (b:UnitVec) = let v = a-b in sqrt(v.X*v.X + v.Y*v.Y + v.Z*v.Z)
+        static member inline difference (a:UnitVec) (b:UnitVec) =
+            let x = b.X - a.X
+            let y = b.Y - a.Y
+            let z = b.Z - a.Z
+            sqrt(x*x + y*y + z*z)
 
         /// Returns the squared distance between the tips of two 3D unit-vectors.
         /// This operation is slightly faster than Vec.difference and sufficient for many algorithms like finding closest points.
-        static member inline differenceSq (a:UnitVec) (b:UnitVec) = let v = a-b in  v.X*v.X + v.Y*v.Y + v.Z*v.Z
+        static member inline differenceSq (a:UnitVec) (b:UnitVec) =
+            let x = b.X - a.X
+            let y = b.Y - a.Y
+            let z = b.Z - a.Z
+            x*x + y*y + z*z
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
         static member failedCreateFromMembersXYZ(v:'T,e:exn) = EuclidException.Raise "Euclid.UnitVec.createFromMembersXYZ: %A could not be converted to a Euclid.UnitVec:\r\n%A" v e
-
         /// Accepts any type that has a X, Y and Z (UPPERCASE) member that can be converted to a float.
         /// Does the unitizing too.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
@@ -354,7 +372,6 @@ module AutoOpenUnitVec =
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
         static member failedCreateFromPnt(pt:Pnt)= EuclidDivByZeroException.Raise "Euclid.UnitVec.createFromPnt failed on too short %O" pt
-
         /// Create 3D unit-vector from 3D point. Does the unitizing too.
         static member inline createFromPnt (pt:Pnt) =
             let l = sqrt (pt.X*pt.X + pt.Y*pt.Y + pt.Z*pt.Z)
@@ -365,7 +382,6 @@ module AutoOpenUnitVec =
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
         static member failedCreateFromVec(v:Vec)= EuclidDivByZeroException.Raise "Euclid.UnitVec.createFromVec failed on too short %O" v
-
         /// Create 3D unit-vector from 3D vector. Does the unitizing too.
         static member inline createFromVec (v:Vec) =
             let l = sqrt (v.X*v.X + v.Y*v.Y + v.Z*v.Z)
@@ -374,19 +390,24 @@ module AutoOpenUnitVec =
             UnitVec.createUnchecked(li*v.X, li*v.Y, li*v.Z)
 
         /// Convert 3D unit-vector to 2D point by ignoring Z value.
-        static member inline asPt(v:UnitVec) = Pt(v.X, v.Y)
+        static member inline asPt(v:UnitVec) =
+            Pt(v.X, v.Y)
 
         /// Convert 3D unit-vector to 2D vector by ignoring Z value.
-        static member inline asVc(v:UnitVec) = Vc(v.X, v.Y)
+        static member inline asVc(v:UnitVec) =
+            Vc(v.X, v.Y)
 
         /// Convert 3D unit-vector to 2D unit-vector by ignoring Z value and unitizing again.
-        static member inline asUnitVc(v:UnitVec) = UnitVc.create(v.X, v.Y)
+        static member inline asUnitVc(v:UnitVec) =
+            UnitVc.create(v.X, v.Y)
 
         /// Convert 3D unit-vector to 3D point.
-        static member inline asPnt(v:UnitVec) = Pnt(v.X, v.Y, v.Z)
+        static member inline asPnt(v:UnitVec) =
+            Pnt(v.X, v.Y, v.Z)
 
         /// Convert 3D unit-vector to 3D vector.
-        static member inline asVec(v:UnitVec) = Vec(v.X, v.Y, v.Z)
+        static member inline asVec(v:UnitVec) =
+            Vec(v.X, v.Y, v.Z)
 
         //static member inline cross (a:UnitVec, b:UnitVec)  moved to Vec type declaration
 
@@ -395,9 +416,9 @@ module AutoOpenUnitVec =
         /// Its length is the area of the parallelogram spanned by the input vectors.
         /// Its direction follows th right-hand rule.
         /// A x B = |A| * |B| * sin(angle)
-        static member inline cross (a:UnitVec, b:Vec) = 
-            Vec(a.Y * b.Z - a.Z * b.Y, 
-                a.Z * b.X - a.X * b.Z, 
+        static member inline cross (a:UnitVec, b:Vec) =
+            Vec(a.Y * b.Z - a.Z * b.Y,
+                a.Z * b.X - a.X * b.Z,
                 a.X * b.Y - a.Y * b.X)
 
         /// Cross product, of a 3D vector and a 3D unit-vectors.
@@ -406,79 +427,99 @@ module AutoOpenUnitVec =
         /// Its direction follows th right-hand rule.
         /// A x B = |A| * |B| * sin(angle)
         static member inline cross (a:Vec, b:UnitVec) =
-            Vec(a.Y * b.Z - a.Z * b.Y, 
-                a.Z * b.X - a.X * b.Z, 
+            Vec(a.Y * b.Z - a.Z * b.Y,
+                a.Z * b.X - a.X * b.Z,
                 a.X * b.Y - a.Y * b.X)
 
         //static member inline dot (a:UnitVec, b:UnitVec)  //moved to Vec type declaration
 
         /// Dot product, or scalar product of a 3D unit-vector with a 3D vector.
         /// Returns a float. This float is the projected length of the 3D vector on the direction of the unit-vector.
-        static member inline dot (a:UnitVec, b:Vec) = a.X * b.X + a.Y * b.Y + a.Z * b.Z
+        static member inline dot (a:UnitVec, b:Vec) =
+            a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
         /// Dot product, or scalar product of a 3D vector with a 3D unit-vector.
         /// Returns a float. This float is the projected length of the 3D vector on the direction of the unit-vector.
-        static member inline dot (a:Vec, b:UnitVec) = a.X * b.X + a.Y * b.Y + a.Z * b.Z
+        static member inline dot (a:Vec, b:UnitVec) =
+            a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
         /// Gets the X part of this 3D unit-vector.
-        static member inline getX (v:UnitVec) = v.X
+        static member inline getX (v:UnitVec) =
+            v.X
 
         /// Gets the Y part of this 3D unit-vector.
-        static member inline getY (v:UnitVec) = v.Y
+        static member inline getY (v:UnitVec) =
+            v.Y
 
         /// Gets the Z part of this 3D unit-vector.
-        static member inline getZ (v:UnitVec) = v.Z
+        static member inline getZ (v:UnitVec) =
+            v.Z
 
         /// Returns new 3D vector with new X value, Y and Z stay the same.
-        static member inline withX  x (v:UnitVec) = v.WithX x
+        static member inline withX  x (v:UnitVec) =
+            v.WithX x
 
         /// Returns new 3D vector with new Y value, X and Z stay the same.
-        static member inline withY  y (v:UnitVec) = v.WithY y
+        static member inline withY  y (v:UnitVec) =
+            v.WithY y
 
         /// Returns new 3D vector with new z value, X and Y stay the same.
-        static member inline withZ z (v:UnitVec) = v.WithZ z
+        static member inline withZ z (v:UnitVec) =
+            v.WithZ z
 
         /// Add two 3D unit-vectors together. Returns a new (non-unitized) 3D vector.
-        static member inline add (a:UnitVec) (b:UnitVec) = b + a
+        static member inline add (a:UnitVec) (b:UnitVec) =
+            b + a
 
         /// Multiplies a 3D unit-vector with a scalar, also called scaling a vector.
         /// Same as UnitVec.withLength. Returns a new (non-unitized) 3D vector.
-        static member inline scale (f:float) (v:UnitVec) = Vec (v.X * f, v.Y * f, v.Z * f)
+        static member inline scale (f:float) (v:UnitVec) =
+            Vec (v.X * f, v.Y * f, v.Z * f)
 
         /// Multiplies a 3D unit-vector with a scalar, also called scaling a vector.
         /// Same as UnitVec.scale. Returns a new (non-unitized) 3D vector.
-        static member inline withLength(f:float) (v:UnitVec) = Vec (v.X * f, v.Y * f, v.Z * f)
+        static member inline withLength(f:float) (v:UnitVec) =
+            Vec (v.X * f, v.Y * f, v.Z * f)
 
         /// Add to the X part of this 3D unit-vectors together. Returns a new (non-unitized) 3D vector.
-        static member inline moveX x (v:UnitVec) = Vec (v.X+x, v.Y, v.Z)
+        static member inline moveX x (v:UnitVec) =
+            Vec (v.X+x, v.Y, v.Z)
 
         /// Add to the Y part of this 3D unit-vectors together. Returns a new (non-unitized) 3D vector.
-        static member inline moveY y (v:UnitVec) = Vec (v.X, v.Y+y, v.Z)
+        static member inline moveY y (v:UnitVec) =
+            Vec (v.X, v.Y+y, v.Z)
+
 
         /// Add to the Z part of this 3D unit-vectors together. Returns a new (non-unitized) 3D vector.
-        static member inline moveZ z (v:UnitVec) = Vec (v.X, v.Y, v.Z+z)
+        static member inline moveZ z (v:UnitVec) =
+            Vec (v.X, v.Y, v.Z+z)
 
         /// Project vector to World X-Y plane.
         /// Use Vc.ofUnitVec to convert to 2D vector instance.
-        static member inline projectToXYPlane (v:UnitVec) = Vec(v.X, v.Y, 0.0)
+        static member inline projectToXYPlane (v:UnitVec) =
+            Vec(v.X, v.Y, 0.0)
 
 
         /// Negate or inverse a 3D unit-vectors. Returns a new 3D unit-vector.
         /// Same as UnitVec.flip.
-        static member inline reverse (v:UnitVec) = -v
+        static member inline reverse (v:UnitVec) =
+            -v
 
         /// Negate or inverse a 3D unit-vectors. Returns a new 3D unit-vector.
         /// Same as UnitVec.reverse.
-        static member inline flip (v:UnitVec) = -v
+        static member inline flip (v:UnitVec) =
+            -v
 
         /// Flips the vector if Z part is smaller than 0.0
-        static member inline flipToPointUp (v:UnitVec) = if v.Z < 0.0 then -v else v
+        static member inline flipToPointUp (v:UnitVec) =
+            if v.Z < 0.0 then -v else v
 
         /// Returns three vectors Determinant.
         /// This is also the signed volume of the Parallelepipeds define by these three vectors.
         /// Also called scalar triple product, mixed product, box product, or in german: Spatprodukt.
         /// It is defined as the dot product of one of the vectors with the cross product of the other two.
-        static member inline determinant (u:UnitVec, v:UnitVec, w:UnitVec) = u.X*v.Y*w.Z + v.X*w.Y*u.Z + w.X*u.Y*v.Z - w.X*v.Y*u.Z - v.X*u.Y*w.Z - u.X*w.Y*v.Z
+        static member inline determinant (u:UnitVec, v:UnitVec, w:UnitVec) =
+            u.X*v.Y*w.Z + v.X*w.Y*u.Z + w.X*u.Y*v.Z - w.X*v.Y*u.Z - v.X*u.Y*w.Z - u.X*w.Y*v.Z
 
         /// Returns angle between two 3D unit-vectors in Radians.
         /// Takes vector orientation into account.
@@ -549,7 +590,8 @@ module AutoOpenUnitVec =
         /// Range of 0.0 to 4.0 (for 360 Degrees)
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
-        static member inline angleDiamondInXY (a:UnitVec, b:UnitVec) = a.AngleDiamondInXYTo(b)
+        static member inline angleDiamondInXY (a:UnitVec, b:UnitVec) =
+            a.AngleDiamondInXYTo(b)
 
         /// The diamond angle.
         /// Returns positive angle of 3D unit-vector in World X-Y plane.
@@ -558,20 +600,23 @@ module AutoOpenUnitVec =
         /// 0.0 = Xaxis, going Counter-Clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
-        static member inline directionDiamondInXY(v:UnitVec) = v.DirectionDiamondInXY
+        static member inline directionDiamondInXY(v:UnitVec) =
+            v.DirectionDiamondInXY
 
         /// Returns positive angle of 3D unit-vector in World X-Y plane. Counter-Clockwise from X-axis.
         /// In Radians.
         /// Range: 0.0 to 2 Pi ( = 0 to 360 Degrees)
         /// For World X-Y plane. Considers only the X and Y components of the vector.
-        static member inline direction2PiInXY (v:UnitVec) = v.Direction2PiInXY
+        static member inline direction2PiInXY (v:UnitVec) =
+            v.Direction2PiInXY
 
         /// Returns positive angle of 3D unit-vector in World X-Y plane. Counter-Clockwise from X-axis.
         /// In Degree.
         /// Range: 0.0 to 2 Pi ( = 0 to 360 Degrees)
         /// For World X-Y plane. Considers only the X and Y components of the vector.
-        static member inline direction360InXY (v:UnitVec) = v.Direction360InXY
-      
+        static member inline direction360InXY (v:UnitVec) =
+            v.Direction360InXY
+
 
         /// Ensure that the 3D unit-vector has a positive dot product with given 3D orientation unit-vector.
         static member inline matchOrientation (orientationToMatch:UnitVec) (vecToFlip:UnitVec) =
@@ -579,7 +624,7 @@ module AutoOpenUnitVec =
 
         /// Ensure that the 3D unit-vector has a positive dot product with given 3D orientation vector.
         static member inline matchVecOrientation (orientationToMatch:Vec) (vecToFlip:UnitVec) =
-            if orientationToMatch *** vecToFlip < 0.0 then -vecToFlip else vecToFlip            
+            if orientationToMatch *** vecToFlip < 0.0 then -vecToFlip else vecToFlip
 
 
         /// Checks if the angle between the two 3D unit-vectors is less than 180 degrees.
@@ -590,31 +635,36 @@ module AutoOpenUnitVec =
 
         /// Checks if the angle between the two 3D unit-vectors is more than 180 degrees.
         /// Calculates the dot product of two 3D unit-vectors.
-        /// Then checks if it is smaller than minus 1e-12. 
+        /// Then checks if it is smaller than minus 1e-12.
         static member inline isOppositeOrientation (other:UnitVec) (v:UnitVec) =
             v.IsOppositeOrientation other
 
         /// Checks if Angle between two vectors is Below 0.25 Degree.
         /// Ignores vector orientation.
-        static member inline areParallel (other:UnitVec) (v:UnitVec) = v.IsParallelTo other
+        static member inline areParallel (other:UnitVec) (v:UnitVec) =
+            v.IsParallelTo other
 
 
         /// Checks if Angle between two vectors is between 98.75 and 90.25 Degree.
         /// Ignores vector orientation.
-        static member inline areParallelAndMatchOrientation (other:UnitVec) (v:UnitVec) = v.IsParallelAndOrientedTo other
+        static member inline areParallelAndMatchOrientation (other:UnitVec) (v:UnitVec) =
+            v.IsParallelAndOrientedTo other
 
         /// Checks if Angle between two vectors is between 98.75 and 90.25 Degree.
         /// Ignores vector orientation.
-        static member inline arePerpendicular(other:UnitVec) (v:UnitVec) = v.IsPerpendicularTo other
+        static member inline arePerpendicular(other:UnitVec) (v:UnitVec) =
+            v.IsPerpendicularTo other
 
 
         // Rotate2D:
 
         /// 90 Degree rotation Counter-Clockwise around Z-axis.
-        static member inline rotateOnZ90CCW(v:UnitVec) = UnitVec.createUnchecked( -v.Y, v.X, v.Z)
+        static member inline rotateOnZ90CCW(v:UnitVec) =
+            UnitVec.createUnchecked( -v.Y, v.X, v.Z)
 
         /// 90 Degree rotation clockwise around Z-axis.
-        static member inline rotateOnZ90CW(v:UnitVec) = UnitVec.createUnchecked(  v.Y, -v.X, v.Z)
+        static member inline rotateOnZ90CW(v:UnitVec) =
+            UnitVec.createUnchecked(  v.Y, -v.X, v.Z)
 
         /// Rotate the 3D unit-vector around X-axis, from Y to Z-axis, Counter Clockwise looking from right.
         static member inline rotateXBy (r:Rotation2D) (v:UnitVec) =
@@ -646,28 +696,34 @@ module AutoOpenUnitVec =
 
         /// Returns vector length projected into X Y Plane.
         /// sqrt(v.X * v.X  + v.Y * v.Y)
-        static member inline lengthInXY(v:UnitVec) = sqrt(v.X * v.X  + v.Y * v.Y)
+        static member inline lengthInXY(v:UnitVec) =
+            sqrt(v.X * v.X  + v.Y * v.Y)
 
         /// Checks if 3D unit-vector is parallel to the world X axis. Ignoring orientation.
         /// Tolerance is 1e-6.
-        static member inline isXAligned (v:UnitVec) = v.IsXAligned
-        
+        static member inline isXAligned (v:UnitVec) =
+            v.IsXAligned
+
         /// Checks if 3D unit-vector is parallel to the world Y axis. Ignoring orientation.
         /// Tolerance is 1e-6.
-        static member inline isYAligned (v:UnitVec) = v.IsYAligned
-        
+        static member inline isYAligned (v:UnitVec) =
+            v.IsYAligned
+
         /// Checks if 3D unit-vector is parallel to the world Z axis. Ignoring orientation.
         /// Same as ln.IsVertical
-        static member inline isZAligned (v:UnitVec) = v.IsZAligned
-        
+        static member inline isZAligned (v:UnitVec) =
+            v.IsZAligned
+
         /// Checks if 3D unit-vector is parallel to the world Z axis. Ignoring orientation.
         /// Tolerance is 1e-6.
         /// Same as ln.IsZAligned
-        static member inline isVertical (v:UnitVec) = v.IsVertical        
-        
+        static member inline isVertical (v:UnitVec) =
+            v.IsVertical
+
         /// Checks if 3D vector is horizontal (Z component is almost zero).
         /// Tolerance is 1e-6.
-        static member inline isHorizontal (v:UnitVec) = v.IsHorizontal
+        static member inline isHorizontal (v:UnitVec) =
+            v.IsHorizontal
 
         /// Returns positive or negative slope of a vector in Radians.
         /// In relation to X-Y plane.
@@ -687,8 +743,8 @@ module AutoOpenUnitVec =
         /// Returns positive (or negative) infinity if line is vertical.
         static member inline slopePercent (v:UnitVec) =
             //if isTooTiny (abs(v.Z)) then EuclidDivByZeroException.Raise "Euclid.UnitVec.slopePercent: Can't get Slope from vertical unit-vector %O" v
-            let len2D = sqrt(v.X*v.X + v.Y*v.Y)            
-            100.0 * v.Z / len2D      
+            let len2D = sqrt(v.X*v.X + v.Y*v.Y)
+            100.0 * v.Z / len2D
 
         /// Reverse vector if Z part is smaller than 0.0
         static member inline orientUp (v:UnitVec) =
@@ -715,79 +771,79 @@ module AutoOpenUnitVec =
             if v.Z < 0.0 then -r else r
 
 
-        /// Multiplies a Matrix with a 3D vector.  
+        /// Multiplies a Matrix with a 3D vector.
         /// Since a 3D vector represents a direction or an offset in space, but not a location,
         /// the implicit the 4th dimension is 0.0 so that all translations are ignored. (Homogeneous Vector)
         /// The resulting vector is not unitized.
         static member inline transform (m:Matrix) (v:UnitVec) : Vec =
             v.Transform(m)
 
-        /// Multiplies (or applies) a RigidMatrix to a 3D unit-vector. 
+        /// Multiplies (or applies) a RigidMatrix to a 3D unit-vector.
         /// Since a 3D vector represents a direction or an offset in space, but not a location,
         /// all translations are ignored. (Homogeneous Vector)
         /// The resulting vector is  unitized too.
         static member inline transformRigid (m:RigidMatrix) (v:UnitVec) : UnitVec =
             v.TransformRigid(m)
-        
+
         /// Checks if Angle between two unit-vectors is less than given Cosine.
         /// Ignores vector orientation. The angle between two vectors can be 0 to 90 degrees ignoring their direction.
-        /// Use the Euclid.Cosine module to get some precomputed cosine values.        
-        static member inline isAngle90Below (cosineValue: float<Cosine.cosine>) (a:UnitVec) (b:UnitVec) = 
+        /// Use the Euclid.Cosine module to get some precomputed cosine values.
+        static member inline isAngle90Below (cosineValue: float<Cosine.cosine>) (a:UnitVec) (b:UnitVec) =
             abs(a *** b) > float cosineValue
 
         /// Checks if Angle between two unit-vectors is more than given Cosine.
         /// Ignores vector orientation. The angle between two vectors can be 0 to 90 degrees ignoring their direction.
-        /// Use the Euclid.Cosine module to get some precomputed cosine values.        
-        static member inline isAngle90Above (cosineValue: float<Cosine.cosine>) (a:UnitVec) (b:UnitVec) =            
-            abs(a *** b) < float cosineValue  
+        /// Use the Euclid.Cosine module to get some precomputed cosine values.
+        static member inline isAngle90Above (cosineValue: float<Cosine.cosine>) (a:UnitVec) (b:UnitVec) =
+            abs(a *** b) < float cosineValue
 
         /// Checks if Angle between two unit-vectors is less than given Cosine.
         /// Does not ignores vector orientation. The angle between two vectors can be 0 to 180 degrees.
-        /// Use the Euclid.Cosine module to get some precomputed cosine values.        
-        static member inline isAngle180Below (cosineValue: float<Cosine.cosine>) (a:UnitVec) (b:UnitVec) = 
+        /// Use the Euclid.Cosine module to get some precomputed cosine values.
+        static member inline isAngle180Below (cosineValue: float<Cosine.cosine>) (a:UnitVec) (b:UnitVec) =
             a *** b > float cosineValue
 
         /// Checks if Angle between two unit-vectors is more than given Cosine.
         /// Does not ignores vector orientation.The angle between two vectors can be 0 to 180 degrees.
-        /// Use the Euclid.Cosine module to get some precomputed cosine values.        
-        static member inline isAngle180Above (cosineValue: float<Cosine.cosine>) (a:UnitVec) (b:UnitVec) =            
-            a *** b < float cosineValue  
+        /// Use the Euclid.Cosine module to get some precomputed cosine values.
+        static member inline isAngle180Above (cosineValue: float<Cosine.cosine>) (a:UnitVec) (b:UnitVec) =
+            a *** b < float cosineValue
 
 
         /// Linearly interpolates between two vectors.
-        /// e.g. rel=0.5 will return the middle vector, rel=1.0 the end vector, 
-        /// rel=1.5 a vector half the distance beyond the end vector.        
+        /// e.g. rel=0.5 will return the middle vector, rel=1.0 the end vector,
+        /// rel=1.5 a vector half the distance beyond the end vector.
         static member lerp (start:UnitVec, ende:UnitVec, rel:float) : Vec =
-            start + rel * (ende - start) 
-                
-        /// Spherically interpolates between start and end by amount rel (0.0 to 1.0). 
-        /// The difference between this and linear interpolation (aka, "lerp") is that the vectors are treated as directions rather than points in space. 
+            start + rel * (ende - start)
+
+        /// Spherically interpolates between start and end by amount rel (0.0 to 1.0).
+        /// The difference between this and linear interpolation (aka, "lerp") is that the vectors are treated as directions rather than points in space.
         /// The direction of the returned vector is interpolated by the angle and its magnitude is interpolated between the magnitudes of start and end.
         /// Interpolation continues before and after the range of 0.0 and 0.1
-        static member slerp (start:UnitVec, ende:UnitVec, rel:float) :UnitVec = 
+        static member slerp (start:UnitVec, ende:UnitVec, rel:float) :UnitVec =
             // https://en.wikipedia.org/wiki/Slerp
-            // implementation tested in Rhino!            
+            // implementation tested in Rhino!
             let dot = start *** ende
             if dot > float Cosine.``0.05`` then  // vectors are in the same direction interpolate length only
-                start 
-            elif dot < float Cosine.``179.95`` then  
+                start
+            elif dot < float Cosine.``179.95`` then
                 EuclidDivByZeroException.Throw1 "Euclid.UnitVec.slerp: Can't interpolate vectors in opposite directions:" ende
             else
-                let ang = acos(dot) // the angel between the two vectors 
-                let p = ende - start*dot  // a vector perpendicular to start and in the same plane with ende. 
+                let ang = acos(dot) // the angel between the two vectors
+                let p = ende - start*dot  // a vector perpendicular to start and in the same plane with ende.
                 let perp = UnitVec.create(p.X, p.Y, p.Z)
-                let theta = ang*rel // the angle part we want for the result 
+                let theta = ang*rel // the angle part we want for the result
                 let theta360 = (theta+UtilEuclid.twoPi) % UtilEuclid.twoPi // make sure it is i the range 0.0 to 2 Pi (360 degrees)
-                let cosine = cos (theta360) 
-                let sine   = sqrt(1.0 - cosine*cosine)                 
-                let vx = start * cosine 
-                let vy = perp * sine 
+                let cosine = cos (theta360)
+                let sine   = sqrt(1.0 - cosine*cosine)
+                let vx = start * cosine
+                let vy = perp * sine
                 if theta360 < Math.PI then  // in the range 0 to 180 degrees, only applicable if rel is beyond 0.0 or 0.1
                     UnitVec.createUnchecked (vx + vy)
-                else  
+                else
                     UnitVec.createUnchecked (vx - vy)
 
-        
+
         ///<summary> Intersects two infinite 3D lines.
         /// The lines are defined by a start point and a vector.
         /// 'ValueNone' is returned, if the angle between the vectors is less than 0.25 degrees
@@ -814,8 +870,8 @@ module AutoOpenUnitVec =
             let az = vA.Z
             let bx = vB.X
             let by = vB.Y
-            let bz = vB.Z        
-            let b = ax*bx + ay*by + az*bz // dot product of both lines            
+            let bz = vB.Z
+            let b = ax*bx + ay*by + az*bz // dot product of both lines
             let bb = b*b // square of square dot product, never negative
             let discriminant = 1.0 - bb // never negative, the dot product cannot be bigger than the two square length multiplied with each other
             let div = bb // never negative
@@ -834,4 +890,3 @@ module AutoOpenUnitVec =
                 let u = (b * d -     e) / discriminant
                 ValueSome (t, u)
 
-       

@@ -51,55 +51,68 @@ type UnitVec =
         {X=x; Y=y; Z=z}
 
     /// Format 3D unit-vector into string including type name and nice floating point number formatting.
-    override p.ToString() = sprintf "Euclid.UnitVec: X=%s|Y=%s|Z=%s" (Format.float p.X)(Format.float p.Y)(Format.float p.Z)
+    override p.ToString() =
+        sprintf "Euclid.UnitVec: X=%s|Y=%s|Z=%s" (Format.float p.X)(Format.float p.Y)(Format.float p.Z)
 
     /// Format 3D unit-vector into string with nice floating point number formatting of X, Y and Z
     /// But without full type name as in v.ToString()
-    member v.AsString = sprintf "X=%s| Y=%s| Z=%s" (Format.float v.X) (Format.float v.Y) (Format.float v.Z)
+    member v.AsString =
+        sprintf "X=%s| Y=%s| Z=%s" (Format.float v.X) (Format.float v.Y) (Format.float v.Z)
 
     /// Negate or inverse a 3D unit-vectors. Returns a new 3D unit-vector.
-    static member inline ( ~- ) (v:UnitVec) = UnitVec ( -v.X, -v.Y, -v.Z)
+    static member inline ( ~- ) (v:UnitVec) =
+        UnitVec ( -v.X, -v.Y, -v.Z)
 
     /// Subtract one 3D unit-vectors from another. Returns a new (non-unitized) 3D vector.
-    static member inline ( - ) (a:UnitVec, b:UnitVec) = Vec (a.X - b.X, a.Y - b.Y, a.Z - b.Z)
+    static member inline ( - ) (a:UnitVec, b:UnitVec) =
+        Vec (a.X - b.X, a.Y - b.Y, a.Z - b.Z)
 
     /// Subtract a 3D vectors from a 3D unit-vector. Returns a new (non-unitized) 3D vector.
-    static member inline ( - ) (a:UnitVec, b:Vec) = Vec (a.X - b.X, a.Y - b.Y, a.Z - b.Z)
+    static member inline ( - ) (a:UnitVec, b:Vec) =
+        Vec (a.X - b.X, a.Y - b.Y, a.Z - b.Z)
 
     /// Subtract a 3D unit-vectors from a 3D vector. Returns a new (non-unitized) 3D vector.
-    static member inline ( - ) (a:Vec, b:UnitVec) = Vec (a.X - b.X, a.Y - b.Y, a.Z - b.Z)
+    static member inline ( - ) (a:Vec, b:UnitVec) =
+        Vec (a.X - b.X, a.Y - b.Y, a.Z - b.Z)
 
     /// Add two 3D unit-vectors together. Returns a new (non-unitized) 3D vector.
-    static member inline ( + ) (a:UnitVec, b:UnitVec) = Vec (a.X + b.X, a.Y + b.Y, a.Z + b.Z)
+    static member inline ( + ) (a:UnitVec, b:UnitVec) =
+        Vec (a.X + b.X, a.Y + b.Y, a.Z + b.Z)
 
     /// Add a 3D vectors and a 3D unit-vector together. Returns a new (non-unitized) 3D vector.
-    static member inline ( + ) (a:Vec, b:UnitVec) = Vec (a.X + b.X, a.Y + b.Y, a.Z + b.Z)
+    static member inline ( + ) (a:Vec, b:UnitVec) =
+        Vec (a.X + b.X, a.Y + b.Y, a.Z + b.Z)
 
     /// Add a 3D unit-vectors and a 3D vector together. Returns a new (non-unitized) 3D vector.
-    static member inline ( + ) (a:UnitVec, b:Vec) = Vec (a.X + b.X, a.Y + b.Y, a.Z + b.Z)
+    static member inline ( + ) (a:UnitVec, b:Vec) =
+        Vec (a.X + b.X, a.Y + b.Y, a.Z + b.Z)
 
     /// Multiplies a 3D unit-vector with a scalar, also called scaling a vector. Returns a new (non-unitized) 3D vector.
-    static member inline ( * ) (a:UnitVec, f:float) = Vec (a.X * f, a.Y * f, a.Z * f)
+    static member inline ( * ) (a:UnitVec, f:float) =
+        Vec (a.X * f, a.Y * f, a.Z * f)
 
     /// Multiplies a scalar with a 3D unit-vector, also called scaling a vector. Returns a new (non-unitized) 3D vector.
-    static member inline ( * ) (f:float, a:UnitVec) = Vec (a.X * f, a.Y * f, a.Z * f)
+    static member inline ( * ) (f:float, a:UnitVec) =
+        Vec (a.X * f, a.Y * f, a.Z * f)
 
     /// Dot product, or scalar product of two 3D unit-vectors.
     /// Returns a float. This float is the Cosine of the angle between the two 3D vectors.
-    static member inline ( *** ) (a:UnitVec, b:UnitVec) = a.X * b.X + a.Y * b.Y + a.Z * b.Z
+    static member inline ( *** ) (a:UnitVec, b:UnitVec) =
+        a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
     /// Dot product, or scalar product of a 3D unit-vectors with a 3D vector.
     /// Returns a float. This float is the projected length of the 3D vector on the direction of the unit-vector.
-    static member inline ( *** ) (a:UnitVec, b:Vec) = a.X * b.X + a.Y * b.Y + a.Z * b.Z
+    static member inline ( *** ) (a:UnitVec, b:Vec) =
+        a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
     /// Dot product, or scalar product of a 3D unit-vectors with a 3D vector.
     /// Returns a float. This float is the projected length of the 3D vector on the direction of the unit-vector.
-    static member inline ( *** ) (a:Vec, b:UnitVec) = a.X * b.X + a.Y * b.Y + a.Z * b.Z
+    static member inline ( *** ) (a:Vec, b:UnitVec) =
+        a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
-    /// A separate function to compose the error message that does not get inlined.
+    // A separate function to compose the error message that does not get inlined.
     [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
     member v.FailedDivide(f) = EuclidDivByZeroException.Raise "Euclid.UnitVec: divide operator: %g is too small for dividing %O using the '/' operator. Tolerance:%g"  f v zeroLengthTolerance
-
     /// Divides a 3D unit-vector by a scalar, also be called dividing/scaling a vector. Returns a new (non-unitized) 3D vector.
     static member inline ( / ) (v:UnitVec, f:float) =
         if isTooTiny (abs f) then v.FailedDivide(f) // don't compose error msg directly here to keep inlined code small. // https://github.com/dotnet/runtime/issues/24626#issuecomment-356736809
@@ -107,27 +120,29 @@ type UnitVec =
 
     /// Dot product, or scalar product of two 3D unit-vectors.
     /// Returns a float. This float of unit-vectors is the Cosine of the angle between the two vectors.
-    static member inline dot (a:UnitVec, b:UnitVec) = a.X * b.X + a.Y * b.Y + a.Z * b.Z
+    static member inline dot (a:UnitVec, b:UnitVec) =
+        a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
     /// Cross product, of two 3D vectors.
     /// The resulting vector is perpendicular to both input vectors.
     /// Its length is the area of the parallelogram spanned by the input vectors.
     /// Its direction follows th right-hand rule.
     /// A x B = |A| * |B| * sin(angle)
-    static member inline cross (a:UnitVec, b:UnitVec) = Vec (a.Y * b.Z - a.Z * b.Y, a.Z * b.X - a.X * b.Z, a.X * b.Y - a.Y * b.X)
+    static member inline cross (a:UnitVec, b:UnitVec) =
+        Vec (a.Y * b.Z - a.Z * b.Y, a.Z * b.X - a.X * b.Z, a.X * b.Y - a.Y * b.X)
 
     /// For use as a faster internal constructor.
     /// Requires correct input of unitized values.
-    static member inline createUnchecked(x, y, z) = UnitVec(x, y, z)
+    static member inline createUnchecked(x, y, z) =
+        UnitVec(x, y, z)
 
     /// For use as a faster internal constructor.
     /// Requires correct input of unitized values.
-    static member inline createUnchecked(v:Vec) = UnitVec(v.X, v.Y, v.Z)
+    static member inline createUnchecked(v:Vec) =
+        UnitVec(v.X, v.Y, v.Z)
 
-    /// A separate function to compose the error message that does not get inlined.
-    [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
+    // A separate function to compose the error message that does not get inlined.    [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
     static member failedCreate (x:float, y:float, z:float) = EuclidDivByZeroException.Raise "Euclid.UnitVec.create: x:%g, y:%g and z:%g are too small for creating a unit-vector, Tolerance:%g" x y z zeroLengthTolerance
-
     /// Create 3D unit-vector. Does the unitizing too.
     static member inline create (x:float, y:float, z:float) =
         // this member cant be an extension method because it is used with SRTP.

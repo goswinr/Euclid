@@ -24,10 +24,12 @@ type Line2D =
     [<DataMember>] val ToY  :float
 
     /// Create Line2D from 2D start point and 2D end point.
-    new (fromPt:Pt, toPt:Pt) = {FromX=fromPt.X; FromY=fromPt.Y; ToX=toPt.X; ToY=toPt.Y; }
+    new (fromPt:Pt, toPt:Pt) =
+            {FromX=fromPt.X; FromY=fromPt.Y; ToX=toPt.X; ToY=toPt.Y; }
 
     /// Create Line2D from 2D start point's x and y  and 2D end point's x and y .
-    new (fromX, fromY, toX, toY) = {FromX=fromX; FromY=fromY;  ToX=toX; ToY=toY}
+    new (fromX, fromY, toX, toY) =
+            {FromX=fromX; FromY=fromY;  ToX=toX; ToY=toY}
 
     /// Returns the length of the line.
     member inline ln.Length =
@@ -62,10 +64,12 @@ type Line2D =
             (Format.float ln.ToY)
 
     /// The Start point of the 2D Line2D,
-    member inline ln.From = Pt(ln.FromX, ln.FromY)
+    member inline ln.From =
+        Pt(ln.FromX, ln.FromY)
 
     /// The End point of the 2D Line2D,
-    member inline ln.To = Pt(ln.ToX, ln.ToY)
+    member inline ln.To =
+        Pt(ln.ToX, ln.ToY)
 
     /// Same as ln.Vector or ln.Tangent.
     /// The returned vector has the same length as the Line2D.
@@ -664,37 +668,48 @@ type Line2D =
     /// Checks if two 2D lines are coincident within tolerance.
     /// This means that lines are parallel within 0.25 degrees
     /// and the distance of second start point to the first line is less than 1e-6.
-    static member inline areCoincident (a:Line2D) (b:Line2D) = a.IsCoincidentTo(b)
+    static member inline areCoincident (a:Line2D) (b:Line2D) =
+        a.IsCoincidentTo(b)
 
     /// Creates a line starting at World Origin and going to along the given vector.
-    static member inline createFromVec (v:Vc) = Line2D(0., 0., v.X, v.Y)
+    static member inline createFromVec (v:Vc) =
+        Line2D(0., 0., v.X, v.Y)
 
     /// Creates a line starting at given point and going to along the given vector.
-    static member inline createFromPtAndVc (p:Pt, v:Vc) = Line2D(p.X, p.Y, p.X+v.X, p.Y+v.Y)
+    static member inline createFromPtAndVc (p:Pt, v:Vc) =
+        Line2D(p.X, p.Y, p.X+v.X, p.Y+v.Y)
 
     /// Returns the Start point of the line. Same as Line2D.from.
-    static member inline start (l:Line2D) = l.From
+    static member inline start (l:Line2D) =
+        l.From
 
     /// Returns the Start point of the line. Same as Line2D.start.
-    static member inline from (l:Line2D) = l.From
+    static member inline from (l:Line2D) =
+        l.From
 
     /// Returns the Start point's X coordinate of the line.
-    static member inline fromX (l:Line2D) = l.FromX
+    static member inline fromX (l:Line2D) =
+        l.FromX
 
     /// Returns the Start point's Y coordinate of the line.
-    static member inline fromY (l:Line2D) = l.FromY
+    static member inline fromY (l:Line2D) =
+        l.FromY
 
     /// Returns the End point of the line. Same as Line2D.to'
-    static member inline ende (l:Line2D) = l.To
+    static member inline ende (l:Line2D) =
+        l.To
 
     /// Returns the End point of the line. Same as Line2D.ende.
-    static member inline to' (l:Line2D) = l.To
+    static member inline to' (l:Line2D) =
+        l.To
 
     /// Returns the End point's X coordinate of the line.
-    static member inline toX (l:Line2D) = l.ToX
+    static member inline toX (l:Line2D) =
+        l.ToX
 
     /// Returns the End point's Y coordinate of the line.
-    static member inline toY (l:Line2D) = l.ToY
+    static member inline toY (l:Line2D) =
+        l.ToY
 
     /// Set Line2D start point, returns a new line.
     static member inline setStart (pt:Pt) (ln:Line2D) =
@@ -720,61 +735,78 @@ type Line2D =
         Vc(ln.ToX-ln.FromX, ln.ToY-ln.FromY)
 
     /// Returns a unit-vector of the line Direction.
-    static member inline unitTangent (ln:Line2D) = ln.UnitTangent
+    static member inline unitTangent (ln:Line2D) =
+        ln.UnitTangent
 
     /// Returns the length of the line.
-    static member inline length (l:Line2D) = l.Length
+    static member inline length (l:Line2D) =
+        l.Length
 
     /// Returns the square length of the line.
-    static member inline lengthSq (l:Line2D) = l.LengthSq
+    static member inline lengthSq (l:Line2D) =
+        l.LengthSq
 
     /// Check if the line has same starting and ending point.
-    static member inline isZeroLength (l:Line2D) = l.IsZeroLength
+    static member inline isZeroLength (l:Line2D) =
+        l.IsZeroLength
 
     /// Check if line is shorter than tolerance.
     /// Or contains a NaN value
-    static member inline isTiny tol (l:Line2D) = not (l.Length > tol)
+    static member inline isTiny tol (l:Line2D) =
+        not (l.Length > tol)
 
     /// Check if line is shorter than squared tolerance.
     /// Or contains a NaN value
-    static member inline isTinySq tol (l:Line2D) = not (l.LengthSq > tol)
+    static member inline isTinySq tol (l:Line2D) =
+        not (l.LengthSq > tol)
 
     /// Checks if 2D line is parallel to the world X axis. Ignoring orientation.
     /// Tolerance is 1e-6.
     /// Fails on lines shorter than 1e-6.
-    static member inline isXAligned (l:Line2D) = l.IsXAligned
+    static member inline isXAligned (l:Line2D) =
+        l.IsXAligned
 
     /// Checks if 2D line is parallel to the world Y axis. Ignoring orientation.
     /// Tolerance is 1e-6.
     /// Fails on lines shorter than 1e-6.
-    static member inline isYAligned (l:Line2D) = l.IsYAligned
+    static member inline isYAligned (l:Line2D) =
+        l.IsYAligned
 
     /// Evaluate line at a given parameter ( parameters 0.0 to 1.0 are on the line)
-    static member inline evaluateAt t (ln:Line2D) = ln.EvaluateAt t
+    static member inline evaluateAt t (ln:Line2D) =
+        ln.EvaluateAt t
 
     /// Get point at center of line.
-    static member inline mid (ln:Line2D) = ln.Mid
+    static member inline mid (ln:Line2D) =
+        ln.Mid
 
     /// Reverse or flip the Line2D (same as Line2D.flip)
-    static member inline reverse (ln:Line2D) = ln.Reversed
+    static member inline reverse (ln:Line2D) =
+        ln.Reversed
 
     /// Reverse or flip the Line2D (same as Line2D.reverse)
-    static member inline flip (ln:Line2D) = ln.Reversed
+    static member inline flip (ln:Line2D) =
+        ln.Reversed
 
     /// Returns new Line2D from point at Parameter a to point at Parameter b.
-    static member inline segment a b (ln:Line2D) = ln.Segment (a, b)
+    static member inline segment a b (ln:Line2D) =
+        ln.Segment (a, b)
 
     /// Move a Line2D by a vector. (same as Line2D.move)
-    static member inline translate (v:Vc) (ln:Line2D) = ln.Move(v)
+    static member inline translate (v:Vc) (ln:Line2D) =
+        ln.Move(v)
 
     /// Returns a Line2D moved by a given distance in X direction.
-    static member inline moveX (distance:float) (ln:Line2D) = ln.MoveX(distance)
+    static member inline moveX (distance:float) (ln:Line2D) =
+        ln.MoveX(distance)
 
     /// Returns a Line2D moved by a given distance in Y direction.
-    static member inline moveY (distance:double) (ln:Line2D) = ln.MoveY(distance)
+    static member inline moveY (distance:double) (ln:Line2D) =
+        ln.MoveY(distance)
 
     /// Move a Line2D by a vector. (same as Line2D.translate)
-    static member inline move (v:Vc) (ln:Line2D) = ln.Move(v)
+    static member inline move (v:Vc) (ln:Line2D) =
+        ln.Move(v)
 
     /// Rotation a Line2D.
     static member inline rotate (r:Rotation2D) (ln:Line2D) =
@@ -820,62 +852,75 @@ type Line2D =
     /// Checks if the angle between the two 2D lines is less than 180 degrees.
     /// Calculates the dot product of two 2D lines.
     /// Then checks if it is positive.
-    static member inline matchesOrientation180 (l:Line2D) (ln:Line2D) = l.MatchesOrientation180 ln
+    static member inline matchesOrientation180 (l:Line2D) (ln:Line2D) =
+        l.MatchesOrientation180 ln
 
     /// Checks if the angle between the two 2D lines is less than 90 degrees.
     /// Calculates the dot product of the unit-vectors of the two 2D lines.
     /// Then checks if it is bigger than 0.707107 (cosine of 90 degrees).
-    static member inline matchesOrientation90 (l:Line2D) (ln:Line2D) = l.MatchesOrientation90 ln
+    static member inline matchesOrientation90 (l:Line2D) (ln:Line2D) =
+        l.MatchesOrientation90 ln
 
     /// Checks if two 2D lines are parallel. Ignoring orientation.
     /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
     /// And checks if it is smaller than 1e-9
     /// (NOTE: for very long lines a higher tolerance might be needed)
-    static member inline areParallel (l:Line2D) (ln:Line2D) = l.IsParallelTo ln
+    static member inline areParallel (l:Line2D) (ln:Line2D) =
+        l.IsParallelTo ln
 
     /// Checks if two 2D lines are parallel and orientated the same way.
     /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
     /// And checks if it is smaller than 1e-9
     /// Then calculates the dot product and checks if it is positive.
     /// (NOTE: for very long lines a higher tolerance might be needed)
-    static member inline areParallelAndMatchOrientation (l:Line2D) (ln:Line2D) = l.IsParallelAndOrientedTo ln
+    static member inline areParallelAndMatchOrientation (l:Line2D) (ln:Line2D) =
+        l.IsParallelAndOrientedTo ln
 
     /// Checks if two 2D lines are perpendicular.
     /// Calculates the dot product and checks if it is smaller than 1e-9.
     /// (NOTE: for very long lines a higher tolerance might be needed)
-    static member inline arePerpendicular(l:Line2D) (ln:Line2D) = l.IsPerpendicularTo ln
+    static member inline arePerpendicular(l:Line2D) (ln:Line2D) =
+        l.IsPerpendicularTo ln
 
     /// Assumes Line2D to be infinite!
     /// Returns the parameter at which a point is closest to the infinite line.
     /// If it is smaller than 0.0 or bigger than 1.0 it is outside of the finite line.
-    static member inline closestParameterInfinite (p:Pt) (ln:Line2D) = ln.ClosestParameterInfinite p
+    static member inline closestParameterInfinite (p:Pt) (ln:Line2D) =
+        ln.ClosestParameterInfinite p
 
 
     /// Returns the parameter at which a point is closest to the (finite) line.
     /// The result is between 0.0 and 1.0.
-    static member inline closestParameter (p:Pt) (ln:Line2D) = ln.ClosestParameter p
+    static member inline closestParameter (p:Pt) (ln:Line2D) =
+        ln.ClosestParameter p
 
     /// Assumes Line2D to be infinite!
     /// Returns closest point on infinite line.
-    static member inline closestPointInfinite (p:Pt) (ln:Line2D) = ln.ClosestPointInfinite p
+    static member inline closestPointInfinite (p:Pt) (ln:Line2D) =
+        ln.ClosestPointInfinite p
 
 
     /// Returns closest point on (finite) line.
-    static member inline closestPoint (p:Pt) (ln:Line2D) = ln.ClosestPoint p
+    static member inline closestPoint (p:Pt) (ln:Line2D) =
+        ln.ClosestPoint p
 
     /// Assumes Line2D to be infinite!
     /// Returns the square distance from point to infinite line.
-    static member inline distanceSqFromPointInfinite(p:Pt) (ln:Line2D) = ln.DistanceSqFromPointInfinite p
+    static member inline distanceSqFromPointInfinite(p:Pt) (ln:Line2D) =
+        ln.DistanceSqFromPointInfinite p
 
     /// Assumes Line2D to be infinite!
     /// Returns distance from point to infinite line.
-    static member inline distanceToPtInfinite(p:Pt) (ln:Line2D) = ln.DistanceToPtInfinite p
+    static member inline distanceToPtInfinite(p:Pt) (ln:Line2D) =
+        ln.DistanceToPtInfinite p
 
     /// Returns the square distance from point to (finite) line.
-    static member inline distanceSqFromPoint(p:Pt) (ln:Line2D) = ln.DistanceSqFromPoint p
+    static member inline distanceSqFromPoint(p:Pt) (ln:Line2D) =
+        ln.DistanceSqFromPoint p
 
     /// Returns distance from point to (finite) line.
-    static member inline distanceToPt(p:Pt) (ln:Line2D) = ln.DistanceToPt p
+    static member inline distanceToPt(p:Pt) (ln:Line2D) =
+        ln.DistanceToPt p
 
     /// Get distance from start of line to point projected onto line, may be negative.
     static member inline lengthToPtOnLine (line:Line2D) pt =

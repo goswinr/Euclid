@@ -34,10 +34,12 @@ type Line3D =
     [<DataMember>] val ToZ  :float
 
     /// Create Line3D from 3D start point and 3D end point.
-    new (fromPt:Pnt, toPt:Pnt) = {FromX=fromPt.X; FromY=fromPt.Y; FromZ=fromPt.Z; ToX=toPt.X; ToY=toPt.Y; ToZ=toPt.Z}
+    new (fromPt:Pnt, toPt:Pnt) =
+        {FromX=fromPt.X; FromY=fromPt.Y; FromZ=fromPt.Z; ToX=toPt.X; ToY=toPt.Y; ToZ=toPt.Z}
 
     /// Create Line3D from 3D start point's x, y and z and 3D end point's x, y and z.
-    new (fromX, fromY, fromZ, toX, toY, toZ) = {FromX=fromX; FromY=fromY; FromZ=fromZ; ToX=toX; ToY=toY; ToZ=toZ}
+    new (fromX, fromY, fromZ, toX, toY, toZ) =
+        {FromX=fromX; FromY=fromY; FromZ=fromZ; ToX=toX; ToY=toY; ToZ=toZ}
 
     /// Returns the length of the line.
     member inline ln.Length =
@@ -79,10 +81,12 @@ type Line3D =
 
 
     /// The Start point of the 3D Line3D,
-    member inline ln.From = Pnt(ln.FromX, ln.FromY, ln.FromZ)
+    member inline ln.From =
+        Pnt(ln.FromX, ln.FromY, ln.FromZ)
 
     /// The End point of the 3D Line3D,
-    member inline ln.To = Pnt(ln.ToX, ln.ToY, ln.ToZ)
+    member inline ln.To =
+        Pnt(ln.ToX, ln.ToY, ln.ToZ)
 
     /// Same as ln.Vector or ln.Tangent.
     /// The returned vector has the same length as the Line3D.
@@ -824,52 +828,68 @@ type Line3D =
     /// Checks if two 3D lines are coincident within tolerance.
     /// This means that lines are parallel within 0.25 degrees.
     /// and the distance of second start point to the first line is less than 1e-6.
-    static member inline areCoincident (a:Line3D) (b:Line3D) = a.IsCoincidentTo(b)
+    static member inline areCoincident (a:Line3D) (b:Line3D) =
+        a.IsCoincidentTo(b)
 
     /// Creates a 2D line from 3D line. Ignoring Z value.
-    static member inline toLine2D (ln:Line3D) = Line2D(ln.FromX, ln.FromY, ln.ToX, ln.ToY)
+    static member inline toLine2D (ln:Line3D) =
+        Line2D(ln.FromX, ln.FromY, ln.ToX, ln.ToY)
 
     /// Creates a 3D line from 2D line. Setting Z to 0.0
-    static member inline createFromLine2D (ln:Line2D) = Line3D(ln.FromX, ln.FromY, 0., ln.ToX, ln.ToY, 0.)
+    static member inline createFromLine2D (ln:Line2D) =
+        Line3D(ln.FromX, ln.FromY, 0., ln.ToX, ln.ToY, 0.)
 
     /// Creates a 3D line from 2D line. Setting Z to given value.
-    static member inline createFromLine2DwithZ (zLevel) (ln:Line2D) = Line3D(ln.FromX, ln.FromY, zLevel, ln.ToX, ln.ToY, zLevel)
+    static member inline createFromLine2DwithZ (zLevel) (ln:Line2D) =
+        Line3D(ln.FromX, ln.FromY, zLevel, ln.ToX, ln.ToY, zLevel)
 
     /// Creates a line starting at World Origin and going to along the given vector.
-    static member inline createFromVec (v:Vec) = Line3D(0., 0., 0., v.X, v.Y, v.Z)
+    static member inline createFromVec (v:Vec) =
+        Line3D(0., 0., 0., v.X, v.Y, v.Z)
 
     /// Creates a line starting at given point and going to along the given vector.
-    static member inline createFromPntAndVec (p:Pnt, v:Vec) = Line3D(p.X, p.Y, p.Z, p.X+v.X, p.Y+v.Y, p.Z+v.Z)
+    static member inline createFromPntAndVec (p:Pnt, v:Vec) =
+        Line3D(p.X, p.Y, p.Z, p.X+v.X, p.Y+v.Y, p.Z+v.Z)
 
     /// Returns the Start point of the line. Same as Line3D.from.
-    static member inline start (l:Line3D) = l.From
+    static member inline start (l:Line3D) =
+        l.From
 
     /// Returns the Start point of the line. Same as Line3D.start.
-    static member inline from (l:Line3D) = l.From
+    static member inline from (l:Line3D) =
+        l.From
 
     /// Returns the Start point's X coordinate of the line.
-    static member inline fromX (l:Line3D) = l.FromX
+    static member inline fromX (l:Line3D) =
+        l.FromX
 
     /// Returns the Start point's Y coordinate of the line.
-    static member inline fromY (l:Line3D) = l.FromY
+    static member inline fromY (l:Line3D) =
+        l.FromY
 
     /// Returns the Start point's Z coordinate of the line.
-    static member inline fromZ (l:Line3D) = l.FromZ
+    static member inline fromZ (l:Line3D) =
+        l.FromZ
 
     /// Returns the End point of the line. Same as Line3D.to'
-    static member inline ende (l:Line3D) = l.To
+    static member inline ende (l:Line3D) =
+        l.To
 
     /// Returns the End point of the line. Same as Line3D.ende.
-    static member inline to' (l:Line3D) = l.To
+    static member inline to' (l:Line3D) =
+        l.To
 
     /// Returns the End point's X coordinate of the line.
-    static member inline toX (l:Line3D) = l.ToX
+    static member inline toX (l:Line3D) =
+        l.ToX
 
     /// Returns the End point's Y coordinate of the line.
-    static member inline toY (l:Line3D) = l.ToY
+    static member inline toY (l:Line3D) =
+        l.ToY
 
     /// Returns the End point's Z coordinate of the line.
-    static member inline toZ (l:Line3D) = l.ToZ
+    static member inline toZ (l:Line3D) =
+        l.ToZ
 
     /// Set Line3D start point, returns a new line.
     static member inline setStart (pt:Pnt) (ln:Line3D) =
@@ -895,102 +915,129 @@ type Line3D =
         Vec(ln.ToX-ln.FromX, ln.ToY-ln.FromY, ln.ToZ-ln.FromZ)
 
     /// Returns a unit-vector of the line Direction.
-    static member inline unitTangent (ln:Line3D) = ln.UnitTangent
+    static member inline unitTangent (ln:Line3D) =
+        ln.UnitTangent
 
     /// Returns the length of the line.
-    static member inline length (l:Line3D) = l.Length
+    static member inline length (l:Line3D) =
+        l.Length
 
     /// Returns the square length of the line.
-    static member inline lengthSq (l:Line3D) = l.LengthSq
+    static member inline lengthSq (l:Line3D) =
+        l.LengthSq
 
     /// Check if the line has same starting and ending point.
-    static member inline isZeroLength (l:Line3D) = l.IsZeroLength
+    static member inline isZeroLength (l:Line3D) =
+        l.IsZeroLength
 
     /// Check if line is shorter than tolerance.
     /// Also checks if any component is a NaN.
-    static member inline isTiny tol (l:Line3D) = l.Length < tol
+    static member inline isTiny tol (l:Line3D) =
+        l.Length < tol
 
     /// Check if the lines square length is shorter than squared tolerance.
     /// Also checks if any component is a NaN.
-    static member inline isTinySq tol (l:Line3D) = not (l.LengthSq > tol)
+    static member inline isTinySq tol (l:Line3D) =
+        not (l.LengthSq > tol)
 
     /// Checks if 3D line is parallel to the world X axis. Ignoring orientation.
     /// Tolerance is 1e-6.
     /// Fails on lines shorter than 1e-6.
-    static member inline isXAligned (l:Line3D) = l.IsXAligned
+    static member inline isXAligned (l:Line3D) =
+        l.IsXAligned
 
     /// Checks if 3D line is parallel to the world Y axis. Ignoring orientation.
     /// Tolerance is 1e-6.
     /// Fails on lines shorter than 1e-6.
-    static member inline isYAligned (l:Line3D) = l.IsYAligned
+    static member inline isYAligned (l:Line3D) =
+        l.IsYAligned
 
     /// Checks if 3D line is parallel to the world Z axis. Ignoring orientation.
     /// Tolerance is 1e-6.
     /// Fails on lines shorter than 1e-6.
     /// Same as ln.IsVertical
-    static member inline isZAligned (l:Line3D) = l.IsZAligned
+    static member inline isZAligned (l:Line3D) =
+        l.IsZAligned
 
     /// Checks if 3D line is parallel to the world Z axis. Ignoring orientation.
     /// Tolerance is 1e-6.
     /// Fails on lines shorter than 1e-6.
     /// Same as ln.IsZAligned
-    static member inline isVertical (l:Line3D) = l.IsVertical
+    static member inline isVertical (l:Line3D) =
+        l.IsVertical
 
     /// Checks if 3D line is horizontal (Z component is almost zero).
     /// Tolerance is 1e-6.
     /// Fails on lines shorter than 1e-6.
-    static member inline isHorizontal (l:Line3D) = l.IsHorizontal
+    static member inline isHorizontal (l:Line3D) =
+        l.IsHorizontal
 
     /// Evaluate line at a given parameter (parameters 0.0 to 1.0 are on the line)
-    static member inline evaluateAt t (ln:Line3D) = ln.EvaluateAt t
+    static member inline evaluateAt t (ln:Line3D) =
+        ln.EvaluateAt t
 
     /// Get point at center of line.
-    static member inline mid (ln:Line3D) = ln.Mid
+    static member inline mid (ln:Line3D) =
+        ln.Mid
 
     /// Reverse or flip the 3D line (same as Line3D.flip)
-    static member inline reverse (ln:Line3D) = ln.Reversed
+    static member inline reverse (ln:Line3D) =
+        ln.Reversed
 
     /// Reverse or flip the 3D line (same as Line3D.reverse)
-    static member inline flip (ln:Line3D) = ln.Reversed
+    static member inline flip (ln:Line3D) =
+        ln.Reversed
 
     /// Returns new 3D line from point at Parameter a to point at Parameter b.
-    static member inline segment a b (ln:Line3D) = ln.Segment (a, b)
+    static member inline segment a b (ln:Line3D) =
+        ln.Segment (a, b)
 
     /// Move a 3D line by a vector. (same as Line3D.move)
-    static member inline translate (v:Vec) (ln:Line3D) = ln.Move(v)
+    static member inline translate (v:Vec) (ln:Line3D) =
+        ln.Move(v)
 
     /// Returns a 3D line moved by a given distance in X direction.
-    static member inline moveX (distance:float) (ln:Line3D) = ln.MoveX(distance)
+    static member inline moveX (distance:float) (ln:Line3D) =
+        ln.MoveX(distance)
 
     /// Returns a 3D line moved by a given distance in Y direction.
-    static member inline moveY (distance:double) (ln:Line3D) = ln.MoveY(distance)
+    static member inline moveY (distance:double) (ln:Line3D) =
+        ln.MoveY(distance)
 
     /// Returns a 3D line moved by a given distance in Z direction.
-    static member inline moveZ (distance:double) (ln:Line3D) = ln.MoveZ(distance)
+    static member inline moveZ (distance:double) (ln:Line3D) =
+        ln.MoveZ(distance)
 
     /// Move a 3D line by a vector. (same as Line3D.translate)
-    static member inline move (v:Vec) (ln:Line3D) = ln.Move(v)
+    static member inline move (v:Vec) (ln:Line3D) =
+        ln.Move(v)
 
     /// Applies or multiplies a 4x4 transformation matrix to a 3D line.
-    static member inline transform (m:Matrix) (ln:Line3D) = ln.Transform m
+    static member inline transform (m:Matrix) (ln:Line3D) =
+        ln.Transform m
 
     /// Multiplies (or applies) a RigidMatrix to a 3D line .
-    static member inline transformRigid (m:RigidMatrix) (ln:Line3D) = ln.TransformRigid m
+    static member inline transformRigid (m:RigidMatrix) (ln:Line3D) =
+        ln.TransformRigid m
 
     /// Multiplies (or applies) a Quaternion to a 3D line.
     /// The resulting line has the same length as the input.
-    static member inline rotate(q:Quaternion) (ln:Line3D) = ln.Rotate q
+    static member inline rotate(q:Quaternion) (ln:Line3D) =
+        ln.Rotate q
 
     /// Multiplies (or applies) a Quaternion to a 3D line around a given center point.
     /// The resulting line has the same length as the input.
-    static member inline rotateWithCenter (cen:Pnt) (q:Quaternion) (ln:Line3D) = ln.RotateWithCenter (cen, q)
+    static member inline rotateWithCenter (cen:Pnt) (q:Quaternion) (ln:Line3D) =
+        ln.RotateWithCenter (cen, q)
 
 
     /// Rotation a 3D line around Z-Axis.
-    static member inline rotate2D (r:Rotation2D) (ln:Line3D) = Line3D(Pnt.rotateZBy r ln.From, Pnt.rotateZBy r ln.To)
+    static member inline rotate2D (r:Rotation2D) (ln:Line3D) =
+        Line3D(Pnt.rotateZBy r ln.From, Pnt.rotateZBy r ln.To)
 
     /// Rotation a 3D line round given Center point an a local Z-axis.
-    static member inline rotate2dOn (cen:Pnt) (r:Rotation2D) (ln:Line3D) = Line3D(Pnt.rotateZwithCenterBy cen r ln.From, Pnt.rotateZwithCenterBy cen r ln.To)
+    static member inline rotate2dOn (cen:Pnt) (r:Rotation2D) (ln:Line3D) =
+        Line3D(Pnt.rotateZwithCenterBy cen r ln.From, Pnt.rotateZwithCenterBy cen r ln.To)
 
     /// Ensure 3D line has a positive dot product with given orientation line.
     static member inline matchOrientation (orientationToMatch:Line3D) (lineToFlip:Line3D) =
@@ -1007,60 +1054,73 @@ type Line3D =
     /// Checks if the angle between the two 3D lines is less than 180 degrees.
     /// Calculates the dot product of two 3D lines.
     /// Then checks if it is positive.
-    static member inline matchesOrientation180 (l:Line3D) (ln:Line3D) = l.MatchesOrientation180 ln
+    static member inline matchesOrientation180 (l:Line3D) (ln:Line3D) =
+        l.MatchesOrientation180 ln
 
     /// Checks if the angle between the two 3D lines is less than 90 degrees.
     /// Calculates the dot product of the unit-vectors of the two 3D lines.
     /// Then checks if it is bigger than 0.707107 (cosine of 90 degrees).
-    static member inline matchesOrientation90 (l:Line3D) (ln:Line3D) = l.MatchesOrientation90 ln
+    static member inline matchesOrientation90 (l:Line3D) (ln:Line3D) =
+        l.MatchesOrientation90 ln
 
     /// Checks if two 3D lines are parallel. Ignoring orientation.
     /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
     /// And checks if it is smaller than 1e-9
     /// (NOTE: for very long lines a higher tolerance might be needed)
-    static member inline areParallel (l:Line3D) (ln:Line3D) = l.IsParallelTo ln
+    static member inline areParallel (l:Line3D) (ln:Line3D) =
+        l.IsParallelTo ln
 
     /// Checks if two 3D lines are parallel and orientated the same way.
     /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
     /// And checks if it is smaller than 1e-9
     /// Then calculates the dot product and checks if it is positive.
     /// (NOTE: for very long lines a higher tolerance might be needed)
-    static member inline areParallelAndMatchOrientation (l:Line3D) (ln:Line3D) = l.IsParallelAndOrientedTo ln
+    static member inline areParallelAndMatchOrientation (l:Line3D) (ln:Line3D) =
+        l.IsParallelAndOrientedTo ln
 
     /// Checks if two 3D lines are perpendicular.
     /// Calculates the dot product and checks if it is smaller than 1e-9.
     /// (NOTE: for very long lines a higher tolerance might be needed)
-    static member inline arePerpendicular(l:Line3D) (ln:Line3D) = l.IsPerpendicularTo(ln)
+    static member inline arePerpendicular(l:Line3D) (ln:Line3D) =
+        l.IsPerpendicularTo(ln)
 
     /// Assumes Line3D to be infinite.
     /// Returns the parameter at which a point is closest to the infinite line.
     /// If it is smaller than 0.0 or bigger than 1.0 it is outside of the finite line.
-    static member inline closestParameterInfinite (p:Pnt) (ln:Line3D) = ln.ClosestParameterInfinite p
+    static member inline closestParameterInfinite (p:Pnt) (ln:Line3D) =
+        ln.ClosestParameterInfinite p
 
     /// Returns the parameter at which a point is closest to the (finite) line.
     /// The result is between 0.0 and 1.0.
-    static member inline closestParameter (p:Pnt) (ln:Line3D) = ln.ClosestParameter p
+    static member inline closestParameter (p:Pnt) (ln:Line3D) =
+        ln.ClosestParameter p
 
     /// Assumes Line3D to be infinite.
     /// Returns closest point on infinite line.
-    static member inline closestPointInfinite (p:Pnt) (ln:Line3D) = ln.ClosestPointInfinite p
+    static member inline closestPointInfinite (p:Pnt) (ln:Line3D) =
+        ln.ClosestPointInfinite p
 
     /// Returns closest point on (finite) line.
-    static member inline closestPoint (p:Pnt) (ln:Line3D) = ln.ClosestPoint p
+    static member inline closestPoint (p:Pnt) (ln:Line3D) =
+        ln.ClosestPoint p
 
     /// Assumes Line3D to be infinite.
     /// Returns the square distance from point to infinite line.
-    static member inline distanceSqToPntInfinite(p:Pnt) (ln:Line3D) = ln.DistanceSqToPntInfinite p
+    static member inline distanceSqToPntInfinite(p:Pnt) (ln:Line3D) =
+        ln.DistanceSqToPntInfinite p
 
     /// Assumes Line3D to be infinite.
     /// Returns distance from point to infinite line.
-    static member inline distanceToPntInfinite(p:Pnt) (ln:Line3D) = ln.DistanceToPntInfinite p
+    static member inline distanceToPntInfinite(p:Pnt) (ln:Line3D) =
+        ln.DistanceToPntInfinite p
 
     /// Returns the square distance from point to (finite) line.
-    static member inline distanceSqToPnt(p:Pnt) (ln:Line3D) = ln.DistanceSqToPnt p
+    static member inline distanceSqToPnt(p:Pnt) (ln:Line3D) =
+        ln.DistanceSqToPnt p
 
     /// Returns distance from point to (finite) line.
-    static member inline distanceToPnt(p:Pnt) (ln:Line3D) = ln.DistanceToPnt p
+    static member inline distanceToPnt(p:Pnt) (ln:Line3D) =
+        ln.DistanceToPnt p
 
     /// Get distance from start of line to point projected onto line, may be negative.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).

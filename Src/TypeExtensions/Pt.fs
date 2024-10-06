@@ -13,33 +13,42 @@ module AutoOpenPt =
     type Pt with
 
         /// Returns the 2D point as 2D vector.
-        member inline p.AsVc = Vc(p.X, p.Y)
+        member inline p.AsVc =
+            Vc(p.X, p.Y)
 
         /// Returns the 2D point as 3D vector. Using 0.0 for Z.
-        member inline p.AsVec = Vec(p.X, p.Y, 0.0)
+        member inline p.AsVec =
+            Vec(p.X, p.Y, 0.0)
 
         /// Returns the 2D point as 3D point. Using 0.0 for Z.
         /// Use the member pt.WithZ to set Z to a different value.
-        member inline p.AsPnt = Pnt(p.X, p.Y, 0.0)
+        member inline p.AsPnt =
+            Pnt(p.X, p.Y, 0.0)
 
         /// Returns a boolean indicating wether X and Y are exactly 0.0.
-        member inline pt.IsOrigin = pt.X = 0.0 && pt.Y = 0.0
+        member inline pt.IsOrigin =
+            pt.X = 0.0 && pt.Y = 0.0
 
         /// Returns a boolean indicating if any of X and Y is not exactly 0.0.
-        member inline p.IsNotOrigin = p.X <> 0.0 || p.Y <> 0.0
+        member inline p.IsNotOrigin =
+            p.X <> 0.0 || p.Y <> 0.0
 
         /// Returns a boolean indicating wether the absolute value of X and Y is each less than the given tolerance.
-        member inline pt.IsAlmostOrigin tol = abs pt.X < tol && abs pt.Y < tol
+        member inline pt.IsAlmostOrigin tol =
+            abs pt.X < tol && abs pt.Y < tol
 
         /// Returns new 2D point with new X coordinate, Y stays the same.
-        member inline pt.WithX x = Pt (x, pt.Y)
+        member inline pt.WithX x =
+            Pt (x, pt.Y)
 
         /// Returns new 2D point with new Y coordinate, X stays the same.
-        member inline pt.WithY y = Pt (pt.X, y)
+        member inline pt.WithY y =
+            Pt (pt.X, y)
 
         /// Returns new 3D point with Z coordinate, X and Y stay the same.
         /// If you want Z to be 0.0 you can use pt.AsPnt too.
-        member inline pt.WithZ z = Pnt (pt.X, pt.Y, z)
+        member inline pt.WithZ z =
+            Pnt (pt.X, pt.Y, z)
 
         /// Returns the distance between two 2D points.
         member inline p.DistanceTo (b:Pt) =
@@ -55,10 +64,12 @@ module AutoOpenPt =
             x*x + y*y
 
         /// Returns the distance from Origin (0, 0)
-        member inline pt.DistanceFromOrigin = sqrt (pt.X*pt.X + pt.Y*pt.Y)
+        member inline pt.DistanceFromOrigin =
+            sqrt (pt.X*pt.X + pt.Y*pt.Y)
 
         /// Returns the squared distance from Origin (0, 0)
-        member inline pt.DistanceFromOriginSquare = pt.X*pt.X + pt.Y*pt.Y
+        member inline pt.DistanceFromOriginSquare =
+            pt.X*pt.X + pt.Y*pt.Y
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
@@ -219,40 +230,52 @@ module AutoOpenPt =
             with e -> Pt.failedCreateFromMembersxy(pt,e)
 
         /// Create 2D point from 3D point. Ignoring Z component.
-        static member inline createFromPnt (p:Pnt) = Pt (p.X, p.Y)
+        static member inline createFromPnt (p:Pnt) =
+            Pt (p.X, p.Y)
 
         /// Create 2D point from 2D vector.
-        static member inline createFromVc (v:Vc) = Pt (v.X, v.Y)
+        static member inline createFromVc (v:Vc) =
+            Pt (v.X, v.Y)
 
         /// Create 2D point from 2D unit-vector.
-        static member inline createFromUnitVc (v:UnitVc) = Pt (v.X, v.Y)
+        static member inline createFromUnitVc (v:UnitVc) =
+            Pt (v.X, v.Y)
 
         /// Create 3D point from X and Y components.
-        static member inline create (x:float, y:float) = Pt(x, y)
+        static member inline create (x:float, y:float) =
+            Pt(x, y)
 
         /// Sets the X value and returns new 2D point.
-        static member inline withX x (pt:Pt) = Pt(x, pt.Y)
+        static member inline withX x (pt:Pt) =
+            Pt(x, pt.Y)
 
         /// Sets the Y value and returns new 2D point.
-        static member inline withY y (pt:Pt) = Pt(pt.X, y)
+        static member inline withY y (pt:Pt) =
+            Pt(pt.X, y)
 
         /// Gets the X value of 2D point.
-        static member inline getX (pt:Pt) = pt.X
+        static member inline getX (pt:Pt) =
+            pt.X
 
         /// Gets the Y value of 2D point.
-        static member inline getY (pt:Pt) = pt.Y
+        static member inline getY (pt:Pt) =
+            pt.Y
 
         /// Adds two 2D points. Returns a new 2D point.
-        static member inline add   (a:Pt) (b:Pt) = a + b
+        static member inline add (a:Pt) (b:Pt) =
+            a + b
 
         /// Add a 2D point to a 2D vector. Returns a new 2D point.
-        static member inline addVc (v:Vc) (a:Pt) = a + v
+        static member inline addVc (v:Vc) (a:Pt) =
+            a + v
 
         /// Returns the midpoint of two 2D points.
-        static member inline midPt (a:Pt) (b:Pt) = (a+b) * 0.5
+        static member inline midPt (a:Pt) (b:Pt) =
+            (a+b) * 0.5
 
         /// Scales a 2D point by a factor. Returns a new 2D point.
-        static member inline scale (f:float) (pt:Pt) = pt*f
+        static member inline scale (f:float) (pt:Pt) =
+            pt*f
 
         /// Move point 2D by vector. Same as Pt.move.
         static member inline translate (shift:Vc) (pt:Pt) =
@@ -263,17 +286,25 @@ module AutoOpenPt =
             pt + shift
 
         /// Add a float to X component of a 2D point. Returns a new 2D point.
-        static member inline moveX (x:float) (pt:Pt) = Pt (pt.X+x, pt.Y)
+        static member inline moveX (x:float) (pt:Pt) =
+            Pt (pt.X+x, pt.Y)
 
         /// Add a float to Y component of a 2D point. Returns a new 2D point.
-        static member inline moveY (y:float) (pt:Pt) = Pt (pt.X, pt.Y+y)
+        static member inline moveY (y:float) (pt:Pt) =
+            Pt (pt.X, pt.Y+y)
 
         /// Returns the distance between two 2D points.
-        static member inline distance (a:Pt) (b:Pt) = let v = a-b in sqrt(v.X*v.X + v.Y*v.Y)
+        static member inline distance (a:Pt) (b:Pt) =
+            let vx = a.X-b.X
+            let vy = a.Y-b.Y
+            sqrt(vx*vx + vy*vy)
 
         /// Returns the squared distance between two 2D points.
         /// This operation is slightly faster than the distance function, and sufficient for many algorithms like finding closest points.
-        static member inline distanceSq (a:Pt) (b:Pt) = let v = a-b in  v.X*v.X + v.Y*v.Y
+        static member inline distanceSq (a:Pt) (b:Pt) =
+            let vx = a.X-b.X
+            let vy = a.Y-b.Y
+            vx*vx + vy*vy
 
         /// Returns the distance from World Origin.
         static member inline distanceFromOrigin (pt:Pt) = pt.DistanceFromOrigin

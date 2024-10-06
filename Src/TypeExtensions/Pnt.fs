@@ -13,28 +13,36 @@ module AutoOpenPnt =
     type Pnt with
 
         /// Returns the 3D point as 3D vector.
-        member inline p.AsVec = Vec(p.X, p.Y, p.Z)
+        member inline p.AsVec =
+            Vec(p.X, p.Y, p.Z)
 
         /// Returns the 3D point as 2D point.
-        member inline p.AsPt = Pt(p.X, p.Y)
+        member inline p.AsPt =
+            Pt(p.X, p.Y)
 
         /// Returns a boolean indicating wether X, Y and Z are exactly 0.0.
-        member inline pt.IsOrigin = pt.X = 0.0 && pt.Y = 0.0 && pt.Z= 0.0
+        member inline pt.IsOrigin =
+            pt.X = 0.0 && pt.Y = 0.0 && pt.Z= 0.0
 
         /// Returns a boolean indicating if any of X, Y and Z is not exactly 0.0.
-        member inline p.IsNotOrigin = p.X <> 0.0 || p.Y <> 0.0 || p.Z <> 0.0
+        member inline p.IsNotOrigin =
+            p.X <> 0.0 || p.Y <> 0.0 || p.Z <> 0.0
 
         /// Returns a boolean indicating wether the absolute value of X, Y and Z is each less than the given tolerance.
-        member inline pt.IsAlmostOrigin tol = abs pt.X < tol && abs pt.Y < tol
+        member inline pt.IsAlmostOrigin tol =
+            abs pt.X < tol && abs pt.Y < tol
 
         /// Returns new 3D point with new X coordinate, Y and Z stay the same.
-        member inline pt.WithX x = Pnt (x, pt.Y, pt.Z)
+        member inline pt.WithX x =
+            Pnt (x, pt.Y, pt.Z)
 
         /// Returns a new 3D vector with new y coordinate, X and Z stay the same.
-        member inline pt.WithY y = Pnt (pt.X, y, pt.Z)
+        member inline pt.WithY y =
+            Pnt (pt.X, y, pt.Z)
 
         /// Returns a new 3D vector with new z coordinate, X and Y stay the same.
-        member inline pt.WithZ z = Pnt (pt.X, pt.Y, z)
+        member inline pt.WithZ z =
+            Pnt (pt.X, pt.Y, z)
 
         /// Returns the distance between two 3D points.
         member inline p.DistanceTo (b:Pnt) =
@@ -52,16 +60,20 @@ module AutoOpenPnt =
             x*x + y*y + z*z
 
         /// Returns the distance from Origin (0, 0, 0)
-        member inline pt.DistanceFromOrigin = sqrt (pt.X*pt.X + pt.Y*pt.Y + pt.Z*pt.Z)
+        member inline pt.DistanceFromOrigin =
+            sqrt (pt.X*pt.X + pt.Y*pt.Y + pt.Z*pt.Z)
 
         /// Returns the squared distance from Origin (0, 0, 0)
-        member inline pt.DistanceFromOriginSquare = pt.X*pt.X + pt.Y*pt.Y + pt.Z*pt.Z
+        member inline pt.DistanceFromOriginSquare =
+            pt.X*pt.X + pt.Y*pt.Y + pt.Z*pt.Z
 
         /// Returns the projected distance from Origin (0, 0, 0). Ignoring the Z component.
-        member inline pt.DistanceInXYFromOrigin = sqrt (pt.X*pt.X + pt.Y*pt.Y)
+        member inline pt.DistanceInXYFromOrigin =
+            sqrt (pt.X*pt.X + pt.Y*pt.Y)
 
         /// Returns the projected square distance from Origin (0, 0, 0). Ignoring the Z component.
-        member inline pt.DistanceInXYFromOriginSquare = pt.X*pt.X + pt.Y*pt.Y
+        member inline pt.DistanceInXYFromOriginSquare =
+            pt.X*pt.X + pt.Y*pt.Y
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]

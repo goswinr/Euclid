@@ -454,11 +454,11 @@ type Points private () =
     /// Use negative distance for outer offset.
     /// If Points are collinear by 0.25 degrees or less than 1-e6 units apart returns: ValueNone.
     /// Use negative distances to get outside offset.
-    static member offsetInCorner(   thisPt:Pnt,
-                                    prevToThis:Vec,
-                                    thisToNext:Vec,
-                                    prevDist:float,
-                                    nextDist:float) : ValueOption<Pnt> =
+    static member offsetInCorner(thisPt:Pnt,
+                                 prevToThis:Vec,
+                                 thisToNext:Vec,
+                                 prevDist:float,
+                                 nextDist:float) : ValueOption<Pnt> =
         let ax = prevToThis.X
         let ay = prevToThis.Y
         let az = prevToThis.Z
@@ -497,11 +497,11 @@ type Points private () =
     /// Use negative distance for outer offset.
     /// If Points are collinear by 0.25 degrees or less than 1-e6 units apart returns: ValueNone.
     /// Use negative distances to get outside offset.
-    static member offsetInCorner(   prevPt:Pnt,
-                                    thisPt:Pnt,
-                                    nextPt:Pnt,
-                                    prevDist:float,
-                                    nextDist:float) : ValueOption<Pnt> =
+    static member offsetInCorner( prevPt:Pnt,
+                                  thisPt:Pnt,
+                                  nextPt:Pnt,
+                                  prevDist:float,
+                                  nextDist:float) : ValueOption<Pnt> =
         let prevV = thisPt - prevPt
         let nextV = nextPt - thisPt
         Points.offsetInCorner(thisPt, prevV, nextV, prevDist, nextDist)
@@ -514,12 +514,12 @@ type Points private () =
     /// Use negative distances to get outside offset.
     /// The 'referenceNormal' is' An approximate orientation Normal to help find the correct offset side, To be in Z Axis orientation for Counter-Clockwise loops in 2D.
     /// Returns the offset point, the unitized normal vector aligned with the referenceNormal, the shift direction for prev and next line.
-    static member offsetInCornerEx(   thisPt:Pnt,
-                                        prevToThis:Vec,
-                                        thisToNext:Vec,
-                                        prevDist:float,
-                                        nextDist:float,
-                                        referenceNormal:Vec) : ValueOption<Pnt*UnitVec*Vec*Vec> =
+    static member offsetInCornerEx( thisPt:Pnt,
+                                    prevToThis:Vec,
+                                    thisToNext:Vec,
+                                    prevDist:float,
+                                    nextDist:float,
+                                    referenceNormal:Vec) : ValueOption<Pnt*UnitVec*Vec*Vec> =
         let ax = prevToThis.X
         let ay = prevToThis.Y
         let az = prevToThis.Z
@@ -563,12 +563,12 @@ type Points private () =
     /// Use negative distances to get outside offset.
     /// The 'referenceNormal' is' An approximate orientation Normal to help find the correct offset side, To be in Z Axis orientation for Counter-Clockwise loops in 2D.
     /// Returns the offset point, the unitized normal vector aligned with the referenceNormal, the shift direction for prev and next line.
-    static member offsetInCornerEx(   prevPt:Pnt,
-                                        thisPt:Pnt,
-                                        nextPt:Pnt,
-                                        prevDist:float,
-                                        nextDist:float,
-                                        referenceNormal:Vec) : ValueOption<Pnt*UnitVec*Vec*Vec> =
+    static member offsetInCornerEx( prevPt:Pnt,
+                                    thisPt:Pnt,
+                                    nextPt:Pnt,
+                                    prevDist:float,
+                                    nextDist:float,
+                                    referenceNormal:Vec) : ValueOption<Pnt*UnitVec*Vec*Vec> =
         let prevV = thisPt - prevPt
         let nextV = nextPt - thisPt
         Points.offsetInCornerEx(thisPt, prevV, nextV, prevDist, nextDist, referenceNormal)
@@ -594,7 +594,7 @@ type Points private () =
         let c = bx*bx + by*by // square length of B
         if isTooSmallSq (c) then
             ValueNone
-        elif isTooSmallSq (a) then 
+        elif isTooSmallSq (a) then
             ValueNone
         else
             let b = ax*bx + ay*by // dot product of both lines
