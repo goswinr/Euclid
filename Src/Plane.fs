@@ -31,33 +31,41 @@ type Plane = // Normals are always unitized
     new (pt, n) = {Origin = pt; Normal = n} // private unchecked constructor, supply unitized values
 
     /// Format PPlane into string with nicely formatted floating point numbers.
-    override pl.ToString() = sprintf "Euclid.Plane(Origin:%s| Normal:%s)" pl.Origin.AsString pl.Normal.AsString
+    override pl.ToString() =
+        sprintf "Euclid.Plane(Origin:%s| Normal:%s)" pl.Origin.AsString pl.Normal.AsString
 
     /// Returns signed distance of point to plane, also indicating on which side it is.
-    member inline pl.DistanceToPt pt = pl.Normal *** (pt-pl.Origin)
+    member inline pl.DistanceToPt pt =
+        pl.Normal *** (pt-pl.Origin)
 
     /// Returns the closest point on the plane from a test point.
-    member inline pl.ClosestPoint pt = pt - pl.Normal*(pl.DistanceToPt pt)
+    member inline pl.ClosestPoint pt =
+        pt - pl.Normal*(pl.DistanceToPt pt)
 
     /// First finds the closet point on plane from a test point.
     /// Then returns a new plane with Origin at this point and the same Normal.
-    member inline pl.PlaneAtClPt pt = Plane(pt - pl.Normal*(pl.DistanceToPt pt), pl.Normal)
+    member inline pl.PlaneAtClPt pt =
+        Plane(pt - pl.Normal*(pl.DistanceToPt pt), pl.Normal)
 
     /// Returns the angle to another Plane in Degree, ignoring the normal's orientation.
-    /// So between 0 to 90 degrees.
-    member inline this.Angle90ToPlane (pl:Plane) = UnitVec.angle90 this.Normal pl.Normal
+    /// So 0.0 if the planes are parallel. And 90 degrees if the planes are perpendicular to ech other.
+    member inline this.Angle90ToPlane (pl:Plane) =
+        UnitVec.angle90 this.Normal pl.Normal
 
     /// Returns the angle to 3D vector in Degree, ignoring the plane's orientation.
-    /// So between 0 to 90 degrees.
-    member inline pl.Angle90ToVec (v:Vec) = UnitVec.angle90 v.Unitized pl.Normal
+    /// So 0.0 if the vector is parallele to the Plane. And 90 degrees if the vector is perpendicular to the plane.
+    member inline pl.Angle90ToVec (v:Vec) =
+        90.0 - UnitVec.angle90 v.Unitized pl.Normal
 
     /// Returns the angle to 3D unit-vector in Degree, ignoring the plane's orientation.
-    /// So between 0 to 90 degrees.
-    member inline pl.Angle90ToVec (v:UnitVec) = UnitVec.angle90 v pl.Normal
+    /// So 0.0 if the vector is parallele to the Plane. And 90 degrees if the vector is perpendicular to the plane.
+    member inline pl.Angle90ToVec (v:UnitVec) =
+        90.0 - UnitVec.angle90 v pl.Normal
 
     /// Returns the angle to a Line3D in Degree, ignoring the normal's orientation.
-    /// So between 0 to 90 degrees.
-    member inline pl.Angle90ToLine (ln:Line3D) = UnitVec.angle90 ln.UnitTangent pl.Normal
+    /// So 0.0 if the line is parallele to the Plane. And 90 degrees if the line is perpendicular to the plane.
+    member inline pl.Angle90ToLine (ln:Line3D) =
+        90.0 - UnitVec.angle90 ln.UnitTangent pl.Normal
 
     /// Checks if two Planes are coincident within the distance tolerance. 1e-6 by default.
     /// This means that their Z-axes are parallel within the angle tolerance
@@ -92,7 +100,8 @@ type Plane = // Normals are always unitized
     /// Checks if two 3D Parametrized Planes are coincident.
     /// This means that the Z-axes are parallel within 0.25 degrees
     /// and the distance of second origin to the first plane is less than 1e-6 units tolerance.
-    static member inline areCoincident (a:Plane) (b:Plane) = a.IsCoincidentTo (b)
+    static member inline areCoincident (a:Plane) (b:Plane) =
+        a.IsCoincidentTo (b)
 
     /// Create Plane, normal vector gets unitized in constructor.
     static member create(pt, normal:Vec) =
@@ -112,17 +121,21 @@ type Plane = // Normals are always unitized
         Plane(a, n.Unitized)
 
     /// Gets the Planes normal. A unitized vector.
-    static member inline normal (p:Plane) = p.Normal
+    static member inline normal (p:Plane) =
+        p.Normal
 
     /// Gets the Planes origin.
-    static member inline origin (a:Plane) = a.Origin
+    static member inline origin (a:Plane) =
+        a.Origin
 
     /// Gets the Plane at world origin with normal in world Z direction.
-    static member inline xyPlane = Plane(Pnt.Origin, UnitVec.Zaxis)
+    static member inline xyPlane =
+        Plane(Pnt.Origin, UnitVec.Zaxis)
 
     /// Returns the angle to another Plane in Degree, ignoring the normal's orientation.
     /// So between 0 to 90 degrees.
-    static member inline angleTo (a:Plane) b = a.Angle90ToPlane b
+    static member inline angleTo (a:Plane) b =
+        a.Angle90ToPlane b
 
     /// Returns the line of intersection between two planes.
     /// Or None if they are parallel.

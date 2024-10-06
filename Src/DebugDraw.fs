@@ -68,7 +68,6 @@ module Debug3D =
     /// Set this mutable function object from your 3D environment if you want debug objects to be drawn.
     let mutable drawLine = fun (ln:Line3D) -> ()
 
-
     /// By default this function does nothing. But it is called in case of some errors within this library's Loop module.
     /// Set this mutable function object from your 3D environment if you want debug objects to be drawn.
     let mutable drawPolyLine = fun (ps:seq<Pnt>) -> ()

@@ -29,17 +29,31 @@ module AutoOpenPPlane =
             let o = pl.ClosestPoint pt
             PPlane.createUnchecked(o, pl.Xaxis, pl.Yaxis, pl.Zaxis)
 
-        /// Returns the angle to another Plane in Degree, ignoring the plane's orientation.
-        /// So between 0 to 90 degrees.
-        member inline this.Angle90ToPlane (pl:PPlane) = UnitVec.angle90 this.Zaxis pl.Zaxis
+        /// Returns the angle to another Plane in Degree, ignoring the normal's orientation.
+        /// So 0.0 if the planes are parallel. And 90 degrees if the planes are perpendicular to ech other.
+        member inline this.Angle90ToPlane (pl:PPlane) =
+            UnitVec.angle90 this.Zaxis pl.Zaxis
 
         /// Returns the angle to 3D vector in Degree, ignoring the plane's orientation.
-        /// So between 0 to 90 degrees.
-        member inline pl.Angle90ToVec (v:Vec) = UnitVec.angle90 v.Unitized pl.Zaxis
+        /// So 0.0 if the vector is parallele to the Plane. And 90 degrees if the vector is perpendicular to the plane.
+        member inline pl.Angle90ToVec (v:Vec) =
+            90.0 - UnitVec.angle90 v.Unitized pl.Zaxis
 
         /// Returns the angle to 3D unit-vector in Degree, ignoring the plane's orientation.
-        /// So between 0 to 90 degrees.
-        member inline pl.Angle90ToVec (v:UnitVec) = UnitVec.angle90 v pl.Zaxis
+        /// So 0.0 if the vector is parallele to the Plane. And 90 degrees if the vector is perpendicular to the plane.
+        member inline pl.Angle90ToVec (v:UnitVec) =
+            90.0 - UnitVec.angle90 v pl.Zaxis
+
+        /// Returns the angle to a Line3D in Degree, ignoring the Zaxis's orientation.
+        /// So 0.0 if the line is parallele to the Plane. And 90 degrees if the line is perpendicular to the plane.
+        member inline pl.Angle90ToLine (ln:Line3D) =
+            let x = ln.ToX-ln.FromX
+            let y = ln.ToY-ln.FromY
+            let z = ln.ToZ-ln.FromZ
+            let l = sqrt(x * x  + y * y + z * z)
+            if isTooTiny l then EuclidException.Raise "Euclid.PPlane.Angle90ToLine: Line is too short. %O" ln
+            let u = UnitVec.createUnchecked (x/ l, y/ l, z/ l)
+            90.0 - UnitVec.angle90 u pl.Zaxis
 
         /// Evaluate at 3D parameter.
         member inline p.EvaluateAt (px:float, py:float, pz:float) = p.Origin + p.Xaxis*px + p.Yaxis*py + p.Zaxis*pz
@@ -87,21 +101,24 @@ module AutoOpenPPlane =
         /// Checks if two 3D Parametrized Planes are coincident within the distance tolerance..
         /// This means that the Z-axes are parallel within 0.25 degrees
         /// and the distance of second origin to the first plane is less than the tolerance.
-        static member inline areCoincident tol (a:PPlane) (b:PPlane) = a.IsCoincidentTo (b,tol)
+        static member inline areCoincident tol (a:PPlane) (b:PPlane) =
+            a.IsCoincidentTo (b,tol)
 
         /// Returns the World Coordinate System Plane at World Origin.
         /// X-axis = World X-axis
         /// Y-axis = World Y-axis
         /// Z-axis = World Z-axis
         /// same as PPlane.WorldTop
-        static member WorldXY = worldXY
+        static member WorldXY =
+            worldXY
 
         /// Returns the World Coordinate System Plane at World Origin.
         /// X-axis = World X-axis
         /// Y-axis = World Y-axis
         /// Z-axis = World Z-axis
         /// same as PPlane.WorldXY
-        static member WorldTop = worldXY
+        static member WorldTop =
+            worldXY
 
         /// Returns the Coordinate System Plane of a Front view.
         /// X-axis = World X-axis
@@ -338,3 +355,67 @@ module AutoOpenPPlane =
             if pl.Yaxis.Y < 0.0 then PPlane.rotateOnZ180 pl else pl
 
 
+        /// Returns the line of intersection between two planes.
+        /// Returns None if they are parallel or coincident.
+        static member intersect (a:PPlane) (b:PPlane) : Line3D option=
+            let bn = b.Zaxis
+            let an = a.Zaxis
+            let v = UnitVec.cross (an, bn)
+            if isTooSmallSq v.LengthSq then
+                // EuclidException.Raise "Euclid.PPlane.intersect: Planes are parallel or coincident: %O, %O" a b
+                None
+            else
+                let pa = Vec.cross(v, an)
+                let nenner = pa *** bn
+                let ao = a.Origin
+                let t = ((b.Origin - ao) *** bn) / nenner
+                let xpt = ao + pa * t
+                let l = Line3D( xpt.X    , xpt.Y    , xpt.Z,
+                                xpt.X+v.X, xpt.Y+v.Y, xpt.Z+v.Z)
+                Some <| l
+
+        /// Returns the parameter on the line.
+        /// The parameter is the intersection point of the infinite Line3D with the PPlane.
+        /// Returns None if they are parallel or coincident.
+        static member intersectLineParameter  (ln:Line3D) (pl:PPlane) : float option =
+            let z = pl.Zaxis
+            let nenner = ln.Tangent *** z
+            if isTooSmall (abs nenner) then
+                // EuclidException.Raise "Euclid.PPlane.intersectLineParameter: Line and Plane are parallel or line has zero length: %O, %O" ln pl
+                None
+            else
+                Some <| ((pl.Origin - ln.From) *** z) / nenner
+
+
+        /// Returns the line parameter and the X and Y parameters on the Plane. as tuple (pLn, pPlX, pPlY).
+        /// The parameters is the intersection point of the infinite Line3D with the PPlane.
+        /// Returns None if they are parallel or coincident.
+        static member intersectLineParameters  (ln:Line3D) (pl:PPlane) : option<float*float*float> =
+            let z = pl.Zaxis
+            let v = ln.Tangent
+            let nenner = v *** z
+            if isTooSmall (abs nenner) then
+                // EuclidException.Raise "Euclid.PPlane.intersectLineParameters: Line and Plane are parallel or line has zero length: %O, %O" ln pl
+                None
+            else
+                let t = ((pl.Origin - ln.From) *** z) / nenner
+                let xpt = ln.From + v * t
+                let v = xpt-pl.Origin
+                Some <| (t, pl.Xaxis *** v, pl.Yaxis *** v)
+
+        /// Returns intersection point of infinite Line3D with Plane.
+        /// Returns None if they are parallel.
+        static member intersectLine (ln:Line3D) (pl:PPlane) : Pnt option =
+            match PPlane.intersectLineParameter ln pl with
+            | Some t -> Some (ln.From + ln.Tangent * t)
+            | None -> None
+
+        /// Checks if a finite Line3D intersects with Plane in one point.
+        /// Returns false for NaN values or (almost) parallel or coincident lines.
+        static member inline doLinePlaneIntersect (ln:Line3D) (pl:PPlane) =
+            let nenner = ln.Tangent *** pl.Zaxis
+            if isTooSmall (abs nenner) then
+                false
+            else
+                let t = ((pl.Origin - ln.From) *** pl.Zaxis) / nenner // if nenner is 0.0 then 't' is Infinity
+                0. <= t && t <= 1.
