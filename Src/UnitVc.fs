@@ -93,7 +93,7 @@ type UnitVc =
 
     /// Divides a 2D unit-vector by a scalar, also be called dividing/scaling a vector. Returns a new (non-unitized) 2D vector.
     static member inline ( / ) (v:UnitVc, f:float) =
-        if isTooTiny (abs f) then v.FailedDivide(f) // don't compose error msg directly here to keep inlined code small.
+        if isTooTiny (abs f) then v.FailedDivide(f) // don't compose error msg directly here to keep inlined code small. // https://github.com/dotnet/runtime/issues/24626#issuecomment-356736809
         Vc (v.X / f, v.Y / f)
 
     /// For use as a faster constructor.
@@ -113,7 +113,7 @@ type UnitVc =
         // this member cant be an extension method because it is used with SRTP in UnitV.createFromMembersXY
         // see error FS1114: The value 'Euclid.AutoOpenUnitVc.create' was marked inline but was not bound in the optimization environment
         let l = sqrt(x * x  + y * y)
-        if isTooTiny l then UnitVc.failedCreate(x, y) // don't compose error msg directly here to keep inlined code small.
+        if isTooTiny l then UnitVc.failedCreate(x, y) // don't compose error msg directly here to keep inlined code small. // https://github.com/dotnet/runtime/issues/24626#issuecomment-356736809
         UnitVc(x/l, y/l)
 
 

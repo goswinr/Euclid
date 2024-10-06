@@ -32,7 +32,7 @@ Just like Rhino3D, SketchUp, Revit, AutoCAD and Blender have it. But [unlike](ht
 
 In this library a point is a position in space, a vector is a direction in space.
 A 4x4 transformation matrix applied to a vector will only rotate and scale the vector but not translate it.
-( You could think of this as a Homogeneous-coordinate-system where the last value is 0 ( mot 1), thus [disabling translation(https://www.youtube.com/watch?v=o-xwmTODTUI&t=216s)]. )
+You could think of this as a Homogeneous-coordinate-system where the last value is 0 (not 1), thus [disabling translation](https://www.youtube.com/watch?v=o-xwmTODTUI&t=216s).
 
 
 For the full API see [fuget.org](https://www.fuget.org/packages/Euclid) for now.

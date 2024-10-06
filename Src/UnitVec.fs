@@ -16,7 +16,7 @@ open System.Runtime.Serialization // for serialization of struct fields only but
 #nowarn "44" // to skip Obsolete warnings (members just needs to be public for inlining, but should be hidden)
 
 
-/// An immutable 3D vector guaranteed to be always unitized. 
+/// An immutable 3D vector guaranteed to be always unitized.
 /// A 3D vector represents a direction or an offset in space, but not a location.
 /// A 4x4 transformation matrix applied to a vector will only rotate and scale the vector but not translate it.
 /// (2D unit-vectors are called 'UnitVc' )
@@ -26,7 +26,7 @@ open System.Runtime.Serialization // for serialization of struct fields only but
 [<Struct; NoEquality; NoComparison>]
 [<IsReadOnly>]
 //[<IsByRefLike>] // not used, see notes at end of file
-[<DataContract>] // for using DataMember on fields  
+[<DataContract>] // for using DataMember on fields
 type UnitVec =
 
     /// Gets the X part of this 3D unit-vector.
@@ -41,10 +41,10 @@ type UnitVec =
     /// Unsafe internal constructor, doesn't check or unitize the input, public only for inlining.
     [<Obsolete("Unsafe internal constructor, but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >]
     new (x, y, z) =
-        #if DEBUG
+        #if DEBUG //  with these tests all operations are 2.5 times slower
         if Double.IsNaN x || Double.IsNaN y || Double.IsNaN z || Double.IsInfinity x || Double.IsInfinity y || Double.IsInfinity z then
             EuclidException.Raise "Euclid.UnitVec Constructor failed for x:%g, y:%g, z:%g"  x y z
-        let lenSq = x*x + y*y + z*z // TODO : with this test all  operations are 2.5 times slower
+        let lenSq = x*x + y*y + z*z
         if UtilEuclid.isNotOne lenSq then
             EuclidException.Raise "Euclid.UnitVec Constructor failed for x:%g, y:%g, z:%g. The length needs to be 1.0."  x y z
         #endif
@@ -95,14 +95,14 @@ type UnitVec =
     /// Dot product, or scalar product of a 3D unit-vectors with a 3D vector.
     /// Returns a float. This float is the projected length of the 3D vector on the direction of the unit-vector.
     static member inline ( *** ) (a:Vec, b:UnitVec) = a.X * b.X + a.Y * b.Y + a.Z * b.Z
-    
+
     /// A separate function to compose the error message that does not get inlined.
     [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
     member v.FailedDivide(f) = EuclidDivByZeroException.Raise "Euclid.UnitVec: divide operator: %g is too small for dividing %O using the '/' operator. Tolerance:%g"  f v zeroLengthTolerance
-        
+
     /// Divides a 3D unit-vector by a scalar, also be called dividing/scaling a vector. Returns a new (non-unitized) 3D vector.
     static member inline ( / ) (v:UnitVec, f:float) =
-        if isTooTiny (abs f) then v.FailedDivide(f) // don't compose error msg directly here to keep inlined code small.
+        if isTooTiny (abs f) then v.FailedDivide(f) // don't compose error msg directly here to keep inlined code small. // https://github.com/dotnet/runtime/issues/24626#issuecomment-356736809
         Vec (v.X / f, v.Y / f, v.Z / f)
 
     /// Dot product, or scalar product of two 3D unit-vectors.
@@ -119,21 +119,21 @@ type UnitVec =
     /// For use as a faster internal constructor.
     /// Requires correct input of unitized values.
     static member inline createUnchecked(x, y, z) = UnitVec(x, y, z)
-    
+
     /// For use as a faster internal constructor.
     /// Requires correct input of unitized values.
     static member inline createUnchecked(v:Vec) = UnitVec(v.X, v.Y, v.Z)
-    
+
     /// A separate function to compose the error message that does not get inlined.
     [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
     static member failedCreate (x:float, y:float, z:float) = EuclidDivByZeroException.Raise "Euclid.UnitVec.create: x:%g, y:%g and z:%g are too small for creating a unit-vector, Tolerance:%g" x y z zeroLengthTolerance
-        
+
     /// Create 3D unit-vector. Does the unitizing too.
     static member inline create (x:float, y:float, z:float) =
         // this member cant be an extension method because it is used with SRTP.
         // see error FS1114: The value 'Euclid.AutoOpenUnitVc.create' was marked inline but was not bound in the optimization environment
         let l = sqrt(x*x  + y*y + z*z)
-        if isTooTiny l then UnitVec.failedCreate(x, y, z) // don't compose error msg directly here to keep inlined code small.
+        if isTooTiny l then UnitVec.failedCreate(x, y, z) // don't compose error msg directly here to keep inlined code small. // https://github.com/dotnet/runtime/issues/24626#issuecomment-356736809
         let li = 1. / l
         UnitVec.createUnchecked(li*x, li*y, li*z)
 

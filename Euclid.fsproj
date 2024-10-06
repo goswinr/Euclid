@@ -46,12 +46,12 @@
     <PackageIcon>logo128.png</PackageIcon>
     <PackageReadmeFile>READMEnuget.md</PackageReadmeFile>
     <PackageTags>fsharp;geometry;fable;fable-library;fable-all</PackageTags>
+    <DebugType>embedded</DebugType>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
   <ItemGroup>
     <!-- otherwise the minimum FSharp.Core version would be forced by the SDK used for building it. This would be needlessly too high-->
-    <PackageReference Update="FSharp.Core" Version="5.0.2" />
-    <PackageReference Include="Fable.Core" Version="4.3.0"  Condition="$(DefineConstants.Contains('FABLE_COMPILER'))" />
+    <PackageReference Update="FSharp.Core" Version="6.0.7" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
     <None Include="README.md" />
     <None Include="Doc/READMEnuget.md" Pack="true" PackagePath="" />

@@ -85,7 +85,7 @@ type Vec =
 
     /// Divides a 3D vector by a scalar, also be called dividing/scaling a vector. Returns a new 3D vector.
     static member inline ( / ) (v:Vec, f:float) =
-        if isTooTiny (abs f) then v.FailedDivide(f) // don't compose error msg directly here to keep inlined code small.
+        if isTooTiny (abs f) then v.FailedDivide(f) // don't compose error msg directly here to keep inlined code small.// https://github.com/dotnet/runtime/issues/24626#issuecomment-356736809
         Vec (v.X / f, v.Y / f, v.Z / f)
 
 
@@ -98,11 +98,11 @@ type Vec =
     /// Its length is the area of the parallelogram spanned by the input vectors.
     /// Its direction follows th right-hand rule.
     /// A x B = |A| * |B| * sin(angle)
-    static member inline cross (a:Vec, b:Vec) = 
-        Vec (a.Y * b.Z - a.Z * b.Y, 
-             a.Z * b.X - a.X * b.Z, 
+    static member inline cross (a:Vec, b:Vec) =
+        Vec (a.Y * b.Z - a.Z * b.Y,
+             a.Z * b.X - a.X * b.Z,
              a.X * b.Y - a.Y * b.X)
-    
+
     //-----------------------------------------------------------------------------------------------------
     // These static members can't be extension methods to be useful for Array.sum and Array.average :
     //-----------------------------------------------------------------------------------------------------
@@ -111,9 +111,9 @@ type Vec =
     /// (This member is needed by Array.average and similar functions)
     static member DivideByInt (v:Vec, i:int) = // needed by 'Array.average'
         if i = 0 then EuclidDivByZeroException.Raise "Euclid.Vec.DivideByInt is zero %O" v
-        let d = float i 
-        Vec(v.X/d, v.Y/d, v.Z/d) 
-    
+        let d = float i
+        Vec(v.X/d, v.Y/d, v.Z/d)
+
     /// Returns a zero length vector: Vec(0, 0, 0)
     static member inline Zero = Vec(0, 0, 0)  // this member is needed by Seq.sum, so that it doesn't fail on empty seq.
 
