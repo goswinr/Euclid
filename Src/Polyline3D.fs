@@ -117,7 +117,7 @@ type Polyline3D =
     /// The integer part of the parameter is the index of the segment that the point is on.
     /// The fractional part of the parameter is the parameter form 0.0 to 1.0 on the segment.
     /// The domain Polyline3D starts at 0.0 and ends at points.Count - 1.0 .
-    /// If the parameter is within 1e-5 of an integer value, the integer value is used as parameter.
+    /// If the parameter is within 1e-6 of an integer value, the integer value is used as parameter.
     member pl.EvaluateAt(t:float) =
         let i = int t
         let p = t - float i
@@ -129,10 +129,10 @@ type Polyline3D =
             if p > 0.99999 then pl.Points.First
             else EuclidException.Raise "Euclid.Polyline3D.EvaluateAt: Parameter %f is less than 0.0" t
         elif i = pl.Points.Count then
-            if   p > 1e-5 then  EuclidException.Raise "Euclid.Polyline3D.EvaluateAt: Parameter %f is more than than point count(%d)." t pl.Points.Count
+            if   not (isTooSmall (p)) then EuclidException.Raise "Euclid.Polyline3D.EvaluateAt: Parameter %f is more than than point count(%d)." t pl.Points.Count
             else pl.Points.Last
         // return point  if point is almost matching
-        elif isTooTiny (p) then
+        elif isTooSmall (p) then
             pl.Points.[i]
         elif  p > 0.99999964 then // 0.99999964  is 6 steps smaller than 1.0: https://float.exposed/0x3f7ffffa
             pl.Points.[i+1]
@@ -312,7 +312,7 @@ type Polyline3D =
 
     /// Returns new Polyline3D from point at Parameter a to point at Parameter b.
     /// if 'a' is bigger 'b' then the new Polyline3D is in opposite direction.
-    /// If a parameter is within 1e-5 of an integer value, the integer value is used as parameter.
+    /// If a parameter is within 1e-4 of an integer value, the integer value is used as parameter.
     static member segment a b (pl:Polyline3D) =
         let rev = a>b
         let u, v = if rev then b, a else a, b
