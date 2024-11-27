@@ -27,7 +27,7 @@ type UnitVc =
     [<Obsolete("Unsafe internal constructor, doesn't check or unitize the input (unless compiled in DEBUG mode), but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >]
     new (x, y) =
         #if DEBUG // TODO : with this test all  operations are 2.5 times slower
-        if Double.IsNaN x || Double.IsNaN y || Double.IsInfinity x || Double.IsInfinity y  then EuclidException.Raise "Euclid.Vc Constructor failed for x:%g, y:%g"  x y
+        if Double.IsNaN x || Double.IsNaN y || Double.IsInfinity x || Double.IsInfinity y  then EuclidException.Raisef "Euclid.Vc Constructor failed for x:%g, y:%g"  x y
         #endif
         {X=x; Y=y}
 
@@ -104,7 +104,7 @@ type UnitVc =
 
     /// A separate function to compose the error message that does not get inlined.
     [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-    member v.FailedDivide(f) = EuclidDivByZeroException.Raise "Euclid.UnitVc: divide operator: %g is too small for dividing %O using the '/' operator. Tolerance:%g"  f v zeroLengthTolerance
+    member v.FailedDivide(f) = EuclidDivByZeroException.Raisef "Euclid.UnitVc: divide operator: %g is too small for dividing %O using the '/' operator. Tolerance:%g"  f v zeroLengthTolerance
 
     /// Divides a 2D unit-vector by a scalar, also be called dividing/scaling a vector. Returns a new (non-unitized) 2D vector.
     static member inline ( / ) (v:UnitVc, f:float) =
@@ -123,7 +123,7 @@ type UnitVc =
 
     /// A separate function to compose the error message that does not get inlined.
     [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-    static member failedCreate (x:float, y:float) = EuclidDivByZeroException.Raise "Euclid.UnitVc.create: x:%g and y:%g are too small for creating a unit-vector. Tolerance:%g" x y zeroLengthTolerance
+    static member failedCreate (x:float, y:float) = EuclidDivByZeroException.Raisef "Euclid.UnitVc.create: x:%g and y:%g are too small for creating a unit-vector. Tolerance:%g" x y zeroLengthTolerance
 
     /// Create 2D unit-vector. Does the unitizing too.
     static member inline create (x:float, y:float) =

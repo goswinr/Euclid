@@ -414,7 +414,7 @@ type BBox =
         let n = BBox(   b.MinX-dist, b.MinY-dist, b.MinZ-dist,
                         b.MaxX+dist, b.MaxY+dist, b.MaxZ+dist)
         if dist<0. &&  (n.MinX > n.MaxX ||  n.MinY > n.MaxX ||  n.MinZ > n.MaxZ) then
-            EuclidException.Raise "Euclid.BBox.Expand(dist): Negative distance %g cause an underflow, on %s" dist b.AsString
+            EuclidException.Raisef "Euclid.BBox.Expand(dist): Negative distance %g cause an underflow, on %s" dist b.AsString
         n
 
     /// Returns a bounding box expanded by a distance for X, Y and Z-axis each.
@@ -423,7 +423,7 @@ type BBox =
         let n = BBox(   b.MinX-xDist, b.MinY-yDist, b.MinZ-zDist,
                         b.MaxX+xDist, b.MaxY+yDist, b.MaxZ+zDist)
         if n.MinX > n.MaxX ||  n.MinY > n.MaxX ||  n.MinZ > n.MaxZ then
-            EuclidException.Raise "Euclid.BBox.Expand(x, y, z): Negative distance(s) X %g Y: %g and Z:%g cause an underflow, on %s" xDist yDist zDist b.AsString
+            EuclidException.Raisef "Euclid.BBox.Expand(x, y, z): Negative distance(s) X %g Y: %g and Z:%g cause an underflow, on %s" xDist yDist zDist b.AsString
         n
 
     /// Returns a bounding box expanded by a distance for X, Y and Z-axis each.
@@ -463,7 +463,7 @@ type BBox =
     member inline b.ExpandXaxis(startDist, endDist) : BBox =
         let n = BBox(b.MinX-startDist, b.MinY, b.MinZ, b.MaxX+endDist, b.MaxY, b.MaxZ)
         if n.MinX > n.MaxX then
-            EuclidException.Raise "Euclid.BBox.ExpandXaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist b.AsString
+            EuclidException.Raisef "Euclid.BBox.ExpandXaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist b.AsString
         n
 
     /// Returns a bounding box expanded only in Y direction by different distance for start(minY) and end (maxY).
@@ -471,7 +471,7 @@ type BBox =
     member inline b.ExpandYaxis(startDist, endDist) : BBox =
         let n = BBox(b.MinX, b.MinY-startDist, b.MinZ, b.MaxX, b.MaxY+endDist, b.MaxZ)
         if n.MinY > n.MaxY then
-            EuclidException.Raise "Euclid.BBox.ExpandYaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist b.AsString
+            EuclidException.Raisef "Euclid.BBox.ExpandYaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist b.AsString
         n
 
     /// Returns a bounding box expanded only in Z direction by different distance for start(minZ) and end (maxZ).
@@ -479,10 +479,12 @@ type BBox =
     member inline b.ExpandZaxis(startDist, endDist) : BBox =
         let n = BBox(b.MinX, b.MinY, b.MinZ-startDist, b.MaxX, b.MaxY, b.MaxZ+endDist)
         if n.MinZ > n.MaxZ then
-            EuclidException.Raise "Euclid.BBox.ExpandYaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist b.AsString
+            EuclidException.Raisef "Euclid.BBox.ExpandYaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist b.AsString
         n
 
     /// Returns true if the two bounding boxes do overlap or touch.
+    /// Also returns true if one box is completely inside the other.
+    /// Also returns true if one box is completely surrounding the other.
     member inline b.OverlapsWith (a:BBox) =
         not (  b.MinX > a.MaxX
             || a.MinX > b.MaxX
@@ -494,6 +496,8 @@ type BBox =
 
     /// Returns true if the two bounding boxes do overlap more than a given tolerance distance.
     /// Returns false if the two bounding boxes are just touching.
+    /// Also returns true if one box is completely inside the other.
+    /// Also returns true if one box is completely surrounding the other.
     member inline b.OverlapsWith (a:BBox, tol) =
         not (  b.MinX > a.MaxX - tol
             || a.MinX > b.MaxX - tol
@@ -539,7 +543,8 @@ type BBox =
 
     /// Returns the volume of this bounding box.
     member inline b.Volume =
-        b.SizeX*b.SizeY*b.SizeZ
+        b.SizeX * b.SizeY * b.SizeZ
+
 
     /// Returns the 2D part of this bounding box as a bounding rectangle (BRect).
     member inline b.asRect =
@@ -617,11 +622,15 @@ type BBox =
         BBox(b.MinX+v.X, b.MinY+v.Y, b.MinZ+v.Z, b.MaxX+v.X, b.MaxY+v.Y, b.MaxZ+v.Z)
 
     /// Returns true if the two a bounding boxes do overlap or touch exactly.
+    /// Also returns true if one box is completely inside the other.
+    /// Also returns true if one box is completely surrounding the other.
     static member inline doOverlap(a:BBox) (b:BBox) =
         b.OverlapsWith(a)
 
     /// Returns true if the two a bounding boxes do overlap more than a given tolerance distance.
     /// Returns false if the two a bounding boxes are just touching.
+    /// Also returns true if one box is completely inside the other.
+    /// Also returns true if one box is completely surrounding the other.
     static member inline doOverlapMoreThan tol (a:BBox) (b:BBox) =
         b.OverlapsWith(a, tol)
 
@@ -705,9 +714,9 @@ type BBox =
 
     /// Creates a bounding box from a center point and the total X, Y and Z size.
     static member inline createFromCenter (center:Pnt, sizeX, sizeY, sizeZ) =
-        if isNegative(sizeX) then EuclidException.Raise "Euclid.BBox.createFromCenter sizeX is negative: %g, sizeY is: %g, sizeZ is: %g, center: %O"  sizeX sizeY sizeZ center.AsString
-        if isNegative(sizeY) then EuclidException.Raise "Euclid.BBox.createFromCenter sizeY is negative: %g, sizeX is: %g, sizeZ is: %g, center: %O"  sizeY sizeX sizeZ center.AsString
-        if isNegative(sizeZ) then EuclidException.Raise "Euclid.BBox.createFromCenter sizeZ is negative: %g, sizeX is: %g, sizeY is: %g, center: %O"  sizeZ sizeX sizeY center.AsString
+        if isNegative(sizeX) then EuclidException.Raisef "Euclid.BBox.createFromCenter sizeX is negative: %g, sizeY is: %g, sizeZ is: %g, center: %O"  sizeX sizeY sizeZ center.AsString
+        if isNegative(sizeY) then EuclidException.Raisef "Euclid.BBox.createFromCenter sizeY is negative: %g, sizeX is: %g, sizeZ is: %g, center: %O"  sizeY sizeX sizeZ center.AsString
+        if isNegative(sizeZ) then EuclidException.Raisef "Euclid.BBox.createFromCenter sizeZ is negative: %g, sizeX is: %g, sizeY is: %g, center: %O"  sizeZ sizeX sizeY center.AsString
         let minX = center.X - sizeX*0.5
         let minY = center.Y - sizeY*0.5
         let maxX = center.X + sizeX*0.5

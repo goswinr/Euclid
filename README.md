@@ -66,6 +66,13 @@ npm test
 ```
 
 ### Release Notes
+
+`0.12.0`
+- add AreaSquared on Rects and Boxes
+- allow negative offsets in Rect.Offset
+- add BoundingBox for Rects and Boxes
+
+
 `0.11.1`
 - fix Polyline2D.Area
 

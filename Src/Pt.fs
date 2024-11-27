@@ -39,7 +39,7 @@ type Pt =
     /// Create a new 2D point. Made up from 2 floats: X and Y.
     new (x, y) =
         #if DEBUG // TODO : with this test all  operations are 2.5 times slower
-        if Double.IsNaN x || Double.IsNaN y || Double.IsInfinity x || Double.IsInfinity y  then EuclidException.Raise "Euclid.Pt Constructor failed for x:%g, y:%g"  x y
+        if Double.IsNaN x || Double.IsNaN y || Double.IsInfinity x || Double.IsInfinity y  then EuclidException.Raisef "Euclid.Pt Constructor failed for x:%g, y:%g"  x y
         #endif
         {X=x; Y=y}
 
@@ -95,7 +95,7 @@ type Pt =
 
     /// A separate function to compose the error message that does not get inlined.
     [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-    member p.FailedDivide(f) = EuclidDivByZeroException.Raise "Euclid.Pt: divide operator: %g is too small for dividing %O using the '/' operator. Tolerance:%g"  f p zeroLengthTolerance
+    member p.FailedDivide(f) = EuclidDivByZeroException.Raisef "Euclid.Pt: divide operator: %g is too small for dividing %O using the '/' operator. Tolerance:%g"  f p zeroLengthTolerance
 
     /// Divides a 2D vector by a scalar, also be called dividing/scaling a vector. Returns a new 2D vector.
     static member inline ( / ) (p:Pt, f:float) =
@@ -110,7 +110,7 @@ type Pt =
     /// Divides the 3D point by an integer.
     /// (This member is needed by Array.average and similar functions)
     static member DivideByInt (pt:Pt, i:int) = // needed by  'Array.average'`
-        if i = 0 then EuclidDivByZeroException.Raise "Euclid.Pt.DivideByInt is zero %O" pt
+        if i = 0 then EuclidDivByZeroException.Raisef "Euclid.Pt.DivideByInt is zero %O" pt
         let d = float i
         Pt(pt.X/d, pt.Y/d)
 

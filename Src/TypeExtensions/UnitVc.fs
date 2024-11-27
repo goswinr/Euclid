@@ -166,7 +166,7 @@ module AutoOpenUnitVc =
         /// Calculates the dot product of a 2D vector and a unit-vectors.
         /// Then checks if it is bigger than 1e-12.
         member inline v.MatchesOrientation (other:Vc) =
-            if isTooTinySq(other.LengthSq) then EuclidException.Raise "Euclid.UnitVc.MatchesOrientation: Vc 'other' is too short: %O. 'this':%O " other v
+            if isTooTinySq(other.LengthSq) then EuclidException.Raisef "Euclid.UnitVc.MatchesOrientation: Vc 'other' is too short: %O. 'this':%O " other v
             v *** other > 1e-12
 
 
@@ -180,7 +180,7 @@ module AutoOpenUnitVc =
         /// Calculates the dot product of a 2D vector and a unit-vectors.
         /// Then checks if it is smaller than minus 1e-12.
         member inline v.IsOppositeOrientation (other:Vc) =
-            if isTooTinySq(other.LengthSq) then EuclidException.Raise "Euclid.UnitVc.IsOppositeOrientation: Vc 'other' is too short: %O. 'this':%O " other v
+            if isTooTinySq(other.LengthSq) then EuclidException.Raisef "Euclid.UnitVc.IsOppositeOrientation: Vc 'other' is too short: %O. 'this':%O " other v
             v *** other < -1e-12
 
         /// Checks if 2D unit-vector is parallel to the world X axis. Ignoring orientation.
@@ -210,7 +210,7 @@ module AutoOpenUnitVc =
         /// See Euclid.Cosine module.
         member inline this.IsParallelTo(other:Vc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
             let ol = other.LengthSq
-            if isTooTinySq(ol) then EuclidException.Raise "Euclid.UnitVc.IsParallelTo: Vc 'other' is too short: %s. 'this':%s " other.AsString this.AsString
+            if isTooTinySq(ol) then EuclidException.Raisef "Euclid.UnitVc.IsParallelTo: Vc 'other' is too short: %s. 'this':%s " other.AsString this.AsString
             let ou = other * (1.0 / sqrt ol)
             abs(ou***this) > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
 
@@ -231,7 +231,7 @@ module AutoOpenUnitVc =
         /// See Euclid.Cosine module.
         member inline this.IsParallelAndOrientedTo (other:Vc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
             let ol = other.LengthSq
-            if isTooTinySq(ol) then EuclidException.Raise "Euclid.UnitVc.IsParallelAndOrientedTo: Vc 'other' is too short: %s. 'this':%s " other.AsString this.AsString
+            if isTooTinySq(ol) then EuclidException.Raisef "Euclid.UnitVc.IsParallelAndOrientedTo: Vc 'other' is too short: %s. 'this':%s " other.AsString this.AsString
             let ou = other * (1.0 / sqrt ol)
             ou *** this > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
 
@@ -253,7 +253,7 @@ module AutoOpenUnitVc =
         /// See Euclid.Cosine module.
         member inline this.IsPerpendicularTo (other:Vc, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) =
             let ol = other.LengthSq
-            if isTooTinySq(ol) then EuclidException.Raise "Euclid.UnitVc.IsPerpendicularTo: Vc 'other' is too short: %s. 'this':%s " other.AsString this.AsString
+            if isTooTinySq(ol) then EuclidException.Raisef "Euclid.UnitVc.IsPerpendicularTo: Vc 'other' is too short: %s. 'this':%s " other.AsString this.AsString
             let ou = other * (1.0 / sqrt ol)
             let d = ou *** this
             float -maxCosine < d && d  < float maxCosine // = cosine of 98.75 and 90.25 degrees
@@ -273,7 +273,7 @@ module AutoOpenUnitVc =
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        static member failedCreate (fromPt:Pt, toPt:Pt) = EuclidDivByZeroException.Raise "Euclid.UnitVc.create: fromPt:%O and toPt::%O are too close to each other for creating a unit-vector. Tolerance:%g" fromPt toPt zeroLengthTolerance
+        static member failedCreate (fromPt:Pt, toPt:Pt) = EuclidDivByZeroException.Raisef "Euclid.UnitVc.create: fromPt:%O and toPt::%O are too close to each other for creating a unit-vector. Tolerance:%g" fromPt toPt zeroLengthTolerance
 
         /// Create 2D unit-vector from start and endpoint. Does the unitizing too.
         static member inline create (fromPt:Pt, toPt:Pt) =
@@ -306,7 +306,7 @@ module AutoOpenUnitVc =
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        static member failedCreateFromMembersXY(v:'T,e:exn) = EuclidException.Raise "Euclid.UnitVc.createFromMembersXY: %A could not be converted to a Euclid.UnitVc:\r\n%A" v e
+        static member failedCreateFromMembersXY(v:'T,e:exn) = EuclidException.Raisef "Euclid.UnitVc.createFromMembersXY: %A could not be converted to a Euclid.UnitVc:\r\n%A" v e
         /// Accepts any type that has a X and Y (UPPERCASE) member that can be converted to a float.
         /// Does the unitizing too.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
@@ -319,7 +319,7 @@ module AutoOpenUnitVc =
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        static member failedCreateFromMembersxy(v:'T,e:exn) = EuclidException.Raise "Euclid.UnitVc.createFromMembersxy: %A could not be converted to a Euclid.UnitVc:\r\n%A" v e
+        static member failedCreateFromMembersxy(v:'T,e:exn) = EuclidException.Raisef "Euclid.UnitVc.createFromMembersxy: %A could not be converted to a Euclid.UnitVc:\r\n%A" v e
         /// Accepts any type that has a x and y (lowercase) member that can be converted to a float.
         /// Does the unitizing too.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
@@ -332,13 +332,13 @@ module AutoOpenUnitVc =
         /// Create 2D unit-vector from 2D point. Does the unitizing too.
         static member inline createFromPt (pt:Pt) =
             let l = sqrt (pt.X*pt.X + pt.Y*pt.Y)
-            if isTooTiny(l) then EuclidException.Raise "Euclid.UnitVc.createFromPt failed on too close to Origin to give a meaningful direction %O" pt
+            if isTooTiny(l) then EuclidException.Raisef "Euclid.UnitVc.createFromPt failed on too close to Origin to give a meaningful direction %O" pt
             UnitVc.createUnchecked(pt.X / l, pt.Y / l)
 
         /// Create 2D unit-vector from 2D vector. Does the unitizing too.
         static member inline createFromVec (v:Vc) =
             let l = sqrt (v.X*v.X + v.Y*v.Y)
-            if isTooTiny(l) then EuclidException.Raise "Euclid.UnitVc.createFromVec failed on too short %O" v
+            if isTooTiny(l) then EuclidException.Raisef "Euclid.UnitVc.createFromVec failed on too short %O" v
             UnitVc.createUnchecked(v.X / l, v.Y / l)
 
 

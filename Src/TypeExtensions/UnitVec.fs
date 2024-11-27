@@ -70,7 +70,7 @@ module AutoOpenUnitVec =
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        member v.FailedDirectionDiamondInXY() = EuclidDivByZeroException.Raise "Euclid.UnitVec.DirectionDiamondInXY: input 3D unit-vector is vertical:%O" v
+        member v.FailedDirectionDiamondInXY() = EuclidDivByZeroException.Raisef "Euclid.UnitVec.DirectionDiamondInXY: input 3D unit-vector is vertical:%O" v
         /// The diamond angle is always positive and in the range of 0.0 to 4.0 (for 360 Degrees)
         /// 0.0 = Xaxis, going Counter-Clockwise. Ignoring Z component.
         /// This is the fastest angle computation since it does not use Math.Cos or Math.Sin.
@@ -92,7 +92,7 @@ module AutoOpenUnitVec =
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        member v.FailedDirection2PiInXY() = EuclidDivByZeroException.Raise "Euclid.UnitVec.Direction2PiInXY: input 3D unit-vector is vertical:%O" v
+        member v.FailedDirection2PiInXY() = EuclidDivByZeroException.Raisef "Euclid.UnitVec.Direction2PiInXY: input 3D unit-vector is vertical:%O" v
         /// Returns the angle in Radians from X-axis,
         /// Going Counter-Clockwise till two Pi.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
@@ -108,7 +108,7 @@ module AutoOpenUnitVec =
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        member v.FailedDirectionPiInXY() = EuclidDivByZeroException.Raise "Euclid.UnitVec.DirectionPiInXY: input 3D unit-vector is vertical:%O" v
+        member v.FailedDirectionPiInXY() = EuclidDivByZeroException.Raisef "Euclid.UnitVec.DirectionPiInXY: input 3D unit-vector is vertical:%O" v
         /// Returns the angle in Radians from X-axis in World X-Y plane,
         /// Ignores orientation.
         /// Range 0.0 to Pi.
@@ -157,7 +157,7 @@ module AutoOpenUnitVec =
         /// Calculates the dot product of a 3D vector and a unit-vectors.
         /// Then checks if it is bigger than 1e-12.
         member inline v.MatchesOrientation (other:Vec) =
-            if isTooTinySq(other.LengthSq) then EuclidException.Raise "Euclid.UnitVec.MatchesOrientation: Vec 'other' is too short: %O. 'this':%O " other v
+            if isTooTinySq(other.LengthSq) then EuclidException.Raisef "Euclid.UnitVec.MatchesOrientation: Vec 'other' is too short: %O. 'this':%O " other v
             v *** other > 1e-12
 
         /// Checks if the angle between the two 3D unit-vectors is more than 180 degrees.
@@ -170,7 +170,7 @@ module AutoOpenUnitVec =
         /// Calculates the dot product of a 3D vector and a unit-vectors.
         /// Then checks if it is smaller than minus 1e-12.
         member inline v.IsOppositeOrientation (other:Vec) =
-            if isTooTinySq(other.LengthSq) then EuclidException.Raise "Euclid.UnitVc.IsOppositeOrientation: Vec 'other' is too short: %O. 'this':%O " other v
+            if isTooTinySq(other.LengthSq) then EuclidException.Raisef "Euclid.UnitVc.IsOppositeOrientation: Vec 'other' is too short: %O. 'this':%O " other v
             v *** other < -1e-12
 
 
@@ -226,7 +226,7 @@ module AutoOpenUnitVec =
         /// See Euclid.Cosine module.
         member inline this.IsParallelTo(other:Vec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
             let sb = other.LengthSq
-            if isTooTinySq(sb) then EuclidException.Raise "Euclid.UnitVec.IsParallelTo: Vec 'other' is too short: %s. 'this':%s " other.AsString this.AsString
+            if isTooTinySq(sb) then EuclidException.Raisef "Euclid.UnitVec.IsParallelTo: Vec 'other' is too short: %s. 'this':%s " other.AsString this.AsString
             let ou = other * (1.0 / sqrt sb)
             abs(ou *** this) > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
 
@@ -246,7 +246,7 @@ module AutoOpenUnitVec =
         /// See Euclid.Cosine module.
         member inline this.IsParallelAndOrientedTo (other:Vec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
             let sb = other.LengthSq
-            if isTooTinySq(sb) then EuclidException.Raise "Euclid.UnitVec.IsParallelAndOrientedTo: Vec 'other' is too short: %s. 'this':%s " other.AsString this.AsString
+            if isTooTinySq(sb) then EuclidException.Raisef "Euclid.UnitVec.IsParallelAndOrientedTo: Vec 'other' is too short: %s. 'this':%s " other.AsString this.AsString
             let ou = other * (1.0 / sqrt sb)
             ou *** this > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
 
@@ -267,7 +267,7 @@ module AutoOpenUnitVec =
         /// See Euclid.Cosine module.
         member inline this.IsPerpendicularTo (other:Vec, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) =
             let sb = other.LengthSq
-            if isTooTinySq(sb) then EuclidException.Raise "Euclid.UnitVec.IsPerpendicularTo: Vec 'other' is too short: %s. 'this':%s " other.AsString this.AsString
+            if isTooTinySq(sb) then EuclidException.Raisef "Euclid.UnitVec.IsPerpendicularTo: Vec 'other' is too short: %s. 'this':%s " other.AsString this.AsString
             let ou = other * (1.0 / sqrt sb)
             let d = ou *** this
             float -maxCosine < d && d  < float maxCosine // = cosine of 98.75 and 90.25 degrees
@@ -294,7 +294,7 @@ module AutoOpenUnitVec =
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        static member failedCreate (fromPt:Pnt, toPt:Pnt) = EuclidDivByZeroException.Raise "Euclid.UnitVec.create: fromPt:%O and toPt::%O are too close to each other for creating a unit-vector. Tolerance:%g" fromPt toPt zeroLengthTolerance
+        static member failedCreate (fromPt:Pnt, toPt:Pnt) = EuclidDivByZeroException.Raisef "Euclid.UnitVec.create: fromPt:%O and toPt::%O are too close to each other for creating a unit-vector. Tolerance:%g" fromPt toPt zeroLengthTolerance
 
         /// Create 3D unit-vector from start and endpoint. Does the unitizing too.
         static member inline create (fromPt:Pnt, toPt:Pnt) =
@@ -344,7 +344,7 @@ module AutoOpenUnitVec =
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        static member failedCreateFromMembersXYZ(v:'T,e:exn) = EuclidException.Raise "Euclid.UnitVec.createFromMembersXYZ: %A could not be converted to a Euclid.UnitVec:\r\n%A" v e
+        static member failedCreateFromMembersXYZ(v:'T,e:exn) = EuclidException.Raisef "Euclid.UnitVec.createFromMembersXYZ: %A could not be converted to a Euclid.UnitVec:\r\n%A" v e
         /// Accepts any type that has a X, Y and Z (UPPERCASE) member that can be converted to a float.
         /// Does the unitizing too.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
@@ -357,7 +357,7 @@ module AutoOpenUnitVec =
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        static member failedCreateFromMembersxyz(v:'T,e:exn) = EuclidException.Raise "Euclid.UnitVec.createFromMembersxyz: %A could not be converted to a Euclid.UnitVec:\r\n%A" v e
+        static member failedCreateFromMembersxyz(v:'T,e:exn) = EuclidException.Raisef "Euclid.UnitVec.createFromMembersxyz: %A could not be converted to a Euclid.UnitVec:\r\n%A" v e
         /// Accepts any type that has a x, y and z (lowercase) member that can be converted to a float.
         /// Does the unitizing too.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
@@ -371,7 +371,7 @@ module AutoOpenUnitVec =
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        static member failedCreateFromPnt(pt:Pnt)= EuclidDivByZeroException.Raise "Euclid.UnitVec.createFromPnt failed on too short %O" pt
+        static member failedCreateFromPnt(pt:Pnt)= EuclidDivByZeroException.Raisef "Euclid.UnitVec.createFromPnt failed on too short %O" pt
         /// Create 3D unit-vector from 3D point. Does the unitizing too.
         static member inline createFromPnt (pt:Pnt) =
             let l = sqrt (pt.X*pt.X + pt.Y*pt.Y + pt.Z*pt.Z)
@@ -381,7 +381,7 @@ module AutoOpenUnitVec =
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        static member failedCreateFromVec(v:Vec)= EuclidDivByZeroException.Raise "Euclid.UnitVec.createFromVec failed on too short %O" v
+        static member failedCreateFromVec(v:Vec)= EuclidDivByZeroException.Raisef "Euclid.UnitVec.createFromVec failed on too short %O" v
         /// Create 3D unit-vector from 3D vector. Does the unitizing too.
         static member inline createFromVec (v:Vec) =
             let l = sqrt (v.X*v.X + v.Y*v.Y + v.Z*v.Z)

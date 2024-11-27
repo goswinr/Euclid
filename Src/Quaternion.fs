@@ -39,7 +39,7 @@ type Quaternion =
         #if DEBUG
         let l = x*x  + y*y + z*z + w*w
         if isNotOne l then
-            EuclidException.Raise "Euclid.Quaternion Constructor failed for x:%g, y:%g, z:%g, w:%g. The length needs to be 1.0." x y z w
+            EuclidException.Raisef "Euclid.Quaternion Constructor failed for x:%g, y:%g, z:%g, w:%g. The length needs to be 1.0." x y z w
         #endif
         {X=x; Y=y; Z=z; W=w}
 
@@ -148,7 +148,7 @@ type Quaternion =
     static member create (x, y, z, w) =
         let l = sqrt(x*x  + y*y + z*z + w*w)
         if isTooTiny (abs l) then
-            EuclidException.Raise "Euclid.Quaternion create failed for x:%g, y:%g, z:%g, w:%g. The length needs to be bigger than zero." x y z w
+            EuclidException.Raisef "Euclid.Quaternion create failed for x:%g, y:%g, z:%g, w:%g. The length needs to be bigger than zero." x y z w
         let sc = 1./l
         Quaternion(x*sc, y*sc, z*sc, w*sc)
 
@@ -167,7 +167,7 @@ type Quaternion =
     static member createFromRadians (axis:Vec, angleInRadians) =
         let length = sqrt(axis.X*axis.X + axis.Y*axis.Y + axis.Z*axis.Z)
         if isTooTiny(length) then
-            EuclidException.Raise "Euclid.Quaternion.createFromRadians failed too short axis: %O and rotation: %g° Degrees." axis (toDegrees angleInRadians)
+            EuclidException.Raisef "Euclid.Quaternion.createFromRadians failed too short axis: %O and rotation: %g° Degrees." axis (toDegrees angleInRadians)
         let angHalf = angleInRadians * 0.5
         let sa = sin angHalf
         let sc = 1. / length // inverse for unitizing vector:
@@ -198,7 +198,7 @@ type Quaternion =
         else
             let v = vecFrom + vecTo
             if isTooSmallSq v.LengthSq then // the vectors are almost exactly opposite
-                EuclidException.Raise "Euclid.Quaternion.createVecToVec failed to find a rotation axis for (almost) colinear unit-vectors in opposite directions: %O and %O" vecFrom vecTo
+                EuclidException.Raisef "Euclid.Quaternion.createVecToVec failed to find a rotation axis for (almost) colinear unit-vectors in opposite directions: %O and %O" vecFrom vecTo
             else
                 // cross vectors(vFrom, vTo); // inlined to avoid cyclic dependency
                 Quaternion.create ( vecFrom.Y * vecTo.Z - vecFrom.Z * vecTo.Y
@@ -218,7 +218,7 @@ type Quaternion =
             let z = vecFrom.Z
             let length = sqrt(x*x + y*y + z*z)
             if isTooTiny(length) then
-                EuclidException.Raise "Euclid.Quaternion.createVecToVec failed. The vector is too short: vecFrom: %O" vecFrom
+                EuclidException.Raisef "Euclid.Quaternion.createVecToVec failed. The vector is too short: vecFrom: %O" vecFrom
             let sc = 1. / length // inverse for unitizing vector:
             UnitVec.createUnchecked(x*sc, y*sc, z*sc)
         let tu =
@@ -227,7 +227,7 @@ type Quaternion =
             let z = vecTo.Z
             let length = sqrt(x*x + y*y + z*z)
             if isTooTiny(length) then
-                EuclidException.Raise "Euclid.Quaternion.createVecToVec failed. The vector is too short: vecTo: %O" vecTo
+                EuclidException.Raisef "Euclid.Quaternion.createVecToVec failed. The vector is too short: vecTo: %O" vecTo
             let sc = 1. / length // inverse for unitizing vector:
             UnitVec.createUnchecked(x*sc, y*sc, z*sc)
 
@@ -237,7 +237,7 @@ type Quaternion =
         else
             let v = fu + tu
             if isTooSmallSq v.LengthSq then // the vectors are almost exactly opposite
-                EuclidException.Raise "Euclid.Quaternion.createVecToVec failed to find a rotation axis for (almost) colinear  (or NaN) vectors in opposite directions: %O and %O" vecFrom vecTo
+                EuclidException.Raisef "Euclid.Quaternion.createVecToVec failed to find a rotation axis for (almost) colinear  (or NaN) vectors in opposite directions: %O and %O" vecFrom vecTo
             else
                 // cross vectors( vFrom, vTo); // inlined to avoid cyclic dependency
                 Quaternion.create ( fu.Y * tu.Z - fu.Z * tu.Y

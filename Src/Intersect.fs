@@ -170,7 +170,7 @@ module Intersect =
     /// Returns the parameter(s) on the line.
     let lineCone (ln:Line3D, coneRadius, coneBaseZ, coneTipZ) =
         let h = coneBaseZ-coneTipZ
-        if isTooTiny( abs h )then EuclidException.Raise "Euclid.Intersection.lineCone: cone has zero height: coneRadius: %g, coneBaseZ: %g, coneTipZ: %g" coneRadius coneBaseZ coneTipZ
+        if isTooTiny( abs h )then EuclidException.Raisef "Euclid.Intersection.lineCone: cone has zero height: coneRadius: %g, coneBaseZ: %g, coneTipZ: %g" coneRadius coneBaseZ coneTipZ
         let lam = coneRadius / h
         let lam = lam * lam
         let v = ln.Tangent

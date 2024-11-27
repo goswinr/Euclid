@@ -106,7 +106,7 @@ type Line3D =
         let z = ln.ToZ-ln.FromZ
         let l = sqrt(x * x  + y * y + z * z)
         if UtilEuclid.isTooTiny l then
-            EuclidException.Raise "Euclid.Line3D.UnitTangent: x:%g, y:%g and z:%g are too small for creating a unit-vector. Tolerance:%g" x y z UtilEuclid.zeroLengthTolerance
+            EuclidException.Raisef "Euclid.Line3D.UnitTangent: x:%g, y:%g and z:%g are too small for creating a unit-vector. Tolerance:%g" x y z UtilEuclid.zeroLengthTolerance
         let s = 1.0 / l
         UnitVec.createUnchecked (x*s, y*s, z*s)
 

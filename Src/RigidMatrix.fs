@@ -364,7 +364,7 @@ type RigidMatrix =
         // first unitize
         let len = sqrt (axis.X*axis.X + axis.Y*axis.Y + axis.Z*axis.Z)
         if isTooTiny(len) then
-            EuclidException.Raise "Euclid.RigidMatrix.createRotationAxis failed on too short axis: %O and rotation: %g° Degrees." axis angleDegrees
+            EuclidException.Raisef "Euclid.RigidMatrix.createRotationAxis failed on too short axis: %O and rotation: %g° Degrees." axis angleDegrees
         let sc = 1. / len
         let x = axis.X * sc
         let y = axis.Y * sc
@@ -414,7 +414,7 @@ type RigidMatrix =
         else
             let v = vecFrom + vecTo
             if isTooSmallSq v.LengthSq then // the vectors are almost exactly opposite
-                EuclidException.Raise "Euclid.RigidMatrix.createVecToVec failed to find a rotation axis for (almost) colinear unit-vectors in opposite directions: %O and %O" vecFrom vecTo
+                EuclidException.Raisef "Euclid.RigidMatrix.createVecToVec failed to find a rotation axis for (almost) colinear unit-vectors in opposite directions: %O and %O" vecFrom vecTo
             else
                 let axis0 = UnitVec.cross(vecFrom, vecTo)
                 let len = axis0.Length
@@ -443,7 +443,7 @@ type RigidMatrix =
             let z = vecFrom.Z
             let length = sqrt(x*x + y*y + z*z)
             if isTooTiny(length) then
-                EuclidException.Raise "Euclid.RigidMatrix.createVecToVec failed. The vector is too short: vecFrom: %O" vecFrom
+                EuclidException.Raisef "Euclid.RigidMatrix.createVecToVec failed. The vector is too short: vecFrom: %O" vecFrom
             let sc = 1. / length // inverse for unitizing vector:
             UnitVec.createUnchecked(x*sc, y*sc, z*sc)
         let tu =
@@ -452,7 +452,7 @@ type RigidMatrix =
             let z = vecTo.Z
             let length = sqrt(x*x + y*y + z*z)
             if isTooTiny(length) then
-                EuclidException.Raise "Euclid.RigidMatrix.createVecToVec failed. The vector is too short: vecTo: %O" vecTo
+                EuclidException.Raisef "Euclid.RigidMatrix.createVecToVec failed. The vector is too short: vecTo: %O" vecTo
             let sc = 1. / length // inverse for unitizing vector:
             UnitVec.createUnchecked(x*sc, y*sc, z*sc)
 
@@ -462,7 +462,7 @@ type RigidMatrix =
         else
             let v = fu + tu
             if isTooSmallSq v.LengthSq then // the vectors are almost exactly opposite
-                EuclidException.Raise "Euclid.RigidMatrix.createVecToVec failed to find a rotation axis for (almost) colinear vectors in opposite directions: %O and %O" vecFrom vecTo
+                EuclidException.Raisef "Euclid.RigidMatrix.createVecToVec failed to find a rotation axis for (almost) colinear vectors in opposite directions: %O and %O" vecFrom vecTo
             else
                 let axis0 = UnitVec.cross(fu, tu)
                 let len = axis0.Length
@@ -533,7 +533,7 @@ type RigidMatrix =
     static member createFromMatrix (m:Matrix) =
         match RigidMatrix.tryCreateFromMatrix m with
         | Some m -> m
-        | None -> EuclidException.Raise "Euclid.RigidMatrix.createFromMatrix failed. The input matrix does scale, shear, flip, mirror, reflect or project: %O" m
+        | None -> EuclidException.Raisef "Euclid.RigidMatrix.createFromMatrix failed. The input matrix does scale, shear, flip, mirror, reflect or project: %O" m
 
     /// Create a RigidMatrix from a Quaternion.
     static member createFromQuaternion(quaternion:Quaternion) =

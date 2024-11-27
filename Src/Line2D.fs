@@ -92,5 +92,5 @@ type Line2D =
         let y = ln.ToY-ln.FromY
         let l = sqrt(x * x  + y * y)
         if UtilEuclid.isTooTiny l then
-            EuclidException.Raise "Euclid.Line2D.UnitTangent: x:%g and y:%g are too small for creating a unit-vector. Tolerance:%g" x y UtilEuclid.zeroLengthTolerance
+            EuclidException.Raisef "Euclid.Line2D.UnitTangent: x:%g and y:%g are too small for creating a unit-vector. Tolerance:%g" x y UtilEuclid.zeroLengthTolerance
         UnitVc.createUnchecked (x/l, y/l)

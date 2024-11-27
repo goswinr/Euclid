@@ -37,7 +37,7 @@ type Pnt =
     /// Create a new 3D point. Made up from 3 floats: X, Y, and Z.
     new (x, y, z) =
         #if DEBUG // with this test all Pnt operations are 2.5 times slower:
-        if Double.IsNaN x || Double.IsNaN y || Double.IsNaN z || Double.IsInfinity x || Double.IsInfinity y || Double.IsInfinity z then EuclidException.Raise "Euclid.Pnt Constructor failed for x:%g, y:%g, z:%g"  x y z
+        if Double.IsNaN x || Double.IsNaN y || Double.IsNaN z || Double.IsInfinity x || Double.IsInfinity y || Double.IsInfinity z then EuclidException.Raisef "Euclid.Pnt Constructor failed for x:%g, y:%g, z:%g"  x y z
         #endif
         {X=x; Y=y; Z=z}
 
@@ -76,7 +76,7 @@ type Pnt =
     
     /// A separate function to compose the error message that does not get inlined.
     [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-    member p.FailedDivide(f) = EuclidDivByZeroException.Raise "Euclid.Pnt: divide operator: %g is too small for dividing %O using the '/' operator. Tolerance:%g"  f p zeroLengthTolerance
+    member p.FailedDivide(f) = EuclidDivByZeroException.Raisef "Euclid.Pnt: divide operator: %g is too small for dividing %O using the '/' operator. Tolerance:%g"  f p zeroLengthTolerance
         
     /// Divides a 3D point by a scalar, also be called dividing/scaling a point. Returns a new 3D point.
     static member inline ( / ) (p:Pnt, f:float) =
@@ -97,7 +97,7 @@ type Pnt =
     /// Divides the 3D point by an integer.
     /// (This member is needed by Array.average and similar functions)
     static member DivideByInt (pt:Pnt, i:int) = // needed by  'Array.average' 
-        if i=0 then EuclidDivByZeroException.Raise "Euclid.Pnt.DivideByInt 0 %O" pt 
+        if i=0 then EuclidDivByZeroException.Raisef "Euclid.Pnt.DivideByInt 0 %O" pt 
         let d = float i  
         Pnt(pt.X/d, pt.Y/d, pt.Z/d)
      

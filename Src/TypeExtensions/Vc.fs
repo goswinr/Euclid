@@ -64,7 +64,7 @@ module AutoOpenVc =
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        member v.FailedWithLength(desiredLength) = EuclidDivByZeroException.Raise "Euclid.Vc.WithLength %g : %O is too small for unitizing, Tolerance:%g" desiredLength v zeroLengthTolerance
+        member v.FailedWithLength(desiredLength) = EuclidDivByZeroException.Raisef "Euclid.Vc.WithLength %g : %O is too small for unitizing, Tolerance:%g" desiredLength v zeroLengthTolerance
 
         /// Returns a new 2D vector scaled to the desired length.
         /// Same as Vc.withLength.
@@ -75,7 +75,7 @@ module AutoOpenVc =
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        member v.FailedUnitized() = EuclidDivByZeroException.Raise "Euclid.Vc.Unitized %O is too small for unitizing, Tolerance:%g" v zeroLengthTolerance
+        member v.FailedUnitized() = EuclidDivByZeroException.Raisef "Euclid.Vc.Unitized %O is too small for unitizing, Tolerance:%g" v zeroLengthTolerance
 
         /// Returns the 2D vector unitized.
         /// Fails with EuclidDivByZeroException if the length of the vector is
@@ -119,7 +119,7 @@ module AutoOpenVc =
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        member v.FailedDirectionDiamond() = EuclidDivByZeroException.Raise "Euclid.Vc.DirectionDiamond: input vector is zero length: %O" v
+        member v.FailedDirectionDiamond() = EuclidDivByZeroException.Raisef "Euclid.Vc.DirectionDiamond: input vector is zero length: %O" v
 
         /// The diamond angle.
         /// Calculates the proportion of X to Y component.
@@ -145,7 +145,7 @@ module AutoOpenVc =
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        member v.FailedDirection2Pi() = EuclidDivByZeroException.Raise "Euclid.Vc.Direction2Pi: input vector is zero length: %O" v
+        member v.FailedDirection2Pi() = EuclidDivByZeroException.Raisef "Euclid.Vc.Direction2Pi: input vector is zero length: %O" v
 
         /// Returns the angle in Radians from X-axis.
         /// Going Counter-Clockwise till two Pi.
@@ -162,7 +162,7 @@ module AutoOpenVc =
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        member v.FailedDirectionPi() = EuclidDivByZeroException.Raise "Euclid.Vc.DirectionPi: input vector is zero length: %O" v
+        member v.FailedDirectionPi() = EuclidDivByZeroException.Raisef "Euclid.Vc.DirectionPi: input vector is zero length: %O" v
 
         /// Returns the angle in Radians from X-axis.
         /// Going Counter-Clockwise till two Pi.
@@ -205,8 +205,8 @@ module AutoOpenVc =
         /// Then checks if it is bigger than 1e-12.
         /// Fails if any of the two vectors is shorter than zeroLengthTolerance  (1e-12).
         member inline v.MatchesOrientation (other:Vc) =
-            if isTooTinySq(v.LengthSq    ) then EuclidException.Raise "Euclid.Vc.MatchesOrientation: Vc 'this' is too short: %s. 'other':%s " v.AsString other.AsString
-            if isTooTinySq(other.LengthSq) then EuclidException.Raise "Euclid.Vc.MatchesOrientation: Vc 'other' is too short: %s. 'this':%s " other.AsString v.AsString
+            if isTooTinySq(v.LengthSq    ) then EuclidException.Raisef "Euclid.Vc.MatchesOrientation: Vc 'this' is too short: %s. 'other':%s " v.AsString other.AsString
+            if isTooTinySq(other.LengthSq) then EuclidException.Raisef "Euclid.Vc.MatchesOrientation: Vc 'other' is too short: %s. 'this':%s " other.AsString v.AsString
             v *** other > 1e-12
 
         /// Checks if the angle between this 2D vectors and a 2D unit-vector is less than 180 degrees.
@@ -214,7 +214,7 @@ module AutoOpenVc =
         /// Then checks if it is bigger than 1e-12.
         /// Fails if the vector is shorter than zeroLengthTolerance  (1e-12).
         member inline v.MatchesOrientation (other:UnitVc) =
-            if isTooTinySq(v.LengthSq) then EuclidException.Raise "Euclid.Vc.MatchesOrientation: Vc 'this' is too short: %s. 'other':%s " v.AsString other.AsString
+            if isTooTinySq(v.LengthSq) then EuclidException.Raisef "Euclid.Vc.MatchesOrientation: Vc 'this' is too short: %s. 'other':%s " v.AsString other.AsString
             v *** other > 1e-12
 
         /// Checks if the angle between the two 2D vectors is more than 180 degrees.
@@ -222,8 +222,8 @@ module AutoOpenVc =
         /// Then checks if it is smaller than -1e-12.
         /// Fails if any of the two vectors is zero length .
         member inline v.IsOppositeOrientation (other:Vc) =
-            if isTooTinySq(v.LengthSq    ) then EuclidException.Raise "Euclid.Vc.IsOppositeOrientation: Vc 'this'  is too short: %s. 'other':%s " v.AsString other.AsString
-            if isTooTinySq(other.LengthSq) then EuclidException.Raise "Euclid.Vc.IsOppositeOrientation: Vc 'other' is too short: %s. 'this':%s " other.AsString v.AsString
+            if isTooTinySq(v.LengthSq    ) then EuclidException.Raisef "Euclid.Vc.IsOppositeOrientation: Vc 'this'  is too short: %s. 'other':%s " v.AsString other.AsString
+            if isTooTinySq(other.LengthSq) then EuclidException.Raisef "Euclid.Vc.IsOppositeOrientation: Vc 'other' is too short: %s. 'this':%s " other.AsString v.AsString
             v *** other < -1e-12
 
         /// Checks if the angle between this 2D vectors and a 2D unit-vector is more than 180 degrees.
@@ -231,7 +231,7 @@ module AutoOpenVc =
         /// Then checks if it is smaller than minus 1e-12.
         /// Fails if the vector is shorter than zeroLengthTolerance  (1e-12).
         member inline v.IsOppositeOrientation (other:UnitVc) =
-            if isTooTinySq(v.LengthSq) then EuclidException.Raise "Euclid.Vc.IsOppositeOrientation: Vc 'this' is too short: %s. 'other':%s " v.AsString other.AsString
+            if isTooTinySq(v.LengthSq) then EuclidException.Raisef "Euclid.Vc.IsOppositeOrientation: Vc 'this' is too short: %s. 'other':%s " v.AsString other.AsString
             v *** other < -1e-12
 
 
@@ -241,7 +241,7 @@ module AutoOpenVc =
         member inline v.IsXAligned =
             let x = abs (v.X)
             let y = abs (v.Y)
-            if isTooSmall (x+y) then EuclidException.Raise "Euclid.Vc.IsXAligned cannot not check very tiny vector. (tolerance 1e-6) %O" v
+            if isTooSmall (x+y) then EuclidException.Raisef "Euclid.Vc.IsXAligned cannot not check very tiny vector. (tolerance 1e-6) %O" v
             else y < 1e-9
 
         /// Checks if 2D vector is parallel to the world Y axis. Ignoring orientation.
@@ -250,7 +250,7 @@ module AutoOpenVc =
         member inline v.IsYAligned =
             let x = abs (v.X)
             let y = abs (v.Y)
-            if isTooSmall (x+y)then EuclidException.Raise "Euclid.Vc.IsYAligned cannot not check very tiny vector. (tolerance 1e-6) %O" v
+            if isTooSmall (x+y)then EuclidException.Raisef "Euclid.Vc.IsYAligned cannot not check very tiny vector. (tolerance 1e-6) %O" v
             else x < 1e-9
 
         /// Checks if two 2D vectors are parallel.
@@ -261,9 +261,9 @@ module AutoOpenVc =
         /// Fails on vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
         member inline this.IsParallelTo(other:Vc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
             let sa = this.LengthSq
-            if isTooTinySq(sa) then EuclidException.Raise "Euclid.Vc.IsParallelTo: Vc 'this' is too short: %s. 'other':%s " this.AsString other.AsString
+            if isTooTinySq(sa) then EuclidException.Raisef "Euclid.Vc.IsParallelTo: Vc 'this' is too short: %s. 'other':%s " this.AsString other.AsString
             let sb = other.LengthSq
-            if isTooTinySq(sb) then EuclidException.Raise "Euclid.Vc.IsParallelTo: Vc 'other' is too short: %s. 'this':%s " other.AsString this.AsString
+            if isTooTinySq(sb) then EuclidException.Raisef "Euclid.Vc.IsParallelTo: Vc 'other' is too short: %s. 'this':%s " other.AsString this.AsString
             let au = this * (1.0 / sqrt sa)
             let bu = other * (1.0 / sqrt sb)
             abs(bu *** au) > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
@@ -276,7 +276,7 @@ module AutoOpenVc =
         /// Fails on vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
         member inline this.IsParallelTo(other:UnitVc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
             let sa = this.LengthSq
-            if isTooTinySq(sa) then EuclidException.Raise "Euclid.Vc.IsParallelTo: Vc 'this' is too short: %s. 'other':%s " this.AsString other.AsString
+            if isTooTinySq(sa) then EuclidException.Raisef "Euclid.Vc.IsParallelTo: Vc 'this' is too short: %s. 'other':%s " this.AsString other.AsString
             let au = this * (1.0 / sqrt sa)
             abs(other *** au) > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
 
@@ -289,9 +289,9 @@ module AutoOpenVc =
         /// Fails on vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
         member inline this.IsParallelAndOrientedTo (other:Vc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
             let sa = this.LengthSq
-            if isTooTinySq(sa) then EuclidException.Raise "Euclid.Vc.IsParallelAndOrientedTo: Vc 'this' is too short: %s. 'other':%s " this.AsString other.AsString
+            if isTooTinySq(sa) then EuclidException.Raisef "Euclid.Vc.IsParallelAndOrientedTo: Vc 'this' is too short: %s. 'other':%s " this.AsString other.AsString
             let sb = other.LengthSq
-            if isTooTinySq(sb) then EuclidException.Raise "Euclid.Vc.IsParallelAndOrientedTo: Vc 'other' is too short: %s. 'this':%s " other.AsString this.AsString
+            if isTooTinySq(sb) then EuclidException.Raisef "Euclid.Vc.IsParallelAndOrientedTo: Vc 'other' is too short: %s. 'this':%s " other.AsString this.AsString
             let au = this  * (1.0 / sqrt sa)
             let bu = other * (1.0 / sqrt sb)
             bu *** au > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
@@ -304,7 +304,7 @@ module AutoOpenVc =
         /// Fails on vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
         member inline this.IsParallelAndOrientedTo (other:UnitVc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
             let sa = this.LengthSq
-            if isTooTinySq(sa) then EuclidException.Raise "Euclid.Vc.IsParallelAndOrientedTo: Vc 'this' is too short: %s. 'other':%s " this.AsString other.AsString
+            if isTooTinySq(sa) then EuclidException.Raisef "Euclid.Vc.IsParallelAndOrientedTo: Vc 'this' is too short: %s. 'other':%s " this.AsString other.AsString
             let au = this * (1.0 / sqrt sa)
             other *** au > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
 
@@ -318,9 +318,9 @@ module AutoOpenVc =
         /// Fails on vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
         member inline this.IsPerpendicularTo (other:Vc, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) =
             let sa = this.LengthSq
-            if isTooTinySq(sa) then EuclidException.Raise "Euclid.Vc.IsPerpendicularTo: Vc 'this' is too short: %s. 'other':%s " this.AsString other.AsString
+            if isTooTinySq(sa) then EuclidException.Raisef "Euclid.Vc.IsPerpendicularTo: Vc 'this' is too short: %s. 'other':%s " this.AsString other.AsString
             let sb = other.LengthSq
-            if isTooTinySq(sb) then EuclidException.Raise "Euclid.Vc.IsPerpendicularTo: Vc 'other' is too short: %s. 'this':%s " other.AsString this.AsString
+            if isTooTinySq(sb) then EuclidException.Raisef "Euclid.Vc.IsPerpendicularTo: Vc 'other' is too short: %s. 'this':%s " other.AsString this.AsString
             let au = this  * (1.0 / sqrt sa)
             let bu = other * (1.0 / sqrt sb)
             let d = bu *** au
@@ -334,7 +334,7 @@ module AutoOpenVc =
         /// Fails on vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
         member inline this.IsPerpendicularTo (other:UnitVc, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) =
             let sa = this.LengthSq
-            if isTooTinySq(sa) then EuclidException.Raise "Euclid.Vc.IsPerpendicularTo: Vc 'this' is too short: %s. 'other':%s " this.AsString other.AsString
+            if isTooTinySq(sa) then EuclidException.Raisef "Euclid.Vc.IsPerpendicularTo: Vc 'this' is too short: %s. 'other':%s " this.AsString other.AsString
             let au = this * (1.0 / sqrt sa)
             let d = other *** au
             float -maxCosine < d && d  < float maxCosine // = cosine of 98.75 and 90.25 degrees
@@ -373,7 +373,7 @@ module AutoOpenVc =
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        static member failedCreateFromMembersXY(v:'T,e:exn) = EuclidException.Raise "Euclid.Vc.createFromMembersXY: %A could not be converted to a Euclid.Vc:\r\n%A" v e
+        static member failedCreateFromMembersXY(v:'T,e:exn) = EuclidException.Raisef "Euclid.Vc.createFromMembersXY: %A could not be converted to a Euclid.Vc:\r\n%A" v e
         /// Accepts any type that has a X and Y (UPPERCASE) member that can be converted to a float.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
         static member inline createFromMembersXY vec =
@@ -384,7 +384,7 @@ module AutoOpenVc =
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        static member failedCreateFromMembersxy(v:'T,e:exn) = EuclidException.Raise "Euclid.Vc.createFromMembersxy: %A could not be converted to a Euclid.Vc:\r\n%A" v e
+        static member failedCreateFromMembersxy(v:'T,e:exn) = EuclidException.Raisef "Euclid.Vc.createFromMembersxy: %A could not be converted to a Euclid.Vc:\r\n%A" v e
         /// Accepts any type that has a x and y (lowercase) member that can be converted to a float.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
         static member inline createFromMembersxy vec =
@@ -621,9 +621,9 @@ module AutoOpenVc =
         /// Fails on zero length vectors, tolerance 1e-12.
         static member inline isAngle90Below (cosineValue: float<Cosine.cosine>) (a:Vc) (b:Vc) =
             let sa = a.LengthSq
-            if isTooTinySq(sa) then EuclidException.Raise "Euclid.Vc.isAngle90Below: Vc a is too short: %s. Vc b:%s " a.AsString b.AsString
+            if isTooTinySq(sa) then EuclidException.Raisef "Euclid.Vc.isAngle90Below: Vc a is too short: %s. Vc b:%s " a.AsString b.AsString
             let sb = b.LengthSq
-            if isTooTinySq(sb) then EuclidException.Raise "Euclid.Vc.isAngle90Below: Vc b is too short: %s. Vc a:%s " b.AsString a.AsString
+            if isTooTinySq(sb) then EuclidException.Raisef "Euclid.Vc.isAngle90Below: Vc b is too short: %s. Vc a:%s " b.AsString a.AsString
             let au = a * (1.0 / sqrt sa)
             let bu = b * (1.0 / sqrt sb)
             abs(bu *** au) > float cosineValue
@@ -634,9 +634,9 @@ module AutoOpenVc =
         /// Fails on zero length vectors, tolerance 1e-12.
         static member inline isAngle90Above(cosineValue: float<Cosine.cosine>) (a:Vc) (b:Vc) =
             let sa = a.LengthSq
-            if isTooTinySq(sa) then EuclidException.Raise "Euclid.Vc.isAngle90Above: Vc a is too short: %s. Vc b:%s " a.AsString b.AsString
+            if isTooTinySq(sa) then EuclidException.Raisef "Euclid.Vc.isAngle90Above: Vc a is too short: %s. Vc b:%s " a.AsString b.AsString
             let sb = b.LengthSq
-            if isTooTinySq(sb) then EuclidException.Raise "Euclid.Vc.isAngle90Above: Vc b is too short: %s. Vc a:%s " b.AsString a.AsString
+            if isTooTinySq(sb) then EuclidException.Raisef "Euclid.Vc.isAngle90Above: Vc b is too short: %s. Vc a:%s " b.AsString a.AsString
             let au = a * (1.0 / sqrt sa)
             let bu = b * (1.0 / sqrt sb)
             abs(bu *** au) < float cosineValue
@@ -648,9 +648,9 @@ module AutoOpenVc =
         /// Fails on zero length vectors, tolerance 1e-12.
         static member inline isAngle180Below (cosineValue: float<Cosine.cosine>) (a:Vc) (b:Vc) =
             let sa = a.LengthSq
-            if isTooTinySq(sa) then EuclidException.Raise "Euclid.Vc.isAngle180Below: Vc a is too short: %s. Vc b:%s " a.AsString b.AsString
+            if isTooTinySq(sa) then EuclidException.Raisef "Euclid.Vc.isAngle180Below: Vc a is too short: %s. Vc b:%s " a.AsString b.AsString
             let sb = b.LengthSq
-            if isTooTinySq(sb) then EuclidException.Raise "Euclid.Vc.isAngle180Below: Vc b is too short: %s. Vc a:%s " b.AsString a.AsString
+            if isTooTinySq(sb) then EuclidException.Raisef "Euclid.Vc.isAngle180Below: Vc b is too short: %s. Vc a:%s " b.AsString a.AsString
             let au = a * (1.0 / sqrt sa)
             let bu = b * (1.0 / sqrt sb)
             bu *** au > float cosineValue
@@ -661,9 +661,9 @@ module AutoOpenVc =
         /// Fails on zero length vectors, tolerance 1e-12.
         static member inline isAngle180Above(cosineValue: float<Cosine.cosine>) (a:Vc) (b:Vc) =
             let sa = a.LengthSq
-            if isTooTinySq(sa) then EuclidException.Raise "Euclid.Vc.isAngle180Above: Vc a is too short: %s. Vc b:%s " a.AsString b.AsString
+            if isTooTinySq(sa) then EuclidException.Raisef "Euclid.Vc.isAngle180Above: Vc a is too short: %s. Vc b:%s " a.AsString b.AsString
             let sb = b.LengthSq
-            if isTooTinySq(sb) then EuclidException.Raise "Euclid.Vc.isAngle180Above: Vc b is too short: %s. Vc a:%s " b.AsString a.AsString
+            if isTooTinySq(sb) then EuclidException.Raisef "Euclid.Vc.isAngle180Above: Vc b is too short: %s. Vc a:%s " b.AsString a.AsString
             let au = a * (1.0 / sqrt sa)
             let bu = b * (1.0 / sqrt sb)
             bu *** au < float cosineValue
@@ -674,7 +674,7 @@ module AutoOpenVc =
         /// Range -1.57 to +1.57 Radians.
         /// This is just asin(v.Y).
         static member inline slopeRadians (v:Vc) =
-            if isTooTinySq(v.LengthSq) then EuclidException.Raise "Euclid.Vc.slopeRadians: Vc is too short: %s" v.AsString
+            if isTooTinySq(v.LengthSq) then EuclidException.Raisef "Euclid.Vc.slopeRadians: Vc is too short: %s" v.AsString
             let r = Math.Atan2(v.Y, v.X)
             if   r > halfPi  then  r - Math.PI
             elif r < -halfPi then  r + Math.PI
@@ -698,7 +698,7 @@ module AutoOpenVc =
         /// Range -3.14 to +3.14 Radians.
         /// This is just atan2(v.Y, v.X).
         static member inline angleToXPi (vc:Vc) =
-            if isTooTinySq(vc.LengthSq) then EuclidException.Raise "Euclid.Vc.angleToXPi: Vc is too short: %s" vc.AsString
+            if isTooTinySq(vc.LengthSq) then EuclidException.Raisef "Euclid.Vc.angleToXPi: Vc is too short: %s" vc.AsString
             Math.Atan2(vc.Y, vc.X)
 
 

@@ -35,12 +35,12 @@ type Polyline2D =
 
     /// Gets first point of the Polyline2D
     member p.Start =
-        if p.Points.Count < 2 then EuclidException.Raise "Euclid.Polyline2D.Start failed on Polyline2D with less than 2 points %O" p
+        if p.Points.Count < 2 then EuclidException.Raisef "Euclid.Polyline2D.Start failed on Polyline2D with less than 2 points %O" p
         p.Points.First
 
     /// Gets last or end point of the Polyline2D
     member p.End =
-        if p.Points.Count < 2 then EuclidException.Raise "Euclid.Polyline2D.Start failed on Polyline2D with less than 2 points %O" p
+        if p.Points.Count < 2 then EuclidException.Raisef "Euclid.Polyline2D.Start failed on Polyline2D with less than 2 points %O" p
         p.Points.Last
 
     /// Gets the count of points in the Polyline2D
@@ -50,7 +50,7 @@ type Polyline2D =
         /// Gets the length of the Polyline2D
     member p.Length =
         let ps = p.Points
-        if ps.Count < 2 then EuclidException.Raise "Euclid.Polyline3D.Length failed on Polyline2D with less than 2 points %O" p
+        if ps.Count < 2 then EuclidException.Raisef "Euclid.Polyline3D.Length failed on Polyline2D with less than 2 points %O" p
         let mutable l = 0.0
         let mutable prev = ps.[0]
         for i = 1 to ps.Count-1 do
@@ -65,13 +65,13 @@ type Polyline2D =
 
     /// Tests if Polyline2D start and end points are exactly the same.
     member inline p.IsClosed =
-        if p.Points.Count < 2 then EuclidException.Raise "Euclid.Polyline3D.IsClosed failed on Polyline2D with less than 2 points %O" p
+        if p.Points.Count < 2 then EuclidException.Raisef "Euclid.Polyline3D.IsClosed failed on Polyline2D with less than 2 points %O" p
         let v = p.Start  - p.End
         v.IsZero
 
     /// Tests if Polyline2D is closed within given tolerance.
     member p.IsAlmostClosed(tolerance) =
-        if p.Points.Count < 2 then EuclidException.Raise "Euclid.Polyline2D.IsAlmostClosed failed on Polyline2D with less than 2 points %O" p
+        if p.Points.Count < 2 then EuclidException.Raisef "Euclid.Polyline2D.IsAlmostClosed failed on Polyline2D with less than 2 points %O" p
         let v = p.Start  - p.End
         v.LengthSq < tolerance*tolerance
 
@@ -89,7 +89,7 @@ type Polyline2D =
     /// If the ends are closer than the tolerance. The last point is set to equal the first point.
     /// Else the start point is added to the end of the Polyline2D.
     member p.CloseIfOpen(toleranceForAddingPoint) =
-        if p.Points.Count < 2 then EuclidException.Raise "Euclid.Polyline2D.CloseIfOpen failed on Polyline2D with less than 2 points %O" p
+        if p.Points.Count < 2 then EuclidException.Raisef "Euclid.Polyline2D.CloseIfOpen failed on Polyline2D with less than 2 points %O" p
         let v = p.Start  - p.End
         if v.LengthSq < toleranceForAddingPoint*toleranceForAddingPoint then
             p.Points.Last <- p.Start
@@ -117,7 +117,7 @@ type Polyline2D =
     /// Fails if Polyline is not exactly closed.
     /// For self intersecting Polylines the result is invalid.
     member p.Area =
-        if not p.IsClosed then EuclidException.Raise "Euclid.Polyline2D.Area failed on Polyline2D that is not exactly closed %O" p
+        if not p.IsClosed then EuclidException.Raisef "Euclid.Polyline2D.Area failed on Polyline2D that is not exactly closed %O" p
         abs(p.SignedArea)
 
     /// Test if Polyline2D is CounterClockwise.
@@ -126,7 +126,7 @@ type Polyline2D =
     /// If it is positive the Polyline2D is Counter Clockwise.
     member p.IsCounterClockwise =
         let  area = p.SignedArea
-        if   abs(area) < UtilEuclid.zeroLengthTolerance then EuclidException.Raise "Euclid.Polyline2D.IsCounterClockwiseIn2D: Polyline2D the area is zero: %O" p
+        if   abs(area) < UtilEuclid.zeroLengthTolerance then EuclidException.Raisef "Euclid.Polyline2D.IsCounterClockwiseIn2D: Polyline2D the area is zero: %O" p
         else area > 0.0
 
 
@@ -139,14 +139,14 @@ type Polyline2D =
         let i = int t
         let p = t - float i
         if   i < -1 then
-            EuclidException.Raise "Euclid.Polyline2D.EvaluateAt: Parameter %f is less than 0.0" t
+            EuclidException.Raisef "Euclid.Polyline2D.EvaluateAt: Parameter %f is less than 0.0" t
         elif i > pl.Points.Count then
-            EuclidException.Raise "Euclid.Polyline2D.EvaluateAt: Parameter %f is more than than point count(%d)." t pl.Points.Count
+            EuclidException.Raisef "Euclid.Polyline2D.EvaluateAt: Parameter %f is more than than point count(%d)." t pl.Points.Count
         elif i = -1 then
             if p > 0.99999 then pl.Points.First
-            else EuclidException.Raise "Euclid.Polyline2D.EvaluateAt: Parameter %f is less than 0.0" t
+            else EuclidException.Raisef "Euclid.Polyline2D.EvaluateAt: Parameter %f is less than 0.0" t
         elif i = pl.Points.Count then
-            if   not (isTooSmall (p)) then  EuclidException.Raise "Euclid.Polyline2D.EvaluateAt: Parameter %f is more than than point count(%d)." t pl.Points.Count
+            if   not (isTooSmall (p)) then  EuclidException.Raisef "Euclid.Polyline2D.EvaluateAt: Parameter %f is more than than point count(%d)." t pl.Points.Count
             else pl.Points.Last
         // return point  if point is almost matching
         elif isTooSmall (p) then
@@ -166,14 +166,14 @@ type Polyline2D =
         let i = int t
         let p = t - float i
         if   i < -1 then
-            EuclidException.Raise "Euclid.Polyline2D.EvaluateAt: Parameter %f is less than 0.0" t
+            EuclidException.Raisef "Euclid.Polyline2D.EvaluateAt: Parameter %f is less than 0.0" t
         elif i > pl.Points.Count then
-            EuclidException.Raise "Euclid.Polyline2D.EvaluateAt: Parameter %f is more than than point count(%d)." t pl.Points.Count
+            EuclidException.Raisef "Euclid.Polyline2D.EvaluateAt: Parameter %f is more than than point count(%d)." t pl.Points.Count
         elif i = -1 then
             if p > 0.9999 then UnitVc.create(pl.Points.First, pl.Points.Second)
-            else EuclidException.Raise "Euclid.Polyline2D.EvaluateAt: Parameter %f is less than 0.0" t
+            else EuclidException.Raisef "Euclid.Polyline2D.EvaluateAt: Parameter %f is less than 0.0" t
         elif i = pl.Points.Count then
-            if   p > 1e-4 then  EuclidException.Raise "Euclid.Polyline2D.EvaluateAt: Parameter %f is more than than point count(%d)." t pl.Points.Count
+            if   p > 1e-4 then  EuclidException.Raisef "Euclid.Polyline2D.EvaluateAt: Parameter %f is more than than point count(%d)." t pl.Points.Count
             else UnitVc.create(pl.Points.SecondLast, pl.Points.Last)
         // return point  if point is almost matching
         else
@@ -187,7 +187,7 @@ type Polyline2D =
     member pl.ClosestParameter(pt:Pt) =
         // for very large polylines, this is could be optimized by using search R-tree
         let ps = pl.Points
-        if ps.Count < 2 then EuclidException.Raise "Euclid.Polyline2D.ClosestParameter failed on  Polyline2D with less than 2 points %O" pl
+        if ps.Count < 2 then EuclidException.Raisef "Euclid.Polyline2D.ClosestParameter failed on  Polyline2D with less than 2 points %O" pl
         // vectors of the segments
         let vs = Array.zeroCreate (ps.Count-1)
         for i = 0 to vs.Length-1 do
@@ -238,12 +238,12 @@ type Polyline2D =
 
     /// Gets first point of the Polyline2D
     static member inline start (p:Polyline2D) =
-        if p.Points.Count < 2 then EuclidException.Raise "Euclid.Polyline2D.Start failed on Polyline2D with less than 2 points %O" p
+        if p.Points.Count < 2 then EuclidException.Raisef "Euclid.Polyline2D.Start failed on Polyline2D with less than 2 points %O" p
         p.Points.First
 
     /// Gets last or end point of the Polyline2D
     static member inline ende (p:Polyline2D) =
-        if p.Points.Count < 2 then EuclidException.Raise "Euclid.Polyline2D.Start failed on Polyline2D with less than 2 points %O" p
+        if p.Points.Count < 2 then EuclidException.Raisef "Euclid.Polyline2D.Start failed on Polyline2D with less than 2 points %O" p
         p.Points.Last
 
     /// Reverse order of the Polyline2D in place.
@@ -359,7 +359,7 @@ type Polyline2D =
     /// From first and second point up to last and first point.
     /// The endIndexChange is to skip the last point if first and last are the same. ( then use -1)
     static member internal findOuterCornerAndRefNormal(pts:ResizeArray<Pt>, vs:Vc[], endIndexChange) : int*float =
-        if pts.Count + endIndexChange <> vs.Length then EuclidException.Raise "Euclid.Polyline2D.findOuterCornerAndRefNormal pts (%d) and vs(%d) must have the same length." pts.Count vs.Length
+        if pts.Count + endIndexChange <> vs.Length then EuclidException.Raisef "Euclid.Polyline2D.findOuterCornerAndRefNormal pts (%d) and vs(%d) must have the same length." pts.Count vs.Length
         let us = Array.zeroCreate vs.Length
         // mark very short segments with 0, 0, 0:
         for i=0 to vs.Length-1 do
@@ -411,19 +411,24 @@ type Polyline2D =
 
     /// The inner core routine of Points.offset. This function considers input a closed polyline.
     /// The offset distances are given for each segment of the polyline. offDi:IList must have the same length as the polyline or be a singleton
-    /// Start point and end point may not be equal, all arrays of same length.
-    /// The 'referenceOrient' corresponds to the cross product of two segment of the polyline an an outside corner.
-    /// If 'referenceOrient' is 0.0 then the algorithm tries to detect if the loop is clockwise or counterclockwise
-    /// it also tries to find an outer corner on non convex polylines
+    /// Start point and end point may not be equal, all arrays must be of the same length..
+    /// The 'referenceOrient' corresponds to the cross product of two segment of the polyline at an outside corner.
+    /// If 'referenceOrient' is given as 0.0 then the algorithm tries to detect if the loop is clockwise or counterclockwise
+    /// it also tries to find an outer corner on non convex polylines.
     /// If 'referenceOrient' is bigger than 0.0 a counter-clock-wise loop is assumed and the detection part is skipped.
     /// If 'referenceOrient' is smaller than 0.0 a clock-wise loop is assumed and the detection part is skipped.
     /// The endIndexChange is to skip the last point if first and last are the same. ( then use -1)
-    static member internal offsetCore(pts:ResizeArray<Pt>, offDi:IList<float>,  referenceOrient:float, fixColinearLooped:bool, allowObliqueOffsetOnColinearSegments, endIndexChange) : ResizeArray<Pt> =
+    static member internal offsetCore(  pts:ResizeArray<Pt>,
+                                        offDi:IList<float>,
+                                        referenceOrient:float,
+                                        fixColinearLooped:bool,
+                                        allowObliqueOffsetOnColinearSegments:bool,
+                                        endIndexChange:int ) : ResizeArray<Pt> =
         let offCount = offDi.Count
         if  offCount <> 1
-        &&  offCount <> pts.Count + endIndexChange //case: the last point if first and last are the same.
+        &&  offCount <> pts.Count + endIndexChange //case: first and last points are the same.
         &&  offCount <> pts.Count - 1  then //case: open polyline and, no looping desired:
-            EuclidException.Raise "Euclid.Polyline2D.offsetCore pts(%d) and offD(%d) must have the same length or offD must be of length 1." pts.Count offDi.Count
+            EuclidException.Raisef "Euclid.Polyline2D.offsetCore pts(%d) and offD(%d) must have the same length or offD must be of length 1." pts.Count offDi.Count
 
         let lenTolSq = 1e-12 //local squared length tolerance
         let lenPts = pts.Count + endIndexChange
@@ -436,7 +441,7 @@ type Polyline2D =
             elif offCount = i then 0.0  //case: open polyline and, no looping desired:
             else offDi[i]
 
-        // (1) collect array of vectors going from this to next
+        // (1) precomputed array of vectors going from this to next
         let vs = Array.zeroCreate lenPts
         let mutable this = pts.[0]
         for i=1 to lastIdx do
@@ -445,25 +450,35 @@ type Polyline2D =
             this <- next
         vs.[lastIdx] <- pts.[0]-pts[lastIdx]
 
-        let refNorm = if referenceOrient = 0.0 then Polyline2D.findOuterCornerAndRefNormal(pts, vs, endIndexChange) |> snd else referenceOrient
+        let refNorm :float =
+            if referenceOrient = 0.0 then Polyline2D.findOuterCornerAndRefNormal(pts, vs, endIndexChange) |> snd
+            else referenceOrient
 
         // (2) main loop
         let colinear: bool[] = Array.zeroCreate lenPts
-        let res = pts.GetRange(0, lenPts) // copy
+        let res = pts.GetRange(0, lenPts) // copy the input points
+
         //(2.1) find last valid vector
         let prevVIdx =
             vs
             |> Array.tryFindIndexBack (fun v -> v.LengthSq > lenTolSq)
-            |> Option.defaultWith (fun _ -> EuclidException.Raise "Euclid.Polyline2D.offsetCore: invalid Polyline2D, all points are in the same location" )
+            |> Option.defaultWith (fun _ -> EuclidException.Raisef "Euclid.Polyline2D.offsetCore: invalid Polyline2D, all points are in the same location" )
 
-        for i=prevVIdx+1 to lastIdx do
-            colinear.[i]<-true
+        for i=prevVIdx+1 to lastIdx do // set last points a colinear if prevVIdx is not the index of the last point
+            colinear.[i] <- true
+
         let mutable prevV = vs.[prevVIdx]
         let mutable prevOff = getOffDist(prevVIdx)
 
         //(2.2) looping
         let rec loop(i) =
             if i <= lastIdx then
+                let thisOff = getOffDist(i)
+                if abs(thisOff) < 1e-9 && abs(prevOff) < 1e-9 then
+                    // offset distance is zero for previous and this segment,
+                    // just copy the point
+                    res.[i] <- pts.[i]
+                    loop(i+1)
                 let nextV = vs.[i]
                 let ax = prevV.X
                 let ay = prevV.Y
@@ -491,8 +506,6 @@ type Polyline2D =
                         /// In 2D the cross product vector is the signed area of the parallelogram spanned by the two vectors.
                         /// So just a scalar. Not actually a vector
                         let n = Vc.cross(prevV, nextV) |> matchSign refNorm
-
-                        let thisOff = getOffDist(i)
                         let thisPt = pts.[i]
                         let prevShift = prevV.Rotate90CCW |> Vc.withLength (if n>0. then prevOff else -prevOff)
                         let nextShift = nextV.Rotate90CCW |> Vc.withLength (if n>0. then thisOff else -thisOff)
@@ -514,7 +527,7 @@ type Polyline2D =
             let rec searchBack i =
                 let ii = saveIdx (i) colinear.Length
                 if not colinear.[ii] then ii
-                elif i < -colinear.Length then EuclidException.Raise "Euclid.Polyline2D.offsetCore : all %d points for offset are colinear within 0.25 degree or identical. " pts.Count
+                elif i < -colinear.Length then EuclidException.Raisef "Euclid.Polyline2D.offsetCore : all %d points for offset are colinear within 0.25 degree or identical. " pts.Count
                 else searchBack (i - 1)
 
             let rec  searchForward i =
@@ -527,12 +540,12 @@ type Polyline2D =
                     let pi = searchBack    (i - 1)
                     let ni = searchForward (i + 1)
                     if pi = ni then //  does this ever happen ? it is either all colinear (caught in searchBack) or at least three points are not colinear ??
-                        EuclidException.Raise "Euclid.Polyline2D.offsetCore : all %d points for offset are colinear within 0.25 degree or identical. " pts.Count
+                        EuclidException.Raisef "Euclid.Polyline2D.offsetCore : all %d points for offset are colinear within 0.25 degree or identical. " pts.Count
                     let ln = Line2D(res.[pi], res.[ni])
                     res.[i] <- ln.ClosestPointInfinite(pts.[i])
                     // TODO add safety check? could be omitted. offset is then averaged out.
                     if not allowObliqueOffsetOnColinearSegments && abs (getOffDist(pi) - getOffDist(ni)) > 1e-9 then
-                        EuclidException.Raise "Euclid.Polyline2D.offsetCore: can't offset collinear segment at index %d with different offset distances from index %d and %d\r\n these distances are not the same: %f and %f" i pi ni (getOffDist(pi)) (getOffDist(ni))
+                        EuclidException.Raisef "Euclid.Polyline2D.offsetCore: can't offset collinear segment at index %d with different offset distances from index %d and %d\r\n these distances are not the same: %f and %f" i pi ni (getOffDist(pi)) (getOffDist(ni))
         else
             let rec searchBack i =
                 if i<0 then -1
@@ -549,24 +562,24 @@ type Polyline2D =
                     let pi = searchBack    (i-1)
                     let ni = searchForward (i+1)
                     if pi = ni then //  does this ever happen ? it is either all colinear (caught in searchBack) or at least three points are not colinear ??
-                        EuclidException.Raise "Euclid.Polyline2D.offsetCore : all %d points for offset are colinear within 0.25 degree or identical. " pts.Count
+                        EuclidException.Raisef "Euclid.Polyline2D.offsetCore : all %d points for offset are colinear within 0.25 degree or identical. " pts.Count
                     elif pi = -1 then
                         if ni = -1 then
-                            EuclidException.Raise "Euclid.Polyline2D.offsetCore : all %d points for offset are colinear within 0.25 degree or identical. " pts.Count
+                            EuclidException.Raisef "Euclid.Polyline2D.offsetCore : all %d points for offset are colinear within 0.25 degree or identical. " pts.Count
                         else // colinear start, get frame
                             match Points.offsetInCornerEx2D (pts[ni-1], pts[ni], pts[ni+1],  getOffDist(ni-1),  getOffDist(ni), refNorm) with
-                            |ValueNone -> EuclidException.Raise "Euclid.Polyline2D.offsetCore :offsetInCornerEx-1 failed unexpectedly."
+                            |ValueNone -> EuclidException.Raisef "Euclid.Polyline2D.offsetCore :offsetInCornerEx-1 failed unexpectedly."
                             |ValueSome (_, prevShift, _) -> res.[i] <- pts.[i] + prevShift
                     elif ni = -1 then  // colinear end, get frame
                         match Points.offsetInCornerEx2D (pts[pi-1], pts[pi], pts[pi+1],  getOffDist(pi-1),  getOffDist(pi), refNorm) with
-                        |ValueNone -> EuclidException.Raise "Euclid.Polyline2D.offsetCore :offsetInCornerEx-1 failed unexpectedly."
+                        |ValueNone -> EuclidException.Raisef "Euclid.Polyline2D.offsetCore :offsetInCornerEx-1 failed unexpectedly."
                         |ValueSome (_, _, nextShift) -> res.[i] <- pts.[i] + nextShift
                     else
                         let ln = Line2D(res.[pi], res.[ni])
                         res.[i] <- ln.ClosestPointInfinite(pts.[i])
                         // TODO add safety check? could be omitted. offset is then averaged out.
                         if not allowObliqueOffsetOnColinearSegments && abs (getOffDist(pi) - getOffDist(ni)) > 1e-9 then
-                            EuclidException.Raise "Euclid.Polyline2D.offsetCore: can't offset collinear segment at index %d with different offset distances from index %d and %d\r\n these distances are not the same: %f and %f" i pi ni (getOffDist(pi)) (getOffDist(ni))
+                            EuclidException.Raisef "Euclid.Polyline2D.offsetCore: can't offset collinear segment at index %d with different offset distances from index %d and %d\r\n these distances are not the same: %f and %f" i pi ni (getOffDist(pi)) (getOffDist(ni))
         res
 
 
@@ -578,17 +591,22 @@ type Polyline2D =
     /// A positive distance offsets inwards in corners, a negative offset outwards.
     /// For open and closed polylines this list of distances must have one item less than number of points in the polyline.
     /// Except if the polyline is open and the loop parameter is set to true. Then points and distances list shall have the same count.
-    /// A empty list for no offset or singleton for constant offset is allowed too.
+    /// A singleton for constant offset is allowed too.
     /// </param>
     /// <param name="loop">bool, Optional. Consider last point and first point to be from a closed loop, even if they are not at the same location.</param>
     /// <param name="referenceOrient">float, Optional.
-    /// The 'referenceOrient' corresponds to the cross product of two segment of the polyline an an outside corner.
-    /// If 'referenceOrient' is 0.0 or omitted then the algorithm tries to detect if the loop is clockwise or counterclockwise.
-    /// it also tries to find an outer corner on non convex polylines.
+    /// This is to control on which side of the polyline the offset is created.
+    /// By default the offset is created to the inside of the polygon / polyline.
+    /// The algorithm tries to detect if the loop is clockwise or counterclockwise. But this cannot always be detected.
+    /// For example on self intersecting polylines.
     /// If 'referenceOrient' is bigger than 0.0 a counterclockwise loops is assumed and the detection part is skipped.
     /// If 'referenceOrient' is smaller than 0.0 a clockwise loops is assumed and the detection part is skipped.
-    /// If a given referenceOrient does not correspond to the looping order the offset will be to the other side.</param>
-    /// <param name="obliqueOffsets">bool, Optional. When two adjacent segments are colinear but have different offset distances there is no solution with a parallel offset.
+    /// The 'referenceOrient' corresponds to the cross product of two segment of the polyline an an convex corner.
+    /// If 'referenceOrient' is 0.0 or omitted then the algorithm tries to detect if the loop is clockwise or counterclockwise.
+    /// It also tries to find a convex corner on a convex and concave polyline.
+    /// If the given referenceOrient does not correspond to the looping order the offset will be to the other side.</param>
+    /// <param name="obliqueOffsets">bool, Optional. When two adjacent segments are colinear but have different offset distances
+    /// there is no solution with a parallel offset.
     /// By default an exception is raised. Set this to true to create and averaged oblique offset instead of failing.</param>
     /// <returns>A new 2D polyline with the same amount of points.</returns>
     static member offset(   polyLine:Polyline2D,
@@ -600,7 +618,7 @@ type Polyline2D =
         let points = polyLine.Points
         // (1) Fail if polyline has less than one point
         if points.Count < 2 then
-            EuclidException.Raise "Euclid.Polyline2D.offset needs at least two points but %O given." polyLine
+            EuclidException.Raisef "Euclid.Polyline2D.offset needs at least two points but %O given." polyLine
 
 
         let checkDistanceCount len  =
@@ -613,7 +631,7 @@ type Polyline2D =
         // (2) check if last and first point are the same and if so remove last point (one point needs to be removed from list)
         if Pt.distanceSq polyLine.Start polyLine.End < 1e-12 then // sqrt of 1e-6, auto detect closed polyline points  then
             match checkDistanceCount (points.Count - 1) with
-            |Error k  -> EuclidException.Raise "Euclid.Polyline2D.offset: %s but should have 1 or %d for %d given points. \r\nIn closed Polyline2D with identical start and end points:\r\n%O" k (points.Count-1) points.Count polyLine |Ok _ -> ()
+            |Error k  -> EuclidException.Raisef "Euclid.Polyline2D.offset: %s but should have 1 or %d for %d given points. \r\nIn closed Polyline2D with identical start and end points:\r\n%O" k (points.Count-1) points.Count polyLine |Ok _ -> ()
             // use endIndexChange = -1 to skip the last point, wil then be re added at the end.
             let res = Polyline2D.offsetCore(points, offsetDistances, referenceOrient, fixColinearLooped=true, allowObliqueOffsetOnColinearSegments=obliqueOffsets, endIndexChange = -1)
             res.Add(res.[0])  // set last equal first, it was skipped with 'endIndexChange = -1'
@@ -622,14 +640,14 @@ type Polyline2D =
         // (3) check if open but looping desired
         elif loop then
             match checkDistanceCount points.Count with
-            |Error k  -> EuclidException.Raise "Euclid.Polyline2D.offset: %s but should have 1 or %d for %d given points. \r\nIn open Polyline2D with start and end apart and loop set to TRUE :\r\n%O" k points.Count points.Count polyLine  |Ok _ -> ()
+            |Error k  -> EuclidException.Raisef "Euclid.Polyline2D.offset: %s but should have 1 or %d for %d given points. \r\nIn open Polyline2D with start and end apart and loop set to TRUE :\r\n%O" k points.Count points.Count polyLine  |Ok _ -> ()
             Polyline2D.offsetCore(points, offsetDistances, referenceOrient, fixColinearLooped=true, allowObliqueOffsetOnColinearSegments=obliqueOffsets, endIndexChange = 0)
             |> Polyline2D.createDirectlyUnsafe
 
         // (4) open polyline and, no looping desired: (one distance value will be added, in getOffDist in offsetCore, )
         else
             match checkDistanceCount (points.Count-1) with
-            |Error k  -> EuclidException.Raise "Euclid.Polyline2D.offset: %s but should have 1 or %d for %d given points. \r\nIn open Polyline2D with start and end apart and loop set to FALSE :\r\n%O" k points.Count points.Count polyLine  |Ok _ -> ()
+            |Error k  -> EuclidException.Raisef "Euclid.Polyline2D.offset: %s but should have 1 or %d for %d given points. \r\nIn open Polyline2D with start and end apart and loop set to FALSE :\r\n%O" k points.Count points.Count polyLine  |Ok _ -> ()
             let res = Polyline2D.offsetCore(points, offsetDistances, referenceOrient, fixColinearLooped=false, allowObliqueOffsetOnColinearSegments=obliqueOffsets, endIndexChange = 0)
 
             // (4.1) fix ends if not looped
@@ -648,15 +666,20 @@ type Polyline2D =
     /// Auto detects if given points are from a closed Polyline (first point = last point) and loops them.
     /// Does not fail on colinear or duplicate points.</summary>
     /// <param name="polyLine"> A 2D Polyline. </param>
-    /// <param name="offsetDistance">The offset distance for all segments of the polyline.  A positive distance offsets inwards in corners, a negative offset outwards.</param>
+    /// <param name="offsetDistance">The offset distance for all segments of the polyline.
+    /// A positive distance offsets inwards in corners, a negative offset outwards.</param>
     /// <param name="loop">Consider last point and first point to be from a closed loop, even if they are not at the same location.</param>
     /// <param name="referenceOrient">float, Optional.
-    /// The 'referenceOrient' corresponds to the cross product of two segment of the polyline an an outside corner.
-    /// If 'referenceOrient' is 0.0 or omitted then the algorithm tries to detect if the loop is clockwise or counterclockwise.
-    /// it also tries to find an outer corner on non convex polylines.
+    /// This is to control on which side of the polyline the offset is created.
+    /// By default the offset is created to the inside of the polygon / polyline.
+    /// The algorithm tries to detect if the loop is clockwise or counterclockwise. But this cannot always be detected.
+    /// For example on self intersecting polylines.
     /// If 'referenceOrient' is bigger than 0.0 a counterclockwise loops is assumed and the detection part is skipped.
     /// If 'referenceOrient' is smaller than 0.0 a clockwise loops is assumed and the detection part is skipped.
-    /// If a given referenceOrient does not correspond to the looping order the offset will be to the other side.</param>
+    /// The 'referenceOrient' corresponds to the cross product of two segment of the polyline an an convex corner.
+    /// If 'referenceOrient' is 0.0 or omitted then the algorithm tries to detect if the loop is clockwise or counterclockwise.
+    /// It also tries to find a convex corner on a convex and concave polyline.
+    /// If the given referenceOrient does not correspond to the looping order the offset will be to the other side.</param>
     /// <returns>A new 2D polyline with the same amount of points.</returns>
     static member offset(   polyLine:Polyline2D,
                             offsetDistance: float,

@@ -106,7 +106,7 @@ type Plane = // Normals are always unitized
     /// Create Plane, normal vector gets unitized in constructor.
     static member create(pt, normal:Vec) =
         let l = sqrt(normal.X*normal.X + normal.Y*normal.Y + normal.Z*normal.Z)
-        if isTooTiny l then EuclidException.Raise "Euclid.Plane.create: %O is too small for unitizing, tolerance:%g" normal zeroLengthTolerance
+        if isTooTiny l then EuclidException.Raisef "Euclid.Plane.create: %O is too small for unitizing, tolerance:%g" normal zeroLengthTolerance
         let li = 1. / l
         Plane(pt, UnitVec.createUnchecked(li*normal.X, li*normal.Y, li*normal.Z))
 
@@ -117,7 +117,7 @@ type Plane = // Normals are always unitized
     /// Create Plane from 3 points.
     static member inline createFrom3Points (a:Pnt) (b:Pnt) (c:Pnt) =
         let n = Vec.cross (c-b, a-b)
-        if isTooSmallSq n.LengthSq then EuclidException.Raise "Euclid.Plane.createFrom3Points: the points %O, %O, %O are (almost) in one line or one Point, no Plane found." a b c
+        if isTooSmallSq n.LengthSq then EuclidException.Raisef "Euclid.Plane.createFrom3Points: the points %O, %O, %O are (almost) in one line or one Point, no Plane found." a b c
         Plane(a, n.Unitized)
 
     /// Gets the Planes normal. A unitized vector.

@@ -20,7 +20,8 @@ type internal DEF = Runtime.InteropServices.DefaultParameterValueAttribute
 type EuclidException (s:string) =
     inherit Exception(s)
 
-    static member Raise msg = Printf.kprintf (fun s -> raise (EuclidException(s))) msg
+    static member Raisef msg = Printf.kprintf (fun s -> raise (EuclidException(s))) msg
+    static member Raise (txt:string) = raise (EuclidException(txt))
 
     /// This function is much smaller when it gets inlined compared to the Raise (Printf.kprintf) version
     static member Throw1 msg (v:'T) = raise (EuclidException(msg + ": " + v.ToString()))
@@ -30,7 +31,9 @@ type EuclidException (s:string) =
 type EuclidDivByZeroException (s:string) =
     inherit Exception(s)
 
-    static member Raise msg = Printf.kprintf (fun s -> raise (EuclidDivByZeroException(s))) msg
+    static member Raisef msg = Printf.kprintf (fun s -> raise (EuclidDivByZeroException(s))) msg
+
+    static member Raise (txt:string) = raise (EuclidDivByZeroException(txt))
 
     /// This function is much smaller when it gets inlined compared to the Raise (Printf.kprintf) version
     static member Throw1 msg (v:'T) = raise (EuclidDivByZeroException(msg + ": " + v.ToString()))

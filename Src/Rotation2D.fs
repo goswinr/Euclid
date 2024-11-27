@@ -34,7 +34,7 @@ type Rotation2D =
     new (sin, cos) =
         #if DEBUG
         let sum = sin*sin + cos*cos in
-        if 0.99999 > sum || sum > 1.00001  then  EuclidException.Raise "Euclid.Rotate Constructor failed for sin:%g and cos:%g.  Because sin*sin + cos*cos needs to be 1.0." sin cos
+        if 0.99999 > sum || sum > 1.00001  then  EuclidException.Raisef "Euclid.Rotate Constructor failed for sin:%g and cos:%g.  Because sin*sin + cos*cos needs to be 1.0." sin cos
         #endif
         {Sin = sin; Cos = cos}
 
@@ -103,7 +103,7 @@ type Rotation2D =
         let la = a.Length
         let lb = b.Length
         if isTooTiny (la) || isTooTiny (lb) then
-            EuclidException.Raise "Euclid.Rotation2D.createFromVectors failed because one of the input vectors is too shorter than zeroLengthTolerance: a: %s, b: %s" a.AsString b.AsString
+            EuclidException.Raisef "Euclid.Rotation2D.createFromVectors failed because one of the input vectors is too shorter than zeroLengthTolerance: a: %s, b: %s" a.AsString b.AsString
         let ax = a.X/la
         let ay = a.Y/la
         let bx = b.X/lb

@@ -43,10 +43,10 @@ type UnitVec =
     new (x, y, z) =
         #if DEBUG //  with these tests all operations are 2.5 times slower
         if Double.IsNaN x || Double.IsNaN y || Double.IsNaN z || Double.IsInfinity x || Double.IsInfinity y || Double.IsInfinity z then
-            EuclidException.Raise "Euclid.UnitVec Constructor failed for x:%g, y:%g, z:%g"  x y z
+            EuclidException.Raisef "Euclid.UnitVec Constructor failed for x:%g, y:%g, z:%g"  x y z
         let lenSq = x*x + y*y + z*z
         if UtilEuclid.isNotOne lenSq then
-            EuclidException.Raise "Euclid.UnitVec Constructor failed for x:%g, y:%g, z:%g. The length needs to be 1.0."  x y z
+            EuclidException.Raisef "Euclid.UnitVec Constructor failed for x:%g, y:%g, z:%g. The length needs to be 1.0."  x y z
         #endif
         {X=x; Y=y; Z=z}
 
@@ -112,7 +112,7 @@ type UnitVec =
 
     // A separate function to compose the error message that does not get inlined.
     [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-    member v.FailedDivide(f) = EuclidDivByZeroException.Raise "Euclid.UnitVec: divide operator: %g is too small for dividing %O using the '/' operator. Tolerance:%g"  f v zeroLengthTolerance
+    member v.FailedDivide(f) = EuclidDivByZeroException.Raisef "Euclid.UnitVec: divide operator: %g is too small for dividing %O using the '/' operator. Tolerance:%g"  f v zeroLengthTolerance
     /// Divides a 3D unit-vector by a scalar, also be called dividing/scaling a vector. Returns a new (non-unitized) 3D vector.
     static member inline ( / ) (v:UnitVec, f:float) =
         if isTooTiny (abs f) then v.FailedDivide(f) // don't compose error msg directly here to keep inlined code small. // https://github.com/dotnet/runtime/issues/24626#issuecomment-356736809
@@ -142,7 +142,7 @@ type UnitVec =
         UnitVec(v.X, v.Y, v.Z)
 
     // A separate function to compose the error message that does not get inlined.    [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-    static member failedCreate (x:float, y:float, z:float) = EuclidDivByZeroException.Raise "Euclid.UnitVec.create: x:%g, y:%g and z:%g are too small for creating a unit-vector, Tolerance:%g" x y z zeroLengthTolerance
+    static member failedCreate (x:float, y:float, z:float) = EuclidDivByZeroException.Raisef "Euclid.UnitVec.create: x:%g, y:%g and z:%g are too small for creating a unit-vector, Tolerance:%g" x y z zeroLengthTolerance
     /// Create 3D unit-vector. Does the unitizing too.
     static member inline create (x:float, y:float, z:float) =
         // this member cant be an extension method because it is used with SRTP.

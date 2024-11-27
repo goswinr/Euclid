@@ -43,7 +43,7 @@ type Vec =
     new (x, y, z) =
         #if DEBUG
         if Double.IsNaN x || Double.IsNaN y || Double.IsNaN z || Double.IsInfinity x || Double.IsInfinity y || Double.IsInfinity z then
-            EuclidException.Raise "Euclid.Vec Constructor failed for x:%g, y:%g, z:%g"  x y z
+            EuclidException.Raisef "Euclid.Vec Constructor failed for x:%g, y:%g, z:%g"  x y z
         #endif
         {X=x; Y=y; Z=z}
 
@@ -91,7 +91,7 @@ type Vec =
 
     /// A separate function to compose the error message that does not get inlined.
     [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-    member v.FailedDivide(f) = EuclidDivByZeroException.Raise "Euclid.Vec: divide operator: %g is too small for dividing %O using the '/' operator. Tolerance:%g"  f v zeroLengthTolerance
+    member v.FailedDivide(f) = EuclidDivByZeroException.Raisef "Euclid.Vec: divide operator: %g is too small for dividing %O using the '/' operator. Tolerance:%g"  f v zeroLengthTolerance
 
     /// Divides a 3D vector by a scalar, also be called dividing/scaling a vector. Returns a new 3D vector.
     static member inline ( / ) (v:Vec, f:float) =
@@ -121,7 +121,7 @@ type Vec =
     /// Divides the vector by an integer.
     /// (This member is needed by Array.average and similar functions)
     static member DivideByInt (v:Vec, i:int) = // needed by 'Array.average'
-        if i = 0 then EuclidDivByZeroException.Raise "Euclid.Vec.DivideByInt is zero %O" v
+        if i = 0 then EuclidDivByZeroException.Raisef "Euclid.Vec.DivideByInt is zero %O" v
         let d = float i
         Vec(v.X/d, v.Y/d, v.Z/d)
 

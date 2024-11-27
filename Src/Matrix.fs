@@ -147,7 +147,7 @@ type Matrix =
 
     /// A separate function to compose the error message that does not get inlined.
     member private m.FailedInverse() =
-        EuclidException.Raise "Euclid.Matrix has a zero or almost zero Determinant. It is smaller than 1e-16. It cannot be inverted:\r\n%O" m // TODO or return all zero matrix like threeJS ?
+        EuclidException.Raisef "Euclid.Matrix has a zero or almost zero Determinant. It is smaller than 1e-16. It cannot be inverted:\r\n%O" m // TODO or return all zero matrix like threeJS ?
 
     /// Inverts the matrix.
     /// If the determinant is zero the Matrix cannot be inverted.
@@ -585,7 +585,7 @@ type Matrix =
         // first unitize
         let len = sqrt (axis.X*axis.X + axis.Y*axis.Y + axis.Z*axis.Z)
         if isTooTiny(len) then
-            EuclidException.Raise "Euclid.Matrix.createRotationAxis failed on too short axis: %O and rotation: %g° Degrees." axis angleDegrees
+            EuclidException.Raisef "Euclid.Matrix.createRotationAxis failed on too short axis: %O and rotation: %g° Degrees." axis angleDegrees
         let sc = 1. / len
         let x = axis.X * sc
         let y = axis.Y * sc
@@ -652,7 +652,7 @@ type Matrix =
         else
             let v = vecFrom + vecTo
             if isTooSmallSq v.LengthSq then // the vectors are almost exactly opposite
-                EuclidException.Raise "Euclid.Matrix.createVecToVec failed to find a rotation axis for (almost) colinear unit-vectors in opposite directions: %O and %O" vecFrom vecTo
+                EuclidException.Raisef "Euclid.Matrix.createVecToVec failed to find a rotation axis for (almost) colinear unit-vectors in opposite directions: %O and %O" vecFrom vecTo
             else
                 let axis0 = UnitVec.cross(vecFrom, vecTo)
                 let len = axis0.Length
@@ -682,7 +682,7 @@ type Matrix =
             let z = vecFrom.Z
             let length = sqrt(x*x + y*y + z*z)
             if isTooTiny(length) then
-                EuclidException.Raise "Euclid.Matrix.createVecToVec failed. The vector is too short: vecFrom: %O" vecFrom
+                EuclidException.Raisef "Euclid.Matrix.createVecToVec failed. The vector is too short: vecFrom: %O" vecFrom
             let sc = 1. / length // inverse for unitizing vector:
             UnitVec.createUnchecked(x*sc, y*sc, z*sc)
         let tu =
@@ -691,7 +691,7 @@ type Matrix =
             let z = vecTo.Z
             let length = sqrt(x*x + y*y + z*z)
             if isTooTiny(length) then
-                EuclidException.Raise "Euclid.Matrix.createVecToVec failed. The vector is too short: vecTo: %O" vecTo
+                EuclidException.Raisef "Euclid.Matrix.createVecToVec failed. The vector is too short: vecTo: %O" vecTo
             let sc = 1. / length // inverse for unitizing vector:
             UnitVec.createUnchecked(x*sc, y*sc, z*sc)
 
@@ -701,7 +701,7 @@ type Matrix =
         else
             let v = fu + tu
             if isTooSmallSq v.LengthSq then // the vectors are almost exactly opposite
-                EuclidException.Raise "Euclid.Matrix.createVecToVec failed to find a rotation axis for (almost) colinear (or NaN) vectors in opposite directions: %O and %O" vecFrom vecTo
+                EuclidException.Raisef "Euclid.Matrix.createVecToVec failed to find a rotation axis for (almost) colinear (or NaN) vectors in opposite directions: %O and %O" vecFrom vecTo
             else
                 let axis0 = UnitVec.cross(fu, tu)
                 let len = axis0.Length
@@ -808,7 +808,7 @@ type Matrix =
     /// Where X41, Y42 and Z43 refer to the translation part of the matrix.
     static member createFromColumMajorArray (xs:float[]) =
         if xs.Length <> 16 then
-            EuclidException.Raise "Euclid.Matrix.createFromColumMajorArray expects an array of 16 items but got %d " xs.Length
+            EuclidException.Raisef "Euclid.Matrix.createFromColumMajorArray expects an array of 16 items but got %d " xs.Length
         else
             Matrix (
                 xs[0],  xs[4],  xs[ 8],  xs[12] ,
@@ -822,7 +822,7 @@ type Matrix =
     /// Where X41, Y42 and Z43 refer to the translation part of the matrix.
     static member createFromRowMajorArray (xs:float[]) =
         if xs.Length <> 16 then
-            EuclidException.Raise "Euclid.Matrix.createFromRowMajorArray expects an array of 16 items but got %d " xs.Length
+            EuclidException.Raisef "Euclid.Matrix.createFromRowMajorArray expects an array of 16 items but got %d " xs.Length
         else
             Matrix (
                 xs[ 0],  xs[ 1],  xs[ 2],  xs[ 3] ,

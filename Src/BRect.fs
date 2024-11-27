@@ -250,7 +250,7 @@ type BRect =
     member inline r.Expand(dist) : BRect =
         let n = BRect(r.MinX-dist, r.MinY-dist, r.MaxX+dist, r.MaxY+dist)
         if dist<0. &&  (n.MinX > n.MaxX || n.MinY > n.MaxX) then
-            EuclidException.Raise "Euclid.BRect.Expand(dist): Negative distance %g causes an underflow, on %s" dist r.AsString
+            EuclidException.Raisef "Euclid.BRect.Expand(dist): Negative distance %g causes an underflow, on %s" dist r.AsString
         n
 
 
@@ -259,7 +259,7 @@ type BRect =
     member inline r.Expand(xDist, yDist) : BRect =
         let n = BRect(r.MinX-xDist, r.MinY-yDist, r.MaxX+xDist, r.MaxY+yDist)
         if n.MinX > n.MaxX ||  n.MinY > n.MaxX then
-            EuclidException.Raise "Euclid.BRect.Expand(x, y): Negative distance(s) X: %g and Y: %g cause an underflow, on %s" xDist yDist r.AsString
+            EuclidException.Raisef "Euclid.BRect.Expand(x, y): Negative distance(s) X: %g and Y: %g cause an underflow, on %s" xDist yDist r.AsString
         n
 
 
@@ -293,7 +293,7 @@ type BRect =
     member inline r.ExpandXaxis(startDist, endDist) : BRect =
         let n = BRect(r.MinX-startDist, r.MinY, r.MaxX+endDist, r.MaxY)
         if n.MinX > n.MaxX then
-            EuclidException.Raise "Euclid.BRect.ExpandXaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist r.AsString
+            EuclidException.Raisef "Euclid.BRect.ExpandXaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist r.AsString
         n
 
     /// Returns a bounding rectangle expanded only in Y direction by different distance for start(minY) and end (maxY).
@@ -301,10 +301,12 @@ type BRect =
     member inline r.ExpandYaxis(startDist, endDist) : BRect =
         let n = BRect(r.MinX, r.MinY-startDist, r.MaxX, r.MaxY+endDist)
         if n.MinY > n.MaxY then
-            EuclidException.Raise "Euclid.BRect.ExpandYaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist r.AsString
+            EuclidException.Raisef "Euclid.BRect.ExpandYaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist r.AsString
         n
 
     /// Returns true if the two bounding rectangles do overlap or touch.
+    /// Also returns true if one box is completely inside the other.
+    /// Also returns true if one box is completely surrounding the other.
     member inline r.OverlapsWith (a:BRect) =
         not (  r.MinX > a.MaxX
             || a.MinX > r.MaxX
@@ -314,6 +316,8 @@ type BRect =
     /// Returns true if the two bounding rectangles do overlap more than a given tolerance distance.
     /// Use a negative tolerance to count touching if they are apart by abs(tolerance)
     /// Returns false if the two bounding rectangles are just touching or apart.
+    /// Also returns true if one box is completely inside the other.
+    /// Also returns true if one box is completely surrounding the other.
     member inline r.OverlapsWith (a:BRect, tol) =
         not (  r.MinX > a.MaxX - tol
             || a.MinX > r.MaxX - tol
@@ -410,12 +414,16 @@ type BRect =
         BRect(r.MinX+v.X, r.MinY+v.Y, r.MaxX+v.X, r.MaxY+v.Y)
 
     /// Returns true if the two bounding rectangles do overlap or touch exactly.
+    /// Also returns true if one box is completely inside the other.
+    /// Also returns true if one box is completely surrounding the other.
     static member inline doOverlap(a:BRect) (b:BRect) =
         b.OverlapsWith(a)
 
     /// Returns true if the two bounding rectangles do overlap more than a given tolerance distance.
     /// Use a negative tolerance to count touching if they are apart by abs(tolerance)
     /// Returns false if the two bounding rectangles are just touching or apart.
+    /// Also returns true if one box is completely inside the other.
+    /// Also returns true if one box is completely surrounding the other.
     static member inline doOverlapMoreThan tol (a:BRect) (b:BRect) =
         b.OverlapsWith(a, tol)
 
@@ -490,8 +498,8 @@ type BRect =
 
     /// Creates a bounding rectangle from a center point and the total X and Y size.
     static member inline createFromCenter (center:Pt, sizeX, sizeY) =
-        if isNegative(sizeX) then EuclidException.Raise "Euclid.BRect.createFromCenter sizeX is negative: %g, sizeY is: %g, center: %O"  sizeX sizeY  center.AsString
-        if isNegative(sizeY) then EuclidException.Raise "Euclid.BRect.createFromCenter sizeY is negative: %g, sizeX is: %g, center: %O"  sizeY sizeX  center.AsString
+        if isNegative(sizeX) then EuclidException.Raisef "Euclid.BRect.createFromCenter sizeX is negative: %g, sizeY is: %g, center: %O"  sizeX sizeY  center.AsString
+        if isNegative(sizeY) then EuclidException.Raisef "Euclid.BRect.createFromCenter sizeY is negative: %g, sizeX is: %g, center: %O"  sizeY sizeX  center.AsString
         let minX = center.X - sizeX*0.5
         let minY = center.Y - sizeY*0.5
         let maxX = center.X + sizeX*0.5

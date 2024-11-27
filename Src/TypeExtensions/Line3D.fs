@@ -22,7 +22,7 @@ module AutoOpenLine3D =
         let x = abs (ln.ToX-ln.FromX)
         let y = abs (ln.ToY-ln.FromY)
         let z = abs (ln.ToZ-ln.FromZ)
-        if isTooSmall (x+y+z) then EuclidException.Raise "Euclid.Line3D.IsXAligned cannot not check very short line. (tolerance 1e-6) %O" ln
+        if isTooSmall (x+y+z) then EuclidException.Raisef "Euclid.Line3D.IsXAligned cannot not check very short line. (tolerance 1e-6) %O" ln
         else y < 1e-9 && z < 1e-9
 
     /// Checks if 3D line is parallel to the world Y axis. Ignoring orientation.
@@ -32,7 +32,7 @@ module AutoOpenLine3D =
         let x = abs (ln.ToX-ln.FromX)
         let y = abs (ln.ToY-ln.FromY)
         let z = abs (ln.ToZ-ln.FromZ)
-        if isTooSmall (x+y+z) then EuclidException.Raise "Euclid.Line3D.IsYAligned cannot not check very short line. (tolerance 1e-6) %O" ln
+        if isTooSmall (x+y+z) then EuclidException.Raisef "Euclid.Line3D.IsYAligned cannot not check very short line. (tolerance 1e-6) %O" ln
         else x < 1e-9 && z < 1e-9
 
     /// Checks if 3D line is parallel to the world Z axis. Ignoring orientation.
@@ -43,7 +43,7 @@ module AutoOpenLine3D =
         let x = abs (ln.ToX-ln.FromX)
         let y = abs (ln.ToY-ln.FromY)
         let z = abs (ln.ToZ-ln.FromZ)
-        if isTooSmall (x+y+z) then EuclidException.Raise "Euclid.Line3D.IsZAligned cannot not check very short line. (tolerance 1e-6) %O" ln
+        if isTooSmall (x+y+z) then EuclidException.Raisef "Euclid.Line3D.IsZAligned cannot not check very short line. (tolerance 1e-6) %O" ln
         else x < 1e-9 && y < 1e-9
 
     /// Checks if 3D line is parallel to the world Z axis. Ignoring orientation.
@@ -54,7 +54,7 @@ module AutoOpenLine3D =
         let x = abs (ln.ToX-ln.FromX)
         let y = abs (ln.ToY-ln.FromY)
         let z = abs (ln.ToZ-ln.FromZ)
-        if isTooSmall (x+y+z) then EuclidException.Raise "Euclid.Line3D.IsVertical cannot not check very short line. (tolerance 1e-6) %O" ln
+        if isTooSmall (x+y+z) then EuclidException.Raisef "Euclid.Line3D.IsVertical cannot not check very short line. (tolerance 1e-6) %O" ln
         else x < 1e-9 && y < 1e-9
 
     /// Checks if 3D line is horizontal.
@@ -64,7 +64,7 @@ module AutoOpenLine3D =
         let x = abs (ln.ToX-ln.FromX)
         let y = abs (ln.ToY-ln.FromY)
         let z = abs (ln.ToZ-ln.FromZ)
-        if isTooSmall (x+y+z) then EuclidException.Raise "Euclid.Line3D.IsHorizontal cannot not check very short line. (tolerance 1e-6) %O" ln
+        if isTooSmall (x+y+z) then EuclidException.Raisef "Euclid.Line3D.IsHorizontal cannot not check very short line. (tolerance 1e-6) %O" ln
         else z < 1e-9
 
     /// Check if the 3D line has exactly the same starting and ending point.
@@ -155,7 +155,7 @@ module AutoOpenLine3D =
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let l = sqrt(x*x + y*y + z*z)
-        if isTooTiny l then EuclidException.Raise "Euclid.Line3D.Extend %O to short for finding point at a distance." ln
+        if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.Extend %O to short for finding point at a distance." ln
         Line3D( ln.FromX - x*distAtStart/l,
                 ln.FromY - y*distAtStart/l,
                 ln.FromZ - z*distAtStart/l,
@@ -170,7 +170,7 @@ module AutoOpenLine3D =
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let l = sqrt(x*x + y*y + z*z)
-        if isTooTiny l then EuclidException.Raise "Euclid.Line3D.ExtendStart %O to short for finding point at a distance." ln
+        if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.ExtendStart %O to short for finding point at a distance." ln
         Line3D( ln.FromX - x*distAtStart/l,
                 ln.FromY - y*distAtStart/l,
                 ln.FromZ - z*distAtStart/l,
@@ -185,7 +185,7 @@ module AutoOpenLine3D =
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let l = sqrt(x*x + y*y + z*z)
-        if isTooTiny l then EuclidException.Raise "Euclid.Line3D.ExtendEnd %O to short for finding point at a distance." ln
+        if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.ExtendEnd %O to short for finding point at a distance." ln
         Line3D( ln.FromX,
                 ln.FromY,
                 ln.FromZ,
@@ -201,7 +201,7 @@ module AutoOpenLine3D =
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let l = sqrt(x*x + y*y)
-        if isTooTiny l then EuclidException.Raise "Euclid.Line3D.ExtendRel %O to short for finding point at a distance." ln
+        if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.ExtendRel %O to short for finding point at a distance." ln
         Line3D( ln.FromX - x*relAtStart,
                 ln.FromY - y*relAtStart,
                 ln.FromZ - z*relAtStart,
@@ -217,7 +217,7 @@ module AutoOpenLine3D =
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let l = sqrt(x*x + y*y)
-        if isTooTiny l then EuclidException.Raise "Euclid.Line3D.ExtendStartRel %O to short for finding point at a distance." ln
+        if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.ExtendStartRel %O to short for finding point at a distance." ln
         Line3D( ln.FromX - x*relAtStart,
                 ln.FromY - y*relAtStart,
                 ln.FromZ - z*relAtStart,
@@ -233,7 +233,7 @@ module AutoOpenLine3D =
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let l = sqrt(x*x + y*y)
-        if isTooTiny l then EuclidException.Raise "Euclid.Line3D.ExtendEndRel %O to short for finding point at a distance." ln
+        if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.ExtendEndRel %O to short for finding point at a distance." ln
         Line3D( ln.FromX,
                 ln.FromY,
                 ln.FromZ,
@@ -248,7 +248,7 @@ module AutoOpenLine3D =
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let l = sqrt(x*x + y*y + z*z)
-        if isTooTiny l then EuclidException.Raise "Euclid.Line3D.Shrink %O to short for finding point at a distance." ln
+        if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.Shrink %O to short for finding point at a distance." ln
         Line3D( ln.FromX + x*distAtStart/l,
                 ln.FromY + y*distAtStart/l,
                 ln.FromZ + z*distAtStart/l,
@@ -263,7 +263,7 @@ module AutoOpenLine3D =
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let l = sqrt(x*x + y*y + z*z)
-        if isTooTiny l then EuclidException.Raise "Euclid.Line3D.ShrinkStart %O to short for finding point at a distance." ln
+        if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.ShrinkStart %O to short for finding point at a distance." ln
         Line3D( ln.FromX + x*distAtStart/l,
                 ln.FromY + y*distAtStart/l,
                 ln.FromZ + z*distAtStart/l,
@@ -278,7 +278,7 @@ module AutoOpenLine3D =
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let l = sqrt(x*x + y*y + z*z)
-        if isTooTiny l then EuclidException.Raise "Euclid.Line3D.ShrinkEnd %O to short for finding point at a distance." ln
+        if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.ShrinkEnd %O to short for finding point at a distance." ln
         Line3D( ln.FromX,
                 ln.FromY,
                 ln.FromZ,
@@ -332,7 +332,7 @@ module AutoOpenLine3D =
         let z = ln.FromZ - ln.ToZ
         let lenSq = x*x + y*y + z*z
         if isTooSmallSq(lenSq) then
-            EuclidException.Raise "Euclid.Line3D.ClosestParameterInfinite failed on very short line %O for point %O" ln p
+            EuclidException.Raisef "Euclid.Line3D.ClosestParameterInfinite failed on very short line %O for point %O" ln p
         let u = ln.FromX-p.X
         let v = ln.FromY-p.Y
         let w = ln.FromZ-p.Z
@@ -369,7 +369,7 @@ module AutoOpenLine3D =
         let z = ln.FromZ - ln.ToZ
         let lenSq = x*x + y*y + z*z
         if isTooSmallSq(lenSq) then
-            EuclidException.Raise "Euclid.Line3D.ClosestPointInfinite failed on very short line %O for point %O" ln p
+            EuclidException.Raisef "Euclid.Line3D.ClosestPointInfinite failed on very short line %O for point %O" ln p
         let u = ln.FromX-p.X
         let v = ln.FromY-p.Y
         let w = ln.FromZ-p.Z
@@ -398,7 +398,7 @@ module AutoOpenLine3D =
         let z = lnFromZ - ln.ToZ
         let lenSq = x*x + y*y + z*z
         if isTooSmallSq lenSq  then // corresponds to a line Length of 1e-6
-            EuclidException.Raise "Euclid.Line3D.DistanceSqToPntInfiniteSq failed on very short line %O for point %O" ln p
+            EuclidException.Raisef "Euclid.Line3D.DistanceSqToPntInfiniteSq failed on very short line %O for point %O" ln p
         let u = lnFromX - p.X
         let v = lnFromY - p.Y
         let w = lnFromZ - p.Z
@@ -440,7 +440,7 @@ module AutoOpenLine3D =
     /// Calculates the dot product of both.
     /// Then checks if it is bigger than 1e-12.
     member inline ln.MatchesOrientation180 (v:Vec) =
-        if isTooTinySq(v.LengthSq) then EuclidException.Raise "Euclid.Line3D.MatchesOrientation180: Vec 'v' is too short: %s. 'ln':%s " v.AsString ln.AsString
+        if isTooTinySq(v.LengthSq) then EuclidException.Raisef "Euclid.Line3D.MatchesOrientation180: Vec 'v' is too short: %s. 'ln':%s " v.AsString ln.AsString
         let dot = v.X*(ln.ToX-ln.FromX) + v.Y*(ln.ToY-ln.FromY) + v.Z*(ln.ToZ-ln.FromZ)
         dot > 1e-12
 
@@ -468,9 +468,9 @@ module AutoOpenLine3D =
         let a = ln.Vector
         let b = other.Vector
         let sa = a.LengthSq
-        if isTooTinySq(sa) then EuclidException.Raise "Euclid.Line3D.IsParallelTo: Line3D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
+        if isTooTinySq(sa) then EuclidException.Raisef "Euclid.Line3D.IsParallelTo: Line3D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
         let sb = b.LengthSq
-        if isTooTinySq(sb) then EuclidException.Raise "Euclid.Line3D.IsParallelTo: Line3D 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
+        if isTooTinySq(sb) then EuclidException.Raisef "Euclid.Line3D.IsParallelTo: Line3D 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
         let au = a * (1.0 / sqrt sa)
         let bu = b * (1.0 / sqrt sb)
         abs(bu *** au) > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
@@ -485,9 +485,9 @@ module AutoOpenLine3D =
         let a = ln.Vector
         let b = other
         let sa = a.LengthSq
-        if isTooTinySq(sa) then EuclidException.Raise "Euclid.Line2D.IsParallelTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
+        if isTooTinySq(sa) then EuclidException.Raisef "Euclid.Line2D.IsParallelTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
         let sb = b.LengthSq
-        if isTooTinySq(sb) then EuclidException.Raise "Euclid.Line2D.IsParallelTo: Vec 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
+        if isTooTinySq(sb) then EuclidException.Raisef "Euclid.Line2D.IsParallelTo: Vec 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
         let au = a * (1.0 / sqrt sa)
         let bu = b * (1.0 / sqrt sb)
         abs(bu *** au) > float minCosine
@@ -501,7 +501,7 @@ module AutoOpenLine3D =
     member inline ln.IsParallelTo( other:UnitVec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
         let a = ln.Vector
         let sa = a.LengthSq
-        if isTooTinySq(sa) then EuclidException.Raise "Euclid.Line3D.IsParallelTo: Line3D 'ln' is too short: %s. 'other':%s " a.AsString other.AsString
+        if isTooTinySq(sa) then EuclidException.Raisef "Euclid.Line3D.IsParallelTo: Line3D 'ln' is too short: %s. 'other':%s " a.AsString other.AsString
         let au = a * (1.0 / sqrt sa)
         abs(other *** au) > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
 
@@ -516,9 +516,9 @@ module AutoOpenLine3D =
         let a = ln.Vector
         let b = other.Vector
         let sa = a.LengthSq
-        if isTooTinySq(sa) then EuclidException.Raise "Euclid.Line3D.IsParallelAndOrientedTo: Line3D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
+        if isTooTinySq(sa) then EuclidException.Raisef "Euclid.Line3D.IsParallelAndOrientedTo: Line3D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
         let sb = b.LengthSq
-        if isTooTinySq(sb) then EuclidException.Raise "Euclid.Line3D.IsParallelAndOrientedTo: Line3D 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
+        if isTooTinySq(sb) then EuclidException.Raisef "Euclid.Line3D.IsParallelAndOrientedTo: Line3D 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
         let au = a * (1.0 / sqrt sa)
         let bu = b * (1.0 / sqrt sb)
         bu *** au > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
@@ -533,9 +533,9 @@ module AutoOpenLine3D =
         let a = ln.Vector
         let b = other
         let sa = a.LengthSq
-        if isTooTinySq(sa) then EuclidException.Raise "Euclid.Line2D.IsParallelAndOrientedTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
+        if isTooTinySq(sa) then EuclidException.Raisef "Euclid.Line2D.IsParallelAndOrientedTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
         let sb = b.LengthSq
-        if isTooTinySq(sb) then EuclidException.Raise "Euclid.Line2D.IsParallelAndOrientedTo: Vec 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
+        if isTooTinySq(sb) then EuclidException.Raisef "Euclid.Line2D.IsParallelAndOrientedTo: Vec 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
         let au = a * (1.0 / sqrt sa)
         let bu = b * (1.0 / sqrt sb)
         bu *** au > float minCosine
@@ -549,7 +549,7 @@ module AutoOpenLine3D =
     member inline ln.IsParallelAndOrientedTo (other:UnitVec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
         let a = ln.Vector
         let sa = a.LengthSq
-        if isTooTinySq(sa) then EuclidException.Raise "Euclid.Line3D.IsParallelAndOrientedTo: Line3D 'ln' is too short: %s. 'other':%s " a.AsString other.AsString
+        if isTooTinySq(sa) then EuclidException.Raisef "Euclid.Line3D.IsParallelAndOrientedTo: Line3D 'ln' is too short: %s. 'other':%s " a.AsString other.AsString
         let au = a * (1.0 / sqrt sa)
         other *** au > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
 
@@ -564,9 +564,9 @@ module AutoOpenLine3D =
         let a = ln.Vector
         let b = other.Vector
         let sa = a.LengthSq
-        if isTooTinySq(sa) then EuclidException.Raise "Euclid.Line3D.IsPerpendicularTo: Line3D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
+        if isTooTinySq(sa) then EuclidException.Raisef "Euclid.Line3D.IsPerpendicularTo: Line3D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
         let sb = b.LengthSq
-        if isTooTinySq(sb) then EuclidException.Raise "Euclid.Line3D.IsPerpendicularTo: Line3D 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
+        if isTooTinySq(sb) then EuclidException.Raisef "Euclid.Line3D.IsPerpendicularTo: Line3D 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
         let au = a * (1.0 / sqrt sa)
         let bu = b * (1.0 / sqrt sb)
         let d = bu *** au
@@ -583,9 +583,9 @@ module AutoOpenLine3D =
         let a = ln.Vector
         let b = other
         let sa = a.LengthSq
-        if isTooTinySq(sa) then EuclidException.Raise "Euclid.Line2D.IsPerpendicularTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
+        if isTooTinySq(sa) then EuclidException.Raisef "Euclid.Line2D.IsPerpendicularTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
         let sb = b.LengthSq
-        if isTooTinySq(sb) then EuclidException.Raise "Euclid.Line2D.IsPerpendicularTo: Vec 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
+        if isTooTinySq(sb) then EuclidException.Raisef "Euclid.Line2D.IsPerpendicularTo: Vec 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
         let au = a * (1.0 / sqrt sa)
         let bu = b * (1.0 / sqrt sb)
         let d = bu *** au
@@ -600,7 +600,7 @@ module AutoOpenLine3D =
     member inline ln.IsPerpendicularTo (other:UnitVec, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) =
         let a = ln.Vector
         let sa = a.LengthSq
-        if isTooTinySq(sa) then EuclidException.Raise "Euclid.Line3D.IsPerpendicularTo: Line3D 'ln' is too short: %s. 'other':%s " a.AsString other.AsString
+        if isTooTinySq(sa) then EuclidException.Raisef "Euclid.Line3D.IsPerpendicularTo: Line3D 'ln' is too short: %s. 'other':%s " a.AsString other.AsString
         let au = a * (1.0 / sqrt sa)
         let d = other *** au
         float -maxCosine < d && d  < float maxCosine // = cosine of 98.75 and 90.25 degrees
@@ -977,7 +977,7 @@ module AutoOpenLine3D =
     static member inline lengthToPtOnLine (ln:Line3D) pt =
         let t = ln.Vector
         let l = t.Length
-        if isTooTiny l then EuclidException.Raise "Euclid.Line3D.lengthToPtOnLine %O to short for finding length to point." ln
+        if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.lengthToPtOnLine %O to short for finding length to point." ln
         (t/l) *** (pt-ln.From)
 
     /// Extend 3D line by absolute amount at start and end.
@@ -1035,7 +1035,7 @@ module AutoOpenLine3D =
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let len = sqrt(x*x + y*y + z*z)
-        if isTooTiny len then EuclidException.Raise "Euclid.Line3D.pointAtDistance %O to short for finding point at a distance." ln
+        if isTooTiny len then EuclidException.Raisef "Euclid.Line3D.pointAtDistance %O to short for finding point at a distance." ln
         let f = dist/len
         Pnt(ln.FromX + x*f,
             ln.FromY + y*f,
@@ -1048,7 +1048,7 @@ module AutoOpenLine3D =
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let l = sqrt(x*x + y*y + z*z)
-        if isTooTiny l then EuclidException.Raise "Euclid.Line3D.withLengthFromStart %O to short for finding point at a distance." ln
+        if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.withLengthFromStart %O to short for finding point at a distance." ln
         let f = len/l
         Line3D( ln.FromX,
                 ln.FromY,
@@ -1064,7 +1064,7 @@ module AutoOpenLine3D =
         let y = ln.FromY-ln.ToY
         let z = ln.FromZ-ln.ToZ
         let l = sqrt(x*x + y*y + z*z)
-        if isTooTiny l then EuclidException.Raise "Euclid.Line3D.withLengthToEnd %O to short for finding point at a distance." ln
+        if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.withLengthToEnd %O to short for finding point at a distance." ln
         let f = len/l
         Line3D( ln.ToX + x*f,
                 ln.ToY + y*f,
@@ -1080,7 +1080,7 @@ module AutoOpenLine3D =
         let y = ln.FromY-ln.ToY
         let z = ln.FromZ-ln.ToZ
         let l = sqrt(x*x + y*y + z*z)
-        if isTooTiny l then EuclidException.Raise "Euclid.Line3D.withLengthFromMid %O to short for finding point at a distance." ln
+        if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.withLengthFromMid %O to short for finding point at a distance." ln
         let f = (len/l + 1.0) * 0.5
         Line3D( ln.ToX   + x*f,
                 ln.ToY   + y*f,
@@ -1096,7 +1096,7 @@ module AutoOpenLine3D =
         let x = ln.ToX - ln.FromX
         let y = ln.ToY - ln.FromY
         let lenXY = sqrt (x*x + y*y)
-        if isTooTiny (lenXY ) then EuclidException.Raise "Euclid.Line3D.offset: Cannot offset vertical Line3D (by %g) %O" amount ln
+        if isTooTiny (lenXY ) then EuclidException.Raisef "Euclid.Line3D.offset: Cannot offset vertical Line3D (by %g) %O" amount ln
         let ox = -y*amount/lenXY  // unitized, horizontal, perpendicular  vector
         let oy =  x*amount/lenXY  // unitized, horizontal, perpendicular  vector
         Line3D( ln.FromX+ox,
@@ -1111,7 +1111,7 @@ module AutoOpenLine3D =
     /// Includes start and endpoint of line.
     static member divide (segments:int) (ln:Line3D) : Pnt[] =
         match segments with
-        | x when x < 1 -> EuclidException.Raise "Euclid.Line3D.divide failed for %d segments. Minimum one. for %O"  segments ln
+        | x when x < 1 -> EuclidException.Raisef "Euclid.Line3D.divide failed for %d segments. Minimum one. for %O"  segments ln
         | 1 -> [|ln.From;  ln.To|]
         | k ->
             let x = ln.ToX - ln.FromX
@@ -1137,7 +1137,7 @@ module AutoOpenLine3D =
     static member divideMinLength (minSegmentLength:float) (ln:Line3D) : Pnt[] =
         let len = ln.Length
         if len < minSegmentLength then
-            EuclidException.Raise "Euclid.Line3D.divideMinLength: minSegmentLength %g is bigger than line length %g for %O"  minSegmentLength len ln
+            EuclidException.Raisef "Euclid.Line3D.divideMinLength: minSegmentLength %g is bigger than line length %g for %O"  minSegmentLength len ln
         let k = int (len / (minSegmentLength*1.00000095367431640625)) // 8 float steps above 1.0 https://float.exposed/0x3f800008
         Line3D.divide k ln
 
@@ -1157,7 +1157,7 @@ module AutoOpenLine3D =
     /// Returns an empty array if the length of the line is less than gap-size x segment-count-minus-1.
     static member split (gap:float) (segments:int) (ln:Line3D) : Line3D[] =
         if segments <= 0  then
-            EuclidException.Raise "Euclid.Line3D.split failed for %d segments. Minimum one. for %O"  segments ln
+            EuclidException.Raisef "Euclid.Line3D.split failed for %d segments. Minimum one. for %O"  segments ln
         let v = ln.Vector
         let len = v.Length
         let lenMinusGaps = len - gap * float (segments-1)
@@ -1196,7 +1196,7 @@ module AutoOpenLine3D =
     static member splitMinLength (gap:float) (minSegmentLength:float) (ln:Line3D) : Line3D[] =
         let len = ln.Length
         if len < minSegmentLength then
-            EuclidException.Raise "Euclid.Line3D.splitMinLength: minSegmentLength %g is bigger than line length %g for %O"  minSegmentLength len ln
+            EuclidException.Raisef "Euclid.Line3D.splitMinLength: minSegmentLength %g is bigger than line length %g for %O"  minSegmentLength len ln
         let k = int ((len+gap) / ((minSegmentLength+gap)*1.000000953)) // 8 float steps above 1.0 https://float.exposed/0x3f800008
         Line3D.split gap k ln
 
@@ -1406,10 +1406,10 @@ module AutoOpenLine3D =
                                             ) : Pnt =
         match Line3D.intersectionInfinite(lnA, lnB, skewTolerance, relAngleDiscriminant, coincidentTolerance, tooShortTolerance) with
         |IntersectionPoints3D.OnePoint p  -> p
-        |IntersectionPoints3D.TwoPoints _ -> EuclidException.Raise "Euclid.Line3D.intersectionPointInfinite: Lines are skew lnA: \r\n%O and lnB: \r\n%O" lnA lnB
-        |IntersectionPoints3D.Parallel    -> EuclidException.Raise "Euclid.Line3D.intersectionPointInfinite: Lines are parallel lnA: \r\n%O and lnB: \r\n%O" lnA lnB
-        |IntersectionPoints3D.Coincident  -> EuclidException.Raise "Euclid.Line3D.intersectionPointInfinite: Lines are coincident lnA: \r\n%O and lnB: \r\n%O" lnA lnB
-        |IntersectionPoints3D.TooShort    -> EuclidException.Raise "Euclid.Line3D.intersectionPointInfinite: Lines are tooShort lnA: \r\n%O and lnB: \r\n%O" lnA lnB
+        |IntersectionPoints3D.TwoPoints _ -> EuclidException.Raisef "Euclid.Line3D.intersectionPointInfinite: Lines are skew lnA: \r\n%O and lnB: \r\n%O" lnA lnB
+        |IntersectionPoints3D.Parallel    -> EuclidException.Raisef "Euclid.Line3D.intersectionPointInfinite: Lines are parallel lnA: \r\n%O and lnB: \r\n%O" lnA lnB
+        |IntersectionPoints3D.Coincident  -> EuclidException.Raisef "Euclid.Line3D.intersectionPointInfinite: Lines are coincident lnA: \r\n%O and lnB: \r\n%O" lnA lnB
+        |IntersectionPoints3D.TooShort    -> EuclidException.Raisef "Euclid.Line3D.intersectionPointInfinite: Lines are tooShort lnA: \r\n%O and lnB: \r\n%O" lnA lnB
 
     /// Assumes Lines to be infinite.
     /// Returns the distance between two infinite 3D lines. At their closest point.
@@ -1420,9 +1420,9 @@ module AutoOpenLine3D =
     static member inline distanceBetweenInfiniteLines(lnA, lnB) =
         match Line3D.intersectionParamInfinite(lnA, lnB) with
         |IntersectionParam.Coincident    ->  0.0
-        |IntersectionParam.TooShortA     ->  EuclidException.Raise "Euclid.Line3D.distanceBetweenInfiniteLines: Line A is tooShort lnA: \r\n%O and lnB: \r\n%O" lnA lnB
-        |IntersectionParam.TooShortB     ->  EuclidException.Raise "Euclid.Line3D.distanceBetweenInfiniteLines: Line B is  tooShort lnA: \r\n%O and lnB: \r\n%O" lnA lnB
-        |IntersectionParam.TooShortBoth  ->  EuclidException.Raise "Euclid.Line3D.distanceBetweenInfiniteLines: both Lines are tooShort lnA: \r\n%O and lnB: \r\n%O" lnA lnB
+        |IntersectionParam.TooShortA     ->  EuclidException.Raisef "Euclid.Line3D.distanceBetweenInfiniteLines: Line A is tooShort lnA: \r\n%O and lnB: \r\n%O" lnA lnB
+        |IntersectionParam.TooShortB     ->  EuclidException.Raisef "Euclid.Line3D.distanceBetweenInfiniteLines: Line B is  tooShort lnA: \r\n%O and lnB: \r\n%O" lnA lnB
+        |IntersectionParam.TooShortBoth  ->  EuclidException.Raisef "Euclid.Line3D.distanceBetweenInfiniteLines: both Lines are tooShort lnA: \r\n%O and lnB: \r\n%O" lnA lnB
         |IntersectionParam.Parallel      -> lnA.DistanceToPntInfinite lnB.From
         |TwoParam (u, v) -> // skew or intersecting
             let a = lnA.EvaluateAt u

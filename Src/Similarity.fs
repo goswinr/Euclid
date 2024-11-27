@@ -146,7 +146,7 @@ module Similarity2D =
     /// The list of items and precomputed SimilarityMainGroups must have the same length and correspond to each other at the same index.
     /// SimilarityMainGroups is precomputed for better performance.
     let getGrouped (tolerance, items:ResizeArray<'T>, sims:ResizeArray<ObjectToCheck>) : ResizeArray<ResizeArray<'T>> =
-        if items.Count<>sims.Count then EuclidException.Raise "Count mismatch in Similarity2D.getGrouped"
+        if items.Count<>sims.Count then EuclidException.Raisef "Count mismatch in Similarity2D.getGrouped"
         let unique = ResizeArray<ObjectToCheck>()
         let groups = Dictionary<int, ResizeArray<'T>>()
         for sid, it in Seq.zip sims items do

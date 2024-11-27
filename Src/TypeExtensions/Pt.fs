@@ -73,7 +73,7 @@ module AutoOpenPt =
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        member p.FailedWithDistanceFromOrigin(l) = EuclidException.Raise "Euclid.Pt.WithDistFromOrigin %O is too small to be scaled to length %g." p l
+        member p.FailedWithDistanceFromOrigin(l) = EuclidException.Raisef "Euclid.Pt.WithDistFromOrigin %O is too small to be scaled to length %g." p l
 
         /// Returns new 2D point with given distance from Origin by scaling it up or down.
         member inline pt.WithDistanceFromOrigin (l:float) =
@@ -83,7 +83,7 @@ module AutoOpenPt =
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        member p.FailedDirectionDiamondTo(o) = EuclidException.Raise "Euclid.Pt.DirectionDiamondTo failed for too short distance between %O and %O." p o
+        member p.FailedDirectionDiamondTo(o) = EuclidException.Raisef "Euclid.Pt.DirectionDiamondTo failed for too short distance between %O and %O." p o
 
         /// Returns the Diamond Angle from this point to another point.
         /// Calculates the proportion of X to Y component.
@@ -108,7 +108,7 @@ module AutoOpenPt =
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        member p.FailedAngle2PiTo(o) = EuclidDivByZeroException.Raise "Euclid.Pt.Angle2PiTo failed for too short distance between %O and %O." p o
+        member p.FailedAngle2PiTo(o) = EuclidDivByZeroException.Raisef "Euclid.Pt.Angle2PiTo failed for too short distance between %O and %O." p o
 
         /// Returns the angle in Radians from this point to another point.
         /// 0.0 = Xaxis, going Counter-Clockwise till two Pi.
@@ -128,7 +128,7 @@ module AutoOpenPt =
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        member p.FailedClosestPointOnLine(fromPt:Pt, toPt:Pt) = EuclidDivByZeroException.Raise "Euclid.Pt.closestPointOnLine: Line is too short for fromPt %O to %O and %O" fromPt toPt p
+        member p.FailedClosestPointOnLine(fromPt:Pt, toPt:Pt) = EuclidDivByZeroException.Raisef "Euclid.Pt.closestPointOnLine: Line is too short for fromPt %O to %O and %O" fromPt toPt p
 
         /// Get closest point on finite line to test point.
         member inline testPt.ClosestPointOnLine(fromPt:Pt, toPt:Pt) =
@@ -181,7 +181,7 @@ module AutoOpenPt =
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        member testPt.FailedDistanceToLine(fromPt:Pt, toPt:Pt) = EuclidDivByZeroException.Raise "Euclid.Pt.DistanceToLine: Line is too short for fromPt %O to %O and %O" fromPt toPt testPt
+        member testPt.FailedDistanceToLine(fromPt:Pt, toPt:Pt) = EuclidDivByZeroException.Raisef "Euclid.Pt.DistanceToLine: Line is too short for fromPt %O to %O and %O" fromPt toPt testPt
 
         /// Returns the distance between point and finite line segment defined by start and end.
         member inline testPt.DistanceToLine(fromPt:Pt, toPt:Pt) =
@@ -207,7 +207,7 @@ module AutoOpenPt =
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        static member failedCreateFromMembersXY(pt:'T,e:exn) = EuclidException.Raise "Euclid.Pt.createFromMembersXY: %A could not be converted to a Euclid.Pt:\r\n%A" pt e
+        static member failedCreateFromMembersXY(pt:'T,e:exn) = EuclidException.Raisef "Euclid.Pt.createFromMembersXY: %A could not be converted to a Euclid.Pt:\r\n%A" pt e
 
         /// Accepts any type that has a X and Y (UPPERCASE) member that can be converted to a float.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
@@ -219,7 +219,7 @@ module AutoOpenPt =
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        static member failedCreateFromMembersxy(pt:'T,e:exn) = EuclidException.Raise "Euclid.Pt.createFromMembersxy: %A could not be converted to a Euclid.Pt:\r\n%A" pt e
+        static member failedCreateFromMembersxy(pt:'T,e:exn) = EuclidException.Raisef "Euclid.Pt.createFromMembersxy: %A could not be converted to a Euclid.Pt:\r\n%A" pt e
 
         /// Accepts any type that has a x and y (lowercase) member that can be converted to a float.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
@@ -352,7 +352,7 @@ module AutoOpenPt =
         static member inline rotateWithCenter (cen:Pt)  angDegree (pt:Pt) =
             Pt.rotateWithCenterBy cen (Rotation2D.createFromDegrees angDegree) pt
 
-        static member failedDistPt (fromPt:Pt, dirPt:Pt, distance:float) = EuclidDivByZeroException.Raise "Euclid.Pt.distPt: distance form %O to %O is too small to scale to distance: %g" fromPt dirPt distance
+        static member failedDistPt (fromPt:Pt, dirPt:Pt, distance:float) = EuclidDivByZeroException.Raisef "Euclid.Pt.distPt: distance form %O to %O is too small to scale to distance: %g" fromPt dirPt distance
 
         /// Returns a point that is at a given distance from a 2D point in the direction of another point.
         static member inline distPt (fromPt:Pt, dirPt:Pt, distance:float) : Pt =
@@ -411,7 +411,7 @@ module AutoOpenPt =
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        static member failedProjectedParameter(fromPt:Pt, v:Vc, testPt:Pt)= EuclidDivByZeroException.Raise "Euclid.Pt.projectedParameter: %O is too short for fromPt %O and %O" v fromPt testPt
+        static member failedProjectedParameter(fromPt:Pt, v:Vc, testPt:Pt)= EuclidDivByZeroException.Raisef "Euclid.Pt.projectedParameter: %O is too short for fromPt %O and %O" v fromPt testPt
         /// 'fromPt' and 'vec' vector describe an endless 2D line.
         /// 'testPt' gets projected onto this line.
         /// Returns the parameter (or scaling for vector) on this line of the projection.
@@ -424,7 +424,7 @@ module AutoOpenPt =
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        static member failedProjectedParameter(fromPt:Pt, toPt:Pt, testPt:Pt)= EuclidDivByZeroException.Raise "Euclid.Pt.projectedParameter: Line is too short for fromPt %O to %O and %O" fromPt toPt testPt
+        static member failedProjectedParameter(fromPt:Pt, toPt:Pt, testPt:Pt)= EuclidDivByZeroException.Raisef "Euclid.Pt.projectedParameter: Line is too short for fromPt %O to %O and %O" fromPt toPt testPt
         /// 'fromPt' and 'toPt' describe an endless 2D line.
         /// 'testPt' gets projected on to this line.
         /// Returns the parameter (or scaling for vector) on this line of the projection.
