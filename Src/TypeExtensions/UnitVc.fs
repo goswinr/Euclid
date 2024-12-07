@@ -271,6 +271,12 @@ module AutoOpenUnitVc =
             abs (a.X-b.X) <= tol &&
             abs (a.Y-b.Y) <= tol
 
+        /// Check if two 2d unit vectors are not equal within a given tolerance.
+        /// Use a tolerance of 0.0 to check if the two unit vectors are not exactly equal.
+        static member notEquals (tol:float) (a:UnitVc) (b:UnitVc) =
+            abs (a.X-b.X) > tol ||
+            abs (a.Y-b.Y) > tol
+
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
         static member failedCreate (fromPt:Pt, toPt:Pt) = EuclidDivByZeroException.Raisef "Euclid.UnitVc.create: fromPt:%O and toPt::%O are too close to each other for creating a unit-vector. Tolerance:%g" fromPt toPt zeroLengthTolerance

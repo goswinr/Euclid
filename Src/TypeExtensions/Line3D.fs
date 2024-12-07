@@ -675,6 +675,16 @@ module AutoOpenLine3D =
         abs (a.ToY   - b.ToY  ) <= tol &&
         abs (a.ToZ   - b.ToZ  ) <= tol
 
+    /// Check if two 3D Lines are not equal within a given tolerance.
+    /// Use a tolerance of 0.0 to check if the two rectangles are not exactly equal.
+    static member notEquals (tol:float) (a:Line3D) (b:Line3D) =
+        abs (a.FromX - b.FromX) > tol ||
+        abs (a.FromY - b.FromY) > tol ||
+        abs (a.FromZ - b.FromZ) > tol ||
+        abs (a.ToX   - b.ToX  ) > tol ||
+        abs (a.ToY   - b.ToY  ) > tol ||
+        abs (a.ToZ   - b.ToZ  ) > tol
+
     /// Checks if two 3D lines are coincident within tolerance.
     /// This means that lines are parallel within 0.25 degrees.
     /// and the distance of second start point to the first line is less than 1e-6.

@@ -381,13 +381,22 @@ type BRect =
     //------------------------static members---------------------------
     //-------------------------------------------------------------------
 
-    /// Checks if two 2D bounding rectangle are equal within tolerance.
+    /// Checks if two 2D bounding rectangles are equal within tolerance.
     /// Use a tolerance of 0.0 to check for an exact match.
     static member equals (tol:float) (a:BRect) (b:BRect) =
         abs(a.MinX-b.MinX) <= tol &&
         abs(a.MinY-b.MinY) <= tol &&
         abs(a.MaxX-b.MaxX) <= tol &&
         abs(a.MaxY-b.MaxY) <= tol
+
+
+    /// Check if two 2D bounding rectangles  are not equal within a given tolerance.
+    /// Use a tolerance of 0.0 to check if the two 2D bounding rectangles  are not exactly equal.
+    static member notEquals (tol:float) (a:BRect) (b:BRect) =
+        abs(a.MinX-b.MinX) > tol ||
+        abs(a.MinY-b.MinY) > tol ||
+        abs(a.MaxX-b.MaxX) > tol ||
+        abs(a.MaxY-b.MaxY) > tol
 
     /// Returns bounding rectangle expanded by distance.
     /// Does check for underflow if distance is negative and raises EuclidException.

@@ -360,6 +360,13 @@ module AutoOpenVc =
             abs (a.X-b.X) <= tol &&
             abs (a.Y-b.Y) <= tol
 
+
+        /// Check if two 2D vectors  are not equal within a given tolerance.
+        /// Use a tolerance of 0.0 to check if the two vectors are not exactly equal.
+        static member notEquals (tol:float) (a:Vc) (b:Vc) =
+            abs (a.X-b.X) > tol ||
+            abs (a.Y-b.Y) > tol
+
         /// Returns the distance between the tips of two 2D vectors.
         static member inline difference (a:Vc) (b:Vc) =
             let v = a-b

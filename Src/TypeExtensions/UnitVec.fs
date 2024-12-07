@@ -327,6 +327,13 @@ module AutoOpenUnitVec =
             abs (a.Y-b.Y) <= tol &&
             abs (a.Z-b.Z) <= tol
 
+        /// Check if two 3D unit-vectors  are not equal within a given tolerance.
+        /// Use a tolerance of 0.0 to check if the two unit-vectors  are not exactly equal.
+        static member notEquals (tol:float) (a:UnitVec) (b:UnitVec) =
+            abs (a.X-b.X) > tol ||
+            abs (a.Y-b.Y) > tol ||
+            abs (a.Z-b.Z) > tol
+
         /// Returns the distance between the tips of two 3D unit-vectors.
         static member inline difference (a:UnitVec) (b:UnitVec) =
             let x = b.X - a.X

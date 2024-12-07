@@ -526,7 +526,7 @@ type Box =
     /// A point exactly on the edge of the Box is considered inside.
     static member inline contains (p:Pnt) (b:Box) = b.Contains p
 
-    /// Checks if two 3D Boxes are equal within tolerance.
+    /// Checks if two 3D-boxes are equal within tolerance.
     /// Does not recognize congruent boxes with different rotation as equal.
     /// Use a tolerance of 0.0 to check for an exact match.
     static member equals (tol:float) (a:Box) (b:Box) =
@@ -542,6 +542,23 @@ type Box =
         abs (a.Zaxis.X  - b.Zaxis.X ) <= tol &&
         abs (a.Zaxis.Y  - b.Zaxis.Y ) <= tol &&
         abs (a.Zaxis.Z  - b.Zaxis.Z ) <= tol
+
+
+    /// Check if two 3D-boxes are not equal within a given tolerance.
+    /// Use a tolerance of 0.0 to check if the two 3D-boxes are not exactly equal.
+    static member notEquals (tol:float) (a:Box) (b:Box) =
+        abs (a.Origin.X - b.Origin.X) > tol ||
+        abs (a.Origin.Y - b.Origin.Y) > tol ||
+        abs (a.Origin.Z - b.Origin.Z) > tol ||
+        abs (a.Xaxis.X  - b.Xaxis.X ) > tol ||
+        abs (a.Xaxis.Y  - b.Xaxis.Y ) > tol ||
+        abs (a.Xaxis.Z  - b.Xaxis.Z ) > tol ||
+        abs (a.Yaxis.X  - b.Yaxis.X ) > tol ||
+        abs (a.Yaxis.Y  - b.Yaxis.Y ) > tol ||
+        abs (a.Yaxis.Z  - b.Yaxis.Z ) > tol ||
+        abs (a.Zaxis.X  - b.Zaxis.X ) > tol ||
+        abs (a.Zaxis.Y  - b.Zaxis.Y ) > tol ||
+        abs (a.Zaxis.Z  - b.Zaxis.Z ) > tol
 
 
     /// Returns Box expanded by distance on all six sides.

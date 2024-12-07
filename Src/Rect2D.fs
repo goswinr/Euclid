@@ -579,15 +579,25 @@ type Rect2D =
 
     /// Checks if two 2D Rectangles are equal within tolerance.
     /// Does not recognize congruent rectangles with different rotation as equal.
-    /// Use a tolerance of 0.0 to check for an exact match.
+    /// Use a tolerance of 0.0 to check for an exact match of exactly equal rectangles.
     static member equals (tol:float) (a:Rect2D) (b:Rect2D) =
-        abs (a.Origin.X - b.Origin.X) <= tol &&
+        abs (a.Origin.X - b.Origin.X) <= tol && //TODO raise an exception if the tolerance is negative ?
         abs (a.Origin.Y - b.Origin.Y) <= tol &&
         abs (a.Xaxis.X -  b.Xaxis.X ) <= tol &&
         abs (a.Xaxis.Y -  b.Xaxis.Y ) <= tol &&
         abs (a.Yaxis.X -  b.Yaxis.X ) <= tol &&
         abs (a.Yaxis.Y -  b.Yaxis.Y ) <= tol
 
+
+    /// Check if two 2D Rectangles are not equal within a given tolerance.
+    /// Use a tolerance of 0.0 to check if the two rectangles are not exactly equal.
+    static member notEquals (tol:float) (a:Rect2D) (b:Rect2D) =
+        abs (a.Origin.X - b.Origin.X) > tol || //TODO raise an exception if the tolerance is negative ?
+        abs (a.Origin.Y - b.Origin.Y) > tol ||
+        abs (a.Xaxis.X -  b.Xaxis.X ) > tol ||
+        abs (a.Xaxis.Y -  b.Xaxis.Y ) > tol ||
+        abs (a.Yaxis.X -  b.Yaxis.X ) > tol ||
+        abs (a.Yaxis.Y -  b.Yaxis.Y ) > tol
 
 
     /// Returns the 2D Rectangle expanded by distance on all four sides.

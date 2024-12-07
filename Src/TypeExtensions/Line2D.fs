@@ -573,7 +573,7 @@ module AutoOpenLine2D =
     //-------------------------------------------------------------------
 
 
-    /// Checks if two 2D Lines are equal within tolerance.
+    /// Checks if two 2D-lines are equal within tolerance.
     /// Identical Lines in opposite directions are not considered equal.
     /// Use a tolerance of 0.0 to check for an exact match.
     static member inline equals (tol:float) (a:Line2D) (b:Line2D) =
@@ -581,6 +581,15 @@ module AutoOpenLine2D =
         abs (a.FromY - b.FromY) <= tol &&
         abs (a.ToX   - b.ToX  ) <= tol &&
         abs (a.ToY   - b.ToY  ) <= tol
+
+
+    /// Check if two 2D-lines are not equal within a given tolerance.
+    /// Use a tolerance of 0.0 to check if the two 2D-lines are not exactly equal.
+    static member notEquals (tol:float) (a:Line2D) (b:Line2D) =
+        abs (a.FromX - b.FromX) > tol ||
+        abs (a.FromY - b.FromY) > tol ||
+        abs (a.ToX   - b.ToX  ) > tol ||
+        abs (a.ToY   - b.ToY  ) > tol
 
     /// Checks if two 2D lines are coincident within tolerance.
     /// This means that lines are parallel within 0.25 degrees

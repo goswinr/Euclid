@@ -226,6 +226,14 @@ module AutoOpenPnt =
             abs (a.Y-b.Y) <= tol &&
             abs (a.Z-b.Z) <= tol
 
+        /// Check if two 3D points are not equal within a given tolerance.
+        /// Use a tolerance of 0.0 to check if the two points are not exactly equal.
+        static member notEquals (tol:float) (a:Pnt) (b:Pnt) =
+            abs (a.X-b.X) > tol ||
+            abs (a.Y-b.Y) > tol ||
+            abs (a.Z-b.Z) > tol
+
+
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
         static member failedCreateFromMembersXYZ(pt:'T,e:exn) = EuclidException.Raisef "Euclid.Pnt.createFromMembersXYZ: %A could not be converted to a Euclid.Pnt:\r\n%A" pt e

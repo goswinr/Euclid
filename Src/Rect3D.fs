@@ -6,10 +6,10 @@ open UtilEuclid
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 open System.Collections.Generic
 
-/// An immutable planar 3D Rectangle with any rotation in 3D space.
+/// An immutable planar 3D-rectangle with any rotation in 3D space.
 /// Described by an Origin and two Edge vectors.
 /// Similar to PPlane, however the two vectors are not unitized.
-/// This implementation guarantees the 3D Rectangle to be always valid.
+/// This implementation guarantees the 3D-rectangle to be always valid.
 /// That means the  X and Y axes are always perpendicular to each other.
 /// However the length of one of these axes might still be zero.
 ///
@@ -34,14 +34,14 @@ type Rect3D =
 
     //[<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
 
-    /// The Origin Corner of the 3D Rectangle.
+    /// The Origin Corner of the 3D-rectangle.
     [<DataMember>] val Origin: Pnt
 
-    /// The edge vector representing the X-axis of the 3D Rectangle.
+    /// The edge vector representing the X-axis of the 3D-rectangle.
     /// Also called Length.
     [<DataMember>] val Xaxis: Vec
 
-    /// The edge vector representing the Y-axis of the 3D Rectangle.
+    /// The edge vector representing the Y-axis of the 3D-rectangle.
     [<DataMember>] val Yaxis: Vec
 
     /// Unchecked Internal Constructor Only.
@@ -77,14 +77,14 @@ type Rect3D =
     /// The squared size in Y direction
     member inline r.SizeYSq = r.Yaxis.LengthSq
 
-    /// Nicely formatted string representation of the 3D Rectangle including its size.
+    /// Nicely formatted string representation of the 3D-rectangle including its size.
     override r.ToString() =
         sprintf "Euclid.Rect3D %s x %s (Origin:%s| X-ax:%s| Y-ax:%s)"
            (Format.float r.SizeX) (Format.float r.SizeY)
             r.Origin.AsString r.Xaxis.AsString r.Yaxis.AsString
 
 
-    /// Format the 3D Rectangle into string with nice floating point number formatting of X, Y and Z size only.
+    /// Format the 3D-rectangle into string with nice floating point number formatting of X, Y and Z size only.
     /// But without type name as in v.ToString()
     member r.AsString = sprintf "%s x %s" (Format.float r.SizeX) (Format.float r.SizeY)
 
@@ -141,7 +141,7 @@ type Rect3D =
     ///  0-Origin       1
     member inline r.YCorner = r.Origin + r.Yaxis
 
-    /// Returns point 0 of the 3D rectangle. Same as member rect.Origin.
+    /// Returns point 0 of the 3D-rectangle. Same as member rect.Origin.
     ///
     ///   local
     ///   Y-Axis
@@ -159,7 +159,7 @@ type Rect3D =
     member inline r.Pt0 = r.Origin
 
 
-    /// Returns point 1 of the 3D rectangle.
+    /// Returns point 1 of the 3D-rectangle.
     ///
     ///   local
     ///   Y-Axis
@@ -177,7 +177,7 @@ type Rect3D =
     member inline r.Pt1 = r.Origin + r.Xaxis
 
 
-    /// Returns point 2 of the 3D rectangle. Same as rect.FarCorner.
+    /// Returns point 2 of the 3D-rectangle. Same as rect.FarCorner.
     ///
     ///   local
     ///   Y-Axis
@@ -194,7 +194,7 @@ type Rect3D =
     ///  0-Origin       1
     member inline r.Pt2 = r.Origin + r.Xaxis + r.Yaxis
 
-    /// Returns point 3 of the 3D rectangle.
+    /// Returns point 3 of the 3D-rectangle.
     ///
     ///   local
     ///   Y-Axis
@@ -362,11 +362,11 @@ type Rect3D =
         if isTooTiny len then EuclidException.Raisef "Euclid.Rect3D.NormalUnit: rect is too small for finding a normal vector: %s" r.AsString
         z*(1./len)
 
-    /// Returns the diagonal vector of the 3D Rectangle.
+    /// Returns the diagonal vector of the 3D-rectangle.
     /// From Origin to FarCorner.
     member inline r.Diagonal = r.Xaxis + r.Yaxis
 
-    /// Returns the center of the 3D Rectangle.
+    /// Returns the center of the 3D-rectangle.
     member inline r.Center = r.Origin + r.Xaxis*0.5 + r.Yaxis*0.5
 
     /// Returns the Rectangle flipped. Or rotated 180 around its diagonal from point 1 to 3.
@@ -445,7 +445,7 @@ type Rect3D =
     member r.RotateOrientation90CCW = Rect3D(r.Origin + r.Xaxis, r.Yaxis, -r.Xaxis)
 
 
-    /// Returns the 4 corners of the 3D Rectangle in Counter-Clockwise order, starting at Origin.
+    /// Returns the 4 corners of the 3D-rectangle in Counter-Clockwise order, starting at Origin.
     /// Returns an array of 4 Points: point 0 then 1, 2 and 3.
     ///
     ///   local
@@ -466,7 +466,7 @@ type Rect3D =
         let p1 = p0 + r.Xaxis
         [| p0  ; p1 ; p1 + r.Yaxis; p0 + r.Yaxis|]
 
-    /// Returns the 4 corners of the 3D Rectangle als closed loop in Counter-Clockwise order, starting at Origin.
+    /// Returns the 4 corners of the 3D-rectangle als closed loop in Counter-Clockwise order, starting at Origin.
     /// First and last point are the same.
     /// Returns an array of 5 Points: point 0 then 1, 2, 3 and again 0.
     ///
@@ -488,7 +488,7 @@ type Rect3D =
         let p1 = p0 + r.Xaxis
         [| p0  ; p1 ; p1 + r.Yaxis; p0 + r.Yaxis; p0|]
 
-    /// Returns the 4 Edges of the 3D Rectangle in Counter-Clockwise order, starting at Origin.
+    /// Returns the 4 Edges of the 3D-rectangle in Counter-Clockwise order, starting at Origin.
     /// Returns an array of 4 Lines: from point 0 to 1, 1 to 2 to 3 and 3 to 0.
     ///
     ///   local
@@ -539,7 +539,7 @@ type Rect3D =
         | _ -> EuclidException.Raisef "Euclid.Rect3D.GetEdge: index %i out of range 0..3" i
 
 
-    /// Evaluate a X and Y parameter of the 3D Rectangle.
+    /// Evaluate a X and Y parameter of the 3D-rectangle.
     ///  0.0, 0.0 returns the Origin.
     ///  1.0, 1.0 returns the FarCorner.
     member inline r.EvaluateAt (xParameter:float, yParameter:float) =
@@ -553,17 +553,17 @@ type Rect3D =
             EuclidException.Raisef "Euclid.Rect3D.EvaluateDist: rect Xaxis or Yaxis is too small for evaluating distance: %s" r.AsString
         r.Origin + r.Xaxis * (xDistance/lx) + r.Yaxis * (yDistance/ly)
 
-    /// Calculates the area of the 3D Rectangle.
+    /// Calculates the area of the 3D-rectangle.
     member inline r.Area =
         r.Xaxis.Length*r.Yaxis.Length
 
-    /// Calculates the squared area of the 3D Rectangle.
+    /// Calculates the squared area of the 3D-rectangle.
     /// by using the squared lengths of the X and Y axis.
     /// This is a bit faster than calculating the area and good enough for relative comparisons or sorting by size.
     member inline r.AreaSq =
         r.Xaxis.LengthSq * r.Yaxis.LengthSq
 
-    /// Gets the Plane that this 3D rectangle is based on.
+    /// Gets the Plane that this 3D-rectangle is based on.
     member inline r.Plane =
         let x = r.Xaxis.Unitized
         let y = r.Yaxis.Unitized
@@ -571,7 +571,7 @@ type Rect3D =
         PPlane.createUnchecked (r.Origin, x, y, z)
 
 
-    /// Gets the axis aligned 2D Bounding Rectangle of the 3D Rectangle.
+    /// Gets the axis aligned 2D Bounding Rectangle of the 3D-rectangle.
     /// The z-coordinate components are ignored.
     member r.BRect =
         let x = r.Xaxis
@@ -586,7 +586,7 @@ type Rect3D =
         let maxY = max (max (max p0.Y p1.Y) p2.Y) p3.Y
         BRect.createUnchecked(minX, minY, maxX, maxY)
 
-    /// Gets the axis aligned 3D Bounding Box of the 3D Rectangle.
+    /// Gets the axis aligned 3D Bounding Box of the 3D-rectangle.
     member r.BBox =
         let x = r.Xaxis
         let y = r.Yaxis
@@ -607,7 +607,7 @@ type Rect3D =
     //------------------------static members-----------------------------
     //-------------------------------------------------------------------
 
-    /// Checks if two 3D Rectangles are equal within tolerance.
+    /// Checks if two 3D-rectangles are equal within tolerance.
     /// Does not recognize congruent rectangles with different rotation as equal.
     /// Use a tolerance of 0.0 to check for an exact match.
     static member equals (tol:float) (a:Rect3D) (b:Rect3D) =
@@ -621,32 +621,45 @@ type Rect3D =
         abs (a.Yaxis.Y  - b.Yaxis.Y ) <= tol &&
         abs (a.Yaxis.Z  - b.Yaxis.Z ) <= tol
 
+    /// Check if two 3D-rectangles are not equal within a given tolerance.
+    /// Use a tolerance of 0.0 to check if the two rectangles are not exactly equal.
+    static member notEquals (tol:float) (a:Rect3D) (b:Rect3D) =
+        abs (a.Origin.X - b.Origin.X) > tol ||
+        abs (a.Origin.Y - b.Origin.Y) > tol ||
+        abs (a.Origin.Z - b.Origin.Z) > tol ||
+        abs (a.Xaxis.X  - b.Xaxis.X ) > tol ||
+        abs (a.Xaxis.Y  - b.Xaxis.Y ) > tol ||
+        abs (a.Xaxis.Z  - b.Xaxis.Z ) > tol ||
+        abs (a.Yaxis.X  - b.Yaxis.X ) > tol ||
+        abs (a.Yaxis.Y  - b.Yaxis.Y ) > tol ||
+        abs (a.Yaxis.Z  - b.Yaxis.Z ) > tol
 
-    /// Returns the 3D Rectangle expanded by distance on all four sides.
+
+    /// Returns the 3D-rectangle expanded by distance on all four sides.
     /// Does check for underflow if distance is negative and raises EuclidException.
     static member expand dist (r:Rect3D) =
         let siX = r.SizeX
         let siY = r.SizeY
         let d = dist * -2.0
         if siX<=d || siY<=d  then
-            EuclidException.Raisef "Euclid.Rect3D.expand: the 3D Rectangle %s is too small to expand by negative distance %s"  r.AsString (Format.float dist)
+            EuclidException.Raisef "Euclid.Rect3D.expand: the 3D-rectangle %s is too small to expand by negative distance %s"  r.AsString (Format.float dist)
         let x = r.Xaxis * (dist / siX)
         let y = r.Yaxis * (dist / siY)
         Rect3D(r.Origin-x-y, r.Xaxis+x*2., r.Yaxis+y*2.)
 
-    /// Returns the 3D Rectangle expanded by respective distances on all four sides.
+    /// Returns the 3D-rectangle expanded by respective distances on all four sides.
     /// Does check for overflow if distance is negative and fails.
     /// distX, distY are for the local X and Y-axis respectively.
     static member expandXY distX distY (r:Rect3D) =
         let siX = r.SizeX
         let siY = r.SizeY
-        if siX <= distX * -2.0 then EuclidException.Raisef "Euclid.Rect3D.expandXY: the 3D Rectangle %s is too small to expand by negative distance distX %s"  r.AsString (Format.float distX)
-        if siY <= distY * -2.0 then EuclidException.Raisef "Euclid.Rect3D.expandXY: the 3D Rectangle %s is too small to expand by negative distance distY %s"  r.AsString (Format.float distY)
+        if siX <= distX * -2.0 then EuclidException.Raisef "Euclid.Rect3D.expandXY: the 3D-rectangle %s is too small to expand by negative distance distX %s"  r.AsString (Format.float distX)
+        if siY <= distY * -2.0 then EuclidException.Raisef "Euclid.Rect3D.expandXY: the 3D-rectangle %s is too small to expand by negative distance distY %s"  r.AsString (Format.float distY)
         let x = r.Xaxis * (distX   / r.SizeX)
         let y = r.Yaxis * (distY / r.SizeY)
         Rect3D(r.Origin-x-y, r.Xaxis+x*2., r.Yaxis+y*2.)
 
-    /// Create a 3D Rectangle from the origin point, an x-edge and an y-edge.
+    /// Create a 3D-rectangle from the origin point, an x-edge and an y-edge.
     /// Fails if x and y are not perpendicularity.
     /// Fails on vectors shorter than 1e-9.
     static member createFromVectors(origin, x:Vec, y:Vec) =
@@ -679,12 +692,12 @@ type Rect3D =
         Rect3D(b.MinPt.AsPnt, Vec.Xaxis*b.SizeX, Vec.Yaxis*b.SizeY)
 
 
-    /// Create a 3D Rectangle from the origin point and X-edge and Y edge.
+    /// Create a 3D-rectangle from the origin point and X-edge and Y edge.
     /// Does not check for perpendicularity.
     static member createUnchecked (origin, x:Vec, y:Vec) =
         Rect3D(origin, x, y)
 
-    /// Creates a 3D rectangle from three points. Fails if points are too close to each other or all colinear.
+    /// Creates a 3D-rectangle from three points. Fails if points are too close to each other or all colinear.
     /// The Origin, a point in X-axis direction and length, and a point for the length in Y-axis direction.
     /// Origin and x-point define the X-axis orientation of the Rectangle.
     /// The y-point only defines the length and side of the Y axis.
@@ -715,7 +728,7 @@ type Rect3D =
 
 
 
-    /// Tries to create a 3D rectangle from three points. Returns None if points are too close to each other or all colinear..
+    /// Tries to create a 3D-rectangle from three points. Returns None if points are too close to each other or all colinear..
     /// The Origin, a point in X-axis direction and length, and a point for the length in Y-axis direction.
     /// Origin and x-point define the X-axis orientation of the Rectangle.
     /// The y-point only defines the length and side of the Y axis.
@@ -749,7 +762,7 @@ type Rect3D =
 
 
     /// Returns the projected oriented bounding box of the points.
-    /// Adjusts the 3D Rectangle to contain the projections of all given points.
+    /// Adjusts the 3D-rectangle to contain the projections of all given points.
     /// Keeps the same plane and the same X- and Y-axis as the input rectangle.
     /// For a 3D oriented bounding box use the Box.createFromPlaneAndPoints function.
     static member fitToPoints (pts:IList<Pnt>) (refRect:Rect3D) : Rect3D =
@@ -792,14 +805,14 @@ type Rect3D =
     ///  0-Origin       1
     static member flip (r:Rect3D) = Rect3D(r.Origin + r.Xaxis + r.Yaxis, -r.Yaxis, -r.Xaxis)
 
-    /// Translate along the local X-axis of the 3D Rectangle.
+    /// Translate along the local X-axis of the 3D-rectangle.
     static member translateX (distX:float) (r:Rect3D) =
         let x = r.Xaxis
         let len = x.Length
         if isTooTiny len then EuclidException.Raisef "Euclid.Rect3D.translateX: rect.Xaxis is zero length in Rect3D: %s" r.AsString
         Rect3D(r.Origin + x*(distX/len), x, r.Yaxis)
 
-    /// Translate along the local Y-axis of the 3D Rectangle.
+    /// Translate along the local Y-axis of the 3D-rectangle.
     static member translateY (distY:float) (r:Rect3D) =
         let y = r.Yaxis
         let len = y.Length
@@ -810,12 +823,12 @@ type Rect3D =
     static member translate (v:Vec) (r:Rect3D) =
         Rect3D(r.Origin + v, r.Xaxis, r.Yaxis)
 
-    /// Move the 3D Rectangle by a vector.(same as Rect3D.translate)
+    /// Move the 3D-rectangle by a vector.(same as Rect3D.translate)
     static member move (v:Vec) (r:Rect3D) =
         Rect3D(r.Origin + v, r.Xaxis, r.Yaxis)
 
-    /// Transform the 3D Rectangle by the given RigidMatrix.
-    /// The returned 3D Rectangle is guaranteed to have orthogonal vectors.
+    /// Transform the 3D-rectangle by the given RigidMatrix.
+    /// The returned 3D-rectangle is guaranteed to have orthogonal vectors.
     static member transform (m:RigidMatrix) (r:Rect3D) =
         let o = Pnt.transformRigid m r.Origin
         let x = Vec.transformRigid m r.Xaxis
@@ -824,7 +837,7 @@ type Rect3D =
 
 
     /// Offset or Translate along the local Z-axis.
-    /// The local Z-axis is calculated from cross product of X and Y-axis of the 3D Rectangle.
+    /// The local Z-axis is calculated from cross product of X and Y-axis of the 3D-rectangle.
     static member offsetZ (offsetDistance :float) (r:Rect3D) =
         let z = Vec.cross(r.Xaxis, r.Yaxis)
         let len = z.Length
@@ -874,7 +887,7 @@ type Rect3D =
 
 
     ///<summary>Offsets a local Rect3D at one of the four corners.</summary>
-    ///<param name="rect">The 3D Rectangle</param>
+    ///<param name="rect">The 3D-rectangle</param>
     ///<param name="corner">The Index of the corner to Offset
     ///
     ///   local
@@ -894,14 +907,14 @@ type Rect3D =
     ///<param name="yOffset">The local offset distances in y direction. (Applies to the x side.) Positive values offset to the inside of the rectangle, negative values will offset outwards.</param>
     ///<param name="xWidth">The the width (or size in x direction) that will be added to the current offset.</param>
     ///<param name="yHeight">The the height (or size in y direction) that will be added to the current offset.</param>
-    ///<returns>A new 3D Rectangle. It will always have the same x and y axis orientation as the input rectangle. Independent of negative or positive offsets</returns>
+    ///<returns>A new 3D-rectangle. It will always have the same x and y axis orientation as the input rectangle. Independent of negative or positive offsets</returns>
     static member offsetCorner (rect:Rect3D, corner:int, xOffset:float, yOffset:float, xWidth:float, yHeight:float) =
         let xa = rect.Xaxis
         let ya = rect.Yaxis
         let xl = xa.Length
         let yl = ya.Length
         if isTooTiny (xl) || isTooTiny (yl) then
-            EuclidException.Raisef "Euclid.Rect3D.offsetCorner: the 3D Rectangle %s is too small to offsetCorner"  rect.AsString
+            EuclidException.Raisef "Euclid.Rect3D.offsetCorner: the 3D-rectangle %s is too small to offsetCorner"  rect.AsString
         let xv = xa * (xWidth/xl)
         let yv = ya * (yHeight/yl)
         match corner with
@@ -927,7 +940,7 @@ type Rect3D =
         EuclidException.Raise $"Euclid.Rect3D.offsetEdge: the 2D Rectangle is too small to offsetEdge by {d} at edgeIdx {edgeIdx}. offStart: {offStart}, offEnd: {offEnd}, Length: {len}"
 
     ///<summary>Offsets a local Rect3D at one of the four corners.</summary>
-    ///<param name="rect">The 3D Rectangle</param>
+    ///<param name="rect">The 3D-rectangle</param>
     ///<param name="edgeIdx">The Index of the edge to offset
     ///
     ///   local
@@ -947,7 +960,7 @@ type Rect3D =
     ///<param name="width">The width of the new rectangle. This is like the second offset to be applied to the first offset of offEdge</param>
     ///<param name="offStart">The local offset distances perpendicular to the edge at the start.</param>
     ///<param name="offEnd">The local offset distances perpendicular to the edge at the end.</param>
-    ///<returns>A new 3D Rectangle. It will always have the same x and y axis orientation as the input rectangle. Independent of negative or positive offsets</returns>
+    ///<returns>A new 3D-rectangle. It will always have the same x and y axis orientation as the input rectangle. Independent of negative or positive offsets</returns>
     static member offsetEdge (rect:Rect3D, edgeIdx:int, offEdge:float, width:float, offStart:float, offEnd:float) =
         let x = rect.Xaxis
         let y = rect.Yaxis
@@ -1011,8 +1024,8 @@ type Rect3D =
             EuclidException.Raisef "Euclid.Rect3D.offsetEdge: width %g must be more than 1e-6" width
 
 
-    /// Divides a 3D Rectangle into a grid of sub-rectangles. The sub-rectangles are returned as an array of arrays.
-    /// The gap between the sub-rectangles is given in x and y direction. It does not apply to the outer edges of the 3D Rectangle.
+    /// Divides a 3D-rectangle into a grid of sub-rectangles. The sub-rectangles are returned as an array of arrays.
+    /// The gap between the sub-rectangles is given in x and y direction. It does not apply to the outer edges of the 3D-rectangle.
     /// The returned array has xCount elements, each element is an array of yCount sub-rectangles.
     static member subDivide (rect:Rect3D, xCount:int, yCount:int, xGap:float, yGap:float)=
         if xCount <= 0 || yCount <= 0 then
@@ -1040,8 +1053,8 @@ type Rect3D =
             rss
 
 
-    /// Divides a a 3D Rectangle into a grid of sub-rectangles.
-    /// The gap between the sub-rectangles is given in x and y direction. It does not apply to the outer edges of the 3D Rectangle.
+    /// Divides a a 3D-rectangle into a grid of sub-rectangles.
+    /// The gap between the sub-rectangles is given in x and y direction. It does not apply to the outer edges of the 3D-rectangle.
     /// It will create as many sub-rectangles as possible respecting the minimum side length for x and y.
     /// The input minSegmentLength is multiplied by factor 0.99999 of to avoid numerical errors.
     /// That means in an edge case there are more segments returned, not fewer.
@@ -1056,8 +1069,8 @@ type Rect3D =
         Rect3D.subDivide (rect, xCount, yCount, xGap, yGap)
 
 
-    /// Divides a a 3D Rectangle into a grid of sub-rectangles.
-    /// The gap between the sub-rectangles is given in x and y direction. It does not apply to the outer edges of the 3D Rectangle.
+    /// Divides a a 3D-rectangle into a grid of sub-rectangles.
+    /// The gap between the sub-rectangles is given in x and y direction. It does not apply to the outer edges of the 3D-rectangle.
     /// It will create as few as segments as possible respecting the maximum segment length.
     /// The input maxSegmentLength is multiplied by factor 1.00001 of to avoid numerical errors.
     /// That means in an edge case there are fewer segments returned, not more.
@@ -1070,7 +1083,7 @@ type Rect3D =
         Rect3D.subDivide (rect, xCount, yCount, xGap, yGap)
 
 
-    /// Divides a 3D Rectangle into a grid of points. The points are returned as an array of arrays.
+    /// Divides a 3D-rectangle into a grid of points. The points are returned as an array of arrays.
     /// A xCount and yCount of 2 will only return the 4 corners of the rectangle.
     static member grid (rect:Rect3D, xCount:int, yCount:int) : Pnt[][]=
         if xCount <= 1 || yCount <= 1 then
@@ -1092,7 +1105,7 @@ type Rect3D =
             rss.[ix] <- rs
         rss
 
-    /// Divides a a 3D Rectangle into a grid of points.
+    /// Divides a a 3D-rectangle into a grid of points.
     /// It will create as many points as possible respecting the minimum side length for x and y.
     /// The input minSegmentLength is multiplied by factor 0.9999 of to avoid numerical errors.
     /// That means in an edge case there are more segments returned, not fewer.
@@ -1107,7 +1120,7 @@ type Rect3D =
         Rect3D.grid (rect, xCount, yCount)
 
 
-    /// Divides a a 3D Rectangle into a grid of points.
+    /// Divides a a 3D-rectangle into a grid of points.
     /// It will create as few as points as possible respecting the maximum segment length.
     /// The input maxSegmentLength is multiplied by factor 0.0001 of to avoid numerical errors.
     /// That means in an edge case there are fewer segments returned, not more.
