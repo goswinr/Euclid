@@ -254,7 +254,7 @@ type Loop private   ( pts:ResizeArray<Pt>
         let mutable t = unitVcts.[0]
         for ii=1 to segLastIdx do
             let n = unitVcts.[ii]
-            if t *** n < float Cosine.``177.0`` then
+            if t *** n < float Cosine.``177.5`` then
                 Debug2D.drawDot ("+170° turn?", pts.[ii])
                 EuclidException.Raisef "Euclid.Loop: Lines for Loop make a kink between 170 and 180 Degrees."
             t <- n
