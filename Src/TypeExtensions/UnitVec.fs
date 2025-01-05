@@ -68,6 +68,48 @@ module AutoOpenUnitVec =
             UnitVec.createUnchecked(  v.Y, -v.X, v.Z)
 
 
+        /// Cross product, of two 3D unit-vectors.
+        /// The resulting vector is perpendicular to both input vectors.
+        /// The length of this resulting vector is the squared area of the parallelogram spanned by the input vectors.
+        /// Or the sine of the angle between the two unit-vectors.
+        /// Its direction follows the right-hand rule.
+        /// A x B = |A| * |B| * sin(angle)
+        member inline a.Cross (b:UnitVec) =
+            Vec(a.Y * b.Z - a.Z * b.Y,
+                a.Z * b.X - a.X * b.Z,
+                a.X * b.Y - a.Y * b.X)
+
+        /// Cross product, of a 3D unit-vectors an a 3D vector.
+        /// The resulting vector is perpendicular to both input vectors.
+        /// The length of this resulting vector is the squared area of the parallelogram spanned by the input vectors.
+        /// Its direction follows the right-hand rule.
+        /// A x B = |A| * |B| * sin(angle)
+        member inline a.Cross (b:Vec) =
+            Vec(a.Y * b.Z - a.Z * b.Y,
+                a.Z * b.X - a.X * b.Z,
+                a.X * b.Y - a.Y * b.X)
+
+        /// Dot product, or scalar product of two 3D unit-vectors.
+        /// Returns a float.
+        /// This float of unit-vectors is the Cosine of the angle between the two vectors.
+        member inline a.Dot (b:UnitVec) =
+            a.X * b.X + a.Y * b.Y + a.Z * b.Z
+
+
+        /// Dot product, or scalar product of a 3D unit-vector with a 3D vector.
+        /// Returns a float.
+        /// This float is the projected length of the 3D vector on the direction of the unit-vector.
+        member inline a.Dot (b:Vec) =
+            a.X * b.X + a.Y * b.Y + a.Z * b.Z
+
+        /// Dot product, or scalar product of two 3D unit-vector.
+        /// This float of unit-vectors is the Cosine of the angle between the two vectors.
+        /// Returns a float with a unit of Measure Euclid.Cosine.cosine.
+        /// This is useful for comparing the angle to precomputed values in the Euclid.Cosine module.
+        member inline a.DotCosine (b:UnitVec) : float<Cosine.cosine> =
+            a.X * b.X + a.Y * b.Y + a.Z * b.Z  |> LanguagePrimitives.FloatWithMeasure
+
+
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
         member v.FailedDirectionDiamondInXY() = EuclidDivByZeroException.Raisef "Euclid.UnitVec.DirectionDiamondInXY: input 3D unit-vector is vertical:%O" v
@@ -420,8 +462,8 @@ module AutoOpenUnitVec =
 
         /// Cross product, of a 3D unit-vectors an a 3D vector.
         /// The resulting vector is perpendicular to both input vectors.
-        /// Its length is the area of the parallelogram spanned by the input vectors.
-        /// Its direction follows th right-hand rule.
+        /// The length of this resulting vector is the squared area of the parallelogram spanned by the input vectors.
+        /// Its direction follows the right-hand rule.
         /// A x B = |A| * |B| * sin(angle)
         static member inline cross (a:UnitVec, b:Vec) =
             Vec(a.Y * b.Z - a.Z * b.Y,
@@ -430,25 +472,36 @@ module AutoOpenUnitVec =
 
         /// Cross product, of a 3D vector and a 3D unit-vectors.
         /// The resulting vector is perpendicular to both input vectors.
-        /// Its length is the area of the parallelogram spanned by the input vectors.
-        /// Its direction follows th right-hand rule.
+        /// The length of this resulting vector is the squared area of the parallelogram spanned by the input vectors.
+        /// Its direction follows the right-hand rule.
         /// A x B = |A| * |B| * sin(angle)
         static member inline cross (a:Vec, b:UnitVec) =
             Vec(a.Y * b.Z - a.Z * b.Y,
                 a.Z * b.X - a.X * b.Z,
                 a.X * b.Y - a.Y * b.X)
 
-        //static member inline dot (a:UnitVec, b:UnitVec)  //moved to Vec type declaration
+        //static member inline dot (a:UnitVec, b:UnitVec)  //moved to UnitVec type declaration
 
         /// Dot product, or scalar product of a 3D unit-vector with a 3D vector.
-        /// Returns a float. This float is the projected length of the 3D vector on the direction of the unit-vector.
+        /// Returns a float.
+        /// This float is the projected length of the 3D vector on the direction of the unit-vector.
         static member inline dot (a:UnitVec, b:Vec) =
             a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
         /// Dot product, or scalar product of a 3D vector with a 3D unit-vector.
-        /// Returns a float. This float is the projected length of the 3D vector on the direction of the unit-vector.
+        /// Returns a float.
+        /// This float is the projected length of the 3D vector on the direction of the unit-vector.
         static member inline dot (a:Vec, b:UnitVec) =
             a.X * b.X + a.Y * b.Y + a.Z * b.Z
+
+
+        /// Dot product, or scalar product of two 3D unit-vector.
+        /// This float of unit-vectors is the Cosine of the angle between the two vectors.
+        /// Returns a float with a unit of Measure Euclid.Cosine.cosine.
+        /// This is useful for comparing the angle to precomputed values in the Euclid.Cosine module.
+        static member inline dotCosine (a:UnitVec) ( b:UnitVec) : float<Cosine.cosine> =
+            a.X * b.X + a.Y * b.Y + a.Z * b.Z  |> LanguagePrimitives.FloatWithMeasure
+
 
         /// Gets the X part of this 3D unit-vector.
         static member inline getX (v:UnitVec) =

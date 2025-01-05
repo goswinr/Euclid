@@ -119,14 +119,15 @@ type UnitVec =
         Vec (v.X / f, v.Y / f, v.Z / f)
 
     /// Dot product, or scalar product of two 3D unit-vectors.
-    /// Returns a float. This float of unit-vectors is the Cosine of the angle between the two vectors.
+    /// Returns a float.
+    /// This float of unit-vectors is the Cosine of the angle between the two vectors.
     static member inline dot (a:UnitVec, b:UnitVec) =
         a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
     /// Cross product, of two 3D vectors.
     /// The resulting vector is perpendicular to both input vectors.
-    /// Its length is the area of the parallelogram spanned by the input vectors.
-    /// Its direction follows th right-hand rule.
+    /// The length of this resulting vector is the squared area of the parallelogram spanned by the input vectors.
+    /// Its direction follows the right-hand rule.
     /// A x B = |A| * |B| * sin(angle)
     static member inline cross (a:UnitVec, b:UnitVec) =
         Vec (a.Y * b.Z - a.Z * b.Y, a.Z * b.X - a.X * b.Z, a.X * b.Y - a.Y * b.X)

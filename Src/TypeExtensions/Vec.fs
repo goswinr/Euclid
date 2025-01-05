@@ -63,6 +63,34 @@ module AutoOpenVec =
         member inline v.Half =
             Vec (v.X*0.5, v.Y*0.5, v.Z*0.5)
 
+        /// Cross product, of a 3D vector and a 3D unit-vectors.
+        /// The resulting vector is perpendicular to both input vectors.
+        /// The length of this resulting vector is the squared area of the parallelogram spanned by the input vectors.
+        /// Its direction follows the right-hand rule.
+        /// A x B = |A| * |B| * sin(angle)
+        member inline a.Cross (b:UnitVec) =
+            Vec (a.Y * b.Z - a.Z * b.Y, a.Z * b.X - a.X * b.Z, a.X * b.Y - a.Y * b.X)
+
+        /// Cross product, of a 3D unit-vector and a 3D vectors.
+        /// The resulting vector is perpendicular to both input vectors.
+        /// The length of this resulting vector is the squared area of the parallelogram spanned by the input vectors.
+        /// Its direction follows the right-hand rule.
+        /// A x B = |A| * |B| * sin(angle)
+        member inline a.Cross (b:Vec) =
+            Vec (a.Y * b.Z - a.Z * b.Y, a.Z * b.X - a.X * b.Z, a.X * b.Y - a.Y * b.X)
+
+        /// Dot product, or scalar product of two 3D vectors.
+        /// Returns a float.
+        member inline a.Dot (b:Vec) =
+            a.X * b.X + a.Y * b.Y + a.Z * b.Z
+
+        /// Dot product, or scalar product of a 3D vector with a 3D unit-vector.
+        /// Returns a float.
+        /// This float is the projected length of the 3D vector on the direction of the unit-vector.
+        member inline a.Dot (b:UnitVec) =
+            a.X * b.X + a.Y * b.Y + a.Z * b.Z
+
+
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
         member v.FailedWithLength(desiredLength) = EuclidDivByZeroException.Raisef "Euclid.Vec.WithLength %g : %O is too small for unitizing, Tolerance:%g" desiredLength v zeroLengthTolerance
@@ -471,16 +499,16 @@ module AutoOpenVec =
 
         /// Cross product, of a 3D unit-vectors an a 3D vector.
         /// The resulting vector is perpendicular to both input vectors.
-        /// Its length is the area of the parallelogram spanned by the input vectors.
-        /// Its direction follows th right-hand rule.
+        /// The length of this resulting vector is the squared area of the parallelogram spanned by the input vectors.
+        /// Its direction follows the right-hand rule.
         /// A x B = |A| * |B| * sin(angle)
         static member inline cross (a:UnitVec, b:Vec) =
             Vec (a.Y * b.Z - a.Z * b.Y, a.Z * b.X - a.X * b.Z, a.X * b.Y - a.Y * b.X)
 
         /// Cross product, of a 3D vector and a 3D unit-vectors.
         /// The resulting vector is perpendicular to both input vectors.
-        /// Its length is the area of the parallelogram spanned by the input vectors.
-        /// Its direction follows th right-hand rule.
+        /// The length of this resulting vector is the squared area of the parallelogram spanned by the input vectors.
+        /// Its direction follows the right-hand rule.
         /// A x B = |A| * |B| * sin(angle)
         static member inline cross (a:Vec, b:UnitVec) =
             Vec (a.Y * b.Z - a.Z * b.Y, a.Z * b.X - a.X * b.Z, a.X * b.Y - a.Y * b.X)
@@ -489,12 +517,14 @@ module AutoOpenVec =
         //static member inline dot (a:Vec, b:Vec)   //moved to Vec type declaration
 
         /// Dot product, or scalar product of a 3D unit-vector with a 3D vector.
-        /// Returns a float. This float is the projected length of the 3D vector on the direction of the unit-vector.
+        /// Returns a float.
+        /// This float is the projected length of the 3D vector on the direction of the unit-vector.
         static member inline dot (a:UnitVec, b:Vec) =
             a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
         /// Dot product, or scalar product of a 3D vector with a 3D unit-vector.
-        /// Returns a float. This float is the projected length of the 3D vector on the direction of the unit-vector.
+        /// Returns a float.
+        /// This float is the projected length of the 3D vector on the direction of the unit-vector.
         static member inline dot (a:Vec, b:UnitVec) =
             a.X * b.X + a.Y * b.Y + a.Z * b.Z
 

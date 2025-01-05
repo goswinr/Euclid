@@ -106,8 +106,8 @@ type Vec =
 
     /// Cross product, of two 3D vectors.
     /// The resulting vector is perpendicular to both input vectors.
-    /// Its length is the area of the parallelogram spanned by the input vectors.
-    /// Its direction follows th right-hand rule.
+    /// The length of this resulting vector is the squared area of the parallelogram spanned by the input vectors.
+    /// Its direction follows the right-hand rule.
     /// A x B = |A| * |B| * sin(angle)
     static member inline cross (a:Vec, b:Vec) =
         Vec (a.Y * b.Z - a.Z * b.Y,

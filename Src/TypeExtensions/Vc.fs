@@ -91,13 +91,29 @@ module AutoOpenVc =
         member inline v.IsUnit =
             UtilEuclid.isOne v.LengthSq
 
-        /// 2D cross product.
-        /// Its Just a scalar equal to the area of the parallelogram spanned by the input vectors.
-        member inline a.Cross (b:Vc) = a.X*b.Y - a.Y*b.X
+        /// The 2D cross product of two 2D vectors.
+        /// It is just a scalar equal to the signed square area of the parallelogram spanned by the input vectors.
+        /// If the rotation from 'a' to 'b' is Counter-Clockwise the result is positive.
+        member inline a.Cross (b:Vc) =
+            a.X*b.Y - a.Y*b.X
 
-        /// 2D cross product.
-        /// Its Just a scalar equal to the area of the parallelogram spanned by the input vectors.
-        member inline a.Cross (b:UnitVc) = a.X*b.Y - a.Y*b.X
+        /// The 2D cross product of a 2D vector with a 2D unit-vector.
+        /// It is just a scalar equal to the signed square area of the parallelogram spanned by the input vectors.
+        /// If the rotation from 'a' to 'b' is Counter-Clockwise the result is positive.
+        member inline a.Cross (b:UnitVc) =
+            a.X*b.Y - a.Y*b.X
+
+        /// Dot product, or scalar product of two 2D vectors.
+        /// Returns a float.
+        member inline a.Dot ( b:Vc) =
+            a.X * b.X + a.Y * b.Y
+
+        /// Dot product, or scalar product of a 2D vector with a 2D unit-vector.
+        /// Returns a float.
+        /// This float is the projected length of the 2D vector on the direction of the unit-vector.
+        member inline a.Dot ( b:UnitVc) =
+            a.X * b.X + a.Y * b.Y
+
 
         /// Rotate the a 2D vector Counter Clockwise by a 2D Rotation (that has cos and sin precomputed)
         member inline v.RotateBy (r:Rotation2D) =
@@ -421,20 +437,23 @@ module AutoOpenVc =
         static member inline asVec(v:Vc) =
             Vec(v.X, v.Y, 0.0)
 
-        /// 2D Cross product, of two 2D vectors.
-        /// Its Just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
+        /// The 2D cross product.
+        /// It is just a scalar equal to the signed square area of the parallelogram spanned by the input vectors.
+        /// If the rotation from 'a' to 'b' is Counter-Clockwise the result is positive.
         static member inline cross (a:Vc, b:Vc) =
-            a.X*b.Y - a.Y*b.X
+            a.X * b.Y - a.Y * b.X
 
-        /// 2D Cross product, of a 2D unit-vectors an a 2D vector.
-        /// Its Just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
+        /// The 2D cross product.
+        /// It is just a scalar equal to the signed square area of the parallelogram spanned by the input vectors.
+        /// If the rotation from 'a' to 'b' is Counter-Clockwise the result is positive.
         static member inline cross (a:UnitVc, b:Vc) =
-            a.X*b.Y - a.Y*b.X
+            a.X * b.Y - a.Y * b.X
 
-        /// 2D Cross product, of a 2D vectors an a 2D unit-vector.
-        /// Its Just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
+        /// The 2D cross product.
+        /// It is just a scalar equal to the signed square area of the parallelogram spanned by the input vectors.
+        /// If the rotation from 'a' to 'b' is Counter-Clockwise the result is positive.
         static member inline cross (a:Vc, b:UnitVc) =
-            a.X*b.Y - a.Y*b.X
+            a.X * b.Y - a.Y * b.X
 
         /// Dot product, or scalar product of two 2D vectors.
         /// Returns a float.
@@ -442,12 +461,14 @@ module AutoOpenVc =
             a.X * b.X + a.Y * b.Y
 
         /// Dot product, or scalar product of a 2D unit-vector with a 2D vector.
-        /// Returns a float. This float is the projected length of the 2D vector on the direction of the unit-vector.
+        /// Returns a float.
+        /// This float is the projected length of the 2D vector on the direction of the unit-vector.
         static member inline dot (a:Vc, b:UnitVc) =
             a.X * b.X + a.Y * b.Y
 
         /// Dot product, or scalar product of a 2D vector with a 2D unit-vector.
-        /// Returns a float. This float is the projected length of the 2D vector on the direction of the unit-vector.
+        /// Returns a float.
+        /// This float is the projected length of the 2D vector on the direction of the unit-vector.
         static member inline dot (a:UnitVc, b:Vc) =
             a.X * b.X + a.Y * b.Y
 
@@ -458,10 +479,10 @@ module AutoOpenVc =
         static member inline getY (v:Vc) = v.Y
 
         /// Returns new 2D vector with new X value, Y stays the same.
-        static member inline withX  x (v:Vc) = v.WithX x
+        static member inline withX x (v:Vc) = v.WithX x
 
         /// Returns new 2D vector with new Y value, X stays the same.
-        static member inline withY  y (v:Vc) = v.WithY y
+        static member inline withY y (v:Vc) = v.WithY y
 
         /// Add two 2D vectors together. Returns a new 2D vector.
         static member inline add (a:Vc) (b:Vc) = b + a

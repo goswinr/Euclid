@@ -53,16 +53,35 @@ module AutoOpenUnitVc =
         member inline v.WithZ z =
             Vec (v.X, v.Y, z)
 
-        /// 2D cross product.
-        /// Its Just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
+        /// The 2D cross product of a 2D unit-vector with a 2D vector.
+        /// It is just a scalar equal to the signed square area of the parallelogram spanned by the input vectors.
+        /// If the rotation from 'a' to 'b' is Counter-Clockwise the result is positive.
         member inline a.Cross (b:Vc) =
             a.X*b.Y - a.Y*b.X
 
-        /// 2D cross product.
-        /// Its Just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
-        /// For unit-vectors this is the same as the sine of the angle between the two vectors. (while the dot product is the cosine)
+        /// The 2D cross product of two 2D unit-vectors.
+        /// It is just a scalar equal to the signed square area of the parallelogram spanned by the input vectors.
+        /// If the rotation from 'a' to 'b' is Counter-Clockwise the result is positive.
         member inline a.Cross (b:UnitVc) =
             a.X*b.Y - a.Y*b.X
+
+        /// Dot product, or scalar product of two 2D unit-vectors.
+        /// Returns a float. This float is the Cosine of the angle between the two 2D vectors.
+        member inline a.Dot ( b:UnitVc) =
+            a.X * b.X + a.Y * b.Y
+
+        /// Dot product, or scalar product of a 2D unit-vector with a 2D vector.
+        /// Returns a float. This float is the projected length of the 2D vector on the direction of the unit-vector.
+        member inline a.Dot ( b:Vc) =
+            a.X * b.X + a.Y * b.Y
+
+        /// Dot product, or scalar product of two 2D unit-vectors.
+        /// This float of unit-vectors is the Cosine of the angle between the two vectors.
+        /// Returns a float with a unit of Measure Euclid.Cosine.cosine.
+        /// This is useful for comparing the angle to precomputed values in the Euclid.Cosine module.
+        member inline a.DotCosine (b:UnitVc) : float<Cosine.cosine> =
+            a.X * b.X + a.Y * b.Y  |> LanguagePrimitives.FloatWithMeasure
+
 
         /// Rotate the a 2D unit-vector Counter Clockwise by a 2D Rotation (that has cos and sin precomputed)
         member inline v.RotateBy (r:Rotation2D) =
@@ -367,27 +386,38 @@ module AutoOpenUnitVc =
 
         //static member inline cross (a:UnitVc, b:UnitVc) // moved to UnitVc.fs
 
-        /// 2D cross product.
-        /// Its Just a scalar equal to the area of the parallelogram spanned by the input vectors.
+        /// The 2D cross product.
+        /// It is just a scalar equal to the signed square area of the parallelogram spanned by the input vectors.
+        /// If the rotation from 'a' to 'b' is Counter-Clockwise the result is positive.
         static member inline cross (a:UnitVc, b:Vc) =
             a.X*b.Y - a.Y*b.X
 
-        /// 2D cross product.
-        /// Its Just a scalar equal to the area of the parallelogram spanned by the input vectors.
+        /// The 2D cross product.
+        /// It is just a scalar equal to the signed square area of the parallelogram spanned by the input vectors.
+        /// If the rotation from 'a' to 'b' is Counter-Clockwise the result is positive.
         static member inline cross (a:Vc, b:UnitVc) =
             a.X*b.Y - a.Y*b.X
 
-
+        //static member inline dot (a:UnitVc, b:UnitVc)  //moved to Vc type declaration
 
         /// Dot product, or scalar product of a 2D unit-vector with a 2D vector.
-        /// Returns a float. This float is the projected length of the 2D vector on the direction of the unit-vector.
+        /// Returns a float.
+        /// This float is the projected length of the 2D vector on the direction of the unit-vector.
         static member inline dot (a:UnitVc, b:Vc) =
             a.X * b.X + a.Y * b.Y
 
         /// Dot product, or scalar product of a 2D vector with a 2D unit-vector.
-        /// Returns a float. This float is the projected length of the 2D vector on the direction of the unit-vector.
+        /// Returns a float.
+        /// This float is the projected length of the 2D vector on the direction of the unit-vector.
         static member inline dot (a:Vc, b:UnitVc) =
             a.X * b.X + a.Y * b.Y
+
+        /// Dot product, or scalar product of two 2D unit-vector.
+        /// This float of unit-vectors is the Cosine of the angle between the two vectors.
+        /// Returns a float with a unit of Measure Euclid.Cosine.cosine.
+        /// This is useful for comparing the angle to precomputed values in the Euclid.Cosine module.
+        static member inline dotCosine (a:UnitVc) ( b:UnitVc) : float<Cosine.cosine> =
+            a.X * b.X + a.Y * b.Y  |> LanguagePrimitives.FloatWithMeasure
 
         /// Gets the X part of this 2D unit-vector.
         static member inline getX (v:UnitVc) =
