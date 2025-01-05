@@ -3,9 +3,9 @@
 
 [![Euclid on nuget.org](https://img.shields.io/nuget/v/Euclid)](https://www.nuget.org/packages/Euclid/)
 [![Euclid on fuget.org](https://www.fuget.org/packages/Euclid/badge.svg)](https://www.fuget.org/packages/Euclid)
+[![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fgoswinr%2FEuclid&count_bg=%2379C83D&title_bg=%23555555&icon=github.svg&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
 ![code size](https://img.shields.io/github/languages/code-size/goswinr/Euclid.svg)
 [![license](https://img.shields.io/github/license/goswinr/Euclid)](LICENSE)
-
 ![Logo](https://raw.githubusercontent.com/goswinr/Euclid/main/Doc/logo128.png)
 
 
