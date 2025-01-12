@@ -1600,4 +1600,101 @@ module AutoOpenLine2D =
 
 
 
+    /// <summary>Checks if the two finite 2D lines are touching each other at any of end points
+    /// within the given tolerance.
+    /// This will also return found result if the lines are touching on both points.</summary>
+    /// <param name="tol"> The tolerance for the distance between the end points.</param>
+    /// <param name="a"> The first line.</param>
+    /// <param name="b"> The second line.</param>
+    /// <returns>
+    /// An integer value indicating the touching case:
+    /// 0 if not touching,
+    /// 1 if touching at End of A and Start of B,
+    /// 2 if touching at Start of A and End of B,
+    /// 3 if touching at Start of A and Start of B,
+    /// 4 if touching at End of A and End of B
+    /// </returns>
+    static member areTouchingAny tol (a:Line2D) (b:Line2D)  : int =
+        let tolSq = tol*tol
+        if (
+            let x = a.ToX-b.FromX
+            let y = a.ToY-b.FromY
+            x*x + y*y < tolSq) then 1
+        elif (
+            let x = a.FromX-b.ToX
+            let y = a.FromY-b.ToY
+            x*x + y*y < tolSq) then 2
+        elif  (
+            let x = a.FromX-b.FromX
+            let y = a.FromY-b.FromY
+            x*x + y*y < tolSq) then 3
+        elif (
+            let x = a.ToX-b.ToX
+            let y = a.ToY-b.ToY
+            x*x + y*y < tolSq) then 4
+        else
+            0
+
+
+    /// <summary>Checks if the two finite 2D lines are touching each other at exactly one of their end points
+    /// within the given tolerance.
+    /// This will return a separate case (5 or 6) if the lines are touching on both points.</summary>
+    /// <param name="tol"> The tolerance for the distance between the end points.</param>
+    /// <param name="a"> The first line.</param>
+    /// <param name="b"> The second line.</param>
+    /// <returns>
+    /// An integer value indicating the touching case:
+    /// 0 if not touching,
+    /// 1 if touching at End of A and Start of B,
+    /// 2 if touching at Start of A and End of B,
+    /// 3 if touching at Start of A and Start of B,
+    /// 4 if touching at End of A and End of B,
+    /// 5 if touching at both Start and End. Lines are identical and in same orientation.
+    /// 6 if touching at both at the other Start or End. Lines are identical but in opposite orientation.
+    /// </returns>
+    static member areTouchingEither tol (a:Line2D) (b:Line2D) =
+        let tolSq = tol*tol
+        if (
+            let x = a.ToX-b.FromX
+            let y = a.ToY-b.FromY
+            x*x + y*y < tolSq) then
+                if (
+                    let x = a.FromX-b.ToX
+                    let y = a.FromY-b.ToY
+                    x*x + y*y < tolSq) then 6
+                else
+                    1
+        elif (
+            let x = a.FromX-b.ToX
+            let y = a.FromY-b.ToY
+            x*x + y*y < tolSq) then 2
+            // if ( // this cant happen because it would have been caught by the above if case
+            //     let x = a.ToX-b.FromX
+            //     let y = a.ToY-b.FromY
+            //     x*x + y*y < tolSq) then 6
+            // else
+            //     2
+        elif (
+            let x = a.FromX-b.FromX
+            let y = a.FromY-b.FromY
+            x*x + y*y < tolSq) then
+                if (
+                    let x = a.ToX-b.ToX
+                    let y = a.ToY-b.ToY
+                    x*x + y*y < tolSq) then 5
+                else
+                    3
+        elif (
+            let x = a.ToX-b.ToX
+            let y = a.ToY-b.ToY
+            x*x + y*y < tolSq) then 4
+            // if ( // this cant happen because it would have been caught by the above if case
+            //     let x = a.FromX-b.FromX
+            //     let y = a.FromY-b.FromY
+            //     x*x + y*y < tolSq) then 5
+            // else
+            //     4
+        else
+            0
+
 
