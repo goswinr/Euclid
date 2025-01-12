@@ -14,28 +14,8 @@ type XLineCone =
 module Intersect =
     open UtilEuclid
 
-    /// Returns the parameter on vector 'va' where 'va' and 'vb' intersect intersect as endless rays.
-    /// If they start from points 'a' and 'b' respectively.
-    /// Pass in va.Cross vb is precomputed and inverted.
-    let inline private getXPara (a:Pt, vaXvbInverse:float, b:Pt, vb:UnitVc) =
-        // find intersection using 2D cross product :
-        // https://www.youtube.com/watch?v=c065KoXooSw and https://gist.github.com/EgoMoose/f3d22a503e0598c12d1e3926dc72fb19
-        ((b-a).Cross(vb)) * vaXvbInverse // va.Cross vb  is precomputed  and inverted
-
-    let inline private isParamStillBelowZeroAfterOffsets(ap:Pt, au:UnitVc, aXbInverse:float, bp:Pt, bu:UnitVc, snapThreshold:float) =
-        let n = au.Rotate90CCW * snapThreshold
-        // TODO would it be enough to only compute one of these two? depending on the sign of aXbInverse ?
-        getXPara(ap + n, aXbInverse, bp, bu) <  -snapThreshold //with threshold subtracted the  range factor is 1 to 1.4 . without 0.7 to 1 of threshold
-        &&
-        getXPara(ap - n, aXbInverse, bp, bu) <  -snapThreshold
-
-    let inline private isParamStillMoreThanLengthAfterOffsets(ap:Pt, au:UnitVc, aXbInverse:float, al:float, bp:Pt, bu:UnitVc, snapThreshold:float) =
-        let n = au.Rotate90CCW * snapThreshold
-        getXPara(ap + n, aXbInverse, bp, bu) > al + snapThreshold //with threshold added the range factor is 1 to 1.4 . without 0.7 to 1 of threshold
-        &&
-        getXPara(ap - n, aXbInverse, bp, bu) > al + snapThreshold
-
-
+    /// A Discriminated Union with the result cases
+    /// from the first step of a 2D line-line intersection test.
     type LineLineRelation =
         // TODO this DU could be also encoded via Float NaN and infinity to avoid an extra object allocation, (using ref out parameters ?)
         |NoIntersection
@@ -44,14 +24,35 @@ module Intersect =
         |BfromRight of struct (float * float) // parameters for unit-vector, might be out of bound by snapThreshold
         |BfromLeft  of struct (float * float) // parameters for unit-vector, might be out of bound by snapThreshold
 
-    // inline functions?
+    /// Returns the parameter on vector 'va' where 'va' and 'vb' intersect intersect as endless rays.
+    /// If they start from points 'a' and 'b' respectively.
+    /// Pass in va.Cross vb is precomputed and inverted.
+    let inline private getXPara (a:Pt, vaXvbInverse:float, b:Pt, vb:UnitVc) :float =
+        // find intersection using 2D cross product :
+        // https://www.youtube.com/watch?v=c065KoXooSw and https://gist.github.com/EgoMoose/f3d22a503e0598c12d1e3926dc72fb19
+        ((b-a).Cross vb) * vaXvbInverse // va.Cross vb  is precomputed  and inverted
+
+    let inline private isParamStillBelowZeroAfterOffsets(ap:Pt, au:UnitVc, aXbInverse:float, bp:Pt, bu:UnitVc, snapThreshold:float) :bool =
+        let n = au.Rotate90CCW * snapThreshold
+        // TODO would it be enough to only compute one of these two? depending on the sign of aXbInverse ?
+        getXPara(ap + n, aXbInverse, bp, bu) <  -snapThreshold //with threshold subtracted the  range factor is 1 to 1.4 . without 0.7 to 1 of threshold
+        &&
+        getXPara(ap - n, aXbInverse, bp, bu) <  -snapThreshold
+
+    let inline private isParamStillMoreThanLengthAfterOffsets(ap:Pt, au:UnitVc, aXbInverse:float, al:float, bp:Pt, bu:UnitVc, snapThreshold:float) :bool =
+        let n = au.Rotate90CCW * snapThreshold
+        getXPara(ap + n, aXbInverse, bp, bu) > al + snapThreshold //with threshold added the range factor is 1 to 1.4 . without 0.7 to 1 of threshold
+        &&
+        getXPara(ap - n, aXbInverse, bp, bu) > al + snapThreshold
+
+
 
     /// A Call to this should be preceded by BRect.doOverlap. to exit quickly if apart.
     /// For line A and line B give for each:
     /// Start point, unitized Direction, line length.
     /// And finally a tolerance: Curve A will be extended on both ends and offset to both sides.
     /// These offsets will also be checked with curve B that is also extended by this amount.
-    let getRelation (ap:Pt, au:UnitVc, al:float, bp:Pt, bu:UnitVc, bl:float, snapThreshold:float) :LineLineRelation=
+    let getRelation (ap:Pt, au:UnitVc, al:float, bp:Pt, bu:UnitVc, bl:float, snapThreshold:float) : LineLineRelation =
         let aXb = au.Cross bu //precomputed cross product
 
         if abs(aXb) > zeroLengthTolerance then  // not parallel
@@ -94,7 +95,7 @@ module Intersect =
                 Parallel // parallel distance is more than snapThreshold distance,
 
     /// This function includes a initial call to BRect.doOverlap.
-    let inline doIntersectOrOverlapColinear (ap:Pt, au:UnitVc, al:float, abb:BRect, bp:Pt, bu:UnitVc, bl:float, bbb:BRect, snapThreshold:float) :bool =
+    let inline doIntersectOrOverlapColinear (ap:Pt, au:UnitVc, al:float, abb:BRect, bp:Pt, bu:UnitVc, bl:float, bbb:BRect, snapThreshold:float) : bool =
         BRect.doOverlap abb bbb
         &&
         match getRelation(ap, au, al, bp, bu, bl, snapThreshold)   with
@@ -168,7 +169,7 @@ module Intersect =
     /// Intersects an infinite line with an infinite double cone that has it's Axis on Z-Axis.
     /// coneRadius -> coneBaseZ -> coneTipZ ->  (ln:Line3D) -> XConeLine
     /// Returns the parameter(s) on the line.
-    let lineCone (ln:Line3D, coneRadius, coneBaseZ, coneTipZ) =
+    let lineCone (ln:Line3D, coneRadius, coneBaseZ, coneTipZ) : XLineCone =
         let h = coneBaseZ-coneTipZ
         if isTooTiny( abs h )then EuclidException.Raisef "Euclid.Intersection.lineCone: cone has zero height: coneRadius: %g, coneBaseZ: %g, coneTipZ: %g" coneRadius coneBaseZ coneTipZ
         let lam = coneRadius / h

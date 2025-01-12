@@ -1191,7 +1191,7 @@ module AutoOpenLine2D =
     /// Use the module Euclid.UtilEuclid.RelAngleDiscriminant to set another tolerance here.</param>
     ///<param name="coincidentTolerance" > Is an optional distance tolerance. 1e-6 by default.
     ///  If parallel lines are closer than this, then the 'Coincident' union case is returned.</param>
-    ///<returns> An IntersectionPoints3D Discriminated Union with the following cases:
+    ///<returns> An IntersectionPoints2D Discriminated Union with the following cases:
     ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
     ///  If one or both lines are shorter than this, then the 'TooShort' union case is returned.</param>
     ///
