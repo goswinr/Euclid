@@ -14,7 +14,6 @@ module AutoOpenLine3D =
   type Line3D with
 
 
-
     /// Checks if line is parallel to the world X axis. Ignoring orientation.
     /// The absolute deviation tolerance along Y and Z axis is 1e-9.
     /// Fails on lines shorter than 1e-6.
@@ -1083,7 +1082,8 @@ module AutoOpenLine3D =
                 ln.ToY,
                 ln.ToZ)
 
-    /// Returns new Line3D with given length. Missing length is added to or subtracted from both the end and start of the line.
+    /// Returns new Line3D with given length. Fixed in the midpoint.
+    /// Missing length is added to or subtracted from both the end and start of the line.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     static member inline withLengthFromMid len (ln:Line3D) =
         let x = ln.FromX-ln.ToX
@@ -1102,19 +1102,23 @@ module AutoOpenLine3D =
     /// Offset line parallel to XY-Plane to left side in line direction.
     /// Z values are not changed.
     /// Fails on vertical lines or lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    /// If amount is 0.0 no offset is computed and the input line is returned.
     static member offsetXY amount (ln:Line3D) =
-        let x = ln.ToX - ln.FromX
-        let y = ln.ToY - ln.FromY
-        let lenXY = sqrt (x*x + y*y)
-        if isTooTiny (lenXY ) then EuclidException.Raisef "Euclid.Line3D.offset: Cannot offset vertical Line3D (by %g) %O" amount ln
-        let ox = -y*amount/lenXY  // unitized, horizontal, perpendicular  vector
-        let oy =  x*amount/lenXY  // unitized, horizontal, perpendicular  vector
-        Line3D( ln.FromX+ox,
-                ln.FromY+oy,
-                ln.FromZ,
-                ln.ToX+ox,
-                ln.ToY+oy,
-                ln.ToZ)
+        if amount = 0.0 then
+            ln
+        else
+            let x = ln.ToX - ln.FromX
+            let y = ln.ToY - ln.FromY
+            let lenXY = sqrt (x*x + y*y)
+            if isTooTiny (lenXY ) then EuclidException.Raisef "Euclid.Line3D.offset: Cannot offset vertical Line3D (by %g) %O" amount ln
+            let ox = -y*amount/lenXY  // unitized, horizontal, perpendicular  vector
+            let oy =  x*amount/lenXY  // unitized, horizontal, perpendicular  vector
+            Line3D( ln.FromX+ox,
+                    ln.FromY+oy,
+                    ln.FromZ,
+                    ln.ToX+ox,
+                    ln.ToY+oy,
+                    ln.ToZ)
 
     /// Divides a 3D line into given amount of segments.
     /// Returns an array of 3D points of length: segment count + 1.

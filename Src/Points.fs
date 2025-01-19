@@ -586,38 +586,41 @@ type Points private () =
                                         prevDist:float,
                                         nextDist:float,
                                         referenceOrient:float) : ValueOption<Pt*Vc*Vc> =
-        let ax = prevToThis.X
-        let ay = prevToThis.Y
-        let bx = thisToNext.X
-        let by = thisToNext.Y
-        let a = ax*ax + ay*ay // square length of A
-        let c = bx*bx + by*by // square length of B
-        if isTooSmallSq (c) then
-            ValueNone
-        elif isTooSmallSq (a) then
-            ValueNone
+        if prevDist = 0. && nextDist = 0. then
+            ValueSome (thisPt, Vc.Zero, Vc.Zero)
         else
-            let b = ax*bx + ay*by // dot product of both lines
-            let ac = a*c // square of square length, never negative
-            let bb = b*b // square of square dot product, never negative
-            let discriminant = ac - bb // never negative, the dot product cannot be bigger than the two square length multiplied with each other
-            let div = ac+bb // never negative
-            let rel = discriminant/div
-            if rel < float RelAngleDiscriminant.``0.25`` then //parallel
+            let ax = prevToThis.X
+            let ay = prevToThis.Y
+            let bx = thisToNext.X
+            let by = thisToNext.Y
+            let a = ax*ax + ay*ay // square length of A
+            let c = bx*bx + by*by // square length of B
+            if isTooSmallSq (c) then
+                ValueNone
+            elif isTooSmallSq (a) then
                 ValueNone
             else
-                let n = Vc.cross(prevToThis, thisToNext) |> UtilEuclid.matchSign referenceOrient
-                let prevShift = prevToThis.Rotate90CCW |> Vc.withLength (if n>0. then prevDist else -prevDist)
-                let nextShift = thisToNext.Rotate90CCW |> Vc.withLength (if n>0. then nextDist else -nextDist)
-                let offP = thisPt + prevShift
-                let offN = thisPt + nextShift
-                let vx = offN.X - offP.X
-                let vy = offN.Y - offP.Y
-                let e = bx*vx + by*vy
-                let d = ax*vx + ay*vy
-                let t = (c * d - b * e) / discriminant
-                let pt = offP + t * prevToThis
-                ValueSome (pt, prevShift, nextShift)
+                let b = ax*bx + ay*by // dot product of both lines
+                let ac = a*c // square of square length, never negative
+                let bb = b*b // square of square dot product, never negative
+                let discriminant = ac - bb // never negative, the dot product cannot be bigger than the two square length multiplied with each other
+                let div = ac+bb // never negative
+                let rel = discriminant/div
+                if rel < float RelAngleDiscriminant.``0.25`` then //parallel
+                    ValueNone
+                else
+                    let n = Vc.cross(prevToThis, thisToNext) |> UtilEuclid.matchSign referenceOrient
+                    let prevShift = prevToThis.Rotate90CCW |> Vc.withLength (if n>0. then prevDist else -prevDist)
+                    let nextShift = thisToNext.Rotate90CCW |> Vc.withLength (if n>0. then nextDist else -nextDist)
+                    let offP = thisPt + prevShift
+                    let offN = thisPt + nextShift
+                    let vx = offN.X - offP.X
+                    let vy = offN.Y - offP.Y
+                    let e = bx*vx + by*vy
+                    let d = ax*vx + ay*vy
+                    let t = (c * d - b * e) / discriminant
+                    let pt = offP + t * prevToThis
+                    ValueSome (pt, prevShift, nextShift)
 
     /// It finds the inner offset point in a corner (defined by a Polyline from 3 points (prevPt, thisPt and nextPt)
     /// The offset from first and second segment are given separately and can vary (prevDist and nextDist).

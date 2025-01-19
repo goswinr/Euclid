@@ -939,7 +939,8 @@ module AutoOpenLine2D =
                 ln.ToY)
 
 
-    /// Returns new Line2D with given length. Missing length is added to or subtracted from both the end and start of the line.
+    /// Returns new Line2D with given length. Fixed in the midpoint.
+    /// Missing length is added to or subtracted from both the end and start of the line.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     static member inline withLengthFromMid len (ln:Line2D) =
         let x = ln.FromX-ln.ToX
@@ -955,17 +956,21 @@ module AutoOpenLine2D =
 
     /// Offset line in XY-Plane to left side in line direction.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    /// If amount is 0.0 no offset is computed and the input line is returned.
     static member offset amount (ln:Line2D) =
-        let x = ln.ToX - ln.FromX
-        let y = ln.ToY - ln.FromY
-        let lenXY = sqrt (x*x + y*y)
-        if isTooTiny (lenXY ) then EuclidException.Raisef "Euclid.Line2D.offset: Cannot offset too short Line2D (by %g) %O" amount ln
-        let ox = -y*amount/lenXY // unitized, horizontal, perpendicular  vector
-        let oy =  x*amount/lenXY  // unitized, horizontal, perpendicular  vector
-        Line2D( ln.FromX+ox,
-                ln.FromY+oy,
-                ln.ToX+ox,
-                ln.ToY+oy)
+        if amount = 0.0 then
+            ln
+        else
+            let x = ln.ToX - ln.FromX
+            let y = ln.ToY - ln.FromY
+            let lenXY = sqrt (x*x + y*y)
+            if isTooTiny (lenXY ) then EuclidException.Raisef "Euclid.Line2D.offset: Cannot offset too short Line2D (by %g) %O" amount ln
+            let ox = -y*amount/lenXY // unitized, horizontal, perpendicular  vector
+            let oy =  x*amount/lenXY  // unitized, horizontal, perpendicular  vector
+            Line2D( ln.FromX+ox,
+                    ln.FromY+oy,
+                    ln.ToX+ox,
+                    ln.ToY+oy)
 
     /// Divides a 2D line into given amount of segments.
     /// Returns an array of 2D points of length: segment count + 1.
