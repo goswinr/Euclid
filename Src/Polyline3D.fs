@@ -435,9 +435,23 @@ type Polyline3D =
         let mutable prevOff = if notNull offD then offD.[prevVIdx] else 0.0
 
         //(2.2) looping
-        let rec loop(i) =
-            if i <= lastIdx then
-                let nextV = vs.[i]
+
+
+        for i = 0 to lastIdx do
+            let nextV = vs.[i]
+            let thisOff = if notNull offD then  offD.[i] else 0.0
+            let normDist   = if notNull normD then normD.[i] else 0.0
+
+            let doOff   = abs(thisOff)  > 1e-9 && abs(prevOff) > 1e-9
+            let doNorm  = abs(normDist) > 1e-9
+
+            if not doOff && not doNorm then
+                // offset distance is zero for previous and this segment,
+                // just copy the point
+                res.[i] <- pts.[i]
+                prevOff <- thisOff
+                prevV   <- nextV
+            else
                 let ax = prevV.X
                 let ay = prevV.Y
                 let az = prevV.Z
@@ -448,7 +462,9 @@ type Polyline3D =
                 let c = bx*bx + by*by + bz*bz // square length of nextV
                 if c < lenTolSq then
                     colinear.[i] <- true
-                    loop(i+1)
+                    prevOff <- thisOff
+                    prevV   <- nextV
+
                 //elif a < lenTolSq then
                 //    failwithf "To short segment not recognized. This should already be checked!"
                 else
@@ -460,11 +476,13 @@ type Polyline3D =
                     let rel = discriminant/div
                     if rel < float RelAngleDiscriminant.``0.25`` then //parallel
                         colinear.[i] <- true
-                        loop(i+1)
+                        prevOff <- thisOff
+                        prevV   <- nextV
                     else
                         let n = Vec.cross(prevV, nextV) |> Vec.matchOrientation refNorm
-                        if notNull offD then
-                            let thisOff = offD.[i]
+
+                        // in corner offset
+                        if doOff then
                             let thisPt = pts.[i]
                             let offP = thisPt + (Vec.cross(n, prevV)  |> Vec.withLength prevOff)  // not always the same as lastIdx !
                             let offN = thisPt + (Vec.cross(n, nextV)  |> Vec.withLength thisOff)
@@ -475,15 +493,14 @@ type Polyline3D =
                             let d = ax*vx + ay*vy + az*vz
                             let t = (c * d - b * e) / discriminant
                             res.[i] <- offP + t * prevV
-                            prevOff <- thisOff
 
                         // add normal offset:
-                        if notNull normD then
-                            res.[i] <- res.[i] + n.Unitized * normD.[i]
+                        if doNorm then
+                            res.[i] <- res.[i] + n.Unitized * normDist
 
+                        prevOff <- thisOff
                         prevV <- nextV
-                        loop(i+1)
-        loop(0)
+
 
         // (3.5) correct colinear points by nearest neighbors that are ok in a loop
         if fixColinearLooped then

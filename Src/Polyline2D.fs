@@ -471,15 +471,18 @@ type Polyline2D =
         let mutable prevOff = getOffDist(prevVIdx)
 
         //(2.2) looping
-        let rec loop(i) =
-            if i <= lastIdx then
-                let thisOff = getOffDist(i)
-                if abs(thisOff) < 1e-9 && abs(prevOff) < 1e-9 then
-                    // offset distance is zero for previous and this segment,
-                    // just copy the point
-                    res.[i] <- pts.[i]
-                    loop(i+1)
-                let nextV = vs.[i]
+
+        for i=0 to lastIdx do
+            let thisOff = getOffDist(i)
+            let nextV = vs.[i]
+            if abs(thisOff) < 1e-9 && abs(prevOff) < 1e-9 then
+                // offset distance is zero for previous and this segment,
+                // just copy the point
+                res.[i] <- pts.[i]
+                prevOff <- thisOff
+                prevV <- nextV
+
+            else
                 let ax = prevV.X
                 let ay = prevV.Y
                 let bx = nextV.X
@@ -488,7 +491,9 @@ type Polyline2D =
                 let c = bx*bx + by*by // square length of nextV
                 if c < lenTolSq then
                     colinear.[i] <- true
-                    loop(i+1)
+                    prevOff <- thisOff
+                    prevV <- nextV
+
                 //elif a < lenTolSq then
                 //    failwithf "To short segment not recognized. This should already be checked!"
                 else
@@ -497,10 +502,11 @@ type Polyline2D =
                     let bb = b*b // square of square dot product, never negative
                     let discriminant = ac - bb // never negative, the dot product cannot be bigger than the two square length multiplied with each other
                     let div = ac+bb // never negative
-                    let rel = discriminant/div
+                    let rel = discriminant / div
                     if rel < float RelAngleDiscriminant.``0.25`` then //parallel
                         colinear.[i] <- true
-                        loop(i+1)
+                        prevOff <- thisOff
+                        prevV <- nextV
                     else
                         /// Check with the orientation with the reference normal
                         /// In 2D the cross product vector is the signed area of the parallelogram spanned by the two vectors.
@@ -519,23 +525,23 @@ type Polyline2D =
                         res.[i] <- offP + t * prevV
                         prevOff <- thisOff
                         prevV <- nextV
-                        loop(i+1)
-        loop(0)
+
+
 
         // (3.5) correct colinear points by nearest neighbors that are ok in a loop
         if fixColinearLooped then
             let rec searchBack i =
-                let ii = saveIdx (i) colinear.Length
+                let ii = saveIdx i colinear.Length
                 if not colinear.[ii] then ii
                 elif i < -colinear.Length then EuclidException.Raisef "Euclid.Polyline2D.offsetCore : all %d points for offset are colinear within 0.25 degree or identical. " pts.Count
                 else searchBack (i - 1)
 
             let rec  searchForward i =
-                let ii = saveIdx (i) colinear.Length
+                let ii = saveIdx i colinear.Length
                 if not colinear.[ii] then ii // no need to check for endless loop here because check is done in searchBack that is called first
                 else searchForward (i + 1)
 
-            for i = 0 to colinear.Length-1 do
+            for i = 0 to colinear.Length - 1 do
                 if colinear.[i]  then
                     let pi = searchBack    (i - 1)
                     let ni = searchForward (i + 1)
@@ -557,7 +563,7 @@ type Polyline2D =
                 elif not colinear.[i] then i
                 else searchForward (i + 1)
 
-            for i = 0 to colinear.Length-1 do
+            for i = 0 to colinear.Length - 1 do
                 if colinear.[i]  then
                     let pi = searchBack    (i-1)
                     let ni = searchForward (i+1)
