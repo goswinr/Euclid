@@ -1334,18 +1334,19 @@ module AutoOpenLine2D =
             let ur = isZeroOneOrBetween u
             let vr = isZeroOneOrBetween v
 
-            let inline fix01 zt1 x = match zt1 with Zero -> 0.0 |One -> 1.0 |Between |Outside -> x
+            let inline fix01 pos x = match pos with Zero -> 0.0 |One -> 1.0 | Between | Outside -> x
 
             if ur = Outside || vr = Outside then
                 // finite Lines are not intersecting, still find their closest Points:
-                let pu = lnA.EvaluateAt  u
+                let pu = lnA.EvaluateAt  (clampBetweenZeroAndOne u)
                 let vt = Line2D.closestParameter pu lnB
-                let pv = lnB.EvaluateAt vt
+                let pv = lnB.EvaluateAt (clampBetweenZeroAndOne vt)
                 let ut = Line2D.closestParameter pv lnA
                 Apart, ut, vt
+
             elif ur = Zero || ur = One then
                 if vr = Zero || vr = One then
-                    IntersectingEndsBoth,(fix01 ur u), (fix01 vr  v)
+                    IntersectingEndsBoth, (fix01 ur u), (fix01 vr  v)
                 else
                     IntersectingEndsFirst, (fix01 ur u), v
             elif vr = Zero || vr = One then

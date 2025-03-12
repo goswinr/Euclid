@@ -1534,11 +1534,12 @@ module AutoOpenLine3D =
 
             if   ur = Outside || vr = Outside then
                 // finite Lines are not intersecting, still find their closest Points:
-                let pu = lnA.EvaluateAt  u
+                let pu = lnA.EvaluateAt  (clampBetweenZeroAndOne u)
                 let vt = Line3D.closestParameter pu lnB
-                let pv = lnB.EvaluateAt vt
+                let pv = lnB.EvaluateAt (clampBetweenZeroAndOne vt)
                 let ut = Line3D.closestParameter pv lnA
                 Apart, ut, vt
+
             else
                 let a = lnA.EvaluateAt(u)
                 let b = lnA.EvaluateAt(v)

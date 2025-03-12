@@ -52,7 +52,7 @@ module Intersect =
     /// Start point, unitized Direction, line length.
     /// And finally a tolerance: Curve A will be extended on both ends and offset to both sides.
     /// These offsets will also be checked with curve B that is also extended by this amount.
-    let getRelation (ap:Pt, au:UnitVc, al:float, bp:Pt, bu:UnitVc, bl:float, snapThreshold:float) : LineLineRelation =
+    let internal getRelation (ap:Pt, au:UnitVc, al:float, bp:Pt, bu:UnitVc, bl:float, snapThreshold:float) : LineLineRelation =
         let aXb = au.Cross bu //precomputed cross product
 
         if abs(aXb) > zeroLengthTolerance then  // not parallel
@@ -95,7 +95,7 @@ module Intersect =
                 Parallel // parallel distance is more than snapThreshold distance,
 
     /// This function includes a initial call to BRect.doOverlap.
-    let inline doIntersectOrOverlapColinear (ap:Pt, au:UnitVc, al:float, abb:BRect, bp:Pt, bu:UnitVc, bl:float, bbb:BRect, snapThreshold:float) : bool =
+    let inline internal doIntersectOrOverlapColinear (ap:Pt, au:UnitVc, al:float, abb:BRect, bp:Pt, bu:UnitVc, bl:float, bbb:BRect, snapThreshold:float) : bool =
         BRect.doOverlap abb bbb
         &&
         match getRelation(ap, au, al, bp, bu, bl, snapThreshold)   with
@@ -108,7 +108,7 @@ module Intersect =
 
     /// Returns the intersection point or mid point between two 2D lines.
     /// (used mainly for drawing debug notes at this point)
-    let getXPointOrMid (ap:Pt, au:UnitVc, al:float, bp:Pt, bu:UnitVc, bl:float, snapThreshold:float) : Pt =
+    let internal getXPointOrMid (ap:Pt, au:UnitVc, al:float, bp:Pt, bu:UnitVc, bl:float, snapThreshold:float) : Pt =
         match getRelation(ap, au, al, bp, bu, bl, snapThreshold)   with
         |NoIntersection
         |Colinear

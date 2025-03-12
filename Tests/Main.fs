@@ -1,28 +1,34 @@
 ﻿module Euclid.Tests
 
 #if FABLE_COMPILER
-
 open Fable.Mocha
-
-Mocha.runTests Rect2D.tests
-|||
-Mocha.runTests Polyline.tests
-|||
-Mocha.runTests Topo.tests
-
-|> printfn "Fable.Mocha completed. with %A"
-
-
+let test x = Mocha.runTests x
 #else
 open Expecto
-
-[<EntryPoint>]
-let main argv =
-
-    runTestsWithCLIArgs [] [||] Rect2D.tests
-    |||
-    runTestsWithCLIArgs [] [||] Polyline.tests
-    |||
-    runTestsWithCLIArgs [] [||] Topo.tests
-
+open System.Globalization
+open System.Threading
+Thread.CurrentThread.CurrentCulture <- CultureInfo.GetCultureInfo("en-US") // so that a float never has a comma as decimal separator
+Thread.CurrentThread.CurrentUICulture <- CultureInfo.GetCultureInfo("en-US")
+let test x =  runTestsWithCLIArgs [] [||] x
 #endif
+
+
+let run () =
+
+    test Line.tests
+    |||
+    test Rect2D.tests
+    |||
+    test Polyline.tests
+    |||
+    test Topo.tests
+
+
+#if FABLE_COMPILER
+run() |> ignore<int>
+#else
+let [<EntryPoint>] main _ = run()
+#endif
+
+
+

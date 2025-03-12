@@ -3,10 +3,11 @@
   "type": "module",
   "scripts": {
     "checkTS": "tsc --target es2022",
-    "watchTS": "dotnet fable watch ../Euclid.fsproj --lang typescript          --outDir ./_ts --run npm run checkTS" ,
+    "watchTS": "dotnet fable watch ../Euclid.fsproj --lang typescript          --outDir ./_ts --run npm run checkTS " ,
     "buildTS": "dotnet fable       ../Euclid.fsproj --lang typescript --silent --outDir ./_ts --run npm run checkTS" ,
-    "pretest": "dotnet tool update fable && dotnet fable --outDir dist/tests --noCache ",
-    "test": "mocha dist/tests && npm run buildTS"
+    "buildJS": "dotnet fable --outDir dist/tests --noCache ",
+    "pretest": "npm run buildJS && npm run buildTS",
+    "test": "mocha dist/tests"
   },
   "dependencies": {
     "mocha": "^10.7.3"

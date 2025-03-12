@@ -10,7 +10,6 @@ open Expecto
 
 let inline eq a b = Pt.distance a b < 1e-9
 
-
 let pl = Polyline2D.create [Pt(0.,0.); Pt(10.,0.); Pt(10.,10.); Pt(0.,10.); Pt(0.,0.)]
 let plo = Polyline2D.create [Pt(0.,0.); Pt(10.,0.); Pt(10.,10.); Pt(0.,10.)]
 

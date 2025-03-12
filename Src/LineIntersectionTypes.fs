@@ -183,12 +183,31 @@ module LineIntersectionTypes =
         |Between
         |Outside
 
+    open UtilEuclid
+
     /// Tests if a float is close to 0.0, close to 1.0 in between or outside.
     /// The tolerance is approximately 1e-6 for each side.
     /// That is 6 steps of float increment from 1.0.
     /// So between 0.99999964 and 1.000000715. Same step size for zero.
     let inline isZeroOneOrBetween (x:float) =
-        if   UtilEuclid.isZero              x then Zero
-        elif UtilEuclid.isOne               x then One
-        elif UtilEuclid.isBetweenZeroAndOne x then Between
-        else Outside
+        if    x < -1e-6          then Outside
+        elif  x > ``1.0 + 1e-6`` then Outside
+        elif  x < 1e-6           then Zero
+        elif  x > ``1.0 - 1e-6`` then One
+        else Between
+
+
+
+    // type ZeroToOne =
+    //     |Zero
+    //     |One
+    //     |Between
+    //     |Below
+    //     |Above
+
+    // let inline isZeroOneOrBetween (x:float) =
+    //     if    x < -1e-6          then Below
+    //     elif  x > ``1.0 + 1e-6`` then Above
+    //     elif  x < 1e-6           then Zero
+    //     elif  x > ``1.0 - 1e-6`` then One
+    //     else Between
