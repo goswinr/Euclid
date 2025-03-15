@@ -66,14 +66,15 @@ let tests =
         let mutable continueShift = true
         for i = 0 to 50 do
             if continueShift then
-                let shift =  ((float i) ** 2) * 0.001 // us exponent of 1.5 to progressively increase distance
+                let ii = float i
+                let shift = ii * ii * ii * 0.001 // us exponent of 1.5 to progressively increase distance
                 let a = Line2D(0,0,0,100)
                 let b = Line2D(0,-50,shift,50)
                 let b = if i % 2 = 0 then b else b.Reversed
                 let a = if i % 3 = 0 then a else a.Reversed
                 let ang = Vc.angle180 a.Tangent b.Tangent
                 let d = Line2D.distanceBetweenLines(a,b)
-                let ok = d <= shift*0.6
+                let ok = d <= shift*0.55 // the actual distance it half or less
                 if not ok then
                     printfn $"  *  angle {ang}"
                     printfn $"  *  distance: {d}"
@@ -81,7 +82,7 @@ let tests =
                     printfn $"  *  line A from to: Line2D({a.FromX}, {a.FromY}, {a.ToX}, {a.ToY})"
                     printfn $"  *  line B from to: Line2D({b.FromX}, {b.FromY}, {b.ToX}, {b.ToY})"
                     continueShift <- false
-                test (sprintf $"almost Parallel {i},  angle {ang} (= {180.-ang})" ) {
+                test (sprintf $"distance of almost Parallel {i},  angle {ang} (= {180.-ang})" ) {
                     "distance is as expected in almost Parallel Lines" |> Expect.isTrue ok
                 }
 
