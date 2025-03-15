@@ -1,0 +1,54 @@
+name: Docs
+
+# copied and adapted from https://fsprojects.github.io/FSharp.Formatting/zero-to-hero.html#Ship-it
+
+# Trigger this Action when new code is pushed to the main branch
+on:
+  push:
+    branches:
+      - main
+
+# We need some permissions to publish to Github Pages
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.x'
+
+
+      - name: Restore dotnet tools
+        run: dotnet tool restore
+
+      - name: Build code to make xml file
+        run: dotnet build -c Release # see required xml tags: https://fsprojects.github.io/FSharp.Formatting/zero-to-hero.html#Generating-API-documentation
+
+      - name: copy README.md to Docs/index.md
+        run: cp README.md Docs/index.md
+
+      - name: Generate the documentation html
+        run: dotnet fsdocs build --properties Configuration=Release --input Docs --output DocsGenerated
+
+      - name: Upload documentation html files
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./DocsGenerated
+
+  # GitHub Actions recommends deploying in a separate job.
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

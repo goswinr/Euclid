@@ -1,0 +1,47 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+           dotnet-version: '9.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Run tests .NET
+        run: dotnet run
+        working-directory: ./Tests
+
+      # run JS tests:
+
+      - name: Restore .NET tools (Fable)
+        run: dotnet tool restore
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x' # Adjust the version as needed
+
+      - name: Clean Install npm dependencies
+        run: npm ci
+        working-directory: ./Tests
+
+      - name: Run tests JS
+        run: npm test
+        working-directory: ./Tests

@@ -1,51 +1,72 @@
 
+
+![Logo](https://raw.githubusercontent.com/goswinr/Euclid/main/Docs/img/logo128.png)
+
 # Euclid
 
+
 [![Euclid on nuget.org](https://img.shields.io/nuget/v/Euclid)](https://www.nuget.org/packages/Euclid/)
-[![Euclid on fuget.org](https://www.fuget.org/packages/Euclid/badge.svg)](https://www.fuget.org/packages/Euclid)
+[![Build Status](https://github.com/goswinr/Euclid/actions/workflows/build.yml/badge.svg)](https://github.com/goswinr/Euclid/actions/workflows/build.yml)
+[![Docs Build Status](https://github.com/goswinr/Euclid/actions/workflows/docs.yml/badge.svg)](https://github.com/goswinr/Euclid/actions/workflows/docs.yml)
+[![Test Status](https://github.com/goswinr/Euclid/actions/workflows/test.yml/badge.svg)](https://github.com/goswinr/Euclid/actions/workflows/test.yml)
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fgoswinr%2FEuclid&count_bg=%2379C83D&title_bg=%23555555&icon=github.svg&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
+[![license](https://img.shields.io/github/license/goswinr/Euclid)](LICENSE.md)
 ![code size](https://img.shields.io/github/languages/code-size/goswinr/Euclid.svg)
-[![license](https://img.shields.io/github/license/goswinr/Euclid)](LICENSE)
-![Logo](https://raw.githubusercontent.com/goswinr/Euclid/main/Doc/logo128.png)
 
 
-Euclid is a 2D and 3D geometry library without dependencies.
-It is mostly focused on creating and manipulating primitives such as
-points, vectors, lines, planes, boxes, and bounding boxes, and polylines.
+Euclid is a 2D and 3D geometry library for F# without dependencies.\
+It is mostly focused on creating and manipulating primitives such as\
+points, vectors, lines, planes, boxes, and bounding boxes, and polylines.\
 For transformations of those there are rotations, quaternions, 4x4 and rigid ortho normal 4x3 matrices.
 
-Written in F# and designed for use with F#.
-All primitive types are immutable and functions are curried where appropriate.
-Many functions exist as both a lowercase static member and a uppercase methods or property.
-e.g.: `Vec.unitized(v)` is the same as the `v.Unitized` property.
-This library is intended to be used for design, construction and manufacturing too.
-So it is using double precision floating point numbers for all values. (While most geometry libraries for games use single precision floats.)
+Written in F# and designed for use with F#, \
+all primitive types are immutable and functions are curried where appropriate.\
 
-This library can be compiled to JavaScript via [Fable](https://fable.io/) too.
+This library is intended to be used for design, construction and manufacturing.\
+So it is using double precision floating point numbers for all values. (While most geometry libraries for games use single precision floats.)
 
 See [Euclid.Rhino](https://github.com/goswinr/Euclid.Rhino) for converting form and to [Rhino3D](https://www.rhino3d.com/) geometry.
 
-### Documentation
+This library can be compiled to JavaScript, Typescript, Rust or Python via [Fable](https://fable.io/).
 
-This library assumes a right handed coordinate system with the Z-axis pointing up.
-Just like Rhino3D, SketchUp, Revit, AutoCAD and Blender have it. But [unlike](https://twitter.com/FreyaHolmer/status/1325556229410861056) Unity or Unreal Engine.
+## Where does Z point to?
 
-In this library a point is a position in space, a vector is a direction in space.
-A 4x4 transformation matrix applied to a vector will only rotate and scale the vector but not translate it.
+This library assumes a right handed coordinate system with the Z-axis pointing up.\
+Just like Rhino3D, Blender, SketchUp, Revit and AutoCAD have it. But [unlike](https://bsky.app/profile/freya.bsky.social/post/3lat5r6hlck25) Unity, Unreal or Maya.
+
+
+## Design decisions
+
+In this library a point is a position in space, a vector is a direction in space.\
+A 4x4 transformation matrix applied to a vector will only rotate and scale the vector but not translate it.\
 You could think of this as a Homogeneous-coordinate-system where the last value is 0 (not 1), thus [disabling translation](https://www.youtube.com/watch?v=o-xwmTODTUI&t=216s).
 
+A 2D point is called `Pt` and a 3D point is called `Pnt`.\
+A 2D vector is called `Vc` and a 3D vector is called `Vec`.\
 
-For the full API see [fuget.org](https://www.fuget.org/packages/Euclid) for now.
+This library has dedicated types for Unit vectors in 2D and 3D space.\
+They are called `UnitVc` and `UnitVec` respectively.\
+They are guaranteed to have a length of 1.0.
 
-### License
-[MIT](https://raw.githubusercontent.com/goswinr/Euclid/main/LICENSE.txt)
+All types have respective modules with the same name for functions that operate on them.\
+Many functions exist as both a lowercase static member and a uppercase methods or property.\
+e.g.: `Vec.unitized(v)` is the same as the `v.Unitized` property.\
 
-### Build
+## Full API Documentation
+
+[goswinr.github.io/Euclid](https://goswinr.github.io/Euclid)
+
+## Changelog
+see [CHANGELOG.md](https://github.com/goswinr/Euclid/blob/main/CHANGELOG.md)
+
+## Build from source
 Just run `dotnet build` in the root directory.
 
-### Test
-To just run once: `dotnet run Tests\Euclid.Tests.fsproj`
-To run and watch the tests use: `dotnet watch --project Tests\Euclid.Tests.fsproj run`
+
+## Tests
+All Tests run in both javascript and dotnet.
+The typescript result is verified with the typescript compiler.
+Go to the tests folder:
 
 or:
 
@@ -65,87 +86,6 @@ for testing with Fable.Mocha run
 npm test
 ```
 
-### Release Notes
+## License
+[MIT](https://github.com/goswinr/Euclid/blob/main/LICENSE.md)
 
-`0.12.0`
-- add AreaSquared on Rects and Boxes
-- allow negative offsets in Rect.Offset
-- add BoundingBox for Rects and Boxes
-
-
-`0.11.1`
-- fix Polyline2D.Area
-
-`0.11.0`
-- add Box and Rect.contains Pt
-- fix bad tolerance in Rect2D.tryCreateFrom3Points
-
-`0.10.0`
-- add Line.divideEvery
-- add Rect.createFromDirAndPoints
-- rename Width and Height to SizeX and SizeY for Rect and Box
-- check TS build via Fable
-
-`0.9.0`
-- add suffix '90' to angel functions in Plane module
-- improve precision of Pi literals
-- include NaN check in isTiny functions
-
-`0.8.0`
-- fix line splitting
-- rename Rect.create functions
-
-`0.7.0`
-- refactor offset
-- add Topology sorting
-
-`0.6.1`
-- remove reflection form error messages for nicer Fable output
-- rename Rect.Rotate to Rect.RotateOrientation
-- add Rect.grid
-- fix Rect.subdivide
-
-`0.5.0`
-- allow equality checks to use zero tolerance.
-- better docstring
-- add more angle calculation functions
-- rename distanceFromPoint to distanceToPt
-- add rotateByQuarterCircle
-- add ExtendRel functions for Lines
-- use *** as operator for dot product, and matrix multiplication
-- add splitting with gap to Lines and Rects
-
-`0.4.1`
-- fix bug in rect.Edge23
-- add BBox.createFromIList
-
-`0.4.0`
-- add Line.withLengthFromMid
-- rename isAngleLessThan functions
-- add spherical interpolation (slerp) for vectors
-- rename Length to Width on Boxes and Rects
-- rename Width to Height2D on Rects
-- rename Width to Depth on Boxes
-- add EdgeMethods on Rects and Boxes
-
-`0.3.0`
-- renamed OrthoMatrix to RigidMatrix
-- add DataMember Attributes for serialization
-- ofXZY functions renamed to createFromMembersXYZ
-- add DivideByInt static members for Array.average and Array.sum for functions
-- fixed typos, improve documentation
-
-`0.2.1`
-- fix fable support
-
-`0.2.0`
-- fable support
-- improved xml documentation
-
-`0.1.0`
-- first public release
-
-### Fable build notes
-
-Test is there is code using reflection via (or similar):
-`dotnet fable  --verbose --lang typescript --outDir ./dist/TS --noReflection`

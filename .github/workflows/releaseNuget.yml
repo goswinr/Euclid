@@ -1,0 +1,51 @@
+name: Publish NuGet Package
+
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  publish:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.x'
+
+    - name: Build
+      run: dotnet build --configuration Release
+
+    - name: Check version consistency of git tag and CHANGELOG.md
+      # needs in fsproj:
+      # <Target Name="WriteChangelogVersion" AfterTargets="AfterBuild"><!-- for version checks in github tag based builds -->
+      #   <WriteLinesToFile File="./bin/ChangelogVersion.txt" Lines="@(CurrentReleaseChangelog)" Overwrite="true" ContinueOnError="false" />
+      # </Target>
+      id: check_version
+      shell: bash
+      run: |
+        CHANGELOG_VERSION=$(cat ./Src/bin/ChangelogVersion.txt | tr -d '[:space:]')
+        echo "CHANGELOG_VERSION=$CHANGELOG_VERSION"
+        echo "github.ref_name=${{ github.ref_name }}"  
+        if [ "${{ github.ref_name }}" != "$CHANGELOG_VERSION" ]; then
+          echo "Version mismatch: git tag (${{ github.ref_name }}) and version in CHANGELOG.md ($CHANGELOG_VERSION) are not the same."
+          exit 1
+        fi 
+
+    - name: Get repository name
+      id: repo-name
+      run: echo "REPO_NAME=${GITHUB_REPOSITORY#*/}" >> $GITHUB_ENV
+
+    - name: Publish NuGet package
+      run: |
+        $nupkgPath = Get-ChildItem -Path "./Src/bin/Release/" -Filter "*.symbols.nupkg" -Recurse | Select-Object -First 1 -ExpandProperty FullName
+        if (-not $nupkgPath) {
+          Write-Error "No .symbols.nupkg file found in ./Src/bin/Release/ folder."
+          exit 1
+        }
+        dotnet nuget push $nupkgPath --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
