@@ -10,7 +10,7 @@
     "test": "mocha dist/tests"
   },
   "dependencies": {
-    "mocha": "^10.7.3"
+    "mocha": "^11.1.0"
   },
   "devDependencies": {
     "typescript": "^5.8.2"
