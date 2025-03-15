@@ -127,6 +127,44 @@ type Loop private   ( pts:ResizeArray<Pt>
         let l = lo.Lengths.[i]
         pt.ClosestPointOnLine(t, u, l)
 
+
+    // from https://github.com/FreyaHolmer/Mathfs/blob/master/Runtime/Geometric%20Shapes/Polygon.cs#L92
+    // https://x.com/FreyaHolmer/status/1232826293902888960
+
+
+    // or use ? https://github.com/blenderfan/AdvancedGamedevTutorials/blob/main/AdvancedGamedev-WindingNumbers/Polygon2D.cs
+    // https://www.youtube.com/watch?v=E51LrZQuuPE
+    // faster implementations such as counting the crossings of a horizontal ray do fail if several loop segments are on the X-axis and the test point too.
+
+
+    /// <summary>Returns the winding number for this polygon, around a given point</summary>
+    /// <param name="point">The point to check winding around</param>
+    /// <returns>The winding number, if it is not 0 then point is contained in the Loop</returns>
+    member lo.WindingNumber (point:Pt) : int =
+        let inline isLeft (a:Pt) (b:Pt) (p:Pt) =
+            let det = Vc.cross (p-a, b-a)
+            if   det >  1e-12 then  1
+            elif det < -1e-12 then -1
+            else 0
+
+        let mutable winding = 0
+        let pts = lo.Points
+
+        for i = 0 to pts.Count - 2 do  // -2 because our Points list has the first point repeated at the end , no looped index is needed.
+            let this = pts.[i]
+            let next = pts.[i + 1]
+            if this.Y <= point.Y then
+                if next.Y > point.Y && isLeft this next point > 0 then
+                    winding <- winding - 1
+            else
+                if next.Y <= point.Y && isLeft this next point < 0 then
+                    winding <- winding + 1
+
+        winding
+
+
+
+
     /// Returns Relation between point and Loop: Inside, On or Outside.
     /// Tolerance for being on Loop is SnapThreshold.
     member lo.ContainsPoint(pt:Pt) =
