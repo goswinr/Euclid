@@ -54,24 +54,24 @@ module UtilEuclid =
 
     /// Returns true for values smaller than 1e-6 and for NaN
     let inline isTooSmall x =
-        // use 'not' to catch a NaN too ( a cross product of infinit long vectors can give a NaN length)
+        // use 'not' to catch a NaN too ( a Cross Product of infinit long vectors can give a NaN length)
         not ( x > 1e-6 )
 
     /// Returns true for values smaller than 1e-12 (square of 1e-6)  and for NaN
     let inline isTooSmallSq x =
-        // use 'not' to catch a NaN too ( a cross product of infinit long vectors can give a NaN length)
+        // use 'not' to catch a NaN too ( a Cross Product of infinit long vectors can give a NaN length)
         not ( x > 1e-12 )
 
     /// Returns true for values smaller than 1e-12 and for NaN
     /// uses UtilEuclid.zeroLengthTolerance
     let inline isTooTiny x =
-        // use 'not' to catch a NaN too ( a cross product of infinit long vectors can give a NaN length)
+        // use 'not' to catch a NaN too ( a Cross Product of infinit long vectors can give a NaN length)
         not ( x > zeroLengthTolerance )
 
     /// Returns true for values smaller than 1e-24 (square of 1e-12) and for NaN
     /// uses UtilEuclid.zeroLengthTolSquared
     let inline isTooTinySq x =
-        // use 'not' to catch a NaN too ( a cross product of infinit long vectors can give a NaN length)
+        // use 'not' to catch a NaN too ( a Cross Product of infinit long vectors can give a NaN length)
         not ( x > zeroLengthTolSquared)
 
     /// Returns true for negative number and for NaN
@@ -186,6 +186,7 @@ module UtilEuclid =
         if   sign signedValue = sign numToMatch then numToMatch
         else -numToMatch
 
+
     /// Any int will give a valid index for given collection size.
     /// Converts negative indices to positive ones and loops to start after last index is reached.
     /// Returns a valid index for a collection of 'length' items for any integer.
@@ -193,6 +194,8 @@ module UtilEuclid =
         let t = i % length
         if t >= 0 then t
         else           t + length
+
+
 
 /// Precalculated cosine values for faster checking the angles of dot products of unit-vectors.
 [<RequireQualifiedAccess>]

@@ -498,6 +498,7 @@ module AutoOpenVec =
 
 
         /// Cross product, of a 3D unit-vectors an a 3D vector.
+        /// It is also known as the Determinant, Wedge Product or Outer Product.
         /// The resulting vector is perpendicular to both input vectors.
         /// The length of this resulting vector is the squared area of the parallelogram spanned by the input vectors.
         /// Its direction follows the right-hand rule.
@@ -506,6 +507,7 @@ module AutoOpenVec =
             Vec (a.Y * b.Z - a.Z * b.Y, a.Z * b.X - a.X * b.Z, a.X * b.Y - a.Y * b.X)
 
         /// Cross product, of a 3D vector and a 3D unit-vectors.
+        /// It is also known as the Determinant, Wedge Product or Outer Product.
         /// The resulting vector is perpendicular to both input vectors.
         /// The length of this resulting vector is the squared area of the parallelogram spanned by the input vectors.
         /// Its direction follows the right-hand rule.
@@ -644,7 +646,7 @@ module AutoOpenVec =
         /// Returns three vector's Determinant.
         /// This is also the signed volume of the Parallelepipeds define by these three vectors.
         /// Also called scalar triple product, mixed product, Box product, or in German: Spatprodukt.
-        /// It is defined as the dot product of one of the vectors with the cross product of the other two.
+        /// It is defined as the dot product of one of the vectors with the Cross Product of the other two.
         static member inline determinant (u:Vec, v:Vec, w:Vec) =
             u.X*v.Y*w.Z + v.X*w.Y*u.Z + w.X*u.Y*v.Z - w.X*v.Y*u.Z - v.X*u.Y*w.Z - u.X*w.Y*v.Z
 

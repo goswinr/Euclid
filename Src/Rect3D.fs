@@ -351,11 +351,11 @@ type Rect3D =
         r.Yaxis*(1./len)
 
     /// Returns the Normal
-    /// Resulting from the cross product of r.Xaxis with r.Yaxis.
+    /// Resulting from the Cross Product of r.Xaxis with r.Yaxis.
     member inline r.Normal = Vec.cross(r.Xaxis, r.Yaxis)
 
     /// Returns the unitized Normal.
-    /// Resulting from the cross product of r.Xaxis with r.Yaxis.
+    /// Resulting from the Cross Product of r.Xaxis with r.Yaxis.
     member r.NormalUnit =
         let z = Vec.cross(r.Xaxis, r.Yaxis)
         let len = z.Length
@@ -837,7 +837,7 @@ type Rect3D =
 
 
     /// Offset or Translate along the local Z-axis.
-    /// The local Z-axis is calculated from cross product of X and Y-axis of the 3D-rectangle.
+    /// The local Z-axis is calculated from Cross Product of X and Y-axis of the 3D-rectangle.
     static member offsetZ (offsetDistance :float) (r:Rect3D) =
         let z = Vec.cross(r.Xaxis, r.Yaxis)
         let len = z.Length

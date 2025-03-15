@@ -219,9 +219,9 @@ module AutoOpenPPlane =
             PPlane.createOriginXaxisYaxis (origin, xu, yu)
 
         /// Creates a Parametrized Plane from a point and unit-vector representing the normal (or Z-axis).
-        /// The X-axis will be found by taking the cross product of the World Z-axis and the given normal (or Z-axis).
+        /// The X-axis will be found by taking the Cross Product of the World Z-axis and the given normal (or Z-axis).
         /// This will make the X-axis horizontal.
-        /// If this fails because they are coincident, the cross product of the World Y-axis and the given normal (or Z-axis) will be used.
+        /// If this fails because they are coincident, the Cross Product of the World Y-axis and the given normal (or Z-axis) will be used.
         static member createOriginNormal (origin:Pnt, normal:UnitVec) =
             if normal.IsParallelTo(UnitVec.Zaxis, Cosine.``0.5``) then
                 let y = Vec.cross (normal,Vec.Xaxis)
@@ -233,9 +233,9 @@ module AutoOpenPPlane =
                 PPlane.createUnchecked(origin, x.Unitized, y.Unitized, normal)
 
         /// Creates a Parametrized Plane from a point and vector representing the normal (or Z-axis).
-        /// The X-axis will be found by taking the cross product of the World Z-axis and the given normal (or Z-axis).
+        /// The X-axis will be found by taking the Cross Product of the World Z-axis and the given normal (or Z-axis).
         /// This will make the X-axis horizontal.
-        /// If this fails because they are coincident, the cross product of the World Y-axis and the given normal (or Z-axis) will be used.
+        /// If this fails because they are coincident, the Cross Product of the World Y-axis and the given normal (or Z-axis) will be used.
         /// Fails if the vectors are shorter than 1e-6.
         static member createOriginNormal (origin:Pnt, normal:Vec) =
             let len = normal.Length

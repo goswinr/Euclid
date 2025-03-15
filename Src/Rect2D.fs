@@ -640,15 +640,15 @@ type Rect2D =
     /// Creates a 2D rectangle from a origin point, the X vector and Y size.
     /// Fails on negative Y size.
     static member createFromXVectorAndWidth (origin:Pt, x:Vc, sizeY) =
-        if isNegative(sizeY) then EuclidException.Raisef "Euclid.Rect2D.createFromXVectorAndWidth(origin:Pt, x:Vc, sizeY) sizeY is negative: %g, x is: %O, origin: %O"  sizeY  x.AsString  origin.AsString
+        if isNegative(sizeY) then EuclidException.Raisef "Euclid.Rect2D.createFromXVectorAndWidth(origin:Pt, x:Vc, sizeY) sizeY cannot be negative: %g, x is: %O, origin: %O"  sizeY  x.AsString  origin.AsString
         let y = x.Rotate90CCW * sizeY
         Rect2D(origin, x, y)
 
     /// Creates a 2D rectangle from an origin point, the X direction as unit-vector, the size in  X and Y direction.
     /// Fails on negative sizes.
     static member createFromDirectionAndSizes (origin:Pt, directionX:UnitVc, sizeX, sizeY) =
-        if isNegative(sizeX) then EuclidException.Raisef "Euclid.Rect2D.createFromDirectionAndSizes(origin:Pt, directionX:UnitVc, sizeX, sizeY) sizeX is negative: %g, sizeY is: %g, origin: %O"  sizeX sizeY  origin.AsString
-        if isNegative(sizeY) then EuclidException.Raisef "Euclid.Rect2D.createFromDirectionAndSizes(origin:Pt, directionX:UnitVc, sizeX, sizeY) sizeY is negative: %g, sizeX is: %g, origin: %O"  sizeY sizeX  origin.AsString
+        if isNegative(sizeX) then EuclidException.Raisef "Euclid.Rect2D.createFromDirectionAndSizes(origin:Pt, directionX:UnitVc, sizeX, sizeY) sizeX cannot be negative: %g, sizeY is: %g, origin: %O"  sizeX sizeY  origin.AsString
+        if isNegative(sizeY) then EuclidException.Raisef "Euclid.Rect2D.createFromDirectionAndSizes(origin:Pt, directionX:UnitVc, sizeX, sizeY) sizeY cannot be negative: %g, sizeX is: %g, origin: %O"  sizeY sizeX  origin.AsString
         let x = directionX * sizeX
         let y = directionX.Rotate90CCW * sizeY
         Rect2D(origin, x, y)
@@ -679,8 +679,8 @@ type Rect2D =
     /// Creates a 2D rectangle from a center point, the X direction, the X and the Y size.
     /// Fails on negative sizes.
     static member createFromCenterAndDirection (center:Pt, directionX:UnitVc, sizeX, sizeY) =
-        if isNegative(sizeX) then EuclidException.Raisef "Euclid.Rect2D.createFromCenterAndDirection(center:Pt, directionX:UnitVc, sizeX, sizeY) sizeX is negative: %g, sizeY is: %g, center: %O"  sizeX sizeY  center.AsString
-        if isNegative(sizeY) then EuclidException.Raisef "Euclid.Rect2D.createFromCenterAndDirection(center:Pt, directionX:UnitVc, sizeX, sizeY) sizeY is negative: %g, sizeX is: %g, center: %O"  sizeY sizeX  center.AsString
+        if isNegative(sizeX) then EuclidException.Raisef "Euclid.Rect2D.createFromCenterAndDirection(center:Pt, directionX:UnitVc, sizeX, sizeY) sizeX cannot be negative: %g, sizeY is: %g, center: %O"  sizeX sizeY  center.AsString
+        if isNegative(sizeY) then EuclidException.Raisef "Euclid.Rect2D.createFromCenterAndDirection(center:Pt, directionX:UnitVc, sizeX, sizeY) sizeY cannot be negative: %g, sizeX is: %g, center: %O"  sizeY sizeX  center.AsString
         let x = directionX * sizeX
         let y = directionX.Rotate90CCW * sizeY
         Rect2D(center - x * 0.5 - y * 0.5, x, y)
@@ -688,7 +688,7 @@ type Rect2D =
     /// Creates a 2D rectangle from a center point, the X vector and the Y size.
     /// Fails on negative Y size.
     static member createFromCenterAndVector (center:Pt, x:Vc, sizeY) =
-        if isNegative(sizeY) then EuclidException.Raisef "Euclid.Rect2D.createFromCenterAndVector(center:Pt, x:Vc, sizeY) sizeY is negative: %g, x is: %O, center: %O"  sizeY  x.AsString  center.AsString
+        if isNegative(sizeY) then EuclidException.Raisef "Euclid.Rect2D.createFromCenterAndVector(center:Pt, x:Vc, sizeY) sizeY cannot be negative: %g, x is: %O, center: %O"  sizeY  x.AsString  center.AsString
         let y = x.Rotate90CCW * sizeY
         Rect2D(center - x * 0.5 - y * 0.5, x, y)
 

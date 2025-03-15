@@ -923,14 +923,14 @@ module AutoOpenLine3D =
         l.MatchesOrientation90 ln
 
     /// Checks if two 3D lines are parallel. Ignoring orientation.
-    /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
+    /// Calculates the Cross Product of the two line vectors. (= the area of the parallelogram)
     /// And checks if it is smaller than 1e-9
     /// (NOTE: for very long lines a higher tolerance might be needed)
     static member inline areParallel (l:Line3D) (ln:Line3D) =
         l.IsParallelTo ln
 
     /// Checks if two 3D lines are parallel and orientated the same way.
-    /// Calculates the cross product of the two line vectors. (= the area of the parallelogram)
+    /// Calculates the Cross Product of the two line vectors. (= the area of the parallelogram)
     /// And checks if it is smaller than 1e-9
     /// Then calculates the dot product and checks if it is positive.
     /// (NOTE: for very long lines a higher tolerance might be needed)

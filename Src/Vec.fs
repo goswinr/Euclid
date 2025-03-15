@@ -104,7 +104,8 @@ type Vec =
     static member inline dot (a:Vec, b:Vec) =
         a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
-    /// Cross product, of two 3D vectors.
+    /// The Cross product, of two 3D vectors.
+    /// It is also known as the Determinant, Wedge Product or Outer Product.
     /// The resulting vector is perpendicular to both input vectors.
     /// The length of this resulting vector is the squared area of the parallelogram spanned by the input vectors.
     /// Its direction follows the right-hand rule.

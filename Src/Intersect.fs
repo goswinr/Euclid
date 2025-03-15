@@ -28,7 +28,7 @@ module Intersect =
     /// If they start from points 'a' and 'b' respectively.
     /// Pass in va.Cross vb is precomputed and inverted.
     let inline private getXPara (a:Pt, vaXvbInverse:float, b:Pt, vb:UnitVc) :float =
-        // find intersection using 2D cross product :
+        // find intersection using 2D Cross Product :
         // https://www.youtube.com/watch?v=c065KoXooSw and https://gist.github.com/EgoMoose/f3d22a503e0598c12d1e3926dc72fb19
         ((b-a).Cross vb) * vaXvbInverse // va.Cross vb  is precomputed  and inverted
 
@@ -53,7 +53,7 @@ module Intersect =
     /// And finally a tolerance: Curve A will be extended on both ends and offset to both sides.
     /// These offsets will also be checked with curve B that is also extended by this amount.
     let internal getRelation (ap:Pt, au:UnitVc, al:float, bp:Pt, bu:UnitVc, bl:float, snapThreshold:float) : LineLineRelation =
-        let aXb = au.Cross bu //precomputed cross product
+        let aXb = au.Cross bu //precomputed Cross Product
 
         if abs(aXb) > zeroLengthTolerance then  // not parallel
             let aXbInverse = 1./aXb // invert only once, then pass it on as inverted value

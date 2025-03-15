@@ -91,13 +91,13 @@ module AutoOpenVc =
         member inline v.IsUnit =
             UtilEuclid.isOne v.LengthSq
 
-        /// The 2D cross product of two 2D vectors.
+        /// The 2D Cross Product of two 2D vectors.
         /// It is just a scalar equal to the signed square area of the parallelogram spanned by the input vectors.
         /// If the rotation from 'a' to 'b' is Counter-Clockwise the result is positive.
         member inline a.Cross (b:Vc) =
             a.X*b.Y - a.Y*b.X
 
-        /// The 2D cross product of a 2D vector with a 2D unit-vector.
+        /// The 2D Cross Product of a 2D vector with a 2D unit-vector.
         /// It is just a scalar equal to the signed square area of the parallelogram spanned by the input vectors.
         /// If the rotation from 'a' to 'b' is Counter-Clockwise the result is positive.
         member inline a.Cross (b:UnitVc) =
@@ -437,19 +437,21 @@ module AutoOpenVc =
         static member inline asVec(v:Vc) =
             Vec(v.X, v.Y, 0.0)
 
-        /// The 2D cross product.
+        /// The 2D Cross Product.
+        /// It is also known as the Determinant, Wedge Product or Outer Product.
         /// It is just a scalar equal to the signed square area of the parallelogram spanned by the input vectors.
         /// If the rotation from 'a' to 'b' is Counter-Clockwise the result is positive.
         static member inline cross (a:Vc, b:Vc) =
             a.X * b.Y - a.Y * b.X
 
-        /// The 2D cross product.
+        /// The 2D Cross Product.
+        /// It is also known as the Determinant, Wedge Product or Outer Product.
         /// It is just a scalar equal to the signed square area of the parallelogram spanned by the input vectors.
         /// If the rotation from 'a' to 'b' is Counter-Clockwise the result is positive.
         static member inline cross (a:UnitVc, b:Vc) =
             a.X * b.Y - a.Y * b.X
 
-        /// The 2D cross product.
+        /// The 2D Cross Product.
         /// It is just a scalar equal to the signed square area of the parallelogram spanned by the input vectors.
         /// If the rotation from 'a' to 'b' is Counter-Clockwise the result is positive.
         static member inline cross (a:Vc, b:UnitVc) =
@@ -700,7 +702,7 @@ module AutoOpenVc =
         /// Returns positive or negative slope of a vector in Radians.
         /// This is the same as the positive or negative angle to the X-axis (or its reverse).
         /// Range -1.57 to +1.57 Radians.
-        /// This is just asin(v.Y).
+        /// This is just Math.Atan2(v.Y, v.X).
         static member inline slopeRadians (v:Vc) =
             if isTooTinySq(v.LengthSq) then EuclidException.Raisef "Euclid.Vc.slopeRadians: Vc is too short: %s" v.AsString
             let r = Math.Atan2(v.Y, v.X)
@@ -711,7 +713,7 @@ module AutoOpenVc =
         /// Returns positive or negative slope of a vector in Degrees.
         /// This is the same as the positive or negative angle to the X-axis(or its reverse).
         /// Range -90 to +90 Degrees.
-        /// This is just asin(v.Y).
+        /// This is just Math.Atan2(v.Y, v.X).
         static member inline slopeDegrees (v:Vc) =
             Vc.slopeRadians v |> toDegrees
 

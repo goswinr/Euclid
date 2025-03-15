@@ -124,7 +124,8 @@ type UnitVec =
     static member inline dot (a:UnitVec, b:UnitVec) =
         a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
-    /// Cross product, of two 3D vectors.
+    /// The Cross Product.
+    /// It is also known as the Determinant, Wedge Product or Outer Product.
     /// The resulting vector is perpendicular to both input vectors.
     /// The length of this resulting vector is the squared area of the parallelogram spanned by the input vectors.
     /// Its direction follows the right-hand rule.

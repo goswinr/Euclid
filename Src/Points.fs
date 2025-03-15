@@ -15,8 +15,8 @@ type Points private () =
 
     /// Returns the double square area of a triangle.
     /// This is the fastest way to get a comparison or sorting value for the area of a triangle.
-    /// This is just the square length of the cross product vector.
-    /// The length of a cross product vector is equal to the area of the parallelogram described by the two input vectors.
+    /// This is just the square length of the Cross Product vector.
+    /// The length of a Cross Product vector is equal to the area of the parallelogram described by the two input vectors.
     static member inline areaTriangleDoubleSq (a:Pnt, b:Pnt, c:Pnt) :float =
         // 2 edges of the triangle as vectors
         let vX = b.X - a.X
@@ -25,11 +25,11 @@ type Points private () =
         let wX = c.X - a.X
         let wY = c.Y - a.Y
         let wZ = c.Z - a.Z
-        // cross product of the two edges
+        // Cross Product of the two edges
         let x = vY * wZ - vZ * wY
         let y = vZ * wX - vX * wZ
         let z = vX * wY - vY * wX
-        // the square length of the cross product is the square area of the parallelogram described by the two input vectors.
+        // the square length of the Cross Product is the square area of the parallelogram described by the two input vectors.
         x*x + y*y + z*z
 
     /// Returns the area of a triangle described by 3 points.

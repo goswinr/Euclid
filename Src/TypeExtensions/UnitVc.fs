@@ -53,13 +53,13 @@ module AutoOpenUnitVc =
         member inline v.WithZ z =
             Vec (v.X, v.Y, z)
 
-        /// The 2D cross product of a 2D unit-vector with a 2D vector.
+        /// The 2D Cross Product of a 2D unit-vector with a 2D vector.
         /// It is just a scalar equal to the signed square area of the parallelogram spanned by the input vectors.
         /// If the rotation from 'a' to 'b' is Counter-Clockwise the result is positive.
         member inline a.Cross (b:Vc) =
             a.X*b.Y - a.Y*b.X
 
-        /// The 2D cross product of two 2D unit-vectors.
+        /// The 2D Cross Product of two 2D unit-vectors.
         /// It is just a scalar equal to the signed square area of the parallelogram spanned by the input vectors.
         /// If the rotation from 'a' to 'b' is Counter-Clockwise the result is positive.
         member inline a.Cross (b:UnitVc) =
@@ -386,13 +386,15 @@ module AutoOpenUnitVc =
 
         //static member inline cross (a:UnitVc, b:UnitVc) // moved to UnitVc.fs
 
-        /// The 2D cross product.
+        /// The 2D Cross Product.
+        /// It is also known as the Determinant, Wedge Product or Outer Product.
         /// It is just a scalar equal to the signed square area of the parallelogram spanned by the input vectors.
         /// If the rotation from 'a' to 'b' is Counter-Clockwise the result is positive.
         static member inline cross (a:UnitVc, b:Vc) =
             a.X*b.Y - a.Y*b.X
 
-        /// The 2D cross product.
+        /// The 2D Cross Product.
+        /// It is also known as the Determinant, Wedge Product or Outer Product.
         /// It is just a scalar equal to the signed square area of the parallelogram spanned by the input vectors.
         /// If the rotation from 'a' to 'b' is Counter-Clockwise the result is positive.
         static member inline cross (a:Vc, b:UnitVc) =

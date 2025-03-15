@@ -103,8 +103,9 @@ type UnitVc =
         a.X * b.X+ a.Y * b.Y
 
 
-    /// The 2D cross product.
-    /// It is just a scalar equal to the signed square area of the parallelogram spanned by the input vectors.
+    /// The 2D Cross Product.
+    /// It is also known as the Determinant, Wedge Product or Outer Product.
+    /// In 2D it is just a scalar equal to the signed square area of the parallelogram spanned by the input vectors.
     /// If the rotation from 'a' to 'b' is Counter-Clockwise the result is positive.
     /// For unit-vectors this is the same as the sine of the angle between the two vectors.
     /// (while the dot product is the cosine)

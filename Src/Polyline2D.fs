@@ -352,8 +352,8 @@ type Polyline2D =
     //--------------------------------------------------------------------------------
 
     /// Returns the index of an outer corner and
-    /// a cross product as normal vector corresponding to an Counter-Clockwise view on the loop.
-    /// In 2D the cross product is the signed area of the parallelogram spanned by the two vectors. So just a scalar. Not a vector
+    /// a Cross Product as normal vector corresponding to an Counter-Clockwise view on the loop.
+    /// In 2D the Cross Product is the signed area of the parallelogram spanned by the two vectors. So just a scalar. Not a vector
     /// This is used to calculate the RefNormal vector for the offset function.
     /// The input vectors are the vectors for each segment of the polyline.
     /// From first and second point up to last and first point.
@@ -412,7 +412,7 @@ type Polyline2D =
     /// The inner core routine of Points.offset. This function considers input a closed polyline.
     /// The offset distances are given for each segment of the polyline. offDi:IList must have the same length as the polyline or be a singleton
     /// Start point and end point may not be equal, all arrays must be of the same length..
-    /// The 'referenceOrient' corresponds to the cross product of two segment of the polyline at an outside corner.
+    /// The 'referenceOrient' corresponds to the Cross Product of two segment of the polyline at an outside corner.
     /// If 'referenceOrient' is given as 0.0 then the algorithm tries to detect if the loop is clockwise or counterclockwise
     /// it also tries to find an outer corner on non convex polylines.
     /// If 'referenceOrient' is bigger than 0.0 a counter-clock-wise loop is assumed and the detection part is skipped.
@@ -509,7 +509,7 @@ type Polyline2D =
                         prevV <- nextV
                     else
                         /// Check with the orientation with the reference normal
-                        /// In 2D the cross product vector is the signed area of the parallelogram spanned by the two vectors.
+                        /// In 2D the Cross Product vector is the signed area of the parallelogram spanned by the two vectors.
                         /// So just a scalar. Not actually a vector
                         let n = Vc.cross(prevV, nextV) |> matchSign refNorm
                         let thisPt = pts.[i]
@@ -607,7 +607,7 @@ type Polyline2D =
     /// For example on self intersecting polylines.
     /// If 'referenceOrient' is bigger than 0.0 a counterclockwise loops is assumed and the detection part is skipped.
     /// If 'referenceOrient' is smaller than 0.0 a clockwise loops is assumed and the detection part is skipped.
-    /// The 'referenceOrient' corresponds to the cross product of two segment of the polyline an an convex corner.
+    /// The 'referenceOrient' corresponds to the Cross Product of two segment of the polyline an an convex corner.
     /// If 'referenceOrient' is 0.0 or omitted then the algorithm tries to detect if the loop is clockwise or counterclockwise.
     /// It also tries to find a convex corner on a convex and concave polyline.
     /// If the given referenceOrient does not correspond to the looping order the offset will be to the other side.</param>
@@ -682,7 +682,7 @@ type Polyline2D =
     /// For example on self intersecting polylines.
     /// If 'referenceOrient' is bigger than 0.0 a counterclockwise loops is assumed and the detection part is skipped.
     /// If 'referenceOrient' is smaller than 0.0 a clockwise loops is assumed and the detection part is skipped.
-    /// The 'referenceOrient' corresponds to the cross product of two segment of the polyline an an convex corner.
+    /// The 'referenceOrient' corresponds to the Cross Product of two segment of the polyline an an convex corner.
     /// If 'referenceOrient' is 0.0 or omitted then the algorithm tries to detect if the loop is clockwise or counterclockwise.
     /// It also tries to find a convex corner on a convex and concave polyline.
     /// If the given referenceOrient does not correspond to the looping order the offset will be to the other side.</param>
