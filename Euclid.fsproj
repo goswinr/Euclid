@@ -42,10 +42,10 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <DebugType>embedded</DebugType>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <RepositoryUrl>https://github.com/goswinr/ResizeArray</RepositoryUrl>
-    <FsDocsLicenseLink>https://github.com/goswinr/ResizeArray/blob/main//LICENSE.md</FsDocsLicenseLink>
-    <FsDocsReleaseNotesLink>https://github.com/goswinr/ResizeArray/blob/main/CHANGELOG.md</FsDocsReleaseNotesLink>
-    <PackageProjectUrl>https://goswinr.github.io/ResizeArray</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/goswinr/Euclid</RepositoryUrl>
+    <FsDocsLicenseLink>https://github.com/goswinr/Euclid/blob/main//LICENSE.md</FsDocsLicenseLink>
+    <FsDocsReleaseNotesLink>https://github.com/goswinr/Euclid/blob/main/CHANGELOG.md</FsDocsReleaseNotesLink>
+    <PackageProjectUrl>https://goswinr.github.io/Euclid</PackageProjectUrl>
 
     <FsDocsFaviconSource>img/favicon.ico</FsDocsFaviconSource>
     <FsDocsWarnOnMissingDocs>true</FsDocsWarnOnMissingDocs>
