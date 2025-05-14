@@ -199,7 +199,7 @@ module AutoOpenLine3D =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
-        let l = sqrt(x*x + y*y)
+        let l = sqrt(x*x + y*y + z*z)
         if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.ExtendRel %O to short for finding point at a distance." ln
         Line3D( ln.FromX - x*relAtStart,
                 ln.FromY - y*relAtStart,
@@ -215,7 +215,7 @@ module AutoOpenLine3D =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
-        let l = sqrt(x*x + y*y)
+        let l = sqrt(x*x + y*y + z*z)
         if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.ExtendStartRel %O to short for finding point at a distance." ln
         Line3D( ln.FromX - x*relAtStart,
                 ln.FromY - y*relAtStart,
@@ -231,7 +231,7 @@ module AutoOpenLine3D =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
-        let l = sqrt(x*x + y*y)
+        let l = sqrt(x*x + y*y + z*z)
         if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.ExtendEndRel %O to short for finding point at a distance." ln
         Line3D( ln.FromX,
                 ln.FromY,

@@ -71,7 +71,7 @@ module AutoOpenPnt =
         member inline pt.DistanceInXYFromOrigin =
             sqrt (pt.X*pt.X + pt.Y*pt.Y)
 
-        /// Returns the projected square distance from Origin (0, 0, 0). Ignoring the Z component.
+        /// Returns the projected squared distance from Origin (0, 0, 0). Ignoring the Z component.
         member inline pt.DistanceInXYFromOriginSquare =
             pt.X*pt.X + pt.Y*pt.Y
 
@@ -96,19 +96,19 @@ module AutoOpenPnt =
         /// It is useful for radial sorting.
         member inline p.DirectionDiamondInXYTo(o:Pnt) =
             // https://stackoverflow.com/a/14675998/969070
-            let x = o.X-p.X
-            let y = o.Y-p.Y
-            if isTooTiny (abs(x) + abs(y)) then p.FailedDirectionDiamondInXYTo(o) // don't compose error msg directly here to keep inlined code small.
+            let x = o.X - p.X
+            let y = o.Y - p.Y
+            if isTooTiny (abs x + abs y) then p.FailedDirectionDiamondInXYTo o // don't compose error msg directly here to keep inlined code small.
             if y >= 0.0 then
                 if x >= 0.0 then
-                    y/(x+y)
+                    y/(x + y)
                 else
-                    1.0 - x/(-x+y)
+                    1.0 - x/(-x + y)
             else
                 if x < 0.0 then
-                    2.0 - y/(-x-y)
+                    2.0 - y/(-x - y)
                 else
-                    3.0 + x/(x-y)
+                    3.0 + x/(x - y)
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
@@ -121,7 +121,7 @@ module AutoOpenPnt =
             // https://stackoverflow.com/a/14675998/969070
             let x = o.X-p.X
             let y = o.Y-p.Y
-            if isTooTiny (abs(x) + abs(y)) then p.FailedAngle2PiInXYTo(o)// don't compose error msg directly here to keep inlined code small.
+            if isTooTiny (abs x + abs y) then p.FailedAngle2PiInXYTo o // don't compose error msg directly here to keep inlined code small.
             let a = Math.Atan2(y, x)
             if a < 0. then  a + UtilEuclid.twoPi
             else            a
@@ -140,7 +140,7 @@ module AutoOpenPnt =
             let dir = testPt - fromPt
             let v   = toPt   - fromPt
             let lenSq = v.LengthSq
-            if isTooTinySq(lenSq) then testPt.FailedAngle360InXYTo(fromPt, toPt)
+            if isTooTinySq lenSq then testPt.FailedAngle360InXYTo(fromPt, toPt)
             let dot = Vec.dot (v, dir) / lenSq
             if   dot <= 0.0 then  fromPt
             elif dot >= 1.0 then  toPt
@@ -326,14 +326,25 @@ module AutoOpenPnt =
         static member inline moveZ (z:float) (pt:Pnt) = Pnt (pt.X, pt.Y, pt.Z+z)
 
         /// Returns the distance between two 3D points.
-        static member inline distance (a:Pnt) (b:Pnt) = let v = a-b in sqrt(v.X*v.X + v.Y*v.Y + v.Z*v.Z)
+        static member inline distance (a:Pnt) (b:Pnt) =
+            let x = a.X-b.X
+            let y = a.Y-b.Y
+            let z = a.Z-b.Z
+            sqrt(x*x + y*y + z*z)
 
         /// Returns the horizontal distance between two 3D points(ignoring their Z Value)
-        static member inline distanceXY (a:Pnt) (b:Pnt) = let x = a.X-b.X in let y=a.Y-b.Y in sqrt(x*x + y*y)
+        static member inline distanceXY (a:Pnt) (b:Pnt) =
+            let x = a.X-b.X
+            let y = a.Y-b.Y
+            sqrt(x*x + y*y)
 
         /// Returns the squared distance between two 3D points.
         /// This operation is slightly faster than the Pnt.distance function, and sufficient for many algorithms like finding closest points.
-        static member inline distanceSq (a:Pnt) (b:Pnt) = let v = a-b in  v.X*v.X + v.Y*v.Y + v.Z*v.Z
+        static member inline distanceSq (a:Pnt) (b:Pnt) =
+            let x = a.X-b.X
+            let y = a.Y-b.Y
+            let z = a.Z-b.Z
+            x*x + y*y + z*z
 
         /// Returns the distance from World Origin.
         static member inline distanceFromOrigin (pt:Pnt) = pt.DistanceFromOrigin

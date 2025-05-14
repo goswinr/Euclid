@@ -528,14 +528,14 @@ type BBox =
         let xTouch   = abs(b.MinX - a.MaxX)  < tol || abs(a.MinX - b.MaxX) < tol
         let yTouch   = abs(a.MinY - b.MaxY)  < tol || abs(b.MinY - a.MaxY) < tol
         let zTouch   = abs(a.MinZ - b.MaxZ)  < tol || abs(b.MinZ - a.MaxZ) < tol
-        (xOverlap && yOverlap && zTouch  ) ||
-        (xOverlap && yTouch   && zOverlap) ||
-        (xTouch   && yOverlap && zOverlap)
+        xOverlap && yOverlap && zTouch   ||
+        xOverlap && yTouch   && zOverlap ||
+        xTouch   && yOverlap && zOverlap
 
 
     /// Evaluate a X, Y and Z parameter of this 3D-bounding-box.
-    ///  0.0, 0.0, 0.0 returns the MinPnt.
-    ///  1.0, 1.0, 1.0 returns the MaxPnt.
+    /// 0.0, 0.0, 0.0 returns the MinPnt.
+    /// 1.0, 1.0, 1.0 returns the MaxPnt.
     member inline b.EvaluateAt (xParameter, yParameter, zParameter) =
         Pnt(b.MinX + (b.MaxX-b.MinX) * xParameter,
             b.MinY + (b.MaxY-b.MinY) * yParameter,
@@ -630,6 +630,20 @@ type BBox =
     /// Returns a 3D-bounding-box moved by a vector.
     static member move (v:Vec) (b:BBox) =
         BBox(b.MinX+v.X, b.MinY+v.Y, b.MinZ+v.Z, b.MaxX+v.X, b.MaxY+v.Y, b.MaxZ+v.Z)
+
+
+    /// Returns a new 3D-bounding-box moved in X-axis direction.
+    static member moveX (translation:float) (b:BBox) =
+        BBox(b.MinX+translation, b.MinY, b.MinZ, b.MaxX+translation, b.MaxY, b.MaxZ)
+
+    /// Returns a new 3D-bounding-box moved in Y-axis direction.
+    static member moveY (translation:float) (b:BBox) =
+        BBox(b.MinX, b.MinY+translation, b.MinZ, b.MaxX, b.MaxY+translation, b.MaxZ)
+
+    /// Returns a new 3D-bounding-box moved in Z-axis direction.
+    static member moveZ (translation:float) (b:BBox) =
+        BBox(b.MinX, b.MinY, b.MinZ+translation, b.MaxX, b.MaxY, b.MaxZ+translation)
+
 
     /// Returns true if the two a 3D-bounding-boxes do overlap or touch exactly.
     /// Also returns true if one box is completely inside the other.
@@ -741,10 +755,10 @@ type BBox =
 
     /// Returns the volume of the a 3D-bounding-box.
     static member inline volume (b:BBox) =
-        b.SizeX*b.SizeY*b.SizeZ
+        b.SizeX * b.SizeY * b.SizeZ
 
     /// Returns the 2D part of a 3D-bounding-box as a bounding rectangle.
-    static member inline toRect (b:BBox) =
+    static member inline toBRect (b:BBox) =
         BRect.createUnchecked(b.MinX, b.MinY, b.MaxX, b.MaxY)
 
     static member inline createFromLine (l:Line3D) =
@@ -755,4 +769,8 @@ type BBox =
         let minZ = min l.FromZ l.ToZ
         let maxZ = max l.FromZ l.ToZ
         BBox(minX, minY, minZ, maxX, maxY, maxZ)
+
+    static member inline createFromBRect minZ maxZ (r : BRect) =
+        if minZ>maxZ then raise <| EuclidException $"Euclid.BBox.createFromBRect: minZ > maxZ: {minZ} > {maxZ}"
+        BBox(r.MinX, r.MinY, minZ, r.MaxX, r.MaxY, maxZ)
 

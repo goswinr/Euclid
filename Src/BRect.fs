@@ -418,15 +418,24 @@ type BRect =
     static member expandYaxis startDist endDist (r:BRect) =
         r.ExpandYaxis(startDist, endDist)
 
-    /// Move this bounding rectangle by a vector.
+    /// Returns a new 2D-bounding-rectangle moved by a vector.
     static member move (v:Vc) (r:BRect) =
         BRect(r.MinX+v.X, r.MinY+v.Y, r.MaxX+v.X, r.MaxY+v.Y)
+
+    /// Returns a new 2D-bounding-rectangle moved in X-axis direction.
+    static member moveX (translation:float) (r:BRect) =
+        BRect(r.MinX+translation, r.MinY, r.MaxX+translation, r.MaxY)
+
+    /// Returns a new 2D-bounding-rectangle moved in Y-axis direction.
+    static member moveY (translation:float) (r:BRect) =
+        BRect(r.MinX, r.MinY+translation, r.MaxX, r.MaxY+translation)
+
 
     /// Returns true if the two bounding rectangles do overlap or touch exactly.
     /// Also returns true if one box is completely inside the other.
     /// Also returns true if one box is completely surrounding the other.
     static member inline doOverlap(a:BRect) (b:BRect) =
-        b.OverlapsWith(a)
+        b.OverlapsWith a
 
     /// Returns true if the two bounding rectangles do overlap more than a given tolerance distance.
     /// Use a negative tolerance to count touching if they are apart by abs(tolerance)
@@ -439,11 +448,11 @@ type BRect =
     /// Returns true if this bounding rectangle is inside or exactly on the other bounding rectangle.
     /// Argument order matters!
     static member inline contains (rectInside:BRect) (surroundingRect:BRect) =
-        surroundingRect.Contains(rectInside)
+        surroundingRect.Contains rectInside
 
     /// Returns true if the point is inside or on this bounding rectangle.
     static member inline containsPt (pt:Pt) (rect:BRect) =
-        rect.Contains(pt)
+        rect.Contains pt
 
 
     /// Returns a bounding rectangle that contains both input Rectangles.
