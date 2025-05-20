@@ -19,13 +19,15 @@ let run () =
     |||
     test Rect2D.tests
     |||
+    test Rect3D.tests
+    |||
     test Polyline.tests
     |||
     test Topo.tests
 
 
 #if FABLE_COMPILER
-run() |> ignore<int>
+run() //|> ignore<int>
 #else
 let [<EntryPoint>] main _ = run()
 #endif

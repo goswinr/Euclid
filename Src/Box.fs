@@ -95,165 +95,6 @@ type Box =
     /// But without type name as in v.ToString()
     member b.AsString = sprintf "%s x %s x %s" (Format.float b.SizeX)  (Format.float b.SizeY) (Format.float b.SizeZ)
 
-    /// Returns point 0 of the box, same box.Origin.
-    ///
-    ///   local        local
-    ///   Z-Axis       Y-Axis
-    ///   ^           /
-    ///   |   7      /        6
-    ///   |   +---------------+
-    ///   |  /|    /         /|
-    ///   | / |   /         / |
-    /// 4 |/  |  /       5 /  |
-    ///   +---------------+   |
-    ///   |   |/          |   |
-    ///   |   +-----------|---+
-    ///   |  / 3          |  / 2
-    ///   | /             | /
-    ///   |/              |/     local
-    ///   +---------------+----> X-Axis
-    ///   0               1
-    member inline b.Pt0 = b.Origin
-
-    /// Returns point 1 of the box.
-    ///
-    ///   local        local
-    ///   Z-Axis       Y-Axis
-    ///   ^           /
-    ///   |   7      /        6
-    ///   |   +---------------+
-    ///   |  /|    /         /|
-    ///   | / |   /         / |
-    /// 4 |/  |  /       5 /  |
-    ///   +---------------+   |
-    ///   |   |/          |   |
-    ///   |   +-----------|---+
-    ///   |  / 3          |  / 2
-    ///   | /             | /
-    ///   |/              |/     local
-    ///   +---------------+----> X-Axis
-    ///   0               1
-    member inline b.Pt1 = b.Origin + b.Xaxis
-
-    /// Returns point 2 of the box.
-    ///
-    ///   local        local
-    ///   Z-Axis       Y-Axis
-    ///   ^           /
-    ///   |   7      /        6
-    ///   |   +---------------+
-    ///   |  /|    /         /|
-    ///   | / |   /         / |
-    /// 4 |/  |  /       5 /  |
-    ///   +---------------+   |
-    ///   |   |/          |   |
-    ///   |   +-----------|---+
-    ///   |  / 3          |  / 2
-    ///   | /             | /
-    ///   |/              |/     local
-    ///   +---------------+----> X-Axis
-    ///   0               1
-    member inline b.Pt2 = b.Origin + b.Xaxis + b.Yaxis
-
-    /// Returns point 3 of the box.
-    ///
-    ///   local        local
-    ///   Z-Axis       Y-Axis
-    ///   ^           /
-    ///   |   7      /        6
-    ///   |   +---------------+
-    ///   |  /|    /         /|
-    ///   | / |   /         / |
-    /// 4 |/  |  /       5 /  |
-    ///   +---------------+   |
-    ///   |   |/          |   |
-    ///   |   +-----------|---+
-    ///   |  / 3          |  / 2
-    ///   | /             | /
-    ///   |/              |/     local
-    ///   +---------------+----> X-Axis
-    ///   0               1
-    member inline b.Pt3 = b.Origin + b.Yaxis
-
-    /// Returns point 4 of the box.
-    ///
-    ///   local        local
-    ///   Z-Axis       Y-Axis
-    ///   ^           /
-    ///   |   7      /        6
-    ///   |   +---------------+
-    ///   |  /|    /         /|
-    ///   | / |   /         / |
-    /// 4 |/  |  /       5 /  |
-    ///   +---------------+   |
-    ///   |   |/          |   |
-    ///   |   +-----------|---+
-    ///   |  / 3          |  / 2
-    ///   | /             | /
-    ///   |/              |/     local
-    ///   +---------------+----> X-Axis
-    ///   0               1
-    member inline b.Pt4 = b.Origin + b.Zaxis
-
-    /// Returns point 5 of the box.
-    ///
-    ///   local        local
-    ///   Z-Axis       Y-Axis
-    ///   ^           /
-    ///   |   7      /        6
-    ///   |   +---------------+
-    ///   |  /|    /         /|
-    ///   | / |   /         / |
-    /// 4 |/  |  /       5 /  |
-    ///   +---------------+   |
-    ///   |   |/          |   |
-    ///   |   +-----------|---+
-    ///   |  / 3          |  / 2
-    ///   | /             | /
-    ///   |/              |/     local
-    ///   +---------------+----> X-Axis
-    ///   0               1
-    member inline b.Pt5 = b.Origin + b.Xaxis + b.Zaxis
-
-    /// Returns point 6 of the box.
-    ///
-    ///   local        local
-    ///   Z-Axis       Y-Axis
-    ///   ^           /
-    ///   |   7      /        6
-    ///   |   +---------------+
-    ///   |  /|    /         /|
-    ///   | / |   /         / |
-    /// 4 |/  |  /       5 /  |
-    ///   +---------------+   |
-    ///   |   |/          |   |
-    ///   |   +-----------|---+
-    ///   |  / 3          |  / 2
-    ///   | /             | /
-    ///   |/              |/     local
-    ///   +---------------+----> X-Axis
-    ///   0               1
-    member inline b.Pt6 = b.Origin + b.Xaxis + b.Yaxis + b.Zaxis
-
-    /// Returns point 7 of the box.
-    ///
-    ///   local        local
-    ///   Z-Axis       Y-Axis
-    ///   ^           /
-    ///   |   7      /        6
-    ///   |   +---------------+
-    ///   |  /|    /         /|
-    ///   | / |   /         / |
-    /// 4 |/  |  /       5 /  |
-    ///   +---------------+   |
-    ///   |   |/          |   |
-    ///   |   +-----------|---+
-    ///   |  / 3          |  / 2
-    ///   | /             | /
-    ///   |/              |/     local
-    ///   +---------------+----> X-Axis
-    ///   0               1
-    member inline b.Pt7 = b.Origin + b.Yaxis + b.Zaxis
 
     /// Creates a unitized version of the local X-Axis.
     member inline r.XaxisUnit =
@@ -282,175 +123,6 @@ type Box =
     /// The center of the Box.
     member inline b.Center = b.Origin + b.Xaxis*0.5 + b.Yaxis*0.5 + b.Zaxis*0.5
 
-
-    /// Returns the bottom corners of the Box in Counter-Clockwise order, starting at Origin.
-    /// Then the top corners staring above Origin. Returns an array of 8 Points.
-    ///
-    ///   local        local
-    ///   Z-Axis       Y-Axis
-    ///   ^           /
-    ///   |   7      /        6
-    ///   |   +---------------+
-    ///   |  /|    /         /|
-    ///   | / |   /         / |
-    /// 4 |/  |  /       5 /  |
-    ///   +---------------+   |
-    ///   |   |/          |   |
-    ///   |   +-----------|---+
-    ///   |  / 3          |  / 2
-    ///   | /             | /
-    ///   |/              |/     local
-    ///   +---------------+----> X-Axis
-    ///   0               1
-    member b.Points :Pnt[] =
-        let p0 = b.Origin
-        let p1 = p0 + b.Xaxis
-        let p4 = p0 + b.Zaxis
-        let p5 = p4 + b.Xaxis
-        [|
-            p0
-            p1
-            p1 + b.Yaxis
-            p0 + b.Yaxis
-            p4
-            p5
-            p5 + b.Yaxis
-            p4 + b.Yaxis
-        |]
-
-    /// Returns the top face of the Box in Counter-Clockwise order, looking from above.
-    /// Returns Origin at point 4, X-Axis to point 5, Y-Axis to point 7.
-    /// The normal of the Rect3D points away from the Box.
-    ///   local        local
-    ///   Z-Axis       Y-Axis
-    ///   ^           /
-    ///   |   7      /        6
-    ///   |   +---------------+
-    ///   |  /|    /         /|
-    ///   | / |   /         / |
-    /// 4 |/  |  /       5 /  |
-    ///   +---------------+   |
-    ///   |   |/          |   |
-    ///   |   +-----------|---+
-    ///   |  / 3          |  / 2
-    ///   | /             | /
-    ///   |/              |/     local
-    ///   +---------------+----> X-Axis
-    ///   0               1
-    member b.TopFace :Rect3D = Rect3D(b.Origin + b.Zaxis, b.Xaxis, b.Yaxis)
-
-
-    /// Returns the bottom face of the Box in Counter-Clockwise order, looking from above.
-    /// Returns Origin at point 0, X-Axis to point 1, Y-Axis to point 3.
-    /// The normal of the Rect3D points into the Box.
-    ///
-    ///   local        local
-    ///   Z-Axis       Y-Axis
-    ///   ^           /
-    ///   |   7      /        6
-    ///   |   +---------------+
-    ///   |  /|    /         /|
-    ///   | / |   /         / |
-    /// 4 |/  |  /       5 /  |
-    ///   +---------------+   |
-    ///   |   |/          |   |
-    ///   |   +-----------|---+
-    ///   |  / 3          |  / 2
-    ///   | /             | /
-    ///   |/              |/     local
-    ///   +---------------+----> X-Axis
-    ///   0               1
-    member b.BottomFace = Rect3D(b.Origin, b.Xaxis, b.Yaxis)
-
-
-
-    /// Returns the front face of the Box in Counter-Clockwise order, looking from front.
-    /// Returns Origin at point 0, X-Axis to point 1, Y-Axis to point 4.
-    /// The normal of the Rect3D points away from the Box.
-    ///
-    ///   local        local
-    ///   Z-Axis       Y-Axis
-    ///   ^           /
-    ///   |   7      /        6
-    ///   |   +---------------+
-    ///   |  /|    /         /|
-    ///   | / |   /         / |
-    /// 4 |/  |  /       5 /  |
-    ///   +---------------+   |
-    ///   |   |/          |   |
-    ///   |   +-----------|---+
-    ///   |  / 3          |  / 2
-    ///   | /             | /
-    ///   |/              |/     local
-    ///   +---------------+----> X-Axis
-    ///   0               1
-    member b.FrontFace = Rect3D(b.Origin, b.Xaxis, b.Zaxis)
-
-    /// Returns the back face of the Box in Counter-Clockwise order, looking from front.
-    /// Returns Origin at point 3, X-Axis to point 2, Y-Axis to point 7.
-    /// The normal of the Rect3D points into the Box.
-    ///
-    ///   local        local
-    ///   Z-Axis       Y-Axis
-    ///   ^           /
-    ///   |   7      /        6
-    ///   |   +---------------+
-    ///   |  /|    /         /|
-    ///   | / |   /         / |
-    /// 4 |/  |  /       5 /  |
-    ///   +---------------+   |
-    ///   |   |/          |   |
-    ///   |   +-----------|---+
-    ///   |  / 3          |  / 2
-    ///   | /             | /
-    ///   |/              |/     local
-    ///   +---------------+----> X-Axis
-    ///   0               1
-    member b.BackFace = Rect3D(b.Origin + b.Yaxis, b.Xaxis, b.Zaxis)
-
-    /// Returns the right face of the Box in Counter-Clockwise order, looking from right.
-    /// Returns Origin at point 1, X-Axis to point 2, Y-Axis to point 5.
-    /// The normal of the Rect3D points away from the Box.
-    ///
-    ///   local        local
-    ///   Z-Axis       Y-Axis
-    ///   ^           /
-    ///   |   7      /        6
-    ///   |   +---------------+
-    ///   |  /|    /         /|
-    ///   | / |   /         / |
-    /// 4 |/  |  /       5 /  |
-    ///   +---------------+   |
-    ///   |   |/          |   |
-    ///   |   +-----------|---+
-    ///   |  / 3          |  / 2
-    ///   | /             | /
-    ///   |/              |/     local
-    ///   +---------------+----> X-Axis
-    ///   0               1
-    member b.RightFace = Rect3D(b.Origin + b.Xaxis, b.Yaxis, b.Zaxis)
-
-    /// Returns the left face of the Box in Counter-Clockwise order, looking from right.
-    /// Returns Origin at point 0, X-Axis to point 3, Y-Axis to point 4.
-    /// The normal of the Rect3D points into the Box.
-    ///
-    ///   local        local
-    ///   Z-Axis       Y-Axis
-    ///   ^           /
-    ///   |   7      /        6
-    ///   |   +---------------+
-    ///   |  /|    /         /|
-    ///   | / |   /         / |
-    /// 4 |/  |  /       5 /  |
-    ///   +---------------+   |
-    ///   |   |/          |   |
-    ///   |   +-----------|---+
-    ///   |  / 3          |  / 2
-    ///   | /             | /
-    ///   |/              |/     local
-    ///   +---------------+----> X-Axis
-    ///   0               1
-    member b.LeftFace = Rect3D(b.Origin, b.Yaxis, b.Zaxis)
 
     /// Evaluate a X, Y and Z parameter of the Box.
     ///  0.0, 0.0, 0.0 returns the Origin.
@@ -692,4 +364,700 @@ type Box =
 
 
 
+    /// Returns the bottom corners of the Box in Counter-Clockwise order, starting at Origin.
+    /// Then the top corners staring above Origin. Returns an array of 8 Points.
+    ///
+    ///   local        local
+    ///   Z-Axis       Y-Axis
+    ///   ^           /
+    ///   |   7      /        6
+    ///   |   +---------------+
+    ///   |  /|    /         /|
+    ///   | / |   /         / |
+    /// 4 |/  |  /       5 /  |
+    ///   +---------------+   |
+    ///   |   |/          |   |
+    ///   |   +-----------|---+
+    ///   |  / 3          |  / 2
+    ///   | /             | /
+    ///   |/              |/     local
+    ///   +---------------+----> X-Axis
+    ///   0               1
+    member b.Points :Pnt[] =
+        let p0 = b.Origin
+        let p1 = p0 + b.Xaxis
+        let p4 = p0 + b.Zaxis
+        let p5 = p4 + b.Xaxis
+        [|
+            p0
+            p1
+            p1 + b.Yaxis
+            p0 + b.Yaxis
+            p4
+            p5
+            p5 + b.Yaxis
+            p4 + b.Yaxis
+        |]
 
+
+    /// Returns point 0 of the box, same box.Origin.
+    ///
+    ///   local        local
+    ///   Z-Axis       Y-Axis
+    ///   ^           /
+    ///   |   7      /        6
+    ///   |   +---------------+
+    ///   |  /|    /         /|
+    ///   | / |   /         / |
+    /// 4 |/  |  /       5 /  |
+    ///   +---------------+   |
+    ///   |   |/          |   |
+    ///   |   +-----------|---+
+    ///   |  / 3          |  / 2
+    ///   | /             | /
+    ///   |/              |/     local
+    ///   +---------------+----> X-Axis
+    ///   0               1
+    member inline b.Pt0 = b.Origin
+
+    /// Returns point 1 of the box.
+    ///
+    ///   local        local
+    ///   Z-Axis       Y-Axis
+    ///   ^           /
+    ///   |   7      /        6
+    ///   |   +---------------+
+    ///   |  /|    /         /|
+    ///   | / |   /         / |
+    /// 4 |/  |  /       5 /  |
+    ///   +---------------+   |
+    ///   |   |/          |   |
+    ///   |   +-----------|---+
+    ///   |  / 3          |  / 2
+    ///   | /             | /
+    ///   |/              |/     local
+    ///   +---------------+----> X-Axis
+    ///   0               1
+    member inline b.Pt1 = b.Origin + b.Xaxis
+
+    /// Returns point 2 of the box.
+    ///
+    ///   local        local
+    ///   Z-Axis       Y-Axis
+    ///   ^           /
+    ///   |   7      /        6
+    ///   |   +---------------+
+    ///   |  /|    /         /|
+    ///   | / |   /         / |
+    /// 4 |/  |  /       5 /  |
+    ///   +---------------+   |
+    ///   |   |/          |   |
+    ///   |   +-----------|---+
+    ///   |  / 3          |  / 2
+    ///   | /             | /
+    ///   |/              |/     local
+    ///   +---------------+----> X-Axis
+    ///   0               1
+    member inline b.Pt2 = b.Origin + b.Xaxis + b.Yaxis
+
+    /// Returns point 3 of the box.
+    ///
+    ///   local        local
+    ///   Z-Axis       Y-Axis
+    ///   ^           /
+    ///   |   7      /        6
+    ///   |   +---------------+
+    ///   |  /|    /         /|
+    ///   | / |   /         / |
+    /// 4 |/  |  /       5 /  |
+    ///   +---------------+   |
+    ///   |   |/          |   |
+    ///   |   +-----------|---+
+    ///   |  / 3          |  / 2
+    ///   | /             | /
+    ///   |/              |/     local
+    ///   +---------------+----> X-Axis
+    ///   0               1
+    member inline b.Pt3 = b.Origin + b.Yaxis
+
+    /// Returns point 4 of the box.
+    ///
+    ///   local        local
+    ///   Z-Axis       Y-Axis
+    ///   ^           /
+    ///   |   7      /        6
+    ///   |   +---------------+
+    ///   |  /|    /         /|
+    ///   | / |   /         / |
+    /// 4 |/  |  /       5 /  |
+    ///   +---------------+   |
+    ///   |   |/          |   |
+    ///   |   +-----------|---+
+    ///   |  / 3          |  / 2
+    ///   | /             | /
+    ///   |/              |/     local
+    ///   +---------------+----> X-Axis
+    ///   0               1
+    member inline b.Pt4 = b.Origin + b.Zaxis
+
+    /// Returns point 5 of the box.
+    ///
+    ///   local        local
+    ///   Z-Axis       Y-Axis
+    ///   ^           /
+    ///   |   7      /        6
+    ///   |   +---------------+
+    ///   |  /|    /         /|
+    ///   | / |   /         / |
+    /// 4 |/  |  /       5 /  |
+    ///   +---------------+   |
+    ///   |   |/          |   |
+    ///   |   +-----------|---+
+    ///   |  / 3          |  / 2
+    ///   | /             | /
+    ///   |/              |/     local
+    ///   +---------------+----> X-Axis
+    ///   0               1
+    member inline b.Pt5 = b.Origin + b.Xaxis + b.Zaxis
+
+    /// Returns point 6 of the box.
+    ///
+    ///   local        local
+    ///   Z-Axis       Y-Axis
+    ///   ^           /
+    ///   |   7      /        6
+    ///   |   +---------------+
+    ///   |  /|    /         /|
+    ///   | / |   /         / |
+    /// 4 |/  |  /       5 /  |
+    ///   +---------------+   |
+    ///   |   |/          |   |
+    ///   |   +-----------|---+
+    ///   |  / 3          |  / 2
+    ///   | /             | /
+    ///   |/              |/     local
+    ///   +---------------+----> X-Axis
+    ///   0               1
+    member inline b.Pt6 = b.Origin + b.Xaxis + b.Yaxis + b.Zaxis
+
+    /// Returns point 7 of the box.
+    ///
+    ///   local        local
+    ///   Z-Axis       Y-Axis
+    ///   ^           /
+    ///   |   7      /        6
+    ///   |   +---------------+
+    ///   |  /|    /         /|
+    ///   | / |   /         / |
+    /// 4 |/  |  /       5 /  |
+    ///   +---------------+   |
+    ///   |   |/          |   |
+    ///   |   +-----------|---+
+    ///   |  / 3          |  / 2
+    ///   | /             | /
+    ///   |/              |/     local
+    ///   +---------------+----> X-Axis
+    ///   0               1
+    member inline b.Pt7 = b.Origin + b.Yaxis + b.Zaxis
+
+
+
+    // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // ------------------------Faces----------------------------------------------------------------------------------------------------------------------------------------------
+    // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+    /// Returns 6 face of the Box in
+    /// The normal of the Rect3Ds are oriented with the X-Axis, Y-Axis or Z-Axis.
+    /// The order of the Rect3D is: BottomFace, FrontFace, RightFace, BackFace, LeftFace, TopFace.
+    ///
+    ///   local        local
+    ///   Z-Axis       Y-Axis
+    ///   ^           /
+    ///   |   7      /        6
+    ///   |   +---------------+
+    ///   |  /|    /         /|
+    ///   | / |   /         / |
+    /// 4 |/  |  /       5 /  |
+    ///   +---------------+   |
+    ///   |   |/          |   |
+    ///   |   +-----------|---+
+    ///   |  / 3          |  / 2
+    ///   | /             | /
+    ///   |/              |/     local
+    ///   +---------------+----> X-Axis
+    ///   0               1
+    member b.Faces:Rect3D[] =
+
+        [|
+        b.BottomFace
+        b.FrontFace
+        b.RightFace
+        b.BackFace
+        b.LeftFace
+        b.TopFace
+        |]
+
+
+    /// Returns the top face of the Box in Counter-Clockwise order, looking from above.
+    /// Returns Origin at point 4, X-Axis to point 5, Y-Axis to point 7.
+    /// The normal of the Rect3D points away from the Box.
+    ///   local        local
+    ///   Z-Axis       Y-Axis
+    ///   ^           /
+    ///   |   7      /        6
+    ///   |   +---------------+
+    ///   |  /|    /         /|
+    ///   | / |   /         / |
+    /// 4 |/  |  /       5 /  |
+    ///   +---------------+   |
+    ///   |   |/          |   |
+    ///   |   +-----------|---+
+    ///   |  / 3          |  / 2
+    ///   | /             | /
+    ///   |/              |/     local
+    ///   +---------------+----> X-Axis
+    ///   0               1
+    member b.TopFace :Rect3D = Rect3D(b.Origin + b.Zaxis, b.Xaxis, b.Yaxis)
+
+
+    /// Returns the bottom face of the Box in Counter-Clockwise order, looking from above.
+    /// Returns Origin at point 0, X-Axis to point 1, Y-Axis to point 3.
+    /// The normal of the Rect3D points into the Box.
+    ///
+    ///   local        local
+    ///   Z-Axis       Y-Axis
+    ///   ^           /
+    ///   |   7      /        6
+    ///   |   +---------------+
+    ///   |  /|    /         /|
+    ///   | / |   /         / |
+    /// 4 |/  |  /       5 /  |
+    ///   +---------------+   |
+    ///   |   |/          |   |
+    ///   |   +-----------|---+
+    ///   |  / 3          |  / 2
+    ///   | /             | /
+    ///   |/              |/     local
+    ///   +---------------+----> X-Axis
+    ///   0               1
+    member b.BottomFace = Rect3D(b.Origin, b.Xaxis, b.Yaxis)
+
+
+
+    /// Returns the front face of the Box in Counter-Clockwise order, looking from front.
+    /// Returns Origin at point 0, X-Axis to point 1, Y-Axis to point 4.
+    /// The normal of the Rect3D points away from the Box.
+    ///
+    ///   local        local
+    ///   Z-Axis       Y-Axis
+    ///   ^           /
+    ///   |   7      /        6
+    ///   |   +---------------+
+    ///   |  /|    /         /|
+    ///   | / |   /         / |
+    /// 4 |/  |  /       5 /  |
+    ///   +---------------+   |
+    ///   |   |/          |   |
+    ///   |   +-----------|---+
+    ///   |  / 3          |  / 2
+    ///   | /             | /
+    ///   |/              |/     local
+    ///   +---------------+----> X-Axis
+    ///   0               1
+    member b.FrontFace = Rect3D(b.Origin, b.Xaxis, b.Zaxis)
+
+    /// Returns the back face of the Box in Counter-Clockwise order, looking from front.
+    /// Returns Origin at point 3, X-Axis to point 2, Y-Axis to point 7.
+    /// The normal of the Rect3D points into the Box.
+    ///
+    ///   local        local
+    ///   Z-Axis       Y-Axis
+    ///   ^           /
+    ///   |   7      /        6
+    ///   |   +---------------+
+    ///   |  /|    /         /|
+    ///   | / |   /         / |
+    /// 4 |/  |  /       5 /  |
+    ///   +---------------+   |
+    ///   |   |/          |   |
+    ///   |   +-----------|---+
+    ///   |  / 3          |  / 2
+    ///   | /             | /
+    ///   |/              |/     local
+    ///   +---------------+----> X-Axis
+    ///   0               1
+    member b.BackFace = Rect3D(b.Origin + b.Yaxis, b.Xaxis, b.Zaxis)
+
+    /// Returns the right face of the Box in Counter-Clockwise order, looking from right.
+    /// Returns Origin at point 1, X-Axis to point 2, Y-Axis to point 5.
+    /// The normal of the Rect3D points away from the Box.
+    ///
+    ///   local        local
+    ///   Z-Axis       Y-Axis
+    ///   ^           /
+    ///   |   7      /        6
+    ///   |   +---------------+
+    ///   |  /|    /         /|
+    ///   | / |   /         / |
+    /// 4 |/  |  /       5 /  |
+    ///   +---------------+   |
+    ///   |   |/          |   |
+    ///   |   +-----------|---+
+    ///   |  / 3          |  / 2
+    ///   | /             | /
+    ///   |/              |/     local
+    ///   +---------------+----> X-Axis
+    ///   0               1
+    member b.RightFace = Rect3D(b.Origin + b.Xaxis, b.Yaxis, b.Zaxis)
+
+    /// Returns the left face of the Box in Counter-Clockwise order, looking from right.
+    /// Returns Origin at point 0, X-Axis to point 3, Y-Axis to point 4.
+    /// The normal of the Rect3D points into the Box.
+    ///
+    ///   local        local
+    ///   Z-Axis       Y-Axis
+    ///   ^           /
+    ///   |   7      /        6
+    ///   |   +---------------+
+    ///   |  /|    /         /|
+    ///   | / |   /         / |
+    /// 4 |/  |  /       5 /  |
+    ///   +---------------+   |
+    ///   |   |/          |   |
+    ///   |   +-----------|---+
+    ///   |  / 3          |  / 2
+    ///   | /             | /
+    ///   |/              |/     local
+    ///   +---------------+----> X-Axis
+    ///   0               1
+    member b.LeftFace = Rect3D(b.Origin, b.Yaxis, b.Zaxis)
+
+
+
+    // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // ------------------------Edges----------------------------------------------------------------------------------------------------------------------------------------------
+    // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    /// Returns the 12 box edges.
+    /// The returned line is parallel to and oriented with the X-Axis, Y-Axis or Z-Axis.
+    ///
+    ///   local        local
+    ///   Z-Axis       Y-Axis
+    ///   ^           /
+    ///   |          /
+    ///   |   +--------E6-----+
+    ///   |  /|    /         /|
+    ///   |E7 E11 /         E5|
+    ///   |/  |  /         /  |
+    ///   +--------E4-----+   E10
+    ///   |   |/          E9  |
+    ///   E8  +-----E2----|---+
+    ///   |  /            |  /
+    ///   | E3            | E1
+    ///   |/              |/       local
+    ///   +------E0 ------+------> X-Axis
+    ///
+    member b.Edges :Line3D[] =
+        let p0 = b.Origin
+        let p1 = p0 + b.Xaxis
+        let p4 = p0 + b.Zaxis
+        let p5 = p4 + b.Xaxis
+        let y = b.Yaxis
+        let p2 = p1 + y
+        let p3 = p0 + y
+        let p6 = p5 + y
+        let p7 = p4 + y
+
+        [|
+        Line3D(p0, p1) // E0
+        Line3D(p1, p2) // E1
+        Line3D(p3,p2) // E2
+        Line3D(p0,p3) // E3
+        Line3D(p4,p5) // E4
+        Line3D(p5,p6) // E5
+        Line3D(p7,p6) // E6
+        Line3D(p4,p7) // E7
+        Line3D(p0,p4) // E8
+        Line3D(p1,p5) // E9
+        Line3D(p2,p6) // E10
+        Line3D(p3,p7) // E11
+        |]
+
+
+
+    /// Returns edge 1 (of the 12 box edges.)
+    /// The returned line is parallel to and oriented with the X-Axis.
+    ///
+    ///   local        local
+    ///   Z-Axis       Y-Axis
+    ///   ^           /
+    ///   |          /
+    ///   |   +--------E6-----+
+    ///   |  /|    /         /|
+    ///   |E7 E11 /         E5|
+    ///   |/  |  /         /  |
+    ///   +--------E4-----+   E10
+    ///   |   |/          E9  |
+    ///   E8  +-----E2----|---+
+    ///   |  /            |  /
+    ///   | E3            | E1
+    ///   |/              |/       local
+    ///   +------E0 ------+------> X-Axis
+    ///
+    member inline b.Edge0 =
+        let st = b.Origin
+        Line3D(st, st + b.Xaxis)
+
+    /// Returns edge 1 (of the 12 box edges.)
+    /// The returned line is parallel to and oriented with the Y-Axis.
+    ///
+    ///   local        local
+    ///   Z-Axis       Y-Axis
+    ///   ^           /
+    ///   |          /
+    ///   |   +--------E6-----+
+    ///   |  /|    /         /|
+    ///   |E7 E11 /         E5|
+    ///   |/  |  /         /  |
+    ///   +--------E4-----+   E10
+    ///   |   |/          E9  |
+    ///   E8  +-----E2----|---+
+    ///   |  /            |  /
+    ///   | E3            | E1
+    ///   |/              |/       local
+    ///   +------E0 ------+------> X-Axis
+    ///
+    member inline b.Edge1 =
+        let st = b.Origin + b.Xaxis
+        Line3D(st, st + b.Yaxis)
+
+    /// Returns edge 2 (of the 12 box edges.)
+    /// The returned line is parallel to and oriented with the X-Axis.
+    ///
+    ///   local        local
+    ///   Z-Axis       Y-Axis
+    ///   ^           /
+    ///   |          /
+    ///   |   +--------E6-----+
+    ///   |  /|    /         /|
+    ///   |E7 E11 /         E5|
+    ///   |/  |  /         /  |
+    ///   +--------E4-----+   E10
+    ///   |   |/          E9  |
+    ///   E8  +-----E2----|---+
+    ///   |  /            |  /
+    ///   | E3            | E1
+    ///   |/              |/       local
+    ///   +------E0 ------+------> X-Axis
+    ///
+    member inline b.Edge2 =
+        let st = b.Origin + b.Yaxis
+        Line3D(st, st + b.Xaxis)
+
+    /// Returns edge 3 (of the 12 box edges.)
+    /// The returned line is parallel to and oriented with the Y-Axis.
+    ///
+    ///   local        local
+    ///   Z-Axis       Y-Axis
+    ///   ^           /
+    ///   |          /
+    ///   |   +--------E6-----+
+    ///   |  /|    /         /|
+    ///   |E7 E11 /         E5|
+    ///   |/  |  /         /  |
+    ///   +--------E4-----+   E10
+    ///   |   |/          E9  |
+    ///   E8  +-----E2----|---+
+    ///   |  /            |  /
+    ///   | E3            | E1
+    ///   |/              |/       local
+    ///   +------E0 ------+------> X-Axis
+    ///
+    member inline b.Edge3 =
+        let st = b.Origin
+        Line3D(st, st + b.Yaxis)
+
+    /// Returns edge 4 (of the 12 box edges.)
+    /// The returned line is parallel to and oriented with the X-Axis.
+    ///
+    ///   local        local
+    ///   Z-Axis       Y-Axis
+    ///   ^           /
+    ///   |          /
+    ///   |   +--------E6-----+
+    ///   |  /|    /         /|
+    ///   |E7 E11 /         E5|
+    ///   |/  |  /         /  |
+    ///   +--------E4-----+   E10
+    ///   |   |/          E9  |
+    ///   E8  +-----E2----|---+
+    ///   |  /            |  /
+    ///   | E3            | E1
+    ///   |/              |/       local
+    ///   +------E0 ------+------> X-Axis
+    ///
+    member inline b.Edge4 =
+        let st = b.Origin + b.Zaxis
+        Line3D(st, st + b.Xaxis)
+
+    /// Returns edge 5 (of the 12 box edges.)
+    /// The returned line is parallel to and oriented with the Y-Axis.
+    ///
+    ///   local        local
+    ///   Z-Axis       Y-Axis
+    ///   ^           /
+    ///   |          /
+    ///   |   +--------E6-----+
+    ///   |  /|    /         /|
+    ///   |E7 E11 /         E5|
+    ///   |/  |  /         /  |
+    ///   +--------E4-----+   E10
+    ///   |   |/          E9  |
+    ///   E8  +-----E2----|---+
+    ///   |  /            |  /
+    ///   | E3            | E1
+    ///   |/              |/       local
+    ///   +------E0 ------+------> X-Axis
+    ///
+    member inline b.Edge5 =
+        let st = b.Origin + b.Zaxis + b.Xaxis
+        Line3D(st, st + b.Yaxis)
+
+    /// Returns edge 6 (of the 12 box edges.)
+    /// The returned line is parallel to and oriented with the X-Axis.
+    ///
+    ///   local        local
+    ///   Z-Axis       Y-Axis
+    ///   ^           /
+    ///   |          /
+    ///   |   +--------E6-----+
+    ///   |  /|    /         /|
+    ///   |E7 E11 /         E5|
+    ///   |/  |  /         /  |
+    ///   +--------E4-----+   E10
+    ///   |   |/          E9  |
+    ///   E8  +-----E2----|---+
+    ///   |  /            |  /
+    ///   | E3            | E1
+    ///   |/              |/       local
+    ///   +------E0 ------+------> X-Axis
+    ///
+    member inline b.Edge6 =
+        let st = b.Origin + b.Zaxis + b.Yaxis
+        Line3D(st, st + b.Xaxis)
+
+    /// Returns edge 7 (of the 12 box edges.)
+    /// The returned line is parallel to and oriented with the Y-Axis.
+    ///
+    ///   local        local
+    ///   Z-Axis       Y-Axis
+    ///   ^           /
+    ///   |          /
+    ///   |   +--------E6-----+
+    ///   |  /|    /         /|
+    ///   |E7 E11 /         E5|
+    ///   |/  |  /         /  |
+    ///   +--------E4-----+   E10
+    ///   |   |/          E9  |
+    ///   E8  +-----E2----|---+
+    ///   |  /            |  /
+    ///   | E3            | E1
+    ///   |/              |/       local
+    ///   +------E0 ------+------> X-Axis
+    ///
+    member inline b.Edge7 =
+        let st = b.Origin + b.Zaxis
+        Line3D(st, st + b.Yaxis)
+
+    /// Returns edge 8 (of the 12 box edges.)
+    /// The returned line is parallel to and oriented with the Z-Axis.
+    ///
+    ///   local        local
+    ///   Z-Axis       Y-Axis
+    ///   ^           /
+    ///   |          /
+    ///   |   +--------E6-----+
+    ///   |  /|    /         /|
+    ///   |E7 E11 /         E5|
+    ///   |/  |  /         /  |
+    ///   +--------E4-----+   E10
+    ///   |   |/          E9  |
+    ///   E8  +-----E2----|---+
+    ///   |  /            |  /
+    ///   | E3            | E1
+    ///   |/              |/       local
+    ///   +------E0 ------+------> X-Axis
+    ///
+    member inline b.Edge8 =
+        let st = b.Origin
+        Line3D(st, st + b.Zaxis)
+
+    /// Returns edge 9 (of the 12 box edges.)
+    /// The returned line is parallel to and oriented with the Z-Axis.
+    ///
+    ///   local        local
+    ///   Z-Axis       Y-Axis
+    ///   ^           /
+    ///   |          /
+    ///   |   +--------E6-----+
+    ///   |  /|    /         /|
+    ///   |E7 E11 /         E5|
+    ///   |/  |  /         /  |
+    ///   +--------E4-----+   E10
+    ///   |   |/          E9  |
+    ///   E8  +-----E2----|---+
+    ///   |  /            |  /
+    ///   | E3            | E1
+    ///   |/              |/       local
+    ///   +------E0 ------+------> X-Axis
+    ///
+    member inline b.Edge9 =
+        let st = b.Origin + b.Xaxis
+        Line3D(st, st + b.Zaxis)
+
+    /// Returns edge 10 (of the 12 box edges.)
+    /// The returned line is parallel to and oriented with the Z-Axis.
+    ///
+    ///   local        local
+    ///   Z-Axis       Y-Axis
+    ///   ^           /
+    ///   |          /
+    ///   |   +--------E6-----+
+    ///   |  /|    /         /|
+    ///   |E7 E11 /         E5|
+    ///   |/  |  /         /  |
+    ///   +--------E4-----+   E10
+    ///   |   |/          E9  |
+    ///   E8  +-----E2----|---+
+    ///   |  /            |  /
+    ///   | E3            | E1
+    ///   |/              |/       local
+    ///   +------E0 ------+------> X-Axis
+    ///
+    member inline b.Edge10 =
+        let st = b.Origin + b.Xaxis + b.Yaxis
+        Line3D(st, st + b.Zaxis)
+
+    /// Returns edge 11 (of the 12 box edges.)
+    /// The returned line is parallel to and oriented with the Z-Axis.
+    ///
+    ///   local        local
+    ///   Z-Axis       Y-Axis
+    ///   ^           /
+    ///   |          /
+    ///   |   +--------E6-----+
+    ///   |  /|    /         /|
+    ///   |E7 E11 /         E5|
+    ///   |/  |  /         /  |
+    ///   +--------E4-----+   E10
+    ///   |   |/          E9  |
+    ///   E8  +-----E2----|---+
+    ///   |  /            |  /
+    ///   | E3            | E1
+    ///   |/              |/       local
+    ///   +------E0 ------+------> X-Axis
+    ///
+    member inline b.Edge11 =
+        let st = b.Origin + b.Yaxis
+        Line3D(st, st + b.Zaxis)

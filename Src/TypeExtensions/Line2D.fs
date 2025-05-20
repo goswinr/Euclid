@@ -51,7 +51,14 @@ module AutoOpenLine2D =
 
     /// Evaluate line at a given parameters (parameters 0.0 to 1.0 are on the line),
     /// Return a new line from evaluated points.
+    /// Same as ln.Segment(start,ende).
     member inline ln.SubLine (start:float, ende:float) =
+        ln.Segment(start, ende)
+
+    /// Evaluate line at a given parameters (parameters 0.0 to 1.0 are on the line),
+    /// Return a new line from evaluated points.
+    /// Same as ln.SubLine(start,ende).
+    member inline ln.Segment(start:float, ende:float) =
         let fromX = ln.FromX
         let fromY = ln.FromY
         let x = ln.ToX-fromX
@@ -88,18 +95,6 @@ module AutoOpenLine2D =
     /// Returns the Line2D reversed.
     member inline ln.Reversed =
         Line2D(ln.ToX, ln.ToY, ln.FromX, ln.FromY)
-
-    // Returns the lines bounding rectangle.
-    //member inline ln.BoundingRect = BRect.create ( ln.From, ln.To)
-
-    /// Returns a Line2D from point at Parameter a to point at Parameter b.
-    member inline ln.Segment(a, b) =
-        let x = ln.ToX-ln.FromX
-        let y = ln.ToY-ln.FromY
-        Line2D( ln.FromX + x*a,
-                ln.FromY + y*a,
-                ln.FromX + x*b,
-                ln.FromY + y*b)
 
 
     /// Extend 2D line by absolute amount at start and end.
@@ -573,7 +568,7 @@ module AutoOpenLine2D =
     //-------------------------------------------------------------------
 
 
-    /// Checks if two 2D-lines are equal within tolerance.
+    /// Checks if two 2D lines are equal within tolerance.
     /// Identical Lines in opposite directions are not considered equal.
     /// Use a tolerance of 0.0 to check for an exact match.
     static member inline equals (tol:float) (a:Line2D) (b:Line2D) =
@@ -583,7 +578,7 @@ module AutoOpenLine2D =
         abs (a.ToY   - b.ToY  ) <= tol
 
 
-    /// Check if two 2D-lines are not equal within a given tolerance.
+    /// Check if two 2D lines are not equal within a given tolerance.
     /// Use a tolerance of 0.0 to check if the two 2D-lines are not exactly equal.
     static member notEquals (tol:float) (a:Line2D) (b:Line2D) =
         abs (a.FromX - b.FromX) > tol ||
@@ -597,11 +592,11 @@ module AutoOpenLine2D =
     static member inline areCoincident (a:Line2D) (b:Line2D) =
         a.IsCoincidentTo(b)
 
-    /// Creates a line starting at World Origin and going to along the given vector.
+    /// Creates a 2D line starting at World Origin and going to along the given vector.
     static member inline createFromVec (v:Vc) =
         Line2D(0., 0., v.X, v.Y)
 
-    /// Creates a line starting at given point and going to along the given vector.
+    /// Creates a 2D line starting at given point and going to along the given vector.
     static member inline createFromPtAndVc (p:Pt, v:Vc) =
         Line2D(p.X, p.Y, p.X+v.X, p.Y+v.Y)
 
@@ -702,6 +697,16 @@ module AutoOpenLine2D =
     static member inline evaluateAt t (ln:Line2D) =
         ln.EvaluateAt t
 
+    /// Returns new Line2D from point at Parameter a to point at Parameter b.
+    /// Same as Line2D.segment
+    static member inline subLine start ende (ln:Line2D) =
+        ln.Segment (start, ende)
+
+    /// Returns new Line2D from point at Parameter a to point at Parameter b.
+    /// Same as Line2D.subLine
+    static member inline segment start ende (ln:Line2D) =
+        ln.Segment (start, ende)
+
     /// Get point at center of line.
     static member inline mid (ln:Line2D) =
         ln.Mid
@@ -714,9 +719,7 @@ module AutoOpenLine2D =
     static member inline flip (ln:Line2D) =
         ln.Reversed
 
-    /// Returns new Line2D from point at Parameter a to point at Parameter b.
-    static member inline segment a b (ln:Line2D) =
-        ln.Segment (a, b)
+
 
     /// Move a Line2D by a vector. (same as Line2D.move)
     static member inline translate (v:Vc) (ln:Line2D) =

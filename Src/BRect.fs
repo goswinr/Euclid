@@ -530,7 +530,7 @@ type BRect =
         BRect(minX, minY, maxX, maxY)
 
     /// Returns the area of this bounding rectangle.
-    static member inline area  (r:BRect) =
+    static member inline area (r:BRect) =
         r.SizeX * r.SizeY
 
     static member createFromLine (l:Line2D) =

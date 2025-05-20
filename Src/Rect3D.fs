@@ -339,16 +339,24 @@ type Rect3D =
     member inline r.DiagonalLine = Line3D (r.Origin, r.Origin + r.Yaxis + r.Xaxis)
 
     /// Creates a unitized version of the local X-Axis.
-    member inline r.XaxisUnit =
-        let len = r.Xaxis.Length
+    member inline r.XaxisUnit : UnitVec =
+        let v = r.Xaxis
+        let x = v.X
+        let y = v.Y
+        let z = v.Z
+        let len = sqrt (x*x + y*y + z*z)
         if isTooTiny len then EuclidException.Raisef "Euclid.Rect3D.XaxisUnit: rect Xaxis is too small for unitizing: %s" r.AsString
-        r.Xaxis*(1./len)
+        UnitVec.createUnchecked (x/len, y/len, z/len)
 
     /// Creates a unitized version of the local Y-Axis.
-    member inline r.YaxisUnit =
-        let len = r.Yaxis.Length
-        if isTooTiny len then EuclidException.Raisef "Euclid.Rect3D.XaxisUnit: rect Yaxis is too small for unitizing: %s" r.AsString
-        r.Yaxis*(1./len)
+    member inline r.YaxisUnit : UnitVec =
+        let v = r.Yaxis
+        let x = v.X
+        let y = v.Y
+        let z = v.Z
+        let len = sqrt (x*x + y*y + z*z)
+        if isTooTiny len then EuclidException.Raisef "Euclid.Rect3D.YaxisUnit: rect Yaxis is too small for unitizing: %s" r.AsString
+        UnitVec.createUnchecked (x/len, y/len, z/len)
 
     /// Returns the Normal
     /// Resulting from the Cross Product of r.Xaxis with r.Yaxis.
@@ -356,11 +364,16 @@ type Rect3D =
 
     /// Returns the unitized Normal.
     /// Resulting from the Cross Product of r.Xaxis with r.Yaxis.
-    member r.NormalUnit =
-        let z = Vec.cross(r.Xaxis, r.Yaxis)
-        let len = z.Length
+    member r.NormalUnit : UnitVec =
+        let a = r.Xaxis
+        let b = r.Yaxis
+        // cross product:
+        let x = a.Y * b.Z - a.Z * b.Y
+        let y = a.Z * b.X - a.X * b.Z
+        let z = a.X * b.Y - a.Y * b.X
+        let len = sqrt (x*x + y*y + z*z)
         if isTooTiny len then EuclidException.Raisef "Euclid.Rect3D.NormalUnit: rect is too small for finding a normal vector: %s" r.AsString
-        z*(1./len)
+        UnitVec.createUnchecked (x/len, y/len, z/len)
 
     /// Returns the diagonal vector of the 3D-rectangle.
     /// From Origin to FarCorner.
@@ -1131,3 +1144,72 @@ type Rect3D =
         let xCount = 2 + int (xLen / (xMaxLen*1.00001))
         let yCount = 2 + int (yLen / (yMaxLen*1.00001))
         Rect3D.grid (rect, xCount, yCount)
+
+
+
+    /// Returns the line parameter and the X and Y parameters on the Rect3D. as tuple (pLn, pPlX, pPlY).
+    /// The parameters is the intersection point of the Line3D with the parameters on the Rect3D.
+    /// If the line is outside of the rectangle, one or more parameters are outside of the range 0.0-to-1.0 range.
+    /// Returns None if they are parallel or coincident.
+    static member intersectLineParameters  (ln:Line3D) (pl:Rect3D) : option<float*float*float> =
+        let z = pl.NormalUnit
+        let v = ln.Tangent
+        let nenner = v *** z
+        if isTooSmall (abs nenner) then
+            // EuclidException.Raise "Euclid.Rect3D.intersectLineParameters: Line and Rect3D are parallel or line has zero length: %O, %O" ln pl
+            None
+        else
+            let t = ((pl.Origin - ln.From) *** z) / nenner
+            let xpt = ln.From + v * t
+            let vecInPlane = xpt - pl.Origin
+            Some <| (t, pl.Xaxis *** vecInPlane / pl.Xaxis.LengthSq , pl.Yaxis *** vecInPlane/ pl.Yaxis.LengthSq)
+
+    /// Returns intersection point of a Line3D with Rect3D.
+    /// Returns None if the intersection point is outside of their bounds.
+    /// Use Rect3D.intersectLineParameters to get the parameters of the intersection point.
+    /// Returns None if they are parallel or coincident.
+    static member intersectLine (ln:Line3D) (pl:Rect3D) : Pnt option =
+        let z = pl.NormalUnit
+        let v = ln.Tangent
+        let nenner = v *** z
+        if isTooSmall (abs nenner) then
+            None
+        else
+            let t = ((pl.Origin - ln.From) *** z) / nenner
+            if t < 0.0 || t > 1.0 then
+                None
+            else
+                let xpt = ln.From + v * t
+                let vecInPlane = xpt - pl.Origin
+                let tx = pl.Xaxis *** vecInPlane / pl.Xaxis.LengthSq
+                if tx < 0.0 || tx > 1.0 then
+                    None
+                else
+                    let ty = pl.Yaxis *** vecInPlane / pl.Yaxis.LengthSq
+                    if ty < 0.0 || ty > 1.0 then
+                        None
+                    else
+                        Some <| xpt
+
+
+
+
+    // TODO find correct implementation
+
+    // Returns the line of intersection between two planes.
+    // Returns None if they are parallel or coincident.
+    // static member intersect (a:Rect3D) (b:Rect3D) : Line3D option=
+    //     let an = a.NormalUnit
+    //     let bn = b.NormalUnit
+    //     let v = UnitVec.cross (an, bn)
+    //     if isTooSmallSq v.LengthSq then
+    //         None
+    //     else
+    //         let pa = Vec.cross(v, an)
+    //         let nenner = pa *** bn
+    //         let ao = a.Origin
+    //         let t = ((b.Origin - ao) *** bn) / nenner
+    //         let xpt = ao + pa * t
+    //         let l = Line3D( xpt.X    , xpt.Y    , xpt.Z,
+    //                         xpt.X+v.X, xpt.Y+v.Y, xpt.Z+v.Z)
+    //         Some <| l

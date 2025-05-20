@@ -1,22 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>Exe</OutputType>    <!-- Exe = console app -->
+    <OutputType>Exe</OutputType>
+    <!-- Exe = console app -->
     <TargetFramework>net8.0</TargetFramework>
     <LangVersion>preview</LangVersion>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Expecto" Version="10.2.3" />
     <PackageReference Include="Fable.Mocha" Version="2.17.0" />
-
-
     <ProjectReference Include="../Euclid.fsproj" />
-
+    <Compile Include="Rect3D.fs" />
     <Compile Include="Rect2D.fs" />
     <Compile Include="Topo.fs" />
     <Compile Include="Line.fs" />
     <Compile Include="Polyline.fs" />
     <Compile Include="Main.fs" />
   </ItemGroup>
-
 </Project>

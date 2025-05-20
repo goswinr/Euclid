@@ -406,10 +406,16 @@ module AutoOpenPPlane =
 
         /// Returns intersection point of infinite Line3D with Plane.
         /// Returns None if they are parallel.
+        /// Returns None if the line is too short.
         static member intersectLine (ln:Line3D) (pl:PPlane) : Pnt option =
             match PPlane.intersectLineParameter ln pl with
-            | Some t -> Some (ln.From + ln.Tangent * t)
-            | None -> None
+            | Some t ->
+                if 0. <= t && t <= 1. then
+                    Some (ln.From + ln.Tangent * t)
+                else
+                    None
+            | None ->
+                None
 
         /// Checks if a finite Line3D intersects with Plane in one point.
         /// Returns false for NaN values or (almost) parallel or coincident lines.

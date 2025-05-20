@@ -660,7 +660,7 @@ type Rect2D =
     static member createUnchecked (origin, x:Vc, y:Vc) =
         Rect2D(origin, x, y)
 
-    /// Create a 2D Rectangle from a line and a  right and left offset.
+    /// Create a 2D Rectangle from a 2D line and a  right and left offset.
     /// The left offset is in the direction of the future Y-axis.
     static member createFromLine(line:Line2D, offRight, offLeft) =
         if -offRight >= offLeft then EuclidException.Raisef "Euclid.Rect2D.createFromLine: flipped Rect2D : minus offRight %g must be smaller than offLeft %g .  " offRight  offLeft

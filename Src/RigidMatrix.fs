@@ -339,7 +339,7 @@ type RigidMatrix =
     /// Creates a rotation around an Axis RigidMatrix.
     /// axis — Rotation axis, as unit-vector.
     /// angleDegrees — Rotation angle in Degrees.
-    /// Returns a positive rotation will be so clockwise looking in the direction of the axis vector.
+    /// Returns a positive rotation, so clockwise looking in the direction of the axis vector.
     static member createRotationAxis(axis:UnitVec, angleDegrees:float) =
         // Based on http://www.gamedev.net/reference/articles/article1199.asp
         let angle = UtilEuclid.toRadians angleDegrees
@@ -359,7 +359,7 @@ type RigidMatrix =
     /// Creates a rotation around an Axis RigidMatrix.
     /// axis — Rotation axis, a vector of any length but 0.0 .
     /// angleDegrees — Rotation angle in Degrees.
-    /// Returns a positive rotation will be so clockwise looking in the direction of the axis vector.
+    /// Returns a positive rotation, so clockwise looking in the direction of the axis vector.
     static member createRotationAxis(axis:Vec, angleDegrees:float) =
         // first unitize
         let len = sqrt (axis.X*axis.X + axis.Y*axis.Y + axis.Z*axis.Z)
@@ -386,7 +386,7 @@ type RigidMatrix =
     /// axis — Rotation axis, a vector of any length but 0.0
     /// cen — The center point for the rotation.
     /// angleDegrees — Rotation angle in Degrees.
-    /// Returns a positive rotation will be so clockwise looking in the direction of the axis vector.
+    /// Returns a positive rotation, so clockwise looking in the direction of the axis vector.
     static member createRotationAxisCenter(axis:Vec, cen:Pnt, angleDegrees:float) =
         RigidMatrix.createTranslation(-cen.X, -cen.Y, -cen.Z)
         *** RigidMatrix.createRotationAxis(axis, angleDegrees)
@@ -396,7 +396,7 @@ type RigidMatrix =
     /// axis — Rotation axis, a unit-vector.
     /// cen — The center point for the rotation.
     /// angleDegrees — Rotation angle in Degrees.
-    /// Returns a positive rotation will be so clockwise looking in the direction of the axis vector.
+    /// Returns a positive rotation, so clockwise looking in the direction of the axis vector.
     static member createRotationAxisCenter(axis:UnitVec, cen:Pnt, angleDegrees:float) =
         RigidMatrix.createTranslation(-cen.X, -cen.Y, -cen.Z)
         *** RigidMatrix.createRotationAxis(axis, angleDegrees)

@@ -663,7 +663,7 @@ module AutoOpenLine3D =
     //-------------------------------------------------------------------
 
 
-    /// Checks if two 3D Lines are equal within tolerance.
+    /// Checks if two 3D lines are equal within tolerance.
     /// Identical Lines in opposite directions are not considered equal.
     /// Use a tolerance of 0.0 to check for an exact match.
     static member inline equals (tol:float) (a:Line3D) (b:Line3D) =
@@ -674,7 +674,7 @@ module AutoOpenLine3D =
         abs (a.ToY   - b.ToY  ) <= tol &&
         abs (a.ToZ   - b.ToZ  ) <= tol
 
-    /// Check if two 3D Lines are not equal within a given tolerance.
+    /// Check if two 3D lines are not equal within a given tolerance.
     /// Use a tolerance of 0.0 to check if the two rectangles are not exactly equal.
     static member notEquals (tol:float) (a:Line3D) (b:Line3D) =
         abs (a.FromX - b.FromX) > tol ||
@@ -702,11 +702,11 @@ module AutoOpenLine3D =
     static member inline createFromLine2DwithZ (zLevel) (ln:Line2D) =
         Line3D(ln.FromX, ln.FromY, zLevel, ln.ToX, ln.ToY, zLevel)
 
-    /// Creates a line starting at World Origin and going to along the given vector.
+    /// Creates a 3D line starting at World Origin and going to along the given vector.
     static member inline createFromVec (v:Vec) =
         Line3D(0., 0., 0., v.X, v.Y, v.Z)
 
-    /// Creates a line starting at given point and going to along the given vector.
+    /// Creates a 3D line starting at given point and going to along the given vector.
     static member inline createFromPntAndVec (p:Pnt, v:Vec) =
         Line3D(p.X, p.Y, p.Z, p.X+v.X, p.Y+v.Y, p.Z+v.Z)
 
@@ -1167,7 +1167,7 @@ module AutoOpenLine3D =
 
     /// Divides a 3D line into given amount of segments.
     /// Includes a gap between the segments. But not at the start or end.
-    /// Returns an array of 3D Lines.
+    /// Returns an array of 3D lines.
     /// Returns an empty array if the length of the line is less than gap-size x segment-count-minus-1.
     static member split (gap:float) (segments:int) (ln:Line3D) : Line3D[] =
         if segments <= 0  then
@@ -1204,7 +1204,7 @@ module AutoOpenLine3D =
 
     /// Divides a 3D line into as many as segments as possible respecting the minimum segment length and the gap.
     /// Includes a gap between the segments. But not at the start or end.
-    /// Returns an array ofe3D Lines
+    /// Returns an array ofe3D lines
     /// The input minSegmentLength is multiplied by factor 1.000001 of to avoid numerical errors.
     /// That means in an edge case there are more segments returned, not fewer.
     static member splitMinLength (gap:float) (minSegmentLength:float) (ln:Line3D) : Line3D[] =
@@ -1217,7 +1217,7 @@ module AutoOpenLine3D =
 
     /// Divides a 3D line into as few as segments as possible respecting the maximum segment length and the gap.
     /// Includes a gap between the segments. But not at the start or end.
-    /// Returns an array ofe3D Lines
+    /// Returns an array ofe3D lines
     /// The input maxSegmentLength is multiplied by factor 0.999999 of to avoid numerical errors.
     /// That means in an edge case there are fewer segments returned, not more.
     static member splitMaxLength (gap:float) (maxSegmentLength:float) (ln:Line3D)  : Line3D[] =
@@ -1444,7 +1444,7 @@ module AutoOpenLine3D =
             Pnt.distance a b
 
 
-    /// <summary>Returns the intersection kind and the parameters at which two (finite) 3D Lines are intersecting or closest to each other.
+    /// <summary>Returns the intersection kind and the parameters at which two (finite) 3D lines are intersecting or closest to each other.
     /// The threshold for skew intersection can be given as an optional tolerance input. The default is 1e-6.
     /// If the two points ar within this distance one of the Intersecting Cases is returned.
     /// (or Continuation Case if lines are colinear in one point)
@@ -1681,7 +1681,7 @@ module AutoOpenLine3D =
         |IntersectionParam.TooShortB     -> TooShortB    , lnA.ClosestParameter lnB.Mid, 0.5
         |IntersectionParam.TooShortBoth  -> TooShortBoth , 0.5, 0.5
 
-    /// <summary>Returns the intersection kind and the points at which two (finite) 3D Lines are intersecting or closest to each other.
+    /// <summary>Returns the intersection kind and the points at which two (finite) 3D lines are intersecting or closest to each other.
     /// The threshold for skew intersection can be given as an optional tolerance input. The default is 1e-6.
     /// If the two points ar within this distance one of the Intersecting Cases is returned.
     /// (or Continuation Case if lines are colinear in one point)
