@@ -86,5 +86,32 @@ let tests =
                     "distance is as expected in almost Parallel Lines" |> Expect.isTrue ok
                 }
 
+        test "float formatting" {
+            Expect.equal (Format.float 0.0) "0.0" "float 0.0"
+            Expect.equal (Format.float 0.000_001) "0.000'001" "float 0.000_001"
+            Expect.equal (Format.float 0.000_000_1) "0.000'000'1" "float 0.000_000_1"
+            Expect.equal (Format.float 0.000_000_01)  "≈+0.0" "float 0.000_000_01"
+            Expect.equal (Format.float -0.000_000_01) "≈-0.0" "float 0.000_000_01"
+            Expect.equal (Format.float 123.1234) "123.1" "float 123.123"
+            Expect.equal (Format.float 123.01) "123" "float 123.01"
+            Expect.equal (Format.float 13.1234) "13.12" "float 13.1234"
+            Expect.equal (Format.float 13.0) "13" "float 13.0"
+            Expect.equal (Format.float 200.0) "200" "float 200.0"
+            Expect.equal (Format.float 200.1) "200.1" "float 200.1"
+            Expect.equal (Format.float 2000.01) "2000" "float 2000.01"
+            Expect.equal (Format.float 2000.00) "2000" "float 2000.01"
+            Expect.equal (Format.float 20.0001) "20" "float 20.0001"
+            Expect.equal (Format.float 13234.12) "13'234" "float 13.123"
+        }
 
+
+        test "float32 formatting" {
+            Expect.equal (Format.single 0.0f) "0.0" "float 0.0"
+            Expect.equal (Format.single 0.000_000_1f) "0.000'000'1" "float 0.000_000_1"
+            Expect.equal (Format.single 123.1234f) "123.1" "float 123.123"
+            Expect.equal (Format.single 123.01f) "123" "float 123.123"
+            Expect.equal (Format.single 13.1234f) "13.12" "float 13.123"
+            Expect.equal (Format.single 13.0f) "13" "float 13.123"
+            Expect.equal (Format.single 13234.12f) "13'234" "float 13.123"
+        }
   ]

@@ -33,13 +33,13 @@ type RigidMatrix =
     /// M11 M21 M31 X41
     /// M12 M22 M32 Y42
     /// M13 M23 M33 Z43
-        /// Where X41, Y42 and Z43 refer to the translation part of the RigidMatrix.
-        internal new(   m11, m21, m31, x41,
-                        m12, m22, m32, y42,
-                        m13, m23, m33, z43) = {
-                            M11=m11 ; M21=m21 ; M31=m31 ; X41=x41 ;
-                            M12=m12 ; M22=m22 ; M32=m32 ; Y42=y42 ;
-                            M13=m13 ; M23=m23 ; M33=m33 ; Z43=z43 }
+    /// Where X41, Y42 and Z43 refer to the translation part of the RigidMatrix.
+    internal new(   m11, m21, m31, x41,
+                    m12, m22, m32, y42,
+                    m13, m23, m33, z43) = {
+                        M11=m11 ; M21=m21 ; M31=m31 ; X41=x41 ;
+                        M12=m12 ; M22=m22 ; M32=m32 ; Y42=y42 ;
+                        M13=m13 ; M23=m23 ; M33=m33 ; Z43=z43 }
 
     /// Returns the 12 elements column-major order:
     /// [| M11 M12 M13 M21 M22 M23 M31 M32 M33 X41 Y42 Z43 |]
@@ -216,22 +216,19 @@ type RigidMatrix =
         let b31 = matrixB.M31
         let b32 = matrixB.M32
         let b33 = matrixB.M33
-        let b41 = matrixB.X41
-        let b42 = matrixB.Y42
-        let b43 = matrixB.Z43
         RigidMatrix(
              a11*b11 + a12*b21 + a13*b31       , // M11
              a21*b11 + a22*b21 + a23*b31       , // M21
              a31*b11 + a32*b21 + a33*b31       , // M31
-             a41*b11 + a42*b21 + a43*b31 + b41 , // X41
+             a41*b11 + a42*b21 + a43*b31 + matrixB.X41 , // X41
              a11*b12 + a12*b22 + a13*b32       , // M12
              a21*b12 + a22*b22 + a23*b32       , // M22
              a31*b12 + a32*b22 + a33*b32       , // M32
-             a41*b12 + a42*b22 + a43*b32 + b42 , // Y42
+             a41*b12 + a42*b22 + a43*b32 + matrixB.Y42 , // Y42
              a11*b13 + a12*b23 + a13*b33       , // M13
              a21*b13 + a22*b23 + a23*b33       , // M23
              a31*b13 + a32*b23 + a33*b33       , // M33
-             a41*b13 + a42*b23 + a43*b33 + b43) // Z43
+             a41*b13 + a42*b23 + a43*b33 + matrixB.Z43)  // Z43
 
 
     /// Multiplies matrixA with matrixB.
@@ -283,6 +280,42 @@ type RigidMatrix =
             0, 1, 0, v.Y,
             0, 0, 1, v.Z)
 
+    /// Creates a translation RigidMatrix:
+    /// x - the amount by which to translate in X-axis.
+    /// The resulting RigidMatrix will be:
+    /// 1  0  0  x
+    /// 0  1  0  0
+    /// 0  0  1  0
+    static member createTranslationX(x) =
+        RigidMatrix(
+            1, 0, 0, x,
+            0, 1, 0, 0,
+            0, 0, 1, 0)
+
+    /// Creates a translation RigidMatrix:
+    /// y - the amount by which to translate in Y-axis.
+    /// The resulting RigidMatrix will be:
+    /// 1  0  0  0
+    /// 0  1  0  y
+    /// 0  0  1  0
+    static member createTranslationY(y) =
+        RigidMatrix(
+            1, 0, 0, 0,
+            0, 1, 0, y,
+            0, 0, 1, 0)
+
+
+    /// Creates a translation RigidMatrix:
+    /// z - the amount by which to translate in Z-axis.
+    /// The resulting RigidMatrix will be:
+    /// 1  0  0  0
+    /// 0  1  0  0
+    /// 0  0  1  z
+    static member createTranslationZ(z) =
+        RigidMatrix(
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, z)
 
 
     /// Creates a rotation around the X-axis RigidMatrix
@@ -554,18 +587,18 @@ type RigidMatrix =
         let wy = w * y2
         let wz = w * z2
         // the sequence is reordered here, when compared to Three js
-        RigidMatrix ( (1. - (yy + zz) )
-                    , (xy - wz)
-                    , (xz + wy)
+        RigidMatrix ( 1. - (yy + zz)
+                    , xy - wz
+                    , xz + wy
                     , 0
-                    , (xy + wz)
-                    , (1. - (xx + zz) )
+                    , xy + wz
+                    , 1. - (xx + zz)
                     , 0
-                    , (yz - wx)
-                    , (xz - wy)
-                    , (yz + wx)
-                    , (1. - (xx + yy) )
-                    , 0)
+                    , yz - wx
+                    , xz - wy
+                    , yz + wx
+                    , 1. - (xx + yy)
+                    , 0 )
 
 
     /// Removes the translation part by setting X41, Y42 and Z43 to 0.0.

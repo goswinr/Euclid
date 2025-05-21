@@ -26,13 +26,11 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
     /// The unitized normal of the Plane.
     [<DataMember>] val Normal : UnitVec
 
-    /// Unsafe internal constructor, public only for inlining.
-    [<Obsolete("Unsafe internal constructor, but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >]
-    new (pt, n) = {Origin = pt; Normal = n} // private unchecked constructor, supply unitized values
+    new (pt:Pnt, n:UnitVec) = {Origin = pt; Normal = n}
 
     /// Format PPlane into string with nicely formatted floating point numbers.
     override pl.ToString() =
-        sprintf "Euclid.Plane(Origin:%s| Normal:%s)" pl.Origin.AsString pl.Normal.AsString
+        sprintf "Euclid.NPlane(Origin:%s| Normal:%s)" pl.Origin.AsString pl.Normal.AsString
 
     /// Returns a new Plane with the same Origin but flipped Normal.
     member inline pl.Flipped  =
@@ -44,12 +42,12 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
 
     /// Returns the closest point on the plane from a test point.
     member inline pl.ClosestPoint pt =
-        pt - pl.Normal*(pl.DistanceToPt pt)
+        pt - pl.Normal * (pl.DistanceToPt pt)
 
     /// First finds the closet point on plane from a test point.
     /// Then returns a new plane with Origin at this point and the same Normal.
     member inline pl.PlaneAtClPt pt =
-        NPlane(pt - pl.Normal*(pl.DistanceToPt pt), pl.Normal)
+        NPlane(pt - pl.Normal * (pl.DistanceToPt pt), pl.Normal)
 
     /// Returns the angle to another Plane in Degree, ignoring the normal's orientation.
     /// So 0.0 if the planes are parallel. And 90 degrees if the planes are perpendicular to ech other.
@@ -83,7 +81,6 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
         pl.Normal.IsParallelTo(other.Normal, minCosine)
         &&
         pl.DistanceToPt other.Origin < distanceTolerance
-
 
     //----------------------------------------------------------------------------------------------
     //--------------------------  Static Members  --------------------------------------------------

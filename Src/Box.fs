@@ -138,9 +138,82 @@ type Box =
 
      /// Calculates the squared volume of the Box.
     /// by using the squared lengths of the X , Y and Z axis.
-    /// This is a bit faster than calculating the area and good enough for relative comparisons or sorting by size.
+    /// This is a bit faster than calculating the volume and good enough for relative comparisons or sorting by size.
+    /// r.Xaxis.LengthSq * r.Yaxis.LengthSq * r.Zaxis.LengthSq
+    [<Obsolete("this ia actually the volume, also this does not scale proportionally, use .Volume")>]
     member inline r.AreaSq =
         r.Xaxis.LengthSq * r.Yaxis.LengthSq * r.Zaxis.LengthSq
+
+    /// Returns the longest edge of the Box.
+    member inline b.LongestEdge =
+        let x = b.Xaxis.LengthSq
+        let y = b.Yaxis.LengthSq
+        let z = b.Zaxis.LengthSq
+        sqrt (max (max x y) z)
+
+    /// Returns the shortest edge of the Box.
+    member inline b.ShortestEdge =
+        let x = b.Xaxis.LengthSq
+        let y = b.Yaxis.LengthSq
+        let z = b.Zaxis.LengthSq
+        sqrt (min (min x y) z)
+
+
+    /// Returns the square of longest edge of the Box.
+    member inline b.LongestEdgeSq =
+        let x = b.Xaxis.LengthSq
+        let y = b.Yaxis.LengthSq
+        let z = b.Zaxis.LengthSq
+        max (max x y) z
+
+    /// Returns the square of longest shortest edge of the Box.
+    member inline b.ShortestEdgeSq =
+        let x = b.Xaxis.LengthSq
+        let y = b.Yaxis.LengthSq
+        let z = b.Zaxis.LengthSq
+        min (min x y) z
+
+    /// Tests if all sides are smaller than the zeroLength tolerance.
+    /// This is the same as IsPoint.
+    member inline b.IsZero =
+        isTooTinySq b.Xaxis.LengthSq &&
+        isTooTinySq b.Yaxis.LengthSq &&
+        isTooTinySq b.Zaxis.LengthSq
+
+    /// Tests if all sides are smaller than the zeroLength tolerance.
+    /// This is the same as IsZero.
+    member inline b.IsPoint =
+        isTooTinySq b.Xaxis.LengthSq &&
+        isTooTinySq b.Yaxis.LengthSq &&
+        isTooTinySq b.Zaxis.LengthSq
+
+
+    /// Counts the amount of sides that are smaller than the zeroLength tolerance.
+    /// This is 0, 1, 2 or 3.
+    member inline b.CountZeroSides =
+        countTooTinySq    b.Xaxis.LengthSq
+        +  countTooTinySq b.Yaxis.LengthSq
+        +  countTooTinySq b.Zaxis.LengthSq
+
+
+    /// Tests if two of the X, Y and Z axis is smaller than the zeroLength tolerance.
+    member inline b.IsLine =
+        b.CountZeroSides = 2
+
+    /// Tests if one of the X, Y and Z axis is smaller than the zeroLength tolerance.
+    member inline b.IsFlat =
+        b.CountZeroSides = 1
+
+    /// Tests if no sides of the X, Y and Z axis is smaller than the zeroLength tolerance.
+    /// Same as .HasVolume
+    member inline b.IsValid =
+        b.CountZeroSides = 0
+
+    /// Tests if none of the X, Y and Z axis is smaller than the zeroLength tolerance.
+    /// Same as .IsValid
+    member inline b.HasVolume =
+        b.CountZeroSides = 0
+
 
     /// Gets the Plane that this box is based on.
     member inline b.Plane =
@@ -154,18 +227,25 @@ type Box =
     /// By doing 6 dot products with the sides of the rectangle.
     /// A point exactly on the edge of the Box is considered inside.
     member b.Contains(p:Pnt) =
-        let v = p - b.Origin
-        v *** b.Xaxis >= 0.
+        let x = b.Xaxis
+        let y = b.Yaxis
+        let z = b.Zaxis
+        let p0 = b.Origin
+        let v = p - p0
+        let p1 = p0 + x
+        let p3 = p0 + y
+        let p4 = p0 + z
+        v *** x >= 0.
         &&
-        v *** b.Yaxis >= 0.
+        v *** y >= 0.
         &&
-        v *** b.Zaxis >= 0.
+        v *** z >= 0.
         &&
-        (p - b.Pt3) *** b.Yaxis <= 0.
+        (p - p3) *** y <= 0.
         &&
-        (p - b.Pt1) *** b.Xaxis <= 0.
+        (p - p1) *** x <= 0.
         &&
-        (p - b.Pt4) *** b.Zaxis <= 0.
+        (p - p4) *** z <= 0.
 
 
     /// Gets the axis aligned 3D Bounding Box of the Box.
@@ -361,6 +441,14 @@ type Box =
         let y = Vec.transformRigid m b.Yaxis
         let z = Vec.transformRigid m b.Zaxis
         Box(o, x, y, z)
+
+
+    // static member intersectPlane (pl:NPlane) (b:Box) =
+    //     let x = b.Xaxis
+    //     let y = b.Yaxis
+    //     let z = b.Zaxis
+
+    //     let zu
 
 
 

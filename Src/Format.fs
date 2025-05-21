@@ -66,7 +66,7 @@ module Format =
 
         match s.IndexOf('.') with
         | -1 ->
-            match s.IndexOf("e") with //, StringComparison.OrdinalIgnoreCase) // not supported by Fable complier 
+            match s.IndexOf("e") with //, StringComparison.OrdinalIgnoreCase) // not supported by Fable complier
             | -1 -> doBeforeComma start (s.Length-1)
             | e -> // if float is in scientific notation don't insert comas into it too:
                 doBeforeComma start (s.Length-1)
@@ -76,7 +76,7 @@ module Format =
                 doBeforeComma start (i-1)
             add '.'
             if i < s.Length then
-                match s.IndexOf("e") with //, StringComparison.OrdinalIgnoreCase) with // not supported by Fable complier 
+                match s.IndexOf("e") with //, StringComparison.OrdinalIgnoreCase) with // not supported by Fable complier
                 | -1 -> doAfterComma (i+1) (s.Length-1)
                 | e -> // if float is in scientific notation don't insert comas into it too:
                     doAfterComma (i+1) (e-1)
@@ -85,6 +85,12 @@ module Format =
         b.ToString()
 
     let private invC = Globalization.CultureInfo.InvariantCulture
+
+    let trim (n:string) =
+        n.TrimEnd( [|'0'|] ).TrimEnd( [|'.'|] ) // remove trailing zeros and dot if no decimal digits left
+
+    let trimThous (n:string) =
+        n.TrimEnd( [|'0'; thousandSeparator |] ).TrimEnd( [|'.'|] ) // remove trailing zeros and dot if no decimal digits left
 
     /// Formatting with automatic precision.
     /// e.g.: 0 digits behind comma if above 1000
@@ -113,17 +119,17 @@ module Format =
             // elif a >= 0.000_000_1  then x.ToString("0.##########", invC)|> addThousandSeparators
             //works better in Fable:  (but may have trailing zeros)
             elif a >= 10000.       then sprintf "%.0f"  x |> addThousandSeparators
-            elif a >= 1000.        then sprintf "%.0f"  x 
-            elif a >= 100.         then sprintf "%.1f"  x
-            elif a >= 10.          then sprintf "%.2f"  x
-            elif a >= 1.           then sprintf "%.3f"  x
-            elif a >= 0.1          then sprintf "%.4f"  x
-            elif a >= 0.01         then sprintf "%.5f"  x 
-            elif a >= 0.001        then sprintf "%.6f"  x |> addThousandSeparators
-            elif a >= 0.000_1      then sprintf "%.7f"  x |> addThousandSeparators
-            elif a >= 0.000_01     then sprintf "%.8f"  x |> addThousandSeparators
-            elif a >= 0.000_001    then sprintf "%.9f"  x |> addThousandSeparators
-            elif a >= 0.000_000_1  then sprintf "%.10f" x |> addThousandSeparators
+            elif a >= 1000.        then sprintf "%.0f"  x
+            elif a >= 100.         then sprintf "%.1f"  x |> trim
+            elif a >= 10.          then sprintf "%.2f"  x |> trim
+            elif a >= 1.           then sprintf "%.3f"  x |> trim
+            elif a >= 0.1          then sprintf "%.4f"  x |> trim
+            elif a >= 0.01         then sprintf "%.5f"  x |> trim
+            elif a >= 0.001        then sprintf "%.6f"  x |> addThousandSeparators |> trimThous
+            elif a >= 0.000_1      then sprintf "%.7f"  x |> addThousandSeparators |> trimThous
+            elif a >= 0.000_01     then sprintf "%.8f"  x |> addThousandSeparators |> trimThous
+            elif a >= 0.000_001    then sprintf "%.9f"  x |> addThousandSeparators |> trimThous
+            elif a >= 0.000_000_1  then sprintf "%.10f" x |> addThousandSeparators |> trimThous
 
             elif x >= 0.0          then Literals.CloseToZeroPositive
             else                        Literals.CloseToZeroNegative
@@ -151,19 +157,19 @@ module Format =
             // elif a >= 0.001f    then x.ToString("0.######", invC)|> addThousandSeparators
             // elif a >= 0.0001f   then x.ToString("0.#######", invC)|> addThousandSeparators
             // elif a >= 0.00001f  then x.ToString("0.########", invC)|> addThousandSeparators
-            // elif a >= 0.000001f then x.ToString("0.#########", invC)|> addThousandSeparators            
+            // elif a >= 0.000001f then x.ToString("0.#########", invC)|> addThousandSeparators
             //works better in Fable: (but may have trailing zeros)
             elif a >= 10000.f       then sprintf "%.0f"  x |> addThousandSeparators
-            elif a >= 1000.f        then sprintf "%.0f"  x 
-            elif a >= 100.f         then sprintf "%.1f"  x
-            elif a >= 10.f          then sprintf "%.2f"  x
-            elif a >= 1.f           then sprintf "%.3f"  x
-            elif a >= 0.1f          then sprintf "%.4f"  x
-            elif a >= 0.01f         then sprintf "%.5f"  x 
-            elif a >= 0.001f        then sprintf "%.6f"  x |> addThousandSeparators
-            elif a >= 0.000_1f      then sprintf "%.7f"  x |> addThousandSeparators
-            elif a >= 0.000_01f     then sprintf "%.8f"  x |> addThousandSeparators
-            elif a >= 0.000_001f    then sprintf "%.9f"  x |> addThousandSeparators
-            elif a >= 0.000_000_1f  then sprintf "%.10f" x |> addThousandSeparators
+            elif a >= 1000.f        then sprintf "%.0f"  x
+            elif a >= 100.f         then sprintf "%.1f"  x |> trim
+            elif a >= 10.f          then sprintf "%.2f"  x |> trim
+            elif a >= 1.f           then sprintf "%.3f"  x |> trim
+            elif a >= 0.1f          then sprintf "%.4f"  x |> trim
+            elif a >= 0.01f         then sprintf "%.5f"  x |> trim
+            elif a >= 0.001f        then sprintf "%.6f"  x |> addThousandSeparators |> trimThous
+            elif a >= 0.000_1f      then sprintf "%.7f"  x |> addThousandSeparators |> trimThous
+            elif a >= 0.000_01f     then sprintf "%.8f"  x |> addThousandSeparators |> trimThous
+            elif a >= 0.000_001f    then sprintf "%.9f"  x |> addThousandSeparators |> trimThous
+            elif a >= 0.000_000_1f  then sprintf "%.10f" x |> addThousandSeparators |> trimThous
             elif x >= 0.0f      then Literals.CloseToZeroPositive
             else                     Literals.CloseToZeroNegative

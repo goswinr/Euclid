@@ -305,8 +305,8 @@ type BRect =
         n
 
     /// Returns true if the two bounding rectangles do overlap or touch.
-    /// Also returns true if one box is completely inside the other.
-    /// Also returns true if one box is completely surrounding the other.
+    /// Also returns true if one bounding rect is completely inside the other.
+    /// Also returns true if one bounding rect is completely surrounding the other.
     member inline r.OverlapsWith (a:BRect) =
         not (  r.MinX > a.MaxX
             || a.MinX > r.MaxX
@@ -316,8 +316,8 @@ type BRect =
     /// Returns true if the two bounding rectangles do overlap more than a given tolerance distance.
     /// Use a negative tolerance to count touching if they are apart by abs(tolerance)
     /// Returns false if the two bounding rectangles are just touching or apart.
-    /// Also returns true if one box is completely inside the other.
-    /// Also returns true if one box is completely surrounding the other.
+    /// Also returns true if one bounding rect is completely inside the other.
+    /// Also returns true if one bounding rect is completely surrounding the other.
     member inline r.OverlapsWith (a:BRect, tol) =
         not (  r.MinX > a.MaxX - tol
             || a.MinX > r.MaxX - tol
@@ -353,7 +353,54 @@ type BRect =
 
     /// Returns the area of this bounding rectangle.
     member inline r.Area =
-        r.SizeX*r.SizeY
+        r.SizeX * r.SizeY
+
+
+    /// Returns the longest edge of the Box.
+    member inline b.LongestEdge =
+        let x = b.MaxX - b.MinX
+        let y = b.MaxY - b.MinY
+        max x y
+
+    /// Returns the shortest edge of the Box.
+    member inline b.ShortestEdge =
+        let x = b.MaxX - b.MinX
+        let y = b.MaxY - b.MinY
+        min x y
+
+
+    /// Tests if all sides are smaller than the zeroLength tolerance.
+    /// This is the same as IsPoint.
+    member inline b.IsZero =
+        isTooTiny (b.MaxX - b.MinX) &&
+        isTooTiny (b.MaxY - b.MinY)
+
+    /// Tests if all sides are smaller than the zeroLength tolerance.
+    /// This is the same as IsZero.
+    member inline b.IsPoint =
+        b.IsZero
+
+
+    /// Counts the amount of sides that are smaller than the zeroLength tolerance.
+    /// This is 0, 1, or 2.
+    member inline b.CountZeroSides =
+        countTooTiny    (b.MaxX - b.MinX)
+        +  countTooTiny (b.MaxY - b.MinY)
+
+    /// Tests if two of the X and Y axis is smaller than the zeroLength tolerance.
+    member inline b.IsLine =
+        b.CountZeroSides = 1
+
+    /// Tests if no sides of the X and Y axis is smaller than the zeroLength tolerance.
+    /// Same as .HasVolume
+    member inline b.IsValid =
+        b.CountZeroSides = 0
+
+    /// Tests if none of the X and Y axis is smaller than the zeroLength tolerance.
+    /// Same as .IsValid
+    member inline b.HasVolume =
+        b.CountZeroSides = 0
+
 
     /// Returns a bounding rectangle that contains both input Rectangles.
     member inline r.Union  (b:BRect) =
@@ -432,16 +479,16 @@ type BRect =
 
 
     /// Returns true if the two bounding rectangles do overlap or touch exactly.
-    /// Also returns true if one box is completely inside the other.
-    /// Also returns true if one box is completely surrounding the other.
+    /// Also returns true if one bounding rect is completely inside the other.
+    /// Also returns true if one bounding rect is completely surrounding the other.
     static member inline doOverlap(a:BRect) (b:BRect) =
         b.OverlapsWith a
 
     /// Returns true if the two bounding rectangles do overlap more than a given tolerance distance.
     /// Use a negative tolerance to count touching if they are apart by abs(tolerance)
     /// Returns false if the two bounding rectangles are just touching or apart.
-    /// Also returns true if one box is completely inside the other.
-    /// Also returns true if one box is completely surrounding the other.
+    /// Also returns true if one bounding rect is completely inside the other.
+    /// Also returns true if one bounding rect is completely surrounding the other.
     static member inline doOverlapMoreThan tol (a:BRect) (b:BRect) =
         b.OverlapsWith(a, tol)
 

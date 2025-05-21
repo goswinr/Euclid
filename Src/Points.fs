@@ -638,3 +638,13 @@ type Points private () =
         let prevV = thisPt - prevPt
         let nextV = nextPt - thisPt
         Points.offsetInCornerEx2D(thisPt, prevV, nextV, prevDist, nextDist, referenceOrient)
+
+
+    /// Returns the closer point of the two points to the reference given point.
+    static member closestOfTwo (pt1:Pnt) (pt2:Pnt) (referencePoint:Pnt) =
+        let d1 = Pnt.distanceSq pt1 referencePoint
+        let d2 = Pnt.distanceSq pt2 referencePoint
+        if d1 < d2 then
+            pt1
+        else
+            pt2

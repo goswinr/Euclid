@@ -1,4 +1,5 @@
 ﻿module Euclid.Tests
+open System
 
 #if FABLE_COMPILER
 open Fable.Mocha
@@ -11,6 +12,9 @@ Thread.CurrentThread.CurrentCulture <- CultureInfo.GetCultureInfo("en-US") // so
 Thread.CurrentThread.CurrentUICulture <- CultureInfo.GetCultureInfo("en-US")
 let test x =  runTestsWithCLIArgs [] [||] x
 #endif
+
+
+
 
 
 let run () =
@@ -27,9 +31,13 @@ let run () =
 
 
 #if FABLE_COMPILER
-run() //|> ignore<int>
+# nowarn "20" //The result of this expression has type 'int' and is implicitly ignored.
+run()
+
 #else
-let [<EntryPoint>] main _ = run()
+
+[<EntryPoint>]
+let main ([<ParamArray>] _args: string[]) = run()
 #endif
 
 

@@ -45,7 +45,7 @@ type Rect3D =
     [<DataMember>] val Yaxis: Vec
 
     /// Unchecked Internal Constructor Only.
-    /// Create a Parametrized Plane with X, Y and Z Direction.
+    /// Creates a 3D rectangle with X, Y Direction.
     internal new (origin:Pnt, axisX:Vec, axisY:Vec) =
         #if DEBUG
         let lenX = axisX.Length
@@ -84,259 +84,10 @@ type Rect3D =
             r.Origin.AsString r.Xaxis.AsString r.Yaxis.AsString
 
 
-    /// Format the 3D-rectangle into string with nice floating point number formatting of X, Y and Z size only.
+    /// Format the 3D-rectangle into string with nice floating point number formatting of X and Y size only.
     /// But without type name as in v.ToString()
     member r.AsString = sprintf "%s x %s" (Format.float r.SizeX) (Format.float r.SizeY)
 
-
-    /// Returns the corner diagonally opposite of corner from Origin (point 2).
-    ///
-    ///   local
-    ///   Y-Axis
-    ///   ^
-    ///   |
-    ///   |             2
-    /// 3 +------------+
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |       local
-    ///   +------------+-----> X-Axis
-    ///  0-Origin       1
-    member inline r.FarCorner = r.Origin + r.Xaxis + r.Yaxis
-
-    /// Returns the corner at end of X-axis (point 1).
-    ///
-    ///   local
-    ///   Y-Axis
-    ///   ^
-    ///   |
-    ///   |             2
-    /// 3 +------------+
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |       local
-    ///   +------------+-----> X-Axis
-    ///  0-Origin       1
-    member inline r.XCorner = r.Origin + r.Xaxis
-
-
-    /// Returns the corner at end of Y-axis (point 3).
-    ///
-    ///   local
-    ///   Y-Axis
-    ///   ^
-    ///   |
-    ///   |             2
-    /// 3 +------------+
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |       local
-    ///   +------------+-----> X-Axis
-    ///  0-Origin       1
-    member inline r.YCorner = r.Origin + r.Yaxis
-
-    /// Returns point 0 of the 3D-rectangle. Same as member rect.Origin.
-    ///
-    ///   local
-    ///   Y-Axis
-    ///   ^
-    ///   |
-    ///   |             2
-    /// 3 +------------+
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |       local
-    ///   +------------+-----> X-Axis
-    ///  0-Origin       1
-    member inline r.Pt0 = r.Origin
-
-
-    /// Returns point 1 of the 3D-rectangle.
-    ///
-    ///   local
-    ///   Y-Axis
-    ///   ^
-    ///   |
-    ///   |             2
-    /// 3 +------------+
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |       local
-    ///   +------------+-----> X-Axis
-    ///  0-Origin       1
-    member inline r.Pt1 = r.Origin + r.Xaxis
-
-
-    /// Returns point 2 of the 3D-rectangle. Same as rect.FarCorner.
-    ///
-    ///   local
-    ///   Y-Axis
-    ///   ^
-    ///   |
-    ///   |             2
-    /// 3 +------------+
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |       local
-    ///   +------------+-----> X-Axis
-    ///  0-Origin       1
-    member inline r.Pt2 = r.Origin + r.Xaxis + r.Yaxis
-
-    /// Returns point 3 of the 3D-rectangle.
-    ///
-    ///   local
-    ///   Y-Axis
-    ///   ^
-    ///   |
-    ///   |             2
-    /// 3 +------------+
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |       local
-    ///   +------------+-----> X-Axis
-    ///  0-Origin       1
-    member inline r.Pt3 = r.Origin  + r.Yaxis
-
-    /// Returns a 3D line from point 0 to 1 of the 2D rectangle.
-    ///
-    ///   local
-    ///   Y-Axis
-    ///   ^
-    ///   |
-    ///   |             2
-    /// 3 +------------+
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |       local
-    ///   +------------+-----> X-Axis
-    ///  0-Origin       1
-    member inline r.Edge01 = Line3D (r.Origin, r.Origin + r.Xaxis)
-
-    /// Returns a 3D line from point 1 to 2 of the 2D rectangle.
-    ///
-    ///   local
-    ///   Y-Axis
-    ///   ^
-    ///   |
-    ///   |             2
-    /// 3 +------------+
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |       local
-    ///   +------------+-----> X-Axis
-    ///  0-Origin       1
-    member inline r.Edge12 =
-        let s = r.Origin + r.Xaxis
-        Line3D (s, s + r.Yaxis)
-
-
-
-    /// Returns a 3D line from point 2 to 3 of the 2D rectangle.
-    ///
-    ///   local
-    ///   Y-Axis
-    ///   ^
-    ///   |
-    ///   |             2
-    /// 3 +------------+
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |       local
-    ///   +------------+-----> X-Axis
-    ///  0-Origin       1
-    member inline r.Edge23 =
-        let p3 = r.Origin + r.Yaxis
-        Line3D (p3 + r.Xaxis, p3)
-
-
-    /// Returns a 3D line from point 3 to 0 of the 2D rectangle.
-    ///
-    ///   local
-    ///   Y-Axis
-    ///   ^
-    ///   |
-    ///   |             2
-    /// 3 +------------+
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |       local
-    ///   +------------+-----> X-Axis
-    ///  0-Origin       1
-    member inline r.Edge30 = Line3D (r.Origin + r.Yaxis, r.Origin)
-
-    /// Returns the local X side as the 2D line from point 0 to 1 of the 2D rectangle.
-    ///
-    ///   local
-    ///   Y-Axis
-    ///   ^
-    ///   |
-    ///   |             2
-    /// 3 +------------+
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |       local
-    ///   +------------+-----> X-Axis
-    ///  0-Origin       1
-    member inline r.EdgeX = r.Edge01
-
-    /// Returns the local Y side as 3D line from point 0 to 3 of the 2D rectangle.
-    /// This is the reverse of Edge30.
-    ///
-    ///   local
-    ///   Y-Axis
-    ///   ^
-    ///   |
-    ///   |             2
-    /// 3 +------------+
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |       local
-    ///   +------------+-----> X-Axis
-    ///  0-Origin       1
-    member inline r.EdgeY = Line3D (r.Origin, r.Origin + r.Yaxis)
-
-    /// Returns the diagonal 3D line from point 0 to 2 of the 2D rectangle.
-    ///
-    ///   local
-    ///   Y-Axis
-    ///   ^
-    ///   |
-    ///   |             2
-    /// 3 +------------+
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |       local
-    ///   +------------+-----> X-Axis
-    ///  0-Origin       1
-    member inline r.DiagonalLine = Line3D (r.Origin, r.Origin + r.Yaxis + r.Xaxis)
 
     /// Creates a unitized version of the local X-Axis.
     member inline r.XaxisUnit : UnitVec =
@@ -382,175 +133,6 @@ type Rect3D =
     /// Returns the center of the 3D-rectangle.
     member inline r.Center = r.Origin + r.Xaxis*0.5 + r.Yaxis*0.5
 
-    /// Returns the Rectangle flipped. Or rotated 180 around its diagonal from point 1 to 3.
-    /// The normal of the rectangle gets flipped.
-    /// Origin will be at point 2, X-axis points down to to point 1, Y-axis points left to point 3.
-    ///
-    ///   local
-    ///   Y-Axis
-    ///   ^
-    ///   |
-    ///   |             2
-    /// 3 +------------+
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |       local
-    ///   +------------+-----> X-Axis
-    ///  0-Origin       1
-    member r.Flipped = Rect3D(r.Origin + r.Xaxis + r.Yaxis, -r.Yaxis, -r.Xaxis)
-
-    /// Returns the same rectangle with a new orientation rotated by 90 degrees clockwise around its center.
-    /// This only changes the internal representation of the rectangle, the appearance is not changed.
-    /// Origin will be at point 3, X-axis to to point 0, Y-axis to point 2.
-    ///   local
-    ///   Y-Axis
-    ///   ^
-    ///   |
-    ///   |             2
-    /// 3 +------------+
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |       local
-    ///   +------------+-----> X-Axis
-    ///  0-Origin       1
-    member r.RotateOrientation90CW = Rect3D(r.Origin + r.Yaxis, -r.Yaxis, r.Xaxis)
-
-
-    /// Returns the Rectangle rotated 180 degrees around its center.
-    /// Returns the same rectangle with a new orientation rotated by 180 degrees around its center.
-    /// This only changes the internal representation of the rectangle, the appearance is not changed.
-    /// Origin will be at point 2, X-axis to to point 3, Y-axis to point 1.
-    ///   local
-    ///   Y-Axis
-    ///   ^
-    ///   |
-    ///   |             2
-    /// 3 +------------+
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |       local
-    ///   +------------+-----> X-Axis
-    ///  0-Origin       1
-    member r.RotateOrientation180 = Rect3D(r.Origin + r.Yaxis + r.Xaxis, -r.Xaxis, -r.Yaxis)
-
-    /// Returns the same rectangle with a new orientation rotated by 90 degrees counter clockwise around its center.
-    /// This only changes the internal representation of the rectangle, the appearance is not changed.
-    /// Origin will be at point 1, X-axis to to point 2, Y-axis to point 0.
-    ///   local
-    ///   Y-Axis
-    ///   ^
-    ///   |
-    ///   |             2
-    /// 3 +------------+
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |       local
-    ///   +------------+-----> X-Axis
-    ///  0-Origin       1
-    member r.RotateOrientation90CCW = Rect3D(r.Origin + r.Xaxis, r.Yaxis, -r.Xaxis)
-
-
-    /// Returns the 4 corners of the 3D-rectangle in Counter-Clockwise order, starting at Origin.
-    /// Returns an array of 4 Points: point 0 then 1, 2 and 3.
-    ///
-    ///   local
-    ///   Y-Axis
-    ///   ^
-    ///   |
-    ///   |             2
-    /// 3 +------------+
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |       local
-    ///   +------------+-----> X-Axis
-    ///  0-Origin       1
-    member r.Points :Pnt[] =
-        let p0 = r.Origin
-        let p1 = p0 + r.Xaxis
-        [| p0  ; p1 ; p1 + r.Yaxis; p0 + r.Yaxis|]
-
-    /// Returns the 4 corners of the 3D-rectangle als closed loop in Counter-Clockwise order, starting at Origin.
-    /// First and last point are the same.
-    /// Returns an array of 5 Points: point 0 then 1, 2, 3 and again 0.
-    ///
-    ///   local
-    ///   Y-Axis
-    ///   ^
-    ///   |
-    ///   |             2
-    /// 3 +------------+
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |       local
-    ///   +------------+-----> X-Axis
-    ///  0-Origin       1
-    member r.PointsLooped :Pnt[] =
-        let p0 = r.Origin
-        let p1 = p0 + r.Xaxis
-        [| p0  ; p1 ; p1 + r.Yaxis; p0 + r.Yaxis; p0|]
-
-    /// Returns the 4 Edges of the 3D-rectangle in Counter-Clockwise order, starting at Origin.
-    /// Returns an array of 4 Lines: from point 0 to 1, 1 to 2 to 3 and 3 to 0.
-    ///
-    ///   local
-    ///   Y-Axis
-    ///   ^
-    ///   |
-    ///   |             2
-    /// 3 +------------+
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |       local
-    ///   +------------+-----> X-Axis
-    ///  0-Origin       1
-    member r.Edges :Line3D[] =
-        let p0 = r.Origin
-        let p1 = p0 + r.Xaxis
-        let p2 = p1 + r.Yaxis
-        let p3 = p0 + r.Yaxis
-        [| Line3D(p0, p1); Line3D(p1, p2); Line3D(p2, p3); Line3D(p3, p0)|]
-
-    /// Returns one of the 4 Edges as 3D Line:
-    /// Edge 0: from point  0 to 1
-    /// Edge 1: from point  1 to 2
-    /// Edge 2: from point  2 to 3
-    /// Edge 3: from point  3 to 0
-    ///
-    ///   local
-    ///   Y-Axis
-    ///   ^
-    ///   |
-    ///   |             2
-    /// 3 +------------+
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |       local
-    ///   +------------+-----> X-Axis
-    ///  0-Origin       1
-    member r.GetEdge i =
-        match i with
-        | 0 -> Line3D(r.Origin, r.Origin + r.Xaxis)
-        | 1 -> Line3D(r.Origin + r.Xaxis, r.Origin + r.Xaxis + r.Yaxis)
-        | 2 -> Line3D(r.Origin + r.Xaxis + r.Yaxis, r.Origin + r.Yaxis)
-        | 3 -> Line3D(r.Origin + r.Yaxis, r.Origin)
-        | _ -> EuclidException.Raisef "Euclid.Rect3D.GetEdge: index %i out of range 0..3" i
-
 
     /// Evaluate a X and Y parameter of the 3D-rectangle.
     ///  0.0, 0.0 returns the Origin.
@@ -573,8 +155,67 @@ type Rect3D =
     /// Calculates the squared area of the 3D-rectangle.
     /// by using the squared lengths of the X and Y axis.
     /// This is a bit faster than calculating the area and good enough for relative comparisons or sorting by size.
+    /// r.Xaxis.LengthSq * r.Yaxis.LengthSq
+    [<Obsolete("this does not scale proportionally, use .Area")>]
     member inline r.AreaSq =
         r.Xaxis.LengthSq * r.Yaxis.LengthSq
+
+
+    /// Returns the longest edge of the Rect3D.
+    member inline b.LongestEdge =
+        let x = b.Xaxis.LengthSq
+        let y = b.Yaxis.LengthSq
+        sqrt  (max x y)
+
+    /// Returns the shortest edge of the Rect3D.
+    member inline b.ShortestEdge =
+        let x = b.Xaxis.LengthSq
+        let y = b.Yaxis.LengthSq
+        sqrt  (min x y)
+
+    /// Returns the square of longest edge of the Rect3D.
+    member inline b.LongestEdgeSq =
+        let x = b.Xaxis.LengthSq
+        let y = b.Yaxis.LengthSq
+        max x y
+
+    /// Returns the square of longest shortest edge of the Rect3D.
+    member inline b.ShortestEdgeSq =
+        let x = b.Xaxis.LengthSq
+        let y = b.Yaxis.LengthSq
+        min x y
+
+    /// Tests if all sides are smaller than the zeroLength tolerance.
+    /// This is the same as IsPoint.
+    member inline b.IsZero =
+        isTooTinySq b.Xaxis.LengthSq &&
+        isTooTinySq b.Yaxis.LengthSq
+
+    /// Tests if all sides are smaller than the zeroLength tolerance.
+    /// This is the same as IsZero.
+    member inline b.IsPoint =
+        isTooTinySq b.Xaxis.LengthSq &&
+        isTooTinySq b.Yaxis.LengthSq
+
+    /// Counts the amount of sides that are smaller than the zeroLength tolerance.
+    /// This is 0, 1, 2 .
+    member inline b.CountZeroSides =
+        countTooTinySq    b.Xaxis.LengthSq
+        +  countTooTinySq b.Yaxis.LengthSq
+
+    /// Tests if two of the X and Y axis is smaller than the zeroLength tolerance.
+    member inline b.IsLine =
+        b.CountZeroSides = 1
+
+    /// Tests if no sides of the X and Y axis is smaller than the zeroLength tolerance.
+    /// Same as .HasVolume
+    member inline b.IsValid =
+        b.CountZeroSides = 0
+
+    /// Tests if none of the X and Y axis is smaller than the zeroLength tolerance.
+    /// Same as .IsValid
+    member inline b.HasVolume =
+        b.CountZeroSides = 0
 
     /// Gets the Plane that this 3D-rectangle is based on.
     member inline r.Plane =
@@ -952,7 +593,7 @@ type Rect3D =
     static member private failOffsetEdge(offStart, offEnd, len, edgeIdx, d) =
         EuclidException.Raise $"Euclid.Rect3D.offsetEdge: the 2D Rectangle is too small to offsetEdge by {d} at edgeIdx {edgeIdx}. offStart: {offStart}, offEnd: {offEnd}, Length: {len}"
 
-    ///<summary>Offsets a local Rect3D at one of the four corners.</summary>
+    ///<summary>Offsets a local Rect3D at one of the four edges.</summary>
     ///<param name="rect">The 3D-rectangle</param>
     ///<param name="edgeIdx">The Index of the edge to offset
     ///
@@ -1173,7 +814,7 @@ type Rect3D =
         let v = ln.Tangent
         let nenner = v *** z
         if isTooSmall (abs nenner) then
-            None
+            None //Line and Rect3D are parallel or line has zero length
         else
             let t = ((pl.Origin - ln.From) *** z) / nenner
             if t < 0.0 || t > 1.0 then
@@ -1213,3 +854,447 @@ type Rect3D =
     //         let l = Line3D( xpt.X    , xpt.Y    , xpt.Z,
     //                         xpt.X+v.X, xpt.Y+v.Y, xpt.Z+v.Z)
     //         Some <| l
+
+
+
+
+
+    /// Returns the corner diagonally opposite of corner from Origin (point 2).
+    ///
+    ///   local
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-Axis
+    ///  0-Origin       1
+    member inline r.FarCorner =
+        r.Origin + r.Xaxis + r.Yaxis
+
+    /// Returns the corner at end of X-axis (point 1).
+    ///
+    ///   local
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-Axis
+    ///  0-Origin       1
+    member inline r.XCorner =
+        r.Origin + r.Xaxis
+
+
+    /// Returns the corner at end of Y-axis (point 3).
+    ///
+    ///   local
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-Axis
+    ///  0-Origin       1
+    member inline r.YCorner =
+        r.Origin + r.Yaxis
+
+    /// Returns point 0 of the 3D-rectangle. Same as member rect.Origin.
+    ///
+    ///   local
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-Axis
+    ///  0-Origin       1
+    member inline r.Pt0 =
+        r.Origin
+
+
+    /// Returns point 1 of the 3D-rectangle.
+    ///
+    ///   local
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-Axis
+    ///  0-Origin       1
+    member inline r.Pt1 =
+        r.Origin + r.Xaxis
+
+
+    /// Returns point 2 of the 3D-rectangle. Same as rect.FarCorner.
+    ///
+    ///   local
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-Axis
+    ///  0-Origin       1
+    member inline r.Pt2 =
+        r.Origin + r.Xaxis + r.Yaxis
+
+    /// Returns point 3 of the 3D-rectangle.
+    ///
+    ///   local
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-Axis
+    ///  0-Origin       1
+    member inline r.Pt3 =
+        r.Origin  + r.Yaxis
+
+    /// Returns a 3D line from point 0 to 1 of the 2D rectangle.
+    ///
+    ///   local
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-Axis
+    ///  0-Origin       1
+    member inline r.Edge01 =
+        Line3D (r.Origin, r.Origin + r.Xaxis)
+
+    /// Returns a 3D line from point 1 to 2 of the 2D rectangle.
+    ///
+    ///   local
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-Axis
+    ///  0-Origin       1
+    member inline r.Edge12 =
+        let s = r.Origin + r.Xaxis
+        Line3D (s, s + r.Yaxis)
+
+
+
+    /// Returns a 3D line from point 2 to 3 of the 2D rectangle.
+    ///
+    ///   local
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-Axis
+    ///  0-Origin       1
+    member inline r.Edge23 =
+        let p3 = r.Origin + r.Yaxis
+        Line3D (p3 + r.Xaxis, p3)
+
+
+    /// Returns a 3D line from point 3 to 0 of the 2D rectangle.
+    ///
+    ///   local
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-Axis
+    ///  0-Origin       1
+    member inline r.Edge30 =
+        Line3D (r.Origin + r.Yaxis, r.Origin)
+
+    /// Returns the local X side as the 2D line from point 0 to 1 of the 2D rectangle.
+    ///
+    ///   local
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-Axis
+    ///  0-Origin       1
+    member inline r.EdgeX =
+        r.Edge01
+
+    /// Returns the local Y side as 3D line from point 0 to 3 of the 2D rectangle.
+    /// This is the reverse of Edge30.
+    ///
+    ///   local
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-Axis
+    ///  0-Origin       1
+    member inline r.EdgeY =
+        Line3D (r.Origin, r.Origin + r.Yaxis)
+
+    /// Returns the diagonal 3D line from point 0 to 2 of the 2D rectangle.
+    ///
+    ///   local
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-Axis
+    ///  0-Origin       1
+    member inline r.DiagonalLine =
+        Line3D (r.Origin, r.Origin + r.Yaxis + r.Xaxis)
+
+
+
+    /// Returns the Rectangle flipped. Or rotated 180 around its diagonal from point 1 to 3.
+    /// The normal of the rectangle gets flipped.
+    /// Origin will be at point 2, X-axis points down to to point 1, Y-axis points left to point 3.
+    ///
+    ///   local
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-Axis
+    ///  0-Origin       1
+    member r.Flipped =
+        Rect3D(r.Origin + r.Xaxis + r.Yaxis, -r.Yaxis, -r.Xaxis)
+
+    /// Returns the same rectangle with a new orientation rotated by 90 degrees clockwise around its center.
+    /// This only changes the internal representation of the rectangle, the appearance is not changed.
+    /// Origin will be at point 3, X-axis to to point 0, Y-axis to point 2.
+    ///   local
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-Axis
+    ///  0-Origin       1
+    member r.RotateOrientation90CW =
+        Rect3D(r.Origin + r.Yaxis, -r.Yaxis, r.Xaxis)
+
+
+    /// Returns the Rectangle rotated 180 degrees around its center.
+    /// Returns the same rectangle with a new orientation rotated by 180 degrees around its center.
+    /// This only changes the internal representation of the rectangle, the appearance is not changed.
+    /// Origin will be at point 2, X-axis to to point 3, Y-axis to point 1.
+    ///   local
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-Axis
+    ///  0-Origin       1
+    member r.RotateOrientation180 =
+        Rect3D(r.Origin + r.Yaxis + r.Xaxis, -r.Xaxis, -r.Yaxis)
+
+    /// Returns the same rectangle with a new orientation rotated by 90 degrees counter clockwise around its center.
+    /// This only changes the internal representation of the rectangle, the appearance is not changed.
+    /// Origin will be at point 1, X-axis to to point 2, Y-axis to point 0.
+    ///   local
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-Axis
+    ///  0-Origin       1
+    member r.RotateOrientation90CCW =
+        Rect3D(r.Origin + r.Xaxis, r.Yaxis, -r.Xaxis)
+
+
+    /// Returns the 4 corners of the 3D-rectangle in Counter-Clockwise order, starting at Origin.
+    /// Returns an array of 4 Points: point 0 then 1, 2 and 3.
+    ///
+    ///   local
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-Axis
+    ///  0-Origin       1
+    member r.Points :Pnt[] =
+        let p0 = r.Origin
+        let p1 = p0 + r.Xaxis
+        [| p0  ; p1 ; p1 + r.Yaxis; p0 + r.Yaxis|]
+
+    /// Returns the 4 corners of the 3D-rectangle als closed loop in Counter-Clockwise order, starting at Origin.
+    /// First and last point are the same.
+    /// Returns an array of 5 Points: point 0 then 1, 2, 3 and again 0.
+    ///
+    ///   local
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-Axis
+    ///  0-Origin       1
+    member r.PointsLooped :Pnt[] =
+        let p0 = r.Origin
+        let p1 = p0 + r.Xaxis
+        [| p0  ; p1 ; p1 + r.Yaxis; p0 + r.Yaxis; p0|]
+
+    /// Returns the 4 Edges of the 3D-rectangle in Counter-Clockwise order, starting at Origin.
+    /// Returns an array of 4 Lines: from point
+    /// 0 to 1,
+    /// 1 to 2,
+    /// 2 to 3,
+    /// 3 to 0.
+    ///
+    ///   local
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-Axis
+    ///  0-Origin       1
+    member r.Edges :Line3D[] =
+        let p0 = r.Origin
+        let p1 = p0 + r.Xaxis
+        let p2 = p1 + r.Yaxis
+        let p3 = p0 + r.Yaxis
+        [| Line3D(p0, p1); Line3D(p1, p2); Line3D(p2, p3); Line3D(p3, p0)|]
+
+    /// Returns one of the 4 Edges as 3D Line:
+    /// Edge 0: from point  0 to 1
+    /// Edge 1: from point  1 to 2
+    /// Edge 2: from point  2 to 3
+    /// Edge 3: from point  3 to 0
+    ///
+    ///   local
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-Axis
+    ///  0-Origin       1
+    member r.GetEdge i =
+        match i with
+        | 0 -> Line3D(r.Origin, r.Origin + r.Xaxis)
+        | 1 -> Line3D(r.Origin + r.Xaxis, r.Origin + r.Xaxis + r.Yaxis)
+        | 2 -> Line3D(r.Origin + r.Xaxis + r.Yaxis, r.Origin + r.Yaxis)
+        | 3 -> Line3D(r.Origin + r.Yaxis, r.Origin)
+        | _ -> EuclidException.Raisef "Euclid.Rect3D.GetEdge: index %i out of range 0..3" i

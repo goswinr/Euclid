@@ -52,33 +52,46 @@ module UtilEuclid =
     [<Literal>]
     let private zeroLengthTolSquared = zeroLengthTolerance * zeroLengthTolerance
 
-    /// Returns true for values smaller than 1e-6 and for NaN
+    /// Returns true for values smaller than 1e-6 and for NaN.
     let inline isTooSmall x =
         // use 'not' to catch a NaN too ( a Cross Product of infinit long vectors can give a NaN length)
         not ( x > 1e-6 )
 
-    /// Returns true for values smaller than 1e-12 (square of 1e-6)  and for NaN
+    /// Returns true for values smaller than 1e-12 (square of 1e-6)  and for NaN.
     let inline isTooSmallSq x =
         // use 'not' to catch a NaN too ( a Cross Product of infinit long vectors can give a NaN length)
         not ( x > 1e-12 )
 
-    /// Returns true for values smaller than 1e-12 and for NaN
-    /// uses UtilEuclid.zeroLengthTolerance
+    /// Returns true for values smaller than 1e-12 and for NaN.
+    /// Uses UtilEuclid.zeroLengthTolerance
     let inline isTooTiny x =
         // use 'not' to catch a NaN too ( a Cross Product of infinit long vectors can give a NaN length)
         not ( x > zeroLengthTolerance )
 
-    /// Returns true for values smaller than 1e-24 (square of 1e-12) and for NaN
-    /// uses UtilEuclid.zeroLengthTolSquared
+    /// Returns 0 for values smaller than 1e-12 and for NaN.
+    /// Otherwise returns 1
+    /// Uses UtilEuclid.zeroLengthTolerance
+    let inline countTooTiny x =
+        // use 'not' to catch a NaN too ( a Cross Product of infinit long vectors can give a NaN length)
+        if x > zeroLengthTolerance then 1 else 0
+
+    /// Returns true for values smaller than 1e-24 (square of 1e-12) and for NaN.
+    /// Uses UtilEuclid.zeroLengthTolSquared
     let inline isTooTinySq x =
         // use 'not' to catch a NaN too ( a Cross Product of infinit long vectors can give a NaN length)
         not ( x > zeroLengthTolSquared)
 
-    /// Returns true for negative number and for NaN
+    /// Returns 0 for values smaller than 1e-24 (square of 1e-12) and for NaN.
+    /// Otherwise returns 1
+    /// Uses UtilEuclid.zeroLengthTolSquared
+    let inline countTooTinySq x =
+        // use 'not' to catch a NaN too ( a Cross Product of infinit long vectors can give a NaN length)
+        if x > zeroLengthTolSquared then 1 else 0
+
+    /// Returns true for negative number and for NaN.
     /// 0.0  and -0.0 is not negative.
     let inline isNegative x =
         not (x >= 0.0)
-
 
     /// Math.PI * 2.0
     /// This is equal to 360 degrees in radians.

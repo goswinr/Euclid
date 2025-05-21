@@ -14,7 +14,7 @@ open System.Runtime.Serialization // for serialization of struct fields only but
 
 #nowarn "44" // for internal inline constructors
 
-/// An immutable Parametrized Plane or Frame with X, Y and Z Direction.
+/// An immutable Parametrized Plane or Frame with unitized  X, Y and Z Direction.
 /// This struct is called 'PPlane' , the other plane 'NPlane' refers to an un-oriented plane consisting only of a Origin and a Normal.
 /// Note: Never use the struct default constructor PPlane() as it will create an invalid zero length PPlane.
 /// Use PPlane.create or PPlane.createUnchecked instead.

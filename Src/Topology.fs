@@ -26,7 +26,7 @@ module Topology  =
 
 
     /// Like findIndexBy. But starting to search only from a given index.
-    /// returns -1 if not found
+    /// Returns -1 if not found
     let inline private findIndexByFrom (predicate: 'T -> bool)  fromIdx (xs:ResizeArray<'T>) : int =
         let mutable i = fromIdx
         let mutable found = -1

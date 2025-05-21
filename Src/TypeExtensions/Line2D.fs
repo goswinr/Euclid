@@ -53,7 +53,14 @@ module AutoOpenLine2D =
     /// Return a new line from evaluated points.
     /// Same as ln.Segment(start,ende).
     member inline ln.SubLine (start:float, ende:float) =
-        ln.Segment(start, ende)
+        let fromX = ln.FromX
+        let fromY = ln.FromY
+        let x = ln.ToX-fromX
+        let y = ln.ToY-fromY
+        Line2D( fromX + x * start,
+                fromY + y * start,
+                fromX + x * ende ,
+                fromY + y * ende )
 
     /// Evaluate line at a given parameters (parameters 0.0 to 1.0 are on the line),
     /// Return a new line from evaluated points.
