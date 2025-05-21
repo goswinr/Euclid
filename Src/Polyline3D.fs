@@ -703,3 +703,27 @@ type Polyline3D =
     // the above two methods do not fail anymore with fable
     // see https://github.com/fable-compiler/Fable/issues/3326
 
+
+    /// Returns a new closed Polyline3D.
+    /// If the first and last point are within 1e-6 of each other, the last point is set equal to the first point.
+    /// Otherwise one point is added.
+    static member inline close (pl:Polyline3D) =
+        if pl.Points.Count < 2 then EuclidException.Raisef "Euclid.Polyline3D.close failed on Polyline3D with less than 2 points %O" pl
+        let ps = pl.Points
+        let np = Polyline3D.createEmpty (ps.Count + 1)
+        for p in ps do np.Points.Add(p)
+        if Pnt.distanceSq ps.First ps.Last < 1e-12 then
+            np.Points.[np.Points.Count-1] <- np.Points.First // set last point equal to first
+        else
+            np.Points.Add(np.Points.First)
+        np
+
+    /// Closes the Polyline3D in place by adding a point.
+    /// If the first and last point are within 1e-6 of each other, the last point is set equal to the first point instead.
+    static member inline closeInPlace (pl:Polyline3D) =
+        if pl.Points.Count < 2 then EuclidException.Raisef "Euclid.Polyline3D.closeInPlace failed on Polyline3D with less than 2 points %O" pl
+        let ps = pl.Points
+        if Pnt.distanceSq ps.First ps.Last < 1e-12 then
+            ps.[ps.Count-1] <- ps.First
+        else
+            ps.Add(ps.First)

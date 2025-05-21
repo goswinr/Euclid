@@ -700,3 +700,28 @@ type Polyline2D =
                             [<OPT;DEF(0.0)>] referenceOrient:float) : Polyline2D =
         Polyline2D.offset(polyLine, [|offsetDistance|], loop, referenceOrient, obliqueOffsets=false)
 
+
+
+    /// Returns a new closed Polyline2D.
+    /// If the first and last point are within 1e-6 of each other, the last point is set equal to the first point.
+    /// Otherwise one point is added.
+    static member inline close (pl:Polyline2D) =
+        if pl.Points.Count < 2 then EuclidException.Raisef "Euclid.Polyline2D.close failed on Polyline2D with less than 2 points %O" pl
+        let ps = pl.Points
+        let np = Polyline2D.createEmpty (ps.Count + 1)
+        if Pt.distanceSq ps.First ps.Last < 1e-12 then
+            ps.[ps.Count-1] <- ps.First // set last point equal to first
+        else
+            np.Points.Add(ps.First)
+        np
+
+
+    /// Closes the Polyline2D in place by adding a point.
+    /// If the first and last point are within 1e-6 of each other, the last point is set equal to the first point instead.
+    static member inline closeInPlace (pl:Polyline2D) =
+        if pl.Points.Count < 2 then EuclidException.Raisef "Euclid.Polyline2D.closeInPlace failed on Polyline2D with less than 2 points %O" pl
+        let ps = pl.Points
+        if Pt.distanceSq ps.First ps.Last < 1e-12 then
+            ps.[ps.Count-1] <- ps.First
+        else
+            ps.Add(ps.First)
