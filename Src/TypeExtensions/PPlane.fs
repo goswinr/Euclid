@@ -434,3 +434,11 @@ module AutoOpenPPlane =
             let o = pl.Origin
             let newOrigin = Pnt(o.X * factor, o.Y * factor, o.Z * factor)
             PPlane.createUnchecked(newOrigin, pl.Xaxis, pl.Yaxis, pl.Zaxis)
+
+        /// Move plane origin by vector.
+        static member inline translate (translation:Vec) (pl:PPlane) =
+            PPlane.createUnchecked(pl.Origin + translation, pl.Xaxis, pl.Yaxis, pl.Zaxis)
+
+        /// Move plane origin by vector. Same as translate.
+        static member inline move (translation:Vec) (pl:PPlane) =
+            PPlane.createUnchecked(pl.Origin + translation, pl.Xaxis, pl.Yaxis, pl.Zaxis)

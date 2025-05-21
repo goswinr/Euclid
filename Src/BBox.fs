@@ -390,6 +390,8 @@ type BBox =
     static member move (v:Vec) (b:BBox) =
         BBox(b.MinX+v.X, b.MinY+v.Y, b.MinZ+v.Z, b.MaxX+v.X, b.MaxY+v.Y, b.MaxZ+v.Z)
 
+    static member translate (v:Vec) (b:BBox) =
+        BBox(b.MinX+v.X, b.MinY+v.Y, b.MinZ+v.Z, b.MaxX+v.X, b.MaxY+v.Y, b.MaxZ+v.Z)
 
     /// Returns a new 3D-bounding-box moved in X-axis direction.
     static member moveX (translation:float) (b:BBox) =

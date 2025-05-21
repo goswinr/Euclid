@@ -201,6 +201,16 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
     static member inline scale (factor:float) (pl:NPlane) : NPlane =
         NPlane(pl.Origin * factor, pl.Normal)
 
+    /// Move plane origin by vector.
+    /// This is the same as NPlane.move.
+    static member inline translate (translation:Vec) (pl:NPlane) =
+        NPlane(pl.Origin + translation, pl.Normal)
+
+    /// Move plane origin by vector.
+    /// This is same as NPlane.translate.
+    static member inline move (translation:Vec) (pl:NPlane) =
+        NPlane(pl.Origin + translation, pl.Normal)
+
     (*
     static member fitFromConvexPts (pts:seq<Pnt>) =
         let cen = pts |> Seq.average

@@ -282,6 +282,13 @@ type Polyline2D =
         pl |> Polyline2D.map (Pt.moveY distance)
 
 
+    /// Scales the Polyline2D by a given factor.
+    /// Scale center is World Origin 0,0
+    /// Returns a new Polyline2D.
+    static member inline scale (factor:float) (pl:Polyline2D) : Polyline2D =
+        pl |> Polyline2D.map (fun pt -> pt * factor)
+
+
     /// Rotation a Polyline2D around Z-Axis.
     static member inline rotate (r:Rotation2D) (pl:Polyline2D) =
         pl |> Polyline2D.map (Pt.rotateBy r)
@@ -693,9 +700,3 @@ type Polyline2D =
                             [<OPT;DEF(0.0)>] referenceOrient:float) : Polyline2D =
         Polyline2D.offset(polyLine, [|offsetDistance|], loop, referenceOrient, obliqueOffsets=false)
 
-
-    /// Scales the Polyline2D by a given factor.
-    /// Scale center is World Origin 0,0
-    /// Returns a new Polyline2D.
-    static member inline scale (factor:float) (pl:Polyline2D) : Polyline2D =
-        pl |> Polyline2D.map (fun pt -> pt * factor)

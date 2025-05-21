@@ -466,7 +466,13 @@ type BRect =
         r.ExpandYaxis(startDist, endDist)
 
     /// Returns a new 2D-bounding-rectangle moved by a vector.
+    /// This is the same as translate.
     static member move (v:Vc) (r:BRect) =
+        BRect(r.MinX+v.X, r.MinY+v.Y, r.MaxX+v.X, r.MaxY+v.Y)
+
+    /// Returns a new 2D-bounding-rectangle moved by a vector.
+    /// This is the same as move.
+    static member translate (v:Vc) (r:BRect) =
         BRect(r.MinX+v.X, r.MinY+v.Y, r.MaxX+v.X, r.MaxY+v.Y)
 
     /// Returns a new 2D-bounding-rectangle moved in X-axis direction.
@@ -595,3 +601,5 @@ type BRect =
                 r.MinY * factor,
                 r.MaxX * factor,
                 r.MaxY * factor)
+
+
