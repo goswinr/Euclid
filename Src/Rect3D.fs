@@ -833,7 +833,10 @@ type Rect3D =
                         Some <| xpt
 
 
-
+    /// Scales the 3D rectangle by a given factor.
+    /// Scale center is World Origin 0,0,0
+    static member inline scale (factor:float) (r:Rect3D) : Rect3D =
+        Rect3D(r.Origin * factor, r.Xaxis * factor, r.Yaxis * factor)
 
     // TODO find correct implementation
 

@@ -691,5 +691,13 @@ type Polyline3D =
         else                         Polyline3D.offset(polyLine, [offsetDistance], [normalDistance], loop, refNormal, false)
 
 
-// the above two methods do not fail anymore with fable
-// see https://github.com/fable-compiler/Fable/issues/3326
+    // the above two methods do not fail anymore with fable
+    // see https://github.com/fable-compiler/Fable/issues/3326
+
+
+
+    /// Scales the Polyline3D by a given factor.
+    /// Scale center is World Origin 0,0,0
+    /// Returns a new Polyline3D.
+    static member inline scale (factor:float) (pl:Polyline3D) : Polyline3D =
+        pl |> Polyline3D.map (fun pt -> pt * factor)

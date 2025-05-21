@@ -196,6 +196,11 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
     static member inline distToPt (pt:Pnt) (pl:NPlane) =
         pl.DistanceToPt pt
 
+
+    /// Scales the plane's origin by a given factor from the world origin. The normal remains unchanged.
+    static member inline scale (factor:float) (pl:NPlane) : NPlane =
+        NPlane(pl.Origin * factor, pl.Normal)
+
     (*
     static member fitFromConvexPts (pts:seq<Pnt>) =
         let cen = pts |> Seq.average

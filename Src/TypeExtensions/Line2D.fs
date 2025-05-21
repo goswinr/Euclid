@@ -1713,4 +1713,12 @@ module AutoOpenLine2D =
         else
             0
 
+    /// Scale the 2D line by a given factor.
+    /// Scale center is World Origin 0,0,0
+    static member inline scale (factor:float) (ln:Line2D) : Line2D =
+        Line2D(ln.FromX * factor,
+               ln.FromY * factor,
+               ln.ToX * factor,
+               ln.ToY * factor)
+
 

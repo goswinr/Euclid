@@ -692,3 +692,10 @@ type Polyline2D =
                             [<OPT;DEF(false)>]loop:bool,
                             [<OPT;DEF(0.0)>] referenceOrient:float) : Polyline2D =
         Polyline2D.offset(polyLine, [|offsetDistance|], loop, referenceOrient, obliqueOffsets=false)
+
+
+    /// Scales the Polyline2D by a given factor.
+    /// Scale center is World Origin 0,0
+    /// Returns a new Polyline2D.
+    static member inline scale (factor:float) (pl:Polyline2D) : Polyline2D =
+        pl |> Polyline2D.map (fun pt -> pt * factor)

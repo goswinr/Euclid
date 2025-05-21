@@ -442,6 +442,16 @@ type Box =
         let z = Vec.transformRigid m b.Zaxis
         Box(o, x, y, z)
 
+    /// Scales the 3D box by a given factor.
+    /// Scale center is World Origin 0,0,0
+    static member inline scale (factor:float) (b:Box) : Box =
+        Box(
+            b.Origin * factor,
+            b.Xaxis * factor,
+            b.Yaxis * factor,
+            b.Zaxis * factor
+        )
+
 
     // static member intersectPlane (pl:NPlane) (b:Box) =
     //     let x = b.Xaxis

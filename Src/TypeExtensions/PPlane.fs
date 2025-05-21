@@ -426,3 +426,11 @@ module AutoOpenPPlane =
             else
                 let t = ((pl.Origin - ln.From) *** pl.Zaxis) / nenner // if nenner is 0.0 then 't' is Infinity
                 0. <= t && t <= 1.
+
+
+        /// Scales the PPlane's origin position by a given factor from the world origin (0,0,0).
+        /// The axes directions remain unchanged.
+        static member inline scale (factor:float) (pl:PPlane) : PPlane =
+            let o = pl.Origin
+            let newOrigin = Pnt(o.X * factor, o.Y * factor, o.Z * factor)
+            PPlane.createUnchecked(newOrigin, pl.Xaxis, pl.Yaxis, pl.Zaxis)

@@ -767,6 +767,15 @@ type Rect2D =
 
 
 
+    /// Scales the 2D rectangle by a given factor.
+    /// Scale center is World Origin 0,0
+    static member inline scale (factor:float) (r:Rect2D) : Rect2D =
+        Rect2D( r.Origin * factor,
+                r.Xaxis * factor,
+                r.Yaxis * factor)
+
+
+
     /// Returns the corner diagonally opposite of corner from Origin (point 2).
     ///
     ///   local

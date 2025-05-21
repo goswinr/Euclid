@@ -586,3 +586,12 @@ type BRect =
         let minY = min l.FromY l.ToY
         let maxY = max l.FromY l.ToY
         BRect(minX, minY, maxX, maxY)
+
+
+    /// Scales the 2D bounding rectangle by a given factor.
+    /// Scale center is World Origin 0,0
+    static member inline scale (factor:float) (r:BRect) : BRect =
+        BRect(  r.MinX * factor,
+                r.MinY * factor,
+                r.MaxX * factor,
+                r.MaxY * factor)

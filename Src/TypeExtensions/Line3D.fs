@@ -1940,3 +1940,12 @@ module AutoOpenLine3D =
             0
 
 
+    /// Scale the 3D line by a given factor.
+    /// Scale center is World Origin 0,0,0
+    static member inline scale (factor:float) (ln:Line3D) : Line3D =
+        Line3D(ln.FromX * factor,
+               ln.FromY * factor,
+               ln.FromZ * factor,
+               ln.ToX * factor,
+               ln.ToY * factor,
+               ln.ToZ * factor)

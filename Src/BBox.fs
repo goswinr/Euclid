@@ -842,4 +842,20 @@ type BBox =
     ///   |/              |/
     ///   +---------------+----> X-Axis (Width)
     ///   0 MinPt         1
-    member b.Edges = [| b.Edge01; b.Edge12; b.Edge32; b.Edge03; b.Edge04; b.Edge15; b.Edge26; b.Edge37; b.Edge45; b.Edge56; b.Edge76; b.Edge47 |]
+    member b.Edges =
+        [| b.Edge01; b.Edge12; b.Edge32; b.Edge03; // bottom face
+           b.Edge04; b.Edge15; b.Edge26; b.Edge37; // vertical edges
+           b.Edge45; b.Edge56; b.Edge76; b.Edge47 |] // top face
+
+
+    /// Scales the 3D bounding box by a given factor.
+    /// Scale center is World Origin 0,0,0
+    static member inline scale (factor:float) (b:BBox) : BBox =
+        BBox(
+            b.MinX * factor,
+            b.MinY * factor,
+            b.MinZ * factor,
+            b.MaxX * factor,
+            b.MaxY * factor,
+            b.MaxZ * factor
+        )
