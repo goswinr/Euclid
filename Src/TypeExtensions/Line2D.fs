@@ -1722,3 +1722,26 @@ module AutoOpenLine2D =
                ln.ToY * factor)
 
 
+    /// Project a line onto another line considered infinite in both directions.
+    static member projectOn (onToLine:Line2D) (lineToProject:Line2D) =
+        let osx = onToLine.FromX
+        let osy = onToLine.FromY
+        let ovx = onToLine.ToX - osx
+        let ovy = onToLine.ToY - osy
+        let lenSq = ovx*ovx + ovy*ovy
+        if UtilEuclid.isTooSmallSq(lenSq) then
+            EuclidException.Raise "Euclid.Line2D.projectOn failed on very short onToLine %O " onToLine
+        let s = // start parameter
+            let u = lineToProject.FromX - osx
+            let v = lineToProject.FromY - osy
+            let dot = ovx*u + ovy*v
+            dot / lenSq
+        let e = // end parameter
+            let u = lineToProject.ToX - osx
+            let v = lineToProject.ToY - osy
+            let dot = ovx*u + ovy*v
+            dot / lenSq
+        Line2D( osx + ovx * s,
+                osy + ovy * s,
+                osx + ovx * e,
+                osy + ovy * e )

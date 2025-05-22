@@ -484,9 +484,9 @@ module AutoOpenLine3D =
         let a = ln.Vector
         let b = other
         let sa = a.LengthSq
-        if isTooTinySq(sa) then EuclidException.Raisef "Euclid.Line2D.IsParallelTo: Line2D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
+        if isTooTinySq(sa) then EuclidException.Raisef "Euclid.Line3D.IsParallelTo: Line3D 'ln' is too short: %s. 'other':%s " a.AsString b.AsString
         let sb = b.LengthSq
-        if isTooTinySq(sb) then EuclidException.Raisef "Euclid.Line2D.IsParallelTo: Vec 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
+        if isTooTinySq(sb) then EuclidException.Raisef "Euclid.Line3D.IsParallelTo: Vec 'other' is too short: %s. 'ln':%s " b.AsString a.AsString
         let au = a * (1.0 / sqrt sa)
         let bu = b * (1.0 / sqrt sb)
         abs(bu *** au) > float minCosine
@@ -1949,3 +1949,35 @@ module AutoOpenLine3D =
                ln.ToX * factor,
                ln.ToY * factor,
                ln.ToZ * factor)
+
+
+    /// Project a line onto another line considered infinite in both directions.
+    static member  projectOn (onToLine:Line3D) (lineToProject:Line3D) =
+        let osx = onToLine.FromX
+        let osy = onToLine.FromY
+        let osz = onToLine.FromZ
+        let ovx = onToLine.ToX - osx
+        let ovy = onToLine.ToY - osy
+        let ovz = onToLine.ToZ - osz
+        let lenSq = ovx*ovx + ovy*ovy
+        if UtilEuclid.isTooSmallSq(lenSq) then
+            EuclidException.Raise "Euclid.Line3D.projectOn failed on very short onToLine %O " onToLine
+        let s = // start parameter
+            let u = lineToProject.FromX - osx
+            let v = lineToProject.FromY - osy
+            let w = lineToProject.FromZ - osz
+            let dot = ovx*u + ovy*v + ovz*w
+            dot / lenSq
+        let e = // end parameter
+            let u = lineToProject.ToX - osx
+            let v = lineToProject.ToY - osy
+            let w = lineToProject.ToZ - osz
+            let dot = ovx*u + ovy*v + ovz*w
+            dot / lenSq
+        Line3D( osx + ovx * s,
+                osy + ovy * s,
+                osz + ovz * s,
+                osx + ovx * e,
+                osy + ovy * e,
+                osz + ovz * e
+                )
