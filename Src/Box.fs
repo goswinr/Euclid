@@ -342,6 +342,36 @@ type Box =
         let z = b.Zaxis * (distZ / b.SizeZ)
         Box(b.Origin-x-y-z, b.Xaxis+x*2., b.Yaxis+y*2., b.Zaxis+z*2.)
 
+
+    /// Returns the 3D box expanded by a relative factor on all six sides.
+    /// Values between 0.0 and 1.0 shrink the box.
+    /// Values larger than 1.0 expand the box.
+    /// Does check for underflow if factor is negative and raises EuclidException.
+    static member expandRel factor (b:Box) =
+        if factor < 0.0 then
+            EuclidException.Raise $"Euclid.Box.expandRel: a negative factor {factor} is not allowed for expanding the 3D box {b.AsString}"
+        let x = b.Xaxis * factor
+        let y = b.Yaxis * factor
+        let z = b.Zaxis * factor
+        Box(b.Center - x*0.5 - y*0.5 - z*0.5, x, y, z)
+
+    /// Returns the 3D box expanded by a relative factor on all six sides, separately for X, Y, Z.
+    /// Values between 0.0 and 1.0 shrink the box.
+    /// Values larger than 1.0 expand the box.
+    /// Does check for underflow if any factor is negative and raises EuclidException.
+    static member expandRelXYZ factorX factorY factorZ (b:Box) =
+        if factorX < 0.0 then
+            EuclidException.Raise $"Euclid.Box.expandRelXYZ: a negative factorX {factorX} is not allowed for expanding the 3D box {b.AsString}"
+        if factorY < 0.0 then
+            EuclidException.Raise $"Euclid.Box.expandRelXYZ: a negative factorY {factorY} is not allowed for expanding the 3D box {b.AsString}"
+        if factorZ < 0.0 then
+            EuclidException.Raise $"Euclid.Box.expandRelXYZ: a negative factorZ {factorZ} is not allowed for expanding the 3D box {b.AsString}"
+        let x = b.Xaxis * factorX
+        let y = b.Yaxis * factorY
+        let z = b.Zaxis * factorZ
+        Box(b.Center - x*0.5 - y*0.5 - z*0.5, x, y, z)
+
+
     /// Creates a 3D box from PPlane and x, y and Z size.
     static member createFromPlane (pl:PPlane, x, y, z) =
         Box(pl.Origin, pl.Xaxis*x, pl.Yaxis*y, pl.Zaxis*z)

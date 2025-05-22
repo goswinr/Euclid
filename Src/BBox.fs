@@ -116,7 +116,7 @@ type BBox =
     /// Returns a 3D-bounding-box expanded by a distance for X, Y and Z-axis each.
     /// If expansion is negative it shrinks the Box. It also makes sure that there is no underflow.
     /// When the negative expansion is bigger than the size, Min and Max values will be both in the middle from where they were before.
-    member inline b.ExpandSave(xDist, yDist, zDist) : BBox =
+    member inline b.ExpandSafe(xDist, yDist, zDist) : BBox =
         let mutable minXCh = b.MinX - xDist
         let mutable maxXCh = b.MaxX + xDist
         if minXCh > maxXCh then  // Overflow! Set both to the same mid point
@@ -142,8 +142,19 @@ type BBox =
     /// Returns a 3D-bounding-box expanded by a distance.
     /// If expansion is negative it shrinks the Box. It also makes sure that there is no underflow.
     /// When the negative expansion is bigger than the size, Min and Max values will be both in the middle from where they were before.
+    member inline b.ExpandSafe(dist) : BBox =
+        b.ExpandSafe(dist, dist, dist)
+
+
+    [<Obsolete("typo, use ExpandSafe instead")>]
+    member inline b.ExpandSave(xDist, yDist, zDist) : BBox =
+        b.ExpandSafe(xDist, yDist, zDist)
+
+
+    [<Obsolete("typo, use ExpandSafe instead")>]
     member inline b.ExpandSave(dist) : BBox =
-        b.ExpandSave(dist, dist, dist)
+        b.ExpandSafe(dist, dist, dist)
+
 
     /// Returns a 3D-bounding-box expanded only in X direction by different distance for start(minX) and end (maxX).
     /// Does check for underflow if distance is negative and raises EuclidException.
@@ -366,15 +377,18 @@ type BBox =
         b.Expand dist
 
     /// Returns a 3D-bounding-box expanded by distance.
-    /// Does check for underflow if distance is negative and raises EuclidException.
+     /// When the negative expansion is bigger than the size, Min and Max values will be both in the middle from where they were before.
+    static member expandSafe dist (b:BBox) =
+        b.ExpandSafe dist
+
+    [<Obsolete("typo, use expandSafe instead")>]
     static member expandSave dist (b:BBox) =
-        b.Expand dist
+        b.ExpandSafe dist
 
     /// Returns a 3D-bounding-box expanded only in X direction by different distance for start(minX) and end (maxX).
     /// Does check for underflow if distance is negative and raises EuclidException.
     static member expandXaxis startDist endDist (b:BBox) =
         b.ExpandXaxis(startDist, endDist)
-
 
     /// Returns a 3D-bounding-box expanded only in Y direction by different distance for start(minY) and end (maxY).
     /// Does check for underflow if distance is negative and raises EuclidException.
@@ -385,6 +399,36 @@ type BBox =
     /// Does check for underflow if distance is negative and raises EuclidException.
     static member expandZaxis startDist endDist (b:BBox) =
         b.ExpandZaxis(startDist, endDist)
+
+    /// Returns the 3D bounding box expanded by a relative factor on all six sides.
+    /// Values between 0.0 and 1.0 shrink the box.
+    /// Values larger than 1.0 expand the box.
+    /// Does check for underflow if factor is negative and raises EuclidException.
+    static member expandRel factor (b:BBox) =
+        if factor < 0.0 then
+            EuclidException.Raisef "Euclid.BBox.expandRel: a negative factor %g is not allowed for expanding the 3D bounding box %s" factor b.AsString
+        let center = b.Center
+        let sizeX = b.SizeX * factor
+        let sizeY = b.SizeY * factor
+        let sizeZ = b.SizeZ * factor
+        BBox.createFromCenter(center, sizeX, sizeY, sizeZ)
+
+    /// Returns the 3D bounding box expanded by a relative factor on all six sides, separately for X, Y, Z.
+    /// Values between 0.0 and 1.0 shrink the box.
+    /// Values larger than 1.0 expand the box.
+    /// Does check for underflow if any factor is negative and raises EuclidException.
+    static member expandRelXYZ factorX factorY factorZ (b:BBox) =
+        if factorX < 0.0 then
+            EuclidException.Raisef "Euclid.BBox.expandRelXYZ: a negative factorX %g is not allowed for expanding the 3D bounding box %s" factorX b.AsString
+        if factorY < 0.0 then
+            EuclidException.Raisef "Euclid.BBox.expandRelXYZ: a negative factorY %g is not allowed for expanding the 3D bounding box %s" factorY b.AsString
+        if factorZ < 0.0 then
+            EuclidException.Raisef "Euclid.BBox.expandRelXYZ: a negative factorZ %g is not allowed for expanding the 3D bounding box %s" factorZ b.AsString
+        let center = b.Center
+        let sizeX = b.SizeX * factorX
+        let sizeY = b.SizeY * factorY
+        let sizeZ = b.SizeZ * factorZ
+        BBox.createFromCenter(center, sizeX, sizeY, sizeZ)
 
     /// Returns a 3D-bounding-box moved by a vector.
     static member move (v:Vec) (b:BBox) =

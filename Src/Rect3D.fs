@@ -309,9 +309,38 @@ type Rect3D =
         let siY = r.SizeY
         if siX <= distX * -2.0 then EuclidException.Raisef "Euclid.Rect3D.expandXY: the 3D-rectangle %s is too small to expand by negative distance distX %s"  r.AsString (Format.float distX)
         if siY <= distY * -2.0 then EuclidException.Raisef "Euclid.Rect3D.expandXY: the 3D-rectangle %s is too small to expand by negative distance distY %s"  r.AsString (Format.float distY)
-        let x = r.Xaxis * (distX   / r.SizeX)
+        let x = r.Xaxis * (distX / r.SizeX)
         let y = r.Yaxis * (distY / r.SizeY)
         Rect3D(r.Origin-x-y, r.Xaxis+x*2., r.Yaxis+y*2.)
+
+
+
+    /// Returns the 3D-rectangle expanded by a relative factor on all four sides.
+    /// Values between 0.0 and 1.0 shrink the rectangle.
+    /// Values larger than 1.0 expand the rectangle.
+    /// Does check for underflow if factor is negative and raises EuclidException.
+    static member expandRel factor (r:Rect3D) =
+        if factor < 0.0  then
+            EuclidException.Raise $"Euclid.Rect3D.expandRel: a negative factor {factor} is not allowed for expanding the 3D-rectangle {r.AsString}"
+        let x = r.Xaxis * factor
+        let y = r.Yaxis * factor
+        Rect3D(r.Center - x*0.5 - y*0.5, x, y)
+
+
+    /// Returns the 3D-rectangle expanded by a relative factor on all four sides.
+    /// Values between 0.0 and 1.0 shrink the rectangle.
+    /// Values larger than 1.0 expand the rectangle.
+    /// Does check for underflow if factor is negative and raises EuclidException.
+    static member expandRelXY factorX factorY (r:Rect3D) =
+        if factorX < 0.0  then
+            EuclidException.Raise $"Euclid.Rect3D.expandRelXY: a negative factor {factorX} is not allowed for expanding the 3D-rectangle {r.AsString}"
+        if factorY < 0.0  then
+            EuclidException.Raise $"Euclid.Rect3D.expandRelXY: a negative factor {factorY} is not allowed for expanding the 3D-rectangle {r.AsString}"
+        let x = r.Xaxis * factorX
+        let y = r.Yaxis * factorY
+        Rect3D(r.Center - x*0.5 - y*0.5, x, y)
+
+
 
     /// Create a 3D-rectangle from the origin point, an x-edge and an y-edge.
     /// Fails if x and y are not perpendicularity.

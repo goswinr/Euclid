@@ -264,6 +264,33 @@ type Rect2D =
         let y = r.Yaxis * (distY / r.SizeY)
         Rect2D(r.Origin - x - y, r.Xaxis + x * 2., r.Yaxis + y * 2.)
 
+
+
+    /// Returns the 2D-rectangle expanded by a relative factor on all four sides.
+    /// Values between 0.0 and 1.0 shrink the rectangle.
+    /// Values larger than 1.0 expand the rectangle.
+    /// Does check for underflow if factor is negative and raises EuclidException.
+    static member expandRel factor (r:Rect2D) =
+        if factor < 0.0  then
+            EuclidException.Raise $"Euclid.Rect2D.expandRel: a negative factor {factor} is not allowed for expanding the 2D-rectangle {r.AsString}"
+        let x = r.Xaxis * factor
+        let y = r.Yaxis * factor
+        Rect2D(r.Center - x*0.5 - y*0.5, x, y)
+
+
+    /// Returns the 2D-rectangle expanded by a relative factor on all four sides.
+    /// Values between 0.0 and 1.0 shrink the rectangle.
+    /// Values larger than 1.0 expand the rectangle.
+    /// Does check for underflow if factor is negative and raises EuclidException.
+    static member expandRelXY factorX factorY (r:Rect2D) =
+        if factorX < 0.0  then
+            EuclidException.Raise $"Euclid.Rect2D.expandRelXY: a negative factor {factorX} is not allowed for expanding the 2D-rectangle {r.AsString}"
+        if factorY < 0.0  then
+            EuclidException.Raise $"Euclid.Rect2D.expandRelXY: a negative factor {factorY} is not allowed for expanding the 2D-rectangle {r.AsString}"
+        let x = r.Xaxis * factorX
+        let y = r.Yaxis * factorY
+        Rect2D(r.Center - x*0.5 - y*0.5, x, y)
+
     /// Create a 2D Rectangle from the origin point, an x-edge and an y-edge.
     /// Fails if x and y are not in counter-clockwise order.
     /// Fails if x and y are not perpendicularity.

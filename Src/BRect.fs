@@ -262,11 +262,10 @@ type BRect =
             EuclidException.Raisef "Euclid.BRect.Expand(x, y): Negative distance(s) X: %g and Y: %g cause an underflow, on %s" xDist yDist r.AsString
         n
 
-
     /// Returns a bounding rectangle expanded by a distance for X and Y-axis each.
     /// If expansion is negative it shrinks the Rectangle. It also makes sure that there is no underflow.
     /// When the negative expansion is bigger than the size, Min and Max values will be both in the middle from where they were before.
-    member inline b.ExpandSave(xDist, yDist) : BRect =
+    member inline b.ExpandSafe(xDist, yDist) : BRect =
         let mutable minXCh = b.MinX - xDist
         let mutable maxXCh = b.MaxX + xDist
         if minXCh > maxXCh then  // Overflow! Set both to the same mid point
@@ -285,8 +284,17 @@ type BRect =
     /// Returns a bounding rectangle expanded by a distance.
     /// If expansion is negative it shrinks the Rectangle. It also makes sure that there is no underflow.
     /// When the negative expansion is bigger than the size, Min and Max values will be both in the middle from where they were before.
+    member inline b.ExpandSafe(dist) : BRect =
+        b.ExpandSafe(dist, dist)
+
+    [<Obsolete("typo, use ExpandSafe instead")>]
+    member inline b.ExpandSave(xDist, yDist) : BRect =
+        b.ExpandSafe(xDist, yDist)
+
+    [<Obsolete("typo, use ExpandSafe instead")>]
     member inline b.ExpandSave(dist) : BRect =
-        b.ExpandSave(dist, dist)
+        b.ExpandSafe(dist, dist)
+
 
     /// Returns a bounding rectangle expanded only in X direction by different distance for start(minX) and end (maxX).
     /// Does check for underflow if distance is negative and raises EuclidException.
@@ -303,6 +311,33 @@ type BRect =
         if n.MinY > n.MaxY then
             EuclidException.Raisef "Euclid.BRect.ExpandYaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist r.AsString
         n
+
+    /// Returns the 2D bounding rectangle expanded by a relative factor on all four sides.
+    /// Values between 0.0 and 1.0 shrink the rectangle.
+    /// Values larger than 1.0 expand the rectangle.
+    /// Does check for underflow if factor is negative and raises EuclidException.
+    static member expandRel factor (r:BRect) =
+        if factor < 0.0 then
+            EuclidException.Raisef "Euclid.BRect.expandRel: a negative factor %g is not allowed for expanding the 2D bounding rectangle %s" factor r.AsString
+        let center = r.Center
+        let sizeX = r.SizeX * factor
+        let sizeY = r.SizeY * factor
+        BRect.createFromCenter(center, sizeX, sizeY)
+
+    /// Returns the 2D bounding rectangle expanded by a relative factor on all four sides, separately for X and Y.
+    /// Values between 0.0 and 1.0 shrink the rectangle.
+    /// Values larger than 1.0 expand the rectangle.
+    /// Does check for underflow if any factor is negative and raises EuclidException.
+    static member expandRelXY factorX factorY (r:BRect) =
+        if factorX < 0.0 then
+            EuclidException.Raisef "Euclid.BRect.expandRelXY: a negative factorX %g is not allowed for expanding the 2D bounding rectangle %s" factorX r.AsString
+        if factorY < 0.0 then
+            EuclidException.Raisef "Euclid.BRect.expandRelXY: a negative factorY %g is not allowed for expanding the 2D bounding rectangle %s" factorY r.AsString
+        let center = r.Center
+        let sizeX = r.SizeX * factorX
+        let sizeY = r.SizeY * factorY
+        BRect.createFromCenter(center, sizeX, sizeY)
+
 
     /// Returns true if the two bounding rectangles do overlap or touch.
     /// Also returns true if one bounding rect is completely inside the other.
@@ -452,7 +487,7 @@ type BRect =
 
     /// Returns bounding rectangle expanded by distance.
     /// Does check for underflow if distance is negative and raises EuclidException.
-    static member expandSave dist (r:BRect) =
+    static member expandSafe dist (r:BRect) =
         r.Expand dist
 
     /// Returns bounding rectangle expanded only in X direction by different distance for start(minX) and end (maxX).

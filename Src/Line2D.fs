@@ -94,3 +94,4 @@ type Line2D =
         if UtilEuclid.isTooTiny l then
             EuclidException.Raisef "Euclid.Line2D.UnitTangent: x:%g and y:%g are too small for creating a unit-vector. Tolerance:%g" x y UtilEuclid.zeroLengthTolerance
         UnitVc.createUnchecked (x/l, y/l)
+
