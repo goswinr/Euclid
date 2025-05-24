@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.0] - 2025-05-24
+### Added
+- expand relative for Boxes and Rects
+- line on line projection
+- close Polylines
+- add move and translate where missing
+- add scale functions
+- zero length edge queries for Boxes and Rects
+- getting edges of Box
+### Fixed
+- fix Line3D.ExtendRel error cases
+
 ## [0.13.0] - 2024-03-15
 ### Fixed
 - bug in finite line intersection
@@ -124,7 +136,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - first public release
 
-[Unreleased]: https://github.com/goswinr/Euclid/compare/v0.13.0...HEAD
+[Unreleased]: https://github.com/goswinr/Euclid/compare/v0.14.0...HEAD
+[0.14.0]: https://github.com/goswinr/Euclid/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/goswinr/Euclid/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/goswinr/Euclid/compare/v0.11.1...v0.12.0
 [0.11.1]: https://github.com/goswinr/Euclid/compare/v0.11.0...v0.11.1
