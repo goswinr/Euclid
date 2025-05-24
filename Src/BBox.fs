@@ -43,7 +43,7 @@ type BBox =
     [<DataMember>] val MaxZ : float
 
     /// Unsafe internal constructor, public only for inlining.
-    [<Obsolete("Unsafe internal constructor, but must be public for inlining.") >]
+    [<Obsolete("This is not Obsolete, but an unsafe internal constructor. the input is not verified, so it might create invalid geometry. It is exposed as a public member so that it can be inlined.") >]
     new (minX, minY, minZ, maxX, maxY, maxZ) =
         {MinX = minX
          MinY = minY
@@ -335,8 +335,103 @@ type BBox =
 
 
     //-------------------------------------------------------------------
-    //------------------------static members---------------------------
     //-------------------------------------------------------------------
+    //-------------------------------------------------------------------
+    //-------------------------------------------------------------------
+    //-------------------------------------------------------------------
+    //------------------------ static members  --------------------------
+    //-------------------------------------------------------------------
+    //-------------------------------------------------------------------
+    //-------------------------------------------------------------------
+    //-------------------------------------------------------------------
+    //-------------------------------------------------------------------
+    //-------------------------------------------------------------------
+
+
+
+    /// Finds min and max values for x, y and z.
+    static member inline create (a:Pnt, b:Pnt) =
+        // sort min and max values (not using allocating tuples for swapping).
+        let mutable minX = a.X
+        let maxX = if b.X > minX then b.X else minX <- b.X ;  a.X
+        let mutable minY = a.Y
+        let maxY = if b.Y > minY then b.Y else minY <- b.Y ;  a.Y
+        let mutable minZ = a.Z
+        let maxZ = if b.Z > minZ then b.Z else minZ <- b.Z ;  a.Z
+        BBox(minX, minY, minZ, maxX, maxY, maxZ)
+
+
+    /// Finds min and max values for x, y and z.
+    /// Creates a 3D-bounding-box from the points.
+    static member inline createFromSeq (ps:seq<Pnt> ) =
+        if Seq.isEmpty ps then raise <| EuclidException("Euclid.BBox.createFromSeq: seq<Pt> is empty.")
+        let mutable minX = Double.MaxValue
+        let mutable minY = Double.MaxValue
+        let mutable minZ = Double.MaxValue
+        let mutable maxX = Double.MinValue
+        let mutable maxY = Double.MinValue
+        let mutable maxZ = Double.MinValue
+        for p in ps do
+            minX <- min minX p.X
+            minY <- min minY p.Y
+            minZ <- min minZ p.Z
+            maxX <- max maxX p.X
+            maxY <- max maxY p.Y
+            maxZ <- max maxZ p.Z
+        BBox(minX, minY, minZ, maxX, maxY, maxZ)
+
+    /// Finds min and max values for x, y and z.
+    /// Creates a 3D-bounding-box from the points.
+    static member inline createFromIList (ps:Collections.Generic.IList<Pnt> ) =
+        if Seq.isEmpty ps then raise <| EuclidException("Euclid.BBox.createFromIList: IList<Pt> is empty.")
+        let mutable minX = Double.MaxValue
+        let mutable minY = Double.MaxValue
+        let mutable minZ = Double.MaxValue
+        let mutable maxX = Double.MinValue
+        let mutable maxY = Double.MinValue
+        let mutable maxZ = Double.MinValue
+        for i=0 to ps.Count-1 do
+            let p = ps.[i]
+            minX <- min minX p.X
+            minY <- min minY p.Y
+            minZ <- min minZ p.Z
+            maxX <- max maxX p.X
+            maxY <- max maxY p.Y
+            maxZ <- max maxZ p.Z
+        BBox(minX, minY, minZ, maxX, maxY, maxZ)
+
+
+    /// Creates a 3D-bounding-box from a center point and the total X, Y and Z size.
+    static member inline createFromCenter (center:Pnt, sizeX, sizeY, sizeZ) =
+        if isNegative(sizeX) then EuclidException.Raisef "Euclid.BBox.createFromCenter sizeX is negative: %g, sizeY is: %g, sizeZ is: %g, center: %O"  sizeX sizeY sizeZ center.AsString
+        if isNegative(sizeY) then EuclidException.Raisef "Euclid.BBox.createFromCenter sizeY is negative: %g, sizeX is: %g, sizeZ is: %g, center: %O"  sizeY sizeX sizeZ center.AsString
+        if isNegative(sizeZ) then EuclidException.Raisef "Euclid.BBox.createFromCenter sizeZ is negative: %g, sizeX is: %g, sizeY is: %g, center: %O"  sizeZ sizeX sizeY center.AsString
+        let minX = center.X - sizeX*0.5
+        let minY = center.Y - sizeY*0.5
+        let maxX = center.X + sizeX*0.5
+        let maxY = center.Y + sizeY*0.5
+        let minZ = center.Z - sizeZ*0.5
+        let maxZ = center.Z + sizeZ*0.5
+        BBox(minX, minY, minZ, maxX, maxY, maxZ)
+
+    /// Does not verify the order of min and max values.
+    static member inline createUnchecked (minX, minY, minZ, maxX, maxY, maxZ) =
+        BBox(minX, minY, minZ, maxX, maxY, maxZ)
+
+    static member inline createFromLine (l:Line3D) =
+        let minX = min l.FromX l.ToX
+        let maxX = max l.FromX l.ToX
+        let minY = min l.FromY l.ToY
+        let maxY = max l.FromY l.ToY
+        let minZ = min l.FromZ l.ToZ
+        let maxZ = max l.FromZ l.ToZ
+        BBox(minX, minY, minZ, maxX, maxY, maxZ)
+
+    static member inline createFromBRect minZ maxZ (r : BRect) =
+        if minZ>maxZ then raise <| EuclidException $"Euclid.BBox.createFromBRect: minZ > maxZ: {minZ} > {maxZ}"
+        BBox(r.MinX, r.MinY, minZ, r.MaxX, r.MaxY, maxZ)
+
+
 
 
 
@@ -487,89 +582,6 @@ type BBox =
     /// Returns ValueNone if the two boxes do not overlap.
     static member inline intersection (a:BBox) (b:BBox) =
         a.Intersection(b)
-
-
-    /// Finds min and max values for x, y and z.
-    static member inline create (a:Pnt, b:Pnt) =
-        // sort min and max values (not using allocating tuples for swapping).
-        let mutable minX = a.X
-        let maxX = if b.X > minX then b.X else minX <- b.X ;  a.X
-        let mutable minY = a.Y
-        let maxY = if b.Y > minY then b.Y else minY <- b.Y ;  a.Y
-        let mutable minZ = a.Z
-        let maxZ = if b.Z > minZ then b.Z else minZ <- b.Z ;  a.Z
-        BBox(minX, minY, minZ, maxX, maxY, maxZ)
-
-
-    /// Finds min and max values for x, y and z.
-    /// Creates a 3D-bounding-box from the points.
-    static member inline createFromSeq (ps:seq<Pnt> ) =
-        if Seq.isEmpty ps then raise <| EuclidException("Euclid.BBox.createFromSeq: seq<Pt> is empty.")
-        let mutable minX = Double.MaxValue
-        let mutable minY = Double.MaxValue
-        let mutable minZ = Double.MaxValue
-        let mutable maxX = Double.MinValue
-        let mutable maxY = Double.MinValue
-        let mutable maxZ = Double.MinValue
-        for p in ps do
-            minX <- min minX p.X
-            minY <- min minY p.Y
-            minZ <- min minZ p.Z
-            maxX <- max maxX p.X
-            maxY <- max maxY p.Y
-            maxZ <- max maxZ p.Z
-        BBox(minX, minY, minZ, maxX, maxY, maxZ)
-
-    /// Finds min and max values for x, y and z.
-    /// Creates a 3D-bounding-box from the points.
-    static member inline createFromIList (ps:Collections.Generic.IList<Pnt> ) =
-        if Seq.isEmpty ps then raise <| EuclidException("Euclid.BBox.createFromIList: IList<Pt> is empty.")
-        let mutable minX = Double.MaxValue
-        let mutable minY = Double.MaxValue
-        let mutable minZ = Double.MaxValue
-        let mutable maxX = Double.MinValue
-        let mutable maxY = Double.MinValue
-        let mutable maxZ = Double.MinValue
-        for i=0 to ps.Count-1 do
-            let p = ps.[i]
-            minX <- min minX p.X
-            minY <- min minY p.Y
-            minZ <- min minZ p.Z
-            maxX <- max maxX p.X
-            maxY <- max maxY p.Y
-            maxZ <- max maxZ p.Z
-        BBox(minX, minY, minZ, maxX, maxY, maxZ)
-
-
-    /// Creates a 3D-bounding-box from a center point and the total X, Y and Z size.
-    static member inline createFromCenter (center:Pnt, sizeX, sizeY, sizeZ) =
-        if isNegative(sizeX) then EuclidException.Raisef "Euclid.BBox.createFromCenter sizeX is negative: %g, sizeY is: %g, sizeZ is: %g, center: %O"  sizeX sizeY sizeZ center.AsString
-        if isNegative(sizeY) then EuclidException.Raisef "Euclid.BBox.createFromCenter sizeY is negative: %g, sizeX is: %g, sizeZ is: %g, center: %O"  sizeY sizeX sizeZ center.AsString
-        if isNegative(sizeZ) then EuclidException.Raisef "Euclid.BBox.createFromCenter sizeZ is negative: %g, sizeX is: %g, sizeY is: %g, center: %O"  sizeZ sizeX sizeY center.AsString
-        let minX = center.X - sizeX*0.5
-        let minY = center.Y - sizeY*0.5
-        let maxX = center.X + sizeX*0.5
-        let maxY = center.Y + sizeY*0.5
-        let minZ = center.Z - sizeZ*0.5
-        let maxZ = center.Z + sizeZ*0.5
-        BBox(minX, minY, minZ, maxX, maxY, maxZ)
-
-    /// Does not verify the order of min and max values.
-    static member inline createUnchecked (minX, minY, minZ, maxX, maxY, maxZ) =
-        BBox(minX, minY, minZ, maxX, maxY, maxZ)
-
-    static member inline createFromLine (l:Line3D) =
-        let minX = min l.FromX l.ToX
-        let maxX = max l.FromX l.ToX
-        let minY = min l.FromY l.ToY
-        let maxY = max l.FromY l.ToY
-        let minZ = min l.FromZ l.ToZ
-        let maxZ = max l.FromZ l.ToZ
-        BBox(minX, minY, minZ, maxX, maxY, maxZ)
-
-    static member inline createFromBRect minZ maxZ (r : BRect) =
-        if minZ>maxZ then raise <| EuclidException $"Euclid.BBox.createFromBRect: minZ > maxZ: {minZ} > {maxZ}"
-        BBox(r.MinX, r.MinY, minZ, r.MaxX, r.MaxY, maxZ)
 
 
     /// Returns point 0 of this 3D-bounding-box, same as member box.MinPnt.

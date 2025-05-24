@@ -310,20 +310,20 @@ module AutoOpenPPlane =
             PPlane.createUnchecked(pl.Origin, x, y, pl.Zaxis)
 
         /// Move Plane along the local X-axis by the given distance.
-        static member inline translateX (d:float) (pl:PPlane) =
+        static member inline translateLocalX (d:float) (pl:PPlane) =
             PPlane.createUnchecked(pl.Origin + pl.Xaxis*d, pl.Xaxis, pl.Yaxis, pl.Zaxis)
 
         /// Move Plane along the local Y-axis by the given distance.
-        static member inline translateY (d:float) (pl:PPlane) =
+        static member inline translateLocalY (d:float) (pl:PPlane) =
             PPlane.createUnchecked(pl.Origin + pl.Yaxis*d, pl.Xaxis, pl.Yaxis, pl.Zaxis)
 
         /// Move Plane along the local Z-axis by the given distance.
         /// Same as PPlane.offset.
-        static member inline translateZ (d:float) (pl:PPlane) =
+        static member inline translateLocalZ (d:float) (pl:PPlane) =
             PPlane.createUnchecked(pl.Origin + pl.Zaxis*d, pl.Xaxis, pl.Yaxis, pl.Zaxis)
 
         /// Move Plane along the local Z-axis by the given distance.
-        /// Same as PPlane.translateZ.
+        /// Same as PPlane.translateLocalZ.
         static member inline offset (d:float) (pl:PPlane) =
             PPlane.createUnchecked(pl.Origin + pl.Zaxis*d, pl.Xaxis, pl.Yaxis, pl.Zaxis)
 

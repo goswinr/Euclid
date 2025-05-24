@@ -37,7 +37,7 @@ type BRect =
 
 
     /// Unsafe internal constructor, public only for inlining.
-    [<Obsolete("Unsafe internal constructor, but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >]
+    [<Obsolete("This is not Obsolete, but an unsafe internal constructor. the input is not verified, so it might create invalid geometry. It is exposed as a public member so that it can be inlined. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >]
     new (minX, minY, maxX, maxY) =
         {MinX = minX
          MinY = minY
@@ -312,6 +312,84 @@ type BRect =
             EuclidException.Raisef "Euclid.BRect.ExpandYaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist r.AsString
         n
 
+
+    // --------------------------------------------------------------------
+    // --------------------------------------------------------------------
+    // --------------------------------------------------------------------
+    // --------------------------------------------------------------------
+    // --------------------------------------------------------------------
+    // ------------------------ static members  ---------------------------
+    // --------------------------------------------------------------------
+    // --------------------------------------------------------------------
+    // --------------------------------------------------------------------
+    // --------------------------------------------------------------------
+    // --------------------------------------------------------------------
+
+
+    /// Finds min and max values for x and y.
+    static member inline create (a:Pt, b:Pt) =
+        // sort min and max values (not using allocating tuples for swapping)
+        let mutable minX = a.X
+        let maxX = if b.X > minX then b.X else minX <- b.X ;  a.X
+        let mutable minY = a.Y
+        let maxY = if b.Y > minY then b.Y else minY <- b.Y ;  a.Y
+        BRect(minX, minY, maxX, maxY)
+
+    /// Finds min and max values for x and y.
+    static member inline createFromSeq (ps:seq<Pt> ) =
+        if Seq.isEmpty ps then raise <| EuclidException("Euclid.BRect.createFromSeq: seq<Pt> is empty.")
+        let mutable minX = Double.MaxValue
+        let mutable minY = Double.MaxValue
+        let mutable maxX = Double.MinValue
+        let mutable maxY = Double.MinValue
+        for p in ps do
+            minX <- min minX p.X
+            minY <- min minY p.Y
+            maxX <- max maxX p.X
+            maxY <- max maxY p.Y
+        BRect(minX, minY, maxX, maxY)
+
+    /// Finds min and max values for x and y.
+    static member inline createFromIList (ps:Collections.Generic.IList<Pt> ) =
+        if ps.Count = 0 then raise <| EuclidException("Euclid.BRect.createFromIList: IList<Pt> is empty.")
+        let mutable minX = Double.MaxValue
+        let mutable minY = Double.MaxValue
+        let mutable maxX = Double.MinValue
+        let mutable maxY = Double.MinValue
+        for i = 0 to ps.Count-1 do
+            let p = ps.[i]
+            minX <- min minX p.X
+            minY <- min minY p.Y
+            maxX <- max maxX p.X
+            maxY <- max maxY p.Y
+        BRect(minX, minY, maxX, maxY)
+
+    /// Creates a bounding rectangle from a center point and the total X and Y size.
+    static member inline createFromCenter (center:Pt, sizeX, sizeY) =
+        if isNegative(sizeX) then EuclidException.Raisef "Euclid.BRect.createFromCenter sizeX is negative: %g, sizeY is: %g, center: %O"  sizeX sizeY  center.AsString
+        if isNegative(sizeY) then EuclidException.Raisef "Euclid.BRect.createFromCenter sizeY is negative: %g, sizeX is: %g, center: %O"  sizeY sizeX  center.AsString
+        let minX = center.X - sizeX*0.5
+        let minY = center.Y - sizeY*0.5
+        let maxX = center.X + sizeX*0.5
+        let maxY = center.Y + sizeY*0.5
+        BRect(minX, minY, maxX, maxY)
+
+
+    /// Does not verify the order of min and max values.
+    static member inline createUnchecked (minX, minY, maxX, maxY) =
+        BRect(minX, minY, maxX, maxY)
+
+    /// Creates a bounding rectangle of a line.
+    static member inline createFromLine (l:Line2D) =
+        let minX = min l.FromX l.ToX
+        let maxX = max l.FromX l.ToX
+        let minY = min l.FromY l.ToY
+        let maxY = max l.FromY l.ToY
+        BRect(minX, minY, maxX, maxY)
+
+
+
+
     /// Returns the 2D bounding rectangle expanded by a relative factor on all four sides.
     /// Values between 0.0 and 1.0 shrink the rectangle.
     /// Values larger than 1.0 expand the rectangle.
@@ -564,69 +642,11 @@ type BRect =
         else
             ValueNone
 
-    /// Finds min and max values for x and y.
-    static member inline create (a:Pt, b:Pt) =
-        // sort min and max values (not using allocating tuples for swapping)
-        let mutable minX = a.X
-        let maxX = if b.X > minX then b.X else minX <- b.X ;  a.X
-        let mutable minY = a.Y
-        let maxY = if b.Y > minY then b.Y else minY <- b.Y ;  a.Y
-        BRect(minX, minY, maxX, maxY)
 
-    /// Finds min and max values for x and y.
-    static member inline createFromSeq (ps:seq<Pt> ) =
-        if Seq.isEmpty ps then raise <| EuclidException("Euclid.BRect.createFromSeq: seq<Pt> is empty.")
-        let mutable minX = Double.MaxValue
-        let mutable minY = Double.MaxValue
-        let mutable maxX = Double.MinValue
-        let mutable maxY = Double.MinValue
-        for p in ps do
-            minX <- min minX p.X
-            minY <- min minY p.Y
-            maxX <- max maxX p.X
-            maxY <- max maxY p.Y
-        BRect(minX, minY, maxX, maxY)
-
-    /// Finds min and max values for x and y.
-    static member inline createFromIList (ps:Collections.Generic.IList<Pt> ) =
-        if ps.Count = 0 then raise <| EuclidException("Euclid.BRect.createFromIList: IList<Pt> is empty.")
-        let mutable minX = Double.MaxValue
-        let mutable minY = Double.MaxValue
-        let mutable maxX = Double.MinValue
-        let mutable maxY = Double.MinValue
-        for i = 0 to ps.Count-1 do
-            let p = ps.[i]
-            minX <- min minX p.X
-            minY <- min minY p.Y
-            maxX <- max maxX p.X
-            maxY <- max maxY p.Y
-        BRect(minX, minY, maxX, maxY)
-
-    /// Creates a bounding rectangle from a center point and the total X and Y size.
-    static member inline createFromCenter (center:Pt, sizeX, sizeY) =
-        if isNegative(sizeX) then EuclidException.Raisef "Euclid.BRect.createFromCenter sizeX is negative: %g, sizeY is: %g, center: %O"  sizeX sizeY  center.AsString
-        if isNegative(sizeY) then EuclidException.Raisef "Euclid.BRect.createFromCenter sizeY is negative: %g, sizeX is: %g, center: %O"  sizeY sizeX  center.AsString
-        let minX = center.X - sizeX*0.5
-        let minY = center.Y - sizeY*0.5
-        let maxX = center.X + sizeX*0.5
-        let maxY = center.Y + sizeY*0.5
-        BRect(minX, minY, maxX, maxY)
-
-
-    /// Does not verify the order of min and max values.
-    static member inline createUnchecked (minX, minY, maxX, maxY) =
-        BRect(minX, minY, maxX, maxY)
 
     /// Returns the area of this bounding rectangle.
     static member inline area (r:BRect) =
         r.SizeX * r.SizeY
-
-    static member createFromLine (l:Line2D) =
-        let minX = min l.FromX l.ToX
-        let maxX = max l.FromX l.ToX
-        let minY = min l.FromY l.ToY
-        let maxY = max l.FromY l.ToY
-        BRect(minX, minY, maxX, maxY)
 
 
     /// Scales the 2D bounding rectangle by a given factor.

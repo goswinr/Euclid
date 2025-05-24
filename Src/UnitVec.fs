@@ -39,7 +39,7 @@ type UnitVec =
     [<DataMember>] val Z : float
 
     /// Unsafe internal constructor, doesn't check or unitize the input, public only for inlining.
-    [<Obsolete("Unsafe internal constructor, but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >]
+    [<Obsolete("This is not Obsolete, but an unsafe internal constructor. the input is not verified, so it might create invalid geometry. It is exposed as a public member so that it can be inlined. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >]
     new (x, y, z) =
         #if DEBUG //  with these tests all operations are 2.5 times slower
         if Double.IsNaN x || Double.IsNaN y || Double.IsNaN z || Double.IsInfinity x || Double.IsInfinity y || Double.IsInfinity z then

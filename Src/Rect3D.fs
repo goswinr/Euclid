@@ -489,17 +489,17 @@ type Rect3D =
     static member flip (r:Rect3D) = Rect3D(r.Origin + r.Xaxis + r.Yaxis, -r.Yaxis, -r.Xaxis)
 
     /// Translate along the local X-axis of the 3D-rectangle.
-    static member translateX (distX:float) (r:Rect3D) =
+    static member translateLocalX (distX:float) (r:Rect3D) =
         let x = r.Xaxis
         let len = x.Length
-        if isTooTiny len then EuclidException.Raisef "Euclid.Rect3D.translateX: rect.Xaxis is zero length in Rect3D: %s" r.AsString
+        if isTooTiny len then EuclidException.Raisef "Euclid.Rect3D.translateLocalX: rect.Xaxis is zero length in Rect3D: %s" r.AsString
         Rect3D(r.Origin + x*(distX/len), x, r.Yaxis)
 
     /// Translate along the local Y-axis of the 3D-rectangle.
-    static member translateY (distY:float) (r:Rect3D) =
+    static member translateLocalY (distY:float) (r:Rect3D) =
         let y = r.Yaxis
         let len = y.Length
-        if isTooTiny len then EuclidException.Raisef "Euclid.Rect3D.translateY: rect.Yaxis is zero length in Rect3D: %s" r.AsString
+        if isTooTiny len then EuclidException.Raisef "Euclid.Rect3D.translateLocalY: rect.Yaxis is zero length in Rect3D: %s" r.AsString
         Rect3D(r.Origin + y*(distY/len), r.Xaxis, y)
 
     /// Translate by a 3D vector.(same as Rect3D.move)
@@ -865,7 +865,7 @@ type Rect3D =
     /// Scales the 3D rectangle by a given factor.
     /// Scale center is World Origin 0,0,0
     static member inline scale (factor:float) (r:Rect3D) : Rect3D =
-        Rect3D(r.Origin * factor, r.Xaxis * factor, r.Yaxis * factor)
+        Rect3D.createUnchecked(r.Origin * factor, r.Xaxis * factor, r.Yaxis * factor)
 
     // TODO find correct implementation
 

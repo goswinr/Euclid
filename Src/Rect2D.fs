@@ -89,6 +89,29 @@ type Rect2D =
     /// But without type name as in v.ToString()
     member r.AsString = sprintf "%s x %s" (Format.float r.SizeX)  (Format.float r.SizeY)
 
+
+
+
+    /// Creates a unitized version of the local X-Axis.
+    member inline r.XaxisUnit =
+        let len = r.Xaxis.Length
+        if isTooTiny len then EuclidException.Raisef "Euclid.Rect2D.XaxisUnit: rect Xaxis is too small for unitizing: %s" r.AsString
+        r.Xaxis*(1./len)
+
+    /// Creates a unitized version of the local Y-Axis.
+    member inline r.YaxisUnit =
+        let len = r.Yaxis.Length
+        if isTooTiny len then EuclidException.Raisef "Euclid.Rect2D.XaxisUnit: rect Yaxis is too small for unitizing: %s" r.AsString
+        r.Yaxis*(1./len)
+
+
+    /// Returns the diagonal vector of the 2D Rectangle.
+    /// From Origin to FarCorner.
+    member inline r.Diagonal = r.Xaxis + r.Yaxis
+
+    /// Returns the center of the 2D Rectangle.
+    member inline r.Center = r.Origin + r.Xaxis*0.5 + r.Yaxis*0.5
+
     /// Evaluate a X and Y parameter of the 2D Rectangle.
     ///  0.0, 0.0 returns the Origin.
     ///  1.0, 1.0 returns the FarCorner.
@@ -209,8 +232,91 @@ type Rect2D =
 
 
     //-------------------------------------------------------------------
+    //-------------------------------------------------------------------
+    //-------------------------------------------------------------------
+    //-------------------------------------------------------------------
+    //-------------------------------------------------------------------
+    //-------------------------------------------------------------------
     //------------------------static members-----------------------------
     //-------------------------------------------------------------------
+    //-------------------------------------------------------------------
+    //-------------------------------------------------------------------
+    //-------------------------------------------------------------------
+    //-------------------------------------------------------------------
+    //-------------------------------------------------------------------
+    //-------------------------------------------------------------------
+
+
+
+
+    /// Create a 2D Rectangle from the origin point, an x-edge and an y-edge.
+    /// Fails if x and y are not in counter-clockwise order.
+    /// Fails if x and y are not perpendicularity.
+    /// Fails on vectors shorter than 1e-9.
+    static member createFromVectors(origin, x:Vc, y:Vc) =
+        if isTooSmallSq x.LengthSq  then EuclidException.Raisef "Euclid.Rect2D.createFromVectors(origin, x:Vc, y:Vc): X-axis is too short:\r\n%O" y
+        if isTooSmallSq y.LengthSq  then EuclidException.Raisef "Euclid.Rect2D.createFromVectors(origin, x:Vc, y:Vc): Y-axis is too short:\r\n%O" y
+        //zeroLengthTolerance seems too strict for dot product:
+        if abs (x *** y) > 1e-10 then EuclidException.Raisef "Euclid.Rect2D.createFromVectors(origin, x:Vc, y:Vc): X-axis and Y-axis are not perpendicular (dot=%g): \r\n%O and\r\n%O" (abs (x *** y)) x y
+        if isNegative(Vc.cross(x,y))then EuclidException.Raisef "Euclid.Rect2D.createFromVectors(origin, x:Vc, y:Vc): X-axis and Y-axis are not counter clockwise:\r\n%O and\r\n%O" x y
+        Rect2D(origin, x, y)
+
+
+    /// Creates a 2D rectangle from a origin point, the X vector and Y size.
+    /// Fails on negative Y size.
+    static member createFromXVectorAndWidth (origin:Pt, x:Vc, sizeY) =
+        if isNegative(sizeY) then EuclidException.Raisef "Euclid.Rect2D.createFromXVectorAndWidth(origin:Pt, x:Vc, sizeY) sizeY cannot be negative: %g, x is: %O, origin: %O"  sizeY  x.AsString  origin.AsString
+        let y = x.Rotate90CCW * sizeY
+        Rect2D(origin, x, y)
+
+    /// Creates a 2D rectangle from an origin point, the X direction as unit-vector, the size in  X and Y direction.
+    /// Fails on negative sizes.
+    static member createFromDirectionAndSizes (origin:Pt, directionX:UnitVc, sizeX, sizeY) =
+        if isNegative(sizeX) then EuclidException.Raisef "Euclid.Rect2D.createFromDirectionAndSizes(origin:Pt, directionX:UnitVc, sizeX, sizeY) sizeX cannot be negative: %g, sizeY is: %g, origin: %O"  sizeX sizeY  origin.AsString
+        if isNegative(sizeY) then EuclidException.Raisef "Euclid.Rect2D.createFromDirectionAndSizes(origin:Pt, directionX:UnitVc, sizeX, sizeY) sizeY cannot be negative: %g, sizeX is: %g, origin: %O"  sizeY sizeX  origin.AsString
+        let x = directionX * sizeX
+        let y = directionX.Rotate90CCW * sizeY
+        Rect2D(origin, x, y)
+
+
+    /// Create a 2D Rectangle from the origin point and X-edge and Y edge.
+    /// Does not check for counter-clockwise order of x and y.
+    /// Does not check for perpendicularity.
+    static member createUnchecked (origin, x:Vc, y:Vc) =
+        Rect2D(origin, x, y)
+
+    /// Create a 2D Rectangle from a 2D line and a  right and left offset.
+    /// The left offset is in the direction of the future Y-axis.
+    static member createFromLine(line:Line2D, offRight, offLeft) =
+        if -offRight >= offLeft then EuclidException.Raisef "Euclid.Rect2D.createFromLine: flipped Rect2D : minus offRight %g must be smaller than offLeft %g .  " offRight  offLeft
+        let x = line.Vector
+        let len = x.Length
+        if isTooSmall len then  EuclidException.Raisef "Euclid.Rect2D.createFromLine: line too short: %s." line.AsString
+        let y = x.Rotate90CCW
+        let o = line.From - y * (offRight / len)
+        let y = y * ((offLeft + offRight) / len)
+        Rect2D(o, x, y)
+
+    /// Give 2D Bounding Rect.
+    static member createFromBRect (b:BRect) =
+        Rect2D(b.MinPt, Vc.Xaxis*b.SizeX, Vc.Yaxis*b.SizeY)
+
+    /// Creates a 2D rectangle from a center point, the X direction, the X and the Y size.
+    /// Fails on negative sizes.
+    static member createFromCenterAndDirection (center:Pt, directionX:UnitVc, sizeX, sizeY) =
+        if isNegative(sizeX) then EuclidException.Raisef "Euclid.Rect2D.createFromCenterAndDirection(center:Pt, directionX:UnitVc, sizeX, sizeY) sizeX cannot be negative: %g, sizeY is: %g, center: %O"  sizeX sizeY  center.AsString
+        if isNegative(sizeY) then EuclidException.Raisef "Euclid.Rect2D.createFromCenterAndDirection(center:Pt, directionX:UnitVc, sizeX, sizeY) sizeY cannot be negative: %g, sizeX is: %g, center: %O"  sizeY sizeX  center.AsString
+        let x = directionX * sizeX
+        let y = directionX.Rotate90CCW * sizeY
+        Rect2D(center - x * 0.5 - y * 0.5, x, y)
+
+    /// Creates a 2D rectangle from a center point, the X vector and the Y size.
+    /// Fails on negative Y size.
+    static member createFromCenterAndVector (center:Pt, x:Vc, sizeY) =
+        if isNegative(sizeY) then EuclidException.Raisef "Euclid.Rect2D.createFromCenterAndVector(center:Pt, x:Vc, sizeY) sizeY cannot be negative: %g, x is: %O, center: %O"  sizeY  x.AsString  center.AsString
+        let y = x.Rotate90CCW * sizeY
+        Rect2D(center - x * 0.5 - y * 0.5, x, y)
+
 
     /// Check for point containment in the 2D Rectangle.
     /// By doing 4 dot products with the sides of the rectangle.
@@ -291,73 +397,6 @@ type Rect2D =
         let y = r.Yaxis * factorY
         Rect2D(r.Center - x*0.5 - y*0.5, x, y)
 
-    /// Create a 2D Rectangle from the origin point, an x-edge and an y-edge.
-    /// Fails if x and y are not in counter-clockwise order.
-    /// Fails if x and y are not perpendicularity.
-    /// Fails on vectors shorter than 1e-9.
-    static member createFromVectors(origin, x:Vc, y:Vc) =
-        if isTooSmallSq x.LengthSq  then EuclidException.Raisef "Euclid.Rect2D.createFromVectors(origin, x:Vc, y:Vc): X-axis is too short:\r\n%O" y
-        if isTooSmallSq y.LengthSq  then EuclidException.Raisef "Euclid.Rect2D.createFromVectors(origin, x:Vc, y:Vc): Y-axis is too short:\r\n%O" y
-        //zeroLengthTolerance seems too strict for dot product:
-        if abs (x *** y) > 1e-10 then EuclidException.Raisef "Euclid.Rect2D.createFromVectors(origin, x:Vc, y:Vc): X-axis and Y-axis are not perpendicular (dot=%g): \r\n%O and\r\n%O" (abs (x *** y)) x y
-        if isNegative(Vc.cross(x,y))then EuclidException.Raisef "Euclid.Rect2D.createFromVectors(origin, x:Vc, y:Vc): X-axis and Y-axis are not counter clockwise:\r\n%O and\r\n%O" x y
-        Rect2D(origin, x, y)
-
-
-    /// Creates a 2D rectangle from a origin point, the X vector and Y size.
-    /// Fails on negative Y size.
-    static member createFromXVectorAndWidth (origin:Pt, x:Vc, sizeY) =
-        if isNegative(sizeY) then EuclidException.Raisef "Euclid.Rect2D.createFromXVectorAndWidth(origin:Pt, x:Vc, sizeY) sizeY cannot be negative: %g, x is: %O, origin: %O"  sizeY  x.AsString  origin.AsString
-        let y = x.Rotate90CCW * sizeY
-        Rect2D(origin, x, y)
-
-    /// Creates a 2D rectangle from an origin point, the X direction as unit-vector, the size in  X and Y direction.
-    /// Fails on negative sizes.
-    static member createFromDirectionAndSizes (origin:Pt, directionX:UnitVc, sizeX, sizeY) =
-        if isNegative(sizeX) then EuclidException.Raisef "Euclid.Rect2D.createFromDirectionAndSizes(origin:Pt, directionX:UnitVc, sizeX, sizeY) sizeX cannot be negative: %g, sizeY is: %g, origin: %O"  sizeX sizeY  origin.AsString
-        if isNegative(sizeY) then EuclidException.Raisef "Euclid.Rect2D.createFromDirectionAndSizes(origin:Pt, directionX:UnitVc, sizeX, sizeY) sizeY cannot be negative: %g, sizeX is: %g, origin: %O"  sizeY sizeX  origin.AsString
-        let x = directionX * sizeX
-        let y = directionX.Rotate90CCW * sizeY
-        Rect2D(origin, x, y)
-
-
-    /// Create a 2D Rectangle from the origin point and X-edge and Y edge.
-    /// Does not check for counter-clockwise order of x and y.
-    /// Does not check for perpendicularity.
-    static member createUnchecked (origin, x:Vc, y:Vc) =
-        Rect2D(origin, x, y)
-
-    /// Create a 2D Rectangle from a 2D line and a  right and left offset.
-    /// The left offset is in the direction of the future Y-axis.
-    static member createFromLine(line:Line2D, offRight, offLeft) =
-        if -offRight >= offLeft then EuclidException.Raisef "Euclid.Rect2D.createFromLine: flipped Rect2D : minus offRight %g must be smaller than offLeft %g .  " offRight  offLeft
-        let x = line.Vector
-        let len = x.Length
-        if isTooSmall len then  EuclidException.Raisef "Euclid.Rect2D.createFromLine: line too short: %s." line.AsString
-        let y = x.Rotate90CCW
-        let o = line.From - y * (offRight / len)
-        let y = y * ((offLeft + offRight) / len)
-        Rect2D(o, x, y)
-
-    /// Give 2D Bounding Rect.
-    static member createFromBRect (b:BRect) =
-        Rect2D(b.MinPt, Vc.Xaxis*b.SizeX, Vc.Yaxis*b.SizeY)
-
-    /// Creates a 2D rectangle from a center point, the X direction, the X and the Y size.
-    /// Fails on negative sizes.
-    static member createFromCenterAndDirection (center:Pt, directionX:UnitVc, sizeX, sizeY) =
-        if isNegative(sizeX) then EuclidException.Raisef "Euclid.Rect2D.createFromCenterAndDirection(center:Pt, directionX:UnitVc, sizeX, sizeY) sizeX cannot be negative: %g, sizeY is: %g, center: %O"  sizeX sizeY  center.AsString
-        if isNegative(sizeY) then EuclidException.Raisef "Euclid.Rect2D.createFromCenterAndDirection(center:Pt, directionX:UnitVc, sizeX, sizeY) sizeY cannot be negative: %g, sizeX is: %g, center: %O"  sizeY sizeX  center.AsString
-        let x = directionX * sizeX
-        let y = directionX.Rotate90CCW * sizeY
-        Rect2D(center - x * 0.5 - y * 0.5, x, y)
-
-    /// Creates a 2D rectangle from a center point, the X vector and the Y size.
-    /// Fails on negative Y size.
-    static member createFromCenterAndVector (center:Pt, x:Vc, sizeY) =
-        if isNegative(sizeY) then EuclidException.Raisef "Euclid.Rect2D.createFromCenterAndVector(center:Pt, x:Vc, sizeY) sizeY cannot be negative: %g, x is: %O, center: %O"  sizeY  x.AsString  center.AsString
-        let y = x.Rotate90CCW * sizeY
-        Rect2D(center - x * 0.5 - y * 0.5, x, y)
 
     /// Creates a 2D rectangle from three points. Fails if points are too close to each other or all colinear.
     /// The Origin, a point in X-axis direction and length, and a point for the length in Y-axis direction.
@@ -469,17 +508,17 @@ type Rect2D =
 
 
     /// Translate along the local X-axis of the 2D Rectangle.
-    static member translateX (distX:float) (r:Rect2D) =
+    static member translateLocalX (distX:float) (r:Rect2D) =
         let x = r.Xaxis
         let len = x.Length
-        if isTooTiny len then EuclidException.Raisef "Euclid.Rect2D.translateX: rect.Xaxis is zero length in Rect2D: %s" r.AsString
+        if isTooTiny len then EuclidException.Raisef "Euclid.Rect2D.translateLocalX: rect.Xaxis is zero length in Rect2D: %s" r.AsString
         Rect2D(r.Origin + x*(distX/len), x, r.Yaxis)
 
     /// Translate along the local Y-axis of the 2D Rectangle.
-    static member translateY (distY:float) (r:Rect2D) =
+    static member translateLocalY (distY:float) (r:Rect2D) =
         let y = r.Yaxis
         let len = y.Length
-        if isTooTiny len then EuclidException.Raisef "Euclid.Rect2D.translateY: rect.Yaxis is zero length in Rect2D: %s" r.AsString
+        if isTooTiny len then EuclidException.Raisef "Euclid.Rect2D.translateLocalY: rect.Yaxis is zero length in Rect2D: %s" r.AsString
         Rect2D(r.Origin + y*(distY/len), r.Xaxis, y)
 
     /// Translate by a 2D vector.(Same as Rect2D.move)
@@ -797,7 +836,8 @@ type Rect2D =
     /// Scales the 2D rectangle by a given factor.
     /// Scale center is World Origin 0,0
     static member inline scale (factor:float) (r:Rect2D) : Rect2D =
-        Rect2D( r.Origin * factor,
+        Rect2D.createUnchecked(
+                r.Origin * factor,
                 r.Xaxis * factor,
                 r.Yaxis * factor)
 
@@ -1054,26 +1094,6 @@ type Rect2D =
     ///  0-Origin       1
     member inline r.DiagonalLine = Line2D (r.Origin, r.Origin + r.Yaxis + r.Xaxis)
 
-
-    /// Creates a unitized version of the local X-Axis.
-    member inline r.XaxisUnit =
-        let len = r.Xaxis.Length
-        if isTooTiny len then EuclidException.Raisef "Euclid.Rect2D.XaxisUnit: rect Xaxis is too small for unitizing: %s" r.AsString
-        r.Xaxis*(1./len)
-
-    /// Creates a unitized version of the local Y-Axis.
-    member inline r.YaxisUnit =
-        let len = r.Yaxis.Length
-        if isTooTiny len then EuclidException.Raisef "Euclid.Rect2D.XaxisUnit: rect Yaxis is too small for unitizing: %s" r.AsString
-        r.Yaxis*(1./len)
-
-
-    /// Returns the diagonal vector of the 2D Rectangle.
-    /// From Origin to FarCorner.
-    member inline r.Diagonal = r.Xaxis + r.Yaxis
-
-    /// Returns the center of the 2D Rectangle.
-    member inline r.Center = r.Origin + r.Xaxis*0.5 + r.Yaxis*0.5
 
 
     /// Returns the same rectangle with a new orientation rotated by 90 degrees clockwise around its center.

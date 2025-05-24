@@ -7,6 +7,8 @@ open System.Runtime.Serialization // for serialization of struct fields only but
 
 open System.Collections.Generic
 
+#nowarn "44" // for hidden constructors via Obsolete Attribute
+
 /// An immutable 3D Box with any rotation in 3D space.
 /// Described by an Origin and three Edge vectors.
 /// Similar to PPlane, however the three vectors are not unitized.
@@ -49,9 +51,9 @@ type Box =
     /// The Edge vector representing the Z-axis of the Box.
     [<DataMember>] val Zaxis: Vec
 
-    /// Unchecked Internal Constructor Only.
-    /// Create a Parametrized Plane with X, Y and Z Direction.
-    internal new (origin, axisX, axisY, axisZ) = {Origin=origin; Xaxis=axisX; Yaxis=axisY; Zaxis=axisZ}
+    /// Unssafe internal constructor, public only for inlining.
+    [<Obsolete("This is not Obsolete, but an unsafe internal constructor. the input is not verified, so it might create invalid geometry. It is exposed as a public member so that it can be inlined.") >]
+    new (origin, axisX, axisY, axisZ) = {Origin=origin; Xaxis=axisX; Yaxis=axisY; Zaxis=axisZ}
 
     /// The size in X direction, same as member box.SizeX.
     [<Obsolete("use SizeX")>]
@@ -371,13 +373,16 @@ type Box =
         let z = b.Zaxis * factorZ
         Box(b.Center - x*0.5 - y*0.5 - z*0.5, x, y, z)
 
+    /// Does not verify the orientation of vectors.
+    static member inline createUnchecked (origin,xAxis,yAxis,zAxis) =
+        Box(origin, xAxis, yAxis, zAxis)
 
     /// Creates a 3D box from PPlane and x, y and Z size.
-    static member createFromPlane (pl:PPlane, x, y, z) =
+    static member inline createFromPlane (pl:PPlane, x, y, z) =
         Box(pl.Origin, pl.Xaxis*x, pl.Yaxis*y, pl.Zaxis*z)
 
     /// Creates a 3D box from a 3D a bounding box.
-    static member createFromBoundingBox (b:BBox) =
+    static member inline createFromBoundingBox (b:BBox) =
         Box(b.MinPnt, Vec.Xaxis*b.SizeX, Vec.Yaxis*b.SizeY, Vec.Zaxis*b.SizeZ)
 
     /// Creates a 3D box from a 2D rectangle and Z lower and upper position.
@@ -388,7 +393,7 @@ type Box =
             Vec.Zaxis*(zHigh-zLow))
 
      /// Creates a 3D box from a 3D rectangle and Z lower and upper position.
-    static member createFromRect3D (r:Rect3D, zLow, zHigh) =
+    static member inline createFromRect3D (r:Rect3D, zLow, zHigh) =
         let z = Vec.cross(r.Xaxis, r.Yaxis)
         Box(r.Origin  + z.WithLength(zLow),
             r.Xaxis,
@@ -439,33 +444,33 @@ type Box =
         Box.createFromPlaneAndPoints pl pts
 
     /// Creates a 3D box moved by a vector.
-    static member move (v:Vec) (b:Box) =
+    static member inline move (v:Vec) (b:Box) =
         Box(b.Origin + v, b.Xaxis, b.Yaxis, b.Zaxis)
 
     /// Creates a 3D box translated along the local X-axis of the Box.
-    static member translateX (distX:float) (b:Box) =
+    static member translateLocalX (distX:float) (b:Box) =
         let x = b.Xaxis
         let len = x.Length
-        if isTooTiny len then EuclidException.Raisef "Euclid.Box.translateX: box.Xaxis is zero length in Box: %s" b.AsString
+        if isTooTiny len then EuclidException.Raisef "Euclid.Box.translateLocalX: box.Xaxis is zero length in Box: %s" b.AsString
         Box(b.Origin + x*(distX/len), x, b.Yaxis, b.Zaxis)
 
     /// Creates a 3D box translated along the local Y-axis of the Box.
-    static member translateY (distY:float) (b:Box) =
+    static member translateLocalY (distY:float) (b:Box) =
         let y = b.Yaxis
         let len = y.Length
-        if isTooTiny len then EuclidException.Raisef "Euclid.Box.translateY: box.Yaxis is zero length in Box: %s" b.AsString
+        if isTooTiny len then EuclidException.Raisef "Euclid.Box.translateLocalY: box.Yaxis is zero length in Box: %s" b.AsString
         Box(b.Origin + y*(distY/len), b.Xaxis, y, b.Zaxis)
 
     /// Creates a 3D box translated along the local Z-axis of the Box.
-    static member translateZ (distZ:float) (b:Box) =
+    static member translateLocalZ (distZ:float) (b:Box) =
         let z = b.Zaxis
         let len = z.Length
-        if isTooTiny len then EuclidException.Raisef "Euclid.Box.translateZ: box.Zaxis is zero length in Box: %s" b.AsString
+        if isTooTiny len then EuclidException.Raisef "Euclid.Box.translateLocalZ: box.Zaxis is zero length in Box: %s" b.AsString
         Box(b.Origin + z*(distZ/len), b.Xaxis, b.Yaxis, z)
 
     /// Transform the Box by the given RigidMatrix.
     /// The returned Box is guaranteed to have still orthogonal vectors.
-    static member transform (m:RigidMatrix) (b:Box) =
+    static member inline transform (m:RigidMatrix) (b:Box) =
         let o = Pnt.transformRigid m b.Origin
         let x = Vec.transformRigid m b.Xaxis
         let y = Vec.transformRigid m b.Yaxis
@@ -475,7 +480,7 @@ type Box =
     /// Scales the 3D box by a given factor.
     /// Scale center is World Origin 0,0,0
     static member inline scale (factor:float) (b:Box) : Box =
-        Box(
+        Box.createUnchecked(
             b.Origin * factor,
             b.Xaxis * factor,
             b.Yaxis * factor,

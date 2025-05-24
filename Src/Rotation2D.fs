@@ -30,7 +30,7 @@ type Rotation2D =
     [<DataMember>] val Cos : float
 
     /// Unsafe internal constructor, public only for inlining.
-    [<Obsolete("Unsafe internal constructor, but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >]
+    [<Obsolete("This is not Obsolete, but an unsafe internal constructor. the input is not verified, so it might create invalid geometry. It is exposed as a public member so that it can be inlined. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >]
     new (sin, cos) =
         #if DEBUG
         let sum = sin*sin + cos*cos in
