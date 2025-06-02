@@ -818,11 +818,11 @@ type Rect3D =
 
 
 
-    /// Returns the line parameter and the X and Y parameters on the Rect3D. as tuple (pLn, pPlX, pPlY).
-    /// The parameters is the intersection point of the Line3D with the parameters on the Rect3D.
-    /// If the line is outside of the rectangle, one or more parameters are outside of the range 0.0-to-1.0 range.
+    /// Returns the line parameter and the X and Y parameters on the Rect3D as tuple (pLn, pPlX, pPlY).
+    /// The parameters is the intersection point of the infinite Line3D with the infinite Rect3D.
+    /// So if any of the parameters is outside of the range 0.0 to 1.0 the intersection point is actually outside of the rectangle.
     /// Returns None if they are parallel or coincident.
-    static member intersectLineParameters  (ln:Line3D) (pl:Rect3D) : option<float*float*float> =
+    static member intersectLineParametersInfinite  (ln:Line3D) (pl:Rect3D) : option<float*float*float> =
         let z = pl.NormalUnit
         let v = ln.Tangent
         let nenner = v *** z
@@ -833,7 +833,52 @@ type Rect3D =
             let t = ((pl.Origin - ln.From) *** z) / nenner
             let xpt = ln.From + v * t
             let vecInPlane = xpt - pl.Origin
-            Some <| (t, pl.Xaxis *** vecInPlane / pl.Xaxis.LengthSq , pl.Yaxis *** vecInPlane/ pl.Yaxis.LengthSq)
+            Some   (t,
+                    pl.Xaxis *** vecInPlane / pl.Xaxis.LengthSq ,
+                    pl.Yaxis *** vecInPlane / pl.Yaxis.LengthSq )
+
+    /// Returns the line parameter.
+    /// The parameter is the intersection point of the infinite Line3D with the infinite Rect3D.
+    /// The line is outside of the rectangle if the range is 0.0 to 1.0 .
+    /// Returns None if they are parallel or coincident.
+    static member intersectLineParameterInfinite  (ln:Line3D) (pl:Rect3D) : option<float> =
+        let z = pl.NormalUnit
+        let v = ln.Tangent
+        let nenner = v *** z
+        if isTooSmall (abs nenner) then
+            // EuclidException.Raise "Euclid.Rect3D.intersectLineParameters: Line and Rect3D are parallel or line has zero length: %O, %O" ln pl
+            None
+        else
+            let t = ((pl.Origin - ln.From) *** z) / nenner
+            Some t
+
+    /// Returns the line parameter and the X and Y parameters on the Rect3D as tuple (pLn, pPlX, pPlY).
+    /// These parameters ar all in the range 0.0 to 1.0.
+    /// Returns None if the intersection point is outside of their bounds.
+    /// Use Rect3D.intersectLineParameters to get the parameters of the intersection point.
+    /// Returns None if they are parallel or coincident.
+    static member intersectLineParameters (ln:Line3D) (pl:Rect3D) : option<float*float*float> =
+        let z = pl.NormalUnit
+        let v = ln.Tangent
+        let nenner = v *** z
+        if isTooSmall (abs nenner) then
+            None //Line and Rect3D are parallel or line has zero length
+        else
+            let t = ((pl.Origin - ln.From) *** z) / nenner
+            if t < 0.0 || t > 1.0 then
+                None
+            else
+                let xpt = ln.From + v * t
+                let vecInPlane = xpt - pl.Origin
+                let tx = pl.Xaxis *** vecInPlane / pl.Xaxis.LengthSq
+                if tx < 0.0 || tx > 1.0 then
+                    None
+                else
+                    let ty = pl.Yaxis *** vecInPlane / pl.Yaxis.LengthSq
+                    if ty < 0.0 || ty > 1.0 then
+                        None
+                    else
+                        Some (t, tx, ty)
 
     /// Returns intersection point of a Line3D with Rect3D.
     /// Returns None if the intersection point is outside of their bounds.
