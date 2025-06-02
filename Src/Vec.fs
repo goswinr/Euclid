@@ -1,11 +1,11 @@
 namespace Euclid
 
 // Design notes:
-// The structs types in this file only have the constructors, the ToString override and operators define in this file.
+// The structs types in this file only have the constructors, the ToString override and operators defined in this file.
 // For structs that need a checked and unchecked constructor (like unit-vectors) the main 'new' constructor is marked obsolete.
 // A 'create' and 'createUnchecked' static member is provided instead.
-// All other members are implemented as extension members. see files in folder 'members'.
-// This design however makes extension members unaccessible from see C#. To fix this all types and all members could be put into one file.
+// All other members are implemented as extension members. See files in folder 'members'.
+// This design however makes extension members inaccessible from C#. To fix this all types and all members could be put into one file.
 // The types would have to be marked as recursive. This file would be very large and probably have bad editor performance.
 
 open System
@@ -65,11 +65,11 @@ type Vec =
     member inline v.LengthSq =
         v.X*v.X + v.Y*v.Y + v.Z*v.Z
 
-    /// Negate or inverse a 3D vectors. Returns a new 3D vector.
+    /// Negate or inverse a 3D vector. Returns a new 3D vector.
     static member inline ( ~- ) (v:Vec) =
         Vec( -v.X, -v.Y, -v.Z)
 
-    /// Subtract one 3D vectors from another. Returns a new 3D vector.
+    /// Subtract one 3D vector from another. Returns a new 3D vector.
     static member inline ( - ) (a:Vec, b:Vec) =
         Vec (a.X - b.X, a.Y - b.Y, a.Z - b.Z)
 
@@ -93,9 +93,9 @@ type Vec =
     [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
     member v.FailedDivide(f) = EuclidDivByZeroException.Raisef "Euclid.Vec: divide operator: %g is too small for dividing %O using the '/' operator. Tolerance:%g"  f v zeroLengthTolerance
 
-    /// Divides a 3D vector by a scalar, also be called dividing/scaling a vector. Returns a new 3D vector.
+    /// Divides a 3D vector by a scalar, also called dividing/scaling a vector. Returns a new 3D vector.
     static member inline ( / ) (v:Vec, f:float) =
-        if isTooTiny (abs f) then v.FailedDivide(f) // don't compose error msg directly here to keep inlined code small.// https://github.com/dotnet/runtime/issues/24626#issuecomment-356736809
+        if isTooTiny (abs f) then v.FailedDivide(f) // don't compose error msg directly here to keep inlined code small. // https://github.com/dotnet/runtime/issues/24626#issuecomment-356736809
         Vec (v.X / f, v.Y / f, v.Z / f)
 
 
@@ -104,7 +104,7 @@ type Vec =
     static member inline dot (a:Vec, b:Vec) =
         a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
-    /// The Cross product, of two 3D vectors.
+    /// The Cross Product of two 3D vectors.
     /// It is also known as the Determinant, Wedge Product or Outer Product.
     /// The resulting vector is perpendicular to both input vectors.
     /// The length of this resulting vector is the squared area of the parallelogram spanned by the input vectors.
@@ -122,7 +122,7 @@ type Vec =
     /// Divides the vector by an integer.
     /// (This member is needed by Array.average and similar functions)
     static member DivideByInt (v:Vec, i:int) = // needed by 'Array.average'
-        if i = 0 then EuclidDivByZeroException.Raisef "Euclid.Vec.DivideByInt is zero %O" v
+        if i = 0 then EuclidDivByZeroException.Raisef "Euclid.Vec.DivideByInt by zero %O" v
         let d = float i
         Vec(v.X/d, v.Y/d, v.Z/d)
 

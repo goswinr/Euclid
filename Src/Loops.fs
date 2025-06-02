@@ -1,12 +1,12 @@
 namespace Euclid
 
 open System
-open System .Collections.Generic
+open System.Collections.Generic
 open UtilEuclid
 
 
 /// Discriminated union for the three possible relations of a point to a closed polyline Loop.
-/// Points are consider on loop if they are within loop.SnapThreshold tolerance.
+/// Points are considered on loop if they are within loop.SnapThreshold tolerance.
 [<RequireQualifiedAccess>]
 type PointLoopRel =
     In | On | Out
@@ -18,7 +18,7 @@ type PointLoopRel =
 
 
 /// A counter-clockwise, closed series of 2D points.
-/// Checked for too short segments and duplicate points but might have colinear points.
+/// Checked for too short segments and duplicate points but might have collinear points.
 /// Checked for self intersection.
 /// This class stores for each segment precomputed list of unit-vectors, lengths and bounding Rectangles.
 /// This is to have better performance when calculating Loop with Loop intersections or point containment.
@@ -211,13 +211,13 @@ type Loop private   ( pts:ResizeArray<Pt>
     /// Checks for too short segments.
     /// Closes loop if not closed yet.
     /// Makes it Counterclockwise.
-    /// Also check for self intersection.
-    /// Does NOT remove colinear points.
+    /// Also checks for self intersection.
+    /// Does NOT remove collinear points.
     static member create (minSegmentLength:float) (snapThreshold:float) (points:IList<Pt>)=
         let pts =
             if isNegative(minSegmentLength) then EuclidException.Raisef "Euclid.Loop constructor: minSegmentLength < 0.0:  %g" minSegmentLength
             if isNegative(snapThreshold)    then EuclidException.Raisef "Euclid.Loop constructor: snapThreshold < 0.0:  %g" snapThreshold
-            if points.Count<3 then EuclidException.Raisef "Euclid.Loop constructor: Input ResizeArray needs to have a least three points, not  %d " points.Count
+            if points.Count<3 then EuclidException.Raisef "Euclid.Loop constructor: Input ResizeArray needs to have at least three points, not  %d " points.Count
 
             let ps= ResizeArray<Pt>(points.Count+1)
             // check gap sizes
@@ -306,7 +306,7 @@ type Loop private   ( pts:ResizeArray<Pt>
             let abb = bRects.[i]
             for j = from to till do
                 let bbb = bRects.[j]
-                // test on BRect overlap could be done here already instead of in doIntersectOrOverlapColinear.
+                // test on BRect overlap could be done here already instead of in doIntersectOrOverlapCollinear.
                 let bp = pts.[j]
                 let bu = unitVcts.[j]
                 let bl = lens.[j]
@@ -328,4 +328,3 @@ type Loop private   ( pts:ResizeArray<Pt>
 
         Loop(   pts, unitVcts, bRects, lens, //xys,
                 area, minSegmentLength, snapThreshold, erect)
-

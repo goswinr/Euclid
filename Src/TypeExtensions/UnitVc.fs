@@ -217,7 +217,7 @@ module AutoOpenUnitVc =
         /// Checks if two 2D unit-vectors are parallel.
         /// Ignores the line orientation.
         /// The default angle tolerance is 0.25 degrees.
-        /// This tolerance can be customized by an optional minium cosine value.
+        /// This tolerance can be customized by an optional minimum cosine value.
         /// See Euclid.Cosine module.
         member inline this.IsParallelTo(other:UnitVc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
             abs(other *** this) > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
@@ -225,7 +225,7 @@ module AutoOpenUnitVc =
         /// Checks if this 2D unit-vectors and a 2D vector are parallel.
         /// Ignores the line orientation.
         /// The default angle tolerance is 0.25 degrees.
-        /// This tolerance can be customized by an optional minium cosine value.
+        /// This tolerance can be customized by an optional minimum cosine value.
         /// See Euclid.Cosine module.
         member inline this.IsParallelTo(other:Vc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
             let ol = other.LengthSq
@@ -238,7 +238,7 @@ module AutoOpenUnitVc =
         /// Checks if two 2D unit-vectors are parallel.
         /// Takes the line orientation into account too.
         /// The default angle tolerance is 0.25 degrees.
-        /// This tolerance can be customized by an optional minium cosine value.
+        /// This tolerance can be customized by an optional minimum cosine value.
         /// See Euclid.Cosine module.
         member inline this.IsParallelAndOrientedTo (other:UnitVc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
             other *** this > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
@@ -246,7 +246,7 @@ module AutoOpenUnitVc =
         /// Checks if this 2D unit-vectors and a 2D vector are parallel.
         /// Takes the line orientation into account too.
         /// The default angle tolerance is 0.25 degrees.
-        /// This tolerance can be customized by an optional minium cosine value.
+        /// This tolerance can be customized by an optional minimum cosine value.
         /// See Euclid.Cosine module.
         member inline this.IsParallelAndOrientedTo (other:Vc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
             let ol = other.LengthSq
@@ -258,16 +258,16 @@ module AutoOpenUnitVc =
 
         /// Checks if two 2D unit-vectors are perpendicular to each other.
         /// The default angle tolerance is 89.75 to 90.25 degrees.
-        /// This tolerance can be customized by an optional minium cosine value.
+        /// This tolerance can be customized by an optional maximum cosine value.
         /// The default cosine is 0.0043633 ( = 89.75 deg)
         /// See Euclid.Cosine module.
         member inline this.IsPerpendicularTo (other:UnitVc, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) =
             let d = other *** this
-            float -maxCosine < d && d  < float maxCosine // = cosine of 98.75 and 90.25 degrees
+            float -maxCosine < d && d  < float maxCosine // = cosine of 89.75 and 90.25 degrees
 
         /// Checks if this 2D unit-vectors and a 2D vector are perpendicular to each other.
         /// The default angle tolerance is 89.75 to 90.25 degrees.
-        /// This tolerance can be customized by an optional minium cosine value.
+        /// This tolerance can be customized by an optional maximum cosine value.
         /// The default cosine is 0.0043633 ( = 89.75 deg)
         /// See Euclid.Cosine module.
         member inline this.IsPerpendicularTo (other:Vc, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) =
@@ -275,7 +275,7 @@ module AutoOpenUnitVc =
             if isTooTinySq(ol) then EuclidException.Raisef "Euclid.UnitVc.IsPerpendicularTo: Vc 'other' is too short: %s. 'this':%s " other.AsString this.AsString
             let ou = other * (1.0 / sqrt ol)
             let d = ou *** this
-            float -maxCosine < d && d  < float maxCosine // = cosine of 98.75 and 90.25 degrees
+            float -maxCosine < d && d  < float maxCosine // = cosine of 89.75 and 90.25 degrees
 
 
         //----------------------------------------------------------------------------------------------
@@ -331,7 +331,7 @@ module AutoOpenUnitVc =
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        static member failedCreateFromMembersXY(v:'T,e:exn) = EuclidException.Raisef "Euclid.UnitVc.createFromMembersXY: %A could not be converted to a Euclid.UnitVc:\r\n%A" v e
+        static member failedCreateFromMembersXY(v:'T,e:exn) = EuclidException.Raise $"Euclid.UnitVc.createFromMembersXY: {v} could not be converted to a Euclid.UnitVc:{Format.nl}{e}"
         /// Accepts any type that has a X and Y (UPPERCASE) member that can be converted to a float.
         /// Does the unitizing too.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
@@ -344,7 +344,7 @@ module AutoOpenUnitVc =
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        static member failedCreateFromMembersxy(v:'T,e:exn) = EuclidException.Raisef "Euclid.UnitVc.createFromMembersxy: %A could not be converted to a Euclid.UnitVc:\r\n%A" v e
+        static member failedCreateFromMembersxy(v:'T,e:exn) = EuclidException.Raise $"Euclid.UnitVc.createFromMembersxy: {v} could not be converted to a Euclid.UnitVc:{Format.nl}{e}"
         /// Accepts any type that has a x and y (lowercase) member that can be converted to a float.
         /// Does the unitizing too.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
@@ -707,7 +707,7 @@ module AutoOpenUnitVc =
         /// Spherically interpolates between start and end by amount rel (0.0 to 1.0).
         /// The difference between this and linear interpolation (aka, "lerp") is that the vectors are treated as directions rather than points in space.
         /// The direction of the returned vector is interpolated by the angle and its magnitude is interpolated between the magnitudes of start and end.
-        /// Interpolation continues before and after the range of 0.0 and 0.1
+        /// Interpolation continues before and after the range of 0.0 and 1.0
         static member slerp (start:UnitVc, ende:UnitVc, rel:float) :UnitVc =
             // https://en.wikipedia.org/wiki/Slerp
             // implementation tested in Rhino!
@@ -717,14 +717,14 @@ module AutoOpenUnitVc =
             elif dot < float Cosine.``179.95`` then
                 EuclidDivByZeroException.Throw1 "Euclid.UnitVc.slerp: Can't interpolate vectors in opposite directions:" ende
             else
-                let ang = acos(dot) // the angel between the two vectors
+                let ang = acos(dot) // the angle between the two vectors
                 let p = ende - start*dot  // a vector perpendicular to start and in the same plane with ende.
                 let perp = UnitVc.create(p.X, p.Y)
                 let theta = ang*rel // the angle part we want for the result
-                let theta360 = (theta+UtilEuclid.twoPi) % UtilEuclid.twoPi // make sure it is i the range 0.0 to 2 Pi (360 degrees)
+                let theta360 = (theta+UtilEuclid.twoPi) % UtilEuclid.twoPi // make sure it is in the range 0.0 to 2 Pi (360 degrees)
                 let cosine = cos (theta360)
                 let sine   = sqrt(1.0 - cosine*cosine)
-                if theta360 < Math.PI then  // in the range 0 to 180 degrees, only applicable if rel is beyond 0.0 or 0.1
+                if theta360 < Math.PI then  // in the range 0 to 180 degrees, only applicable if rel is beyond 0.0 or 1.0
                     start * cosine + perp * sine |> UnitVc.createUnchecked
                 else
                     start * cosine - perp * sine |> UnitVc.createUnchecked

@@ -502,7 +502,7 @@ type Polyline2D =
                     prevV <- nextV
 
                 //elif a < lenTolSq then
-                //    failwithf "To short segment not recognized. This should already be checked!"
+                //    failwithf "too short segment not recognized. This should already be checked!"
                 else
                     let b = ax*bx + ay*by  // dot product of both lines
                     let ac = a*c // square of square length, never negative
@@ -540,7 +540,8 @@ type Polyline2D =
             let rec searchBack i =
                 let ii = saveIdx i colinear.Length
                 if not colinear.[ii] then ii
-                elif i < -colinear.Length then EuclidException.Raisef "Euclid.Polyline2D.offsetCore : all %d points for offset are colinear within 0.25 degree or identical. " pts.Count
+                elif i < -colinear.Length then
+                    EuclidException.Raise $"Euclid.Polyline2D.offsetCore : all {pts.Count} points for offset are colinear within 0.25 degree or identical."
                 else searchBack (i - 1)
 
             let rec  searchForward i =
@@ -553,13 +554,13 @@ type Polyline2D =
                     let pi = searchBack    (i - 1)
                     let ni = searchForward (i + 1)
                     if pi = ni then //  does this ever happen ? it is either all colinear (caught in searchBack) or at least three points are not colinear ??
-                        EuclidException.Raisef "Euclid.Polyline2D.offsetCore : all %d points for offset are colinear within 0.25 degree or identical. " pts.Count
+                        EuclidException.Raise $"Euclid.Polyline2D.offsetCore : all {pts.Count} points for offset are colinear within 0.25 degree or identical."
                     let ln = Line2D(res.[pi], res.[ni])
                     res.[i] <- ln.ClosestPointInfinite(pts.[i])
                     // TODO add safety check? could be omitted. offset is then averaged out.
                     if not allowObliqueOffsetOnColinearSegments && abs (getOffDist(pi) - getOffDist(ni)) > 1e-9 then
-                        EuclidException.Raisef "Euclid.Polyline2D.offsetCore: can't offset collinear segment at index %d with different offset distances from index %d and %d\r\n these distances are not the same: %f and %f" i pi ni (getOffDist(pi)) (getOffDist(ni))
-        else
+                        EuclidException.Raise $"Euclid.Polyline2D.offsetCore: can't offset collinear segment at index {i} with different offset distances from index {pi} and {ni}{Format.nl}these distances are not the same: {getOffDist(pi)} and {getOffDist(ni)}"
+
             let rec searchBack i =
                 if i<0 then -1
                 elif not colinear.[i] then i
@@ -592,7 +593,8 @@ type Polyline2D =
                         res.[i] <- ln.ClosestPointInfinite(pts.[i])
                         // TODO add safety check? could be omitted. offset is then averaged out.
                         if not allowObliqueOffsetOnColinearSegments && abs (getOffDist(pi) - getOffDist(ni)) > 1e-9 then
-                            EuclidException.Raisef "Euclid.Polyline2D.offsetCore: can't offset collinear segment at index %d with different offset distances from index %d and %d\r\n these distances are not the same: %f and %f" i pi ni (getOffDist(pi)) (getOffDist(ni))
+                            EuclidException.Raise $"Euclid.Polyline2D.offsetCore: can't offset collinear segment at index {i} with different offset distances from index {pi} and {ni}{Format.nl}these distances are not the same: {getOffDist(pi)} and {getOffDist(ni)}"
+
         res
 
 
@@ -635,16 +637,18 @@ type Polyline2D =
 
 
         let checkDistanceCount len  =
-            if isNull offsetDistances then Error("offsetDistances is null")
+            if isNull offsetDistances then Error "offsetDistances is null"
             elif offsetDistances.Count = len then Ok()
             elif offsetDistances.Count = 1   then Ok()
-            else Error( $"offsetDistances has {offsetDistances.Count} items" )
+            else Error $"offsetDistances has {offsetDistances.Count} items"
 
 
         // (2) check if last and first point are the same and if so remove last point (one point needs to be removed from list)
         if Pt.distanceSq polyLine.Start polyLine.End < 1e-12 then // sqrt of 1e-6, auto detect closed polyline points  then
             match checkDistanceCount (points.Count - 1) with
-            |Error k  -> EuclidException.Raisef "Euclid.Polyline2D.offset: %s but should have 1 or %d for %d given points. \r\nIn closed Polyline2D with identical start and end points:\r\n%O" k (points.Count-1) points.Count polyLine |Ok _ -> ()
+            |Error k  -> EuclidException.Raise $"Euclid.Polyline2D.offset: {k} but should have 1 or {(points.Count-1)} for {points.Count} given points. {Format.nl}In closed Polyline2D with identical start and end points:{Format.nl}{polyLine}"
+            |Ok _ -> ()
+
             // use endIndexChange = -1 to skip the last point, wil then be re added at the end.
             let res = Polyline2D.offsetCore(points, offsetDistances, referenceOrient, fixColinearLooped=true, allowObliqueOffsetOnColinearSegments=obliqueOffsets, endIndexChange = -1)
             res.Add(res.[0])  // set last equal first, it was skipped with 'endIndexChange = -1'
@@ -653,14 +657,16 @@ type Polyline2D =
         // (3) check if open but looping desired
         elif loop then
             match checkDistanceCount points.Count with
-            |Error k  -> EuclidException.Raisef "Euclid.Polyline2D.offset: %s but should have 1 or %d for %d given points. \r\nIn open Polyline2D with start and end apart and loop set to TRUE :\r\n%O" k points.Count points.Count polyLine  |Ok _ -> ()
+            |Error k  -> EuclidException.Raise $"Euclid.Polyline2D.offset: {k} but should have 1 or {points.Count} for {points.Count} given points. {Format.nl}In open Polyline2D with start and end apart and loop set to TRUE :{Format.nl}{polyLine}"
+            |Ok _ -> ()
             Polyline2D.offsetCore(points, offsetDistances, referenceOrient, fixColinearLooped=true, allowObliqueOffsetOnColinearSegments=obliqueOffsets, endIndexChange = 0)
             |> Polyline2D.createDirectlyUnsafe
 
         // (4) open polyline and, no looping desired: (one distance value will be added, in getOffDist in offsetCore, )
         else
             match checkDistanceCount (points.Count-1) with
-            |Error k  -> EuclidException.Raisef "Euclid.Polyline2D.offset: %s but should have 1 or %d for %d given points. \r\nIn open Polyline2D with start and end apart and loop set to FALSE :\r\n%O" k points.Count points.Count polyLine  |Ok _ -> ()
+            |Error k  -> EuclidException.Raise $"Euclid.Polyline2D.offset: {k} but should have 1 or {points.Count} for {points.Count} given points. {Format.nl}In open Polyline2D with start and end apart and loop set to FALSE :{Format.nl}{polyLine}"
+            |Ok _ -> ()
             let res = Polyline2D.offsetCore(points, offsetDistances, referenceOrient, fixColinearLooped=false, allowObliqueOffsetOnColinearSegments=obliqueOffsets, endIndexChange = 0)
 
             // (4.1) fix ends if not looped

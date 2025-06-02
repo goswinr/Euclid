@@ -9,7 +9,7 @@ open System.Runtime.Serialization
 
 #nowarn "44" // for internal inline constructors and hidden obsolete members for error cases
 
-/// <summary>UnitVc is an immutable 2D unit-vector. it is guaranteed to be unitized.
+/// <summary>UnitVc is an immutable 2D unit-vector. It is guaranteed to be unitized.
 /// Never use the struct default constructor UnitVc()!
 /// It will create an invalid zero length vector.
 /// Use UnitVc.create or UnitVc.createUnchecked instead.</summary>
@@ -20,14 +20,14 @@ type UnitVc =
     /// <summary>Gets the X part of this 2D unit-vector.</summary>
     [<DataMember>] val X : float
 
-    /// <summary>Gets the X part of this 2D unit-vector.</summary>
+    /// <summary>Gets the Y part of this 2D unit-vector.</summary>
     [<DataMember>] val Y : float
 
     /// Unsafe internal constructor, doesn't check or unitize the input, public only for inlining.
     [<Obsolete("Unsafe internal constructor, doesn't check or unitize the input (unless compiled in DEBUG mode), but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >]
     new (x, y) =
         #if DEBUG // TODO : with this test all  operations are 2.5 times slower
-        if Double.IsNaN x || Double.IsNaN y || Double.IsInfinity x || Double.IsInfinity y  then EuclidException.Raisef "Euclid.Vc Constructor failed for x:%g, y:%g"  x y
+        if Double.IsNaN x || Double.IsNaN y || Double.IsInfinity x || Double.IsInfinity y  then EuclidException.Raisef "Euclid.UnitVc Constructor failed for x:%g, y:%g"  x y
         #endif
         {X=x; Y=y}
 
@@ -40,19 +40,19 @@ type UnitVc =
     member v.AsString =
         sprintf "X=%s| Y=%s" (Format.float v.X) (Format.float v.Y)
 
-    /// Negate or inverse a 2D unit-vectors. Returns a new 2D unit-vector.
+    /// Negate or inverse a 2D unit-vector. Returns a new 2D unit-vector.
     static member inline ( ~- ) (v:UnitVc) =
         UnitVc( -v.X, -v.Y)
 
-    /// Subtract one 2D unit-vectors from another. Returns a new (non-unitized) 2D vector.
+    /// Subtract one 2D unit-vector from another. Returns a new (non-unitized) 2D vector.
     static member inline ( - ) (a:UnitVc, b:UnitVc) =
         Vc (a.X - b.X, a.Y - b.Y)
 
-    /// Subtract a 2D unit-vectors from a 2D vector". Returns a new (non-unitized) 2D vector.
+    /// Subtract a 2D unit-vector from a 2D vector. Returns a new (non-unitized) 2D vector.
     static member inline ( - ) (a:Vc, b:UnitVc) =
         Vc (a.X - b.X, a.Y - b.Y)
 
-    /// Subtract a 2D vectors from a 2D unit-vector". Returns a new (non-unitized) 2D vector.
+    /// Subtract a 2D vector from a 2D unit-vector. Returns a new (non-unitized) 2D vector.
     static member inline ( - ) (a:UnitVc, b:Vc) =
         Vc (a.X - b.X, a.Y - b.Y)
 
@@ -61,12 +61,12 @@ type UnitVc =
     static member inline ( + ) (a:UnitVc, b:UnitVc) =
         Vc (a.X + b.X, a.Y + b.Y)
 
-    /// Add a 2D unit-vectors and a 2D vector together.
+    /// Add a 2D vector and a 2D unit-vector together.
     /// Returns a new (non-unitized) 2D vector.
     static member inline ( + ) (a:Vc, b:UnitVc) =
         Vc (a.X + b.X, a.Y + b.Y)
 
-    /// Add a 2D vectors and a 2D unit-vector together.
+    /// Add a 2D unit-vector and a 2D vector together.
     /// Returns a new (non-unitized) 2D vector.
     static member inline ( + ) (a:UnitVc, b:Vc) =
         Vc (a.X + b.X, a.Y + b.Y)
@@ -84,23 +84,23 @@ type UnitVc =
     /// Dot product, or scalar product of two 2D unit-vectors.
     /// Returns a float. This float is the Cosine of the angle between the two 2D vectors.
     static member inline ( *** ) (a:UnitVc, b:UnitVc) =
-        a.X * b.X+ a.Y * b.Y
+        a.X * b.X + a.Y * b.Y
 
     /// Dot product, or scalar product of a 2D unit-vector with a 2D vector.
     /// Returns a float. This float is the projected length of the 2D vector on the direction of the unit-vector.
     static member inline ( *** ) (a:UnitVc, b:Vc) =
-        a.X * b.X+ a.Y * b.Y
+        a.X * b.X + a.Y * b.Y
 
     /// Dot product, or scalar product of a 2D vector with a 2D unit-vector.
     /// Returns a float. This float is the projected length of the 2D vector on the direction of the unit-vector.
     static member inline ( *** ) (a:Vc, b:UnitVc) =
-        a.X * b.X+ a.Y * b.Y
+        a.X * b.X + a.Y * b.Y
 
     /// Dot product, or scalar product of two 2D unit-vectors.
     /// Returns a float.
     /// This float is the Cosine of the angle between the two 2D vectors.
     static member inline dot (a:UnitVc, b:UnitVc) =
-        a.X * b.X+ a.Y * b.Y
+        a.X * b.X + a.Y * b.Y
 
 
     /// The 2D Cross Product.
@@ -116,7 +116,7 @@ type UnitVc =
     [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
     member v.FailedDivide(f) = EuclidDivByZeroException.Raisef "Euclid.UnitVc: divide operator: %g is too small for dividing %O using the '/' operator. Tolerance:%g"  f v zeroLengthTolerance
 
-    /// Divides a 2D unit-vector by a scalar, also be called dividing/scaling a vector. Returns a new (non-unitized) 2D vector.
+    /// Divides a 2D unit-vector by a scalar, also called dividing/scaling a vector. Returns a new (non-unitized) 2D vector.
     static member inline ( / ) (v:UnitVc, f:float) =
         if isTooTiny (abs f) then v.FailedDivide(f) // don't compose error msg directly here to keep inlined code small. // https://github.com/dotnet/runtime/issues/24626#issuecomment-356736809
         Vc (v.X / f, v.Y / f)

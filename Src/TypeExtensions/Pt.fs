@@ -25,7 +25,7 @@ module AutoOpenPt =
         member inline p.AsPnt =
             Pnt(p.X, p.Y, 0.0)
 
-        /// Returns a boolean indicating wether X and Y are exactly 0.0.
+        /// Returns a boolean indicating whether X and Y are exactly 0.0.
         member inline pt.IsOrigin =
             pt.X = 0.0 && pt.Y = 0.0
 
@@ -33,7 +33,7 @@ module AutoOpenPt =
         member inline p.IsNotOrigin =
             p.X <> 0.0 || p.Y <> 0.0
 
-        /// Returns a boolean indicating wether the absolute value of X and Y is each less than the given tolerance.
+        /// Returns a boolean indicating whether the absolute value of X and Y is each less than the given tolerance.
         member inline pt.IsAlmostOrigin tol =
             abs pt.X < tol && abs pt.Y < tol
 
@@ -214,7 +214,7 @@ module AutoOpenPt =
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        static member failedCreateFromMembersXY(pt:'T,e:exn) = EuclidException.Raisef "Euclid.Pt.createFromMembersXY: %A could not be converted to a Euclid.Pt:\r\n%A" pt e
+        static member failedCreateFromMembersXY(pt:'T,e:exn) = EuclidException.Raise $"Euclid.Pt.createFromMembersXY: {pt} could not be converted to a Euclid.Pt:{Format.nl}{e}"
 
         /// Accepts any type that has a X and Y (UPPERCASE) member that can be converted to a float.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
@@ -226,7 +226,7 @@ module AutoOpenPt =
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        static member failedCreateFromMembersxy(pt:'T,e:exn) = EuclidException.Raisef "Euclid.Pt.createFromMembersxy: %A could not be converted to a Euclid.Pt:\r\n%A" pt e
+        static member failedCreateFromMembersxy(pt:'T,e:exn) = EuclidException.Raise $"Euclid.Pt.createFromMembersxy: {pt} could not be converted to a Euclid.Pt:{Format.nl}{e}"
 
         /// Accepts any type that has a x and y (lowercase) member that can be converted to a float.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.

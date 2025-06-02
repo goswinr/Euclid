@@ -43,7 +43,7 @@ type Line2D =
         x*x + y*y
 
     /// Format 2D line into string including type name, X and Y for start and end points, and Length.
-    /// Using nice floating point number formatting .
+    /// Using nice floating point number formatting.
     override ln.ToString() =
         sprintf "Euclid.Line2D from X=%s| Y=%s to X=%s| Y=%s Length %s"
             (Format.float ln.FromX)
@@ -53,7 +53,7 @@ type Line2D =
             (Format.float ln.Length)
 
     /// Format 2D line into string from X and Y for start and end points.
-    /// Using nice floating point number formatting .
+    /// Using nice floating point number formatting.
     /// But without full type name as in v.ToString()
     member ln.AsString =
         sprintf "X=%s| Y=%s to X=%s| Y=%s"
@@ -63,11 +63,11 @@ type Line2D =
             (Format.float ln.ToY)
 
 
-    /// The Start point of the 2D Line2D,
+    /// The Start point of the 2D Line2D.
     member inline ln.From =
         Pt(ln.FromX, ln.FromY)
 
-    /// The End point of the 2D Line2D,
+    /// The End point of the 2D Line2D.
     member inline ln.To =
         Pt(ln.ToX, ln.ToY)
 

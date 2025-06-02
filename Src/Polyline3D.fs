@@ -475,7 +475,7 @@ type Polyline3D =
                     prevV   <- nextV
 
                 //elif a < lenTolSq then
-                //    failwithf "To short segment not recognized. This should already be checked!"
+                //    failwithf "too short segment not recognized. This should already be checked!"
                 else
                     let b = ax*bx + ay*by + az*bz // dot product of both lines
                     let ac = a*c // square of square length, never negative
@@ -534,7 +534,7 @@ type Polyline3D =
                     res.[i] <- ln.ClosestPointInfinite(pts.[i])
                     // TODO add safety check? could be omitted. offset is then averaged out.
                     if not allowObliqueOffsetOnColinearSegments && abs (offD.[pi] - offD.[ni]) > 1e-9 then
-                        EuclidException.Raisef "Euclid.Polyline3D.offsetCore: can't offset collinear segment at index %d with different offset distances from index %d and %d\r\n these distances are not the same: %f and %f" i pi ni offD.[pi]  offD.[ni]
+                        EuclidException.Raise $"Euclid.Polyline3D.offsetCore: can't offset collinear segment at index {i} with different offset distances from index {pi} and {ni}{Format.nl} these distances are not the same: {offD.[pi]} and {offD.[ni]}"
         else
             let rec searchBack i =
                 if i<0 then -1
@@ -568,7 +568,7 @@ type Polyline3D =
                         res.[i] <- ln.ClosestPointInfinite(pts.[i])
                         // TODO add safety check? could be omitted. offset is then averaged out.
                         if not allowObliqueOffsetOnColinearSegments && abs (offD.[pi] - offD.[ni]) > 1e-9 then
-                            EuclidException.Raisef "Euclid.Polyline3D.offsetCore: can't offset collinear segment at index %d with different offset distances from index %d and %d\r\n these distances are not the same: %f and %f" i pi ni offD.[pi]  offD.[ni]
+                            EuclidException.Raise $"Euclid.Polyline3D.offsetCore: can't offset collinear segment at index {i} with different offset distances from index {pi} and {ni}{Format.nl} these distances are not the same: {offD.[pi]} and {offD.[ni]}"
         res
 
 
@@ -623,12 +623,12 @@ type Polyline3D =
             let pts = points.GetRange(0, points.Count-1) // remove last point
             let offD =
                 match getWithLength pts.Count offsetDistances with
-                |Error k  -> EuclidException.Raisef "Euclid.Polyline3D.offset: offsetDistances has %d items but should have 0, 1 or %d for %d given points \r\nin closed Polyline3D with identical start and end:\r\n%O" k pts.Count points.Count polyLine
+                |Error k  -> EuclidException.Raise $"Euclid.Polyline3D.offset: offsetDistances has {k} items but should have 0, 1 or {pts.Count} for {points.Count} given points {Format.nl}in closed Polyline3D with identical start and end:{Format.nl}{polyLine}"
                 |Ok    ds -> ds
 
             let normD =
                 match getWithLength pts.Count normalDistances with
-                |Error k  -> EuclidException.Raisef "Euclid.Polyline3D.offset: normalDistances has %d items but should have 0, 1 or %d for %d given points \r\nin closed Polyline3D with identical start and end:\r\n%O" k pts.Count points.Count polyLine
+                |Error k  -> EuclidException.Raise $"Euclid.Polyline3D.offset: normalDistances has {k} items but should have 0, 1 or {pts.Count} for {points.Count} given points {Format.nl}in closed Polyline3D with identical start and end:{Format.nl}{polyLine}"
                 |Ok    ds -> ds
 
             let res = Polyline3D.offsetCore(pts, offD, normD, refNormal, fixColinearLooped=true, allowObliqueOffsetOnColinearSegments=obliqueOffsets)
@@ -639,12 +639,12 @@ type Polyline3D =
         elif loop then
             let offD =
                 match getWithLength points.Count offsetDistances with
-                |Error k  -> EuclidException.Raisef "Euclid.Polyline3D.offset: offsetDistances has %d items but should have 0, 1 or %d for %d given points \r\nin open Polyline3D with start and end apart and loop set to '%b :\r\n%O" k points.Count points.Count loop polyLine
+                |Error k  -> EuclidException.Raise $"Euclid.Polyline3D.offset: offsetDistances has {k} items but should have 0, 1 or {points.Count} for {points.Count} given points {Format.nl}in open Polyline3D with start and end apart and loop set to '{loop}' :{Format.nl}{polyLine}"
                 |Ok    ds -> ds
 
             let normD =
                 match getWithLength points.Count normalDistances with
-                |Error k  -> EuclidException.Raisef "Euclid.Polyline3D.offset: normalDistances has %d items but should have 0, 1 or %d for %d given points \r\nin closed Polyline3D with start and end apart and loop set to '%b :\r\n%O" k points.Count points.Count loop polyLine
+                |Error k  -> EuclidException.Raise $"Euclid.Polyline3D.offset: normalDistances has {k} items but should have 0, 1 or {points.Count} for {points.Count} given points {Format.nl}in closed Polyline3D with start and end apart and loop set to '{loop}' :{Format.nl}{polyLine}"
                 |Ok    ds -> ds
 
             Polyline3D.offsetCore(points, offD, normD, refNormal, fixColinearLooped=true, allowObliqueOffsetOnColinearSegments=obliqueOffsets)
@@ -654,14 +654,14 @@ type Polyline3D =
         else
             let offD =
                 match getWithLength (points.Count-1) offsetDistances with
-                |Error k  -> EuclidException.Raisef "Euclid.Polyline3D.offset: offsetDistances has %d items but should have 0, 1 or %d for %d given points \r\nin open Polyline3D with start and end apart and loop set to '%b :\r\n%O" k points.Count points.Count loop polyLine
+                |Error k  -> EuclidException.Raise $"Euclid.Polyline3D.offset: offsetDistances has {k} items but should have 0, 1 or {points.Count} for {points.Count} given points {Format.nl}in open Polyline3D with start and end apart and loop set to '{loop}' :{Format.nl}{polyLine}"
                 |Ok    ds ->
                     if notNull ds then ds.Add ds.[0] // make same length as points
                     ds
 
             let normD =
                 match getWithLength points.Count normalDistances with
-                |Error k  -> EuclidException.Raisef "Euclid.Polyline3D.offset: normalDistances has %d items but should have 0, 1 or %d for %d given points \r\nin closed Polyline3D with start and end apart and loop set to '%b :\r\n%O" k points.Count points.Count loop polyLine
+                |Error k  -> EuclidException.Raise $"Euclid.Polyline3D.offset: normalDistances has {k} items but should have 0, 1 or {points.Count} for {points.Count} given points {Format.nl}in closed Polyline3D with start and end apart and loop set to '{loop}' :{Format.nl}{polyLine}"
                 |Ok    ds -> ds
 
             let res = Polyline3D.offsetCore(points, offD, normD, refNormal, fixColinearLooped=false, allowObliqueOffsetOnColinearSegments=obliqueOffsets)

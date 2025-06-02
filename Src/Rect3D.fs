@@ -53,7 +53,7 @@ type Rect3D =
         if isTooSmall (lenX) then  EuclidException.Raisef "Euclid.Rect3D(): X-axis is too short: %O" axisX
         if isTooSmall (lenY) then  EuclidException.Raisef "Euclid.Rect3D(): Y-axis is too short: %O" axisY
         //just using zeroLengthTolerance 1e-12 seems too strict for dot product check:
-        if abs (axisX *** axisY) > (lenX+lenY) * 1e-9 then EuclidException.Raisef "Euclid.Rect3D(): X-axis and Y-axis are not perpendicular\r\n(dot=%g) > 1e-9 \r\n%O and \r\n%O" (abs (axisX *** axisY)) axisX axisY
+        if abs (axisX *** axisY) > (lenX+lenY) * 1e-9 then EuclidException.Raise $"Euclid.Rect3D(): X-axis and Y-axis are not perpendicular{Format.nl}(dot={(abs(axisX***axisY))}) > 1e-9 {Format.nl}{axisX} and {Format.nl}{axisY}"
         #endif
         {Origin=origin; Xaxis=axisX; Yaxis=axisY}
 
@@ -173,13 +173,13 @@ type Rect3D =
         let y = b.Yaxis.LengthSq
         sqrt  (min x y)
 
-    /// Returns the square of longest edge of the Rect3D.
+    /// Returns the square length of longest edge of the Rect3D.
     member inline b.LongestEdgeSq =
         let x = b.Xaxis.LengthSq
         let y = b.Yaxis.LengthSq
         max x y
 
-    /// Returns the square of longest shortest edge of the Rect3D.
+    /// Returns the square length of shortest edge of the Rect3D.
     member inline b.ShortestEdgeSq =
         let x = b.Xaxis.LengthSq
         let y = b.Yaxis.LengthSq
@@ -346,10 +346,10 @@ type Rect3D =
     /// Fails if x and y are not perpendicularity.
     /// Fails on vectors shorter than 1e-9.
     static member createFromVectors(origin, x:Vec, y:Vec) =
-        if isTooSmallSq(x.LengthSq)then EuclidException.Raisef "Euclid.Rect3D.createFromVectors(origin, x:Vec, y:Vec): X-axis is too short:\r\n%O" y
-        if isTooSmallSq(y.LengthSq) then EuclidException.Raisef "Euclid.Rect3D.createFromVectors(origin, x:Vec, y:Vec): Y-axis is too short:\r\n%O" y
+        if isTooSmallSq(x.LengthSq)then EuclidException.Raise $"Euclid.Rect3D.createFromVectors(origin, x:Vec, y:Vec): X-axis is too short:{Format.nl}{y}"
+        if isTooSmallSq(y.LengthSq) then EuclidException.Raise $"Euclid.Rect3D.createFromVectors(origin, x:Vec, y:Vec): Y-axis is too short:{Format.nl}{y}"
         //zeroLengthTolerance seems too strict for dot product:
-        if abs (x *** y) > 1e-10 then EuclidException.Raisef "Euclid.Rect3D.createFromVectors(origin, x:Vec, y:Vec): X-axis and Y-axis are not perpendicular (dot=%g): \r\n%O and\r\n%O" (abs (x *** y)) x y
+        if abs (x *** y) > 1e-10 then EuclidException.Raise $"Euclid.Rect3D.createFromVectors(origin, x:Vec, y:Vec): X-axis and Y-axis are not perpendicular (dot={(abs(x***y))}): {Format.nl}{x} and{Format.nl}{y}"
         Rect3D(origin, x, y)
 
     /// Give PPlane and sizes.
@@ -528,6 +528,7 @@ type Rect3D =
         Rect3D(r.Origin + z*(offsetDistance/len), r.Xaxis, r.Yaxis)
 
     /// Offset a Rect3D like a Polyline inwards by a given distance.
+    /// Negative distances will offset outwards.
     /// Fails if the distance is larger than half the size of the rectangle.
     static member offset dist (rect:Rect3D) =
         let xl = rect.Xaxis.Length
@@ -540,7 +541,7 @@ type Rect3D =
 
 
     /// Offset a Rect3D like a Polyline inwards by four distances.
-    /// The distance array is for Edge01, Edge12, Edge23 and Edge30 respectively.
+    /// The distance array is for Edge01, Edge12, Edge23, and Edge30 respectively.
     /// Fails if the distance is larger than half the size of the rectangle.
     ///
     ///   local
@@ -588,8 +589,8 @@ type Rect3D =
     ///  0-Origin       1 </param>
     ///<param name="xOffset">The local offset distances in x direction. (Applies to the y side.) Positive values offset to the inside of the rectangle, negative values will offset outwards.</param>
     ///<param name="yOffset">The local offset distances in y direction. (Applies to the x side.) Positive values offset to the inside of the rectangle, negative values will offset outwards.</param>
-    ///<param name="xWidth">The the width (or size in x direction) that will be added to the current offset.</param>
-    ///<param name="yHeight">The the height (or size in y direction) that will be added to the current offset.</param>
+    ///<param name="xWidth">The width (or size in x direction) that will be added to the current offset.</param>
+    ///<param name="yHeight">The height (or size in y direction) that will be added to the current offset.</param>
     ///<returns>A new 3D-rectangle. It will always have the same x and y axis orientation as the input rectangle. Independent of negative or positive offsets</returns>
     static member offsetCorner (rect:Rect3D, corner:int, xOffset:float, yOffset:float, xWidth:float, yHeight:float) =
         let xa = rect.Xaxis
@@ -620,7 +621,7 @@ type Rect3D =
         | _ ->
             EuclidException.Raisef "Euclid.Rect3D.offsetCorner: corner %i out of range 0..3" corner
     static member private failOffsetEdge(offStart, offEnd, len, edgeIdx, d) =
-        EuclidException.Raise $"Euclid.Rect3D.offsetEdge: the 2D Rectangle is too small to offsetEdge by {d} at edgeIdx {edgeIdx}. offStart: {offStart}, offEnd: {offEnd}, Length: {len}"
+        EuclidException.Raise $"Euclid.Rect3D.offsetEdge: the 3D-rectangle is too small to offsetEdge by {d} at edgeIdx {edgeIdx}. offStart: {offStart}, offEnd: {offEnd}, Length: {len}"
 
     ///<summary>Offsets a local Rect3D at one of the four edges.</summary>
     ///<param name="rect">The 3D-rectangle</param>
@@ -681,7 +682,7 @@ type Rect3D =
                 Rect3D( orig offEdge offEnd, xLen width, yLen y )
 
             | _ ->
-                EuclidException.Raisef "Euclid.Rect3D.offsetCorner: corner %i out of range 0..3" edgeIdx
+                EuclidException.Raisef "Euclid.Rect3D.offsetEdge: edgeIdx %i out of range 0..3" edgeIdx
 
         elif width < -1e-6 then // the rect origin needs to be at the other corner
             match edgeIdx with
@@ -702,7 +703,7 @@ type Rect3D =
                 Rect3D( orig (offEdge+width) offEnd, xLen -width, yLen y )
 
             | _ ->
-                EuclidException.Raisef "Euclid.Rect3D.offsetCorner: corner %i out of range 0..3" edgeIdx
+                EuclidException.Raisef "Euclid.Rect3D.offsetEdge: edgeIdx %i out of range 0..3" edgeIdx
         else
             EuclidException.Raisef "Euclid.Rect3D.offsetEdge: width %g must be more than 1e-6" width
 
@@ -738,8 +739,8 @@ type Rect3D =
 
     /// Divides a a 3D-rectangle into a grid of sub-rectangles.
     /// The gap between the sub-rectangles is given in x and y direction. It does not apply to the outer edges of the 3D-rectangle.
-    /// It will create as many sub-rectangles as possible respecting the minimum side length for x and y.
-    /// The input minSegmentLength is multiplied by factor 0.99999 of to avoid numerical errors.
+    /// It will create as many sub-rectangles as possible, respecting the minimum side length for x and y.
+    /// The input minSegmentLength is multiplied by factor 0.99999 to avoid numerical errors.
     /// That means in an edge case there are more segments returned, not fewer.
     /// The returned array is divided along the x-axis. The sub-array is divided along the y-axis.
     static member subDivideMinLength (rect:Rect3D, xMinLen:float, yMinLen:float, xGap:float, yGap:float) =
@@ -754,8 +755,8 @@ type Rect3D =
 
     /// Divides a a 3D-rectangle into a grid of sub-rectangles.
     /// The gap between the sub-rectangles is given in x and y direction. It does not apply to the outer edges of the 3D-rectangle.
-    /// It will create as few as segments as possible respecting the maximum segment length.
-    /// The input maxSegmentLength is multiplied by factor 1.00001 of to avoid numerical errors.
+    /// It will create as few segments as possible respecting the maximum segment length.
+    /// The input maxSegmentLength is multiplied by factor 1.00001 to avoid numerical errors.
     /// That means in an edge case there are fewer segments returned, not more.
     /// The returned array is divided along the x-axis. The sub-array is divided along the y-axis.
     static member subDivideMaxLength (rect:Rect3D, xMaxLen:float, yMaxLen:float, xGap:float, yGap:float) =

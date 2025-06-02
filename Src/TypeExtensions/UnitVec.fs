@@ -212,7 +212,7 @@ module AutoOpenUnitVec =
         /// Calculates the dot product of a 3D vector and a unit-vectors.
         /// Then checks if it is smaller than minus 1e-12.
         member inline v.IsOppositeOrientation (other:Vec) =
-            if isTooTinySq(other.LengthSq) then EuclidException.Raisef "Euclid.UnitVc.IsOppositeOrientation: Vec 'other' is too short: %O. 'this':%O " other v
+            if isTooTinySq(other.LengthSq) then EuclidException.Raisef "Euclid.UnitVec.IsOppositeOrientation: Vec 'other' is too short: %O. 'this':%O " other v
             v *** other < -1e-12
 
 
@@ -256,7 +256,7 @@ module AutoOpenUnitVec =
         /// Checks if two 3D unit-vectors are parallel.
         /// Ignores the line orientation.
         /// The default angle tolerance is 0.25 degrees.
-        /// This tolerance can be customized by an optional minium cosine value.
+        /// This tolerance can be customized by an optional minimum cosine value.
         /// See Euclid.Cosine module.
         member inline this.IsParallelTo(other:UnitVec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
             abs(other *** this) > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
@@ -264,7 +264,7 @@ module AutoOpenUnitVec =
         /// Checks if this 3D unit-vectors and a 3D vector are parallel.
         /// Ignores the line orientation.
         /// The default angle tolerance is 0.25 degrees.
-        /// This tolerance can be customized by an optional minium cosine value.
+        /// This tolerance can be customized by an optional minimum cosine value.
         /// See Euclid.Cosine module.
         member inline this.IsParallelTo(other:Vec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
             let sb = other.LengthSq
@@ -276,7 +276,7 @@ module AutoOpenUnitVec =
         /// Checks if two 3D unit-vectors are parallel.
         /// Takes the line orientation into account too.
         /// The default angle tolerance is 0.25 degrees.
-        /// This tolerance can be customized by an optional minium cosine value.
+        /// This tolerance can be customized by an optional minimum cosine value.
         /// See Euclid.Cosine module.
         member inline this.IsParallelAndOrientedTo (other:UnitVec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
             other *** this > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
@@ -284,7 +284,7 @@ module AutoOpenUnitVec =
         /// Checks if this 3D unit-vectors and a 3D vector are parallel.
         /// Takes the line orientation into account too.
         /// The default angle tolerance is 0.25 degrees.
-        /// This tolerance can be customized by an optional minium cosine value.
+        /// This tolerance can be customized by an optional minimum cosine value.
         /// See Euclid.Cosine module.
         member inline this.IsParallelAndOrientedTo (other:Vec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
             let sb = other.LengthSq
@@ -295,7 +295,7 @@ module AutoOpenUnitVec =
 
         /// Checks if two 3D unit-vectors are perpendicular to each other.
         /// The default angle tolerance is 89.75 to 90.25 degrees.
-        /// This tolerance can be customized by an optional minium cosine value.
+        /// This tolerance can be customized by an optional minimum cosine value.
         /// The default cosine is 0.0043633 ( = 89.75 deg)
         /// See Euclid.Cosine module.
         member inline this.IsPerpendicularTo (other:UnitVec, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) =
@@ -304,7 +304,7 @@ module AutoOpenUnitVec =
 
         /// Checks if this 3D unit-vectors and a 3D vector are perpendicular to each other.
         /// The default angle tolerance is 89.75 to 90.25 degrees.
-        /// This tolerance can be customized by an optional minium cosine value.
+        /// This tolerance can be customized by an optional minimum cosine value.
         /// The default cosine is 0.0043633 ( = 89.75 deg)
         /// See Euclid.Cosine module.
         member inline this.IsPerpendicularTo (other:Vec, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) =
@@ -393,7 +393,7 @@ module AutoOpenUnitVec =
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        static member failedCreateFromMembersXYZ(v:'T,e:exn) = EuclidException.Raisef "Euclid.UnitVec.createFromMembersXYZ: %A could not be converted to a Euclid.UnitVec:\r\n%A" v e
+        static member failedCreateFromMembersXYZ(v:'T,e:exn) = EuclidException.Raise $"Euclid.UnitVec.createFromMembersXYZ: {v} could not be converted to a Euclid.UnitVec:{Format.nl}{e}"
         /// Accepts any type that has a X, Y and Z (UPPERCASE) member that can be converted to a float.
         /// Does the unitizing too.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
@@ -406,7 +406,7 @@ module AutoOpenUnitVec =
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        static member failedCreateFromMembersxyz(v:'T,e:exn) = EuclidException.Raisef "Euclid.UnitVec.createFromMembersxyz: %A could not be converted to a Euclid.UnitVec:\r\n%A" v e
+        static member failedCreateFromMembersxyz(v:'T,e:exn) = EuclidException.Raise $"Euclid.UnitVec.createFromMembersxyz: {v} could not be converted to a Euclid.UnitVec:{Format.nl}{e}"
         /// Accepts any type that has a x, y and z (lowercase) member that can be converted to a float.
         /// Does the unitizing too.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.

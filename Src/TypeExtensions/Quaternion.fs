@@ -2,20 +2,20 @@ namespace Euclid
 
 open Euclid.UtilEuclid
 
-/// When Euclid is opened this module will be auto-opened.
-/// It only contains extension members for type Quaternion.
+/// When Euclid is opened, this module will be auto-opened.
+/// It only contains extension members for the type Quaternion.
 [<AutoOpen>]
 module AutoOpenQuaternion =
 
   type Quaternion with
 
-    /// If the matrix is affine and has no shear or scaling it returns the rotation defined in its 3x3 part.
+    /// If the matrix is affine and has no shear or scaling, it returns the rotation defined in its 3x3 part.
     static member tryCreateFromMatrix(matrix:Matrix) : option<Quaternion> =
         match RigidMatrix.tryCreateFromMatrix(matrix) with
         |None -> None
         |Some m ->
             // http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/index.htm
-            // assumes the upper 3x3 of m is a pure rotation matrix (i.e, unscaled)
+            // assumes the upper 3x3 of m is a pure rotation matrix (i.e. unscaled)
             let m11 = m.M11
             let m12 = m.M21
             let m13 = m.M31
@@ -57,7 +57,7 @@ module AutoOpenQuaternion =
                     0.25 * s       ,
                     (m21 - m12) / s )
 
-    /// Returns the rotation defined in and RigidMatrix's 3x3 part.
+    /// Returns the rotation defined in a RigidMatrix's 3x3 part.
     static member createFromRigidMatrix(orthoMatrix:RigidMatrix) : Quaternion =
         // http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/index.htm
         // assumes the upper 3x3 of m is a pure rotation matrix (i.e, unscaled)

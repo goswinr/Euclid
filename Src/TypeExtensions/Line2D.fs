@@ -17,7 +17,7 @@ module AutoOpenLine2D =
     member inline ln.IsXAligned =
         let x = abs (ln.ToX-ln.FromX)
         let y = abs (ln.ToY-ln.FromY)
-        if isTooSmall (x+y) then EuclidException.Raisef "Euclid.Line2D.IsXAligned cannot not check very short line. (tolerance 1e-6) %O" ln
+        if isTooSmall (x+y) then EuclidException.Raisef "Euclid.Line2D.IsXAligned cannot check very short line. (tolerance 1e-6) %O" ln
         else y < 1e-9
 
     /// Checks if 2D line is parallel to the world Y axis. Ignoring orientation.
@@ -26,10 +26,10 @@ module AutoOpenLine2D =
     member inline ln.IsYAligned =
         let x = abs (ln.ToX-ln.FromX)
         let y = abs (ln.ToY-ln.FromY)
-        if isTooSmall (x+y) then EuclidException.Raisef "Euclid.Line2D.IsYAligned cannot not check very short line. (tolerance 1e-6) %O" ln
+        if isTooSmall (x+y) then EuclidException.Raisef "Euclid.Line2D.IsYAligned cannot check very short line. (tolerance 1e-6) %O" ln
         else x < 1e-9
 
-    /// Check if the line has same starting and ending point.
+    /// Check if the line has the same starting and ending point.
     member inline ln.IsZeroLength =
         ln.ToX = ln.FromX &&
         ln.ToY = ln.FromY
@@ -39,18 +39,18 @@ module AutoOpenLine2D =
     member inline ln.IsTiny tol =
         not (ln.Length > tol) // use not(..) to catch NaN too
 
-    /// Check if the lines square length is shorter than squared tolerance.
+    /// Check if the line's square length is shorter than squared tolerance.
     /// Or has NaN components.
     member inline ln.IsTinySq tol =
         not (ln.LengthSq > tol)
 
-    /// Evaluate line at a given parameter (parameters 0.0 to 1.0 are on the line),
+    /// Evaluate line at a given parameter (parameters 0.0 to 1.0 are on the line).
     member inline ln.EvaluateAt (p:float) =
         Pt  (ln.FromX + (ln.ToX-ln.FromX)*p,
              ln.FromY + (ln.ToY-ln.FromY)*p)
 
-    /// Evaluate line at a given parameters (parameters 0.0 to 1.0 are on the line),
-    /// Return a new line from evaluated points.
+    /// Evaluate line at given parameters (parameters 0.0 to 1.0 are on the line).
+    /// Returns a new line from evaluated points.
     /// Same as ln.Segment(start,ende).
     member inline ln.SubLine (start:float, ende:float) =
         let fromX = ln.FromX
@@ -62,8 +62,8 @@ module AutoOpenLine2D =
                 fromX + x * ende ,
                 fromY + y * ende )
 
-    /// Evaluate line at a given parameters (parameters 0.0 to 1.0 are on the line),
-    /// Return a new line from evaluated points.
+    /// Evaluate line at given parameters (parameters 0.0 to 1.0 are on the line).
+    /// Returns a new line from evaluated points.
     /// Same as ln.SubLine(start,ende).
     member inline ln.Segment(start:float, ende:float) =
         let fromX = ln.FromX
@@ -110,7 +110,7 @@ module AutoOpenLine2D =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
         let l = sqrt(x*x + y*y)
-        if isTooTiny l then EuclidException.Raisef "Euclid.Line2D.Extend %O to short for finding point at a distance." ln
+        if isTooTiny l then EuclidException.Raisef "Euclid.Line2D.Extend %O too short for finding point at a distance." ln
         Line2D( ln.FromX - x*distAtStart/l,
                 ln.FromY - y*distAtStart/l,
                 ln.ToX   + x*distAtEnd/l,
@@ -122,7 +122,7 @@ module AutoOpenLine2D =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
         let l = sqrt(x*x + y*y)
-        if isTooTiny l then EuclidException.Raisef "Euclid.Line2D.ExtendStart %O to short for finding point at a distance." ln
+        if isTooTiny l then EuclidException.Raisef "Euclid.Line2D.ExtendStart %O too short for finding point at a distance." ln
         Line2D( ln.FromX - x*distAtStart/l,
                 ln.FromY - y*distAtStart/l,
                 ln.ToX,
@@ -134,7 +134,7 @@ module AutoOpenLine2D =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
         let l = sqrt(x*x + y*y)
-        if isTooTiny l then EuclidException.Raisef "Euclid.Line2D.ExtendEnd %O to short for finding point at a distance." ln
+        if isTooTiny l then EuclidException.Raisef "Euclid.Line2D.ExtendEnd %O too short for finding point at a distance." ln
         Line2D( ln.FromX,
                 ln.FromY,
                 ln.ToX   + x*distAtEnd/l,
@@ -147,7 +147,7 @@ module AutoOpenLine2D =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
         let l = sqrt(x*x + y*y)
-        if isTooTiny l then EuclidException.Raisef "Euclid.Line2D.ExtendRel %O to short for finding point at a distance." ln
+        if isTooTiny l then EuclidException.Raisef "Euclid.Line2D.ExtendRel %O too short for finding point at a distance." ln
         Line2D( ln.FromX - x*relAtStart,
                 ln.FromY - y*relAtStart,
                 ln.ToX   + x*relAtEnd,
@@ -160,7 +160,7 @@ module AutoOpenLine2D =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
         let l = sqrt(x*x + y*y)
-        if isTooTiny l then EuclidException.Raisef "Euclid.Line2D.ExtendStartRel %O to short for finding point at a distance." ln
+        if isTooTiny l then EuclidException.Raisef "Euclid.Line2D.ExtendStartRel %O too short for finding point at a distance." ln
         Line2D( ln.FromX - x*relAtStart,
                 ln.FromY - y*relAtStart,
                 ln.ToX,
@@ -173,7 +173,7 @@ module AutoOpenLine2D =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
         let l = sqrt(x*x + y*y)
-        if isTooTiny l then EuclidException.Raisef "Euclid.Line2D.ExtendEndRel %O to short for finding point at a distance." ln
+        if isTooTiny l then EuclidException.Raisef "Euclid.Line2D.ExtendEndRel %O too short for finding point at a distance." ln
         Line2D( ln.FromX,
                 ln.FromY,
                 ln.ToX   + x*relAtEnd,
@@ -185,7 +185,7 @@ module AutoOpenLine2D =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
         let l = sqrt(x*x + y*y)
-        if isTooTiny l then EuclidException.Raisef "Euclid.Line2D.Shrink %O to short for finding point at a distance." ln
+        if isTooTiny l then EuclidException.Raisef "Euclid.Line2D.Shrink %O too short for finding point at a distance." ln
         Line2D( ln.FromX + x*distAtStart/l,
                 ln.FromY + y*distAtStart/l,
                 ln.ToX   - x*distAtEnd/l,
@@ -197,7 +197,7 @@ module AutoOpenLine2D =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
         let l = sqrt(x*x + y*y)
-        if isTooTiny l then EuclidException.Raisef "Euclid.Line2D.ShrinkStart %O to short for finding point at a distance." ln
+        if isTooTiny l then EuclidException.Raisef "Euclid.Line2D.ShrinkStart %O too short for finding point at a distance." ln
         Line2D( ln.FromX + x*distAtStart/l,
                 ln.FromY + y*distAtStart/l,
                 ln.ToX,
@@ -209,7 +209,7 @@ module AutoOpenLine2D =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
         let l = sqrt(x*x + y*y)
-        if isTooTiny l then EuclidException.Raisef "Euclid.Line2D.ShrinkEnd %O to short for finding point at a distance." ln
+        if isTooTiny l then EuclidException.Raisef "Euclid.Line2D.ShrinkEnd %O too short for finding point at a distance." ln
         Line2D( ln.FromX,
                 ln.FromY,
                 ln.ToX   - x*distAtEnd/l,
@@ -255,7 +255,7 @@ module AutoOpenLine2D =
 
     /// Returns the parameter at which a point is closest to the (finite) line.
     /// The result is between 0.0 and 1.0.
-    /// Does not fails on very short curves.
+    /// Does not fail on very short curves.
     member inline ln.ClosestParameter (p:Pt) =
         //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
         let x = ln.FromX - ln.ToX
@@ -290,7 +290,7 @@ module AutoOpenLine2D =
         Pt(x', y')
 
     /// Returns closest point on (finite) line.
-    /// Does not fails on very short curves.
+    /// Does not fail on very short curves.
     member ln.ClosestPoint (p:Pt) =
         ln.EvaluateAt(ln.ClosestParameter(p))
 
@@ -367,7 +367,7 @@ module AutoOpenLine2D =
     /// Checks if two 2D lines are parallel.
     /// Ignores the line orientation.
     /// The default angle tolerance is 0.25 degrees.
-    /// This tolerance can be customized by an optional minium cosine value.
+    /// This tolerance can be customized by an optional minimum cosine value.
     /// See Euclid.Cosine module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.IsParallelTo( other:Line2D, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
@@ -385,7 +385,7 @@ module AutoOpenLine2D =
     /// Checks if a 2D lines is parallel to a 2D vector.
     /// Ignores the line orientation.
     /// The default angle tolerance is 0.25 degrees.
-    /// This tolerance can be customized by an optional minium cosine value.
+    /// This tolerance can be customized by an optional minimum cosine value.
     /// See Euclid.Cosine module.
     /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.IsParallelTo( other:Vc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
@@ -402,7 +402,7 @@ module AutoOpenLine2D =
     /// Checks if a 2D lines is parallel to a 2D unit-vector.
     /// Ignores the line orientation.
     /// The default angle tolerance is 0.25 degrees.
-    /// This tolerance can be customized by an optional minium cosine value.
+    /// This tolerance can be customized by an optional minimum cosine value.
     /// See Euclid.Cosine module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.IsParallelTo( other:UnitVc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
@@ -416,7 +416,7 @@ module AutoOpenLine2D =
     /// Checks if two 2D lines are parallel.
     /// Takes the line orientation into account too.
     /// The default angle tolerance is 0.25 degrees.
-    /// This tolerance can be customized by an optional minium cosine value.
+    /// This tolerance can be customized by an optional minimum cosine value.
     /// See Euclid.Cosine module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.IsParallelAndOrientedTo (other:Line2D, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
@@ -433,7 +433,7 @@ module AutoOpenLine2D =
     /// Checks if a 2D lines is parallel to a 2D vector.
     /// Takes the line orientation into account too.
     /// The default angle tolerance is 0.25 degrees.
-    /// This tolerance can be customized by an optional minium cosine value.
+    /// This tolerance can be customized by an optional minimum cosine value.
     /// See Euclid.Cosine module.
     /// Fails on lines  or vectors shorter than 1e-12.
     member inline ln.IsParallelAndOrientedTo (other:Vc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
@@ -451,7 +451,7 @@ module AutoOpenLine2D =
     /// Checks if a 2D lines is parallel to a 2D unit-vector.
     /// Takes the line orientation into account too.
     /// The default angle tolerance is 0.25 degrees.
-    /// This tolerance can be customized by an optional minium cosine value.
+    /// This tolerance can be customized by an optional minimum cosine value.
     /// See Euclid.Cosine module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.IsParallelAndOrientedTo (other:UnitVc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
@@ -462,10 +462,9 @@ module AutoOpenLine2D =
         other***au > float minCosine
 
 
-
     /// Checks if two 2D lines are perpendicular to each other.
     /// The default angle tolerance is 89.75 to 90.25 degrees.
-    /// This tolerance can be customized by an optional minium cosine value.
+    /// This tolerance can be customized by an optional minimum cosine value.
     /// The default cosine is 0.0043633 ( = 89.75 deg)
     /// See Euclid.Cosine module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -484,7 +483,7 @@ module AutoOpenLine2D =
 
     /// Checks if a 2D lines is perpendicular to a 2D vector.
     /// The default angle tolerance is 89.75 to 90.25 degrees.
-    /// This tolerance can be customized by an optional minium cosine value.
+    /// This tolerance can be customized by an optional minimum cosine value.
     /// The default cosine is 0.0043633 ( = 89.75 deg)
     /// See Euclid.Cosine module.
     /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -502,7 +501,7 @@ module AutoOpenLine2D =
 
     /// Checks if a 2D lines is perpendicular to a 2D unit-vector.
     /// The default angle tolerance is 89.75 to 90.25 degrees.
-    /// This tolerance can be customized by an optional minium cosine value.
+    /// This tolerance can be customized by an optional minimum cosine value.
     /// The default cosine is 0.0043633 ( = 89.75 deg)
     /// See Euclid.Cosine module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -520,7 +519,7 @@ module AutoOpenLine2D =
     /// and the distance of second start to the first line is less than the distance tolerance.
     /// Also returns false on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     /// The default angle tolerance is 0.25 degrees.
-    /// This tolerance can be customized by an optional minium cosine value.
+    /// This tolerance can be customized by an optional minimum cosine value.
     /// See Euclid.Cosine module.
     member inline ln.IsCoincidentTo (other:Line2D,
                                     [<OPT;DEF(1e-6)>] distanceTolerance:float,
@@ -850,7 +849,7 @@ module AutoOpenLine2D =
     static member inline distanceToPtInfinite(p:Pt) (ln:Line2D) =
         ln.DistanceToPtInfinite p
 
-    /// Returns the square distance from point to (finite) line.
+    /// Returns the square distance from point to finite line.
     static member inline distanceSqFromPoint(p:Pt) (ln:Line2D) =
         ln.DistanceSqFromPoint p
 
@@ -920,7 +919,7 @@ module AutoOpenLine2D =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
         let len = sqrt(x*x + y*y)
-        if isTooTiny len then EuclidException.Raisef "Euclid.Line2D.pointAtDistance %O to short for finding point at a distance." ln
+        if isTooTiny len then EuclidException.Raisef "Euclid.Line2D.pointAtDistance %O too short for finding point at a distance." ln
         Pt(ln.FromX + x*dist/len,
             ln.FromY + y*dist/len)
 
@@ -930,7 +929,7 @@ module AutoOpenLine2D =
         let x = ln.ToX-ln.FromX
         let y = ln.ToY-ln.FromY
         let l = sqrt(x*x + y*y)
-        if isTooTiny l then EuclidException.Raisef "Euclid.Line2D.withLengthFromStart %O to short for finding point at a distance." ln
+        if isTooTiny l then EuclidException.Raisef "Euclid.Line2D.withLengthFromStart %O too short for finding point at a distance." ln
         Line2D( ln.FromX,
                 ln.FromY,
                 ln.FromX + x*len/l,
@@ -942,7 +941,7 @@ module AutoOpenLine2D =
         let x = ln.FromX-ln.ToX
         let y = ln.FromY-ln.ToY
         let l = sqrt(x*x + y*y)
-        if isTooTiny l then EuclidException.Raisef "Euclid.Line2D.withLengthToEnd %O to short for finding point at a distance." ln
+        if isTooTiny l then EuclidException.Raisef "Euclid.Line2D.withLengthToEnd %O too short for finding point at a distance." ln
         Line2D( ln.ToX + x*len/l,
                 ln.ToY + y*len/l,
                 ln.ToX,
@@ -956,7 +955,7 @@ module AutoOpenLine2D =
         let x = ln.FromX-ln.ToX
         let y = ln.FromY-ln.ToY
         let l = sqrt(x*x + y*y)
-        if isTooTiny l then EuclidException.Raisef "Euclid.Line2D.withLengthFromMid %O to short for finding point at a distance." ln
+        if isTooTiny l then EuclidException.Raisef "Euclid.Line2D.withLengthFromMid %O too short for finding point at a distance." ln
         let f = (len/l + 1.0) * 0.5
         Line2D( ln.ToX   + x*f,
                 ln.ToY   + y*f,
@@ -1146,7 +1145,7 @@ module AutoOpenLine2D =
     /// | Coincident:
     /// The lines are coincident (or maybe even identical) .
     /// As infinite lines they have infinitely many points in common.
-    /// They might still not have the same start and end points in their finit definition.
+    /// They might still not have the same start and end points in their finite definition.
     ///
     /// | TooShort:
     /// One or both input lines is shorter than the given minimum Length tolerance. </returns>
@@ -1221,7 +1220,7 @@ module AutoOpenLine2D =
     ///     As infinite lines they have infinitely many points in common.
     ///
     /// | TooShort:
-    ///     One or both input lines is shorter than the given minimum Length tolerance.
+    ///     One or both lines are shorter than the given minimum Length tolerance.
     /// </returns>
     static member inline intersectionInfinite  (lnA:Line2D,
                                                 lnB:Line2D,
@@ -1258,15 +1257,15 @@ module AutoOpenLine2D =
                                             ) : Pt =
         match Line2D.intersectionInfinite(lnA, lnB, relAngleDiscriminant, coincidentTolerance, tooShortTolerance) with
         |IntersectionPoints2D.Point p     -> p
-        |IntersectionPoints2D.Parallel    -> EuclidException.Raisef "Euclid.Line2D.intersectionPointInfinite: Lines are parallel lnA: \r\n%O and lnB: \r\n%O" lnA lnB
-        |IntersectionPoints2D.Coincident  -> EuclidException.Raisef "Euclid.Line2D.intersectionPointInfinite: Lines are coincident lnA: \r\n%O and lnB: \r\n%O" lnA lnB
-        |IntersectionPoints2D.TooShort    -> EuclidException.Raisef "Euclid.Line2D.intersectionPointInfinite: Lines are tooShort lnA: \r\n%O and lnB: \r\n%O" lnA lnB
+        |IntersectionPoints2D.Parallel    -> EuclidException.Raise $"Euclid.Line2D.intersectionPointInfinite: Lines are parallel lnA: {Format.nl}{lnA} and lnB: {Format.nl}{lnB}"
+        |IntersectionPoints2D.Coincident  -> EuclidException.Raise $"Euclid.Line2D.intersectionPointInfinite: Lines are coincident lnA: {Format.nl}{lnA} and lnB: {Format.nl}{lnB}"
+        |IntersectionPoints2D.TooShort    -> EuclidException.Raise $"Euclid.Line2D.intersectionPointInfinite: Lines are too short lnA: {Format.nl}{lnA} and lnB: {Format.nl}{lnB}"
 
 
     //static member distanceBetweenInfiniteLines(lnA, lnB) = // doesn't make sense for 2D lines
 
 
-    /// <summary>Returns the intersection kind and the parameters at which two (finite) 2D Lines intersect or are closest to each other.
+    /// <summary>Returns the intersection kind and the parameters at which two (finite)  2D Lines intersect or are closest to each other.
     /// The returned parameters are both between 0.0 and 1.0.
     /// For parallel and coincident lines it still returns the two end points that are closest to each other or a point in the middle of their overlap.
     /// First parameter is on lnA, second parameter is on lnB.
@@ -1684,7 +1683,7 @@ module AutoOpenLine2D =
             let x = a.FromX-b.ToX
             let y = a.FromY-b.ToY
             x*x + y*y < tolSq) then 2
-            // if ( // this cant happen because it would have been caught by the above if case
+            // if (// this cant happen because it would have been caught by the above if case
             //     let x = a.ToX-b.FromX
             //     let y = a.ToY-b.FromY
             //     x*x + y*y < tolSq) then 6
@@ -1704,7 +1703,7 @@ module AutoOpenLine2D =
             let x = a.ToX-b.ToX
             let y = a.ToY-b.ToY
             x*x + y*y < tolSq) then 4
-            // if ( // this cant happen because it would have been caught by the above if case
+            // if (// this cant happen because it would have been caught by the above if case
             //     let x = a.FromX-b.FromX
             //     let y = a.FromY-b.FromY
             //     x*x + y*y < tolSq) then 5
@@ -1744,4 +1743,4 @@ module AutoOpenLine2D =
         Line2D( osx + ovx * s,
                 osy + ovy * s,
                 osx + ovx * e,
-                osy + ovy * e )
+                osy + ovy * e)

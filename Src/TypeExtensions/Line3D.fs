@@ -154,7 +154,7 @@ module AutoOpenLine3D =
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let l = sqrt(x*x + y*y + z*z)
-        if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.Extend %O to short for finding point at a distance." ln
+        if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.Extend %O too short for finding point at a distance." ln
         Line3D( ln.FromX - x*distAtStart/l,
                 ln.FromY - y*distAtStart/l,
                 ln.FromZ - z*distAtStart/l,
@@ -169,7 +169,7 @@ module AutoOpenLine3D =
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let l = sqrt(x*x + y*y + z*z)
-        if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.ExtendStart %O to short for finding point at a distance." ln
+        if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.ExtendStart %O too short for finding point at a distance." ln
         Line3D( ln.FromX - x*distAtStart/l,
                 ln.FromY - y*distAtStart/l,
                 ln.FromZ - z*distAtStart/l,
@@ -184,7 +184,7 @@ module AutoOpenLine3D =
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let l = sqrt(x*x + y*y + z*z)
-        if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.ExtendEnd %O to short for finding point at a distance." ln
+        if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.ExtendEnd %O too short for finding point at a distance." ln
         Line3D( ln.FromX,
                 ln.FromY,
                 ln.FromZ,
@@ -200,7 +200,7 @@ module AutoOpenLine3D =
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let l = sqrt(x*x + y*y + z*z)
-        if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.ExtendRel %O to short for finding point at a distance." ln
+        if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.ExtendRel %O too short for finding point at a distance." ln
         Line3D( ln.FromX - x*relAtStart,
                 ln.FromY - y*relAtStart,
                 ln.FromZ - z*relAtStart,
@@ -216,7 +216,7 @@ module AutoOpenLine3D =
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let l = sqrt(x*x + y*y + z*z)
-        if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.ExtendStartRel %O to short for finding point at a distance." ln
+        if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.ExtendStartRel %O too short for finding point at a distance." ln
         Line3D( ln.FromX - x*relAtStart,
                 ln.FromY - y*relAtStart,
                 ln.FromZ - z*relAtStart,
@@ -232,7 +232,7 @@ module AutoOpenLine3D =
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let l = sqrt(x*x + y*y + z*z)
-        if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.ExtendEndRel %O to short for finding point at a distance." ln
+        if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.ExtendEndRel %O too short for finding point at a distance." ln
         Line3D( ln.FromX,
                 ln.FromY,
                 ln.FromZ,
@@ -247,7 +247,7 @@ module AutoOpenLine3D =
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let l = sqrt(x*x + y*y + z*z)
-        if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.Shrink %O to short for finding point at a distance." ln
+        if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.Shrink %O too short for finding point at a distance." ln
         Line3D( ln.FromX + x*distAtStart/l,
                 ln.FromY + y*distAtStart/l,
                 ln.FromZ + z*distAtStart/l,
@@ -262,7 +262,7 @@ module AutoOpenLine3D =
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let l = sqrt(x*x + y*y + z*z)
-        if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.ShrinkStart %O to short for finding point at a distance." ln
+        if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.ShrinkStart %O too short for finding point at a distance." ln
         Line3D( ln.FromX + x*distAtStart/l,
                 ln.FromY + y*distAtStart/l,
                 ln.FromZ + z*distAtStart/l,
@@ -277,7 +277,7 @@ module AutoOpenLine3D =
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let l = sqrt(x*x + y*y + z*z)
-        if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.ShrinkEnd %O to short for finding point at a distance." ln
+        if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.ShrinkEnd %O too short for finding point at a distance." ln
         Line3D( ln.FromX,
                 ln.FromY,
                 ln.FromZ,
@@ -340,7 +340,7 @@ module AutoOpenLine3D =
 
     /// Returns the parameter at which a point is closest to the (finite) line.
     /// The result is between 0.0 and 1.0.
-    /// Does not fails on very short curves.
+    /// Does not fail on very short curves.
     member inline ln.ClosestParameter (p:Pnt) =
         //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
         let x = ln.FromX - ln.ToX
@@ -380,7 +380,7 @@ module AutoOpenLine3D =
         Pnt(x', y', z')
 
     /// Returns closest point on (finite) line.
-    /// Does not fails on very short curves.
+    /// Does not fail on very short curves.
     member inline ln.ClosestPoint (p:Pnt) =
         ln.EvaluateAt(ln.ClosestParameter(p))
 
@@ -460,7 +460,7 @@ module AutoOpenLine3D =
     /// Checks if two 3D lines are parallel.
     /// Ignores the line orientation.
     /// The default angle tolerance is 0.25 degrees.
-    /// This tolerance can be customized by an optional minium cosine value.
+    /// This tolerance can be customized by an optional minimum cosine value.
     /// See Euclid.Cosine module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.IsParallelTo( other:Line3D, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
@@ -477,7 +477,7 @@ module AutoOpenLine3D =
     /// Checks if a 3D lines is parallel to a 3D vector.
     /// Ignores the line orientation.
     /// The default angle tolerance is 0.25 degrees.
-    /// This tolerance can be customized by an optional minium cosine value.
+    /// This tolerance can be customized by an optional minimum cosine value.
     /// See Euclid.Cosine module.
     /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.IsParallelTo( other:Vec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
@@ -494,7 +494,7 @@ module AutoOpenLine3D =
     /// Checks if a 3D lines is parallel to a 3D unit-vector.
     /// Ignores the line orientation.
     /// The default angle tolerance is 0.25 degrees.
-    /// This tolerance can be customized by an optional minium cosine value.
+    /// This tolerance can be customized by an optional minimum cosine value.
     /// See Euclid.Cosine module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.IsParallelTo( other:UnitVec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
@@ -508,7 +508,7 @@ module AutoOpenLine3D =
     /// Checks if two 3D lines are parallel.
     /// Takes the line orientation into account too.
     /// The default angle tolerance is 0.25 degrees.
-    /// This tolerance can be customized by an optional minium cosine value.
+    /// This tolerance can be customized by an optional minimum cosine value.
     /// See Euclid.Cosine module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.IsParallelAndOrientedTo (other:Line3D, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
@@ -525,7 +525,7 @@ module AutoOpenLine3D =
     /// Checks if a 3D lines is parallel to a 3D vector.
     /// Takes the line orientation into account too.
     /// The default angle tolerance is 0.25 degrees.
-    /// This tolerance can be customized by an optional minium cosine value.
+    /// This tolerance can be customized by an optional minimum cosine value.
     /// See Euclid.Cosine module.
     /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.IsParallelAndOrientedTo (other:Vec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
@@ -542,7 +542,7 @@ module AutoOpenLine3D =
     /// Checks if a 3D lines is parallel to a 3D unit-vector.
     /// Takes the line orientation into account too.
     /// The default angle tolerance is 0.25 degrees.
-    /// This tolerance can be customized by an optional minium cosine value.
+    /// This tolerance can be customized by an optional minimum cosine value.
     /// See Euclid.Cosine module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.IsParallelAndOrientedTo (other:UnitVec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
@@ -555,7 +555,7 @@ module AutoOpenLine3D =
 
     /// Checks if two 3D lines are perpendicular to each other.
     /// The default angle tolerance is 89.75 to 90.25 degrees.
-    /// This tolerance can be customized by an optional minium cosine value.
+    /// This tolerance can be customized by an optional minimum cosine value.
     /// The default cosine is 0.0043633 ( = 89.75 deg)
     /// See Euclid.Cosine module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -574,7 +574,7 @@ module AutoOpenLine3D =
 
     /// Checks if a 3D lines is perpendicular to a 3D vector.
     /// The default angle tolerance is 89.75 to 90.25 degrees.
-    /// This tolerance can be customized by an optional minium cosine value.
+    /// This tolerance can be customized by an optional minimum cosine value.
     /// The default cosine is 0.0043633 ( = 89.75 deg)
     /// See Euclid.Cosine module.
     /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -592,7 +592,7 @@ module AutoOpenLine3D =
 
     /// Checks if a 3D lines is perpendicular to a 3D unit-vector.
     /// The default angle tolerance is 89.75 to 90.25 degrees.
-    /// This tolerance can be customized by an optional minium cosine value.
+    /// This tolerance can be customized by an optional minimum cosine value.
     /// The default cosine is 0.0043633 ( = 89.75 deg)
     /// See Euclid.Cosine module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -610,7 +610,7 @@ module AutoOpenLine3D =
     /// and the distance of second start to the first line is less than the distance tolerance.
     /// Also returns false on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     /// The default angle tolerance is 0.25 degrees.
-    /// This tolerance can be customized by an optional minium cosine value.
+    /// This tolerance can be customized by an optional minimum cosine value.
     /// See Euclid.Cosine module.
     member inline ln.IsCoincidentTo (other:Line3D,
                                     [<OPT;DEF(1e-6)>] distanceTolerance:float,
@@ -986,7 +986,7 @@ module AutoOpenLine3D =
     static member inline lengthToPtOnLine (ln:Line3D) pt =
         let t = ln.Vector
         let l = t.Length
-        if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.lengthToPtOnLine %O to short for finding length to point." ln
+        if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.lengthToPtOnLine %O too short for finding length to point." ln
         (t/l) *** (pt-ln.From)
 
     /// Extend 3D line by absolute amount at start and end.
@@ -1044,7 +1044,7 @@ module AutoOpenLine3D =
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let len = sqrt(x*x + y*y + z*z)
-        if isTooTiny len then EuclidException.Raisef "Euclid.Line3D.pointAtDistance %O to short for finding point at a distance." ln
+        if isTooTiny len then EuclidException.Raisef "Euclid.Line3D.pointAtDistance %O too short for finding point at a distance." ln
         let f = dist/len
         Pnt(ln.FromX + x*f,
             ln.FromY + y*f,
@@ -1057,7 +1057,7 @@ module AutoOpenLine3D =
         let y = ln.ToY-ln.FromY
         let z = ln.ToZ-ln.FromZ
         let l = sqrt(x*x + y*y + z*z)
-        if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.withLengthFromStart %O to short for finding point at a distance." ln
+        if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.withLengthFromStart %O too short for finding point at a distance." ln
         let f = len/l
         Line3D( ln.FromX,
                 ln.FromY,
@@ -1073,7 +1073,7 @@ module AutoOpenLine3D =
         let y = ln.FromY-ln.ToY
         let z = ln.FromZ-ln.ToZ
         let l = sqrt(x*x + y*y + z*z)
-        if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.withLengthToEnd %O to short for finding point at a distance." ln
+        if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.withLengthToEnd %O too short for finding point at a distance." ln
         let f = len/l
         Line3D( ln.ToX + x*f,
                 ln.ToY + y*f,
@@ -1090,7 +1090,7 @@ module AutoOpenLine3D =
         let y = ln.FromY-ln.ToY
         let z = ln.FromZ-ln.ToZ
         let l = sqrt(x*x + y*y + z*z)
-        if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.withLengthFromMid %O to short for finding point at a distance." ln
+        if isTooTiny l then EuclidException.Raisef "Euclid.Line3D.withLengthFromMid %O too short for finding point at a distance." ln
         let f = (len/l + 1.0) * 0.5
         Line3D( ln.ToX   + x*f,
                 ln.ToY   + y*f,
@@ -1420,10 +1420,10 @@ module AutoOpenLine3D =
                                             ) : Pnt =
         match Line3D.intersectionInfinite(lnA, lnB, skewTolerance, relAngleDiscriminant, coincidentTolerance, tooShortTolerance) with
         |IntersectionPoints3D.OnePoint p  -> p
-        |IntersectionPoints3D.TwoPoints _ -> EuclidException.Raisef "Euclid.Line3D.intersectionPointInfinite: Lines are skew lnA: \r\n%O and lnB: \r\n%O" lnA lnB
-        |IntersectionPoints3D.Parallel    -> EuclidException.Raisef "Euclid.Line3D.intersectionPointInfinite: Lines are parallel lnA: \r\n%O and lnB: \r\n%O" lnA lnB
-        |IntersectionPoints3D.Coincident  -> EuclidException.Raisef "Euclid.Line3D.intersectionPointInfinite: Lines are coincident lnA: \r\n%O and lnB: \r\n%O" lnA lnB
-        |IntersectionPoints3D.TooShort    -> EuclidException.Raisef "Euclid.Line3D.intersectionPointInfinite: Lines are tooShort lnA: \r\n%O and lnB: \r\n%O" lnA lnB
+        |IntersectionPoints3D.TwoPoints _ -> EuclidException.Raise $"Euclid.Line3D.intersectionPointInfinite: Lines are skew lnA: {Format.nl}{lnA} and lnB: {Format.nl}{lnB}"
+        |IntersectionPoints3D.Parallel    -> EuclidException.Raise $"Euclid.Line3D.intersectionPointInfinite: Lines are parallel lnA: {Format.nl}{lnA} and lnB: {Format.nl}{lnB}"
+        |IntersectionPoints3D.Coincident  -> EuclidException.Raise $"Euclid.Line3D.intersectionPointInfinite: Lines are coincident lnA: {Format.nl}{lnA} and lnB: {Format.nl}{lnB}"
+        |IntersectionPoints3D.TooShort    -> EuclidException.Raise $"Euclid.Line3D.intersectionPointInfinite: Lines are too short lnA: {Format.nl}{lnA} and lnB: {Format.nl}{lnB}"
 
     /// Assumes Lines to be infinite.
     /// Returns the distance between two infinite 3D lines. At their closest point.
@@ -1434,9 +1434,9 @@ module AutoOpenLine3D =
     static member inline distanceBetweenInfiniteLines(lnA, lnB) =
         match Line3D.intersectionParamInfinite(lnA, lnB) with
         |IntersectionParam.Coincident    ->  0.0
-        |IntersectionParam.TooShortA     ->  EuclidException.Raisef "Euclid.Line3D.distanceBetweenInfiniteLines: Line A is tooShort lnA: \r\n%O and lnB: \r\n%O" lnA lnB
-        |IntersectionParam.TooShortB     ->  EuclidException.Raisef "Euclid.Line3D.distanceBetweenInfiniteLines: Line B is  tooShort lnA: \r\n%O and lnB: \r\n%O" lnA lnB
-        |IntersectionParam.TooShortBoth  ->  EuclidException.Raisef "Euclid.Line3D.distanceBetweenInfiniteLines: both Lines are tooShort lnA: \r\n%O and lnB: \r\n%O" lnA lnB
+        |IntersectionParam.TooShortA     ->  EuclidException.Raise $"Euclid.Line3D.distanceBetweenInfiniteLines: Line A is too short lnA: {Format.nl}{lnA} and lnB: {Format.nl}{lnB}"
+        |IntersectionParam.TooShortB     ->  EuclidException.Raise $"Euclid.Line3D.distanceBetweenInfiniteLines: Line B is  tooShort lnA: {Format.nl}{lnA} and lnB: {Format.nl}{lnB}"
+        |IntersectionParam.TooShortBoth  ->  EuclidException.Raise $"Euclid.Line3D.distanceBetweenInfiniteLines: both Lines are too short lnA: {Format.nl}{lnA} and lnB: {Format.nl}{lnB}"
         |IntersectionParam.Parallel      -> lnA.DistanceToPntInfinite lnB.From
         |TwoParam (u, v) -> // skew or intersecting
             let a = lnA.EvaluateAt u

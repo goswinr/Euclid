@@ -10,7 +10,7 @@ open UtilEuclid
 [<RequireQualifiedAccess>]
 type Points private () =
     // static class, use these attributes [<AbstractClass; Sealed>] to match C# static class
-    // and make in visible in C# // https://stackoverflow.com/questions/13101995/defining-static-classes-in-f
+    // and make it visible in C# // https://stackoverflow.com/questions/13101995/defining-static-classes-in-f
 
 
     /// Returns the double square area of a triangle.
@@ -53,7 +53,7 @@ type Points private () =
     static member areInLine (a:Pnt, b:Pnt, c:Pnt, [<OPT;DEF(1e-6)>] distanceTolerance:float) =
 
         let inline  distanceSqLineToPntInfinite(lnFrom:Pnt, lnTo:Pnt, p:Pnt,  lnSqLen:float) =
-            // rewritten from  as Line3D.distanceLineToPntInfinite
+            // rewritten from as Line3D.distanceLineToPntInfinite
             // http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
             let x = lnFrom.X - lnTo.X
             let y = lnFrom.Y - lnTo.Y
@@ -113,7 +113,7 @@ type Points private () =
         area * 0.5
 
 
-    /// Returns the closest 3D point index form a 3D point list to a given 3D point.
+    /// Returns the closest 3D point index from a 3D point list to a given 3D point.
     static member closestPointIdx (pts:ResizeArray<Pnt>, pt:Pnt) : int =
         if pts.Count = 0 then EuclidException.Raisef "Euclid.Points.closestPoint<Pnt>: empty List of Points: pts"
         let mutable mi = -1
@@ -126,7 +126,7 @@ type Points private () =
                 mi <- i
         mi
 
-    /// Returns the closest 2D point index form a 2D point list to a given 2D point.
+    /// Returns the closest 2D point index from a 2D point list to a given 2D point.
     static member closestPointIdx (pts:ResizeArray<Pt>, pt:Pt) : int =
         if pts.Count = 0 then EuclidException.Raisef "Euclid.Points.closestPoint<Pt>: empty List of Points: pts"
         let mutable mi = -1
@@ -139,11 +139,11 @@ type Points private () =
                 mi <- i
         mi
 
-    /// Returns the closest point form a 3D point list to a given 3D point.
+    /// Returns the closest point from a 3D point list to a given 3D point.
     static member closestPoint (pts:ResizeArray<Pnt>, pt:Pnt) : Pnt=
         pts.[Points.closestPointIdx (pts, pt)]
 
-    /// Returns the closest 2D point form a point list to a given 2D point.
+    /// Returns the closest 2D point from a point list to a given 2D point.
     static member closestPoint (pts:ResizeArray<Pt>, pt:Pt) : Pt=
         pts.[Points.closestPointIdx (pts, pt)]
 
@@ -169,9 +169,9 @@ type Points private () =
         //TODO
         // (1)
         // the current quadratic runtime could be optimized by first sorting the points in x (or y) direction
-        // then the search loop could star when x distance is smaller than minD, and exist when it is bigger
+        // then the search loop could start when x distance is smaller than minD, and exit when it is bigger
         // (2)
-        // alternatively a spatial hash could be used to cluster nearby objects. the challenge would be to finde the right cell size for each point
+        // alternatively a spatial hash could be used to cluster nearby objects. the challenge would be to find the right cell size for each point
         // (3)
         // the bounding Rectangles of each set could be intersected. then expanded. then used to filter both lists.
         if xs.Count = 0 then EuclidException.Raisef "Euclid.Points.closestPointsIdx<Pt>: empty List of Points: xs"
@@ -266,7 +266,7 @@ type Points private () =
         findPointFrom.[i]
 
 
-    /// Culls 3D points if they are to close to previous or next item.
+    /// Culls 3D points if they are too close to previous or next item.
     /// Last and first 3D points stay the same.
     static member cullDuplicatePointsInSeq (pts:ResizeArray<Pnt>, tolerance) =
         if pts.Count = 0 then EuclidException.Raisef "Euclid.Points.cullDuplicatePointsInSeq<Pnt>: empty List of Points"
@@ -288,7 +288,7 @@ type Points private () =
                     res.Add pt
             res
 
-    /// Culls 2D points if they are to close to previous or next item.
+    /// Culls 2D points if they are too close to previous or next item.
     /// Last and first 2D points stay the same.
     static member cullDuplicatePointsInSeq (pts:ResizeArray<Pt>, tolerance) =
         if pts.Count = 0 then EuclidException.Raisef "Euclid.Points.cullDuplicatePointsInSeq<Pt>: empty List of Points"
@@ -313,11 +313,11 @@ type Points private () =
 
 
 
-    /// Similar to join polylines this tries to find continuos sequences of 2D points.
-    /// 'tolGap' is the maximum allowable gap between the start and the endpoint of to segments.
+    /// Similar to join polylines, this tries to find continuous sequences of 2D points.
+    /// 'tolGap' is the maximum allowable gap between the start and the endpoint of two segments.
     /// Search starts from the segment with the most points.
-    /// Both start and end point of each 2D point list is checked for adjacency.
-    static member findContinuosPoints (ptss: ResizeArray<ResizeArray<Pt>>, tolGap:float) =
+    /// Both start and end point of each 2D point list are checked for adjacency.
+    static member findContinuousPoints (ptss: ResizeArray<ResizeArray<Pt>>, tolGap:float) =
         let i = ptss |> ResizeArr.maxIndexBy ResizeArr.length
         let res = ptss.Pop(i)
         let mutable loop = true
@@ -344,11 +344,11 @@ type Points private () =
         res
 
 
-    /// Similar to Join Polylines this tries to find continuos sequences of 3D points.
-    /// 'tolGap' is the maximum allowable gap between the start and the endpoint of to segments.
+    /// Similar to join polylines, this tries to find continuous sequences of 3D points.
+    /// 'tolGap' is the maximum allowable gap between the start and the endpoint of two segments.
     /// Search starts from the segment with the most points.
-    /// Both start and end point of each 3D point list is checked for adjacency.
-    static member findContinuosPoints (ptss: ResizeArray<ResizeArray<Pnt>>, tolGap:float) =
+    /// Both start and end point of each 3D point list are checked for adjacency.
+    static member findContinuousPoints (ptss: ResizeArray<ResizeArray<Pnt>>, tolGap:float) =
         let i = ptss |> ResizeArr.maxIndexBy ResizeArr.length
         let res = ptss.Pop(i)
         let mutable loop = true
@@ -374,7 +374,16 @@ type Points private () =
                     loop <- false
         res
 
-    /// Finds the center, mean or average point.
+    [<Obsolete("Typo, use Points.findContinuousPoints instead")>]
+    static member findContinuosPoints (ptss: ResizeArray<ResizeArray<Pnt>>, tolGap:float) =
+        Points.findContinuousPoints(ptss, tolGap)
+
+    [<Obsolete("Typo, use Points.findContinuousPoints instead")>]
+    static member findContinuosPoints (ptss: ResizeArray<ResizeArray<Pt>>, tolGap:float) =
+        Points.findContinuousPoints(ptss, tolGap)
+
+
+    /// Finds the center, mean, or average point.
     static member center (pts: ResizeArray<Pnt>) =
         let mutable sum = Pnt.Origin
         for i = 0 to pts.Count-1 do
@@ -383,10 +392,10 @@ type Points private () =
         sum / float pts.Count
 
     /// Finds the mean normal of many points.
-    /// It finds the center point and then takes cross-products iterating all points in pairs of two.
+    /// It finds the center point and then takes cross-products, iterating all points in pairs of two.
     /// The first three points define the orientation of the normal.
     /// So it considers the current order of points too.
-    /// If the order is counterclockwise in the World X-Y plane then the normal is in world Z orientation.
+    /// If the order is counterclockwise in the World X-Y plane, then the normal is in world Z orientation.
     static member normalOfPoints(pts: ResizeArray<Pnt>) : Vec =
         if pts.Count <= 2 then
             EuclidException.Raisef "Euclid.Points.normalOfPoints can't find normal of two or less points %O" pts
@@ -415,10 +424,10 @@ type Points private () =
                 v
 
     /// Finds the mean normal of many points.
-    /// It finds the center point and then takes cross-products iterating all points in pairs of two.
+    /// It finds the center point and then takes cross-products, iterating all points in pairs of two.
     /// The first three points define the orientation of the normal.
     /// So it considers the current order of points too.
-    /// If the order is counterclockwise in the World X-Y plane then the normal is in world Z orientation.
+    /// If the order is counterclockwise in the World X-Y plane, then the normal is in world Z orientation.
     static member normalOfPoints(pts:Pnt []) : Vec =
         if pts.Length <= 2 then
             EuclidException.Raisef "Euclid.Points.normalOfPoints can't find normal of two or less points %O" pts
@@ -467,7 +476,7 @@ type Points private () =
         let bz = thisToNext.Z
         let a = ax*ax + ay*ay + az*az // square length of A
         let c = bx*bx + by*by + bz*bz // square length of B
-        if isTooSmallSq c then
+        if isTooSmallSq a then
             ValueNone
         elif isTooSmallSq c  then
             ValueNone

@@ -60,11 +60,11 @@ type Rotation2D =
         Rotation2D  ( r.Sin*ro.Cos + r.Cos*ro.Sin
                     , r.Cos*ro.Cos - r.Sin*ro.Sin)
 
-    /// Create a new 2D Rotation that adds and angle in Degrees to the existing one.
+    /// Create a new 2D Rotation that adds an angle in Degrees to the existing one.
     member inline r.AddDegrees(deg:float) =
         r.Add(Rotation2D.createFromDegrees deg)
 
-    /// Create a new 2D Rotation that adds and angle in Radians to the existing one.
+    /// Create a new 2D Rotation that adds an angle in Radians to the existing one.
     member inline r.AddRadians(rad:float) =
         r.Add(Rotation2D.createFromRadians rad)
 

@@ -45,7 +45,7 @@ module Topology  =
     /// Sorts elements in place to be in a circular structure.
     /// This does not recognize if there are actually two loops, not just one.
     /// Use Topology.join2D instead.
-    /// for each line end point it finds the next closest line start point.
+    /// For each line end point it finds the next closest line start point.
     /// (Does not check other line end points that might be closer)
     /// Line3D is used as an abstraction to hold start and end of arbitrary object.
     let sortToLoop3D(getLine: 'T -> Line3D, xs:ResizeArray<'T>) =
@@ -58,8 +58,8 @@ module Topology  =
 
     /// Sorts elements in place to be in a circular structure.
     /// This does not recognize if there are actually two loops, not just one.
-    /// /// Use Topology.join3D instead.
-    /// for each line end point it finds the next closest line start point.
+    /// Use Topology.join2D instead.
+    /// For each line end point it finds the next closest line start point.
     /// (Does not check other line end points that might be closer)
     /// Line2D is used as an abstraction to hold start and end of arbitrary object.
     let sortToLoop2D(getLine: 'T -> Line2D, xs:ResizeArray<'T>) =
@@ -78,7 +78,7 @@ module Topology  =
     /// Reverses the input in place where required.
     /// To reverse a 'T in place it uses the reverseInPlace function that takes the index of the element and the element itself as parameter.
     /// e.g. the reverseInPlace function might just update an item at the given index in the array.
-    /// Depending on the structure of 'T the index might not be need  to reverse an element in place.
+    /// Depending on the structure of 'T the index might not be needed to reverse an element in place.
     let sortToLoopWithReversing3D (getLine: 'T -> Line3D, reverseInPlace: int -> 'T -> unit, xs:ResizeArray<'T>) : unit =
         for i = 0 to xs.Count - 2 do // only run till second last
             let thisLine = getLine xs.[i]
@@ -96,12 +96,12 @@ module Topology  =
 
     /// Sorts elements in place to be in a circular structure.
     /// This does not recognize if there are actually two loops, not just one.
-    /// Use Topology.joinReversing3D instead.
+    /// Use Topology.joinReversing2D instead.
     /// For each line end it finds the next closest start point or end point.
     /// Line2D is used as an abstraction to hold start and end of arbitrary object.
     /// Reverses the input in place where required.
     /// e.g. the reverseInPlace function might just update an item at the given index in the array.
-    /// Depending on the structure of 'T the index might not be need  to reverse an element in place.
+    /// Depending on the structure of 'T the index might not be needed to reverse an element in place.
     let sortToLoopWithReversing2D (getLine: 'T -> Line2D, reverseInPlace: int -> 'T -> unit, xs:ResizeArray<'T>) : unit =
         for i = 0 to xs.Count - 2 do // only run till second last
             let thisLine = getLine xs.[i]
@@ -135,7 +135,7 @@ module Topology  =
     let join2D(getLine: 'T -> Line2D, splitDistance:float , xs:ResizeArray<'T>) =
         let loops   = ResizeArray<LoopCollector<'T>>()
         let distSq  = splitDistance * splitDistance
-        //let lns     = ResizeArray.map getLine xs // precompute lines if geLine is expensive, then swap them too
+        //let lns     = ResizeArray.map getLine xs // precompute lines if getLine is expensive, then swap them too
 
         let mutable idx = 0
         while idx < xs.Count do
@@ -191,7 +191,7 @@ module Topology  =
     let join3D(getLine: 'T -> Line3D, splitDistance:float , xs:ResizeArray<'T>) =
         let loops   = ResizeArray<LoopCollector<'T>>()
         let distSq  = splitDistance * splitDistance
-        //let lns     = ResizeArray.map getLine xs // precompute lines if geLine is expensive, then swap them too
+        //let lns     = ResizeArray.map getLine xs // precompute lines if getLine is expensive, then swap them too
 
         let mutable idx = 0
         while idx < xs.Count do
@@ -246,7 +246,7 @@ module Topology  =
     let joinReversing2D(getLine: 'T -> Line2D, splitDistance:float , xs:ResizeArray<'T>) =
         let loops   = ResizeArray<LoopCollector<'T*bool>>()
         let distSq  = splitDistance * splitDistance
-        //let lns     = ResizeArray.map getLine xs // precompute lines if geLine is expensive, then swap them too
+        //let lns     = ResizeArray.map getLine xs // precompute lines if getLine is expensive, then swap them too
 
         let mutable idx = 0
         while idx < xs.Count do
@@ -314,7 +314,7 @@ module Topology  =
     let joinReversing3D(getLine: 'T -> Line3D, splitDistance:float , xs:ResizeArray<'T>) =
         let loops   = ResizeArray<LoopCollector<'T*bool>>()
         let distSq  = splitDistance * splitDistance
-        //let lns     = ResizeArray.map getLine xs // precompute lines if geLine is expensive, then swap them too
+        //let lns     = ResizeArray.map getLine xs // precompute lines if getLine is expensive, then swap them too
 
         let mutable idx = 0
         while idx < xs.Count do

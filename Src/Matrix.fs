@@ -67,9 +67,9 @@ type Matrix =
     /// M14 M24 M34 M44
     /// Where X41, Y42 and Z43 refer to the translation part of the matrix.
     override m.ToString()=
-        let ts = m.ToArrayByRows |> Array.map (fun x -> x.ToString("0.###"))
+        let ts = m.ToArrayByRows |> Array.map (sprintf "%0.3f")
         let most = ts |> Array.maxBy (fun s -> s.Length)
-        "4x4 Column-Vector Transformation Matrix:\r\n" + (
+        $"4x4 Column-Vector Transformation Matrix:{Format.nl}" + (
         ts
         |> Array.map (fun x -> String(' ', most.Length-x.Length) + x)
         |> Array.chunkBySize 4
@@ -80,9 +80,9 @@ type Matrix =
     //Nicely formats the Matrix to a Grid of 4x4 including field names.
     //override m.ToString()=
     //    let names =[| "M11"; "M21"; "M31"; "X41"; "M12"; "M22"; "M32"; "Y42"; "M13"; "M23"; "M33"; "Z43"; "M14"; "M24"; "M34"; "M44"|]
-    //    let ts = (names, m.ByRows)  ||> Array.map2 (fun n v -> v.ToString("0.###"))
+    //    let ts = (names, m.ByRows)  ||> Array.map2 (fun n v -> sprintf "%0.3f" v)
     //    let most = ts |> Array.maxBy (fun s -> s.Length)
-    //    "Colum-Vector Transformation Matrix:\r\n" + (
+    //    $"Column-Vector Transformation Matrix:{Format.nl}" + (
     //    (names, ts)
     //    ||> Array.map2 (fun n v ->n + ": " + String(' ', most.Length-v.Length) + v)
     //    |> Array.chunkBySize 4
@@ -100,7 +100,7 @@ type Matrix =
     /// Returns the third column vector. M31, M32 and M33
     member m.ColumnVector3 = Vec(m.M31, m.M32, m.M33)
 
-    /// Returns the translation or forth column vector. X41, Y42 and Z43
+    /// Returns the translation or fourth column vector. X41, Y42 and Z43
     member m.Translation = Vec(m.X41, m.Y42, m.Z43)
 
 
@@ -147,7 +147,7 @@ type Matrix =
 
     /// A separate function to compose the error message that does not get inlined.
     member private m.FailedInverse() =
-        EuclidException.Raisef "Euclid.Matrix has a zero or almost zero Determinant. It is smaller than 1e-16. It cannot be inverted:\r\n%O" m // TODO or return all zero matrix like threeJS ?
+        EuclidException.Raise $"Euclid.Matrix has a zero or almost zero Determinant. It is smaller than 1e-16. It cannot be inverted:{Format.nl}{m}" // TODO or return all zero matrix like threeJS ?
 
     /// Inverts the matrix.
     /// If the determinant is zero the Matrix cannot be inverted.
@@ -436,12 +436,12 @@ type Matrix =
     static member inline ( *** ) (matrixA:Matrix, matrixB:Matrix) =
         Matrix.multiply(matrixA, matrixB)
 
-    /// If the determinant of the Matrix.
-    /// The determinant describes the volume that a unit cube will have have the matrix was applied.
+    /// The determinant of the Matrix.
+    /// The determinant describes the volume that a unit cube will have after the matrix was applied.
     static member inline determinant (m:Matrix) =
         m.Determinant
 
-    /// Inverses the matrix.
+    /// Inverts the matrix.
     /// If the determinant is zero the Matrix cannot be inverted.
     /// An exception is raised.
     static member inline inverse (m:Matrix) =

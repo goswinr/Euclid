@@ -23,29 +23,29 @@ module AutoOpenPPlane =
             let v = pt-pl.Origin
             pl.Xaxis *** v, pl.Yaxis *** v, pl.Zaxis *** v
 
-        /// First finds the closet point on plane from a test point.
+        /// First finds the closest point on plane from a test point.
         /// Then returns a new plane with Origin at this point and the same Axes vectors.
         member inline pl.PlaneAtClPt pt =
             let o = pl.ClosestPoint pt
             PPlane.createUnchecked(o, pl.Xaxis, pl.Yaxis, pl.Zaxis)
 
         /// Returns the angle to another Plane in Degree, ignoring the normal's orientation.
-        /// So 0.0 if the planes are parallel. And 90 degrees if the planes are perpendicular to ech other.
+        /// So 0.0 if the planes are parallel. And 90 degrees if the planes are perpendicular to each other.
         member inline this.Angle90ToPlane (pl:PPlane) =
             UnitVec.angle90 this.Zaxis pl.Zaxis
 
         /// Returns the angle to 3D vector in Degree, ignoring the plane's orientation.
-        /// So 0.0 if the vector is parallele to the Plane. And 90 degrees if the vector is perpendicular to the plane.
+        /// So 0.0 if the vector is parallel to the Plane. And 90 degrees if the vector is perpendicular to the plane.
         member inline pl.Angle90ToVec (v:Vec) =
             90.0 - UnitVec.angle90 v.Unitized pl.Zaxis
 
         /// Returns the angle to 3D unit-vector in Degree, ignoring the plane's orientation.
-        /// So 0.0 if the vector is parallele to the Plane. And 90 degrees if the vector is perpendicular to the plane.
+        /// So 0.0 if the vector is parallel to the Plane. And 90 degrees if the vector is perpendicular to the plane.
         member inline pl.Angle90ToVec (v:UnitVec) =
             90.0 - UnitVec.angle90 v pl.Zaxis
 
         /// Returns the angle to a Line3D in Degree, ignoring the Zaxis's orientation.
-        /// So 0.0 if the line is parallele to the Plane. And 90 degrees if the line is perpendicular to the plane.
+        /// So 0.0 if the line is parallel to the Plane. And 90 degrees if the line is perpendicular to the plane.
         member inline pl.Angle90ToLine (ln:Line3D) =
             let x = ln.ToX-ln.FromX
             let y = ln.ToY-ln.FromY
@@ -65,7 +65,7 @@ module AutoOpenPPlane =
         /// This means that their Z-axes are parallel within the angle tolerance
         /// and the distance of second origin to the first plane is less than the distance tolerance.
         /// The default angle tolerance is 0.25 degrees.
-        /// This tolerance can be customized by an optional minium cosine value.
+        /// This tolerance can be customized by an optional minimum cosine value.
         /// See Euclid.Cosine module.
         member inline pl.IsCoincidentTo (other:PPlane,
                                         [<OPT;DEF(1e-6)>] distanceTolerance:float,
@@ -79,8 +79,8 @@ module AutoOpenPPlane =
         //--------------------------  Static Members  --------------------------------------------------
         //----------------------------------------------------------------------------------------------
 
-        /// Checks if two Parametrized Planes are equal within tolerance distance
-        /// For the tips of its units vectors and its origin.
+        /// Checks if two Parametrized Planes are equal within tolerance distance.
+        /// For the tips of its unit vectors and its origin.
         /// Use a tolerance of 0.0 to check for an exact match.
         static member inline equals (tol:float) (a:PPlane) (b:PPlane) =
             abs (a.Origin.X - b.Origin.X) <= tol &&
@@ -172,7 +172,7 @@ module AutoOpenPPlane =
             PPlane.createUnchecked(Pnt.Origin, UnitVec.Xaxis, -UnitVec.Yaxis, -UnitVec.Zaxis)
 
         /// Builds Plane at first point, X-axis to second point,
-        /// Y-axis to third point or at lest in plane with third point.
+        /// Y-axis to third point or at least in plane with third point.
         /// Fails if points are closer than 1e-6.
         static member createThreePoints (origin:Pnt) (xPt:Pnt) (yPt:Pnt) =
             let x = xPt-origin

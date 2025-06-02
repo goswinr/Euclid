@@ -41,51 +41,51 @@ type EuclidDivByZeroException (s:string) =
 /// Math Utility functions and values for use within Euclid.
 module UtilEuclid =
 
-    /// Test is a value is not null.
+    /// Test if a value is not null.
     let inline notNull x = match x with null -> false | _ -> true
 
     /// Tolerance for zero length: 1e-12 in divisions and unitizing of vectors.
     [<Literal>]
     let zeroLengthTolerance = 1e-12
 
-    /// Squared Tolerance for zero length in divisions.: 1e-12 * 1e-12 = 1e-24
+    /// Squared Tolerance for zero length in divisions: 1e-12 * 1e-12 = 1e-24
     [<Literal>]
     let private zeroLengthTolSquared = zeroLengthTolerance * zeroLengthTolerance
 
     /// Returns true for values smaller than 1e-6 and for NaN.
     let inline isTooSmall x =
-        // use 'not' to catch a NaN too ( a Cross Product of infinit long vectors can give a NaN length)
+        // use 'not' to catch a NaN too ( a Cross Product of infinite long vectors can give a NaN length)
         not ( x > 1e-6 )
 
     /// Returns true for values smaller than 1e-12 (square of 1e-6)  and for NaN.
     let inline isTooSmallSq x =
-        // use 'not' to catch a NaN too ( a Cross Product of infinit long vectors can give a NaN length)
+        // use 'not' to catch a NaN too ( a Cross Product of infinite long vectors can give a NaN length)
         not ( x > 1e-12 )
 
     /// Returns true for values smaller than 1e-12 and for NaN.
     /// Uses UtilEuclid.zeroLengthTolerance
     let inline isTooTiny x =
-        // use 'not' to catch a NaN too ( a Cross Product of infinit long vectors can give a NaN length)
+        // use 'not' to catch a NaN too ( a Cross Product of infinite long vectors can give a NaN length)
         not ( x > zeroLengthTolerance )
 
     /// Returns 0 for values smaller than 1e-12 and for NaN.
     /// Otherwise returns 1
     /// Uses UtilEuclid.zeroLengthTolerance
     let inline countTooTiny x =
-        // use 'not' to catch a NaN too ( a Cross Product of infinit long vectors can give a NaN length)
+        // use 'not' to catch a NaN too ( a Cross Product of infinite long vectors can give a NaN length)
         if x > zeroLengthTolerance then 1 else 0
 
     /// Returns true for values smaller than 1e-24 (square of 1e-12) and for NaN.
     /// Uses UtilEuclid.zeroLengthTolSquared
     let inline isTooTinySq x =
-        // use 'not' to catch a NaN too ( a Cross Product of infinit long vectors can give a NaN length)
+        // use 'not' to catch a NaN too ( a Cross Product of infinite long vectors can give a NaN length)
         not ( x > zeroLengthTolSquared)
 
     /// Returns 0 for values smaller than 1e-24 (square of 1e-12) and for NaN.
     /// Otherwise returns 1
     /// Uses UtilEuclid.zeroLengthTolSquared
     let inline countTooTinySq x =
-        // use 'not' to catch a NaN too ( a Cross Product of infinit long vectors can give a NaN length)
+        // use 'not' to catch a NaN too ( a Cross Product of infinite long vectors can give a NaN length)
         if x > zeroLengthTolSquared then 1 else 0
 
     /// Returns true for negative number and for NaN.
@@ -103,11 +103,11 @@ module UtilEuclid =
     [<Literal>]
     let halfPi = 1.5707963267948966 // (Math.PI*0.5).ToString("R")
 
-    /// Converts Angels from Degrees to Radians.
+    /// Converts Angles from Degrees to Radians.
     /// By multiplying with 0.0174... (PI / 180.)
     let inline toRadians degrees = 0.017453292519943295 * degrees //  (Math.PI / 180.).ToString("R")
 
-    /// Converts Angels from Radians to Degrees.
+    /// Converts Angles from Radians to Degrees.
     /// By multiplying with 57.29... (180. / PI)
     let inline toDegrees radians = 57.295779513082323 * radians  // (180. / Math.PI).ToString("R")
 
@@ -151,8 +151,8 @@ module UtilEuclid =
     [<Literal>]
     let ``-1.0 + 1e-6`` = -1.00000107288360595703
 
-    /// The float number that is 16 increments bigger than 1.0.
-    /// This is approx 1.0 - 1e-6
+    /// The float number that is 16 increments bigger than -1.0.
+    /// This is approx -1.0 + 1e-6
     /// see https://float.exposed/0xbf7ffff0
     [<Literal>]
     let ``-1.0 - 1e-6`` = -0.99999904632568359375
@@ -227,7 +227,7 @@ module Cosine =
 let print(degree:float) =
     let radians = degree * (System.Math.PI  / 180.)
     let v = cos(radians).ToString("R") // r for round trip
-    let deg = degree.ToString("0.0####") // #0.0 ensure at least one trailing zero
+    let deg = sprintf "%0.3f" degree // #0.0 ensure at least one trailing zero
     printfn $"""
     /// The cosine of an angle of {degree} degrees.
     /// This is exactly {v}

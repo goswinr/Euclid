@@ -55,9 +55,9 @@ type RigidMatrix =
 
     /// Nicely formats the Matrix to a Grid of 4x3.
     override m.ToString()=
-        let ts = m.ByRows |> Array.map (fun x -> x.ToString("0.###"))
+        let ts = m.ByRows |> Array.map (sprintf "%0.3f")
         let most = ts |> Array.maxBy (fun s -> s.Length)
-        "4x3 Colum-Vector Rigid Transformation Matrix:\r\n" + (
+        $"4x3 Colum-Vector Rigid Transformation Matrix:{Format.nl}" + (
         ts
         |> Array.map (fun x -> String(' ', most.Length-x.Length) + x)
         |> Array.chunkBySize 4
@@ -68,9 +68,9 @@ type RigidMatrix =
     //Nicely formats the Matrix to a Grid of 4x3 including field names.
     //override m.ToString()=
     //    let names =[| "M11"; "M21"; "M31"; "X41"; "M12"; "M22"; "M32"; "Y42"; "M13"; "M23"; "M33"; "Z43"; "M14"; "M24"; "M34"; "M44"|]
-    //    let ts = (names, m.ByRows)  ||> Array.map2 (fun n v -> v.ToString("0.###"))
+    //    let ts = (names, m.ByRows)  ||> Array.map2 (fun n v -> sprintf "%0.3f" v)
     //    let most = ts |> Array.maxBy (fun s -> s.Length)
-    //    "Colum-Vector Rigid Transformation Matrix:\r\n" + (
+    //    $"Colum-Vector Rigid Transformation Matrix:{Format.nl}" + (
     //    (names, ts)
     //    ||> Array.map2 (fun n v ->n + ": " + String(' ', most.Length-v.Length) + v)
     //    |> Array.chunkBySize 4
@@ -87,11 +87,11 @@ type RigidMatrix =
     /// Returns the third column vector. M31, M32 and M33
     member m.ColumnVector3 = Vec(m.M31, m.M32, m.M33)
 
-    /// Returns the translation or forth column vector. X41, Y42 and Z43
+    /// Returns the translation or fourth column vector. X41, Y42 and Z43
     member m.Translation = Vec(m.X41, m.Y42, m.Z43)
 
 
-    /// The Determinant of an Rigid Matrix is always 1.0
+    /// The Determinant of a Rigid Matrix is always 1.0
     /// The Determinant describes the volume that a unit cube will have after the matrix was applied.
     member m.Determinant =
         let n11 = m.M11
@@ -113,7 +113,7 @@ type RigidMatrix =
 
 
     /// Inverts the RigidMatrix.
-    /// Rigid matrices have always determinant 1.0 so the can always be inverted.
+    /// Rigid matrices always have determinant 1.0 so they can always be inverted.
     member m.Inverse =
         // simplified from Matrix.Inverse in Matrix.fs:
         let n11 = m.M11
@@ -235,8 +235,8 @@ type RigidMatrix =
     /// The resulting transformation will first do matrixA and then matrixB.
     static member inline ( *** ) (matrixA:RigidMatrix, matrixB:RigidMatrix) = RigidMatrix.multiply(matrixA, matrixB)
 
-    /// The Determinant of an Rigid Matrix is always 1.0
-    /// The Determinant describes the volume that a unit cube will have have the matrix was applied.
+    /// The Determinant of a Rigid Matrix is always 1.0
+    /// The Determinant describes the volume that a unit cube will have after the matrix was applied.
     static member inline determinant (m:RigidMatrix) = m.Determinant
 
     /// Inverses the RigidMatrix.

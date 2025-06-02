@@ -19,7 +19,7 @@ module AutoOpenVec =
         member inline v.AsVc =
             Vc(v.X, v.Y)
 
-        /// Returns a boolean indicating wether X, Y and Z are all exactly 0.0.
+        /// Returns a boolean indicating whether X, Y and Z are all exactly 0.0.
         member inline v.IsZero =
             v.X = 0.0 && v.Y = 0.0 && v.Z = 0.0
 
@@ -308,7 +308,7 @@ module AutoOpenVec =
         /// Checks if two 3D vectors are parallel.
         /// Ignores the line orientation.
         /// The default angle tolerance is 0.25 degrees.
-        /// This tolerance can be customized by an optional minium cosine value.
+        /// This tolerance can be customized by an optional minimum cosine value.
         /// See Euclid.Cosine module.
         /// Fails on vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
         member inline this.IsParallelTo(other:Vec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
@@ -323,7 +323,7 @@ module AutoOpenVec =
         /// Checks if this 3D vectors and a 3D unit-vector are parallel.
         /// Ignores the line orientation.
         /// The default angle tolerance is 0.25 degrees.
-        /// This tolerance can be customized by an optional minium cosine value.
+        /// This tolerance can be customized by an optional minimum cosine value.
         /// See Euclid.Cosine module.
         /// Fails on vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
         member inline this.IsParallelTo(other:UnitVec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
@@ -338,7 +338,7 @@ module AutoOpenVec =
         /// Checks if two 3D vectors are parallel.
         /// Takes the line orientation into account too.
         /// The default angle tolerance is 0.25 degrees.
-        /// This tolerance can be customized by an optional minium cosine value.
+        /// This tolerance can be customized by an optional minimum cosine value.
         /// See Euclid.Cosine module.
         /// Fails on vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
         member inline this.IsParallelAndOrientedTo (other:Vec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
@@ -353,7 +353,7 @@ module AutoOpenVec =
         /// Checks if this 3D vectors and a 3D unit-vector are parallel.
         /// Takes the line orientation into account too.
         /// The default angle tolerance is 0.25 degrees.
-        /// This tolerance can be customized by an optional minium cosine value.
+        /// This tolerance can be customized by an optional minimum cosine value.
         /// See Euclid.Cosine module.
         /// Fails on vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
         member inline this.IsParallelAndOrientedTo (other:UnitVec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
@@ -365,7 +365,7 @@ module AutoOpenVec =
 
         /// Checks if two 3D vectors are perpendicular to each other.
         /// The default angle tolerance is 89.75 to 90.25 degrees.
-        /// This tolerance can be customized by an optional minium cosine value.
+        /// This tolerance can be customized by an optional minimum cosine value.
         /// The default cosine is 0.0043633 ( = 89.75 deg)
         /// See Euclid.Cosine module.
         /// Fails on vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -381,7 +381,7 @@ module AutoOpenVec =
 
         /// Checks if this 3D vectors and a 3D unit-vector are perpendicular to each other.
         /// The default angle tolerance is 89.75 to 90.25 degrees.
-        /// This tolerance can be customized by an optional minium cosine value.
+        /// This tolerance can be customized by an optional minimum cosine value.
         /// The default cosine is 0.0043633 ( = 89.75 deg)
         /// See Euclid.Cosine module.
         /// Fails on vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -455,7 +455,7 @@ module AutoOpenVec =
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        static member failedCreateFromMembersXYZ(v:'T,e:exn) = EuclidException.Raisef "Euclid.Vec.createFromMembersXYZ: %A could not be converted to a Euclid.Vec:\r\n%A" v e
+        static member failedCreateFromMembersXYZ(v:'T,e:exn) = EuclidException.Raise $"Euclid.Vec.createFromMembersXYZ: {v} could not be converted to a Euclid.Vec:{Format.nl}{e}"
         /// Accepts any type that has a X, Y and Z (UPPERCASE) member that can be converted to a float.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
         static member inline createFromMembersXYZ vec =
@@ -467,7 +467,7 @@ module AutoOpenVec =
 
         /// A separate function to compose the error message that does not get inlined.
         [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        static member failedCreateFromMembersxyz(v:'T,e:exn) = EuclidException.Raisef "Euclid.Vec.createFromMembersxyz: %A could not be converted to a Euclid.Vec:\r\n%A" v e
+        static member failedCreateFromMembersxyz(v:'T,e:exn) = EuclidException.Raise $"Euclid.Vec.createFromMembersxyz: {v} could not be converted to a Euclid.Vec:{Format.nl}{e}"
         /// Accepts any type that has a x, y and z (lowercase) member that can be converted to a float.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
         static member inline createFromMembersxyz vec =

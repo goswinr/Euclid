@@ -53,7 +53,7 @@ type Rect2D =
         if isTooSmall lenX then  EuclidException.Raisef "internal Euclid.Rect2D(): X-axis is too short: %O" axisX
         if isTooSmall lenY then  EuclidException.Raisef "internal Euclid.Rect2D(): Y-axis is too short: %O" axisY
         //just using zeroLengthTolerance 1e-12 seems too strict for dot product check:
-        if abs (axisX *** axisY) > (lenX+lenY) * 1e-9 then EuclidException.Raisef "internal Euclid.Rect2D(): X-axis and Y-axis are not perpendicular\r\n(dot=%g) > 1e-10 \r\n%O and \r\n%O" (abs (axisX *** axisY)) axisX axisY
+        if abs (axisX *** axisY) > (lenX+lenY) * 1e-9 then EuclidException.Raise $"internal Euclid.Rect2D(): X-axis and Y-axis are not perpendicular{Format.nl}(dot={(abs(axisX***axisY))}) > 1e-10 {Format.nl}{axisX} and {Format.nl}{axisY}"
         if isNegative(Vc.cross(axisX, axisY) ) then EuclidException.Raisef "internal Euclid.Rect2D(): X-axis and Y-axis are not counter clockwise: %O and %O" axisX axisY
         #endif
         {Origin=origin; Xaxis=axisX; Yaxis=axisY}
@@ -153,13 +153,13 @@ type Rect2D =
         let y = b.Yaxis.LengthSq
         sqrt  (min x y)
 
-    /// Returns the square of longest edge of the Rect2D.
+    /// Returns the square length of longest edge of the Rect2D.
     member inline b.LongestEdgeSq =
         let x = b.Xaxis.LengthSq
         let y = b.Yaxis.LengthSq
         max x y
 
-    /// Returns the square of longest shortest edge of the Rect2D.
+    /// Returns the square length of shortest edge of the Rect2D.
     member inline b.ShortestEdgeSq =
         let x = b.Xaxis.LengthSq
         let y = b.Yaxis.LengthSq
@@ -254,11 +254,11 @@ type Rect2D =
     /// Fails if x and y are not perpendicularity.
     /// Fails on vectors shorter than 1e-9.
     static member createFromVectors(origin, x:Vc, y:Vc) =
-        if isTooSmallSq x.LengthSq  then EuclidException.Raisef "Euclid.Rect2D.createFromVectors(origin, x:Vc, y:Vc): X-axis is too short:\r\n%O" y
-        if isTooSmallSq y.LengthSq  then EuclidException.Raisef "Euclid.Rect2D.createFromVectors(origin, x:Vc, y:Vc): Y-axis is too short:\r\n%O" y
+        if isTooSmallSq x.LengthSq  then EuclidException.Raise $"Euclid.Rect2D.createFromVectors(origin, x:Vc, y:Vc): X-axis is too short:{Format.nl}{y}"
+        if isTooSmallSq y.LengthSq  then EuclidException.Raise $"Euclid.Rect2D.createFromVectors(origin, x:Vc, y:Vc): Y-axis is too short:{Format.nl}{y}"
         //zeroLengthTolerance seems too strict for dot product:
-        if abs (x *** y) > 1e-10 then EuclidException.Raisef "Euclid.Rect2D.createFromVectors(origin, x:Vc, y:Vc): X-axis and Y-axis are not perpendicular (dot=%g): \r\n%O and\r\n%O" (abs (x *** y)) x y
-        if isNegative(Vc.cross(x,y))then EuclidException.Raisef "Euclid.Rect2D.createFromVectors(origin, x:Vc, y:Vc): X-axis and Y-axis are not counter clockwise:\r\n%O and\r\n%O" x y
+        if abs (x *** y) > 1e-10 then EuclidException.Raise $"Euclid.Rect2D.createFromVectors(origin, x:Vc, y:Vc): X-axis and Y-axis are not perpendicular (dot={(abs(x***y))}): {Format.nl}{x} and{Format.nl}{y}"
+        if isNegative(Vc.cross(x,y))then EuclidException.Raise $"Euclid.Rect2D.createFromVectors(origin, x:Vc, y:Vc): X-axis and Y-axis are not counter clockwise:{Format.nl}{x} and{Format.nl}{y}"
         Rect2D(origin, x, y)
 
 
@@ -358,7 +358,7 @@ type Rect2D =
         let y = r.Yaxis * (dist / siY)
         Rect2D(r.Origin - x - y, r.Xaxis + x * 2., r.Yaxis + y * 2.)
 
-    /// Returns the 2D Rectangle expanded by respective distances on all six sides.
+    /// Returns the 2D Rectangle expanded by respective distances on all four sides.
     /// Does check for overflow if distance is negative and fails.
     /// distX, distY are for the local X and Y-axis respectively.
     static member expandXY distX distY (r:Rect2D) =
@@ -551,7 +551,7 @@ type Rect2D =
 
     /// Offset a Rect2D inwards by four distances.
     /// Negative distances will offset outwards.
-    /// The distance array is for Edge01, Edge12, Edge23 and Edge30 respectively.
+    /// The distance array is for Edge01, Edge12, Edge23, and Edge30 respectively.
     /// Fails if the distance is larger than half the size of the rectangle.
     ///
     ///   local
@@ -599,8 +599,8 @@ type Rect2D =
     ///  0-Origin       1 </param>
     ///<param name="xOffset">The local offset distances in x direction. (Applies to the y side.) Positive values offset to the inside of the rectangle, negative values will offset outwards.</param>
     ///<param name="yOffset">The local offset distances in y direction. (Applies to the x side.) Positive values offset to the inside of the rectangle, negative values will offset outwards.</param>
-    ///<param name="xWidth">The the width (or size in x direction) that will be added to the current offset.</param>
-    ///<param name="yHeight">The the height (or size in y direction) that will be added to the current offset.</param>
+    ///<param name="xWidth">The width (or size in x direction) that will be added to the current offset.</param>
+    ///<param name="yHeight">The height (or size in y direction) that will be added to the current offset.</param>
     ///<returns>A new 2D Rectangle. It will always have the same x and y axis orientation as the input rectangle. Independent of negative or positive offsets</returns>
     static member offsetCorner (rect:Rect2D, corner:int, xOffset:float, yOffset:float, xWidth:float, yHeight:float) =
         let xa = rect.Xaxis
@@ -631,12 +631,10 @@ type Rect2D =
         | _ ->
             EuclidException.Raisef "Euclid.Rect2D.offsetCorner: corner %i out of range 0..3" corner
 
-
-
     static member private failOffsetEdge(offStart, offEnd, len, edgeIdx, d) =
         EuclidException.Raise $"Euclid.Rect2D.offsetEdge: the 2D Rectangle is too small to offsetEdge by {d} at edgeIdx {edgeIdx}. offStart: {offStart}, offEnd: {offEnd}, Length: {len}"
 
-    ///<summary>Offsets a local Rect2D at one of the four corners.</summary>
+    ///<summary>Offsets a local Rect2D at one of the four edges.</summary>
     ///<param name="rect">The 2D Rectangle</param>
     ///<param name="edgeIdx">The Index of the edge to offset
     ///
@@ -695,7 +693,7 @@ type Rect2D =
                 Rect2D( orig offEdge offEnd, xLen width, yLen y )
 
             | _ ->
-                EuclidException.Raisef "Euclid.Rect2D.offsetCorner: corner %i out of range 0..3" edgeIdx
+                EuclidException.Raisef "Euclid.Rect2D.offsetEdge: edgeIdx %i out of range 0..3" edgeIdx
 
         elif width < -1e-6 then // the rect origin needs to be at the other corner
             match edgeIdx with
@@ -716,11 +714,9 @@ type Rect2D =
                 Rect2D( orig (offEdge+width) offEnd, xLen -width, yLen y )
 
             | _ ->
-                EuclidException.Raisef "Euclid.Rect2D.offsetCorner: corner %i out of range 0..3" edgeIdx
+                EuclidException.Raisef "Euclid.Rect2D.offsetEdge: edgeIdx %i out of range 0..3" edgeIdx
         else
             EuclidException.Raisef "Euclid.Rect2D.offsetEdge: width %g must be more than 1e-6" width
-
-
 
     /// Divides a 2D Rectangle into a grid of sub-rectangles. The sub-rectangles are returned as an array of arrays.
     /// The gap between the sub-rectangles is given in x and y direction. It does not apply to the outer edges of the 2D Rectangle.

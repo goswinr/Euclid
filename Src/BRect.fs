@@ -181,7 +181,7 @@ type BRect =
     member r.PointsLooped =
         [| Pt(r.MinX, r.MinY); Pt(r.MaxX, r.MinY);  Pt(r.MaxX, r.MaxY); Pt(r.MinX, r.MaxY); Pt(r.MinX, r.MinY)|]
 
-    /// The bottom Edge. The line from point 0 to 1
+    /// The bottom edge. The line from point 0 to 1
     ///
     ///   Y-Axis (Height2D)
     ///   ^
@@ -197,7 +197,7 @@ type BRect =
     ///  0 = min X,Y    1
     member r.Edge01 = Line2D(r.MinX,r.MinY,r.MaxX,r.MinY)
 
-    /// The right Edge. The line from point 1 to 2
+    /// The right edge. The line from point 1 to 2
     ///
     ///   Y-Axis (Height2D)
     ///   ^
@@ -213,7 +213,7 @@ type BRect =
     ///  0 = min X,Y    1
     member r.Edge12 = Line2D(r.MaxX,r.MinY,r.MaxX,r.MaxY)
 
-    /// The top Edge. The line from point 2 to 3
+    /// The top edge. The line from point 2 to 3
     ///
     ///   Y-Axis (Height2D)
     ///   ^
@@ -229,7 +229,7 @@ type BRect =
     ///  0 = min X,Y    1
     member r.Edge23 = Line2D(r.MaxX,r.MaxY,r.MinX,r.MaxY)
 
-    /// The left Edge. The line from point 3 to 0
+    /// The left edge. The line from point 3 to 0
     ///
     ///   Y-Axis (Height2D)
     ///   ^
@@ -249,7 +249,7 @@ type BRect =
     /// Does check for underflow if distance is negative and raises EuclidException.
     member inline r.Expand(dist) : BRect =
         let n = BRect(r.MinX-dist, r.MinY-dist, r.MaxX+dist, r.MaxY+dist)
-        if dist<0. &&  (n.MinX > n.MaxX || n.MinY > n.MaxX) then
+        if dist<0. &&  (n.MinX > n.MaxX || n.MinY > n.MaxY) then
             EuclidException.Raisef "Euclid.BRect.Expand(dist): Negative distance %g causes an underflow, on %s" dist r.AsString
         n
 
@@ -258,7 +258,7 @@ type BRect =
     /// Does check for underflow if distance is negative and raises EuclidException.
     member inline r.Expand(xDist, yDist) : BRect =
         let n = BRect(r.MinX-xDist, r.MinY-yDist, r.MaxX+xDist, r.MaxY+yDist)
-        if n.MinX > n.MaxX ||  n.MinY > n.MaxX then
+        if n.MinX > n.MaxX ||  n.MinY > n.MaxY then
             EuclidException.Raisef "Euclid.BRect.Expand(x, y): Negative distance(s) X: %g and Y: %g cause an underflow, on %s" xDist yDist r.AsString
         n
 
@@ -296,7 +296,7 @@ type BRect =
         b.ExpandSafe(dist, dist)
 
 
-    /// Returns a bounding rectangle expanded only in X direction by different distance for start(minX) and end (maxX).
+    /// Returns a bounding rectangle expanded only in X direction by different distances for start(minX) and end (maxX).
     /// Does check for underflow if distance is negative and raises EuclidException.
     member inline r.ExpandXaxis(startDist, endDist) : BRect =
         let n = BRect(r.MinX-startDist, r.MinY, r.MaxX+endDist, r.MaxY)
@@ -304,7 +304,7 @@ type BRect =
             EuclidException.Raisef "Euclid.BRect.ExpandXaxis: Negative distances for start(%g) and end (%g) cause an underflow, on %s" startDist endDist r.AsString
         n
 
-    /// Returns a bounding rectangle expanded only in Y direction by different distance for start(minY) and end (maxY).
+    /// Returns a bounding rectangle expanded only in Y direction by different distances for start(minY) and end (maxY).
     /// Does check for underflow if distance is negative and raises EuclidException.
     member inline r.ExpandYaxis(startDist, endDist) : BRect =
         let n = BRect(r.MinX, r.MinY-startDist, r.MaxX, r.MaxY+endDist)
@@ -568,12 +568,12 @@ type BRect =
     static member expandSafe dist (r:BRect) =
         r.Expand dist
 
-    /// Returns bounding rectangle expanded only in X direction by different distance for start(minX) and end (maxX).
+    /// Returns bounding rectangle expanded only in X direction by different distances for start(minX) and end (maxX).
     /// Does check for underflow if distance is negative and raises EuclidException.
     static member expandXaxis startDist endDist (r:BRect) =
         r.ExpandXaxis(startDist, endDist)
 
-    /// Returns bounding rectangle expanded only in Y direction by different distance for start(minY) and end (maxY).
+    /// Returns bounding rectangle expanded only in Y direction by different distances for start(minY) and end (maxY).
     /// Does check for underflow if distance is negative and raises EuclidException.
     static member expandYaxis startDist endDist (r:BRect) =
         r.ExpandYaxis(startDist, endDist)

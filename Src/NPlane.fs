@@ -9,30 +9,30 @@ open System.Runtime.Serialization // for serialization of struct fields only but
 #nowarn "44" // for hidden constructors via Obsolete Attribute
 
 
-/// An immutable un-parametrized plane defined by a point and a normal vector.
-/// As opposed to the PPlane this plane is not parametrized in a X, Y and Z direction.
-/// Note: Never use the struct default constructor NPlane() as it will create an invalid zero Plane.
-/// Use NPlane.create or Plane.createUnchecked instead.
-[<Struct;NoEquality;NoComparison>]// because its made up from floats
+/// An immutable, unparametrized plane defined by a point and a normal vector.
+/// As opposed to the PPlane, this plane is not parametrized in X, Y, and Z directions.
+/// Note: Never use the struct default constructor NPlane() as it will create an invalid zero plane.
+/// Use NPlane.create or NPlane.createUnchecked instead.
+[<Struct;NoEquality;NoComparison>]// because it's made up from floats
 [<IsReadOnly>]
 [<DataContract>] // for using DataMember on fields
 type NPlane = // NPlane to avoid a name clash with Rhino Plane
 
     //[<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
 
-    /// The center point of the Plane.
+    /// The center point of the plane.
     [<DataMember>] val Origin : Pnt
 
-    /// The unitized normal of the Plane.
+    /// The unitized normal of the plane.
     [<DataMember>] val Normal : UnitVec
 
     new (pt:Pnt, n:UnitVec) = {Origin = pt; Normal = n}
 
-    /// Format PPlane into string with nicely formatted floating point numbers.
+    /// Format NPlane into string with nicely formatted floating point numbers.
     override pl.ToString() =
         sprintf "Euclid.NPlane(Origin:%s| Normal:%s)" pl.Origin.AsString pl.Normal.AsString
 
-    /// Returns a new Plane with the same Origin but flipped Normal.
+    /// Returns a new plane with the same Origin but flipped Normal.
     member inline pl.Flipped  =
         NPlane(pl.Origin, -pl.Normal)
 
@@ -44,36 +44,36 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
     member inline pl.ClosestPoint pt =
         pt - pl.Normal * (pl.DistanceToPt pt)
 
-    /// First finds the closet point on plane from a test point.
+    /// First finds the closest point on the plane from a test point.
     /// Then returns a new plane with Origin at this point and the same Normal.
     member inline pl.PlaneAtClPt pt =
         NPlane(pt - pl.Normal * (pl.DistanceToPt pt), pl.Normal)
 
-    /// Returns the angle to another Plane in Degree, ignoring the normal's orientation.
-    /// So 0.0 if the planes are parallel. And 90 degrees if the planes are perpendicular to ech other.
+    /// Returns the angle to another plane in degrees, ignoring the normal's orientation.
+    /// So 0.0 if the planes are parallel, and 90 degrees if the planes are perpendicular to each other.
     member inline this.Angle90ToPlane (pl:NPlane) =
         UnitVec.angle90 this.Normal pl.Normal
 
-    /// Returns the angle to 3D vector in Degree, ignoring the plane's orientation.
-    /// So 0.0 if the vector is parallele to the Plane. And 90 degrees if the vector is perpendicular to the plane.
+    /// Returns the angle to 3D vector in degrees, ignoring the plane's orientation.
+    /// So 0.0 if the vector is parallel to the plane, and 90 degrees if the vector is perpendicular to the plane.
     member inline pl.Angle90ToVec (v:Vec) =
         90.0 - UnitVec.angle90 v.Unitized pl.Normal
 
-    /// Returns the angle to 3D unit-vector in Degree, ignoring the plane's orientation.
-    /// So 0.0 if the vector is parallele to the Plane. And 90 degrees if the vector is perpendicular to the plane.
+    /// Returns the angle to 3D unit-vector in degrees, ignoring the plane's orientation.
+    /// So 0.0 if the vector is parallel to the plane, and 90 degrees if the vector is perpendicular to the plane.
     member inline pl.Angle90ToVec (v:UnitVec) =
         90.0 - UnitVec.angle90 v pl.Normal
 
-    /// Returns the angle to a Line3D in Degree, ignoring the normal's orientation.
-    /// So 0.0 if the line is parallele to the Plane. And 90 degrees if the line is perpendicular to the plane.
+    /// Returns the angle to a Line3D in degrees, ignoring the normal's orientation.
+    /// So 0.0 if the line is parallel to the plane, and 90 degrees if the line is perpendicular to the plane.
     member inline pl.Angle90ToLine (ln:Line3D) =
         90.0 - UnitVec.angle90 ln.UnitTangent pl.Normal
 
-    /// Checks if two Planes are coincident within the distance tolerance. 1e-6 by default.
-    /// This means that their Z-axes are parallel within the angle tolerance
-    /// and the distance of second origin to the first plane is less than the distance tolerance.
+    /// Checks if two planes are coincident within the distance tolerance (1e-6 by default).
+    /// This means that their normals are parallel within the angle tolerance
+    /// and the distance of the second origin to the first plane is less than the distance tolerance.
     /// The default angle tolerance is 0.25 degrees.
-    /// This tolerance can be customized by an optional minium cosine value.
+    /// This tolerance can be customized by an optional minimum cosine value.
     /// See Euclid.Cosine module.
     member inline pl.IsCoincidentTo (other:NPlane,
                                     [<OPT;DEF(1e-6)>] distanceTolerance:float,
@@ -86,7 +86,7 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
     //--------------------------  Static Members  --------------------------------------------------
     //----------------------------------------------------------------------------------------------
 
-    /// Checks if two 3D Planes are equal within tolerance.
+    /// Checks if two 3D planes are equal within tolerance.
     /// The same tolerance is used for the origin and the tips of the normal.
     /// Use a tolerance of 0.0 to check for an exact match.
     static member equals (tol:float) (a:NPlane) (b:NPlane) =
@@ -98,7 +98,7 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
         abs (a.Normal.Z - b.Normal.Z) <= tol
 
 
-    /// Checks if two 3D Planes are coincident.
+    /// Checks if two 3D planes are coincident.
     /// This means that the Z-axes are parallel within 0.25 degrees
     /// and the distance of second origin to the first plane is less than 1e-6 units tolerance.
     static member inline areCoincident (a:NPlane) (b:NPlane) : bool =

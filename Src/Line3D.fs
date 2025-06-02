@@ -1,16 +1,16 @@
 namespace Euclid
 
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>]
-open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
+open System.Runtime.Serialization // for serialization of struct fields only, but not properties, via [<DataMember>] attribute with Newtonsoft.Json or similar
 
 
 /// An immutable finite line in 3D. Represented by a 3D start and 3D end point.
-[<Struct;NoEquality;NoComparison>]// because its made up from floats
+[<Struct;NoEquality;NoComparison>] // because it's made up from floats
 [<IsReadOnly>]
 [<DataContract>] // for using DataMember on fields
 type Line3D =
 
-    //[<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
+    //[<DataMember>] // to serialize this struct field (but not properties) with Newtonsoft.Json and similar
 
     /// Returns the X coordinate of the start point of the line.
     [<DataMember>] val FromX:float
@@ -34,7 +34,7 @@ type Line3D =
     new (fromPt:Pnt, toPt:Pnt) =
         {FromX=fromPt.X; FromY=fromPt.Y; FromZ=fromPt.Z; ToX=toPt.X; ToY=toPt.Y; ToZ=toPt.Z}
 
-    /// Create Line3D from 3D start point's x, y and z and 3D end point's x, y and z.
+    /// Create Line3D from 3D start point's x, y, and z and 3D end point's x, y, and z.
     new (fromX, fromY, fromZ, toX, toY, toZ) =
         {FromX=fromX; FromY=fromY; FromZ=fromZ; ToX=toX; ToY=toY; ToZ=toZ}
 
@@ -65,7 +65,7 @@ type Line3D =
             (Format.float ln.Length)
 
     /// Format 3D line into string from X, Y and Z for start and end points.
-    /// Using nice floating point number formatting .
+    /// Using nice floating point number formatting.
     /// But without full type name as in v.ToString()
     member ln.AsString =
         sprintf "%s, %s, %s to %s, %s, %s"
@@ -76,11 +76,11 @@ type Line3D =
             (Format.float ln.ToY)
             (Format.float ln.ToZ)
 
-    /// The Start point of the 3D Line3D,
+    /// The start point of the 3D Line3D.
     member inline ln.From =
         Pnt(ln.FromX, ln.FromY, ln.FromZ)
 
-    /// The End point of the 3D Line3D,
+    /// The end point of the 3D Line3D.
     member inline ln.To =
         Pnt(ln.ToX, ln.ToY, ln.ToZ)
 

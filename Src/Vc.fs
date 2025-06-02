@@ -10,14 +10,14 @@ open System.Runtime.Serialization
 
 /// <summary>Vc is an immutable 2D vector with any length. Made up from 2 floats: X and Y.</summary>
 /// <remarks>2D unit-vectors with length 1.0 are called 'UnitVc'.
-/// 3D vectors are called 'Vec'.</remarks>///
+/// 3D vectors are called 'Vec'.</remarks>
 [<Struct;DataContract;NoEquality;NoComparison;IsReadOnly>] //[<IsByRefLike>]
 type Vc =
 
     /// <summary>Gets the X part of this 2D vector.</summary>
     [<DataMember>] val X : float
 
-    /// <summary>Gets the X part of this 2D vector.</summary>
+    /// <summary>Gets the Y part of this 2D vector.</summary>
     [<DataMember>] val Y : float
 
     /// Create a new 2D vector with any length. Made up from 2 floats: X and Y.
@@ -37,11 +37,11 @@ type Vc =
     member v.AsString =
         sprintf "X=%s| Y=%s" (Format.float v.X) (Format.float v.Y)
 
-    /// Negate or inverse a 2D vectors. Returns a new 2D vector.
+    /// Negate or inverse a 2D vector. Returns a new 2D vector.
     static member inline ( ~- ) (v:Vc) =
         Vc ( -v.X, -v.Y)
 
-    /// Subtract one 2D vectors from another. Returns a new 2D vector.
+    /// Subtract one 2D vector from another. Returns a new 2D vector.
     static member inline ( - ) (a:Vc, b:Vc) =
         Vc (a.X - b.X, a.Y - b.Y)
 
@@ -58,15 +58,15 @@ type Vc =
         Vc (v.X * f, v.Y * f)
 
     /// Dot product, or scalar product of two 2D vectors. Returns a float.
-    static member inline ( *** ) (v:Vc, b:Vc) =
-        v.X * b.X + v.Y * b.Y
+    static member inline ( *** ) (a:Vc, b:Vc) =
+        a.X * b.X + a.Y * b.Y
 
     /// A separate function to compose the error message that does not get inlined.
     [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
     member v.FailedDivide(f) =
         EuclidDivByZeroException.Raisef "Euclid.Vc: divide operator: %g is too small for dividing %O using the '/' operator. Tolerance:%g"  f v zeroLengthTolerance
 
-    /// Divides a 2D vector by a scalar, also be called dividing/scaling a vector. Returns a new 2D vector.
+    /// Divides a 2D vector by a scalar, also called dividing/scaling a vector. Returns a new 2D vector.
     static member inline ( / ) (v:Vc, f:float) =
         if isTooTiny (abs f) then v.FailedDivide(f) // don't compose error msg directly here to keep inlined code small. // https://github.com/dotnet/runtime/issues/24626#issuecomment-356736809
         Vc (v.X / f, v.Y / f)
@@ -88,14 +88,14 @@ type Vc =
     // These static members can't be extension methods to be useful for Array.sum and Array.average :
     //-----------------------------------------------------------------------------------------------------
 
-    /// Returns a zero length vector: Vec(0, 0)
+    /// Returns a zero length vector: Vc(0, 0)
     static member inline Zero =
         Vc(0, 0)  // this member is needed by Seq.sum, so that it doesn't fail on empty seq.
 
     /// Divides the vector by an integer.
     /// (This member is needed by Array.average and similar functions)
     static member DivideByInt (v:Vc, i:int) = // needed by 'Array.average'
-        if i = 0 then EuclidDivByZeroException.Raisef "Euclid.Vc.DivideByInt is zero %O" v
+        if i = 0 then EuclidDivByZeroException.Raisef "Euclid.Vc.DivideByInt by zero %O" v
         let d = float i
         Vc(v.X/d, v.Y/d)
 

@@ -51,7 +51,7 @@ type Box =
     /// The Edge vector representing the Z-axis of the Box.
     [<DataMember>] val Zaxis: Vec
 
-    /// Unssafe internal constructor, public only for inlining.
+    /// Unsafe internal constructor, public only for inlining.
     [<Obsolete("This is not Obsolete, but an unsafe internal constructor. the input is not verified, so it might create invalid geometry. It is exposed as a public member so that it can be inlined.") >]
     new (origin, axisX, axisY, axisZ) = {Origin=origin; Xaxis=axisX; Yaxis=axisY; Zaxis=axisZ}
 
@@ -161,14 +161,14 @@ type Box =
         sqrt (min (min x y) z)
 
 
-    /// Returns the square of longest edge of the Box.
+    /// Returns the square length of longest edge of the Box.
     member inline b.LongestEdgeSq =
         let x = b.Xaxis.LengthSq
         let y = b.Yaxis.LengthSq
         let z = b.Zaxis.LengthSq
         max (max x y) z
 
-    /// Returns the square of longest shortest edge of the Box.
+    /// Returns the square length of shortest edge of the Box.
     member inline b.ShortestEdgeSq =
         let x = b.Xaxis.LengthSq
         let y = b.Yaxis.LengthSq

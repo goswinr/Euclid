@@ -57,14 +57,14 @@ module internal ResizeArr =
     /// Yields looped Seq from (first, second)  up to (last, first).
     /// The resulting seq has the same element count as the input Rarr.
     let thisNext (rarr:ResizeArray<'T>) =
-        if rarr.Count <= 2 then EuclidException.Raisef "Euclid.ResizeArr.thisNext input has less than two items:\r\n%O" rarr
+        if rarr.Count <= 2 then EuclidException.Raise $"Euclid.ResizeArr.thisNext input has less than two items:{Format.nl}{rarr}"
         seq {   for i = 0 to rarr.Count-2 do  rarr.[i], rarr.[i+1]
                 rarr.[rarr.Count-1], rarr.[0] }
 
     /// Yields looped Seq from (1, last, first, second)  up to (lastIndex, second-last, last, first)
     /// The resulting seq has the same element count as the input Rarr.
     let iPrevThisNext (rarr:ResizeArray<'T>) =
-        if rarr.Count <= 3 then EuclidException.Raisef "Euclid.ResizeArr.iPrevThisNext input has less than three items:\r\n%O" rarr
+        if rarr.Count <= 3 then EuclidException.Raise $"Euclid.ResizeArr.iPrevThisNext input has less than three items:{Format.nl}{rarr}"
         seq {   0, rarr.[rarr.Count-1], rarr.[0], rarr.[1]
                 for i = 0 to rarr.Count-3 do  i+1, rarr.[i], rarr.[i+1], rarr.[i+2]
                 rarr.Count-1, rarr.[rarr.Count-2], rarr.[rarr.Count-1], rarr.[0] }

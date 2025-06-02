@@ -1,12 +1,12 @@
 namespace Euclid
 
 // Design notes:
-// The structs types in this file only have the constructors, ToString override and operators define in this file.
+// The structs types in this file only have the constructors, ToString override and operators defined in this file.
 // For structs that need a checked and unchecked constructor (like unit-vectors) the main 'new' constructor is marked obsolete.
 // A 'create' and 'createUnchecked' static member is provided instead.
-// All other members are implemented as extension members. see files in folder members.
-// This design however makes extension members unaccessible from see C#. To fix this all types and all members could be put into one file.
-// the types would have to be marked as recursive. This file would be very large and probably have bad editor performance.
+// All other members are implemented as extension members. See files in folder members.
+// This design however makes extension members inaccessible from C#. To fix this all types and all members could be put into one file.
+// The types would have to be marked as recursive. This file would be very large and probably have bad editor performance.
 
 // the attributes [<IsByRefLike; IsReadOnly>]  are for potential performance optimization.
 // see https://www.bartoszsypytkowski.com/writing-high-performance-f-code/
@@ -33,7 +33,7 @@ type Pt =
     /// <summary>Gets the X part of this 2D point.</summary>
     [<DataMember>] val X : float
 
-    /// <summary>Gets the X part of this 2D point.</summary>
+    /// <summary>Gets the Y part of this 2D point.</summary>
     [<DataMember>] val Y : float
 
     /// Create a new 2D point. Made up from 2 floats: X and Y.
@@ -58,28 +58,26 @@ type Pt =
     static member inline ( - ) (a:Pt, b:Pt) =
         Vc (a.X - b.X, a.Y - b.Y)
 
-    /// Subtract a unit-vector from a 2D point. Returns a new 2D point.
+    /// Subtract a vector from a 2D point. Returns a new 2D point.
     static member inline ( - ) (a:Pt, b:Vc) =
         Pt (a.X - b.X, a.Y - b.Y)
 
-    /// Subtract a vector from a 2D point. Returns a new 2D point.
+    /// Subtract a unit-vector from a 2D point. Returns a new 2D point.
     static member inline ( - ) (a:Pt, b:UnitVc) =
         Pt (a.X - b.X, a.Y - b.Y)
 
     //static member inline ( + ) (v:UnitVc, p:Pt) = Pt (p.X + v.X, p.Y + v.Y)
     //static member inline ( + ) (v:Vc,     p:Pt) = Pt (p.X + v.X, p.Y + v.Y)
 
-    /// Add two 2D points together. Returns a new 2D point.
+    /// Add a vector to a 2D point. Returns a new 2D point.
     static member inline ( + ) (p:Pt, v:Vc) =
         Pt (p.X + v.X, p.Y + v.Y)
 
-    /// Add a vector to a 2D point.
-    /// Returns a new 2D point.
+    /// Add a unit-vector to a 2D point. Returns a new 2D point.
     static member inline ( + ) (p:Pt, v:UnitVc) =
         Pt (p.X + v.X, p.Y + v.Y)
 
-    /// Add a unit-vector to a 2D point.
-    /// Returns a new 2D point.
+    /// Add two 2D points together. Returns a new 2D point.
     static member inline ( + ) (a:Pt, b:Pt) =
         Pt (a.X + b.X, a.Y + b.Y) // required for Seq.average and Pnt.midPt
 
@@ -97,7 +95,7 @@ type Pt =
     [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
     member p.FailedDivide(f) = EuclidDivByZeroException.Raisef "Euclid.Pt: divide operator: %g is too small for dividing %O using the '/' operator. Tolerance:%g"  f p zeroLengthTolerance
 
-    /// Divides a 2D vector by a scalar, also be called dividing/scaling a vector. Returns a new 2D vector.
+    /// Divides a 2D point by a scalar, also called dividing/scaling a point. Returns a new 2D point.
     static member inline ( / ) (p:Pt, f:float) =
         if isTooTiny (abs f) then p.FailedDivide(f) // don't compose error msg directly here to keep inlined code small.
         Pt (p.X / f, p.Y / f)
@@ -107,10 +105,10 @@ type Pt =
     // These static members can't be extension methods to be useful for Array.sum and Array.average :
     //-----------------------------------------------------------------------------------------------------
 
-    /// Divides the 3D point by an integer.
+    /// Divides the 2D point by an integer.
     /// (This member is needed by Array.average and similar functions)
-    static member DivideByInt (pt:Pt, i:int) = // needed by  'Array.average'`
-        if i = 0 then EuclidDivByZeroException.Raisef "Euclid.Pt.DivideByInt is zero %O" pt
+    static member DivideByInt (pt:Pt, i:int) = // needed by 'Array.average'
+        if i = 0 then EuclidDivByZeroException.Raisef "Euclid.Pt.DivideByInt by zero %O" pt
         let d = float i
         Pt(pt.X/d, pt.Y/d)
 

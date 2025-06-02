@@ -7,8 +7,10 @@ module Format =
 
     /// If the absolut value of a float is below this, display ~0.0
     /// The default is 1e-24
-    /// This value can be set for example by hosting apps that have a build in absolute tolerance like Rhino3d.
+    /// This value can be set for example by hosting apps that have a built-in absolute tolerance like Rhino3d.
     let mutable userZeroTolerance = 1e-24 //  default = Double.Epsilon = no rounding down
+
+    let nl = Environment.NewLine
 
     module private Literals =
 
@@ -38,6 +40,8 @@ module Format =
         [<Literal>]
         let BelowUserZeroTolerance = "~0.0"
 
+        /// The newline character for this platform.
+
     /// Set this to change the printing of floats larger than 10'000
     let mutable thousandSeparator = '\'' // = just one quote '
 
@@ -54,7 +58,7 @@ module Format =
             add s.[en] //add last (never with sep)
 
         let inline doAfterComma st en =
-            add s.[st] //add fist (never with sep)
+            add s.[st] //add first (never with sep)
             for i=st+1 to en do // don't go to last one because it shall never get a separator
                 let pos = i-st
                 if pos % 3 = 0 then add thousandSeparator
@@ -66,7 +70,7 @@ module Format =
 
         match s.IndexOf('.') with
         | -1 ->
-            match s.IndexOf("e") with //, StringComparison.OrdinalIgnoreCase) // not supported by Fable complier
+            match s.IndexOf("e") with //, StringComparison.OrdinalIgnoreCase) // not supported by Fable compiler
             | -1 -> doBeforeComma start (s.Length-1)
             | e -> // if float is in scientific notation don't insert comas into it too:
                 doBeforeComma start (s.Length-1)
@@ -76,7 +80,7 @@ module Format =
                 doBeforeComma start (i-1)
             add '.'
             if i < s.Length then
-                match s.IndexOf("e") with //, StringComparison.OrdinalIgnoreCase) with // not supported by Fable complier
+                match s.IndexOf("e") with //, StringComparison.OrdinalIgnoreCase) with // not supported by Fable compiler
                 | -1 -> doAfterComma (i+1) (s.Length-1)
                 | e -> // if float is in scientific notation don't insert comas into it too:
                     doAfterComma (i+1) (e-1)
@@ -94,8 +98,8 @@ module Format =
 
     /// Formatting with automatic precision.
     /// e.g.: 0 digits behind comma if above 1000
-    /// if the value is smaller than 'userZeroTolerance' (1e-24)  '~0.0' will be shown.
-    /// if the value is smaller than  (1e-7)  '≈+0.0' will be shown.
+    /// If the value is smaller than 'userZeroTolerance' (1e-24)  '~0.0' will be shown.
+    /// If the value is smaller than  (1e-7)  '≈+0.0' will be shown.
     let float (x:float) =
         if   Double.IsNaN x then Literals.NaN
         elif x = Double.NegativeInfinity then Literals.NegativeInfinity
@@ -107,7 +111,7 @@ module Format =
             if   a <  userZeroTolerance then Literals.BelowUserZeroTolerance // do this check up here, this user value might be very high
             // elif a >= 10000.       then x.ToString("#")|> addThousandSeparators
             // elif a >= 1000.        then x.ToString("#")
-            // elif a >= 100.         then x.ToString("0.#", invC)
+            // elif a >= 100.         then x.ToString("0.#", invC)   // the 0.### formatters don't work in Fable
             // elif a >= 10.          then x.ToString("0.0#", invC)
             // elif a >= 1.           then x.ToString("0.0##", invC)
             // elif a >= 0.1          then x.ToString("0.####", invC)
@@ -136,8 +140,8 @@ module Format =
 
     /// Formatting with automatic precision.
     /// e.g.: 0 digits behind comma if above 1000
-    /// if the value is smaller than veryCloseToZero (1e-24)  '~0.0' will be shown.
-    /// if the value is smaller than  (1e-6)  '≈+0.0' will be shown.
+    /// If the value is smaller than veryCloseToZero (1e-24)  '~0.0' will be shown.
+    /// If the value is smaller than  (1e-6)  '≈+0.0' will be shown.
     let single (x:float32) =
         if   Single.IsNaN x then Literals.NaN
         elif x = Single.NegativeInfinity then Literals.PositiveInfinity
@@ -151,7 +155,7 @@ module Format =
             // elif a >= 1000.f    then x.ToString("#")
             // elif a >= 100.f     then x.ToString("0.#", invC)
             // elif a >= 10.f      then x.ToString("0.0#", invC)
-            // elif a >= 1.f       then x.ToString("0.0##", invC)
+            // elif a >= 1.f       then x.ToString("0.0##", invC)    // the 0.### formatters don't work in Fable
             // elif a >= 0.1f      then x.ToString("0.####", invC)
             // elif a >= 0.01f     then x.ToString("0.#####", invC)
             // elif a >= 0.001f    then x.ToString("0.######", invC)|> addThousandSeparators

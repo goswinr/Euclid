@@ -337,7 +337,7 @@ type Quaternion =
     /// Angles are given in Degrees,
     /// The order in which to apply rotations is Y-Z-X,
     /// which means that the object will first be rotated around its Y-axis,
-    /// then its Z-axis finally its X-axis.
+    /// then its Z-axis and finally its X-axis.
     /// This uses intrinsic Tait-Bryan angles.
     /// This means that rotations are performed with respect to the local coordinate system.
     /// That is, for order Y-Z-X, the rotation is first around the local-Y-axis (which is the same as the World-Y-axis),

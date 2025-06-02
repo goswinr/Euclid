@@ -22,7 +22,7 @@ open System.Runtime.Serialization // for serialization of struct fields only but
 [<Struct; NoEquality; NoComparison>] // because its made up from floats
 [<IsReadOnly>]
 //[<IsByRefLike>]
-[<DataContract>] // for using DataMember on fields  
+[<DataContract>] // for using DataMember on fields
 type Pnt =
 
     /// Gets the X part of this 3D point.
@@ -73,14 +73,14 @@ type Pnt =
 
     /// Multiplies a scalar with a 3D point, also called scaling a point. Returns a new 3D point.
     static member inline ( * ) (f:float, a:Pnt) = Pnt (a.X * f, a.Y * f, a.Z * f)
-    
+
     /// A separate function to compose the error message that does not get inlined.
     [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
     member p.FailedDivide(f) = EuclidDivByZeroException.Raisef "Euclid.Pnt: divide operator: %g is too small for dividing %O using the '/' operator. Tolerance:%g"  f p zeroLengthTolerance
-        
+
     /// Divides a 3D point by a scalar, also be called dividing/scaling a point. Returns a new 3D point.
     static member inline ( / ) (p:Pnt, f:float) =
-        if abs f < UtilEuclid.zeroLengthTolerance then p.FailedDivide(f) // don't compose error msg directly here to keep inlined code small.        
+        if abs f < UtilEuclid.zeroLengthTolerance then p.FailedDivide(f) // don't compose error msg directly here to keep inlined code small.
         //p * (1./f) // maybe faster but worse precision
         Pnt (p.X / f, p.Y / f, p.Z / f)
 
@@ -96,11 +96,11 @@ type Pnt =
 
     /// Divides the 3D point by an integer.
     /// (This member is needed by Array.average and similar functions)
-    static member DivideByInt (pt:Pnt, i:int) = // needed by  'Array.average' 
-        if i=0 then EuclidDivByZeroException.Raisef "Euclid.Pnt.DivideByInt 0 %O" pt 
-        let d = float i  
+    static member DivideByInt (pt:Pnt, i:int) = // needed by  'Array.average'
+        if i=0 then EuclidDivByZeroException.Raisef "Euclid.Pnt.DivideByInt 0 %O" pt
+        let d = float i
         Pnt(pt.X/d, pt.Y/d, pt.Z/d)
-     
+
 
 (*
 from:
