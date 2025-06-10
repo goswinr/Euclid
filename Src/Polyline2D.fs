@@ -50,7 +50,7 @@ type Polyline2D =
         /// Gets the length of the Polyline2D
     member p.Length =
         let ps = p.Points
-        if ps.Count < 2 then EuclidException.Raisef "Euclid.Polyline3D.Length failed on Polyline2D with less than 2 points %O" p
+        if ps.Count < 2 then EuclidException.Raisef "Euclid.Polyline2D.Length failed on Polyline2D with less than 2 points %O" p
         let mutable l = 0.0
         let mutable prev = ps.[0]
         for i = 1 to ps.Count-1 do
@@ -59,13 +59,19 @@ type Polyline2D =
             prev <- t
         l
 
+    /// Gets the segment at index i of the Polyline2D.
+    member p.Segment(i:int) =
+        if i < 0 || i >= p.Points.Count - 1 then
+            EuclidException.Raisef "Euclid.Polyline2D.Segment: index %d is out of range for Polyline2D with %d points." i p.Points.Count
+        Line2D(p.Points.[i], p.Points.[i+1])
+
     /// Gets bounding rectangle of the Polyline2D
     member p.BoundingRectangle =
         BRect.createFromIList p.Points
 
     /// Tests if Polyline2D start and end points are exactly the same.
     member inline p.IsClosed =
-        if p.Points.Count < 2 then EuclidException.Raisef "Euclid.Polyline3D.IsClosed failed on Polyline2D with less than 2 points %O" p
+        if p.Points.Count < 2 then EuclidException.Raisef "Euclid.Polyline2D.IsClosed failed on Polyline2D with less than 2 points %O" p
         let v = p.Start  - p.End
         v.IsZero
 

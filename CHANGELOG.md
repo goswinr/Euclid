@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.15.0-a] - 2025-06-10
+### Added
+- add Polyline.Segment
+
 ## [0.14.0] - 2025-05-24
 ### Added
 - expand relative for Boxes and Rects

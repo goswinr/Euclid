@@ -56,6 +56,12 @@ type Polyline3D =
             prev <- t
         l
 
+    /// Gets the segment at index i of the Polyline3D.
+    member p.Segment(i:int) =
+        if i < 0 || i >= p.Points.Count - 1 then
+            EuclidException.Raisef "Euclid.Polyline3D.Segment: index %d is out of range for Polyline3D with %d points." i p.Points.Count
+        Line3D(p.Points.[i], p.Points.[i+1])
+
     /// Gets the a bounding box of the Polyline3D
     member inline p.BoundingBox =
         BBox.createFromIList p.Points

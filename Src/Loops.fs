@@ -128,56 +128,55 @@ type Loop private   ( pts:ResizeArray<Pt>
         pt.ClosestPointOnLine(t, u, l)
 
 
-    // from https://github.com/FreyaHolmer/Mathfs/blob/master/Runtime/Geometric%20Shapes/Polygon.cs#L92
-    // https://x.com/FreyaHolmer/status/1232826293902888960
-
-
-    // or use ? https://github.com/blenderfan/AdvancedGamedevTutorials/blob/main/AdvancedGamedev-WindingNumbers/Polygon2D.cs
-    // https://www.youtube.com/watch?v=E51LrZQuuPE
-    // faster implementations such as counting the crossings of a horizontal ray do fail if several loop segments are on the X-axis and the test point too.
-
-
     /// <summary>Returns the winding number for this polygon, around a given point</summary>
     /// <param name="point">The point to check winding around</param>
     /// <returns>The winding number, if it is not 0 then point is contained in the Loop</returns>
     member lo.WindingNumber (point:Pt) : int =
-        let inline isLeft (a:Pt) (b:Pt) (p:Pt) =
-            let det = Vc.cross (p-a, b-a)
-            if   det >  1e-12 then  1
-            elif det < -1e-12 then -1
-            else 0
+        // from https://github.com/FreyaHolmer/Mathfs/blob/master/Runtime/Geometric%20Shapes/Polygon.cs#L92
+        // https://x.com/FreyaHolmer/status/1232826293902888960
+        // or use ? https://github.com/blenderfan/AdvancedGamedevTutorials/blob/main/AdvancedGamedev-WindingNumbers/Polygon2D.cs
+        // https://www.youtube.com/watch?v=E51LrZQuuPE
+        let rect = lo.ExpandedBoundingRect
+        if not <| rect.Contains point then  // the bounding Rectangle includes an expansion by snap SnapThreshold
+            0 // no looping needed, point is outside
+        else
+            let inline isLeft (a:Pt) (b:Pt) (p:Pt) =
+                let det = Vc.cross (p-a, b-a)
+                if   det >  1e-12 then  1
+                elif det < -1e-12 then -1
+                else 0
 
-        let mutable winding = 0
-        let pts = lo.Points
+            let mutable winding = 0
+            let pts = lo.Points
+            let mutable this = pts.[0]
+            for i = 1 to pts.LastIndex do  //start at 1 because our Points list has the first point repeated at the end
+                let next = pts.[i]
+                if this.Y <= point.Y then
+                    if next.Y > point.Y && isLeft this next point > 0 then
+                        winding <- winding - 1
+                else
+                    if next.Y <= point.Y && isLeft this next point < 0 then
+                        winding <- winding + 1
+                this <- next
 
-        for i = 0 to pts.Count - 2 do  // -2 because our Points list has the first point repeated at the end , no looped index is needed.
-            let this = pts.[i]
-            let next = pts.[i + 1]
-            if this.Y <= point.Y then
-                if next.Y > point.Y && isLeft this next point > 0 then
-                    winding <- winding - 1
-            else
-                if next.Y <= point.Y && isLeft this next point < 0 then
-                    winding <- winding + 1
-
-        winding
+            winding
 
 
 
 
     /// Returns Relation between point and Loop: Inside, On or Outside.
     /// Tolerance for being on Loop is SnapThreshold.
+    /// this implementation using the closest two segments is always correct.
+    /// faster implementations such as WindingNumber or  counting the crossings of a horizontal ray do fail if several loop segments are on the Y-axis and the test point too.
     member lo.ContainsPoint(pt:Pt) =
-        // this implementation using the closest two segments is always correct.
-        // faster implementations such as counting the crossings of a horizontal ray do fail if several loop segments are on the X-axis and the test point too.
         let rect = lo.ExpandedBoundingRect
-        if not <| rect.Contains(pt) then  // the bounding Rectangle includes an expansion by snap SnapThreshold
+        if not <| rect.Contains pt then  // the bounding Rectangle includes an expansion by snap SnapThreshold
             PointLoopRel.Out
         else
             let ps = lo.Points
             let us = lo.UnitVectors
             let ls = lo.Lengths
-            let j, k = lo.ClosestSegments(pt)
+            let j, k = lo.ClosestSegments pt
 
             let pj = ps.[j]
             let uj = us.[j]
