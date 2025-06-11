@@ -132,6 +132,25 @@ type Rect2D =
     member inline r.Area =
         r.Xaxis.Length * r.Yaxis.Length
 
+    /// Scales the 2D rectangle by a given factor.
+    /// Scale center is World Origin 0,0
+    member inline r.Scale (factor:float) : Rect2D =
+        Rect2D.createUnchecked(
+                r.Origin * factor,
+                r.Xaxis * factor,
+                r.Yaxis * factor)
+
+    /// Scales the 2D rectangle by a given factor on a given center point
+    member inline l.ScaleOn (cen:Pt) (factor:float) : Rect2D =
+        let cx = cen.X
+        let cy = cen.Y
+        let o = l.Origin
+        Rect2D.createUnchecked(
+            Pt( cx + (o.X - cx) * factor,
+                cy + (o.Y - cy) * factor),
+            l.Xaxis * factor,
+            l.Yaxis * factor
+        )
 
     /// Calculates the squared area of the 2D Rectangle.
     /// by using the squared lengths of the X and Y axis.
@@ -229,6 +248,7 @@ type Rect2D =
         let maxX = max (max (max p0.X p1.X) p2.X) p3.X
         let maxY = max (max (max p0.Y p1.Y) p2.Y) p3.Y
         BRect.createUnchecked(minX, minY, maxX, maxY)
+
 
 
     //-------------------------------------------------------------------

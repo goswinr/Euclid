@@ -60,10 +60,24 @@ type Polyline2D =
         l
 
     /// Gets the segment at index i of the Polyline2D.
-    member p.Segment(i:int) =
-        if i < 0 || i >= p.Points.Count - 1 then
+    member p.GetSegment(i:int) =
+        if i < 0 || i > p.Points.Count - 2 then
             EuclidException.Raisef "Euclid.Polyline2D.Segment: index %d is out of range for Polyline2D with %d points." i p.Points.Count
         Line2D(p.Points.[i], p.Points.[i+1])
+
+    /// Returns all segments of the Polyline2D as a list of Line2D.
+    member p.Segments =
+        let lns = ResizeArray()
+        let pts = p.Points
+        if pts.Count < 2 then
+            lns
+        else
+            let mutable a = pts.[0]
+            for i = 1 to p.Points.LastIndex do
+                let b = pts.[i]
+                lns.Add(Line2D(a, b))
+                a <- b
+            lns
 
     /// Gets bounding rectangle of the Polyline2D
     member p.BoundingRectangle =
@@ -232,6 +246,77 @@ type Polyline2D =
         let t = pl.ClosestParameter pt
         pl.EvaluateAt t
         |> Pt.distance pt
+
+
+    /// If it is 0 then point is outside of the Loop
+    /// The first and last point of the Polyline2D need to be identical for correct results
+    member pl.WindingNumber (point:Pt) : int =
+        // from https://github.com/FreyaHolmer/Mathfs/blob/master/Runtime/Geometric%20Shapes/Polygon.cs#L92
+        // https://x.com/FreyaHolmer/status/1232826293902888960
+        // or use ? https://github.com/blenderfan/AdvancedGamedevTutorials/blob/main/AdvancedGamedev-WindingNumbers/Polygon2D.cs
+        // https://www.youtube.com/watch?v=E51LrZQuuPE
+        let px = point.X
+        let py = point.Y
+        let inline isLeft (aa:Pt) (bb:Pt)  =
+            let ax = px - aa.X // cross product unrolled to avoid allocation of temp Vc
+            let ay = py - aa.Y
+            let bx = bb.X - aa.X
+            let by = bb.Y - aa.Y
+            let det = ax * by - ay * bx
+            if   det >  1e-12 then  1
+            elif det < -1e-12 then -1
+            else 0
+
+        let mutable winding = 0
+        let pts = pl.Points
+        let mutable this = pts.[0]
+        for i = 1 to pts.LastIndex do
+            let next = pts.[i]
+            if this.Y <= py then
+                if next.Y > py && isLeft this next  > 0 then
+                    winding <- winding - 1
+            else
+                if next.Y <= py && isLeft this next  < 0 then
+                    winding <- winding + 1
+            this <- next
+
+        winding
+
+    /// The first and last point of the Polyline2D need to be identical for correct results
+    /// Uses the WindingNumber to determine if the point is inside the Polyline2D.
+    member pl.Contains (point:Pt) : bool =
+        pl.WindingNumber point <> 0
+
+    /// Returns the average center of all points of the Polyline2D.
+    member pl.Center =
+        let ps = pl.Points
+        if ps.Count = 0 then EuclidException.Raise "Euclid.Polyline2D.Center failed on Polyline2D with less than 0 points"
+        let mutable x = 0.0
+        let mutable y = 0.0
+        for i = 0 to ps.LastIndex do
+            let p = ps.[i]
+            x <- x + p.X
+            y <- y + p.Y
+        Pt(x / float ps.Count, y / float ps.Count)
+
+
+    /// Scales the 2D polyline by a given factor.
+    /// Scale center is World Origin 0,0
+    member p.Scale (factor:float) : Polyline2D =
+        let ps = p.Points  |> ResizeArr.map (fun pt -> pt * factor)
+        Polyline2D.createDirectlyUnsafe ps
+
+
+    /// Scales the 2D polyline by a given factor on a given center point
+    member p.ScaleOn (cen:Pt) (factor:float) : Polyline2D =
+        let cx = cen.X
+        let cy = cen.Y
+        p.Points
+        |> ResizeArr.map (fun pt ->
+            Pt( cx + (pt.X - cx) * factor,
+                cy + (pt.Y - cy) * factor)
+            )
+        |> Polyline2D.createDirectlyUnsafe
 
 
     //-------------------------------------------------------------------

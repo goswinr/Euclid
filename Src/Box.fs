@@ -224,6 +224,31 @@ type Box =
         let z = b.Zaxis.Unitized
         PPlane.createUnchecked (b.Origin, x, y, z)
 
+    /// Scales the Box by a given factor.
+    /// Scale center is World Origin 0,0
+    member inline r.Scale (factor:float) : Box =
+        Box(
+            r.Origin * factor,
+            r.Xaxis * factor,
+            r.Yaxis * factor,
+            r.Zaxis * factor
+        )
+
+    // Scales the Box by a given factor on a given center point
+    member inline l.ScaleOn (cen:Pnt) (factor:float) : Box =
+        let cx = cen.X
+        let cy = cen.Y
+        let cz = cen.Z
+        let o = l.Origin
+        Box(
+            Pnt(cx + (o.X - cx) * factor,
+                cy + (o.Y - cy) * factor,
+                cz + (o.Z - cz) * factor),
+            l.Xaxis * factor,
+            l.Yaxis * factor,
+            l.Zaxis * factor
+        )
+
 
     /// Check for point containment in the Box.
     /// By doing 6 dot products with the sides of the rectangle.
@@ -251,13 +276,13 @@ type Box =
 
 
     /// Gets the axis aligned 3D Bounding Box of the Box.
-    member r.BBox =
-        let y = r.Yaxis
-        let z = r.Zaxis
-        let p0 = r.Origin
-        let p1 = p0 + r.Xaxis
+    member b.BBox =
+        let p0 = b.Origin
+        let p1 = p0 + b.Xaxis
+        let y = b.Yaxis
         let p2 = p1 + y
         let p3 = p0 + y
+        let z = b.Zaxis
         let p4 = p0 + z
         let p5 = p1 + z
         let p6 = p2 + z
@@ -269,6 +294,24 @@ type Box =
         let maxY = max (max (max (max (max (max (max p0.Y p1.Y) p2.Y) p3.Y) p4.Y) p5.Y) p6.Y) p7.Y
         let maxZ = max (max (max (max (max (max (max p0.Z p1.Z) p2.Z) p3.Z) p4.Z) p5.Z) p6.Z) p7.Z
         BBox.createUnchecked(minX, minY, minZ, maxX, maxY, maxZ)
+
+
+    /// Returns the Area of the biggest face of the box.
+    /// This is the biggest of the three faces X*Y, X*Z and Y*Z.
+    member b.AreaOfBiggestFace (box:Box) =
+        let x = box.Xaxis.Length
+        let y = box.Yaxis.Length
+        let z = box.Zaxis.Length
+        max (x * y) (max (x * z) (y * z))
+
+    /// Returns the Area of the smallest face of the box.
+    /// This is the smallest of the three faces X*Y, X*Z and Y*Z.
+    member b.AreaOfSmallestFace (box:Box) =
+        let x = box.Xaxis.Length
+        let y = box.Yaxis.Length
+        let z = box.Zaxis.Length
+        min (x * y) (min (x * z) (y * z))
+
 
 
     //-------------------------------------------------------------------
@@ -374,11 +417,11 @@ type Box =
         Box(b.Center - x*0.5 - y*0.5 - z*0.5, x, y, z)
 
     /// Does not verify the orientation of vectors.
-    static member inline createUnchecked (origin,xAxis,yAxis,zAxis) =
+    static member inline createUnchecked (origin, xAxis, yAxis, zAxis) =
         Box(origin, xAxis, yAxis, zAxis)
 
     /// Creates a 3D box from PPlane and x, y and Z size.
-    static member inline createFromPlane (pl:PPlane, x, y, z) =
+    static member inline createFromPlane x y z (pl:PPlane) =
         Box(pl.Origin, pl.Xaxis*x, pl.Yaxis*y, pl.Zaxis*z)
 
     /// Creates a 3D box from a 3D a bounding box.
@@ -386,14 +429,15 @@ type Box =
         Box(b.MinPnt, Vec.Xaxis*b.SizeX, Vec.Yaxis*b.SizeY, Vec.Zaxis*b.SizeZ)
 
     /// Creates a 3D box from a 2D rectangle and Z lower and upper position.
-    static member createFromRect2D (r:Rect2D, zLow, zHigh) =
+    static member createFromRect2D zLow zHigh (r:Rect2D) =
         Box(r.Origin.WithZ zLow,
             r.Xaxis.AsVec,
             r.Yaxis.AsVec,
-            Vec.Zaxis*(zHigh-zLow))
+            Vec.Zaxis*(zHigh-zLow)
+        )
 
      /// Creates a 3D box from a 3D rectangle and Z lower and upper position.
-    static member inline createFromRect3D (r:Rect3D, zLow, zHigh) =
+    static member inline createFromRect3D zLow zHigh (r:Rect3D) =
         let z = Vec.cross(r.Xaxis, r.Yaxis)
         Box(r.Origin  + z.WithLength(zLow),
             r.Xaxis,

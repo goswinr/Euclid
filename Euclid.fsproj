@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -57,7 +57,7 @@
     <!-- otherwise the minimum FSharp.Core version would be forced by the SDK used for building it. This would be needlessly too high-->
     <PackageReference Update="FSharp.Core" Version="6.0.7" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
-    <PackageReference Include="Ionide.KeepAChangelog.Tasks" Version="0.1.8" PrivateAssets="all"  />
+    <PackageReference Include="Ionide.KeepAChangelog.Tasks" Version="0.1.8" PrivateAssets="all" />
 
     <None Include="./README.md" Pack="true" PackagePath="" />
     <None Include="./Docs/img/logo128.png" Pack="true" PackagePath="" />   <!--PackagePath = "" makes the file available to nuget pack tool-->
@@ -96,7 +96,7 @@
     <Compile Include="Src/NPlane.fs" />
     <Compile Include="Src/Rect2D.fs" />
     <Compile Include="Src/Rect3D.fs" />
-    <Compile Include="Src/Box.fs" />
+    <Compile Include="Src/Box.fs" /><Compile Include="Src\FreeBox.fs" />
     <Compile Include="Src/Intersect.fs" />
     <Compile Include="Src/ResizeArr.fs" />
     <Compile Include="Src/Points.fs" />
@@ -111,7 +111,7 @@
 
   <Target Name="CopyReadmeToDocs" AfterTargets="Build">
     <!-- for fsdocs to build locally -->
-    <Copy SourceFiles="./README.md" DestinationFiles="./Docs/index.md" ContinueOnError="false"/>
+    <Copy SourceFiles="./README.md" DestinationFiles="./Docs/index.md" ContinueOnError="false" />
   </Target>
 
   <Target Name="WriteChangelogVersion" AfterTargets="AfterBuild"><!-- for version checks in github tag based builds -->

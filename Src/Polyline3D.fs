@@ -58,9 +58,30 @@ type Polyline3D =
 
     /// Gets the segment at index i of the Polyline3D.
     member p.Segment(i:int) =
-        if i < 0 || i >= p.Points.Count - 1 then
+        if i < 0 || i > p.Points.Count - 2 then
             EuclidException.Raisef "Euclid.Polyline3D.Segment: index %d is out of range for Polyline3D with %d points." i p.Points.Count
         Line3D(p.Points.[i], p.Points.[i+1])
+
+
+    /// Gets the segment at index i of the Polyline3D.
+    member p.GetSegment(i:int) =
+        if i < 0 || i > p.Points.Count - 2 then
+            EuclidException.Raisef "Euclid.Polyline2D.Segment: index %d is out of range for Polyline2D with %d points." i p.Points.Count
+        Line3D(p.Points.[i], p.Points.[i+1])
+
+    /// Returns all segments of the Polyline3D as a list of Line3D.
+    member p.Segments =
+        let lns = ResizeArray()
+        let pts = p.Points
+        if pts.Count < 2 then
+            lns
+        else
+            let mutable a = pts.[0]
+            for i = 1 to p.Points.LastIndex do
+                let b = pts.[i]
+                lns.Add(Line3D(a, b))
+                a <- b
+            lns
 
     /// Gets the a bounding box of the Polyline3D
     member inline p.BoundingBox =
@@ -217,6 +238,43 @@ type Polyline3D =
         let t = pl.ClosestParameter pt
         pl.EvaluateAt t
         |> Pnt.distance pt
+
+
+
+    /// Returns the average center of all points of the Polyline3D.
+    member pl.Center =
+        let ps = pl.Points
+        if ps.Count = 0 then EuclidException.Raise "Euclid.Polyline3D.Center failed on Polyline2D with less than 0 points"
+        let mutable x = 0.0
+        let mutable y = 0.0
+        let mutable z = 0.0
+        for i = 0 to ps.LastIndex do
+            let p = ps.[i]
+            x <- x + p.X
+            y <- y + p.Y
+            z <- z + p.Z
+        Pnt(x / float ps.Count, y / float ps.Count, z / float ps.Count)
+
+    /// Scales the 3D polyline by a given factor.
+    /// Scale center is World Origin 0,0
+    member p.Scale (factor:float) : Polyline3D =
+        let ps = p.Points  |> ResizeArr.map (fun pt -> pt * factor)
+        Polyline3D.createDirectlyUnsafe ps
+
+
+    /// Scales the 2D polyline by a given factor on a given center point
+    member p.ScaleOn (cen:Pnt) (factor:float) : Polyline3D =
+        let cx = cen.X
+        let cy = cen.Y
+        let cz = cen.Z
+        p.Points
+        |> ResizeArr.map (fun pt ->
+            Pnt(cx + (pt.X - cx) * factor,
+                cy + (pt.Y - cy) * factor,
+                cz + (pt.Z - cz) * factor)
+            )
+        |> Polyline3D.createDirectlyUnsafe
+
 
     //-------------------------------------------------------------------
     //------------------------static members-----------------------------

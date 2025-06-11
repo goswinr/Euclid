@@ -152,6 +152,28 @@ type Rect3D =
     member inline r.Area =
         r.Xaxis.Length*r.Yaxis.Length
 
+    /// Scales the 3D rectangle by a given factor.
+    /// Scale center is World Origin 0,0
+    member inline r.Scale (factor:float) : Rect3D =
+        Rect3D.createUnchecked(
+                r.Origin * factor,
+                r.Xaxis * factor,
+                r.Yaxis * factor)
+
+    /// Scales the 3D rectangle by a given factor on a given center point
+    member inline l.ScaleOn (cen:Pnt) (factor:float) : Rect3D =
+        let cx = cen.X
+        let cy = cen.Y
+        let cz = cen.Z
+        let o = l.Origin
+        Rect3D.createUnchecked(
+            Pnt(cx + (o.X - cx) * factor,
+                cy + (o.Y - cy) * factor,
+                cz + (o.Z - cz) * factor),
+            l.Xaxis * factor,
+            l.Yaxis * factor
+        )
+
     /// Calculates the squared area of the 3D-rectangle.
     /// by using the squared lengths of the X and Y axis.
     /// This is a bit faster than calculating the area and good enough for relative comparisons or sorting by size.

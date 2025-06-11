@@ -569,6 +569,26 @@ module AutoOpenLine2D =
         let pv = pt - ln.From
         lv *** pv > 0.0
 
+
+    /// Scales the 2D line by a given factor.
+    /// Scale center is World Origin 0,0
+    member inline l.Scale (factor:float) : Line2D =
+        Line2D(
+            l.FromX * factor,
+            l.FromY * factor,
+            l.ToX   * factor,
+            l.ToY   * factor)
+
+    /// Scales the 2D line by a given factor on a given center point
+    member inline l.ScaleOn (cen:Pt) (factor:float) : Line2D =
+        let cx = cen.X
+        let cy = cen.Y
+        Line2D(
+            cx + (l.FromX - cx) * factor,
+            cy + (l.FromY - cy) * factor,
+            cx + (l.ToX   - cx) * factor,
+            cy + (l.ToY   - cy) * factor)
+
     //-------------------------------------------------------------------
     //------------------------static members-----------------------------
     //-------------------------------------------------------------------

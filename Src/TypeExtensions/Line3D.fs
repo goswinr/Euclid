@@ -656,7 +656,29 @@ module AutoOpenLine3D =
     member inline l.TransformRigid (m:RigidMatrix) = Line3D(l.From *** m, l.To *** m)
 
 
+    /// Scales the 3D line by a given factor.
+    /// Scale center is World Origin 0,0
+    member inline l.Scale (factor:float) : Line3D =
+        Line3D(
+            l.FromX * factor,
+            l.FromY * factor,
+            l.FromZ * factor,
+            l.ToX   * factor,
+            l.ToY   * factor,
+            l.ToZ   * factor)
 
+    // Scales the 3D line by a given factor on a given center point
+    member inline l.ScaleOn (cen:Pnt) (factor:float) : Line3D =
+        let cx = cen.X
+        let cy = cen.Y
+        let cz = cen.Z
+        Line3D(
+            cx + (l.FromX - cx) * factor,
+            cy + (l.FromY - cy) * factor,
+            cz + (l.FromZ - cz) * factor,
+            cx + (l.ToX   - cx) * factor,
+            cy + (l.ToY   - cy) * factor,
+            cz + (l.ToZ   - cz) * factor)
 
     //-------------------------------------------------------------------
     //------------------------static members-----------------------------
