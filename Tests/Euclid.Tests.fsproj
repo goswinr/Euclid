@@ -15,7 +15,7 @@
     <Compile Include="TestLine.fs" />
     <Compile Include="TestPolyline.fs" />
     <Compile Include="TestQuat.fs" />
-    <Compile Include="TestMatrix.fs" />
+    <Compile Include="TestMatrix.fs" /><Compile Include="TestRigidMatrix.fs" />
     <Compile Include="TestMain.fs" />
   </ItemGroup>
 </Project>

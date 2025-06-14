@@ -59,14 +59,14 @@ type Matrix =
     member m.ToArrayByRows =
         [| m.M11; m.M21; m.M31; m.X41; m.M12; m.M22; m.M32; m.Y42; m.M13; m.M23; m.M33; m.Z43; m.M14; m.M24; m.M34; m.M44 |]
 
-    /// Nicely formats the Matrix to a Grid of 4x4
+    /// Nicely formats the Matrix to a Grid of 4x4 (without field names)
     /// the following column-vector syntax form:
     /// M11 M21 M31 X41
     /// M12 M22 M32 Y42
     /// M13 M23 M33 Z43
     /// M14 M24 M34 M44
     /// Where X41, Y42 and Z43 refer to the translation part of the matrix.
-    override m.ToString()=
+    member m.AsString =
         let ts = m.ToArrayByRows |> Array.map (sprintf "%0.3f")
         let most = ts |> Array.maxBy (fun s -> s.Length)
         $"4x4 Column-Vector Transformation Matrix:{Format.nl}" + (
@@ -77,18 +77,24 @@ type Matrix =
         |> String.concat Environment.NewLine
         )
 
-    //Nicely formats the Matrix to a Grid of 4x4 including field names.
-    //override m.ToString()=
-    //    let names =[| "M11"; "M21"; "M31"; "X41"; "M12"; "M22"; "M32"; "Y42"; "M13"; "M23"; "M33"; "Z43"; "M14"; "M24"; "M34"; "M44"|]
-    //    let ts = (names, m.ByRows)  ||> Array.map2 (fun n v -> sprintf "%0.3f" v)
-    //    let most = ts |> Array.maxBy (fun s -> s.Length)
-    //    $"Column-Vector Transformation Matrix:{Format.nl}" + (
-    //    (names, ts)
-    //    ||> Array.map2 (fun n v ->n + ": " + String(' ', most.Length-v.Length) + v)
-    //    |> Array.chunkBySize 4
-    //    |> Array.map (fun es -> " " + String.concat " | " es)
-    //    |> String.concat Environment.NewLine
-    //    )
+    /// Nicely formats the Matrix to a Grid of 4x4 including field names.
+    /// Using the following column-vector syntax form:
+    /// M11 M21 M31 X41
+    /// M12 M22 M32 Y42
+    /// M13 M23 M33 Z43
+    /// M14 M24 M34 M44
+    /// Where X41, Y42 and Z43 refer to the translation part of the matrix.
+    override m.ToString()=
+       let names =[| "M11"; "M21"; "M31"; "X41"; "M12"; "M22"; "M32"; "Y42"; "M13"; "M23"; "M33"; "Z43"; "M14"; "M24"; "M34"; "M44"|]
+       let ts =  m.ToArrayByRows |> Array.map ( sprintf "%0.3f" )
+       let most = ts |> Array.maxBy (fun s -> s.Length)
+       $"Column-Vector Transformation Matrix:{Format.nl}" + (
+       (names, ts)
+       ||> Array.map2 (fun n v ->n + ": " + String(' ', most.Length-v.Length) + v)
+       |> Array.chunkBySize 4
+       |> Array.map (fun es -> " " + String.concat " | " es)
+       |> String.concat Environment.NewLine
+       )
 
 
     /// Returns the first column vector. M11, M12 and M13
@@ -791,18 +797,19 @@ type Matrix =
         let wx = w * x2
         let wy = w * y2
         let wz = w * z2
-        // the sequence is reordered here, when compared to Three js
-        Matrix  ( (1. - (yy + zz) )
-                , (xy - wz)
-                , (xz + wy)
+        // Create a 4x4 Transformation Matrix.
+        // This Constructor takes arguments in row-major order,
+        Matrix  ( 1. - (yy + zz)
+                , xy - wz
+                , xz + wy
                 , 0
-                , (xy + wz)
-                , (1. - (xx + zz) )
+                , xy + wz
+                , 1. - (xx + zz)
+                , yz - wx
                 , 0
-                , (yz - wx)
-                , (xz - wy)
-                , (yz + wx)
-                , (1. - (xx + yy) )
+                , xz - wy
+                , yz + wx
+                , 1. - (xx + yy)
                 , 0
                 , 0
                 , 0
@@ -869,9 +876,10 @@ type Matrix =
         let x' = m.M11*x + m.M21*y + m.M31*z //+ m.X41 * w
         let y' = m.M12*x + m.M22*y + m.M32*z //+ m.Y42 * w
         let z' = m.M13*x + m.M23*y + m.M33*z //+ m.Z43 * w
-        let w' = m.M14*x + m.M24*y + m.M34*z //+ m.M44 * w
-        let sc = 1.0 / w'
-        Vec(x' * sc, y'* sc, z'* sc)
+        // let w' = m.M14*x + m.M24*y + m.M34*z //+ m.M44 * w
+        // let sc = 1.0 / w'
+        // Vec(x' * sc, y'* sc, z'* sc)
+        Vec(x', y', z')
 
     /// Multiplies a Matrix with a 3D vector
     /// Since a 3D vector represents a direction or an offset in space, but not a location,
@@ -885,9 +893,10 @@ type Matrix =
         let x' = m.M11*x + m.M21*y + m.M31*z //+ m.X41 * w
         let y' = m.M12*x + m.M22*y + m.M32*z //+ m.Y42 * w
         let z' = m.M13*x + m.M23*y + m.M33*z //+ m.Z43 * w
-        let w' = m.M14*x + m.M24*y + m.M34*z //+ m.M44 * w
-        let sc = 1.0 / w'
-        Vec(x' * sc, y'* sc, z'* sc)
+        // let w' = m.M14*x + m.M24*y + m.M34*z //+ m.M44 * w
+        // let sc = 1.0 / w'
+        // Vec(x' * sc, y'* sc, z'* sc)
+        Vec(x', y', z')
 
     /// Multiplies (or applies) a Matrix to a 3D point (with an implicit 1 in the 4th dimension,
     /// so that it also works correctly for projections.)

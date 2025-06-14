@@ -47,18 +47,21 @@ type RigidMatrix =
     /// Returns the 12 elements column-major order:
     /// [| M11 M12 M13 M21 M22 M23 M31 M32 M33 X41 Y42 Z43 |]
     /// Where X41, Y42 and Z43 refer to the translation part of the RigidMatrix.
-    member m.ByColumns =
+    member m.ToArrayByColumns =
         [| m.M11; m.M12; m.M13; m.M21; m.M22; m.M23; m.M31; m.M32; m.M33; m.X41; m.Y42; m.Z43 |]
 
-    /// Returns the 12 elements in row-major order:
-    /// [| M11 M21 M31 X41 M12 M22 M32 Y42 M13 M23 M33 Z43 |]
+    /// Nicely formats the RigidMatrix to a Grid of 3x4 (without field names)
+    /// the following column-vector syntax form:
+    /// M11 M21 M31 X41
+    /// M12 M22 M32 Y42
+    /// M13 M23 M33 Z43
     /// Where X41, Y42 and Z43 refer to the translation part of the RigidMatrix.
-    member m.ByRows =
+    member m.ToArrayByRows =
         [| m.M11; m.M21; m.M31; m.X41; m.M12; m.M22; m.M32; m.Y42; m.M13; m.M23; m.M33; m.Z43 |]
 
     /// Nicely formats the Matrix to a Grid of 4x3.
-    override m.ToString()=
-        let ts = m.ByRows |> Array.map (sprintf "%0.3f")
+    member m.AsString =
+        let ts = m.ToArrayByRows |> Array.map (sprintf "%0.3f")
         let most = ts |> Array.maxBy (fun s -> s.Length)
         $"4x3 Colum-Vector Rigid Transformation Matrix:{Format.nl}" + (
         ts
@@ -68,18 +71,23 @@ type RigidMatrix =
         |> String.concat Environment.NewLine
         )
 
-    //Nicely formats the Matrix to a Grid of 4x3 including field names.
-    //override m.ToString()=
-    //    let names =[| "M11"; "M21"; "M31"; "X41"; "M12"; "M22"; "M32"; "Y42"; "M13"; "M23"; "M33"; "Z43"; "M14"; "M24"; "M34"; "M44"|]
-    //    let ts = (names, m.ByRows)  ||> Array.map2 (fun n v -> sprintf "%0.3f" v)
-    //    let most = ts |> Array.maxBy (fun s -> s.Length)
-    //    $"Colum-Vector Rigid Transformation Matrix:{Format.nl}" + (
-    //    (names, ts)
-    //    ||> Array.map2 (fun n v ->n + ": " + String(' ', most.Length-v.Length) + v)
-    //    |> Array.chunkBySize 4
-    //    |> Array.map (fun es -> " " + String.concat " | " es)
-    //    |> String.concat Environment.NewLine
-    //    )
+    /// Nicely formats the Matrix to a Grid of 4x4 including field names.
+    /// Using the following column-vector syntax form:
+    /// M11 M21 M31 X41
+    /// M12 M22 M32 Y42
+    /// M13 M23 M33 Z43
+    /// Where X41, Y42 and Z43 refer to the translation part of the matrix.
+    override m.ToString()=
+       let names =[| "M11"; "M21"; "M31"; "X41"; "M12"; "M22"; "M32"; "Y42"; "M13"; "M23"; "M33"; "Z43"|]
+       let ts =  m.ToArrayByRows |> Array.map ( sprintf "%0.3f" )
+       let most = ts |> Array.maxBy (fun s -> s.Length)
+       $"Colum-Vector Rigid Transformation Matrix:{Format.nl}" + (
+       (names, ts)
+       ||> Array.map2 (fun n v -> n + ": " + String(' ', most.Length-v.Length) + v)
+       |> Array.chunkBySize 4
+       |> Array.map (fun es -> " " + String.concat " | " es)
+       |> String.concat Environment.NewLine
+       )
 
     /// Returns the first column vector. M11, M12 and M13
     member m.ColumnVector1 = Vec(m.M11, m.M12, m.M13)
@@ -97,19 +105,19 @@ type RigidMatrix =
     member m.Matrix =
         // converts the RigidMatrix to a Matrix
         Matrix(
-            m.M11, m.M12, m.M13, 0.0,
-            m.M21, m.M22, m.M23, 0.0,
-            m.M31, m.M32, m.M33, 0.0,
-            m.X41, m.Y42, m.Z43, 1.0)
+            m.M11, m.M21, m.M31, m.X41,
+            m.M12, m.M22, m.M32, m.Y42,
+            m.M13, m.M23, m.M33, m.Z43,
+            0.0  , 0.0  , 0.0  , 1.0  )
 
 
     /// The Determinant of a Rigid Matrix is always 1.0
     /// The Determinant describes the volume that a unit cube will have after the matrix was applied.
+    /// This method only exists for testing.
     [<Obsolete("The Determinant of a Rigid Matrix is always 1.0.")>]
     member m.Determinant :float =
         let m = m.Matrix
         m.Determinant
-
 
     /// Inverts the RigidMatrix.
     /// Rigid matrices always have determinant 1.0 so they can always be inverted.
@@ -542,7 +550,7 @@ type RigidMatrix =
             let x = Vec(m.M11, m.M12, m.M13)
             let y = Vec(m.M21, m.M22, m.M23)
             let z = Vec(m.M31, m.M32, m.M33)
-            let inline sqLen    (v:Vec) = v.X*v.X + v.Y*v.Y + v.Z*v.Z // defined here again, because Vec extension members are not in scope here
+            let inline sqLen (v:Vec) = v.X*v.X + v.Y*v.Y + v.Z*v.Z // defined here again, because Vec extension members are not in scope here
             if
                 UtilEuclid.isZero m.M14 && // last row is 0, 0, 0, 1
                 UtilEuclid.isZero m.M24 && // last row is 0, 0, 0, 1
@@ -551,10 +559,10 @@ type RigidMatrix =
                 UtilEuclid.isOne (sqLen x) && // exclude scaling
                 UtilEuclid.isOne (sqLen y) &&
                 UtilEuclid.isOne (sqLen z) &&
-                UtilEuclid.isZero (x *** y)    && // orthogonal if dot product of row or column vectors is zero
-                UtilEuclid.isZero (x *** z)    &&
-                UtilEuclid.isZero (y *** z)    &&
-                UtilEuclid.isOne  ((Vec.cross (x, y)) *** z) then // check it's not reflecting (would be -1)
+                UtilEuclid.isZero (x *** y) && // orthogonal if dot product of row or column vectors is zero
+                UtilEuclid.isZero (x *** z) &&
+                UtilEuclid.isZero (y *** z) &&
+                UtilEuclid.isOne  (Vec.cross (x, y) *** z) then // check it's not reflecting (would be -1)
                     Some (RigidMatrix(  m.M11, m.M21, m.M31, m.X41,
                                         m.M12, m.M22, m.M32, m.Y42,
                                         m.M13, m.M23, m.M33, m.Z43)
@@ -567,8 +575,10 @@ type RigidMatrix =
     /// However, translation is allowed.
     static member createFromMatrix (m:Matrix) =
         match RigidMatrix.tryCreateFromMatrix m with
-        | Some m -> m
-        | None -> EuclidException.Raisef "Euclid.RigidMatrix.createFromMatrix failed. The input matrix does scale, shear, flip, mirror, reflect or project: %O" m
+        | Some m ->
+            m
+        | None ->
+            EuclidException.Raisef "Euclid.RigidMatrix.createFromMatrix failed. The input matrix does scale, shear, flip, mirror, reflect or project: %O" m
 
 
     /// Converts the 3x4 RigidMatrix to a general 4x4 Matrix
@@ -597,15 +607,16 @@ type RigidMatrix =
         let wx = w * x2
         let wy = w * y2
         let wz = w * z2
-        // the sequence is reordered here, when compared to Three js
+        // Create a 4x4 Transformation Matrix.
+        // This Constructor takes arguments in row-major order,
         RigidMatrix ( 1. - (yy + zz)
                     , xy - wz
                     , xz + wy
                     , 0
                     , xy + wz
                     , 1. - (xx + zz)
-                    , 0
                     , yz - wx
+                    , 0
                     , xz - wy
                     , yz + wx
                     , 1. - (xx + yy)

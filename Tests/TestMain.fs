@@ -31,6 +31,8 @@ let run () =
     test TestQuat.tests
     |||
     test TestMatrix.tests
+    |||
+    test TestRigidMatrix.tests
 
 
 #if FABLE_COMPILER
