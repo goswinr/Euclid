@@ -9,75 +9,180 @@
 [![license](https://img.shields.io/github/license/goswinr/Euclid)](LICENSE.md)
 ![code size](https://img.shields.io/github/languages/code-size/goswinr/Euclid.svg)
 
-Euclid is a 2D and 3D geometry library for F# without dependencies.<br>
-It is mostly focused on creating and manipulating primitives such as<br>
-points, vectors, lines, planes, boxes, bounding boxes, and polylines.<br>
-For transformations of those there are rotations, quaternions, 4x4 and rigid orthonormal 4x3 matrices.
+A comprehensive 2D and 3D geometry library in F# without dependencies, designed for precision engineering and computational design.<br>
+It runs on JavaScript too.
 
-Written in F# and designed for use with F#, <br>
-all primitive types are immutable and functions are curried where appropriate.<br>
+## Table of Contents
 
-This library is intended to be used for design, construction, and manufacturing.<br>
-So it uses double-precision floating point numbers for all values. (While most geometry libraries for games use single-precision floats.)
+- [Features](#features)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Coordinate System](#coordinate-system)
+- [Design Philosophy](#design-philosophy)
+- [Usage Examples](#usage-examples)
+- [API Documentation](#api-documentation)
+- [Platform Support](#platform-support)
+- [Development](#development)
+- [Testing](#testing)
+- [Contributing](#contributing)
+- [License](#license)
 
-See [Euclid.Rhino](https://github.com/goswinr/Euclid.Rhino) for converting from and to [Rhino3D](https://www.rhino3d.com/) geometry.
+## Features
 
-This library can be compiled to JavaScript, TypeScript, Rust, or Python via [Fable](https://fable.io/).
+🎯 **Core Geometry Types**
+- Points (`Pt`, `Pnt`), Vectors (`Vc`, `Vec`), Unit Vectors (`UnitVc`, `UnitVec`)
+- Lines, Planes, Boxes, Bounding Boxes, Polylines
+- Rotations, Quaternions, 4x4 and rigid orthonormal 4x3 matrices
 
-## Where does Z point to?
+✨ **Key Advantages**
+- **Zero dependencies** - lightweight and self-contained
+- **Double precision** - engineered for CAD/manufacturing accuracy
+- **Immutable types** - functional programming friendly
+- **Type safety** - dedicated unit vector types prevent common errors
+- **Cross-platform** - compiles to .NET, JavaScript, TypeScript, Rust, Python via Fable
+- **Performant** - All small types are structs, functions are often inline and try to minimize the allocation of intermediate objects.
 
-This library assumes a right-handed coordinate system with the Z-axis pointing up.<br>
-Just like Rhino3D, Blender, SketchUp, Revit, and AutoCAD have it. But [unlike](https://bsky.app/profile/freya.bsky.social/post/3lat5r6hlck25) Unity, Unreal, or Maya.
+🔧 **Design & Manufacturing Focus**
+- Optimized for design, construction, and manufacturing workflows
+- Integrates seamlessly with [Rhino3D](https://github.com/goswinr/Euclid.Rhino)
+- Right-handed coordinate system (Z-up) matching industry standards
 
+## Installation
 
-## Design decisions
-
-In this library, a point is a position in space, a vector is a direction in space.<br>
-A 4x4 transformation matrix applied to a vector will only rotate and scale the vector but not translate it.<br>
-You could think of this as a homogeneous coordinate system where the last value is 0 (not 1), thus [disabling translation](https://www.youtube.com/watch?v=o-xwmTODTUI&t=216s).
-
-A 2D point is called `Pt` and a 3D point is called `Pnt`.<br>
-A 2D vector is called `Vc` and a 3D vector is called `Vec`.<br>
-
-This library has dedicated types for unit vectors in 2D and 3D space.<br>
-They are called `UnitVc` and `UnitVec` respectively.<br>
-They are guaranteed to have a length of 1.0.
-
-All types have respective modules with the same name for functions that operate on them.<br>
-Many functions exist as both a lowercase static member and an uppercase method or property.<br>
-e.g.: `Vec.unitized(v)` is the same as the `v.Unitized` property.<br>
-
-## Full API Documentation
-
-[goswinr.github.io/Euclid](https://goswinr.github.io/Euclid/reference/euclid.html)
-
-## Changelog
-See [CHANGELOG.md](https://github.com/goswinr/Euclid/blob/main/CHANGELOG.md)
-
-## Build from source
-Just run `dotnet build` in the root directory.
-
-
-## Tests
-All tests run in both JavaScript and .NET.
-The TypeScript result is verified with the TypeScript compiler.
-Go to the tests folder:
+Add Euclid to your F# project via NuGet:
 
 ```bash
-cd Tests
+dotnet add package Euclid
 ```
 
-For testing with .NET using Expecto run
+Or in F# scripting:
+```fsharp
+#r "nuget: Euclid"
+```
 
+## Quick Start
+
+```fsharp
+open Euclid
+
+// Create 3D points and vectors
+let point1 = Pnt(1.0, 2.0, 3.0)
+let point2 = Pnt(4.0, 5.0, 6.0)
+let vector = Vec(1.0, 1.0, 0.0)
+
+// Calculate distance
+let distance = Pnt.distance point1 point2
+
+// Create and use unit vectors
+let unitVec = vector.Unitized  // returns a UnitVec
+
+// Transform with 4x4 matrix
+let matrix =
+    Matrix.createShear(3.0, 0, 0, 0, 0, 0)
+    *** // Combine transfromations
+    Matrix.createRotationZ 45
+
+point1
+|> Pnt.translate vector
+|> Pnt.scale 3.0
+|> Pnt.transform matrix
+
+```
+
+## Coordinate System
+
+This library uses a **right-handed coordinate system** with the **Z-axis pointing up**.
+
+✅ **Same as in:** Rhino3D, Blender, SketchUp, Revit, AutoCAD
+❌ **Different from:** Unity, Unreal Engine, Maya
+
+This choice aligns with industry-standard CAD and architectural software.
+
+## Design Philosophy
+
+### Points vs Vectors
+- **Points** (`Pt`, `Pnt`): Positions in space
+- **Vectors** (`Vc`, `Vec`): Directions and displacements
+
+When a 4x4 transformation matrix is applied:
+- **Points**: Undergo full transformation (rotation, scaling, translation)
+- **Vectors**: Only rotate and scale (no translation)
+
+This follows homogeneous coordinate conventions where vectors have w=0.
+
+### Naming Conventions
+| Type | 2D | 3D |
+|------|----|----|
+| Point | `Pt` | `Pnt` |
+| Vector | `Vc` | `Vec` |
+| Unit Vector | `UnitVc` | `UnitVec` |
+
+### Function Patterns
+Functions are available in multiple forms:
+```fsharp
+// Static module function (lowercase)
+let normalized = Vec.unitized myVector
+
+// Instance method/property (uppercase)
+let normalized = myVector.Unitized
+```
+
+## API Documentation
+
+📚 **Full API Reference:** [goswinr.github.io/Euclid](https://goswinr.github.io/Euclid/reference/euclid.html)
+
+## Platform Support
+
+Thanks to [Fable](https://fable.io/), Euclid can be compiled to multiple platforms:
+
+- ✅ **.NET** (Primary target)
+- ✅ **JavaScript** (Browser/Node.js)
+- ✅ **TypeScript** (Type-safe JS)
+- ✅ **Rust** (Systems programming)
+- ✅ **Python** (Data science/ML)
+
+## Development
+
+### Building from Source
 ```bash
+git clone https://github.com/goswinr/Euclid.git
+cd Euclid
+dotnet build
+```
+
+### Prerequisites
+- .NET SDK 6.0 or later
+- Node.js (for JavaScript testing)
+
+## Testing
+
+Tests run on both .NET and JavaScript platforms with TypeScript verification.
+
+### .NET Testing
+```bash
+cd Tests
 dotnet run
 ```
 
-For testing with Fable.Mocha run
-
+### JavaScript Testing
 ```bash
+cd Tests
+npm install
 npm test
 ```
+
+The test suite ensures cross-platform compatibility and verifies TypeScript type definitions.
+
+## Contributing
+
+Contributions are welcome!
+
+
+## Changelog
+📋 See [CHANGELOG.md](https://github.com/goswinr/Euclid/blob/main/CHANGELOG.md) for version history.
+
+## Related Projects
+🦏 [Euclid.Rhino](https://github.com/goswinr/Euclid.Rhino) - Rhino3D integration
 
 ## License
 [MIT](https://github.com/goswinr/Euclid/blob/main/LICENSE.md)
