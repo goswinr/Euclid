@@ -1,4 +1,4 @@
-module Topo
+module TestTopo
 
 open Euclid
 
@@ -32,9 +32,9 @@ let lns =
 
 
 let tests =
-  testList "Topo " [
+  testList "Topology " [
 
-    test "5 lines" {
+    test "join2D lines" {
         let gs = Topology.join2D( (fun (ln:Li) -> ln.ln), 0.001, lns)
         "gs length" |> Expect.equal gs.Count  2
         "gs[0] length" |> Expect.equal gs.[0].Count  4

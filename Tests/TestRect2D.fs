@@ -1,4 +1,4 @@
-module Rect2D
+module TestRect2D
 
 open Euclid
 
@@ -16,7 +16,7 @@ let y = Vc.Yaxis
 let rect = Rect2D.createFromVectors(o,x,y)
 
 let tests =
-  testList "samples" [
+  testList "Rect2D" [
 
     test "Rect2D.grid" {
       let grid = Rect2D.grid (rect, 2, 2)

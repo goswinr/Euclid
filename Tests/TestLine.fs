@@ -1,4 +1,4 @@
-module Line
+module TestLine
 
 open Euclid
 
@@ -24,7 +24,7 @@ let expectEqualEpsilon (a:float) b txt =
     Expect.isTrue ok txt
 
 let tests =
-  testList "Line2D tests" [
+  testList "Line2D" [
 
         for i = 1 to 10 do
             let v = Vc(rFloat -99. 99., rFloat -99. 99.)

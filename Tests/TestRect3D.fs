@@ -1,4 +1,4 @@
-module Rect3D
+module TestRect3D
 
 open Euclid
 
@@ -18,7 +18,7 @@ let y = Vec.Yaxis
 let rect = Rect3D.createFromVectors(o,x,y)
 
 let tests =
-  testList "samples" [
+  testList "Rect3D" [
 
     test "Rect3D.grid" {
       let grid = Rect3D.grid (rect, 2, 2)

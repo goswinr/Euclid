@@ -9,11 +9,13 @@
     <PackageReference Include="Expecto" Version="10.2.3" />
     <PackageReference Include="Fable.Mocha" Version="2.17.0" />
     <ProjectReference Include="../Euclid.fsproj" />
-    <Compile Include="Rect3D.fs" />
-    <Compile Include="Rect2D.fs" />
-    <Compile Include="Topo.fs" />
-    <Compile Include="Line.fs" />
-    <Compile Include="Polyline.fs" />
-    <Compile Include="Main.fs" />
+    <Compile Include="TestRect3D.fs" />
+    <Compile Include="TestRect2D.fs" />
+    <Compile Include="TestTopo.fs" />
+    <Compile Include="TestLine.fs" />
+    <Compile Include="TestPolyline.fs" />
+    <Compile Include="TestQuat.fs" />
+    <Compile Include="TestMatrix.fs" />
+    <Compile Include="TestMain.fs" />
   </ItemGroup>
 </Project>

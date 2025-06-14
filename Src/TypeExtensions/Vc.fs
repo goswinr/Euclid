@@ -45,11 +45,11 @@ module AutoOpenVc =
         //member inline v.Length moved to Vc type declaration
         //member inline v.LengthSq moved to Vc type declaration
 
-        /// Returns new 2D vector with new X coordinate, Y stays the same.
+        /// Returns a new 2D vector with new X coordinate, Y stays the same.
         member inline v.WithX x =
             Vc (x, v.Y)
 
-        /// Returns new 2D vector with new Y coordinate, X stays the same.
+        /// Returns a new 2D vector with new Y coordinate, X stays the same.
         member inline v.WithY y =
             Vc (v.X, y)
 
@@ -480,10 +480,10 @@ module AutoOpenVc =
         /// Gets the Y part of this 2D vector.
         static member inline getY (v:Vc) = v.Y
 
-        /// Returns new 2D vector with new X value, Y stays the same.
+        /// Returns a new 2D vector with new X value, Y stays the same.
         static member inline withX x (v:Vc) = v.WithX x
 
-        /// Returns new 2D vector with new Y value, X stays the same.
+        /// Returns a new 2D vector with new Y value, X stays the same.
         static member inline withY y (v:Vc) = v.WithY y
 
         /// Add two 2D vectors together. Returns a new 2D vector.

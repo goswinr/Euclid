@@ -5,6 +5,9 @@ open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see http
 open Euclid.UtilEuclid
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 
+
+#nowarn "44" // deprecated
+
 /// An immutable 4x3 rigid matrix. For only rotation and translation in 3D space.
 /// This matrix guarantees to NOT scale, shear, flip, mirror, reflect or project.
 /// Angles are preserved. Lengths are preserved. Area is preserved. Volume is preserved.
@@ -90,26 +93,22 @@ type RigidMatrix =
     /// Returns the translation or fourth column vector. X41, Y42 and Z43
     member m.Translation = Vec(m.X41, m.Y42, m.Z43)
 
+    /// Converts the 3x4 RigidMatrix to a general 4x4 Matrix
+    member m.Matrix =
+        // converts the RigidMatrix to a Matrix
+        Matrix(
+            m.M11, m.M12, m.M13, 0.0,
+            m.M21, m.M22, m.M23, 0.0,
+            m.M31, m.M32, m.M33, 0.0,
+            m.X41, m.Y42, m.Z43, 1.0)
+
 
     /// The Determinant of a Rigid Matrix is always 1.0
     /// The Determinant describes the volume that a unit cube will have after the matrix was applied.
-    member m.Determinant =
-        let n11 = m.M11
-        let n21 = m.M21
-        let n31 = m.M31
-        //let n41 = m.X41
-        let n12 = m.M12
-        let n22 = m.M22
-        let n32 = m.M32
-        //let n42 = m.Y42
-        let n13 = m.M13
-        let n23 = m.M23
-        let n33 = m.M33
-        //let n43 = m.Z43
-        let t11 =  - n23 * n32  + n22 * n33
-        let t12 =    n13 * n32  - n12 * n33
-        let t13 =  - n13 * n22  + n12 * n23
-        n11 * t11 + n21 * t12 + n31 * t13
+    [<Obsolete("The Determinant of a Rigid Matrix is always 1.0.")>]
+    member m.Determinant :float =
+        let m = m.Matrix
+        m.Determinant
 
 
     /// Inverts the RigidMatrix.
@@ -237,7 +236,10 @@ type RigidMatrix =
 
     /// The Determinant of a Rigid Matrix is always 1.0
     /// The Determinant describes the volume that a unit cube will have after the matrix was applied.
-    static member inline determinant (m:RigidMatrix) = m.Determinant
+    [<Obsolete("The Determinant of a Rigid Matrix is always 1.0.")>]
+    static member inline determinant (m:RigidMatrix) =
+        let m = m.Matrix
+        m.Determinant
 
     /// Inverses the RigidMatrix.
     /// An RigidMatrix can always be inverted. (as opposed to a general Matrix)
@@ -567,6 +569,15 @@ type RigidMatrix =
         match RigidMatrix.tryCreateFromMatrix m with
         | Some m -> m
         | None -> EuclidException.Raisef "Euclid.RigidMatrix.createFromMatrix failed. The input matrix does scale, shear, flip, mirror, reflect or project: %O" m
+
+
+    /// Converts the 3x4 RigidMatrix to a general 4x4 Matrix
+    static member toMatrix (m:RigidMatrix) =
+        Matrix(
+            m.M11, m.M12, m.M13, 0.0,
+            m.M21, m.M22, m.M23, 0.0,
+            m.M31, m.M32, m.M33, 0.0,
+            m.X41, m.Y42, m.Z43, 1.0)
 
     /// Create a RigidMatrix from a Quaternion.
     static member createFromQuaternion(quaternion:Quaternion) =

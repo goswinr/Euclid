@@ -1,4 +1,4 @@
-module Polyline
+module TestPolyline
 
 open Euclid
 

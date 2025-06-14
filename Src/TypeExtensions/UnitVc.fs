@@ -39,12 +39,12 @@ module AutoOpenUnitVc =
         /// Convert 2D unit-vector to 3D point using 0.0 as Z value.
         member inline v.AsPnt =
             Pnt(v.X, v.Y, 0.0)
-        /// Returns new 2D vector with new X coordinate, Y stays the same.
+        /// Returns a new 2D vector with new X coordinate, Y stays the same.
         ///
         member inline v.WithX x =
             Vc (x, v.Y)
 
-        /// Returns new 2D vector with new Y coordinate, X stays the same.
+        /// Returns a new 2D vector with new Y coordinate, X stays the same.
         member inline v.WithY y =
             Vc (v.X, y)
 
@@ -429,11 +429,11 @@ module AutoOpenUnitVc =
         static member inline getY (v:UnitVc) =
             v.Y
 
-        /// Returns new 2D vector with new X value, Y stays the same.
+        /// Returns a new 2D vector with new X value, Y stays the same.
         static member inline withX x (v:UnitVc) =
             v.WithX x
 
-        /// Returns new 2D vector with new Y value, X stays the same.
+        /// Returns a new 2D vector with new Y value, X stays the same.
         static member inline withY y (v:UnitVc) =
             v.WithY y
 

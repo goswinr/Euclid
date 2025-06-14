@@ -107,42 +107,68 @@ type Matrix =
     /// The determinant of the Matrix.
     /// The Determinant describes the signed volume that a unit cube will have after the matrix was applied.
     member m.Determinant =
-        let n11 = m.M11
-        let n21 = m.M21
-        let n31 = m.M31
-        let x41 = m.X41
-        let n12 = m.M12
-        let n22 = m.M22
-        let n32 = m.M32
-        let y42 = m.Y42
-        let n13 = m.M13
-        let n23 = m.M23
-        let n33 = m.M33
-        let z43 = m.Z43
-        let n14 = m.M14
-        let n24 = m.M24
-        let n34 = m.M34
-        let n44 = m.M44
+        // https://www.euclideanspace.com/maths/algebra/matrix/functions/determinant/fourD/index.htm
 
-        // let t11 = n23 * n34 * y42 - n24 * n33 * y42 + n24 * n32 * z43 - n22 * n34 * z43 - n23 * n32 * n44 + n22 * n33 * n44
-        // let t12 = n14 * n33 * y42 - n13 * n34 * y42 - n14 * n32 * z43 + n12 * n34 * z43 + n13 * n32 * n44 - n12 * n33 * n44
-        // let t13 = n13 * n24 * y42 - n14 * n23 * y42 + n14 * n22 * z43 - n12 * n24 * z43 - n13 * n22 * n44 + n12 * n23 * n44
-        // let t14 = n14 * n23 * n32 - n13 * n24 * n32 - n14 * n22 * n33 + n12 * n24 * n33 + n13 * n22 * n34 - n12 * n23 * n34
+        //   m03 * m12 * m21 * m30-m02 * m13 * m21 * m30-m03 * m11 * m22 * m30+m01 * m13 * m22 * m30+
+        //   m02 * m11 * m23 * m30-m01 * m12 * m23 * m30-m03 * m12 * m20 * m31+m02 * m13 * m20 * m31+
+        //   m03 * m10 * m22 * m31-m00 * m13 * m22 * m31-m02 * m10 * m23 * m31+m00 * m12 * m23 * m31+
+        //   m03 * m11 * m20 * m32-m01 * m13 * m20 * m32-m03 * m10 * m21 * m32+m00 * m13 * m21 * m32+
+        //   m01 * m10 * m23 * m32-m00 * m11 * m23 * m32-m02 * m11 * m20 * m33+m01 * m12 * m20 * m33+
+        //   m02 * m10 * m21 * m33-m00 * m12 * m21 * m33-m01 * m10 * m22 * m33+m00 * m11 * m22 * m33;
 
-        // common sub expressions extracted:
-        let n23n34 = n23 * n34
-        let n24n33 = n24 * n33
-        let n24n32 = n24 * n32
-        let n22n34 = n22 * n34
-        let n23n32 = n23 * n32
-        let n22n33 = n22 * n33
+        let m00 = m.M11
+        let m01 = m.M12
+        let m02 = m.M13
+        let m03 = m.M14
+        let m10 = m.M21
+        let m11 = m.M22
+        let m12 = m.M23
+        let m13 = m.M24
+        let m20 = m.M31
+        let m21 = m.M32
+        let m22 = m.M33
+        let m23 = m.M34
+        let x30 = m.X41
+        let y31 = m.Y42
+        let z32 = m.Z43
+        let m33 = m.M44
 
-        let t11 = n23n34 * y42 - n24n33 * y42 + n24n32 * z43 - n22n34 * z43 - n23n32 * n44 + n22n33 * n44
-        let t12 = n14 * n33 * y42 - n13 * n34 * y42 - n14 * n32 * z43 + n12 * n34 * z43 + n13 * n32 * n44 - n12 * n33 * n44
-        let t13 = n13 * n24 * y42 - n14 * n23 * y42 + n14 * n22 * z43 - n12 * n24 * z43 - n13 * n22 * n44 + n12 * n23 * n44
-        let t14 = n14 * n23n32 - n13 * n24n32 - n14 * n22n33 + n12 * n24n33 + n13 * n22n34 - n12 * n23n34
+        // common sub expressions extracted to reduce from 72 to 48 multiplications:
+        let m03m12 = m03*m12
+        let m02m11 = m02*m11
+        let m03m10 = m03*m10
+        let m03m11 = m03*m11
+        let m01m10 = m01*m10
+        let m02m10 = m02*m10
 
-        n11 * t11 + n21 * t12 + n31 * t13 + x41 * t14
+        let m21x30 = m21*x30
+        let m23x30 = m23*x30
+        let m22y31 = m22*y31
+        let m20z32 = m20*z32
+        let m23z32 = m23*z32
+        let m21m33 = m21*m33
+
+        let m02m13 = m02*m13
+        let m01m12 = m01*m12
+        let m00m13 = m00*m13
+        let m01m13 = m01*m13
+        let m00m11 = m00*m11
+        let m00m12 = m00*m12
+
+        let m22x30 = m22*x30
+        let m20y31 = m20*y31
+        let m23y31 = m23*y31
+        let m21z32 = m21*z32
+        let m20m33 = m20*m33
+        let m22m33 = m22*m33
+
+        m03m12*m21x30 - m02m13*m21x30 - m03m11*m22x30 + m01m13*m22x30 +
+        m02m11*m23x30 - m01m12*m23x30 - m03m12*m20y31 + m02m13*m20y31 +
+        m03m10*m22y31 - m00m13*m22y31 - m02m10*m23y31 + m00m12*m23y31 +
+        m03m11*m20z32 - m01m13*m20z32 - m03m10*m21z32 + m00m13*m21z32 +
+        m01m10*m23z32 - m00m11*m23z32 - m02m11*m20m33 + m01m12*m20m33 +
+        m02m10*m21m33 - m00m12*m21m33 - m01m10*m22m33 + m00m11*m22m33
+
 
 
     /// A separate function to compose the error message that does not get inlined.
@@ -153,103 +179,85 @@ type Matrix =
     /// If the determinant is zero the Matrix cannot be inverted.
     /// An Exception is raised.
     member m.Inverse =
-        // Use Laplace expansion theorem to calculate the inverse of a 4x4 matrix
-        // 1. Calculate the 2x2 determinants needed the 4x4 determinant based on the 2x2 determinants
-        // 3. Create the adjugate matrix, which satisfies: A * adj(A) = det(A) * I
-        // 4. Divide adjugate matrix with the determinant to find the inverse
-
         // based on http://www.euclideanspace.com/maths/algebra/matrix/functions/inverse/fourD/index.htm
+        // also see https://github.com/mrdoob/three.js/blob/master/src/math/Matrix4.js#L717
+        let m00 = m.M11
+        let m01 = m.M12
+        let m02 = m.M13
+        let m03 = m.M14
+        let m10 = m.M21
+        let m11 = m.M22
+        let m12 = m.M23
+        let m13 = m.M24
+        let m20 = m.M31
+        let m21 = m.M32
+        let m22 = m.M33
+        let m23 = m.M34
+        let x30 = m.X41
+        let y31 = m.Y42
+        let z32 = m.Z43
+        let m33 = m.M44
 
-        //Speed Optimization TODO
-        //The below  program is valid for a general 4×4 matrix which will work in all circumstances but when the matrix is being used to
-        //represent a combined rotation and translation (as described on this page) then the matrix carries a lot of redundant information.
-        //So if we want to speed up the code on this page then, for this case only, we can take advantage of this redundant information.
-        //to invert a pure rotation then we just take the transpose of the 3x3 part of the matrix.
-        //to invert a pure translation the we just negate the translation
+        // common sub expressions extracted for determinant :
+        let m03_m12 = m03*m12
+        let m02_m13 = m02*m13
+        let m03_m11 = m03*m11
+        let m01_m12 = m01*m12
+        let m01_m13 = m01*m13
+        let m02_m11 = m02*m11
+        let m03_m10 = m03*m10
+        let m02_m10 = m02*m10
+        let m00_m13 = m00*m13
+        let m00_m12 = m00*m12
+        let m00_m11 = m00*m11
+        let m01_m10 = m01*m10
+        let t03 = m03_m12*m21 - m02_m13*m21 - m03_m11*m22 + m01_m13*m22 + m02_m11*m23 - m01_m12*m23
+        let t13 = m02_m13*m20 - m03_m12*m20 + m03_m10*m22 - m00_m13*m22 - m02_m10*m23 + m00_m12*m23
+        let t23 = m03_m11*m20 - m01_m13*m20 - m03_m10*m21 + m00_m13*m21 + m01_m10*m23 - m00_m11*m23
+        let t33 = m01_m12*m20 - m02_m11*m20 + m02_m10*m21 - m00_m12*m21 - m01_m10*m22 + m00_m11*m22
 
-        // this order would actually need to be transposed when comparing to three.js, but its transposed in the output too, so its correct.
-        // The internal array in three.js is column major.
-        let n11 = m.M11
-        let n21 = m.M21
-        let n31 = m.M31
-        let x41 = m.X41
-        let n12 = m.M12
-        let n22 = m.M22
-        let n32 = m.M32
-        let y42 = m.Y42
-        let n13 = m.M13
-        let n23 = m.M23
-        let n33 = m.M33
-        let z43 = m.Z43
-        let n14 = m.M14 // x translation in three.js
-        let n24 = m.M24 // y translation in three.js
-        let n34 = m.M34 // z translation in three.js
-        let n44 = m.M44
+        let determinant =
+            t03 * x30 +
+            t13 * y31 +
+            t23 * z32 +
+            t33 * m33
 
-        // common sub expressions extracted:
-        let n23n34 = n23 * n34
-        let n24n33 = n24 * n33
-        let n24n32 = n24 * n32
-        let n22n34 = n22 * n34
-        let n23n32 = n23 * n32
-        let n22n33 = n22 * n33
+        if abs determinant < 1e-16 then m.FailedInverse()
+        let detInv = 1. / determinant
 
-        let n33y42 = n33 * y42
-        let n34y42 = n34 * y42
-        let n32z43 = n32 * z43
-        let n34z43 = n34 * z43
-        let n32n44 = n32 * n44
-        let n33n44 = n33 * n44
-        let n13n24 = n13 * n24
-        let n14n23 = n14 * n23
-        let n14n22 = n14 * n22
-        let n12n24 = n12 * n24
-        let n13n22 = n13 * n22
-        let n12n23 = n12 * n23
+        // more common sub expressions that are used at least four times:
+        let m20_y31 = m20*y31
+        let m20_z32 = m20*z32
+        let m20_m33 = m20*m33
+        let m21_x30 = m21*x30
+        let m21_z32 = m21*z32
+        let m21_m33 = m21*m33
+        let m22_x30 = m22*x30
+        let m22_y31 = m22*y31
+        let m22_m33 = m22*m33
+        let m23_x30 = m23*x30
+        let m23_y31 = m23*y31
+        let m23_z32 = m23*z32
 
-        let t11 = n23n34 * y42  -  n24n33 * y42  -  n24n32 * z43  -  n22n34 * z43  -  n23n32 * n44  -  n22n33 * n44
-        let t12 = n14 * n33y42  -  n13 * n34y42  -  n14 * n32z43  -  n12 * n34z43  -  n13 * n32n44  -  n12 * n33n44
-        let t13 = n13n24 * y42  -  n14n23 * y42  -  n14n22 * z43  -  n12n24 * z43  -  n13n22 * n44  -  n12n23 * n44
-        let t14 = n14 * n23n32  -  n13 * n24n32  -  n14 * n22n33  -  n12 * n24n33  -  n13 * n22n34  -  n12 * n23n34
-        let det = n11 * t11  -  n21 * t12  -  n31 * t13  -  x41 * t14
-
-        if abs(det) < 1e-16 then m.FailedInverse()
-        let detInv = 1. / det
-
-        // 4 common sub expressions extracted:
-        let n31z43 = n31 * z43
-        let n31y42 = n31 * y42
-        let n31n44 = n31 * n44
-        let n14n21 = n14 * n21
-        let n13n21 = n13 * n21
-        let n12n21 = n12 * n21
-
-        // 2 common sub expressions extracted:
-        let n34x41 = n34 * x41
-        let n33x41 = n33 * x41
-        let n11n24 = n11 * n24
-        let n11n23 = n11 * n23
-        let n11n22 = n11 * n22
-        let n32x41 = n32 * x41
-
-        // this order would actually need to be transposed when comparing to three.js, but since input is transposed it is correct.
-        Matrix  (   t11 * detInv                                                                                                 // M11
-                , ( n24n33 * x41  -  n23n34 * x41  -  n24 * n31z43  -  n21 * n34z43  -  n23 * n31n44  -  n21 * n33n44 ) * detInv // M21
-                , ( n22n34 * x41  -  n24n32 * x41  -  n24 * n31y42  -  n21 * n34y42  -  n22 * n31n44  -  n21 * n32n44 ) * detInv // M31
-                , ( n23n32 * x41  -  n22n33 * x41  -  n23 * n31y42  -  n21 * n33y42  -  n22 * n31z43  -  n21 * n32z43 ) * detInv // X41
-                ,   t12 * detInv                                                                                                 // M12
-                , ( n13 * n34x41  -  n14 * n33x41  -  n14 * n31z43  -  n11 * n34z43  -  n13 * n31n44  -  n11 * n33n44 ) * detInv // M22
-                , ( n14 * n32x41  -  n12 * n34x41  -  n14 * n31y42  -  n11 * n34y42  -  n12 * n31n44  -  n11 * n32n44 ) * detInv // M32
-                , ( n12 * n33x41  -  n13 * n32x41  -  n13 * n31y42  -  n11 * n33y42  -  n12 * n31z43  -  n11 * n32z43 ) * detInv // Y42
-                ,   t13 * detInv                                                                                                 // M13
-                , ( n14n23 * x41  -  n13n24 * x41  -  n14n21 * z43  -  n11n24 * z43  -  n13n21 * n44  -  n11n23 * n44 ) * detInv // M23
-                , ( n12n24 * x41  -  n14n22 * x41  -  n14n21 * y42  -  n11n24 * y42  -  n12n21 * n44  -  n11n22 * n44 ) * detInv // M33
-                , ( n13n22 * x41  -  n12n23 * x41  -  n13n21 * y42  -  n11n23 * y42  -  n12n21 * z43  -  n11n22 * z43 ) * detInv // Z43
-                ,   t14 * detInv                                                                                                 // M14
-                , ( n13n24 * n31  -  n14n23 * n31  -  n14n21 * n33  -  n11 * n24n33  -  n13n21 * n34  -  n11 * n23n34 ) * detInv // M24
-                , ( n14n22 * n31  -  n12n24 * n31  -  n14n21 * n32  -  n11 * n24n32  -  n12n21 * n34  -  n11 * n22n34 ) * detInv // M34
-                , ( n12n23 * n31  -  n13n22 * n31  -  n13n21 * n32  -  n11 * n23n32  -  n12n21 * n33  -  n11 * n22n33 ) * detInv // M44
+        Matrix  ( (m12*m23_y31 - m13*m22_y31 + m13*m21_z32 - m11*m23_z32 - m12*m21_m33 + m11*m22_m33 ) * detInv // M11
+                , (m13*m22_x30 - m12*m23_x30 - m13*m20_z32 + m10*m23_z32 + m12*m20_m33 - m10*m22_m33 ) * detInv // M21
+                , (m11*m23_x30 - m13*m21_x30 + m13*m20_y31 - m10*m23_y31 - m11*m20_m33 + m10*m21_m33 ) * detInv // M31
+                , (m12*m21_x30 - m11*m22_x30 - m12*m20_y31 + m10*m22_y31 + m11*m20_z32 - m10*m21_z32 ) * detInv // X41
+                , (m03*m22_y31 - m02*m23_y31 - m03*m21_z32 + m01*m23_z32 + m02*m21_m33 - m01*m22_m33 ) * detInv // M12
+                , (m02*m23_x30 - m03*m22_x30 + m03*m20_z32 - m00*m23_z32 - m02*m20_m33 + m00*m22_m33 ) * detInv // M22
+                , (m03*m21_x30 - m01*m23_x30 - m03*m20_y31 + m00*m23_y31 + m01*m20_m33 - m00*m21_m33 ) * detInv // M32
+                , (m01*m22_x30 - m02*m21_x30 + m02*m20_y31 - m00*m22_y31 - m01*m20_z32 + m00*m21_z32 ) * detInv // Y42
+                , (m02_m13*y31 - m03_m12*y31 + m03_m11*z32 - m01_m13*z32 - m02_m11*m33 + m01_m12*m33 ) * detInv // M13
+                , (m03_m12*x30 - m02_m13*x30 - m03_m10*z32 + m00_m13*z32 + m02_m10*m33 - m00_m12*m33 ) * detInv // M23
+                , (m01_m13*x30 - m03_m11*x30 + m03_m10*y31 - m00_m13*y31 - m01_m10*m33 + m00_m11*m33 ) * detInv // M33
+                , (m02_m11*x30 - m01_m12*x30 - m02_m10*y31 + m00_m12*y31 + m01_m10*z32 - m00_m11*z32 ) * detInv // Z43
+                , t03 * detInv // M14
+                , t13 * detInv // M24
+                , t23 * detInv // M34
+                , t33 * detInv // M44
                 )
+
+
 
     /// Checks if the Matrix is an identity matrix in the form of:
     /// 1  0  0  0
@@ -924,3 +932,90 @@ type Matrix =
             0                               , 0                                , negFarRange, nearPlaneDistance * negFarRange,
             0                               , 0                                , -1         ,                               0
             )
+
+
+    (*
+    [<Obsolete("Use Inverse instead. This method is not optimized and will be removed in a future version.")>]
+    member m.InverseSlow =
+        // based on http://www.euclideanspace.com/maths/algebra/matrix/functions/inverse/fourD/index.htm
+        // also see https://github.com/mrdoob/three.js/blob/master/src/math/Matrix4.js#L717
+        let m00 = m.M11
+        let m01 = m.M12
+        let m02 = m.M13
+        let m03 = m.M14
+        let m10 = m.M21
+        let m11 = m.M22
+        let m12 = m.M23
+        let m13 = m.M24
+        let m20 = m.M31
+        let m21 = m.M32
+        let m22 = m.M33
+        let m23 = m.M34
+        let m30 = m.X41
+        let m31 = m.Y42
+        let m32 = m.Z43
+        let m33 = m.M44
+
+        let determinant =
+            m03 * m12 * m21 * m30-m02 * m13 * m21 * m30-m03 * m11 * m22 * m30+m01 * m13 * m22 * m30 +
+            m02 * m11 * m23 * m30-m01 * m12 * m23 * m30-m03 * m12 * m20 * m31+m02 * m13 * m20 * m31 +
+            m03 * m10 * m22 * m31-m00 * m13 * m22 * m31-m02 * m10 * m23 * m31+m00 * m12 * m23 * m31 +
+            m03 * m11 * m20 * m32-m01 * m13 * m20 * m32-m03 * m10 * m21 * m32+m00 * m13 * m21 * m32 +
+            m01 * m10 * m23 * m32-m00 * m11 * m23 * m32-m02 * m11 * m20 * m33+m01 * m12 * m20 * m33 +
+            m02 * m10 * m21 * m33-m00 * m12 * m21 * m33-m01 * m10 * m22 * m33+m00 * m11 * m22 * m33
+
+        if abs determinant < 1e-16 then m.FailedInverse()
+        let detInv = 1. / determinant
+
+        let r00 = m12*m23*m31 - m13*m22*m31 + m13*m21*m32 - m11*m23*m32 - m12*m21*m33 + m11*m22*m33;
+        let r01 = m03*m22*m31 - m02*m23*m31 - m03*m21*m32 + m01*m23*m32 + m02*m21*m33 - m01*m22*m33;
+        let r02 = m02*m13*m31 - m03*m12*m31 + m03*m11*m32 - m01*m13*m32 - m02*m11*m33 + m01*m12*m33;
+        let r03 = m03*m12*m21 - m02*m13*m21 - m03*m11*m22 + m01*m13*m22 + m02*m11*m23 - m01*m12*m23;
+        let r10 = m13*m22*m30 - m12*m23*m30 - m13*m20*m32 + m10*m23*m32 + m12*m20*m33 - m10*m22*m33;
+        let r11 = m02*m23*m30 - m03*m22*m30 + m03*m20*m32 - m00*m23*m32 - m02*m20*m33 + m00*m22*m33;
+        let r12 = m03*m12*m30 - m02*m13*m30 - m03*m10*m32 + m00*m13*m32 + m02*m10*m33 - m00*m12*m33;
+        let r13 = m02*m13*m20 - m03*m12*m20 + m03*m10*m22 - m00*m13*m22 - m02*m10*m23 + m00*m12*m23;
+        let r20 = m11*m23*m30 - m13*m21*m30 + m13*m20*m31 - m10*m23*m31 - m11*m20*m33 + m10*m21*m33;
+        let r21 = m03*m21*m30 - m01*m23*m30 - m03*m20*m31 + m00*m23*m31 + m01*m20*m33 - m00*m21*m33;
+        let r22 = m01*m13*m30 - m03*m11*m30 + m03*m10*m31 - m00*m13*m31 - m01*m10*m33 + m00*m11*m33;
+        let r23 = m03*m11*m20 - m01*m13*m20 - m03*m10*m21 + m00*m13*m21 + m01*m10*m23 - m00*m11*m23;
+        let r30 = m12*m21*m30 - m11*m22*m30 - m12*m20*m31 + m10*m22*m31 + m11*m20*m32 - m10*m21*m32;
+        let r31 = m01*m22*m30 - m02*m21*m30 + m02*m20*m31 - m00*m22*m31 - m01*m20*m32 + m00*m21*m32;
+        let r32 = m02*m11*m30 - m01*m12*m30 - m02*m10*m31 + m00*m12*m31 + m01*m10*m32 - m00*m11*m32;
+        let r33 = m01*m12*m20 - m02*m11*m20 + m02*m10*m21 - m00*m12*m21 - m01*m10*m22 + m00*m11*m22;
+
+        // argument order for Matrix constructor is:
+        // r00 or  M11
+        // r01 or  M21
+        // r02 or  M31
+        // r03 or  X41
+        // r10 or  M12
+        // r11 or  M22
+        // r12 or  M32
+        // r13 or  Y42
+        // r20 or  M13
+        // r21 or  M23
+        // r22 or  M33
+        // r23 or  Z43
+        // r30 or  M14
+        // r31 or  M24
+        // r32 or  M34
+        // r33 or  M44
+        Matrix  ( r00*detInv // M11
+                , r10*detInv // M21
+                , r20*detInv // M31
+                , r30*detInv // X41
+                , r01*detInv // M12
+                , r11*detInv // M22
+                , r21*detInv // M32
+                , r31*detInv // Y42
+                , r02*detInv // M13
+                , r12*detInv // M23
+                , r22*detInv // M33
+                , r32*detInv // Z43
+                , r03*detInv // M14
+                , r13*detInv // M24
+                , r23*detInv // M34
+                , r33*detInv // M44
+                )
+    *)

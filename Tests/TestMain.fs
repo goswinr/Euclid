@@ -16,18 +16,21 @@ let test x =  runTestsWithCLIArgs [] [||] x
 
 
 
-
 let run () =
 
-    test Line.tests
+    test TestLine.tests
     |||
-    test Rect2D.tests
+    test TestRect2D.tests
     |||
-    test Rect3D.tests
+    test TestRect3D.tests
     |||
-    test Polyline.tests
+    test TestPolyline.tests
     |||
-    test Topo.tests
+    test TestTopo.tests
+    |||
+    test TestQuat.tests
+    |||
+    test TestMatrix.tests
 
 
 #if FABLE_COMPILER
