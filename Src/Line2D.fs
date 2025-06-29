@@ -22,11 +22,11 @@ type Line2D =
     /// Returns the Y coordinate of the end point of the line.
     [<DataMember>] val ToY  :float
 
-    /// Create Line2D from 2D start point and 2D end point.
+    /// Create a Line2D from 2D start point and 2D end point.
     new (fromPt:Pt, toPt:Pt) =
             {FromX=fromPt.X; FromY=fromPt.Y; ToX=toPt.X; ToY=toPt.Y; }
 
-    /// Create Line2D from 2D start point's x and y  and 2D end point's x and y .
+    /// Create a Line2D from 2D start point's x and y  and 2D end point's x and y .
     new (fromX, fromY, toX, toY) =
             {FromX=fromX; FromY=fromY;  ToX=toX; ToY=toY}
 
@@ -63,11 +63,11 @@ type Line2D =
             (Format.float ln.ToY)
 
 
-    /// The Start point of the 2D Line2D.
+    /// The Start point of the Line2D.
     member inline ln.From =
         Pt(ln.FromX, ln.FromY)
 
-    /// The End point of the 2D Line2D.
+    /// The End point of the Line2D.
     member inline ln.To =
         Pt(ln.ToX, ln.ToY)
 

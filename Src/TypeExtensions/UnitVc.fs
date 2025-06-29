@@ -715,7 +715,7 @@ module AutoOpenUnitVc =
             if dot > float Cosine.``0.05`` then  // vectors are in the same direction interpolate length only
                 start
             elif dot < float Cosine.``179.95`` then
-                EuclidDivByZeroException.Throw1 "Euclid.UnitVc.slerp: Can't interpolate vectors in opposite directions:" ende
+                EuclidDivByZeroException.ThrowT "Euclid.UnitVc.slerp: Can't interpolate vectors in opposite directions:" ende
             else
                 let ang = acos(dot) // the angle between the two vectors
                 let p = ende - start*dot  // a vector perpendicular to start and in the same plane with ende.

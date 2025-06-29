@@ -429,7 +429,7 @@ module AutoOpenPnt =
         /// e.g. snap 10  Pnt(3    , 19   , 0) -> Pnt(0  , 20 , 0)
         /// does: (Math.Round (x/precision)) * precision
         static member inline snap (precision) (pt:Pnt) =
-            if isTooTiny (precision) then EuclidDivByZeroException.Throw1 "Euclid.Pnt.snap: precision too small or negative" precision
+            if isTooTiny (precision) then EuclidDivByZeroException.ThrowT "Euclid.Pnt.snap: precision too small or negative" precision
             Pnt( (Math.Round (pt.X/precision)) * precision,
                  (Math.Round (pt.Y/precision)) * precision,
                  (Math.Round (pt.Z/precision)) * precision)
@@ -452,7 +452,7 @@ module AutoOpenPnt =
         /// The second distance (distNormal) is applied perpendicular to the line (made by the two 3D points)
         /// and perpendicular to the horizontal offset direction.
         /// This is in World.Z direction if both points are at the same Z level.
-        /// If points are closer than than 1e-6 units the World.Xaxis is used
+        /// If points are closer than 1e-6 units the World.Xaxis is used
         /// as first direction and World Z-axis as second direction.
         static member offsetTwoPt(  fromPt:Pnt,
                                     toPt:Pnt,

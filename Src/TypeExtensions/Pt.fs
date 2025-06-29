@@ -398,7 +398,7 @@ module AutoOpenPt =
         /// e.g. snap 10  Pt(3    , 19)    -> Pt(0  , 20)
         /// does: (Math.Round (x/precision)) * precision
         static member inline snap (precision) (pt:Pt) =
-            if isTooTiny (precision) then EuclidDivByZeroException.Throw1 "Euclid.Pt.snap: precision too small or negative" precision
+            if isTooTiny (precision) then EuclidDivByZeroException.ThrowT "Euclid.Pt.snap: precision too small or negative" precision
             Pt( (Math.Round (pt.X/precision)) * precision,
                 (Math.Round (pt.Y/precision)) * precision)
 

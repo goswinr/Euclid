@@ -882,11 +882,11 @@ module AutoOpenLine3D =
         ln.MoveX(distance)
 
     /// Returns a 3D line moved by a given distance in Y direction.
-    static member inline moveY (distance:double) (ln:Line3D) =
+    static member inline moveY (distance:float) (ln:Line3D) =
         ln.MoveY(distance)
 
     /// Returns a 3D line moved by a given distance in Z direction.
-    static member inline moveZ (distance:double) (ln:Line3D) =
+    static member inline moveZ (distance:float) (ln:Line3D) =
         ln.MoveZ(distance)
 
     /// Move a 3D line by a vector. (same as Line3D.translate)

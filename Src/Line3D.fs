@@ -76,11 +76,11 @@ type Line3D =
             (Format.float ln.ToY)
             (Format.float ln.ToZ)
 
-    /// The start point of the 3D Line3D.
+    /// The start point of the Line3D.
     member inline ln.From =
         Pnt(ln.FromX, ln.FromY, ln.FromZ)
 
-    /// The end point of the 3D Line3D.
+    /// The end point of the Line3D.
     member inline ln.To =
         Pnt(ln.ToX, ln.ToY, ln.ToZ)
 

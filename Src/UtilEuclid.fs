@@ -24,7 +24,7 @@ type EuclidException (s:string) =
     static member Raise (txt:string) = raise (EuclidException(txt))
 
     /// This function is much smaller when it gets inlined compared to the Raise (Printf.kprintf) version
-    static member Throw1 msg (v:'T) = raise (EuclidException(msg + ": " + v.ToString()))
+    static member ThrowT msg (v:'T) = raise (EuclidException(msg + ": " + v.ToString()))
 
 /// Exception for attempting to divide by a 0.0 or almost 0.0 value.
 /// Almost 0.0 is defined by UtilEuclid.zeroLengthTolerance as 1e-12.
@@ -36,7 +36,7 @@ type EuclidDivByZeroException (s:string) =
     static member Raise (txt:string) = raise (EuclidDivByZeroException(txt))
 
     /// This function is much smaller when it gets inlined compared to the Raise (Printf.kprintf) version
-    static member Throw1 msg (v:'T) = raise (EuclidDivByZeroException(msg + ": " + v.ToString()))
+    static member ThrowT msg (v:'T) = raise (EuclidDivByZeroException(msg + ": " + v.ToString()))
 
 /// Math Utility functions and values for use within Euclid.
 module UtilEuclid =
@@ -200,7 +200,7 @@ module UtilEuclid =
         else -numToMatch
 
 
-    /// Any int will give a valid index for given collection size.
+    /// Any positive or negative int will give a valid index for given collection size.
     /// Converts negative indices to positive ones and loops to start after last index is reached.
     /// Returns a valid index for a collection of 'length' items for any integer.
     let inline saveIdx i length =

@@ -26,6 +26,9 @@ let run () =
     |||
     test TestPolyline.tests
     |||
+    test TestPolyline.testsDup
+
+    |||
     test TestTopo.tests
     |||
     test TestQuat.tests

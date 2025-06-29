@@ -35,7 +35,7 @@ type Vc =
     /// Format 2D vector into string with nice floating point number formatting of X and Y
     /// But without full type name or length as in v.ToString()
     member v.AsString =
-        sprintf "X=%s| Y=%s" (Format.float v.X) (Format.float v.Y)
+        sprintf "X=%s|Y=%s" (Format.float v.X) (Format.float v.Y)
 
     /// Negate or inverse a 2D vector. Returns a new 2D vector.
     static member inline ( ~- ) (v:Vc) =
@@ -63,12 +63,12 @@ type Vc =
 
     /// A separate function to compose the error message that does not get inlined.
     [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-    member v.FailedDivide(f) =
+    static member failedDivide(f,v:Vc) =
         EuclidDivByZeroException.Raisef "Euclid.Vc: divide operator: %g is too small for dividing %O using the '/' operator. Tolerance:%g"  f v zeroLengthTolerance
 
     /// Divides a 2D vector by a scalar, also called dividing/scaling a vector. Returns a new 2D vector.
     static member inline ( / ) (v:Vc, f:float) =
-        if isTooTiny (abs f) then v.FailedDivide(f) // don't compose error msg directly here to keep inlined code small. // https://github.com/dotnet/runtime/issues/24626#issuecomment-356736809
+        if isTooTiny (abs f) then Vc.failedDivide(f,v) // don't compose error msg directly here to keep inlined code small. // https://github.com/dotnet/runtime/issues/24626#issuecomment-356736809
         Vc (v.X / f, v.Y / f)
 
     /// Returns the length of the 2D vector.

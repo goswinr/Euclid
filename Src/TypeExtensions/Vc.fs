@@ -833,8 +833,8 @@ module AutoOpenVc =
             // implementation tested in Rhino!
             let sLen = start.Length
             let eLen = ende.Length
-            if isTooTiny sLen then EuclidDivByZeroException.Throw1 "Euclid.Vc.slerp: Can't interpolate from zero length vector:" start
-            if isTooTiny eLen then EuclidDivByZeroException.Throw1 "Euclid.Vc.slerp: Can't interpolate to zero length vector:" ende
+            if isTooTiny sLen then EuclidDivByZeroException.ThrowT "Euclid.Vc.slerp: Can't interpolate from zero length vector:" start
+            if isTooTiny eLen then EuclidDivByZeroException.ThrowT "Euclid.Vc.slerp: Can't interpolate to zero length vector:" ende
             let fs = 1.0 / sLen
             let fe = 1.0 / eLen
             let su  = start * fs //unitized start vector
@@ -843,7 +843,7 @@ module AutoOpenVc =
             if dot > float Cosine.``0.05`` then  // vectors are in the same direction interpolate length only
                 Vc.lerp(start, ende, rel)
             elif dot < float Cosine.``179.95`` then
-                EuclidDivByZeroException.Throw1 "Euclid.Vc.slerp: Can't interpolate vectors in opposite directions:" ende
+                EuclidDivByZeroException.ThrowT "Euclid.Vc.slerp: Can't interpolate vectors in opposite directions:" ende
             else
                 let ang = acos(dot) // the angel between the two vectors
                 let perp = eu - su*dot |> Vc.unitize // a vector perpendicular to start and in the same plane with ende.

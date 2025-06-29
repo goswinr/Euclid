@@ -260,7 +260,7 @@ module AutoOpenVec =
             let x = abs (v.X)
             let y = abs (v.Y)
             let z = abs (v.Z)
-            if isTooSmall (x+y+z) then EuclidException.Throw1 "Euclid.Vec.IsXAligned cannot not check very tiny vector. (tolerance 1e-6)" v
+            if isTooSmall (x+y+z) then EuclidException.ThrowT "Euclid.Vec.IsXAligned cannot not check very tiny vector. (tolerance 1e-6)" v
             else y < 1e-9 && z < 1e-9
 
         /// Checks if 3D vector is parallel to the world Y axis. Ignoring orientation.
@@ -825,8 +825,8 @@ module AutoOpenVec =
             // implementation tested in Rhino!
             let sLen = start.Length
             let eLen = ende.Length
-            if isTooTiny sLen then EuclidDivByZeroException.Throw1 "Euclid.Vec.slerp: Can't interpolate from zero length vector:" start
-            if isTooTiny eLen then EuclidDivByZeroException.Throw1 "Euclid.Vec.slerp: Can't interpolate to zero length vector:" ende
+            if isTooTiny sLen then EuclidDivByZeroException.ThrowT "Euclid.Vec.slerp: Can't interpolate from zero length vector:" start
+            if isTooTiny eLen then EuclidDivByZeroException.ThrowT "Euclid.Vec.slerp: Can't interpolate to zero length vector:" ende
             let fs = 1.0 / sLen
             let fe = 1.0 / eLen
             let su  = start * fs //unitized start vector
@@ -835,7 +835,7 @@ module AutoOpenVec =
             if dot > float Cosine.``0.05`` then  // vectors are in the same direction interpolate linear only
                 Vec.lerp(start, ende, rel)
             elif dot < float Cosine.``179.95`` then
-                EuclidDivByZeroException.Throw1 "Euclid.Vec.slerp: Can't interpolate vectors in opposite directions:" ende
+                EuclidDivByZeroException.ThrowT "Euclid.Vec.slerp: Can't interpolate vectors in opposite directions:" ende
             else
                 let ang = acos(dot) // the angel between the two vectors
                 let perp = eu - su*dot |> Vec.unitize // a vector perpendicular to start and in the same plane with ende.

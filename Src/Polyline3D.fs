@@ -3,105 +3,200 @@ namespace Euclid
 open System
 open UtilEuclid
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
-
-# nowarn "52" // copying of structs
 open System.Collections.Generic
+
+// # nowarn "52" // copying of structs
+
+
+[<Obsolete("Not Obsolete, but internal, but needs to be public for inlining")>]
+module Polyline3DErr =
+    let failToSmall (name:string) (minCount:int) =
+         EuclidException.Raise $"Euclid.Polyline3D.{name} failed on Polyline3D with less than {minCount} points "
+
+#nowarn "44" //for obsolete warning
+open Polyline3DErr
 
 /// A mutable 3D Polyline.
 /// If the last point is the same as the first point, the Polyline3D is closed.
-[<Struct; NoEquality; NoComparison>] // because its made up from floats
+// [<Struct>]
+[<NoEquality; NoComparison>] // because its made up from floats
 [<DataContract>] // for using DataMember on fields
-type Polyline3D =
+type Polyline3D (points: ResizeArray<Pnt>) =
 
     /// Gets the internal list of all Points of the Polyline3D.
     /// This is not a copy, so changes to the list will be reflected in the Polyline3D.
-    [<DataMember>] val Points: ResizeArray<Pnt>
+    [<DataMember>]
+    member _.Points = points
 
-    /// Internal constructor. Uses input List without copying it.
-    internal new (points: ResizeArray<Pnt>) =
-        { Points = points }
+        /// Create a new empty Polyline3D
+    new () = Polyline3D(ResizeArray<Pnt>())
+
+    /// Create a new empty Polyline3D with predefined capacity for the internal list of points.
+    new (capacity:int) = Polyline3D(ResizeArray<Pnt>(capacity))
 
     /// Nicely formatted string representation of the Box including its size.
-    override pl.ToString() =
-        if pl.Points.Count = 0 then "An empty Euclid.Polyline3D."
-        else sprintf"Euclid.Polyline3D with %d points from %s to %s" pl.Points.Count pl.Points.First.AsString pl.Points.Last.AsString
+    override p.ToString() =
+        if points.Count = 0 then
+            "An empty Euclid.Polyline3D."
+        else
+            $"Euclid.Polyline3D with length {p.Length}, from {p.Points.Count} points"
 
     /// Creates a copy of the Polyline3D
-    member inline p.Duplicate(): Polyline3D =
-        let ps = p.Points
-        Polyline3D.createDirectlyUnsafe(ps.GetRange(0, ps.Count))
+    /// Same as polyline.Clone()
+    member p.Duplicate(): Polyline3D =
+        Polyline3D.createDirectlyUnsafe(points.GetRange(0, points.Count))
 
-    /// Gets first point of the Polyline3D
-    member inline p.Start =
-        if p.Points.Count < 2 then EuclidException.Raisef "Euclid.Polyline3D.Start failed on Polyline3D with less than 2 points %O" p
-        p.Points.First
+    /// Creates a copy of the Polyline3D.
+    /// Same as polyline.Duplicate()
+    member p.Clone(): Polyline3D =
+        Polyline3D.createDirectlyUnsafe(points.GetRange(0, points.Count))
 
-    /// Gets last or end point of the Polyline3D
-    member inline p.End =
-        if p.Points.Count < 2 then EuclidException.Raisef "Euclid.Polyline3D.Start failed on Polyline3D with less than 2 points %O" p
-        p.Points.Last
+    /// Gets or sets first point of the Polyline3D
+    /// This is the point at index 0.
+    /// Same as Polyline3D.FirstPoint
+    member p.Start
+        with get() =
+            if points.Count < 1 then failToSmall "Start.get" 1
+            points.[0]
+        and set(v) =
+            if points.Count < 1 then failToSmall "Start.set" 1
+            points.[0] <- v
+
+    /// Gets or sets last or end point of the Polyline3D
+    /// This is the point at index Points.Count - 1.
+    /// Same as Polyline3D.LastPoint
+    member p.End
+        with get() =
+            if points.Count < 1 then failToSmall "End.get" 1
+            points.[points.Count - 1]
+        and set(v) =
+            if points.Count < 1 then failToSmall "End.set" 1
+            points.[points.Count - 1] <- v
+
+    /// Gets or sets the last point of the Polyline3D.
+    /// This is the point at index Points.Count - 1.
+    /// Same as Polyline3D.End
+    member p.LastPoint
+        with get() =
+            if points.Count < 1 then failToSmall "LastPoint.get" 1
+            points.[points.Count - 1]
+        and set(v) =
+            if points.Count < 1 then failToSmall "LastPoint.set" 1
+            points.[points.Count - 1] <- v
+
+    /// Gets or sets the second last point of the Polyline3D.
+    member p.SecondLastPoint
+        with get() =
+            if points.Count < 2 then failToSmall "SecondLastPoint.get" 2
+            points.[points.Count - 2]
+        and set(v) =
+            if points.Count < 2 then failToSmall "SecondLastPoint.set" 2
+            points.[points.Count - 2] <- v
+
+    /// Gets or sets the second point of the Polyline3D.
+    /// This is the point at index 1.
+    member p.SecondPoint
+        with get() =
+            if points.Count < 2 then failToSmall "SecondPoint.get" 2
+            points.[1]
+        and set(v) =
+            if points.Count < 2 then failToSmall "SecondPoint.set" 2
+            points.[1] <- v
+
+    /// Gets or sets the first point of the Polyline3D.
+    /// This is the point at index 0.
+    /// Same as Polyline3D.Start
+    member p.FirstPoint
+        with get() =
+            if points.Count < 1 then failToSmall "FirstPoint.get" 1
+            points.[0]
+        and set(v) =
+            if points.Count < 1 then failToSmall "FirstPoint.set" 1
+            points.[0] <- v
 
     /// Gets the count of points in the Polyline3D
-    member inline p.PointCount = p.Points.Count
+    member p.PointCount =
+        points.Count
+
+    /// Gets the count of segments in the Polyline3D
+    /// This is poly.Points.Count - 1
+    member p.SegmentCount =
+        max 0 (points.Count - 1 )
+
+    /// Gets the index of the last point in the Polyline3D.
+    /// points.Count - 1
+    member p.LastPointIndex =
+        points.Count - 1
+
+    /// Gets the index of the last segment in the Polyline3D.
+    /// This is poly.Points.Count - 2
+    member p.LastSegmentIndex =
+        points.Count - 2
 
     /// Gets the length of the Polyline3D
+    /// Returns 0.0 if there are less than 2 points.
     member p.Length =
-        let ps = p.Points
-        if ps.Count < 2 then EuclidException.Raisef "Euclid.Polyline3D.Length failed on Polyline3D with less than 2 points %O" p
         let mutable l = 0.0
-        let mutable prev = ps.[0]
-        for i = 1 to ps.Count-1 do
-            let t = ps.[i]
-            l <- l + (t - prev).Length
-            prev <- t
+        if points.Count > 1 then
+            let mutable prev = points.[0]
+            for i = 1 to points.Count-1 do
+                let t = points.[i]
+                l <- l + Pnt.distance prev t
+                prev <- t
         l
 
     /// Gets the segment at index i of the Polyline3D.
-    member p.Segment(i:int) =
-        if i < 0 || i > p.Points.Count - 2 then
-            EuclidException.Raisef "Euclid.Polyline3D.Segment: index %d is out of range for Polyline3D with %d points." i p.Points.Count
-        Line3D(p.Points.[i], p.Points.[i+1])
-
-
-    /// Gets the segment at index i of the Polyline3D.
     member p.GetSegment(i:int) =
-        if i < 0 || i > p.Points.Count - 2 then
-            EuclidException.Raisef "Euclid.Polyline2D.Segment: index %d is out of range for Polyline2D with %d points." i p.Points.Count
-        Line3D(p.Points.[i], p.Points.[i+1])
+        if i < 0 || i > points.Count - 2 then
+            EuclidException.Raisef "Euclid.Polyline3D.GetSegment: index %d is out of range for Polyline3D with %d points." i points.Count
+        Line3D(points.[i], points.[i+1])
+
+    /// Gets the last segment of the Polyline3D.
+    member p.LastSegment =
+        if points.Count < 2 then failToSmall ".LastSegment" 2
+        let i = points.Count - 1
+        Line3D(points.[i-1], points.[i])
+
+    /// Gets the first segment of the Polyline3D.
+    member p.FirstSegment =
+        if points.Count < 2 then failToSmall "FirstSegment" 2
+        Line3D(points.[0], points.[1])
 
     /// Returns all segments of the Polyline3D as a list of Line3D.
     member p.Segments =
         let lns = ResizeArray()
-        let pts = p.Points
+        let pts = points
         if pts.Count < 2 then
             lns
         else
             let mutable a = pts.[0]
-            for i = 1 to p.Points.LastIndex do
+            for i = 1 to points.LastIndex do
                 let b = pts.[i]
                 lns.Add(Line3D(a, b))
                 a <- b
             lns
 
     /// Gets the a bounding box of the Polyline3D
-    member inline p.BoundingBox =
-        BBox.createFromIList p.Points
+    member p.BoundingBox =
+        BBox.createFromIList points
 
     /// Tests if Polyline3D start and end points are exactly the same.
-    member inline p.IsClosed =
-        if p.Points.Count < 2 then EuclidException.Raisef "Euclid.Polyline3D.IsClosed failed on Polyline3D with less than 2 points %O" p
+    /// Fails if the Polyline3D has less than 3 points.
+    member p.IsClosed =
+        if points.Count < 3 then failToSmall "IsClosed" 3
         let v = p.Start  - p.End
         v.IsZero
 
     /// Tests if Polyline3D is closed within given tolerance.
+    /// Fails if the Polyline3D has less than 3 points.
     member p.IsAlmostClosed(tolerance) =
-        if p.Points.Count < 2 then EuclidException.Raisef "Euclid.Polyline3D.IsAlmostClosed failed on Polyline3D with less than 2 points %O" p
+        if points.Count < 3 then failToSmall "IsAlmostClosed" 3
         let v = p.Start  - p.End
         v.LengthSq < tolerance*tolerance
 
     /// Reverse order of the Polyline3D in place.
     member p.ReverseInPlace() =
-        p.Points.Reverse()
+        points.Reverse()
 
     /// Returns new Polyline3D in reversed Order.
     member p.Reverse () =
@@ -109,16 +204,35 @@ type Polyline3D =
         n.Points.Reverse()
         n
 
-    /// Close the Polyline2D if it is not already closed.
+    /// Close the Polyline3D if it is not already closed.
     /// If the ends are closer than the tolerance. The last point is set to equal the first point.
-    /// Else the start point is added to the end of the Polyline2D.
+    /// Else the start point is added to the end of the Polyline3D.
     member p.CloseIfOpen(toleranceForAddingPoint) =
-        if p.Points.Count < 2 then EuclidException.Raisef "Euclid.Polyline3D.CloseIfOpen failed on Polyline3D with less than 2 points %O" p
+        if points.Count < 3 then failToSmall "CloseIfOpen" 3
         let v = p.Start  - p.End
         if v.LengthSq < toleranceForAddingPoint*toleranceForAddingPoint then
-            p.Points.Last <- p.Start
+            points.Last <- p.Start
         else
-            p.Points.Add p.Start
+            points.Add p.Start
+
+
+
+    /// Calculates the signed area of the Polyline3D when projected in 2D.
+    /// Z values are ignored.
+    /// The Polyline3D does not need to be actually closed.
+    /// The signed area of the Polyline3D is calculated.
+    /// If it is positive the Polyline3D is CCW.
+    member p.SignedAreaIn2D =
+        //https://helloacm.com/sign-area-of-irregular-polygon/
+        let mutable area = 0.0
+        let mutable t = points.Last // calculate from last to first too
+        for i=0 to points.Count-1 do
+            let n = points.[i]
+            let a = t.X - n.X
+            let b = n.Y + t.Y
+            area <- area + a*b
+            t <- n
+        area
 
     /// Test if Polyline3D is CounterClockwise when projected in 2D.
     /// Z values are ignored.
@@ -126,19 +240,20 @@ type Polyline3D =
     /// The signed area of the Polyline3D is calculated.
     /// If it is positive the Polyline3D is CCW.
     member p.IsCounterClockwiseIn2D =
-        //https://helloacm.com/sign-area-of-irregular-polygon/
-        let ps = p.Points
-        let mutable area = 0.0
-        let mutable t = ps.Last // calculate from last to first too
-        for i=0 to ps.Count-1 do
-            let n = ps.[i]
-            let a = t.X - n.X
-            let b = n.Y + t.Y
-            area <- area + a*b
-            t <- n
+        let  area = p.SignedAreaIn2D
         if   abs(area) < UtilEuclid.zeroLengthTolerance then EuclidException.Raisef "Euclid.Polyline3D.IsCounterClockwiseIn2D: Polyline3D the area is zero: %O" p
         else area > 0.0
 
+
+    /// Test if Polyline3D is Clockwise when projected in 2D.
+    /// Z values are ignored.
+    /// The Polyline3D does not need to be actually closed.
+    /// The signed area of the Polyline3D is calculated.
+    /// If it is positive the Polyline3D is CCW.
+    member p.IsClockwiseIn2D =
+        let area = p.SignedAreaIn2D
+        if   abs(area) < UtilEuclid.zeroLengthTolerance then EuclidException.Raisef "Euclid.Polyline3D.IsClockwiseIn2D: Polyline3D the area is zero: %O" p
+        else area < 0.0
 
 
     /// Returns the point at a given parameter on the Polyline3D.
@@ -147,22 +262,28 @@ type Polyline3D =
     /// The domain Polyline3D starts at 0.0 and ends at points.Count - 1.0 .
     /// If the parameter is within 1e-6 of an integer value, the integer value is used as parameter.
     member pl.EvaluateAt(t:float) =
-        let i = int t
-        let p = t - float i
+        let i = int t       // integer part of the parameter
+        let p = t - float i // fractional part of the parameter
         if   i < -1 then
             EuclidException.Raisef "Euclid.Polyline3D.EvaluateAt: Parameter %f is less than 0.0" t
-        elif i > pl.Points.Count then
-            EuclidException.Raisef "Euclid.Polyline3D.EvaluateAt: Parameter %f is more than than point count(%d)." t pl.Points.Count
+
+        elif i >= pl.Points.Count then
+            EuclidException.Raisef "Euclid.Polyline3D.EvaluateAt: Parameter %f is more than point count(%d) - 1." t pl.Points.Count
+
+        // handle the case where the value is just below 0.0:
         elif i = -1 then
             if p > 0.99999 then pl.Points.First
             else EuclidException.Raisef "Euclid.Polyline3D.EvaluateAt: Parameter %f is less than 0.0" t
-        elif i = pl.Points.Count then
-            if   not (isTooSmall (p)) then EuclidException.Raisef "Euclid.Polyline3D.EvaluateAt: Parameter %f is more than than point count(%d)." t pl.Points.Count
-            else pl.Points.Last
-        // return point  if point is almost matching
-        elif isTooSmall (p) then
+
+        // handle the case where the value is just above point count - 1:
+        elif i = pl.Points.Count - 1  then
+            if p < 0.00001 then pl.Points.Last
+            else EuclidException.Raisef "Euclid.Polyline3D.EvaluateAt: Parameter %f is more than point count(%d) - 1." t pl.Points.Count
+
+        // return point if point is almost matching and integer
+        elif p < 0.000001 then
             pl.Points.[i]
-        elif  p > 0.99999964 then // 0.99999964  is 6 steps smaller than 1.0: https://float.exposed/0x3f7ffffa
+        elif p > 0.999999 then
             pl.Points.[i+1]
         else
             let t = pl.Points.[i]
@@ -177,14 +298,14 @@ type Polyline3D =
         let i = int t
         let p = t - float i
         if   i < -1 then
-            EuclidException.Raisef "Euclid.Polyline3D.EvaluateAt: Parameter %f is less than 0.0" t
+            EuclidException.Raisef "Euclid.Polyline3D.TangentAt: Parameter %f is less than 0.0" t
         elif i > pl.Points.Count then
-            EuclidException.Raisef "Euclid.Polyline3D.EvaluateAt: Parameter %f is more than than point count(%d)." t pl.Points.Count
+            EuclidException.Raisef "Euclid.Polyline3D.TangentAt: Parameter %f is more than point count(%d)." t pl.Points.Count
         elif i = -1 then
             if p > 0.9999 then UnitVec.create(pl.Points.First, pl.Points.Second)
-            else EuclidException.Raisef "Euclid.Polyline3D.EvaluateAt: Parameter %f is less than 0.0" t
+            else EuclidException.Raisef "Euclid.Polyline3D.TangentAt: Parameter %f is less than 0.0" t
         elif i = pl.Points.Count then
-            if   p > 1e-4 then  EuclidException.Raisef "Euclid.Polyline3D.EvaluateAt: Parameter %f is more than than point count(%d)." t pl.Points.Count
+            if   p > 1e-4 then  EuclidException.Raisef "Euclid.Polyline3D.TangentAt: Parameter %f is more than point count(%d)." t pl.Points.Count
             else UnitVec.create(pl.Points.SecondLast, pl.Points.Last)
         // return point  if point is almost matching
         else
@@ -199,16 +320,16 @@ type Polyline3D =
     member pl.ClosestParameter(pt:Pnt) =
         // for very large polylines, this is could be optimized by using search R-tree
         let ps = pl.Points
-        if ps.Count < 2 then EuclidException.Raisef "Euclid.Polyline3D.ClosestParameter failed on  Polyline3D with less than 2 points %O" pl
+        if points.Count < 2 then failToSmall "ClosestParameter" 2
         // vectors of the segments
-        let vs = Array.zeroCreate (ps.Count-1)
+        let vs = Array.zeroCreate (points.Count-1)
         for i = 0 to vs.Length-1 do
             let ti = ps[i]
             let ne = ps[i+1]
             vs[i] <- ne-ti
 
         // closest parameters  of the segments
-        let ts = Array.zeroCreate (ps.Count-1)
+        let ts = Array.zeroCreate (points.Count-1)
         for i = 0 to ts.Length-1 do
             let p = ps[i]
             let v = vs[i]
@@ -217,7 +338,7 @@ type Polyline3D =
             ts[i] <- if len < 1e-9 then 0.0 else -((p-pt) *** v) / len |> UtilEuclid.clampBetweenZeroAndOne //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
 
         // square distances per segment
-        let ds = Array.zeroCreate (ps.Count-1)
+        let ds = Array.zeroCreate (points.Count-1)
         for i = 0 to ds.Length-1 do
             let p = ps[i]
             let v = vs[i]
@@ -240,25 +361,23 @@ type Polyline3D =
         |> Pnt.distance pt
 
 
-
     /// Returns the average center of all points of the Polyline3D.
     member pl.Center =
-        let ps = pl.Points
-        if ps.Count = 0 then EuclidException.Raise "Euclid.Polyline3D.Center failed on Polyline2D with less than 0 points"
+        if points.Count = 0 then failToSmall "Center" 1
         let mutable x = 0.0
         let mutable y = 0.0
         let mutable z = 0.0
-        for i = 0 to ps.LastIndex do
-            let p = ps.[i]
+        for i = 0 to points.LastIndex do
+            let p = points.[i]
             x <- x + p.X
             y <- y + p.Y
             z <- z + p.Z
-        Pnt(x / float ps.Count, y / float ps.Count, z / float ps.Count)
+        Pnt(x / float points.Count, y / float points.Count, z / float points.Count)
 
     /// Scales the 3D polyline by a given factor.
     /// Scale center is World Origin 0,0
     member p.Scale (factor:float) : Polyline3D =
-        let ps = p.Points  |> ResizeArr.map (fun pt -> pt * factor)
+        let ps = points  |> ResizeArr.map (fun pt -> pt * factor)
         Polyline3D.createDirectlyUnsafe ps
 
 
@@ -267,7 +386,7 @@ type Polyline3D =
         let cx = cen.X
         let cy = cen.Y
         let cz = cen.Z
-        p.Points
+        points
         |> ResizeArr.map (fun pt ->
             Pnt(cx + (pt.X - cx) * factor,
                 cy + (pt.Y - cy) * factor,
@@ -282,32 +401,34 @@ type Polyline3D =
 
     /// Gets the internal list of all Points of the Polyline3D.
     /// This is not a copy, so changes to the list will be reflected in the Polyline3D.
-    static member inline pointsUnsafeInternal (p:Polyline3D) =
+    static member pointsUnsafeInternal (p:Polyline3D) =
         p.Points
 
     /// Gets first point of the Polyline3D
-    static member inline start (p:Polyline3D) =
-        if p.Points.Count < 2 then EuclidException.Raisef "Euclid.Polyline3D.Start failed on Polyline3D with less than 2 points %O" p
-        p.Points.First
+    static member start (p:Polyline3D) =
+        let points = p.Points
+        if points.Count < 1 then  failToSmall "start" 1
+        points.[0]
 
     /// Gets last or end point of the Polyline3D
-    static member inline ende (p:Polyline3D) =
-        if p.Points.Count < 2 then EuclidException.Raisef "Euclid.Polyline3D.Start failed on Polyline3D with less than 2 points %O" p
-        p.Points.Last
+    static member ende (p:Polyline3D) =
+        let points = p.Points
+        if points.Count < 1 then failToSmall "ende" 1
+        points.[points.Count - 1]
 
     /// Reverse order of the Polyline3D in place.
-    static member inline reverseInPlace (p:Polyline3D) =
+    static member reverseInPlace (p:Polyline3D) =
         p.ReverseInPlace()
 
     /// Returns new Polyline3D in reversed Order.
-    static member inline reverse (p:Polyline3D) =
+    static member reverse (p:Polyline3D) =
         p.Reverse()
 
     /// Returns the point at a given parameter on the Polyline3D.
     /// The integer part of the parameter is the index of the segment that the point is on.
     /// The fractional part of the parameter is the parameter form 0.0 to 1.0 on the segment.
     /// The domain Polyline3D starts at 0.0 and ends at point count.
-    static member inline evaluateAt (t:float) (pl:Polyline3D) =
+    static member evaluateAt (t:float) (pl:Polyline3D) =
         pl.EvaluateAt t
 
 
@@ -316,58 +437,57 @@ type Polyline3D =
         pl.Points |> ResizeArr.map mapping |> Polyline3D.createDirectlyUnsafe
 
     /// Move a Polyline3D by a vector. (same as Polyline3D.move)
-    static member inline translate (v:Vec) (pl:Polyline3D) =
+    static member translate (v:Vec) (pl:Polyline3D) =
         pl |> Polyline3D.map (Pnt.addVec v)
 
     /// Move a Polyline3D by a vector. (same as Polyline3D.translate)
-    static member inline move (v:Vec) (pl:Polyline3D) = Polyline3D.translate v pl
+    static member move (v:Vec) (pl:Polyline3D) = Polyline3D.translate v pl
 
     /// Returns a Polyline3D moved by a given distance in X direction.
-    static member inline moveX (distance:float) (pl:Polyline3D) =
+    static member moveX (distance:float) (pl:Polyline3D) =
         pl |> Polyline3D.map (Pnt.moveX distance)
 
     /// Returns a Polyline3D moved by a given distance in Y direction.
-    static member inline moveY (distance:double) (pl:Polyline3D) =
+    static member moveY (distance:float) (pl:Polyline3D) =
         pl |> Polyline3D.map (Pnt.moveY distance)
 
     /// Returns a Polyline3D moved by a given distance in Z direction.
-    static member inline moveZ (distance:double) (pl:Polyline3D) =
+    static member moveZ (distance:float) (pl:Polyline3D) =
         pl |> Polyline3D.map (Pnt.moveZ distance)
-
 
 
     /// Scales the Polyline3D by a given factor.
     /// Scale center is World Origin 0,0,0
     /// Returns a new Polyline3D.
-    static member inline scale (factor:float) (pl:Polyline3D) : Polyline3D =
+    static member scale (factor:float) (pl:Polyline3D) : Polyline3D =
         pl |> Polyline3D.map (fun pt -> pt * factor)
 
 
     /// Applies a 4x4 transformation matrix.
-    static member inline transform (m:Matrix) (pl:Polyline3D) =
+    static member transform (m:Matrix) (pl:Polyline3D) =
         pl |> Polyline3D.map (Pnt.transform m)
 
     /// Rotation a Polyline3D around Z-Axis.
-    static member inline rotate (r:Rotation2D) (pl:Polyline3D) =
+    static member rotate (r:Rotation2D) (pl:Polyline3D) =
         pl |> Polyline3D.map (Pnt.rotateZBy r)
 
     /// Rotation a Polyline3D round given Center point an a local Z-axis.
-    static member inline rotateWithCenter (cen:Pnt) (r:Rotation2D) (pl:Polyline3D) =
+    static member rotateWithCenter (cen:Pnt) (r:Rotation2D) (pl:Polyline3D) =
         pl |> Polyline3D.map (Pnt.rotateZwithCenterBy cen r)
 
     /// Returns the parameter on the Polyline3D that is the closest point to the given point.
     /// The integer part of the parameter is the index of the segment that the point is on.
     /// The fractional part of the parameter is the parameter form 0.0 to 1.0 on the segment.
     /// The domain Polyline3D starts at 0.0 and ends at point count.
-    static member inline closestParameter (pl:Polyline3D) (pt:Pnt) =
+    static member closestParameter (pl:Polyline3D) (pt:Pnt) =
         pl.ClosestParameter pt
 
     /// Returns the point on the Polyline3D that is the closest point to the given point.
-    static member inline closestPoint (pl:Polyline3D) (pt:Pnt) =
+    static member closestPoint (pl:Polyline3D) (pt:Pnt) =
         pl.ClosestPoint pt
 
     /// Returns the distance of the test point to the closest point on the Polyline3D.
-    static member inline distanceTo (pl:Polyline3D) (pt:Pnt) =
+    static member distanceTo (pl:Polyline3D) (pt:Pnt) =
         pl.DistanceTo pt
 
     /// Create a new Polyline3D by copying over all points.
@@ -387,7 +507,7 @@ type Polyline3D =
     /// Returns new Polyline3D from point at Parameter a to point at Parameter b.
     /// if 'a' is bigger 'b' then the new Polyline3D is in opposite direction.
     /// If a parameter is within 1e-4 of an integer value, the integer value is used as parameter.
-    static member segment a b (pl:Polyline3D) =
+    static member subPolyline a b (pl:Polyline3D) : Polyline3D =
         let rev = a>b
         let u, v = if rev then b, a else a, b
         let np = Polyline3D.createEmpty (int(v-u)+2)
@@ -400,7 +520,8 @@ type Polyline3D =
             nps.Add(pl.EvaluateAt u)
         // inner points
         for i = int u + 1 to int v do
-            nps.Add(ps[i])
+            if i >= 0 && i < ps.Count then
+                nps.Add(ps[i])
         // last point
         let vi = int v
         let vf = v - float vi
@@ -410,6 +531,53 @@ type Polyline3D =
         if rev then
             np.ReverseInPlace()
         np
+
+    [<Obsolete("Renamed to Polyline3D.subPolyline")>]
+    static member segment a b (pl:Polyline3D) :Polyline3D =
+        Polyline3D.subPolyline a b pl
+
+
+    /// Returns a new closed Polyline3D.
+    /// If the first and last point are within 1e-6 of each other, the last point is set equal to the first point.
+    /// Otherwise one point is added.
+    static member close (pl:Polyline3D) =
+        if pl.Points.Count < 2 then failToSmall "close" 2
+        let points = pl.Points
+        let np = Polyline3D.createEmpty (points.Count + 1)
+        np.Points.AddRange(points.GetRange(0, points.Count))
+        if Pnt.distanceSq points.First points.Last < 1e-12 then
+            np.Points.[np.Points.Count-1] <- np.Points.First // set last point equal to first
+        else
+            np.Points.Add np.Points.First
+        np
+
+    /// Closes the Polyline3D in place by adding a point.
+    /// If the first and last point are within 1e-6 of each other, the last point is set equal to the first point instead.
+    static member closeInPlace (pl:Polyline3D) =
+        if pl.Points.Count < 2 then failToSmall "closeInPlace" 2
+        let points = pl.Points
+        if Pnt.distanceSq points.First points.Last < 1e-12 then
+            points.[points.Count-1] <- points.First
+        else
+            points.Add points.First
+
+
+    /// Tests if two Polyline3D have the same number of points and points are equal within a given tolerance.
+    static member equals tol (a:Polyline3D) (b:Polyline3D) =
+        let k = a.PointCount
+        if k <> b.PointCount then
+            false
+        else
+            let mutable i = 0
+            let mutable same = true
+            let aPts = a.Points
+            let bPts = b.Points
+            while i < k && same do
+                if Pnt.equals tol aPts.[i] bPts.[i] then
+                    i <- i + 1
+                else
+                    same <- false
+            same
 
     //--------------------------------------------------------------------------------
     //------------------------Offset------------------------------------
@@ -437,7 +605,7 @@ type Polyline3D =
         let mutable negAngSum = 0.0
         let mutable posIdx = -1
         let mutable negIdx = -1
-        let inline isNotZero  (v:UnitVec) = v.X<>0. || v.Y<>0. || v.Z<>0.
+        let isNotZero  (v:UnitVec) = v.X<>0. || v.Y<>0. || v.Z<>0.
 
         // get angle sums
         let prevUIdx = us|> Array.findIndexBack isNotZero
@@ -768,26 +936,3 @@ type Polyline3D =
     // see https://github.com/fable-compiler/Fable/issues/3326
 
 
-    /// Returns a new closed Polyline3D.
-    /// If the first and last point are within 1e-6 of each other, the last point is set equal to the first point.
-    /// Otherwise one point is added.
-    static member inline close (pl:Polyline3D) =
-        if pl.Points.Count < 2 then EuclidException.Raisef "Euclid.Polyline3D.close failed on Polyline3D with less than 2 points %O" pl
-        let ps = pl.Points
-        let np = Polyline3D.createEmpty (ps.Count + 1)
-        for p in ps do np.Points.Add(p)
-        if Pnt.distanceSq ps.First ps.Last < 1e-12 then
-            np.Points.[np.Points.Count-1] <- np.Points.First // set last point equal to first
-        else
-            np.Points.Add(np.Points.First)
-        np
-
-    /// Closes the Polyline3D in place by adding a point.
-    /// If the first and last point are within 1e-6 of each other, the last point is set equal to the first point instead.
-    static member inline closeInPlace (pl:Polyline3D) =
-        if pl.Points.Count < 2 then EuclidException.Raisef "Euclid.Polyline3D.closeInPlace failed on Polyline3D with less than 2 points %O" pl
-        let ps = pl.Points
-        if Pnt.distanceSq ps.First ps.Last < 1e-12 then
-            ps.[ps.Count-1] <- ps.First
-        else
-            ps.Add(ps.First)

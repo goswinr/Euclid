@@ -30,13 +30,11 @@ let tests =
 
     test "RigidMatrix Determinant " {
         let m = RigidMatrix.createTranslation (Vec(-9,3,188))
-        let a = Accuracy.veryHigh
         "Determinant is one " |> Expect.floatClose Accuracy.high m.Determinant 1.0
     }
 
     test "RigidMatrix Determinant  rot" {
         let m = RigidMatrix.createFromQuaternion (Quaternion.createFromDegree(Vec(2,5,6), 16.))
-        let a = Accuracy.veryHigh
         "Determinant is one " |> Expect.floatClose Accuracy.high m.Determinant 1.0
     }
 
@@ -399,7 +397,7 @@ let tests =
         let rotation = RigidMatrix.createRotationZ(1.0)  // 1 degree
 
         // Apply 360 small rotations (should return to start)
-        for i in 1..360 do
+        for _ = 1 to 360 do
             current <- current *** rotation
 
         "360 small rotations return approximately to start" |> Expect.floatClose Accuracy.low (Pnt.distance p current) 0.0

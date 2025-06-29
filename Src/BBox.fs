@@ -219,13 +219,14 @@ type BBox =
         b.Contains(o.MinPnt) && b.Contains(o.MaxPnt)
 
     /// Test if 3D bounding boxes are only touching each other from the Outside within a given tolerance.
+    /// Returns false if the two 3D bounding boxes are overlapping or intersecting
     member b.IsTouching (a:BBox, tol) =
         let xOverlap = not (b.MinX > a.MaxX + tol || a.MinX > b.MaxX + tol)
         let yOverlap = not (a.MinY > b.MaxY + tol || b.MinY > a.MaxY + tol)
         let zOverlap = not (a.MinZ > b.MaxZ + tol || b.MinZ > a.MaxZ + tol)
-        let xTouch   = abs(b.MinX - a.MaxX)  < tol || abs(a.MinX - b.MaxX) < tol
-        let yTouch   = abs(a.MinY - b.MaxY)  < tol || abs(b.MinY - a.MaxY) < tol
-        let zTouch   = abs(a.MinZ - b.MaxZ)  < tol || abs(b.MinZ - a.MaxZ) < tol
+        let xTouch   = abs(b.MinX - a.MaxX)  <= tol || abs(a.MinX - b.MaxX) <= tol
+        let yTouch   = abs(a.MinY - b.MaxY)  <= tol || abs(b.MinY - a.MaxY) <= tol
+        let zTouch   = abs(a.MinZ - b.MaxZ)  <= tol || abs(b.MinZ - a.MaxZ) <= tol
         xOverlap && yOverlap && zTouch   ||
         xOverlap && yTouch   && zOverlap ||
         xTouch   && yOverlap && zOverlap
@@ -322,13 +323,13 @@ type BBox =
     /// The returned Box is the volume inside both input boxes.
     /// Returns ValueNone if the two boxes do not overlap.
     member inline b.Intersection (a:BBox) =
-        let mutable minX = max a.MinX b.MinX
-        let mutable minY = max a.MinY b.MinY
-        let mutable minZ = max a.MinZ b.MinZ
-        let mutable maxX = min a.MaxX b.MaxX
-        let mutable maxY = min a.MaxY b.MaxY
-        let mutable maxZ = min a.MaxZ b.MaxZ
-        if minX <= maxX && minY <= maxY && minZ <= maxZ then
+        let minX = max a.MinX b.MinX
+        let minY = max a.MinY b.MinY
+        let minZ = max a.MinZ b.MinZ
+        let maxX = min a.MaxX b.MaxX
+        let maxY = min a.MaxY b.MaxY
+        let maxZ = min a.MaxZ b.MaxZ
+        if minX < maxX && minY < maxY && minZ < maxZ then
             ValueSome (BBox(minX, minY, minZ, maxX, maxY, maxZ))
         else
             ValueNone

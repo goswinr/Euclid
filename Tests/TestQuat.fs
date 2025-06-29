@@ -135,8 +135,6 @@ let tests =
 
     test "Quaternion Euler XYZ" {
         let q = Quaternion.createFromEulerXYZ(30., 45., 60.)
-        let a = Pnt(1,0,0)
-        let b = a *** q
         // Test that the quaternion is valid (has unit length)
         Expect.floatClose Accuracy.high (q.X*q.X + q.Y*q.Y + q.Z*q.Z + q.W*q.W) 1.0 "quaternion is unit length"
     }

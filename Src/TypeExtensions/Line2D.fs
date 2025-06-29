@@ -756,7 +756,7 @@ module AutoOpenLine2D =
         ln.MoveX(distance)
 
     /// Returns a Line2D moved by a given distance in Y direction.
-    static member inline moveY (distance:double) (ln:Line2D) =
+    static member inline moveY (distance:float) (ln:Line2D) =
         ln.MoveY(distance)
 
     /// Move a Line2D by a vector. (same as Line2D.translate)

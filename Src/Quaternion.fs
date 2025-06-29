@@ -90,7 +90,7 @@ type Quaternion =
     member q.setAngleInRadians (angleInRadians) =
         let length = sqrt(q.X*q.X + q.Y*q.Y + q.Z*q.Z)
         if isTooTiny(length) then
-            EuclidException.Throw1 "Euclid.Quaternion.setAngleInRadians failed. The length of the axis is too short:" q.Axis
+            EuclidException.ThrowT "Euclid.Quaternion.setAngleInRadians failed. The length of the axis is too short:" q.Axis
         let sc = 1. / length // inverse for unitizing vector:
         let angHalf = angleInRadians * 0.5
         let sa = sc * sin (angHalf)
