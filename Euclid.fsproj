@@ -55,7 +55,7 @@
 
   <ItemGroup>
     <!-- otherwise the minimum FSharp.Core version would be forced by the SDK used for building it. This would be needlessly too high-->
-    <PackageReference Update="FSharp.Core" Version="6.0.7" />
+    <PackageReference Update="FSharp.Core" Version="9.0.300" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
     <PackageReference Include="Ionide.KeepAChangelog.Tasks" Version="0.1.8" PrivateAssets="all" />
 
