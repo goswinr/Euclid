@@ -40,7 +40,7 @@ jobs:
         run: dotnet fsdocs build --properties Configuration=Release --input Docs --output DocsGenerated
 
       - name: Upload documentation html files
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: ./DocsGenerated
 
