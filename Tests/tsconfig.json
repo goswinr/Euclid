@@ -25,6 +25,9 @@
      // only output d.ts files
      "emitDeclarationOnly": true,
 
+     "allowImportingTsExtensions": true, // seems needed from fable5-alpha17, needs emitDeclarationOnly=true
+
+
      // Types should go into this directory. Removing this would place the .d.ts files next to the .js files
      "outDir": "./dist/", // this must not be a subpath of the "include" directory
 
