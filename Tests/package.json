@@ -13,6 +13,6 @@
     "mocha": "^11.7.5"
   },
   "devDependencies": {
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.3"
   }
 }
