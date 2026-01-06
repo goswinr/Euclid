@@ -19,15 +19,16 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
-           dotnet-version: '9.x'
+           dotnet-version: '10.x'
 
 
       - name: Restore dependencies
         run: dotnet restore
 
       - name: Run tests .NET
-        run: dotnet run
-        working-directory: ./Tests
+        # start the tests from the root so that the AsFSharpCode-test-temp.fsx file can find the project files correctly
+        run: dotnet run --project ./Tests/Euclid.Tests.fsproj
+
 
       # run JS tests:
 
