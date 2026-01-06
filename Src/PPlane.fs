@@ -12,7 +12,7 @@ open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see http
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 
 
-#nowarn "44" // for internal inline constructors
+
 
 /// An immutable Parametrized Plane or Frame with unitized X, Y and Z Direction.
 /// This struct is called 'PPlane'; the other plane 'NPlane' refers to an un-oriented plane consisting only of an Origin and a Normal.
@@ -37,18 +37,41 @@ type PPlane =
     [<DataMember>] val Zaxis: UnitVec
 
     /// Unsafe internal constructor, doesn't check if the input is perpendicular, public only for inlining.
-    [<Obsolete("Unsafe internal constructor, doesn't check if the input is perpendicular, but must be public for inlining. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >]
+    [<Obsolete("Unsafe internal constructor, doesn't check if the input is perpendicular, but must be public for inlining. So marked Obsolete instead.") >]
     new (origin, axisX, axisY, axisZ) =
         {Origin=origin; Xaxis=axisX; Yaxis=axisY; Zaxis=axisZ}
 
-    /// Format PPlane into string with nicely formatted floating point numbers.
-    override pl.ToString() =
-        $"Euclid.PPlane({Format.nl}Origin={pl.Origin.AsString}{Format.nl}  X-axis={pl.Xaxis.AsString}{Format.nl}  Y-axis={pl.Yaxis.AsString}{Format.nl}  Z-axis={pl.Zaxis.AsString})"
 
-    /// For use as a faster internal constructor.
+    /// Unsafe internal constructor, doesn't check if the input is perpendicular.
     /// Requires correct input of unitized perpendicular vectors.
     static member inline createUnchecked (origin: Pnt, axisX: UnitVec, axisY: UnitVec, axisZ: UnitVec) =
-        new PPlane(origin, axisX, axisY, axisZ)
+        #nowarn "44"
+        PPlane(origin, axisX, axisY, axisZ)
+        #warnon "44" // re-enable warning for obsolete usage
+
+
+    /// Format PPlane into string with nicely formatted floating point numbers.
+    override pl.ToString() =
+        let o = pl.Origin.AsString
+        let x = pl.Xaxis.AsString
+        let y = pl.Yaxis.AsString
+        let z = pl.Zaxis.AsString
+        $"Euclid.PPlane(%s{Format.nl}Origin=%s{o}%s{Format.nl}  X-axis=%s{x}%s{Format.nl}  Y-axis=%s{y}%s{Format.nl}  Z-axis=%s{z})"
+
+    /// Format PPlane into string with nicely formatted floating point numbers.
+    /// But without type name as in pl.ToString()
+    member pl.AsString =
+        let o = pl.Origin.AsString
+        let x = pl.Xaxis.AsString
+        let y = pl.Yaxis.AsString
+        let z = pl.Zaxis.AsString
+        $"%s{Format.nl}Origin=%s{o}%s{Format.nl}  X-axis=%s{x}%s{Format.nl}  Y-axis=%s{y}%s{Format.nl}  Z-axis=%s{z}"
+
+    /// Format PPlane into an F# code string that can be used to recreate the plane.
+    member pl.AsFSharpCode =
+        $"PPlane.createUnchecked({pl.Origin.AsFSharpCode}, {pl.Xaxis.AsFSharpCode}, {pl.Yaxis.AsFSharpCode}, {pl.Zaxis.AsFSharpCode})"
+
+
 
 
 
