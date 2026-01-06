@@ -37,6 +37,8 @@
 
      //  "noEmit": false, // false by default ?
      // "types": [ "node"  ],// so that 'Buffer' is recognized, see //https://github.com/aws/aws-sdk-js/issues/1271#issuecomment-267472623
+
+     "allowImportingTsExtensions": true, // seems needed from fable5-alpha17, needs emitDeclarationOnly=true
   }
   , "include": [ "./_ts/Src/" ]
   // , "exclude": ["fable_modules/"]

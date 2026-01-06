@@ -32,18 +32,18 @@ let lns =
 
 
 let tests =
-  testList "Topology " [
+    testList "Topology " [
 
-    test "join2D lines" {
-        let gs = Topology.join2D( (fun (ln:Li) -> ln.ln), 0.001, lns)
-        "gs length" |> Expect.equal gs.Count  2
-        "gs[0] length" |> Expect.equal gs.[0].Count  4
-        "gs[1] length" |> Expect.equal gs.[1].Count  2
-        "gs[0][0] idx=3" |> Expect.equal gs.[0].[0].idx  3
-        "gs[0][3] idx=1" |> Expect.equal gs.[0].[3].idx  1
-        "gs[1][0] idx=5" |> Expect.equal gs.[1].[0].idx  5
-        "gs[1][1] idx=4" |> Expect.equal gs.[1].[1].idx  4
+        test "join2D lines" {
+            let gs = Topology2D.join( (fun (ln:Li) -> ln.ln), 0.001, lns)
+            "gs length" |> Expect.equal gs.Count  2
+            "gs[0] length" |> Expect.equal gs.[0].Count  4
+            "gs[1] length" |> Expect.equal gs.[1].Count  2
+            "gs[0][0] idx=3" |> Expect.equal gs.[0].[0].idx  3
+            "gs[0][3] idx=1" |> Expect.equal gs.[0].[3].idx  1
+            "gs[1][0] idx=5" |> Expect.equal gs.[1].[0].idx  5
+            "gs[1][1] idx=4" |> Expect.equal gs.[1].[1].idx  4
 
-    }
+        }
 
-  ]
+    ]

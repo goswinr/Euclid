@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <!-- Exe = console app -->
     <TargetFramework>net8.0</TargetFramework>
     <LangVersion>preview</LangVersion>
   </PropertyGroup>
@@ -9,13 +8,37 @@
     <PackageReference Include="Expecto" Version="10.2.3" />
     <PackageReference Include="Fable.Mocha" Version="2.17.0" />
     <ProjectReference Include="../Euclid.fsproj" />
+
+    <Compile Include="TestBBox.fs" />
+    <Compile Include="TestBox.fs" />
+    <Compile Include="TestFreeBox.fs" />
+    <Compile Include="TestPlane.fs" />
+    <Compile Include="TestBRect.fs" />
     <Compile Include="TestRect3D.fs" />
     <Compile Include="TestRect2D.fs" />
     <Compile Include="TestTopo.fs" />
+    <Compile Include="TestPoints.fs" />
     <Compile Include="TestLine.fs" />
+
+    <Compile Include="TestXLine2D.fs" />
+    <Compile Include="TestXLine3D.fs" />
     <Compile Include="TestPolyline.fs" />
+    <Compile Include="TestPolyline3D.fs" />
+    <Compile Include="TestRotation2D.fs" />
     <Compile Include="TestQuat.fs" />
-    <Compile Include="TestMatrix.fs" /><Compile Include="TestRigidMatrix.fs" />
+    <Compile Include="TestMatrix.fs" />
+    <Compile Include="TestRigidMatrix.fs" />
+    <Compile Include="TestTria2D.fs" />
+    <Compile Include="TestTria3D.fs" />
+    <Compile Include="TestOffset2D.fs" />
+    <Compile Include="TestOffset3D.fs" />
+    <Compile Include="TestUtilEuclid.fs" />
+    <Compile Include="TestFormat.fs" />
+    <Compile Include="TestPolyLabel.fs" />
+    <Compile Include="TestSimilarity2D.fs" />
+    <Compile Include="TestHarmonization.fs" />
+    <Compile Include="TestVectors.fs" />
+    <Compile Include="TestAsFSharpCode.fs" />
     <Compile Include="TestMain.fs" />
   </ItemGroup>
 </Project>
