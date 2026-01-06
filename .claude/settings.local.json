@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet build:*)",
+      "Bash(dotnet restore:*)",
+      "Bash(dotnet run:*)",
+      "Bash(dotnet fsi:*)",
+      "Bash(dotnet test:*)",
+      "Bash(npm run test:*)",
+      "Bash(dir:*)",
+      "Bash(comm:*)",
+      "SlashCommand(/standards)",
+      "Bash(ls:*)",
+      "Edit",
+      "Write"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
