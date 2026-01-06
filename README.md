@@ -29,6 +29,13 @@ It runs on JavaScript too.
 
 ## Features
 
+While most 3D geometry libraries just use a generic type ( often called Vec3 or similar) containing three floats for both points and vectors,<br>
+Euclid makes a distinction to preserve semantic meaning and avoid accidental misuse.<br>
+A point represents a position in space, while a vector represents a direction and magnitude.<br>
+Even unitized vectors are a separate type. They are guaranteed to have a length of 1.0.<br>
+This helps to skip checks for zero length vectors in many operations.
+
+
 🎯 **Core Geometry Types**
 - Points (`Pt`, `Pnt`), Vectors (`Vc`, `Vec`), Unit Vectors (`UnitVc`, `UnitVec`)
 - Lines, Planes, Boxes, Bounding Boxes, Polylines
@@ -38,7 +45,6 @@ It runs on JavaScript too.
 - **Zero dependencies** - lightweight and self-contained
 - **Double precision** - engineered for CAD/manufacturing accuracy
 - **Immutable types** - functional programming friendly
-- **Type safety** - dedicated unit vector types prevent common errors
 - **Cross-platform** - compiles to .NET, JavaScript, TypeScript, Rust, Python via Fable
 - **Performant** - All small types are structs, functions are often inline and try to minimize the allocation of intermediate objects.
 
@@ -79,7 +85,7 @@ let unitVec = vector.Unitized  // returns a UnitVec
 // Transform with 4x4 matrix
 let matrix =
     Matrix.createShear(3.0, 0, 0, 0, 0, 0)
-    *** // Combine transfromations
+    *** // Combine transformations
     Matrix.createRotationZ 45
 
 point1
@@ -133,15 +139,14 @@ let normalized = myVector.Unitized
 
 ## Platform Support
 
-Thanks to [Fable](https://fable.io/), Euclid can be compiled to multiple platforms:
-
-- ✅ **.NET** (Primary target)
-- ✅ **JavaScript** (Browser/Node.js)
-- ✅ **TypeScript** (Type-safe JS)
-- ✅ **Rust** (Systems programming)
-- ✅ **Python** (Data science/ML)
+Thanks to [Fable](https://fable.io/), Euclid can
+be used not only on .NET but also in JavaScript, TypeScript, Rust, and Python.
 
 ## Development
+
+### Prerequisites
+- .NET SDK 10.0 or later (to have [scoped warnings](https://learn.microsoft.com/en-us/dotnet/fsharp/whats-new/fsharp-10#scoped-warning-suppression) available)
+- Node.js (only needed to run the .NET tests in JavaScript and TypeScript via Fable.Mocha)
 
 ### Building from Source
 ```bash
@@ -150,25 +155,19 @@ cd Euclid
 dotnet build
 ```
 
-### Prerequisites
-- .NET SDK 6.0 or later
-- Node.js (for JavaScript testing)
-
 ## Testing
 
-Tests run on both .NET and JavaScript platforms with TypeScript verification.
+Tests run on both .NET and JavaScript with TypeScript build verification.
 
 ### .NET Testing
 ```bash
-cd Tests
-dotnet run
+dotnet run --project ./Tests/Euclid.Tests.fsproj
 ```
 
 ### JavaScript Testing
+
 ```bash
-cd Tests
-npm install
-npm test
+npm run test --prefix ./Tests
 ```
 
 The test suite ensures cross-platform compatibility and verifies TypeScript type definitions.

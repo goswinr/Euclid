@@ -3,11 +3,10 @@ namespace Euclid
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
 open UtilEuclid
+open EuclidErrors
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
-
 open System.Collections.Generic
 
-#nowarn "44" // for hidden constructors via Obsolete Attribute
 
 /// An immutable 3D Box with any rotation in 3D space.
 /// Described by an Origin and three Edge vectors.
@@ -53,78 +52,126 @@ type Box =
 
     /// Unsafe internal constructor, public only for inlining.
     [<Obsolete("This is not Obsolete, but an unsafe internal constructor. the input is not verified, so it might create invalid geometry. It is exposed as a public member so that it can be inlined.") >]
-    new (origin, axisX, axisY, axisZ) = {Origin=origin; Xaxis=axisX; Yaxis=axisY; Zaxis=axisZ}
+    new (origin, axisX, axisY, axisZ) =
+        {Origin=origin; Xaxis=axisX; Yaxis=axisY; Zaxis=axisZ}
 
-    /// The size in X direction, same as member box.SizeX.
+    /// Unsafe constructor that creates a Box from origin and three axis vectors.
+    /// It does NOT verify the orientation of vectors.
+    static member inline createUnchecked (origin, xAxis, yAxis, zAxis) =
+        #nowarn "44"
+        Box(origin, xAxis, yAxis, zAxis)
+        #warnon "44" // re-enable warning for obsolete usage
+
     [<Obsolete("use SizeX")>]
-    member inline b.Width = b.Xaxis.Length
-
+    member inline b.Width =
+        b.Xaxis.Length
     /// The size in X direction.
-    member inline b.SizeX = b.Xaxis.Length
+    member inline b.SizeX =
+        b.Xaxis.Length
 
     /// The size in X direction squared.
-    member inline b.SizeXSq = b.Xaxis.LengthSq
+    member inline b.SizeXSq =
+        b.Xaxis.LengthSq
 
-    /// The size in Y direction, same as member box.SizeY.
+
     [<Obsolete("use SizeY")>]
-    member inline b.Depth = b.Yaxis.Length
-
+    member inline b.Depth =
+        b.Yaxis.Length
     /// The size in Y direction.
-    member inline b.SizeY = b.Yaxis.Length
+    member inline b.SizeY =
+        b.Yaxis.Length
 
     /// The size in Y direction squared.
-    member inline b.SizeYSq = b.Yaxis.LengthSq
+    member inline b.SizeYSq =
+        b.Yaxis.LengthSq
 
-    /// The size in Z direction, same as member box.SizeZ.
+
     [<Obsolete("use SizeZ")>]
-    member inline b.Height3D = b.Zaxis.Length
-
+    member inline b.Height3D =
+        b.Zaxis.Length
     /// The size in Z direction.
-    member inline b.SizeZ = b.Zaxis.Length
+    member inline b.SizeZ =
+        b.Zaxis.Length
 
     /// The size in Z direction squared.
-    member inline b.SizeZSq = b.Zaxis.LengthSq
+    member inline b.SizeZSq =
+        b.Zaxis.LengthSq
 
 
     /// Nicely formatted string representation of the Box including its size.
     override b.ToString() =
-        sprintf "Euclid.Box %s x %s x %s (Origin:%s| X-ax:%s| Y-ax:%s| Z-ax:%s)"
-            (Format.float b.SizeX) (Format.float b.SizeY) (Format.float b.SizeZ)
-            b.Origin.AsString b.Xaxis.AsString b.Yaxis.AsString b.Zaxis.AsString
+        let sizeX = Format.float b.SizeX
+        let sizeY = Format.float b.SizeY
+        let sizeZ = Format.float b.SizeZ
+        let origin = b.Origin.AsString
+        let xAxis = b.Xaxis.AsString
+        let yAxis = b.Yaxis.AsString
+        let zAxis = b.Zaxis.AsString
+        $"Euclid.Box %s{sizeX} x %s{sizeY} x %s{sizeZ} (Origin:%s{origin}| X-ax:%s{xAxis}|Y-ax:%s{yAxis}|Z-ax:%s{zAxis})"
 
 
     /// Format Box into string with nice floating point number formatting of X, Y and Z size only.
     /// But without type name as in v.ToString()
-    member b.AsString = sprintf "%s x %s x %s" (Format.float b.SizeX)  (Format.float b.SizeY) (Format.float b.SizeZ)
+    member b.AsString =
+        let sizeX = Format.float b.SizeX
+        let sizeY = Format.float b.SizeY
+        let sizeZ = Format.float b.SizeZ
+        $"%s{sizeX} x %s{sizeY} x %s{sizeZ}"
+
+    /// Format Box into an F# code string that can be used to recreate the box.
+    member b.AsFSharpCode =
+        $"Box.createUnchecked({b.Origin.AsFSharpCode}, {b.Xaxis.AsFSharpCode}, {b.Yaxis.AsFSharpCode}, {b.Zaxis.AsFSharpCode})"
 
 
     /// Creates a unitized version of the local X-Axis.
-    member inline r.XaxisUnit =
-        let len = r.Xaxis.Length
-        if isTooTiny len then EuclidException.Raisef "Euclid.Box.XaxisUnit: rect Xaxis is too small for unitizing: %s" r.AsString
-        r.Xaxis*(1./len)
+    member inline r.XaxisUnit : UnitVec =
+        let a = r.Xaxis
+        let x = a.X
+        let y = a.Y
+        let z = a.Z
+        let sqLen = x*x + y*y + z*z
+        if isTooTinySq sqLen then
+            failTooSmall "Box.XaxisUnit Xaxis" r
+        let f = 1.0 / sqrt sqLen
+        UnitVec.createUnchecked(x*f, y*f, z*f)
+
 
     /// Creates a unitized version of the local Y-Axis.
     member inline r.YaxisUnit =
-        let len = r.Yaxis.Length
-        if isTooTiny len then EuclidException.Raisef "Euclid.Box.XaxisUnit: rect Yaxis is too small for unitizing: %s" r.AsString
-        r.Yaxis*(1./len)
+        let a = r.Yaxis
+        let x = a.X
+        let y = a.Y
+        let z = a.Z
+        let sqLen = x*x + y*y + z*z
+        if isTooTinySq sqLen then
+            failTooSmall "Box.YaxisUnit Yaxis" r
+        let f = 1.0 / sqrt sqLen
+        UnitVec.createUnchecked(x*f, y*f, z*f)
 
     /// Creates a unitized version of the local Z-Axis.
     member inline r.ZaxisUnit =
-        let len = r.Zaxis.Length
-        if isTooTiny len then EuclidException.Raisef "Euclid.Box.XaxisUnit: rect Zaxis is too small for unitizing: %s" r.AsString
-        r.Zaxis*(1./len)
+        let a = r.Zaxis
+        let x = a.X
+        let y = a.Y
+        let z = a.Z
+        let sqLen = x*x + y*y + z*z
+        if isTooTinySq sqLen then
+            failTooSmall "Box.ZaxisUnit Zaxis" r
+        let f = 1.0 / sqrt sqLen
+        UnitVec.createUnchecked(x*f, y*f, z*f)
+
 
     /// The corner diagonally opposite of corner from Origin.
-    member inline b.FarCorner = b.Origin + b.Xaxis + b.Yaxis + b.Zaxis
+    member inline b.FarCorner =
+        b.Origin + b.Xaxis + b.Yaxis + b.Zaxis
 
     /// The diagonal vector of the Box.
-    member inline b.Diagonal = b.Xaxis + b.Yaxis + b.Zaxis
+    member inline b.Diagonal =
+        b.Xaxis + b.Yaxis + b.Zaxis
 
     /// The center of the Box.
-    member inline b.Center = b.Origin + b.Xaxis*0.5 + b.Yaxis*0.5 + b.Zaxis*0.5
-
+    member inline b.Center =
+        b.Origin + b.Xaxis*0.5 + b.Yaxis*0.5 + b.Zaxis*0.5
 
     /// Evaluate a X, Y and Z parameter of the Box.
     ///  0.0, 0.0, 0.0 returns the Origin.
@@ -193,9 +240,9 @@ type Box =
     /// Counts the amount of sides that are smaller than the zeroLength tolerance.
     /// This is 0, 1, 2 or 3.
     member inline b.CountZeroSides =
-        countTooTinySq    b.Xaxis.LengthSq
-        +  countTooTinySq b.Yaxis.LengthSq
-        +  countTooTinySq b.Zaxis.LengthSq
+        countTooTinySqOrNaN    b.Xaxis.LengthSq
+        +  countTooTinySqOrNaN b.Yaxis.LengthSq
+        +  countTooTinySqOrNaN b.Zaxis.LengthSq
 
 
     /// Tests if two of the X, Y and Z axis is smaller than the zeroLength tolerance.
@@ -226,12 +273,12 @@ type Box =
 
     /// Scales the Box by a given factor.
     /// Scale center is World Origin 0,0
-    member inline r.Scale (factor:float) : Box =
-        Box(
-            r.Origin * factor,
-            r.Xaxis * factor,
-            r.Yaxis * factor,
-            r.Zaxis * factor
+    member inline b.Scale (factor:float) : Box =
+        Box.createUnchecked(
+            b.Origin * factor,
+            b.Xaxis * factor,
+            b.Yaxis * factor,
+            b.Zaxis * factor
         )
 
     // Scales the Box by a given factor on a given center point
@@ -240,7 +287,7 @@ type Box =
         let cy = cen.Y
         let cz = cen.Z
         let o = l.Origin
-        Box(
+        Box.createUnchecked(
             Pnt(cx + (o.X - cx) * factor,
                 cy + (o.Y - cy) * factor,
                 cz + (o.Z - cz) * factor),
@@ -298,25 +345,30 @@ type Box =
 
     /// Returns the Area of the biggest face of the box.
     /// This is the biggest of the three faces X*Y, X*Z and Y*Z.
-    member b.AreaOfBiggestFace (box:Box) =
-        let x = box.Xaxis.Length
-        let y = box.Yaxis.Length
-        let z = box.Zaxis.Length
+    member b.AreaOfBiggestFace =
+        let x = b.Xaxis.Length
+        let y = b.Yaxis.Length
+        let z = b.Zaxis.Length
         max (x * y) (max (x * z) (y * z))
 
     /// Returns the Area of the smallest face of the box.
     /// This is the smallest of the three faces X*Y, X*Z and Y*Z.
-    member b.AreaOfSmallestFace (box:Box) =
-        let x = box.Xaxis.Length
-        let y = box.Yaxis.Length
-        let z = box.Zaxis.Length
+    member b.AreaOfSmallestFace =
+        let x = b.Xaxis.Length
+        let y = b.Yaxis.Length
+        let z = b.Zaxis.Length
         min (x * y) (min (x * z) (y * z))
 
 
+    //            █████               █████     ███                                                       █████
+    //           ░░███               ░░███     ░░░                                                       ░░███
+    //    █████  ███████    ██████   ███████   ████   ██████     █████████████    ██████  █████████████   ░███████   ██████  ████████   █████
+    //   ███░░  ░░░███░    ░░░░░███ ░░░███░   ░░███  ███░░███   ░░███░░███░░███  ███░░███░░███░░███░░███  ░███░░███ ███░░███░░███░░███ ███░░
+    //  ░░█████   ░███      ███████   ░███     ░███ ░███ ░░░     ░███ ░███ ░███ ░███████  ░███ ░███ ░███  ░███ ░███░███████  ░███ ░░░ ░░█████
+    //   ░░░░███  ░███ ███ ███░░███   ░███ ███ ░███ ░███  ███    ░███ ░███ ░███ ░███░░░   ░███ ░███ ░███  ░███ ░███░███░░░   ░███      ░░░░███
+    //   ██████   ░░█████ ░░████████  ░░█████  █████░░██████     █████░███ █████░░██████  █████░███ █████ ████████ ░░██████  █████     ██████
+    //  ░░░░░░     ░░░░░   ░░░░░░░░    ░░░░░  ░░░░░  ░░░░░░     ░░░░░ ░░░ ░░░░░  ░░░░░░  ░░░░░ ░░░ ░░░░░ ░░░░░░░░   ░░░░░░  ░░░░░     ░░░░░░
 
-    //-------------------------------------------------------------------
-    //------------------------static members-----------------------------
-    //-------------------------------------------------------------------
 
     /// Check for point containment in the Box.
     /// By doing 6 dot products with the sides of the rectangle.
@@ -366,11 +418,11 @@ type Box =
         let hei = b.SizeZ
         let d = dist * -2.0
         if siX<=d || siY<=d || hei<=d then
-            EuclidException.Raisef "Euclid.Box.expand: Box %s is too small to expand by negative distance %s"  b.AsString (Format.float dist)
+            fail $"Box.expand: Box {b.AsString} is too small to expand by negative (=shrink) distance {dist}"
         let x = b.Xaxis * (dist / siX)
         let y = b.Yaxis * (dist / siY)
         let z = b.Zaxis * (dist / hei)
-        Box(b.Origin-x-y-z, b.Xaxis+x*2., b.Yaxis+y*2., b.Zaxis+z*2.)
+        Box.createUnchecked(b.Origin-x-y-z, b.Xaxis+x*2., b.Yaxis+y*2., b.Zaxis+z*2.)
 
     /// Returns Box expanded by respective distances on all six sides.
     /// Does check for overflow if distance is negative and fails.
@@ -379,13 +431,13 @@ type Box =
         let siX = b.SizeX
         let siY = b.SizeY
         let hei = b.SizeZ
-        if siX <= distX * -2.0 then EuclidException.Raisef "Euclid.Box.expandXYZ: Box %s is too small to expand by negative distance distX %s"  b.AsString (Format.float distX)
-        if siY <= distY * -2.0 then EuclidException.Raisef "Euclid.Box.expandXYZ: Box %s is too small to expand by negative distance distY %s"  b.AsString (Format.float distY)
-        if hei <= distZ * -2.0 then EuclidException.Raisef "Euclid.Box.expandXYZ: Box %s is too small to expand by negative distance distZ %s"  b.AsString (Format.float distZ)
+        if siX <= distX * -2.0 then fail $"Box.expandXYZ: Box {b.AsString} is too small to expand by negative (=shrink) distance distX {distX}"
+        if siY <= distY * -2.0 then fail $"Box.expandXYZ: Box {b.AsString} is too small to expand by negative (=shrink) distance distY {distY}"
+        if hei <= distZ * -2.0 then fail $"Box.expandXYZ: Box {b.AsString} is too small to expand by negative (=shrink) distance distZ {distZ}"
         let x = b.Xaxis * (distX / b.SizeX)
         let y = b.Yaxis * (distY / b.SizeY )
         let z = b.Zaxis * (distZ / b.SizeZ)
-        Box(b.Origin-x-y-z, b.Xaxis+x*2., b.Yaxis+y*2., b.Zaxis+z*2.)
+        Box.createUnchecked(b.Origin-x-y-z, b.Xaxis+x*2., b.Yaxis+y*2., b.Zaxis+z*2.)
 
 
     /// Returns the 3D box expanded by a relative factor on all six sides.
@@ -394,11 +446,11 @@ type Box =
     /// Does check for underflow if factor is negative and raises EuclidException.
     static member expandRel factor (b:Box) =
         if factor < 0.0 then
-            EuclidException.Raise $"Euclid.Box.expandRel: a negative factor {factor} is not allowed for expanding the 3D box {b.AsString}"
+            fail $"Box.expandRel: a negative factor {factor} is not allowed for expanding the 3D box {b.AsString}"
         let x = b.Xaxis * factor
         let y = b.Yaxis * factor
         let z = b.Zaxis * factor
-        Box(b.Center - x*0.5 - y*0.5 - z*0.5, x, y, z)
+        Box.createUnchecked(b.Center - x*0.5 - y*0.5 - z*0.5, x, y, z)
 
     /// Returns the 3D box expanded by a relative factor on all six sides, separately for X, Y, Z.
     /// Values between 0.0 and 1.0 shrink the box.
@@ -406,31 +458,29 @@ type Box =
     /// Does check for underflow if any factor is negative and raises EuclidException.
     static member expandRelXYZ factorX factorY factorZ (b:Box) =
         if factorX < 0.0 then
-            EuclidException.Raise $"Euclid.Box.expandRelXYZ: a negative factorX {factorX} is not allowed for expanding the 3D box {b.AsString}"
+            fail $"Box.expandRelXYZ: a negative factorX {factorX} is not allowed for expanding the 3D box {b.AsString}"
         if factorY < 0.0 then
-            EuclidException.Raise $"Euclid.Box.expandRelXYZ: a negative factorY {factorY} is not allowed for expanding the 3D box {b.AsString}"
+            fail $"Box.expandRelXYZ: a negative factorY {factorY} is not allowed for expanding the 3D box {b.AsString}"
         if factorZ < 0.0 then
-            EuclidException.Raise $"Euclid.Box.expandRelXYZ: a negative factorZ {factorZ} is not allowed for expanding the 3D box {b.AsString}"
+            fail $"Box.expandRelXYZ: a negative factorZ {factorZ} is not allowed for expanding the 3D box {b.AsString}"
         let x = b.Xaxis * factorX
         let y = b.Yaxis * factorY
         let z = b.Zaxis * factorZ
-        Box(b.Center - x*0.5 - y*0.5 - z*0.5, x, y, z)
+        Box.createUnchecked(b.Center - x*0.5 - y*0.5 - z*0.5, x, y, z)
 
-    /// Does not verify the orientation of vectors.
-    static member inline createUnchecked (origin, xAxis, yAxis, zAxis) =
-        Box(origin, xAxis, yAxis, zAxis)
+
 
     /// Creates a 3D box from PPlane and x, y and Z size.
     static member inline createFromPlane x y z (pl:PPlane) =
-        Box(pl.Origin, pl.Xaxis*x, pl.Yaxis*y, pl.Zaxis*z)
+        Box.createUnchecked(pl.Origin, pl.Xaxis*x, pl.Yaxis*y, pl.Zaxis*z)
 
     /// Creates a 3D box from a 3D a bounding box.
     static member inline createFromBoundingBox (b:BBox) =
-        Box(b.MinPnt, Vec.Xaxis*b.SizeX, Vec.Yaxis*b.SizeY, Vec.Zaxis*b.SizeZ)
+        Box.createUnchecked(b.MinPnt, Vec.Xaxis*b.SizeX, Vec.Yaxis*b.SizeY, Vec.Zaxis*b.SizeZ)
 
     /// Creates a 3D box from a 2D rectangle and Z lower and upper position.
     static member createFromRect2D zLow zHigh (r:Rect2D) =
-        Box(r.Origin.WithZ zLow,
+        Box.createUnchecked(r.Origin.WithZ zLow,
             r.Xaxis.AsVec,
             r.Yaxis.AsVec,
             Vec.Zaxis*(zHigh-zLow)
@@ -439,7 +489,7 @@ type Box =
      /// Creates a 3D box from a 3D rectangle and Z lower and upper position.
     static member inline createFromRect3D zLow zHigh (r:Rect3D) =
         let z = Vec.cross(r.Xaxis, r.Yaxis)
-        Box(r.Origin  + z.WithLength(zLow),
+        Box.createUnchecked(r.Origin  + z.WithLength(zLow),
             r.Xaxis,
             r.Yaxis,
             z.WithLength(zHigh-zLow)
@@ -449,17 +499,17 @@ type Box =
     /// The orientation of the X-axis is defined by the dirX vector.
     /// The orientation of the Y-axis is defined by the dirY vector.
     static member createFromPlaneAndPoints (pl:PPlane)  (pts:IList<Pnt>) : Box =
-        if pts.Count < 2 then EuclidException.Raisef $"Euclid.Box.createFromPlaneAndPoints: cannot create a Box from {pts.Count} points"
+        if pts.Count < 2 then fail $"Box.createFromPlaneAndPoints: cannot create a Box from just {pts.Count} points"
         let o = pl.Origin
         let x = pl.Xaxis
         let y = pl.Yaxis
         let z = pl.Zaxis
-        let mutable minX = 0.0
-        let mutable minY = 0.0
-        let mutable maxX = 0.0
-        let mutable maxY = 0.0
-        let mutable minZ = 0.0
-        let mutable maxZ = 0.0
+        let mutable minX = Double.MaxValue
+        let mutable minY = Double.MaxValue
+        let mutable maxX = Double.MinValue
+        let mutable maxY = Double.MinValue
+        let mutable minZ = Double.MaxValue
+        let mutable maxZ = Double.MinValue
         for i = 1 to pts.Count-1 do
             let v = pts.[i] - o
             let dotX = v *** x
@@ -475,42 +525,42 @@ type Box =
         let sizeX = maxX - minX
         let sizeY = maxY - minY
         let sizeZ = maxZ - minZ
-        Box(bo, x*sizeX, y*sizeY, z*sizeZ)
+        Box.createUnchecked(bo, x*sizeX, y*sizeY, z*sizeZ)
 
     /// Finds the oriented bounding box in 3D of a set of points.
     /// The orientation of the X-axis is defined by the dirX vector.
     /// The orientation of the Y-axis is defined by the dirY vector.
     static member createFromDirsAndPoints (dirX:Vec)  (dirY:Vec)  (pts:IList<Pnt>) : Box =
-        if isTooSmallSq dirX.LengthSq then EuclidException.Raisef $"Euclid.Box.createFromDirsAndPoints: dirX too short: {dirX.AsString}"
-        if isTooSmallSq dirX.LengthSq then EuclidException.Raisef $"Euclid.Box.createFromDirsAndPoints: dirY too short: {dirY.AsString}"
-        if pts.Count < 2 then EuclidException.Raisef $"Euclid.Box.createFromDirsAndPoints: cannot create a Box from {pts.Count} points"
+        if isTooSmallSq dirX.LengthSq then failTooSmall "Euclid.Box.createFromDirsAndPoints: dirX too short" dirX
+        if isTooSmallSq dirY.LengthSq then failTooSmall "Euclid.Box.createFromDirsAndPoints: dirY too short" dirY
+        if pts.Count < 2              then fail $"Box.createFromDirsAndPoints: cannot create a Box from just {pts.Count} points"
         let pl = PPlane.createOriginXaxisYaxis(pts[0],dirX,dirY)
         Box.createFromPlaneAndPoints pl pts
 
     /// Creates a 3D box moved by a vector.
     static member inline move (v:Vec) (b:Box) =
-        Box(b.Origin + v, b.Xaxis, b.Yaxis, b.Zaxis)
+        Box.createUnchecked(b.Origin + v, b.Xaxis, b.Yaxis, b.Zaxis)
 
     /// Creates a 3D box translated along the local X-axis of the Box.
     static member translateLocalX (distX:float) (b:Box) =
         let x = b.Xaxis
         let len = x.Length
-        if isTooTiny len then EuclidException.Raisef "Euclid.Box.translateLocalX: box.Xaxis is zero length in Box: %s" b.AsString
-        Box(b.Origin + x*(distX/len), x, b.Yaxis, b.Zaxis)
+        if isTooTiny len then failTooSmall "Box.translateLocalX Xaxis " b
+        Box.createUnchecked(b.Origin + x*(distX/len), x, b.Yaxis, b.Zaxis)
 
     /// Creates a 3D box translated along the local Y-axis of the Box.
     static member translateLocalY (distY:float) (b:Box) =
         let y = b.Yaxis
         let len = y.Length
-        if isTooTiny len then EuclidException.Raisef "Euclid.Box.translateLocalY: box.Yaxis is zero length in Box: %s" b.AsString
-        Box(b.Origin + y*(distY/len), b.Xaxis, y, b.Zaxis)
+        if isTooTiny len then failTooSmall "Box.translateLocalY Yaxis" b
+        Box.createUnchecked(b.Origin + y*(distY/len), b.Xaxis, y, b.Zaxis)
 
     /// Creates a 3D box translated along the local Z-axis of the Box.
     static member translateLocalZ (distZ:float) (b:Box) =
         let z = b.Zaxis
         let len = z.Length
-        if isTooTiny len then EuclidException.Raisef "Euclid.Box.translateLocalZ: box.Zaxis is zero length in Box: %s" b.AsString
-        Box(b.Origin + z*(distZ/len), b.Xaxis, b.Yaxis, z)
+        if isTooTiny len then failTooSmall "Box.translateLocalZ Zaxis" b
+        Box.createUnchecked(b.Origin + z*(distZ/len), b.Xaxis, b.Yaxis, z)
 
     /// Transform the Box by the given RigidMatrix.
     /// The returned Box is guaranteed to have still orthogonal vectors.
@@ -519,7 +569,7 @@ type Box =
         let x = Vec.transformRigid m b.Xaxis
         let y = Vec.transformRigid m b.Yaxis
         let z = Vec.transformRigid m b.Zaxis
-        Box(o, x, y, z)
+        Box.createUnchecked(o, x, y, z)
 
     /// Scales the 3D box by a given factor.
     /// Scale center is World Origin 0,0,0
@@ -532,12 +582,123 @@ type Box =
         )
 
 
-    // static member intersectPlane (pl:NPlane) (b:Box) =
-    //     let x = b.Xaxis
-    //     let y = b.Yaxis
-    //     let z = b.Zaxis
+    // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // ------------------------Intersection---------------------------------------------------------------------------------------------------------------------------------------
+    // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    //     let zu
+
+    /// <summary>Intersects an infinite ray (Line3D extended infinitely in both directions) with this Box.
+    /// Uses the slab intersection method in the box's local coordinate system.
+    /// Returns None if the ray does not intersect the box or if the ray direction is too short.
+    /// Returns Some with entry and exit parameters on the ray if it intersects.
+    /// A parameter of 0.0 corresponds to the ray's From point, 1.0 to its To point.</summary>
+    /// <param name="ray">The ray (Line3D) to intersect with the box.</param>
+    /// <returns>None if no intersection, Some(tEntry, tExit) with the entry and exit parameters on the ray.</returns>
+    member b.IntersectRay(ray:Line3D) : Option<float*float> =
+        // Transform ray to box's local coordinate system
+        let rayDir = ray.Direction
+        let rayDirLenSq = rayDir.LengthSq
+        if isTooSmallSq rayDirLenSq then
+            None // Ray direction too short
+        else
+            let rayOrigin = ray.From - b.Origin
+
+            // Get box axes and their squared lengths
+            let xAxis = b.Xaxis
+            let yAxis = b.Yaxis
+            let zAxis = b.Zaxis
+            let xLenSq = xAxis.LengthSq
+            let yLenSq = yAxis.LengthSq
+            let zLenSq = zAxis.LengthSq
+
+            // Initialize tMin and tMax
+            let mutable tMin = Double.MinValue
+            let mutable tMax = Double.MaxValue
+
+            // Process X-axis slab
+            if isTooTinySq xLenSq then
+                // Box is flat in X direction, check if ray origin is within slab
+                let originDotX = rayOrigin *** xAxis
+                if originDotX < 0.0 || originDotX > xLenSq then
+                    tMin <- Double.MaxValue // Force no intersection
+            else
+                let dirDotX = rayDir *** xAxis
+                let originDotX = rayOrigin *** xAxis
+                if abs dirDotX < 1e-18 then
+                    // Ray is parallel to X slab
+                    if originDotX < 0.0 || originDotX > xLenSq then
+                        tMin <- Double.MaxValue // Force no intersection
+                else
+                    let t1 = -originDotX / dirDotX
+                    let t2 = (xLenSq - originDotX) / dirDotX
+                    if t1 < t2 then
+                        tMin <- max tMin t1
+                        tMax <- min tMax t2
+                    else
+                        tMin <- max tMin t2
+                        tMax <- min tMax t1
+
+            // Process Y-axis slab
+            if tMin <= tMax then
+                if isTooTinySq yLenSq then
+                    let originDotY = rayOrigin *** yAxis
+                    if originDotY < 0.0 || originDotY > yLenSq then
+                        tMin <- Double.MaxValue
+                else
+                    let dirDotY = rayDir *** yAxis
+                    let originDotY = rayOrigin *** yAxis
+                    if abs dirDotY < 1e-18 then
+                        if originDotY < 0.0 || originDotY > yLenSq then
+                            tMin <- Double.MaxValue
+                    else
+                        let t1 = -originDotY / dirDotY
+                        let t2 = (yLenSq - originDotY) / dirDotY
+                        if t1 < t2 then
+                            tMin <- max tMin t1
+                            tMax <- min tMax t2
+                        else
+                            tMin <- max tMin t2
+                            tMax <- min tMax t1
+
+            // Process Z-axis slab
+            if tMin <= tMax then
+                if isTooTinySq zLenSq then
+                    let originDotZ = rayOrigin *** zAxis
+                    if originDotZ < 0.0 || originDotZ > zLenSq then
+                        tMin <- Double.MaxValue
+                else
+                    let dirDotZ = rayDir *** zAxis
+                    let originDotZ = rayOrigin *** zAxis
+                    if abs dirDotZ < 1e-18 then
+                        if originDotZ < 0.0 || originDotZ > zLenSq then
+                            tMin <- Double.MaxValue
+                    else
+                        let t1 = -originDotZ / dirDotZ
+                        let t2 = (zLenSq - originDotZ) / dirDotZ
+                        if t1 < t2 then
+                            tMin <- max tMin t1
+                            tMax <- min tMax t2
+                        else
+                            tMin <- max tMin t2
+                            tMax <- min tMax t1
+
+            if tMin <= tMax then
+                Some(tMin, tMax)
+            else
+                None
+
+
+    /// <summary>Intersects an infinite ray (Line3D extended infinitely in both directions) with the Box.
+    /// Uses the slab intersection method in the box's local coordinate system.
+    /// Returns None if the ray does not intersect the box or if the ray direction is too short.
+    /// Returns Some with entry and exit parameters on the ray if it intersects.
+    /// A parameter of 0.0 corresponds to the ray's From point, 1.0 to its To point.</summary>
+    /// <param name="ray">The ray (Line3D) to intersect with the box.</param>
+    /// <param name="box">The box to intersect with.</param>
+    /// <returns>None if no intersection, Some(tEntry, tExit) with the entry and exit parameters on the ray.</returns>
+    static member inline intersectRay (ray:Line3D) (box:Box) : Option<float*float> =
+        box.IntersectRay(ray)
+
 
 
 
@@ -795,7 +956,7 @@ type Box =
     ///   |/              |/     local
     ///   +---------------+----> X-Axis
     ///   0               1
-    member b.TopFace :Rect3D = Rect3D(b.Origin + b.Zaxis, b.Xaxis, b.Yaxis)
+    member b.TopFace :Rect3D = Rect3D.createUnchecked(b.Origin + b.Zaxis, b.Xaxis, b.Yaxis)
 
 
     /// Returns the bottom face of the Box in Counter-Clockwise order, looking from above.
@@ -818,7 +979,7 @@ type Box =
     ///   |/              |/     local
     ///   +---------------+----> X-Axis
     ///   0               1
-    member b.BottomFace = Rect3D(b.Origin, b.Xaxis, b.Yaxis)
+    member b.BottomFace = Rect3D.createUnchecked(b.Origin, b.Xaxis, b.Yaxis)
 
 
 
@@ -842,7 +1003,7 @@ type Box =
     ///   |/              |/     local
     ///   +---------------+----> X-Axis
     ///   0               1
-    member b.FrontFace = Rect3D(b.Origin, b.Xaxis, b.Zaxis)
+    member b.FrontFace = Rect3D.createUnchecked(b.Origin, b.Xaxis, b.Zaxis)
 
     /// Returns the back face of the Box in Counter-Clockwise order, looking from front.
     /// Returns Origin at point 3, X-Axis to point 2, Y-Axis to point 7.
@@ -864,7 +1025,7 @@ type Box =
     ///   |/              |/     local
     ///   +---------------+----> X-Axis
     ///   0               1
-    member b.BackFace = Rect3D(b.Origin + b.Yaxis, b.Xaxis, b.Zaxis)
+    member b.BackFace = Rect3D.createUnchecked(b.Origin + b.Yaxis, b.Xaxis, b.Zaxis)
 
     /// Returns the right face of the Box in Counter-Clockwise order, looking from right.
     /// Returns Origin at point 1, X-Axis to point 2, Y-Axis to point 5.
@@ -886,7 +1047,7 @@ type Box =
     ///   |/              |/     local
     ///   +---------------+----> X-Axis
     ///   0               1
-    member b.RightFace = Rect3D(b.Origin + b.Xaxis, b.Yaxis, b.Zaxis)
+    member b.RightFace = Rect3D.createUnchecked(b.Origin + b.Xaxis, b.Yaxis, b.Zaxis)
 
     /// Returns the left face of the Box in Counter-Clockwise order, looking from right.
     /// Returns Origin at point 0, X-Axis to point 3, Y-Axis to point 4.
@@ -908,7 +1069,7 @@ type Box =
     ///   |/              |/     local
     ///   +---------------+----> X-Axis
     ///   0               1
-    member b.LeftFace = Rect3D(b.Origin, b.Yaxis, b.Zaxis)
+    member b.LeftFace = Rect3D.createUnchecked(b.Origin, b.Yaxis, b.Zaxis)
 
 
 

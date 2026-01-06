@@ -19,8 +19,7 @@ open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>]
 open Euclid.UtilEuclid
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
-
-#nowarn "44" // for internal inline constructors and hidden obsolete members for error cases
+open EuclidErrors
 
 
 /// <summary> Pt is an immutable 2D point. Made up from 2 floats: X and Y.</summary>
@@ -38,20 +37,28 @@ type Pt =
 
     /// Create a new 2D point. Made up from 2 floats: X and Y.
     new (x, y) =
-        #if DEBUG // TODO : with this test all  operations are 2.5 times slower
-        if Double.IsNaN x || Double.IsNaN y || Double.IsInfinity x || Double.IsInfinity y  then EuclidException.Raisef "Euclid.Pt Constructor failed for x:%g, y:%g"  x y
+        #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode // TODO : with this test all operations are 2.5 times slower
+            if isNanInfinity x || isNanInfinity y then failNaN2 "Pt()" x y
         #endif
-        {X=x; Y=y}
+            {X=x; Y=y}
 
 
     /// Format 2D point into string including type name and nice floating point number formatting.
     override p.ToString() =
-        sprintf "Euclid.Pt: X=%s|Y=%s" (Format.float p.X) (Format.float p.Y)
+        let x = Format.float p.X
+        let y = Format.float p.Y
+        $"Euclid.Pt: X=%s{x}|Y=%s{y}"
 
     /// Format 2D point into string with nice floating point number formatting of X and Y
     /// But without full type name as in p.ToString()
     member p.AsString =
-        sprintf "X=%s|Y=%s" (Format.float p.X) (Format.float p.Y)
+        let x = Format.float p.X
+        let y = Format.float p.Y
+        $"X=%s{x}|Y=%s{y}"
+
+    /// Format 2D point into an F# code string that can be used to recreate the point.
+    member p.AsFSharpCode =
+        $"Pt({p.X}, {p.Y})"
 
     /// Subtract one 2D point from another.
     /// 'a-b' returns a new 2D vector from b to a.
@@ -91,15 +98,10 @@ type Pt =
     static member inline ( * ) (f:float, a:Pt) =
         Pt (a.X * f, a.Y * f)
 
-    /// A separate function to compose the error message that does not get inlined.
-    [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-    member p.FailedDivide(f) = EuclidDivByZeroException.Raisef "Euclid.Pt: divide operator: %g is too small for dividing %O using the '/' operator. Tolerance:%g"  f p zeroLengthTolerance
-
     /// Divides a 2D point by a scalar, also called dividing/scaling a point. Returns a new 2D point.
     static member inline ( / ) (p:Pt, f:float) =
-        if isTooTiny (abs f) then p.FailedDivide(f) // don't compose error msg directly here to keep inlined code small.
+        if isTooTiny (abs f) then failDivide "'/' operator" f p // don't compose error msg directly here to keep inlined code small.
         Pt (p.X / f, p.Y / f)
-
 
     //-----------------------------------------------------------------------------------------------------
     // These static members can't be extension methods to be useful for Array.sum and Array.average :
@@ -108,7 +110,7 @@ type Pt =
     /// Divides the 2D point by an integer.
     /// (This member is needed by Array.average and similar functions)
     static member DivideByInt (pt:Pt, i:int) = // needed by 'Array.average'
-        if i = 0 then EuclidDivByZeroException.Raisef "Euclid.Pt.DivideByInt by zero %O" pt
+        if i = 0 then failDivide "Pt.DivideByInt" 0.0 pt
         let d = float i
         Pt(pt.X/d, pt.Y/d)
 

@@ -1,8 +1,8 @@
 namespace Euclid
 
 open System
+open EuclidErrors
 
-#nowarn "44" // for internal inline constructors and hidden obsolete members for error cases
 
 /// When Euclid is opened this module will be auto-opened.
 /// It only contains extension members for type UnitVec.
@@ -67,11 +67,17 @@ module AutoOpenUnitVec =
         member inline v.RotateOnZ90CW =
             UnitVec.createUnchecked(  v.Y, -v.X, v.Z)
 
+        /// Rotates the 3D unit-vector around the Z-axis by a given number of quarter-circles (i.e. multiples of 90
+        /// degrees or Pi/2 radians). A positive number rotates counter-clockwise, a
+        /// negative number rotates clockwise. The length of the vector is preserved.
+        member inline v.RotateByQuarterCircle(numberOfQuarters:int) =
+            UnitVec.rotateByQuarterCircle numberOfQuarters v
+
 
         /// Cross product, of two 3D unit-vectors.
         /// The resulting vector is perpendicular to both input vectors.
-        /// The length of this resulting vector is the squared area of the parallelogram spanned by the input vectors.
-        /// Or the sine of the angle between the two unit-vectors.
+        /// The length of this resulting vector is the area of the parallelogram spanned by the input vectors,
+        /// or the sine of the angle between the two unit-vectors.
         /// Its direction follows the right-hand rule.
         /// A x B = |A| * |B| * sin(angle)
         member inline a.Cross (b:UnitVec) =
@@ -79,9 +85,9 @@ module AutoOpenUnitVec =
                 a.Z * b.X - a.X * b.Z,
                 a.X * b.Y - a.Y * b.X)
 
-        /// Cross product, of a 3D unit-vectors an a 3D vector.
+        /// Cross product, of a 3D unit-vector and a 3D vector.
         /// The resulting vector is perpendicular to both input vectors.
-        /// The length of this resulting vector is the squared area of the parallelogram spanned by the input vectors.
+        /// The length of this resulting vector is the area of the parallelogram spanned by the input vectors.
         /// Its direction follows the right-hand rule.
         /// A x B = |A| * |B| * sin(angle)
         member inline a.Cross (b:Vec) =
@@ -110,9 +116,6 @@ module AutoOpenUnitVec =
             a.X * b.X + a.Y * b.Y + a.Z * b.Z  |> LanguagePrimitives.FloatWithMeasure
 
 
-        /// A separate function to compose the error message that does not get inlined.
-        [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        member v.FailedDirectionDiamondInXY() = EuclidDivByZeroException.Raisef "Euclid.UnitVec.DirectionDiamondInXY: input 3D unit-vector is vertical:%O" v
         /// The diamond angle is always positive and in the range of 0.0 to 4.0 (for 360 Degrees)
         /// 0.0 = Xaxis, going Counter-Clockwise. Ignoring Z component.
         /// This is the fastest angle computation since it does not use Math.Cos or Math.Sin.
@@ -120,7 +123,7 @@ module AutoOpenUnitVec =
         /// For X-Y plane. Considers only the X and Y components of the vector.
         member inline v.DirectionDiamondInXY =
             // https://stackoverflow.com/a/14675998/969070
-            if isTooTiny (abs v.X + abs v.Y) then v.FailedDirectionDiamondInXY() // don't compose error msg directly here to keep inlined code small.
+            if isTooTiny (abs v.X + abs v.Y) then failVertical "UnitVec.DirectionDiamondInXY" v // don't compose error msg directly here to keep inlined code small.
             if v.Y >= 0.0 then
                 if v.X >= 0.0 then
                     v.Y/(v.X+v.Y)
@@ -132,25 +135,19 @@ module AutoOpenUnitVec =
                 else
                     3.0 + v.X/(v.X-v.Y)
 
-        /// A separate function to compose the error message that does not get inlined.
-        [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        member v.FailedDirection2PiInXY() = EuclidDivByZeroException.Raisef "Euclid.UnitVec.Direction2PiInXY: input 3D unit-vector is vertical:%O" v
         /// Returns the angle in Radians from X-axis,
         /// Going Counter-Clockwise till two Pi.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
         /// Fails if vector is vertical.
         member inline v.Direction2PiInXY =
             // https://stackoverflow.com/a/14675998/969070
-            if isTooTiny (abs v.X + abs v.Y) then v.FailedDirection2PiInXY() // don't compose error msg directly here to keep inlined code small.
+            if isTooTiny (abs v.X + abs v.Y) then failVertical "UnitVec.Direction2PiInXY" v // don't compose error msg directly here to keep inlined code small.
             let a = Math.Atan2(v.Y, v.X)
             if a < 0. then
                 a + UtilEuclid.twoPi
             else
                 a
 
-        /// A separate function to compose the error message that does not get inlined.
-        [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        member v.FailedDirectionPiInXY() = EuclidDivByZeroException.Raisef "Euclid.UnitVec.DirectionPiInXY: input 3D unit-vector is vertical:%O" v
         /// Returns the angle in Radians from X-axis in World X-Y plane,
         /// Ignores orientation.
         /// Range 0.0 to Pi.
@@ -158,7 +155,7 @@ module AutoOpenUnitVec =
         /// Fails if vector is vertical.
         member inline v.DirectionPiInXY =
             // https://stackoverflow.com/a/14675998/969070
-            if isTooTiny (abs v.X + abs v.Y) then v.FailedDirectionPiInXY() // don't compose error msg directly here to keep inlined code small.
+            if isTooTiny (abs v.X + abs v.Y) then failVertical "UnitVec.DirectionPiInXY" v // don't compose error msg directly here to keep inlined code small.
             let a = Math.Atan2(v.Y, v.X)
             if a < 0. then
                 a + Math.PI
@@ -199,7 +196,7 @@ module AutoOpenUnitVec =
         /// Calculates the dot product of a 3D vector and a unit-vectors.
         /// Then checks if it is bigger than 1e-12.
         member inline v.MatchesOrientation (other:Vec) =
-            if isTooTinySq(other.LengthSq) then EuclidException.Raisef "Euclid.UnitVec.MatchesOrientation: Vec 'other' is too short: %O. 'this':%O " other v
+            if isTooTinySq(other.LengthSq) then failTooSmall "UnitVec.MatchesOrientation" other
             v *** other > 1e-12
 
         /// Checks if the angle between the two 3D unit-vectors is more than 180 degrees.
@@ -212,7 +209,7 @@ module AutoOpenUnitVec =
         /// Calculates the dot product of a 3D vector and a unit-vectors.
         /// Then checks if it is smaller than minus 1e-12.
         member inline v.IsOppositeOrientation (other:Vec) =
-            if isTooTinySq(other.LengthSq) then EuclidException.Raisef "Euclid.UnitVec.IsOppositeOrientation: Vec 'other' is too short: %O. 'this':%O " other v
+            if isTooTinySq(other.LengthSq) then failTooSmall "UnitVec.IsOppositeOrientation" other
             v *** other < -1e-12
 
 
@@ -268,7 +265,7 @@ module AutoOpenUnitVec =
         /// See Euclid.Cosine module.
         member inline this.IsParallelTo(other:Vec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
             let sb = other.LengthSq
-            if isTooTinySq(sb) then EuclidException.Raisef "Euclid.UnitVec.IsParallelTo: Vec 'other' is too short: %s. 'this':%s " other.AsString this.AsString
+            if isTooTinySq(sb) then failTooSmall "UnitVec.IsParallelTo" other
             let ou = other * (1.0 / sqrt sb)
             abs(ou *** this) > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
 
@@ -288,7 +285,7 @@ module AutoOpenUnitVec =
         /// See Euclid.Cosine module.
         member inline this.IsParallelAndOrientedTo (other:Vec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) =
             let sb = other.LengthSq
-            if isTooTinySq(sb) then EuclidException.Raisef "Euclid.UnitVec.IsParallelAndOrientedTo: Vec 'other' is too short: %s. 'this':%s " other.AsString this.AsString
+            if isTooTinySq(sb) then failTooSmall "UnitVec.IsParallelAndOrientedTo" other
             let ou = other * (1.0 / sqrt sb)
             ou *** this > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
 
@@ -309,7 +306,7 @@ module AutoOpenUnitVec =
         /// See Euclid.Cosine module.
         member inline this.IsPerpendicularTo (other:Vec, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) =
             let sb = other.LengthSq
-            if isTooTinySq(sb) then EuclidException.Raisef "Euclid.UnitVec.IsPerpendicularTo: Vec 'other' is too short: %s. 'this':%s " other.AsString this.AsString
+            if isTooTinySq(sb) then failTooSmall "UnitVec.IsPerpendicularTo" other
             let ou = other * (1.0 / sqrt sb)
             let d = ou *** this
             float -maxCosine < d && d  < float maxCosine // = cosine of 98.75 and 90.25 degrees
@@ -329,31 +326,45 @@ module AutoOpenUnitVec =
         member inline v.TransformRigid (m:RigidMatrix) : UnitVec =
             v *** m // operator * is defined in RigidMatrix.fs
 
-        //----------------------------------------------------------------------------------------------
-        //--------------------------  Static Members  --------------------------------------------------
-        //----------------------------------------------------------------------------------------------
+
+        // ----------------------------------------------------------------------------------
+        //            █████               █████     ███
+        //           ░░███               ░░███     ░░░
+        //    █████  ███████    ██████   ███████   ████   ██████
+        //   ███░░  ░░░███░    ░░░░░███ ░░░███░   ░░███  ███░░███
+        //  ░░█████   ░███      ███████   ░███     ░███ ░███ ░░░
+        //   ░░░░███  ░███ ███ ███░░███   ░███ ███ ░███ ░███  ███
+        //   ██████   ░░█████ ░░████████  ░░█████  █████░░██████
+        //  ░░░░░░     ░░░░░   ░░░░░░░░    ░░░░░  ░░░░░  ░░░░░░
+        //
+        //                                             █████
+        //                                            ░░███
+        //    █████████████    ██████  █████████████   ░███████   ██████  ████████   █████
+        //   ░░███░░███░░███  ███░░███░░███░░███░░███  ░███░░███ ███░░███░░███░░███ ███░░
+        //    ░███ ░███ ░███ ░███████  ░███ ░███ ░███  ░███ ░███░███████  ░███ ░░░ ░░█████
+        //    ░███ ░███ ░███ ░███░░░   ░███ ░███ ░███  ░███ ░███░███░░░   ░███      ░░░░███
+        //    █████░███ █████░░██████  █████░███ █████ ████████ ░░██████  █████     ██████
+        //   ░░░░░ ░░░ ░░░░░  ░░░░░░  ░░░░░ ░░░ ░░░░░ ░░░░░░░░   ░░░░░░  ░░░░░     ░░░░░░
+        // ------------------------------------------------------------------------------------
 
 
-        /// A separate function to compose the error message that does not get inlined.
-        [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        static member failedCreate (fromPt:Pnt, toPt:Pnt) = EuclidDivByZeroException.Raisef "Euclid.UnitVec.create: fromPt:%O and toPt::%O are too close to each other for creating a unit-vector. Tolerance:%g" fromPt toPt zeroLengthTolerance
 
         /// Create 3D unit-vector from start and endpoint. Does the unitizing too.
         static member inline create (fromPt:Pnt, toPt:Pnt) =
             let x = toPt.X - fromPt.X
             let y = toPt.Y - fromPt.Y
             let z = toPt.Z - fromPt.Z
-            let l = sqrt(x * x  + y * y)
-            if isTooTiny l then UnitVec.failedCreate(fromPt,toPt) // don't compose error msg directly here to keep inlined code small.
+            let l = sqrt(x * x  + y * y + z * z)
+            if isTooTiny l then failTooClose "UnitVec.create" fromPt toPt
             let f = 1.0/l
-            UnitVec(x*f, y*f, z*f)
+            UnitVec.createUnchecked(x*f, y*f, z*f)
 
 
         /// Returns the World X-axis with length one: UnitVec(1, 0, 0)
         static member inline Xaxis =
             UnitVec.createUnchecked (1.0, 0.0, 0.0)
 
-        /// Returns the World Y-axis with length one: UnitVec(0.1, 0)
+        /// Returns the World Y-axis with length one: UnitVec(0, 1, 0)
         static member inline Yaxis =
             UnitVec.createUnchecked (0.0, 1.0, 0.0)
 
@@ -391,9 +402,6 @@ module AutoOpenUnitVec =
             let z = b.Z - a.Z
             x*x + y*y + z*z
 
-        /// A separate function to compose the error message that does not get inlined.
-        [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        static member failedCreateFromMembersXYZ(v:'T,e:exn) = EuclidException.Raise $"Euclid.UnitVec.createFromMembersXYZ: {v} could not be converted to a Euclid.UnitVec:{Format.nl}{e}"
         /// Accepts any type that has a X, Y and Z (UPPERCASE) member that can be converted to a float.
         /// Does the unitizing too.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
@@ -401,12 +409,12 @@ module AutoOpenUnitVec =
             let x = ( ^T : (member X : _) vec)
             let y = ( ^T : (member Y : _) vec)
             let z = ( ^T : (member Z : _) vec)
-            try UnitVec.create(float x, float y, float z)
-            with e -> UnitVec.failedCreateFromMembersXYZ(vec, e)
+            try
+                UnitVec.create(float x, float y, float z)
+            with e ->
+                fail2 "UnitVec.createFromMembersXYZ" vec e |> unbox // unbox to make type checker happy
 
-        /// A separate function to compose the error message that does not get inlined.
-        [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        static member failedCreateFromMembersxyz(v:'T,e:exn) = EuclidException.Raise $"Euclid.UnitVec.createFromMembersxyz: {v} could not be converted to a Euclid.UnitVec:{Format.nl}{e}"
+
         /// Accepts any type that has a x, y and z (lowercase) member that can be converted to a float.
         /// Does the unitizing too.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
@@ -414,27 +422,23 @@ module AutoOpenUnitVec =
             let x = ( ^T : (member x : _) vec)
             let y = ( ^T : (member y : _) vec)
             let z = ( ^T : (member z : _) vec)
-            try UnitVec.create(float x, float y, float z)
-            with e -> UnitVec.failedCreateFromMembersxyz(vec, e)
+            try
+                UnitVec.create(float x, float y, float z)
+            with e ->
+                fail2 "UnitVec.createFromMembersxyz" vec e  |> unbox // unbox to make type checker happy
 
 
-        /// A separate function to compose the error message that does not get inlined.
-        [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        static member failedCreateFromPnt(pt:Pnt)= EuclidDivByZeroException.Raisef "Euclid.UnitVec.createFromPnt failed on too short %O" pt
-        /// Create 3D unit-vector from 3D point. Does the unitizing too.
+
         static member inline createFromPnt (pt:Pnt) =
             let l = sqrt (pt.X*pt.X + pt.Y*pt.Y + pt.Z*pt.Z)
-            if isTooTiny(l) then UnitVec.failedCreateFromPnt pt // don't compose error msg directly here to keep inlined code small.
+            if isTooTiny(l) then failTooSmall "UnitVec.createFromPnt" pt
             let li = 1. / l
             UnitVec.createUnchecked(li*pt.X, li*pt.Y, li*pt.Z)
 
-        /// A separate function to compose the error message that does not get inlined.
-        [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-        static member failedCreateFromVec(v:Vec)= EuclidDivByZeroException.Raisef "Euclid.UnitVec.createFromVec failed on too short %O" v
         /// Create 3D unit-vector from 3D vector. Does the unitizing too.
         static member inline createFromVec (v:Vec) =
             let l = sqrt (v.X*v.X + v.Y*v.Y + v.Z*v.Z)
-            if isTooTiny(l) then UnitVec.failedCreateFromVec v // don't compose error msg directly here to keep inlined code small.
+            if isTooTiny(l) then failTooSmall "UnitVec.createFromVec" v
             let li = 1. / l
             UnitVec.createUnchecked(li*v.X, li*v.Y, li*v.Z)
 
@@ -460,10 +464,10 @@ module AutoOpenUnitVec =
 
         //static member inline cross (a:UnitVec, b:UnitVec)  moved to Vec type declaration
 
-        /// Cross product, of a 3D unit-vectors an a 3D vector.
+        /// Cross product, of a 3D unit-vector and a 3D vector.
         /// It is also known as the Determinant, Wedge Product or Outer Product.
         /// The resulting vector is perpendicular to both input vectors.
-        /// The length of this resulting vector is the squared area of the parallelogram spanned by the input vectors.
+        /// The length of this resulting vector is the area of the parallelogram spanned by the input vectors.
         /// Its direction follows the right-hand rule.
         /// A x B = |A| * |B| * sin(angle)
         static member inline cross (a:UnitVec, b:Vec) =
@@ -471,10 +475,10 @@ module AutoOpenUnitVec =
                 a.Z * b.X - a.X * b.Z,
                 a.X * b.Y - a.Y * b.X)
 
-        /// Cross product, of a 3D vector and a 3D unit-vectors.
+        /// Cross product, of a 3D vector and a 3D unit-vector.
         /// It is also known as the Determinant, Wedge Product or Outer Product.
         /// The resulting vector is perpendicular to both input vectors.
-        /// The length of this resulting vector is the squared area of the parallelogram spanned by the input vectors.
+        /// The length of this resulting vector is the area of the parallelogram spanned by the input vectors.
         /// Its direction follows the right-hand rule.
         /// A x B = |A| * |B| * sin(angle)
         static member inline cross (a:Vec, b:UnitVec) =
@@ -497,12 +501,13 @@ module AutoOpenUnitVec =
             a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
 
-        /// Dot product, or scalar product of two 3D unit-vector.
+        /// Dot product, or scalar product of two 3D unit-vectors.
         /// This float of unit-vectors is the Cosine of the angle between the two vectors.
-        /// Returns a float with a unit of Measure Euclid.Cosine.cosine.
+        /// Returns a float with a F# unit of Measure Euclid.Cosine.cosine.
         /// This is useful for comparing the angle to precomputed values in the Euclid.Cosine module.
-        static member inline dotCosine (a:UnitVec) ( b:UnitVec) : float<Cosine.cosine> =
-            a.X * b.X + a.Y * b.Y + a.Z * b.Z  |> LanguagePrimitives.FloatWithMeasure
+        static member inline dotCosine (a:UnitVec) (b:UnitVec) :float<Cosine.cosine> =
+            a.X * b.X + a.Y * b.Y  + a.Z * b.Z
+            |> LanguagePrimitives.FloatWithMeasure
 
 
         /// Gets the X part of this 3D unit-vector.
@@ -707,12 +712,12 @@ module AutoOpenUnitVec =
             v.IsParallelTo other
 
 
-        /// Checks if Angle between two vectors is between 98.75 and 90.25 Degree.
-        /// Ignores vector orientation.
+        /// Checks if Angle between two vectors is less than 0.25 Degree.
+        /// Takes vector orientation into account.
         static member inline areParallelAndMatchOrientation (other:UnitVec) (v:UnitVec) =
             v.IsParallelAndOrientedTo other
 
-        /// Checks if Angle between two vectors is between 98.75 and 90.25 Degree.
+        /// Checks if Angle between two vectors is between 89.75 and 90.25 Degree.
         /// Ignores vector orientation.
         static member inline arePerpendicular(other:UnitVec) (v:UnitVec) =
             v.IsPerpendicularTo other
@@ -752,6 +757,19 @@ module AutoOpenUnitVec =
         static member inline rotateZ (angDegree) (v:UnitVec) =
             UnitVec.rotateZBy (Rotation2D.createFromDegrees angDegree) v
 
+        /// Rotates a 3D unit-vector around the Z-axis by a given number of quarter-circles (i.e. multiples of 90
+        /// degrees or Pi/2 radians). A positive number rotates counter-clockwise, a
+        /// negative number rotates clockwise. The length of the vector is preserved.
+        static member rotateByQuarterCircle (numberOfQuarters:int) (v:UnitVec) =
+            let mutable nQuad = numberOfQuarters % 4
+            if nQuad < 0 then nQuad <- nQuad + 4
+            match nQuad with
+            | 0 -> v
+            | 1 -> UnitVec.createUnchecked(-v.Y, v.X, v.Z)
+            | 2 -> UnitVec.createUnchecked(-v.X, -v.Y, v.Z)
+            | 3 -> UnitVec.createUnchecked(v.Y, -v.X, v.Z)
+            | _ -> fail "never happens" |> unbox // unbox to make type checker happy
+
         /// Rotate by Quaternion.
         static member inline rotateByQuaternion (q:Quaternion) (v:UnitVec) =
             v *** q  // operator * is defined in Quaternion.fs
@@ -787,20 +805,20 @@ module AutoOpenUnitVec =
         static member inline isHorizontal (v:UnitVec) =
             v.IsHorizontal
 
-        /// Returns positive or negative slope of a vector in Radians.
-        /// In relation to X-Y plane.
+        /// Returns positive or negative slope of a 3D unit-vector in Radians.
+        /// This is the elevation angle from the World X-Y plane (not from the X-axis).
         /// Range -1.57 to +1.57 Radians.
         static member inline slopeRadians (v:UnitVec) =
             v.Z |> asinSafe
 
-        /// Returns positive or negative slope of a vector in Degrees.
-        /// In relation to X-Y plane.
+        /// Returns positive or negative slope of a 3D unit-vector in Degrees.
+        /// This is the elevation angle from the World X-Y plane (not from the X-axis).
         /// Range -90 to +90 Degrees.
         static member inline slopeDegrees (v:UnitVec) =
             UnitVec.slopeRadians v |> toDegrees
 
-        /// Returns positive or negative slope of a vector in Percent.
-        /// In relation to X-Y plane.
+        /// Returns positive or negative slope of a 3D unit-vector in Percent.
+        /// This is the elevation angle from the World X-Y plane (not from the X-axis).
         /// 100% = 45 Degrees.
         /// Returns positive (or negative) infinity if line is vertical.
         static member inline slopePercent (v:UnitVec) =
@@ -847,29 +865,37 @@ module AutoOpenUnitVec =
         static member inline transformRigid (m:RigidMatrix) (v:UnitVec) : UnitVec =
             v.TransformRigid(m)
 
-        /// Checks if Angle between two unit-vectors is less than given Cosine.
-        /// Ignores vector orientation. The angle between two vectors can be 0 to 90 degrees ignoring their direction.
+        /// Checks if the angle between two unit-vectors is smaller than a threshold angle specified as a precomputed cosine value.
+        /// Ignores vector orientation. So the angle is between 0 to 90 degrees ignoring their orientation.
         /// Use the Euclid.Cosine module to get some precomputed cosine values.
-        static member inline isAngle90Below (cosineValue: float<Cosine.cosine>) (a:UnitVec) (b:UnitVec) =
+        /// Use UnitVec.isAngleBelow for considering vector orientation.
+        static member inline isParallelWithin (cosineValue: float<Cosine.cosine>) (a:UnitVec) (b:UnitVec) =
             abs(a *** b) > float cosineValue
 
-        /// Checks if Angle between two unit-vectors is more than given Cosine.
-        /// Ignores vector orientation. The angle between two vectors can be 0 to 90 degrees ignoring their direction.
+
+        /// Checks if the angle between two unit-vectors is bigger than a threshold angle specified as a precomputed cosine value.
+        /// Ignores vector orientation. So the angle is between 0 to 90 degrees ignoring their orientation.
         /// Use the Euclid.Cosine module to get some precomputed cosine values.
-        static member inline isAngle90Above (cosineValue: float<Cosine.cosine>) (a:UnitVec) (b:UnitVec) =
+        /// Use UnitVec.isAngleAbove for considering vector orientation.
+        static member inline isNotParallelWithin (cosineValue: float<Cosine.cosine>) (a:UnitVec) (b:UnitVec) =
             abs(a *** b) < float cosineValue
 
-        /// Checks if Angle between two unit-vectors is less than given Cosine.
-        /// Does not ignores vector orientation. The angle between two vectors can be 0 to 180 degrees.
+
+        /// Checks if the angle between two unit-vectors is smaller than a threshold angle specified as a precomputed cosine value.
+        /// Considers the vector orientation too. So the angle is between 0 to 180 degrees.
         /// Use the Euclid.Cosine module to get some precomputed cosine values.
-        static member inline isAngle180Below (cosineValue: float<Cosine.cosine>) (a:UnitVec) (b:UnitVec) =
+        /// Use UnitVec.isParallelWithin to ignore vector orientation.
+        static member inline isAngleBelow (cosineValue: float<Cosine.cosine>) (a:UnitVec) (b:UnitVec) =
             a *** b > float cosineValue
 
-        /// Checks if Angle between two unit-vectors is more than given Cosine.
-        /// Does not ignores vector orientation.The angle between two vectors can be 0 to 180 degrees.
+
+        /// Checks if the angle between two unit-vectors is bigger than a threshold angle specified as a precomputed cosine value.
+        /// Considers the vector orientation too. So the angle is between 0 to 180 degrees.
         /// Use the Euclid.Cosine module to get some precomputed cosine values.
-        static member inline isAngle180Above (cosineValue: float<Cosine.cosine>) (a:UnitVec) (b:UnitVec) =
+        /// Use UnitVec.isNotParallelWithin to ignore vector orientation.
+        static member inline isAngleAbove (cosineValue: float<Cosine.cosine>) (a:UnitVec) (b:UnitVec) =
             a *** b < float cosineValue
+
 
 
         /// Linearly interpolates between two vectors.
@@ -889,7 +915,7 @@ module AutoOpenUnitVec =
             if dot > float Cosine.``0.05`` then  // vectors are in the same direction interpolate length only
                 start
             elif dot < float Cosine.``179.95`` then
-                EuclidDivByZeroException.ThrowT "Euclid.UnitVec.slerp: Can't interpolate vectors in opposite directions:" ende
+                fail2 "UnitVec.slerp vectors are 180 deg opposite." start ende |> unbox // unbox to make type checker happy
             else
                 let ang = acos(dot) // the angel between the two vectors
                 let p = ende - start*dot  // a vector perpendicular to start and in the same plane with ende.
@@ -901,54 +927,31 @@ module AutoOpenUnitVec =
                 let vx = start * cosine
                 let vy = perp * sine
                 if theta360 < Math.PI then  // in the range 0 to 180 degrees, only applicable if rel is beyond 0.0 or 0.1
-                    UnitVec.createUnchecked (vx + vy)
+                    let v = vx + vy
+                    UnitVec.createUnchecked (v.X, v.Y, v.Z)
                 else
-                    UnitVec.createUnchecked (vx - vy)
+                    let v = vx - vy
+                    UnitVec.createUnchecked (v.X, v.Y, v.Z)
 
 
-        ///<summary> Intersects two infinite 3D lines.
-        /// The lines are defined by a start point and a vector.
-        /// 'ValueNone' is returned, if the angle between the vectors is less than 0.25 degrees
-        /// or any of them is shorter than 1e-6. These tolerances can be adjusted with optional parameters. </summary>
-        ///<param name="ptA"> The start point of the first line.</param>
-        ///<param name="ptB"> The start point of the second line.</param>
-        ///<param name="vA" > The unit-vector of the first line.</param>
-        ///<param name="vB" > The unit-vector of the second line.</param>
-        ///<param name="relAngleDiscriminant"> This is an optional tolerance for the internally calculated relative Angle Discriminant.
-        /// The default value corresponds to approx 0.25 degree. Below this angle vectors are considered parallel.
-        /// Use the module Euclid.UtilEuclid.RelAngleDiscriminant to set another tolerance here.</param>
-        ///<returns> For (almost) zero length or (almost) parallel vectors: ValueNone
-        /// Else ValueSome with a tuple of the parameters at which the two infinite 2D lines intersect to each other.
-        /// The tuple's order corresponds to the input order.</returns>
-        static member inline intersection(  ptA:Pnt,
-                                            ptB:Pnt,
-                                            vA:UnitVec,
-                                            vB:UnitVec,
-                                            [<OPT;DEF(RelAngleDiscriminant.``0.25``)>] relAngleDiscriminant:float<RelAngleDiscriminant.relAngDiscr>
-                                            ) : ValueOption<float*float> =
-            //https://stackoverflow.com/a/34604574/969070 but DP and DQ are in wrong order !
-            let ax = vA.X
-            let ay = vA.Y
-            let az = vA.Z
-            let bx = vB.X
-            let by = vB.Y
-            let bz = vB.Z
-            let b = ax*bx + ay*by + az*bz // dot product of both lines
-            let bb = b*b // square of square dot product, never negative
-            let discriminant = 1.0 - bb // never negative, the dot product cannot be bigger than the two square length multiplied with each other
-            let div = bb // never negative
-            // getting the relation between the sum and the subtraction gives a good estimate of the angle between the lines
-            // see module Euclid.UtilEuclid.RelAngleDiscriminant
-            let rel = discriminant/div
-            if rel < float relAngleDiscriminant then //parallel
-                ValueNone
-            else
-                let vx = ptB.X - ptA.X
-                let vy = ptB.Y - ptA.Y
-                let vz = ptB.Z - ptA.Z
-                let e = bx*vx + by*vy + bz*vz
-                let d = ax*vx + ay*vy + az*vz
-                let t = (    d - b * e) / discriminant
-                let u = (b * d -     e) / discriminant
-                ValueSome (t, u)
+        [<Obsolete("Use Euclid.XLine3D module instead.")>]
+        static member inline intersection(ptA:Pnt, ptB:Pnt, vA:UnitVec, vB:UnitVec) : Option<float*float> =
+            Some (XLine3D.parameters(ptA.X, ptA.Y, ptA.Z, ptB.X, ptB.Y, ptB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z))
 
+
+
+        [<Obsolete("Use UnitVec.isParallelWithin instead.")>]
+        static member inline isAngle90Below (cosineValue: float<Cosine.cosine>) (a:UnitVec) (b:UnitVec) =
+            UnitVec.isParallelWithin cosineValue a b
+
+        [<Obsolete("Use UnitVec.isNotParallelWithin instead.")>]
+        static member inline isAngle90Above (cosineValue: float<Cosine.cosine>) (a:UnitVec) (b:UnitVec) =
+            UnitVec.isNotParallelWithin cosineValue a b
+
+        [<Obsolete("Use UnitVec.isAngleBelow instead.")>]
+        static member inline isAngle180Below (cosineValue: float<Cosine.cosine>) (a:UnitVec) (b:UnitVec) =
+            UnitVec.isAngleBelow cosineValue a b
+
+        [<Obsolete("Use UnitVec.isAngleAbove instead.")>]
+        static member inline isAngle180Above (cosineValue: float<Cosine.cosine>) (a:UnitVec) (b:UnitVec) =
+            UnitVec.isAngleAbove cosineValue a b

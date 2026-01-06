@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.20.0-beta] - 2025-11-24
+### Changed
+- Reimplement Polyline2D and 3D offseting more efficiently and with error correction in Offset2D and Offset3D modules
+- New XLine2D and XLine3D modules for Line to Line intersections and relationships. deprecate LineIntersectionTypes
+- Split Topology module into Topology2D and Topology3D
+- Deprecate Points module, use new Tria2D, Tria3D, and Points2D and Points3D for Pointclouds instead
+### Added
+- Polylabel algorithm for finding pole of inaccessibility in polygons.
+
 ## [0.16.0] - 2025-06-29
 ### Added
 - more methods for Polyline
@@ -14,7 +23,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Polyline is no longer a struct
 ### Fixed
 - edge case bug in BBox.Contains
-
 
 ## [0.15.0] - 2025-06-14
 ### Added
@@ -155,7 +163,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - first public release
 
-[Unreleased]: https://github.com/goswinr/Euclid/compare/v0.15.0...HEAD
+[Unreleased]: https://github.com/goswinr/Euclid/compare/v0.30.0...HEAD
+[0.30.0]: https://github.com/goswinr/Euclid/compare/v0.16.0...v0.30.0
+[0.16.0]: https://github.com/goswinr/Euclid/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/goswinr/Euclid/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/goswinr/Euclid/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/goswinr/Euclid/compare/v0.12.0...v0.13.0
@@ -175,7 +185,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [0.2.0]: https://github.com/goswinr/Euclid/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/goswinr/Euclid/releases/tag/v0.1.0
 
-<!--
-use to get tag dates:
-git log --tags --simplify-by-decoration --pretty="format:%ci %d"
--->

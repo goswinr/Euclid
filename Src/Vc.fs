@@ -5,8 +5,7 @@ open System
 open System.Runtime.CompilerServices
 open Euclid.UtilEuclid
 open System.Runtime.Serialization
-
-#nowarn "44" // for internal inline constructors and hidden obsolete members for error cases
+open EuclidErrors
 
 /// <summary>Vc is an immutable 2D vector with any length. Made up from 2 floats: X and Y.</summary>
 /// <remarks>2D unit-vectors with length 1.0 are called 'UnitVc'.
@@ -22,20 +21,29 @@ type Vc =
 
     /// Create a new 2D vector with any length. Made up from 2 floats: X and Y.
     new (x, y) =
-        #if DEBUG // TODO : with this test all  operations are 2.5 times slower
-        if Double.IsNaN x || Double.IsNaN y || Double.IsInfinity x || Double.IsInfinity y  then EuclidException.Raisef "Euclid.Vc Constructor failed for x:%g, y:%g"  x y
+        #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode // TODO : with this test all  operations are 2.5 times slower
+            if isNanInfinity x || isNanInfinity y then failNaN2 "Vc()" x y
         #endif
-        {X=x; Y=y}
+            {X=x; Y=y}
 
 
     /// Format 2D vector into string including type name and nice floating point number formatting of X, Y and length.
     override v.ToString() =
-        sprintf "Euclid.Vc: X=%s|Y=%s|length: %s" (Format.float v.X) (Format.float v.Y) (Format.float (sqrt (v.X*v.X + v.Y*v.Y)))
+        let x = Format.float v.X
+        let y = Format.float v.Y
+        let length = Format.float (sqrt (v.X*v.X + v.Y*v.Y))
+        $"Euclid.Vc: X=%s{x}|Y=%s{y}|length: %s{length}"
 
     /// Format 2D vector into string with nice floating point number formatting of X and Y
     /// But without full type name or length as in v.ToString()
     member v.AsString =
-        sprintf "X=%s|Y=%s" (Format.float v.X) (Format.float v.Y)
+        let x = Format.float v.X
+        let y = Format.float v.Y
+        $"X=%s{x}|Y=%s{y}"
+
+    /// Format 2D vector into an F# code string that can be used to recreate the vector.
+    member v.AsFSharpCode =
+        $"Vc({v.X}, {v.Y})"
 
     /// Negate or inverse a 2D vector. Returns a new 2D vector.
     static member inline ( ~- ) (v:Vc) =
@@ -61,14 +69,10 @@ type Vc =
     static member inline ( *** ) (a:Vc, b:Vc) =
         a.X * b.X + a.Y * b.Y
 
-    /// A separate function to compose the error message that does not get inlined.
-    [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-    static member failedDivide(f,v:Vc) =
-        EuclidDivByZeroException.Raisef "Euclid.Vc: divide operator: %g is too small for dividing %O using the '/' operator. Tolerance:%g"  f v zeroLengthTolerance
-
-    /// Divides a 2D vector by a scalar, also called dividing/scaling a vector. Returns a new 2D vector.
+    /// Divides a 2D vector by a scalar. Returns a new 2D vector.
+    /// Throws EuclidDivByZeroException if the divisor is too small (|f| < 1e-12).
     static member inline ( / ) (v:Vc, f:float) =
-        if isTooTiny (abs f) then Vc.failedDivide(f,v) // don't compose error msg directly here to keep inlined code small. // https://github.com/dotnet/runtime/issues/24626#issuecomment-356736809
+        if isTooTiny (abs f) then failDivide "'/' operator" f v // don't compose error msg directly here to keep inlined code small. // https://github.com/dotnet/runtime/issues/24626#issuecomment-356736809
         Vc (v.X / f, v.Y / f)
 
     /// Returns the length of the 2D vector.
@@ -94,8 +98,9 @@ type Vc =
 
     /// Divides the vector by an integer.
     /// (This member is needed by Array.average and similar functions)
+    /// Throws EuclidDivByZeroException if i is 0.
     static member DivideByInt (v:Vc, i:int) = // needed by 'Array.average'
-        if i = 0 then EuclidDivByZeroException.Raisef "Euclid.Vc.DivideByInt by zero %O" v
+        if i = 0 then failDivide "Vc.DivideByInt by zero" 0.0 v
         let d = float i
         Vc(v.X/d, v.Y/d)
 

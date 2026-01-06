@@ -4,9 +4,7 @@ open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
 open Euclid.UtilEuclid
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
-
-
-#nowarn "44" // for hidden constructors via Obsolete Attribute
+open EuclidErrors
 
 /// An immutable unitized Quaternion, for arbitrary 3D rotations.
 /// This implementation guarantees the Quaternion to be always unitized.
@@ -34,43 +32,57 @@ type Quaternion =
     [<DataMember>] val W:float
 
     /// Unsafe internal constructor, public only for inlining.
-    [<Obsolete("This is not Obsolete, but an unsafe internal constructor. the input is not verified, so it might create invalid geometry. It is exposed as a public member so that it can be inlined. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >]
+    [<Obsolete("This is not Obsolete, but an unsafe internal constructor. The input is not verified, so it might create invalid geometry. It is exposed as a public member so that it can be inlined. So marked Obsolete instead.") >]
     new (x, y, z, w) =
-        #if DEBUG
-        let l = x*x  + y*y + z*z + w*w
-        if isNotOne l then
-            EuclidException.Raisef "Euclid.Quaternion Constructor failed for x:%g, y:%g, z:%g, w:%g. The length needs to be 1.0." x y z w
+        #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode
+            let l = x*x  + y*y + z*z + w*w
+            if isNotOne l then failQuat w x y z
         #endif
-        {X=x; Y=y; Z=z; W=w}
+            {X=x; Y=y; Z=z; W=w}
+
+    /// This unsafe constructor does NOT do any unitizing.
+    static member inline createUnchecked (x, y, z, w) =
+        #nowarn "44"
+        Quaternion(x, y, z, w)
+        #warnon "44" // re-enable warning for obsolete usage
 
     /// Format Quaternion into string also showing angle in Degree as nicely formatted floating point number.
     override q.ToString() =
         let ang = q.W |> acosSafe |> ( * ) 2.0 |>  toDegrees
-        sprintf "Euclid.Quaternion(X=%s| Y=%s| Z=%s, W=%s| angle: %s°)"
-                (Format.float q.X) (Format.float q.Y) (Format.float q.Z) (Format.float q.W) (Format.float ang)
+        $"Euclid.Quaternion(X={Format.float q.X}|Y={Format.float q.Y}|Z={Format.float q.Z}, W={Format.float q.W}| angle: {Format.float ang}°)"
 
-    /// Multiply two Quaternions. Its like adding one rotation to the other.
-    static member multiply (l:Quaternion, r:Quaternion) =
-        Quaternion(
-            l.W * r.X + l.X * r.W + l.Y * r.Z - l.Z * r.Y,
-            l.W * r.Y + l.Y * r.W + l.Z * r.X - l.X * r.Z,
-            l.W * r.Z + l.Z * r.W + l.X * r.Y - l.Y * r.X,
-            l.W * r.W - l.X * r.X - l.Y * r.Y - l.Z * r.Z)
+    /// Format Quaternion into string also showing angle in Degree as nicely formatted floating point number.
+    /// Using nice floating point number formatting.
+    /// But without full type name as in q.ToString()
+    member q.AsString =
+        let ang = q.W |> acosSafe |> ( * ) 2.0 |>  toDegrees
+        $"X={Format.float q.X}|Y={Format.float q.Y}|Z={Format.float q.Z}, angle: {Format.float ang}°"
 
-    /// Multiply two Quaternions. Its like adding one rotation to the other.
-    static member inline ( *** ) (l:Quaternion, r:Quaternion) =
-        Quaternion.multiply(l, r)
+    /// Format Quaternion into an F# code string that can be used to recreate the quaternion.
+    member q.AsFSharpCode =
+        $"Quaternion.create({q.X}, {q.Y}, {q.Z}, {q.W})"
+
 
     /// Returns a new Quaternion for the inverse rotation.
     /// Same as q.Inverse.
-    member inline q.Conjugate = Quaternion (-q.X, -q.Y, -q.Z, q.W)
+    member inline q.Conjugate =
+        Quaternion.createUnchecked(-q.X, -q.Y, -q.Z, q.W)
 
     /// Returns a new Quaternion for the inverse rotation.
     /// Same as q.Conjugate.
-    member inline q.Inverse = Quaternion (-q.X, -q.Y, -q.Z, q.W)
+    member inline q.Inverse =
+        Quaternion.createUnchecked(-q.X, -q.Y, -q.Z, q.W)
+
+    /// This method should normally not be needed as Euclid Quaternions are always unitized.
+    /// However, use this to correct numerical drift after many quaternion multiplications.
+    /// This is the same as calling Quaternion.create with the current components.
+    /// Returns a renormalized copy of this Quaternion with unit length.
+    member inline q.Normalize() =
+        Quaternion.create(q.X, q.Y, q.Z, q.W)
 
     [<Obsolete("The Magnitude is always one. This function only exist for testing.")>]
-    member q.Magnitude = sqrt (q.X*q.X + q.Y*q.Y + q.Z*q.Z + q.W*q.W)
+    member q.Magnitude =
+        sqrt (q.X*q.X + q.Y*q.Y + q.Z*q.Z + q.W*q.W)
 
     /// Returns the angle in Radians.
     member inline q.AngleInRadians =
@@ -80,28 +92,30 @@ type Quaternion =
     member inline q.AngleInDegrees =
         q.AngleInRadians |>  toDegrees
 
-    /// Returns the rotation axis of this Quaternion.
-    /// This is just q.X, q.Y and q.Z.
-    /// The length of this vector is less than one.
-    member inline q.Axis = Vec(q.X, q.Y, q.Z)
+    /// Returns the rotation axis of this Quaternion as a (non-unit) vector.
+    /// This is just q.X, q.Y and q.Z, which equals axis * sin(angle/2).
+    /// For the identity quaternion (no rotation), this returns a zero-length vector Vec(0,0,0).
+    /// The length of this vector is sin(angle/2), ranging from 0 (no rotation) to 1 (180° rotation).
+    member inline q.Axis =
+        Vec(q.X, q.Y, q.Z)
 
-    /// Get a new Quaternion that rotates around the same axis
-    /// but with the different angle. In Radians.
+    /// Get a new Quaternion that rotates around the same axis but with a different angle. In Radians.
+    /// Fails for identity or near-identity quaternions where the rotation axis is not defined (angle ≈ 0).
     member q.setAngleInRadians (angleInRadians) =
         let length = sqrt(q.X*q.X + q.Y*q.Y + q.Z*q.Z)
         if isTooTiny(length) then
-            EuclidException.ThrowT "Euclid.Quaternion.setAngleInRadians failed. The length of the axis is too short:" q.Axis
+            fail $"Quaternion.setAngleInRadians failed. The length of the axis is too short: {q.Axis}"
         let sc = 1. / length // inverse for unitizing vector:
         let angHalf = angleInRadians * 0.5
-        let sa = sc * sin (angHalf)
-        Quaternion ( q.X * sa,
+        let sa = sc * sin angHalf
+        Quaternion.createUnchecked( q.X * sa,
                      q.Y * sa,
                      q.Z * sa,
-                     cos (angHalf) )
+                     cos angHalf )
 
-    /// Get a new Quaternion that rotates around the same axis
-    /// but with the different angle. In Degree.
-    member inline q.setAngleInDegrees (angleInDegrees) =
+    /// Get a new Quaternion that rotates around the same axis but with a different angle. In Degree.
+    /// Fails for identity or near-identity quaternions where the rotation axis is not defined (angle ≈ 0).
+    member inline q.setAngleInDegrees angleInDegrees =
         q.setAngleInRadians (toRadians angleInDegrees)
 
     (* TODO the interpolation follows a Cone. is that correct ?
@@ -140,26 +154,73 @@ type Quaternion =
                     )
     *)
 
-    //-----------------------------------------------
-    //------------static members---------------------
-    //-----------------------------------------------
+
+    // --------------------------------------------------------------------
+    //            █████               █████     ███
+    //           ░░███               ░░███     ░░░
+    //    █████  ███████    ██████   ███████   ████   ██████
+    //   ███░░  ░░░███░    ░░░░░███ ░░░███░   ░░███  ███░░███
+    //  ░░█████   ░███      ███████   ░███     ░███ ░███ ░░░
+    //   ░░░░███  ░███ ███ ███░░███   ░███ ███ ░███ ░███  ███
+    //   ██████   ░░█████ ░░████████  ░░█████  █████░░██████
+    //  ░░░░░░     ░░░░░   ░░░░░░░░    ░░░░░  ░░░░░  ░░░░░░
+    //
+    //                                             █████
+    //                                            ░░███
+    //    █████████████    ██████  █████████████   ░███████   ██████  ████████   █████
+    //   ░░███░░███░░███  ███░░███░░███░░███░░███  ░███░░███ ███░░███░░███░░███ ███░░
+    //    ░███ ░███ ░███ ░███████  ░███ ░███ ░███  ░███ ░███░███████  ░███ ░░░ ░░█████
+    //    ░███ ░███ ░███ ░███░░░   ░███ ░███ ░███  ░███ ░███░███░░░   ░███      ░░░░███
+    //    █████░███ █████░░██████  █████░███ █████ ████████ ░░██████  █████     ██████
+    //   ░░░░░ ░░░ ░░░░░  ░░░░░░  ░░░░░ ░░░ ░░░░░ ░░░░░░░░   ░░░░░░  ░░░░░     ░░░░░░
+
+
+    /// Checks if two Quaternion are equal within tolerance (component-wise comparison).
+    /// Use a tolerance of 0.0 to check for an exact match.
+    /// Note: A Quaternion with every component negated represents the same rotation but will be considered unequal by this function.
+    /// For rotational equivalence, consider using Quaternion.equalsRotation function.
+    static member inline equals (tolerance:float) (a:Quaternion) (b:Quaternion) =
+        abs(a.X-b.X) <= tolerance &&
+        abs(a.Y-b.Y) <= tolerance &&
+        abs(a.Z-b.Z) <= tolerance &&
+        abs(a.W-b.W) <= tolerance
+
+    /// Checks if two Quaternion represent an equal rotation.
+    /// Use a tolerance of 0.0 to check for an exact match.
+    /// Note: A Quaternion with every component negated represents the same rotation and will be considered equal by this function.
+    /// For component-wise equality, consider using Quaternion.equals function.
+    static member inline equalsRotation (tolerance:float) (a:Quaternion) (b:Quaternion) =
+        Quaternion.equals tolerance a b ||
+        Quaternion.equals tolerance a (Quaternion.createUnchecked(-b.X, -b.Y, -b.Z, -b.W))
+
+
+    /// Multiply two Quaternions. It's like adding one rotation to the other.
+    /// Note: Repeated multiplications may accumulate floating-point errors that violate the unit-length invariant.
+    /// Use q.Normalize() to renormalize if combining many rotations.
+    static member multiply (l:Quaternion, r:Quaternion) =
+        Quaternion.createUnchecked(
+            l.W * r.X + l.X * r.W + l.Y * r.Z - l.Z * r.Y,
+            l.W * r.Y + l.Y * r.W + l.Z * r.X - l.X * r.Z,
+            l.W * r.Z + l.Z * r.W + l.X * r.Y - l.Y * r.X,
+            l.W * r.W - l.X * r.X - l.Y * r.Y - l.Z * r.Z)
+
+    /// Multiply two Quaternions. It's like adding one rotation to the other.
+    static member inline ( *** ) (l:Quaternion, r:Quaternion) =
+        Quaternion.multiply(l, r)
 
     /// This constructor does unitizing too.
     static member create (x, y, z, w) =
         let l = sqrt(x*x  + y*y + z*z + w*w)
         if isTooTiny (abs l) then
-            EuclidException.Raisef "Euclid.Quaternion create failed for x:%g, y:%g, z:%g, w:%g. The length needs to be bigger than zero." x y z w
+            fail $"Quaternion create failed for x:{x}, y:{y}, z:{z}, w:{w}. The length needs to be bigger than zero."
         let sc = 1./l
-        Quaternion(x*sc, y*sc, z*sc, w*sc)
+        Quaternion.createUnchecked(x*sc, y*sc, z*sc, w*sc)
 
-    /// This unsafe constructor does do any unitizing.
-    static member inline createDirectlyUnchecked (x, y, z, w) =
-        Quaternion(x, y, z, w)
 
     /// The identity quaternion that does not do any rotation.
     /// This is Quaternion(x=0, y=0, z=0, w=1)
     static member inline identity =
-        Quaternion(0, 0, 0, 1)
+        Quaternion.createUnchecked(0, 0, 0, 1)
 
 
     /// The created rotation is Clockwise looking in the direction of the vector.
@@ -167,17 +228,17 @@ type Quaternion =
     static member createFromRadians (axis:Vec, angleInRadians) =
         let length = sqrt(axis.X*axis.X + axis.Y*axis.Y + axis.Z*axis.Z)
         if isTooTiny(length) then
-            EuclidException.Raisef "Euclid.Quaternion.createFromRadians failed too short axis: %O and rotation: %g° Degrees." axis (toDegrees angleInRadians)
+            fail $"Quaternion.createFromRadians failed too short axis: %O{axis} and rotation: %g{toDegrees angleInRadians}° Degrees."
         let angHalf = angleInRadians * 0.5
         let sa = sin angHalf
         let sc = 1. / length // inverse for unitizing vector:
-        Quaternion (axis.X * sc * sa, axis.Y * sc * sa, axis.Z * sc * sa, cos angHalf)
+        Quaternion.createUnchecked(axis.X * sc * sa, axis.Y * sc * sa, axis.Z * sc * sa, cos angHalf)
 
     /// The created rotation is Clockwise looking in the direction of the unit-vector.
     static member inline createFromRadians (axis:UnitVec, angleInRadians) =
         let angHalf = angleInRadians * 0.5
         let sa = sin angHalf
-        Quaternion (axis.X  * sa, axis.Y  * sa, axis.Z  * sa, cos angHalf)
+        Quaternion.createUnchecked(axis.X  * sa, axis.Y  * sa, axis.Z  * sa, cos angHalf)
 
     /// The created rotation is Clockwise looking in the direction of the vector (of any length but zero).
     static member inline createFromDegree (axis:Vec, angleInDegrees) =
@@ -187,29 +248,30 @@ type Quaternion =
     static member inline createFromDegree (axis:UnitVec, angleInDegrees) =
         Quaternion.createFromRadians (axis, toRadians angleInDegrees)
 
-    /// Creates a rotation from one vectors direction to another vectors direction.
-    /// If the tips of the two vectors are closer than 1e-9 then an identity Quaternion is returned.
-    /// If the tips of the two vectors are almost exactly opposite, deviating less than 1e-6 from line,
+    /// Creates a rotation from one vector's direction to another vector's direction.
+    /// If the tips of the two unit vectors are closer than 1e-12 (squared: 1e-24) then an identity Quaternion is returned.
+    /// If the tips of the two vectors are almost exactly opposite (sum length too small),
     /// there is no valid unique 180 degree rotation that can be found, so an exception is raised.
     static member inline createVecToVec(vecFrom:UnitVec, vecTo:UnitVec) =
         let v = vecFrom - vecTo
-        if v.LengthSq < 1e-24 then // the vectors are almost the same
+        if v.LengthSq < 1e-24 then // the vectors are almost the same (threshold: (1e-12)^2)
             Quaternion.identity
         else
             let v = vecFrom + vecTo
             if isTooSmallSq v.LengthSq then // the vectors are almost exactly opposite
-                EuclidException.Raisef "Euclid.Quaternion.createVecToVec failed to find a rotation axis for (almost) colinear unit-vectors in opposite directions: %O and %O" vecFrom vecTo
-            else
-                // cross vectors(vFrom, vTo); // inlined to avoid cyclic dependency
-                Quaternion.create ( vecFrom.Y * vecTo.Z - vecFrom.Z * vecTo.Y
-                                  , vecFrom.Z * vecTo.X - vecFrom.X * vecTo.Z
-                                  , vecFrom.X * vecTo.Y - vecFrom.Y * vecTo.X
-                                  , vecFrom *** vecTo  + 1.0
-                                  )
+                fail $"Quaternion.createVecToVec failed to find a rotation axis for (almost) colinear unit-vectors in opposite directions: %O{vecFrom} and %O{vecTo}"
 
-    /// Creates a rotation from one vectors direction to another vectors direction.
-    /// If the tips of the two vectors unitized are closer than 1e-9 the identity Quaternion is returned.
-    /// If the tips of the two vectors unitized are almost exactly opposite, deviating less than 1e-6 from line (unitized),
+            // cross vectors(vFrom, vTo); // inlined to avoid cyclic dependency
+            Quaternion.create ( vecFrom.Y * vecTo.Z - vecFrom.Z * vecTo.Y
+                              , vecFrom.Z * vecTo.X - vecFrom.X * vecTo.Z
+                              , vecFrom.X * vecTo.Y - vecFrom.Y * vecTo.X
+                              , vecFrom *** vecTo  + 1.0
+                              )
+
+
+    /// Creates a rotation from one vector's direction to another vector's direction.
+    /// If the tips of the two vectors (unitized) are closer than 1e-12 (squared: 1e-24) then an identity Quaternion is returned.
+    /// If the tips of the two vectors (unitized) are almost exactly opposite (sum length too small),
     /// there is no valid unique 180 degree rotation that can be found, so an exception is raised.
     static member createVecToVec(vecFrom:Vec, vecTo:Vec) =
         let fu =
@@ -218,7 +280,7 @@ type Quaternion =
             let z = vecFrom.Z
             let length = sqrt(x*x + y*y + z*z)
             if isTooTiny(length) then
-                EuclidException.Raisef "Euclid.Quaternion.createVecToVec failed. The vector is too short: vecFrom: %O" vecFrom
+                fail $"Quaternion.createVecToVec failed. The vector is too short: vecFrom: %O{vecFrom}"
             let sc = 1. / length // inverse for unitizing vector:
             UnitVec.createUnchecked(x*sc, y*sc, z*sc)
         let tu =
@@ -227,7 +289,7 @@ type Quaternion =
             let z = vecTo.Z
             let length = sqrt(x*x + y*y + z*z)
             if isTooTiny(length) then
-                EuclidException.Raisef "Euclid.Quaternion.createVecToVec failed. The vector is too short: vecTo: %O" vecTo
+                fail $"Quaternion.createVecToVec failed. The vector is too short: vecTo: %O{vecTo}"
             let sc = 1. / length // inverse for unitizing vector:
             UnitVec.createUnchecked(x*sc, y*sc, z*sc)
 
@@ -237,14 +299,14 @@ type Quaternion =
         else
             let v = fu + tu
             if isTooSmallSq v.LengthSq then // the vectors are almost exactly opposite
-                EuclidException.Raisef "Euclid.Quaternion.createVecToVec failed to find a rotation axis for (almost) colinear  (or NaN) vectors in opposite directions: %O and %O" vecFrom vecTo
-            else
-                // cross vectors( vFrom, vTo); // inlined to avoid cyclic dependency
-                Quaternion.create ( fu.Y * tu.Z - fu.Z * tu.Y
-                                  , fu.Z * tu.X - fu.X * tu.Z
-                                  , fu.X * tu.Y - fu.Y * tu.X
-                                  , fu *** tu  + 1.0
-                                  )
+                fail $"Quaternion.createVecToVec failed to find a rotation axis for (almost) colinear  (or NaN) vectors in opposite directions: %O{vecFrom} and %O{vecTo}"
+
+            // cross vectors( vFrom, vTo); // inlined to avoid cyclic dependency
+            Quaternion.create ( fu.Y * tu.Z - fu.Z * tu.Y
+                              , fu.Z * tu.X - fu.X * tu.Z
+                              , fu.X * tu.Y - fu.Y * tu.X
+                              , fu *** tu  + 1.0
+                              )
 
     /// Angles are given in Degrees,
     /// The order in which to apply rotations is X-Y-Z,
@@ -262,11 +324,11 @@ type Quaternion =
         let s1 = sin(toRadians degreesX * 0.5)
         let s2 = sin(toRadians degreesY * 0.5)
         let s3 = sin(toRadians degreesZ * 0.5)
-        Quaternion  (  s1 * c2 * c3 + c1 * s2 * s3
-                    ,  c1 * s2 * c3 - s1 * c2 * s3
-                    ,  c1 * c2 * s3 + s1 * s2 * c3
-                    ,  c1 * c2 * c3 - s1 * s2 * s3
-                    )
+        Quaternion.createUnchecked(  s1 * c2 * c3 + c1 * s2 * s3
+                                  ,  c1 * s2 * c3 - s1 * c2 * s3
+                                  ,  c1 * c2 * s3 + s1 * s2 * c3
+                                  ,  c1 * c2 * c3 - s1 * s2 * s3
+                                  )
 
     /// Angles are given in Degrees,
     /// The order in which to apply rotations is Y-X-Z,
@@ -284,11 +346,11 @@ type Quaternion =
         let s1 = sin(toRadians degreesX * 0.5)
         let s2 = sin(toRadians degreesY * 0.5)
         let s3 = sin(toRadians degreesZ * 0.5)
-        Quaternion  (  s1 * c2 * c3 + c1 * s2 * s3
-                    ,  c1 * s2 * c3 - s1 * c2 * s3
-                    ,  c1 * c2 * s3 - s1 * s2 * c3
-                    ,  c1 * c2 * c3 + s1 * s2 * s3
-                    )
+        Quaternion.createUnchecked(  s1 * c2 * c3 + c1 * s2 * s3
+                                  ,  c1 * s2 * c3 - s1 * c2 * s3
+                                  ,  c1 * c2 * s3 - s1 * s2 * c3
+                                  ,  c1 * c2 * c3 + s1 * s2 * s3
+                                  )
 
 
     /// Angles are given in Degrees,
@@ -307,10 +369,10 @@ type Quaternion =
         let s1 = sin(toRadians degreesX * 0.5)
         let s2 = sin(toRadians degreesY * 0.5)
         let s3 = sin(toRadians degreesZ * 0.5)
-        Quaternion(  s1 * c2 * c3 - c1 * s2 * s3
-                  ,  c1 * s2 * c3 + s1 * c2 * s3
-                  ,  c1 * c2 * s3 + s1 * s2 * c3
-                  ,  c1 * c2 * c3 - s1 * s2 * s3)
+        Quaternion.createUnchecked(  s1 * c2 * c3 - c1 * s2 * s3
+                                  ,  c1 * s2 * c3 + s1 * c2 * s3
+                                  ,  c1 * c2 * s3 + s1 * s2 * c3
+                                  ,  c1 * c2 * c3 - s1 * s2 * s3)
 
 
     /// Angles are given in Degrees,
@@ -329,10 +391,10 @@ type Quaternion =
         let s1 = sin(toRadians degreesX * 0.5)
         let s2 = sin(toRadians degreesY * 0.5)
         let s3 = sin(toRadians degreesZ * 0.5)
-        Quaternion(  s1 * c2 * c3 - c1 * s2 * s3
-                  ,  c1 * s2 * c3 + s1 * c2 * s3
-                  ,  c1 * c2 * s3 - s1 * s2 * c3
-                  ,  c1 * c2 * c3 + s1 * s2 * s3)
+        Quaternion.createUnchecked(  s1 * c2 * c3 - c1 * s2 * s3
+                                  ,  c1 * s2 * c3 + s1 * c2 * s3
+                                  ,  c1 * c2 * s3 - s1 * s2 * c3
+                                  ,  c1 * c2 * c3 + s1 * s2 * s3)
 
     /// Angles are given in Degrees,
     /// The order in which to apply rotations is Y-Z-X,
@@ -350,10 +412,10 @@ type Quaternion =
         let s1 = sin(toRadians degreesX * 0.5)
         let s2 = sin(toRadians degreesY * 0.5)
         let s3 = sin(toRadians degreesZ * 0.5)
-        Quaternion(  s1 * c2 * c3 + c1 * s2 * s3
-                  ,  c1 * s2 * c3 + s1 * c2 * s3
-                  ,  c1 * c2 * s3 - s1 * s2 * c3
-                  ,  c1 * c2 * c3 - s1 * s2 * s3)
+        Quaternion.createUnchecked(  s1 * c2 * c3 + c1 * s2 * s3
+                                ,  c1 * s2 * c3 + s1 * c2 * s3
+                                ,  c1 * c2 * s3 - s1 * s2 * c3
+                                ,  c1 * c2 * c3 - s1 * s2 * s3)
 
     /// Angles are given in Degrees,
     /// The order in which to apply rotations is X-Z-Y,
@@ -371,10 +433,10 @@ type Quaternion =
         let s1 = sin(toRadians degreesX * 0.5)
         let s2 = sin(toRadians degreesY * 0.5)
         let s3 = sin(toRadians degreesZ * 0.5)
-        Quaternion(  s1 * c2 * c3 - c1 * s2 * s3
-                  ,  c1 * s2 * c3 - s1 * c2 * s3
-                  ,  c1 * c2 * s3 + s1 * s2 * c3
-                  ,  c1 * c2 * c3 + s1 * s2 * s3)
+        Quaternion.createUnchecked(  s1 * c2 * c3 - c1 * s2 * s3
+                                  ,  c1 * s2 * c3 - s1 * c2 * s3
+                                  ,  c1 * c2 * s3 + s1 * s2 * c3
+                                  ,  c1 * c2 * c3 + s1 * s2 * s3)
 
 
 
@@ -384,7 +446,8 @@ type Quaternion =
     /// 1) Rotate Frame A about its Z-axis by angle Gamma;
     /// 2) Rotate the resulting frame about its (new) Y-axis by angle Beta;
     /// 3) Rotate the resulting frame about its (new) X-axis by angle Alpha, to arrive at frame B.
-    /// Returns the angels in Degrees as triple. For rotating first round the axis Z then local Y and finally local X.
+    /// Returns the angles in Degrees as triple. For rotating first around the axis Z then local Y and finally local X.
+    /// Note: This conversion may encounter gimbal lock issues when Beta is near ±90°.
     /// see Quaternion.createFromEulerZYX(z, y, x)
     static member toEulerAnglesZYX(q:Quaternion) : float*float*float =
         // from https://github.com/mathnet/mathnet-spatial/blob/master/src/Spatial/Euclidean/Quaternion.cs#L491
@@ -436,9 +499,9 @@ type Quaternion =
         let ty = 2.0 * ( qz * x - qx * z)
         let tz = 2.0 * ( qx * y - qy * x)
         // v + q.w * t + cross( q.xyz, t);
-        UnitVec( x + qw * tx + qy * tz - qz * ty,
-                 y + qw * ty + qz * tx - qx * tz,
-                 z + qw * tz + qx * ty - qy * tx)
+        UnitVec.createUnchecked( x + qw * tx + qy * tz - qz * ty,
+                                 y + qw * ty + qz * tx - qx * tz,
+                                 z + qw * tz + qx * ty - qy * tx)
 
 
     /// Rotate by Quaternion around Origin.

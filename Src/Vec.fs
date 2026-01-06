@@ -12,8 +12,7 @@ open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
 open Euclid.UtilEuclid
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
-
-#nowarn "44" // to skip Obsolete warnings (members just needs to be public for inlining, but should be hidden)
+open EuclidErrors
 
 
 
@@ -41,20 +40,31 @@ type Vec =
 
     /// Create a new 3D vector with any length. Made up from 3 floats: X, Y, and Z.
     new (x, y, z) =
-        #if DEBUG
-        if Double.IsNaN x || Double.IsNaN y || Double.IsNaN z || Double.IsInfinity x || Double.IsInfinity y || Double.IsInfinity z then
-            EuclidException.Raisef "Euclid.Vec Constructor failed for x:%g, y:%g, z:%g"  x y z
+        #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode
+            if isNanInfinity x || isNanInfinity y || isNanInfinity z then
+                failNaN3 "Vec()" x y z
         #endif
-        {X=x; Y=y; Z=z}
+            {X=x; Y=y; Z=z}
 
     /// Format 3D vector into string including type name and nice floating point number formatting of X, Y, Z and length.
     override v.ToString() =
-        sprintf "Euclid.Vec: X=%s|Y=%s|Z=%s|length: %s" (Format.float v.X) (Format.float v.Y) (Format.float v.Z) (Format.float (sqrt (v.X*v.X + v.Y*v.Y + v.Z*v.Z)))
+        let x = Format.float v.X
+        let y = Format.float v.Y
+        let z = Format.float v.Z
+        let len = Format.float (sqrt (v.X*v.X + v.Y*v.Y + v.Z*v.Z))
+        $"Euclid.Vec: X=%s{x}|Y=%s{y}|Z=%s{z}|length: %s{len}"
 
     /// Format 3D vector into string with nice floating point number formatting of X, Y and Z.
     /// But without full type name or length as in v.ToString()
     member v.AsString =
-        sprintf "X=%s|Y=%s|Z=%s" (Format.float v.X) (Format.float v.Y) (Format.float v.Z)
+        let x = Format.float v.X
+        let y = Format.float v.Y
+        let z = Format.float v.Z
+        $"X=%s{x}|Y=%s{y}|Z=%s{z}"
+
+    /// Format 3D vector into an F# code string that can be used to recreate the vector.
+    member v.AsFSharpCode =
+        $"Vec({v.X}, {v.Y}, {v.Z})"
 
     /// Returns the length of the 3D vector.
     member inline v.Length =
@@ -89,13 +99,10 @@ type Vec =
     static member inline ( *** ) (a:Vec, b:Vec) =
         a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
-    /// A separate function to compose the error message that does not get inlined.
-    [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-    member v.FailedDivide(f) = EuclidDivByZeroException.Raisef "Euclid.Vec: divide operator: %g is too small for dividing %O using the '/' operator. Tolerance:%g"  f v zeroLengthTolerance
 
     /// Divides a 3D vector by a scalar, also called dividing/scaling a vector. Returns a new 3D vector.
     static member inline ( / ) (v:Vec, f:float) =
-        if isTooTiny (abs f) then v.FailedDivide(f) // don't compose error msg directly here to keep inlined code small. // https://github.com/dotnet/runtime/issues/24626#issuecomment-356736809
+        if isTooTiny (abs f) then failDivide "'/' operator" f v // don't compose error msg directly here to keep inlined code small. // https://github.com/dotnet/runtime/issues/24626#issuecomment-356736809
         Vec (v.X / f, v.Y / f, v.Z / f)
 
 
@@ -107,7 +114,7 @@ type Vec =
     /// The Cross Product of two 3D vectors.
     /// It is also known as the Determinant, Wedge Product or Outer Product.
     /// The resulting vector is perpendicular to both input vectors.
-    /// The length of this resulting vector is the squared area of the parallelogram spanned by the input vectors.
+    /// The length of this resulting vector is the area of the parallelogram spanned by the input vectors.
     /// Its direction follows the right-hand rule.
     /// A x B = |A| * |B| * sin(angle)
     static member inline cross (a:Vec, b:Vec) =
@@ -122,7 +129,7 @@ type Vec =
     /// Divides the vector by an integer.
     /// (This member is needed by Array.average and similar functions)
     static member DivideByInt (v:Vec, i:int) = // needed by 'Array.average'
-        if i = 0 then EuclidDivByZeroException.Raisef "Euclid.Vec.DivideByInt by zero %O" v
+        if i = 0 then failDivide "Vec.DivideByInt" 0.0 v
         let d = float i
         Vec(v.X/d, v.Y/d, v.Z/d)
 

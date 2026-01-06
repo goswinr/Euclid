@@ -12,8 +12,7 @@ open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
 open Euclid.UtilEuclid
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
-
-#nowarn "44" // to skip Obsolete warnings (members just needs to be public for inlining, but should be hidden)
+open EuclidErrors
 
 
 /// An immutable 3D point. Made up from 3 floats: X, Y, and Z.
@@ -36,51 +35,67 @@ type Pnt =
 
     /// Create a new 3D point. Made up from 3 floats: X, Y, and Z.
     new (x, y, z) =
-        #if DEBUG // with this test all Pnt operations are 2.5 times slower:
-        if Double.IsNaN x || Double.IsNaN y || Double.IsNaN z || Double.IsInfinity x || Double.IsInfinity y || Double.IsInfinity z then EuclidException.Raisef "Euclid.Pnt Constructor failed for x:%g, y:%g, z:%g"  x y z
+        #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode // with this test all Pnt operations are 2.5 times slower:
+            if isNanInfinity x || isNanInfinity y || isNanInfinity z then failNaN3 "Pnt()" x y z
         #endif
-        {X=x; Y=y; Z=z}
+            {X=x; Y=y; Z=z}
 
     /// Format 3D point into string including type name and nice floating point number formatting.
-    override p.ToString() = sprintf "Euclid.Pnt: X=%s|Y=%s|Z=%s" (Format.float p.X)(Format.float p.Y)(Format.float p.Z)
+    override p.ToString() =
+        let x = Format.float p.X
+        let y = Format.float p.Y
+        let z = Format.float p.Z
+        $"Euclid.Pnt: X=%s{x}|Y=%s{y}|Z=%s{z}"
 
 
     /// Format 3D point into string with nice floating point number formatting of X, Y and Z
     /// But without full type name as in pt.ToString()
-    member p.AsString = sprintf "X=%s|Y=%s|Z=%s" (Format.float p.X) (Format.float p.Y) (Format.float p.Z)
+    member p.AsString =
+        let x = Format.float p.X
+        let y = Format.float p.Y
+        let z = Format.float p.Z
+        $"X=%s{x}|Y=%s{y}|Z=%s{z}"
+
+    /// Format 3D point into an F# code string that can be used to recreate the point.
+    member p.AsFSharpCode =
+        $"Pnt({p.X}, {p.Y}, {p.Z})"
 
     /// Subtract one 3D point from another.
     /// 'a-b' returns a new 3D vector from b to a.
-    static member inline ( - ) (a:Pnt, b:Pnt) = Vec (a.X - b.X, a.Y - b.Y, a.Z - b.Z)
+    static member inline ( - ) (a:Pnt, b:Pnt) =
+        Vec (a.X - b.X, a.Y - b.Y, a.Z - b.Z)
 
     /// Subtract a unit-vector from a 3D point. Returns a new 3D point.
-    static member inline ( - ) (p:Pnt, v:UnitVec) = Pnt (p.X - v.X, p.Y - v.Y, p.Z - v.Z)
+    static member inline ( - ) (p:Pnt, v:UnitVec) =
+        Pnt (p.X - v.X, p.Y - v.Y, p.Z - v.Z)
 
     /// Subtract a vector from a 3D point. Returns a new 3D point.
-    static member inline ( - ) (p:Pnt, v:Vec) = Pnt (p.X - v.X, p.Y - v.Y, p.Z - v.Z)
+    static member inline ( - ) (p:Pnt, v:Vec) =
+        Pnt (p.X - v.X, p.Y - v.Y, p.Z - v.Z)
 
     /// Add two 3D points together. Returns a new 3D point.
-    static member inline ( + ) (a:Pnt, b:Pnt) = Pnt (a.X + b.X, a.Y + b.Y, a.Z + b.Z) // required for Seq.average and Pnt.midPt
+    static member inline ( + ) (a:Pnt, b:Pnt) =
+        Pnt (a.X + b.X, a.Y + b.Y, a.Z + b.Z) // required for Seq.average and Pnt.midPt
 
     /// Add a vector to a 3D point. Returns a new 3D point.
-    static member inline ( + ) (p:Pnt, v:Vec) = Pnt (p.X + v.X, p.Y + v.Y, p.Z + v.Z)
+    static member inline ( + ) (p:Pnt, v:Vec) =
+        Pnt (p.X + v.X, p.Y + v.Y, p.Z + v.Z)
 
     /// Add a unit-vector to a 3D point. Returns a new 3D point.
-    static member inline ( + ) (p:Pnt, v:UnitVec) = Pnt (p.X + v.X, p.Y + v.Y, p.Z + v.Z)
+    static member inline ( + ) (p:Pnt, v:UnitVec) =
+        Pnt (p.X + v.X, p.Y + v.Y, p.Z + v.Z)
 
     /// Multiplies a 3D point with a scalar, also called scaling a point. Returns a new 3D point.
-    static member inline ( * ) (a:Pnt, f:float) = Pnt (a.X * f, a.Y * f, a.Z * f)
+    static member inline ( * ) (a:Pnt, f:float) =
+        Pnt (a.X * f, a.Y * f, a.Z * f)
 
     /// Multiplies a scalar with a 3D point, also called scaling a point. Returns a new 3D point.
-    static member inline ( * ) (f:float, a:Pnt) = Pnt (a.X * f, a.Y * f, a.Z * f)
+    static member inline ( * ) (f:float, a:Pnt) =
+        Pnt (a.X * f, a.Y * f, a.Z * f)
 
-    /// A separate function to compose the error message that does not get inlined.
-    [<Obsolete("Not actually obsolete but just hidden. (Needs to be public for inlining of the functions using it.)")>]
-    member p.FailedDivide(f) = EuclidDivByZeroException.Raisef "Euclid.Pnt: divide operator: %g is too small for dividing %O using the '/' operator. Tolerance:%g"  f p zeroLengthTolerance
-
-    /// Divides a 3D point by a scalar, also be called dividing/scaling a point. Returns a new 3D point.
+    /// Divides a 3D point by a scalar. Returns a new 3D point.
     static member inline ( / ) (p:Pnt, f:float) =
-        if abs f < UtilEuclid.zeroLengthTolerance then p.FailedDivide(f) // don't compose error msg directly here to keep inlined code small.
+        if abs f < UtilEuclid.zeroLengthTolerance then failDivide "'/' operator" f p // don't compose error msg directly here to keep inlined code small.
         //p * (1./f) // maybe faster but worse precision
         Pnt (p.X / f, p.Y / f, p.Z / f)
 
@@ -89,15 +104,17 @@ type Pnt =
     //-----------------------------------------------------------------------------------------------------
 
     /// Same as Pnt.Origin.
-    static member inline Zero = Pnt (0., 0., 0.)  // needed by 'Array.sum'
+    static member inline Zero =
+        Pnt (0., 0., 0.)  // needed by 'Array.sum'
 
     /// Same as Pnt.Zero.
-    static member inline Origin = Pnt (0. , 0., 0.)
+    static member inline Origin =
+        Pnt (0. , 0., 0.)
 
     /// Divides the 3D point by an integer.
     /// (This member is needed by Array.average and similar functions)
     static member DivideByInt (pt:Pnt, i:int) = // needed by  'Array.average'
-        if i=0 then EuclidDivByZeroException.Raisef "Euclid.Pnt.DivideByInt 0 %O" pt
+        if i=0 then failDivide "Pnt.DivideByInt" 0.0 pt
         let d = float i
         Pnt(pt.X/d, pt.Y/d, pt.Z/d)
 

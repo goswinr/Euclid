@@ -1,4 +1,4 @@
-// a workaround for Fable compiler to not fail on DataContract attribute
+// A workaround for Fable compiler to not fail on DataContract and DataMember attributes
 // see https://github.com/fable-compiler/Fable/issues/2253
 #if FABLE_COMPILER
 namespace System.Runtime.Serialization
@@ -10,47 +10,49 @@ namespace Euclid
 
 open System
 
-/// OptionalAttribute for member parameters.
-type internal OPT = Runtime.InteropServices.OptionalAttribute
+/// Runtime.InteropServices.OptionalAttribute for member parameters.
+type internal OPT =
+    Runtime.InteropServices.OptionalAttribute
 
-/// DefaultParameterValueAttribute for member parameters.
-type internal DEF = Runtime.InteropServices.DefaultParameterValueAttribute
+/// Runtime.InteropServices.DefaultParameterValueAttribute for member parameters.
+type internal DEF =
+    Runtime.InteropServices.DefaultParameterValueAttribute
 
-/// Exception in Euclid.
-type EuclidException (s:string) =
-    inherit Exception(s)
 
-    static member Raisef msg = Printf.kprintf (fun s -> raise (EuclidException(s))) msg
-    static member Raise (txt:string) = raise (EuclidException(txt))
-
-    /// This function is much smaller when it gets inlined compared to the Raise (Printf.kprintf) version
-    static member ThrowT msg (v:'T) = raise (EuclidException(msg + ": " + v.ToString()))
-
-/// Exception for attempting to divide by a 0.0 or almost 0.0 value.
-/// Almost 0.0 is defined by UtilEuclid.zeroLengthTolerance as 1e-12.
-type EuclidDivByZeroException (s:string) =
-    inherit Exception(s)
-
-    static member Raisef msg = Printf.kprintf (fun s -> raise (EuclidDivByZeroException(s))) msg
-
-    static member Raise (txt:string) = raise (EuclidDivByZeroException(txt))
-
-    /// This function is much smaller when it gets inlined compared to the Raise (Printf.kprintf) version
-    static member ThrowT msg (v:'T) = raise (EuclidDivByZeroException(msg + ": " + v.ToString()))
-
-/// Math Utility functions and values for use within Euclid.
+/// Math and logic utility functions and values for use within Euclid.
 module UtilEuclid =
 
+    /// Adds a Unit Of Measure to a float value.
+    /// This is a compile time feature of F#. It's erased at runtime.
+    let inline withMeasure (x:float) : float<'measure> =
+        x |> LanguagePrimitives.FloatWithMeasure
+
+    /// Adds a Unit Of Measure to a float value.
+    /// This is a compile time feature of F#. It's erased at runtime.
+    let inline ( !^ ) (x:float) : float<'measure> =
+        x |> LanguagePrimitives.FloatWithMeasure
+
     /// Test if a value is not null.
-    let inline notNull x = match x with null -> false | _ -> true
+    let inline notNull x =
+        match x with null -> false | _ -> true
+
+    /// Returns true if the float is NaN or Infinity.
+    let inline isNanInfinity (x:float) =
+        Double.IsNaN x || Double.IsInfinity x
+
+    /// Squares a float value.
+    let inline sq (x:float) =
+        x * x
 
     /// Tolerance for zero length: 1e-12 in divisions and unitizing of vectors.
     [<Literal>]
-    let zeroLengthTolerance = 1e-12
+    let zeroLengthTolerance =
+        1e-12
 
     /// Squared Tolerance for zero length in divisions: 1e-12 * 1e-12 = 1e-24
     [<Literal>]
-    let private zeroLengthTolSquared = zeroLengthTolerance * zeroLengthTolerance
+    let private zeroLengthTolSquared =
+        zeroLengthTolerance * zeroLengthTolerance
 
     /// Returns true for values smaller than 1e-6 and for NaN.
     let inline isTooSmall x =
@@ -68,25 +70,25 @@ module UtilEuclid =
         // use 'not' to catch a NaN too ( a Cross Product of infinite long vectors can give a NaN length)
         not ( x > zeroLengthTolerance )
 
-    /// Returns 0 for values smaller than 1e-12 and for NaN.
-    /// Otherwise returns 1
+    /// Returns 1 for values smaller than 1e-12 and for NaN.
+    /// Otherwise returns 0
     /// Uses UtilEuclid.zeroLengthTolerance
-    let inline countTooTiny x =
-        // use 'not' to catch a NaN too ( a Cross Product of infinite long vectors can give a NaN length)
-        if x > zeroLengthTolerance then 1 else 0
+    let inline countTooTinyOrNaN x =
+        // Catches a NaN too  ( a Cross Product of infinite long vectors can give a NaN length)
+        if x > zeroLengthTolerance then 0 else 1
 
     /// Returns true for values smaller than 1e-24 (square of 1e-12) and for NaN.
     /// Uses UtilEuclid.zeroLengthTolSquared
     let inline isTooTinySq x =
-        // use 'not' to catch a NaN too ( a Cross Product of infinite long vectors can give a NaN length)
+        // Catches a NaN too  ( a Cross Product of infinite long vectors can give a NaN length)
         not ( x > zeroLengthTolSquared)
 
-    /// Returns 0 for values smaller than 1e-24 (square of 1e-12) and for NaN.
-    /// Otherwise returns 1
+    /// Returns 1 for values smaller than 1e-24 (square of 1e-12) and for NaN.
+    /// Otherwise returns 0
     /// Uses UtilEuclid.zeroLengthTolSquared
-    let inline countTooTinySq x =
-        // use 'not' to catch a NaN too ( a Cross Product of infinite long vectors can give a NaN length)
-        if x > zeroLengthTolSquared then 1 else 0
+    let inline countTooTinySqOrNaN x =
+        // Catches a NaN too ( a Cross Product of infinite long vectors can give a NaN length)
+        if x > zeroLengthTolSquared then 0 else 1
 
     /// Returns true for negative number and for NaN.
     /// 0.0  and -0.0 is not negative.
@@ -96,32 +98,51 @@ module UtilEuclid =
     /// Math.PI * 2.0
     /// This is equal to 360 degrees in radians.
     [<Literal>]
-    let twoPi = 6.2831853071795862 //(Math.PI*2.0).ToString("R")
+    let twoPi =
+        6.2831853071795862 //(Math.PI*2.0).ToString("R")
 
     /// Math.PI * 0.5
     /// This is equal to 90 degrees in radians.
     [<Literal>]
-    let halfPi = 1.5707963267948966 // (Math.PI*0.5).ToString("R")
+    let halfPi =
+        1.5707963267948966 // (Math.PI*0.5).ToString("R")
 
     /// Converts Angles from Degrees to Radians.
     /// By multiplying with 0.0174... (PI / 180.)
-    let inline toRadians degrees = 0.017453292519943295 * degrees //  (Math.PI / 180.).ToString("R")
+    let inline toRadians degrees =
+        0.017453292519943295 * degrees //  (Math.PI / 180.).ToString("R")
 
     /// Converts Angles from Radians to Degrees.
     /// By multiplying with 57.29... (180. / PI)
-    let inline toDegrees radians = 57.295779513082323 * radians  // (180. / Math.PI).ToString("R")
+    let inline toDegrees radians =
+        57.295779513082323 * radians  // (180. / Math.PI).ToString("R")
 
-    /// Clamp value between -1.0 and +1.0
+    /// Sorts two values and returns them as a tuple (min, max).
+    let inline sort2 (a:'T) (b:'T) =
+        if a <= b then a,b else b,a
+
+    /// Clamp value between -1.0 and +1.0.
+    /// Returns -1.0 for NaN
     let inline clampBetweenMinusOneAndOne (x:float)=
-        if   x < -1.0 then -1.0
-        elif x >  1.0 then  1.0
-        else                x
+        if x > -1.0 then // to handle NaN too
+            if x < 1.0 then
+                x
+            else
+                1.0
+        else // x <= -1.0 or NaN
+            -1.0
 
-    /// Clamp value between 0.0 and +1.0
+    /// Clamp value between 0.0 and +1.0.
+    /// Returns 0.0 for NaN
     let inline clampBetweenZeroAndOne (x:float)=
-        if   x <  0.0 then  0.0
-        elif x >  1.0 then  1.0
-        else                x
+        if x > 0.0 then // to handle NaN too
+            if x < 1.0 then
+                x
+            else
+                1.0
+        else // x <= 0.0 or NaN
+            0.0
+
 
     /// A safe arcsine (Inverse Sine) function.
     /// It clamps the input between -1 and 1
@@ -133,29 +154,29 @@ module UtilEuclid =
     let inline acosSafe a = // TODO fail if 'a' is bigger than  1.01 or smaller than -1.01 ??
         a |> clampBetweenMinusOneAndOne |> Math.Acos
 
-    /// The float number that is 9 increments bigger than 1.0.
-    /// This is approx 1.0 + 1e-6
-    /// see https://float.exposed/0x3f800009
+    /// The float literal that is 1.0 + 1e-6
+    /// This is literally 1.000001
     [<Literal>]
-    let ``1.0 + 1e-6`` = 1.00000107288360595703
+    let ``1.0 + 1e-6`` =
+        1.000001
 
-    /// The float number that is 16 increments smaller than 1.0.
-    /// This is approx 1.0 - 1e-6
-    /// see https://float.exposed/0x3f7ffff0
+    /// The float literal that is 1.0 - 1e-6
+    /// This is literally 0.999999
     [<Literal>]
-    let ``1.0 - 1e-6`` = 0.99999904632568359375
+    let ``1.0 - 1e-6`` =
+        0.999999
 
-   /// The float number that is 9 increments smaller than -1.0.
-    /// This is approx -1.0 + 1e-6
-    /// see https://float.exposed/0xbf800009
+   /// The float literal that is -1.0 + 1e-6
+   /// This is literally -0.999999
     [<Literal>]
-    let ``-1.0 + 1e-6`` = -1.00000107288360595703
+    let ``-1.0 + 1e-6`` =
+        -0.999999
 
-    /// The float number that is 16 increments bigger than -1.0.
-    /// This is approx -1.0 + 1e-6
-    /// see https://float.exposed/0xbf7ffff0
+    /// The float literal that is -1.0 - 1e-6
+    /// This is literally -1.000001
     [<Literal>]
-    let ``-1.0 - 1e-6`` = -0.99999904632568359375
+    let ``-1.0 - 1e-6`` =
+        -1.000001
 
     /// Tests if a number is close to 1.0 by a 1e-6 tolerance.
     /// This is a float increment of 6 steps or decrement of 16 steps.
@@ -165,13 +186,14 @@ module UtilEuclid =
     /// Tests if a number is NOT close to 1.0 by a 1e-6 tolerance.
     /// This is a float increment of 6 steps or decrement of 16 steps.
     /// Also returns true for NaN.
-    let inline isNotOne x = not (isOne x)
+    let inline isNotOne x =
+        not (isOne x)
 
 
     /// Tests if a number is close to minus 1.0 by a 1e-6 tolerance.
     /// This is a float increment of 6 steps or decrement of 16 steps.
     let inline isMinusOne  x =
-        ``-1.0 - 1e-6`` > x && x > ``-1.0 + 1e-6``
+        ``-1.0 - 1e-6`` < x && x < ``-1.0 + 1e-6``
 
     /// Tests if a number is close to 0.0 by 1e-6
     /// This is approximately the same tolerance that 6 increments of a float are away from 1.0.
@@ -183,21 +205,30 @@ module UtilEuclid =
     /// This is approximately the same tolerance that 6 increments of a float are away from 1.0.
     /// See Euclid.UtilEuclid.isOne function.
     /// Also returns true for NaN.
-    let inline isNotZero x = not (isZero x)
+    let inline isNotZero x =
+        not (isZero x)
 
     /// Check if value is between 0.0 and +1.0 inclusive.
     let inline isBetweenZeroAndOne (x:float) =
         x >= 0.0 && x <= 1.0
 
     /// Check if value is between 0.0 and +1.0 inclusive a tolerance of 1e-6 .
-    let inline isBetweenZeroAndOneTolerant (x:float) =
+    ///  -1e-6 < x < 1.0 + 1e-6
+    let inline isBetweenZeroAndOneTolerantIncl (x:float) =
         -1e-6 < x && x < ``1.0 + 1e-6``
+
+    /// Check if value is between 0.0 and +1.0 exclusive a tolerance of 1e-6 .
+    /// 1e-6 < x < 1.0 - 1e-6
+    let inline isBetweenZeroAndOneTolerantExcl (x:float) =
+        1e-6 < x && x < ``1.0 - 1e-6``
 
 
     /// Match the sign (+ or -) to a given number.
     let matchSign (signedValue:float) (numToMatch:float) =
-        if   sign signedValue = sign numToMatch then numToMatch
-        else -numToMatch
+        if sign signedValue = sign numToMatch then
+            numToMatch
+        else
+            -numToMatch
 
 
     /// Any positive or negative int will give a valid index for given collection size.
@@ -213,49 +244,62 @@ module UtilEuclid =
 /// Precalculated cosine values for faster checking the angles of dot products of unit-vectors.
 [<RequireQualifiedAccess>]
 module Cosine =
-
     /// The Unit Of Measure for
     /// the precalculated cosine values.
     /// This UoM helps to avoid that degree or radians angle values are used in the parallel or orthogonality tests.
     [<Measure>]
     type cosine
 
+    /// Converts a cosine value to degrees.
+    let inDegrees (c:float<cosine>) : float =
+        acos (unbox<float>  c) |> UtilEuclid.toDegrees
+
     (*
     // to generate the below values use :
-
-
-let print(degree:float) =
-    let radians = degree * (System.Math.PI  / 180.)
-    let v = cos(radians).ToString("R") // r for round trip
-    let deg = sprintf "%0.3f" degree // #0.0 ensure at least one trailing zero
-    printfn $"""
-    /// The cosine of an angle of {degree} degrees.
-    /// This is exactly {v}
-    [<Literal>]
-    let ``{deg}`` = {v}<cosine>
-    """
-let steps =[
-    0.01
-    0.025
-    0.05
-    0.1
-    0.25
-    0.5
-    1.0
-    2.5
-    5.0
-    10.0
-    15.0
-    20.0
-    30.0
-    45.0
-    ]
-for s in steps            do print (s)
-for s in steps|> List.rev |> Seq.skip 1 do print (90. - s)
-for s in steps            do print (90. + s)
-for s in steps|> List.rev |> Seq.skip 1 do print (180. - s)
-
+    let print(degree:float) =
+        let radians = degree * (System.Math.PI  / 180.)
+        let v = cos(radians).ToString("R") // r for round trip
+        let deg = sprintf "%0.3f" degree // #0.0 ensure at least one trailing zero
+        printfn $"""
+        /// The cosine of an angle of {degree} degrees.
+        /// This is exactly {v}
+        [<Literal>]
+        let ``{deg}`` = {v}<cosine>
+        """
+    let steps =[
+        0.01
+        0.025
+        0.05
+        0.1
+        0.25
+        0.5
+        1.0
+        2.5
+        5.0
+        10.0
+        15.0
+        20.0
+        30.0
+        45.0
+        ]
+    print 0.0
+    for s in steps            do print (s)
+    for s in steps|> List.rev |> Seq.skip 1 do print (90. - s)
+    for s in steps            do print (90. + s)
+    for s in steps|> List.rev |> Seq.skip 1 do print (180. - s)
+    print 180.0
     *)
+
+    /// More than the cosine of an angle of 0.0 degrees.
+    /// This is exactly 1.1
+    /// A value that can never be reached from a cosine function.
+    [<Literal>]
+    let ``0.0+`` = 1.1<cosine>
+
+    /// The cosine of an angle of 0.0 degrees.
+    /// This is exactly 1.0
+    [<Literal>]
+    let ``0.0`` = 1.0<cosine>
 
 
     /// The cosine of an angle of 0.01 degrees.
@@ -582,139 +626,407 @@ for s in steps|> List.rev |> Seq.skip 1 do print (180. - s)
     let ``179.99`` = -0.9999999847691291<cosine>
 
 
+    /// The cosine of an angle of 180.00 degrees.
+    /// This is exactly -1.0
+    [<Literal>]
+    let ``180.0`` = -1.0<cosine>
+
+    /// Less than the cosine of an angle of 180.00 degrees.
+    /// This is exactly -1.1
+    /// A value that can never be reached from a cosine function.
+    [<Literal>]
+    let ``180.0-`` = -1.1<cosine>
 
 
 
-
-/// Precalculated relative angle discriminant values for faster checking the angles in line line intersection.
+/// Precalculated tangent values for faster checking the angles between two vectors.
+/// The Cross Product length (=determinant) divided by the Dot Product value gives the tangent of the angle between two vectors.
+/// If one of vectors has a zero length, the tangent is NaN
 [<RequireQualifiedAccess>]
-module RelAngleDiscriminant =
+module Tangent =
 
     /// The Unit Of Measure for
-    /// the precalculated relative angle discriminant values.
-    /// This UoM helps to avoid that angle values are used directly in the line Intersection functions.
+    /// the precalculated tangent values.
+    /// This UoM helps to avoid that degree or radians angle values are used in the parallel or orthogonality tests.
+    /// The tangent is calculated by (determinant / dot-product) of two vectors.
     [<Measure>]
-    type relAngDiscr
+    type tangent
 
-    //the value from
-    // let intersectLines (l:Line3D) (ll:Line3D) =
-    //     //https://stackoverflow.com/a/34604574/969070 but DP and DQ are in wrong order !
-    //     let ax = l.FromX - l.ToX
-    //     let ay = l.FromY - l.ToY
-    //     let az = l.FromZ - l.ToZ
-    //     let bx = ll.FromX - ll.ToX
-    //     let by = ll.FromY - ll.ToY
-    //     let bz = ll.FromZ - ll.ToZ
-    //     let vx = ll.FromX - l.FromX
-    //     let vy = ll.FromY - l.FromY
-    //     let vz = ll.FromZ - l.FromZ
-    //     let a = ax*ax + ay*ay + az*az // square length
-    //     let b = ax*bx + ay*by + az*bz
-    //     let c = bx*bx + by*by + bz*bz // square length
-    //     let d = ax*vx + ay*vy + az*vz
-    //     let e = bx*vx + by*vy + bz*vz
-    //     let ac = a*c
-    //     let bb = b*b
-    //     let discriminant = ac - bb
-    //     // Getting this relation between the sum and the subtraction gives a very good estimate of the angle between the lines.
-    //     let relAngleDiscriminant = discriminant/(ac+bb)     //
-    //     if relAngleDiscriminant > 1.5e-6 then //not parallel //1e-5 for 0.25deg, //1.5e-6 for 0.1deg, //1.5e-4 for 1.0 deg
-    //         let t = (b * e - c * d) / discriminant
-    //         let u = (a * e - b * d) / discriminant
-    //         Some (t, u)
-    //     else
-    //         None
+    /// Converts a tangent value to degrees.
+    let inDegrees (t:float<tangent>) : float =
+        atan (unbox<float> t) |> UtilEuclid.toDegrees
+
+    (*
+    // to generate the below values use :
+    open System
+    let print(degree:float) =
+        let radians = degree * (Math.PI  / 180.)
+        let v = tan radians
+        let deg = sprintf "%0.3f" degree // #0.0 ensure at least one trailing zero
+        let deg = deg.TrimEnd '0'
+        let deg = if deg[deg.Length-1]='.' then deg+"0" else deg
+        printfn $"""
+        /// The inverse or arc tangent (atan) for an angle of {degree} degrees.
+        /// This is exactly {v},  calculated by  (determinant / dot-product)
+        [<Literal>]
+        let ``{deg}`` = {v}<tangent>
+        """
+    let steps =[
+        0.01
+        0.025
+        0.05
+        0.1
+        0.25
+        0.5
+        1.0
+        2.5
+        5.0
+        10.0
+        15.0
+        20.0
+        30.0
+        45.0
+        ]
+    print 0.0
+    for s in steps  do print (s)
+    for s in steps|> List.rev |> Seq.skip 1 do print (90. - s)
+    //for s in steps            do print (90. + s)
+    //for s in steps|> List.rev |> Seq.skip 1 do print (180. - s)
+    //print 180.0
+    *)
+
+    // The inverse or arc tangent (atan) for an angle of 0 degrees.
+    // This is exactly 0,  calculated by  determinant / dot-product
+    // [<Literal>]
+    // let ``0.0`` = 0<tangent> // don't allow this value, if used in intersections of lines it would return infinity parameters
 
 
-    /// The discriminant for an angle of 0.01 degrees.
-    /// This is exactly 0.00000001523087101891
+    /// The inverse or arc tangent (atan) for an angle of 0.01 degrees.
+    /// This is exactly 0.0001745329269716253,  calculated by  determinant / dot-product
     [<Literal>]
-    let ``0.01`` = 0.00000001523087101891<relAngDiscr>
+    let ``0.01`` = 0.0001745329269716253<tangent>
 
-    /// The discriminant for an angle of 0.05 degrees.
-    /// This is exactly 0.0000003807718230973
-    [<Literal>]
-    let ``0.05`` = 0.0000003807718230973<relAngDiscr>
 
-    /// The discriminant for an angle of 0.1 degrees.
-    /// This is exactly 0.00000152308787227638
+    /// The inverse or arc tangent (atan) for an angle of 0.025 degrees.
+    /// This is exactly 0.00043633234068908935,  calculated by  determinant / dot-product
     [<Literal>]
-    let ``0.1`` = 0.00000152308787227638<relAngDiscr>
+    let ``0.025`` = 0.00043633234068908935<tangent>
 
-    /// The discriminant for an angle of 0.25 degrees.
-    /// This is exactly 0.00000951932457379627
-    [<Literal>]
-    let ``0.25`` = 0.00000951932457379627<relAngDiscr>
 
-    /// The discriminant for an angle of 0.5 degrees.
-    /// This is exactly 0.0000380776607551941
+    /// The inverse or arc tangent (atan) for an angle of 0.05 degrees.
+    /// This is exactly 0.0008726648475212713,  calculated by  determinant / dot-product
     [<Literal>]
-    let ``0.5`` = 0.0000380776607551941<relAngDiscr>
+    let ``0.05`` = 0.0008726648475212713<tangent>
 
-    /// The discriminant for an angle of 1.0 degrees.
-    /// This is exactly 0.000152316441991406
-    [<Literal>]
-    let ``1.0`` = 0.000152316441991406<relAngDiscr>
 
-    /// The discriminant for an angle of 3.0 degrees.
-    /// This is exactly 0.00137140433203738
+    /// The inverse or arc tangent (atan) for an angle of 0.1 degrees.
+    /// This is exactly 0.0017453310241888004,  calculated by  determinant / dot-product
     [<Literal>]
-    let ``3.0`` = 0.00137140433203738<relAngDiscr>
+    let ``0.1`` = 0.0017453310241888004<tangent>
 
-    /// The discriminant for an angle of 5.0 degrees.
-    /// This is exactly 0.00381254201694106
-    [<Literal>]
-    let ``5.0`` = 0.00381254201694106<relAngDiscr>
 
-    /// The discriminant for an angle of 10.0 degrees.
-    /// This is exactly 0.0153076356505348
+    /// The inverse or arc tangent (atan) for an angle of 0.25 degrees.
+    /// This is exactly 0.004363350820701567,  calculated by  determinant / dot-product
     [<Literal>]
-    let ``10.0`` = 0.0153076356505348<relAngDiscr>
+    let ``0.25`` = 0.004363350820701567<tangent>
 
-    /// The discriminant for an angle of 30.0 degrees.
-    /// This is exactly 0.142857142857143
-    [<Literal>]
-    let ``30.0`` = 0.142857142857143<relAngDiscr>
 
-    /// The discriminant for an angle of 45.0 degrees.
-    /// This is exactly 0.333333333333333
+    /// The inverse or arc tangent (atan) for an angle of 0.5 degrees.
+    /// This is exactly 0.00872686779075879,  calculated by  determinant / dot-product
     [<Literal>]
-    let ``45.0`` = 0.333333333333333<relAngDiscr>
+    let ``0.5`` = 0.00872686779075879<tangent>
 
-    /// The discriminant for an angle of 60.0 degrees.
-    /// This is exactly 0.6
-    [<Literal>]
-    let ``60.0`` = 0.6<relAngDiscr>
 
-    /// The discriminant for an angle of 87.0 degrees.
-    /// This is exactly 0.994536859196742
+    /// The inverse or arc tangent (atan) for an angle of 1 degrees.
+    /// This is exactly 0.017455064928217585,  calculated by  determinant / dot-product
     [<Literal>]
-    let ``87.0`` = 0.994536859196742<relAngDiscr>
+    let ``1.0`` = 0.017455064928217585<tangent>
 
-    /// The discriminant for an angle of 89.0 degrees.
-    /// This is exactly 0.999391012508459
-    [<Literal>]
-    let ``89.0`` = 0.999391012508459<relAngDiscr>
 
-    /// The discriminant for an angle of 89.75 degrees.
-    /// This is exactly 0.999961923789084
+    /// The inverse or arc tangent (atan) for an angle of 2.5 degrees.
+    /// This is exactly 0.04366094290851206,  calculated by  determinant / dot-product
     [<Literal>]
-    let ``89.75`` = 0.999961923789084<relAngDiscr>
+    let ``2.5`` = 0.04366094290851206<tangent>
 
-    /// The discriminant for an angle of 89.9 degrees.
-    /// This is exactly 0.999993907676349
-    [<Literal>]
-    let ``89.9`` = 0.999993907676349<relAngDiscr>
 
-    /// The discriminant for an angle of 89.95 degrees.
-    /// This is exactly 0.999998476914448
+    /// The inverse or arc tangent (atan) for an angle of 5 degrees.
+    /// This is exactly 0.08748866352592401,  calculated by  determinant / dot-product
     [<Literal>]
-    let ``89.95`` = 0.999998476914448<relAngDiscr>
+    let ``5.0`` = 0.08748866352592401<tangent>
 
-    /// The discriminant for an angle of 89.99 degrees.
-    /// This is exactly 0.999999939076519
+
+    /// The inverse or arc tangent (atan) for an angle of 10 degrees.
+    /// This is exactly 0.17632698070846498,  calculated by  determinant / dot-product
     [<Literal>]
-    let ``89.99`` = 0.999999939076519<relAngDiscr>
+    let ``10.0`` = 0.17632698070846498<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 15 degrees.
+    /// This is exactly 0.2679491924311227,  calculated by  determinant / dot-product
+    [<Literal>]
+    let ``15.0`` = 0.2679491924311227<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 20 degrees.
+    /// This is exactly 0.36397023426620234,  calculated by  determinant / dot-product
+    [<Literal>]
+    let ``20.0`` = 0.36397023426620234<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 30 degrees.
+    /// This is exactly 0.5773502691896257,  calculated by  determinant / dot-product
+    [<Literal>]
+    let ``30.0`` = 0.5773502691896257<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 45 degrees.
+    /// This is exactly 1.0,  calculated by  determinant / dot-product
+    [<Literal>]
+    let ``45.0`` = 1.0<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 60 degrees.
+    /// This is exactly 1.7320508075688767,  calculated by  determinant / dot-product
+    [<Literal>]
+    let ``60.0`` = 1.7320508075688767<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 70 degrees.
+    /// This is exactly 2.7474774194546216,  calculated by  determinant / dot-product
+    [<Literal>]
+    let ``70.0`` = 2.7474774194546216<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 75 degrees.
+    /// This is exactly 3.7320508075688776,  calculated by  determinant / dot-product
+    [<Literal>]
+    let ``75.0`` = 3.7320508075688776<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 80 degrees.
+    /// This is exactly 5.671281819617707,  calculated by  determinant / dot-product
+    [<Literal>]
+    let ``80.0`` = 5.671281819617707<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 85 degrees.
+    /// This is exactly 11.430052302761348,  calculated by  determinant / dot-product
+    [<Literal>]
+    let ``85.0`` = 11.430052302761348<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 87.5 degrees.
+    /// This is exactly 22.903765548431192,  calculated by  determinant / dot-product
+    [<Literal>]
+    let ``87.5`` = 22.903765548431192<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 89 degrees.
+    /// This is exactly 57.289961630759144,  calculated by  determinant / dot-product
+    [<Literal>]
+    let ``89.0`` = 57.289961630759144<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 89.5 degrees.
+    /// This is exactly 114.58865012931011,  calculated by  determinant / dot-product
+    [<Literal>]
+    let ``89.5`` = 114.58865012931011<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 89.75 degrees.
+    /// This is exactly 229.1816636094393,  calculated by  determinant / dot-product
+    [<Literal>]
+    let ``89.75`` = 229.1816636094393<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 89.9 degrees.
+    /// This is exactly 572.9572133543032,  calculated by  determinant / dot-product
+    [<Literal>]
+    let ``89.9`` = 572.9572133543032<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 89.95 degrees.
+    /// This is exactly 1145.915299373414,  calculated by  determinant / dot-product
+    [<Literal>]
+    let ``89.95`` = 1145.915299373414<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 89.975 degrees.
+    /// This is exactly 2291.8310350790075,  calculated by  determinant / dot-product
+    [<Literal>]
+    let ``89.975`` = 2291.8310350790075<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 89.99 degrees.
+    /// This is exactly 5729.577893128937,  calculated by  determinant / dot-product
+    [<Literal>]
+    let ``89.99`` = 5729.577893128937<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 90.01 degrees.
+    /// This is exactly -5729.577893125667,  calculated by  (determinant / dot-product)
+    [<Literal>]
+    let ``90.01`` = -5729.577893125667<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 90.025 degrees.
+    /// This is exactly -2291.8310350784845,  calculated by  (determinant / dot-product)
+    [<Literal>]
+    let ``90.025`` = -2291.8310350784845<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 90.05 degrees.
+    /// This is exactly -1145.9152993735747,  calculated by  (determinant / dot-product)
+    [<Literal>]
+    let ``90.05`` = -1145.9152993735747<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 90.1 degrees.
+    /// This is exactly -572.9572133543435,  calculated by  (determinant / dot-product)
+    [<Literal>]
+    let ``90.1`` = -572.9572133543435<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 90.25 degrees.
+    /// This is exactly -229.18166360944574,  calculated by  (determinant / dot-product)
+    [<Literal>]
+    let ``90.25`` = -229.18166360944574<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 90.5 degrees.
+    /// This is exactly -114.5886501293088,  calculated by  (determinant / dot-product)
+    [<Literal>]
+    let ``90.5`` = -114.5886501293088<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 91 degrees.
+    /// This is exactly -57.28996163075955,  calculated by  (determinant / dot-product)
+    [<Literal>]
+    let ``91.0`` = -57.28996163075955<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 92.5 degrees.
+    /// This is exactly -22.903765548431256,  calculated by  (determinant / dot-product)
+    [<Literal>]
+    let ``92.5`` = -22.903765548431256<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 95 degrees.
+    /// This is exactly -11.430052302761336,  calculated by  (determinant / dot-product)
+    [<Literal>]
+    let ``95.0`` = -11.430052302761336<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 100 degrees.
+    /// This is exactly -5.671281819617711,  calculated by  (determinant / dot-product)
+    [<Literal>]
+    let ``100.0`` = -5.671281819617711<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 105 degrees.
+    /// This is exactly -3.7320508075688763,  calculated by  (determinant / dot-product)
+    [<Literal>]
+    let ``105.0`` = -3.7320508075688763<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 110 degrees.
+    /// This is exactly -2.7474774194546225,  calculated by  (determinant / dot-product)
+    [<Literal>]
+    let ``110.0`` = -2.7474774194546225<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 120 degrees.
+    /// This is exactly -1.7320508075688783,  calculated by  (determinant / dot-product)
+    [<Literal>]
+    let ``120.0`` = -1.7320508075688783<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 135 degrees.
+    /// This is exactly -1.0000000000000002,  calculated by  (determinant / dot-product)
+    [<Literal>]
+    let ``135.0`` = -1.0000000000000002<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 150 degrees.
+    /// This is exactly -0.5773502691896257,  calculated by  (determinant / dot-product)
+    [<Literal>]
+    let ``150.0`` = -0.5773502691896257<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 160 degrees.
+    /// This is exactly -0.36397023426620256,  calculated by  (determinant / dot-product)
+    [<Literal>]
+    let ``160.0`` = -0.36397023426620256<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 165 degrees.
+    /// This is exactly -0.267949192431123,  calculated by  (determinant / dot-product)
+    [<Literal>]
+    let ``165.0`` = -0.267949192431123<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 170 degrees.
+    /// This is exactly -0.1763269807084649,  calculated by  (determinant / dot-product)
+    [<Literal>]
+    let ``170.0`` = -0.1763269807084649<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 175 degrees.
+    /// This is exactly -0.08748866352592402,  calculated by  (determinant / dot-product)
+    [<Literal>]
+    let ``175.0`` = -0.08748866352592402<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 177.5 degrees.
+    /// This is exactly -0.043660942908512135,  calculated by  (determinant / dot-product)
+    [<Literal>]
+    let ``177.5`` = -0.043660942908512135<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 179 degrees.
+    /// This is exactly -0.01745506492821751,  calculated by  (determinant / dot-product)
+    [<Literal>]
+    let ``179.0`` = -0.01745506492821751<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 179.5 degrees.
+    /// This is exactly -0.008726867790758814,  calculated by  (determinant / dot-product)
+    [<Literal>]
+    let ``179.5`` = -0.008726867790758814<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 179.75 degrees.
+    /// This is exactly -0.004363350820701418,  calculated by  (determinant / dot-product)
+    [<Literal>]
+    let ``179.75`` = -0.004363350820701418<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 179.9 degrees.
+    /// This is exactly -0.0017453310241888143,  calculated by  (determinant / dot-product)
+    [<Literal>]
+    let ``179.9`` = -0.0017453310241888143<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 179.95 degrees.
+    /// This is exactly -0.0008726648475213393,  calculated by  (determinant / dot-product)
+    [<Literal>]
+    let ``179.95`` = -0.0008726648475213393<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 179.975 degrees.
+    /// This is exactly -0.0004363323406891847,  calculated by  (determinant / dot-product)
+    [<Literal>]
+    let ``179.975`` = -0.0004363323406891847<tangent>
+
+
+    /// The inverse or arc tangent (atan) for an angle of 179.99 degrees.
+    /// This is exactly -0.0001745329269717369,  calculated by  (determinant / dot-product)
+    [<Literal>]
+    let ``179.99`` = -0.0001745329269717369<tangent>
+
+
+
+
 
 (*
 
@@ -738,6 +1050,6 @@ module Units =
     /// Converts Angels from Radians to Degrees.
     let inline toDegrees (radians: float<rad>) :float<deg> = 57.2957795130823<deg/rad> * radians
 
-    *)
+*)
 
 

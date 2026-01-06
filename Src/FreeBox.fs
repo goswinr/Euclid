@@ -7,6 +7,8 @@ open System.Runtime.Serialization // for serialization of struct fields only but
 
 open System.Collections.Generic
 
+#nowarn "52" // The value has been copied to ensure the original is not mutated by this operation
+
 
 /// An arbitrary 3D Box.
 /// Described by 8 3D points.
@@ -29,20 +31,74 @@ open System.Collections.Generic
 [<DataContract>] // for using DataMember on fields
 type FreeBox private (pts:Pnt[]) =
 
-    member this.Pt0 = pts.[0]
-    member this.Pt1 = pts.[1]
-    member this.Pt2 = pts.[2]
-    member this.Pt3 = pts.[3]
-    member this.Pt4 = pts.[4]
-    member this.Pt5 = pts.[5]
-    member this.Pt6 = pts.[6]
-    member this.Pt7 = pts.[7]
+    member b.Pt0 = pts.[0]
+    member b.Pt1 = pts.[1]
+    member b.Pt2 = pts.[2]
+    member b.Pt3 = pts.[3]
+    member b.Pt4 = pts.[4]
+    member b.Pt5 = pts.[5]
+    member b.Pt6 = pts.[6]
+    member b.Pt7 = pts.[7]
 
     /// The 8 points that make up the box.
     [<DataMember>]
-    member this.Points = pts
+    member b.Points = pts
 
-    member this.GetPt (i:int) =
+
+    /// Nicely formatted string representation of the Box including its size.
+    override b.ToString() =
+        let sizeX = Format.float b.SizeX
+        let sizeY = Format.float b.SizeY
+        let sizeZ = Format.float b.SizeZ
+        let origin = b.Origin.AsString
+        let xAxis  = b.Xaxis.AsString
+        let yAxis  = b.Yaxis.AsString
+        let zAxis  = b.Zaxis.AsString
+        $"Euclid.Box %s{sizeX} x %s{sizeY} x %s{sizeZ} (Origin:%s{origin}| X-ax:%s{xAxis}|Y-ax:%s{yAxis}|Z-ax:%s{zAxis})"
+
+
+    /// Format Box into string with nice floating point number formatting of X, Y and Z size only.
+    /// But without type name as in v.ToString()
+    member b.AsString =
+        let sizeX = Format.float b.SizeX
+        let sizeY = Format.float b.SizeY
+        let sizeZ = Format.float b.SizeZ
+        $"%s{sizeX} x %s{sizeY} x %s{sizeZ}"
+
+    /// Format FreeBox into an F# code string that can be used to recreate the box.
+    member b.AsFSharpCode =
+        let ps = b.Points
+        $"FreeBox.createFromEightPoints([| {ps[0].AsFSharpCode}; {ps[1].AsFSharpCode}; {ps[2].AsFSharpCode}; {ps[3].AsFSharpCode}; {ps[4].AsFSharpCode}; {ps[5].AsFSharpCode}; {ps[6].AsFSharpCode}; {ps[7].AsFSharpCode} |])"
+
+    /// The first point of the Box array.
+    member b.Origin : Pnt =
+        pts.[0]
+
+    /// The vector from Pt0 to Pt1 defining the X axis direction and length.
+    member b.Xaxis : Vec =
+        pts.[1] - pts.[0]
+
+    /// The vector from Pt0 to Pt3 defining the Y axis direction and length.
+    member b.Yaxis : Vec =
+        pts.[3] - pts.[0]
+
+    /// The vector from Pt0 to Pt4 defining the Z axis direction and length.
+    member b.Zaxis : Vec =
+        pts.[4] - pts.[0]
+
+    /// The length of the Box from Pt0 to Pt1 in the X direction.
+    member b.SizeX : float =
+        b.Xaxis.Length
+
+    /// The length of the Box from Pt0 to Pt3 in the Y direction.
+    member b.SizeY : float =
+        b.Yaxis.Length
+
+    /// The length of the Box from Pt0 to Pt4 in the Z direction.
+    member b.SizeZ : float =
+        b.Zaxis.Length
+
+    member b.GetPt (i:int) =
         if i < 0 || i > 7 then
             failwithf "FreeBox.Pt index must be between 0 and 7, got %d" i
         pts.[i]
@@ -84,32 +140,41 @@ type FreeBox private (pts:Pnt[]) =
     static member createFromFour2DPoints zMin zMax (pts:Pt[]) =
         if pts.Length <> 4 then
             failwithf "FreeBox.createFrom4 must be initialized with 4 points, got %d" pts.Length
-        let p0 = pts[0].WithZ zMin
-        let p1 = pts[1].WithZ zMin
-        let p2 = pts[2].WithZ zMin
-        let p3 = pts[3].WithZ zMin
-        let p4 = pts[0].WithZ zMax
-        let p5 = pts[1].WithZ zMax
-        let p6 = pts[2].WithZ zMax
-        let p7 = pts[3].WithZ zMax
         FreeBox [|
-            p0; p1; p2; p3;
-            p4; p5; p6; p7
-        |]
+            pts[0].WithZ zMin// 0
+            pts[1].WithZ zMin// 1
+            pts[2].WithZ zMin// 2
+            pts[3].WithZ zMin// 3
+            pts[0].WithZ zMax// 4
+            pts[1].WithZ zMax// 5
+            pts[2].WithZ zMax// 6
+            pts[3].WithZ zMax// 7
+            |]
 
     /// Creates a FreeBox from four 2D points and a zMin and zMax value.
     static member createFromFour2DPointsArgs ( a:Pt, b:Pt, c:Pt, d:Pt, zMin, zMax) =
-        let p0 = a.WithZ zMin
-        let p1 = b.WithZ zMin
-        let p2 = c.WithZ zMin
-        let p3 = d.WithZ zMin
-        let p4 = a.WithZ zMax
-        let p5 = b.WithZ zMax
-        let p6 = c.WithZ zMax
-        let p7 = d.WithZ zMax
+        //       7               6
+        //       +---------------+
+        //      /|              /|
+        //     / |             / |
+        // 4  /  |          5 /  |
+        //   +---------------+   |
+        //   |   |           |   |
+        //   |   +-----------|---+
+        //   |  / 3          |  / 2
+        //   | /             | /
+        //   |/              |/
+        //   +---------------+
+        //   0               1
         FreeBox [|
-            p0; p1; p2; p3;
-            p4; p5; p6; p7
-        |]
+            a.WithZ zMin // 0
+            b.WithZ zMin // 1
+            c.WithZ zMin // 2
+            d.WithZ zMin // 3
+            a.WithZ zMax // 4
+            b.WithZ zMax // 5
+            c.WithZ zMax // 6
+            d.WithZ zMax // 7
+            |]
 
 

@@ -28,7 +28,7 @@ module AutoOpenQuaternion =
             let trace = m11 + m22 + m33
             if  trace > 0  then
                 let s = 0.5 / sqrt(trace + 1.0)
-                Some <| Quaternion.createDirectlyUnchecked(
+                Some <| Quaternion.createUnchecked(
                     (m32 - m23) * s,
                     (m13 - m31) * s,
                     (m21 - m12) * s,
@@ -36,7 +36,7 @@ module AutoOpenQuaternion =
 
             elif  m11 > m22 && m11 > m33  then
                 let s = 2.0 * sqrt(1.0 + m11 - m22 - m33)
-                Some <| Quaternion.createDirectlyUnchecked(
+                Some <| Quaternion.createUnchecked(
                     0.25 * s        ,
                     (m12 + m21) / s ,
                     (m13 + m31) / s ,
@@ -44,14 +44,14 @@ module AutoOpenQuaternion =
 
             elif  m22 > m33  then
                 let s = 2.0 * sqrt(1.0 + m22 - m11 - m33)
-                Some <| Quaternion.createDirectlyUnchecked(
+                Some <| Quaternion.createUnchecked(
                     (m12 + m21) / s ,
                     0.25 * s        ,
                     (m23 + m32) / s ,
                     (m13 - m31) / s )
             else
                 let s = 2.0 * sqrt(1.0 + m33 - m11 - m22)
-                Some <| Quaternion.createDirectlyUnchecked(
+                Some <| Quaternion.createUnchecked(
                     (m13 + m31) / s,
                     (m23 + m32) / s,
                     0.25 * s       ,
@@ -73,7 +73,7 @@ module AutoOpenQuaternion =
         let trace = m11 + m22 + m33
         if  trace > 0  then
             let s = 0.5 / sqrt(trace + 1.0)
-            Quaternion.createDirectlyUnchecked(
+            Quaternion.createUnchecked(
                 (m32 - m23) * s,
                 (m13 - m31) * s,
                 (m21 - m12) * s,
@@ -81,7 +81,7 @@ module AutoOpenQuaternion =
 
         elif  m11 > m22 && m11 > m33  then
             let s = 2.0 * sqrt(1.0 + m11 - m22 - m33)
-            Quaternion.createDirectlyUnchecked(
+            Quaternion.createUnchecked(
                 0.25 * s          ,
                 (m12 + m21) / s ,
                 (m13 + m31) / s ,
@@ -89,14 +89,14 @@ module AutoOpenQuaternion =
 
         elif  m22 > m33  then
             let s = 2.0 * sqrt(1.0 + m22 - m11 - m33)
-            Quaternion.createDirectlyUnchecked(
+            Quaternion.createUnchecked(
                 (m12 + m21) / s ,
                 0.25 * s          ,
                 (m23 + m32) / s ,
                 (m13 - m31) / s)
         else
             let s = 2.0 * sqrt(1.0 + m33 - m11 - m22)
-            Quaternion.createDirectlyUnchecked(
+            Quaternion.createUnchecked(
                 (m13 + m31) / s,
                 (m23 + m32) / s,
                 0.25 * s         ,
