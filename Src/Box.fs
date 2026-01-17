@@ -296,6 +296,57 @@ type Box =
             l.Zaxis * factor
         )
 
+    /// Returns a 3D box moved by a vector.
+    member inline b.Move (v:Vec) =
+        Box.createUnchecked(b.Origin + v, b.Xaxis, b.Yaxis, b.Zaxis)
+
+    /// Returns a 3D box moved by a given distance in X direction.
+    member inline b.MoveX (distance:float) =
+        Box.createUnchecked(Pnt(b.Origin.X + distance, b.Origin.Y, b.Origin.Z), b.Xaxis, b.Yaxis, b.Zaxis)
+
+    /// Returns a 3D box moved by a given distance in Y direction.
+    member inline b.MoveY (distance:float) =
+        Box.createUnchecked(Pnt(b.Origin.X, b.Origin.Y + distance, b.Origin.Z), b.Xaxis, b.Yaxis, b.Zaxis)
+
+    /// Returns a 3D box moved by a given distance in Z direction.
+    member inline b.MoveZ (distance:float) =
+        Box.createUnchecked(Pnt(b.Origin.X, b.Origin.Y, b.Origin.Z + distance), b.Xaxis, b.Yaxis, b.Zaxis)
+
+    /// Applies or multiplies a 4x4 transformation matrix to a 3D box.
+    /// The returned box may not have orthogonal axis vectors anymore for non-IsRigid matrices.
+    member inline b.Transform (m:Matrix) =
+        let o = b.Origin *** m
+        let x = Vec.transform m b.Xaxis
+        let y = Vec.transform m b.Yaxis
+        let z = Vec.transform m b.Zaxis
+        Box.createUnchecked(o, x, y, z)
+
+    /// Multiplies (or applies) a RigidMatrix to a 3D box.
+    /// The returned Box is guaranteed to have still orthogonal vectors.
+    member inline b.TransformRigid (m:RigidMatrix) =
+        let o = b.Origin *** m
+        let x = Vec.transformRigid m b.Xaxis
+        let y = Vec.transformRigid m b.Yaxis
+        let z = Vec.transformRigid m b.Zaxis
+        Box.createUnchecked(o, x, y, z)
+
+    /// Multiplies (or applies) a Quaternion to a 3D box.
+    /// The box is rotated around the World Origin.
+    member inline b.Rotate (q:Quaternion) =
+        let o = b.Origin *** q
+        let x = b.Xaxis *** q
+        let y = b.Yaxis *** q
+        let z = b.Zaxis *** q
+        Box.createUnchecked(o, x, y, z)
+
+    /// Multiplies (or applies) a Quaternion to a 3D box around a given center point.
+    member inline b.RotateWithCenter (cen:Pnt, q:Quaternion) =
+        let o = Pnt.rotateWithCenterByQuat cen q b.Origin
+        let x = b.Xaxis *** q
+        let y = b.Yaxis *** q
+        let z = b.Zaxis *** q
+        Box.createUnchecked(o, x, y, z)
+
 
     /// Check for point containment in the Box.
     /// By doing 6 dot products with the sides of the rectangle.
@@ -562,15 +613,6 @@ type Box =
         if isTooTiny len then failTooSmall "Box.translateLocalZ Zaxis" b
         Box.createUnchecked(b.Origin + z*(distZ/len), b.Xaxis, b.Yaxis, z)
 
-    /// Transform the Box by the given RigidMatrix.
-    /// The returned Box is guaranteed to have still orthogonal vectors.
-    static member inline transform (m:RigidMatrix) (b:Box) =
-        let o = Pnt.transformRigid m b.Origin
-        let x = Vec.transformRigid m b.Xaxis
-        let y = Vec.transformRigid m b.Yaxis
-        let z = Vec.transformRigid m b.Zaxis
-        Box.createUnchecked(o, x, y, z)
-
     /// Scales the 3D box by a given factor.
     /// Scale center is World Origin 0,0,0
     static member inline scale (factor:float) (b:Box) : Box =
@@ -580,6 +622,57 @@ type Box =
             b.Yaxis * factor,
             b.Zaxis * factor
         )
+
+    /// Move a 3D box by a vector. Same as Box.translate.
+    static member inline translate (v:Vec) (b:Box) =
+        Box.createUnchecked(b.Origin + v, b.Xaxis, b.Yaxis, b.Zaxis)
+
+    /// Returns the 3D box moved by a given distance in X direction.
+    static member inline moveX (distance:float) (b:Box) =
+        Box.createUnchecked(Pnt(b.Origin.X + distance, b.Origin.Y, b.Origin.Z), b.Xaxis, b.Yaxis, b.Zaxis)
+
+    /// Returns the 3D box moved by a given distance in Y direction.
+    static member inline moveY (distance:float) (b:Box) =
+        Box.createUnchecked(Pnt(b.Origin.X, b.Origin.Y + distance, b.Origin.Z), b.Xaxis, b.Yaxis, b.Zaxis)
+
+    /// Returns the 3D box moved by a given distance in Z direction.
+    static member inline moveZ (distance:float) (b:Box) =
+        Box.createUnchecked(Pnt(b.Origin.X, b.Origin.Y, b.Origin.Z + distance), b.Xaxis, b.Yaxis, b.Zaxis)
+
+    /// Applies or multiplies a 4x4 transformation matrix to a 3D box.
+    /// The returned box may not have orthogonal axis vectors anymore for non-IsRigid matrices.
+    static member inline transform (m:Matrix) (b:Box) =
+        let o = b.Origin *** m
+        let x = Vec.transform m b.Xaxis
+        let y = Vec.transform m b.Yaxis
+        let z = Vec.transform m b.Zaxis
+        Box.createUnchecked(o, x, y, z)
+
+    /// Transforms the Box by the given RigidMatrix.
+    /// The returned Box is guaranteed to have still orthogonal vectors.
+    static member inline transformRigid (m:RigidMatrix) (b:Box) =
+        let o = Pnt.transformRigid m b.Origin
+        let x = Vec.transformRigid m b.Xaxis
+        let y = Vec.transformRigid m b.Yaxis
+        let z = Vec.transformRigid m b.Zaxis
+        Box.createUnchecked(o, x, y, z)
+
+    /// Multiplies (or applies) a Quaternion to a 3D box.
+    /// The box IsRotated around the World Origin.
+    static member inline rotate (q:Quaternion) (b:Box) =
+        let o = b.Origin *** q
+        let x = b.Xaxis *** q
+        let y = b.Yaxis *** q
+        let z = b.Zaxis *** q
+        Box.createUnchecked(o, x, y, z)
+
+    /// Multiplies (or applies) a Quaternion to a 3D box around a given center point.
+    static member inline rotateWithCenter (cen:Pnt) (q:Quaternion) (b:Box) =
+        let o = Pnt.rotateWithCenterByQuat cen q b.Origin
+        let x = b.Xaxis *** q
+        let y = b.Yaxis *** q
+        let z = b.Zaxis *** q
+        Box.createUnchecked(o, x, y, z)
 
 
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
