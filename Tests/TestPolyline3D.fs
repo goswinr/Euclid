@@ -316,4 +316,163 @@ let tests =
             "LastPointIndex is 2" |> Expect.equal pl.LastPointIndex 2
             "LastSegmentIndex is 1" |> Expect.equal pl.LastSegmentIndex 1
         }
+
+        testList "Transformation Methods" [
+            test "Move instance method" {
+                let pts = ResizeArray([Pnt(0,0,0); Pnt(1,0,0); Pnt(1,1,0)])
+                let pl = Polyline3D(pts)
+                let moved = pl.Move(Vec(5., 3., 2.))
+                "Move - first point" |> Expect.isTrue (eqPnt moved.FirstPoint (Pnt(5., 3., 2.)))
+                "Move - last point" |> Expect.isTrue (eqPnt moved.LastPoint (Pnt(6., 4., 2.)))
+            }
+
+            test "MoveX instance method" {
+                let pts = ResizeArray([Pnt(0,0,0); Pnt(1,0,0)])
+                let pl = Polyline3D(pts)
+                let moved = pl.MoveX(5.)
+                "MoveX - first point" |> Expect.isTrue (eqPnt moved.FirstPoint (Pnt(5., 0., 0.)))
+            }
+
+            test "MoveY instance method" {
+                let pts = ResizeArray([Pnt(0,0,0); Pnt(1,0,0)])
+                let pl = Polyline3D(pts)
+                let moved = pl.MoveY(3.)
+                "MoveY - first point" |> Expect.isTrue (eqPnt moved.FirstPoint (Pnt(0., 3., 0.)))
+            }
+
+            test "MoveZ instance method" {
+                let pts = ResizeArray([Pnt(0,0,0); Pnt(1,0,0)])
+                let pl = Polyline3D(pts)
+                let moved = pl.MoveZ(2.)
+                "MoveZ - first point" |> Expect.isTrue (eqPnt moved.FirstPoint (Pnt(0., 0., 2.)))
+            }
+
+            test "move static method" {
+                let pts = ResizeArray([Pnt(0,0,0); Pnt(1,0,0)])
+                let pl = Polyline3D(pts)
+                let moved = Polyline3D.move (Vec(5., 3., 2.)) pl
+                "move static - first point" |> Expect.isTrue (eqPnt moved.FirstPoint (Pnt(5., 3., 2.)))
+            }
+
+            test "translate static method" {
+                let pts = ResizeArray([Pnt(0,0,0); Pnt(1,0,0)])
+                let pl = Polyline3D(pts)
+                let moved = Polyline3D.translate (Vec(5., 3., 2.)) pl
+                "translate static - first point" |> Expect.isTrue (eqPnt moved.FirstPoint (Pnt(5., 3., 2.)))
+            }
+
+            test "moveX, moveY, moveZ static methods" {
+                let pts = ResizeArray([Pnt(0,0,0); Pnt(1,0,0)])
+                let pl = Polyline3D(pts)
+                let movedX = Polyline3D.moveX 5. pl
+                let movedY = Polyline3D.moveY 3. pl
+                let movedZ = Polyline3D.moveZ 2. pl
+                "moveX static" |> Expect.isTrue (eqPnt movedX.FirstPoint (Pnt(5., 0., 0.)))
+                "moveY static" |> Expect.isTrue (eqPnt movedY.FirstPoint (Pnt(0., 3., 0.)))
+                "moveZ static" |> Expect.isTrue (eqPnt movedZ.FirstPoint (Pnt(0., 0., 2.)))
+            }
+
+            test "Transform with identity matrix" {
+                let pts = ResizeArray([Pnt(1,2,3); Pnt(4,5,6)])
+                let pl = Polyline3D(pts)
+                let transformed = pl.Transform(Matrix.Identity)
+                "Transform identity - first point" |> Expect.isTrue (eqPnt transformed.FirstPoint pl.FirstPoint)
+            }
+
+            test "Transform with translation matrix" {
+                let pts = ResizeArray([Pnt(0,0,0); Pnt(1,0,0)])
+                let pl = Polyline3D(pts)
+                let m = Matrix.createTranslation(Vec(5., 3., 2.))
+                let transformed = pl.Transform(m)
+                "Transform translation - first point" |> Expect.isTrue (eqPnt transformed.FirstPoint (Pnt(5., 3., 2.)))
+            }
+
+            test "transform static method" {
+                let pts = ResizeArray([Pnt(0,0,0); Pnt(1,0,0)])
+                let pl = Polyline3D(pts)
+                let m = Matrix.createTranslation(Vec(5., 3., 2.))
+                let transformed = Polyline3D.transform m pl
+                "transform static - first point" |> Expect.isTrue (eqPnt transformed.FirstPoint (Pnt(5., 3., 2.)))
+            }
+
+            test "TransformRigid instance method" {
+                let pts = ResizeArray([Pnt(0,0,0); Pnt(1,0,0)])
+                let pl = Polyline3D(pts)
+                let m = RigidMatrix.createTranslation(Vec(5., 3., 2.))
+                let transformed = pl.TransformRigid(m)
+                "TransformRigid - first point" |> Expect.isTrue (eqPnt transformed.FirstPoint (Pnt(5., 3., 2.)))
+            }
+
+            test "transformRigid static method" {
+                let pts = ResizeArray([Pnt(0,0,0); Pnt(1,0,0)])
+                let pl = Polyline3D(pts)
+                let m = RigidMatrix.createTranslation(Vec(5., 3., 2.))
+                let transformed = Polyline3D.transformRigid m pl
+                "transformRigid static - first point" |> Expect.isTrue (eqPnt transformed.FirstPoint (Pnt(5., 3., 2.)))
+            }
+
+            test "Rotate with identity quaternion" {
+                let pts = ResizeArray([Pnt(1,2,3); Pnt(4,5,6)])
+                let pl = Polyline3D(pts)
+                let rotated = pl.Rotate(Quaternion.Identity)
+                "Rotate identity - first point" |> Expect.isTrue (eqPnt rotated.FirstPoint pl.FirstPoint)
+            }
+
+            test "Rotate 90 degrees around Z axis" {
+                let pts = ResizeArray([Pnt(1,0,0); Pnt(2,0,0)])
+                let pl = Polyline3D(pts)
+                let q = Quaternion.createFromAxisAngle(UnitVec.Zaxis, UtilEuclid.``Math.PI/2``)
+                let rotated = pl.Rotate(q)
+                "Rotate 90 - first point" |> Expect.isTrue (eqPnt rotated.FirstPoint (Pnt(0., 1., 0.)))
+            }
+
+            test "rotateByQuaternion static method" {
+                let pts = ResizeArray([Pnt(1,0,0); Pnt(2,0,0)])
+                let pl = Polyline3D(pts)
+                let q = Quaternion.createFromAxisAngle(UnitVec.Zaxis, UtilEuclid.``Math.PI/2``)
+                let rotated = Polyline3D.rotateByQuaternion q pl
+                "rotateByQuaternion - first point" |> Expect.isTrue (eqPnt rotated.FirstPoint (Pnt(0., 1., 0.)))
+            }
+
+            test "RotateWithCenter keeps center fixed" {
+                let pts = ResizeArray([Pnt(0,0,0); Pnt(2,0,0); Pnt(2,2,0); Pnt(0,2,0)])
+                let pl = Polyline3D(pts)
+                let center = pl.Center
+                let q = Quaternion.createFromAxisAngle(UnitVec.Zaxis, UtilEuclid.``Math.PI/2``)
+                let rotated = pl.RotateWithCenter(center, q)
+                "RotateWithCenter - center" |> Expect.isTrue (eqPnt rotated.Center center)
+            }
+
+            test "rotateWithCenterByQuaternion static method" {
+                let pts = ResizeArray([Pnt(0,0,0); Pnt(2,0,0); Pnt(2,2,0); Pnt(0,2,0)])
+                let pl = Polyline3D(pts)
+                let center = pl.Center
+                let q = Quaternion.createFromAxisAngle(UnitVec.Zaxis, UtilEuclid.``Math.PI/2``)
+                let rotated = Polyline3D.rotateWithCenterByQuaternion center q pl
+                "rotateWithCenterByQuaternion - center" |> Expect.isTrue (eqPnt rotated.Center center)
+            }
+
+            test "Scale instance method" {
+                let pts = ResizeArray([Pnt(1,2,3); Pnt(2,4,6)])
+                let pl = Polyline3D(pts)
+                let scaled = pl.Scale(2.)
+                "Scale - first point" |> Expect.isTrue (eqPnt scaled.FirstPoint (Pnt(2., 4., 6.)))
+                "Scale - last point" |> Expect.isTrue (eqPnt scaled.LastPoint (Pnt(4., 8., 12.)))
+            }
+
+            test "scale static method" {
+                let pts = ResizeArray([Pnt(1,2,3); Pnt(2,4,6)])
+                let pl = Polyline3D(pts)
+                let scaled = Polyline3D.scale 2. pl
+                "scale static - first point" |> Expect.isTrue (eqPnt scaled.FirstPoint (Pnt(2., 4., 6.)))
+            }
+
+            test "rotate2D static method" {
+                let pts = ResizeArray([Pnt(1,0,0); Pnt(2,0,0)])
+                let pl = Polyline3D(pts)
+                let r = Rotation2D.createFromDegrees 90.
+                let rotated = Polyline3D.rotate2D r pl
+                "rotate2D - first point" |> Expect.isTrue (eqPnt rotated.FirstPoint (Pnt(0., 1., 0.)))
+            }
+        ]
     ]
