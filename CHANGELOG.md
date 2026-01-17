@@ -7,12 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.20.0-beta] - 2025-11-24
+## [0.20.0-beta1] - 2026-01-17
 ### Changed
-- Reimplement Polyline2D and 3D offseting more efficiently and with error correction in Offset2D and Offset3D modules
+- Reimplement Polyline2D and 3D offsetting more efficiently and with error correction in Offset2D and Offset3D modules
 - New XLine2D and XLine3D modules for Line to Line intersections and relationships. deprecate LineIntersectionTypes
 - Split Topology module into Topology2D and Topology3D
-- Deprecate Points module, use new Tria2D, Tria3D, and Points2D and Points3D for Pointclouds instead
+- Deprecate Points module, use new Tria2D, Tria3D, and Points2D and Points3D for PointClouds instead
 ### Added
 - Polylabel algorithm for finding pole of inaccessibility in polygons.
 

@@ -12,20 +12,6 @@
 A comprehensive 2D and 3D geometry library in F# without dependencies, designed for precision engineering and computational design.<br>
 It runs on JavaScript too.
 
-## Table of Contents
-
-- [Features](#features)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Coordinate System](#coordinate-system)
-- [Design Philosophy](#design-philosophy)
-- [Usage Examples](#usage-examples)
-- [API Documentation](#api-documentation)
-- [Platform Support](#platform-support)
-- [Development](#development)
-- [Testing](#testing)
-- [Contributing](#contributing)
-- [License](#license)
 
 ## Features
 
@@ -62,6 +48,7 @@ dotnet add package Euclid
 ```
 
 Or in F# scripting:
+
 ```fsharp
 #r "nuget: Euclid"
 ```
