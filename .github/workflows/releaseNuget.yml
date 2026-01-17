@@ -3,7 +3,7 @@ name: Publish NuGet Package
 on:
   push:
     tags:
-      - '[0-9]+.[0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+*' # Trigger on version tags like 1.0.0, 2.1.3-alpha13 etc.
 
 jobs:
   publish:
