@@ -139,7 +139,7 @@ let tests =
 
             test "Transform with identity matrix" {
                 let r = Rect3D.createFromVectors(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.))
-                let transformed = r.Transform(Matrix.Identity)
+                let transformed = r.Transform(Matrix.identity)
                 "Transform identity - origin" |> Expect.isTrue (eq transformed.Origin r.Origin)
             }
 
@@ -173,20 +173,20 @@ let tests =
 
             test "Rotate with identity quaternion" {
                 let r = Rect3D.createFromVectors(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.))
-                let rotated = r.Rotate(Quaternion.Identity)
+                let rotated = r.Rotate(Quaternion.identity)
                 "Rotate identity - origin" |> Expect.isTrue (eq rotated.Origin r.Origin)
             }
 
             test "Rotate 90 degrees around Z axis" {
                 let r = Rect3D.createFromVectors(Pnt(1., 0., 0.), Vec(1., 0., 0.), Vec(0., 1., 0.))
-                let q = Quaternion.createFromAxisAngle(UnitVec.Zaxis, UtilEuclid.``Math.PI/2``)
+                let q = Quaternion.createFromDegree(UnitVec.Zaxis, 90.)
                 let rotated = r.Rotate(q)
                 "Rotate 90 - origin" |> Expect.isTrue (eq rotated.Origin (Pnt(0., 1., 0.)))
             }
 
             test "rotate static method" {
                 let r = Rect3D.createFromVectors(Pnt(1., 0., 0.), Vec(1., 0., 0.), Vec(0., 1., 0.))
-                let q = Quaternion.createFromAxisAngle(UnitVec.Zaxis, UtilEuclid.``Math.PI/2``)
+                let q = Quaternion.createFromDegree(UnitVec.Zaxis, 90.)
                 let rotated = Rect3D.rotate q r
                 "rotate static - origin" |> Expect.isTrue (eq rotated.Origin (Pnt(0., 1., 0.)))
             }
@@ -194,7 +194,7 @@ let tests =
             test "RotateWithCenter keeps center fixed" {
                 let r = Rect3D.createFromVectors(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.))
                 let center = r.Center
-                let q = Quaternion.createFromAxisAngle(UnitVec.Zaxis, UtilEuclid.``Math.PI/2``)
+                let q = Quaternion.createFromDegree(UnitVec.Zaxis, 90.)
                 let rotated = r.RotateWithCenter(center, q)
                 "RotateWithCenter - center" |> Expect.isTrue (eq rotated.Center center)
             }
@@ -202,7 +202,7 @@ let tests =
             test "rotateWithCenter static method" {
                 let r = Rect3D.createFromVectors(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.))
                 let center = r.Center
-                let q = Quaternion.createFromAxisAngle(UnitVec.Zaxis, UtilEuclid.``Math.PI/2``)
+                let q = Quaternion.createFromDegree(UnitVec.Zaxis, 90.)
                 let rotated = Rect3D.rotateWithCenter center q r
                 "rotateWithCenter static - center" |> Expect.isTrue (eq rotated.Center center)
             }

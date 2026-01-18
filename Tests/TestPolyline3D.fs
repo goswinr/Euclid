@@ -375,7 +375,7 @@ let tests =
             test "Transform with identity matrix" {
                 let pts = ResizeArray([Pnt(1,2,3); Pnt(4,5,6)])
                 let pl = Polyline3D(pts)
-                let transformed = pl.Transform(Matrix.Identity)
+                let transformed = pl.Transform(Matrix.identity)
                 "Transform identity - first point" |> Expect.isTrue (eqPnt transformed.FirstPoint pl.FirstPoint)
             }
 
@@ -414,14 +414,14 @@ let tests =
             test "Rotate with identity quaternion" {
                 let pts = ResizeArray([Pnt(1,2,3); Pnt(4,5,6)])
                 let pl = Polyline3D(pts)
-                let rotated = pl.Rotate(Quaternion.Identity)
+                let rotated = pl.Rotate(Quaternion.identity)
                 "Rotate identity - first point" |> Expect.isTrue (eqPnt rotated.FirstPoint pl.FirstPoint)
             }
 
             test "Rotate 90 degrees around Z axis" {
                 let pts = ResizeArray([Pnt(1,0,0); Pnt(2,0,0)])
                 let pl = Polyline3D(pts)
-                let q = Quaternion.createFromAxisAngle(UnitVec.Zaxis, UtilEuclid.``Math.PI/2``)
+                let q = Quaternion.createFromDegree(UnitVec.Zaxis, 90.)
                 let rotated = pl.Rotate(q)
                 "Rotate 90 - first point" |> Expect.isTrue (eqPnt rotated.FirstPoint (Pnt(0., 1., 0.)))
             }
@@ -429,7 +429,7 @@ let tests =
             test "rotateByQuaternion static method" {
                 let pts = ResizeArray([Pnt(1,0,0); Pnt(2,0,0)])
                 let pl = Polyline3D(pts)
-                let q = Quaternion.createFromAxisAngle(UnitVec.Zaxis, UtilEuclid.``Math.PI/2``)
+                let q = Quaternion.createFromDegree(UnitVec.Zaxis, 90.)
                 let rotated = Polyline3D.rotateByQuaternion q pl
                 "rotateByQuaternion - first point" |> Expect.isTrue (eqPnt rotated.FirstPoint (Pnt(0., 1., 0.)))
             }
@@ -438,7 +438,7 @@ let tests =
                 let pts = ResizeArray([Pnt(0,0,0); Pnt(2,0,0); Pnt(2,2,0); Pnt(0,2,0)])
                 let pl = Polyline3D(pts)
                 let center = pl.Center
-                let q = Quaternion.createFromAxisAngle(UnitVec.Zaxis, UtilEuclid.``Math.PI/2``)
+                let q = Quaternion.createFromDegree(UnitVec.Zaxis, 90.)
                 let rotated = pl.RotateWithCenter(center, q)
                 "RotateWithCenter - center" |> Expect.isTrue (eqPnt rotated.Center center)
             }
@@ -447,7 +447,7 @@ let tests =
                 let pts = ResizeArray([Pnt(0,0,0); Pnt(2,0,0); Pnt(2,2,0); Pnt(0,2,0)])
                 let pl = Polyline3D(pts)
                 let center = pl.Center
-                let q = Quaternion.createFromAxisAngle(UnitVec.Zaxis, UtilEuclid.``Math.PI/2``)
+                let q = Quaternion.createFromDegree(UnitVec.Zaxis, 90.)
                 let rotated = Polyline3D.rotateWithCenterByQuaternion center q pl
                 "rotateWithCenterByQuaternion - center" |> Expect.isTrue (eqPnt rotated.Center center)
             }

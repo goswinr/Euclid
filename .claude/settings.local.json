@@ -12,7 +12,9 @@
       "SlashCommand(/standards)",
       "Bash(ls:*)",
       "Edit",
-      "Write"
+      "Write",
+      "Bash(npm test)",
+      "Bash(git stash:*)"
     ],
     "deny": [],
     "ask": []

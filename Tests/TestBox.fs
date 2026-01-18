@@ -300,7 +300,7 @@ let tests =
 
             test "Transform with identity matrix" {
                 let box = Box.createUnchecked(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
-                let transformed = box.Transform(Matrix.Identity)
+                let transformed = box.Transform(Matrix.identity)
                 Expect.isTrue (eqPnt transformed.Origin box.Origin) "Origin should be unchanged with identity"
                 Expect.isTrue (eqVec transformed.Xaxis box.Xaxis) "Xaxis should be unchanged"
             }
@@ -335,21 +335,21 @@ let tests =
 
             test "Rotate with identity quaternion" {
                 let box = Box.createUnchecked(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
-                let rotated = box.Rotate(Quaternion.Identity)
+                let rotated = box.Rotate(Quaternion.identity)
                 Expect.isTrue (eqPnt rotated.Origin box.Origin) "Origin should be unchanged with identity quaternion"
                 Expect.isTrue (eqVec rotated.Xaxis box.Xaxis) "Xaxis should be unchanged"
             }
 
             test "Rotate 90 degrees around Z axis" {
                 let box = Box.createUnchecked(Pnt(1., 0., 0.), Vec(1., 0., 0.), Vec(0., 1., 0.), Vec(0., 0., 1.))
-                let q = Quaternion.createFromAxisAngle(UnitVec.Zaxis, UtilEuclid.``Math.PI/2``)
+                let q = Quaternion.createFromDegree(UnitVec.Zaxis, 90.)
                 let rotated = box.Rotate(q)
                 Expect.isTrue (eqPnt rotated.Origin (Pnt(0., 1., 0.))) "Origin should be rotated 90 degrees"
             }
 
             test "rotate static method" {
                 let box = Box.createUnchecked(Pnt(1., 0., 0.), Vec(1., 0., 0.), Vec(0., 1., 0.), Vec(0., 0., 1.))
-                let q = Quaternion.createFromAxisAngle(UnitVec.Zaxis, UtilEuclid.``Math.PI/2``)
+                let q = Quaternion.createFromDegree(UnitVec.Zaxis, 90.)
                 let rotated = Box.rotate q box
                 Expect.isTrue (eqPnt rotated.Origin (Pnt(0., 1., 0.))) "Origin should be rotated 90 degrees"
             }
@@ -357,7 +357,7 @@ let tests =
             test "RotateWithCenter keeps center point fixed" {
                 let box = Box.createUnchecked(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
                 let center = box.Center
-                let q = Quaternion.createFromAxisAngle(UnitVec.Zaxis, UtilEuclid.``Math.PI/2``)
+                let q = Quaternion.createFromDegree(UnitVec.Zaxis, 90.)
                 let rotated = box.RotateWithCenter(center, q)
                 Expect.isTrue (eqPnt rotated.Center center) "Center should remain fixed"
             }
@@ -365,7 +365,7 @@ let tests =
             test "rotateWithCenter static method" {
                 let box = Box.createUnchecked(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
                 let center = box.Center
-                let q = Quaternion.createFromAxisAngle(UnitVec.Zaxis, UtilEuclid.``Math.PI/2``)
+                let q = Quaternion.createFromDegree(UnitVec.Zaxis, 90.)
                 let rotated = Box.rotateWithCenter center q box
                 Expect.isTrue (eqPnt rotated.Center center) "Center should remain fixed"
             }
