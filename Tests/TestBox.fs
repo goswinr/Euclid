@@ -249,6 +249,127 @@ let tests =
                 Expect.isTrue (eqVec moved.Xaxis box.Xaxis) "Xaxis should be unchanged"
             }
 
+            test "Move instance method" {
+                let box = Box.createUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let moved = box.Move(Vec(5., 3., 2.))
+                Expect.isTrue (eqPnt moved.Origin (Pnt(5., 3., 2.))) "Origin should be moved"
+                Expect.isTrue (eqVec moved.Xaxis box.Xaxis) "Xaxis should be unchanged"
+            }
+
+            test "MoveX instance method" {
+                let box = Box.createUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let moved = box.MoveX(5.)
+                Expect.isTrue (eqPnt moved.Origin (Pnt(5., 0., 0.))) "Origin should be moved in X"
+            }
+
+            test "MoveY instance method" {
+                let box = Box.createUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let moved = box.MoveY(3.)
+                Expect.isTrue (eqPnt moved.Origin (Pnt(0., 3., 0.))) "Origin should be moved in Y"
+            }
+
+            test "MoveZ instance method" {
+                let box = Box.createUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let moved = box.MoveZ(2.)
+                Expect.isTrue (eqPnt moved.Origin (Pnt(0., 0., 2.))) "Origin should be moved in Z"
+            }
+
+            test "moveX static method" {
+                let box = Box.createUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let moved = Box.moveX 5. box
+                Expect.isTrue (eqPnt moved.Origin (Pnt(5., 0., 0.))) "Origin should be moved in X"
+            }
+
+            test "moveY static method" {
+                let box = Box.createUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let moved = Box.moveY 3. box
+                Expect.isTrue (eqPnt moved.Origin (Pnt(0., 3., 0.))) "Origin should be moved in Y"
+            }
+
+            test "moveZ static method" {
+                let box = Box.createUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let moved = Box.moveZ 2. box
+                Expect.isTrue (eqPnt moved.Origin (Pnt(0., 0., 2.))) "Origin should be moved in Z"
+            }
+
+            test "translate static method" {
+                let box = Box.createUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let moved = Box.translate (Vec(5., 3., 2.)) box
+                Expect.isTrue (eqPnt moved.Origin (Pnt(5., 3., 2.))) "Origin should be translated"
+            }
+
+            test "Transform with identity matrix" {
+                let box = Box.createUnchecked(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let transformed = box.Transform(Matrix.identity)
+                Expect.isTrue (eqPnt transformed.Origin box.Origin) "Origin should be unchanged with identity"
+                Expect.isTrue (eqVec transformed.Xaxis box.Xaxis) "Xaxis should be unchanged"
+            }
+
+            test "Transform with translation matrix" {
+                let box = Box.createUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let m = Matrix.createTranslation(Vec(5., 3., 2.))
+                let transformed = box.Transform(m)
+                Expect.isTrue (eqPnt transformed.Origin (Pnt(5., 3., 2.))) "Origin should be translated"
+            }
+
+            test "transform static method" {
+                let box = Box.createUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let m = Matrix.createTranslation(Vec(5., 3., 2.))
+                let transformed = Box.transform m box
+                Expect.isTrue (eqPnt transformed.Origin (Pnt(5., 3., 2.))) "Origin should be translated"
+            }
+
+            test "TransformRigid instance method" {
+                let box = Box.createUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let m = RigidMatrix.createTranslation(Vec(5., 3., 2.))
+                let transformed = box.TransformRigid(m)
+                Expect.isTrue (eqPnt transformed.Origin (Pnt(5., 3., 2.))) "Origin should be translated"
+            }
+
+            test "transformRigid static method" {
+                let box = Box.createUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let m = RigidMatrix.createTranslation(Vec(5., 3., 2.))
+                let transformed = Box.transformRigid m box
+                Expect.isTrue (eqPnt transformed.Origin (Pnt(5., 3., 2.))) "Origin should be translated"
+            }
+
+            test "Rotate with identity quaternion" {
+                let box = Box.createUnchecked(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let rotated = box.Rotate(Quaternion.identity)
+                Expect.isTrue (eqPnt rotated.Origin box.Origin) "Origin should be unchanged with identity quaternion"
+                Expect.isTrue (eqVec rotated.Xaxis box.Xaxis) "Xaxis should be unchanged"
+            }
+
+            test "Rotate 90 degrees around Z axis" {
+                let box = Box.createUnchecked(Pnt(1., 0., 0.), Vec(1., 0., 0.), Vec(0., 1., 0.), Vec(0., 0., 1.))
+                let q = Quaternion.createFromDegree(UnitVec.Zaxis, 90.)
+                let rotated = box.Rotate(q)
+                Expect.isTrue (eqPnt rotated.Origin (Pnt(0., 1., 0.))) "Origin should be rotated 90 degrees"
+            }
+
+            test "rotate static method" {
+                let box = Box.createUnchecked(Pnt(1., 0., 0.), Vec(1., 0., 0.), Vec(0., 1., 0.), Vec(0., 0., 1.))
+                let q = Quaternion.createFromDegree(UnitVec.Zaxis, 90.)
+                let rotated = Box.rotate q box
+                Expect.isTrue (eqPnt rotated.Origin (Pnt(0., 1., 0.))) "Origin should be rotated 90 degrees"
+            }
+
+            test "RotateWithCenter keeps center point fixed" {
+                let box = Box.createUnchecked(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
+                let center = box.Center
+                let q = Quaternion.createFromDegree(UnitVec.Zaxis, 90.)
+                let rotated = box.RotateWithCenter(center, q)
+                Expect.isTrue (eqPnt rotated.Center center) "Center should remain fixed"
+            }
+
+            test "rotateWithCenter static method" {
+                let box = Box.createUnchecked(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
+                let center = box.Center
+                let q = Quaternion.createFromDegree(UnitVec.Zaxis, 90.)
+                let rotated = Box.rotateWithCenter center q box
+                Expect.isTrue (eqPnt rotated.Center center) "Center should remain fixed"
+            }
+
             test "translateLocalX" {
                 let box = Box.createUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 let moved = Box.translateLocalX 5. box

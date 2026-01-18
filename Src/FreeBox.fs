@@ -125,6 +125,55 @@ type FreeBox private (pts:Pnt[]) =
             )
         |> FreeBox
 
+    /// Returns a FreeBox moved by a vector.
+    member b.Move (v:Vec) : FreeBox =
+        b.Points
+        |> Array.map (fun p -> p + v)
+        |> FreeBox
+
+    /// Returns a FreeBox moved by a given distance in X direction.
+    member b.MoveX (distance:float) : FreeBox =
+        b.Points
+        |> Array.map (fun p -> Pnt(p.X + distance, p.Y, p.Z))
+        |> FreeBox
+
+    /// Returns a FreeBox moved by a given distance in Y direction.
+    member b.MoveY (distance:float) : FreeBox =
+        b.Points
+        |> Array.map (fun p -> Pnt(p.X, p.Y + distance, p.Z))
+        |> FreeBox
+
+    /// Returns a FreeBox moved by a given distance in Z direction.
+    member b.MoveZ (distance:float) : FreeBox =
+        b.Points
+        |> Array.map (fun p -> Pnt(p.X, p.Y, p.Z + distance))
+        |> FreeBox
+
+    /// Applies or multiplies a 4x4 transformation matrix to the FreeBox.
+    member b.Transform (m:Matrix) : FreeBox =
+        b.Points
+        |> Array.map (fun p -> p *** m)
+        |> FreeBox
+
+    /// Multiplies (or applies) a RigidMatrix to the FreeBox.
+    member b.TransformRigid (m:RigidMatrix) : FreeBox =
+        b.Points
+        |> Array.map (fun p -> Pnt.transformRigid m p)
+        |> FreeBox
+
+    /// Multiplies (or applies) a Quaternion to the FreeBox.
+    /// The box is rotated around the World Origin.
+    member b.Rotate (q:Quaternion) : FreeBox =
+        b.Points
+        |> Array.map (fun p -> p *** q)
+        |> FreeBox
+
+    /// Multiplies (or applies) a Quaternion to the FreeBox around a given center point.
+    member b.RotateWithCenter (cen:Pnt, q:Quaternion) : FreeBox =
+        b.Points
+        |> Array.map (fun p -> Pnt.rotateWithCenterByQuat cen q p)
+        |> FreeBox
+
     static member createFromEightPoints (pts:Pnt[]) =
         if pts.Length <> 8 then
             failwithf "FreeBox.createFrom8 must be initialized with 8 points, got %d" pts.Length
@@ -176,5 +225,47 @@ type FreeBox private (pts:Pnt[]) =
             c.WithZ zMax // 6
             d.WithZ zMax // 7
             |]
+
+    /// Scales the FreeBox by a given factor.
+    /// Scale center is World Origin 0,0,0
+    static member inline scale (factor:float) (b:FreeBox) : FreeBox =
+        b.Scale(factor)
+
+    /// Move a FreeBox by a vector. Same as FreeBox.translate.
+    static member inline move (v:Vec) (b:FreeBox) : FreeBox =
+        b.Move(v)
+
+    /// Translate a FreeBox by a vector. Same as FreeBox.move.
+    static member inline translate (v:Vec) (b:FreeBox) : FreeBox =
+        b.Move(v)
+
+    /// Returns the FreeBox moved by a given distance in X direction.
+    static member inline moveX (distance:float) (b:FreeBox) : FreeBox =
+        b.MoveX(distance)
+
+    /// Returns the FreeBox moved by a given distance in Y direction.
+    static member inline moveY (distance:float) (b:FreeBox) : FreeBox =
+        b.MoveY(distance)
+
+    /// Returns the FreeBox moved by a given distance in Z direction.
+    static member inline moveZ (distance:float) (b:FreeBox) : FreeBox =
+        b.MoveZ(distance)
+
+    /// Applies or multiplies a 4x4 transformation matrix to the FreeBox.
+    static member inline transform (m:Matrix) (b:FreeBox) : FreeBox =
+        b.Transform(m)
+
+    /// Multiplies (or applies) a RigidMatrix to the FreeBox.
+    static member inline transformRigid (m:RigidMatrix) (b:FreeBox) : FreeBox =
+        b.TransformRigid(m)
+
+    /// Multiplies (or applies) a Quaternion to the FreeBox.
+    /// The box is rotated around the World Origin.
+    static member inline rotate (q:Quaternion) (b:FreeBox) : FreeBox =
+        b.Rotate(q)
+
+    /// Multiplies (or applies) a Quaternion to the FreeBox around a given center point.
+    static member inline rotateWithCenter (cen:Pnt) (q:Quaternion) (b:FreeBox) : FreeBox =
+        b.RotateWithCenter(cen, q)
 
 

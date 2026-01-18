@@ -512,6 +512,55 @@ type Polyline3D (points: ResizeArray<Pnt>) =
             )
         |> Polyline3D
 
+    /// Returns a Polyline3D moved by a vector.
+    member p.Move (v:Vec) : Polyline3D =
+        points
+        |> ResizeArr.map (fun pt -> pt + v)
+        |> Polyline3D
+
+    /// Returns a Polyline3D moved by a given distance in X direction.
+    member p.MoveX (distance:float) : Polyline3D =
+        points
+        |> ResizeArr.map (fun pt -> Pnt(pt.X + distance, pt.Y, pt.Z))
+        |> Polyline3D
+
+    /// Returns a Polyline3D moved by a given distance in Y direction.
+    member p.MoveY (distance:float) : Polyline3D =
+        points
+        |> ResizeArr.map (fun pt -> Pnt(pt.X, pt.Y + distance, pt.Z))
+        |> Polyline3D
+
+    /// Returns a Polyline3D moved by a given distance in Z direction.
+    member p.MoveZ (distance:float) : Polyline3D =
+        points
+        |> ResizeArr.map (fun pt -> Pnt(pt.X, pt.Y, pt.Z + distance))
+        |> Polyline3D
+
+    /// Applies or multiplies a 4x4 transformation matrix to the Polyline3D.
+    member p.Transform (m:Matrix) : Polyline3D =
+        points
+        |> ResizeArr.map (fun pt -> pt *** m)
+        |> Polyline3D
+
+    /// Multiplies (or applies) a RigidMatrix to the Polyline3D.
+    member p.TransformRigid (m:RigidMatrix) : Polyline3D =
+        points
+        |> ResizeArr.map (fun pt -> Pnt.transformRigid m pt)
+        |> Polyline3D
+
+    /// Multiplies (or applies) a Quaternion to the Polyline3D.
+    /// The polyline is rotated around the World Origin.
+    member p.Rotate (q:Quaternion) : Polyline3D =
+        points
+        |> ResizeArr.map (fun pt -> pt *** q)
+        |> Polyline3D
+
+    /// Multiplies (or applies) a Quaternion to the Polyline3D around a given center point.
+    member p.RotateWithCenter (cen:Pnt, q:Quaternion) : Polyline3D =
+        points
+        |> ResizeArr.map (fun pt -> Pnt.rotateWithCenterByQuat cen q pt)
+        |> Polyline3D
+
 
 
     // --------------------------------------------------------------------
@@ -615,13 +664,36 @@ type Polyline3D (points: ResizeArray<Pnt>) =
     static member transform (m:Matrix) (pl:Polyline3D) =
         pl |> Polyline3D.map (Pnt.transform m)
 
+    /// Multiplies (or applies) a RigidMatrix to the Polyline3D.
+    static member transformRigid (m:RigidMatrix) (pl:Polyline3D) =
+        pl |> Polyline3D.map (Pnt.transformRigid m)
+
     /// Rotation a Polyline3D around Z-Axis.
+    static member rotate2D (r:Rotation2D) (pl:Polyline3D) =
+        pl |> Polyline3D.map (Pnt.rotateZBy r)
+
+    /// Rotation a Polyline3D around Z-Axis.
+    [<Obsolete("Renamed to rotate2D to avoid confusion with Quaternion rotation")>]
     static member rotate (r:Rotation2D) (pl:Polyline3D) =
         pl |> Polyline3D.map (Pnt.rotateZBy r)
 
     /// Rotation a Polyline3D round given Center point an a local Z-axis.
+    static member rotate2DWithCenter (cen:Pnt) (r:Rotation2D) (pl:Polyline3D) =
+        pl |> Polyline3D.map (Pnt.rotateZwithCenterBy cen r)
+
+    /// Rotation a Polyline3D round given Center point an a local Z-axis.
+    [<Obsolete("Renamed to rotate2DWithCenter to avoid confusion with Quaternion rotation")>]
     static member rotateWithCenter (cen:Pnt) (r:Rotation2D) (pl:Polyline3D) =
         pl |> Polyline3D.map (Pnt.rotateZwithCenterBy cen r)
+
+    /// Multiplies (or applies) a Quaternion to the Polyline3D.
+    /// The polyline is rotated around the World Origin.
+    static member rotateByQuaternion (q:Quaternion) (pl:Polyline3D) =
+        pl |> Polyline3D.map (fun pt -> pt *** q)
+
+    /// Multiplies (or applies) a Quaternion to the Polyline3D around a given center point.
+    static member rotateWithCenterByQuaternion (cen:Pnt) (q:Quaternion) (pl:Polyline3D) =
+        pl |> Polyline3D.map (Pnt.rotateWithCenterByQuat cen q)
 
     /// Returns the parameter on the Polyline3D that is the closest point to the given point.
     /// The integer part of the parameter is the index of the segment that the point is on.
