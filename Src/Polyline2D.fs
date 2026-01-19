@@ -267,9 +267,7 @@ type Polyline2D (points: ResizeArray<Pt>) =
         let mutable t = points.Last // calculate from last to first too
         for i=0 to points.Count-1 do
             let n = points.[i]
-            let a = t.X - n.X
-            let b = n.Y + t.Y
-            area <- area + (a * b)
+            area <- area + (t.X-n.X) * (n.Y + t.Y)
             t <- n
         area * 0.5
 
