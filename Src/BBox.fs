@@ -744,8 +744,8 @@ type BBox =
     /// Finds min and max values for x, y and z.
     /// Creates a 3D bounding box from the points.
     static member inline createFromIList (ps:Collections.Generic.IList<Pnt> ) =
-        if isNull ps      then failNull "BBox.createFromIList" "IList<Pnt>"
-        if Seq.isEmpty ps then failEmptySeq "BBox.createFromIList" "IList<Pnt>"
+        if isNull ps    then failNull "BBox.createFromIList" "IList<Pnt>"
+        if ps.Count = 0 then failEmptySeq "BBox.createFromIList" "IList<Pnt>"
         let mutable minX = Double.MaxValue
         let mutable minY = Double.MaxValue
         let mutable minZ = Double.MaxValue
@@ -945,8 +945,12 @@ type BBox =
         a.Intersection(b)
 
     /// Scales the 3D bounding box by a given factor.
-    /// Scale center is World Origin 0,0,0
+    /// Scale center is World Origin 0,0,0.
+    /// A negative factor will flip the box orientation, creating an invalid BBox.
+    /// Use only positive factors.
     static member inline scale (factor:float) (b:BBox) : BBox =
+        if factor < 0.0 then
+            fail $"BBox.scale: a negative factor {factor} is not allowed for scaling the 3D bounding box {b.AsString}"
         BBox.createUnchecked(
             b.MinX * factor,
             b.MinY * factor,
