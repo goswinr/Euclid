@@ -233,6 +233,31 @@ let tests =
                 Expect.isFalse (plClosed.Contains(outsidePoint)) "should not contain outside point"
             }
 
+
+
+
+            test "WindingNumber - various cases" {
+                let square = Polyline2D.create [Pt(0.,0.); Pt(10.,0.); Pt(10.,10.); Pt(0.,10.); Pt(0.,0.)]
+
+                // Inside point
+                let inside = Pt(5., 5.)
+                let windingInside = square.WindingNumber(inside)
+                "winding number for inside point should be non-zero" |> Expect.isTrue (windingInside <> 0)
+
+                // Outside point
+                let outside = Pt(15., 5.)
+                let windingOutside = square.WindingNumber(outside)
+                "winding number for outside point should be zero" |> Expect.equal windingOutside 0
+
+                // Empty polyline
+                let empty = Polyline2D()
+                let windingEmpty = empty.WindingNumber(Pt(5., 5.))
+                "winding number for empty polyline should be zero" |> Expect.equal windingEmpty 0
+            }
+
+
+
+
             ]
 
         testList "Creation and Manipulation" [
@@ -249,7 +274,7 @@ let tests =
 
             test "close if open" {
                 let copy = plOpen.Clone()
-                copy.CloseIfOpen(1e-6)
+                copy.CloseInPlace(1e-6)
                 "closed polyline point count" |> Expect.equal copy.PointCount (plOpen.PointCount + 1)
                 "last point equals first" |> (expectEqPts  copy.Points.[copy.PointCount-1] copy.Points.[0])
             }
@@ -806,12 +831,6 @@ let testsDup =
 
                 let allOutside = expectedOutside |> Array.forall failPoly.Contains |> not
                 "all expected outside points should be outside, winding" |> Expect.isTrue allOutside
-
-                let allInside =  expectedInside   |> Array.forall failPoly.Contains'
-                "all expected inside points should be inside, ray" |> Expect.isTrue allInside
-
-                let allOutside =  expectedOutside  |> Array.forall failPoly.Contains'  |> not
-                "all expected outside points should be outside, ray" |> Expect.isTrue allOutside
 
 
                 // let rand = System.Random()

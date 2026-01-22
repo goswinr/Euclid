@@ -431,7 +431,7 @@ let tests =
                 // Add 36° ten times to get exactly 360° (full rotation)
                 let r36 = Rotation2D.createFromDegrees 36.0
                 let mutable result = r36
-                for i in 1..9 do
+                for _i in 1..9 do
                     result <- result.Add r36
                 Expect.isTrue (eqFloat result.InDegrees 0.0) "Ten 36° rotations should accumulate to 360° = 0°"
             }

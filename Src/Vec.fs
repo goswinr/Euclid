@@ -17,7 +17,7 @@ open EuclidErrors
 
 
 /// An immutable 3D vector of any length. Made up from 3 floats: X, Y, and Z.
-/// A 3D vector represents a direction or an offset in space, but not a location.
+/// A 3D vector represents a direction or translation in space, but not a location.
 /// A 4x4 transformation matrix applied to a vector will only rotate and scale the vector but not translate it.
 /// (3D unit-vectors of length 1.0 are called 'UnitVec' )
 /// (2D vectors are called 'Vc' )

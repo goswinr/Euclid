@@ -104,6 +104,7 @@ When a 4x4 transformation matrix is applied:
 This follows homogeneous coordinate conventions where vectors have w=0.
 
 ### Naming Conventions
+
 | Type | 2D | 3D |
 |------|----|----|
 | Point | `Pt` | `Pnt` |
@@ -112,6 +113,7 @@ This follows homogeneous coordinate conventions where vectors have w=0.
 
 ### Function Patterns
 Functions are available in multiple forms:
+
 ```fsharp
 // Static module function (lowercase)
 let normalized = Vec.unitized myVector
@@ -136,6 +138,7 @@ be used not only on .NET but also in JavaScript, TypeScript, Rust, and Python.
 - Node.js (only needed to run the .NET tests in JavaScript and TypeScript via Fable.Mocha)
 
 ### Building from Source
+
 ```bash
 git clone https://github.com/goswinr/Euclid.git
 cd Euclid
@@ -147,11 +150,21 @@ dotnet build
 Tests run on both .NET and JavaScript with TypeScript build verification.
 
 ### .NET Testing
+
 ```bash
 dotnet run --project ./Tests/Euclid.Tests.fsproj
 ```
 
 ### JavaScript Testing
+
+setup dependencies:
+
+```bash
+npm ci --prefix ./Tests
+dotnet tool restore
+```
+
+then run tests:
 
 ```bash
 npm run test --prefix ./Tests

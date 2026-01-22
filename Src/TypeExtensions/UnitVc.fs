@@ -794,8 +794,8 @@ module AutoOpenUnitVc =
             v.IsYAligned
 
         [<Obsolete("Use Euclid.XLine2D module instead.")>]
-        static member intersection( ptA:Pt, ptB:Pt, vA:UnitVc, vB:UnitVc ) : Option<float*float> =
-            Some (XLine2D.parameters( ptA.X, ptA.Y, vA.X, vA.Y, ptB.X, ptB.Y, vB.X, vB.Y ))
+        static member intersection( ptA:Pt, ptB:Pt, vA:UnitVc, vB:UnitVc ) : ValueOption<float*float> =
+            ValueSome (XLine2D.parameters( ptA.X, ptA.Y, vA.X, vA.Y, ptB.X, ptB.Y, vB.X, vB.Y ))
 
         [<Obsolete("Use UnitVc.isParallelWithin instead.")>]
         static member inline isAngle90Below (cosineValue: float<Cosine.cosine>) (a:UnitVc) (b:UnitVc) =

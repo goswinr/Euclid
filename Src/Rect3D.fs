@@ -970,12 +970,11 @@ type Rect3D =
     /// The parameters is the intersection point of the ray with the infinitely extended Rect3D.
     /// So if any of the parameters is outside of the range 0.0 to 1.0 the intersection point is actually outside of the rectangle.
     /// Returns None if they are parallel or coincident.
-    static member intersectLineParametersInfinite  (ln:Line3D) (pl:Rect3D) : option<float*float*float> =
+    static member intersectRayParameters (ln:Line3D) (pl:Rect3D) : option<float*float*float> =
         let z = pl.NormalUnit
         let v = ln.Tangent
         let nenner = v *** z
         if isTooSmall (abs nenner) then
-            // EuclidException.Raise "Euclid.Rect3D.intersectLineParameters: Line and Rect3D are parallel or line has zero length: %O, %O" ln pl
             None
         else
             let t = ((pl.Origin - ln.From) *** z) / nenner
@@ -989,12 +988,11 @@ type Rect3D =
     /// The parameter is the intersection point of the ray with the infinitely extended Rect3D.
     /// The line is outside of the rectangle if the range is 0.0 to 1.0 .
     /// Returns None if they are parallel or coincident.
-    static member intersectLineParameterInfinite  (ln:Line3D) (pl:Rect3D) : option<float> =
+    static member intersectRayParameter (ln:Line3D) (pl:Rect3D) : option<float> =
         let z = pl.NormalUnit
         let v = ln.Tangent
         let nenner = v *** z
         if isTooSmall (abs nenner) then
-            // EuclidException.Raise "Euclid.Rect3D.intersectLineParameters: Line and Rect3D are parallel or line has zero length: %O, %O" ln pl
             None
         else
             let t = ((pl.Origin - ln.From) *** z) / nenner
@@ -1524,3 +1522,14 @@ type Rect3D =
         | 2 -> Line3D(r.Origin + r.Xaxis + r.Yaxis, r.Origin + r.Yaxis)
         | 3 -> Line3D(r.Origin + r.Yaxis, r.Origin)
         | _ -> fail $"Rect3D.GetEdge: index {i} out of range 0..3" |> unbox // unbox to make type checker happy
+
+
+
+    [<Obsolete("use Rect3D.intersectRayParameters")>]
+    static member intersectLineParametersInfinite (ln:Line3D) (pl:Rect3D) : option<float*float*float> =
+        Rect3D.intersectRayParameters ln pl
+
+
+    [<Obsolete("use Rect3D.intersectRayParameter")>]
+    static member intersectLineParameterInfinite (ln:Line3D) (pl:Rect3D) : option<float> =
+        Rect3D.intersectRayParameter ln pl

@@ -72,7 +72,7 @@ let tests =
             test "mostDistantPointIdx finds most lonely point" {
                 let findFrom = ResizeArray([Pt(0,0); Pt(10,0)])
                 let checkAgainst = ResizeArray([Pt(0,1)])
-                let (fromIdx, againstIdx) = Points2D.mostDistantPointIdx(findFrom, checkAgainst)
+                let (fromIdx, _againstIdx) = Points2D.mostDistantPointIdx(findFrom, checkAgainst)
                 "most distant is at index 1" |> Expect.equal fromIdx 1
             }
 
@@ -118,6 +118,15 @@ let tests =
                 let ys = ResizeArray<Pt>([])
                 let f() = Points2D.closestPointsIdx(xs, ys) |> ignore
                 "throws on empty ys" |> Expect.throws f
+            }
+
+            test "dist to line is 3.0" {
+                let pt = Pt(1,1)
+                let lineStart = Pt(4,0)
+                let lineEnd = Pt(4,9)
+                let ln = Line2D(lineStart, lineEnd)
+                let dist = pt.DistanceToLine ln
+                "distance is 3.0" |> Expect.floatClose tol dist 3.0
             }
         ]
 
@@ -185,7 +194,7 @@ let tests =
             test "mostDistantPointIdx finds most lonely point" {
                 let findFrom = ResizeArray([Pnt(0,0,0); Pnt(10,0,0)])
                 let checkAgainst = ResizeArray([Pnt(0,0,1)])
-                let (fromIdx, againstIdx) = Points3D.mostDistantPointIdx(findFrom, checkAgainst)
+                let (fromIdx, _againstIdx) = Points3D.mostDistantPointIdx(findFrom, checkAgainst)
                 "most distant is at index 1" |> Expect.equal fromIdx 1
             }
 
@@ -236,6 +245,16 @@ let tests =
                 let target = Pnt(1,1,1)
                 let idx = Points3D.closestPointIdx(pts, target)
                 "returns first matching point" |> Expect.equal idx 0
+            }
+
+
+            test "dist to line is 3.0" {
+                let pt = Pnt(1,1,7)
+                let lineStart = Pnt(4,0,7)
+                let lineEnd = Pnt(4,9,7)
+                let ln = Line3D(lineStart, lineEnd)
+                let dist = pt.DistanceToLine ln
+                "distance is 3.0" |> Expect.floatClose tol dist 3.0
             }
         ]
     ]

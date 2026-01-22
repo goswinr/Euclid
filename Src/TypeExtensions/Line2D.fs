@@ -1861,6 +1861,31 @@ module AutoOpenLine2D =
         XLine2D.getSqDistance(lnA, lnB) |> sqrt
 
 
+    /// <summary>Checks if the two finite 2D lines are touching each other at any of end points
+    /// within the given tolerance.
+    /// This will also return TRUE if the lines are touching on both points.</summary>
+    /// <param name="squareTolerance"> The squared tolerance for the distance between the end points.</param>
+    /// <param name="a"> The first line.</param>
+    /// <param name="b"> The second line.</param>
+    /// <remarks> Use XLine2D.getEndsTouching to get more detailed information about which ends are touching.</remarks>
+    static member isTouchingEndOf squareTolerance (a:Line2D) (b:Line2D)  : bool =
+        (
+            let x = a.ToX-b.FromX
+            let y = a.ToY-b.FromY
+            x*x + y*y < squareTolerance
+        ) || (
+            let x = a.FromX-b.ToX
+            let y = a.FromY-b.ToY
+            x*x + y*y < squareTolerance
+        ) || (
+            let x = a.FromX-b.FromX
+            let y = a.FromY-b.FromY
+            x*x + y*y < squareTolerance
+        ) || (
+            let x = a.ToX-b.ToX
+            let y = a.ToY-b.ToY
+            x*x + y*y < squareTolerance
+        )
 
 
 
@@ -1873,108 +1898,109 @@ module AutoOpenLine2D =
     // The new signature is: IsCoincidentTo(other, distanceTolerance, minTangent)
     // This change makes the angle tolerance more intuitive for near-parallel line detection
 
-    [<Obsolete("Use this.RayClosestParameter instead" + since30)>]
+    [<Obsolete("Use this.RayClosestParameter instead. Obsolete since 0.20.0")>]
     member ln.ClosestParameterInfinite (p:Pt) =
         ln.RayClosestParameter(p)
 
-    [<Obsolete("Use this.RayClosestPoint instead" + since30)>]
+    [<Obsolete("Use this.RayClosestPoint instead. Obsolete since 0.20.0")>]
     member ln.ClosestPointInfinite (p:Pt) =
         ln.RayClosestPoint(p)
 
-    [<Obsolete("Use this.SqDistanceRayPoint instead" + since30)>]
+    [<Obsolete("Use this.SqDistanceRayPoint instead. Obsolete since 0.20.0")>]
     member ln.DistanceSqFromPointInfinite(p:Pt) =
         ln.SqDistanceRayPoint(p)
 
-    [<Obsolete("Use this.DistanceRayPoint instead" + since30)>]
+    [<Obsolete("Use this.DistanceRayPoint instead. Obsolete since 0.20.0")>]
     member inline ln.DistanceToPtInfinite(p:Pt) =
         ln.DistanceRayPoint(p)
 
-    [<Obsolete("Use this.SqDistanceFromPoint instead" + since30)>]
+    [<Obsolete("Use this.SqDistanceFromPoint instead. Obsolete since 0.20.0")>]
     member ln.DistanceSqFromPoint(p:Pt) =
         XLine2D.sqDistLnPt'(ln, p.X, p.Y)
 
     // Static members marked as Obsolete that have direct replacements:
 
-    [<Obsolete("Use Line2D.isCoincidentTo instead" + since30)>]
+    [<Obsolete("Use Line2D.isCoincidentTo instead. Obsolete since 0.20.0")>]
     static member inline areCoincident (a:Line2D) (b:Line2D) =
         a.IsCoincidentTo(b)
 
-    [<Obsolete("Use Line2D.isParallelTo instead" + since30)>]
+    [<Obsolete("Use Line2D.isParallelTo instead. Obsolete since 0.20.0")>]
     static member inline areParallel (l:Line2D) (ln:Line2D) =
         l.IsParallelTo ln
 
-    [<Obsolete("Use Line2D.isParallelAndOrientedTo instead" + since30)>]
+    [<Obsolete("Use Line2D.isParallelAndOrientedTo instead. Obsolete since 0.20.0")>]
     static member inline areParallelAndMatchOrientation (l:Line2D) (ln:Line2D) =
         l.IsParallelAndOrientedTo ln
 
-    [<Obsolete("Use Line2D.isPerpendicularTo instead" + since30)>]
+    [<Obsolete("Use Line2D.isPerpendicularTo instead. Obsolete since 0.20.0")>]
     static member inline arePerpendicular(l:Line2D) (ln:Line2D) =
         l.IsPerpendicularTo ln
 
-    [<Obsolete("Use Line2D.rayClosestParameter instead" + since30)>]
+    [<Obsolete("Use Line2D.rayClosestParameter instead. Obsolete since 0.20.0")>]
     static member inline closestParameterInfinite (p:Pt) (ln:Line2D) =
         ln.RayClosestParameter p
 
-    [<Obsolete("Use Line2D.rayClosestPoint instead" + since30)>]
+    [<Obsolete("Use Line2D.rayClosestPoint instead. Obsolete since 0.20.0")>]
     static member inline closestPointInfinite (p:Pt) (ln:Line2D) =
         ln.RayClosestPoint p
 
-    [<Obsolete("Use Line2D.sqDistanceRayPoint instead" + since30)>]
+    [<Obsolete("Use Line2D.sqDistanceRayPoint instead. Obsolete since 0.20.0")>]
     static member inline distanceSqFromPointInfinite(p:Pt) (ln:Line2D) =
         ln.SqDistanceRayPoint p
 
-    [<Obsolete("Use Line2D.distanceRayPoint instead" + since30)>]
+    [<Obsolete("Use Line2D.distanceRayPoint instead. Obsolete since 0.20.0")>]
     static member inline distanceToPtInfinite(p:Pt) (ln:Line2D) =
         ln.DistanceRayPoint p
 
-    [<Obsolete("Use Line2D.sqDistanceFromPoint instead" + since30)>]
+    [<Obsolete("Use Line2D.sqDistanceFromPoint instead. Obsolete since 0.20.0")>]
     static member inline distanceSqFromPoint(p:Pt) (ln:Line2D) =
         ln.SqDistanceFromPoint p
 
-    [<Obsolete("Use Line2D.distanceToLine instead" + since30)>]
+    [<Obsolete("Use Line2D.distanceToLine instead. Obsolete since 0.20.0")>]
     static member distanceBetweenLines(lnA:Line2D, lnB:Line2D) =
         Line2D.distanceToLine lnA lnB
 
-    [<Obsolete("Use Line2D.projectOntoRay instead" + since30)>]
-    static member projectOn(onToLine:Line2D, lineToProject:Line2D) =
+    [<Obsolete("Use Line2D.projectOntoRay instead. Obsolete since 0.20.0")>]
+    static member projectOn(onToLine:Line2D) (lineToProject:Line2D) =
         Line2D.projectOntoRay onToLine lineToProject
 
 
 
     // Obsolete members that don't have a direct replacement:
 
-    [<Obsolete("Use XLine2D.getIntersectionParam instead" + since30)>]
+    [<Obsolete("Use XLine2D.getIntersectionParam instead. Obsolete since 0.20.0",error=true)>]
     static member intersectionParamInfinite(_lnA:Line2D, _lnB:Line2D)  =
         failObsoleteV30 "Line2D.intersectionParamInfinite" "XLine2D.getIntersectionParam"
 
-    [<Obsolete("Use XLine2D.getIntersection instead" + since30)>]
+    [<Obsolete("Use XLine2D.getIntersection instead. Obsolete since 0.20.0",error=true)>]
     static member intersectionInfinite(_lnA:Line2D, _lnB:Line2D) =
         failObsoleteV30 "Line2D.intersectionInfinite" "XLine2D.getIntersection"
 
-    [<Obsolete("Use XLine2D.tryIntersectRay instead" + since30)>]
+    [<Obsolete("Use XLine2D.tryIntersectRay instead. Obsolete since 0.20.0",error=true)>]
     static member intersectionPointInfinite(_lnA:Line2D, _lnB:Line2D) =
         failObsoleteV30 "Line2D.intersectionPointInfinite" "XLine2D.tryIntersectRay"
 
-    [<Obsolete("Use XLine2D.getClosestParameters instead" + since30)>]
+    [<Obsolete("Use XLine2D.getClosestParameters instead. Obsolete since 0.20.0",error=true)>]
     static member intersectionParam(_lnA:Line2D, _lnB:Line2D) =
         failObsoleteV30 "Line2D.intersectionParam" "XLine2D.getClosestParameters"
 
-    [<Obsolete("Use XLine2D.getClosestPoints instead" + since30)>]
+    [<Obsolete("Use XLine2D.getClosestPoints instead. Obsolete since 0.20.0",error=true)>]
     static member intersection(_lnA:Line2D, _lnB:Line2D) =
         failObsoleteV30 "Line2D.intersection" "XLine2D.getClosestPoints"
 
-    [<Obsolete("Use Line2D.tryIntersect or Line2D.tryIntersectOrOverlap instead" + since30)>]
+    [<Obsolete("Use Line2D.tryIntersect or Line2D.tryIntersectOrOverlap instead. Obsolete since 0.20.0",error=true)>]
     static member intersectionPoint(_lnA:Line2D, _lnB:Line2D) =
         failObsoleteV30 "Line2D.intersectionPoint" "Line2D.tryIntersect or Line2D.tryIntersectOrOverlap"
 
 
 
 
-    [<Obsolete("Use XLine2D.getEndsTouching instead" + since30)>]
-    static member areTouchingAny(_tol:float, _a:Line2D, _b:Line2D) =
-        failObsoleteV30 "Line2D.areTouchingAny" "XLine2D.getEndsTouching"
 
-    [<Obsolete("Use XLine2D.getEndsTouching instead" + since30)>]
-    static member areTouchingEither(_tol:float, _a:Line2D, _b:Line2D) =
-        failObsoleteV30 "Line2D.areTouchingEither" "XLine2D.getEndsTouching"
+    [<Obsolete("Use isTouchingEndOf or  XLine2D.getEndsTouching instead. Obsolete since 0.20.0",error=true)>]
+    static member areTouchingAny(tol:float)( a:Line2D)( b:Line2D) =
+        XLine2D.getEndsTouching(a,b,tol)
+
+    [<Obsolete("Use isTouchingEndOf or XLine2D.getEndsTouching instead. Obsolete since 0.20.0",error=true)>]
+    static member areTouchingEither(tol:float)( a:Line2D)( b:Line2D) =
+        XLine2D.getEndsTouching(a,b,tol)
 

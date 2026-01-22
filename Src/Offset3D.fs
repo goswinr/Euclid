@@ -303,7 +303,7 @@ module Offset3D =
     /// <param name="isClosed">Whether the polyline is closed (true) or open (false).</param>
     /// <param name="varDistParallelBehavior">The behavior to use when colinear segments with different offset distances are found.</param>
     /// <returns>The offset points as a ResizeArray of Pnt.</returns>
-    let offsetVariableWithDirections(pts:ResizeArray<Pnt>, segmentDirs:ResizeArray<UnitVec>, offDirs: ResizeArray<OffsetDirection voption>, distsInPlane:ResizeArray<float>, distsPerpendicular:ResizeArray<float>, isClosed:bool, varDistParallelBehavior: VarDistParallel) : ResizeArray<Pnt> =
+    let offsetVariableWithDirections(pts:ResizeArray<Pnt>, segmentDirs:ResizeArray<UnitVec>, offDirs: ResizeArray<OffsetDirection voption>, distsInPlane:Collections.Generic.IList<float>, distsPerpendicular:Collections.Generic.IList<float>, isClosed:bool, varDistParallelBehavior: VarDistParallel) : ResizeArray<Pnt> =
         if pts.Count < 2 then
             fail $"Offset3D.offsetVariable: pts.Count {pts.Count} must be at least 2 for a polyline."
 
@@ -315,7 +315,7 @@ module Offset3D =
 
         let mutable res = ResizeArray<Pnt>(pts.Count)
         let mutable needsSecondPass = false
-        let mutable prevDistInPlane = if isClosed then distsInPlane.Last else distsInPlane.First
+        let mutable prevDistInPlane = if isClosed then distsInPlane.[distsInPlane.Count - 1] else distsInPlane.[0]
 
         // (1) first pass: offset points that have valid directions
         for i = 0 to pts.LastIndex-1 do
@@ -335,8 +335,8 @@ module Offset3D =
 
         // (1.1) handle last point extra because distsInPlane has one less entry than pts and nextDistInPlane depends on loop status
         let pt = pts.Last
-        let nextDistInPlane = if isClosed then distsInPlane.First else distsInPlane.Last
-        let distPerp = distsPerpendicular.Last
+        let nextDistInPlane = if isClosed then distsInPlane.[0] else distsInPlane.[distsInPlane.Count - 1]
+        let distPerp = distsPerpendicular.[distsPerpendicular.Count - 1]
         match offDirs.Last with
         | ValueNone ->
             needsSecondPass <- true

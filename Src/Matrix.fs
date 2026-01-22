@@ -954,7 +954,7 @@ type Matrix =
     // ----------------------------------------------
 
     /// <summary>Multiplies (or applies) a Matrix to a 3D vector.
-    /// Since a 3D vector represents a direction or an offset in space, but not a location,
+    /// Since a 3D vector represents a direction or translation in space, but not a location,
     /// the implicit 4th dimension is 0.0 so that all translations are ignored. (Homogeneous Vector)</summary>
     /// <param name="v">The 3D vector to transform.</param>
     /// <param name="m">The transformation matrix.</param>
@@ -973,7 +973,7 @@ type Matrix =
         Vec(x', y', z')
 
     /// <summary>Multiplies a Matrix with a 3D unit-vector.
-    /// Since a 3D vector represents a direction or an offset in space, but not a location,
+    /// Since a 3D vector represents a direction or translation in space, but not a location,
     /// the implicit 4th dimension is 0.0 so that all translations are ignored. (Homogeneous Vector)</summary>
     /// <param name="v">The 3D unit-vector to transform.</param>
     /// <param name="m">The transformation matrix.</param>

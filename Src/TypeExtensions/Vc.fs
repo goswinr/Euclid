@@ -935,8 +935,8 @@ module AutoOpenVc =
         /// Returns the intersection parameters for two infinite lines.
         /// Always returns Some since XLine2D.parameters handles parallel lines by returning infinity values.
         [<Obsolete("Use XLine2D.getRayIntersectionParam instead.")>]
-        static member intersection( ptA:Pt, ptB:Pt, vA:Vc, vB:Vc) : Option<float*float> =
-            Some (XLine2D.parameters( ptA.X, ptA.Y, vA.X, vA.Y, ptB.X, ptB.Y, vB.X, vB.Y ))
+        static member intersection( ptA:Pt, ptB:Pt, vA:Vc, vB:Vc) : ValueOption<float*float> =
+            ValueSome (XLine2D.parameters( ptA.X, ptA.Y, vA.X, vA.Y, ptB.X, ptB.Y, vB.X, vB.Y ))
 
 
 

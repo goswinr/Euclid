@@ -81,10 +81,10 @@ type Polyline2D (points: ResizeArray<Pt>) =
     /// Same as Polyline2D.FirstPoint
     member p.Start
         with get() =
-            if points.Count < 1 then failTooFew "Start.get" 1
+            if points.Count < 1 then failTooFewPoly2D "Start.get" 1 points.Count
             points.[0]
         and set(v) =
-            if points.Count < 1 then failTooFew "Start.set" 1
+            if points.Count < 1 then failTooFewPoly2D "Start.set" 1 points.Count
             points.[0] <- v
 
     /// Gets or sets last or end point of the Polyline2D
@@ -92,10 +92,10 @@ type Polyline2D (points: ResizeArray<Pt>) =
     /// Same as Polyline2D.LastPoint
     member p.End
         with get() =
-            if points.Count < 1 then failTooFew "End.get" 1
+            if points.Count < 1 then failTooFewPoly2D "End.get" 1 points.Count
             points.[points.Count - 1]
         and set(v) =
-            if points.Count < 1 then failTooFew "End.set" 1
+            if points.Count < 1 then failTooFewPoly2D "End.set" 1 points.Count
             points.[points.Count - 1] <- v
 
     /// Gets or sets the last point of the Polyline2D.
@@ -103,29 +103,29 @@ type Polyline2D (points: ResizeArray<Pt>) =
     /// Same as Polyline2D.End
     member p.LastPoint
         with get() =
-            if points.Count < 1 then failTooFew "LastPoint.get" 1
+            if points.Count < 1 then failTooFewPoly2D "LastPoint.get" 1 points.Count
             points.[points.Count - 1]
         and set(v) =
-            if points.Count < 1 then failTooFew "LastPoint.set" 1
+            if points.Count < 1 then failTooFewPoly2D "LastPoint.set" 1 points.Count
             points.[points.Count - 1] <- v
 
     /// Gets or sets the second last point of the Polyline2D.
     member p.SecondLastPoint
         with get() =
-            if points.Count < 2 then failTooFew "SecondLastPoint.get" 2
+            if points.Count < 2 then failTooFewPoly2D "SecondLastPoint.get" 2 p.PointCount
             points.[points.Count - 2]
         and set(v) =
-            if points.Count < 2 then failTooFew "SecondLastPoint.set" 2
+            if points.Count < 2 then failTooFewPoly2D "SecondLastPoint.set" 2 p.PointCount
             points.[points.Count - 2] <- v
 
     /// Gets or sets the second point of the Polyline2D.
     /// This is the point at index 1.
     member p.SecondPoint
         with get() =
-            if points.Count < 2 then failTooFew "SecondPoint.get" 2
+            if points.Count < 2 then failTooFewPoly2D "SecondPoint.get" 2 p.PointCount
             points.[1]
         and set(v) =
-            if points.Count < 2 then failTooFew "SecondPoint.set" 2
+            if points.Count < 2 then failTooFewPoly2D "SecondPoint.set" 2 p.PointCount
             points.[1] <- v
 
     /// Gets or sets the first point of the Polyline2D.
@@ -133,10 +133,10 @@ type Polyline2D (points: ResizeArray<Pt>) =
     /// Same as Polyline2D.Start
     member p.FirstPoint
         with get() =
-            if points.Count < 1 then failTooFew "FirstPoint.get" 1
+            if points.Count < 1 then failTooFewPoly2D "FirstPoint.get" 1 p.PointCount
             points.[0]
         and set(v) =
-            if points.Count < 1 then failTooFew "FirstPoint.set" 1
+            if points.Count < 1 then failTooFewPoly2D "FirstPoint.set" 1 p.PointCount
             points.[0] <- v
 
 
@@ -179,13 +179,13 @@ type Polyline2D (points: ResizeArray<Pt>) =
 
     /// Gets the segment at index i of the Polyline2D.
     member p.LastSegment =
-        if points.Count < 2 then failTooFew "LastSegment" 2
+        if points.Count < 2 then failTooFewPoly2D "LastSegment" 2 p.PointCount
         let i = points.Count - 1
         Line2D(points.[i-1], points.[i])
 
     /// Gets the first segment of the Polyline2D.
     member p.FirstSegment =
-        if points.Count < 2 then failTooFew "FirstSegment" 2
+        if points.Count < 2 then failTooFewPoly2D "FirstSegment" 2 p.PointCount
         Line2D(points.[0], points.[1])
 
     /// Returns all segments of the Polyline2D as a list of Line2D.
@@ -249,8 +249,8 @@ type Polyline2D (points: ResizeArray<Pt>) =
     /// Close the Polyline2D if it is not already closed.
     /// If the ends are closer than the tolerance. The last point is set to equal the first point.
     /// Else the start point is added to the end of the Polyline2D.
-    member p.CloseIfOpen(toleranceForAddingPoint) =
-        if points.Count < 3 then failTooFew "CloseIfOpen" 3
+    member p.CloseInPlace(toleranceForAddingPoint) =
+        if points.Count < 3 then failTooFewPoly2D "CloseInPlace" 3 p.PointCount
         let v = p.Start  - p.End
         if v.LengthSq < toleranceForAddingPoint*toleranceForAddingPoint then
             points.Last <- p.Start
@@ -267,9 +267,7 @@ type Polyline2D (points: ResizeArray<Pt>) =
         let mutable t = points.Last // calculate from last to first too
         for i=0 to points.Count-1 do
             let n = points.[i]
-            let a = t.X - n.X
-            let b = n.Y + t.Y
-            area <- area + (a * b)
+            area <- area + (t.X-n.X) * (n.Y + t.Y)
             t <- n
         area * 0.5
 
@@ -456,8 +454,15 @@ type Polyline2D (points: ResizeArray<Pt>) =
 
 
 
-    /// If it is 0 then point is outside of the Polyline2D.
-    /// The first and last point of the Polyline2D need to be identical for correct results
+    /// <summary>Count how many times the polygon winds around the point.
+    /// If the result is 0 then the point is outside of the Polyline2D.
+    /// A non-zero value indicates the point is inside.</summary>
+    /// <param name="point">The point to test.</param>
+    /// <returns>The winding number. Zero means outside, non-zero means inside.</returns>
+    /// <remarks>The first and last point of the Polyline2D need to be identical for correct results.
+    /// Boundary cases: Points exactly on edges or vertices may return inconsistent results
+    /// due to floating-point precision. For points on horizontal edges, behavior depends on
+    /// the edge direction. This method Handles self-intersecting polygons more intuitively than the pl.Contains method.</remarks>
     member pl.WindingNumber (point:Pt) : int =
         // from https://github.com/FreyaHolmer/Mathfs/blob/master/Runtime/Geometric%20Shapes/Polygon.cs#L92
         // https://x.com/FreyaHolmer/status/1232826293902888960
@@ -465,7 +470,7 @@ type Polyline2D (points: ResizeArray<Pt>) =
         // https://www.youtube.com/watch?v=E51LrZQuuPE
         let px = point.X
         let py = point.Y
-        let isLeft (aa:Pt) (bb:Pt)  =
+        let inline isLeft (aa:Pt) (bb:Pt)  =
             let ax = px - aa.X // cross product unrolled to avoid allocation of temp Vc
             let ay = py - aa.Y
             let bx = bb.X - aa.X
@@ -493,23 +498,19 @@ type Polyline2D (points: ResizeArray<Pt>) =
 
         winding
 
-    /// The first and last point of the Polyline2D need to be identical for correct results.
-    /// Uses the WindingNumber to determine if the point is inside the Polyline2D.
-    /// Always returns false if the Polyline2D has less than 3 points.
-    member pl.Contains (point:Pt) : bool =
-        if pl.PointCount < 3 then
-            false
-        else
-            pl.WindingNumber point <> 0
-
-
-    /// The first and last point of the Polyline2D need to be identical for correct results.
-    /// Uses the Ray casting to determine if the point is inside the Polyline2D.
-    /// It runs a infinite ray horizontally (increasing x, fixed y) out from the test point,
-    /// and counts how many edges it crosses.
-    /// At each crossing, the ray switches between inside and outside. This is called the Jordan curve theorem.
-    /// Always returns false if the Polyline2D has less than 3 points.
-    member p.Contains' (pt: Pt)  =
+    /// <summary>Tests if a point is inside the closed Polyline2D using the ray casting algorithm.</summary>
+    /// <param name="pt">The point to test.</param>
+    /// <returns>TRUE if the point is inside, FALSE otherwise.</returns>
+    /// <remarks>The first and last point of the Polyline2D need to be identical for correct results.
+    /// Self-intersecting polygons give "alternating" inside/outside regions
+    /// Uses ray casting: runs an infinite horizontal ray (increasing x, fixed y) from the test point
+    /// and counts edge crossings. Each crossing toggles inside/outside state (Jordan curve theorem).
+    /// Always returns FALSE if the Polyline2D has less than 3 points.
+    /// Boundary cases: Points exactly on edges or vertices have implementation-specific behavior.
+    /// Horizontal edges are handled by the strict inequality convention (pi.Y > y) != (pj.Y > y).
+    /// Points on left/bottom edges tend to be considered inside, right/top edges outside.
+    /// The result may differ from checking the pl.WindingNumber 0 for boundary points.</remarks>
+    member p.Contains (pt: Pt)  =
         let pts = p.Points
         if pts.Count < 3 then
             false
@@ -530,18 +531,18 @@ type Polyline2D (points: ResizeArray<Pt>) =
             inside
 
 
-
     /// Calculates the shortest distance from the test point to the polyline with `DistanceTo`,
-    /// then signs that value by testing containment via the ray-casting based `Contains'` helper.
+    /// then signs that value by testing containment via the ray-casting based `Contains` helper.
     /// Returns a positive distance for points that lie inside the polyline boundary and negative otherwise.
     /// For reliable results the polyline should be closed and have identical first and last vertices.
     member pl.SignedDistanceTo (point: Pt)  :float =
         let distance = pl.DistanceTo point
-        if pl.Contains' point then distance else -distance
+        if pl.Contains point then distance else -distance
+
 
     /// Returns the average center of all points of the Polyline2D.
-    member p.Center : Pt =
-        if points.Count = 0 then failTooFew "Center" 1
+    member p.Center =
+        if points.Count = 0 then failTooFewPoly2D "Center" 1 p.PointCount
         let mutable x = 0.0
         let mutable y = 0.0
         for i = 0 to points.LastIndex do
@@ -707,13 +708,13 @@ type Polyline2D (points: ResizeArray<Pt>) =
     /// Gets first point of the Polyline2D
     static member start (p:Polyline2D) =
         let points = p.Points
-        if points.Count < 1 then failTooFew "start" 1
+        if points.Count < 1 then failTooFewPoly2D "start" 1 p.PointCount
         points.[0]
 
     /// Gets last or end point of the Polyline2D
     static member ende (p:Polyline2D) =
         let points = p.Points
-        if points.Count < 1 then failTooFew "ende" 1
+        if points.Count < 1 then failTooFewPoly2D "ende" 1 p.PointCount
         points.[ points.Count - 1 ]
 
     /// Gets the length of the Polyline2D.
@@ -845,15 +846,12 @@ type Polyline2D (points: ResizeArray<Pt>) =
         np
 
 
-    [<Obsolete("Renamed to Polyline2D.subPolyline")>]
-    static member segment a b (pl:Polyline2D) :Polyline2D =
-        Polyline2D.subPolyline a b pl
 
     /// Returns a new closed Polyline2D.
     /// If the first and last point are within 1e-6 of each other, the last point is set equal to the first point.
     /// Otherwise one point is added.
     static member close (pl:Polyline2D) =
-        if pl.Points.Count < 2 then failTooFew "close" 2
+        if pl.Points.Count < 2 then failTooFewPoly2D "close" 2 pl.PointCount
         let ps = pl.Points
         let np = Polyline2D.createEmpty (ps.Count + 1)
         np.Points.AddRange(ps.GetRange(0, ps.Count))
@@ -867,7 +865,7 @@ type Polyline2D (points: ResizeArray<Pt>) =
     /// Closes the Polyline2D in place by adding a point.
     /// If the first and last point are within 1e-6 of each other, the last point is set equal to the first point instead.
     static member closeInPlace (pl:Polyline2D) =
-        if pl.Points.Count < 2 then failTooFew "closeInPlace" 2
+        if pl.Points.Count < 2 then failTooFewPoly2D "closeInPlace" 2 pl.PointCount
         let points = pl.Points
         if Pt.distanceSq points.First points.Last < 1e-12 then
             points.[points.Count-1] <- points.First
@@ -1049,7 +1047,7 @@ type Polyline2D (points: ResizeArray<Pt>) =
     /// The angle between normals after which, instead of a normal miter, the joint is chamfered by adding an extra point.</param>
     /// <returns>A new 2D polyline.</returns>
     static member offsetVar(polyLine:Polyline2D,
-                            multipleOffsetDistances: ResizeArray<float>,
+                            multipleOffsetDistances: Collections.Generic.IList<float>,
                             [<OPT;DEF(false)>] loop:bool,
                             [<OPT;DEF(true)>] checkOrientation:bool,
                             [<OPT;DEF(Offset2D.VarDistParallel.Fail)>] varDistParallelBehavior: Offset2D.VarDistParallel,
@@ -1061,7 +1059,7 @@ type Polyline2D (points: ResizeArray<Pt>) =
         if pts.Count < 2 then
             fail $"Polyline2D.offset: Polyline2D must have at least 2 points but has {pts.Count} points. {polyLine}"
 
-        let distances =
+        let distances : Collections.Generic.IList<float> =
             if checkOrientation && polyLine.SignedArea < 0.0 then
                 // reverse all distances if loop is clockwise
                 let ds = ResizeArray(multipleOffsetDistances.Count)
@@ -1124,6 +1122,7 @@ type Polyline2D (points: ResizeArray<Pt>) =
 
 
     /// Tries to find a self intersection in the Polyline2D.
+    /// Also returns Some if segments are just touching.
     /// If found returns the intersection point and the indices of the two segments that intersect.
     /// If no intersection is found returns None.
     /// This is an O(n^2) algorithm and should only be used for small Polylines.
@@ -1167,3 +1166,53 @@ type Polyline2D (points: ResizeArray<Pt>) =
                 Some (pt, 0, segmentVs.LastIndex)
             | None    ->
                 checkSegs 0 2 // start with segment 0 and segment 2 to avoid checking adjacent segments
+
+
+
+
+    /// <summary>Count how many times the polygon winds around the point.
+    /// If the result is 0 then the point is outside of the Polyline2D.
+    /// A non-zero value indicates the point is inside.</summary>
+    /// <param name="point">The point to test.</param>
+    /// <param name="pl">The closed Polyline2D.</param>
+    /// <returns>The winding number. Zero means outside, non-zero means inside.</returns>
+    /// <remarks>The first and last point of the Polyline2D need to be identical for correct results.
+    /// Boundary cases: Points exactly on edges or vertices may return inconsistent results
+    /// due to floating-point precision. For points on horizontal edges, behavior depends on
+    /// the edge direction. This method Handles self-intersecting polygons more intuitively than the pl.Contains method.</remarks>
+    static member inline windingNumber (point:Pt) (pl:Polyline2D) : int =
+        pl.WindingNumber point
+
+
+    /// <summary>Tests if a point is inside the closed Polyline2D using the ray casting algorithm.</summary>
+    /// <param name="pt">The point to test.</param>
+    /// <param name="pl">The closed Polyline2D.</param>
+    /// <returns>TRUE if the point is inside, FALSE otherwise.</returns>
+    /// <remarks>The first and last point of the Polyline2D need to be identical for correct results.
+    /// Self-intersecting polygons give "alternating" inside/outside regions
+    /// Uses ray casting: runs an infinite horizontal ray (increasing x, fixed y) from the test point
+    /// and counts edge crossings. Each crossing toggles inside/outside state (Jordan curve theorem).
+    /// Always returns FALSE if the Polyline2D has less than 3 points.
+    /// Boundary cases: Points exactly on edges or vertices have implementation-specific behavior.
+    /// Horizontal edges are handled by the strict inequality convention (pi.Y > y) != (pj.Y > y).
+    /// Points on left/bottom edges tend to be considered inside, right/top edges outside.
+    /// The result may differ from checking the pl.WindingNumber 0 for boundary points.</remarks>
+    static member inline contains (pt:Pt) (pl:Polyline2D) =
+        pl.Contains pt
+
+
+
+    [<Obsolete("Use polyline2D.CloseInPlace instead.")>]
+    member p.CloseIfOpen(t) = p.CloseInPlace(t)
+
+
+    [<Obsolete("Renamed to Polyline2D.subPolyline")>]
+    static member segment a b (pl:Polyline2D) :Polyline2D =
+        Polyline2D.subPolyline a b pl
+
+[<Obsolete("Use Euclid.Loop has been removed from Euclid in v0.20.0. use Polyline2D instead.",true)>]
+type Loop private  () =
+
+    [<Obsolete("Use Euclid.Loop has been removed from Euclid in v0.20.0. use Polyline2D instead.",true)>]
+    static member create () =
+        failwithf "Euclid.Loop has been removed from Euclid in v0.20.0. use Polyline2D instead."

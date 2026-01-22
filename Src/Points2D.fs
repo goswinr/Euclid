@@ -143,7 +143,6 @@ type Points2D   =
 
 
 
-
     /// Similar to join polylines, this tries to find continuous sequences of 2D points.
     /// 'tolGap' is the maximum allowable gap between the start and the endpoint of two segments.
     /// Search starts from the segment with the most points.
@@ -173,78 +172,5 @@ type Points2D   =
                 else
                     loop <- false
         res
-
-
-
-(* use Tria2D instead
-
-    /// It finds the inner offset point in a corner (defined a point, a previous vector to this point and a next vector from this point)
-    /// The offset from first and second segment are given separately and can vary (prevDist and nextDist).
-    /// Use negative distance for outer offset.
-    /// If Points are collinear by 0.25 degrees or less than 1-e6 units apart returns: ValueNone.
-    /// Use negative distances to get outside offset.
-    /// 'referenceOrient' is positive for counterclockwise loops otherwise negative.
-    /// Returns the offset point, the shift direction for prev and next line.
-    static member offsetInCornerEx2D(   thisPt:Pt,
-                                        prevToThis:Vc,
-                                        thisToNext:Vc,
-                                        prevDist:float,
-                                        nextDist:float,
-                                        referenceOrient:float) : ValueOption<Pt*Vc*Vc> =
-        if prevDist = 0. && nextDist = 0. then
-            ValueSome (thisPt, Vc.Zero, Vc.Zero)
-        else
-            let ax = prevToThis.X
-            let ay = prevToThis.Y
-            let bx = thisToNext.X
-            let by = thisToNext.Y
-            let a = ax*ax + ay*ay // square length of A
-            let c = bx*bx + by*by // square length of B
-            if isTooSmallSq (c) then
-                ValueNone
-            elif isTooSmallSq (a) then
-                ValueNone
-            else
-                let b = ax*bx + ay*by // dot product of both lines
-                let ac = a*c // square of square length, never negative
-                let bb = b*b // square of square dot product, never negative
-                let discriminant = ac - bb // never negative, the dot product cannot be bigger than the two square length multiplied with each other
-                let div = ac+bb // never negative
-                let rel = discriminant/div
-                if rel < float RelAngleDiscriminant.``0.25`` then //parallel
-                    ValueNone
-                else
-                    let n = Vc.cross(prevToThis, thisToNext) |> UtilEuclid.matchSign referenceOrient
-                    let prevShift = prevToThis.Rotate90CCW |> Vc.withLength (if n>0. then prevDist else -prevDist)
-                    let nextShift = thisToNext.Rotate90CCW |> Vc.withLength (if n>0. then nextDist else -nextDist)
-                    let offP = thisPt + prevShift
-                    let offN = thisPt + nextShift
-                    let vx = offN.X - offP.X
-                    let vy = offN.Y - offP.Y
-                    let e = bx*vx + by*vy
-                    let d = ax*vx + ay*vy
-                    let t = (c * d - b * e) / discriminant
-                    let pt = offP + t * prevToThis
-                    ValueSome (pt, prevShift, nextShift)
-
-    /// It finds the inner offset point in a corner (defined by a Polyline from 3 points (prevPt, thisPt and nextPt)
-    /// The offset from first and second segment are given separately and can vary (prevDist and nextDist).
-    /// Use negative distance for outer offset.
-    /// If Points are collinear by 0.25 degrees or less than 1-e6 units apart returns: ValueNone.
-    /// Use negative distances to get outside offset.
-    /// 'referenceOrient' is positive for counterclockwise loops otherwise negative.
-    /// Returns the offset point, the shift direction for prev and next line.
-    static member offsetInCornerEx2D(prevPt:Pt,
-                                    thisPt:Pt,
-                                    nextPt:Pt,
-                                    prevDist:float,
-                                    nextDist:float,
-                                    referenceOrient:float) : ValueOption<Pt*Vc*Vc> =
-        let prevV = thisPt - prevPt
-        let nextV = nextPt - thisPt
-        Points2D.offsetInCornerEx2D(thisPt, prevV, nextV, prevDist, nextDist, referenceOrient)
-
-
-*)
 
 

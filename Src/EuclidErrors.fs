@@ -42,9 +42,7 @@ module EuclidErrors =
 
     let internal nl = Environment.NewLine
 
-    let [<Literal>] internal v30 = "0.30.0"
 
-    let [<Literal>] internal since30 = ", since Euclid version " + v30
 
     let fail (msg:string) :unit =
         raise <| EuclidException $"Euclid.{msg}"
@@ -104,7 +102,7 @@ module EuclidErrors =
         raise <| EuclidTooSmallException $"{msg}: {nl}  %O{this} {nl}  and {nl}  %O{other} are too close to get a direction."
 
     let failObsoleteV30 (funName:string) (newFunName:string) :unit =
-        raise <| EuclidObsoleteException $"{funName} is obsolete from Euclid version {v30} or higher. Use alternative functions in :{newFunName}."
+        raise <| EuclidObsoleteException $"{funName} is obsolete from Euclid version 0.20.0 or higher. Use alternative functions in :{newFunName}."
 
     let failObsolete (funName:string) (newFunName:string) :unit =
         raise <| EuclidObsoleteException $"{funName} is obsolete. Use alternative functions in :{newFunName}."
@@ -112,8 +110,11 @@ module EuclidErrors =
     let failVertical (msg:string) (v:'t) :unit =
         raise <| EuclidException $"{msg}: vector is vertical or zero length: {v}"
 
-    let failTooFew (name:string) (minCount:int) :unit =
-        raise <| EuclidException $"Polyline2D.{name} failed on Polyline2D with less than {minCount} points."
+    let failTooFewPoly2D (name:string) (minCount:int) (actual:int):unit =
+        raise <| EuclidException $"Polyline2D.{name} failed on Polyline2D with {actual} points. Minimum required is {minCount} points."
+
+    let failTooFewPoly3D (name:string) (minCount:int) (actual:int) :unit =
+        raise <| EuclidException $"Polyline3D.{name} failed on Polyline3D with {actual} points. Minimum required is {minCount} points."
 
     /// Raises an EuclidException when offsetting a 2D rectangle edge fails due to insufficient size.
     let failRect2DOffsetEdge(offStart, offEnd, len, edgeIdx, d) : unit =

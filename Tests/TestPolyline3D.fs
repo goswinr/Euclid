@@ -182,7 +182,7 @@ let tests =
         test "CloseIfOpen closes almost closed polyline" {
             let pts = ResizeArray([Pnt(0,0,0); Pnt(1,0,0); Pnt(1,1,0); Pnt(0.001,0,0)])
             let pl = Polyline3D(pts)
-            pl.CloseIfOpen(0.01)
+            pl.CloseInPlace(0.01)
             "polyline is now closed" |> Expect.isTrue pl.IsClosed
             "last point equals first" |> Expect.isTrue (eqPnt pl.FirstPoint pl.LastPoint)
         }
@@ -191,7 +191,7 @@ let tests =
             let pts = ResizeArray([Pnt(0,0,0); Pnt(1,0,0); Pnt(1,1,0)])
             let pl = Polyline3D(pts)
             let origCount = pl.PointCount
-            pl.CloseIfOpen(0.01)
+            pl.CloseInPlace(0.01)
             "point count increased" |> Expect.equal pl.PointCount (origCount + 1)
             "polyline is now closed" |> Expect.isTrue pl.IsClosed
         }

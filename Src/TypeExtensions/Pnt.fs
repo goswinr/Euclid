@@ -137,71 +137,23 @@ module AutoOpenPnt =
         member inline p.Angle360InXYTo(o:Pnt) =
             p.Angle2PiInXYTo o |> toDegrees
 
-        /// Get closest point on finite line to test point.
-        member inline testPt.ClosestPointOnLine(fromPt:Pnt, toPt:Pnt) =
-            let dir = testPt - fromPt
-            let v   = toPt   - fromPt
-            let lenSq = v.LengthSq
-            if isTooTinySq lenSq then failTooClose "Pnt.ClosestPointOnLine" fromPt toPt
-            let dot = Vec.dot (v, dir) / lenSq
-            if   dot <= 0.0 then  fromPt
-            elif dot >= 1.0 then  toPt
-            else                 fromPt+dot*v
 
-        /// Get closest point on finite line to test point.
-        member inline testPt.ClosestPointOnLine(fromPt:Pnt, uv:UnitVec, len:float) =
-            let dir = testPt-fromPt
-            let dot = Vec.dot (uv, dir)
-            if   dot <= 0.0 then  fromPt
-            elif dot >= len then (fromPt+len*uv)
-            else                 fromPt+dot*uv
+        /// Returns the closest point on a finite line segment to test point.
+        /// The line segment is defined by start point 'fromPt' and end point 'toPt'.
+        /// Fails if fromPt and toPt are coincident or too close together.
+        member inline testPt.ClosestPointOnLine(ln:Line3D) =
+            XLine3D.clPtLn(ln.FromX, ln.FromY, ln.FromZ, ln.VectorX, ln.VectorY, ln.VectorZ,  testPt.X, testPt.Y, testPt.Z)
 
-        /// Returns the squared distance between point and finite line segment defined by
-        /// start point, direction and length.
-        member inline testPt.SqDistanceToLine(fromPt:Pnt, uv:UnitVec, len:float) =
-            let dir = testPt-fromPt
-            let dot = Vec.dot (uv, dir)
-            if   dot <= 0.0 then testPt.SqDistanceTo  fromPt
-            elif dot >= len then testPt.SqDistanceTo (fromPt+len*uv)
-            else                 testPt.SqDistanceTo (fromPt+dot*uv)
+        /// Returns the squared distance between point and finite line segment.
+        /// The line segment is defined by start point 'fromPt', unit direction 'uv', and length 'len'.
+        member inline testPt.SqDistanceToLine(ln:Line3D) =
+            XLine3D.sqDistLnPt(ln.FromX, ln.FromY, ln.FromZ, ln.VectorX, ln.VectorY, ln.VectorZ, testPt.X, testPt.Y, testPt.Z)
 
-        [<Obsolete("Use SqDistanceToLine instead.")>]
-        member inline testPt.DistanceToLineSquare(fromPt:Pnt, uv:UnitVec, len:float) =
-            testPt.SqDistanceToLine(fromPt, uv, len)
 
-        /// Returns the squared distance between point and finite line segment defined by
-        /// start point, end point, direction and length.
-        /// The last two parameters help speed up calculations.
-        member inline testPt.SqDistanceToLine(fromPt:Pnt, toPt:Pnt, uv:UnitVec, len:float) =
-            let dir = testPt-fromPt
-            let dot = Vec.dot (uv, dir)
-            if   dot <= 0.0 then testPt.SqDistanceTo fromPt
-            elif dot >= len then testPt.SqDistanceTo toPt
-            else                 testPt.SqDistanceTo (fromPt+dot*uv)
-
-        [<Obsolete("Use SqDistanceToLine instead.")>]
-        member inline testPt.DistanceToLineSquare(fromPt:Pnt, toPt:Pnt, uv:UnitVec, len:float) =
-            testPt.SqDistanceToLine(fromPt, toPt, uv, len)
-
-        /// Returns the distance between point and finite line segment defined by
-        /// start point, direction and length.
-        member inline testPt.DistanceToLine(fromPt:Pnt, uv:UnitVec, len:float) =
-            let dir = testPt-fromPt
-            let dot = Vec.dot (uv, dir)
-            if   dot <= 0.0 then testPt.DistanceTo  fromPt
-            elif dot >= len then testPt.DistanceTo (fromPt+len*uv)
-            else                 testPt.DistanceTo (fromPt+dot*uv)
-
-        /// Returns the distance between point and finite line segment defined by start and end.
-        member inline testPt.DistanceToLine(fromPt:Pnt, toPt:Pnt) =
-            let dir = testPt - fromPt
-            let v   = toPt   - fromPt
-            let lenSq = v.LengthSq
-            if isTooTinySq(lenSq) then failTooClose "Pnt.DistanceToLine" fromPt toPt
-            let dot = Vec.dot (v, dir) / v.LengthSq
-            if   dot <= 0.0 then testPt.DistanceTo   fromPt
-            elif dot >= 1.0 then testPt.DistanceTo   toPt
-            else                 testPt.DistanceTo   (fromPt + v * dot)
+        /// Returns the distance between point and finite line segment.
+        /// The line segment is defined by start point 'fromPt', unit direction 'uv', and length 'len'.
+        member inline testPt.DistanceToLine(ln:Line3D) =
+            testPt.SqDistanceToLine ln |> sqrt
 
         /// Multiplies (or applies) a Matrix to a 3D point (with an implicit 1 in the 4th dimension,
         /// so that it also works correctly for projections.)

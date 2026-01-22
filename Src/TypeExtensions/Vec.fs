@@ -393,13 +393,13 @@ module AutoOpenVec =
 
 
         /// Multiplies a Matrix with a 3D vector.
-        /// Since a 3D vector represents a direction or an offset in space, but not a location,
+        /// Since a 3D vector represents a direction or translation in space, but not a location,
         /// all translations are ignored. (Homogeneous Vector)
         member inline v.Transform (m:Matrix) =
             v *** m // operator *** is defined in Matrix.fs
 
         /// Multiplies (or applies) a RigidMatrix to a 3D vector.
-        /// Since a 3D vector represents a direction or an offset in space, but not a location,
+        /// Since a 3D vector represents a direction or translation in space, but not a location,
         /// all translations are ignored. (Homogeneous Vector)
         member inline v.TransformRigid (m:RigidMatrix) =
             v *** m // operator *** is defined in RigidMatrix.fs
@@ -1005,13 +1005,13 @@ module AutoOpenVec =
             if v.Z < 0.0 then -r else r
 
         /// Multiplies a Matrix with a 3D vector
-        /// Since a 3D vector represents a direction or an offset in space, but not a location,
+        /// Since a 3D vector represents a direction or translation in space, but not a location,
         /// the implicit the 4th dimension is 0.0 so that all translations are ignored. (Homogeneous Vector)
         static member inline transform (m:Matrix) (v:Vec) =
             v.Transform(m)
 
         /// Multiplies (or applies) a RigidMatrix to a 3D vector.
-        /// Since a 3D vector represents a direction or an offset in space, but not a location,
+        /// Since a 3D vector represents a direction or translation in space, but not a location,
         /// all translations are ignored. (Homogeneous Vector)
         static member inline transformRigid (m:RigidMatrix) (v:Vec) =
             v.TransformRigid(m)
@@ -1095,5 +1095,5 @@ module AutoOpenVec =
 
 
         [<Obsolete("Use Euclid.XLine3D module instead.")>]
-        static member inline intersection(ptA:Pnt, ptB:Pnt, vA:Vec, vB:Vec) : Option<float*float> =
-            Some (XLine3D.parameters(ptA.X, ptA.Y, ptA.Z, ptB.X, ptB.Y, ptB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z))
+        static member inline intersection(ptA:Pnt, ptB:Pnt, vA:Vec, vB:Vec) : ValueOption<float*float> =
+            ValueSome (XLine3D.parameters(ptA.X, ptA.Y, ptA.Z, ptB.X, ptB.Y, ptB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z))

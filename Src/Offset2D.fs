@@ -444,7 +444,7 @@ module Offset2D=
     /// <param name="useVarDistParallelBehaviorBelow"> The angle between normals below which points are considered colinear and VarDistParallelBehavior is applied if distances are not the same. </param>
     /// <param name="useUTurnBehaviorAbove"> The angle between normals after which uTurnBehavior is applied .</param>
     /// <returns> A new ResizeArray of Points. Due to error correction at sharp U-turns the point count may not be the same as the input.</returns>
-    let offsetVariableWithDirections(pts:ResizeArray<Pt>, nDirs: ResizeArray<UnitVc>, dists:ResizeArray<float>, varDistParallelBehavior: VarDistParallel, uTurnBehavior:UTurn, useVarDistParallelBehaviorBelow :float<Cosine.cosine>, useUTurnBehaviorAbove :float<Cosine.cosine>) : ResizeArray<Pt> =
+    let offsetVariableWithDirections(pts:ResizeArray<Pt>, nDirs: ResizeArray<UnitVc>, dists:Collections.Generic.IList<float>, varDistParallelBehavior: VarDistParallel, uTurnBehavior:UTurn, useVarDistParallelBehaviorBelow :float<Cosine.cosine>, useUTurnBehaviorAbove :float<Cosine.cosine>) : ResizeArray<Pt> =
         if pts.Count < 2 then
             fail $"Offset2D.offsetVariableWithDirections:\n  point count must be at least 2, but is {pts.Count}."
 
@@ -504,7 +504,7 @@ module Offset2D=
 
         // (3) if the polyline is open, then we need to fix first and last point
         if isOpen then
-            res.Add <| pts.Last + nDirs.Last * dists.Last
+            res.Add <| pts.Last + nDirs.Last * dists.[dists.Count - 1]
         else
             res.Add res.[0] // add the last point, which is the same as the first point
 

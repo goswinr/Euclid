@@ -9,6 +9,8 @@
     <PackageReference Include="Fable.Mocha" Version="2.17.0" />
     <ProjectReference Include="../Euclid.fsproj" />
 
+    <Compile Include="TestAPI.fs" />
+
     <Compile Include="TestBBox.fs" />
     <Compile Include="TestBox.fs" />
     <Compile Include="TestFreeBox.fs" />

@@ -65,12 +65,6 @@ module AutoOpenPt =
             sqrt(x*x + y*y)
 
 
-        [<Obsolete("Use SqDistanceTo instead.")>]
-        member inline p.DistanceToSquare (b:Pt) =
-            let x = p.X-b.X
-            let y = p.Y-b.Y
-            x*x + y*y
-
         /// Returns the squared distance between two 2D points.
         /// This operation is slightly faster than the distance function, and sufficient for many algorithms like finding closest points.
         member inline p.SqDistanceTo (b:Pt) =
@@ -81,11 +75,6 @@ module AutoOpenPt =
         /// Returns the distance from Origin (0, 0)
         member inline pt.DistanceFromOrigin =
             sqrt (pt.X*pt.X + pt.Y*pt.Y)
-
-
-        [<Obsolete("Use SqDistanceFromOrigin instead.")>]
-        member inline pt.DistanceFromOriginSquare =
-            pt.X*pt.X + pt.Y*pt.Y
 
         /// Returns the squared distance from Origin (0, 0)
         member inline pt.SqDistanceFromOrigin =
@@ -140,72 +129,23 @@ module AutoOpenPt =
         member inline p.Angle360To(o:Pt) =
             p.Angle2PiTo o |> toDegrees
 
-
         /// Returns the closest point on a finite line segment to test point.
         /// The line segment is defined by start point 'fromPt' and end point 'toPt'.
         /// Fails if fromPt and toPt are coincident or too close together.
-        member inline testPt.ClosestPointOnLine(fromPt:Pt, toPt:Pt) =
-            let dir = testPt - fromPt
-            let v   = toPt   - fromPt
-            let lenSq = v.LengthSq
-            if isTooTinySq(lenSq) then failTooClose "Pt.ClosestPointOnLine" fromPt toPt
-            let dot = Vc.dot (v, dir) / lenSq
-            if   dot <= 0.0 then  fromPt
-            elif dot >= 1.0 then  toPt
-            else                  fromPt + dot*v
-
-        /// Returns the closest point on a finite line segment to test point.
-        /// The line segment is defined by start point 'fromPt', unit direction 'uv', and length 'len'.
-        member inline testPt.ClosestPointOnLine(fromPt:Pt, uv:UnitVc, len:float) =
-            let dir = testPt-fromPt
-            let dot = Vc.dot (uv, dir)
-            if   dot <= 0.0 then  fromPt
-            elif dot >= len then  fromPt+len*uv
-            else                  fromPt+dot*uv
+        member inline testPt.ClosestPointOnLine(ln:Line2D) =
+            XLine2D.clPtLn(ln.FromX, ln.FromY, ln.VectorX, ln.VectorY, testPt.X, testPt.Y)
 
         /// Returns the squared distance between point and finite line segment.
         /// The line segment is defined by start point 'fromPt', unit direction 'uv', and length 'len'.
-        member inline testPt.SqDistanceToLine(fromPt:Pt, uv:UnitVc, len:float) =
-            let dir = testPt-fromPt
-            let dot = Vc.dot (uv, dir)
-            if   dot <= 0.0 then testPt.SqDistanceTo  fromPt
-            elif dot >= len then testPt.SqDistanceTo (fromPt+len*uv)
-            else
-                let actual = uv.Rotate90CCW *** dir
-                actual*actual
+        member inline testPt.SqDistanceToLine(ln:Line2D) =
+            XLine2D.sqDistLnPt(ln.FromX, ln.FromY, ln.VectorX, ln.VectorY, testPt.X, testPt.Y)
 
-        /// Returns the squared distance between point and finite line segment defined by
-        /// start, end, direction and length.
-        /// The last two parameters help speed up calculations.
-        member inline testPt.SqDistanceToLine(fromPt:Pt, toPt:Pt, uv:UnitVc, len:float) =
-            let dir = testPt-fromPt
-            let dot = Vc.dot (uv, dir)
-            if   dot <= 0.0 then testPt.SqDistanceTo fromPt
-            elif dot >= len then testPt.SqDistanceTo toPt
-            else
-                let actual = uv.Rotate90CCW *** dir
-                actual*actual
 
         /// Returns the distance between point and finite line segment.
         /// The line segment is defined by start point 'fromPt', unit direction 'uv', and length 'len'.
-        member inline testPt.DistanceToLine(fromPt:Pt, uv:UnitVc, len:float) =
-            let dir = testPt-fromPt
-            let dot = Vc.dot (uv, dir)
-            if   dot <= 0.0 then testPt.DistanceTo  fromPt
-            elif dot >= len then testPt.DistanceTo (fromPt+len*uv)
-            else                abs (uv.Rotate90CCW *** dir)
+        member inline testPt.DistanceToLine(ln:Line2D) =
+            testPt.SqDistanceToLine ln |> sqrt
 
-
-        /// Returns the distance between point and finite line segment defined by start and end.
-        member inline testPt.DistanceToLine(fromPt:Pt, toPt:Pt) =
-            let dir = testPt - fromPt
-            let v   = toPt   - fromPt
-            let lenSq = v.LengthSq
-            if isTooTinySq(lenSq) then failTooClose "Pt.DistanceToLine" fromPt toPt
-            let dot = Vc.dot (v, dir) / v.LengthSq
-            if   dot <= 0.0 then testPt.DistanceTo   fromPt
-            elif dot >= 1.0 then testPt.DistanceTo   toPt
-            else                 testPt.DistanceTo  (fromPt + v * dot)
 
 
         // ----------------------------------------------------------------------------------
@@ -342,8 +282,6 @@ module AutoOpenPt =
         /// Returns the distance from World Origin.
         static member inline distanceFromOrigin (pt:Pt) = pt.DistanceFromOrigin
 
-        [<Obsolete("Use sqDistanceFromOrigin instead.")>]
-        static member inline distanceFromOriginSquare (pt:Pt) = pt.SqDistanceFromOrigin
 
         /// Returns the square distance from World Origin.
         static member inline sqDistanceFromOrigin (pt:Pt) = pt.SqDistanceFromOrigin
@@ -475,3 +413,24 @@ module AutoOpenPt =
                 pt1
             else
                 pt2
+
+
+
+        [<Obsolete("Use .sqDistanceFromOrigin instead.")>]
+        static member inline distanceFromOriginSquare (pt:Pt) = pt.SqDistanceFromOrigin
+
+
+        [<Obsolete("Use .SqDistanceTo instead.")>]
+        member inline p.DistanceToSquare (b:Pt) =
+            let x = p.X-b.X
+            let y = p.Y-b.Y
+            x*x + y*y
+
+
+        [<Obsolete("Use .SqDistanceFromOrigin instead.")>]
+        member inline pt.DistanceFromOriginSquare =
+            pt.X*pt.X + pt.Y*pt.Y
+
+        [<Obsolete("Use .SqDistanceToLine instead.")>]
+        member inline pt.DistanceToLineSquare (ln:Line2D)=
+            pt.SqDistanceToLine(ln)

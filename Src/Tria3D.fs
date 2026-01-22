@@ -124,10 +124,7 @@ type  Tria3D =
 
 
     /// Offsets all points by a given distance.
-    /// If the points are in counter-clockwise order, the offset is inwards.
-    /// Otherwise it is outwards.
-    /// A negative offset distance inverts the direction.
-    ///
+    /// The offset is inwards for positive distance and outwards for negative distance.
     static member offset(a:Pnt, b:Pnt, c:Pnt, dist:float) : Pnt*Pnt*Pnt =
         let vAB = b-a
         let vBC = c-b
@@ -138,9 +135,9 @@ type  Tria3D =
         let na = Vec.cross(perp,vAB) |> Vec.unitize
         let nb = Vec.cross(perp,vBC) |> Vec.unitize
         let nc = Vec.cross(perp,vCA) |> Vec.unitize
-        let mutable cosineA = na *** nc
-        let mutable cosineB = na *** nb
-        let mutable cosineC = nb *** nc
+        let cosineA = na *** nc
+        let cosineB = na *** nb
+        let cosineC = nb *** nc
         (Tria3D.offsetPntCoreSafe a dist na nc perp cosineA,
          Tria3D.offsetPntCoreSafe b dist na nb perp cosineB,
          Tria3D.offsetPntCoreSafe c dist nb nc perp cosineC)

@@ -48,7 +48,7 @@ type Tria2D =
     /// By finding the biggest angle in the triangle.
     /// And then measuring the distance from this point to the line defined by the other two points.
     static member isLinear (a:Pt, b:Pt, c:Pt, [<OPT;DEF(1e-6)>] distanceTolerance:float) =
-        let inline distanceSqLineToPtInfinite(lnFrom:Pt, lnTo:Pt, p:Pt,  lnSqLen:float) =
+        let inline _distanceSqLineToPtInfinite(lnFrom:Pt, lnTo:Pt, p:Pt,  lnSqLen:float) =
             // rewritten from Line3D.distanceLineToPtInfinite
             // http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
             let x = lnFrom.X - lnTo.X
@@ -84,11 +84,11 @@ type Tria2D =
             // the corner with the biggest dot product is the one with the biggest angle,
             // so the one with the closest distance to the opposite line in this triangle
             if dotA > dotB && dotA > dotC then
-                distanceSqLineToPtInfinite(b, c, a, bcLenSq) < distSq
+                _distanceSqLineToPtInfinite(b, c, a, bcLenSq) < distSq
             elif dotB > dotA && dotB > dotC then
-                distanceSqLineToPtInfinite(c, a, b, caLenSq) < distSq
+                _distanceSqLineToPtInfinite(c, a, b, caLenSq) < distSq
             else
-                distanceSqLineToPtInfinite(a, b, c, abLenSq) < distSq
+                _distanceSqLineToPtInfinite(a, b, c, abLenSq) < distSq
 
 
     /// Returns the offset point based on the previous and next normals, the distance and the precomputed cosine (= dot product of nPrev * nNext).
@@ -117,7 +117,7 @@ type Tria2D =
         let vNext = next - ptToOffset |> Vc.unitize
         let nPrev = vPrev |> UnitVc.rotate90CCW
         let nNext = vNext |> UnitVc.rotate90CCW
-        let mutable cosine = nPrev *** nNext
+        let cosine = nPrev *** nNext
         // check for 180 degrees U-turns. 179 degrees is exactly -0.9998476951563913
         // 0 degrees are handled fine
         if withMeasure cosine < Cosine.``179.0`` then // check for 180 degrees U-turns, (0.0 degrees are handled fine)
@@ -135,9 +135,9 @@ type Tria2D =
         let na = b-a |> Vc.unitize |> UnitVc.rotate90CCW
         let nb = c-b |> Vc.unitize |> UnitVc.rotate90CCW
         let nc = a-c |> Vc.unitize |> UnitVc.rotate90CCW
-        let mutable cosineA = na *** nc
-        let mutable cosineB = na *** nb
-        let mutable cosineC = nb *** nc
+        let cosineA = na *** nc
+        let  cosineB = na *** nb
+        let  cosineC = nb *** nc
         (Tria2D.offsetPtCoreSafe a dist na nc cosineA,
          Tria2D.offsetPtCoreSafe b dist na nb cosineB,
          Tria2D.offsetPtCoreSafe c dist nb nc cosineC)

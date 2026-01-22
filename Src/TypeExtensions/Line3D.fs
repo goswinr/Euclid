@@ -461,14 +461,6 @@ module AutoOpenLine3D =
         if isTooTinySq(vLn.LengthSq) then failTooSmall2 "Line3D.MatchesOrientation other" ln v
         vLn *** v > 1e-12
 
-    [<Obsolete("Use ln.MatchesOrientation instead")>]
-    member inline ln.MatchesOrientation180 (otherLn:Line3D) = ln.MatchesOrientation(otherLn)
-
-    [<Obsolete("Use ln.MatchesOrientation instead")>]
-    member inline ln.MatchesOrientation180 (v:Vec) = ln.MatchesOrientation(v)
-
-    [<Obsolete("Use ln.MatchesOrientation instead")>]
-    member inline ln.MatchesOrientation180 (v:UnitVec) = ln.MatchesOrientation(v)
 
     /// Checks if the angle between the two 3D lines is less than 45 degrees.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -480,8 +472,7 @@ module AutoOpenLine3D =
         let tan = XLine3D.tangent (vLn.X, vLn.Y, vLn.Z, vOt.X, vOt.Y, vOt.Z)
         tan < Tangent.``45.0``
 
-    [<Obsolete("Use ln.MatchesOrientation45 instead")>]
-    member inline ln.MatchesOrientation90 (l:Line3D) = ln.MatchesOrientation45(l)
+
 
     /// Checks if two 3D lines are parallel.
     /// Ignores the line orientation.
@@ -961,61 +952,7 @@ module AutoOpenLine3D =
             cy + (l.ToY   - cy) * factor,
             cz + (l.ToZ   - cz) * factor)
 
-    /// Multiplies (or applies) a Quaternion to a 3D line .
-    /// The resulting line has the same length as the input.
-    member inline l.Rotate (q:Quaternion) =
-        // adapted from https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
-        let u = l.FromX
-        let v = l.FromY
-        let w = l.FromZ
-        let x = l.ToX
-        let y = l.ToY
-        let z = l.ToZ
-        let qx = q.X
-        let qy = q.Y
-        let qz = q.Z
-        let qw = q.W
-        let tu = 2.0 * ( qy * w - qz * v)
-        let tv = 2.0 * ( qz * u - qx * w)
-        let tw = 2.0 * ( qx * v - qy * u)
-        let tx = 2.0 * ( qy * z - qz * y)
-        let ty = 2.0 * ( qz * x - qx * z)
-        let tz = 2.0 * ( qx * y - qy * x)
-        Line3D( u + qw * tu + qy * tw - qz * tv ,
-                v + qw * tv + qz * tu - qx * tw ,
-                w + qw * tw + qx * tv - qy * tu ,
-                x + qw * tx + qy * tz - qz * ty ,
-                y + qw * ty + qz * tx - qx * tz ,
-                z + qw * tz + qx * ty - qy * tx )
 
-    /// Multiplies (or applies) a Quaternion to a 3D line around a given center point.
-    /// The resulting line has the same length as the input.
-    member inline l.RotateWithCenter (cen:Pnt, q:Quaternion) =
-        let cX = cen.X
-        let cY = cen.Y
-        let cZ = cen.Z
-        let u = l.FromX - cX
-        let v = l.FromY - cY
-        let w = l.FromZ - cZ
-        let x = l.ToX   - cX
-        let y = l.ToY   - cY
-        let z = l.ToZ   - cZ
-        let qx = q.X
-        let qy = q.Y
-        let qz = q.Z
-        let qw = q.W
-        let tu = 2.0 * ( qy * w - qz * v)
-        let tv = 2.0 * ( qz * u - qx * w)
-        let tw = 2.0 * ( qx * v - qy * u)
-        let tx = 2.0 * ( qy * z - qz * y)
-        let ty = 2.0 * ( qz * x - qx * z)
-        let tz = 2.0 * ( qx * y - qy * x)
-        Line3D( u + qw * tu + qy * tw - qz * tv + cX ,
-                v + qw * tv + qz * tu - qx * tw + cY,
-                w + qw * tw + qx * tv - qy * tu + cZ ,
-                x + qw * tx + qy * tz - qz * ty + cX ,
-                y + qw * ty + qz * tx - qx * tz + cY ,
-                z + qw * tz + qx * ty - qy * tx + cZ )
 
 
 
@@ -1265,7 +1202,7 @@ module AutoOpenLine3D =
 
     /// Multiplies (or applies) a Quaternion to a 3D line.
     /// The resulting line has the same length as the input.
-    static member inline rotate(q:Quaternion) (ln:Line3D) =
+    static member inline rotate (q:Quaternion) (ln:Line3D) =
         ln.Rotate q
 
     /// Multiplies (or applies) a Quaternion to a 3D line around a given center point.
@@ -1305,11 +1242,6 @@ module AutoOpenLine3D =
     static member inline matchesOrientation45 (l:Line3D) (ln:Line3D) =
         l.MatchesOrientation45 ln
 
-    [<Obsolete("Use matchesOrientation instead")>]
-    static member inline matchesOrientation180 (l:Line3D) (ln:Line3D) = l.MatchesOrientation ln
-
-    [<Obsolete("Use matchesOrientation45 instead")>]
-    static member inline matchesOrientation90 (l:Line3D) (ln:Line3D) = l.MatchesOrientation45 ln
 
     /// Checks if two 3D lines are parallel. Ignoring orientation.
     /// Calculates the Cross Product of the two line vectors. (= the area of the parallelogram)
@@ -2125,16 +2057,60 @@ module AutoOpenLine3D =
         XLine3D.getSqDistance(lnA, lnB) |> sqrt
 
 
+    /// <summary>Checks if the two finite 3D lines are touching each other at any of end points
+    /// within the given tolerance.
+    /// This will also return TRUE if the lines are touching on both points.</summary>
+    /// <param name="squareTolerance"> The squared tolerance for the distance between the end points.</param>
+    /// <param name="a"> The first line.</param>
+    /// <param name="b"> The second line.</param>
+    /// <remarks> Use XLine3D.getEndsTouching to get more detailed information about which ends are touching.</remarks>
+    static member isTouchingEndOf squareTolerance (a:Line3D) (b:Line3D)  : bool =
+        (
+            let x = a.ToX-b.FromX
+            let y = a.ToY-b.FromY
+            let z = a.ToZ-b.FromZ
+            x*x + y*y + z*z < squareTolerance
+        ) || (
+            let x = a.FromX-b.ToX
+            let y = a.FromY-b.ToY
+            let z = a.FromZ-b.ToZ
+            x*x + y*y + z*z < squareTolerance
+        ) || (
+            let x = a.FromX-b.FromX
+            let y = a.FromY-b.FromY
+            let z = a.FromZ-b.FromZ
+            x*x + y*y + z*z < squareTolerance
+        ) || (
+            let x = a.ToX-b.ToX
+            let y = a.ToY-b.ToY
+            let z = a.ToZ-b.ToZ
+            x*x + y*y + z*z < squareTolerance
+        )
+
+
+    [<Obsolete("Use ln.MatchesOrientation45 instead")>]
+    member inline ln.MatchesOrientation90 (l:Line3D) = ln.MatchesOrientation45(l)
+
+
+
+    [<Obsolete("Use ln.MatchesOrientation instead")>]
+    member inline ln.MatchesOrientation180 (otherLn:Line3D) = ln.MatchesOrientation(otherLn)
+
+    [<Obsolete("Use ln.MatchesOrientation instead")>]
+    member inline ln.MatchesOrientation180 (v:Vec) = ln.MatchesOrientation(v)
+
+    [<Obsolete("Use ln.MatchesOrientation instead")>]
+    member inline ln.MatchesOrientation180 (v:UnitVec) = ln.MatchesOrientation(v)
 
 
 
 
 
+    [<Obsolete("Use matchesOrientation instead")>]
+    static member inline matchesOrientation180 (l:Line3D) (ln:Line3D) = l.MatchesOrientation ln
 
-
-
-
-
+    [<Obsolete("Use matchesOrientation45 instead")>]
+    static member inline matchesOrientation90 (l:Line3D) (ln:Line3D) = l.MatchesOrientation45 ln
 
 
 
@@ -2184,38 +2160,38 @@ module AutoOpenLine3D =
     static member inline distanceSqToPnt(p:Pnt) (ln:Line3D) =
         ln.SqDistanceFromPoint p
 
-    [<Obsolete("Use Line3D.distanceToLine instead" + since30)>]
+    [<Obsolete("Use Line3D.distanceToLine instead. Obsolete since 0.20.0")>]
     static member distanceBetweenLines(lnA:Line3D, lnB:Line3D) =
         Line3D.distanceToLine lnA lnB
 
-    [<Obsolete("Use Line3D.projectOntoRay instead" + since30)>]
+    [<Obsolete("Use Line3D.projectOntoRay instead. Obsolete since 0.20.0")>]
     static member projectOn(onToLine:Line3D, lineToProject:Line3D) =
         Line3D.projectOntoRay onToLine lineToProject
 
 
     // Obsolete members that don't have a direct replacement:
 
-    [<Obsolete("Use XLine3D.getIntersectionParam instead" + since30)>]
+    [<Obsolete("Use XLine3D.getIntersectionParam instead. Obsolete since 0.20.0", error=true)>]
     static member intersectionParamInfinite(_lnA:Line3D, _lnB:Line3D )  =
         failObsoleteV30 "Line3D.intersectionParamInfinite" "XLine3D.getIntersectionParam"
 
-    [<Obsolete("Use XLine3D.getIntersection instead" + since30)>]
+    [<Obsolete("Use XLine3D.getIntersection instead. Obsolete since 0.20.0", error=true)>]
     static member intersectionInfinite(_lnA:Line3D, _lnB:Line3D ) =
         failObsoleteV30 "Line3D.intersectionInfinite" "XLine3D.getIntersection"
 
-    [<Obsolete("Use Line3D.tryIntersectRay instead" + since30)>]
+    [<Obsolete("Use Line3D.tryIntersectRay instead. Obsolete since 0.20.0", error=true)>]
     static member intersectionPointInfinite(_lnA:Line3D, _lnB:Line3D ) =
         failObsoleteV30 "Line3D.intersectionPointInfinite" "Line3D.tryIntersectRay"
 
-    [<Obsolete("Use XLine3D.getIntersectionParam instead" + since30)>]
+    [<Obsolete("Use XLine3D.getIntersectionParam instead. Obsolete since 0.20.0", error=true)>]
     static member intersectionParam(_lnA:Line3D, _lnB:Line3D ) =
         failObsoleteV30 "Line3D.intersectionParam" "XLine3D.getIntersectionParam"
 
-    [<Obsolete("Use XLine3D.getIntersection instead" + since30)>]
+    [<Obsolete("Use XLine3D.getIntersection instead. Obsolete since 0.20.0", error=true)>]
     static member intersection(_lnA:Line3D, _lnB:Line3D ) =
         failObsoleteV30 "Line3D.intersection" "XLine3D.getIntersection"
 
-    [<Obsolete("Use Line3D.tryIntersect instead" + since30)>]
+    [<Obsolete("Use Line3D.tryIntersect instead. Obsolete since 0.20.0", error=true)>]
     static member intersectionPoint(_lnA:Line3D, _lnB:Line3D) =
         failObsoleteV30 "Line3D.intersectionPoint" "Line3D.tryIntersect"
 
@@ -2224,10 +2200,10 @@ module AutoOpenLine3D =
 
 
 
-    [<Obsolete("Use XLine3D.getEndsTouching instead" + since30)>]
+    [<Obsolete("Use isTouchingEndOf or XLine3D.getEndsTouching instead. Obsolete since 0.20.0")>]
     static member areTouchingAny(_tol:float, _a:Line3D, _b:Line3D) =
         failObsoleteV30 "Line3D.areTouchingAny" "XLine3D.getEndsTouching"
 
-    [<Obsolete("Use XLine3D.getEndsTouching instead" + since30)>]
+    [<Obsolete("Use isTouchingEndOf or XLine3D.getEndsTouching instead. Obsolete since 0.20.0")>]
     static member areTouchingEither(_tol:float, _a:Line3D, _b:Line3D) =
         failObsoleteV30 "Line3D.areTouchingEither" "XLine3D.getEndsTouching"

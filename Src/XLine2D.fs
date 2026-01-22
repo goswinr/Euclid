@@ -212,7 +212,7 @@ module XLine2D =
     /// The result is clamped to the range 0.0 to  1.0.
     /// If the line vector is zero length 0.0 is returned.
     let inline internal clParamLnPt (ln:Line2D, x:float, y:float) : float =
-        clParamRayPt(ln.FromX, ln.FromY, ln.VectorX        , ln.VectorY        , x, y) |> clampBetweenZeroAndOne
+        clParamRayPt(ln.FromX, ln.FromY, ln.VectorX , ln.VectorY, x, y) |> clampBetweenZeroAndOne
 
     /// Returns the squared distance of a point to a ray.
     /// May be NaN or infinity if the line vector is zero length or very short.
@@ -229,6 +229,7 @@ module XLine2D =
         (dotN * dotN) / lenSq
 
         // alternative implementation computing the closest point first:
+        // like used in sqDistLnPt
         // // parameter t of the closest point on line A to point B
         // let t = clParamRayPt(pAx, pAy, vAx, vAy, x, y)
         // let clPtX = pAx + vAx * t
@@ -282,7 +283,7 @@ module XLine2D =
 
     /// Returns the squared distance of a point to a finite line.
     let inline internal sqDistLnPt'(ln:Line2D, x:float, y:float) : float =
-        sqDistLnPt(ln.FromX, ln.FromY, ln.VectorX        , ln.VectorY        , x, y)
+        sqDistLnPt(ln.FromX, ln.FromY, ln.VectorX, ln.VectorY , x, y)
 
     /// Returns the squared distance between the start points of two finite lines.
     let inline internal sqDistLnFromLnFrom(a:Line2D, b:Line2D) : float =
@@ -1537,7 +1538,6 @@ type XLine2D =
 
 
 
-    // TODO add getEndsTouching overload for float and Pt Input ?
 
     /// <summary>Checks if the two finite 2D lines are touching each other at exactly one of their end points
     /// within the given tolerance.</summary>

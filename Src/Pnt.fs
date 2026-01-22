@@ -16,7 +16,7 @@ open EuclidErrors
 
 
 /// An immutable 3D point. Made up from 3 floats: X, Y, and Z.
-/// A 3D point represents a location in space, but not direction or an offset. (use Vec for that.)
+/// A 3D point represents a location in space, but not direction. (use Vec for that.)
 /// (2D Points are called 'Pt' )
 [<Struct; NoEquality; NoComparison>] // because its made up from floats
 [<IsReadOnly>]

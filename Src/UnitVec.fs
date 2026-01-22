@@ -16,7 +16,7 @@ open EuclidErrors
 
 
 /// An immutable 3D vector guaranteed to be always unitized.
-/// A 3D vector represents a direction or an offset in space, but not a location.
+/// A 3D vector represents a direction or translation in space, but not a location.
 /// A 4x4 transformation matrix applied to a vector will only rotate and scale the vector but not translate it.
 /// (2D unit-vectors are called 'UnitVc' )
 /// Use UnitVec.create or UnitVec.createUnchecked to create instances.

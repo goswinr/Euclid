@@ -86,9 +86,8 @@ let run () =
 
 
 #if FABLE_COMPILER
-# nowarn "20" //The result of this expression has type 'int' and is implicitly ignored.
+#nowarn "20" //The result of this expression has type 'int' and is implicitly ignored.
 run()
-
 #else
 
 [<EntryPoint>]

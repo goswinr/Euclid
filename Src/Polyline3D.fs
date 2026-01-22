@@ -81,63 +81,63 @@ type Polyline3D (points: ResizeArray<Pnt>) =
     /// Same as Polyline3D.FirstPoint
     member p.Start
         with get() =
-            if points.Count < 1 then failTooFew "Start.get" 1
+            if points.Count < 1 then failTooFewPoly3D "Start.get" 1 points.Count
             points.[0]
-        and set(v) =
-            if points.Count < 1 then failTooFew "Start.set" 1
-            points.[0] <- v
+        and set(pt) =
+            if points.Count < 1 then failTooFewPoly3D "Start.set" 1 points.Count
+            points.[0] <- pt
 
     /// Gets or sets last or end point of the Polyline3D
     /// This is the point at index Points.Count - 1.
     /// Same as Polyline3D.LastPoint
     member p.End
         with get() =
-            if points.Count < 1 then failTooFew "End.get" 1
+            if points.Count < 1 then failTooFewPoly3D "End.get" 1 points.Count
             points.[points.Count - 1]
-        and set(v) =
-            if points.Count < 1 then failTooFew "End.set" 1
-            points.[points.Count - 1] <- v
+        and set(pt) =
+            if points.Count < 1 then failTooFewPoly3D "End.set" 1 points.Count
+            points.[points.Count - 1] <- pt
 
     /// Gets or sets the last point of the Polyline3D.
     /// This is the point at index Points.Count - 1.
     /// Same as Polyline3D.End
     member p.LastPoint
         with get() =
-            if points.Count < 1 then failTooFew "LastPoint.get" 1
+            if points.Count < 1 then failTooFewPoly3D "LastPoint.get" 1 points.Count
             points.[points.Count - 1]
-        and set(v) =
-            if points.Count < 1 then failTooFew "LastPoint.set" 1
-            points.[points.Count - 1] <- v
+        and set(pt) =
+            if points.Count < 1 then failTooFewPoly3D "LastPoint.set" 1 points.Count
+            points.[points.Count - 1] <- pt
 
     /// Gets or sets the second last point of the Polyline3D.
     member p.SecondLastPoint
         with get() =
-            if points.Count < 2 then failTooFew "SecondLastPoint.get" 2
+            if points.Count < 2 then failTooFewPoly3D "SecondLastPoint.get" 2 points.Count
             points.[points.Count - 2]
-        and set(v) =
-            if points.Count < 2 then failTooFew "SecondLastPoint.set" 2
-            points.[points.Count - 2] <- v
+        and set(pt) =
+            if points.Count < 2 then failTooFewPoly3D "SecondLastPoint.set" 2 points.Count
+            points.[points.Count - 2] <- pt
 
     /// Gets or sets the second point of the Polyline3D.
     /// This is the point at index 1.
     member p.SecondPoint
         with get() =
-            if points.Count < 2 then failTooFew "SecondPoint.get" 2
+            if points.Count < 2 then failTooFewPoly3D "SecondPoint.get" 2 points.Count
             points.[1]
-        and set(v) =
-            if points.Count < 2 then failTooFew "SecondPoint.set" 2
-            points.[1] <- v
+        and set(pt) =
+            if points.Count < 2 then failTooFewPoly3D "SecondPoint.set" 2 points.Count
+            points.[1] <- pt
 
     /// Gets or sets the first point of the Polyline3D.
     /// This is the point at index 0.
     /// Same as Polyline3D.Start
     member p.FirstPoint
         with get() =
-            if points.Count < 1 then failTooFew "FirstPoint.get" 1
+            if points.Count < 1 then failTooFewPoly3D "FirstPoint.get" 1 points.Count
             points.[0]
-        and set(v) =
-            if points.Count < 1 then failTooFew "FirstPoint.set" 1
-            points.[0] <- v
+        and set(pt) =
+            if points.Count < 1 then failTooFewPoly3D "FirstPoint.set" 1 points.Count
+            points.[0] <- pt
 
     /// Gets the count of points in the Polyline3D
     member p.PointCount =
@@ -178,13 +178,13 @@ type Polyline3D (points: ResizeArray<Pnt>) =
 
     /// Gets the last segment of the Polyline3D.
     member p.LastSegment =
-        if points.Count < 2 then failTooFew "LastSegment" 2
+        if points.Count < 2 then failTooFewPoly3D "LastSegment" 2 points.Count
         let i = points.Count - 1
         Line3D(points.[i-1], points.[i])
 
     /// Gets the first segment of the Polyline3D.
     member p.FirstSegment =
-        if points.Count < 2 then failTooFew "FirstSegment" 2
+        if points.Count < 2 then failTooFewPoly3D "FirstSegment" 2 points.Count
         Line3D(points.[0], points.[1])
 
     /// Returns all segments of the Polyline3D as a list of Line3D.
@@ -247,8 +247,8 @@ type Polyline3D (points: ResizeArray<Pnt>) =
     /// Close the Polyline3D if it is not already closed.
     /// If the ends are closer than the tolerance. The last point is set to equal the first point.
     /// Else the start point is added to the end of the Polyline3D.
-    member p.CloseIfOpen(toleranceForAddingPoint) =
-        if points.Count < 3 then failTooFew "CloseIfOpen" 3
+    member p.CloseInPlace(toleranceForAddingPoint) =
+        if points.Count < 3 then failTooFewPoly3D "CloseInPlace" 3 points.Count
         let v = p.Start  - p.End
         if v.LengthSq < toleranceForAddingPoint*toleranceForAddingPoint then
             points.Last <- p.Start
@@ -464,8 +464,8 @@ type Polyline3D (points: ResizeArray<Pnt>) =
 
 
     /// Returns the average center of all points of the Polyline3D.
-    member pl.Center : Pnt =
-        if points.Count = 0 then failTooFew "Center" 1
+    member pl.Center =
+        if points.Count = 0 then failTooFewPoly3D "Center" 1 pl.PointCount
         let mutable x = 0.0
         let mutable y = 0.0
         let mutable z = 0.0
@@ -589,15 +589,15 @@ type Polyline3D (points: ResizeArray<Pnt>) =
         p.Points
 
     /// Gets first point of the Polyline3D
-    static member start (p:Polyline3D) =
-        let points = p.Points
-        if points.Count < 1 then  failTooFew "start" 1
+    static member start (pl:Polyline3D) =
+        let points = pl.Points
+        if points.Count < 1 then  failTooFewPoly3D "start" 1 pl.PointCount
         points.[0]
 
     /// Gets last or end point of the Polyline3D
-    static member ende (p:Polyline3D) =
-        let points = p.Points
-        if points.Count < 1 then failTooFew "ende" 1
+    static member ende (pl:Polyline3D) =
+        let points = pl.Points
+        if points.Count < 1 then failTooFewPoly3D "ende" 1 pl.PointCount
         points.[points.Count - 1]
 
     /// Gets the length of the Polyline3D.
@@ -765,7 +765,7 @@ type Polyline3D (points: ResizeArray<Pnt>) =
     /// If the first and last point are within 1e-6 of each other, the last point is set equal to the first point.
     /// Otherwise one point is added.
     static member close (pl:Polyline3D) =
-        if pl.Points.Count < 2 then failTooFew "close" 2
+        if pl.Points.Count < 2 then failTooFewPoly3D "close" 2 pl.PointCount
         let points = pl.Points
         let np = Polyline3D.createEmpty (points.Count + 1)
         np.Points.AddRange(points.GetRange(0, points.Count))
@@ -778,7 +778,7 @@ type Polyline3D (points: ResizeArray<Pnt>) =
     /// Closes the Polyline3D in place by adding a point.
     /// If the first and last point are within 1e-6 of each other, the last point is set equal to the first point instead.
     static member closeInPlace (pl:Polyline3D) =
-        if pl.Points.Count < 2 then failTooFew "closeInPlace" 2
+        if pl.Points.Count < 2 then failTooFewPoly3D "closeInPlace" 2 pl.PointCount
         let points = pl.Points
         if Pnt.distanceSq points.First points.Last < 1e-12 then
             points.[points.Count-1] <- points.First
@@ -986,8 +986,8 @@ type Polyline3D (points: ResizeArray<Pnt>) =
     /// <returns>A new 3D polyline.</returns>
     static member offsetVarWithRef(
                             polyLine:Polyline3D,
-                            inPlaneOffsetDistance: ResizeArray<float>,
-                            perpendicularOffsetDistances: ResizeArray<float>,
+                            inPlaneOffsetDistance: Collections.Generic.IList<float>,
+                            perpendicularOffsetDistances: Collections.Generic.IList<float>,
                             refNormal: UnitVec,
                             [<OPT;DEF(false)>] loop:bool,
                             [<OPT;DEF(Offset3D.VarDistParallel.Fail)>] varDistParallelBehaviour: Offset3D.VarDistParallel, // fail by default
@@ -1056,3 +1056,5 @@ type Polyline3D (points: ResizeArray<Pnt>) =
 
 
 
+    [<Obsolete("Use polyline3D.CloseInPlace instead.")>]
+    member p.CloseIfOpen(t) = p.CloseInPlace(t)

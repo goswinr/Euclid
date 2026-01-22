@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [0.20.0-beta2] - 2026-01-24
+### Changed
+- Deprecate Loop module, use Polyline2D instead
 
 ## [0.20.0-beta1] - 2026-01-17
 ### Changed

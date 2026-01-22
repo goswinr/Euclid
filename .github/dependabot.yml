@@ -12,6 +12,12 @@ updates:
     directory: "/Src/"
     schedule:
       interval: "weekly"
+
+
+    # https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain/manage-your-dependency-security/controlling-dependencies-updated#allowing-specific-dependencies-to-be-updated
+    allow:
+      # the allow key is needed so that the ignore key below works
+      - dependency-type: "all"
     ignore:
       - dependency-name: "FSharp.Core"
 

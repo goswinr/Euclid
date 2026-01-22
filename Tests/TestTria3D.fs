@@ -352,4 +352,129 @@ let tests =
         | ValueNone -> failwith "first offsetVar returned None"
         }
 
+        test "offset inward reduces area (equilateral triangle in XY plane)" {
+        // Equilateral triangle in XY plane
+        let sqrt3 = sqrt 3.0
+        let a = Pnt(0, 0, 0)
+        let b = Pnt(2, 0, 0)
+        let c = Pnt(1, sqrt3, 0)
+        let originalArea = Tria3D.area(a, b, c)
+        let d = 0.1 // positive offset = inward
+        let (oa, ob, oc) = Tria3D.offset(a, b, c, d)
+        let offsetArea = Tria3D.area(oa, ob, oc)
+        "inward offset reduces area" |> Expect.isTrue (offsetArea < originalArea)
+        }
+
+        test "offset outward increases area (equilateral triangle in XY plane)" {
+        // Equilateral triangle in XY plane
+        let sqrt3 = sqrt 3.0
+        let a = Pnt(0, 0, 0)
+        let b = Pnt(2, 0, 0)
+        let c = Pnt(1, sqrt3, 0)
+        let originalArea = Tria3D.area(a, b, c)
+        let d = -0.1 // negative offset = outward
+        let (oa, ob, oc) = Tria3D.offset(a, b, c, d)
+        let offsetArea = Tria3D.area(oa, ob, oc)
+        "outward offset increases area" |> Expect.isTrue (offsetArea > originalArea)
+        }
+
+        test "offset inward reduces area (triangle in XZ plane)" {
+        let a = Pnt(0, 0, 0)
+        let b = Pnt(2, 0, 0)
+        let c = Pnt(1, 0, 2)
+        let originalArea = Tria3D.area(a, b, c)
+        let d = 0.1
+        let (oa, ob, oc) = Tria3D.offset(a, b, c, d)
+        let offsetArea = Tria3D.area(oa, ob, oc)
+        "inward offset reduces area (XZ)" |> Expect.isTrue (offsetArea < originalArea)
+        }
+
+        test "offset outward increases area (triangle in YZ plane)" {
+        let a = Pnt(0, 0, 0)
+        let b = Pnt(0, 2, 0)
+        let c = Pnt(0, 1, 2)
+        let originalArea = Tria3D.area(a, b, c)
+        let d = -0.1
+        let (oa, ob, oc) = Tria3D.offset(a, b, c, d)
+        let offsetArea = Tria3D.area(oa, ob, oc)
+        "outward offset increases area (YZ)" |> Expect.isTrue (offsetArea > originalArea)
+
+        let originalArea = Tria3D.area(a, c, b)//swapped b and c
+        let d = -0.1
+        let (oa, ob, oc) = Tria3D.offset(a, c, b, d)
+        let offsetArea = Tria3D.area(oa, ob, oc)
+        "outward offset increases area (YZ)" |> Expect.isTrue (offsetArea > originalArea)
+
+
+
+        }
+
+        test "offset equilateral triangle preserves symmetry" {
+        // Equilateral triangle centered at origin in XY plane
+        let sqrt3 = sqrt 3.0
+        let a = Pnt(-1, -sqrt3 / 3.0, 0)
+        let b = Pnt(1, -sqrt3 / 3.0, 0)
+        let c = Pnt(0, 2.0 * sqrt3 / 3.0, 0)
+        let d = 0.1
+        let (oa, ob, oc) = Tria3D.offset(a, b, c, d)
+        // For an equilateral triangle, all offset points should move toward centroid
+        let centroid = Pnt((a.X + b.X + c.X) / 3.0, (a.Y + b.Y + c.Y) / 3.0, (a.Z + b.Z + c.Z) / 3.0)
+        let distA = Pnt.distance a centroid
+        let distOa = Pnt.distance oa centroid
+        let distB = Pnt.distance b centroid
+        let distOb = Pnt.distance ob centroid
+        let distC = Pnt.distance c centroid
+        let distOc = Pnt.distance oc centroid
+        "oa is closer to centroid than a" |> Expect.isTrue (distOa < distA)
+        "ob is closer to centroid than b" |> Expect.isTrue (distOb < distB)
+        "oc is closer to centroid than c" |> Expect.isTrue (distOc < distC)
+        // All offset points should be equidistant from centroid (equilateral symmetry)
+        "offset triangle is equilateral (oa-ob)" |> Expect.floatClose tol distOa distOb
+        "offset triangle is equilateral (ob-oc)" |> Expect.floatClose tol distOb distOc
+        }
+
+        test "offset stays in same plane (XY)" {
+        let a = Pnt(0, 0, 5)
+        let b = Pnt(2, 0, 5)
+        let c = Pnt(1, 2, 5)
+        let d = 0.2
+        let (oa, ob, oc) = Tria3D.offset(a, b, c, d)
+        "oa stays in Z=5 plane" |> Expect.floatClose tol oa.Z 5.0
+        "ob stays in Z=5 plane" |> Expect.floatClose tol ob.Z 5.0
+        "oc stays in Z=5 plane" |> Expect.floatClose tol oc.Z 5.0
+        }
+
+        test "offset stays in same plane (arbitrary tilted)" {
+        // Triangle in a tilted plane
+        let a = Pnt(0, 0, 0)
+        let b = Pnt(1, 0, 1)
+        let c = Pnt(0, 1, 1)
+        let d = 0.1
+        let (oa, ob, oc) = Tria3D.offset(a, b, c, d)
+        // Compute the original plane normal
+        let v1 = b - a
+        let v2 = c - a
+        let normal = Vec.cross(v1, v2) |> Vec.unitize
+        // Check that offset points lie in the same plane (dot product with normal from original point should be 0)
+        let distOa = abs ((oa - a) *** normal)
+        let distOb = abs ((ob - a) *** normal)
+        let distOc = abs ((oc - a) *** normal)
+        "oa stays in original plane" |> Expect.floatClose tol distOa 0.0
+        "ob stays in original plane" |> Expect.floatClose tol distOb 0.0
+        "oc stays in original plane" |> Expect.floatClose tol distOc 0.0
+        }
+
+        test "offset throws for collinear points" {
+        let a = Pnt(0, 0, 0)
+        let b = Pnt(1, 1, 1)
+        let c = Pnt(2, 2, 2)
+        try
+            let _ = Tria3D.offset(a, b, c, 0.1)
+            failwith "Expected exception for collinear points"
+        with
+        | :? Euclid.EuclidErrors.EuclidException ->
+            "offset correctly throws exception for collinear points" |> Expect.isTrue true
+        | _ -> failwith "Expected EuclidException"
+        }
+
     ]

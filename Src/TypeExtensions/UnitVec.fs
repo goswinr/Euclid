@@ -314,14 +314,14 @@ module AutoOpenUnitVec =
 
 
         /// Multiplies a Matrix with a 3D vector.
-        /// Since a 3D vector represents a direction or an offset in space, but not a location,
+        /// Since a 3D vector represents a direction or translation in space, but not a location,
         /// the implicit the 4th dimension is 0.0 so that all translations are ignored. (Homogeneous Vector)
         /// The resulting vector is not unitized.
         member inline v.Transform (m:Matrix) : Vec =
             v *** m // operator * is defined in Matrix.fs
 
         /// Multiplies (or applies) a RigidMatrix to a 3D unit-vector.
-        /// Since a 3D vector represents a direction or an offset in space, but not a location,
+        /// Since a 3D vector represents a direction or translation in space, but not a location,
         /// all translations are ignored. (Homogeneous Vector)
         member inline v.TransformRigid (m:RigidMatrix) : UnitVec =
             v *** m // operator * is defined in RigidMatrix.fs
@@ -852,14 +852,14 @@ module AutoOpenUnitVec =
 
 
         /// Multiplies a Matrix with a 3D vector.
-        /// Since a 3D vector represents a direction or an offset in space, but not a location,
+        /// Since a 3D vector represents a direction or translation in space, but not a location,
         /// the implicit the 4th dimension is 0.0 so that all translations are ignored. (Homogeneous Vector)
         /// The resulting vector is not unitized.
         static member inline transform (m:Matrix) (v:UnitVec) : Vec =
             v.Transform(m)
 
         /// Multiplies (or applies) a RigidMatrix to a 3D unit-vector.
-        /// Since a 3D vector represents a direction or an offset in space, but not a location,
+        /// Since a 3D vector represents a direction or translation in space, but not a location,
         /// all translations are ignored. (Homogeneous Vector)
         /// The resulting vector is  unitized too.
         static member inline transformRigid (m:RigidMatrix) (v:UnitVec) : UnitVec =

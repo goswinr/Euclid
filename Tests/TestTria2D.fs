@@ -370,9 +370,86 @@ let tests =
             | ValueNone -> failwith "first offsetPtVar returned None"
         }
 
+        test "offset inward CCW triangle reduces area" {
+            // Equilateral triangle CCW
+            let sqrt3 = sqrt 3.0
+            let a = Pt(0, 0)
+            let b = Pt(2, 0)
+            let c = Pt(1, sqrt3)
+            let originalArea = Tria2D.area(a, b, c)
+            let d = 0.1 // positive offset = inward for CCW
+            let (oa, ob, oc) = Tria2D.offset(a, b, c, d)
+            let offsetArea = Tria2D.area(oa, ob, oc)
+            "inward offset reduces area" |> Expect.isTrue (offsetArea < originalArea)
+        }
 
+        test "offset outward CCW triangle increases area" {
+            // Equilateral triangle CCW
+            let sqrt3 = sqrt 3.0
+            let a = Pt(0, 0)
+            let b = Pt(2, 0)
+            let c = Pt(1, sqrt3)
+            let originalArea = Tria2D.area(a, b, c)
+            let d = -0.1 // negative offset = outward for CCW
+            let (oa, ob, oc) = Tria2D.offset(a, b, c, d)
+            let offsetArea = Tria2D.area(oa, ob, oc)
+            "outward offset increases area" |> Expect.isTrue (offsetArea > originalArea)
+        }
 
+        test "offset inward CW triangle increases area (offset goes outward)" {
+            // Right triangle CW orientation
+            let a = Pt(1, 1)
+            let b = Pt(1, 0)
+            let c = Pt(0, 0)
+            let originalArea = Tria2D.area(a, b, c)
+            let d = 0.1 // positive offset = outward for CW
+            let (oa, ob, oc) = Tria2D.offset(a, b, c, d)
+            let offsetArea = Tria2D.area(oa, ob, oc)
+            "positive offset on CW triangle increases area" |> Expect.isTrue (offsetArea > originalArea)
+        }
 
+        test "offset equilateral triangle with known geometry" {
+            // Equilateral triangle CCW, centered at origin for simpler math
+            let sqrt3 = sqrt 3.0
+            let a = Pt(-1, -sqrt3 / 3.0)
+            let b = Pt(1, -sqrt3 / 3.0)
+            let c = Pt(0, 2.0 * sqrt3 / 3.0)
+            let d = 0.1
+            let (oa, ob, oc) = Tria2D.offset(a, b, c, d)
+            // For an equilateral triangle, all offset points should move toward centroid by same distance
+            let centroid = Pt((a.X + b.X + c.X) / 3.0, (a.Y + b.Y + c.Y) / 3.0)
+            let distA = Pt.distance a centroid
+            let distOa = Pt.distance oa centroid
+            let distB = Pt.distance b centroid
+            let distOb = Pt.distance ob centroid
+            let distC = Pt.distance c centroid
+            let distOc = Pt.distance oc centroid
+            "oa is closer to centroid than a" |> Expect.isTrue (distOa < distA)
+            "ob is closer to centroid than b" |> Expect.isTrue (distOb < distB)
+            "oc is closer to centroid than c" |> Expect.isTrue (distOc < distC)
+            // All offset points should be equidistant from centroid (equilateral symmetry)
+            "offset triangle is equilateral (oa-ob)" |> Expect.floatClose tol distOa distOb
+            "offset triangle is equilateral (ob-oc)" |> Expect.floatClose tol distOb distOc
+        }
 
+        test "offset preserves orientation CCW" {
+            let a = Pt(0, 0)
+            let b = Pt(2, 0)
+            let c = Pt(1, 1)
+            let originalDet = Tria2D.det(a, b, c)
+            let (oa, ob, oc) = Tria2D.offset(a, b, c, 0.1)
+            let offsetDet = Tria2D.det(oa, ob, oc)
+            "CCW orientation preserved after offset" |> Expect.isTrue (sign originalDet = sign offsetDet)
+        }
+
+        test "offset preserves orientation CW" {
+            let a = Pt(1, 1)
+            let b = Pt(2, 0)
+            let c = Pt(0, 0)
+            let originalDet = Tria2D.det(a, b, c)
+            let (oa, ob, oc) = Tria2D.offset(a, b, c, 0.1)
+            let offsetDet = Tria2D.det(oa, ob, oc)
+            "CW orientation preserved after offset" |> Expect.isTrue (sign originalDet = sign offsetDet)
+        }
 
     ]

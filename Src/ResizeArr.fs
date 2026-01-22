@@ -8,7 +8,7 @@ module internal Arr =
 
     /// Returns the index of the smallest element.
     let minIndex (xs:'T[]) =
-        if xs.Length < 1 then failTooFew "Array.minIndex" 1
+        if xs.Length < 1 then fail "Arr.minIndex failed on empty array."
         let mutable f = xs.[0]
         let mutable mf = f
         let mutable ii = 0
@@ -21,7 +21,7 @@ module internal Arr =
 
     /// Returns the index of the biggest element.
     let maxIndex (xs:'T[]) =
-        if xs.Length < 1 then failTooFew "Array.maxIndex" 1
+        if xs.Length < 1 then fail "Arr.maxIndex failed on empty array."
         let mutable f = xs.[0]
         let mutable mf = f
         let mutable ii = 0
@@ -35,25 +35,40 @@ module internal Arr =
 // written with lowercase so that it does not get shadowed by the ResizeArray library if used together with it in Fable.
 module internal ResizeArr =
 
+
     /// just like Array.create.
-    let inline create (count:int) (x:'T) =
+    let inline create (count:int) (x:'T) : ResizeArray<'T> =
         let r = new ResizeArray<'T>(count)
         for i=0 to count-1 do r.Add(x)
         r
 
     /// this.Count.
-    let inline length (xs: ResizeArray<'T>) =
+    let inline length (xs: ResizeArray<'T>) :int =
         xs.Count
 
-    let inline init (count:int) (f:int->'T) =
-        let r = new ResizeArray<'T>(count)
-        for i=0 to count-1 do r.Add(f i)
-        r
+    let inline init (count:int) (f:int->'T) : ResizeArray<'T> =
+        #if FABLE_COMPILER
+            // https://fable.io/docs/javascript/features.html#emitjsexpr
+            Fable.Core.JsInterop.emitJsStatement (count, f) "
+            const xs = new Array($0); 
+            for (let i = 0; i < $0; i++) 
+                { xs[i] = $1(i); }; 
+            return xs "
+        #else
+            let r = new ResizeArray<'T>(count)
+            for i=0 to count-1 do r.Add(f i)
+            r
+        #endif
 
-    let inline singleton (x:'T) =
-        let r = new ResizeArray<'T>(1)
-        r.Add(x)
-        r
+    let inline singleton (x:'T) : ResizeArray<'T> =
+        #if FABLE_COMPILER
+            Fable.Core.JsInterop.emitJsExpr (x) "[ $0 ]"
+        #else
+            let r = new ResizeArray<'T>(1)
+            r.Add(x)
+            r
+        #endif
+
     /// Yields looped Seq from (first, second)  up to (last, first).
     /// The resulting seq has the same element count as the input Rarr.
     let thisNext (rarr:ResizeArray<'T>) =
@@ -103,8 +118,6 @@ module internal ResizeArr =
     let findIndex (predicate:'T->bool) (xs: ResizeArray<'T>) : int=
         xs.FindIndex (System.Predicate predicate)
 
-
-
     let find (predicate:'T->bool) (xs: ResizeArray<'T>) : 'T =
         xs.Find (System.Predicate predicate)
 
@@ -120,7 +133,7 @@ module internal ResizeArr =
                     fail $"ResizeArr.findLast: None of the {xs.Count} elements satisfies the predicate."
         xs.[i]
 
-    let findLastIndex (predicate:'T->bool) (xs: ResizeArray<'T>) : int=
+    let findLastIndex (predicate:'T->bool) (xs: ResizeArray<'T>) : int =
         let mutable r = -1
         let mutable i = xs.Count - 1
         while r = -1 && i >= 0 do
@@ -133,12 +146,22 @@ module internal ResizeArr =
     /// <summary>Returns a new ResizeArray with the elements in reverse order.</summary>
     /// <param name="xs">The input ResizeArr.</param>
     /// <returns>The reversed ResizeArr.</returns>
-    let rev (xs: ResizeArray<'T>) =
-        let len = xs.Count
-        let result = ResizeArray (len)
-        for i = len - 1 downto 0 do
-            result.Add xs.[i]
-        result
+    let rev (xs: ResizeArray<'T>) : ResizeArray<'T> =
+        #if FABLE_COMPILER
+            // https://fable.io/docs/javascript/features.html#emitjsexpr
+            Fable.Core.JsInterop.emitJsStatement (xs) "
+            const xs = new Array($0.length);
+            const lastIdx = $0.length - 1; 
+            for (let i = 0; i < $0.length; i++) 
+                { xs[i] = $0[lastIdx - i]; }; 
+            return xs "
+        #else
+            let len = xs.Count
+            let result = ResizeArray (len)
+            for i = len - 1 downto 0 do
+                result.Add xs.[i]
+            result
+        #endif
 
     /// <summary>Returns the index of the smallest of all elements of the ResizeArray, compared via Operators.max on the function result.</summary>
     /// <param name="projection">The function to transform the elements into a type supporting comparison.</param>
@@ -179,20 +202,28 @@ module internal ResizeArr =
     /// <returns>The ResizeArray of transformed elements.</returns>
     let map (mapping: 'T -> 'U) (xs: ResizeArray<'T>) : ResizeArray<'U> =
         #if FABLE_COMPILER
-        let r = ResizeArray(xs.Count)
-        for i = 0 to xs.Count - 1 do
-            r.Add(mapping xs.[i])
-        r
+        // https://fable.io/docs/javascript/features.html#emitjsexpr
+        Fable.Core.JsInterop.emitJsExpr (xs, mapping) "$0.map($1)"
         #else
         xs.ConvertAll (System.Converter mapping) // not supported in Fable
         #endif
 
     /// Creates a shallow copy of the input ResizeArray and adds the first element to the end, closing the loop.
     let closeLoop (pts: ResizeArray<'T>) =
-        let r = ResizeArray<'T>(pts.Count + 1)
-        r.AddRange(pts)
-        r.Add(pts.[0])
-        r
+        #if FABLE_COMPILER
+            Fable.Core.JsInterop.emitJsStatement (xs) "
+            const xs = new Array($0.length+1);            
+            for (let i = 0; i < $0.length; i++) 
+                { xs[i] = $0[i]; }; 
+            xs[$0.length] = $0[0];
+            return xs "
+        #else
+            let r = ResizeArray<'T>(pts.Count + 1)
+            r.AddRange(pts)
+            r.Add(pts.[0])
+            r
+        #endif
+
 
 
     /// <summary>Returns the last element for which the given function returns <c>true</c>.

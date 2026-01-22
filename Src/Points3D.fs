@@ -306,15 +306,15 @@ type Points() =
     // Tria2D
 
 
-    [<Obsolete("Use Tria2D.offsetPtVar instead")>]
+    [<Obsolete("Use Tria2D.offsetPtVar instead", error=true)>]
     static member offsetInCornerEx2D(_thisPt:Pt, _prevToThis:Vc, _thisToNext:Vc, _prevDist:float, _nextDist:float, _referenceOrient:float) : ValueOption<Pt*Vc*Vc> =
         fail "Points.offsetInCornerEx2D with referenceOrient is deprecated, referenceOrient is ignored, use Tria2D.offsetPtVar instead." |> unbox // unbox to make type checker happy
-        // Tria2D.offsetPtVar(thisPt, thisPt+prevToThis, thisPt+thisToNext, prevDist, nextDist)
 
-    [<Obsolete("Use Tria2D.offsetPtVar instead")>]
+
+    [<Obsolete("Use Tria2D.offsetPtVar instead", error=true)>]
     static member offsetInCornerEx2D(_prevPt:Pt, _thisPt:Pt, _nextPt:Pt, _prevDist:float,_nextDist:float, _referenceOrient:float) : ValueOption<Pt*Vc*Vc> =
         fail "Points.offsetInCornerEx2D with referenceOrient is deprecated, referenceOrient is ignored, use Tria2D.offsetPtVar instead." |> unbox // unbox to make type checker happy
-        // Tria2D.offsetPtVar(prevPt, thisPt, nextPt, prevDist, nextDist) //, referenceOrient)
+
 
     // Tria3D
 
@@ -327,153 +327,14 @@ type Points() =
     static member offsetInCorner(prevPt:Pnt, thisPt:Pnt, nextPt:Pnt, prevDist:float, nextDist:float) : ValueOption<Pnt> =
         Tria3D.offsetVar(prevPt, thisPt, nextPt, prevDist, nextDist)
 
-    [<Obsolete("Use Tria3D.offsetVar instead")>]
+    [<Obsolete("Use Tria3D.offsetVar instead", error=true)>]
     static member offsetInCornerEx(_thisPt:Pnt, _prevToThis:Vec, _thisToNext:Vec, _prevDist:float, _nextDist:float, _referenceNormal:Vec) : ValueOption<Pnt*UnitVec*Vec*Vec> =
         fail "Points.offsetInCornerEx with referenceNormal is deprecated, referenceNormal is ignored, use Tria3D.offsetVar instead." |> unbox // unbox to make type checker happy
-        // Tria3D.offsetVar(thisPt, thisPt+prevToThis, thisPt+thisToNext, prevDist, nextDist) //, referenceNormal)
 
-    [<Obsolete("Use Tria3D.offsetVar instead")>]
+
+    [<Obsolete("Use Tria3D.offsetVar instead", error=true)>]
     static member offsetInCornerEx(_prevPt:Pnt, _thisPt:Pnt, _nextPt:Pnt, _prevDist:float, _nextDist:float, _referenceNormal:Vec) : ValueOption<Pnt*UnitVec*Vec*Vec> =
         fail "Points.offsetInCornerEx with referenceNormal is deprecated, referenceNormal is ignored, use Tria3D.offsetVar instead." |> unbox // unbox to make type checker happy
-        // Tria3D.offsetVar(prevPt, thisPt, nextPt, prevDist, nextDist) //, referenceNormal)
 
 
-
-    (* use Tria3D instead
-
-    /// It finds the inner offset point in a corner (defined a point, a previous vector to this point and a next vector from this point)
-    /// The offset from first and second segment are given separately and can vary (prevDist and nextDist).
-    /// Use negative distance for outer offset.
-    /// If Points are collinear by 0.25 degrees or less than 1-e6 units apart returns: ValueNone.
-    /// Use negative distances to get outside offset.
-    static member offsetInCorner(thisPt:Pnt,
-                                 prevToThis:Vec,
-                                 thisToNext:Vec,
-                                 prevDist:float,
-                                 nextDist:float) : ValueOption<Pnt> =
-        let ax = prevToThis.X
-        let ay = prevToThis.Y
-        let az = prevToThis.Z
-        let bx = thisToNext.X
-        let by = thisToNext.Y
-        let bz = thisToNext.Z
-        let a = ax*ax + ay*ay + az*az // square length of A
-        let c = bx*bx + by*by + bz*bz // square length of B
-        if isTooSmallSq a then
-            ValueNone
-        elif isTooSmallSq c  then
-            ValueNone
-        else
-            let b = ax*bx + ay*by + az*bz // dot product of both lines
-            let ac = a*c // square of square length, never negative
-            let bb = b*b // square of square dot product, never negative
-            let discriminant = ac - bb // never negative, the dot product cannot be bigger than the two square length multiplied with each other
-            let div = ac+bb // never negative
-            let rel = discriminant/div
-            if rel < float RelAngleDiscriminant.``0.25`` then //parallel
-                ValueNone
-            else
-                let n = Vec.cross(prevToThis, thisToNext)
-                let offP = thisPt + (Vec.cross(n, prevToThis)  |> Vec.withLength prevDist)
-                let offN = thisPt + (Vec.cross(n, thisToNext)  |> Vec.withLength nextDist)
-                let vx = offN.X - offP.X
-                let vy = offN.Y - offP.Y
-                let vz = offN.Z - offP.Z
-                let e = bx*vx + by*vy + bz*vz
-                let d = ax*vx + ay*vy + az*vz
-                let t = (c * d - b * e) / discriminant
-                ValueSome <|  offP + t * prevToThis
-
-    /// It finds the inner offset point in a corner (defined by a Polyline from 3 points (prevPt, thisPt and nextPt)
-    /// The offset from first and second segment are given separately and can vary (prevDist and nextDist).
-    /// Use negative distance for outer offset.
-    /// If Points are collinear by 0.25 degrees or less than 1-e6 units apart returns: ValueNone.
-    /// Use negative distances to get outside offset.
-    static member offsetInCorner( prevPt:Pnt,
-                                  thisPt:Pnt,
-                                  nextPt:Pnt,
-                                  prevDist:float,
-                                  nextDist:float) : ValueOption<Pnt> =
-        let prevV = thisPt - prevPt
-        let nextV = nextPt - thisPt
-        Points.offsetInCorner(thisPt, prevV, nextV, prevDist, nextDist)
-
-
-    /// It finds the inner offset point in a corner (defined a point, a previous vector to this point and a next vector from this point)
-    /// The offset from first and second segment are given separately and can vary (prevDist and nextDist).
-    /// Use negative distance for outer offset.
-    /// If Points are collinear by 0.25 degrees or less than 1-e6 units apart returns: ValueNone.
-    /// Use negative distances to get outside offset.
-    /// The 'referenceNormal' is' An approximate orientation Normal to help find the correct offset side, To be in Z Axis orientation for Counter-Clockwise loops in 2D.
-    /// Returns the offset point, the unitized normal vector aligned with the referenceNormal, the shift direction for prev and next line.
-    static member offsetInCornerEx( thisPt:Pnt,
-                                    prevToThis:Vec,
-                                    thisToNext:Vec,
-                                    prevDist:float,
-                                    nextDist:float,
-                                    referenceNormal:Vec) : ValueOption<Pnt*UnitVec*Vec*Vec> =
-        let ax = prevToThis.X
-        let ay = prevToThis.Y
-        let az = prevToThis.Z
-        let bx = thisToNext.X
-        let by = thisToNext.Y
-        let bz = thisToNext.Z
-        let a = ax*ax + ay*ay + az*az // square length of A
-        let c = bx*bx + by*by + bz*bz // square length of B
-        if isTooSmallSq (c) then
-            ValueNone
-        elif isTooSmallSq (a) then
-            ValueNone
-        else
-            let b = ax*bx + ay*by + az*bz // dot product of both lines
-            let ac = a*c // square of square length, never negative
-            let bb = b*b // square of square dot product, never negative
-            let discriminant = ac - bb // never negative, the dot product cannot be bigger than the two square length multiplied with each other
-            let div = ac+bb // never negative
-            let rel = discriminant/div
-            if rel < float RelAngleDiscriminant.``0.25`` then //parallel
-                ValueNone
-            else
-                let n = Vec.cross(prevToThis, thisToNext) |> Vec.matchOrientation referenceNormal
-                let prevShift = Vec.cross(n, prevToThis)  |> Vec.withLength prevDist
-                let nextShift = Vec.cross(n, thisToNext)  |> Vec.withLength nextDist
-                let offP = thisPt + prevShift
-                let offN = thisPt + nextShift
-                let vx = offN.X - offP.X
-                let vy = offN.Y - offP.Y
-                let vz = offN.Z - offP.Z
-                let e = bx*vx + by*vy + bz*vz
-                let d = ax*vx + ay*vy + az*vz
-                let t = (c * d - b * e) / discriminant
-                let pt = offP + t * prevToThis
-                ValueSome (pt, n.Unitized, prevShift, nextShift)
-
-    /// It finds the inner offset point in a corner (defined by a Polyline from 3 points (prevPt, thisPt and nextPt)
-    /// The offset from first and second segment are given separately and can vary (prevDist and nextDist).
-    /// Use negative distance for outer offset.
-    /// If Points are collinear by 0.25 degrees or less than 1-e6 units apart returns: ValueNone.
-    /// Use negative distances to get outside offset.
-    /// The 'referenceNormal' is' An approximate orientation Normal to help find the correct offset side, To be in Z Axis orientation for Counter-Clockwise loops in 2D.
-    /// Returns the offset point, the unitized normal vector aligned with the referenceNormal, the shift direction for prev and next line.
-    static member offsetInCornerEx( prevPt:Pnt,
-                                    thisPt:Pnt,
-                                    nextPt:Pnt,
-                                    prevDist:float,
-                                    nextDist:float,
-                                    referenceNormal:Vec) : ValueOption<Pnt*UnitVec*Vec*Vec> =
-        let prevV = thisPt - prevPt
-        let nextV = nextPt - thisPt
-        Points.offsetInCornerEx(thisPt, prevV, nextV, prevDist, nextDist, referenceNormal)
-
-
-    /// Returns the closer point of the two points to the reference given point.
-    static member closestOfTwo (pt1:Pnt) (pt2:Pnt) (referencePoint:Pnt) =
-        let d1 = Pnt.distanceSq pt1 referencePoint
-        let d2 = Pnt.distanceSq pt2 referencePoint
-        if d1 < d2 then
-            pt1
-        else
-            pt2
-
-    *)
 
