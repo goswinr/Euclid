@@ -96,5 +96,116 @@ let tests =
             "fitToPoints offset - SizeY" |> Expect.isTrue (equ fitted.SizeY 1.0)
         }
 
+        testList "Transformation Methods" [
+            test "Move instance method" {
+                let r = Rect3D.createFromVectors(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.))
+                let moved = r.Move(Vec(5., 3., 2.))
+                "Move - origin" |> Expect.isTrue (eq moved.Origin (Pnt(5., 3., 2.)))
+            }
+
+            test "MoveX instance method" {
+                let r = Rect3D.createFromVectors(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.))
+                let moved = r.MoveX(5.)
+                "MoveX - origin" |> Expect.isTrue (eq moved.Origin (Pnt(5., 0., 0.)))
+            }
+
+            test "MoveY instance method" {
+                let r = Rect3D.createFromVectors(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.))
+                let moved = r.MoveY(3.)
+                "MoveY - origin" |> Expect.isTrue (eq moved.Origin (Pnt(0., 3., 0.)))
+            }
+
+            test "MoveZ instance method" {
+                let r = Rect3D.createFromVectors(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.))
+                let moved = r.MoveZ(2.)
+                "MoveZ - origin" |> Expect.isTrue (eq moved.Origin (Pnt(0., 0., 2.)))
+            }
+
+            test "move static method" {
+                let r = Rect3D.createFromVectors(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.))
+                let moved = Rect3D.move (Vec(5., 3., 2.)) r
+                "move - origin" |> Expect.isTrue (eq moved.Origin (Pnt(5., 3., 2.)))
+            }
+
+            test "moveX, moveY, moveZ static methods" {
+                let r = Rect3D.createFromVectors(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.))
+                let movedX = Rect3D.moveX 5. r
+                let movedY = Rect3D.moveY 3. r
+                let movedZ = Rect3D.moveZ 2. r
+                "moveX" |> Expect.isTrue (eq movedX.Origin (Pnt(5., 0., 0.)))
+                "moveY" |> Expect.isTrue (eq movedY.Origin (Pnt(0., 3., 0.)))
+                "moveZ" |> Expect.isTrue (eq movedZ.Origin (Pnt(0., 0., 2.)))
+            }
+
+            test "Transform with identity matrix" {
+                let r = Rect3D.createFromVectors(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.))
+                let transformed = r.Transform(Matrix.identity)
+                "Transform identity - origin" |> Expect.isTrue (eq transformed.Origin r.Origin)
+            }
+
+            test "Transform with translation matrix" {
+                let r = Rect3D.createFromVectors(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.))
+                let m = Matrix.createTranslation(Vec(5., 3., 2.))
+                let transformed = r.Transform(m)
+                "Transform translation - origin" |> Expect.isTrue (eq transformed.Origin (Pnt(5., 3., 2.)))
+            }
+
+            test "transform static method" {
+                let r = Rect3D.createFromVectors(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.))
+                let m = Matrix.createTranslation(Vec(5., 3., 2.))
+                let transformed = Rect3D.transform m r
+                "transform static - origin" |> Expect.isTrue (eq transformed.Origin (Pnt(5., 3., 2.)))
+            }
+
+            test "TransformRigid instance method" {
+                let r = Rect3D.createFromVectors(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.))
+                let m = RigidMatrix.createTranslation(Vec(5., 3., 2.))
+                let transformed = r.TransformRigid(m)
+                "TransformRigid - origin" |> Expect.isTrue (eq transformed.Origin (Pnt(5., 3., 2.)))
+            }
+
+            test "transformRigid static method" {
+                let r = Rect3D.createFromVectors(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.))
+                let m = RigidMatrix.createTranslation(Vec(5., 3., 2.))
+                let transformed = Rect3D.transformRigid m r
+                "transformRigid static - origin" |> Expect.isTrue (eq transformed.Origin (Pnt(5., 3., 2.)))
+            }
+
+            test "Rotate with identity quaternion" {
+                let r = Rect3D.createFromVectors(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.))
+                let rotated = r.Rotate(Quaternion.identity)
+                "Rotate identity - origin" |> Expect.isTrue (eq rotated.Origin r.Origin)
+            }
+
+            test "Rotate 90 degrees around Z axis" {
+                let r = Rect3D.createFromVectors(Pnt(1., 0., 0.), Vec(1., 0., 0.), Vec(0., 1., 0.))
+                let q = Quaternion.createFromDegree(UnitVec.Zaxis, 90.)
+                let rotated = r.Rotate(q)
+                "Rotate 90 - origin" |> Expect.isTrue (eq rotated.Origin (Pnt(0., 1., 0.)))
+            }
+
+            test "rotate static method" {
+                let r = Rect3D.createFromVectors(Pnt(1., 0., 0.), Vec(1., 0., 0.), Vec(0., 1., 0.))
+                let q = Quaternion.createFromDegree(UnitVec.Zaxis, 90.)
+                let rotated = Rect3D.rotate q r
+                "rotate static - origin" |> Expect.isTrue (eq rotated.Origin (Pnt(0., 1., 0.)))
+            }
+
+            test "RotateWithCenter keeps center fixed" {
+                let r = Rect3D.createFromVectors(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.))
+                let center = r.Center
+                let q = Quaternion.createFromDegree(UnitVec.Zaxis, 90.)
+                let rotated = r.RotateWithCenter(center, q)
+                "RotateWithCenter - center" |> Expect.isTrue (eq rotated.Center center)
+            }
+
+            test "rotateWithCenter static method" {
+                let r = Rect3D.createFromVectors(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.))
+                let center = r.Center
+                let q = Quaternion.createFromDegree(UnitVec.Zaxis, 90.)
+                let rotated = Rect3D.rotateWithCenter center q r
+                "rotateWithCenter static - center" |> Expect.isTrue (eq rotated.Center center)
+            }
+        ]
 
     ]

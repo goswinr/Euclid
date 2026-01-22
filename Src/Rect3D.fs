@@ -209,6 +209,53 @@ type Rect3D =
             l.Yaxis * factor
         )
 
+    /// Returns a 3D rectangle moved by a vector.
+    member inline r.Move (v:Vec) =
+        Rect3D.createUnchecked(r.Origin + v, r.Xaxis, r.Yaxis)
+
+    /// Returns a 3D rectangle moved by a given distance in X direction.
+    member inline r.MoveX (distance:float) =
+        Rect3D.createUnchecked(Pnt(r.Origin.X + distance, r.Origin.Y, r.Origin.Z), r.Xaxis, r.Yaxis)
+
+    /// Returns a 3D rectangle moved by a given distance in Y direction.
+    member inline r.MoveY (distance:float) =
+        Rect3D.createUnchecked(Pnt(r.Origin.X, r.Origin.Y + distance, r.Origin.Z), r.Xaxis, r.Yaxis)
+
+    /// Returns a 3D rectangle moved by a given distance in Z direction.
+    member inline r.MoveZ (distance:float) =
+        Rect3D.createUnchecked(Pnt(r.Origin.X, r.Origin.Y, r.Origin.Z + distance), r.Xaxis, r.Yaxis)
+
+    /// Applies or multiplies a 4x4 transformation matrix to a 3D rectangle.
+    /// The returned rectangle may not have orthogonal axis vectors anymore for non-IsRigid matrices.
+    member inline r.Transform (m:Matrix) =
+        let o = r.Origin *** m
+        let x = Vec.transform m r.Xaxis
+        let y = Vec.transform m r.Yaxis
+        Rect3D.createUnchecked(o, x, y)
+
+    /// Multiplies (or applies) a RigidMatrix to a 3D rectangle.
+    /// The returned 3D rectangle is guaranteed to have still orthogonal vectors.
+    member inline r.TransformRigid (m:RigidMatrix) =
+        let o = r.Origin *** m
+        let x = Vec.transformRigid m r.Xaxis
+        let y = Vec.transformRigid m r.Yaxis
+        Rect3D.createUnchecked(o, x, y)
+
+    /// Multiplies (or applies) a Quaternion to a 3D rectangle.
+    /// The rectangle is rotated around the World Origin.
+    member inline r.Rotate (q:Quaternion) =
+        let o = r.Origin *** q
+        let x = r.Xaxis *** q
+        let y = r.Yaxis *** q
+        Rect3D.createUnchecked(o, x, y)
+
+    /// Multiplies (or applies) a Quaternion to a 3D rectangle around a given center point.
+    member inline r.RotateWithCenter (cen:Pnt, q:Quaternion) =
+        let o = Pnt.rotateWithCenterByQuat cen q r.Origin
+        let x = r.Xaxis *** q
+        let y = r.Yaxis *** q
+        Rect3D.createUnchecked(o, x, y)
+
     [<Obsolete("This does not scale proportionally to the actual area, use just .Area for sorting by area")>]
     member inline r.AreaSq =
         r.Xaxis.LengthSq * r.Yaxis.LengthSq
@@ -577,12 +624,47 @@ type Rect3D =
     static member move (v:Vec) (r:Rect3D)  : Rect3D =
         Rect3D.createUnchecked(r.Origin + v, r.Xaxis, r.Yaxis)
 
-    /// Transform the 3D-rectangle by the given RigidMatrix.
+    /// Returns a 3D rectangle moved by a given distance in X direction.
+    static member inline moveX (distance:float) (r:Rect3D) =
+        Rect3D.createUnchecked(Pnt(r.Origin.X + distance, r.Origin.Y, r.Origin.Z), r.Xaxis, r.Yaxis)
+
+    /// Returns a 3D rectangle moved by a given distance in Y direction.
+    static member inline moveY (distance:float) (r:Rect3D) =
+        Rect3D.createUnchecked(Pnt(r.Origin.X, r.Origin.Y + distance, r.Origin.Z), r.Xaxis, r.Yaxis)
+
+    /// Returns a 3D rectangle moved by a given distance in Z direction.
+    static member inline moveZ (distance:float) (r:Rect3D) =
+        Rect3D.createUnchecked(Pnt(r.Origin.X, r.Origin.Y, r.Origin.Z + distance), r.Xaxis, r.Yaxis)
+
+    /// Applies or multiplies a 4x4 transformation matrix to a 3D rectangle.
+    /// The returned rectangle may not have orthogonal axis vectors anymore for non-IsRigid matrices.
+    static member inline transform (m:Matrix) (r:Rect3D) =
+        let o = r.Origin *** m
+        let x = Vec.transform m r.Xaxis
+        let y = Vec.transform m r.Yaxis
+        Rect3D.createUnchecked(o, x, y)
+
+    /// Transforms the 3D-rectangle by the given RigidMatrix.
     /// The returned 3D-rectangle is guaranteed to have orthogonal vectors.
-    static member transform (m:RigidMatrix) (r:Rect3D) =
+    static member inline transformRigid (m:RigidMatrix) (r:Rect3D) =
         let o = Pnt.transformRigid m r.Origin
         let x = Vec.transformRigid m r.Xaxis
         let y = Vec.transformRigid m r.Yaxis
+        Rect3D.createUnchecked(o, x, y)
+
+    /// Multiplies (or applies) a Quaternion to a 3D rectangle.
+    /// The rectangle is rotated around the World Origin.
+    static member inline rotate (q:Quaternion) (r:Rect3D) =
+        let o = r.Origin *** q
+        let x = r.Xaxis *** q
+        let y = r.Yaxis *** q
+        Rect3D.createUnchecked(o, x, y)
+
+    /// Multiplies (or applies) a Quaternion to a 3D rectangle around a given center point.
+    static member inline rotateWithCenter (cen:Pnt) (q:Quaternion) (r:Rect3D) =
+        let o = Pnt.rotateWithCenterByQuat cen q r.Origin
+        let x = r.Xaxis *** q
+        let y = r.Yaxis *** q
         Rect3D.createUnchecked(o, x, y)
 
 
