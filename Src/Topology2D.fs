@@ -1,4 +1,5 @@
 namespace Euclid
+open Euclid.EuclidCollectionUtilities
 
 #nowarn "52" // copying of structs
 

@@ -2,6 +2,7 @@ namespace Euclid
 
 open System
 open TopologyUtil
+open Euclid.EuclidCollectionUtilities
 
 #nowarn "52" // copying of structs
 

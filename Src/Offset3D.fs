@@ -3,6 +3,7 @@ namespace Euclid
 open System
 open UtilEuclid
 open EuclidErrors
+open Euclid.EuclidCollectionUtilities
 
 
 /// 3D polyline offset utilities based on local vertex normals.

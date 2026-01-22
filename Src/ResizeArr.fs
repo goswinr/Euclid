@@ -1,10 +1,12 @@
-namespace Euclid
+namespace Euclid.EuclidCollectionUtilities
 
 open System
-open EuclidErrors
+open Euclid
+open Euclid.EuclidErrors
 
 
-module internal Arr =
+/// Functions for working with arrays.
+module Arr =
 
     /// Returns the index of the smallest element.
     let minIndex (xs:'T[]) =
@@ -32,8 +34,8 @@ module internal Arr =
                 mf <- f
         ii
 
-// written with lowercase so that it does not get shadowed by the ResizeArray library if used together with it in Fable.
-module internal ResizeArr =
+// Functions for working with ResizeArray<'T>.
+module ResizeArr =
 
 
     /// just like Array.create.
@@ -78,11 +80,15 @@ module internal ResizeArr =
 
     /// Yields looped Seq from (1, last, first, second)  up to (lastIndex, second-last, last, first)
     /// The resulting seq has the same element count as the input Rarr.
-    let iPrevThisNext (rarr:ResizeArray<'T>) =
-        if rarr.Count <= 3 then fail $"ResizeArr.iPrevThisNext input has less than three items:{Format.nl}{Format.rarr rarr}"
-        seq {   0, rarr.[rarr.Count-1], rarr.[0], rarr.[1]
-                for i = 0 to rarr.Count-3 do  i+1, rarr.[i], rarr.[i+1], rarr.[i+2]
-                rarr.Count-1, rarr.[rarr.Count-2], rarr.[rarr.Count-1], rarr.[0] }
+    let iPrevThisNext (xs:ResizeArray<'T>) =
+        if xs.Count <= 3 then fail $"ResizeArr.iPrevThisNext input has less than three items:{Format.nl}{Format.rarr xs}"
+        seq {
+            0, xs.[xs.Count-1], xs.[0], xs.[1]
+            for i = 0 to xs.Count-3 do
+                i+1, xs.[i], xs.[i+1], xs.[i+2]
+
+            xs.Count-1, xs.[xs.Count-2], xs.[xs.Count-1], xs.[0]
+        }
 
     /// <summary>Sorts the elements of a ResizeArray, using the given projection for the keys and returning a new ResizeArr.
     /// Elements are compared using <see cref="M:Microsoft.FSharp.Core.Operators.compare"/>.
@@ -150,11 +156,11 @@ module internal ResizeArr =
         #if FABLE_COMPILER
             // https://fable.io/docs/javascript/features.html#emitjsexpr
             Fable.Core.JsInterop.emitJsStatement (xs) "
-            const xs = new Array($0.length);
+            const rs = new Array($0.length);
             const lastIdx = $0.length - 1; 
             for (let i = 0; i < $0.length; i++) 
-                { xs[i] = $0[lastIdx - i]; }; 
-            return xs "
+                { rs[i] = $0[lastIdx - i]; }; 
+            return rs "
         #else
             let len = xs.Count
             let result = ResizeArray (len)
@@ -209,10 +215,10 @@ module internal ResizeArr =
         #endif
 
     /// Creates a shallow copy of the input ResizeArray and adds the first element to the end, closing the loop.
-    let closeLoop (pts: ResizeArray<'T>) =
+    let closeLoop (pts: ResizeArray<'T>) : ResizeArray<'T> =
         #if FABLE_COMPILER
-            Fable.Core.JsInterop.emitJsStatement (xs) "
-            const xs = new Array($0.length+1);            
+            Fable.Core.JsInterop.emitJsStatement (pts) "
+            const xs = new Array($0.length + 1);            
             for (let i = 0; i < $0.length; i++) 
                 { xs[i] = $0[i]; }; 
             xs[$0.length] = $0[0];
@@ -244,7 +250,7 @@ module internal ResizeArr =
 
 
 [<AutoOpen>]
-module internal AutoOpenResizeArrayExtensions =
+module AutoOpenEuclidResizeArrayExtensions =
 
     type Collections.Generic.List<'T> with
 

@@ -4,6 +4,7 @@ open System
 open UtilEuclid
 open EuclidErrors
 open System.Collections.Generic
+open Euclid.EuclidCollectionUtilities
 
 
 //  A static type containing functions for operating on multiple 3D points or set of 3D points. aka point-clouds

@@ -3,6 +3,7 @@ namespace Euclid
 open System
 
 open System.Collections.Generic
+open Euclid.EuclidCollectionUtilities
 
 /// For finding 2D object that are similar but not exactly the same.
 /// Based on their 2D point clouds.

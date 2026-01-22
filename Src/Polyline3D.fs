@@ -5,6 +5,7 @@ open UtilEuclid
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 open System.Collections.Generic
 open EuclidErrors
+open Euclid.EuclidCollectionUtilities
 
 
 

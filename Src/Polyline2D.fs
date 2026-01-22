@@ -4,6 +4,7 @@ open System
 open UtilEuclid
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 open EuclidErrors
+open Euclid.EuclidCollectionUtilities
 
 
 /// A mutable 2D Polyline.

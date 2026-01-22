@@ -3,6 +3,7 @@ namespace Euclid
 open System
 open UtilEuclid
 open EuclidErrors
+open Euclid.EuclidCollectionUtilities
 
 /// The core algorithms for offsetting 2D polylines.
 /// Normally you would not use this directly; prefer the Polyline2D or Points module.
