@@ -811,7 +811,7 @@ module AutoOpenLine2D =
     /// Checks if two 2D lines are equal within tolerance.
     /// Identical Lines in opposite directions are not considered equal.
     /// Use a tolerance of 0.0 to check for an exact match.
-    static member inline equals (tol:float) (a:Line2D) (b:Line2D) =
+    static member inline equals (tol:float) (a:Line2D) (b:Line2D)  : bool =
         abs (a.FromX - b.FromX) <= tol &&
         abs (a.FromY - b.FromY) <= tol &&
         abs (a.ToX   - b.ToX  ) <= tol &&
@@ -820,7 +820,7 @@ module AutoOpenLine2D =
 
     /// Check if two 2D lines are not equal within a given tolerance.
     /// Use a tolerance of 0.0 to check if the two 2D-lines are not exactly equal.
-    static member notEquals (tol:float) (a:Line2D) (b:Line2D) =
+    static member notEquals (tol:float) (a:Line2D) (b:Line2D)  : bool =
         abs (a.FromX - b.FromX) > tol ||
         abs (a.FromY - b.FromY) > tol ||
         abs (a.ToX   - b.ToX  ) > tol ||
@@ -831,7 +831,7 @@ module AutoOpenLine2D =
     /// In 2D it is just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
     /// If the result is zero the two lines are parallel (or one line is zero-length).
     /// Same as Line2D.det
-    static member inline cross (a:Line2D) (b:Line2D) =
+    static member inline cross (a:Line2D) (b:Line2D)  : Vc =
         let ax = a.VectorX
         let ay = a.VectorY
         let bx = b.VectorX
@@ -992,19 +992,19 @@ module AutoOpenLine2D =
 
 
     /// Move a Line2D by a vector. (same as Line2D.move)
-    static member inline translate (v:Vc) (ln:Line2D) =
+    static member inline translate (v:Vc) (ln:Line2D)  : Line2D =
         ln.Move(v)
 
     /// Returns a Line2D moved by a given distance in X direction.
-    static member inline moveX (distance:float) (ln:Line2D) =
+    static member inline moveX (distance:float) (ln:Line2D)  : Line2D =
         ln.MoveX(distance)
 
     /// Returns a Line2D moved by a given distance in Y direction.
-    static member inline moveY (distance:float) (ln:Line2D) =
+    static member inline moveY (distance:float) (ln:Line2D)  : Line2D =
         ln.MoveY(distance)
 
     /// Move a Line2D by a vector. (same as Line2D.translate)
-    static member inline move (v:Vc) (ln:Line2D) =
+    static member inline move (v:Vc) (ln:Line2D)  : Line2D =
         ln.Move(v)
 
     /// Rotation a Line2D.

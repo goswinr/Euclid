@@ -39,26 +39,26 @@ type Line3D =
         {FromX=fromX; FromY=fromY; FromZ=fromZ; ToX=toX; ToY=toY; ToZ=toZ}
 
     /// The X component of the line Direction/Vector.
-    member inline ln.VectorX =
+    member inline ln.VectorX : float =
         ln.ToX - ln.FromX
 
     /// The Y component of the line Direction/Vector.
-    member inline ln.VectorY =
+    member inline ln.VectorY : float =
         ln.ToY - ln.FromY
 
     /// The Z component of the line Direction/Vector.
-    member inline ln.VectorZ =
+    member inline ln.VectorZ : float =
         ln.ToZ - ln.FromZ
 
     /// Returns the length of the line.
-    member inline ln.Length =
+    member inline ln.Length : float =
         let x = ln.VectorX
         let y = ln.VectorY
         let z = ln.VectorZ
         sqrt(x*x + y*y + z*z)
 
     /// Returns the squared length of the line.
-    member inline ln.LengthSq =
+    member inline ln.LengthSq : float =
         let x = ln.VectorX
         let y = ln.VectorY
         let z = ln.VectorZ
@@ -79,7 +79,7 @@ type Line3D =
     /// Format 3D line into string from X, Y and Z for start and end points.
     /// Using nice floating point number formatting.
     /// But without full type name as in ln.ToString()
-    member ln.AsString =
+    member ln.AsString : string =
         let fromX = Format.float ln.FromX
         let fromY = Format.float ln.FromY
         let fromZ = Format.float ln.FromZ
@@ -89,37 +89,37 @@ type Line3D =
         $"%s{fromX}, %s{fromY}, %s{fromZ} to %s{toX}, %s{toY}, %s{toZ}"
 
     /// Format 3D line into an F# code string that can be used to recreate the line.
-    member ln.AsFSharpCode =
+    member ln.AsFSharpCode : string =
         $"Line3D({ln.FromX}, {ln.FromY}, {ln.FromZ}, {ln.ToX}, {ln.ToY}, {ln.ToZ})"
 
 
     /// The start point of the Line3D.
-    member inline ln.From =
+    member inline ln.From : Pnt =
         Pnt(ln.FromX, ln.FromY, ln.FromZ)
 
     /// The end point of the Line3D.
-    member inline ln.To =
+    member inline ln.To : Pnt =
         Pnt(ln.ToX, ln.ToY, ln.ToZ)
 
 
     /// Same as ln.Vector or ln.Tangent.
     /// The returned vector has the same length as the Line3D.
-    member inline ln.Direction =
+    member inline ln.Direction : Vec =
         Vec(ln.VectorX, ln.VectorY, ln.VectorZ)
 
     /// Same as ln.Tangent or ln.Direction.
     /// The returned vector has the same length as the Line3D.
-    member inline ln.Vector =
+    member inline ln.Vector : Vec =
         Vec(ln.VectorX, ln.VectorY, ln.VectorZ)
 
 
     /// Same as ln.Vector or ln.Direction.
     /// The returned vector has the same length as the Line3D.
-    member inline ln.Tangent =
+    member inline ln.Tangent : Vec =
         Vec(ln.VectorX, ln.VectorY, ln.VectorZ)
 
     /// Returns a unit-vector of the line Direction.
-    member inline ln.UnitTangent =
+    member inline ln.UnitTangent : UnitVec =
         let x = ln.VectorX
         let y = ln.VectorY
         let z = ln.VectorZ

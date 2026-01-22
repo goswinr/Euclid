@@ -44,7 +44,7 @@ type PPlane =
 
     /// Unsafe internal constructor, doesn't check if the input is perpendicular.
     /// Requires correct input of unitized perpendicular vectors.
-    static member inline createUnchecked (origin: Pnt, axisX: UnitVec, axisY: UnitVec, axisZ: UnitVec) =
+    static member inline createUnchecked (origin: Pnt, axisX: UnitVec, axisY: UnitVec, axisZ: UnitVec) : PPlane =
         #nowarn "44"
         PPlane(origin, axisX, axisY, axisZ)
         #warnon "44" // re-enable warning for obsolete usage
@@ -60,7 +60,7 @@ type PPlane =
 
     /// Format PPlane into string with nicely formatted floating point numbers.
     /// But without type name as in pl.ToString()
-    member pl.AsString =
+    member pl.AsString : string =
         let o = pl.Origin.AsString
         let x = pl.Xaxis.AsString
         let y = pl.Yaxis.AsString
@@ -68,7 +68,7 @@ type PPlane =
         $"%s{Format.nl}Origin=%s{o}%s{Format.nl}  X-axis=%s{x}%s{Format.nl}  Y-axis=%s{y}%s{Format.nl}  Z-axis=%s{z}"
 
     /// Format PPlane into an F# code string that can be used to recreate the plane.
-    member pl.AsFSharpCode =
+    member pl.AsFSharpCode : string =
         $"PPlane.createUnchecked({pl.Origin.AsFSharpCode}, {pl.Xaxis.AsFSharpCode}, {pl.Yaxis.AsFSharpCode}, {pl.Zaxis.AsFSharpCode})"
 
 

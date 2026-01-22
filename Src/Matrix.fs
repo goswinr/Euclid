@@ -78,7 +78,7 @@ type Matrix =
     /// M14 M24 M34 M44
     /// </code>
     /// Where X41, Y42 and Z43 refer to the translation part of the matrix.</summary>
-    member m.AsString =
+    member m.AsString : string =
         let ts = m.ToArrayByRows |> Array.map (sprintf "%0.3f")
         let most = ts |> Array.maxBy (fun s -> s.Length)
         $"4x4 Column-Vector Transformation Matrix:{Format.nl}" + (
@@ -91,7 +91,7 @@ type Matrix =
 
     /// <summary>Format Matrix into an F# code string that can be used to recreate the matrix.
     /// The output matches the constructor's row-major parameter order.</summary>
-    member m.AsFSharpCode =
+    member m.AsFSharpCode : string =
         $"Matrix({m.M11}, {m.M21}, {m.M31}, {m.X41}, {m.M12}, {m.M22}, {m.M32}, {m.Y42}, {m.M13}, {m.M23}, {m.M33}, {m.Z43}, {m.M14}, {m.M24}, {m.M34}, {m.M44})"
 
     /// <summary>Nicely formats the Matrix to a Grid of 4x4 including field names.
@@ -409,7 +409,7 @@ type Matrix =
     /// <param name="tol">The tolerance for comparing each matrix element.</param>
     /// <param name="a">The first matrix.</param>
     /// <param name="b">The second matrix.</param>
-    static member equals (tol:float) (a:Matrix) (b:Matrix) =
+    static member equals (tol:float) (a:Matrix) (b:Matrix)  : bool =
         abs(a.M11-b.M11) <= tol &&
         abs(a.M12-b.M12) <= tol &&
         abs(a.M13-b.M13) <= tol &&

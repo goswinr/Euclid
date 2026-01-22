@@ -36,7 +36,7 @@ type Polyline2D (points: ResizeArray<Pt>) =
             $"open Euclid.Polyline2D with length {p.Length}, from {points.Count} points"
 
     /// Format Polyline2D into string including its length.
-    member p.AsString =
+    member p.AsString : string =
         if points.Count = 0 then
             "empty Polyline2D."
         elif p.IsClosed then
@@ -46,7 +46,7 @@ type Polyline2D (points: ResizeArray<Pt>) =
 
 
     /// Format a 2D polyline into an F# code string that can be used to recreate the point.
-    member p.AsFSharpCode =
+    member p.AsFSharpCode : string =
         let ptsAsCode =
             points
             |> ResizeArr.map _.AsFSharpCode
@@ -161,7 +161,7 @@ type Polyline2D (points: ResizeArray<Pt>) =
 
     /// Gets the length of the Polyline2D
     /// Returns 0.0 if there are less than 2 points.
-    member p.Length =
+    member p.Length : float =
         let mutable l = 0.0
         if points.Count > 1 then
             let mutable prev = points.[0]
@@ -276,7 +276,7 @@ type Polyline2D (points: ResizeArray<Pt>) =
     /// The area of the Polyline2D.
     /// Fails if Polyline is not exactly closed.
     /// For self intersecting Polylines the result is invalid.
-    member p.Area =
+    member p.Area : float =
         if not p.IsClosed then fail $"Polyline2D.Area failed on Polyline2D that is not exactly closed {p}"
         abs(p.SignedArea)
 
@@ -540,7 +540,7 @@ type Polyline2D (points: ResizeArray<Pt>) =
         if pl.Contains' point then distance else -distance
 
     /// Returns the average center of all points of the Polyline2D.
-    member p.Center =
+    member p.Center : Pt =
         if points.Count = 0 then failTooFew "Center" 1
         let mutable x = 0.0
         let mutable y = 0.0
@@ -750,19 +750,19 @@ type Polyline2D (points: ResizeArray<Pt>) =
         pl.Points |> ResizeArr.map mapping |> Polyline2D
 
     /// Move a Polyline2D by a vector. (same as Polyline2D.move)
-    static member translate (v:Vc) (pl:Polyline2D) =
+    static member translate (v:Vc) (pl:Polyline2D)  : Polyline2D =
         pl |> Polyline2D.map (Pt.addVc v)
 
     /// Move a Polyline2D by a vector. (same as Polyline2D.translate)
-    static member move (v:Vc) (pl:Polyline2D) =
+    static member move (v:Vc) (pl:Polyline2D)  : Polyline2D =
         Polyline2D.translate v pl
 
     /// Returns a Polyline2D moved by a given distance in X direction.
-    static member moveX (distance:float) (pl:Polyline2D) =
+    static member moveX (distance:float) (pl:Polyline2D)  : Polyline2D =
         pl |> Polyline2D.map (Pt.moveX distance)
 
     /// Returns a Polyline2D moved by a given distance in Y direction.
-    static member moveY (distance:float) (pl:Polyline2D) =
+    static member moveY (distance:float) (pl:Polyline2D)  : Polyline2D =
         pl |> Polyline2D.map (Pt.moveY distance)
 
 
@@ -875,7 +875,7 @@ type Polyline2D (points: ResizeArray<Pt>) =
             points.Add points.First
 
     /// Tests if two Polyline2D have the same number of points and points are equal within a given tolerance.
-    static member equals tol (a:Polyline2D) (b:Polyline2D) =
+    static member equals tol (a:Polyline2D) (b:Polyline2D)  : bool =
         let k = a.PointCount
         if k <> b.PointCount then
             false

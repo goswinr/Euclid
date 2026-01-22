@@ -34,13 +34,13 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
 
     /// Format NPlane into string with nicely formatted floating point numbers.
     /// But without type name as in pl.ToString()
-    member pl.AsString =
+    member pl.AsString : string =
         let o = pl.Origin.AsString
         let n = pl.Normal.AsString
         $"Origin:%s{o}| Normal:%s{n}"
 
     /// Format NPlane into an F# code string that can be used to recreate the plane.
-    member pl.AsFSharpCode =
+    member pl.AsFSharpCode : string =
         $"NPlane(Pnt({pl.Origin.X}, {pl.Origin.Y}, {pl.Origin.Z}), UnitVec.create({pl.Normal.X}, {pl.Normal.Y}, {pl.Normal.Z}))"
 
     /// Returns a new plane with the same Origin but flipped Normal.
@@ -119,7 +119,7 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
     /// Checks if two 3D planes are equal within tolerance.
     /// The same tolerance is used for the origin and the tips of the normal.
     /// Use a tolerance of 0.0 to check for an exact match.
-    static member equals (tol:float) (a:NPlane) (b:NPlane) =
+    static member equals (tol:float) (a:NPlane) (b:NPlane)  : bool =
         abs (a.Origin.X - b.Origin.X) <= tol &&
         abs (a.Origin.Y - b.Origin.Y) <= tol &&
         abs (a.Origin.Z - b.Origin.Z) <= tol &&
@@ -261,12 +261,12 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
 
     /// Move plane origin by vector.
     /// This is the same as NPlane.move.
-    static member inline translate (translation:Vec) (pl:NPlane) =
+    static member inline translate (translation:Vec) (pl:NPlane)  : NPlane =
         NPlane(pl.Origin + translation, pl.Normal)
 
     /// Move plane origin by vector.
     /// This is same as NPlane.translate.
-    static member inline move (translation:Vec) (pl:NPlane) =
+    static member inline move (translation:Vec) (pl:NPlane)  : NPlane =
         NPlane(pl.Origin + translation, pl.Normal)
 
     (*

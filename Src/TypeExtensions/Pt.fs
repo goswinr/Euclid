@@ -17,7 +17,7 @@ module AutoOpenPt =
             isNanInfinity p.X || isNanInfinity p.Y
 
         /// Returns a boolean indicating whether X and Y are both valid (not NaN or Infinity).
-        member inline p.IsValid =
+        member inline p.IsValid : bool =
             not p.IsInValid
 
         /// Returns the 2D point as 2D vector.

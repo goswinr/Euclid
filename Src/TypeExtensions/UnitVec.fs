@@ -470,7 +470,7 @@ module AutoOpenUnitVec =
         /// The length of this resulting vector is the area of the parallelogram spanned by the input vectors.
         /// Its direction follows the right-hand rule.
         /// A x B = |A| * |B| * sin(angle)
-        static member inline cross (a:UnitVec, b:Vec) =
+        static member inline cross (a:UnitVec, b:Vec)  : Vec =
             Vec(a.Y * b.Z - a.Z * b.Y,
                 a.Z * b.X - a.X * b.Z,
                 a.X * b.Y - a.Y * b.X)
@@ -481,7 +481,7 @@ module AutoOpenUnitVec =
         /// The length of this resulting vector is the area of the parallelogram spanned by the input vectors.
         /// Its direction follows the right-hand rule.
         /// A x B = |A| * |B| * sin(angle)
-        static member inline cross (a:Vec, b:UnitVec) =
+        static member inline cross (a:Vec, b:UnitVec)  : Vec =
             Vec(a.Y * b.Z - a.Z * b.Y,
                 a.Z * b.X - a.X * b.Z,
                 a.X * b.Y - a.Y * b.X)
@@ -491,13 +491,13 @@ module AutoOpenUnitVec =
         /// Dot product, or scalar product of a 3D unit-vector with a 3D vector.
         /// Returns a float.
         /// This float is the projected length of the 3D vector on the direction of the unit-vector.
-        static member inline dot (a:UnitVec, b:Vec) =
+        static member inline dot (a:UnitVec, b:Vec)  : float =
             a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
         /// Dot product, or scalar product of a 3D vector with a 3D unit-vector.
         /// Returns a float.
         /// This float is the projected length of the 3D vector on the direction of the unit-vector.
-        static member inline dot (a:Vec, b:UnitVec) =
+        static member inline dot (a:Vec, b:UnitVec)  : float =
             a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
 

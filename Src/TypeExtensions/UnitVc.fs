@@ -420,14 +420,14 @@ module AutoOpenUnitVc =
         /// It is also known as the Determinant, Wedge Product or Outer Product.
         /// It is just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
         /// If the rotation from 'a' to 'b' is Counter-Clockwise the result is positive.
-        static member inline cross (a:UnitVc, b:Vc) =
+        static member inline cross (a:UnitVc, b:Vc)  : Vc =
             a.X*b.Y - a.Y*b.X
 
         /// The 2D Cross Product.
         /// It is also known as the Determinant, Wedge Product or Outer Product.
         /// It is just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
         /// If the rotation from 'a' to 'b' is Counter-Clockwise the result is positive.
-        static member inline cross (a:Vc, b:UnitVc) =
+        static member inline cross (a:Vc, b:UnitVc)  : Vc =
             a.X*b.Y - a.Y*b.X
 
         //static member inline dot (a:UnitVc, b:UnitVc)  //moved to Vc type declaration
@@ -435,13 +435,13 @@ module AutoOpenUnitVc =
         /// Dot product, or scalar product of a 2D unit-vector with a 2D vector.
         /// Returns a float.
         /// This float is the projected length of the 2D vector on the direction of the unit-vector.
-        static member inline dot (a:UnitVc, b:Vc) =
+        static member inline dot (a:UnitVc, b:Vc)  : float =
             a.X * b.X + a.Y * b.Y
 
         /// Dot product, or scalar product of a 2D vector with a 2D unit-vector.
         /// Returns a float.
         /// This float is the projected length of the 2D vector on the direction of the unit-vector.
-        static member inline dot (a:Vc, b:UnitVc) =
+        static member inline dot (a:Vc, b:UnitVc)  : float =
             a.X * b.X + a.Y * b.Y
 
         /// Tangent of the angle between two 2D unit-vectors.

@@ -40,7 +40,7 @@ type Rotation2D =
 
     /// Construct 2D Rotation from sine and corresponding cosine directly.
     /// Input is unchecked and not validated.
-    static member inline createUnchecked (sine, cosine) =
+    static member inline createUnchecked (sine, cosine) : Rotation2D =
         #nowarn "44"
         Rotation2D (sine, cosine)
         #warnon "44" // re-enable warning for obsolete usage
@@ -52,12 +52,12 @@ type Rotation2D =
 
     /// Format rotation into string showing angle in Degrees as nicely formatted floating point number.
     /// But without type name as in r.ToString()
-    member r.AsString =
+    member r.AsString : string =
         let deg = atan2 r.Sin r.Cos |> toDegrees |> Format.float
         $"%s{deg}° Degrees."
 
     /// Format Rotation2D into an F# code string that can be used to recreate the rotation.
-    member r.AsFSharpCode =
+    member r.AsFSharpCode : string =
         // $"Rotation2D.createFromDegrees({r.Sin |> asinSafe |> toDegrees})"
         $"Rotation2D.createUnchecked({r.Sin}, {r.Cos})"
 
@@ -114,7 +114,7 @@ type Rotation2D =
     /// By comparing the fields Sin and Cos each with the given tolerance.
     /// The range of these fields is -1.0 to +1.0
     /// Use a tolerance of 0.0 to check for an exact match.
-    static member inline equals (tol:float) (a:Rotation2D) (b:Rotation2D) =
+    static member inline equals (tol:float) (a:Rotation2D) (b:Rotation2D)  : bool =
         abs(a.Sin-b.Sin) <= tol &&
         abs(a.Cos-b.Cos) <= tol
 

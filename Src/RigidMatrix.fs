@@ -67,7 +67,7 @@ type RigidMatrix =
         [| m.M11; m.M21; m.M31; m.X41; m.M12; m.M22; m.M32; m.Y42; m.M13; m.M23; m.M33; m.Z43 |]
 
     /// <summary>Nicely formats the Matrix to a Grid of 4x3.</summary>
-    member m.AsString =
+    member m.AsString : string =
         let ts = m.ToArrayByRows |> Array.map (sprintf "%0.3f")
         let most = ts |> Array.maxBy (fun s -> s.Length)
         $"4x3 Column-Vector Rigid Transformation Matrix:{Format.nl}" + (
@@ -79,7 +79,7 @@ type RigidMatrix =
         )
 
     /// <summary>Format RigidMatrix into an F# code string that can be used to recreate the matrix.</summary>
-    member m.AsFSharpCode =
+    member m.AsFSharpCode : string =
         $"RigidMatrix.create({m.M11}, {m.M21}, {m.M31}, {m.X41}, {m.M12}, {m.M22}, {m.M32}, {m.Y42}, {m.M13}, {m.M23}, {m.M33}, {m.Z43})"
 
     /// <summary>Nicely formats the Matrix to a Grid of 4x3 including field names.
@@ -219,7 +219,7 @@ type RigidMatrix =
     /// <param name="tol">The tolerance for comparing each matrix element.</param>
     /// <param name="a">The first matrix.</param>
     /// <param name="b">The second matrix.</param>
-    static member equals (tol:float) (a:RigidMatrix) (b:RigidMatrix) =
+    static member equals (tol:float) (a:RigidMatrix) (b:RigidMatrix)  : bool =
         abs(a.M11-b.M11) <= tol &&
         abs(a.M12-b.M12) <= tol &&
         abs(a.M13-b.M13) <= tol &&

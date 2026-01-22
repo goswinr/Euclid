@@ -146,7 +146,7 @@ type Loop private   ( pts:ResizeArray<Pt>
 
     /// Without sign, since loop is guaranteed to be Counter Clockwise.
     /// This Value is precomputed in constructor.
-    member _.Area = area
+    member _.Area : float = area
 
     /// A List of precomputed bounding rectangles for each segment.
     /// Each bounding rectangle is expanded by the SnapThreshold.

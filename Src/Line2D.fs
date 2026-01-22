@@ -30,21 +30,21 @@ type Line2D =
     new (fromX, fromY, toX, toY) =
             {FromX=fromX; FromY=fromY;  ToX=toX; ToY=toY}
     /// The X component of the line Direction/Vector.
-    member inline ln.VectorX =
+    member inline ln.VectorX : float =
         ln.ToX - ln.FromX
 
     /// The Y component of the line Direction/Vector.
-    member inline ln.VectorY =
+    member inline ln.VectorY : float =
         ln.ToY - ln.FromY
 
     /// Returns the length of the line.
-    member inline ln.Length =
+    member inline ln.Length : float =
         let x = ln.VectorX
         let y = ln.VectorY
         sqrt(x*x + y*y)
 
     /// Returns the squared length of the line.
-    member inline ln.LengthSq =
+    member inline ln.LengthSq : float =
         let x = ln.VectorX
         let y = ln.VectorY
         x*x + y*y
@@ -62,7 +62,7 @@ type Line2D =
     /// Format 2D line into string from X and Y for start and end points.
     /// Using nice floating point number formatting.
     /// But without full type name as in ln.ToString()
-    member ln.AsString =
+    member ln.AsString : string =
         let fx = Format.float ln.FromX
         let fy = Format.float ln.FromY
         let tx = Format.float ln.ToX
@@ -70,37 +70,37 @@ type Line2D =
         $"X=%s{fx}|Y=%s{fy} to X=%s{tx}|Y=%s{ty}"
 
     /// Format 2D line into an F# code string that can be used to recreate the line.
-    member ln.AsFSharpCode =
+    member ln.AsFSharpCode : string =
         $"Line2D({ln.FromX}, {ln.FromY}, {ln.ToX}, {ln.ToY})"
 
 
     /// The start point of the Line2D.
-    member inline ln.From =
+    member inline ln.From : Pt =
         Pt(ln.FromX, ln.FromY)
 
     /// The end point of the Line2D.
-    member inline ln.To =
+    member inline ln.To : Pt =
         Pt(ln.ToX, ln.ToY)
 
     /// Same as ln.Vector or ln.Tangent.
     /// The returned vector has the same length as the Line2D.
-    member inline ln.Direction =
+    member inline ln.Direction : Vc =
         Vc(ln.VectorX, ln.VectorY)
 
     /// Same as ln.Tangent or ln.Direction.
     /// The returned vector has the same length as the Line2D.
-    member inline ln.Vector =
+    member inline ln.Vector : Vc =
         Vc(ln.VectorX, ln.VectorY)
 
 
 
     /// Same as ln.Vector or ln.Direction.
     /// The returned vector has the same length as the Line2D.
-    member inline ln.Tangent =
+    member inline ln.Tangent : Vc =
         Vc(ln.VectorX, ln.VectorY)
 
     /// Returns a unit-vector of the line Direction.
-    member inline ln.UnitTangent =
+    member inline ln.UnitTangent : UnitVc =
         let x = ln.VectorX
         let y = ln.VectorY
         let l = sqrt(x * x  + y * y)

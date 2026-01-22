@@ -63,7 +63,7 @@ type Rect2D =
     /// Create a 2D Rectangle from the origin point and X-edge and Y edge.
     /// Does not check for counter-clockwise order of x and y.
     /// Does not check for perpendicularity.
-    static member inline createUnchecked (origin, x:Vc, y:Vc) =
+    static member inline createUnchecked (origin, x:Vc, y:Vc) : Rect2D =
         #nowarn "44"
         Rect2D(origin, x, y)
         #warnon "44" // re-enable warning for obsolete usage
@@ -72,7 +72,7 @@ type Rect2D =
     member inline r.Width =
         r.Xaxis.Length
     /// The size in X direction
-    member inline r.SizeX =
+    member inline r.SizeX : float =
         r.Xaxis.Length
 
    /// The squared size in X direction
@@ -84,7 +84,7 @@ type Rect2D =
     member inline r.Height2D =
         r.Yaxis.Length
     /// The size in Y direction
-    member inline r.SizeY =
+    member inline r.SizeY : float =
         r.Yaxis.Length
 
     /// The squared size in Y direction
@@ -103,13 +103,13 @@ type Rect2D =
 
     /// Format the 2D Rectangle into string with nice floating point number formatting of X and Y size only.
     /// But without type name as in v.ToString()
-    member r.AsString =
+    member r.AsString : string =
         let sizeX = Format.float r.SizeX
         let sizeY = Format.float r.SizeY
         $"%s{sizeX} x %s{sizeY}"
 
     /// Format Rect2D into an F# code string that can be used to recreate the rectangle.
-    member r.AsFSharpCode =
+    member r.AsFSharpCode : string =
         $"Rect2D.createUnchecked({r.Origin.AsFSharpCode}, {r.Xaxis.AsFSharpCode}, {r.Yaxis.AsFSharpCode})"
 
 
@@ -141,7 +141,7 @@ type Rect2D =
     member inline r.Diagonal = r.Xaxis + r.Yaxis
 
     /// Returns the center of the 2D Rectangle.
-    member inline r.Center = r.Origin + r.Xaxis*0.5 + r.Yaxis*0.5
+    member inline r.Center : Pt = r.Origin + r.Xaxis*0.5 + r.Yaxis*0.5
 
     /// Evaluate a X and Y parameter of the 2D Rectangle.
     ///  0.0, 0.0 returns the Origin.
@@ -159,7 +159,7 @@ type Rect2D =
 
 
     /// Calculates the area of the 2D Rectangle.
-    member inline r.Area =
+    member inline r.Area : float =
         r.Xaxis.Length * r.Yaxis.Length
 
     /// Scales the 2D rectangle by a given factor.
@@ -187,13 +187,13 @@ type Rect2D =
         r.Xaxis.LengthSq * r.Yaxis.LengthSq
 
     /// Returns the longest edge of the Rect2D.
-    member inline b.LongestEdge =
+    member inline b.LongestEdge : float =
         let x = b.Xaxis.LengthSq
         let y = b.Yaxis.LengthSq
         sqrt  (max x y)
 
     /// Returns the shortest edge of the Rect2D.
-    member inline b.ShortestEdge =
+    member inline b.ShortestEdge : float =
         let x = b.Xaxis.LengthSq
         let y = b.Yaxis.LengthSq
         sqrt  (min x y)
@@ -212,34 +212,34 @@ type Rect2D =
 
     /// Tests if all sides are smaller than the zeroLength tolerance.
     /// This is the same as IsPoint.
-    member inline b.IsZero =
+    member inline b.IsZero : bool =
         isTooTinySq b.Xaxis.LengthSq &&
         isTooTinySq b.Yaxis.LengthSq
 
     /// Tests if all sides are smaller than the zeroLength tolerance.
     /// This is the same as IsZero.
-    member inline b.IsPoint =
+    member inline b.IsPoint : bool =
         isTooTinySq b.Xaxis.LengthSq &&
         isTooTinySq b.Yaxis.LengthSq
 
     /// Counts the amount of sides that are smaller than the zeroLength tolerance.
     /// This is 0, 1 or 2.
-    member inline b.CountZeroSides =
+    member inline b.CountZeroSides : int =
         countTooTinySqOrNaN    b.Xaxis.LengthSq
         +  countTooTinySqOrNaN b.Yaxis.LengthSq
 
     /// Tests if two of the X and Y axis is smaller than the zeroLength tolerance.
-    member inline b.IsLine =
+    member inline b.IsLine : bool =
         b.CountZeroSides = 1
 
     /// Tests if no sides of the X and Y axis is smaller than the zeroLength tolerance.
     /// Same as .HasArea
-    member inline b.IsValid =
+    member inline b.IsValid : bool =
         b.CountZeroSides = 0
 
     /// Tests if none of the X and Y axis is smaller than the zeroLength tolerance.
     /// Same as .IsValid
-    member inline b.HasArea =
+    member inline b.HasArea : bool =
         b.CountZeroSides = 0
 
     /// Check for point containment in the 2D Rectangle.
@@ -344,7 +344,7 @@ type Rect2D =
         Rect2D.createUnchecked(o, x, y)
 
     /// Create a 2D Rectangle from an axis-aligned 2D Bounding Rectangle.
-    static member createFromBRect (b:BRect) =
+    static member createFromBRect (b:BRect)  : Rect2D =
         Rect2D.createUnchecked(b.MinPt, Vc.Xaxis*b.SizeX, Vc.Yaxis*b.SizeY)
 
     /// Creates a 2D rectangle from a center point, the X direction, the X and the Y size.
@@ -368,12 +368,12 @@ type Rect2D =
     /// Check for point containment in the 2D Rectangle.
     /// By doing 4 dot products with the sides of the rectangle.
     /// A point exactly on the edge of the Box is considered inside.
-    static member inline contains (p:Pt) (r:Rect2D) = r.Contains p
+    static member inline contains (p:Pt) (r:Rect2D)  : bool = r.Contains p
 
     /// Checks if two 2D Rectangles are equal within tolerance.
     /// Does not recognize congruent rectangles with different rotation as equal.
     /// Use a tolerance of 0.0 to check for an exact match of exactly equal rectangles.
-    static member equals (tol:float) (a:Rect2D) (b:Rect2D) =
+    static member equals (tol:float) (a:Rect2D) (b:Rect2D)  : bool =
         abs (a.Origin.X - b.Origin.X) <= tol && //TODO raise an exception if the tolerance is negative ?
         abs (a.Origin.Y - b.Origin.Y) <= tol &&
         abs (a.Xaxis.X -  b.Xaxis.X ) <= tol &&
@@ -384,7 +384,7 @@ type Rect2D =
 
     /// Check if two 2D Rectangles are not equal within a given tolerance.
     /// Use a tolerance of 0.0 to check if the two rectangles are not exactly equal.
-    static member notEquals (tol:float) (a:Rect2D) (b:Rect2D) =
+    static member notEquals (tol:float) (a:Rect2D) (b:Rect2D)  : bool =
         abs (a.Origin.X - b.Origin.X) > tol || //TODO raise an exception if the tolerance is negative ?
         abs (a.Origin.Y - b.Origin.Y) > tol ||
         abs (a.Xaxis.X -  b.Xaxis.X ) > tol ||
@@ -395,7 +395,7 @@ type Rect2D =
 
     /// Returns the 2D Rectangle expanded by distance on all four sides.
     /// Does check for underflow if distance is negative and raises EuclidException.
-    static member expand dist (r:Rect2D) =
+    static member expand dist (r:Rect2D)  : Rect2D =
         let siX = r.SizeX
         let siY = r.SizeY
         let d = dist * -2.0
@@ -423,7 +423,7 @@ type Rect2D =
     /// Values between 0.0 and 1.0 shrink the rectangle.
     /// Values larger than 1.0 expand the rectangle.
     /// Does check for underflow if factor is negative and raises EuclidException.
-    static member expandRel factor (r:Rect2D) =
+    static member expandRel factor (r:Rect2D)  : Rect2D =
         if factor < 0.0  then
             fail $"Rect2D.expandRel: a negative factor {factor} is not allowed for expanding the 2D-rectangle {r.AsString}"
         let x = r.Xaxis * factor
@@ -435,7 +435,7 @@ type Rect2D =
     /// Values between 0.0 and 1.0 shrink the rectangle.
     /// Values larger than 1.0 expand the rectangle.
     /// Does check for underflow if factor is negative and raises EuclidException.
-    static member expandRelXY factorX factorY (r:Rect2D) =
+    static member expandRelXY factorX factorY (r:Rect2D)  : Rect2D =
         if factorX < 0.0  then
             fail $"Rect2D.expandRelXY: a negative factor {factorX} is not allowed for expanding the 2D-rectangle {r.AsString}"
         if factorY < 0.0  then
@@ -595,11 +595,11 @@ type Rect2D =
         Rect2D.createUnchecked(r.Origin + y*(distY/len), r.Xaxis, y)
 
     /// Translate by a 2D vector.(Same as Rect2D.move)
-    static member translate (v:Vc) (r:Rect2D) =
+    static member translate (v:Vc) (r:Rect2D)  : Rect2D =
         Rect2D.createUnchecked(r.Origin + v, r.Xaxis, r.Yaxis)
 
     /// Translate by a 2D vector.(Same as Rect2D.translate)
-    static member move (v:Vc) (r:Rect2D) =
+    static member move (v:Vc) (r:Rect2D)  : Rect2D =
         Rect2D.createUnchecked(r.Origin + v, r.Xaxis, r.Yaxis)
 
     /// Rotation of a Rect2D.

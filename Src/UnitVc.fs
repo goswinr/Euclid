@@ -36,7 +36,7 @@ type UnitVc =
 
     /// For use as a faster constructor.
     /// Requires correct input of unitized values.
-    static member inline createUnchecked(x, y) =
+    static member inline createUnchecked(x, y) : UnitVc =
         #nowarn "44"
         UnitVc(x, y)
         #warnon "44" // re-enable warning for obsolete usage
@@ -49,13 +49,13 @@ type UnitVc =
 
     /// Format 2D unit-vector into string with nice floating point number formatting of X and Y
     /// But without full type name as in v.ToString()
-    member v.AsString =
+    member v.AsString : string =
         let x = Format.float v.X
         let y = Format.float v.Y
         $"X=%s{x}|Y=%s{y}"
 
     /// Format 2D unit-vector into an F# code string that can be used to recreate the unit-vector.
-    member v.AsFSharpCode =
+    member v.AsFSharpCode : string =
         $"UnitVc.create({v.X}, {v.Y})"
 
     /// Negate or inverse a 2D unit-vector. Returns a new 2D unit-vector.
@@ -117,7 +117,7 @@ type UnitVc =
     /// Dot product, or scalar product of two 2D unit-vectors.
     /// Returns a float.
     /// This float is the Cosine of the angle between the two 2D vectors.
-    static member inline dot (a:UnitVc, b:UnitVc) =
+    static member inline dot (a:UnitVc, b:UnitVc) : float =
         a.X * b.X + a.Y * b.Y
 
 
@@ -127,7 +127,7 @@ type UnitVc =
     /// If the rotation from 'a' to 'b' is Counter-Clockwise the result is positive.
     /// For unit-vectors this is the same as the sine of the angle between the two vectors.
     /// (while the dot product is the cosine)
-    static member inline cross (a:UnitVc, b:UnitVc) =
+    static member inline cross (a:UnitVc, b:UnitVc) : float =
         a.X*b.Y - a.Y*b.X
 
 
@@ -143,7 +143,7 @@ type UnitVc =
     //     UnitVc.createUnchecked(v.X, v.Y)
 
     /// Create 2D unit-vector. Does the unitizing too.
-    static member inline create (x:float, y:float) =
+    static member inline create (x:float, y:float) : UnitVc =
         // this member cant be an extension method because it is used with SRTP in UnitV.createFromMembersXY
         // see error FS1114: The value 'Euclid.AutoOpenUnitVc.create' was marked inline but was not bound in the optimization environment
         let l = sqrt(x * x  + y * y)

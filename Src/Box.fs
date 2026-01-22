@@ -57,7 +57,7 @@ type Box =
 
     /// Unsafe constructor that creates a Box from origin and three axis vectors.
     /// It does NOT verify the orientation of vectors.
-    static member inline createUnchecked (origin, xAxis, yAxis, zAxis) =
+    static member inline createUnchecked (origin, xAxis, yAxis, zAxis) : Box =
         #nowarn "44"
         Box(origin, xAxis, yAxis, zAxis)
         #warnon "44" // re-enable warning for obsolete usage
@@ -66,7 +66,7 @@ type Box =
     member inline b.Width =
         b.Xaxis.Length
     /// The size in X direction.
-    member inline b.SizeX =
+    member inline b.SizeX : float =
         b.Xaxis.Length
 
     /// The size in X direction squared.
@@ -78,7 +78,7 @@ type Box =
     member inline b.Depth =
         b.Yaxis.Length
     /// The size in Y direction.
-    member inline b.SizeY =
+    member inline b.SizeY : float =
         b.Yaxis.Length
 
     /// The size in Y direction squared.
@@ -90,7 +90,7 @@ type Box =
     member inline b.Height3D =
         b.Zaxis.Length
     /// The size in Z direction.
-    member inline b.SizeZ =
+    member inline b.SizeZ : float =
         b.Zaxis.Length
 
     /// The size in Z direction squared.
@@ -112,14 +112,14 @@ type Box =
 
     /// Format Box into string with nice floating point number formatting of X, Y and Z size only.
     /// But without type name as in v.ToString()
-    member b.AsString =
+    member b.AsString : string =
         let sizeX = Format.float b.SizeX
         let sizeY = Format.float b.SizeY
         let sizeZ = Format.float b.SizeZ
         $"%s{sizeX} x %s{sizeY} x %s{sizeZ}"
 
     /// Format Box into an F# code string that can be used to recreate the box.
-    member b.AsFSharpCode =
+    member b.AsFSharpCode : string =
         $"Box.createUnchecked({b.Origin.AsFSharpCode}, {b.Xaxis.AsFSharpCode}, {b.Yaxis.AsFSharpCode}, {b.Zaxis.AsFSharpCode})"
 
 
@@ -170,7 +170,7 @@ type Box =
         b.Xaxis + b.Yaxis + b.Zaxis
 
     /// The center of the Box.
-    member inline b.Center =
+    member inline b.Center : Pt =
         b.Origin + b.Xaxis*0.5 + b.Yaxis*0.5 + b.Zaxis*0.5
 
     /// Evaluate a X, Y and Z parameter of the Box.
@@ -181,7 +181,7 @@ type Box =
 
 
     /// Calculates the volume of the Box.
-    member inline b.Volume =
+    member inline b.Volume : float =
         b.Xaxis.Length*b.Yaxis.Length*b.Zaxis.Length
 
 
@@ -194,14 +194,14 @@ type Box =
         r.Xaxis.LengthSq * r.Yaxis.LengthSq * r.Zaxis.LengthSq
 
     /// Returns the longest edge of the Box.
-    member inline b.LongestEdge =
+    member inline b.LongestEdge : float =
         let x = b.Xaxis.LengthSq
         let y = b.Yaxis.LengthSq
         let z = b.Zaxis.LengthSq
         sqrt (max (max x y) z)
 
     /// Returns the shortest edge of the Box.
-    member inline b.ShortestEdge =
+    member inline b.ShortestEdge : float =
         let x = b.Xaxis.LengthSq
         let y = b.Yaxis.LengthSq
         let z = b.Zaxis.LengthSq
@@ -224,14 +224,14 @@ type Box =
 
     /// Tests if all sides are smaller than the zeroLength tolerance.
     /// This is the same as IsPoint.
-    member inline b.IsZero =
+    member inline b.IsZero : bool =
         isTooTinySq b.Xaxis.LengthSq &&
         isTooTinySq b.Yaxis.LengthSq &&
         isTooTinySq b.Zaxis.LengthSq
 
     /// Tests if all sides are smaller than the zeroLength tolerance.
     /// This is the same as IsZero.
-    member inline b.IsPoint =
+    member inline b.IsPoint : bool =
         isTooTinySq b.Xaxis.LengthSq &&
         isTooTinySq b.Yaxis.LengthSq &&
         isTooTinySq b.Zaxis.LengthSq
@@ -239,28 +239,28 @@ type Box =
 
     /// Counts the amount of sides that are smaller than the zeroLength tolerance.
     /// This is 0, 1, 2 or 3.
-    member inline b.CountZeroSides =
+    member inline b.CountZeroSides : int =
         countTooTinySqOrNaN    b.Xaxis.LengthSq
         +  countTooTinySqOrNaN b.Yaxis.LengthSq
         +  countTooTinySqOrNaN b.Zaxis.LengthSq
 
 
     /// Tests if two of the X, Y and Z axis is smaller than the zeroLength tolerance.
-    member inline b.IsLine =
+    member inline b.IsLine : bool =
         b.CountZeroSides = 2
 
     /// Tests if one of the X, Y and Z axis is smaller than the zeroLength tolerance.
-    member inline b.IsFlat =
+    member inline b.IsFlat : bool =
         b.CountZeroSides = 1
 
     /// Tests if no sides of the X, Y and Z axis is smaller than the zeroLength tolerance.
     /// Same as .HasVolume
-    member inline b.IsValid =
+    member inline b.IsValid : bool =
         b.CountZeroSides = 0
 
     /// Tests if none of the X, Y and Z axis is smaller than the zeroLength tolerance.
     /// Same as .IsValid
-    member inline b.HasVolume =
+    member inline b.HasVolume : bool =
         b.CountZeroSides = 0
 
 
@@ -373,12 +373,12 @@ type Box =
     /// Check for point containment in the Box.
     /// By doing 6 dot products with the sides of the rectangle.
     /// A point exactly on the edge of the Box is considered inside.
-    static member inline contains (p:Pnt) (b:Box) = b.Contains p
+    static member inline contains (p:Pnt) (b:Box)  : bool = b.Contains p
 
     /// Checks if two 3D-boxes are equal within tolerance.
     /// Does not recognize congruent boxes with different rotation as equal.
     /// Use a tolerance of 0.0 to check for an exact match.
-    static member equals (tol:float) (a:Box) (b:Box) =
+    static member equals (tol:float) (a:Box) (b:Box)  : bool =
         abs (a.Origin.X - b.Origin.X) <= tol &&
         abs (a.Origin.Y - b.Origin.Y) <= tol &&
         abs (a.Origin.Z - b.Origin.Z) <= tol &&
@@ -395,7 +395,7 @@ type Box =
 
     /// Check if two 3D-boxes are not equal within a given tolerance.
     /// Use a tolerance of 0.0 to check if the two 3D-boxes are not exactly equal.
-    static member notEquals (tol:float) (a:Box) (b:Box) =
+    static member notEquals (tol:float) (a:Box) (b:Box)  : bool =
         abs (a.Origin.X - b.Origin.X) > tol ||
         abs (a.Origin.Y - b.Origin.Y) > tol ||
         abs (a.Origin.Z - b.Origin.Z) > tol ||
@@ -412,7 +412,7 @@ type Box =
 
     /// Returns Box expanded by distance on all six sides.
     /// Does check for underflow if distance is negative and raises EuclidException.
-    static member expand dist (b:Box) =
+    static member expand dist (b:Box)  : Box =
         let siX = b.SizeX
         let siY = b.SizeY
         let hei = b.SizeZ
@@ -444,7 +444,7 @@ type Box =
     /// Values between 0.0 and 1.0 shrink the box.
     /// Values larger than 1.0 expand the box.
     /// Does check for underflow if factor is negative and raises EuclidException.
-    static member expandRel factor (b:Box) =
+    static member expandRel factor (b:Box)  : Box =
         if factor < 0.0 then
             fail $"Box.expandRel: a negative factor {factor} is not allowed for expanding the 3D box {b.AsString}"
         let x = b.Xaxis * factor
@@ -456,7 +456,7 @@ type Box =
     /// Values between 0.0 and 1.0 shrink the box.
     /// Values larger than 1.0 expand the box.
     /// Does check for underflow if any factor is negative and raises EuclidException.
-    static member expandRelXYZ factorX factorY factorZ (b:Box) =
+    static member expandRelXYZ factorX factorY factorZ (b:Box)  : Box =
         if factorX < 0.0 then
             fail $"Box.expandRelXYZ: a negative factorX {factorX} is not allowed for expanding the 3D box {b.AsString}"
         if factorY < 0.0 then
@@ -538,7 +538,7 @@ type Box =
         Box.createFromPlaneAndPoints pl pts
 
     /// Creates a 3D box moved by a vector.
-    static member inline move (v:Vec) (b:Box) =
+    static member inline move (v:Vec) (b:Box)  : Box =
         Box.createUnchecked(b.Origin + v, b.Xaxis, b.Yaxis, b.Zaxis)
 
     /// Creates a 3D box translated along the local X-axis of the Box.

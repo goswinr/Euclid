@@ -56,23 +56,23 @@ type Vec =
 
     /// Format 3D vector into string with nice floating point number formatting of X, Y and Z.
     /// But without full type name or length as in v.ToString()
-    member v.AsString =
+    member v.AsString : string =
         let x = Format.float v.X
         let y = Format.float v.Y
         let z = Format.float v.Z
         $"X=%s{x}|Y=%s{y}|Z=%s{z}"
 
     /// Format 3D vector into an F# code string that can be used to recreate the vector.
-    member v.AsFSharpCode =
+    member v.AsFSharpCode : string =
         $"Vec({v.X}, {v.Y}, {v.Z})"
 
     /// Returns the length of the 3D vector.
-    member inline v.Length =
+    member inline v.Length : float =
         sqrt (v.X*v.X + v.Y*v.Y + v.Z*v.Z)
 
     /// Returns the squared length of the 3D vector.
     /// The square length is faster to calculate and often good enough for use cases such as sorting vectors by length.
-    member inline v.LengthSq =
+    member inline v.LengthSq : float =
         v.X*v.X + v.Y*v.Y + v.Z*v.Z
 
     /// Negate or inverse a 3D vector. Returns a new 3D vector.
@@ -108,7 +108,7 @@ type Vec =
 
     /// Dot product, or scalar product of two 3D vectors.
     /// Returns a float.
-    static member inline dot (a:Vec, b:Vec) =
+    static member inline dot (a:Vec, b:Vec)  : float =
         a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
     /// The Cross Product of two 3D vectors.
@@ -117,7 +117,7 @@ type Vec =
     /// The length of this resulting vector is the area of the parallelogram spanned by the input vectors.
     /// Its direction follows the right-hand rule.
     /// A x B = |A| * |B| * sin(angle)
-    static member inline cross (a:Vec, b:Vec) =
+    static member inline cross (a:Vec, b:Vec)  : Vec =
         Vec (a.Y * b.Z - a.Z * b.Y,
              a.Z * b.X - a.X * b.Z,
              a.X * b.Y - a.Y * b.X)
@@ -128,7 +128,7 @@ type Vec =
 
     /// Divides the vector by an integer.
     /// (This member is needed by Array.average and similar functions)
-    static member DivideByInt (v:Vec, i:int) = // needed by 'Array.average'
+    static member DivideByInt (v:Vec, i:int) : Vec = // needed by 'Array.average'
         if i = 0 then failDivide "Vec.DivideByInt" 0.0 v
         let d = float i
         Vec(v.X/d, v.Y/d, v.Z/d)

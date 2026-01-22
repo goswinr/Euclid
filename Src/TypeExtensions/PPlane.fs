@@ -98,7 +98,7 @@ module AutoOpenPPlane =
         /// Checks if two Parametrized Planes are equal within tolerance distance.
         /// For the tips of its unit vectors and its origin.
         /// Use a tolerance of 0.0 to check for an exact match.
-        static member inline equals (tol:float) (a:PPlane) (b:PPlane) =
+        static member inline equals (tol:float) (a:PPlane) (b:PPlane)  : bool =
             abs (a.Origin.X - b.Origin.X) <= tol &&
             abs (a.Origin.Y - b.Origin.Y) <= tol &&
             abs (a.Origin.Z - b.Origin.Z) <= tol &&
@@ -116,7 +116,7 @@ module AutoOpenPPlane =
         /// Checks if two Parametrized Planes are NOT equal within tolerance distance.
         /// For the tips of its unit vectors and its origin.
         /// Use a tolerance of 0.0 to check for an exact mismatch.
-        static member inline notEquals (tol:float) (a:PPlane) (b:PPlane) =
+        static member inline notEquals (tol:float) (a:PPlane) (b:PPlane)  : bool =
             abs (a.Origin.X - b.Origin.X) > tol ||
             abs (a.Origin.Y - b.Origin.Y) > tol ||
             abs (a.Origin.Z - b.Origin.Z) > tol ||
@@ -479,9 +479,9 @@ module AutoOpenPPlane =
             PPlane.createUnchecked(newOrigin, pl.Xaxis, pl.Yaxis, pl.Zaxis)
 
         /// Move plane origin by vector.
-        static member inline translate (translation:Vec) (pl:PPlane) =
+        static member inline translate (translation:Vec) (pl:PPlane)  : PPlane =
             PPlane.createUnchecked(pl.Origin + translation, pl.Xaxis, pl.Yaxis, pl.Zaxis)
 
         /// Move plane origin by vector. Same as translate.
-        static member inline move (translation:Vec) (pl:PPlane) =
+        static member inline move (translation:Vec) (pl:PPlane)  : PPlane =
             PPlane.createUnchecked(pl.Origin + translation, pl.Xaxis, pl.Yaxis, pl.Zaxis)

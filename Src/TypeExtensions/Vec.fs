@@ -19,7 +19,7 @@ module AutoOpenVec =
             Vc(v.X, v.Y)
 
         /// Returns a boolean indicating whether X, Y and Z are all exactly 0.0.
-        member inline v.IsZero =
+        member inline v.IsZero : bool =
             v.X = 0.0 && v.Y = 0.0 && v.Z = 0.0
 
         /// Returns a boolean indicating if any of X, Y and Z is not exactly 0.0.
@@ -518,7 +518,7 @@ module AutoOpenVec =
         /// The length of this resulting vector is the area of the parallelogram spanned by the input vectors.
         /// Its direction follows the right-hand rule.
         /// A x B = |A| * |B| * sin(angle)
-        static member inline cross (a:UnitVec, b:Vec) =
+        static member inline cross (a:UnitVec, b:Vec)  : Vec =
             Vec (a.Y * b.Z - a.Z * b.Y, a.Z * b.X - a.X * b.Z, a.X * b.Y - a.Y * b.X)
 
         /// Cross product, of a 3D vector and a 3D unit-vectors.
@@ -527,7 +527,7 @@ module AutoOpenVec =
         /// The length of this resulting vector is the area of the parallelogram spanned by the input vectors.
         /// Its direction follows the right-hand rule.
         /// A x B = |A| * |B| * sin(angle)
-        static member inline cross (a:Vec, b:UnitVec) =
+        static member inline cross (a:Vec, b:UnitVec)  : Vec =
             Vec (a.Y * b.Z - a.Z * b.Y, a.Z * b.X - a.X * b.Z, a.X * b.Y - a.Y * b.X)
 
 
@@ -536,13 +536,13 @@ module AutoOpenVec =
         /// Dot product, or scalar product of a 3D unit-vector with a 3D vector.
         /// Returns a float.
         /// This float is the projected length of the 3D vector on the direction of the unit-vector.
-        static member inline dot (a:UnitVec, b:Vec) =
+        static member inline dot (a:UnitVec, b:Vec)  : float =
             a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
         /// Dot product, or scalar product of a 3D vector with a 3D unit-vector.
         /// Returns a float.
         /// This float is the projected length of the 3D vector on the direction of the unit-vector.
-        static member inline dot (a:Vec, b:UnitVec) =
+        static member inline dot (a:Vec, b:UnitVec)  : float =
             a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
         /// Gets the X part of this 3D vector.

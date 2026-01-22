@@ -47,7 +47,7 @@ type BRect =
 
     /// Does not verify the order of min and max values.
     /// Creates a new bounding rectangle.
-    static member inline createUnchecked (minX, minY, maxX, maxY) =
+    static member inline createUnchecked (minX, minY, maxX, maxY) : BRect =
         #nowarn "44"
         BRect(minX, minY, maxX, maxY)
         #warnon "44" // re-enable warning for obsolete usage
@@ -62,7 +62,7 @@ type BRect =
 
     /// Format bounding rectangle into string with nice floating point number formatting of size and position.
     /// But without full type name as in rect.ToString()
-    member r.AsString =
+    member r.AsString : string =
         let sizeX = Format.float (r.MaxX - r.MinX)
         let sizeY = Format.float (r.MaxY - r.MinY)
         let atX = Format.float r.MinX
@@ -70,31 +70,31 @@ type BRect =
         $"sizeX=%s{sizeX}| sizeY=%s{sizeY}| at X=%s{atX}|Y=%s{atY}"
 
     /// Format bounding rectangle into an F# code string that can be used to recreate the rectangle.
-    member r.AsFSharpCode =
+    member r.AsFSharpCode : string =
         $"BRect.createUnchecked({r.MinX}, {r.MinY}, {r.MaxX}, {r.MaxY})"
 
     /// The point where X and Y are the minimum values.
-    member inline r.MinPt =
+    member inline r.MinPt : Pt =
         Pt(r.MinX, r.MinY)
 
     /// The point where X and Y are the maximum values.
-    member inline r.MaxPt =
+    member inline r.MaxPt : Pt =
         Pt(r.MaxX, r.MaxY)
 
     /// The size in X direction.
-    member inline r.SizeX =
+    member inline r.SizeX : float =
         r.MaxX - r.MinX
 
     /// The size in Y direction.
-    member inline r.SizeY =
+    member inline r.SizeY : float =
         r.MaxY - r.MinY
 
     /// The diagonal 2D vector of the bounding rect. From MinPt to MaxPt.
-    member inline r.Diagonal =
+    member inline r.Diagonal : Vc =
         Vc(r.MaxX - r.MinX, r.MaxY - r.MinY)
 
     /// The center of the bounding rect.
-    member inline r.Center =
+    member inline r.Center : Pt =
         Pt( (r.MaxX + r.MinX) * 0.5,
             (r.MaxY + r.MinY) * 0.5)
 
@@ -161,7 +161,7 @@ type BRect =
     /// Returns TRUE if the two bounding rectangles do overlap or touch.
     /// Also returns TRUE if one bounding rect is completely inside the other.
     /// Also returns TRUE if one bounding rect is completely surrounding the other.
-    member inline r.OverlapsWith (a:BRect) =
+    member inline r.OverlapsWith (a:BRect) : bool =
         not (  r.MinX > a.MaxX
             || a.MinX > r.MaxX
             || a.MinY > r.MaxY
@@ -186,7 +186,7 @@ type BRect =
     /// Returns false if the two bounding rectangles are just touching or apart.
     /// Also returns TRUE if one bounding rect is completely inside the other.
     /// Also returns TRUE if one bounding rect is completely surrounding the other.
-    member inline r.OverlapsWith (a:BRect, [<OPT;DEF(1e-6)>]tol:float) =
+    member inline r.OverlapsWith (a:BRect, [<OPT;DEF(1e-6)>]tol:float) : bool =
         not (  r.MinX > a.MaxX - tol
             || a.MinX > r.MaxX - tol
             || a.MinY > r.MaxY - tol
@@ -194,14 +194,14 @@ type BRect =
             )
 
     /// Returns TRUE if the point is inside or exactly on this bounding rectangle.
-    member inline r.Contains (p:Pt) =
+    member inline r.Contains (p:Pt) : bool =
         p.X >= r.MinX &&
         p.X <= r.MaxX &&
         p.Y >= r.MinY &&
         p.Y <= r.MaxY
 
     /// Returns TRUE if the Rectangle is inside or exactly on the other bounding rectangle.
-    member inline r.Contains (o:BRect) =
+    member inline r.Contains (o:BRect) : bool =
         r.Contains(o.MinPt) && r.Contains(o.MaxPt)
 
     /// <summary>Test if 2D bounding rectangles are only touching each other from the Outside within a given tolerance.</summary>
@@ -209,7 +209,7 @@ type BRect =
     /// <param name="tol">Optional. A tolerance for touching test. Default is 1e-6.</param>
     /// <returns>TRUE if the two 2D bounding rectangles are touching each other within the given tolerance.
     /// FALSE if the two 2D bounding rectangles are overlapping or intersecting.</returns>
-    member b.IsTouching (a:BRect, [<OPT;DEF(1e-6)>]tol:float) =
+    member b.IsTouching (a:BRect, [<OPT;DEF(1e-6)>]tol:float) : bool =
         let xOverlap = not (b.MinX > a.MaxX + tol || a.MinX > b.MaxX + tol)
         let yOverlap = not (a.MinY > b.MaxY + tol || b.MinY > a.MaxY + tol)
         let xTouch   = abs(b.MinX - a.MaxX)  <= tol || abs(a.MinX - b.MaxX) <= tol
@@ -219,23 +219,23 @@ type BRect =
     /// Evaluate a X and Y parameter of this bounding rectangle.
     ///  0.0, 0.0 returns the MinPt.
     ///  1.0, 1.0 returns the MaxPt.
-    member inline b.EvaluateAt (xParameter, yParameter) =
+    member inline b.EvaluateAt (xParameter, yParameter) : Pt =
         Pt (b.MinX + (b.MaxX-b.MinX) * xParameter,
             b.MinY + (b.MaxY-b.MinY) * yParameter)
 
     /// Returns the area of this bounding rectangle.
-    member inline r.Area =
+    member inline r.Area : float =
         r.SizeX * r.SizeY
 
 
     /// Returns the longest edge of the Box.
-    member inline b.LongestEdge =
+    member inline b.LongestEdge : float =
         let x = b.MaxX - b.MinX
         let y = b.MaxY - b.MinY
         max x y
 
     /// Returns the shortest edge of the Box.
-    member inline b.ShortestEdge =
+    member inline b.ShortestEdge : float =
         let x = b.MaxX - b.MinX
         let y = b.MaxY - b.MinY
         min x y
@@ -243,43 +243,43 @@ type BRect =
 
     /// Tests if all sides are smaller than the zeroLength tolerance.
     /// This is the same as IsPoint.
-    member inline b.IsZero =
+    member inline b.IsZero : bool =
         isTooTiny (b.MaxX - b.MinX) &&
         isTooTiny (b.MaxY - b.MinY)
 
     /// Tests if all sides are smaller than the zeroLength tolerance.
     /// This is the same as IsZero.
-    member inline b.IsPoint =
+    member inline b.IsPoint : bool =
         b.IsZero
 
 
     /// Counts the amount of sides that are smaller than the zeroLength tolerance.
     /// This is 0, 1, or 2.
-    member inline b.CountZeroSides =
+    member inline b.CountZeroSides : int =
         countTooTinyOrNaN    (b.MaxX - b.MinX)
         +  countTooTinyOrNaN (b.MaxY - b.MinY)
 
     /// Tests if one of the X or Y axis is smaller than the zeroLength tolerance.
-    member inline b.IsLine =
+    member inline b.IsLine : bool =
         b.CountZeroSides = 1
 
     /// Tests if no sides of the X and Y axis is smaller than the zeroLength tolerance.
     /// Same as .HasArea
-    member inline b.IsValid =
+    member inline b.IsValid : bool =
         b.CountZeroSides = 0
 
     /// Tests if none of the X and Y axis is smaller than the zeroLength tolerance.
     /// Same as .IsValid
-    member inline b.HasArea =
+    member inline b.HasArea : bool =
         b.CountZeroSides = 0
 
 
     /// Returns a bounding rectangle that contains both input Rectangles.
-    member inline r.Union  (b:BRect) =
+    member inline r.Union  (b:BRect) : BRect =
         BRect.createUnchecked(min b.MinX r.MinX, min b.MinY r.MinY, max b.MaxX r.MaxX, max b.MaxY r.MaxY)
 
     /// Returns a bounding rectangle that contains the input Rectangles and the point.
-    member inline r.Union (p:Pt) =
+    member inline r.Union (p:Pt) : BRect =
         BRect.createUnchecked(min r.MinX p.X, min r.MinY p.Y, max r.MaxX p.X, max r.MaxY p.Y)
 
 
@@ -287,7 +287,7 @@ type BRect =
     /// The returned Rectangle is the area that is inside both input Rectangles.
     /// Returns ValueNone if the two Rectangles do not overlap.
     /// Just touching Rectangles will return ValueSome with zero area collapsed BRect.
-    member inline b.Intersection (a:BRect) =
+    member inline b.Intersection (a:BRect) : BRect voption =
         let minX = max a.MinX b.MinX
         let minY = max a.MinY b.MinY
         let maxX = min a.MaxX b.MaxX
@@ -319,7 +319,7 @@ type BRect =
 
 
     /// Finds min and max values for x and y.
-    static member inline create (a:Pt, b:Pt) =
+    static member inline create (a:Pt, b:Pt) : BRect =
         // sort min and max values (not using allocating tuples for swapping)
         let mutable minX = a.X
         let maxX = if b.X > minX then b.X else minX <- b.X ;  a.X
@@ -329,7 +329,7 @@ type BRect =
 
     /// Finds min and max values for x and y.
     /// Fails if the sequence is null or empty.
-    static member inline createFromSeq (ps:seq<Pt> ) =
+    static member inline createFromSeq (ps:seq<Pt> ) : BRect =
         if isNull ps      then failNull "BRect.createFromSeq" "seq<Pt>"
         if Seq.isEmpty ps then failEmptySeq "BRect.createFromSeq" "seq<Pt>"
         let mutable minX = Double.MaxValue
@@ -345,7 +345,7 @@ type BRect =
 
     /// Finds min and max values for x and y.
     /// Fails if the IList is null or empty.
-    static member inline createFromIList (ps:Collections.Generic.IList<Pt> ) =
+    static member inline createFromIList (ps:Collections.Generic.IList<Pt> ) : BRect =
         if isNull ps    then failNull "BRect.createFromIList" "IList<Pt>"
         if ps.Count = 0 then failEmptySeq "BRect.createFromIList" "IList<Pt>"
         let mutable minX = Double.MaxValue
@@ -362,7 +362,7 @@ type BRect =
 
     /// Creates a bounding rectangle from a center point and the total X and Y size.
     /// Fails if sizeX or sizeY is negative.
-    static member inline createFromCenter (center:Pt, sizeX, sizeY) =
+    static member inline createFromCenter (center:Pt, sizeX, sizeY) : BRect =
         if isNegative sizeX then fail $"BRect.createFromCenter sizeX is negative: {sizeX}, sizeY is: {sizeY}, center: {center.AsString}"
         if isNegative sizeY then fail $"BRect.createFromCenter sizeY is negative: {sizeY}, sizeX is: {sizeX}, center: {center.AsString}"
         let minX = center.X - sizeX*0.5
@@ -374,7 +374,7 @@ type BRect =
 
 
     /// Creates a bounding rectangle of a line.
-    static member inline createFromLine (l:Line2D) =
+    static member inline createFromLine (l:Line2D) : BRect =
         let minX = min l.FromX l.ToX
         let maxX = max l.FromX l.ToX
         let minY = min l.FromY l.ToY
@@ -386,7 +386,7 @@ type BRect =
     /// Values between 0.0 and 1.0 shrink the rectangle.
     /// Values larger than 1.0 expand the rectangle.
     /// Does check for underflow if factor is negative and raises EuclidException.
-    static member expandRel factor (r:BRect) =
+    static member expandRel factor (r:BRect) : BRect =
         if factor < 0.0 then
             fail $"BRect.expandRel: a negative factor {factor} is not allowed for expanding the 2D bounding rectangle {r.AsString}"
         let center = r.Center
@@ -398,7 +398,7 @@ type BRect =
     /// Values between 0.0 and 1.0 shrink the rectangle.
     /// Values larger than 1.0 expand the rectangle.
     /// Does check for underflow if any factor is negative and raises EuclidException.
-    static member expandRelXY factorX factorY (r:BRect) =
+    static member expandRelXY factorX factorY (r:BRect) : BRect =
         if factorX < 0.0 then
             fail $"BRect.expandRelXY: a negative factorX {factorX} is not allowed for expanding the 2D bounding rectangle {r.AsString}"
         if factorY < 0.0 then
@@ -410,7 +410,7 @@ type BRect =
 
     /// Checks if two 2D bounding rectangles are equal within tolerance.
     /// Use a tolerance of 0.0 to check for an exact match.
-    static member inline equals (tol:float) (a:BRect) (b:BRect) =
+    static member inline equals (tol:float) (a:BRect) (b:BRect) : bool =
         abs(a.MinX-b.MinX) <= tol &&
         abs(a.MinY-b.MinY) <= tol &&
         abs(a.MaxX-b.MaxX) <= tol &&
@@ -419,7 +419,7 @@ type BRect =
 
     /// Check if two 2D bounding rectangles  are not equal within a given tolerance.
     /// Use a tolerance of 0.0 to check if the two 2D bounding rectangles  are not exactly equal.
-    static member inline notEquals (tol:float) (a:BRect) (b:BRect) =
+    static member inline notEquals (tol:float) (a:BRect) (b:BRect) : bool =
         abs(a.MinX-b.MinX) > tol ||
         abs(a.MinY-b.MinY) > tol ||
         abs(a.MaxX-b.MaxX) > tol ||
@@ -427,48 +427,48 @@ type BRect =
 
     /// Returns bounding rectangle expanded by distance.
     /// Does check for underflow if distance is negative and raises EuclidException.
-    static member inline expand dist (r:BRect) =
+    static member inline expand dist (r:BRect) : BRect =
         r.Expand dist
 
     /// Returns a bounding rectangle expanded by a distance for X and Y-axis each.
     /// If expansion is negative it shrinks the Rectangle. It also makes sure that there is no underflow.
     /// When the negative expansion is bigger than the size, Min and Max values will be both in the middle from where they were before.
-    static member inline expandSafe dist (r:BRect) =
+    static member inline expandSafe dist (r:BRect) : BRect =
         r.ExpandSafe dist
 
     /// Returns bounding rectangle expanded only in X direction by different distances for start(minX) and end (maxX).
     /// Does check for underflow if distance is negative and raises EuclidException.
-    static member inline expandXaxis startDist endDist (r:BRect) =
+    static member inline expandXaxis startDist endDist (r:BRect) : BRect =
         r.ExpandXaxis(startDist, endDist)
 
     /// Returns bounding rectangle expanded only in Y direction by different distances for start(minY) and end (maxY).
     /// Does check for underflow if distance is negative and raises EuclidException.
-    static member inline expandYaxis startDist endDist (r:BRect) =
+    static member inline expandYaxis startDist endDist (r:BRect) : BRect =
         r.ExpandYaxis(startDist, endDist)
 
     /// Returns a new 2D-bounding-rectangle moved by a vector.
     /// This is the same as translate.
-    static member inline move (v:Vc) (r:BRect) =
+    static member inline move (v:Vc) (r:BRect) : BRect =
         BRect.createUnchecked(r.MinX+v.X, r.MinY+v.Y, r.MaxX+v.X, r.MaxY+v.Y)
 
     /// Returns a new 2D-bounding-rectangle moved by a vector.
     /// This is the same as move.
-    static member inline translate (v:Vc) (r:BRect) =
+    static member inline translate (v:Vc) (r:BRect) : BRect =
         BRect.createUnchecked(r.MinX+v.X, r.MinY+v.Y, r.MaxX+v.X, r.MaxY+v.Y)
 
     /// Returns a new 2D-bounding-rectangle moved in X-axis direction.
-    static member inline moveX (translation:float) (r:BRect) =
+    static member inline moveX (translation:float) (r:BRect) : BRect =
         BRect.createUnchecked(r.MinX+translation, r.MinY, r.MaxX+translation, r.MaxY)
 
     /// Returns a new 2D-bounding-rectangle moved in Y-axis direction.
-    static member inline moveY (translation:float) (r:BRect) =
+    static member inline moveY (translation:float) (r:BRect) : BRect =
         BRect.createUnchecked(r.MinX, r.MinY+translation, r.MaxX, r.MaxY+translation)
 
 
     /// Returns TRUE if the two bounding rectangles do overlap or touch exactly.
     /// Also returns TRUE if one bounding rect is completely inside the other.
     /// Also returns TRUE if one bounding rect is completely surrounding the other.
-    static member inline doOverlap(a:BRect) (b:BRect) =
+    static member inline doOverlap(a:BRect) (b:BRect) : bool =
         b.OverlapsWith a
 
     /// Returns TRUE if the two bounding rectangles do overlap more than a given tolerance distance.
@@ -476,38 +476,38 @@ type BRect =
     /// Returns false if the two bounding rectangles are just touching or apart.
     /// Also returns TRUE if one bounding rect is completely inside the other.
     /// Also returns TRUE if one bounding rect is completely surrounding the other.
-    static member inline doOverlapMoreThan tol (a:BRect) (b:BRect) =
+    static member inline doOverlapMoreThan tol (a:BRect) (b:BRect) : bool =
         b.OverlapsWith(a, tol)
 
     /// Returns TRUE if this bounding rectangle is inside or exactly on the other bounding rectangle.
     /// Argument order matters!
-    static member inline contains (rectInside:BRect) (surroundingRect:BRect) =
+    static member inline contains (rectInside:BRect) (surroundingRect:BRect) : bool =
         surroundingRect.Contains rectInside
 
     /// Returns TRUE if the point is inside or on this bounding rectangle.
-    static member inline containsPt (pt:Pt) (rect:BRect) =
+    static member inline containsPt (pt:Pt) (rect:BRect) : bool =
         rect.Contains pt
 
 
     /// Returns a bounding rectangle that contains both input Rectangles.
-    static member inline union (a:BRect) (b:BRect) =
+    static member inline union (a:BRect) (b:BRect) : BRect =
         BRect.createUnchecked(min b.MinX a.MinX, min b.MinY a.MinY, max b.MaxX a.MaxX, max b.MaxY a.MaxY)
 
     /// Returns a bounding rectangle that contains the input Rectangles and the point.
-    static member inline unionPt (p:Pt) (r:BRect) =
+    static member inline unionPt (p:Pt) (r:BRect) : BRect =
         BRect.createUnchecked(min r.MinX p.X, min r.MinY p.Y, max r.MaxX p.X, max r.MaxY p.Y)
 
     /// Returns the intersection of two bounding rectangles.
     /// The returned Rectangle is the area that is inside both input Rectangles.
     /// Returns ValueNone if the two Rectangles do not overlap.
     /// Just touching Rectangles will return ValueSome with zero area collapsed BRect.
-    static member inline intersection (a:BRect) (b:BRect) =
+    static member inline intersection (a:BRect) (b:BRect) : BRect voption =
         a.Intersection b
 
 
 
     /// Returns the area of this bounding rectangle.
-    static member inline area (r:BRect) =
+    static member inline area (r:BRect) : float =
         r.SizeX * r.SizeY
 
 
@@ -540,7 +540,7 @@ type BRect =
     ///   |            |
     ///   +------------+-----> X-Axis (Width)
     ///  0 = min X,Y      1
-    member r.Pt0 = Pt(r.MinX, r.MinY)
+    member r.Pt0 : Pt = Pt(r.MinX, r.MinY)
 
     /// Returns the point (1) or maxX, minY.
     ///
@@ -556,7 +556,7 @@ type BRect =
     ///   |            |
     ///   +------------+-----> X-Axis (Width)
     ///  0 = min X,Y      1
-    member r.Pt1 = Pt(r.MaxX, r.MinY)
+    member r.Pt1 : Pt = Pt(r.MaxX, r.MinY)
 
     /// Returns the point (2) or maxX, maxY.
     ///
@@ -572,7 +572,7 @@ type BRect =
     ///   |            |
     ///   +------------+-----> X-Axis (Width)
     ///  0 = min X,Y      1
-    member r.Pt2 = Pt(r.MaxX, r.MaxY)
+    member r.Pt2 : Pt = Pt(r.MaxX, r.MaxY)
 
     /// Returns the point (3) or minX, maxY.
     ///
@@ -588,7 +588,7 @@ type BRect =
     ///   |            |
     ///   +------------+-----> X-Axis (Width)
     ///  0 = min X,Y      1
-    member r.Pt3 = Pt(r.MinX, r.MaxY)
+    member r.Pt3 : Pt = Pt(r.MinX, r.MaxY)
 
 
     /// Returns the corners of this bounding rectangle in Counter-Clockwise order, starting at MinPt.
@@ -606,7 +606,7 @@ type BRect =
     ///   |            |
     ///   +------------+-----> X-Axis (Width)
     ///  0 = min X,Y    1
-    member r.Points =
+    member r.Points : Pt[] =
         [| Pt(r.MinX, r.MinY); Pt(r.MaxX, r.MinY);  Pt(r.MaxX, r.MaxY); Pt(r.MinX, r.MaxY) |]
 
 
@@ -625,7 +625,7 @@ type BRect =
     ///   |            |
     ///   +------------+-----> X-Axis (Width)
     ///  0 = min X,Y    1
-    member r.PointsLooped =
+    member r.PointsLooped : Pt[] =
         [| Pt(r.MinX, r.MinY); Pt(r.MaxX, r.MinY);  Pt(r.MaxX, r.MaxY); Pt(r.MinX, r.MaxY); Pt(r.MinX, r.MinY)|]
 
     /// The bottom edge. The line from point 0 to 1
@@ -642,7 +642,7 @@ type BRect =
     ///   |            |
     ///   +------------+-----> X-Axis (Width)
     ///  0 = min X,Y    1
-    member r.Edge01 = Line2D(r.MinX,r.MinY,r.MaxX,r.MinY)
+    member r.Edge01 : Line2D = Line2D(r.MinX,r.MinY,r.MaxX,r.MinY)
 
     /// The right edge. The line from point 1 to 2
     ///
@@ -658,7 +658,7 @@ type BRect =
     ///   |            |
     ///   +------------+-----> X-Axis (Width)
     ///  0 = min X,Y    1
-    member r.Edge12 = Line2D(r.MaxX,r.MinY,r.MaxX,r.MaxY)
+    member r.Edge12 : Line2D = Line2D(r.MaxX,r.MinY,r.MaxX,r.MaxY)
 
     /// The top edge. The line from point 2 to 3
     ///
@@ -674,7 +674,7 @@ type BRect =
     ///   |            |
     ///   +------------+-----> X-Axis (Width)
     ///  0 = min X,Y    1
-    member r.Edge23 = Line2D(r.MaxX,r.MaxY,r.MinX,r.MaxY)
+    member r.Edge23 : Line2D = Line2D(r.MaxX,r.MaxY,r.MinX,r.MaxY)
 
     /// The left edge. The line from point 3 to 0
     ///
@@ -690,7 +690,7 @@ type BRect =
     ///   |            |
     ///   +------------+-----> X-Axis (Width)
     ///  0 = min X,Y    1
-    member r.Edge30 = Line2D(r.MinX,r.MaxY,r.MinX,r.MinY)
+    member r.Edge30 : Line2D = Line2D(r.MinX,r.MaxY,r.MinX,r.MinY)
 
 
 
@@ -699,11 +699,11 @@ type BRect =
 
 
     [<Obsolete("use SizeX")>]
-    member inline r.Width =
+    member inline r.Width : float =
         r.MaxX - r.MinX
 
     [<Obsolete("use SizeY")>]
-    member inline r.Height2D =
+    member inline r.Height2D : float =
         r.MaxY - r.MinY
 
     [<Obsolete("typo, use ExpandSafe instead")>]

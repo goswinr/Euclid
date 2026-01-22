@@ -51,7 +51,7 @@ type UnitVec =
 
     /// For use as a faster internal constructor.
     /// Requires correct input of unitized values.
-    static member inline createUnchecked(x, y, z) =
+    static member inline createUnchecked(x, y, z) : UnitVec =
         #nowarn "44"
         UnitVec(x, y, z)
         #warnon "44" // re-enable warning for obsolete usage
@@ -63,11 +63,11 @@ type UnitVec =
 
     /// Format 3D unit-vector into string with nice floating point number formatting of X, Y and Z
     /// But without full type name as in v.ToString()
-    member v.AsString =
+    member v.AsString : string =
         $"X={Format.float v.X}|Y={Format.float v.Y}|Z={Format.float v.Z}"
 
     /// Format 3D unit-vector into an F# code string that can be used to recreate the unit-vector.
-    member v.AsFSharpCode =
+    member v.AsFSharpCode : string =
         $"UnitVec.create({v.X}, {v.Y}, {v.Z})"
 
     /// Negate or inverse a 3D unit-vector. Returns a new 3D unit-vector.
@@ -129,7 +129,7 @@ type UnitVec =
     /// Dot product, or scalar product of two 3D unit-vectors.
     /// Returns a float.
     /// This float for unit-vectors is the Cosine of the angle between the two vectors.
-    static member inline dot (a:UnitVec, b:UnitVec) :float =
+    static member inline dot (a:UnitVec, b:UnitVec) : float =
         a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
 
@@ -139,7 +139,7 @@ type UnitVec =
     /// The length of this resulting vector is the area of the parallelogram spanned by the input vectors.
     /// Its direction follows the right-hand rule.
     /// A x B = |A| * |B| * sin(angle)
-    static member inline cross (a:UnitVec, b:UnitVec) =
+    static member inline cross (a:UnitVec, b:UnitVec) : Vec =
         Vec (a.Y * b.Z - a.Z * b.Y, a.Z * b.X - a.X * b.Z, a.X * b.Y - a.Y * b.X)
 
 
@@ -149,7 +149,7 @@ type UnitVec =
     //     UnitVec(v.X, v.Y, v.Z)
 
     /// Create 3D unit-vector. Does the unitizing too.
-    static member inline create (x:float, y:float, z:float) =
+    static member inline create (x:float, y:float, z:float) : UnitVec =
         // this member cant be an extension method because it is used with SRTP.
         // see error FS1114: The value 'Euclid.AutoOpenUnitVc.create' was marked inline but was not bound in the optimization environment
         let l = sqrt(x*x  + y*y + z*z)

@@ -50,14 +50,14 @@ type Pnt =
 
     /// Format 3D point into string with nice floating point number formatting of X, Y and Z
     /// But without full type name as in pt.ToString()
-    member p.AsString =
+    member p.AsString : string =
         let x = Format.float p.X
         let y = Format.float p.Y
         let z = Format.float p.Z
         $"X=%s{x}|Y=%s{y}|Z=%s{z}"
 
     /// Format 3D point into an F# code string that can be used to recreate the point.
-    member p.AsFSharpCode =
+    member p.AsFSharpCode : string =
         $"Pnt({p.X}, {p.Y}, {p.Z})"
 
     /// Subtract one 3D point from another.
@@ -113,7 +113,7 @@ type Pnt =
 
     /// Divides the 3D point by an integer.
     /// (This member is needed by Array.average and similar functions)
-    static member DivideByInt (pt:Pnt, i:int) = // needed by  'Array.average'
+    static member DivideByInt (pt:Pnt, i:int) : Pnt = // needed by  'Array.average'
         if i=0 then failDivide "Pnt.DivideByInt" 0.0 pt
         let d = float i
         Pnt(pt.X/d, pt.Y/d, pt.Z/d)

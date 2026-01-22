@@ -51,13 +51,13 @@ type Pt =
 
     /// Format 2D point into string with nice floating point number formatting of X and Y
     /// But without full type name as in p.ToString()
-    member p.AsString =
+    member p.AsString : string =
         let x = Format.float p.X
         let y = Format.float p.Y
         $"X=%s{x}|Y=%s{y}"
 
     /// Format 2D point into an F# code string that can be used to recreate the point.
-    member p.AsFSharpCode =
+    member p.AsFSharpCode : string =
         $"Pt({p.X}, {p.Y})"
 
     /// Subtract one 2D point from another.
@@ -109,7 +109,7 @@ type Pt =
 
     /// Divides the 2D point by an integer.
     /// (This member is needed by Array.average and similar functions)
-    static member DivideByInt (pt:Pt, i:int) = // needed by 'Array.average'
+    static member DivideByInt (pt:Pt, i:int) : Pt = // needed by 'Array.average'
         if i = 0 then failDivide "Pt.DivideByInt" 0.0 pt
         let d = float i
         Pt(pt.X/d, pt.Y/d)

@@ -16,7 +16,7 @@ type  Tria3D =
         Vec.cross (v, w) |> Vec.length
 
     /// Returns the area of a triangle described by 3 points.
-    static member inline area (a:Pnt, b:Pnt, c:Pnt) :float =
+    static member inline area (a:Pnt, b:Pnt, c:Pnt) : float =
         Tria3D.areaDouble(a, b, c) *  0.5
 
 

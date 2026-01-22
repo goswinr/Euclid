@@ -41,7 +41,7 @@ type Quaternion =
             {X=x; Y=y; Z=z; W=w}
 
     /// This unsafe constructor does NOT do any unitizing.
-    static member inline createUnchecked (x, y, z, w) =
+    static member inline createUnchecked (x, y, z, w) : Quaternion =
         #nowarn "44"
         Quaternion(x, y, z, w)
         #warnon "44" // re-enable warning for obsolete usage
@@ -54,12 +54,12 @@ type Quaternion =
     /// Format Quaternion into string also showing angle in Degree as nicely formatted floating point number.
     /// Using nice floating point number formatting.
     /// But without full type name as in q.ToString()
-    member q.AsString =
+    member q.AsString : string =
         let ang = q.W |> acosSafe |> ( * ) 2.0 |>  toDegrees
         $"X={Format.float q.X}|Y={Format.float q.Y}|Z={Format.float q.Z}, angle: {Format.float ang}°"
 
     /// Format Quaternion into an F# code string that can be used to recreate the quaternion.
-    member q.AsFSharpCode =
+    member q.AsFSharpCode : string =
         $"Quaternion.create({q.X}, {q.Y}, {q.Z}, {q.W})"
 
 
@@ -179,7 +179,7 @@ type Quaternion =
     /// Use a tolerance of 0.0 to check for an exact match.
     /// Note: A Quaternion with every component negated represents the same rotation but will be considered unequal by this function.
     /// For rotational equivalence, consider using Quaternion.equalsRotation function.
-    static member inline equals (tolerance:float) (a:Quaternion) (b:Quaternion) =
+    static member inline equals (tolerance:float) (a:Quaternion) (b:Quaternion)  : bool =
         abs(a.X-b.X) <= tolerance &&
         abs(a.Y-b.Y) <= tolerance &&
         abs(a.Z-b.Z) <= tolerance &&
@@ -209,7 +209,7 @@ type Quaternion =
         Quaternion.multiply(l, r)
 
     /// This constructor does unitizing too.
-    static member create (x, y, z, w) =
+    static member create (x, y, z, w) : Quaternion =
         let l = sqrt(x*x  + y*y + z*z + w*w)
         if isTooTiny (abs l) then
             fail $"Quaternion create failed for x:{x}, y:{y}, z:{z}, w:{w}. The length needs to be bigger than zero."

@@ -62,7 +62,7 @@ type Rect3D =
 
     /// Create a 3D-rectangle from the origin point and X-edge and Y edge.
     /// Does not check for perpendicularity.
-    static member inline createUnchecked (origin, x:Vec, y:Vec) =
+    static member inline createUnchecked (origin, x:Vec, y:Vec) : Rect3D =
         #nowarn "44"
         Rect3D(origin, x, y)
         #warnon "44" // re-enable warning for obsolete usage
@@ -72,7 +72,7 @@ type Rect3D =
     member inline r.Width =
         r.Xaxis.Length
     /// The size in X direction
-    member inline r.SizeX =
+    member inline r.SizeX : float =
         r.Xaxis.Length
 
     /// The squared size in X direction
@@ -84,7 +84,7 @@ type Rect3D =
     member inline r.Height2D =
         r.Yaxis.Length
     /// The size in Y direction
-    member inline r.SizeY =
+    member inline r.SizeY : float =
         r.Yaxis.Length
 
     /// The squared size in Y direction
@@ -103,13 +103,13 @@ type Rect3D =
 
     /// Format the 3D-rectangle into string with nice floating point number formatting of X and Y size only.
     /// But without type name as in v.ToString()
-    member r.AsString =
+    member r.AsString : string =
         let sizeX = Format.float r.SizeX
         let sizeY = Format.float r.SizeY
         $"%s{sizeX} x %s{sizeY}"
 
     /// Format Rect3D into an F# code string that can be used to recreate the rectangle.
-    member r.AsFSharpCode =
+    member r.AsFSharpCode : string =
         $"Rect3D.createUnchecked({r.Origin.AsFSharpCode}, {r.Xaxis.AsFSharpCode}, {r.Yaxis.AsFSharpCode})"
 
 
@@ -164,7 +164,7 @@ type Rect3D =
     member inline r.Diagonal = r.Xaxis + r.Yaxis
 
     /// Returns the center of the 3D-rectangle.
-    member inline r.Center = r.Origin + r.Xaxis*0.5 + r.Yaxis*0.5
+    member inline r.Center : Pt = r.Origin + r.Xaxis*0.5 + r.Yaxis*0.5
 
 
     /// Evaluate a X and Y parameter of the 3D-rectangle.
@@ -182,7 +182,7 @@ type Rect3D =
         r.Origin + r.Xaxis * (xDistance/lx) + r.Yaxis * (yDistance/ly)
 
     /// Calculates the area of the 3D-rectangle.
-    member inline r.Area =
+    member inline r.Area : float =
         r.Xaxis.Length * r.Yaxis.Length
 
     /// Scales the 3D rectangle by a given factor.
@@ -213,13 +213,13 @@ type Rect3D =
 
 
     /// Returns the longest edge of the Rect3D.
-    member inline b.LongestEdge =
+    member inline b.LongestEdge : float =
         let x = b.Xaxis.LengthSq
         let y = b.Yaxis.LengthSq
         sqrt  (max x y)
 
     /// Returns the shortest edge of the Rect3D.
-    member inline b.ShortestEdge =
+    member inline b.ShortestEdge : float =
         let x = b.Xaxis.LengthSq
         let y = b.Yaxis.LengthSq
         sqrt  (min x y)
@@ -238,34 +238,34 @@ type Rect3D =
 
     /// Tests if all sides are smaller than the zeroLength tolerance.
     /// This is the same as IsPoint.
-    member inline b.IsZero =
+    member inline b.IsZero : bool =
         isTooTinySq b.Xaxis.LengthSq &&
         isTooTinySq b.Yaxis.LengthSq
 
     /// Tests if all sides are smaller than the zeroLength tolerance.
     /// This is the same as IsZero.
-    member inline b.IsPoint =
+    member inline b.IsPoint : bool =
         isTooTinySq b.Xaxis.LengthSq &&
         isTooTinySq b.Yaxis.LengthSq
 
     /// Counts the amount of sides that are smaller than the zeroLength tolerance.
     /// This is 0, 1, 2 .
-    member inline b.CountZeroSides =
+    member inline b.CountZeroSides : int =
         countTooTinySqOrNaN    b.Xaxis.LengthSq
         +  countTooTinySqOrNaN b.Yaxis.LengthSq
 
     /// Tests if two of the X and Y axis is smaller than the zeroLength tolerance.
-    member inline b.IsLine =
+    member inline b.IsLine : bool =
         b.CountZeroSides = 1
 
     /// Tests if no sides of the X and Y axis is smaller than the zeroLength tolerance.
     /// Same as .HasArea
-    member inline b.IsValid =
+    member inline b.IsValid : bool =
         b.CountZeroSides = 0
 
     /// Tests if none of the X and Y axis is smaller than the zeroLength tolerance.
     /// Same as .IsValid
-    member inline b.HasArea =
+    member inline b.HasArea : bool =
         b.CountZeroSides = 0
 
     /// Gets the Plane that this 3D-rectangle is based on.
@@ -332,7 +332,7 @@ type Rect3D =
     /// Checks if two 3D-rectangles are equal within tolerance.
     /// Does not recognize congruent rectangles with different rotation as equal.
     /// Use a tolerance of 0.0 to check for an exact match.
-    static member equals (tol:float) (a:Rect3D) (b:Rect3D) =
+    static member equals (tol:float) (a:Rect3D) (b:Rect3D)  : bool =
         abs (a.Origin.X - b.Origin.X) <= tol &&
         abs (a.Origin.Y - b.Origin.Y) <= tol &&
         abs (a.Origin.Z - b.Origin.Z) <= tol &&
@@ -345,7 +345,7 @@ type Rect3D =
 
     /// Check if two 3D-rectangles are not equal within a given tolerance.
     /// Use a tolerance of 0.0 to check if the two rectangles are not exactly equal.
-    static member notEquals (tol:float) (a:Rect3D) (b:Rect3D) =
+    static member notEquals (tol:float) (a:Rect3D) (b:Rect3D)  : bool =
         abs (a.Origin.X - b.Origin.X) > tol ||
         abs (a.Origin.Y - b.Origin.Y) > tol ||
         abs (a.Origin.Z - b.Origin.Z) > tol ||
@@ -359,7 +359,7 @@ type Rect3D =
 
     /// Returns the 3D-rectangle expanded by distance on all four sides.
     /// Does check for underflow if distance is negative and raises EuclidException.
-    static member expand dist (r:Rect3D) =
+    static member expand dist (r:Rect3D)  : Rect3D =
         let siX = r.SizeX
         let siY = r.SizeY
         let d = dist * -2.0
@@ -387,7 +387,7 @@ type Rect3D =
     /// Values between 0.0 and 1.0 shrink the rectangle.
     /// Values larger than 1.0 expand the rectangle.
     /// Does check for underflow if factor is negative and raises EuclidException.
-    static member expandRel factor (r:Rect3D) =
+    static member expandRel factor (r:Rect3D)  : Rect3D =
         if factor < 0.0  then
             fail $"Rect3D.expandRel: a negative factor {factor} is not allowed for expanding the 3D-rectangle {r.AsString}"
         let x = r.Xaxis * factor
@@ -399,7 +399,7 @@ type Rect3D =
     /// Values between 0.0 and 1.0 shrink the rectangle.
     /// Values larger than 1.0 expand the rectangle.
     /// Does check for underflow if factor is negative and raises EuclidException.
-    static member expandRelXY factorX factorY (r:Rect3D) =
+    static member expandRelXY factorX factorY (r:Rect3D)  : Rect3D =
         if factorX < 0.0  then
             fail $"Rect3D.expandRelXY: a negative factor {factorX} is not allowed for expanding the 3D-rectangle {r.AsString}"
         if factorY < 0.0  then
@@ -439,7 +439,7 @@ type Rect3D =
         Rect3D.createUnchecked(pl.Origin- x*0.5 - y*0.5, x, y)
 
     /// Give 2D Bounding Rect.
-    static member createFromBRect (b:BRect) =
+    static member createFromBRect (b:BRect)  : Rect3D =
         Rect3D.createUnchecked(b.MinPt.AsPnt, Vec.Xaxis*b.SizeX, Vec.Yaxis*b.SizeY)
 
 
@@ -568,11 +568,11 @@ type Rect3D =
         Rect3D.createUnchecked(r.Origin + y*(distY/len), r.Xaxis, y)
 
     /// Translate by a 3D vector.(same as Rect3D.move)
-    static member translate (v:Vec) (r:Rect3D) =
+    static member translate (v:Vec) (r:Rect3D)  : Rect3D =
         Rect3D.createUnchecked(r.Origin + v, r.Xaxis, r.Yaxis)
 
     /// Move the 3D-rectangle by a vector.(same as Rect3D.translate)
-    static member move (v:Vec) (r:Rect3D) =
+    static member move (v:Vec) (r:Rect3D)  : Rect3D =
         Rect3D.createUnchecked(r.Origin + v, r.Xaxis, r.Yaxis)
 
     /// Transform the 3D-rectangle by the given RigidMatrix.

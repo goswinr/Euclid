@@ -36,13 +36,13 @@ type Vc =
 
     /// Format 2D vector into string with nice floating point number formatting of X and Y
     /// But without full type name or length as in v.ToString()
-    member v.AsString =
+    member v.AsString : string =
         let x = Format.float v.X
         let y = Format.float v.Y
         $"X=%s{x}|Y=%s{y}"
 
     /// Format 2D vector into an F# code string that can be used to recreate the vector.
-    member v.AsFSharpCode =
+    member v.AsFSharpCode : string =
         $"Vc({v.X}, {v.Y})"
 
     /// Negate or inverse a 2D vector. Returns a new 2D vector.
@@ -76,14 +76,14 @@ type Vc =
         Vc (v.X / f, v.Y / f)
 
     /// Returns the length of the 2D vector.
-    member inline v.Length =
+    member inline v.Length : float =
         let x = v.X
         let y = v.Y
         sqrt (x*x + y*y)
 
     /// Returns the squared length of the 2D vector.
     /// The square length is faster to calculate and often good enough for use cases such as sorting vectors by length.
-    member inline v.LengthSq =
+    member inline v.LengthSq : float =
         let x = v.X
         let y = v.Y
         x*x + y*y
@@ -99,7 +99,7 @@ type Vc =
     /// Divides the vector by an integer.
     /// (This member is needed by Array.average and similar functions)
     /// Throws EuclidDivByZeroException if i is 0.
-    static member DivideByInt (v:Vc, i:int) = // needed by 'Array.average'
+    static member DivideByInt (v:Vc, i:int) : Vc = // needed by 'Array.average'
         if i = 0 then failDivide "Vc.DivideByInt by zero" 0.0 v
         let d = float i
         Vc(v.X/d, v.Y/d)

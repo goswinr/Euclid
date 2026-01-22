@@ -29,7 +29,7 @@ type Tria2D =
         abs(Tria2D.det(a, b, c))
 
     /// Returns the area of a triangle described by 3 points.
-    static member inline area (a:Pt, b:Pt, c:Pt) :float =
+    static member inline area (a:Pt, b:Pt, c:Pt) : float =
         Tria2D.areaDouble(a, b, c) *  0.5
 
 

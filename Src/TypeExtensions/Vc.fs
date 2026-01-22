@@ -25,7 +25,7 @@ module AutoOpenVc =
             Pnt(v.X, v.Y, 0.0)
 
         /// Returns a boolean indicating whether X and Y are exactly 0.0.
-        member inline v.IsZero =
+        member inline v.IsZero : bool =
             v.X = 0.0 && v.Y = 0.0
 
         /// Returns a boolean indicating if any of X and Y is not exactly 0.0.
@@ -460,37 +460,37 @@ module AutoOpenVc =
         /// It is also known as the Determinant, Wedge Product or Outer Product.
         /// It is just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
         /// If the rotation from 'a' to 'b' is Counter-Clockwise the result is positive.
-        static member inline cross (a:Vc, b:Vc) =
+        static member inline cross (a:Vc, b:Vc)  : Vc =
             a.X * b.Y - a.Y * b.X
 
         /// The 2D Cross Product.
         /// It is also known as the Determinant, Wedge Product or Outer Product.
         /// It is just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
         /// If the rotation from 'a' to 'b' is Counter-Clockwise the result is positive.
-        static member inline cross (a:UnitVc, b:Vc) =
+        static member inline cross (a:UnitVc, b:Vc)  : Vc =
             a.X * b.Y - a.Y * b.X
 
         /// The 2D Cross Product.
         /// It is just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
         /// If the rotation from 'a' to 'b' is Counter-Clockwise the result is positive.
-        static member inline cross (a:Vc, b:UnitVc) =
+        static member inline cross (a:Vc, b:UnitVc)  : Vc =
             a.X * b.Y - a.Y * b.X
 
         /// Dot product, or scalar product of two 2D vectors.
         /// Returns a float.
-        static member inline dot (a:Vc, b:Vc) =
+        static member inline dot (a:Vc, b:Vc)  : float =
             a.X * b.X + a.Y * b.Y
 
         /// Dot product, or scalar product of a 2D unit-vector with a 2D vector.
         /// Returns a float.
         /// This float is the projected length of the 2D vector on the direction of the unit-vector.
-        static member inline dot (a:Vc, b:UnitVc) =
+        static member inline dot (a:Vc, b:UnitVc)  : float =
             a.X * b.X + a.Y * b.Y
 
         /// Dot product, or scalar product of a 2D vector with a 2D unit-vector.
         /// Returns a float.
         /// This float is the projected length of the 2D vector on the direction of the unit-vector.
-        static member inline dot (a:UnitVc, b:Vc) =
+        static member inline dot (a:UnitVc, b:Vc)  : float =
             a.X * b.X + a.Y * b.Y
 
         /// Gets the X part of this 2D vector.

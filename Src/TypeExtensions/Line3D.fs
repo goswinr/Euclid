@@ -1044,7 +1044,7 @@ module AutoOpenLine3D =
     /// Checks if two 3D lines are equal within tolerance.
     /// Identical Lines in opposite directions are not considered equal.
     /// Use a tolerance of 0.0 to check for an exact match.
-    static member inline equals (tol:float) (a:Line3D) (b:Line3D) =
+    static member inline equals (tol:float) (a:Line3D) (b:Line3D)  : bool =
         abs (a.FromX - b.FromX) <= tol &&
         abs (a.FromY - b.FromY) <= tol &&
         abs (a.FromZ - b.FromZ) <= tol &&
@@ -1054,7 +1054,7 @@ module AutoOpenLine3D =
 
     /// Check if two 3D lines are not equal within a given tolerance.
     /// Use a tolerance of 0.0 to check if the two lines are not exactly equal.
-    static member notEquals (tol:float) (a:Line3D) (b:Line3D) =
+    static member notEquals (tol:float) (a:Line3D) (b:Line3D)  : bool =
         abs (a.FromX - b.FromX) > tol ||
         abs (a.FromY - b.FromY) > tol ||
         abs (a.FromZ - b.FromZ) > tol ||
@@ -1236,23 +1236,23 @@ module AutoOpenLine3D =
         ln.Segment (a, b)
 
     /// Move a 3D line by a vector. (same as Line3D.move)
-    static member inline translate (v:Vec) (ln:Line3D) =
+    static member inline translate (v:Vec) (ln:Line3D)  : Line3D =
         ln.Move(v)
 
     /// Returns a 3D line moved by a given distance in X direction.
-    static member inline moveX (distance:float) (ln:Line3D) =
+    static member inline moveX (distance:float) (ln:Line3D)  : Line3D =
         ln.MoveX(distance)
 
     /// Returns a 3D line moved by a given distance in Y direction.
-    static member inline moveY (distance:float) (ln:Line3D) =
+    static member inline moveY (distance:float) (ln:Line3D)  : Line3D =
         ln.MoveY(distance)
 
     /// Returns a 3D line moved by a given distance in Z direction.
-    static member inline moveZ (distance:float) (ln:Line3D) =
+    static member inline moveZ (distance:float) (ln:Line3D)  : Line3D =
         ln.MoveZ(distance)
 
     /// Move a 3D line by a vector. (same as Line3D.translate)
-    static member inline move (v:Vec) (ln:Line3D) =
+    static member inline move (v:Vec) (ln:Line3D)  : Line3D =
         ln.Move(v)
 
     /// Applies or multiplies a 4x4 transformation matrix to a 3D line.

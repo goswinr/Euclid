@@ -59,14 +59,14 @@ type FreeBox private (pts:Pnt[]) =
 
     /// Format Box into string with nice floating point number formatting of X, Y and Z size only.
     /// But without type name as in v.ToString()
-    member b.AsString =
+    member b.AsString : string =
         let sizeX = Format.float b.SizeX
         let sizeY = Format.float b.SizeY
         let sizeZ = Format.float b.SizeZ
         $"%s{sizeX} x %s{sizeY} x %s{sizeZ}"
 
     /// Format FreeBox into an F# code string that can be used to recreate the box.
-    member b.AsFSharpCode =
+    member b.AsFSharpCode : string =
         let ps = b.Points
         $"FreeBox.createFromEightPoints([| {ps[0].AsFSharpCode}; {ps[1].AsFSharpCode}; {ps[2].AsFSharpCode}; {ps[3].AsFSharpCode}; {ps[4].AsFSharpCode}; {ps[5].AsFSharpCode}; {ps[6].AsFSharpCode}; {ps[7].AsFSharpCode} |])"
 
