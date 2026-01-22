@@ -464,7 +464,7 @@ type Polyline3D (points: ResizeArray<Pnt>) =
 
 
     /// Returns the average center of all points of the Polyline3D.
-    member pl.Center : Pt =
+    member pl.Center : Pnt =
         if points.Count = 0 then failTooFew "Center" 1
         let mutable x = 0.0
         let mutable y = 0.0

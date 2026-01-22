@@ -161,10 +161,12 @@ type Rect3D =
 
     /// Returns the diagonal vector of the 3D-rectangle.
     /// From Origin to FarCorner.
-    member inline r.Diagonal = r.Xaxis + r.Yaxis
+    member inline r.Diagonal : Vec =
+        r.Xaxis + r.Yaxis
 
     /// Returns the center of the 3D-rectangle.
-    member inline r.Center : Pt = r.Origin + r.Xaxis*0.5 + r.Yaxis*0.5
+    member inline r.Center : Pnt =
+        r.Origin + r.Xaxis*0.5 + r.Yaxis*0.5
 
 
     /// Evaluate a X and Y parameter of the 3D-rectangle.

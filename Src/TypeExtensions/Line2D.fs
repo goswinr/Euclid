@@ -831,7 +831,7 @@ module AutoOpenLine2D =
     /// In 2D it is just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
     /// If the result is zero the two lines are parallel (or one line is zero-length).
     /// Same as Line2D.det
-    static member inline cross (a:Line2D) (b:Line2D)  : Vc =
+    static member inline cross (a:Line2D) (b:Line2D)  : float =
         let ax = a.VectorX
         let ay = a.VectorY
         let bx = b.VectorX

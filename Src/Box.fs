@@ -170,7 +170,7 @@ type Box =
         b.Xaxis + b.Yaxis + b.Zaxis
 
     /// The center of the Box.
-    member inline b.Center : Pt =
+    member inline b.Center : Pnt =
         b.Origin + b.Xaxis*0.5 + b.Yaxis*0.5 + b.Zaxis*0.5
 
     /// Evaluate a X, Y and Z parameter of the Box.
