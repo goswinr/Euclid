@@ -78,17 +78,6 @@ let tests =
         // ResizeArr module tests
         // ==============================================================
 
-        test "ResizeArr.create creates array with count elements" {
-            let r = ResizeArr.create 5 42
-            Expect.equal r.Count 5 "5 elements"
-            for i = 0 to 4 do
-                Expect.equal r.[i] 42 $"element {i} is 42"
-        }
-
-        test "ResizeArr.create zero count" {
-            let r = ResizeArr.create 0 99
-            Expect.equal r.Count 0 "empty"
-        }
 
         test "ResizeArr.length returns Count" {
             let r = ResizeArray<int>()

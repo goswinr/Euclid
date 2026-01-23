@@ -124,7 +124,7 @@ let normalized = myVector.Unitized
 
 ## API Documentation
 
-📚 **Full API Reference:** [goswinr.github.io/Euclid](https://goswinr.github.io/Euclid/reference/euclid.html)
+**Full API Reference:** [goswinr.github.io/Euclid](https://goswinr.github.io/Euclid/reference/euclid.html)
 
 ## Platform Support
 
@@ -132,6 +132,11 @@ Thanks to [Fable](https://fable.io/), Euclid can
 be used not only on .NET but also in JavaScript, TypeScript, Rust, and Python.
 
 ## Development
+
+### Use of AI and LLMs
+All core function are are written by hand to ensure performance and correctness.<br>
+However, AI tools have been used for code review, typo and grammar checking in documentation<br>
+and to generate not all but many of the tests.
 
 ### Prerequisites
 - .NET SDK 10.0 or later (to have [scoped warnings](https://learn.microsoft.com/en-us/dotnet/fsharp/whats-new/fsharp-10#scoped-warning-suppression) available)
@@ -178,10 +183,10 @@ Contributions are welcome!
 
 
 ## Changelog
-📋 See [CHANGELOG.md](https://github.com/goswinr/Euclid/blob/main/CHANGELOG.md) for version history.
+See [CHANGELOG.md](https://github.com/goswinr/Euclid/blob/main/CHANGELOG.md) for version history.
 
 ## Related Projects
-🦏 [Euclid.Rhino](https://github.com/goswinr/Euclid.Rhino) - Rhino3D integration
+[Euclid.Rhino](https://github.com/goswinr/Euclid.Rhino) - Rhino3D integration
 
 ## License
 [MIT](https://github.com/goswinr/Euclid/blob/main/LICENSE.md)

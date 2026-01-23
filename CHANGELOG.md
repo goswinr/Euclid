@@ -6,9 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-## [0.20.0-beta2] - 2026-01-24
+## [0.20.0-beta2] - 2026-01-23
 ### Changed
-- Deprecate Loop module, use Polyline2D instead
+- Deprecate Loop module,
+- Make sure all renamed modules and functions have proper deprecation messages
+### Added
+- Tests for deprecated functions and modules to ensure they still work
+- Add more Tests
+
 
 ## [0.20.0-beta1] - 2026-01-17
 ### Changed
@@ -166,8 +171,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - first public release
 
-[Unreleased]: https://github.com/goswinr/Euclid/compare/v0.30.0...HEAD
-[0.30.0]: https://github.com/goswinr/Euclid/compare/v0.16.0...v0.30.0
+[Unreleased]: https://github.com/goswinr/Euclid/compare/v0.20.0-beta2...HEAD
+[0.20.0-beta2]: https://github.com/goswinr/Euclid/compare/v0.20.0-beta1...v0.20.0-beta2
+[0.20.0-beta1]: https://github.com/goswinr/Euclid/compare/v0.16.0...v0.20.0-beta1
 [0.16.0]: https://github.com/goswinr/Euclid/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/goswinr/Euclid/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/goswinr/Euclid/compare/v0.13.0...v0.14.0
