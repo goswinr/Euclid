@@ -589,9 +589,9 @@ type Rect3D =
         Rect3D.createUnchecked(bo, x * sizeX, y * sizeY)
 
 
-    /// Returns the Rectangle flipped. Or rotated 180 around its diagonal from point 1 to 3.
+    /// <summary>Returns the Rectangle flipped. Or rotated 180 around its diagonal from point 1 to 3.
     /// Origin will be at point 2, X-axis points down to to point 1, Y-axis points left to point 3.
-    ///
+    /// <code>
     ///   local
     ///   Y-Axis
     ///   ^
@@ -605,6 +605,8 @@ type Rect3D =
     ///   |            |       local
     ///   +------------+-----> X-Axis
     ///  0-Origin       1
+    /// </code>
+    /// </summary>
     static member inline flip (r:Rect3D) = Rect3D.createUnchecked(r.Origin + r.Xaxis + r.Yaxis, -r.Yaxis, -r.Xaxis)
 
     /// Translate along the local X-axis of the 3D-rectangle.
@@ -781,7 +783,7 @@ type Rect3D =
     ///<summary>Offsets a local Rect3D at one of the four edges.</summary>
     ///<param name="rect">The 3D-rectangle</param>
     ///<param name="edgeIdx">The Index of the edge to offset
-    ///
+    /// <code>
     ///   local
     ///   Y-Axis
     ///   ^
@@ -794,7 +796,8 @@ type Rect3D =
     ///   |            |
     ///   |            |       local
     ///   +------------+-----> X-Axis
-    ///         0</param>
+    ///         0
+    /// </code></param>
     ///<param name="offEdge">The local offset distances parallel to the edge.</param>
     ///<param name="width">The width of the new rectangle. This is like the second offset to be applied to the first offset of offEdge</param>
     ///<param name="offStart">The local offset distances perpendicular to the edge at the start.</param>

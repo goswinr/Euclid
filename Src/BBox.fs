@@ -363,8 +363,8 @@ type BBox =
 
 
 
-    /// Returns point 0 of this 3D bounding box, same as member box.MinPnt.
-    ///
+    /// <summary>Returns point 0 of this 3D bounding box, same as member box.MinPnt.
+    /// <code>
     ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6 MaxPt
@@ -380,10 +380,12 @@ type BBox =
     ///   |/              |/
     ///   +---------------+----> X-Axis (Width)
     ///   0 MinPt         1
+    /// </code>
+    /// </summary>
     member inline b.Pt0 : Pnt = Pnt(b.MinX, b.MinY, b.MinZ)
 
-    /// Returns point 1 of this 3D bounding box.
-    ///
+    /// <summary>Returns point 1 of this 3D bounding box.
+    /// <code>
     ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6 MaxPt
@@ -399,10 +401,12 @@ type BBox =
     ///   |/              |/
     ///   +---------------+----> X-Axis (Width)
     ///   0 MinPt         1
+    /// </code>
+    /// </summary>
     member inline b.Pt1 : Pnt = Pnt(b.MaxX, b.MinY, b.MinZ)
 
-    /// Returns point 2 of this 3D bounding box.
-    ///
+    /// <summary>Returns point 2 of this 3D bounding box.
+    /// <code>
     ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6 MaxPt
@@ -418,10 +422,12 @@ type BBox =
     ///   |/              |/
     ///   +---------------+----> X-Axis (Width)
     ///   0 MinPt         1
+    /// </code>
+    /// </summary>
     member inline b.Pt2 : Pnt = Pnt(b.MaxX, b.MaxY, b.MinZ)
 
-    /// Returns point 3 of this 3D bounding box.
-    ///
+    /// <summary>Returns point 3 of this 3D bounding box.
+    /// <code>
     ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6 MaxPt
@@ -437,10 +443,12 @@ type BBox =
     ///   |/              |/
     ///   +---------------+----> X-Axis (Width)
     ///   0 MinPt         1
+    /// </code>
+    /// </summary>
     member inline b.Pt3 : Pnt = Pnt(b.MinX, b.MaxY, b.MinZ)
 
-    /// Returns point 4 of this 3D bounding box.
-    ///
+    /// <summary>Returns point 4 of this 3D bounding box.
+    /// <code>
     ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6 MaxPt
@@ -456,10 +464,12 @@ type BBox =
     ///   |/              |/
     ///   +---------------+----> X-Axis (Width)
     ///   0 MinPt         1
+    /// </code>
+    /// </summary>
     member inline b.Pt4 : Pnt = Pnt(b.MinX, b.MinY, b.MaxZ)
 
-    /// Returns point 5 of this 3D bounding box.
-    ///
+    /// <summary>Returns point 5 of this 3D bounding box.
+    /// <code>
     ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6 MaxPt
@@ -475,10 +485,12 @@ type BBox =
     ///   |/              |/
     ///   +---------------+----> X-Axis (Width)
     ///   0 MinPt         1
+    /// </code>
+    /// </summary>
     member inline b.Pt5 : Pnt = Pnt(b.MaxX, b.MinY, b.MaxZ)
 
-    /// Returns point 6 of this 3D bounding box.
-    ///
+    /// <summary>Returns point 6 of this 3D bounding box.
+    /// <code>
     ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6 MaxPt
@@ -494,10 +506,12 @@ type BBox =
     ///   |/              |/
     ///   +---------------+----> X-Axis (Width)
     ///   0 MinPt         1
+    /// </code>
+    /// </summary>
     member inline b.Pt6 : Pnt = Pnt(b.MaxX, b.MaxY, b.MaxZ)
 
-    /// Returns point 7 of this 3D bounding box.
-    ///
+    /// <summary>Returns point 7 of this 3D bounding box.
+    /// <code>
     ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6 MaxPt
@@ -513,6 +527,8 @@ type BBox =
     ///   |/              |/
     ///   +---------------+----> X-Axis (Width)
     ///   0 MinPt         1
+    /// </code>
+    /// </summary>
     member inline b.Pt7 : Pnt = Pnt(b.MinX, b.MaxY, b.MaxZ)
 
 

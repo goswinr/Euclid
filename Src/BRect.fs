@@ -528,8 +528,8 @@ type BRect =
 
 
 
-    /// Returns the point (0) or minX, minY.
-    ///
+    /// <summary>Returns the point (0) or minX, minY.
+    /// <code>
     ///   Y-Axis (Height2D)
     ///   ^
     ///   |
@@ -542,10 +542,12 @@ type BRect =
     ///   |            |
     ///   +------------+-----> X-Axis (Width)
     ///  0 = min X,Y      1
+    /// </code>
+    /// </summary>
     member r.Pt0 : Pt = Pt(r.MinX, r.MinY)
 
-    /// Returns the point (1) or maxX, minY.
-    ///
+    /// <summary>Returns the point (1) or maxX, minY.
+    /// <code>
     ///   Y-Axis (Height2D)
     ///   ^
     ///   |
@@ -558,10 +560,12 @@ type BRect =
     ///   |            |
     ///   +------------+-----> X-Axis (Width)
     ///  0 = min X,Y      1
+    /// </code>
+    /// </summary>
     member r.Pt1 : Pt = Pt(r.MaxX, r.MinY)
 
-    /// Returns the point (2) or maxX, maxY.
-    ///
+    /// <summary>Returns the point (2) or maxX, maxY.
+    /// <code>
     ///   Y-Axis (Height2D)
     ///   ^
     ///   |
@@ -574,10 +578,12 @@ type BRect =
     ///   |            |
     ///   +------------+-----> X-Axis (Width)
     ///  0 = min X,Y      1
+    /// </code>
+    /// </summary>
     member r.Pt2 : Pt = Pt(r.MaxX, r.MaxY)
 
-    /// Returns the point (3) or minX, maxY.
-    ///
+    /// <summary>Returns the point (3) or minX, maxY.
+    /// <code>
     ///   Y-Axis (Height2D)
     ///   ^
     ///   |
@@ -590,12 +596,14 @@ type BRect =
     ///   |            |
     ///   +------------+-----> X-Axis (Width)
     ///  0 = min X,Y      1
+    /// </code>
+    /// </summary>
     member r.Pt3 : Pt = Pt(r.MinX, r.MaxY)
 
 
-    /// Returns the corners of this bounding rectangle in Counter-Clockwise order, starting at MinPt.
+    /// <summary>Returns the corners of this bounding rectangle in Counter-Clockwise order, starting at MinPt.
     /// Returns an array of 4 Points.
-    ///
+    /// <code>
     ///   Y-Axis (Height2D)
     ///   ^
     ///   |
@@ -608,6 +616,8 @@ type BRect =
     ///   |            |
     ///   +------------+-----> X-Axis (Width)
     ///  0 = min X,Y    1
+    /// </code>
+    /// </summary>
     member r.Points : Pt[] =
         [| Pt(r.MinX, r.MinY); Pt(r.MaxX, r.MinY);  Pt(r.MaxX, r.MaxY); Pt(r.MinX, r.MaxY) |]
 
