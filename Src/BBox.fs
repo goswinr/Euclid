@@ -9,11 +9,12 @@ open EuclidErrors
 
 
 
+/// <summary>
 /// An immutable 3D bounding box.
 /// This implementation guarantees the box to always be valid.
 /// That means the Min X, Y, and Z values are always smaller or equal to the respective Max values.
 /// The X, Y, and Z axes are also called Width, Depth, and Height3D.
-///
+/// <code>
 ///   Z-Axis       Y-Axis (Depth)
 ///   ^           /
 ///   |   7      /        6 MaxPt
@@ -29,6 +30,8 @@ open EuclidErrors
 ///   |/              |/
 ///   +---------------+----> X-Axis (Width)
 ///   0 MinPt         1
+/// </code>
+/// </summary>
 [<Struct; NoEquality; NoComparison>]
 [<IsReadOnly>]
 //[<IsByRefLike>]

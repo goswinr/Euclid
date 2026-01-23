@@ -7,11 +7,11 @@ open UtilEuclid
 open EuclidErrors
 
 
-/// An immutable 2D bounding rectangle.
+/// <summary>An immutable 2D bounding rectangle.
 /// Sometimes also called 2D a bounding box.
 /// This implementation guarantees the rectangle to be always valid.
 /// That means the Min X and Y values are always smaller or equal than the respective Max values.
-///
+/// <code>
 ///   Y-Axis (Height2D)
 ///   ^
 ///   |
@@ -24,6 +24,8 @@ open EuclidErrors
 ///   |            |       local
 ///   +------------+-----> X-Axis (Width)
 ///  0-min X,Y      1
+/// </code>
+/// </summary>
 [<Struct; NoEquality; NoComparison>]
 [<IsReadOnly>]
 //[<IsByRefLike>]

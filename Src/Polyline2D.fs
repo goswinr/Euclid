@@ -988,9 +988,9 @@ type Polyline2D (points: ResizeArray<Pt>) =
     /// <param name="checkOrientation">bool, Optional(true). By default the algorithm always checks if the polyline is clockwise or counter clockwise.
     /// So that positive offset distances are always towards the inside of the polyline.
     /// Set this parameter to false if you are sure that the input polyline is counter clockwise or if you want to skip this check.</param>
-    /// <param name="uTurnBehavior"> Optional. Default value: <code>Offset2D.UTurnBehavior.Fail</code>.
+    /// <param name="uTurnBehavior"> Optional. Default value: `Offset2D.UTurnBehavior.Fail`.
     /// What to do at a 180 degree U-turn? Fail, Chamfer with two points, Use179 or Skip the point.</param>
-    /// <param name="useUTurnBehaviorAbove"> Optional. Default value: <code>Cosine.``175.0``</code>.
+    /// <param name="useUTurnBehaviorAbove"> Optional. Default value: `Cosine.``175.0`` `.
     /// The angle between normals after which, instead of a normal miter, the joint is chamfered by adding an extra point.</param>
     /// <returns>A new 2D polyline.</returns>
     static member offset(   polyLine:Polyline2D,
@@ -1038,13 +1038,13 @@ type Polyline2D (points: ResizeArray<Pt>) =
     /// <param name="checkOrientation">bool, Optional(true). By default the algorithm always checks if the polyline is clockwise or counter clockwise.
     /// So that positive offset distances are always towards the inside of the polyline.
     /// Set this parameter to false if you are sure that the input polyline is counter clockwise or if you want to skip this check.</param>
-    /// <param name="varDistParallelBehavior"> Optional. Default value: <code>Offset2D.VarDistParallelBehavior.Fail</code>.
+    /// <param name="varDistParallelBehavior"> Optional. Default value: `Offset2D.VarDistParallelBehavior.Fail`.
     ///  What to do with colinear segments below 'useVarDistParallelBehaviorBelow' degrees when offset distances are different too.</param>
-    /// <param name="uTurnBehavior"> Optional. Default value: <code>Offset2D.UTurnBehavior.Fail</code>.
+    /// <param name="uTurnBehavior"> Optional. Default value: `Offset2D.UTurnBehavior.Fail`.
     /// What to do at a 180 degree U-turn? Fail, Chamfer with two points, Use179 or Skip the point.</param>
-    /// <param name="useVarDistParallelBehaviorBelow"> Optional. Default value: <code>Cosine.``5.0``</code>.
+    /// <param name="useVarDistParallelBehaviorBelow"> Optional. Default value: `Cosine.``5.0`` `.
     /// The angle between normals below which points are considered colinear and VarDistParallelBehavior is applied if distances are not the same. </param>
-    /// <param name="useUTurnBehaviorAbove"> Optional. Default value: <code>Cosine.``175.0``</code>.
+    /// <param name="useUTurnBehaviorAbove"> Optional. Default value: `Cosine.``175.0`` `.
     /// The angle between normals after which, instead of a normal miter, the joint is chamfered by adding an extra point.</param>
     /// <returns>A new 2D polyline.</returns>
     static member offsetVar(polyLine:Polyline2D,
@@ -1069,6 +1069,7 @@ type Polyline2D (points: ResizeArray<Pt>) =
                 ds
             else
                 multipleOffsetDistances
+
 
         // check if looping desired and polyline is open
         if loop && Pt.distanceSq pts.First pts.Last > Offset2D.sqOpenTolerance then
@@ -1100,13 +1101,13 @@ type Polyline2D (points: ResizeArray<Pt>) =
     /// <param name="checkOrientation">bool, Optional(true). By default the algorithm always checks if the polyline is clockwise or counter clockwise.
     /// So that positive offset distances are always towards the inside of the polyline.
     /// Set this parameter to false if you are sure that the input polyline is counter clockwise or if you want to skip this check.</param>
-    /// <param name="varDistParallelBehavior"> Optional. Default value: <code>Offset2D.VarDistParallelBehavior.Fail</code>.
+    /// <param name="varDistParallelBehavior"> Optional. Default value: `Offset2D.VarDistParallelBehavior.Fail`.
     ///  What to do with colinear segments below 'useVarDistParallelBehaviorBelow' degrees when offset distances are different too.</param>
-    /// <param name="uTurnBehavior"> Optional. Default value: <code>Offset2D.UTurnBehavior.Fail</code>.
+    /// <param name="uTurnBehavior"> Optional. Default value: `Offset2D.UTurnBehavior.Fail`.
     /// What to do at a 180 degree U-turn? Fail, Chamfer with two points, Use179 or Skip the point.</param>
-    /// <param name="useVarDistParallelBehaviorBelow"> Optional. Default value: <code>Cosine.``5.0``</code>.
+    /// <param name="useVarDistParallelBehaviorBelow"> Optional. Default value: `Cosine.``5.0`` `.
     /// The angle between normals below which points are considered colinear and VarDistParallelBehavior is applied if distances are not the same. </param>
-    /// <param name="useUTurnBehaviorAbove"> Optional. Default value: <code>Cosine.``175.0``</code>.
+    /// <param name="useUTurnBehaviorAbove"> Optional. Default value: `Cosine.``175.0`` `.
     /// The angle between normals after which, instead of a normal miter, the joint is chamfered by adding an extra point.</param>
     /// <returns>A new 2D polyline.</returns>
     static member offsetVar(polyLine:Polyline2D,

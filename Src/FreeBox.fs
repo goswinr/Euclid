@@ -10,10 +10,11 @@ open System.Collections.Generic
 #nowarn "52" // The value has been copied to ensure the original is not mutated by this operation
 
 
+/// <summary>
 /// An arbitrary 3D Box.
 /// Described by 8 3D points.
 /// The points can be in arbitrary position in space.
-///
+/// <code>
 ///       7               6
 ///       +---------------+
 ///      /|              /|
@@ -27,6 +28,8 @@ open System.Collections.Generic
 ///   |/              |/
 ///   +---------------+
 ///   0               1
+/// </code>
+/// </summary>
 [<NoEquality; NoComparison>] // because its made up from floats
 [<DataContract>] // for using DataMember on fields
 type FreeBox private (pts:Pnt[]) =
