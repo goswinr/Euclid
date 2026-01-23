@@ -41,6 +41,7 @@
     <Compile Include="TestHarmonization.fs" />
     <Compile Include="TestVectors.fs" />
     <Compile Include="TestAsFSharpCode.fs" />
+    <Compile Include="TestResizeArr.fs" />
     <Compile Include="TestMain.fs" />
   </ItemGroup>
 </Project>

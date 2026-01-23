@@ -47,6 +47,9 @@ module EuclidErrors =
     let fail (msg:string) :unit =
         raise <| EuclidException $"Euclid.{msg}"
 
+    let failRarr (msg:string) (xs: ResizeArray<'T>) :unit =
+        raise <| EuclidException $"Euclid.ResizeArr.{msg} failed on ResizeArray of {xs.Count} elements."
+
     let failNull (funcName:string) (arg:string) :unit =
         raise <| EuclidNullException $"Euclid.{funcName} argument {arg} is null."
 

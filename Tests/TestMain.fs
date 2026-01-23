@@ -83,6 +83,8 @@ let run () =
     test TestPolyLabel.tests
     |||
     test TestAsFSharpCode.tests
+    |||
+    test TestResizeArr.tests
 
 
 #if FABLE_COMPILER

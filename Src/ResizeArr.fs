@@ -38,12 +38,6 @@ module Arr =
 module ResizeArr =
 
 
-    /// just like Array.create.
-    let inline create (count:int) (x:'T) : ResizeArray<'T> =
-        let r = new ResizeArray<'T>(count)
-        for i=0 to count-1 do r.Add(x)
-        r
-
     /// this.Count.
     let inline length (xs: ResizeArray<'T>) :int =
         xs.Count
@@ -75,8 +69,11 @@ module ResizeArr =
     /// The resulting seq has the same element count as the input Rarr.
     let thisNext (rarr:ResizeArray<'T>) =
         if rarr.Count <= 2 then fail $"ResizeArr.thisNext input has less than two items:{Format.nl}{Format.rarr rarr}"
-        seq {   for i = 0 to rarr.Count-2 do  rarr.[i], rarr.[i+1]
-                rarr.[rarr.Count-1], rarr.[0] }
+        seq {
+            for i = 0 to rarr.Count-2 do
+                rarr.[i], rarr.[i+1]
+            rarr.[rarr.Count-1], rarr.[0]
+            }
 
     /// Yields looped Seq from (1, last, first, second)  up to (lastIndex, second-last, last, first)
     /// The resulting seq has the same element count as the input Rarr.
@@ -100,7 +97,8 @@ module ResizeArr =
     /// <returns>The sorted ResizeArr.</returns>
     let sortBy<'T, 'Key when 'Key : comparison> (projection : 'T -> 'Key) (xs : ResizeArray<'T>) : ResizeArray<'T> =
         let r = xs.GetRange(0, xs.Count) // fastest way to create a shallow copy
-        r.Sort (fun x y -> Operators.compare (projection x) (projection y))
+        r.Sort (fun x y ->
+            Operators.compare (projection x) (projection y))
         r
 
     /// <summary>Returns the index of the first element in the ResizeArray
@@ -174,7 +172,7 @@ module ResizeArr =
     /// <param name="xs">The input ResizeArr.</param>
     /// <returns>The index of the smallest element.</returns>
     let minIndexBy (projection : 'T -> 'Key) (xs: ResizeArray<'T>) : int =
-        if xs.Count = 0 then fail "ResizeArr.minIndBy: Failed on empty ResizeArray." // noReflection for Fable. <%O>" typeof<'T>
+        if xs.Count = 0 then fail "ResizeArr.minIndBy: Failed on empty ResizeArray."
         let mutable f = projection xs.[0]
         let mutable mf = f
         let mutable ii = 0
@@ -190,7 +188,7 @@ module ResizeArr =
     /// <param name="xs">The input ResizeArr.</param>
     /// <returns>The index of the maximum element.</returns>
     let maxIndexBy (projection : 'T -> 'Key) (xs: ResizeArray<'T>) : int =
-        if xs.Count = 0 then fail "ResizeArr.maxIndBy: Failed on empty ResizeArray." // noReflection for Fable. <%O>" typeof<'T>
+        if xs.Count = 0 then fail "ResizeArr.maxIndBy: Failed on empty ResizeArray."
         let mutable f = projection xs.[0]
         let mutable mf = f
         let mutable ii = 0
@@ -258,7 +256,7 @@ module AutoOpenEuclidResizeArrayExtensions =
         /// Equal to this.Count - 1
         member inline this.LastIndex =
             // #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode
-            // if this.Count = 0 then fail "ResizeArr.LastIndex: Failed to get LastIndex of of empty ResizeArray." // noReflection for Fable. <%O>" typeof<'T>
+            // if this.Count = 0 then fail "ResizeArr.LastIndex: Failed to get LastIndex of of empty ResizeArray."
             // #endif
             this.Count - 1
 
@@ -267,12 +265,12 @@ module AutoOpenEuclidResizeArrayExtensions =
         member inline this.Last
             with get() =
                 #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode
-                    if this.Count = 0 then fail "ResizeArr.Last: Failed to get last item of empty ResizeArray." // noReflection for Fable. <%O>" typeof<'T>
+                    if this.Count = 0 then failRarr "Last.get" this
                 #endif
                     this.[this.Count - 1]
             and set (v:'T) =
-                #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode
-                    if this.Count = 0 then fail "ResizeArr.Last: Failed to set last item of empty ResizeArray." // noReflection for Fable. <%O> to %O" typeof<'T> v
+                #if DEBUG || CHECK_EUCLID
+                    if this.Count = 0 then failRarr "Last.set" this
                 #endif
                     this.[this.Count - 1] <- v
 
@@ -280,13 +278,13 @@ module AutoOpenEuclidResizeArrayExtensions =
         /// Equal to this.[this.Count - 2]
         member inline this.SecondLast
             with get() =
-                #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode
-                    if this.Count < 2 then fail "ResizeArr.SecondLast: Failed to get second last item of ResizeArray." // noReflection for Fable. <%O>" typeof<'T>
+                #if DEBUG || CHECK_EUCLID
+                    if this.Count < 2 then failRarr "SecondLast.get" this
                 #endif
                     this.[this.Count - 2]
             and set (v:'T) =
-                #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode
-                    if this.Count < 2 then fail "ResizeArr.SecondLast: Failed to set second last item of ResizeArray." // noReflection for Fable. <%O> to %O" typeof<'T> v
+                #if DEBUG || CHECK_EUCLID
+                    if this.Count < 2 then failRarr "SecondLast.set" this
                 #endif
                     this.[this.Count - 2] <- v
 
@@ -295,13 +293,13 @@ module AutoOpenEuclidResizeArrayExtensions =
         /// Equal to this.[this.Count - 2]
         member inline this.ThirdLast
             with get() =
-                #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode
-                    if this.Count < 3 then fail "ResizeArr.ThirdLast: Failed to get third last item of ResizeArray." // noReflection for Fable. <%O>" typeof<'T>
+                #if DEBUG || CHECK_EUCLID
+                    if this.Count < 3 then failRarr "ThirdLast.get" this
                 #endif
                     this.[this.Count - 3]
             and set (v:'T) =
-                #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode
-                    if this.Count < 3 then fail "ResizeArr.SeconThirdLastdLast: Failed to set third last item of ResizeArray." // noReflection for Fable. <%O> to %O" typeof<'T> v
+                #if DEBUG || CHECK_EUCLID
+                    if this.Count < 3 then failRarr "ThirdLast.set" this
                 #endif
                     this.[this.Count - 3] <- v
 
@@ -309,13 +307,13 @@ module AutoOpenEuclidResizeArrayExtensions =
         /// Equal to this.[0]
         member inline this.First
             with get() =
-                #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode
-                    if this.Count = 0 then fail "ResizeArr.First: Failed to get first item of empty ResizeArray." // noReflection for Fable. <%O>" typeof<'T>
+                #if DEBUG || CHECK_EUCLID
+                    if this.Count = 0 then failRarr "First.get" this
                 #endif
                     this.[0]
             and set (v:'T) =
-                #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode
-                    if this.Count = 0 then fail "ResizeArr.First: Failed to set first item of empty ResizeArray." // noReflection for Fable. <%O> to %O" typeof<'T> v
+                #if DEBUG || CHECK_EUCLID
+                    if this.Count = 0 then failRarr "First.set" this
                 #endif
                     this.[0] <- v
 
@@ -323,13 +321,13 @@ module AutoOpenEuclidResizeArrayExtensions =
         /// Equal to this.[1]
         member inline this.Second
             with get() =
-                #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode
-                    if this.Count < 2 then fail "ResizeArr.Second: Failed to get second item of ResizeArray." // noReflection for Fable. <%O>" typeof<'T>
+                #if DEBUG || CHECK_EUCLID
+                    if this.Count < 2 then failRarr "Second.get" this
                 #endif
                     this.[1]
             and set (v:'T) =
-                #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode
-                    if this.Count < 2 then fail "ResizeArr.Second: Failed to set second item of ResizeArray." // noReflection for Fable. <%O> to %O" typeof<'T> v
+                #if DEBUG || CHECK_EUCLID
+                    if this.Count < 2 then failRarr "Second.set" this
                 #endif
                     this.[1] <- v
 
@@ -337,21 +335,21 @@ module AutoOpenEuclidResizeArrayExtensions =
         /// Equal to this.[2]
         member inline this.Third
             with get() =
-                #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode
-                    if this.Count < 3 then fail "ResizeArr.Third: Failed to get third item of ResizeArray." // noReflection for Fable. <%O>" typeof<'T>
+                #if DEBUG || CHECK_EUCLID
+                    if this.Count < 3 then failRarr "Third.get" this
                 #endif
                     this.[2]
             and set (v:'T) =
-                #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode
-                    if this.Count < 3 then fail "ResizeArr.Third: Failed to set third item of ResizeArray." // noReflection for Fable. <%O> to %O" typeof<'T> v
+                #if DEBUG || CHECK_EUCLID
+                    if this.Count < 3 then failRarr "Third.set" this
                 #endif
                     this.[2] <- v
 
 
         /// Get and remove last item from ResizeArr.
         member inline this.Pop() =
-            #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode
-                if this.Count=0 then fail "ResizeArr.Pop() failed for empty ResizeArray." // noReflection for Fable. <%O>" typeof<'T>
+            #if DEBUG || CHECK_EUCLID
+                if this.Count=0 then failRarr "Pop" this
             #endif
                 let i = this.Count - 1
                 let v = this.[i]
@@ -362,9 +360,9 @@ module AutoOpenEuclidResizeArrayExtensions =
         member inline this.Pop(index:int) =
             #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode
                 if index < 0 then
-                    fail $"ResizeArr.Pop {index} failed for ResizeArray of {this.Count} items, index must be positive."
+                    failRarr $"Pop({index})" this
                 if index >= this.Count then
-                    fail $"ResizeArr.Pop {index} failed for ResizeArray of {this.Count} items, index must be less than the count."
+                    failRarr $"Pop({index})" this
             #endif
                 let v = this.[index]
                 this.RemoveAt(index)
@@ -381,7 +379,7 @@ module AutoOpenEuclidResizeArrayExtensions =
         member inline this.SetIdx i v =
             #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode
                 if i < 0 || i >= this.Count then
-                    fail $"ResizeArr.Set: Failed to set item at index {i} in ResizeArray of {this.Count} items."
+                    failRarr $"SetIdx({i})" this
             #endif
                 this.[i] <- v
 
