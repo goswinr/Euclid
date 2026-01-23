@@ -6,13 +6,11 @@ updates:
     schedule:
       interval: "weekly"
 
-
   # Update to newer NuGet dependencies
   - package-ecosystem: "nuget"
-    directory: "/Src/"
+    directory: "/"
     schedule:
       interval: "weekly"
-
 
     # https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain/manage-your-dependency-security/controlling-dependencies-updated#allowing-specific-dependencies-to-be-updated
     allow:
@@ -20,11 +18,6 @@ updates:
       - dependency-type: "all"
     ignore:
       - dependency-name: "FSharp.Core"
-
-  - package-ecosystem: "nuget"
-    directory: "/Tests/"
-    schedule:
-      interval: "weekly"
 
 
   # Update to newer NPM dependencies
