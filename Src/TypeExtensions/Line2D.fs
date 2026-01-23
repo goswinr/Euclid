@@ -298,6 +298,35 @@ module AutoOpenLine2D =
     member ln.ClosestPoint (p:Pt) =
         ln.EvaluateAt(ln.ClosestParameter(p))
 
+
+    /// <summary> Finds the closest points between two finite 2D Lines, also works on parallel and overlapping lines.</summary>
+    /// <param name="lnB"> The second line.</param>
+    /// <remarks> For parallel and overlapping lines the points returned are in the center of their overlap.
+    /// If the lines intersect the returned points are exactly the same</remarks>
+    member lnA.ClosestPoints (lnB:Line2D) : Pt * Pt =
+        match XLine2D.getClosestPoints(lnA, lnB) with
+        | XLine2D.ClPts.Apart (a,b, _) -> a,b
+        | XLine2D.ClPts.Parallel (a,b) -> a,b
+        | XLine2D.ClPts.Intersect a -> a,a
+        | XLine2D.ClPts.TooShortBoth -> lnA.From , lnB.From // TODO or use midpoint, or use end point ? they are all kind off the same
+        | XLine2D.ClPts.TooShortA    -> lnA.From , XLine2D.clPtLn' (lnB, lnA.FromX, lnA.FromY)
+        | XLine2D.ClPts.TooShortB    -> XLine2D.clPtLn' (lnA, lnB.FromX, lnB.FromY), lnB.From
+
+
+    /// <summary> Finds the parameters of closest points between two finite 2D Lines, also works on parallel and overlapping lines.</summary>
+    /// <param name="lnB"> The second line.</param>
+    /// <remarks> For parallel and overlapping lines the parameters returned are in the center of their overlap.
+    ///  If the lines intersect the returned parameters are exactly the same</remarks>
+    /// <returns> A tuple of two floats, the first is the parameter on lnA, the second on lnB</returns>
+    member lnA.ClosestParameters (lnB:Line2D) : float * float =
+        match XLine2D.getClosestParameters(lnA, lnB) with
+        | XLine2D.ClParams.Apart (a,b, _) -> a,b
+        | XLine2D.ClParams.Parallel (a,b) -> a,b
+        | XLine2D.ClParams.Intersect (a,b) -> a,b
+        | XLine2D.ClParams.TooShortBoth -> 0.0  , 0.0 // TODO or use midpoint, or use end point ? they are all kind off the same
+        | XLine2D.ClParams.TooShortA    -> 0.0  , XLine2D.clParamLnPt (lnB, lnA.FromX, lnA.FromY)
+        | XLine2D.ClParams.TooShortB    -> XLine2D.clParamLnPt (lnA, lnB.FromX, lnB.FromY), 0.0
+
     /// Assumes Line2D to be an infinite ray!
     /// Returns square distance from point to ray.
     /// Fails on curves shorter than 1e-9 units. (ln.DistanceSqFromPoint does not.)
@@ -332,8 +361,6 @@ module AutoOpenLine2D =
 
 
 
-
-
     /// Checks if the dot product between the two 2D lines is positive .
     /// So if the angle between their direction vectors is less than 90 degrees.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -363,15 +390,6 @@ module AutoOpenLine2D =
         vLn *** v > 1e-12
 
 
-    [<Obsolete("Use ln.MatchesOrientation instead")>]
-    member inline ln.MatchesOrientation180 (otherLn:Line2D) =  ln.MatchesOrientation(otherLn)
-
-    [<Obsolete("Use ln.MatchesOrientation instead")>]
-    member inline ln.MatchesOrientation180 (v:Vc) = ln.MatchesOrientation(v)
-
-    [<Obsolete("Use ln.MatchesOrientation instead")>]
-    member inline ln.MatchesOrientation180 (v:UnitVc) =  ln.MatchesOrientation(v)
-
 
     /// Checks if the angle between the two 2D lines is less than 45 degrees.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -382,11 +400,6 @@ module AutoOpenLine2D =
         if isTooTinySq(vOt.LengthSq) then failTooSmall2 "Line2D.MatchesOrientation45 other" vOt vLn
         let tan = XLine2D.tangent (vLn.X, vLn.Y, vOt.X, vOt.Y)
         tan < Tangent.``45.0``
-
-    [<Obsolete("Use ln.MatchesOrientation45 instead")>]
-    member inline ln.MatchesOrientation90 (l:Line2D) = ln.MatchesOrientation45(l)
-
-
 
 
 
@@ -1059,14 +1072,6 @@ module AutoOpenLine2D =
     static member inline matchesOrientation45 (l:Line2D) (ln:Line2D) =
         l.MatchesOrientation45 ln
 
-
-    [<Obsolete("Use matchesOrientation instead")>]
-    static member inline matchesOrientation180 (l:Line2D) (ln:Line2D) = l.MatchesOrientation ln
-
-    [<Obsolete("Use matchesOrientation45 instead")>]
-    static member inline matchesOrientation90 (l:Line2D) (ln:Line2D) = l.MatchesOrientation45 ln
-
-
     /// Checks if two 2D lines are coincident on the same ray within tolerance.
     /// This means that lines are parallel within 0.25 degrees
     /// and the distance of second start point to the first line is less than 1e-6.
@@ -1506,46 +1511,6 @@ module AutoOpenLine2D =
                ln.ToY * factor)
 
 
-
-    (*
-    /// <summary>Checks if the two finite 2D lines are touching each other at any of end points
-    /// within the given tolerance.
-    /// This will also return found result if the lines are touching on both points.</summary>
-    /// <param name="tol"> The tolerance for the distance between the end points.</param>
-    /// <param name="a"> The first line.</param>
-    /// <param name="b"> The second line.</param>
-    /// <returns>
-    /// An integer value indicating the touching case:
-    /// 0 if not touching,
-    /// 1 if touching at End of A and Start of B,
-    /// 2 if touching at Start of A and End of B,
-    /// 3 if touching at Start of A and Start of B,
-    /// 4 if touching at End of A and End of B
-    /// </returns>
-    [<Obsolete("Use Line2D.isTouchingEnd instead")>]
-    static member isTouchingEndsOf tol (a:Line2D) (b:Line2D)  : int =
-        let tolSq = tol*tol
-        if (
-            let x = a.ToX-b.FromX
-            let y = a.ToY-b.FromY
-            x*x + y*y < tolSq) then 1
-        elif (
-            let x = a.FromX-b.ToX
-            let y = a.FromY-b.ToY
-            x*x + y*y < tolSq) then 2
-        elif  (
-            let x = a.FromX-b.FromX
-            let y = a.FromY-b.FromY
-            x*x + y*y < tolSq) then 3
-        elif (
-            let x = a.ToX-b.ToX
-            let y = a.ToY-b.ToY
-            x*x + y*y < tolSq) then 4
-        else
-            0
-    *)
-
-
     /// <summary>Checks if the two finite 2D lines are touching each other at one of their end points
     /// within the default tolerance of 1e-6. use XLine2D.areEndsTouching to set a custom tolerance</summary>
     /// <param name="a"> The first line.</param>
@@ -1795,14 +1760,8 @@ module AutoOpenLine2D =
     ///<param name="lnB"> The second line.</param>
     ///<remarks> For parallel and overlapping lines the points returned are in the center of their overlap.
     /// If the lines intersect the returned points are exactly the same</remarks>
-    static member lineLineClosestPoints (lnA:Line2D) (lnB:Line2D) : Pt * Pt =
-        match XLine2D.getClosestPoints(lnA, lnB) with
-        | XLine2D.ClPts.Apart (a,b, _) -> a,b
-        | XLine2D.ClPts.Parallel (a,b) -> a,b
-        | XLine2D.ClPts.Intersect a -> a,a
-        | XLine2D.ClPts.TooShortBoth -> lnA.From , lnB.From // TODO or use midpoint, or use end point ? they are all kind off the same
-        | XLine2D.ClPts.TooShortA    -> lnA.From , XLine2D.clPtLn' (lnB, lnA.FromX, lnA.FromY)
-        | XLine2D.ClPts.TooShortB    -> XLine2D.clPtLn' (lnA, lnB.FromX, lnB.FromY), lnB.From
+    static member closestPoints (lnA:Line2D) (lnB:Line2D) : Pt * Pt =
+        lnA.ClosestPoints lnB
 
 
     ///<summary> Finds the parameters of closest points between two finite 2D Lines, also works on parallel and overlapping lines.</summary>
@@ -1811,14 +1770,8 @@ module AutoOpenLine2D =
     /// <remarks> For parallel and overlapping lines the parameters returned are in the center of their overlap.
     ///  If the lines intersect the returned parameters are exactly the same</remarks>
     /// <returns> A tuple of two floats, the first is the parameter on lnA, the second on lnB</returns>
-    static member lineLineClosestParameters (lnA:Line2D) (lnB:Line2D) : float * float =
-        match XLine2D.getClosestParameters(lnA, lnB) with
-        | XLine2D.ClParams.Apart (a,b, _) -> a,b
-        | XLine2D.ClParams.Parallel (a,b) -> a,b
-        | XLine2D.ClParams.Intersect (a,b) -> a,b
-        | XLine2D.ClParams.TooShortBoth -> 0.0  , 0.0 // TODO or use midpoint, or use end point ? they are all kind off the same
-        | XLine2D.ClParams.TooShortA    -> 0.0  , XLine2D.clParamLnPt (lnB, lnA.FromX, lnA.FromY)
-        | XLine2D.ClParams.TooShortB    -> XLine2D.clParamLnPt (lnA, lnB.FromX, lnB.FromY), 0.0
+    static member closestParameters (lnA:Line2D) (lnB:Line2D) : float * float =
+        lnA.ClosestParameters lnB
 
 
     /// <summary> Checks if lines are parallel, coincident and overlapping.</summary>
@@ -1888,15 +1841,28 @@ module AutoOpenLine2D =
         )
 
 
-
-
-
     // Instance members marked as Obsolete that have direct replacements:
 
     // Note: The old IsCoincidentTo(other, distanceTolerance, minCosine) signature was changed
     // to use Tangent tolerance instead of Cosine tolerance in v0.30
     // The new signature is: IsCoincidentTo(other, distanceTolerance, minTangent)
     // This change makes the angle tolerance more intuitive for near-parallel line detection
+
+
+
+    [<Obsolete("Use ln.MatchesOrientation instead")>]
+    member inline ln.MatchesOrientation180 (otherLn:Line2D) =  ln.MatchesOrientation(otherLn)
+
+    [<Obsolete("Use ln.MatchesOrientation instead")>]
+    member inline ln.MatchesOrientation180 (v:Vc) = ln.MatchesOrientation(v)
+
+    [<Obsolete("Use ln.MatchesOrientation instead")>]
+    member inline ln.MatchesOrientation180 (v:UnitVc) =  ln.MatchesOrientation(v)
+
+    [<Obsolete("Use ln.MatchesOrientation45 instead")>]
+    member inline ln.MatchesOrientation90 (l:Line2D) = ln.MatchesOrientation45(l)
+
+
 
     [<Obsolete("Use this.RayClosestParameter instead. Obsolete since 0.20.0")>]
     member ln.ClosestParameterInfinite (p:Pt) =
@@ -1919,6 +1885,16 @@ module AutoOpenLine2D =
         XLine2D.sqDistLnPt'(ln, p.X, p.Y)
 
     // Static members marked as Obsolete that have direct replacements:
+
+
+
+    [<Obsolete("Use matchesOrientation instead")>]
+    static member inline matchesOrientation180 (l:Line2D) (ln:Line2D) = l.MatchesOrientation ln
+
+    [<Obsolete("Use matchesOrientation45 instead")>]
+    static member inline matchesOrientation90 (l:Line2D) (ln:Line2D) = l.MatchesOrientation45 ln
+
+
 
     [<Obsolete("Use Line2D.isCoincidentTo instead. Obsolete since 0.20.0")>]
     static member inline areCoincident (a:Line2D) (b:Line2D) =

@@ -2698,34 +2698,34 @@ let testsLine3DDistance =
             "squared distance matches" |> expectEqualEpsilon (sqrt sqDist) dist
         }
 
-        test "lineLineClosestPoints on intersecting" {
+        test "closestPoints on intersecting" {
             let lnA = Line3D(0., 0., 0., 10., 0., 0.)
             let lnB = Line3D(5., -5., 0., 5., 5., 0.)
-            let (ptA, ptB) = Line3D.lineLineClosestPoints lnA lnB
+            let (ptA, ptB) = Line3D.closestPoints lnA lnB
             "closest points are same" |> Expect.isTrue (Pnt.distance ptA ptB < 1e-9)
             "at intersection" |> expectEqualEpsilon ptA.X 5.
         }
 
-        test "lineLineClosestPoints on parallel" {
+        test "closestPoints on parallel" {
             let lnA = Line3D(0., 0., 0., 10., 0., 0.)
             let lnB = Line3D(0., 5., 0., 10., 5., 0.)
-            let (ptA, ptB) = Line3D.lineLineClosestPoints lnA lnB
+            let (ptA, ptB) = Line3D.closestPoints lnA lnB
             "closest points Y distance" |> expectEqualEpsilon (abs (ptB.Y - ptA.Y)) 5.
         }
 
-        test "lineLineClosestPoints on skew" {
+        test "closestPoints on skew" {
             let lnA = Line3D(0., 0., 0., 10., 0., 0.)
             let lnB = Line3D(5., 0., 2., 5., 10., 2.)
-            let (ptA, ptB) = Line3D.lineLineClosestPoints lnA lnB
+            let (ptA, ptB) = Line3D.closestPoints lnA lnB
             "closest point A on lnA" |> expectEqualEpsilon ptA.X 5.
             "closest point B on lnB" |> expectEqualEpsilon ptB.X 5.
             "Z distance is 2" |> expectEqualEpsilon (abs (ptB.Z - ptA.Z)) 2.
         }
 
-        test "lineLineClosestParameters" {
+        test "closestParameters" {
             let lnA = Line3D(0., 0., 0., 10., 0., 0.)
             let lnB = Line3D(5., -10., 0., 5., 10., 0.)
-            let (tA, tB) = Line3D.lineLineClosestParameters lnA lnB
+            let (tA, tB) = Line3D.closestParameters lnA lnB
             "parameter on A" |> expectEqualEpsilon tA 0.5
             "parameter on B" |> expectEqualEpsilon tB 0.5
         }

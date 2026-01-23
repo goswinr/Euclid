@@ -390,6 +390,40 @@ module AutoOpenLine3D =
     member inline ln.ClosestPoint (p:Pnt) =
         ln.EvaluateAt(ln.ClosestParameter(p))
 
+
+
+    /// <summary>Finds the closest points between two finite 3D Lines, also works on parallel and overlapping lines.</summary>
+    /// <param name="lnB">The second line.</param>
+    /// <remarks>For parallel and overlapping lines the points returned are in the center of their overlap.
+    /// If the lines intersect the returned points are exactly the same.
+    /// For skew lines, returns the two closest points on each line.</remarks>
+    member lnA.ClosestPoints (lnB:Line3D) : Pnt * Pnt =
+        match XLine3D.getClosestPoints(lnA, lnB) with
+        | XLine3D.ClPts.Intersect p       -> p, p
+        | XLine3D.ClPts.Skew (pA, pB, _)  -> pA, pB
+        | XLine3D.ClPts.Parallel (pA, pB) -> pA, pB
+        | XLine3D.ClPts.Apart (pA, pB, _) -> pA, pB
+        | XLine3D.ClPts.TooShortBoth      -> lnA.From, lnB.From
+        | XLine3D.ClPts.TooShortA         -> lnA.From, XLine3D.clPtLn'(lnB, lnA.FromX, lnA.FromY, lnA.FromZ)
+        | XLine3D.ClPts.TooShortB         -> XLine3D.clPtLn'(lnA, lnB.FromX, lnB.FromY, lnB.FromZ), lnB.From
+
+
+    /// <summary>Finds the parameters of closest points between two finite 3D Lines, also works on parallel and overlapping lines.</summary>
+    /// <param name="lnB">The second line.</param>
+    /// <remarks>For parallel and overlapping lines the parameters returned are in the center of their overlap.
+    /// If the lines intersect the returned parameters are for the intersection point.
+    /// For skew lines, returns the parameters at the closest approach.</remarks>
+    /// <returns>A tuple of two floats, the first is the parameter on lnA, the second on lnB.</returns>
+    member lnA.ClosestParameters (lnB:Line3D) : float * float =
+        match XLine3D.getClosestParameters(lnA, lnB) with
+        | XLine3D.ClParams.Intersect (tA, tB)   -> tA, tB
+        | XLine3D.ClParams.Skew (tA, tB, _)     -> tA, tB
+        | XLine3D.ClParams.Parallel (tA, tB)    -> tA, tB
+        | XLine3D.ClParams.Apart (tA, tB, _)    -> tA, tB
+        | XLine3D.ClParams.TooShortBoth         -> 0.0, 0.0
+        | XLine3D.ClParams.TooShortA            -> 0.0, XLine3D.clParamLnPt(lnB, lnA.FromX, lnA.FromY, lnA.FromZ)
+        | XLine3D.ClParams.TooShortB            -> XLine3D.clParamLnPt(lnA, lnB.FromX, lnB.FromY, lnB.FromZ), 0.0
+
     /// Assumes Line3D to be an infinite ray.
     /// Returns square distance from point to ray.
     /// Fails on curves shorter than 1e-6 units. (ln.SqDistanceFromPoint does not.)
@@ -1326,6 +1360,25 @@ module AutoOpenLine3D =
     static member inline closestPoint (p:Pnt) (ln:Line3D) =
         ln.ClosestPoint p
 
+    /// <summary>Finds the closest points between two finite 3D Lines, also works on parallel and overlapping lines.</summary>
+    /// <param name="lnA">The first line.</param>
+    /// <param name="lnB">The second line.</param>
+    /// <remarks>For parallel and overlapping lines the points returned are in the center of their overlap.
+    /// If the lines intersect the returned points are exactly the same.
+    /// For skew lines, returns the two closest points on each line.</remarks>
+    static member closestPoints (lnA:Line3D) (lnB:Line3D) : Pnt * Pnt =
+        lnA.ClosestPoints lnB
+
+    /// <summary>Finds the parameters of closest points between two finite 3D Lines, also works on parallel and overlapping lines.</summary>
+    /// <param name="lnA">The first line.</param>
+    /// <param name="lnB">The second line.</param>
+    /// <remarks>For parallel and overlapping lines the parameters returned are in the center of their overlap.
+    /// If the lines intersect the returned parameters are for the intersection point.
+    /// For skew lines, returns the parameters at the closest approach.</remarks>
+    /// <returns>A tuple of two floats, the first is the parameter on lnA, the second on lnB.</returns>
+    static member closestParameters (lnA:Line3D) (lnB:Line3D) : float * float =
+        lnA.ClosestParameters lnB
+
     /// Assumes Line3D to be an infinite ray.
     /// Returns the square distance from point to ray.
     static member inline sqDistanceRayPoint(p:Pnt) (ln:Line3D) =
@@ -1981,39 +2034,7 @@ module AutoOpenLine3D =
         | XLine3D.XPnt.TooShortB    -> if XLine3D.sqDistLnPt'(lnA, lnB.FromX, lnB.FromY, lnB.FromZ) < 1e-12 then Some lnB.From else None
 
 
-    /// <summary>Finds the closest points between two finite 3D Lines, also works on parallel and overlapping lines.</summary>
-    /// <param name="lnA">The first line.</param>
-    /// <param name="lnB">The second line.</param>
-    /// <remarks>For parallel and overlapping lines the points returned are in the center of their overlap.
-    /// If the lines intersect the returned points are exactly the same.
-    /// For skew lines, returns the two closest points on each line.</remarks>
-    static member lineLineClosestPoints (lnA:Line3D) (lnB:Line3D) : Pnt * Pnt =
-        match XLine3D.getClosestPoints(lnA, lnB) with
-        | XLine3D.ClPts.Intersect p       -> p, p
-        | XLine3D.ClPts.Skew (pA, pB, _)  -> pA, pB
-        | XLine3D.ClPts.Parallel (pA, pB) -> pA, pB
-        | XLine3D.ClPts.Apart (pA, pB, _) -> pA, pB
-        | XLine3D.ClPts.TooShortBoth      -> lnA.From, lnB.From
-        | XLine3D.ClPts.TooShortA         -> lnA.From, XLine3D.clPtLn'(lnB, lnA.FromX, lnA.FromY, lnA.FromZ)
-        | XLine3D.ClPts.TooShortB         -> XLine3D.clPtLn'(lnA, lnB.FromX, lnB.FromY, lnB.FromZ), lnB.From
 
-
-    /// <summary>Finds the parameters of closest points between two finite 3D Lines, also works on parallel and overlapping lines.</summary>
-    /// <param name="lnA">The first line.</param>
-    /// <param name="lnB">The second line.</param>
-    /// <remarks>For parallel and overlapping lines the parameters returned are in the center of their overlap.
-    /// If the lines intersect the returned parameters are for the intersection point.
-    /// For skew lines, returns the parameters at the closest approach.</remarks>
-    /// <returns>A tuple of two floats, the first is the parameter on lnA, the second on lnB.</returns>
-    static member lineLineClosestParameters (lnA:Line3D) (lnB:Line3D) : float * float =
-        match XLine3D.getClosestParameters(lnA, lnB) with
-        | XLine3D.ClParams.Intersect (tA, tB)   -> tA, tB
-        | XLine3D.ClParams.Skew (tA, tB, _)     -> tA, tB
-        | XLine3D.ClParams.Parallel (tA, tB)    -> tA, tB
-        | XLine3D.ClParams.Apart (tA, tB, _)    -> tA, tB
-        | XLine3D.ClParams.TooShortBoth         -> 0.0, 0.0
-        | XLine3D.ClParams.TooShortA            -> 0.0, XLine3D.clParamLnPt(lnB, lnA.FromX, lnA.FromY, lnA.FromZ)
-        | XLine3D.ClParams.TooShortB            -> XLine3D.clParamLnPt(lnA, lnB.FromX, lnB.FromY, lnB.FromZ), 0.0
 
 
     /// <summary>Checks if lines are parallel, coincident and overlapping.</summary>
@@ -2088,9 +2109,15 @@ module AutoOpenLine3D =
         )
 
 
+
+
+
+
+
+    // Instance members marked as Obsolete that have direct replacements:
+
     [<Obsolete("Use ln.MatchesOrientation45 instead")>]
     member inline ln.MatchesOrientation90 (l:Line3D) = ln.MatchesOrientation45(l)
-
 
 
     [<Obsolete("Use ln.MatchesOrientation instead")>]
@@ -2102,19 +2129,6 @@ module AutoOpenLine3D =
     [<Obsolete("Use ln.MatchesOrientation instead")>]
     member inline ln.MatchesOrientation180 (v:UnitVec) = ln.MatchesOrientation(v)
 
-
-
-
-
-    [<Obsolete("Use matchesOrientation instead")>]
-    static member inline matchesOrientation180 (l:Line3D) (ln:Line3D) = l.MatchesOrientation ln
-
-    [<Obsolete("Use matchesOrientation45 instead")>]
-    static member inline matchesOrientation90 (l:Line3D) (ln:Line3D) = l.MatchesOrientation45 ln
-
-
-
-    // Instance members marked as Obsolete that have direct replacements:
 
     [<Obsolete("Use this.RayClosestParameter instead")>]
     member ln.ClosestParameterInfinite (p:Pnt) =
@@ -2169,6 +2183,24 @@ module AutoOpenLine3D =
         Line3D.projectOntoRay onToLine lineToProject
 
 
+    [<Obsolete("Use isTouchingEndOf or XLine3D.getEndsTouching instead. Obsolete since 0.20.0")>]
+    static member areTouchingAny(_tol:float, _a:Line3D, _b:Line3D) =
+        failObsoleteV30 "Line3D.areTouchingAny" "XLine3D.getEndsTouching"
+
+    [<Obsolete("Use isTouchingEndOf or XLine3D.getEndsTouching instead. Obsolete since 0.20.0")>]
+    static member areTouchingEither(_tol:float, _a:Line3D, _b:Line3D) =
+        failObsoleteV30 "Line3D.areTouchingEither" "XLine3D.getEndsTouching"
+
+
+    [<Obsolete("Use matchesOrientation instead")>]
+    static member inline matchesOrientation180 (l:Line3D) (ln:Line3D) = l.MatchesOrientation ln
+
+    [<Obsolete("Use matchesOrientation45 instead")>]
+    static member inline matchesOrientation90 (l:Line3D) (ln:Line3D) = l.MatchesOrientation45 ln
+
+
+
+
     // Obsolete members that don't have a direct replacement:
 
     [<Obsolete("Use XLine3D.getIntersectionParam instead. Obsolete since 0.20.0", error=true)>]
@@ -2196,14 +2228,3 @@ module AutoOpenLine3D =
         failObsoleteV30 "Line3D.intersectionPoint" "Line3D.tryIntersect"
 
 
-
-
-
-
-    [<Obsolete("Use isTouchingEndOf or XLine3D.getEndsTouching instead. Obsolete since 0.20.0")>]
-    static member areTouchingAny(_tol:float, _a:Line3D, _b:Line3D) =
-        failObsoleteV30 "Line3D.areTouchingAny" "XLine3D.getEndsTouching"
-
-    [<Obsolete("Use isTouchingEndOf or XLine3D.getEndsTouching instead. Obsolete since 0.20.0")>]
-    static member areTouchingEither(_tol:float, _a:Line3D, _b:Line3D) =
-        failObsoleteV30 "Line3D.areTouchingEither" "XLine3D.getEndsTouching"
