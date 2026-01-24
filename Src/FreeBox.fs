@@ -203,7 +203,7 @@ type FreeBox private (pts:Pnt[]) =
             pts[3].WithZ zMax// 7
             |]
 
-    /// Creates a FreeBox from four 2D points and a zMin and zMax value.
+    /// Creates a FreeBox from four 2D points in counter clockwise order and a zMin and zMax value.
     static member createFromFour2DPointsArgs ( a:Pt, b:Pt, c:Pt, d:Pt, zMin, zMax) =
         //       7               6
         //       +---------------+

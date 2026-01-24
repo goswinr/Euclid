@@ -534,9 +534,9 @@ type BBox =
 
 
 
-    /// Returns the bottom corners of this 3D bounding box in Counter-Clockwise order, starting at MinPt.
+    /// <summary>Returns the bottom corners of this 3D bounding box in Counter-Clockwise order, starting at MinPt.
     /// Then the top corners starting above MinPt. Returns an array of 8 Points.
-    ///
+    /// <code>
     ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6 MaxPt
@@ -552,12 +552,14 @@ type BBox =
     ///   |/              |/
     ///   +---------------+----> X-Axis (Width)
     ///   0 MinPt         1
+    /// </code>
+    /// </summary>
     member b.Points : Pnt[] = [|b.Pt0; b.Pt1; b.Pt2; b.Pt3; b.Pt4; b.Pt5; b.Pt6; b.Pt7|]
 
-    /// Returns the bottom of the box as a Counter-Clockwise array of 4 Points.
+    /// <summary>Returns the bottom of the box as a Counter-Clockwise array of 4 Points.
     /// Starting at MinPt. Points 0, 1, 2, and 3.
     /// Last and first point are NOT the same.
-    ///
+    /// <code>
     ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6 MaxPt
@@ -573,13 +575,15 @@ type BBox =
     ///   |/              |/
     ///   +---------------+----> X-Axis (Width)
     ///   0 MinPt         1
+    /// </code>
+    /// </summary>
     member b.BottomPoints : Pnt[] = [|b.Pt0; b.Pt1; b.Pt2; b.Pt3|]
 
 
-    /// Returns the bottom of the box as a Counter-Clockwise array of 5 Points, starting at MinPt.
+    /// <summary>Returns the bottom of the box as a Counter-Clockwise array of 5 Points, starting at MinPt.
     /// Points 0, 1, 2, 3, and again 0.
     /// Last and first point are the same.
-    ///
+    /// <code>
     ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6 MaxPt
@@ -595,12 +599,14 @@ type BBox =
     ///   |/              |/
     ///   +---------------+----> X-Axis (Width)
     ///   0 MinPt         1
+    /// </code>
+    /// </summary>
     member b.BottomPointsLooped : Pnt[] = [|b.Pt0; b.Pt1; b.Pt2; b.Pt3; b.Pt0|]
 
-    /// Returns the top of the box as a Counter-Clockwise array of 4 Points.
+    /// <summary>Returns the top of the box as a Counter-Clockwise array of 4 Points.
     /// Starting at point 4 then 5, 6, and 7.
     /// Last and first point are NOT the same.
-    ///
+    /// <code>
     ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6 MaxPt
@@ -616,12 +622,14 @@ type BBox =
     ///   |/              |/
     ///   +---------------+----> X-Axis (Width)
     ///   0 MinPt         1
+    /// </code>
+    /// </summary>
     member b.TopPoints : Pnt[] = [|b.Pt4; b.Pt5; b.Pt6; b.Pt7|]
 
-    /// Returns the top of the box as a Counter-Clockwise array of 5 Points.
+    /// <summary>Returns the top of the box as a Counter-Clockwise array of 5 Points.
     /// Points 4, 5, 6, 7, and again 4.
     /// Last and first point are the same.
-    ///
+    /// <code>
     ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6 MaxPt
@@ -637,6 +645,8 @@ type BBox =
     ///   |/              |/
     ///   +---------------+----> X-Axis (Width)
     ///   0 MinPt         1
+    /// </code>
+    /// </summary>
     member b.TopPointsLooped : Pnt[] = [|b.Pt4; b.Pt5; b.Pt6; b.Pt7; b.Pt4|]
 
 
@@ -677,10 +687,10 @@ type BBox =
     member inline b.Edge47 : Line3D = Line3D(b.Pt4, b.Pt7)
 
 
-    /// Returns the 12 edges of this 3D bounding box as an array of 12 Lines.
+    /// <summary>Returns the 12 edges of this 3D bounding box as an array of 12 Lines.
     /// Pairs in this order:
     /// 0-1, 1-2, 3-2, 0-3, 0-4, 1-5, 2-6, 3-7, 4-5, 5-6, 7-6, 4-7
-    ///
+    /// <code>
     ///   Z-Axis       Y-Axis (Depth)
     ///   ^           /
     ///   |   7      /        6 MaxPt
@@ -696,6 +706,8 @@ type BBox =
     ///   |/              |/
     ///   +---------------+----> X-Axis (Width)
     ///   0 MinPt         1
+    /// </code>
+    /// </summary>
     member b.Edges : Line3D[] = // this function needs to be defined after the EdgeXX members, because they are inlined.
         [| b.Edge01; b.Edge12; b.Edge32; b.Edge03; // bottom face
            b.Edge04; b.Edge15; b.Edge26; b.Edge37; // vertical edges

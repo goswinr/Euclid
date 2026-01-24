@@ -622,9 +622,9 @@ type BRect =
         [| Pt(r.MinX, r.MinY); Pt(r.MaxX, r.MinY);  Pt(r.MaxX, r.MaxY); Pt(r.MinX, r.MaxY) |]
 
 
-    /// Returns a Counter-Clockwise array of 5 Points, starting at MinPt.
+    /// <summary>Returns a Counter-Clockwise array of 5 Points, starting at MinPt.
     /// Last and first point are the same.
-    ///
+    /// <code>
     ///   Y-Axis (Height2D)
     ///   ^
     ///   |
@@ -637,11 +637,13 @@ type BRect =
     ///   |            |
     ///   +------------+-----> X-Axis (Width)
     ///  0 = min X,Y    1
+    /// </code>
+    /// </summary>
     member r.PointsLooped : Pt[] =
         [| Pt(r.MinX, r.MinY); Pt(r.MaxX, r.MinY);  Pt(r.MaxX, r.MaxY); Pt(r.MinX, r.MaxY); Pt(r.MinX, r.MinY)|]
 
-    /// The bottom edge. The line from point 0 to 1
-    ///
+    /// <summary>The bottom edge. The line from point 0 to 1.
+    /// <code>
     ///   Y-Axis (Height2D)
     ///   ^
     ///   |
@@ -654,10 +656,12 @@ type BRect =
     ///   |            |
     ///   +------------+-----> X-Axis (Width)
     ///  0 = min X,Y    1
+    /// </code>
+    /// </summary>
     member r.Edge01 : Line2D = Line2D(r.MinX,r.MinY,r.MaxX,r.MinY)
 
-    /// The right edge. The line from point 1 to 2
-    ///
+    /// <summary>The right edge. The line from point 1 to 2.
+    /// <code>
     ///   Y-Axis (Height2D)
     ///   ^
     ///   |
@@ -670,10 +674,12 @@ type BRect =
     ///   |            |
     ///   +------------+-----> X-Axis (Width)
     ///  0 = min X,Y    1
+    /// </code>
+    /// </summary>
     member r.Edge12 : Line2D = Line2D(r.MaxX,r.MinY,r.MaxX,r.MaxY)
 
-    /// The top edge. The line from point 2 to 3
-    ///
+    /// <summary>The top edge. The line from point 2 to 3.
+    /// <code>
     ///   Y-Axis (Height2D)
     ///   ^
     ///   |
@@ -686,10 +692,12 @@ type BRect =
     ///   |            |
     ///   +------------+-----> X-Axis (Width)
     ///  0 = min X,Y    1
+    /// </code>
+    /// </summary>
     member r.Edge23 : Line2D = Line2D(r.MaxX,r.MaxY,r.MinX,r.MaxY)
 
-    /// The left edge. The line from point 3 to 0
-    ///
+    /// <summary>The left edge. The line from point 3 to 0.
+    /// <code>
     ///   Y-Axis (Height2D)
     ///   ^
     ///   |
@@ -702,6 +710,8 @@ type BRect =
     ///   |            |
     ///   +------------+-----> X-Axis (Width)
     ///  0 = min X,Y    1
+    /// </code>
+    /// </summary>
     member r.Edge30 : Line2D = Line2D(r.MinX,r.MaxY,r.MinX,r.MinY)
 
 
