@@ -1922,16 +1922,13 @@ type XLine3D =
 
 
 
-    // TODO add getEndsTouching overload for float and Pt Input ?
-
-
     /// <summary>Checks if the two finite 3D lines are touching each other at exactly one of their end points
     /// within the given tolerance.
     /// This will return a separate case (5 or 6) if the lines are touching on both points.</summary>
     /// <param name="a"> The first line.</param>
     /// <param name="b"> The second line.</param>
     /// <param name="tolerance"> Is an optional distance tolerance. 1e-6 by default.</param>
-    /// <returns>A Discriminated Union XEnds that describes the possible cases of two finite 3D lines touching at their ends:
+    /// <returns>A Discriminated Union XLine3D.XEnds that describes the possible cases of two finite 3D lines touching at their ends:
     /// | NotTouching
     /// | StartA_StartB
     /// | EndA_EndB
@@ -1940,7 +1937,7 @@ type XLine3D =
     /// | Identical
     /// | IdenticalFlipped
     /// </returns>
-    static member getEndsTouching (a:Line3D, b:Line3D, [<OPT;DEF(1e-6)>] tolerance:float) : XEnds =
+    static member getEndsTouching (a:Line3D, b:Line3D, [<OPT;DEF(1e-6)>] tolerance:float) : XLine3D.XEnds =
         let sqTolerance = tolerance * tolerance
         if sq(a.ToX-b.FromX) + sq(a.ToY-b.FromY) + sq(a.ToZ-b.FromZ) < sqTolerance then
             if sq(a.FromX-b.ToX) + sq(a.FromY-b.ToY) + sq(a.FromZ-b.ToZ) < sqTolerance then

@@ -1642,7 +1642,7 @@ let testsLine2DIntersection =
         test "isTouchingEndsOf not touching" {
             let a = Line2D(0., 0., 10., 0.)
             let b = Line2D(0., 5., 10., 5.)
-            let result = Line2D.isTouchingEndsOf a b
+            let result = XLine2D.getEndsTouching(a,b)
             match result with
             | XLine2D.XEnds.NotTouching -> Expect.isTrue true "not touching"
             | _ -> failwith "expected NotTouching"
@@ -1651,7 +1651,7 @@ let testsLine2DIntersection =
         test "isTouchingEndsOf StartA_StartB" {
             let a = Line2D(0., 0., 10., 0.)
             let b = Line2D(0., 0., 0., 10.)
-            let result = Line2D.isTouchingEndsOf a b
+            let result = XLine2D.getEndsTouching(a,b)
             match result with
             | XLine2D.XEnds.StartA_StartB -> Expect.isTrue true "StartA_StartB"
             | _ -> failwith "expected StartA_StartB"
@@ -1660,7 +1660,7 @@ let testsLine2DIntersection =
         test "isTouchingEndsOf EndA_EndB" {
             let a = Line2D(0., 0., 10., 0.)
             let b = Line2D(0., 10., 10., 0.)
-            let result = Line2D.isTouchingEndsOf a b
+            let result = XLine2D.getEndsTouching(a,b)
             match result with
             | XLine2D.XEnds.EndA_EndB -> Expect.isTrue true "EndA_EndB"
             | _ -> failwith "expected EndA_EndB"
@@ -1669,7 +1669,7 @@ let testsLine2DIntersection =
         test "isTouchingEndsOf identical" {
             let a = Line2D(0., 0., 10., 0.)
             let b = Line2D(0., 0., 10., 0.)
-            let result = Line2D.isTouchingEndsOf a b
+            let result = XLine2D.getEndsTouching(a,b)
             match result with
             | XLine2D.XEnds.Identical -> Expect.isTrue true "identical"
             | _ -> failwith "expected Identical"

@@ -1517,24 +1517,6 @@ module AutoOpenLine2D =
                ln.ToX * factor,
                ln.ToY * factor)
 
-
-
-    /// <summary>Checks if the two finite 2D lines are touching each other at any of their end points</summary>
-    /// <param name="tolerance">The tolerance within which the line ends are considered touching.</param>
-    /// <param name="a">The first line.</param>
-    /// <param name="b">The second line.</param>
-    /// <remarks>Use <see cref="XLine2D.getEndsTouching"/> to get detailed Information about which ends are touching.</remarks>
-    static member isTouchingEndsOf tolerance (a:Line2D) (b:Line2D) : bool=
-        let sqTolerance = tolerance * tolerance
-        sq(a.ToX-b.FromX) + sq(a.ToY-b.FromY)  < sqTolerance
-        ||
-        sq(a.FromX-b.ToX) + sq(a.FromY-b.ToY)  < sqTolerance
-        ||
-        sq(a.FromX-b.FromX) + sq(a.FromY-b.FromY)  < sqTolerance
-        ||
-        sq(a.ToX-b.ToX) + sq(a.ToY-b.ToY)  < sqTolerance
-
-
     /// Project a line onto another line considered infinite in both directions.
     /// Returns the start and end parameters of the projected line on the target line.
     static member projectOntoRayParam (rayToProjectOnto:Line2D) (lineToProject:Line2D) : float*float =

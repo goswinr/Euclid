@@ -1796,22 +1796,6 @@ module AutoOpenLine3D =
         | XCone.Intersecting (u,v) -> Some (u,v)
 
 
-    /// <summary>Checks if the two finite 3D lines are touching each other at any of their end points</summary>
-    /// <param name="tolerance">The tolerance within which the line ends are considered touching.</param>
-    /// <param name="a">The first line.</param>
-    /// <param name="b">The second line.</param>
-    /// <remarks>Use <see cref="XLine3D.getEndsTouching"/> to get detailed Information about which ends are touching.</remarks>
-    static member isTouchingEndsOf tolerance (a:Line3D) (b:Line3D) : bool=
-        let sqTolerance = tolerance * tolerance
-        sq(a.ToX-b.FromX) + sq(a.ToY-b.FromY) + sq(a.ToZ-b.FromZ) < sqTolerance
-        ||
-        sq(a.FromX-b.ToX) + sq(a.FromY-b.ToY) + sq(a.FromZ-b.ToZ) < sqTolerance
-        ||
-        sq(a.FromX-b.FromX) + sq(a.FromY-b.FromY) + sq(a.FromZ-b.FromZ) < sqTolerance
-        ||
-        sq(a.ToX-b.ToX) + sq(a.ToY-b.ToY) + sq(a.ToZ-b.ToZ) < sqTolerance
-
-
     /// Project a 3D line onto another line considered infinite in both directions.
     /// Returns the start and end parameters of the projected line on the target line.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).

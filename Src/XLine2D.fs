@@ -895,15 +895,20 @@ type XLine2D =
     /// <param name="vAy"> The Y component of the vector of the first ray.</param>
     /// <param name="vBx"> The X component of the vector of the second ray.</param>
     /// <param name="vBy"> The Y component of the vector of the second ray.</param>
+    ///<param name="tangent" > Is an optional tangent of the maximum allowed angle between the two line vectors.
+    ///  The default value is '0.00436' this corresponds to approx 0.25 degree. Below this angle the lines are considered parallel.
+    ///  Use the module Euclid.UtilEuclid.Tangent to set another tolerance here.</param>
     /// <returns> The point at which the two rays intersect or None.</returns>
-    /// <remarks> If the lines are parallel or coincident, or if the parameter on Line A is bigger than 1e12 in absolute value,
-    /// None is returned.</remarks>
-    static member inline tryIntersectRay (pAx:float, pAy:float, pBx:float, pBy:float, vAx:float, vAy:float, vBx:float, vBy:float): Pt option =
-        let det = vAx * vBy - vAy * vBx // Cross product of vectors (determinant), this is 0.0 if vectors are parallel
-        let dx = pBx - pAx
-        let dy = pBy - pAy
-        let t = (dx * vBy - dy * vBx) / det //  this can be NaN or Infinity
-        if t > -1e12 && t < 1e12 then // checks for NaN correctly
+    /// <remarks> If the lines are parallel or coincident (within the tangent tolerance) or too short, None is returned.</remarks>
+    static member inline tryIntersectRay (pAx:float, pAy:float, pBx:float, pBy:float, vAx:float, vAy:float, vBx:float, vBy:float,
+                                          [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>): Pt option =
+        let det = vAx * vBy - vAy * vBx // Cross product of vectors (determinant, or signed area of parallelogram between them), this is 0.0 if vectors are parallel or very short
+        let dot = vAx * vBx + vAy * vBy // Dot product of vectors, may be 0.0 for perpendicular vectors
+        let tan = det / dot // tangent of the angle between the two vectors, may be negative too
+        if abs !^ tan > tangent && abs(det) > 1e-9 then // abs check needed, handles the NaN case correctly
+            let dx = pBx - pAx
+            let dy = pBy - pAy
+            let t = (dx * vBy - dy * vBx) / det //  this can't be NaN or Infinity anymore because of the tangent check
             Some <| Pt(pAx + t * vAx, pAy + t * vAy)
         else
             None
@@ -914,20 +919,24 @@ type XLine2D =
     /// <param name="pB"> The start point of the second ray.</param>
     /// <param name="vA"> The direction vector of the first ray.</param>
     /// <param name="vB"> The direction vector of the second ray.</param>
+    ///<param name="tangent" > Is an optional tangent of the maximum allowed angle between the two line vectors.
+    ///  The default value is '0.00436' this corresponds to approx 0.25 degree. Below this angle the lines are considered parallel.
+    ///  Use the module Euclid.UtilEuclid.Tangent to set another tolerance here.</param>
     /// <returns> The point at which the two rays intersect or None.</returns>
-    /// <remarks> If the lines are parallel or coincident, or if the parameter on Line A is bigger than 1e12 in absolute value,
-    /// None is returned.</remarks>
-    static member inline tryIntersectRay (pA:Pt, pB:Pt, vA:Vc, vB:Vc): Pt option =
-        XLine2D.tryIntersectRay (pA.X, pA.Y, pB.X, pB.Y, vA.X, vA.Y, vB.X, vB.Y)
+    /// <remarks> If the lines are parallel or coincident (within the tangent tolerance) or too short, None is returned.</remarks>
+    static member inline tryIntersectRay (pA:Pt, pB:Pt, vA:Vc, vB:Vc, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>): Pt option =
+        XLine2D.tryIntersectRay (pA.X, pA.Y, pB.X, pB.Y, vA.X, vA.Y, vB.X, vB.Y, tangent)
 
     /// <summary> Tries to get intersection point of two rays (rays are 2D lines extended infinitely).</summary>
     /// <param name="lineA"> First ray.</param>
     /// <param name="lineB"> Second ray.</param>
+    ///<param name="tangent" > Is an optional tangent of the maximum allowed angle between the two line vectors.
+    ///  The default value is '0.00436' this corresponds to approx 0.25 degree. Below this angle the lines are considered parallel.
+    ///  Use the module Euclid.UtilEuclid.Tangent to set another tolerance here.</param>
     /// <returns> The point at which the two rays intersect or None.</returns>
-    /// <remarks> If the lines are parallel or coincident, or if the parameter on Line A is bigger than 1e12 in absolute value,
-    /// None is returned.</remarks>
-    static member inline tryIntersectRay (lineA: Line2D, lineB: Line2D): Pt option =
-        XLine2D.tryIntersectRay (lineA.FromX, lineA.FromY, lineB.FromX, lineB.FromY, lineA.VectorX, lineA.VectorY, lineB.VectorX, lineB.VectorY )
+    /// <remarks> If the lines are parallel or coincident (within the tangent tolerance), or too short, None is returned.</remarks>
+    static member inline tryIntersectRay (lineA: Line2D, lineB: Line2D, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>): Pt option =
+        XLine2D.tryIntersectRay (lineA.FromX, lineA.FromY, lineB.FromX, lineB.FromY, lineA.VectorX, lineA.VectorY, lineB.VectorX, lineB.VectorY, tangent)
 
 
 
@@ -1544,7 +1553,7 @@ type XLine2D =
     /// <param name="a"> The first line.</param>
     /// <param name="b"> The second line.</param>
     /// <param name="tolerance"> Is an optional distance tolerance. 1e-6 by default.</param>
-    /// <returns>A Discriminated Union LineEndsTouching that describes the possible cases of two finite 2D lines touching at their ends:
+    /// <returns>A Discriminated Union Line2D.XEnds that describes the possible cases of two finite 2D lines touching at their ends:
     /// | NotTouching
     /// | StartA_StartB
     /// | EndA_EndB
@@ -1553,7 +1562,7 @@ type XLine2D =
     /// | Identical
     /// | IdenticalFlipped
     /// </returns>
-    static member getEndsTouching (a:Line2D, b:Line2D, [<OPT;DEF(1e-6)>] tolerance:float) : XEnds =
+    static member getEndsTouching (a:Line2D, b:Line2D, [<OPT;DEF(1e-6)>] tolerance:float) : XLine2D.XEnds =
         let sqTolerance = tolerance * tolerance
         if sq(a.ToX-b.FromX) + sq(a.ToY-b.FromY) < sqTolerance then
             if sq(a.FromX-b.ToX) + sq(a.FromY-b.ToY) < sqTolerance then
