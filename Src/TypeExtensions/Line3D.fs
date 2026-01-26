@@ -424,6 +424,22 @@ module AutoOpenLine3D =
         | XLine3D.ClParams.TooShortA            -> 0.0, XLine3D.clParamLnPt(lnB, lnA.FromX, lnA.FromY, lnA.FromZ)
         | XLine3D.ClParams.TooShortB            -> XLine3D.clParamLnPt(lnA, lnB.FromX, lnB.FromY, lnB.FromZ), 0.0
 
+    /// <summary>Finds the closest approach parameters of two infinite rays (Line3D treated as rays).</summary>
+    /// <param name="lnB">The second line (treated as infinite ray).</param>
+    /// <returns>Some tuple of two floats (parameter on this, parameter on lnB) if rays are not parallel and not too short, otherwise None.</returns>
+    member lnA.RayClosestParameters (lnB:Line3D) : (float * float) option =
+        match XLine3D.getRayClosestParam(lnA, lnB) with
+        | XRayParam.SkewOrX (t, u) -> Some (t, u)
+        | XRayParam.Parallel | XRayParam.TooShortA | XRayParam.TooShortB | XRayParam.TooShortBoth -> None
+
+    /// <summary>Finds the closest approach points of two infinite rays (Line3D treated as rays).</summary>
+    /// <param name="lnB">The second line (treated as infinite ray).</param>
+    /// <returns>Some tuple of two points (closest point on this, closest point on lnB) if rays are not parallel and not too short, otherwise None.</returns>
+    member lnA.RayClosestPoints (lnB:Line3D) : (Pnt * Pnt) option =
+        match XLine3D.getRayClosestParam(lnA, lnB) with
+        | XRayParam.SkewOrX (t, u) -> Some (lnA.EvaluateAt t, lnB.EvaluateAt u)
+        | XRayParam.Parallel | XRayParam.TooShortA | XRayParam.TooShortB | XRayParam.TooShortBoth -> None
+
     /// Assumes Line3D to be an infinite ray.
     /// Returns square distance from point to ray.
     /// Fails on curves shorter than 1e-6 units. (ln.SqDistanceFromPoint does not.)
@@ -1378,6 +1394,20 @@ module AutoOpenLine3D =
     /// <returns>A tuple of two floats, the first is the parameter on lnA, the second on lnB.</returns>
     static member closestParameters (lnA:Line3D) (lnB:Line3D) : float * float =
         lnA.ClosestParameters lnB
+
+    /// <summary>Finds the closest approach parameters of two infinite rays (Line3D treated as rays).</summary>
+    /// <param name="lnA">The first line (treated as infinite ray).</param>
+    /// <param name="lnB">The second line (treated as infinite ray).</param>
+    /// <returns>Some tuple of two floats (parameter on lnA, parameter on lnB) if rays are not parallel and not too short, otherwise None.</returns>
+    static member rayClosestParameters (lnA:Line3D) (lnB:Line3D) : (float * float) option =
+        lnA.RayClosestParameters lnB
+
+    /// <summary>Finds the closest approach points of two infinite rays (Line3D treated as rays).</summary>
+    /// <param name="lnA">The first line (treated as infinite ray).</param>
+    /// <param name="lnB">The second line (treated as infinite ray).</param>
+    /// <returns>Some tuple of two points (closest point on lnA, closest point on lnB) if rays are not parallel and not too short, otherwise None.</returns>
+    static member rayClosestPoints (lnA:Line3D) (lnB:Line3D) : (Pnt * Pnt) option =
+        lnA.RayClosestPoints lnB
 
     /// Assumes Line3D to be an infinite ray.
     /// Returns the square distance from point to ray.
