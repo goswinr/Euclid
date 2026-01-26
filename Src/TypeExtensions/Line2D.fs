@@ -302,7 +302,11 @@ module AutoOpenLine2D =
     /// <summary> Finds the closest points between two finite 2D Lines, also works on parallel and overlapping lines.</summary>
     /// <param name="lnB"> The second line.</param>
     /// <remarks> For parallel and overlapping lines the points returned are in the center of their overlap.
-    /// If the lines intersect the returned points are exactly the same</remarks>
+    /// If the lines intersect the returned points are exactly the same.
+    /// This method uses a default angle tolerance of 0.25 degrees for parallel detection
+    /// and a length tolerance of 1e-6 for detecting lines that are too short.
+    /// For more control over these tolerances, use XLine2D.getClosestPoints directly.</remarks>
+    /// <returns> A tuple of two Pt, the first is the closest point on lnA, the second on lnB.</returns>
     member lnA.ClosestPoints (lnB:Line2D) : Pt * Pt =
         match XLine2D.getClosestPoints(lnA, lnB) with
         | XLine2D.ClPts.Apart (a,b, _) -> a,b
@@ -316,8 +320,11 @@ module AutoOpenLine2D =
     /// <summary> Finds the parameters of closest points between two finite 2D Lines, also works on parallel and overlapping lines.</summary>
     /// <param name="lnB"> The second line.</param>
     /// <remarks> For parallel and overlapping lines the parameters returned are in the center of their overlap.
-    ///  If the lines intersect the returned parameters are exactly the same</remarks>
-    /// <returns> A tuple of two floats, the first is the parameter on lnA, the second on lnB</returns>
+    /// If the lines intersect the returned parameters are exactly the same.
+    /// This method uses a default angle tolerance of 0.25 degrees for parallel detection
+    /// and a length tolerance of 1e-6 for detecting lines that are too short.
+    /// For more control over these tolerances, use XLine2D.getClosestParameters directly.</remarks>
+    /// <returns> A tuple of two floats, the first is the parameter on lnA, the second on lnB.</returns>
     member lnA.ClosestParameters (lnB:Line2D) : float * float =
         match XLine2D.getClosestParameters(lnA, lnB) with
         | XLine2D.ClParams.Apart (a,b, _) -> a,b
@@ -1511,21 +1518,21 @@ module AutoOpenLine2D =
                ln.ToY * factor)
 
 
-    /// <summary>Checks if the two finite 2D lines are touching each other at one of their end points
-    /// within the default tolerance of 1e-6. use XLine2D.areEndsTouching to set a custom tolerance</summary>
-    /// <param name="a"> The first line.</param>
-    /// <param name="b"> The second line.</param>
-    /// <returns>A Discriminated Union LineEndsTouching that describes the possible cases of two finite 2D lines touching at their ends:
-    /// | NotTouching
-    /// | StartA_StartB
-    /// | EndA_EndB
-    /// | EndA_StartB
-    /// | StartA_EndB
-    /// | Identical
-    /// | IdenticalFlipped
-    /// </returns>
-    static member isTouchingEndsOf (a:Line2D) (b:Line2D) : XLine2D.XEnds =
-        XLine2D.getEndsTouching(a,b)
+
+    /// <summary>Checks if the two finite 2D lines are touching each other at any of their end points</summary>
+    /// <param name="tolerance">The tolerance within which the line ends are considered touching.</param>
+    /// <param name="a">The first line.</param>
+    /// <param name="b">The second line.</param>
+    /// <remarks>Use <see cref="XLine2D.getEndsTouching"/> to get detailed Information about which ends are touching.</remarks>
+    static member isTouchingEndsOf tolerance (a:Line2D) (b:Line2D) : bool=
+        let sqTolerance = tolerance * tolerance
+        sq(a.ToX-b.FromX) + sq(a.ToY-b.FromY)  < sqTolerance
+        ||
+        sq(a.FromX-b.ToX) + sq(a.FromY-b.ToY)  < sqTolerance
+        ||
+        sq(a.FromX-b.FromX) + sq(a.FromY-b.FromY)  < sqTolerance
+        ||
+        sq(a.ToX-b.ToX) + sq(a.ToY-b.ToY)  < sqTolerance
 
 
     /// Project a line onto another line considered infinite in both directions.
@@ -1820,7 +1827,7 @@ module AutoOpenLine2D =
     /// <param name="squareTolerance"> The squared tolerance for the distance between the end points.</param>
     /// <param name="a"> The first line.</param>
     /// <param name="b"> The second line.</param>
-    /// <remarks> Use XLine2D.getEndsTouching to get more detailed information about which ends are touching.</remarks>
+    /// <remarks> Use <see cref="XLine2D.getEndsTouching"/> to get more detailed information about which ends are touching.</remarks>
     static member isTouchingEndOf squareTolerance (a:Line2D) (b:Line2D)  : bool =
         (
             let x = a.ToX-b.FromX

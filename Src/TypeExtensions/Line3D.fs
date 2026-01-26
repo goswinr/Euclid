@@ -396,7 +396,10 @@ module AutoOpenLine3D =
     /// <param name="lnB">The second line.</param>
     /// <remarks>For parallel and overlapping lines the points returned are in the center of their overlap.
     /// If the lines intersect the returned points are exactly the same.
-    /// For skew lines, returns the two closest points on each line.</remarks>
+    /// For skew lines, returns the two closest points on each line.
+    /// Lines shorter than 1e-6 are considered too short.
+    /// Lines with an angle less than 0.25 degrees are considered parallel.
+    /// For more control over tolerances, use <see cref="XLine3D.getClosestPoints"/>.</remarks>
     member lnA.ClosestPoints (lnB:Line3D) : Pnt * Pnt =
         match XLine3D.getClosestPoints(lnA, lnB) with
         | XLine3D.ClPts.Intersect p       -> p, p
@@ -412,7 +415,10 @@ module AutoOpenLine3D =
     /// <param name="lnB">The second line.</param>
     /// <remarks>For parallel and overlapping lines the parameters returned are in the center of their overlap.
     /// If the lines intersect the returned parameters are for the intersection point.
-    /// For skew lines, returns the parameters at the closest approach.</remarks>
+    /// For skew lines, returns the parameters at the closest approach.
+    /// Lines shorter than 1e-6 are considered too short.
+    /// Lines with an angle less than 0.25 degrees are considered parallel.
+    /// For more control over tolerances, use <see cref="XLine3D.getClosestParameters"/>.</remarks>
     /// <returns>A tuple of two floats, the first is the parameter on lnA, the second on lnB.</returns>
     member lnA.ClosestParameters (lnB:Line3D) : float * float =
         match XLine3D.getClosestParameters(lnA, lnB) with
@@ -426,6 +432,9 @@ module AutoOpenLine3D =
 
     /// <summary>Finds the closest approach parameters of two infinite rays (Line3D treated as rays).</summary>
     /// <param name="lnB">The second line (treated as infinite ray).</param>
+    /// <remarks>Lines shorter than 1e-6 are considered too short.
+    /// Lines with an angle less than 0.25 degrees are considered parallel.
+    /// For more control over tolerances, use <see cref="XLine3D.getRayClosestParam"/>.</remarks>
     /// <returns>Some tuple of two floats (parameter on this, parameter on lnB) if rays are not parallel and not too short, otherwise None.</returns>
     member lnA.RayClosestParameters (lnB:Line3D) : (float * float) option =
         match XLine3D.getRayClosestParam(lnA, lnB) with
@@ -434,6 +443,9 @@ module AutoOpenLine3D =
 
     /// <summary>Finds the closest approach points of two infinite rays (Line3D treated as rays).</summary>
     /// <param name="lnB">The second line (treated as infinite ray).</param>
+    /// <remarks>Lines shorter than 1e-6 are considered too short.
+    /// Lines with an angle less than 0.25 degrees are considered parallel.
+    /// For more control over tolerances, use <see cref="XLine3D.getRayClosestParam"/>.</remarks>
     /// <returns>Some tuple of two points (closest point on this, closest point on lnB) if rays are not parallel and not too short, otherwise None.</returns>
     member lnA.RayClosestPoints (lnB:Line3D) : (Pnt * Pnt) option =
         match XLine3D.getRayClosestParam(lnA, lnB) with
@@ -1767,51 +1779,37 @@ module AutoOpenLine3D =
                ln.ToZ * factor)
 
 
-    /// Intersects an infinite ray with an infinite double cone that has its axis on the Z-axis.
-    /// coneRadius -> coneBaseZ -> coneTipZ -> (ln:Line3D) -> XConeLine
-    /// Returns the parameter(s) on the line.
-    static member intersectCone (ln:Line3D, coneRadius, coneBaseZ, coneTipZ) : XLine3D.XCone =
-        let h = coneBaseZ-coneTipZ
-        if isTooTiny( abs h )then
-            fail $"Intersection.lineCone: cone has zero height: coneRadius: {coneRadius}, coneBaseZ: {coneBaseZ}, coneTipZ: {coneTipZ}"
-        let lam = coneRadius / h
-        let lam = lam * lam
-        let v = ln.Tangent
-        let f2 = lam*v.Z*v.Z - v.X*v.X - v.Y*v.Y
-        if isTooTiny(abs f2) then
-            XLine3D.XCone.Tangential
-        else
-            let f1 = 2.*lam*ln.FromZ*v.Z - 2.*lam*v.Z*coneTipZ - 2.*v.Y*ln.FromY - 2.*ln.FromX*v.X
-            let f0 = lam*ln.FromZ*ln.FromZ + lam*coneTipZ*coneTipZ - 2.*ln.FromZ*coneTipZ*lam - ln.FromY*ln.FromY - ln.FromX*ln.FromX
-            let part = f1**2. - 4.* f2 * f0
-            if part < 0.0 then
-                XLine3D.XCone.NoIntersection
-            else
-                let sqrtPart = sqrt(part)
-                let div = 1. / (2. * f2)
-                let u = (-f1 + sqrtPart) * div
-                let v = (-f1 - sqrtPart) * div
-                if isTooTiny(abs(u-v)) then
-                    XLine3D.XCone.Touching ((u+v)*0.5)
-                else
-                    XLine3D.XCone.Intersecting (u, v)
+    /// <summary>Intersects a ray with an infinite double cone that has its axis on the Z-axis.</summary>
+    /// <param name="ray">The Line3D to intersect. It is considered as infinite ray.</param>
+    /// <param name="coneRadius">The radius of the cone at the base. Parallel to the XY plane.</param>
+    /// <param name="coneBaseZ">The Z coordinate of the cone base.</param>
+    /// <param name="coneTipZ">The Z coordinate of the cone tip.</param>
+    /// <returns>The two parameters on the ray where the intersections occur.
+    /// If there is only one touching point both parameters are the same.
+    /// If there is no intersection None is returned.
+    /// </returns>
+    static member intersectCone (ray:Line3D, coneRadius, coneBaseZ, coneTipZ) : Option<float*float> =
+        match XLine3D.intersectCone(ray, coneRadius, coneBaseZ, coneTipZ) with
+        | XCone.NoIntersection -> None
+        | XCone.Tangential     -> None
+        | XCone.Touching t         -> Some (t, t)
+        | XCone.Intersecting (u,v) -> Some (u,v)
 
 
-    /// <summary>Checks if the two finite 3D lines are touching each other at their end points
-    /// within the default tolerance of 1e-6. Use XLine3D.getEndsTouching to set a custom tolerance.</summary>
+    /// <summary>Checks if the two finite 3D lines are touching each other at any of their end points</summary>
+    /// <param name="tolerance">The tolerance within which the line ends are considered touching.</param>
     /// <param name="a">The first line.</param>
     /// <param name="b">The second line.</param>
-    /// <returns>A Discriminated Union XEnds that describes the possible cases of two finite 3D lines touching at their ends:
-    /// | NotTouching
-    /// | StartA_StartB
-    /// | EndA_EndB
-    /// | EndA_StartB
-    /// | StartA_EndB
-    /// | Identical
-    /// | IdenticalFlipped
-    /// </returns>
-    static member isTouchingEndsOf (a:Line3D) (b:Line3D) : XLine3D.XEnds =
-        XLine3D.getEndsTouching(a, b)
+    /// <remarks>Use <see cref="XLine3D.getEndsTouching"/> to get detailed Information about which ends are touching.</remarks>
+    static member isTouchingEndsOf tolerance (a:Line3D) (b:Line3D) : bool=
+        let sqTolerance = tolerance * tolerance
+        sq(a.ToX-b.FromX) + sq(a.ToY-b.FromY) + sq(a.ToZ-b.FromZ) < sqTolerance
+        ||
+        sq(a.FromX-b.ToX) + sq(a.FromY-b.ToY) + sq(a.FromZ-b.ToZ) < sqTolerance
+        ||
+        sq(a.FromX-b.FromX) + sq(a.FromY-b.FromY) + sq(a.FromZ-b.FromZ) < sqTolerance
+        ||
+        sq(a.ToX-b.ToX) + sq(a.ToY-b.ToY) + sq(a.ToZ-b.ToZ) < sqTolerance
 
 
     /// Project a 3D line onto another line considered infinite in both directions.
@@ -2114,7 +2112,7 @@ module AutoOpenLine3D =
     /// <param name="squareTolerance"> The squared tolerance for the distance between the end points.</param>
     /// <param name="a"> The first line.</param>
     /// <param name="b"> The second line.</param>
-    /// <remarks> Use XLine3D.getEndsTouching to get more detailed information about which ends are touching.</remarks>
+    /// <remarks>Use <see cref="XLine3D.getEndsTouching"/> to get more detailed information about which ends are touching.</remarks>
     static member isTouchingEndOf squareTolerance (a:Line3D) (b:Line3D)  : bool =
         (
             let x = a.ToX-b.FromX

@@ -3,6 +3,7 @@ namespace Euclid
 
 open System
 open UtilEuclid
+open EuclidErrors
 
 
 /// A module containing the result types for 3D Line-Line-Intersections
@@ -1958,3 +1959,41 @@ type XLine3D =
         else
             XEnds.NotTouching
 
+
+
+    /// <summary>Intersects a ray with an infinite double cone that has its axis on the Z-axis.</summary>
+    /// <param name="ray">The Line3D to intersect. It is considered as infinite ray.</param>
+    /// <param name="coneRadius">The radius of the cone at the base. Parallel to the XY plane.</param>
+    /// <param name="coneBaseZ">The Z coordinate of the cone base.</param>
+    /// <param name="coneTipZ">The Z coordinate of the cone tip.</param>
+    /// <returns>An XLine3D.XCone discriminated union representing the intersection result with parameter(s) on the line:
+    /// | NoIntersection: The line does not intersect the cone.
+    /// | Tangential: The line is tangent to the cone surface.
+    /// | Touching of float: The line touches the cone at one point with a tolerance of 1e-6, contains the parameter on the line.
+    /// | Intersecting of float*float: The line intersects the cone at two points, contains both parameters on the line.
+    /// </returns>
+    static member intersectCone (ray:Line3D, coneRadius, coneBaseZ, coneTipZ) : XLine3D.XCone =
+        let h = coneBaseZ-coneTipZ
+        if isTooTiny( abs h )then
+            fail $"XLine3D.intersectCone: cone has zero height: coneRadius: {coneRadius}, coneBaseZ: {coneBaseZ}, coneTipZ: {coneTipZ}"
+        let lam = coneRadius / h
+        let lam = lam * lam
+        let v = ray.Tangent
+        let f2 = lam*v.Z*v.Z - v.X*v.X - v.Y*v.Y
+        if isTooTiny(abs f2) then
+            XLine3D.XCone.Tangential
+        else
+            let f1 = 2.*lam*ray.FromZ*v.Z - 2.*lam*v.Z*coneTipZ - 2.*v.Y*ray.FromY - 2.*ray.FromX*v.X
+            let f0 = lam*ray.FromZ*ray.FromZ + lam*coneTipZ*coneTipZ - 2.*ray.FromZ*coneTipZ*lam - ray.FromY*ray.FromY - ray.FromX*ray.FromX
+            let part = f1**2. - 4.* f2 * f0
+            if part < 0.0 then
+                XLine3D.XCone.NoIntersection
+            else
+                let sqrtPart = sqrt(part)
+                let div = 1. / (2. * f2)
+                let u = (-f1 + sqrtPart) * div
+                let v = (-f1 - sqrtPart) * div
+                if isTooTiny(abs(u-v)) then
+                    XLine3D.XCone.Touching ((u+v)*0.5)
+                else
+                    XLine3D.XCone.Intersecting (u, v)

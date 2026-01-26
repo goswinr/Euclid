@@ -246,6 +246,6 @@ module Intersect =
     let lineTriangle(line:Line3D, p1 :Pnt, p2:Pnt, p3:Pnt) : Pnt option =
        Tria3D.intersectLine(line, p1, p2, p3)
 
-    [<Obsolete("Use Line3D.intersectPlane instead.")>]
-    let lineCone (ln:Line3D, coneRadius, coneBaseZ, coneTipZ) : XLine3D.XCone =
+    [<Obsolete("Use Line3D.intersectCone or XLine3D.intersectCone for a more detailed result instead.")>]
+    let lineCone (ln:Line3D, coneRadius, coneBaseZ, coneTipZ) : option<float*float> =
         Line3D.intersectCone(ln, coneRadius, coneBaseZ, coneTipZ)
