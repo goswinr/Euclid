@@ -2640,7 +2640,7 @@ let testsLine3DIntersection =
         test "isTouchingEndsOf touching at ends" {
             let lnA = Line3D(0., 0., 0., 10., 0., 0.)
             let lnB = Line3D(10., 0., 0., 20., 0., 0.)
-            let result = Line3D.isTouchingEndsOf lnA lnB
+            let result = XLine3D.getEndsTouching(lnA, lnB)
             match result with
             | XLine3D.XEnds.EndA_StartB -> Expect.isTrue true "correct end touching"
             | _ -> Expect.isTrue false "wrong touching type"
@@ -2649,7 +2649,7 @@ let testsLine3DIntersection =
         test "isTouchingEndsOf not touching" {
             let lnA = Line3D(0., 0., 0., 10., 0., 0.)
             let lnB = Line3D(15., 0., 0., 20., 0., 0.)
-            let result = Line3D.isTouchingEndsOf lnA lnB
+            let result = XLine3D.getEndsTouching(lnA, lnB)
             match result with
             | XLine3D.XEnds.NotTouching -> Expect.isTrue true "correctly not touching"
             | _ -> Expect.isTrue false "should not be touching"
@@ -2658,7 +2658,7 @@ let testsLine3DIntersection =
         test "isTouchingEndsOf identical" {
             let lnA = Line3D(0., 0., 0., 10., 0., 0.)
             let lnB = Line3D(0., 0., 0., 10., 0., 0.)
-            let result = Line3D.isTouchingEndsOf lnA lnB
+            let result = XLine3D.getEndsTouching(lnA, lnB)
             match result with
             | XLine3D.XEnds.Identical -> Expect.isTrue true "correctly identical"
             | _ -> Expect.isTrue false "should be identical"
