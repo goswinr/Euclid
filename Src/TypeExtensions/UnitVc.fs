@@ -218,16 +218,16 @@ module AutoOpenUnitVc =
             v *** other < -1e-12
 
         /// Checks if 2D unit-vector is parallel to the world X axis. Ignoring orientation.
-        /// The absolute deviation tolerance along Y axis is 1e-9.
+        /// The absolute deviation tolerance along Y axis is 1e-9 (axisAlignmentTolerance).
         member inline v.IsXAligned =
             let y = abs (v.Y)
-            y < 1e-9
+            y < axisAlignmentTolerance
 
         /// Checks if 2D unit-vector is parallel to the world Y axis. Ignoring orientation.
-        /// The absolute deviation tolerance along X axis is 1e-9.
+        /// The absolute deviation tolerance along X axis is 1e-9 (axisAlignmentTolerance).
         member inline v.IsYAligned =
             let x = abs (v.X)
-            x < 1e-9
+            x < axisAlignmentTolerance
 
         /// Checks if two 2D unit-vectors are parallel.
         /// Ignores the line orientation.
@@ -784,12 +784,12 @@ module AutoOpenUnitVc =
                     UnitVc.createUnchecked(v.X, v.Y)
 
         /// Checks if 2D unit-vector is parallel to the world X axis. Ignoring orientation.
-        /// The absolute deviation tolerance along Y axis is 1e-9.
+        /// The absolute deviation tolerance along Y axis is 1e-9 (axisAlignmentTolerance).
         static member inline isXAligned (v:UnitVc) =
             v.IsXAligned
 
         /// Checks if 2D unit-vector is parallel to the world Y axis. Ignoring orientation.
-        /// The absolute deviation tolerance along X axis is 1e-9.
+        /// The absolute deviation tolerance along X axis is 1e-9 (axisAlignmentTolerance).
         static member inline isYAligned (v:UnitVc) =
             v.IsYAligned
 

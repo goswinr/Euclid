@@ -13,24 +13,24 @@ module AutoOpenLine2D =
   type Line2D with
 
     /// Checks if 2D line is parallel to the world X axis. Ignoring orientation.
-    /// The absolute deviation tolerance along Y axis is 1e-9.
+    /// The absolute deviation tolerance along Y axis is 1e-9 (axisAlignmentTolerance).
     /// Fails on lines shorter than 1e-6.
     member inline ln.IsXAligned =
         let x = abs ln.VectorX
         let y = abs ln.VectorY
         if isTooSmall (x+y) then
             failTooSmall "Line2D.IsXAligned" ln
-        y < 1e-9
+        y < axisAlignmentTolerance
 
     /// Checks if 2D line is parallel to the world Y axis. Ignoring orientation.
-    /// The absolute deviation tolerance along X axis is 1e-9.
+    /// The absolute deviation tolerance along X axis is 1e-9 (axisAlignmentTolerance).
     /// Fails on lines shorter than 1e-6.
     member inline ln.IsYAligned =
         let x = abs ln.VectorX
         let y = abs ln.VectorY
         if isTooSmall (x+y) then
             failTooSmall "Line2D.IsYAligned" ln
-        x < 1e-9
+        x < axisAlignmentTolerance
 
     /// Check if the line has the same starting and ending point.
     member inline ln.IsZeroLength =
@@ -244,7 +244,7 @@ module AutoOpenLine2D =
     /// Assumes the Line2D to be an infinite ray!
     /// Returns the parameter at which a point is closest to the ray.
     /// If it is smaller than 0.0 or bigger than 1.0 it is outside of the finite line.
-    /// Fails on curves shorter than 1e-9 units. (ln.ClosestParameter does not)
+    /// Fails on curves shorter than 1e-6 units. (ln.ClosestParameter does not)
     member ln.RayClosestParameter (pt:Pt) =
         let x = ln.FromX - ln.ToX
         let y = ln.FromY - ln.ToY
@@ -276,7 +276,7 @@ module AutoOpenLine2D =
 
     /// Assumes Line2D to be an infinite ray!
     /// Returns closest point on ray.
-    /// Fails on curves shorter than 1e-9 units. (ln.ClosestPoint does not.)
+    /// Fails on curves shorter than 1e-6 units. (ln.ClosestPoint does not.)
     member ln.RayClosestPoint (pt:Pt) =
         let fromX = ln.FromX
         let fromY = ln.FromY
@@ -336,7 +336,7 @@ module AutoOpenLine2D =
 
     /// Assumes Line2D to be an infinite ray!
     /// Returns square distance from point to ray.
-    /// Fails on curves shorter than 1e-9 units. (ln.DistanceSqFromPoint does not.)
+    /// Fails on curves shorter than 1e-6 units. (ln.DistanceSqFromPoint does not.)
     member ln.SqDistanceRayPoint(p:Pt) =
         let vAx = ln.VectorX
         let vAy = ln.VectorY
@@ -353,7 +353,7 @@ module AutoOpenLine2D =
 
     /// Assumes Line2D to be an infinite ray!
     /// Returns distance from point to ray.
-    /// Fails on curves shorter than 1e-9 units. (ln.DistanceToPt does not.)
+    /// Fails on curves shorter than 1e-6 units. (ln.DistanceToPt does not.)
     member inline ln.DistanceRayPoint(p:Pt) =
         ln.SqDistanceRayPoint(p) |> sqrt
 
@@ -972,13 +972,13 @@ module AutoOpenLine2D =
         not (l.LengthSq > tol)
 
     /// Checks if 2D line is parallel to the world X axis. Ignoring orientation.
-    /// The absolute deviation tolerance along Y axis is 1e-9.
+    /// The absolute deviation tolerance along Y axis is 1e-9 (axisAlignmentTolerance).
     /// Fails on lines shorter than 1e-6.
     static member inline isXAligned (l:Line2D) =
         l.IsXAligned
 
     /// Checks if 2D line is parallel to the world Y axis. Ignoring orientation.
-    /// The absolute deviation tolerance along X axis is 1e-9.
+    /// The absolute deviation tolerance along X axis is 1e-9 (axisAlignmentTolerance).
     /// Fails on lines shorter than 1e-6.
     static member inline isYAligned (l:Line2D) =
         l.IsYAligned

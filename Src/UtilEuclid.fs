@@ -44,6 +44,13 @@ module UtilEuclid =
     let inline sq (x:float) =
         x * x
 
+
+    /// Tolerance for axis alignment: 1e-9
+    /// Used in Axis Alignment checks.
+    [<Literal>]
+    let axisAlignmentTolerance =
+        1e-9
+
     /// Tolerance for zero length: 1e-12 in divisions and unitizing of vectors.
     [<Literal>]
     let zeroLengthTolerance =

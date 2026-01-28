@@ -214,41 +214,41 @@ module AutoOpenUnitVec =
 
 
         /// Checks if 3D unit-vector is parallel to the world X axis. Ignoring orientation.
-        /// The absolute deviation tolerance along Y and Z axis is 1e-9.
+        /// The absolute deviation tolerance along Y and Z axis is 1e-9 (axisAlignmentTolerance).
         member inline v.IsXAligned =
             let y = abs (v.Y)
             let z = abs (v.Z)
-            y < 1e-9 && z < 1e-9
+            y < axisAlignmentTolerance && z < axisAlignmentTolerance
 
         /// Checks if 3D unit-vector is parallel to the world Y axis. Ignoring orientation.
-        /// The absolute deviation tolerance along X and Z axis is 1e-9.
+        /// The absolute deviation tolerance along X and Z axis is 1e-9 (axisAlignmentTolerance).
         member inline v.IsYAligned =
             let x = abs (v.X)
             let z = abs (v.Z)
-            x < 1e-9 && z < 1e-9
+            x < axisAlignmentTolerance && z < axisAlignmentTolerance
 
         /// Checks if 3D unit-vector is parallel to the world Z axis. Ignoring orientation.
-        /// The absolute deviation tolerance along X and Y axis is 1e-9.
+        /// The absolute deviation tolerance along X and Y axis is 1e-9 (axisAlignmentTolerance).
         /// Same as v.IsVertical
         member inline v.IsZAligned =
             let x = abs (v.X)
             let y = abs (v.Y)
-            x < 1e-9 && y < 1e-9
+            x < axisAlignmentTolerance && y < axisAlignmentTolerance
 
         /// Checks if 3D unit-vector is parallel to the world Z axis. Ignoring orientation.
-        /// The absolute deviation tolerance along X and Y axis is 1e-9.
+        /// The absolute deviation tolerance along X and Y axis is 1e-9 (axisAlignmentTolerance).
         /// Same as v.IsZAligned
         member inline v.IsVertical =
             let x = abs (v.X)
             let y = abs (v.Y)
-            x < 1e-9 && y < 1e-9
+            x < axisAlignmentTolerance && y < axisAlignmentTolerance
 
         /// Checks if 3D unit-vector is horizontal (Z component is almost zero).
-        /// The absolute deviation tolerance along Z axis is 1e-9.
+        /// The absolute deviation tolerance along Z axis is 1e-9 (axisAlignmentTolerance).
         /// Fails on vectors shorter than 1e-6.
         member inline v.IsHorizontal =
             let z = abs (v.Z)
-            z < 1e-9
+            z < axisAlignmentTolerance
 
         /// Checks if two 3D unit-vectors are parallel.
         /// Ignores the line orientation.

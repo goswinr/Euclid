@@ -905,7 +905,11 @@ type XLine2D =
         let det = vAx * vBy - vAy * vBx // Cross product of vectors (determinant, or signed area of parallelogram between them), this is 0.0 if vectors are parallel or very short
         let dot = vAx * vBx + vAy * vBy // Dot product of vectors, may be 0.0 for perpendicular vectors
         let tan = det / dot // tangent of the angle between the two vectors, may be negative too
-        if abs !^ tan > tangent && abs(det) > 1e-9 then // abs check needed, handles the NaN case correctly
+        // (1) check abs of tangent to return None on parallel lines, if both lines have zero length, tan is NaN, this is handled here too.
+        // (2) length check on det , (the area of the parallelogram) , so if both perpendicular lines ar shorter than 0.00001 (1e-5)
+        // None is returned. because  1e-5 * 1e-5 = 1e-10
+        // If one line is longer but the other one even shorter, None is still returned as long as the area of the parallelogram is smaller than 1e-10
+        if abs !^ tan > tangent && abs(det) > 1e-10 then
             let dx = pBx - pAx
             let dy = pBy - pAy
             let t = (dx * vBy - dy * vBx) / det //  this can't be NaN or Infinity anymore because of the tangent check

@@ -16,7 +16,7 @@ module AutoOpenLine3D =
 
 
     /// Checks if 3D line is parallel to the world X axis. Ignoring orientation.
-    /// The absolute deviation tolerance along Y and Z axis is 1e-9.
+    /// The absolute deviation tolerance along Y and Z axis is 1e-9 (axisAlignmentTolerance).
     /// Fails on lines shorter than 1e-6.
     member inline ln.IsXAligned =
         let x = abs (ln.VectorX)
@@ -24,10 +24,10 @@ module AutoOpenLine3D =
         let z = abs (ln.VectorZ)
         if isTooSmall (x+y+z) then
             failTooSmall "Line3D.IsXAligned" ln
-        y < 1e-9 && z < 1e-9
+        y < axisAlignmentTolerance && z < axisAlignmentTolerance
 
     /// Checks if 3D line is parallel to the world Y axis. Ignoring orientation.
-    /// The absolute deviation tolerance along X and Z axis is 1e-9.
+    /// The absolute deviation tolerance along X and Z axis is 1e-9 (axisAlignmentTolerance).
     /// Fails on lines shorter than 1e-6.
     member inline ln.IsYAligned =
         let x = abs (ln.VectorX)
@@ -35,10 +35,10 @@ module AutoOpenLine3D =
         let z = abs (ln.VectorZ)
         if isTooSmall (x+y+z) then
             failTooSmall "Line3D.IsYAligned" ln
-        x < 1e-9 && z < 1e-9
+        x < axisAlignmentTolerance && z < axisAlignmentTolerance
 
     /// Checks if 3D line is parallel to the world Z axis. Ignoring orientation.
-    /// The absolute deviation tolerance along X and Y axis is 1e-9.
+    /// The absolute deviation tolerance along X and Y axis is 1e-9 (axisAlignmentTolerance).
     /// Fails on lines shorter than 1e-6.
     /// Same as ln.IsVertical
     member inline ln.IsZAligned =
@@ -47,10 +47,10 @@ module AutoOpenLine3D =
         let z = abs (ln.VectorZ)
         if isTooSmall (x+y+z) then
             failTooSmall "Line3D.IsZAligned" ln
-        x < 1e-9 && y < 1e-9
+        x < axisAlignmentTolerance && y < axisAlignmentTolerance
 
     /// Checks if 3D line is parallel to the world Z axis. Ignoring orientation.
-    /// The absolute deviation tolerance along X and Y axis is 1e-9.
+    /// The absolute deviation tolerance along X and Y axis is 1e-9 (axisAlignmentTolerance).
     /// Fails on lines shorter than 1e-6.
     /// Same as ln.IsZAligned
     member inline ln.IsVertical =
@@ -59,10 +59,10 @@ module AutoOpenLine3D =
         let z = abs (ln.VectorZ)
         if isTooSmall (x+y+z) then
             failTooSmall "Line3D.IsVertical" ln
-        x < 1e-9 && y < 1e-9
+        x < axisAlignmentTolerance && y < axisAlignmentTolerance
 
     /// Checks if 3D line is horizontal.
-    /// The absolute deviation tolerance along Z axis is 1e-9.
+    /// The absolute deviation tolerance along Z axis is 1e-9 (axisAlignmentTolerance).
     /// Fails on lines shorter than 1e-6.
     member inline ln.IsHorizontal =
         let x = abs (ln.VectorX)
@@ -70,7 +70,7 @@ module AutoOpenLine3D =
         let z = abs (ln.VectorZ)
         if isTooSmall (x+y+z) then
             failTooSmall "Line3D.IsHorizontal" ln
-        z < 1e-9
+        z < axisAlignmentTolerance
 
     /// Check if the 3D line has exactly the same starting and ending point.
     member inline ln.IsZeroLength =
@@ -329,7 +329,7 @@ module AutoOpenLine3D =
     /// Assumes Line3D to be an infinite ray.
     /// Returns the parameter at which a point is closest to the ray.
     /// If it is smaller than 0.0 or bigger than 1.0 it is outside of the finite line.
-    /// Fails on curves shorter than 1e-9 units. (ln.ClosestParameter does not)
+    /// Fails on curves shorter than 1e-6 units. (ln.ClosestParameter does not)
     member inline ln.RayClosestParameter (p:Pnt) =
         //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
         let x = ln.FromX - ln.ToX
@@ -366,7 +366,7 @@ module AutoOpenLine3D =
 
     /// Assumes Line3D to be an infinite ray.
     /// Returns closest point on ray.
-    /// Fails on curves shorter than 1e-9 units. (ln.ClosestPoint does not.)
+    /// Fails on curves shorter than 1e-6 units. (ln.ClosestPoint does not.)
     member inline ln.RayClosestPoint (p:Pnt) =
         //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
         let x = ln.FromX - ln.ToX
@@ -481,7 +481,7 @@ module AutoOpenLine3D =
 
     /// Assumes Line3D to be an infinite ray.
     /// Returns distance from point to ray.
-    /// Fails on curves shorter than 1e-9 units. (ln.DistanceToPnt does not.)
+    /// Fails on curves shorter than 1e-6 units. (ln.DistanceToPnt does not.)
     member inline ln.DistanceRayPoint(p:Pnt) =
         ln.SqDistanceRayPoint(p) |> sqrt
 
@@ -1183,33 +1183,33 @@ module AutoOpenLine3D =
         not (l.LengthSq > tol)
 
     /// Checks if 3D line is parallel to the world X axis. Ignoring orientation.
-    /// The absolute deviation tolerance along Y and Z axis is 1e-9.
+    /// The absolute deviation tolerance along Y and Z axis is 1e-9 (axisAlignmentTolerance).
     /// Fails on lines shorter than 1e-6.
     static member inline isXAligned (l:Line3D) =
         l.IsXAligned
 
     /// Checks if 3D line is parallel to the world Y axis. Ignoring orientation.
-    /// The absolute deviation tolerance along X and Z axis is 1e-9.
+    /// The absolute deviation tolerance along X and Z axis is 1e-9 (axisAlignmentTolerance).
     /// Fails on lines shorter than 1e-6.
     static member inline isYAligned (l:Line3D) =
         l.IsYAligned
 
     /// Checks if 3D line is parallel to the world Z axis. Ignoring orientation.
-    /// The absolute deviation tolerance along X and Y axis is 1e-9.
+    /// The absolute deviation tolerance along X and Y axis is 1e-9 (axisAlignmentTolerance).
     /// Fails on lines shorter than 1e-6.
     /// Same as ln.IsVertical
     static member inline isZAligned (l:Line3D) =
         l.IsZAligned
 
     /// Checks if 3D line is parallel to the world Z axis. Ignoring orientation.
-    /// The absolute deviation tolerance along X and Y axis is 1e-9.
+    /// The absolute deviation tolerance along X and Y axis is 1e-9 (axisAlignmentTolerance).
     /// Fails on lines shorter than 1e-6.
     /// Same as ln.IsZAligned
     static member inline isVertical (l:Line3D) =
         l.IsVertical
 
     /// Checks if 3D line is horizontal (Z component is almost zero).
-    /// The absolute deviation tolerance along Z axis is 1e-9.
+    /// The absolute deviation tolerance along Z axis is 1e-9 (axisAlignmentTolerance).
     /// Fails on lines shorter than 1e-6.
     static member inline isHorizontal (l:Line3D) =
         l.IsHorizontal

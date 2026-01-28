@@ -464,12 +464,12 @@ type Rect3D =
 
     /// Create a 3D-rectangle from the origin point, an x-edge and an y-edge.
     /// Fails if x and y are not perpendicularity.
-    /// Fails on vectors shorter than 1e-9.
+    /// Fails on vectors shorter than 1e-12.
     static member createFromVectors(origin, x:Vec, y:Vec) =
         if isTooSmallSq x.LengthSq  then failTooSmall2 "Rect3D.createFromVectors x" x y
         if isTooSmallSq y.LengthSq  then failTooSmall2 "Rect3D.createFromVectors y" y x
         //zeroLengthTolerance seems too strict for dot product:
-        if abs (x *** y) > 1e-10 then fail2 $"Rect3D.createFromVectors: X-axis and Y-axis are not perpendicular" x y
+        if abs (x *** y) > 1e-12 then fail2 $"Rect3D.createFromVectors: X-axis and Y-axis are not perpendicular" x y
         Rect3D.createUnchecked(origin, x, y)
 
     /// Give PPlane and sizes.

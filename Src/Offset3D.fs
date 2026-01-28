@@ -91,7 +91,7 @@ module Offset3D =
 
     /// Returns a Unit vector.
     /// Only to be used when the input vectors are known to be perpendicular.
-    let inline internal crossProduct (a:UnitVec, b:UnitVec) =
+    let inline internal crossProduct (a:UnitVec, b:UnitVec) : UnitVec =
         #if DEBUG
             if abs(a***b) > 1e-9 then
                 fail $"Offset3D.crossProduct: input UnitVec are not perpendicular: dot product is {a***b}."

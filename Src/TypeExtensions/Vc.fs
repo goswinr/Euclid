@@ -250,24 +250,24 @@ module AutoOpenVc =
 
 
         /// Checks if 2D vector is parallel to the world X axis. Ignoring orientation.
-        /// The absolute deviation tolerance along Y axis is 1e-9.
+        /// The absolute deviation tolerance along Y axis is 1e-9 (axisAlignmentTolerance).
         /// Fails on vectors shorter than 1e-6.
         member inline v.IsXAligned =
             let x = abs (v.X)
             let y = abs (v.Y)
             if isTooSmall (x+y) then
                 failTooSmall "Vc.IsXAligned" v
-            y < 1e-9
+            y < axisAlignmentTolerance
 
         /// Checks if 2D vector is parallel to the world Y axis. Ignoring orientation.
-        /// The absolute deviation tolerance along X axis is 1e-9.
+        /// The absolute deviation tolerance along X axis is 1e-9 (axisAlignmentTolerance).
         /// Fails on vectors shorter than 1e-6.
         member inline v.IsYAligned =
             let x = abs (v.X)
             let y = abs (v.Y)
             if isTooSmall (x+y)then
                 failTooSmall "Vc.IsYAligned" v
-            x < 1e-9
+            x < axisAlignmentTolerance
 
         /// Checks if two 2D vectors are parallel.
         /// Ignores the line orientation.
@@ -920,13 +920,13 @@ module AutoOpenVc =
                     res * abs lenRel
 
         /// Checks if 2D vector is parallel to the world X axis. Ignoring orientation.
-        /// The absolute deviation tolerance along the Y axis is 1e-9.
+        /// The absolute deviation tolerance along the Y axis is 1e-9 (axisAlignmentTolerance).
         /// Fails on vectors shorter than 1e-6.
         static member inline isXAligned (v:Vc) =
             v.IsXAligned
 
         /// Checks if 2D vector is parallel to the world Y axis. Ignoring orientation.
-        /// The absolute deviation tolerance along the X axis is 1e-9.
+        /// The absolute deviation tolerance along the X axis is 1e-9 (axisAlignmentTolerance).
         /// Fails on vectors shorter than 1e-6.
         static member inline isYAligned (v:Vc) =
             v.IsYAligned
