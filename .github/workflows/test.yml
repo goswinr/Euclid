@@ -27,7 +27,7 @@ jobs:
 
       - name: Run tests .NET
         # start the tests from the root so that the AsFSharpCode-test-temp.fsx file can find the project files correctly
-        run: dotnet run --project ./Tests/Euclid.Tests.fsproj
+        run: dotnet run --project ./Tests/Tests.fsproj
 
 
       # run JS tests:

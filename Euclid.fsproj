@@ -50,7 +50,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- <InternalsVisibleTo Include="Euclid.Tests" /> fail on inline -->
+    <!-- <InternalsVisibleTo Include="Tests" /> fail on inline -->
     <!-- otherwise the minimum FSharp.Core version would be forced by the SDK used for building it. This would be needlessly too high-->
     <PackageReference Update="FSharp.Core" Version="6.0.7" />
     <PackageReference Include="Fable.Core" Version="4.5.0" Condition="$(DefineConstants.Contains('FABLE_COMPILER'))" />    <!-- Fable.Core only to use number.toFixed() when formatting in JS -->

@@ -7,7 +7,7 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Euclid", "Euclid.fsproj", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{0AB3BF05-4346-4AA6-1389-037BE0695223}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Euclid.Tests", "Tests\Euclid.Tests.fsproj", "{3EC1158E-32BD-48D7-B51F-62F48218D97D}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Tests", "Tests\Tests.fsproj", "{3EC1158E-32BD-48D7-B51F-62F48218D97D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

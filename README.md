@@ -157,7 +157,7 @@ Tests run on both .NET and JavaScript with TypeScript build verification.
 ### .NET Testing
 
 ```bash
-dotnet run --project ./Tests/Euclid.Tests.fsproj
+dotnet run --project ./Tests/Tests.fsproj
 ```
 
 ### JavaScript Testing

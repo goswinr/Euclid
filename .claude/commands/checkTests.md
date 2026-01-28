@@ -26,7 +26,7 @@ If `$file` is `*`, check all source files in current project.
    - Follow the existing test structure (Expecto/Fable.Mocha compatible)
    - Use `manage_todo_list` to track test creation progress
 5. **Run tests** after adding new ones:
-   - Execute: `dotnet run --project ./Tests/Euclid.Tests.fsproj` for .NET
+   - Execute: `dotnet run --project ./Tests/Tests.fsproj` for .NET
    - Execute: `npm run test --prefix ./Tests` for Node.js
 6. **Fix any failures**:
    - If tests fail, first check if the implementation in `Src/` has a bug

@@ -55,7 +55,7 @@ This library uses a **right-handed coordinate system** with the **Z-axis pointin
 3. Provide tolerant versions if operations can degenerate (colinearity, zero-length, parallel tests).
 
 ## Testing Workflow
-- Tests are located in `Tests` folder using the `Euclid.Tests.fsproj` project.
+- Tests are located in `Tests` folder using the `Tests.fsproj` project.
 - When adding test always try to cover special cases, like:
     - zero length vectors,
     - very short vectors,
@@ -69,7 +69,7 @@ This library uses a **right-handed coordinate system** with the **Z-axis pointin
 
 - Test Run in both .NET and Node.js environments. via Expecto and Fable.Mocha
 .NET:
-`dotnet run --project ./Tests/Euclid.Tests.fsproj`
+`dotnet run --project ./Tests/Tests.fsproj`
 Node.js:
 `npm run test --prefix ./Tests`
 
