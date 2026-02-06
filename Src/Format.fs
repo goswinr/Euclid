@@ -3,7 +3,7 @@ open System
 
 
 
-/// For formatting floats with adaptive precision.
+/// A module with functions for formatting floats with adaptive precision.
 module Format =
 
 

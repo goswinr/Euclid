@@ -19,7 +19,7 @@ type internal DEF =
     Runtime.InteropServices.DefaultParameterValueAttribute
 
 
-/// Math and logic utility functions and values for use within Euclid.
+/// A module for math , logic utility functions and default tolerance values for use within Euclid.
 module UtilEuclid =
 
     /// Adds a Unit Of Measure to a float value.
@@ -248,11 +248,11 @@ module UtilEuclid =
 
 
 
-/// Precalculated cosine values for faster checking the angles of dot products of unit-vectors.
+/// A module of precalculated cosine values for faster checking the angles of dot products of unit-vectors.
 [<RequireQualifiedAccess>]
 module Cosine =
-    /// The Unit Of Measure for
-    /// the precalculated cosine values.
+
+    /// The Unit Of Measure type for the precalculated cosine values.
     /// This UoM helps to avoid that degree or radians angle values are used in the parallel or orthogonality tests.
     [<Measure>]
     type cosine
@@ -646,14 +646,13 @@ module Cosine =
 
 
 
-/// Precalculated tangent values for faster checking the angles between two vectors.
+/// A module of precalculated tangent values for faster checking the angles between two vectors.
 /// The Cross Product length (=determinant) divided by the Dot Product value gives the tangent of the angle between two vectors.
 /// If one of vectors has a zero length, the tangent is NaN
 [<RequireQualifiedAccess>]
 module Tangent =
 
-    /// The Unit Of Measure for
-    /// the precalculated tangent values.
+    /// The Unit Of Measure type for the precalculated tangent values.
     /// This UoM helps to avoid that degree or radians angle values are used in the parallel or orthogonality tests.
     /// The tangent is calculated by (determinant / dot-product) of two vectors.
     [<Measure>]

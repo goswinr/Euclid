@@ -14,7 +14,7 @@ open EuclidErrors
 
 
 
-/// <summary>An immutable 4x4 transformation matrix.
+/// <summary>A struct containing 16 floats, representing an immutable 4x4 transformation matrix.
 /// The matrix is represented in the following column-vector syntax form:
 /// <code>
 /// M11 M21 M31 X41

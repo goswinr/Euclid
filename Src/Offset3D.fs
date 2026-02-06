@@ -6,13 +6,16 @@ open EuclidErrors
 open Euclid.EuclidCollectionUtilities
 
 
-/// 3D polyline offset utilities based on local vertex normals.
+/// A module containing the core algorithms for offsetting 2D polylines.
+/// Normally you would not use this directly; prefer the Polyline2D or Points2D module.
 /// Each vertex has its own normal defined by the cross product of the incoming and outgoing segment tangents.
 /// These vertex normals define a local plane for each joint; within that plane we build per-segment offset directions.
 module Offset3D =
 
-        /// The squared tolerance for open polylines.
+    /// The tolerance for considering points to be identical in the input polyline.
+    /// The value is 1e-6
     let [<Literal>] openTolerance = 1e-6
+    /// The squared tolerance for open polylines.
     let [<Literal>] sqOpenTolerance = 1e-12
 
     /// We can only offset colinear segments if the distances are the same.

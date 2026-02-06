@@ -48,7 +48,7 @@ module internal TopologyUtil =
 
 open TopologyUtil
 
-/// A static type containing functions for 2D topological operations.
+/// A type containing only static member functions for 2D topological operations.
 type Topology2D  =
 
     /// Sorts elements in place to be in a circular structure.

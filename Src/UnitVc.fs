@@ -8,7 +8,8 @@ open Euclid.UtilEuclid
 open System.Runtime.Serialization
 open EuclidErrors
 
-/// <summary>UnitVc is an immutable 2D unit-vector. It is guaranteed to be unitized.
+/// <summary>A struct containing 2 floats, representing an 2D unitized vector.
+/// All instances of this type are guaranteed to be always unitized.
 /// Never use the struct default constructor UnitVc()!
 /// It will create an invalid zero length vector.
 /// Use UnitVc.create or UnitVc.createUnchecked instead.</summary>

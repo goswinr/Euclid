@@ -386,7 +386,7 @@ module XLine2D =
 
 open XLine2D
 
-/// Provides static methods for computing 2D line intersections.
+/// A type containing only static member functions for computing 2D line intersections.
 /// Some functions return Discriminated Unions from the XLine2D module.
 [<RequireQualifiedAccess>]
 type XLine2D =

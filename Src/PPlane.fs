@@ -14,8 +14,9 @@ open System.Runtime.Serialization // for serialization of struct fields only but
 
 
 
-/// An immutable Parametrized Plane or Frame with unitized X, Y and Z Direction.
-/// This struct is called 'PPlane'; the other plane 'NPlane' refers to an un-oriented plane consisting only of an Origin and a Normal.
+/// A struct containing one 3D point and three 3D unit vectors, representing an immutable parametrized plane or frame
+/// with unitized X, Y and Z Direction.
+/// This struct is called 'PPlane'; the other plane 'NPlane' refers to an un-oriented plane consisting only of an origin and a normal.
 /// Note: Never use the struct default constructor PPlane() as it will create an invalid zero length PPlane.
 /// Use PPlane.create or PPlane.createUnchecked instead.
 [<Struct; NoEquality; NoComparison>] // because it's made up from floats
@@ -24,17 +25,21 @@ open System.Runtime.Serialization // for serialization of struct fields only but
 type PPlane =
     //[<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
 
-    /// The Origin 3D point of this PPlane.
-    [<DataMember>] val Origin: Pnt
+    /// The field holding the Origin 3D point of this PPlane.
+    [<DataMember>]
+    val Origin: Pnt
 
-    /// The local X-axis of this PPlane.
-    [<DataMember>] val Xaxis: UnitVec
+    /// The field holding the local X-axis of this PPlane.
+    [<DataMember>]
+    val Xaxis: UnitVec
 
-    /// The local Y-axis of this PPlane.
-    [<DataMember>] val Yaxis: UnitVec
+    /// The field holding the local Y-axis of this PPlane.
+    [<DataMember>]
+    val Yaxis: UnitVec
 
-    /// The local Z-axis of this PPlane.
-    [<DataMember>] val Zaxis: UnitVec
+    /// The field holding the local Z-axis of this PPlane.
+    [<DataMember>]
+    val Zaxis: UnitVec
 
     /// Unsafe internal constructor, doesn't check if the input is perpendicular, public only for inlining.
     [<Obsolete("Unsafe internal constructor, doesn't check if the input is perpendicular, but must be public for inlining. So marked Obsolete instead.") >]

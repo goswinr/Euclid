@@ -6,7 +6,8 @@ open Euclid.UtilEuclid
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 open EuclidErrors
 
-/// 2D Counter Clockwise rotation. It can be applied in World X, Y or Z plane.
+/// A struct containing 2 floats, representing a 2D Counter Clockwise rotation.
+/// It can be applied in World X, Y or Z plane.
 /// Internally stored just as a Sine and Cosine value.
 /// For arbitrary rotations use Quaternions or 4x4 Matrix.
 /// However this module has much better performance than the more general Matrix4x4 or a Quaternion.

@@ -29,16 +29,19 @@ type Vec =
 
     //[<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
 
-    /// Gets the X part of this 3D vector.
+    /// The field holding the X part of this 3D vector.
     [<DataMember>] val X : float
 
-    /// Gets the Y part of this 3D vector.
+    /// The field holding the Y part of this 3D vector.
     [<DataMember>] val Y : float
 
-    /// Gets the Z part of this 3D vector.
+    /// The field holding the Z part of this 3D vector.
     [<DataMember>] val Z : float
 
-    /// Create a new 3D vector with any length. Made up from 3 floats: X, Y, and Z.
+    /// <summary>Create a new 3D vector from X, Y, and Z coordinates.</summary>
+    /// <remarks>When compiled in DEBUG or with CHECK_EUCLID symbol defined, this constructor checks for
+    /// NaN and Infinity values and raises an exception if any are found.
+    /// This check is skipped in release mode for performance reasons.</remarks>
     new (x, y, z) =
         #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode
             if isNanInfinity x || isNanInfinity y || isNanInfinity z then

@@ -5,7 +5,7 @@ open Euclid
 open Euclid.EuclidErrors
 
 
-/// Functions for working with arrays.
+/// An internal module with functions for working with arrays.
 module Arr =
 
     /// Returns the index of the smallest element.
@@ -34,7 +34,7 @@ module Arr =
                 mf <- f
         ii
 
-// Functions for working with ResizeArray<'T>.
+/// An internal module with functions for working with ResizeArray<'T>.
 module ResizeArr =
 
 

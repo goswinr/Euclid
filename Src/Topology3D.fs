@@ -7,7 +7,7 @@ open Euclid.EuclidCollectionUtilities
 #nowarn "52" // copying of structs
 
 
-/// A static type containing functions for 3D topological operations.
+/// A type containing only static member functions for 3D topological operations.
 type Topology3D  =
 
 

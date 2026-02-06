@@ -5,8 +5,8 @@ open UtilEuclid
 open EuclidErrors
 open Euclid.EuclidCollectionUtilities
 
-/// The core algorithms for offsetting 2D polylines.
-/// Normally you would not use this directly; prefer the Polyline2D or Points module.
+/// A module containing the core algorithms for offsetting 2D polylines.
+/// Normally you would not use this directly; prefer the Polyline2D or Points2D module.
 module Offset2D=
 
     /// The squared tolerance for open polylines.

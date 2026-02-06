@@ -3,7 +3,7 @@ namespace Euclid
 open System
 open UtilEuclid
 
-/// Provides operations on 2D Triangles.
+/// A type containing only static member functions for operations on 2D Triangles.
 type Tria2D =
 
     /// Returns the determinant (2D cross product), i.e., the signed double area of a triangle.

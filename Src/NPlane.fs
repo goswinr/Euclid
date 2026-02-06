@@ -7,7 +7,8 @@ open System.Runtime.Serialization // for serialization of struct fields only but
 open EuclidErrors
 
 
-/// An immutable, unparametrized plane defined by a point and a normal vector.
+/// A struct containing a Pnt and a UnitVec, representing an
+/// unparametrized plane defined by a point and a normal vector.
 /// As opposed to the PPlane, this plane is not parametrized in X, Y, and Z directions.
 /// Note: Never use the struct default constructor NPlane() as it will create an invalid zero plane.
 /// Use NPlane.create or NPlane.createUnchecked instead.

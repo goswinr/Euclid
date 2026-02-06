@@ -7,7 +7,7 @@ open EuclidErrors
 open Euclid.EuclidCollectionUtilities
 
 
-/// A mutable 2D Polyline.
+/// A class holding a list of 2D points representing a mutable 2D Polyline.
 /// If the last point is the same as the first point, the Polyline2D is considered closed.
 /// The Default constructor uses the provided ResizeArray of points directly,
 /// so changes to the list will be reflected in the Polyline2D.

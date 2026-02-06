@@ -9,7 +9,7 @@ open Euclid.EuclidCollectionUtilities
 
 
 
-/// A mutable 3D Polyline.
+/// A class holding a list of 3D points representing a mutable 3D Polyline.
 /// If the last point is the same as the first point, the Polyline3D is closed.
 /// The Default constructor uses the provided ResizeArray of points directly,
 /// so changes to the list will be reflected in the Polyline3D.

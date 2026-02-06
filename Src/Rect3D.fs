@@ -9,8 +9,8 @@ open System.Collections.Generic
 
 
 /// <summary>
-/// An immutable planar 3D-rectangle with any rotation in 3D space.
-/// Described by an Origin and two Edge vectors.
+/// A struct containing a 3D Origin point and two 3D Edge vectors,
+/// representing an immutable planar 3D-rectangle with any rotation in 3D space.
 /// Similar to PPlane, however the two vectors are not unitized.
 /// This implementation guarantees the 3D-rectangle to be always valid.
 /// That means the  X and Y axes are always perpendicular to each other.

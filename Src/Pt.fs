@@ -29,13 +29,16 @@ open EuclidErrors
 [<DataContract>] // for using DataMember on fields
 type Pt =
 
-    /// <summary>Gets the X part of this 2D point.</summary>
+    /// <summary>The field holding the X part of this 2D point.</summary>
     [<DataMember>] val X : float
 
-    /// <summary>Gets the Y part of this 2D point.</summary>
+    /// <summary>The field holding the Y part of this 2D point.</summary>
     [<DataMember>] val Y : float
 
-    /// Create a new 2D point. Made up from 2 floats: X and Y.
+    /// <summary>Create a new 2D point from X and Y coordinates.</summary>
+    /// <remarks>When compiled in DEBUG or with CHECK_EUCLID symbol defined, this constructor checks for
+    /// NaN and Infinity values and raises an exception if any are found.
+    /// This check is skipped in release mode for performance reasons.</remarks>
     new (x, y) =
         #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode // TODO : with this test all operations are 2.5 times slower
             if isNanInfinity x || isNanInfinity y then failNaN2 "Pt()" x y

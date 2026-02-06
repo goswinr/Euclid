@@ -2,7 +2,7 @@ namespace Euclid
 
 open System
 
-/// Internal module for Euclid specific exceptions and failure functions.
+/// An internal module for Euclid specific exceptions and failure functions.
 module EuclidErrors =
 
     /// Exception in Euclid.

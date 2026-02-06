@@ -4,8 +4,8 @@ open System
 open UtilEuclid
 open EuclidErrors
 
-/// Provides operations on 2D Triangles.
-type  Tria3D =
+/// A type containing only static member functions for operations on 2D Triangles.
+type Tria3D =
 
     /// Returns the double area of a triangle.
     /// This is the fastest way to get a comparison or sorting value for the areas of triangles.

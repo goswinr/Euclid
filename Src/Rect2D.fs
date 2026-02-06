@@ -9,8 +9,8 @@ open EuclidErrors
 
 
 /// <summary>
-/// An immutable 2D Rectangle with any rotation in 2D space.
-/// Described by an Origin and two Edge vectors.
+/// A struct containing a 2D Origin point and two 2D Edge vectors,
+/// representing an immutable 2D Rectangle with any rotation in 2D space.
 /// This implementation guarantees the 2D Rectangle to be always valid.
 /// That means the X and Y axes are always perpendicular to each other.
 /// However the length of one of these axes might still be zero.

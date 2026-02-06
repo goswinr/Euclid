@@ -14,7 +14,8 @@ open EuclidErrors
 // Not performance or memory optimal at all.
 
 
-/// <summary>An immutable 4x3 rigid matrix. For only rotation and translation in 3D space.
+/// <summary>A struct containing 12 floats, representing an immutable 4x3 rigid matrix.
+/// For only rotation and translation in 3D space.
 /// This matrix guarantees to NOT scale, shear, flip, mirror, reflect or project.
 /// Angles are preserved. Lengths are preserved. Area is preserved. Volume is preserved.
 /// A rigid matrix is a matrix whose 3x3 columns and rows are orthogonal unit-vectors.

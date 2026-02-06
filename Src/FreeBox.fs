@@ -11,8 +11,7 @@ open System.Collections.Generic
 
 
 /// <summary>
-/// An arbitrary 3D Box.
-/// Described by 8 3D points.
+/// A class containing an array of 8 points representing an arbitrary 3D Box.
 /// The points can be in arbitrary position in space.
 /// <code>
 ///       7               6

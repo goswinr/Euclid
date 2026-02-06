@@ -15,7 +15,7 @@ open System.Runtime.Serialization // for serialization of struct fields only but
 open EuclidErrors
 
 
-/// An immutable 3D point. Made up from 3 floats: X, Y, and Z.
+/// A struct containing 3 floats, representing an immutable 3D point. X, Y, and Z.
 /// A 3D point represents a location in space, but not direction. (use Vec for that.)
 /// (2D Points are called 'Pt' )
 [<Struct; NoEquality; NoComparison>] // because its made up from floats
@@ -24,16 +24,19 @@ open EuclidErrors
 [<DataContract>] // for using DataMember on fields
 type Pnt =
 
-    /// Gets the X part of this 3D point.
+    /// The field holding the X part of this 3D point.
     [<DataMember>] val X : float
 
-    /// Gets the Y part of this 3D point.
+    /// The field holding the Y part of this 3D point.
     [<DataMember>] val Y : float
 
-    /// Gets the Z part of this 3D point.
+    /// The field holding the Z part of this 3D point.
     [<DataMember>] val Z : float
 
-    /// Create a new 3D point. Made up from 3 floats: X, Y, and Z.
+    /// <summary>Create a new 3D point form X, Y, and Z coordinates.</summary>
+    /// <remarks>When compiled in DEBUG or with CHECK_EUCLID symbol defined, this constructor checks for
+    /// NaN and Infinity values and raises an exception if any are found.
+    /// This check is skipped in release mode for performance reasons.</remarks>
     new (x, y, z) =
         #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode // with this test all Pnt operations are 2.5 times slower:
             if isNanInfinity x || isNanInfinity y || isNanInfinity z then failNaN3 "Pnt()" x y z

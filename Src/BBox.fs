@@ -10,12 +10,12 @@ open EuclidErrors
 
 
 /// <summary>
-/// An immutable 3D bounding box.
+/// A struct of 6 floats representing an immutable 3D bounding box.
 /// This implementation guarantees the box to always be valid.
 /// That means the Min X, Y, and Z values are always smaller or equal to the respective Max values.
 /// The X, Y, and Z axes are also called Width, Depth, and Height3D.
 /// <code>
-///   Z-Axis       Y-Axis (Depth)
+///   Z-Axis       Y-Axis
 ///   ^           /
 ///   |   7      /        6 MaxPt
 ///   |   +---------------+
@@ -28,7 +28,7 @@ open EuclidErrors
 ///   |  / 3          |  / 2
 ///   | /             | /
 ///   |/              |/
-///   +---------------+----> X-Axis (Width)
+///   +---------------+----> X-Axis
 ///   0 MinPt         1
 /// </code>
 /// </summary>
@@ -38,12 +38,29 @@ open EuclidErrors
 [<DataContract>] // for using DataMember on fields
 type BBox =
     //[<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
-    [<DataMember>] val MinX : float
-    [<DataMember>] val MinY : float
-    [<DataMember>] val MinZ : float
-    [<DataMember>] val MaxX : float
-    [<DataMember>] val MaxY : float
-    [<DataMember>] val MaxZ : float
+
+    /// The fields holding the minimum X value of this 3D bounding box.
+    [<DataMember>]
+    val MinX : float
+
+    /// The fields holding the minimum Y value of this 3D bounding box.
+    [<DataMember>]
+    val MinY : float
+
+    /// The fields holding the minimum Z value of this 3D bounding box.
+    [<DataMember>]
+    val MinZ : float
+    /// The fields holding the maximum X value of this 3D bounding box.
+    [<DataMember>]
+    val MaxX : float
+
+    /// The fields holding the maximum Y value of this 3D bounding box.
+    [<DataMember>]
+    val MaxY : float
+
+    /// The fields holding the maximum Z value of this 3D bounding box.
+    [<DataMember>]
+    val MaxZ : float
 
     /// Unsafe internal constructor, public only for inlining.
     [<Obsolete("This is not Obsolete, but an unsafe internal constructor. the input is not verified, so it might create invalid geometry. It is exposed as a public member so that it can be inlined.") >]
@@ -365,7 +382,7 @@ type BBox =
 
     /// <summary>Returns point 0 of this 3D bounding box, same as member box.MinPnt.
     /// <code>
-    ///   Z-Axis       Y-Axis (Depth)
+    ///   Z-Axis       Y-Axis
     ///   ^           /
     ///   |   7      /        6 MaxPt
     ///   |   +---------------+
@@ -378,7 +395,7 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis (Width)
+    ///   +---------------+----> X-Axis
     ///   0 MinPt         1
     /// </code>
     /// </summary>
@@ -386,7 +403,7 @@ type BBox =
 
     /// <summary>Returns point 1 of this 3D bounding box.
     /// <code>
-    ///   Z-Axis       Y-Axis (Depth)
+    ///   Z-Axis       Y-Axis
     ///   ^           /
     ///   |   7      /        6 MaxPt
     ///   |   +---------------+
@@ -399,7 +416,7 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis (Width)
+    ///   +---------------+----> X-Axis
     ///   0 MinPt         1
     /// </code>
     /// </summary>
@@ -407,7 +424,7 @@ type BBox =
 
     /// <summary>Returns point 2 of this 3D bounding box.
     /// <code>
-    ///   Z-Axis       Y-Axis (Depth)
+    ///   Z-Axis       Y-Axis
     ///   ^           /
     ///   |   7      /        6 MaxPt
     ///   |   +---------------+
@@ -420,7 +437,7 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis (Width)
+    ///   +---------------+----> X-Axis
     ///   0 MinPt         1
     /// </code>
     /// </summary>
@@ -428,7 +445,7 @@ type BBox =
 
     /// <summary>Returns point 3 of this 3D bounding box.
     /// <code>
-    ///   Z-Axis       Y-Axis (Depth)
+    ///   Z-Axis       Y-Axis
     ///   ^           /
     ///   |   7      /        6 MaxPt
     ///   |   +---------------+
@@ -441,7 +458,7 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis (Width)
+    ///   +---------------+----> X-Axis
     ///   0 MinPt         1
     /// </code>
     /// </summary>
@@ -449,7 +466,7 @@ type BBox =
 
     /// <summary>Returns point 4 of this 3D bounding box.
     /// <code>
-    ///   Z-Axis       Y-Axis (Depth)
+    ///   Z-Axis       Y-Axis
     ///   ^           /
     ///   |   7      /        6 MaxPt
     ///   |   +---------------+
@@ -462,7 +479,7 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis (Width)
+    ///   +---------------+----> X-Axis
     ///   0 MinPt         1
     /// </code>
     /// </summary>
@@ -470,7 +487,7 @@ type BBox =
 
     /// <summary>Returns point 5 of this 3D bounding box.
     /// <code>
-    ///   Z-Axis       Y-Axis (Depth)
+    ///   Z-Axis       Y-Axis
     ///   ^           /
     ///   |   7      /        6 MaxPt
     ///   |   +---------------+
@@ -483,7 +500,7 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis (Width)
+    ///   +---------------+----> X-Axis
     ///   0 MinPt         1
     /// </code>
     /// </summary>
@@ -491,7 +508,7 @@ type BBox =
 
     /// <summary>Returns point 6 of this 3D bounding box.
     /// <code>
-    ///   Z-Axis       Y-Axis (Depth)
+    ///   Z-Axis       Y-Axis
     ///   ^           /
     ///   |   7      /        6 MaxPt
     ///   |   +---------------+
@@ -504,7 +521,7 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis (Width)
+    ///   +---------------+----> X-Axis
     ///   0 MinPt         1
     /// </code>
     /// </summary>
@@ -512,7 +529,7 @@ type BBox =
 
     /// <summary>Returns point 7 of this 3D bounding box.
     /// <code>
-    ///   Z-Axis       Y-Axis (Depth)
+    ///   Z-Axis       Y-Axis
     ///   ^           /
     ///   |   7      /        6 MaxPt
     ///   |   +---------------+
@@ -525,7 +542,7 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis (Width)
+    ///   +---------------+----> X-Axis
     ///   0 MinPt         1
     /// </code>
     /// </summary>
@@ -537,7 +554,7 @@ type BBox =
     /// <summary>Returns the bottom corners of this 3D bounding box in Counter-Clockwise order, starting at MinPt.
     /// Then the top corners starting above MinPt. Returns an array of 8 Points.
     /// <code>
-    ///   Z-Axis       Y-Axis (Depth)
+    ///   Z-Axis       Y-Axis
     ///   ^           /
     ///   |   7      /        6 MaxPt
     ///   |   +---------------+
@@ -550,7 +567,7 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis (Width)
+    ///   +---------------+----> X-Axis
     ///   0 MinPt         1
     /// </code>
     /// </summary>
@@ -560,7 +577,7 @@ type BBox =
     /// Starting at MinPt. Points 0, 1, 2, and 3.
     /// Last and first point are NOT the same.
     /// <code>
-    ///   Z-Axis       Y-Axis (Depth)
+    ///   Z-Axis       Y-Axis
     ///   ^           /
     ///   |   7      /        6 MaxPt
     ///   |   +---------------+
@@ -573,7 +590,7 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis (Width)
+    ///   +---------------+----> X-Axis
     ///   0 MinPt         1
     /// </code>
     /// </summary>
@@ -584,7 +601,7 @@ type BBox =
     /// Points 0, 1, 2, 3, and again 0.
     /// Last and first point are the same.
     /// <code>
-    ///   Z-Axis       Y-Axis (Depth)
+    ///   Z-Axis       Y-Axis
     ///   ^           /
     ///   |   7      /        6 MaxPt
     ///   |   +---------------+
@@ -597,7 +614,7 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis (Width)
+    ///   +---------------+----> X-Axis
     ///   0 MinPt         1
     /// </code>
     /// </summary>
@@ -607,7 +624,7 @@ type BBox =
     /// Starting at point 4 then 5, 6, and 7.
     /// Last and first point are NOT the same.
     /// <code>
-    ///   Z-Axis       Y-Axis (Depth)
+    ///   Z-Axis       Y-Axis
     ///   ^           /
     ///   |   7      /        6 MaxPt
     ///   |   +---------------+
@@ -620,7 +637,7 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis (Width)
+    ///   +---------------+----> X-Axis
     ///   0 MinPt         1
     /// </code>
     /// </summary>
@@ -630,7 +647,7 @@ type BBox =
     /// Points 4, 5, 6, 7, and again 4.
     /// Last and first point are the same.
     /// <code>
-    ///   Z-Axis       Y-Axis (Depth)
+    ///   Z-Axis       Y-Axis
     ///   ^           /
     ///   |   7      /        6 MaxPt
     ///   |   +---------------+
@@ -643,7 +660,7 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis (Width)
+    ///   +---------------+----> X-Axis
     ///   0 MinPt         1
     /// </code>
     /// </summary>
@@ -691,7 +708,7 @@ type BBox =
     /// Pairs in this order:
     /// 0-1, 1-2, 3-2, 0-3, 0-4, 1-5, 2-6, 3-7, 4-5, 5-6, 7-6, 4-7
     /// <code>
-    ///   Z-Axis       Y-Axis (Depth)
+    ///   Z-Axis       Y-Axis
     ///   ^           /
     ///   |   7      /        6 MaxPt
     ///   |   +---------------+
@@ -704,7 +721,7 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis (Width)
+    ///   +---------------+----> X-Axis
     ///   0 MinPt         1
     /// </code>
     /// </summary>

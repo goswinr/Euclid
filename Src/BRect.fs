@@ -7,12 +7,12 @@ open UtilEuclid
 open EuclidErrors
 
 
-/// <summary>An immutable 2D bounding rectangle.
+/// <summary>A struct of 4 floats representing an immutable 2D bounding rectangle.
 /// Sometimes also called 2D a bounding box.
 /// This implementation guarantees the rectangle to be always valid.
 /// That means the Min X and Y values are always smaller or equal than the respective Max values.
 /// <code>
-///   Y-Axis (Height2D)
+///   Y-Axis
 ///   ^
 ///   |
 ///   |             2 max X,Y
@@ -22,7 +22,7 @@ open EuclidErrors
 ///   |            |
 ///   |            |
 ///   |            |       local
-///   +------------+-----> X-Axis (Width)
+///   +------------+-----> X-Axis
 ///  0-min X,Y      1
 /// </code>
 /// </summary>
@@ -32,10 +32,19 @@ open EuclidErrors
 [<DataContract>] // for using DataMember on fields
 type BRect =
     //[<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
-    [<DataMember>] val MinX : float
-    [<DataMember>] val MinY : float
-    [<DataMember>] val MaxX : float
-    [<DataMember>] val MaxY : float
+
+    /// The fields holding the minimum X value of this bounding rectangle.
+    [<DataMember>]
+    val MinX : float
+    /// The fields holding the minimum Y value of this bounding rectangle.
+    [<DataMember>]
+    val MinY : float
+    /// The fields holding the maximum X value of this bounding rectangle.
+    [<DataMember>]
+    val MaxX : float
+    /// The fields holding the maximum Y value of this bounding rectangle.
+    [<DataMember>]
+    val MaxY : float
 
 
     /// Unsafe internal constructor, public only for inlining.
@@ -530,7 +539,7 @@ type BRect =
 
     /// <summary>Returns the point (0) or minX, minY.
     /// <code>
-    ///   Y-Axis (Height2D)
+    ///   Y-Axis
     ///   ^
     ///   |
     ///   |             2 = max X,Y
@@ -540,7 +549,7 @@ type BRect =
     ///   |            |
     ///   |            |
     ///   |            |
-    ///   +------------+-----> X-Axis (Width)
+    ///   +------------+-----> X-Axis
     ///  0 = min X,Y      1
     /// </code>
     /// </summary>
@@ -548,7 +557,7 @@ type BRect =
 
     /// <summary>Returns the point (1) or maxX, minY.
     /// <code>
-    ///   Y-Axis (Height2D)
+    ///   Y-Axis
     ///   ^
     ///   |
     ///   |             2 = max X,Y
@@ -558,7 +567,7 @@ type BRect =
     ///   |            |
     ///   |            |
     ///   |            |
-    ///   +------------+-----> X-Axis (Width)
+    ///   +------------+-----> X-Axis
     ///  0 = min X,Y      1
     /// </code>
     /// </summary>
@@ -566,7 +575,7 @@ type BRect =
 
     /// <summary>Returns the point (2) or maxX, maxY.
     /// <code>
-    ///   Y-Axis (Height2D)
+    ///   Y-Axis
     ///   ^
     ///   |
     ///   |             2 = max X,Y
@@ -576,7 +585,7 @@ type BRect =
     ///   |            |
     ///   |            |
     ///   |            |
-    ///   +------------+-----> X-Axis (Width)
+    ///   +------------+-----> X-Axis
     ///  0 = min X,Y      1
     /// </code>
     /// </summary>
@@ -584,7 +593,7 @@ type BRect =
 
     /// <summary>Returns the point (3) or minX, maxY.
     /// <code>
-    ///   Y-Axis (Height2D)
+    ///   Y-Axis
     ///   ^
     ///   |
     ///   |             2 = max X,Y
@@ -594,7 +603,7 @@ type BRect =
     ///   |            |
     ///   |            |
     ///   |            |
-    ///   +------------+-----> X-Axis (Width)
+    ///   +------------+-----> X-Axis
     ///  0 = min X,Y      1
     /// </code>
     /// </summary>
@@ -604,7 +613,7 @@ type BRect =
     /// <summary>Returns the corners of this bounding rectangle in Counter-Clockwise order, starting at MinPt.
     /// Returns an array of 4 Points.
     /// <code>
-    ///   Y-Axis (Height2D)
+    ///   Y-Axis
     ///   ^
     ///   |
     ///   |             2  = max X,Y
@@ -614,7 +623,7 @@ type BRect =
     ///   |            |
     ///   |            |
     ///   |            |
-    ///   +------------+-----> X-Axis (Width)
+    ///   +------------+-----> X-Axis
     ///  0 = min X,Y    1
     /// </code>
     /// </summary>
@@ -625,7 +634,7 @@ type BRect =
     /// <summary>Returns a Counter-Clockwise array of 5 Points, starting at MinPt.
     /// Last and first point are the same.
     /// <code>
-    ///   Y-Axis (Height2D)
+    ///   Y-Axis
     ///   ^
     ///   |
     ///   |             2  = max X,Y
@@ -635,7 +644,7 @@ type BRect =
     ///   |            |
     ///   |            |
     ///   |            |
-    ///   +------------+-----> X-Axis (Width)
+    ///   +------------+-----> X-Axis
     ///  0 = min X,Y    1
     /// </code>
     /// </summary>
@@ -644,7 +653,7 @@ type BRect =
 
     /// <summary>The bottom edge. The line from point 0 to 1.
     /// <code>
-    ///   Y-Axis (Height2D)
+    ///   Y-Axis
     ///   ^
     ///   |
     ///   |             2  = max X,Y
@@ -654,7 +663,7 @@ type BRect =
     ///   |            |
     ///   |            |
     ///   |            |
-    ///   +------------+-----> X-Axis (Width)
+    ///   +------------+-----> X-Axis
     ///  0 = min X,Y    1
     /// </code>
     /// </summary>
@@ -662,7 +671,7 @@ type BRect =
 
     /// <summary>The right edge. The line from point 1 to 2.
     /// <code>
-    ///   Y-Axis (Height2D)
+    ///   Y-Axis
     ///   ^
     ///   |
     ///   |             2  = max X,Y
@@ -672,7 +681,7 @@ type BRect =
     ///   |            |
     ///   |            |
     ///   |            |
-    ///   +------------+-----> X-Axis (Width)
+    ///   +------------+-----> X-Axis
     ///  0 = min X,Y    1
     /// </code>
     /// </summary>
@@ -680,7 +689,7 @@ type BRect =
 
     /// <summary>The top edge. The line from point 2 to 3.
     /// <code>
-    ///   Y-Axis (Height2D)
+    ///   Y-Axis
     ///   ^
     ///   |
     ///   |             2  = max X,Y
@@ -690,7 +699,7 @@ type BRect =
     ///   |            |
     ///   |            |
     ///   |            |
-    ///   +------------+-----> X-Axis (Width)
+    ///   +------------+-----> X-Axis
     ///  0 = min X,Y    1
     /// </code>
     /// </summary>
@@ -698,7 +707,7 @@ type BRect =
 
     /// <summary>The left edge. The line from point 3 to 0.
     /// <code>
-    ///   Y-Axis (Height2D)
+    ///   Y-Axis
     ///   ^
     ///   |
     ///   |             2  = max X,Y
@@ -708,7 +717,7 @@ type BRect =
     ///   |            |
     ///   |            |
     ///   |            |
-    ///   +------------+-----> X-Axis (Width)
+    ///   +------------+-----> X-Axis
     ///  0 = min X,Y    1
     /// </code>
     /// </summary>

@@ -6,8 +6,8 @@ open UtilEuclid
 open EuclidErrors
 
 
-/// A module containing the result types for 3D Line-Line-Intersections
-/// , 3D Line-Line relationship queries,
+/// A module containing the result types for 3D Line-Line-Intersections,
+/// 3D Line-Line relationship queries,
 /// and Line-Cone intersections.
 [<AutoOpen>]
 module XLine3D =
@@ -437,7 +437,7 @@ module XLine3D =
 
 open XLine3D
 
-/// Provides static methods for computing 3D line intersections and closest approaches.
+/// A type containing only static member functions for computing 3D line intersections and closest approaches.
 /// Some functions return Discriminated Unions from the XLine3D module.
 [<RequireQualifiedAccess>]
 type XLine3D =

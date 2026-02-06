@@ -7,7 +7,8 @@ open System.Collections.Generic
 open Euclid.EuclidCollectionUtilities
 
 
-//  A static type containing functions for operating on multiple 3D points or set of 3D points. aka point-clouds
+/// A type containing only static member functions for operating on multiple 3D points or set of 3D points.
+/// Aka point-clouds
 type Points3D   =
 
 

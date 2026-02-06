@@ -3,23 +3,23 @@ namespace Euclid
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>]
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 
-/// An immutable finite line in 2D. Represented by a 2D start and 2D end point.
+/// A struct containing 4 floats, representing an immutable finite line in 2D.
 [<Struct;NoEquality;NoComparison>] // because it's made up from floats
 [<IsReadOnly>]
 [<DataContract>] // for using DataMember on fields
 type Line2D =
     // [<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
 
-    /// Returns the X coordinate of the start point of the line.
+    /// The field holding the X coordinate of the start point of the line.
     [<DataMember>] val FromX:float
 
-    /// Returns the Y coordinate of the start point of the line.
+    /// The field holding the Y coordinate of the start point of the line.
     [<DataMember>] val FromY:float
 
-    /// Returns the X coordinate of the end point of the line.
+    /// The field holding the X coordinate of the end point of the line.
     [<DataMember>] val ToX  :float
 
-    /// Returns the Y coordinate of the end point of the line.
+    /// The field holding the Y coordinate of the end point of the line.
     [<DataMember>] val ToY  :float
 
     /// Create a Line2D from 2D start point and 2D end point.

@@ -6,7 +6,7 @@ open Euclid.UtilEuclid
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 open EuclidErrors
 
-/// An immutable unitized Quaternion, for arbitrary 3D rotations.
+/// A struct containing 4 floats, representing an immutable unitized Quaternion, for arbitrary 3D rotations.
 /// This implementation guarantees the Quaternion to be always unitized.
 /// Note: Never use the struct default constructor Quaternion() as it will create an invalid zero length Quaternion.
 /// Use Quaternion.create or Quaternion.createUnchecked instead.
@@ -19,16 +19,16 @@ type Quaternion =
 
     //[<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
 
-    /// The X component of this Quaternion.
+    /// The field holding the X component of this Quaternion.
     [<DataMember>] val X:float
 
-    /// The Y component of this Quaternion.
+    /// The field holding the Y component of this Quaternion.
     [<DataMember>] val Y:float
 
-    /// The Z component of this Quaternion.
+    /// The field holding the Z component of this Quaternion.
     [<DataMember>] val Z:float
 
-    /// The W component of this Quaternion.
+    /// The field holding the W component of this Quaternion.
     [<DataMember>] val W:float
 
     /// Unsafe internal constructor, public only for inlining.

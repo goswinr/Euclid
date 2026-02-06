@@ -8,7 +8,7 @@ open System.Runtime.Serialization // for serialization of struct fields only but
 open System.Collections.Generic
 
 
-/// <summary>An immutable 3D Box with any rotation in 3D space.
+/// <summary>A struct of one Pnt and three Vec, representing an immutable 3D Box with any rotation in 3D space.
 /// Described by an Origin and three Edge vectors.
 /// Similar to PPlane, however the three vectors are not unitized.
 /// This implementation guarantees the box to be always valid.

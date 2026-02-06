@@ -4,7 +4,7 @@ open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>]
 open System.Runtime.Serialization // for serialization of struct fields only, but not properties, via [<DataMember>] attribute with Newtonsoft.Json or similar
 open System
 
-/// An immutable finite line in 3D. Represented by a 3D start and 3D end point.
+/// A struct containing 6 floats, representing an immutable finite line in 3D.
 [<Struct;NoEquality;NoComparison>] // because it's made up from floats
 [<IsReadOnly>]
 [<DataContract>] // for using DataMember on fields
@@ -12,22 +12,22 @@ type Line3D =
 
     //[<DataMember>] // to serialize this struct field (but not properties) with Newtonsoft.Json and similar
 
-    /// Returns the X coordinate of the start point of the line.
+    /// The field holding the X coordinate of the start point of the line.
     [<DataMember>] val FromX:float
 
-    /// Returns the Y coordinate of the start point of the line.
+    /// The field holding the Y coordinate of the start point of the line.
     [<DataMember>] val FromY:float
 
-    /// Returns the Z coordinate of the start point of the line.
+    /// The field holding the Z coordinate of the start point of the line.
     [<DataMember>] val FromZ:float
 
-    /// Returns the X coordinate of the end point of the line.
+    /// The field holding the X coordinate of the end point of the line.
     [<DataMember>] val ToX  :float
 
-    /// Returns the Y coordinate of the end point of the line.
+    /// The field holding the Y coordinate of the end point of the line.
     [<DataMember>] val ToY  :float
 
-    /// Returns the Z coordinate of the end point of the line.
+    /// The field holding the Z coordinate of the end point of the line.
     [<DataMember>] val ToZ  :float
 
     /// Create Line3D from 3D start point and 3D end point.
