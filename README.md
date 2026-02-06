@@ -27,17 +27,161 @@ This helps to skip checks for zero length vectors in many operations.
 - Lines, Planes, Boxes, Bounding Boxes, Polylines
 - Rotations, Quaternions, 4x4 and rigid orthonormal 4x3 matrices
 
-✨ **Key Advantages**
+✨ **Key Characteristics**
 - **Zero dependencies** - lightweight and self-contained
-- **Double precision** - engineered for CAD/manufacturing accuracy
-- **Immutable types** - functional programming friendly
+- **Double precision** - designed for CAD/manufacturing accuracy
+- **Immutable types** - all primitive types are immutable for safety and ease of reasoning
 - **Cross-platform** - compiles to .NET, JavaScript, TypeScript, Rust, Python via Fable
-- **Performant** - All small types are structs, functions are often inline and try to minimize the allocation of intermediate objects.
+- **Performance Focus** - All small types are structs, functions are often inline and try to minimize the allocation.
+- **Interoperability** - Can be used with [Rhino3D](https://github.com/goswinr/Euclid.Rhino), Revit, or any .NET environment, and also in JavaScript/TypeScript projects via Fable.
 
-🔧 **Design & Manufacturing Focus**
-- Optimized for design, construction, and manufacturing workflows
-- Integrates seamlessly with [Rhino3D](https://github.com/goswinr/Euclid.Rhino)
-- Right-handed coordinate system (Z-up) matching industry standards
+
+## Coordinate System
+
+This library uses a **right-handed coordinate system** with the **Z-axis pointing up**.
+
+✅ **Same as in:** Rhino3D, Blender, SketchUp, Revit, AutoCAD
+❌ **Different from:** Unity, Unreal Engine, Maya
+
+This choice aligns with industry-standard CAD and architectural software.
+
+## Design Philosophy
+
+### Points vs Vectors
+- **Points** (`Pt`, `Pnt`): Positions in space
+- **Vectors** (`Vc`, `Vec`): Directions and displacements
+
+When a 4x4 transformation matrix is applied:
+- **Points**: Undergo full transformation (rotation, scaling, translation)
+- **Vectors**: Only rotate and scale (no translation)
+
+This follows homogeneous coordinate conventions where vectors have w=0.
+
+### Naming Conventions
+
+**Core Types (2D and 3D):**
+
+| Type | 2D | 3D |
+|------|----|----|
+| Point | `Pt` | `Pnt` |
+| Vector | `Vc` | `Vec` |
+| Unit Vector | `UnitVc` | `UnitVec` |
+| Line | `Line2D` | `Line3D` |
+| Polyline | `Polyline2D` | `Polyline3D` |
+| Rectangle | `Rect2D` | `Rect3D` |
+| Bounding Rect/Box | `BRect` | `BBox` |
+
+**3D-only Types:**
+
+| Type | Description |
+|------|-------------|
+| `PPlane` | Parametrized plane (origin + X/Y/Z axes) |
+| `NPlane` | Normal plane (origin + normal vector) |
+| `Box` | Oriented 3D box (origin + 3 axis vectors) |
+| `Matrix` | 4x4 transformation matrix |
+| `RigidMatrix` | 4x3 rigid transformation (rotation + translation only) |
+| `Quaternion` | Unitized quaternion for 3D rotations |
+| `Rotation2D` | 2D rotation stored as sine/cosine pair |
+
+### Function Patterns
+Functions are available in multiple forms:
+
+```fsharp
+// Static module function (lowercase, pipeable)
+let normalized = Vec.unitize myVector
+let moved = Pnt.translate myVec myPoint
+
+// Instance method/property (uppercase)
+let normalized = myVector.Unitized
+let moved = myPoint.Transform myMatrix
+
+// Pipeline style
+myPoint
+|> Pnt.translate (Vec(1, 0, 0))
+|> Pnt.rotateZ 45.0
+|> Pnt.transform myMatrix
+```
+
+### Custom Operators
+
+```fsharp
+a + b           // Point + Vector = Point, Vector + Vector = Vector
+a - b           // Point - Point = Vector, Point - Vector = Point
+a * 2.0         // Scale vector or point
+a / 2.0         // Divide (with zero-check)
+a *** b         // Dot product for vectors, matrix multiplication for matrices
+-a              // Negate a vector
+```
+
+## API Documentation
+
+**Full API Reference:** [goswinr.github.io/Euclid](https://goswinr.github.io/Euclid/reference/euclid.html)
+
+## Platform Support
+
+Thanks to [Fable](https://fable.io/), Euclid can
+be used not only on .NET but also in JavaScript, TypeScript, Rust, and Python.
+
+## Development
+
+### Use of AI and LLMs
+All core function are are written by hand to ensure performance and correctness.<br>
+However, AI tools have been used for code review, typo and grammar checking in documentation<br>
+and to generate not all but many of the tests.
+
+### Prerequisites
+- .NET SDK 10.0 or later (to have [scoped warnings](https://learn.microsoft.com/en-us/dotnet/fsharp/whats-new/fsharp-10#scoped-warning-suppression) available)
+- Node.js (only needed to run the .NET tests in JavaScript and TypeScript via Fable.Mocha)
+
+### Building from Source
+
+```bash
+git clone https://github.com/goswinr/Euclid.git
+cd Euclid
+dotnet build
+```
+
+## Testing
+
+Tests run on both .NET and JavaScript with TypeScript build verification.
+
+### .NET Testing
+
+```bash
+dotnet run --project ./Tests/Tests.fsproj
+```
+
+### JavaScript Testing
+
+setup dependencies:
+
+```bash
+npm ci --prefix ./Tests
+dotnet tool restore
+```
+
+then run tests:
+
+```bash
+npm run test --prefix ./Tests
+```
+
+The test suite ensures cross-platform compatibility and verifies TypeScript type definitions.
+
+## Contributing
+
+Contributions are welcome!
+
+
+## Changelog
+See [CHANGELOG.md](https://github.com/goswinr/Euclid/blob/main/CHANGELOG.md) for version history.
+
+## Related Projects
+[Euclid.Rhino](https://github.com/goswinr/Euclid.Rhino) - Rhino3D integration
+
+## License
+[MIT](https://github.com/goswinr/Euclid/blob/main/LICENSE.md)
+
 
 ## Installation
 
@@ -463,150 +607,4 @@ with :? EuclidException as e ->
 // - zeroLengthTolerance = 1e-12 (for divisions, unitizing)
 // - isTooSmall = 1e-6 (general smallness check)
 ```
-
-## Coordinate System
-
-This library uses a **right-handed coordinate system** with the **Z-axis pointing up**.
-
-✅ **Same as in:** Rhino3D, Blender, SketchUp, Revit, AutoCAD
-❌ **Different from:** Unity, Unreal Engine, Maya
-
-This choice aligns with industry-standard CAD and architectural software.
-
-## Design Philosophy
-
-### Points vs Vectors
-- **Points** (`Pt`, `Pnt`): Positions in space
-- **Vectors** (`Vc`, `Vec`): Directions and displacements
-
-When a 4x4 transformation matrix is applied:
-- **Points**: Undergo full transformation (rotation, scaling, translation)
-- **Vectors**: Only rotate and scale (no translation)
-
-This follows homogeneous coordinate conventions where vectors have w=0.
-
-### Naming Conventions
-
-**Core Types (2D and 3D):**
-
-| Type | 2D | 3D |
-|------|----|----|
-| Point | `Pt` | `Pnt` |
-| Vector | `Vc` | `Vec` |
-| Unit Vector | `UnitVc` | `UnitVec` |
-| Line | `Line2D` | `Line3D` |
-| Polyline | `Polyline2D` | `Polyline3D` |
-| Rectangle | `Rect2D` | `Rect3D` |
-| Bounding Rect/Box | `BRect` | `BBox` |
-
-**3D-only Types:**
-
-| Type | Description |
-|------|-------------|
-| `PPlane` | Parametrized plane (origin + X/Y/Z axes) |
-| `NPlane` | Normal plane (origin + normal vector) |
-| `Box` | Oriented 3D box (origin + 3 axis vectors) |
-| `Matrix` | 4x4 transformation matrix |
-| `RigidMatrix` | 4x3 rigid transformation (rotation + translation only) |
-| `Quaternion` | Unitized quaternion for 3D rotations |
-| `Rotation2D` | 2D rotation stored as sine/cosine pair |
-
-### Function Patterns
-Functions are available in multiple forms:
-
-```fsharp
-// Static module function (lowercase, pipeable)
-let normalized = Vec.unitize myVector
-let moved = Pnt.translate myVec myPoint
-
-// Instance method/property (uppercase)
-let normalized = myVector.Unitized
-let moved = myPoint.Transform myMatrix
-
-// Pipeline style
-myPoint
-|> Pnt.translate (Vec(1, 0, 0))
-|> Pnt.rotateZ 45.0
-|> Pnt.transform myMatrix
-```
-
-### Custom Operators
-
-```fsharp
-a + b           // Point + Vector = Point, Vector + Vector = Vector
-a - b           // Point - Point = Vector, Point - Vector = Point
-a * 2.0         // Scale vector or point
-a / 2.0         // Divide (with zero-check)
-a *** b         // Dot product for vectors, matrix multiplication for matrices
--a              // Negate a vector
-```
-
-## API Documentation
-
-**Full API Reference:** [goswinr.github.io/Euclid](https://goswinr.github.io/Euclid/reference/euclid.html)
-
-## Platform Support
-
-Thanks to [Fable](https://fable.io/), Euclid can
-be used not only on .NET but also in JavaScript, TypeScript, Rust, and Python.
-
-## Development
-
-### Use of AI and LLMs
-All core function are are written by hand to ensure performance and correctness.<br>
-However, AI tools have been used for code review, typo and grammar checking in documentation<br>
-and to generate not all but many of the tests.
-
-### Prerequisites
-- .NET SDK 10.0 or later (to have [scoped warnings](https://learn.microsoft.com/en-us/dotnet/fsharp/whats-new/fsharp-10#scoped-warning-suppression) available)
-- Node.js (only needed to run the .NET tests in JavaScript and TypeScript via Fable.Mocha)
-
-### Building from Source
-
-```bash
-git clone https://github.com/goswinr/Euclid.git
-cd Euclid
-dotnet build
-```
-
-## Testing
-
-Tests run on both .NET and JavaScript with TypeScript build verification.
-
-### .NET Testing
-
-```bash
-dotnet run --project ./Tests/Tests.fsproj
-```
-
-### JavaScript Testing
-
-setup dependencies:
-
-```bash
-npm ci --prefix ./Tests
-dotnet tool restore
-```
-
-then run tests:
-
-```bash
-npm run test --prefix ./Tests
-```
-
-The test suite ensures cross-platform compatibility and verifies TypeScript type definitions.
-
-## Contributing
-
-Contributions are welcome!
-
-
-## Changelog
-See [CHANGELOG.md](https://github.com/goswinr/Euclid/blob/main/CHANGELOG.md) for version history.
-
-## Related Projects
-[Euclid.Rhino](https://github.com/goswinr/Euclid.Rhino) - Rhino3D integration
-
-## License
-[MIT](https://github.com/goswinr/Euclid/blob/main/LICENSE.md)
 
