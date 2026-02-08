@@ -14,11 +14,14 @@ open EuclidErrors
 // Not performance or memory optimal at all.
 
 
-/// <summary>A struct containing 12 floats, representing an immutable 4x3 rigid matrix.
-/// For only rotation and translation in 3D space.
+/// <summary>A struct containing 12 floats, representing an immutable 4x3 rigid transformation matrix.
 /// This matrix guarantees to NOT scale, shear, flip, mirror, reflect or project.
 /// Angles are preserved. Lengths are preserved. Area is preserved. Volume is preserved.
-/// A rigid matrix is a matrix whose 3x3 columns and rows are orthogonal unit-vectors.
+/// Transformations with 4x3 RigidMatrices are faster than with the more general 4x4 Matrices.
+/// A rigid matrix is made from a rotational 3x3 part whose columns and rows are orthogonal 3D unit-vectors.
+/// The last 1x3 column is the translation part of the matrix.
+/// It can be thought of as a 4x4 Orthonormal matrix where the last row would always be 0, 0, 0, 1.
+/// Thus it is not stored in the RigidMatrix 4x3 struct.
 /// The matrix is represented in the following column-vector syntax form:
 /// <code>
 /// M11 M21 M31 X41
@@ -79,7 +82,7 @@ type RigidMatrix =
         |> String.concat Environment.NewLine
         )
 
-    /// <summary>Format RigidMatrix into an F# code string that can be used to recreate the matrix.</summary>
+    /// <summary>Formats a RigidMatrix into an F# code string that can be used to recreate the matrix.</summary>
     member m.AsFSharpCode : string =
         $"RigidMatrix.create({m.M11}, {m.M21}, {m.M31}, {m.X41}, {m.M12}, {m.M22}, {m.M32}, {m.Y42}, {m.M13}, {m.M23}, {m.M33}, {m.Z43})"
 
@@ -407,7 +410,7 @@ type RigidMatrix =
     /// <summary>Creates a rotation around the Y-axis RigidMatrix
     /// by angle in Degrees (not Radians).
     /// A positive rotation will be from Z towards X-axis,
-    /// so counter-clockwise when the Y-axis vector is pointing towards the observer.( right-hand rule)
+    /// so counter-clockwise when the Y-axis vector is pointing towards the observer. (right-hand rule)
     /// The resulting RigidMatrix will be:
     /// <code>
     /// cos(θ)  0 sin(θ) 0
@@ -426,7 +429,7 @@ type RigidMatrix =
 
     /// <summary>Creates a rotation around the Z-axis RigidMatrix
     /// by angle in Degrees (not Radians).
-    /// A positive rotation will be from X toward Y-axis,
+    /// A positive rotation will be from X towards Y-axis,
     /// so counter-clockwise when the Z-axis vector is pointing towards the observer. (right-hand rule)
     /// The resulting RigidMatrix will be:
     /// <code>
@@ -511,7 +514,7 @@ type RigidMatrix =
         *** RigidMatrix.createTranslation(cen.X, cen.Y, cen.Z)
 
 
-    /// <summary>Creates a rotation from one unit-vectors direction to another unit-vectors direction.
+    /// <summary>Creates a rotation from one unit-vector's direction to another unit-vector's direction.
     /// If the tips of the two unitized vectors have a distance less than 1e-12 the identity matrix is returned.
     /// If the tips of the two vectors are almost exactly opposite,
     /// that is if tips of the two vectors are less than 1e-12 apart when summed,
@@ -542,7 +545,7 @@ type RigidMatrix =
                 tx * y + s * z, ty * y + c     , ty * z - s * x , 0 ,
                 tx * z - s * y, ty * z + s * x , t  * z * z + c , 0 )
 
-    /// <summary>Creates a rotation from one vectors direction to another vectors direction.
+    /// <summary>Creates a rotation from one vector's direction to another vector's direction.
     /// If the tips of the two unitized vectors have a distance less than 1e-12 the identity matrix is returned.
     /// If the tips of the two vectors are almost exactly opposite,
     /// that is if tips of the two vectors are less than 1e-12 apart when summed,
@@ -640,7 +643,7 @@ type RigidMatrix =
             else
                 None
 
-    /// <summary>Create immutable a 4x3 Transformation Matrix.
+    /// <summary>Creates an immutable 4x3 Transformation Matrix.
     /// Checks the input values to ensure they form a valid RigidMatrix.
     /// This Constructor takes arguments in row-major order:
     /// <code>M11 M21 M31 X41 M12 M22 M32 Y42 M13 M23 M33 Z43</code>
@@ -685,10 +688,10 @@ type RigidMatrix =
     /// <param name="m">The RigidMatrix to convert.</param>
     static member toMatrix (m:RigidMatrix) =
         Matrix(
-            m.M11, m.M12, m.M13, 0.0,
-            m.M21, m.M22, m.M23, 0.0,
-            m.M31, m.M32, m.M33, 0.0,
-            m.X41, m.Y42, m.Z43, 1.0)
+            m.M11, m.M21, m.M31, m.X41,
+            m.M12, m.M22, m.M32, m.Y42,
+            m.M13, m.M23, m.M33, m.Z43,
+            0.0  , 0.0  , 0.0  , 1.0  )
 
     /// <summary>Create a RigidMatrix from a Quaternion.</summary>
     /// <param name="quaternion">The quaternion representing the rotation.</param>
@@ -726,15 +729,15 @@ type RigidMatrix =
 
 
     /// <summary>Removes the translation part by setting X41, Y42 and Z43 to 0.0.</summary>
-    /// <param name="m">The matrix to modify.</param>
+    /// <param name="m">The input matrix.</param>
     static member removeTranslation (m:RigidMatrix) =
         RigidMatrix(m.M11, m.M21, m.M31, 0.0,
                     m.M12, m.M22, m.M32, 0.0,
                     m.M13, m.M23, m.M33, 0.0)
 
-    /// <summary>Add a vector translation to an existing RigidMatrix.</summary>
+    /// <summary>Adds a vector translation to an existing RigidMatrix.</summary>
     /// <param name="v">The translation vector to add.</param>
-    /// <param name="m">The matrix to modify.</param>
+    /// <param name="m">The input matrix.</param>
     static member addTranslation (v:Vec) (m:RigidMatrix) =
         RigidMatrix(m.M11, m.M21, m.M31, m.X41 + v.X,
                     m.M12, m.M22, m.M32, m.Y42 + v.Y,
@@ -742,11 +745,11 @@ type RigidMatrix =
 
 
 
-    /// <summary>Add a X, Y and Z translation to an existing RigidMatrix.</summary>
+    /// <summary>Adds an X, Y and Z translation to an existing RigidMatrix.</summary>
     /// <param name="x">The X translation to add.</param>
     /// <param name="y">The Y translation to add.</param>
     /// <param name="z">The Z translation to add.</param>
-    /// <param name="m">The matrix to modify.</param>
+    /// <param name="m">The input matrix.</param>
     static member addTranslationXYZ x y z  (m:RigidMatrix) =
         RigidMatrix(m.M11, m.M21, m.M31, m.X41 + x,
                     m.M12, m.M22, m.M32, m.Y42 + y,
