@@ -37,7 +37,8 @@ jobs:
         run: cp README.md Docs/index.md
 
       - name: Generate the documentation html
-        run: dotnet fsdocs build --properties Configuration=Release --input Docs --output DocsGenerated
+        # for this to work in dotnet-tools.json, rollForward must be set to 'false' for fsdocs-tool
+        run: dotnet fsdocs build --clean --strict --properties Configuration=Release --input Docs --output DocsGenerated
 
       - name: Upload documentation html files
         uses: actions/upload-pages-artifact@v4

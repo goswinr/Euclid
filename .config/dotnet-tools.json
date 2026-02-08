@@ -7,7 +7,7 @@
       "commands": [
         "fable"
       ],
-      "rollForward": false
+      "rollForward": true
     },
     "fsdocs-tool": {
       "version": "21.0.0",

@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFrameworks>net472;net6.0</TargetFrameworks>    <!--netstandard2.0 does not support [<IsByRefLike>] nor [<IsReadOnly>] -->
+    <TargetFrameworks>net6.0;net472</TargetFrameworks>    <!--netstandard2.0 does not support [<IsByRefLike>] nor [<IsReadOnly>] -->
 
     <LangVersion>preview</LangVersion>
     <NeutralLanguage>en</NeutralLanguage>
@@ -16,7 +16,7 @@
     <Product>Euclid</Product>
     <PackageId>Euclid</PackageId>
 
-    <!-- <Version>0.0.0</Version>  done by Ionide.KeepAChangelog.Tasks-->
+    <!-- <Version></Version>  done by Ionide.KeepAChangelog.Tasks-->
     <Authors>GoswinR</Authors>
     <Copyright>Goswin Rothenthal 2019-2026</Copyright>
     <Description>A 2D and 3D geometry library written in and for F# (and Fable)</Description>
@@ -50,7 +50,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- <InternalsVisibleTo Include="Tests" /> fail on inline -->
+
     <!-- otherwise the minimum FSharp.Core version would be forced by the SDK used for building it. This would be needlessly too high-->
     <PackageReference Update="FSharp.Core" Version="6.0.7" />
     <PackageReference Include="Fable.Core" Version="4.5.0" Condition="$(DefineConstants.Contains('FABLE_COMPILER'))" />    <!-- Fable.Core only to use number.toFixed() when formatting in JS -->
