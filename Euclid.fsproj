@@ -2,7 +2,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFrameworks>net6.0;net472</TargetFrameworks>    <!--netstandard2.0 does not support [<IsByRefLike>] nor [<IsReadOnly>] -->
+    <!--netstandard2.0 does not support [<IsByRefLike>] nor [<IsReadOnly>],  -->
+    <!-- FsDoc will use the first target framework: https://fsprojects.github.io/FSharp.Formatting/apidocs.html#Selected-projects -->
+    <TargetFrameworks>net6.0;net472</TargetFrameworks>
 
     <LangVersion>preview</LangVersion>
     <NeutralLanguage>en</NeutralLanguage>
@@ -51,7 +53,6 @@
 
   <ItemGroup>
 
-    <!-- otherwise the minimum FSharp.Core version would be forced by the SDK used for building it. This would be needlessly too high-->
     <PackageReference Update="FSharp.Core" Version="6.0.7" />
     <PackageReference Include="Fable.Core" Version="4.5.0" Condition="$(DefineConstants.Contains('FABLE_COMPILER'))" />    <!-- Fable.Core only to use number.toFixed() when formatting in JS -->
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.102" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" />

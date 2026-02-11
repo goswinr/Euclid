@@ -28,12 +28,12 @@ This helps to skip checks for zero length vectors in many operations.
 - Rotations, Quaternions, 4x4 and rigid orthonormal 4x3 matrices
 
 ✨ **Key Characteristics**
-- **Zero dependencies:**  lightweight and self-contained
-- **Double precision:**  designed for CAD/manufacturing accuracy
-- **Immutable types:**  all primitive types are immutable for safety and ease of reasoning
-- **Cross-platform:**  compiles to .NET, JavaScript, TypeScript, Rust, Python via Fable
-- **Performance Focus:**  All small types are structs, functions are often inline and try to minimize the allocation.
-- **Interoperability:**  Can be used with [Rhino3D](https://github.com/goswinr/Euclid.Rhino), Revit, or any .NET environment, and also in JavaScript/TypeScript projects via Fable.
+- **Zero dependencies:** lightweight and self-contained<br>
+- **Double precision:** designed for CAD/manufacturing accuracy<br>
+- **Immutable types:** all primitive types are immutable for safety and ease of reasoning<br>
+- **Cross-platform:** compiles to .NET, JavaScript, TypeScript, Rust, Python via Fable<br>
+- **Performance Focus:** All small types are structs, functions are often inline and try to minimize the allocation.<br>
+- **Interoperability:** Can be used with [Rhino3D](https://github.com/goswinr/Euclid.Rhino), Revit, or any .NET environment, and also in JavaScript/TypeScript projects via Fable.<br>
 
 
 ## Coordinate System
