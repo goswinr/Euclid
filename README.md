@@ -28,19 +28,19 @@ This helps to skip checks for zero length vectors in many operations.
 - Rotations, Quaternions, 4x4 and rigid orthonormal 4x3 matrices
 
 ✨ **Key Characteristics**
-- **Zero dependencies** - lightweight and self-contained
-- **Double precision** - designed for CAD/manufacturing accuracy
-- **Immutable types** - all primitive types are immutable for safety and ease of reasoning
-- **Cross-platform** - compiles to .NET, JavaScript, TypeScript, Rust, Python via Fable
-- **Performance Focus** - All small types are structs, functions are often inline and try to minimize the allocation.
-- **Interoperability** - Can be used with [Rhino3D](https://github.com/goswinr/Euclid.Rhino), Revit, or any .NET environment, and also in JavaScript/TypeScript projects via Fable.
+- **Zero dependencies:**  lightweight and self-contained
+- **Double precision:**  designed for CAD/manufacturing accuracy
+- **Immutable types:**  all primitive types are immutable for safety and ease of reasoning
+- **Cross-platform:**  compiles to .NET, JavaScript, TypeScript, Rust, Python via Fable
+- **Performance Focus:**  All small types are structs, functions are often inline and try to minimize the allocation.
+- **Interoperability:**  Can be used with [Rhino3D](https://github.com/goswinr/Euclid.Rhino), Revit, or any .NET environment, and also in JavaScript/TypeScript projects via Fable.
 
 
 ## Coordinate System
 
 This library uses a **right-handed coordinate system** with the **Z-axis pointing up**.
 
-✅ **Same as in:** Rhino3D, Blender, SketchUp, Revit, AutoCAD
+✅ **Same as in:** Rhino3D, Blender, SketchUp, Revit, AutoCAD<br>
 ❌ **Different from:** Unity, Unreal Engine, Maya
 
 This choice aligns with industry-standard CAD and architectural software.
