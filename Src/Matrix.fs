@@ -1009,6 +1009,10 @@ type Matrix =
         Pnt(x' * sc, y'* sc, z'* sc)
 
 
+    // see \TypeExtensions\Matrix.fs:
+    // static member createFromRigidMatrix
+
+
     /// <summary>
     /// Creates a perspective projection matrix from the given view volume dimensions.
     /// </summary>

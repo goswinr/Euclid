@@ -153,17 +153,10 @@ dotnet run --project ./Tests/Tests.fsproj
 
 ### JavaScript Testing
 
-setup dependencies:
+run
 
 ```bash
-npm ci --prefix ./Tests
-dotnet tool restore
-```
-
-then run tests:
-
-```bash
-npm run test --prefix ./Tests
+cd Tests && npm run test
 ```
 
 The test suite ensures cross-platform compatibility and verifies TypeScript type definitions.

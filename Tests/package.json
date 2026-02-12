@@ -6,7 +6,7 @@
     "buildTS": "dotnet fable       ../Euclid.fsproj --lang typescript --silent --outDir ./_ts --configuration Release --run npm run checkTS",
     "buildJS": "dotnet fable --outDir dist/testsRelease --noCache --configuration Release",
     "buildDb": "dotnet fable --outDir dist/testsDebug --noCache --configuration Debug",
-    "pretest": "npm run buildJS && npm run buildDb && npm run buildTS",
+    "pretest": "npm i && dotnet tool restore && npm run buildJS && npm run buildDb && npm run buildTS",
     "test": "mocha dist/testsRelease && mocha dist/testsDebug"
   },
   "dependencies": {

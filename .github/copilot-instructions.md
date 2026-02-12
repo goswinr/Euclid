@@ -71,7 +71,7 @@ This library uses a **right-handed coordinate system** with the **Z-axis pointin
 .NET:
 `dotnet run --project ./Tests/Tests.fsproj`
 Node.js:
-`npm run test --prefix ./Tests`
+`cd Tests && npm run test && cd ..`
 
 ## Build & Docs
 - Build: `dotnet build` (multi-target). Package metadata is managed via project file & CHANGELOG automation.
