@@ -1010,6 +1010,7 @@ type Matrix =
 
 
     // see \TypeExtensions\Matrix.fs:
+    // static member createLookAt(position:Pnt, target:Pnt)  =
     // static member createFromRigidMatrix
 
 

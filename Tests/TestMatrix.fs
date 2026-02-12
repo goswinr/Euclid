@@ -223,6 +223,24 @@ let tests =
             "same vector gives identity" |> Expect.isTrue m.IsIdentity
         }
 
+        test "Matrix look-at Z-up" {
+            let position = Pnt(2,3,4)
+            let target = Pnt(3,3,4)
+            let m = Matrix.createLookAt(position, target)
+
+            let origin = Pnt(0,0,0) *** m
+            "look-at origin to position" |> expectEqual origin position
+
+            let forwardPoint = Pnt(0,0,1) *** m
+            "look-at forward point" |> expectEqual forwardPoint (position + Vec(1,0,0))
+
+            let rightVec = Vec(1,0,0) *** m
+            "look-at right axis" |> expectEqual rightVec.AsPnt (Vec(0,1,0).AsPnt)
+
+            let upVec = Vec(0,1,0) *** m
+            "look-at up axis" |> expectEqual upVec.AsPnt (Vec(0,0,1).AsPnt)
+        }
+
         test "Matrix properties identity" {
             let m = Matrix.identity
             "identity IsIdentity" |> Expect.isTrue m.IsIdentity
