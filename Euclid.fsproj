@@ -55,7 +55,7 @@
 
     <PackageReference Update="FSharp.Core" Version="6.0.7" />
     <PackageReference Include="Fable.Core" Version="4.5.0" Condition="$(DefineConstants.Contains('FABLE_COMPILER'))" />    <!-- Fable.Core only to use number.toFixed() when formatting in JS -->
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.102" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.103" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
     <PackageReference Include="Ionide.KeepAChangelog.Tasks" Version="0.3.3" PrivateAssets="all" />
 
     <None Include="./README.md" Pack="true" PackagePath="" />
