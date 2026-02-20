@@ -436,7 +436,7 @@ module AutoOpenVc =
                 fail2 "Vc.failedCreateFromMembersxy" vec e |> unbox // unbox to make type checker happy
 
 
-         /// Create 2D vector from 3D point (ignoring Z coordinate).
+        /// Create 2D vector from 3D point (ignoring Z coordinate).
         static member inline createFromPt (pt:Pnt) =
             Vc(pt.X, pt.Y)
 
@@ -902,10 +902,10 @@ module AutoOpenVc =
             elif dot < float Cosine.``179.95`` then
                 fail2 "Vc.slerp vectors are 180 deg opposite." start ende  |> unbox // unbox to make type checker happy
             else
-                let ang = acos(dot) // the angel between the two vectors
+                let ang = acos(dot) // the angle between the two vectors
                 let perp = eu - su*dot |> Vc.unitize // a vector perpendicular to start and in the same plane with ende.
                 let theta = ang*rel // the angle part we want for the result
-                let theta360 = (theta+UtilEuclid.twoPi) % UtilEuclid.twoPi // make sure it is i the range 0.0 to 2 Pi (360 degrees)
+                let theta360 = (theta+UtilEuclid.twoPi) % UtilEuclid.twoPi // make sure it is in the range 0.0 to 2 Pi (360 degrees)
                 let cosine = cos (theta360)
                 let sine   = sqrt(1.0 - cosine*cosine)
                 let res =  //unitized result vector

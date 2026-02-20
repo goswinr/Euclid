@@ -205,8 +205,8 @@ module AutoOpenUnitVec =
         member inline v.IsOppositeOrientation (other:UnitVec) =
             v *** other < -1e-12
 
-        /// Checks if the angle between the this 23D unit-vectors and a 2D vector is more than 180 degrees.
-        /// Calculates the dot product of a 3D vector and a unit-vectors.
+        /// Checks if the angle between this 3D unit-vector and a 3D vector is more than 90 degrees.
+        /// Calculates the dot product of a 3D vector and a unit-vector.
         /// Then checks if it is smaller than minus 1e-12.
         member inline v.IsOppositeOrientation (other:Vec) =
             if isTooTinySq(other.LengthSq) then failTooSmall "UnitVec.IsOppositeOrientation" other
@@ -548,16 +548,16 @@ module AutoOpenUnitVec =
         static member inline withLength(f:float) (v:UnitVec) =
             Vec (v.X * f, v.Y * f, v.Z * f)
 
-        /// Add to the X part of this 3D unit-vectors together. Returns a new (non-unitized) 3D vector.
+        /// Adds to the X part of this 3D unit-vector. Returns a new (non-unitized) 3D vector.
         static member inline moveX x (v:UnitVec) =
             Vec (v.X+x, v.Y, v.Z)
 
-        /// Add to the Y part of this 3D unit-vectors together. Returns a new (non-unitized) 3D vector.
+        /// Adds to the Y part of this 3D unit-vector. Returns a new (non-unitized) 3D vector.
         static member inline moveY y (v:UnitVec) =
             Vec (v.X, v.Y+y, v.Z)
 
 
-        /// Add to the Z part of this 3D unit-vectors together. Returns a new (non-unitized) 3D vector.
+        /// Adds to the Z part of this 3D unit-vector. Returns a new (non-unitized) 3D vector.
         static member inline moveZ z (v:UnitVec) =
             Vec (v.X, v.Y, v.Z+z)
 
@@ -604,7 +604,7 @@ module AutoOpenUnitVec =
             // 2*asin(|u-v|/2) gives us the angle between u and v.
             // The largest possible value of |u-v| occurs with perpendicular
             // vectors and is sqrt(2)/2 which is well away from extreme slope
-            // at +/-1. (See Windows OS Bug 01706299 for details) (form WPF reference source code)
+            // at +/-1. (See Windows OS Bug 01706299 for details) (from WPF reference source code)
             let dot = a *** b
             if -0.98 < dot && dot < 0.98 then // threshold for switching 0.98 ?
                 acos dot
@@ -837,14 +837,14 @@ module AutoOpenUnitVec =
 
         /// Returns a perpendicular horizontal vector. Rotated counterclockwise.
         /// Just does Vec(-v.Y, v.X, 0.0)
-        /// On vertical input vector resulting vector if of zero length.
+        /// On vertical input vector resulting vector is of zero length.
         static member inline perpendicularInXY (v:UnitVec) :Vec =
             Vec(-v.Y, v.X, 0.0)
 
         /// Returns a vector that is perpendicular to the given vector and in the same vertical Plane.
         /// Projected into the X-Y plane input and output vectors are parallel and of same orientation.
         /// Not of same length, not unitized.
-        /// On vertical input vector resulting vector if of zero length.
+        /// On vertical input vector resulting vector is of zero length.
         static member inline perpendicularInVerticalPlane (v:UnitVec) :Vec =
             let hor = Vec(v.Y, -v.X, 0.0)
             let r = UnitVec.cross (v, hor)
@@ -907,7 +907,7 @@ module AutoOpenUnitVec =
         /// Spherically interpolates between start and end by amount rel (0.0 to 1.0).
         /// The difference between this and linear interpolation (aka, "lerp") is that the vectors are treated as directions rather than points in space.
         /// The direction of the returned vector is interpolated by the angle and its magnitude is interpolated between the magnitudes of start and end.
-        /// Interpolation continues before and after the range of 0.0 and 0.1
+        /// Interpolation continues before and after the range of 0.0 and 1.0.
         static member slerp (start:UnitVec, ende:UnitVec, rel:float) :UnitVec =
             // https://en.wikipedia.org/wiki/Slerp
             // implementation tested in Rhino!
@@ -917,11 +917,11 @@ module AutoOpenUnitVec =
             elif dot < float Cosine.``179.95`` then
                 fail2 "UnitVec.slerp vectors are 180 deg opposite." start ende |> unbox // unbox to make type checker happy
             else
-                let ang = acos(dot) // the angel between the two vectors
+                let ang = acos(dot) // the angle between the two vectors
                 let p = ende - start*dot  // a vector perpendicular to start and in the same plane with ende.
                 let perp = UnitVec.create(p.X, p.Y, p.Z)
                 let theta = ang*rel // the angle part we want for the result
-                let theta360 = (theta+UtilEuclid.twoPi) % UtilEuclid.twoPi // make sure it is i the range 0.0 to 2 Pi (360 degrees)
+                let theta360 = (theta+UtilEuclid.twoPi) % UtilEuclid.twoPi // make sure it is in the range 0.0 to 2 Pi (360 degrees)
                 let cosine = cos (theta360)
                 let sine   = sqrt(1.0 - cosine*cosine)
                 let vx = start * cosine

@@ -86,19 +86,19 @@ module AutoOpenUnitVc =
             a.X * b.X + a.Y * b.Y  |> LanguagePrimitives.FloatWithMeasure
 
 
-        /// Rotate the a 2D unit-vector Counter Clockwise by a 2D Rotation (that has cos and sin precomputed)
+        /// Rotate a 2D unit-vector Counter Clockwise by a 2D Rotation (that has cos and sin precomputed)
         member inline v.RotateBy (r:Rotation2D) =
             UnitVc.createUnchecked (
                 r.Cos*v.X - r.Sin*v.Y,
                 r.Sin*v.X + r.Cos*v.Y)
 
         /// Rotate the 2D unit-vector in Degrees. Counter Clockwise.
-        /// For better Performance recompute the Rotate2D struct and use its member to rotate. see UnitVc.RotateBy.
+        /// For better performance recompute the Rotation2D struct and use its member to rotate. see UnitVc.RotateBy.
         member inline v.Rotate (angDegree)  =
             v.RotateBy (Rotation2D.createFromDegrees angDegree)
 
         /// Rotate the 2D unit-vector in Degrees. Counter Clockwise.
-        /// For better Performance recompute the Rotate2D struct and use its member to rotate. see UnitVc.RotateBy.
+        /// For better performance recompute the Rotation2D struct and use its member to rotate. see UnitVc.RotateBy.
         member inline v.RotateRadians (angRadians)  =
             v.RotateBy (Rotation2D.createFromRadians angRadians)
 
@@ -500,11 +500,11 @@ module AutoOpenUnitVc =
         static member inline withLength (length:float) (v:UnitVc) =
             Vc (v.X * length, v.Y * length)
 
-        /// Add to the X part of this 2D unit-vectors together. Returns a new (non-unitized) 2D vector.
+        /// Adds to the X part of this 2D unit-vector. Returns a new (non-unitized) 2D vector.
         static member inline moveX x (v:UnitVc) =
             Vc (v.X+x, v.Y)
 
-        /// Add to the Y part of this 2D unit-vectors together. Returns a new (non-unitized) 2D vector.
+        /// Adds to the Y part of this 2D unit-vector. Returns a new (non-unitized) 2D vector.
         static member inline moveY y (v:UnitVc) =
             Vc (v.X, v.Y+y)
 
@@ -535,7 +535,7 @@ module AutoOpenUnitVc =
             // 2*asin(|u-v|/2) gives us the angle between u and v.
             // The largest possible value of |u-v| occurs with perpendicular
             // vectors and is sqrt(2)/2 which is well away from extreme slope
-            // at +/-1. (See Windows OS Bug 01706299 for details) (form WPF reference source code)
+            // at +/-1. (See Windows OS Bug 01706299 for details) (from WPF reference source code)
             let dot = a *** b
             if -0.98 < dot && dot < 0.98 then // threshold for switching 0.98 ?
                 acos dot
@@ -554,7 +554,7 @@ module AutoOpenUnitVc =
         /// Range 0.0 to Pi/2 ( = 90 Degree)
         static member inline angleHalfPi (a:UnitVc) (b:UnitVc) =
             let dot = a *** b
-            let dotAbs = abs dot // constrains teh result to range 0-90 degrees
+            let dotAbs = abs dot // constrains the result to range 0-90 degrees
             if dotAbs < 0.98 then
                 acos dotAbs
             else
@@ -731,14 +731,14 @@ module AutoOpenUnitVc =
         static member inline arePerpendicular(other:UnitVc) (v:UnitVc) =
             v.IsPerpendicularTo other
 
-        /// Rotate the a 2D unit-vector Counter Clockwise by a 2D Rotation (that has cos and sin precomputed)
+        /// Rotate a 2D unit-vector Counter Clockwise by a 2D Rotation (that has cos and sin precomputed)
         static member inline rotateBy (r:Rotation2D) (v:UnitVc) =
             UnitVc.createUnchecked (
                 r.Cos*v.X - r.Sin*v.Y,
                 r.Sin*v.X + r.Cos*v.Y)
 
         /// Rotate the 2D unit-vector in Degrees. Counter Clockwise.
-        /// For better Performance recompute the Rotate2D struct and use its member to rotate. see UnitVc.rotateBy.
+        /// For better performance recompute the Rotation2D struct and use its member to rotate. see UnitVc.rotateBy.
         static member inline rotate (angDegree) (vec:UnitVc) =
             UnitVc.rotateBy (Rotation2D.createFromDegrees angDegree) vec
 

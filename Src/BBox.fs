@@ -966,12 +966,12 @@ type BBox =
     static member inline doOverlapMoreThan tol (a:BBox) (b:BBox)  : bool =
         b.OverlapsWith(a, tol)
 
-    /// Returns TRUE if the a 3D bounding box is inside or exactly on the other bounding Box.
+    /// Returns TRUE if a 3D bounding box is inside or exactly on the other bounding Box.
     /// Argument order matters!
     static member inline contains (boxInside:BBox) (surroundingBox:BBox)  : bool =
         surroundingBox.Contains(boxInside)
 
-    /// Returns TRUE if the point is inside or on the a 3D bounding box.
+    /// Returns TRUE if the point is inside or on a 3D bounding box.
     static member inline containsPnt (pt:Pnt) (box:BBox)  : bool =
         box.Contains(pt)
 

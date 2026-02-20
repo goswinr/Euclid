@@ -216,7 +216,7 @@ type Polyline3D (points: ResizeArray<Pnt>) =
                 a <- b
             vs
 
-    /// Gets the a bounding box of the Polyline3D
+    /// Gets the bounding box of the Polyline3D.
     member p.BoundingBox =
         BBox.createFromIList points
 

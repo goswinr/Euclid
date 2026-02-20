@@ -46,7 +46,7 @@ module AutoOpenVec =
         member inline v.LengthSqInXY =
             v.X*v.X + v.Y*v.Y
 
-        /// Returns  a new 3D vector with new X coordinate, Y and Z stay the same.
+        /// Returns a new 3D vector with new X coordinate, Y and Z stay the same.
         member inline v.WithX x =
             Vec (x, v.Y, v.Z)
 
@@ -62,7 +62,7 @@ module AutoOpenVec =
         member inline v.Half =
             Vec (v.X*0.5, v.Y*0.5, v.Z*0.5)
 
-        /// Cross product, of a 3D vector and a 3D unit-vectors.
+        /// Cross product, of a 3D vector and a 3D unit-vector.
         /// The resulting vector is perpendicular to both input vectors.
         /// The length of this resulting vector is the area of the parallelogram spanned by the input vectors.
         /// Its direction follows the right-hand rule.
@@ -70,7 +70,7 @@ module AutoOpenVec =
         member inline a.Cross (b:UnitVec) =
             Vec (a.Y * b.Z - a.Z * b.Y, a.Z * b.X - a.X * b.Z, a.X * b.Y - a.Y * b.X)
 
-        /// Cross product, of a 3D unit-vector and a 3D vectors.
+        /// Cross product, of a 3D unit-vector and a 3D vector.
         /// The resulting vector is perpendicular to both input vectors.
         /// The length of this resulting vector is the area of the parallelogram spanned by the input vectors.
         /// Its direction follows the right-hand rule.
@@ -680,7 +680,7 @@ module AutoOpenVec =
 
 
         /// Returns 3D vector unitized.
-        /// If vector has zero length this wil return an INFINITY unit vector
+        /// If vector has zero length this will return an INFINITY unit vector
         static member inline unitizeUnchecked (v:Vec) =
             let x = v.X
             let y = v.Y
@@ -886,7 +886,7 @@ module AutoOpenVec =
         /// Spherically interpolates between start and end by amount rel (0.0 to 1.0).
         /// The difference between this and linear interpolation (aka, "lerp") is that the vectors are treated as directions rather than points in space.
         /// The direction of the returned vector is interpolated by the angle and its magnitude is interpolated between the magnitudes of start and end.
-        /// Interpolation continues before and after the range of 0.0 and 0.1
+        /// Interpolation continues before and after the range of 0.0 and 1.0.
         static member slerp (start:Vec, ende:Vec, rel:float) =
             // https://en.wikipedia.org/wiki/Slerp
             // implementation tested in Rhino!
@@ -904,10 +904,10 @@ module AutoOpenVec =
             elif dot < float Cosine.``179.95`` then
                 fail2 "Vec.slerp vectors are 180 deg opposite." start ende |> unbox // unbox to make type checker happy
             else
-                let ang = acos(dot) // the angel between the two vectors
+                let ang = acos(dot) // the angle between the two vectors
                 let perp = eu - su*dot |> Vec.unitize // a vector perpendicular to start and in the same plane with ende.
                 let theta = ang*rel // the angle part we want for the result
-                let theta360 = (theta+UtilEuclid.twoPi) % UtilEuclid.twoPi // make sure it is i the range 0.0 to 2 Pi (360 degrees)
+                let theta360 = (theta+UtilEuclid.twoPi) % UtilEuclid.twoPi // make sure it is in the range 0.0 to 2 Pi (360 degrees)
                 let cosine = cos (theta360)
                 let sine   = sqrt(1.0 - cosine*cosine)
                 let res =  //unitized result vector
@@ -991,14 +991,14 @@ module AutoOpenVec =
 
         /// Returns a perpendicular horizontal vector. Rotated counterclockwise.
         /// Just does Vec(-v.Y, v.X, 0.0)
-        /// On vertical input vector resulting vector if of zero length.
+        /// On vertical input vector resulting vector is of zero length.
         static member inline perpendicularInXY (v:Vec) =
             Vec(-v.Y, v.X, 0.0)
 
         /// Returns a vector that is perpendicular to the given vector and in the same vertical Plane.
         /// Projected into the X-Y plane input and output vectors are parallel and of same orientation.
         /// Not of same length, not unitized.
-        /// On vertical input vector resulting vector if of zero length.
+        /// On vertical input vector resulting vector is of zero length.
         static member inline perpendicularInVerticalPlane (v:Vec) =
             let hor = Vec(v.Y, -v.X, 0.0)
             let r = Vec.cross (v, hor)

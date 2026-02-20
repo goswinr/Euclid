@@ -506,7 +506,7 @@ module AutoOpenLine3D =
         if isTooTinySq(vOt.LengthSq) then failTooSmall2 "Line3D.MatchesOrientation other" otherLn ln
         vLn *** vOt > 1e-12
 
-    /// Checks if the dot product between the a 3D lines and a vector is positive.
+    /// Checks if the dot product between a 3D line and a vector is positive.
     /// So if the angle between their direction vectors is less than 90 degrees.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.MatchesOrientation (v:Vec) =
@@ -515,7 +515,7 @@ module AutoOpenLine3D =
         if isTooTinySq(vLn.LengthSq) then failTooSmall2 "Line3D.MatchesOrientation other" ln v
         vLn *** v > 1e-12
 
-    /// Checks if the dot product between the a 3D lines and a unit-vector is positive.
+    /// Checks if the dot product between a 3D line and a unit-vector is positive.
     /// So if the angle between their direction vectors is less than 90 degrees.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.MatchesOrientation (v:UnitVec) =

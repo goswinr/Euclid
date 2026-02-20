@@ -310,8 +310,8 @@ module AutoOpenPt =
                 r.Sin*p.X + r.Cos*p.Y)
 
         /// Rotate the 2D point in Degrees. Counter Clockwise.
-        /// For better Performance precompute the Rotate2D struct and use its member to rotate.
-        /// see Vc.rotateBy.
+        /// For better performance precompute the Rotation2D struct and use its member to rotate.
+        /// see Pt.rotateBy.
         static member inline rotate (angDegree) (vec:Pt) : Pt =
             Pt.rotateBy (Rotation2D.createFromDegrees angDegree) vec
 

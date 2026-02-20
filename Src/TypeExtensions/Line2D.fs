@@ -379,7 +379,7 @@ module AutoOpenLine2D =
         vLn *** vOt > 1e-12
 
 
-    /// Checks if the dot product between the a 2D lines and a vector is positive .
+    /// Checks if the dot product between a 2D line and a vector is positive.
     /// So if the angle between their direction vectors is less than 90 degrees.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.MatchesOrientation (v:Vc) =
@@ -388,7 +388,7 @@ module AutoOpenLine2D =
         if isTooTinySq(vLn.LengthSq) then failTooSmall2 "Line2D.MatchesOrientation other" ln v
         vLn *** v > 1e-12
 
-    /// Checks if the dot product between the a 2D lines and a unit-vector is positive .
+    /// Checks if the dot product between a 2D line and a unit-vector is positive.
     /// So if the angle between their direction vectors is less than 90 degrees.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.MatchesOrientation (v:UnitVc) =
@@ -1068,7 +1068,7 @@ module AutoOpenLine2D =
         if orientationToMatch *** lineToFlip.Vector < 0.0 then lineToFlip.Reversed else lineToFlip
 
 
-    /// Checks if the dot product between the a 2D lines and a unit-vector is positive .
+    /// Checks if the dot product between two 2D lines is positive.
     /// So if the angle between their direction vectors is less than 90 degrees.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     static member inline matchesOrientation (l:Line2D) (ln:Line2D) =
