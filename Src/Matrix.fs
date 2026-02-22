@@ -201,6 +201,7 @@ type Matrix =
     member m.Inverse =
         // based on http://www.euclideanspace.com/maths/algebra/matrix/functions/inverse/fourD/index.htm
         // also see https://github.com/mrdoob/three.js/blob/master/src/math/Matrix4.js#L717
+        // and 2026 changes: https://github.com/mrdoob/three.js/pull/32657
         let m00 = m.M11
         let m01 = m.M12
         let m02 = m.M13

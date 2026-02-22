@@ -82,10 +82,52 @@ module AutoOpenPt =
 
 
         /// Returns new 2D point with given distance from Origin by scaling it up or down.
-        member inline pt.WithDistanceFromOrigin (l:float) =
+        member inline pt.WithDistanceFromOrigin (l:float) : Pt =
             let d = pt.DistanceFromOrigin
             if isTooTiny d then failTooSmall "Pt.WithDistanceFromOrigin" pt
             pt * (l/d)
+
+        /// Rotate a 2D point Counter Clockwise by a 2D Rotation (that has cos and sin precomputed)
+        member inline pt.RotateBy (r:Rotation2D) : Pt =
+            Pt(r.Cos*pt.X - r.Sin*pt.Y,
+                r.Sin*pt.X + r.Cos*pt.Y)
+
+        /// <summary>Rotate the 2D point in Degrees. Counter Clockwise.</summary>
+        /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
+        member inline pt.Rotate angDegree : Pt =
+            pt.RotateBy (Rotation2D.createFromDegrees angDegree)
+
+        /// <summary>Rotate the 2D point in Radians. Counter Clockwise.</summary>
+        /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
+        member inline pt.RotateRadians angRadians  : Pt =
+            pt.RotateBy (Rotation2D.createFromRadians angRadians)
+
+        /// 90 Degree rotation Counter-Clockwise.
+        member inline pt.Rotate90CCW : Pt =
+            Pt( -pt.Y, pt.X)
+
+        /// 90 Degree rotation clockwise.
+        member inline pt.Rotate90CW : Pt =
+            Pt(pt.Y, -pt.X)
+
+        /// Rotates the 2D point by a given number of quarter-circles (i.e. multiples of 90
+        /// degrees or Pi/2 radians). A positive number rotates counter-clockwise, a
+        /// negative number rotates clockwise. The length of the vector is preserved.
+        member inline pt.RotateByQuarterCircle(numberOfQuarters:int) : Pt =
+            Pt.rotateByQuarterCircle numberOfQuarters pt
+
+        /// Rotates a point by a given number of quarter-circles (i.e. multiples of 90
+        /// degrees or Pi/2 radians). A positive number rotates counter-clockwise, a
+        /// negative number rotates clockwise. The length of the vector is preserved.
+        static member rotateByQuarterCircle (numberOfQuarters:int) (v:Pt) : Pt=
+            let mutable nQuad = numberOfQuarters % 4
+            if nQuad < 0 then nQuad <- nQuad + 4
+            match nQuad with
+            | 0 -> v
+            | 1 -> Pt(-v.Y, v.X)
+            | 2 -> Pt(-v.X, -v.Y)
+            | 3 -> Pt(v.Y, -v.X)
+            | _ -> v // should never happen
 
 
         /// Returns the Diamond Angle from this point to another point.
@@ -94,7 +136,7 @@ module AutoOpenPt =
         /// 0.0 = Xaxis, going Counter-Clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         /// Fails if the two points are coincident or too close together.
-        member inline p.DirectionDiamondTo(o:Pt) =
+        member inline p.DirectionDiamondTo(o:Pt) : float =
             // https://stackoverflow.com/a/14675998/969070
             let x = o.X-p.X
             let y = o.Y-p.Y
@@ -309,11 +351,13 @@ module AutoOpenPt =
             Pt(r.Cos*p.X - r.Sin*p.Y,
                 r.Sin*p.X + r.Cos*p.Y)
 
-        /// Rotate the 2D point in Degrees. Counter Clockwise.
-        /// For better performance precompute the Rotation2D struct and use its member to rotate.
-        /// see Pt.rotateBy.
-        static member inline rotate (angDegree) (vec:Pt) : Pt =
+        /// <summary>Rotate the 2D point in Degrees. Counter Clockwise.</summary>
+        /// <remarks>For better performance precompute the Rotation2D struct and rotate with `Pt.rotateBy rotation2D`.</remarks>
+        static member inline rotate angDegree (vec:Pt) : Pt =
             Pt.rotateBy (Rotation2D.createFromDegrees angDegree) vec
+
+
+
 
         /// Rotate the 2D point around a center 2D point. Counter Clockwise.
         /// By a 2D Rotation (that has cos and sin precomputed)

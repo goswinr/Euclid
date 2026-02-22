@@ -768,7 +768,7 @@ module AutoOpenUnitVec =
             | 1 -> UnitVec.createUnchecked(-v.Y, v.X, v.Z)
             | 2 -> UnitVec.createUnchecked(-v.X, -v.Y, v.Z)
             | 3 -> UnitVec.createUnchecked(v.Y, -v.X, v.Z)
-            | _ -> fail "never happens" |> unbox // unbox to make type checker happy
+            | _ -> v // should never happen because of the modulo % 4 operation
 
         /// Rotate by Quaternion.
         static member inline rotateByQuaternion (q:Quaternion) (v:UnitVec) =

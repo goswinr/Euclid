@@ -92,13 +92,13 @@ module AutoOpenUnitVc =
                 r.Cos*v.X - r.Sin*v.Y,
                 r.Sin*v.X + r.Cos*v.Y)
 
-        /// Rotate the 2D unit-vector in Degrees. Counter Clockwise.
-        /// For better performance recompute the Rotation2D struct and use its member to rotate. see UnitVc.RotateBy.
+        /// <summary>Rotate the 2D unit-vector in Degrees. Counter Clockwise.</summary>
+        /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
         member inline v.Rotate (angDegree)  =
             v.RotateBy (Rotation2D.createFromDegrees angDegree)
 
-        /// Rotate the 2D unit-vector in Degrees. Counter Clockwise.
-        /// For better performance recompute the Rotation2D struct and use its member to rotate. see UnitVc.RotateBy.
+        /// <summary>Rotate the 2D unit-vector in Radians. Counter Clockwise.</summary>
+        /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
         member inline v.RotateRadians (angRadians)  =
             v.RotateBy (Rotation2D.createFromRadians angRadians)
 
@@ -737,8 +737,8 @@ module AutoOpenUnitVc =
                 r.Cos*v.X - r.Sin*v.Y,
                 r.Sin*v.X + r.Cos*v.Y)
 
-        /// Rotate the 2D unit-vector in Degrees. Counter Clockwise.
-        /// For better performance recompute the Rotation2D struct and use its member to rotate. see UnitVc.rotateBy.
+        /// <summary>Rotate the 2D unit-vector in Degrees. Counter Clockwise.</summary>
+        /// <remarks>For better performance precompute the Rotation2D struct and rotate with `UnitVc.rotateBy rotation2D`.</remarks>
         static member inline rotate (angDegree) (vec:UnitVc) =
             UnitVc.rotateBy (Rotation2D.createFromDegrees angDegree) vec
 

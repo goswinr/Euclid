@@ -116,13 +116,14 @@ module AutoOpenVc =
             Vc(r.Cos*v.X - r.Sin*v.Y,
                 r.Sin*v.X + r.Cos*v.Y)
 
-        /// Rotate the 2D vector in Degrees. Counter Clockwise.
-        /// For better performance precompute the Rotation2D struct and call Vc.RotateBy.
-        member inline v.Rotate (angDegree) =
+        /// <summary>Rotate the 2D vector in Degrees. Counter Clockwise.</summary>
+        /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
+        member inline v.Rotate angDegree =
             v.RotateBy (Rotation2D.createFromDegrees angDegree)
 
-        /// Rotate the 2D vector in Radians. Counter Clockwise.
-        member inline v.RotateRadians (angRadians)  =
+        /// <summary>Rotate the 2D vector in Radians. Counter Clockwise.</summary>
+        /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
+        member inline v.RotateRadians angRadians  =
             v.RotateBy (Rotation2D.createFromRadians angRadians)
 
         /// 90 Degree rotation Counter-Clockwise.
@@ -872,7 +873,7 @@ module AutoOpenVc =
             | 1 -> Vc(-v.Y, v.X)
             | 2 -> Vc(-v.X, -v.Y)
             | 3 -> Vc(v.Y, -v.X)
-            | _ -> Vc.Xaxis // should never happen
+            | _ -> v // should never happen
 
 
         /// Linearly interpolates between two vectors.
