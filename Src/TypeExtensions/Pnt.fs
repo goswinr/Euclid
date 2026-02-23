@@ -13,7 +13,7 @@ module AutoOpenPnt =
     type Pnt with
 
         /// Returns a boolean indicating whether X, Y or Z is NaN or Infinity.
-        member inline p.IsInValid =
+        member inline p.IsInValid : bool =
             isNanInfinity p.X || isNanInfinity p.Y || isNanInfinity p.Z
 
         /// Returns a boolean indicating whether X, Y and Z are valid (not NaN or Infinity).
@@ -21,46 +21,46 @@ module AutoOpenPnt =
             not p.IsInValid
 
         /// Returns the 3D point as 3D vector.
-        member inline p.AsVec =
+        member inline p.AsVec : Vec =
             Vec(p.X, p.Y, p.Z)
 
         /// Returns the 3D point as 2D point.
-        member inline p.AsPt =
+        member inline p.AsPt : Pt =
             Pt(p.X, p.Y)
 
         /// Returns a boolean indicating whether X, Y and Z are exactly 0.0.
-        member inline pt.IsOrigin =
+        member inline pt.IsOrigin : bool =
             pt.X = 0.0 && pt.Y = 0.0 && pt.Z= 0.0
 
         /// Returns a boolean indicating if any of X, Y and Z is not exactly 0.0.
-        member inline p.IsNotOrigin =
+        member inline p.IsNotOrigin : bool =
             p.X <> 0.0 || p.Y <> 0.0 || p.Z <> 0.0
 
         /// Returns a boolean indicating whether the absolute value of X, Y and Z is each less than the given tolerance.
-        member inline pt.IsAlmostOrigin tol =
+        member inline pt.IsAlmostOrigin tol : bool =
             abs pt.X < tol && abs pt.Y < tol && abs pt.Z < tol
 
         /// Returns new 3D point with new X coordinate, Y and Z stay the same.
-        member inline pt.WithX x =
+        member inline pt.WithX x : Pnt =
             Pnt (x, pt.Y, pt.Z)
 
         /// Returns a new 3D point with new Y coordinate, X and Z stay the same.
-        member inline pt.WithY y =
+        member inline pt.WithY y : Pnt =
             Pnt (pt.X, y, pt.Z)
 
         /// Returns a new 3D point with new Z coordinate, X and Y stay the same.
-        member inline pt.WithZ z =
+        member inline pt.WithZ z : Pnt =
             Pnt (pt.X, pt.Y, z)
 
         /// Returns the distance between two 3D points.
-        member inline p.DistanceTo (b:Pnt) =
+        member inline p.DistanceTo (b:Pnt) : float =
             let x = p.X-b.X
             let y = p.Y-b.Y
             let z = p.Z-b.Z
             sqrt(x*x + y*y + z*z)
 
         [<Obsolete("Use SqDistanceTo instead.")>]
-        member inline p.DistanceToSquare (b:Pnt) =
+        member inline p.DistanceToSquare (b:Pnt) : float =
             let x = p.X-b.X
             let y = p.Y-b.Y
             let z = p.Z-b.Z
@@ -68,34 +68,34 @@ module AutoOpenPnt =
 
         /// Returns the squared distance between two 3D points.
         /// This operation is slightly faster than the distance function, and sufficient for many algorithms like finding closest points.
-        member inline p.SqDistanceTo (b:Pnt) =
+        member inline p.SqDistanceTo (b:Pnt) : float =
             let x = p.X-b.X
             let y = p.Y-b.Y
             let z = p.Z-b.Z
             x*x + y*y + z*z
 
         /// Returns the distance from Origin (0, 0, 0)
-        member inline pt.DistanceFromOrigin =
+        member inline pt.DistanceFromOrigin : float =
             sqrt (pt.X*pt.X + pt.Y*pt.Y + pt.Z*pt.Z)
 
         [<Obsolete("Use SqDistanceFromOrigin instead.")>]
-        member inline pt.DistanceFromOriginSquare =
+        member inline pt.DistanceFromOriginSquare : float =
             pt.X*pt.X + pt.Y*pt.Y + pt.Z*pt.Z
 
         /// Returns the squared distance from Origin (0, 0, 0)
-        member inline pt.SqDistanceFromOrigin =
+        member inline pt.SqDistanceFromOrigin : float =
             pt.X*pt.X + pt.Y*pt.Y + pt.Z*pt.Z
 
         /// Returns the projected distance from Origin (0, 0, 0). Ignoring the Z component.
-        member inline pt.DistanceInXYFromOrigin =
+        member inline pt.DistanceInXYFromOrigin : float =
             sqrt (pt.X*pt.X + pt.Y*pt.Y)
 
         /// Returns the projected squared distance from Origin (0, 0, 0). Ignoring the Z component.
-        member inline pt.DistanceInXYFromOriginSquare =
+        member inline pt.DistanceInXYFromOriginSquare : float =
             pt.X*pt.X + pt.Y*pt.Y
 
         /// Returns new 3D point with given distance from Origin by scaling it up or down.
-        member inline pt.WithDistanceFromOrigin (l:float) =
+        member inline pt.WithDistanceFromOrigin (l:float) : Pnt =
             let d = pt.DistanceFromOrigin
             if isTooTiny d then failTooSmall "Pnt.WithDistanceFromOrigin" pt
             pt * (l/d)
@@ -105,7 +105,7 @@ module AutoOpenPnt =
         /// 0.0 = Xaxis, going Counter-Clockwise. Ignoring Z component.
         /// This is the fastest angle computation since it does not use Math.Cos or Math.Sin.
         /// It is useful for radial sorting.
-        member inline p.DirectionDiamondInXYTo(o:Pnt) =
+        member inline p.DirectionDiamondInXYTo(o:Pnt) : float =
             // https://stackoverflow.com/a/14675998/969070
             let x = o.X - p.X
             let y = o.Y - p.Y
@@ -123,7 +123,7 @@ module AutoOpenPnt =
 
         /// Returns the angle in Radians from this point to another point projected in X-Y plane.
         /// 0.0 = Xaxis, going Counter-Clockwise till two Pi.
-        member inline p.Angle2PiInXYTo(o:Pnt) =
+        member inline p.Angle2PiInXYTo(o:Pnt) : float =
             // https://stackoverflow.com/a/14675998/969070
             let x = o.X-p.X
             let y = o.Y-p.Y
@@ -134,38 +134,38 @@ module AutoOpenPnt =
 
         /// Returns the angle in Degrees from this point to another point projected in X-Y plane.
         /// 0.0 = Xaxis, going Counter-Clockwise till 360.
-        member inline p.Angle360InXYTo(o:Pnt) =
+        member inline p.Angle360InXYTo(o:Pnt) : float =
             p.Angle2PiInXYTo o |> toDegrees
 
 
         /// Returns the closest point on a finite line segment to test point.
         /// The line segment is defined by start point 'fromPt' and end point 'toPt'.
         /// Fails if fromPt and toPt are coincident or too close together.
-        member inline testPt.ClosestPointOnLine(ln:Line3D) =
+        member inline testPt.ClosestPointOnLine(ln:Line3D) : Pnt =
             XLine3D.clPtLn(ln.FromX, ln.FromY, ln.FromZ, ln.VectorX, ln.VectorY, ln.VectorZ,  testPt.X, testPt.Y, testPt.Z)
 
         /// Returns the squared distance between point and finite line segment.
         /// The line segment is defined by start point 'fromPt', unit direction 'uv', and length 'len'.
-        member inline testPt.SqDistanceToLine(ln:Line3D) =
+        member inline testPt.SqDistanceToLine(ln:Line3D) : float =
             XLine3D.sqDistLnPt(ln.FromX, ln.FromY, ln.FromZ, ln.VectorX, ln.VectorY, ln.VectorZ, testPt.X, testPt.Y, testPt.Z)
 
 
         /// Returns the distance between point and finite line segment.
         /// The line segment is defined by start point 'fromPt', unit direction 'uv', and length 'len'.
-        member inline testPt.DistanceToLine(ln:Line3D) =
+        member inline testPt.DistanceToLine(ln:Line3D) : float =
             testPt.SqDistanceToLine ln |> sqrt
 
         /// Multiplies (or applies) a Matrix to a 3D point (with an implicit 1 in the 4th dimension,
         /// so that it also works correctly for projections.)
-        member inline p.Transform (m:Matrix) =
+        member inline p.Transform (m:Matrix) : Pnt =
             p *** m // operator * is defined in Matrix.fs
 
         /// Multiplies (or applies) a RigidMatrix to a 3D point.
-        member inline p.TransformRigid (m:RigidMatrix) =
+        member inline p.TransformRigid (m:RigidMatrix) : Pnt =
             p *** m // operator * is defined in RigidMatrix.fs
 
         /// Multiplies (or applies) only the 3x3 rotation part of a RigidMatrix to a 3D point.
-        member inline p.TransformRigidRotateOnly (m:RigidMatrix) =
+        member inline p.TransformRigidRotateOnly (m:RigidMatrix) : Pnt =
             let x = p.X
             let y = p.Y
             let z = p.Z
@@ -199,14 +199,14 @@ module AutoOpenPnt =
 
         /// Checks if two 3D points are equal within tolerance.
         /// Use a tolerance of 0.0 to check for an exact match.
-        static member inline equals (tol:float) (a:Pnt) (b:Pnt) =
+        static member inline equals (tol:float) (a:Pnt) (b:Pnt) : bool =
             abs (a.X-b.X) <= tol &&
             abs (a.Y-b.Y) <= tol &&
             abs (a.Z-b.Z) <= tol
 
         /// Check if two 3D points are not equal within a given tolerance.
         /// Use a tolerance of 0.0 to check if the two points are not exactly equal.
-        static member notEquals (tol:float) (a:Pnt) (b:Pnt) =
+        static member notEquals (tol:float) (a:Pnt) (b:Pnt) : bool =
             abs (a.X-b.X) > tol ||
             abs (a.Y-b.Y) > tol ||
             abs (a.Z-b.Z) > tol

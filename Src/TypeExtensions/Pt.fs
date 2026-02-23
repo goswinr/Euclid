@@ -13,7 +13,7 @@ module AutoOpenPt =
     type Pt with
 
         /// Returns a boolean indicating whether X or Y is NaN or Infinity.
-        member inline p.IsInValid =
+        member inline p.IsInValid : bool =
             isNanInfinity p.X || isNanInfinity p.Y
 
         /// Returns a boolean indicating whether X and Y are both valid (not NaN or Infinity).
@@ -21,45 +21,45 @@ module AutoOpenPt =
             not p.IsInValid
 
         /// Returns the 2D point as 2D vector.
-        member inline p.AsVc =
+        member inline p.AsVc : Vc =
             Vc(p.X, p.Y)
 
         /// Returns the 2D point as 3D vector. Using 0.0 for Z.
-        member inline p.AsVec =
+        member inline p.AsVec : Vec =
             Vec(p.X, p.Y, 0.0)
 
         /// Returns the 2D point as 3D point. Using 0.0 for Z.
         /// Use the member pt.WithZ to set Z to a different value.
-        member inline p.AsPnt =
+        member inline p.AsPnt : Pnt =
             Pnt(p.X, p.Y, 0.0)
 
         /// Returns a boolean indicating whether X and Y are exactly 0.0.
-        member inline pt.IsOrigin =
+        member inline pt.IsOrigin : bool =
             pt.X = 0.0 && pt.Y = 0.0
 
         /// Returns a boolean indicating if any of X and Y is not exactly 0.0.
-        member inline p.IsNotOrigin =
+        member inline p.IsNotOrigin : bool =
             p.X <> 0.0 || p.Y <> 0.0
 
         /// Returns a boolean indicating whether the absolute value of X and Y is each less than the given tolerance.
-        member inline pt.IsAlmostOrigin tol =
+        member inline pt.IsAlmostOrigin tol : bool =
             abs pt.X < tol && abs pt.Y < tol
 
         /// Returns new 2D point with new X coordinate, Y stays the same.
-        member inline pt.WithX x =
+        member inline pt.WithX x : Pt =
             Pt (x, pt.Y)
 
         /// Returns new 2D point with new Y coordinate, X stays the same.
-        member inline pt.WithY y =
+        member inline pt.WithY y : Pt =
             Pt (pt.X, y)
 
         /// Returns new 3D point with Z coordinate, X and Y stay the same.
         /// If you want Z to be 0.0 you can use pt.AsPnt too.
-        member inline pt.WithZ z =
+        member inline pt.WithZ z : Pnt =
             Pnt (pt.X, pt.Y, z)
 
         /// Returns the distance between two 2D points.
-        member inline p.DistanceTo (b:Pt) =
+        member inline p.DistanceTo (b:Pt) : float =
             let x = p.X-b.X
             let y = p.Y-b.Y
             sqrt(x*x + y*y)
@@ -67,17 +67,17 @@ module AutoOpenPt =
 
         /// Returns the squared distance between two 2D points.
         /// This operation is slightly faster than the distance function, and sufficient for many algorithms like finding closest points.
-        member inline p.SqDistanceTo (b:Pt) =
+        member inline p.SqDistanceTo (b:Pt) : float =
             let x = p.X-b.X
             let y = p.Y-b.Y
             x*x + y*y
 
         /// Returns the distance from Origin (0, 0)
-        member inline pt.DistanceFromOrigin =
+        member inline pt.DistanceFromOrigin : float =
             sqrt (pt.X*pt.X + pt.Y*pt.Y)
 
         /// Returns the squared distance from Origin (0, 0)
-        member inline pt.SqDistanceFromOrigin =
+        member inline pt.SqDistanceFromOrigin : float =
             pt.X*pt.X + pt.Y*pt.Y
 
 
@@ -156,7 +156,7 @@ module AutoOpenPt =
         /// Returns the angle in Radians from this point to another point.
         /// 0.0 = Xaxis, going Counter-Clockwise till two Pi.
         /// Fails if the two points are coincident or too close together.
-        member inline p.Angle2PiTo(o:Pt) =
+        member inline p.Angle2PiTo(o:Pt) : float =
             // https://stackoverflow.com/a/14675998/969070
             let x = o.X-p.X
             let y = o.Y-p.Y
@@ -168,24 +168,24 @@ module AutoOpenPt =
         /// Returns the angle in Degrees from this point to another point.
         /// 0.0 = Xaxis, going Counter-Clockwise till 360.
         /// Fails if the two points are coincident or too close together.
-        member inline p.Angle360To(o:Pt) =
+        member inline p.Angle360To(o:Pt) : float =
             p.Angle2PiTo o |> toDegrees
 
         /// Returns the closest point on a finite line segment to test point.
         /// The line segment is defined by start point 'fromPt' and end point 'toPt'.
         /// Fails if fromPt and toPt are coincident or too close together.
-        member inline testPt.ClosestPointOnLine(ln:Line2D) =
+        member inline testPt.ClosestPointOnLine(ln:Line2D) : Pt =
             XLine2D.clPtLn(ln.FromX, ln.FromY, ln.VectorX, ln.VectorY, testPt.X, testPt.Y)
 
         /// Returns the squared distance between point and finite line segment.
         /// The line segment is defined by start point 'fromPt', unit direction 'uv', and length 'len'.
-        member inline testPt.SqDistanceToLine(ln:Line2D) =
+        member inline testPt.SqDistanceToLine(ln:Line2D) : float =
             XLine2D.sqDistLnPt(ln.FromX, ln.FromY, ln.VectorX, ln.VectorY, testPt.X, testPt.Y)
 
 
         /// Returns the distance between point and finite line segment.
         /// The line segment is defined by start point 'fromPt', unit direction 'uv', and length 'len'.
-        member inline testPt.DistanceToLine(ln:Line2D) =
+        member inline testPt.DistanceToLine(ln:Line2D) : float =
             testPt.SqDistanceToLine ln |> sqrt
 
 
@@ -212,13 +212,13 @@ module AutoOpenPt =
 
         /// Checks if two 2D points are equal within tolerance.
         /// Use a tolerance of 0.0 to check for an exact match.
-        static member inline equals (tol:float) (a:Pt) (b:Pt) =
+        static member inline equals (tol:float) (a:Pt) (b:Pt) : bool =
             abs (a.X-b.X) <= tol &&
             abs (a.Y-b.Y) <= tol
 
         /// Check if two 2D points are not equal within a given tolerance.
         /// Use a tolerance of 0.0 to check if the two points are not exactly equal.
-        static member notEquals (tol:float) (a:Pt) (b:Pt) =
+        static member notEquals (tol:float) (a:Pt) (b:Pt) : bool =
             abs (a.X-b.X) > tol ||
             abs (a.Y-b.Y) > tol
 
@@ -245,27 +245,27 @@ module AutoOpenPt =
 
 
         /// Create 2D point from 3D point. Ignoring Z component.
-        static member inline createFromPnt (p:Pnt) =
+        static member inline createFromPnt (p:Pnt) : Pt =
             Pt (p.X, p.Y)
 
         /// Create 2D point from 2D vector.
-        static member inline createFromVc (v:Vc) =
+        static member inline createFromVc (v:Vc) : Pt =
             Pt (v.X, v.Y)
 
         /// Create 2D point from 2D unit-vector.
-        static member inline createFromUnitVc (v:UnitVc) =
+        static member inline createFromUnitVc (v:UnitVc) : Pt =
             Pt (v.X, v.Y)
 
         /// Create a 2D point from X and Y components.
-        static member inline create (x:float, y:float) =
+        static member inline create (x:float, y:float) : Pt =
             Pt(x, y)
 
         /// Sets the X value and returns new 2D point.
-        static member inline withX x (pt:Pt) =
+        static member inline withX x (pt:Pt) : Pt =
             Pt(x, pt.Y)
 
         /// Sets the Y value and returns new 2D point.
-        static member inline withY y (pt:Pt) =
+        static member inline withY y (pt:Pt) : Pt =
             Pt(pt.X, y)
 
         /// Gets the X value of 2D point.

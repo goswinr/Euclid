@@ -56,7 +56,7 @@ module Format =
     /// Before and after the decimal point.
     /// Assumes a string that represent a float or int
     /// with '.' as decimal separator and no other input formatting.
-    let addThousandSeparators (thousandSeparator:char) (number:string) =
+    let addThousandSeparators (thousandSeparator:char) (number:string) : string =
 
         let b = Text.StringBuilder(number.Length + number.Length / 3 + 1)
         let inline add (c:char) = b.Append(c) |> ignore
@@ -106,7 +106,7 @@ module Format =
     module ToMaxDigits =
 
             /// Remove trailing zeros but keep last zero if dot reached
-            let trimZeros  (n:string) =
+            let trimZeros  (n:string) : string =
                 let mutable l = n.Length
                 let mutable i = n.Length - 1
                 while i >= 0  do
@@ -137,17 +137,17 @@ module Format =
 
         #else
             let private invC = Globalization.CultureInfo.InvariantCulture
-            let  d0 (x:float) = x.ToString("#")
-            let  d1 (x:float) = x.ToString("0.0", invC)
-            let  d2 (x:float) = x.ToString("0.0#", invC)
-            let  d3 (x:float) = x.ToString("0.0##", invC)
-            let  d4 (x:float) = x.ToString("0.####", invC)
-            let  d5 (x:float) = x.ToString("0.#####", invC)
-            let  d6 (x:float) = x.ToString("0.######", invC)
-            let  d7 (x:float) = x.ToString("0.#######", invC)
-            let  d8 (x:float) = x.ToString("0.########", invC)
-            let  d9 (x:float) = x.ToString("0.#########", invC)
-            let d10 (x:float) = x.ToString("0.##########", invC)
+            let  d0 (x:float) : string = x.ToString("#")
+            let  d1 (x:float) : string = x.ToString("0.0", invC)
+            let  d2 (x:float) : string = x.ToString("0.0#", invC)
+            let  d3 (x:float) : string = x.ToString("0.0##", invC)
+            let  d4 (x:float) : string = x.ToString("0.####", invC)
+            let  d5 (x:float) : string = x.ToString("0.#####", invC)
+            let  d6 (x:float) : string = x.ToString("0.######", invC)
+            let  d7 (x:float) : string = x.ToString("0.#######", invC)
+            let  d8 (x:float) : string = x.ToString("0.########", invC)
+            let  d9 (x:float) : string = x.ToString("0.#########", invC)
+            let d10 (x:float) : string = x.ToString("0.##########", invC)
         #endif
 
 
@@ -157,7 +157,7 @@ module Format =
     /// If the value is smaller than  (1e-7)  '≈+0.0' will be shown.
     /// The thousand separator character is used if more than 3 digits are next to each other before and after the comma.
     /// If the separator is the NUL character '\000' no separator will be added.
-    let floatWithSeparator (thousandSeparator:char) (x:float) =
+    let floatWithSeparator (thousandSeparator:char) (x:float) : string =
         if Double.IsNaN x then Literals.NaN
         elif x = Double.NegativeInfinity then Literals.NegativeInfinity
         elif x = Double.PositiveInfinity then Literals.PositiveInfinity
@@ -187,11 +187,11 @@ module Format =
     /// If the value is smaller than  (1e-7)  '≈+0.0' will be shown.
     /// The global thousand separator, a tick (') is used if more than 3 digits are next to each other before and after the comma.
     /// change it at 'Euclid.Format.globalThousandSeparator'
-    let float (x:float) =
+    let float (x:float) : string =
         floatWithSeparator globalThousandSeparator x
 
 
-    let rarr(xs:ResizeArray<'T>) =
+    let rarr(xs:ResizeArray<'T>) : string =
         if xs=null then "null-ResizeArray"
         elif xs.Count=0 then "empty ResizeArray"
         elif xs.Count=1 then $"ResizeArray with one item: [%O{xs.[0]}]"
@@ -203,7 +203,7 @@ module Format =
 
 
     open System.Collections.Generic
-    let iList(xs:IList<'T>) =
+    let iList(xs:IList<'T>) : string =
         if xs=null then "null-IList<'T>"
         elif xs.Count=0 then "empty IList<'T>"
         elif xs.Count=1 then $"IList<'T> with one item: [%O{xs.[0]}]"

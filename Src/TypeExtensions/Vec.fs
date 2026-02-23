@@ -11,11 +11,11 @@ module AutoOpenVec =
     type Vec with
 
         /// Convert 3D vector to 3D point.
-        member inline v.AsPnt =
+        member inline v.AsPnt : Pnt =
             Pnt(v.X, v.Y, v.Z)
 
         /// Convert 3D vector to 2D vector, discarding the Z value.
-        member inline v.AsVc =
+        member inline v.AsVc : Vc =
             Vc(v.X, v.Y)
 
         /// Returns a boolean indicating whether X, Y and Z are all exactly 0.0.
@@ -23,43 +23,43 @@ module AutoOpenVec =
             v.X = 0.0 && v.Y = 0.0 && v.Z = 0.0
 
         /// Returns a boolean indicating if any of X, Y and Z is not exactly 0.0.
-        member inline v.IsNotZero =
+        member inline v.IsNotZero : bool =
             not v.IsZero
 
         /// Check if the 3D vector is shorter than the tolerance.
         /// Also checks if any component is a NaN.
-        member inline v.IsTiny tol =
+        member inline v.IsTiny tol : bool =
             not (v.Length > tol)
 
         /// Check if the 3D vectors square length is shorter than the squared tolerance.
         /// Also checks if any component is a NaN.
-        member inline v.IsTinySq tol =
+        member inline v.IsTinySq tol : bool =
             not (v.LengthSq > tol)
 
 
         /// Returns the length of the 3D vector projected into World X-Y plane.
-        member inline v.LengthInXY =
+        member inline v.LengthInXY : float =
             sqrt (v.X*v.X + v.Y*v.Y)
 
         /// Returns the squared length of the 3D vector projected into World X-Y plane.
         /// The square length is faster to calculate and often good enough for use cases such as sorting vectors by length.
-        member inline v.LengthSqInXY =
+        member inline v.LengthSqInXY : float =
             v.X*v.X + v.Y*v.Y
 
         /// Returns a new 3D vector with new X coordinate, Y and Z stay the same.
-        member inline v.WithX x =
+        member inline v.WithX x : Vec =
             Vec (x, v.Y, v.Z)
 
         /// Returns a new 3D vector with new y coordinate, X and Z stay the same.
-        member inline v.WithY y =
+        member inline v.WithY y : Vec =
             Vec (v.X, y, v.Z)
 
         /// Returns a new 3D vector with new z coordinate, X and Y stay the same.
-        member inline v.WithZ z =
+        member inline v.WithZ z : Vec =
             Vec (v.X, v.Y, z)
 
         /// Returns a new 3D vector with half the length.
-        member inline v.Half =
+        member inline v.Half : Vec =
             Vec (v.X*0.5, v.Y*0.5, v.Z*0.5)
 
         /// Cross product, of a 3D vector and a 3D unit-vector.
@@ -67,7 +67,7 @@ module AutoOpenVec =
         /// The length of this resulting vector is the area of the parallelogram spanned by the input vectors.
         /// Its direction follows the right-hand rule.
         /// A x B = |A| * |B| * sin(angle)
-        member inline a.Cross (b:UnitVec) =
+        member inline a.Cross (b:UnitVec) : Vec =
             Vec (a.Y * b.Z - a.Z * b.Y, a.Z * b.X - a.X * b.Z, a.X * b.Y - a.Y * b.X)
 
         /// Cross product, of a 3D unit-vector and a 3D vector.
@@ -75,24 +75,24 @@ module AutoOpenVec =
         /// The length of this resulting vector is the area of the parallelogram spanned by the input vectors.
         /// Its direction follows the right-hand rule.
         /// A x B = |A| * |B| * sin(angle)
-        member inline a.Cross (b:Vec) =
+        member inline a.Cross (b:Vec) : Vec =
             Vec (a.Y * b.Z - a.Z * b.Y, a.Z * b.X - a.X * b.Z, a.X * b.Y - a.Y * b.X)
 
         /// Dot product, or scalar product of two 3D vectors.
         /// Returns a float.
-        member inline a.Dot (b:Vec) =
+        member inline a.Dot (b:Vec) : float =
             a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
         /// Dot product, or scalar product of a 3D vector with a 3D unit-vector.
         /// Returns a float.
         /// This float is the projected length of the 3D vector on the direction of the unit-vector.
-        member inline a.Dot (b:UnitVec) =
+        member inline a.Dot (b:UnitVec) : float =
             a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
 
         /// Returns a new 3D vector scaled to the desired length.
         /// Same as Vec.withLength.
-        member inline v.WithLength (desiredLength:float) =
+        member inline v.WithLength (desiredLength:float) : Vec =
             let l = v.Length
             if isTooTiny l then failUnit3 "Vec.WithLength" v.X v.Y v.Z
             v * (desiredLength / l)
@@ -100,7 +100,7 @@ module AutoOpenVec =
         /// Returns the 3D vector unitized.
         /// Fails with EuclidDivByZeroException if the length of the vector is
         /// too small (1e-16) to unitize.
-        member inline v.Unitized =
+        member inline v.Unitized : UnitVec =
             let x = v.X
             let y = v.Y
             let z = v.Z
@@ -120,27 +120,27 @@ module AutoOpenVec =
         /// Test if the 3D vector is a unit-vector.
         /// Test if the vectors square length is within 6 float steps of 1.0
         /// So between 0.99999964 and 1.000000715.
-        member inline v.IsUnit =
+        member inline v.IsUnit : bool =
             UtilEuclid.isOne v.LengthSq
 
         /// Returns a perpendicular horizontal vector. Rotated counterclockwise.
         /// Or Vec.Zero if input is vertical.
         /// Just does Vec(-v.Y, v.X, 0.0)
-        member inline v.PerpendicularInXY =
+        member inline v.PerpendicularInXY : Vec =
             Vec(-v.Y, v.X, 0)
 
         /// 90 Degree rotation Counter-Clockwise around Z-axis.
-        member inline v.RotateOnZ90CCW =
+        member inline v.RotateOnZ90CCW : Vec =
             Vec( -v.Y, v.X, v.Z)
 
         /// 90 Degree rotation clockwise around Z-axis.
-        member inline v.RotateOnZ90CW =
+        member inline v.RotateOnZ90CW : Vec =
             Vec(v.Y, -v.X, v.Z)
 
         /// Rotates the 3D vector around the Z-axis by a given number of quarter-circles (i.e. multiples of 90
         /// degrees or Pi/2 radians). A positive number rotates counter-clockwise, a
         /// negative number rotates clockwise. The length of the vector is preserved.
-        member inline v.RotateByQuarterCircle(numberOfQuarters:int) =
+        member inline v.RotateByQuarterCircle(numberOfQuarters:int) : Vec =
             Vec.rotateByQuarterCircle numberOfQuarters v
 
         /// The diamond angle.
@@ -149,7 +149,7 @@ module AutoOpenVec =
         /// 0.0 = Xaxis, going Counter-Clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
-        member inline v.DirectionDiamondInXY =
+        member inline v.DirectionDiamondInXY : float =
             // https://stackoverflow.com/a/14675998/969070
             if isTooTiny (abs v.X + abs v.Y) then failVertical "Vec.DirectionDiamondInXY" v
             if v.Y >= 0.0 then
@@ -166,7 +166,7 @@ module AutoOpenVec =
         /// Returns the angle in Radians from X-axis,
         /// Going Counter-Clockwise till two Pi.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
-        member inline v.Direction2PiInXY =
+        member inline v.Direction2PiInXY : float =
             // https://stackoverflow.com/a/14675998/969070
             if isTooTiny (abs v.X + abs v.Y) then failVertical "Vec.Direction2PiInXY" v
             let a = Math.Atan2(v.Y, v.X)
@@ -179,7 +179,7 @@ module AutoOpenVec =
         /// Ignores orientation.
         /// Range 0.0 to Pi.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
-        member inline v.DirectionPiInXY =
+        member inline v.DirectionPiInXY : float =
             // https://stackoverflow.com/a/14675998/969070
             if isTooTiny (abs v.X + abs v.Y) then failVertical "Vec.DirectionPiInXY" v
             let a = Math.Atan2(v.Y, v.X)
@@ -191,14 +191,14 @@ module AutoOpenVec =
         /// Returns the angle in Degrees from X-axis.
         /// Going Counter-Clockwise till 360.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
-        member inline v.Direction360InXY =
+        member inline v.Direction360InXY : float =
             v.Direction2PiInXY |> toDegrees
 
         /// Returns the angle in Degrees from X-axis,
         /// Ignores orientation.
         /// Range 0.0 to 180.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
-        member inline v.Direction180InXY =
+        member inline v.Direction180InXY : float =
             v.DirectionPiInXY |> toDegrees
 
         /// Returns positive angle for rotating Counter-Clockwise from this vector to vector 'b' .
@@ -206,7 +206,7 @@ module AutoOpenVec =
         /// Range of 0.0 to 4.0 (for 360 Degrees)
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
-        member inline v.AngleDiamondInXYTo (b:Vec) =
+        member inline v.AngleDiamondInXYTo (b:Vec) : float =
             let r = b.DirectionDiamondInXY - v.DirectionDiamondInXY
             if r >= 0. then  r
             else r + 4.0
@@ -215,7 +215,7 @@ module AutoOpenVec =
         /// Calculates the dot product of two 3D vectors.
         /// Then checks if it is bigger than 1e-12.
         /// Fails if any of the two vectors is shorter than zeroLengthTolerance (1e-12).
-        member inline v.MatchesOrientation (other:Vec) =
+        member inline v.MatchesOrientation (other:Vec) : bool =
             if isTooTinySq(v.LengthSq    ) then failTooSmall2 "Vec.MatchesOrientation" v other
             if isTooTinySq(other.LengthSq) then failTooSmall2 "Vec.MatchesOrientation" other v
             v *** other > 1e-12
@@ -224,7 +224,7 @@ module AutoOpenVec =
         /// Calculates the dot product of two 3D vectors.
         /// Then checks if it is bigger than 1e-12.
         /// Fails if the vector is shorter than zeroLengthTolerance (1e-12).
-        member inline v.MatchesOrientation (other:UnitVec) =
+        member inline v.MatchesOrientation (other:UnitVec) : bool =
             if isTooTinySq(v.LengthSq) then failTooSmall2 "Vec.MatchesOrientation" v other
             v *** other > 1e-12
 
@@ -233,7 +233,7 @@ module AutoOpenVec =
         /// Calculates the dot product of two 3D vectors.
         /// Then checks if it is smaller than minus 1e-12.
         /// Fails if any of the two vectors is shorter than zeroLengthTolerance (1e-12).
-        member inline v.IsOppositeOrientation (other:Vec) =
+        member inline v.IsOppositeOrientation (other:Vec) : bool =
             if isTooTinySq(v.LengthSq    ) then failTooSmall2 "Vec.IsOppositeOrientation" v other
             if isTooTinySq(other.LengthSq) then failTooSmall2 "Vec.IsOppositeOrientation" other v
             v *** other < -1e-12
@@ -242,7 +242,7 @@ module AutoOpenVec =
         /// Calculates the dot product of a 3D vector and a unit-vectors.
         /// Then checks if it is smaller than -1e-12.
         /// Fails if the vector is shorter than zeroLengthTolerance (1e-12).
-        member inline v.IsOppositeOrientation (other:UnitVec) =
+        member inline v.IsOppositeOrientation (other:UnitVec) : bool =
             if isTooTinySq(v.LengthSq) then failTooSmall2 "Vec.IsOppositeOrientation" v other
             v *** other < -1e-12
 
@@ -250,7 +250,7 @@ module AutoOpenVec =
         /// Checks if 3D vector is parallel to the world X axis. Ignoring orientation.
         /// The absolute deviation tolerance along Y and Z axis is 1e-9 (axisAlignmentTolerance).
         /// Fails on vectors shorter than 1e-6.
-        member inline v.IsXAligned =
+        member inline v.IsXAligned : bool =
             let x = abs (v.X)
             let y = abs (v.Y)
             let z = abs (v.Z)
@@ -261,7 +261,7 @@ module AutoOpenVec =
         /// Checks if 3D vector is parallel to the world Y axis. Ignoring orientation.
         /// The absolute deviation tolerance along X and Z axis is 1e-9 (axisAlignmentTolerance).
         /// Fails on vectors shorter than 1e-6.
-        member inline v.IsYAligned =
+        member inline v.IsYAligned : bool =
             let x = abs (v.X)
             let y = abs (v.Y)
             let z = abs (v.Z)

@@ -231,7 +231,7 @@ module UtilEuclid =
 
 
     /// Match the sign (+ or -) to a given number.
-    let matchSign (signedValue:float) (numToMatch:float) =
+    let matchSign (signedValue:float) (numToMatch:float) : float =
         if sign signedValue = sign numToMatch then
             numToMatch
         else
@@ -241,7 +241,7 @@ module UtilEuclid =
     /// Any positive or negative int will give a valid index for given collection size.
     /// Converts negative indices to positive ones and loops to start after last index is reached.
     /// Returns a valid index for a collection of 'length' items for any integer.
-    let inline saveIdx i length =
+    let inline saveIdx i length : int =
         let t = i % length
         if t >= 0 then t
         else           t + length

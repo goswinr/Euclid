@@ -12,16 +12,16 @@ module AutoOpenVc =
     type Vc with
 
         /// Convert 2D vector to 2D point.
-        member inline v.AsPt =
+        member inline v.AsPt : Pt =
             Pt(v.X, v.Y)
 
         /// Convert 2D vector to 3D vector using 0.0 as Z value.
         /// If you want a different Z value use the member v.WithZ(z)
-        member inline v.AsVec =
+        member inline v.AsVec : Vec =
             Vec(v.X, v.Y, 0.0)
 
         /// Convert 2D vector to 3D point using 0.0 as Z value.
-        member inline v.AsPnt =
+        member inline v.AsPnt : Pnt =
             Pnt(v.X, v.Y, 0.0)
 
         /// Returns a boolean indicating whether X and Y are exactly 0.0.
@@ -29,43 +29,43 @@ module AutoOpenVc =
             v.X = 0.0 && v.Y = 0.0
 
         /// Returns a boolean indicating if any of X and Y is not exactly 0.0.
-        member inline v.IsNotZero =
+        member inline v.IsNotZero : bool =
             v.X <> 0.0 || v.Y <> 0.0
 
         /// Check if the 2D vector is shorter than the tolerance.
         /// Also checks if any component is a NaN.
-        member inline v.IsTiny tol =
+        member inline v.IsTiny tol : bool =
             not (v.Length > tol)
 
         /// Check if the 2D vectors square length is shorter than the squared tolerance.
         /// Also checks if any component is a NaN.
-        member inline v.IsTinySq tol =
+        member inline v.IsTinySq tol : bool =
             not (v.LengthSq > tol)
 
         //member inline v.Length moved to Vc type declaration
         //member inline v.LengthSq moved to Vc type declaration
 
         /// Returns a new 2D vector with new X coordinate, Y stays the same.
-        member inline v.WithX x =
+        member inline v.WithX x : Vc =
             Vc (x, v.Y)
 
         /// Returns a new 2D vector with new Y coordinate, X stays the same.
-        member inline v.WithY y =
+        member inline v.WithY y : Vc =
             Vc (v.X, y)
 
         /// Returns new 3D vector with Z coordinate, X and Y stay the same.
         /// If you want Z to be 0.0 you can use v.AsVec too.
-        member inline v.WithZ z =
+        member inline v.WithZ z : Vec =
             Vec (v.X, v.Y, z)
 
         /// Returns a new 2D vector with half the length.
-        member inline v.Half =
+        member inline v.Half : Vc =
             Vc (v.X*0.5, v.Y*0.5)
 
 
         /// Returns a new 2D vector scaled to the desired length.
         /// Same as Vc.withLength.
-        member inline v.WithLength (desiredLength:float) =
+        member inline v.WithLength (desiredLength:float) : Vc =
             let l = v.Length
             if isTooTiny l then failTooSmall "Vc.WithLength" v
             v * (desiredLength / l)
@@ -73,7 +73,7 @@ module AutoOpenVc =
         /// Returns the 2D vector unitized.
         /// Fails with EuclidDivByZeroException if the length of the vector is
         /// less than 1e-12 (UtilEuclid.zeroLengthTolerance).
-        member inline v.Unitized =
+        member inline v.Unitized : UnitVc =
             let x = v.X
             let y = v.Y
             let l = sqrt (x*x + y*y)
@@ -84,60 +84,60 @@ module AutoOpenVc =
         /// Test if the 2D vector is a unit-vector.
         /// Tests if square length is within 6 float steps of 1.0
         /// So between 0.99999964 and 1.000000715.
-        member inline v.IsUnit =
+        member inline v.IsUnit : bool =
             UtilEuclid.isOne v.LengthSq
 
         /// The 2D Cross Product of two 2D vectors.
         /// It is just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
         /// If the rotation from 'a' to 'b' is Counter-Clockwise the result is positive.
-        member inline a.Cross (b:Vc) =
+        member inline a.Cross (b:Vc) : float =
             a.X*b.Y - a.Y*b.X
 
         /// The 2D Cross Product of a 2D vector with a 2D unit-vector.
         /// It is just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
         /// If the rotation from 'a' to 'b' is Counter-Clockwise the result is positive.
-        member inline a.Cross (b:UnitVc) =
+        member inline a.Cross (b:UnitVc) : float =
             a.X*b.Y - a.Y*b.X
 
         /// Dot product, or scalar product of two 2D vectors.
         /// Returns a float.
-        member inline a.Dot ( b:Vc) =
+        member inline a.Dot ( b:Vc) : float =
             a.X * b.X + a.Y * b.Y
 
         /// Dot product, or scalar product of a 2D vector with a 2D unit-vector.
         /// Returns a float.
         /// This float is the projected length of the 2D vector on the direction of the unit-vector.
-        member inline a.Dot ( b:UnitVc) =
+        member inline a.Dot ( b:UnitVc) : float =
             a.X * b.X + a.Y * b.Y
 
 
         /// Rotate a 2D vector Counter Clockwise by a 2D Rotation (that has cos and sin precomputed)
-        member inline v.RotateBy (r:Rotation2D) =
+        member inline v.RotateBy (r:Rotation2D) : Vc =
             Vc(r.Cos*v.X - r.Sin*v.Y,
                 r.Sin*v.X + r.Cos*v.Y)
 
         /// <summary>Rotate the 2D vector in Degrees. Counter Clockwise.</summary>
         /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
-        member inline v.Rotate angDegree =
+        member inline v.Rotate angDegree : Vc =
             v.RotateBy (Rotation2D.createFromDegrees angDegree)
 
         /// <summary>Rotate the 2D vector in Radians. Counter Clockwise.</summary>
         /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
-        member inline v.RotateRadians angRadians  =
+        member inline v.RotateRadians angRadians  : Vc =
             v.RotateBy (Rotation2D.createFromRadians angRadians)
 
         /// 90 Degree rotation Counter-Clockwise.
-        member inline v.Rotate90CCW =
+        member inline v.Rotate90CCW : Vc =
             Vc( -v.Y, v.X)
 
         /// 90 Degree rotation clockwise.
-        member inline v.Rotate90CW =
+        member inline v.Rotate90CW : Vc =
             Vc(v.Y, -v.X)
 
         /// Rotates the 2D vector by a given number of quarter-circles (i.e. multiples of 90
         /// degrees or Pi/2 radians). A positive number rotates counter-clockwise, a
         /// negative number rotates clockwise. The length of the vector is preserved.
-        member inline v.RotateByQuarterCircle(numberOfQuarters:int) =
+        member inline v.RotateByQuarterCircle(numberOfQuarters:int) : Vc =
             Vc.rotateByQuarterCircle numberOfQuarters v
 
 
@@ -146,7 +146,7 @@ module AutoOpenVc =
         /// It is always positive and in the range of 0.0 to 4.0 (for 360 Degrees)
         /// 0.0 = Xaxis, going Counter-Clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
-        member inline v.DirectionDiamond =
+        member inline v.DirectionDiamond : float =
             // https://stackoverflow.com/a/14675998/969070
             #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode
                 if isTooTiny (abs v.X + abs v.Y) then
@@ -166,7 +166,7 @@ module AutoOpenVc =
 
         /// Returns the angle in Radians from X-axis.
         /// Going Counter-Clockwise till two Pi.
-        member inline v.Direction2Pi =
+        member inline v.Direction2Pi : float =
             // https://stackoverflow.com/a/14675998/969070
             #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode
                 if isTooTiny (abs v.X + abs v.Y) then
@@ -182,7 +182,7 @@ module AutoOpenVc =
         /// Going Counter-Clockwise till two Pi.
         /// Ignores orientation.
         /// Range 0.0 to Pi.
-        member inline v.DirectionPi =
+        member inline v.DirectionPi : float =
             // https://stackoverflow.com/a/14675998/969070
             #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode // TODO : with this test all  operations are 2.5 times slower
                 if isTooTinySq(v.LengthSq)  then
@@ -196,20 +196,20 @@ module AutoOpenVc =
 
         /// Returns the angle in Degrees from X-axis.
         /// Going Counter-Clockwise till 360.
-        member inline v.Direction360 =
+        member inline v.Direction360 : float =
             v.Direction2Pi |> toDegrees
 
         /// Returns the angle in Degrees from X-axis,
         /// Ignores orientation.
         /// Range 0.0 to 180.
-        member inline v.Direction180 =
+        member inline v.Direction180 : float =
             v.DirectionPi |> toDegrees
 
         /// Returns positive angle for rotating Counter-Clockwise from this vector to vector 'b' .
         /// In Diamond Angle. Using only proportion of X to Y components.
         /// Range of 0.0 to 4.0 (for 360 Degrees)
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
-        member inline v.AngleDiamondTo (b:Vc) =
+        member inline v.AngleDiamondTo (b:Vc) : float =
             let r = b.DirectionDiamond - v.DirectionDiamond
             if r >= 0. then  r
             else r + 4.0
@@ -219,7 +219,7 @@ module AutoOpenVc =
         /// Calculates the dot product of two 2D vectors.
         /// Then checks if it is bigger than 1e-12.
         /// Fails if any of the two vectors is shorter than zeroLengthTolerance (1e-12).
-        member inline v.MatchesOrientation (other:Vc) =
+        member inline v.MatchesOrientation (other:Vc) : bool =
             if isTooTinySq(v.LengthSq    ) then failTooSmall2 "Vc.MatchesOrientation" v other
             if isTooTinySq(other.LengthSq) then failTooSmall2 "Vc.MatchesOrientation" other v
             v *** other > 1e-12
@@ -228,7 +228,7 @@ module AutoOpenVc =
         /// Calculates the dot product of a 2D vector and a unit-vectors.
         /// Then checks if it is bigger than 1e-12.
         /// Fails if the vector is shorter than zeroLengthTolerance (1e-12).
-        member inline v.MatchesOrientation (other:UnitVc) =
+        member inline v.MatchesOrientation (other:UnitVc) : bool =
             if isTooTinySq(v.LengthSq) then failTooSmall2 "Vc.MatchesOrientation" v other
             v *** other > 1e-12
 
@@ -236,7 +236,7 @@ module AutoOpenVc =
         /// Calculates the dot product of two 2D vectors.
         /// Then checks if it is smaller than -1e-12.
         /// Fails if any of the two vectors is shorter than zeroLengthTolerance (1e-12).
-        member inline v.IsOppositeOrientation (other:Vc) =
+        member inline v.IsOppositeOrientation (other:Vc) : bool =
             if isTooTinySq(v.LengthSq    ) then failTooSmall2 "Vc.IsOppositeOrientation" v other
             if isTooTinySq(other.LengthSq) then failTooSmall2 "Vc.IsOppositeOrientation" other v
             v *** other < -1e-12
@@ -245,7 +245,7 @@ module AutoOpenVc =
         /// Calculates the dot product of a 2D vector and a unit-vectors.
         /// Then checks if it is smaller than -1e-12.
         /// Fails if the vector is shorter than zeroLengthTolerance (1e-12).
-        member inline v.IsOppositeOrientation (other:UnitVc) =
+        member inline v.IsOppositeOrientation (other:UnitVc) : bool =
             if isTooTinySq(v.LengthSq) then failTooSmall2 "Vc.IsOppositeOrientation" v other
             v *** other < -1e-12
 
