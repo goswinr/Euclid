@@ -987,7 +987,8 @@ type Polyline2D (points: ResizeArray<Pt>) =
     /// Set to true to explicitly consider last point and first point to be from a closed loop, even if they are not at the same location.</param>
     /// <param name="checkOrientation">bool, Optional(true). By default the algorithm always checks if the polyline is clockwise or counter clockwise.
     /// So that positive offset distances are always towards the inside of the polyline.
-    /// Set this parameter to false if you are sure that the input polyline is counter clockwise or if you want to skip this check.</param>
+    /// Set this parameter to FALSE if you want to skip the orientation check.
+    /// Clockwise polylines will offset to the outside, counter-clockwise polylines to the inside.</param>
     /// <param name="uTurnBehavior"> Optional. Default value: `Offset2D.UTurnBehavior.Fail`.
     /// What to do at a 180 degree U-turn? Fail, Chamfer with two points, Use179 or Skip the point.</param>
     /// <param name="useUTurnBehaviorAbove"> Optional. Default value: `Cosine.``175.0`` `.
@@ -1037,7 +1038,8 @@ type Polyline2D (points: ResizeArray<Pt>) =
     /// Set to true to explicitly consider last point and first point to be from a closed loop, even if they are not at the same location.</param>
     /// <param name="checkOrientation">bool, Optional(true). By default the algorithm always checks if the polyline is clockwise or counter clockwise.
     /// So that positive offset distances are always towards the inside of the polyline.
-    /// Set this parameter to false if you are sure that the input polyline is counter clockwise or if you want to skip this check.</param>
+    /// Set this parameter to FALSE if you want to skip the orientation check.
+    /// Clockwise polylines will offset to the outside, counter-clockwise polylines to the inside.</param>
     /// <param name="varDistParallelBehavior"> Optional. Default value: `Offset2D.VarDistParallelBehavior.Fail`.
     ///  What to do with colinear segments below 'useVarDistParallelBehaviorBelow' degrees when offset distances are different too.</param>
     /// <param name="uTurnBehavior"> Optional. Default value: `Offset2D.UTurnBehavior.Fail`.
@@ -1100,7 +1102,8 @@ type Polyline2D (points: ResizeArray<Pt>) =
     /// Set to true to explicitly consider last point and first point to be from a closed loop, even if they are not at the same location.</param>
     /// <param name="checkOrientation">bool, Optional(true). By default the algorithm always checks if the polyline is clockwise or counter clockwise.
     /// So that positive offset distances are always towards the inside of the polyline.
-    /// Set this parameter to false if you are sure that the input polyline is counter clockwise or if you want to skip this check.</param>
+    /// Set this parameter to FALSE if you want to skip the orientation check.
+    /// Clockwise polylines will offset to the outside, counter-clockwise polylines to the inside.</param>
     /// <param name="varDistParallelBehavior"> Optional. Default value: `Offset2D.VarDistParallelBehavior.Fail`.
     ///  What to do with colinear segments below 'useVarDistParallelBehaviorBelow' degrees when offset distances are different too.</param>
     /// <param name="uTurnBehavior"> Optional. Default value: `Offset2D.UTurnBehavior.Fail`.

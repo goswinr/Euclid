@@ -260,6 +260,7 @@ module XLine2D =
 
     /// Returns the squared distance of a point to a finite line.
     let inline internal sqDistLnPt(pAx:float, pAy:float, vAx:float, vAy:float, x:float, y:float) : float =
+        // https://www.youtube.com/watch?v=PMltMdi1Wzg
         // parameter t of the closest point on line A to point B
         let t = clParamRayPt(pAx, pAy, vAx, vAy, x, y)
         if t > -1e-6 then // to handle NaN too

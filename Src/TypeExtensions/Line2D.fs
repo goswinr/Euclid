@@ -246,6 +246,8 @@ module AutoOpenLine2D =
     /// If it is smaller than 0.0 or bigger than 1.0 it is outside of the finite line.
     /// Fails on curves shorter than 1e-6 units. (ln.ClosestParameter does not)
     member ln.RayClosestParameter (pt:Pt) =
+        // http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
+        // https://www.youtube.com/watch?v=PMltMdi1Wzg
         let x = ln.FromX - ln.ToX
         let y = ln.FromY - ln.ToY
         let lenSq = x*x + y*y
@@ -260,7 +262,8 @@ module AutoOpenLine2D =
     /// The result is between 0.0 and 1.0.
     /// Does not fail on very short curves.
     member inline ln.ClosestParameter (p:Pt) =
-        //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
+        // http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
+        // https://www.youtube.com/watch?v=PMltMdi1Wzg
         let x = ln.FromX - ln.ToX
         let y = ln.FromY - ln.ToY
         let u = ln.FromX-p.X
