@@ -7,225 +7,293 @@ open EuclidErrors
 open Euclid.EuclidCollectionUtilities
 
 
-/// A class holding a list of 2D points representing a mutable 2D Polyline.
+/// A class holding a flat list of floats (x1,y1, x2,y2, ..) representing a mutable 2D Polyline.
 /// If the last point is the same as the first point, the Polyline2D is considered closed.
-/// The Default constructor uses the provided ResizeArray of points directly,
-/// so changes to the list will be reflected in the Polyline2D.
 // [<Struct>]
 [<NoEquality; NoComparison>] // because its made up from floats
 [<DataContract>] // for using DataMember on fields
-type Polyline2D (points: ResizeArray<Pt>) =
+type Polyline2D private (xs: ResizeArray<float>) =
 
-    /// Gets the internal list of all Points of the Polyline2D.
+    /// Gets the internal flat list of all coordinates of the Polyline2D.
+    /// Layout is x0, y0, x1, y1, x2, y2, ...
     /// This is not a copy, so changes to the list will be reflected in the Polyline2D.
     [<DataMember>]
-    member _.Points =  points
+    member _.InternalArray = xs
+
+    /// Gets all Points of the Polyline2D as a new ResizeArray of Pt.
+    /// This IS a copy, changes to the returned list will NOT be reflected in the Polyline2D.
+    member _.Points : ResizeArray<Pt> =
+        let count = xs.Count / 2
+        let pts = ResizeArray(count)
+        for i = 0 to count - 1 do
+            let j = i * 2
+            pts.Add(Pt(xs.[j], xs.[j+1]))
+        pts
 
     /// Create a new empty Polyline2D
-    new () = Polyline2D(ResizeArray<Pt>())
+    new () = Polyline2D(ResizeArray<float>())
 
     /// Create a new empty Polyline2D with predefined capacity for the internal list of points.
-    new (capacity:int) = Polyline2D(ResizeArray<Pt>(capacity))
+    new (capacity:int) = Polyline2D(ResizeArray<float>(capacity * 2))
+
+    /// Create a new Polyline2D from a ResizeArray of Pt.
+    new (points: ResizeArray<Pt>) =
+        let arr = ResizeArray(points.Count * 2)
+        for i = 0 to points.Count - 1 do
+            let p = points.[i]
+            arr.Add(p.X)
+            arr.Add(p.Y)
+        Polyline2D(arr)
+
+    /// Create a new Polyline2D from a sequence of Pt.
+    new (points: seq<Pt>) =
+        let arr = ResizeArray()
+        for p in points do
+            arr.Add(p.X)
+            arr.Add(p.Y)
+        Polyline2D(arr)
+
+    // ------ internal helpers ------
+    /// Number of 2D points
+    member private _.PtCount = xs.Count / 2
+
+    /// Get X coordinate of point at index i
+    member private _.GetX i = xs.[i * 2]
+
+    /// Get Y coordinate of point at index i
+    member private _.GetY i = xs.[i * 2 + 1]
+
+    /// Get point at index i as Pt
+    member private _.GetPt i =
+        let j = i * 2
+        Pt(xs.[j], xs.[j+1])
+
+    /// Set point at index i from Pt
+    member private _.SetPt i (pt:Pt) =
+        let j = i * 2
+        xs.[j]   <- pt.X
+        xs.[j+1] <- pt.Y
+
+    /// Add a point to the end
+    member private _.AddPt (pt:Pt) =
+        xs.Add(pt.X)
+        xs.Add(pt.Y)
+
+    /// The last point index (point count - 1)
+    member private p.LastIdx = p.PtCount - 1
 
     /// Nicely formatted string representation of the Polyline2D including its length.
     override p.ToString() =
-        if points.Count = 0 then
+        if p.PtCount = 0 then
             "empty Euclid.Polyline2D."
         elif p.IsClosed then
-            $"closed Euclid.Polyline2D with length {p.Length}, from {points.Count} points"
+            $"closed Euclid.Polyline2D with length {p.Length}, from {p.PtCount} points"
         else
-            $"open Euclid.Polyline2D with length {p.Length}, from {points.Count} points"
+            $"open Euclid.Polyline2D with length {p.Length}, from {p.PtCount} points"
 
     /// Format Polyline2D into string including its length.
     member p.AsString : string =
-        if points.Count = 0 then
+        if p.PtCount = 0 then
             "empty Polyline2D."
         elif p.IsClosed then
-            $"closed Polyline2D with length {p.Length}, from {points.Count} points"
+            $"closed Polyline2D with length {p.Length}, from {p.PtCount} points"
         else
-            $"open Polyline2D with length {p.Length}, from {points.Count} points"
+            $"open Polyline2D with length {p.Length}, from {p.PtCount} points"
 
 
     /// Format a 2D polyline into an F# code string that can be used to recreate the point.
     member p.AsFSharpCode : string =
-        let ptsAsCode =
-            points
-            |> ResizeArr.map _.AsFSharpCode
-            |> String.concat "; "
-        $"Polyline2D.create [| {ptsAsCode} |]"
+        let sb = System.Text.StringBuilder()
+        sb.Append("Polyline2D.create [| ") |> ignore
+        for i = 0 to p.LastIdx do
+            if i > 0 then sb.Append("; ") |> ignore
+            sb.Append($"Pt({p.GetX i}, {p.GetY i})") |> ignore
+        sb.Append(" |]") |> ignore
+        sb.ToString()
 
 
 
     /// Creates a copy of the Polyline2D
     /// Same as polyline.Clone()
     member p.Duplicate(): Polyline2D =
-        Polyline2D(points.GetRange(0, points.Count))
+        Polyline2D(ResizeArray(xs))
 
     /// Creates a copy of the Polyline2D.
     /// Same as polyline.Duplicate()
     member p.Clone(): Polyline2D =
-        Polyline2D(points.GetRange(0, points.Count))
+        Polyline2D(ResizeArray(xs))
 
     /// Sets the vertex at given index to the given point.
     /// On a closed Polyline2D, setting the first or last point will set both to the same point.
     member p.SetVertex idx (pt:Pt) =
-        if idx < 0 || idx >= points.Count then
-            fail $"Polyline2D.SetVertex: index {idx} is out of range for Polyline2D with {points.Count} points."
+        if idx < 0 || idx >= p.PtCount then
+            fail $"Polyline2D.SetVertex: index {idx} is out of range for Polyline2D with {p.PtCount} points."
         if idx = 0 && p.IsClosed then
-            points.[points.LastIndex] <- pt
-        elif idx = points.LastIndex && p.IsClosed then
-            points.[0] <- pt
-        points.[idx] <- pt //do last, otherwise IsClosed check fails
+            p.SetPt p.LastIdx pt
+        elif idx = p.LastIdx && p.IsClosed then
+            p.SetPt 0 pt
+        p.SetPt idx pt //do last, otherwise IsClosed check fails
 
     /// Gets or sets first point of the Polyline2D
     /// This is the point at index 0.
     /// Same as Polyline2D.FirstPoint
     member p.Start
         with get() =
-            if points.Count < 1 then failTooFewPoly2D "Start.get" 1 points.Count
-            points.[0]
-        and set(v) =
-            if points.Count < 1 then failTooFewPoly2D "Start.set" 1 points.Count
-            points.[0] <- v
+            if p.PtCount < 1 then failTooFewPoly2D "Start.get" 1 p.PtCount
+            p.GetPt 0
+        and set(v:Pt) =
+            if p.PtCount < 1 then failTooFewPoly2D "Start.set" 1 p.PtCount
+            p.SetPt 0 v
 
     /// Gets or sets last or end point of the Polyline2D
     /// This is the point at index Points.Count - 1.
     /// Same as Polyline2D.LastPoint
     member p.End
         with get() =
-            if points.Count < 1 then failTooFewPoly2D "End.get" 1 points.Count
-            points.[points.Count - 1]
-        and set(v) =
-            if points.Count < 1 then failTooFewPoly2D "End.set" 1 points.Count
-            points.[points.Count - 1] <- v
+            if p.PtCount < 1 then failTooFewPoly2D "End.get" 1 p.PtCount
+            p.GetPt p.LastIdx
+        and set(v:Pt) =
+            if p.PtCount < 1 then failTooFewPoly2D "End.set" 1 p.PtCount
+            p.SetPt p.LastIdx v
 
     /// Gets or sets the last point of the Polyline2D.
     /// This is the point at index Points.Count - 1.
     /// Same as Polyline2D.End
     member p.LastPoint
         with get() =
-            if points.Count < 1 then failTooFewPoly2D "LastPoint.get" 1 points.Count
-            points.[points.Count - 1]
-        and set(v) =
-            if points.Count < 1 then failTooFewPoly2D "LastPoint.set" 1 points.Count
-            points.[points.Count - 1] <- v
+            if p.PtCount < 1 then failTooFewPoly2D "LastPoint.get" 1 p.PtCount
+            p.GetPt p.LastIdx
+        and set(v:Pt) =
+            if p.PtCount < 1 then failTooFewPoly2D "LastPoint.set" 1 p.PtCount
+            p.SetPt p.LastIdx v
 
     /// Gets or sets the second last point of the Polyline2D.
     member p.SecondLastPoint
         with get() =
-            if points.Count < 2 then failTooFewPoly2D "SecondLastPoint.get" 2 p.PointCount
-            points.[points.Count - 2]
-        and set(v) =
-            if points.Count < 2 then failTooFewPoly2D "SecondLastPoint.set" 2 p.PointCount
-            points.[points.Count - 2] <- v
+            if p.PtCount < 2 then failTooFewPoly2D "SecondLastPoint.get" 2 p.PointCount
+            p.GetPt (p.PtCount - 2)
+        and set(v:Pt) =
+            if p.PtCount < 2 then failTooFewPoly2D "SecondLastPoint.set" 2 p.PointCount
+            p.SetPt (p.PtCount - 2) v
 
     /// Gets or sets the second point of the Polyline2D.
     /// This is the point at index 1.
     member p.SecondPoint
         with get() =
-            if points.Count < 2 then failTooFewPoly2D "SecondPoint.get" 2 p.PointCount
-            points.[1]
-        and set(v) =
-            if points.Count < 2 then failTooFewPoly2D "SecondPoint.set" 2 p.PointCount
-            points.[1] <- v
+            if p.PtCount < 2 then failTooFewPoly2D "SecondPoint.get" 2 p.PointCount
+            p.GetPt 1
+        and set(v:Pt) =
+            if p.PtCount < 2 then failTooFewPoly2D "SecondPoint.set" 2 p.PointCount
+            p.SetPt 1 v
 
     /// Gets or sets the first point of the Polyline2D.
     /// This is the point at index 0.
     /// Same as Polyline2D.Start
     member p.FirstPoint
         with get() =
-            if points.Count < 1 then failTooFewPoly2D "FirstPoint.get" 1 p.PointCount
-            points.[0]
-        and set(v) =
-            if points.Count < 1 then failTooFewPoly2D "FirstPoint.set" 1 p.PointCount
-            points.[0] <- v
+            if p.PtCount < 1 then failTooFewPoly2D "FirstPoint.get" 1 p.PointCount
+            p.GetPt 0
+        and set(v:Pt) =
+            if p.PtCount < 1 then failTooFewPoly2D "FirstPoint.set" 1 p.PointCount
+            p.SetPt 0 v
 
 
     /// Gets the count of points in the Polyline2D
     member p.PointCount =
-        points.Count
+        p.PtCount
 
     /// Gets the count of segments in the Polyline2D
     /// This is poly.Points.Count - 1
     member p.SegmentCount =
-        max 0 (points.Count - 1 )
+        max 0 (p.PtCount - 1 )
 
     /// Gets the index of the last point in the Polyline2D.
     /// points.Count - 1
     member p.LastPointIndex =
-        points.Count - 1
+        p.PtCount - 1
 
     /// Gets the index of the last segment in the Polyline2D.
     /// This is poly.Points.Count - 2
     member p.LastSegmentIndex =
-        points.Count - 2
+        p.PtCount - 2
 
     /// Gets the length of the Polyline2D
     /// Returns 0.0 if there are less than 2 points.
     member p.Length : float =
         let mutable l = 0.0
-        if points.Count > 1 then
-            let mutable prev = points.[0]
-            for i = 1 to points.Count-1 do
-                let t = points.[i]
-                l <- l + Pt.distance prev t
-                prev <- t
+        let cnt = p.PtCount
+        if cnt > 1 then
+            let mutable prevX = xs.[0]
+            let mutable prevY = xs.[1]
+            for i = 1 to cnt - 1 do
+                let j = i * 2
+                let tx = xs.[j]
+                let ty = xs.[j+1]
+                let dx = tx - prevX
+                let dy = ty - prevY
+                l <- l + sqrt(dx*dx + dy*dy)
+                prevX <- tx
+                prevY <- ty
         l
 
     /// Gets the segment at index i of the Polyline2D.
     member p.GetSegment(i:int) =
-        if i < 0 || i > points.Count - 2 then
-            fail $"Polyline2D.GetSegment: index {i} is out of range for Polyline2D with {points.Count} points."
-        Line2D(points.[i], points.[i+1])
+        if i < 0 || i > p.PtCount - 2 then
+            fail $"Polyline2D.GetSegment: index {i} is out of range for Polyline2D with {p.PtCount} points."
+        Line2D(p.GetPt i, p.GetPt (i+1))
 
     /// Gets the segment at index i of the Polyline2D.
     member p.LastSegment =
-        if points.Count < 2 then failTooFewPoly2D "LastSegment" 2 p.PointCount
-        let i = points.Count - 1
-        Line2D(points.[i-1], points.[i])
+        if p.PtCount < 2 then failTooFewPoly2D "LastSegment" 2 p.PointCount
+        let i = p.LastIdx
+        Line2D(p.GetPt (i-1), p.GetPt i)
 
     /// Gets the first segment of the Polyline2D.
     member p.FirstSegment =
-        if points.Count < 2 then failTooFewPoly2D "FirstSegment" 2 p.PointCount
-        Line2D(points.[0], points.[1])
+        if p.PtCount < 2 then failTooFewPoly2D "FirstSegment" 2 p.PointCount
+        Line2D(p.GetPt 0, p.GetPt 1)
 
     /// Returns all segments of the Polyline2D as a list of Line2D.
     member p.Segments : ResizeArray<Line2D> =
+        let cnt = p.PtCount
         let lns = ResizeArray(p.SegmentCount)
-        let pts = points
-        if pts.Count < 2 then
+        if cnt < 2 then
             lns
         else
-            let mutable a = pts.[0]
-            for i = 1 to points.LastIndex do
-                let b = pts.[i]
+            let mutable a = p.GetPt 0
+            for i = 1 to cnt - 1 do
+                let b = p.GetPt i
                 lns.Add(Line2D(a, b))
                 a <- b
             lns
 
     /// Returns the line vectors of all segments of the Polyline2D as a list of Vc.
     member p.SegmentVectors : ResizeArray<Vc> =
+        let cnt = p.PtCount
         let vs = ResizeArray(p.SegmentCount)
-        let pts = points
-        if pts.Count < 2 then
+        if cnt < 2 then
             vs
         else
-            let mutable a = pts.[0]
-            for i = 1 to points.LastIndex do
-                let b = pts.[i]
-                vs.Add(b-a)
-                a <- b
+            let mutable ax = xs.[0]
+            let mutable ay = xs.[1]
+            for i = 1 to cnt - 1 do
+                let j = i * 2
+                let bx = xs.[j]
+                let by = xs.[j+1]
+                vs.Add(Vc(bx - ax, by - ay))
+                ax <- bx
+                ay <- by
             vs
 
 
     /// Gets bounding rectangle of the Polyline2D
     member p.BoundingRectangle =
-        BRect.createFromIList points
+        BRect.createFromIList p.Points
 
     /// Tests if Polyline2D start and end points are exactly the same.
     /// Returns False if the Polyline2D has less than 3 points.
     member p.IsClosed =
-        points.Count > 2
+        p.PtCount > 2
         &&
         (p.Start  - p.End).IsZero
 
@@ -233,30 +301,44 @@ type Polyline2D (points: ResizeArray<Pt>) =
     /// Tests if Polyline2D is closed within given tolerance.
     /// Returns False if the Polyline2D has less than 3 points.
     member p.IsAlmostClosed tolerance =
-        points.Count > 2
+        p.PtCount > 2
         &&
         Pt.distanceSq p.Start p.End < tolerance*tolerance
 
     /// Reverse order of the Polyline2D in place.
     member p.ReverseInPlace() =
-        points.Reverse()
+        // Reverse pairs of floats in-place
+        let cnt = p.PtCount
+        let mutable lo = 0
+        let mutable hi = cnt - 1
+        while lo < hi do
+            let loJ = lo * 2
+            let hiJ = hi * 2
+            let tmpX = xs.[loJ]
+            let tmpY = xs.[loJ+1]
+            xs.[loJ]   <- xs.[hiJ]
+            xs.[loJ+1] <- xs.[hiJ+1]
+            xs.[hiJ]   <- tmpX
+            xs.[hiJ+1] <- tmpY
+            lo <- lo + 1
+            hi <- hi - 1
 
     /// Returns new Polyline2D in reversed Order.
     member p.Reverse () =
         let n = p.Duplicate()
-        n.Points.Reverse()
+        n.ReverseInPlace()
         n
 
     /// Close the Polyline2D if it is not already closed.
     /// If the ends are closer than the tolerance. The last point is set to equal the first point.
     /// Else the start point is added to the end of the Polyline2D.
     member p.CloseInPlace(toleranceForAddingPoint) =
-        if points.Count < 3 then failTooFewPoly2D "CloseInPlace" 3 p.PointCount
+        if p.PtCount < 3 then failTooFewPoly2D "CloseInPlace" 3 p.PointCount
         let v = p.Start  - p.End
         if v.LengthSq < toleranceForAddingPoint*toleranceForAddingPoint then
-            points.Last <- p.Start
+            p.SetPt p.LastIdx p.Start
         else
-            points.Add p.Start
+            p.AddPt p.Start
 
     /// The signed area of the Polyline2D .
     /// If it is positive the Polyline2D is Counter Clockwise.
@@ -265,11 +347,17 @@ type Polyline2D (points: ResizeArray<Pt>) =
     member p.SignedArea =
         //https://helloacm.com/sign-area-of-irregular-polygon/
         let mutable area = 0.0
-        let mutable t = points.Last // calculate from last to first too
-        for i=0 to points.Count-1 do
-            let n = points.[i]
-            area <- area + (t.X-n.X) * (n.Y + t.Y)
-            t <- n
+        let cnt = p.PtCount
+        let lastJ = p.LastIdx * 2
+        let mutable tx = xs.[lastJ] // calculate from last to first too
+        let mutable ty = xs.[lastJ + 1]
+        for i=0 to cnt - 1 do
+            let j = i * 2
+            let nx = xs.[j]
+            let ny = xs.[j+1]
+            area <- area + (tx - nx) * (ny + ty)
+            tx <- nx
+            ty <- ny
         area * 0.5
 
     /// The area of the Polyline2D.
@@ -309,30 +397,30 @@ type Polyline2D (points: ResizeArray<Pt>) =
     member pl.EvaluateAt(t:float) : Pt =
         let i = int t       // integer part of the parameter
         let p = t - float i // fractional part of the parameter
-        let count = pl.Points.Count
+        let count = pl.PtCount
         let countF = float count
 
         // values next to  the start of the polyline:
         if t < 1e-6 then
             if t < -1e-6 then
                 fail $"Polyline2D.EvaluateAt: Parameter {t} is less than 0.0"
-            pl.Points.First
+            pl.GetPt 0
 
         // values next to  the end of the polyline:
         elif t > (countF - 1e-6) then
             if t > (countF + 1e-6) then
-                fail $"Polyline2D.EvaluateAt: Parameter {t} is more than point count {pl.Points.Count}."
-            pl.Points.Last
+                fail $"Polyline2D.EvaluateAt: Parameter {t} is more than point count {pl.PtCount}."
+            pl.GetPt pl.LastIdx
 
         // return point if point is almost matching and integer
         elif p < 1e-6 then
-            pl.Points.[i]
+            pl.GetPt i
         elif p > 1.0 - 1e-6 then
-            pl.Points.[i+1]
+            pl.GetPt (i+1)
         else
-            let t = pl.Points.[i]
-            let v = pl.Points.[i+1] - t
-            t + v * p
+            let ti = pl.GetPt i
+            let v = pl.GetPt (i+1) - ti
+            ti + v * p
 
     [<Obsolete("This was semantically unclear, what happens at vertex? Use GetSegment(i).UnitTangent instead")>]
     member pl.TangentAt(_t:float) =
@@ -344,21 +432,26 @@ type Polyline2D (points: ResizeArray<Pt>) =
     /// The fractional part of the parameter is the parameter form 0.0 to 1.0 on the segment.
     /// The domain Polyline2D starts at 0.0 and ends at points.Count - 1.0 .
     member pl.ClosestParameter(p:Pt) =
-        let pts = pl.Points
-        if pts.IsEmpty then  fail "Polyline2D.ClosestParameter failed on empty Polyline2D"
-        let mutable a = pts[0]
+        let cnt = pl.PtCount
+        if cnt = 0 then  fail "Polyline2D.ClosestParameter failed on empty Polyline2D"
+        let mutable ax = xs.[0]
+        let mutable ay = xs.[1]
         let mutable minT = 0.0
         let mutable seg = 0
-        let mutable minDistSq = Pt.distanceSq a p // this handles the case of a single point Polyline2D
-        for i = 1 to pts.LastIndex do // 1 because last point is same as first
-            let b = pts.[i]
-            let dx = b.X - a.X
-            let dy = b.Y - a.Y
+        let dxI = p.X - ax
+        let dyI = p.Y - ay
+        let mutable minDistSq = dxI * dxI + dyI * dyI // this handles the case of a single point Polyline2D
+        for i = 1 to cnt - 1 do // 1 because last point is same as first
+            let j = i * 2
+            let bx = xs.[j]
+            let by = xs.[j+1]
+            let dx = bx - ax
+            let dy = by - ay
             if dx <> 0.0 || dy <> 0.0 then // zero distance between points
-                let t = ((p.X - a.X) * dx + (p.Y - a.Y) * dy) / (dx * dx + dy * dy)
+                let t = ((p.X - ax) * dx + (p.Y - ay) * dy) / (dx * dx + dy * dy)
                 let t' = max 0.0 (min 1.0 t)
-                let projX = a.X + dx * t'
-                let projY = a.Y + dy * t'
+                let projX = ax + dx * t'
+                let projY = ay + dy * t'
                 let dpx = p.X - projX
                 let dpy = p.Y - projY
                 let distSq = dpx * dpx + dpy * dpy
@@ -367,34 +460,40 @@ type Polyline2D (points: ResizeArray<Pt>) =
                     minT <- t'
                     seg <- i - 1 // -1 because i starts at 1
             else
-                let dpx = p.X - a.X
-                let dpy = p.Y - a.Y
+                let dpx = p.X - ax
+                let dpy = p.Y - ay
                 let distSq = dpx * dpx + dpy * dpy
                 if distSq < minDistSq then
                     minDistSq <- distSq
                     minT <- 0.0
                     seg <- i - 1
-            a <- b
+            ax <- bx
+            ay <- by
         float seg + minT
 
 
     /// Returns the point on the Polyline2D that is the closest point to the given point.
     /// This might be a point on a segment or a vertex point.
     member pl.ClosestPoint(p:Pt) =
-        let pts = pl.Points
-        if pts.IsEmpty then  fail "Polyline2D.ClosestPoint failed on empty Polyline2D"
-        let mutable a = pts[0]
-        let mutable minPt = a // this handles the case of a single point Polyline2D
-        let mutable minDistSq = Pt.distanceSq a p // this handles the case of a single point Polyline2D
-        for i = 1 to pts.LastIndex do // 1 because last point is same as first
-            let b = pts.[i]
-            let dx = b.X - a.X
-            let dy = b.Y - a.Y
+        let cnt = pl.PtCount
+        if cnt = 0 then  fail "Polyline2D.ClosestPoint failed on empty Polyline2D"
+        let mutable ax = xs.[0]
+        let mutable ay = xs.[1]
+        let mutable minPt = Pt(ax, ay) // this handles the case of a single point Polyline2D
+        let dxI = p.X - ax
+        let dyI = p.Y - ay
+        let mutable minDistSq = dxI * dxI + dyI * dyI
+        for i = 1 to cnt - 1 do // 1 because last point is same as first
+            let j = i * 2
+            let bx = xs.[j]
+            let by = xs.[j+1]
+            let dx = bx - ax
+            let dy = by - ay
             if dx <> 0.0 || dy <> 0.0 then // zero distance between points
-                let t = ((p.X - a.X) * dx + (p.Y - a.Y) * dy) / (dx * dx + dy * dy)
+                let t = ((p.X - ax) * dx + (p.Y - ay) * dy) / (dx * dx + dy * dy)
                 let t' = max 0.0 (min 1.0 t)
-                let projX = a.X + dx * t'
-                let projY = a.Y + dy * t'
+                let projX = ax + dx * t'
+                let projY = ay + dy * t'
                 let dpx = p.X - projX
                 let dpy = p.Y - projY
                 let distSq = dpx * dpx + dpy * dpy
@@ -402,23 +501,29 @@ type Polyline2D (points: ResizeArray<Pt>) =
                     minDistSq <- distSq
                     minPt <- Pt(projX, projY)
             else
-                let dpx = p.X - a.X
-                let dpy = p.Y - a.Y
+                let dpx = p.X - ax
+                let dpy = p.Y - ay
                 let distSq = dpx * dpx + dpy * dpy
                 if distSq < minDistSq then
                     minDistSq <- distSq
-                    minPt <- a
-            a <- b
+                    minPt <- Pt(ax, ay)
+            ax <- bx
+            ay <- by
         minPt
 
     /// Returns the index into the Polylines point list of the vertex that is closest to the given point.
     member pl.ClosestVertex(p:Pt) : int =
-        let pts = pl.Points
-        if pts.IsEmpty then  fail "Polyline2D.ClosestVertex failed on empty Polyline2D"
+        let cnt = pl.PtCount
+        if cnt = 0 then  fail "Polyline2D.ClosestVertex failed on empty Polyline2D"
         let mutable minIdx = 0
-        let mutable minDistSq = Pt.distanceSq pts[0] p
-        for i = 1 to pts.LastIndex do
-            let dSq = Pt.distanceSq pts.[i] p
+        let dx0 = xs.[0] - p.X
+        let dy0 = xs.[1] - p.Y
+        let mutable minDistSq = dx0 * dx0 + dy0 * dy0
+        for i = 1 to cnt - 1 do
+            let j = i * 2
+            let dx = xs.[j] - p.X
+            let dy = xs.[j+1] - p.Y
+            let dSq = dx * dx + dy * dy
             if dSq < minDistSq then
                 minDistSq <- dSq
                 minIdx <- i
@@ -426,31 +531,37 @@ type Polyline2D (points: ResizeArray<Pt>) =
 
     /// Returns the distance of the test point to the closest point on the Polyline2D.
     member pl.DistanceTo(p:Pt) =
-        let pts = pl.Points
-        if pts.IsEmpty then  fail "Polyline2D.DistanceTo failed on empty Polyline2D"
-        let mutable a = pts[0]
-        let mutable minDistSq = Pt.distanceSq a p // this handles the case of a single point Polyline2D
-        for i = 1 to pts.LastIndex do // 1 because last point is same as first
-            let b = pts.[i]
-            let dx = b.X - a.X
-            let dy = b.Y - a.Y
+        let cnt = pl.PtCount
+        if cnt = 0 then  fail "Polyline2D.DistanceTo failed on empty Polyline2D"
+        let mutable ax = xs.[0]
+        let mutable ay = xs.[1]
+        let dxI = p.X - ax
+        let dyI = p.Y - ay
+        let mutable minDistSq = dxI * dxI + dyI * dyI // this handles the case of a single point Polyline2D
+        for i = 1 to cnt - 1 do // 1 because last point is same as first
+            let j = i * 2
+            let bx = xs.[j]
+            let by = xs.[j+1]
+            let dx = bx - ax
+            let dy = by - ay
             if dx <> 0.0 || dy <> 0.0 then // zero distance between points
-                let t = ((p.X - a.X) * dx + (p.Y - a.Y) * dy) / (dx * dx + dy * dy)
+                let t = ((p.X - ax) * dx + (p.Y - ay) * dy) / (dx * dx + dy * dy)
                 let t' = max 0.0 (min 1.0 t)
-                let projX = a.X + dx * t'
-                let projY = a.Y + dy * t'
+                let projX = ax + dx * t'
+                let projY = ay + dy * t'
                 let dpx = p.X - projX
                 let dpy = p.Y - projY
                 let distSq = dpx * dpx + dpy * dpy
                 if distSq < minDistSq then
                     minDistSq <- distSq
             else
-                let dpx = p.X - a.X
-                let dpy = p.Y - a.Y
+                let dpx = p.X - ax
+                let dpy = p.Y - ay
                 let distSq = dpx * dpx + dpy * dpy
                 if distSq < minDistSq then
                     minDistSq <- distSq
-            a <- b
+            ax <- bx
+            ay <- by
         sqrt minDistSq
 
 
@@ -471,32 +582,38 @@ type Polyline2D (points: ResizeArray<Pt>) =
         // https://www.youtube.com/watch?v=E51LrZQuuPE
         let px = point.X
         let py = point.Y
-        let inline isLeft (aa:Pt) (bb:Pt)  =
-            let ax = px - aa.X // cross product unrolled to avoid allocation of temp Vc
-            let ay = py - aa.Y
-            let bx = bb.X - aa.X
-            let by = bb.Y - aa.Y
-            let det = ax * by - ay * bx
-            // if   det >  1e-12 then  1
-            // elif det < -1e-12 then -1
-            if   det > 0 then  1
-            elif det < 0 then -1
-            else 0
+        let cnt = pl.PtCount
 
         let mutable winding = 0
-        let pts = pl.Points
-        if pts.Count > 0 then
-            let mutable this = pts.[0]
-            for i = 1 to pts.LastIndex do
-                let next = pts.[i]
-                if this.Y <= py then
-                    if next.Y > py && isLeft this next  > 0 then
-                        winding <- winding - 1
+        if cnt > 0 then
+            let mutable thisX = xs.[0]
+            let mutable thisY = xs.[1]
+            for i = 1 to cnt - 1 do
+                let j = i * 2
+                let nextX = xs.[j]
+                let nextY = xs.[j+1]
+                if thisY <= py then
+                    if nextY > py then
+                        // isLeft inline
+                        let ax = px - thisX
+                        let ay = py - thisY
+                        let bx = nextX - thisX
+                        let by = nextY - thisY
+                        let det = ax * by - ay * bx
+                        if det > 0 then
+                            winding <- winding - 1
                 else
-                    if next.Y <= py && isLeft this next  < 0 then
-                        winding <- winding + 1
-                this <- next
-
+                    if nextY <= py then
+                        // isLeft inline
+                        let ax = px - thisX
+                        let ay = py - thisY
+                        let bx = nextX - thisX
+                        let by = nextY - thisY
+                        let det = ax * by - ay * bx
+                        if det < 0 then
+                            winding <- winding + 1
+                thisX <- nextX
+                thisY <- nextY
         winding
 
     /// <summary>Tests if a point is inside the closed Polyline2D using the ray casting algorithm.</summary>
@@ -512,23 +629,27 @@ type Polyline2D (points: ResizeArray<Pt>) =
     /// Points on left/bottom edges tend to be considered inside, right/top edges outside.
     /// The result may differ from checking the pl.WindingNumber 0 for boundary points.</remarks>
     member p.Contains (pt: Pt)  =
-        let pts = p.Points
-        if pts.Count < 3 then
+        let cnt = p.PtCount
+        if cnt < 3 then
             false
         else
             // taken from Polylabel algorithm
             // also see https://wrf.ecse.rpi.edu/Research/Short_Notes/pnpoly.html
             let mutable inside = false
-            let mutable pi = pts.[0]
+            let mutable piX = xs.[0]
+            let mutable piY = xs.[1]
             let y = pt.Y
             let x = pt.X
-            for i = 1 to pts.LastIndex do
-                let pj = pts.[i]
-                if  (pi.Y > y) <> (pj.Y > y)
-                &&  x < (pj.X - pi.X) * (y - pi.Y) / (pj.Y - pi.Y) + pi.X
+            for i = 1 to cnt - 1 do
+                let j = i * 2
+                let pjX = xs.[j]
+                let pjY = xs.[j+1]
+                if  (piY > y) <> (pjY > y)
+                &&  x < (pjX - piX) * (y - piY) / (pjY - piY) + piX
                     then
                         inside <- not inside
-                pi <- pj
+                piX <- pjX
+                piY <- pjY
             inside
 
 
@@ -543,34 +664,37 @@ type Polyline2D (points: ResizeArray<Pt>) =
 
     /// Returns the average center of all points of the Polyline2D.
     member p.Center =
-        if points.Count = 0 then failTooFewPoly2D "Center" 1 p.PointCount
+        let cnt = p.PtCount
+        if cnt = 0 then failTooFewPoly2D "Center" 1 p.PointCount
         let mutable x = 0.0
         let mutable y = 0.0
-        for i = 0 to points.LastIndex do
-            let p = points.[i]
-            x <- x + p.X
-            y <- y + p.Y
-        Pt(x / float points.Count, y / float points.Count)
+        for i = 0 to cnt - 1 do
+            let j = i * 2
+            x <- x + xs.[j]
+            y <- y + xs.[j+1]
+        Pt(x / float cnt, y / float cnt)
 
 
     /// Scales the 2D polyline by a given factor.
     /// Scale center is World Origin 0,0
     member p.Scale (factor:float) : Polyline2D =
-        points
-        |> ResizeArr.map (fun pt -> pt * factor)
-        |> Polyline2D
+        let nxs = ResizeArray(xs.Count)
+        for i = 0 to xs.Count - 1 do
+            nxs.Add(xs.[i] * factor)
+        Polyline2D(nxs)
 
 
     /// Scales the 2D polyline by a given factor on a given center point.
     member p.ScaleOn (cen:Pt) (factor:float) : Polyline2D =
         let cx = cen.X
         let cy = cen.Y
-        points
-        |> ResizeArr.map (fun pt ->
-            Pt( cx + (pt.X - cx) * factor,
-                cy + (pt.Y - cy) * factor)
-            )
-        |> Polyline2D
+        let cnt = p.PtCount
+        let nxs = ResizeArray(xs.Count)
+        for i = 0 to cnt - 1 do
+            let j = i * 2
+            nxs.Add(cx + (xs.[j] - cx) * factor)
+            nxs.Add(cy + (xs.[j+1] - cy) * factor)
+        Polyline2D(nxs)
 
     /// Finds a point inside a closed Polyline2D that is the farthest away from the edges of the Polyline2D.
     /// Uses the Polylabel algorithm from Mapbox. It is a highly optimized algorithm specifically designed to find the
@@ -701,22 +825,20 @@ type Polyline2D (points: ResizeArray<Pt>) =
     static member findLablePoint (precision: float) (pl: Polyline2D)  =
         pl.FindLablePoint precision
 
-    /// Gets the internal list of all Points of the Polyline2D.
-    /// This is not a copy, so changes to the list will be reflected in the Polyline2D.
+    /// Gets the internal list of all Points of the Polyline2D as a new ResizeArray.
+    /// This IS a copy, changes to the returned list will NOT be reflected in the Polyline2D.
     static member pointsUnsafeInternal (p:Polyline2D) =
         p.Points
 
     /// Gets first point of the Polyline2D
     static member start (p:Polyline2D) =
-        let points = p.Points
-        if points.Count < 1 then failTooFewPoly2D "start" 1 p.PointCount
-        points.[0]
+        if p.PtCount < 1 then failTooFewPoly2D "start" 1 p.PointCount
+        p.GetPt 0
 
     /// Gets last or end point of the Polyline2D
     static member ende (p:Polyline2D) =
-        let points = p.Points
-        if points.Count < 1 then failTooFewPoly2D "ende" 1 p.PointCount
-        points.[ points.Count - 1 ]
+        if p.PtCount < 1 then failTooFewPoly2D "ende" 1 p.PointCount
+        p.GetPt p.LastIdx
 
     /// Gets the length of the Polyline2D.
     /// The sum of the lengths of all segments.
@@ -725,7 +847,7 @@ type Polyline2D (points: ResizeArray<Pt>) =
 
     /// Gets the number of points in the Polyline2D.
     static member inline pointCount (p:Polyline2D) =
-        p.Points.Count
+        p.PtCount
 
     /// Gets the number of segments in the Polyline2D.
     static member inline segmentCount (p:Polyline2D) =
@@ -749,7 +871,13 @@ type Polyline2D (points: ResizeArray<Pt>) =
 
     /// Apply a mapping function to each point in the 2D Polyline2D. Returns new Polyline2D.
     static member map (mapping:Pt->Pt) (pl:Polyline2D) =
-        pl.Points |> ResizeArr.map mapping |> Polyline2D
+        let cnt = pl.PtCount
+        let nxs = ResizeArray(cnt * 2)
+        for i = 0 to cnt - 1 do
+            let mapped = mapping (pl.GetPt i)
+            nxs.Add(mapped.X)
+            nxs.Add(mapped.Y)
+        Polyline2D(nxs)
 
     /// Move a Polyline2D by a vector. (same as Polyline2D.move)
     static member translate (v:Vc) (pl:Polyline2D)  : Polyline2D =
@@ -805,7 +933,7 @@ type Polyline2D (points: ResizeArray<Pt>) =
     /// Create a new Polyline2D by copying over all points.
     /// This will allocate a new ResizeArray and copy all points.
     static member inline create(points: seq<Pt>) =
-        Polyline2D(ResizeArray(points))
+        Polyline2D(points)
 
     /// Create a new Polyline2D by using the provided ResizeArray directly.
     /// Unsafe because all later changes to the ResizeArray will be reflected in the Polyline2D.
@@ -815,7 +943,7 @@ type Polyline2D (points: ResizeArray<Pt>) =
     /// Create a new empty Polyline2D without any points.
     /// But predefined capacity.
     static member inline createEmpty (capacity:int) =
-        Polyline2D(ResizeArray(capacity))
+        Polyline2D(capacity)
 
 
     /// Returns new Polyline2D from point at Parameter a to point at Parameter b.
@@ -825,22 +953,22 @@ type Polyline2D (points: ResizeArray<Pt>) =
         let rev = a>b
         let u, v = if rev then b, a else a, b
         let np = Polyline2D.createEmpty (int(v-u)+2)
-        let nps = np.Points
-        let ps  = pl.Points
         // first point
         let ui = int u
         let uf = u - float ui
         if uf < 0.9999 then
-            nps.Add(pl.EvaluateAt u)
+            let pt = pl.EvaluateAt u
+            np.AddPt pt
         // inner points
         for i = int u + 1 to int v do
-            if i >= 0 && i < ps.Count then
-                nps.Add(ps[i])
+            if i >= 0 && i < pl.PtCount then
+                np.AddPt (pl.GetPt i)
         // last point
         let vi = int v
         let vf = v - float vi
         if vf > 1e-4 then
-            nps.Add(pl.EvaluateAt v)
+            let pt = pl.EvaluateAt v
+            np.AddPt pt
         // reverse if necessary
         if rev then
             np.ReverseInPlace()
@@ -852,26 +980,23 @@ type Polyline2D (points: ResizeArray<Pt>) =
     /// If the first and last point are within 1e-6 of each other, the last point is set equal to the first point.
     /// Otherwise one point is added.
     static member close (pl:Polyline2D) =
-        if pl.Points.Count < 2 then failTooFewPoly2D "close" 2 pl.PointCount
-        let ps = pl.Points
-        let np = Polyline2D.createEmpty (ps.Count + 1)
-        np.Points.AddRange(ps.GetRange(0, ps.Count))
-        if Pt.distanceSq ps.First ps.Last < 1e-12 then
-            np.Points.[np.Points.Count-1] <- np.Points.First // set last point equal to first
+        if pl.PtCount < 2 then failTooFewPoly2D "close" 2 pl.PointCount
+        let np = pl.Duplicate()
+        if Pt.distanceSq pl.Start pl.End < 1e-12 then
+            np.SetPt np.LastIdx np.Start // set last point equal to first
         else
-            np.Points.Add np.Points.First
+            np.AddPt np.Start
         np
 
 
     /// Closes the Polyline2D in place by adding a point.
     /// If the first and last point are within 1e-6 of each other, the last point is set equal to the first point instead.
     static member closeInPlace (pl:Polyline2D) =
-        if pl.Points.Count < 2 then failTooFewPoly2D "closeInPlace" 2 pl.PointCount
-        let points = pl.Points
-        if Pt.distanceSq points.First points.Last < 1e-12 then
-            points.[points.Count-1] <- points.First
+        if pl.PtCount < 2 then failTooFewPoly2D "closeInPlace" 2 pl.PointCount
+        if Pt.distanceSq pl.Start pl.End < 1e-12 then
+            pl.SetPt pl.LastIdx pl.Start
         else
-            points.Add points.First
+            pl.AddPt pl.Start
 
     /// Tests if two Polyline2D have the same number of points and points are equal within a given tolerance.
     static member equals tol (a:Polyline2D) (b:Polyline2D)  : bool =
@@ -881,10 +1006,8 @@ type Polyline2D (points: ResizeArray<Pt>) =
         else
             let mutable i = 0
             let mutable same = true
-            let aPts = a.Points
-            let bPts = b.Points
             while i < k && same do
-                if Pt.equals tol aPts.[i] bPts.[i] then
+                if Pt.equals tol (a.GetPt i) (b.GetPt i) then
                     i <- i + 1
                 else
                     same <- false
@@ -893,19 +1016,21 @@ type Polyline2D (points: ResizeArray<Pt>) =
     /// Removes consecutive duplicate points from the Polyline2D within a given tolerance.
     /// This algorithm allows the last and first point to be identical if the Polyline2D is closed.
     static member removeDuplicatePoints (distanceTolerance:float) (pl:Polyline2D) =
-        let pts = pl.Points
-        if pts.Count < 2 then // single point or empty polyline
+        let cnt = pl.PtCount
+        if cnt < 2 then // single point or empty polyline
             pl
         else
-            let nps = ResizeArray(pts.Count)
-            let mutable prev = pts.[0]
-            nps.Add prev
-            for i = 1 to pts.LastIndex do
-                let p = pts.[i]
+            let nxs = ResizeArray(cnt * 2)
+            let mutable prev = pl.GetPt 0
+            nxs.Add(prev.X)
+            nxs.Add(prev.Y)
+            for i = 1 to cnt - 1 do
+                let p = pl.GetPt i
                 if not (Pt.equals distanceTolerance prev p) then
-                    nps.Add p
+                    nxs.Add(p.X)
+                    nxs.Add(p.Y)
                     prev <- p
-            Polyline2D.createDirectlyUnsafe nps
+            Polyline2D(nxs)
 
     /// Removes consecutive duplicate points and colinear points from the Polyline2D within given tolerances.
     /// This algorithm allows the last and first point to be identical if the Polyline2D is closed.
@@ -919,43 +1044,45 @@ type Polyline2D (points: ResizeArray<Pt>) =
         if angleTolerance > Cosine.``0.01`` then
             fail $"Polyline2D.removeColinearAndDuplicatePoints: angleTolerance must be at most Cosine.``0.01`` ( that is 0.999999984) but was {angleTolerance} (= {acos (float angleTolerance)} degrees)."
 
-        let pts = pl.Points
-        if pts.Count < 2 then // single point or empty polyline
+        let cnt = pl.PtCount
+        if cnt < 2 then // single point or empty polyline
             pl
         else
-            let nps = ResizeArray(pts.Count)
+            let nxs = ResizeArray(cnt * 2)
+            let lastIdx = cnt - 1
 
-            let lastIdx = pts.LastIndex
-            let mutable prev = pts.[0]
-            nps.Add prev // add first  point
+            let mutable prev = pl.GetPt 0
+            nxs.Add(prev.X) // add first point
+            nxs.Add(prev.Y)
 
             // find first non-duplicate point:
             let mutable i = 1
-            let mutable this = pts.[i]
-            let mutable len = Pt.distance prev this
+            let mutable this' = pl.GetPt i
+            let mutable len = Pt.distance prev this'
             while len < distanceTolerance && i < lastIdx do
                 i <- i + 1
-                this  <- pts.[i]
-                len   <- Pt.distance prev this
+                this'  <- pl.GetPt i
+                len   <- Pt.distance prev this'
 
-            let firstVec = UnitVc.create(prev, this)
+            let firstVec = UnitVc.create(prev, this')
             let mutable vPrev = firstVec
 
             // main loop:
             for idx = i + 1 to lastIdx do
-                let next = pts.[idx]
-                let vx = next.X - this.X
-                let vy = next.Y - this.Y
+                let next = pl.GetPt idx
+                let vx = next.X - this'.X
+                let vy = next.Y - this'.Y
                 let len = vx * vx + vy * vy |> sqrt
                 if len > distanceTolerance then
                     let vNext = UnitVc.createUnchecked(vx / len, vy / len)
                     let cos = UnitVc.dot (vPrev, vNext)
                     if withMeasure cos < angleTolerance then
                         // not colinear , keep this point
-                        nps.Add this
-                        prev <- this
+                        nxs.Add(this'.X)
+                        nxs.Add(this'.Y)
+                        prev <- this'
                         vPrev <- vNext // advance previous vector only when point kept
-                    this <- next // always advance this point
+                    this' <- next // always advance this point
 
             // handle last segment to first point
             if pl.IsAlmostClosed distanceTolerance then
@@ -963,16 +1090,22 @@ type Polyline2D (points: ResizeArray<Pt>) =
                 let cos = UnitVc.dot (vPrev, firstVec)
                 if withMeasure cos < angleTolerance then
                     // not colinear , keep the original end point
-                    nps.Add pts.Last
+                    let lastPt = pl.GetPt lastIdx
+                    nxs.Add(lastPt.X)
+                    nxs.Add(lastPt.Y)
                 else
                     // colinear , replace first point with last non-colinear point
-                    nps.[0] <- nps.Last
+                    let lastNxsIdx = nxs.Count / 2 - 1
+                    let lastNxsJ = lastNxsIdx * 2
+                    nxs.[0] <- nxs.[lastNxsJ]
+                    nxs.[1] <- nxs.[lastNxsJ+1]
             else
                 // open polyline , just add last point if not duplicate
-                if Pt.notEquals distanceTolerance this prev then
-                    nps.Add this
+                if Pt.notEquals distanceTolerance this' prev then
+                    nxs.Add(this'.X)
+                    nxs.Add(this'.Y)
 
-            Polyline2D.createDirectlyUnsafe nps
+            Polyline2D(nxs)
 
 
 
@@ -1082,7 +1215,7 @@ type Polyline2D (points: ResizeArray<Pt>) =
             let normals = Offset2D.makeOffsetDirections closedPts
             let res  = Offset2D.offsetVariableWithDirections(closedPts, normals, distances, varDistParallelBehavior, uTurnBehavior, useVarDistParallelBehaviorBelow, useUTurnBehaviorAbove)
             res.Pop() |> ignore // remove last point to open the polyline again
-            Polyline2D res
+            Polyline2D(res)
         else
             let normals = Offset2D.makeOffsetDirections pts
             Offset2D.offsetVariableWithDirections(pts , normals, distances, varDistParallelBehavior, uTurnBehavior, useVarDistParallelBehaviorBelow, useUTurnBehaviorAbove)
