@@ -48,6 +48,8 @@ let run () =
     |||
     test TestPolyline.testsDup
     |||
+    test TestPolyline.testsComprehensive
+    |||
     test TestPolyline3D.tests
     |||
     test TestTopo.tests
