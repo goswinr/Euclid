@@ -20,6 +20,12 @@ type Polyline2D private (xs: ResizeArray<float>) =
     [<DataMember>]
     member _.InternalArray = xs
 
+    /// Gets the internal flat list of all coordinates of the Polyline2D.
+    /// Layout is x0, y0, x1, y1, x2, y2, ...
+    /// This is not a copy, so changes to the list will be reflected in the Polyline2D.
+    /// Same as InternalArray.
+    member _.PointsXY = xs
+
     /// Gets all Points of the Polyline2D as a new ResizeArray of Pt.
     /// This IS a copy, changes to the returned list will NOT be reflected in the Polyline2D.
     member _.Points : ResizeArray<Pt> =
@@ -201,6 +207,12 @@ type Polyline2D private (xs: ResizeArray<float>) =
     /// Gets the count of points in the Polyline2D
     member p.PointCount =
         p.PtCount
+
+    /// Gets the X coordinate of the point at the given index.
+    member _.PointXAt(index:int) = xs.[index * 2]
+
+    /// Gets the Y coordinate of the point at the given index.
+    member _.PointYAt(index:int) = xs.[index * 2 + 1]
 
     /// Gets the count of segments in the Polyline2D
     /// This is poly.Points.Count - 1
