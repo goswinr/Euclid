@@ -859,7 +859,7 @@ type Polyline2D private (xs: ResizeArray<float>) =
 
     /// Gets the number of points in the Polyline2D.
     static member inline pointCount (p:Polyline2D) =
-        p.PtCount
+        p.PointCount
 
     /// Gets the number of segments in the Polyline2D.
     static member inline segmentCount (p:Polyline2D) =
