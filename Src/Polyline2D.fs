@@ -301,6 +301,76 @@ type Polyline2D (points: ResizeArray<Pt>) =
         area < 0.0
 
 
+    /// <summary>Reverses the Polyline2D in place if it is Counter-Clockwise, so that it becomes Clockwise.
+    /// Does nothing if it is already Clockwise.</summary>
+    /// <remarks>Fails if the signed area is zero (degenerate polyline).</remarks>
+    member p.MakeClockwiseInPlace() =
+        let area = p.SignedArea
+        if abs(area) < UtilEuclid.zeroLengthTolerance then
+            fail $"Polyline2D.MakeClockwiseInPlace: Polyline2D the area is zero: {p}"
+        if area > 0.0 then
+            points.Reverse()
+
+    /// <summary>Returns a new Polyline2D that is Clockwise.
+    /// Reverses the point order if the Polyline2D is Counter-Clockwise.</summary>
+    /// <remarks>Fails if the signed area is zero (degenerate polyline).</remarks>
+    member p.AsClockwise() =
+        let area = p.SignedArea
+        if abs(area) < UtilEuclid.zeroLengthTolerance then
+            fail $"Polyline2D.AsClockwise: Polyline2D the area is zero: {p}"
+        if area < 0.0 then p.Duplicate()
+        else p.Reverse()
+
+    /// <summary>Reverses the Polyline2D in place if it is Clockwise, so that it becomes Counter-Clockwise.
+    /// Does nothing if it is already Counter-Clockwise.</summary>
+    /// <remarks>Fails if the signed area is zero (degenerate polyline).</remarks>
+    member p.MakeCounterClockwiseInPlace() =
+        let area = p.SignedArea
+        if abs(area) < UtilEuclid.zeroLengthTolerance then
+            fail $"Polyline2D.MakeCounterClockwiseInPlace: Polyline2D the area is zero: {p}"
+        if area < 0.0 then
+            points.Reverse()
+
+    /// <summary>Returns a new Polyline2D that is Counter-Clockwise.
+    /// Reverses the point order if the Polyline2D is Clockwise.</summary>
+    /// <remarks>Fails if the signed area is zero (degenerate polyline).</remarks>
+    member p.AsCounterClockwise() =
+        let area = p.SignedArea
+        if abs(area) < UtilEuclid.zeroLengthTolerance then
+            fail $"Polyline2D.AsCounterClockwise: Polyline2D the area is zero: {p}"
+        if area > 0.0 then p.Duplicate()
+        else p.Reverse()
+
+    /// <summary>Reverses this Polyline2D in place if its orientation does not match <paramref name="other"/>.
+    /// After this call both polylines will have the same winding direction.</summary>
+    /// <param name="other">The reference Polyline2D whose orientation to match.</param>
+    /// <remarks>Fails if the signed area of either polyline is zero (degenerate).</remarks>
+    member p.MatchOrientationInPlace(other: Polyline2D) =
+        let areaThis  = p.SignedArea
+        let areaOther = other.SignedArea
+        if abs(areaThis) < UtilEuclid.zeroLengthTolerance then
+            fail $"Polyline2D.MatchOrientationInPlace: this Polyline2D has zero area: {p}"
+        if abs(areaOther) < UtilEuclid.zeroLengthTolerance then
+            fail $"Polyline2D.MatchOrientationInPlace: other Polyline2D has zero area: {other}"
+        // reverse only when the signs differ (one CW, one CCW)
+        if (areaThis > 0.0) <> (areaOther > 0.0) then
+            points.Reverse()
+
+    /// <summary>Returns a new Polyline2D whose orientation matches <paramref name="other"/>.
+    /// Reverses the point order when the two polylines have opposite winding directions.</summary>
+    /// <param name="other">The reference Polyline2D whose orientation to match.</param>
+    /// <remarks>Fails if the signed area of either polyline is zero (degenerate).</remarks>
+    member p.WithMatchedOrientation(other: Polyline2D) =
+        let areaThis  = p.SignedArea
+        let areaOther = other.SignedArea
+        if abs(areaThis) < UtilEuclid.zeroLengthTolerance then
+            fail $"Polyline2D.WithMatchedOrientation: this Polyline2D has zero area: {p}"
+        if abs(areaOther) < UtilEuclid.zeroLengthTolerance then
+            fail $"Polyline2D.WithMatchedOrientation: other Polyline2D has zero area: {other}"
+        if (areaThis > 0.0) <> (areaOther > 0.0) then p.Reverse()
+        else p.Duplicate()
+
+
     /// Returns the point at a given parameter on the Polyline2D.
     /// The integer part of the parameter is the index of the segment that the point is on.
     /// The fractional part of the parameter is the parameter form 0.0 to 1.0 on the segment.
@@ -739,6 +809,50 @@ type Polyline2D (points: ResizeArray<Pt>) =
     /// Returns new Polyline2D in reversed Order.
     static member reverse (p:Polyline2D) =
         p.Reverse()
+
+    /// <summary>Reverses the Polyline2D in place if it is Counter-Clockwise, so that it becomes Clockwise.
+    /// Does nothing if it is already Clockwise.</summary>
+    /// <param name="p">The Polyline2D to orient Clockwise.</param>
+    /// <remarks>Fails if the signed area is zero (degenerate polyline).</remarks>
+    static member makeClockwiseInPlace (p:Polyline2D) =
+        p.MakeClockwiseInPlace()
+
+    /// <summary>Returns a new Polyline2D that is Clockwise.
+    /// Reverses the point order if the Polyline2D is Counter-Clockwise.</summary>
+    /// <param name="p">The Polyline2D to orient Clockwise.</param>
+    /// <remarks>Fails if the signed area is zero (degenerate polyline).</remarks>
+    static member asClockwise (p:Polyline2D) =
+        p.AsClockwise()
+
+    /// <summary>Reverses the Polyline2D in place if it is Clockwise, so that it becomes Counter-Clockwise.
+    /// Does nothing if it is already Counter-Clockwise.</summary>
+    /// <param name="p">The Polyline2D to orient Counter-Clockwise.</param>
+    /// <remarks>Fails if the signed area is zero (degenerate polyline).</remarks>
+    static member makeCounterClockwiseInPlace (p:Polyline2D) =
+        p.MakeCounterClockwiseInPlace()
+
+    /// <summary>Returns a new Polyline2D that is Counter-Clockwise.
+    /// Reverses the point order if the Polyline2D is Clockwise.</summary>
+    /// <param name="p">The Polyline2D to orient Counter-Clockwise.</param>
+    /// <remarks>Fails if the signed area is zero (degenerate polyline).</remarks>
+    static member asCounterClockwise (p:Polyline2D) =
+        p.AsCounterClockwise()
+
+    /// <summary>Reverses <paramref name="p"/> in place if its orientation does not match <paramref name="reference"/>.
+    /// After this call both polylines will have the same winding direction.</summary>
+    /// <param name="reference">The reference Polyline2D whose orientation to match.</param>
+    /// <param name="p">The Polyline2D to reorient.</param>
+    /// <remarks>Fails if the signed area of either polyline is zero (degenerate).</remarks>
+    static member matchOrientationInPlace (reference:Polyline2D) (p:Polyline2D) =
+        p.MatchOrientationInPlace(reference)
+
+    /// <summary>Returns a new Polyline2D whose orientation matches <paramref name="reference"/>.
+    /// Reverses the point order when the two polylines have opposite winding directions.</summary>
+    /// <param name="reference">The reference Polyline2D whose orientation to match.</param>
+    /// <param name="p">The Polyline2D to reorient.</param>
+    /// <remarks>Fails if the signed area of either polyline is zero (degenerate).</remarks>
+    static member withMatchedOrientation (reference:Polyline2D) (p:Polyline2D) =
+        p.WithMatchedOrientation(reference)
 
     /// Returns the point at a given parameter on the Polyline2D.
     /// The integer part of the parameter is the index of the segment that the point is on.
