@@ -918,6 +918,195 @@ type Rect2D =
                 r.Yaxis * factor)
 
 
+    /// Returns the size in X direction.
+    static member inline sizeX (r:Rect2D) : float =
+        r.SizeX
+
+    /// Returns the squared size in X direction.
+    static member inline sizeXSq (r:Rect2D) : float =
+        r.SizeXSq
+
+    /// Returns the size in Y direction.
+    static member inline sizeY (r:Rect2D) : float =
+        r.SizeY
+
+    /// Returns the squared size in Y direction.
+    static member inline sizeYSq (r:Rect2D) : float =
+        r.SizeYSq
+
+    /// Returns a nicely formatted string representation of the 2D rectangle.
+    static member inline toString (r:Rect2D) : string =
+        r.ToString()
+
+    /// Returns a concise formatted string representation of the 2D rectangle.
+    static member inline asString (r:Rect2D) : string =
+        r.AsString
+
+    /// Returns an F# code string that recreates the 2D rectangle.
+    static member inline asFSharpCode (r:Rect2D) : string =
+        r.AsFSharpCode
+
+    /// Returns the unitized local X-axis of the 2D rectangle.
+    static member inline xaxisUnit (r:Rect2D) : UnitVc =
+        r.XaxisUnit
+
+    /// Returns the unitized local Y-axis of the 2D rectangle.
+    static member inline yaxisUnit (r:Rect2D) : UnitVc =
+        r.YaxisUnit
+
+    /// Returns the diagonal vector of the 2D rectangle.
+    static member inline diagonal (r:Rect2D) : Vc =
+        r.Diagonal
+
+    /// Returns the center point of the 2D rectangle.
+    static member inline center (r:Rect2D) : Pt =
+        r.Center
+
+    /// Evaluates X and Y parameters on the 2D rectangle and returns a point.
+    static member inline evaluateAt (xParameter:float) (yParameter:float) (r:Rect2D) : Pt =
+        r.EvaluateAt(xParameter, yParameter)
+
+    /// Evaluates a point by X and Y distances along local axes of the 2D rectangle.
+    static member inline evaluateDist (xDistance:float) (yDistance:float) (r:Rect2D) : Pt =
+        r.EvaluateDist(xDistance, yDistance)
+
+    /// Returns the area of the 2D rectangle.
+    static member inline area (r:Rect2D) : float =
+        r.Area
+
+    /// Scales the 2D rectangle around a given center point.
+    static member inline scaleOn (cen:Pt) (factor:float) (r:Rect2D) : Rect2D =
+        r.ScaleOn cen factor
+
+    /// Returns the longest edge length of the 2D rectangle.
+    static member inline longestEdge (r:Rect2D) : float =
+        r.LongestEdge
+
+    /// Returns the shortest edge length of the 2D rectangle.
+    static member inline shortestEdge (r:Rect2D) : float =
+        r.ShortestEdge
+
+    /// Returns the squared length of the longest edge of the 2D rectangle.
+    static member inline longestEdgeSq (r:Rect2D) : float =
+        r.LongestEdgeSq
+
+    /// Returns the squared length of the shortest edge of the 2D rectangle.
+    static member inline shortestEdgeSq (r:Rect2D) : float =
+        r.ShortestEdgeSq
+
+    /// Returns TRUE if all sides are below zero-length tolerance.
+    static member inline isZero (r:Rect2D) : bool =
+        r.IsZero
+
+    /// Returns TRUE if the 2D rectangle degenerates to a point.
+    static member inline isPoint (r:Rect2D) : bool =
+        r.IsPoint
+
+    /// Returns the number of sides below zero-length tolerance.
+    static member inline countZeroSides (r:Rect2D) : int =
+        r.CountZeroSides
+
+    /// Returns TRUE if exactly one side is below zero-length tolerance.
+    static member inline isLine (r:Rect2D) : bool =
+        r.IsLine
+
+    /// Returns TRUE if both sides are above zero-length tolerance.
+    static member inline isValid (r:Rect2D) : bool =
+        r.IsValid
+
+    /// Returns TRUE if the 2D rectangle has area.
+    static member inline hasArea (r:Rect2D) : bool =
+        r.HasArea
+
+    /// Returns the axis-aligned bounding rectangle of the 2D rectangle.
+    static member inline bRect (r:Rect2D) : BRect =
+        r.BRect
+
+    /// Returns the far corner (point 2) of the 2D rectangle.
+    static member inline farCorner (r:Rect2D) : Pt =
+        r.FarCorner
+
+    /// Returns the X corner (point 1) of the 2D rectangle.
+    static member inline xCorner (r:Rect2D) : Pt =
+        r.XCorner
+
+    /// Returns the Y corner (point 3) of the 2D rectangle.
+    static member inline yCorner (r:Rect2D) : Pt =
+        r.YCorner
+
+    /// Returns point 0 of the 2D rectangle.
+    static member inline pt0 (r:Rect2D) : Pt =
+        r.Pt0
+
+    /// Returns point 1 of the 2D rectangle.
+    static member inline pt1 (r:Rect2D) : Pt =
+        r.Pt1
+
+    /// Returns point 2 of the 2D rectangle.
+    static member inline pt2 (r:Rect2D) : Pt =
+        r.Pt2
+
+    /// Returns point 3 of the 2D rectangle.
+    static member inline pt3 (r:Rect2D) : Pt =
+        r.Pt3
+
+    /// Returns edge 0-1 of the 2D rectangle.
+    static member inline edge01 (r:Rect2D) : Line2D =
+        r.Edge01
+
+    /// Returns edge 1-2 of the 2D rectangle.
+    static member inline edge12 (r:Rect2D) : Line2D =
+        r.Edge12
+
+    /// Returns edge 2-3 of the 2D rectangle.
+    static member inline edge23 (r:Rect2D) : Line2D =
+        r.Edge23
+
+    /// Returns edge 3-0 of the 2D rectangle.
+    static member inline edge30 (r:Rect2D) : Line2D =
+        r.Edge30
+
+    /// Returns the local X edge of the 2D rectangle.
+    static member inline edgeX (r:Rect2D) : Line2D =
+        r.EdgeX
+
+    /// Returns the local Y edge of the 2D rectangle.
+    static member inline edgeY (r:Rect2D) : Line2D =
+        r.EdgeY
+
+    /// Returns the diagonal line from point 0 to point 2 of the 2D rectangle.
+    static member inline diagonalLine (r:Rect2D) : Line2D =
+        r.DiagonalLine
+
+    /// Returns the same rectangle with orientation rotated 90 degrees clockwise around center.
+    static member inline rotateOrientation90CW (r:Rect2D) : Rect2D =
+        r.RotateOrientation90CW
+
+    /// Returns the same rectangle with orientation rotated 180 degrees around center.
+    static member inline rotateOrientation180 (r:Rect2D) : Rect2D =
+        r.RotateOrientation180
+
+    /// Returns the same rectangle with orientation rotated 90 degrees counter-clockwise around center.
+    static member inline rotateOrientation90CCW (r:Rect2D) : Rect2D =
+        r.RotateOrientation90CCW
+
+    /// Returns the 4 corner points of the 2D rectangle.
+    static member inline points (r:Rect2D) : Pt[] =
+        r.Points
+
+    /// Returns the 4 corner points as a closed loop.
+    static member inline pointsLooped (r:Rect2D) : Pt[] =
+        r.PointsLooped
+
+    /// Returns the 4 edges of the 2D rectangle.
+    static member inline edges (r:Rect2D) : Line2D[] =
+        r.Edges
+
+    /// Returns one edge of the 2D rectangle by index 0..3.
+    static member inline getEdge (i:int) (r:Rect2D) : Line2D =
+        r.GetEdge i
+
+
 
 
 

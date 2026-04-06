@@ -1062,16 +1062,11 @@ module AutoOpenLine3D =
         abs (a.ToZ   - b.ToZ  ) > tol
 
     /// Checks if two 3D lines are coincident within tolerance.
-    /// This means that lines are parallel within 0.25 degrees
-    /// and the distance of second start point to the first line is less than 1e-6.
-    static member inline areCoincident (a:Line3D) (b:Line3D) =
-        a.IsCoincidentTo(b)
-
-    /// Checks if two 3D lines are coincident within tolerance.
-    /// This means that lines are parallel within 0.25 degrees
-    /// and the distance of second start point to the first line is less than 1e-6.
-    static member inline isCoincidentTo (a:Line3D) (b:Line3D) =
-        a.IsCoincidentTo(b)
+    /// This means that lines are parallel within the given angular tolerance
+    /// and the distance of second start point to the first line is less than distanceTolerance.
+    /// Use a precomputed value from Euclid.Tangent module as tolerance.
+    static member inline isCoincidentTo distanceTolerance minTangent (a:Line3D) (b:Line3D) =
+        a.IsCoincidentTo(b, distanceTolerance, minTangent)
 
     /// Creates a 2D line from 3D line. Ignoring Z value.
     static member inline toLine2D (ln:Line3D) =
@@ -1306,33 +1301,10 @@ module AutoOpenLine3D =
 
 
     /// Checks if two 3D lines are parallel. Ignoring orientation.
-    /// Calculates the Cross Product of the two line vectors. (= the area of the parallelogram)
-    /// And checks if it is smaller than 1e-9
-    /// (NOTE: for very long lines a higher tolerance might be needed)
-    static member inline areParallel (l:Line3D) (ln:Line3D) =
-        l.IsParallelTo ln
-
-    /// Checks if two 3D lines are parallel and orientated the same way.
-    /// Calculates the Cross Product of the two line vectors. (= the area of the parallelogram)
-    /// And checks if it is smaller than 1e-9
-    /// Then calculates the dot product and checks if it is positive.
-    /// (NOTE: for very long lines a higher tolerance might be needed)
-    static member inline areParallelAndMatchOrientation (l:Line3D) (ln:Line3D) =
-        l.IsParallelAndOrientedTo ln
-
-    /// Checks if two 3D lines are perpendicular.
-    /// Calculates the dot product and checks if it is smaller than 1e-9.
-    /// (NOTE: for very long lines a higher tolerance might be needed)
-    static member inline arePerpendicular(l:Line3D) (ln:Line3D) =
-        l.IsPerpendicularTo(ln)
-
-    /// Checks if two 3D lines are parallel. Ignoring orientation.
-    /// The default angle tolerance is 0.25 degrees.
-    /// This tolerance can be customized by an optional minimum Tangent value.
-    /// See Euclid.Tangent module.
+    /// Use a precomputed value from Euclid.Tangent module as tolerance.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    static member inline isParallelTo (lnA:Line3D) (lnB:Line3D) =
-        lnA.IsParallelTo(lnB)
+    static member inline isParallelTo minTangent (lnA:Line3D) (lnB:Line3D) =
+        lnA.IsParallelTo(lnB, minTangent)
 
     /// Checks if two 3D lines are Not parallel. Ignoring orientation.
     /// The default angle tolerance is 0.25 degrees.
@@ -1343,30 +1315,24 @@ module AutoOpenLine3D =
         not <| lnA.IsParallelTo(lnB)
 
     /// Checks if two 3D lines are parallel and orientated the same way.
-    /// The default angle tolerance is 0.25 degrees.
-    /// This tolerance can be customized by an optional minimum Tangent value.
-    /// See Euclid.Tangent module.
+    /// Use a precomputed value from Euclid.Tangent module as tolerance.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    static member inline isParallelAndOrientedTo (lnA:Line3D) (lnB:Line3D) =
-        lnA.IsParallelAndOrientedTo(lnB)
+    static member inline isParallelAndOrientedTo minTangent (lnA:Line3D) (lnB:Line3D) =
+        lnA.IsParallelAndOrientedTo(lnB, minTangent)
 
     /// Checks if two 3D lines are perpendicular to each other.
-    /// The default angle tolerance is 89.75 to 90.25 degrees.
-    /// This tolerance can be customized by an optional minimum Tangent value.
-    /// See Euclid.Tangent module.
+    /// Use a precomputed value from Euclid.Tangent module as tolerance.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     /// Same as Line3D.isNormalTo
-    static member inline isPerpendicularTo (lnA:Line3D) (lnB:Line3D) =
-        lnA.IsPerpendicularTo(lnB)
+    static member inline isPerpendicularTo maxTangent (lnA:Line3D) (lnB:Line3D) =
+        lnA.IsPerpendicularTo(lnB, maxTangent)
 
     /// Checks if two 3D lines are perpendicular to each other.
-    /// The default angle tolerance is 89.75 to 90.25 degrees.
-    /// This tolerance can be customized by an optional minimum Tangent value.
-    /// See Euclid.Tangent module.
+    /// Use a precomputed value from Euclid.Tangent module as tolerance.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     /// Same as Line3D.isPerpendicularTo
-    static member inline isNormalTo (lnA:Line3D) (lnB:Line3D) =
-        lnA.IsPerpendicularTo(lnB)
+    static member inline isNormalTo maxTangent (lnA:Line3D) (lnB:Line3D) =
+        lnA.IsNormalTo(lnB, maxTangent)
 
     /// Assumes Line3D to be an infinite ray.
     /// Returns the parameter at which a point is closest to the ray.
@@ -2209,6 +2175,22 @@ module AutoOpenLine3D =
 
     [<Obsolete("Use matchesOrientation45 instead")>]
     static member inline matchesOrientation90 (l:Line3D) (ln:Line3D) = l.MatchesOrientation45 ln
+
+    [<Obsolete("Use Line3D.isCoincidentTo instead. Obsolete since 0.21.0")>]
+    static member inline areCoincident (a:Line3D) (b:Line3D) =
+        Line3D.isCoincidentTo 1e-6 Tangent.``0.25`` a b
+
+    [<Obsolete("Use Line3D.isParallelTo instead. Obsolete since 0.21.0")>]
+    static member inline areParallel (l:Line3D) (ln:Line3D) =
+        Line3D.isParallelTo Tangent.``0.25`` l ln
+
+    [<Obsolete("Use Line3D.isParallelAndOrientedTo instead. Obsolete since 0.21.0")>]
+    static member inline areParallelAndMatchOrientation (l:Line3D) (ln:Line3D) =
+        Line3D.isParallelAndOrientedTo Tangent.``0.25`` l ln
+
+    [<Obsolete("Use Line3D.isPerpendicularTo instead. Obsolete since 0.21.0")>]
+    static member inline arePerpendicular(l:Line3D) (ln:Line3D) =
+        Line3D.isPerpendicularTo Tangent.``89.75`` l ln
 
 
 

@@ -516,10 +516,145 @@ type BRect =
         a.Intersection b
 
 
-
     /// Returns the area of this bounding rectangle.
     static member inline area (r:BRect) : float =
         r.SizeX * r.SizeY
+
+    /// Format bounding rectangle into string with nice floating point number formatting of size and position.
+    /// But without full type name as in rect.ToString()
+    static member inline asString (r:BRect) : string =
+        r.AsString
+
+    /// Nicely formatted string representation of the bounding rectangle, including its size.
+    static member inline toString (r:BRect) : string =
+        r.ToString()
+
+    /// Format bounding rectangle into an F# code string that can be used to recreate the rectangle.
+    static member inline asFSharpCode (r:BRect) : string =
+        r.AsFSharpCode
+
+    /// The point where X and Y are the minimum values.
+    static member inline minPt (r:BRect) : Pt =
+        r.MinPt
+
+    /// The point where X and Y are the maximum values.
+    static member inline maxPt (r:BRect) : Pt =
+        r.MaxPt
+
+    /// The size in X direction.
+    static member inline sizeX (r:BRect) : float =
+        r.SizeX
+
+    /// The size in Y direction.
+    static member inline sizeY (r:BRect) : float =
+        r.SizeY
+
+    /// The diagonal 2D vector of the bounding rect. From MinPt to MaxPt.
+    static member inline diagonal (r:BRect) : Vc =
+        r.Diagonal
+
+    /// The center of the bounding rect.
+    static member inline center (r:BRect) : Pt =
+        r.Center
+
+    /// Returns a bounding rectangle expanded by a distance for X and Y-axis each.
+    static member inline expandXY xDist yDist (r:BRect) : BRect =
+        r.Expand(xDist, yDist)
+
+    /// Returns a bounding rectangle expanded by a distance for X and Y-axis each.
+    /// If expansion is negative it shrinks the Rectangle. It also prevents the rectangle from collapsing past its center.
+    /// When the negative expansion is bigger than the size, Min and Max values will be both at the center point.
+    static member inline expandSafeXY xDist yDist (r:BRect) : BRect =
+        r.ExpandSafe(xDist, yDist)
+
+    /// Test if 2D bounding rectangles are only touching each other from the outside within a given tolerance.
+    static member inline isTouching tol (a:BRect) (b:BRect) : bool =
+        b.IsTouching(a, tol)
+
+    /// Evaluate a X and Y parameter of this bounding rectangle.
+    /// 0.0, 0.0 returns the MinPt.
+    /// 1.0, 1.0 returns the MaxPt.
+    static member inline evaluateAt xParameter yParameter (r:BRect) : Pt =
+        r.EvaluateAt(xParameter, yParameter)
+
+    /// Returns the longest edge of the Box.
+    static member inline longestEdge (r:BRect) : float =
+        r.LongestEdge
+
+    /// Returns the shortest edge of the Box.
+    static member inline shortestEdge (r:BRect) : float =
+        r.ShortestEdge
+
+    /// Tests if all sides are smaller than the zeroLength tolerance.
+    /// This is the same as IsPoint.
+    static member inline isZero (r:BRect) : bool =
+        r.IsZero
+
+    /// Tests if all sides are smaller than the zeroLength tolerance.
+    /// This is the same as IsZero.
+    static member inline isPoint (r:BRect) : bool =
+        r.IsPoint
+
+    /// Counts the amount of sides that are smaller than the zeroLength tolerance.
+    /// This is 0, 1, or 2.
+    static member inline countZeroSides (r:BRect) : int =
+        r.CountZeroSides
+
+    /// Tests if one of the X or Y axis is smaller than the zeroLength tolerance.
+    static member inline isLine (r:BRect) : bool =
+        r.IsLine
+
+    /// Tests if no sides of the X and Y axis is smaller than the zeroLength tolerance.
+    /// Same as .HasArea.
+    static member inline isValid (r:BRect) : bool =
+        r.IsValid
+
+    /// Tests if none of the X and Y axis is smaller than the zeroLength tolerance.
+    /// Same as .IsValid.
+    static member inline hasArea (r:BRect) : bool =
+        r.HasArea
+
+    /// Returns the point (0) or minX, minY.
+    static member inline pt0 (r:BRect) : Pt =
+        r.Pt0
+
+    /// Returns the point (1) or maxX, minY.
+    static member inline pt1 (r:BRect) : Pt =
+        r.Pt1
+
+    /// Returns the point (2) or maxX, maxY.
+    static member inline pt2 (r:BRect) : Pt =
+        r.Pt2
+
+    /// Returns the point (3) or minX, maxY.
+    static member inline pt3 (r:BRect) : Pt =
+        r.Pt3
+
+    /// Returns the corners of this bounding rectangle in Counter-Clockwise order, starting at MinPt.
+    /// Returns an array of 4 Points.
+    static member inline points (r:BRect) : Pt[] =
+        r.Points
+
+    /// Returns a Counter-Clockwise array of 5 Points, starting at MinPt.
+    /// Last and first point are the same.
+    static member inline pointsLooped (r:BRect) : Pt[] =
+        r.PointsLooped
+
+    /// The bottom edge. The line from point 0 to 1.
+    static member inline edge01 (r:BRect) : Line2D =
+        r.Edge01
+
+    /// The right edge. The line from point 1 to 2.
+    static member inline edge12 (r:BRect) : Line2D =
+        r.Edge12
+
+    /// The top edge. The line from point 2 to 3.
+    static member inline edge23 (r:BRect) : Line2D =
+        r.Edge23
+
+    /// The left edge. The line from point 3 to 0.
+    static member inline edge30 (r:BRect) : Line2D =
+        r.Edge30
 
 
     /// Scales the 2D bounding rectangle by a given factor.
@@ -533,8 +668,6 @@ type BRect =
                 r.MinY * factor,
                 r.MaxX * factor,
                 r.MaxY * factor)
-
-
 
 
     /// <summary>Returns the point (0) or minX, minY.

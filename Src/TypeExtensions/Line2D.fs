@@ -925,6 +925,24 @@ module AutoOpenLine2D =
     static member inline toY (l:Line2D) =
         l.ToY
 
+    /// The X component of the line Direction/Vector.
+    static member inline vectorX (l:Line2D) =
+        l.VectorX
+
+    /// The Y component of the line Direction/Vector.
+    static member inline vectorY (l:Line2D) =
+        l.VectorY
+
+    /// Format 2D line into string from X and Y for start and end points.
+    /// Using nice floating point number formatting.
+    /// But without full type name as in ln.ToString()
+    static member inline asString (l:Line2D) =
+        l.AsString
+
+    /// Format 2D line into an F# code string that can be used to recreate the line.
+    static member inline asFSharpCode (l:Line2D) =
+        l.AsFSharpCode
+
     /// Set Line2D start point, returns a new line.
     static member inline setStart (pt:Pt) (ln:Line2D) =
         Line2D( pt.X, pt.Y, ln.ToX, ln.ToY)
@@ -999,6 +1017,16 @@ module AutoOpenLine2D =
     /// Same as Line2D.subLine
     static member inline segment start ende (ln:Line2D) =
         ln.Segment (start, ende)
+
+    /// Returns the length of the line segment from the start point to the given parameter.
+    /// This length is negative if the parameter is negative.
+    static member inline lengthTillParam p (ln:Line2D) =
+        ln.LengthTillParam p
+
+    /// Returns the length of the line segment from the given parameter till the line End.
+    /// This length is negative if the parameter is bigger than 1.0.
+    static member inline lengthFromParam t (ln:Line2D) =
+        ln.LengthFromParam t
 
     /// Get point at center of line.
     static member inline mid (ln:Line2D) =
@@ -1077,58 +1105,119 @@ module AutoOpenLine2D =
     static member inline matchesOrientation (l:Line2D) (ln:Line2D) =
         l.MatchesOrientation ln
 
+    /// Checks if the dot product between a 2D line and a vector is positive.
+    /// So if the angle between their direction vectors is less than 90 degrees.
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    static member inline matchesOrientationVc (v:Vc) (ln:Line2D) =
+        ln.MatchesOrientation v
+
+    /// Checks if the dot product between a 2D line and a unit-vector is positive.
+    /// So if the angle between their direction vectors is less than 90 degrees.
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    static member inline matchesOrientationUnitVc (v:UnitVc) (ln:Line2D) =
+        ln.MatchesOrientation v
+
     /// Checks if the angle between the two 2D lines is less than 45 degrees.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     static member inline matchesOrientation45 (l:Line2D) (ln:Line2D) =
         l.MatchesOrientation45 ln
 
-    /// Checks if two 2D lines are coincident on the same ray within tolerance.
-    /// This means that lines are parallel within 0.25 degrees
-    /// and the distance of second start point to the first line is less than 1e-6.
-    static member inline isCoincidentTo (a:Line2D) (b:Line2D) =
-        a.IsCoincidentTo(b)
+    /// Checks if two 2D lines are coincident on the same ray within the distance tolerance.
+    /// This means that lines are parallel within the angle tolerance.
+    /// Also returns FALSE on zero length lines.
+    /// Use a precomputed value from Euclid.Tangent module as tolerance.
+    static member inline isCoincidentTo distanceTolerance minTangent (a:Line2D) (b:Line2D) =
+        a.IsCoincidentTo(b, distanceTolerance, minTangent)
 
     /// Checks if two 2D lines are parallel. Ignoring orientation.
-    /// The default angle tolerance is 0.25 degrees.
-    /// This tolerance can be customized by an optional minimum Tangent value.
-    /// See Euclid.Tangent module.
+    /// Use a precomputed value from Euclid.Tangent module as tolerance.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    static member inline isParallelTo (lnA:Line2D) (lnB:Line2D) =
-        lnA.IsParallelTo(lnB)
+    static member inline isParallelTo minTangent (lnA:Line2D) (lnB:Line2D) =
+        lnA.IsParallelTo(lnB, minTangent)
+
+    /// Checks if a 2D line is parallel to a 2D vector. Ignores orientation.
+    /// Use a precomputed value from Euclid.Tangent module as tolerance.
+    /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    static member inline isParallelToVc minTangent (other:Vc) (ln:Line2D) =
+        ln.IsParallelTo(other, minTangent)
+
+    /// Checks if a 2D line is parallel to a 2D unit-vector. Ignores orientation.
+    /// Use a precomputed value from Euclid.Tangent module as tolerance.
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    static member inline isParallelToUnitVc minTangent (other:UnitVc) (ln:Line2D) =
+        ln.IsParallelTo(other, minTangent)
 
     /// Checks if two 2D lines are Not parallel. Ignoring orientation.
     /// The default angle tolerance is 0.25 degrees.
     /// This tolerance can be customized by an optional minimum Tangent value.
-    /// See Euclid.Tangent module.
+    /// Use a precomputed value from Euclid.Tangent module as tolerance.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     static member inline isNotParallelTo (lnA:Line2D) (lnB:Line2D) =
         not <| lnA.IsParallelTo(lnB)
 
     /// Checks if two 2D lines are parallel and orientated the same way.
-    /// The default angle tolerance is 0.25 degrees.
-    /// This tolerance can be customized by an optional minimum Tangent value.
-    /// See Euclid.Tangent module.
+    /// Use a precomputed value from Euclid.Tangent module as tolerance.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    static member inline isParallelAndOrientedTo (lnA:Line2D) (lnB:Line2D) =
-        lnA.IsParallelAndOrientedTo(lnB)
+    static member inline isParallelAndOrientedTo minTangent (lnA:Line2D) (lnB:Line2D) =
+        lnA.IsParallelAndOrientedTo(lnB, minTangent)
+
+    /// Checks if a 2D line is parallel to a 2D vector and oriented the same way.
+    /// Use a precomputed value from Euclid.Tangent module as tolerance.
+    /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    static member inline isParallelAndOrientedToVc minTangent (other:Vc) (ln:Line2D) =
+        ln.IsParallelAndOrientedTo(other, minTangent)
+
+    /// Checks if a 2D line is parallel to a 2D unit-vector and oriented the same way.
+    /// Use a precomputed value from Euclid.Tangent module as tolerance.
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    static member inline isParallelAndOrientedToUnitVc minTangent (other:UnitVc) (ln:Line2D) =
+        ln.IsParallelAndOrientedTo(other, minTangent)
 
     /// Checks if two 2D lines are perpendicular to each other.
-    /// The default angle tolerance is 89.75 to 90.25 degrees.
-    /// This tolerance can be customized by an optional minimum Tangent value.
-    /// See Euclid.Tangent module.
+    /// Use a precomputed value from Euclid.Tangent module as tolerance.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    /// Same as Line2D.isNormalTo
-    static member inline isPerpendicularTo (lnA:Line2D) (lnB:Line2D) =
-        lnA.IsPerpendicularTo(lnB)
+    static member inline isPerpendicularTo maxTangent (lnA:Line2D) (lnB:Line2D) =
+        lnA.IsPerpendicularTo(lnB, maxTangent)
+
+    /// Checks if a 2D line is perpendicular to a 2D vector.
+    /// Use a precomputed value from Euclid.Tangent module as tolerance.
+    /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    static member inline isPerpendicularToVc maxTangent (other:Vc) (ln:Line2D) =
+        ln.IsPerpendicularTo(other, maxTangent)
+
+    /// Checks if a 2D line is perpendicular to a 2D unit-vector.
+    /// Use a precomputed value from Euclid.Tangent module as tolerance.
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    static member inline isPerpendicularToUnitVc maxTangent (other:UnitVc) (ln:Line2D) =
+        ln.IsPerpendicularTo(other, maxTangent)
 
     /// Checks if two 2D lines are perpendicular to each other.
-    /// The default angle tolerance is 89.75 to 90.25 degrees.
-    /// This tolerance can be customized by an optional minimum Tangent value.
-    /// See Euclid.Tangent module.
+    /// Use a precomputed value from Euclid.Tangent module as tolerance.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    /// Same as Line2D.isNormalTo
-    static member inline isNormalTo (lnA:Line2D) (lnB:Line2D) =
-        lnA.IsPerpendicularTo(lnB)
+    static member inline isNormalTo maxTangent (lnA:Line2D) (lnB:Line2D) =
+        lnA.IsNormalTo(lnB, maxTangent)
+
+    /// Checks if a 2D line is perpendicular to a 2D vector.
+    /// Use a precomputed value from Euclid.Tangent module as tolerance.
+    /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    static member inline isNormalToVc maxTangent (other:Vc) (ln:Line2D) =
+        ln.IsNormalTo(other, maxTangent)
+
+    /// Checks if a 2D line is perpendicular to a 2D unit-vector.
+    /// Use a precomputed value from Euclid.Tangent module as tolerance.
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    static member inline isNormalToUnitVc maxTangent (other:UnitVc) (ln:Line2D) =
+        ln.IsNormalTo(other, maxTangent)
+
+    /// Checks if a point is on the right side of the line ray.
+    /// Also returns FALSE if the point is on the line.
+    static member inline isPointOnRight (pt:Pt) (ln:Line2D) =
+        ln.IsPointOnRight pt
+
+    /// Checks if a point is on the left side of the line ray.
+    /// Also returns FALSE if the point is on the line.
+    static member inline isPointOnLeft (pt:Pt) (ln:Line2D) =
+        ln.IsPointOnLeft pt
 
 
 
@@ -1184,6 +1273,30 @@ module AutoOpenLine2D =
     /// Same as Line2D.isPerpendicularTo'
     static member inline isNormalTo' (lnA:Line2D) (lnB:Line2D) : bool =
         Line2D.isPerpendicularTo' lnA lnB
+
+    /// A fast version of IsParallelTo that uses cross-product to determine parallelism.
+    static member inline isParallelToFast parallelogramAreaTolerance (lnA:Line2D) (lnB:Line2D) =
+        lnA.IsParallelToFast(lnB, parallelogramAreaTolerance)
+
+    /// A fast version of IsCoincidentTo that uses cross-product to determine parallelism.
+    static member inline isCoincidentToFast parallelogramAreaTolerance (lnA:Line2D) (lnB:Line2D) =
+        lnA.IsCoincidentToFast(lnB, parallelogramAreaTolerance)
+
+    /// A fast version of IsParallelAndOrientedTo that uses cross-product and dot-product checks.
+    static member inline isParallelAndOrientedToFast parallelogramAreaTolerance minDotProduct (lnA:Line2D) (lnB:Line2D) =
+        lnA.IsParallelAndOrientedToFast(lnB, parallelogramAreaTolerance, minDotProduct)
+
+    /// A fast version of IsParallelAndOpposingTo that uses cross-product and dot-product checks.
+    static member inline isParallelAndOpposingToFast parallelogramAreaTolerance maxDotProduct (lnA:Line2D) (lnB:Line2D) =
+        lnA.IsParallelAndOpposingToFast(lnB, parallelogramAreaTolerance, maxDotProduct)
+
+    /// A fast version of IsCoincidentAndOrientedTo that uses cross-product and dot-product checks.
+    static member inline isCoincidentAndOrientedToFast parallelogramAreaTolerance minDotProduct (lnA:Line2D) (lnB:Line2D) =
+        lnA.IsCoincidentAndOrientedToFast(lnB, parallelogramAreaTolerance, minDotProduct)
+
+    /// A fast version of IsCoincidentAndOpposingTo that uses cross-product and dot-product checks.
+    static member inline isCoincidentAndOpposingToFast parallelogramAreaTolerance maxDotProduct (lnA:Line2D) (lnB:Line2D) =
+        lnA.IsCoincidentAndOpposingToFast(lnB, parallelogramAreaTolerance, maxDotProduct)
 
 
 
@@ -1519,6 +1632,10 @@ module AutoOpenLine2D =
                ln.FromY * factor,
                ln.ToX * factor,
                ln.ToY * factor)
+
+    /// Scale the 2D line by a given factor on a given center point.
+    static member inline scaleOn (cen:Pt) (factor:float) (ln:Line2D) : Line2D =
+        ln.ScaleOn cen factor
 
     /// Project a line onto another line considered infinite in both directions.
     /// Returns the start and end parameters of the projected line on the target line.

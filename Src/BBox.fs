@@ -852,6 +852,210 @@ type BBox =
     static member inline toBRect (b:BBox)  : BRect =
         BRect.createUnchecked(b.MinX, b.MinY, b.MaxX, b.MaxY)
 
+    /// Returns a nicely formatted string representation of the 3D bounding box.
+    static member inline toString (b:BBox) : string =
+        b.ToString()
+
+    /// Returns a concise formatted string representation of the 3D bounding box.
+    static member inline asString (b:BBox) : string =
+        b.AsString
+
+    /// Returns an F# code string that recreates the 3D bounding box.
+    static member inline asFSharpCode (b:BBox) : string =
+        b.AsFSharpCode
+
+    /// Returns the minimum corner point of the 3D bounding box.
+    static member inline minPnt (b:BBox) : Pnt =
+        b.MinPnt
+
+    /// Returns the maximum corner point of the 3D bounding box.
+    static member inline maxPnt (b:BBox) : Pnt =
+        b.MaxPnt
+
+    /// Returns the X-size (width) of the 3D bounding box.
+    static member inline sizeX (b:BBox) : float =
+        b.SizeX
+
+    /// Returns the Y-size (depth) of the 3D bounding box.
+    static member inline sizeY (b:BBox) : float =
+        b.SizeY
+
+    /// Returns the Z-size (height) of the 3D bounding box.
+    static member inline sizeZ (b:BBox) : float =
+        b.SizeZ
+
+    /// Returns the diagonal vector from MinPnt to MaxPnt.
+    static member inline diagonal (b:BBox) : Vec =
+        b.Diagonal
+
+    /// Returns the center point of the 3D bounding box.
+    static member inline center (b:BBox) : Pnt =
+        b.Center
+
+    /// Returns a 3D bounding box expanded by separate distances in X, Y and Z.
+    static member inline expandXYZ xDist yDist zDist (b:BBox) : BBox =
+        b.Expand(xDist, yDist, zDist)
+
+    /// Returns a 3D bounding box safely expanded by separate distances in X, Y and Z.
+    static member inline expandSafeXYZ xDist yDist zDist (b:BBox) : BBox =
+        b.ExpandSafe(xDist, yDist, zDist)
+
+    /// Returns TRUE if two 3D bounding boxes overlap or touch.
+    static member inline overlapsWith (a:BBox) (b:BBox) : bool =
+        b.OverlapsWith(a)
+
+    /// Returns TRUE if two 3D bounding boxes overlap more than the given tolerance.
+    static member inline overlapsWithTol tol (a:BBox) (b:BBox) : bool =
+        b.OverlapsWith(a, tol)
+
+    /// Returns TRUE if two 3D bounding boxes touch from outside within tolerance.
+    static member inline isTouching tol (a:BBox) (b:BBox) : bool =
+        b.IsTouching(a, tol)
+
+    /// Evaluates X, Y and Z parameters on the 3D bounding box and returns a point.
+    static member inline evaluateAt xParameter yParameter zParameter (b:BBox) : Pnt =
+        b.EvaluateAt(xParameter, yParameter, zParameter)
+
+    /// Returns the longest edge length of the 3D bounding box.
+    static member inline longestEdge (b:BBox) : float =
+        b.LongestEdge
+
+    /// Returns the shortest edge length of the 3D bounding box.
+    static member inline shortestEdge (b:BBox) : float =
+        b.ShortestEdge
+
+    /// Returns TRUE if all box dimensions are below zero-length tolerance.
+    static member inline isZero (b:BBox) : bool =
+        b.IsZero
+
+    /// Returns the amount of dimensions that are below zero-length tolerance.
+    static member inline countZeroSides (b:BBox) : int =
+        b.CountZeroSides
+
+    /// Returns TRUE if exactly two dimensions are below zero-length tolerance.
+    static member inline isLine (b:BBox) : bool =
+        b.IsLine
+
+    /// Returns TRUE if exactly one dimension is below zero-length tolerance.
+    static member inline isFlat (b:BBox) : bool =
+        b.IsFlat
+
+    /// Returns TRUE if all dimensions are below zero-length tolerance.
+    static member inline isPoint (b:BBox) : bool =
+        b.IsPoint
+
+    /// Returns TRUE if no dimension is below zero-length tolerance.
+    static member inline isValid (b:BBox) : bool =
+        b.IsValid
+
+    /// Returns TRUE if the 3D bounding box has volume.
+    static member inline hasVolume (b:BBox) : bool =
+        b.HasVolume
+
+    /// Returns corner point 0 of the 3D bounding box.
+    static member inline pt0 (b:BBox) : Pnt =
+        b.Pt0
+
+    /// Returns corner point 1 of the 3D bounding box.
+    static member inline pt1 (b:BBox) : Pnt =
+        b.Pt1
+
+    /// Returns corner point 2 of the 3D bounding box.
+    static member inline pt2 (b:BBox) : Pnt =
+        b.Pt2
+
+    /// Returns corner point 3 of the 3D bounding box.
+    static member inline pt3 (b:BBox) : Pnt =
+        b.Pt3
+
+    /// Returns corner point 4 of the 3D bounding box.
+    static member inline pt4 (b:BBox) : Pnt =
+        b.Pt4
+
+    /// Returns corner point 5 of the 3D bounding box.
+    static member inline pt5 (b:BBox) : Pnt =
+        b.Pt5
+
+    /// Returns corner point 6 of the 3D bounding box.
+    static member inline pt6 (b:BBox) : Pnt =
+        b.Pt6
+
+    /// Returns corner point 7 of the 3D bounding box.
+    static member inline pt7 (b:BBox) : Pnt =
+        b.Pt7
+
+    /// Returns all 8 corner points of the 3D bounding box.
+    static member inline points (b:BBox) : Pnt[] =
+        b.Points
+
+    /// Returns the 4 bottom face points of the 3D bounding box.
+    static member inline bottomPoints (b:BBox) : Pnt[] =
+        b.BottomPoints
+
+    /// Returns the looped 5-point bottom face polyline of the 3D bounding box.
+    static member inline bottomPointsLooped (b:BBox) : Pnt[] =
+        b.BottomPointsLooped
+
+    /// Returns the 4 top face points of the 3D bounding box.
+    static member inline topPoints (b:BBox) : Pnt[] =
+        b.TopPoints
+
+    /// Returns the looped 5-point top face polyline of the 3D bounding box.
+    static member inline topPointsLooped (b:BBox) : Pnt[] =
+        b.TopPointsLooped
+
+    /// Returns edge 0-1 of the 3D bounding box.
+    static member inline edge01 (b:BBox) : Line3D =
+        b.Edge01
+
+    /// Returns edge 1-2 of the 3D bounding box.
+    static member inline edge12 (b:BBox) : Line3D =
+        b.Edge12
+
+    /// Returns edge 3-2 of the 3D bounding box.
+    static member inline edge32 (b:BBox) : Line3D =
+        b.Edge32
+
+    /// Returns edge 0-3 of the 3D bounding box.
+    static member inline edge03 (b:BBox) : Line3D =
+        b.Edge03
+
+    /// Returns edge 0-4 of the 3D bounding box.
+    static member inline edge04 (b:BBox) : Line3D =
+        b.Edge04
+
+    /// Returns edge 1-5 of the 3D bounding box.
+    static member inline edge15 (b:BBox) : Line3D =
+        b.Edge15
+
+    /// Returns edge 2-6 of the 3D bounding box.
+    static member inline edge26 (b:BBox) : Line3D =
+        b.Edge26
+
+    /// Returns edge 3-7 of the 3D bounding box.
+    static member inline edge37 (b:BBox) : Line3D =
+        b.Edge37
+
+    /// Returns edge 4-5 of the 3D bounding box.
+    static member inline edge45 (b:BBox) : Line3D =
+        b.Edge45
+
+    /// Returns edge 5-6 of the 3D bounding box.
+    static member inline edge56 (b:BBox) : Line3D =
+        b.Edge56
+
+    /// Returns edge 7-6 of the 3D bounding box.
+    static member inline edge76 (b:BBox) : Line3D =
+        b.Edge76
+
+    /// Returns edge 4-7 of the 3D bounding box.
+    static member inline edge47 (b:BBox) : Line3D =
+        b.Edge47
+
+    /// Returns all 12 edges of the 3D bounding box.
+    static member inline edges (b:BBox) : Line3D[] =
+        b.Edges
+
 
     /// Checks if two 3D bounding boxes are equal within tolerance.
     /// Use a tolerance of 0.0 to check for an exact match.

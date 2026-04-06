@@ -413,14 +413,158 @@ type Box =
         min (x * y) (min (x * z) (y * z))
 
 
-    //            █████               █████     ███                                                       █████
-    //           ░░███               ░░███     ░░░                                                       ░░███
-    //    █████  ███████    ██████   ███████   ████   ██████     █████████████    ██████  █████████████   ░███████   ██████  ████████   █████
-    //   ███░░  ░░░███░    ░░░░░███ ░░░███░   ░░███  ███░░███   ░░███░░███░░███  ███░░███░░███░░███░░███  ░███░░███ ███░░███░░███░░███ ███░░
-    //  ░░█████   ░███      ███████   ░███     ░███ ░███ ░░░     ░███ ░███ ░███ ░███████  ░███ ░███ ░███  ░███ ░███░███████  ░███ ░░░ ░░█████
-    //   ░░░░███  ░███ ███ ███░░███   ░███ ███ ░███ ░███  ███    ░███ ░███ ░███ ░███░░░   ░███ ░███ ░███  ░███ ░███░███░░░   ░███      ░░░░███
-    //   ██████   ░░█████ ░░████████  ░░█████  █████░░██████     █████░███ █████░░██████  █████░███ █████ ████████ ░░██████  █████     ██████
-    //  ░░░░░░     ░░░░░   ░░░░░░░░    ░░░░░  ░░░░░  ░░░░░░     ░░░░░ ░░░ ░░░░░  ░░░░░░  ░░░░░ ░░░ ░░░░░ ░░░░░░░░   ░░░░░░  ░░░░░     ░░░░░░
+    // -------------------------------------------------------------------------------------
+    //            █████               █████     ███
+    //           ░░███               ░░███     ░░░
+    //    █████  ███████    ██████   ███████   ████   ██████
+    //   ███░░  ░░░███░    ░░░░░███ ░░░███░   ░░███  ███░░███
+    //  ░░█████   ░███      ███████   ░███     ░███ ░███ ░░░
+    //   ░░░░███  ░███ ███ ███░░███   ░███ ███ ░███ ░███  ███
+    //   ██████   ░░█████ ░░████████  ░░█████  █████░░██████
+    //  ░░░░░░     ░░░░░   ░░░░░░░░    ░░░░░  ░░░░░  ░░░░░░
+    //
+    //                                             █████
+    //                                            ░░███
+    //    █████████████    ██████  █████████████   ░███████   ██████  ████████   █████
+    //   ░░███░░███░░███  ███░░███░░███░░███░░███  ░███░░███ ███░░███░░███░░███ ███░░
+    //    ░███ ░███ ░███ ░███████  ░███ ░███ ░███  ░███ ░███░███████  ░███ ░░░ ░░█████
+    //    ░███ ░███ ░███ ░███░░░   ░███ ░███ ░███  ░███ ░███░███░░░   ░███      ░░░░███
+    //    █████░███ █████░░██████  █████░███ █████ ████████ ░░██████  █████     ██████
+    //   ░░░░░ ░░░ ░░░░░  ░░░░░░  ░░░░░ ░░░ ░░░░░ ░░░░░░░░   ░░░░░░  ░░░░░     ░░░░░░
+    // -------------------------------------------------------------------------------------
+
+
+
+    static member inline sizeX (b:Box) : float =
+        b.SizeX
+
+    /// The size in X direction squared.
+    static member inline sizeXSq (b:Box) : float =
+        b.SizeXSq
+
+    /// The size in Y direction.
+    static member inline sizeY (b:Box) : float =
+        b.SizeY
+
+    /// The size in Y direction squared.
+    static member inline sizeYSq (b:Box) : float =
+        b.SizeYSq
+
+    /// The size in Z direction.
+    static member inline sizeZ (b:Box) : float =
+        b.SizeZ
+
+    /// The size in Z direction squared.
+    static member inline sizeZSq (b:Box) : float =
+        b.SizeZSq
+
+    /// Format box into string with nice floating point number formatting of X, Y and Z size only.
+    static member inline asString (b:Box) : string =
+        b.AsString
+
+    /// Nicely formatted string representation of the box including its size.
+    static member inline toString (b:Box) : string =
+        b.ToString()
+
+    /// Format box into an F# code string that can be used to recreate it.
+    static member inline asFSharpCode (b:Box) : string =
+        b.AsFSharpCode
+
+    /// Creates a unitized version of the local X-axis.
+    static member inline xaxisUnit (b:Box) : UnitVec =
+        b.XaxisUnit
+
+    /// Creates a unitized version of the local Y-axis.
+    static member inline yaxisUnit (b:Box) : UnitVec =
+        b.YaxisUnit
+
+    /// Creates a unitized version of the local Z-axis.
+    static member inline zaxisUnit (b:Box) : UnitVec =
+        b.ZaxisUnit
+
+    /// The corner diagonally opposite of corner from Origin.
+    static member inline farCorner (b:Box) : Pnt =
+        b.FarCorner
+
+    /// The diagonal vector of the box.
+    static member inline diagonal (b:Box) : Vec =
+        b.Diagonal
+
+    /// The center of the box.
+    static member inline center (b:Box) : Pnt =
+        b.Center
+
+    /// Evaluate a X, Y and Z parameter of the box.
+    static member inline evaluateAt xParameter yParameter zParameter (b:Box) : Pnt =
+        b.EvaluateAt(xParameter, yParameter, zParameter)
+
+    /// Calculates the volume of the box.
+    static member inline volume (b:Box) : float =
+        b.Volume
+
+    /// Returns the longest edge of the box.
+    static member inline longestEdge (b:Box) : float =
+        b.LongestEdge
+
+    /// Returns the shortest edge of the box.
+    static member inline shortestEdge (b:Box) : float =
+        b.ShortestEdge
+
+    /// Returns the square length of longest edge of the box.
+    static member inline longestEdgeSq (b:Box) : float =
+        b.LongestEdgeSq
+
+    /// Returns the square length of shortest edge of the box.
+    static member inline shortestEdgeSq (b:Box) : float =
+        b.ShortestEdgeSq
+
+    /// Tests if all sides are smaller than the zeroLength tolerance.
+    static member inline isZero (b:Box) : bool =
+        b.IsZero
+
+    /// Tests if all sides are smaller than the zeroLength tolerance.
+    static member inline isPoint (b:Box) : bool =
+        b.IsPoint
+
+    /// Counts the amount of sides that are smaller than the zeroLength tolerance.
+    static member inline countZeroSides (b:Box) : int =
+        b.CountZeroSides
+
+    /// Tests if two of the X, Y and Z axis is smaller than the zeroLength tolerance.
+    static member inline isLine (b:Box) : bool =
+        b.IsLine
+
+    /// Tests if one of the X, Y and Z axis is smaller than the zeroLength tolerance.
+    static member inline isFlat (b:Box) : bool =
+        b.IsFlat
+
+    /// Tests if no sides of the X, Y and Z axis is smaller than the zeroLength tolerance.
+    static member inline isValid (b:Box) : bool =
+        b.IsValid
+
+    /// Tests if none of the X, Y and Z axis is smaller than the zeroLength tolerance.
+    static member inline hasVolume (b:Box) : bool =
+        b.HasVolume
+
+    /// Gets the plane that this box is based on.
+    static member inline plane (b:Box) : PPlane =
+        b.Plane
+
+    /// Scales the box by a given factor around a given center point.
+    static member inline scaleOn (cen:Pnt) (factor:float) (b:Box) : Box =
+        b.ScaleOn cen factor
+
+    /// Gets the axis aligned 3D bounding box of the box.
+    static member inline bbox (b:Box) : BBox =
+        b.BBox
+
+    /// Returns the area of the biggest face of the box.
+    static member inline areaOfBiggestFace (b:Box) : float =
+        b.AreaOfBiggestFace
+
+    /// Returns the area of the smallest face of the box.
+    static member inline areaOfSmallestFace (b:Box) : float =
+        b.AreaOfSmallestFace
 
 
     /// Check for point containment in the Box.
@@ -793,6 +937,122 @@ type Box =
     /// <returns>None if no intersection, Some(tEntry, tExit) with the entry and exit parameters on the ray.</returns>
     static member inline intersectRay (ray:Line3D) (box:Box) : Option<float*float> =
         box.IntersectRay(ray)
+
+    /// Returns the corners of the box in the documented order.
+    static member inline points (b:Box) : Pnt[] =
+        b.Points
+
+    /// Returns point 0 of the box, same as Origin.
+    static member inline pt0 (b:Box) : Pnt =
+        b.Pt0
+
+    /// Returns point 1 of the box.
+    static member inline pt1 (b:Box) : Pnt =
+        b.Pt1
+
+    /// Returns point 2 of the box.
+    static member inline pt2 (b:Box) : Pnt =
+        b.Pt2
+
+    /// Returns point 3 of the box.
+    static member inline pt3 (b:Box) : Pnt =
+        b.Pt3
+
+    /// Returns point 4 of the box.
+    static member inline pt4 (b:Box) : Pnt =
+        b.Pt4
+
+    /// Returns point 5 of the box.
+    static member inline pt5 (b:Box) : Pnt =
+        b.Pt5
+
+    /// Returns point 6 of the box.
+    static member inline pt6 (b:Box) : Pnt =
+        b.Pt6
+
+    /// Returns point 7 of the box.
+    static member inline pt7 (b:Box) : Pnt =
+        b.Pt7
+
+    /// Returns the six faces of the box in documented order.
+    static member inline faces (b:Box) : Rect3D[] =
+        b.Faces
+
+    /// Returns the top face of the box.
+    static member inline topFace (b:Box) : Rect3D =
+        b.TopFace
+
+    /// Returns the bottom face of the box.
+    static member inline bottomFace (b:Box) : Rect3D =
+        b.BottomFace
+
+    /// Returns the front face of the box.
+    static member inline frontFace (b:Box) : Rect3D =
+        b.FrontFace
+
+    /// Returns the back face of the box.
+    static member inline backFace (b:Box) : Rect3D =
+        b.BackFace
+
+    /// Returns the right face of the box.
+    static member inline rightFace (b:Box) : Rect3D =
+        b.RightFace
+
+    /// Returns the left face of the box.
+    static member inline leftFace (b:Box) : Rect3D =
+        b.LeftFace
+
+    /// Returns the 12 box edges.
+    static member inline edges (b:Box) : Line3D[] =
+        b.Edges
+
+    /// Returns edge 0 of the box.
+    static member inline edge0 (b:Box) : Line3D =
+        b.Edge0
+
+    /// Returns edge 1 of the box.
+    static member inline edge1 (b:Box) : Line3D =
+        b.Edge1
+
+    /// Returns edge 2 of the box.
+    static member inline edge2 (b:Box) : Line3D =
+        b.Edge2
+
+    /// Returns edge 3 of the box.
+    static member inline edge3 (b:Box) : Line3D =
+        b.Edge3
+
+    /// Returns edge 4 of the box.
+    static member inline edge4 (b:Box) : Line3D =
+        b.Edge4
+
+    /// Returns edge 5 of the box.
+    static member inline edge5 (b:Box) : Line3D =
+        b.Edge5
+
+    /// Returns edge 6 of the box.
+    static member inline edge6 (b:Box) : Line3D =
+        b.Edge6
+
+    /// Returns edge 7 of the box.
+    static member inline edge7 (b:Box) : Line3D =
+        b.Edge7
+
+    /// Returns edge 8 of the box.
+    static member inline edge8 (b:Box) : Line3D =
+        b.Edge8
+
+    /// Returns edge 9 of the box.
+    static member inline edge9 (b:Box) : Line3D =
+        b.Edge9
+
+    /// Returns edge 10 of the box.
+    static member inline edge10 (b:Box) : Line3D =
+        b.Edge10
+
+    /// Returns edge 11 of the box.
+    static member inline edge11 (b:Box) : Line3D =
+        b.Edge11
 
 
 

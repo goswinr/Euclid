@@ -1069,6 +1069,214 @@ type Rect3D =
     static member inline scale (factor:float) (r:Rect3D) : Rect3D =
         Rect3D.createUnchecked(r.Origin * factor, r.Xaxis * factor, r.Yaxis * factor)
 
+    /// The size in X direction.
+    static member inline sizeX (r:Rect3D) : float =
+        r.SizeX
+
+    /// The squared size in X direction.
+    static member inline sizeXSq (r:Rect3D) : float =
+        r.SizeXSq
+
+    /// The size in Y direction.
+    static member inline sizeY (r:Rect3D) : float =
+        r.SizeY
+
+    /// The squared size in Y direction.
+    static member inline sizeYSq (r:Rect3D) : float =
+        r.SizeYSq
+
+    /// Format the 3D-rectangle into string with nice floating point number formatting of X and Y size only.
+    static member inline asString (r:Rect3D) : string =
+        r.AsString
+
+    /// Format Rect3D into an F# code string that can be used to recreate the rectangle.
+    static member inline asFSharpCode (r:Rect3D) : string =
+        r.AsFSharpCode
+
+    /// Nicely formatted string representation of the 3D-rectangle including its size.
+    static member inline toString (r:Rect3D) : string =
+        r.ToString()
+
+    /// Creates a unitized version of the local X-Axis.
+    static member inline xaxisUnit (r:Rect3D) : UnitVec =
+        r.XaxisUnit
+
+    /// Creates a unitized version of the local Y-Axis.
+    static member inline yaxisUnit (r:Rect3D) : UnitVec =
+        r.YaxisUnit
+
+    /// Returns the Normal resulting from the Cross Product of Xaxis with Yaxis.
+    static member inline normal (r:Rect3D) : Vec =
+        r.Normal
+
+    /// Returns the unitized Normal resulting from the Cross Product of Xaxis with Yaxis.
+    static member inline normalUnit (r:Rect3D) : UnitVec =
+        r.NormalUnit
+
+    /// Returns the diagonal vector of the 3D-rectangle.
+    static member inline diagonal (r:Rect3D) : Vec =
+        r.Diagonal
+
+    /// Returns the center of the 3D-rectangle.
+    static member inline center (r:Rect3D) : Pnt =
+        r.Center
+
+    /// Evaluate a X and Y parameter of the 3D-rectangle.
+    static member inline evaluateAt (xParameter:float) (yParameter:float) (r:Rect3D) : Pnt =
+        r.EvaluateAt(xParameter, yParameter)
+
+    /// Evaluate a point at X and Y distance on the respective axes of the 2D Rectangle.
+    static member inline evaluateDist (xDistance:float) (yDistance:float) (r:Rect3D) : Pnt =
+        r.EvaluateDist(xDistance, yDistance)
+
+    /// Calculates the area of the 3D-rectangle.
+    static member inline area (r:Rect3D) : float =
+        r.Area
+
+    /// Scales the 3D rectangle by a given factor on a given center point.
+    static member inline scaleOn (cen:Pnt) (factor:float) (r:Rect3D) : Rect3D =
+        r.ScaleOn cen factor
+
+    /// Returns the longest edge of the Rect3D.
+    static member inline longestEdge (r:Rect3D) : float =
+        r.LongestEdge
+
+    /// Returns the shortest edge of the Rect3D.
+    static member inline shortestEdge (r:Rect3D) : float =
+        r.ShortestEdge
+
+    /// Returns the square length of longest edge of the Rect3D.
+    static member inline longestEdgeSq (r:Rect3D) : float =
+        r.LongestEdgeSq
+
+    /// Returns the square length of shortest edge of the Rect3D.
+    static member inline shortestEdgeSq (r:Rect3D) : float =
+        r.ShortestEdgeSq
+
+    /// Tests if all sides are smaller than the zeroLength tolerance.
+    static member inline isZero (r:Rect3D) : bool =
+        r.IsZero
+
+    /// Tests if all sides are smaller than the zeroLength tolerance.
+    static member inline isPoint (r:Rect3D) : bool =
+        r.IsPoint
+
+    /// Counts the amount of sides that are smaller than the zeroLength tolerance.
+    static member inline countZeroSides (r:Rect3D) : int =
+        r.CountZeroSides
+
+    /// Tests if two of the X and Y axis is smaller than the zeroLength tolerance.
+    static member inline isLine (r:Rect3D) : bool =
+        r.IsLine
+
+    /// Tests if no sides of the X and Y axis is smaller than the zeroLength tolerance.
+    static member inline isValid (r:Rect3D) : bool =
+        r.IsValid
+
+    /// Tests if none of the X and Y axis is smaller than the zeroLength tolerance.
+    static member inline hasArea (r:Rect3D) : bool =
+        r.HasArea
+
+    /// Gets the Plane that this 3D-rectangle is based on.
+    static member inline plane (r:Rect3D) : PPlane =
+        r.Plane
+
+    /// Gets the axis aligned 2D Bounding Rectangle of the 3D-rectangle.
+    static member inline bRect (r:Rect3D) : BRect =
+        r.BRect
+
+    /// Gets the axis aligned 3D Bounding Box of the 3D-rectangle.
+    static member inline bBox (r:Rect3D) : BBox =
+        r.BBox
+
+    /// Returns the corner diagonally opposite of the origin corner.
+    static member inline farCorner (r:Rect3D) : Pnt =
+        r.FarCorner
+
+    /// Returns the corner at end of X-axis.
+    static member inline xCorner (r:Rect3D) : Pnt =
+        r.XCorner
+
+    /// Returns the corner at end of Y-axis.
+    static member inline yCorner (r:Rect3D) : Pnt =
+        r.YCorner
+
+    /// Returns point 0 of the 3D-rectangle.
+    static member inline pt0 (r:Rect3D) : Pnt =
+        r.Pt0
+
+    /// Returns point 1 of the 3D-rectangle.
+    static member inline pt1 (r:Rect3D) : Pnt =
+        r.Pt1
+
+    /// Returns point 2 of the 3D-rectangle.
+    static member inline pt2 (r:Rect3D) : Pnt =
+        r.Pt2
+
+    /// Returns point 3 of the 3D-rectangle.
+    static member inline pt3 (r:Rect3D) : Pnt =
+        r.Pt3
+
+    /// Returns a 3D line from point 0 to 1 of the rectangle.
+    static member inline edge01 (r:Rect3D) : Line3D =
+        r.Edge01
+
+    /// Returns a 3D line from point 1 to 2 of the rectangle.
+    static member inline edge12 (r:Rect3D) : Line3D =
+        r.Edge12
+
+    /// Returns a 3D line from point 2 to 3 of the rectangle.
+    static member inline edge23 (r:Rect3D) : Line3D =
+        r.Edge23
+
+    /// Returns a 3D line from point 3 to 0 of the rectangle.
+    static member inline edge30 (r:Rect3D) : Line3D =
+        r.Edge30
+
+    /// Returns the local X side as a 3D line from point 0 to 1.
+    static member inline edgeX (r:Rect3D) : Line3D =
+        r.EdgeX
+
+    /// Returns the local Y side as a 3D line from point 0 to 3.
+    static member inline edgeY (r:Rect3D) : Line3D =
+        r.EdgeY
+
+    /// Returns the diagonal 3D line from point 0 to 2.
+    static member inline diagonalLine (r:Rect3D) : Line3D =
+        r.DiagonalLine
+
+    /// Returns the Rectangle flipped.
+    static member inline flipped (r:Rect3D) : Rect3D =
+        r.Flipped
+
+    /// Returns the same rectangle with orientation rotated by 90 degrees clockwise around its center.
+    static member inline rotateOrientation90CW (r:Rect3D) : Rect3D =
+        r.RotateOrientation90CW
+
+    /// Returns the same rectangle with orientation rotated by 180 degrees around its center.
+    static member inline rotateOrientation180 (r:Rect3D) : Rect3D =
+        r.RotateOrientation180
+
+    /// Returns the same rectangle with orientation rotated by 90 degrees counter clockwise around its center.
+    static member inline rotateOrientation90CCW (r:Rect3D) : Rect3D =
+        r.RotateOrientation90CCW
+
+    /// Returns the 4 corners of the 3D-rectangle in counter-clockwise order, starting at origin.
+    static member inline points (r:Rect3D) : Pnt[] =
+        r.Points
+
+    /// Returns the 4 corners of the 3D-rectangle as closed loop in counter-clockwise order, starting at origin.
+    static member inline pointsLooped (r:Rect3D) : Pnt[] =
+        r.PointsLooped
+
+    /// Returns the 4 edges of the 3D-rectangle in counter-clockwise order, starting at origin.
+    static member inline edges (r:Rect3D) : Line3D[] =
+        r.Edges
+
+    /// Returns one of the 4 edges as a 3D line.
+    static member inline getEdge (i:int) (r:Rect3D) : Line3D =
+        r.GetEdge i
+
     // TODO find correct implementation
 
     // Returns the line of intersection between two planes.
