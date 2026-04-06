@@ -5,10 +5,8 @@ fable_modules/
 node_modules/
 _js/
 _ts/
-dist/
-Src16/
-*.fs.js
-# *.ts
+_tscBuild/
+
 
 # FSharp.Formatting
 .fsdocs/

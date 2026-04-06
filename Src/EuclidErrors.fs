@@ -44,85 +44,85 @@ module EuclidErrors =
 
 
 
-    let fail (msg:string) :unit =
+    let fail (msg:string) : 'Failed =
         raise <| EuclidException $"Euclid.{msg}"
 
-    let failRarr (msg:string) (xs: ResizeArray<'T>) :unit =
+    let failRarr (msg:string) (xs: ResizeArray<'T>) : 'Failed =
         raise <| EuclidException $"Euclid.ResizeArr.{msg} failed on ResizeArray of {xs.Count} elements."
 
-    let failNull (funcName:string) (arg:string) :unit =
+    let failNull (funcName:string) (arg:string) : 'Failed =
         raise <| EuclidNullException $"Euclid.{funcName} argument {arg} is null."
 
-    let failEmptySeq (funcName:string) (arg:string) :unit =
+    let failEmptySeq (funcName:string) (arg:string) : 'Failed =
         raise <| EuclidEmptySeqException $"Euclid.{funcName} argument {arg} is an empty sequence."
 
-    let fail1 (msg:string) (a: 'T) :unit =
+    let fail1 (msg:string) (a: 'T) : 'Failed =
         raise <| EuclidException $"{msg} failed on: {nl}  %O{a}."
 
-    let fail2 (msg:string) (a: 'T) (b: 'U) :unit =
+    let fail2 (msg:string) (a: 'T) (b: 'U) : 'Failed =
         raise <| EuclidException $"{msg} failed on {nl}  %O{a}{nl}  %O{b}."
 
-    let fail3 (msg:string) (a: 'T) (b:'U) (c:'V) :unit =
+    let fail3 (msg:string) (a: 'T) (b:'U) (c:'V) : 'Failed =
         raise <| EuclidException $"{msg} failed on: {nl}  %O{a}{nl}  %O{b}{nl}  %O{c}."
 
-    let failColinear (msg:string) (a: 'T) (b:'U) (c:'V) :unit =
+    let failColinear (msg:string) (a: 'T) (b:'U) (c:'V) : 'Failed =
         raise <| EuclidException $"{msg} failed on colinear points {nl}  %O{a}{nl}  %O{b}{nl}  %O{c}."
 
-    let failDivide (msg:string) (div:float) (obj:'T) :unit =
+    let failDivide (msg:string) (div:float) (obj:'T) : 'Failed =
         raise <| EuclidDivByZeroException $"{msg}: {nl}  %O{obj} {nl}  cannot be divided by {div}."
 
-    let failRot (x:float) (y:float) :unit =
+    let failRot (x:float) (y:float) : 'Failed =
         raise <| EuclidUnitizingException $"Rotation2D(sine {x}, cosine {y}): sin*sin + cos*cos length is not one."
 
-    let failQuat (w:float) (x:float) (y:float) (z:float) :unit =
+    let failQuat (w:float) (x:float) (y:float) (z:float) : 'Failed =
         raise <| EuclidUnitizingException $"Quaternion(w:{w}, x:{x}, y:{y}, z:{z}): w*w + x*x + y*y + z*z length is not one."
 
-    let failNotOne2 (msg:string) (x:float) (y:float) :unit =
+    let failNotOne2 (msg:string) (x:float) (y:float) : 'Failed =
         raise <| EuclidUnitizingException $"{msg}: length of vector with components X:{x}, Y:{y} is not one."
 
-    let failNotOne3 (msg:string) (x:float) (y:float) (z:float) :unit =
+    let failNotOne3 (msg:string) (x:float) (y:float) (z:float) : 'Failed =
         raise <| EuclidUnitizingException $"{msg}: length of vector with components X:{x}, Y:{y}, Z:{z} is not one."
 
-    let failNaN2 (msg:string) (x:float) (y:float)  :unit =
+    let failNaN2 (msg:string) (x:float) (y:float)  : 'Failed =
         raise <| EuclidNanInfinityException $"NaN or Infinity in {msg}  X:{x}, Y:{y}."
 
-    let failNaN3 (msg:string) (x:float) (y:float) (z:float) :unit =
+    let failNaN3 (msg:string) (x:float) (y:float) (z:float) : 'Failed =
         raise <| EuclidNanInfinityException $"NaN or Infinity in {msg}  X:{x}, Y:{y}, Z:{z}."
 
-    let failUnit2 (msg:string) (x:float) (y:float) :unit =
+    let failUnit2 (msg:string) (x:float) (y:float) : 'Failed =
         raise <| EuclidUnitizingException $"{msg} unitizing failed for too small input: X:{x}, Y:{y}."
 
-    let failUnit3 (msg:string) (x:float) (y:float) (z:float) :unit =
+    let failUnit3 (msg:string) (x:float) (y:float) (z:float) : 'Failed =
         raise <| EuclidUnitizingException $"{msg} unitizing failed for too small input: X:{x}, Y:{y}, Z:{z}."
 
-    let failTooSmall (msg:string) (this:'T)  :unit =
+    let failTooSmall (msg:string) (this:'T)  : 'Failed =
         raise <| EuclidTooSmallException $"{msg}: {nl}  %O{this} {nl}  is too small."
 
-    let failTooSmall2 (msg:string) (this:'T) (other:'U) :unit =
+    let failTooSmall2 (msg:string) (this:'T) (other:'U) : 'Failed =
         raise <| EuclidTooSmallException $"{msg}: {nl}  %O{this} {nl}  is too small. Other: {nl}  %O{other}."
 
-    let failTooClose (msg:string) (this:'T) (other:'U) :unit =
+    let failTooClose (msg:string) (this:'T) (other:'U) : 'Failed =
         raise <| EuclidTooSmallException $"{msg}: {nl}  %O{this} {nl}  and {nl}  %O{other} are too close to get a direction."
 
-    let failObsoleteV30 (funName:string) (newFunName:string) :unit =
+    let failObsoleteV30 (funName:string) (newFunName:string) : 'Failed =
         raise <| EuclidObsoleteException $"{funName} is obsolete from Euclid version 0.20.0 or higher. Use alternative functions in :{newFunName}."
 
-    let failObsolete (funName:string) (newFunName:string) :unit =
+    let failObsolete (funName:string) (newFunName:string) : 'Failed =
         raise <| EuclidObsoleteException $"{funName} is obsolete. Use alternative functions in :{newFunName}."
 
-    let failVertical (msg:string) (v:'t) :unit =
+    let failVertical (msg:string) (v:'t) : 'Failed =
         raise <| EuclidException $"{msg}: vector is vertical or zero length: {v}"
 
-    let failTooFewPoly2D (name:string) (minCount:int) (actual:int):unit =
+    let failTooFewPoly2D (name:string) (minCount:int) (actual:int): 'Failed =
         raise <| EuclidException $"Polyline2D.{name} failed on Polyline2D with {actual} points. Minimum required is {minCount} points."
 
-    let failTooFewPoly3D (name:string) (minCount:int) (actual:int) :unit =
+    let failTooFewPoly3D (name:string) (minCount:int) (actual:int) : 'Failed =
         raise <| EuclidException $"Polyline3D.{name} failed on Polyline3D with {actual} points. Minimum required is {minCount} points."
 
     /// Raises an EuclidException when offsetting a 2D rectangle edge fails due to insufficient size.
-    let failRect2DOffsetEdge(offStart, offEnd, len, edgeIdx, d) : unit =
+    let failRect2DOffsetEdge(offStart, offEnd, len, edgeIdx, d) : 'Failed =
         fail $"Rect2D.offsetEdge: the 2D Rectangle is too small to offsetEdge by {d} at edgeIdx {edgeIdx}. offStart: {offStart}, offEnd: {offEnd}, Length: {len}"
 
     /// Raises an EuclidException when offsetting a 3D rectangle edge fails due to insufficient size.
-    let failRect3DOffsetEdge(offStart, offEnd, len, edgeIdx, d) : unit =
+    let failRect3DOffsetEdge(offStart, offEnd, len, edgeIdx, d) : 'Failed =
         fail $"Rect3D.offsetEdge: the 3D-rectangle is too small to offsetEdge by {d} at edgeIdx {edgeIdx}. offStart: {offStart}, offEnd: {offEnd}, Length: {len}"

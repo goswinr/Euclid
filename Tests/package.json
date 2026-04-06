@@ -1,7 +1,7 @@
 {
   "type": "module",
   "scripts": {
-    "checkTS": "tsc --target es2022",
+    "checkTS": "tsc",
     "watchTS": "dotnet fable watch ../Euclid.fsproj --lang typescript          --outDir ./_ts --run npm run checkTS ",
     "buildTS": "dotnet fable       ../Euclid.fsproj --lang typescript --silent --outDir ./_ts --configuration Release --run npm run checkTS",
     "buildJS": "dotnet fable --outDir dist/testsRelease --noCache --configuration Release",
