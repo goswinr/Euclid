@@ -1189,93 +1189,6 @@ type Rect3D =
     static member inline bBox (r:Rect3D) : BBox =
         r.BBox
 
-    /// Returns the corner diagonally opposite of the origin corner.
-    static member inline farCorner (r:Rect3D) : Pnt =
-        r.FarCorner
-
-    /// Returns the corner at end of X-axis.
-    static member inline xCorner (r:Rect3D) : Pnt =
-        r.XCorner
-
-    /// Returns the corner at end of Y-axis.
-    static member inline yCorner (r:Rect3D) : Pnt =
-        r.YCorner
-
-    /// Returns point 0 of the 3D-rectangle.
-    static member inline pt0 (r:Rect3D) : Pnt =
-        r.Pt0
-
-    /// Returns point 1 of the 3D-rectangle.
-    static member inline pt1 (r:Rect3D) : Pnt =
-        r.Pt1
-
-    /// Returns point 2 of the 3D-rectangle.
-    static member inline pt2 (r:Rect3D) : Pnt =
-        r.Pt2
-
-    /// Returns point 3 of the 3D-rectangle.
-    static member inline pt3 (r:Rect3D) : Pnt =
-        r.Pt3
-
-    /// Returns a 3D line from point 0 to 1 of the rectangle.
-    static member inline edge01 (r:Rect3D) : Line3D =
-        r.Edge01
-
-    /// Returns a 3D line from point 1 to 2 of the rectangle.
-    static member inline edge12 (r:Rect3D) : Line3D =
-        r.Edge12
-
-    /// Returns a 3D line from point 2 to 3 of the rectangle.
-    static member inline edge23 (r:Rect3D) : Line3D =
-        r.Edge23
-
-    /// Returns a 3D line from point 3 to 0 of the rectangle.
-    static member inline edge30 (r:Rect3D) : Line3D =
-        r.Edge30
-
-    /// Returns the local X side as a 3D line from point 0 to 1.
-    static member inline edgeX (r:Rect3D) : Line3D =
-        r.EdgeX
-
-    /// Returns the local Y side as a 3D line from point 0 to 3.
-    static member inline edgeY (r:Rect3D) : Line3D =
-        r.EdgeY
-
-    /// Returns the diagonal 3D line from point 0 to 2.
-    static member inline diagonalLine (r:Rect3D) : Line3D =
-        r.DiagonalLine
-
-    /// Returns the Rectangle flipped.
-    static member inline flipped (r:Rect3D) : Rect3D =
-        r.Flipped
-
-    /// Returns the same rectangle with orientation rotated by 90 degrees clockwise around its center.
-    static member inline rotateOrientation90CW (r:Rect3D) : Rect3D =
-        r.RotateOrientation90CW
-
-    /// Returns the same rectangle with orientation rotated by 180 degrees around its center.
-    static member inline rotateOrientation180 (r:Rect3D) : Rect3D =
-        r.RotateOrientation180
-
-    /// Returns the same rectangle with orientation rotated by 90 degrees counter clockwise around its center.
-    static member inline rotateOrientation90CCW (r:Rect3D) : Rect3D =
-        r.RotateOrientation90CCW
-
-    /// Returns the 4 corners of the 3D-rectangle in counter-clockwise order, starting at origin.
-    static member inline points (r:Rect3D) : Pnt[] =
-        r.Points
-
-    /// Returns the 4 corners of the 3D-rectangle as closed loop in counter-clockwise order, starting at origin.
-    static member inline pointsLooped (r:Rect3D) : Pnt[] =
-        r.PointsLooped
-
-    /// Returns the 4 edges of the 3D-rectangle in counter-clockwise order, starting at origin.
-    static member inline edges (r:Rect3D) : Line3D[] =
-        r.Edges
-
-    /// Returns one of the 4 edges as a 3D line.
-    static member inline getEdge (i:int) (r:Rect3D) : Line3D =
-        r.GetEdge i
 
     // TODO find correct implementation
 
@@ -1765,6 +1678,96 @@ type Rect3D =
         | 2 -> Line3D(r.Origin + r.Xaxis + r.Yaxis, r.Origin + r.Yaxis)
         | 3 -> Line3D(r.Origin + r.Yaxis, r.Origin)
         | _ -> fail $"Rect3D.GetEdge: index {i} out of range 0..3" |> unbox // unbox to make type checker happy
+
+
+
+    /// Returns the corner diagonally opposite of the origin corner.
+    static member inline farCorner (r:Rect3D) : Pnt =
+        r.FarCorner
+
+    /// Returns the corner at end of X-axis.
+    static member inline xCorner (r:Rect3D) : Pnt =
+        r.XCorner
+
+    /// Returns the corner at end of Y-axis.
+    static member inline yCorner (r:Rect3D) : Pnt =
+        r.YCorner
+
+    /// Returns point 0 of the 3D-rectangle.
+    static member inline pt0 (r:Rect3D) : Pnt =
+        r.Pt0
+
+    /// Returns point 1 of the 3D-rectangle.
+    static member inline pt1 (r:Rect3D) : Pnt =
+        r.Pt1
+
+    /// Returns point 2 of the 3D-rectangle.
+    static member inline pt2 (r:Rect3D) : Pnt =
+        r.Pt2
+
+    /// Returns point 3 of the 3D-rectangle.
+    static member inline pt3 (r:Rect3D) : Pnt =
+        r.Pt3
+
+    /// Returns a 3D line from point 0 to 1 of the rectangle.
+    static member inline edge01 (r:Rect3D) : Line3D =
+        r.Edge01
+
+    /// Returns a 3D line from point 1 to 2 of the rectangle.
+    static member inline edge12 (r:Rect3D) : Line3D =
+        r.Edge12
+
+    /// Returns a 3D line from point 2 to 3 of the rectangle.
+    static member inline edge23 (r:Rect3D) : Line3D =
+        r.Edge23
+
+    /// Returns a 3D line from point 3 to 0 of the rectangle.
+    static member inline edge30 (r:Rect3D) : Line3D =
+        r.Edge30
+
+    /// Returns the local X side as a 3D line from point 0 to 1.
+    static member inline edgeX (r:Rect3D) : Line3D =
+        r.EdgeX
+
+    /// Returns the local Y side as a 3D line from point 0 to 3.
+    static member inline edgeY (r:Rect3D) : Line3D =
+        r.EdgeY
+
+    /// Returns the diagonal 3D line from point 0 to 2.
+    static member inline diagonalLine (r:Rect3D) : Line3D =
+        r.DiagonalLine
+
+    /// Returns the Rectangle flipped.
+    static member inline flipped (r:Rect3D) : Rect3D =
+        r.Flipped
+
+    /// Returns the same rectangle with orientation rotated by 90 degrees clockwise around its center.
+    static member inline rotateOrientation90CW (r:Rect3D) : Rect3D =
+        r.RotateOrientation90CW
+
+    /// Returns the same rectangle with orientation rotated by 180 degrees around its center.
+    static member inline rotateOrientation180 (r:Rect3D) : Rect3D =
+        r.RotateOrientation180
+
+    /// Returns the same rectangle with orientation rotated by 90 degrees counter clockwise around its center.
+    static member inline rotateOrientation90CCW (r:Rect3D) : Rect3D =
+        r.RotateOrientation90CCW
+
+    /// Returns the 4 corners of the 3D-rectangle in counter-clockwise order, starting at origin.
+    static member inline points (r:Rect3D) : Pnt[] =
+        r.Points
+
+    /// Returns the 4 corners of the 3D-rectangle as closed loop in counter-clockwise order, starting at origin.
+    static member inline pointsLooped (r:Rect3D) : Pnt[] =
+        r.PointsLooped
+
+    /// Returns the 4 edges of the 3D-rectangle in counter-clockwise order, starting at origin.
+    static member inline edges (r:Rect3D) : Line3D[] =
+        r.Edges
+
+    /// Returns one of the 4 edges as a 3D line.
+    static member inline getEdge (i:int) (r:Rect3D) : Line3D =
+        r.GetEdge i
 
 
 

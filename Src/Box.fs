@@ -942,119 +942,6 @@ type Box =
     static member inline points (b:Box) : Pnt[] =
         b.Points
 
-    /// Returns point 0 of the box, same as Origin.
-    static member inline pt0 (b:Box) : Pnt =
-        b.Pt0
-
-    /// Returns point 1 of the box.
-    static member inline pt1 (b:Box) : Pnt =
-        b.Pt1
-
-    /// Returns point 2 of the box.
-    static member inline pt2 (b:Box) : Pnt =
-        b.Pt2
-
-    /// Returns point 3 of the box.
-    static member inline pt3 (b:Box) : Pnt =
-        b.Pt3
-
-    /// Returns point 4 of the box.
-    static member inline pt4 (b:Box) : Pnt =
-        b.Pt4
-
-    /// Returns point 5 of the box.
-    static member inline pt5 (b:Box) : Pnt =
-        b.Pt5
-
-    /// Returns point 6 of the box.
-    static member inline pt6 (b:Box) : Pnt =
-        b.Pt6
-
-    /// Returns point 7 of the box.
-    static member inline pt7 (b:Box) : Pnt =
-        b.Pt7
-
-    /// Returns the six faces of the box in documented order.
-    static member inline faces (b:Box) : Rect3D[] =
-        b.Faces
-
-    /// Returns the top face of the box.
-    static member inline topFace (b:Box) : Rect3D =
-        b.TopFace
-
-    /// Returns the bottom face of the box.
-    static member inline bottomFace (b:Box) : Rect3D =
-        b.BottomFace
-
-    /// Returns the front face of the box.
-    static member inline frontFace (b:Box) : Rect3D =
-        b.FrontFace
-
-    /// Returns the back face of the box.
-    static member inline backFace (b:Box) : Rect3D =
-        b.BackFace
-
-    /// Returns the right face of the box.
-    static member inline rightFace (b:Box) : Rect3D =
-        b.RightFace
-
-    /// Returns the left face of the box.
-    static member inline leftFace (b:Box) : Rect3D =
-        b.LeftFace
-
-    /// Returns the 12 box edges.
-    static member inline edges (b:Box) : Line3D[] =
-        b.Edges
-
-    /// Returns edge 0 of the box.
-    static member inline edge0 (b:Box) : Line3D =
-        b.Edge0
-
-    /// Returns edge 1 of the box.
-    static member inline edge1 (b:Box) : Line3D =
-        b.Edge1
-
-    /// Returns edge 2 of the box.
-    static member inline edge2 (b:Box) : Line3D =
-        b.Edge2
-
-    /// Returns edge 3 of the box.
-    static member inline edge3 (b:Box) : Line3D =
-        b.Edge3
-
-    /// Returns edge 4 of the box.
-    static member inline edge4 (b:Box) : Line3D =
-        b.Edge4
-
-    /// Returns edge 5 of the box.
-    static member inline edge5 (b:Box) : Line3D =
-        b.Edge5
-
-    /// Returns edge 6 of the box.
-    static member inline edge6 (b:Box) : Line3D =
-        b.Edge6
-
-    /// Returns edge 7 of the box.
-    static member inline edge7 (b:Box) : Line3D =
-        b.Edge7
-
-    /// Returns edge 8 of the box.
-    static member inline edge8 (b:Box) : Line3D =
-        b.Edge8
-
-    /// Returns edge 9 of the box.
-    static member inline edge9 (b:Box) : Line3D =
-        b.Edge9
-
-    /// Returns edge 10 of the box.
-    static member inline edge10 (b:Box) : Line3D =
-        b.Edge10
-
-    /// Returns edge 11 of the box.
-    static member inline edge11 (b:Box) : Line3D =
-        b.Edge11
-
-
 
 
     /// <summary>Returns the bottom corners of the Box in Counter-Clockwise order, starting at Origin.
@@ -1800,3 +1687,118 @@ type Box =
     member inline b.Edge11 =
         let st = b.Origin + b.Yaxis
         Line3D(st, st + b.Zaxis)
+
+
+
+    /// Returns point 0 of the box, same as Origin.
+    static member inline pt0 (b:Box) : Pnt =
+        b.Pt0
+
+    /// Returns point 1 of the box.
+    static member inline pt1 (b:Box) : Pnt =
+        b.Pt1
+
+    /// Returns point 2 of the box.
+    static member inline pt2 (b:Box) : Pnt =
+        b.Pt2
+
+    /// Returns point 3 of the box.
+    static member inline pt3 (b:Box) : Pnt =
+        b.Pt3
+
+    /// Returns point 4 of the box.
+    static member inline pt4 (b:Box) : Pnt =
+        b.Pt4
+
+    /// Returns point 5 of the box.
+    static member inline pt5 (b:Box) : Pnt =
+        b.Pt5
+
+    /// Returns point 6 of the box.
+    static member inline pt6 (b:Box) : Pnt =
+        b.Pt6
+
+    /// Returns point 7 of the box.
+    static member inline pt7 (b:Box) : Pnt =
+        b.Pt7
+
+    /// Returns the six faces of the box in documented order.
+    static member inline faces (b:Box) : Rect3D[] =
+        b.Faces
+
+    /// Returns the top face of the box.
+    static member inline topFace (b:Box) : Rect3D =
+        b.TopFace
+
+    /// Returns the bottom face of the box.
+    static member inline bottomFace (b:Box) : Rect3D =
+        b.BottomFace
+
+    /// Returns the front face of the box.
+    static member inline frontFace (b:Box) : Rect3D =
+        b.FrontFace
+
+    /// Returns the back face of the box.
+    static member inline backFace (b:Box) : Rect3D =
+        b.BackFace
+
+    /// Returns the right face of the box.
+    static member inline rightFace (b:Box) : Rect3D =
+        b.RightFace
+
+    /// Returns the left face of the box.
+    static member inline leftFace (b:Box) : Rect3D =
+        b.LeftFace
+
+    /// Returns the 12 box edges.
+    static member inline edges (b:Box) : Line3D[] =
+        b.Edges
+
+    /// Returns edge 0 of the box.
+    static member inline edge0 (b:Box) : Line3D =
+        b.Edge0
+
+    /// Returns edge 1 of the box.
+    static member inline edge1 (b:Box) : Line3D =
+        b.Edge1
+
+    /// Returns edge 2 of the box.
+    static member inline edge2 (b:Box) : Line3D =
+        b.Edge2
+
+    /// Returns edge 3 of the box.
+    static member inline edge3 (b:Box) : Line3D =
+        b.Edge3
+
+    /// Returns edge 4 of the box.
+    static member inline edge4 (b:Box) : Line3D =
+        b.Edge4
+
+    /// Returns edge 5 of the box.
+    static member inline edge5 (b:Box) : Line3D =
+        b.Edge5
+
+    /// Returns edge 6 of the box.
+    static member inline edge6 (b:Box) : Line3D =
+        b.Edge6
+
+    /// Returns edge 7 of the box.
+    static member inline edge7 (b:Box) : Line3D =
+        b.Edge7
+
+    /// Returns edge 8 of the box.
+    static member inline edge8 (b:Box) : Line3D =
+        b.Edge8
+
+    /// Returns edge 9 of the box.
+    static member inline edge9 (b:Box) : Line3D =
+        b.Edge9
+
+    /// Returns edge 10 of the box.
+    static member inline edge10 (b:Box) : Line3D =
+        b.Edge10
+
+    /// Returns edge 11 of the box.
+    static member inline edge11 (b:Box) : Line3D =
+        b.Edge11
+

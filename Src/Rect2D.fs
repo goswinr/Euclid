@@ -1022,95 +1022,12 @@ type Rect2D =
     static member inline bRect (r:Rect2D) : BRect =
         r.BRect
 
-    /// Returns the far corner (point 2) of the 2D rectangle.
-    static member inline farCorner (r:Rect2D) : Pt =
-        r.FarCorner
-
-    /// Returns the X corner (point 1) of the 2D rectangle.
-    static member inline xCorner (r:Rect2D) : Pt =
-        r.XCorner
-
-    /// Returns the Y corner (point 3) of the 2D rectangle.
-    static member inline yCorner (r:Rect2D) : Pt =
-        r.YCorner
-
-    /// Returns point 0 of the 2D rectangle.
-    static member inline pt0 (r:Rect2D) : Pt =
-        r.Pt0
-
-    /// Returns point 1 of the 2D rectangle.
-    static member inline pt1 (r:Rect2D) : Pt =
-        r.Pt1
-
-    /// Returns point 2 of the 2D rectangle.
-    static member inline pt2 (r:Rect2D) : Pt =
-        r.Pt2
-
-    /// Returns point 3 of the 2D rectangle.
-    static member inline pt3 (r:Rect2D) : Pt =
-        r.Pt3
-
-    /// Returns edge 0-1 of the 2D rectangle.
-    static member inline edge01 (r:Rect2D) : Line2D =
-        r.Edge01
-
-    /// Returns edge 1-2 of the 2D rectangle.
-    static member inline edge12 (r:Rect2D) : Line2D =
-        r.Edge12
-
-    /// Returns edge 2-3 of the 2D rectangle.
-    static member inline edge23 (r:Rect2D) : Line2D =
-        r.Edge23
-
-    /// Returns edge 3-0 of the 2D rectangle.
-    static member inline edge30 (r:Rect2D) : Line2D =
-        r.Edge30
-
-    /// Returns the local X edge of the 2D rectangle.
-    static member inline edgeX (r:Rect2D) : Line2D =
-        r.EdgeX
-
-    /// Returns the local Y edge of the 2D rectangle.
-    static member inline edgeY (r:Rect2D) : Line2D =
-        r.EdgeY
-
-    /// Returns the diagonal line from point 0 to point 2 of the 2D rectangle.
-    static member inline diagonalLine (r:Rect2D) : Line2D =
-        r.DiagonalLine
-
-    /// Returns the same rectangle with orientation rotated 90 degrees clockwise around center.
-    static member inline rotateOrientation90CW (r:Rect2D) : Rect2D =
-        r.RotateOrientation90CW
-
-    /// Returns the same rectangle with orientation rotated 180 degrees around center.
-    static member inline rotateOrientation180 (r:Rect2D) : Rect2D =
-        r.RotateOrientation180
-
-    /// Returns the same rectangle with orientation rotated 90 degrees counter-clockwise around center.
-    static member inline rotateOrientation90CCW (r:Rect2D) : Rect2D =
-        r.RotateOrientation90CCW
-
-    /// Returns the 4 corner points of the 2D rectangle.
-    static member inline points (r:Rect2D) : Pt[] =
-        r.Points
-
-    /// Returns the 4 corner points as a closed loop.
-    static member inline pointsLooped (r:Rect2D) : Pt[] =
-        r.PointsLooped
-
-    /// Returns the 4 edges of the 2D rectangle.
-    static member inline edges (r:Rect2D) : Line2D[] =
-        r.Edges
-
-    /// Returns one edge of the 2D rectangle by index 0..3.
-    static member inline getEdge (i:int) (r:Rect2D) : Line2D =
-        r.GetEdge i
-
 
 
 
 
     /// <summary>Returns the corner diagonally opposite of corner from Origin (point 2).
+    /// r.Origin + r.Xaxis + r.Yaxis
     /// <code>
     ///   local
     ///   Y-Axis
@@ -1535,3 +1452,91 @@ type Rect2D =
         | 2 -> Line2D(r.Origin + r.Xaxis + r.Yaxis, r.Origin + r.Yaxis)
         | 3 -> Line2D(r.Origin + r.Yaxis, r.Origin)
         | _ -> fail $"Rect2D.GetEdge: index {i} out of range 0..3" |> unbox // unbox to make type checker happy
+
+
+
+    /// Returns the far corner (point 2) of the 2D rectangle.
+    static member inline farCorner (r:Rect2D) : Pt =
+        r.FarCorner
+
+    /// Returns the X corner (point 1) of the 2D rectangle.
+    static member inline xCorner (r:Rect2D) : Pt =
+        r.XCorner
+
+    /// Returns the Y corner (point 3) of the 2D rectangle.
+    static member inline yCorner (r:Rect2D) : Pt =
+        r.YCorner
+
+    /// Returns point 0 of the 2D rectangle.
+    static member inline pt0 (r:Rect2D) : Pt =
+        r.Pt0
+
+    /// Returns point 1 of the 2D rectangle.
+    static member inline pt1 (r:Rect2D) : Pt =
+        r.Pt1
+
+    /// Returns point 2 of the 2D rectangle.
+    static member inline pt2 (r:Rect2D) : Pt =
+        r.Pt2
+
+    /// Returns point 3 of the 2D rectangle.
+    static member inline pt3 (r:Rect2D) : Pt =
+        r.Pt3
+
+    /// Returns edge 0-1 of the 2D rectangle.
+    static member inline edge01 (r:Rect2D) : Line2D =
+        r.Edge01
+
+    /// Returns edge 1-2 of the 2D rectangle.
+    static member inline edge12 (r:Rect2D) : Line2D =
+        r.Edge12
+
+    /// Returns edge 2-3 of the 2D rectangle.
+    static member inline edge23 (r:Rect2D) : Line2D =
+        r.Edge23
+
+    /// Returns edge 3-0 of the 2D rectangle.
+    static member inline edge30 (r:Rect2D) : Line2D =
+        r.Edge30
+
+    /// Returns the local X edge of the 2D rectangle.
+    static member inline edgeX (r:Rect2D) : Line2D =
+        r.EdgeX
+
+    /// Returns the local Y edge of the 2D rectangle.
+    static member inline edgeY (r:Rect2D) : Line2D =
+        r.EdgeY
+
+
+
+    /// Returns the diagonal line from point 0 to point 2 of the 2D rectangle.
+    static member inline diagonalLine (r:Rect2D) : Line2D =
+        r.DiagonalLine
+
+    /// Returns the same rectangle with orientation rotated 90 degrees clockwise around center.
+    static member inline rotateOrientation90CW (r:Rect2D) : Rect2D =
+        r.RotateOrientation90CW
+
+    /// Returns the same rectangle with orientation rotated 180 degrees around center.
+    static member inline rotateOrientation180 (r:Rect2D) : Rect2D =
+        r.RotateOrientation180
+
+    /// Returns the same rectangle with orientation rotated 90 degrees counter-clockwise around center.
+    static member inline rotateOrientation90CCW (r:Rect2D) : Rect2D =
+        r.RotateOrientation90CCW
+
+    /// Returns the 4 corner points of the 2D rectangle.
+    static member inline points (r:Rect2D) : Pt[] =
+        r.Points
+
+    /// Returns the 4 corner points as a closed loop.
+    static member inline pointsLooped (r:Rect2D) : Pt[] =
+        r.PointsLooped
+
+    /// Returns the 4 edges of the 2D rectangle.
+    static member inline edges (r:Rect2D) : Line2D[] =
+        r.Edges
+
+    /// Returns one edge of the 2D rectangle by index 0..3.
+    static member inline getEdge (i:int) (r:Rect2D) : Line2D =
+        r.GetEdge i
