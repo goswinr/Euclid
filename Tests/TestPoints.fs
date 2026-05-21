@@ -120,6 +120,19 @@ let tests =
                 "throws on empty ys" |> Expect.throws f
             }
 
+            test "findContinuousPoints joins from both ends and reverses where needed" {
+                let ptss =
+                    ResizeArray([
+                        ResizeArray([Pt(1,0); Pt(2,0)])
+                        ResizeArray([Pt(1,0); Pt(0,0)])
+                        ResizeArray([Pt(3,0); Pt(2,0)])
+                    ])
+                let joined = Points2D.findContinuousPoints(ptss, 0.01)
+                let expected = [Pt(0,0); Pt(1,0); Pt(1,0); Pt(2,0); Pt(2,0); Pt(3,0)]
+                "returns joined sequence with expected length" |> Expect.equal joined.Count expected.Length
+                "returns joined sequence from 0 to 3" |> Expect.isTrue (Seq.forall2 eqPt joined expected)
+            }
+
             test "dist to line is 3.0" {
                 let pt = Pt(1,1)
                 let lineStart = Pt(4,0)

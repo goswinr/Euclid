@@ -152,27 +152,37 @@ type Points2D   =
     static member findContinuousPoints (ptss: ResizeArray<ResizeArray<Pt>>, tolGap:float) : ResizeArray<Pt> =
         let i = ptss |> ResizeArr.maxIndexBy ResizeArr.length
         let res = ptss.Pop(i)
+        let tolGapSq = tolGap * tolGap
+        let findClosestAtStartAndEnd (pt:Pt) =
+            let mutable si = -1
+            let mutable ei = -1
+            let mutable sdSq = Double.MaxValue
+            let mutable edSq = Double.MaxValue
+            for i=0 to ptss.Count-1 do
+                let ps = ptss.[i]
+                let dStartSq = Pt.distanceSq pt ps.First
+                if dStartSq < sdSq then
+                    sdSq <- dStartSq
+                    si <- i
+                let dEndSq = Pt.distanceSq pt ps.Last
+                if dEndSq < edSq then
+                    edSq <- dEndSq
+                    ei <- i
+            si, sdSq, ei, edSq
         let mutable loop = true
         while loop && ptss.Count > 0 do
             //first try to append to end
             let ende = res.[res.Count-1]
-            let si = ptss |> ResizeArr.minIndexBy (fun ps -> Pt.distanceSq ende ps.First)
-            let ei = ptss |> ResizeArr.minIndexBy (fun ps -> Pt.distanceSq ende ps.Last)
-            let sd = Pt.distance ende ptss.[si].First
-            let ed = Pt.distance ende ptss.[ei].Last
-            if   sd < tolGap && sd < ed then  res.AddRange(                ptss.Pop(si))
-            elif ed < tolGap && ed < sd then  res.AddRange(ResizeArr.rev(ptss.Pop(ei)) )
+            let si, sdSq, ei, edSq = findClosestAtStartAndEnd ende
+            if   sdSq < tolGapSq && sdSq < edSq then  res.AddRange(                ptss.Pop(si))
+            elif edSq < tolGapSq && edSq < sdSq then  res.AddRange(ResizeArr.rev(ptss.Pop(ei)) )
             else
                 //search from start
                 let start = res.[0]
-                let si = ptss |> ResizeArr.minIndexBy (fun ps -> Pt.distanceSq start ps.First)
-                let ei = ptss |> ResizeArr.minIndexBy (fun ps -> Pt.distanceSq start ps.Last)
-                let sd = Pt.distance start ptss.[si].First
-                let ed = Pt.distance start ptss.[ei].Last
-                if   sd < tolGap && sd < ed then res.InsertRange(0, ResizeArr.rev(ptss.Pop(si)) )
-                elif ed < tolGap && ed < sd then res.InsertRange(0,                 ptss.Pop(ei))
+                let si, sdSq, ei, edSq = findClosestAtStartAndEnd start
+                if   sdSq < tolGapSq && sdSq < edSq then res.InsertRange(0, ResizeArr.rev(ptss.Pop(si)) )
+                elif edSq < tolGapSq && edSq < sdSq then res.InsertRange(0,                 ptss.Pop(ei))
                 else
                     loop <- false
         res
-
 
