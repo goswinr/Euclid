@@ -7,12 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.30.0] - 2026-04-12
+## [0.30.0] - 2026-03-23
 ### Added
 - add a static member for every instance member
 ### Changed
 - naming consistency , some members marked obsolete and renamed to have more consistent naming
-
+- Polyline2D and 3D use a ResizeArray<float>  of interlaced x0, y0, z0, x1, y1, z1, ... internally , instead of ResizeArray<Pnt>
+- Rect2D and 3D use just 6 (or 9) floats instead of 3  points or vectors internally.
 
 ## [0.20.0] - 2026-02-08
 ### Added
@@ -189,7 +190,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - first public release
 
-[Unreleased]: https://github.com/goswinr/Euclid/compare/0.20.0...HEAD
+[Unreleased]: https://github.com/goswinr/Euclid/compare/0.30.0...HEAD
+[0.30.0]: https://github.com/goswinr/Euclid/compare/0.20.0...0.30.0
 [0.20.0]: https://github.com/goswinr/Euclid/compare/0.20.0-beta3...0.20.0
 [0.20.0-beta3]: https://github.com/goswinr/Euclid/compare/0.20.0-beta2...0.20.0-beta3
 [0.20.0-beta2]: https://github.com/goswinr/Euclid/compare/0.20.0-beta1...0.20.0-beta2
