@@ -1,0 +1,1 @@
+- [Test geometry off-origin and rotated](test-geometry-off-origin-rotated.md) — when writing tests, place shapes away from the world origin and rotate them

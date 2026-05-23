@@ -1,4 +1,4 @@
-namespace Euclid
+﻿namespace Euclid
 
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
@@ -64,12 +64,16 @@ type BRect =
         #warnon "44" // re-enable warning for obsolete usage
 
     /// Nicely formatted string representation of the bounding rectangle, including its size.
-    override r.ToString() =
+    override r.ToString() : string =
         let sizeX = Format.float (r.MaxX - r.MinX)
         let sizeY = Format.float (r.MaxY - r.MinY)
         let atX = Format.float r.MinX
         let atY = Format.float r.MinY
         $"Euclid.BRect: sizeX=%s{sizeX}| sizeY=%s{sizeY}| at X=%s{atX}|Y=%s{atY}"
+
+    /// Nicely formatted string representation of the bounding rectangle, including its size.
+    static member inline toString (r:BRect) : string =
+        r.ToString()
 
     /// Format bounding rectangle into string with nice floating point number formatting of size and position.
     /// But without full type name as in rect.ToString()
@@ -80,35 +84,67 @@ type BRect =
         let atY = Format.float r.MinY
         $"sizeX=%s{sizeX}| sizeY=%s{sizeY}| at X=%s{atX}|Y=%s{atY}"
 
+    /// Format bounding rectangle into string with nice floating point number formatting of size and position.
+    /// But without full type name as in rect.ToString()
+    static member inline asString (r:BRect) : string =
+        r.AsString
+
     /// Format bounding rectangle into an F# code string that can be used to recreate the rectangle.
     member r.AsFSharpCode : string =
         $"BRect.createUnchecked({r.MinX}, {r.MinY}, {r.MaxX}, {r.MaxY})"
+
+    /// Format bounding rectangle into an F# code string that can be used to recreate the rectangle.
+    static member inline asFSharpCode (r:BRect) : string =
+        r.AsFSharpCode
 
     /// The point where X and Y are the minimum values.
     member inline r.MinPt : Pt =
         Pt(r.MinX, r.MinY)
 
+    /// The point where X and Y are the minimum values.
+    static member inline minPt (r:BRect) : Pt =
+        r.MinPt
+
     /// The point where X and Y are the maximum values.
     member inline r.MaxPt : Pt =
         Pt(r.MaxX, r.MaxY)
+
+    /// The point where X and Y are the maximum values.
+    static member inline maxPt (r:BRect) : Pt =
+        r.MaxPt
 
     /// The size in X direction.
     member inline r.SizeX : float =
         r.MaxX - r.MinX
 
+    /// The size in X direction.
+    static member inline sizeX (r:BRect) : float =
+        r.SizeX
+
     /// The size in Y direction.
     member inline r.SizeY : float =
         r.MaxY - r.MinY
 
+    /// The size in Y direction.
+    static member inline sizeY (r:BRect) : float =
+        r.SizeY
+
     /// The diagonal 2D vector of the bounding rect. From MinPt to MaxPt.
     member inline r.Diagonal : Vc =
         Vc(r.MaxX - r.MinX, r.MaxY - r.MinY)
+
+    /// The diagonal 2D vector of the bounding rect. From MinPt to MaxPt.
+    static member inline diagonal (r:BRect) : Vc =
+        r.Diagonal
 
     /// The center of the bounding rect.
     member inline r.Center : Pt =
         Pt( (r.MaxX + r.MinX) * 0.5,
             (r.MaxY + r.MinY) * 0.5)
 
+    /// The center of the bounding rect.
+    static member inline center (r:BRect) : Pt =
+        r.Center
 
     /// Returns a bounding rectangle expanded by distance.
     /// Does check for underflow if distance is negative and raises EuclidException.
@@ -118,19 +154,29 @@ type BRect =
             fail $"BRect.Expand(dist): Negative distance {dist} causes an underflow, on {r.AsString}"
         n
 
+    /// Returns bounding rectangle expanded by distance.
+    /// Does check for underflow if distance is negative and raises EuclidException.
+    static member inline expand (dist:float) (r:BRect) : BRect =
+        r.Expand dist
 
     /// Returns a bounding rectangle expanded by a distance for X and Y-axis each.
     /// Raises EuclidException if the resulting rectangle would be invalid (Min > Max).
-    member inline r.Expand(xDist, yDist) : BRect =
+    member inline r.ExpandXY(xDist, yDist) : BRect =
         let n = BRect.createUnchecked(r.MinX-xDist, r.MinY-yDist, r.MaxX+xDist, r.MaxY+yDist)
         if n.MinX > n.MaxX ||  n.MinY > n.MaxY then
             fail $"BRect.Expand(x, y): Distance(s) X: {xDist} and Y: {yDist} cause an underflow, on {r.AsString}"
         n
 
     /// Returns a bounding rectangle expanded by a distance for X and Y-axis each.
+    static member inline expandXY (xDist:float) (yDist:float) (r:BRect) : BRect =
+        r.ExpandXY(xDist, yDist)
+
+
+
+    /// Returns a bounding rectangle expanded by a distance for X and Y-axis each.
     /// If expansion is negative it shrinks the Rectangle. It also prevents the rectangle from collapsing past its center.
     /// When the negative expansion is bigger than the size, Min and Max values will be both at the center point.
-    member inline b.ExpandSafe(xDist, yDist) : BRect =
+    member b.ExpandSafeXY(xDist:float, yDist:float) : BRect =
         let mutable minXCh = b.MinX - xDist
         let mutable maxXCh = b.MaxX + xDist
         if minXCh > maxXCh then  // Overflow! Set both to the same mid point
@@ -146,11 +192,25 @@ type BRect =
             maxYCh <- mid
         BRect.createUnchecked(minXCh, minYCh, maxXCh, maxYCh)
 
+    /// Returns a bounding rectangle expanded by a distance for X and Y-axis each.
+    /// If expansion is negative it shrinks the Rectangle. It also prevents the rectangle from collapsing past its center.
+    /// When the negative expansion is bigger than the size, Min and Max values will be both at the center point.
+    static member inline expandSafeXY (xDist:float) (yDist:float) (r:BRect) : BRect =
+        r.ExpandSafeXY(xDist, yDist)
+
+
     /// Returns a bounding rectangle expanded by a distance.
     /// If expansion is negative it shrinks the Rectangle. It also prevents the rectangle from collapsing past its center.
     /// When the negative expansion is bigger than the size, Min and Max values will be both at the center point.
-    member inline b.ExpandSafe(dist) : BRect =
-        b.ExpandSafe(dist, dist)
+    member inline b.ExpandSafe(dist:float) : BRect =
+        b.ExpandSafeXY(dist, dist)
+
+    /// Returns a bounding rectangle expanded by a distance.
+    /// If expansion is negative it shrinks the Rectangle. It also makes sure that there is no underflow.
+    /// When the negative expansion is bigger than the size, Min and Max values will be both in the middle from where they were before.
+    static member inline expandSafe (dist:float) (r:BRect) : BRect =
+        r.ExpandSafeXY(dist, dist)
+
 
     /// Returns a bounding rectangle expanded only in X direction by different distances for start(minX) and end (maxX).
     /// Does check for underflow if distance is negative and raises EuclidException.
@@ -160,6 +220,11 @@ type BRect =
             fail $"BRect.ExpandXaxis: Negative distances for start({startDist}) and end ({endDist}) cause an underflow, on {r.AsString}"
         n
 
+    /// Returns bounding rectangle expanded only in X direction by different distances for start(minX) and end (maxX).
+    /// Does check for underflow if distance is negative and raises EuclidException.
+    static member inline expandXaxis startDist endDist (r:BRect) : BRect =
+        r.ExpandXaxis(startDist, endDist)
+
     /// Returns a bounding rectangle expanded only in Y direction by different distances for start(minY) and end (maxY).
     /// Does check for underflow if distance is negative and raises EuclidException.
     member inline r.ExpandYaxis(startDist, endDist) : BRect =
@@ -168,41 +233,140 @@ type BRect =
             fail $"BRect.ExpandYaxis: Negative distances for start({startDist}) and end({endDist}) cause an underflow, on {r.AsString}"
         n
 
+    /// Returns bounding rectangle expanded only in Y direction by different distances for start(minY) and end (maxY).
+    /// Does check for underflow if distance is negative and raises EuclidException.
+    static member inline expandYaxis startDist endDist (r:BRect) : BRect =
+        r.ExpandYaxis(startDist, endDist)
 
-    /// Returns TRUE if the two bounding rectangles do overlap or touch.
-    /// Also returns TRUE if one bounding rect is completely inside the other.
-    /// Also returns TRUE if one bounding rect is completely surrounding the other.
-    member inline r.OverlapsWith (a:BRect) : bool =
-        not (  r.MinX > a.MaxX
-            || a.MinX > r.MaxX
-            || a.MinY > r.MaxY
-            || r.MinY > a.MaxY)
+    /// Returns TRUE if the two 2D bounding rectangles do overlap or touch exactly.
+    /// Also returns TRUE if one box is completely inside the other.
+    /// Also returns TRUE if one box is completely surrounding the other.
+    member inline b.IsOverlapping (a:BRect) : bool =
+        a.MinX <= b.MaxX &&
+        b.MinX <= a.MaxX &&
+        a.MinY <= b.MaxY &&
+        b.MinY <= a.MaxY
 
-    /// <summary>
-    /// Determines whether two bounding rectangles overlap more than a given tolerance distance.
-    /// </summary>
-    /// <param name="a">The bounding rectangle to test for overlap with.</param>
-    /// <param name="tol">The tolerance distance. Use a negative tolerance to count touching if they are apart by abs(tolerance). Default is 1e-6.</param>
-    /// <returns>
-    /// Returns TRUE if:
-    /// - The rectangles overlap by more than the tolerance distance
-    /// - One rectangle is completely inside the other
-    /// - One rectangle completely surrounds the other
-    /// Returns FALSE if:
-    /// - The rectangles are just touching (within tolerance)
-    /// - The rectangles are separated
-    /// </returns>
-    /// Returns TRUE if the two bounding rectangles do overlap more than a given tolerance distance.
-    /// Use a negative tolerance to count touching if they are apart by abs(tolerance)
-    /// Returns false if the two bounding rectangles are just touching or apart.
-    /// Also returns TRUE if one bounding rect is completely inside the other.
-    /// Also returns TRUE if one bounding rect is completely surrounding the other.
-    member inline r.OverlapsWith (a:BRect, [<OPT;DEF(1e-6)>]tol:float) : bool =
-        not (  r.MinX > a.MaxX - tol
-            || a.MinX > r.MaxX - tol
-            || a.MinY > r.MaxY - tol
-            || r.MinY > a.MaxY - tol
-            )
+    /// Returns TRUE if the two 2D bounding rectangles do overlap or touch exactly.
+    /// Also returns TRUE if one box is completely inside the other.
+    /// Also returns TRUE if one box is completely surrounding the other.
+    static member inline isOverlapping (a:BRect) (b:BRect) : bool =
+        b.IsOverlapping a
+
+    /// Returns TRUE if the two 2D bounding rectangles do overlap or are apart less than the specified tolerance.
+    /// Also returns TRUE if one box is completely inside the other.
+    /// Also returns TRUE if one box is completely surrounding the other.
+    /// A negative tolerance shrinks the effective boundaries instead of expanding them. The math works out symmetrically:
+    member inline b.IsOverlappingOrClose (a:BRect, tolerance:float) : bool =
+        a.MinX - tolerance <= b.MaxX &&
+        b.MinX - tolerance <= a.MaxX &&
+        a.MinY - tolerance <= b.MaxY &&
+        b.MinY - tolerance <= a.MaxY
+
+    /// Returns TRUE if the two 2D bounding rectangles do overlap or are apart less than the specified tolerance.
+    /// Also returns TRUE if one box is completely inside the other.
+    /// Also returns TRUE if one box is completely surrounding the other.
+    /// A negative tolerance shrinks the effective boundaries instead of expanding them. The math works out symmetrically:
+    static member inline isOverlappingOrClose (tolerance:float) (a:BRect) (b:BRect) : bool =
+        b.IsOverlappingOrClose(a, tolerance)
+
+    /// Returns TRUE if the two 2D bounding rectangles are just touching within the tolerance.
+    /// The default tolerance is 1e-6.But can also be specified as a parameter.
+    /// Returns FALSE if one box is completely inside the other.
+    /// Returns FALSE if one box is completely surrounding the other.
+    member inline this.IsTouching (other:BRect, [<OPT;DEF(1e-6)>] tolerance:float) : bool =
+        // Signed face-gaps: positive = faces are apart, negative = faces penetrate
+        let g1 = this.MinX - other.MaxX
+        let g2 = other.MinX - this.MaxX
+        let g3 = this.MinY - other.MaxY
+        let g4 = other.MinY - this.MaxY
+        // Per-axis separation: >0 = apart, <0 = overlap
+        let gx = max g1 g2
+        let gy = max g3 g4
+        if gx > tolerance || gy > tolerance  then
+            false  // fully apart on at least one axis
+        elif gx < 0.0 && gy < 0.0  then
+            false // share area
+        else
+            true
+
+    /// Returns TRUE if the two 2D bounding rectangles are just touching within a given specified tolerance.
+    /// Returns FALSE if one box is completely inside the other.
+    /// Returns FALSE if one box is completely surrounding the other.
+    static member inline isTouching (tolerance:float) (other:BRect) (this:BRect) : bool =
+        this.IsTouching(other, tolerance)
+
+    /// Returns a value from -1 to 6 indicating the side on which the two 2D
+    /// are just touching within the tolerance.
+    /// The default tolerance is 1e-6.But can also be specified as a parameter.
+    ///   -1 : not touching but overlapping / one inside the other
+    ///    0 : not touching, apart on at least one axis by more than tolerance
+    ///    1 : other is in front  of this (this.MinX touches other.MaxX)
+    ///    2 : other is behind    this  (this.MaxX touches other.MinX)
+    ///    3 : other is to the left  of this (this.MinY touches other.MaxY)
+    ///    4 : other is to the right of this (this.MaxY touches other.MinY)
+    ///    5 : this.MinZ touches other.MaxZ
+    ///    6 : this.MaxZ touches other.MinZ
+    member inline this.TouchingSide (other:BRect, [<OPT;DEF(1e-6)>] tolerance:float) : int =
+        // Signed face-gaps: positive = faces are apart, negative = faces penetrate
+        let g1 = this.MinX - other.MaxX
+        let g2 = other.MinX - this.MaxX
+        let g3 = this.MinY - other.MaxY
+        let g4 = other.MinY - this.MaxY
+        // Per-axis separation: >0 = apart, <0 = overlap
+        let gx = max g1 g2
+        let gy = max g3 g4
+        if gx > tolerance || gy > tolerance then
+            0  // fully apart on at least one axis
+        elif gx < 0.0 && gy < 0.0  then
+            -1 // share area
+        else
+            // At least one axis has a face-gap in [0, tolerance]. Pick the tightest.
+            let mutable side = 0
+            let mutable best = System.Double.PositiveInfinity
+            if g1 >= 0.0 && g1 < best then side <- 1; best <- g1
+            if g2 >= 0.0 && g2 < best then side <- 2; best <- g2
+            if g3 >= 0.0 && g3 < best then side <- 3; best <- g3
+            if g4 >= 0.0 && g4 < best then side <- 4; best <- g4
+            side
+
+    /// Returns a value from -1 to 6 indicating the side on which the two 2D
+    /// are just touching within a given specified tolerance.
+    ///   -1 : not touching but overlapping / one inside the other
+    ///    0 : not touching, apart on at least one axis by more than tolerance
+    ///    1 : other is in front  of this (this.MinX touches other.MaxX)
+    ///    2 : other is behind    this  (this.MaxX touches other.MinX)
+    ///    3 : other is to the left  of this (this.MinY touches other.MaxY)
+    ///    4 : other is to the right of this (this.MaxY touches other.MinY)
+    ///    5 : this.MinZ touches other.MaxZ
+    ///    6 : this.MaxZ touches other.MinZ
+    static member inline touchingSide (other:BRect) (tolerance:float) (this:BRect) : int =
+        this.TouchingSide(other, tolerance)
+
+
+    // /// Returns TRUE if the two 2D bounding rectangles overlap by at least the specified threshold on every axis.
+    // /// (See note: when one box is smaller than the threshold on some axis but fully inside the other,
+    // ///  this returns FALSE.)
+    // member inline b.IsOverlappingMoreThan (a:Brect, threshold:float) : bool =
+    //     (min a.MaxX b.MaxX) - (max a.MinX b.MinX) >= threshold &&
+    //     (min a.MaxY b.MaxY) - (max a.MinY b.MinY) >= threshold &&
+    //     (min a.MaxZ b.MaxZ) - (max a.MinZ b.MinZ) >= threshold
+
+    // /// Returns TRUE if the two 2D bounding rectangles overlap by at least the specified threshold on every axis.
+    // /// Also returns TRUE if one box is completely inside the other (even if smaller than the threshold).
+    // /// Also returns TRUE if one box is completely surrounding the other.
+    // member inline b.IsOverlappingMoreThan (a:Brect, threshold:float) : bool =
+    //     (   (min a.MaxX b.MaxX) - (max a.MinX b.MinX) >= threshold &&
+    //         (min a.MaxY b.MaxY) - (max a.MinY b.MinY) >= threshold &&
+    //         (min a.MaxZ b.MaxZ) - (max a.MinZ b.MinZ) >= threshold    )
+    //     ||
+    //     (   a.MinX >= b.MinX && a.MaxX <= b.MaxX &&
+    //         a.MinY >= b.MinY && a.MaxY <= b.MaxY &&
+    //         a.MinZ >= b.MinZ && a.MaxZ <= b.MaxZ    )
+    //     ||
+    //     (   b.MinX >= a.MinX && b.MaxX <= a.MaxX &&
+    //         b.MinY >= a.MinY && b.MaxY <= a.MaxY &&
+    //         b.MinZ >= a.MinZ && b.MaxZ <= a.MaxZ    )
 
     /// Returns TRUE if the point is inside or exactly on this bounding rectangle.
     member inline r.Contains (p:Pt) : bool =
@@ -215,17 +379,14 @@ type BRect =
     member inline r.Contains (o:BRect) : bool =
         r.Contains(o.MinPt) && r.Contains(o.MaxPt)
 
-    /// <summary>Test if 2D bounding rectangles are only touching each other from the Outside within a given tolerance.</summary>
-    /// <param name="a">Other 2D bounding rectangle to test against.</param>
-    /// <param name="tol">Optional. A tolerance for touching test. Default is 1e-6.</param>
-    /// <returns>TRUE if the two 2D bounding rectangles are touching each other within the given tolerance.
-    /// FALSE if the two 2D bounding rectangles are overlapping or intersecting.</returns>
-    member b.IsTouching (a:BRect, [<OPT;DEF(1e-6)>]tol:float) : bool =
-        let xOverlap = not (b.MinX > a.MaxX + tol || a.MinX > b.MaxX + tol)
-        let yOverlap = not (a.MinY > b.MaxY + tol || b.MinY > a.MaxY + tol)
-        let xTouch   = abs(b.MinX - a.MaxX)  <= tol || abs(a.MinX - b.MaxX) <= tol
-        let yTouch   = abs(a.MinY - b.MaxY)  <= tol || abs(b.MinY - a.MaxY) <= tol
-        (xOverlap && yTouch) || (xTouch && yOverlap)
+    /// Returns TRUE if this bounding rectangle is inside or exactly on the other bounding rectangle.
+    /// Argument order matters!
+    static member inline contains (rectInside:BRect) (surroundingRect:BRect) : bool =
+        surroundingRect.Contains rectInside
+
+    /// Returns TRUE if the point is inside or on this bounding rectangle.
+    static member inline containsPt (pt:Pt) (rect:BRect) : bool =
+        rect.Contains pt
 
     /// Evaluate a X and Y parameter of this bounding rectangle.
     ///  0.0, 0.0 returns the MinPt.
@@ -234,10 +395,19 @@ type BRect =
         Pt (b.MinX + (b.MaxX-b.MinX) * xParameter,
             b.MinY + (b.MaxY-b.MinY) * yParameter)
 
+    /// Evaluate a X and Y parameter of this bounding rectangle.
+    /// 0.0, 0.0 returns the MinPt.
+    /// 1.0, 1.0 returns the MaxPt.
+    static member inline evaluateAt xParameter yParameter (r:BRect) : Pt =
+        r.EvaluateAt(xParameter, yParameter)
+
     /// Returns the area of this bounding rectangle.
     member inline r.Area : float =
         r.SizeX * r.SizeY
 
+    /// Returns the area of this bounding rectangle.
+    static member inline area (r:BRect) : float =
+        r.SizeX * r.SizeY
 
     /// Returns the longest edge of the Box.
     member inline b.LongestEdge : float =
@@ -245,12 +415,19 @@ type BRect =
         let y = b.MaxY - b.MinY
         max x y
 
+    /// Returns the longest edge of the Box.
+    static member inline longestEdge (r:BRect) : float =
+        r.LongestEdge
+
     /// Returns the shortest edge of the Box.
     member inline b.ShortestEdge : float =
         let x = b.MaxX - b.MinX
         let y = b.MaxY - b.MinY
         min x y
 
+    /// Returns the shortest edge of the Box.
+    static member inline shortestEdge (r:BRect) : float =
+        r.ShortestEdge
 
     /// Tests if all sides are smaller than the zeroLength tolerance.
     /// This is the same as IsPoint.
@@ -259,10 +436,19 @@ type BRect =
         isTooTiny (b.MaxY - b.MinY)
 
     /// Tests if all sides are smaller than the zeroLength tolerance.
+    /// This is the same as IsPoint.
+    static member inline isZero (r:BRect) : bool =
+        r.IsZero
+
+    /// Tests if all sides are smaller than the zeroLength tolerance.
     /// This is the same as IsZero.
     member inline b.IsPoint : bool =
         b.IsZero
 
+    /// Tests if all sides are smaller than the zeroLength tolerance.
+    /// This is the same as IsZero.
+    static member inline isPoint (r:BRect) : bool =
+        r.IsPoint
 
     /// Counts the amount of sides that are smaller than the zeroLength tolerance.
     /// This is 0, 1, or 2.
@@ -270,29 +456,54 @@ type BRect =
         countTooTinyOrNaN    (b.MaxX - b.MinX)
         +  countTooTinyOrNaN (b.MaxY - b.MinY)
 
+    /// Counts the amount of sides that are smaller than the zeroLength tolerance.
+    /// This is 0, 1, or 2.
+    static member inline countZeroSides (r:BRect) : int =
+        r.CountZeroSides
+
     /// Tests if one of the X or Y axis is smaller than the zeroLength tolerance.
     member inline b.IsLine : bool =
         b.CountZeroSides = 1
+
+    /// Tests if one of the X or Y axis is smaller than the zeroLength tolerance.
+    static member inline isLine (r:BRect) : bool =
+        r.IsLine
 
     /// Tests if no sides of the X and Y axis is smaller than the zeroLength tolerance.
     /// Same as .HasArea
     member inline b.IsValid : bool =
         b.CountZeroSides = 0
 
+    /// Tests if no sides of the X and Y axis is smaller than the zeroLength tolerance.
+    /// Same as .HasArea.
+    static member inline isValid (r:BRect) : bool =
+        r.IsValid
+
     /// Tests if none of the X and Y axis is smaller than the zeroLength tolerance.
     /// Same as .IsValid
     member inline b.HasArea : bool =
         b.CountZeroSides = 0
 
+    /// Tests if none of the X and Y axis is smaller than the zeroLength tolerance.
+    /// Same as .IsValid.
+    static member inline hasArea (r:BRect) : bool =
+        r.HasArea
 
     /// Returns a bounding rectangle that contains both input Rectangles.
-    member inline r.Union  (b:BRect) : BRect =
+    member inline r.Union (b:BRect) : BRect =
         BRect.createUnchecked(min b.MinX r.MinX, min b.MinY r.MinY, max b.MaxX r.MaxX, max b.MaxY r.MaxY)
 
     /// Returns a bounding rectangle that contains the input Rectangles and the point.
-    member inline r.Union (p:Pt) : BRect =
+    member inline r.UnionPt (p:Pt) : BRect =
         BRect.createUnchecked(min r.MinX p.X, min r.MinY p.Y, max r.MaxX p.X, max r.MaxY p.Y)
 
+    /// Returns a bounding rectangle that contains both input Rectangles.
+    static member inline union (a:BRect) (b:BRect) : BRect =
+        a.Union b
+
+    /// Returns a bounding rectangle that contains the input Rectangles and the point.
+    static member inline unionPt (p:Pt) (r:BRect) : BRect =
+        r.UnionPt p
 
     /// Returns the intersection of two bounding rectangles.
     /// The returned Rectangle is the area that is inside both input Rectangles.
@@ -308,26 +519,262 @@ type BRect =
         else
             ValueNone
 
-    // -------------------------------------------------------------------------------------
-    //            █████               █████     ███
-    //           ░░███               ░░███     ░░░
-    //    █████  ███████    ██████   ███████   ████   ██████
-    //   ███░░  ░░░███░    ░░░░░███ ░░░███░   ░░███  ███░░███
-    //  ░░█████   ░███      ███████   ░███     ░███ ░███ ░░░
-    //   ░░░░███  ░███ ███ ███░░███   ░███ ███ ░███ ░███  ███
-    //   ██████   ░░█████ ░░████████  ░░█████  █████░░██████
-    //  ░░░░░░     ░░░░░   ░░░░░░░░    ░░░░░  ░░░░░  ░░░░░░
-    //
-    //                                             █████
-    //                                            ░░███
-    //    █████████████    ██████  █████████████   ░███████   ██████  ████████   █████
-    //   ░░███░░███░░███  ███░░███░░███░░███░░███  ░███░░███ ███░░███░░███░░███ ███░░
-    //    ░███ ░███ ░███ ░███████  ░███ ░███ ░███  ░███ ░███░███████  ░███ ░░░ ░░█████
-    //    ░███ ░███ ░███ ░███░░░   ░███ ░███ ░███  ░███ ░███░███░░░   ░███      ░░░░███
-    //    █████░███ █████░░██████  █████░███ █████ ████████ ░░██████  █████     ██████
-    //   ░░░░░ ░░░ ░░░░░  ░░░░░░  ░░░░░ ░░░ ░░░░░ ░░░░░░░░   ░░░░░░  ░░░░░     ░░░░░░
-    // -------------------------------------------------------------------------------------
+    /// Returns the intersection of two bounding rectangles.
+    /// The returned Rectangle is the area that is inside both input Rectangles.
+    /// Returns ValueNone if the two Rectangles do not overlap.
+    /// Just touching Rectangles will return ValueSome with zero area collapsed BRect.
+    static member inline intersection (a:BRect) (b:BRect) : BRect voption =
+        a.Intersection b
 
+    /// Scales the 2D bounding rectangle by a given factor.
+    /// Scale center is World Origin 0,0.
+    /// A factor of 0.0 will collapse the rectangle to a point at the origin.
+    /// Negative factors would flip the rectangle, breaking the Min/Max invariant, so this is raising an  EuclidException.
+    static member inline scale (factor:float) (r:BRect) : BRect =
+        if factor < 0.0 then
+            fail $"BRect.scale: Negative factor {factor} is not allowed, would flip the rectangle on {r.AsString}"
+        BRect.createUnchecked(  r.MinX * factor,
+                r.MinY * factor,
+                r.MaxX * factor,
+                r.MaxY * factor)
+
+    /// <summary>Returns the point (0) or minX, minY.
+    /// <code>
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2 = max X,Y
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   +------------+-----> X-Axis
+    ///  0 = min X,Y      1
+    /// </code>
+    /// </summary>
+    member r.Pt0 : Pt =
+        Pt(r.MinX, r.MinY)
+
+    /// Returns the point (0) or minX, minY.
+    static member inline pt0 (r:BRect) : Pt =
+        r.Pt0
+
+    /// <summary>Returns the point (1) or maxX, minY.
+    /// <code>
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2 = max X,Y
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   +------------+-----> X-Axis
+    ///  0 = min X,Y      1
+    /// </code>
+    /// </summary>
+    member r.Pt1 : Pt =
+        Pt(r.MaxX, r.MinY)
+
+    /// Returns the point (1) or maxX, minY.
+    static member inline pt1 (r:BRect) : Pt =
+        r.Pt1
+
+    /// <summary>Returns the point (2) or maxX, maxY.
+    /// <code>
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2 = max X,Y
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   +------------+-----> X-Axis
+    ///  0 = min X,Y      1
+    /// </code>
+    /// </summary>
+    member r.Pt2 : Pt =
+        Pt(r.MaxX, r.MaxY)
+
+    /// Returns the point (2) or maxX, maxY.
+    static member inline pt2 (r:BRect) : Pt =
+        r.Pt2
+
+    /// <summary>Returns the point (3) or minX, maxY.
+    /// <code>
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2 = max X,Y
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   +------------+-----> X-Axis
+    ///  0 = min X,Y      1
+    /// </code>
+    /// </summary>
+    member r.Pt3 : Pt =
+        Pt(r.MinX, r.MaxY)
+
+    /// Returns the point (3) or minX, maxY.
+    static member inline pt3 (r:BRect) : Pt =
+        r.Pt3
+
+    /// <summary>Returns the corners of this bounding rectangle in Counter-Clockwise order, starting at MinPt.
+    /// Returns an array of 4 Points.
+    /// <code>
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2  = max X,Y
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   +------------+-----> X-Axis
+    ///  0 = min X,Y    1
+    /// </code>
+    /// </summary>
+    member r.Points : Pt[] =
+        [| Pt(r.MinX, r.MinY); Pt(r.MaxX, r.MinY);  Pt(r.MaxX, r.MaxY); Pt(r.MinX, r.MaxY) |]
+
+    /// Returns the corners of this bounding rectangle in Counter-Clockwise order, starting at MinPt.
+    /// Returns an array of 4 Points.
+    static member inline points (r:BRect) : Pt[] =
+        r.Points
+
+    /// <summary>Returns a Counter-Clockwise array of 5 Points, starting at MinPt.
+    /// Last and first point are the same.
+    /// <code>
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2  = max X,Y
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   +------------+-----> X-Axis
+    ///  0 = min X,Y    1
+    /// </code>
+    /// </summary>
+    member r.PointsLooped : Pt[] =
+        [| Pt(r.MinX, r.MinY); Pt(r.MaxX, r.MinY);  Pt(r.MaxX, r.MaxY); Pt(r.MinX, r.MaxY); Pt(r.MinX, r.MinY)|]
+
+    /// Returns a Counter-Clockwise array of 5 Points, starting at MinPt.
+    /// Last and first point are the same.
+    static member inline pointsLooped (r:BRect) : Pt[] =
+        r.PointsLooped
+
+    /// <summary>The bottom edge. The line from point 0 to 1.
+    /// <code>
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2  = max X,Y
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   +------------+-----> X-Axis
+    ///  0 = min X,Y    1
+    /// </code>
+    /// </summary>
+    member r.Edge01 : Line2D =
+        Line2D(r.MinX,r.MinY,r.MaxX,r.MinY)
+
+    /// The bottom edge. The line from point 0 to 1.
+    static member inline edge01 (r:BRect) : Line2D =
+        r.Edge01
+
+    /// <summary>The right edge. The line from point 1 to 2.
+    /// <code>
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2  = max X,Y
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   +------------+-----> X-Axis
+    ///  0 = min X,Y    1
+    /// </code>
+    /// </summary>
+    member r.Edge12 : Line2D =
+        Line2D(r.MaxX,r.MinY,r.MaxX,r.MaxY)
+
+    /// The right edge. The line from point 1 to 2.
+    static member inline edge12 (r:BRect) : Line2D =
+        r.Edge12
+
+    /// <summary>The top edge. The line from point 2 to 3.
+    /// <code>
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2  = max X,Y
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   +------------+-----> X-Axis
+    ///  0 = min X,Y    1
+    /// </code>
+    /// </summary>
+    member r.Edge23 : Line2D =
+        Line2D(r.MaxX,r.MaxY,r.MinX,r.MaxY)
+
+    /// The top edge. The line from point 2 to 3.
+    static member inline edge23 (r:BRect) : Line2D =
+        r.Edge23
+
+    /// <summary>The left edge. The line from point 3 to 0.
+    /// <code>
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2  = max X,Y
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   +------------+-----> X-Axis
+    ///  0 = min X,Y    1
+    /// </code>
+    /// </summary>
+    member r.Edge30 : Line2D =
+        Line2D(r.MinX,r.MaxY,r.MinX,r.MinY)
+
+    /// The left edge. The line from point 3 to 0.
+    static member inline edge30 (r:BRect) : Line2D =
+        r.Edge30
+
+
+    // #endregion
+    // #region Static members
 
     /// Finds min and max values for x and y.
     static member inline create (a:Pt, b:Pt) : BRect =
@@ -382,8 +829,6 @@ type BRect =
         let maxY = center.Y + sizeY*0.5
         BRect.createUnchecked(minX, minY, maxX, maxY)
 
-
-
     /// Creates a bounding rectangle of a line.
     static member inline createFromLine (l:Line2D) : BRect =
         let minX = min l.FromX l.ToX
@@ -391,7 +836,6 @@ type BRect =
         let minY = min l.FromY l.ToY
         let maxY = max l.FromY l.ToY
         BRect.createUnchecked(minX, minY, maxX, maxY)
-
 
     /// Returns the 2D bounding rectangle expanded by a relative factor on all four sides.
     /// Values between 0.0 and 1.0 shrink the rectangle.
@@ -427,7 +871,6 @@ type BRect =
         abs(a.MaxX-b.MaxX) <= tol &&
         abs(a.MaxY-b.MaxY) <= tol
 
-
     /// Check if two 2D bounding rectangles  are not equal within a given tolerance.
     /// Use a tolerance of 0.0 to check if the two 2D bounding rectangles  are not exactly equal.
     static member inline notEquals (tol:float) (a:BRect) (b:BRect) : bool =
@@ -435,27 +878,6 @@ type BRect =
         abs(a.MinY-b.MinY) > tol ||
         abs(a.MaxX-b.MaxX) > tol ||
         abs(a.MaxY-b.MaxY) > tol
-
-    /// Returns bounding rectangle expanded by distance.
-    /// Does check for underflow if distance is negative and raises EuclidException.
-    static member inline expand dist (r:BRect) : BRect =
-        r.Expand dist
-
-    /// Returns a bounding rectangle expanded by a distance for X and Y-axis each.
-    /// If expansion is negative it shrinks the Rectangle. It also makes sure that there is no underflow.
-    /// When the negative expansion is bigger than the size, Min and Max values will be both in the middle from where they were before.
-    static member inline expandSafe dist (r:BRect) : BRect =
-        r.ExpandSafe dist
-
-    /// Returns bounding rectangle expanded only in X direction by different distances for start(minX) and end (maxX).
-    /// Does check for underflow if distance is negative and raises EuclidException.
-    static member inline expandXaxis startDist endDist (r:BRect) : BRect =
-        r.ExpandXaxis(startDist, endDist)
-
-    /// Returns bounding rectangle expanded only in Y direction by different distances for start(minY) and end (maxY).
-    /// Does check for underflow if distance is negative and raises EuclidException.
-    static member inline expandYaxis startDist endDist (r:BRect) : BRect =
-        r.ExpandYaxis(startDist, endDist)
 
     /// Returns a new 2D-bounding-rectangle moved by a vector.
     /// This is the same as translate.
@@ -476,391 +898,17 @@ type BRect =
         BRect.createUnchecked(r.MinX, r.MinY+translation, r.MaxX, r.MaxY+translation)
 
 
-    /// Returns TRUE if the two bounding rectangles do overlap or touch exactly.
-    /// Also returns TRUE if one bounding rect is completely inside the other.
-    /// Also returns TRUE if one bounding rect is completely surrounding the other.
+
+    // #endregion
+    // #region Obsolete
+
+    [<Obsolete("use .overlapsWithExactly instead")>]
     static member inline doOverlap(a:BRect) (b:BRect) : bool =
-        b.OverlapsWith a
+        b.IsOverlapping(a)
 
-    /// Returns TRUE if the two bounding rectangles do overlap more than a given tolerance distance.
-    /// Use a negative tolerance to count touching if they are apart by abs(tolerance)
-    /// Returns false if the two bounding rectangles are just touching or apart.
-    /// Also returns TRUE if one bounding rect is completely inside the other.
-    /// Also returns TRUE if one bounding rect is completely surrounding the other.
-    static member inline doOverlapMoreThan tol (a:BRect) (b:BRect) : bool =
-        b.OverlapsWith(a, tol)
-
-    /// Returns TRUE if this bounding rectangle is inside or exactly on the other bounding rectangle.
-    /// Argument order matters!
-    static member inline contains (rectInside:BRect) (surroundingRect:BRect) : bool =
-        surroundingRect.Contains rectInside
-
-    /// Returns TRUE if the point is inside or on this bounding rectangle.
-    static member inline containsPt (pt:Pt) (rect:BRect) : bool =
-        rect.Contains pt
-
-
-    /// Returns a bounding rectangle that contains both input Rectangles.
-    static member inline union (a:BRect) (b:BRect) : BRect =
-        BRect.createUnchecked(min b.MinX a.MinX, min b.MinY a.MinY, max b.MaxX a.MaxX, max b.MaxY a.MaxY)
-
-    /// Returns a bounding rectangle that contains the input Rectangles and the point.
-    static member inline unionPt (p:Pt) (r:BRect) : BRect =
-        BRect.createUnchecked(min r.MinX p.X, min r.MinY p.Y, max r.MaxX p.X, max r.MaxY p.Y)
-
-    /// Returns the intersection of two bounding rectangles.
-    /// The returned Rectangle is the area that is inside both input Rectangles.
-    /// Returns ValueNone if the two Rectangles do not overlap.
-    /// Just touching Rectangles will return ValueSome with zero area collapsed BRect.
-    static member inline intersection (a:BRect) (b:BRect) : BRect voption =
-        a.Intersection b
-
-
-    /// Returns the area of this bounding rectangle.
-    static member inline area (r:BRect) : float =
-        r.SizeX * r.SizeY
-
-    /// Format bounding rectangle into string with nice floating point number formatting of size and position.
-    /// But without full type name as in rect.ToString()
-    static member inline asString (r:BRect) : string =
-        r.AsString
-
-    /// Nicely formatted string representation of the bounding rectangle, including its size.
-    static member inline toString (r:BRect) : string =
-        r.ToString()
-
-    /// Format bounding rectangle into an F# code string that can be used to recreate the rectangle.
-    static member inline asFSharpCode (r:BRect) : string =
-        r.AsFSharpCode
-
-    /// The point where X and Y are the minimum values.
-    static member inline minPt (r:BRect) : Pt =
-        r.MinPt
-
-    /// The point where X and Y are the maximum values.
-    static member inline maxPt (r:BRect) : Pt =
-        r.MaxPt
-
-    /// The size in X direction.
-    static member inline sizeX (r:BRect) : float =
-        r.SizeX
-
-    /// The size in Y direction.
-    static member inline sizeY (r:BRect) : float =
-        r.SizeY
-
-    /// The diagonal 2D vector of the bounding rect. From MinPt to MaxPt.
-    static member inline diagonal (r:BRect) : Vc =
-        r.Diagonal
-
-    /// The center of the bounding rect.
-    static member inline center (r:BRect) : Pt =
-        r.Center
-
-    /// Returns a bounding rectangle expanded by a distance for X and Y-axis each.
-    static member inline expandXY xDist yDist (r:BRect) : BRect =
-        r.Expand(xDist, yDist)
-
-    /// Returns a bounding rectangle expanded by a distance for X and Y-axis each.
-    /// If expansion is negative it shrinks the Rectangle. It also prevents the rectangle from collapsing past its center.
-    /// When the negative expansion is bigger than the size, Min and Max values will be both at the center point.
-    static member inline expandSafeXY xDist yDist (r:BRect) : BRect =
-        r.ExpandSafe(xDist, yDist)
-
-    /// Test if 2D bounding rectangles are only touching each other from the outside within a given tolerance.
-    static member inline isTouching tol (a:BRect) (b:BRect) : bool =
-        b.IsTouching(a, tol)
-
-    /// Evaluate a X and Y parameter of this bounding rectangle.
-    /// 0.0, 0.0 returns the MinPt.
-    /// 1.0, 1.0 returns the MaxPt.
-    static member inline evaluateAt xParameter yParameter (r:BRect) : Pt =
-        r.EvaluateAt(xParameter, yParameter)
-
-    /// Returns the longest edge of the Box.
-    static member inline longestEdge (r:BRect) : float =
-        r.LongestEdge
-
-    /// Returns the shortest edge of the Box.
-    static member inline shortestEdge (r:BRect) : float =
-        r.ShortestEdge
-
-    /// Tests if all sides are smaller than the zeroLength tolerance.
-    /// This is the same as IsPoint.
-    static member inline isZero (r:BRect) : bool =
-        r.IsZero
-
-    /// Tests if all sides are smaller than the zeroLength tolerance.
-    /// This is the same as IsZero.
-    static member inline isPoint (r:BRect) : bool =
-        r.IsPoint
-
-    /// Counts the amount of sides that are smaller than the zeroLength tolerance.
-    /// This is 0, 1, or 2.
-    static member inline countZeroSides (r:BRect) : int =
-        r.CountZeroSides
-
-    /// Tests if one of the X or Y axis is smaller than the zeroLength tolerance.
-    static member inline isLine (r:BRect) : bool =
-        r.IsLine
-
-    /// Tests if no sides of the X and Y axis is smaller than the zeroLength tolerance.
-    /// Same as .HasArea.
-    static member inline isValid (r:BRect) : bool =
-        r.IsValid
-
-    /// Tests if none of the X and Y axis is smaller than the zeroLength tolerance.
-    /// Same as .IsValid.
-    static member inline hasArea (r:BRect) : bool =
-        r.HasArea
-
-    /// Returns the point (0) or minX, minY.
-    static member inline pt0 (r:BRect) : Pt =
-        r.Pt0
-
-    /// Returns the point (1) or maxX, minY.
-    static member inline pt1 (r:BRect) : Pt =
-        r.Pt1
-
-    /// Returns the point (2) or maxX, maxY.
-    static member inline pt2 (r:BRect) : Pt =
-        r.Pt2
-
-    /// Returns the point (3) or minX, maxY.
-    static member inline pt3 (r:BRect) : Pt =
-        r.Pt3
-
-    /// Returns the corners of this bounding rectangle in Counter-Clockwise order, starting at MinPt.
-    /// Returns an array of 4 Points.
-    static member inline points (r:BRect) : Pt[] =
-        r.Points
-
-    /// Returns a Counter-Clockwise array of 5 Points, starting at MinPt.
-    /// Last and first point are the same.
-    static member inline pointsLooped (r:BRect) : Pt[] =
-        r.PointsLooped
-
-    /// The bottom edge. The line from point 0 to 1.
-    static member inline edge01 (r:BRect) : Line2D =
-        r.Edge01
-
-    /// The right edge. The line from point 1 to 2.
-    static member inline edge12 (r:BRect) : Line2D =
-        r.Edge12
-
-    /// The top edge. The line from point 2 to 3.
-    static member inline edge23 (r:BRect) : Line2D =
-        r.Edge23
-
-    /// The left edge. The line from point 3 to 0.
-    static member inline edge30 (r:BRect) : Line2D =
-        r.Edge30
-
-
-    /// Scales the 2D bounding rectangle by a given factor.
-    /// Scale center is World Origin 0,0.
-    /// A factor of 0.0 will collapse the rectangle to a point at the origin.
-    /// Negative factors would flip the rectangle, breaking the Min/Max invariant, so this is raising an  EuclidException.
-    static member inline scale (factor:float) (r:BRect) : BRect =
-        if factor < 0.0 then
-            fail $"BRect.scale: Negative factor {factor} is not allowed, would flip the rectangle on {r.AsString}"
-        BRect.createUnchecked(  r.MinX * factor,
-                r.MinY * factor,
-                r.MaxX * factor,
-                r.MaxY * factor)
-
-
-    /// <summary>Returns the point (0) or minX, minY.
-    /// <code>
-    ///   Y-Axis
-    ///   ^
-    ///   |
-    ///   |             2 = max X,Y
-    /// 3 +------------+
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   +------------+-----> X-Axis
-    ///  0 = min X,Y      1
-    /// </code>
-    /// </summary>
-    member r.Pt0 : Pt = Pt(r.MinX, r.MinY)
-
-    /// <summary>Returns the point (1) or maxX, minY.
-    /// <code>
-    ///   Y-Axis
-    ///   ^
-    ///   |
-    ///   |             2 = max X,Y
-    /// 3 +------------+
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   +------------+-----> X-Axis
-    ///  0 = min X,Y      1
-    /// </code>
-    /// </summary>
-    member r.Pt1 : Pt = Pt(r.MaxX, r.MinY)
-
-    /// <summary>Returns the point (2) or maxX, maxY.
-    /// <code>
-    ///   Y-Axis
-    ///   ^
-    ///   |
-    ///   |             2 = max X,Y
-    /// 3 +------------+
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   +------------+-----> X-Axis
-    ///  0 = min X,Y      1
-    /// </code>
-    /// </summary>
-    member r.Pt2 : Pt = Pt(r.MaxX, r.MaxY)
-
-    /// <summary>Returns the point (3) or minX, maxY.
-    /// <code>
-    ///   Y-Axis
-    ///   ^
-    ///   |
-    ///   |             2 = max X,Y
-    /// 3 +------------+
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   +------------+-----> X-Axis
-    ///  0 = min X,Y      1
-    /// </code>
-    /// </summary>
-    member r.Pt3 : Pt = Pt(r.MinX, r.MaxY)
-
-
-    /// <summary>Returns the corners of this bounding rectangle in Counter-Clockwise order, starting at MinPt.
-    /// Returns an array of 4 Points.
-    /// <code>
-    ///   Y-Axis
-    ///   ^
-    ///   |
-    ///   |             2  = max X,Y
-    /// 3 +------------+
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   +------------+-----> X-Axis
-    ///  0 = min X,Y    1
-    /// </code>
-    /// </summary>
-    member r.Points : Pt[] =
-        [| Pt(r.MinX, r.MinY); Pt(r.MaxX, r.MinY);  Pt(r.MaxX, r.MaxY); Pt(r.MinX, r.MaxY) |]
-
-
-    /// <summary>Returns a Counter-Clockwise array of 5 Points, starting at MinPt.
-    /// Last and first point are the same.
-    /// <code>
-    ///   Y-Axis
-    ///   ^
-    ///   |
-    ///   |             2  = max X,Y
-    /// 3 +------------+
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   +------------+-----> X-Axis
-    ///  0 = min X,Y    1
-    /// </code>
-    /// </summary>
-    member r.PointsLooped : Pt[] =
-        [| Pt(r.MinX, r.MinY); Pt(r.MaxX, r.MinY);  Pt(r.MaxX, r.MaxY); Pt(r.MinX, r.MaxY); Pt(r.MinX, r.MinY)|]
-
-    /// <summary>The bottom edge. The line from point 0 to 1.
-    /// <code>
-    ///   Y-Axis
-    ///   ^
-    ///   |
-    ///   |             2  = max X,Y
-    /// 3 +------------+
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   +------------+-----> X-Axis
-    ///  0 = min X,Y    1
-    /// </code>
-    /// </summary>
-    member r.Edge01 : Line2D = Line2D(r.MinX,r.MinY,r.MaxX,r.MinY)
-
-    /// <summary>The right edge. The line from point 1 to 2.
-    /// <code>
-    ///   Y-Axis
-    ///   ^
-    ///   |
-    ///   |             2  = max X,Y
-    /// 3 +------------+
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   +------------+-----> X-Axis
-    ///  0 = min X,Y    1
-    /// </code>
-    /// </summary>
-    member r.Edge12 : Line2D = Line2D(r.MaxX,r.MinY,r.MaxX,r.MaxY)
-
-    /// <summary>The top edge. The line from point 2 to 3.
-    /// <code>
-    ///   Y-Axis
-    ///   ^
-    ///   |
-    ///   |             2  = max X,Y
-    /// 3 +------------+
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   +------------+-----> X-Axis
-    ///  0 = min X,Y    1
-    /// </code>
-    /// </summary>
-    member r.Edge23 : Line2D = Line2D(r.MaxX,r.MaxY,r.MinX,r.MaxY)
-
-    /// <summary>The left edge. The line from point 3 to 0.
-    /// <code>
-    ///   Y-Axis
-    ///   ^
-    ///   |
-    ///   |             2  = max X,Y
-    /// 3 +------------+
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   +------------+-----> X-Axis
-    ///  0 = min X,Y    1
-    /// </code>
-    /// </summary>
-    member r.Edge30 : Line2D = Line2D(r.MinX,r.MaxY,r.MinX,r.MinY)
-
-
-
-
-
-
+    [<Obsolete("use .overlapsWith instead")>]
+    static member inline doOverlapMoreThan tol (a:BRect) (b:BRect)  : bool =
+        b.IsOverlappingOrClose(a, tol)
 
     [<Obsolete("use SizeX")>]
     member inline r.Width : float =
@@ -872,8 +920,25 @@ type BRect =
 
     [<Obsolete("typo, use ExpandSafe instead")>]
     member inline b.ExpandSave(xDist, yDist) : BRect =
-        b.ExpandSafe(xDist, yDist)
+        b.ExpandSafeXY(xDist, yDist)
 
     [<Obsolete("typo, use ExpandSafe instead")>]
     member inline b.ExpandSave(dist) : BRect =
-        b.ExpandSafe(dist, dist)
+        b.ExpandSafeXY(dist, dist)
+
+    [<Obsolete("Use ExpandXY instead.")>]
+    member inline r.Expand(xDist:float, yDist:float) : BRect =
+        r.ExpandXY(xDist, yDist)
+
+    [<Obsolete("Use ExpandSafeXY instead.")>]
+    member inline b.ExpandSafe(xDist:float, yDist:float) : BRect =
+        b.ExpandSafeXY(xDist, yDist)
+
+    [<Obsolete("Use IsOverlapping instead.")>]
+    member inline b.OverlapsWith (a:BRect) : bool =
+        b.IsOverlapping(a)
+
+    [<Obsolete("Use IsOverlappingOrClose instead.")>]
+    member inline b.OverlapsWith (a:BRect, tolerance:float) : bool =
+        b.IsOverlappingOrClose(a, tolerance)
+

@@ -39,7 +39,7 @@ type Tria2D =
     /// So it also returns true if the points are equal or very close to each other.
     /// Returns false for NaN input values.
     /// Use Points.areInLine if you need better control over the actual tolerance distance.
-    static member inline isLinearFast (a:Pt, b:Pt, c:Pt, [<OPT;DEF(0.001)>] maxAreaParallelogram:float) =
+    static member inline isLinearFast (a:Pt, b:Pt, c:Pt, [<OPT;DEF(0.001)>] maxAreaParallelogram:float) : bool =
         let doubleArea = Tria2D.areaDouble(a, b, c)
         doubleArea < maxAreaParallelogram
 
@@ -47,7 +47,7 @@ type Tria2D =
     /// Checks if three points are in one line.
     /// By finding the biggest angle in the triangle.
     /// And then measuring the distance from this point to the line defined by the other two points.
-    static member isLinear (a:Pt, b:Pt, c:Pt, [<OPT;DEF(1e-6)>] distanceTolerance:float) =
+    static member isLinear (a:Pt, b:Pt, c:Pt, [<OPT;DEF(1e-6)>] distanceTolerance:float) : bool =
         let inline _distanceSqLineToPtInfinite(lnFrom:Pt, lnTo:Pt, p:Pt,  lnSqLen:float) =
             // rewritten from Line3D.distanceLineToPtInfinite
             // http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
@@ -93,14 +93,14 @@ type Tria2D =
 
     /// Returns the offset point based on the previous and next normals, the distance and the precomputed cosine (= dot product of nPrev * nNext).
     /// Returns Infinity if the cosine is -1.0 (normals in opposite directions at a 180-degree U-turn).
-    static member inline private offsetPtCore (pt:Pt) (dist:float) (nPrev:UnitVc) (nNext:UnitVc) (cosine:float) =
+    static member inline private offsetPtCore (pt:Pt) (dist:float) (nPrev:UnitVc) (nNext:UnitVc) (cosine:float) : Pt =
         // based on https://www.angusj.com/clipper2/Docs/Trigonometry.htm
         pt + (nPrev + nNext) * (dist / (1.0 + cosine)) // offset point
 
 
     /// Returns the offset point based on the previous and next normals, the distance and the precomputed cosine (= dot product of nPrev * nNext).
     /// Checks for 180 degrees U-turns. sets it to 179 degrees
-    static member inline private offsetPtCoreSafe (pt:Pt) (dist:float) (nPrev:UnitVc) (nNext:UnitVc) (cosine:float) =
+    static member inline private offsetPtCoreSafe (pt:Pt) (dist:float) (nPrev:UnitVc) (nNext:UnitVc) (cosine:float) : Pt =
         if withMeasure cosine < Cosine.``179.0`` then // check for 180 degrees U-turns, (0.0 degrees are handled fine)
             let v = nPrev.Rotate90CCW + nNext.Rotate90CW // the offset vector with length of 2.0
             pt + v * 28.645 //tangent function of 89 degrees * 0.5
@@ -112,7 +112,7 @@ type Tria2D =
     /// If the points 'prev', 'this' and 'next' are in counter-clockwise order, the offset is inwards.
     /// Otherwise it is outwards.
     /// A negative offset distance inverts the direction.
-    static member offsetPt(ptToOffset:Pt, prev:Pt,  next:Pt, dist:float) =
+    static member offsetPt(ptToOffset:Pt, prev:Pt,  next:Pt, dist:float) : Pt =
         let vPrev = ptToOffset - prev |> Vc.unitize
         let vNext = next - ptToOffset |> Vc.unitize
         let nPrev = vPrev |> UnitVc.rotate90CCW

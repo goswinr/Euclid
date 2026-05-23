@@ -39,10 +39,7 @@ module EuclidErrors =
     type EuclidObsoleteException (s:string) =
         inherit Exception(s)
 
-
     let internal nl = Environment.NewLine
-
-
 
     let fail (msg:string) : 'Failed =
         raise <| EuclidException $"Euclid.{msg}"
@@ -104,7 +101,7 @@ module EuclidErrors =
     let failTooClose (msg:string) (this:'T) (other:'U) : 'Failed =
         raise <| EuclidTooSmallException $"{msg}: {nl}  %O{this} {nl}  and {nl}  %O{other} are too close to get a direction."
 
-    let failObsoleteV30 (funName:string) (newFunName:string) : 'Failed =
+    let failObsoleteV20 (funName:string) (newFunName:string) : 'Failed =
         raise <| EuclidObsoleteException $"{funName} is obsolete from Euclid version 0.20.0 or higher. Use alternative functions in :{newFunName}."
 
     let failObsolete (funName:string) (newFunName:string) : 'Failed =

@@ -6,6 +6,7 @@ node_modules/
 _js/
 _ts/
 _tscBuild/
+dist/
 
 
 # FSharp.Formatting

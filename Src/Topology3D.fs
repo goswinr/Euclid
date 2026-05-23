@@ -1,4 +1,4 @@
-namespace Euclid
+﻿namespace Euclid
 
 open System
 open TopologyUtil
@@ -21,7 +21,7 @@ type Topology3D  =
         for i = 0 to xs.Count - 2 do // only run till second last
             let thisLine = getLine xs.[i]
             //  TODO could be optimized using a R-Tree for very large lists instead of minBy function
-            let nextIdx = xs |> minIndexByFrom (fun c -> Pnt.distanceSq (getLine c).From thisLine.To) (i+1)
+            let nextIdx = xs |> minIndexByFrom (fun c -> Pnt.sqDistanceTo (getLine c).From thisLine.To) (i+1)
             xs |> swap (i+1) nextIdx
 
     /// Sorts elements in place to be in a circular structure.
@@ -37,17 +37,15 @@ type Topology3D  =
         for i = 0 to xs.Count - 2 do // only run till second last
             let thisLine = getLine xs.[i]
             // TODO could be optimized using a R-Tree for very large lists instead of minBy function
-            let nextIdxSt = xs |> minIndexByFrom (fun c -> Pnt.distanceSq (getLine c).From  thisLine.To) (i+1)
-            let nextIdxEn = xs |> minIndexByFrom (fun c -> Pnt.distanceSq (getLine c).To    thisLine.To) (i+1)
+            let nextIdxSt = xs |> minIndexByFrom (fun c -> Pnt.sqDistanceTo (getLine c).From  thisLine.To) (i+1)
+            let nextIdxEn = xs |> minIndexByFrom (fun c -> Pnt.sqDistanceTo (getLine c).To    thisLine.To) (i+1)
             // check if closest endpoint is closer than closest start-point
-            if  Pnt.distanceSq (getLine xs.[nextIdxSt]).From  thisLine.To <=
-                Pnt.distanceSq (getLine xs.[nextIdxEn]).To    thisLine.To then
+            if  Pnt.sqDistanceTo (getLine xs.[nextIdxSt]).From  thisLine.To <=
+                Pnt.sqDistanceTo (getLine xs.[nextIdxEn]).To    thisLine.To then
                     xs |> swap (i+1) nextIdxSt
             else
                 reverseInPlace nextIdxEn xs.[nextIdxEn]
                 xs |> swap (i+1) nextIdxEn
-
-
 
     /// Returns the groups of consecutive elements, loops or polylines.
     /// They are split where the distance between the end point of one element and the start point of the next element is greater than 'splitDistance'.
@@ -71,7 +69,7 @@ type Topology3D  =
             let mutable i = idx + 1
             while i < xs.Count do
                 let oth = getLine xs.[i]
-                if Pnt.distanceSq en oth.From < distSq then
+                if Pnt.sqDistanceTo en oth.From < distSq then
                     loops.Last.forward.Add xs.[i]
                     swap i (idx+1) xs
                     i   <- idx + 2 //reset search from swapped-to-index + 1
@@ -85,7 +83,7 @@ type Topology3D  =
             i <- idx + 1
             while i < xs.Count  do
                 let oth = getLine xs.[i]
-                if Pnt.distanceSq st oth.To < distSq then
+                if Pnt.sqDistanceTo st oth.To < distSq then
                     loops.Last.backward.Add xs.[i]
                     swap i (idx+1) xs
                     i   <- idx + 2 //reset search from swapped-to-index + 1
@@ -101,7 +99,6 @@ type Topology3D  =
             l.backward.Reverse()
             l.backward.AddRange l.forward
             l.backward)
-
 
     /// Returns the groups of consecutive elements, loops or polylines.
     /// They are split where the distance between the end point of one element and the start point of the next element is greater than 'splitDistance'.
@@ -126,13 +123,13 @@ type Topology3D  =
             let mutable i = idx + 1
             while i < xs.Count do
                 let oth = getLine xs.[i]
-                if Pnt.distanceSq en oth.From < distSq then
+                if Pnt.sqDistanceTo en oth.From < distSq then
                     loops.Last.forward.Add (xs.[i],false)
                     swap i (idx+1) xs
                     i   <- idx + 2 //reset search from swap + 1
                     idx <- idx + 1
                     en  <- oth.To
-                elif Pnt.distanceSq en oth.To < distSq then
+                elif Pnt.sqDistanceTo en oth.To < distSq then
                     loops.Last.forward.Add (xs.[i],true)
                     swap i (idx+1) xs
                     i   <- idx + 2 //reset search from swap + 1
@@ -146,13 +143,13 @@ type Topology3D  =
             i <- idx + 1
             while i < xs.Count  do
                 let oth = getLine xs.[i]
-                if Pnt.distanceSq st oth.To < distSq then
+                if Pnt.sqDistanceTo st oth.To < distSq then
                     loops.Last.backward.Add (xs.[i],false)
                     swap i (idx+1) xs
                     i   <- idx + 2 //reset search from swapped-to-index + 1
                     idx <- idx + 1
                     st  <- oth.From
-                elif Pnt.distanceSq st oth.From < distSq then
+                elif Pnt.sqDistanceTo st oth.From < distSq then
                     loops.Last.backward.Add (xs.[i],true)
                     swap i (idx+1) xs
                     i   <- idx + 2 //reset search from swapped-to-index + 1
@@ -169,6 +166,9 @@ type Topology3D  =
             l.backward.AddRange l.forward
             l.backward)
 
+
+// #endregion
+// #region Obsolete
 
 
 [<Obsolete("Use Topology2D or Topology3D module instead")>]
@@ -205,3 +205,4 @@ module Topology  =
     [<Obsolete("Use Topology3D.joinReversing instead")>]
     let joinReversing3D(getLine: 'T -> Line3D, splitDistance:float , xs:ResizeArray<'T>) =
         Topology3D.joinReversing(getLine, splitDistance, xs)
+

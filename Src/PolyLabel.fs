@@ -1,5 +1,7 @@
 namespace Euclid
 
+open Euclid.EuclidCollectionUtilities
+
 
 /// used in Polyline2D.FindLablePoint
 module internal Polylabel =
@@ -21,17 +23,23 @@ module internal Polylabel =
         let data = ResizeArray<Cell>()
 
         // Compare with tie-break on coordinates to avoid treating equal MaxDistance cells as identical
-        static member inline better (a: Cell) (b: Cell) =
+        static member inline better (a: Cell) (b: Cell) : bool =
             if a.MaxDistance = b.MaxDistance then
                 // Arbitrary stable-ish tie-break: X then Y then H
                 if a.X = b.X then
-                    if a.Y = b.Y then a.H > b.H else a.Y > b.Y
-                else a.X > b.X
-            else a.MaxDistance > b.MaxDistance
+                    if a.Y = b.Y then
+                        a.H > b.H
+                    else
+                        a.Y > b.Y
+                else
+                    a.X > b.X
+            else
+                a.MaxDistance > b.MaxDistance
 
-        member _.Count = data.Count
+        member _.Count : int =
+            data.Count
 
-        member _.Add (c: Cell) =
+        member _.Add (c: Cell) : unit =
             data.Add c
             // bubble up
             let mutable i = data.Count - 1
@@ -45,12 +53,14 @@ module internal Polylabel =
                 else
                     i <- 0
 
-        member _.Pop () =
-            if data.Count = 0 then EuclidErrors.fail "Polylabel: CellHeap empty"
+        member _.Pop () : Cell =
+            if data.Count = 0 then
+                EuclidErrors.fail "Polylabel: CellHeap empty"
             let root = data.[0]
             let lastIdx = data.Count - 1
             data.[0] <- data.[lastIdx]
-            data.RemoveAt lastIdx
+            ResizeArr.popOff data
+
             // heapify down
             let mutable i = 0
             let n = data.Count
@@ -62,7 +72,9 @@ module internal Polylabel =
                     cont <- false
                 else
                     let mutable bestChild = l
-                    if r < n && CellHeap.better data.[r] data.[l] then bestChild <- r
+                    if r < n && CellHeap.better data.[r] data.[l] then
+                        bestChild <- r
+
                     if CellHeap.better data.[bestChild] data.[i] then
                         let tmp = data.[i]
                         data.[i] <- data.[bestChild]

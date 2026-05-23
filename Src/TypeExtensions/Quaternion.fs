@@ -1,4 +1,4 @@
-namespace Euclid
+﻿namespace Euclid
 
 open Euclid.UtilEuclid
 
@@ -101,3 +101,4 @@ module AutoOpenQuaternion =
                 (m23 + m32) / s,
                 0.25 * s         ,
                 (m21 - m12) / s)
+

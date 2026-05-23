@@ -1,6 +1,6 @@
 // A workaround for Fable compiler to not fail on DataContract and DataMember attributes
 // see https://github.com/fable-compiler/Fable/issues/2253
-#if FABLE_COMPILER
+#if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
 namespace System.Runtime.Serialization
 type DataContract() = inherit System.Attribute() // just shadow the real attribute
 type DataMember()   = inherit System.Attribute() // just shadow the real attribute
@@ -17,6 +17,12 @@ type internal OPT =
 /// Runtime.InteropServices.DefaultParameterValueAttribute for member parameters.
 type internal DEF =
     Runtime.InteropServices.DefaultParameterValueAttribute
+
+
+
+// #endregion
+// #region UtilEuclid
+
 
 
 /// A module for math , logic utility functions and default tolerance values for use within Euclid.
@@ -245,6 +251,10 @@ module UtilEuclid =
         let t = i % length
         if t >= 0 then t
         else           t + length
+
+
+// #endregion
+// #region Cosine
 
 
 
@@ -643,6 +653,10 @@ module Cosine =
     /// A value that can never be reached from a cosine function.
     [<Literal>]
     let ``180.0-`` = -1.1<cosine>
+
+
+// #endregion
+// #region Tangent
 
 
 

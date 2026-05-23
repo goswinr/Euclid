@@ -1,4 +1,4 @@
-namespace Euclid
+﻿namespace Euclid
 
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
@@ -33,22 +33,63 @@ open System.Collections.Generic
 [<DataContract>] // for using DataMember on fields
 type FreeBox private (pts:Pnt[]) =
 
-    member b.Pt0 = pts.[0]
-    member b.Pt1 = pts.[1]
-    member b.Pt2 = pts.[2]
-    member b.Pt3 = pts.[3]
-    member b.Pt4 = pts.[4]
-    member b.Pt5 = pts.[5]
-    member b.Pt6 = pts.[6]
-    member b.Pt7 = pts.[7]
+    /// The first point of the Box array. pts.[0]
+    member b.Pt0 : Pnt = pts.[0]
+
+    /// The first point of the Box array. pts.[0]
+    static member inline pt0 (b:FreeBox) : Pnt = b.Pt0
+
+    /// The second point of the Box array. pts.[1]
+    member b.Pt1 : Pnt = pts.[1]
+
+    /// The second point of the Box array. pts.[1]
+    static member inline pt1 (b:FreeBox) : Pnt = b.Pt1
+
+    /// The third point of the Box array. pts.[2]
+    member b.Pt2 : Pnt = pts.[2]
+
+    /// The third point of the Box array. pts.[2]
+    static member inline pt2 (b:FreeBox) : Pnt = b.Pt2
+
+    /// The fourth point of the Box array. pts.[3]
+    member b.Pt3 : Pnt = pts.[3]
+
+    /// The fourth point of the Box array. pts.[3]
+    static member inline pt3 (b:FreeBox) : Pnt = b.Pt3
+
+    /// The fifth point of the Box array. pts.[4]
+    member b.Pt4 : Pnt = pts.[4]
+
+    /// The fifth point of the Box array. pts.[4]
+    static member inline pt4 (b:FreeBox) : Pnt = b.Pt4
+
+    /// The sixth point of the Box array. pts.[5]
+    member b.Pt5 : Pnt = pts.[5]
+
+    /// The sixth point of the Box array. pts.[5]
+    static member inline pt5 (b:FreeBox) : Pnt = b.Pt5
+
+    /// The seventh point of the Box array. pts.[6]
+    member b.Pt6 : Pnt = pts.[6]
+
+    /// The seventh point of the Box array. pts.[6]
+    static member inline pt6 (b:FreeBox) : Pnt = b.Pt6
+
+    /// The eighth point of the Box array. pts.[7]
+    member b.Pt7 : Pnt = pts.[7]
+
+    /// The eighth point of the Box array. pts.[7]
+    static member inline pt7 (b:FreeBox) : Pnt = b.Pt7
 
     /// The 8 points that make up the box.
     [<DataMember>]
-    member b.Points = pts
+    member b.Points : Pnt array = pts
 
+    /// The 8 points that make up the box.
+    static member inline points (b:FreeBox) : Pnt array = b.Points
 
     /// Nicely formatted string representation of the Box including its size.
-    override b.ToString() =
+    override b.ToString() : string =
         let sizeX = Format.float b.SizeX
         let sizeY = Format.float b.SizeY
         let sizeZ = Format.float b.SizeZ
@@ -58,7 +99,6 @@ type FreeBox private (pts:Pnt[]) =
         let zAxis  = b.Zaxis.AsString
         $"Euclid.Box %s{sizeX} x %s{sizeY} x %s{sizeZ} (Origin:%s{origin}| X-ax:%s{xAxis}|Y-ax:%s{yAxis}|Z-ax:%s{zAxis})"
 
-
     /// Format Box into string with nice floating point number formatting of X, Y and Z size only.
     /// But without type name as in v.ToString()
     member b.AsString : string =
@@ -67,43 +107,76 @@ type FreeBox private (pts:Pnt[]) =
         let sizeZ = Format.float b.SizeZ
         $"%s{sizeX} x %s{sizeY} x %s{sizeZ}"
 
+    /// Format Box into string with nice floating point number formatting of X, Y and Z size only.
+    /// But without type name as in v.ToString()
+    static member inline asString (b:FreeBox) : string = b.AsString
+
     /// Format FreeBox into an F# code string that can be used to recreate the box.
     member b.AsFSharpCode : string =
         let ps = b.Points
         $"FreeBox.createFromEightPoints([| {ps[0].AsFSharpCode}; {ps[1].AsFSharpCode}; {ps[2].AsFSharpCode}; {ps[3].AsFSharpCode}; {ps[4].AsFSharpCode}; {ps[5].AsFSharpCode}; {ps[6].AsFSharpCode}; {ps[7].AsFSharpCode} |])"
 
+    /// Format FreeBox into an F# code string that can be used to recreate the box.
+    static member inline asFSharpCode (b:FreeBox) : string = b.AsFSharpCode
+
     /// The first point of the Box array.
     member b.Origin : Pnt =
         pts.[0]
+
+    /// The first point of the Box array.
+    static member inline origin (b:FreeBox) : Pnt = b.Origin
 
     /// The vector from Pt0 to Pt1 defining the X axis direction and length.
     member b.Xaxis : Vec =
         pts.[1] - pts.[0]
 
+    /// The vector from Pt0 to Pt1 defining the X axis direction and length.
+    static member inline xaxis (b:FreeBox) : Vec = b.Xaxis
+
     /// The vector from Pt0 to Pt3 defining the Y axis direction and length.
     member b.Yaxis : Vec =
         pts.[3] - pts.[0]
+
+    /// The vector from Pt0 to Pt3 defining the Y axis direction and length.
+    static member inline yaxis (b:FreeBox) : Vec = b.Yaxis
 
     /// The vector from Pt0 to Pt4 defining the Z axis direction and length.
     member b.Zaxis : Vec =
         pts.[4] - pts.[0]
 
+    /// The vector from Pt0 to Pt4 defining the Z axis direction and length.
+    static member inline zaxis (b:FreeBox) : Vec = b.Zaxis
+
     /// The length of the Box from Pt0 to Pt1 in the X direction.
     member b.SizeX : float =
         b.Xaxis.Length
+
+    /// The length of the Box from Pt0 to Pt1 in the X direction.
+    static member inline sizeX (b:FreeBox) : float = b.SizeX
 
     /// The length of the Box from Pt0 to Pt3 in the Y direction.
     member b.SizeY : float =
         b.Yaxis.Length
 
+    /// The length of the Box from Pt0 to Pt3 in the Y direction.
+    static member inline sizeY (b:FreeBox) : float = b.SizeY
+
     /// The length of the Box from Pt0 to Pt4 in the Z direction.
     member b.SizeZ : float =
         b.Zaxis.Length
 
-    member b.GetPt (i:int) =
+    /// The length of the Box from Pt0 to Pt4 in the Z direction.
+    static member inline sizeZ (b:FreeBox) : float = b.SizeZ
+
+    /// Get the point at index in the Box array. Index must be between 0 and 7.
+    member b.GetPt (i:int) : Pnt =
         if i < 0 || i > 7 then
             failwithf "FreeBox.Pt index must be between 0 and 7, got %d" i
         pts.[i]
+
+    /// Get the point at index in the Box array. Index must be between 0 and 7.
+    static member inline getPt (i:int) (b:FreeBox) : Pnt =
+        b.GetPt(i)
 
     /// Scales the 3D rectangle by a given factor on world origin (0,0,0)
     member b.Scale (factor:float) : FreeBox =
@@ -111,9 +184,13 @@ type FreeBox private (pts:Pnt[]) =
         |> Array.map (fun p -> p * factor)
         |> FreeBox
 
+    /// Scales the FreeBox by a given factor.
+    /// Scale center is World Origin 0,0,0
+    static member inline scale (factor:float) (b:FreeBox) : FreeBox =
+        b.Scale(factor)
 
     /// Scales the 3D rectangle by a given factor on a given center point
-    member b.ScaleOn (cen:Pnt) (factor:float) : FreeBox =
+    member b.ScaleOn (cen:Pnt, factor:float) : FreeBox =
         let cx = cen.X
         let cy = cen.Y
         let cz = cen.Z
@@ -127,11 +204,19 @@ type FreeBox private (pts:Pnt[]) =
             )
         |> FreeBox
 
+    /// Scales the 3D rectangle by a given factor on a given center point
+    static member inline scaleOn (cen:Pnt)  (factor:float) (b:FreeBox) : FreeBox =
+        b.ScaleOn(cen, factor)
+
     /// Returns a FreeBox moved by a vector.
     member b.Move (v:Vec) : FreeBox =
         b.Points
         |> Array.map (fun p -> p + v)
         |> FreeBox
+
+    /// Move a FreeBox by a vector. Same as FreeBox.translate.
+    static member inline move (v:Vec) (b:FreeBox) : FreeBox =
+        b.Move(v)
 
     /// Returns a FreeBox moved by a given distance in X direction.
     member b.MoveX (distance:float) : FreeBox =
@@ -139,11 +224,19 @@ type FreeBox private (pts:Pnt[]) =
         |> Array.map (fun p -> Pnt(p.X + distance, p.Y, p.Z))
         |> FreeBox
 
+    /// Returns the FreeBox moved by a given distance in X direction.
+    static member inline moveX (distance:float) (b:FreeBox) : FreeBox =
+        b.MoveX(distance)
+
     /// Returns a FreeBox moved by a given distance in Y direction.
     member b.MoveY (distance:float) : FreeBox =
         b.Points
         |> Array.map (fun p -> Pnt(p.X, p.Y + distance, p.Z))
         |> FreeBox
+
+    /// Returns the FreeBox moved by a given distance in Y direction.
+    static member inline moveY (distance:float) (b:FreeBox) : FreeBox =
+        b.MoveY(distance)
 
     /// Returns a FreeBox moved by a given distance in Z direction.
     member b.MoveZ (distance:float) : FreeBox =
@@ -151,17 +244,29 @@ type FreeBox private (pts:Pnt[]) =
         |> Array.map (fun p -> Pnt(p.X, p.Y, p.Z + distance))
         |> FreeBox
 
+    /// Returns the FreeBox moved by a given distance in Z direction.
+    static member inline moveZ (distance:float) (b:FreeBox) : FreeBox =
+        b.MoveZ(distance)
+
     /// Applies or multiplies a 4x4 transformation matrix to the FreeBox.
     member b.Transform (m:Matrix) : FreeBox =
         b.Points
         |> Array.map (fun p -> p *** m)
         |> FreeBox
 
+    /// Applies or multiplies a 4x4 transformation matrix to the FreeBox.
+    static member inline transform (m:Matrix) (b:FreeBox) : FreeBox =
+        b.Transform(m)
+
     /// Multiplies (or applies) a RigidMatrix to the FreeBox.
     member b.TransformRigid (m:RigidMatrix) : FreeBox =
         b.Points
         |> Array.map (fun p -> Pnt.transformRigid m p)
         |> FreeBox
+
+    /// Multiplies (or applies) a RigidMatrix to the FreeBox.
+    static member inline transformRigid (m:RigidMatrix) (b:FreeBox) : FreeBox =
+        b.TransformRigid(m)
 
     /// Multiplies (or applies) a Quaternion to the FreeBox.
     /// The box is rotated around the World Origin.
@@ -170,25 +275,36 @@ type FreeBox private (pts:Pnt[]) =
         |> Array.map (fun p -> p *** q)
         |> FreeBox
 
+    /// Multiplies (or applies) a Quaternion to the FreeBox.
+    /// The box is rotated around the World Origin.
+    static member inline rotate (q:Quaternion) (b:FreeBox) : FreeBox =
+        b.Rotate(q)
+
     /// Multiplies (or applies) a Quaternion to the FreeBox around a given center point.
     member b.RotateWithCenter (cen:Pnt, q:Quaternion) : FreeBox =
         b.Points
-        |> Array.map (fun p -> Pnt.rotateWithCenterByQuat cen q p)
+        |> Array.map (fun p -> Pnt.rotateWithCenter cen q p)
         |> FreeBox
 
-    static member createFromEightPoints (pts:Pnt[]) =
+    /// Multiplies (or applies) a Quaternion to the FreeBox around a given center point.
+    static member inline rotateWithCenter (cen:Pnt) (q:Quaternion) (b:FreeBox) : FreeBox =
+        b.RotateWithCenter(cen, q)
+
+    /// Creates a FreeBox from an array of 8 points. The points can be in arbitrary position in space.
+    static member createFromEightPoints (pts:Pnt[]) : FreeBox =
         if pts.Length <> 8 then
             failwithf "FreeBox.createFrom8 must be initialized with 8 points, got %d" pts.Length
         FreeBox pts
 
-    static member createFromBox (box:Box) =
+    /// Creates a FreeBox from a Box. The 8 points of the FreeBox are the 8 corners of the Box.
+    static member createFromBox (box:Box) : FreeBox =
         FreeBox [|
             box.Pt0; box.Pt1; box.Pt2; box.Pt3;
             box.Pt4; box.Pt5; box.Pt6; box.Pt7
         |]
 
     /// Creates a FreeBox from four 2D points and a zMin and zMax value.
-    static member createFromFour2DPoints zMin zMax (pts:Pt[]) =
+    static member createFromFour2DPoints zMin zMax (pts:Pt[]) : FreeBox =
         if pts.Length <> 4 then
             failwithf "FreeBox.createFrom4 must be initialized with 4 points, got %d" pts.Length
         FreeBox [|
@@ -203,7 +319,7 @@ type FreeBox private (pts:Pnt[]) =
             |]
 
     /// Creates a FreeBox from four 2D points in counter clockwise order and a zMin and zMax value.
-    static member createFromFour2DPointsArgs ( a:Pt, b:Pt, c:Pt, d:Pt, zMin, zMax) =
+    static member createFromFour2DPointsArgs ( a:Pt, b:Pt, c:Pt, d:Pt, zMin, zMax) : FreeBox =
         //       7               6
         //       +---------------+
         //      /|              /|
@@ -228,46 +344,7 @@ type FreeBox private (pts:Pnt[]) =
             d.WithZ zMax // 7
             |]
 
-    /// Scales the FreeBox by a given factor.
-    /// Scale center is World Origin 0,0,0
-    static member inline scale (factor:float) (b:FreeBox) : FreeBox =
-        b.Scale(factor)
-
-    /// Move a FreeBox by a vector. Same as FreeBox.translate.
-    static member inline move (v:Vec) (b:FreeBox) : FreeBox =
-        b.Move(v)
-
     /// Translate a FreeBox by a vector. Same as FreeBox.move.
     static member inline translate (v:Vec) (b:FreeBox) : FreeBox =
         b.Move(v)
-
-    /// Returns the FreeBox moved by a given distance in X direction.
-    static member inline moveX (distance:float) (b:FreeBox) : FreeBox =
-        b.MoveX(distance)
-
-    /// Returns the FreeBox moved by a given distance in Y direction.
-    static member inline moveY (distance:float) (b:FreeBox) : FreeBox =
-        b.MoveY(distance)
-
-    /// Returns the FreeBox moved by a given distance in Z direction.
-    static member inline moveZ (distance:float) (b:FreeBox) : FreeBox =
-        b.MoveZ(distance)
-
-    /// Applies or multiplies a 4x4 transformation matrix to the FreeBox.
-    static member inline transform (m:Matrix) (b:FreeBox) : FreeBox =
-        b.Transform(m)
-
-    /// Multiplies (or applies) a RigidMatrix to the FreeBox.
-    static member inline transformRigid (m:RigidMatrix) (b:FreeBox) : FreeBox =
-        b.TransformRigid(m)
-
-    /// Multiplies (or applies) a Quaternion to the FreeBox.
-    /// The box is rotated around the World Origin.
-    static member inline rotate (q:Quaternion) (b:FreeBox) : FreeBox =
-        b.Rotate(q)
-
-    /// Multiplies (or applies) a Quaternion to the FreeBox around a given center point.
-    static member inline rotateWithCenter (cen:Pnt) (q:Quaternion) (b:FreeBox) : FreeBox =
-        b.RotateWithCenter(cen, q)
-
 

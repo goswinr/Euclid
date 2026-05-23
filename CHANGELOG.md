@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.30.0] - 2026-04-12
+### Added
+- add a static member for every instance member
+### Changed
+- naming consistency , some members marked obsolete and renamed to have more consistent naming
+
+
 ## [0.20.0] - 2026-02-08
 ### Added
 - improved docstring

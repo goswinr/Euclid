@@ -1,4 +1,4 @@
-namespace Euclid
+﻿namespace Euclid
 
 // Design notes:
 // The struct types in this file only have the constructors, ToString override and operators defined in this file.
@@ -54,9 +54,20 @@ type PPlane =
         PPlane(origin, axisX, axisY, axisZ)
         #warnon "44" // re-enable warning for obsolete usage
 
+    static member inline createUncheckedXYZ(originX: float, originY: float, originZ: float,
+                                            xAxisX: float, xAxisY: float, xAxisZ: float,
+                                            yAxisX: float, yAxisY: float, yAxisZ: float,
+                                            zAxisX: float, zAxisY: float, zAxisZ: float) : PPlane =
+        #nowarn "44"
+        PPlane( Pnt(originX, originY, originZ),
+                UnitVec(xAxisX, xAxisY, xAxisZ),
+                UnitVec(yAxisX, yAxisY, yAxisZ),
+                UnitVec(zAxisX, zAxisY, zAxisZ))
+        #warnon "44" // re-enable warning for obsolete usage
+
 
     /// Format PPlane into string with nicely formatted floating point numbers.
-    override pl.ToString() =
+    override pl.ToString() : string =
         let o = pl.Origin.AsString
         let x = pl.Xaxis.AsString
         let y = pl.Yaxis.AsString
@@ -72,6 +83,11 @@ type PPlane =
         let z = pl.Zaxis.AsString
         $"%s{Format.nl}Origin=%s{o}%s{Format.nl}  X-axis=%s{x}%s{Format.nl}  Y-axis=%s{y}%s{Format.nl}  Z-axis=%s{z}"
 
+    /// Format PPlane into string with nicely formatted floating point numbers.
+    /// But without type name as in pl.ToString()
+    static member inline asString (pl:PPlane) : string =
+        pl.AsString
+
     /// Format PPlane into an F# code string that can be used to recreate the plane.
     member pl.AsFSharpCode : string =
         $"PPlane.createUnchecked({pl.Origin.AsFSharpCode}, {pl.Xaxis.AsFSharpCode}, {pl.Yaxis.AsFSharpCode}, {pl.Zaxis.AsFSharpCode})"
@@ -82,3 +98,4 @@ type PPlane =
 
 
     // see extension members in folder 'TypeExtensions/PPlane.fs'
+

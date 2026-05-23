@@ -31,7 +31,7 @@ type Vc =
 
 
     /// Format 2D vector into string including type name and nice floating point number formatting of X, Y and length.
-    override v.ToString() =
+    override v.ToString() : string =
         let x = Format.float v.X
         let y = Format.float v.Y
         let length = Format.float (sqrt (v.X*v.X + v.Y*v.Y))
@@ -49,32 +49,32 @@ type Vc =
         $"Vc({v.X}, {v.Y})"
 
     /// Negate or inverse a 2D vector. Returns a new 2D vector.
-    static member inline ( ~- ) (v:Vc) =
+    static member inline ( ~- ) (v:Vc) : Vc =
         Vc ( -v.X, -v.Y)
 
     /// Subtract one 2D vector from another. Returns a new 2D vector.
-    static member inline ( - ) (a:Vc, b:Vc) =
+    static member inline ( - ) (a:Vc, b:Vc) : Vc =
         Vc (a.X - b.X, a.Y - b.Y)
 
     /// Add two 2D vectors together. Returns a new 2D vector.
-    static member inline ( + ) (a:Vc, b:Vc) =
+    static member inline ( + ) (a:Vc, b:Vc) : Vc =
         Vc (a.X + b.X, a.Y + b.Y)
 
     /// Multiplies a 2D vector with a scalar, also called scaling a vector. Returns a new 2D vector.
-    static member inline ( * ) (v:Vc, f:float) =
+    static member inline ( * ) (v:Vc, f:float) : Vc =
         Vc (v.X * f, v.Y * f)
 
     /// Multiplies a scalar with a 2D vector, also called scaling a vector. Returns a new 2D vector.
-    static member inline ( * ) (f:float, v:Vc) =
+    static member inline ( * ) (f:float, v:Vc) : Vc =
         Vc (v.X * f, v.Y * f)
 
     /// Dot product, or scalar product of two 2D vectors. Returns a float.
-    static member inline ( *** ) (a:Vc, b:Vc) =
+    static member inline ( *** ) (a:Vc, b:Vc) : float =
         a.X * b.X + a.Y * b.Y
 
     /// Divides a 2D vector by a scalar. Returns a new 2D vector.
     /// Throws EuclidDivByZeroException if the divisor is too small (|f| < 1e-12).
-    static member inline ( / ) (v:Vc, f:float) =
+    static member inline ( / ) (v:Vc, f:float) : Vc =
         if isTooTiny (abs f) then failDivide "'/' operator" f v // don't compose error msg directly here to keep inlined code small. // https://github.com/dotnet/runtime/issues/24626#issuecomment-356736809
         Vc (v.X / f, v.Y / f)
 
@@ -96,7 +96,7 @@ type Vc =
     //-----------------------------------------------------------------------------------------------------
 
     /// Returns a zero length vector: Vc(0, 0)
-    static member inline Zero =
+    static member inline Zero : Vc =
         Vc(0, 0)  // this member is needed by Seq.sum, so that it doesn't fail on empty seq.
 
     /// Divides the vector by an integer.

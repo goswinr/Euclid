@@ -1,4 +1,4 @@
-namespace Euclid
+﻿namespace Euclid
 
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
@@ -19,7 +19,6 @@ open EuclidErrors
 [<DataContract>] // for using DataMember on fields
 type Rotation2D =
 
-    //[<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
 
     /// The Sine component of this rotation.
     /// The range of this field is -1.0 to +1.0
@@ -47,7 +46,7 @@ type Rotation2D =
         #warnon "44" // re-enable warning for obsolete usage
 
     /// Format rotation into string showing angle in Degrees as nicely formatted floating point number.
-    override r.ToString() =
+    override r.ToString() : string =
         let deg = atan2 r.Sin r.Cos |> toDegrees |> Format.float
         $"Euclid.Rotation2D of %s{deg}° Degrees."
 
@@ -57,59 +56,86 @@ type Rotation2D =
         let deg = atan2 r.Sin r.Cos |> toDegrees |> Format.float
         $"%s{deg}° Degrees."
 
+    /// Format rotation into string showing angle in Degrees as nicely formatted floating point number.
+    /// But without type name as in r.ToString()
+    static member inline asString (r:Rotation2D) : string =
+        r.AsString
+
     /// Format Rotation2D into an F# code string that can be used to recreate the rotation.
     member r.AsFSharpCode : string =
         // $"Rotation2D.createFromDegrees({r.Sin |> asinSafe |> toDegrees})"
         $"Rotation2D.createUnchecked({r.Sin}, {r.Cos})"
 
+    /// Format Rotation2D into an F# code string that can be used to recreate the rotation.
+    static member inline asFSharpCode (r:Rotation2D) : string =
+        r.AsFSharpCode
+
     /// Returns the angle represented by this 2D Rotation in Radians.
     /// The returned angle is in the range [-π, π] (-180° to +180°).
-    member inline r.InRadians =
+    member inline r.InRadians : float =
         atan2 r.Sin r.Cos
+
+    /// Returns the angle represented by this 2D Rotation in Radians.
+    /// The returned angle is in the range [-π, π] (-180° to +180°).
+    static member inline inRadians (r:Rotation2D) : float =
+        r.InRadians
 
     /// Returns the angle represented by this 2D Rotation in Degrees.
     /// The returned angle is in the range [-180°, +180°].
-    member inline r.InDegrees =
+    member inline r.InDegrees : float =
         r.InRadians |> toDegrees
 
+    /// Returns the angle represented by this 2D Rotation in Degrees.
+    /// The returned angle is in the range [-180°, +180°].
+    static member inline inDegrees (r:Rotation2D) : float =
+        r.InDegrees
+
     /// Returns the 2D Rotation in the opposite direction.
-    member inline r.Inverse =
+    member inline r.Inverse : Rotation2D =
         Rotation2D.createUnchecked (-r.Sin, r.Cos)
 
+    /// Returns the 2D Rotation in the opposite direction.
+    static member inline inverse (r:Rotation2D) : Rotation2D =
+        r.Inverse
+
     /// Create a new 2D Rotation that adds a 2D Rotation to the existing one.
-    member inline r.Add(ro:Rotation2D) =
+    member inline r.Add(ro:Rotation2D) : Rotation2D =
         //use 2x2 matrix multiplication logic for better performance:
         Rotation2D.createUnchecked ( r.Sin*ro.Cos + r.Cos*ro.Sin
                                    , r.Cos*ro.Cos - r.Sin*ro.Sin)
 
+    /// Create a new 2D Rotation that adds a 2D Rotation to the existing one.
+    static member inline add (ro:Rotation2D) (r:Rotation2D) : Rotation2D =
+        r.Add(ro)
+
+    /// Create a new 2D Rotation that adds a counter clockwise angle in Degrees to the existing one.
+    member inline r.AddDegrees(deg:float) : Rotation2D =
+        let rad = toRadians deg
+        r.Add(Rotation2D.createUnchecked (sin rad, cos rad))
+
+    /// Create a new 2D Rotation that adds a counter clockwise angle in Degrees to the existing one.
+    static member inline addDegrees (deg:float) (r:Rotation2D) : Rotation2D =
+        r.AddDegrees(deg)
+
+    /// Create a new 2D Rotation that adds a counter clockwise angle in Radians to the existing one.
+    member inline r.AddRadians(rad:float) : Rotation2D =
+        r.Add(Rotation2D.createUnchecked (sin rad, cos rad))
+
+    /// Create a new 2D Rotation that adds a counter clockwise angle in Radians to the existing one.
+    static member inline addRadians (rad:float) (r:Rotation2D) : Rotation2D =
+        r.AddRadians(rad)
 
     /// Returns half the 2D Rotation in the same direction.
-    member inline r.Half =
+    member inline r.Half : Rotation2D =
         let halfCos = sqrt ((1.0 + r.Cos) / 2.0)
         let halfSin = sqrt ((1.0 - r.Cos) / 2.0)
         let halfSinSigned = if r.Sin < 0.0 then -halfSin else halfSin
         Rotation2D.createUnchecked (halfSinSigned, halfCos)
 
 
-    // ----------------------------------------------------------------------------------
-    //            █████               █████     ███
-    //           ░░███               ░░███     ░░░
-    //    █████  ███████    ██████   ███████   ████   ██████
-    //   ███░░  ░░░███░    ░░░░░███ ░░░███░   ░░███  ███░░███
-    //  ░░█████   ░███      ███████   ░███     ░███ ░███ ░░░
-    //   ░░░░███  ░███ ███ ███░░███   ░███ ███ ░███ ░███  ███
-    //   ██████   ░░█████ ░░████████  ░░█████  █████░░██████
-    //  ░░░░░░     ░░░░░   ░░░░░░░░    ░░░░░  ░░░░░  ░░░░░░
-    //
-    //                                             █████
-    //                                            ░░███
-    //    █████████████    ██████  █████████████   ░███████   ██████  ████████   █████
-    //   ░░███░░███░░███  ███░░███░░███░░███░░███  ░███░░███ ███░░███░░███░░███ ███░░
-    //    ░███ ░███ ░███ ░███████  ░███ ░███ ░███  ░███ ░███░███████  ░███ ░░░ ░░█████
-    //    ░███ ░███ ░███ ░███░░░   ░███ ░███ ░███  ░███ ░███░███░░░   ░███      ░░░░███
-    //    █████░███ █████░░██████  █████░███ █████ ████████ ░░██████  █████     ██████
-    //   ░░░░░ ░░░ ░░░░░  ░░░░░░  ░░░░░ ░░░ ░░░░░ ░░░░░░░░   ░░░░░░  ░░░░░     ░░░░░░
-    // --------------------------------------------------------------------------------
+    // #endregion
+    // #region Static members
+
 
     /// Checks if two 2D Rotations are equal within tolerance.
     /// By comparing the fields Sin and Cos each with the given tolerance.
@@ -121,20 +147,19 @@ type Rotation2D =
 
     /// Construct a counter clockwise 2D Rotation from angle in Radians.
     /// Use negative radians for clockwise rotation.
-    static member inline createFromRadians rad =
+    static member inline createFromRadians rad : Rotation2D =
         Rotation2D.createUnchecked (sin rad, cos rad)
 
     /// Construct a counter clockwise 2D Rotation from angle in Degrees.
     /// Use negative degrees for clockwise rotation.
-    static member inline createFromDegrees deg =
+    static member inline createFromDegrees deg : Rotation2D =
         let rad = toRadians deg
         Rotation2D.createUnchecked (sin rad, cos rad)
-
 
     /// Construct a counter clockwise 2D Rotation from angle given in its cosine value.
     /// The input must be in the range [-1.0, +1.0].
     /// Note: Only angles in the range [0°, 180°] can be created since acos returns values in [0, π].
-    static member inline createFromCosine cos =
+    static member inline createFromCosine cos : Rotation2D =
         #if DEBUG || CHECK_EUCLID
         if cos < -1.0 || cos > 1.0 then fail $"Rotation2D.createFromCosine: input cosine {cos} is out of range [-1.0, +1.0]."
         #endif
@@ -144,18 +169,17 @@ type Rotation2D =
     /// Construct a counter clockwise 2D Rotation from angle given in its sine value.
     /// The input must be in the range [-1.0, +1.0].
     /// Note: Only angles in the range [-90°, +90°] can be created since asin returns values in [-π/2, π/2].
-    static member inline createFromSine sin =
+    static member inline createFromSine sin : Rotation2D =
         #if DEBUG || CHECK_EUCLID
         if sin < -1.0 || sin > 1.0 then fail $"Rotation2D.createFromSine: input sine {sin} is out of range [-1.0, +1.0]."
         #endif
         let cos = sqrt (1.0 - sin*sin)
         Rotation2D.createUnchecked (sin, cos)
 
-
     /// Construct a 2D Rotation from two unit vectors.
     /// The rotation represents the counter-clockwise angle from vector 'a' to vector 'b'.
     /// Uses the dot product for cosine and cross product for sine.
-    static member createFromVectors (a:UnitVc,b:UnitVc) =
+    static member createFromVectors (a:UnitVc,b:UnitVc) : Rotation2D =
         let dot = a *** b
         let cross = UnitVc.cross(a, b)
         Rotation2D.createUnchecked (cross, dot)
@@ -164,7 +188,7 @@ type Rotation2D =
     /// The rotation represents the counter-clockwise angle from vector 'a' to vector 'b'.
     /// Normalizes both vectors internally and uses dot product for cosine and cross product for sine.
     /// Fails if either vector has near-zero length.
-    static member createFromVectors (a:Vc,b:Vc) =
+    static member createFromVectors (a:Vc,b:Vc) : Rotation2D =
         let la = a.Length
         let lb = b.Length
         if isTooTiny la || isTooTiny lb then
@@ -177,15 +201,3 @@ type Rotation2D =
         let cross = ax*by - ay*bx
         Rotation2D.createUnchecked (cross, dot)
 
-
-
-    // These members need to be down here for inlining to work correctly:
-
-
-    /// Create a new 2D Rotation that adds a counter clockwise angle in Degrees to the existing one.
-    member inline r.AddDegrees(deg:float) =
-        r.Add(Rotation2D.createFromDegrees deg)
-
-    /// Create a new 2D Rotation that adds a counter clockwise angle in Radians to the existing one.
-    member inline r.AddRadians(rad:float) =
-        r.Add(Rotation2D.createFromRadians rad)

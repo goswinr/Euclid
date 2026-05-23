@@ -22,6 +22,6 @@ updates:
 
   # Update to newer NPM dependencies
   - package-ecosystem: "npm"
-    directory: "/Tests/"
+    directory: "/Test/"
     schedule:
       interval: "weekly"

@@ -121,7 +121,7 @@ module Format =
                     i <- i-1
                 n.Substring(0,l)
 
-        #if FABLE_COMPILER
+        #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
             open Fable.Core.JsInterop // for '?' operator
             let  d0 (x:float) : string  = x?toFixed(0)
             let  d1 (x:float) : string  = x?toFixed(1)  |> trimZeros

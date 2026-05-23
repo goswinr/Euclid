@@ -43,7 +43,7 @@ type UnitVc =
         #warnon "44" // re-enable warning for obsolete usage
 
     /// Format 2D unit-vector into string including type name and nice floating point number formatting.
-    override v.ToString() =
+    override v.ToString() : string =
         let x = Format.float v.X
         let y = Format.float v.Y
         $"Euclid.UnitVc: X=%s{x}|Y=%s{y}"
@@ -60,59 +60,59 @@ type UnitVc =
         $"UnitVc.create({v.X}, {v.Y})"
 
     /// Negate or inverse a 2D unit-vector. Returns a new 2D unit-vector.
-    static member inline ( ~- ) (v:UnitVc) =
+    static member inline ( ~- ) (v:UnitVc) : UnitVc =
         UnitVc.createUnchecked( -v.X, -v.Y)
 
     /// Subtract one 2D unit-vector from another. Returns a new (non-unitized) 2D vector.
-    static member inline ( - ) (a:UnitVc, b:UnitVc) =
+    static member inline ( - ) (a:UnitVc, b:UnitVc) : Vc =
         Vc (a.X - b.X, a.Y - b.Y)
 
     /// Subtract a 2D unit-vector from a 2D vector. Returns a new (non-unitized) 2D vector.
-    static member inline ( - ) (a:Vc, b:UnitVc) =
+    static member inline ( - ) (a:Vc, b:UnitVc) : Vc =
         Vc (a.X - b.X, a.Y - b.Y)
 
     /// Subtract a 2D vector from a 2D unit-vector. Returns a new (non-unitized) 2D vector.
-    static member inline ( - ) (a:UnitVc, b:Vc) =
+    static member inline ( - ) (a:UnitVc, b:Vc) : Vc =
         Vc (a.X - b.X, a.Y - b.Y)
 
     /// Add two 2D unit-vectors together.
     /// Returns a new (non-unitized) 2D vector.
-    static member inline ( + ) (a:UnitVc, b:UnitVc) =
+    static member inline ( + ) (a:UnitVc, b:UnitVc) : Vc =
         Vc (a.X + b.X, a.Y + b.Y)
 
     /// Add a 2D vector and a 2D unit-vector together.
     /// Returns a new (non-unitized) 2D vector.
-    static member inline ( + ) (a:Vc, b:UnitVc) =
+    static member inline ( + ) (a:Vc, b:UnitVc) : Vc =
         Vc (a.X + b.X, a.Y + b.Y)
 
     /// Add a 2D unit-vector and a 2D vector together.
     /// Returns a new (non-unitized) 2D vector.
-    static member inline ( + ) (a:UnitVc, b:Vc) =
+    static member inline ( + ) (a:UnitVc, b:Vc) : Vc =
         Vc (a.X + b.X, a.Y + b.Y)
 
     /// Multiplies a 2D unit-vector with a scalar, also called scaling a vector.
     /// Returns a new (non-unitized) 2D vector.
-    static member inline ( * ) (a:UnitVc, f:float) =
+    static member inline ( * ) (a:UnitVc, f:float) : Vc =
         Vc (a.X * f, a.Y * f)
 
     /// Multiplies a scalar with a 2D unit-vector, also called scaling a vector.
     /// Returns a new (non-unitized) 2D vector.
-    static member inline ( * ) (f:float, a:UnitVc) =
+    static member inline ( * ) (f:float, a:UnitVc) : Vc =
         Vc (a.X * f, a.Y * f)
 
     /// Dot product, or scalar product of two 2D unit-vectors.
     /// Returns a float. This float is the Cosine of the angle between the two 2D vectors.
-    static member inline ( *** ) (a:UnitVc, b:UnitVc) =
+    static member inline ( *** ) (a:UnitVc, b:UnitVc) : float =
         a.X * b.X + a.Y * b.Y
 
     /// Dot product, or scalar product of a 2D unit-vector with a 2D vector.
     /// Returns a float. This float is the projected length of the 2D vector on the direction of the unit-vector.
-    static member inline ( *** ) (a:UnitVc, b:Vc) =
+    static member inline ( *** ) (a:UnitVc, b:Vc) : float =
         a.X * b.X + a.Y * b.Y
 
     /// Dot product, or scalar product of a 2D vector with a 2D unit-vector.
     /// Returns a float. This float is the projected length of the 2D vector on the direction of the unit-vector.
-    static member inline ( *** ) (a:Vc, b:UnitVc) =
+    static member inline ( *** ) (a:Vc, b:UnitVc) : float =
         a.X * b.X + a.Y * b.Y
 
     /// Dot product, or scalar product of two 2D unit-vectors.
@@ -133,7 +133,7 @@ type UnitVc =
 
 
     /// Divides a 2D unit-vector by a scalar, also called dividing/scaling a vector. Returns a new (non-unitized) 2D vector.
-    static member inline ( / ) (v:UnitVc, f:float) =
+    static member inline ( / ) (v:UnitVc, f:float) : Vc =
         if isTooTiny (abs f) then failDivide "'/' operator" f v // don't compose error msg directly here to keep inlined code small. // https://github.com/dotnet/runtime/issues/24626#issuecomment-356736809
         Vc (v.X / f, v.Y / f)
 
@@ -150,6 +150,7 @@ type UnitVc =
         let l = sqrt(x * x  + y * y)
         if isTooTiny l then failUnit2 "UnitVc.create" x y
         UnitVc.createUnchecked(x/l, y/l)
+
 
 
     // These members cannot be implemented since Array.sum and Array.average of UnitVc would return a 'Vc' and not a 'UnitVc'

@@ -1,4 +1,4 @@
-namespace Euclid
+﻿namespace Euclid
 open Euclid.EuclidCollectionUtilities
 
 #nowarn "52" // copying of structs
@@ -57,13 +57,12 @@ type Topology2D  =
     /// For each line end point it finds the next closest line start point.
     /// (Does not check other line end points that might be closer)
     /// Line2D is used as an abstraction to hold start and end of arbitrary object.
-    static member sortToLoop(getLine: 'T -> Line2D, xs:ResizeArray<'T>) =
+    static member sortToLoop(getLine: 'T -> Line2D, xs:ResizeArray<'T>) : unit =
         for i = 0 to xs.Count - 2 do // only run till second last
             let thisLine = getLine xs.[i]
             //  TODO could be optimized using a R-Tree for very large lists instead of minBy function
-            let nextIdx = xs |> minIndexByFrom (fun c -> Pt.distanceSq (getLine c).From  thisLine.To) (i+1)
+            let nextIdx = xs |> minIndexByFrom (fun c -> Pt.sqDist (getLine c).From  thisLine.To) (i+1)
             xs |> swap (i+1) nextIdx
-
 
     /// Sorts elements in place to be in a circular structure.
     /// This does not recognize if there are actually two loops, not just one.
@@ -77,17 +76,15 @@ type Topology2D  =
         for i = 0 to xs.Count - 2 do // only run till second last
             let thisLine = getLine xs.[i]
             // TODO could be optimized using a R-Tree for very large lists instead of minBy function
-            let nextIdxSt = xs |> minIndexByFrom (fun c -> Pt.distanceSq (getLine c).From   thisLine.To) (i+1)
-            let nextIdxEn = xs |> minIndexByFrom (fun c -> Pt.distanceSq (getLine c).To     thisLine.To) (i+1)
+            let nextIdxSt = xs |> minIndexByFrom (fun c -> Pt.sqDist (getLine c).From   thisLine.To) (i+1)
+            let nextIdxEn = xs |> minIndexByFrom (fun c -> Pt.sqDist (getLine c).To     thisLine.To) (i+1)
             // check if closest endpoint is closer than closest start-point
-            if  Pt.distanceSq (getLine xs.[nextIdxSt]).From   thisLine.To <=
-                Pt.distanceSq (getLine xs.[nextIdxEn]).To     thisLine.To then
+            if  Pt.sqDist (getLine xs.[nextIdxSt]).From   thisLine.To <=
+                Pt.sqDist (getLine xs.[nextIdxEn]).To     thisLine.To then
                     xs |> swap (i+1) nextIdxSt
             else
                 reverseInPlace nextIdxEn xs.[nextIdxEn]
                 xs |> swap (i+1) nextIdxEn
-
-
 
     /// Returns the groups of consecutive elements, loops or polylines.
     /// They are split where the distance between the end point of one element and the start point of the next element is greater than 'splitDistance'.
@@ -111,7 +108,7 @@ type Topology2D  =
             let mutable i = idx + 1
             while i < xs.Count do
                 let oth = getLine xs.[i]
-                if Pt.distanceSq en oth.From < distSq then
+                if Pt.sqDist en oth.From < distSq then
                     loops.Last.forward.Add xs.[i]
                     swap i (idx+1) xs
                     i   <- idx + 2 //reset search from swapped-to-index + 1
@@ -125,7 +122,7 @@ type Topology2D  =
             i <- idx + 1
             while i < xs.Count  do
                 let oth = getLine xs.[i]
-                if Pt.distanceSq st oth.To < distSq then
+                if Pt.sqDist st oth.To < distSq then
                     loops.Last.backward.Add xs.[i]
                     swap i (idx+1) xs
                     i   <- idx + 2 //reset search from swapped-to-index + 1
@@ -143,7 +140,6 @@ type Topology2D  =
             l.backward.Reverse()
             l.backward.AddRange l.forward
             l.backward)
-
 
     /// Returns the groups of consecutive elements, loops or polylines.
     /// They are split where the distance between the end point of one element and the start point of the next element is greater than 'splitDistance'.
@@ -168,13 +164,13 @@ type Topology2D  =
             let mutable i = idx + 1
             while i < xs.Count do
                 let oth = getLine xs.[i]
-                if Pt.distanceSq en oth.From < distSq then
+                if Pt.sqDist en oth.From < distSq then
                     loops.Last.forward.Add (xs.[i],false)
                     swap i (idx+1) xs
                     i   <- idx + 2 //reset search from swap + 1
                     idx <- idx + 1
                     en  <- oth.To
-                elif Pt.distanceSq en oth.To < distSq then
+                elif Pt.sqDist en oth.To < distSq then
                     loops.Last.forward.Add (xs.[i],true)
                     swap i (idx+1) xs
                     i   <- idx + 2 //reset search from swap + 1
@@ -188,13 +184,13 @@ type Topology2D  =
             i <- idx + 1
             while i < xs.Count  do
                 let oth = getLine xs.[i]
-                if Pt.distanceSq st oth.To < distSq then
+                if Pt.sqDist st oth.To < distSq then
                     loops.Last.backward.Add (xs.[i],false)
                     swap i (idx+1) xs
                     i   <- idx + 2 //reset search from swapped-to-index + 1
                     idx <- idx + 1
                     st  <- oth.From
-                elif Pt.distanceSq st oth.From < distSq then
+                elif Pt.sqDist st oth.From < distSq then
                     loops.Last.backward.Add (xs.[i],true)
                     swap i (idx+1) xs
                     i   <- idx + 2 //reset search from swapped-to-index + 1

@@ -1,4 +1,4 @@
-namespace Euclid.EuclidCollectionUtilities
+﻿namespace Euclid.EuclidCollectionUtilities
 
 open System
 open Euclid
@@ -37,19 +37,73 @@ module Arr =
 /// An internal module with functions for working with ResizeArray<'T>.
 module ResizeArr =
 
+    /// returns a clone of the ResizeArray, but optimized in Fable
+    let inline clone  (resizeArray: ResizeArray<'T>) : ResizeArray<'T>=
+        #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
+            Fable.Core.JsInterop.emitJsExpr (resizeArray) "$0.slice()"
+        #else
+            resizeArray.GetRange(0, resizeArray.Count-1)
+        #endif
 
-    /// this.Count.
-    let inline length (xs: ResizeArray<'T>) :int =
-        xs.Count
+    /// returns resizeArray.Count , but optimized in Fable
+    let inline len  (resizeArray: ResizeArray<'T>) : int =
+        #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
+            Fable.Core.JsInterop.emitJsExpr (resizeArray) "$0.length" // avoid call to count() in fable lib
+        #else
+            resizeArray.Count
+        #endif
 
+    /// returns resizeArray.Count - 1 , but optimized in Fable
+    let inline lastIdx  (resizeArray: ResizeArray<'T>) : int =
+        #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
+            Fable.Core.JsInterop.emitJsExpr (resizeArray) "$0.length - 1" // avoid call to count() in fable lib
+        #else
+            resizeArray.Count - 1
+        #endif
+
+    /// this is more efficient than ResizeArray.Clear() in Fable,
+    /// which emits .splice(0)
+    let inline clear (arr: ResizeArray<'T>) : unit =
+        #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
+            Fable.Core.JsInterop.emitJsStatement arr "$0.length = 0"
+        #else
+            arr.Clear()
+        #endif
+
+    let inline popOff (arr: ResizeArray<'T>) : unit =
+        #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
+            Fable.Core.JsInterop.emitJsExpr (arr) "$0.pop()"
+        #else
+            arr.RemoveAt(arr.Count - 1)
+        #endif
+
+
+    let inline pop (arr: ResizeArray<'T>) : 'T =
+        #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
+            Fable.Core.JsInterop.emitJsExpr (arr) "$0.pop()"
+        #else
+            let v = arr.[arr.Count - 1]
+            arr.RemoveAt(arr.Count - 1)
+            v
+        #endif
+
+    let inline map (mapping: 'T -> 'U) (resizeArray: ResizeArray<'T>) : ResizeArray<'U> =
+        #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
+            Fable.Core.JsInterop.emitJsExpr (resizeArray, mapping) "$0.map($1)" // this works only because a ResizeArray is never a TypedArray in JS
+        #else
+            resizeArray.ConvertAll (System.Converter mapping) // would work in Fable too
+        #endif
+
+
+    /// DO NOT USE with numbers, they are Float64Arrays in Fable .
     let inline init (count:int) (f:int->'T) : ResizeArray<'T> =
-        #if FABLE_COMPILER
+        #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
             // https://fable.io/docs/javascript/features.html#emitjsexpr
             Fable.Core.JsInterop.emitJsStatement (count, f) "
-            const xs = new Array($0); 
-            for (let i = 0; i < $0; i++) 
-                { xs[i] = $1(i); }; 
-            return xs "
+                const xs = new Array($0); 
+                for (let i = 0; i < $0; i++) 
+                    { xs[i] = $1(i); }; 
+                return xs; "
         #else
             let r = new ResizeArray<'T>(count)
             for i=0 to count-1 do r.Add(f i)
@@ -57,7 +111,7 @@ module ResizeArr =
         #endif
 
     let inline singleton (x:'T) : ResizeArray<'T> =
-        #if FABLE_COMPILER
+        #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
             Fable.Core.JsInterop.emitJsExpr (x) "[ $0 ]"
         #else
             let r = new ResizeArray<'T>(1)
@@ -151,14 +205,9 @@ module ResizeArr =
     /// <param name="xs">The input ResizeArr.</param>
     /// <returns>The reversed ResizeArr.</returns>
     let rev (xs: ResizeArray<'T>) : ResizeArray<'T> =
-        #if FABLE_COMPILER
+        #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
             // https://fable.io/docs/javascript/features.html#emitjsexpr
-            Fable.Core.JsInterop.emitJsStatement (xs) "
-            const rs = new Array($0.length);
-            const lastIdx = $0.length - 1; 
-            for (let i = 0; i < $0.length; i++) 
-                { rs[i] = $0[lastIdx - i]; }; 
-            return rs "
+            Fable.Core.JsInterop.emitJsExpr (xs) "xs.toReversed()"
         #else
             let len = xs.Count
             let result = ResizeArray (len)
@@ -199,22 +248,10 @@ module ResizeArr =
                 mf <- f
         ii
 
-    /// <summary>Builds a new ResizeArray whose elements are the results of applying the given function
-    /// to each of the elements of the ResizeArr.</summary>
-    /// <param name="mapping">The function to transform elements of the ResizeArr.</param>
-    /// <param name="xs">The input ResizeArr.</param>
-    /// <returns>The ResizeArray of transformed elements.</returns>
-    let map (mapping: 'T -> 'U) (xs: ResizeArray<'T>) : ResizeArray<'U> =
-        #if FABLE_COMPILER
-        // https://fable.io/docs/javascript/features.html#emitjsexpr
-        Fable.Core.JsInterop.emitJsExpr (xs, mapping) "$0.map($1)"
-        #else
-        xs.ConvertAll (System.Converter mapping) // not supported in Fable
-        #endif
 
     /// Creates a shallow copy of the input ResizeArray and adds the first element to the end, closing the loop.
     let closeLoop (pts: ResizeArray<'T>) : ResizeArray<'T> =
-        #if FABLE_COMPILER
+        #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
             Fable.Core.JsInterop.emitJsStatement (pts) "
             const xs = new Array($0.length + 1);            
             for (let i = 0; i < $0.length; i++) 
@@ -247,6 +284,8 @@ module ResizeArr =
         result
 
 
+
+
 [<AutoOpen>]
 module AutoOpenEuclidResizeArrayExtensions =
 
@@ -254,7 +293,7 @@ module AutoOpenEuclidResizeArrayExtensions =
 
         /// Gets the index of the last item in the ResizeArr.
         /// Equal to this.Count - 1
-        member inline this.LastIndex =
+        member inline this.LastIndex : int =
             // #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode
             // if this.Count = 0 then fail "ResizeArr.LastIndex: Failed to get LastIndex of of empty ResizeArray."
             // #endif
@@ -267,12 +306,12 @@ module AutoOpenEuclidResizeArrayExtensions =
                 #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode
                     if this.Count = 0 then failRarr "Last.get" this
                 #endif
-                    this.[this.Count - 1]
+                    this.[this |> ResizeArr.lastIdx]
             and set (v:'T) =
                 #if DEBUG || CHECK_EUCLID
                     if this.Count = 0 then failRarr "Last.set" this
                 #endif
-                    this.[this.Count - 1] <- v
+                    this.[this |> ResizeArr.lastIdx] <- v
 
         /// Get (or set) the second last item in the ResizeArr.
         /// Equal to this.[this.Count - 2]
@@ -281,13 +320,12 @@ module AutoOpenEuclidResizeArrayExtensions =
                 #if DEBUG || CHECK_EUCLID
                     if this.Count < 2 then failRarr "SecondLast.get" this
                 #endif
-                    this.[this.Count - 2]
+                    this.[ResizeArr.len this - 2]
             and set (v:'T) =
                 #if DEBUG || CHECK_EUCLID
                     if this.Count < 2 then failRarr "SecondLast.set" this
                 #endif
-                    this.[this.Count - 2] <- v
-
+                    this.[ResizeArr.len this - 2] <- v
 
         /// Get (or set) the second last item in the ResizeArr.
         /// Equal to this.[this.Count - 2]
@@ -296,12 +334,12 @@ module AutoOpenEuclidResizeArrayExtensions =
                 #if DEBUG || CHECK_EUCLID
                     if this.Count < 3 then failRarr "ThirdLast.get" this
                 #endif
-                    this.[this.Count - 3]
+                    this.[ResizeArr.len this - 3]
             and set (v:'T) =
                 #if DEBUG || CHECK_EUCLID
                     if this.Count < 3 then failRarr "ThirdLast.set" this
                 #endif
-                    this.[this.Count - 3] <- v
+                    this.[ResizeArr.len this - 3] <- v
 
         /// Get (or set) the first item in the Euclid.ResizeArr.
         /// Equal to this.[0]
@@ -345,9 +383,8 @@ module AutoOpenEuclidResizeArrayExtensions =
                 #endif
                     this.[2] <- v
 
-
         /// Get and remove last item from ResizeArr.
-        member inline this.Pop() =
+        member inline this.Pop() : 'T =
             #if DEBUG || CHECK_EUCLID
                 if this.Count=0 then failRarr "Pop" this
             #endif
@@ -357,11 +394,9 @@ module AutoOpenEuclidResizeArrayExtensions =
                 v
 
         /// Get and remove item at index from ResizeArr.
-        member inline this.Pop(index:int) =
+        member inline this.PopAt(index:int) : 'T =
             #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode
-                if index < 0 then
-                    failRarr $"Pop({index})" this
-                if index >= this.Count then
+                if index < 0 || index >= this.Count then
                     failRarr $"Pop({index})" this
             #endif
                 let v = this.[index]
@@ -370,13 +405,13 @@ module AutoOpenEuclidResizeArrayExtensions =
 
         /// Any integer becomes a valid index, even negative.
         /// -1 is the last item, -2 is the second last, etc.
-        member inline this.GetLooped(i)=
+        member inline this.GetLooped(i) : 'T =
             let t = i % this.Count
             if t >= 0 then this.[t]
             else           this.[t + this.Count]
 
-
-        member inline this.SetIdx i v =
+        /// Set item at index in ResizeArray
+        member inline this.SetIdx i v : unit =
             #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode
                 if i < 0 || i >= this.Count then
                     failRarr $"SetIdx({i})" this
@@ -384,6 +419,6 @@ module AutoOpenEuclidResizeArrayExtensions =
                 this.[i] <- v
 
         /// true if this.Count = 0
-        member inline this.IsEmpty  =
+        member inline this.IsEmpty : bool =
             this.Count = 0
 

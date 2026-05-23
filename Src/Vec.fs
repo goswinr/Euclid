@@ -50,7 +50,7 @@ type Vec =
             {X=x; Y=y; Z=z}
 
     /// Format 3D vector into string including type name and nice floating point number formatting of X, Y, Z and length.
-    override v.ToString() =
+    override v.ToString() : string =
         let x = Format.float v.X
         let y = Format.float v.Y
         let z = Format.float v.Z
@@ -79,32 +79,32 @@ type Vec =
         v.X*v.X + v.Y*v.Y + v.Z*v.Z
 
     /// Negate or inverse a 3D vector. Returns a new 3D vector.
-    static member inline ( ~- ) (v:Vec) =
+    static member inline ( ~- ) (v:Vec) : Vec =
         Vec( -v.X, -v.Y, -v.Z)
 
     /// Subtract one 3D vector from another. Returns a new 3D vector.
-    static member inline ( - ) (a:Vec, b:Vec) =
+    static member inline ( - ) (a:Vec, b:Vec) : Vec =
         Vec (a.X - b.X, a.Y - b.Y, a.Z - b.Z)
 
     /// Add two 3D vectors together. Returns a new 3D vector.
-    static member inline ( + ) (a:Vec, b:Vec) =
+    static member inline ( + ) (a:Vec, b:Vec) : Vec =
         Vec (a.X + b.X, a.Y + b.Y, a.Z + b.Z)
 
     /// Multiplies a 3D vector with a scalar, also called scaling a vector. Returns a new 3D vector.
-    static member inline ( * ) (a:Vec, f:float) =
+    static member inline ( * ) (a:Vec, f:float) : Vec =
         Vec (a.X * f, a.Y * f, a.Z * f)
 
     /// Multiplies a scalar with a 3D vector, also called scaling a vector. Returns a new 3D vector.
-    static member inline ( * ) (f:float, a:Vec) =
+    static member inline ( * ) (f:float, a:Vec) : Vec =
         Vec (a.X * f, a.Y * f, a.Z * f)
 
     /// Dot product, or scalar product of two 3D vectors. Returns a float.
-    static member inline ( *** ) (a:Vec, b:Vec) =
+    static member inline ( *** ) (a:Vec, b:Vec) : float =
         a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
 
     /// Divides a 3D vector by a scalar, also called dividing/scaling a vector. Returns a new 3D vector.
-    static member inline ( / ) (v:Vec, f:float) =
+    static member inline ( / ) (v:Vec, f:float) : Vec =
         if isTooTiny (abs f) then failDivide "'/' operator" f v // don't compose error msg directly here to keep inlined code small. // https://github.com/dotnet/runtime/issues/24626#issuecomment-356736809
         Vec (v.X / f, v.Y / f, v.Z / f)
 
@@ -137,6 +137,6 @@ type Vec =
         Vec(v.X/d, v.Y/d, v.Z/d)
 
     /// Returns a zero length vector: Vec(0, 0, 0)
-    static member inline Zero =
+    static member inline Zero : Vec =
         Vec(0, 0, 0)  // this member is needed by Seq.sum, so that it doesn't fail on empty seq.
 

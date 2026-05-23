@@ -15,9 +15,9 @@ If `$file` is `*`, check all source files in current project.
 ## Workflow
 
 1. **Read the source file** (`Src/$file`) to understand all public functions, types, and extension members
-2. **Find the corresponding test file** in `Tests/` (e.g., `Pnt.fs` → `TestVectors.fs`, `Offset2D.fs` → `TestOffset2D.fs`)
+2. **Find the corresponding test file** in `Test/` (e.g., `Pnt.fs` → `TestVectors.fs`, `Offset2D.fs` → `TestOffset2D.fs`)
    - Use `file_search` and `grep_search` to locate test files that reference the source file's types or functions
-   - Check `Tests/TestMain.fs` to understand the test structure
+   - Check `Test/TestMain.fs` to understand the test structure
 3. **Analyze existing test coverage**:
    - Read the test file and identify which functions/members are already tested
    - Note any missing coverage for public APIs
@@ -26,8 +26,8 @@ If `$file` is `*`, check all source files in current project.
    - Follow the existing test structure (Expecto/Fable.Mocha compatible)
    - Use `manage_todo_list` to track test creation progress
 5. **Run tests** after adding new ones:
-   - Execute: `dotnet run --project ./Tests/Tests.fsproj` for .NET
-   - Execute: `npm run test --prefix ./Tests` for Node.js
+   - Execute: `dotnet run --project ./Test/Test.fsproj` for .NET
+   - Execute: `npm run test --prefix ./Test` for Node.js
 6. **Fix any failures**:
    - If tests fail, first check if the implementation in `Src/` has a bug
    - Only update tests if they incorrectly validate the documented behavior

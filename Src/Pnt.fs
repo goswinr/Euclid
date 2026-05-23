@@ -44,7 +44,7 @@ type Pnt =
             {X=x; Y=y; Z=z}
 
     /// Format 3D point into string including type name and nice floating point number formatting.
-    override p.ToString() =
+    override p.ToString() : string =
         let x = Format.float p.X
         let y = Format.float p.Y
         let z = Format.float p.Z
@@ -65,39 +65,39 @@ type Pnt =
 
     /// Subtract one 3D point from another.
     /// 'a-b' returns a new 3D vector from b to a.
-    static member inline ( - ) (a:Pnt, b:Pnt) =
+    static member inline ( - ) (a:Pnt, b:Pnt) : Vec =
         Vec (a.X - b.X, a.Y - b.Y, a.Z - b.Z)
 
     /// Subtract a unit-vector from a 3D point. Returns a new 3D point.
-    static member inline ( - ) (p:Pnt, v:UnitVec) =
+    static member inline ( - ) (p:Pnt, v:UnitVec) : Pnt =
         Pnt (p.X - v.X, p.Y - v.Y, p.Z - v.Z)
 
     /// Subtract a vector from a 3D point. Returns a new 3D point.
-    static member inline ( - ) (p:Pnt, v:Vec) =
+    static member inline ( - ) (p:Pnt, v:Vec) : Pnt =
         Pnt (p.X - v.X, p.Y - v.Y, p.Z - v.Z)
 
     /// Add two 3D points together. Returns a new 3D point.
-    static member inline ( + ) (a:Pnt, b:Pnt) =
+    static member inline ( + ) (a:Pnt, b:Pnt) : Pnt =
         Pnt (a.X + b.X, a.Y + b.Y, a.Z + b.Z) // required for Seq.average and Pnt.midPt
 
     /// Add a vector to a 3D point. Returns a new 3D point.
-    static member inline ( + ) (p:Pnt, v:Vec) =
+    static member inline ( + ) (p:Pnt, v:Vec) : Pnt =
         Pnt (p.X + v.X, p.Y + v.Y, p.Z + v.Z)
 
     /// Add a unit-vector to a 3D point. Returns a new 3D point.
-    static member inline ( + ) (p:Pnt, v:UnitVec) =
+    static member inline ( + ) (p:Pnt, v:UnitVec) : Pnt =
         Pnt (p.X + v.X, p.Y + v.Y, p.Z + v.Z)
 
     /// Multiplies a 3D point with a scalar, also called scaling a point. Returns a new 3D point.
-    static member inline ( * ) (a:Pnt, f:float) =
+    static member inline ( * ) (a:Pnt, f:float) : Pnt =
         Pnt (a.X * f, a.Y * f, a.Z * f)
 
     /// Multiplies a scalar with a 3D point, also called scaling a point. Returns a new 3D point.
-    static member inline ( * ) (f:float, a:Pnt) =
+    static member inline ( * ) (f:float, a:Pnt) : Pnt =
         Pnt (a.X * f, a.Y * f, a.Z * f)
 
     /// Divides a 3D point by a scalar. Returns a new 3D point.
-    static member inline ( / ) (p:Pnt, f:float) =
+    static member inline ( / ) (p:Pnt, f:float) : Pnt =
         if abs f < UtilEuclid.zeroLengthTolerance then failDivide "'/' operator" f p // don't compose error msg directly here to keep inlined code small.
         //p * (1./f) // maybe faster but worse precision
         Pnt (p.X / f, p.Y / f, p.Z / f)
@@ -107,11 +107,11 @@ type Pnt =
     //-----------------------------------------------------------------------------------------------------
 
     /// Same as Pnt.Origin.
-    static member inline Zero =
+    static member inline Zero : Pnt =
         Pnt (0., 0., 0.)  // needed by 'Array.sum'
 
     /// Same as Pnt.Zero.
-    static member inline Origin =
+    static member inline Origin : Pnt =
         Pnt (0. , 0., 0.)
 
     /// Divides the 3D point by an integer.

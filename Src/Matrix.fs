@@ -1,4 +1,4 @@
-namespace Euclid
+﻿namespace Euclid
 
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
@@ -60,14 +60,26 @@ type Matrix =
     /// <summary>Returns the 16 elements column-major order:
     /// <code>[| M11 M12 M13 M14 M21 M22 M23 M24 M31 M32 M33 M34 X41 Y42 Z43 M44 |]</code>
     /// Where X41, Y42 and Z43 refer to the translation part of the matrix.</summary>
-    member m.ToArrayByColumns =
+    member m.ToArrayByColumns : float array =
         [| m.M11; m.M12; m.M13; m.M14; m.M21; m.M22; m.M23; m.M24; m.M31; m.M32; m.M33; m.M34; m.X41; m.Y42; m.Z43; m.M44 |]
+
+    /// <summary>Returns the 16 elements column-major order:
+    /// <code>[| M11 M12 M13 M14 M21 M22 M23 M24 M31 M32 M33 M34 X41 Y42 Z43 M44 |]</code>
+    /// Where X41, Y42 and Z43 refer to the translation part of the matrix.</summary>
+    static member inline toArrayByColumns (m:Matrix) : float array =
+        m.ToArrayByColumns
 
     /// <summary>Returns the 16 elements in row-major order:
     /// <code>[| M11 M21 M31 X41 M12 M22 M32 Y42 M13 M23 M33 Z43 M14 M24 M34 M44 |]</code>
     /// Where X41, Y42 and Z43 refer to the translation part of the matrix.</summary>
-    member m.ToArrayByRows =
+    member m.ToArrayByRows : float array =
         [| m.M11; m.M21; m.M31; m.X41; m.M12; m.M22; m.M32; m.Y42; m.M13; m.M23; m.M33; m.Z43; m.M14; m.M24; m.M34; m.M44 |]
+
+    /// <summary>Returns the 16 elements in row-major order:
+    /// <code>[| M11 M21 M31 X41 M12 M22 M32 Y42 M13 M23 M33 Z43 M14 M24 M34 M44 |]</code>
+    /// Where X41, Y42 and Z43 refer to the translation part of the matrix.</summary>
+    static member inline toArrayByRows (m:Matrix) : float array =
+        m.ToArrayByRows
 
     /// <summary>Nicely formats the Matrix to a Grid of 4x4 (without field names)
     /// the following column-vector syntax form:
@@ -89,10 +101,27 @@ type Matrix =
         |> String.concat Environment.NewLine
         )
 
+    /// <summary>Nicely formats the Matrix to a Grid of 4x4 (without field names)
+    /// the following column-vector syntax form:
+    /// <code>
+    /// M11 M21 M31 X41
+    /// M12 M22 M32 Y42
+    /// M13 M23 M33 Z43
+    /// M14 M24 M34 M44
+    /// </code>
+    /// Where X41, Y42 and Z43 refer to the translation part of the matrix.</summary>
+    static member inline asString (m:Matrix) : string =
+        m.AsString
+
     /// <summary>Format Matrix into an F# code string that can be used to recreate the matrix.
     /// The output matches the constructor's row-major parameter order.</summary>
     member m.AsFSharpCode : string =
         $"Matrix({m.M11}, {m.M21}, {m.M31}, {m.X41}, {m.M12}, {m.M22}, {m.M32}, {m.Y42}, {m.M13}, {m.M23}, {m.M33}, {m.Z43}, {m.M14}, {m.M24}, {m.M34}, {m.M44})"
+
+    /// <summary>Format Matrix into an F# code string that can be used to recreate the matrix.
+    /// The output matches the constructor's row-major parameter order.</summary>
+    static member inline asFSharpCode (m:Matrix) : string =
+        m.AsFSharpCode
 
     /// <summary>Nicely formats the Matrix to a Grid of 4x4 including field names.
     /// Using the following column-vector syntax form:
@@ -103,7 +132,7 @@ type Matrix =
     /// M14 M24 M34 M44
     /// </code>
     /// Where X41, Y42 and Z43 refer to the translation part of the matrix.</summary>
-    override m.ToString()=
+    override m.ToString() : string =
        let names =[| "M11"; "M21"; "M31"; "X41"; "M12"; "M22"; "M32"; "Y42"; "M13"; "M23"; "M33"; "Z43"; "M14"; "M24"; "M34"; "M44"|]
        let ts =  m.ToArrayByRows |> Array.map ( sprintf "%0.3f" )
        let most = ts |> Array.maxBy (fun s -> s.Length)
@@ -115,23 +144,41 @@ type Matrix =
        |> String.concat Environment.NewLine
        )
 
+    /// <summary>Returns the first column vector. M11, M12 and M13.</summary>
+    member m.ColumnVector1 : Vec =
+        Vec(m.M11, m.M12, m.M13)
 
     /// <summary>Returns the first column vector. M11, M12 and M13.</summary>
-    member m.ColumnVector1 = Vec(m.M11, m.M12, m.M13)
+    static member inline columnVector1 (m:Matrix) : Vec =
+        m.ColumnVector1
 
     /// <summary>Returns the second column vector. M21, M22 and M23.</summary>
-    member m.ColumnVector2 = Vec(m.M21, m.M22, m.M23)
+    member m.ColumnVector2 : Vec =
+        Vec(m.M21, m.M22, m.M23)
+
+    /// <summary>Returns the second column vector. M21, M22 and M23.</summary>
+    static member inline columnVector2 (m:Matrix) : Vec =
+        m.ColumnVector2
 
     /// <summary>Returns the third column vector. M31, M32 and M33.</summary>
-    member m.ColumnVector3 = Vec(m.M31, m.M32, m.M33)
+    member m.ColumnVector3 : Vec =
+        Vec(m.M31, m.M32, m.M33)
+
+    /// <summary>Returns the third column vector. M31, M32 and M33.</summary>
+    static member inline columnVector3 (m:Matrix) : Vec =
+        m.ColumnVector3
 
     /// <summary>Returns the translation or fourth column vector. X41, Y42 and Z43.</summary>
-    member m.Translation = Vec(m.X41, m.Y42, m.Z43)
+    member m.Translation : Vec =
+        Vec(m.X41, m.Y42, m.Z43)
 
+    /// <summary>Returns the translation or fourth column vector. X41, Y42 and Z43.</summary>
+    static member inline translation (m:Matrix) : Vec =
+        m.Translation
 
     /// <summary>The determinant of the Matrix.
     /// The Determinant describes the signed volume that a unit cube will have after the matrix was applied.</summary>
-    member m.Determinant =
+    member m.Determinant : float =
         // https://www.euclideanspace.com/maths/algebra/matrix/functions/determinant/fourD/index.htm
 
         //   m03 * m12 * m21 * m30-m02 * m13 * m21 * m30-m03 * m11 * m22 * m30+m01 * m13 * m22 * m30+
@@ -194,11 +241,15 @@ type Matrix =
         m01m10*m23z32 - m00m11*m23z32 - m02m11*m20m33 + m01m12*m20m33 +
         m02m10*m21m33 - m00m12*m21m33 - m01m10*m22m33 + m00m11*m22m33
 
+    /// <summary>The determinant of the Matrix.
+    /// The determinant describes the signed volume that a unit cube will have after the matrix was applied.</summary>
+    static member inline determinant (m:Matrix) : float =
+        m.Determinant
 
     /// <summary>Inverts the matrix.
     /// If the determinant is zero the Matrix cannot be inverted.
     /// An Exception is raised.</summary>
-    member m.Inverse =
+    member m.Inverse : Matrix =
         // based on http://www.euclideanspace.com/maths/algebra/matrix/functions/inverse/fourD/index.htm
         // also see https://github.com/mrdoob/three.js/blob/master/src/math/Matrix4.js#L717
         // and 2026 changes: https://github.com/mrdoob/three.js/pull/32657
@@ -280,7 +331,12 @@ type Matrix =
                 , t33 * detInv // M44
                 )
 
-
+    /// <summary>Inverts the matrix.
+    /// If the determinant is zero the Matrix cannot be inverted.
+    /// An exception is raised.</summary>
+    /// <param name="m">The matrix to invert.</param>
+    static member inline inverse (m:Matrix) : Matrix =
+        m.Inverse
 
     /// <summary>Checks if the Matrix is an identity matrix in the form of:
     /// <code>
@@ -290,30 +346,55 @@ type Matrix =
     /// 0  0  0  1
     /// </code>
     /// Using an approximate tolerance of 1e-6.</summary>
-    member m.IsIdentity =
+    member m.IsIdentity : bool =
         isOne  m.M11 && isZero m.M21 && isZero m.M31 && isZero m.X41 &&
         isZero m.M12 && isOne  m.M22 && isZero m.M32 && isZero m.Y42 &&
         isZero m.M13 && isZero m.M23 && isOne  m.M33 && isZero m.Z43 &&
         isZero m.M14 && isZero m.M24 && isZero m.M34 && isOne  m.M44
 
+    /// <summary>Checks if the Matrix is an identity matrix in the form of:
+    /// <code>
+    /// 1  0  0  0
+    /// 0  1  0  0
+    /// 0  0  1  0
+    /// 0  0  0  1
+    /// </code>
+    /// Using an approximate tolerance of 1e-6.</summary>
+    static member inline isIdentity (m:Matrix) : bool =
+        m.IsIdentity
+
     /// <summary>Checks if the Matrix is an affine transformation.
     /// That means it does not do any projection.
     /// The fields m.M14, m.M24 and m.M34 must be 0.0 and m.M44 must be 1.0 or very close to it.
     /// Using an approximate tolerance of 1e-6.</summary>
-    member m.IsAffine =
+    member m.IsAffine : bool =
         isZero m.M14 && isZero m.M24 && isZero m.M34 && isOne m.M44
+
+    /// <summary>Checks if the Matrix is an affine transformation.
+    /// That means it does not do any projection.
+    /// The fields m.M14, m.M24 and m.M34 must be 0.0 and m.M44 must be 1.0 or very close to it.
+    /// Using an approximate tolerance of 1e-6.</summary>
+    static member inline isAffine (m:Matrix) : bool =
+        m.IsAffine
 
     /// <summary>Checks if the Matrix is a projection transformation.
     /// That means it does perform projection (perspective divide).
     /// Returns true if at least one of the fields m.M14, m.M24, m.M34 is not 0.0 or m.M44 is not 1.0.
     /// Using an approximate tolerance of 1e-6.</summary>
-    member m.IsProjecting =
+    member m.IsProjecting : bool =
         isNotZero m.M14 || isNotZero m.M24 || isNotZero m.M34 || isNotOne m.M44
+
+    /// <summary>Checks if the Matrix is a projection transformation.
+    /// That means it does perform projection (perspective divide).
+    /// Returns true if at least one of the fields m.M14, m.M24, m.M34 is not 0.0 or m.M44 is not 1.0.
+    /// Using an approximate tolerance of 1e-6.</summary>
+    static member inline isProjecting (m:Matrix) : bool =
+        m.IsProjecting
 
     /// <summary>Returns if the Matrix is orthogonal.
     /// It might also be mirroring or scaling, but not shearing or projecting.
     /// It must be affine and the dot products of the three column vectors must be zero.</summary>
-    member m.IsOrthogonal =
+    member m.IsOrthogonal : bool =
         m.IsAffine &&
         (
         let x = Vec(m.M11, m.M12, m.M13)
@@ -324,11 +405,17 @@ type Matrix =
         UtilEuclid.isZero (y *** z)
         )
 
+    /// <summary>Returns if the Matrix is orthogonal.
+    /// It might also be mirroring or scaling, but not shearing or projecting.
+    /// It must be affine and the dot products of the three column vectors must be zero.</summary>
+    static member inline isOrthogonal (m:Matrix) : bool =
+        m.IsOrthogonal
+
     /// <summary>Returns if the Matrix is mirroring or reflection.
     /// It might also be rotating, translating or scaling, but not projecting.
     /// It must be affine and the determinate of the 3x3 part must be negative.
     /// Same as m.IsReflecting.</summary>
-    member m.IsMirroring =
+    member m.IsMirroring : bool =
         m.IsAffine &&
         (
         let x = Vec(m.M11, m.M12, m.M13)
@@ -340,14 +427,28 @@ type Matrix =
     /// <summary>Returns if the Matrix is mirroring or reflection.
     /// It might also be rotating, translating or scaling, but not projecting.
     /// It must be affine and the determinate of the 3x3 part must be negative.
-    /// Same as m.IsMirroring.</summary>
-    member m.IsReflecting =
+    /// Same as m.IsReflecting.</summary>
+    static member inline isMirroring (m:Matrix) : bool =
         m.IsMirroring
+
+    /// <summary>Returns if the Matrix is mirroring or reflection.
+    /// It might also be rotating, translating or scaling, but not projecting.
+    /// It must be affine and the determinate of the 3x3 part must be negative.
+    /// Same as m.IsMirroring.</summary>
+    member m.IsReflecting : bool =
+        m.IsMirroring
+
+    /// <summary>Returns if the Matrix is mirroring or reflection.
+    /// It might also be rotating, translating or scaling, but not projecting.
+    /// It must be affine and the determinate of the 3x3 part must be negative.
+    /// Same as m.IsMirroring.</summary>
+    static member inline isReflecting (m:Matrix) : bool =
+        m.IsReflecting
 
     /// <summary>Returns if the Matrix is scaling.
     /// It might also be rotating, translating or reflecting, but not projecting.
     /// It must be affine and at least one of the 3 column vectors must have a squared length other than 1.0.</summary>
-    member m.IsScaling =
+    member m.IsScaling : bool =
         m.IsAffine &&
         (
         let inline sqLen    (v:Vec) = v.X*v.X + v.Y*v.Y + v.Z*v.Z // defined here again, because Vec extension members are not in scope here
@@ -356,53 +457,33 @@ type Matrix =
         UtilEuclid.isNotOne (sqLen (Vec(m.M31, m.M32, m.M33)))
         )
 
+    /// <summary>Returns if the Matrix is scaling.
+    /// It might also be rotating, translating or reflecting, but not projecting.
+    /// It must be affine and at least one of the 3 column vectors must have a squared length other than 1.0.</summary>
+    static member inline isScaling (m:Matrix) : bool =
+        m.IsScaling
+
     /// <summary>Returns true if the Matrix is translating.
     /// It might also be rotating, scaling and reflecting, but not projecting.</summary>
-    member m.IsTranslating = m.IsAffine && (isNotZero m.X41 || isNotZero m.Y42|| isNotZero m.Z43)
+    member m.IsTranslating : bool =
+        m.IsAffine && (isNotZero m.X41 || isNotZero m.Y42|| isNotZero m.Z43)
+
+    /// <summary>Returns true if the Matrix is translating.
+    /// It might also be rotating, scaling and reflecting, but not projecting.</summary>
+    static member inline isTranslating (m:Matrix) : bool =
+        m.IsTranslating
 
     /// <summary>Returns true if the Matrix is only translating.
     /// It might not be rotating, scaling, reflecting, or projecting.</summary>
-    member m.IsOnlyTranslating =
+    member m.IsOnlyTranslating : bool =
         isOne  m.M11 && isZero m.M21 && isZero m.M31 &&
         isZero m.M12 && isOne  m.M22 && isZero m.M32 &&
         isZero m.M13 && isZero m.M23 && isOne  m.M33 &&
         isZero m.M14 && isZero m.M24 && isZero m.M34 && isOne  m.M44
 
 
-    // ----------------------------------------------------------------------------------
-    //            █████               █████     ███
-    //           ░░███               ░░███     ░░░
-    //    █████  ███████    ██████   ███████   ████   ██████
-    //   ███░░  ░░░███░    ░░░░░███ ░░░███░   ░░███  ███░░███
-    //  ░░█████   ░███      ███████   ░███     ░███ ░███ ░░░
-    //   ░░░░███  ░███ ███ ███░░███   ░███ ███ ░███ ░███  ███
-    //   ██████   ░░█████ ░░████████  ░░█████  █████░░██████
-    //  ░░░░░░     ░░░░░   ░░░░░░░░    ░░░░░  ░░░░░  ░░░░░░
-    //
-    //                                             █████
-    //                                            ░░███
-    //    █████████████    ██████  █████████████   ░███████   ██████  ████████   █████
-    //   ░░███░░███░░███  ███░░███░░███░░███░░███  ░███░░███ ███░░███░░███░░███ ███░░
-    //    ░███ ░███ ░███ ░███████  ░███ ░███ ░███  ░███ ░███░███████  ░███ ░░░ ░░█████
-    //    ░███ ░███ ░███ ░███░░░   ░███ ░███ ░███  ░███ ░███░███░░░   ░███      ░░░░███
-    //    █████░███ █████░░██████  █████░███ █████ ████████ ░░██████  █████     ██████
-    //   ░░░░░ ░░░ ░░░░░  ░░░░░░  ░░░░░ ░░░ ░░░░░ ░░░░░░░░   ░░░░░░  ░░░░░     ░░░░░░
-    // --------------------------------------------------------------------------------
-
-    /// <summary>Returns the 16 elements column-major order:
-    /// <code>[| M11 M12 M13 M14 M21 M22 M23 M24 M31 M32 M33 M34 X41 Y42 Z43 M44 |]</code>
-    /// Where X41, Y42 and Z43 refer to the translation part of the matrix.</summary>
-    /// <param name="m">The matrix.</param>
-    static member inline toArrayByColumns (m:Matrix) =
-        m.ToArrayByColumns
-
-    /// <summary>Returns the 16 elements in row-major order:
-    /// <code>[| M11 M21 M31 X41 M12 M22 M32 Y42 M13 M23 M33 Z43 M14 M24 M34 M44 |]</code>
-    /// Where X41, Y42 and Z43 refer to the translation part of the matrix.</summary>
-    /// <param name="m">The matrix.</param>
-    static member inline toArrayByRows (m:Matrix) =
-        m.ToArrayByRows
-
+    // #endregion
+    // #region Static members
 
     /// <summary>Checks if two matrices are equal within tolerance.
     /// By comparing the fields M11 to M44 each with the given tolerance.
@@ -428,13 +509,11 @@ type Matrix =
         abs(a.Z43-b.Z43) <= tol &&
         abs(a.M44-b.M44) <= tol
 
-
-
     /// <summary>Multiplies matrixA with matrixB.
     /// The resulting transformation will first do matrixA and then matrixB.</summary>
     /// <param name="matrixA">The first matrix (applied first).</param>
     /// <param name="matrixB">The second matrix (applied second).</param>
-    static member multiply (matrixA:Matrix, matrixB:Matrix) =
+    static member multiply (matrixA:Matrix, matrixB:Matrix) : Matrix =
         let a11 = matrixA.M11
         let a12 = matrixA.M12
         let a13 = matrixA.M13
@@ -486,32 +565,18 @@ type Matrix =
              a31 * b14 + a32 * b24 + a33 * b34 + a34 * b44 , // M34
              a41 * b14 + a42 * b24 + a43 * b34 + a44 * b44 ) // M44
 
-
     /// <summary>Multiplies matrixA with matrixB.
     /// The resulting transformation will first do matrixA and then matrixB.</summary>
     /// <param name="matrixA">The first matrix (applied first).</param>
     /// <param name="matrixB">The second matrix (applied second).</param>
-    static member inline ( *** ) (matrixA:Matrix, matrixB:Matrix) =
+    static member inline ( *** ) (matrixA:Matrix, matrixB:Matrix) : Matrix =
         Matrix.multiply(matrixA, matrixB)
-
-    /// <summary>The determinant of the Matrix.
-    /// The determinant describes the signed volume that a unit cube will have after the matrix was applied.</summary>
-    /// <param name="m">The matrix.</param>
-    static member inline determinant (m:Matrix) =
-        m.Determinant
-
-    /// <summary>Inverts the matrix.
-    /// If the determinant is zero the Matrix cannot be inverted.
-    /// An exception is raised.</summary>
-    /// <param name="m">The matrix to invert.</param>
-    static member inline inverse (m:Matrix) =
-        m.Inverse
 
     /// <summary>Transposes the Matrix by swapping rows and columns.
     /// For transformation matrices, this swaps the effect of row-major and column-major conventions.
     /// For orthogonal rotation matrices, the transpose equals the inverse.</summary>
     /// <param name="m">The matrix to transpose.</param>
-    static member transpose(m:Matrix) =
+    static member transpose(m:Matrix) : Matrix =
         Matrix  ( m.M11, m.M12, m.M13, m.M14
                 , m.M21, m.M22, m.M23, m.M24
                 , m.M31, m.M32, m.M33, m.M34
@@ -524,7 +589,7 @@ type Matrix =
     /// 0  0  1  0
     /// 0  0  0  1
     /// </code></summary>
-    static member identity =
+    static member identity : Matrix =
         Matrix(
             1, 0, 0, 0,
             0, 1, 0, 0,
@@ -542,7 +607,7 @@ type Matrix =
     /// <param name="x">The amount to translate in the X-axis.</param>
     /// <param name="y">The amount to translate in the Y-axis.</param>
     /// <param name="z">The amount to translate in the Z-axis.</param>
-    static member createTranslation(x, y, z) =
+    static member createTranslation(x, y, z) : Matrix =
         Matrix(
             1, 0, 0, x,
             0, 1, 0, y,
@@ -558,14 +623,12 @@ type Matrix =
     /// 0  0  0  1
     /// </code></summary>
     /// <param name="v">The vector by which to translate.</param>
-    static member createTranslation(v:Vec) =
+    static member createTranslation(v:Vec) : Matrix =
         Matrix(
             1, 0, 0, v.X,
             0, 1, 0, v.Y,
             0, 0, 1, v.Z,
             0, 0, 0, 1  )
-
-
 
     /// <summary>Creates a rotation transformation matrix around the X-axis
     /// by angle in Degrees (not Radians).
@@ -579,7 +642,7 @@ type Matrix =
     /// 0 0      0        1
     /// </code></summary>
     /// <param name="angleDegrees">Rotation angle in Degrees.</param>
-    static member createRotationX(angleDegrees) =
+    static member createRotationX(angleDegrees) : Matrix =
         let angle = UtilEuclid.toRadians angleDegrees
         let c = cos angle
         let s = sin angle
@@ -601,7 +664,7 @@ type Matrix =
     /// 0       0 0      1
     /// </code></summary>
     /// <param name="angleDegrees">Rotation angle in Degrees.</param>
-    static member createRotationY(angleDegrees) =
+    static member createRotationY(angleDegrees) : Matrix =
         let angle = UtilEuclid.toRadians angleDegrees
         let c = cos angle
         let s = sin angle
@@ -623,7 +686,7 @@ type Matrix =
     /// 0      0       0 1
     /// </code></summary>
     /// <param name="angleDegrees">Rotation angle in Degrees.</param>
-    static member createRotationZ(angleDegrees) =
+    static member createRotationZ(angleDegrees) : Matrix =
         let angle = UtilEuclid.toRadians angleDegrees
         let c = cos angle
         let s = sin angle
@@ -633,12 +696,11 @@ type Matrix =
             0,  0,  1,  0,
             0,  0,  0,  1)
 
-
     /// <summary>Creates a rotation around an axis transformation matrix.
     /// A positive angle rotates counter-clockwise when the axis vector is pointing towards the observer (right-hand rule).</summary>
     /// <param name="axis">Rotation axis, as unit-vector.</param>
     /// <param name="angleDegrees">Rotation angle in Degrees.</param>
-    static member createRotationAxis(axis:UnitVec, angleDegrees:float) =
+    static member createRotationAxis(axis:UnitVec, angleDegrees:float) : Matrix =
         // Based on http://www.gamedev.net/reference/articles/article1199.asp
         let angle = UtilEuclid.toRadians angleDegrees
         let c = cos angle
@@ -659,7 +721,7 @@ type Matrix =
     /// A positive angle rotates counter-clockwise when the axis vector is pointing towards the observer (right-hand rule).</summary>
     /// <param name="axis">Rotation axis, a vector of any length but 0.0.</param>
     /// <param name="angleDegrees">Rotation angle in Degrees.</param>
-    static member createRotationAxis(axis:Vec, angleDegrees:float) =
+    static member createRotationAxis(axis:Vec, angleDegrees:float) : Matrix =
         // first unitize
         let len = sqrt (axis.X*axis.X + axis.Y*axis.Y + axis.Z*axis.Z)
         if isTooTiny(len) then
@@ -682,13 +744,12 @@ type Matrix =
             tx * z - s * y, ty * z + s * x , t  * z * z + c , 0,
             0             , 0              , 0              , 1)
 
-
     /// <summary>Creates a rotation matrix around an axis at a given center point.
     /// A positive angle rotates counter-clockwise when the axis vector is pointing towards the observer (right-hand rule).</summary>
     /// <param name="axis">Rotation axis, a vector of any length but 0.0.</param>
     /// <param name="cen">The center point for the rotation.</param>
     /// <param name="angleDegrees">Rotation angle in Degrees.</param>
-    static member createRotationAxisCenter(axis:Vec, cen:Pnt, angleDegrees:float) =
+    static member createRotationAxisCenter(axis:Vec, cen:Pnt, angleDegrees:float) : Matrix =
         Matrix.createTranslation(-cen.X, -cen.Y, -cen.Z)
         *** Matrix.createRotationAxis(axis, angleDegrees)
         *** Matrix.createTranslation(cen.X, cen.Y, cen.Z)
@@ -698,11 +759,10 @@ type Matrix =
     /// <param name="axis">Rotation axis, a unit-vector.</param>
     /// <param name="cen">The center point for the rotation.</param>
     /// <param name="angleDegrees">Rotation angle in Degrees.</param>
-    static member createRotationAxisCenter(axis:UnitVec, cen:Pnt, angleDegrees:float) =
+    static member createRotationAxisCenter(axis:UnitVec, cen:Pnt, angleDegrees:float) : Matrix =
         Matrix.createTranslation(-cen.X, -cen.Y, -cen.Z)
         *** Matrix.createRotationAxis(axis, angleDegrees)
         *** Matrix.createTranslation(cen.X, cen.Y, cen.Z)
-
 
     /// <summary>Creates a scale transformation matrix.
     /// The resulting matrix will be:
@@ -715,7 +775,7 @@ type Matrix =
     /// <param name="x">The amount to scale in the X-axis.</param>
     /// <param name="y">The amount to scale in the Y-axis.</param>
     /// <param name="z">The amount to scale in the Z-axis.</param>
-    static member createScale(x, y, z) =
+    static member createScale(x, y, z) : Matrix =
         Matrix(
             x, 0, 0, 0,
             0, y, 0, 0,
@@ -729,7 +789,7 @@ type Matrix =
     /// there is no valid unique 180 degree rotation that can be found, so an exception is raised.</summary>
     /// <param name="vecFrom">The source unit-vector direction.</param>
     /// <param name="vecTo">The target unit-vector direction.</param>
-    static member createVecToVec(vecFrom:UnitVec, vecTo:UnitVec) =
+    static member createVecToVec(vecFrom:UnitVec, vecTo:UnitVec) : Matrix =
         let vt = vecFrom - vecTo
         if isTooTinySq vt.LengthSq then // the vectors are almost the same
             Matrix.identity
@@ -765,7 +825,7 @@ type Matrix =
     /// Fails if either vector is too short (length less than 1e-6).</summary>
     /// <param name="vecFrom">The source vector direction.</param>
     /// <param name="vecTo">The target vector direction.</param>
-    static member createVecToVec(vecFrom:Vec, vecTo:Vec) =
+    static member createVecToVec(vecFrom:Vec, vecTo:Vec) : Matrix =
         let fu =
             let x = vecFrom.X
             let y = vecFrom.Y
@@ -810,8 +870,6 @@ type Matrix =
                 tx * z - s * y, ty * z + s * x , t  * z * z + c , 0,
                 0             , 0              , 0              , 1)
 
-
-
     /// <summary>Creates a shear transformation matrix.
     /// The resulting matrix will be:
     /// <code>
@@ -826,7 +884,7 @@ type Matrix =
     /// <param name="yz">The amount to shear the Z component when moving along the Y-axis.</param>
     /// <param name="zx">The amount to shear the X component when moving along the Z-axis.</param>
     /// <param name="zy">The amount to shear the Y component when moving along the Z-axis.</param>
-    static member createShear(xy, xz, yx, yz, zx, zy) =
+    static member createShear(xy, xz, yx, yz, zx, zy) : Matrix =
         Matrix(
             1,  yx, zx, 0,
             xy, 1 , zy, 0,
@@ -836,25 +894,24 @@ type Matrix =
     /// <summary>Creates a Matrix to transform from World plane or Coordinate System to given Plane.
     /// Also called Change of Basis.</summary>
     /// <param name="p">The target plane.</param>
-    static member createToPlane(p:PPlane) =
+    static member createToPlane(p:PPlane) : Matrix =
         Matrix(
             p.Xaxis.X, p.Yaxis.X, p.Zaxis.X,  p.Origin.X,
             p.Xaxis.Y, p.Yaxis.Y, p.Zaxis.Y,  p.Origin.Y,
             p.Xaxis.Z, p.Yaxis.Z, p.Zaxis.Z,  p.Origin.Z,
             0        ,         0,         0,           1)
 
-
     /// <summary>Creates a Matrix to transform from one Plane or Coordinate System to another Plane.</summary>
     /// <param name="fromPlane">The source plane.</param>
     /// <param name="toPlane">The target plane.</param>
-    static member createPlaneToPlane(fromPlane:PPlane, toPlane:PPlane) =
+    static member createPlaneToPlane(fromPlane:PPlane, toPlane:PPlane) : Matrix =
         let f = fromPlane |> Matrix.createToPlane |> Matrix.inverse
         let t = toPlane   |> Matrix.createToPlane
         f *** t
 
     /// <summary>Creates a Matrix to mirror on a Plane.</summary>
     /// <param name="p">The mirror plane.</param>
-    static member createMirror (p:PPlane) =
+    static member createMirror (p:PPlane) : Matrix =
         let toPlane   = Matrix.createToPlane p
         let fromPlane = toPlane.Inverse
         let zFlip     = Matrix.createScale(1, 1, -1)
@@ -862,7 +919,7 @@ type Matrix =
 
     /// <summary>Create Matrix from Quaternion.</summary>
     /// <param name="quaternion">The quaternion representing the rotation.</param>
-    static member createFromQuaternion(quaternion:Quaternion) =
+    static member createFromQuaternion(quaternion:Quaternion) : Matrix =
         let x = quaternion.X
         let y = quaternion.Y
         let z = quaternion.Z
@@ -898,13 +955,11 @@ type Matrix =
                 , 0
                 , 1)
 
-
-
     /// <summary>Creates a matrix from array of 16 elements in Column Major order:
     /// <code>[| M11 M12 M13 M14 M21 M22 M23 M24 M31 M32 M33 M34 X41 Y42 Z43 M44 |]</code>
     /// Where X41, Y42 and Z43 refer to the translation part of the matrix.</summary>
     /// <param name="xs">Array of 16 float elements in column-major order.</param>
-    static member createFromColumMajorArray (xs:float[]) =
+    static member createFromColumMajorArray (xs:float[]) : Matrix =
         if xs.Length <> 16 then
             fail $"Matrix.createFromColumMajorArray expects an array of 16 items but got {xs.Length}"
         Matrix (
@@ -913,12 +968,11 @@ type Matrix =
             xs[2],  xs[6],  xs[10],  xs[14] ,
             xs[3],  xs[7],  xs[11],  xs[15] )
 
-
     /// <summary>Creates a matrix from array of 16 elements in Row Major order:
     /// <code>[| M11 M21 M31 X41 M12 M22 M32 Y42 M13 M23 M33 Z43 M14 M24 M34 M44 |]</code>
     /// Where X41, Y42 and Z43 refer to the translation part of the matrix.</summary>
     /// <param name="xs">Array of 16 float elements in row-major order.</param>
-    static member createFromRowMajorArray (xs:float[]) =
+    static member createFromRowMajorArray (xs:float[]) : Matrix =
         if xs.Length <> 16 then
             fail $"Matrix.createFromRowMajorArray expects an array of 16 items but got {xs.Length}"
         Matrix (
@@ -927,11 +981,10 @@ type Matrix =
             xs[ 8],  xs[ 9],  xs[10],  xs[11] ,
             xs[12],  xs[13],  xs[14],  xs[15] )
 
-
     /// <summary>Add a vector translation to an existing matrix.</summary>
     /// <param name="v">The translation vector to add.</param>
     /// <param name="m">The matrix to modify.</param>
-    static member addTranslation (v:Vec) (m:Matrix) =
+    static member addTranslation (v:Vec) (m:Matrix) : Matrix =
         Matrix( m.M11,  m.M21,  m.M31,  m.X41 + v.X,
                 m.M12,  m.M22,  m.M32,  m.Y42 + v.Y,
                 m.M13,  m.M23,  m.M33,  m.Z43 + v.Z,
@@ -942,61 +995,51 @@ type Matrix =
     /// <param name="y">The Y translation to add.</param>
     /// <param name="z">The Z translation to add.</param>
     /// <param name="m">The matrix to modify.</param>
-    static member addTranslationXYZ x y z (m:Matrix) =
+    static member addTranslationXYZ x y z (m:Matrix) : Matrix =
         Matrix( m.M11,  m.M21,  m.M31,  m.X41 + x,
                 m.M12,  m.M22,  m.M32,  m.Y42 + y,
                 m.M13,  m.M23,  m.M33,  m.Z43 + z,
                 m.M14,  m.M24,  m.M34,  m.M44)
 
-    // ----------------------------------------------
-    // operators for matrix multiplication:
-    // For Vectors the translation part of the matrix is ignored.
-    // For Points the translation part of the matrix is applied.
-    // ----------------------------------------------
 
-    /// <summary>Multiplies (or applies) a Matrix to a 3D vector.
-    /// Since a 3D vector represents a direction or translation in space, but not a location,
-    /// the implicit 4th dimension is 0.0 so that all translations are ignored. (Homogeneous Vector)</summary>
-    /// <param name="v">The 3D vector to transform.</param>
-    /// <param name="m">The transformation matrix.</param>
-    static member inline ( *** ) (v:Vec, m:Matrix) =
-        // from applyMatrix4(m) in  https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
-        let x = v.X
-        let y = v.Y
-        let z = v.Z
-        //let w = 0.0
-        let x' = m.M11*x + m.M21*y + m.M31*z //+ m.X41 * w
-        let y' = m.M12*x + m.M22*y + m.M32*z //+ m.Y42 * w
-        let z' = m.M13*x + m.M23*y + m.M33*z //+ m.Z43 * w
-        // let w' = m.M14*x + m.M24*y + m.M34*z //+ m.M44 * w
-        // let sc = 1.0 / w'
-        // Vec(x' * sc, y'* sc, z'* sc)
-        Vec(x', y', z')
+    // /// <summary>Multiplies (or applies) a Matrix to a 3D vector.
+    // /// Since a 3D vector represents a direction or translation in space, but not a location,
+    // /// the implicit 4th dimension is 0.0 so that all translations are ignored. (Homogeneous Vector)</summary>
+    // /// <param name="x">The X component of the 3D vector to transform.</param>
+    // /// <param name="y">The Y component of the 3D vector to transform.</param>
+    // /// <param name="z">The Z component of the 3D vector to transform.</param>
+    // /// <param name="m">The transformation matrix.</param>
+    // static member inline transformVecXYZ (x:float) (y:float) (z:float) (m:Matrix) : Vec =
+    //     let x' = m.M11*x + m.M21*y + m.M31*z //+ m.X41 * w
+    //     let y' = m.M12*x + m.M22*y + m.M32*z //+ m.Y42 * w
+    //     let z' = m.M13*x + m.M23*y + m.M33*z //+ m.Z43 * w
+    //     // let w' = m.M14*x + m.M24*y + m.M34*z //+ m.M44 * w
+    //     // let sc = 1.0 / w'
+    //     // Vec(x' * sc, y'* sc, z'* sc)
+    //     Vec(x', y', z')
 
-    /// <summary>Multiplies a Matrix with a 3D unit-vector.
-    /// Since a 3D vector represents a direction or translation in space, but not a location,
-    /// the implicit 4th dimension is 0.0 so that all translations are ignored. (Homogeneous Vector)</summary>
-    /// <param name="v">The 3D unit-vector to transform.</param>
+    /// <summary>Multiplies (or applies) a Matrix to a 3D point (with an implicit 1.0 in the 4th dimension,
+    /// so that it also works correctly for projections.)</summary>
+    /// <param name="x">The X component of the 3D point to transform.</param>
+    /// <param name="y">The Y component of the 3D point to transform.</param>
+    /// <param name="z">The Z component of the 3D point to transform.</param>
     /// <param name="m">The transformation matrix.</param>
-    static member inline ( *** ) (v:UnitVec, m:Matrix) =
-        // from applyMatrix4(m) in  https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
-        let x = v.X
-        let y = v.Y
-        let z = v.Z
-        //let w = 0.0
-        let x' = m.M11*x + m.M21*y + m.M31*z //+ m.X41 * w
-        let y' = m.M12*x + m.M22*y + m.M32*z //+ m.Y42 * w
-        let z' = m.M13*x + m.M23*y + m.M33*z //+ m.Z43 * w
-        // let w' = m.M14*x + m.M24*y + m.M34*z //+ m.M44 * w
-        // let sc = 1.0 / w'
-        // Vec(x' * sc, y'* sc, z'* sc)
-        Vec(x', y', z')
+    static member inline transformXYZ (x:float) (y:float) (z:float) ( m:Matrix) : Pnt =
+        //let w = 1.0
+        let x' = m.M11*x + m.M21*y + m.M31*z + m.X41 // * w
+        let y' = m.M12*x + m.M22*y + m.M32*z + m.Y42 // * w
+        let z' = m.M13*x + m.M23*y + m.M33*z + m.Z43 // * w
+        let w' = m.M14*x + m.M24*y + m.M34*z + m.M44 // * w
+        let sc = 1.0 / w'
+        Pnt(x' * sc, y'* sc, z'* sc)
+
+
 
     /// <summary>Multiplies (or applies) a Matrix to a 3D point (with an implicit 1.0 in the 4th dimension,
     /// so that it also works correctly for projections.)</summary>
     /// <param name="p">The 3D point to transform.</param>
     /// <param name="m">The transformation matrix.</param>
-    static member inline ( *** ) (p:Pnt, m:Matrix) =
+    static member inline ( *** ) (p:Pnt, m:Matrix) : Pnt =
         // from applyMatrix4(m) in  https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
         let x = p.X
         let y = p.Y
@@ -1013,7 +1056,6 @@ type Matrix =
     // see \TypeExtensions\Matrix.fs:
     // static member createFromRigidMatrix
 
-
     /// <summary>
     /// Creates a perspective projection matrix from the given view volume dimensions.
     /// </summary>
@@ -1022,7 +1064,7 @@ type Matrix =
     /// <param name="nearPlaneDistance">Distance to the near view plane. Must be greater than 0.0.</param>
     /// <param name="farPlaneDistance">Distance to the far view plane. Must be greater than 0.0 and greater than nearPlaneDistance.</param>
     /// <returns>The perspective projection matrix.</returns>
-    static member createPerspective(width, height, nearPlaneDistance, farPlaneDistance) =
+    static member createPerspective(width, height, nearPlaneDistance, farPlaneDistance) : Matrix =
         // from https://github.com/vimaec/Math3D/blob/dev/src/Matrix4x4.cs#L762
 
         if nearPlaneDistance <= 0.0 then
@@ -1042,10 +1084,56 @@ type Matrix =
             0                               , 0                                , -1         ,                               0
             )
 
+    // ----------------------------------------------
+    // operators for matrix multiplication:
+    // For Vectors the translation part of the matrix is ignored.
+    // For Points the translation part of the matrix is applied.
+    // ----------------------------------------------
+
+    /// <summary>Multiplies (or applies) a Matrix to a 3D vector.
+    /// Since a 3D vector represents a direction or translation in space, but not a location,
+    /// the implicit 4th dimension is 0.0 so that all translations are ignored. (Homogeneous Vector)</summary>
+    /// <param name="v">The 3D vector to transform.</param>
+    /// <param name="m">The transformation matrix.</param>
+    [<Obsolete("If the matrix is projecting this transformation will not be correct. Use RigidMatrix or with a Pnt instead.")>]
+    static member inline ( *** ) (v:Vec, m:Matrix) : Vec =
+        // from applyMatrix4(m) in  https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
+        let x = v.X
+        let y = v.Y
+        let z = v.Z
+        //let w = 0.0
+        let x' = m.M11*x + m.M21*y + m.M31*z //+ m.X41 * w
+        let y' = m.M12*x + m.M22*y + m.M32*z //+ m.Y42 * w
+        let z' = m.M13*x + m.M23*y + m.M33*z //+ m.Z43 * w
+        // let w' = m.M14*x + m.M24*y + m.M34*z //+ m.M44 * w
+        // let sc = 1.0 / w'
+        // Vec(x' * sc, y'* sc, z'* sc)
+        Vec(x', y', z')
+
+    /// <summary>Multiplies a Matrix with a 3D unit-vector.
+    /// Since a 3D vector represents a direction or translation in space, but not a location,
+    /// the implicit 4th dimension is 0.0 so that all translations are ignored. (Homogeneous Vector)</summary>
+    /// <param name="v">The 3D unit-vector to transform.</param>
+    /// <param name="m">The transformation matrix.</param>
+    [<Obsolete("If the matrix is projecting this transformation will not be correct. Use RigidMatrix or with a Pnt instead.")>]
+    static member inline ( *** ) (v:UnitVec, m:Matrix) : Vec =
+        // from applyMatrix4(m) in  https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
+        let x = v.X
+        let y = v.Y
+        let z = v.Z
+        //let w = 0.0
+        let x' = m.M11*x + m.M21*y + m.M31*z //+ m.X41 * w
+        let y' = m.M12*x + m.M22*y + m.M32*z //+ m.Y42 * w
+        let z' = m.M13*x + m.M23*y + m.M33*z //+ m.Z43 * w
+        // let w' = m.M14*x + m.M24*y + m.M34*z //+ m.M44 * w
+        // let sc = 1.0 / w'
+        // Vec(x' * sc, y'* sc, z'* sc)
+        Vec(x', y', z')
+
 
     (*
     [<Obsolete("Use Inverse instead. This method is not optimized and will be removed in a future version.")>]
-    member m.InverseSlow =
+    //member m.InverseSlow =
         // based on http://www.euclideanspace.com/maths/algebra/matrix/functions/inverse/fourD/index.htm
         // also see https://github.com/mrdoob/three.js/blob/master/src/math/Matrix4.js#L717
         let m00 = m.M11
@@ -1128,3 +1216,4 @@ type Matrix =
                 , r33*detInv // M44
                 )
     *)
+

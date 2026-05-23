@@ -43,7 +43,9 @@ If you are unsure how to interpret a prompt or task, please ask for clarificatio
 
 ## Coordinate System
 
-This library uses a **right-handed coordinate system** with the **Z-axis pointing up**.
+This library uses a **right-handed coordinate system** .
+In 2D, the positive X-axis points to the right and the positive Y-axis points up.
+In 3D, the positive X-axis points to the right, the positive Y-axis points forward, and the positive Z-axis points up.
 
 ## Performance Considerations
 - Avoid allocating intermediate arrays; prefer `ResizeArray<_>` reuse patterns aligned with existing modules.
@@ -55,7 +57,7 @@ This library uses a **right-handed coordinate system** with the **Z-axis pointin
 3. Provide tolerant versions if operations can degenerate (colinearity, zero-length, parallel tests).
 
 ## Testing Workflow
-- Tests are located in `Tests` folder using the `Tests.fsproj` project.
+- Tests are located in `Test` folder using the `Test.fsproj` project.
 - When adding test always try to cover special cases, like:
     - zero length vectors,
     - very short vectors,
@@ -69,9 +71,9 @@ This library uses a **right-handed coordinate system** with the **Z-axis pointin
 
 - Test Run in both .NET and Node.js environments. via Expecto and Fable.Mocha
 .NET:
-`dotnet run --project ./Tests/Tests.fsproj`
+`dotnet run --project ./Test/Test.fsproj`
 Node.js:
-`cd Tests && npm run test && cd ..`
+`cd Test && npm run test && cd ..`
 
 ## Build & Docs
 - Build: `dotnet build` (multi-target). Package metadata is managed via project file & CHANGELOG automation.

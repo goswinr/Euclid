@@ -148,15 +148,14 @@ Tests run on both .NET and JavaScript with TypeScript build verification.
 ### .NET Testing
 
 ```bash
-dotnet run --project ./Tests/Tests.fsproj
+dotnet run --project ./Test/Test.fsproj
 ```
 
 ### JavaScript Testing
 
 run
-
 ```bash
-cd Tests && npm run test
+cd Test && npm test && cd ..
 ```
 
 The test suite ensures cross-platform compatibility and verifies TypeScript type definitions.
@@ -548,7 +547,7 @@ let inv = q1.Inverse                             // reverse rotation
 let q4 = q1 * q2                                 // first q2, then q1
 
 // Apply to points and vectors
-let rotated = Pnt.rotateByQuaternion q1 (Pnt(1, 0, 0))   // Pnt(0, 1, 0)
+let rotated = Pnt.rotate q1 (Pnt(1, 0, 0))   // Pnt(0, 1, 0)
 
 // Convert quaternion to matrix
 let mat = Matrix.createFromQuaternion q1
@@ -573,7 +572,7 @@ let (iA, iB) = Points3D.closestPointsIdx(setA, setB)            // (0, 0)
 // Most distant point
 let farthest = Points3D.mostDistantPoint(cloud, setB)
 
-// Center of points
+// center of points
 let center = Points3D.center cloud                // Pnt(4, 3.75, 3.75)
 
 // Remove duplicate points within tolerance

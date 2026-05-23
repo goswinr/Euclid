@@ -58,7 +58,7 @@ type UnitVec =
 
 
     /// Format 3D unit-vector into string including type name and nice floating point number formatting.
-    override p.ToString() =
+    override p.ToString() : string =
         $"Euclid.UnitVec: X={Format.float p.X}|Y={Format.float p.Y}|Z={Format.float p.Z}"
 
     /// Format 3D unit-vector into string with nice floating point number formatting of X, Y and Z
@@ -71,58 +71,58 @@ type UnitVec =
         $"UnitVec.create({v.X}, {v.Y}, {v.Z})"
 
     /// Negate or inverse a 3D unit-vector. Returns a new 3D unit-vector.
-    static member inline ( ~- ) (v:UnitVec) =
+    static member inline ( ~- ) (v:UnitVec) : UnitVec =
         UnitVec.createUnchecked ( -v.X, -v.Y, -v.Z)
 
     /// Subtract one 3D unit-vector from another. Returns a new (non-unitized) 3D vector.
-    static member inline ( - ) (a:UnitVec, b:UnitVec) =
+    static member inline ( - ) (a:UnitVec, b:UnitVec) : Vec =
         Vec (a.X - b.X, a.Y - b.Y, a.Z - b.Z)
 
     /// Subtract a 3D vector from a 3D unit-vector. Returns a new (non-unitized) 3D vector.
-    static member inline ( - ) (a:UnitVec, b:Vec) =
+    static member inline ( - ) (a:UnitVec, b:Vec) : Vec =
         Vec (a.X - b.X, a.Y - b.Y, a.Z - b.Z)
 
     /// Subtract a 3D unit-vector from a 3D vector. Returns a new (non-unitized) 3D vector.
-    static member inline ( - ) (a:Vec, b:UnitVec) =
+    static member inline ( - ) (a:Vec, b:UnitVec) : Vec =
         Vec (a.X - b.X, a.Y - b.Y, a.Z - b.Z)
 
     /// Add two 3D unit-vectors together. Returns a new (non-unitized) 3D vector.
-    static member inline ( + ) (a:UnitVec, b:UnitVec) =
+    static member inline ( + ) (a:UnitVec, b:UnitVec) : Vec =
         Vec (a.X + b.X, a.Y + b.Y, a.Z + b.Z)
 
     /// Add a 3D vector and a 3D unit-vector together. Returns a new (non-unitized) 3D vector.
-    static member inline ( + ) (a:Vec, b:UnitVec) =
+    static member inline ( + ) (a:Vec, b:UnitVec) : Vec =
         Vec (a.X + b.X, a.Y + b.Y, a.Z + b.Z)
 
     /// Add a 3D unit-vector and a 3D vector together. Returns a new (non-unitized) 3D vector.
-    static member inline ( + ) (a:UnitVec, b:Vec) =
+    static member inline ( + ) (a:UnitVec, b:Vec) : Vec =
         Vec (a.X + b.X, a.Y + b.Y, a.Z + b.Z)
 
     /// Multiplies a 3D unit-vector with a scalar, also called scaling a vector. Returns a new (non-unitized) 3D vector.
-    static member inline ( * ) (a:UnitVec, f:float) =
+    static member inline ( * ) (a:UnitVec, f:float) : Vec =
         Vec (a.X * f, a.Y * f, a.Z * f)
 
     /// Multiplies a scalar with a 3D unit-vector, also called scaling a vector. Returns a new (non-unitized) 3D vector.
-    static member inline ( * ) (f:float, a:UnitVec) =
+    static member inline ( * ) (f:float, a:UnitVec) : Vec =
         Vec (a.X * f, a.Y * f, a.Z * f)
 
     /// Dot product, or scalar product of two 3D unit-vectors.
     /// Returns a float. This float is the Cosine of the angle between the two 3D vectors.
-    static member inline ( *** ) (a:UnitVec, b:UnitVec) =
+    static member inline ( *** ) (a:UnitVec, b:UnitVec) : float =
         a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
     /// Dot product, or scalar product of a 3D unit-vector with a 3D vector.
     /// Returns a float. This float is the projected length of the 3D vector on the direction of the unit-vector.
-    static member inline ( *** ) (a:UnitVec, b:Vec) =
+    static member inline ( *** ) (a:UnitVec, b:Vec) : float =
         a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
     /// Dot product, or scalar product of a 3D vector with a 3D unit-vector.
     /// Returns a float. This float is the projected length of the 3D vector on the direction of the unit-vector.
-    static member inline ( *** ) (a:Vec, b:UnitVec) =
+    static member inline ( *** ) (a:Vec, b:UnitVec) : float =
         a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
    /// Divides a 3D unit-vector by a scalar, also called dividing/scaling a vector. Returns a new (non-unitized) 3D vector.
-    static member inline ( / ) (v:UnitVec, f:float) =
+    static member inline ( / ) (v:UnitVec, f:float) : Vec =
         if isTooTiny (abs f) then failDivide "'/' operator" f v // don't compose error msg directly here to keep inlined code small. // https://github.com/dotnet/runtime/issues/24626#issuecomment-356736809
         Vec (v.X / f, v.Y / f, v.Z / f)
 

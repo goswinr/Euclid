@@ -1,4 +1,4 @@
-namespace Euclid
+﻿namespace Euclid
 
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>]
@@ -28,7 +28,7 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
     new (pt:Pnt, n:UnitVec) = {Origin = pt; Normal = n}
 
     /// Format NPlane into string with nicely formatted floating point numbers.
-    override pl.ToString() =
+    override pl.ToString() : string =
         let o = pl.Origin.AsString
         let n = pl.Normal.AsString
         $"Euclid.NPlane(Origin:%s{o}| Normal:%s{n})"
@@ -40,46 +40,92 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
         let n = pl.Normal.AsString
         $"Origin:%s{o}| Normal:%s{n}"
 
+    /// Format NPlane into string with nicely formatted floating point numbers.
+    /// But without type name as in pl.ToString()
+    static member inline asString (pl:NPlane) : string =
+        pl.AsString
+
     /// Format NPlane into an F# code string that can be used to recreate the plane.
     member pl.AsFSharpCode : string =
         $"NPlane(Pnt({pl.Origin.X}, {pl.Origin.Y}, {pl.Origin.Z}), UnitVec.create({pl.Normal.X}, {pl.Normal.Y}, {pl.Normal.Z}))"
 
+    /// Format NPlane into an F# code string that can be used to recreate the plane.
+    static member inline asFSharpCode (pl:NPlane) : string =
+        pl.AsFSharpCode
+
     /// Returns a new plane with the same Origin but flipped Normal.
-    member inline pl.Flipped  =
+    member inline pl.Flipped : NPlane =
         NPlane(pl.Origin, -pl.Normal)
 
+    /// Returns a new plane with the same Origin but flipped Normal.
+    static member inline flipped (pl:NPlane) : NPlane =
+        pl.Flipped
+
     /// Returns signed distance of point to plane, also indicating on which side it is.
-    member inline pl.DistanceToPt pt =
+    member inline pl.DistanceToPt pt : float =
         pl.Normal *** (pt-pl.Origin)
 
+    /// Returns signed distance of point to plane, also indicating on which side it is.
+    static member inline distanceToPt (pt:Pnt) (pl:NPlane) : float =
+        pl.DistanceToPt pt
+
     /// Returns the closest point on the plane from a test point.
-    member inline pl.ClosestPoint pt =
+    member inline pl.ClosestPoint pt : Pnt =
         pt - pl.Normal * (pl.DistanceToPt pt)
+
+    /// Returns the closest point on the plane from a test point.
+    static member inline closestPoint (pt:Pnt) (pl:NPlane) : Pnt =
+        pl.ClosestPoint pt
 
     /// First finds the closest point on the plane from a test point.
     /// Then returns a new plane with Origin at this point and the same Normal.
-    member inline pl.PlaneAtClPt pt =
+    member inline pl.PlaneAtClPt pt : NPlane =
         NPlane(pt - pl.Normal * (pl.DistanceToPt pt), pl.Normal)
+
+    /// First finds the closest point on the plane from a test point.
+    /// Then returns a new plane with Origin at this point and the same Normal.
+    static member inline planeAtClPt (pt:Pnt) (pl:NPlane) : NPlane =
+        pl.PlaneAtClPt pt
 
     /// Returns the angle to another plane in degrees, ignoring the normal's orientation.
     /// So 0.0 if the planes are parallel, and 90 degrees if the planes are perpendicular to each other.
-    member inline this.Angle90ToPlane (pl:NPlane) =
+    member inline this.Angle90ToPlane (pl:NPlane) : float =
         UnitVec.angle90 this.Normal pl.Normal
+
+    /// Returns the angle to another plane in degrees, ignoring the normal's orientation.
+    /// So 0.0 if the planes are parallel, and 90 degrees if the planes are perpendicular to each other.
+    static member inline angle90ToPlane (pl:NPlane) (other:NPlane) : float =
+        pl.Angle90ToPlane other
 
     /// Returns the angle to 3D vector in degrees, ignoring the plane's orientation.
     /// So 0.0 if the vector is parallel to the plane, and 90 degrees if the vector is perpendicular to the plane.
-    member inline pl.Angle90ToVec (v:Vec) =
+    member inline pl.Angle90ToVec (v:Vec) : float =
         90.0 - UnitVec.angle90 v.Unitized pl.Normal
 
     /// Returns the angle to 3D unit-vector in degrees, ignoring the plane's orientation.
     /// So 0.0 if the vector is parallel to the plane, and 90 degrees if the vector is perpendicular to the plane.
-    member inline pl.Angle90ToVec (v:UnitVec) =
+    member inline pl.Angle90ToVec (v:UnitVec) : float =
         90.0 - UnitVec.angle90 v pl.Normal
+
+    /// Returns the angle to 3D vector in degrees, ignoring the plane's orientation.
+    /// So 0.0 if the vector is parallel to the plane, and 90 degrees if the vector is perpendicular to the plane.
+    static member inline angle90ToVec (v:Vec) (pl:NPlane) : float =
+        pl.Angle90ToVec v
+
+    /// Returns the angle to 3D unit-vector in degrees, ignoring the plane's orientation.
+    /// So 0.0 if the vector is parallel to the plane, and 90 degrees if the vector is perpendicular to the plane.
+    static member inline angle90ToUnitVec (v:UnitVec) (pl:NPlane) : float =
+        pl.Angle90ToVec v
 
     /// Returns the angle to a Line3D in degrees, ignoring the normal's orientation.
     /// So 0.0 if the line is parallel to the plane, and 90 degrees if the line is perpendicular to the plane.
-    member inline pl.Angle90ToLine (ln:Line3D) =
+    member inline pl.Angle90ToLine (ln:Line3D) : float =
         90.0 - UnitVec.angle90 ln.UnitTangent pl.Normal
+
+    /// Returns the angle to a Line3D in degrees, ignoring the normal's orientation.
+    /// So 0.0 if the line is parallel to the plane, and 90 degrees if the line is perpendicular to the plane.
+    static member inline angle90ToLine (ln:Line3D) (pl:NPlane) : float =
+        pl.Angle90ToLine ln
 
     /// Checks if two planes are coincident within the distance tolerance (1e-6 by default).
     /// This means that their normals are parallel within the angle tolerance
@@ -95,27 +141,8 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
         pl.DistanceToPt other.Origin < distanceTolerance
 
 
-    // ----------------------------------------------------------------------------------
-    //            █████               █████     ███
-    //           ░░███               ░░███     ░░░
-    //    █████  ███████    ██████   ███████   ████   ██████
-    //   ███░░  ░░░███░    ░░░░░███ ░░░███░   ░░███  ███░░███
-    //  ░░█████   ░███      ███████   ░███     ░███ ░███ ░░░
-    //   ░░░░███  ░███ ███ ███░░███   ░███ ███ ░███ ░███  ███
-    //   ██████   ░░█████ ░░████████  ░░█████  █████░░██████
-    //  ░░░░░░     ░░░░░   ░░░░░░░░    ░░░░░  ░░░░░  ░░░░░░
-    //
-    //                                             █████
-    //                                            ░░███
-    //    █████████████    ██████  █████████████   ░███████   ██████  ████████   █████
-    //   ░░███░░███░░███  ███░░███░░███░░███░░███  ░███░░███ ███░░███░░███░░███ ███░░
-    //    ░███ ░███ ░███ ░███████  ░███ ░███ ░███  ░███ ░███░███████  ░███ ░░░ ░░█████
-    //    ░███ ░███ ░███ ░███░░░   ░███ ░███ ░███  ░███ ░███░███░░░   ░███      ░░░░███
-    //    █████░███ █████░░██████  █████░███ █████ ████████ ░░██████  █████     ██████
-    //   ░░░░░ ░░░ ░░░░░  ░░░░░░  ░░░░░ ░░░ ░░░░░ ░░░░░░░░   ░░░░░░  ░░░░░     ░░░░░░
-    // ------------------------------------------------------------------------------------
-
-
+    // #endregion
+    // #region Static members
 
     /// Checks if two 3D planes are equal within tolerance.
     /// The same tolerance is used for the origin and the tips of the normal.
@@ -128,7 +155,6 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
         abs (a.Normal.Y - b.Normal.Y) <= tol &&
         abs (a.Normal.Z - b.Normal.Z) <= tol
 
-
     /// Checks if two 3D planes are coincident.
     /// This means that the normals are parallel within 0.25 degrees
     /// and the distance of second origin to the first plane is less than 1e-6 units tolerance.
@@ -136,21 +162,21 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
         a.IsCoincidentTo (b)
 
     /// Create Plane, normal vector gets unitized in constructor.
-    static member create(pt, normal:Vec) =
+    static member create(pt, normal:Vec) : NPlane =
         let l = normal.Length
         if isTooTiny l then failTooSmall "NPlane.create" normal
         let li = 1. / l
         NPlane(pt, UnitVec.createUnchecked(li*normal.X, li*normal.Y, li*normal.Z))
 
     /// Create Plane from already normalized input vector.
-    static member inline create(pt, normal:UnitVec) =
+    static member inline create(pt, normal:UnitVec) : NPlane =
         NPlane(pt, normal)
 
     /// Create Plane from 3 points.
     /// Point 'a' becomes the origin.
     /// Normal is calculated as cross product (c-b) × (a-b) following the right-hand rule.
     /// Fails if the three points are colinear.
-    static member inline createFrom3Points (a:Pnt) (b:Pnt) (c:Pnt) =
+    static member inline createFrom3Points (a:Pnt) (b:Pnt) (c:Pnt) : NPlane =
         let n = Vec.cross (c-b, a-b)
         if isTooSmallSq n.LengthSq then
             failColinear "NPlane.createFrom3Points" a b c
@@ -158,29 +184,29 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
 
     /// Creates an NPlane from a parametrized PPlane.
     /// Uses the PPlane's origin and Z-axis (which becomes the normal).
-    static member inline createFromPPlane (p:PPlane) =
+    static member inline createFromPPlane (p:PPlane) : NPlane =
         NPlane.create(p.Origin, p.Zaxis)
 
     /// Gets the Planes normal. A unitized vector.
-    static member inline normal (p:NPlane) =
+    static member inline normal (p:NPlane) : UnitVec =
         p.Normal
 
     /// Gets the Planes origin.
-    static member inline origin (a:NPlane) =
+    static member inline origin (a:NPlane) : Pnt =
         a.Origin
 
     /// Gets the Plane at world origin with normal in world Z direction.
-    static member inline xyPlane =
+    static member inline xyPlane : NPlane =
         NPlane(Pnt.Origin, UnitVec.Zaxis)
 
     /// Returns the angle to another Plane in Degree, ignoring the normal's orientation.
     /// So between 0 to 90 degrees.
-    static member inline angleTo (a:NPlane) (b:NPlane) =
+    static member inline angleTo (a:NPlane) (b:NPlane) : float =
         a.Angle90ToPlane b
 
     /// Returns the line of intersection between two planes.
     /// Or None if they are parallel or coincident.
-    static member intersect (a:NPlane) (b:NPlane) =
+    static member intersect (a:NPlane) (b:NPlane) : Line3D option =
         let bn = b.Normal
         let an = a.Normal
         let ao = a.Origin
@@ -197,7 +223,7 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
 
     /// Returns the parameter of intersection on a infinite line / ray with the Plane.
     /// Or None if they are parallel.
-    static member intersectLineParameter (ln:Line3D) (pl:NPlane) =
+    static member intersectLineParameter (ln:Line3D) (pl:NPlane) : float option =
         let n = pl.Normal
         let nenner = ln.Vector *** n
         if isTooSmall(abs nenner) then
@@ -208,7 +234,7 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
 
     /// Returns intersection point of a infinite line / ray with the Plane.
     /// Or None if they are parallel.
-    static member intersectRay (ln:Line3D) (pl:NPlane) =
+    static member intersectRay (ln:Line3D) (pl:NPlane) : Pnt option =
         let n = pl.Normal
         let v = ln.Vector
         let nenner = v *** n
@@ -222,7 +248,7 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
     /// Returns intersection point of a finite line  with the Plane.
     /// Or None if they are parallel or the domain of intersection is outside 0.0 to 1.0
     /// Intersection just below 0.0 or just above 1.0 within tolerance of 1e-6 are clamped to 0.0 or 1.0
-    static member intersectLine (ln:Line3D) (pl:NPlane) =
+    static member intersectLine (ln:Line3D) (pl:NPlane) : Pnt option =
         let n = pl.Normal
         let v = ln.Vector
         let nenner = v *** n
@@ -234,27 +260,26 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
 
     /// Checks if a finite Line3D intersects with Plane in one point.
     /// Returns false for parallel and coincident lines.
-    static member inline doLinePlaneIntersect (ln:Line3D) (pl:NPlane) =
+    static member inline doLinePlaneIntersect (ln:Line3D) (pl:NPlane) : bool =
         let n = pl.Normal
         let nenner = ln.Tangent *** n
         let t = ((pl.Origin - ln.From) *** n)  / nenner // if nenner is 0.0 then 't' is Infinity
         isBetweenZeroAndOneTolerantIncl t
 
     /// Returns a new plane offset along the normal vector.
-    static member inline offset (dist:float) (pl:NPlane) =
+    static member inline offset (dist:float) (pl:NPlane) : NPlane =
         NPlane(pl.Origin + pl.Normal*dist, pl.Normal)
 
     /// Offsets the plane by the given distance in the direction determined by a point.
     /// If the point is on the positive side of the plane (same direction as normal), offsets in the normal direction.
     /// If the point is on the negative side, offsets in the opposite direction.
-    static member inline offsetInDir (dirPt:Pnt) (dist:float) (pl:NPlane) =
+    static member inline offsetInDir (dirPt:Pnt) (dist:float) (pl:NPlane) : NPlane =
         if pl.Normal *** (dirPt-pl.Origin) >= 0. then NPlane(pl.Origin + pl.Normal*dist, pl.Normal)
         else                                          NPlane(pl.Origin - pl.Normal*dist, pl.Normal)
 
     /// Returns signed distance of point to plane, also indicating on which side it is.
-    static member inline distToPt (pt:Pnt) (pl:NPlane) =
+    static member inline distToPt (pt:Pnt) (pl:NPlane) : float =
         pl.DistanceToPt pt
-
 
     /// Scales the plane's origin by a given factor from the world origin. The normal remains unchanged.
     static member inline scale (factor:float) (pl:NPlane) : NPlane =
@@ -269,29 +294,4 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
     /// This is same as NPlane.translate.
     static member inline move (translation:Vec) (pl:NPlane)  : NPlane =
         NPlane(pl.Origin + translation, pl.Normal)
-
-    (*
-    static member fitFromConvexPts (pts:seq<Pnt>) =
-        let cen = pts |> Seq.average
-        let n = pts |> Seq.thisNextLoop |> Seq.map (fun (t, n) -> (t-cen)/*(n-cen)) |> Seq.sum |> Vec.norm
-        Plane(cen, n)
-
-    /// * NOT STABLE !! Different seq order different result ???
-    static member fitFromPts (pts:seq<Pnt>) =
-        let pts = Array.ofSeq pts
-        let cen = pts |> Array.average
-        let mutable Normal = Vec()
-        for t, n in Array.thisNextLoop pts do
-            let v = (t-cen)/*(n-cen)
-            if Vec.dirMatch v Normal then Normal <- Normal + v
-            else                     Normal <- Normal - v
-        Plane.byNormal cen Normal
-
-    static member arePtsPlanar tol (pts:seq<Pnt>)=
-        let pl = pts|> Plane.fitFromPts
-        pts|> Seq.exists (fun p -> pl.DistToPt p > tol) |> not
-
-    static member arePtsInPlane tol (pl:Plane) (pts:seq<Pnt>)=
-        pts|> Seq.exists (fun p -> pl.DistToPt p > tol) |> not
-    *)
 

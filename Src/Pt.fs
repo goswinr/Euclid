@@ -12,6 +12,45 @@ namespace Euclid
 // see https://www.bartoszsypytkowski.com/writing-high-performance-f-code/
 // see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
 
+(*
+from:
+https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
+
+netstandard2.0 does not support [<IsByRefLike>] nor  [<IsReadOnly>]
+
+https://www.bartoszsypytkowski.com/writing-high-performance-f-code/ :
+
+[<IsReadOnly>] attribute let's us define given structure as being readonly.
+For obvious reasons this also means, that corresponding data type cannot contain any mutable fields within.
+It's used as a slight optimization technique - sometimes .NET JIT compiler must guarantee that structs contents will not be modified.
+To do so, it will conservatively copy that structure, even when it has been passed into function using inref parameter.
+If struct has been marked with [<IsReadOnly>] attribute, compiler can skip this step and avoid building defensive copies.
+You can read more about it here: https://devblogs.microsoft.com/premier-developer/avoiding-struct-and-readonly-reference-performance-pitfalls-with-errorprone-net/
+
+[<IsByRefLike>] is another attribute.
+We are talking a lot about passing value types using memory location addresses instead of doing deep copies.
+Marking struct using this attribute is basically saying "I always want to pass this value by reference".
+This of course comes with severe limitations: it cannot be boxed (moved to managed heap) and
+for this reason it can never be captured by closures, implement interfaces or be used as field in classes or other non-by-ref structs.
+
+In terms of F# this basically means that this kind of structs are used mostly for code that
+is executed right away within the function body, with no computation expressions or other indirections.
+This usually qualifies them to hot paths in our code, where CPU intensive work is expected and allocations
+are not welcome, like:
+
+for .. in loops - in fact many moderns .NET structures have special variants of GetEnumerator
+that doesn't allocate any memory and is implemented as by-ref struct.
+F# also understands that pattern - in fact you can define custom
+GetEnumerator(): MyEnumerator method for your collection, with MyEnumerator - which can even be a ref struct - having two methods:
+
+Current: 'item and
+MoveNext: unit -> bool, and F# will automatically understand how to use it in loops.
+You can see an example implementation of it here -
+https://github.com/Horusiath/fsharp.core.extensions/blob/62b102e84325e89b0a6c4065b973936c11adee55/src/FSharp.Core.Extensions/Vec.fs#L147
+it's a part of implementation of persistent vector data type,
+similar to FSharpX persistent vector, but it's 4.5 times faster and not allocating anything on heap when executed in loops.
+*)
+
 // The attributes [<DataContract>] is for using DataMember on fields for serialization.
 // [<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
 
@@ -47,7 +86,7 @@ type Pt =
 
 
     /// Format 2D point into string including type name and nice floating point number formatting.
-    override p.ToString() =
+    override p.ToString() : string =
         let x = Format.float p.X
         let y = Format.float p.Y
         $"Euclid.Pt: X=%s{x}|Y=%s{y}"
@@ -65,44 +104,44 @@ type Pt =
 
     /// Subtract one 2D point from another.
     /// 'a-b' returns a new 2D vector from b to a.
-    static member inline ( - ) (a:Pt, b:Pt) =
+    static member inline ( - ) (a:Pt, b:Pt) : Vc =
         Vc (a.X - b.X, a.Y - b.Y)
 
     /// Subtract a vector from a 2D point. Returns a new 2D point.
-    static member inline ( - ) (a:Pt, b:Vc) =
+    static member inline ( - ) (a:Pt, b:Vc) : Pt =
         Pt (a.X - b.X, a.Y - b.Y)
 
     /// Subtract a unit-vector from a 2D point. Returns a new 2D point.
-    static member inline ( - ) (a:Pt, b:UnitVc) =
+    static member inline ( - ) (a:Pt, b:UnitVc) : Pt =
         Pt (a.X - b.X, a.Y - b.Y)
 
     //static member inline ( + ) (v:UnitVc, p:Pt) = Pt (p.X + v.X, p.Y + v.Y)
     //static member inline ( + ) (v:Vc,     p:Pt) = Pt (p.X + v.X, p.Y + v.Y)
 
     /// Add a vector to a 2D point. Returns a new 2D point.
-    static member inline ( + ) (p:Pt, v:Vc) =
+    static member inline ( + ) (p:Pt, v:Vc) : Pt =
         Pt (p.X + v.X, p.Y + v.Y)
 
     /// Add a unit-vector to a 2D point. Returns a new 2D point.
-    static member inline ( + ) (p:Pt, v:UnitVc) =
+    static member inline ( + ) (p:Pt, v:UnitVc) : Pt =
         Pt (p.X + v.X, p.Y + v.Y)
 
     /// Add two 2D points together. Returns a new 2D point.
-    static member inline ( + ) (a:Pt, b:Pt) =
+    static member inline ( + ) (a:Pt, b:Pt) : Pt =
         Pt (a.X + b.X, a.Y + b.Y) // required for Seq.average and Pnt.midPt
 
     /// Multiplies a 2D point with a scalar, also called scaling a point.
     /// Returns a new 2D point.
-    static member inline ( * ) (a:Pt, f:float) =
+    static member inline ( * ) (a:Pt, f:float) : Pt =
         Pt (a.X * f, a.Y * f)
 
     /// Multiplies a scalar with a 2D point, also called scaling a point.
     /// Returns a new 2D point.
-    static member inline ( * ) (f:float, a:Pt) =
+    static member inline ( * ) (f:float, a:Pt) : Pt =
         Pt (a.X * f, a.Y * f)
 
     /// Divides a 2D point by a scalar, also called dividing/scaling a point. Returns a new 2D point.
-    static member inline ( / ) (p:Pt, f:float) =
+    static member inline ( / ) (p:Pt, f:float) : Pt =
         if isTooTiny (abs f) then failDivide "'/' operator" f p // don't compose error msg directly here to keep inlined code small.
         Pt (p.X / f, p.Y / f)
 
@@ -119,39 +158,11 @@ type Pt =
 
 
     /// Same as Pt.Origin.
-    static member inline Zero =
+    static member inline Zero : Pt =
         Pt (0., 0. )  // needed by 'Array.sum' .
 
     /// Same as Pt.Zero.
-    static member inline Origin =
+    static member inline Origin : Pt =
         Pt (0., 0. )
 
-(*
-from:
-https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
 
-netstandard2.0 does not support [<IsByRefLike>] nor  [<IsReadOnly>]
-
-[<IsByRefLike>] is another attribute.
-We are talking a lot about passing value types using memory location addresses instead of doing deep copies.
-Marking struct using this attribute is basically saying "I always want to pass this value by reference".
-This of course comes with severe limitations: it cannot be boxed (moved to managed heap) and
-for this reason it can never be captured by closures, implement interfaces or be used as field in classes or other non-by-ref structs.
-
-In terms of F# this basically means that this kind of structs are used mostly for code that
-is executed right away within the function body, with no computation expressions or other indirections.
-This usually qualifies them to hot paths in our code, where CPU intensive work is expected and allocations
-are not welcome, like:
-
-for .. in loops - in fact many moderns .NET structures have special variants of GetEnumerator
-that doesn't allocate any memory and is implemented as by-ref struct.
-F# also understands that pattern - in fact you can define custom
-GetEnumerator(): MyEnumerator method for your collection, with MyEnumerator - which can even be a ref struct - having two methods:
-
-Current: 'item and
-MoveNext: unit -> bool, and F# will automatically understand how to use it in loops.
-You can see an example implementation of it here -
-https://github.com/Horusiath/fsharp.core.extensions/blob/62b102e84325e89b0a6c4065b973936c11adee55/src/FSharp.Core.Extensions/Vec.fs#L147
-it's a part of implementation of persistent vector data type,
-similar to FSharpX persistent vector, but it's 4.5 times faster and not allocating anything on heap when executed in loops.
-*)

@@ -19,7 +19,7 @@ type Points3D   =
         let mutable mid = Double.MaxValue
         for i=0 to pts.Count - 1 do
             let p = pts.[i]
-            let d = Pnt.distanceSq p pt
+            let d = Pnt.sqDist p pt
             if d < mid then
                 mid <- d
                 mi <- i
@@ -31,9 +31,9 @@ type Points3D   =
 
     /// Returns the closest of two 3D points to a given reference 3D point.
     /// If both points are equidistant the first point is returned.
-    static member closestOfTwo (pt1:Pnt) (pt2:Pnt) (referencePoint:Pnt) =
-        let d1 = Pnt.distanceSq pt1 referencePoint
-        let d2 = Pnt.distanceSq pt2 referencePoint
+    static member closestOfTwo (pt1:Pnt) (pt2:Pnt) (referencePoint:Pnt) : Pnt =
+        let d1 = Pnt.sqDist pt1 referencePoint
+        let d2 = Pnt.sqDist pt2 referencePoint
         if d1 <= d2 then
             pt1
         else
@@ -41,7 +41,7 @@ type Points3D   =
 
 
     /// Returns the indices of the 3D points that are closest to each other.
-    static member closestPointsIdx (xs:IList<Pnt>, ys:IList<Pnt>) =
+    static member closestPointsIdx (xs:IList<Pnt>, ys:IList<Pnt>) : int * int =
         if xs.Count = 0 then fail "Points3D.closestPointsIdx: empty List of Points: xs"
         if ys.Count = 0 then fail "Points3D.closestPointsIdx: empty List of Points: ys"
         let mutable xi = -1
@@ -50,7 +50,7 @@ type Points3D   =
         for i=0 to xs.Count-1 do
             let pt = xs.[i]
             for j=0 to ys.Count-1 do
-                let d = Pnt.distanceSq pt ys.[j]
+                let d = Pnt.sqDist pt ys.[j]
                 if d < minD then
                     minD <- d
                     xi <- i
@@ -59,11 +59,11 @@ type Points3D   =
 
 
     /// Given two lists of 3D points finds the pair that are closest to each other and returns their distance.
-    static member minDistBetweenPointSets (xs:IList<Pnt>, ys:IList<Pnt>) =
+    static member minDistBetweenPointSets (xs:IList<Pnt>, ys:IList<Pnt>) : float =
         if xs.Count = 0 then fail "Points3D.minDistBetweenPointSets: empty List of Points: xs"
         if ys.Count = 0 then fail "Points3D.minDistBetweenPointSets: empty List of Points: ys"
         let (i, j) = Points3D.closestPointsIdx (xs, ys)
-        Pnt.distance xs.[i]  ys.[j]
+        Pnt.dist xs.[i]  ys.[j]
 
 
 
@@ -81,7 +81,7 @@ type Points3D   =
             let pt = findPointFrom.[i]
             let mutable minD = Double.MaxValue
             for j=0 to checkAgainst.Count-1 do
-                let d = Pnt.distanceSq pt checkAgainst.[j]
+                let d = Pnt.sqDist pt checkAgainst.[j]
                 if d < minD then
                     minD <- d
                     checkAgainstTempIdx <-j
@@ -93,7 +93,7 @@ type Points3D   =
 
 
     /// Find the 3D point that has the biggest distance to any 3D point from another set.
-    static member mostDistantPoint (findPointFrom:IList<Pnt>, checkAgainst:IList<Pnt>) =
+    static member mostDistantPoint (findPointFrom:IList<Pnt>, checkAgainst:IList<Pnt>) : Pnt =
         let i, _ = Points3D.mostDistantPointIdx (findPointFrom, checkAgainst)
         findPointFrom.[i]
 
@@ -112,7 +112,7 @@ type Points3D   =
             let iLast = pts.Count-1
             for i = 1  to iLast do
                 let pt = pts.[i]
-                if Pnt.distanceSq last pt > tolSq then
+                if Pnt.sqDist last pt > tolSq then
                     last <- pt
                     res.Add last
                 elif i=iLast then // to ensure last point stays the same
@@ -121,38 +121,8 @@ type Points3D   =
             res
 
 
-    /// Similar to join polylines, this tries to find continuous sequences of 3D points.
-    /// 'tolGap' is the maximum allowable gap between the start and the endpoint of two segments.
-    /// Search starts from the segment with the most points.
-    /// Both start and end point of each 3D point list are checked for adjacency.
-    static member findContinuousPoints (ptss: ResizeArray<ResizeArray<Pnt>>, tolGap:float) =
-        let i = ptss |> ResizeArr.maxIndexBy ResizeArr.length
-        let res = ptss.Pop(i)
-        let mutable loop = true
-        while loop && ptss.Count > 0 do
-            //first try to append to end
-            let ende = res.[res.Count-1]
-            let si = ptss |> ResizeArr.minIndexBy (fun ps -> Pnt.distanceSq ende ps.First)
-            let ei = ptss |> ResizeArr.minIndexBy (fun ps -> Pnt.distanceSq ende ps.Last)
-            let sd = Pnt.distance ende ptss.[si].First
-            let ed = Pnt.distance ende ptss.[ei].Last
-            if   sd < tolGap && sd < ed then  res.AddRange(                ptss.Pop(si))
-            elif ed < tolGap && ed < sd then  res.AddRange(ResizeArr.rev(ptss.Pop(ei)) )
-            else
-                //search from start
-                let start = res.[0]
-                let si = ptss |> ResizeArr.minIndexBy (fun ps -> Pnt.distanceSq start ps.First)
-                let ei = ptss |> ResizeArr.minIndexBy (fun ps -> Pnt.distanceSq start ps.Last)
-                let sd = Pnt.distance start ptss.[si].First
-                let ed = Pnt.distance start ptss.[ei].Last
-                if   sd < tolGap && sd < ed then res.InsertRange(0, ResizeArr.rev(ptss.Pop(si)) )
-                elif ed < tolGap && ed < sd then res.InsertRange(0,                 ptss.Pop(ei))
-                else
-                    loop <- false
-        res
-
     /// Finds the center, mean, or average point.
-    static member center (pts: IList<Pnt>) =
+    static member center (pts: IList<Pnt>) : Pnt =
         let mutable sum = Pnt.Origin
         for i = 0 to pts.Count-1 do
             let pt = pts.[i]
@@ -189,7 +159,42 @@ type Points3D   =
                 fail $"Points3D.normalOfPoints: points are in a line or sphere without clear normal: {Format.iList pts}"
             v
 
+// #endregion
+// #region Obsolete
 
+
+    /// Similar to join polylines, this tries to find continuous sequences of 3D points.
+    /// 'tolGap' is the maximum allowable gap between the start and the endpoint of two segments.
+    /// Search starts from the segment with the most points.
+    /// Both start and end point of each 3D point list are checked for adjacency.
+    [<Obsolete("This method has very poor performance. It is recommended to use a spatial hash to cluster nearby points instead.")>] // TODO
+    static member findContinuousPoints (ptss: ResizeArray<ResizeArray<Pnt>>, tolGap:float) : ResizeArray<Pnt> =
+        let i = ptss |> ResizeArr.maxIndexBy ResizeArr.len
+        let res = ptss.PopAt(i)
+        let mutable loop = true
+        while loop && ptss.Count > 0 do
+            //first try to append to end
+            let ende = res.[res.Count-1]
+            let si = ptss |> ResizeArr.minIndexBy (fun ps -> Pnt.sqDist ende ps.First)
+            let ei = ptss |> ResizeArr.minIndexBy (fun ps -> Pnt.sqDist ende ps.Last)
+            let sd = Pnt.dist ende ptss.[si].First
+            let ed = Pnt.dist ende ptss.[ei].Last
+            if   sd < tolGap && sd < ed then  res.AddRange(              ptss.PopAt(si))
+            elif ed < tolGap && ed < sd then  res.AddRange(ResizeArr.rev(ptss.PopAt(ei)) )
+            else
+                //search from start
+                let start = res.[0]
+                let si = ptss |> ResizeArr.minIndexBy (fun ps -> Pnt.sqDist start ps.First)
+                let ei = ptss |> ResizeArr.minIndexBy (fun ps -> Pnt.sqDist start ps.Last)
+                let sd = Pnt.dist start ptss.[si].First
+                let ed = Pnt.dist start ptss.[ei].Last
+                if   sd < tolGap && sd < ed then res.InsertRange(0, ResizeArr.rev(ptss.PopAt(si)) )
+                elif ed < tolGap && ed < sd then res.InsertRange(0,               ptss.PopAt(ei))
+                else
+                    loop <- false
+        res
+
+#nowarn "44" // obsolete members
 
 [<Obsolete("Use Points3D or Points2D static class instead")>]
 type Points() =
@@ -203,15 +208,15 @@ type Points() =
         Tria3D.area(a, b, c)
 
     [<Obsolete("Use Tria3D.isLinearFast instead")>]
-    static member inline areInLineFast (a:Pnt, b:Pnt, c:Pnt, [<OPT;DEF(0.001)>] maxSquareAreaParallelogram:float) =
+    static member inline areInLineFast (a:Pnt, b:Pnt, c:Pnt, [<OPT;DEF(0.001)>] maxSquareAreaParallelogram:float) : bool =
         Tria3D.isLinearFast(a, b, c, maxSquareAreaParallelogram)
 
     [<Obsolete("Use Tria3D.isLinear instead")>]
-    static member areInLine (a:Pnt, b:Pnt, c:Pnt, [<OPT;DEF(1e-6)>] distanceTolerance:float) =
+    static member areInLine (a:Pnt, b:Pnt, c:Pnt, [<OPT;DEF(1e-6)>] distanceTolerance:float) : bool =
         Tria3D.isLinear(a, b, c, distanceTolerance)
 
     [<Obsolete("Use Points2D.getSignedArea instead")>]
-    static member getSignedArea(ps:ResizeArray<Pt>) =
+    static member getSignedArea(ps:ResizeArray<Pt>) : float =
         Points2D.getSignedArea(ps)
 
     [<Obsolete("Use Points3D.closestPointIdx instead")>]
@@ -231,25 +236,25 @@ type Points() =
         Points2D.closestPoint(pts, pt)
 
     [<Obsolete("Use Points3D.closestPointsIdx instead")>]
-    static member closestPointsIdx (xs:ResizeArray<Pnt>, ys:ResizeArray<Pnt>) =
+    static member closestPointsIdx (xs:ResizeArray<Pnt>, ys:ResizeArray<Pnt>) : int * int =
         Points3D.closestPointsIdx(xs, ys)
 
     [<Obsolete("Use Points2D.closestPointsIdx instead")>]
-    static member closestPointsIdx (xs:ResizeArray<Pt>, ys:ResizeArray<Pt>) =
+    static member closestPointsIdx (xs:ResizeArray<Pt>, ys:ResizeArray<Pt>) : int * int =
         Points2D.closestPointsIdx(xs, ys)
 
 
     [<Obsolete("Use Tria3D.offsetVar instead")>]
-    static member closestOfTwo (pt1:Pnt) (pt2:Pnt) (referencePoint:Pnt) =
+    static member closestOfTwo (pt1:Pnt) (pt2:Pnt) (referencePoint:Pnt) : Pnt =
         Points3D.closestOfTwo pt1 pt2 referencePoint
 
 
     [<Obsolete("Use Points3D.minDistBetweenPointSets instead")>]
-    static member minDistBetweenPointSets (xs:ResizeArray<Pnt>, ys:ResizeArray<Pnt>) =
+    static member minDistBetweenPointSets (xs:ResizeArray<Pnt>, ys:ResizeArray<Pnt>) : float =
         Points3D.minDistBetweenPointSets(xs, ys)
 
     [<Obsolete("Use Points2D.minDistBetweenPointSets instead")>]
-    static member minDistBetweenPointSets (xs:ResizeArray<Pt>, ys:ResizeArray<Pt>) =
+    static member minDistBetweenPointSets (xs:ResizeArray<Pt>, ys:ResizeArray<Pt>) : float =
         Points2D.minDistBetweenPointSets(xs, ys)
 
     [<Obsolete("Use Points3D.mostDistantPointIdx instead")>]
@@ -261,40 +266,40 @@ type Points() =
         Points2D.mostDistantPointIdx(findPointFrom, checkAgainst)
 
     [<Obsolete("Use Points3D.mostDistantPoint instead")>]
-    static member mostDistantPoint (findPointFrom:ResizeArray<Pnt>, checkAgainst:ResizeArray<Pnt>) =
+    static member mostDistantPoint (findPointFrom:ResizeArray<Pnt>, checkAgainst:ResizeArray<Pnt>) : Pnt =
         Points3D.mostDistantPoint(findPointFrom, checkAgainst)
 
     [<Obsolete("Use Points2D.mostDistantPoint instead")>]
-    static member mostDistantPoint (findPointFrom:ResizeArray<Pt>, checkAgainst:ResizeArray<Pt>) =
+    static member mostDistantPoint (findPointFrom:ResizeArray<Pt>, checkAgainst:ResizeArray<Pt>) : Pt =
         Points2D.mostDistantPoint(findPointFrom, checkAgainst)
 
     [<Obsolete("Use Points3D.cullDuplicatePointsInSeq instead")>]
-    static member cullDuplicatePointsInSeq (pts:ResizeArray<Pnt>, tolerance) =
+    static member cullDuplicatePointsInSeq (pts:ResizeArray<Pnt>, tolerance) : ResizeArray<Pnt> =
         Points3D.cullDuplicatePointsInSeq(pts, tolerance)
 
     [<Obsolete("Use Points2D.cullDuplicatePointsInSeq instead")>]
-    static member cullDuplicatePointsInSeq (pts:ResizeArray<Pt>, tolerance) =
+    static member cullDuplicatePointsInSeq (pts:ResizeArray<Pt>, tolerance) : ResizeArray<Pt> =
         Points2D.cullDuplicatePointsInSeq(pts, tolerance)
 
     [<Obsolete("Use Points2D.findContinuousPoints instead")>]
-    static member findContinuousPoints (ptss: ResizeArray<ResizeArray<Pt>>, tolGap:float) =
+    static member findContinuousPoints (ptss: ResizeArray<ResizeArray<Pt>>, tolGap:float) : ResizeArray<Pt> =
         Points2D.findContinuousPoints(ptss, tolGap)
 
     [<Obsolete("Use Points3D.findContinuousPoints instead")>]
-    static member findContinuousPoints (ptss: ResizeArray<ResizeArray<Pnt>>, tolGap:float) =
+    static member findContinuousPoints (ptss: ResizeArray<ResizeArray<Pnt>>, tolGap:float) : ResizeArray<Pnt> =
         Points3D.findContinuousPoints(ptss, tolGap)
 
 
     [<Obsolete("Typo, use Points3D.findContinuousPoints instead")>]
-    static member findContinuosPoints (ptss: ResizeArray<ResizeArray<Pnt>>, tolGap:float) =
+    static member findContinuosPoints (ptss: ResizeArray<ResizeArray<Pnt>>, tolGap:float) : ResizeArray<Pnt> =
         Points3D.findContinuousPoints(ptss, tolGap)
 
     [<Obsolete("Typo, use Points2D.findContinuousPoints instead")>]
-    static member findContinuosPoints (ptss: ResizeArray<ResizeArray<Pt>>, tolGap:float) =
+    static member findContinuosPoints (ptss: ResizeArray<ResizeArray<Pt>>, tolGap:float) : ResizeArray<Pt> =
         Points2D.findContinuousPoints(ptss, tolGap)
 
     [<Obsolete("Use Points3D.center instead")>]
-    static member center (pts: ResizeArray<Pnt>) =
+    static member center (pts: ResizeArray<Pnt>) : Pnt =
         Points3D.center(pts)
 
     [<Obsolete("Use Points3D.normalOfPoints instead")>]

@@ -1,4 +1,4 @@
-namespace Euclid
+﻿namespace Euclid
 
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>]
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
@@ -33,12 +33,26 @@ type Line2D =
     member inline ln.VectorX : float =
         ln.ToX - ln.FromX
 
+    /// The X component of the line Direction/Vector.
+    static member inline vectorX (ln:Line2D) : float =
+        ln.ToX - ln.FromX
+
     /// The Y component of the line Direction/Vector.
     member inline ln.VectorY : float =
         ln.ToY - ln.FromY
 
+    /// The Y component of the line Direction/Vector.
+    static member inline vectorY (ln:Line2D) : float =
+        ln.ToY - ln.FromY
+
     /// Returns the length of the line.
     member inline ln.Length : float =
+        let x = ln.VectorX
+        let y = ln.VectorY
+        sqrt(x*x + y*y)
+
+    /// Returns the length of the line.
+    static member inline length (ln:Line2D) : float =
         let x = ln.VectorX
         let y = ln.VectorY
         sqrt(x*x + y*y)
@@ -49,9 +63,15 @@ type Line2D =
         let y = ln.VectorY
         x*x + y*y
 
+    /// Returns the squared length of the line.
+    static member inline lengthSq (ln:Line2D) : float =
+        let x = ln.VectorX
+        let y = ln.VectorY
+        x*x + y*y
+
     /// Format 2D line into string including type name, X and Y for start and end points, and Length.
     /// Using nice floating point number formatting.
-    override ln.ToString() =
+    override ln.ToString() : string =
         let fx = Format.float ln.FromX
         let fy = Format.float ln.FromY
         let tx = Format.float ln.ToX
@@ -69,17 +89,38 @@ type Line2D =
         let ty = Format.float ln.ToY
         $"X=%s{fx}|Y=%s{fy} to X=%s{tx}|Y=%s{ty}"
 
+    /// Format 2D line into string from X and Y for start and end points.
+    /// Using nice floating point number formatting.
+    /// But without full type name as in ln.ToString()
+    static member asString (ln:Line2D) : string =
+        let fx = Format.float ln.FromX
+        let fy = Format.float ln.FromY
+        let tx = Format.float ln.ToX
+        let ty = Format.float ln.ToY
+        $"X=%s{fx}|Y=%s{fy} to X=%s{tx}|Y=%s{ty}"
+
     /// Format 2D line into an F# code string that can be used to recreate the line.
     member ln.AsFSharpCode : string =
         $"Line2D({ln.FromX}, {ln.FromY}, {ln.ToX}, {ln.ToY})"
 
+    /// Format 2D line into an F# code string that can be used to recreate the line.
+    static member asFSharpCode (ln:Line2D) : string =
+        $"Line2D({ln.FromX}, {ln.FromY}, {ln.ToX}, {ln.ToY})"
 
     /// The start point of the Line2D.
     member inline ln.From : Pt =
         Pt(ln.FromX, ln.FromY)
 
+    /// The start point of the Line2D.
+    static member inline from (ln:Line2D) : Pt =
+        Pt(ln.FromX, ln.FromY)
+
     /// The end point of the Line2D.
     member inline ln.To : Pt =
+        Pt(ln.ToX, ln.ToY)
+
+    /// The end point of the Line2D.
+    static member inline to' (ln:Line2D) : Pt =
         Pt(ln.ToX, ln.ToY)
 
     /// Same as ln.Vector or ln.Tangent.
@@ -87,20 +128,42 @@ type Line2D =
     member inline ln.Direction : Vc =
         Vc(ln.VectorX, ln.VectorY)
 
+    /// Same as ln.Vector or ln.Tangent.
+    /// The returned vector has the same length as the Line2D.
+    static member inline direction (ln:Line2D) : Vc =
+        Vc(ln.VectorX, ln.VectorY)
+
     /// Same as ln.Tangent or ln.Direction.
     /// The returned vector has the same length as the Line2D.
     member inline ln.Vector : Vc =
         Vc(ln.VectorX, ln.VectorY)
 
-
+    /// Same as ln.Tangent or ln.Direction.
+    /// The returned vector has the same length as the Line2D.
+    static member inline vector (ln:Line2D) : Vc =
+        Vc(ln.VectorX, ln.VectorY)
 
     /// Same as ln.Vector or ln.Direction.
     /// The returned vector has the same length as the Line2D.
     member inline ln.Tangent : Vc =
         Vc(ln.VectorX, ln.VectorY)
 
+    /// Same as ln.Vector or ln.Direction.
+    /// The returned vector has the same length as the Line2D.
+    static member inline tangent (ln:Line2D) : Vc =
+        Vc(ln.VectorX, ln.VectorY)
+
     /// Returns a unit-vector of the line Direction.
     member inline ln.UnitTangent : UnitVc =
+        let x = ln.VectorX
+        let y = ln.VectorY
+        let l = sqrt(x * x  + y * y)
+        if UtilEuclid.isTooTiny l then
+            EuclidErrors.failUnit2 "Line2D.UnitTangent" x y
+        UnitVc.createUnchecked (x/l, y/l)
+
+    /// Returns a unit-vector of the line Direction.
+    static member inline unitTangent (ln:Line2D) : UnitVc =
         let x = ln.VectorX
         let y = ln.VectorY
         let l = sqrt(x * x  + y * y)

@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    // Emit .d.ts declaration files alongside .js
+    "declaration": true,
+
+    "outDir": "./_tscBuild",
+    "rootDir": "./_ts",
+    "module": "ESNext",
+    "target": "ESNext",
+    "moduleResolution": "bundler",
+
+    "allowImportingTsExtensions" :true,
+    "emitDeclarationOnly": true,
+
+    // Fable-generated TypeScript should not have errors, so strict mode by default
+    "strict": true
+  },
+  "include": ["./_ts/**/*.ts"]
+}
+

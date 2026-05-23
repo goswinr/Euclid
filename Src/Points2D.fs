@@ -33,7 +33,7 @@ type Points2D   =
         let mutable mid = Double.MaxValue
         for i=0 to pts.Count - 1 do
             let p = pts.[i]
-            let d = Pt.distanceSq p pt
+            let d = Pt.sqDist p pt
             if d < mid then
                 mid <- d
                 mi <- i
@@ -46,9 +46,9 @@ type Points2D   =
 
     /// Returns the closest of two 2D points to a given reference 2D point.
     /// If both points are equidistant the first point is returned.
-    static member closestOfTwo (pt1:Pt) (pt2:Pt) (referencePoint:Pt) =
-        let d1 = Pt.distanceSq pt1 referencePoint
-        let d2 = Pt.distanceSq pt2 referencePoint
+    static member closestOfTwo (pt1:Pt) (pt2:Pt) (referencePoint:Pt) : Pt =
+        let d1 = Pt.sqDist pt1 referencePoint
+        let d2 = Pt.sqDist pt2 referencePoint
         if d1 <= d2 then
             pt1
         else
@@ -73,7 +73,7 @@ type Points2D   =
         for i=0 to xs.Count-1 do
             let pt = xs.[i]
             for j=0 to ys.Count-1 do
-                let d = Pt.distanceSq pt ys.[j]
+                let d = Pt.sqDist pt ys.[j]
                 if d < minD then
                     minD <- d
                     xi <- i
@@ -86,8 +86,8 @@ type Points2D   =
     static member minDistBetweenPointSets (xs:IList<Pt>, ys:IList<Pt>) : float =
         if xs.Count = 0 then fail "Points2D.minDistBetweenPointSets: empty List of Points: xs"
         if ys.Count = 0 then fail "Points2D.minDistBetweenPointSets: empty List of Points: ys"
-        let (i, j) = Points2D.closestPointsIdx (xs, ys)
-        Pt.distance xs.[i]  ys.[j]
+        let i, j = Points2D.closestPointsIdx (xs, ys)
+        Pt.dist xs.[i]  ys.[j]
 
 
 
@@ -105,7 +105,7 @@ type Points2D   =
             let pt = findPointFrom.[i]
             let mutable minD = Double.MaxValue
             for j=0 to checkAgainst.Count-1 do
-                let d = Pt.distanceSq pt checkAgainst.[j]
+                let d = Pt.sqDist pt checkAgainst.[j]
                 if d < minD then
                     minD <- d
                     checkAgainstTempIdx <-j
@@ -135,7 +135,7 @@ type Points2D   =
             let iLast = pts.Count-1
             for i = 1  to iLast do
                 let pt = pts.[i]
-                if Pt.distanceSq last pt > tolSq then
+                if Pt.sqDist last pt > tolSq then
                     last <- pt
                     res.Add last
                 elif i=iLast then // to ensure last point stays the same
@@ -149,28 +149,29 @@ type Points2D   =
     /// 'tolGap' is the maximum allowable gap between the start and the endpoint of two segments.
     /// Search starts from the segment with the most points.
     /// Both start and end point of each 2D point list are checked for adjacency.
+    [<Obsolete("This method has very poor performance. It is recommended to use a spatial hash to cluster nearby points instead.")>] // TODO
     static member findContinuousPoints (ptss: ResizeArray<ResizeArray<Pt>>, tolGap:float) : ResizeArray<Pt> =
-        let i = ptss |> ResizeArr.maxIndexBy ResizeArr.length
-        let res = ptss.Pop(i)
+        let i = ptss |> ResizeArr.maxIndexBy ResizeArr.len
+        let res = ptss.PopAt(i)
         let mutable loop = true
         while loop && ptss.Count > 0 do
             //first try to append to end
             let ende = res.[res.Count-1]
-            let si = ptss |> ResizeArr.minIndexBy (fun ps -> Pt.distanceSq ende ps.First)
-            let ei = ptss |> ResizeArr.minIndexBy (fun ps -> Pt.distanceSq ende ps.Last)
-            let sd = Pt.distance ende ptss.[si].First
-            let ed = Pt.distance ende ptss.[ei].Last
-            if   sd < tolGap && sd < ed then  res.AddRange(                ptss.Pop(si))
-            elif ed < tolGap && ed < sd then  res.AddRange(ResizeArr.rev(ptss.Pop(ei)) )
+            let si = ptss |> ResizeArr.minIndexBy (fun ps -> Pt.sqDist ende ps.First)
+            let ei = ptss |> ResizeArr.minIndexBy (fun ps -> Pt.sqDist ende ps.Last)
+            let sd = Pt.dist ende ptss.[si].First
+            let ed = Pt.dist ende ptss.[ei].Last
+            if   sd < tolGap && sd < ed then  res.AddRange(              ptss.PopAt(si))
+            elif ed < tolGap && ed < sd then  res.AddRange(ResizeArr.rev(ptss.PopAt(ei)) )
             else
                 //search from start
                 let start = res.[0]
-                let si = ptss |> ResizeArr.minIndexBy (fun ps -> Pt.distanceSq start ps.First)
-                let ei = ptss |> ResizeArr.minIndexBy (fun ps -> Pt.distanceSq start ps.Last)
-                let sd = Pt.distance start ptss.[si].First
-                let ed = Pt.distance start ptss.[ei].Last
-                if   sd < tolGap && sd < ed then res.InsertRange(0, ResizeArr.rev(ptss.Pop(si)) )
-                elif ed < tolGap && ed < sd then res.InsertRange(0,                 ptss.Pop(ei))
+                let si = ptss |> ResizeArr.minIndexBy (fun ps -> Pt.sqDist start ps.First)
+                let ei = ptss |> ResizeArr.minIndexBy (fun ps -> Pt.sqDist start ps.Last)
+                let sd = Pt.dist start ptss.[si].First
+                let ed = Pt.dist start ptss.[ei].Last
+                if   sd < tolGap && sd < ed then res.InsertRange(0, ResizeArr.rev(ptss.PopAt(si)) )
+                elif ed < tolGap && ed < sd then res.InsertRange(0,               ptss.PopAt(ei))
                 else
                     loop <- false
         res

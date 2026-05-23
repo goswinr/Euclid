@@ -26,7 +26,7 @@ type Tria3D =
     /// So it also returns true if the points are equal or very close to each other.
     /// Returns false for NaN input values.
     /// Use Points.areInLine if you need better control over the actual tolerance distance.
-    static member inline isLinearFast (a:Pnt, b:Pnt, c:Pnt, [<OPT;DEF(0.001)>] maxAreaParallelogram:float) =
+    static member inline isLinearFast (a:Pnt, b:Pnt, c:Pnt, [<OPT;DEF(0.001)>] maxAreaParallelogram:float) : bool =
         let doubleArea = Tria3D.areaDouble(a, b, c)
         doubleArea < maxAreaParallelogram
 
@@ -34,7 +34,7 @@ type Tria3D =
     /// Checks if three points are in one line.
     /// By finding the biggest angle in the triangle.
     /// And then measuring the distance from this point to the line defined by the other two points.
-    static member isLinear (a:Pnt, b:Pnt, c:Pnt, [<OPT;DEF(1e-6)>] distanceTolerance:float) =
+    static member isLinear (a:Pnt, b:Pnt, c:Pnt, [<OPT;DEF(1e-6)>] distanceTolerance:float) : bool =
         let inline distanceSqLineToPntInfinite(lnFrom:Pnt, lnTo:Pnt, p:Pnt,  lnSqLen:float) =
             // rewritten from Line3D.distanceLineToPntInfinite
             // http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
@@ -84,14 +84,14 @@ type Tria3D =
 
     /// Returns the offset point based on the previous and next normals, the distance and the precomputed cosine (= dot product of nPrev * nNext).
     /// Returns Infinity if the cosine is -1.0 (normals in opposite directions at a 180-degree U-turn).
-    static member inline private offsetPntCore (pt:Pnt) (dist:float) (nPrev:UnitVec) (nNext:UnitVec) (cosine:float) =
+    static member inline private offsetPntCore (pt:Pnt) (dist:float) (nPrev:UnitVec) (nNext:UnitVec) (cosine:float) : Pnt =
         // based on https://www.angusj.com/clipper2/Docs/Trigonometry.htm
         pt + (nPrev + nNext) * (dist / (1.0 + cosine)) // offset point
 
 
     /// Returns the offset point based on the previous and next normals, the distance and the precomputed cosine (= dot product of nPrev * nNext).
     /// Checks for 180 degrees U-turns. sets it to 179 degrees
-    static member inline private offsetPntCoreSafe (pt:Pnt) (dist:float) (nPrev:UnitVec) (nNext:UnitVec) (perp:Vec) (cosine:float) =
+    static member inline private offsetPntCoreSafe (pt:Pnt) (dist:float) (nPrev:UnitVec) (nNext:UnitVec) (perp:Vec) (cosine:float) : Pnt =
         if withMeasure cosine < Cosine.``179.0`` then // check for 180 degrees U-turns, (0.0 degrees are handled fine)
             let dirPrev = Vec.cross (nPrev, perp) |> Vec.withLength 28.645 //tangent function of 89 degrees * 0.5 (90+89=179 degrees)
             let dirNext = Vec.cross (perp, nNext) |> Vec.withLength 28.645 //tangent function of 89 degrees * 0.5 (90+89=179 degrees)
@@ -104,7 +104,7 @@ type Tria3D =
     /// If the points 'prev', 'this' and 'next' are in counter-clockwise order, the offset is inwards.
     /// Otherwise it is outwards.
     /// A negative offset distance inverts the direction.
-    static member offsetPnt(pntToOffset:Pnt, prev:Pnt, next:Pnt, dist:float) =
+    static member offsetPnt(pntToOffset:Pnt, prev:Pnt, next:Pnt, dist:float) : Pnt =
         let vPrev = pntToOffset - prev
         let vNext = next - pntToOffset
         let perp = Vec.cross (vPrev, vNext)
@@ -237,7 +237,8 @@ type Tria3D =
                         None
             else None
 
-
+// #endregion
+// #region Obsolete
 
 [<Obsolete("Use the module Euclid.Line3D or Euclid.XLine3D instead.")>]
 module Intersect =
