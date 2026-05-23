@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- Polyline2D.tryFindSelfIntersection no longer reports adjacent segments as a self intersection: the shared closure vertex of a closed Polyline2D and the corner of an open 3-point Polyline2D are no longer false positives. It also returns None instead of throwing for Polylines with fewer than 3 points.
 
 ## [0.30.1] - 2026-03-23
 ### Fixed

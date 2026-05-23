@@ -1539,3 +1539,209 @@ let testsComprehensive =
             }
         ]
     ]
+
+
+let testsSpecial =
+    testList "Polyline2D Special Cases" [
+
+        testList "tryFindSelfIntersection special cases" [
+            test "simple closed square has no self intersection" {
+                // The shared start/end (closure) vertex of a closed polyline is not a self intersection.
+                let result = Polyline2D.tryFindSelfIntersection plClosed
+                Expect.isNone result "closure seam of a simple closed square must not be reported"
+            }
+            test "closed triangle has no self intersection" {
+                let result = Polyline2D.tryFindSelfIntersection plTriangle
+                Expect.isNone result "closed triangle has no self intersection"
+            }
+            test "open 3-point corner has no self intersection" {
+                // first and last segment are adjacent (share the middle vertex), so their corner is not a crossing
+                let pl = Polyline2D.create [Pt(0.,0.); Pt(5.,0.); Pt(5.,5.)]
+                let result = Polyline2D.tryFindSelfIntersection pl
+                Expect.isNone result "an open corner of two adjacent segments is not a self intersection"
+            }
+            test "degenerate polylines have no self intersection" {
+                Expect.isNone (Polyline2D.tryFindSelfIntersection plEmpty) "empty has no self intersection"
+                Expect.isNone (Polyline2D.tryFindSelfIntersection plSinglePoint) "single point has no self intersection"
+                Expect.isNone (Polyline2D.tryFindSelfIntersection plLine) "single segment has no self intersection"
+            }
+            test "closed figure-8 is still detected" {
+                let fig8 = Polyline2D.create [Pt(0.,0.); Pt(10.,10.); Pt(10.,0.); Pt(0.,10.); Pt(0.,0.)]
+                let result = Polyline2D.tryFindSelfIntersection fig8
+                Expect.isSome result "a real crossing must still be found"
+                match result with
+                | Some (pt, _, _) -> "crossing near center" |> expectEqPts pt (Pt(5.,5.))
+                | None -> ()
+            }
+            test "non-adjacent touching segments are reported" {
+                // two non-adjacent segments meet at (5,5)
+                let pl = Polyline2D.create [Pt(0.,0.); Pt(5.,5.); Pt(10.,0.); Pt(5.,5.); Pt(0.,10.)]
+                Expect.isSome (Polyline2D.tryFindSelfIntersection pl) "non-adjacent touching segments should be found"
+            }
+        ]
+
+        testList "IsClosed special cases" [
+            test "three point back-and-forth is closed" {
+                let pl = Polyline2D.create [Pt(0.,0.); Pt(1.,1.); Pt(0.,0.)]
+                Expect.isTrue pl.IsClosed "first equals last with 3 points is closed"
+            }
+            test "two identical points are not closed" {
+                let pl = Polyline2D.create [Pt(0.,0.); Pt(0.,0.)]
+                Expect.isFalse pl.IsClosed "fewer than 3 points is never closed"
+            }
+        ]
+
+        testList "SignedArea and Area on open polylines" [
+            test "signed area of open CCW triangle includes closing segment" {
+                let openTri = Polyline2D.create [Pt(0.,0.); Pt(4.,0.); Pt(0.,3.)]
+                "open triangle signed area" |> Expect.isTrue (abs(openTri.SignedArea - 6.0) < 1e-9)
+                "open triangle area" |> Expect.isTrue (abs(openTri.Area - 6.0) < 1e-9)
+            }
+            test "signed area of open CW triangle is negative" {
+                let openTri = Polyline2D.create [Pt(0.,0.); Pt(0.,3.); Pt(4.,0.)]
+                "open CW triangle signed area" |> Expect.isTrue (openTri.SignedArea < 0.0)
+                "open CW triangle area is positive" |> Expect.isTrue (abs(openTri.Area - 6.0) < 1e-9)
+            }
+        ]
+
+        testList "Center counts stored points" [
+            test "center of closed polyline counts the duplicated closure vertex" {
+                // plClosed stores 5 points (start vertex twice), so the average is shifted from the geometric centroid (5,5)
+                "center is average of all 5 stored points" |> expectEqPts plClosed.Center (Pt(4.,4.))
+            }
+        ]
+
+        testList "EvaluateAt degenerate" [
+            test "evaluate single point polyline at 0" {
+                "single point eval at 0" |> expectEqPts (plSinglePoint.EvaluateAt 0.0) (Pt(1.,1.))
+            }
+        ]
+
+        testList "Reverse degenerate" [
+            test "reverse empty stays empty" {
+                Expect.equal (plEmpty.Reverse()).PointCount 0 "reversed empty is empty"
+            }
+            test "reverse single point stays the same" {
+                let r = plSinglePoint.Reverse()
+                Expect.equal r.PointCount 1 "reversed single is single"
+                "same point" |> expectEqPts r.AsPoints.[0] (Pt(1.,1.))
+            }
+            test "reverseInPlace on empty and single does not throw" {
+                plEmpty.Clone().ReverseInPlace()
+                plSinglePoint.Clone().ReverseInPlace()
+                Expect.isTrue true "no exception on degenerate reverseInPlace"
+            }
+        ]
+
+        testList "Duplicate and Clone independence" [
+            test "mutating a duplicate does not affect the original" {
+                let orig = Polyline2D.create [Pt(0.,0.); Pt(1.,1.)]
+                let dup = orig.Duplicate()
+                dup.SetPointXY(0, 9., 9.)
+                "original unchanged" |> expectEqPts orig.AsPoints.[0] (Pt(0.,0.))
+                "duplicate changed" |> expectEqPts dup.AsPoints.[0] (Pt(9.,9.))
+            }
+            test "AsPoints returns a copy" {
+                let pl = Polyline2D.create [Pt(0.,0.); Pt(1.,1.)]
+                let pts = pl.AsPoints
+                pts.[0] <- Pt(9.,9.)
+                "polyline unchanged after mutating AsPoints copy" |> expectEqPts pl.AsPoints.[0] (Pt(0.,0.))
+            }
+        ]
+
+        testList "Scale special cases" [
+            test "scale by negative factor mirrors through origin" {
+                let s = plLine.Scale(-1.0)
+                "scaled second point" |> expectEqPts s.AsPoints.[1] (Pt(-10.,0.))
+            }
+            test "scale by zero collapses to origin" {
+                let s = plOpen.Scale(0.0)
+                for i = 0 to s.PointCount - 1 do
+                    $"point {i} at origin" |> expectEqPts s.AsPoints.[i] (Pt(0.,0.))
+            }
+            test "scaleOn by zero collapses to center" {
+                let cen = Pt(5.,5.)
+                let s = Polyline2D.scaleOn cen 0.0 plOpen
+                for i = 0 to s.PointCount - 1 do
+                    $"point {i} at center" |> expectEqPts s.AsPoints.[i] cen
+            }
+        ]
+
+        testList "map / iter family" [
+            test "map transforms by coordinates" {
+                let m = Polyline2D.map (fun x y -> Pt(x + 1., y + 2.)) plLine
+                "mapped first" |> expectEqPts m.AsPoints.[0] (Pt(1.,2.))
+                "mapped second" |> expectEqPts m.AsPoints.[1] (Pt(11.,2.))
+            }
+            test "mapi uses point index" {
+                let m = Polyline2D.mapi (fun i _ y -> Pt(float i, y)) plOpen
+                "mapi point 0 x" |> Expect.isTrue (abs(m.GetX 0 - 0.0) < 1e-9)
+                "mapi point 3 x" |> Expect.isTrue (abs(m.GetX 3 - 3.0) < 1e-9)
+            }
+            test "mapiPt uses point index" {
+                let m = Polyline2D.mapiPt (fun i pt -> Pt(pt.X + float i, pt.Y)) plOpen
+                // plOpen: (0,0),(10,0),(10,10),(0,10) -> shift x by index
+                "mapiPt point 0" |> expectEqPts m.AsPoints.[0] (Pt(0.,0.))
+                "mapiPt point 1" |> expectEqPts m.AsPoints.[1] (Pt(11.,0.))
+                "mapiPt point 3" |> expectEqPts m.AsPoints.[3] (Pt(3.,10.))
+            }
+            test "iter visits every point" {
+                let mutable sumX = 0.0
+                Polyline2D.iter (fun x _ -> sumX <- sumX + x) plOpen
+                "sum of x coordinates" |> Expect.isTrue (abs(sumX - 20.0) < 1e-9)
+            }
+            test "iteri provides indices" {
+                let mutable idxSum = 0
+                Polyline2D.iteri (fun i _ _ -> idxSum <- idxSum + i) plOpen
+                Expect.equal idxSum 6 "indices 0+1+2+3"
+            }
+        ]
+
+        testList "create helpers" [
+            test "createFromXYMembers from points" {
+                let pl = Polyline2D.createFromXYMembers [Pt(1.,2.); Pt(3.,4.)]
+                Expect.equal pl.PointCount 2 "two points"
+                "first" |> expectEqPts pl.AsPoints.[0] (Pt(1.,2.))
+                "second" |> expectEqPts pl.AsPoints.[1] (Pt(3.,4.))
+            }
+            test "createFromBRectCCW is closed and counter-clockwise" {
+                let br = BRect.create(Pt(0.,0.), Pt(10.,5.))
+                let pl = Polyline2D.createFromBRectCCW br
+                Expect.equal pl.PointCount 5 "rect loop has 5 points"
+                Expect.isTrue pl.IsClosed "should be closed"
+                "starts at min corner" |> expectEqPts pl.AsPoints.[0] (Pt(0.,0.))
+                "positive signed area" |> Expect.isTrue (pl.SignedArea > 0.0)
+            }
+            test "createFromBRectCW is closed and clockwise" {
+                let br = BRect.create(Pt(0.,0.), Pt(10.,5.))
+                let pl = Polyline2D.createFromBRectCW br
+                Expect.equal pl.PointCount 5 "rect loop has 5 points"
+                Expect.isTrue pl.IsClosed "should be closed"
+                "negative signed area" |> Expect.isTrue (pl.SignedArea < 0.0)
+            }
+            test "createFromRectCCW is closed" {
+                let r = Rect2D.createFromBRect (BRect.create(Pt(0.,0.), Pt(10.,5.)))
+                let pl = Polyline2D.createFromRectCCW r
+                Expect.equal pl.PointCount 5 "rect loop has 5 points"
+                Expect.isTrue pl.IsClosed "should be closed"
+            }
+        ]
+
+        testList "GetSegment on closed polyline" [
+            test "last segment of closed square closes the loop" {
+                let seg = plClosed.GetSegment(plClosed.SegmentCount - 1)
+                "closed last segment from" |> expectEqPts seg.From (Pt(0.,10.))
+                "closed last segment to" |> expectEqPts seg.To (Pt(0.,0.))
+            }
+        ]
+
+        testList "removeUTurns no-op" [
+            test "polyline without U-turns keeps all points" {
+                let pl = Polyline2D.create [Pt(0.,0.); Pt(5.,0.); Pt(5.,5.); Pt(0.,5.)]
+                let r = Polyline2D.removeUTurns Cosine.``179.0`` pl
+                Expect.equal r.PointCount pl.PointCount "no U-turns, point count preserved"
+                "first preserved" |> expectEqPts r.AsPoints.[0] pl.AsPoints.[0]
+                "last preserved" |> expectEqPts r.AsPoints.[r.PointCount - 1] pl.AsPoints.[pl.PointCount - 1]
+            }
+        ]
+    ]

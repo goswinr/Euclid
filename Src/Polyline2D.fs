@@ -1861,50 +1861,55 @@ type Polyline2D private (xys: ResizeArray<float>) =
             |> Polyline2D.createDirectly
 
     /// Tries to find a self intersection in the Polyline2D.
-    /// Also returns Some if segments are just touching.
+    /// Adjacent segments are never checked, so the shared vertex of a corner,
+    /// or the shared closure vertex of a closed Polyline2D, is not reported as a self intersection.
+    /// Also returns Some if two non-adjacent segments are just touching.
     /// If found returns the first intersection point and the indices of the two segments that intersect.
     /// If no intersection is found returns None.
+    /// Returns None for Polylines with fewer than 3 points (less than two segments).
     /// This is a recursive O(n^2) algorithm and should only be used for small Polylines.
     static member tryFindSelfIntersection (pl:Polyline2D) : Option<Pt * int * int> =
         let pts = pl.AsPoints
-        let segmentVs = pl.SegmentVectors
-        let segLastIdx = segmentVs.LastIndex
-        let brs = ResizeArray(segmentVs.Count)
-        let mutable pp = pts.[0]
-        for i = 1 to pts.LastIndex do
-            let p = pts.[i]
-            let br = BRect.create(pp,p)
-            brs.Add br
-            pp <- p
+        if pts.Count < 3 then
+            None // a polyline with fewer than two segments cannot intersect itself
+        else
+            let segmentVs = pl.SegmentVectors
+            let segLastIdx = segmentVs.LastIndex
+            let brs = ResizeArray(segmentVs.Count)
+            let mutable pp = pts.[0]
+            for i = 1 to pts.LastIndex do
+                let p = pts.[i]
+                let br = BRect.create(pp,p)
+                brs.Add br
+                pp <- p
 
-        // O(n^2) check of all segments against each other
-        let rec checkSegs i j =
-            if i > segLastIdx then
-                None // exit loop
+            let isClosed = pl.IsClosed
 
-            elif j > segLastIdx then
-                checkSegs (i + 1) (i + 3) // +3 to skip adjacent segments
+            // O(n^2) check of all non-adjacent segments against each other
+            let rec checkSegs i j =
+                if i > segLastIdx then
+                    None // exit loop
 
-            // first do a quick bounding rectangle overlap test because most lines do not intersect
-            elif not <| BRect.isOverlapping brs.[i] brs.[j] then
-                checkSegs i (j + 1) // move on to next segment
+                elif j > segLastIdx then
+                    checkSegs (i + 1) (i + 3) // +3 to skip adjacent segments
 
-            else
-                match XLine2D.tryIntersect(pts.[i], pts.[j], segmentVs.[i], segmentVs.[j]) with
-                | Some pt ->
-                    Some (pt, i, j)
-                | None    ->
+                elif isClosed && i = 0 && j = segLastIdx then
+                    // on a closed Polyline2D the first and last segment share the closure vertex,
+                    // so they are adjacent and their shared point must not count as a self intersection.
                     checkSegs i (j + 1)
 
-        if pl.IsClosed then
-            checkSegs 0 2
-        else
-            // if the polyline is open check first and last segment.
-            match XLine2D.tryIntersect(pts.First, pts.SecondLast, segmentVs.First, segmentVs.Last) with
-            | Some pt ->
-                Some (pt, 0, segmentVs.LastIndex)
-            | None    ->
-                checkSegs 0 2 // start with segment 0 and segment 2 to avoid checking adjacent segments
+                // first do a quick bounding rectangle overlap test because most lines do not intersect
+                elif not <| BRect.isOverlapping brs.[i] brs.[j] then
+                    checkSegs i (j + 1) // move on to next segment
+
+                else
+                    match XLine2D.tryIntersect(pts.[i], pts.[j], segmentVs.[i], segmentVs.[j]) with
+                    | Some pt ->
+                        Some (pt, i, j)
+                    | None    ->
+                        checkSegs i (j + 1)
+
+            checkSegs 0 2 // start with segment 0 and segment 2 to avoid checking adjacent segments
 
 
     // #endregion
