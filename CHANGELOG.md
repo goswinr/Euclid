@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.30.1] - 2026-03-23
+### Fixed
+- Polyline2D.area doesn't fail on open polylines anymore.
+- wrong point count when offset distance is 0.0
+
 ## [0.30.0] - 2026-03-23
 ### Added
 - add a static member for every instance member

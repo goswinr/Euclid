@@ -38,7 +38,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '22.x' # Adjust the version as needed
+          node-version: '24.x' # Adjust the version as needed
 
       - name: Clean Install npm dependencies
         run: npm ci

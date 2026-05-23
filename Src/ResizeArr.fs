@@ -38,11 +38,11 @@ module Arr =
 module ResizeArr =
 
     /// returns a clone of the ResizeArray, but optimized in Fable
-    let inline clone  (resizeArray: ResizeArray<'T>) : ResizeArray<'T>=
+    let inline clone (resizeArray: ResizeArray<'T>) : ResizeArray<'T>=
         #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
             Fable.Core.JsInterop.emitJsExpr (resizeArray) "$0.slice()"
         #else
-            resizeArray.GetRange(0, resizeArray.Count-1)
+            resizeArray.GetRange(0, resizeArray.Count)
         #endif
 
     /// returns resizeArray.Count , but optimized in Fable

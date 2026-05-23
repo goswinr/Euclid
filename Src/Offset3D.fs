@@ -410,10 +410,11 @@ module Offset3D =
             fail $"Offset3D.offsetVariableWithDirections: point count {ptCount} must be at least 2 for a polyline."
 
         if ptCount <> segmentDirs.Count + 1  then
-            fail $"Offset3D.offsetVariableWithDirections:\n   Point count must be 1 greater than normal directions count, but they are {ptCount} and {segmentDirs.Count}."
+            fail $"Offset3D.offsetVariableWithDirections:\n Segment directions count must be {ptCount-1} for {ptCount} points, but is {segmentDirs.Count}."
 
         if ptCount <> distsInPlane.Count + 1  then
-            fail $"Offset3D.offsetVariableWithDirections:\n   Point count must be 1 greater than offset distances count, but they are {ptCount} and {distsInPlane.Count}."
+            fail $"Offset3D.offsetVariableWithDirections:\n in-plane distances count must be {ptCount-1} for {ptCount} points, but is {distsInPlane.Count}."
+
 
         let mutable res = ResizeArray<float>(xyzs.Count)
         let mutable needsSecondPass = false

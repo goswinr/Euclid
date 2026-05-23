@@ -1,10 +1,12 @@
+name: Check Links
+
 on:
   push:
     branches:
       - main
   schedule:
     - cron: '0 6 * * 1'
-name: ci
+
 jobs:
   linkinator:
     runs-on: ubuntu-latest

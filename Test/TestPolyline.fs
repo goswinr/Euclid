@@ -1324,9 +1324,6 @@ let testsComprehensive =
         ]
 
         testList "Area and orientation edge cases" [
-            test "area fails on open polyline" {
-                Expect.throws (fun () -> plOpen.Area |> ignore) "area on open throws"
-            }
             test "isCounterClockwise fails on zero area" {
                 let pl = Polyline2D.create [Pt(0.,0.); Pt(1.,0.); Pt(2.,0.); Pt(0.,0.)]
                 Expect.throws (fun () -> pl.IsCounterClockwise |> ignore) "zero area ccw throws"

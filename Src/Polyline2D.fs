@@ -590,7 +590,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
         let ey = xys.Last
         let dx = sx - ex
         let dy = sy - ey
-        if dx * dx + dy * dy < toleranceForAddingPoint*toleranceForAddingPoint then
+        if dx * dx + dy * dy <= toleranceForAddingPoint*toleranceForAddingPoint then // <= needed so it works with 0.0
             xys.SecondLast <- sx
             xys.Last       <- sy
         else
@@ -607,48 +607,46 @@ type Polyline2D private (xys: ResizeArray<float>) =
         pl.CloseInPlace toleranceForAddingPoint
         pl
 
-    /// The signed area of the Polyline2D .
+    /// Calculates the signed area of the Polyline2D .
     /// If it is positive the Polyline2D is Counter Clockwise.
-    /// Polyline does not need to be exactly closed. But then result might be wrong. Or without meaning.
-    /// For self intersecting Polylines the result is also invalid.
+    /// Polyline does not need to be exactly closed.
+    /// The segment from the last point to the first point is included in the area calculation.
+    /// For self intersecting Polylines the result is invalid.
     member p.SignedArea : float =
         //https://helloacm.com/sign-area-of-irregular-polygon/
-        if p.PointCount = 0 then
-            0.0
-        else
-            let mutable area = 0.0
-            let mutable tx = xys.SecondLast // calculate from last to first too
-            let mutable ty = xys.Last
-            let mutable i = 0
-            let len = xys.Count
-            while i < len do
-                let nx = xys.[i]
-                let ny = xys.[i + 1]
-                area <- area + (tx - nx) * (ny + ty)
-                tx <- nx
-                ty <- ny
-                i <- i + 2
-            area * 0.5
+        let mutable area = 0.0
+        let mutable tx = xys.SecondLast // calculate from last to first too
+        let mutable ty = xys.Last
+        let mutable i = 0
+        let len = xys.Count
+        while i < len do
+            let nx = xys.[i]
+            let ny = xys.[i + 1]
+            area <- area + (tx - nx) * (ny + ty)
+            tx <- nx
+            ty <- ny
+            i <- i + 2
+        area * 0.5
 
-    /// The signed area of the Polyline2D .
+    /// Calculates the signed area of the Polyline2D .
     /// If it is positive the Polyline2D is Counter Clockwise.
-    /// Polyline does not need to be exactly closed. But then result might be wrong. Or without meaning.
-    /// For self intersecting Polylines the result is also invalid.
+    /// Polyline does not need to be exactly closed.
+    /// The segment from the last point to the first point is included in the area calculation.
+    /// For self intersecting Polylines the result is invalid..
     static member inline signedArea (p:Polyline2D) : float =
         p.SignedArea
 
-    /// The area of the Polyline2D.
-    /// Fails if Polyline is not exactly closed.
+    /// Calculates the area of the Polyline2D .
+    /// The segment from the last point to the first point is included in the area calculation.
     /// For self intersecting Polylines the result is invalid.
     member p.Area : float =
-        if not p.IsClosed then fail $"Polyline2D.Area failed on Polyline2D that is not exactly closed {p}"
         abs p.SignedArea
 
-    /// The area of the Polyline2D.
-    /// Fails if Polyline is not exactly closed.
+    /// Calculates the area of the Polyline2D .
+    /// The segment from the last point to the first point is included in the area calculation.
     /// For self intersecting Polylines the result is invalid.
     static member inline area (p:Polyline2D) : float =
-        p.Area
+        abs p.SignedArea
 
     /// Test if Polyline2D is CounterClockwise.
     /// The Polyline2D does not need to be actually closed.

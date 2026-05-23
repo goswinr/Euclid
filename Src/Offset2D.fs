@@ -132,6 +132,55 @@ module Offset2D=
             let dy = xys.[1] - xys.Last
             dx * dx + dy * dy
 
+    /// A helper function to print interleaved coordinate buffers for debugging.
+    let toStringXYs (xys: ResizeArray<float>) : string =
+        if isNull xys then
+            "ResizeArray<float> null"
+        elif xys.Count = 0 then
+            "Empty ResizeArray<float>"
+        elif xys.Count = 1 then
+            $"Invalid ResizeArray<float> with 1 value: {xys.[0]}"
+        elif xys.Count = 2 then
+            $"ResizeArray<float> Single Point: ({xys.[0]}, {xys.[1]})"
+        else
+            let sb = Text.StringBuilder()
+            let cnt = xys.Count
+            let ln (line:string) =
+                sb.AppendLine(line) |> ignore
+            if cnt % 2 <> 0 then
+                ln $"An invalid ResizeArray<float> Polyline with {cnt} values, which is not even."
+                for i = 0 to min (cnt - 1) 100 do
+                    if i % 2 = 0 then
+                        ln $"    x {xys.[i]}"
+                    else
+                        ln $"    y {xys.[i]}"
+                if cnt > 100 then
+                    ln $"    ... and {cnt - 100} more values."
+            else
+                // it's a valid Polyline
+                let dist = sqrt (
+                    (xys.[0] - xys.SecondLast) * (xys.[0] - xys.SecondLast) +
+                    (xys.[1] - xys.Last      ) * (xys.[1] - xys.Last)
+                    )
+
+                if dist = 0.0 then
+                    ln $"ResizeArray<float>:Closed polyline with {cnt / 2} points."
+                elif dist < 1e-6 then
+                    ln $"ResizeArray<float>:Almost closed polyline with {cnt / 2} points, distance between first and last point is {dist}."
+                else
+                    ln $"ResizeArray<float>:Open polyline with {cnt / 2} points, distance between first and last point is {dist}."
+                let loopTil =  min cnt 100
+                let mutable i = 0
+                while i < loopTil do
+                    let x = xys.[i]
+                    let y = xys.[i + 1]
+                    ln $"    {x}  {y}"
+                    i <- i + 2
+                if cnt > 100 then
+                    ln $"    ... and {cnt - 100} more values."
+                    ln $"    Last point: ({xys.SecondLast}, {xys.Last})"
+            sb.ToString()
+
     let inline private dot (ax:float) (ay:float) (bx:float) (by:float) : float =
         ax * bx + ay * by
 
@@ -180,24 +229,28 @@ module Offset2D=
     /// The vector count is one less than the input point count. The result is interleaved x/y values.
     /// Fails on duplicate points.
     let makeOffsetDirections (xys:ResizeArray<float>) : ResizeArray<float> =
+        // printfn $"***Offset2D.makeOffsetDirections: for {xys.Count / 2} points.{toStringXYs xys}"
         XY.checkEven "makeOffsetDirections" xys
-        let ptCount = XY.pointCount xys
-        if ptCount < 2 then
-            fail $"Offset2D.makeOffsetDirections: point count {ptCount} must be at least 2 for a polyline."
-        let normals = ResizeArray<float>((ptCount - 1) * 2) // the normals of the segments, two floats per segment
+        let cnt = xys.Count
+        if cnt < 4 then
+            fail $"Offset2D.makeOffsetDirections: point count {cnt / 2} must be at least 2 for a polyline."
         let mutable px = xys.[0]
         let mutable py = xys.[1]
-        for i = 1 to ptCount - 1 do
-            let x = XY.getX i xys
-            let y = XY.getY i xys
+        let mutable i = 2
+        let normals = ResizeArray<float>(cnt-2) // the normals of the segments, two floats per segment
+        while i < cnt do
+            let x = xys.[i]
+            let y = xys.[i + 1]
             let vx = x - px
             let vy = y - py
             let len = sqrt (vx * vx + vy * vy)
-            if len < 1e-6 then fail $"Offset2D.makeOffsetDirections: point[{i}] and point[{i-1}] are the same at ({px}, {py})."
+            if len < 1e-6 then
+                fail $"Offset2D.makeOffsetDirections: point[{i/2}] and point[{i/2-1}] are the same, at Pt({px}, {py}) in \n{toStringXYs xys}."
             normals.Add (vy / -len) // x = -y, y = x : =Rotate90CCW
             normals.Add (vx / len)
             px <- x
             py <- y
+            i <- i + 2
         normals
 
     /// <summary>Removes Sharp U-Turns from an interleaved coordinate buffer</summary>
@@ -545,13 +598,12 @@ module Offset2D=
         let ptCount = XY.pointCount xys
         let nDirCount = XY.pointCount nDirs
         if ptCount < 2 then
-            fail $"Offset2D.offsetVariableWithDirections:\n  point count must be at least 2, but is {ptCount}."
+            fail $"Offset2D.offsetVariableWithDirections:\n point count must be at least 2, but is {ptCount}."
 
         if ptCount <> nDirCount + 1  then
-            fail $"Offset2D.offsetVariableWithDirections:\n  point count must be 1 greater than normal directions count, but they are {ptCount} and {nDirCount}."
-
+            fail $"Offset2D.offsetVariableWithDirections:\n normal directions count must be {ptCount-1} for {ptCount} points, but is {nDirCount}."
         if ptCount <> dists.Count + 1  then
-            fail $"Offset2D.offsetVariableWithDirections:\n   point count must be 1 greater than offset distances count, but they are {ptCount} and {dists.Count}."
+            fail $"Offset2D.offsetVariableWithDirections:\n distances count must be {ptCount-1} for {ptCount} points, but is {dists.Count}."
 
         let res = ResizeArray<float>(xys.Count)
         let idxsToFixProportional = ResizeArray<IndexToFixProportional>() // only used if varDistParallelBehavior is Proportional

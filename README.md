@@ -98,7 +98,7 @@ let moved = myPoint.Transform myMatrix
 // Pipeline style
 myPoint
 |> Pnt.translate (Vec(1, 0, 0))
-|> Pnt.rotateZ 45.0
+|> Pnt.rotateOnZDeg 45.0
 |> Pnt.transform myMatrix
 ```
 
@@ -200,7 +200,7 @@ let point2 = Pnt(4.0, 5.0, 6.0)
 let vector = Vec(1.0, 1.0, 0.0)
 
 // Calculate distance
-let distance = Pnt.distance point1 point2
+let distance = point1.DistanceTo point2
 
 // Create and use unit vectors
 let unitVec = vector.Unitized  // returns a UnitVec
@@ -229,7 +229,7 @@ let a = Pt(1.0, 2.0)
 let b = Pt(4.0, 6.0)
 
 // Distance between points
-let dist = Pt.distance a b              // 5.0
+let dist = a.DistanceTo b              // 5.0
 
 // Midpoint
 let mid = Pt.midPt a b                  // Pt(2.5, 4.0)
@@ -405,7 +405,7 @@ open Euclid
 let rect = Rect2D.createFromXVectorAndWidth(Pt(0, 0), Vc(10, 0), 5.0)
 
 // From direction and sizes
-let dir = UnitVc.createFromDegrees 45.0
+let dir = UnitVc.rotate 45.0 UnitVc.Xaxis
 let rotRect = Rect2D.createFromDirectionAndSizes(Pt(0, 0), dir, 10.0, 5.0)
 
 // Rectangle properties
@@ -413,8 +413,8 @@ let area = rect.Area
 let cx = rect.SizeX
 let cy = rect.SizeY
 let center = rect.Center
-let c0 = rect.Corner0                     // origin corner
-let c2 = rect.Corner2                     // diagonally opposite corner
+let c0 = rect.Origin                      // origin corner
+let c2 = rect.FarCorner                   // diagonally opposite corner
 
 // Point evaluation (u, v parameters from 0 to 1)
 let midPoint = rect.EvaluateAt(0.5, 0.5)  // center point
@@ -440,7 +440,7 @@ let vol = bbox.Volume                             // 288.0
 let box2 = BBox.createFromCenter(Pnt(0, 0, 0), 10.0, 10.0, 10.0)
 
 // Expand bounding box
-let bigger = bbox.Grown 1.0                // expand by 1.0 on all sides
+let bigger = bbox.Expand 1.0               // expand by 1.0 on all sides
 
 // Check containment
 let inside = bbox.Contains(Pnt(5, 4, 2))  // true
@@ -467,7 +467,7 @@ let firstSeg = pl2d.FirstSegment           // Line2D(Pt(0,0), Pt(10,0))
 let seg = pl2d.GetSegment(1)               // Line2D(Pt(10,0), Pt(10,5))
 
 // Modify (polylines are mutable)
-pl2d.SetVertex 2 (Pt(12, 5))              // move a vertex
+pl2d.SetPoint (2, Pt(12, 5))              // move a vertex
 let copy = pl2d.Duplicate()                // deep copy
 
 // 3D polyline
@@ -506,14 +506,15 @@ let combined = m1 *** m2 *** m6
 
 // Apply to points and vectors
 let pt2 = pt.Transform combined                  // full transform (rotate, scale, translate)
+let rigid = RigidMatrix.createRotationZ 90.0
 let v = Vec(1, 0, 0)
-let v2 = v.Transform combined                    // only rotate and scale (no translation)
+let v2 = v.TransformRigid rigid                  // rotate without translation
 
 // Functional pipeline style
 let result =
     pt
     |> Pnt.translate (Vec(10, 0, 0))
-    |> Pnt.rotateZ 90.0
+    |> Pnt.rotateOnZDeg 90.0
     |> Pnt.scale 2.0
     |> Pnt.transform combined
 

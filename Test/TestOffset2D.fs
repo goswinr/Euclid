@@ -17,6 +17,7 @@ let eqf a b msg=
 let tol = Accuracy.veryHigh
 
 let xysOfPts (pts: ResizeArray<Pt>) =
+    // printfn $"Converting {pts.Count} points to interleaved XYs"
     let xys = ResizeArray<float>(pts.Count * 2)
     for pt in pts do
         xys.Add pt.X
@@ -31,6 +32,7 @@ let expectEqualPts msg (pts: ResizeArray<float>) (xys: ResizeArray<float>) =
     for i = 0 to pts.Count - 1 do
         $"{msg} point {i}" |> eqf xys.[i] pts.[i]
 
+
 let tests =
     testList "Offset2D " [
 
@@ -38,7 +40,7 @@ let tests =
         test "offset distance 0 returns original points (simple square)" {
           let pts = ResizeArray([Pt(0,0); Pt(1,0); Pt(1,1); Pt(0,1); Pt(0,0)])  |> xysOfPts
           let result = Offset2D.offset 0.0 pts
-          "count is one less (removes duplicate)" |> Expect.equal result.Count (pts.Count - 1)
+          "count is same (removes duplicate)" |> Expect.equal result.Count pts.Count
           for i = 0 to result.Count - 1 do
             $"pt[{i}] matches" |> eqf result.[i] pts.[i]
         }
@@ -46,7 +48,7 @@ let tests =
         test "offset distance 0 returns original points (triangle)" {
           let pts = ResizeArray([Pt(0,0); Pt(2,0); Pt(1,2); Pt(0,0)]) |> xysOfPts
           let result = Offset2D.offset 0.0 pts
-          "count is one less (removes duplicate)" |> Expect.equal result.Count (pts.Count - 1)
+          "count is same (removes duplicate)" |> Expect.equal result.Count pts.Count
           for i = 0 to result.Count - 1 do
             $"pt[{i}] matches" |> eqf result.[i] pts.[i]
         }
