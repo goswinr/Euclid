@@ -5,12 +5,14 @@ open UtilEuclid
 open EuclidErrors
 open Euclid.EuclidCollectionUtilities
 
+module R = ResizeArr
+
 /// A module containing the core algorithms for offsetting 2D polylines.
 /// Normally you would not use this directly; prefer the Polyline2D or Points2D module.
 module Offset2D=
 
     /// The squared tolerance for open polylines.
-    let [<Literal>] sqOpenTolerance = 1e-12
+    let [<Literal>] sqOpenTolerance = 1e-6 * 1e-6 // 1e-12
 
 
     /// An Enum for describing what to do at U-turns (180 degree turns).
@@ -19,7 +21,6 @@ module Offset2D=
     /// 1: Fail
     /// 2: Add a chamfer with two points.
     /// 3: Use the offset point for the threshold angle, by default this is 179 degrees.
-    /// 4: Just skip the point.
     // [<RequireQualifiedAccess>]
     type UTurn = // needs to be an enum , so it can bve an optional parameter with default value
 
@@ -35,10 +36,6 @@ module Offset2D=
         /// This option guarantees the same number of points in the returned Polyline.
         /// (unless StepWithTwoPoints is used for var dist offsets)
         | UseThreshold = 3
-
-        /// Just skip U-turn points.
-        /// This will create a polyline with less points than the input that cuts across the U-turn.
-        | Skip = 4
 
 
     /// An Enum for describing what to do with colinear segments with different offset distances.
@@ -95,224 +92,342 @@ module Offset2D=
     type internal IndexToProject = {
         /// the index of the colinear point in result
         idx:int
-        /// the direction to project along
-        dir: Vc
+        /// x component of the direction to project along
+        dirX: float
+        /// y component of the direction to project along
+        dirY: float
     }
 
+    module private XY =
 
-    //          █████████                               █████                          █████
-    //         ███░░░░░███                             ░░███                          ░░███
-    //        ███     ░░░   ██████  ████████    █████  ███████    ██████   ████████   ███████
-    //       ░███          ███░░███░░███░░███  ███░░  ░░░███░    ░░░░░███ ░░███░░███ ░░░███░
-    //       ░███         ░███ ░███ ░███ ░███ ░░█████   ░███      ███████  ░███ ░███   ░███
-    //       ░░███     ███░███ ░███ ░███ ░███  ░░░░███  ░███ ███ ███░░███  ░███ ░███   ░███ ███
-    //        ░░█████████ ░░██████  ████ █████ ██████   ░░█████ ░░████████ ████ █████  ░░█████
-    //         ░░░░░░░░░   ░░░░░░  ░░░░ ░░░░░ ░░░░░░     ░░░░░   ░░░░░░░░ ░░░░ ░░░░░    ░░░░░
-    //
-    //
-    //
-    //                    ██████     ██████                    █████
-    //                   ███░░███   ███░░███                  ░░███
-    //         ██████   ░███ ░░░   ░███ ░░░   █████   ██████  ███████
-    //        ███░░███ ███████    ███████    ███░░   ███░░███░░░███░
-    //       ░███ ░███░░░███░    ░░░███░    ░░█████ ░███████   ░███
-    //       ░███ ░███  ░███       ░███      ░░░░███░███░░░    ░███ ███
-    //       ░░██████   █████      █████     ██████ ░░██████   ░░█████
-    //        ░░░░░░   ░░░░░      ░░░░░     ░░░░░░   ░░░░░░     ░░░░░
-    //
-    //
-    //
-    //            █████  ███           █████
-    //           ░░███  ░░░           ░░███
-    //         ███████  ████   █████  ███████    ██████   ████████    ██████   ██████
-    //        ███░░███ ░░███  ███░░  ░░░███░    ░░░░░███ ░░███░░███  ███░░███ ███░░███
-    //       ░███ ░███  ░███ ░░█████   ░███      ███████  ░███ ░███ ░███ ░░░ ░███████
-    //       ░███ ░███  ░███  ░░░░███  ░███ ███ ███░░███  ░███ ░███ ░███  ███░███░░░
-    //       ░░████████ █████ ██████   ░░█████ ░░████████ ████ █████░░██████ ░░██████
-    //        ░░░░░░░░ ░░░░░ ░░░░░░     ░░░░░   ░░░░░░░░ ░░░░ ░░░░░  ░░░░░░   ░░░░░░
+        let inline pointCount (xys: ResizeArray<float>) : int =
+            xys.Count / 2
 
+        let failEven methodName (xys: ResizeArray<float>) =
+            fail $"Offset2D.{methodName}: coordinate buffer must contain an even number of floats, but has {xys.Count} values."
+
+        let inline checkEven methodName (xys: ResizeArray<float>) =
+            if xys.Count % 2 <> 0 then
+                failEven methodName xys
+
+        let inline getX i (xys: ResizeArray<float>) : float =
+            xys.[i * 2]
+
+        let inline getY i (xys: ResizeArray<float>) : float =
+            xys.[i * 2 + 1]
+
+        let inline getPt i (xys: ResizeArray<float>) : Pt =
+            Pt(xys.[i * 2], xys.[i * 2 + 1])
+
+        let inline set i x y (xys: ResizeArray<float>) : unit =
+            xys.[i * 2    ] <- x
+            xys.[i * 2 + 1] <- y
+
+        let inline add x y (xys: ResizeArray<float>) : unit =
+            xys.Add x
+            xys.Add y
+
+        let sqDistFirstLast (xys: ResizeArray<float>) : float =
+            let dx = xys.[0] - xys.SecondLast
+            let dy = xys.[1] - xys.Last
+            dx * dx + dy * dy
+
+    let inline private dot (ax:float) (ay:float) (bx:float) (by:float) : float =
+        ax * bx + ay * by
+
+    let inline private chamferNormalBetween (nPrevX:float) (nPrevY:float) (nNextX:float) (nNextY:float) : struct (float * float * float) =
+        let tx = nPrevX - nNextX
+        let ty = nPrevY - nNextY
+        let len = sqrt (tx * tx + ty * ty)
+        let nx = -ty / len
+        let ny =  tx / len
+        let cos = dot nx ny nPrevX nPrevY
+        if cos >= 0.0 then
+            struct (nx, ny, cos)
+        else
+            struct (-nx, -ny, cos)
+
+
+
+    /// Returns the unit tangents of the segments of an interleaved coordinate buffer.
+    /// The vector count is one less than the input point count. The result is interleaved x/y values.
+    /// Fails on duplicate points.
+    let makeUnitTangents (xys:ResizeArray<float>) : ResizeArray<float> =
+        XY.checkEven "makeUnitTangents" xys
+        let ptCount = XY.pointCount xys
+        if ptCount < 2 then
+            fail $"Offset2D.makeUnitTangents: point count {ptCount} must be at least 2 for a polyline."
+        let uVecs = ResizeArray<float>((ptCount - 1) * 2) // the unit vectors of the segments, two floats per segment
+        let mutable px = xys.[0]
+        let mutable py = xys.[1]
+        for i = 1 to ptCount - 1 do
+            let x = XY.getX i xys
+            let y = XY.getY i xys
+            let vx = x - px
+            let vy = y - py
+            let len = sqrt (vx * vx + vy * vy)
+            if len < 1e-6 then
+                fail $"Offset2D.makeUnitTangents: point[{i}] and point[{i-1}] are the same at ({px}, {py})."
+            // TODO: or just skip duplicate points?
+            uVecs.Add (vx / len)
+            uVecs.Add (vy / len)
+            px <- x
+            py <- y
+        uVecs
+
+
+    /// Returns the normals of the segments of an interleaved coordinate buffer; each segment is rotated 90 degrees in counter-clockwise order.
+    /// The vector count is one less than the input point count. The result is interleaved x/y values.
+    /// Fails on duplicate points.
+    let makeOffsetDirections (xys:ResizeArray<float>) : ResizeArray<float> =
+        XY.checkEven "makeOffsetDirections" xys
+        let ptCount = XY.pointCount xys
+        if ptCount < 2 then
+            fail $"Offset2D.makeOffsetDirections: point count {ptCount} must be at least 2 for a polyline."
+        let normals = ResizeArray<float>((ptCount - 1) * 2) // the normals of the segments, two floats per segment
+        let mutable px = xys.[0]
+        let mutable py = xys.[1]
+        for i = 1 to ptCount - 1 do
+            let x = XY.getX i xys
+            let y = XY.getY i xys
+            let vx = x - px
+            let vy = y - py
+            let len = sqrt (vx * vx + vy * vy)
+            if len < 1e-6 then fail $"Offset2D.makeOffsetDirections: point[{i}] and point[{i-1}] are the same at ({px}, {py})."
+            normals.Add (vy / -len) // x = -y, y = x : =Rotate90CCW
+            normals.Add (vx / len)
+            px <- x
+            py <- y
+        normals
+
+    /// <summary>Removes Sharp U-Turns from an interleaved coordinate buffer</summary>
+    /// <param name="xys">The interleaved coordinates of the polyline.</param>
+    /// <param name="ns">The precomputed interleaved unit tangents or unit normals. (either are fine)</param>
+    /// <param name="minCos">The minimum cosine value for detecting U-turns.</param>
+    /// <returns>If no U-turns are present, the original coordinate buffer is returned.
+    /// If U-turns are present, a new ResizeArray of coordinates is returned with the U-turns removed.</returns>
+    let removeUTurns (xys:ResizeArray<float>, ns: ResizeArray<float>, minCos:float<Cosine.cosine>) : ResizeArray<float> =
+        XY.checkEven "removeUTurns" xys
+        XY.checkEven "removeUTurns normals" ns
+        let ptCount = XY.pointCount xys
+        let nCount = XY.pointCount ns
+        if ptCount < 2 then
+            fail $"Offset2D.removeUTurns: point count must be at least 2 but is {ptCount}."
+
+        if ptCount <> nCount + 1  then
+            fail $"Offset2D.removeUTurns: point count must be one greater than normals count but they are {ptCount} and {nCount}."
+
+        let isClosed = XY.sqDistFirstLast xys < sqOpenTolerance
+
+        // (1) first collect all the bad indices that have Uturns:
+        let bad = Array.zeroCreate<bool> ptCount
+        let mutable anyBad = false
+        let mutable nPrevX = XY.getX (nCount - 1) ns
+        let mutable nPrevY = XY.getY (nCount - 1) ns
+
+        // (1.1) check the first and last point if it's a closed polyline
+        if isClosed then
+            let nNextX = XY.getX 0 ns
+            let nNextY = XY.getY 0 ns
+            let cosine = dot nPrevX nPrevY nNextX nNextY
+            let isBad = withMeasure cosine <= minCos // cos is smaller than -0.99.. (but never less than -1.0)
+            bad[0]            <- isBad
+            bad[bad.Length-1] <- isBad
+            anyBad <- isBad
+
+        // (1.2) the main loop
+        nPrevX <- XY.getX 0 ns
+        nPrevY <- XY.getY 0 ns
+        for i = 1 to bad.Length - 2 do
+            let nNextX = XY.getX i ns // the normal vector for the segment from pt to next point
+            let nNextY = XY.getY i ns
+            let cosine = dot nPrevX nPrevY nNextX nNextY
+            let isBad = withMeasure cosine <= minCos
+            bad[i] <- isBad
+            anyBad <- anyBad || isBad
+            nPrevX <- nNextX
+            nPrevY <- nNextY
+
+        // (2) collect points and re-intersect where bad points are skipped
+        if anyBad then
+            let res = ResizeArray<float>(xys.Count)
+            for i = 0 to bad.Length - 1 do
+                if not bad[i] then
+                    XY.add (XY.getX i xys) (XY.getY i xys) res
+            // If the polyline was closed and its seam vertex (the shared start/end point) was a U-turn,
+            // both bad[0] and bad[last] were skipped above, which would leave the result open.
+            // Re-close it by repeating the new first point at the end so the closed property is preserved.
+            if isClosed && bad[0] && res.Count >= 4 then
+                XY.add res.[0] res.[1] res
+            res
+        else
+            xys // no bad points, return original
+
+
+    // #endregion
+    // #region Constant Distance
 
 
     /// The core offset Algorithm for constant distance offsets.
     /// Returns the offset point based on the previous and next normals,
     /// the distance, and the precomputed cosine (= dot product of nPrev * nNext).
     /// (pt + (nPrev + nNext) * (dist / (1.0 + cosine)))
-    let inline setOffCorner (pt:Pt) (dist:float) (nPrev:UnitVc) (nNext:UnitVc) (cosine:float) :Pt =
+    let inline setOffCorner (res:ResizeArray<float>, x:float, y:float, dist:float, nPrevX:float, nPrevY:float, nNextX:float, nNextY:float, cosine:float) : unit =
         #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode
             if cosine < -0.9999999 then
-                fail $"Offset2D.setOffCorner: cosine is {cosine} , a 180 degree U-turn, which is not allowed here for dist {dist}, nPrev {nPrev}, nNext {nNext} at pt {pt}."
+                fail $"Offset2D.setOffCorner: cosine is {cosine} , a 180 degree U-turn, which is not allowed here for dist {dist}, nPrev ({nPrevX}, {nPrevY}), nNext ({nNextX}, {nNextY}) at ({x}, {y})."
         #endif
             // based on https://www.angusj.com/clipper2/Docs/Trigonometry.htm
-            pt + (nPrev + nNext) * (dist / (1.0 + cosine))
+            let k = dist / (1.0 + cosine)
+            let xx = x + (nPrevX + nNextX) * k
+            let yy = y + (nPrevY + nNextY) * k
+            res.Add xx
+            res.Add yy
 
 
-    /// Returns the normals of the segments of a polyline; each segment is rotated 90 degrees in counter-clockwise order.
-    /// The count is one less than the input points.
-    /// Fails on duplicate points.
-    let makeOffsetDirections (pts:ResizeArray<Pt>) : ResizeArray<UnitVc> =
-        if pts.Count < 2 then
-            fail $"Offset2D.makeOffsetDirections: pts.Count {pts.Count} must be at least 2 for a polyline."
-        let normals = ResizeArray<UnitVc>(pts.LastIndex) // the normals of the segments, one less than pts
-        let mutable pp = pts.[0]
-        for i = 1 to pts.LastIndex do
-            let p = pts.[i]
-            let v = p - pp // the vector from previous to current point
-            let len = v.Length
-            if len < 1e-6 then fail $"Offset2D.makeOffsetDirections: pts.[{i}] and pts.[{i-1}] are the same at {pp}"
-            // TODO: or just skip duplicate points?
-            let u = UnitVc.createUnchecked(v.X/len, v.Y/len) // the unit vector of the segment
-            normals.Add u.Rotate90CCW
-            pp <- p
-        normals
-
-    let internal handleUTurn (pt:Pt, cosine:float, nPrev:UnitVc, nNext:UnitVc, dist:float, res:ResizeArray<Pt>, uTurnBehavior:UTurn, useUTurnBehaviorAbove:float<Cosine.cosine>) =
+    let internal handleUTurn (x:float, y:float, cosine:float, nPrevX:float, nPrevY:float, nNextX:float, nNextY:float, dist:float, res:ResizeArray<float>, uTurnBehavior:UTurn, useUTurnBehaviorAbove:float<Cosine.cosine>) :unit =
         match uTurnBehavior with
         | UTurn.Fail ->
-            fail $"Offset2D.handleUTurn: pt {pt} makes a %.4f{toDegrees(acos cosine) } degree U-turn, max {toDegrees(acos (float useUTurnBehaviorAbove))} is allowed."
+            fail $"Offset2D.handleUTurn: point ({x}, {y}) makes a %.4f{toDegrees(acos cosine) } degree U-turn, max {toDegrees(acos (float useUTurnBehaviorAbove))} is allowed."
 
         | UTurn.Chamfer ->
             // (1.2) special case: sharp U-turn, add a chamfer, i.e., two points instead of one
-            let chamferTangent = (nPrev - nNext).Unitized
-            let chamferNormal = chamferTangent.Rotate90CCW
-            let chamferNormalChecked = if chamferNormal *** nPrev >= 0.0 then chamferNormal else -chamferNormal
-            let cos = UnitVc.dot (nPrev , chamferNormal)
-            res.Add <| setOffCorner pt dist nPrev                chamferNormalChecked cos // the first chamfer point
-            res.Add <| setOffCorner pt dist chamferNormalChecked nNext                cos // the second chamfer point
+            let struct (nMidX, nMidY, cos) = chamferNormalBetween nPrevX nPrevY nNextX nNextY
+            setOffCorner (res, x, y, dist, nPrevX, nPrevY, nMidX,  nMidY,  cos) // the first chamfer point
+            setOffCorner (res, x, y, dist, nMidX,  nMidY,  nNextX, nNextY, cos) // the second chamfer point
 
         | UTurn.UseThreshold  ->
             // make the offset point as if the acute angle matches the threshold angle, even if it is more acute
-            let midV = nPrev.Rotate90CW + nNext.Rotate90CCW // the offset vector with length of almost 2.0, so use *0.5 below:
+            let midX = nPrevY - nNextY // nPrev.Rotate90CW + nNext.Rotate90CCW, length almost 2.0, so use *0.5 below
+            let midY = nNextX - nPrevX
             let cosHalf =  sqrt ((1.0 + unbox<float> useUTurnBehaviorAbove) / 2.0)  // get the cosine of half the angle from the cosine of the full angle
-            res.Add <| pt - midV * (0.5 * dist / cosHalf)  // hypotenuse = adjacent / cos(θ); use *0.5 because midV length is almost 2.0
-
-        | UTurn.Skip ->
-            () // do nothing, skip the point
+            let xx = x - midX * (0.5 * dist / cosHalf) // hypotenuse = adjacent / cos(θ); use *0.5 because mid vector length is almost 2.0
+            let yy = y - midY * (0.5 * dist / cosHalf)
+            res.Add xx
+            res.Add yy
 
         | x -> // should never happen
             fail $"Offset2D.UTurnBehavior: enum value {x} not recognized."
 
-    /// The lines are described here by their normal vectors, not their tangent vectors.
-    let inline private intersectFromNormals(fromA:Pt, nA:UnitVc, fromB:Pt, nB:UnitVc) : Pt =
-        // using the normal vectors, first rotate 90 degrees to get the tangent vector
-        let ax =  nA.Y // x and y swapped and one sign changed to rotate 90 degrees
-        let ay = -nA.X
-        let bx =  nB.Y
-        let by = -nB.X
-        let t = XLine2D.parameterA(fromA.X, fromA.Y, fromB.X, fromB.Y, ax, ay, bx, by)
-        Pt(fromA.X + ax*t , fromA.Y + ay*t)
 
-    let internal handleUTurnVarDist (pt:Pt, cosine:float, nPrev:UnitVc, nNext:UnitVc, dPrev:float, dNext:float, res:ResizeArray<Pt>, uTurnBehavior:UTurn, useUTurnBehaviorAbove:float<Cosine.cosine>) =
+    /// The lines are described here by their normal vectors, not their tangent vectors.
+    let inline private intersectFromNormals(res:ResizeArray<float>, fromAx:float, fromAy:float, nAx:float, nAy:float, fromBx:float, fromBy:float, nBx:float, nBy:float) : unit =
+        // using the normal vectors, first rotate 90 degrees to get the tangent vector
+        let ax =  nAy // x and y swapped and one sign changed to rotate 90 degrees
+        let ay = -nAx
+        let bx =  nBy
+        let by = -nBx
+        let t = XLine2D.parameterA(fromAx, fromAy, fromBx, fromBy, ax, ay, bx, by)
+        let x = fromAx + ax*t
+        let y = fromAy + ay*t
+        res.Add x
+        res.Add y
+
+
+    let internal handleUTurnVarDist (x:float, y:float, cosine:float, nPrevX:float, nPrevY:float, nNextX:float, nNextY:float, dPrev:float, dNext:float, res:ResizeArray<float>, uTurnBehavior:UTurn, useUTurnBehaviorAbove:float<Cosine.cosine>) :unit  =
         // (2.3) special case: sharp U-turn with variable distances:
         match uTurnBehavior with
         | UTurn.Fail ->
             // for i,d in Seq.indexed dirs do printfn $"*dir[{i}]= {d.AsString}"
-            fail $"Offset2D.offsetVariableWithDirections: pt {pt} makes a {toDegrees(acos cosine) } degree U-turn, max {toDegrees(acos (float useUTurnBehaviorAbove))} is allowed."
+            fail $"Offset2D.offsetVariableWithDirections: point ({x}, {y}) makes a {toDegrees(acos cosine) } degree U-turn, max {toDegrees(acos (float useUTurnBehaviorAbove))} is allowed."
 
         | UTurn.Chamfer ->
             // (1.2) special case: sharp U-turn, add a chamfer (two points) with variable distance
-            let chamferTangent = (nPrev - nNext).Unitized
-            let chamferNormal = chamferTangent.Rotate90CCW
-            let nMid = if chamferNormal *** nPrev >= 0.0 then chamferNormal else -chamferNormal // = chamferNormalChecked
+            let struct (nMidX, nMidY, _) = chamferNormalBetween nPrevX nPrevY nNextX nNextY
             let dMid = (dPrev + dNext) * 0.5 // the mean distance
-            let midOff = pt + nMid * dMid
-            res.Add <| intersectFromNormals(pt + nPrev * dPrev, nPrev, midOff            , nMid) // the intersection of the two offset lines
-            res.Add <| intersectFromNormals(midOff            , nMid , pt + nNext * dNext, nNext) // the intersection of the two offset lines
+            let midX = x + nMidX * dMid
+            let midY = y + nMidY * dMid
+            let aX = x + nPrevX * dPrev
+            let aY = y + nPrevY * dPrev
+            let bX = x + nNextX * dNext
+            let bY = y + nNextY * dNext
+            intersectFromNormals(res, aX, aY, nPrevX, nPrevY, midX, midY, nMidX, nMidY) // the intersection of the two offset lines
+            intersectFromNormals(res, midX, midY, nMidX, nMidY, bX, bY, nNextX, nNextY) // the intersection of the two offset lines
+
 
         | UTurn.UseThreshold  ->
             // make the offset point as if the acute angle matches the threshold angle, even if it is more acute
             let cosHalf =  sqrt ((1.0 + unbox<float> useUTurnBehaviorAbove) / 2.0)  // get the cosine of half the angle from the cosine of the full angle
-            let rot = Rotation2D.createFromCosine cosHalf
-            let nMid  = nPrev.Rotate90CW + nNext.Rotate90CCW |> Vc.unitize // the middle unit vector
+            let sinHalf = sqrt (1.0 - cosHalf * cosHalf)
+            let nMidX = nPrevY - nNextY // nPrev.Rotate90CW + nNext.Rotate90CCW
+            let nMidY = nNextX - nPrevX
+            let nMidLen = sqrt (nMidX * nMidX + nMidY * nMidY)
+            let nMidX = nMidX / nMidLen
+            let nMidY = nMidY / nMidLen
             // create two normals rotated by the threshold angle instead of the real angle
-            let nPrevThresh = nMid.RotateBy rot.Inverse
-            let nNextThresh = nMid.RotateBy rot
-            res.Add <| intersectFromNormals(pt + nPrev * dPrev, nPrevThresh, pt + nNext * dNext, nNextThresh) // the intersection of the two offset lines
-
-        | UTurn.Skip ->
-            () // do nothing, skip the point
+            let nPrevThreshX = nMidX * cosHalf + nMidY * sinHalf
+            let nPrevThreshY = -nMidX * sinHalf + nMidY * cosHalf
+            let nNextThreshX = nMidX * cosHalf - nMidY * sinHalf
+            let nNextThreshY = nMidX * sinHalf + nMidY * cosHalf
+            let aX = x + nPrevX * dPrev
+            let aY = y + nPrevY * dPrev
+            let bX = x + nNextX * dNext
+            let bY = y + nNextY * dNext
+            intersectFromNormals(res, aX, aY, nPrevThreshX, nPrevThreshY, bX, bY, nNextThreshX, nNextThreshY) // the intersection of the two offset lines
 
         | x ->
             fail $"Offset2D.UTurnBehavior: enum value {x} not recognized."
 
 
 
-    /// <summary> For closed or open polylines.</summary>
+    /// <summary> For closed or open interleaved coordinate buffers of x and y.</summary>
     /// <remarks> This function requires precomputed segment normals; the simpler 'Offset2D.offset' uses it internally too.</remarks>
-    /// <param name="pts">The points of the Polyline2D to offset.</param>
-    /// <param name="dirs">The normals of the Polyline2D to offset. One item less than pts. Must be created by counter clockwise rotation of each segment.</param>
-    /// <param name="dist">The distance to offset the Polyline2D.</param>
-    /// <param name="uTurnBehavior"> What to do at a 180 degree U-turn? Fail, Chamfer with two points, UseThreshold or Skip the point.</param>
+    /// <param name="xys">The interleaved coordinates of the Polyline2D to offset.</param>
+    /// <param name="dirs">The interleaved normals of the Polyline2D to offset. One vector less than the point count. Must be created by counter clockwise rotation of each segment.</param>
+    /// <param name="dist">The distance to offset the coordinates.</param>
+    /// <param name="uTurnBehavior"> What to do at a 180 degree U-turn? Fail, Chamfer with two points, or UseThreshold.</param>
     /// <param name="useUTurnBehaviorAbove"> The angle between normals after which, U-TurnBehavior is used.</param>
-    /// <returns> A new ResizeArray of Points. Due to error correction at sharp U-turns the point count may not be the same as the input.</returns>
-    let offsetWithDirections(pts:ResizeArray<Pt>, dirs: ResizeArray<UnitVc>, dist:float, uTurnBehavior:UTurn, useUTurnBehaviorAbove :float<Cosine.cosine>) : ResizeArray<Pt> = //[<OPT;DEF(Cosine.``179.0``)>]
-        if pts.Count < 2 then
-            fail $"Offset2D.offsetWithDirections: pts.Count must be at least 2 but is {pts.Count}."
+    /// <returns> A new ResizeArray of interleaved coordinates. Due to error correction at sharp U-turns the point count may not be the same as the input.</returns>
+    let offsetWithDirections(xys:ResizeArray<float>, dirs: ResizeArray<float>, dist:float, uTurnBehavior:UTurn, useUTurnBehaviorAbove :float<Cosine.cosine>) : ResizeArray<float> = //[<OPT;DEF(Cosine.``179.0``)>]
+        XY.checkEven "offsetWithDirections" xys
+        XY.checkEven "offsetWithDirections dirs" dirs
+        let ptCount = XY.pointCount xys
+        let dirCount = XY.pointCount dirs
+        if ptCount < 2 then
+            fail $"Offset2D.offsetWithDirections: point count must be at least 2 but is {ptCount}."
 
-        if pts.Count <> dirs.Count + 1  then
-            fail $"Offset2D.offsetWithDirections: pts.Count must be one greater than normals.Count but they are {pts.Count} and {dirs.Count}."
+        if ptCount <> dirCount + 1  then
+            fail $"Offset2D.offsetWithDirections: point count must be one greater than normals count but they are {ptCount} and {dirCount}."
 
-        let res = ResizeArray<Pt>(pts.Count)
-        let isOpen = Pt.distanceSq pts.First pts.Last > sqOpenTolerance
+        let res = ResizeArray<float>(xys.Count)
+        let isOpen = XY.sqDistFirstLast xys > sqOpenTolerance
         let mutable fromIdx = 0
-        let mutable nPrev = dirs.[dirs.Count-1]
+        let mutable nPrevX = XY.getX (dirCount - 1) dirs
+        let mutable nPrevY = XY.getY (dirCount - 1) dirs
         if isOpen then // this is needed for open polylines that have 180 degree opposing start and end segments
             fromIdx <- 1
-            nPrev <- dirs.[0]
-            res.Add <|  pts.[0] + nPrev * dist
+            nPrevX <- XY.getX 0 dirs
+            nPrevY <- XY.getY 0 dirs
+            XY.add (xys.[0] + nPrevX * dist) (xys.[1] + nPrevY * dist) res
 
-        for i = fromIdx to pts.Count - 2 do // last point is skipped; it's dealt with at the end
-            let nNext = dirs.[i] // the normal vector for the segment from pt to next point
-            let pt = pts.[i]
-            let cosine = UnitVc.dot (nPrev , nNext)
+        for i = fromIdx to ptCount - 2 do // last point is skipped; it's dealt with at the end
+            let nNextX = XY.getX i dirs // the normal vector for the segment from pt to next point
+            let nNextY = XY.getY i dirs
+            let x = XY.getX i xys
+            let y = XY.getY i xys
+            let cosine = dot nPrevX nPrevY nNextX nNextY
             if withMeasure cosine > useUTurnBehaviorAbove then // exclude U-turns
                 // (1.1) the regular case:
-                res.Add <| setOffCorner pt dist nPrev nNext cosine
+                setOffCorner (res, x, y, dist, nPrevX, nPrevY, nNextX, nNextY, cosine)
             else
-                handleUTurn (pt, cosine, nPrev, nNext, dist, res, uTurnBehavior, useUTurnBehaviorAbove)
-            nPrev <- nNext
+                handleUTurn (x, y, cosine, nPrevX, nPrevY, nNextX, nNextY, dist, res, uTurnBehavior, useUTurnBehaviorAbove)
+            nPrevX <- nNextX
+            nPrevY <- nNextY
 
         // if the polyline is open, then we need to fix first and last point
         if isOpen then
-            res.Add <| pts.Last + dirs.Last * dist
+            let nLastX = XY.getX (dirCount - 1) dirs
+            let nLastY = XY.getY (dirCount - 1) dirs
+            let li = (ptCount - 1) * 2
+            XY.add (xys.[li] + nLastX * dist) (xys.[li + 1] + nLastY * dist) res
         else
-            res.Add res.[0] // add the last point, which is the same as the first point
+            XY.add res.[0] res.[1] res // add the last point, which is the same as the first point
         res
 
 
 
-
-
-    //       █████   █████                      ███            █████     ████
-    //      ░░███   ░░███                      ░░░            ░░███     ░░███
-    //       ░███    ░███   ██████   ████████  ████   ██████   ░███████  ░███   ██████
-    //       ░███    ░███  ░░░░░███ ░░███░░███░░███  ░░░░░███  ░███░░███ ░███  ███░░███
-    //       ░░███   ███    ███████  ░███ ░░░  ░███   ███████  ░███ ░███ ░███ ░███████
-    //        ░░░█████░    ███░░███  ░███      ░███  ███░░███  ░███ ░███ ░███ ░███░░░
-    //          ░░███     ░░████████ █████     █████░░████████ ████████  █████░░██████
-    //           ░░░       ░░░░░░░░ ░░░░░     ░░░░░  ░░░░░░░░ ░░░░░░░░  ░░░░░  ░░░░░░
-    //
-    //
-    //
-    //                      ██████     ██████                    █████
-    //                     ███░░███   ███░░███                  ░░███
-    //           ██████   ░███ ░░░   ░███ ░░░   █████   ██████  ███████
-    //          ███░░███ ███████    ███████    ███░░   ███░░███░░░███░
-    //         ░███ ░███░░░███░    ░░░███░    ░░█████ ░███████   ░███
-    //         ░███ ░███  ░███       ░███      ░░░░███░███░░░    ░███ ███
-    //         ░░██████   █████      █████     ██████ ░░██████   ░░█████
-    //          ░░░░░░   ░░░░░      ░░░░░     ░░░░░░   ░░░░░░     ░░░░░
-    //
-    //
-    //
-    //              █████  ███           █████
-    //             ░░███  ░░░           ░░███
-    //           ███████  ████   █████  ███████    ██████   ████████    ██████   ██████
-    //          ███░░███ ░░███  ███░░  ░░░███░    ░░░░░███ ░░███░░███  ███░░███ ███░░███
-    //         ░███ ░███  ░███ ░░█████   ░███      ███████  ░███ ░███ ░███ ░░░ ░███████
-    //         ░███ ░███  ░███  ░░░░███  ░███ ███ ███░░███  ░███ ░███ ░███  ███░███░░░
-    //         ░░████████ █████ ██████   ░░█████ ░░████████ ████ █████░░██████ ░░██████
-    //          ░░░░░░░░ ░░░░░ ░░░░░░     ░░░░░   ░░░░░░░░ ░░░░ ░░░░░  ░░░░░░   ░░░░░░
-
+    // #endregion
+    // #region Variable Distance
 
 
     /// Split list into chunks. Starts a new chunk if comparing the current item with the previous one returns true
@@ -337,177 +452,167 @@ module Offset2D=
 
 
     /// Only used when VarDistParallelBehavior.Proportional is selected.
-    let internal distributeProportionallyBadIdxs( res: ResizeArray<Pt>, colinearIdxs : ResizeArray<IndexToFixProportional>, origs: ResizeArray<Pt>) =
+    let internal distributeProportionallyBadIdxs( res: ResizeArray<float>, colinearIdxs : ResizeArray<IndexToFixProportional>, origs: ResizeArray<float>) =
         let chunks = colinearIdxs |> chunkBy (fun thisIdx prevIdx -> thisIdx.idxRes <> prevIdx.idxRes + 1 ) // return true for split if not  consecutive indices
-        reLoop (res.LastIndex) (fun (i: IndexToFixProportional) -> i.idxRes) chunks
-        // for ch in chunks do
-        //     printfn "new chunk:"
-        //     for e in ch do eprintfn $"{e}"
+        reLoop (XY.pointCount res - 1) (fun (i: IndexToFixProportional) -> i.idxRes) chunks
         for i=0 to chunks.LastIndex do
             let chunk = chunks.[i]
             let offLn =
-                let prevOkIdx = saveIdx (chunk.First.idxRes - 1) res.Count  // the previous point before the chunk
-                let nextOkIdx = saveIdx (chunk.Last.idxRes  + 1) res.Count // the next point after the chunk
-                Line2D(res[prevOkIdx], res[nextOkIdx])
+                let prevOkIdx = saveIdx (chunk.First.idxRes - 1) (XY.pointCount res)  // the previous point before the chunk
+                let nextOkIdx = saveIdx (chunk.Last.idxRes  + 1) (XY.pointCount res) // the next point after the chunk
+                Line2D(XY.getPt prevOkIdx res, XY.getPt nextOkIdx res)
             let origLn =
-                let origPrevOkIdx = saveIdx (chunk.First.idxOrig - 1 ) origs.Count // .LastIndex //use origs last idx, not count, because origs is one item more,  the last and first point are already the same.
-                let origNextOkIdx = saveIdx (chunk.Last.idxOrig  + 1 ) origs.Count // .LastIndex
-                Line2D(origs[origPrevOkIdx], origs[origNextOkIdx])
+                let origPrevOkIdx = saveIdx (chunk.First.idxOrig - 1 ) (XY.pointCount origs)
+                let origNextOkIdx = saveIdx (chunk.Last.idxOrig  + 1 ) (XY.pointCount origs)
+                Line2D(XY.getPt origPrevOkIdx origs, XY.getPt origNextOkIdx origs)
             for j=0 to chunk.LastIndex do
                 let bi = chunk.[j]
-                let origPt = origs.[bi.idxOrig] // the original point to fix
+                let origPt = XY.getPt bi.idxOrig origs // the original point to fix
                 let t = origLn.RayClosestParameter(origPt) // the parameter on the original line
-                res.[bi.idxRes] <- offLn.EvaluateAt t
+                let fixedPt = offLn.EvaluateAt t
+                XY.set bi.idxRes fixedPt.X fixedPt.Y res
 
     /// Only used when VarDistParallelBehavior.Project is selected.
-    let internal projectBadIdxs(res: ResizeArray<Pt>, colinearIdxs : ResizeArray<IndexToProject>) =
+    let internal projectBadIdxs(res: ResizeArray<float>, colinearIdxs : ResizeArray<IndexToProject>) =
        let chunks = colinearIdxs |> chunkBy (fun thisIdx prevIdx -> thisIdx.idx <> prevIdx.idx + 1 )  // return true for split if not consecutive indices
-       reLoop res.LastIndex _.idx chunks
+       reLoop (XY.pointCount res - 1) _.idx chunks
        for i=0 to chunks.LastIndex do
            let chunk = chunks.[i]
-           let prev = res.GetLooped (chunk.First.idx - 1) // the previous point before the chunk
-           let next = res.GetLooped (chunk.Last.idx + 1) // the next point after the chunk
+           let prev = XY.getPt (saveIdx (chunk.First.idx - 1) (XY.pointCount res)) res // the previous point before the chunk
+           let next = XY.getPt (saveIdx (chunk.Last.idx + 1) (XY.pointCount res)) res // the next point after the chunk
            let ln = Line2D(prev,next)
            for j=0 to chunk.LastIndex do
                 let itp = chunk.[j]
-                let pt = res.[itp.idx] // the point to fix
-                let pln = Line2D(pt, pt + itp.dir) // the line from the point in the direction of the normal
+                let pt = XY.getPt itp.idx res // the point to fix
+                let pln = Line2D(pt, Pt(pt.X + itp.dirX, pt.Y + itp.dirY)) // the line from the point in the direction of the normal
                 // at shallow angles and strongly different distances, the projection may be outside of the segment
                 // Should we allow that? or check for it and skip ?
-                res.[itp.idx] <- XLine2D.tryIntersectRay(ln, pln).Value // Null Reference Exception should never happen here, because lines are not parallel
-
-
-
-    (*
-    // alternative offset point calculation for variable distances, all work correctly:
-
-    let inline setOffCornerVar1 (pt:Pt) (distPrev:float) (distNext:float) (nPrev:UnitVc) (nNext:UnitVc) :Pt =
-        let pAx = pt.X + nPrev.X * distPrev
-        let pAy = pt.Y + nPrev.Y * distPrev
-        let pBx = pt.X + nNext.X * distNext
-        let pBy = pt.Y + nNext.Y * distNext
-        let vAx = nPrev.Y // x and y swapped and one sign changed to rotate 90 degrees
-        let vAy = -nPrev.X
-        let vBx = nNext.Y
-        let vBy = -nNext.X
-        let t = XLine2D.parameterA( pAx, pAy, pBx, pBy, vAx, vAy, vBx, vBy)
-        Pt( pAx + vAx * t , pAy + vAy * t)
-
-    let inline setOffCornerVar2 (pt:Pt) (distPrev:float) (distNext:float) (nPrev:UnitVc) (nNext:UnitVc) (cosine:float) :Pt =
-        // first get the offset point as if distances were the same
-        let eqPt = pt + (nPrev + nNext) * (distNext / (1.0 + cosine))
-        // second, find the offset point as if distPrev was 0.0.
-        let vPrev = nPrev.Rotate90CW
-        let cosN = vPrev *** nNext // never 0.0 here, because vectors are already checked to be not colinear
-        // / the offset point as if distPrev was 0.0:
-        let exPt = pt + vPrev * (distNext / cosN)
-        // now interpolate between both points according to distPrev / distNext
-        Pt.divPt(exPt, eqPt, distPrev / distNext )
-    *)
+                let fixedPt = XLine2D.tryIntersectRay(ln, pln).Value // Null Reference Exception should never happen here, because lines are not parallel
+                XY.set itp.idx fixedPt.X fixedPt.Y res
 
     /// offset point calculation for variable distances:
-    let inline internal setOffCornerVar3 (pt:Pt) (distPrev:float) (distNext:float) (nPrev:UnitVc) (nNext:UnitVc) (cosine:float) : Pt =
+    let inline internal setOffCornerVar3 (res: ResizeArray<float>, x:float, y:float, distPrev:float, distNext:float, nPrevX:float, nPrevY:float, nNextX:float, nNextY:float, cosine:float) : unit =
         let delta = distPrev - distNext
-        let vNext = nNext.Rotate90CW // the unit vector along the next segment
-        let cos2 = nPrev *** vNext // never 0.0 here, because vectors are already checked to be not colinear
-        pt
-            + vNext * (delta / cos2) // the offset for the delta in distances
-            + (nPrev + nNext) * (distNext / (1.0 + cosine)) // the offset for the common distance
+        let vNextX = nNextY // the unit vector along the next segment
+        let vNextY = -nNextX
+        let cos2 = dot nPrevX nPrevY vNextX vNextY // never 0.0 here, because vectors are already checked to be not colinear
+        let common = distNext / (1.0 + cosine)
+        let x = x + vNextX * (delta / cos2) + (nPrevX + nNextX) * common
+        let y = y + vNextY * (delta / cos2) + (nPrevY + nNextY) * common
+        res.Add x
+        res.Add y
 
-
-
-    let internal handleVarOffsetColinear (i:int, pt:Pt, nPrev:UnitVc, nNext:UnitVc, dPrev:float, dNext:float, res:ResizeArray<Pt>, idxsToFixProportional: ResizeArray<IndexToFixProportional>, projectIdxs: ResizeArray<IndexToProject>, varDistParallelBehavior: VarDistParallel) =
+    let internal handleVarOffsetColinear (i:int, x:float, y:float, nPrevX:float, nPrevY:float, nNextX:float, nNextY:float, dPrev:float, dNext:float, res:ResizeArray<float>, idxsToFixProportional: ResizeArray<IndexToFixProportional>, projectIdxs: ResizeArray<IndexToProject>, varDistParallelBehavior: VarDistParallel) =
         match varDistParallelBehavior with
         | VarDistParallel.Fail ->
-            fail $"Offset2D.offsetVariableWithDirections: pts.[{i}] and pts.[{i-1}] are colinear but have different distances {dPrev} and {dNext}."
+            fail $"Offset2D.offsetVariableWithDirections: point[{i}] and point[{i-1}] are colinear but have different distances {dPrev} and {dNext}."
         | VarDistParallel.Skip ->
             ()
         | VarDistParallel.Proportional ->
-            idxsToFixProportional.Add  {idxRes = res.Count; idxOrig = i} // if there was a sharp U-turn with two points earlier, the the index into the originals now has an offset
-            res.Add  pt // just add a dummy point , so we can edit it in place later
+            idxsToFixProportional.Add  {idxRes = XY.pointCount res; idxOrig = i} // if there was a sharp U-turn with two points earlier, the the index into the originals now has an offset
+            XY.add x y res // just add a dummy point , so we can edit it in place later
         | VarDistParallel.Project ->
-            projectIdxs.Add {idx = res.Count;  dir = nPrev + nNext}
-            res.Add  pt // just add the original point , so we can project it later
+            projectIdxs.Add {idx = XY.pointCount res; dirX = nPrevX + nNextX; dirY = nPrevY + nNextY}
+            XY.add x y res // just add the original point , so we can project it later
         | VarDistParallel.StepWithTwoPoints  ->
             // add two points, one for each distance
-            res.Add <| pt + nPrev * dPrev
-            res.Add <| pt + nNext * dNext
+            XY.add (x + nPrevX * dPrev) (y + nPrevY * dPrev) res
+            XY.add (x + nNextX * dNext) (y + nNextY * dNext) res
         | x ->
             fail $"Offset2D.VarDistParallelBehavior: enum value {x} not recognized."
 
+
     /// <summary> Offsetting each segment by its own distance. For closed or open polylines. Adds 2 chamfer points at U-turns and skips colinear points.</summary>
     /// <remarks> This function requires precomputed segment normals; the simpler 'Offset2D.offsetVariable' uses it internally too.</remarks>
-    /// <param name="pts">The points of the Polyline to offset.</param>
-    /// <param name="nDirs">The directions or normals of the Polyline segments to offset. One item less than pts. Must be created by counter clockwise rotation of each segment.</param>
-    /// <param name="dists"> The distances to offset the Polyline. One item less than pts. Positive values will create inside offsets on counter-clockwise polylines.</param>
+    /// <param name="xys">The points of the Polyline to offset as a flat array of coordinates.</param>
+    /// <param name="nDirs">The interleaved directions or normals of the Polyline segments to offset. One vector less than xys. Must be created by counter clockwise rotation of each segment.</param>
+    /// <param name="dists"> The distances to offset the Polyline. One item less than xys. Positive values will create inside offsets on counter-clockwise polylines.</param>
     /// <param name="varDistParallelBehavior"> What to do with colinear segments below 'useVarDistParallelBehaviorBelow' degrees when offset distances are different too.</param>
-    /// <param name="uTurnBehavior"> What to do at a 180 degree U-turn? Fail, Chamfer with two points, UseThreshold or Skip the point.</param>
+    /// <param name="uTurnBehavior"> What to do at a 180 degree U-turn? Fail, Chamfer with two points, or UseThreshold.</param>
     /// <param name="useVarDistParallelBehaviorBelow"> The angle between normals below which points are considered colinear and VarDistParallelBehavior is applied if distances are not the same. </param>
     /// <param name="useUTurnBehaviorAbove"> The angle between normals after which uTurnBehavior is applied .</param>
-    /// <returns> A new ResizeArray of Points. Due to error correction at sharp U-turns the point count may not be the same as the input.</returns>
-    let offsetVariableWithDirections(pts:ResizeArray<Pt>, nDirs: ResizeArray<UnitVc>, dists:Collections.Generic.IList<float>, varDistParallelBehavior: VarDistParallel, uTurnBehavior:UTurn, useVarDistParallelBehaviorBelow :float<Cosine.cosine>, useUTurnBehaviorAbove :float<Cosine.cosine>) : ResizeArray<Pt> =
-        if pts.Count < 2 then
-            fail $"Offset2D.offsetVariableWithDirections:\n  point count must be at least 2, but is {pts.Count}."
+    /// <returns> A new ResizeArray of Points as a flat array of coordinates. If UTurnBehavior.Chamfer is used the total point count may be more than the input.</returns>
+    let offsetVariableWithDirections(xys : ResizeArray<float>,
+                                     nDirs : ResizeArray<float>,
+                                     dists : Collections.Generic.IList<float>,
+                                     varDistParallelBehavior : VarDistParallel,
+                                     uTurnBehavior : UTurn,
+                                     useVarDistParallelBehaviorBelow : float<Cosine.cosine>,
+                                     useUTurnBehaviorAbove : float<Cosine.cosine>
+                                     ) : ResizeArray<float> =
+        XY.checkEven "offsetVariableWithDirections" xys
+        XY.checkEven "offsetVariableWithDirections nDirs" nDirs
+        let ptCount = XY.pointCount xys
+        let nDirCount = XY.pointCount nDirs
+        if ptCount < 2 then
+            fail $"Offset2D.offsetVariableWithDirections:\n  point count must be at least 2, but is {ptCount}."
 
-        if pts.Count <> nDirs.Count + 1  then
-            fail $"Offset2D.offsetVariableWithDirections:\n  point count must be 1 greater than normal directions count, but they are {pts.Count} and {nDirs.Count}."
+        if ptCount <> nDirCount + 1  then
+            fail $"Offset2D.offsetVariableWithDirections:\n  point count must be 1 greater than normal directions count, but they are {ptCount} and {nDirCount}."
 
-        if pts.Count <> dists.Count + 1  then
-            fail $"Offset2D.offsetVariableWithDirections:\n   point count must be 1 greater than offset distances count, but they are {pts.Count} and {dists.Count}."
+        if ptCount <> dists.Count + 1  then
+            fail $"Offset2D.offsetVariableWithDirections:\n   point count must be 1 greater than offset distances count, but they are {ptCount} and {dists.Count}."
 
-        let res = ResizeArray<Pt>(pts.Count)
+        let res = ResizeArray<float>(xys.Count)
         let idxsToFixProportional = ResizeArray<IndexToFixProportional>() // only used if varDistParallelBehavior is Proportional
         let projectIdxs           = ResizeArray<IndexToProject>() // only used if varDistParallelBehavior is Project
         let mutable dPrev = dists.[dists.Count-1]
-        let mutable nPrev = nDirs.[nDirs.Count-1]
+        let mutable nPrevX = XY.getX (nDirCount - 1) nDirs
+        let mutable nPrevY = XY.getY (nDirCount - 1) nDirs
 
-        let isOpen = Pt.distanceSq pts.First pts.Last > sqOpenTolerance
+        let isOpen = XY.sqDistFirstLast xys > sqOpenTolerance
         let mutable fromIdx = 0
         if isOpen then // this is needed for open polylines that have 180 degree opposing start and end segments , see check 2.01 below
             fromIdx <- 1
-            nPrev <- nDirs.[0]
+            nPrevX <- XY.getX 0 nDirs
+            nPrevY <- XY.getY 0 nDirs
             dPrev <- dists.[0]
-            res.Add <| pts.[0] + nPrev * dPrev
+            XY.add (xys.[0] + nPrevX * dPrev) (xys.[1] + nPrevY * dPrev) res
 
-        for i = fromIdx to pts.Count - 2 do // last point is skipped; it is dealt with at the end
-            let nNext = nDirs.[i]
+        for i = fromIdx to ptCount - 2 do // last point is skipped; it is dealt with at the end
+            let nNextX = XY.getX i nDirs
+            let nNextY = XY.getY i nDirs
             let dNext = dists.[i]
-            let pt = pts.[i]
-            let cosine = UnitVc.dot (nPrev , nNext)
+            let x = XY.getX i xys
+            let y = XY.getY i xys
+            let cosine = dot nPrevX nPrevY nNextX nNextY
 
             if abs (dPrev - dNext) < 1e-6 then
                 // (1) both distances are the same, no line intersection needed
                 if withMeasure cosine > useUTurnBehaviorAbove  then // exclude U-turns
                     // (1.1) the regular case for same distances:
-                    res.Add <| setOffCorner pt dPrev nPrev nNext cosine
+                    setOffCorner(res, x, y, dPrev, nPrevX, nPrevY, nNextX, nNextY, cosine)
                 else
                     // (1.2) special case: sharp U-turn, add a chamfer (two points)
-                    handleUTurn (pt, cosine, nPrev, nNext, dPrev, res, uTurnBehavior, useUTurnBehaviorAbove)
+                    handleUTurn (x, y, cosine, nPrevX, nPrevY, nNextX, nNextY, dPrev, res, uTurnBehavior, useUTurnBehaviorAbove)
 
             else
                 // (2) distances are different, so we need to find the intersection of the two offset lines
                 if withMeasure cosine > useUTurnBehaviorAbove || (i=0 && isOpen) then // exclude U-turns, but don't check the first point of an open polyline , ( check 2.01 )
                     if withMeasure cosine < useVarDistParallelBehaviorBelow then // check for colinear segments
                         // (2.1) the regular case for variable distances:
-                        // res.Add <| setOffCornerVar pt dPrev dNext nPrev nNext  // or use alternative calculation method setOffCornerVar2 ?
-                        // res.Add <| setOffCornerVar2 pt dPrev dNext nPrev nNext cos // or use alternative calculation method setOffCornerVar3 ?
-                        res.Add <| setOffCornerVar3 pt dPrev dNext nPrev nNext cosine // the cheapest methods, all are correct
+                        setOffCornerVar3 (res, x, y, dPrev, dNext, nPrevX, nPrevY, nNextX, nNextY, cosine) // the cheapest method, all are correct
                     else
                         // (2.2) special case: colinear segments:
-                        handleVarOffsetColinear (i, pt, nPrev, nNext, dPrev, dNext, res, idxsToFixProportional, projectIdxs, varDistParallelBehavior)
+                        handleVarOffsetColinear (i, x, y, nPrevX, nPrevY, nNextX, nNextY, dPrev, dNext, res, idxsToFixProportional, projectIdxs, varDistParallelBehavior)
 
                 else
                     // (2.3) special case: sharp U-turn with variable distances:
-                    handleUTurnVarDist (pt, cosine, nPrev, nNext, dPrev, dNext, res, uTurnBehavior, useUTurnBehaviorAbove)
+                    handleUTurnVarDist (x, y, cosine, nPrevX, nPrevY, nNextX, nNextY, dPrev, dNext, res, uTurnBehavior, useUTurnBehaviorAbove)
 
-            nPrev <- nNext
+            nPrevX <- nNextX
+            nPrevY <- nNextY
             dPrev <- dNext
 
         // (3) if the polyline is open, then we need to fix first and last point
         if isOpen then
-            res.Add <| pts.Last + nDirs.Last * dists.[dists.Count - 1]
+            let nLastX = XY.getX (nDirCount - 1) nDirs
+            let nLastY = XY.getY (nDirCount - 1) nDirs
+            let dLast = dists.[dists.Count - 1]
+            let li = (ptCount - 1) * 2
+            XY.add (xys.[li] + nLastX * dLast) (xys.[li + 1] + nLastY * dLast) res
         else
-            res.Add res.[0] // add the last point, which is the same as the first point
+            XY.add res.[0] res.[1] res // add the last point, which is the same as the first point
 
         // (4) now if there were colinear segments with different distances, we need to fix those points
         // first add another bad index at the end.
@@ -515,112 +620,99 @@ module Offset2D=
         if idxsToFixProportional.Count > 0 then
             // if the first index is to fix, then also add the last index to fix, to close the loop
             if idxsToFixProportional.First.idxRes = 0 then
-                idxsToFixProportional.Add  {idxRes = res.LastIndex; idxOrig = pts.LastIndex}
-            distributeProportionallyBadIdxs(res, idxsToFixProportional, pts)
+                idxsToFixProportional.Add  {idxRes = XY.pointCount res - 1; idxOrig = ptCount - 1}
+            distributeProportionallyBadIdxs(res, idxsToFixProportional, xys)
         elif projectIdxs.Count > 0 then
             // if the first index is to fix, then also add the last index to fix, to close the loop
             if projectIdxs.First.idx = 0 then
-                projectIdxs.Add  {idx = res.LastIndex; dir = projectIdxs.First.dir}
+                projectIdxs.Add  {idx = XY.pointCount res - 1; dirX = projectIdxs.First.dirX; dirY = projectIdxs.First.dirY}
             projectBadIdxs(res, projectIdxs)
         res
 
 
-    //    █████████                                  ███               █████      █████████   ███████████  █████
-    //   ███░░░░░███                                ░░░               ░░███      ███░░░░░███ ░░███░░░░░███░░███
-    //  ███     ░░░  █████ ████ ████████  ████████  ████   ██████   ███████     ░███    ░███  ░███    ░███ ░███
-    // ░███         ░░███ ░███ ░░███░░███░░███░░███░░███  ███░░███ ███░░███     ░███████████  ░██████████  ░███
-    // ░███          ░███ ░███  ░███ ░░░  ░███ ░░░  ░███ ░███████ ░███ ░███     ░███░░░░░███  ░███░░░░░░   ░███
-    // ░░███     ███ ░███ ░███  ░███      ░███      ░███ ░███░░░  ░███ ░███     ░███    ░███  ░███         ░███
-    //  ░░█████████  ░░████████ █████     █████     █████░░██████ ░░████████    █████   █████ █████        █████
-    //   ░░░░░░░░░    ░░░░░░░░ ░░░░░     ░░░░░     ░░░░░  ░░░░░░   ░░░░░░░░    ░░░░░   ░░░░░ ░░░░░        ░░░░░
-
-
+    // #endregion
+    // #region Curried API
 
 
 
     /// <summary> A constant-distance offset algorithm for closed or open polylines.</summary>
     /// <param name="useUTurnBehaviorAbove"> The angle between normals after which the uTurnBehavior is applied.</param>
-    /// <param name="uTurnBehavior"> What to do at a 180 degree U-turn? Fail, Chamfer with two points, UseThreshold or Skip the point.</param>
-    /// <param name="pts">The points of the Polyline2D to offset.</param>
+    /// <param name="uTurnBehavior"> What to do at a 180 degree U-turn? Fail, Chamfer with two points, or UseThreshold.</param>
+    /// <param name="xys">The interleaved coordinate buffer of the Polyline2D to offset.</param>
     /// <param name="dist">The distance to offset the Polyline2D. A positive distance will offset inwards on counter-clockwise curves.
     /// A negative distance will offset inwards on clockwise curves.</param>
     /// <returns> A new ResizeArray of Points. Due to error correction at sharp U-turns the point count may not be the same as the input. </returns>
-    let offset'' (useUTurnBehaviorAbove :float<Cosine.cosine>) (uTurnBehavior:UTurn) (dist:float) (pts:ResizeArray<Pt>): ResizeArray<Pt> =
-        if pts.Count < 2 then
-            fail $"Offset2D.offset'': pts.Count must be at least 2 but is {pts.Count}."
+    let offset'' (useUTurnBehaviorAbove :float<Cosine.cosine>) (uTurnBehavior:UTurn) (dist:float) (xys:ResizeArray<float>) : ResizeArray<float> =
         if abs dist < 1e-12 then
-            pts.GetRange(0, pts.Count-1)// if distance is zero, just clone the polyline
+            R.clone xys// if distance is zero, just clone the polyline
         else
-            offsetWithDirections(pts, makeOffsetDirections pts, dist, uTurnBehavior, useUTurnBehaviorAbove)
+            offsetWithDirections(xys, makeOffsetDirections xys, dist, uTurnBehavior, useUTurnBehaviorAbove)
 
 
     /// <summary> A constant-distance offset algorithm for closed or open polylines.</summary>
-    /// <param name="uTurnBehavior"> What to do at a 180 degree U-turn? Fail, Chamfer with two points, UseThreshold or Skip the point.
+    /// <param name="uTurnBehavior"> What to do at a 180 degree U-turn? Fail, Chamfer with two points, or UseThreshold.
     /// This will only be applied for joints bigger than 175° degrees.</param>
-    /// <param name="pts">The points of the Polyline2D to offset.</param>
+    /// <param name="xys">The interleaved coordinate buffer of the Polyline2D to offset.</param>
     /// <param name="dist">The distance to offset the Polyline2D. A positive distance will offset inwards on counter-clockwise curves.
     /// A negative distance will offset inwards on clockwise curves.</param>
     /// <returns> A new ResizeArray of Points. Due to error correction at sharp U-turns the point count may not be the same as the input. </returns>
-    let offset' (uTurnBehavior:UTurn) (dist:float) (pts:ResizeArray<Pt>): ResizeArray<Pt> =
-        if pts.Count < 2 then
-            fail $"Offset2D.offset': pts.Count must be at least 2 but is {pts.Count}."
+    let offset' (uTurnBehavior:UTurn) (dist:float) (xys:ResizeArray<float>) : ResizeArray<float> =
         if abs dist < 1e-12 then
-            pts.GetRange(0, pts.Count-1)// if distance is zero, just clone the polyline
+            R.clone xys// if distance is zero, just clone the polyline
         else
-            offsetWithDirections(pts, makeOffsetDirections pts, dist, uTurnBehavior, Cosine.``175.0``)
+            offsetWithDirections(xys, makeOffsetDirections xys, dist, uTurnBehavior, Cosine.``175.0``)
 
 
     /// <summary> A constant-distance offset algorithm for closed or open polylines.
     /// Fails at corners or U-turns sharper than joints after 177.5° degrees.</summary>
-    /// <param name="pts">The points of the Polyline2D to offset.</param>
+    /// <param name="xys">The points of the Polyline2D to offset.</param>
     /// <param name="dist">The distance to offset the Polyline2D. A positive distance will offset inwards on counter-clockwise curves.
     /// A negative distance will offset inwards on clockwise curves.</param>
     /// <returns> A new ResizeArray of Points. The point count will be the same as the input. </returns>
-    let offset (dist:float) (pts:ResizeArray<Pt>): ResizeArray<Pt> =
-        if pts.Count < 2 then
-            fail $"Offset2D.offset: pts.Count must be at least 2 but is {pts.Count}."
+    let offset (dist:float) (xys:ResizeArray<float>):ResizeArray<float> =
         if abs dist < 1e-12 then
-            pts.GetRange(0, pts.Count-1)// if distance is zero, just clone the polyline
+            R.clone xys// if distance is zero, just clone the polyline
         else
-            offsetWithDirections(pts, makeOffsetDirections pts, dist, UTurn.Fail, Cosine.``177.5``) // default chamfer after the given angle
+            offsetWithDirections(xys, makeOffsetDirections xys, dist, UTurn.Fail, Cosine.``177.5``) // default chamfer after the given angle
 
 
     /// <summary> Offsetting each segment by its own distance. For closed or open polylines.
     /// The behaviour and the limits for colinear and 180 degree U-turns are configurable.</summary>
     /// <param name="useUTurnBehaviorAbove"> The angle between normals after which, instead of a normal miter, the joint is chamfered by adding an extra point.</param>
     /// <param name="useVarDistParallelBehaviorBelow"> The angle between normals below which points are considered colinear and VarDistParallelBehavior is applied if distances are not the same. </param>
-    /// <param name="uTurnBehavior"> What to do at a 180 degree U-turn? Fail, Chamfer with two points, UseThreshold or Skip the point.</param>
+    /// <param name="uTurnBehavior"> What to do at a 180 degree U-turn? Fail, Chamfer with two points, or UseThreshold.</param>
     /// <param name="varDistParallelBehavior"> What to do with colinear segments below 'useVarDistParallelBehaviorBelow' degrees when offset distances are different too.</param>
-    /// <param name="dists"> The distances to offset the Polyline. One item less than pts. Positive values will create inside offsets on counter-clockwise polylines.</param>
-    /// <param name="pts">The points of the Polyline to offset.</param>
+    /// <param name="dists"> The distances to offset the Polyline. One item less than xys. Positive values will create inside offsets on counter-clockwise polylines.</param>
+    /// <param name="xys">The points of the Polyline to offset.</param>
     /// <returns> A new ResizeArray of Points.
     /// Due to error correction at sharp U-turns or the picked behaviour for collinear segments
     /// the point count may not be the same as the input.</returns>
-    let offsetVariable'' (useUTurnBehaviorAbove :float<Cosine.cosine>) (useVarDistParallelBehaviorBelow :float<Cosine.cosine>) (uTurnBehavior:UTurn) (varDistParallelBehavior: VarDistParallel) (dists:ResizeArray<float>) (pts:ResizeArray<Pt>)  =
-        let nDirs = makeOffsetDirections pts
-        offsetVariableWithDirections(pts, nDirs, dists, varDistParallelBehavior, uTurnBehavior, useVarDistParallelBehaviorBelow, useUTurnBehaviorAbove) // default chamfer after the given angle
+    let offsetVariable'' (useUTurnBehaviorAbove :float<Cosine.cosine>) (useVarDistParallelBehaviorBelow :float<Cosine.cosine>) (uTurnBehavior:UTurn) (varDistParallelBehavior: VarDistParallel) (dists:ResizeArray<float>) (xys:ResizeArray<float>)  =
+        let nDirs = makeOffsetDirections xys
+        offsetVariableWithDirections(xys, nDirs, dists, varDistParallelBehavior, uTurnBehavior, useVarDistParallelBehaviorBelow, useUTurnBehaviorAbove) // default chamfer after the given angle
 
 
     /// <summary> Offsetting each segment by its own distance.
     /// The behaviour for colinear and 180 degree U-turns is configurable.</summary>
-    /// <param name="uTurnBehavior"> What to do at a 180 degree U-turn? Fail, Chamfer with two points, UseThreshold or Skip the point. will be applied for joints bigger than 175° degrees.</param>
+    /// <param name="uTurnBehavior"> What to do at a 180 degree U-turn? Fail, Chamfer with two points, or UseThreshold. Will be applied for joints bigger than 175° degrees.</param>
     /// <param name="varDistParallelBehavior"> What to do with colinear segments within 2.5 degrees when offset distances are different too..</param>
-    /// <param name="dists"> The distances to offset the Polyline. One item less than pts. Positive values will create inside offsets on counter-clockwise polylines.</param>
-    /// <param name="pts">The points of the Polyline to offset.</param>
+    /// <param name="dists"> The distances to offset the Polyline. One item less than xys. Positive values will create inside offsets on counter-clockwise polylines.</param>
+    /// <param name="xys">The points of the Polyline to offset.</param>
     /// <returns> A new ResizeArray of Points.
     /// Due to error correction at sharp U-turns or the picked behaviour for collinear segments
     /// the point count may not be the same as the input.</returns>
-    let offsetVariable' (uTurnBehavior:UTurn)  (varDistParallelBehavior: VarDistParallel) (dists:ResizeArray<float>) (pts:ResizeArray<Pt>) =
-        let nDirs = makeOffsetDirections pts
-        offsetVariableWithDirections(pts, nDirs, dists, varDistParallelBehavior, uTurnBehavior, Cosine.``2.5``, Cosine.``175.0``)
+    let offsetVariable' (uTurnBehavior:UTurn)  (varDistParallelBehavior: VarDistParallel) (dists:ResizeArray<float>) (xys:ResizeArray<float>) =
+        let nDirs = makeOffsetDirections xys
+        offsetVariableWithDirections(xys, nDirs, dists, varDistParallelBehavior, uTurnBehavior, Cosine.``2.5``, Cosine.``175.0``)
 
 
     /// <summary> Offsetting each segment by its own distance. For closed or open polylines.
     /// Fails at U-turns above 175 degrees and at colinear segments within less than 2.5 degrees. </summary>
-    /// <param name="dists"> The distances to offset the Polyline. One item less than pts.</param>
-    /// <param name="pts">The points of the Polyline to offset. Positive values will create inside offsets on counter-clockwise polylines.</param>
+    /// <param name="dists"> The distances to offset the Polyline. One item less than xys.</param>
+    /// <param name="xys">The points of the Polyline to offset. Positive values will create inside offsets on counter-clockwise polylines.</param>
     /// <returns> A new ResizeArray of Points. The point count is the same as the input.</returns>
-    let offsetVariable (dists:ResizeArray<float>) (pts:ResizeArray<Pt>) =
-        let nDirs = makeOffsetDirections pts
-        offsetVariableWithDirections(pts, nDirs, dists, VarDistParallel.Fail, UTurn.Fail, Cosine.``2.5``, Cosine.``175.0``)
+    let offsetVariable (dists:ResizeArray<float>) (xys:ResizeArray<float>) =
+        let nDirs = makeOffsetDirections xys
+        offsetVariableWithDirections(xys, nDirs, dists, VarDistParallel.Fail, UTurn.Fail, Cosine.``2.5``, Cosine.``175.0``)
+
 

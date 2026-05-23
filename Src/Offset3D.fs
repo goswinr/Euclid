@@ -1,4 +1,4 @@
-namespace Euclid
+﻿namespace Euclid
 
 open System
 open UtilEuclid
@@ -6,8 +6,8 @@ open EuclidErrors
 open Euclid.EuclidCollectionUtilities
 
 
-/// A module containing the core algorithms for offsetting 2D polylines.
-/// Normally you would not use this directly; prefer the Polyline2D or Points2D module.
+/// A module containing the core algorithms for offsetting 3D polylines.
+/// Normally you would not use this directly; prefer the Polyline3D module.
 /// Each vertex has its own normal defined by the cross product of the incoming and outgoing segment tangents.
 /// These vertex normals define a local plane for each joint; within that plane we build per-segment offset directions.
 module Offset3D =
@@ -67,28 +67,109 @@ module Offset3D =
     /// points that have valid offset directions.
     /// `prevOK` may be bigger than `nextOK` if the colinear point is at the start or end of a closed polyline.
     [<NoComparison; NoEquality>]
-    type ColinearPnt = {
+    type ColinearPoint = {
         idx: int
         prevOK: int
         nextOK: int
     }
 
-    /// Computes the unit vectors of each segment in the polyline defined by pts.
+    module private XYZ =
+
+        let inline pointCount (xyzs: ResizeArray<float>) : int =
+            xyzs.Count / 3
+
+        let failMod3 methodName (xyzs: ResizeArray<float>) =
+            fail $"Offset3D.{methodName}: coordinate buffer must contain a multiple of 3 floats, but has {xyzs.Count} values."
+
+        let inline checkMod3 methodName (xyzs: ResizeArray<float>) =
+            if xyzs.Count % 3 <> 0 then
+                failMod3 methodName xyzs
+
+        let inline getX i (xyzs: ResizeArray<float>) : float =
+            xyzs.[i * 3]
+
+        let inline getY i (xyzs: ResizeArray<float>) : float =
+            xyzs.[i * 3 + 1]
+
+        let inline getZ i (xyzs: ResizeArray<float>) : float =
+            xyzs.[i * 3 + 2]
+
+        let inline set i x y z (xyzs: ResizeArray<float>) : unit =
+            xyzs.[i * 3    ] <- x
+            xyzs.[i * 3 + 1] <- y
+            xyzs.[i * 3 + 2] <- z
+
+        let inline add x y z (xyzs: ResizeArray<float>) : unit =
+            xyzs.Add x
+            xyzs.Add y
+            xyzs.Add z
+
+        let sqDistFirstLast (xyzs: ResizeArray<float>) : float =
+            let n = xyzs.Count
+            let dx = xyzs.[0] - xyzs.[n - 3]
+            let dy = xyzs.[1] - xyzs.[n - 2]
+            let dz = xyzs.[2] - xyzs.[n - 1]
+            dx * dx + dy * dy + dz * dz
+
+    let inline private rayClosestParameter(fromX:float, fromY:float, fromZ:float, toX:float, toY:float, toZ:float, pX:float, pY:float, pZ:float) : float =
+        let vx = toX - fromX
+        let vy = toY - fromY
+        let vz = toZ - fromZ
+        let lenSq = vx * vx + vy * vy + vz * vz
+        if isTooSmallSq lenSq then
+            fail $"Offset3D.rayClosestParameter: line from ({fromX}, {fromY}, {fromZ}) to ({toX}, {toY}, {toZ}) is too short."
+        ((pX - fromX) * vx + (pY - fromY) * vy + (pZ - fromZ) * vz) / lenSq
+
+    let inline private setLinePointAt (idx:int) (fromIdx:int) (toIdx:int) (t:float) (lineXYZs: ResizeArray<float>) (res: ResizeArray<float>) : unit =
+        let fromX = XYZ.getX fromIdx lineXYZs
+        let fromY = XYZ.getY fromIdx lineXYZs
+        let fromZ = XYZ.getZ fromIdx lineXYZs
+        let x = fromX + (XYZ.getX toIdx lineXYZs - fromX) * t
+        let y = fromY + (XYZ.getY toIdx lineXYZs - fromY) * t
+        let z = fromZ + (XYZ.getZ toIdx lineXYZs - fromZ) * t
+        XYZ.set idx x y z res
+
+    let private projectPointToLineInPlace (idx:int) (fromIdx:int) (toIdx:int) (pointXYZs: ResizeArray<float>) (lineXYZs: ResizeArray<float>) (res: ResizeArray<float>) : unit =
+        let t =
+            rayClosestParameter(
+                XYZ.getX fromIdx lineXYZs,
+                XYZ.getY fromIdx lineXYZs,
+                XYZ.getZ fromIdx lineXYZs,
+                XYZ.getX toIdx lineXYZs,
+                XYZ.getY toIdx lineXYZs,
+                XYZ.getZ toIdx lineXYZs,
+                XYZ.getX idx pointXYZs,
+                XYZ.getY idx pointXYZs,
+                XYZ.getZ idx pointXYZs)
+        setLinePointAt idx fromIdx toIdx t lineXYZs res
+
+    /// Computes the unit vectors of each segment in the polyline defined by the interleaved coordinate buffer xyzs (x0, y0, z0, x1, y1, z1, ...).
     /// Fails if any two consecutive points are identical.
     /// Returns a ResizeArray of UnitVec, one less than the number of input points.
-    let getSegmentUnitVectors(pts: ResizeArray<Pnt>) : ResizeArray<UnitVec> =
-        if pts.Count < 2 then
-            fail $"Offset3D.GetSegmentUnitVectors: pts.Count {pts.Count} must be at least 2 for a polyline."
-        let uvs = ResizeArray<UnitVec>(pts.LastIndex) // the unit vectors of the segments, one less than pts
-        let mutable prevPt = pts.[0]
-        for i = 1 to pts.LastIndex do
-            let p = pts.[i]
-            let v = p - prevPt // the vector from previous to current point
-            let len = v.Length
-            if len < openTolerance then fail $"Offset3D.GetSegmentUnitVectors: pts.[{i}] and pts.[{i-1}] are the same at {prevPt}"
+    let getSegmentUnitVectors(xyzs: ResizeArray<float>) : ResizeArray<UnitVec> =
+        XYZ.checkMod3 "getSegmentUnitVectors" xyzs
+        let ptCount = XYZ.pointCount xyzs
+        if ptCount < 2 then
+            fail $"Offset3D.getSegmentUnitVectors: point count {ptCount} must be at least 2 for a polyline."
+        let uvs = ResizeArray<UnitVec>(ptCount - 1) // the unit vectors of the segments, one less than pts
+        let mutable px = xyzs.[0]
+        let mutable py = xyzs.[1]
+        let mutable pz = xyzs.[2]
+        for i = 1 to ptCount - 1 do
+            let x = XYZ.getX i xyzs
+            let y = XYZ.getY i xyzs
+            let z = XYZ.getZ i xyzs
+            let vx = x - px
+            let vy = y - py
+            let vz = z - pz
+            let len = sqrt (vx * vx + vy * vy + vz * vz)
+            if len < openTolerance then
+                fail $"Offset3D.getSegmentUnitVectors: point[{i}] and point[{i-1}] are the same at ({px}, {py}, {pz})."
             let f = 1.0 / len
-            uvs.Add (UnitVec.createUnchecked(v.X*f, v.Y*f, v.Z*f))
-            prevPt <- p
+            uvs.Add (UnitVec.createUnchecked(vx * f, vy * f, vz * f))
+            px <- x
+            py <- y
+            pz <- z
         uvs
 
 
@@ -172,35 +253,40 @@ module Offset3D =
 
 
     /// The core offset Algorithm for constant distance offsets.
-    /// Returns the offset point based on the previous and next normals,
+    /// Writes the offset point into the result buffer based on the previous and next normals,
     /// the distance, and the precomputed cosine (= dot product of nPrev * nNext).
-    /// (pt + (nPrev + nNext) * (dist / (1.0 + cosine)))
-    let inline setOffCorner (pt:Pnt) (dist:float) (nPrev:UnitVec) (nNext:UnitVec) (cosine:float) :Pnt =
+    /// res.Add ((nPrev + nNext) * (dist / (1.0 + cosine)) + perpDir * distPerp + pt)
+    let inline setOffCorner (res:ResizeArray<float>, x:float, y:float, z:float, distInPlane:float, distPerp:float, nPrev:UnitVec, nNext:UnitVec, perpDir:UnitVec, cosine:float) : unit =
         #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode
             if cosine < -0.9999999 then
-                fail $"Offset3D.setOffCorner: cosine is {cosine} , a 180 degree U-turn, which is not allowed here for dist {dist}, nPrev {nPrev}, nNext {nNext} at pt {pt}."
+                fail $"Offset3D.setOffCorner: cosine is {cosine} , a 180 degree U-turn, which is not allowed here for distInPlane {distInPlane}, nPrev {nPrev}, nNext {nNext} at pt ({x}, {y}, {z})."
         #endif
             // based on https://www.angusj.com/clipper2/Docs/Trigonometry.htm
-            pt + (nPrev + nNext) * (dist / (1.0 + cosine))
+            let k = distInPlane / (1.0 + cosine)
+            res.Add (x + (nPrev.X + nNext.X) * k + perpDir.X * distPerp)
+            res.Add (y + (nPrev.Y + nNext.Y) * k + perpDir.Y * distPerp)
+            res.Add (z + (nPrev.Z + nNext.Z) * k + perpDir.Z * distPerp)
 
 
     /// offset point calculation for variable distances:
-    let inline setOffCornerVar (pt:Pnt) (distPrev:float) (distNext:float) (nPrev:UnitVec) (nNext:UnitVec) (cosine:float) (vNext:UnitVec) : Pnt =
-        let delta = distPrev - distNext
+    let inline setOffCornerVar (res:ResizeArray<float>, x:float, y:float, z:float, distInPlanePrev:float, distInPlaneNext:float, distPerp:float, nPrev:UnitVec, nNext:UnitVec, perpDir:UnitVec, cosine:float, vNext:UnitVec) : unit =
+        let delta = distInPlanePrev - distInPlaneNext
         let cos2 = nPrev *** vNext // never 0.0 here, because vectors are already checked to be not colinear
-        pt
-            + vNext * (delta / cos2) // the offset for the delta in distances
-            + (nPrev + nNext) * (distNext / (1.0 + cosine)) // the offset for the common distance
+        let a = delta / cos2
+        let common = distInPlaneNext / (1.0 + cosine)
+        res.Add (x + vNext.X * a + (nPrev.X + nNext.X) * common + perpDir.X * distPerp)
+        res.Add (y + vNext.Y * a + (nPrev.Y + nNext.Y) * common + perpDir.Y * distPerp)
+        res.Add (z + vNext.Z * a + (nPrev.Z + nNext.Z) * common + perpDir.Z * distPerp)
 
 
 
     /// For all dirs that are ValueNone this will find the index of adjacent points that are OK.
     /// Works also for closed polylines where initial and end segments are colinear
-    let getColinearNeighbors(dirs: ResizeArray<OffsetDirection voption>) : ResizeArray<ColinearPnt> =
+    let getColinearNeighbors(dirs: ResizeArray<OffsetDirection voption>) : ResizeArray<ColinearPoint> =
         let mutable prevIdx = -1
         let mutable nextIdx = -1
         let mutable j = -1
-        let colinearPts = ResizeArray<ColinearPnt>()
+        let colinearPts = ResizeArray<ColinearPoint>()
 
         for i = 0 to dirs.LastIndex do
             match dirs.[i] with
@@ -263,165 +349,190 @@ module Offset3D =
         colinearPts
 
     /// <summary>Offsets a polyline by a constant distance.</summary>
-    /// <param name="pts">The points of the polyline to offset.</param>
+    /// <param name="xyzs">The interleaved coordinates (x0, y0, z0, x1, y1, z1, ...) of the polyline to offset.</param>
     /// <param name="dirs">The offset directions at each point of the polyline.</param>
     /// <param name="distInPlane">The distance to offset in the local plane of each vertex.</param>
     /// <param name="distPerpendicular">The distance to offset perpendicular to the local plane of each vertex.</param>
-    /// <returns>The offset points as a ResizeArray of Pnt.</returns>
-    let offsetConstantWithDirections(pts:ResizeArray<Pnt>, dirs: ResizeArray<OffsetDirection voption>, distInPlane:float, distPerpendicular:float) : ResizeArray<Pnt> =
-        if pts.Count < 2 then
-            fail $"Offset3D.offsetConstant: pts.Count {pts.Count} must be at least 2 for a polyline."
+    /// <returns>The offset points as a ResizeArray of interleaved coordinates.</returns>
+    let offsetConstantWithDirections(xyzs:ResizeArray<float>, dirs: ResizeArray<OffsetDirection voption>, distInPlane:float, distPerpendicular:float) : ResizeArray<float> =
+        XYZ.checkMod3 "offsetConstantWithDirections" xyzs
+        let ptCount = XYZ.pointCount xyzs
+        if ptCount < 2 then
+            fail $"Offset3D.offsetConstantWithDirections: point count {ptCount} must be at least 2 for a polyline."
 
-        let res = ResizeArray<Pnt>(pts.Count)
+        if ptCount <> dirs.Count then
+            fail $"Offset3D.offsetConstantWithDirections: point count must equal offset directions count, but they are {ptCount} and {dirs.Count}."
+
+        let res = ResizeArray<float>(xyzs.Count)
         let mutable needsSecondPass = false
 
         // (1) first pass: offset points that have valid directions
-        for i = 0 to pts.LastIndex do
-            let pt = pts.[i]
+        for i = 0 to ptCount - 1 do
+            let x = XYZ.getX i xyzs
+            let y = XYZ.getY i xyzs
+            let z = XYZ.getZ i xyzs
             match dirs.[i] with
             | ValueNone ->
                 needsSecondPass <- true
-                res.Add pt // for now just keep the input point, will be projected in second pass
+                XYZ.add x y z res // for now just keep the input point, will be projected in second pass
             | ValueSome dir ->
                 let cosine = dir.prevInPlane *** dir.nextInPlane
-                let inPlanePt  = setOffCorner pt distInPlane dir.prevInPlane dir.nextInPlane cosine
-                let offsetPt = inPlanePt + dir.perpDir * distPerpendicular // offset out of the plane by dist along the refNormal
-                res.Add offsetPt
+                setOffCorner(res, x, y, z, distInPlane, distPerpendicular, dir.prevInPlane, dir.nextInPlane, dir.perpDir, cosine)
 
         // (2) second pass: project colinear points
         if needsSecondPass then
-            let clPnts = getColinearNeighbors(dirs)
-            for i = 0 to clPnts.LastIndex do
-                let cP = clPnts.[i]
-                let ln = Line3D(res.[cP.prevOK], res.[cP.nextOK])
-                res.[cP.idx] <- Line3D.rayClosestPoint pts.[cP.idx] ln
+            let colinearPoints = getColinearNeighbors(dirs)
+            for i = 0 to colinearPoints.LastIndex do
+                let cP = colinearPoints.[i]
+                projectPointToLineInPlace cP.idx cP.prevOK cP.nextOK xyzs res res
 
         res
 
     /// <summary>Offsets a polyline by variable distances.</summary>
-    /// <param name="pts">The points of the polyline to offset.</param>
+    /// <param name="xyzs">The interleaved coordinates (x0, y0, z0, x1, y1, z1, ...) of the polyline to offset.</param>
     /// <param name="segmentDirs">The unit vectors of each segment in the polyline.</param>
     /// <param name="offDirs">The offset directions at each point of the polyline.</param>
     /// <param name="distsInPlane">The distance to offset in the local plane of each vertex.</param>
     /// <param name="distsPerpendicular">The distance to offset perpendicular to the local plane of each vertex.</param>
     /// <param name="isClosed">Whether the polyline is closed (true) or open (false).</param>
     /// <param name="varDistParallelBehavior">The behavior to use when colinear segments with different offset distances are found.</param>
-    /// <returns>The offset points as a ResizeArray of Pnt.</returns>
-    let offsetVariableWithDirections(pts:ResizeArray<Pnt>, segmentDirs:ResizeArray<UnitVec>, offDirs: ResizeArray<OffsetDirection voption>, distsInPlane:Collections.Generic.IList<float>, distsPerpendicular:Collections.Generic.IList<float>, isClosed:bool, varDistParallelBehavior: VarDistParallel) : ResizeArray<Pnt> =
-        if pts.Count < 2 then
-            fail $"Offset3D.offsetVariable: pts.Count {pts.Count} must be at least 2 for a polyline."
+    /// <returns>The offset points as a ResizeArray of interleaved coordinates.</returns>
+    let offsetVariableWithDirections(   xyzs:ResizeArray<float>,
+                                        segmentDirs:ResizeArray<UnitVec>,
+                                        offDirs: ResizeArray<OffsetDirection voption>,
+                                        distsInPlane:Collections.Generic.IList<float>,
+                                        distsPerpendicular:Collections.Generic.IList<float>,
+                                        isClosed:bool, varDistParallelBehavior: VarDistParallel
+                                        ) : ResizeArray<float> =
+        XYZ.checkMod3 "offsetVariableWithDirections" xyzs
+        let ptCount = XYZ.pointCount xyzs
+        if ptCount < 2 then
+            fail $"Offset3D.offsetVariableWithDirections: point count {ptCount} must be at least 2 for a polyline."
 
-        if pts.Count <> segmentDirs.Count + 1  then
-            fail $"Offset3D.offsetVariableWithDirections:\n   Point count must be 1 greater than normal directions count, but they are {pts.Count} and {segmentDirs.Count}."
+        if ptCount <> segmentDirs.Count + 1  then
+            fail $"Offset3D.offsetVariableWithDirections:\n   Point count must be 1 greater than normal directions count, but they are {ptCount} and {segmentDirs.Count}."
 
-        if pts.Count <> distsInPlane.Count + 1  then
-            fail $"Offset3D.offsetVariableWithDirections:\n   Point count must be 1 greater than offset distances count, but they are {pts.Count} and {distsInPlane.Count}."
+        if ptCount <> distsInPlane.Count + 1  then
+            fail $"Offset3D.offsetVariableWithDirections:\n   Point count must be 1 greater than offset distances count, but they are {ptCount} and {distsInPlane.Count}."
 
-        let mutable res = ResizeArray<Pnt>(pts.Count)
+        let mutable res = ResizeArray<float>(xyzs.Count)
         let mutable needsSecondPass = false
         let mutable prevDistInPlane = if isClosed then distsInPlane.[distsInPlane.Count - 1] else distsInPlane.[0]
 
         // (1) first pass: offset points that have valid directions
-        for i = 0 to pts.LastIndex-1 do
-            let pt = pts.[i]
+        for i = 0 to ptCount - 2 do
+            let x = XYZ.getX i xyzs
+            let y = XYZ.getY i xyzs
+            let z = XYZ.getZ i xyzs
             let nextDistInPlane = distsInPlane.[i]
             let distPerp = distsPerpendicular.[i]
             match offDirs.[i] with
             | ValueNone ->
                 needsSecondPass <- true
-                res.Add pt // for now just keep the input point, will be projected in second pass
+                XYZ.add x y z res // for now just keep the input point, will be projected in second pass
             | ValueSome dir ->
                 let cosine = dir.prevInPlane *** dir.nextInPlane
-                let inPlanePt  = setOffCornerVar pt prevDistInPlane nextDistInPlane dir.prevInPlane dir.nextInPlane cosine segmentDirs.[i]
-                let offsetPt = inPlanePt + dir.perpDir * distPerp // offset out of the plane by dist along the refNormal
-                res.Add offsetPt
+                setOffCornerVar(res, x, y, z, prevDistInPlane, nextDistInPlane, distPerp, dir.prevInPlane, dir.nextInPlane, dir.perpDir, cosine, segmentDirs.[i])
+            prevDistInPlane <- nextDistInPlane
 
 
         // (1.1) handle last point extra because distsInPlane has one less entry than pts and nextDistInPlane depends on loop status
-        let pt = pts.Last
+        let li = ptCount - 1
+        let x = XYZ.getX li xyzs
+        let y = XYZ.getY li xyzs
+        let z = XYZ.getZ li xyzs
         let nextDistInPlane = if isClosed then distsInPlane.[0] else distsInPlane.[distsInPlane.Count - 1]
         let distPerp = distsPerpendicular.[distsPerpendicular.Count - 1]
         match offDirs.Last with
         | ValueNone ->
             needsSecondPass <- true
-            res.Add pt // for now just keep the input point, will be projected in second pass
+            XYZ.add x y z res // for now just keep the input point, will be projected in second pass
         | ValueSome dir ->
             let cosine = dir.prevInPlane *** dir.nextInPlane
-            let inPlanePt  = setOffCornerVar pt prevDistInPlane nextDistInPlane dir.prevInPlane dir.nextInPlane cosine segmentDirs.[segmentDirs.LastIndex]
-            let offsetPt = inPlanePt + dir.perpDir * distPerp // offset out of the plane by dist along the refNormal
-            res.Add offsetPt
+            setOffCornerVar(res, x, y, z, prevDistInPlane, nextDistInPlane, distPerp, dir.prevInPlane, dir.nextInPlane, dir.perpDir, cosine, segmentDirs.[segmentDirs.LastIndex])
 
 
         // (2) second pass: project colinear points
         if needsSecondPass then
             match varDistParallelBehavior with
             | VarDistParallel.Fail ->
-                fail "Offset3D.offsetVariable: colinear segments with different offset distances found, cannot offset with VarDistParallel.Fail behavior."
+                fail "Offset3D.offsetVariableWithDirections: colinear segments with different offset distances found, cannot offset with VarDistParallel.Fail behavior."
 
             | VarDistParallel.Skip ->
-                let newRes = ResizeArray<Pnt>(pts.Count)
-                for i = 0 to pts.LastIndex do
+                let newRes = ResizeArray<float>(xyzs.Count)
+                for i = 0 to ptCount - 1 do
                     match offDirs.[i] with
-                    | ValueSome _ -> newRes.Add res.[i]
+                    | ValueSome _ ->
+                        XYZ.add (XYZ.getX i res) (XYZ.getY i res) (XYZ.getZ i res) newRes
                     | ValueNone -> () // skip this point
                 res <- newRes
 
             | VarDistParallel.Proportional ->
                 // (2) or distribute with equal parameter spacing
-                let clPnts = getColinearNeighbors(offDirs)
-                for i = 0 to clPnts.LastIndex do
-                    let cP = clPnts.[i]
-                    let origLn = Line3D(pts.[cP.prevOK], pts.[cP.nextOK])
-                    let t = origLn.RayClosestParameter pts.[cP.idx]
-                    let ln = Line3D(res.[cP.prevOK], res.[cP.nextOK])
-                    res.[cP.idx] <- ln.EvaluateAt(t)
+                let colinearPoints = getColinearNeighbors(offDirs)
+                for i = 0 to colinearPoints.LastIndex do
+                    let cP = colinearPoints.[i]
+                    let t =
+                        rayClosestParameter(
+                            XYZ.getX cP.prevOK xyzs,
+                            XYZ.getY cP.prevOK xyzs,
+                            XYZ.getZ cP.prevOK xyzs,
+                            XYZ.getX cP.nextOK xyzs,
+                            XYZ.getY cP.nextOK xyzs,
+                            XYZ.getZ cP.nextOK xyzs,
+                            XYZ.getX cP.idx xyzs,
+                            XYZ.getY cP.idx xyzs,
+                            XYZ.getZ cP.idx xyzs)
+                    setLinePointAt cP.idx cP.prevOK cP.nextOK t res res
 
             | VarDistParallel.Project ->
                 // just project the original point onto the line between the two adjacent offset points
                 // this can lead to duplicate points in the result
-                let clPnts = getColinearNeighbors(offDirs)
-                for i = 0 to clPnts.LastIndex do
-                    let cP = clPnts.[i]
-                    let ln = Line3D(res.[cP.prevOK], res.[cP.nextOK])
-                    res.[cP.idx] <- Line3D.rayClosestPoint pts.[cP.idx] ln
+                let colinearPoints = getColinearNeighbors(offDirs)
+                for i = 0 to colinearPoints.LastIndex do
+                    let cP = colinearPoints.[i]
+                    projectPointToLineInPlace cP.idx cP.prevOK cP.nextOK xyzs res res
 
             |_  ->
-                fail $"Offset3D.offsetVariable: unknown VarDistParallel behavior {varDistParallelBehavior}."
+                fail $"Offset3D.offsetVariableWithDirections: unknown VarDistParallel behavior {varDistParallelBehavior}."
 
         res
 
-    /// Returns the average normal vector of the Polyline3D.
+    /// Returns the average normal vector of the polyline defined by the interleaved coordinate buffer xyzs.
     /// It is calculated by summing up the cross products of all segments around the center point.
     /// Does not check for bad input, may be zero length if points are colinear.
-    let internal averageNormal(pts: ResizeArray<Pnt>) : Vec =
-        let mutable x = 0.0
-        let mutable y = 0.0
-        let mutable z = 0.0
-        for i = 0 to pts.LastIndex do
-            let p = pts.[i]
-            x <- x + p.X
-            y <- y + p.Y
-            z <- z + p.Z
-        let c = Pnt(x / float pts.Count, y / float pts.Count, z / float pts.Count)
+    let internal averageNormal(xyzs: ResizeArray<float>) : Vec =
+        let ptCount = XYZ.pointCount xyzs
+        let mutable cx = 0.0
+        let mutable cy = 0.0
+        let mutable cz = 0.0
+        for i = 0 to ptCount - 1 do
+            cx <- cx + XYZ.getX i xyzs
+            cy <- cy + XYZ.getY i xyzs
+            cz <- cz + XYZ.getZ i xyzs
+        let f = 1.0 / float ptCount
+        let cX = cx * f
+        let cY = cy * f
+        let cZ = cz * f
         let mutable normal = Vec.Zero
-        let mutable a = pts.[pts.LastIndex] - c
-        for i = 0 to pts.LastIndex do
-            let b = pts.[i] - c
-            normal <- normal + Vec.cross(a, b)
-            a <- b
+        let li = ptCount - 1
+        let mutable ax = XYZ.getX li xyzs - cX
+        let mutable ay = XYZ.getY li xyzs - cY
+        let mutable az = XYZ.getZ li xyzs - cZ
+        for i = 0 to ptCount - 1 do
+            let bx = XYZ.getX i xyzs - cX
+            let by = XYZ.getY i xyzs - cY
+            let bz = XYZ.getZ i xyzs - cZ
+            normal <- Vec(normal.X + ay * bz - az * by,
+                          normal.Y + az * bx - ax * bz,
+                          normal.Z + ax * by - ay * bx)
+            ax <- bx
+            ay <- by
+            az <- bz
         normal
 
-
-    //     █████████                                  ███               █████      █████████   ███████████  █████
-    //    ███░░░░░███                                ░░░               ░░███      ███░░░░░███ ░░███░░░░░███░░███
-    //   ███     ░░░  █████ ████ ████████  ████████  ████   ██████   ███████     ░███    ░███  ░███    ░███ ░███
-    //  ░███         ░░███ ░███ ░░███░░███░░███░░███░░███  ███░░███ ███░░███     ░███████████  ░██████████  ░███
-    //  ░███          ░███ ░███  ░███ ░░░  ░███ ░░░  ░███ ░███████ ░███ ░███     ░███░░░░░███  ░███░░░░░░   ░███
-    //  ░░███     ███ ░███ ░███  ░███      ░███      ░███ ░███░░░  ░███ ░███     ░███    ░███  ░███         ░███
-    //   ░░█████████  ░░████████ █████     █████     █████░░██████ ░░████████    █████   █████ █████        █████
-    //    ░░░░░░░░░    ░░░░░░░░ ░░░░░     ░░░░░     ░░░░░  ░░░░░░   ░░░░░░░░    ░░░░░   ░░░░░ ░░░░░        ░░░░░
-
-
+    // #endregion
+    // #region Curried API
 
     /// <summary> A constant-distance offset algorithm for closed or open polylines in 3D.
     /// Uses default angles: colinear below 2.5 degrees, fails at U-turns above 175 degrees.</summary>
@@ -435,13 +546,13 @@ module Offset3D =
     /// A positive distance offsets in the direction of the computed normal.
     /// For a counterclockwise polyline in xy-plane this is Upwards.
     /// A negative distance offsets in the opposite direction.</param>
-    /// <param name="pts"> The points of the polyline to offset.</param>
-    /// <returns> A new ResizeArray of Points.</returns>
-    let offset' (refNormal:UnitVec) (distInPlane: float) (distPerpendicular: float) (pts:ResizeArray<Pnt>): ResizeArray<Pnt> =
-        let isOpen = Pnt.distanceSq pts.First pts.Last > sqOpenTolerance
-        let uvs = getSegmentUnitVectors pts
+    /// <param name="xyzs"> The interleaved coordinates (x0, y0, z0, x1, y1, z1, ...) of the polyline to offset.</param>
+    /// <returns> A new ResizeArray of interleaved coordinates.</returns>
+    let offset' (refNormal:UnitVec) (distInPlane: float) (distPerpendicular: float) (xyzs:ResizeArray<float>): ResizeArray<float> =
+        let isOpen = XYZ.sqDistFirstLast xyzs > sqOpenTolerance
+        let uvs = getSegmentUnitVectors xyzs
         let dirs = getOffsetDirections(uvs, refNormal, isOpen, Cosine.``2.5`` , Cosine.``175.0``)
-        offsetConstantWithDirections(pts, dirs, distInPlane, distPerpendicular)
+        offsetConstantWithDirections(xyzs, dirs, distInPlane, distPerpendicular)
 
 
     /// <summary> A constant-distance offset algorithm for closed or open polylines in 3D.
@@ -454,13 +565,11 @@ module Offset3D =
     /// A positive distance offsets in the direction of the computed normal.
     /// For a counterclockwise polyline in xy-plane this is Upwards.
     /// A negative distance offsets in the opposite direction.</param>
-    /// <param name="pts"> The points of the polyline to offset.</param>
-    /// <returns> A new ResizeArray of Points.</returns>
-    let offset (distInPlane: float) (distPerpendicular: float) (pts: ResizeArray<Pnt>) : ResizeArray<Pnt> =
-        let refNormal = averageNormal(pts) |> Vec.unitize
-        offset' refNormal distInPlane distPerpendicular pts
-
-
+    /// <param name="xyzs"> The interleaved coordinates (x0, y0, z0, x1, y1, z1, ...) of the polyline to offset.</param>
+    /// <returns> A new ResizeArray of interleaved coordinates.</returns>
+    let offset (distInPlane: float) (distPerpendicular: float) (xyzs: ResizeArray<float>) : ResizeArray<float> =
+        let refNormal = averageNormal(xyzs) |> Vec.unitize
+        offset' refNormal distInPlane distPerpendicular xyzs
 
 
     /// <summary> Offsetting each segment by its own distance. For closed or open polylines in 3D.
@@ -476,13 +585,13 @@ module Offset3D =
     /// A positive distance offsets in the direction of the computed normal.
     /// For a counterclockwise polyline in xy-plane this is Upwards.
     /// A negative distance offsets in the opposite direction.</param>
-    /// <param name="pts"> The points of the polyline to offset.</param>
-    /// <returns> A new ResizeArray of Points. If colinear segment handling is set to Skip the point count may differ from input.</returns>
-    let offsetVariable' (varDistParallelBehavior: VarDistParallel) (refNormal:UnitVec) (distancesInPlane: ResizeArray<float>) (distancesPerpendicular: ResizeArray<float>) (pts: ResizeArray<Pnt>) : ResizeArray<Pnt> =
-        let isOpen = Pnt.distanceSq pts.First pts.Last > sqOpenTolerance
-        let uvs = getSegmentUnitVectors pts
+    /// <param name="xyzs"> The interleaved coordinates (x0, y0, z0, x1, y1, z1, ...) of the polyline to offset.</param>
+    /// <returns> A new ResizeArray of interleaved coordinates. If colinear segment handling is set to Skip the point count may differ from input.</returns>
+    let offsetVariable' (varDistParallelBehavior: VarDistParallel) (refNormal:UnitVec) (distancesInPlane: ResizeArray<float>) (distancesPerpendicular: ResizeArray<float>) (xyzs: ResizeArray<float>) : ResizeArray<float> =
+        let isOpen = XYZ.sqDistFirstLast xyzs > sqOpenTolerance
+        let uvs = getSegmentUnitVectors xyzs
         let dirs = getOffsetDirections(uvs, refNormal, isOpen, Cosine.``2.5``, Cosine.``175.0``)
-        offsetVariableWithDirections(pts, uvs, dirs, distancesInPlane, distancesPerpendicular, isOpen, varDistParallelBehavior)
+        offsetVariableWithDirections(xyzs, uvs, dirs, distancesInPlane, distancesPerpendicular, isOpen, varDistParallelBehavior)
 
 
     /// <summary> Offsetting each segment by its own distance. For closed or open polylines in 3D.
@@ -496,9 +605,9 @@ module Offset3D =
     /// A positive distance offsets in the direction of the computed normal.
     /// For a counterclockwise polyline in xy-plane this is Upwards.
     /// A negative distance offsets in the opposite direction.</param>
-    /// <param name="pts"> The points of the polyline to offset.</param>
-    /// <returns> A new ResizeArray of Points.</returns>
-    let offsetVariable (distancesInPlane: ResizeArray<float>) (distancesPerpendicular: ResizeArray<float>) (pts: ResizeArray<Pnt>) : ResizeArray<Pnt> =
-        let refNormal = averageNormal(pts) |> Vec.unitize
-        offsetVariable' VarDistParallel.Fail refNormal distancesInPlane distancesPerpendicular pts
+    /// <param name="xyzs"> The interleaved coordinates (x0, y0, z0, x1, y1, z1, ...) of the polyline to offset.</param>
+    /// <returns> A new ResizeArray of interleaved coordinates.</returns>
+    let offsetVariable (distancesInPlane: ResizeArray<float>) (distancesPerpendicular: ResizeArray<float>) (xyzs: ResizeArray<float>) : ResizeArray<float> =
+        let refNormal = averageNormal(xyzs) |> Vec.unitize
+        offsetVariable' VarDistParallel.Fail refNormal distancesInPlane distancesPerpendicular xyzs
 
