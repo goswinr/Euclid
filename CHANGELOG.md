@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Polyline2D.area doesn't fail on open polylines anymore.
 - wrong point count when offset distance is 0.0
+- fix close in place with 0.0 tolerance.
 
 ## [0.30.0] - 2026-03-23
 ### Added
@@ -195,7 +196,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - first public release
 
-[Unreleased]: https://github.com/goswinr/Euclid/compare/0.30.0...HEAD
+[Unreleased]: https://github.com/goswinr/Euclid/compare/0.30.1...HEAD
+[0.30.1]: https://github.com/goswinr/Euclid/compare/0.30.0...0.30.1
 [0.30.0]: https://github.com/goswinr/Euclid/compare/0.20.0...0.30.0
 [0.20.0]: https://github.com/goswinr/Euclid/compare/0.20.0-beta3...0.20.0
 [0.20.0-beta3]: https://github.com/goswinr/Euclid/compare/0.20.0-beta2...0.20.0-beta3
@@ -220,4 +222,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [0.2.1]: https://github.com/goswinr/Euclid/compare/0.2.0...0.2.1
 <!-- [0.2.0]: https://github.com/goswinr/Euclid/compare/0.1.0...0.2.0
 [0.1.0]: https://github.com/goswinr/Euclid/releases/tag/0.1.0 -->
-
