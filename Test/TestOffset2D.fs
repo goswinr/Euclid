@@ -1479,3 +1479,179 @@ let tests =
 
 
     ]
+
+
+let testsExtra =
+    testList "Offset2D Extra" [
+
+        testList "makeUnitTangents" [
+            test "unit square segment tangents" {
+                let xys = ResizeArray([Pt(0,0); Pt(1,0); Pt(1,1); Pt(0,1)]) |> xysOfPts
+                let ts = Offset2D.makeUnitTangents xys
+                let exp = ResizeArray([1.;0.;  0.;1.;  -1.;0.]) // 3 segments
+                expectEqualPts "tangents" exp ts
+            }
+            test "tangent of non unit segment is normalized" {
+                let xys = ResizeArray([Pt(0,0); Pt(3,4)]) |> xysOfPts
+                let ts = Offset2D.makeUnitTangents xys
+                let exp = ResizeArray([0.6; 0.8])
+                expectEqualPts "normalized tangent" exp ts
+            }
+            test "fails with fewer than 2 points" {
+                let xys = ResizeArray([Pt(0,0)]) |> xysOfPts
+                Expect.throws (fun () -> Offset2D.makeUnitTangents xys |> ignore) "single point should fail"
+            }
+            test "fails on duplicate consecutive points" {
+                let xys = ResizeArray([Pt(0,0); Pt(0,0); Pt(1,0)]) |> xysOfPts
+                Expect.throws (fun () -> Offset2D.makeUnitTangents xys |> ignore) "duplicate points should fail"
+            }
+            test "fails on odd coordinate count" {
+                let xys = ResizeArray([0.0; 0.0; 1.0])
+                Expect.throws (fun () -> Offset2D.makeUnitTangents xys |> ignore) "odd count should fail"
+            }
+        ]
+
+        testList "makeOffsetDirections" [
+            test "unit square segment normals are 90 deg CCW" {
+                let xys = ResizeArray([Pt(0,0); Pt(1,0); Pt(1,1); Pt(0,1)]) |> xysOfPts
+                let ns = Offset2D.makeOffsetDirections xys
+                // each segment rotated 90 deg counter-clockwise: (1,0)->(0,1), (0,1)->(-1,0), (-1,0)->(0,-1)
+                let exp = ResizeArray([0.;1.;  -1.;0.;  0.;-1.])
+                expectEqualPts "normals" exp ns
+            }
+            test "normal of non unit segment is normalized" {
+                let xys = ResizeArray([Pt(0,0); Pt(3,4)]) |> xysOfPts
+                let ns = Offset2D.makeOffsetDirections xys
+                // (3,4)/5 rotated 90 CCW = (-0.8, 0.6)
+                let exp = ResizeArray([-0.8; 0.6])
+                expectEqualPts "normalized normal" exp ns
+            }
+            test "fails with fewer than 2 points" {
+                let xys = ResizeArray([Pt(5,5)]) |> xysOfPts
+                Expect.throws (fun () -> Offset2D.makeOffsetDirections xys |> ignore) "single point should fail"
+            }
+            test "fails on duplicate consecutive points" {
+                let xys = ResizeArray([Pt(0,0); Pt(2,0); Pt(2,0); Pt(2,2)]) |> xysOfPts
+                Expect.throws (fun () -> Offset2D.makeOffsetDirections xys |> ignore) "duplicate points should fail"
+            }
+            test "fails on odd coordinate count" {
+                let xys = ResizeArray([0.0; 0.0; 1.0; 0.0; 2.0])
+                Expect.throws (fun () -> Offset2D.makeOffsetDirections xys |> ignore) "odd count should fail"
+            }
+        ]
+
+        testList "removeUTurns" [
+            test "no U-turns returns unchanged coordinates" {
+                let xys = ResizeArray([Pt(0,0); Pt(1,0); Pt(1,1); Pt(0,1); Pt(0,0)]) |> xysOfPts
+                let ns = Offset2D.makeUnitTangents xys
+                let res = Offset2D.removeUTurns(xys, ns, Cosine.``179.0``)
+                expectEqualPts "unchanged" xys res
+            }
+            test "simple open U-turn point removed" {
+                let xys = ResizeArray([Pt(0,0); Pt(5,0); Pt(5,5); Pt(5,1); Pt(9,1)]) |> xysOfPts
+                let ns = Offset2D.makeUnitTangents xys
+                let res = Offset2D.removeUTurns(xys, ns, Cosine.``179.99``)
+                "one point removed" |> Expect.equal res.Count (xys.Count - 2)
+                "removed the U-turn vertex (5,5)" |> Expect.isTrue (eq (ptOf 2 res) (Pt(5,1)))
+            }
+            test "closed seam U-turn keeps polyline closed" {
+                let xys = ResizeArray([Pt(0,0); Pt(10,0); Pt(10,10); Pt(0,10); Pt(5,0.001); Pt(0,0)]) |> xysOfPts
+                let ns = Offset2D.makeUnitTangents xys
+                let res = Offset2D.removeUTurns(xys, ns, Cosine.``179.9``)
+                let lastPt = ptOf (res.Count / 2 - 1) res
+                "result still closed" |> Expect.isTrue (eq (ptOf 0 res) lastPt)
+            }
+            test "fails on normals count mismatch" {
+                let xys = ResizeArray([Pt(0,0); Pt(1,0); Pt(1,1)]) |> xysOfPts
+                let ns = ResizeArray([1.0; 0.0]) // only 1 vector, needs 2
+                Expect.throws (fun () -> Offset2D.removeUTurns(xys, ns, Cosine.``179.0``) |> ignore) "count mismatch should fail"
+            }
+            test "fails with fewer than 2 points" {
+                let xys = ResizeArray([Pt(0,0)]) |> xysOfPts
+                let ns = ResizeArray<float>()
+                Expect.throws (fun () -> Offset2D.removeUTurns(xys, ns, Cosine.``179.0``) |> ignore) "too few points should fail"
+            }
+        ]
+
+        testList "toStringXYs special inputs" [
+            test "handles all degenerate and valid shapes" {
+                "null" |> Expect.stringContains (Offset2D.toStringXYs null) "null"
+                "empty" |> Expect.stringContains (Offset2D.toStringXYs (ResizeArray<float>())) "Empty"
+                "single value" |> Expect.stringContains (Offset2D.toStringXYs (ResizeArray([1.0]))) "1 value"
+                "single point" |> Expect.stringContains (Offset2D.toStringXYs (ResizeArray([1.0; 2.0]))) "Single Point"
+                let odd = ResizeArray([1.0; 2.0; 3.0])
+                "odd values" |> Expect.stringContains (Offset2D.toStringXYs odd) "not even"
+                let closed = ResizeArray([Pt(0,0); Pt(1,0); Pt(1,1); Pt(0,0)]) |> xysOfPts
+                "closed" |> Expect.stringContains (Offset2D.toStringXYs closed) "Closed"
+                let openP = ResizeArray([Pt(0,0); Pt(1,0); Pt(1,1); Pt(0,2)]) |> xysOfPts
+                "open" |> Expect.stringContains (Offset2D.toStringXYs openP) "Open"
+            }
+        ]
+
+        testList "constant offset geometric correctness" [
+            test "CCW square offset inward by 2" {
+                let xys = ResizeArray([Pt(0,0); Pt(10,0); Pt(10,10); Pt(0,10); Pt(0,0)]) |> xysOfPts
+                let res = Offset2D.offset 2.0 xys
+                let exp = ResizeArray([Pt(2,2); Pt(8,2); Pt(8,8); Pt(2,8); Pt(2,2)]) |> xysOfPts
+                expectEqualPts "inward square" exp res
+            }
+            test "CCW square offset outward by 2 (negative distance)" {
+                let xys = ResizeArray([Pt(0,0); Pt(10,0); Pt(10,10); Pt(0,10); Pt(0,0)]) |> xysOfPts
+                let res = Offset2D.offset -2.0 xys
+                let exp = ResizeArray([Pt(-2,-2); Pt(12,-2); Pt(12,12); Pt(-2,12); Pt(-2,-2)]) |> xysOfPts
+                expectEqualPts "outward square" exp res
+            }
+            test "open L offset by 2 moves ends along their own segment normals" {
+                let xys = ResizeArray([Pt(0,0); Pt(10,0); Pt(10,10)]) |> xysOfPts
+                let res = Offset2D.offset 2.0 xys
+                let exp = ResizeArray([Pt(0,2); Pt(8,2); Pt(8,10)]) |> xysOfPts
+                expectEqualPts "open L offset" exp res
+            }
+            test "distance 0 clones the input" {
+                let xys = ResizeArray([Pt(0,0); Pt(10,0); Pt(10,10); Pt(0,10); Pt(0,0)]) |> xysOfPts
+                let res = Offset2D.offset 0.0 xys
+                expectEqualPts "unchanged" xys res
+            }
+        ]
+
+        testList "U-turn behavior for constant offset" [
+            // an open 3-point polyline that reverses direction at the middle vertex is a 180 degree U-turn
+            let uTurn () = ResizeArray([Pt(0,0); Pt(5,0); Pt(1,0)]) |> xysOfPts
+            test "UTurn.Fail throws" {
+                Expect.throws (fun () -> Offset2D.offset 1.0 (uTurn()) |> ignore) "U-turn with Fail should throw"
+            }
+            test "UTurn.Chamfer adds a point" {
+                let res = Offset2D.offset' Offset2D.UTurn.Chamfer 1.0 (uTurn())
+                "chamfer adds an extra point at the U-turn" |> Expect.isTrue (res.Count > (uTurn()).Count)
+            }
+            test "UTurn.UseThreshold keeps the point count" {
+                let res = Offset2D.offset' Offset2D.UTurn.UseThreshold 1.0 (uTurn())
+                "UseThreshold keeps the same point count" |> Expect.equal res.Count (uTurn()).Count
+            }
+        ]
+
+        testList "offsetWithDirections and offsetVariableWithDirections errors" [
+            test "offsetWithDirections fails on direction count mismatch" {
+                let xys = ResizeArray([Pt(0,0); Pt(1,0); Pt(1,1)]) |> xysOfPts // needs 2 directions
+                let dirs = ResizeArray([0.0; 1.0]) // only 1 direction
+                Expect.throws
+                    (fun () -> Offset2D.offsetWithDirections(xys, dirs, 1.0, Offset2D.UTurn.Fail, Cosine.``175.0``) |> ignore)
+                    "direction count mismatch should fail"
+            }
+            test "offsetWithDirections fails with fewer than 2 points" {
+                let xys = ResizeArray([Pt(0,0)]) |> xysOfPts
+                let dirs = ResizeArray<float>()
+                Expect.throws
+                    (fun () -> Offset2D.offsetWithDirections(xys, dirs, 1.0, Offset2D.UTurn.Fail, Cosine.``175.0``) |> ignore)
+                    "too few points should fail"
+            }
+            test "offsetVariableWithDirections fails on distances count mismatch" {
+                let xys = ResizeArray([Pt(0,0); Pt(1,0); Pt(1,1)]) |> xysOfPts
+                let dirs = Offset2D.makeOffsetDirections xys // 2 directions
+                let dists = ResizeArray([1.0]) // only 1, needs 2
+                Expect.throws
+                    (fun () -> Offset2D.offsetVariableWithDirections(xys, dirs, dists, Offset2D.VarDistParallel.Fail, Offset2D.UTurn.Fail, Cosine.``2.5``, Cosine.``175.0``) |> ignore)
+                    "distances count mismatch should fail"
+            }
+        ]
+    ]

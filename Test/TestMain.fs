@@ -75,6 +75,8 @@ let run () =
     |||
     test TestOffset2D.tests
     |||
+    test TestOffset2D.testsExtra
+    |||
     test TestOffset3D.tests
     |||
     test TestHarmonization.tests
