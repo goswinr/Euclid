@@ -65,8 +65,8 @@ type Rect2D =
             let lenY = sqrt(axisYX*axisYX + axisYY*axisYY)
             if isTooSmall lenX then  failTooSmall2 "Rect2D() axisX" (Vc(axisXX, axisXY)) (Vc(axisYX, axisYY))
             if isTooSmall lenY then  failTooSmall2 "Rect2D() axisY" (Vc(axisYX, axisYY)) (Vc(axisXX, axisXY))
-            //just using zeroLengthTolerance 1e-12 seems too strict for dot product check:
-            if abs (axisXX*axisYX + axisXY*axisYY) > (lenX+lenY) * 1e-9 then fail2 $"Rect2D(): X-axis and Y-axis are not perpendicular" (Vc(axisXX, axisXY)) (Vc(axisYX, axisYY))
+            // scale the dot-product tolerance by the axis lengths so the check is a relative angle tolerance (independent of the rectangle size):
+            if abs (axisXX*axisYX + axisXY*axisYY) > lenX*lenY * 1e-9 then fail2 $"Rect2D(): X-axis and Y-axis are not perpendicular" (Vc(axisXX, axisXY)) (Vc(axisYX, axisYY))
             if isNegative(axisXX*axisYY - axisXY*axisYX) then fail2 $"Rect2D(): X-axis and Y-axis are not counter-clockwise" (Vc(axisXX, axisXY)) (Vc(axisYX, axisYY))
         #endif
             {OriginX=originX; OriginY=originY; XaxisX=axisXX; XaxisY=axisXY; YaxisX=axisYX; YaxisY=axisYY}
@@ -435,15 +435,15 @@ type Rect2D =
 
     /// Create a 2D Rectangle from the origin point, an x-edge and an y-edge.
     /// Fails if x and y are not in counter-clockwise order.
-    /// Fails if x and y are not perpendicularity.
-    /// Fails on vectors shorter than 1e-9.
+    /// Fails if x and y are not perpendicular.
+    /// Fails on vectors shorter than 1e-6.
     static member createFromVectors(origin:Pt, x:Vc, y:Vc) : Rect2D =
         let xLenSq = x.X*x.X + x.Y*x.Y
         let yLenSq = y.X*y.X + y.Y*y.Y
         if isTooSmallSq xLenSq  then failTooSmall2 "Rect2D.createFromVectors x" x y
         if isTooSmallSq yLenSq  then failTooSmall2 "Rect2D.createFromVectors y" y x
-        //zeroLengthTolerance seems too strict for dot product:
-        if abs (x.X*y.X + x.Y*y.Y) > 1e-10 then fail2 $"Rect2D.createFromVectors: X-axis and Y-axis are not perpendicular" x y
+        // scale the dot-product tolerance by the axis lengths so the check is a relative angle tolerance (independent of the rectangle size):
+        if abs (x.X*y.X + x.Y*y.Y) > sqrt(xLenSq*yLenSq) * 1e-9 then fail2 $"Rect2D.createFromVectors: X-axis and Y-axis are not perpendicular" x y
         if isNegative(x.X*y.Y - x.Y*y.X)then fail2 $"Rect2D.createFromVectors: X-axis and Y-axis are not counter-clockwise" x y
         Rect2D.createUnchecked(origin.X, origin.Y, x.X, x.Y, y.X, y.Y)
 
@@ -752,9 +752,9 @@ type Rect2D =
     /// Keeps the same X- and Y-axis orientation as the input rectangle.
     static member fitToPoints (pts:IList<Pt>) (refRect:Rect2D) : Rect2D =
         let xLen = sqrt(refRect.XaxisX*refRect.XaxisX + refRect.XaxisY*refRect.XaxisY)
-        if isTooTiny xLen then failTooSmall "Vc.Unitized" (Vc(refRect.XaxisX, refRect.XaxisY))
+        if isTooTiny xLen then failTooSmall "Rect2D.fitToPoints: Xaxis" (Vc(refRect.XaxisX, refRect.XaxisY))
         let yLen = sqrt(refRect.YaxisX*refRect.YaxisX + refRect.YaxisY*refRect.YaxisY)
-        if isTooTiny yLen then failTooSmall "Vc.Unitized" (Vc(refRect.YaxisX, refRect.YaxisY))
+        if isTooTiny yLen then failTooSmall "Rect2D.fitToPoints: Yaxis" (Vc(refRect.YaxisX, refRect.YaxisY))
         let xX = refRect.XaxisX / xLen
         let xY = refRect.XaxisY / xLen
         let yX = refRect.YaxisX / yLen
@@ -1144,7 +1144,7 @@ type Rect2D =
 
     /// Divides a a 2D Rectangle into a grid of points.
     /// It will create as few as points as possible respecting the maximum segment length.
-    /// The input maxSegmentLength is multiplied by factor 1.0001 of to avoid numerical errors.
+    /// The input maxSegmentLength is multiplied by factor 1.00001 to avoid numerical errors.
     /// That means in an edge case there are fewer segments returned, not more.
     /// The returned array is divided along the x-axis. The sub-array is divided along the y-axis.
     static member gridMaxLength (rect:Rect2D, xMaxLen:float, yMaxLen:float) : Pt array array =

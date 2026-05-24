@@ -75,8 +75,8 @@ type Rect3D =
             let lenY = sqrt(axisYX*axisYX + axisYY*axisYY + axisYZ*axisYZ)
             if isTooSmall (lenX) then  failTooSmall2 "Rect3D() axisX" (Vec(axisXX, axisXY, axisXZ)) (Vec(axisYX, axisYY, axisYZ))
             if isTooSmall (lenY) then  failTooSmall2 "Rect3D() axisY" (Vec(axisYX, axisYY, axisYZ)) (Vec(axisXX, axisXY, axisXZ))
-            //just using zeroLengthTolerance 1e-12 seems too strict for dot product check:
-            if abs (axisXX*axisYX + axisXY*axisYY + axisXZ*axisYZ) > (lenX+lenY) * 1e-9 then fail2 $"Rect3D(): X-axis and Y-axis are not perpendicular" (Vec(axisXX, axisXY, axisXZ)) (Vec(axisYX, axisYY, axisYZ))
+            // scale the dot-product tolerance by the axis lengths so the check is a relative angle tolerance (independent of the rectangle size):
+            if abs (axisXX*axisYX + axisXY*axisYY + axisXZ*axisYZ) > lenX*lenY * 1e-9 then fail2 $"Rect3D(): X-axis and Y-axis are not perpendicular" (Vec(axisXX, axisXY, axisXZ)) (Vec(axisYX, axisYY, axisYZ))
         #endif
             {OriginX=originX; OriginY=originY; OriginZ=originZ; XaxisX=axisXX; XaxisY=axisXY; XaxisZ=axisXZ; YaxisX=axisYX; YaxisY=axisYY; YaxisZ=axisYZ}
 
@@ -194,7 +194,7 @@ type Rect3D =
         UnitVec.createUnchecked(x*f, y*f, z*f)
 
     /// Creates a unitized version of the local X-Axis.
-    static member inline xaxisUnit (r:Rect3D) : UnitVec =
+    static member inline xAxisUnit (r:Rect3D) : UnitVec =
         r.XaxisUnit
 
     /// Creates a unitized version of the local Y-Axis.
@@ -209,7 +209,7 @@ type Rect3D =
         UnitVec.createUnchecked(x*f, y*f, z*f)
 
     /// Creates a unitized version of the local Y-Axis.
-    static member inline yaxisUnit (r:Rect3D) : UnitVec =
+    static member inline yAxisUnit (r:Rect3D) : UnitVec =
         r.YaxisUnit
 
     /// Returns the Normal
@@ -271,7 +271,7 @@ type Rect3D =
     static member inline evaluateAt (xParameter:float) (yParameter:float) (r:Rect3D) : Pnt =
         r.EvaluateAt(xParameter, yParameter)
 
-    /// Evaluate a point at X and Y distance on the respective axes of the 2D Rectangle.
+    /// Evaluate a point at X and Y distance on the respective axes of the 3D-rectangle.
     member inline r.EvaluateDist (xDistance:float, yDistance:float) : Pnt =
         let lx = sqrt(r.XaxisX*r.XaxisX + r.XaxisY*r.XaxisY + r.XaxisZ*r.XaxisZ)
         let ly = sqrt(r.YaxisX*r.YaxisX + r.YaxisY*r.YaxisY + r.YaxisZ*r.YaxisZ)
@@ -283,7 +283,7 @@ type Rect3D =
             r.OriginY + r.XaxisY*xf + r.YaxisY*yf,
             r.OriginZ + r.XaxisZ*xf + r.YaxisZ*yf)
 
-    /// Evaluate a point at X and Y distance on the respective axes of the 2D Rectangle.
+    /// Evaluate a point at X and Y distance on the respective axes of the 3D-rectangle.
     static member inline evaluateDist (xDistance:float) (yDistance:float) (r:Rect3D) : Pnt =
         r.EvaluateDist(xDistance, yDistance)
 
@@ -817,7 +817,7 @@ type Rect3D =
     static member inline pt3 (r:Rect3D) : Pnt =
         r.Pt3
 
-    /// <summary>Returns a 3D line from point 0 to 1 of the 2D rectangle.
+    /// <summary>Returns a 3D line from point 0 to 1 of the 3D-rectangle.
     /// <code>
     ///   local
     ///   Y-Axis
@@ -840,7 +840,7 @@ type Rect3D =
     static member inline edge01 (r:Rect3D) : Line3D =
         r.Edge01
 
-    /// <summary>Returns a 3D line from point 1 to 2 of the 2D rectangle.
+    /// <summary>Returns a 3D line from point 1 to 2 of the 3D-rectangle.
     /// <code>
     ///   local
     ///   Y-Axis
@@ -866,7 +866,7 @@ type Rect3D =
     static member inline edge12 (r:Rect3D) : Line3D =
         r.Edge12
 
-    /// <summary>Returns a 3D line from point 2 to 3 of the 2D rectangle.
+    /// <summary>Returns a 3D line from point 2 to 3 of the 3D-rectangle.
     /// <code>
     ///   local
     ///   Y-Axis
@@ -892,7 +892,7 @@ type Rect3D =
     static member inline edge23 (r:Rect3D) : Line3D =
         r.Edge23
 
-    /// <summary>Returns a 3D line from point 3 to 0 of the 2D rectangle.
+    /// <summary>Returns a 3D line from point 3 to 0 of the 3D-rectangle.
     /// <code>
     ///   local
     ///   Y-Axis
@@ -915,7 +915,7 @@ type Rect3D =
     static member inline edge30 (r:Rect3D) : Line3D =
         r.Edge30
 
-    /// <summary>Returns the local X side as the 2D line from point 0 to 1 of the 2D rectangle.
+    /// <summary>Returns the local X side as the 3D line from point 0 to 1 of the 3D-rectangle.
     /// <code>
     ///   local
     ///   Y-Axis
@@ -938,7 +938,7 @@ type Rect3D =
     static member inline edgeX (r:Rect3D) : Line3D =
         r.EdgeX
 
-    /// <summary>Returns the local Y side as 3D line from point 0 to 3 of the 2D rectangle.
+    /// <summary>Returns the local Y side as 3D line from point 0 to 3 of the 3D-rectangle.
     /// This is the reverse of Edge30.
     /// <code>
     ///   local
@@ -962,7 +962,7 @@ type Rect3D =
     static member inline edgeY (r:Rect3D) : Line3D =
         r.EdgeY
 
-    /// <summary>Returns the diagonal 3D line from point 0 to 2 of the 2D rectangle.
+    /// <summary>Returns the diagonal 3D line from point 0 to 2 of the 3D-rectangle.
     /// <code>
     ///   local
     ///   Y-Axis
@@ -1385,15 +1385,15 @@ type Rect3D =
             xX, xY, xZ, yX, yY, yZ)
 
     /// Create a 3D-rectangle from the origin point, an x-edge and an y-edge.
-    /// Fails if x and y are not perpendicularity.
-    /// Fails on vectors shorter than 1e-12.
+    /// Fails if x and y are not perpendicular.
+    /// Fails on vectors shorter than 1e-6.
     static member createFromVectors(origin:Pnt, x:Vec, y:Vec) : Rect3D =
         let xLenSq = x.X*x.X + x.Y*x.Y + x.Z*x.Z
         let yLenSq = y.X*y.X + y.Y*y.Y + y.Z*y.Z
         if isTooSmallSq xLenSq  then failTooSmall2 "Rect3D.createFromVectors x" x y
         if isTooSmallSq yLenSq  then failTooSmall2 "Rect3D.createFromVectors y" y x
-        //zeroLengthTolerance seems too strict for dot product:
-        if abs (x.X*y.X + x.Y*y.Y + x.Z*y.Z) > 1e-12 then fail2 $"Rect3D.createFromVectors: X-axis and Y-axis are not perpendicular" x y
+        // scale the dot-product tolerance by the axis lengths so the check is a relative angle tolerance (independent of the rectangle size):
+        if abs (x.X*y.X + x.Y*y.Y + x.Z*y.Z) > sqrt(xLenSq*yLenSq) * 1e-9 then fail2 $"Rect3D.createFromVectors: X-axis and Y-axis are not perpendicular" x y
         Rect3D.createUnchecked(origin.X, origin.Y, origin.Z, x.X, x.Y, x.Z, y.X, y.Y, y.Z)
 
     /// Give PPlane and sizes.
@@ -1799,7 +1799,7 @@ type Rect3D =
     /// Divides a a 3D-rectangle into a grid of sub-rectangles.
     /// The gap between the sub-rectangles is given in x and y direction. It does not apply to the outer edges of the 3D-rectangle.
     /// It will create as many sub-rectangles as possible, respecting the minimum side length for x and y.
-    /// The input minSegmentLength is multiplied by factor 0.99999 to avoid numerical errors.
+    /// The input minSegmentLength is multiplied by factor 0.9999 to avoid numerical errors.
     /// That means in an edge case there are more segments returned, not fewer.
     /// The returned array is divided along the x-axis. The sub-array is divided along the y-axis.
     static member subDivideMinLength (rect:Rect3D, xMinLen:float, yMinLen:float, xGap:float, yGap:float) : Rect3D array array =
@@ -1862,7 +1862,7 @@ type Rect3D =
 
     /// Divides a a 3D-rectangle into a grid of points.
     /// It will create as few as points as possible respecting the maximum segment length.
-    /// The input maxSegmentLength is multiplied by factor 0.0001 of to avoid numerical errors.
+    /// The input maxSegmentLength is multiplied by factor 1.00001 to avoid numerical errors.
     /// That means in an edge case there are fewer segments returned, not more.
     /// The returned array is divided along the x-axis. The sub-array is divided along the y-axis.
     static member gridMaxLength (rect:Rect3D, xMaxLen:float, yMaxLen:float) : Pnt array array =
@@ -1892,7 +1892,7 @@ type Rect3D =
 
     /// Returns the line parameter.
     /// The parameter is the intersection point of the ray with the infinitely extended Rect3D.
-    /// The line is outside of the rectangle if the range is 0.0 to 1.0 .
+    /// The intersection point lies on the line segment itself only if the parameter is within the range 0.0 to 1.0.
     /// Returns None if they are parallel or coincident.
     static member intersectRayParameter (ln:Line3D) (pl:Rect3D) : option<float> =
         let z = pl.NormalUnit
@@ -1905,9 +1905,9 @@ type Rect3D =
             Some t
 
     /// Returns the line parameter and the X and Y parameters on the Rect3D as tuple (pLn, pPlX, pPlY).
-    /// These parameters ar all in the range 0.0 to 1.0.
+    /// These parameters are all in the range 0.0 to 1.0.
     /// Returns None if the intersection point is outside of their bounds.
-    /// Use Rect3D.intersectLineParameters to get the parameters of the intersection point.
+    /// Use Rect3D.intersectRayParameters to get the parameters even when the intersection point is outside the bounds.
     /// Returns None if they are parallel or coincident.
     static member intersectLineParameters (ln:Line3D) (pl:Rect3D) : option<float*float*float> =
         let z = pl.NormalUnit
@@ -1935,7 +1935,7 @@ type Rect3D =
     /// Returns intersection point of a Line3D with Rect3D.
     /// Returns None if the intersection point is outside of their bounds.
     /// Use Rect3D.intersectLineParameters to get the parameters of the intersection point.
-    /// Returns None if they are parallel or coincident.
+    /// Returns None if they are parallel or coincident or the line has zero length.
     static member intersectLine (ln:Line3D) (pl:Rect3D) : Pnt option =
         let z = pl.NormalUnit
         let v = ln.Tangent
@@ -1962,6 +1962,14 @@ type Rect3D =
     // #endregion
     // #region Obsolete
 
+
+    [<Obsolete("Renamed to Rect3D.xAxisUnit for naming consistency with Rect2D.")>]
+    static member inline xaxisUnit (r:Rect3D) : UnitVec =
+        r.XaxisUnit
+
+    [<Obsolete("Renamed to Rect3D.yAxisUnit for naming consistency with Rect2D.")>]
+    static member inline yaxisUnit (r:Rect3D) : UnitVec =
+        r.YaxisUnit
 
     [<Obsolete("This does not scale proportionally to the actual area, use just .Area for sorting by area")>]
     member inline r.AreaSq : float =

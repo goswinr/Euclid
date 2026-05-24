@@ -48,6 +48,20 @@ let tests =
             "Rect3D.SizeY" |> Expect.isTrue (equ r.SizeY d)
         }
 
+        test "Rect3D.createFromVectors accepts large rect that is perpendicular within tolerance" {
+            // dot product of perpendicular axes scales with the square of the size,
+            // so an absolute tolerance falsely rejects large valid rectangles.
+            let r = Rect3D.createFromVectors(o, Vec(1e5, 0., 0.), Vec(1e-5, 1e5, 0.))
+            "SizeX" |> Expect.isTrue (equ r.SizeX 1e5)
+            "SizeY" |> Expect.isTrue (equ r.SizeY 1e5)
+        }
+
+        test "Rect3D.xAxisUnit / yAxisUnit static members" {
+            let r = Rect3D.createFromVectors(o, Vec(2., 0., 0.), Vec(0., 3., 0.))
+            "xAxisUnit X" |> Expect.isTrue (equ (Rect3D.xAxisUnit r).X 1.0)
+            "yAxisUnit Y" |> Expect.isTrue (equ (Rect3D.yAxisUnit r).Y 1.0)
+        }
+
         test "Rect3D.fitToPoints - all positive projections" {
             // Reference rectangle at origin with unit axes
             let refRect = Rect3D.createFromVectors(Pnt.Origin, Vec.Xaxis, Vec.Yaxis)

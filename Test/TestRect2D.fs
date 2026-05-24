@@ -120,6 +120,9 @@ let tests =
                 "XaxisUnit Y" |> Expect.isTrue (eqf xu.Y 0.6)
                 "YaxisUnit X" |> Expect.isTrue (eqf yu.X -0.6)
                 "YaxisUnit Y" |> Expect.isTrue (eqf yu.Y 0.8)
+                // static members mirror the instance members
+                "xAxisUnit static" |> Expect.isTrue (eqf (Rect2D.xAxisUnit rr).X 0.8)
+                "yAxisUnit static" |> Expect.isTrue (eqf (Rect2D.yAxisUnit rr).Y 0.8)
             }
         ]
 
@@ -263,6 +266,14 @@ let tests =
             }
             test "createFromVectors rejects zero-length axis" {
                 "zero x" |> Expect.throws (fun () -> Rect2D.createFromVectors(ro, Vc(0., 0.), rvy) |> ignore)
+            }
+            test "createFromVectors accepts large rect that is perpendicular within tolerance" {
+                // dot product of perpendicular axes scales with the square of the size,
+                // so an absolute tolerance falsely rejects large valid rectangles.
+                // x and y are off-perpendicular by only ~1e-10 rad here.
+                let r = Rect2D.createFromVectors(o, Vc(1e5, 0.), Vc(1e-5, 1e5))
+                "SizeX" |> Expect.isTrue (eqf r.SizeX 1e5)
+                "SizeY" |> Expect.isTrue (eqf r.SizeY 1e5)
             }
             test "createFromXVectorAndWidth uses absolute Y size" {
                 let r = Rect2D.createFromXVectorAndWidth(ro, rvx, 5.)
