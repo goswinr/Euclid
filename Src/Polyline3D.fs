@@ -262,6 +262,9 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     static member inline asFSharpCode (pl:Polyline3D) : string =
         pl.AsFSharpCode
 
+
+
+
     /// Creates a copy of the Polyline3D
     /// Same as polyline.Clone()
     member p.Duplicate(): Polyline3D =
@@ -487,6 +490,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
         pl.Segments
 
     /// Returns the line vectors of all segments of the Polyline3D as a list of Vec.
+    /// The length of the list is one less than the point count.
     member p.SegmentVectors : ResizeArray<Vec> =
         let vs = ResizeArray(p.SegmentCount)
         let len = xyzs.Count
@@ -509,8 +513,41 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             vs
 
     /// Returns the line vectors of all segments of the Polyline3D as a list of Vec.
+    /// The length of the list is one less than the point count.
     static member inline segmentVectors (pl:Polyline3D) : ResizeArray<Vec> =
         pl.SegmentVectors
+
+
+    /// Returns the line vectors of all segments of the Polyline3D as a flat list of x, y, and z components.
+    /// The length of the list is 3 less than the xyzs count, so one less vector than points in the polyline.
+    member p.SegmentVectorsXYZ : ResizeArray<float> =
+        let xyzs = p.XYZs
+        let len = xyzs.Count
+        let vs = ResizeArray(len - 3)
+        if len < 6 then
+            vs
+        else
+            let mutable ax = xyzs.[0]
+            let mutable ay = xyzs.[1]
+            let mutable az = xyzs.[2]
+            let mutable i = 3
+            while i < len do
+                let bx = xyzs.[i]
+                let by = xyzs.[i + 1]
+                let bz = xyzs.[i + 2]
+                vs.Add (bx - ax)
+                vs.Add (by - ay)
+                vs.Add (bz - az)
+                ax <- bx
+                ay <- by
+                az <- bz
+                i <- i + 3
+            vs
+
+    /// Returns the line vectors of all segments of the Polyline3D as a flat list of x, y, and z components.
+    /// The length of the list is 3 less than the xyzs count, so one less vector than points in the polyline.
+    static member inline segmentVectorsXYZ (p:Polyline3D) : ResizeArray<float> =
+        p.SegmentVectorsXYZ
 
     /// Gets the bounding box of the Polyline3D.
     member p.BoundingBox : BBox =
@@ -1594,6 +1631,9 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
 
             Polyline3D nps
 
+    // #endregion
+    // #region Offset
+
     /// <summary> Offsets a Polyline in 3D space by finding the local plane in each corner.
     /// Takes a reference normal for orienting the perpendicular offset and determining inside/outside.
     /// Auto-detects if given points are from a closed Polyline (first point = last point) and loops them.
@@ -1787,6 +1827,10 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
         if refNormal.LengthSq < 1e-8 then
             fail $"Polyline3D.offsetVar: Cannot compute average normal of Polyline3D, the {polyLine.PointCount} points are colinear or too close together: "
         Polyline3D.offsetVarWithRef(polyLine,inPlaneOffsetDistance, perpendicularOffsetDistances, refNormal.Unitized, loop, varDistParallelBehaviour, considerColinearBelow, failAtUTurnAbove)
+
+
+
+
 
     // #endregion
     // #region Obsolete

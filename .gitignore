@@ -20,3 +20,6 @@ Docs/index.md
 
 # temp lock files from Rhino3D tests
 *.3dm.rhl
+
+
+BenchmarkDotNet.Artifacts/

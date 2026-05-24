@@ -1375,19 +1375,19 @@ let testsComprehensive =
 
         testList "tryFindSelfIntersection" [
             test "no intersection in simple polyline" {
-                let result = Polyline2D.tryFindSelfIntersection plOpen
+                let result = Polyline2D.tryFindSelfIntersectionSmall plOpen
                 Expect.isNone result "simple polyline has no self intersection"
             }
             test "no intersection in L-shape open polyline" {
                 // Open polyline with many segments but no crossings
-                let result = Polyline2D.tryFindSelfIntersection plLShape
+                let result = Polyline2D.tryFindSelfIntersectionSmall plLShape
                 Expect.isNone result "L-shape open polyline has no self intersection"
             }
             test "self intersection in figure-8" {
                 let fig8 = Polyline2D.create [
                     Pt(0.,0.); Pt(10.,10.); Pt(10.,0.); Pt(0.,10.); Pt(0.,0.)
                 ]
-                let result = Polyline2D.tryFindSelfIntersection fig8
+                let result = Polyline2D.tryFindSelfIntersectionBig fig8
                 Expect.isSome result "figure 8 has self intersection"
                 match result with
                 | Some (pt, _i, _j) ->
@@ -1399,8 +1399,19 @@ let testsComprehensive =
                 let pl = Polyline2D.create [
                     Pt(0.,0.); Pt(5.,5.); Pt(10.,0.); Pt(5.,5.); Pt(0.,10.)
                 ]
-                let result = Polyline2D.tryFindSelfIntersection pl
+                let result = Polyline2D.tryFindSelfIntersectionBig pl
                 Expect.isSome result "touching segments should find intersection"
+            }
+            test "first and last segment intersect in open polyline" {
+                let pl = Polyline2D.create [
+                    Pt(0.,0.); Pt(10.,0.); Pt(10.,3.); Pt(10.,5.); Pt(2.,-2.)
+                ]
+                let result = Polyline2D.tryFindSelfIntersectionBig pl
+                Expect.isSome result "open polyline should report crossing between first and last segment"
+                match result with
+                | Some (pt, _i, _j) ->
+                    "intersection point" |> expectEqPts pt (Pt(30. / 7., 0.))
+                | None -> ()
             }
         ]
 
@@ -1547,27 +1558,27 @@ let testsSpecial =
         testList "tryFindSelfIntersection special cases" [
             test "simple closed square has no self intersection" {
                 // The shared start/end (closure) vertex of a closed polyline is not a self intersection.
-                let result = Polyline2D.tryFindSelfIntersection plClosed
+                let result = Polyline2D.tryFindSelfIntersectionBig plClosed
                 Expect.isNone result "closure seam of a simple closed square must not be reported"
             }
             test "closed triangle has no self intersection" {
-                let result = Polyline2D.tryFindSelfIntersection plTriangle
+                let result = Polyline2D.tryFindSelfIntersectionBig plTriangle
                 Expect.isNone result "closed triangle has no self intersection"
             }
             test "open 3-point corner has no self intersection" {
                 // first and last segment are adjacent (share the middle vertex), so their corner is not a crossing
                 let pl = Polyline2D.create [Pt(0.,0.); Pt(5.,0.); Pt(5.,5.)]
-                let result = Polyline2D.tryFindSelfIntersection pl
+                let result = Polyline2D.tryFindSelfIntersectionSmall pl
                 Expect.isNone result "an open corner of two adjacent segments is not a self intersection"
             }
             test "degenerate polylines have no self intersection" {
-                Expect.isNone (Polyline2D.tryFindSelfIntersection plEmpty) "empty has no self intersection"
-                Expect.isNone (Polyline2D.tryFindSelfIntersection plSinglePoint) "single point has no self intersection"
-                Expect.isNone (Polyline2D.tryFindSelfIntersection plLine) "single segment has no self intersection"
+                Expect.isNone (Polyline2D.tryFindSelfIntersectionSmall plEmpty) "empty has no self intersection"
+                Expect.isNone (Polyline2D.tryFindSelfIntersectionSmall plSinglePoint) "single point has no self intersection"
+                Expect.isNone (Polyline2D.tryFindSelfIntersectionSmall plLine) "single segment has no self intersection"
             }
             test "closed figure-8 is still detected" {
                 let fig8 = Polyline2D.create [Pt(0.,0.); Pt(10.,10.); Pt(10.,0.); Pt(0.,10.); Pt(0.,0.)]
-                let result = Polyline2D.tryFindSelfIntersection fig8
+                let result = Polyline2D.tryFindSelfIntersectionBig fig8
                 Expect.isSome result "a real crossing must still be found"
                 match result with
                 | Some (pt, _, _) -> "crossing near center" |> expectEqPts pt (Pt(5.,5.))
@@ -1576,7 +1587,7 @@ let testsSpecial =
             test "non-adjacent touching segments are reported" {
                 // two non-adjacent segments meet at (5,5)
                 let pl = Polyline2D.create [Pt(0.,0.); Pt(5.,5.); Pt(10.,0.); Pt(5.,5.); Pt(0.,10.)]
-                Expect.isSome (Polyline2D.tryFindSelfIntersection pl) "non-adjacent touching segments should be found"
+                Expect.isSome (Polyline2D.tryFindSelfIntersectionBig pl) "non-adjacent touching segments should be found"
             }
         ]
 

@@ -778,12 +778,24 @@ type BRect =
 
     /// Finds min and max values for x and y.
     static member inline create (a:Pt, b:Pt) : BRect =
-        // sort min and max values (not using allocating tuples for swapping)
-        let mutable minX = a.X
-        let maxX = if b.X > minX then b.X else minX <- b.X ;  a.X
-        let mutable minY = a.Y
-        let maxY = if b.Y > minY then b.Y else minY <- b.Y ;  a.Y
-        BRect.createUnchecked(minX, minY, maxX, maxY)
+        BRect.createUnchecked(
+            min a.X b.X,
+            min a.Y b.Y,
+            max a.X b.X,
+            max a.Y b.Y)
+
+    /// <summary>Finds min and max values points A and B given as separate X and Y values.</summary>
+    /// <param name="ptAx">X value of point A</param>
+    /// <param name="ptAy">Y value of point A</param>
+    /// <param name="ptBx">X value of point B</param>
+    /// <param name="ptBy">Y value of point B</param>
+    /// <returns>A bounding rectangle that contains both points A and B.</returns>
+    static member inline createXY (ptAx:float, ptAy:float, ptBx:float, ptBy:float) : BRect =
+        BRect.createUnchecked(
+            min ptAx ptBx,
+            min ptAy ptBy,
+            max ptAx ptBx,
+            max ptAy ptBy)
 
     /// Finds min and max values for x and y.
     /// Fails if the sequence is null or empty.

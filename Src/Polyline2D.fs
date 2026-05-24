@@ -469,6 +469,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
         p.Segments
 
     /// Returns the line vectors of all segments of the Polyline2D as a list of Vc.
+    /// The length of the list is one less than the point count.
     member p.SegmentVectors : ResizeArray<Vc> =
         let vs = ResizeArray(p.SegmentCount)
         let len = xys.Count
@@ -490,6 +491,33 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// Returns the line vectors of all segments of the Polyline2D as a list of Vc.
     static member inline segmentVectors (p:Polyline2D) : ResizeArray<Vc> =
         p.SegmentVectors
+
+
+    /// Returns the line vectors of all segments of the Polyline2D as a flat list of x and y components.
+    /// The length of the list is 2 less than the xys count, so one less vector than points in the polyline.
+    member p.SegmentVectorsXY : ResizeArray<float> =
+        let xys = p.XYs
+        let len = xys.Count
+        let vs = ResizeArray(len - 2)
+        if len < 4 then
+            vs
+        else
+            let mutable ax = xys.[0]
+            let mutable ay = xys.[1]
+            let mutable i = 2
+            while i < len do
+                let bx = xys.[i]
+                let by = xys.[i + 1]
+                vs.Add (bx - ax)
+                vs.Add (by - ay)
+                ax <- bx
+                ay <- by
+                i <- i + 2
+            vs
+    /// Returns the line vectors of all segments of the Polyline2D as a flat list of x and y components.
+    /// The length of the list is 2 less than the xys count, so one less vector than points in the polyline.
+    static member inline segmentVectorsXY (p:Polyline2D) : ResizeArray<float> =
+        p.SegmentVectorsXY
 
     /// Gets bounding rectangle of the Polyline2D
     member p.BoundingRectangle : BRect =
@@ -1860,56 +1888,145 @@ type Polyline2D private (xys: ResizeArray<float>) =
             Offset2D.offsetVariableWithDirections(xys, normals, distances, varDistParallelBehavior, uTurnBehavior, useVarDistParallelBehaviorBelow, useUTurnBehaviorAbove)
             |> Polyline2D.createDirectly
 
-    /// Tries to find a self intersection in the Polyline2D.
-    /// Adjacent segments are never checked, so the shared vertex of a corner,
-    /// or the shared closure vertex of a closed Polyline2D, is not reported as a self intersection.
+    /// Tries to find a self intersection in big Polyline2D.
+    /// This function is optimized for polylines with more than 20 points.
+    /// A closed Polyline2D, is not reported as a self intersection.
     /// Also returns Some if two non-adjacent segments are just touching.
     /// If found returns the first intersection point and the indices of the two segments that intersect.
     /// If no intersection is found returns None.
     /// Returns None for Polylines with fewer than 3 points (less than two segments).
-    /// This is a recursive O(n^2) algorithm and should only be used for small Polylines.
-    static member tryFindSelfIntersection (pl:Polyline2D) : Option<Pt * int * int> =
-        let pts = pl.AsPoints
-        if pts.Count < 3 then
+    /// This is an iterative O(n^2) algorithm
+    static member tryFindSelfIntersectionBig (pl:Polyline2D) : Option<Pt * int * int> =
+        // see Test\BenchmarkPolyline2DSelfIntersection.fsx for performance tests and comparison of this algorithm with tryFindSelfIntersectionSmall.
+        let xys = pl.XYs
+        let len = xys.Count
+        if len < 6 then
             None // a polyline with fewer than two segments cannot intersect itself
         else
-            let segmentVs = pl.SegmentVectors
+
+            // brs is indexed per segment (0,1,2,..), while i and j below are flat (x,y)
+            // coordinate indices into xys/segmentVs that step by 2, so brs is accessed as brs.[i/2].
+            let brs = ResizeArray(len - 2) // one vector less than points
+            let mutable px = xys.[0]
+            let mutable py = xys.[1]
+            let mutable i = 2
+            while i < len do
+                let tx = xys.[i]
+                let ty = xys.[i + 1]
+                brs.Add (BRect.createXY(px, py, tx, ty))
+                px <- tx
+                py <- ty
+                i <- i + 2
+
+            let segmentVs = pl.SegmentVectorsXY
             let segLastIdx = segmentVs.LastIndex
-            let brs = ResizeArray(segmentVs.Count)
-            let mutable pp = pts.[0]
-            for i = 1 to pts.LastIndex do
-                let p = pts.[i]
-                let br = BRect.create(pp,p)
-                brs.Add br
-                pp <- p
+            let isClosed = pl.IsAlmostClosed 1e-7
 
-            let isClosed = pl.IsClosed
+            let mutable result = None
 
-            // O(n^2) check of all non-adjacent segments against each other
-            let rec checkSegs i j =
-                if i > segLastIdx then
-                    None // exit loop
+            // Segment 0 is handled first because its range depends on whether the Polyline2D is closed:
+            // on a closed Polyline2D the first and last segment share the closure vertex and are therefore
+            // adjacent, so on a closed Polyline2D segment 0 is not checked against the last segment.
+            // Indices are flat (x,y) coordinate indices stepping by 2, so excluding the last segment
+            // means dropping a full segment stride: segLastIdx is odd (the last segment's y-component),
+            // segLastIdx-1 is the last segment's start and segLastIdx-2 is the previous segment's start.
+            let firstRowEnd = if isClosed then segLastIdx - 2 else segLastIdx
+            let mutable j = 4 // +2 to skip the adjacent segment
+            let mutable bri = brs.[0]
+            let mutable ptix = xys.[0]
+            let mutable ptiy = xys.[1]
+            let mutable sVix = segmentVs.[0]
+            let mutable sViy = segmentVs.[1]
+            while result.IsNone && j < firstRowEnd do
+                if BRect.isOverlapping bri brs.[j / 2] then
+                    let mutable ptjx = xys.[j]
+                    let mutable ptjy = xys.[j + 1]
+                    let mutable sVjx = segmentVs.[j]
+                    let mutable sVjy = segmentVs.[j + 1]
+                    match XLine2D.tryIntersect(ptix, ptiy, ptjx, ptjy, sVix, sViy, sVjx, sVjy) with
+                    | Some pt -> result <- Some (pt, 0, j)
+                    | None    -> ()
+                j <- j + 2
 
-                elif j > segLastIdx then
-                    checkSegs (i + 1) (i + 3) // +3 to skip adjacent segments
+            // The remaining segments from index 1 onward have no closure special case.
+            let mutable i = 2
+            while result.IsNone && i < segLastIdx do
+                let mutable j = i + 4 // +2 to skip the adjacent segment
+                bri <- brs.[i / 2]
+                ptix <- xys.[i]
+                ptiy <- xys.[i + 1]
+                sVix <- segmentVs.[i]
+                sViy <- segmentVs.[i + 1]
+                while result.IsNone && j <= segLastIdx do
+                    if BRect.isOverlapping bri brs.[j / 2] then
+                        let mutable ptjx = xys.[j]
+                        let mutable ptjy = xys.[j + 1]
+                        let mutable sVjx = segmentVs.[j]
+                        let mutable sVjy = segmentVs.[j + 1]
+                        match XLine2D.tryIntersect(ptix, ptiy, ptjx, ptjy, sVix, sViy, sVjx, sVjy) with
+                        | Some pt -> result <- Some (pt, i, j)
+                        | None    -> ()
+                    j <- j + 2
+                i <- i + 2
+            result
 
-                elif isClosed && i = 0 && j = segLastIdx then
-                    // on a closed Polyline2D the first and last segment share the closure vertex,
-                    // so they are adjacent and their shared point must not count as a self intersection.
-                    checkSegs i (j + 1)
+    /// Tries to find a self intersection in small Polyline2D.
+    /// This function is optimized for polylines with fewer than 20 points.
+    /// A closed Polyline2D, is not reported as a self intersection.
+    /// Also returns Some if two non-adjacent segments are just touching.
+    /// If found returns the first intersection point and the indices of the two segments that intersect.
+    /// If no intersection is found returns None.
+    /// Returns None for Polylines with fewer than 3 points (less than two segments).
+    /// This is an iterative O(n^2) algorithm
+    static member tryFindSelfIntersectionSmall (pl:Polyline2D) : Option<Pt * int * int> =
+        // see Test\BenchmarkPolyline2DSelfIntersection.fsx for performance tests and comparison of this algorithm with tryFindSelfIntersectionBig.
+        let xys = pl.XYs
+        let len = xys.Count
+        if len < 6 then
+            None // a polyline with fewer than two segments cannot intersect itself
+        else
+            let segmentVs = pl.SegmentVectorsXY
+            let segLastIdx = segmentVs.LastIndex
+            let isClosed = pl.IsAlmostClosed 1e-7
+            let mutable result = None
 
-                // first do a quick bounding rectangle overlap test because most lines do not intersect
-                elif not <| BRect.isOverlapping brs.[i] brs.[j] then
-                    checkSegs i (j + 1) // move on to next segment
+            let firstRowEnd = if isClosed then segLastIdx - 3 else segLastIdx
+            let mutable j = 4 // +2 to skip the adjacent segment
+            let mutable ptix = xys.[0]
+            let mutable ptiy = xys.[1]
+            let mutable sVix = segmentVs.[0]
+            let mutable sViy = segmentVs.[1]
+            while result.IsNone && j <= firstRowEnd do
+                let mutable ptjx = xys.[j]
+                let mutable ptjy = xys.[j + 1]
+                let mutable sVjx = segmentVs.[j]
+                let mutable sVjy = segmentVs.[j + 1]
+                match XLine2D.tryIntersect(ptix, ptiy, ptjx, ptjy, sVix, sViy, sVjx, sVjy) with
+                | Some pt -> result <- Some (pt, 0, j)
+                | None    -> ()
+                j <- j + 2
 
-                else
-                    match XLine2D.tryIntersect(pts.[i], pts.[j], segmentVs.[i], segmentVs.[j]) with
-                    | Some pt ->
-                        Some (pt, i, j)
-                    | None    ->
-                        checkSegs i (j + 1)
+            // The remaining segments from index 1 onward have no closure special case.
+            let mutable i = 2
+            while result.IsNone && i <= segLastIdx do
+                let mutable j = i + 4 // +2 to skip the adjacent segment
+                ptix <- xys.[i]
+                ptiy <- xys.[i + 1]
+                sVix <- segmentVs.[i]
+                sViy <- segmentVs.[i + 1]
+                while result.IsNone && j <= segLastIdx do
+                    let mutable ptjx = xys.[j]
+                    let mutable ptjy = xys.[j + 1]
+                    let mutable sVjx = segmentVs.[j]
+                    let mutable sVjy = segmentVs.[j + 1]
+                    match XLine2D.tryIntersect(ptix, ptiy, ptjx, ptjy, sVix, sViy, sVjx, sVjy) with
+                    | Some pt -> result <- Some (pt, i, j)
+                    | None    -> ()
+                    j <- j + 2
+                i <- i + 2
+            result
 
-            checkSegs 0 2 // start with segment 0 and segment 2 to avoid checking adjacent segments
+
 
 
     // #endregion
@@ -1942,6 +2059,11 @@ type Polyline2D private (xys: ResizeArray<float>) =
     [<Obsolete("Since the internal structure of Polyline2D has changed to a flat array using this for looping doesn't make sense any more.")>]
     member p.LastSegmentIndex : int =
         p.PointCount - 2
+
+    [<Obsolete("Use Polyline2D.tryFindSelfIntersectionSmall or Polyline2D.tryFindSelfIntersectionBig instead.")>]
+    static member tryFindSelfIntersection (pl:Polyline2D) : Option<Pt * int * int> =
+        Polyline2D.tryFindSelfIntersectionBig pl
+
 
 [<Obsolete("Use Euclid.Loop has been removed from Euclid in 0.20.0. use Polyline2D instead.",true)>]
 type Loop private  () =
