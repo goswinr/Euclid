@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Fixed
+- Polyline2D.tryFindSelfIntersection now returns segment indices instead of flat coordinate-buffer indices.
+- Polyline3D.SignedAreaIn2D now returns the actual projected signed area instead of double the area.
+- Polyline3D helper and tolerance inconsistencies: `setPointXYZ` is curried like the 2D setter, `CloseInPlace` works with 0.0 tolerance, XY member creation uses Z=0, XYZ member creation helpers were added, and duplicate-point removal now uses distance tolerance while preserving the endpoint.
 - Rect2D and Rect3D: the perpendicularity check in `createFromVectors` and the internal constructor now scales with the axis lengths, so large but valid rectangles are no longer falsely rejected.
 - Rect2D.fitToPoints: corrected the misleading "Vc.Unitized" text in the too-short-axis exception messages.
 - corrected several Rect3D docstrings that mentioned "2D rectangle" and wrong grid/subdivision rounding factors.

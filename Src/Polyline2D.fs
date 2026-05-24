@@ -1944,7 +1944,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
                     let mutable sVjx = segmentVs.[j]
                     let mutable sVjy = segmentVs.[j + 1]
                     match XLine2D.tryIntersect(ptix, ptiy, ptjx, ptjy, sVix, sViy, sVjx, sVjy) with
-                    | Some pt -> result <- Some (pt, 0, j)
+                    | Some pt -> result <- Some (pt, 0, j / 2)
                     | None    -> ()
                 j <- j + 2
 
@@ -1964,7 +1964,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
                         let mutable sVjx = segmentVs.[j]
                         let mutable sVjy = segmentVs.[j + 1]
                         match XLine2D.tryIntersect(ptix, ptiy, ptjx, ptjy, sVix, sViy, sVjx, sVjy) with
-                        | Some pt -> result <- Some (pt, i, j)
+                        | Some pt -> result <- Some (pt, i / 2, j / 2)
                         | None    -> ()
                     j <- j + 2
                 i <- i + 2
@@ -2002,7 +2002,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
                 let mutable sVjx = segmentVs.[j]
                 let mutable sVjy = segmentVs.[j + 1]
                 match XLine2D.tryIntersect(ptix, ptiy, ptjx, ptjy, sVix, sViy, sVjx, sVjy) with
-                | Some pt -> result <- Some (pt, 0, j)
+                | Some pt -> result <- Some (pt, 0, j / 2)
                 | None    -> ()
                 j <- j + 2
 
@@ -2020,7 +2020,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
                     let mutable sVjx = segmentVs.[j]
                     let mutable sVjy = segmentVs.[j + 1]
                     match XLine2D.tryIntersect(ptix, ptiy, ptjx, ptjy, sVix, sViy, sVjx, sVjy) with
-                    | Some pt -> result <- Some (pt, i, j)
+                    | Some pt -> result <- Some (pt, i / 2, j / 2)
                     | None    -> ()
                     j <- j + 2
                 i <- i + 2

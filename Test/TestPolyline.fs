@@ -1390,8 +1390,9 @@ let testsComprehensive =
                 let result = Polyline2D.tryFindSelfIntersectionBig fig8
                 Expect.isSome result "figure 8 has self intersection"
                 match result with
-                | Some (pt, _i, _j) ->
+                | Some (pt, i, j) ->
                     "intersection near center" |> expectEqPts pt (Pt(5.,5.))
+                    Expect.equal (i, j) (0, 2) "returns segment indices, not flat coordinate indices"
                 | None -> ()
             }
             test "touching segments" {
@@ -1409,8 +1410,9 @@ let testsComprehensive =
                 let result = Polyline2D.tryFindSelfIntersectionBig pl
                 Expect.isSome result "open polyline should report crossing between first and last segment"
                 match result with
-                | Some (pt, _i, _j) ->
+                | Some (pt, i, j) ->
                     "intersection point" |> expectEqPts pt (Pt(30. / 7., 0.))
+                    Expect.equal (i, j) (0, 3) "returns segment indices, not flat coordinate indices"
                 | None -> ()
             }
         ]

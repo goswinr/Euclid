@@ -241,6 +241,44 @@ let tests =
             "AsString contains 'closed'" |> Expect.stringContains s "closed"
         }
 
+        test "SignedAreaIn2D matches 2D signed area" {
+            let pl = Polyline3D.create [Pnt(0.,0.,7.); Pnt(10.,0.,7.); Pnt(10.,10.,7.); Pnt(0.,10.,7.); Pnt(0.,0.,7.)]
+            "projected area is not doubled" |> Expect.floatClose tol pl.SignedAreaIn2D 100.0
+        }
+
+        test "static setPointXYZ is curried like setPointXY" {
+            let pl = Polyline3D.create [Pnt(0.,0.,0.); Pnt(1.,0.,0.)]
+            Polyline3D.setPointXYZ 2. 3. 4. 1 pl
+            "point updated" |> Expect.isTrue (eqPnt pl.LastPoint (Pnt(2.,3.,4.)))
+        }
+
+        test "CloseInPlace with zero tolerance snaps already matching ends" {
+            let pl = Polyline3D.create [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(0.,0.,0.)]
+            pl.CloseInPlace(0.0)
+            "no duplicate closure point added" |> Expect.equal pl.PointCount 3
+            "still closed" |> Expect.isTrue pl.IsClosed
+        }
+
+        test "createFrom member helpers" {
+            let fromXYZ = Polyline3D.createFromXYZMembers [Pnt(1.,2.,3.); Pnt(4.,5.,6.)]
+            "XYZ first" |> Expect.isTrue (eqPnt fromXYZ.FirstPoint (Pnt(1.,2.,3.)))
+            "XYZ second" |> Expect.isTrue (eqPnt fromXYZ.LastPoint (Pnt(4.,5.,6.)))
+
+            let fromXY = Polyline3D.createFromXYMembers [Pt(1.,2.); Pt(3.,4.)]
+            "XY first uses zero z" |> Expect.isTrue (eqPnt fromXY.FirstPoint (Pnt(1.,2.,0.)))
+            "XY second uses zero z" |> Expect.isTrue (eqPnt fromXY.LastPoint (Pnt(3.,4.,0.)))
+
+            let fromxyz = Polyline3D.createFromxyzMembers [{| x = 7.; y = 8.; z = 9. |}]
+            "lowercase xyz" |> Expect.isTrue (eqPnt fromxyz.FirstPoint (Pnt(7.,8.,9.)))
+        }
+
+        test "removeDuplicatePoints uses distance tolerance and preserves closure" {
+            let pl = Polyline3D.create [Pnt(0.,0.,0.); Pnt(0.009,0.009,0.009); Pnt(1.,0.,0.); Pnt(0.,0.,0.)]
+            let cleaned = Polyline3D.removeDuplicatePoints 0.01 pl
+            "diagonal point is outside Euclidean tolerance and kept" |> Expect.equal cleaned.PointCount 4
+            "closure preserved" |> Expect.isTrue cleaned.IsClosed
+        }
+
         test "GetSegment out of range throws" {
             let pts = ResizeArray([Pnt(0,0,0); Pnt(1,0,0)])
             let pl = Polyline3D(pts)

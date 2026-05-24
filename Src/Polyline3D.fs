@@ -202,10 +202,10 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
         #endif
         setCoordXYZ position x y z xyzs
 
-    /// Sets the x and y coordinates of the point at the given index.
+    /// Sets the x, y, and z coordinates of the point at the given index.
     /// NOTE: setting the first or last point on a closed Polyline3D might open it.
-    /// (sets xyzs.[position * 2] and xyzs.[position * 2 + 1] internally )
-    static member inline setPointXYZ x y z (position:int, p:Polyline3D) : unit =
+    /// (sets xyzs.[position * 3], xyzs.[position * 3 + 1], and xyzs.[position * 3 + 2] internally )
+    static member inline setPointXYZ x y z (position:int) (p:Polyline3D) : unit =
         p.SetPointXYZ (position, x, y, z)
 
     /// Adds a point from x, y, and z coordinates.
@@ -663,7 +663,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
         let dx = sx - ex
         let dy = sy - ey
         let dz = sz - ez
-        if dx * dx + dy * dy + dz * dz < toleranceForAddingPoint*toleranceForAddingPoint then
+        if dx * dx + dy * dy + dz * dz <= toleranceForAddingPoint*toleranceForAddingPoint then // <= needed so it works with 0.0
             xyzs.[c - 3] <- sx
             xyzs.[c - 2] <- sy
             xyzs.[c - 1] <- sz
@@ -679,7 +679,6 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// <param name="pl">The Polyline3D to close.</param>
     /// <returns>A reference to the the same Polyline3D as the input</returns>
     static member closeInPlace (toleranceForAddingPoint:float)  (pl:Polyline3D) : Polyline3D =
-        if pl.PointCount < 2 then failTooFewPoly3D "closeInPlace" 2 pl.PointCount
         pl.CloseInPlace toleranceForAddingPoint
         pl
 
@@ -707,7 +706,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
                 tx <- nx
                 ty <- ny
                 i <- i + 3
-            area
+            area * 0.5
 
     /// Calculates the signed area of the Polyline3D when projected in 2D.
     /// Z values are ignored.
@@ -1421,7 +1420,31 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     // #endregion
     // #region Create
 
-    /// Creates a Polyline3D from a list of objects with X and Y members (uppercase).
+    /// Creates a Polyline3D from a list of objects with X, Y, and Z members (uppercase).
+    static member inline createFromXYZMembers (xyzObjs: seq< ^T >) : Polyline3D =
+        let coordinates = ResizeArray<float>()
+        for pt in xyzObjs do
+            let x = float (^T : (member X : _) pt)
+            let y = float (^T : (member Y : _) pt)
+            let z = float (^T : (member Z : _) pt)
+            coordinates.Add x
+            coordinates.Add y
+            coordinates.Add z
+        Polyline3D.createDirectly coordinates
+
+    /// Creates a Polyline3D from a list of objects with x, y, and z members (lowercase).
+    static member inline createFromxyzMembers (xyzObjs: seq< ^T >) : Polyline3D =
+        let coordinates = ResizeArray<float>()
+        for pt in xyzObjs do
+            let x = float (^T : (member x : _) pt)
+            let y = float (^T : (member y : _) pt)
+            let z = float (^T : (member z : _) pt)
+            coordinates.Add x
+            coordinates.Add y
+            coordinates.Add z
+        Polyline3D.createDirectly coordinates
+
+    /// Creates a Polyline3D from a list of objects with X and Y members (uppercase), using 0.0 for Z.
     static member inline createFromXYMembers (xyObjs: seq< ^T >) : Polyline3D =
         let coordinates = ResizeArray<float>()
         for pt in xyObjs do
@@ -1429,9 +1452,10 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             let y = float (^T : (member Y : _) pt)
             coordinates.Add x
             coordinates.Add y
+            coordinates.Add 0.0
         Polyline3D.createDirectly coordinates
 
-    /// Creates a Polyline3D from a list of objects with x and y members (lowercase).
+    /// Creates a Polyline3D from a list of objects with x and y members (lowercase), using 0.0 for z.
     static member inline createFromxyMembers (xyObjs: seq< ^T >) : Polyline3D =
         let coordinates = ResizeArray<float>()
         for pt in xyObjs do
@@ -1439,6 +1463,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             let y = float (^T : (member y : _) pt)
             coordinates.Add x
             coordinates.Add y
+            coordinates.Add 0.0
         Polyline3D.createDirectly coordinates
 
     /// Create a new Polyline3D by copying over all points.
@@ -1539,6 +1564,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             pl
         else
             let len = xyzs.Count
+            let toSq = distanceTolerance * distanceTolerance
             let nps = ResizeArray<float>(len)
             let mutable lastX = xyzs.[0]
             let mutable lastY = xyzs.[1]
@@ -1551,8 +1577,10 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
                 let x = xyzs.[i]
                 let y = xyzs.[i + 1]
                 let z = xyzs.[i + 2]
-                // Pnt.equals is component-wise within tolerance
-                if abs (x - lastX) > distanceTolerance || abs (y - lastY) > distanceTolerance || abs (z - lastZ) > distanceTolerance then
+                let dx = x - lastX
+                let dy = y - lastY
+                let dz = z - lastZ
+                if dx * dx + dy * dy + dz * dz > toSq then
                     nps.Add x
                     nps.Add y
                     nps.Add z
@@ -1560,6 +1588,9 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
                     lastY <- y
                     lastZ <- z
                 i <- i + 3
+            nps.[nps.Count - 3] <- xyzs.[xyzs.Count - 3] // ensure last point is not moved by the algorithm, it might be off by distanceTolerance
+            nps.[nps.Count - 2] <- xyzs.[xyzs.Count - 2]
+            nps.[nps.Count - 1] <- xyzs.[xyzs.Count - 1]
             Polyline3D.createDirectly nps
 
     /// Removes consecutive duplicate points and colinear points from the Polyline3D within given tolerances.
@@ -1578,6 +1609,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
         if pts.Count < 2 then // single point or empty polyline
             pl
         else
+            let distTol = max distanceTolerance 1e-6 // vectors need to be longer than zero, otherwise unitizing would fail
             let nps = ResizeArray<Pnt>(pts.Count)
 
             let lastIdx = pts.LastIndex
@@ -1588,7 +1620,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             let mutable i = 1
             let mutable this = pts.[i]
             let mutable len = Pnt.dist prev this
-            while len < distanceTolerance && i < lastIdx do
+            while len < distTol && i < lastIdx do
                 i <- i + 1
                 this  <- pts.[i]
                 len   <- Pnt.dist prev this
@@ -1603,8 +1635,8 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
                 let vy = next.Y - this.Y
                 let vz = next.Z - this.Z
                 let len = vx * vx + vy * vy + vz * vz |> sqrt
-                let f  = 1.0 / len
-                if len > distanceTolerance then
+                if len > distTol then
+                    let f  = 1.0 / len
                     let vNext = UnitVec.createUnchecked(vx * f, vy * f, vz * f)
                     let cos = UnitVec.dot (vPrev, vNext)
                     if withMeasure cos < angleTolerance then
@@ -1615,7 +1647,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
                     this <- next // always advance this point
 
             // handle last segment to first point
-            if pl.IsAlmostClosed distanceTolerance then
+            if pl.IsAlmostClosed distTol then
                 // if closed now check if last and first segment are colinear
                 let cos = UnitVec.dot (vPrev, firstVec)
                 if withMeasure cos < angleTolerance then
@@ -1626,8 +1658,10 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
                     nps.[0] <- nps.Last
             else
                 // open polyline , just add last point if not duplicate
-                if Pnt.notEquals distanceTolerance this prev then
+                if Pnt.notEquals distTol this prev then
                     nps.Add this
+                else
+                    nps.Last <- pts.Last // ensure last point is not changed, it might be off by distanceTolerance
 
             Polyline3D nps
 
