@@ -62,6 +62,12 @@ let testsIsCoincident =
             "parallel lines outside distance tolerance are not coincident" |> Expect.isFalse (a.IsCoincidentTo(b, 1e-6))
         }
 
+        test "IsCoincidentTo compares squared distance to squared tolerance" {
+            let a = Line2D(0., 0., 10., 0.)
+            let b = Line2D(0., 0.0005, 10., 0.0005)
+            "offset much larger than default tolerance is not coincident" |> Expect.isFalse (a.IsCoincidentTo(b))
+        }
+
         test "IsCoincidentTo perpendicular lines" {
             let a = Line2D(0., 0., 10., 0.)
             let b = Line2D(0., 0., 0., 10.)
@@ -138,7 +144,7 @@ let testsIsCoincident =
             let a = Line2D(0., 0., 10., 0.)
             let b = Line2D(0., 0.0005, 10., 0.0005)
             "with strict tolerance not coincident" |> Expect.isFalse (a.IsCoincidentTo(b, 1e-7))
-            "with relaxed tolerance coincident" |> Expect.isTrue (a.IsCoincidentTo(b, 1e-5))
+            "with relaxed tolerance coincident" |> Expect.isTrue (a.IsCoincidentTo(b, 1e-3))
         }
 
         test "IsCoincidentTo custom angle tolerance strict" {
@@ -1315,12 +1321,12 @@ let testsLine2DDivide =
         }
 
         test "divideEvery with tiny remainder" {
-            let ln = Line2D(0., 0., 5.001, 0.)
+            let ln = Line2D(0., 0., 5.01, 0.)
             let pts = Line2D.divideEvery 1. ln
-            // div = 5.001/1 = 5.001, floor = 5, remainder 0.001 > 0.1% so end included
+            // div = 5.01/1 = 5.01, floor = 5, remainder 0.01 > 0.1% so end included
             "includes end due to remainder > 0.1%" |> Expect.equal pts.Count 7
             "point 0" |> Expect.isTrue (eq pts.[0] (Pt(0., 0.)))
-            "point 6" |> Expect.isTrue (eq pts.[6] (Pt(5.001, 0.)))
+            "point 6" |> Expect.isTrue (eq pts.[6] (Pt(5.01, 0.)))
         }
 
         test "divideEvery with very tiny remainder includes end" {
@@ -1329,7 +1335,17 @@ let testsLine2DDivide =
             // div = 5.0001/1 = 5.0001, floor = 5, remainder 0.0001 > 0.1% so end NOT included
             "0.0001 / 5.0001 = 0.002% < 0.1% threshold so end not included" |> Expect.equal pts.Count 6
             "point 0" |> Expect.isTrue (eq pts.[0] (Pt(0., 0.)))
-            "point 5 at line end" |> Expect.isTrue (eq pts.[5] (Pt(5.0001, 0.)))
+            "point 5 at requested distance" |> Expect.isTrue (eq pts.[5] (Pt(5., 0.)))
+        }
+
+        test "divideEvery with non-integer divisor keeps requested spacing" {
+            let ln = Line2D(0., 0., 10., 0.)
+            let pts = Line2D.divideEvery 3. ln
+            "start, three spacing points, and end" |> Expect.equal pts.Count 5
+            "point at 3" |> Expect.isTrue (eq pts.[1] (Pt(3., 0.)))
+            "point at 6" |> Expect.isTrue (eq pts.[2] (Pt(6., 0.)))
+            "point at 9" |> Expect.isTrue (eq pts.[3] (Pt(9., 0.)))
+            "end point" |> Expect.isTrue (eq pts.[4] (Pt(10., 0.)))
         }
 
         test "divideInsideEvery excludes endpoints" {
@@ -1352,6 +1368,15 @@ let testsLine2DDivide =
             // points at t=0.5, 1.0, but excludes start and checks 0.1% remainder rule
             "returns 1 interior point" |> Expect.equal pts.Count 1
             "point 0 at 50%" |> Expect.isTrue (eq pts.[0] (Pt(5., 0.)))
+        }
+
+        test "divideInsideEvery with non-integer divisor excludes endpoint" {
+            let ln = Line2D(0., 0., 10., 0.)
+            let pts = Line2D.divideInsideEvery 3. ln
+            "three interior spacing points" |> Expect.equal pts.Count 3
+            "point at 3" |> Expect.isTrue (eq pts.[0] (Pt(3., 0.)))
+            "point at 6" |> Expect.isTrue (eq pts.[1] (Pt(6., 0.)))
+            "point at 9" |> Expect.isTrue (eq pts.[2] (Pt(9., 0.)))
         }
 
         test "divideInsideEvery very small distance" {
@@ -1637,6 +1662,27 @@ let testsLine2DIntersection =
             match Line2D.tryIntersectOrOverlap a b with
             | Some pt -> Expect.isTrue (eq pt (Pt(10., 0.))) "touching point"
             | None -> failwith "expected Some for touching"
+        }
+
+        test "tryGetOverlap touching at point returns parameters" {
+            let a = Line2D(0., 0., 10., 0.)
+            let b = Line2D(10., 0., 20., 0.)
+            let result = Line2D.tryGetOverlap a b
+            match result with
+            | Some (s, e) ->
+                "touching at end start parameter" |> expectEqualEpsilon s 1.0
+                "touching at end end parameter" |> expectEqualEpsilon e 1.0
+            | None -> failwith "expected Some for touching endpoints"
+        }
+
+        test "tryGetOverlap overlapping collinear returns parameters" {
+            let a = Line2D(0., 0., 10., 0.)
+            let b = Line2D(5., 0., 15., 0.)
+            match Line2D.tryGetOverlap a b with
+            | Some (s, e) ->
+                "overlap start" |> expectEqualEpsilon s 0.5
+                "overlap end" |> expectEqualEpsilon e 1.0
+            | None -> failwith "expected overlap"
         }
 
         test "isTouchingEndsOf not touching" {
@@ -2318,15 +2364,25 @@ let testsLine3DDivide =
         }
 
         test "divideEvery with tiny remainder" {
-            let ln = Line3D(0., 0., 0., 10.001, 0., 0.)
+            let ln = Line3D(0., 0., 0., 10.01, 0., 0.)
             let pts = Line3D.divideEvery 5. ln
-            "includes end due to 1% rule" |> expectEqualEpsilon pts.[pts.Count - 1].X 10.001
+            "includes end due to 0.1% rule" |> expectEqualEpsilon pts.[pts.Count - 1].X 10.01
         }
 
         test "divideEvery with very tiny remainder includes end" {
             let ln = Line3D(0., 0., 0., 10.0001, 0., 0.)
             let pts = Line3D.divideEvery 5. ln
-            "includes end if remainder > 1%" |> Expect.isTrue (pts.[pts.Count - 1].X >= 10.)
+            "keeps last division at requested distance" |> expectEqualEpsilon pts.[pts.Count - 1].X 10.
+        }
+
+        test "divideEvery with non-integer divisor keeps requested spacing" {
+            let ln = Line3D(0., 0., 0., 10., 0., 0.)
+            let pts = Line3D.divideEvery 3. ln
+            "start, three spacing points, and end" |> Expect.equal pts.Count 5
+            "point at 3" |> expectEqualEpsilon pts.[1].X 3.
+            "point at 6" |> expectEqualEpsilon pts.[2].X 6.
+            "point at 9" |> expectEqualEpsilon pts.[3].X 9.
+            "end point" |> Expect.isTrue (Pnt.equals 1e-12 pts.[4] ln.To)
         }
 
         test "divideInsideEvery excludes endpoints" {
@@ -2347,6 +2403,15 @@ let testsLine3DDivide =
             let ln = Line3D(0., 0., 0., 1., 0., 0.)
             let pts = Line3D.divideInsideEvery 0.1 ln
             "multiple interior points" |> Expect.isTrue (pts.Count > 1)
+        }
+
+        test "divideInsideEvery with non-integer divisor excludes endpoint" {
+            let ln = Line3D(0., 0., 0., 10., 0., 0.)
+            let pts = Line3D.divideInsideEvery 3. ln
+            "three interior spacing points" |> Expect.equal pts.Count 3
+            "point at 3" |> expectEqualEpsilon pts.[0].X 3.
+            "point at 6" |> expectEqualEpsilon pts.[1].X 6.
+            "point at 9" |> expectEqualEpsilon pts.[2].X 9.
         }
 
         test "divideEvery distance larger than line" {
@@ -2761,9 +2826,9 @@ let testsLine3DDistance =
             let result = Line3D.tryGetOverlap lnA lnB
             match result with
             | Some (s, e) ->
-                "touching at end" |> expectEqualEpsilon s 1.0
-                "touching at end" |> expectEqualEpsilon e 1.0
-            | None -> Expect.isTrue false "touching should return Some"
+                "touching at end start parameter" |> expectEqualEpsilon s 1.0
+                "touching at end end parameter" |> expectEqualEpsilon e 1.0
+            | None -> failwith "expected Some for touching endpoints"
         }
     ]
 

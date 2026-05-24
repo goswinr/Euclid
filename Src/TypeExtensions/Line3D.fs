@@ -1,7 +1,5 @@
 ﻿namespace Euclid
 
-namespace Euclid
-
 open System
 open Euclid.UtilEuclid
 open UtilEuclid
@@ -854,7 +852,7 @@ module AutoOpenLine3D =
 
     /// Checks if two 3D lines are parallel.
     /// Ignores the line orientation.
-    /// The default angle tolerance is 0.25 degrees.
+    /// The default angle tolerance is 0.25 degrees. Tangent.``0.25`` is about 0.0044.
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -868,13 +866,14 @@ module AutoOpenLine3D =
 
     /// Checks if two 3D lines are parallel. Ignoring orientation.
     /// Use a precomputed value from Euclid.Tangent module as tolerance.
+    /// e.g. Tangent.``0.25`` is about 0.0044.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    static member inline isParallelTo minTangent (lnA:Line3D) (lnB:Line3D) : bool =
+    static member inline isParallelTo (minTangent:float<Tangent.tangent>) (lnA:Line3D) (lnB:Line3D) : bool =
         lnA.IsParallelTo(lnB, minTangent)
 
     /// Checks if a 3D lines is parallel to a 3D vector.
     /// Ignores the line orientation.
-    /// The default angle tolerance is 0.25 degrees.
+    /// The default angle tolerance is 0.25 degrees. Tangent.``0.25`` is about 0.0044.
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -887,7 +886,7 @@ module AutoOpenLine3D =
 
     /// Checks if a 3D lines is parallel to a 3D unit-vector.
     /// Ignores the line orientation.
-    /// The default angle tolerance is 0.25 degrees.
+    /// The default angle tolerance is 0.25 degrees. Tangent.``0.25`` is about 0.0044.
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -899,7 +898,7 @@ module AutoOpenLine3D =
 
     /// Checks if two 3D lines are parallel.
     /// Takes the line orientation into account too.
-    /// The default angle tolerance is 0.25 degrees.
+    /// The default angle tolerance is 0.25 degrees.Tangent.``0.25`` is about 0.0044.
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -913,13 +912,14 @@ module AutoOpenLine3D =
 
     /// Checks if two 3D lines are parallel and orientated the same way.
     /// Use a precomputed value from Euclid.Tangent module as tolerance.
+    /// e.g. Tangent.``0.25`` is about 0.0044.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    static member inline isParallelAndOrientedTo minTangent (lnA:Line3D) (lnB:Line3D) : bool =
+    static member inline isParallelAndOrientedTo (minTangent:float<Tangent.tangent>) (lnA:Line3D) (lnB:Line3D) : bool =
         lnA.IsParallelAndOrientedTo(lnB, minTangent)
 
     /// Checks if a 3D lines is parallel to a 3D vector.
     /// Takes the line orientation into account too.
-    /// The default angle tolerance is 0.25 degrees.
+    /// The default angle tolerance is 0.25 degrees. Tangent.``0.25`` is about 0.0044.
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -932,7 +932,7 @@ module AutoOpenLine3D =
 
     /// Checks if a 3D lines is parallel to a 3D unit-vector.
     /// Takes the line orientation into account too.
-    /// The default angle tolerance is 0.25 degrees.
+    /// The default angle tolerance is 0.25 degrees. Tangent.``0.25`` is about 0.0044.
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -943,7 +943,7 @@ module AutoOpenLine3D =
         tan < minTangent
 
     /// Checks if two 3D lines are perpendicular to each other.
-    /// The default angle tolerance is 89.75 to 90.25 degrees.
+    /// The default angle tolerance is 89.75 to 90.25 degrees. Tangent.``89.75`` is about 229.2
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -957,13 +957,14 @@ module AutoOpenLine3D =
 
     /// Checks if two 3D lines are perpendicular to each other.
     /// Use a precomputed value from Euclid.Tangent module as tolerance.
+    /// e.g. Tangent.``89.75`` is about 229.2.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     /// Same as Line3D.isNormalTo
-    static member inline isPerpendicularTo maxTangent (lnA:Line3D) (lnB:Line3D) : bool =
+    static member inline isPerpendicularTo (maxTangent:float<Tangent.tangent>) (lnA:Line3D) (lnB:Line3D) : bool =
         lnA.IsPerpendicularTo(lnB, maxTangent)
 
     /// Checks if a 3D lines is perpendicular to a 3D vector.
-    /// The default angle tolerance is 89.75 to 90.25 degrees.
+    /// The default angle tolerance is 89.75 to 90.25 degrees. Tangent.``89.75`` is about 229.2.
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -975,7 +976,7 @@ module AutoOpenLine3D =
         abs tan > maxTangent
 
     /// Checks if a 3D lines is perpendicular to a 3D unit-vector.
-    /// The default angle tolerance is 89.75 to 90.25 degrees.
+    /// The default angle tolerance is 89.75 to 90.25 degrees. Tangent.``89.75`` is about 229.2.
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -986,7 +987,7 @@ module AutoOpenLine3D =
         abs tan > maxTangent
 
     /// Checks if two 3D lines are perpendicular to each other.
-    /// The default angle tolerance is 89.75 to 90.25 degrees.
+    /// The default angle tolerance is 89.75 to 90.25 degrees. Tangent.``89.75`` is about 229.2.
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -996,13 +997,14 @@ module AutoOpenLine3D =
 
     /// Checks if two 3D lines are perpendicular to each other.
     /// Use a precomputed value from Euclid.Tangent module as tolerance.
+    /// e.g. Tangent.``89.75`` is about 229.2.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     /// Same as Line3D.isPerpendicularTo
-    static member inline isNormalTo maxTangent (lnA:Line3D) (lnB:Line3D) : bool =
+    static member inline isNormalTo (maxTangent:float<Tangent.tangent>) (lnA:Line3D) (lnB:Line3D) : bool =
         lnA.IsNormalTo(lnB, maxTangent)
 
     /// Checks if a 3D lines is perpendicular to a 3D vector.
-    /// The default angle tolerance is 89.75 to 90.25 degrees.
+    /// The default angle tolerance is 89.75 to 90.25 degrees. Tangent.``89.75`` is about 229.2.
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -1011,7 +1013,7 @@ module AutoOpenLine3D =
         ln.IsPerpendicularTo(other, maxTangent)
 
     /// Checks if a 3D lines is perpendicular to a 3D unit-vector.
-    /// The default angle tolerance is 89.75 to 90.25 degrees.
+    /// The default angle tolerance is 89.75 to 90.25 degrees. Tangent.``89.75`` is about 229.2.
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -1023,7 +1025,7 @@ module AutoOpenLine3D =
     /// This means that lines are parallel within the angle tolerance.
     /// and the distance of second start to the first line is less than the distance tolerance.
     /// Also returns false on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    /// The default angle tolerance is 0.25 degrees.
+    /// The default angle tolerance is 0.25 degrees. Tangent.``0.25`` is about 0.0044.
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     member inline ln.IsCoincidentTo (other:Line3D,
@@ -1064,7 +1066,7 @@ module AutoOpenLine3D =
     /// This means that lines are parallel within the given angular tolerance
     /// and the distance of second start point to the first line is less than distanceTolerance.
     /// Use a precomputed value from Euclid.Tangent module as tolerance.
-    static member inline isCoincidentTo distanceTolerance minTangent (a:Line3D) (b:Line3D) : bool =
+    static member inline isCoincidentTo distanceTolerance (minTangent:float<Tangent.tangent>) (a:Line3D) (b:Line3D) : bool =
         a.IsCoincidentTo(b, distanceTolerance, minTangent)
 
     /// A fast version of IsParallelTo that uses cross-product magnitude to determine parallelism.
@@ -1559,13 +1561,81 @@ module AutoOpenLine3D =
     static member inline matchUnitVecOrientation (orientationToMatch:UnitVec) (lineToFlip:Line3D) : Line3D =
         if orientationToMatch *** lineToFlip.Vector  < 0.0 then lineToFlip.Reversed else lineToFlip
 
+    /// Checks if the dot product between a 3D line and a vector is positive.
+    /// So if the angle between their direction vectors is less than 90 degrees.
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    static member inline matchesOrientationVec (v:Vec) (ln:Line3D) : bool =
+        ln.MatchesOrientation v
+
+    /// Checks if the dot product between a 3D line and a unit-vector is positive.
+    /// So if the angle between their direction vectors is less than 90 degrees.
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    static member inline matchesOrientationUnitVec (v:UnitVec) (ln:Line3D) : bool =
+        ln.MatchesOrientation v
+
+    /// Checks if a 3D line is parallel to a 3D vector. Ignores orientation.
+    /// Use a precomputed value from Euclid.Tangent module as tolerance.
+    /// e.g. Tangent.``0.25`` is about 0.0044.
+    /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    static member inline isParallelToVec (minTangent:float<Tangent.tangent>) (other:Vec) (ln:Line3D) : bool =
+        ln.IsParallelTo(other, minTangent)
+
+    /// Checks if a 3D line is parallel to a 3D unit-vector. Ignores orientation.
+    /// Use a precomputed value from Euclid.Tangent module as tolerance.
+    /// e.g. Tangent.``0.25`` is about 0.0044.
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    static member inline isParallelToUnitVec (minTangent:float<Tangent.tangent>) (other:UnitVec) (ln:Line3D) : bool =
+        ln.IsParallelTo(other, minTangent)
+
     /// Checks if two 3D lines are Not parallel. Ignoring orientation.
-    /// The default angle tolerance is 0.25 degrees.
+    /// The default angle tolerance is 0.25 degrees. Tangent.``0.25`` is about 0.0044.
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     static member inline isNotParallelTo (lnA:Line3D) (lnB:Line3D) : bool =
         not <| lnA.IsParallelTo(lnB)
+
+    /// Checks if a 3D line is parallel to a 3D vector and oriented the same way.
+    /// Use a precomputed value from Euclid.Tangent module as tolerance.
+    /// e.g. Tangent.``0.25``.
+    /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    static member inline isParallelAndOrientedToVec (minTangent:float<Tangent.tangent>) (other:Vec) (ln:Line3D) : bool =
+        ln.IsParallelAndOrientedTo(other, minTangent)
+
+    /// Checks if a 3D line is parallel to a 3D unit-vector and oriented the same way.
+    /// Use a precomputed value from Euclid.Tangent module as tolerance.
+    /// e.g. Tangent.``0.25``.
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    static member inline isParallelAndOrientedToUnitVec (minTangent:float<Tangent.tangent>) (other:UnitVec) (ln:Line3D) : bool =
+        ln.IsParallelAndOrientedTo(other, minTangent)
+
+    /// Checks if a 3D line is perpendicular to a 3D vector.
+    /// Use a precomputed value from Euclid.Tangent module as tolerance.
+    /// e.g. Tangent.``89.75``.
+    /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    static member inline isPerpendicularToVec (maxTangent:float<Tangent.tangent>) (other:Vec) (ln:Line3D) : bool =
+        ln.IsPerpendicularTo(other, maxTangent)
+
+    /// Checks if a 3D line is perpendicular to a 3D unit-vector.
+    /// Use a precomputed value from Euclid.Tangent module as tolerance.
+    /// e.g. Tangent.``89.75``.
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    static member inline isPerpendicularToUnitVec (maxTangent:float<Tangent.tangent>) (other:UnitVec) (ln:Line3D) : bool =
+        ln.IsPerpendicularTo(other, maxTangent)
+
+    /// Checks if a 3D line is perpendicular to a 3D vector.
+    /// Use a precomputed value from Euclid.Tangent module as tolerance.
+    /// e.g. Tangent.``89.75``.
+    /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    static member inline isNormalToVec (maxTangent:float<Tangent.tangent>) (other:Vec) (ln:Line3D) : bool =
+        ln.IsNormalTo(other, maxTangent)
+
+    /// Checks if a 3D line is perpendicular to a 3D unit-vector.
+    /// Use a precomputed value from Euclid.Tangent module as tolerance.
+    /// e.g. Tangent.``89.75``.
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    static member inline isNormalToUnitVec (maxTangent:float<Tangent.tangent>) (other:UnitVec) (ln:Line3D) : bool =
+        ln.IsNormalTo(other, maxTangent)
 
     /// Get distance from start of line to point projected onto line, may be negative.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -1810,7 +1880,7 @@ module AutoOpenLine3D =
             pts.Add l.To
             pts
         else
-            let step = 1.0 / floor
+            let step = dist / len
             let count = int floor
             let pts = ResizeArray<Pnt>(count + 2)
             pts.Add l.From
@@ -1831,13 +1901,12 @@ module AutoOpenLine3D =
         if floor = 0.0 then
             ResizeArray<Pnt>()
         else
-            let step = 1.0 / floor
+            let step = dist / len
             let count = int floor
             let pts = ResizeArray<Pnt>(count)
-            for i = 1 to count - 1 do
-                pts.Add <| l.EvaluateAt (step * float i)
-            if div - floor > 0.001 then
-                pts.Add <| l.EvaluateAt (step * floor) // add last div point only if there is a remainder bigger than 0.1%
+            for i = 1 to count do
+                if i < count || div - floor > 0.001 then
+                    pts.Add <| l.EvaluateAt (step * float i)
             pts
 
     /// <summary>Intersects a ray with an infinite double cone that has its axis on the Z-axis.</summary>
@@ -2046,9 +2115,9 @@ module AutoOpenLine3D =
     /// <summary>Tries to get intersection point of two rays (rays are 3D lines extended infinitely).</summary>
     /// <param name="lineA">First ray.</param>
     /// <param name="lineB">Second ray.</param>
-    /// <returns>The point at which the two rays intersect or the midpoint of closest approach for skew lines, or None.</returns>
+    /// <returns>The point at which the two rays intersect or the closest point on line A for skew lines, or None.</returns>
     /// <remarks>If the lines are parallel or coincident, or if they are skew with distance > 1e-6, None is returned.
-    /// For skew lines within tolerance, returns the midpoint between the two closest points.</remarks>
+    /// For skew lines within tolerance, returns the closest point on line A.</remarks>
     static member tryIntersectRay (lineA:Line3D) (lineB:Line3D) : Pnt option =
         XLine3D.tryIntersectRay(lineA, lineB)
 
@@ -2061,7 +2130,7 @@ module AutoOpenLine3D =
     /// If the lines are coincident and overlapping this point is in the center of their overlap.</returns>
     /// <remarks>This method uses an angle of 0.25 degrees to classify Lines as parallel.
     /// In which case it also checks if they overlap or touch.
-    /// For skew lines that are very close (less than 1e-6), returns the midpoint between closest points.
+    /// For skew lines that are very close (less than 1e-6), returns the closest point on line A.
     /// Use the XLine3D module for more specialized intersection calculations.</remarks>
     static member tryIntersectOrOverlap (lnA:Line3D) (lnB:Line3D) : Pnt option =
         match XLine3D.getIntersection(lnA, lnB) with
@@ -2085,7 +2154,7 @@ module AutoOpenLine3D =
     /// <param name="lnB">The second line.</param>
     /// <returns>An option of a tuple of two floats.
     /// Returns the tuple containing the start and end parameter of the overlap on lnA if the lines are parallel and overlapping.
-    /// Returns None if the lines are not parallel, not overlapping, or just touching at ends, or too short.</returns>
+    /// Returns None if the lines are not parallel, not overlapping, or too short.</returns>
     /// <remarks>If the first parameter in the overlap is smaller than the second the lines are oriented in the same direction.
     /// If the first parameter is greater than the second the lines are oriented in the opposite direction.</remarks>
     static member tryGetOverlap (lnA:Line3D) (lnB:Line3D) : option<float*float> =

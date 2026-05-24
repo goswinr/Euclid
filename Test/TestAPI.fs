@@ -1208,6 +1208,18 @@ module Line3DAPI =
     let (_:float) = Line3D.fromZ line3d
     let (_:float) = Line3D.toZ line3d
 
+    // Static members - vector relation wrappers
+    let (_:bool) = Line3D.matchesOrientationVec (Vec(1., 0., 0.)) line3d
+    let (_:bool) = Line3D.matchesOrientationUnitVec UnitVec.Xaxis line3d
+    let (_:bool) = Line3D.isParallelToVec Tangent.``0.25`` (Vec(1., 0., 0.)) line3d
+    let (_:bool) = Line3D.isParallelToUnitVec Tangent.``0.25`` UnitVec.Xaxis line3d
+    let (_:bool) = Line3D.isParallelAndOrientedToVec Tangent.``0.25`` (Vec(1., 0., 0.)) line3d
+    let (_:bool) = Line3D.isParallelAndOrientedToUnitVec Tangent.``0.25`` UnitVec.Xaxis line3d
+    let (_:bool) = Line3D.isPerpendicularToVec Tangent.``89.75`` (Vec(0., 1., 0.)) line3d
+    let (_:bool) = Line3D.isPerpendicularToUnitVec Tangent.``89.75`` UnitVec.Yaxis line3d
+    let (_:bool) = Line3D.isNormalToVec Tangent.``89.75`` (Vec(0., 1., 0.)) line3d
+    let (_:bool) = Line3D.isNormalToUnitVec Tangent.``89.75`` UnitVec.Yaxis line3d
+
     // Static members - Distance\n    let (_:float) = Line3D.distanceToPnt testPnt ln\n    let (_:float) = Line3D.distanceToPntInfinite testPnt ln\n    let (_:float) = Line3D.distanceSqToPnt testPnt ln\n    let (_:float) = Line3D.distanceSqToPntInfinite testPnt ln\n    let (_:float) = Line3D.distanceBetweenInfiniteLines(ln, ln2)\n\n    // Static members - Operations\n    let r2d = Rotation2D.createFromDegrees 45.0\n    let (_:Line3D) = Line3D.offsetXY UnitVc.Yaxis 1.0 ln\n    let (_:Line3D) = Line3D.rotate2D r2d ln\n    let (_:Line3D) = Line3D.rotate2dOn Pnt.Origin r2d ln\n    let (_:Line2D) = Line3D.toLine2D ln\n    let (_:Line3D) = Line3D.transformRigid rm ln\n    let (_:Line3D) = Line3D.matchVecOrientation (Vec(1., 0., 0.)) ln\n\n// ===== Rotation2D (2D Counter-Clockwise Rotation) =====
 
 module Rotation2DAPI =

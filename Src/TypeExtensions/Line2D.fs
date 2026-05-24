@@ -576,7 +576,7 @@ module AutoOpenLine2D =
 
     /// Checks if two 2D lines are parallel.
     /// Ignores the line orientation.
-    /// The default angle tolerance is 0.25 degrees.
+    /// The default angle tolerance is 0.25 degrees. Tangent.``0.25`` is about 0.0044.
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -590,13 +590,14 @@ module AutoOpenLine2D =
 
     /// Checks if two 2D lines are parallel. Ignoring orientation.
     /// Use a precomputed value from Euclid.Tangent module as tolerance.
+    /// e.g. Tangent.``0.25`` is about 0.0044.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    static member inline isParallelTo minTangent (lnA:Line2D) (lnB:Line2D) : bool =
+    static member inline isParallelTo (minTangent:float<Tangent.tangent>) (lnA:Line2D) (lnB:Line2D) : bool =
         lnA.IsParallelTo(lnB, minTangent)
 
     /// Checks if a 2D lines is parallel to a 2D vector.
     /// Ignores the line orientation.
-    /// The default angle tolerance is 0.25 degrees.
+    /// The default angle tolerance is 0.25 degrees. Tangent.``0.25`` is about 0.0044.
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -609,7 +610,7 @@ module AutoOpenLine2D =
 
     /// Checks if a 2D lines is parallel to a 2D unit-vector.
     /// Ignores the line orientation.
-    /// The default angle tolerance is 0.25 degrees.
+    /// The default angle tolerance is 0.25 degrees. Tangent.``0.25`` is about 0.0044.
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -621,7 +622,7 @@ module AutoOpenLine2D =
 
     /// Checks if two 2D lines are parallel.
     /// Takes the line orientation into account too.
-    /// The default angle tolerance is 0.25 degrees.
+    /// The default angle tolerance is 0.25 degrees. Tangent.``0.25`` is about 0.0044.
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -635,13 +636,14 @@ module AutoOpenLine2D =
 
     /// Checks if two 2D lines are parallel and orientated the same way.
     /// Use a precomputed value from Euclid.Tangent module as tolerance.
+    /// e.g. Tangent.``0.25`` is about 0.0044.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    static member inline isParallelAndOrientedTo minTangent (lnA:Line2D) (lnB:Line2D) : bool =
+    static member inline isParallelAndOrientedTo (minTangent:float<Tangent.tangent>) (lnA:Line2D) (lnB:Line2D) : bool =
         lnA.IsParallelAndOrientedTo(lnB, minTangent)
 
     /// Checks if a 2D lines is parallel to a 2D vector.
     /// Takes the line orientation into account too.
-    /// The default angle tolerance is 0.25 degrees.
+    /// The default angle tolerance is 0.25 degrees. Tangent.``0.25`` is about 0.0044.
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines  or vectors shorter than 1e-12.
@@ -654,7 +656,7 @@ module AutoOpenLine2D =
 
     /// Checks if a 2D lines is parallel to a 2D unit-vector.
     /// Takes the line orientation into account too.
-    /// The default angle tolerance is 0.25 degrees.
+    /// The default angle tolerance is 0.25 degrees. Tangent.``0.25`` is about 0.0044.
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -665,7 +667,7 @@ module AutoOpenLine2D =
         tan < minTangent
 
     /// Checks if two 2D lines are perpendicular to each other.
-    /// The default angle tolerance is 89.75 to 90.25 degrees.
+    /// The default angle tolerance is 89.75 to 90.25 degrees. Tangent.``89.75`` is about 229.2.
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -679,12 +681,13 @@ module AutoOpenLine2D =
 
     /// Checks if two 2D lines are perpendicular to each other.
     /// Use a precomputed value from Euclid.Tangent module as tolerance.
+    /// e.g. Tangent.``89.75`` is about 229.2.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    static member inline isPerpendicularTo maxTangent (lnA:Line2D) (lnB:Line2D) : bool =
+    static member inline isPerpendicularTo (maxTangent:float<Tangent.tangent>) (lnA:Line2D) (lnB:Line2D) : bool =
         lnA.IsPerpendicularTo(lnB, maxTangent)
 
     /// Checks if a 2D lines is perpendicular to a 2D vector.
-    /// The default angle tolerance is 89.75 to 90.25 degrees.
+    /// The default angle tolerance is 89.75 to 90.25 degrees. Tangent.``89.75`` is about 229.2.
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -696,7 +699,7 @@ module AutoOpenLine2D =
         abs tan > maxTangent
 
     /// Checks if a 2D lines is perpendicular to a 2D unit-vector.
-    /// The default angle tolerance is 89.75 to 90.25 degrees.
+    /// The default angle tolerance is 89.75 to 90.25 degrees. Tangent.``89.75`` is about 229.2.
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -707,7 +710,7 @@ module AutoOpenLine2D =
         abs tan > maxTangent
 
     /// Checks if two 2D lines are perpendicular to each other.
-    /// The default angle tolerance is 89.75 to 90.25 degrees.
+    /// The default angle tolerance is 89.75 to 90.25 degrees. Tangent.``89.75`` is about 229.2.
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -717,12 +720,13 @@ module AutoOpenLine2D =
 
     /// Checks if two 2D lines are perpendicular to each other.
     /// Use a precomputed value from Euclid.Tangent module as tolerance.
+    /// e.g. Tangent.``89.75`` is about 229.2.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    static member inline isNormalTo maxTangent (lnA:Line2D) (lnB:Line2D) : bool =
+    static member inline isNormalTo (maxTangent:float<Tangent.tangent>) (lnA:Line2D) (lnB:Line2D) : bool =
         lnA.IsNormalTo(lnB, maxTangent)
 
     /// Checks if a 2D lines is perpendicular to a 2D vector.
-    /// The default angle tolerance is 89.75 to 90.25 degrees.
+    /// The default angle tolerance is 89.75 to 90.25 degrees. Tangent.``89.75`` is about 229.2.
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -731,7 +735,7 @@ module AutoOpenLine2D =
         ln.IsPerpendicularTo(other, maxTangent)
 
     /// Checks if a 2D lines is perpendicular to a 2D unit-vector.
-    /// The default angle tolerance is 89.75 to 90.25 degrees.
+    /// The default angle tolerance is 89.75 to 90.25 degrees. Tangent.``89.75`` is about 229.2.
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -743,7 +747,7 @@ module AutoOpenLine2D =
     /// This means that lines are parallel within the angle tolerance
     /// and the distance of second start to the first line is less than the distance tolerance.
     /// Also returns false on zero Length lines.
-    /// The default angle tolerance is 0.25 degrees.
+    /// The default angle tolerance is 0.25 degrees. Tangent.``0.25`` is about 0.0044.
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     member inline ln.IsCoincidentTo (other:Line2D,
@@ -764,8 +768,8 @@ module AutoOpenLine2D =
             let y = other.FromY - ln.FromY
             let dotN =  x*vtY - y*vtX // looks like a cross product, but is the dot with the normal
             let lenSq = vtX*vtX + vtY*vtY
-            let dist = (dotN * dotN) / lenSq
-            dist < distanceTolerance
+            let distSq = (dotN * dotN) / lenSq
+            distSq < distanceTolerance * distanceTolerance
         else
             // they are not parallel within tolerance
             false
@@ -773,8 +777,9 @@ module AutoOpenLine2D =
     /// Checks if two 2D lines are coincident on the same ray within the distance tolerance.
     /// This means that lines are parallel within the angle tolerance.
     /// Also returns FALSE on zero length lines.
+    /// e.g. Tangent.``0.25`` is about 0.0044.
     /// Use a precomputed value from Euclid.Tangent module as tolerance.
-    static member inline isCoincidentTo distanceTolerance minTangent (a:Line2D) (b:Line2D) : bool =
+    static member inline isCoincidentTo distanceTolerance (minTangent:float<Tangent.tangent>) (a:Line2D) (b:Line2D) : bool =
         a.IsCoincidentTo(b, distanceTolerance, minTangent)
 
     /// A fast version of IsParallelTo that uses cross-product to determine parallelism.
@@ -1242,62 +1247,71 @@ module AutoOpenLine2D =
 
     /// Checks if a 2D line is parallel to a 2D vector. Ignores orientation.
     /// Use a precomputed value from Euclid.Tangent module as tolerance.
+    /// e.g. Tangent.``0.25`` is about 0.0044.
     /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    static member inline isParallelToVc minTangent (other:Vc) (ln:Line2D) : bool =
+    static member inline isParallelToVc (minTangent:float<Tangent.tangent>) (other:Vc) (ln:Line2D) : bool =
         ln.IsParallelTo(other, minTangent)
 
     /// Checks if a 2D line is parallel to a 2D unit-vector. Ignores orientation.
     /// Use a precomputed value from Euclid.Tangent module as tolerance.
+    /// e.g. Tangent.``0.25`` is about 0.0044.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    static member inline isParallelToUnitVc minTangent (other:UnitVc) (ln:Line2D) : bool =
+    static member inline isParallelToUnitVc (minTangent:float<Tangent.tangent>) (other:UnitVc) (ln:Line2D) : bool =
         ln.IsParallelTo(other, minTangent)
 
     /// Checks if two 2D lines are Not parallel. Ignoring orientation.
     /// The default angle tolerance is 0.25 degrees.
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// Use a precomputed value from Euclid.Tangent module as tolerance.
+    /// e.g. Tangent.``0.25`` is about 0.0044.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     static member inline isNotParallelTo (lnA:Line2D) (lnB:Line2D) : bool =
         not <| lnA.IsParallelTo(lnB)
 
     /// Checks if a 2D line is parallel to a 2D vector and oriented the same way.
     /// Use a precomputed value from Euclid.Tangent module as tolerance.
+    /// e.g. Tangent.``0.25`` is about 0.0044.
     /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    static member inline isParallelAndOrientedToVc minTangent (other:Vc) (ln:Line2D) : bool =
+    static member inline isParallelAndOrientedToVc (minTangent:float<Tangent.tangent>) (other:Vc) (ln:Line2D) : bool =
         ln.IsParallelAndOrientedTo(other, minTangent)
 
     /// Checks if a 2D line is parallel to a 2D unit-vector and oriented the same way.
     /// Use a precomputed value from Euclid.Tangent module as tolerance.
+    /// e.g. Tangent.``0.25`` is about 0.0044.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    static member inline isParallelAndOrientedToUnitVc minTangent (other:UnitVc) (ln:Line2D) : bool =
+    static member inline isParallelAndOrientedToUnitVc (minTangent:float<Tangent.tangent>) (other:UnitVc) (ln:Line2D) : bool =
         ln.IsParallelAndOrientedTo(other, minTangent)
 
     /// Checks if a 2D line is perpendicular to a 2D vector.
     /// Use a precomputed value from Euclid.Tangent module as tolerance.
+    /// e.g. Tangent.``89.75`` is about 0.0044.
     /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    static member inline isPerpendicularToVc maxTangent (other:Vc) (ln:Line2D) : bool =
+    static member inline isPerpendicularToVc (maxTangent:float<Tangent.tangent>) (other:Vc) (ln:Line2D) : bool =
         ln.IsPerpendicularTo(other, maxTangent)
 
     /// Checks if a 2D line is perpendicular to a 2D unit-vector.
     /// Use a precomputed value from Euclid.Tangent module as tolerance.
+    /// e.g. Tangent.``89.75`` is about 0.0044.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    static member inline isPerpendicularToUnitVc maxTangent (other:UnitVc) (ln:Line2D) : bool =
+    static member inline isPerpendicularToUnitVc (maxTangent:float<Tangent.tangent>) (other:UnitVc) (ln:Line2D) : bool =
         ln.IsPerpendicularTo(other, maxTangent)
 
     /// Checks if a 2D line is perpendicular to a 2D vector.
     /// Use a precomputed value from Euclid.Tangent module as tolerance.
+    /// e.g. Tangent.``89.75`` is about 0.0044.
     /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    static member inline isNormalToVc maxTangent (other:Vc) (ln:Line2D) : bool =
+    static member inline isNormalToVc (maxTangent:float<Tangent.tangent>) (other:Vc) (ln:Line2D) : bool =
         ln.IsNormalTo(other, maxTangent)
 
     /// Checks if a 2D line is perpendicular to a 2D unit-vector.
     /// Use a precomputed value from Euclid.Tangent module as tolerance.
+    /// e.g. Tangent.``89.75`` is about 0.0044.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    static member inline isNormalToUnitVc maxTangent (other:UnitVc) (ln:Line2D) : bool =
+    static member inline isNormalToUnitVc (maxTangent:float<Tangent.tangent>) (other:UnitVc) (ln:Line2D) : bool =
         ln.IsNormalTo(other, maxTangent)
 
     /// A faster Check if two 2D lines are parallel. Ignoring orientation.
-    /// The angle tolerance is 0.25 degrees.
+    /// The angle tolerance is 0.25 degrees. 
     /// This function does not do a check for very short lines.
     /// But will return false on zero-length lines.
     static member inline isParallelTo' (lnA:Line2D) (lnB:Line2D) : bool =
@@ -1311,7 +1325,7 @@ module AutoOpenLine2D =
         !^ tan < Tangent.``0.25``
 
     /// A faster Check if two 2D lines are not parallel. Ignoring orientation.
-    /// The angle tolerance is 0.25 degrees.
+    /// The angle tolerance is 0.25 degrees. 
     /// This function does not do a check for very short lines.
     /// But will return false on zero-length lines.
     static member inline isNotParallelTo' (lnA:Line2D) (lnB:Line2D) : bool =
@@ -1325,7 +1339,7 @@ module AutoOpenLine2D =
         !^ tan > Tangent.``0.25``
 
     /// A faster Check if two 2D lines are perpendicular to each other.
-    /// The angle tolerance is 89.75 to 90.25 degrees.
+    /// The angle tolerance is 89.75 to 90.25 degrees. 
     /// This function does not do a check for very short lines.
     /// But will return false on zero-length lines.
     /// Same as Line2D.isNormalTo'
@@ -1545,7 +1559,7 @@ module AutoOpenLine2D =
             pts.Add l.To
             pts
         else
-            let step = 1.0 / floor
+            let step = dist / len
             let count = int floor
             let pts = ResizeArray<Pt>(count + 2)
             pts.Add l.From
@@ -1566,13 +1580,12 @@ module AutoOpenLine2D =
         if floor = 0.0 then
             ResizeArray<Pt>()
         else
-            let step = 1.0 / floor
+            let step = dist / len
             let count = int floor
             let pts = ResizeArray<Pt>(count)
-            for i = 1 to count - 1 do
-                pts.Add <| l.EvaluateAt (step * float i)
-            if div - floor > 0.001 then
-                pts.Add <| l.EvaluateAt (step * floor) // add last div point only if there is a remainder bigger than 0.1%
+            for i = 1 to count do
+                if i < count || div - floor > 0.001 then
+                    pts.Add <| l.EvaluateAt (step * float i)
             pts
 
     /// Project a line onto another line considered infinite in both directions.
@@ -1664,7 +1677,7 @@ module AutoOpenLine2D =
         let ovy = onToLine.ToY - osy
         let lenSq = ovx*ovx + ovy*ovy
         if UtilEuclid.isTooSmallSq(lenSq) then
-            failTooSmall "Line2D.projectOntoLineParam" onToLine
+            failTooSmall "Line2D.tryProjectOntoLine" onToLine
         // start parameter
         let u = lineToProject.FromX - osx
         let v = lineToProject.FromY - osy
@@ -1777,7 +1790,7 @@ module AutoOpenLine2D =
     /// <param name="lnB"> The second line.</param>
     /// <returns> An option of a tuple of two floats.
     /// Returns the tuple containing the start and end parameter of the overlap on lnA if the lines are parallel and overlapping.
-    /// Returns None if the lines are not parallel, not overlapping, our just touching at ends,or too short.</returns>
+    /// Returns None if the lines are not parallel, not overlapping, or too short.</returns>
     /// <remarks> If the first parameter in the overlap is smaller than the second the lines are oriented in the same direction.
     /// If the first parameter is greater than the second the lines are oriented in the opposite direction.</remarks>
     static member tryGetOverlap (lnA:Line2D) (lnB:Line2D) : option<float*float> =
