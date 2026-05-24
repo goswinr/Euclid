@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rect2D.fitToPoints: corrected the misleading "Vc.Unitized" text in the too-short-axis exception messages.
 - corrected several Rect3D docstrings that mentioned "2D rectangle" and wrong grid/subdivision rounding factors.
 ### Changed
-- Rect2D.xAxisUnit / yAxisUnit renamed to Rect2D.xaxisUnit / yaxisUnit for naming consistency with Rect3D and Box. The old names remain as obsolete aliases.
+- Rect3D.xaxisUnit / yaxisUnit renamed to Rect3D.xAxisUnit / yAxisUnit for naming consistency with Rect2D. The old names remain as obsolete aliases.
 
 ## [0.30.1] - 2026-03-24
 ### Fixed

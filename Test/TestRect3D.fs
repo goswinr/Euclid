@@ -56,6 +56,12 @@ let tests =
             "SizeY" |> Expect.isTrue (equ r.SizeY 1e5)
         }
 
+        test "Rect3D.xAxisUnit / yAxisUnit static members" {
+            let r = Rect3D.createFromVectors(o, Vec(2., 0., 0.), Vec(0., 3., 0.))
+            "xAxisUnit X" |> Expect.isTrue (equ (Rect3D.xAxisUnit r).X 1.0)
+            "yAxisUnit Y" |> Expect.isTrue (equ (Rect3D.yAxisUnit r).Y 1.0)
+        }
+
         test "Rect3D.fitToPoints - all positive projections" {
             // Reference rectangle at origin with unit axes
             let refRect = Rect3D.createFromVectors(Pnt.Origin, Vec.Xaxis, Vec.Yaxis)

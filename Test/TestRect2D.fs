@@ -120,9 +120,9 @@ let tests =
                 "XaxisUnit Y" |> Expect.isTrue (eqf xu.Y 0.6)
                 "YaxisUnit X" |> Expect.isTrue (eqf yu.X -0.6)
                 "YaxisUnit Y" |> Expect.isTrue (eqf yu.Y 0.8)
-                // static members mirror the instance members (consistent lowercase naming)
-                "xaxisUnit static" |> Expect.isTrue (eqf (Rect2D.xaxisUnit rr).X 0.8)
-                "yaxisUnit static" |> Expect.isTrue (eqf (Rect2D.yaxisUnit rr).Y 0.8)
+                // static members mirror the instance members
+                "xAxisUnit static" |> Expect.isTrue (eqf (Rect2D.xAxisUnit rr).X 0.8)
+                "yAxisUnit static" |> Expect.isTrue (eqf (Rect2D.yAxisUnit rr).Y 0.8)
             }
         ]
 

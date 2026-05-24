@@ -185,7 +185,7 @@ type Rect2D =
         UnitVc.createUnchecked(x*f, y*f)
 
     /// Returns the unitized local X-axis of the 2D rectangle.
-    static member inline xaxisUnit (r:Rect2D) : UnitVc =
+    static member inline xAxisUnit (r:Rect2D) : UnitVc =
         r.XaxisUnit
 
     /// Creates a unitized version of the local Y-Axis.
@@ -199,7 +199,7 @@ type Rect2D =
         UnitVc.createUnchecked(x*f, y*f)
 
     /// Returns the unitized local Y-axis of the 2D rectangle.
-    static member inline yaxisUnit (r:Rect2D) : UnitVc =
+    static member inline yAxisUnit (r:Rect2D) : UnitVc =
         r.YaxisUnit
 
     /// Returns the diagonal vector of the 2D Rectangle.
@@ -1833,14 +1833,6 @@ type Rect2D =
     // #endregion
     // #region Obsolete
 
-
-    [<Obsolete("Renamed to Rect2D.xaxisUnit for naming consistency with Rect3D and Box.")>]
-    static member inline xAxisUnit (r:Rect2D) : UnitVc =
-        r.XaxisUnit
-
-    [<Obsolete("Renamed to Rect2D.yaxisUnit for naming consistency with Rect3D and Box.")>]
-    static member inline yAxisUnit (r:Rect2D) : UnitVc =
-        r.YaxisUnit
 
     [<Obsolete("use SizeX")>]
     member inline r.Width : float =

@@ -194,7 +194,7 @@ type Rect3D =
         UnitVec.createUnchecked(x*f, y*f, z*f)
 
     /// Creates a unitized version of the local X-Axis.
-    static member inline xaxisUnit (r:Rect3D) : UnitVec =
+    static member inline xAxisUnit (r:Rect3D) : UnitVec =
         r.XaxisUnit
 
     /// Creates a unitized version of the local Y-Axis.
@@ -209,7 +209,7 @@ type Rect3D =
         UnitVec.createUnchecked(x*f, y*f, z*f)
 
     /// Creates a unitized version of the local Y-Axis.
-    static member inline yaxisUnit (r:Rect3D) : UnitVec =
+    static member inline yAxisUnit (r:Rect3D) : UnitVec =
         r.YaxisUnit
 
     /// Returns the Normal
@@ -1962,6 +1962,14 @@ type Rect3D =
     // #endregion
     // #region Obsolete
 
+
+    [<Obsolete("Renamed to Rect3D.xAxisUnit for naming consistency with Rect2D.")>]
+    static member inline xaxisUnit (r:Rect3D) : UnitVec =
+        r.XaxisUnit
+
+    [<Obsolete("Renamed to Rect3D.yAxisUnit for naming consistency with Rect2D.")>]
+    static member inline yaxisUnit (r:Rect3D) : UnitVec =
+        r.YaxisUnit
 
     [<Obsolete("This does not scale proportionally to the actual area, use just .Area for sorting by area")>]
     member inline r.AreaSq : float =
