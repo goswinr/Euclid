@@ -34,6 +34,14 @@ module Arr =
                 mf <- f
         ii
 
+    let inline undefCreateFloat64 (count:int) : float[] =
+        #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
+            Fable.Core.JsInterop.emitJsExpr (count) "new Float64Array($0)"
+        #else
+            Array.zeroCreate<float> count
+        #endif
+
+
 /// An internal module with functions for working with ResizeArray<'T>.
 module ResizeArr =
 
@@ -122,7 +130,7 @@ module ResizeArr =
     /// Yields looped Seq from (first, second)  up to (last, first).
     /// The resulting seq has the same element count as the input Rarr.
     let thisNext (rarr:ResizeArray<'T>) =
-        if rarr.Count <= 2 then fail $"ResizeArr.thisNext input has less than two items:{Format.nl}{Format.rarr rarr}"
+        if rarr.Count <= 2 then fail $"ResizeArr.thisNext input has two or fewer items:{Format.nl}{Format.rarr rarr}"
         seq {
             for i = 0 to rarr.Count-2 do
                 rarr.[i], rarr.[i+1]
@@ -132,7 +140,7 @@ module ResizeArr =
     /// Yields looped Seq from (1, last, first, second)  up to (lastIndex, second-last, last, first)
     /// The resulting seq has the same element count as the input Rarr.
     let iPrevThisNext (xs:ResizeArray<'T>) =
-        if xs.Count <= 3 then fail $"ResizeArr.iPrevThisNext input has less than three items:{Format.nl}{Format.rarr xs}"
+        if xs.Count <= 3 then fail $"ResizeArr.iPrevThisNext input has three or fewer items:{Format.nl}{Format.rarr xs}"
         seq {
             0, xs.[xs.Count-1], xs.[0], xs.[1]
             for i = 0 to xs.Count-3 do
@@ -180,7 +188,9 @@ module ResizeArr =
         xs.Find (System.Predicate predicate)
 
     let findLast (predicate:'T->bool) (xs: ResizeArray<'T>) : 'T =
-        let mutable loopOn = false
+        if xs.Count = 0 then
+            fail "ResizeArr.findLast: Failed on empty ResizeArray."
+        let mutable loopOn = true
         let mutable i = xs.Count - 1
         while loopOn do
             if predicate xs.[i] then
@@ -207,7 +217,7 @@ module ResizeArr =
     let rev (xs: ResizeArray<'T>) : ResizeArray<'T> =
         #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
             // https://fable.io/docs/javascript/features.html#emitjsexpr
-            Fable.Core.JsInterop.emitJsExpr (xs) "xs.toReversed()"
+            Fable.Core.JsInterop.emitJsExpr (xs) "$0.toReversed()"
         #else
             let len = xs.Count
             let result = ResizeArray (len)
@@ -327,8 +337,8 @@ module AutoOpenEuclidResizeArrayExtensions =
                 #endif
                     this.[ResizeArr.len this - 2] <- v
 
-        /// Get (or set) the second last item in the ResizeArr.
-        /// Equal to this.[this.Count - 2]
+        /// Get (or set) the third last item in the ResizeArr.
+        /// Equal to this.[this.Count - 3]
         member inline this.ThirdLast
             with get() =
                 #if DEBUG || CHECK_EUCLID

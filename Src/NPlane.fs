@@ -62,16 +62,24 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
         pl.Flipped
 
     /// Returns signed distance of point to plane, also indicating on which side it is.
-    member inline pl.DistanceToPt pt : float =
+    member inline pl.DistanceToPtSigned pt : float =
         pl.Normal *** (pt-pl.Origin)
 
     /// Returns signed distance of point to plane, also indicating on which side it is.
+    static member inline distanceToPtSigned (pt:Pnt) (pl:NPlane) : float =
+        pl.DistanceToPtSigned pt
+
+    /// Returns absolute distance of point to plane.
+    member inline pl.DistanceToPt pt : float =
+        abs (pl.DistanceToPtSigned pt)
+
+    /// Returns absolute distance of point to plane.
     static member inline distanceToPt (pt:Pnt) (pl:NPlane) : float =
         pl.DistanceToPt pt
 
     /// Returns the closest point on the plane from a test point.
     member inline pl.ClosestPoint pt : Pnt =
-        pt - pl.Normal * (pl.DistanceToPt pt)
+        pt - pl.Normal * (pl.DistanceToPtSigned pt)
 
     /// Returns the closest point on the plane from a test point.
     static member inline closestPoint (pt:Pnt) (pl:NPlane) : Pnt =
@@ -80,7 +88,7 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
     /// First finds the closest point on the plane from a test point.
     /// Then returns a new plane with Origin at this point and the same Normal.
     member inline pl.PlaneAtClPt pt : NPlane =
-        NPlane(pt - pl.Normal * (pl.DistanceToPt pt), pl.Normal)
+        NPlane(pt - pl.Normal * (pl.DistanceToPtSigned pt), pl.Normal)
 
     /// First finds the closest point on the plane from a test point.
     /// Then returns a new plane with Origin at this point and the same Normal.
@@ -277,9 +285,13 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
         if pl.Normal *** (dirPt-pl.Origin) >= 0. then NPlane(pl.Origin + pl.Normal*dist, pl.Normal)
         else                                          NPlane(pl.Origin - pl.Normal*dist, pl.Normal)
 
-    /// Returns signed distance of point to plane, also indicating on which side it is.
+    /// Returns absolute distance of point to plane.
     static member inline distToPt (pt:Pnt) (pl:NPlane) : float =
         pl.DistanceToPt pt
+
+    /// Returns signed distance of point to plane, also indicating on which side it is.
+    static member inline distToPtSigned (pt:Pnt) (pl:NPlane) : float =
+        pl.DistanceToPtSigned pt
 
     /// Scales the plane's origin by a given factor from the world origin. The normal remains unchanged.
     static member inline scale (factor:float) (pl:NPlane) : NPlane =

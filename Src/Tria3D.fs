@@ -4,7 +4,7 @@ open System
 open UtilEuclid
 open EuclidErrors
 
-/// A type containing only static member functions for operations on 2D Triangles.
+/// A type containing only static member functions for operations on 3D Triangles.
 type Tria3D =
 
     /// Returns the double area of a triangle.
@@ -89,13 +89,23 @@ type Tria3D =
         pt + (nPrev + nNext) * (dist / (1.0 + cosine)) // offset point
 
 
+    /// Returns the capped offset point for a near-180-degree U-turn corner, in the triangle plane around 'perp'.
+    /// The exact miter would shoot towards infinity, so the corner is capped at the 179-degree
+    /// threshold. The result is scaled by 'dist' and lies on the same side as 'offsetPntCore'.
+    /// This is the 3D analog of Tria2D.offsetPtUTurn ('perp' need not be unit length).
+    static member inline private offsetPntUTurn (pt:Pnt) (dist:float) (nPrev:UnitVec) (nNext:UnitVec) (perp:Vec) : Pnt =
+        let cosHalf = sqrt ((1.0 + float Cosine.``179.0``) / 2.0) // cosine of half the threshold angle = cosine of 89.5 degrees
+        let f = 0.5 * dist / cosHalf // hypotenuse = adjacent / cos(angle); *0.5 because the summed direction length is almost 2.0
+        let dirPrev = Vec.cross (perp, nPrev) |> Vec.withLength f // 90-degree rotation of nPrev in the triangle plane
+        let dirNext = Vec.cross (nNext, perp) |> Vec.withLength f // 90-degree rotation of nNext in the triangle plane
+        pt + dirPrev + dirNext
+
+
     /// Returns the offset point based on the previous and next normals, the distance and the precomputed cosine (= dot product of nPrev * nNext).
-    /// Checks for 180 degrees U-turns. sets it to 179 degrees
+    /// Checks for 180 degrees U-turns and caps them at 179 degrees.
     static member inline private offsetPntCoreSafe (pt:Pnt) (dist:float) (nPrev:UnitVec) (nNext:UnitVec) (perp:Vec) (cosine:float) : Pnt =
         if withMeasure cosine < Cosine.``179.0`` then // check for 180 degrees U-turns, (0.0 degrees are handled fine)
-            let dirPrev = Vec.cross (nPrev, perp) |> Vec.withLength 28.645 //tangent function of 89 degrees * 0.5 (90+89=179 degrees)
-            let dirNext = Vec.cross (perp, nNext) |> Vec.withLength 28.645 //tangent function of 89 degrees * 0.5 (90+89=179 degrees)
-            pt + dirPrev + dirNext
+            Tria3D.offsetPntUTurn pt dist nPrev nNext perp
         else
             Tria3D.offsetPntCore pt dist nPrev nNext cosine
 
@@ -114,11 +124,9 @@ type Tria3D =
 
         let nPrev = Vec.cross(perp, vPrev) |> Vec.unitize//Unchecked
         let nNext = Vec.cross(perp, vNext) |> Vec.unitize//Unchecked
-        let mutable cosine = nPrev *** nNext
+        let cosine = nPrev *** nNext
         if withMeasure cosine < Cosine.``179.0`` then // check for 180 degrees U-turns, (0.0 degrees are handled fine)
-            let dirPrev = vPrev |> Vec.withLength  28.645 //tangent function of 89 degrees * 0.5 (90+89=179 degrees)
-            let dirNext = vNext |> Vec.withLength -28.645 //inverted here !
-            pntToOffset + dirPrev + dirNext
+            Tria3D.offsetPntUTurn pntToOffset dist nPrev nNext perp
         else
             Tria3D.offsetPntCore pntToOffset dist nPrev nNext cosine
 

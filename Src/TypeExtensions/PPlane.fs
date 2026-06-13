@@ -12,16 +12,24 @@ module AutoOpenPPlane =
     type PPlane with
 
         /// Returns signed distance of point to plane, also indicating on which side it is.
-        member inline pl.DistanceToPt pt : float =
+        member inline pl.DistanceToPtSigned pt : float =
             pl.Zaxis *** (pt-pl.Origin)
 
         /// Returns signed distance of point to plane, also indicating on which side it is.
+        static member inline distanceToPtSigned pt (pl:PPlane) : float =
+            pl.DistanceToPtSigned pt
+
+        /// Returns absolute distance of point to plane.
+        member inline pl.DistanceToPt pt : float =
+            abs (pl.DistanceToPtSigned pt)
+
+        /// Returns absolute distance of point to plane.
         static member inline distanceToPt pt (pl:PPlane) : float =
             pl.DistanceToPt pt
 
         /// Returns the closest point on the plane from a test point.
         member inline pl.ClosestPoint pt : Pnt =
-            pt - pl.Zaxis*(pl.DistanceToPt pt)
+            pt - pl.Zaxis*(pl.DistanceToPtSigned pt)
 
         /// Returns the closest point on the plane from a test point.
         static member inline closestPoint pt (pl:PPlane) : Pnt =
@@ -293,8 +301,11 @@ module AutoOpenPPlane =
         /// Creates a Parametrized Plane from a point and unit-vector representing the normal (or Z-axis).
         /// The X-axis will be found by taking the Cross Product of the World Z-axis and the given normal (or Z-axis).
         /// This will make the X-axis horizontal.
-        /// If this fails because they are coincident, the Cross Product of the World Y-axis and the given normal (or Z-axis) will be used.
+        /// If this fails because they are coincident, the Cross Product of the World X-axis and the given normal (or Z-axis) will be used.
         static member createOriginNormal (origin:Pnt, normal:UnitVec) : PPlane =
+            // 0.5 degrees is a deliberately wider guard than the 0.25 degree parallel-tolerance used
+            // elsewhere: it falls back early, before the Cross Product with the World Z-axis becomes
+            // numerically unstable for near-vertical normals.
             if normal.IsParallelTo(UnitVec.Zaxis, Cosine.``0.5``) then
                 let y = Vec.cross (normal,Vec.Xaxis)
                 let x = Vec.cross (y, normal)
@@ -307,7 +318,7 @@ module AutoOpenPPlane =
         /// Creates a Parametrized Plane from a point and vector representing the normal (or Z-axis).
         /// The X-axis will be found by taking the Cross Product of the World Z-axis and the given normal (or Z-axis).
         /// This will make the X-axis horizontal.
-        /// If this fails because they are coincident, the Cross Product of the World Y-axis and the given normal (or Z-axis) will be used.
+        /// If this fails because they are coincident, the Cross Product of the World X-axis and the given normal (or Z-axis) will be used.
         /// Fails if the vectors are shorter than 1e-6.
         static member createOriginNormal (origin:Pnt, normal:Vec) : PPlane =
             let len = normal.Length
@@ -473,14 +484,15 @@ module AutoOpenPPlane =
                 let v = xpt-pl.Origin
                 Some <| (t, pl.Xaxis *** v, pl.Yaxis *** v)
 
-        /// Returns intersection point of ray with Plane.
-        /// Returns None if they are parallel.
+        /// Returns intersection point of a finite line with the Plane.
+        /// Returns None if they are parallel or the domain of intersection is outside 0.0 to 1.0.
+        /// Intersection just below 0.0 or just above 1.0 within tolerance of 1e-6 are clamped to 0.0 or 1.0.
         /// Returns None if the line is too short.
         static member intersectLine (ln:Line3D) (pl:PPlane) : Pnt option =
             match PPlane.intersectLineParameter ln pl with
             | Some t ->
-                if 0. <= t && t <= 1. then
-                    Some (ln.From + ln.Vector * t)
+                if isBetweenZeroAndOneTolerantIncl t then
+                    Some (ln.From + ln.Vector * (clampBetweenZeroAndOne t))
                 else
                     None
             | None ->

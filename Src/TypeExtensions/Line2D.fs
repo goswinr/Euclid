@@ -1141,10 +1141,10 @@ module AutoOpenLine2D =
         l.FromY
 
     /// Returns the End point of the line. Same as Line2D.to'
-    static member inline ende (l:Line2D) : Pt =
+    static member inline end' (l:Line2D) : Pt =
         l.To
 
-    /// Returns the End point of the line. Same as Line2D.ende.
+    /// Returns the End point of the line. Same as Line2D.end'.
     static member inline to' (l:Line2D) : Pt =
         l.To
 
@@ -1311,7 +1311,7 @@ module AutoOpenLine2D =
         ln.IsNormalTo(other, maxTangent)
 
     /// A faster Check if two 2D lines are parallel. Ignoring orientation.
-    /// The angle tolerance is 0.25 degrees. 
+    /// The angle tolerance is 0.25 degrees.
     /// This function does not do a check for very short lines.
     /// But will return false on zero-length lines.
     static member inline isParallelTo' (lnA:Line2D) (lnB:Line2D) : bool =
@@ -1325,7 +1325,7 @@ module AutoOpenLine2D =
         !^ tan < Tangent.``0.25``
 
     /// A faster Check if two 2D lines are not parallel. Ignoring orientation.
-    /// The angle tolerance is 0.25 degrees. 
+    /// The angle tolerance is 0.25 degrees.
     /// This function does not do a check for very short lines.
     /// But will return false on zero-length lines.
     static member inline isNotParallelTo' (lnA:Line2D) (lnB:Line2D) : bool =
@@ -1339,7 +1339,7 @@ module AutoOpenLine2D =
         !^ tan > Tangent.``0.25``
 
     /// A faster Check if two 2D lines are perpendicular to each other.
-    /// The angle tolerance is 89.75 to 90.25 degrees. 
+    /// The angle tolerance is 89.75 to 90.25 degrees.
     /// This function does not do a check for very short lines.
     /// But will return false on zero-length lines.
     /// Same as Line2D.isNormalTo'
@@ -1722,7 +1722,7 @@ module AutoOpenLine2D =
     /// <param name="lnA"> The first line.</param>
     /// <param name="lnB"> The second line.</param>
     /// <remarks> This method uses an angle of 0.25 degrees to classify Lines as parallel.
-    /// In wich case it also checks if they overlap or touch.
+    /// In which case it also checks if they overlap or touch.
     /// Use the Euclid's XLine2D module for more specialized intersection calculations.
     /// Like getting the kind of Parallel relation between lines, only getting the parameter of one line,
     /// or setting a tolerance for when lines are parallel or coincident.</remarks>
@@ -1759,11 +1759,13 @@ module AutoOpenLine2D =
 
     /// <summary> Intersects two finite 2D Lines.
     /// Also returns a point if parallel lines are touching or overlapping each other.
-    /// Also returns a point a zero length lines are at the same location within 1e-6 distance.</summary>
+    /// Also returns a point if zero-length lines are at the same location within 1e-6 distance.</summary>
     /// <param name="lnA"> The first line.</param>
     /// <param name="lnB"> The second line.</param>
     /// <remarks> This method uses an angle of 0.25 degrees to classify Lines as parallel.
-    /// In wich case it also checks if they overlap or touch.
+    /// In which case it also checks if they overlap or touch.
+    /// Parallel lines are treated as coincident when their perpendicular distance is below 1e-6
+    /// (1e-12 squared), the same tolerance as Line2D.tryGetOverlap.
     /// Use the Euclid's XLine2D module for more specialized intersection calculations.
     /// Like getting the kind of Parallel relation between lines, only getting the parameter of one line,
     /// or setting a tolerance for when lines are parallel or coincident.</remarks>
@@ -1775,7 +1777,7 @@ module AutoOpenLine2D =
         |XLine2D.XPt.Apart -> None
         |XLine2D.XPt.Parallel ->
             let sqDist = XLine2D.sqRayPtDist(lnA.FromX, lnA.FromY, lnA.VectorX, lnA.VectorY, lnB.FromX, lnB.FromY)
-            if sqDist < 1e-12 then
+            if sqDist < 1e-12 then // squared distance: coincident within 1e-6
                 match lnB |> Line2D.tryProjectOntoLineParam lnA  with
                 | Some (s,e) -> Some <| lnA.EvaluateAt((s+e)*0.5)
                 | None -> None
@@ -1792,7 +1794,9 @@ module AutoOpenLine2D =
     /// Returns the tuple containing the start and end parameter of the overlap on lnA if the lines are parallel and overlapping.
     /// Returns None if the lines are not parallel, not overlapping, or too short.</returns>
     /// <remarks> If the first parameter in the overlap is smaller than the second the lines are oriented in the same direction.
-    /// If the first parameter is greater than the second the lines are oriented in the opposite direction.</remarks>
+    /// If the first parameter is greater than the second the lines are oriented in the opposite direction.
+    /// Parallel lines are treated as coincident when their perpendicular distance is below 1e-6
+    /// (1e-12 squared), the same tolerance as Line2D.tryIntersectOrOverlap.</remarks>
     static member tryGetOverlap (lnA:Line2D) (lnB:Line2D) : option<float*float> =
         let va = lnA.Vector
         let vb = lnB.Vector
@@ -1802,7 +1806,7 @@ module AutoOpenLine2D =
             let tan = XLine2D.tangent(va.X, va.Y, vb.X, vb.Y)
             if abs tan < Tangent.``0.25`` then
                 let sqDist = XLine2D.sqRayPtDist(lnA.FromX, lnA.FromY, lnA.VectorX, lnA.VectorY, lnB.FromX, lnB.FromY)
-                if sqDist < 1e-9 then
+                if sqDist < 1e-12 then // squared distance: coincident within 1e-6
                     Line2D.tryProjectOntoLineParam lnA lnB
                 else
                     None

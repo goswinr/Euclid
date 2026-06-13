@@ -120,7 +120,7 @@ module AutoOpenVec =
         member inline a.Cross (b:UnitVec) : Vec =
             Vec (a.Y * b.Z - a.Z * b.Y, a.Z * b.X - a.X * b.Z, a.X * b.Y - a.Y * b.X)
 
-        /// Cross product, of a 3D unit-vector and a 3D vector.
+        /// Cross product of two 3D vectors.
         /// The resulting vector is perpendicular to both input vectors.
         /// The length of this resulting vector is the area of the parallelogram spanned by the input vectors.
         /// Its direction follows the right-hand rule.
@@ -171,7 +171,7 @@ module AutoOpenVec =
         /// Same as Vec.withLength.
         member inline v.WithLength (desiredLength:float) : Vec =
             let l = v.Length
-            if isTooTiny l then failUnit3 "Vec.WithLength" v.X v.Y v.Z
+            if isTooTiny l then failTooSmall "Vec.WithLength" v
             v * (desiredLength / l)
 
         /// Returns a new 3D vector scaled to the desired length.
@@ -181,7 +181,7 @@ module AutoOpenVec =
 
         /// Returns the 3D vector unitized.
         /// Fails with EuclidDivByZeroException if the length of the vector is
-        /// too small (1e-16) to unitize.
+        /// less than 1e-12 (UtilEuclid.zeroLengthTolerance).
         member inline v.Unitized : UnitVec =
             let x = v.X
             let y = v.Y
@@ -193,7 +193,7 @@ module AutoOpenVec =
 
         /// Returns the 3D vector unitized.
         /// Fails with EuclidDivByZeroException if the length of the vector is
-        /// too small (1e-16) to unitize.
+        /// less than 1e-12 (UtilEuclid.zeroLengthTolerance).
         static member inline unitize (v:Vec) : UnitVec =
             let x = v.X
             let y = v.Y
@@ -212,14 +212,12 @@ module AutoOpenVec =
         //    UnitVec.createUnchecked(li*v.X, li*v.Y, li*v.Z)
 
         /// Test if the 3D vector is a unit-vector.
-        /// Test if the vectors square length is within 6 float steps of 1.0
-        /// So between 0.99999964 and 1.000000715.
+        /// Tests if the squared length is between 0.999999 and 1.000001 (1e-6 tolerance).
         member inline v.IsUnit : bool =
             UtilEuclid.isOne v.LengthSq
 
         /// Test if the 3D vector is a unit-vector.
-        /// Test if the vectors square length is within 6 float steps of 1.0
-        /// So between 0.99999964 and 1.000000715.
+        /// Tests if the squared length is between 0.999999 and 1.000001 (1e-6 tolerance).
         static member inline isUnit (v:Vec) : bool =
             v.IsUnit
 
@@ -268,7 +266,7 @@ module AutoOpenVec =
             | 1 -> Vec(-v.Y, v.X, v.Z)
             | 2 -> Vec(-v.X, -v.Y, v.Z)
             | 3 -> Vec(v.Y, -v.X, v.Z)
-            | _ -> Vec(1, 0, 0) // should never happen
+            | _ -> v // should never happen because of the modulo % 4 operation
 
         /// The diamond angle.
         /// Calculates the proportion of X to Y component.
@@ -373,12 +371,12 @@ module AutoOpenVec =
             if r >= 0. then  r
             else r + 4.0
 
-        /// Returns positive angle for rotating Counter-Clockwise from this vector to vector 'b' .
+        /// Returns positive angle for rotating Counter-Clockwise from vector 'a' to vector 'b' .
         /// In Diamond Angle. Using only proportion of X to Y components.
         /// Range of 0.0 to 4.0 (for 360 Degrees)
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
-        static member inline angleDiamondInXY (b:Vec, a:Vec) : float =
+        static member inline angleDiamondInXY (a:Vec, b:Vec) : float =
             a.AngleDiamondInXYTo(b)
 
         /// Checks if the angle between the two 3D vectors is less than 90 degrees.
@@ -762,16 +760,16 @@ module AutoOpenVec =
         static member inline scale (f:float) (v:Vec) : Vec =
             Vec (v.X * f, v.Y * f, v.Z * f)
 
-        /// Add to the X part of this 3D vectors together. Returns a new 3D vector.
-        static member inline moveX x (v:Vec) : Vec =
+        /// Adds the given delta to the X component and returns a new 3D vector.
+        static member inline addX x (v:Vec) : Vec =
             Vec (v.X+x, v.Y, v.Z)
 
-        /// Add to the Y part of this 3D vectors together. Returns a new 3D vector.
-        static member inline moveY y (v:Vec) : Vec =
+        /// Adds the given delta to the Y component and returns a new 3D vector.
+        static member inline addY y (v:Vec) : Vec =
             Vec (v.X, v.Y+y, v.Z)
 
-        /// Add to the Z part of this 3D vectors together. Returns a new 3D vector.
-        static member inline moveZ z (v:Vec) : Vec =
+        /// Adds the given delta to the Z component and returns a new 3D vector.
+        static member inline addZ z (v:Vec) : Vec =
             Vec (v.X, v.Y, v.Z+z)
 
         /// Returns the length of the 3D vector.
@@ -848,7 +846,7 @@ module AutoOpenVec =
         /// Unitize 3D vector, if input vector is shorter than 1e-6 the default unit-vector is returned.
         static member inline unitizeOrDefault (defaultUnitVector:UnitVec) (v:Vec) : UnitVec =
             let l = v.LengthSq
-            if l < 1e-12  then  // = sqrt (1e-06)
+            if l < 1e-12  then  // = (1e-6)^2
                 defaultUnitVector
             else
                 let f = 1.0 / sqrt(l)
@@ -922,26 +920,10 @@ module AutoOpenVec =
         static member inline rotate (q:Quaternion) (pt:Vec) : Vec =
             pt *** q  // operator * is defined in Quaternion.fs
 
-        /// Rotate by Quaternion around given center point.
-        static member inline rotateWithCenter (cen:Vec) (q:Quaternion) (pt:Vec) : Vec =
-            // adapted from https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
-            let x = pt.X - cen.X
-            let y = pt.Y - cen.Y
-            let z = pt.Z - cen.Z
-            let qx = q.X
-            let qy = q.Y
-            let qz = q.Z
-            let qw = q.W
-            // calculate quat * vector
-            let ix =  qw * x + qy * z - qz * y
-            let iy =  qw * y + qz * x - qx * z
-            let iz =  qw * z + qx * y - qy * x
-            let iw = -qx * x - qy * y - qz * z
-            // calculate result * inverse quat
-            Vec(  ix * qw + iw * - qx + iy * - qz - iz * - qy  + cen.X
-                , iy * qw + iw * - qy + iz * - qx - ix * - qz  + cen.Y
-                , iz * qw + iw * - qz + ix * - qy - iy * - qx  + cen.Z
-                )
+        // Note: there is intentionally no Vec.rotateWithCenter: a vector is only a direction with
+        // magnitude, it has no location, so rotating it around a center point is not a valid operation.
+        // See the "Points vs Vectors" section in README.md.
+
         /// Rotate the 3D vector around X-axis, from Y to Z-axis, Counter Clockwise looking from right.
         static member rotateOnX (r:Rotation2D) (v:Vec) : Vec =
             Vec (v.X, r.Cos*v.Y - r.Sin*v.Z, r.Sin*v.Y + r.Cos*v.Z)
@@ -1031,7 +1013,8 @@ module AutoOpenVec =
         /// Returns positive or negative slope of a vector in Percent.
         /// In relation to X-Y plane.
         /// 100% = 45 Degrees.
-        /// Returns positive (or negative) Infinity if line is vertical or input has length zero.
+        /// Returns positive (or negative) Infinity if the vector is vertical.
+        /// Returns NaN if the vector is zero-length.
         static member inline slopePercent (v:Vec) : float =
             //if isTooTiny (abs(v.Z)) then EuclidDivByZeroException.Raise "Euclid.Vec.slopePercent: Can't get Slope from vertical vector %O" v
             let len2D = sqrt(v.X*v.X + v.Y*v.Y)
@@ -1194,6 +1177,21 @@ module AutoOpenVec =
         [<Obsolete("Use Vec.rotateOnZDeg instead.")>]
         static member inline rotateZ (angDegree) (v:Vec) : Vec =
             Vec.rotateOnZDeg angDegree v
+
+        /// Obsolete, use Vec.addX instead. A vector has no location; this is a vector addition.
+        [<Obsolete("Use Vec.addX instead.")>]
+        static member inline moveX x (v:Vec) : Vec =
+            Vec.addX x v
+
+        /// Obsolete, use Vec.addY instead. A vector has no location; this is a vector addition.
+        [<Obsolete("Use Vec.addY instead.")>]
+        static member inline moveY y (v:Vec) : Vec =
+            Vec.addY y v
+
+        /// Obsolete, use Vec.addZ instead. A vector has no location; this is a vector addition.
+        [<Obsolete("Use Vec.addZ instead.")>]
+        static member inline moveZ z (v:Vec) : Vec =
+            Vec.addZ z v
 
 
 

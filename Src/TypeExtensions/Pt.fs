@@ -273,11 +273,11 @@ module AutoOpenPt =
             if a < 0. then  a + UtilEuclid.twoPi
             else            a
 
-        /// Returns the angle in Radians from this point to another point.
+        /// Returns the angle in Radians from 'fromPt' to 'toPt'.
         /// 0.0 = Xaxis, going Counter-Clockwise till two Pi.
         /// Fails if the two points are coincident or too close together.
-        static member inline angle2PiTo (o:Pt, p:Pt) : float = // not curried because argument order is important
-            p.Angle2PiTo(o)
+        static member inline angle2PiTo (fromPt:Pt, toPt:Pt) : float = // not curried because argument order is important
+            fromPt.Angle2PiTo(toPt)
 
         /// Returns the angle in Degrees from this point to another point.
         /// 0.0 = Xaxis, going Counter-Clockwise till 360.
@@ -285,41 +285,41 @@ module AutoOpenPt =
         member inline p.Angle360To(o:Pt) : float =
             p.Angle2PiTo o |> toDegrees
 
-        /// Returns the angle in Degrees from this point to another point.
+        /// Returns the angle in Degrees from 'fromPt' to 'toPt'.
         /// 0.0 = Xaxis, going Counter-Clockwise till 360.
         /// Fails if the two points are coincident or too close together.
-        static member inline angle360To (o:Pt, p:Pt) : float =  // not curried because argument order is important
-            p.Angle360To(o)
+        static member inline angle360To (fromPt:Pt, toPt:Pt) : float =  // not curried because argument order is important
+            fromPt.Angle360To(toPt)
 
         /// Returns the closest point on a finite line segment to test point.
-        /// The line segment is defined by start point 'fromPt' and end point 'toPt'.
-        /// Fails if fromPt and toPt are coincident or too close together.
+        /// The line segment is given as a Line2D `ln`.
+        /// Fails if the line is degenerate (zero-length).
         member inline testPt.ClosestPointOnLine(ln:Line2D) : Pt =
             XLine2D.clPtLn(ln.FromX, ln.FromY, ln.VectorX, ln.VectorY, testPt.X, testPt.Y)
 
         /// Returns the closest point on a finite line segment to test point.
-        /// The line segment is defined by start point 'fromPt' and end point 'toPt'.
-        /// Fails if fromPt and toPt are coincident or too close together.
+        /// The line segment is given as a Line2D `ln`.
+        /// Fails if the line is degenerate (zero-length).
         static member inline closestPointOnLine (ln:Line2D) (testPt:Pt) : Pt =
             testPt.ClosestPointOnLine(ln)
 
         /// Returns the squared distance between point and finite line segment.
-        /// The line segment is defined by start point 'fromPt', unit direction 'uv', and length 'len'.
+        /// The line segment is given as a Line2D `ln`.
         member inline testPt.SqDistanceToLine(ln:Line2D) : float =
             XLine2D.sqDistLnPt(ln.FromX, ln.FromY, ln.VectorX, ln.VectorY, testPt.X, testPt.Y)
 
         /// Returns the squared distance between point and finite line segment.
-        /// The line segment is defined by start point 'fromPt', unit direction 'uv', and length 'len'.
+        /// The line segment is given as a Line2D `ln`.
         static member inline sqDistanceToLine (ln:Line2D) (testPt:Pt) : float =
             testPt.SqDistanceToLine(ln)
 
         /// Returns the distance between point and finite line segment.
-        /// The line segment is defined by start point 'fromPt', unit direction 'uv', and length 'len'.
+        /// The line segment is given as a Line2D `ln`.
         member inline testPt.DistanceToLine(ln:Line2D) : float =
             testPt.SqDistanceToLine ln |> sqrt
 
         /// Returns the distance between point and finite line segment.
-        /// The line segment is defined by start point 'fromPt', unit direction 'uv', and length 'len'.
+        /// The line segment is given as a Line2D `ln`.
         static member inline distanceToLine (ln:Line2D) (testPt:Pt) : float =
             testPt.DistanceToLine(ln)
 

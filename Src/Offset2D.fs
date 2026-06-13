@@ -104,7 +104,7 @@ module Offset2D=
             xys.Count / 2
 
         let failEven methodName (xys: ResizeArray<float>) =
-            fail $"Offset2D.{methodName}: coordinate buffer must contain an even number of floats, but has {xys.Count} values."
+            fail $"Offset2D.{methodName}: ResizeArray must contain an even number of floats, but has {xys.Count} values."
 
         let inline checkEven methodName (xys: ResizeArray<float>) =
             if xys.Count % 2 <> 0 then
@@ -132,7 +132,7 @@ module Offset2D=
             let dy = xys.[1] - xys.Last
             dx * dx + dy * dy
 
-    /// A helper function to print interleaved coordinate buffers for debugging.
+    /// A helper function to print interleaved ResizeArrays for debugging.
     let toStringXYs (xys: ResizeArray<float>) : string =
         if isNull xys then
             "ResizeArray<float> null"
@@ -198,7 +198,7 @@ module Offset2D=
 
 
 
-    /// Returns the unit tangents of the segments of an interleaved coordinate buffer.
+    /// Returns the unit tangents of the segments of an X and Y interleaved ResizeArray.
     /// The vector count is one less than the input point count. The result is interleaved x/y values.
     /// Fails on duplicate points.
     let makeUnitTangents (xys:ResizeArray<float>) : ResizeArray<float> =
@@ -225,7 +225,7 @@ module Offset2D=
         uVecs
 
 
-    /// Returns the normals of the segments of an interleaved coordinate buffer; each segment is rotated 90 degrees in counter-clockwise order.
+    /// Returns the normals of the segments of an X and Y interleaved ResizeArray; each segment is rotated 90 degrees in counter-clockwise order.
     /// The vector count is one less than the input point count. The result is interleaved x/y values.
     /// Fails on duplicate points.
     let makeOffsetDirections (xys:ResizeArray<float>) : ResizeArray<float> =
@@ -253,11 +253,14 @@ module Offset2D=
             i <- i + 2
         normals
 
-    /// <summary>Removes Sharp U-Turns from an interleaved coordinate buffer</summary>
+    // #endregion
+    // #region Remove U-Turns
+
+    /// <summary>Removes Sharp U-Turns from an X and Y interleaved ResizeArray, like Polyline2D is using</summary>
     /// <param name="xys">The interleaved coordinates of the polyline.</param>
     /// <param name="ns">The precomputed interleaved unit tangents or unit normals. (either are fine)</param>
     /// <param name="minCos">The minimum cosine value for detecting U-turns.</param>
-    /// <returns>If no U-turns are present, the original coordinate buffer is returned.
+    /// <returns>If no U-turns are present, the original ResizeArray is returned.
     /// If U-turns are present, a new ResizeArray of coordinates is returned with the U-turns removed.</returns>
     let removeUTurns (xys:ResizeArray<float>, ns: ResizeArray<float>, minCos:float<Cosine.cosine>) : ResizeArray<float> =
         XY.checkEven "removeUTurns" xys
@@ -423,7 +426,7 @@ module Offset2D=
 
 
 
-    /// <summary> For closed or open interleaved coordinate buffers of x and y.</summary>
+    /// <summary> For closed or open X and Y interleaved ResizeArrays of x and y.</summary>
     /// <remarks> This function requires precomputed segment normals; the simpler 'Offset2D.offset' uses it internally too.</remarks>
     /// <param name="xys">The interleaved coordinates of the Polyline2D to offset.</param>
     /// <param name="dirs">The interleaved normals of the Polyline2D to offset. One vector less than the point count. Must be created by counter clockwise rotation of each segment.</param>
@@ -511,12 +514,12 @@ module Offset2D=
         for i=0 to chunks.LastIndex do
             let chunk = chunks.[i]
             let offLn =
-                let prevOkIdx = saveIdx (chunk.First.idxRes - 1) (XY.pointCount res)  // the previous point before the chunk
-                let nextOkIdx = saveIdx (chunk.Last.idxRes  + 1) (XY.pointCount res) // the next point after the chunk
+                let prevOkIdx = safeIdx (chunk.First.idxRes - 1) (XY.pointCount res)  // the previous point before the chunk
+                let nextOkIdx = safeIdx (chunk.Last.idxRes  + 1) (XY.pointCount res) // the next point after the chunk
                 Line2D(XY.getPt prevOkIdx res, XY.getPt nextOkIdx res)
             let origLn =
-                let origPrevOkIdx = saveIdx (chunk.First.idxOrig - 1 ) (XY.pointCount origs)
-                let origNextOkIdx = saveIdx (chunk.Last.idxOrig  + 1 ) (XY.pointCount origs)
+                let origPrevOkIdx = safeIdx (chunk.First.idxOrig - 1 ) (XY.pointCount origs)
+                let origNextOkIdx = safeIdx (chunk.Last.idxOrig  + 1 ) (XY.pointCount origs)
                 Line2D(XY.getPt origPrevOkIdx origs, XY.getPt origNextOkIdx origs)
             for j=0 to chunk.LastIndex do
                 let bi = chunk.[j]
@@ -531,8 +534,8 @@ module Offset2D=
        reLoop (XY.pointCount res - 1) _.idx chunks
        for i=0 to chunks.LastIndex do
            let chunk = chunks.[i]
-           let prev = XY.getPt (saveIdx (chunk.First.idx - 1) (XY.pointCount res)) res // the previous point before the chunk
-           let next = XY.getPt (saveIdx (chunk.Last.idx + 1) (XY.pointCount res)) res // the next point after the chunk
+           let prev = XY.getPt (safeIdx (chunk.First.idx - 1) (XY.pointCount res)) res // the previous point before the chunk
+           let next = XY.getPt (safeIdx (chunk.Last.idx + 1) (XY.pointCount res)) res // the next point after the chunk
            let ln = Line2D(prev,next)
            for j=0 to chunk.LastIndex do
                 let itp = chunk.[j]
@@ -690,7 +693,7 @@ module Offset2D=
     /// <summary> A constant-distance offset algorithm for closed or open polylines.</summary>
     /// <param name="useUTurnBehaviorAbove"> The angle between normals after which the uTurnBehavior is applied.</param>
     /// <param name="uTurnBehavior"> What to do at a 180 degree U-turn? Fail, Chamfer with two points, or UseThreshold.</param>
-    /// <param name="xys">The interleaved coordinate buffer of the Polyline2D to offset.</param>
+    /// <param name="xys">The X and Y interleaved ResizeArray of the Polyline2D to offset.</param>
     /// <param name="dist">The distance to offset the Polyline2D. A positive distance will offset inwards on counter-clockwise curves.
     /// A negative distance will offset inwards on clockwise curves.</param>
     /// <returns> A new ResizeArray of Points. Due to error correction at sharp U-turns the point count may not be the same as the input. </returns>
@@ -704,7 +707,7 @@ module Offset2D=
     /// <summary> A constant-distance offset algorithm for closed or open polylines.</summary>
     /// <param name="uTurnBehavior"> What to do at a 180 degree U-turn? Fail, Chamfer with two points, or UseThreshold.
     /// This will only be applied for joints bigger than 175° degrees.</param>
-    /// <param name="xys">The interleaved coordinate buffer of the Polyline2D to offset.</param>
+    /// <param name="xys">The X and Y interleaved ResizeArray of the Polyline2D to offset.</param>
     /// <param name="dist">The distance to offset the Polyline2D. A positive distance will offset inwards on counter-clockwise curves.
     /// A negative distance will offset inwards on clockwise curves.</param>
     /// <returns> A new ResizeArray of Points. Due to error correction at sharp U-turns the point count may not be the same as the input. </returns>

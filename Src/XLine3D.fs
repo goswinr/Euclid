@@ -13,14 +13,40 @@ open EuclidErrors
 module XLine3D =
 
 
-    /// The result of a line-cone intersection test.
-    /// This is the return type of the function Intersection.lineCone.
+
+    /// Result of intersecting an infinite line with one nappe of an infinite cone
+    /// (only the part of the cone on the base side of the tip, not the mirrored double cone).
+    /// All parameters are in the parametrization of the line: t=0 at ray.From, t=1 at ray.To,
+    /// values outside 0..1 (including negative ones) lie on the infinite extension.
     [<RequireQualifiedAccess>]
     type XCone =
+        /// The line misses the cone entirely.
+        /// (This includes lines that would only hit the mirrored upper nappe of the double cone.)
         | NoIntersection
-        | Tangential
+
+        /// The line crosses the cone surface at two distinct points, both on the lower nappe.
+        /// Contains both parameters on the line, sorted ascending.
+        | Intersecting of float * float
+
+        /// The line crosses the cone surface transversally at exactly one point of the lower nappe.
+        /// This happens when the second root of the quadratic lies on the mirrored upper nappe,
+        /// or when the line is parallel to a generator line of the cone (the quadratic degenerates to linear).
+        /// Unlike 'Touching' this is a true crossing from outside to inside.
+        | IntersectingOne of float
+
+        /// The line touches the cone surface tangentially at exactly one point of the lower nappe.
+        /// (Double root of the quadratic, touch point is not the tip.)
         | Touching of float
-        | Intersecting of float*float
+
+        /// The line passes through the tip (apex) point only and is not on the cone surface.
+        | ThroughTip of float
+
+        /// The line lies on the cone surface: it is a generator line through the tip.
+        /// Since only the lower nappe counts as the cone, just the half-line starting
+        /// at the tip lies on the cone:
+        /// tipParam is the parameter of the tip on the line.
+        /// If onConeTowardsPositiveT is true the on-cone half is  t >= tipParam,  otherwise  t <= tipParam.
+        | LineOnCone of tipParam:float * onConeTowardsPositiveT:bool
 
 
     /// Describes the possible relationships of two rays (rays are 3D lines extended infinitely in both directions).
@@ -675,7 +701,7 @@ type XLine3D =
     /// <summary> Checks if 3D lines are not only parallel and coincident but are also overlapping or at least touching at their ends.</summary>
     /// <param name="lineA"> The first line.</param>
     /// <param name="lineB"> The second line.</param>
-    /// <param name="tolerance" > Is an optional squared distance tolerance. 1e-6 by default.
+    /// <param name="tolerance" > Is an optional distance tolerance (compared against the squared distance internally). 1e-6 by default.
     /// Used for checking if the distance between parallel lines is less than this value.</param>
     /// <returns> TRUE if the lines are coincident and overlap or touch.
     ///  FALSE if the lines are not coincident or do not overlap nor touch.</returns>
@@ -1929,42 +1955,170 @@ type XLine3D =
             XEnds.NotTouching
 
 
-
-    /// <summary>Intersects a ray with an infinite double cone that has its axis on the Z-axis.</summary>
-    /// <param name="ray">The Line3D to intersect. It is considered as infinite ray.</param>
-    /// <param name="coneRadius">The radius of the cone at the base. Parallel to the XY plane.</param>
+    /// <summary>Intersects a ray with an infinite cone (lower nappe only) that has its axis on the Z-axis.</summary>
+    /// <param name="ray">The Line3D to intersect. It is considered as an infinite line (both directions).</param>
+    /// <param name="coneRadius">The radius of the cone at the base. Parallel to the XY plane. Must be positive.</param>
     /// <param name="coneBaseZ">The Z coordinate of the cone base.</param>
-    /// <param name="coneTipZ">The Z coordinate of the cone tip.</param>
-    /// <returns>An XLine3D.XCone discriminated union representing the intersection result with parameter(s) on the line:
-    /// | NoIntersection: The line does not intersect the cone.
-    /// | Tangential: The line is tangent to the cone surface.
-    /// | Touching of float: The line touches the cone at one point with a tolerance of 1e-6, contains the parameter on the line.
-    /// | Intersecting of float*float: The line intersects the cone at two points, contains both parameters on the line.
-    /// </returns>
-    static member intersectCone (ray:Line3D, coneRadius, coneBaseZ, coneTipZ) : XLine3D.XCone =
-        let h = coneBaseZ-coneTipZ
-        if isTooTiny( abs h )then
-            fail $"XLine3D.intersectCone: cone has zero height: coneRadius: {coneRadius}, coneBaseZ: {coneBaseZ}, coneTipZ: {coneTipZ}"
-        let lam = coneRadius / h
-        let lam = lam * lam
-        let vx = ray.VectorX
-        let vy = ray.VectorY
-        let vz = ray.VectorZ
-        let f2 = lam*vz*vz - vx*vx - vy*vy
-        if isTooTiny(abs f2) then
-            XLine3D.XCone.Tangential
-        else
-            let f1 = 2.*lam*ray.FromZ*vz - 2.*lam*vz*coneTipZ - 2.*vy*ray.FromY - 2.*ray.FromX*vx
-            let f0 = lam*ray.FromZ*ray.FromZ + lam*coneTipZ*coneTipZ - 2.*ray.FromZ*coneTipZ*lam - ray.FromY*ray.FromY - ray.FromX*ray.FromX
-            let part = f1**2. - 4.* f2 * f0
-            if part < 0.0 then
-                XLine3D.XCone.NoIntersection
-            else
-                let sqrtPart = sqrt(part)
-                let div = 1. / (2. * f2)
-                let u = (-f1 + sqrtPart) * div
-                let v = (-f1 - sqrtPart) * div
-                if isTooTiny(abs(u-v)) then
-                    XLine3D.XCone.Touching ((u+v)*0.5)
+    /// <param name="coneTipZ">The Z coordinate of the cone tip. Must differ from coneBaseZ.
+    /// Only the nappe on the base side of the tip is considered part of the cone.</param>
+    /// <returns>An XCone discriminated union, see its documentation for all cases.</returns>
+    static member intersectCone (ray:Line3D, coneRadius:float, coneBaseZ:float, coneTipZ:float) : XCone =
+
+        // Relative tolerance used for all coefficient comparisons.
+        // Each coefficient is compared against the sum of the absolute values of the
+        // terms it was computed from. This makes the check scale-invariant.
+        let relTol = 1e-9
+
+        // Looser relative tolerance for snapping points to the tip / tip plane.
+        // Near a double root the computed t carries an error of roughly sqrt(machine epsilon),
+        // so a tighter value than ~1e-6 would misclassify true through-tip lines as Touching.
+        let tipTol = 1e-6
+
+        let height = coneBaseZ - coneTipZ
+        if abs height < 1e-12 then
+            fail "Line3D.intersectCone: coneBaseZ and coneTipZ are equal (%g), the cone is degenerate." coneBaseZ
+            // in Euclid use: EuclidException.Raisef "..."
+        if coneRadius < 1e-12 then
+            fail "Line3D.intersectCone: coneRadius %g is zero or negative, the cone is degenerate." coneRadius
+
+        // Slope of the cone flank: radius change per unit of Z. Only k² is used in the quadratic.
+        let k  = coneRadius / height
+        let k2 = k * k
+        // The lower (valid) nappe is where sign(z - coneTipZ) = sign(height):
+        let signH = if height > 0.0 then 1.0 else -1.0
+
+        // Ray origin, shifted so that the cone tip sits at the world origin:
+        let ox = ray.FromX
+        let oy = ray.FromY
+        let oz = ray.FromZ - coneTipZ
+        // Ray direction. The returned parameters are in units of this vector:
+        let dx = ray.ToX - ray.FromX
+        let dy = ray.ToY - ray.FromY
+        let dz = ray.ToZ - ray.FromZ
+
+        if dx*dx + dy*dy + dz*dz < 1e-24 then
+            fail "Line3D.intersectCone: ray is too short: %O" ray
+
+        // Implicit double cone equation with tip at the origin:   x² + y² - k²·z² = 0
+        // Substituting the line  P(t) = O + t·D  yields the quadratic  a·t² + b·t + c = 0 :
+        let a = dx*dx + dy*dy - k2*dz*dz
+        let b = 2.0 * (ox*dx + oy*dy - k2*oz*dz)
+        let c = ox*ox + oy*oy - k2*oz*oz
+
+        // Magnitude scales for the relative tolerance checks (sums of absolute values of the same terms).
+        // If a scale is exactly 0.0 then the corresponding coefficient is exactly 0.0 too,
+        // so 'abs x <= relTol * scale' is still correct (0 <= 0).
+        let aScale = dx*dx + dy*dy + k2*dz*dz
+        let bScale = 2.0 * (abs(ox*dx) + abs(oy*dy) + k2*(abs(oz*dz)))
+        let cScale = ox*ox + oy*oy + k2*oz*oz
+
+        // Classifies a root of the quadratic by which nappe its point lies on:
+        //  +1 : on the lower (valid) nappe
+        //   0 : at the tip (within tolerance)
+        //  -1 : on the mirrored upper nappe -> not part of the cone
+        // Because every root lies on the cone surface, the Z coordinate alone decides:
+        // on the surface |z| ~ 0 implies x,y ~ 0, i.e. the point is the apex.
+        let nappeOf (t:float) =
+            let pz     = oz + t*dz
+            let zScale = abs oz + abs (t*dz)
+            if   abs pz <= tipTol * zScale then 0
+            elif pz * signH > 0.0          then 1
+            else                                -1
+
+        if abs a <= relTol * aScale then
+            // Degenerate quadratic: the ray direction is parallel to a generator line of the cone.
+            if abs b <= relTol * bScale then
+                if abs c <= relTol * cScale then
+                    // All coefficients vanish: the line lies on the (double) cone, it is a generator.
+                    // A generator is never horizontal, so dz <> 0 and the tip is at pz = 0:
+                    let tTip = -oz / dz
+                    // for t > tTip the Z offset from the tip is (t-tTip)*dz, valid if its sign matches signH:
+                    XCone.LineOnCone (tTip, dz * signH > 0.0)
                 else
-                    XLine3D.XCone.Intersecting (u, v)
+                    XCone.NoIntersection // parallel to a generator but offset from the surface
+            else
+                // Linear equation: exactly one crossing with the double cone.
+                // (It cannot be at the tip: through-tip + parallel-to-generator would be a generator,
+                // which is caught above. So nappeOf decides between the two nappes.)
+                let t = -c / b
+                if nappeOf t >= 0 then XCone.IntersectingOne t
+                else                   XCone.NoIntersection
+        else
+            let disc      = b*b - 4.0*a*c
+            let discScale = b*b + abs (4.0*a*c)
+            if disc > relTol * discScale then
+                // Two distinct roots on the double cone. Computed the numerically stable way
+                // to avoid catastrophic cancellation when b² >> 4ac:
+                let sqrtDisc = sqrt disc
+                let q  = -0.5 * (b + (if b >= 0.0 then sqrtDisc else -sqrtDisc))
+                let r1 = q / a
+                let r2 = c / q
+                let t1, t2 = if r1 <= r2 then r1, r2 else r2, r1
+                match nappeOf t1 >= 0, nappeOf t2 >= 0 with
+                | true , true  -> XCone.Intersecting (t1, t2)
+                | true , false -> XCone.IntersectingOne t1
+                | false, true  -> XCone.IntersectingOne t2
+                | false, false -> XCone.NoIntersection
+            elif disc < -relTol * discScale then
+                XCone.NoIntersection
+            else
+                // Double root: the line is tangent to the cone, or it passes through the tip.
+                let t  = -0.5 * b / a
+                let px = ox + t*dx
+                let py = oy + t*dy
+                let pz = oz + t*dz
+                // Distance of the touch point from the tip, compared against the
+                // magnitude of the coordinates involved in computing it:
+                let distToTip = sqrt (px*px + py*py + pz*pz)
+                let geoScale  = sqrt cScale + abs t * sqrt aScale
+                if   distToTip <= tipTol * geoScale then XCone.ThroughTip t // the tip belongs to the cone
+                elif pz * signH > 0.0               then XCone.Touching   t // tangent point on the valid nappe
+                else                                     XCone.NoIntersection // tangent to the mirrored nappe only
+
+
+    // /// <summary>Intersects a ray with an infinite double cone that has its axis on the Z-axis.</summary>
+    // /// <param name="ray">The Line3D to intersect. It is considered as infinite ray.</param>
+    // /// <param name="coneRadius">The radius of the cone at the base. Parallel to the XY plane.</param>
+    // /// <param name="coneBaseZ">The Z coordinate of the cone base.</param>
+    // /// <param name="coneTipZ">The Z coordinate of the cone tip.</param>
+    // /// <returns>An XLine3D.XCone discriminated union representing the intersection result with parameter(s) on the line:
+    // /// | NoIntersection: The line does not intersect the cone.
+    // /// | Tangential: The line lies on the cone surface as a generator line through the tip.
+    // /// | Touching of float: The line touches the cone at one point with a tolerance of 1e-6, contains the parameter on the line.
+    // /// | ParallelInside of float: The line is parallel to a generator line of the cone but still pierces it at one point, contains the parameter on the line.
+    // /// | Intersecting of float*float: The line intersects the cone at two points, contains both parameters on the line.
+    // /// </returns>
+    // static member intersectCone (ray:Line3D, coneRadius, coneBaseZ, coneTipZ) : XLine3D.XCone =
+    //     let h = coneBaseZ-coneTipZ
+    //     if isTooTiny( abs h )then
+    //         fail $"XLine3D.intersectCone: cone has zero height: coneRadius: {coneRadius}, coneBaseZ: {coneBaseZ}, coneTipZ: {coneTipZ}"
+    //     let lam = coneRadius / h
+    //     let lam = lam * lam
+    //     let vx = ray.VectorX
+    //     let vy = ray.VectorY
+    //     let vz = ray.VectorZ
+    //     let f2 = lam*vz*vz - vx*vx - vy*vy
+    //     let f1 = 2.*lam*ray.FromZ*vz - 2.*lam*vz*coneTipZ - 2.*vy*ray.FromY - 2.*ray.FromX*vx
+    //     let f0 = lam*ray.FromZ*ray.FromZ + lam*coneTipZ*coneTipZ - 2.*ray.FromZ*coneTipZ*lam - ray.FromY*ray.FromY - ray.FromX*ray.FromX
+    //     if isTooTiny(abs f2) then
+    //         // The ray is parallel to a generator line of the cone, so the quadratic degenerates to the linear equation f1*t + f0 = 0.
+    //         if isTooTiny(abs f1) then
+    //             if isTooTiny(abs f0) then
+    //                 XLine3D.XCone.Tangential // The ray lies on the cone surface as a generator line through the tip.
+    //             else
+    //                 XLine3D.XCone.NoIntersection // Parallel to a generator but offset, the ray never meets the cone.
+    //         else
+    //             XLine3D.XCone.ParallelInside (-f0 / f1) // Parallel to a generator but pierces the cone at one point.
+    //     else
+    //         let part = f1**2. - 4.* f2 * f0
+    //         if part < 0.0 then
+    //             XLine3D.XCone.NoIntersection
+    //         else
+    //             let sqrtPart = sqrt(part)
+    //             let div = 1. / (2. * f2)
+    //             let u = (-f1 + sqrtPart) * div
+    //             let v = (-f1 - sqrtPart) * div
+    //             if isTooTiny(abs(u-v)) then
+    //                 XLine3D.XCone.Touching ((u+v)*0.5)
+    //             else
+    //                 XLine3D.XCone.Intersecting (u, v)

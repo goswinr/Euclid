@@ -190,13 +190,13 @@ module AutoOpenPnt =
                 else
                     3.0 + x/(x - y)
 
-        /// Returns the Diamond Angle from this point to another point projected in X-Y plane.
+        /// Returns the Diamond Angle from 'fromPt' to 'toPt' projected in X-Y plane.
         /// The diamond angle is always positive and in the range of 0.0 to 4.0 (for 360 Degrees)
         /// 0.0 = Xaxis, going Counter-Clockwise. Ignoring Z component.
         /// This is the fastest angle computation since it does not use Math.Cos or Math.Sin.
         /// It is useful for radial sorting.
-        static member inline directionDiamondInXYTo (o:Pnt, p:Pnt) : float = // not curried because argument order is important
-            p.DirectionDiamondInXYTo(o)
+        static member inline directionDiamondInXYTo (fromPt:Pnt, toPt:Pnt) : float = // not curried because argument order is important
+            fromPt.DirectionDiamondInXYTo(toPt)
 
         /// Returns the angle in Radians from this point to another point projected in X-Y plane.
         /// 0.0 = Xaxis, going Counter-Clockwise till two Pi.
@@ -209,50 +209,50 @@ module AutoOpenPnt =
             if a < 0. then  a + UtilEuclid.twoPi
             else            a
 
-        /// Returns the angle in Radians from this point to another point projected in X-Y plane.
+        /// Returns the angle in Radians from 'fromPt' to 'toPt' projected in X-Y plane.
         /// 0.0 = Xaxis, going Counter-Clockwise till two Pi.
-        static member inline angle2PiInXYTo (o:Pnt, p:Pnt) : float = // not curried because argument order is important
-            p.Angle2PiInXYTo(o)
+        static member inline angle2PiInXYTo (fromPt:Pnt, toPt:Pnt) : float = // not curried because argument order is important
+            fromPt.Angle2PiInXYTo(toPt)
 
         /// Returns the angle in Degrees from this point to another point projected in X-Y plane.
         /// 0.0 = Xaxis, going Counter-Clockwise till 360.
         member inline p.Angle360InXYTo(o:Pnt) : float =
             p.Angle2PiInXYTo o |> toDegrees
 
-        /// Returns the angle in Degrees from this point to another point projected in X-Y plane.
+        /// Returns the angle in Degrees from 'fromPt' to 'toPt' projected in X-Y plane.
         /// 0.0 = Xaxis, going Counter-Clockwise till 360.
-        static member inline angle360InXYTo (o:Pnt, p:Pnt) : float = // not curried because argument order is important
-            p.Angle360InXYTo(o)
+        static member inline angle360InXYTo (fromPt:Pnt, toPt:Pnt) : float = // not curried because argument order is important
+            fromPt.Angle360InXYTo(toPt)
 
         /// Returns the closest point on a finite line segment to test point.
-        /// The line segment is defined by start point 'fromPt' and end point 'toPt'.
-        /// Fails if fromPt and toPt are coincident or too close together.
+        /// The line segment is given as a Line3D `ln`.
+        /// Fails if the line is degenerate (zero-length).
         member inline testPt.ClosestPointOnLine(ln:Line3D) : Pnt =
             XLine3D.clPtLn(ln.FromX, ln.FromY, ln.FromZ, ln.VectorX, ln.VectorY, ln.VectorZ,  testPt.X, testPt.Y, testPt.Z)
 
         /// Returns the closest point on a finite line segment to test point.
-        /// The line segment is defined by start point 'fromPt' and end point 'toPt'.
-        /// Fails if fromPt and toPt are coincident or too close together.
+        /// The line segment is given as a Line3D `ln`.
+        /// Fails if the line is degenerate (zero-length).
         static member inline closestPointOnLine (ln:Line3D) (testPt:Pnt) : Pnt =
             testPt.ClosestPointOnLine(ln)
 
         /// Returns the squared distance between point and finite line segment.
-        /// The line segment is defined by start point 'fromPt', unit direction 'uv', and length 'len'.
+        /// The line segment is given as a Line3D `ln`.
         member inline testPt.SqDistanceToLine(ln:Line3D) : float =
             XLine3D.sqDistLnPt(ln.FromX, ln.FromY, ln.FromZ, ln.VectorX, ln.VectorY, ln.VectorZ, testPt.X, testPt.Y, testPt.Z)
 
         /// Returns the squared distance between point and finite line segment.
-        /// The line segment is defined by start point 'fromPt', unit direction 'uv', and length 'len'.
+        /// The line segment is given as a Line3D `ln`.
         static member inline sqDistanceToLine (ln:Line3D) (testPt:Pnt) : float =
             testPt.SqDistanceToLine(ln)
 
         /// Returns the distance between point and finite line segment.
-        /// The line segment is defined by start point 'fromPt', unit direction 'uv', and length 'len'.
+        /// The line segment is given as a Line3D `ln`.
         member inline testPt.DistanceToLine(ln:Line3D) : float =
             testPt.SqDistanceToLine ln |> sqrt
 
         /// Returns the distance between point and finite line segment.
-        /// The line segment is defined by start point 'fromPt', unit direction 'uv', and length 'len'.
+        /// The line segment is given as a Line3D `ln`.
         static member inline distanceToLine (ln:Line3D) (testPt:Pnt) : float =
             testPt.DistanceToLine(ln)
 
@@ -422,9 +422,12 @@ module AutoOpenPnt =
             (ptPrev-ptThis).Unitized  + (ptNext-ptThis).Unitized
 
         /// For three Points describing a plane return a normal.
+        /// The points 'a', 'b' and 'c' in counter-clockwise order return a normal pointing towards the
+        /// viewer (e.g. +Z for points in the XY plane), matching NPlane.createFrom3Points and
+        /// Points3D.normalOfPoints. The result is not unitized.
         /// If the returned vector has length zero then the points are in one line.
         static member normalOf3Pts (a:Pnt, b:Pnt, c:Pnt) : Vec =
-            Vec.cross (a-b,c-b)
+            Vec.cross (b-a, c-a)
 
         /// Returns a point that is at a given distance from a 3D point in the direction of another point.
         static member inline distPt (fromPt:Pnt, dirPt:Pnt, distance:float) : Pnt =

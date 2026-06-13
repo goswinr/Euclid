@@ -57,6 +57,10 @@ let run () =
     |||
     test TestTopo.tests
     |||
+    test TestTopo.tests3D
+    |||
+    test TestTopo.testsCached
+    |||
     test TestPoints.tests
     |||
     test TestSimilarity2D.tests

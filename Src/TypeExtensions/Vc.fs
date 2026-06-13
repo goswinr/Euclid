@@ -144,14 +144,12 @@ module AutoOpenVc =
             UnitVc.createUnchecked(x/l, y/l)
 
         /// Test if the 2D vector is a unit-vector.
-        /// Tests if square length is within 6 float steps of 1.0
-        /// So between 0.99999964 and 1.000000715.
+        /// Tests if the squared length is between 0.999999 and 1.000001 (1e-6 tolerance).
         member inline v.IsUnit : bool =
             UtilEuclid.isOne v.LengthSq
 
         /// Test if the 2D vector is a unit-vector.
-        /// Tests if square length is within 6 float steps of 1.0
-        /// So between 0.99999964 and 1.000000715.
+        /// Tests if the squared length is between 0.999999 and 1.000001 (1e-6 tolerance).
         static member inline isUnit (v:Vc) : bool =
             v.IsUnit
 
@@ -395,7 +393,7 @@ module AutoOpenVc =
         /// In Diamond Angle. Using only proportion of X to Y components.
         /// Range of 0.0 to 4.0 (for 360 Degrees)
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
-        static member inline angleDiamond (b:Vc, a:Vc) : float =
+        static member inline angleDiamond (a:Vc, b:Vc) : float =
             a.AngleDiamondTo(b)
 
         /// Checks if the angle between the two 2D vectors is less than 90 degrees.
@@ -636,7 +634,7 @@ module AutoOpenVc =
                 fail2 "Vc.failedCreateFromMembersxy" vec e |> unbox // unbox to make type checker happy
 
         /// Create 2D vector from 3D point (ignoring Z coordinate).
-        static member inline createFromPt (pt:Pnt) : Vc =
+        static member inline createFromPnt (pt:Pnt) : Vc =
             Vc(pt.X, pt.Y)
 
         /// Create 2D vector from 2D unit-vector.
@@ -661,11 +659,11 @@ module AutoOpenVc =
             Vc (v.X * f, v.Y * f)
 
         /// Adds the given delta to the X component and returns a new 2D vector.
-        static member inline moveX x (v:Vc) : Vc =
+        static member inline addX x (v:Vc) : Vc =
             Vc (v.X+x, v.Y)
 
         /// Adds the given delta to the Y component and returns a new 2D vector.
-        static member inline moveY y (v:Vc) : Vc =
+        static member inline addY y (v:Vc) : Vc =
             Vc (v.X, v.Y+y)
 
         /// Returns the length of the 2D vector.
@@ -722,7 +720,7 @@ module AutoOpenVc =
         /// Unitize 2D vector, if input vector is shorter than 1e-6 the default unit-vector is returned.
         static member inline unitizeOrDefault (defaultUnitVector:UnitVc) (v:Vc) : UnitVc =
             let l = v.LengthSq
-            if l < 1e-12  then  // = sqrt (1e-06)
+            if l < 1e-12  then  // = (1e-6)^2
                 defaultUnitVector
             else
                 let f = 1.0 / sqrt(l)
@@ -963,4 +961,14 @@ module AutoOpenVc =
         [<Obsolete("Use Vc.isPerpendicularTo instead. Obsolete since 0.21.0")>]
         static member inline arePerpendicular(other:Vc) (v:Vc) : bool =
             Vc.isPerpendicularTo Cosine.``89.75`` v other
+
+        /// Obsolete, use Vc.addX instead. A vector has no location; this is a vector addition.
+        [<Obsolete("Use Vc.addX instead.")>]
+        static member inline moveX x (v:Vc) : Vc =
+            Vc.addX x v
+
+        /// Obsolete, use Vc.addY instead. A vector has no location; this is a vector addition.
+        [<Obsolete("Use Vc.addY instead.")>]
+        static member inline moveY y (v:Vc) : Vc =
+            Vc.addY y v
 

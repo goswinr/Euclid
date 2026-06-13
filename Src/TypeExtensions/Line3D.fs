@@ -48,7 +48,7 @@ module AutoOpenLine3D =
         l.IsYAligned
 
     /// Checks if 3D line is parallel to the world Z axis. Ignoring orientation.
-    /// The absolute deviation tolerance along X and Y axis is 1e-9 (axisAlignmentTolerance).
+    /// The absolute deviation tolerance along X, Y and Z  axis is 1e-9 (axisAlignmentTolerance).
     /// Fails on lines shorter than 1e-6.
     /// Same as ln.IsVertical
     member inline ln.IsZAligned : bool =
@@ -60,14 +60,14 @@ module AutoOpenLine3D =
         x < axisAlignmentTolerance && y < axisAlignmentTolerance
 
     /// Checks if 3D line is parallel to the world Z axis. Ignoring orientation.
-    /// The absolute deviation tolerance along X and Y axis is 1e-9 (axisAlignmentTolerance).
+    /// The absolute deviation tolerance along X, Y and Z  axis is 1e-9 (axisAlignmentTolerance).
     /// Fails on lines shorter than 1e-6.
     /// Same as ln.IsVertical
     static member inline isZAligned (l:Line3D) : bool =
         l.IsZAligned
 
     /// Checks if 3D line is parallel to the world Z axis. Ignoring orientation.
-    /// The absolute deviation tolerance along X and Y axis is 1e-9 (axisAlignmentTolerance).
+    /// The absolute deviation tolerance along X, Y and Z  axis is 1e-9 (axisAlignmentTolerance).
     /// Fails on lines shorter than 1e-6.
     /// Same as ln.IsZAligned
     member inline ln.IsVertical : bool =
@@ -79,7 +79,7 @@ module AutoOpenLine3D =
         x < axisAlignmentTolerance && y < axisAlignmentTolerance
 
     /// Checks if 3D line is parallel to the world Z axis. Ignoring orientation.
-    /// The absolute deviation tolerance along X and Y axis is 1e-9 (axisAlignmentTolerance).
+    /// The absolute deviation tolerance along X, Y and Z  axis is 1e-9 (axisAlignmentTolerance).
     /// Fails on lines shorter than 1e-6.
     /// Same as ln.IsZAligned
     static member inline isVertical (l:Line3D) : bool =
@@ -1494,10 +1494,10 @@ module AutoOpenLine3D =
         l.FromZ
 
     /// Returns the End point of the line. Same as Line3D.to'
-    static member inline ende (l:Line3D) : Pnt =
+    static member inline end' (l:Line3D) : Pnt =
         l.To
 
-    /// Returns the End point of the line. Same as Line3D.ende.
+    /// Returns the End point of the line. Same as Line3D.end'.
     static member inline to' (l:Line3D) : Pnt =
         l.To
 
@@ -1921,9 +1921,14 @@ module AutoOpenLine3D =
     static member intersectCone (ray:Line3D, coneRadius, coneBaseZ, coneTipZ) : Option<float*float> =
         match XLine3D.intersectCone(ray, coneRadius, coneBaseZ, coneTipZ) with
         | XCone.NoIntersection -> None
-        | XCone.Tangential     -> None
-        | XCone.Touching t         -> Some (t, t)
-        | XCone.Intersecting (u,v) -> Some (u,v)
+        | XCone.Intersecting (t1, t2) -> Some (t1, t2)
+        | XCone.IntersectingOne (t) -> Some (t, t)
+        | XCone.Touching (t) -> Some (t, t)
+        | XCone.ThroughTip (t) -> Some (t, t)
+        | XCone.LineOnCone (tipParam, _) -> Some (tipParam, tipParam)
+
+
+
 
     /// Project a 3D line onto another line considered infinite in both directions.
     /// Returns the start and end parameters of the projected line on the target line.

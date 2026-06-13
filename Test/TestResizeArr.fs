@@ -236,6 +236,28 @@ let tests =
             Expect.equal el 4 "first element > 3"
         }
 
+        test "ResizeArr.findLast finds last match" {
+            let r = ResizeArray<int>([| 1; 2; 3; 2; 1 |])
+            let el = ResizeArr.findLast (fun x -> x = 2) r
+            Expect.equal el 2 "last element equal to 2"
+        }
+
+        test "ResizeArr.findLast respects the predicate (only first element matches)" {
+            let r = ResizeArray<int>([| 5; 1; 2; 3; 4 |])
+            let el = ResizeArr.findLast (fun x -> x = 5) r
+            Expect.equal el 5 "only the first element satisfies the predicate"
+        }
+
+        test "ResizeArr.findLast fails when no element satisfies the predicate" {
+            let r = ResizeArray<int>([| 1; 2; 3 |])
+            Expect.throws (fun () -> ResizeArr.findLast (fun x -> x = 99) r |> ignore) "no element satisfies"
+        }
+
+        test "ResizeArr.findLast fails on empty ResizeArray" {
+            let r = ResizeArray<int>()
+            Expect.throws (fun () -> ResizeArr.findLast (fun _ -> true) r |> ignore) "empty fails"
+        }
+
         test "ResizeArr.findLastIndex finds last match" {
             let r = ResizeArray<int>([| 1; 2; 3; 2; 1 |])
             let idx = ResizeArr.findLastIndex (fun x -> x = 2) r

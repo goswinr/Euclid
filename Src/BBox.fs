@@ -1264,7 +1264,7 @@ type BBox =
 
     [<Obsolete("use .overlapsWith instead")>]
     static member doOverlapMoreThan tol (a:BBox) (b:BBox)  : bool =
-        b.IsOverlappingOrClose(a, tol)
+        b.IsOverlappingOrClose(a, -tol)
 
 
     [<Obsolete("use .isOverlapping instead")>]

@@ -618,7 +618,7 @@ type XLine2D =
     /// <param name="vAy"> The Y component of the vector of the first line.</param>
     /// <param name="vBx"> The X component of the vector of the second line.</param>
     /// <param name="vBy"> The Y component of the vector of the second line.</param>
-    /// <param name="tolerance" > Is an optional squared distance tolerance. 1e-6 by default.
+    /// <param name="tolerance" > Is an optional distance tolerance (compared against the squared distance internally). 1e-6 by default.
     /// Used for checking if the distance between parallel lines is less than this value.</param>
     /// <returns> TRUE if the lines are coincident and overlap or touch.
     ///  FALSE if the lines are not coincident or do not overlap nor touch.</returns>
@@ -665,7 +665,7 @@ type XLine2D =
     /// <param name="pB"> The start point on the second line.</param>
     /// <param name="vA"> The direction vector of the first line.</param>
     /// <param name="vB"> The direction vector of the second line.</param>
-    /// <param name="tolerance" > Is an optional squared distance tolerance. 1e-6 by default.
+    /// <param name="tolerance" > Is an optional distance tolerance (compared against the squared distance internally). 1e-6 by default.
     /// Used for checking if the distance between parallel lines is less than this value.</param>
     static member inline doOverlap(pA:Pt, pB:Pt, vA:Vc, vB:Vc, [<OPT;DEF(1e-6)>] tolerance:float ) : bool =
         XLine2D.doOverlap(pA.X, pA.Y, pB.X, pB.Y, vA.X, vA.Y, vB.X, vB.Y, tolerance)
@@ -673,7 +673,7 @@ type XLine2D =
     /// <summary> Checks if 2D lines are not only parallel and coincident but are also overlapping or at least touching at their ends.</summary>
     /// <param name="lineA"> The first line.</param>
     /// <param name="lineB"> The second line.</param>
-    /// <param name="tolerance" > Is an optional squared distance tolerance. 1e-6 by default.
+    /// <param name="tolerance" > Is an optional distance tolerance (compared against the squared distance internally). 1e-6 by default.
     /// Used for checking if the distance between parallel lines is less than this value.</param>
     static member inline doOverlap(lineA:Line2D, lineB:Line2D, [<OPT;DEF(1e-6)>] tolerance:float ) : bool =
         XLine2D.doOverlap( lineA.FromX, lineA.FromY, lineB.FromX, lineB.FromY, lineA.VectorX, lineA.VectorY, lineB.VectorX, lineB.VectorY, tolerance )

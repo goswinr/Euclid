@@ -920,7 +920,7 @@ type BRect =
 
     [<Obsolete("use .overlapsWith instead")>]
     static member inline doOverlapMoreThan tol (a:BRect) (b:BRect)  : bool =
-        b.IsOverlappingOrClose(a, tol)
+        b.IsOverlappingOrClose(a, -tol)
 
     [<Obsolete("use SizeX")>]
     member inline r.Width : float =

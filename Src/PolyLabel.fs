@@ -3,7 +3,7 @@ namespace Euclid
 open Euclid.EuclidCollectionUtilities
 
 
-/// used in Polyline2D.FindLablePoint
+/// used in Polyline2D.FindLabelPoint
 module internal Polylabel =
 
     // see https://github.com/mapbox/polylabel

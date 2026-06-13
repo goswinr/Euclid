@@ -264,7 +264,7 @@ let tests =
             "XYZ first" |> Expect.isTrue (eqPnt fromXYZ.FirstPoint (Pnt(1.,2.,3.)))
             "XYZ second" |> Expect.isTrue (eqPnt fromXYZ.LastPoint (Pnt(4.,5.,6.)))
 
-            let fromXY = Polyline3D.createFromXYMembers [Pt(1.,2.); Pt(3.,4.)]
+            let fromXY = Polyline3D.createFrom2DXYMembers [Pt(1.,2.); Pt(3.,4.)]
             "XY first uses zero z" |> Expect.isTrue (eqPnt fromXY.FirstPoint (Pnt(1.,2.,0.)))
             "XY second uses zero z" |> Expect.isTrue (eqPnt fromXY.LastPoint (Pnt(3.,4.,0.)))
 
@@ -500,6 +500,231 @@ let tests =
                 let r = Rotation2D.createFromDegrees 90.
                 let rotated = Polyline3D.rotateOnZ r pl
                 "rotate2D - first point" |> Expect.isTrue (eqPnt rotated.FirstPoint (Pnt(0., 1., 0.)))
+            }
+        ]
+
+        testList "Edge case regressions" [
+            test "SegmentVectorsXYZ on empty polyline returns empty list" {
+                let pl = Polyline3D()
+                Expect.equal pl.SegmentVectorsXYZ.Count 0 "empty polyline has no segment vectors"
+            }
+            test "SegmentVectorsXYZ on single point returns empty list" {
+                let pl = Polyline3D.create [Pnt(1.,1.,1.)]
+                Expect.equal pl.SegmentVectorsXYZ.Count 0 "single point has no segment vectors"
+            }
+            test "close fails with less than 3 points" {
+                let pl = Polyline3D.create [Pnt(0.,0.,0.); Pnt(1.,0.,0.)]
+                Expect.throws (fun () -> Polyline3D.close 1e-6 pl |> ignore) "two point close should fail"
+            }
+            test "close with 0.0 tolerance on exactly closed polyline adds no point" {
+                let pl = Polyline3D.create [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(1.,1.,0.); Pnt(0.,0.,0.)]
+                let closed = Polyline3D.close 0.0 pl
+                Expect.equal closed.PointCount pl.PointCount "no extra point added"
+                Expect.isTrue closed.IsClosed "still closed"
+            }
+            test "IsAlmostClosed with 0.0 tolerance on exactly closed polyline" {
+                let pl = Polyline3D.create [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(1.,1.,0.); Pnt(0.,0.,0.)]
+                Expect.isTrue (pl.IsAlmostClosed 0.0) "exactly closed is almost closed with 0.0 tolerance"
+                let plOpen = Polyline3D.create [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(1.,1.,0.)]
+                Expect.isFalse (plOpen.IsAlmostClosed 0.0) "open is not almost closed with 0.0 tolerance"
+            }
+            test "removeDuplicatePoints keeps first point when all points collapse" {
+                let pl = Polyline3D.create [Pnt(1.,1.,1.); Pnt(1.0000001,1.,1.)]
+                let result = Polyline3D.removeDuplicatePoints 1e-6 pl
+                Expect.equal result.PointCount 1 "collapses to one point"
+                "kept point is the first point" |> Expect.isTrue (eqPnt (result.GetPt 0) (Pnt(1.,1.,1.)))
+            }
+            test "removeDuplicateAndColinearPoints removes colinear point" {
+                let pl = Polyline3D.create [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(2.,0.,0.); Pnt(2.,2.,0.)]
+                let result = Polyline3D.removeDuplicateAndColinearPoints Cosine.``0.1`` 1e-6 pl
+                Expect.equal result.PointCount 3 "middle colinear point removed"
+            }
+            test "removeDuplicateAndColinearPoints fails when all points are duplicates" {
+                let pl = Polyline3D.create [Pnt(1.,1.,1.); Pnt(1.,1.,1.); Pnt(1.,1.,1.)]
+                Expect.throws (fun () -> Polyline3D.removeDuplicateAndColinearPoints Cosine.``0.1`` 1e-6 pl |> ignore) "all duplicates should fail with a clear error"
+            }
+        ]
+
+        testList "Coverage for untested members" [
+            test "equals on clones and on different counts" {
+                let pl = Polyline3D.create [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(1.,1.,0.)]
+                Expect.isTrue (Polyline3D.equals 1e-9 pl (pl.Clone())) "clones are equal"
+                let shorter = Polyline3D.create [Pnt(0.,0.,0.); Pnt(1.,0.,0.)]
+                Expect.isFalse (Polyline3D.equals 1e-9 pl shorter) "different counts are not equal"
+            }
+            test "equals uses Euclidean distance not per-axis" {
+                let a = Polyline3D.create [Pnt(0.,0.,0.)]
+                let b = Polyline3D.create [Pnt(0.0008, 0.0008, 0.0008)] // each axis within 0.001, Euclidean distance ~0.001386
+                Expect.isFalse (Polyline3D.equals 0.001 a b) "outside Euclidean tolerance"
+                Expect.isTrue (Polyline3D.equals 0.0015 a b) "inside Euclidean tolerance"
+            }
+            test "EvaluateAt start, mid-segment and out of range" {
+                let pl = Polyline3D.create [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(1.,1.,0.)]
+                "at 0.0 is start" |> Expect.isTrue (eqPnt (pl.EvaluateAt 0.0) (Pnt(0.,0.,0.)))
+                "at 1.5 is middle of second segment" |> Expect.isTrue (eqPnt (pl.EvaluateAt 1.5) (Pnt(1.,0.5,0.)))
+                Expect.throws (fun () -> pl.EvaluateAt -1.0 |> ignore) "negative parameter throws"
+                Expect.throws (fun () -> pl.EvaluateAt 5.0 |> ignore) "parameter beyond end throws"
+            }
+            test "ClosestPoint, ClosestParameter and DistanceTo" {
+                let pl = Polyline3D.create [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(1.,1.,0.)]
+                let testPt = Pnt(0.5, -1., 0.)
+                "closest point on first segment" |> Expect.isTrue (eqPnt (pl.ClosestPoint testPt) (Pnt(0.5, 0., 0.)))
+                "closest parameter is 0.5" |> Expect.floatClose tol (pl.ClosestParameter testPt) 0.5
+                "distance is 1.0" |> Expect.floatClose tol (pl.DistanceTo testPt) 1.0
+                "closest point index is 1" |> Expect.equal (pl.ClosestPointIndex (Pnt(1.1, 0.1, 0.))) 1
+            }
+            test "subPolyline forward and reversed" {
+                let pl = Polyline3D.create [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(1.,1.,0.)]
+                let sub = Polyline3D.subPolyline 0.5 1.5 pl
+                Expect.equal sub.PointCount 3 "sub polyline has 3 points"
+                "sub starts at mid first segment" |> Expect.isTrue (eqPnt sub.FirstPoint (Pnt(0.5, 0., 0.)))
+                "sub ends at mid second segment" |> Expect.isTrue (eqPnt sub.LastPoint (Pnt(1., 0.5, 0.)))
+                let rev = Polyline3D.subPolyline 1.5 0.5 pl
+                "reversed sub starts at mid second segment" |> Expect.isTrue (eqPnt rev.FirstPoint (Pnt(1., 0.5, 0.)))
+            }
+            test "AverageNormal of counterclockwise square points up" {
+                let pl = Polyline3D.create [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(1.,1.,0.); Pnt(0.,1.,0.)]
+                let n = pl.AverageNormal
+                Expect.isTrue (n.Z > 0.0) "normal points up for CCW square in XY plane"
+                Expect.floatClose tol n.X 0.0 "normal X is zero"
+                Expect.floatClose tol n.Y 0.0 "normal Y is zero"
+            }
+            test "Center is average of points" {
+                let pl = Polyline3D.create [Pnt(0.,0.,0.); Pnt(2.,0.,0.); Pnt(2.,2.,2.)]
+                "center is average" |> Expect.isTrue (eqPnt pl.Center (Pnt(4./3., 2./3., 2./3.)))
+                Expect.throws (fun () -> Polyline3D().Center |> ignore) "center of empty polyline throws"
+            }
+            test "ToString distinguishes open and closed" {
+                let plOpen3 = Polyline3D.create [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(1.,1.,0.)]
+                let plClosed3 = Polyline3D.create [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(1.,1.,0.); Pnt(0.,0.,0.)]
+                Expect.stringContains (plOpen3.ToString()) "open" "open polyline string says open"
+                Expect.stringContains (plClosed3.ToString()) "closed" "closed polyline string says closed"
+                Expect.stringContains (Polyline3D().ToString()) "empty" "empty polyline string says empty"
+            }
+            test "SignedAreaIn2D on empty polyline throws" {
+                Expect.throws (fun () -> Polyline3D().SignedAreaIn2D |> ignore) "empty polyline has no signed area"
+            }
+            test "static addXYZ is curried" {
+                let pl = Polyline3D.create [Pnt(0.,0.,0.)]
+                Polyline3D.addXYZ 1. 2. 3. pl
+                Expect.equal pl.PointCount 2 "point added"
+                "added point" |> Expect.isTrue (eqPnt pl.LastPoint (Pnt(1.,2.,3.)))
+            }
+            test "offset' takes inPlane distance first then perpendicular" {
+                let pl = Polyline3D.create [Pnt(0.,0.,0.); Pnt(10.,0.,0.); Pnt(10.,10.,0.); Pnt(0.,10.,0.); Pnt(0.,0.,0.)]
+                let viaTupled = Polyline3D.offset(pl, 1.0, 0.5)
+                let viaCurried = Polyline3D.offset' 1.0 0.5 pl
+                Expect.isTrue (Polyline3D.equals 1e-9 viaTupled viaCurried) "offset' argument order matches offset"
+            }
+        ]
+
+        testList "AreaIn2D and orientation helpers" [
+            test "AreaIn2D is the absolute value of SignedAreaIn2D" {
+                let ccw = Polyline3D.create [Pnt(0.,0.,7.); Pnt(10.,0.,7.); Pnt(10.,10.,7.); Pnt(0.,10.,7.); Pnt(0.,0.,7.)]
+                let cw  = Polyline3D.create [Pnt(0.,0.,7.); Pnt(0.,10.,7.); Pnt(10.,10.,7.); Pnt(10.,0.,7.); Pnt(0.,0.,7.)]
+                "CCW area" |> Expect.floatClose tol ccw.AreaIn2D 100.0
+                "CW area is still positive" |> Expect.floatClose tol cw.AreaIn2D 100.0
+                "static areaIn2D matches" |> Expect.floatClose tol (Polyline3D.areaIn2D cw) 100.0
+                "signed area is negative for CW" |> Expect.isTrue (cw.SignedAreaIn2D < 0.0)
+            }
+            test "ensureCounterClockwiseIn2D returns the same instance when already CCW" {
+                let ccw = Polyline3D.create [Pnt(0.,0.,0.); Pnt(10.,0.,0.); Pnt(10.,10.,0.); Pnt(0.,10.,0.); Pnt(0.,0.,0.)]
+                let r = Polyline3D.ensureCounterClockwiseIn2D ccw
+                Expect.isTrue (System.Object.ReferenceEquals(r, ccw)) "already CCW returns same instance"
+                Expect.isTrue r.IsCounterClockwiseIn2D "result is CCW"
+            }
+            test "ensureClockwiseIn2D reverses a CCW polyline into a new instance" {
+                let ccw = Polyline3D.create [Pnt(0.,0.,0.); Pnt(10.,0.,0.); Pnt(10.,10.,0.); Pnt(0.,10.,0.); Pnt(0.,0.,0.)]
+                let r = Polyline3D.ensureClockwiseIn2D ccw
+                Expect.isFalse (System.Object.ReferenceEquals(r, ccw)) "CCW input is reversed to a new instance"
+                Expect.isTrue r.IsClockwiseIn2D "result is CW"
+                Expect.isTrue ccw.IsCounterClockwiseIn2D "input is not mutated"
+            }
+            test "ensureClockwiseInPlaceIn2D mutates in place and returns the same instance" {
+                let ccw = Polyline3D.create [Pnt(0.,0.,0.); Pnt(10.,0.,0.); Pnt(10.,10.,0.); Pnt(0.,10.,0.); Pnt(0.,0.,0.)]
+                let r = Polyline3D.ensureClockwiseInPlaceIn2D ccw
+                Expect.isTrue (System.Object.ReferenceEquals(r, ccw)) "returns same instance"
+                Expect.isTrue ccw.IsClockwiseIn2D "original is now CW"
+            }
+            test "ensureCounterClockwiseInPlaceIn2D mutates a CW polyline in place" {
+                let cw = Polyline3D.create [Pnt(0.,0.,0.); Pnt(0.,10.,0.); Pnt(10.,10.,0.); Pnt(10.,0.,0.); Pnt(0.,0.,0.)]
+                let r = Polyline3D.ensureCounterClockwiseInPlaceIn2D cw
+                Expect.isTrue (System.Object.ReferenceEquals(r, cw)) "returns same instance"
+                Expect.isTrue cw.IsCounterClockwiseIn2D "original is now CCW"
+            }
+        ]
+
+        testList "removeUTurns and removeUTurnsDeeply" [
+            test "simple open U-turn point removed (axis aligned)" {
+                let pl = Polyline3D.create [Pnt(0.,0.,0.); Pnt(5.,0.,0.); Pnt(5.,5.,0.); Pnt(5.,1.,0.); Pnt(9.,1.,0.)]
+                let simplified = Polyline3D.removeUTurns Cosine.``179.99`` pl
+                Expect.equal simplified.PointCount 4 "should remove the U-turn point"
+                "removed the U-turn vertex (5,5,0)" |> Expect.isTrue (eqPnt (simplified.GetPt 2) (Pnt(5.,1.,0.)))
+            }
+            test "U-turn in a non-axis-aligned (XZ) plane is detected" {
+                let pl = Polyline3D.create [Pnt(0.,0.,0.); Pnt(2.,0.,0.); Pnt(2.,0.,2.); Pnt(2.,0.,0.5); Pnt(5.,0.,0.5)]
+                let simplified = Polyline3D.removeUTurns Cosine.``179.99`` pl
+                Expect.equal simplified.PointCount 4 "should remove the 3D U-turn point"
+                "removed the U-turn vertex (2,0,2)" |> Expect.isTrue (eqPnt (simplified.GetPt 2) (Pnt(2.,0.,0.5)))
+            }
+            test "no U-turns returns an equal polyline" {
+                let pl = Polyline3D.create [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(1.,1.,0.); Pnt(0.,1.,0.)]
+                let r = Polyline3D.removeUTurns Cosine.``179.0`` pl
+                Expect.isTrue (Polyline3D.equals 1e-9 r pl) "unchanged when no U-turns"
+            }
+            test "U-turn at seam keeps closed polyline closed" {
+                let pl = Polyline3D.create [Pnt(0.,0.,0.); Pnt(10.,0.,0.); Pnt(10.,10.,0.); Pnt(0.,10.,0.); Pnt(5.,0.001,0.); Pnt(0.,0.,0.)]
+                Expect.isTrue pl.IsClosed "input should be closed"
+                let simplified = Polyline3D.removeUTurns Cosine.``179.9`` pl
+                Expect.isTrue simplified.IsClosed "closed polyline must stay closed after removing seam U-turn"
+            }
+            test "removeUTurnsDeeply on a simple U matches a single pass" {
+                let pl = Polyline3D.create [Pnt(0.,0.,0.); Pnt(5.,0.,0.); Pnt(5.,5.,0.); Pnt(5.,1.,0.); Pnt(9.,1.,0.)]
+                let deep = Polyline3D.removeUTurnsDeeply Cosine.``179.99`` pl
+                Expect.equal deep.PointCount 4 "single U is fully removed"
+            }
+            test "removeUTurnsDeeply U-turn at seam keeps closed polyline closed" {
+                let pl = Polyline3D.create [Pnt(0.,0.,0.); Pnt(10.,0.,0.); Pnt(10.,10.,0.); Pnt(0.,10.,0.); Pnt(5.,0.001,0.); Pnt(0.,0.,0.)]
+                let simplified = Polyline3D.removeUTurnsDeeply Cosine.``179.9`` pl
+                Expect.isTrue simplified.IsClosed "closed polyline must stay closed"
+            }
+        ]
+
+        testList "removeDuplicatePointsFaithfully" [
+            test "coplanar re-intersection matches the 2D result" {
+                // same configuration as the Polyline2D test, embedded in the z=0 plane
+                let pl = Polyline3D.create [Pnt(0.,0.,0.); Pnt(0.993,0.,0.); Pnt(1.0,0.002,0.); Pnt(1.,1.,0.)]
+                let cleaned = Polyline3D.removeDuplicatePointsFaithfully 0.01 pl
+                Expect.equal cleaned.PointCount 3 "one point removed as duplicate within tolerance"
+                "edges re-intersected, not moved to the average" |> Expect.isTrue (eqPnt (cleaned.GetPt 1) (Pnt(1.0,0.0,0.)))
+                "start preserved" |> Expect.isTrue (eqPnt cleaned.Start pl.Start)
+                "end preserved"   |> Expect.isTrue (eqPnt cleaned.End pl.End)
+            }
+            test "re-intersection works in a tilted (non-axis-aligned) plane" {
+                // the same shape mapped by (x,y,0) -> (x,y,x); the two edges stay coplanar so the
+                // closest approach is the true intersection. tolerance 0.02 keeps the lengthened cluster within tolerance.
+                let pl = Polyline3D.create [Pnt(0.,0.,0.); Pnt(0.993,0.,0.993); Pnt(1.0,0.002,1.0); Pnt(1.,1.,1.)]
+                let cleaned = Polyline3D.removeDuplicatePointsFaithfully 0.02 pl
+                Expect.equal cleaned.PointCount 3 "one point removed"
+                "intersection computed in the tilted plane" |> Expect.isTrue (eqPnt (cleaned.GetPt 1) (Pnt(1.0,0.0,1.0)))
+                "start preserved" |> Expect.isTrue (eqPnt cleaned.Start pl.Start)
+                "end preserved"   |> Expect.isTrue (eqPnt cleaned.End pl.End)
+            }
+            test "parallel segments fall back to the cluster midpoint" {
+                let pl = Polyline3D.create [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(1.005,0.,0.); Pnt(2.,0.,0.)]
+                let cleaned = Polyline3D.removeDuplicatePointsFaithfully 0.01 pl
+                Expect.equal cleaned.PointCount 3 "one point removed"
+                "no intersection possible, so the midpoint of the too-close cluster is used" |> Expect.isTrue (eqPnt (cleaned.GetPt 1) (Pnt(1.0025,0.,0.)))
+            }
+            test "no change when no points are within tolerance" {
+                let pl = Polyline3D.create [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(1.,1.,0.)]
+                let cleaned = Polyline3D.removeDuplicatePointsFaithfully 0.01 pl
+                Expect.equal cleaned.PointCount 3 "nothing removed"
+            }
+            test "too short polyline returned unchanged" {
+                let pl = Polyline3D.create [Pnt(0.,0.,0.)]
+                let cleaned = Polyline3D.removeDuplicatePointsFaithfully 0.01 pl
+                Expect.equal cleaned.PointCount 1 "single point returned as is"
             }
         ]
     ]

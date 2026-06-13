@@ -143,15 +143,15 @@ module Offset3D =
                 XYZ.getZ idx pointXYZs)
         setLinePointAt idx fromIdx toIdx t lineXYZs res
 
-    /// Computes the unit vectors of each segment in the polyline defined by the interleaved coordinate buffer xyzs (x0, y0, z0, x1, y1, z1, ...).
+    /// Computes the unit vectors of each segment in the polyline defined by the X, Y and Z  interleaved ResizeArray xyzs (x0, y0, z0, x1, y1, z1, ...).
     /// Fails if any two consecutive points are identical.
-    /// Returns a ResizeArray of UnitVec, one less than the number of input points.
-    let getSegmentUnitVectors(xyzs: ResizeArray<float>) : ResizeArray<UnitVec> =
+    /// Returns an X, Y and Z interleaved ResizeArray of the segment unit vectors, with one vector less than the number of input points.
+    let getSegmentUnitVectors(xyzs: ResizeArray<float>) : ResizeArray<float> =
         XYZ.checkMod3 "getSegmentUnitVectors" xyzs
         let ptCount = XYZ.pointCount xyzs
         if ptCount < 2 then
             fail $"Offset3D.getSegmentUnitVectors: point count {ptCount} must be at least 2 for a polyline."
-        let uvs = ResizeArray<UnitVec>(ptCount - 1) // the unit vectors of the segments, one less than pts
+        let uvs = ResizeArray<float>((ptCount - 1) * 3) // the unit vectors of the segments, one less than pts, three floats each
         let mutable px = xyzs.[0]
         let mutable py = xyzs.[1]
         let mutable pz = xyzs.[2]
@@ -166,11 +166,72 @@ module Offset3D =
             if len < openTolerance then
                 fail $"Offset3D.getSegmentUnitVectors: point[{i}] and point[{i-1}] are the same at ({px}, {py}, {pz})."
             let f = 1.0 / len
-            uvs.Add (UnitVec.createUnchecked(vx * f, vy * f, vz * f))
+            uvs.Add (vx * f)
+            uvs.Add (vy * f)
+            uvs.Add (vz * f)
             px <- x
             py <- y
             pz <- z
         uvs
+
+
+    /// <summary>Removes Sharp U-Turns from an X, Y and Z interleaved ResizeArray, like Polyline3D is using.</summary>
+    /// <param name="xyzs">The interleaved coordinates of the polyline.</param>
+    /// <param name="uvs">The precomputed X, Y and Z interleaved segment unit vectors (one per segment, as from getSegmentUnitVectors).</param>
+    /// <param name="minCos">The minimum cosine value for detecting U-turns.</param>
+    /// <returns>If no U-turns are present, the original ResizeArray is returned.
+    /// If U-turns are present, a new ResizeArray of coordinates is returned with the U-turns removed.</returns>
+    let removeUTurns (xyzs:ResizeArray<float>, uvs: ResizeArray<float>, minCos:float<Cosine.cosine>) : ResizeArray<float> =
+        XYZ.checkMod3 "removeUTurns" xyzs
+        XYZ.checkMod3 "removeUTurns segment vectors" uvs
+        let ptCount = XYZ.pointCount xyzs
+        let nCount = XYZ.pointCount uvs
+        if ptCount < 2 then
+            fail $"Offset3D.removeUTurns: point count must be at least 2 but is {ptCount}."
+        if ptCount <> nCount + 1 then
+            fail $"Offset3D.removeUTurns: point count must be one greater than segment vector count but they are {ptCount} and {nCount}."
+
+        let isClosed = XYZ.sqDistFirstLast xyzs < sqOpenTolerance
+
+        // the cosine between two segment unit vectors a and b (both already unitized, so this is their dot product)
+        let inline cosineBetween a b =
+            XYZ.getX a uvs * XYZ.getX b uvs +
+            XYZ.getY a uvs * XYZ.getY b uvs +
+            XYZ.getZ a uvs * XYZ.getZ b uvs
+
+        // (1) first collect all the bad indices that have U-turns:
+        let bad = Array.zeroCreate<bool> ptCount
+        let mutable anyBad = false
+
+        // (1.1) check the first and last point if it's a closed polyline
+        if isClosed then
+            let cosine = cosineBetween (nCount - 1) 0
+            let isBad = withMeasure cosine <= minCos // cos is smaller than -0.99.. (but never less than -1.0)
+            bad[0]            <- isBad
+            bad[bad.Length-1] <- isBad
+            anyBad <- isBad
+
+        // (1.2) the main loop
+        for i = 1 to bad.Length - 2 do
+            let cosine = cosineBetween (i - 1) i // cosine between the segment ending at pt and the segment starting at pt
+            let isBad = withMeasure cosine <= minCos
+            bad[i] <- isBad
+            anyBad <- anyBad || isBad
+
+        // (2) collect points and skip bad ones
+        if anyBad then
+            let res = ResizeArray<float>(xyzs.Count)
+            for i = 0 to bad.Length - 1 do
+                if not bad[i] then
+                    XYZ.add (XYZ.getX i xyzs) (XYZ.getY i xyzs) (XYZ.getZ i xyzs) res
+            // If the polyline was closed and its seam vertex (the shared start/end point) was a U-turn,
+            // both bad[0] and bad[last] were skipped above, which would leave the result open.
+            // Re-close it by repeating the new first point at the end so the closed property is preserved.
+            if isClosed && bad[0] && res.Count >= 6 then
+                XYZ.add res.[0] res.[1] res.[2] res
+            res
+        else
+            xyzs // no bad points, return original
 
 
     /// Returns a Unit vector.
@@ -189,18 +250,20 @@ module Offset3D =
     /// Segments are considered colinear if the cosine of the angle between them is less than considerColinearBelow.
     /// Special case: If all points are in a line the first and last point will have directions derived from the refNormal. The inner points will be ValueNone.
     /// Fails if a U-turn exceeding failAtUTurnAbove is detected.
-    let getOffsetDirections(uvs: ResizeArray<UnitVec>, refNormal:UnitVec, isOpen:bool, considerColinearBelow: float<Cosine.cosine>, failAtUTurnAbove :float<Cosine.cosine>) : ResizeArray<OffsetDirection voption> =
-        let ptsCount = uvs.Count + 1
+    let getOffsetDirections(uvs: ResizeArray<float>, refNormal:UnitVec, isOpen:bool, considerColinearBelow: float<Cosine.cosine>, failAtUTurnAbove :float<Cosine.cosine>) : ResizeArray<OffsetDirection voption> =
+        let segCount = XYZ.pointCount uvs // number of segment unit vectors, three floats each
+        let ptsCount = segCount + 1
         let dirs = ResizeArray<OffsetDirection voption>(ptsCount)
+        let inline getUV i = UnitVec.createUnchecked(XYZ.getX i uvs, XYZ.getY i uvs, XYZ.getZ i uvs)
 
         // (1) setup
         let mutable firstDirPending = isOpen
         let mutable fromIdx = 0
-        let mutable uPrev = uvs.Last
+        let mutable uPrev = getUV (segCount - 1)
         if isOpen then // this is needed for open polylines that have 180 degree opposing start and end segments
             dirs.Add ValueNone
             fromIdx <- 1
-            uPrev <- uvs.[0]
+            uPrev <- getUV 0
 
 
         let mutable perp  = refNormal
@@ -209,7 +272,7 @@ module Offset3D =
 
         //(2) compute the cross product of the segment unit vectors to get the vertex normals, and offset points
         for i = fromIdx to ptsCount - 2 do // last point is skipped; it's dealt with at the end
-            let uNext = uvs.[i]
+            let uNext = getUV i
             let dot   = UnitVec.dot(uPrev, uNext)
             if withMeasure dot < failAtUTurnAbove then
                 fail $"Offset3D.getOffsetDirections: {Cosine.inDegrees (withMeasure dot)} degree U-turn detected at pts.[{i}]. exceeding failAtUTurnAbove: {Cosine.inDegrees failAtUTurnAbove}."
@@ -236,7 +299,7 @@ module Offset3D =
         if firstDirPending then
             // handle case where all points are colinear for open polyline
             // set first point too
-            let n = UnitVec.cross(refNormal, uvs.[0]) |> Vec.unitize
+            let n = UnitVec.cross(refNormal, getUV 0) |> Vec.unitize
             let dir = ValueSome { prevInPlane = n; nextInPlane = n; perpDir = refNormal }
             for i = 0 to dirs.LastIndex do
                 dirs.[i] <- dir
@@ -398,19 +461,22 @@ module Offset3D =
     /// <param name="varDistParallelBehavior">The behavior to use when colinear segments with different offset distances are found.</param>
     /// <returns>The offset points as a ResizeArray of interleaved coordinates.</returns>
     let offsetVariableWithDirections(   xyzs:ResizeArray<float>,
-                                        segmentDirs:ResizeArray<UnitVec>,
+                                        segmentDirs:ResizeArray<float>,
                                         offDirs: ResizeArray<OffsetDirection voption>,
                                         distsInPlane:Collections.Generic.IList<float>,
                                         distsPerpendicular:Collections.Generic.IList<float>,
                                         isClosed:bool, varDistParallelBehavior: VarDistParallel
                                         ) : ResizeArray<float> =
         XYZ.checkMod3 "offsetVariableWithDirections" xyzs
+        XYZ.checkMod3 "offsetVariableWithDirections segment directions" segmentDirs
         let ptCount = XYZ.pointCount xyzs
+        let segCount = XYZ.pointCount segmentDirs // number of segment unit vectors, three floats each
+        let inline getSegUV i = UnitVec.createUnchecked(XYZ.getX i segmentDirs, XYZ.getY i segmentDirs, XYZ.getZ i segmentDirs)
         if ptCount < 2 then
             fail $"Offset3D.offsetVariableWithDirections: point count {ptCount} must be at least 2 for a polyline."
 
-        if ptCount <> segmentDirs.Count + 1  then
-            fail $"Offset3D.offsetVariableWithDirections:\n Segment directions count must be {ptCount-1} for {ptCount} points, but is {segmentDirs.Count}."
+        if ptCount <> segCount + 1  then
+            fail $"Offset3D.offsetVariableWithDirections:\n Segment directions count must be {ptCount-1} for {ptCount} points, but is {segCount}."
 
         if ptCount <> distsInPlane.Count + 1  then
             fail $"Offset3D.offsetVariableWithDirections:\n in-plane distances count must be {ptCount-1} for {ptCount} points, but is {distsInPlane.Count}."
@@ -433,7 +499,7 @@ module Offset3D =
                 XYZ.add x y z res // for now just keep the input point, will be projected in second pass
             | ValueSome dir ->
                 let cosine = dir.prevInPlane *** dir.nextInPlane
-                setOffCornerVar(res, x, y, z, prevDistInPlane, nextDistInPlane, distPerp, dir.prevInPlane, dir.nextInPlane, dir.perpDir, cosine, segmentDirs.[i])
+                setOffCornerVar(res, x, y, z, prevDistInPlane, nextDistInPlane, distPerp, dir.prevInPlane, dir.nextInPlane, dir.perpDir, cosine, getSegUV i)
             prevDistInPlane <- nextDistInPlane
 
 
@@ -450,7 +516,7 @@ module Offset3D =
             XYZ.add x y z res // for now just keep the input point, will be projected in second pass
         | ValueSome dir ->
             let cosine = dir.prevInPlane *** dir.nextInPlane
-            setOffCornerVar(res, x, y, z, prevDistInPlane, nextDistInPlane, distPerp, dir.prevInPlane, dir.nextInPlane, dir.perpDir, cosine, segmentDirs.[segmentDirs.LastIndex])
+            setOffCornerVar(res, x, y, z, prevDistInPlane, nextDistInPlane, distPerp, dir.prevInPlane, dir.nextInPlane, dir.perpDir, cosine, getSegUV (segCount - 1))
 
 
         // (2) second pass: project colinear points
@@ -499,7 +565,7 @@ module Offset3D =
 
         res
 
-    /// Returns the average normal vector of the polyline defined by the interleaved coordinate buffer xyzs.
+    /// Returns the average normal vector of the polyline defined by the X, Y and Z interleaved ResizeArray xyzs.
     /// It is calculated by summing up the cross products of all segments around the center point.
     /// Does not check for bad input, may be zero length if points are colinear.
     let internal averageNormal(xyzs: ResizeArray<float>) : Vec =

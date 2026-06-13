@@ -98,29 +98,6 @@ type Points3D   =
         findPointFrom.[i]
 
 
-    /// Culls 3D points if they are too close to previous or next item.
-    /// Last and first 3D points stay the same.
-    static member cullDuplicatePointsInSeq (pts:ResizeArray<Pnt>, tolerance) :ResizeArray<Pnt> =
-        if pts.Count = 0 then fail "Points3D.cullDuplicatePointsInSeq: empty List of Points"
-        if pts.Count = 1 then
-            pts
-        else
-            let tolSq = tolerance*tolerance
-            let res = ResizeArray(pts.Count)
-            let mutable last = pts.[0]
-            res.Add last
-            let iLast = pts.Count-1
-            for i = 1  to iLast do
-                let pt = pts.[i]
-                if Pnt.sqDist last pt > tolSq then
-                    last <- pt
-                    res.Add last
-                elif i=iLast then // to ensure last point stays the same
-                    res.RemoveAt(res.Count-1)
-                    res.Add pt
-            res
-
-
     /// Finds the center, mean, or average point.
     static member center (pts: IList<Pnt>) : Pnt =
         let mutable sum = Pnt.Origin
@@ -244,7 +221,7 @@ type Points() =
         Points2D.closestPointsIdx(xs, ys)
 
 
-    [<Obsolete("Use Tria3D.offsetVar instead")>]
+    [<Obsolete("Use Points3D.closestOfTwo instead")>]
     static member closestOfTwo (pt1:Pnt) (pt2:Pnt) (referencePoint:Pnt) : Pnt =
         Points3D.closestOfTwo pt1 pt2 referencePoint
 
@@ -273,13 +250,6 @@ type Points() =
     static member mostDistantPoint (findPointFrom:ResizeArray<Pt>, checkAgainst:ResizeArray<Pt>) : Pt =
         Points2D.mostDistantPoint(findPointFrom, checkAgainst)
 
-    [<Obsolete("Use Points3D.cullDuplicatePointsInSeq instead")>]
-    static member cullDuplicatePointsInSeq (pts:ResizeArray<Pnt>, tolerance) : ResizeArray<Pnt> =
-        Points3D.cullDuplicatePointsInSeq(pts, tolerance)
-
-    [<Obsolete("Use Points2D.cullDuplicatePointsInSeq instead")>]
-    static member cullDuplicatePointsInSeq (pts:ResizeArray<Pt>, tolerance) : ResizeArray<Pt> =
-        Points2D.cullDuplicatePointsInSeq(pts, tolerance)
 
     [<Obsolete("Use Points2D.findContinuousPoints instead")>]
     static member findContinuousPoints (ptss: ResizeArray<ResizeArray<Pt>>, tolGap:float) : ResizeArray<Pt> =

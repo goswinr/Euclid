@@ -121,30 +121,6 @@ type Points2D   =
         let i, _ = Points2D.mostDistantPointIdx (findPointFrom, checkAgainst)
         findPointFrom.[i]
 
-    /// Culls 2D points if they are too close to previous or next item.
-    /// Last and first 2D points stay the same.
-    static member cullDuplicatePointsInSeq (pts:ResizeArray<Pt>, tolerance:float) : ResizeArray<Pt> =
-        if pts.Count = 0 then fail "Points2D.cullDuplicatePointsInSeq: empty List of Points"
-        if pts.Count = 1 then
-            pts
-        else
-            let tolSq = tolerance*tolerance
-            let res = ResizeArray(pts.Count)
-            let mutable last = pts.[0]
-            res.Add last
-            let iLast = pts.Count-1
-            for i = 1  to iLast do
-                let pt = pts.[i]
-                if Pt.sqDist last pt > tolSq then
-                    last <- pt
-                    res.Add last
-                elif i=iLast then // to ensure last point stays the same
-                    res.RemoveAt(res.Count-1)
-                    res.Add pt
-            res
-
-
-
     /// Similar to join polylines, this tries to find continuous sequences of 2D points.
     /// 'tolGap' is the maximum allowable gap between the start and the endpoint of two segments.
     /// Search starts from the segment with the most points.

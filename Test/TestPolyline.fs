@@ -928,7 +928,7 @@ let testsComprehensive =
         testList "SetPoint" [
             test "set vertex on open polyline" {
                 let pl = Polyline2D.create [Pt(0.,0.); Pt(1.,0.); Pt(2.,0.); Pt(3.,0.)]
-                pl.SetPoint (1, Pt(1.,5.))
+                pl.SetPt (1, Pt(1.,5.))
                 "vertex 1 changed" |> expectEqPts pl.AsPoints.[1] (Pt(1.,5.))
                 "vertex 0 unchanged" |> expectEqPts pl.AsPoints.[0] (Pt(0.,0.))
             }
@@ -955,8 +955,8 @@ let testsComprehensive =
             // }
             test "set vertex out of range throws" {
                 let pl = Polyline2D.create [Pt(0.,0.); Pt(1.,0.)]
-                Expect.throws (fun () -> pl.SetPoint (-1, Pt(0.,0.))) "negative index"
-                Expect.throws (fun () -> pl.SetPoint (2, Pt(0.,0.))) "too large index"
+                Expect.throws (fun () -> pl.SetPt (-1, Pt(0.,0.))) "negative index"
+                Expect.throws (fun () -> pl.SetPt (2, Pt(0.,0.))) "too large index"
             }
         ]
 
@@ -1104,8 +1104,9 @@ let testsComprehensive =
                 Expect.isTrue closed.IsClosed "should be closed"
                 "last snapped to first" |> expectEqPts closed.AsPoints.[0] closed.AsPoints.[closed.PointCount - 1]
             }
-            test "close fails with less than 2 points" {
+            test "close fails with less than 3 points" {
                 Expect.throws (fun () -> Polyline2D.close 1e-6 plSinglePoint |> ignore) "single point close should fail"
+                Expect.throws (fun () -> Polyline2D.close 1e-6 plLine |> ignore) "two point close should fail"
             }
         ]
 
@@ -1162,7 +1163,7 @@ let testsComprehensive =
                 "static start" |> expectEqPts (Polyline2D.start plOpen) plOpen.Start
             }
             test "static ende" {
-                "static ende" |> expectEqPts (Polyline2D.ende plOpen) plOpen.End
+                "static ende" |> expectEqPts (Polyline2D.end' plOpen) plOpen.End
             }
             test "static length" {
                 "static length" |> Expect.isTrue (abs(Polyline2D.length plOpen - plOpen.Length) < 1e-9)
@@ -1218,8 +1219,8 @@ let testsComprehensive =
             test "static start fails on empty" {
                 Expect.throws (fun () -> Polyline2D.start plEmpty |> ignore) "start on empty"
             }
-            test "static ende fails on empty" {
-                Expect.throws (fun () -> Polyline2D.ende plEmpty |> ignore) "ende on empty"
+            test "static end' fails on empty" {
+                Expect.throws (fun () -> Polyline2D.end' plEmpty |> ignore) "end' on empty"
             }
         ]
 
@@ -1230,13 +1231,7 @@ let testsComprehensive =
                 ra.Add(Pt(2.,2.))
                 Expect.equal pl.PointCount 2 "point array mutation is not reflected"
             }
-            test "pointsUnsafeInternal returns compatibility copy" {
-                let pl = Polyline2D.create [Pt(0.,0.); Pt(1.,1.)]
-                let pts = Polyline2D.pointsUnsafeInternal pl
-                Expect.equal pts.Count 2 "same count"
-                pts.Add(Pt(2.,2.))
-                Expect.equal pl.PointCount 2 "point copy mutation is not reflected"
-            }
+
             test "coordinate accessors and setters use float storage" {
                 let pl = Polyline2D.create [Pt(0.,0.); Pt(1.,1.)]
                 Expect.equal (pl.GetX 1) 1.0 "x accessor"
@@ -1249,7 +1244,7 @@ let testsComprehensive =
             }
             test "coordinatesUnsafeInternal returns live buffer" {
                 let pl = Polyline2D.create [Pt(0.,0.); Pt(1.,1.)]
-                let cs = Polyline2D.coordinatesUnsafeInternal pl
+                let cs = Polyline2D.getXYs pl
                 cs.Add 2.0
                 cs.Add 2.0
                 Expect.equal pl.PointCount 3 "coordinate mutation reflected in polyline"
@@ -1375,19 +1370,19 @@ let testsComprehensive =
 
         testList "tryFindSelfIntersection" [
             test "no intersection in simple polyline" {
-                let result = Polyline2D.tryFindSelfIntersectionSmall plOpen
+                let result = Polyline2D.tryFindSelfIntersection plOpen
                 Expect.isNone result "simple polyline has no self intersection"
             }
             test "no intersection in L-shape open polyline" {
                 // Open polyline with many segments but no crossings
-                let result = Polyline2D.tryFindSelfIntersectionSmall plLShape
+                let result = Polyline2D.tryFindSelfIntersection plLShape
                 Expect.isNone result "L-shape open polyline has no self intersection"
             }
             test "self intersection in figure-8" {
                 let fig8 = Polyline2D.create [
                     Pt(0.,0.); Pt(10.,10.); Pt(10.,0.); Pt(0.,10.); Pt(0.,0.)
                 ]
-                let result = Polyline2D.tryFindSelfIntersectionBig fig8
+                let result = Polyline2D.tryFindSelfIntersection fig8
                 Expect.isSome result "figure 8 has self intersection"
                 match result with
                 | Some (pt, i, j) ->
@@ -1400,14 +1395,14 @@ let testsComprehensive =
                 let pl = Polyline2D.create [
                     Pt(0.,0.); Pt(5.,5.); Pt(10.,0.); Pt(5.,5.); Pt(0.,10.)
                 ]
-                let result = Polyline2D.tryFindSelfIntersectionBig pl
+                let result = Polyline2D.tryFindSelfIntersection pl
                 Expect.isSome result "touching segments should find intersection"
             }
             test "first and last segment intersect in open polyline" {
                 let pl = Polyline2D.create [
                     Pt(0.,0.); Pt(10.,0.); Pt(10.,3.); Pt(10.,5.); Pt(2.,-2.)
                 ]
-                let result = Polyline2D.tryFindSelfIntersectionBig pl
+                let result = Polyline2D.tryFindSelfIntersection pl
                 Expect.isSome result "open polyline should report crossing between first and last segment"
                 match result with
                 | Some (pt, i, j) ->
@@ -1560,27 +1555,27 @@ let testsSpecial =
         testList "tryFindSelfIntersection special cases" [
             test "simple closed square has no self intersection" {
                 // The shared start/end (closure) vertex of a closed polyline is not a self intersection.
-                let result = Polyline2D.tryFindSelfIntersectionBig plClosed
+                let result = Polyline2D.tryFindSelfIntersection plClosed
                 Expect.isNone result "closure seam of a simple closed square must not be reported"
             }
             test "closed triangle has no self intersection" {
-                let result = Polyline2D.tryFindSelfIntersectionBig plTriangle
+                let result = Polyline2D.tryFindSelfIntersection plTriangle
                 Expect.isNone result "closed triangle has no self intersection"
             }
             test "open 3-point corner has no self intersection" {
                 // first and last segment are adjacent (share the middle vertex), so their corner is not a crossing
                 let pl = Polyline2D.create [Pt(0.,0.); Pt(5.,0.); Pt(5.,5.)]
-                let result = Polyline2D.tryFindSelfIntersectionSmall pl
+                let result = Polyline2D.tryFindSelfIntersection pl
                 Expect.isNone result "an open corner of two adjacent segments is not a self intersection"
             }
             test "degenerate polylines have no self intersection" {
-                Expect.isNone (Polyline2D.tryFindSelfIntersectionSmall plEmpty) "empty has no self intersection"
-                Expect.isNone (Polyline2D.tryFindSelfIntersectionSmall plSinglePoint) "single point has no self intersection"
-                Expect.isNone (Polyline2D.tryFindSelfIntersectionSmall plLine) "single segment has no self intersection"
+                Expect.isNone (Polyline2D.tryFindSelfIntersection plEmpty) "empty has no self intersection"
+                Expect.isNone (Polyline2D.tryFindSelfIntersection plSinglePoint) "single point has no self intersection"
+                Expect.isNone (Polyline2D.tryFindSelfIntersection plLine) "single segment has no self intersection"
             }
             test "closed figure-8 is still detected" {
                 let fig8 = Polyline2D.create [Pt(0.,0.); Pt(10.,10.); Pt(10.,0.); Pt(0.,10.); Pt(0.,0.)]
-                let result = Polyline2D.tryFindSelfIntersectionBig fig8
+                let result = Polyline2D.tryFindSelfIntersection fig8
                 Expect.isSome result "a real crossing must still be found"
                 match result with
                 | Some (pt, _, _) -> "crossing near center" |> expectEqPts pt (Pt(5.,5.))
@@ -1589,7 +1584,7 @@ let testsSpecial =
             test "non-adjacent touching segments are reported" {
                 // two non-adjacent segments meet at (5,5)
                 let pl = Polyline2D.create [Pt(0.,0.); Pt(5.,5.); Pt(10.,0.); Pt(5.,5.); Pt(0.,10.)]
-                Expect.isSome (Polyline2D.tryFindSelfIntersectionBig pl) "non-adjacent touching segments should be found"
+                Expect.isSome (Polyline2D.tryFindSelfIntersection pl) "non-adjacent touching segments should be found"
             }
         ]
 
@@ -1755,6 +1750,104 @@ let testsSpecial =
                 Expect.equal r.PointCount pl.PointCount "no U-turns, point count preserved"
                 "first preserved" |> expectEqPts r.AsPoints.[0] pl.AsPoints.[0]
                 "last preserved" |> expectEqPts r.AsPoints.[r.PointCount - 1] pl.AsPoints.[pl.PointCount - 1]
+            }
+        ]
+
+        testList "SegmentVectorsXY" [
+            test "empty polyline returns empty list" {
+                let vs = plEmpty.SegmentVectorsXY
+                Expect.equal vs.Count 0 "empty polyline has no segment vectors"
+            }
+            test "single point returns empty list" {
+                let vs = plSinglePoint.SegmentVectorsXY
+                Expect.equal vs.Count 0 "single point has no segment vectors"
+            }
+            test "open polyline returns flat components" {
+                let vs = plOpen.SegmentVectorsXY
+                Expect.equal vs.Count (plOpen.XYs.Count - 2) "two floats less than xys count"
+                Expect.isTrue (abs(vs.[0] - 10.0) < 1e-12 && abs(vs.[1]) < 1e-12) "first vector is (10, 0)"
+                Expect.isTrue (abs(vs.[2]) < 1e-12 && abs(vs.[3] - 10.0) < 1e-12) "second vector is (0, 10)"
+            }
+        ]
+
+        testList "zero tolerance closing" [
+            test "close with 0.0 tolerance on exactly closed polyline adds no point" {
+                let closed = Polyline2D.close 0.0 plClosed
+                Expect.equal closed.PointCount plClosed.PointCount "no extra point added"
+                Expect.isTrue closed.IsClosed "still closed"
+            }
+            test "IsAlmostClosed with 0.0 tolerance on exactly closed polyline" {
+                Expect.isTrue (plClosed.IsAlmostClosed 0.0) "exactly closed is almost closed with 0.0 tolerance"
+                Expect.isFalse (plOpen.IsAlmostClosed 0.0) "open is not almost closed with 0.0 tolerance"
+            }
+        ]
+
+        testList "removeDuplicatePoints keeps first point" [
+            test "two near-duplicate points collapse to the first point" {
+                let pl = Polyline2D.create [Pt(1.,1.); Pt(1.0000001, 1.)]
+                let result = Polyline2D.removeDuplicatePoints 1e-6 pl
+                Expect.equal result.PointCount 1 "collapses to one point"
+                "kept point is the first point" |> expectEqPts result.AsPoints.[0] (Pt(1.,1.))
+            }
+        ]
+
+        testList "tryFindSelfIntersectionWithBRect" [
+            test "bowtie intersection found by both variants" {
+                let bowtie = Polyline2D.create [Pt(0.,0.); Pt(10.,10.); Pt(10.,0.); Pt(0.,10.)]
+                match Polyline2D.tryFindSelfIntersection bowtie, Polyline2D.tryFindSelfIntersectionWithBRect bowtie with
+                | Some (pt1, i1, j1), Some (pt2, i2, j2) ->
+                    "same intersection point" |> expectEqPts pt1 pt2
+                    Expect.equal (i1, j1) (i2, j2) "same segment indices"
+                    "intersection at (5,5)" |> expectEqPts pt1 (Pt(5.,5.))
+                | a, b ->
+                    failwithf "both variants should find the intersection but got %A and %A" a b
+            }
+            test "closed square is not a self intersection in both variants" {
+                Expect.isNone (Polyline2D.tryFindSelfIntersection plClosed) "closed square has no self intersection"
+                Expect.isNone (Polyline2D.tryFindSelfIntersectionWithBRect plClosed) "closed square has no self intersection with BRect"
+            }
+        ]
+
+        testList "fail fast on degenerate input" [
+            test "SignedArea on empty polyline throws" {
+                Expect.throws (fun () -> plEmpty.SignedArea |> ignore) "empty polyline has no signed area"
+            }
+            test "SignedArea on single point returns zero" {
+                Expect.floatClose Accuracy.veryHigh plSinglePoint.SignedArea 0.0 "single point has zero area"
+            }
+            test "removeDuplicateAndColinearPoints fails when all points are duplicates" {
+                let pl = Polyline2D.create [Pt(1.,1.); Pt(1.,1.); Pt(1.,1.)]
+                Expect.throws (fun () -> Polyline2D.removeDuplicateAndColinearPoints Cosine.``0.1`` 1e-6 pl |> ignore) "all duplicates should fail with a clear error"
+            }
+            test "FindLabelPoint fails on zero or negative precision" {
+                Expect.throws (fun () -> plClosed.FindLabelPoint 0.0 |> ignore) "zero precision should fail"
+                Expect.throws (fun () -> plClosed.FindLabelPoint -1.0 |> ignore) "negative precision should fail"
+            }
+        ]
+
+        testList "instance transform methods match their statics" [
+            test "Move, MoveX and MoveY instance methods" {
+                let pl = Polyline2D.create [Pt(0.,0.); Pt(10.,0.); Pt(10.,10.)]
+                "Move matches translate" |> expectEqPts (pl.Move(Vc(5.,3.))).Start (Polyline2D.translate (Vc(5.,3.)) pl).Start
+                "Move - last point" |> expectEqPts (pl.Move(Vc(5.,3.))).End (Pt(15.,13.))
+                "MoveX - first point" |> expectEqPts (pl.MoveX 5.).Start (Pt(5.,0.))
+                "MoveX - last point"  |> expectEqPts (pl.MoveX 5.).End (Pt(15.,10.))
+                "MoveY - first point" |> expectEqPts (pl.MoveY 3.).Start (Pt(0.,3.))
+            }
+            test "Rotate instance method matches static rotate" {
+                let pl = Polyline2D.create [Pt(10.,0.); Pt(10.,10.)]
+                let r = Rotation2D.createFromDegrees 90.
+                "Rotate - first point goes to (0,10)" |> expectEqPts (pl.Rotate r).Start (Pt(0.,10.))
+                "Rotate matches static" |> expectEqPts (pl.Rotate r).End (Polyline2D.rotate r pl).End
+            }
+            test "RotateWithCenter keeps the center fixed and matches the static" {
+                let pl = Polyline2D.create [Pt(0.,0.); Pt(2.,0.); Pt(2.,2.); Pt(0.,2.)]
+                let cen = pl.Center
+                let r = Rotation2D.createFromDegrees 90.
+                let rotated = pl.RotateWithCenter(cen, r)
+                "center stays put" |> expectEqPts rotated.Center cen
+                "matches static rotateWithCenter" |> expectEqPts rotated.Start (Polyline2D.rotateWithCenter cen r pl).Start
+                "original not mutated" |> expectEqPts pl.Start (Pt(0.,0.))
             }
         ]
     ]

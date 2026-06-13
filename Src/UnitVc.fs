@@ -8,7 +8,7 @@ open Euclid.UtilEuclid
 open System.Runtime.Serialization
 open EuclidErrors
 
-/// <summary>A struct containing 2 floats, representing an 2D unitized vector.
+/// <summary>A struct containing 2 floats, representing a 2D unitized vector.
 /// All instances of this type are guaranteed to be always unitized.
 /// Never use the struct default constructor UnitVc()!
 /// It will create an invalid zero length vector.

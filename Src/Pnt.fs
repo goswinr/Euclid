@@ -5,7 +5,7 @@ namespace Euclid
 // For structs that need a checked and unchecked constructor (like unit-vectors) the main 'new' constructor is marked obsolete.
 // A 'create' and 'createUnchecked' static member is provided instead.
 // All other members are implemented as extension members. see files in folder 'members'.
-// This design however makes extension members unaccessible from see C#. To fix this all types and all members could be put into one file.
+// This design however makes extension members inaccessible from C#. To fix this all types and all members could be put into one file.
 // The types would have to be marked as recursive. This file would be very large and probably have bad editor performance.
 
 open System
@@ -33,7 +33,7 @@ type Pnt =
     /// The field holding the Z part of this 3D point.
     [<DataMember>] val Z : float
 
-    /// <summary>Create a new 3D point form X, Y, and Z coordinates.</summary>
+    /// <summary>Create a new 3D point from X, Y, and Z coordinates.</summary>
     /// <remarks>When compiled in DEBUG or with CHECK_EUCLID symbol defined, this constructor checks for
     /// NaN and Infinity values and raises an exception if any are found.
     /// This check is skipped in release mode for performance reasons.</remarks>

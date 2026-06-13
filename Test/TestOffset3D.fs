@@ -610,6 +610,67 @@ let tests =
             for i = 0 to 3 do
                 Expect.isTrue (abs(result.AsPoints.[i].Z - 2.0) < 1e-6) $"CW: Point {i} should be at Z=2, got Z={result.AsPoints.[i].Z}"
 
+        testList "getSegmentUnitVectors (interleaved floats)" [
+            testCase "returns one interleaved unit vector per segment" <| fun _ ->
+                let xyzs = (Polyline3D.create [Pnt(0,0,0); Pnt(2,0,0); Pnt(2,0,3)]).XYZs
+                let uvs = Offset3D.getSegmentUnitVectors xyzs
+                Expect.equal uvs.Count 6 "two segments -> 6 interleaved floats"
+                Expect.floatClose tol uvs.[0] 1.0 "seg0 x = 1"
+                Expect.floatClose tol uvs.[1] 0.0 "seg0 y = 0"
+                Expect.floatClose tol uvs.[2] 0.0 "seg0 z = 0"
+                Expect.floatClose tol uvs.[3] 0.0 "seg1 x = 0"
+                Expect.floatClose tol uvs.[4] 0.0 "seg1 y = 0"
+                Expect.floatClose tol uvs.[5] 1.0 "seg1 z = 1 (already unitized)"
+
+            testCase "fails on duplicate consecutive points" <| fun _ ->
+                let xyzs = (Polyline3D.create [Pnt(0,0,0); Pnt(0,0,0); Pnt(1,0,0)]).XYZs
+                Expect.throws (fun () -> Offset3D.getSegmentUnitVectors xyzs |> ignore) "duplicate points should fail"
+
+            testCase "fails with fewer than 2 points" <| fun _ ->
+                let xyzs = (Polyline3D.create [Pnt(0,0,0)]).XYZs
+                Expect.throws (fun () -> Offset3D.getSegmentUnitVectors xyzs |> ignore) "single point should fail"
+        ]
+
+        testList "Offset3D.removeUTurns" [
+            testCase "no U-turns returns the original buffer unchanged" <| fun _ ->
+                let xyzs = (Polyline3D.create [Pnt(0,0,0); Pnt(1,0,0); Pnt(1,1,0); Pnt(0,1,0)]).XYZs
+                let uvs = Offset3D.getSegmentUnitVectors xyzs
+                let res = Offset3D.removeUTurns(xyzs, uvs, Cosine.``179.0``)
+                Expect.equal res.Count xyzs.Count "unchanged count"
+                Expect.isTrue (System.Object.ReferenceEquals(res, xyzs)) "returns the original buffer when nothing to remove"
+
+            testCase "simple open U-turn point removed" <| fun _ ->
+                let xyzs = (Polyline3D.create [Pnt(0,0,0); Pnt(5,0,0); Pnt(5,5,0); Pnt(5,1,0); Pnt(9,1,0)]).XYZs
+                let uvs = Offset3D.getSegmentUnitVectors xyzs
+                let res = Offset3D.removeUTurns(xyzs, uvs, Cosine.``179.99``)
+                Expect.equal res.Count (xyzs.Count - 3) "one point (3 floats) removed"
+                "removed the U-turn vertex (5,5,0), so index 2 is now (5,1,0)" |> Expect.floatClose tol res.[7] 1.0
+
+            testCase "U-turn in a non-axis-aligned (XZ) plane is detected" <| fun _ ->
+                let xyzs = (Polyline3D.create [Pnt(0,0,0); Pnt(2,0,0); Pnt(2,0,2); Pnt(2,0,0.5); Pnt(5,0,0.5)]).XYZs
+                let uvs = Offset3D.getSegmentUnitVectors xyzs
+                let res = Offset3D.removeUTurns(xyzs, uvs, Cosine.``179.99``)
+                Expect.equal res.Count (xyzs.Count - 3) "the out-of-XY-plane U-turn vertex is removed"
+
+            testCase "closed seam U-turn keeps polyline closed" <| fun _ ->
+                let xyzs = (Polyline3D.create [Pnt(0,0,0); Pnt(10,0,0); Pnt(10,10,0); Pnt(0,10,0); Pnt(5,0.001,0); Pnt(0,0,0)]).XYZs
+                let uvs = Offset3D.getSegmentUnitVectors xyzs
+                let res = Offset3D.removeUTurns(xyzs, uvs, Cosine.``179.9``)
+                let n = res.Count
+                let stillClosed = abs(res.[0]-res.[n-3]) < 1e-9 && abs(res.[1]-res.[n-2]) < 1e-9 && abs(res.[2]-res.[n-1]) < 1e-9
+                Expect.isTrue stillClosed "result still closed after removing the seam U-turn"
+
+            testCase "fails on segment vector count mismatch" <| fun _ ->
+                let xyzs = (Polyline3D.create [Pnt(0,0,0); Pnt(1,0,0); Pnt(1,1,0)]).XYZs
+                let uvs = ResizeArray([1.0; 0.0; 0.0]) // only 1 vector, needs 2
+                Expect.throws (fun () -> Offset3D.removeUTurns(xyzs, uvs, Cosine.``179.0``) |> ignore) "count mismatch should fail"
+
+            testCase "fails on segment vectors that are not a multiple of 3" <| fun _ ->
+                let xyzs = (Polyline3D.create [Pnt(0,0,0); Pnt(1,0,0); Pnt(1,1,0)]).XYZs
+                let uvs = ResizeArray([1.0; 0.0]) // not a multiple of 3
+                Expect.throws (fun () -> Offset3D.removeUTurns(xyzs, uvs, Cosine.``179.0``) |> ignore) "non multiple-of-3 should fail"
+        ]
+
         // ============ Write test data file ============
 
         testCase "Write test data file (when saveTestData=true)" <| fun _ ->

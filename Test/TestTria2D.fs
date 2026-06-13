@@ -128,9 +128,32 @@ let tests =
             let pt   = Pt(1,0)
             let next = Pt(0,0)
             let o = Tria2D.offsetPt(pt, prev, next, 1.0)
-            // We don't assert the magic factor, just sanity: very large X shift, Y ~ 0
-            sprintf "expected large X due to U-turn, got %A" o |> Expect.isTrue (o.X > 10.0)
+            // The capped miter is on the same (negative X) side as the true miter just below the
+            // threshold; we don't assert the exact factor, just side and large magnitude, Y ~ 0.
+            sprintf "expected large negative X due to U-turn, got %A" o |> Expect.isTrue (o.X < -10.0)
             "Y ~ 0 at U-turn" |> Expect.floatClose tol o.Y 0.0
+        }
+
+        test "offsetPt U-turn cap matches side of sub-threshold miter and scales with dist" {
+            // symmetric corner about pt=(1,0): travel +X into pt, turn by 'turnDeg' degrees.
+            let mkOffset turnDeg dist =
+                let prev = Pt(0,0)
+                let pt   = Pt(1,0)
+                let a    = turnDeg * System.Math.PI / 180.0
+                let next = pt + Vc(cos a, sin a) // outgoing direction rotated by the turn angle
+                Tria2D.offsetPt(pt, prev, next, dist)
+            let pt = Pt(1,0)
+            // 178 deg turn is below the 179 deg threshold -> exact miter (offsetPtCore path)
+            let oCore = mkOffset 178.0 1.0
+            // 179.5 deg turn is above the threshold -> capped fallback
+            let oCap  = mkOffset 179.5 1.0
+            "sub-threshold miter is on the negative-X side"  |> Expect.isTrue (oCore.X < 0.0)
+            "capped fallback is on the same (negative-X) side" |> Expect.isTrue (oCap.X < 0.0)
+            "cap displacement points the same way as the miter" |> Expect.isTrue ((oCap - pt) *** (oCore - pt) > 0.0)
+            "cap at threshold reaches further out than the 178-degree miter" |> Expect.isTrue ((oCap - pt).Length > (oCore - pt).Length)
+            // the U-turn cap scales linearly with dist
+            let oCap2 = mkOffset 179.5 2.0
+            "cap scales linearly with dist" |> Expect.isTrue (Pt.dist oCap2 (pt + (oCap - pt) * 2.0) < 1e-9)
         }
 
         test "offsetVarByNormals equal distances matches offsetPt at 90-degree corner" {

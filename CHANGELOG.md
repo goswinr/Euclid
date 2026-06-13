@@ -7,14 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Fixed
-- Polyline2D.tryFindSelfIntersection now returns segment indices instead of flat coordinate-buffer indices.
-- Polyline3D.SignedAreaIn2D now returns the actual projected signed area instead of double the area.
-- Polyline3D helper and tolerance inconsistencies: `setPointXYZ` is curried like the 2D setter, `CloseInPlace` works with 0.0 tolerance, XY member creation uses Z=0, XYZ member creation helpers were added, and duplicate-point removal now uses distance tolerance while preserving the endpoint.
-- Rect2D and Rect3D: the perpendicularity check in `createFromVectors` and the internal constructor now scales with the axis lengths, so large but valid rectangles are no longer falsely rejected.
-- Rect2D.fitToPoints: corrected the misleading "Vc.Unitized" text in the too-short-axis exception messages.
-- corrected several Rect3D docstrings that mentioned "2D rectangle" and wrong grid/subdivision rounding factors.
+- `Polyline2D.SegmentVectorsXY` and `Polyline3D.SegmentVectorsXYZ` no longer throw on an empty polyline (negative ResizeArray capacity).
+- `Polyline2D.close`, `Polyline3D.close`, `Polyline2D.IsAlmostClosed` and `Polyline3D.IsAlmostClosed` now work with 0.0 tolerance on exactly closed polylines (tolerance comparison was strict less-than).
+- `removeDuplicatePoints` on `Polyline2D` and `Polyline3D` keeps the first point when all points collapse into one duplicate cluster, instead of replacing it with the last point.
+- The angle tolerance range error messages of `removeDuplicateAndColinearPoints` now report degrees (previously printed radians labeled as degrees).
+- `Polyline2D.offsetVar` error messages now name offsetVar instead of offset.
+- `Polyline3D.offsetVar` now checks for at least 2 points before computing the average normal, like `Polyline3D.offset`; the colinear-points error messages of `offset` and `offsetVar` now include the polyline (previously ended in a dangling colon).
+- Several `Polyline2D` and `Polyline3D` docstring corrections: `SetPoint` no longer claims to keep closed polylines closed (it never did, use `SetPointXYClosed`), the parameter domain of the static `evaluateAt`/`closestParameter` ends at points.Count - 1.0 (not point count), `subPolyline` documents its actual snapping behavior, stale `Offset2D.UTurnBehavior`/`VarDistParallelBehavior` type names, and typos.
+- `Polyline2D.tryFindSelfIntersection` now returns segment indices instead of flat ResizeArray indices.
+- `Polyline3D.SignedAreaIn2D` now returns the actual projected signed area instead of double the area.
+- `Polyline3D` helper and tolerance inconsistencies: `setPointXYZ` is curried like the 2D setter, `CloseInPlace` works with 0.0 tolerance, XY member creation uses Z=0, XYZ member creation helpers were added, and duplicate-point removal now uses distance tolerance while preserving the endpoint.
+- `Rect2D` and `Rect3D`: the perpendicularity check in `createFromVectors` and the internal constructor now scales with the axis lengths, so large but valid rectangles are no longer falsely rejected.
+- `Rect2D.fitToPoints`: corrected the misleading "Vc.Unitized" text in the too-short-axis exception messages.
+- corrected several `Rect3D` docstrings that mentioned "2D rectangle" and wrong grid/subdivision rounding factors.
 ### Changed
-- Rect3D.xaxisUnit / yaxisUnit renamed to Rect3D.xAxisUnit / yAxisUnit for naming consistency with Rect2D. The old names remain as obsolete aliases.
+- `Polyline3D.removeColinearAndDuplicatePoints` renamed to `removeDuplicateAndColinearPoints` for naming consistency with `Polyline2D`. The old name was removed.
+- `Polyline2D.close` and `Polyline3D.close` now require at least 3 points (was 2), matching `CloseInPlace`.
+- `removeDuplicateAndColinearPoints` on `Polyline2D` and `Polyline3D` now raises a clear error when all points are within the distance tolerance of the first point (previously failed with an unhelpful zero-length-vector error or returned inconsistent results).
+- `Polyline2D.SignedArea` now raises a named error on an empty polyline (previously an obscure index error).
+- `Polyline2D.FindLabelPoint` now validates that the precision parameter is a positive number.
+- `Polyline3D.equals` now compares points by Euclidean distance, matching `Polyline2D.equals`. Previously each axis was compared separately, which accepted point pairs up to sqrt(3) times the tolerance apart.
+- `Polyline3D.ToString` now distinguishes open and closed polylines, like `Polyline2D.ToString`.
+- `Polyline3D.SignedAreaIn2D` now raises a named error on an empty polyline instead of returning 0.0, matching `Polyline2D.SignedArea`.
+- `Polyline3D.addXYZ` is now fully curried like `Polyline2D.addXY`. Previously the coordinates were a tuple: use `Polyline3D.addXYZ x y z pl` instead of `Polyline3D.addXYZ (x, y, z) pl`.
+- `Polyline3D.offset'` now takes the in-plane offset distance first and the perpendicular offset distance second, matching the parameter order of `Polyline3D.offset`. The order was previously reversed; since both are floats, existing callers must swap their arguments.
+- `Polyline3D.offsetVar` and `offsetVarWithRef`: the list parameter `inPlaneOffsetDistance` is renamed to `inPlaneOffsetDistances`, it was always a list with one distance per segment.
+- `Rect3D.xaxisUnit` / `yaxisUnit` renamed to `Rect3D.xAxisUnit` / `yAxisUnit` for naming consistency with `Rect2D`. The old names remain as obsolete aliases.
+- `Pnt.normalOf3Pts` now follows the library orientation convention (counter-clockwise points give a normal towards the viewer, e.g. +Z in the XY plane), matching `NPlane.createFrom3Points` and `Points3D.normalOfPoints`.
+Previously it returned the negated normal. Callers relying on the old direction must negate the result.
+- Angle helpers with a static (from, to) signature now take the arguments in natural order (first = from, second = to),
+matching `angle2Pi`: `Vc.angleDiamond`, `UnitVc.angleDiamond`, `Vec.angleDiamondInXY`, `UnitVec.angleDiamondInXY`, `Pt.angle2PiTo`, `Pt.angle360To`, `Pnt.directionDiamondInXYTo`, `Pnt.angle2PiInXYTo` and `Pnt.angle360InXYTo`. The arguments were previously reversed; callers that compensated for the old order must swap their arguments.
+- `Polyline2D.FindLablePoint` / `findLablePoint` renamed to `FindLabelPoint` / `findLabelPoint` (corrected spelling). The misspelled names remain as obsolete aliases.
+- `moveX`/`moveY`/`moveZ` on `Vc`, `Vec`, `UnitVc` and `UnitVec` renamed to `addX`/`addY`/`addZ`: these are vector additions (a vector has no location to "move"), so the name now matches the "Points vs Vectors" semantic.
+The move* names remain as obsolete aliases. The move* members on location types (`Pt`, `Pnt`, `Line`, `Rect`, `Box`, `Polyline`, ...) are unchanged.
+- `Line2D.tryGetOverlap` now uses the same coincidence tolerance as `Line2D.tryIntersectOrOverlap`: parallel lines count as coincident when their perpendicular distance is below 1e-6 (1e-12 squared). Previously `tryGetOverlap` used a looser ~3.16e-5 (1e-9 squared).
+- `XLine3D.intersectCone` more result cases and better docstring.
+
+### Removed
+- Vec.rotateWithCenter and UnitVec.rotateWithCenter: rotating a vector (which is only a direction with magnitude, not a location) around a center point is not a valid operation. Both members were unused. See the "Points vs Vectors" section in README.md.
+- Points.cullDuplicatePointsInSeq, use Polyline.removeDuplicatePoints instead
 
 ### Added
 - Polyline2D.tryFindSelfIntersection optimized

@@ -323,29 +323,29 @@ module AutoOpenUnitVec =
         /// Range of 0.0 to 4.0 (for 360 Degrees)
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
-        static member inline angleDiamondInXY (b:UnitVec, a:UnitVec) : float =
+        static member inline angleDiamondInXY (a:UnitVec, b:UnitVec) : float =
             a.AngleDiamondInXYTo(b)
 
-        /// Checks if the angle between the two 3D unit-vectors is less than 180 degrees.
+        /// Checks if the angle between the two 3D unit-vectors is less than 90 degrees.
         /// Calculates the dot product of two 3D unit-vectors.
         /// Then checks if it is bigger than 1e-12.
         member inline v.MatchesOrientation (other:UnitVec) : bool =
             v *** other > 1e-12
 
-        /// Checks if the angle between the this 3D unit-vectors and a 3D vector is less than 180 degrees.
+        /// Checks if the angle between the this 3D unit-vectors and a 3D vector is less than 90 degrees.
         /// Calculates the dot product of a 3D vector and a unit-vectors.
         /// Then checks if it is bigger than 1e-12.
         member inline v.MatchesOrientation (other:Vec) : bool =
             if isTooTinySq(other.LengthSq) then failTooSmall "UnitVec.MatchesOrientation" other
             v *** other > 1e-12
 
-        /// Checks if the angle between the two 3D unit-vectors is less than 180 degrees.
+        /// Checks if the angle between the two 3D unit-vectors is less than 90 degrees.
         /// Calculates the dot product of two 3D unit-vectors.
         /// Then checks if it is bigger than 1e-12.
         static member inline matchesOrientation (other:UnitVec) (v:UnitVec) : bool =
             v.MatchesOrientation other
 
-        /// Checks if the angle between the two 3D unit-vectors is more than 180 degrees.
+        /// Checks if the angle between the two 3D unit-vectors is more than 90 degrees.
         /// Calculates the dot product of two 3D unit-vectors.
         /// Then checks if it is smaller than minus 1e-12.
         member inline v.IsOppositeOrientation (other:UnitVec) : bool =
@@ -358,7 +358,7 @@ module AutoOpenUnitVec =
             if isTooTinySq(other.LengthSq) then failTooSmall "UnitVec.IsOppositeOrientation" other
             v *** other < -1e-12
 
-        /// Checks if the angle between the two 3D unit-vectors is more than 180 degrees.
+        /// Checks if the angle between the two 3D unit-vectors is more than 90 degrees.
         /// Calculates the dot product of two 3D unit-vectors.
         /// Then checks if it is smaller than minus 1e-12.
         static member inline isOppositeOrientation (other:UnitVec) (v:UnitVec) : bool =
@@ -484,7 +484,7 @@ module AutoOpenUnitVec =
         /// See Euclid.Cosine module.
         member inline this.IsPerpendicularTo (other:UnitVec, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) : bool =
             let d = other *** this
-            float -maxCosine < d && d  < float maxCosine // = cosine of 98.75 and 90.25 degrees
+            float -maxCosine < d && d  < float maxCosine // = cosine of 89.75 and 90.25 degrees
 
         /// Checks if this 3D unit-vectors and a 3D vector are perpendicular to each other.
         /// The default angle tolerance is 89.75 to 90.25 degrees.
@@ -496,7 +496,7 @@ module AutoOpenUnitVec =
             if isTooTinySq(sb) then failTooSmall "UnitVec.IsPerpendicularTo" other
             let ou = other * (1.0 / sqrt sb)
             let d = ou *** this
-            float -maxCosine < d && d  < float maxCosine // = cosine of 98.75 and 90.25 degrees
+            float -maxCosine < d && d  < float maxCosine // = cosine of 89.75 and 90.25 degrees
 
         /// Checks if two 3D unit-vectors are perpendicular to each other.
         /// The default angle tolerance is 89.75 to 90.25 degrees.
@@ -654,16 +654,16 @@ module AutoOpenUnitVec =
         static member inline withLength(f:float) (v:UnitVec) : Vec =
             Vec (v.X * f, v.Y * f, v.Z * f)
 
-        /// Adds to the X part of this 3D unit-vector. Returns a new (non-unitized) 3D vector.
-        static member inline moveX x (v:UnitVec) : Vec =
+        /// Adds the given delta to the X component. Returns a new (non-unitized) 3D vector.
+        static member inline addX x (v:UnitVec) : Vec =
             Vec (v.X+x, v.Y, v.Z)
 
-        /// Adds to the Y part of this 3D unit-vector. Returns a new (non-unitized) 3D vector.
-        static member inline moveY y (v:UnitVec) : Vec =
+        /// Adds the given delta to the Y component. Returns a new (non-unitized) 3D vector.
+        static member inline addY y (v:UnitVec) : Vec =
             Vec (v.X, v.Y+y, v.Z)
 
-        /// Adds to the Z part of this 3D unit-vector. Returns a new (non-unitized) 3D vector.
-        static member inline moveZ z (v:UnitVec) : Vec =
+        /// Adds the given delta to the Z component. Returns a new (non-unitized) 3D vector.
+        static member inline addZ z (v:UnitVec) : Vec =
             Vec (v.X, v.Y, v.Z+z)
 
         /// Project vector to World X-Y plane.
@@ -671,12 +671,12 @@ module AutoOpenUnitVec =
         static member inline projectToXYPlane (v:UnitVec) : Vec =
             Vec(v.X, v.Y, 0.0)
 
-        /// Negate or inverse a 3D unit-vectors. Returns a new 3D unit-vector.
+        /// Negate or inverse a 3D unit-vector. Returns a new 3D unit-vector.
         /// Same as UnitVec.flip.
         static member inline reverse (v:UnitVec) : UnitVec =
             -v
 
-        /// Negate or inverse a 3D unit-vectors. Returns a new 3D unit-vector.
+        /// Negate or inverse a 3D unit-vector. Returns a new 3D unit-vector.
         /// Same as UnitVec.reverse.
         static member inline flip (v:UnitVec) : UnitVec =
             -v
@@ -770,26 +770,10 @@ module AutoOpenUnitVec =
         static member inline rotate (q:Quaternion) (pt:UnitVec) : UnitVec =
             pt *** q  // operator * is defined in Quaternion.fs
 
-        /// Rotate by Quaternion around given center point.
-        static member inline rotateWithCenter (cen:UnitVec) (q:Quaternion) (pt:UnitVec) : UnitVec =
-            // adapted from https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
-            let x = pt.X - cen.X
-            let y = pt.Y - cen.Y
-            let z = pt.Z - cen.Z
-            let qx = q.X
-            let qy = q.Y
-            let qz = q.Z
-            let qw = q.W
-            // calculate quat * vector
-            let ix =  qw * x + qy * z - qz * y
-            let iy =  qw * y + qz * x - qx * z
-            let iz =  qw * z + qx * y - qy * x
-            let iw = -qx * x - qy * y - qz * z
-            // calculate result * inverse quat
-            UnitVec.createUnchecked(  ix * qw + iw * - qx + iy * - qz - iz * - qy  + cen.X
-                                    , iy * qw + iw * - qy + iz * - qx - ix * - qz  + cen.Y
-                                    , iz * qw + iw * - qz + ix * - qy - iy * - qx  + cen.Z
-                                    )
+        // Note: there is intentionally no UnitVec.rotateWithCenter: a vector is only a direction with
+        // magnitude, it has no location, so rotating it around a center point is not a valid operation
+        // (and the translation would also break the unit-length invariant).
+        // See the "Points vs Vectors" section in README.md.
 
         /// Rotate the 3D unit-vector around X-axis, from Y to Z-axis, Counter Clockwise looking from right.
         static member inline rotateOnX (r:Rotation2D) (v:UnitVec) : UnitVec =
@@ -814,10 +798,6 @@ module AutoOpenUnitVec =
         /// Rotate the 3D unit-vector in Degrees around Z-axis, from X to Y-axis, Counter Clockwise looking from top.
         static member inline rotateOnZDeg (angDegree) (v:UnitVec) : UnitVec =
             UnitVec.rotateOnZ (Rotation2D.createFromDegrees angDegree) v
-
-        /// Rotate by Quaternion.
-        static member inline rotateByQuaternion (q:Quaternion) (v:UnitVec) : UnitVec =
-            v *** q  // operator * is defined in Quaternion.fs
 
         /// Returns positive or negative slope of a 3D unit-vector in Radians.
         /// This is the elevation angle from the World X-Y plane (not from the X-axis).
@@ -975,6 +955,26 @@ module AutoOpenUnitVec =
         [<Obsolete("If the matrix is projecting this transformation will not be correct. Use RigidMatrix or with a Pnt instead.")>]
         static member inline transform (m:Matrix) (v:UnitVec) : Vec =
             v.Transform(m)
+
+        /// Rotate by Quaternion.
+        [<Obsolete("Use UnitVec.rotate instead.")>]
+        static member inline rotateByQuaternion (q:Quaternion) (v:UnitVec) : UnitVec =
+            v *** q  // operator * is defined in Quaternion.fs
+
+        /// Obsolete, use UnitVec.addX instead. A vector has no location; this is a vector addition.
+        [<Obsolete("Use UnitVec.addX instead.")>]
+        static member inline moveX x (v:UnitVec) : Vec =
+            UnitVec.addX x v
+
+        /// Obsolete, use UnitVec.addY instead. A vector has no location; this is a vector addition.
+        [<Obsolete("Use UnitVec.addY instead.")>]
+        static member inline moveY y (v:UnitVec) : Vec =
+            UnitVec.addY y v
+
+        /// Obsolete, use UnitVec.addZ instead. A vector has no location; this is a vector addition.
+        [<Obsolete("Use UnitVec.addZ instead.")>]
+        static member inline moveZ z (v:UnitVec) : Vec =
+            UnitVec.addZ z v
 
 
 

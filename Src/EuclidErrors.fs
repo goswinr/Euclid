@@ -102,10 +102,10 @@ module EuclidErrors =
         raise <| EuclidTooSmallException $"{msg}: {nl}  %O{this} {nl}  and {nl}  %O{other} are too close to get a direction."
 
     let failObsoleteV20 (funName:string) (newFunName:string) : 'Failed =
-        raise <| EuclidObsoleteException $"{funName} is obsolete from Euclid version 0.20.0 or higher. Use alternative functions in :{newFunName}."
+        raise <| EuclidObsoleteException $"{funName} is obsolete from Euclid version 0.20.0 or higher. Use the alternative function: {newFunName}."
 
     let failObsolete (funName:string) (newFunName:string) : 'Failed =
-        raise <| EuclidObsoleteException $"{funName} is obsolete. Use alternative functions in :{newFunName}."
+        raise <| EuclidObsoleteException $"{funName} is obsolete. Use the alternative function: {newFunName}."
 
     let failVertical (msg:string) (v:'t) : 'Failed =
         raise <| EuclidException $"{msg}: vector is vertical or zero length: {v}"

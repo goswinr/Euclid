@@ -145,7 +145,7 @@ let count = pl2d.PointCount
 let segs = pl2d.SegmentCount
 let firstSeg = pl2d.FirstSegment
 let seg = pl2d.GetSegment(1)
-pl2d.SetPoint (2, Pt(12, 5))
+pl2d.SetPt (2, Pt(12, 5))
 let copy = pl2d.Duplicate()
 let pl3d = Polyline3D.create [ Pnt(0, 0, 0); Pnt(10, 0, 0); Pnt(10, 5, 3) ]
 let totalLen = pl3d.Length
@@ -196,7 +196,6 @@ let setB = ResizeArray [ Pnt(1,0,0); Pnt(20,20,20) ]
 let iA, iB = Points3D.closestPointsIdx(setA, setB)
 let farthest = Points3D.mostDistantPoint(cloud, setB)
 let centerPoints = Points3D.center cloud
-let culled = Points3D.cullDuplicatePointsInSeq(cloud, 0.01)
 
 // Error Handling
 try

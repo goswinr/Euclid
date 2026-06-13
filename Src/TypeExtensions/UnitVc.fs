@@ -139,7 +139,7 @@ module AutoOpenUnitVc =
         static member inline dotCosine (a:UnitVc) (b:UnitVc) : float<Cosine.cosine> =
             a.X * b.X + a.Y * b.Y  |> LanguagePrimitives.FloatWithMeasure
 
-        /// The 2D Cross Product of two 2D unit-vectors.
+        /// The 2D Cross Product of a 2D vector with a 2D unit-vector.
         /// It is also known as the Determinant, or the sine of the angle between the two vectors.
         /// It is just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
         /// If the rotation from 'a' to 'b' is Counter-Clockwise the result is positive.
@@ -216,7 +216,7 @@ module AutoOpenUnitVc =
             | 1 -> UnitVc.createUnchecked(-v.Y, v.X)
             | 2 -> UnitVc.createUnchecked(-v.X, -v.Y)
             | 3 -> UnitVc.createUnchecked(v.Y, -v.X)
-            | _ -> fail "never happens"  |> unbox // unbox to make type checker happy
+            | _ -> v // should never happen because of the modulo % 4 operation
 
         /// The diamond angle.
         /// Calculates the proportion of X to Y component.
@@ -307,11 +307,11 @@ module AutoOpenUnitVc =
             if r >= 0. then  r
             else r + 4.0
 
-        /// Returns positive angle for rotating Counter-Clockwise from this vector to vector 'b' .
+        /// Returns positive angle for rotating Counter-Clockwise from vector 'a' to vector 'b' .
         /// In Diamond Angle. Using only proportion of X to Y components.
         /// Range of 0.0 to 4.0 (for 360 Degrees)
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
-        static member inline angleDiamond (b:UnitVc, a:UnitVc) : float =
+        static member inline angleDiamond (a:UnitVc, b:UnitVc) : float =
             a.AngleDiamondTo(b)
 
         /// Checks if the angle between the two 2D unit-vectors is less than 90 degrees.
@@ -576,20 +576,20 @@ module AutoOpenUnitVc =
         static member inline withLength (length:float) (v:UnitVc) : Vc =
             Vc (v.X * length, v.Y * length)
 
-        /// Adds to the X part of this 2D unit-vector. Returns a new (non-unitized) 2D vector.
-        static member inline moveX x (v:UnitVc) : Vc =
+        /// Adds the given delta to the X component. Returns a new (non-unitized) 2D vector.
+        static member inline addX x (v:UnitVc) : Vc =
             Vc (v.X+x, v.Y)
 
-        /// Adds to the Y part of this 2D unit-vector. Returns a new (non-unitized) 2D vector.
-        static member inline moveY y (v:UnitVc) : Vc =
+        /// Adds the given delta to the Y component. Returns a new (non-unitized) 2D vector.
+        static member inline addY y (v:UnitVc) : Vc =
             Vc (v.X, v.Y+y)
 
-        /// Negate or inverse a 2D unit-vectors. Returns a new 2D unit-vector.
+        /// Negate or inverse a 2D unit-vector. Returns a new 2D unit-vector.
         /// Same as UnitVc.reverse.
         static member inline flip (v:UnitVc) : UnitVc =
             UnitVc.createUnchecked(-v.X, -v.Y)
 
-        /// Negate or inverse a 2D unit-vectors. Returns a new 2D unit-vector.
+        /// Negate or inverse a 2D unit-vector. Returns a new 2D unit-vector.
         /// Same as UnitVc.flip.
         static member inline reverse (v:UnitVc) : UnitVc =
             UnitVc.createUnchecked(-v.X, -v.Y)
@@ -700,7 +700,7 @@ module AutoOpenUnitVc =
         /// Returns positive or negative slope of a 2D unit-vector in Radians.
         /// This is the angle from the X-axis in the 2D plane (or its reverse).
         /// Range -1.57 to +1.57 Radians.
-        /// This is just asin(v.Y).
+        /// This is atan2(v.Y, v.X) folded into the slope of the line, ignoring direction.
         static member inline slopeRadians (v:UnitVc) : float =
             let r = Math.Atan2(v.Y, v.X)
             if   r > halfPi  then  r - Math.PI
@@ -710,8 +710,8 @@ module AutoOpenUnitVc =
         /// Returns positive or negative slope of a 2D unit-vector in Degrees.
         /// This is the angle from the X-axis in the 2D plane (or its reverse).
         /// Range -90 to +90 Degrees.
-        /// This is just asin(v.Y).
-        static member inline slopeDegree (v:UnitVc) : float =
+        /// This is atan2(v.Y, v.X) folded into the slope of the line, ignoring direction.
+        static member inline slopeDegrees (v:UnitVc) : float =
             UnitVc.slopeRadians v |> toDegrees
 
         /// Returns positive or negative slope of a 2D unit-vector in Percent.
@@ -809,4 +809,18 @@ module AutoOpenUnitVc =
         [<Obsolete("Use UnitVc.isPerpendicularTo instead. Obsolete since 0.21.0")>]
         static member inline arePerpendicular(other:UnitVc) (v:UnitVc) : bool =
             UnitVc.isPerpendicularTo Cosine.``89.75`` v other
+
+        [<Obsolete("Use UnitVc.slopeDegrees instead.")>]
+        static member inline slopeDegree (v:UnitVc) : float =
+            UnitVc.slopeDegrees v
+
+        /// Obsolete, use UnitVc.addX instead. A vector has no location; this is a vector addition.
+        [<Obsolete("Use UnitVc.addX instead.")>]
+        static member inline moveX x (v:UnitVc) : Vc =
+            UnitVc.addX x v
+
+        /// Obsolete, use UnitVc.addY instead. A vector has no location; this is a vector addition.
+        [<Obsolete("Use UnitVc.addY instead.")>]
+        static member inline moveY y (v:UnitVc) : Vc =
+            UnitVc.addY y v
 

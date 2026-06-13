@@ -50,6 +50,15 @@ let tests =
                 "vector X is 3.0" |> Expect.floatClose tol vc.X 3.0
                 "vector Y is 4.0" |> Expect.floatClose tol vc.Y 4.0
             }
+
+            test "angle2PiTo uses natural (fromPt, toPt) order" {
+                let o = Pt(0.0, 0.0)
+                // angle from origin towards +Y is pi/2
+                "from origin to +Y" |> Expect.floatClose tol (Pt.angle2PiTo(o, Pt(0.0, 1.0))) (System.Math.PI / 2.0)
+                // angle from origin towards +X is 0
+                "from origin to +X" |> Expect.floatClose tol (Pt.angle2PiTo(o, Pt(1.0, 0.0))) 0.0
+                "angle360To from origin to +Y is 90" |> Expect.floatClose tol (Pt.angle360To(o, Pt(0.0, 1.0))) 90.0
+            }
         ]
 
         testList "Vc (2D Vector)" [
@@ -99,6 +108,13 @@ let tests =
                 let result = vc / 2.0
                 "result X is 3.0" |> Expect.floatClose tol result.X 3.0
                 "result Y is 4.0" |> Expect.floatClose tol result.Y 4.0
+            }
+
+            test "angleDiamond uses natural (a, b) order" {
+                // diamond angle CCW from +X to +Y is 1.0 (a quarter turn)
+                "from +X to +Y is 1.0" |> Expect.floatClose tol (Vc.angleDiamond(Vc(1.0, 0.0), Vc(0.0, 1.0))) 1.0
+                // the reverse direction is 3.0 (three quarter turns CCW)
+                "from +Y to +X is 3.0" |> Expect.floatClose tol (Vc.angleDiamond(Vc(0.0, 1.0), Vc(1.0, 0.0))) 3.0
             }
         ]
 
@@ -171,6 +187,16 @@ let tests =
                 "vector X is 3.0" |> Expect.floatClose tol vec.X 3.0
                 "vector Y is 4.0" |> Expect.floatClose tol vec.Y 4.0
                 "vector Z is 5.0" |> Expect.floatClose tol vec.Z 5.0
+            }
+
+            test "normalOf3Pts follows CCW convention (+Z in XY plane)" {
+                // counter-clockwise points in the XY plane must give a +Z normal,
+                // matching NPlane.createFrom3Points and Points3D.normalOfPoints
+                let a = Pnt(0.0, 0.0, 0.0)
+                let b = Pnt(1.0, 0.0, 0.0)
+                let c = Pnt(0.0, 1.0, 0.0)
+                let n = Pnt.normalOf3Pts(a, b, c) |> Vec.unitize
+                "normal is +Z" |> Expect.floatClose tol n.Z 1.0
             }
         ]
 

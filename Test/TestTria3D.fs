@@ -255,6 +255,23 @@ let tests =
         | _ -> failwith "Expected EuclidException"
         }
 
+        test "offsetPnt near-U-turn cap side, in-plane and scaling (XY plane)" {
+            // symmetric corner about pt=(1,0,0): travel +X into pt, turn by 'turnDeg' in the XY plane.
+            let mkOffset turnDeg dist =
+                let prev = Pnt(0,0,0)
+                let pt   = Pnt(1,0,0)
+                let a    = turnDeg * System.Math.PI / 180.0
+                let next = pt + Vec(cos a, sin a, 0.0) // outgoing direction rotated by the turn angle
+                Tria3D.offsetPnt(pt, prev, next, dist)
+            let pt = Pnt(1,0,0)
+            let oCap = mkOffset 179.5 1.0 // above the 179-degree threshold -> capped fallback
+            "capped fallback is on the negative-X side" |> Expect.isTrue (oCap.X < -10.0)
+            "capped fallback stays in the triangle plane (Z = 0)" |> Expect.floatClose tol oCap.Z 0.0
+            // the U-turn cap scales linearly with dist
+            let oCap2 = mkOffset 179.5 2.0
+            "cap scales linearly with dist" |> Expect.isTrue (Pnt.dist oCap2 (pt + (oCap - pt) * 2.0) < 1e-9)
+        }
+
         test "area calculation matches expected for known triangles" {
         // Unit triangle in XY plane
         let a = Pnt(0,0,0)

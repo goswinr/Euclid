@@ -57,6 +57,17 @@ When a 4x4 transformation matrix is applied:
 
 This follows homogeneous coordinate conventions where vectors have w=0.
 
+A vector in Euclid is just a direction with a magnitude. It has no location in space.
+Therefore transformations that depend on a location never apply to vectors:
+- A vector cannot be **translated**. Translating a direction is meaningless; it stays the same vector.
+- A vector cannot be **rotated around a center point**. Only location-bearing types
+  (points, lines, planes, rectangles, boxes, polylines) can rotate around a center.
+  Vectors only rotate around the origin (a pure rotation, e.g. `Vec.rotate`, `Vec.rotateOnZ`).
+
+The API enforces this: vector types (`Vc`, `Vec`, `UnitVc`, `UnitVec`) deliberately offer no
+`translate` or `rotateWithCenter` members. (The two members that violated this rule,
+`Vec.rotateWithCenter` and `UnitVec.rotateWithCenter`, are scheduled for removal.)
+
 ### Naming Conventions
 
 **Core Types (2D and 3D):**
@@ -138,8 +149,21 @@ and to generate not all but many of the tests.
 ```bash
 git clone https://github.com/goswinr/Euclid.git
 cd Euclid
-dotnet build
 ```
+
+To build the libary and the tests for .NET
+```bash
+dotnet build --configuration Release
+```
+
+for JavaScript/TypeScript (compiles the .NET code to JavaScript via Fable)
+```bash
+cd Test
+npm i
+npm run build
+cd ..
+```
+
 
 ## Testing
 
@@ -147,6 +171,7 @@ Tests run on both .NET and JavaScript with TypeScript build verification.
 
 ### .NET Testing
 
+run the tests from root. (not from within the Test folder)
 ```bash
 dotnet run --project ./Test/Test.fsproj
 ```
@@ -155,10 +180,18 @@ dotnet run --project ./Test/Test.fsproj
 
 run
 ```bash
-cd Test && npm test && cd ..
+cd Test
+npm i
+npm test
+cd ..
 ```
 
 The test suite ensures cross-platform compatibility and verifies TypeScript type definitions.
+
+## Benchmarks
+
+Some more complex algorithms are benchmarked in both .NET and Node JavaScript.
+See [Test/Benchmarks/README.md](./Test/Benchmarks/README.md).
 
 ## Contributing
 
@@ -467,7 +500,7 @@ let firstSeg = pl2d.FirstSegment           // Line2D(Pt(0,0), Pt(10,0))
 let seg = pl2d.GetSegment(1)               // Line2D(Pt(10,0), Pt(10,5))
 
 // Modify (polylines are mutable)
-pl2d.SetPoint (2, Pt(12, 5))              // move a vertex
+pl2d.SetPt (2, Pt(12, 5))                 // move a vertex
 let copy = pl2d.Duplicate()                // deep copy
 
 // 3D polyline
@@ -576,8 +609,6 @@ let farthest = Points3D.mostDistantPoint(cloud, setB)
 // center of points
 let center = Points3D.center cloud                // Pnt(4, 3.75, 3.75)
 
-// Remove duplicate points within tolerance
-let culled = Points3D.cullDuplicatePointsInSeq(cloud, 0.01)
 ```
 
 ### Error Handling

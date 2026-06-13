@@ -60,13 +60,13 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             xyzs.Add pt.Z
         Polyline3D(xyzs)
 
-    /// Gets the interleaved coordinate buffer of the Polyline3D: x0, y0, z0, x1, y1, z1, ...
+    /// Gets the X, Y and Z interleaved ResizeArray of the Polyline3D: x0, y0, z0, x1, y1, z1, ...
     /// This is the live internal buffer, so changes to the list will be reflected in the Polyline3D.
     [<DataMember>]
     member _.XYZs : ResizeArray<float> =
         xyzs
 
-    /// Gets the interleaved coordinate buffer of the Polyline3D: x0, y0, z0, x1, y1, z1, ...
+    /// Gets the X, Y and Z interleaved ResizeArray of the Polyline3D: x0, y0, z0, x1, y1, z1, ...
     /// This is the live internal buffer, so changes to the list will be reflected in the Polyline3D.
     static member inline getXYZs (p:Polyline3D) : ResizeArray<float> =
         p.XYZs
@@ -187,13 +187,13 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// Sets the x, y, and z coordinates of the point at the given index.
     /// On a closed Polyline3D, setting the first or last point will set both to the same point.
     /// Raises an error if the index is out of range.
-    /// (sets xyzs.[position * 2] and xyzs.[position * 2 + 1] internally)
+    /// (sets xyzs.[position * 3], xyzs.[position * 3 + 1], and xyzs.[position * 3 + 2] internally)
     static member inline setPointXYZClosed x y z (position:int) (p:Polyline3D) : unit =
         p.SetPointXYZClosed (position, x, y, z)
 
     /// Sets the x, y, and z coordinates of the point at the given index.
     /// NOTE: setting the first or last point on a closed Polyline3D might open it.
-    /// (sets xyzs.[position * 2] and xyzs.[position * 2 + 1] internally )
+    /// (sets xyzs.[position * 3], xyzs.[position * 3 + 1], and xyzs.[position * 3 + 2] internally )
     member p.SetPointXYZ (position:int, x:float, y:float, z:float) : unit =
         #if DEBUG || CHECK_EUCLID
         let len = xyzs.Count
@@ -213,7 +213,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
         appendXYZ x y z xyzs
 
     /// Adds a point from x, y, and z coordinates.
-    static member inline addXYZ (x:float, y:float, z:float) (p:Polyline3D) : unit =
+    static member inline addXYZ (x:float) (y:float) (z:float) (p:Polyline3D) : unit =
         p.AddXYZ (x, y, z)
 
     /// Adds a point to the end of the Polyline3D.
@@ -232,9 +232,11 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     override p.ToString() : string =
         let pc = p.PointCount
         if pc = 0 then
-            "An empty Euclid.Polyline3D."
+            "empty Euclid.Polyline3D."
+        elif p.IsClosed then
+            $"closed Euclid.Polyline3D with length {p.Length}, from {pc} points"
         else
-            $"Euclid.Polyline3D with length {p.Length}, from {pc} points"
+            $"open Euclid.Polyline3D with length {p.Length}, from {pc} points"
 
     /// Format Polyline3D into string including its length.
     member p.AsString : string =
@@ -250,7 +252,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     static member inline asString (pl:Polyline3D) : string =
         pl.AsString
 
-    /// Format this 3D polyline into an F# code string that can be used to recreate the point.
+    /// Format this 3D polyline into an F# code string that can be used to recreate the polyline.
     member p.AsFSharpCode : string =
         let ptsAsCode =
             p.AsPoints
@@ -258,7 +260,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             |> String.concat "; "
         $"Polyline3D.create [| {ptsAsCode} |]"
 
-    /// Format this 3D polyline into an F# code string that can be used to recreate the point.
+    /// Format this 3D polyline into an F# code string that can be used to recreate the polyline.
     static member inline asFSharpCode (pl:Polyline3D) : string =
         pl.AsFSharpCode
 
@@ -317,7 +319,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             xyzs.[c - 2] <- pt.Y
             xyzs.[c - 1] <- pt.Z
 
-    /// Gets or sets last or end point of the Polyline3D
+    /// Gets the last or end point of the Polyline3D
     /// This is the point at index Points.Count - 1.
     /// Same as Polyline3D.LastPoint
     static member inline end' (pl:Polyline3D) : Pnt =
@@ -338,7 +340,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             xyzs.[c - 2] <- pt.Y
             xyzs.[c - 1] <- pt.Z
 
-    /// Gets or sets the last point of the Polyline3D.
+    /// Gets the last point of the Polyline3D.
     /// This is the point at index Points.Count - 1.
     /// Same as Polyline3D.End
     static member inline lastPoint (pl:Polyline3D) : Pnt =
@@ -357,7 +359,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             xyzs.[c - 5] <- pt.Y
             xyzs.[c - 4] <- pt.Z
 
-    /// Gets or sets the second last point of the Polyline3D.
+    /// Gets the second last point of the Polyline3D.
     static member inline secondLastPoint (pl:Polyline3D) : Pnt =
         pl.SecondLastPoint
 
@@ -373,7 +375,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             xyzs.[4] <- pt.Y
             xyzs.[5] <- pt.Z
 
-    /// Gets or sets the second point of the Polyline3D.
+    /// Gets the second point of the Polyline3D.
     /// This is the point at index 1.
     static member inline secondPoint (pl:Polyline3D) : Pnt =
         pl.SecondPoint
@@ -391,7 +393,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             xyzs.[1] <- pt.Y
             xyzs.[2] <- pt.Z
 
-    /// Gets or sets the first point of the Polyline3D.
+    /// Gets the first point of the Polyline3D.
     /// This is the point at index 0.
     /// Same as Polyline3D.Start
     static member inline firstPoint (pl:Polyline3D) : Pnt =
@@ -523,7 +525,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     member p.SegmentVectorsXYZ : ResizeArray<float> =
         let xyzs = p.XYZs
         let len = xyzs.Count
-        let vs = ResizeArray(len - 3)
+        let vs = ResizeArray(max 0 (len - 3)) // max 0 to avoid negative capacity on empty polyline
         if len < 6 then
             vs
         else
@@ -601,7 +603,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             let dx = xyzs.[0] - xyzs.[c - 3]
             let dy = xyzs.[1] - xyzs.[c - 2]
             let dz = xyzs.[2] - xyzs.[c - 1]
-            dx * dx + dy * dy + dz * dz < tolerance*tolerance
+            dx * dx + dy * dy + dz * dz <= tolerance*tolerance // <= needed so it works with 0.0
 
     /// Tests if Polyline3D is closed within given tolerance.
     /// Returns False if the Polyline3D has less than 3 points.
@@ -642,14 +644,14 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
 
     /// <summary>Reverse order of the Polyline3D in place.</summary>
     /// <param name="p">The Polyline3D to reverse.</param>
-    /// <returns>A reference to the the same Polyline3D as the input</returns>
+    /// <returns>A reference to the same Polyline3D as the input</returns>
     static member reverseInPlace (p:Polyline3D) : Polyline3D =
         p.ReverseInPlace()
         p
 
     /// Close the Polyline3D if it is not already closed.
-    /// If the ends are closer than the tolerance. The last point is set to equal the first point.
-    /// Else the start point is added to the end of the Polyline3D.
+    /// If the ends are closer than the tolerance, the last point is set equal to the first point.
+    /// Otherwise the start point is added to the end of the Polyline3D.
     /// The default tolerance is 1e-6
     member p.CloseInPlace([<OPT; DEF(1e-6)>]toleranceForAddingPoint:float) : unit =
         if p.PointCount < 3 then failTooFewPoly3D "CloseInPlace" 3 p.PointCount
@@ -677,7 +679,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// the last point is set equal to the first point instead.</summary>
     /// <param name="toleranceForAddingPoint">The tolerance used to decide whether to snap the last point to the first point.</param>
     /// <param name="pl">The Polyline3D to close.</param>
-    /// <returns>A reference to the the same Polyline3D as the input</returns>
+    /// <returns>A reference to the same Polyline3D as the input</returns>
     static member closeInPlace (toleranceForAddingPoint:float)  (pl:Polyline3D) : Polyline3D =
         pl.CloseInPlace toleranceForAddingPoint
         pl
@@ -687,26 +689,25 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// The Polyline3D does not need to be actually closed.
     /// The signed area of the Polyline3D is calculated.
     /// If it is positive the Polyline3D is CCW.
+    /// Raises an error on an empty Polyline3D.
     member p.SignedAreaIn2D : float =
         //https://helloacm.com/sign-area-of-irregular-polygon/
-        if p.PointCount = 0 then
-            0.0
-        else
-            let mutable area = 0.0
-            let c = xyzs.Count
-            let mutable tx = xyzs.[c - 3] // calculate from last to first too
-            let mutable ty = xyzs.[c - 2]
-            let mutable i = 0
-            while i < c do
-                let nx = xyzs.[i]
-                let ny = xyzs.[i + 1]
-                let a = tx - nx
-                let b = ny + ty
-                area <- area + a*b
-                tx <- nx
-                ty <- ny
-                i <- i + 3
-            area * 0.5
+        if p.PointCount = 0 then failTooFewPoly3D "SignedAreaIn2D" 1 p.PointCount
+        let mutable area = 0.0
+        let c = xyzs.Count
+        let mutable tx = xyzs.[c - 3] // calculate from last to first too
+        let mutable ty = xyzs.[c - 2]
+        let mutable i = 0
+        while i < c do
+            let nx = xyzs.[i]
+            let ny = xyzs.[i + 1]
+            let a = tx - nx
+            let b = ny + ty
+            area <- area + a*b
+            tx <- nx
+            ty <- ny
+            i <- i + 3
+        area * 0.5
 
     /// Calculates the signed area of the Polyline3D when projected in 2D.
     /// Z values are ignored.
@@ -715,6 +716,20 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// If it is positive the Polyline3D is CCW.
     static member inline signedAreaIn2D (pl:Polyline3D) : float =
         pl.SignedAreaIn2D
+
+    /// Calculates the area of the Polyline3D when projected in 2D.
+    /// Z values are ignored.
+    /// The segment from the last point to the first point is included in the area calculation.
+    /// For self intersecting Polylines the result is invalid.
+    member p.AreaIn2D : float =
+        abs p.SignedAreaIn2D
+
+    /// Calculates the area of the Polyline3D when projected in 2D.
+    /// Z values are ignored.
+    /// The segment from the last point to the first point is included in the area calculation.
+    /// For self intersecting Polylines the result is invalid.
+    static member inline areaIn2D (pl:Polyline3D) : float =
+        abs pl.SignedAreaIn2D
 
     /// Test if Polyline3D is CounterClockwise when projected in 2D.
     /// Z values are ignored.
@@ -739,7 +754,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// Z values are ignored.
     /// The Polyline3D does not need to be actually closed.
     /// The signed area of the Polyline3D is calculated.
-    /// If it is positive the Polyline3D is CCW.
+    /// If it is negative the Polyline3D is Clockwise.
     member p.IsClockwiseIn2D : bool =
         let area = p.SignedAreaIn2D
         if   abs(area) < UtilEuclid.zeroLengthTolerance then
@@ -750,13 +765,13 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// Z values are ignored.
     /// The Polyline3D does not need to be actually closed.
     /// The signed area of the Polyline3D is calculated.
-    /// If it is positive the Polyline3D is CCW.
+    /// If it is negative the Polyline3D is Clockwise.
     static member inline isClockwiseIn2D (pl:Polyline3D) : bool =
         pl.IsClockwiseIn2D
 
     /// Returns the point at a given parameter on the Polyline3D.
     /// The integer part of the parameter is the index of the segment that the point is on.
-    /// The fractional part of the parameter is the parameter form 0.0 to 1.0 on the segment.
+    /// The fractional part of the parameter is the parameter from 0.0 to 1.0 on the segment.
     /// The domain Polyline3D starts at 0.0 and ends at points.Count - 1.0 .
     /// If the parameter is within 1e-6 of an integer value, the integer value is used as parameter.
     member pl.EvaluateAt(t:float) : Pnt =
@@ -793,14 +808,14 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
 
     /// Returns the point at a given parameter on the Polyline3D.
     /// The integer part of the parameter is the index of the segment that the point is on.
-    /// The fractional part of the parameter is the parameter form 0.0 to 1.0 on the segment.
-    /// The domain Polyline3D starts at 0.0 and ends at point count.
+    /// The fractional part of the parameter is the parameter from 0.0 to 1.0 on the segment.
+    /// The domain Polyline3D starts at 0.0 and ends at points.Count - 1.0 .
     static member evaluateAt (t:float) (pl:Polyline3D) : Pnt =
         pl.EvaluateAt t
 
     /// Returns the parameter on the Polyline3D that is the closest point to the given point.
     /// The integer part of the parameter is the index of the segment that the point is on.
-    /// The fractional part of the parameter is the parameter form 0.0 to 1.0 on the segment.
+    /// The fractional part of the parameter is the parameter from 0.0 to 1.0 on the segment.
     /// The domain Polyline3D starts at 0.0 and ends at points.Count - 1.0 .
     member pl.ClosestParameter(p:Pnt) : float =
         if pl.PointCount = 0 then  fail "Polyline3D.ClosestParameter failed on empty Polyline3D"
@@ -859,8 +874,8 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
 
     /// Returns the parameter on the Polyline3D that is the closest point to the given point.
     /// The integer part of the parameter is the index of the segment that the point is on.
-    /// The fractional part of the parameter is the parameter form 0.0 to 1.0 on the segment.
-    /// The domain Polyline3D starts at 0.0 and ends at point count.
+    /// The fractional part of the parameter is the parameter from 0.0 to 1.0 on the segment.
+    /// The domain Polyline3D starts at 0.0 and ends at points.Count - 1.0 .
     static member inline closestParameter (pl:Polyline3D) (pt:Pnt) : float =
         pl.ClosestParameter pt
 
@@ -1304,15 +1319,32 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     // #region Static members
 
 
-    /// Gets the live interleaved coordinate buffer of the Polyline3D.
-    /// Unsafe because changes to the ResizeArray are reflected in the Polyline3D.
-    static member coordinatesUnsafeInternal (p:Polyline3D) : ResizeArray<float> =
-        p.XYZs
+    /// Tests if the Polyline3D is Clockwise when projected in 2D (Z values are ignored).
+    /// Returns the same instance if the Polyline3D is already Clockwise,
+    /// otherwise returns a new reversed Polyline3D.
+    static member inline ensureClockwiseIn2D (pl:Polyline3D) : Polyline3D =
+        if pl.IsClockwiseIn2D then pl else pl.Reverse()
 
-    /// Gets last or end point of the Polyline3D
-    static member ende (pl:Polyline3D) : Pnt =
-        if pl.PointCount < 1 then failTooFewPoly3D "ende" 1 pl.PointCount
-        pl.End
+    /// Tests if the Polyline3D is Counter Clockwise when projected in 2D (Z values are ignored).
+    /// Returns the same instance if the Polyline3D is already Counter Clockwise,
+    /// otherwise returns a new reversed Polyline3D.
+    static member inline ensureCounterClockwiseIn2D (pl:Polyline3D) : Polyline3D =
+        if pl.IsCounterClockwiseIn2D then pl else pl.Reverse()
+
+    /// Tests if the Polyline3D is Clockwise when projected in 2D (Z values are ignored).
+    /// If not reverse the Polyline3D in place.
+    /// Always returns the same instance.
+    static member inline ensureClockwiseInPlaceIn2D (pl:Polyline3D) : Polyline3D =
+        if pl.IsCounterClockwiseIn2D then pl.ReverseInPlace()
+        pl
+
+    /// Tests if the Polyline3D is Counter Clockwise when projected in 2D (Z values are ignored).
+    /// If not reverse the Polyline3D in place.
+    /// Always returns the same instance.
+    static member inline ensureCounterClockwiseInPlaceIn2D (pl:Polyline3D) : Polyline3D =
+        if pl.IsClockwiseIn2D then pl.ReverseInPlace()
+        pl
+
 
     /// <summary>Apply a mapping function to each point in the 3D Polyline. Returns new Polyline3D.</summary>
     /// <param name="mapping">A function that takes a point and returns a new point.</param>
@@ -1445,7 +1477,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
         Polyline3D.createDirectly coordinates
 
     /// Creates a Polyline3D from a list of objects with X and Y members (uppercase), using 0.0 for Z.
-    static member inline createFromXYMembers (xyObjs: seq< ^T >) : Polyline3D =
+    static member inline createFrom2DXYMembers (xyObjs: seq< ^T >) : Polyline3D =
         let coordinates = ResizeArray<float>()
         for pt in xyObjs do
             let x = float (^T : (member X : _) pt)
@@ -1456,7 +1488,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
         Polyline3D.createDirectly coordinates
 
     /// Creates a Polyline3D from a list of objects with x and y members (lowercase), using 0.0 for z.
-    static member inline createFromxyMembers (xyObjs: seq< ^T >) : Polyline3D =
+    static member inline createFrom2DxyMembers (xyObjs: seq< ^T >) : Polyline3D =
         let coordinates = ResizeArray<float>()
         for pt in xyObjs do
             let x = float (^T : (member x : _) pt)
@@ -1470,7 +1502,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     static member create(points: seq<Pnt>) : Polyline3D =
         Polyline3D(points)
 
-    /// Create a new Polyline3D by using the provided interleaved coordinate buffer directly.
+    /// Create a new Polyline3D by using the provided X, Y and Z interleaved ResizeArray directly.
     /// Unsafe because later changes to the ResizeArray will be reflected in the Polyline3D.
     static member createDirectly (xyzs: ResizeArray<float>) : Polyline3D =
         if isNull xyzs then failNull "Polyline3D.createDirectly" "coordinates"
@@ -1489,8 +1521,10 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
         Polyline3D r.PointsLooped
 
     /// Returns new Polyline3D from point at Parameter a to point at Parameter b.
-    /// if 'a' is bigger 'b' then the new Polyline3D is in opposite direction.
-    /// If a parameter is within 1e-4 of an integer value, the integer value is used as parameter.
+    /// If 'a' is bigger than 'b' then the new Polyline3D is in opposite direction.
+    /// If the start parameter is less than 1e-4 below the next integer it snaps up to that vertex.
+    /// If the end parameter is less than 1e-4 above the previous integer it snaps down to that vertex.
+    /// Raises an error if a parameter is outside the domain of the Polyline3D (0.0 to points.Count - 1.0).
     static member subPolyline a b (pl:Polyline3D) : Polyline3D =
         let rev = a>b
         let u, v = if rev then b, a else a, b
@@ -1519,8 +1553,9 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// Returns a new closed Polyline3D.
     /// If the first and last point are within the tolerance of each other, the last point is set equal to the first point.
     /// Otherwise one point is added.
+    /// Raises an error if the Polyline3D has fewer than 3 points, same as CloseInPlace.
     static member close (toleranceForAddingPoint:float) (pl:Polyline3D) : Polyline3D =
-        if pl.PointCount < 2 then failTooFewPoly3D "close" 2 pl.PointCount
+        if pl.PointCount < 3 then failTooFewPoly3D "close" 3 pl.PointCount
         let np = pl.Duplicate()
         let sx = np.GetX 0
         let sy = np.GetY 0
@@ -1532,7 +1567,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
         let dx = sx - ex
         let dy = sy - ey
         let dz = sz - ez
-        if dx * dx + dy * dy + dz * dz < toleranceForAddingPoint * toleranceForAddingPoint then
+        if dx * dx + dy * dy + dz * dz <= toleranceForAddingPoint * toleranceForAddingPoint then // <= needed so it works with 0.0
             np.SetPointXYZ (lastIdx, sx, sy, sz) // set last point equal to first
         else
             np.AddXYZ (sx, sy, sz)
@@ -1547,10 +1582,10 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             let mutable i = 0
             let mutable same = true
             while i < k && same do
-                let dx = abs (a.GetX i - b.GetX i)
-                let dy = abs (a.GetY i - b.GetY i)
-                let dz = abs (a.GetZ i - b.GetZ i)
-                if dx <= tol && dy <= tol && dz <= tol then
+                let dx = a.GetX i - b.GetX i
+                let dy = a.GetY i - b.GetY i
+                let dz = a.GetZ i - b.GetZ i
+                if dx * dx + dy * dy + dz * dz <= tol * tol then // Euclidean distance, same as Polyline2D.equals
                     i <- i + 1
                 else
                     same <- false
@@ -1588,9 +1623,111 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
                     lastY <- y
                     lastZ <- z
                 i <- i + 3
-            nps.[nps.Count - 3] <- xyzs.[xyzs.Count - 3] // ensure last point is not moved by the algorithm, it might be off by distanceTolerance
-            nps.[nps.Count - 2] <- xyzs.[xyzs.Count - 2]
-            nps.[nps.Count - 1] <- xyzs.[xyzs.Count - 1]
+            if nps.Count >= 6 then // if only one point is left keep the start point, don't overwrite it with the end point
+                nps.[nps.Count - 3] <- xyzs.[xyzs.Count - 3] // ensure last point is not moved by the algorithm, it might be off by distanceTolerance
+                nps.[nps.Count - 2] <- xyzs.[xyzs.Count - 2]
+                nps.[nps.Count - 1] <- xyzs.[xyzs.Count - 1]
+            Polyline3D.createDirectly nps
+
+    /// <summary>Removes consecutive duplicate points from the Polyline3D within a given tolerance.</summary>
+    /// <param name="distanceTolerance"> The distance within which points are considered duplicates. </param>
+    /// <param name="pl"> A 3D Polyline, open or closed. </param>
+    /// <remarks>This algorithm ensures to keep edges in their position by re-intersecting segments at their closest approach if points are closer than the distanceTolerance but not identical.
+    /// The position of start and end point is NOT changed. Use Polyline3D.close to ensure start and end point are identical.</remarks>
+    static member removeDuplicatePointsFaithfully (distanceTolerance:float) (pl:Polyline3D) : Polyline3D =
+        let xyzs = pl.XYZs
+        if xyzs.Count < 6 then // single point or empty polyline
+            pl
+        else
+            let tolSq = distanceTolerance * distanceTolerance
+            let nps = ResizeArray<float>(xyzs.Count)
+            let mutable prevX = xyzs.[0]
+            let mutable prevY = xyzs.[1]
+            let mutable prevZ = xyzs.[2]
+            let mutable prevWasBad = false
+            nps.Add prevX
+            nps.Add prevY
+            nps.Add prevZ
+            let mutable i = 3
+            while i < xyzs.Count do
+                let thisX = xyzs.[i]
+                let thisY = xyzs.[i + 1]
+                let thisZ = xyzs.[i + 2]
+                let dx = thisX - prevX
+                let dy = thisY - prevY
+                let dz = thisZ - prevZ
+                let dSq = dx * dx + dy * dy + dz * dz
+                // the distance is too small:
+                if dSq < tolSq then
+                    if dSq > 1e-24 then
+                        // if the points are not identical, we will try to keep line fidelity by re-intersecting segments.
+                        prevWasBad <- true
+
+                // the distance is OK:
+                else
+                    // (a) fix the last point if it was bad and not the first point
+                    if prevWasBad && nps.Count >= 6 then // if nps has less than 2 points we keep the start point exactly. like at the end see below.
+                        // else, if nps has at least 2 points, re-intersect the edge from lastBad to this with the edge from prev back to the previous ok point
+                        let lastBadX = xyzs.[i - 3] // prev is the last point of a cluster of too close points, so we use this as the last point of the edge.
+                        let lastBadY = xyzs.[i - 2]
+                        let lastBadZ = xyzs.[i - 1]
+                        let vLastX = thisX - lastBadX // Vec.create(lastBadPt, this)
+                        let vLastY = thisY - lastBadY
+                        let vLastZ = thisZ - lastBadZ
+                        let prevOkX = nps.[nps.Count - 6] // the point in nps before prev
+                        let prevOkY = nps.[nps.Count - 5]
+                        let prevOkZ = nps.[nps.Count - 4]
+                        let vFirstX = prevOkX - prevX // Vec.create(prev, prevOkPt), prev is the first bad point
+                        let vFirstY = prevOkY - prevY
+                        let vFirstZ = prevOkZ - prevZ
+                        match XLine3D.tryClosestParameterRayA(lastBadX, lastBadY, lastBadZ, prevX, prevY, prevZ, vLastX, vLastY, vLastZ, vFirstX, vFirstY, vFirstZ) with
+                        |Some t ->
+                            // the expected parameter on A is somewhere round 0.0, so use -0.4 to 0.4 as range,
+                            let x = lastBadX + t * vLastX // t is the parameter on line A (lastBad, vLast)
+                            let y = lastBadY + t * vLastY
+                            let z = lastBadZ + t * vLastZ
+                            // the closest-approach point must stay within the distanceTolerance of the cluster it replaces,
+                            // measured against prev (last OK point) and lastBad (start of the following OK segment).
+                            let dPrevX = x - prevX
+                            let dPrevY = y - prevY
+                            let dPrevZ = z - prevZ
+                            let dLastX = x - lastBadX
+                            let dLastY = y - lastBadY
+                            let dLastZ = z - lastBadZ
+                            if t > -0.4 && t < 0.4
+                               && dPrevX * dPrevX + dPrevY * dPrevY + dPrevZ * dPrevZ < tolSq
+                               && dLastX * dLastX + dLastY * dLastY + dLastZ * dLastZ < tolSq then
+                                nps.[nps.Count - 3] <- x // replace prev that was already set
+                                nps.[nps.Count - 2] <- y
+                                nps.[nps.Count - 1] <- z
+                            else
+                                // closest approach is too far away or segments are near parallel, line fidelity is not kept, use the midpoint
+                                nps.[nps.Count - 3] <- (lastBadX + prevX) * 0.5
+                                nps.[nps.Count - 2] <- (lastBadY + prevY) * 0.5
+                                nps.[nps.Count - 1] <- (lastBadZ + prevZ) * 0.5
+                        |None -> // segments are parallel, no closest approach parameter
+                            nps.[nps.Count - 3] <- (lastBadX + prevX) * 0.5 // in this case line fidelity is not kept, use the midpoint
+                            nps.[nps.Count - 2] <- (lastBadY + prevY) * 0.5
+                            nps.[nps.Count - 1] <- (lastBadZ + prevZ) * 0.5
+
+                    // (b) just use this point, no last points to fix
+                    nps.Add thisX
+                    nps.Add thisY
+                    nps.Add thisZ
+                    prevX <- thisX
+                    prevY <- thisY
+                    prevZ <- thisZ
+                    prevWasBad <- false
+
+                i <- i + 3
+
+            // last point :
+            if prevWasBad then
+                // in this case we are maintaining the last point exactly. like we do with the first point.
+                nps.[nps.Count - 3] <- xyzs.[xyzs.Count - 3]
+                nps.[nps.Count - 2] <- xyzs.[xyzs.Count - 2]
+                nps.[nps.Count - 1] <- xyzs.[xyzs.Count - 1]
+
             Polyline3D.createDirectly nps
 
     /// Removes consecutive duplicate points and colinear points from the Polyline3D within given tolerances.
@@ -1599,11 +1736,12 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// If the Polyline3D is closed and starts and ends with colinear segments, the first point is replaced with the last non-colinear point.
     /// So the joint of the loop is now moved to the last non-colinear point.
     /// So that there are no colinear segments even between start and end.
-    static member removeColinearAndDuplicatePoints (angleTolerance:float<Cosine.cosine>) (distanceTolerance:float) (pl:Polyline3D) : Polyline3D =
+    /// Raises an error if all points are within the distanceTolerance of the first point.
+    static member removeDuplicateAndColinearPoints (angleTolerance:float<Cosine.cosine>) (distanceTolerance:float) (pl:Polyline3D) : Polyline3D =
         if angleTolerance < Cosine.``45.0`` then
-            fail $"Polyline3D.removeColinearAndDuplicatePoints: angleTolerance must be at least Cosine.``45.0`` ( that is 0.707) but was {angleTolerance} (= {acos (float angleTolerance)} degrees)."
+            fail $"Polyline3D.removeDuplicateAndColinearPoints: angleTolerance must be at least Cosine.``45.0`` ( that is 0.707) but was {angleTolerance} (= {acos (float angleTolerance) |> toDegrees} degrees)."
         if angleTolerance > Cosine.``0.01`` then
-            fail $"Polyline3D.removeColinearAndDuplicatePoints: angleTolerance must be at most Cosine.``0.01`` ( that is 0.999999984) but was {angleTolerance} (= {acos (float angleTolerance)} degrees)."
+            fail $"Polyline3D.removeDuplicateAndColinearPoints: angleTolerance must be at most Cosine.``0.01`` ( that is 0.999999984) but was {angleTolerance} (= {acos (float angleTolerance) |> toDegrees} degrees)."
 
         let pts = pl.AsPoints
         if pts.Count < 2 then // single point or empty polyline
@@ -1624,6 +1762,9 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
                 i <- i + 1
                 this  <- pts.[i]
                 len   <- Pnt.dist prev this
+
+            if len < distTol then
+                fail $"Polyline3D.removeDuplicateAndColinearPoints: all {pts.Count} points are within the distanceTolerance {distTol} of the first point {prev}."
 
             let firstVec = UnitVec.create(prev, this)
             let mutable vPrev = firstVec
@@ -1664,6 +1805,35 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
                     nps.Last <- pts.Last // ensure last point is not changed, it might be off by distanceTolerance
 
             Polyline3D nps
+
+    /// <summary>Removes simple sharp U-Turns from a Polyline</summary>
+    /// <param name="minCos"> The angle between segments so that they are considered a U-turn.
+    /// For example, for 179.9 degrees use 'Cosine.``179.9``'. </param>
+    /// <param name="polyLine"> A 3D Polyline, open or closed. </param>
+    /// <remarks>The Offset3D module also has a removeUTurns function that takes precomputed unit vectors and is therefore more efficient.
+    /// For nested U-turns and colinear points in U-turns segments use 'removeUTurnsDeeply'. That function calls repeatedly until no more U-turns are present.</remarks>
+    /// <returns>If no U-turns are present, the List of points of the original Polyline3D is reused and a new Polyline3D is created with that list.
+    /// If U-turns are present, a new ResizeArray of points is returned with simple U-turns removed.</returns>
+    static member removeUTurns (minCos:float<Cosine.cosine>) (polyLine:Polyline3D) : Polyline3D =
+        let uvs = Offset3D.getSegmentUnitVectors polyLine.XYZs
+        let pts = Offset3D.removeUTurns(polyLine.XYZs, uvs, minCos)
+        Polyline3D pts
+
+    /// <summary>Removes all sharp U-Turns from a Polyline recursively until no more U-turns are present.
+    /// This function calls 'removeUTurns' repeatedly until no more U-turns are present.
+    /// Use this function when you have nested U-turns and colinear points in U-turns segments.</summary>
+    /// <param name="minCos"> The angle between segments so that they are considered a U-turn.
+    /// For example, for 179.9 degrees use 'Cosine.``179.9``'. </param>
+    /// <param name="polyLine"> A 3D Polyline, open or closed. </param>
+    /// <returns>If no U-turns are present, the List of points of the original Polyline3D is reused and a new Polyline3D is created with that list.
+    /// If U-turns are present, a new ResizeArray of points is returned with all U-turns removed.</returns>
+    static member removeUTurnsDeeply (minCos:float<Cosine.cosine>) (polyLine:Polyline3D) : Polyline3D =
+        let mutable input = polyLine
+        let mutable output = Polyline3D.removeUTurns minCos polyLine
+        while output.PointCount <> input.PointCount do
+            input  <- output
+            output <- Polyline3D.removeUTurns minCos input
+        output
 
     // #endregion
     // #region Offset
@@ -1743,32 +1913,32 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             fail $"Polyline3D.offset: Polyline3D must have at least 2 points but has {polyLine.PointCount} points."
         let refNormal = polyLine.AverageNormal
         if refNormal.LengthSq < 1e-8 then
-            fail $"Polyline3D.offset: Cannot compute average normal of Polyline3D, the {polyLine.PointCount} points are colinear or too close together: "
+            fail $"Polyline3D.offset: Cannot compute average normal of Polyline3D, the {polyLine.PointCount} points are colinear or too close together: {polyLine}"
         Polyline3D.offsetWithRef(polyLine, inPlaneOffsetDistance, perpendicularOffsetDistance, refNormal.Unitized, loop)
 
     /// <summary> Offsets a Polyline in 3D space by finding the local plane in each corner.
     /// Auto-detects if given points are from a closed Polyline (first point = last point) and loops them.
     /// The reference normal is computed from the average normal of the polyline.
     /// This function raises an Exception on duplicate points, 180 degree U-turns, or colinear points.</summary>
-    /// <param name="perpendicularOffsetDistance">The offset distance perpendicular to the local plane.
-    /// A positive distance offsets in the direction of the computed normal.
-    /// For a counterclockwise polyline in xy-plane this is Upwards.
-    /// A negative distance offsets in the opposite direction.</param>
     /// <param name="inPlaneOffsetDistance">The offset distance in the local plane defined by two segments.
     /// A positive distance offsets to the inside of the polyline.
     /// A negative distance offsets to the outside.
     /// No matter how the polyline is oriented.</param>
+    /// <param name="perpendicularOffsetDistance">The offset distance perpendicular to the local plane.
+    /// A positive distance offsets in the direction of the computed normal.
+    /// For a counterclockwise polyline in xy-plane this is Upwards.
+    /// A negative distance offsets in the opposite direction.</param>
     /// <param name="polyLine"> A 3D Polyline, open or closed.</param>
     /// <returns>A new 3D polyline.</returns>
-    static member offset' (perpendicularOffsetDistance:float) (inPlaneOffsetDistance:float) (polyLine:Polyline3D): Polyline3D =
-        Polyline3D.offset(polyLine,inPlaneOffsetDistance, perpendicularOffsetDistance)
+    static member offset' (inPlaneOffsetDistance:float) (perpendicularOffsetDistance:float) (polyLine:Polyline3D): Polyline3D =
+        Polyline3D.offset(polyLine, inPlaneOffsetDistance, perpendicularOffsetDistance)
 
     /// <summary> Offsets a Polyline in 3D space by finding the local plane in each corner.
     /// Takes a reference normal for orienting the perpendicular offset and determining inside/outside.
     /// Auto-detects if given points are from a closed Polyline (first point = last point) and loops them.
     /// This function raises an Exception on duplicate points and 180 degree U-turns.</summary>
     /// <param name="polyLine"> A 3D Polyline, open or closed.</param>
-    /// <param name="inPlaneOffsetDistance">The offset distances in the local plane defined by two segments. One distance per segment.
+    /// <param name="inPlaneOffsetDistances">The offset distances in the local plane defined by two segments. One distance per segment.
     /// A positive distance offsets to the inside of the polyline (for counterclockwise polylines when refNormal points up).
     /// A negative distance offsets to the outside.</param>
     /// <param name="perpendicularOffsetDistances">The offset distances perpendicular to the local plane. One distance per segment.
@@ -1785,7 +1955,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// <returns>A new 3D polyline.</returns>
     static member offsetVarWithRef(
                             polyLine:Polyline3D,
-                            inPlaneOffsetDistance: Collections.Generic.IList<float>,
+                            inPlaneOffsetDistances: Collections.Generic.IList<float>,
                             perpendicularOffsetDistances: Collections.Generic.IList<float>,
                             refNormal: UnitVec,
                             [<OPT;DEF(false)>] loop:bool,
@@ -1803,9 +1973,9 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
         let dz = xyzs.[2] - xyzs.[xyzs.Count - 1]
         let isOpen = dx * dx + dy * dy + dz * dz > Offset3D.sqOpenTolerance
         if loop && isOpen then
-            if inPlaneOffsetDistance.Count <> ptCount then
-                fail ($"Polyline3D.offsetVarWithRef: For open Polyline3D with loop=true the inPlaneOffsetDistance list must have the same number of items as the polyline has points.\n" +
-                      $"But polyline has {ptCount} points and inPlaneOffsetDistance has {inPlaneOffsetDistance.Count} items.")
+            if inPlaneOffsetDistances.Count <> ptCount then
+                fail ($"Polyline3D.offsetVarWithRef: For open Polyline3D with loop=true the inPlaneOffsetDistances list must have the same number of items as the polyline has points.\n" +
+                      $"But polyline has {ptCount} points and inPlaneOffsetDistances has {inPlaneOffsetDistances.Count} items.")
             if perpendicularOffsetDistances.Count <> ptCount then
                 fail ($"Polyline3D.offsetVarWithRef: For open Polyline3D with loop=true the perpendicularOffsetDistances list must have the same number of items as the polyline has points.\n" +
                       $"But polyline has {ptCount} points and perpendicularOffsetDistances has {perpendicularOffsetDistances.Count} items.")
@@ -1816,7 +1986,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             closedXYZs.Add xyzs.[2]
             let uvs  = Offset3D.getSegmentUnitVectors closedXYZs
             let dirs = Offset3D.getOffsetDirections(uvs, refNormal, false, considerColinearBelow, failAtUTurnAbove)
-            let res  = Offset3D.offsetVariableWithDirections(closedXYZs, uvs, dirs, inPlaneOffsetDistance, perpendicularOffsetDistances, true, varDistParallelBehaviour)
+            let res  = Offset3D.offsetVariableWithDirections(closedXYZs, uvs, dirs, inPlaneOffsetDistances, perpendicularOffsetDistances, true, varDistParallelBehaviour)
             res.RemoveAt(res.Count - 1) // remove last point to open the polyline again
             res.RemoveAt(res.Count - 1)
             res.RemoveAt(res.Count - 1)
@@ -1824,7 +1994,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
         else
             let uvs = Offset3D.getSegmentUnitVectors xyzs
             let dirs = Offset3D.getOffsetDirections(uvs, refNormal, isOpen, considerColinearBelow, failAtUTurnAbove)
-            Offset3D.offsetVariableWithDirections(xyzs, uvs, dirs, inPlaneOffsetDistance, perpendicularOffsetDistances, isOpen, varDistParallelBehaviour)
+            Offset3D.offsetVariableWithDirections(xyzs, uvs, dirs, inPlaneOffsetDistances, perpendicularOffsetDistances, isOpen, varDistParallelBehaviour)
             |> Polyline3D.createDirectly
 
     /// <summary> Offsets a Polyline in 3D space by finding the local plane in each corner.
@@ -1832,7 +2002,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// The reference normal is computed from the average normal of the polyline.
     /// This function raises an Exception on duplicate points, 180 degree U-turns, or colinear points.</summary>
     /// <param name="polyLine"> A 3D Polyline, open or closed.</param>
-    /// <param name="inPlaneOffsetDistance">The offset distances in the local plane defined by two segments. One distance per segment.
+    /// <param name="inPlaneOffsetDistances">The offset distances in the local plane defined by two segments. One distance per segment.
     /// A positive distance offsets to the inside of the polyline.
     /// A negative distance offsets to the outside.
     /// No matter how the polyline is oriented.</param>
@@ -1850,17 +2020,19 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// The cosine of the angle above which a U-turn is considered to fail.</param>
     /// <returns>A new 3D polyline.</returns>
     static member offsetVar(polyLine:Polyline3D,
-                            inPlaneOffsetDistance: ResizeArray<float>,
+                            inPlaneOffsetDistances: ResizeArray<float>,
                             perpendicularOffsetDistances: ResizeArray<float>,
                             [<OPT;DEF(false)>] loop:bool,
                             [<OPT;DEF(Offset3D.VarDistParallel.Fail)>] varDistParallelBehaviour: Offset3D.VarDistParallel, // fail by default
                             [<OPT;DEF(Cosine.``2.5``)>] considerColinearBelow: float<Cosine.cosine>,
                             [<OPT;DEF(Cosine.``175.0``)>] failAtUTurnAbove :float<Cosine.cosine>
                             ) : Polyline3D =
+        if polyLine.PointCount < 2 then
+            fail $"Polyline3D.offsetVar: Polyline3D must have at least 2 points but has {polyLine.PointCount} points."
         let refNormal = polyLine.AverageNormal
         if refNormal.LengthSq < 1e-8 then
-            fail $"Polyline3D.offsetVar: Cannot compute average normal of Polyline3D, the {polyLine.PointCount} points are colinear or too close together: "
-        Polyline3D.offsetVarWithRef(polyLine,inPlaneOffsetDistance, perpendicularOffsetDistances, refNormal.Unitized, loop, varDistParallelBehaviour, considerColinearBelow, failAtUTurnAbove)
+            fail $"Polyline3D.offsetVar: Cannot compute average normal of Polyline3D, the {polyLine.PointCount} points are colinear or too close together: {polyLine}"
+        Polyline3D.offsetVarWithRef(polyLine, inPlaneOffsetDistances, perpendicularOffsetDistances, refNormal.Unitized, loop, varDistParallelBehaviour, considerColinearBelow, failAtUTurnAbove)
 
 
 

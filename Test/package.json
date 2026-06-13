@@ -2,7 +2,7 @@
   "type": "module",
   "scripts": {
     "checkTS": "tsc",
-    "buildTS": "dotnet fable       ../Euclid.fsproj --lang typescript --silent --outDir ./_ts --configuration Release --run npm run checkTS",
+    "buildTS": "dotnet fable ../Euclid.fsproj --lang typescript --outDir ./_ts --configuration Release --run npm run checkTS",
     "buildJS": "dotnet fable --outDir dist/testsRelease --noCache --configuration Release",
     "buildDb": "dotnet fable --outDir dist/testsDebug --noCache --configuration Debug",
     "build": "dotnet tool restore && npm run buildJS && npm run buildDb && npm run buildTS",

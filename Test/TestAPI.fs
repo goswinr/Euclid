@@ -5,6 +5,11 @@ open Euclid
 #nowarn "44" // Suppress warnings for obsolete members
 
 
+// IMPORTANT : This file is meant to be a compile-time test of the API surface of Euclid release 16.
+// It should should NOT be changed anymore, it just helped to see what members need to be marked obsolete instead of deleted.
+
+
+
 // A test that has the full API available of release 16
 // This is a compile time only test to find any missing API surface and add them as obsolete members
 // No runtime test is performed here
@@ -83,7 +88,7 @@ module ApiVc =
     // Static members - Creation
     let (_:Vc) = Vc.create(1.0, 2.0)
     let (_:Vc) = Vc.create(Pt(0., 0.), Pt(1., 2.))
-    let (_:Vc) = Vc.createFromPt(Pnt(1., 2., 3.))
+    let (_:Vc) = Vc.createFromPnt(Pnt(1., 2., 3.))
     let (_:Vc) = Vc.createFromUnitVc(UnitVc.Xaxis)
     let (_:Vc) = Vc.createFromMembersXY (Pt(1., 2.))  // Pt has X and Y members
     // createFromMembersxy requires lowercase x/y members which Euclid types don't have
@@ -104,8 +109,8 @@ module ApiVc =
     // Static members - Modification
     let (_:Vc) = Vc.withX 5.0 vc
     let (_:Vc) = Vc.withY 5.0 vc
-    let (_:Vc) = Vc.moveX 1.0 vc
-    let (_:Vc) = Vc.moveY 1.0 vc
+    let (_:Vc) = Vc.addX 1.0 vc
+    let (_:Vc) = Vc.addY 1.0 vc
     let (_:Vc) = Vc.scale 2.0 vc
     let (_:Vc) = Vc.withLength 5.0 vc
     let (_:Vc) = Vc.add vc v2
@@ -281,8 +286,8 @@ module UnitVcAPI =
     let (_:Vc) = UnitVc.add unitvc u2
     let (_:Vc) = UnitVc.scale 2.0 unitvc
     let (_:Vc) = UnitVc.withLength 5.0 unitvc
-    let (_:Vc) = UnitVc.moveX 1.0 unitvc
-    let (_:Vc) = UnitVc.moveY 1.0 unitvc
+    let (_:Vc) = UnitVc.addX 1.0 unitvc
+    let (_:Vc) = UnitVc.addY 1.0 unitvc
     let (_:UnitVc) = UnitVc.flip unitvc
     let (_:UnitVc) = UnitVc.reverse unitvc
 
@@ -313,7 +318,7 @@ module UnitVcAPI =
     let (_:float) = UnitVc.direction2Pi unitvc
     let (_:float) = UnitVc.direction360 unitvc
     let (_:float) = UnitVc.slopeRadians unitvc
-    let (_:float) = UnitVc.slopeDegree unitvc
+    let (_:float) = UnitVc.slopeDegrees unitvc
     let (_:float) = UnitVc.slopePercent unitvc
     let (_:float) = UnitVc.angleToXPi unitvc
     let (_:float) = UnitVc.angleToX180 unitvc
@@ -746,9 +751,9 @@ module VecAPI =
     let (_:Vec) = Vec.withX 5.0 vec
     let (_:Vec) = Vec.withY 5.0 vec
     let (_:Vec) = Vec.withZ 5.0 vec
-    let (_:Vec) = Vec.moveX 1.0 vec
-    let (_:Vec) = Vec.moveY 1.0 vec
-    let (_:Vec) = Vec.moveZ 1.0 vec
+    let (_:Vec) = Vec.addX 1.0 vec
+    let (_:Vec) = Vec.addY 1.0 vec
+    let (_:Vec) = Vec.addZ 1.0 vec
     let (_:Vec) = Vec.scale 2.0 vec
     let (_:Vec) = Vec.withLength 5.0 vec
     let (_:Vec) = Vec.add vec v2
@@ -1053,7 +1058,7 @@ module Line2DAPI =
     let (_:Pt) = Line2D.from line2d
     let (_:float) = Line2D.fromX line2d
     let (_:float) = Line2D.fromY line2d
-    let (_:Pt) = Line2D.ende line2d
+    let (_:Pt) = Line2D.end' line2d
     let (_:Pt) = Line2D.to' line2d
     let (_:float) = Line2D.toX line2d
     let (_:float) = Line2D.toY line2d
@@ -2182,7 +2187,7 @@ module Polyline2DAPI =
 
     // Static members - Properties
     let (_:Pt) = Polyline2D.start polyline2d
-    let (_:Pt) = Polyline2D.ende polyline2d
+    let (_:Pt) = Polyline2D.end' polyline2d
 
     // Static members - Operations
     let vc = Vc(1., 1.)
@@ -2203,7 +2208,7 @@ module Polyline2DAPI =
     let (_:Pt) = Polyline2D.closestPoint polyline2d pt
     let (_:float) = Polyline2D.distanceTo polyline2d pt
     let (_:Polyline2D) = Polyline2D.mapPt (fun p -> p + Vc(1., 1.)) polyline2d
-    let (_:Pt ResizeArray) = Polyline2D.pointsUnsafeInternal polyline2d // returns accessor function
+    // let (_:Pt ResizeArray) = Polyline2D.as polyline2d // returns accessor function
     let (_:Polyline2D) = Polyline2D.offset (polyline2d, 1.0)
     let (_:Polyline2D) = Polyline2D.offsetVar (polyline2d,  [|1.0; 1.0; 1.0; 1.0;|])
 
@@ -2268,7 +2273,7 @@ module Polyline3DAPI =
 
     // Static members - Properties
     let (_:Pnt) = Polyline3D.start polyline3d
-    let (_:Pnt) = Polyline3D.ende polyline3d
+    let (_:Pnt) = Polyline3D.end' polyline3d
 
     // Static members - Operations
     let (_:Pnt) = Polyline3D.evaluateAt 0.5 polyline3d
@@ -2330,7 +2335,7 @@ module PointsAPI =
     let (_:(int*int)) = Points.mostDistantPointIdx(pts2d, pts2d)
     let (_:Pt) = Points.mostDistantPoint(pts2d, pts2d)
     let (_:Pnt) = Points.center pts3d
-    let (_:ResizeArray<Pt>) = Points.cullDuplicatePointsInSeq(pts2d, 0.001)
+    // let (_:ResizeArray<Pt>) = Points.cullDuplicatePointsInSeq(pts2d, 0.001)
 
     // Static members - 3D operations
     let (_:Pnt) = Points.closestPoint(pts3d, Pnt(5., 5., 5.))
@@ -2343,7 +2348,7 @@ module PointsAPI =
     let (_:bool) = Points.areInLine(Pnt(0., 0., 0.), Pnt(5., 0., 0.), Pnt(10., 0., 0.), 0.001)
     let (_:float) = Points.areaTriangle(Pnt(0., 0., 0.), Pnt(10., 0., 0.), Pnt(5., 10., 0.))
     let (_:float) = Points.areaTriangleDoubleSq(Pnt(0., 0., 0.), Pnt(10., 0., 0.), Pnt(5., 10., 0.))
-    let (_:ResizeArray<Pnt>) = Points.cullDuplicatePointsInSeq(pts3d, 0.001)
+    // let (_:ResizeArray<Pnt>) = Points.cullDuplicatePointsInSeq(pts3d, 0.001)
     let (_:Vec) = Points.normalOfPoints pts3d
 
     // Static members - Additional operations
@@ -2387,7 +2392,7 @@ module UtilAPI =
 
     // Static members - Other
     let (_:float) = UtilEuclid.matchSign 5.0 (-3.0)
-    let (_:int) = UtilEuclid.saveIdx 10 5
+    let (_:int) = UtilEuclid.safeIdx 10 5
 
 
 // ===== Intersect (Intersection utilities) =====
@@ -2436,9 +2441,9 @@ module TopologyAPI =
 
     // Static members - 2D sorting/joining operations
     // sortToLoop2D: (getLine: 'T -> Line2D, xs:ResizeArray<'T>) -> unit
-    let () = Topology.sortToLoop2D(id, lines2d)
+    let (_:unit) = Topology.sortToLoop2D(id, lines2d)
     // sortToLoopWithReversing2D: (getLine: 'T -> Line2D, reverseInPlace: int -> 'T -> unit, xs:ResizeArray<'T>) -> unit
-    let () = Topology.sortToLoopWithReversing2D((fun ln -> ln), (fun _ _ -> ()), lines2d)
+    let (_:unit) = Topology.sortToLoopWithReversing2D((fun ln -> ln), (fun _ _ -> ()), lines2d)
     // join2D: (getLine: 'T -> Line2D, splitDistance:float, xs:ResizeArray<'T>) -> ResizeArray<ResizeArray<'T>>
     let (_:ResizeArray<ResizeArray<Line2D>>) = Topology.join2D(id, 0.001, lines2d)
     // joinReversing2D: (getLine: 'T -> Line2D, splitDistance:float, xs:ResizeArray<'T>) -> ResizeArray<ResizeArray<'T * bool>>

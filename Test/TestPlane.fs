@@ -79,11 +79,18 @@ let tests =
                 Expect.equal dist 10. "Distance should be 10"
             }
 
-            test "DistanceToPt for point below plane" {
+            test "DistanceToPt for point below plane returns absolute distance" {
                 let plane = NPlane.create(Pnt(0., 0., 0.), Vec(0., 0., 1.))
                 let pt = Pnt(5., 5., -10.)
                 let dist = plane.DistanceToPt pt
-                Expect.equal dist -10. "Distance should be -10 (signed)"
+                Expect.equal dist 10. "Distance should be 10"
+            }
+
+            test "DistanceToPtSigned for point below plane" {
+                let plane = NPlane.create(Pnt(0., 0., 0.), Vec(0., 0., 1.))
+                let pt = Pnt(5., 5., -10.)
+                let dist = plane.DistanceToPtSigned pt
+                Expect.equal dist -10. "Signed distance should be -10"
             }
 
             test "DistanceToPt for point on plane" {
@@ -177,6 +184,13 @@ let tests =
                 let a = NPlane.create(Pnt(0., 0., 0.), Vec(0., 0., 1.))
                 let b = NPlane.create(Pnt(0., 0., 10.), Vec(0., 0., 1.))
                 Expect.isFalse (a.IsCoincidentTo b) "Separated parallel planes should not be coincident"
+            }
+
+            test "IsCoincidentTo for parallel planes separated on negative side" {
+                let a = NPlane.create(Pnt(0., 0., 0.), Vec(0., 0., 1.))
+                let b = NPlane.create(Pnt(0., 0., -10.), Vec(0., 0., 1.))
+                Expect.isFalse (a.IsCoincidentTo b) "Separated parallel planes below should not be coincident"
+                Expect.isFalse (NPlane.areCoincident a b) "Static coincidence check should not treat negative signed distance as coincident"
             }
 
             test "IsCoincidentTo for non-parallel planes" {
@@ -366,6 +380,20 @@ let tests =
                 Expect.equal dist 10. "Distance should be 10"
             }
 
+            test "DistanceToPt for point below plane returns absolute distance" {
+                let plane = PPlane.WorldXY
+                let pt = Pnt(5., 5., -10.)
+                let dist = plane.DistanceToPt pt
+                Expect.equal dist 10. "Distance should be 10"
+            }
+
+            test "DistanceToPtSigned for point below plane" {
+                let plane = PPlane.WorldXY
+                let pt = Pnt(5., 5., -10.)
+                let dist = plane.DistanceToPtSigned pt
+                Expect.equal dist -10. "Signed distance should be -10"
+            }
+
             test "EvaluateAt origin (0, 0, 0)" {
                 let plane = PPlane.createOriginXaxisYaxis(Pnt(1., 2., 3.), Vec.Xaxis, Vec.Yaxis)
                 let pt = plane.EvaluateAt(0., 0., 0.)
@@ -441,6 +469,13 @@ let tests =
                 let a = PPlane.WorldXY
                 let b = PPlane.createOriginXaxisYaxis(Pnt(10., 10., 0.), Vec.Xaxis, Vec.Yaxis)
                 Expect.isTrue (PPlane.isCoincidentTo 1e-6 Cosine.``0.1`` a b) "Static method should work"
+            }
+
+            test "IsCoincidentTo for parallel planes separated on negative side" {
+                let a = PPlane.WorldXY
+                let b = PPlane.createOriginXaxisYaxis(Pnt(0., 0., -10.), Vec.Xaxis, Vec.Yaxis)
+                Expect.isFalse (a.IsCoincidentTo b) "Separated parallel planes below should not be coincident"
+                Expect.isFalse (PPlane.isCoincidentTo 1e-6 Cosine.``0.25`` a b) "Static coincidence check should not treat negative signed distance as coincident"
             }
         ]
 

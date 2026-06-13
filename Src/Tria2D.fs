@@ -98,12 +98,21 @@ type Tria2D =
         pt + (nPrev + nNext) * (dist / (1.0 + cosine)) // offset point
 
 
+    /// Returns the capped offset point for a near-180-degree U-turn corner.
+    /// The exact miter would shoot towards infinity, so the corner is capped at the 179-degree
+    /// threshold. The result is scaled by 'dist' and lies on the same side as 'offsetPtCore'.
+    /// This mirrors Offset2D.handleUTurn with UTurn.UseThreshold.
+    static member inline private offsetPtUTurn (pt:Pt) (dist:float) (nPrev:UnitVc) (nNext:UnitVc) : Pt =
+        let v = nPrev.Rotate90CCW + nNext.Rotate90CW // the offset direction, with length of almost 2.0
+        let cosHalf = sqrt ((1.0 + float Cosine.``179.0``) / 2.0) // cosine of half the threshold angle = cosine of 89.5 degrees
+        pt + v * (0.5 * dist / cosHalf) // hypotenuse = adjacent / cos(angle); *0.5 because v length is almost 2.0
+
+
     /// Returns the offset point based on the previous and next normals, the distance and the precomputed cosine (= dot product of nPrev * nNext).
-    /// Checks for 180 degrees U-turns. sets it to 179 degrees
+    /// Checks for 180 degrees U-turns and caps them at 179 degrees.
     static member inline private offsetPtCoreSafe (pt:Pt) (dist:float) (nPrev:UnitVc) (nNext:UnitVc) (cosine:float) : Pt =
         if withMeasure cosine < Cosine.``179.0`` then // check for 180 degrees U-turns, (0.0 degrees are handled fine)
-            let v = nPrev.Rotate90CCW + nNext.Rotate90CW // the offset vector with length of 2.0
-            pt + v * 28.645 //tangent function of 89 degrees * 0.5
+            Tria2D.offsetPtUTurn pt dist nPrev nNext
         else
             Tria2D.offsetPtCore pt dist nPrev nNext cosine
 
@@ -121,8 +130,7 @@ type Tria2D =
         // check for 180 degrees U-turns. 179 degrees is exactly -0.9998476951563913
         // 0 degrees are handled fine
         if withMeasure cosine < Cosine.``179.0`` then // check for 180 degrees U-turns, (0.0 degrees are handled fine)
-            let v = vPrev - vNext // the offset vector with length of almost 2.0
-            ptToOffset + v * 28.645 //tangent function of 89 degrees * 0.5
+            Tria2D.offsetPtUTurn ptToOffset dist nPrev nNext
         else
             Tria2D.offsetPtCore ptToOffset dist nPrev nNext cosine
 

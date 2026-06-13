@@ -87,11 +87,11 @@ let tests =
             Expect.equal (matchSign 5.0 -3.0) 3.0 "match positive"
         }
 
-        test "saveIdx wraps" {
+        test "safeIdx wraps" {
             let arr = [|0;1;2;3|]
             let l = arr.Length
-            let idx1 = saveIdx -1 l
-            let idx2 = saveIdx 5 l
+            let idx1 = safeIdx -1 l
+            let idx2 = safeIdx 5 l
             Expect.equal arr[idx1] 3 "neg wraps"
             Expect.equal arr[idx2] 1 "overflow wraps"
         }
