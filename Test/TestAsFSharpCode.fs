@@ -41,7 +41,7 @@ let tests =
 
             let codeStr =
                 [
-                """#r "./Test/bin/Debug/net8.0/Euclid.dll" """
+                """#r "./Test/bin/Debug/net10.0/Euclid.dll" """
                 "open Euclid"
                 "open System"
                 "["
