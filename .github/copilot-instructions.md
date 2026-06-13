@@ -9,6 +9,16 @@ Please ask questions if any of these guidelines are unclear.
 If you are unsure how to interpret a guideline in a specific situation, please ask for clarification before proceeding.
 If you are unsure how to interpret a prompt or task, please ask for clarification before proceeding.
 
+## Cloud Sessions (Claude Code on the web)
+In cloud containers the .NET SDK is **not** preinstalled. The `SessionStart` hook
+(`.claude/hooks/session-start.sh`) installs the .NET 10 SDK, but it runs
+**asynchronously** so the session can start before the download finishes.
+This means `dotnet` may not be on `PATH` yet at the very start of a session.
+If a `dotnet` command fails with "command not found" (or the SDK appears missing),
+do not assume the environment is broken — the install is still in progress.
+Wait a short while and retry; the SDK and restored tools/dependencies will become
+available once the background hook completes.
+
 ## Naming Conventions
 - Use PascalCase for types, Discriminated Unions, instance members and modules
 - Use camelCase for variables, functions, and static members
