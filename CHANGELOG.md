@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.40.0] - 2026-01-13
 ### Fixed
 - `Polyline2D.SegmentVectorsXY` and `Polyline3D.SegmentVectorsXYZ` no longer throw on an empty polyline (negative ResizeArray capacity).
 - `Polyline2D.close`, `Polyline3D.close`, `Polyline2D.IsAlmostClosed` and `Polyline3D.IsAlmostClosed` now work with 0.0 tolerance on exactly closed polylines (tolerance comparison was strict less-than).
