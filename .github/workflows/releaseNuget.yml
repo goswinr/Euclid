@@ -18,6 +18,34 @@ jobs:
       with:
         dotnet-version: '10.x'
 
+    # run all test bevor publishing
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Run tests .NET
+      # start the tests from the root so that the AsFSharpCode-test-temp.fsx file can find the project files correctly
+      run: dotnet run --project ./Test/Test.fsproj
+
+
+    # run JS tests:
+
+    - name: Restore .NET tools (Fable)
+      run: dotnet tool restore
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: '24.x' # Adjust the version as needed
+
+    - name: Clean Install npm dependencies
+      run: npm ci
+      working-directory: ./Test
+
+    - name: Run tests JS
+      run: npm test
+      working-directory: ./Test
+
     - name: Replace <br> in README.md with two spaces for nuget.org
       run: |
         $content = Get-Content -Path README.md -Raw

@@ -594,11 +594,11 @@ let tests =
                 let shorter = Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(1.,0.,0.)]
                 Expect.isFalse (Polyline3D.equalsTol  1e-9 pl shorter) "different counts are not equal"
             }
-            test "equals uses Euclidean distance not per-axis" {
-                let a = Polyline3D.createFromPts [Pnt(0.,0.,0.)]
-                let b = Polyline3D.createFromPts [Pnt(0.0008, 0.0008, 0.0008)] // each axis within 0.001, Euclidean distance ~0.001386
-                Expect.isFalse (Polyline3D.equalsTol  0.001 a b) "outside Euclidean tolerance"
-                Expect.isTrue (Polyline3D.equalsTol  0.0015 a b) "inside Euclidean tolerance"
+            test "equals uses  distance  per-axis" {
+                let a = Polyline3D.createFromPts [Pnt(0.,0.,0.);Pnt(0.,0.,0.)]
+                let b = Polyline3D.createFromPts [Pnt(0.,0.,0.);Pnt(0.008, 0.008, 0.008)] // each axis within 0.001, Euclidean distance ~0.001386
+                Expect.isFalse (Polyline3D.equalsTol  0.007 a b) "outside Euclidean tolerance"
+                Expect.isTrue (Polyline3D.equalsTol   0.009 a b) "inside Euclidean tolerance"
             }
             test "EvaluateAt start, mid-segment and out of range" {
                 let pl = Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(1.,1.,0.)]

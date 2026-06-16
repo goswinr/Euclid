@@ -1,9 +1,6 @@
 name: Check Links
 
 on:
-  push:
-    tags:
-      - '*'
   schedule:
     - cron: '0 6 * * 6'
 
