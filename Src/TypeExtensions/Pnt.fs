@@ -92,6 +92,7 @@ module AutoOpenPnt =
         static member inline withZ z (pt:Pnt) : Pnt =
             Pnt(pt.X, pt.Y, z)
 
+
         /// Returns the distance between two 3D points.
         member inline p.DistanceTo (b:Pnt) : float =
             let x = p.X-b.X
@@ -103,9 +104,16 @@ module AutoOpenPnt =
         static member inline distanceTo (b:Pnt) (p:Pnt) : float =
             p.DistanceTo b
 
-        /// Returns the distance between two 3D points.
-        static member inline dist (b:Pnt) (p:Pnt) : float =
-            p.DistanceTo b
+        /// Returns the distance between a 3D point and given x, y, z coordinates.
+        member inline p.DistanceToXYZ (x:float, y:float, z:float) : float =
+            let dx = p.X - x
+            let dy = p.Y - y
+            let dz = p.Z - z
+            sqrt(dx*dx + dy*dy + dz*dz)
+
+        /// Returns the distance between a 3D point and given x, y, z coordinates.
+        static member inline distanceToXYZ (x:float, y:float, z:float) (p:Pnt) : float =
+            p.DistanceToXYZ (x, y, z)
 
         /// Returns the squared distance between two 3D points.
         /// This operation is slightly faster than the distance function, and sufficient for many algorithms like finding closest points.
@@ -121,11 +129,31 @@ module AutoOpenPnt =
         static member inline sqDistanceTo (b:Pnt) (p:Pnt) : float =
             p.SqDistanceTo b
 
+
+        /// Returns the squared distance between a 3D point and given x, y, z coordinates.
+        member inline p.SqDistanceToXYZ (x:float, y:float, z:float) : float =
+            let dx = p.X - x
+            let dy = p.Y - y
+            let dz = p.Z - z
+            dx*dx + dy*dy + dz*dz
+
+        /// Returns the squared distance between a 3D point and given x, y, z coordinates.
+        static member inline sqDistanceToXYZ (x:float, y:float, z:float) (p:Pnt) : float =
+            p.SqDistanceToXYZ (x, y, z)
+
+
+
+        /// Returns the distance between two 3D points.
+        static member inline dist (b:Pnt) (p:Pnt) : float =
+            p.DistanceTo b
+
+
         /// Returns the squared distance between two 3D points.
         /// This operation is slightly faster than the distance function, and sufficient for many algorithms like finding closest points.
         /// Same as Pnt.sqDistanceTo.
         static member inline sqDist (b:Pnt) (p:Pnt) : float =
             p.SqDistanceTo b
+
 
         /// Returns the distance from Origin (0, 0, 0)
         member inline pt.DistanceFromOrigin : float =

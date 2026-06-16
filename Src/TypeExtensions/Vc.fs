@@ -242,18 +242,22 @@ module AutoOpenVc =
             v.RotateRadians angRadians
 
         /// 90 Degree rotation Counter-Clockwise.
+        /// Vc(-y, x)
         member inline v.Rotate90CCW : Vc =
             Vc( -v.Y, v.X)
 
         /// 90 Degree rotation Counter-Clockwise.
+        /// Vc(-y, x)
         static member inline rotate90CCW (v:Vc) : Vc =
             Vc( -v.Y, v.X)
 
         /// 90 Degree rotation clockwise.
+        /// Vc(y, -x)
         member inline v.Rotate90CW : Vc =
             Vc(v.Y, -v.X)
 
         /// 90 Degree rotation clockwise.
+        /// Vc(y, -x)
         static member inline rotate90CW (v:Vc) : Vc =
             Vc( v.Y, -v.X)
 

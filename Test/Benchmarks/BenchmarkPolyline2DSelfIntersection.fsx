@@ -71,7 +71,7 @@ type Polyline2DSelfIntersectionBenchmarks() =
                 let angle = 2.0 * Math.PI * float i / float segmentCount
                 Pt(radius * cos angle, radius * sin angle) |]
 
-        circle <- Polyline2D.create points
+        circle <- Polyline2D.createFromPts points
 
     [<Benchmark(Baseline = true)>]
     member _.TryFindSelfIntersection() =

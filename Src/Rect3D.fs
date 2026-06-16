@@ -1163,6 +1163,44 @@ type Rect3D =
     static member inline pointsLooped (r:Rect3D) : Pnt[] =
         r.PointsLooped
 
+    /// <summary>Iterates the 4 corners of the 3D Rectangle in Counter-Clockwise order, starting at Origin.</summary>
+    /// <param name="action">The action to call 4 times. Once for each corner, with x, y and z as parameters.</param>
+    /// <param name="r">The rectangle to iterate the corners of.</param>
+    static member iterPointsCCW (action: float -> float -> float -> unit) (r:Rect3D) : unit =
+        action r.OriginX r.OriginY r.OriginZ
+        action (r.OriginX + r.XaxisX) (r.OriginY + r.XaxisY) (r.OriginZ + r.XaxisZ)
+        action (r.OriginX + r.XaxisX + r.YaxisX) (r.OriginY + r.XaxisY + r.YaxisY) (r.OriginZ + r.XaxisZ + r.YaxisZ)
+        action (r.OriginX + r.YaxisX) (r.OriginY + r.YaxisY) (r.OriginZ + r.YaxisZ)
+
+    /// <summary>Iterates the 4 corners of the 3D Rectangle as closed loop in Counter-Clockwise order, starting and ending at Origin.</summary>
+    /// <param name="action">The action to call 5 times, with x, y and z as parameters.</param>
+    /// <param name="r">The rectangle to iterate the corners of.</param>
+    static member iterPointsLoopedCCW (action: float -> float -> float -> unit) (r:Rect3D) : unit =
+        action r.OriginX r.OriginY r.OriginZ
+        action (r.OriginX + r.XaxisX) (r.OriginY + r.XaxisY) (r.OriginZ + r.XaxisZ)
+        action (r.OriginX + r.XaxisX + r.YaxisX) (r.OriginY + r.XaxisY + r.YaxisY) (r.OriginZ + r.XaxisZ + r.YaxisZ)
+        action (r.OriginX + r.YaxisX) (r.OriginY + r.YaxisY) (r.OriginZ + r.YaxisZ)
+        action r.OriginX r.OriginY r.OriginZ
+
+    /// <summary>Iterates the 4 corners of the 3D Rectangle in Clockwise order, starting at Origin.</summary>
+    /// <param name="action">The action to call 4 times. Once for each corner, with x, y and z as parameters.</param>
+    /// <param name="r">The rectangle to iterate the corners of.</param>
+    static member iterPointsCW (action: float -> float -> float -> unit) (r:Rect3D) : unit =
+        action r.OriginX r.OriginY r.OriginZ
+        action (r.OriginX + r.YaxisX) (r.OriginY + r.YaxisY) (r.OriginZ + r.YaxisZ)
+        action (r.OriginX + r.XaxisX + r.YaxisX) (r.OriginY + r.XaxisY + r.YaxisY) (r.OriginZ + r.XaxisZ + r.YaxisZ)
+        action (r.OriginX + r.XaxisX) (r.OriginY + r.XaxisY) (r.OriginZ + r.XaxisZ)
+
+    /// <summary>Iterates the 4 corners of the 3D Rectangle as closed loop in Clockwise order, starting and ending at Origin.</summary>
+    /// <param name="action">The action to call 5 times, with x, y and z as parameters.</param>
+    /// <param name="r">The rectangle to iterate the corners of.</param>
+    static member iterPointsLoopedCW (action: float -> float -> float -> unit) (r:Rect3D) : unit =
+        action r.OriginX r.OriginY r.OriginZ
+        action (r.OriginX + r.YaxisX) (r.OriginY + r.YaxisY) (r.OriginZ + r.YaxisZ)
+        action (r.OriginX + r.XaxisX + r.YaxisX) (r.OriginY + r.XaxisY + r.YaxisY) (r.OriginZ + r.XaxisZ + r.YaxisZ)
+        action (r.OriginX + r.XaxisX) (r.OriginY + r.XaxisY) (r.OriginZ + r.XaxisZ)
+        action r.OriginX r.OriginY r.OriginZ
+
     /// <summary>Returns the 4 Edges of the 3D-rectangle in Counter-Clockwise order, starting at Origin.
     /// Returns an array of 4 Lines: from point
     /// 0 to 1,

@@ -2131,7 +2131,7 @@ module FreeBoxAPI =
 
 module Polyline2DAPI =
     // Creation
-    let polyline2d = Polyline2D.create(ResizeArray [Pt(0., 0.); Pt(10., 0.); Pt(10., 10.); Pt(0., 10.);Pt(0., 0.)])
+    let polyline2d = Polyline2D.createFromPts(ResizeArray [Pt(0., 0.); Pt(10., 0.); Pt(10., 10.); Pt(0., 10.);Pt(0., 0.)])
     let pl2 = Polyline2D.createEmpty(0)
 
     // Instance members - String
@@ -2181,7 +2181,7 @@ module Polyline2DAPI =
     let (_:Polyline2D) = polyline2d.ScaleOn Pt.Origin 2.0
 
     // Static members - Creation
-    let (_:Polyline2D) = Polyline2D.create(ResizeArray [Pt(0., 0.); Pt(10., 0.); Pt(10., 10.)])
+    let (_:Polyline2D) = Polyline2D.createFromPts(ResizeArray [Pt(0., 0.); Pt(10., 0.); Pt(10., 10.)])
     let (_:Polyline2D) = Polyline2D.createEmpty(0)
     let (_:Polyline2D) = Polyline2D.createDirectlyUnsafe(ResizeArray [Pt(0., 0.); Pt(10., 0.); Pt(10., 10.)])
 
@@ -2215,13 +2215,13 @@ module Polyline2DAPI =
     // Note: findOuterCornerAndRefNormal and offsetCore are internal/private
 
     // Static members - Comparison
-    let (_:bool) = Polyline2D.equals 0.001 polyline2d polyline2d
+    let (_:bool) = Polyline2D.equals polyline2d polyline2d
 
 // ===== Polyline3D (3D Polyline) =====
 
 module Polyline3DAPI =
     // Creation
-    let polyline3d = Polyline3D.create(ResizeArray [Pnt(0., 0., 0.); Pnt(10., 0., 0.); Pnt(10., 10., 0.); Pnt(0., 10., 0.)])
+    let polyline3d = Polyline3D.createFromPts(ResizeArray [Pnt(0., 0., 0.); Pnt(10., 0., 0.); Pnt(10., 10., 0.); Pnt(0., 10., 0.)])
     let pl2 = Polyline3D.createEmpty(0)
 
     // Instance members - String
@@ -2267,7 +2267,7 @@ module Polyline3DAPI =
     let (_:Polyline3D) = polyline3d.ScaleOn Pnt.Origin 2.0
 
     // Static members - Creation
-    let (_:Polyline3D) = Polyline3D.create(ResizeArray [Pnt(0., 0., 0.); Pnt(10., 0., 0.); Pnt(10., 10., 0.)])
+    let (_:Polyline3D) = Polyline3D.createFromPts(ResizeArray [Pnt(0., 0., 0.); Pnt(10., 0., 0.); Pnt(10., 10., 0.)])
     let (_:Polyline3D) = Polyline3D.createEmpty(0)
     let (_:Polyline3D) = Polyline3D.createDirectlyUnsafe(ResizeArray [Pnt(0., 0., 0.); Pnt(10., 0., 0.); Pnt(10., 10., 0.)])
 
@@ -2294,14 +2294,14 @@ module Polyline3DAPI =
     let (_:float) = Polyline3D.closestParameter polyline3d (Pnt(5., 5., 0.))
     let (_:Pnt) = Polyline3D.closestPoint polyline3d (Pnt(5., 5., 0.))
     let (_:float) = Polyline3D.distanceTo polyline3d (Pnt(5., 5., 0.))
-    let (_:Polyline3D) = Polyline3D.mapPt (fun p -> p + Vec(1., 1., 1.)) polyline3d
+    let (_:Polyline3D) = Polyline3D.mapPnt (fun p -> p + Vec(1., 1., 1.)) polyline3d
     // let (_:Pnt ResizeArray) = Polyline3D.pointsUnsafeInternal polyline3d
     let (_:Polyline3D) = Polyline3D.offset(polyline3d, 1.0, 0)
 
     // Note: findOuterCornerAndRefNormal and offsetCore require complex setup or are internal
 
     // Static members - Comparison
-    let (_:bool) = Polyline3D.equals 0.001 polyline3d polyline3d
+    let (_:bool) = Polyline3D.equals  polyline3d polyline3d
 
 
 

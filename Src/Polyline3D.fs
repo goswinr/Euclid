@@ -1318,6 +1318,10 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     // #endregion
     // #region Static members
 
+    /// Move a Polyline3D by a vector. (same as Polyline3D.move)
+    static member translate (v:Vec) (pl:Polyline3D)  : Polyline3D =
+        pl.Move v
+
 
     /// Tests if the Polyline3D is Clockwise when projected in 2D (Z values are ignored).
     /// Returns the same instance if the Polyline3D is already Clockwise,
@@ -1346,11 +1350,14 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
         pl
 
 
+    // #endregion
+    // #region Map and Iter
+
     /// <summary>Apply a mapping function to each point in the 3D Polyline. Returns new Polyline3D.</summary>
     /// <param name="mapping">A function that takes a point and returns a new point.</param>
     /// <param name="pl">The Polyline3D to map over.</param>
     /// <returns>A new Polyline3D with the mapped points.</returns>
-    static member mapPt (mapping:Pnt-> Pnt) (pl:Polyline3D) : Polyline3D =
+    static member mapPnt (mapping:Pnt-> Pnt) (pl:Polyline3D) : Polyline3D =
         let xyzs = pl.XYZs
         let len = xyzs.Count
         let cs = ResizeArray<float>(len)
@@ -1364,12 +1371,12 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
         Polyline3D cs
 
 
-    /// <summary>Apply a mapping function to each point in the 3D Polyline3D with point position (not float index). Returns new Polyline3D.</summary>
+    /// <summary>Apply a mapping function to each point in the Polyline3D with point position (not float index). Returns new Polyline3D.</summary>
     /// <param name="mapping">A function that takes the position ( = array index/3) of the point and the point itself, and returns a new point.
     /// </param>
     /// <param name="pl">The Polyline3D to map over.</param>
     /// <returns>A new Polyline3D with the mapped points.</returns>
-    static member mapiPt (mapping:int -> Pnt -> Pnt) (pl:Polyline3D) : Polyline3D =
+    static member mapiPnt (mapping:int -> Pnt -> Pnt) (pl:Polyline3D) : Polyline3D =
         let xyzs = pl.XYZs
         let len = xyzs.Count
         let cs = ResizeArray<float>(len)
@@ -1400,7 +1407,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
         Polyline3D cs
 
     /// <summary>Apply a mapping function to each point in the 3D Polyline with index. Returns new Polyline3D.</summary>
-    /// <param name="mapping">A function that takes the point-index and the X, Y and Z coordinates of a point and returns a new point.</param>
+    /// <param name="mapping">A function that takes the index of the X coordinate (in the flat coordinate array) and the X, Y and Z coordinates of a point and returns a new point.</param>
     /// <param name="pl">The Polyline3D to map over.</param>
     /// <returns>A new Polyline3D with the mapped points.</returns>
     static member mapi (mapping:int -> float -> float -> float -> Pnt) (pl:Polyline3D) : Polyline3D =
@@ -1408,21 +1415,19 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
         let len = xyzs.Count
         let cs = ResizeArray<float>(len)
         let mutable i = 0
-        let mutable idx = 0
         while i < len do
-            let pt = mapping idx xyzs.[i] xyzs.[i + 1] xyzs.[i + 2]
+            let pt = mapping i xyzs.[i] xyzs.[i + 1] xyzs.[i + 2]
             cs.Add pt.X
             cs.Add pt.Y
             cs.Add pt.Z
             i <- i + 3
-            idx <- idx + 1
         Polyline3D cs
 
-    /// <summary>Iterate over each point in the 3D Polyline and perform an action.</summary>
-    /// <param name="action">A function that takes the X, Y and Z coordinates of a point and performs an action (returns unit).</param>
+    /// <summary>Iterate over each point in the Polyline3D.</summary>
+    /// <param name="action">A function that takes the X, Y and Z coordinates of a point.</param>
     /// <param name="pl">The Polyline3D to iterate over.</param>
     /// <returns>Unit.</returns>
-    static member iter (action:float -> float -> float -> unit) (pl:Polyline3D) : unit =
+    static member inline iter (action:float -> float -> float -> unit) (pl:Polyline3D) : unit =
         let xyzs = pl.XYZs
         let len = xyzs.Count
         let mutable i = 0
@@ -1430,23 +1435,176 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             action xyzs.[i] xyzs.[i + 1] xyzs.[i + 2]
             i <- i + 3
 
-    /// <summary>Iterate over each point in the 3D Polyline with index and perform an action.</summary>
-    /// <param name="action">A function that takes the point-index and the X, Y and Z coordinates of a point and performs an action (returns unit).</param>
+    /// <summary>Iterate over each point in the Polyline3D.</summary>
+    /// <param name="action">A function that takes a point.</param>
+    /// <param name="pl">The Polyline3D to iterate over.</param>
+    /// <returns>Unit.</returns>
+    static member iterPnt (action:Pnt -> unit) (pl:Polyline3D) : unit =
+        let xyzs = pl.XYZs
+        let len = xyzs.Count
+        let mutable i = 0
+        while i < len do
+            action (Pnt(xyzs.[i], xyzs.[i + 1], xyzs.[i + 2]))
+            i <- i + 3
+
+    /// <summary>Iterate over each point in the Polyline3D except the last point.</summary>
+    /// <param name="action">A function that takes the X, Y and Z coordinates of a point.</param>
+    /// <param name="pl">The Polyline3D to iterate over.</param>
+    /// <returns>Unit.</returns>
+    static member inline iterSkipLast (action:float -> float -> float -> unit) (pl:Polyline3D) : unit =
+        let xyzs = pl.XYZs
+        let len = xyzs.Count - 3 // skip last point
+        let mutable i = 0
+        while i < len do
+            action xyzs.[i] xyzs.[i + 1] xyzs.[i + 2]
+            i <- i + 3
+
+    /// <summary>Iterate over each point in the Polyline3D except the last point.</summary>
+    /// <param name="action">A function that takes a point.</param>
+    /// <param name="pl">The Polyline3D to iterate over.</param>
+    /// <returns>Unit.</returns>
+    static member inline iterPntSkipLast (action:Pnt -> unit) (pl:Polyline3D) : unit =
+        let xyzs = pl.XYZs
+        let len = xyzs.Count - 3 // skip last point
+        let mutable i = 0
+        while i < len do
+            action (Pnt(xyzs.[i], xyzs.[i + 1], xyzs.[i + 2]))
+            i <- i + 3
+
+
+    /// <summary>Iterate over each point in the Polyline3D with index.</summary>
+    /// <param name="action">A function that takes the index of the X coordinate (in the flat coordinate array) and the X, Y and Z coordinates of a point.</param>
     /// <param name="pl">The Polyline3D to iterate over.</param>
     /// <returns>Unit.</returns>
     static member iteri (action:int -> float -> float -> float -> unit) (pl:Polyline3D) : unit =
         let xyzs = pl.XYZs
         let len = xyzs.Count
         let mutable i = 0
-        let mutable idx = 0
         while i < len do
-            action idx xyzs.[i] xyzs.[i + 1] xyzs.[i + 2]
+            action i xyzs.[i] xyzs.[i + 1] xyzs.[i + 2]
             i <- i + 3
-            idx <- idx + 1
 
-    /// Move a Polyline3D by a vector. (same as Polyline3D.move)
-    static member translate (v:Vec) (pl:Polyline3D)  : Polyline3D =
-        pl.Move v
+    /// <summary>Iterate over each point in the Polyline3D with index.</summary>
+    /// <param name="action">A function that takes the position ( = array index/3) of the point and the point itself.</param>
+    /// <param name="pl">The Polyline3D to iterate over.</param>
+    /// <returns>Unit.</returns>
+    static member iteriPnt (action:int -> Pnt -> unit) (pl:Polyline3D) : unit =
+        let xyzs = pl.XYZs
+        let len = xyzs.Count
+        let mutable i = 0
+        while i < len do
+            action (i/3) (Pnt(xyzs.[i], xyzs.[i + 1], xyzs.[i + 2]))
+            i <- i + 3
+
+    /// <summary>Find the first point in the Polyline3D that satisfies a given condition. Returns Some(point) if found, otherwise None.</summary>
+    /// <param name="condition">A function that takes the X, Y and Z coordinates of a point and returns a boolean indicating whether the condition is satisfied.</param>
+    /// <param name="pl">The Polyline3D to search through.</param>
+    /// <returns>Some(Pnt) if a point satisfying the condition is found, otherwise None.</returns>
+    static member inline tryFind (condition: float -> float -> float -> bool) (pl:Polyline3D) : Pnt option =
+        let mutable result = None
+        let xyzs = pl.XYZs
+        let len = xyzs.Count
+        let mutable i = 0
+        while i < len do
+            let x = xyzs.[i]
+            let y = xyzs.[i + 1]
+            let z = xyzs.[i + 2]
+            if condition x y z then
+                result <- Some (Pnt(x, y, z))
+                i <- len // exit loop
+            else
+                i <- i + 3
+        result
+
+    /// <summary>Find the last point in the Polyline3D that satisfies a given condition. Returns Some(point) if found, otherwise None.</summary>
+    /// <param name="condition">A function that takes the X, Y and Z coordinates of a point and returns a boolean indicating whether the condition is satisfied.</param>
+    /// <param name="pl">The Polyline3D to search through.</param>
+    /// <returns>Some(Pnt) if a point satisfying the condition is found, otherwise None.</returns>
+    static member inline tryFindLast (condition: float -> float -> float -> bool) (pl:Polyline3D) : Pnt option =
+        let mutable result = None
+        let xyzs = pl.XYZs
+        let mutable i = xyzs.Count - 3
+        while i >= 0 do
+            let x = xyzs.[i]
+            let y = xyzs.[i + 1]
+            let z = xyzs.[i + 2]
+            if condition x y z then
+                result <- Some (Pnt(x, y, z))
+                i <- -3 // exit loop
+            else
+                i <- i - 3
+        result
+
+    /// <summary>Find the index of the first point in the Polyline3D that satisfies a given condition. Returns Some(index) if found, otherwise None.</summary>
+    /// <param name="condition">A function that takes the X, Y and Z coordinates of a point and returns a boolean indicating whether the condition is satisfied.</param>
+    /// <param name="pl">The Polyline3D to search through.</param>
+    /// <returns>Some(index of x) the index of the x value in the polylines flat array if found, otherwise None.</returns>
+    static member inline tryFindIndex (condition: float -> float -> float -> bool) (pl:Polyline3D) : int option =
+        let mutable result = None
+        let xyzs = pl.XYZs
+        let len = xyzs.Count
+        let mutable i = 0
+        while i < len do
+            let x = xyzs.[i]
+            let y = xyzs.[i + 1]
+            let z = xyzs.[i + 2]
+            if condition x y z then
+                result <- Some i
+                i <- len // exit loop
+            else
+                i <- i + 3
+        result
+
+    /// <summary>Find the index of the last point in the Polyline3D that satisfies a given condition. Returns Some(index) if found, otherwise None.</summary>
+    /// <param name="condition">A function that takes the X, Y and Z coordinates of a point and returns a boolean indicating whether the condition is satisfied.</param>
+    /// <param name="pl">The Polyline3D to search through.</param>
+    /// <returns>Some(index of x) the index of the x value in the polylines flat array if found, otherwise None.</returns>
+    static member inline tryFindLastIndex (condition: float -> float -> float -> bool) (pl:Polyline3D) : int option =
+        let mutable result = None
+        let xyzs = pl.XYZs
+        let mutable i = xyzs.Count - 3
+        while i >= 0 do
+            let x = xyzs.[i]
+            let y = xyzs.[i + 1]
+            let z = xyzs.[i + 2]
+            if condition x y z then
+                result <- Some i
+                i <- -3 // exit loop
+            else
+                i <- i - 3
+        result
+
+    /// <summary>Iterate over each segment in the Polyline3D.</summary>
+    /// <param name="action">A function that takes startX, startY, startZ, endX, endY, and endZ coordinates of a segment.</param>
+    /// <param name="pl">The Polyline3D to iterate over.</param>
+    /// <returns>Unit.</returns>
+    static member inline iterSegments (action: float -> float -> float -> float -> float -> float -> unit) (pl:Polyline3D) : unit =
+        let xyzs = pl.XYZs
+        let len = xyzs.Count
+        if len < 6 then
+            () // not enough points for a segment
+        else
+            let mutable x = xyzs.[0]
+            let mutable y = xyzs.[1]
+            let mutable z = xyzs.[2]
+            let mutable i = 3
+            while i < len do
+                let nextX = xyzs.[i]
+                let nextY = xyzs.[i + 1]
+                let nextZ = xyzs.[i + 2]
+                action x y z nextX nextY nextZ
+                x <- nextX
+                y <- nextY
+                z <- nextZ
+                i <- i + 3
+
+    /// <summary>Iterate over each segment in the Polyline3D.</summary>
+    /// <param name="action">A function that takes a Line3D representing the segment.</param>
+    /// <param name="pl">The Polyline3D to iterate over.</param>
+    /// <returns>Unit.</returns>
+    static member inline iterLineSegments (action: Line3D -> unit) (pl:Polyline3D) : unit =
+        pl |> Polyline3D.iterSegments (fun x1 y1 z1 x2 y2 z2 -> action (Line3D(Pnt(x1, y1, z1), Pnt(x2, y2, z2))))
+
 
 
     // #endregion
@@ -1499,7 +1657,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
         Polyline3D.createDirectly coordinates
 
     /// Create a new Polyline3D by copying over all points.
-    static member create(points: seq<Pnt>) : Polyline3D =
+    static member createFromPts(points: seq<Pnt>) : Polyline3D =
         Polyline3D(points)
 
     /// Create a new Polyline3D by using the provided X, Y and Z interleaved ResizeArray directly.
@@ -1572,24 +1730,51 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
         else
             np.AddXYZ (sx, sy, sz)
         np
-
-    /// Tests if two Polyline3D have the same number of points and points are equal within a given tolerance.
-    static member equals (tol:float) (a:Polyline3D) (b:Polyline3D)  : bool =
-        let k = a.PointCount
-        if k <> b.PointCount then
+    /// <summary>Tests if two Polyline3D have the same point count and if their corresponding points are equal within a given tolerance.</summary>
+    /// <param name="tol">The tolerance value for comparing the coordinates.</param>
+    /// <param name="pl1">The first Polyline3D instance.</param>
+    /// <param name="pl2">The second Polyline3D instance.</param>
+    static member equalsTol (tol:float) (pl1:Polyline3D) (pl2:Polyline3D) : bool =
+        if Object.ReferenceEquals(pl1, pl2) then
+            true
+        elif pl1.XYZs.Count <> pl2.XYZs.Count then
             false
         else
+            let xyzs1 = pl1.XYZs
+            let xyzs2 = pl2.XYZs
+            let len = xyzs1.Count
             let mutable i = 0
-            let mutable same = true
-            while i < k && same do
-                let dx = a.GetX i - b.GetX i
-                let dy = a.GetY i - b.GetY i
-                let dz = a.GetZ i - b.GetZ i
-                if dx * dx + dy * dy + dz * dz <= tol * tol then // Euclidean distance, same as Polyline2D.equals
-                    i <- i + 1
+            let mutable equal = true
+            while i < len do
+                if abs (xyzs1.[i] - xyzs2.[i]) > tol then
+                    equal <- false
+                    i <- len // exit loop
                 else
-                    same <- false
-            same
+                    i <- i + 1
+            equal
+
+    /// <summary>Tests if two Polyline3D have the same point count and if their corresponding points are exactly equal.</summary>
+    /// <param name="pl1">The first Polyline3D instance.</param>
+    /// <param name="pl2">The second Polyline3D instance.</param>
+    /// <returns>True if the two Polyline3D instances are equal, otherwise false.</returns>
+    static member equals (pl1:Polyline3D) (pl2:Polyline3D) : bool =
+        if Object.ReferenceEquals(pl1, pl2) then
+            true
+        elif pl1.XYZs.Count <> pl2.XYZs.Count then
+            false
+        else
+            let xyzs1 = pl1.XYZs
+            let xyzs2 = pl2.XYZs
+            let len = xyzs1.Count
+            let mutable i = 0
+            let mutable equal = true
+            while i < len do
+                if xyzs1.[i] <> xyzs2.[i] then
+                    equal <- false
+                    i <- len // exit loop
+                else
+                    i <- i + 1
+            equal
 
     /// Removes consecutive duplicate points from the Polyline3D within a given tolerance.
     /// This algorithm allows the last and first point to be identical if the Polyline3D is closed.
@@ -1743,68 +1928,103 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
         if angleTolerance > Cosine.``0.01`` then
             fail $"Polyline3D.removeDuplicateAndColinearPoints: angleTolerance must be at most Cosine.``0.01`` ( that is 0.999999984) but was {angleTolerance} (= {acos (float angleTolerance) |> toDegrees} degrees)."
 
-        let pts = pl.AsPoints
-        if pts.Count < 2 then // single point or empty polyline
+        let xyzs = pl.XYZs
+        if xyzs.Count < 6 then // single point or empty polyline
             pl
         else
             let distTol = max distanceTolerance 1e-6 // vectors need to be longer than zero, otherwise unitizing would fail
-            let nps = ResizeArray<Pnt>(pts.Count)
+            let nps = ResizeArray<float>(xyzs.Count)
 
-            let lastIdx = pts.LastIndex
-            let mutable prev = pts.[0]
-            nps.Add prev // add first  point
+            let lastIdx = xyzs.Count
+            let mutable prevX = xyzs.[0]
+            let mutable prevY = xyzs.[1]
+            let mutable prevZ = xyzs.[2]
+            nps.Add prevX // add first  point
+            nps.Add prevY
+            nps.Add prevZ
 
-            // find first non-duplicate point:
-            let mutable i = 1
-            let mutable this = pts.[i]
-            let mutable len = Pnt.dist prev this
+            // (1) find first non-duplicate point:
+            let mutable thisX = xyzs.[3]
+            let mutable thisY = xyzs.[4]
+            let mutable thisZ = xyzs.[5]
+            let mutable len = sqrt ((thisX - prevX) * (thisX - prevX) + (thisY - prevY) * (thisY - prevY) + (thisZ - prevZ) * (thisZ - prevZ))
+            let mutable i = 6
             while len < distTol && i < lastIdx do
-                i <- i + 1
-                this  <- pts.[i]
-                len   <- Pnt.dist prev this
+                thisX <- xyzs.[i]
+                thisY <- xyzs.[i + 1]
+                thisZ <- xyzs.[i + 2]
+                len   <- sqrt ((thisX - prevX) * (thisX - prevX) + (thisY - prevY) * (thisY - prevY) + (thisZ - prevZ) * (thisZ - prevZ))
+                i <- i + 3
 
             if len < distTol then
-                fail $"Polyline3D.removeDuplicateAndColinearPoints: all {pts.Count} points are within the distanceTolerance {distTol} of the first point {prev}."
+                fail $"Polyline3D.removeDuplicateAndColinearPoints: all {xyzs.Count / 3} points are within the distanceTolerance {distTol} of the first point {Pnt(prevX, prevY, prevZ)}."
 
-            let firstVec = UnitVec.create(prev, this)
-            let mutable vPrev = firstVec
+            // first unit vector from prev to this
+            let firstVecX = (thisX - prevX) / len
+            let firstVecY = (thisY - prevY) / len
+            let firstVecZ = (thisZ - prevZ) / len
+            let mutable vPrevX = firstVecX
+            let mutable vPrevY = firstVecY
+            let mutable vPrevZ = firstVecZ
 
-            // main loop:
-            for idx = i + 1 to lastIdx do
-                let next = pts.[idx]
-                let vx = next.X - this.X
-                let vy = next.Y - this.Y
-                let vz = next.Z - this.Z
+            // (2) main loop:
+            while i < lastIdx do
+                let nextX = xyzs.[i]
+                let nextY = xyzs.[i + 1]
+                let nextZ = xyzs.[i + 2]
+                let vx = nextX - thisX
+                let vy = nextY - thisY
+                let vz = nextZ - thisZ
                 let len = vx * vx + vy * vy + vz * vz |> sqrt
                 if len > distTol then
-                    let f  = 1.0 / len
-                    let vNext = UnitVec.createUnchecked(vx * f, vy * f, vz * f)
-                    let cos = UnitVec.dot (vPrev, vNext)
-                    if withMeasure cos < angleTolerance then
+                    // not duplicate, now check if colinear
+                    let vNextX = vx / len
+                    let vNextY = vy / len
+                    let vNextZ = vz / len
+                    let cos : float<Cosine.cosine> = LanguagePrimitives.FloatWithMeasure (vPrevX * vNextX + vPrevY * vNextY + vPrevZ * vNextZ)
+                    if cos < angleTolerance then
                         // not colinear , keep this point
-                        nps.Add this
-                        prev <- this
-                        vPrev <- vNext // advance previous vector only when point kept
-                    this <- next // always advance this point
+                        nps.Add thisX
+                        nps.Add thisY
+                        nps.Add thisZ
+                        prevX <- thisX
+                        prevY <- thisY
+                        prevZ <- thisZ
+                        vPrevX <- vNextX // advance previous vector only when point kept
+                        vPrevY <- vNextY
+                        vPrevZ <- vNextZ
+                    thisX <- nextX // always advance this point
+                    thisY <- nextY
+                    thisZ <- nextZ
+                i <- i + 3
 
-            // handle last segment to first point
+            // (3) handle last segment to first point
             if pl.IsAlmostClosed distTol then
-                // if closed now check if last and first segment are colinear
-                let cos = UnitVec.dot (vPrev, firstVec)
-                if withMeasure cos < angleTolerance then
+                // closed polyline, now check if last and first segment are colinear
+                let cos : float<Cosine.cosine> = LanguagePrimitives.FloatWithMeasure (vPrevX * firstVecX + vPrevY * firstVecY + vPrevZ * firstVecZ)
+                if cos < angleTolerance then
                     // not colinear , keep the original end point
-                    nps.Add pts.Last
+                    nps.Add xyzs.[xyzs.Count - 3]
+                    nps.Add xyzs.[xyzs.Count - 2]
+                    nps.Add xyzs.[xyzs.Count - 1]
                 else
                     // colinear , replace first point with last non-colinear point
-                    nps.[0] <- nps.Last
+                    nps.[0] <- nps.[nps.Count - 3]
+                    nps.[1] <- nps.[nps.Count - 2]
+                    nps.[2] <- nps.[nps.Count - 1]
             else
-                // open polyline , just add last point if not duplicate
-                if Pnt.notEquals distTol this prev then
-                    nps.Add this
+                if abs (thisX - prevX) > distTol || abs (thisY - prevY) > distTol || abs (thisZ - prevZ) > distTol then
+                    // open polyline , just add last point if not duplicate
+                    nps.Add thisX
+                    nps.Add thisY
+                    nps.Add thisZ
                 else
-                    nps.Last <- pts.Last // ensure last point is not changed, it might be off by distanceTolerance
+                    // ensure last point is not changed, it might be off by distanceTolerance
+                    nps.[nps.Count - 3] <- xyzs.[xyzs.Count - 3]
+                    nps.[nps.Count - 2] <- xyzs.[xyzs.Count - 2]
+                    nps.[nps.Count - 1] <- xyzs.[xyzs.Count - 1]
 
-            Polyline3D nps
+            Polyline3D.createDirectly nps
 
     /// <summary>Removes simple sharp U-Turns from a Polyline</summary>
     /// <param name="minCos"> The angle between segments so that they are considered a U-turn.

@@ -914,11 +914,11 @@ type BRect =
     // #endregion
     // #region Obsolete
 
-    [<Obsolete("use .overlapsWithExactly instead")>]
+    [<Obsolete("use .isOverlapping instead")>]
     static member inline doOverlap(a:BRect) (b:BRect) : bool =
         b.IsOverlapping(a)
 
-    [<Obsolete("use .overlapsWith instead")>]
+    [<Obsolete("use .isOverlappingOrClose instead")>]
     static member inline doOverlapMoreThan tol (a:BRect) (b:BRect)  : bool =
         b.IsOverlappingOrClose(a, -tol)
 

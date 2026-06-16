@@ -125,7 +125,7 @@ for i=0 to 25 do
     let x = 0.1 + x * 0.3
     let a = Pt(x, 0)
     let c = Pt(-x, 0)
-    let pl = Polyline2D.create [Pt.divPt(b, a, 9); b; Pt.divPt(b, c, 9) ]
+    let pl = Polyline2D.createFromPts [Pt.divPt(b, a, 9); b; Pt.divPt(b, c, 9) ]
     //pl.RhPolylineCurve |> rs.Ot.Add |> rs.setLayer $"pl"
 
     //let o = Polyline2D.offset(pl, -0.22, uTurnBehavior=Offset2D.UTurn.UseThreshold, useUTurnBehaviorAbove=Cosine.``160.0``)

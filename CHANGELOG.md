@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.41.0] - 2026-06-16
+### Added
+- `Polyline2D` and `Polyline3D` now have `tryFind`, `tryFindLast`, `tryFindIndex`, and `tryFindLastIndex` point-search helpers.
+`iterSkipLast` and `iterPtSkipLast` point iteration helpers.
+`iterSegments` and `iterLineSegments` segment iteration helpers.
+- `Rect2D` and `Rect3D` now has `iterPointsCCW`, `iterPointsLoopedCCW`, `iterPointsCW`, and `iterPointsLoopedCW` corner iteration helpers.
+- `distanceToXY` and `distanceToXYZ` functions on `Pt` and `Pnt`
+
 ## [0.40.0] - 2026-01-13
 ### Fixed
 - `Polyline2D.SegmentVectorsXY` and `Polyline3D.SegmentVectorsXYZ` no longer throw on an empty polyline (negative ResizeArray capacity).

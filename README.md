@@ -388,8 +388,8 @@ match XLine2D.getIntersection(lineA, lineB) with
 
 // Ray intersection (extends lines infinitely)
 match XLine2D.getRayIntersection(lineA, lineB) with
-| XLine2D.XRay.Intersect pt      -> printfn $"Rays meet at {pt}"
-| XLine2D.XRay.Parallel          -> printfn "Rays are parallel"
+| XLine2D.XRay.Intersect pt       -> printfn $"Rays meet at {pt}"
+| XLine2D.XRay.Parallel           -> printfn "Rays are parallel"
 | _                               -> ()
 
 // 3D line relationships include skew detection
@@ -397,10 +397,10 @@ let ln3A = Line3D(Pnt(0, 0, 0), Pnt(10, 0, 0))
 let ln3B = Line3D(Pnt(5, 0, 5), Pnt(5, 10, 5))
 
 match XLine3D.getIntersection(ln3A, ln3B) with
-| XLine3D.XPnt.Intersect pt      -> printfn $"Lines intersect at {pt}"
+| XLine3D.XPnt.Intersect pt       -> printfn $"Lines intersect at {pt}"
 | XLine3D.XPnt.Skew (ptA, ptB, d) -> printfn $"Closest approach: {d} between {ptA} and {ptB}"
-| XLine3D.XPnt.Apart             -> printfn "Segments don't reach each other"
-| XLine3D.XPnt.Parallel          -> printfn "Lines are parallel"
+| XLine3D.XPnt.Apart              -> printfn "Segments don't reach each other"
+| XLine3D.XPnt.Parallel           -> printfn "Lines are parallel"
 | _                               -> ()
 ```
 
@@ -488,7 +488,7 @@ let combined = bbox.Union box2
 open Euclid
 
 // Create a 2D polyline
-let pl2d = Polyline2D(ResizeArray [Pt(0, 0); Pt(10, 0); Pt(10, 5); Pt(0, 5)])
+let pl2d = Polyline2D.createFromPts [Pt(0, 0); Pt(10, 0); Pt(10, 5); Pt(0, 5)]
 
 // Polyline properties
 let len = pl2d.Length                      // total length
@@ -504,7 +504,7 @@ pl2d.SetPt (2, Pt(12, 5))                 // move a vertex
 let copy = pl2d.Duplicate()                // deep copy
 
 // 3D polyline
-let pl3d = Polyline3D.create [Pnt(0,0,0); Pnt(10,0,0); Pnt(10,5,3)]
+let pl3d = Polyline3D.createFromPts [Pnt(0,0,0); Pnt(10,0,0); Pnt(10,5,3)]
 let totalLen = pl3d.Length
 ```
 
@@ -621,7 +621,7 @@ open Euclid
 // Unitizing a zero vector raises EuclidException
 try
     let bad = Vec(0, 0, 0).Unitized      // fails: can't unitize zero vector
-with :? EuclidException as e ->
+with  e ->
     printfn $"Caught: {e.Message}"
 
 // Division by near-zero raises EuclidDivByZeroException

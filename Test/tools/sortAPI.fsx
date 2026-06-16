@@ -20,36 +20,36 @@ let files =
     // ("Vec.fs")
     // ("UnitVec.fs")
     // ("Pnt.fs")
-    "Rotation2D.fs"
-    "Quaternion.fs"
-    "PPlane.fs"
-    "Matrix.fs"
-    "RigidMatrix.fs"
-    "Line2D.fs"
-    "Line3D.fs"
+    // "Rotation2D.fs"
+    // "Quaternion.fs"
+    // "PPlane.fs"
+    // "Matrix.fs"
+    // "RigidMatrix.fs"
+    // "Line2D.fs"
+    // "Line3D.fs"
 
     // ("XLine2D.fs")
     // ("XLine3D.fs")
 
-    "TypeExtensions/UnitVc.fs"
-    "TypeExtensions/Vc.fs"
-    "TypeExtensions/Pt.fs"
-    "TypeExtensions/UnitVec.fs"
-    "TypeExtensions/Vec.fs"
-    "TypeExtensions/Pnt.fs"
-    "TypeExtensions/PPlane.fs"
+    // "TypeExtensions/UnitVc.fs"
+    // "TypeExtensions/Vc.fs"
+    // "TypeExtensions/Pt.fs"
+    // "TypeExtensions/UnitVec.fs"
+    // "TypeExtensions/Vec.fs"
+    // "TypeExtensions/Pnt.fs"
+    // "TypeExtensions/PPlane.fs"
     // ("TypeExtensions/Matrix.fs")
-    "TypeExtensions/Quaternion.fs"
-    "TypeExtensions/Line2D.fs"
-    "TypeExtensions/Line3D.fs"
+    // "TypeExtensions/Quaternion.fs"
+    // "TypeExtensions/Line2D.fs"
+    // "TypeExtensions/Line3D.fs"
 
-    "BRect.fs"
-    "BBox.fs"
-    "NPlane.fs"
-    "Rect2D.fs"
-    "Rect3D.fs"
-    "Box.fs"
-    "FreeBox.fs"
+    // "BRect.fs"
+    // "BBox.fs"
+    // "NPlane.fs"
+    // "Rect2D.fs"
+    // "Rect3D.fs"
+    // "Box.fs"
+    // "FreeBox.fs"
     // ("Tria2D.fs")
     // ("Tria3D.fs")
 
@@ -195,15 +195,15 @@ let resort(mems: ResizeArray<Member>, file: string) =
                 match mems |> ResizeArray.tryFind (fun m -> m.static' &&  m.name = Str.low1 t.name )  with
                 | Some m ->
                     let hasOverload = mems |>  ResizeArray.countIf (fun m -> m.name = t.name)  > 1
-                    
+
                     if not hasOverload && abs (m.pos - n.pos) > 1 then
                         any <- true
                         Printfn.red $"'this.{t.name}' should be at {n.pos} not {m.pos}: {file}:{m.line}"
                         m.desiredPos <- t.desiredPos + 0.3
-                | None ->  
+                | None ->
                     Printfn.gray $" no static for .{t.name}"
 
-    any <- false
+    // any <- false
     if any then
         mems
         |> ResizeArray.sortBy (fun m -> m.desiredPos)
@@ -288,15 +288,36 @@ let deDuplicate(mems: ResizeArray<Member>, file: string, write: bool) =
         Printfn.green $"Dedup {file}"
 
 
+let compareAPI(fileA:string, fileB:string) =
+    let memsA = getMembers fileA
+    let memsB = getMembers fileB
+
+    let namesA = memsA |> ResizeArray.map (fun m -> m.name.Replace("XYZ", "XY").Replace("In2D", ""))
+    let namesB = memsB |> ResizeArray.map (fun m -> m.name.Replace("XYZ", "XY").Replace("In2D", ""))
+
+
+    let onlyInA = namesA |> ResizeArray.filter (fun n -> not <| namesB.Contains n)
+    let onlyInB = namesB |> ResizeArray.filter (fun n -> not <| namesA.Contains n)
+
+    if onlyInA.Count > 0 then
+        Printfn.red $"\nOnly in {fileA}"
+        for n in onlyInA do Printfn.red $"  {n}"
+
+    if onlyInB.Count > 0 then
+        Printfn.blue $"\nOnly in {fileB}"
+        for n in onlyInB do Printfn.blue $"  {n}"
+
 for file in files do
     Printfn.orchid $"\n{file}"
     let mems = getMembers file
-    missingStatics(mems, file)
+    //missingStatics(mems, file)
     //missingInstance(mems, file)
-    //resort(mems, file)
-    //deDuplicate(mems, file, false)
+    // resort(mems, file)
+    // deDuplicate(mems, file, false)
+    ()
 
 
+compareAPI("D:/Git/_Euclid_/Euclid/Src/Polyline2D.fs", "D:/Git/_Euclid_/Euclid/Src/Polyline3D.fs")
 printfn "Done"
 
 

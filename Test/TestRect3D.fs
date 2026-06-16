@@ -37,6 +37,27 @@ let tests =
 
         }
 
+        test "Rect3D point iterators" {
+            let r = Rect3D.createFromVectors(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 20., 2.))
+            let p0 = Pnt(1., 2., 3.)
+            let p1 = Pnt(11., 2., 3.)
+            let p2 = Pnt(11., 22., 5.)
+            let p3 = Pnt(1., 22., 5.)
+            let collect iterator =
+                let pts = ResizeArray<Pnt>()
+                iterator (fun x y z -> pts.Add(Pnt(x, y, z))) r
+                pts.ToArray()
+            let expectPoints label (actual:Pnt[]) (expected:Pnt[]) =
+                label + " length" |> Expect.equal actual.Length expected.Length
+                for i = 0 to actual.Length-1 do
+                    label + string i |> Expect.isTrue (eq actual.[i] expected.[i])
+
+            expectPoints "iterPointsCCW" (collect Rect3D.iterPointsCCW) [| p0; p1; p2; p3 |]
+            expectPoints "iterPointsLoopedCCW" (collect Rect3D.iterPointsLoopedCCW) [| p0; p1; p2; p3; p0 |]
+            expectPoints "iterPointsCW" (collect Rect3D.iterPointsCW) [| p0; p3; p2; p1 |]
+            expectPoints "iterPointsLoopedCW" (collect Rect3D.iterPointsLoopedCW) [| p0; p3; p2; p1; p0 |]
+        }
+
         test "Rect3D.SizeX" {
             let o = Pnt(1,2,3)
             let x = Pnt(5,7,8)

@@ -1766,6 +1766,49 @@ type Rect2D =
         r.PointsXYLoopedCW
 
 
+    /// <summary>Iterates the 4 corners of the 2D Rectangle in Counter-Clockwise order, starting at Origin.</summary>
+    /// <param name="action">The action to call 4 times . Once for each corner, with x and y as parameters.</param>
+    /// <param name="r">The rectangle to iterate the corners of.</param>
+    static member iterPointsCCW (action: float -> float -> unit) (r:Rect2D) : unit =
+        action r.OriginX r.OriginY
+        action (r.OriginX + r.XaxisX) (r.OriginY + r.XaxisY)
+        action (r.OriginX + r.XaxisX + r.YaxisX) (r.OriginY + r.XaxisY + r.YaxisY)
+        action (r.OriginX + r.YaxisX) (r.OriginY + r.YaxisY)
+
+
+    /// <summary>Iterates the 4 corners of the 2D Rectangle as closed loop in Counter-Clockwise order, starting and ending at Origin.</summary>
+    /// <param name="action">The action to call 5 times. With x and y as parameters.</param>
+    /// <param name="r">The rectangle to iterate the corners of.</param>
+    static member iterPointsLoopedCCW (action: float -> float -> unit) (r:Rect2D) : unit =
+        action r.OriginX r.OriginY
+        action (r.OriginX + r.XaxisX) (r.OriginY + r.XaxisY)
+        action (r.OriginX + r.XaxisX + r.YaxisX) (r.OriginY + r.XaxisY + r.YaxisY)
+        action (r.OriginX + r.YaxisX) (r.OriginY + r.YaxisY)
+        action r.OriginX r.OriginY
+
+
+    /// <summary>Iterates the 4 corners of the 2D Rectangle in Clockwise order, starting at Origin.</summary>
+    /// <param name="action">The action to call 4 times . Once for each corner, with x and y as parameters.</param>
+    /// <param name="r">The rectangle to iterate the corners of.</param>
+    static member iterPointsCW (action: float -> float -> unit) (r:Rect2D) : unit =
+        action r.OriginX r.OriginY
+        action (r.OriginX + r.YaxisX) (r.OriginY + r.YaxisY)
+        action (r.OriginX + r.XaxisX + r.YaxisX) (r.OriginY + r.XaxisY + r.YaxisY)
+        action (r.OriginX + r.XaxisX) (r.OriginY + r.XaxisY)
+
+    /// <summary>Iterates the 4 corners of the 2D Rectangle as closed loop in Clockwise order, starting and ending at Origin.</summary>
+    /// <param name="action">The action to call 5 times. With x and y as parameters.</param>
+    /// <param name="r">The rectangle to iterate the corners of.</param>
+    static member iterPointsLoopedCW (action: float -> float -> unit) (r:Rect2D) : unit =
+        action r.OriginX r.OriginY
+        action (r.OriginX + r.YaxisX) (r.OriginY + r.YaxisY)
+        action (r.OriginX + r.XaxisX + r.YaxisX) (r.OriginY + r.XaxisY + r.YaxisY)
+        action (r.OriginX + r.XaxisX) (r.OriginY + r.XaxisY)
+        action r.OriginX r.OriginY
+
+
+
+
     /// <summary>Returns the 4 Edges of the 2D Rectangle in Counter-Clockwise order, starting at Origin.
     /// Returns an array of 4 Lines: from point 0 to 1, 1 to 2 to 3 and 3 to 0.
     /// <code>

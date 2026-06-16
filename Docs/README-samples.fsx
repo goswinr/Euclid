@@ -1,4 +1,4 @@
-#r "nuget: Euclid, 0.30.0"
+#r "../bin/Debug/net6.0/Euclid.dll"
 
 open Euclid
 open Euclid.EuclidErrors
@@ -139,7 +139,7 @@ let inside = bbox.Contains(Pnt(5, 4, 2))
 let combined = bbox.Union box2
 
 // Polylines
-let pl2d = Polyline2D(ResizeArray [ Pt(0, 0); Pt(10, 0); Pt(10, 5); Pt(0, 5) ])
+let pl2d = Polyline2D.createFromPts(ResizeArray [ Pt(0, 0); Pt(10, 0); Pt(10, 5); Pt(0, 5) ])
 let lenPolyline = pl2d.Length
 let count = pl2d.PointCount
 let segs = pl2d.SegmentCount

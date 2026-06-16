@@ -1258,11 +1258,11 @@ type BBox =
     // #endregion
     // #region Obsolete
 
-    [<Obsolete("use .overlapsWithExactly instead")>]
+    [<Obsolete("use .isOverlapping instead")>]
     static member doOverlap(a:BBox) (b:BBox) : bool =
         b.IsOverlapping(a)
 
-    [<Obsolete("use .overlapsWith instead")>]
+    [<Obsolete("use .isOverlappingOrClose instead")>]
     static member doOverlapMoreThan tol (a:BBox) (b:BBox)  : bool =
         b.IsOverlappingOrClose(a, -tol)
 

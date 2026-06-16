@@ -105,27 +105,44 @@ module AutoOpenPt =
             pt.WithZ z
 
         /// Returns the distance between two 2D points.
-        member inline p.DistanceTo (b:Pt) : float =
+        /// Same as Pt.distanceTo.
+        static member inline dist (b:Pt) (p:Pt) : float =
             let x = p.X-b.X
             let y = p.Y-b.Y
             sqrt(x*x + y*y)
+
+        /// Returns the squared distance between two 2D points.
+        /// This operation is slightly faster than the distance function, and sufficient for many algorithms like finding closest points.
+        /// Same as Pt.sqDistanceTo.
+        static member inline sqDist (b:Pt) (p:Pt) : float =
+            let x = p.X-b.X
+            let y = p.Y-b.Y
+            x*x + y*y
+
+        /// Returns the distance between two 2D points.
+        member inline p.DistanceTo (b:Pt) : float =
+            Pt.dist b p
 
         /// Returns the distance between two 2D points.
         /// Same as Pt.dist
         static member inline distanceTo (b:Pt) (p:Pt) : float =
             p.DistanceTo b
 
-        /// Returns the distance between two 2D points.
-        /// Same as Pt.distanceTo.
-        static member inline dist (b:Pt) (p:Pt) : float =
-            b.DistanceTo p
+        /// Returns the distance between a 2D point and given x, y coordinates.
+        member inline p.DistanceToXY (x:float, y:float) : float =
+            let dx = p.X - x
+            let dy = p.Y - y
+            sqrt(dx*dx + dy*dy)
+
+        /// Returns the distance between a 2D point and given x, y coordinates.
+        static member inline distanceToXY (x:float, y:float) (p:Pt) : float =
+            p.DistanceToXY (x, y)
+
 
         /// Returns the squared distance between two 2D points.
         /// This operation is slightly faster than the distance function, and sufficient for many algorithms like finding closest points.
         member inline p.SqDistanceTo (b:Pt) : float =
-            let x = p.X-b.X
-            let y = p.Y-b.Y
-            x*x + y*y
+            Pt.sqDist b p
 
         /// Returns the squared distance between two 2D points.
         /// This operation is slightly faster than the distance function, and sufficient for many algorithms like finding closest points.
@@ -133,11 +150,17 @@ module AutoOpenPt =
         static member inline sqDistanceTo (b:Pt) (p:Pt) : float =
             p.SqDistanceTo b
 
-        /// Returns the squared distance between two 2D points.
-        /// This operation is slightly faster than the distance function, and sufficient for many algorithms like finding closest points.
-        /// Same as Pt.sqDistanceTo.
-        static member inline sqDist (b:Pt) (p:Pt) : float =
-            b.SqDistanceTo p
+
+        /// Returns the squared distance between a 2D point and given x, y coordinates.
+        member inline p.SqDistanceToXY (x:float, y:float) : float =
+            let dx = p.X - x
+            let dy = p.Y - y
+            dx*dx + dy*dy
+
+        /// Returns the squared distance between a 2D point and given x, y coordinates.
+        static member inline sqDistanceToXY (x:float, y:float) (p:Pt) : float =
+            p.SqDistanceToXY (x, y)
+
 
         /// Returns the distance from Origin (0, 0)
         member inline pt.DistanceFromOrigin : float =
