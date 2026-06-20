@@ -1,4 +1,4 @@
-namespace Euclid
+﻿namespace Euclid
 
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
@@ -83,36 +83,36 @@ type Rect2D =
     /// Create a 2D Rectangle from the origin point and X-edge and Y edge.
     /// Does not check for counter-clockwise order of x and y.
     /// Does not check for perpendicularity.
-    static member inline createUnchecked (origin:Pt, x:Vc, y:Vc) : Rect2D =
+    static member inline createUncheckedVec (origin:Pt, x:Vc, y:Vc) : Rect2D =
         Rect2D.createUnchecked(origin.X, origin.Y, x.X, x.Y, y.X, y.Y)
 
-    /// The Origin Corner of the 2D Rectangle.
-    member inline r.Origin : Pt =
+    /// Creates a 2D Point from r.OriginX and r.OriginY
+    member r.Origin : Pt =
         Pt(r.OriginX, r.OriginY)
 
-    /// The Origin Corner of the 2D Rectangle.
+    /// Creates a 2D Point from r.OriginX and r.OriginY
     static member inline origin (r:Rect2D) : Pt =
         r.Origin
 
-    /// The Edge vector representing the X-axis of the 2D Rectangle.
-    member inline r.Xaxis : Vc =
-        Vc(r.XaxisX, r.XaxisY)
-
-    /// The Edge vector representing the X-axis of the 2D Rectangle.
-    static member inline xaxis (r:Rect2D) : Vc =
-        r.Xaxis
-
-    /// The Edge vector representing the Y-axis of the 2D Rectangle.
-    member inline r.Yaxis : Vc =
+    /// Creates a 2D Vector from r.YaxisX and r.YaxisY
+    member r.Yaxis : Vc =
         Vc(r.YaxisX, r.YaxisY)
 
-    /// The Edge vector representing the Y-axis of the 2D Rectangle.
-    static member inline yaxis (r:Rect2D) : Vc =
+    /// Creates a 2D Vector from r.XaxisX and r.XaxisY
+    member r.Xaxis : Vc =
+        Vc(r.XaxisX, r.XaxisY)
+
+    /// Creates a 2D Vector from r.XaxisX and r.XaxisY
+    static member inline xAxis (r:Rect2D) : Vc =
+        r.Xaxis
+
+    /// Creates a 2D Vector from r.YaxisX and r.YaxisY
+    static member inline yAxis (r:Rect2D) : Vc =
         r.Yaxis
 
     /// The size in X direction
     member inline r.SizeX : float =
-        sqrt(r.XaxisX*r.XaxisX + r.XaxisY*r.XaxisY)
+        sqrt(r.XaxisX*r.XaxisX + r.XaxisY * r.XaxisY)
 
     /// Returns the size in X direction.
     static member inline sizeX (r:Rect2D) : float =
@@ -392,16 +392,28 @@ type Rect2D =
     /// Check for point containment in the 2D Rectangle.
     /// By doing 4 dot products with the sides of the rectangle.
     /// A point exactly on the edge of the Box is considered inside.
-    member r.Contains(p:Pt) : bool =
-        let vx = p.X - r.OriginX
-        let vy = p.Y - r.OriginY
+    member r.ContainsXY(x:float, y:float) : bool =
+        let vx = x - r.OriginX
+        let vy = y - r.OriginY
         vx*r.XaxisX + vy*r.XaxisY >= 0.
         &&
         vx*r.YaxisX + vy*r.YaxisY >= 0.
         &&
-        (p.X - r.OriginX - r.YaxisX)*r.YaxisX + (p.Y - r.OriginY - r.YaxisY)*r.YaxisY <= 0.
+        (x - r.OriginX - r.YaxisX)*r.YaxisX + (y - r.OriginY - r.YaxisY)*r.YaxisY <= 0.
         &&
-        (p.X - r.OriginX - r.XaxisX)*r.XaxisX + (p.Y - r.OriginY - r.XaxisY)*r.XaxisY <= 0.
+        (x - r.OriginX - r.XaxisX)*r.XaxisX + (y - r.OriginY - r.XaxisY)*r.XaxisY <= 0.
+
+    /// Check for point containment in the 2D Rectangle.
+    /// By doing 4 dot products with the sides of the rectangle.
+    /// A point exactly on the edge of the Box is considered inside.
+    member r.Contains(p:Pt) : bool =
+        r.ContainsXY(p.X, p.Y)
+
+    /// Check for point containment in the 2D Rectangle.
+    /// By doing 4 dot products with the sides of the rectangle.
+    /// A point exactly on the edge of the Box is considered inside.
+    static member inline containsXY (x:float) (y:float) (r:Rect2D)  : bool =
+        r.ContainsXY (x, y)
 
     /// Check for point containment in the 2D Rectangle.
     /// By doing 4 dot products with the sides of the rectangle.
@@ -411,18 +423,12 @@ type Rect2D =
 
     /// Get the axis aligned 2D Bounding Rectangle of the 2D Rectangle.
     member r.BRect : BRect =
-        let p0x = r.OriginX
-        let p0y = r.OriginY
-        let p1x = p0x + r.XaxisX
-        let p1y = p0y + r.XaxisY
-        let p2x = p1x + r.YaxisX
-        let p2y = p1y + r.YaxisY
-        let p3x = p0x + r.YaxisX
-        let p3y = p0y + r.YaxisY
-        let minX = min (min (min p0x p1x) p2x) p3x
-        let minY = min (min (min p0y p1y) p2y) p3y
-        let maxX = max (max (max p0x p1x) p2x) p3x
-        let maxY = max (max (max p0y p1y) p2y) p3y
+        // Each of the 4 corners is Origin plus any subset of the two axis
+        // components, so min/max decompose per coordinate.
+        let minX = r.OriginX + min 0. r.XaxisX + min 0. r.YaxisX
+        let minY = r.OriginY + min 0. r.XaxisY + min 0. r.YaxisY
+        let maxX = r.OriginX + max 0. r.XaxisX + max 0. r.YaxisX
+        let maxY = r.OriginY + max 0. r.XaxisY + max 0. r.YaxisY
         BRect.createUnchecked(minX, minY, maxX, maxY)
 
     /// Returns the axis-aligned bounding rectangle of the 2D rectangle.
@@ -772,6 +778,47 @@ type Rect2D =
             let dotY = vX*yX + vY*yY
             minY <- min minY dotY
             maxY <- max maxY dotY
+        let sizeX = maxX - minX
+        let sizeY = maxY - minY
+        Rect2D.createUnchecked(
+            refRect.OriginX + xX*minX + yX*minY,
+            refRect.OriginY + xY*minX + yY*minY,
+            xX*sizeX,
+            xY*sizeX,
+            yX*sizeY,
+            yY*sizeY)
+
+    /// <summary>Creates a new 2D rectangle( = oriented bounding rectangle ) to contain the projections of all given points.
+    /// But not the corners of the reference rectangle.
+    /// Keeps the same X- and Y-axis orientation as the input rectangle.</summary>
+    /// <param name="xys">The points given as a flat list of coordinates [x0, y0, x1, y1, ...].</param>
+    /// <param name="refRect">The reference rectangle to use for orientation.</param>
+    static member fitToPointsXY (xys:IList<float>) (refRect:Rect2D) : Rect2D =
+        if xys.Count % 2 <> 0 then fail $"Rect2D.fitToPointsXY: the list of coordinates must have an even number of elements, but has {xys.Count} elements."
+        let xLen = sqrt(refRect.XaxisX*refRect.XaxisX + refRect.XaxisY*refRect.XaxisY)
+        if isTooTiny xLen then failTooSmall "Rect2D.fitToPointsXY: Xaxis" (Vc(refRect.XaxisX, refRect.XaxisY))
+        let yLen = sqrt(refRect.YaxisX*refRect.YaxisX + refRect.YaxisY*refRect.YaxisY)
+        if isTooTiny yLen then failTooSmall "Rect2D.fitToPointsXY: Yaxis" (Vc(refRect.YaxisX, refRect.YaxisY))
+        let xX = refRect.XaxisX / xLen
+        let xY = refRect.XaxisY / xLen
+        let yX = refRect.YaxisX / yLen
+        let yY = refRect.YaxisY / yLen
+        let mutable minX = Double.MaxValue
+        let mutable minY = Double.MaxValue
+        let mutable maxX = Double.MinValue
+        let mutable maxY = Double.MinValue
+        let mutable i = 0
+        let cnt = xys.Count
+        while i < cnt do
+            let vX = xys.[i] - refRect.OriginX
+            let vY = xys.[i+1] - refRect.OriginY
+            let dotX = vX*xX + vY*xY
+            minX <- min minX dotX
+            maxX <- max maxX dotX
+            let dotY = vX*yX + vY*yY
+            minY <- min minY dotY
+            maxY <- max maxY dotY
+            i <- i + 2
         let sizeX = maxX - minX
         let sizeY = maxY - minY
         Rect2D.createUnchecked(
@@ -1650,7 +1697,6 @@ type Rect2D =
         xys.Add(r.OriginY + r.YaxisY)
         xys
 
-
     /// Returns the 4 corner points of the 2D rectangl as open loop in Counter-Clockwise order, starting at Origin.
     /// Returns a ResizeArray of 8 floats: x and y of point 0, x and y of point 1, x and y of point 2, x and y of point 3.
     static member inline pointsXY_CCW (r:Rect2D) : ResizeArray<float> =
@@ -1728,7 +1774,6 @@ type Rect2D =
     static member inline pointsXY_CW (r:Rect2D) : ResizeArray<float> =
         r.PointsXY_CW
 
-
     /// <summary> Returns the 4 corners of the 2D Rectangle as closed loop in Clockwise order, starting at Origin.
     /// Returns a ResizeArray of 10 floats: x and y of point 0, x and y of point 3, x and y of point 2, x and y of point 1 and again x and y of point 0.
     /// <code>
@@ -1765,7 +1810,6 @@ type Rect2D =
     static member inline pointsXYLoopedCW (r:Rect2D) : ResizeArray<float> =
         r.PointsXYLoopedCW
 
-
     /// <summary>Iterates the 4 corners of the 2D Rectangle in Counter-Clockwise order, starting at Origin.</summary>
     /// <param name="action">The action to call 4 times . Once for each corner, with x and y as parameters.</param>
     /// <param name="r">The rectangle to iterate the corners of.</param>
@@ -1774,7 +1818,6 @@ type Rect2D =
         action (r.OriginX + r.XaxisX) (r.OriginY + r.XaxisY)
         action (r.OriginX + r.XaxisX + r.YaxisX) (r.OriginY + r.XaxisY + r.YaxisY)
         action (r.OriginX + r.YaxisX) (r.OriginY + r.YaxisY)
-
 
     /// <summary>Iterates the 4 corners of the 2D Rectangle as closed loop in Counter-Clockwise order, starting and ending at Origin.</summary>
     /// <param name="action">The action to call 5 times. With x and y as parameters.</param>
@@ -1785,7 +1828,6 @@ type Rect2D =
         action (r.OriginX + r.XaxisX + r.YaxisX) (r.OriginY + r.XaxisY + r.YaxisY)
         action (r.OriginX + r.YaxisX) (r.OriginY + r.YaxisY)
         action r.OriginX r.OriginY
-
 
     /// <summary>Iterates the 4 corners of the 2D Rectangle in Clockwise order, starting at Origin.</summary>
     /// <param name="action">The action to call 4 times . Once for each corner, with x and y as parameters.</param>
@@ -1805,9 +1847,6 @@ type Rect2D =
         action (r.OriginX + r.XaxisX + r.YaxisX) (r.OriginY + r.XaxisY + r.YaxisY)
         action (r.OriginX + r.XaxisX) (r.OriginY + r.XaxisY)
         action r.OriginX r.OriginY
-
-
-
 
     /// <summary>Returns the 4 Edges of the 2D Rectangle in Counter-Clockwise order, starting at Origin.
     /// Returns an array of 4 Lines: from point 0 to 1, 1 to 2 to 3 and 3 to 0.
@@ -1875,7 +1914,6 @@ type Rect2D =
 
     // #endregion
     // #region Obsolete
-
 
     [<Obsolete("use SizeX")>]
     member inline r.Width : float =

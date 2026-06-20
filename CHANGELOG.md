@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [0.42.0] - 2026-06-20
+### Added
+- XY/XYZ coordinate overloads for point-taking members that return a `float` or `bool`, each with a curried static counterpart. The original `Pt`/`Pnt` members now delegate to these:
+  - `Box.ContainsXYZ`, `Rect2D.ContainsXY`, `Rect3D.ContainsXY`/`ContainsXYZ`, `BBox.ContainsXYZ`, `BRect.ContainsXY`.
+  - `Line2D`: `ClosestParameterXY`, `RayClosestParameterXY`, `DistanceToXY`, `SqDistanceFromXY`, `DistanceRayXY`, `SqDistanceRayXY`, `IsXYOnLeft`, `IsXYOnRight`.
+  - `Line3D`: `ClosestParameterXYZ`, `RayClosestParameterXYZ`, `DistanceToXYZ`, `SqDistanceFromXYZ`, `DistanceRayXYZ`, `SqDistanceRayXYZ`.
+  - `Polyline2D`: `ClosestParameterXY`, `DistanceToXY`, `ContainsXY`, `SignedDistanceToXY`.
+  - `Polyline3D`: `ClosestParameterXYZ`, `DistanceToXYZ`.
+  - `NPlane` and `PPlane`: `DistanceToXYZ` and `DistanceToXYZSigned`.
+- `FreeBox` now has `Points`, the corner accessors `Pt0`–`Pt7`, `SetPt`, the `Edges` array and `Edge0`–`Edge11`, and a `ToString` with ASCII art.
+- `Rect3D.PointsXY` and `Rect3D.PointsLoopedXY` returning the corner coordinates as interlaced float `ResizeArray`s.
+### Changed
+- `Box`, `NPlane` and `PPlane` now store their components as individual floats internally (like `Rect2D`/`Rect3D` since 0.30.0). The float fields (e.g. `OriginX`, `XaxisX`, `NormalX`) are public, and `Origin`, `Xaxis`/`Normal` etc. are now computed members.
+- `Box.createUnchecked` now takes 12 floats instead of point/vector tuples; the point/vector form is now `Box.createUncheckedVec`. Likewise `NPlane.createUnchecked` takes 6 floats with the point/vector form moved to `NPlane.createUncheckedVec`, and `PPlane.createUncheckedXYZ` was renamed to `PPlane.createUnchecked` (floats) with the point/vector form now `PPlane.createUncheckedVec`.
+- `Box.yaxisUnit` / `zaxisUnit` static accessors renamed to `yAxisUnit` / `zAxisUnit` for naming consistency. New `Box.origin`, `xAxis`, `yAxis`, `zAxis` static accessors were added.
+- `Rect3D.xaxis` / `yaxis` static accessors renamed to `xAxis` / `yAxis`; the parameter name in the `Rect3D` line/ray intersection members is now `r` instead of `pl`.
+
 ## [0.41.0] - 2026-06-16
 ### Added
 - `Polyline2D` and `Polyline3D` now have `tryFind`, `tryFindLast`, `tryFindIndex`, and `tryFindLastIndex` point-search helpers.
@@ -40,7 +59,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Polyline3D.addXYZ` is now fully curried like `Polyline2D.addXY`. Previously the coordinates were a tuple: use `Polyline3D.addXYZ x y z pl` instead of `Polyline3D.addXYZ (x, y, z) pl`.
 - `Polyline3D.offset'` now takes the in-plane offset distance first and the perpendicular offset distance second, matching the parameter order of `Polyline3D.offset`. The order was previously reversed; since both are floats, existing callers must swap their arguments.
 - `Polyline3D.offsetVar` and `offsetVarWithRef`: the list parameter `inPlaneOffsetDistance` is renamed to `inPlaneOffsetDistances`, it was always a list with one distance per segment.
-- `Rect3D.xaxisUnit` / `yaxisUnit` renamed to `Rect3D.xAxisUnit` / `yAxisUnit` for naming consistency with `Rect2D`. The old names remain as obsolete aliases.
+- `Rect3D.xaxisUnit` / `yAxisUnit` renamed to `Rect3D.xAxisUnit` / `yAxisUnit` for naming consistency with `Rect2D`. The old names remain as obsolete aliases.
 - `Pnt.normalOf3Pts` now follows the library orientation convention (counter-clockwise points give a normal towards the viewer, e.g. +Z in the XY plane), matching `NPlane.createFrom3Points` and `Points3D.normalOfPoints`.
 Previously it returned the negated normal. Callers relying on the old direction must negate the result.
 - Angle helpers with a static (from, to) signature now take the arguments in natural order (first = from, second = to),
@@ -248,7 +267,8 @@ The move* names remain as obsolete aliases. The move* members on location types 
 ### Added
 - first public release
 
-[Unreleased]: https://github.com/goswinr/Euclid/compare/0.41.0...HEAD
+[Unreleased]: https://github.com/goswinr/Euclid/compare/0.42.0...HEAD
+[0.42.0]: https://github.com/goswinr/Euclid/compare/0.41.0...0.42.0
 [0.41.0]: https://github.com/goswinr/Euclid/compare/0.40.0...0.41.0
 [0.40.0]: https://github.com/goswinr/Euclid/compare/0.30.1...0.40.0
 [0.30.1]: https://github.com/goswinr/Euclid/compare/0.30.0...0.30.1

@@ -138,11 +138,6 @@ type UnitVc =
         Vc (v.X / f, v.Y / f)
 
 
-    // /// For use as a faster constructor.
-    // /// Requires correct input of unitized values.
-    // static member inline createUnchecked(v:Vc) =
-    //     UnitVc.createUnchecked(v.X, v.Y)
-
     /// Create 2D unit-vector. Does the unitizing too.
     static member inline create (x:float, y:float) : UnitVc =
         // this member cant be an extension method because it is used with SRTP in UnitV.createFromMembersXY

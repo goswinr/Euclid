@@ -41,7 +41,7 @@ let plTriangle = Polyline2D.createFromPts [Pt(0.,0.); Pt(5.,0.); Pt(2.5,4.33); P
 let plLine = Polyline2D.createFromPts [Pt(0.,0.); Pt(10.,0.)]
 let plLShape = Polyline2D.createFromPts [Pt(0.,0.); Pt(5.,0.); Pt(5.,3.); Pt(2.,3.); Pt(2.,5.); Pt(0.,5.)]
 let plSinglePoint = Polyline2D.createFromPts [Pt(1.,1.)]
-let plEmpty = Polyline2D()
+let plEmpty = Polyline2D.createEmpty(10)
 
 
 let tests =
@@ -242,7 +242,7 @@ let tests =
                 "winding number for outside point should be zero" |> Expect.equal windingOutside 0
 
                 // Empty polyline
-                let empty = Polyline2D()
+                let empty = Polyline2D.createEmpty(10)
                 let windingEmpty = empty.WindingNumber(Pt(5., 5.))
                 "winding number for empty polyline should be zero" |> Expect.equal windingEmpty 0
             }
@@ -337,7 +337,7 @@ let tests =
                     | None -> true
                     | Some _ -> false
                 "no point match" |> Expect.isTrue noPointMatch
-                "no index match on empty polyline" |> Expect.equal (Polyline2D.tryFindIndex (fun _ _ -> true) (Polyline2D())) None
+                "no index match on empty polyline" |> Expect.equal (Polyline2D.tryFindIndex (fun _ _ -> true) (Polyline2D(1))) None
             }
 
             test "rotation" {

@@ -352,18 +352,31 @@ module AutoOpenLine2D =
     /// Returns the parameter at which a point is closest to the ray.
     /// If it is smaller than 0.0 or bigger than 1.0 it is outside of the finite line.
     /// Fails on curves shorter than 1e-6 units. (ln.ClosestParameter does not)
-    member ln.RayClosestParameter (pt:Pt) : float =
+    member ln.RayClosestParameterXY (x:float, y:float) : float =
         // http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
         // https://www.youtube.com/watch?v=PMltMdi1Wzg
-        let x = ln.FromX - ln.ToX
-        let y = ln.FromY - ln.ToY
-        let lenSq = x*x + y*y
+        let vx = ln.FromX - ln.ToX
+        let vy = ln.FromY - ln.ToY
+        let lenSq = vx*vx + vy*vy
         if isTooSmallSq(lenSq) then // the parameter is infinite so we have to fail
-            failTooSmall2 "Line2D.RayClosestParameter" ln pt
-        let u = ln.FromX-pt.X
-        let v = ln.FromY-pt.Y
-        let dot = x*u + y*v
+            failTooSmall2 "Line2D.RayClosestParameter" ln (Pt(x, y))
+        let u = ln.FromX - x
+        let v = ln.FromY - y
+        let dot = vx*u + vy*v
         dot / lenSq
+
+    /// Assumes the Line2D to be an infinite ray!
+    /// Returns the parameter at which a point is closest to the ray.
+    /// If it is smaller than 0.0 or bigger than 1.0 it is outside of the finite line.
+    /// Fails on curves shorter than 1e-6 units. (ln.ClosestParameter does not)
+    member ln.RayClosestParameter (pt:Pt) : float =
+        ln.RayClosestParameterXY (pt.X, pt.Y)
+
+    /// Assumes Line2D to be an infinite ray!
+    /// Returns the parameter at which a point is closest to the infinite ray.
+    /// If it is smaller than 0.0 or bigger than 1.0 it is outside of the finite line.
+    static member inline rayClosestParameterXY (x:float) (y:float) (ln:Line2D) : float =
+        ln.RayClosestParameterXY (x, y)
 
     /// Assumes Line2D to be an infinite ray!
     /// Returns the parameter at which a point is closest to the infinite ray.
@@ -374,19 +387,30 @@ module AutoOpenLine2D =
     /// Returns the parameter at which a point is closest to the (finite) line.
     /// The result is between 0.0 and 1.0.
     /// Does not fail on very short curves.
-    member inline ln.ClosestParameter (p:Pt) : float =
+    member inline ln.ClosestParameterXY (x:float, y:float) : float =
         // http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
         // https://www.youtube.com/watch?v=PMltMdi1Wzg
-        let x = ln.FromX - ln.ToX
-        let y = ln.FromY - ln.ToY
-        let u = ln.FromX-p.X
-        let v = ln.FromY-p.Y
-        let dot = x*u + y*v
-        let lenSq = x*x + y*y
+        let vx = ln.FromX - ln.ToX
+        let vy = ln.FromY - ln.ToY
+        let u = ln.FromX - x
+        let v = ln.FromY - y
+        let dot = vx*u + vy*v
+        let lenSq = vx*vx + vy*vy
         if isTooSmallSq (lenSq) then // if the parameter is infinite we can still return 0.0 or 1.0 since that is our range
             if dot < 0.0 then 0.0 else 1.0
         else
             dot / lenSq |> clampBetweenZeroAndOne
+
+    /// Returns the parameter at which a point is closest to the (finite) line.
+    /// The result is between 0.0 and 1.0.
+    /// Does not fail on very short curves.
+    member inline ln.ClosestParameter (p:Pt) : float =
+        ln.ClosestParameterXY (p.X, p.Y)
+
+    /// Returns the parameter at which a point is closest to the (finite) line.
+    /// The result is between 0.0 and 1.0.
+    static member inline closestParameterXY (x:float) (y:float) (ln:Line2D) : float =
+        ln.ClosestParameterXY (x, y)
 
     /// Returns the parameter at which a point is closest to the (finite) line.
     /// The result is between 0.0 and 1.0.
@@ -480,7 +504,7 @@ module AutoOpenLine2D =
     /// Assumes Line2D to be an infinite ray!
     /// Returns square distance from point to ray.
     /// Fails on curves shorter than 1e-6 units. (ln.DistanceSqFromPoint does not.)
-    member ln.SqDistanceRayPoint(p:Pt) : float =
+    member ln.SqDistanceRayXY(x:float, y:float) : float =
         let vAx = ln.VectorX
         let vAy = ln.VectorY
         // normal vector:
@@ -488,11 +512,22 @@ module AutoOpenLine2D =
         let ny = vAx
         let lenSq = nx*nx + ny*ny
         if isTooSmallSq(lenSq) then
-            failTooSmall2 "Line2D.SqDistanceRayPoint" ln p
-        let u = ln.FromX - p.X
-        let v = ln.FromY - p.Y
+            failTooSmall2 "Line2D.SqDistanceRayPoint" ln (Pt(x, y))
+        let u = ln.FromX - x
+        let v = ln.FromY - y
         let dot = nx*u + ny*v
         (dot*dot) / lenSq
+
+    /// Assumes Line2D to be an infinite ray!
+    /// Returns square distance from point to ray.
+    /// Fails on curves shorter than 1e-6 units. (ln.DistanceSqFromPoint does not.)
+    member ln.SqDistanceRayPoint(p:Pt) : float =
+        ln.SqDistanceRayXY(p.X, p.Y)
+
+    /// Assumes Line2D to be an infinite ray!
+    /// Returns the square distance from point to ray.
+    static member inline sqDistanceRayXY(x:float) (y:float) (ln:Line2D) : float =
+        ln.SqDistanceRayXY (x, y)
 
     /// Assumes Line2D to be an infinite ray!
     /// Returns the square distance from point to ray.
@@ -502,8 +537,19 @@ module AutoOpenLine2D =
     /// Assumes Line2D to be an infinite ray!
     /// Returns distance from point to ray.
     /// Fails on curves shorter than 1e-6 units. (ln.DistanceToPt does not.)
+    member inline ln.DistanceRayXY(x:float, y:float) : float =
+        ln.SqDistanceRayXY(x, y) |> sqrt
+
+    /// Assumes Line2D to be an infinite ray!
+    /// Returns distance from point to ray.
+    /// Fails on curves shorter than 1e-6 units. (ln.DistanceToPt does not.)
     member inline ln.DistanceRayPoint(p:Pt) : float =
-        ln.SqDistanceRayPoint(p) |> sqrt
+        ln.DistanceRayXY(p.X, p.Y)
+
+    /// Assumes Line2D to be an infinite ray!
+    /// Returns distance from point to ray.
+    static member inline distanceRayXY(x:float) (y:float) (ln:Line2D) : float =
+        ln.DistanceRayXY (x, y)
 
     /// Assumes Line2D to be an infinite ray!
     /// Returns distance from point to ray.
@@ -511,16 +557,32 @@ module AutoOpenLine2D =
         ln.DistanceRayPoint p
 
     /// Returns square distance from point to finite line.
+    member ln.SqDistanceFromXY(x:float, y:float) : float =
+        XLine2D.sqDistLnPt'(ln, x, y)
+
+    /// Returns square distance from point to finite line.
     member ln.SqDistanceFromPoint(p:Pt) : float =
-        XLine2D.sqDistLnPt'(ln, p.X, p.Y)
+        ln.SqDistanceFromXY(p.X, p.Y)
+
+    /// Returns the square distance from point to finite line.
+    static member inline sqDistanceFromXY(x:float) (y:float) (ln:Line2D) : float =
+        ln.SqDistanceFromXY (x, y)
 
     /// Returns the square distance from point to finite line.
     static member inline sqDistanceFromPoint(p:Pt) (ln:Line2D) : float =
         ln.SqDistanceFromPoint p
 
     /// Returns distance from point to (finite) line.
+    member inline ln.DistanceToXY(x:float, y:float) : float =
+        XLine2D.sqDistLnPt'(ln, x, y) |> sqrt
+
+    /// Returns distance from point to (finite) line.
     member inline ln.DistanceToPt(p:Pt) : float =
-        XLine2D.sqDistLnPt'(ln, p.X, p.Y) |> sqrt
+        ln.DistanceToXY(p.X, p.Y)
+
+    /// Returns distance from point to (finite) line.
+    static member inline distanceToXY(x:float) (y:float) (ln:Line2D) : float =
+        ln.DistanceToXY (x, y)
 
     /// Returns distance from point to (finite) line.
     static member inline distanceToPt(p:Pt) (ln:Line2D) : float =
@@ -951,10 +1013,21 @@ module AutoOpenLine2D =
     /// Looking in the direction of the line.
     /// Check if a given point is on the right side of the ray.
     /// Also returns false if the point is on the line.
-    member inline ln.IsPointOnRight(pt:Pt) : bool =
+    member inline ln.IsXYOnRight(x:float, y:float) : bool =
         let lv = ln.Vector.Rotate90CW
-        let pv = pt - ln.From
+        let pv = Vc(x - ln.FromX, y - ln.FromY)
         lv *** pv > 0.0
+
+    /// Looking in the direction of the line.
+    /// Check if a given point is on the right side of the ray.
+    /// Also returns false if the point is on the line.
+    member inline ln.IsPointOnRight(pt:Pt) : bool =
+        ln.IsXYOnRight(pt.X, pt.Y)
+
+    /// Checks if a point is on the right side of the line ray.
+    /// Also returns FALSE if the point is on the line.
+    static member inline isXYOnRight (x:float) (y:float) (ln:Line2D) : bool =
+        ln.IsXYOnRight (x, y)
 
     /// Checks if a point is on the right side of the line ray.
     /// Also returns FALSE if the point is on the line.
@@ -964,10 +1037,21 @@ module AutoOpenLine2D =
     /// Looking in the direction of the line.
     /// Check if a given point is on the left side of the infinite ray.
     /// Also returns false if the point is on the line.
-    member inline ln.IsPointOnLeft(pt:Pt) : bool =
+    member inline ln.IsXYOnLeft(x:float, y:float) : bool =
         let lv = ln.Vector.Rotate90CCW
-        let pv = pt - ln.From
+        let pv = Vc(x - ln.FromX, y - ln.FromY)
         lv *** pv > 0.0
+
+    /// Looking in the direction of the line.
+    /// Check if a given point is on the left side of the infinite ray.
+    /// Also returns false if the point is on the line.
+    member inline ln.IsPointOnLeft(pt:Pt) : bool =
+        ln.IsXYOnLeft(pt.X, pt.Y)
+
+    /// Checks if a point is on the left side of the line ray.
+    /// Also returns FALSE if the point is on the line.
+    static member inline isXYOnLeft (x:float) (y:float) (ln:Line2D) : bool =
+        ln.IsXYOnLeft (x, y)
 
     /// Checks if a point is on the left side of the line ray.
     /// Also returns FALSE if the point is on the line.

@@ -469,19 +469,32 @@ module AutoOpenLine3D =
     /// Returns the parameter at which a point is closest to the ray.
     /// If it is smaller than 0.0 or bigger than 1.0 it is outside of the finite line.
     /// Fails on curves shorter than 1e-6 units. (ln.ClosestParameter does not)
-    member inline ln.RayClosestParameter (p:Pnt) : float =
+    member inline ln.RayClosestParameterXYZ (x:float, y:float, z:float) : float =
         //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
-        let x = ln.FromX - ln.ToX
-        let y = ln.FromY - ln.ToY
-        let z = ln.FromZ - ln.ToZ
-        let lenSq = x*x + y*y + z*z
+        let vx = ln.FromX - ln.ToX
+        let vy = ln.FromY - ln.ToY
+        let vz = ln.FromZ - ln.ToZ
+        let lenSq = vx*vx + vy*vy + vz*vz
         if isTooSmallSq(lenSq) then // the parameter is infinite so we have to fail
-            failTooSmall2 "Line3D.RayClosestParameter" ln p
-        let u = ln.FromX-p.X
-        let v = ln.FromY-p.Y
-        let w = ln.FromZ-p.Z
-        let dot = x*u + y*v + z*w
+            failTooSmall2 "Line3D.RayClosestParameter" ln (Pnt(x, y, z))
+        let u = ln.FromX - x
+        let v = ln.FromY - y
+        let w = ln.FromZ - z
+        let dot = vx*u + vy*v + vz*w
         dot / lenSq
+
+    /// Assumes Line3D to be an infinite ray.
+    /// Returns the parameter at which a point is closest to the ray.
+    /// If it is smaller than 0.0 or bigger than 1.0 it is outside of the finite line.
+    /// Fails on curves shorter than 1e-6 units. (ln.ClosestParameter does not)
+    member inline ln.RayClosestParameter (p:Pnt) : float =
+        ln.RayClosestParameterXYZ (p.X, p.Y, p.Z)
+
+    /// Assumes Line3D to be an infinite ray.
+    /// Returns the parameter at which a point is closest to the ray.
+    /// If it is smaller than 0.0 or bigger than 1.0 it is outside of the finite line.
+    static member inline rayClosestParameterXYZ (x:float) (y:float) (z:float) (ln:Line3D) : float =
+        ln.RayClosestParameterXYZ (x, y, z)
 
     /// Assumes Line3D to be an infinite ray.
     /// Returns the parameter at which a point is closest to the ray.
@@ -492,20 +505,31 @@ module AutoOpenLine3D =
     /// Returns the parameter at which a point is closest to the (finite) line.
     /// The result is between 0.0 and 1.0.
     /// Does not fail on very short curves.
-    member inline ln.ClosestParameter (p:Pnt) : float =
+    member inline ln.ClosestParameterXYZ (x:float, y:float, z:float) : float =
         //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
-        let x = ln.FromX - ln.ToX
-        let y = ln.FromY - ln.ToY
-        let z = ln.FromZ - ln.ToZ
-        let u = ln.FromX-p.X
-        let v = ln.FromY-p.Y
-        let w = ln.FromZ-p.Z
-        let dot = x*u + y*v + z*w
-        let lenSq = x*x + y*y + z*z
+        let vx = ln.FromX - ln.ToX
+        let vy = ln.FromY - ln.ToY
+        let vz = ln.FromZ - ln.ToZ
+        let u = ln.FromX - x
+        let v = ln.FromY - y
+        let w = ln.FromZ - z
+        let dot = vx*u + vy*v + vz*w
+        let lenSq = vx*vx + vy*vy + vz*vz
         if isTooSmallSq(lenSq) then // the parameter is infinite but we ar constarined to 0.0 till 1.0
             if dot < 0.0 then 0.0 else 1.0
         else
             dot / lenSq |> UtilEuclid.clampBetweenZeroAndOne
+
+    /// Returns the parameter at which a point is closest to the (finite) line.
+    /// The result is between 0.0 and 1.0.
+    /// Does not fail on very short curves.
+    member inline ln.ClosestParameter (p:Pnt) : float =
+        ln.ClosestParameterXYZ (p.X, p.Y, p.Z)
+
+    /// Returns the parameter at which a point is closest to the (finite) line.
+    /// The result is between 0.0 and 1.0.
+    static member inline closestParameterXYZ (x:float) (y:float) (z:float) (ln:Line3D) : float =
+        ln.ClosestParameterXYZ (x, y, z)
 
     /// Returns the parameter at which a point is closest to the (finite) line.
     /// The result is between 0.0 and 1.0.
@@ -642,29 +666,40 @@ module AutoOpenLine3D =
     /// Assumes Line3D to be an infinite ray.
     /// Returns square distance from point to ray.
     /// Fails on curves shorter than 1e-6 units. (ln.SqDistanceFromPoint does not.)
-    member ln.SqDistanceRayPoint(p:Pnt) : float =
+    member ln.SqDistanceRayXYZ(x:float, y:float, z:float) : float =
         let lnFromX = ln.FromX
         let lnFromY = ln.FromY
         let lnFromZ = ln.FromZ
         //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
-        let x = lnFromX - ln.ToX
-        let y = lnFromY - ln.ToY
-        let z = lnFromZ - ln.ToZ
-        let lenSq = x*x + y*y + z*z
+        let vx = lnFromX - ln.ToX
+        let vy = lnFromY - ln.ToY
+        let vz = lnFromZ - ln.ToZ
+        let lenSq = vx*vx + vy*vy + vz*vz
         if isTooSmallSq lenSq  then // corresponds to a line Length of 1e-6
-            failTooSmall2 "Line3D.SqDistanceRayPoint" ln p
-        let u = lnFromX - p.X
-        let v = lnFromY - p.Y
-        let w = lnFromZ - p.Z
-        let dot = x*u + y*v + z*w
+            failTooSmall2 "Line3D.SqDistanceRayPoint" ln (Pnt(x, y, z))
+        let u = lnFromX - x
+        let v = lnFromY - y
+        let w = lnFromZ - z
+        let dot = vx*u + vy*v + vz*w
         let t = dot/lenSq
-        let x' = lnFromX - x*t
-        let y' = lnFromY - y*t
-        let z' = lnFromZ - z*t
-        let u' = x' - p.X
-        let v' = y' - p.Y
-        let w' = z' - p.Z
+        let x' = lnFromX - vx*t
+        let y' = lnFromY - vy*t
+        let z' = lnFromZ - vz*t
+        let u' = x' - x
+        let v' = y' - y
+        let w' = z' - z
         u'*u' + v'*v' + w'*w'
+
+    /// Assumes Line3D to be an infinite ray.
+    /// Returns square distance from point to ray.
+    /// Fails on curves shorter than 1e-6 units. (ln.SqDistanceFromPoint does not.)
+    member ln.SqDistanceRayPoint(p:Pnt) : float =
+        ln.SqDistanceRayXYZ(p.X, p.Y, p.Z)
+
+    /// Assumes Line3D to be an infinite ray.
+    /// Returns the square distance from point to ray.
+    static member inline sqDistanceRayXYZ(x:float) (y:float) (z:float) (ln:Line3D) : float =
+        ln.SqDistanceRayXYZ (x, y, z)
 
     /// Assumes Line3D to be an infinite ray.
     /// Returns the square distance from point to ray.
@@ -674,8 +709,19 @@ module AutoOpenLine3D =
     /// Assumes Line3D to be an infinite ray.
     /// Returns distance from point to ray.
     /// Fails on curves shorter than 1e-6 units. (ln.DistanceToPnt does not.)
+    member inline ln.DistanceRayXYZ(x:float, y:float, z:float) : float =
+        ln.SqDistanceRayXYZ(x, y, z) |> sqrt
+
+    /// Assumes Line3D to be an infinite ray.
+    /// Returns distance from point to ray.
+    /// Fails on curves shorter than 1e-6 units. (ln.DistanceToPnt does not.)
     member inline ln.DistanceRayPoint(p:Pnt) : float =
-        ln.SqDistanceRayPoint(p) |> sqrt
+        ln.DistanceRayXYZ(p.X, p.Y, p.Z)
+
+    /// Assumes Line3D to be an infinite ray.
+    /// Returns distance from point to ray.
+    static member inline distanceRayXYZ(x:float) (y:float) (z:float) (ln:Line3D) : float =
+        ln.DistanceRayXYZ (x, y, z)
 
     /// Assumes Line3D to be an infinite ray.
     /// Returns distance from point to ray.
@@ -683,19 +729,34 @@ module AutoOpenLine3D =
         ln.DistanceRayPoint p
 
     /// Returns square distance from point to finite line.
-    member inline ln.SqDistanceFromPoint(p:Pnt) : float =
-        p
-        |> ln.ClosestParameter
+    member inline ln.SqDistanceFromXYZ(x:float, y:float, z:float) : float =
+        ln.ClosestParameterXYZ(x, y, z)
         |> ln.EvaluateAt
-        |> Pnt.sqDist p
+        |> Pnt.sqDist (Pnt(x, y, z))
+
+    /// Returns square distance from point to finite line.
+    member inline ln.SqDistanceFromPoint(p:Pnt) : float =
+        ln.SqDistanceFromXYZ(p.X, p.Y, p.Z)
+
+    /// Returns the square distance from point to (finite) line.
+    static member inline sqDistanceFromXYZ(x:float) (y:float) (z:float) (ln:Line3D) : float =
+        ln.SqDistanceFromXYZ (x, y, z)
 
     /// Returns the square distance from point to (finite) line.
     static member inline sqDistanceFromPoint(p:Pnt) (ln:Line3D) : float =
         ln.SqDistanceFromPoint p
 
     /// Returns distance from point to (finite) line.
+    member inline ln.DistanceToXYZ(x:float, y:float, z:float) : float =
+        ln.SqDistanceFromXYZ(x, y, z) |> sqrt
+
+    /// Returns distance from point to (finite) line.
     member inline ln.DistanceToPnt(p:Pnt) : float =
-        ln.SqDistanceFromPoint(p) |> sqrt
+        ln.DistanceToXYZ(p.X, p.Y, p.Z)
+
+    /// Returns distance from point to (finite) line.
+    static member inline distanceToXYZ(x:float) (y:float) (z:float) (ln:Line3D) : float =
+        ln.DistanceToXYZ (x, y, z)
 
     /// Returns distance from point to (finite) line.
     static member inline distanceToPnt(p:Pnt) (ln:Line3D) : float =

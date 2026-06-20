@@ -210,4 +210,180 @@ let tests =
             }
         ]
 
+        testList "flip / offsetZ" [
+            test "Rect3D.flip" {
+                let r = Rect3D.createFromVectors(Pnt(0.,0.,0.), Vec(4.,0.,0.), Vec(0.,2.,0.))
+                let f = Rect3D.flip r
+                "flip origin"    |> Expect.isTrue (eq f.Origin (Pnt(4.,2.,0.)))
+                "flip farcorner" |> Expect.isTrue (eq f.FarCorner (Pnt(0.,0.,0.)))
+                "flip sizeX"     |> Expect.isTrue (equ f.SizeX 2.0)
+                "flip sizeY"     |> Expect.isTrue (equ f.SizeY 4.0)
+                "flip area"      |> Expect.isTrue (equ f.Area r.Area)
+                "flip normal Z"  |> Expect.isTrue (equ f.NormalUnit.Z -1.0)
+            }
+
+            test "Rect3D.offsetZ along normal" {
+                let r = Rect3D.createFromVectors(Pnt(0.,0.,0.), Vec(4.,0.,0.), Vec(0.,2.,0.))
+                let up = Rect3D.offsetZ 5.0 r
+                "offsetZ origin"  |> Expect.isTrue (eq up.Origin (Pnt(0.,0.,5.)))
+                "offsetZ sizeX"   |> Expect.isTrue (equ up.SizeX 4.0)
+                "offsetZ sizeY"   |> Expect.isTrue (equ up.SizeY 2.0)
+                let down = Rect3D.offsetZ -3.0 r
+                "offsetZ neg origin" |> Expect.isTrue (eq down.Origin (Pnt(0.,0.,-3.)))
+            }
+        ]
+
+        testList "Rect3D offsets" [
+            test "Rect3D.offset shrinks and keeps center" {
+                let r = Rect3D.createFromVectors(Pnt(0.,0.,0.), Vec(4.,0.,0.), Vec(0.,2.,0.))
+                let o = Rect3D.offset 0.5 r
+                "offset origin" |> Expect.isTrue (eq o.Origin (Pnt(0.5,0.5,0.)))
+                "offset sizeX"  |> Expect.isTrue (equ o.SizeX 3.0)
+                "offset sizeY"  |> Expect.isTrue (equ o.SizeY 1.0)
+                "offset center" |> Expect.isTrue (eq o.Center r.Center)
+            }
+
+            test "Rect3D.offsetVar per-edge distances" {
+                // dist array is [Edge01; Edge12; Edge23; Edge30]
+                let r = Rect3D.createFromVectors(Pnt(0.,0.,0.), Vec(4.,0.,0.), Vec(0.,2.,0.))
+                let o = Rect3D.offsetVar [|0.2; 0.5; 0.4; 0.1|] r
+                "offsetVar origin" |> Expect.isTrue (eq o.Origin (Pnt(0.1,0.2,0.)))
+                "offsetVar sizeX"  |> Expect.isTrue (equ o.SizeX 3.4) // 4 - 0.1 - 0.5
+                "offsetVar sizeY"  |> Expect.isTrue (equ o.SizeY 1.4) // 2 - 0.2 - 0.4
+            }
+
+            test "Rect3D.offsetCorner at corner 0 and 2" {
+                let r = Rect3D.createFromVectors(Pnt(0.,0.,0.), Vec(4.,0.,0.), Vec(0.,2.,0.))
+                let c0 = Rect3D.offsetCorner(r, 0, 1.0, 0.5, 1.5, 0.5)
+                "corner0 origin" |> Expect.isTrue (eq c0.Origin (Pnt(1.0,0.5,0.)))
+                "corner0 sizeX"  |> Expect.isTrue (equ c0.SizeX 1.5)
+                "corner0 sizeY"  |> Expect.isTrue (equ c0.SizeY 0.5)
+                let c2 = Rect3D.offsetCorner(r, 2, 1.0, 0.5, 1.5, 0.5)
+                "corner2 origin" |> Expect.isTrue (eq c2.Origin (Pnt(1.5,1.0,0.)))
+                "corner2 sizeX"  |> Expect.isTrue (equ c2.SizeX 1.5)
+                "corner2 sizeY"  |> Expect.isTrue (equ c2.SizeY 0.5)
+            }
+
+            test "Rect3D.offsetEdge at edge 0 and 2" {
+                let r = Rect3D.createFromVectors(Pnt(0.,0.,0.), Vec(4.,0.,0.), Vec(0.,2.,0.))
+                let e0 = Rect3D.offsetEdge(r, 0, 0.3, 0.5, 1.0, 1.0)
+                "edge0 origin" |> Expect.isTrue (eq e0.Origin (Pnt(1.0,0.3,0.)))
+                "edge0 sizeX"  |> Expect.isTrue (equ e0.SizeX 2.0) // 4 - 1 - 1
+                "edge0 sizeY"  |> Expect.isTrue (equ e0.SizeY 0.5) // width
+                let e2 = Rect3D.offsetEdge(r, 2, 0.3, 0.5, 1.0, 1.0)
+                "edge2 origin" |> Expect.isTrue (eq e2.Origin (Pnt(1.0,1.2,0.)))
+                "edge2 sizeX"  |> Expect.isTrue (equ e2.SizeX 2.0)
+                "edge2 sizeY"  |> Expect.isTrue (equ e2.SizeY 0.5)
+            }
+        ]
+
+        testList "Rect3D.subDivide" [
+            test "2x1 without gap" {
+                let r = Rect3D.createFromVectors(Pnt(0.,0.,0.), Vec(4.,0.,0.), Vec(0.,2.,0.))
+                let g = Rect3D.subDivide(r, 2, 1, 0., 0.)
+                "outer length"  |> Expect.equal g.Length 2
+                "inner length"  |> Expect.equal g.[0].Length 1
+                "sub00 origin"  |> Expect.isTrue (eq g.[0].[0].Origin (Pnt(0.,0.,0.)))
+                "sub00 sizeX"   |> Expect.isTrue (equ g.[0].[0].SizeX 2.0)
+                "sub00 sizeY"   |> Expect.isTrue (equ g.[0].[0].SizeY 2.0)
+                "sub10 origin"  |> Expect.isTrue (eq g.[1].[0].Origin (Pnt(2.,0.,0.)))
+            }
+
+            test "2x1 with gap" {
+                let r = Rect3D.createFromVectors(Pnt(0.,0.,0.), Vec(4.,0.,0.), Vec(0.,2.,0.))
+                let g = Rect3D.subDivide(r, 2, 1, 0.4, 0.)
+                "sub00 sizeX"  |> Expect.isTrue (equ g.[0].[0].SizeX 1.8) // (4 - 0.4)/2
+                "sub10 origin" |> Expect.isTrue (eq g.[1].[0].Origin (Pnt(2.2,0.,0.)))
+                "sub10 sizeX"  |> Expect.isTrue (equ g.[1].[0].SizeX 1.8)
+            }
+
+            test "too small returns empty" {
+                let r = Rect3D.createFromVectors(Pnt(0.,0.,0.), Vec(4.,0.,0.), Vec(0.,2.,0.))
+                let g = Rect3D.subDivide(r, 10, 10, 5., 5.)
+                "empty outer" |> Expect.equal g.Length 0
+            }
+        ]
+
+        testList "Rect3D intersections" [
+            // A 4 x 2 rectangle in the XY plane, normal pointing +Z
+            let r = Rect3D.createFromVectors(Pnt(0.,0.,0.), Vec(4.,0.,0.), Vec(0.,2.,0.))
+
+            test "intersectRayParameters - hits inside the rectangle" {
+                let ln = Line3D(Pnt(1.,0.5,5.), Pnt(1.,0.5,-5.))
+                match Rect3D.intersectRayParameters ln r with
+                | Some (t,tx,ty) ->
+                    "ray t"  |> Expect.isTrue (equ t 0.5)
+                    "ray tx" |> Expect.isTrue (equ tx 0.25)
+                    "ray ty" |> Expect.isTrue (equ ty 0.25)
+                | None ->
+                    "intersectRayParameters should hit" |> Expect.isTrue false
+            }
+
+            test "intersectRayParameters - returns params even outside bounds" {
+                let ln = Line3D(Pnt(10.,0.5,5.), Pnt(10.,0.5,-5.))
+                match Rect3D.intersectRayParameters ln r with
+                | Some (t,tx,ty) ->
+                    "ray t"  |> Expect.isTrue (equ t 0.5)
+                    "ray tx" |> Expect.isTrue (equ tx 2.5) // outside 0..1 on purpose
+                    "ray ty" |> Expect.isTrue (equ ty 0.25)
+                | None ->
+                    "intersectRayParameters should still resolve" |> Expect.isTrue false
+            }
+
+            test "intersectRayParameters - parallel returns None" {
+                let ln = Line3D(Pnt(0.,0.,1.), Pnt(4.,0.,1.))
+                "parallel ray" |> Expect.isTrue (Option.isNone (Rect3D.intersectRayParameters ln r))
+            }
+
+            test "intersectRayParameter - returns line parameter" {
+                let ln = Line3D(Pnt(1.,0.5,5.), Pnt(1.,0.5,-5.))
+                match Rect3D.intersectRayParameter ln r with
+                | Some t -> "ray param t" |> Expect.isTrue (equ t 0.5)
+                | None -> "intersectRayParameter should hit" |> Expect.isTrue false
+                // beyond the segment, the infinite-ray parameter is still returned
+                let ln2 = Line3D(Pnt(1.,0.5,10.), Pnt(1.,0.5,5.))
+                match Rect3D.intersectRayParameter ln2 r with
+                | Some t -> "ray param t2" |> Expect.isTrue (equ t 2.0)
+                | None -> "intersectRayParameter should resolve" |> Expect.isTrue false
+                "parallel ray param" |> Expect.isTrue (Option.isNone (Rect3D.intersectRayParameter (Line3D(Pnt(0.,0.,1.), Pnt(4.,0.,1.))) r))
+            }
+
+            test "intersectLineParameters - inside the segment and rectangle" {
+                let ln = Line3D(Pnt(1.,0.5,5.), Pnt(1.,0.5,-5.))
+                match Rect3D.intersectLineParameters ln r with
+                | Some (t,tx,ty) ->
+                    "line t"  |> Expect.isTrue (equ t 0.5)
+                    "line tx" |> Expect.isTrue (equ tx 0.25)
+                    "line ty" |> Expect.isTrue (equ ty 0.25)
+                | None ->
+                    "intersectLineParameters should hit" |> Expect.isTrue false
+            }
+
+            test "intersectLineParameters - outside rectangle bounds returns None" {
+                let ln = Line3D(Pnt(10.,0.5,5.), Pnt(10.,0.5,-5.))
+                "outside rect" |> Expect.isTrue (Option.isNone (Rect3D.intersectLineParameters ln r))
+            }
+
+            test "intersectLineParameters - beyond segment returns None" {
+                let ln = Line3D(Pnt(1.,0.5,10.), Pnt(1.,0.5,5.)) // plane crossed at t = 2.0
+                "beyond segment" |> Expect.isTrue (Option.isNone (Rect3D.intersectLineParameters ln r))
+            }
+
+            test "intersectLine - returns intersection point inside" {
+                let ln = Line3D(Pnt(1.,0.5,5.), Pnt(1.,0.5,-5.))
+                match Rect3D.intersectLine ln r with
+                | Some p -> "line point" |> Expect.isTrue (eq p (Pnt(1.,0.5,0.)))
+                | None -> "intersectLine should hit" |> Expect.isTrue false
+            }
+
+            test "intersectLine - None when outside, beyond, or parallel" {
+                let outside = Line3D(Pnt(10.,0.5,5.), Pnt(10.,0.5,-5.))
+                let beyond  = Line3D(Pnt(1.,0.5,10.), Pnt(1.,0.5,5.))
+                let paral   = Line3D(Pnt(0.,0.,1.), Pnt(4.,0.,1.))
+                "outside"  |> Expect.isTrue (Option.isNone (Rect3D.intersectLine outside r))
+                "beyond"   |> Expect.isTrue (Option.isNone (Rect3D.intersectLine beyond r))
+                "parallel" |> Expect.isTrue (Option.isNone (Rect3D.intersectLine paral r))
+            }
+        ]
+
     ]

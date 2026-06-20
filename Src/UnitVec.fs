@@ -130,7 +130,9 @@ type UnitVec =
     /// Returns a float.
     /// This float for unit-vectors is the Cosine of the angle between the two vectors.
     static member inline dot (a:UnitVec, b:UnitVec) : float =
-        a.X * b.X + a.Y * b.Y + a.Z * b.Z
+        a.X * b.X +
+        a.Y * b.Y +
+        a.Z * b.Z
 
 
     /// The Cross Product.
@@ -140,13 +142,10 @@ type UnitVec =
     /// Its direction follows the right-hand rule.
     /// A x B = |A| * |B| * sin(angle)
     static member inline cross (a:UnitVec, b:UnitVec) : Vec =
-        Vec (a.Y * b.Z - a.Z * b.Y, a.Z * b.X - a.X * b.Z, a.X * b.Y - a.Y * b.X)
+        Vec (   a.Y * b.Z - a.Z * b.Y,
+                a.Z * b.X - a.X * b.Z,
+                a.X * b.Y - a.Y * b.X)
 
-
-    // /// For use as a faster internal constructor.
-    // /// Requires correct input of unitized values.
-    // static member inline createUnchecked(v:Vec) =
-    //     UnitVec(v.X, v.Y, v.Z)
 
     /// Create 3D unit-vector. Does the unitizing too.
     static member inline create (x:float, y:float, z:float) : UnitVec =

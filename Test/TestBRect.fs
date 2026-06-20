@@ -245,17 +245,17 @@ let tests =
 
             test "Contains point inside" {
                 let r = BRect.create(Pt(0., 0.), Pt(10., 10.))
-                Expect.isTrue (r.Contains(Pt(5., 5.))) "Point (5,5) should be inside"
+                Expect.isTrue (r.ContainsPt(Pt(5., 5.))) "Point (5,5) should be inside"
             }
 
             test "Contains point on edge" {
                 let r = BRect.create(Pt(0., 0.), Pt(10., 10.))
-                Expect.isTrue (r.Contains(Pt(10., 5.))) "Point on edge should be contained"
+                Expect.isTrue (r.ContainsPt(Pt(10., 5.))) "Point on edge should be contained"
             }
 
             test "Contains point outside" {
                 let r = BRect.create(Pt(0., 0.), Pt(10., 10.))
-                Expect.isFalse (r.Contains(Pt(11., 5.))) "Point outside should not be contained"
+                Expect.isFalse (r.ContainsPt(Pt(11., 5.))) "Point outside should not be contained"
             }
 
             test "Contains rectangle inside" {

@@ -217,6 +217,34 @@ let tests =
                 | None -> failwith "Should have intersection"
             }
 
+            test "intersect two planes random example" {
+                let a = NPlane.create(Pnt(83., 1., 40), Vec(870., 0., 1.))
+                let b = NPlane.create(Pnt(-6., -8., 9.), Vec(90., 1., -68.))
+                match NPlane.intersect a b with
+                | Some line ->
+                    Expect.isTrue (a.DistanceToPt line.From < 1e-9) "Intersection line should be on plane A"
+                    Expect.isTrue (b.DistanceToPt line.From < 1e-9) "Intersection line should be on plane B"
+                    Expect.isTrue (a.DistanceToPt line.To < 1e-9) "Intersection line should be on plane A"
+                    Expect.isTrue (b.DistanceToPt line.To < 1e-9) "Intersection line should be on plane B"
+
+                | None -> failwith "Should have intersection"
+            }
+
+            test "PPlane intersect two planes random example" {
+                let a = PPlane.createOriginNormal(Pnt(83., 1., 40), Vec(870., 0., 1.))
+                let b = PPlane.createOriginNormal(Pnt(-6., -8., 9.), Vec(90., 1., -68.))
+                match PPlane.intersect a b with
+                | Some line ->
+                    Expect.isTrue (a.DistanceToPt line.From < 1e-9) "Intersection line should be on plane A"
+                    Expect.isTrue (b.DistanceToPt line.From < 1e-9) "Intersection line should be on plane B"
+                    Expect.isTrue (a.DistanceToPt line.To < 1e-9) "Intersection line should be on plane A"
+                    Expect.isTrue (b.DistanceToPt line.To < 1e-9) "Intersection line should be on plane B"
+
+                | None -> failwith "Should have intersection"
+            }
+
+
+
             test "intersect parallel planes" {
                 let a = NPlane.create(Pnt(0., 0., 0.), Vec(0., 0., 1.))
                 let b = NPlane.create(Pnt(0., 0., 10.), Vec(0., 0., 1.))

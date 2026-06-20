@@ -1338,7 +1338,7 @@ module BBoxAPI =
 
     // Instance members - Operations
     let (_:Pnt) = bbox.EvaluateAt(0.5, 0.5, 0.5)
-    let (_:bool) = bbox.Contains(Pnt(5., 5., 5.))
+    let (_:bool) = bbox.ContainsPnt(Pnt(5., 5., 5.))
     let (_:bool) = bbox.Contains box2
     let (_:BBox) = bbox.Union(Pnt(15., 15., 15.))
     let (_:BBox) = bbox.Union box2
@@ -1750,7 +1750,7 @@ module PPlaneAPI =
     let (_:PPlane) = PPlane.createOriginNormal(Pnt.Origin, Vec(0., 0., 1.))
     let (_:PPlane) = PPlane.createOriginNormalXaxis(Pnt.Origin, UnitVec.Zaxis, UnitVec.Xaxis)
     let (_:PPlane) = PPlane.createOriginNormalXaxis(Pnt.Origin, Vec(0., 0., 1.), Vec(1., 0., 0.))
-    let (_:PPlane) = PPlane.createUnchecked(Pnt.Origin, UnitVec.Xaxis, UnitVec.Yaxis, UnitVec.Zaxis)
+    let (_:PPlane) = PPlane.createUncheckedVec(Pnt.Origin, UnitVec.Xaxis, UnitVec.Yaxis, UnitVec.Zaxis)
 
     // Static members - Modification
     let (_:PPlane) = PPlane.setOrigin (Pnt(1., 2., 3.)) pplane
@@ -1851,7 +1851,7 @@ module Rect2DAPI =
     let (_:Rect2D) = rect2d.ScaleOn Pt.Origin 2.0
 
     // Static members - Creation
-    let (_:Rect2D) = Rect2D.createUnchecked(Pt.Origin, Vc(10., 0.), Vc(0., 5.))
+    let (_:Rect2D) = Rect2D.createUncheckedVec(Pt.Origin, Vc(10., 0.), Vc(0., 5.))
     let (_:Rect2D) = Rect2D.createFromBRect(BRect.create(Pt.Origin, Pt(10., 5.)))
     let (_:Rect2D) = Rect2D.createFromLine(Line2D(Pt.Origin, Pt(10., 0.)), 2.5, 2.5)
     let (_:Rect2D) = Rect2D.createFromVectors(Pt.Origin, Vc(10., 0.), Vc(0., 5.))
@@ -2086,7 +2086,7 @@ module BoxAPI =
 
     // Static members - Creation
     let pts = ResizeArray [Pnt.Origin; Pnt(10., 0., 0.); Pnt(0., 5., 3.)]
-    let (_:Box) = Box.createUnchecked(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+    let (_:Box) = Box.createUncheckedVec(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
     let (_:Box) = Box.createFromPlane 1. 1. 1. PPlane.WorldXY
     let (_:Box) = Box.createFromRect2D 3.0 1. (Rect2D.createFromDirectionAndSizes(Pt.Origin, UnitVc.Xaxis, 10.0, 5.0))
     let (_:Box) = Box.createFromRect3D 3.0 1. (Rect3D.createFromPlane(PPlane.WorldXY, 10.0, 5.0))

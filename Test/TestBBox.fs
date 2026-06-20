@@ -591,19 +591,19 @@ let tests =
             test "Contains point inside" {
                 let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
                 let pt = Pnt(5., 5., 5.)
-                Expect.isTrue (box.Contains pt) "Box should contain point inside"
+                Expect.isTrue (box.ContainsPnt pt) "Box should contain point inside"
             }
 
             test "Contains point on boundary" {
                 let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
                 let pt = Pnt(10., 5., 5.)
-                Expect.isTrue (box.Contains pt) "Box should contain point on boundary"
+                Expect.isTrue (box.ContainsPnt pt) "Box should contain point on boundary"
             }
 
             test "Contains point outside" {
                 let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
                 let pt = Pnt(11., 5., 5.)
-                Expect.isFalse (box.Contains pt) "Box should not contain point outside"
+                Expect.isFalse (box.ContainsPnt pt) "Box should not contain point outside"
             }
 
             test "Contains box inside" {

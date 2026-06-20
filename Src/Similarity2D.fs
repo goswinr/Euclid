@@ -106,21 +106,21 @@ module Similarity2D =
 
     /// Takes transformed and pre sorted by category main groups.
     let areSimilar (tol:float) (a:ObjectToCheck) (b:ObjectToCheck) : bool =
-        let inline sim (a:Pt) (b:Pt) =
-            abs(a.X - b.X) < tol && abs(a.Y - b.Y) < tol
+        let inline isSimilarPt (ax:float) (ay:float) (bx:float) (by:float) =
+            abs(ax - bx) < tol && abs(ay - by) < tol
 
-        let inline simRect (a:BRect) (b:BRect) =
-            sim a.MinPt b.MinPt
-            && sim a.MaxPt b.MaxPt
+        let inline isSimilarRect (a:BRect) (b:BRect) =
+            isSimilarPt a.MinX a.MinY b.MinX b.MinY &&
+            isSimilarPt a.MaxX a.MaxY b.MaxX b.MaxY
 
-        sim a.extend b.extend
+        isSimilarPt a.extend.X a.extend.Y b.extend.X b.extend.Y
         && a.groups.Length = b.groups.Length
         && (a.groups, b.groups) ||> Array.forall2 (fun x y ->
             x.category = y.category
             &&
             x.points.Length = y.points.Length
             &&
-            simRect x.bRect y.bRect
+            isSimilarRect x.bRect y.bRect
             &&
             simPts tol x.points y.points
             )

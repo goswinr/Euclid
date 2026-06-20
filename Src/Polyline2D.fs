@@ -35,26 +35,18 @@ open Polyline2DUtil
 /// A class holding a list of 2D points representing a mutable 2D Polyline.
 /// If the last point is the same as the first point, the Polyline2D is considered closed.
 /// The source-of-truth storage is an interleaved float buffer: x0, y0, x1, y1, ...
-// [<Struct>]
+// [<Struct>] // if it was a struct the Polyline2D() constructor would set _XYs to null, not empty.
 [<NoEquality; NoComparison>] // because its made up from floats
 [<DataContract>] // for using DataMember on fields
 type Polyline2D private (xys: ResizeArray<float>) =
 
-    /// Create a new empty Polyline2D
-    new () = Polyline2D(ResizeArray<float>())
+    // /// Create a new empty Polyline2D
+    // new () = Polyline2D(ResizeArray<float>()) // do not allow this, maybe it wil be a struct in the future, and then this constructor would set _XYZs to null, not empty.
 
-    /// Create a new empty Polyline2D with predefined capacity for the internal list of points.
-    new (capacity:int) = Polyline2D(ResizeArray<float>(capacity * 2))
+    /// Create a new empty Polyline2D with predefined point count capacity.
+    new (capacity:int) =
+        Polyline2D(ResizeArray<float>(capacity * 2))
 
-    // /// Create a new Polyline2D by copying the provided sequence of points into a flat array.
-    // new (points: seq<Pt>) =
-    //     if isNull points then
-    //         failNull "Polyline2D" "points"
-    //     let xys = ResizeArray<float>()
-    //     for pt in points do
-    //         xys.Add pt.X
-    //         xys.Add pt.Y
-    //     Polyline2D(xys)
 
     /// Gets the X and Y interleaved ResizeArray of the Polyline2D: x0, y0, x1, y1, ...
     /// This is the live internal buffer, so changes to the list will be reflected in the Polyline2D.
@@ -744,10 +736,10 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// The integer part of the parameter is the index of the segment that the point is on.
     /// The fractional part of the parameter is the parameter from 0.0 to 1.0 on the segment.
     /// The domain Polyline2D starts at 0.0 and ends at points.Count - 1.0 .
-    member pl.ClosestParameter(p:Pt) : float =
+    member pl.ClosestParameterXY(x:float, y:float) : float =
         if pl.PointCount = 0 then  fail "Polyline2D.ClosestParameter failed on empty Polyline2D"
-        let px = p.X
-        let py = p.Y
+        let px = x
+        let py = y
         let mutable ax = xys.[0]
         let mutable ay = xys.[1]
         let mutable minT = 0.0
@@ -789,6 +781,20 @@ type Polyline2D private (xys: ResizeArray<float>) =
             segmentIndex <- segmentIndex + 1
             i <- i + 2
         float seg + minT
+
+    /// Returns the parameter on the Polyline2D that is the closest point to the given point.
+    /// The integer part of the parameter is the index of the segment that the point is on.
+    /// The fractional part of the parameter is the parameter from 0.0 to 1.0 on the segment.
+    /// The domain Polyline2D starts at 0.0 and ends at points.Count - 1.0 .
+    member pl.ClosestParameter(p:Pt) : float =
+        pl.ClosestParameterXY(p.X, p.Y)
+
+    /// Returns the parameter on the Polyline2D that is the closest point to the given point.
+    /// The integer part of the parameter is the index of the segment that the point is on.
+    /// The fractional part of the parameter is the parameter from 0.0 to 1.0 on the segment.
+    /// The domain Polyline2D starts at 0.0 and ends at points.Count - 1.0 .
+    static member inline closestParameterXY (pl:Polyline2D) (x:float) (y:float) : float =
+        pl.ClosestParameterXY (x, y)
 
     /// Returns the parameter on the Polyline2D that is the closest point to the given point.
     /// The integer part of the parameter is the index of the segment that the point is on.
@@ -873,10 +879,10 @@ type Polyline2D private (xys: ResizeArray<float>) =
         pl.ClosestPointIndex pt
 
     /// Returns the distance of the test point to the closest point on the Polyline2D.
-    member pl.DistanceTo(p:Pt) : float =
+    member pl.DistanceToXY(x:float, y:float) : float =
         if pl.PointCount = 0 then  fail "Polyline2D.DistanceTo failed on empty Polyline2D"
-        let px = p.X
-        let py = p.Y
+        let px = x
+        let py = y
         let mutable ax = xys.[0]
         let mutable ay = xys.[1]
         let mutable minDistSq =
@@ -910,6 +916,14 @@ type Polyline2D private (xys: ResizeArray<float>) =
             ay <- by
             i <- i + 2
         sqrt minDistSq
+
+    /// Returns the distance of the test point to the closest point on the Polyline2D.
+    member pl.DistanceTo(p:Pt) : float =
+        pl.DistanceToXY(p.X, p.Y)
+
+    /// Returns the distance of the test point to the closest point on the Polyline2D.
+    static member inline distanceToXY (pl:Polyline2D) (x:float) (y:float) : float =
+        pl.DistanceToXY (x, y)
 
     /// Returns the distance of the test point to the closest point on the Polyline2D.
     static member inline distanceTo (pl:Polyline2D) (pt:Pt) : float =
@@ -978,7 +992,8 @@ type Polyline2D private (xys: ResizeArray<float>) =
         pl.WindingNumber point
 
     /// <summary>Tests if a point is inside the closed Polyline2D using the ray casting algorithm.</summary>
-    /// <param name="pt">The point to test.</param>
+    /// <param name="x">The X coordinate of the point to test.</param>
+    /// <param name="y">The Y coordinate of the point to test.</param>
     /// <returns>TRUE if the point is inside, FALSE otherwise.</returns>
     /// <remarks>The first and last point of the Polyline2D need to be identical for correct results.
     /// Self-intersecting polygons give "alternating" inside/outside regions
@@ -989,7 +1004,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// Horizontal edges are handled by the strict inequality convention (pi.Y > y) != (pj.Y > y).
     /// Points on left/bottom edges tend to be considered inside, right/top edges outside.
     /// The result may differ from checking the pl.WindingNumber 0 for boundary points.</remarks>
-    member p.Contains (pt: Pt) : bool =
+    member p.ContainsXY (x: float, y: float) : bool =
         if p.PointCount < 3 then
             false
         else
@@ -998,8 +1013,6 @@ type Polyline2D private (xys: ResizeArray<float>) =
             let mutable inside = false
             let mutable pix = xys.[0]
             let mutable piy = xys.[1]
-            let y = pt.Y
-            let x = pt.X
             let mutable i = 2
             let len = xys.Count
             while i < len do
@@ -1013,6 +1026,20 @@ type Polyline2D private (xys: ResizeArray<float>) =
                 piy <- pjy
                 i <- i + 2
             inside
+
+    /// <summary>Tests if a point is inside the closed Polyline2D using the ray casting algorithm.</summary>
+    /// <param name="pt">The point to test.</param>
+    /// <returns>TRUE if the point is inside, FALSE otherwise.</returns>
+    member p.Contains (pt: Pt) : bool =
+        p.ContainsXY (pt.X, pt.Y)
+
+    /// <summary>Tests if a point is inside the closed Polyline2D using the ray casting algorithm.</summary>
+    /// <param name="x">The X coordinate of the point to test.</param>
+    /// <param name="y">The Y coordinate of the point to test.</param>
+    /// <param name="pl">The closed Polyline2D.</param>
+    /// <returns>TRUE if the point is inside, FALSE otherwise.</returns>
+    static member inline containsXY (x:float) (y:float) (pl:Polyline2D) : bool =
+        pl.ContainsXY (x, y)
 
     /// <summary>Tests if a point is inside the closed Polyline2D using the ray casting algorithm.</summary>
     /// <param name="pt">The point to test.</param>
@@ -1034,9 +1061,23 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// then signs that value by testing containment via the ray-casting based `Contains` helper.
     /// Returns a positive distance for points that lie inside the polyline boundary and negative otherwise.
     /// For reliable results the polyline should be closed and have identical first and last vertices.
+    member pl.SignedDistanceToXY (x:float, y:float) :float =
+        let distance = pl.DistanceToXY (x, y)
+        if pl.ContainsXY (x, y) then distance else -distance
+
+    /// Calculates the shortest distance from the test point to the polyline with `DistanceTo`,
+    /// then signs that value by testing containment via the ray-casting based `Contains` helper.
+    /// Returns a positive distance for points that lie inside the polyline boundary and negative otherwise.
+    /// For reliable results the polyline should be closed and have identical first and last vertices.
     member pl.SignedDistanceTo (point: Pt)  :float =
-        let distance = pl.DistanceTo point
-        if pl.Contains point then distance else -distance
+        pl.SignedDistanceToXY (point.X, point.Y)
+
+    /// Calculates the shortest distance from the test point to the polyline with `DistanceTo`,
+    /// then signs that value by testing containment via the ray-casting based `Contains` helper.
+    /// Returns a positive distance for points that lie inside the polyline boundary and negative otherwise.
+    /// For reliable results the polyline should be closed and have identical first and last vertices.
+    static member inline signedDistanceToXY (x:float) (y:float) (pl:Polyline2D) : float =
+        pl.SignedDistanceToXY (x, y)
 
     /// Calculates the shortest distance from the test point to the polyline with `DistanceTo`,
     /// then signs that value by testing containment via the ray-casting based `Contains` helper.

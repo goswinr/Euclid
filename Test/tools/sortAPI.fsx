@@ -2,7 +2,7 @@
 #r "nuget: Fesher, 0.5.0"
 #r "nuget: ResizeArrayT,  0.26.0"
 
-open Str
+open Str 
 open System
 open Fesher
 open System.IO
@@ -11,25 +11,25 @@ open ResizeArrayT
 
 let files =
     [|
-    // ("EuclidErrors.fs")
-    // ("UtilEuclid.fs")
-    // ("Format.fs")
-    // ("Vc.fs")
-    // ("UnitVc.fs")
-    // ("Pt.fs")
-    // ("Vec.fs")
-    // ("UnitVec.fs")
-    // ("Pnt.fs")
-    // "Rotation2D.fs"
-    // "Quaternion.fs"
-    // "PPlane.fs"
-    // "Matrix.fs"
-    // "RigidMatrix.fs"
-    // "Line2D.fs"
-    // "Line3D.fs"
+    // // ("EuclidErrors.fs")
+    // // ("UtilEuclid.fs")
+    // // ("Format.fs")
+    // // ("Vc.fs")
+    // // ("UnitVc.fs")
+    // // ("Pt.fs")
+    // // ("Vec.fs")
+    // // ("UnitVec.fs")
+    // // ("Pnt.fs")
+    "Rotation2D.fs"
+    "Quaternion.fs"
+    "PPlane.fs"
+    "Matrix.fs"
+    "RigidMatrix.fs"
+    "Line2D.fs"
+    "Line3D.fs"
 
-    // ("XLine2D.fs")
-    // ("XLine3D.fs")
+    // // ("XLine2D.fs")
+    // // ("XLine3D.fs")
 
     // "TypeExtensions/UnitVc.fs"
     // "TypeExtensions/Vc.fs"
@@ -37,44 +37,34 @@ let files =
     // "TypeExtensions/UnitVec.fs"
     // "TypeExtensions/Vec.fs"
     // "TypeExtensions/Pnt.fs"
-    // "TypeExtensions/PPlane.fs"
-    // ("TypeExtensions/Matrix.fs")
-    // "TypeExtensions/Quaternion.fs"
-    // "TypeExtensions/Line2D.fs"
-    // "TypeExtensions/Line3D.fs"
+    "TypeExtensions/PPlane.fs"
+    // // ("TypeExtensions/Matrix.fs")
+    "TypeExtensions/Quaternion.fs"
+    "TypeExtensions/Line2D.fs"
+    "TypeExtensions/Line3D.fs"
 
-    // "BRect.fs"
-    // "BBox.fs"
-    // "NPlane.fs"
-    // "Rect2D.fs"
-    // "Rect3D.fs"
-    // "Box.fs"
-    // "FreeBox.fs"
-    // ("Tria2D.fs")
-    // ("Tria3D.fs")
+    "BRect.fs"
+    "BBox.fs"
+    "NPlane.fs"
+    "Rect2D.fs"
+    "Rect3D.fs"
+    "Box.fs"
+    "FreeBox.fs"
+    // // ("Tria2D.fs")
+    // // ("Tria3D.fs")
 
-    // ("ResizeArr.fs")
+    // // ("ResizeArr.fs")
 
-    // ("Points2D.fs")
-    // ("Points3D.fs")
-    // ("Offset2D.fs")
-    // ("Offset3D.fs")
-    // ("PolyLabel.fs")
+    // // ("Points2D.fs")
+    // // ("Points3D.fs")
+    // // ("Offset2D.fs")
+    // // ("Offset3D.fs")
+    // // ("PolyLabel.fs")
     "Polyline2D.fs"
     "Polyline3D.fs"
-    // ("Topology2D.fs")
-    // ("Topology3D.fs")
-    // ("Similarity2D.fs")
-    |]
-    |> Array.map (fun f -> $"D:/Git/_Euclid_/Euclid/Src/{f}")
-
-let files2 =
-    [|
-    //"Rect3D.fs"
-    //"Box.fs"
-    //"FreeBox.fs"
-    "Polyline2D.fs"
-    "Polyline3D.fs"
+    // // ("Topology2D.fs")
+    // // ("Topology3D.fs")
+    // // ("Similarity2D.fs")
     |]
     |> Array.map (fun f -> $"D:/Git/_Euclid_/Euclid/Src/{f}")
 
@@ -92,6 +82,7 @@ type Member =
     isTupled: bool
     static': bool
     lines: ResizeArray<string>
+    declLine: string
     mutable desiredPos: float
     }
 
@@ -108,6 +99,20 @@ let cleanLines(ls:ResizeArray<string>) =
     if not (String.IsNullOrWhiteSpace ls.Last) then
         ls.Add "" // add a blank line at the end of the member for better diffing
 
+
+
+let getTillEq(ln:string, lns:string[],i:int) =
+    let rec loop (j:int) (s :string)=
+        if s.Contains "=" || j >= lns.Length - 1 then
+            s.Trim()
+        else
+            let nextLn = lns[j+1]
+            loop (j+1) (s + " " + nextLn.Trim())
+    loop i ln
+
+
+
+
 let getMembers(file:string) =
     let lns = File.ReadAllLines(file)
     let mems = ResizeArray<Member>()
@@ -118,6 +123,7 @@ let getMembers(file:string) =
     let mutable isTupled = false
     let mutable pos = 1
     let mutable lineNo = 1
+    let mutable declLine = ""
 
     let mutable i = 0
     while i < lns.Length do
@@ -132,7 +138,7 @@ let getMembers(file:string) =
                     let obso =
                         mems.Count > 0 // if a constructor is obsolete don't count them
                         &&  temp |> ResizeArray.exists(Str.contains "[<Obsolete")
-                    mems.Add { name = name; static' = static'; obsolete = obso; isTupled = isTupled; lines = temp; pos = pos; line = lineNo;  desiredPos = float pos }
+                    mems.Add { name = name; static' = static'; obsolete = obso; isTupled = isTupled; lines = temp; pos = pos; line = lineNo; declLine = declLine; desiredPos = float pos }
                     temp <- ResizeArray()
                     name <- ""
                     pos <- pos + 1
@@ -147,6 +153,7 @@ let getMembers(file:string) =
                 name <- "( *** )"
                 static' <- true
                 isTupled <- true
+                declLine <- getTillEq(lt, lns, i)
 
             elif lt.StartsWith "member " ||  lt.StartsWith "static "||  lt.StartsWith "override " then
                 let n =
@@ -164,6 +171,7 @@ let getMembers(file:string) =
                 name <- n
                 static' <- lt.StartsWith "static "
                 isTupled <- lt.Contains ","
+                declLine <- getTillEq(lt, lns, i)
 
             temp.Add ln
 
@@ -172,7 +180,7 @@ let getMembers(file:string) =
     // last member
     if name <> "" then
         let obso = temp |> ResizeArray.exists(Str.contains "[<Obsolete")
-        mems.Add { name = name; static' = static'; obsolete = obso; isTupled = isTupled; lines = temp; pos = pos; line = lineNo;  desiredPos = float pos }
+        mems.Add { name = name; static' = static'; obsolete = obso; isTupled = isTupled; lines = temp; pos = pos; line = lineNo; declLine = declLine; desiredPos = float pos }
         temp <- ResizeArray()
         name <- ""
 
@@ -198,12 +206,13 @@ let resort(mems: ResizeArray<Member>, file: string) =
 
                     if not hasOverload && abs (m.pos - n.pos) > 1 then
                         any <- true
-                        Printfn.red $"'this.{t.name}' should be at {n.pos} not {m.pos}: {file}:{m.line}"
+                        Printf.orange $"this.{t.name} "
+                        Printfn.red $"should be at {n.pos} not {m.pos}: {file}:{m.line}"
                         m.desiredPos <- t.desiredPos + 0.3
                 | None ->
                     Printfn.gray $" no static for .{t.name}"
 
-    // any <- false
+    any <- false // for dry run
     if any then
         mems
         |> ResizeArray.sortBy (fun m -> m.desiredPos)
@@ -307,17 +316,37 @@ let compareAPI(fileA:string, fileB:string) =
         Printfn.blue $"\nOnly in {fileB}"
         for n in onlyInB do Printfn.blue $"  {n}"
 
+
+let filterMembers(mems: ResizeArray<Member>, file: string) =
+    for m in mems do
+        if not m.obsolete then
+            let dLn = m.declLine.Trim()
+            let dlnm = dLn|> Str.replaceLast ":" "%" // % is a marker
+            
+            
+            match Str.tryBetween "%" "=" dlnm with
+            | None ->
+                Printfn.red $"missing type annotation: {dLn}"
+            | Some rt ->
+                if rt.Trim() = "float" && (dLn.Contains "Pt)" || dLn.Contains "Pnt)")   then
+                    Printfn.blue $" - {dLn}"
+                
+                if rt.Trim() = "bool" && (dLn.Contains "Pt)" || dLn.Contains "Pnt)")   then
+                    Printfn.green $" - {dLn}"
+
+
 for file in files do
     Printfn.orchid $"\n{file}"
     let mems = getMembers file
-    //missingStatics(mems, file)
-    //missingInstance(mems, file)
-    // resort(mems, file)
+    // filterMembers(mems, file)
+    // missingStatics(mems, file)
+    // missingInstance(mems, file)
+    resort(mems, file)
     // deDuplicate(mems, file, false)
     ()
 
 
-compareAPI("D:/Git/_Euclid_/Euclid/Src/Polyline2D.fs", "D:/Git/_Euclid_/Euclid/Src/Polyline3D.fs")
+// compareAPI("D:/Git/_Euclid_/Euclid/Src/Polyline2D.fs", "D:/Git/_Euclid_/Euclid/Src/Polyline3D.fs")
 printfn "Done"
 
 

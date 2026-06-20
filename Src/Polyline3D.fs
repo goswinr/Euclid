@@ -43,11 +43,12 @@ open Polyline3DUtil
 [<DataContract>] // for using DataMember on fields
 type Polyline3D private (xyzs: ResizeArray<float>) =
 
-    /// Create a new empty Polyline3D
-    new () = Polyline3D(ResizeArray<float>())
+    // /// Create a new empty Polyline3D
+    // new () = Polyline3D(ResizeArray<float>()) // do not allow this, maybe it wil be a struct in the future, and then this constructor would set _XYZs to null, not empty.
 
-    /// Create a new empty Polyline3D with predefined capacity for the internal list of points.
-    new (capacity:int) = Polyline3D(ResizeArray<float>(capacity * 3))
+    /// Create a new empty Polyline3D with predefined point count capacity.
+    new (capacity:int) =
+        Polyline3D(ResizeArray<float>(capacity * 3))
 
     /// Create a new Polyline3D by copying the provided sequence of points into a flat array.
     new (points: seq<Pnt>) =
@@ -817,11 +818,11 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// The integer part of the parameter is the index of the segment that the point is on.
     /// The fractional part of the parameter is the parameter from 0.0 to 1.0 on the segment.
     /// The domain Polyline3D starts at 0.0 and ends at points.Count - 1.0 .
-    member pl.ClosestParameter(p:Pnt) : float =
+    member pl.ClosestParameterXYZ(x:float, y:float, z:float) : float =
         if pl.PointCount = 0 then  fail "Polyline3D.ClosestParameter failed on empty Polyline3D"
-        let px = p.X
-        let py = p.Y
-        let pz = p.Z
+        let px = x
+        let py = y
+        let pz = z
         let mutable ax = xyzs.[0]
         let mutable ay = xyzs.[1]
         let mutable az = xyzs.[2]
@@ -871,6 +872,24 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             segmentIndex <- segmentIndex + 1
             i <- i + 3
         float seg + minT
+
+    /// Returns the parameter on the Polyline3D that is the closest point to the given point.
+    /// The integer part of the parameter is the index of the segment that the point is on.
+    /// The fractional part of the parameter is the parameter from 0.0 to 1.0 on the segment.
+    /// The domain Polyline3D starts at 0.0 and ends at points.Count - 1.0 .
+    /// Returns the parameter on the Polyline3D that is the closest point to the given point.
+    /// The integer part of the parameter is the index of the segment that the point is on.
+    /// The fractional part of the parameter is the parameter from 0.0 to 1.0 on the segment.
+    /// The domain Polyline3D starts at 0.0 and ends at points.Count - 1.0 .
+    member pl.ClosestParameter(p:Pnt) : float =
+        pl.ClosestParameterXYZ(p.X, p.Y, p.Z)
+
+    /// Returns the parameter on the Polyline3D that is the closest point to the given point.
+    /// The integer part of the parameter is the index of the segment that the point is on.
+    /// The fractional part of the parameter is the parameter from 0.0 to 1.0 on the segment.
+    /// The domain Polyline3D starts at 0.0 and ends at points.Count - 1.0 .
+    static member inline closestParameterXYZ (pl:Polyline3D) (x:float) (y:float) (z:float) : float =
+        pl.ClosestParameterXYZ (x, y, z)
 
     /// Returns the parameter on the Polyline3D that is the closest point to the given point.
     /// The integer part of the parameter is the index of the segment that the point is on.
@@ -966,11 +985,11 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
         pl.ClosestPointIndex pt
 
     /// Returns the distance of the test point to the closest point on the Polyline3D.
-    member pl.DistanceTo(p:Pnt) : float =
+    member pl.DistanceToXYZ(x:float, y:float, z:float) : float =
         if pl.PointCount = 0 then  fail "Polyline3D.DistanceTo failed on empty Polyline3D"
-        let px = p.X
-        let py = p.Y
-        let pz = p.Z
+        let px = x
+        let py = y
+        let pz = z
         let mutable ax = xyzs.[0]
         let mutable ay = xyzs.[1]
         let mutable az = xyzs.[2]
@@ -1012,6 +1031,14 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             az <- bz
             i <- i + 3
         sqrt minDistSq
+
+    /// Returns the distance of the test point to the closest point on the Polyline3D.
+    member pl.DistanceTo(p:Pnt) : float =
+        pl.DistanceToXYZ(p.X, p.Y, p.Z)
+
+    /// Returns the distance of the test point to the closest point on the Polyline3D.
+    static member inline distanceToXYZ (pl:Polyline3D) (x:float) (y:float) (z:float) : float =
+        pl.DistanceToXYZ (x, y, z)
 
     /// Returns the distance of the test point to the closest point on the Polyline3D.
     static member inline distanceTo (pl:Polyline3D) (pt:Pnt) : float =
@@ -1673,10 +1700,12 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     static member inline createEmpty (capacity:int) : Polyline3D =
         Polyline3D(capacity)
 
-    /// Creates a Polyline3D starting at the Origin,
+    /// Creates a closed Polyline3D starting at the Origin,
     /// going to x, then x+y, then y and back to origin.
     static member createFromRect3D (r:Rect3D)  : Polyline3D =
-        Polyline3D r.PointsLooped
+        Polyline3D.createDirectly r.PointsLoopedXY
+
+
 
     /// Returns new Polyline3D from point at Parameter a to point at Parameter b.
     /// If 'a' is bigger than 'b' then the new Polyline3D is in opposite direction.

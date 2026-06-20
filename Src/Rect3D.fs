@@ -92,30 +92,28 @@ type Rect3D =
     static member inline createUncheckedVec (origin:Pnt, x:Vec, y:Vec) : Rect3D =
         Rect3D.createUnchecked(origin.X, origin.Y, origin.Z, x.X, x.Y, x.Z, y.X, y.Y, y.Z)
 
-    /// The Origin Corner of the 3D-rectangle.
-    member inline r.Origin : Pnt =
+    /// Creates a 3D Point from r.OriginX, r.OriginY and r.OriginZ
+    member r.Origin : Pnt =
         Pnt(r.OriginX, r.OriginY, r.OriginZ)
 
-    /// The Origin Corner of the 3D-rectangle.
+    /// Creates a 3D Point from r.OriginX, r.OriginY and r.OriginZ
     static member inline origin (r:Rect3D) : Pnt =
         r.Origin
 
-    /// The edge vector representing the X-axis of the 3D-rectangle.
-    /// Also called Length.
-    member inline r.Xaxis : Vec =
-        Vec(r.XaxisX, r.XaxisY, r.XaxisZ)
-
-    /// The edge vector representing the X-axis of the 3D-rectangle.
-    /// Also called Length.
-    static member inline xaxis (r:Rect3D) : Vec =
-        r.Xaxis
-
-    /// The edge vector representing the Y-axis of the 3D-rectangle.
-    member inline r.Yaxis : Vec =
+    /// Creates a 3D Vector from r.YaxisX, r.YaxisY and r.YaxisZ
+    member r.Yaxis : Vec =
         Vec(r.YaxisX, r.YaxisY, r.YaxisZ)
 
-    /// The edge vector representing the Y-axis of the 3D-rectangle.
-    static member inline yaxis (r:Rect3D) : Vec =
+    /// Creates a 3D Vector from r.XaxisX, r.XaxisY and r.XaxisZ
+    member r.Xaxis : Vec =
+        Vec(r.XaxisX, r.XaxisY, r.XaxisZ)
+
+    /// Creates a 3D Vector from r.YaxisX, r.YaxisY and r.YaxisZ
+    static member inline xAxis (r:Rect3D) : Vec =
+        r.Xaxis
+
+    /// Creates a 3D Vector from r.YaxisX, r.YaxisY and r.YaxisZ
+    static member inline yAxis (r:Rect3D) : Vec =
         r.Yaxis
 
     /// The size in X direction
@@ -376,8 +374,6 @@ type Rect3D =
     static member inline moveZ (distance:float) (r:Rect3D) : Rect3D =
         Rect3D.createUnchecked(r.OriginX, r.OriginY, r.OriginZ + distance, r.XaxisX, r.XaxisY, r.XaxisZ, r.YaxisX, r.YaxisY, r.YaxisZ)
 
-
-
     /// Multiplies (or applies) a RigidMatrix to a 3D rectangle.
     /// The returned 3D rectangle is guaranteed to have still orthogonal vectors.
     member inline r.TransformRigid (m:RigidMatrix) : Rect3D =
@@ -400,8 +396,6 @@ type Rect3D =
         let yy = m.M12*x + m.M22*y + m.M32*z
         let yz = m.M13*x + m.M23*y + m.M33*z
         Rect3D.createUnchecked(ox, oy, oz, xx, xy, xz, yx, yy, yz)
-
-
 
     /// Transforms the 3D-rectangle by the given RigidMatrix.
     /// The returned 3D-rectangle is guaranteed to have orthogonal vectors.
@@ -599,7 +593,7 @@ type Rect3D =
         let nx = uy * vz - uz * vy
         let ny = uz * vx - ux * vz
         let nz = ux * vy - uy * vx
-        PPlane.createUncheckedXYZ(r.OriginX, r.OriginY, r.OriginZ, ux, uy, uz, vx, vy, vz, nx, ny, nz)
+        PPlane.createUnchecked(r.OriginX, r.OriginY, r.OriginZ, ux, uy, uz, vx, vy, vz, nx, ny, nz)
 
     /// Gets the Plane that this 3D-rectangle is based on.
     static member inline plane (r:Rect3D) : PPlane =
@@ -1163,6 +1157,80 @@ type Rect3D =
     static member inline pointsLooped (r:Rect3D) : Pnt[] =
         r.PointsLooped
 
+    /// <summary> Returns the 4 corners of the 3D Rectangle as open loopof 12 floats, starting at Origin.
+    /// Returns a ResizeArray of 12 floats: x, y, and z of point 0, point 1, point 2 and point 3.
+    /// <code>
+    ///   local
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-Axis
+    ///  0-Origin       1
+    /// </code></summary>
+    member r.PointsXY :ResizeArray<float> =
+        let xys = ResizeArray<float>(12)
+        xys.Add(r.OriginX)
+        xys.Add(r.OriginY)
+        xys.Add(r.OriginZ)
+        xys.Add(r.OriginX + r.XaxisX)
+        xys.Add(r.OriginY + r.XaxisY)
+        xys.Add(r.OriginZ + r.XaxisZ)
+        xys.Add(r.OriginX + r.XaxisX + r.YaxisX)
+        xys.Add(r.OriginY + r.XaxisY + r.YaxisY)
+        xys.Add(r.OriginZ + r.XaxisZ + r.YaxisZ)
+        xys.Add(r.OriginX + r.YaxisX)
+        xys.Add(r.OriginY + r.YaxisY)
+        xys.Add(r.OriginZ + r.YaxisZ)
+        xys
+
+    /// Returns the 4 corners of the 3D Rectangle as open loop, starting at Origin.
+    /// Returns a ResizeArray of 12 floats: x, y, and z of point 0, point 1, point 2 and point 3.
+    static member inline pointsXY (r:Rect3D) : ResizeArray<float> =
+        r.PointsXY
+
+    /// <summary> Returns the 5 corners of the 3D Rectangle as closed loop of 15 floats, starting at Origin.
+    /// Returns a ResizeArray of 15 floats: x, y, and z of point 0, point 1, point 2, point 3 and point 0 again.
+    /// <code>
+    ///   local
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-Axis
+    ///  0-Origin       1
+    /// </code></summary>
+    member r.PointsLoopedXY :ResizeArray<float> =
+        let xys = ResizeArray<float>(15)
+        xys.Add(r.OriginX)
+        xys.Add(r.OriginY)
+        xys.Add(r.OriginZ)
+        xys.Add(r.OriginX + r.XaxisX)
+        xys.Add(r.OriginY + r.XaxisY)
+        xys.Add(r.OriginZ + r.XaxisZ)
+        xys.Add(r.OriginX + r.XaxisX + r.YaxisX)
+        xys.Add(r.OriginY + r.XaxisY + r.YaxisY)
+        xys.Add(r.OriginZ + r.XaxisZ + r.YaxisZ)
+        xys.Add(r.OriginX + r.YaxisX)
+        xys.Add(r.OriginY + r.YaxisY)
+        xys.Add(r.OriginZ + r.YaxisZ)
+        xys.Add(r.OriginX)
+        xys.Add(r.OriginY)
+        xys.Add(r.OriginZ)
+        xys
+
     /// <summary>Iterates the 4 corners of the 3D Rectangle in Counter-Clockwise order, starting at Origin.</summary>
     /// <param name="action">The action to call 4 times. Once for each corner, with x, y and z as parameters.</param>
     /// <param name="r">The rectangle to iterate the corners of.</param>
@@ -1524,25 +1592,40 @@ type Rect3D =
     /// Keeps the same plane and the same X- and Y-axis orientation as the input rectangle.
     /// For a 3D oriented bounding box use the Box.createFromPlaneAndPoints function.
     static member fitToPoints (pts:IList<Pnt>) (refRect:Rect3D) : Rect3D =
-        let o = refRect.Origin
-        let x = refRect.Xaxis.Unitized
-        let y = refRect.Yaxis.Unitized
+        let xLen = XYZ.length refRect.XaxisX refRect.XaxisY refRect.XaxisZ
+        if isTooTiny xLen then
+            failTooSmall "Rect3D.fitToPoints: Xaxis" (Vec(refRect.XaxisX, refRect.XaxisY, refRect.XaxisZ))
+        let yLen = XYZ.length refRect.YaxisX refRect.YaxisY refRect.YaxisZ
+        if isTooTiny yLen then
+            failTooSmall "Rect3D.fitToPoints: Yaxis" (Vec(refRect.YaxisX, refRect.YaxisY, refRect.YaxisZ))
+        let xX = refRect.XaxisX / xLen
+        let xY = refRect.XaxisY / xLen
+        let xZ = refRect.XaxisZ / xLen
+        let yX = refRect.YaxisX / yLen
+        let yY = refRect.YaxisY / yLen
+        let yZ = refRect.YaxisZ / yLen
         let mutable minX = Double.MaxValue
         let mutable minY = Double.MaxValue
         let mutable maxX = Double.MinValue
         let mutable maxY = Double.MinValue
         for i = 0 to pts.Count-1 do
-            let v = pts.[i] - o
-            let dotX = v *** x
+            let vX = pts.[i].X - refRect.OriginX
+            let vY = pts.[i].Y - refRect.OriginY
+            let vZ = pts.[i].Z - refRect.OriginZ
+            let dotX = vX*xX + vY*xY + vZ*xZ
             minX <- min minX dotX
             maxX <- max maxX dotX
-            let dotY = v *** y
+            let dotY = vX*yX + vY*yY + vZ*yZ
             minY <- min minY dotY
             maxY <- max maxY dotY
-        let bo =  o + x * minX + y * minY
         let sizeX = maxX - minX
         let sizeY = maxY - minY
-        Rect3D.createUncheckedVec(bo, x * sizeX, y * sizeY)
+        Rect3D.createUnchecked(
+            refRect.OriginX + xX*minX + yX*minY,
+            refRect.OriginY + xY*minX + yY*minY,
+            refRect.OriginZ + xZ*minX + yZ*minY,
+            xX*sizeX, xY*sizeX, xZ*sizeX,
+            yX*sizeY, yY*sizeY, yZ*sizeY)
 
     /// <summary>Returns the Rectangle flipped. Or rotated 180 around its diagonal from point 1 to 3.
     /// Origin will be at point 2, X-axis points down to to point 1, Y-axis points left to point 3.
@@ -1563,18 +1646,23 @@ type Rect3D =
     /// </code>
     /// </summary>
     static member inline flip (r:Rect3D) : Rect3D =
-        Rect3D.createUncheckedVec(r.Origin + r.Xaxis + r.Yaxis, -r.Yaxis, -r.Xaxis)
+        Rect3D.createUnchecked(
+            r.OriginX + r.XaxisX + r.YaxisX,
+            r.OriginY + r.XaxisY + r.YaxisY,
+            r.OriginZ + r.XaxisZ + r.YaxisZ,
+            -r.YaxisX, -r.YaxisY, -r.YaxisZ,
+            -r.XaxisX, -r.XaxisY, -r.XaxisZ)
 
     /// Translate along the local X-axis of the 3D-rectangle.
     static member translateLocalX (distX:float) (r:Rect3D) : Rect3D =
-        let len = sqrt(r.XaxisX*r.XaxisX + r.XaxisY*r.XaxisY + r.XaxisZ*r.XaxisZ)
+        let len = XYZ.length r.XaxisX r.XaxisY r.XaxisZ
         if isTooTiny len then failTooSmall "Rect3D.translateLocalX: Xaxis" r
         let f = distX / len
         Rect3D.createUnchecked(r.OriginX + r.XaxisX*f, r.OriginY + r.XaxisY*f, r.OriginZ + r.XaxisZ*f, r.XaxisX, r.XaxisY, r.XaxisZ, r.YaxisX, r.YaxisY, r.YaxisZ)
 
     /// Translate along the local Y-axis of the 3D-rectangle.
     static member translateLocalY (distY:float) (r:Rect3D) : Rect3D =
-        let len = sqrt(r.YaxisX*r.YaxisX + r.YaxisY*r.YaxisY + r.YaxisZ*r.YaxisZ)
+        let len = XYZ.length r.YaxisX r.YaxisY r.YaxisZ
         if isTooTiny len then failTooSmall "Rect3D.translateLocalY: Yaxis" r
         let f = distY / len
         Rect3D.createUnchecked(r.OriginX + r.YaxisX*f, r.OriginY + r.YaxisY*f, r.OriginZ + r.YaxisZ*f, r.XaxisX, r.XaxisY, r.XaxisZ, r.YaxisX, r.YaxisY, r.YaxisZ)
@@ -1586,17 +1674,23 @@ type Rect3D =
     /// Offset or Translate along the local Z-axis.
     /// The local Z-axis is calculated from Cross Product of X and Y-axis of the 3D-rectangle.
     static member offsetZ (offsetDistance :float) (r:Rect3D) : Rect3D =
-        let z = Vec.cross(r.Xaxis, r.Yaxis)
-        let len = z.Length
+        let zX = r.XaxisY*r.YaxisZ - r.XaxisZ*r.YaxisY
+        let zY = r.XaxisZ*r.YaxisX - r.XaxisX*r.YaxisZ
+        let zZ = r.XaxisX*r.YaxisY - r.XaxisY*r.YaxisX
+        let len = XYZ.length zX zY zZ
         if isTooTiny len then failTooSmall "Rect3D.offsetZ: rect" r
-        Rect3D.createUncheckedVec(r.Origin + z*(offsetDistance/len), r.Xaxis, r.Yaxis)
+        let f = offsetDistance/len
+        Rect3D.createUnchecked(
+            r.OriginX + zX*f, r.OriginY + zY*f, r.OriginZ + zZ*f,
+            r.XaxisX, r.XaxisY, r.XaxisZ,
+            r.YaxisX, r.YaxisY, r.YaxisZ)
 
     /// Offset a Rect3D like a Polyline inwards by a given distance.
     /// Negative distances will offset outwards.
     /// Fails if the distance is larger than half the size of the rectangle.
     static member offset dist (rect:Rect3D) : Rect3D =
-        let xl = sqrt(rect.XaxisX*rect.XaxisX + rect.XaxisY*rect.XaxisY + rect.XaxisZ*rect.XaxisZ)
-        let yl = sqrt(rect.YaxisX*rect.YaxisX + rect.YaxisY*rect.YaxisY + rect.YaxisZ*rect.YaxisZ)
+        let xl = rect.SizeX
+        let yl = rect.SizeY
         if xl < dist*2.0 ||yl < dist*2.0 then
             fail $"Rect3D.offset: the 3D-rectangle {rect.AsString} is too small to offset by distance {Format.float dist}"
         let xf = dist / xl
@@ -1638,8 +1732,8 @@ type Rect3D =
     /// </code></summary>
     static member offsetVar (dist:float[]) (rect:Rect3D) : Rect3D =
         if dist.Length <> 4 then fail $"Rect3D.offsetVar: the distance array must have 4 elements, but has {dist.Length}"
-        let xl = sqrt(rect.XaxisX*rect.XaxisX + rect.XaxisY*rect.XaxisY + rect.XaxisZ*rect.XaxisZ)
-        let yl = sqrt(rect.YaxisX*rect.YaxisX + rect.YaxisY*rect.YaxisY + rect.YaxisZ*rect.YaxisZ)
+        let xl = rect.SizeX
+        let yl = rect.SizeY
         if xl < dist.[1]+dist.[3] ||yl < dist.[0]+dist.[2] then
             fail $"Rect3D.offsetVar: the 3D-rectangle {rect.AsString} is too small to offset by distances [|{Format.float dist.[0]};{Format.float dist.[1]};{Format.float dist.[2]};{Format.float dist.[3]}|]"
         let x0f = dist.[3] / xl
@@ -1693,31 +1787,36 @@ type Rect3D =
     ///<param name="yHeight">The height (or size in y direction) that will be added to the current offset.</param>
     ///<returns>A new 3D-rectangle. It will always have the same x and y axis orientation as the input rectangle. Independent of negative or positive offsets</returns>
     static member offsetCorner (rect:Rect3D, corner:int, xOffset:float, yOffset:float, xWidth:float, yHeight:float) : Rect3D =
-        let xa = rect.Xaxis
-        let ya = rect.Yaxis
-        let xl = xa.Length
-        let yl = ya.Length
+        let xl = rect.SizeX
+        let yl = rect.SizeY
         if isTooTiny xl then failTooSmall "Rect3D.offsetCorner: Xaxis" rect
         if isTooTiny yl then failTooSmall "Rect3D.offsetCorner: Yaxis" rect
-        let xv = xa * (xWidth/xl)
-        let yv = ya * (yHeight/yl)
+        let xvf = xWidth/xl
+        let yvf = yHeight/yl
+        let xvX = rect.XaxisX * xvf
+        let xvY = rect.XaxisY * xvf
+        let xvZ = rect.XaxisZ * xvf
+        let yvX = rect.YaxisX * yvf
+        let yvY = rect.YaxisY * yvf
+        let yvZ = rect.YaxisZ * yvf
+        let inline create xDist yDist =
+            let xf = xDist / xl
+            let yf = yDist / yl
+            Rect3D.createUnchecked(
+                rect.OriginX + rect.XaxisX*xf + rect.YaxisX*yf,
+                rect.OriginY + rect.XaxisY*xf + rect.YaxisY*yf,
+                rect.OriginZ + rect.XaxisZ*xf + rect.YaxisZ*yf,
+                xvX, xvY, xvZ,
+                yvX, yvY, yvZ)
         match corner with
         | 0 ->
-            let x = xa * xOffset / xl
-            let y = ya * yOffset / yl
-            Rect3D.createUncheckedVec(rect.Origin + x + y, xv, yv)
+            create xOffset yOffset
         | 1 ->
-            let x = xa * (xl-xOffset-xWidth) / xl
-            let y = ya * yOffset             / yl
-            Rect3D.createUncheckedVec(rect.Origin + x + y, xv, yv)
+            create (xl-xOffset-xWidth) yOffset
         | 2 ->
-            let x = xa * (xl-xOffset-xWidth)  / xl
-            let y = ya * (yl-yOffset-yHeight) / yl
-            Rect3D.createUncheckedVec(rect.Origin + x + y, xv, yv)
+            create (xl-xOffset-xWidth) (yl-yOffset-yHeight)
         | 3 ->
-            let x = xa *xOffset              / xl
-            let y = ya *(yl-yOffset-yHeight) / yl
-            Rect3D.createUncheckedVec(rect.Origin + x + y, xv, yv)
+            create xOffset (yl-yOffset-yHeight)
         | _ ->
             fail $"Rect3D.offsetCorner: corner {corner} out of range 0..3" |> unbox // unbox to make type checker happy
 
@@ -1745,20 +1844,27 @@ type Rect3D =
     ///<param name="offEnd">The local offset distances perpendicular to the edge at the end.</param>
     ///<returns>A new 3D-rectangle. It will always have the same x and y axis orientation as the input rectangle. Independent of negative or positive offsets</returns>
     static member offsetEdge (rect:Rect3D, edgeIdx:int, offEdge:float, width:float, offStart:float, offEnd:float) : Rect3D =
-        let x = rect.Xaxis
-        let y = rect.Yaxis
-        let lx = x.Length
-        let ly = y.Length
+        let lx = rect.SizeX
+        let ly = rect.SizeY
 
-        let inline xLen d = x * (d / lx)
+        let inline checkX d : float = if d > 1e-6 then d else failRect3DOffsetEdge(offStart, offEnd, lx, edgeIdx, d)  //|> unbox // unbox to make type checker happy
+        let inline checkY d : float = if d > 1e-6 then d else failRect3DOffsetEdge(offStart, offEnd, ly, edgeIdx, d)  //|> unbox // unbox to make type checker happy
 
-        let inline yLen d = y * (d / ly)
-
-        let inline checkX d = if d > 1e-6 then d else failRect3DOffsetEdge(offStart, offEnd, lx, edgeIdx, d)  |> unbox // unbox to make type checker happy
-        let inline checkY d = if d > 1e-6 then d else failRect3DOffsetEdge(offStart, offEnd, ly, edgeIdx, d)  |> unbox // unbox to make type checker happy
-
-        let inline orig xx yy =
-            rect.Origin + xLen xx + yLen yy
+        let inline create xx yy xDist yDist =
+            let xxx = xx / lx
+            let yyy = yy / ly
+            let xxDist = xDist / lx
+            let yyDist = yDist / ly
+            Rect3D.createUnchecked(
+                rect.OriginX + rect.XaxisX * xxx + rect.YaxisX * yyy,
+                rect.OriginY + rect.XaxisY * xxx + rect.YaxisY * yyy,
+                rect.OriginZ + rect.XaxisZ * xxx + rect.YaxisZ * yyy,
+                rect.XaxisX * xxDist,
+                rect.XaxisY * xxDist,
+                rect.XaxisZ * xxDist,
+                rect.YaxisX * yyDist,
+                rect.YaxisY * yyDist,
+                rect.YaxisZ * yyDist)
 
         if isTooTiny (lx) || isTooTiny (ly) then
             failTooSmall "Rect3D.offsetEdge: Xaxis or Yaxis" rect
@@ -1766,19 +1872,19 @@ type Rect3D =
             match edgeIdx with
             | 0 ->
                 let x = lx-offStart-offEnd |> checkX
-                Rect3D.createUncheckedVec( orig offStart offEdge , xLen x , yLen width )
+                create offStart offEdge x width
 
             | 1 ->
                 let y = ly-offStart-offEnd |> checkY
-                Rect3D.createUncheckedVec( orig (lx-offEdge-width) offStart , xLen width, yLen y )
+                create (lx-offEdge-width) offStart width y
 
             | 2 ->
                 let x = lx-offStart-offEnd |> checkX
-                Rect3D.createUncheckedVec( orig offEnd (ly-offEdge-width), xLen x, yLen width )
+                create offEnd (ly-offEdge-width) x width
 
             | 3 ->
                 let y = ly-offStart-offEnd |> checkY
-                Rect3D.createUncheckedVec( orig offEdge offEnd, xLen width, yLen y )
+                create offEdge offEnd width y
 
             | _ ->
                 fail $"Rect3D.offsetEdge: edgeIdx {edgeIdx} out of range 0..3" |> unbox // unbox to make type checker happy
@@ -1787,19 +1893,19 @@ type Rect3D =
             match edgeIdx with
             | 0 ->
                 let x = lx-offStart-offEnd |> checkX
-                Rect3D.createUncheckedVec( orig offStart (offEdge+width) , xLen x , yLen -width )
+                create offStart (offEdge+width) x (-width)
 
             | 1 ->
                 let y = ly-offStart-offEnd |> checkY
-                Rect3D.createUncheckedVec( orig (lx-offEdge) offStart , xLen -width, yLen y )
+                create (lx-offEdge) offStart (-width) y
 
             | 2 ->
                 let x = lx-offStart-offEnd |> checkX
-                Rect3D.createUncheckedVec( orig offEnd (ly-offEdge) , xLen x, yLen -width )
+                create offEnd (ly-offEdge) x (-width)
 
             | 3 ->
                 let y = ly-offStart-offEnd |> checkY
-                Rect3D.createUncheckedVec( orig (offEdge+width) offEnd, xLen -width, yLen y )
+                create (offEdge+width) offEnd (-width) y
 
             | _ ->
                 fail $"Rect3D.offsetEdge: edgeIdx {edgeIdx} out of range 0..3" |> unbox // unbox to make type checker happy
@@ -1812,25 +1918,33 @@ type Rect3D =
     static member subDivide (rect:Rect3D, xCount:int, yCount:int, xGap:float, yGap:float) : Rect3D array array =
         if xCount <= 0 ||yCount <= 0 then
             fail $"Rect3D.subDivide: xCount {xCount} and yCount {yCount} must be 1 or more"
-        let xa = rect.Xaxis
-        let ya = rect.Yaxis
-        let xl = xa.Length
-        let yl = ya.Length
+        let xl = rect.SizeX
+        let yl = rect.SizeY
         let lx1 = (xl - xGap * float (xCount-1) )/ float xCount
         let ly1 = (yl - yGap * float (yCount-1) )/ float yCount
         if isTooTiny (lx1) || isTooTiny (ly1) then
             [||]
         else
-            let o = rect.Origin
-            let vx = xa * (lx1/xl)
-            let vy = ya * (ly1/yl)
+            let vxf = lx1/xl
+            let vyf = ly1/yl
+            let vxX = rect.XaxisX * vxf
+            let vxY = rect.XaxisY * vxf
+            let vxZ = rect.XaxisZ * vxf
+            let vyX = rect.YaxisX * vyf
+            let vyY = rect.YaxisY * vyf
+            let vyZ = rect.YaxisZ * vyf
             let rss = Array.zeroCreate xCount
             for ix = 0 to xCount-1 do
                 let rs = Array.zeroCreate yCount
                 for iy = 0 to yCount-1 do
-                    let x = xa * (xGap * float ix / xl + lx1 * float ix / xl)
-                    let y = ya * (yGap * float iy / yl + ly1 * float iy / yl)
-                    rs.[iy] <- Rect3D.createUncheckedVec(o + x + y, vx, vy)
+                    let xf = (xGap * float ix + lx1 * float ix) / xl
+                    let yf = (yGap * float iy + ly1 * float iy) / yl
+                    rs.[iy] <- Rect3D.createUnchecked(
+                                rect.OriginX + rect.XaxisX*xf + rect.YaxisX*yf,
+                                rect.OriginY + rect.XaxisY*xf + rect.YaxisY*yf,
+                                rect.OriginZ + rect.XaxisZ*xf + rect.YaxisZ*yf,
+                                vxX, vxY, vxZ,
+                                vyX, vyY, vyZ)
                 rss.[ix] <- rs
             rss
 
@@ -1841,10 +1955,12 @@ type Rect3D =
     /// That means in an edge case there are more segments returned, not fewer.
     /// The returned array is divided along the x-axis. The sub-array is divided along the y-axis.
     static member subDivideMinLength (rect:Rect3D, xMinLen:float, yMinLen:float, xGap:float, yGap:float) : Rect3D array array =
-        let xLen = sqrt(rect.XaxisX*rect.XaxisX + rect.XaxisY*rect.XaxisY + rect.XaxisZ*rect.XaxisZ)
-        let yLen = sqrt(rect.YaxisX*rect.YaxisX + rect.YaxisY*rect.YaxisY + rect.YaxisZ*rect.YaxisZ)
-        if xLen < xMinLen  then fail $"Rect3D.subDivideMinLength: xMinLen {xMinLen} is bigger than rect X-axis length {xLen} for {rect.AsString}"
-        if yLen < yMinLen  then fail $"Rect3D.subDivideMinLength: yMinLen {yMinLen} is bigger than rect Y-axis length {yLen} for {rect.AsString}"
+        let xLen = rect.SizeX
+        let yLen = rect.SizeY
+        if xLen < xMinLen then
+            fail $"Rect3D.subDivideMinLength: xMinLen {xMinLen} is bigger than rect X-axis length {xLen} for {rect.AsString}"
+        if yLen < yMinLen then
+            fail $"Rect3D.subDivideMinLength: yMinLen {yMinLen} is bigger than rect Y-axis length {yLen} for {rect.AsString}"
         let xCount = int (xLen / (xMinLen*0.9999))
         let yCount = int (yLen / (yMinLen*0.9999))
         Rect3D.subDivide (rect, xCount, yCount, xGap, yGap)
@@ -1856,8 +1972,8 @@ type Rect3D =
     /// That means in an edge case there are fewer segments returned, not more.
     /// The returned array is divided along the x-axis. The sub-array is divided along the y-axis.
     static member subDivideMaxLength (rect:Rect3D, xMaxLen:float, yMaxLen:float, xGap:float, yGap:float) : Rect3D array array =
-        let xLen = sqrt(rect.XaxisX*rect.XaxisX + rect.XaxisY*rect.XaxisY + rect.XaxisZ*rect.XaxisZ)
-        let yLen = sqrt(rect.YaxisX*rect.YaxisX + rect.YaxisY*rect.YaxisY + rect.YaxisZ*rect.YaxisZ)
+        let xLen = rect.SizeX
+        let yLen = rect.SizeY
         let xCount = 1 + int (xLen / (xMaxLen*1.00001))
         let yCount = 1 + int (yLen / (yMaxLen*1.00001))
         Rect3D.subDivide (rect, xCount, yCount, xGap, yGap)
@@ -1867,20 +1983,20 @@ type Rect3D =
     static member grid (rect:Rect3D, xCount:int, yCount:int) : Pnt[][]=
         if xCount <= 1 ||yCount <= 1 then
             fail $"Rect3D.grid: xCount {xCount} and yCount {yCount} must be 2 or more"
-        let xa = rect.Xaxis
-        let ya = rect.Yaxis
-        let xl = xa.Length
-        let yl = ya.Length
+        let xl = rect.SizeX
+        let yl = rect.SizeY
         let lx1 = xl / float (xCount-1)
         let ly1 = yl / float (yCount-1)
-        let o = rect.Origin
         let rss = Array.zeroCreate xCount
         for ix = 0 to xCount-1 do
             let rs = Array.zeroCreate yCount
             for iy = 0 to yCount-1 do
-                let x = xa * (lx1 * float ix / xl)
-                let y = ya * (ly1 * float iy / yl)
-                rs.[iy] <- o + x + y
+                let xf = lx1 * float ix / xl
+                let yf = ly1 * float iy / yl
+                rs.[iy] <- Pnt(
+                            rect.OriginX + rect.XaxisX*xf + rect.YaxisX*yf,
+                            rect.OriginY + rect.XaxisY*xf + rect.YaxisY*yf,
+                            rect.OriginZ + rect.XaxisZ*xf + rect.YaxisZ*yf)
             rss.[ix] <- rs
         rss
 
@@ -1890,8 +2006,8 @@ type Rect3D =
     /// That means in an edge case there are more segments returned, not fewer.
     /// The returned array is divided along the x-axis. The sub-array is divided along the y-axis.
     static member gridMinLength (rect:Rect3D, xMinLen:float, yMinLen:float) : Pnt array array =
-        let xLen = sqrt(rect.XaxisX*rect.XaxisX + rect.XaxisY*rect.XaxisY + rect.XaxisZ*rect.XaxisZ)
-        let yLen = sqrt(rect.YaxisX*rect.YaxisX + rect.YaxisY*rect.YaxisY + rect.YaxisZ*rect.YaxisZ)
+        let xLen = rect.SizeX
+        let yLen = rect.SizeY
         if xLen < xMinLen  then fail $"Rect3D.gridMinLength: xMinLen {xMinLen} is bigger than rect X-axis length {xLen} for {rect.AsString}"
         if yLen < yMinLen  then fail $"Rect3D.gridMinLength: yMinLen {yMinLen} is bigger than rect Y-axis length {yLen} for {rect.AsString}"
         let xCount = 1 + int (xLen / (xMinLen*0.9999))
@@ -1904,8 +2020,8 @@ type Rect3D =
     /// That means in an edge case there are fewer segments returned, not more.
     /// The returned array is divided along the x-axis. The sub-array is divided along the y-axis.
     static member gridMaxLength (rect:Rect3D, xMaxLen:float, yMaxLen:float) : Pnt array array =
-        let xLen = sqrt(rect.XaxisX*rect.XaxisX + rect.XaxisY*rect.XaxisY + rect.XaxisZ*rect.XaxisZ)
-        let yLen = sqrt(rect.YaxisX*rect.YaxisX + rect.YaxisY*rect.YaxisY + rect.YaxisZ*rect.YaxisZ)
+        let xLen = rect.SizeX
+        let yLen = rect.SizeY
         let xCount = 2 + int (xLen / (xMaxLen*1.00001))
         let yCount = 2 + int (yLen / (yMaxLen*1.00001))
         Rect3D.grid (rect, xCount, yCount)
@@ -1914,32 +2030,83 @@ type Rect3D =
     /// The parameters is the intersection point of the ray with the infinitely extended Rect3D.
     /// So if any of the parameters is outside of the range 0.0 to 1.0 the intersection point is actually outside of the rectangle.
     /// Returns None if they are parallel or coincident.
-    static member intersectRayParameters (ln:Line3D) (pl:Rect3D) : option<float*float*float> =
-        let z = pl.NormalUnit
-        let v = ln.Tangent
-        let nenner = v *** z
+    static member intersectRayParameters (ln:Line3D) (r:Rect3D) : option<float*float*float> =
+        // (1) get the unit normal of the rectangle
+        let mutable nx = r.XaxisY * r.YaxisZ - r.XaxisZ * r.YaxisY
+        let mutable ny = r.XaxisZ * r.YaxisX - r.XaxisX * r.YaxisZ
+        let mutable nz = r.XaxisX * r.YaxisY - r.XaxisY * r.YaxisX
+        let len = sqrt (nx*nx + ny*ny + nz*nz)
+        if isTooTiny len then
+            failTooSmall "Rect3D.intersectRayParameters: rect" r
+        let f = 1.0 / len
+        nx <- nx * f
+        ny <- ny * f
+        nz <- nz * f
+        // (2) get the tangent vector of the line
+        let vx = ln.VectorX
+        let vy = ln.VectorY
+        let vz = ln.VectorZ
+        // (3) dot product of tangent and normal
+        let nenner = vx * nx + vy * ny + vz * nz
         if isTooSmall (abs nenner) then
             None
         else
-            let t = ((pl.Origin - ln.From) *** z) / nenner
-            let xpt = ln.From + v * t
-            let vecInPlane = xpt - pl.Origin
-            Some   (t,
-                    (pl.XaxisX*vecInPlane.X + pl.XaxisY*vecInPlane.Y + pl.XaxisZ*vecInPlane.Z) / (pl.XaxisX*pl.XaxisX + pl.XaxisY*pl.XaxisY + pl.XaxisZ*pl.XaxisZ) ,
-                    (pl.YaxisX*vecInPlane.X + pl.YaxisY*vecInPlane.Y + pl.YaxisZ*vecInPlane.Z) / (pl.YaxisX*pl.YaxisX + pl.YaxisY*pl.YaxisY + pl.YaxisZ*pl.YaxisZ) )
+            let ox = r.OriginX
+            let oy = r.OriginY
+            let oz = r.OriginZ
+            // (4) get the vector from the line start to the rectangle origin
+            let lnOrX = ox - ln.FromX
+            let lnOrY = oy - ln.FromY
+            let lnOrZ = oz - ln.FromZ
+            // (5) get the line parameter of the intersection point
+            let t = (lnOrX * nx + lnOrY * ny + lnOrZ * nz) / nenner
+            // (6) get the intersection point
+            let xptX = ln.FromX + vx * t
+            let xptY = ln.FromY + vy * t
+            let xptZ = ln.FromZ + vz * t
+            // (7) get the vector from the rectangle origin to the intersection point
+            let vecInPlaneX = xptX - ox
+            let vecInPlaneY = xptY - oy
+            let vecInPlaneZ = xptZ - oz
+            // (8) get the X and Y parameters of the intersection point
+            let tx = (r.XaxisX*vecInPlaneX + r.XaxisY*vecInPlaneY + r.XaxisZ*vecInPlaneZ) / (r.XaxisX*r.XaxisX + r.XaxisY*r.XaxisY + r.XaxisZ*r.XaxisZ)
+            let ty = (r.YaxisX*vecInPlaneX + r.YaxisY*vecInPlaneY + r.YaxisZ*vecInPlaneZ) / (r.YaxisX*r.YaxisX + r.YaxisY*r.YaxisY + r.YaxisZ*r.YaxisZ)
+            Some (t, tx, ty)
 
     /// Returns the line parameter.
     /// The parameter is the intersection point of the ray with the infinitely extended Rect3D.
     /// The intersection point lies on the line segment itself only if the parameter is within the range 0.0 to 1.0.
     /// Returns None if they are parallel or coincident.
-    static member intersectRayParameter (ln:Line3D) (pl:Rect3D) : option<float> =
-        let z = pl.NormalUnit
-        let v = ln.Tangent
-        let nenner = v *** z
+    static member intersectRayParameter (ln:Line3D) (r:Rect3D) : option<float> =
+                // (1) get the unit normal of the rectangle
+        let mutable nx = r.XaxisY * r.YaxisZ - r.XaxisZ * r.YaxisY
+        let mutable ny = r.XaxisZ * r.YaxisX - r.XaxisX * r.YaxisZ
+        let mutable nz = r.XaxisX * r.YaxisY - r.XaxisY * r.YaxisX
+        let len = sqrt (nx*nx + ny*ny + nz*nz)
+        if isTooTiny len then
+            failTooSmall "Rect3D.intersectRayParameters: rect" r
+        let f = 1.0 / len
+        nx <- nx * f
+        ny <- ny * f
+        nz <- nz * f
+        // (2) get the tangent vector of the line
+        let vx = ln.VectorX
+        let vy = ln.VectorY
+        let vz = ln.VectorZ
+        // (3) dot product of tangent and normal
+        let nenner = vx * nx + vy * ny + vz * nz
         if isTooSmall (abs nenner) then
             None
         else
-            let t = ((pl.Origin - ln.From) *** z) / nenner
+            let ox = r.OriginX
+            let oy = r.OriginY
+            let oz = r.OriginZ
+            // (4) get the vector from the line start to the rectangle origin
+            let lnOrX = ox - ln.FromX
+            let lnOrY = oy - ln.FromY
+            let lnOrZ = oz - ln.FromZ
+            // (5) get the line parameter of the intersection point
+            let t = (lnOrX * nx + lnOrY * ny + lnOrZ * nz) / nenner
             Some t
 
     /// Returns the line parameter and the X and Y parameters on the Rect3D as tuple (pLn, pPlX, pPlY).
@@ -1947,24 +2114,53 @@ type Rect3D =
     /// Returns None if the intersection point is outside of their bounds.
     /// Use Rect3D.intersectRayParameters to get the parameters even when the intersection point is outside the bounds.
     /// Returns None if they are parallel or coincident.
-    static member intersectLineParameters (ln:Line3D) (pl:Rect3D) : option<float*float*float> =
-        let z = pl.NormalUnit
-        let v = ln.Tangent
-        let nenner = v *** z
+    static member intersectLineParameters (ln:Line3D) (r:Rect3D) : option<float*float*float> =
+        // (1) get the unit normal of the rectangle
+        let mutable nx = r.XaxisY * r.YaxisZ - r.XaxisZ * r.YaxisY
+        let mutable ny = r.XaxisZ * r.YaxisX - r.XaxisX * r.YaxisZ
+        let mutable nz = r.XaxisX * r.YaxisY - r.XaxisY * r.YaxisX
+        let len = sqrt (nx*nx + ny*ny + nz*nz)
+        if isTooTiny len then
+            failTooSmall "Rect3D.intersectLineParameters: rect" r
+        let f = 1.0 / len
+        nx <- nx * f
+        ny <- ny * f
+        nz <- nz * f
+        // (2) get the tangent vector of the line
+        let vx = ln.VectorX
+        let vy = ln.VectorY
+        let vz = ln.VectorZ
+        // (3) dot product of tangent and normal
+        let nenner = vx * nx + vy * ny + vz * nz
         if isTooSmall (abs nenner) then
-            None //Line and Rect3D are parallel or line has zero length
+            None
         else
-            let t = ((pl.Origin - ln.From) *** z) / nenner
+            let ox = r.OriginX
+            let oy = r.OriginY
+            let oz = r.OriginZ
+            // (4) get the vector from the line start to the rectangle origin
+            let lnOrX = ox - ln.FromX
+            let lnOrY = oy - ln.FromY
+            let lnOrZ = oz - ln.FromZ
+            // (5) get the line parameter of the intersection point
+            let t = (lnOrX * nx + lnOrY * ny + lnOrZ * nz) / nenner
             if t < 0.0 || t > 1.0 then
                 None
             else
-                let xpt = ln.From + v * t
-                let vecInPlane = xpt - pl.Origin
-                let tx = (pl.XaxisX*vecInPlane.X + pl.XaxisY*vecInPlane.Y + pl.XaxisZ*vecInPlane.Z) / (pl.XaxisX*pl.XaxisX + pl.XaxisY*pl.XaxisY + pl.XaxisZ*pl.XaxisZ)
+                // (6) get the intersection point
+                let xptX = ln.FromX + vx * t
+                let xptY = ln.FromY + vy * t
+                let xptZ = ln.FromZ + vz * t
+                // (7) get the vector from the rectangle origin to the intersection point
+                let vecInPlaneX = xptX - ox
+                let vecInPlaneY = xptY - oy
+                let vecInPlaneZ = xptZ - oz
+                // (8) get the X and Y parameters of the intersection point
+                let tx = (r.XaxisX*vecInPlaneX + r.XaxisY*vecInPlaneY + r.XaxisZ*vecInPlaneZ) / (r.XaxisX*r.XaxisX + r.XaxisY*r.XaxisY + r.XaxisZ*r.XaxisZ)
                 if tx < 0.0 || tx > 1.0 then
                     None
                 else
-                    let ty = (pl.YaxisX*vecInPlane.X + pl.YaxisY*vecInPlane.Y + pl.YaxisZ*vecInPlane.Z) / (pl.YaxisX*pl.YaxisX + pl.YaxisY*pl.YaxisY + pl.YaxisZ*pl.YaxisZ)
+                    let ty = (r.YaxisX*vecInPlaneX + r.YaxisY*vecInPlaneY + r.YaxisZ*vecInPlaneZ) / (r.YaxisX*r.YaxisX + r.YaxisY*r.YaxisY + r.YaxisZ*r.YaxisZ)
                     if ty < 0.0 || ty > 1.0 then
                         None
                     else
@@ -1974,39 +2170,67 @@ type Rect3D =
     /// Returns None if the intersection point is outside of their bounds.
     /// Use Rect3D.intersectLineParameters to get the parameters of the intersection point.
     /// Returns None if they are parallel or coincident or the line has zero length.
-    static member intersectLine (ln:Line3D) (pl:Rect3D) : Pnt option =
-        let z = pl.NormalUnit
-        let v = ln.Tangent
-        let nenner = v *** z
+    static member intersectLine (ln:Line3D) (r:Rect3D) : Pnt option =
+        // (1) get the unit normal of the rectangle
+        let mutable nx = r.XaxisY * r.YaxisZ - r.XaxisZ * r.YaxisY
+        let mutable ny = r.XaxisZ * r.YaxisX - r.XaxisX * r.YaxisZ
+        let mutable nz = r.XaxisX * r.YaxisY - r.XaxisY * r.YaxisX
+        let len = sqrt (nx*nx + ny*ny + nz*nz)
+        if isTooTiny len then
+            failTooSmall "Rect3D.intersectLine: rect" r
+        let f = 1.0 / len
+        nx <- nx * f
+        ny <- ny * f
+        nz <- nz * f
+        // (2) get the tangent vector of the line
+        let vx = ln.VectorX
+        let vy = ln.VectorY
+        let vz = ln.VectorZ
+        // (3) dot product of tangent and normal
+        let nenner = vx * nx + vy * ny + vz * nz
         if isTooSmall (abs nenner) then
-            None //Line and Rect3D are parallel or line has zero length
+            None
         else
-            let t = ((pl.Origin - ln.From) *** z) / nenner
+            let ox = r.OriginX
+            let oy = r.OriginY
+            let oz = r.OriginZ
+            // (4) get the vector from the line start to the rectangle origin
+            let lnOrX = ox - ln.FromX
+            let lnOrY = oy - ln.FromY
+            let lnOrZ = oz - ln.FromZ
+            // (5) get the line parameter of the intersection point
+            let t = (lnOrX * nx + lnOrY * ny + lnOrZ * nz) / nenner
             if t < 0.0 || t > 1.0 then
                 None
             else
-                let xpt = ln.From + v * t
-                let vecInPlane = xpt - pl.Origin
-                let tx = (pl.XaxisX*vecInPlane.X + pl.XaxisY*vecInPlane.Y + pl.XaxisZ*vecInPlane.Z) / (pl.XaxisX*pl.XaxisX + pl.XaxisY*pl.XaxisY + pl.XaxisZ*pl.XaxisZ)
+                // (6) get the intersection point
+                let xptX = ln.FromX + vx * t
+                let xptY = ln.FromY + vy * t
+                let xptZ = ln.FromZ + vz * t
+                // (7) get the vector from the rectangle origin to the intersection point
+                let vecInPlaneX = xptX - ox
+                let vecInPlaneY = xptY - oy
+                let vecInPlaneZ = xptZ - oz
+                // (8) get the X and Y parameters of the intersection point
+                let tx = (r.XaxisX*vecInPlaneX + r.XaxisY*vecInPlaneY + r.XaxisZ*vecInPlaneZ) / (r.XaxisX*r.XaxisX + r.XaxisY*r.XaxisY + r.XaxisZ*r.XaxisZ)
                 if tx < 0.0 || tx > 1.0 then
                     None
                 else
-                    let ty = (pl.YaxisX*vecInPlane.X + pl.YaxisY*vecInPlane.Y + pl.YaxisZ*vecInPlane.Z) / (pl.YaxisX*pl.YaxisX + pl.YaxisY*pl.YaxisY + pl.YaxisZ*pl.YaxisZ)
+                    let ty = (r.YaxisX*vecInPlaneX + r.YaxisY*vecInPlaneY + r.YaxisZ*vecInPlaneZ) / (r.YaxisX*r.YaxisX + r.YaxisY*r.YaxisY + r.YaxisZ*r.YaxisZ)
                     if ty < 0.0 || ty > 1.0 then
                         None
                     else
-                        Some <| xpt
+                        Some <| Pnt(xptX, xptY, xptZ)
 
     // #endregion
     // #region Obsolete
 
-
     [<Obsolete("Renamed to Rect3D.xAxisUnit for naming consistency with Rect2D.")>]
-    static member inline xaxisUnit (r:Rect3D) : UnitVec =
+    static member xaxisUnit (r:Rect3D) : UnitVec =
         r.XaxisUnit
 
     [<Obsolete("Renamed to Rect3D.yAxisUnit for naming consistency with Rect2D.")>]
-    static member inline yaxisUnit (r:Rect3D) : UnitVec =
+    static member yaxisUnit (r:Rect3D) : UnitVec =
         r.YaxisUnit
 
     [<Obsolete("This does not scale proportionally to the actual area, use just .Area for sorting by area")>]
@@ -2023,31 +2247,32 @@ type Rect3D =
 
     /// The size in Y direction, same as member rect.SizeY.
     [<Obsolete("use SizeY")>]
-    member inline r.Height2D : float =
-        sqrt(r.YaxisX*r.YaxisX + r.YaxisY*r.YaxisY + r.YaxisZ*r.YaxisZ)
+    member  r.Height2D : float =
+        r.SizeY
 
     /// The size in X direction, same as member rect.SizeX.
     [<Obsolete("use SizeX")>]
-    member inline r.Width : float =
-        sqrt(r.XaxisX*r.XaxisX + r.XaxisY*r.XaxisY + r.XaxisZ*r.XaxisZ)
+    member  r.Width : float =
+        r.SizeX
 
 
     #nowarn "44" // Obsolete member
 
-    /// Applies or multiplies a 4x4 transformation matrix to a 3D rectangle.
-    /// The returned rectangle may not have orthogonal axis vectors anymore for non-IsRigid matrices.
-    [<Obsolete("If the matrix is projecting this transformation will not be correct. Use RigidMatrix or with with corner Pnt instead.")>]
-    member inline r.Transform (m:Matrix) : Rect3D =
-        let o = r.Origin *** m
-        let x = Vec.transform m r.Xaxis
-        let y = Vec.transform m r.Yaxis
-        Rect3D.createUnchecked(o.X, o.Y, o.Z, x.X, x.Y, x.Z, y.X, y.Y, y.Z)
+    // /// Applies or multiplies a 4x4 transformation matrix to a 3D rectangle.
+    // /// The returned rectangle may not have orthogonal axis vectors anymore for non-IsRigid matrices.
+    // [<Obsolete("If the matrix is projecting this transformation will not be correct. Use RigidMatrix or with with corner Pnt instead.")>]
+    // member r.Transform (m:Matrix) : Rect3D =
+    //     let o = r.Origin *** m
+    //     let x = Vec.transform m r.Xaxis
+    //     let y = Vec.transform m r.Yaxis
+    //     Rect3D.createUnchecked(o.X, o.Y, o.Z, x.X, x.Y, x.Z, y.X, y.Y, y.Z)
 
-    /// Applies or multiplies a 4x4 transformation matrix to a 3D rectangle.
-    /// The returned rectangle may not have orthogonal axis vectors anymore for non-IsRigid matrices.
-    [<Obsolete("If the matrix is projecting this transformation will not be correct. Use RigidMatrix or with with corner Pnt instead.")>]
-    static member inline transform (m:Matrix) (r:Rect3D) : Rect3D =
-        let o = r.Origin *** m
-        let x = Vec.transform m r.Xaxis
-        let y = Vec.transform m r.Yaxis
-        Rect3D.createUnchecked(o.X, o.Y, o.Z, x.X, x.Y, x.Z, y.X, y.Y, y.Z)
+    // /// Applies or multiplies a 4x4 transformation matrix to a 3D rectangle.
+    // /// The returned rectangle may not have orthogonal axis vectors anymore for non-IsRigid matrices.
+    // [<Obsolete("If the matrix is projecting this transformation will not be correct. Use RigidMatrix or with with corner Pnt instead.")>]
+    // static member transform (m:Matrix) (r:Rect3D) : Rect3D =
+    //     let o = r.Origin *** m
+    //     let x = Vec.transform m r.Xaxis
+    //     let y = Vec.transform m r.Yaxis
+    //     Rect3D.createUnchecked(o.X, o.Y, o.Z, x.X, x.Y, x.Z, y.X, y.Y, y.Z)
+

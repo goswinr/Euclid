@@ -171,8 +171,6 @@ type BRect =
     static member inline expandXY (xDist:float) (yDist:float) (r:BRect) : BRect =
         r.ExpandXY(xDist, yDist)
 
-
-
     /// Returns a bounding rectangle expanded by a distance for X and Y-axis each.
     /// If expansion is negative it shrinks the Rectangle. It also prevents the rectangle from collapsing past its center.
     /// When the negative expansion is bigger than the size, Min and Max values will be both at the center point.
@@ -198,7 +196,6 @@ type BRect =
     static member inline expandSafeXY (xDist:float) (yDist:float) (r:BRect) : BRect =
         r.ExpandSafeXY(xDist, yDist)
 
-
     /// Returns a bounding rectangle expanded by a distance.
     /// If expansion is negative it shrinks the Rectangle. It also prevents the rectangle from collapsing past its center.
     /// When the negative expansion is bigger than the size, Min and Max values will be both at the center point.
@@ -210,7 +207,6 @@ type BRect =
     /// When the negative expansion is bigger than the size, Min and Max values will be both in the middle from where they were before.
     static member inline expandSafe (dist:float) (r:BRect) : BRect =
         r.ExpandSafeXY(dist, dist)
-
 
     /// Returns a bounding rectangle expanded only in X direction by different distances for start(minX) and end (maxX).
     /// Does check for underflow if distance is negative and raises EuclidException.
@@ -369,24 +365,32 @@ type BRect =
     //         b.MinZ >= a.MinZ && b.MaxZ <= a.MaxZ    )
 
     /// Returns TRUE if the point is inside or exactly on this bounding rectangle.
-    member inline r.Contains (p:Pt) : bool =
-        p.X >= r.MinX &&
-        p.X <= r.MaxX &&
-        p.Y >= r.MinY &&
-        p.Y <= r.MaxY
+    member inline r.ContainsXY (x:float, y:float) : bool =
+        x >= r.MinX &&
+        x <= r.MaxX &&
+        y >= r.MinY &&
+        y <= r.MaxY
+
+    /// Returns TRUE if the point is inside or on this bounding rectangle.
+    static member inline containsXY (x:float) (y:float) (rect:BRect) : bool =
+        rect.ContainsXY (x, y)
+
+    /// Returns TRUE if the point is inside or exactly on this bounding rectangle.
+    member inline r.ContainsPt (p:Pt) : bool =
+        r.ContainsXY (p.X, p.Y)
+
+    /// Returns TRUE if the point is inside or on this bounding rectangle.
+    static member inline containsPt (pt:Pt) (rect:BRect) : bool =
+        rect.ContainsPt pt
 
     /// Returns TRUE if the Rectangle is inside or exactly on the other bounding rectangle.
     member inline r.Contains (o:BRect) : bool =
-        r.Contains(o.MinPt) && r.Contains(o.MaxPt)
+        r.ContainsXY (o.MinX, o.MinY) && r.ContainsXY (o.MaxX, o.MaxY)
 
     /// Returns TRUE if this bounding rectangle is inside or exactly on the other bounding rectangle.
     /// Argument order matters!
     static member inline contains (rectInside:BRect) (surroundingRect:BRect) : bool =
         surroundingRect.Contains rectInside
-
-    /// Returns TRUE if the point is inside or on this bounding rectangle.
-    static member inline containsPt (pt:Pt) (rect:BRect) : bool =
-        rect.Contains pt
 
     /// Evaluate a X and Y parameter of this bounding rectangle.
     ///  0.0, 0.0 returns the MinPt.

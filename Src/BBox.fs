@@ -505,52 +505,36 @@ type BBox =
     static member inline touchingSide tolerance (other:BBox) (thisBox:BBox) : int =
         thisBox.TouchingSide(other, tolerance)
 
+    /// Returns TRUE if the point is inside or exactly on the bounding Box.
+    member inline b.ContainsXYZ (x:float, y:float, z:float) : bool =
+        x >= b.MinX &&
+        x <= b.MaxX &&
+        y >= b.MinY &&
+        y <= b.MaxY &&
+        z >= b.MinZ &&
+        z <= b.MaxZ
 
-    // /// Returns TRUE if the two 3D bounding boxes overlap by at least the specified threshold on every axis.
-    // /// (See note: when one box is smaller than the threshold on some axis but fully inside the other,
-    // ///  this returns FALSE.)
-    // member inline b.IsOverlappingMoreThan (a:BBox, threshold:float) : bool =
-    //     (min a.MaxX b.MaxX) - (max a.MinX b.MinX) >= threshold &&
-    //     (min a.MaxY b.MaxY) - (max a.MinY b.MinY) >= threshold &&
-    //     (min a.MaxZ b.MaxZ) - (max a.MinZ b.MinZ) >= threshold
-
-    // /// Returns TRUE if the two 3D bounding boxes overlap by at least the specified threshold on every axis.
-    // /// Also returns TRUE if one box is completely inside the other (even if smaller than the threshold).
-    // /// Also returns TRUE if one box is completely surrounding the other.
-    // member inline b.IsOverlappingMoreThan (a:BBox, threshold:float) : bool =
-    //     (   (min a.MaxX b.MaxX) - (max a.MinX b.MinX) >= threshold &&
-    //         (min a.MaxY b.MaxY) - (max a.MinY b.MinY) >= threshold &&
-    //         (min a.MaxZ b.MaxZ) - (max a.MinZ b.MinZ) >= threshold    )
-    //     ||
-    //     (   a.MinX >= b.MinX && a.MaxX <= b.MaxX &&
-    //         a.MinY >= b.MinY && a.MaxY <= b.MaxY &&
-    //         a.MinZ >= b.MinZ && a.MaxZ <= b.MaxZ    )
-    //     ||
-    //     (   b.MinX >= a.MinX && b.MaxX <= a.MaxX &&
-    //         b.MinY >= a.MinY && b.MaxY <= a.MaxY &&
-    //         b.MinZ >= a.MinZ && b.MaxZ <= a.MaxZ    )
+    /// Returns TRUE if the point is inside or on a 3D bounding box.
+    static member inline containsXYZ (x:float) (y:float) (z:float) (box:BBox)  : bool =
+        box.ContainsXYZ (x, y, z)
 
     /// Returns TRUE if the point is inside or exactly on the bounding Box.
-    member inline b.Contains (p:Pnt) : bool =
-        p.X >= b.MinX &&
-        p.X <= b.MaxX &&
-        p.Y >= b.MinY &&
-        p.Y <= b.MaxY &&
-        p.Z >= b.MinZ &&
-        p.Z <= b.MaxZ
+    member inline b.ContainsPnt (p:Pnt) : bool =
+        b.ContainsXYZ (p.X, p.Y, p.Z)
+
+    /// Returns TRUE if the point is inside or on a 3D bounding box.
+    static member inline containsPnt (pt:Pnt) (box:BBox)  : bool =
+        box.ContainsPnt(pt)
 
     /// Returns TRUE if this 3D bounding box is inside or exactly on the other bounding Box.
     member inline b.Contains (o:BBox) : bool =
-        b.Contains(o.MinPnt) && b.Contains(o.MaxPnt)
+        b.ContainsXYZ(o.MinX, o.MinY, o.MinZ) &&
+        b.ContainsXYZ(o.MaxX, o.MaxY, o.MaxZ)
 
     /// Returns TRUE if a 3D bounding box is inside or exactly on the other bounding Box.
     /// Argument order matters!
     static member inline contains (boxInside:BBox) (surroundingBox:BBox)  : bool =
         surroundingBox.Contains(boxInside)
-
-    /// Returns TRUE if the point is inside or on a 3D bounding box.
-    static member inline containsPnt (pt:Pnt) (box:BBox)  : bool =
-        box.Contains(pt)
 
     /// Evaluate a X, Y and Z parameter of this 3D bounding box.
     /// 0.0, 0.0, 0.0 returns the MinPnt.
@@ -563,6 +547,10 @@ type BBox =
     /// Evaluates X, Y and Z parameters on the 3D bounding box and returns a point.
     static member inline evaluateAt xParameter yParameter zParameter (b:BBox) : Pnt =
         b.EvaluateAt(xParameter, yParameter, zParameter)
+
+
+    // #endregion
+    // #region Points
 
     /// <summary>Returns point 0 of this 3D bounding box, same as member box.MinPnt.
     /// <code>
@@ -910,6 +898,9 @@ type BBox =
     /// Returns the looped 5-point top face polyline of the 3D bounding box.
     static member inline topPointsLooped (b:BBox) : Pnt[] =
         b.TopPointsLooped
+
+    // #endregion
+    // #region Edges
 
     /// Returns the X-aligned edge from point 0 to 1.
     member inline b.Edge01 : Line3D =
@@ -1266,11 +1257,9 @@ type BBox =
     static member doOverlapMoreThan tol (a:BBox) (b:BBox)  : bool =
         b.IsOverlappingOrClose(a, -tol)
 
-
     [<Obsolete("use .isOverlapping instead")>]
     static member overlapsWith (a:BBox) (b:BBox) : bool =
         b.IsOverlapping(a)
-
 
     [<Obsolete("use .IsOverlapping instead")>]
     member  b.OverlapsWith (a:BBox): bool =
@@ -1316,4 +1305,29 @@ type BBox =
     [<Obsolete("typo, use expandSafe instead")>]
     static member expandSave dist (b:BBox) : BBox =
         b.ExpandSafe dist
+
+
+    // /// Returns TRUE if the two 3D bounding boxes overlap by at least the specified threshold on every axis.
+    // /// (See note: when one box is smaller than the threshold on some axis but fully inside the other,
+    // ///  this returns FALSE.)
+    // member inline b.IsOverlappingMoreThan (a:BBox, threshold:float) : bool =
+    //     (min a.MaxX b.MaxX) - (max a.MinX b.MinX) >= threshold &&
+    //     (min a.MaxY b.MaxY) - (max a.MinY b.MinY) >= threshold &&
+    //     (min a.MaxZ b.MaxZ) - (max a.MinZ b.MinZ) >= threshold
+
+    // /// Returns TRUE if the two 3D bounding boxes overlap by at least the specified threshold on every axis.
+    // /// Also returns TRUE if one box is completely inside the other (even if smaller than the threshold).
+    // /// Also returns TRUE if one box is completely surrounding the other.
+    // member inline b.IsOverlappingMoreThan (a:BBox, threshold:float) : bool =
+    //     (   (min a.MaxX b.MaxX) - (max a.MinX b.MinX) >= threshold &&
+    //         (min a.MaxY b.MaxY) - (max a.MinY b.MinY) >= threshold &&
+    //         (min a.MaxZ b.MaxZ) - (max a.MinZ b.MinZ) >= threshold    )
+    //     ||
+    //     (   a.MinX >= b.MinX && a.MaxX <= b.MaxX &&
+    //         a.MinY >= b.MinY && a.MaxY <= b.MaxY &&
+    //         a.MinZ >= b.MinZ && a.MaxZ <= b.MaxZ    )
+    //     ||
+    //     (   b.MinX >= a.MinX && b.MaxX <= a.MaxX &&
+    //         b.MinY >= a.MinY && b.MaxY <= a.MaxY &&
+    //         b.MinZ >= a.MinZ && b.MaxZ <= a.MaxZ    )
 

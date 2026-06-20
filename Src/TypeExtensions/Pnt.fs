@@ -46,7 +46,7 @@ module AutoOpenPnt =
 
         /// Returns a boolean indicating whether X, Y and Z are exactly 0.0.
         member inline pt.IsOrigin : bool =
-            pt.X = 0.0 && pt.Y = 0.0 && pt.Z= 0.0
+            pt.X = 0.0 && pt.Y = 0.0 && pt.Z = 0.0
 
         /// Returns a boolean indicating whether X, Y and Z are exactly 0.0.
         static member inline isOrigin (pt:Pnt) : bool =

@@ -445,7 +445,7 @@ let tests =
         // Edge case tests for createPlaneToPlane
         test "Matrix plane to plane transformation" {
             let fromPlane = PPlane.WorldXY
-            let toPlane = PPlane.createUnchecked(Pnt(1,2,3), UnitVec.Xaxis, UnitVec.Yaxis, UnitVec.Zaxis)
+            let toPlane = PPlane.createUncheckedVec(Pnt(1,2,3), UnitVec.Xaxis, UnitVec.Yaxis, UnitVec.Zaxis)
             let m = Matrix.createPlaneToPlane(fromPlane, toPlane)
             let a = Pnt(0,0,0) // origin of fromPlane
             let b = a *** m
@@ -454,7 +454,7 @@ let tests =
 
         test "Matrix plane to plane with rotation" {
             let fromPlane = PPlane.WorldXY
-            let toPlane = PPlane.createUnchecked(Pnt.Origin, UnitVec.Yaxis, -UnitVec.Xaxis, UnitVec.Zaxis) // 90° rotation
+            let toPlane = PPlane.createUncheckedVec(Pnt.Origin, UnitVec.Yaxis, -UnitVec.Xaxis, UnitVec.Zaxis) // 90° rotation
             let m = Matrix.createPlaneToPlane(fromPlane, toPlane)
             let a = Pnt(1,0,0) // X axis point
             let b = a *** m

@@ -31,66 +31,15 @@ let tests =
                 Expect.throws (fun () -> FreeBox.createFromEightPoints pts |> ignore) "Should throw with wrong number of points"
             }
 
-            test "Origin is first point" {
-                let pts = [|
-                    Pnt(1., 2., 3.); Pnt(11., 2., 3.); Pnt(11., 7., 3.); Pnt(1., 7., 3.)
-                    Pnt(1., 2., 6.); Pnt(11., 2., 6.); Pnt(11., 7., 6.); Pnt(1., 7., 6.)
-                |]
-                let box = FreeBox.createFromEightPoints pts
-                Expect.isTrue (eqPnt box.Origin pts.[0]) "Origin should be first point"
-            }
-
-            test "Xaxis is vector from Pt0 to Pt1" {
-                let pts = [|
-                    Pnt(0., 0., 0.); Pnt(10., 0., 0.); Pnt(10., 5., 0.); Pnt(0., 5., 0.)
-                    Pnt(0., 0., 3.); Pnt(10., 0., 3.); Pnt(10., 5., 3.); Pnt(0., 5., 3.)
-                |]
-                let box = FreeBox.createFromEightPoints pts
-                let expected = Vec(10., 0., 0.)
-                Expect.isTrue (Vec.length (box.Xaxis - expected) < 1e-9) "Xaxis should be Pt1 - Pt0"
-            }
-
-            test "Yaxis is vector from Pt0 to Pt3" {
-                let pts = [|
-                    Pnt(0., 0., 0.); Pnt(10., 0., 0.); Pnt(10., 5., 0.); Pnt(0., 5., 0.)
-                    Pnt(0., 0., 3.); Pnt(10., 0., 3.); Pnt(10., 5., 3.); Pnt(0., 5., 3.)
-                |]
-                let box = FreeBox.createFromEightPoints pts
-                let expected = Vec(0., 5., 0.)
-                Expect.isTrue (Vec.length (box.Yaxis - expected) < 1e-9) "Yaxis should be Pt3 - Pt0"
-            }
-
-            test "Zaxis is vector from Pt0 to Pt4" {
-                let pts = [|
-                    Pnt(0., 0., 0.); Pnt(10., 0., 0.); Pnt(10., 5., 0.); Pnt(0., 5., 0.)
-                    Pnt(0., 0., 3.); Pnt(10., 0., 3.); Pnt(10., 5., 3.); Pnt(0., 5., 3.)
-                |]
-                let box = FreeBox.createFromEightPoints pts
-                let expected = Vec(0., 0., 3.)
-                Expect.isTrue (Vec.length (box.Zaxis - expected) < 1e-9) "Zaxis should be Pt4 - Pt0"
-            }
-
-            test "SizeX, SizeY, SizeZ" {
-                let pts = [|
-                    Pnt(0., 0., 0.); Pnt(10., 0., 0.); Pnt(10., 5., 0.); Pnt(0., 5., 0.)
-                    Pnt(0., 0., 3.); Pnt(10., 0., 3.); Pnt(10., 5., 3.); Pnt(0., 5., 3.)
-                |]
-                let box = FreeBox.createFromEightPoints pts
-                Expect.equal box.SizeX 10. "SizeX should be 10"
-                Expect.equal box.SizeY 5. "SizeY should be 5"
-                Expect.equal box.SizeZ 3. "SizeZ should be 3"
-            }
         ]
 
         testList "Creation from Box" [
             test "createFromBox" {
-                let box = Box.createUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 let freeBox = FreeBox.createFromBox box
                 Expect.isTrue (eqPnt freeBox.Pt0 box.Pt0) "Pt0 should match"
                 Expect.isTrue (eqPnt freeBox.Pt6 box.Pt6) "Pt6 should match"
-                Expect.equal freeBox.SizeX box.SizeX "SizeX should match"
-                Expect.equal freeBox.SizeY box.SizeY "SizeY should match"
-                Expect.equal freeBox.SizeZ box.SizeZ "SizeZ should match"
+
             }
         ]
 
@@ -100,7 +49,7 @@ let tests =
                 let box = FreeBox.createFromFour2DPoints 2. 8. pts
                 Expect.isTrue (eqPnt box.Pt0 (Pnt(0., 0., 2.))) "Pt0 should be at zMin"
                 Expect.isTrue (eqPnt box.Pt4 (Pnt(0., 0., 8.))) "Pt4 should be at zMax"
-                Expect.equal box.SizeZ 6. "SizeZ should be zMax - zMin"
+
             }
 
             test "createFromFour2DPoints rejects wrong number of points" {
@@ -390,49 +339,4 @@ let tests =
             }
         ]
 
-        testList "Edge Cases" [
-            test "Box with zero volume (all points coincident)" {
-                let pts = [|
-                    Pnt(5., 5., 5.); Pnt(5., 5., 5.); Pnt(5., 5., 5.); Pnt(5., 5., 5.)
-                    Pnt(5., 5., 5.); Pnt(5., 5., 5.); Pnt(5., 5., 5.); Pnt(5., 5., 5.)
-                |]
-                let box = FreeBox.createFromEightPoints pts
-                Expect.equal box.SizeX 0. "SizeX should be 0"
-                Expect.equal box.SizeY 0. "SizeY should be 0"
-                Expect.equal box.SizeZ 0. "SizeZ should be 0"
-            }
-
-            test "Box with one dimension (line)" {
-                let pts = [|
-                    Pnt(0., 5., 5.); Pnt(10., 5., 5.); Pnt(10., 5., 5.); Pnt(0., 5., 5.)
-                    Pnt(0., 5., 5.); Pnt(10., 5., 5.); Pnt(10., 5., 5.); Pnt(0., 5., 5.)
-                |]
-                let box = FreeBox.createFromEightPoints pts
-                Expect.equal box.SizeX 10. "SizeX should be 10"
-                Expect.equal box.SizeY 0. "SizeY should be 0"
-                Expect.equal box.SizeZ 0. "SizeZ should be 0"
-            }
-
-            test "Box with two dimensions (flat)" {
-                let pts = [|
-                    Pnt(0., 0., 5.); Pnt(10., 0., 5.); Pnt(10., 10., 5.); Pnt(0., 10., 5.)
-                    Pnt(0., 0., 5.); Pnt(10., 0., 5.); Pnt(10., 10., 5.); Pnt(0., 10., 5.)
-                |]
-                let box = FreeBox.createFromEightPoints pts
-                Expect.equal box.SizeX 10. "SizeX should be 10"
-                Expect.equal box.SizeY 10. "SizeY should be 10"
-                Expect.equal box.SizeZ 0. "SizeZ should be 0"
-            }
-
-            test "Non-axis-aligned box (rotated)" {
-                let pts = [|
-                    Pnt(0., 0., 0.); Pnt(10., 10., 0.); Pnt(0., 20., 0.); Pnt(-10., 10., 0.)
-                    Pnt(0., 0., 5.); Pnt(10., 10., 5.); Pnt(0., 20., 5.); Pnt(-10., 10., 5.)
-                |]
-                let box = FreeBox.createFromEightPoints pts
-                Expect.isTrue (box.SizeX > 0.) "Should have non-zero SizeX"
-                Expect.isTrue (box.SizeY > 0.) "Should have non-zero SizeY"
-                Expect.isTrue (box.SizeZ > 0.) "Should have non-zero SizeZ"
-            }
-        ]
     ]

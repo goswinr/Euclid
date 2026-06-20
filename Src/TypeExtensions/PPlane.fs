@@ -1,4 +1,4 @@
-﻿namespace Euclid
+namespace Euclid
 
 open System
 open Euclid.UtilEuclid
@@ -12,33 +12,54 @@ module AutoOpenPPlane =
     type PPlane with
 
         /// Returns signed distance of point to plane, also indicating on which side it is.
-        member inline pl.DistanceToPtSigned pt : float =
-            pl.Zaxis *** (pt-pl.Origin)
+        member inline pl.DistanceToXYZSigned (x:float, y:float, z:float) : float =
+            XYZ.dot pl.ZaxisX pl.ZaxisY pl.ZaxisZ (x - pl.OriginX) (y - pl.OriginY) (z - pl.OriginZ)
+
+        /// Returns signed distance of point to plane, also indicating on which side it is.
+        static member inline distanceToXYZSigned (x:float) (y:float) (z:float) (pl:PPlane) : float =
+            pl.DistanceToXYZSigned (x, y, z)
+
+        /// Returns signed distance of point to plane, also indicating on which side it is.
+        member inline pl.DistanceToPtSigned (pt:Pnt) : float =
+            pl.DistanceToXYZSigned (pt.X, pt.Y, pt.Z)
 
         /// Returns signed distance of point to plane, also indicating on which side it is.
         static member inline distanceToPtSigned pt (pl:PPlane) : float =
             pl.DistanceToPtSigned pt
 
         /// Returns absolute distance of point to plane.
-        member inline pl.DistanceToPt pt : float =
-            abs (pl.DistanceToPtSigned pt)
+        member inline pl.DistanceToXYZ (x:float, y:float, z:float) : float =
+            abs (pl.DistanceToXYZSigned (x, y, z))
+
+        /// Returns absolute distance of point to plane.
+        static member inline distanceToXYZ (x:float) (y:float) (z:float) (pl:PPlane) : float =
+            pl.DistanceToXYZ (x, y, z)
+
+        /// Returns absolute distance of point to plane.
+        member inline pl.DistanceToPt (pt:Pnt) : float =
+            pl.DistanceToXYZ (pt.X, pt.Y, pt.Z)
 
         /// Returns absolute distance of point to plane.
         static member inline distanceToPt pt (pl:PPlane) : float =
             pl.DistanceToPt pt
 
         /// Returns the closest point on the plane from a test point.
-        member inline pl.ClosestPoint pt : Pnt =
-            pt - pl.Zaxis*(pl.DistanceToPtSigned pt)
+        member inline pl.ClosestPoint (pt:Pnt) : Pnt =
+            let d = pl.DistanceToPtSigned pt
+            Pnt(pt.X - pl.ZaxisX*d, pt.Y - pl.ZaxisY*d, pt.Z - pl.ZaxisZ*d)
 
         /// Returns the closest point on the plane from a test point.
         static member inline closestPoint pt (pl:PPlane) : Pnt =
             pl.ClosestPoint pt
 
         /// Returns the X, Y and Z parameters of a point with regards to the plane.
-        member inline pl.PointParameters pt : float * float * float =
-            let v = pt-pl.Origin
-            pl.Xaxis *** v, pl.Yaxis *** v, pl.Zaxis *** v
+        member inline pl.PointParameters (pt:Pnt) : float * float * float =
+            let vx = pt.X - pl.OriginX
+            let vy = pt.Y - pl.OriginY
+            let vz = pt.Z - pl.OriginZ
+            XYZ.dot pl.XaxisX pl.XaxisY pl.XaxisZ vx vy vz,
+            XYZ.dot pl.YaxisX pl.YaxisY pl.YaxisZ vx vy vz,
+            XYZ.dot pl.ZaxisX pl.ZaxisY pl.ZaxisZ vx vy vz
 
         /// Returns the X, Y and Z parameters of a point with regards to the plane.
         static member inline pointParameters pt (pl:PPlane) : float * float * float =
@@ -46,9 +67,13 @@ module AutoOpenPPlane =
 
         /// First finds the closest point on plane from a test point.
         /// Then returns a new plane with Origin at this point and the same Axes vectors.
-        member inline pl.PlaneAtClPt pt : PPlane =
-            let o = pl.ClosestPoint pt
-            PPlane.createUnchecked(o, pl.Xaxis, pl.Yaxis, pl.Zaxis)
+        member inline pl.PlaneAtClPt (pt:Pnt) : PPlane =
+            let d = pl.DistanceToPtSigned pt
+            PPlane.createUnchecked(
+                pt.X - pl.ZaxisX*d, pt.Y - pl.ZaxisY*d, pt.Z - pl.ZaxisZ*d,
+                pl.XaxisX, pl.XaxisY, pl.XaxisZ,
+                pl.YaxisX, pl.YaxisY, pl.YaxisZ,
+                pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
 
         /// First finds the closest point on plane from a test point.
         /// Then returns a new plane with Origin at this point and the same Axes vectors.
@@ -92,7 +117,8 @@ module AutoOpenPPlane =
             let y = ln.VectorY
             let z = ln.VectorZ
             let l = sqrt(x * x  + y * y + z * z)
-            if isTooTiny l then failTooSmall "PPlane.Angle90ToLine" ln
+            if isTooTiny l then
+                failTooSmall "PPlane.Angle90ToLine" ln
             let u = UnitVec.createUnchecked (x/ l, y/ l, z/ l)
             90.0 - UnitVec.angle90 u pl.Zaxis
 
@@ -103,7 +129,9 @@ module AutoOpenPPlane =
 
         /// Evaluate at 3D parameter.
         member inline p.EvaluateAt (px:float, py:float, pz:float) : Pnt =
-            p.Origin + p.Xaxis*px + p.Yaxis*py + p.Zaxis*pz
+            Pnt(p.OriginX + p.XaxisX*px + p.YaxisX*py + p.ZaxisX*pz,
+                p.OriginY + p.XaxisY*px + p.YaxisY*py + p.ZaxisY*pz,
+                p.OriginZ + p.XaxisZ*px + p.YaxisZ*py + p.ZaxisZ*pz)
 
         /// Evaluate at 3D parameter.
         static member inline evaluateAt (px:float, py:float, pz:float) (pl:PPlane) : Pnt =
@@ -111,7 +139,9 @@ module AutoOpenPPlane =
 
         /// Evaluate at 2D parameter (Z parameter = 0.0)
         member inline p.EvaluateAtXY (px:float, py:float) : Pnt =
-            p.Origin + p.Xaxis*px + p.Yaxis*py
+            Pnt(p.OriginX + p.XaxisX*px + p.YaxisX*py,
+                p.OriginY + p.XaxisY*px + p.YaxisY*py,
+                p.OriginZ + p.XaxisZ*px + p.YaxisZ*py)
 
         /// Evaluate at 2D parameter (Z parameter = 0.0)
         static member inline evaluateAtXY (px:float, py:float) (pl:PPlane) : Pnt =
@@ -145,32 +175,32 @@ module AutoOpenPPlane =
         /// For the tips of its unit vectors and its origin.
         /// Use a tolerance of 0.0 to check for an exact match.
         static member inline equals (tol:float) (a:PPlane) (b:PPlane)  : bool =
-            abs (a.Origin.X - b.Origin.X) <= tol &&
-            abs (a.Origin.Y - b.Origin.Y) <= tol &&
-            abs (a.Origin.Z - b.Origin.Z) <= tol &&
-            abs (a.Xaxis.X - b.Xaxis.X) <= tol &&
-            abs (a.Xaxis.Y - b.Xaxis.Y) <= tol &&
-            abs (a.Xaxis.Z - b.Xaxis.Z) <= tol &&
-            abs (a.Yaxis.X - b.Yaxis.X) <= tol &&
-            abs (a.Yaxis.Y - b.Yaxis.Y) <= tol &&
-            abs (a.Yaxis.Z - b.Yaxis.Z) <= tol //&&
-            //abs (a.Zaxis.X - b.Zaxis.X) <= tol &&
-            //abs (a.Zaxis.Y - b.Zaxis.Y) <= tol &&
-            //abs (a.Zaxis.Z - b.Zaxis.Z) <= tol
+            abs (a.OriginX - b.OriginX) <= tol &&
+            abs (a.OriginY - b.OriginY) <= tol &&
+            abs (a.OriginZ - b.OriginZ) <= tol &&
+            abs (a.XaxisX  - b.XaxisX ) <= tol &&
+            abs (a.XaxisY  - b.XaxisY ) <= tol &&
+            abs (a.XaxisZ  - b.XaxisZ ) <= tol &&
+            abs (a.YaxisX  - b.YaxisX ) <= tol &&
+            abs (a.YaxisY  - b.YaxisY ) <= tol &&
+            abs (a.YaxisZ  - b.YaxisZ ) <= tol //&&
+            //abs (a.ZaxisX - b.ZaxisX) <= tol &&
+            //abs (a.ZaxisY - b.ZaxisY) <= tol &&
+            //abs (a.ZaxisZ - b.ZaxisZ) <= tol
 
         /// Checks if two Parametrized Planes are NOT equal within tolerance distance.
         /// For the tips of its unit vectors and its origin.
         /// Use a tolerance of 0.0 to check for an exact mismatch.
         static member inline notEquals (tol:float) (a:PPlane) (b:PPlane)  : bool =
-            abs (a.Origin.X - b.Origin.X) > tol ||
-            abs (a.Origin.Y - b.Origin.Y) > tol ||
-            abs (a.Origin.Z - b.Origin.Z) > tol ||
-            abs (a.Xaxis.X - b.Xaxis.X) > tol ||
-            abs (a.Xaxis.Y - b.Xaxis.Y) > tol ||
-            abs (a.Xaxis.Z - b.Xaxis.Z) > tol ||
-            abs (a.Yaxis.X - b.Yaxis.X) > tol ||
-            abs (a.Yaxis.Y - b.Yaxis.Y) > tol ||
-            abs (a.Yaxis.Z - b.Yaxis.Z) > tol
+            abs (a.OriginX - b.OriginX) > tol ||
+            abs (a.OriginY - b.OriginY) > tol ||
+            abs (a.OriginZ - b.OriginZ) > tol ||
+            abs (a.XaxisX  - b.XaxisX ) > tol ||
+            abs (a.XaxisY  - b.XaxisY ) > tol ||
+            abs (a.XaxisZ  - b.XaxisZ ) > tol ||
+            abs (a.YaxisX  - b.YaxisX ) > tol ||
+            abs (a.YaxisY  - b.YaxisY ) > tol ||
+            abs (a.YaxisZ  - b.YaxisZ ) > tol
 
         /// Returns the World Coordinate System Plane at World Origin.
         /// X-axis = World X-axis
@@ -178,7 +208,7 @@ module AutoOpenPPlane =
         /// Z-axis = World Z-axis
         /// same as PPlane.WorldTop
         static member inline WorldXY : PPlane =
-            PPlane.createUnchecked(Pnt.Origin, UnitVec.Xaxis, UnitVec.Yaxis, UnitVec.Zaxis)
+            PPlane.createUnchecked(0., 0., 0.,  1., 0., 0.,  0., 1., 0.,  0., 0., 1.)
 
         /// Returns the World Coordinate System Plane at World Origin.
         /// X-axis = World X-axis
@@ -186,70 +216,70 @@ module AutoOpenPPlane =
         /// Z-axis = World Z-axis
         /// same as PPlane.WorldXY
         static member inline WorldTop : PPlane =
-            PPlane.createUnchecked(Pnt.Origin, UnitVec.Xaxis, UnitVec.Yaxis, UnitVec.Zaxis)
+            PPlane.createUnchecked(0., 0., 0.,  1., 0., 0.,  0., 1., 0.,  0., 0., 1.)
 
         /// Returns the Coordinate System Plane of a Front view.
         /// X-axis = World X-axis
         /// Y-axis = World Z-axis
         /// Z-axis = minus World Y-axis
         static member inline WorldFront : PPlane =
-            PPlane.createUnchecked(Pnt.Origin, UnitVec.Xaxis, UnitVec.Zaxis, -UnitVec.Yaxis)
+            PPlane.createUnchecked(0., 0., 0.,  1., 0., 0.,  0., 0., 1.,  0., -1., 0.)
 
         /// Returns the Coordinate System Plane of a Right view.
         /// X-axis = World Y-axis
         /// Y-axis = World Z-axis
         /// Z-axis = World X-axis
         static member inline WorldRight : PPlane =
-            PPlane.createUnchecked(Pnt.Origin, UnitVec.Yaxis, UnitVec.Zaxis, UnitVec.Xaxis)
+            PPlane.createUnchecked(0., 0., 0.,  0., 1., 0.,  0., 0., 1.,  1., 0., 0.)
 
         /// Returns the Coordinate System Plane of a Left view.
         /// X-axis = minus World Y-axis
         /// Y-axis = World Z-axis
         /// Z-axis = minus World X-axis
         static member inline WorldLeft : PPlane =
-            PPlane.createUnchecked(Pnt.Origin, -UnitVec.Yaxis, UnitVec.Zaxis, -UnitVec.Xaxis)
+            PPlane.createUnchecked(0., 0., 0.,  0., -1., 0.,  0., 0., 1.,  -1., 0., 0.)
 
         /// Returns the Coordinate System Plane of a Back view.
         /// X-axis = minus World X-axis
         /// Y-axis = World Z-axis
         /// Z-axis = World Y-axis
         static member inline WorldBack : PPlane =
-            PPlane.createUnchecked(Pnt.Origin, -UnitVec.Xaxis, UnitVec.Zaxis, UnitVec.Yaxis)
+            PPlane.createUnchecked(0., 0., 0.,  -1., 0., 0.,  0., 0., 1.,  0., 1., 0.)
 
         /// Returns the Coordinate System Plane of a Bottom view.
         /// X-axis = World X-axis
         /// Y-axis = minus World Y-axis
         /// Z-axis = minus World Z-axis
         static member inline WorldBottom : PPlane =
-            PPlane.createUnchecked(Pnt.Origin, UnitVec.Xaxis, -UnitVec.Yaxis, -UnitVec.Zaxis)
+            PPlane.createUnchecked(0., 0., 0.,  1., 0., 0.,  0., -1., 0.,  0., 0., -1.)
 
         /// WorldXY rotated 180 degrees round Z-axis.
         /// X-axis = minus World X-axis
         /// Y-axis = minus World Y-axis
         /// Z-axis = World Z-axis
         static member inline WorldMinusXMinusY : PPlane =
-            PPlane.createUnchecked(Pnt.Origin, -UnitVec.Xaxis, -UnitVec.Yaxis, UnitVec.Zaxis)
+            PPlane.createUnchecked(0., 0., 0.,  -1., 0., 0.,  0., -1., 0.,  0., 0., 1.)
 
         /// WorldXY rotated 90 degrees round Z-axis Counter-Clockwise from top.
         /// X-axis = World Y-axis
         /// Y-axis = minus World X-axis
         /// Z-axis = World Z-axis
         static member inline WorldYMinusX : PPlane =
-            PPlane.createUnchecked(Pnt.Origin, UnitVec.Yaxis, -UnitVec.Xaxis, UnitVec.Zaxis)
+            PPlane.createUnchecked(0., 0., 0.,  0., 1., 0.,  -1., 0., 0.,  0., 0., 1.)
 
         /// WorldXY rotated 270 degrees round Z-axis Counter-Clockwise from top.
         /// X-axis = minus World Y-axis
         /// Y-axis = World X-axis
         /// Z-axis = World Z-axis
         static member inline WorldMinusYX : PPlane =
-            PPlane.createUnchecked(Pnt.Origin, -UnitVec.Yaxis, UnitVec.Xaxis, UnitVec.Zaxis)
+            PPlane.createUnchecked(0., 0., 0.,  0., -1., 0.,  1., 0., 0.,  0., 0., 1.)
 
         /// WorldXY rotated 180 degrees round X-axis, Z points down now.
         /// X-axis = World X-axis
         /// Y-axis = minus World Y-axis
         /// Z-axis = minus World Z-axis
         static member inline WorldXMinusY : PPlane =
-            PPlane.createUnchecked(Pnt.Origin, UnitVec.Xaxis, -UnitVec.Yaxis, -UnitVec.Zaxis)
+            PPlane.createUnchecked(0., 0., 0.,  1., 0., 0.,  0., -1., 0.,  0., 0., -1.)
 
         /// Builds Plane at first point, X-axis to second point,
         /// Y-axis to third point or at least in plane with third point.
@@ -259,16 +289,19 @@ module AutoOpenPPlane =
             let y = yPt-origin
             let lx = x.Length
             let ly = y.Length
-            if isTooSmall (lx) then failTooClose "PPlane.createThreePoints xPt" origin xPt
-            if isTooSmall (ly) then failTooClose "PPlane.createThreePoints yPt" origin yPt
+            if isTooSmall lx then
+                failTooClose "PPlane.createThreePoints xPt" origin xPt
+            if isTooSmall ly then
+                failTooClose "PPlane.createThreePoints yPt" origin yPt
             let xf = 1./lx
             let yf = 1./ly
             let xu = UnitVec.createUnchecked(x.X*xf, x.Y*xf, x.Z*xf)
             let yu = UnitVec.createUnchecked(y.X*yf, y.Y*yf, y.Z*yf)
-            if xu.IsParallelTo(yu, Cosine.``1.0``) then failColinear "PPlane.createThreePoints" origin xPt yPt
+            if xu.IsParallelTo(yu, Cosine.``1.0``) then
+                failColinear "PPlane.createThreePoints" origin xPt yPt
             let z = UnitVec.cross (xu, yu)
             let y' = Vec.cross (z, x)
-            PPlane.createUnchecked(origin, xu, y'.Unitized, z.Unitized)
+            PPlane.createUncheckedVec(origin, xu, y'.Unitized, z.Unitized)
 
         /// Creates a Parametrized Plane from a point and a unit-vector representing the X-axis and a Y-axis hint.
         /// The resulting PPlane will have the X-Axis in direction of X vector.
@@ -280,7 +313,7 @@ module AutoOpenPPlane =
                 failColinear "PPlane.createOriginXaxisYaxis" origin xAxis yAxis
             let z = UnitVec.cross (xAxis, yAxis)
             let y = Vec.cross (z, xAxis)
-            PPlane.createUnchecked(origin, xAxis, y.Unitized, z.Unitized)
+            PPlane.createUncheckedVec(origin, xAxis, y.Unitized, z.Unitized)
 
         /// Creates a Parametrized Plane from a point and vector representing the X-axis and a Y-axis hint.
         /// The resulting PPlane will have the X-Axis in direction of X vector.
@@ -290,8 +323,10 @@ module AutoOpenPPlane =
         static member createOriginXaxisYaxis (origin:Pnt, xAxis:Vec, yAxis:Vec) : PPlane =
             let lx = xAxis.Length
             let ly = yAxis.Length
-            if isTooSmall (lx) then failTooSmall2 "PPlane.createOriginXaxisYaxis xAxis" xAxis yAxis
-            if isTooSmall (ly) then failTooSmall2 "PPlane.createOriginXaxisYaxis yAxis" yAxis xAxis
+            if isTooSmall lx then
+                failTooSmall2 "PPlane.createOriginXaxisYaxis xAxis" xAxis yAxis
+            if isTooSmall ly then
+                failTooSmall2 "PPlane.createOriginXaxisYaxis yAxis" yAxis xAxis
             let xf = 1./lx
             let yf = 1./ly
             let xu = UnitVec.createUnchecked(xAxis.X*xf, xAxis.Y*xf, xAxis.Z*xf)
@@ -309,11 +344,11 @@ module AutoOpenPPlane =
             if normal.IsParallelTo(UnitVec.Zaxis, Cosine.``0.5``) then
                 let y = Vec.cross (normal,Vec.Xaxis)
                 let x = Vec.cross (y, normal)
-                PPlane.createUnchecked(origin, x.Unitized, y.Unitized, normal)
+                PPlane.createUncheckedVec(origin, x.Unitized, y.Unitized, normal)
             else
                 let x = Vec.cross (Vec.Zaxis, normal)
                 let y = Vec.cross (normal, x)
-                PPlane.createUnchecked(origin, x.Unitized, y.Unitized, normal)
+                PPlane.createUncheckedVec(origin, x.Unitized, y.Unitized, normal)
 
         /// Creates a Parametrized Plane from a point and vector representing the normal (or Z-axis).
         /// The X-axis will be found by taking the Cross Product of the World Z-axis and the given normal (or Z-axis).
@@ -322,7 +357,8 @@ module AutoOpenPPlane =
         /// Fails if the vectors are shorter than 1e-6.
         static member createOriginNormal (origin:Pnt, normal:Vec) : PPlane =
             let len = normal.Length
-            if isTooSmall (len) then failTooSmall "PPlane.createOriginNormal" normal
+            if isTooSmall len then
+                failTooSmall "PPlane.createOriginNormal" normal
             let f = 1./len
             let nu = UnitVec.createUnchecked(normal.X*f, normal.Y*f, normal.Z*f)
             PPlane.createOriginNormal (origin, nu)
@@ -335,7 +371,7 @@ module AutoOpenPPlane =
                 failColinear "PPlane.createOriginNormalXaxis" origin normal xAxis
             let y = UnitVec.cross (normal, xAxis)
             let x = Vec.cross (y, normal)
-            PPlane.createUnchecked(origin, x.Unitized, y.Unitized, normal)
+            PPlane.createUncheckedVec(origin, x.Unitized, y.Unitized, normal)
 
         /// Creates a Parametrized Plane from a point and unit-vector representing the Z-axis.
         /// The given X vector does not need to be perpendicular to the normal vector, just not parallel.
@@ -343,8 +379,10 @@ module AutoOpenPPlane =
         static member createOriginNormalXaxis (origin:Pnt, normal:Vec, xAxis:Vec) : PPlane =
             let lx = xAxis.Length
             let ln = normal.Length
-            if isTooSmall (lx) then failTooSmall2 "PPlane.createOriginNormalXaxis xAxis" xAxis normal
-            if isTooSmall (ln) then failTooSmall2 "PPlane.createOriginNormalXaxis normal" normal xAxis
+            if isTooSmall lx then
+                failTooSmall2 "PPlane.createOriginNormalXaxis xAxis" xAxis normal
+            if isTooSmall ln then
+                failTooSmall2 "PPlane.createOriginNormalXaxis normal" normal xAxis
             let xf = 1./lx
             let nf = 1./ln
             let xu = UnitVec.createUnchecked(xAxis.X *xf,  xAxis.Y*xf,  xAxis.Z*xf)
@@ -353,136 +391,166 @@ module AutoOpenPPlane =
 
         /// Returns a new plane with given Origin.
         static member inline setOrigin (pt:Pnt) (pl:PPlane) : PPlane =
-            PPlane.createUnchecked(pt, pl.Xaxis, pl.Yaxis, pl.Zaxis)
+            PPlane.createUnchecked(pt.X, pt.Y, pt.Z, pl.XaxisX, pl.XaxisY, pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
 
         /// Returns a new plane with given Origin X value changed.
         static member inline setOriginX (x:float) (pl:PPlane) : PPlane =
-            PPlane.createUnchecked(pl.Origin |> Pnt.withX x, pl.Xaxis, pl.Yaxis, pl.Zaxis)
+            PPlane.createUnchecked(x, pl.OriginY, pl.OriginZ, pl.XaxisX, pl.XaxisY, pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
 
         /// Returns a new plane with given Origin Y value changed.
         static member inline setOriginY (y:float) (pl:PPlane) : PPlane =
-            PPlane.createUnchecked(pl.Origin |> Pnt.withY y, pl.Xaxis, pl.Yaxis, pl.Zaxis)
+            PPlane.createUnchecked(pl.OriginX, y, pl.OriginZ, pl.XaxisX, pl.XaxisY, pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
 
         /// Returns a new plane with given Origin Z value changed.
         static member inline setOriginZ (z:float) (pl:PPlane) : PPlane =
-            PPlane.createUnchecked(pl.Origin |> Pnt.withZ z, pl.Xaxis, pl.Yaxis, pl.Zaxis)
+            PPlane.createUnchecked(pl.OriginX, pl.OriginY, z, pl.XaxisX, pl.XaxisY, pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
 
         /// Returns a new plane with Origin translated by Vec.
         static member inline translateBy (v:Vec) (pl:PPlane) : PPlane =
-            PPlane.createUnchecked(pl.Origin + v, pl.Xaxis, pl.Yaxis, pl.Zaxis)
+            PPlane.createUnchecked(pl.OriginX + v.X, pl.OriginY + v.Y, pl.OriginZ + v.Z, pl.XaxisX, pl.XaxisY, pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
 
         /// Returns a new plane with Origin translated in World X direction.
         static member inline translateByWorldX (x:float) (pl:PPlane) : PPlane =
-            PPlane.createUnchecked(pl.Origin |> Pnt.moveX x, pl.Xaxis, pl.Yaxis, pl.Zaxis)
+            PPlane.createUnchecked(pl.OriginX + x, pl.OriginY, pl.OriginZ, pl.XaxisX, pl.XaxisY, pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
 
         /// Returns a new plane with Origin translated in World Y direction.
         static member inline translateByWorldY (y:float) (pl:PPlane) : PPlane =
-            PPlane.createUnchecked(pl.Origin |> Pnt.moveY y, pl.Xaxis, pl.Yaxis, pl.Zaxis)
+            PPlane.createUnchecked(pl.OriginX, pl.OriginY + y, pl.OriginZ, pl.XaxisX, pl.XaxisY, pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
 
         /// Returns a new plane with Origin translated in World Z direction.
         static member inline translateByWorldZ (z:float) (pl:PPlane) : PPlane =
-            PPlane.createUnchecked(pl.Origin |> Pnt.moveZ z, pl.Xaxis, pl.Yaxis, pl.Zaxis)
+            PPlane.createUnchecked(pl.OriginX, pl.OriginY, pl.OriginZ + z, pl.XaxisX, pl.XaxisY, pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
 
         /// Rotate about Z-axis of the Plane by angle in degree.
         /// Counter-Clockwise in top view (for WorldXY Plane).
         static member inline rotateZ (angDegree:float) (pl:PPlane) : PPlane =
             let m = RigidMatrix.createRotationAxisCenter (pl.Zaxis, pl.Origin, angDegree)
-            let x = UnitVec.transformRigid m pl.Xaxis
-            let y = UnitVec.transformRigid m pl.Yaxis
-            PPlane.createUnchecked(pl.Origin, x, y, pl.Zaxis)
+            // Only the rotational 3x3 part of the matrix is applied to the local axis directions.
+            let xx = m.M11*pl.XaxisX + m.M21*pl.XaxisY + m.M31*pl.XaxisZ
+            let xy = m.M12*pl.XaxisX + m.M22*pl.XaxisY + m.M32*pl.XaxisZ
+            let xz = m.M13*pl.XaxisX + m.M23*pl.XaxisY + m.M33*pl.XaxisZ
+            let yx = m.M11*pl.YaxisX + m.M21*pl.YaxisY + m.M31*pl.YaxisZ
+            let yy = m.M12*pl.YaxisX + m.M22*pl.YaxisY + m.M32*pl.YaxisZ
+            let yz = m.M13*pl.YaxisX + m.M23*pl.YaxisY + m.M33*pl.YaxisZ
+            PPlane.createUnchecked(pl.OriginX, pl.OriginY, pl.OriginZ, xx, xy, xz, yx, yy, yz, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
 
         /// Move Plane along the local X-axis by the given distance.
         static member inline translateLocalX (d:float) (pl:PPlane) : PPlane =
-            PPlane.createUnchecked(pl.Origin + pl.Xaxis*d, pl.Xaxis, pl.Yaxis, pl.Zaxis)
+            PPlane.createUnchecked(pl.OriginX + pl.XaxisX*d, pl.OriginY + pl.XaxisY*d, pl.OriginZ + pl.XaxisZ*d, pl.XaxisX, pl.XaxisY, pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
 
         /// Move Plane along the local Y-axis by the given distance.
         static member inline translateLocalY (d:float) (pl:PPlane) : PPlane =
-            PPlane.createUnchecked(pl.Origin + pl.Yaxis*d, pl.Xaxis, pl.Yaxis, pl.Zaxis)
+            PPlane.createUnchecked(pl.OriginX + pl.YaxisX*d, pl.OriginY + pl.YaxisY*d, pl.OriginZ + pl.YaxisZ*d, pl.XaxisX, pl.XaxisY, pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
 
         /// Move Plane along the local Z-axis by the given distance.
         /// Same as PPlane.offset.
         static member inline translateLocalZ (d:float) (pl:PPlane) : PPlane =
-            PPlane.createUnchecked(pl.Origin + pl.Zaxis*d, pl.Xaxis, pl.Yaxis, pl.Zaxis)
+            PPlane.createUnchecked(pl.OriginX + pl.ZaxisX*d, pl.OriginY + pl.ZaxisY*d, pl.OriginZ + pl.ZaxisZ*d, pl.XaxisX, pl.XaxisY, pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
 
         /// Move Plane along the local Z-axis by the given distance.
         /// Same as PPlane.translateLocalZ.
         static member inline offset (d:float) (pl:PPlane) : PPlane =
-            PPlane.createUnchecked(pl.Origin + pl.Zaxis*d, pl.Xaxis, pl.Yaxis, pl.Zaxis)
+            PPlane.createUnchecked(pl.OriginX + pl.ZaxisX*d, pl.OriginY + pl.ZaxisY*d, pl.OriginZ + pl.ZaxisZ*d, pl.XaxisX, pl.XaxisY, pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
 
         /// Rotate the Plane 180 degrees on its Y-axis.
         /// Called flip because Z-axis points in the opposite direction.
         static member inline flipOnY (pl:PPlane) : PPlane =
-            PPlane.createUnchecked(pl.Origin, -pl.Xaxis, pl.Yaxis, -pl.Zaxis)
+            PPlane.createUnchecked(pl.OriginX, pl.OriginY, pl.OriginZ, -pl.XaxisX, -pl.XaxisY, -pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, -pl.ZaxisX, -pl.ZaxisY, -pl.ZaxisZ)
 
         /// Rotate the Plane 180 degrees on its X-axis.
         /// Called flip because Z-axis points in the opposite direction.
         static member inline flipOnX (pl:PPlane) : PPlane =
-            PPlane.createUnchecked(pl.Origin, pl.Xaxis, -pl.Yaxis, -pl.Zaxis)
+            PPlane.createUnchecked(pl.OriginX, pl.OriginY, pl.OriginZ, pl.XaxisX, pl.XaxisY, pl.XaxisZ, -pl.YaxisX, -pl.YaxisY, -pl.YaxisZ, -pl.ZaxisX, -pl.ZaxisY, -pl.ZaxisZ)
 
         /// Rotate the Plane 180 degrees on its Z-axis.
         static member inline rotateOnZ180 (pl:PPlane) : PPlane =
-            PPlane.createUnchecked(pl.Origin, -pl.Xaxis, -pl.Yaxis, pl.Zaxis)
+            PPlane.createUnchecked(pl.OriginX, pl.OriginY, pl.OriginZ, -pl.XaxisX, -pl.XaxisY, -pl.XaxisZ, -pl.YaxisX, -pl.YaxisY, -pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
 
         /// Transforms the plane by the given RigidMatrix.
         /// The returned PPlane has orthogonal unit-vectors.
         static member transformRigid (m:RigidMatrix) (pl:PPlane) : PPlane =
-            let o = Pnt.transformRigid m pl.Origin
-            let x = UnitVec.transformRigid m pl.Xaxis
-            let y = UnitVec.transformRigid m pl.Yaxis
-            let z = UnitVec.transformRigid m pl.Zaxis
-            PPlane.createUnchecked (o, x, y, z)
+            let ox = m.M11*pl.OriginX + m.M21*pl.OriginY + m.M31*pl.OriginZ + m.X41
+            let oy = m.M12*pl.OriginX + m.M22*pl.OriginY + m.M32*pl.OriginZ + m.Y42
+            let oz = m.M13*pl.OriginX + m.M23*pl.OriginY + m.M33*pl.OriginZ + m.Z43
+            let xx = m.M11*pl.XaxisX + m.M21*pl.XaxisY + m.M31*pl.XaxisZ
+            let xy = m.M12*pl.XaxisX + m.M22*pl.XaxisY + m.M32*pl.XaxisZ
+            let xz = m.M13*pl.XaxisX + m.M23*pl.XaxisY + m.M33*pl.XaxisZ
+            let yx = m.M11*pl.YaxisX + m.M21*pl.YaxisY + m.M31*pl.YaxisZ
+            let yy = m.M12*pl.YaxisX + m.M22*pl.YaxisY + m.M32*pl.YaxisZ
+            let yz = m.M13*pl.YaxisX + m.M23*pl.YaxisY + m.M33*pl.YaxisZ
+            let zx = m.M11*pl.ZaxisX + m.M21*pl.ZaxisY + m.M31*pl.ZaxisZ
+            let zy = m.M12*pl.ZaxisX + m.M22*pl.ZaxisY + m.M32*pl.ZaxisZ
+            let zz = m.M13*pl.ZaxisX + m.M23*pl.ZaxisY + m.M33*pl.ZaxisZ
+            PPlane.createUnchecked(ox, oy, oz, xx, xy, xz, yx, yy, yz, zx, zy, zz)
 
         /// Rotate Plane 180 Degrees around Z-axis if the Y-axis orientation does not match World Y (pl.Yax.Y < 0.0)
         /// To ensure that Y is always positive. For example for showing Text.
         static member inline rotateZ180IfYNegative (pl:PPlane) : PPlane =
-            if pl.Yaxis.Y < 0.0 then PPlane.rotateOnZ180 pl else pl
+            if pl.YaxisY < 0.0 then PPlane.rotateOnZ180 pl else pl
+
+
+        static member inline cross (a:UnitVec, b:UnitVec) : Vec =
+            Vec (   a.Y * b.Z - a.Z * b.Y,
+                    a.Z * b.X - a.X * b.Z,
+                    a.X * b.Y - a.Y * b.X)
 
         /// Returns the line of intersection between two planes.
         /// Returns None if they are parallel or coincident.
         static member intersect (a:PPlane) (b:PPlane) : Line3D option=
-            let bn = b.Zaxis
-            let an = a.Zaxis
-            let v = UnitVec.cross (an, bn)
-            if isTooSmallSq v.LengthSq then
+            // cross product of the planes' normals gives the direction of the line of intersection.
+            let vx = a.ZaxisY * b.ZaxisZ - a.ZaxisZ * b.ZaxisY
+            let vy = a.ZaxisZ * b.ZaxisX - a.ZaxisX * b.ZaxisZ
+            let vz = a.ZaxisX * b.ZaxisY - a.ZaxisY * b.ZaxisX
+            if isTooSmallSq (XYZ.sqLength vx vy vz) then
                 // EuclidException.Raise "Euclid.PPlane.intersect: Planes are parallel or coincident: %O, %O" a b
                 None
             else
-                let pa = Vec.cross(v, an)
-                let nenner = pa *** bn
-                let ao = a.Origin
-                let t = ((b.Origin - ao) *** bn) / nenner
-                let xpt = ao + pa * t
-                let l = Line3D( xpt.X    , xpt.Y    , xpt.Z,
-                                xpt.X+v.X, xpt.Y+v.Y, xpt.Z+v.Z)
-                Some <| l
+                // cross product of the direction of the line of intersection with plane A ZAxis
+                let px = vy * a.ZaxisZ - vz * a.ZaxisY
+                let py = vz * a.ZaxisX - vx * a.ZaxisZ
+                let pz = vx * a.ZaxisY - vy * a.ZaxisX
+                let nenner = XYZ.dot px py pz b.ZaxisX b.ZaxisY b.ZaxisZ
+                let dot = XYZ.dot (b.OriginX - a.OriginX) (b.OriginY - a.OriginY) (b.OriginZ - a.OriginZ) b.ZaxisX b.ZaxisY b.ZaxisZ
+                let t = dot / nenner
+                let xpx = a.OriginX + px * t
+                let xpy = a.OriginY + py * t
+                let xpz = a.OriginZ + pz * t
+                Some (Line3D(xpx,      xpy,      xpz,
+                             xpx + vx, xpy + vy, xpz + vz)
+                             )
 
         /// Returns the parameter on the line.
         /// The parameter is the intersection point of the infinite ray with the PPlane.
         /// Returns None if they are parallel or coincident.
         static member intersectLineParameter  (ln:Line3D) (pl:PPlane) : float option =
-            let z = pl.Zaxis
-            let nenner = ln.Vector *** z
+            let nenner = XYZ.dot ln.VectorX ln.VectorY ln.VectorZ pl.ZaxisX pl.ZaxisY pl.ZaxisZ
             if isTooSmall (abs nenner) then
                 // EuclidException.Raise "Euclid.PPlane.intersectLineParameter: Line and Plane are parallel or line has zero length: %O, %O" ln pl
                 None
             else
-                Some <| ((pl.Origin - ln.From) *** z) / nenner
+                let dot = XYZ.dot (pl.OriginX - ln.FromX) (pl.OriginY - ln.FromY) (pl.OriginZ - ln.FromZ) pl.ZaxisX pl.ZaxisY pl.ZaxisZ
+                Some (dot / nenner)
 
         /// Returns the line parameter and the X and Y parameters on the Plane. as tuple (pLn, pPlX, pPlY).
         /// The parameters is the intersection point of the infinite ray with the PPlane.
         /// Returns None if they are parallel or coincident.
         static member intersectLineParameters  (ln:Line3D) (pl:PPlane) : option<float*float*float> =
-            let z = pl.Zaxis
-            let v = ln.Vector
-            let nenner = v *** z
+            let vx = ln.VectorX
+            let vy = ln.VectorY
+            let vz = ln.VectorZ
+            let nenner = XYZ.dot vx vy vz pl.ZaxisX pl.ZaxisY pl.ZaxisZ
             if isTooSmall (abs nenner) then
                 // EuclidException.Raise "Euclid.PPlane.intersectLineParameters: Line and Plane are parallel or line has zero length: %O, %O" ln pl
                 None
             else
-                let t = ((pl.Origin - ln.From) *** z) / nenner
-                let xpt = ln.From + v * t
-                let v = xpt-pl.Origin
-                Some <| (t, pl.Xaxis *** v, pl.Yaxis *** v)
+                let dot = XYZ.dot (pl.OriginX - ln.FromX) (pl.OriginY - ln.FromY) (pl.OriginZ - ln.FromZ) pl.ZaxisX pl.ZaxisY pl.ZaxisZ
+                let t = dot / nenner
+                let wx = ln.FromX + vx * t - pl.OriginX
+                let wy = ln.FromY + vy * t - pl.OriginY
+                let wz = ln.FromZ + vz * t - pl.OriginZ
+                let dotX = XYZ.dot pl.XaxisX pl.XaxisY pl.XaxisZ wx wy wz
+                let dotY = XYZ.dot pl.YaxisX pl.YaxisY pl.YaxisZ wx wy wz
+                Some (t, dotX, dotY)
 
         /// Returns intersection point of a finite line with the Plane.
         /// Returns None if they are parallel or the domain of intersection is outside 0.0 to 1.0.
@@ -492,7 +560,8 @@ module AutoOpenPPlane =
             match PPlane.intersectLineParameter ln pl with
             | Some t ->
                 if isBetweenZeroAndOneTolerantIncl t then
-                    Some (ln.From + ln.Vector * (clampBetweenZeroAndOne t))
+                    let c = clampBetweenZeroAndOne t
+                    Some (Pnt(ln.FromX + ln.VectorX * c, ln.FromY + ln.VectorY * c, ln.FromZ + ln.VectorZ * c))
                 else
                     None
             | None ->
@@ -501,27 +570,26 @@ module AutoOpenPPlane =
         /// Checks if a finite Line3D intersects with Plane in one point.
         /// Returns false for NaN values or (almost) parallel or coincident lines.
         static member inline doLinePlaneIntersect (ln:Line3D) (pl:PPlane) : bool =
-            let nenner = ln.Vector *** pl.Zaxis
+            let nenner = XYZ.dot ln.VectorX ln.VectorY ln.VectorZ pl.ZaxisX pl.ZaxisY pl.ZaxisZ
             if isTooSmall (abs nenner) then
                 false
             else
-                let t = ((pl.Origin - ln.From) *** pl.Zaxis) / nenner // if nenner is 0.0 then 't' is Infinity
+                let dot = XYZ.dot (pl.OriginX - ln.FromX) (pl.OriginY - ln.FromY) (pl.OriginZ - ln.FromZ) pl.ZaxisX pl.ZaxisY pl.ZaxisZ
+                let t = dot / nenner // if nenner is 0.0 then 't' is Infinity
                 0. <= t && t <= 1.
 
         /// Scales the PPlane's origin position by a given factor from the world origin (0,0,0).
         /// The axes directions remain unchanged.
         static member inline scale (factor:float) (pl:PPlane) : PPlane =
-            let o = pl.Origin
-            let newOrigin = Pnt(o.X * factor, o.Y * factor, o.Z * factor)
-            PPlane.createUnchecked(newOrigin, pl.Xaxis, pl.Yaxis, pl.Zaxis)
+            PPlane.createUnchecked(pl.OriginX * factor, pl.OriginY * factor, pl.OriginZ * factor, pl.XaxisX, pl.XaxisY, pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
 
         /// Move plane origin by vector.
         static member inline translate (translation:Vec) (pl:PPlane)  : PPlane =
-            PPlane.createUnchecked(pl.Origin + translation, pl.Xaxis, pl.Yaxis, pl.Zaxis)
+            PPlane.createUnchecked(pl.OriginX + translation.X, pl.OriginY + translation.Y, pl.OriginZ + translation.Z, pl.XaxisX, pl.XaxisY, pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
 
         /// Move plane origin by vector. Same as translate.
         static member inline move (translation:Vec) (pl:PPlane)  : PPlane =
-            PPlane.createUnchecked(pl.Origin + translation, pl.Xaxis, pl.Yaxis, pl.Zaxis)
+            PPlane.createUnchecked(pl.OriginX + translation.X, pl.OriginY + translation.Y, pl.OriginZ + translation.Z, pl.XaxisX, pl.XaxisY, pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
 
         [<Obsolete("Use PPlane.isCoincidentTo instead. Obsolete since 0.21.0")>]
         static member inline areCoincident tol (a:PPlane) (b:PPlane) : bool =

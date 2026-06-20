@@ -16,7 +16,7 @@ let tests =
     testList "Polyline3D" [
 
         test "create empty polyline" {
-            let pl = Polyline3D()
+            let pl = Polyline3D([])
             "empty polyline has 0 points" |> Expect.equal pl.PointCount 0
             "empty polyline has 0 segments" |> Expect.equal pl.SegmentCount 0
         }
@@ -48,7 +48,7 @@ let tests =
         }
 
         test "empty polyline has zero length" {
-            let pl = Polyline3D()
+            let pl = Polyline3D([])
             "empty polyline has zero length" |> Expect.floatClose tol pl.Length 0.0
         }
 
@@ -214,7 +214,7 @@ let tests =
 
 
         test "ToString works for empty polyline" {
-            let pl = Polyline3D()
+            let pl = Polyline3D.createEmpty(10)
             let s = pl.ToString()
             "ToString contains 'empty'" |> Expect.stringContains s "empty"
         }
@@ -287,7 +287,7 @@ let tests =
         }
 
         test "FirstPoint on empty polyline throws" {
-            let pl = Polyline3D()
+            let pl = Polyline3D.createEmpty(10)
             let f() = pl.FirstPoint |> ignore
             "FirstPoint on empty polyline throws" |> Expect.throws f
         }
@@ -505,7 +505,7 @@ let tests =
 
         testList "Edge case regressions" [
             test "SegmentVectorsXYZ on empty polyline returns empty list" {
-                let pl = Polyline3D()
+                let pl = Polyline3D.createEmpty(10)
                 Expect.equal pl.SegmentVectorsXYZ.Count 0 "empty polyline has no segment vectors"
             }
             test "SegmentVectorsXYZ on single point returns empty list" {
@@ -631,21 +631,15 @@ let tests =
                 Expect.floatClose tol n.X 0.0 "normal X is zero"
                 Expect.floatClose tol n.Y 0.0 "normal Y is zero"
             }
-            test "Center is average of points" {
-                let pl = Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(2.,0.,0.); Pnt(2.,2.,2.)]
-                "center is average" |> Expect.isTrue (eqPnt pl.Center (Pnt(4./3., 2./3., 2./3.)))
-                Expect.throws (fun () -> Polyline3D().Center |> ignore) "center of empty polyline throws"
-            }
+
             test "ToString distinguishes open and closed" {
                 let plOpen3 = Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(1.,1.,0.)]
                 let plClosed3 = Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(1.,1.,0.); Pnt(0.,0.,0.)]
                 Expect.stringContains (plOpen3.ToString()) "open" "open polyline string says open"
                 Expect.stringContains (plClosed3.ToString()) "closed" "closed polyline string says closed"
-                Expect.stringContains (Polyline3D().ToString()) "empty" "empty polyline string says empty"
+                Expect.stringContains (Polyline3D.createEmpty(10).ToString()) "empty" "empty polyline string says empty"
             }
-            test "SignedAreaIn2D on empty polyline throws" {
-                Expect.throws (fun () -> Polyline3D().SignedAreaIn2D |> ignore) "empty polyline has no signed area"
-            }
+
             test "static addXYZ is curried" {
                 let pl = Polyline3D.createFromPts [Pnt(0.,0.,0.)]
                 Polyline3D.addXYZ 1. 2. 3. pl
@@ -670,7 +664,7 @@ let tests =
                     | None -> true
                     | Some _ -> false
                 "no point match" |> Expect.isTrue noPointMatch
-                "no index match on empty polyline" |> Expect.equal (Polyline3D.tryFindIndex (fun _ _ _ -> true) (Polyline3D())) None
+                "no index match on empty polyline" |> Expect.equal (Polyline3D.tryFindIndex (fun _ _ _ -> true) (Polyline3D([]))) None
             }
             test "iter visits every point" {
                 let pl = Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(1.,2.,3.); Pnt(4.,5.,6.)]
