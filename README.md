@@ -476,7 +476,7 @@ let box2 = BBox.createFromCenter(Pnt(0, 0, 0), 10.0, 10.0, 10.0)
 let bigger = bbox.Expand 1.0               // expand by 1.0 on all sides
 
 // Check containment
-let inside = bbox.Contains(Pnt(5, 4, 2))  // true
+let inside = bbox.ContainsPnt(Pnt(5, 4, 2))  // true
 
 // Union of two bounding boxes
 let combined = bbox.Union box2

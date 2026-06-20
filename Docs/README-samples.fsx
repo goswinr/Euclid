@@ -135,11 +135,11 @@ let centerBbox = bbox.Center
 let vol = bbox.Volume
 let box2 = BBox.createFromCenter(Pnt(0, 0, 0), 10.0, 10.0, 10.0)
 let bigger = bbox.Expand 1.0
-let inside = bbox.Contains(Pnt(5, 4, 2))
+let inside = bbox.ContainsPnt(Pnt(5, 4, 2))
 let combined = bbox.Union box2
 
 // Polylines
-let pl2d = Polyline2D.createFromPts(ResizeArray [ Pt(0, 0); Pt(10, 0); Pt(10, 5); Pt(0, 5) ])
+let pl2d = Polyline2D.createFromPts [ Pt(0, 0); Pt(10, 0); Pt(10, 5); Pt(0, 5) ]
 let lenPolyline = pl2d.Length
 let count = pl2d.PointCount
 let segs = pl2d.SegmentCount
