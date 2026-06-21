@@ -1913,6 +1913,176 @@ type Rect2D =
         r.GetEdge i
 
     // #endregion
+    // #region Line Intersection
+
+    /// Internal Liang–Barsky clip of a 2D line against this 2D Rectangle.
+    /// The rectangle is enlarged by 'tol' on each side so that lines grazing an edge or corner still count as touching.
+    /// If 'asRay' is TRUE the line is treated as infinite in both directions, otherwise as the finite segment From-To.
+    /// Returns the two endpoints (x0,y0,x1,y1) of the portion inside the rectangle, or ValueNone if it is fully outside.
+    /// Fails if the rectangle has a zero length axis or the line is too short.
+    static member private clipLine2D (r:Rect2D, line:Line2D, asRay:bool, tol:float) : ValueOption<struct(float*float*float*float)> =
+        let xlenSq = r.XaxisX*r.XaxisX + r.XaxisY*r.XaxisY
+        let ylenSq = r.YaxisX*r.YaxisX + r.YaxisY*r.YaxisY
+        if isTooSmallSq xlenSq then failTooSmall "Rect2D line intersection: Xaxis" r
+        if isTooSmallSq ylenSq then failTooSmall "Rect2D line intersection: Yaxis" r
+        let xlen = sqrt xlenSq
+        let ylen = sqrt ylenSq
+        let uxx = r.XaxisX / xlen // unit X-axis of the rectangle
+        let uxy = r.XaxisY / xlen
+        let uyx = r.YaxisX / ylen // unit Y-axis of the rectangle
+        let uyy = r.YaxisY / ylen
+        let vx = line.ToX - line.FromX
+        let vy = line.ToY - line.FromY
+        let lenSq = vx*vx + vy*vy
+        if isTooSmallSq lenSq then failTooSmall "Rect2D line intersection: line is too short" line
+        let len = sqrt lenSq
+        let ndx = vx / len // unit direction of the line
+        let ndy = vy / len
+        let ox = line.FromX - r.OriginX
+        let oy = line.FromY - r.OriginY
+        let p0u = ox*uxx + oy*uxy   // local X distance of the From point
+        let p0v = ox*uyx + oy*uyy   // local Y distance of the From point
+        let du  = ndx*uxx + ndy*uxy // local X component of the unit direction
+        let dv  = ndx*uyx + ndy*uyy // local Y component of the unit direction
+        // Liang–Barsky: walk the line parameter t (a distance because the direction is unitized)
+        // from tE (entering) to tL (leaving). Each box boundary is an inequality  p*t <= q .
+        // 'tol' enlarges the box by that distance on all four sides.
+        let mutable tE = if asRay then -infinity else 0.0
+        let mutable tL = if asRay then  infinity else len
+        let mutable ok = true
+        let mutable p = -du                  // boundary  local-X >= -tol
+        let mutable q = p0u + tol
+        if   abs p <= 1e-12 then (if q < 0.0 then ok <- false)
+        elif p < 0.0        then (let t = q/p in if t > tL then ok <- false elif t > tE then tE <- t)
+        else                     (let t = q/p in if t < tE then ok <- false elif t < tL then tL <- t)
+        p <- du                              // boundary  local-X <= xlen + tol
+        q <- xlen + tol - p0u
+        if   abs p <= 1e-12 then (if q < 0.0 then ok <- false)
+        elif p < 0.0        then (let t = q/p in if t > tL then ok <- false elif t > tE then tE <- t)
+        else                     (let t = q/p in if t < tE then ok <- false elif t < tL then tL <- t)
+        p <- -dv                             // boundary  local-Y >= -tol
+        q <- p0v + tol
+        if   abs p <= 1e-12 then (if q < 0.0 then ok <- false)
+        elif p < 0.0        then (let t = q/p in if t > tL then ok <- false elif t > tE then tE <- t)
+        else                     (let t = q/p in if t < tE then ok <- false elif t < tL then tL <- t)
+        p <- dv                              // boundary  local-Y <= ylen + tol
+        q <- ylen + tol - p0v
+        if   abs p <= 1e-12 then (if q < 0.0 then ok <- false)
+        elif p < 0.0        then (let t = q/p in if t > tL then ok <- false elif t > tE then tE <- t)
+        else                     (let t = q/p in if t < tE then ok <- false elif t < tL then tL <- t)
+        if ok && tE <= tL then
+            ValueSome (struct(line.FromX + tE*ndx, line.FromY + tE*ndy, line.FromX + tL*ndx, line.FromY + tL*ndy))
+        else
+            ValueNone
+
+    /// <summary>Tests if a finite 2D line (the segment From-To) touches or crosses this 2D Rectangle.
+    /// The rectangle is enlarged by the tolerance, so a line grazing an edge or corner still counts.</summary>
+    /// <param name="line">The finite 2D line to test against this rectangle.</param>
+    /// <param name="tol">Optional tolerance, default 1e-6. The rectangle is enlarged by this distance on each of its four sides.</param>
+    /// <returns>TRUE if any part of the line segment lies inside the (tolerance enlarged) rectangle. Otherwise FALSE.</returns>
+    member r.Intersects(line:Line2D, [<OPT;DEF(1e-6)>] tol:float) : bool =
+        match Rect2D.clipLine2D(r, line, false, tol) with
+        | ValueSome _ -> true
+        | ValueNone   -> false
+
+    /// <summary>Returns the points where a finite 2D line (the segment From-To) enters and leaves this 2D Rectangle.
+    /// The rectangle is enlarged by the tolerance, so a line grazing an edge or corner still counts.
+    /// The returned points are the endpoints of the portion of the line inside the rectangle, so a segment
+    /// endpoint that lies inside the rectangle is returned as such.</summary>
+    /// <param name="line">The finite 2D line to intersect with this rectangle.</param>
+    /// <param name="tol">Optional tolerance, default 1e-6. The rectangle is enlarged by this distance on each of its four sides.</param>
+    /// <returns>An array of 0, 1 or 2 points: empty if the line is fully outside, one point if it just grazes a corner
+    /// (within the tolerance), otherwise the two points bounding the inside portion.</returns>
+    member r.IntersectionPoints(line:Line2D, [<OPT;DEF(1e-6)>] tol:float) : Pt[] =
+        match Rect2D.clipLine2D(r, line, false, tol) with
+        | ValueNone -> [| |]
+        | ValueSome (struct(x0,y0,x1,y1)) ->
+            let dx = x1-x0
+            let dy = y1-y0
+            if dx*dx + dy*dy <= tol*tol then [| Pt((x0+x1)*0.5, (y0+y1)*0.5) |] // the line only grazes a corner
+            else [| Pt(x0,y0); Pt(x1,y1) |]
+
+    /// <summary>Returns the portion of a finite 2D line (the segment From-To) that lies inside this 2D Rectangle.
+    /// The rectangle is enlarged by the tolerance, so a line grazing an edge or corner still counts.</summary>
+    /// <param name="line">The finite 2D line to clip to this rectangle.</param>
+    /// <param name="tol">Optional tolerance, default 1e-6. The rectangle is enlarged by this distance on each of its four sides.</param>
+    /// <returns>ValueSome with the clipped 2D line if any part lies inside the rectangle (this may be a zero length line
+    /// if the line only grazes a corner). ValueNone if the line is fully outside.</returns>
+    member r.IntersectionLine(line:Line2D, [<OPT;DEF(1e-6)>] tol:float) : Line2D voption =
+        match Rect2D.clipLine2D(r, line, false, tol) with
+        | ValueNone -> ValueNone
+        | ValueSome (struct(x0,y0,x1,y1)) -> ValueSome (Line2D(x0,y0,x1,y1))
+
+    /// <summary>Tests if the infinite 2D line through the given finite line touches or crosses this 2D Rectangle.
+    /// The line is extended infinitely in both directions. The rectangle is enlarged by the tolerance, so a line
+    /// grazing an edge or corner still counts.</summary>
+    /// <param name="line">A finite 2D line defining the infinite line by its start point and direction.</param>
+    /// <param name="tol">Optional tolerance, default 1e-6. The rectangle is enlarged by this distance on each of its four sides.</param>
+    /// <returns>TRUE if the infinite line passes through the (tolerance enlarged) rectangle. Otherwise FALSE.</returns>
+    member r.RayIntersects(line:Line2D, [<OPT;DEF(1e-6)>] tol:float) : bool =
+        match Rect2D.clipLine2D(r, line, true, tol) with
+        | ValueSome _ -> true
+        | ValueNone   -> false
+
+    /// <summary>Returns the points where the infinite 2D line through the given finite line enters and leaves this 2D Rectangle.
+    /// The line is extended infinitely in both directions. The rectangle is enlarged by the tolerance, so a line
+    /// grazing an edge or corner still counts.</summary>
+    /// <param name="line">A finite 2D line defining the infinite line by its start point and direction.</param>
+    /// <param name="tol">Optional tolerance, default 1e-6. The rectangle is enlarged by this distance on each of its four sides.</param>
+    /// <returns>An array of 0, 1 or 2 points: empty if the line misses the rectangle, one point if it just grazes a corner
+    /// (within the tolerance), otherwise the two boundary points.</returns>
+    member r.RayIntersectionPoints(line:Line2D, [<OPT;DEF(1e-6)>] tol:float) : Pt[] =
+        match Rect2D.clipLine2D(r, line, true, tol) with
+        | ValueNone -> [| |]
+        | ValueSome (struct(x0,y0,x1,y1)) ->
+            let dx = x1-x0
+            let dy = y1-y0
+            if dx*dx + dy*dy <= tol*tol then [| Pt((x0+x1)*0.5, (y0+y1)*0.5) |] // the line only grazes a corner
+            else [| Pt(x0,y0); Pt(x1,y1) |]
+
+    /// <summary>Returns the chord of the infinite 2D line through the given finite line inside this 2D Rectangle.
+    /// The line is extended infinitely in both directions. The rectangle is enlarged by the tolerance, so a line
+    /// grazing an edge or corner still counts.</summary>
+    /// <param name="line">A finite 2D line defining the infinite line by its start point and direction.</param>
+    /// <param name="tol">Optional tolerance, default 1e-6. The rectangle is enlarged by this distance on each of its four sides.</param>
+    /// <returns>ValueSome with the chord as a 2D line if the infinite line passes through the rectangle (this may be a
+    /// zero length line if it only grazes a corner). ValueNone if the line misses the rectangle.</returns>
+    member r.RayIntersectionLine(line:Line2D, [<OPT;DEF(1e-6)>] tol:float) : Line2D voption =
+        match Rect2D.clipLine2D(r, line, true, tol) with
+        | ValueNone -> ValueNone
+        | ValueSome (struct(x0,y0,x1,y1)) -> ValueSome (Line2D(x0,y0,x1,y1))
+
+    /// Tests if a finite 2D line (the segment From-To) touches or crosses the 2D Rectangle.
+    /// The rectangle is enlarged by the tolerance (default 1e-6), so a line grazing an edge or corner still counts.
+    static member intersects (rect:Rect2D, line:Line2D, [<OPT;DEF(1e-6)>] tol:float) : bool =
+        rect.Intersects(line, tol)
+
+    /// Returns the 0, 1 or 2 points where a finite 2D line (the segment From-To) enters and leaves the 2D Rectangle.
+    /// The rectangle is enlarged by the tolerance (default 1e-6), so a line grazing an edge or corner still counts.
+    static member intersectionPoints (rect:Rect2D, line:Line2D, [<OPT;DEF(1e-6)>] tol:float) : Pt[] =
+        rect.IntersectionPoints(line, tol)
+
+    /// Returns the portion of a finite 2D line (the segment From-To) that lies inside the 2D Rectangle.
+    /// The rectangle is enlarged by the tolerance (default 1e-6), so a line grazing an edge or corner still counts.
+    static member intersectionLine (rect:Rect2D, line:Line2D, [<OPT;DEF(1e-6)>] tol:float) : Line2D voption =
+        rect.IntersectionLine(line, tol)
+
+    /// Tests if the infinite 2D line through the given finite line touches or crosses the 2D Rectangle.
+    /// The rectangle is enlarged by the tolerance (default 1e-6), so a line grazing an edge or corner still counts.
+    static member rayIntersects (rect:Rect2D, line:Line2D, [<OPT;DEF(1e-6)>] tol:float) : bool =
+        rect.RayIntersects(line, tol)
+
+    /// Returns the 0, 1 or 2 points where the infinite 2D line through the given finite line enters and leaves the 2D Rectangle.
+    /// The rectangle is enlarged by the tolerance (default 1e-6), so a line grazing an edge or corner still counts.
+    static member rayIntersectionPoints (rect:Rect2D, line:Line2D, [<OPT;DEF(1e-6)>] tol:float) : Pt[] =
+        rect.RayIntersectionPoints(line, tol)
+
+    /// Returns the chord of the infinite 2D line through the given finite line inside the 2D Rectangle.
+    /// The rectangle is enlarged by the tolerance (default 1e-6), so a line grazing an edge or corner still counts.
+    static member rayIntersectionLine (rect:Rect2D, line:Line2D, [<OPT;DEF(1e-6)>] tol:float) : Line2D voption =
+        rect.RayIntersectionLine(line, tol)
+
+    // #endregion
     // #region Obsolete
 
     [<Obsolete("use SizeX")>]

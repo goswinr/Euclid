@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- `Rect2D` now has `Line2D` intersection members, each with a curried-free static counterpart taking the rectangle first, and an optional tolerance (default `1e-6`) that enlarges the rectangle on each side so lines grazing an edge or corner still count:
+  - `Intersects`, `IntersectionPoints` and `IntersectionLine` treat the `Line2D` as its finite segment.
+  - `RayIntersects`, `RayIntersectionPoints` and `RayIntersectionLine` treat the `Line2D` as an infinite line in both directions.
 
 ## [0.42.0] - 2026-06-20
 ### Added

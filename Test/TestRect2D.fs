@@ -670,4 +670,117 @@ let tests =
                 "has constructor" |> Expect.stringContains s "Rect2D.createUnchecked"
             }
         ]
+
+        // ---------------------------------------------------------------------
+        // Line2D - Rect2D intersection
+        // `rect` is the unit square (0,0)-(1,1). `rr` is the rotated rectangle
+        // with corners p0(5,3) p1(13,9) p2(10,13) p3(2,7) and center (7.5,8).
+        // ---------------------------------------------------------------------
+        testList "Line intersection" [
+
+            test "segment crossing the unit square (exact, tol 0)" {
+                let ln = Line2D(-1., 0.5, 2., 0.5) // horizontal through y = 0.5
+                "intersects" |> Expect.isTrue (rect.Intersects(ln, 0.0))
+                let pts = rect.IntersectionPoints(ln, 0.0)
+                "two points" |> Expect.equal pts.Length 2
+                "enter" |> Expect.isTrue (eq pts.[0] (Pt(0., 0.5)))
+                "leave" |> Expect.isTrue (eq pts.[1] (Pt(1., 0.5)))
+                match rect.IntersectionLine(ln, 0.0) with
+                | ValueSome l -> "clipped line" |> Expect.isTrue (eqLine l (Pt(0., 0.5)) (Pt(1., 0.5)))
+                | ValueNone   -> "should clip" |> Expect.isTrue false
+            }
+
+            test "segment fully inside is returned unchanged" {
+                let ln = Line2D(0.25, 0.5, 0.75, 0.5)
+                "intersects" |> Expect.isTrue (rect.Intersects ln)
+                match rect.IntersectionLine ln with
+                | ValueSome l -> "same line" |> Expect.isTrue (eqLine l (Pt(0.25, 0.5)) (Pt(0.75, 0.5)))
+                | ValueNone   -> "should clip" |> Expect.isTrue false
+            }
+
+            test "segment fully outside misses" {
+                let ln = Line2D(2., 0., 2., 1.) // vertical at x = 2
+                "no intersect" |> Expect.isFalse (rect.Intersects ln)
+                "no points" |> Expect.equal (rect.IntersectionPoints ln).Length 0
+                "no clipped line" |> Expect.isTrue ((rect.IntersectionLine ln).IsNone)
+                "ray also misses" |> Expect.isFalse (rect.RayIntersects ln)
+            }
+
+            test "finite segment outside but its ray crosses" {
+                let ln = Line2D(2., 0.5, 3., 0.5) // to the right of the square, pointing further right
+                "segment misses" |> Expect.isFalse (rect.Intersects ln)
+                "ray hits" |> Expect.isTrue (rect.RayIntersects ln)
+                let pts = rect.RayIntersectionPoints(ln, 0.0)
+                "ray two points" |> Expect.equal pts.Length 2
+                "ray enter" |> Expect.isTrue (eq pts.[0] (Pt(0., 0.5)))
+                "ray leave" |> Expect.isTrue (eq pts.[1] (Pt(1., 0.5)))
+            }
+
+            test "ray along the main diagonal hits both corners (exact, tol 0)" {
+                let ln = Line2D(-1., -1., 2., 2.) // infinite line through (0,0) and (1,1)
+                let pts = rect.RayIntersectionPoints(ln, 0.0)
+                "two corners" |> Expect.equal pts.Length 2
+                "corner 0,0" |> Expect.isTrue (eq pts.[0] (Pt(0., 0.)))
+                "corner 1,1" |> Expect.isTrue (eq pts.[1] (Pt(1., 1.)))
+                match rect.RayIntersectionLine(ln, 0.0) with
+                | ValueSome l -> "diagonal length" |> Expect.isTrue (eqf l.Length (sqrt 2.))
+                | ValueNone   -> "should clip" |> Expect.isTrue false
+            }
+
+            test "line grazing a single corner returns one point (tol 0)" {
+                let ln = Line2D(0., 2., 2., 0.) // x + y = 2, touches square only at (1,1)
+                "grazes" |> Expect.isTrue (rect.RayIntersects(ln, 0.0))
+                let pts = rect.RayIntersectionPoints(ln, 0.0)
+                "one point" |> Expect.equal pts.Length 1
+                "at corner" |> Expect.isTrue (eq pts.[0] (Pt(1., 1.)))
+                match rect.RayIntersectionLine(ln, 0.0) with
+                | ValueSome l -> "zero length at corner" |> Expect.isTrue (eqf l.Length 0.)
+                | ValueNone   -> "should touch" |> Expect.isTrue false
+            }
+
+            test "near-miss corner within tolerance is detected" {
+                // x + y = 2 + d ; the rectangle (enlarged by tol on each side) reaches a sum of 2 + 2*tol at its
+                // far corner, so the line is detected when d <= 2*tol. Default tol = 1e-6.
+                let inside  = Line2D(0., 2. + 1e-6, 2. + 1e-6, 0.) // d = 1e-6  < 2e-6 -> hit
+                let outside = Line2D(0., 2. + 3e-6, 2. + 3e-6, 0.) // d = 3e-6  > 2e-6 -> miss
+                "near miss counts" |> Expect.isTrue  (rect.RayIntersects inside)
+                "far miss ignored" |> Expect.isFalse (rect.RayIntersects outside)
+            }
+
+            test "line collinear with an edge returns the overlap (tol 0)" {
+                let ln = Line2D(-1., 0., 2., 0.) // along the bottom edge y = 0
+                "on edge intersects" |> Expect.isTrue (rect.Intersects(ln, 0.0))
+                match rect.IntersectionLine(ln, 0.0) with
+                | ValueSome l -> "edge overlap" |> Expect.isTrue (eqLine l (Pt(0., 0.)) (Pt(1., 0.)))
+                | ValueNone   -> "should overlap" |> Expect.isTrue false
+            }
+
+            test "crossing a rotated, off-origin rectangle (exact, tol 0)" {
+                // line through the center along the rectangle's local X-axis direction (0.8, 0.6)
+                let ln = Line2D(-0.5, 2., 15.5, 14.)
+                let pts = rr.RayIntersectionPoints(ln, 0.0)
+                "two points" |> Expect.equal pts.Length 2
+                "enter mid of left edge"  |> Expect.isTrue (eq pts.[0] (Pt(3.5, 5.)))
+                "leave mid of right edge" |> Expect.isTrue (eq pts.[1] (Pt(11.5, 11.)))
+                "segment also intersects" |> Expect.isTrue (rr.Intersects ln)
+                match rr.RayIntersectionLine(ln, 0.0) with
+                | ValueSome l -> "full width chord" |> Expect.isTrue (eqf l.Length 10.)
+                | ValueNone   -> "should clip" |> Expect.isTrue false
+            }
+
+            test "static functions delegate to instance members" {
+                let ln = Line2D(-1., 0.5, 2., 0.5)
+                "static intersects" |> Expect.isTrue (Rect2D.intersects(rect, ln, 0.0))
+                "static points" |> Expect.equal (Rect2D.intersectionPoints(rect, ln, 0.0)).Length 2
+                "static rayIntersects" |> Expect.isTrue (Rect2D.rayIntersects(rect, ln))
+                match Rect2D.intersectionLine(rect, ln, 0.0) with
+                | ValueSome l -> "static clipped line" |> Expect.isTrue (eqLine l (Pt(0., 0.5)) (Pt(1., 0.5)))
+                | ValueNone   -> "should clip" |> Expect.isTrue false
+            }
+
+            test "zero length line throws" {
+                let ln = Line2D(1., 1., 1., 1.)
+                "too short" |> Expect.throws (fun () -> rect.Intersects ln |> ignore)
+            }
+        ]
     ]
