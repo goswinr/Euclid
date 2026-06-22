@@ -1921,6 +1921,11 @@ type Rect2D =
     /// Returns the two endpoints (x0,y0,x1,y1) of the portion inside the rectangle, or ValueNone if it is fully outside.
     /// Fails if the rectangle has a zero length axis or the line is too short.
     static member private clipLine2D (r:Rect2D, line:Line2D, asRay:bool, tol:float) : ValueOption<struct(float*float*float*float)> =
+        // The rectangle may be rotated, so instead of clipping in world space we clip in the
+        // rectangle's own local frame, where it becomes the axis-aligned box [0,xlen] x [0,ylen].
+        // A point P maps to local coordinates  u = (P-Origin)·Xunit  and  v = (P-Origin)·Yunit .
+
+        // Step 1: the rectangle's two unit axes and their lengths (= the local box size). Fail on a degenerate axis.
         let xlenSq = r.XaxisX*r.XaxisX + r.XaxisY*r.XaxisY
         let ylenSq = r.YaxisX*r.YaxisX + r.YaxisY*r.YaxisY
         if isTooSmallSq xlenSq then failTooSmall "Rect2D line intersection: Xaxis" r
@@ -1931,6 +1936,9 @@ type Rect2D =
         let uxy = r.XaxisY / xlen
         let uyx = r.YaxisX / ylen // unit Y-axis of the rectangle
         let uyy = r.YaxisY / ylen
+
+        // Step 2: the line's unit direction. Unitizing means the parameter 't' below is a distance,
+        // so the parallel test and the corner-merging in the callers can use 'tol' directly. Fail on a zero length line.
         let vx = line.ToX - line.FromX
         let vy = line.ToY - line.FromY
         let lenSq = vx*vx + vy*vy
@@ -1938,15 +1946,27 @@ type Rect2D =
         let len = sqrt lenSq
         let ndx = vx / len // unit direction of the line
         let ndy = vy / len
+
+        // Step 3: express the line in the local frame as  point(t) = (p0u,p0v) + t*(du,dv) .
         let ox = line.FromX - r.OriginX
         let oy = line.FromY - r.OriginY
         let p0u = ox*uxx + oy*uxy   // local X distance of the From point
         let p0v = ox*uyx + oy*uyy   // local Y distance of the From point
         let du  = ndx*uxx + ndy*uxy // local X component of the unit direction
         let dv  = ndx*uyx + ndy*uyy // local Y component of the unit direction
-        // Liang–Barsky: walk the line parameter t (a distance because the direction is unitized)
-        // from tE (entering) to tL (leaving). Each box boundary is an inequality  p*t <= q .
-        // 'tol' enlarges the box by that distance on all four sides.
+
+        // Step 4: Liang–Barsky clipping. We shrink the parameter interval [tE,tL] (entering..leaving) by
+        // intersecting it with the four half-planes of the box. A finite segment starts as [0,len], an
+        // infinite ray as [-inf,+inf]. 'tol' enlarges the box by that distance on all four sides, so a line
+        // grazing an edge or corner is still kept. Each boundary is written as the inequality  p*t <= q :
+        //   local-X >= -tol        ->  -du*t <= p0u + tol
+        //   local-X <= xlen + tol  ->   du*t <= xlen + tol - p0u
+        //   local-Y >= -tol        ->  -dv*t <= p0v + tol
+        //   local-Y <= ylen + tol  ->   dv*t <= ylen + tol - p0v
+        // For each boundary, given the crossing parameter t = q/p:
+        //   p = 0 : the line is parallel to this boundary; it is entirely outside only if q < 0.
+        //   p < 0 : t is where the line ENTERS this half-plane -> raise tE (reject if it passes tL).
+        //   p > 0 : t is where the line LEAVES this half-plane -> lower tL (reject if it passes tE).
         let mutable tE = if asRay then -infinity else 0.0
         let mutable tL = if asRay then  infinity else len
         let mutable ok = true
@@ -1970,6 +1990,9 @@ type Rect2D =
         if   abs p <= 1e-12 then (if q < 0.0 then ok <- false)
         elif p < 0.0        then (let t = q/p in if t > tL then ok <- false elif t > tE then tE <- t)
         else                     (let t = q/p in if t < tE then ok <- false elif t < tL then tL <- t)
+
+        // Step 5: if the interval survived, map its two ends back to world coordinates (point(t) along the
+        // original line). tE = tL means the line only touches a single point, e.g. a corner.
         if ok && tE <= tL then
             ValueSome (struct(line.FromX + tE*ndx, line.FromY + tE*ndy, line.FromX + tL*ndx, line.FromY + tL*ndy))
         else
