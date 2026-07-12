@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.50.0] - 2026-07-15
+### Added
+- Axis-aligned bounds are now first-class conversion and intersection types:
+  - `BBox` has `AsBox`, `GetPoint`, `GetEdge`, `GetFace`, named faces, `Faces`, `createFromRect3D`, and `createFromBox`.
+  - `BRect` has `AsRect2D`, `IntersectRay`, `intersectRay`, `createFromRect2D`, and `createFromRect3D`.
+  - `Box` has `createFromBounds`, `GetPoint`, `GetEdge`, and `GetFace`; `Rect2D` has `createFromBounds`, ray intersection, and finite-line clipping.
+- `Box` and `FreeBox` edges can be addressed by endpoint names (`Edge01`, `Edge12`, ... `Edge37`), with matching static members. The old numeric `Edge0`-`Edge11` instance members remain as obsolete aliases.
+- `Rect3D.ClosestParameters` and `ClosestPoint`, plus static counterparts.
+- `Line2D` and `Line3D` now expose `Start`/`End` aliases and static `setFrom`/`setTo` helpers. `Line2D.intersectRays` returns the unchecked intersection of two non-parallel infinite rays.
+- `Tria3D.intersectRay`, `intersectRayXYZ`, and the allocation-free `intersectTriaVectorsWithRay` return the intersection parameter of an infinite line with a triangle.
+- Curried `setX`/`setY`/`setZ` helpers for points and vectors, and optimized `ResizeArr.getIdx`/`setIdx` helpers for Fable.
+
+### Changed
+- Intersection APIs now consistently use `voption` where absence is expected. This includes the `XLine2D`/`XLine3D` `try*` APIs, line extension intersections, plane intersections, `Box.IntersectRay`, `Rect3D.intersectRay`/`intersectLine`, and `Tria3D.intersectLine`.
+- `XLine2D` and `XLine3D` were reorganized: raw coordinate implementations live in the `XLineXY` and `XLineXYZ` modules, while the public types provide point/vector and `Line2D`/`Line3D` overloads. `XLine2D.closestParameters` now returns a struct tuple.
+- Plane naming and intersection results were harmonized:
+  - `DistanceToPt*` and `PlaneAtClPt` are now `DistanceToPnt*` and `PlaneAtClPnt` on `NPlane` and `PPlane`.
+  - `PPlane.EvaluateAt` now takes two in-plane coordinates; the three-coordinate form is `EvaluateAtXYZ`.
+  - `NPlane.intersectRay`, `PPlane.intersectRay`, and `Rect3D.intersectRay` return a line parameter. Finite `intersectLine` methods return the intersection point.
+- Bounds conversions now live on the target type: use `BBox.createFromBox`/`createFromRect3D` and `BRect.createFromRect2D`/`createFromRect3D`. The old source-type members remain only as obsolete tuple-returning compatibility helpers.
+- `RigidMatrix.Matrix` was renamed to `ToMatrix`. `Quaternion.createFromDegree` was renamed to `createFromDegrees`; the singular form remains obsolete.
+- Corrected the public spelling `Colinear` to `Collinear`, including `Polyline2D.removeDuplicateAndCollinearPoints`, `Polyline3D.removeDuplicateAndCollinearPoints`, and offset internals.
+- `Line3D.createFromLine2DwithZ` was renamed to `createFromLine2DWithZ`.
+
+### Fixed
+- Reworked 2D and 3D line relationships so intersection, closest-point, closest-parameter, overlap, and squared-distance results are invariant under line order and direction. This also fixes near-parallel, anti-parallel, perpendicular, overlapping, and zero-length cases.
+- Corrected the 3D closest-line Lagrange numerators for oblique coplanar and skew lines.
+- `Tria3D.intersectLine` now uses a two-sided Moller-Trumbore test, is independent of triangle vertex order, and correctly distinguishes a finite segment from its infinite ray.
+- `Polyline2D` and `Polyline3D` offsetting now handles straight runs and intermediate collinear points without losing points or changing round-trip geometry.
+- Rectangle and box ray intersections now handle rays on faces or edges, corner grazing, rays starting inside, parallel slabs, and zero-length rays consistently.
+- `Line2D.lengthToPtOnLine` and `Line3D.lengthToPtOnLine` now return the signed projected distance from the line start, including points before or beyond the segment.
+
+### Removed
+- The obsolete `Intersect` module and its `lineTriangle`/`lineCone` helpers.
+- Obsolete `Vc.intersection` and `UnitVc.intersection` helpers, redundant `NPlane.distToPt*` aliases, obsolete infinite `Rect3D` intersection aliases, and static `toString` helpers on bounds/box/rectangle types.
+
 ## [0.42.0] - 2026-06-20
 ### Added
 - XY/XYZ coordinate overloads for point-taking members that return a `float` or `bool`, each with a curried static counterpart. The original `Pt`/`Pnt` members now delegate to these:
@@ -267,7 +303,8 @@ The move* names remain as obsolete aliases. The move* members on location types 
 ### Added
 - first public release
 
-[Unreleased]: https://github.com/goswinr/Euclid/compare/0.42.0...HEAD
+[Unreleased]: https://github.com/goswinr/Euclid/compare/0.50.0...HEAD
+[0.50.0]: https://github.com/goswinr/Euclid/compare/0.42.0...0.50.0
 [0.42.0]: https://github.com/goswinr/Euclid/compare/0.41.0...0.42.0
 [0.41.0]: https://github.com/goswinr/Euclid/compare/0.40.0...0.41.0
 [0.40.0]: https://github.com/goswinr/Euclid/compare/0.30.1...0.40.0
