@@ -31,7 +31,7 @@ module XLine3D =
         /// The line crosses the cone surface transversally at exactly one point of the lower nappe.
         /// This happens when the second root of the quadratic lies on the mirrored upper nappe,
         /// or when the line is parallel to a generator line of the cone (the quadratic degenerates to linear).
-        /// Unlike 'Touching' this is a true crossing from outside to inside.
+        /// Unlike 'Touching' this is a TRUE crossing from outside to inside.
         | IntersectingOne of float
 
         /// The line touches the cone surface tangentially at exactly one point of the lower nappe.
@@ -45,7 +45,7 @@ module XLine3D =
         /// Since only the lower nappe counts as the cone, just the half-line starting
         /// at the tip lies on the cone:
         /// tipParam is the parameter of the tip on the line.
-        /// If onConeTowardsPositiveT is true the on-cone half is  t >= tipParam,  otherwise  t <= tipParam.
+        /// If onConeTowardsPositiveT is TRUE the on-cone half is  t >= tipParam,  otherwise  t <= tipParam.
         | LineOnCone of tipParam:float * onConeTowardsPositiveT:bool
 
 
@@ -246,7 +246,7 @@ module XLine3D =
         /// Touching at both Start and End. Lines are identical and in same orientation.
         | Identical
 
-        /// Touching at both at the other Start or End. Lines are identical but in opposite orientation.
+        /// Both endpoints touch the opposite endpoints; the lines are identical but oppositely oriented.
         | IdenticalFlipped
 
 
@@ -776,8 +776,8 @@ module XLineXYZ =
     /// <param name="tangent" > Is the tangent of the maximum allowed angle between the two line vectors.
     ///  Use the module Euclid.UtilEuclid.Tangent to set another tolerance here.</param>
     /// <param name="tooShortTolerance" > Is a length tolerance.
-    ///  If one or both lines are shorter than this, None is returned.</param>
-    /// <returns> An intersection point on line A, or None if the segments are skew, parallel, or too short.</returns>
+    ///  If one or both lines are shorter than this, ValueNone is returned.</param>
+    /// <returns> An intersection point on line A, or ValueNone if the segments are skew, parallel, or too short.</returns>
     let tryIntersect(  pAx:float, pAy:float, pAz:float, pBx:float, pBy:float, pBz:float,
                        vAx:float, vAy:float, vAz:float, vBx:float, vBy:float, vBz:float,
                        maxSkewDistance:float,
@@ -843,7 +843,7 @@ module XLineXYZ =
     /// <param name="vBy"> The Y component of the vector of the second ray.</param>
     /// <param name="vBz"> The Z component of the vector of the second ray.</param>
     /// <returns> The parameter at which the two rays come closest on line A if it is smaller than 1e12 in absolute value,
-    /// or None if the parameter is bigger than 1e12 or if they are parallel or coincident.</returns>
+    /// or ValueNone if the parameter is bigger than 1e12 or if they are parallel or coincident.</returns>
     let inline tryClosestParameterRayA (pAx:float, pAy:float, pAz:float, pBx:float, pBy:float, pBz:float,
                                         vAx:float, vAy:float, vAz:float, vBx:float, vBy:float, vBz:float): float voption =
         // Cross product of vectors vA × vB
@@ -886,7 +886,7 @@ module XLineXYZ =
     /// <param name="vBy"> The Y component of the vector of the second ray.</param>
     /// <param name="vBz"> The Z component of the vector of the second ray.</param>
     /// <returns> The point at which the two rays come closest (on Line A) if the parameter on Line A is smaller than 1e12 in absolute value,
-    /// or None if the parameter is bigger than 1e12 ( = the lines are far away or parallel) or if they are exactly parallel or coincident.</returns>
+    /// or ValueNone if the parameter is bigger than 1e12 ( = the lines are far away or parallel) or if they are exactly parallel or coincident.</returns>
     let inline tryClosestPntRayA (pAx:float, pAy:float, pAz:float, pBx:float, pBy:float, pBz:float,
                                   vAx:float, vAy:float, vAz:float, vBx:float, vBy:float, vBz:float): Pnt voption =
         // Cross product of vectors vA × vB
@@ -931,8 +931,8 @@ module XLineXYZ =
     /// <param name="tangent" > Is the tangent of the maximum allowed angle between the two line vectors.
     ///  Use the module Euclid.UtilEuclid.Tangent to set another tolerance here.</param>
     /// <param name="tooShortTolerance" > Is a length tolerance.
-    ///  If one or both lines are shorter than this, None is returned.</param>
-    /// <returns> An intersection point on ray A, or None if the rays are skew, parallel, or too short.</returns>
+    ///  If one or both lines are shorter than this, ValueNone is returned.</param>
+    /// <returns> An intersection point on ray A, or ValueNone if the rays are skew, parallel, or too short.</returns>
     let tryIntersectRay(  pAx:float, pAy:float, pAz:float, pBx:float, pBy:float, pBz:float,
                                     vAx:float, vAy:float, vAz:float, vBx:float, vBy:float, vBz:float,
                                     maxSkewDistance:float,
@@ -1311,7 +1311,7 @@ module XLineXYZ =
     /// Use the module Euclid.UtilEuclid.Tangent to set another tolerance here.</param>
     /// <param name="tooShortTolerance" > Is a length tolerance.
     ///  If one or both lines are shorter than this, then the 'TooShort' union case is returned.</param>
-    /// <returns> An ClParams Discriminated Union with the following cases:
+    /// <returns> A ClParams Discriminated Union with the following cases:
     /// | Intersect of float*float
     /// | Skew of float*float*float
     /// | Parallel of float*float
@@ -1431,7 +1431,7 @@ module XLineXYZ =
     /// Use the module Euclid.UtilEuclid.Tangent to set another tolerance here.</param>
     /// <param name="tooShortTolerance" > Is a length tolerance.
     ///  If one or both lines are shorter than this, then the 'TooShort' union case is returned.</param>
-    /// <returns> An ClPts Discriminated Union with the following cases:
+    /// <returns> A ClPts Discriminated Union with the following cases:
     /// | Intersect of Pnt
     /// | Skew of Pnt * Pnt * float
     /// | Parallel of Pnt * Pnt
@@ -1632,7 +1632,7 @@ type XLine3D =
     /// <param name="vA"> The direction vector of the first ray.</param>
     /// <param name="vB"> The direction vector of the second ray.</param>
     /// <returns> The parameter on line A at the closest approach with line B if it is smaller than 1e12 in absolute value,
-    /// or None if the parameter is bigger than 1e12 or if they are parallel or coincident.</returns>
+    /// or ValueNone if the parameter is bigger than 1e12 or if they are parallel or coincident.</returns>
     static member inline tryClosestParameterRayA (pA:Pnt, pB:Pnt, vA:Vec, vB:Vec): float voption =
         XLineXYZ.tryClosestParameterRayA (pA.X, pA.Y, pA.Z, pB.X, pB.Y, pB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z)
 
@@ -1640,7 +1640,7 @@ type XLine3D =
     /// <param name="lineA"> First ray.</param>
     /// <param name="lineB"> Second ray.</param>
     /// <returns> The parameter on lineA at the closest approach with lineB if it is smaller than 1e12 in absolute value,
-    /// or None if the parameter is bigger than 1e12 or if they are parallel or coincident.</returns>
+    /// or ValueNone if the parameter is bigger than 1e12 or if they are parallel or coincident.</returns>
     static member inline tryClosestParameterRayA (lineA:Line3D, lineB:Line3D): float voption =
         XLineXYZ.tryClosestParameterRayA (lineA.FromX, lineA.FromY, lineA.FromZ, lineB.FromX, lineB.FromY, lineB.FromZ,
                                           lineA.VectorX, lineA.VectorY, lineA.VectorZ, lineB.VectorX, lineB.VectorY, lineB.VectorZ)
@@ -1653,7 +1653,7 @@ type XLine3D =
     /// <param name="vA"> The direction vector of the first ray.</param>
     /// <param name="vB"> The direction vector of the second ray.</param>
     /// <returns> The point at which the two rays come closest (on Line A) if the parameter on Line A is smaller than 1e12 in absolute value,
-    /// or None if the parameter is bigger than 1e12 ( = the lines are far away or parallel) or if they are exactly parallel or coincident.</returns>
+    /// or ValueNone if the parameter is bigger than 1e12 ( = the lines are far away or parallel) or if they are exactly parallel or coincident.</returns>
     static member inline tryClosestPntRayA (pA:Pnt, pB:Pnt, vA:Vec, vB:Vec): Pnt voption =
         XLineXYZ.tryClosestPntRayA (pA.X, pA.Y, pA.Z, pB.X, pB.Y, pB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z)
 
@@ -1661,7 +1661,7 @@ type XLine3D =
     /// <param name="lineA"> First line.</param>
     /// <param name="lineB"> Second line.</param>
     /// <returns> The point at which the two rays come closest (on Line A, first Line) if the parameter on Line A is smaller than 1e12 in absolute value,
-    /// or None if the parameter is bigger than 1e12 ( = the lines are far away or parallel) or if they are exactly parallel or coincident.</returns>
+    /// or ValueNone if the parameter is bigger than 1e12 ( = the lines are far away or parallel) or if they are exactly parallel or coincident.</returns>
     static member inline tryClosestPntRayA (lineA: Line3D, lineB: Line3D): Pnt voption =
         XLineXYZ.tryClosestPntRayA (lineA.FromX, lineA.FromY, lineA.FromZ, lineB.FromX, lineB.FromY, lineB.FromZ,
                                     lineA.VectorX, lineA.VectorY, lineA.VectorZ, lineB.VectorX, lineB.VectorY, lineB.VectorZ)
@@ -1678,8 +1678,8 @@ type XLine3D =
     ///  The default value is '0.00436' this corresponds to approx 0.25 degree. Below this angle the lines are considered parallel.
     ///  Use the module Euclid.UtilEuclid.Tangent to set another tolerance here.</param>
     /// <param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
-    ///  If one or both lines are shorter than this, None is returned.</param>
-    /// <returns> An intersection point on ray A, or None if the rays are skew, parallel, or too short.</returns>
+    ///  If one or both lines are shorter than this, ValueNone is returned.</param>
+    /// <returns> An intersection point on ray A, or ValueNone if the rays are skew, parallel, or too short.</returns>
     static member inline tryIntersectRay(  pA:Pnt, pB:Pnt, vA:Vec, vB:Vec,
                                             [<OPT;DEF(1e-6)>] maxSkewDistance:float,
                                             [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>,
@@ -1694,8 +1694,8 @@ type XLine3D =
     ///  The default value is '0.00436' this corresponds to approx 0.25 degree. Below this angle the lines are considered parallel.
     ///  Use the module Euclid.UtilEuclid.Tangent to set another tolerance here.</param>
     /// <param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
-    ///  If one or both lines are shorter than this, None is returned.</param>
-    /// <returns> An intersection point on ray A, or None if the rays are skew, parallel, or too short.</returns>
+    ///  If one or both lines are shorter than this, ValueNone is returned.</param>
+    /// <returns> An intersection point on ray A, or ValueNone if the rays are skew, parallel, or too short.</returns>
     static member inline tryIntersectRay(lineA:Line3D, lineB:Line3D, [<OPT;DEF(1e-6)>] maxSkewDistance:float,
                                         [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>,
                                         [<OPT;DEF(1e-6)>] tooShortTolerance:float) : Pnt voption =
@@ -1714,8 +1714,8 @@ type XLine3D =
     ///  The default value is '0.00436' this corresponds to approx 0.25 degree. Below this angle the lines are considered parallel.
     ///  Use the module Euclid.UtilEuclid.Tangent to set another tolerance here.</param>
     /// <param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
-    ///  If one or both lines are shorter than this, None is returned.</param>
-    /// <returns> An intersection point on line A, or None if the segments are skew, parallel, or too short.</returns>
+    ///  If one or both lines are shorter than this, ValueNone is returned.</param>
+    /// <returns> An intersection point on line A, or ValueNone if the segments are skew, parallel, or too short.</returns>
     static member inline tryIntersect( pA:Pnt, pB:Pnt, vA:Vec, vB:Vec,
                                         [<OPT;DEF(1e-6)>] maxSkewDistance:float,
                                         [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>,
@@ -1731,8 +1731,8 @@ type XLine3D =
     ///  The default value is '0.00436' this corresponds to approx 0.25 degree. Below this angle the lines are considered parallel.
     ///  Use the module Euclid.UtilEuclid.Tangent to set another tolerance here.</param>
     /// <param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
-    ///  If one or both lines are shorter than this, None is returned.</param>
-    /// <returns> An intersection point on line A, or None if the segments are skew, parallel, or too short.</returns>
+    ///  If one or both lines are shorter than this, ValueNone is returned.</param>
+    /// <returns> An intersection point on line A, or ValueNone if the segments are skew, parallel, or too short.</returns>
     static member inline tryIntersect(lineA:Line3D, lineB:Line3D,
                                       [<OPT;DEF(1e-6)>] maxSkewDistance:float,
                                       [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>,
@@ -1926,7 +1926,7 @@ type XLine3D =
     /// Use the module Euclid.UtilEuclid.Tangent to set another tolerance here.</param>
     /// <param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
     ///  If one or both lines are shorter than this, then the 'TooShort' union case is returned.</param>
-    /// <returns> An ClParams Discriminated Union with the following cases:
+    /// <returns> A ClParams Discriminated Union with the following cases:
     /// | Intersect of float*float
     /// | Skew of float*float*float
     /// | Parallel of float*float
@@ -1948,7 +1948,7 @@ type XLine3D =
     /// Use the module Euclid.UtilEuclid.Tangent to set another tolerance here.</param>
     /// <param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
     ///  If one or both lines are shorter than this, then the 'TooShort' union case is returned.</param>
-    /// <returns> An ClParams Discriminated Union with the following cases:
+    /// <returns> A ClParams Discriminated Union with the following cases:
     /// | Intersect of float*float
     /// | Skew of float*float*float
     /// | Parallel of float*float
@@ -1973,7 +1973,7 @@ type XLine3D =
     /// Use the module Euclid.UtilEuclid.Tangent to set another tolerance here.</param>
     /// <param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
     ///  If one or both lines are shorter than this, then the 'TooShort' union case is returned.</param>
-    /// <returns> An ClPts Discriminated Union with the following cases:
+    /// <returns> A ClPts Discriminated Union with the following cases:
     /// | Intersect of Pnt
     /// | Skew of Pnt * Pnt * float
     /// | Parallel of Pnt * Pnt
@@ -1995,7 +1995,7 @@ type XLine3D =
     /// Use the module Euclid.UtilEuclid.Tangent to set another tolerance here.</param>
     /// <param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
     ///  If one or both lines are shorter than this, then the 'TooShort' union case is returned.</param>
-    /// <returns> An ClPts Discriminated Union with the following cases:
+    /// <returns> A ClPts Discriminated Union with the following cases:
     /// | Intersect of Pnt
     /// | Skew of Pnt * Pnt * float
     /// | Parallel of Pnt * Pnt

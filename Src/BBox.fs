@@ -1,4 +1,4 @@
-﻿namespace Euclid
+namespace Euclid
 
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
@@ -13,9 +13,9 @@ open EuclidErrors
 /// That means the Min X, Y, and Z values are always smaller or equal to the respective Max values.
 /// The X, Y, and Z axes are also called Width, Depth, and Height3D.
 /// <code>
-///   Z-Axis       Y-Axis
+///   Z-axis       Y-axis
 ///   ^           /
-///   |   7      /        6 MaxPt
+///   |   7      /        6 MaxPnt
 ///   |   +---------------+
 ///   |  /|    /         /|
 ///   | / |   /         / |
@@ -26,8 +26,8 @@ open EuclidErrors
 ///   |  / 3          |  / 2
 ///   | /             | /
 ///   |/              |/
-///   +---------------+----> X-Axis
-///   0 MinPt         1
+///   +---------------+----> X-axis
+///   0 MinPnt        1
 ///
 /// A BBox centered at the origin the points has these signs of X, Y and Z coordinates:
 /// Pt0 (-,-,-)
@@ -223,7 +223,7 @@ type BBox =
         b.Expand(xDist, yDist, zDist)
 
     /// Returns a 3D bounding box expanded by a distance for X, Y, and Z-axis each.
-    /// If expansion is negative it shrinks the Box without causing underflow.
+    /// If expansion is negative it shrinks the box without causing underflow.
     /// When the negative expansion is bigger than the size on any axis, both Min and Max values
     /// on that axis will be set to the midpoint of their original values (the box collapses to a plane or line on that axis).
     member inline b.ExpandSafe(xDist, yDist, zDist) : BBox =
@@ -250,14 +250,14 @@ type BBox =
         BBox.createUnchecked(minXCh, minYCh, minZCh, maxXCh, maxYCh, maxZCh)
 
     /// Returns a 3D bounding box expanded by a distance.
-    /// If expansion is negative it shrinks the Box without causing underflow.
+    /// If expansion is negative it shrinks the box without causing underflow.
     /// When the negative expansion is bigger than the size on any axis, both Min and Max values
     /// on that axis will be set to the midpoint of their original values (the box collapses to a plane or line on that axis).
     member inline b.ExpandSafe(dist) : BBox =
         b.ExpandSafe(dist, dist, dist)
 
     /// Returns a 3D bounding box expanded by distance.
-    /// If expansion is negative it shrinks the Box without causing underflow.
+    /// If expansion is negative it shrinks the box without causing underflow.
     /// When the negative expansion is bigger than the size on any axis, both Min and Max values
     /// on that axis will be set to the midpoint of their original values (the box collapses to a plane or line on that axis).
     static member expandSafe dist (b:BBox)  : BBox =
@@ -329,14 +329,14 @@ type BBox =
         b.ShortestEdge
 
     /// Tests if all sides are smaller than the zeroLength tolerance.
-    /// This is the same as IsPoint.
+    /// Same as b.IsPoint.
     member inline b.IsZero : bool =
         isTooTiny (b.MaxX - b.MinX) &&
         isTooTiny (b.MaxY - b.MinY) &&
         isTooTiny (b.MaxZ - b.MinZ)
 
     /// Returns TRUE if all box dimensions are below zero-length tolerance.
-    /// This is the same as isPoint.
+    /// Same as BBox.isPoint.
     static member inline isZero (b:BBox) : bool =
         b.IsZero
 
@@ -351,7 +351,7 @@ type BBox =
     static member inline countZeroSides (b:BBox) : int =
         b.CountZeroSides
 
-    /// Tests if two of the X, Y and Z axis is smaller than the zeroLength tolerance.
+    /// Tests if two of the X, Y, and Z axes are smaller than the zeroLength tolerance.
     member inline b.IsLine : bool =
         b.CountZeroSides = 2
 
@@ -359,7 +359,7 @@ type BBox =
     static member inline isLine (b:BBox) : bool =
         b.IsLine
 
-    /// Tests if one of the X, Y and Z axis is smaller than the zeroLength tolerance.
+    /// Tests if one of the X, Y, and Z axes is smaller than the zeroLength tolerance.
     member inline b.IsFlat : bool =
         b.CountZeroSides = 1
 
@@ -368,16 +368,16 @@ type BBox =
         b.IsFlat
 
     /// Tests if all sides are smaller than the zeroLength tolerance.
-    /// This is the same as IsZero.
+    /// Same as b.IsZero.
     member inline b.IsPoint : bool =
         b.IsZero
 
     /// Returns TRUE if all dimensions are below zero-length tolerance.
-    /// This is the same as isZero.
+    /// Same as BBox.isZero.
     static member inline isPoint (b:BBox) : bool =
         b.IsPoint
 
-    /// Tests if no sides of the X, Y and Z axis is smaller than the zeroLength tolerance.
+    /// Tests if none of the X, Y, and Z axes are smaller than the zeroLength tolerance.
     /// Same as .HasVolume
     member inline b.IsValid : bool =
         b.CountZeroSides = 0
@@ -386,7 +386,7 @@ type BBox =
     static member inline isValid (b:BBox) : bool =
         b.IsValid
 
-    /// Tests if none of the X, Y and Z axis is smaller than the zeroLength tolerance.
+    /// Tests if none of the X, Y, and Z axes is smaller than the zeroLength tolerance.
     /// Same as .IsValid
     member inline b.HasVolume : bool =
         b.CountZeroSides = 0
@@ -544,7 +544,7 @@ type BBox =
     static member inline containsPnt (pt:Pnt) (box:BBox)  : bool =
         box.ContainsPnt(pt)
 
-    /// Returns TRUE if this 3D bounding box is inside or exactly on the other bounding Box.
+    /// Returns TRUE if the other 3D bounding box is inside or exactly on this bounding box.
     member inline b.Contains (o:BBox) : bool =
         b.ContainsXYZ(o.MinX, o.MinY, o.MinZ) &&
         b.ContainsXYZ(o.MaxX, o.MaxY, o.MaxZ)
@@ -554,7 +554,7 @@ type BBox =
     static member inline contains (boxInside:BBox) (surroundingBox:BBox)  : bool =
         surroundingBox.Contains(boxInside)
 
-    /// Evaluate a X, Y and Z parameter of this 3D bounding box.
+    /// Evaluate an X, Y and Z parameter of this 3D bounding box.
     /// 0.0, 0.0, 0.0 returns the MinPnt.
     /// 1.0, 1.0, 1.0 returns the MaxPnt.
     member inline b.EvaluateAt (xParameter, yParameter, zParameter) : Pnt =
@@ -571,18 +571,18 @@ type BBox =
         BBox.createUnchecked   (min b.MinX a.MinX, min b.MinY a.MinY, min b.MinZ a.MinZ,
                                 max b.MaxX a.MaxX, max b.MaxY a.MaxY, max b.MaxZ a.MaxZ)
 
-    /// Returns a bounding 3D bounding box that contains the input 3D bounding box and the point.
-    member inline b.Union (p:Pnt) : BBox =
+    /// Returns a 3D bounding box that contains the input 3D bounding box and the point.
+    member inline b.UnionPnt (p:Pnt) : BBox =
         BBox.createUnchecked   (min b.MinX p.X, min b.MinY p.Y, min b.MinZ p.Z,
                                 max b.MaxX p.X, max b.MaxY p.Y, max b.MaxZ p.Z)
 
-    /// Returns a 3D bounding box that contains both input a 3D bounding boxes.
+    /// Returns a 3D bounding box that contains both input 3D bounding boxes.
     static member inline union (a:BBox) (b:BBox)  : BBox =
         BBox.createUnchecked   (min b.MinX a.MinX, min b.MinY a.MinY, min b.MinZ a.MinZ,
                                 max b.MaxX a.MaxX, max b.MaxY a.MaxY, max b.MaxZ a.MaxZ)
 
-    /// Returns a bounding a 3D bounding box that contains the input a 3D bounding box and the point.
-    static member inline unionPt (p:Pnt) (b:BBox) : BBox =
+    /// Returns a 3D bounding box that contains the input 3D bounding box and the point.
+    static member inline unionPnt (p:Pnt) (b:BBox) : BBox =
         BBox.createUnchecked   (min b.MinX p.X, min b.MinY p.Y, min b.MinZ p.Z,
                                 max b.MaxX p.X, max b.MaxY p.Y, max b.MaxZ p.Z)
 
@@ -609,15 +609,73 @@ type BBox =
     static member inline intersection (a:BBox) (b:BBox) : BBox voption =
         a.Intersection(b)
 
+    /// <summary>Intersects an infinite ray (a Line3D extended infinitely in both directions) with this 3D bounding box.
+    /// Uses the slab intersection method.
+    /// Returns ValueNone if the ray does not intersect the bounding box or if the ray direction is too short.
+    /// Returns ValueSome with the entry and exit parameters on the ray if it intersects.
+    /// A parameter of 0.0 corresponds to the ray's From point, and 1.0 to its To point.
+    /// Contact with the boundary counts as an intersection: a ray exactly on a face intersects if its other coordinates pass through the box.
+    /// A ray parallel to a slab axis and outside that axis returns ValueNone, even if it is outside by only a tiny amount such as 1e-16.
+    /// A ray that touches only one box corner returns ValueSome(t, t), where t is the corner parameter.</summary>
+    /// <param name="ray">The ray to intersect with the bounding box.</param>
+    /// <returns>ValueNone if there is no intersection; otherwise, ValueSome(tEntry, tExit).</returns>
+    member b.IntersectRay (ray:Line3D) : voption<float*float> =
+        let dirX = ray.VectorX
+        let dirY = ray.VectorY
+        let dirZ = ray.VectorZ
+        if isTooSmallSq (dirX*dirX + dirY*dirY + dirZ*dirZ) then
+            ValueNone
+        else
+            let mutable tMin = Double.MinValue
+            let mutable tMax = Double.MaxValue
+
+            if abs dirX < 1e-12 then
+                if ray.FromX < b.MinX || ray.FromX > b.MaxX then
+                    tMin <- Double.MaxValue
+            else
+                let t1 = (b.MinX - ray.FromX) / dirX
+                let t2 = (b.MaxX - ray.FromX) / dirX
+                tMin <- max tMin (min t1 t2)
+                tMax <- min tMax (max t1 t2)
+
+            if tMin <= tMax then
+                if abs dirY < 1e-12 then
+                    if ray.FromY < b.MinY || ray.FromY > b.MaxY then
+                        tMin <- Double.MaxValue
+                else
+                    let t1 = (b.MinY - ray.FromY) / dirY
+                    let t2 = (b.MaxY - ray.FromY) / dirY
+                    tMin <- max tMin (min t1 t2)
+                    tMax <- min tMax (max t1 t2)
+
+            if tMin <= tMax then
+                if abs dirZ < 1e-12 then
+                    if ray.FromZ < b.MinZ || ray.FromZ > b.MaxZ then
+                        tMin <- Double.MaxValue
+                else
+                    let t1 = (b.MinZ - ray.FromZ) / dirZ
+                    let t2 = (b.MaxZ - ray.FromZ) / dirZ
+                    tMin <- max tMin (min t1 t2)
+                    tMax <- min tMax (max t1 t2)
+
+            if tMin <= tMax then
+                ValueSome(tMin, tMax)
+            else
+                ValueNone
+
+    /// Same as b.IntersectRay(ray).
+    static member inline intersectRay (ray:Line3D) (b:BBox) : voption<float*float> =
+        b.IntersectRay ray
+
 
     // #endregion
     // #region Points
 
     /// <summary>Returns point 0 of this 3D bounding box, same as member box.MinPnt.
     /// <code>
-    ///   Z-Axis       Y-Axis
+    ///   Z-axis       Y-axis
     ///   ^           /
-    ///   |   7      /        6 MaxPt
+    ///   |   7      /        6 MaxPnt
     ///   |   +---------------+
     ///   |  /|    /         /|
     ///   | / |   /         / |
@@ -628,8 +686,8 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis
-    ///   0 MinPt         1
+    ///   +---------------+----> X-axis
+    ///   0 MinPnt         1
     /// </code>
     /// </summary>
     member inline b.Pt0 : Pnt =
@@ -641,9 +699,9 @@ type BBox =
 
     /// <summary>Returns point 1 of this 3D bounding box.
     /// <code>
-    ///   Z-Axis       Y-Axis
+    ///   Z-axis       Y-axis
     ///   ^           /
-    ///   |   7      /        6 MaxPt
+    ///   |   7      /        6 MaxPnt
     ///   |   +---------------+
     ///   |  /|    /         /|
     ///   | / |   /         / |
@@ -654,8 +712,8 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis
-    ///   0 MinPt         1
+    ///   +---------------+----> X-axis
+    ///   0 MinPnt         1
     /// </code>
     /// </summary>
     member inline b.Pt1 : Pnt =
@@ -667,9 +725,9 @@ type BBox =
 
     /// <summary>Returns point 2 of this 3D bounding box.
     /// <code>
-    ///   Z-Axis       Y-Axis
+    ///   Z-axis       Y-axis
     ///   ^           /
-    ///   |   7      /        6 MaxPt
+    ///   |   7      /        6 MaxPnt
     ///   |   +---------------+
     ///   |  /|    /         /|
     ///   | / |   /         / |
@@ -680,8 +738,8 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis
-    ///   0 MinPt         1
+    ///   +---------------+----> X-axis
+    ///   0 MinPnt         1
     /// </code>
     /// </summary>
     member inline b.Pt2 : Pnt =
@@ -693,9 +751,9 @@ type BBox =
 
     /// <summary>Returns point 3 of this 3D bounding box.
     /// <code>
-    ///   Z-Axis       Y-Axis
+    ///   Z-axis       Y-axis
     ///   ^           /
-    ///   |   7      /        6 MaxPt
+    ///   |   7      /        6 MaxPnt
     ///   |   +---------------+
     ///   |  /|    /         /|
     ///   | / |   /         / |
@@ -706,8 +764,8 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis
-    ///   0 MinPt         1
+    ///   +---------------+----> X-axis
+    ///   0 MinPnt         1
     /// </code>
     /// </summary>
     member inline b.Pt3 : Pnt =
@@ -719,9 +777,9 @@ type BBox =
 
     /// <summary>Returns point 4 of this 3D bounding box.
     /// <code>
-    ///   Z-Axis       Y-Axis
+    ///   Z-axis       Y-axis
     ///   ^           /
-    ///   |   7      /        6 MaxPt
+    ///   |   7      /        6 MaxPnt
     ///   |   +---------------+
     ///   |  /|    /         /|
     ///   | / |   /         / |
@@ -732,8 +790,8 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis
-    ///   0 MinPt         1
+    ///   +---------------+----> X-axis
+    ///   0 MinPnt         1
     /// </code>
     /// </summary>
     member inline b.Pt4 : Pnt =
@@ -745,9 +803,9 @@ type BBox =
 
     /// <summary>Returns point 5 of this 3D bounding box.
     /// <code>
-    ///   Z-Axis       Y-Axis
+    ///   Z-axis       Y-axis
     ///   ^           /
-    ///   |   7      /        6 MaxPt
+    ///   |   7      /        6 MaxPnt
     ///   |   +---------------+
     ///   |  /|    /         /|
     ///   | / |   /         / |
@@ -758,8 +816,8 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis
-    ///   0 MinPt         1
+    ///   +---------------+----> X-axis
+    ///   0 MinPnt         1
     /// </code>
     /// </summary>
     member inline b.Pt5 : Pnt =
@@ -771,9 +829,9 @@ type BBox =
 
     /// <summary>Returns point 6 of this 3D bounding box.
     /// <code>
-    ///   Z-Axis       Y-Axis
+    ///   Z-axis       Y-axis
     ///   ^           /
-    ///   |   7      /        6 MaxPt
+    ///   |   7      /        6 MaxPnt
     ///   |   +---------------+
     ///   |  /|    /         /|
     ///   | / |   /         / |
@@ -784,8 +842,8 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis
-    ///   0 MinPt         1
+    ///   +---------------+----> X-axis
+    ///   0 MinPnt         1
     /// </code>
     /// </summary>
     member inline b.Pt6 : Pnt =
@@ -797,9 +855,9 @@ type BBox =
 
     /// <summary>Returns point 7 of this 3D bounding box.
     /// <code>
-    ///   Z-Axis       Y-Axis
+    ///   Z-axis       Y-axis
     ///   ^           /
-    ///   |   7      /        6 MaxPt
+    ///   |   7      /        6 MaxPnt
     ///   |   +---------------+
     ///   |  /|    /         /|
     ///   | / |   /         / |
@@ -810,8 +868,8 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis
-    ///   0 MinPt         1
+    ///   +---------------+----> X-axis
+    ///   0 MinPnt         1
     /// </code>
     /// </summary>
     member inline b.Pt7 : Pnt =
@@ -821,12 +879,12 @@ type BBox =
     static member inline pt7 (b:BBox) : Pnt =
         b.Pt7
 
-    /// <summary>Returns the bottom corners of this 3D bounding box in Counter-Clockwise order, starting at MinPt.
-    /// Then the top corners starting above MinPt. Returns an array of 8 Points.
+    /// <summary>Returns the bottom corners of this 3D bounding box in counter-clockwise order, starting at MinPnt.
+    /// Then the top corners starting above MinPnt. Returns an array of 8 Points.
     /// <code>
-    ///   Z-Axis       Y-Axis
+    ///   Z-axis       Y-axis
     ///   ^           /
-    ///   |   7      /        6 MaxPt
+    ///   |   7      /        6 MaxPnt
     ///   |   +---------------+
     ///   |  /|    /         /|
     ///   | / |   /         / |
@@ -837,8 +895,8 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis
-    ///   0 MinPt         1
+    ///   +---------------+----> X-axis
+    ///   0 MinPnt         1
     /// </code>
     /// </summary>
     member b.Points : Pnt[] =
@@ -849,12 +907,12 @@ type BBox =
         b.Points
 
 
-    /// <summary>Returns the point of the Box at the specified index.
+    /// <summary>Returns the point of the box at the specified index.
     /// The order of the points is: Pt0, Pt1, Pt2, Pt3, Pt4, Pt5, Pt6, Pt7.
     /// <code>
-    ///   Z-Axis       Y-Axis
+    ///   Z-axis       Y-axis
     ///   ^           /
-    ///   |   7      /        6 MaxPt
+    ///   |   7      /        6 MaxPnt
     ///   |   +---------------+
     ///   |  /|    /         /|
     ///   | / |   /         / |
@@ -865,8 +923,8 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis
-    ///   0 MinPt         1
+    ///   +---------------+----> X-axis
+    ///   0 MinPnt         1
     /// </code>
     /// </summary>
     member b.GetPoint (pointIndex:int) : Pnt =
@@ -881,18 +939,18 @@ type BBox =
         | 7 -> b.Pt7
         | _ -> fail $"Box.GetPoint: pointIndex {pointIndex} is out of range. Valid range is 0 to 7."
 
-    /// Returns the point of the Box at the specified index.
+    /// Returns the point of the box at the specified index.
     static member inline getPoint (pointIndex:int) (b:BBox) : Pnt =
         b.GetPoint pointIndex
 
 
-    /// <summary>Returns the bottom of the box as a Counter-Clockwise array of 4 Points.
-    /// Starting at MinPt. Points 0, 1, 2, and 3.
+    /// <summary>Returns the bottom of the box as a counter-clockwise array of 4 Points.
+    /// Starting at MinPnt. Points 0, 1, 2, and 3.
     /// Last and first point are NOT the same.
     /// <code>
-    ///   Z-Axis       Y-Axis
+    ///   Z-axis       Y-axis
     ///   ^           /
-    ///   |   7      /        6 MaxPt
+    ///   |   7      /        6 MaxPnt
     ///   |   +---------------+
     ///   |  /|    /         /|
     ///   | / |   /         / |
@@ -903,8 +961,8 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis
-    ///   0 MinPt         1
+    ///   +---------------+----> X-axis
+    ///   0 MinPnt         1
     /// </code>
     /// </summary>
     member b.BottomPoints : Pnt[] =
@@ -914,13 +972,13 @@ type BBox =
     static member inline bottomPoints (b:BBox) : Pnt[] =
         b.BottomPoints
 
-    /// <summary>Returns the bottom of the box as a Counter-Clockwise array of 5 Points, starting at MinPt.
+    /// <summary>Returns the bottom of the box as a counter-clockwise array of 5 Points, starting at MinPnt.
     /// Points 0, 1, 2, 3, and again 0.
     /// Last and first point are the same.
     /// <code>
-    ///   Z-Axis       Y-Axis
+    ///   Z-axis       Y-axis
     ///   ^           /
-    ///   |   7      /        6 MaxPt
+    ///   |   7      /        6 MaxPnt
     ///   |   +---------------+
     ///   |  /|    /         /|
     ///   | / |   /         / |
@@ -931,8 +989,8 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis
-    ///   0 MinPt         1
+    ///   +---------------+----> X-axis
+    ///   0 MinPnt         1
     /// </code>
     /// </summary>
     member b.BottomPointsLooped : Pnt[] =
@@ -942,13 +1000,13 @@ type BBox =
     static member inline bottomPointsLooped (b:BBox) : Pnt[] =
         b.BottomPointsLooped
 
-    /// <summary>Returns the top of the box as a Counter-Clockwise array of 4 Points.
+    /// <summary>Returns the top of the box as a counter-clockwise array of 4 Points.
     /// Starting at point 4 then 5, 6, and 7.
     /// Last and first point are NOT the same.
     /// <code>
-    ///   Z-Axis       Y-Axis
+    ///   Z-axis       Y-axis
     ///   ^           /
-    ///   |   7      /        6 MaxPt
+    ///   |   7      /        6 MaxPnt
     ///   |   +---------------+
     ///   |  /|    /         /|
     ///   | / |   /         / |
@@ -959,8 +1017,8 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis
-    ///   0 MinPt         1
+    ///   +---------------+----> X-axis
+    ///   0 MinPnt         1
     /// </code>
     /// </summary>
     member b.TopPoints : Pnt[] =
@@ -970,13 +1028,13 @@ type BBox =
     static member inline topPoints (b:BBox) : Pnt[] =
         b.TopPoints
 
-    /// <summary>Returns the top of the box as a Counter-Clockwise array of 5 Points.
+    /// <summary>Returns the top of the box as a counter-clockwise array of 5 Points.
     /// Points 4, 5, 6, 7, and again 4.
     /// Last and first point are the same.
     /// <code>
-    ///   Z-Axis       Y-Axis
+    ///   Z-axis       Y-axis
     ///   ^           /
-    ///   |   7      /        6 MaxPt
+    ///   |   7      /        6 MaxPnt
     ///   |   +---------------+
     ///   |  /|    /         /|
     ///   | / |   /         / |
@@ -987,8 +1045,8 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis
-    ///   0 MinPt         1
+    ///   +---------------+----> X-axis
+    ///   0 MinPnt         1
     /// </code>
     /// </summary>
     member b.TopPointsLooped : Pnt[] =
@@ -1101,9 +1159,9 @@ type BBox =
     /// Pairs in this order:
     /// 0-1, 1-2, 3-2, 0-3, 0-4, 1-5, 2-6, 3-7, 4-5, 5-6, 7-6, 4-7
     /// <code>
-    ///   Z-Axis       Y-Axis
+    ///   Z-axis       Y-axis
     ///   ^           /
-    ///   |   7      /        6 MaxPt
+    ///   |   7      /        6 MaxPnt
     ///   |   +---------------+
     ///   |  /|    /         /|
     ///   | / |   /         / |
@@ -1114,8 +1172,8 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis
-    ///   0 MinPt         1
+    ///   +---------------+----> X-axis
+    ///   0 MinPnt         1
     /// </code>
     /// </summary>
     member b.Edges : Line3D[] = // this function needs to be defined after the EdgeXX members, because they are inlined.
@@ -1132,9 +1190,9 @@ type BBox =
     /// Edges use this order:
     /// 0-1, 1-2, 3-2, 0-3, 0-4, 1-5, 2-6, 3-7, 4-5, 5-6, 7-6, 4-7.
     /// <code>
-    ///   Z-Axis       Y-Axis
+    ///   Z-axis       Y-axis
     ///   ^           /
-    ///   |   7      /        6 MaxPt
+    ///   |   7      /        6 MaxPnt
     ///   |   +---------------+
     ///   |  /|    /         /|
     ///   | / |   /         / |
@@ -1145,8 +1203,8 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/
-    ///   +---------------+----> X-Axis
-    ///   0 MinPt         1
+    ///   +---------------+----> X-axis
+    ///   0 MinPnt         1
     /// </code>
     /// </summary>
     member b.GetEdge (edgeIndex:int) : Line3D =
@@ -1176,11 +1234,11 @@ type BBox =
 
 
     /// <summary>Returns the top face of the bounding box , looking from above.
-    /// Returns Origin at point 4, X-Axis to point 5, Y-Axis to point 7.
+    /// Returns Origin at point 4, X-axis to point 5, Y-axis to point 7.
     /// The normal of the Rect3D points up, away from the Box.
     /// <code>
     ///            local      F3(back)
-    ///            Z-Axis     F7(top)
+    ///            Z-axis     F7(top)
     ///            ^          |
     ///            |   7      |        6
     ///            |   +---------------+
@@ -1193,7 +1251,7 @@ type BBox =
     ///            |  / 3          |  / 2
     ///            | /             | /
     ///            |/      |       |/     local
-    ///            +---------------+----> X-Axis
+    ///            +---------------+----> X-axis
     ///            0       |       1
     ///                    |
     ///                    F0(bottom)
@@ -1204,17 +1262,17 @@ type BBox =
         Rect3D.createUnchecked(b.MinX, b.MinY, b.MaxZ, b.SizeX, 0.0, 0.0, 0.0, b.SizeY, 0.0)
 
     /// Returns the top face of the bounding box , looking from above.
-    /// Returns Origin at point 4, X-Axis to point 5, Y-Axis to point 7.
+    /// Returns Origin at point 4, X-axis to point 5, Y-axis to point 7.
     /// The normal of the Rect3D points up, away from the Box.
     static member inline topFace (b:BBox) : Rect3D =
         b.TopFace
 
     /// <summary>Returns the bottom face of the bounding box , looking from above.
-    /// Returns Origin at point 0, X-Axis to point 1, Y-Axis to point 3.
+    /// Returns Origin at point 0, X-axis to point 1, Y-axis to point 3.
     /// The normal of the Rect3D points into the bounding box.
     /// <code>
     ///            local      F3(back)
-    ///            Z-Axis     F7(top)
+    ///            Z-axis     F7(top)
     ///            ^          |
     ///            |   7      |        6
     ///            |   +---------------+
@@ -1227,7 +1285,7 @@ type BBox =
     ///            |  / 3          |  / 2
     ///            | /             | /
     ///            |/      |       |/     local
-    ///            +---------------+----> X-Axis
+    ///            +---------------+----> X-axis
     ///            0       |       1
     ///                    |
     ///                    F0(bottom)
@@ -1238,17 +1296,17 @@ type BBox =
         Rect3D.createUnchecked(b.MinX, b.MinY, b.MinZ,  b.SizeX, 0.0, 0.0,   0.0, b.SizeY, 0.0)
 
     /// Returns the bottom face of the bounding box , looking from above.
-    /// Returns Origin at point 0, X-Axis to point 1, Y-Axis to point 3.
+    /// Returns Origin at point 0, X-axis to point 1, Y-axis to point 3.
     /// The normal of the Rect3D points into the bounding box.
     static member inline bottomFace (b:BBox) : Rect3D =
         b.BottomFace
 
     /// <summary>Returns the front face of the bounding box , looking from front.
-    /// Returns Origin at point 0, X-Axis to point 1, Y-Axis to point 4.
+    /// Returns Origin at point 0, X-axis to point 1, Y-axis to point 4.
     /// The normal of the Rect3D points away from the bounding box.
     /// <code>
     ///            local      F3(back)
-    ///            Z-Axis     F7(top)
+    ///            Z-axis     F7(top)
     ///            ^          |
     ///            |   7      |        6
     ///            |   +---------------+
@@ -1261,7 +1319,7 @@ type BBox =
     ///            |  / 3          |  / 2
     ///            | /             | /
     ///            |/      |       |/     local
-    ///            +---------------+----> X-Axis
+    ///            +---------------+----> X-axis
     ///            0       |       1
     ///                    |
     ///                    F0(bottom)
@@ -1272,17 +1330,17 @@ type BBox =
         Rect3D.createUnchecked(b.MinX, b.MinY, b.MinZ,  b.SizeX, 0.0, 0.0,  0.0, 0.0, b.SizeZ)
 
     /// Returns the front face of the bounding box , looking from front.
-    /// Returns Origin at point 0, X-Axis to point 1, Y-Axis to point 4.
+    /// Returns Origin at point 0, X-axis to point 1, Y-axis to point 4.
     /// The normal of the Rect3D points away from the bounding box.
     static member inline frontFace (b:BBox) : Rect3D =
         b.FrontFace
 
     /// <summary>Returns the back face of the bounding box , looking from front.
-    /// Returns Origin at point 3, X-Axis to point 2, Y-Axis to point 7.
+    /// Returns Origin at point 3, X-axis to point 2, Y-axis to point 7.
     /// The normal of the Rect3D points into the bounding box.
     /// <code>
     ///            local      F3(back)
-    ///            Z-Axis     F7(top)
+    ///            Z-axis     F7(top)
     ///            ^          |
     ///            |   7      |        6
     ///            |   +---------------+
@@ -1295,7 +1353,7 @@ type BBox =
     ///            |  / 3          |  / 2
     ///            | /             | /
     ///            |/      |       |/     local
-    ///            +---------------+----> X-Axis
+    ///            +---------------+----> X-axis
     ///            0       |       1
     ///                    |
     ///                    F0(bottom)
@@ -1306,17 +1364,17 @@ type BBox =
         Rect3D.createUnchecked(b.MinX, b.MaxY, b.MinZ,  b.SizeX, 0.0, 0.0,  0.0, 0.0, b.SizeZ)
 
     /// Returns the back face of the bounding box , looking from front.
-    /// Returns Origin at point 3, X-Axis to point 2, Y-Axis to point 7.
+    /// Returns Origin at point 3, X-axis to point 2, Y-axis to point 7.
     /// The normal of the Rect3D points into the bounding box.
     static member inline backFace (b:BBox) : Rect3D =
         b.BackFace
 
     /// <summary>Returns the right face of the bounding box , looking from right.
-    /// Returns Origin at point 1, X-Axis to point 2, Y-Axis to point 5.
+    /// Returns Origin at point 1, X-axis to point 2, Y-axis to point 5.
     /// The normal of the Rect3D points away from the bounding box.
     /// <code>
     ///            local      F3(back)
-    ///            Z-Axis     F7(top)
+    ///            Z-axis     F7(top)
     ///            ^          |
     ///            |   7      |        6
     ///            |   +---------------+
@@ -1329,7 +1387,7 @@ type BBox =
     ///            |  / 3          |  / 2
     ///            | /             | /
     ///            |/      |       |/     local
-    ///            +---------------+----> X-Axis
+    ///            +---------------+----> X-axis
     ///            0       |       1
     ///                    |
     ///                    F0(bottom)
@@ -1340,17 +1398,17 @@ type BBox =
         Rect3D.createUnchecked(b.MaxX, b.MinY, b.MinZ,  0.0, b.SizeY, 0.0,  0.0, 0.0, b.SizeZ)
 
     /// Returns the right face of the bounding box , looking from right.
-    /// Returns Origin at point 1, X-Axis to point 2, Y-Axis to point 5.
+    /// Returns Origin at point 1, X-axis to point 2, Y-axis to point 5.
     /// The normal of the Rect3D points away from the bounding box.
     static member inline rightFace (b:BBox) : Rect3D =
         b.RightFace
 
     /// <summary>Returns the left face of the bounding box , looking from right.
-    /// Returns Origin at point 0, X-Axis to point 3, Y-Axis to point 4.
+    /// Returns Origin at point 0, X-axis to point 3, Y-axis to point 4.
     /// The normal of the Rect3D points into the bounding box.
     /// <code>
     ///            local      F3(back)
-    ///            Z-Axis     F7(top)
+    ///            Z-axis     F7(top)
     ///            ^          |
     ///            |   7      |        6
     ///            |   +---------------+
@@ -1363,7 +1421,7 @@ type BBox =
     ///            |  / 3          |  / 2
     ///            | /             | /
     ///            |/      |       |/     local
-    ///            +---------------+----> X-Axis
+    ///            +---------------+----> X-axis
     ///            0       |       1
     ///                    |
     ///                    F0(bottom)
@@ -1374,18 +1432,18 @@ type BBox =
         Rect3D.createUnchecked(b.MinX, b.MinY, b.MinZ,  0.0, b.SizeY, 0.0,  0.0, 0.0, b.SizeZ)
 
     /// Returns the left face of the bounding box , looking from right.
-    /// Returns Origin at point 0, X-Axis to point 3, Y-Axis to point 4.
+    /// Returns Origin at point 0, X-axis to point 3, Y-axis to point 4.
     /// The normal of the Rect3D points into the bounding box.
     static member inline leftFace (b:BBox) : Rect3D =
         b.LeftFace
 
 
-    /// <summary>Returns 6 face of the Box in
-    /// The normal of the Rect3Ds are oriented with the X-Axis, Y-Axis or Z-Axis.
+    /// <summary>Returns the six faces of the box.
+    /// The normals of the Rect3Ds are oriented with the X-axis, Y-axis, or Z-axis.
     /// The order of the Rect3D is: BottomFace, FrontFace, RightFace, BackFace, LeftFace, TopFace.
     /// <code>
     ///   local        local
-    ///   Z-Axis       Y-Axis
+    ///   Z-axis       Y-axis
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -1398,7 +1456,7 @@ type BBox =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-axis
     ///   0               1
     /// </code>
     /// </summary>
@@ -1416,11 +1474,11 @@ type BBox =
     static member inline faces (b:BBox) : Rect3D[] =
         b.Faces
 
-    /// <summary>Returns the face of the Box at the specified index.
+    /// <summary>Returns the face of the box at the specified index.
     /// The order of the faces is: BottomFace, FrontFace, RightFace, BackFace, LeftFace, TopFace.
     /// <code>
     ///            local      F3(back)
-    ///            Z-Axis     F7(top)
+    ///            Z-axis     F7(top)
     ///            ^          |
     ///            |   7      |        6
     ///            |   +---------------+
@@ -1433,7 +1491,7 @@ type BBox =
     ///            |  / 3          |  / 2
     ///            | /             | /
     ///            |/      |       |/     local
-    ///            +---------------+----> X-Axis
+    ///            +---------------+----> X-axis
     ///            0       |       1
     ///                    |
     ///                    F0(bottom)
@@ -1452,7 +1510,7 @@ type BBox =
         | 5 -> b.TopFace
         | _ -> fail $"Box.GetFace: faceIndex {faceIndex} is out of range. Valid range is 0 to 5."
 
-    /// Returns the face of the Box at the specified index.
+    /// Returns the face of the box at the specified index.
     static member inline getFace (faceIndex:int) (b:BBox) : Rect3D =
         b.GetFace faceIndex
 
@@ -1719,6 +1777,14 @@ type BBox =
     [<Obsolete("typo, use expandSafe instead")>]
     static member expandSave dist (b:BBox) : BBox =
         b.ExpandSafe dist
+
+    [<Obsolete("use .UnionPnt instead")>]
+    member inline b.Union (p:Pnt) : BBox =
+        b.UnionPnt p
+
+    [<Obsolete("use unionPnt instead")>]
+    static member inline unionPt (p:Pnt) (b:BBox) : BBox =
+        b.UnionPnt p
 
 
     // /// Returns TRUE if the two 3D bounding boxes overlap by at least the specified threshold on every axis.

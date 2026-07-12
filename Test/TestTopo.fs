@@ -390,7 +390,7 @@ let tests =
             // splitDistance it will be considered as a new group.'
             // At distance == splitDistance the relation is NOT 'greater than',
             // so the two elements must remain in the same group — matching
-            // Topology2D.join's behaviour at the same boundary.
+            // Topology2D.join's behavior at the same boundary.
             //
             // NOTE: the current implementation uses '<' instead of '<=' on
             // the squared-distance comparisons (Topology2D.fs lines 191, 197,
@@ -625,7 +625,7 @@ let tests =
             // main continuation. The greedy first-match rule means the chain
             // now takes the branch L2 and the original continuation L1
             // becomes the singleton group — explicit evidence that join's
-            // behaviour at junctions depends on input order.
+            // behavior at junctions depends on input order.
             let xs = ResizeArray [
                 mkLi 0  0 0  1 0
                 mkLi 2  1 0  1 1      // branch first

@@ -286,7 +286,7 @@ let tests =
             let colArray = m.ToArrayByColumns
 
             let mFromRows = Matrix.createFromRowMajorArray(rowArray)
-            let mFromCols = Matrix.createFromColumMajorArray(colArray)
+            let mFromCols = Matrix.createFromColumnMajorArray(colArray)
 
             "matrix from row array" |> Expect.isTrue (Matrix.equals 1e-12 m mFromRows)
             "matrix from column array" |> Expect.isTrue (Matrix.equals 1e-12 m mFromCols)
@@ -415,7 +415,7 @@ let tests =
 
         test "Matrix from column array wrong length should fail" {
             let wrongArray = [| 1.0; 2.0; 3.0; 4.0; 5.0 |] // only 5 elements
-            "wrong array length should throw" |> Expect.throws (fun () -> Matrix.createFromColumMajorArray(wrongArray) |> ignore)
+            "wrong array length should throw" |> Expect.throws (fun () -> Matrix.createFromColumnMajorArray(wrongArray) |> ignore)
         }
 
         test "Matrix from row array too many elements should fail" {

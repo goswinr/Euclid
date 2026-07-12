@@ -36,8 +36,8 @@ type Tria2D =
     /// Checks if three points are in one line.
     /// This is a very fast check, but it is hard to find an appropriate tolerance. (Default is 0.001)
     /// This tolerance is the area of the parallelogram described by two vectors created from the 3 points.
-    /// So it also returns true if the points are equal or very close to each other.
-    /// Returns false for NaN input values.
+    /// So it also returns TRUE if the points are equal or very close to each other.
+    /// Returns FALSE for NaN input values.
     /// Use Points.areInLine if you need better control over the actual tolerance distance.
     static member inline isLinearFast (a:Pt, b:Pt, c:Pt, [<OPT;DEF(0.001)>] maxAreaParallelogram:float) : bool =
         let doubleArea = Tria2D.areaDouble(a, b, c)

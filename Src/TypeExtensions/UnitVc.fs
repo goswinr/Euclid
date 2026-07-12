@@ -1,4 +1,4 @@
-﻿namespace Euclid
+namespace Euclid
 
 open System
 open EuclidErrors
@@ -93,20 +93,20 @@ module AutoOpenUnitVc =
 
         /// The 2D Cross Product of a 2D unit-vector with a 2D vector.
         /// It is just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
-        /// If the rotation from 'a' to 'b' is Counter-Clockwise the result is positive.
+        /// If the rotation from 'a' to 'b' is counter-clockwise the result is positive.
         member inline a.Cross (b:Vc) : float =
             a.X*b.Y - a.Y*b.X
 
         /// The 2D Cross Product of two 2D unit-vectors.
         /// It is also known as the Determinant, or the sine of the angle between the two vectors.
         /// It is just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
-        /// If the rotation from 'a' to 'b' is Counter-Clockwise the result is positive.
+        /// If the rotation from 'a' to 'b' is counter-clockwise the result is positive.
         member inline a.Cross (b:UnitVc) : float =
             a.X*b.Y - a.Y*b.X
 
         /// The 2D Cross Product of a 2D unit-vector with a 2D vector.
         /// It is just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
-        /// If the rotation from 'a' to 'b' is Counter-Clockwise the result is positive.
+        /// If the rotation from 'a' to 'b' is counter-clockwise the result is positive.
         static member inline cross (a:UnitVc, b:Vc)  : float =
             a.X*b.Y - a.Y*b.X
 
@@ -142,7 +142,7 @@ module AutoOpenUnitVc =
         /// The 2D Cross Product of a 2D vector with a 2D unit-vector.
         /// It is also known as the Determinant, or the sine of the angle between the two vectors.
         /// It is just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
-        /// If the rotation from 'a' to 'b' is Counter-Clockwise the result is positive.
+        /// If the rotation from 'a' to 'b' is counter-clockwise the result is positive.
         static member inline cross (a:Vc, b:UnitVc)  : float =
             a.X*b.Y - a.Y*b.X
 
@@ -151,43 +151,43 @@ module AutoOpenUnitVc =
         static member inline dot (a:Vc, b:UnitVc)  : float =
             a.X * b.X + a.Y * b.Y
 
-        /// Rotate a 2D unit-vector Counter Clockwise by a 2D Rotation (that has cos and sin precomputed)
+        /// Rotate a 2D unit-vector counter-clockwise by a 2D Rotation (that has cos and sin precomputed)
         member inline v.RotateBy (r:Rotation2D) : UnitVc =
             UnitVc.createUnchecked (
                 r.Cos*v.X - r.Sin*v.Y,
                 r.Sin*v.X + r.Cos*v.Y)
 
-        /// Rotate a 2D unit-vector Counter Clockwise by a 2D Rotation (that has cos and sin precomputed)
+        /// Rotate a 2D unit-vector counter-clockwise by a 2D Rotation (that has cos and sin precomputed)
         static member inline rotateBy (r:Rotation2D) (v:UnitVc) : UnitVc =
             UnitVc.createUnchecked (
                 r.Cos*v.X - r.Sin*v.Y,
                 r.Sin*v.X + r.Cos*v.Y)
 
-        /// <summary>Rotate the 2D unit-vector in degrees. Counter Clockwise.</summary>
+        /// <summary>Rotate the 2D unit-vector counter-clockwise by an angle in degrees.</summary>
         /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
         member inline v.Rotate (angDegree) : UnitVc =
             v.RotateBy (Rotation2D.createFromDegrees angDegree)
 
-        /// <summary>Rotate the 2D unit-vector in degrees. Counter Clockwise.</summary>
+        /// <summary>Rotate the 2D unit-vector counter-clockwise by an angle in degrees.</summary>
         /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
         static member inline rotate (angDegree) (vec:UnitVc) : UnitVc =
             UnitVc.rotateBy (Rotation2D.createFromDegrees angDegree) vec
 
-        /// <summary>Rotate the 2D unit-vector in radians. Counter Clockwise.</summary>
+        /// <summary>Rotate the 2D unit-vector counter-clockwise by an angle in radians.</summary>
         /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
         member inline v.RotateRadians (angRadians) : UnitVc =
             v.RotateBy (Rotation2D.createFromRadians angRadians)
 
-        /// <summary>Rotate the 2D unit-vector in radians. Counter Clockwise.</summary>
+        /// <summary>Rotate the 2D unit-vector counter-clockwise by an angle in radians.</summary>
         /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
         static member inline rotateRadians angRadians (v:UnitVc) : UnitVc =
             v.RotateRadians angRadians
 
-        /// 90-degree rotation Counter-Clockwise.
+        /// 90-degree rotation counter-clockwise.
         member inline v.Rotate90CCW : UnitVc =
             UnitVc.createUnchecked( -v.Y, v.X )
 
-        /// 90-degree rotation Counter-Clockwise.
+        /// 90-degree rotation counter-clockwise.
         static member inline rotate90CCW (v:UnitVc) : UnitVc =
             UnitVc.createUnchecked( -v.Y, v.X )
 
@@ -221,7 +221,7 @@ module AutoOpenUnitVc =
         /// The diamond angle.
         /// Calculates the proportion of X to Y component.
         /// It is always positive and in the range of 0.0 to 4.0 (for 360 degrees)
-        /// 0.0 = Xaxis, going Counter-Clockwise.
+        /// 0.0 = Xaxis, going counter-clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         member inline v.DirectionDiamond : float =
             // https://stackoverflow.com/a/14675998/969070
@@ -239,13 +239,13 @@ module AutoOpenUnitVc =
         /// The diamond angle.
         /// Calculates the proportion of X to Y component.
         /// It is always positive and in the range of 0.0 to 4.0 (for 360 degrees)
-        /// 0.0 = Xaxis, going Counter-Clockwise.
+        /// 0.0 = Xaxis, going counter-clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         static member inline directionDiamond(a:UnitVc) : float =
             a.DirectionDiamond
 
         /// Returns the angle in radians from X-axis,
-        /// Going Counter-Clockwise till two Pi.
+        /// Going counter-clockwise till two Pi.
         member inline v.Direction2Pi : float =
             // https://stackoverflow.com/a/14675998/969070
             let a = Math.Atan2(v.Y, v.X)
@@ -255,7 +255,7 @@ module AutoOpenUnitVc =
                 a
 
         /// Returns the angle in radians from X-axis,
-        /// Going Counter-Clockwise till two Pi.
+        /// Going counter-clockwise till two Pi.
         static member inline direction2Pi (v:UnitVc) : float =
             v.Direction2Pi
 
@@ -277,12 +277,12 @@ module AutoOpenUnitVc =
             v.DirectionPi
 
         /// Returns the angle in degrees from X-axis.
-        /// Going Counter-Clockwise till 360.
+        /// Going counter-clockwise till 360.
         member inline v.Direction360 : float =
             v.Direction2Pi |> toDegrees
 
         /// Returns the angle in degrees from X-axis.
-        /// Going Counter-Clockwise till 360.
+        /// Going counter-clockwise till 360.
         static member inline direction360 (v:UnitVc) : float =
             v.Direction360
 
@@ -298,7 +298,7 @@ module AutoOpenUnitVc =
         static member inline direction180 (v:UnitVc) : float =
             v.Direction180
 
-        /// Returns positive angle for rotating Counter-Clockwise from this vector to vector 'b' .
+        /// Returns positive angle for rotating counter-clockwise from this vector to vector 'b' .
         /// In Diamond Angle. Using only proportion of X to Y components.
         /// Range of 0.0 to 4.0 (for 360 degrees)
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
@@ -307,7 +307,7 @@ module AutoOpenUnitVc =
             if r >= 0. then  r
             else r + 4.0
 
-        /// Returns positive angle for rotating Counter-Clockwise from vector 'a' to vector 'b' .
+        /// Returns positive angle for rotating counter-clockwise from vector 'a' to vector 'b' .
         /// In Diamond Angle. Using only proportion of X to Y components.
         /// Range of 0.0 to 4.0 (for 360 degrees)
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
@@ -352,25 +352,25 @@ module AutoOpenUnitVc =
         static member inline isOppositeOrientation (other:UnitVc) (v:UnitVc) : bool =
             v.IsOppositeOrientation other
 
-        /// Checks if 2D unit-vector is parallel to the world X axis. Ignoring orientation.
-        /// The absolute deviation tolerance along Y axis is 1e-9 (axisAlignmentTolerance).
+        /// Checks if 2D unit-vector is parallel to the world X-axis. Ignoring orientation.
+        /// The absolute deviation tolerance along the Y-axis is 1e-9 (axisAlignmentTolerance).
         member inline v.IsXAligned : bool =
             let y = abs (v.Y)
             y < axisAlignmentTolerance
 
-        /// Checks if 2D unit-vector is parallel to the world Y axis. Ignoring orientation.
-        /// The absolute deviation tolerance along X axis is 1e-9 (axisAlignmentTolerance).
+        /// Checks if 2D unit-vector is parallel to the world Y-axis. Ignoring orientation.
+        /// The absolute deviation tolerance along the X-axis is 1e-9 (axisAlignmentTolerance).
         member inline v.IsYAligned : bool =
             let x = abs (v.X)
             x < axisAlignmentTolerance
 
-        /// Checks if 2D unit-vector is parallel to the world X axis. Ignoring orientation.
-        /// The absolute deviation tolerance along Y axis is 1e-9 (axisAlignmentTolerance).
+        /// Checks if 2D unit-vector is parallel to the world X-axis. Ignoring orientation.
+        /// The absolute deviation tolerance along the Y-axis is 1e-9 (axisAlignmentTolerance).
         static member inline isXAligned (v:UnitVc) : bool =
             v.IsXAligned
 
-        /// Checks if 2D unit-vector is parallel to the world Y axis. Ignoring orientation.
-        /// The absolute deviation tolerance along X axis is 1e-9 (axisAlignmentTolerance).
+        /// Checks if 2D unit-vector is parallel to the world Y-axis. Ignoring orientation.
+        /// The absolute deviation tolerance along the X-axis is 1e-9 (axisAlignmentTolerance).
         static member inline isYAligned (v:UnitVc) : bool =
             v.IsYAligned
 
@@ -382,7 +382,7 @@ module AutoOpenUnitVc =
         member inline this.IsParallelTo(other:UnitVc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) : bool =
             abs(other *** this) > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
 
-        /// Checks if this 2D unit-vectors and a 2D vector are parallel.
+        /// Checks if this 2D unit vector and a 2D vector are parallel.
         /// Ignores the line orientation.
         /// The default angle tolerance is 0.25 degrees.
         /// This tolerance can be customized by an optional minimum cosine value.
@@ -409,7 +409,7 @@ module AutoOpenUnitVc =
         member inline this.IsParallelAndOrientedTo (other:UnitVc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) : bool =
             other *** this > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
 
-        /// Checks if this 2D unit-vectors and a 2D vector are parallel.
+        /// Checks if this 2D unit vector and a 2D vector are parallel.
         /// Takes the line orientation into account too.
         /// The default angle tolerance is 0.25 degrees.
         /// This tolerance can be customized by an optional minimum cosine value.
@@ -437,7 +437,7 @@ module AutoOpenUnitVc =
             let d = other *** this
             !^(abs d) < maxCosine
 
-        /// Checks if this 2D unit-vectors and a 2D vector are perpendicular to each other.
+        /// Checks if this 2D unit vector and a 2D vector are perpendicular to each other.
         /// The default angle tolerance is 89.75 to 90.25 degrees.
         /// This tolerance can be customized by an optional maximum cosine value.
         /// The default cosine is 0.0043633 ( = 89.75 deg)
@@ -505,7 +505,7 @@ module AutoOpenUnitVc =
             let y = b.Y-a.Y
             x*x+y*y
 
-        /// Accepts any type that has a X and Y (UPPERCASE) member that can be converted to a float.
+        /// Accepts any type that has an X and Y (UPPERCASE) member that can be converted to a float.
         /// Does the unitizing too.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
         static member inline createFromMembersXY vec : UnitVc =
@@ -641,7 +641,7 @@ module AutoOpenUnitVc =
             //if r > halfPi  then  r <- Math.PI - r
             //r
 
-        /// Returns positive angle for rotating Counter-Clockwise from vector 'a' to vector 'b'.
+        /// Returns positive angle for rotating counter-clockwise from vector 'a' to vector 'b'.
         /// In radians.
         /// Range: 0.0 to 2 Pi ( = 360 degrees)
         static member inline angle2Pi (a:UnitVc, b:UnitVc) : float =  // not curried because argument order is important
@@ -663,7 +663,7 @@ module AutoOpenUnitVc =
         static member inline angle180 (a:UnitVc) (b:UnitVc) : float =
             UnitVc.anglePi a b |>  toDegrees
 
-        /// Returns positive angle for rotating Counter-Clockwise from vector 'a' to vector 'b'.
+        /// Returns positive angle for rotating counter-clockwise from vector 'a' to vector 'b'.
         /// In degrees.
         /// Range: 0 to 360 degrees
         static member inline angle360 (a:UnitVc, b:UnitVc) : float = // not curried because argument order is important
@@ -744,25 +744,25 @@ module AutoOpenUnitVc =
         /// Linearly interpolates between two vectors.
         /// e.g. rel=0.5 will return the middle vector, rel=1.0 the end vector,
         /// rel=1.5 a vector half the distance beyond the end vector.
-        static member lerp (start:UnitVc,ende:UnitVc, rel:float) : Vc = // not curried because argument order is important and would be confusing
-            Vc (start.X + (ende.X - start.X) * rel,
-                start.Y + (ende.Y - start.Y) * rel)
+        static member lerp (start:UnitVc, endValue:UnitVc, rel:float) : Vc = // not curried because argument order is important and would be confusing
+            Vc (start.X + (endValue.X - start.X) * rel,
+                start.Y + (endValue.Y - start.Y) * rel)
 
         /// Spherically interpolates between start and end by amount rel (0.0 to 1.0).
         /// The difference between this and linear interpolation (aka, "lerp") is that the vectors are treated as directions rather than points in space.
         /// The direction of the returned vector is interpolated by the angle and its magnitude is interpolated between the magnitudes of start and end.
         /// Interpolation continues before and after the range of 0.0 and 1.0
-        static member slerp (start:UnitVc, ende:UnitVc, rel:float) :UnitVc = // not curried because argument order is important and would be confusing
+        static member slerp (start:UnitVc, endValue:UnitVc, rel:float) :UnitVc = // not curried because argument order is important and would be confusing
             // https://en.wikipedia.org/wiki/Slerp
             // implementation tested in Rhino!
-            let dot = start *** ende
+            let dot = start *** endValue
             if dot > float Cosine.``0.05`` then  // vectors are in the same direction interpolate length only
                 start
             elif dot < float Cosine.``179.95`` then
-                fail2 "UnitVc.slerp vectors are 180 deg opposite." start ende  |> unbox // unbox to make type checker happy
+                fail2 "UnitVc.slerp vectors are 180 deg opposite." start endValue  |> unbox // unbox to make type checker happy
             else
                 let ang = acos(dot) // the angle between the two vectors
-                let p = ende - start*dot  // a vector perpendicular to start and in the same plane with ende.
+                let p = endValue - start*dot  // a vector perpendicular to start and in the same plane with endValue.
                 let perp = UnitVc.create(p.X, p.Y)
                 let theta = ang*rel // the angle part we want for the result
                 let theta360 = (theta+UtilEuclid.twoPi) % UtilEuclid.twoPi // make sure it is in the range 0.0 to 2 Pi (360 degrees)

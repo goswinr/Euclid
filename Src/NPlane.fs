@@ -323,7 +323,7 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
 
 
     /// Returns the intersection parameter of an infinite line / ray with the plane.
-    /// Or None if they are parallel.
+    /// Or ValueNone if they are parallel.
     static member intersectRay (ln:Line3D) (pl:NPlane) : float voption =
         let nenner = XYZ.dot ln.VectorX ln.VectorY ln.VectorZ pl.NormalX pl.NormalY pl.NormalZ
         if isTooTiny(abs nenner) then
@@ -347,7 +347,7 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
             None
 
     /// Checks if a finite Line3D intersects with Plane in one point.
-    /// Returns false for parallel and coincident lines.
+    /// Returns FALSE for parallel and coincident lines.
     /// Adds a tolerance of 1e-6 to the line's domain, so that intersection just below 0.0 or just above 1.0 is considered intersecting.
     static member inline doLinePlaneIntersect (ln:Line3D) (pl:NPlane) : bool =
         let nenner = XYZ.dot ln.VectorX ln.VectorY ln.VectorZ pl.NormalX pl.NormalY pl.NormalZ
@@ -377,12 +377,12 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
         NPlane.createUnchecked(pl.OriginX * factor, pl.OriginY * factor, pl.OriginZ * factor, pl.NormalX, pl.NormalY, pl.NormalZ)
 
     /// Move plane origin by vector.
-    /// This is the same as NPlane.move.
+    /// Same as NPlane.move.
     static member inline translate (translation:Vec) (pl:NPlane)  : NPlane =
         NPlane.createUnchecked(pl.OriginX + translation.X, pl.OriginY + translation.Y, pl.OriginZ + translation.Z, pl.NormalX, pl.NormalY, pl.NormalZ)
 
     /// Move plane origin by vector.
-    /// This is same as NPlane.translate.
+    /// Same as NPlane.translate.
     static member inline move (translation:Vec) (pl:NPlane)  : NPlane =
         NPlane.createUnchecked(pl.OriginX + translation.X, pl.OriginY + translation.Y, pl.OriginZ + translation.Z, pl.NormalX, pl.NormalY, pl.NormalZ)
 

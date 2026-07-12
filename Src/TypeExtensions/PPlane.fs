@@ -259,14 +259,14 @@ module AutoOpenPPlane =
         static member inline WorldMinusXMinusY : PPlane =
             PPlane.createUnchecked(0., 0., 0.,  -1., 0., 0.,  0., -1., 0.,  0., 0., 1.)
 
-        /// WorldXY rotated 90 degrees round Z-axis Counter-Clockwise from top.
+        /// WorldXY rotated 90 degrees round Z-axis counter-clockwise from top.
         /// X-axis = World Y-axis
         /// Y-axis = minus World X-axis
         /// Z-axis = World Z-axis
         static member inline WorldYMinusX : PPlane =
             PPlane.createUnchecked(0., 0., 0.,  0., 1., 0.,  -1., 0., 0.,  0., 0., 1.)
 
-        /// WorldXY rotated 270 degrees round Z-axis Counter-Clockwise from top.
+        /// WorldXY rotated 270 degrees round Z-axis counter-clockwise from top.
         /// X-axis = minus World Y-axis
         /// Y-axis = World X-axis
         /// Z-axis = World Z-axis
@@ -307,7 +307,7 @@ module AutoOpenPPlane =
             PPlane.createUncheckedVec(origin, xu, y'.Unitized, z.Unitized)
 
         /// Creates a Parametrized Plane from a point and a unit-vector representing the X-axis and a Y-axis hint.
-        /// The resulting PPlane will have the X-Axis in direction of X vector.
+        /// The resulting PPlane will have the X-axis in direction of X vector.
         /// The X and Y vectors will define the plane and the side that Z will be on.
         /// The given Y vector does not need to be perpendicular to the X vector, just not parallel.
         /// Fails if the vectors are shorter than 1e-6.
@@ -319,7 +319,7 @@ module AutoOpenPPlane =
             PPlane.createUncheckedVec(origin, xAxis, y.Unitized, z.Unitized)
 
         /// Creates a Parametrized Plane from a point and vector representing the X-axis and a Y-axis hint.
-        /// The resulting PPlane will have the X-Axis in direction of X vector.
+        /// The resulting PPlane will have the X-axis in direction of X vector.
         /// The X and Y vectors will define the plane and the side that Z will be on.
         /// The given Y vector does not need to be perpendicular to the X vector, just not parallel.
         /// Fails if the vectors are shorter than 1e-6.
@@ -447,7 +447,7 @@ module AutoOpenPPlane =
             PPlane.createUnchecked(pl.OriginX, pl.OriginY, pl.OriginZ + z, pl.XaxisX, pl.XaxisY, pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
 
         /// Rotate about Z-axis of the Plane by an angle in degrees.
-        /// Counter-Clockwise in top view (for WorldXY Plane).
+        /// Positive angles rotate counter-clockwise in top view (for the WorldXY plane).
         static member inline rotateZ (angDegree:float) (pl:PPlane) : PPlane =
             let m = RigidMatrix.createRotationAxisCenter (pl.Zaxis, pl.Origin, angDegree)
             // Only the rotational 3x3 part of the matrix is applied to the local axis directions.
@@ -516,7 +516,7 @@ module AutoOpenPPlane =
 
 
         /// Returns the line of intersection between two planes.
-        /// Returns None if they are parallel or coincident.
+        /// Returns ValueNone if they are parallel or coincident.
         static member intersect (a:PPlane) (b:PPlane) : Line3D voption=
             // cross product of the planes' normals gives the direction of the line of intersection.
             let vx = a.ZaxisY * b.ZaxisZ - a.ZaxisZ * b.ZaxisY
@@ -542,7 +542,7 @@ module AutoOpenPPlane =
 
         /// Returns the parameter on the line.
         /// The parameter is the intersection point of the infinite ray with the PPlane.
-        /// Returns None if they are parallel or coincident.
+        /// Returns ValueNone if they are parallel or coincident.
         static member intersectRay  (ln:Line3D) (pl:PPlane) : float voption =
             let nenner = XYZ.dot ln.VectorX ln.VectorY ln.VectorZ pl.ZaxisX pl.ZaxisY pl.ZaxisZ
             if isTooSmall (abs nenner) then
@@ -554,7 +554,7 @@ module AutoOpenPPlane =
 
         /// Returns the line parameter and the X and Y parameters on the Plane. as tuple (pLn, pPlX, pPlY).
         /// The parameters is the intersection point of the infinite ray with the PPlane.
-        /// Returns None if they are parallel or coincident.
+        /// Returns ValueNone if they are parallel or coincident.
         static member intersectRayAllParameters  (ln:Line3D) (pl:PPlane) : voption<float*float*float> =
             let vx = ln.VectorX
             let vy = ln.VectorY
@@ -575,9 +575,9 @@ module AutoOpenPPlane =
                 ValueSome (t, dotX, dotY)
 
         /// Returns intersection point of a finite line with the Plane.
-        /// Returns None if they are parallel or the domain of intersection is outside 0.0 to 1.0.
+        /// Returns ValueNone if they are parallel or the domain of intersection is outside 0.0 to 1.0.
         /// Intersection just below 0.0 or just above 1.0 within tolerance of 1e-6 are clamped to 0.0 or 1.0.
-        /// Returns None if the line is too short.
+        /// Returns ValueNone if the line is too short.
         static member intersectLine (ln:Line3D) (pl:PPlane) : Pnt voption =
             match PPlane.intersectRay ln pl with
             | ValueSome (t) ->
@@ -590,7 +590,7 @@ module AutoOpenPPlane =
                 ValueNone
 
         /// Checks if a finite Line3D intersects with Plane in one point.
-        /// Returns false for NaN values or (almost) parallel or coincident lines.
+        /// Returns FALSE for NaN values or (almost) parallel or coincident lines.
         static member inline doLinePlaneIntersect (ln:Line3D) (pl:PPlane) : bool =
             let nenner = XYZ.dot ln.VectorX ln.VectorY ln.VectorZ pl.ZaxisX pl.ZaxisY pl.ZaxisZ
             if isTooSmall (abs nenner) then

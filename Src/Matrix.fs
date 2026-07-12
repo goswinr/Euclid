@@ -31,10 +31,38 @@ open EuclidErrors
 [<DataContract>] // for using DataMember on fields
 type Matrix =
     //[<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
-    [<DataMember>] val M11 :float ; [<DataMember>] val M21 :float ; [<DataMember>] val M31 :float; [<DataMember>] val X41:float
-    [<DataMember>] val M12 :float ; [<DataMember>] val M22 :float ; [<DataMember>] val M32 :float; [<DataMember>] val Y42:float
-    [<DataMember>] val M13 :float ; [<DataMember>] val M23 :float ; [<DataMember>] val M33 :float; [<DataMember>] val Z43:float
-    [<DataMember>] val M14 :float ; [<DataMember>] val M24 :float ; [<DataMember>] val M34 :float; [<DataMember>] val M44:float
+    /// The element in row 1, column 1 of the matrix.
+    [<DataMember>] val M11 : float
+    /// The element in row 1, column 2 of the matrix.
+    [<DataMember>] val M21 : float
+    /// The element in row 1, column 3 of the matrix.
+    [<DataMember>] val M31 : float
+    /// The X component of the translation in row 1, column 4 of the matrix.
+    [<DataMember>] val X41 : float
+    /// The element in row 2, column 1 of the matrix.
+    [<DataMember>] val M12 : float
+    /// The element in row 2, column 2 of the matrix.
+    [<DataMember>] val M22 : float
+    /// The element in row 2, column 3 of the matrix.
+    [<DataMember>] val M32 : float
+    /// The Y component of the translation in row 2, column 4 of the matrix.
+    [<DataMember>] val Y42 : float
+    /// The element in row 3, column 1 of the matrix.
+    [<DataMember>] val M13 : float
+    /// The element in row 3, column 2 of the matrix.
+    [<DataMember>] val M23 : float
+    /// The element in row 3, column 3 of the matrix.
+    [<DataMember>] val M33 : float
+    /// The Z component of the translation in row 3, column 4 of the matrix.
+    [<DataMember>] val Z43 : float
+    /// The element in row 4, column 1 of the matrix.
+    [<DataMember>] val M14 : float
+    /// The element in row 4, column 2 of the matrix.
+    [<DataMember>] val M24 : float
+    /// The element in row 4, column 3 of the matrix.
+    [<DataMember>] val M34 : float
+    /// The element in row 4, column 4 of the matrix.
+    [<DataMember>] val M44 : float
 
 
     /// <summary>Create a 4x4 Transformation Matrix.
@@ -379,14 +407,14 @@ type Matrix =
 
     /// <summary>Checks if the Matrix is a projection transformation.
     /// That means it does perform projection (perspective divide).
-    /// Returns true if at least one of the fields m.M14, m.M24, m.M34 is not 0.0 or m.M44 is not 1.0.
+    /// Returns TRUE if at least one of the fields m.M14, m.M24, m.M34 is not 0.0 or m.M44 is not 1.0.
     /// Using an approximate tolerance of 1e-6.</summary>
     member m.IsProjecting : bool =
         isNotZero m.M14 || isNotZero m.M24 || isNotZero m.M34 || isNotOne m.M44
 
     /// <summary>Checks if the Matrix is a projection transformation.
     /// That means it does perform projection (perspective divide).
-    /// Returns true if at least one of the fields m.M14, m.M24, m.M34 is not 0.0 or m.M44 is not 1.0.
+    /// Returns TRUE if at least one of the fields m.M14, m.M24, m.M34 is not 0.0 or m.M44 is not 1.0.
     /// Using an approximate tolerance of 1e-6.</summary>
     static member inline isProjecting (m:Matrix) : bool =
         m.IsProjecting
@@ -413,7 +441,7 @@ type Matrix =
 
     /// <summary>Returns if the Matrix is mirroring or reflection.
     /// It might also be rotating, translating or scaling, but not projecting.
-    /// It must be affine and the determinate of the 3x3 part must be negative.
+    /// It must be affine and the determinant of the 3x3 part must be negative.
     /// Same as m.IsReflecting.</summary>
     member m.IsMirroring : bool =
         m.IsAffine &&
@@ -426,21 +454,21 @@ type Matrix =
 
     /// <summary>Returns if the Matrix is mirroring or reflection.
     /// It might also be rotating, translating or scaling, but not projecting.
-    /// It must be affine and the determinate of the 3x3 part must be negative.
+    /// It must be affine and the determinant of the 3x3 part must be negative.
     /// Same as m.IsReflecting.</summary>
     static member inline isMirroring (m:Matrix) : bool =
         m.IsMirroring
 
     /// <summary>Returns if the Matrix is mirroring or reflection.
     /// It might also be rotating, translating or scaling, but not projecting.
-    /// It must be affine and the determinate of the 3x3 part must be negative.
+    /// It must be affine and the determinant of the 3x3 part must be negative.
     /// Same as m.IsMirroring.</summary>
     member m.IsReflecting : bool =
         m.IsMirroring
 
     /// <summary>Returns if the Matrix is mirroring or reflection.
     /// It might also be rotating, translating or scaling, but not projecting.
-    /// It must be affine and the determinate of the 3x3 part must be negative.
+    /// It must be affine and the determinant of the 3x3 part must be negative.
     /// Same as m.IsMirroring.</summary>
     static member inline isReflecting (m:Matrix) : bool =
         m.IsReflecting
@@ -463,17 +491,17 @@ type Matrix =
     static member inline isScaling (m:Matrix) : bool =
         m.IsScaling
 
-    /// <summary>Returns true if the Matrix is translating.
+    /// <summary>Returns TRUE if the Matrix is translating.
     /// It might also be rotating, scaling and reflecting, but not projecting.</summary>
     member m.IsTranslating : bool =
         m.IsAffine && (isNotZero m.X41 || isNotZero m.Y42|| isNotZero m.Z43)
 
-    /// <summary>Returns true if the Matrix is translating.
+    /// <summary>Returns TRUE if the Matrix is translating.
     /// It might also be rotating, scaling and reflecting, but not projecting.</summary>
     static member inline isTranslating (m:Matrix) : bool =
         m.IsTranslating
 
-    /// <summary>Returns true if the Matrix is only translating.
+    /// <summary>Returns TRUE if the Matrix is only translating.
     /// It might not be rotating, scaling, reflecting, or projecting.</summary>
     member m.IsOnlyTranslating : bool =
         isOne  m.M11 && isZero m.M21 && isZero m.M31 &&
@@ -782,7 +810,7 @@ type Matrix =
             0, 0, z, 0,
             0, 0, 0, 1)
 
-    /// <summary>Creates a rotation from one unit-vectors direction to another unit-vectors direction.
+    /// <summary>Creates a rotation from one unit vector's direction to another unit vector's direction.
     /// If the tips of the two unitized vectors have a distance less than 1e-12 the identity matrix is returned.
     /// If the tips of the two vectors are almost exactly opposite,
     /// that is if tips of the two vectors are less than 1e-12 apart when summed,
@@ -959,14 +987,20 @@ type Matrix =
     /// <code>[| M11 M12 M13 M14 M21 M22 M23 M24 M31 M32 M33 M34 X41 Y42 Z43 M44 |]</code>
     /// Where X41, Y42 and Z43 refer to the translation part of the matrix.</summary>
     /// <param name="xs">Array of 16 float elements in column-major order.</param>
-    static member createFromColumMajorArray (xs:float[]) : Matrix =
+    static member createFromColumnMajorArray (xs:float[]) : Matrix =
         if xs.Length <> 16 then
-            fail $"Matrix.createFromColumMajorArray expects an array of 16 items but got {xs.Length}"
+            fail $"Matrix.createFromColumnMajorArray expects an array of 16 items but got {xs.Length}"
         Matrix (
             xs[0],  xs[4],  xs[ 8],  xs[12] ,
             xs[1],  xs[5],  xs[ 9],  xs[13] ,
             xs[2],  xs[6],  xs[10],  xs[14] ,
             xs[3],  xs[7],  xs[11],  xs[15] )
+
+    /// <summary>Obsolete misspelling. Same as Matrix.createFromColumnMajorArray.</summary>
+    /// <param name="xs">Array of 16 float elements in column-major order.</param>
+    [<Obsolete("typo, use createFromColumnMajorArray instead")>]
+    static member createFromColumMajorArray (xs:float[]) : Matrix =
+        Matrix.createFromColumnMajorArray xs
 
     /// <summary>Creates a matrix from array of 16 elements in Row Major order:
     /// <code>[| M11 M21 M31 X41 M12 M22 M32 Y42 M13 M23 M33 Z43 M14 M24 M34 M44 |]</code>
@@ -990,7 +1024,7 @@ type Matrix =
                 m.M13,  m.M23,  m.M33,  m.Z43 + v.Z,
                 m.M14,  m.M24,  m.M34,  m.M44)
 
-    /// <summary>Add a X, Y and Z translation to an existing matrix.</summary>
+    /// <summary>Add an X, Y and Z translation to an existing matrix.</summary>
     /// <param name="x">The X translation to add.</param>
     /// <param name="y">The Y translation to add.</param>
     /// <param name="z">The Z translation to add.</param>

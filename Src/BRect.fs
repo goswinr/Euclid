@@ -1,4 +1,4 @@
-﻿namespace Euclid
+namespace Euclid
 
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
@@ -12,7 +12,7 @@ open EuclidErrors
 /// This implementation guarantees the rectangle to be always valid.
 /// That means the Min X and Y values are always smaller or equal than the respective Max values.
 /// <code>
-///   Y-Axis
+///   Y-axis
 ///   ^
 ///   |
 ///   |             2 max X,Y
@@ -22,7 +22,7 @@ open EuclidErrors
 ///   |            |
 ///   |            |
 ///   |            |       local
-///   +------------+-----> X-Axis
+///   +------------+-----> X-axis
 ///  0-min X,Y      1
 /// </code>
 /// </summary>
@@ -160,7 +160,7 @@ type BRect =
     static member inline expand (dist:float) (r:BRect) : BRect =
         r.Expand dist
 
-    /// Returns a bounding rectangle expanded by a distance for X and Y-axis each.
+    /// Returns a bounding rectangle expanded by a distance for X- and Y-axis each.
     /// Raises EuclidException if the resulting rectangle would be invalid (Min > Max).
     member inline r.ExpandXY(xDist, yDist) : BRect =
         let n = BRect.createUnchecked(r.MinX-xDist, r.MinY-yDist, r.MaxX+xDist, r.MaxY+yDist)
@@ -168,11 +168,11 @@ type BRect =
             fail $"BRect.Expand(x, y): Distance(s) X: {xDist} and Y: {yDist} cause an underflow, on {r.AsString}"
         n
 
-    /// Returns a bounding rectangle expanded by a distance for X and Y-axis each.
+    /// Returns a bounding rectangle expanded by a distance for X- and Y-axis each.
     static member inline expandXY (xDist:float) (yDist:float) (r:BRect) : BRect =
         r.ExpandXY(xDist, yDist)
 
-    /// Returns a bounding rectangle expanded by a distance for X and Y-axis each.
+    /// Returns a bounding rectangle expanded by a distance for X- and Y-axis each.
     /// If expansion is negative it shrinks the Rectangle. It also prevents the rectangle from collapsing past its center.
     /// When the negative expansion is bigger than the size, Min and Max values will be both at the center point.
     member b.ExpandSafeXY(xDist:float, yDist:float) : BRect =
@@ -191,7 +191,7 @@ type BRect =
             maxYCh <- mid
         BRect.createUnchecked(minXCh, minYCh, maxXCh, maxYCh)
 
-    /// Returns a bounding rectangle expanded by a distance for X and Y-axis each.
+    /// Returns a bounding rectangle expanded by a distance for X- and Y-axis each.
     /// If expansion is negative it shrinks the Rectangle. It also prevents the rectangle from collapsing past its center.
     /// When the negative expansion is bigger than the size, Min and Max values will be both at the center point.
     static member inline expandSafeXY (xDist:float) (yDist:float) (r:BRect) : BRect =
@@ -360,7 +360,7 @@ type BRect =
     static member inline containsPt (pt:Pt) (rect:BRect) : bool =
         rect.ContainsPt pt
 
-    /// Returns TRUE if the Rectangle is inside or exactly on the other bounding rectangle.
+    /// Returns TRUE if the other bounding rectangle is inside or exactly on this bounding rectangle.
     member inline r.Contains (o:BRect) : bool =
         r.ContainsXY (o.MinX, o.MinY) && r.ContainsXY (o.MaxX, o.MaxY)
 
@@ -369,14 +369,14 @@ type BRect =
     static member inline contains (rectInside:BRect) (surroundingRect:BRect) : bool =
         surroundingRect.Contains rectInside
 
-    /// Evaluate a X and Y parameter of this bounding rectangle.
+    /// Evaluate an X and Y parameter of this bounding rectangle.
     ///  0.0, 0.0 returns the MinPt.
     ///  1.0, 1.0 returns the MaxPt.
     member inline b.EvaluateAt (xParameter, yParameter) : Pt =
         Pt (b.MinX + (b.MaxX-b.MinX) * xParameter,
             b.MinY + (b.MaxY-b.MinY) * yParameter)
 
-    /// Evaluate a X and Y parameter of this bounding rectangle.
+    /// Evaluate an X and Y parameter of this bounding rectangle.
     /// 0.0, 0.0 returns the MinPt.
     /// 1.0, 1.0 returns the MaxPt.
     static member inline evaluateAt xParameter yParameter (r:BRect) : Pt =
@@ -390,44 +390,44 @@ type BRect =
     static member inline area (r:BRect) : float =
         r.SizeX * r.SizeY
 
-    /// Returns the longest edge of the Box.
+    /// Returns the longest edge of the bounding rectangle.
     member inline b.LongestEdge : float =
         let x = b.MaxX - b.MinX
         let y = b.MaxY - b.MinY
         max x y
 
-    /// Returns the longest edge of the Box.
+    /// Returns the longest edge of the bounding rectangle.
     static member inline longestEdge (r:BRect) : float =
         r.LongestEdge
 
-    /// Returns the shortest edge of the Box.
+    /// Returns the shortest edge of the bounding rectangle.
     member inline b.ShortestEdge : float =
         let x = b.MaxX - b.MinX
         let y = b.MaxY - b.MinY
         min x y
 
-    /// Returns the shortest edge of the Box.
+    /// Returns the shortest edge of the bounding rectangle.
     static member inline shortestEdge (r:BRect) : float =
         r.ShortestEdge
 
     /// Tests if all sides are smaller than the zeroLength tolerance.
-    /// This is the same as IsPoint.
+    /// Same as b.IsPoint.
     member inline b.IsZero : bool =
         isTooTiny (b.MaxX - b.MinX) &&
         isTooTiny (b.MaxY - b.MinY)
 
     /// Tests if all sides are smaller than the zeroLength tolerance.
-    /// This is the same as IsPoint.
+    /// Same as BRect.isPoint.
     static member inline isZero (r:BRect) : bool =
         r.IsZero
 
     /// Tests if all sides are smaller than the zeroLength tolerance.
-    /// This is the same as IsZero.
+    /// Same as b.IsZero.
     member inline b.IsPoint : bool =
         b.IsZero
 
     /// Tests if all sides are smaller than the zeroLength tolerance.
-    /// This is the same as IsZero.
+    /// Same as BRect.isZero.
     static member inline isPoint (r:BRect) : bool =
         r.IsPoint
 
@@ -442,54 +442,54 @@ type BRect =
     static member inline countZeroSides (r:BRect) : int =
         r.CountZeroSides
 
-    /// Tests if one of the X or Y axis is smaller than the zeroLength tolerance.
+    /// Tests if one of the X or Y axes is smaller than the zeroLength tolerance.
     member inline b.IsLine : bool =
         b.CountZeroSides = 1
 
-    /// Tests if one of the X or Y axis is smaller than the zeroLength tolerance.
+    /// Tests if one of the X or Y axes is smaller than the zeroLength tolerance.
     static member inline isLine (r:BRect) : bool =
         r.IsLine
 
-    /// Tests if no sides of the X and Y axis is smaller than the zeroLength tolerance.
+    /// Tests if neither the X nor Y-axis is smaller than the zeroLength tolerance.
     /// Same as .HasArea
     member inline b.IsValid : bool =
         b.CountZeroSides = 0
 
-    /// Tests if no sides of the X and Y axis is smaller than the zeroLength tolerance.
+    /// Tests if neither the X nor Y-axis is smaller than the zeroLength tolerance.
     /// Same as .HasArea.
     static member inline isValid (r:BRect) : bool =
         r.IsValid
 
-    /// Tests if none of the X and Y axis is smaller than the zeroLength tolerance.
+    /// Tests if neither the X nor Y-axis is smaller than the zeroLength tolerance.
     /// Same as .IsValid
     member inline b.HasArea : bool =
         b.CountZeroSides = 0
 
-    /// Tests if none of the X and Y axis is smaller than the zeroLength tolerance.
+    /// Tests if neither the X nor Y-axis is smaller than the zeroLength tolerance.
     /// Same as .IsValid.
     static member inline hasArea (r:BRect) : bool =
         r.HasArea
 
-    /// Returns a bounding rectangle that contains both input Rectangles.
+    /// Returns a bounding rectangle that contains both input rectangles.
     member inline r.Union (b:BRect) : BRect =
         BRect.createUnchecked(min b.MinX r.MinX, min b.MinY r.MinY, max b.MaxX r.MaxX, max b.MaxY r.MaxY)
 
-    /// Returns a bounding rectangle that contains the input Rectangles and the point.
+    /// Returns a bounding rectangle that contains the input rectangles and the point.
     member inline r.UnionPt (p:Pt) : BRect =
         BRect.createUnchecked(min r.MinX p.X, min r.MinY p.Y, max r.MaxX p.X, max r.MaxY p.Y)
 
-    /// Returns a bounding rectangle that contains both input Rectangles.
+    /// Returns a bounding rectangle that contains both input rectangles.
     static member inline union (a:BRect) (b:BRect) : BRect =
         a.Union b
 
-    /// Returns a bounding rectangle that contains the input Rectangles and the point.
+    /// Returns a bounding rectangle that contains the input rectangles and the point.
     static member inline unionPt (p:Pt) (r:BRect) : BRect =
         r.UnionPt p
 
     /// Returns the intersection of two bounding rectangles.
-    /// The returned Rectangle is the area that is inside both input Rectangles.
-    /// Returns ValueNone if the two Rectangles do not overlap.
-    /// Just touching Rectangles will return ValueSome with zero area collapsed BRect.
+    /// The returned rectangle is the area that is inside both input rectangles.
+    /// Returns ValueNone if the two rectangles do not overlap.
+    /// Just touching rectangles will return ValueSome with zero area collapsed BRect.
     member inline b.Intersection (a:BRect) : BRect voption =
         let minX = max a.MinX b.MinX
         let minY = max a.MinY b.MinY
@@ -501,9 +501,9 @@ type BRect =
             ValueNone
 
     /// Returns the intersection of two bounding rectangles.
-    /// The returned Rectangle is the area that is inside both input Rectangles.
-    /// Returns ValueNone if the two Rectangles do not overlap.
-    /// Just touching Rectangles will return ValueSome with zero area collapsed BRect.
+    /// The returned rectangle is the area that is inside both input rectangles.
+    /// Returns ValueNone if the two rectangles do not overlap.
+    /// Just touching rectangles will return ValueSome with zero area collapsed BRect.
     static member inline intersection (a:BRect) (b:BRect) : BRect voption =
         a.Intersection b
 
@@ -578,7 +578,7 @@ type BRect =
 
     /// <summary>Returns the point (0) or minX, minY.
     /// <code>
-    ///   Y-Axis
+    ///   Y-axis
     ///   ^
     ///   |
     ///   |             2 = max X,Y
@@ -588,7 +588,7 @@ type BRect =
     ///   |            |
     ///   |            |
     ///   |            |
-    ///   +------------+-----> X-Axis
+    ///   +------------+-----> X-axis
     ///  0 = min X,Y      1
     /// </code>
     /// </summary>
@@ -601,7 +601,7 @@ type BRect =
 
     /// <summary>Returns the point (1) or maxX, minY.
     /// <code>
-    ///   Y-Axis
+    ///   Y-axis
     ///   ^
     ///   |
     ///   |             2 = max X,Y
@@ -611,7 +611,7 @@ type BRect =
     ///   |            |
     ///   |            |
     ///   |            |
-    ///   +------------+-----> X-Axis
+    ///   +------------+-----> X-axis
     ///  0 = min X,Y      1
     /// </code>
     /// </summary>
@@ -624,7 +624,7 @@ type BRect =
 
     /// <summary>Returns the point (2) or maxX, maxY.
     /// <code>
-    ///   Y-Axis
+    ///   Y-axis
     ///   ^
     ///   |
     ///   |             2 = max X,Y
@@ -634,7 +634,7 @@ type BRect =
     ///   |            |
     ///   |            |
     ///   |            |
-    ///   +------------+-----> X-Axis
+    ///   +------------+-----> X-axis
     ///  0 = min X,Y      1
     /// </code>
     /// </summary>
@@ -647,7 +647,7 @@ type BRect =
 
     /// <summary>Returns the point (3) or minX, maxY.
     /// <code>
-    ///   Y-Axis
+    ///   Y-axis
     ///   ^
     ///   |
     ///   |             2 = max X,Y
@@ -657,7 +657,7 @@ type BRect =
     ///   |            |
     ///   |            |
     ///   |            |
-    ///   +------------+-----> X-Axis
+    ///   +------------+-----> X-axis
     ///  0 = min X,Y      1
     /// </code>
     /// </summary>
@@ -668,10 +668,10 @@ type BRect =
     static member inline pt3 (r:BRect) : Pt =
         r.Pt3
 
-    /// <summary>Returns the corners of this bounding rectangle in Counter-Clockwise order, starting at MinPt.
+    /// <summary>Returns the corners of this bounding rectangle in counter-clockwise order, starting at MinPt.
     /// Returns an array of 4 Points.
     /// <code>
-    ///   Y-Axis
+    ///   Y-axis
     ///   ^
     ///   |
     ///   |             2  = max X,Y
@@ -681,22 +681,22 @@ type BRect =
     ///   |            |
     ///   |            |
     ///   |            |
-    ///   +------------+-----> X-Axis
+    ///   +------------+-----> X-axis
     ///  0 = min X,Y    1
     /// </code>
     /// </summary>
     member r.Points : Pt[] =
         [| Pt(r.MinX, r.MinY); Pt(r.MaxX, r.MinY);  Pt(r.MaxX, r.MaxY); Pt(r.MinX, r.MaxY) |]
 
-    /// Returns the corners of this bounding rectangle in Counter-Clockwise order, starting at MinPt.
+    /// Returns the corners of this bounding rectangle in counter-clockwise order, starting at MinPt.
     /// Returns an array of 4 Points.
     static member inline points (r:BRect) : Pt[] =
         r.Points
 
-    /// <summary>Returns a Counter-Clockwise array of 5 Points, starting at MinPt.
+    /// <summary>Returns a counter-clockwise array of 5 Points, starting at MinPt.
     /// Last and first point are the same.
     /// <code>
-    ///   Y-Axis
+    ///   Y-axis
     ///   ^
     ///   |
     ///   |             2  = max X,Y
@@ -706,14 +706,14 @@ type BRect =
     ///   |            |
     ///   |            |
     ///   |            |
-    ///   +------------+-----> X-Axis
+    ///   +------------+-----> X-axis
     ///  0 = min X,Y    1
     /// </code>
     /// </summary>
     member r.PointsLooped : Pt[] =
         [| Pt(r.MinX, r.MinY); Pt(r.MaxX, r.MinY);  Pt(r.MaxX, r.MaxY); Pt(r.MinX, r.MaxY); Pt(r.MinX, r.MinY)|]
 
-    /// Returns a Counter-Clockwise array of 5 Points, starting at MinPt.
+    /// Returns a counter-clockwise array of 5 Points, starting at MinPt.
     /// Last and first point are the same.
     static member inline pointsLooped (r:BRect) : Pt[] =
         r.PointsLooped
@@ -724,7 +724,7 @@ type BRect =
 
     /// <summary>The bottom edge. The line from point 0 to 1.
     /// <code>
-    ///   Y-Axis
+    ///   Y-axis
     ///   ^
     ///   |
     ///   |             2  = max X,Y
@@ -734,7 +734,7 @@ type BRect =
     ///   |            |
     ///   |            |
     ///   |            |
-    ///   +------------+-----> X-Axis
+    ///   +------------+-----> X-axis
     ///  0 = min X,Y    1
     /// </code>
     /// </summary>
@@ -747,7 +747,7 @@ type BRect =
 
     /// <summary>The right edge. The line from point 1 to 2.
     /// <code>
-    ///   Y-Axis
+    ///   Y-axis
     ///   ^
     ///   |
     ///   |             2  = max X,Y
@@ -757,7 +757,7 @@ type BRect =
     ///   |            |
     ///   |            |
     ///   |            |
-    ///   +------------+-----> X-Axis
+    ///   +------------+-----> X-axis
     ///  0 = min X,Y    1
     /// </code>
     /// </summary>
@@ -770,7 +770,7 @@ type BRect =
 
     /// <summary>The top edge. The line from point 2 to 3.
     /// <code>
-    ///   Y-Axis
+    ///   Y-axis
     ///   ^
     ///   |
     ///   |             2  = max X,Y
@@ -780,7 +780,7 @@ type BRect =
     ///   |            |
     ///   |            |
     ///   |            |
-    ///   +------------+-----> X-Axis
+    ///   +------------+-----> X-axis
     ///  0 = min X,Y    1
     /// </code>
     /// </summary>
@@ -793,7 +793,7 @@ type BRect =
 
     /// <summary>The left edge. The line from point 3 to 0.
     /// <code>
-    ///   Y-Axis
+    ///   Y-axis
     ///   ^
     ///   |
     ///   |             2  = max X,Y
@@ -803,7 +803,7 @@ type BRect =
     ///   |            |
     ///   |            |
     ///   |            |
-    ///   +------------+-----> X-Axis
+    ///   +------------+-----> X-axis
     ///  0 = min X,Y    1
     /// </code>
     /// </summary>
@@ -813,6 +813,29 @@ type BRect =
     /// The left edge. The line from point 3 to 0.
     static member inline edge30 (r:BRect) : Line2D =
         r.Edge30
+
+    /// <summary>Returns all 4 edges of this bounding rectangle in counter-clockwise order: Edge01, Edge12, Edge23 and Edge30.
+    /// <code>
+    ///   Y-axis
+    ///   ^
+    ///   |
+    ///   |             2  = max X,Y
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   +------------+-----> X-axis
+    ///  0 = min X,Y    1
+    /// </code>
+    /// </summary>
+    member r.Edges : Line2D[] =
+        [| r.Edge01; r.Edge12; r.Edge23; r.Edge30 |]
+
+    /// Returns all 4 edges of this bounding rectangle in counter-clockwise order: Edge01, Edge12, Edge23 and Edge30.
+    static member inline edges (r:BRect) : Line2D[] =
+        r.Edges
 
 
     // #endregion
@@ -891,7 +914,7 @@ type BRect =
         let maxY = max l.FromY l.ToY
         BRect.createUnchecked(minX, minY, maxX, maxY)
 
-    /// Get the axis aligned 2D Bounding Rectangle of the 2D Rectangle.
+    /// Get the axis aligned 2D Bounding rectangle of the 2D Rectangle.
     static member inline createFromRect2D (r:Rect2D) : BRect =
         // Each of the 4 corners is Origin plus any subset of the two axis
         // components, so min/max decompose per coordinate.
@@ -901,7 +924,7 @@ type BRect =
         let maxY = r.OriginY + max 0. r.XaxisY + max 0. r.YaxisY
         BRect.createUnchecked(minX, minY, maxX, maxY)
 
-        /// Creates a 3D bounding box from a Rect3D.
+    /// Creates a 2D bounding rectangle by projecting a Rect3D onto the World XY plane.
     static member createFromRect3D (r:Rect3D)  : BRect =
         let minX = r.OriginX + min 0. r.XaxisX + min 0. r.YaxisX
         let minY = r.OriginY + min 0. r.XaxisY + min 0. r.YaxisY
@@ -956,12 +979,12 @@ type BRect =
         abs(a.MaxY-b.MaxY) > tol
 
     /// Returns a new 2D-bounding-rectangle moved by a vector.
-    /// This is the same as translate.
+    /// Same as BRect.translate.
     static member inline move (v:Vc) (r:BRect) : BRect =
         BRect.createUnchecked(r.MinX+v.X, r.MinY+v.Y, r.MaxX+v.X, r.MaxY+v.Y)
 
     /// Returns a new 2D-bounding-rectangle moved by a vector.
-    /// This is the same as move.
+    /// Same as BRect.move.
     static member inline translate (v:Vc) (r:BRect) : BRect =
         BRect.createUnchecked(r.MinX+v.X, r.MinY+v.Y, r.MaxX+v.X, r.MaxY+v.Y)
 

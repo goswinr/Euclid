@@ -191,7 +191,7 @@ module Format =
         floatWithSeparator globalThousandSeparator x
 
 
-    let rarr(xs:ResizeArray<'T>) =
+    let internal rarr(xs:ResizeArray<'T>) =
         if xs=null then "null-ResizeArray"
         elif xs.Count=0 then "empty ResizeArray"
         elif xs.Count=1 then $"ResizeArray with one item: [%O{xs.[0]}]"
@@ -203,7 +203,7 @@ module Format =
 
 
     open System.Collections.Generic
-    let iList(xs:IList<'T>) =
+    let internal iList(xs:IList<'T>) =
         if xs=null then "null-IList<'T>"
         elif xs.Count=0 then "empty IList<'T>"
         elif xs.Count=1 then $"IList<'T> with one item: [%O{xs.[0]}]"

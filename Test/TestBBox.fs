@@ -572,7 +572,7 @@ let tests =
             test "Union with point" {
                 let box = BBox.create(Pnt(0., 0., 0.), Pnt(5., 5., 5.))
                 let pt = Pnt(8., 3., 2.)
-                let union = box.Union pt
+                let union = box.UnionPnt pt
                 Expect.equal union.MinX 0. "Union MinX should be 0"
                 Expect.equal union.MaxX 8. "Union MaxX should be 8"
                 Expect.equal union.MinY 0. "Union MinY should be 0"
@@ -582,7 +582,7 @@ let tests =
             test "unionPt static method" {
                 let box = BBox.create(Pnt(0., 0., 0.), Pnt(5., 5., 5.))
                 let pt = Pnt(8., 3., 2.)
-                let union = BBox.unionPt pt box
+                let union = BBox.unionPnt pt box
                 Expect.equal union.MaxX 8. "Union MaxX should be 8"
             }
         ]
@@ -785,6 +785,50 @@ let tests =
                 let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
                 let pt = box.EvaluateAt(0.5, 0.5, 0.5)
                 Expect.isTrue (eqPnt pt (Pnt(5., 5., 5.))) "Should return center at (0.5,0.5,0.5)"
+            }
+        ]
+
+        testList "IntersectRay" [
+            test "returns entry and exit parameters" {
+                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
+                let ray = Line3D(Pnt(-5., 5., 5.), Pnt(0., 5., 5.))
+                match box.IntersectRay ray with
+                | ValueSome(tEntry, tExit) ->
+                    Expect.isTrue (eqFloat tEntry 1.) "Entry parameter should be 1"
+                    Expect.isTrue (eqFloat tExit 3.) "Exit parameter should be 3"
+                | ValueNone -> failwith "Expected the ray to intersect the bounding box"
+            }
+
+            test "returns parameters on both sides when starting inside" {
+                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
+                let ray = Line3D(Pnt(5., 5., 5.), Pnt(6., 5., 5.))
+                Expect.equal (box.IntersectRay ray) (ValueSome(-5., 5.)) "Expected intersections behind and ahead of the origin"
+            }
+
+            test "returns ValueNone for a parallel ray outside a slab" {
+                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
+                let ray = Line3D(Pnt(-5., 11., 5.), Pnt(0., 11., 5.))
+                Expect.equal (box.IntersectRay ray) ValueNone "Expected the ray to miss the bounding box"
+            }
+
+            test "supports collapsed bounding boxes" {
+                let box = BBox.create(Pnt(2., 0., 0.), Pnt(2., 10., 10.))
+                let hit = Line3D(Pnt(0., 5., 5.), Pnt(1., 5., 5.))
+                let miss = Line3D(Pnt(0., 11., 5.), Pnt(1., 11., 5.))
+                Expect.equal (box.IntersectRay hit) (ValueSome(2., 2.)) "Expected one intersection with the collapsed X slab"
+                Expect.equal (box.IntersectRay miss) ValueNone "Expected the ray to miss the collapsed bounding box"
+            }
+
+            test "returns ValueNone for a zero-length ray" {
+                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
+                let ray = Line3D(Pnt(5., 5., 5.), Pnt(5., 5., 5.))
+                Expect.equal (box.IntersectRay ray) ValueNone "A zero-length ray has no direction"
+            }
+
+            test "static member is the same as the instance member" {
+                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
+                let ray = Line3D(Pnt(-5., 5., 5.), Pnt(0., 5., 5.))
+                Expect.equal (BBox.intersectRay ray box) (box.IntersectRay ray) "Static and instance members should agree"
             }
         ]
 

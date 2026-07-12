@@ -1,4 +1,4 @@
-﻿namespace Euclid
+namespace Euclid
 
 open System
 open UtilEuclid
@@ -13,16 +13,16 @@ module AutoOpenPnt =
     type Pnt with
 
         /// Returns a boolean indicating whether X, Y or Z is NaN or Infinity.
-        member inline p.IsInValid : bool =
+        member inline p.IsInvalid : bool =
             isNanInfinity p.X || isNanInfinity p.Y || isNanInfinity p.Z
 
-        /// Returns a boolean indicating whether X, Y or Z is NaN or Infinity.
-        static member inline isInValid (pt:Pnt) : bool =
-            pt.IsInValid
+        /// Same as pt.IsInvalid.
+        static member inline isInvalid (pt:Pnt) : bool =
+            pt.IsInvalid
 
         /// Returns a boolean indicating whether X, Y and Z are valid (not NaN or Infinity).
         member inline p.IsValid : bool =
-            not p.IsInValid
+            not p.IsInvalid
 
         /// Returns a boolean indicating whether X, Y and Z are valid (not NaN or Infinity).
         static member inline isValid (pt:Pnt) : bool =
@@ -43,6 +43,14 @@ module AutoOpenPnt =
         /// Returns the 3D point as 2D point.
         static member inline asPt (pt:Pnt) : Pt =
             pt.AsPt
+
+        /// Returns the 3D point as 2D vector, discarding the Z value.
+        member inline p.AsVc : Vc =
+            Vc(p.X, p.Y)
+
+        /// Returns the 3D point as 2D vector, discarding the Z value.
+        static member inline asVc (pt:Pnt) : Vc =
+            pt.AsVc
 
         /// Returns a boolean indicating whether X, Y and Z are exactly 0.0.
         member inline pt.IsOrigin : bool =
@@ -187,12 +195,12 @@ module AutoOpenPnt =
             pt.DistanceInXYFromOrigin
 
         /// Returns the projected squared distance from Origin (0, 0, 0). Ignoring the Z component.
-        member inline pt.DistanceInXYFromOriginSquare : float =
+        member inline pt.SqDistanceInXYFromOrigin : float =
             pt.X*pt.X + pt.Y*pt.Y
 
-        /// Returns the projected squared distance from Origin (0, 0, 0). Ignoring the Z component.
-        static member inline distanceInXYFromOriginSquare (pt:Pnt) : float =
-            pt.DistanceInXYFromOriginSquare
+        /// Same as pt.SqDistanceInXYFromOrigin.
+        static member inline sqDistanceInXYFromOrigin (pt:Pnt) : float =
+            pt.SqDistanceInXYFromOrigin
 
         /// Returns new 3D point with given distance from Origin by scaling it up or down.
         member inline pt.WithDistanceFromOrigin (l:float) : Pnt =
@@ -206,7 +214,7 @@ module AutoOpenPnt =
 
         /// Returns the Diamond Angle from this point to another point projected in X-Y plane.
         /// The diamond angle is always positive and in the range of 0.0 to 4.0 (for 360 degrees)
-        /// 0.0 = Xaxis, going Counter-Clockwise. Ignoring Z component.
+        /// 0.0 = Xaxis, going counter-clockwise. Ignoring Z component.
         /// This is the fastest angle computation since it does not use Math.Cos or Math.Sin.
         /// It is useful for radial sorting.
         member inline p.DirectionDiamondInXYTo(o:Pnt) : float =
@@ -227,14 +235,14 @@ module AutoOpenPnt =
 
         /// Returns the Diamond Angle from 'fromPt' to 'toPt' projected in X-Y plane.
         /// The diamond angle is always positive and in the range of 0.0 to 4.0 (for 360 degrees)
-        /// 0.0 = Xaxis, going Counter-Clockwise. Ignoring Z component.
+        /// 0.0 = Xaxis, going counter-clockwise. Ignoring Z component.
         /// This is the fastest angle computation since it does not use Math.Cos or Math.Sin.
         /// It is useful for radial sorting.
         static member inline directionDiamondInXYTo (fromPt:Pnt, toPt:Pnt) : float = // not curried because argument order is important
             fromPt.DirectionDiamondInXYTo(toPt)
 
         /// Returns the angle in radians from this point to another point projected in X-Y plane.
-        /// 0.0 = Xaxis, going Counter-Clockwise till two Pi.
+        /// 0.0 = Xaxis, going counter-clockwise till two Pi.
         member inline p.Angle2PiInXYTo(o:Pnt) : float =
             // https://stackoverflow.com/a/14675998/969070
             let x = o.X-p.X
@@ -245,17 +253,17 @@ module AutoOpenPnt =
             else            a
 
         /// Returns the angle in radians from 'fromPt' to 'toPt' projected in X-Y plane.
-        /// 0.0 = Xaxis, going Counter-Clockwise till two Pi.
+        /// 0.0 = Xaxis, going counter-clockwise till two Pi.
         static member inline angle2PiInXYTo (fromPt:Pnt, toPt:Pnt) : float = // not curried because argument order is important
             fromPt.Angle2PiInXYTo(toPt)
 
         /// Returns the angle in degrees from this point to another point projected in X-Y plane.
-        /// 0.0 = Xaxis, going Counter-Clockwise till 360.
+        /// 0.0 = Xaxis, going counter-clockwise till 360.
         member inline p.Angle360InXYTo(o:Pnt) : float =
             p.Angle2PiInXYTo o |> toDegrees
 
         /// Returns the angle in degrees from 'fromPt' to 'toPt' projected in X-Y plane.
-        /// 0.0 = Xaxis, going Counter-Clockwise till 360.
+        /// 0.0 = Xaxis, going counter-clockwise till 360.
         static member inline angle360InXYTo (fromPt:Pnt, toPt:Pnt) : float = // not curried because argument order is important
             fromPt.Angle360InXYTo(toPt)
 
@@ -342,7 +350,7 @@ module AutoOpenPnt =
             abs (a.Y-b.Y) > tol ||
             abs (a.Z-b.Z) > tol
 
-        /// Accepts any type that has a X, Y and Z (UPPERCASE) member that can be converted to a float.
+        /// Accepts any type that has an X, Y and Z (UPPERCASE) member that can be converted to a float.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
         static member inline createFromMembersXYZ pt : Pnt =
             let x = ( ^T : (member X : _) pt)
@@ -536,7 +544,7 @@ module AutoOpenPnt =
                  (Math.Round (pt.Z/precision)) * precision)
 
         /// Every 3D line has a normal vector in the X-Y plane.
-        /// Rotated Counter-Clockwise in top view.
+        /// Rotated counter-clockwise in top view.
         /// The result is unitized.
         /// If line is vertical then Xaxis is returned.
         /// see also : Vec.perpendicularVecInXY.
@@ -577,19 +585,19 @@ module AutoOpenPnt =
                 )
 
 
-        /// Rotate the 3D point around X-axis, from Y to Z-axis, Counter Clockwise looking from right.
+        /// Rotate the 3D point around X-axis, from Y to Z-axis, counter-clockwise looking from right.
         static member rotateOnX (r:Rotation2D) (p:Pnt) : Pnt =
             Pnt (p.X, r.Cos*p.Y - r.Sin*p.Z, r.Sin*p.Y + r.Cos*p.Z)
 
-        /// Rotate the 3D point around Y-axis, from Z to X-axis, Counter Clockwise looking from back.
+        /// Rotate the 3D point around Y-axis, from Z to X-axis, counter-clockwise looking from back.
         static member rotateOnY (r:Rotation2D) (p:Pnt) : Pnt =
             Pnt (r.Sin*p.Z + r.Cos*p.X, p.Y, r.Cos*p.Z - r.Sin*p.X)
 
-        /// Rotate the 3D point around Z-axis, from X to Y-axis, Counter Clockwise looking from top.
+        /// Rotate the 3D point around Z-axis, from X to Y-axis, counter-clockwise looking from top.
         static member rotateOnZ (r:Rotation2D) (p:Pnt) : Pnt =
             Pnt (r.Cos*p.X - r.Sin*p.Y, r.Sin*p.X + r.Cos*p.Y, p.Z)
 
-        /// Rotate the 3D point around a center 3D point and a X aligned axis, from Y to Z-axis, Counter Clockwise looking from right.
+        /// Rotate the 3D point around a center 3D point and an X-aligned axis, from Y to Z-axis, counter-clockwise looking from right.
         static member rotateOnXWithCenter (cen:Pnt) (r:Rotation2D) (pt:Pnt) : Pnt =
             let x = pt.X - cen.X
             let y = pt.Y - cen.Y
@@ -598,7 +606,7 @@ module AutoOpenPnt =
                     r.Cos*y - r.Sin*z + cen.Y,
                     r.Sin*y + r.Cos*z + cen.Z)
 
-        /// Rotate the 3D point around a center point and a Y aligned axis, from Z to X-axis, Counter Clockwise looking from back.
+        /// Rotate the 3D point around a center point and a Y aligned axis, from Z to X-axis, counter-clockwise looking from back.
         static member rotateOnYWithCenter (cen:Pnt) (r:Rotation2D) (pt:Pnt) : Pnt =
             let x = pt.X - cen.X
             let y = pt.Y - cen.Y
@@ -607,7 +615,7 @@ module AutoOpenPnt =
                     y                 + cen.Y,
                     r.Cos*z - r.Sin*x + cen.Z)
 
-        /// Rotate the 3D point around a center point and a Z aligned axis, from X to Y-axis, Counter Clockwise looking from top.
+        /// Rotate the 3D point around a center point and a Z aligned axis, from X to Y-axis, counter-clockwise looking from top.
         static member rotateOnZWithCenter (cen:Pnt) (r:Rotation2D) (pt:Pnt) : Pnt =
             let x = pt.X - cen.X
             let y = pt.Y - cen.Y
@@ -616,28 +624,28 @@ module AutoOpenPnt =
                     r.Sin*x + r.Cos*y + cen.Y,
                     z                 + cen.Z)
 
-        /// Rotate the 3D point in degrees around X-axis, from Y to Z-axis, Counter Clockwise looking from right.
+        /// Rotate the 3D point in degrees around X-axis, from Y to Z-axis, counter-clockwise looking from right.
         static member inline rotateOnXDeg (angDegree) (pt:Pnt) : Pnt =
             Pnt.rotateOnX (Rotation2D.createFromDegrees angDegree) pt
 
-        /// Rotate the 3D point in degrees around Y-axis, from Z to X-axis, Counter Clockwise looking from back.
+        /// Rotate the 3D point in degrees around Y-axis, from Z to X-axis, counter-clockwise looking from back.
         static member inline rotateOnYDeg (angDegree) (pt:Pnt) : Pnt =
             Pnt.rotateOnY (Rotation2D.createFromDegrees angDegree) pt
 
-        /// Rotate the 3D point in degrees around Z-axis, from X to Y-axis, Counter Clockwise looking from top.
+        /// Rotate the 3D point in degrees around Z-axis, from X to Y-axis, counter-clockwise looking from top.
         static member inline rotateOnZDeg (angDegree) (pt:Pnt) : Pnt =
             Pnt.rotateOnZ (Rotation2D.createFromDegrees angDegree) pt
 
 
-        /// Rotate the 3D point in degrees around center point and a X aligned axis, from Y to Z-axis, Counter Clockwise looking from right.
+        /// Rotate the 3D point in degrees around center point and an X-aligned axis, from Y to Z-axis, counter-clockwise looking from right.
         static member inline rotateOnXWithCenterDeg (cen:Pnt) (angDegree) (pt:Pnt) : Pnt =
             Pnt.rotateOnXWithCenter cen (Rotation2D.createFromDegrees angDegree) pt
 
-        /// Rotate the 3D point in degrees around center point and a Y aligned axis, from Z to X-axis, Counter Clockwise looking from back.
+        /// Rotate the 3D point in degrees around center point and a Y aligned axis, from Z to X-axis, counter-clockwise looking from back.
         static member inline rotateOnYWithCenterDeg (cen:Pnt) (angDegree) (pt:Pnt) : Pnt =
             Pnt.rotateOnYWithCenter cen (Rotation2D.createFromDegrees angDegree) pt
 
-        /// Rotate the 3D point in degrees around center point and a Z aligned axis, from X to Y-axis, Counter Clockwise looking from top.
+        /// Rotate the 3D point in degrees around center point and a Z aligned axis, from X to Y-axis, counter-clockwise looking from top.
         static member inline rotateOnZWithCenterDeg (cen:Pnt) (angDegree) (pt:Pnt) : Pnt =
             Pnt.rotateOnZWithCenter cen (Rotation2D.createFromDegrees angDegree) pt
 
@@ -700,6 +708,26 @@ module AutoOpenPnt =
 
         // #endregion
         // #region Obsolete
+
+        /// Obsolete typo. Same as p.IsInvalid.
+        [<Obsolete("Typo, use IsInvalid instead.")>]
+        member inline p.IsInValid : bool =
+            p.IsInvalid
+
+        /// Obsolete typo. Same as Pnt.isInvalid.
+        [<Obsolete("Typo, use isInvalid instead.")>]
+        static member inline isInValid (pt:Pnt) : bool =
+            pt.IsInvalid
+
+        /// Obsolete name. Same as pt.SqDistanceInXYFromOrigin.
+        [<Obsolete("Use SqDistanceInXYFromOrigin instead.")>]
+        member inline pt.DistanceInXYFromOriginSquare : float =
+            pt.SqDistanceInXYFromOrigin
+
+        /// Obsolete name. Same as Pnt.sqDistanceInXYFromOrigin.
+        [<Obsolete("Use sqDistanceInXYFromOrigin instead.")>]
+        static member inline distanceInXYFromOriginSquare (pt:Pnt) : float =
+            pt.SqDistanceInXYFromOrigin
 
         [<Obsolete("Use SqDistanceTo instead.")>]
         member inline p.DistanceToSquare (b:Pnt) : float =

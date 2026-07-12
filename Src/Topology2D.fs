@@ -398,7 +398,7 @@ type Topology2D  =
     /// <param name="splitDistance">A float value representing the maximum distance between points to be considered part of the same loop or polyline.</param>
     /// <param name="xs">A ResizeArray of elements of type 'T to be grouped into loops or polylines.</param>
     /// <returns>A ResizeArray of ResizeArrays of tuples: 'T * Boolean, the Boolean values indicating if the element was reversed.
-    /// The Boolean value is true if the element was reversed, and false if it was not</returns>
+    /// The Boolean value is TRUE if the element was reversed, and FALSE if it was not</returns>
     static member joinReversing(getLine: 'T -> Line2D, splitDistance:float , xs:ResizeArray<'T>) : ResizeArray<ResizeArray<'T*bool>> =
         let loops   = ResizeArray<LoopCollector<'T*bool>>()
         let distSq  = splitDistance * splitDistance

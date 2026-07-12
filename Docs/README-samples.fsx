@@ -103,8 +103,8 @@ match XLine3D.getIntersection(ln3A, ln3B) with
 
 // Planes
 let npl = NPlane(Pnt(0, 0, 5), UnitVec.Zaxis)
-let d = npl.DistanceToPt (Pnt(3, 4, 8))
-let d2 = npl.DistanceToPt (Pnt(3, 4, 2))
+let d = npl.DistanceToPnt (Pnt(3, 4, 8))
+let d2 = npl.DistanceToPnt (Pnt(3, 4, 2))
 let proj = npl.ClosestPoint (Pnt(3, 4, 8))
 let ang = npl.Angle90ToVec (Vec(1, 0, 0))
 let ppl =

@@ -42,25 +42,13 @@ type Line3D =
     member inline ln.VectorX : float =
         ln.ToX - ln.FromX
 
-    /// The X component of the line Direction/Vector.
-    static member inline vectorX (ln:Line3D) : float =
-        ln.VectorX
-
     /// The Y component of the line Direction/Vector.
     member inline ln.VectorY : float =
         ln.ToY - ln.FromY
 
-    /// The Y component of the line Direction/Vector.
-    static member inline vectorY (ln:Line3D) : float =
-        ln.VectorY
-
     /// The Z component of the line Direction/Vector.
     member inline ln.VectorZ : float =
         ln.ToZ - ln.FromZ
-
-    /// The Z component of the line Direction/Vector.
-    static member inline vectorZ (ln:Line3D) : float =
-        ln.VectorZ
 
     /// Returns the length of the line.
     member inline ln.Length : float =
@@ -69,9 +57,6 @@ type Line3D =
         let z = ln.VectorZ
         sqrt(x*x + y*y + z*z)
 
-    /// Returns the length of the line.
-    static member inline length (ln:Line3D) : float =
-        ln.Length
 
     /// Returns the squared length of the line.
     member inline ln.LengthSq : float =
@@ -80,9 +65,6 @@ type Line3D =
         let z = ln.VectorZ
         x*x + y*y + z*z
 
-    /// Returns the squared length of the line.
-    static member inline lengthSq (ln:Line3D) : float =
-        ln.LengthSq
 
     /// Format 3D line into string including type name, X, Y and Z for start and end points, and Length.
     /// Using nice floating point number formatting.
@@ -108,61 +90,33 @@ type Line3D =
         let toZ = Format.float ln.ToZ
         $"%s{fromX}, %s{fromY}, %s{fromZ} to %s{toX}, %s{toY}, %s{toZ}"
 
-    /// Format 3D line into string from X, Y and Z for start and end points.
-    /// Using nice floating point number formatting.
-    /// But without full type name as in ln.ToString()
-    static member inline asString (ln:Line3D) : string =
-        ln.AsString
-
     /// Format 3D line into an F# code string that can be used to recreate the line.
     member ln.AsFSharpCode : string =
         $"Line3D({ln.FromX}, {ln.FromY}, {ln.FromZ}, {ln.ToX}, {ln.ToY}, {ln.ToZ})"
-
-    /// Format 3D line into an F# code string that can be used to recreate the line.
-    static member inline asFSharpCode (ln:Line3D) : string =
-        ln.AsFSharpCode
 
     /// The start point of the Line3D. Same as ln.Start.
     member inline ln.From : Pnt =
         Pnt(ln.FromX, ln.FromY, ln.FromZ)
 
-    /// The start point of the Line3D. Same as Line3D.start.
-    static member inline from (ln:Line3D) : Pnt =
-        ln.From
 
     /// The start point of the Line3D. Same as ln.From.
     member inline ln.Start : Pnt =
         Pnt(ln.FromX, ln.FromY, ln.FromZ)
 
-    /// The start point of the Line3D. Same as Line3D.from.
-    static member inline start (ln:Line3D) : Pnt =
-        ln.Start
 
     /// The end point of the Line3D. Same as ln.To.
     member inline ln.End : Pnt =
         Pnt(ln.ToX, ln.ToY, ln.ToZ)
 
-    /// The end point of the Line3D. Same as Line3D.to'.
-    static member inline end' (ln:Line3D) : Pnt =
-        ln.End
 
     /// The end point of the Line3D. Same as ln.End.
     member inline ln.To : Pnt =
         Pnt(ln.ToX, ln.ToY, ln.ToZ)
 
-    /// The end point of the Line3D. Same as Line3D.end'.
-    static member inline to' (ln:Line3D) : Pnt =
-        ln.To
-
     /// Same as ln.Tangent or ln.Direction.
     /// The returned vector has the same length as the Line3D.
     member inline ln.Vector : Vec =
         Vec(ln.VectorX, ln.VectorY, ln.VectorZ)
-
-    /// Same as ln.Tangent or ln.Direction.
-    /// The returned vector has the same length as the Line3D.
-    static member inline vector (ln:Line3D) : Vec =
-        ln.Vector
 
     /// Operator to Rotate by Quaternion around Origin.
     /// Multiplies (or applies) a Quaternion to a 3D line.

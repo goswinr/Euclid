@@ -15,24 +15,29 @@ module Similarity2D =
     /// A type used inside ObjectToCheck.
     /// It represent a group of similar input.
     /// The 'category' string is used to only compare groups of the same category.
-    /// The 'bounding Rectangle' of the points is used as a fast and first check for similarity.
+    /// The 'bounding rectangle' of the points is used as a fast and first check for similarity.
     /// Within one 'list of points' the order does not matter, but each location must exist only once
     /// in order to be consider similar within the tolerance with another GroupInsideObjectToCheck.
     [<NoEquality;NoComparison>]// because its made up from Pt
     type GroupInsideObjectToCheck = {
+        /// The category used to restrict comparisons to matching groups.
         category:string
+        /// The bounding rectangle used for the initial similarity check.
         bRect:BRect
+        /// The points in the group, sorted by their X coordinate for binary search.
         points:Pt[] // must be sorted by 'X' property for binary search,
         //duplicate points within tolerance will most likely lead to not recognized similarity (not all indices will be covered in simPts)
         }
 
     /// A type to represent on object that shall be compared to other objects.
-    /// 'extend' (just a 2D point)  represents the max value of a bounding Rectangle, min value must be x=0 and y=0.
+    /// 'extend' (just a 2D point)  represents the max value of a bounding rectangle, min value must be x=0 and y=0.
     /// This is used for a very fast initial similarity check.
     /// 'groups' (an array of GroupInsideObjectToCheck) must be sorted by 'category' property.
     [<NoEquality;NoComparison>]// because its made up from Pt
     type ObjectToCheck = {
+        /// The maximum X and Y extents; the minimum is expected to be (0, 0).
         extend: Pt // represents the max value of a bounding Rectangle, min value must be x0, y0
+        /// The groups to compare, sorted by their category.
         groups: GroupInsideObjectToCheck[] // must be sorted by 'category' property. for Array.forall2 function
         }
 
@@ -127,8 +132,8 @@ module Similarity2D =
 
 
     /// The returned ObjectToCheck will have the subgroups sorted by category
-    /// and each point will be transformed by the overall bounding Rectangle Min point to 0,0.
-    /// Input Position of points does not matter, they will be moved to origin by overall bounding Rectangle over all lists,
+    /// and each point will be transformed by the overall bounding rectangle Min point to 0,0.
+    /// Input Position of points does not matter, they will be moved to origin by overall bounding rectangle over all lists,
     /// But any similarity that could be achieved by rotation will not be discovered.
     /// The string is used as a unique category identifier.
     let getSimilarityData (ptss:ResizeArray<string*ResizeArray<Pt>>) : ObjectToCheck =

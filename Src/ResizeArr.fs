@@ -298,7 +298,7 @@ module ResizeArr =
 
 
 
-    /// <summary>Returns the last element for which the given function returns <c>true</c>.
+    /// <summary>Returns the last element for which the given function returns <c>TRUE</c>.
     /// Return None if no such element exists.</summary>
     /// <param name="predicate">The function to test the input elements.</param>
     /// <param name="resizeArray">The input ResizeArray.</param>
@@ -449,7 +449,7 @@ module AutoOpenEuclidResizeArrayExtensions =
             #endif
                 this.[i] <- v
 
-        /// true if this.Count = 0
+        /// TRUE if this.Count = 0
         member inline this.IsEmpty : bool =
             this.Count = 0
 

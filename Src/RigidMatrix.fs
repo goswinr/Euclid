@@ -38,9 +38,30 @@ open EuclidErrors
 [<DataContract>] // for using DataMember on fields
 type RigidMatrix =
     //[<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
-    [<DataMember>] val M11 :float ; [<DataMember>] val M21 :float ; [<DataMember>] val M31 :float; [<DataMember>] val X41:float
-    [<DataMember>] val M12 :float ; [<DataMember>] val M22 :float ; [<DataMember>] val M32 :float; [<DataMember>] val Y42:float
-    [<DataMember>] val M13 :float ; [<DataMember>] val M23 :float ; [<DataMember>] val M33 :float; [<DataMember>] val Z43:float
+    /// The element in row 1, column 1 of the matrix.
+    [<DataMember>] val M11 : float
+    /// The element in row 1, column 2 of the matrix.
+    [<DataMember>] val M21 : float
+    /// The element in row 1, column 3 of the matrix.
+    [<DataMember>] val M31 : float
+    /// The X component of the translation in row 1, column 4 of the matrix.
+    [<DataMember>] val X41 : float
+    /// The element in row 2, column 1 of the matrix.
+    [<DataMember>] val M12 : float
+    /// The element in row 2, column 2 of the matrix.
+    [<DataMember>] val M22 : float
+    /// The element in row 2, column 3 of the matrix.
+    [<DataMember>] val M32 : float
+    /// The Y component of the translation in row 2, column 4 of the matrix.
+    [<DataMember>] val Y42 : float
+    /// The element in row 3, column 1 of the matrix.
+    [<DataMember>] val M13 : float
+    /// The element in row 3, column 2 of the matrix.
+    [<DataMember>] val M23 : float
+    /// The element in row 3, column 3 of the matrix.
+    [<DataMember>] val M33 : float
+    /// The Z component of the translation in row 3, column 4 of the matrix.
+    [<DataMember>] val Z43 : float
 
     /// <summary>Creates an immutable 4x3 Transformation Matrix. For only rotation and translation in 3D space.
     /// This Constructor takes arguments in row-major order.
@@ -229,6 +250,16 @@ type RigidMatrix =
         isOne  m.M11 && isZero m.M21 && isZero m.M31 && isZero m.X41 &&
         isZero m.M12 && isOne  m.M22 && isZero m.M32 && isZero m.Y42 &&
         isZero m.M13 && isZero m.M23 && isOne  m.M33 && isZero m.Z43
+
+    /// <summary>Checks if the Matrix is an Identity Matrix in the form of:
+    /// <code>
+    /// 1  0  0  0
+    /// 0  1  0  0
+    /// 0  0  1  0
+    /// </code>
+    /// Using an approximate tolerance of 1e-6.</summary>
+    static member inline isIdentity (m:RigidMatrix) : bool =
+        m.IsIdentity
 
 
 

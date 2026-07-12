@@ -11,6 +11,14 @@ open Euclid.EuclidCollectionUtilities
 type Points2D   =
 
 
+    /// Finds the center, mean, or average point.
+    static member center (pts: IList<Pt>) : Pt =
+        let mutable sum = Pt.Origin
+        for i = 0 to pts.Count-1 do
+            let pt = pts.[i]
+            sum <- sum + pt
+        sum / float pts.Count
+
     /// The sign is negative if the loop is clockwise.
     /// Last and first point should be the same.
     static member getSignedArea(ps:IList<Pt>) : float = //
@@ -132,11 +140,11 @@ type Points2D   =
         let mutable loop = true
         while loop && ptss.Count > 0 do
             //first try to append to end
-            let ende = res.[res.Count-1]
-            let si = ptss |> ResizeArr.minIndexBy (fun ps -> Pt.sqDist ende ps.First)
-            let ei = ptss |> ResizeArr.minIndexBy (fun ps -> Pt.sqDist ende ps.Last)
-            let sd = Pt.dist ende ptss.[si].First
-            let ed = Pt.dist ende ptss.[ei].Last
+            let endPt = res.[res.Count-1]
+            let si = ptss |> ResizeArr.minIndexBy (fun ps -> Pt.sqDist endPt ps.First)
+            let ei = ptss |> ResizeArr.minIndexBy (fun ps -> Pt.sqDist endPt ps.Last)
+            let sd = Pt.dist endPt ptss.[si].First
+            let ed = Pt.dist endPt ptss.[ei].Last
             if   sd < tolGap && sd < ed then  res.AddRange(              ptss.PopAt(si))
             elif ed < tolGap && ed < sd then  res.AddRange(ResizeArr.rev(ptss.PopAt(ei)) )
             else

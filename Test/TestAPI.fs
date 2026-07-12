@@ -359,6 +359,8 @@ module UnitVcAPI =
 module PtAPI =
     // Constructor
     let pt = Pt(1., 2.)
+    let (_:bool) = pt.IsInvalid
+    let (_:bool) = Pt.isInvalid pt
     let p2 = Pt(3., 4.)
 
     // Fields
@@ -474,6 +476,8 @@ module PtAPI =
 module PntAPI =
     // Constructor
     let pnt = Pnt(1., 2., 3.)
+    let (_:bool) = pnt.IsInvalid
+    let (_:bool) = Pnt.isInvalid pnt
     let p2 = Pnt(4., 5., 6.)
 
     // Fields
@@ -503,6 +507,8 @@ module PntAPI =
     let (_:float) = pnt.DistanceFromOrigin
     let (_:float) = pnt.DistanceFromOriginSquare
     let (_:float) = pnt.DistanceInXYFromOrigin
+    let (_:float) = pnt.SqDistanceInXYFromOrigin
+    let (_:float) = Pnt.sqDistanceInXYFromOrigin pnt
     let (_:float) = pnt.DistanceInXYFromOriginSquare
     let (_:Pnt) = pnt.WithDistanceFromOrigin 5.0
 
@@ -1260,6 +1266,7 @@ module BBoxAPI =
     // Creation
     let bbox = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
     let box2 = BBox.create(Pnt(5., 5., 5.), Pnt(15., 15., 15.))
+    let ray = Line3D(Pnt(-5., 5., 5.), Pnt(0., 5., 5.))
 
     // Fields
     let (_:float) = bbox.MinX
@@ -1340,9 +1347,10 @@ module BBoxAPI =
     let (_:Pnt) = bbox.EvaluateAt(0.5, 0.5, 0.5)
     let (_:bool) = bbox.ContainsPnt(Pnt(5., 5., 5.))
     let (_:bool) = bbox.Contains box2
-    let (_:BBox) = bbox.Union(Pnt(15., 15., 15.))
+    let (_:BBox) = bbox.UnionPnt(Pnt(15., 15., 15.))
     let (_:BBox) = bbox.Union box2
     let (_:BBox voption) = bbox.Intersection box2
+    let (_:(float * float) voption) = bbox.IntersectRay ray
     let (_:bool) = bbox.IsTouching(box2, 0.001)
 
     // Instance members - Overlap
@@ -1375,9 +1383,10 @@ module BBoxAPI =
     let (_:BBox) = BBox.scale 2.0 bbox
     let (_:bool) = BBox.containsPnt (Pnt(5., 5., 5.)) bbox
     let (_:bool) = BBox.contains box2 bbox
-    let (_:BBox) = BBox.unionPt (Pnt(15., 15., 15.)) bbox
+    let (_:BBox) = BBox.unionPnt (Pnt(15., 15., 15.)) bbox
     let (_:BBox) = BBox.union bbox box2
     let (_:BBox voption) = BBox.intersection bbox box2
+    let (_:(float * float) voption) = BBox.intersectRay ray bbox
 
     // Static members - Comparison
     let (_:bool) = BBox.equals 0.001 bbox box2
@@ -1554,7 +1563,7 @@ module MatrixAPI =
     let (_:Matrix) = Matrix.createVecToVec(Vec(1., 0., 0.), Vec(0., 1., 0.))
     let (_:Matrix) = Matrix.createFromQuaternion(Quaternion.identity)
     let (_:Matrix) = Matrix.createFromRowMajorArray([|1.;0.;0.;0.; 0.;1.;0.;0.; 0.;0.;1.;0.; 0.;0.;0.;1.|])
-    let (_:Matrix) = Matrix.createFromColumMajorArray([|1.;0.;0.;0.; 0.;1.;0.;0.; 0.;0.;1.;0.; 0.;0.;0.;1.|])
+    let (_:Matrix) = Matrix.createFromColumnMajorArray([|1.;0.;0.;0.; 0.;1.;0.;0.; 0.;0.;1.;0.; 0.;0.;0.;1.|])
     let plane = PPlane.WorldXY
     let (_:Matrix) = Matrix.createToPlane plane
     let (_:Matrix) = Matrix.createPlaneToPlane(plane, plane)

@@ -1,4 +1,4 @@
-﻿namespace Euclid
+namespace Euclid
 
 open System
 open EuclidErrors
@@ -13,16 +13,16 @@ module AutoOpenPt =
     type Pt with
 
         /// Returns a boolean indicating whether X or Y is NaN or Infinity.
-        member inline p.IsInValid : bool =
+        member inline p.IsInvalid : bool =
             isNanInfinity p.X || isNanInfinity p.Y
 
-        /// Returns a boolean indicating whether X or Y is NaN or Infinity.
-        static member inline isInValid (pt:Pt) : bool =
-            pt.IsInValid
+        /// Same as pt.IsInvalid.
+        static member inline isInvalid (pt:Pt) : bool =
+            pt.IsInvalid
 
         /// Returns a boolean indicating whether X and Y are both valid (not NaN or Infinity).
         member inline p.IsValid : bool =
-            not p.IsInValid
+            not p.IsInvalid
 
         /// Returns a boolean indicating whether X and Y are both valid (not NaN or Infinity).
         static member inline isValid (pt:Pt) : bool =
@@ -192,41 +192,41 @@ module AutoOpenPt =
         static member inline withDistanceFromOrigin (l:float) (pt:Pt) : Pt =
             pt.WithDistanceFromOrigin l
 
-        /// Rotate a 2D point Counter Clockwise by a 2D Rotation (that has cos and sin precomputed)
+        /// Rotate a 2D point counter-clockwise by a 2D Rotation (that has cos and sin precomputed)
         member inline pt.RotateBy (r:Rotation2D) : Pt =
             Pt(r.Cos*pt.X - r.Sin*pt.Y,
                 r.Sin*pt.X + r.Cos*pt.Y)
 
-        /// Rotate a 2D point Counter Clockwise by a 2D Rotation (that has cos and sin precomputed)
+        /// Rotate a 2D point counter-clockwise by a 2D Rotation (that has cos and sin precomputed)
         static member inline rotateBy (r:Rotation2D) (p:Pt) : Pt =
             Pt(r.Cos*p.X - r.Sin*p.Y,
                 r.Sin*p.X + r.Cos*p.Y)
 
-        /// <summary>Rotate the 2D point in degrees. Counter Clockwise.</summary>
+        /// <summary>Rotate the 2D point counter-clockwise by an angle in degrees.</summary>
         /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
         member inline pt.Rotate angDegree : Pt =
             pt.RotateBy (Rotation2D.createFromDegrees angDegree)
 
-        /// <summary>Rotate the 2D point in degrees. Counter Clockwise.</summary>
+        /// <summary>Rotate the 2D point counter-clockwise by an angle in degrees.</summary>
         /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
         static member inline rotate angDegree (vec:Pt) : Pt =
             Pt.rotateBy (Rotation2D.createFromDegrees angDegree) vec
 
-        /// <summary>Rotate the 2D point in radians. Counter Clockwise.</summary>
+        /// <summary>Rotate the 2D point counter-clockwise by an angle in radians.</summary>
         /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
         member inline pt.RotateRadians angRadians  : Pt =
             pt.RotateBy (Rotation2D.createFromRadians angRadians)
 
-        /// <summary>Rotate the 2D point in radians. Counter Clockwise.</summary>
+        /// <summary>Rotate the 2D point counter-clockwise by an angle in radians.</summary>
         /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
         static member inline rotateRadians angRadians (pt:Pt) : Pt =
             pt.RotateRadians angRadians
 
-        /// 90-degree rotation Counter-Clockwise.
+        /// 90-degree rotation counter-clockwise.
         member inline pt.Rotate90CCW : Pt =
             Pt( -pt.Y, pt.X)
 
-        /// 90-degree rotation Counter-Clockwise.
+        /// 90-degree rotation counter-clockwise.
         static member inline rotate90CCW (pt:Pt) : Pt =
             pt.Rotate90CCW
 
@@ -260,7 +260,7 @@ module AutoOpenPt =
         /// Returns the Diamond Angle from this point to another point.
         /// Calculates the proportion of X to Y component.
         /// It is always positive and in the range of 0.0 to 4.0 (for 360 degrees)
-        /// 0.0 = Xaxis, going Counter-Clockwise.
+        /// 0.0 = Xaxis, going counter-clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         /// Fails if the two points are coincident or too close together.
         member inline p.DirectionDiamondTo(o:Pt) : float =
@@ -282,14 +282,14 @@ module AutoOpenPt =
         /// Returns the Diamond Angle from this point to another point.
         /// Calculates the proportion of X to Y component.
         /// It is always positive and in the range of 0.0 to 4.0 (for 360 degrees)
-        /// 0.0 = Xaxis, going Counter-Clockwise.
+        /// 0.0 = Xaxis, going counter-clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         /// Fails if the two points are coincident or too close together.
         static member inline directionDiamondTo (o:Pt) (p:Pt) : float =
             p.DirectionDiamondTo(o)
 
         /// Returns the angle in radians from this point to another point.
-        /// 0.0 = Xaxis, going Counter-Clockwise till two Pi.
+        /// 0.0 = Xaxis, going counter-clockwise till two Pi.
         /// Fails if the two points are coincident or too close together.
         member inline p.Angle2PiTo(o:Pt) : float =
             // https://stackoverflow.com/a/14675998/969070
@@ -301,19 +301,19 @@ module AutoOpenPt =
             else            a
 
         /// Returns the angle in radians from 'fromPt' to 'toPt'.
-        /// 0.0 = Xaxis, going Counter-Clockwise till two Pi.
+        /// 0.0 = Xaxis, going counter-clockwise till two Pi.
         /// Fails if the two points are coincident or too close together.
         static member inline angle2PiTo (fromPt:Pt, toPt:Pt) : float = // not curried because argument order is important
             fromPt.Angle2PiTo(toPt)
 
         /// Returns the angle in degrees from this point to another point.
-        /// 0.0 = Xaxis, going Counter-Clockwise till 360.
+        /// 0.0 = Xaxis, going counter-clockwise till 360.
         /// Fails if the two points are coincident or too close together.
         member inline p.Angle360To(o:Pt) : float =
             p.Angle2PiTo o |> toDegrees
 
         /// Returns the angle in degrees from 'fromPt' to 'toPt'.
-        /// 0.0 = Xaxis, going Counter-Clockwise till 360.
+        /// 0.0 = Xaxis, going counter-clockwise till 360.
         /// Fails if the two points are coincident or too close together.
         static member inline angle360To (fromPt:Pt, toPt:Pt) : float =  // not curried because argument order is important
             fromPt.Angle360To(toPt)
@@ -470,7 +470,7 @@ module AutoOpenPt =
         static member inline bisector (ptPrev:Pt, ptThis:Pt, ptNext:Pt) : Vc =
            (ptPrev-ptThis).Unitized  + (ptNext-ptThis).Unitized
 
-        /// Rotate the 2D point around a center 2D point. Counter Clockwise.
+        /// Rotate the 2D point counter-clockwise around a center point.
         /// By a 2D Rotation (that has cos and sin precomputed)
         static member inline rotateWithCenterBy (cen:Pt) (r:Rotation2D) (pt:Pt) : Pt =
             let x = pt.X - cen.X
@@ -478,7 +478,7 @@ module AutoOpenPt =
             Pt (r.Cos*x - r.Sin*y + cen.X,
                 r.Sin*x + r.Cos*y + cen.Y)
 
-        /// Rotate 2D point around a center point Counter-Clockwise. Angle given in degrees.
+        /// Rotate 2D point around a center point counter-clockwise. Angle given in degrees.
         static member inline rotateWithCenter (cen:Pt) (angDegree:float) (pt:Pt) : Pt =
             Pt.rotateWithCenterBy cen (Rotation2D.createFromDegrees angDegree) pt
 
@@ -579,6 +579,16 @@ module AutoOpenPt =
 
         // #endregion
         // #region Obsolete
+
+        /// Obsolete typo. Same as p.IsInvalid.
+        [<Obsolete("Typo, use IsInvalid instead.")>]
+        member inline p.IsInValid : bool =
+            p.IsInvalid
+
+        /// Obsolete typo. Same as Pt.isInvalid.
+        [<Obsolete("Typo, use isInvalid instead.")>]
+        static member inline isInValid (pt:Pt) : bool =
+            pt.IsInvalid
 
         [<Obsolete("Use .SqDistanceTo instead.")>]
         member inline p.DistanceToSquare (b:Pt) : float =

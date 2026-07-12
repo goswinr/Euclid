@@ -110,7 +110,7 @@ type Points3D   =
     /// It finds the center point and then takes cross-products, iterating all points in pairs of two.
     /// The first three points define the orientation of the normal.
     /// So it considers the current order of points too.
-    /// If the order is counterclockwise in the World X-Y plane, then the normal is in world Z orientation.
+    /// If the order is counter-clockwise in the World X-Y plane, then the normal is in world Z orientation.
     /// The sweep from the first to the second point (from the mean center) defines the orientation of the normal.
     static member normalOfPoints(pts: IList<Pnt>) : Vec =
         if pts.Count <= 2 then
@@ -151,11 +151,11 @@ type Points3D   =
         let mutable loop = true
         while loop && ptss.Count > 0 do
             //first try to append to end
-            let ende = res.[res.Count-1]
-            let si = ptss |> ResizeArr.minIndexBy (fun ps -> Pnt.sqDist ende ps.First)
-            let ei = ptss |> ResizeArr.minIndexBy (fun ps -> Pnt.sqDist ende ps.Last)
-            let sd = Pnt.dist ende ptss.[si].First
-            let ed = Pnt.dist ende ptss.[ei].Last
+            let endPnt = res.[res.Count-1]
+            let si = ptss |> ResizeArr.minIndexBy (fun ps -> Pnt.sqDist endPnt ps.First)
+            let ei = ptss |> ResizeArr.minIndexBy (fun ps -> Pnt.sqDist endPnt ps.Last)
+            let sd = Pnt.dist endPnt ptss.[si].First
+            let ed = Pnt.dist endPnt ptss.[ei].Last
             if   sd < tolGap && sd < ed then  res.AddRange(              ptss.PopAt(si))
             elif ed < tolGap && ed < sd then  res.AddRange(ResizeArr.rev(ptss.PopAt(ei)) )
             else

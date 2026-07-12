@@ -1,4 +1,4 @@
-﻿namespace Euclid
+namespace Euclid
 
 open System
 open UtilEuclid
@@ -376,7 +376,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
         p.SegmentCount
 
     /// Gets the length of the Polyline2D
-    /// Returns 0.0 if there are less than 2 points.
+    /// Returns 0.0 if there are fewer than 2 points.
     member p.Length : float =
         let mutable l = 0.0
         let len =  R.len xys
@@ -521,19 +521,19 @@ type Polyline2D private (xys: ResizeArray<float>) =
         p.BoundingRectangle
 
     /// Tests if Polyline2D start and end points are exactly the same.
-    /// Returns False if the Polyline2D has less than 3 points.
+    /// Returns FALSE if the Polyline2D has fewer than 3 points.
     member p.IsClosed : bool =
         p.PointCount > 2
         && xys.[0] = xys.SecondLast
         && xys.[1] = xys.Last
 
     /// Tests if Polyline2D start and end points are exactly the same.
-    /// Returns False if the Polyline2D has less than 3 points.
+    /// Returns FALSE if the Polyline2D has fewer than 3 points.
     static member inline isClosed (p:Polyline2D) : bool =
         p.IsClosed
 
     /// Tests if Polyline2D is closed within given tolerance.
-    /// Returns False if the Polyline2D has less than 3 points.
+    /// Returns FALSE if the Polyline2D has fewer than 3 points.
     member p.IsAlmostClosed tolerance : bool =
         if p.PointCount <= 2 then
             false
@@ -543,7 +543,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
             dx * dx + dy * dy <= tolerance*tolerance // <= needed so it works with 0.0
 
     /// Tests if Polyline2D is closed within given tolerance.
-    /// Returns False if the Polyline2D has less than 3 points.
+    /// Returns FALSE if the Polyline2D has fewer than 3 points.
     static member inline isAlmostClosed tolerance (p:Polyline2D) : bool =
         p.IsAlmostClosed tolerance
 
@@ -614,10 +614,10 @@ type Polyline2D private (xys: ResizeArray<float>) =
         pl
 
     /// Calculates the signed area of the Polyline2D .
-    /// If it is positive the Polyline2D is Counter Clockwise.
+    /// If it is positive the Polyline2D is counter-clockwise.
     /// Polyline does not need to be exactly closed.
     /// The segment from the last point to the first point is included in the area calculation.
-    /// For self intersecting Polylines the result is invalid.
+    /// For self-intersecting Polylines the result is invalid.
     /// Raises an error on an empty Polyline2D.
     member p.SignedArea : float =
         //https://helloacm.com/sign-area-of-irregular-polygon/
@@ -637,39 +637,39 @@ type Polyline2D private (xys: ResizeArray<float>) =
         area * 0.5
 
     /// Calculates the signed area of the Polyline2D .
-    /// If it is positive the Polyline2D is Counter Clockwise.
+    /// If it is positive the Polyline2D is counter-clockwise.
     /// Polyline does not need to be exactly closed.
     /// The segment from the last point to the first point is included in the area calculation.
-    /// For self intersecting Polylines the result is invalid.
+    /// For self-intersecting Polylines the result is invalid.
     static member inline signedArea (p:Polyline2D) : float =
         p.SignedArea
 
     /// Calculates the area of the Polyline2D .
     /// The segment from the last point to the first point is included in the area calculation.
-    /// For self intersecting Polylines the result is invalid.
+    /// For self-intersecting Polylines the result is invalid.
     member p.Area : float =
         abs p.SignedArea
 
     /// Calculates the area of the Polyline2D .
     /// The segment from the last point to the first point is included in the area calculation.
-    /// For self intersecting Polylines the result is invalid.
+    /// For self-intersecting Polylines the result is invalid.
     static member inline area (p:Polyline2D) : float =
         abs p.SignedArea
 
-    /// Test if Polyline2D is CounterClockwise.
+    /// Test if Polyline2D is counter-clockwise.
     /// The Polyline2D does not need to be actually closed.
     /// The signed area of the Polyline2D is calculated.
-    /// If it is positive the Polyline2D is Counter Clockwise.
+    /// If it is positive the Polyline2D is counter-clockwise.
     member p.IsCounterClockwise : bool =
         let  area = p.SignedArea
         if abs(area) < UtilEuclid.zeroLengthTolerance then
             fail $"Polyline2D.IsCounterClockwise: Polyline2D the area is zero: {p}"
         area > 0.0
 
-    /// Test if Polyline2D is CounterClockwise.
+    /// Test if Polyline2D is counter-clockwise.
     /// The Polyline2D does not need to be actually closed.
     /// The signed area of the Polyline2D is calculated.
-    /// If it is positive the Polyline2D is Counter Clockwise.
+    /// If it is positive the Polyline2D is counter-clockwise.
     static member inline isCounterClockwise (p:Polyline2D) : bool =
         p.IsCounterClockwise
 
@@ -999,7 +999,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// Self-intersecting polygons give "alternating" inside/outside regions
     /// Uses ray casting: runs an infinite horizontal ray (increasing x, fixed y) from the test point
     /// and counts edge crossings. Each crossing toggles inside/outside state (Jordan curve theorem).
-    /// Always returns FALSE if the Polyline2D has less than 3 points.
+    /// Always returns FALSE if the Polyline2D has fewer than 3 points.
     /// Boundary cases: Points exactly on edges or vertices have implementation-specific behavior.
     /// Horizontal edges are handled by the strict inequality convention (pi.Y > y) != (pj.Y > y).
     /// Points on left/bottom edges tend to be considered inside, right/top edges outside.
@@ -1049,7 +1049,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// Self-intersecting polygons give "alternating" inside/outside regions
     /// Uses ray casting: runs an infinite horizontal ray (increasing x, fixed y) from the test point
     /// and counts edge crossings. Each crossing toggles inside/outside state (Jordan curve theorem).
-    /// Always returns FALSE if the Polyline2D has less than 3 points.
+    /// Always returns FALSE if the Polyline2D has fewer than 3 points.
     /// Boundary cases: Points exactly on edges or vertices have implementation-specific behavior.
     /// Horizontal edges are handled by the strict inequality convention (pi.Y > y) != (pj.Y > y).
     /// Points on left/bottom edges tend to be considered inside, right/top edges outside.
@@ -1142,7 +1142,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
     member p.Move (v:Vc) : Polyline2D =
         Polyline2D.translate v p
 
-    /// Move a Polyline2D by a vector. (same as Polyline2D.translate)
+    /// Move a Polyline2D by a vector. Same as Polyline2D.translate.
     static member move (v:Vc) (pl:Polyline2D)  : Polyline2D =
         Polyline2D.translate v pl
 
@@ -1178,11 +1178,11 @@ type Polyline2D private (xys: ResizeArray<float>) =
             i <- i + 2
         Polyline2D(cs)
 
-    /// Rotation a Polyline2D around the World-Origin by a Rotation2D.
+    /// Rotates a Polyline2D around the world origin by a Rotation2D.
     member p.Rotate (r:Rotation2D) : Polyline2D =
         Polyline2D.rotate r p
 
-    /// Rotation a Polyline2D around Z-Axis.
+    /// Rotates a Polyline2D around the Z-axis.
     static member rotate (r:Rotation2D) (pl:Polyline2D) : Polyline2D =
         let cs = ResizeArray<float>(pl.XYs.Count)
         let mutable i = 0
@@ -1198,7 +1198,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
             i <- i + 2
         Polyline2D(cs)
 
-    /// Rotation a Polyline2D around a given center point by a Rotation2D.
+    /// Rotates a Polyline2D around a given center point by a Rotation2D.
     member p.RotateWithCenter (cen:Pt, r:Rotation2D) : Polyline2D =
         Polyline2D.rotateWithCenter cen r p
 
@@ -1206,7 +1206,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
     // #endregion
     // #region LablePoint
 
-    /// Rotation a Polyline2D round given center point an a local Z-axis.
+    /// Rotates the Polyline2D around the local Z-axis through the given center point.
     static member rotateWithCenter (cen:Pt) (r:Rotation2D) (pl:Polyline2D) : Polyline2D =
         let cs = ResizeArray<float>(pl.XYs.Count)
         let mutable i = 0
@@ -1348,8 +1348,8 @@ type Polyline2D private (xys: ResizeArray<float>) =
     static member inline ensureClockwise (pl:Polyline2D) : Polyline2D =
         if pl.IsClockwise then pl else pl.Reverse()
 
-    /// Tests if Polyline2D is Counter Clockwise.
-    /// Returns the same instance if the Polyline2D is already Counter Clockwise,
+    /// Tests if Polyline2D is counter-clockwise.
+    /// Returns the same instance if the Polyline2D is already counter-clockwise,
     /// otherwise returns a new reversed Polyline2D.
     static member inline ensureCounterClockwise (pl:Polyline2D) : Polyline2D =
         if pl.IsCounterClockwise then pl else pl.Reverse()
@@ -1361,14 +1361,14 @@ type Polyline2D private (xys: ResizeArray<float>) =
         if pl.IsCounterClockwise then pl.ReverseInPlace()
         pl
 
-    /// Tests if Polyline2D is Counter Clockwise.
+    /// Tests if Polyline2D is counter-clockwise.
     /// If not reverse the Polyline2D in place.
     /// Always returns the same instance.
     static member inline ensureCounterClockwiseInPlace (pl:Polyline2D) : Polyline2D =
         if pl.IsClockwise then pl.ReverseInPlace()
         pl
 
-    /// Move a Polyline2D by a vector. (same as Polyline2D.move)
+    /// Move a Polyline2D by a vector. Same as Polyline2D.move.
     static member translate (v:Vc) (pl:Polyline2D)  : Polyline2D =
         let cs = ResizeArray<float>(pl.XYs.Count)
         let mutable i = 0
@@ -1397,7 +1397,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
         Polyline2D(cs)
 
     /// <summary>Apply a mapping function to each point in the Polyline2D with point position (not float index). Returns new Polyline2D.</summary>
-    /// <param name="mapping">A function that takes the the position of the point (index/2) and the point itself, and returns a new point.
+    /// <param name="mapping">A function that takes the position of the point (index/2) and the point itself, and returns a new point.
     /// </param>
     /// <param name="pl">The Polyline2D to map over.</param>
     /// <returns>A new Polyline2D with the mapped points.</returns>
@@ -1442,7 +1442,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
             i <- i + 2
 
     /// <summary>Iterate over each point in the Polyline2D with index and perform an action.</summary>
-    /// <param name="action">A function that takes the the position of the point (index/2) and the point itself.</param>
+    /// <param name="action">A function that takes the position of the point (index/2) and the point itself.</param>
     /// <param name="pl">The Polyline2D to iterate over.</param>
     /// <returns>Unit.</returns>
     static member iteriPt (action:int -> Pt -> unit) (pl:Polyline2D) : unit =
@@ -1557,7 +1557,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// <summary>Find the index of the first point in the Polyline2D that satisfies a given condition. Returns Some(index) if found, otherwise None.</summary>
     /// <param name="condition">A function that takes the X and Y coordinates of a point and returns a boolean indicating whether the condition is satisfied.</param>
     /// <param name="pl">The Polyline2D to search through.</param>
-    /// <returns>Some(index of x) the index of the x value in the polylines flat array if found, otherwise None.</returns>
+    /// <returns>Some(index of x) the index of the x value in the polyline's flat array if found, otherwise None.</returns>
     static member inline tryFindIndex (condition: float -> float -> bool) (pl:Polyline2D) : int option =
         let mutable result = None
         let xys = pl.XYs
@@ -1576,7 +1576,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// <summary>Find the index of the last point in the Polyline2D that satisfies a given condition. Returns Some(index) if found, otherwise None.</summary>
     /// <param name="condition">A function that takes the X and Y coordinates of a point and returns a boolean indicating whether the condition is satisfied.</param>
     /// <param name="pl">The Polyline2D to search through.</param>
-    /// <returns>Some(index of x) the index of the x value in the polylines flat array if found, otherwise None.</returns>
+    /// <returns>Some(index of x) the index of the x value in the polyline's flat array if found, otherwise None.</returns>
     static member inline tryFindLastIndex (condition: float -> float -> bool) (pl:Polyline2D) : int option =
         let mutable result = None
         let xys = pl.XYs
@@ -1646,7 +1646,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// <summary>Tests if two Polyline2D have the same point count and if their corresponding points are exactly equal.</summary>
     /// <param name="pl1">The first Polyline2D instance.</param>
     /// <param name="pl2">The second Polyline2D instance.</param>
-    /// <returns>True if the two Polyline2D instances are equal, otherwise false.</returns>
+    /// <returns>TRUE if the two Polyline2D instances are equal, otherwise FALSE.</returns>
     static member equals (pl1:Polyline2D) (pl2:Polyline2D) : bool =
         if Object.ReferenceEquals(pl1, pl2) then
             true
@@ -1716,13 +1716,13 @@ type Polyline2D private (xys: ResizeArray<float>) =
 
     /// Creates a counter-clockwise closed Polyline2D starting at the Origin of the Rect2D
     static member createFromRectCCW (r:Rect2D)  : Polyline2D =
-        Polyline2D r.PointsXYLoopedCCW
+        Polyline2D r.PointsXYLooped_CCW
 
     /// Creates a clockwise closed Polyline2D starting at the Origin of the Rect2D
     static member createFromRectCW (r:Rect2D)  : Polyline2D =
-        Polyline2D r.PointsXYLoopedCW
+        Polyline2D r.PointsXYLooped_CW
 
-    /// Creates a counter-clockwise Polyline2D starting at the MinX and MinY for the bounding Rectangle
+    /// Creates a counter-clockwise Polyline2D starting at the MinX and MinY for the bounding rectangle
     static member createFromBRectCCW (r:BRect)  : Polyline2D =
         let cs = ResizeArray<float>(10)
         cs.Add r.MinX; cs.Add r.MinY
@@ -1732,7 +1732,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
         cs.Add r.MinX; cs.Add r.MinY
         Polyline2D cs
 
-    /// Creates a clockwise Polyline2D starting at the MinX and MinY for the bounding Rectangle
+    /// Creates a clockwise Polyline2D starting at the MinX and MinY for the bounding rectangle
     static member createFromBRectCW (r:BRect)  : Polyline2D =
         let cs = ResizeArray<float>(10)
         cs.Add r.MinX; cs.Add r.MinY
@@ -1862,7 +1862,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// <summary>Removes consecutive duplicate points from the Polyline2D within a given tolerance.</summary>
     /// <param name="distanceTolerance"> The distance within which points are considered duplicates. </param>
     /// <param name="pl"> A 2D Polyline, open or closed. </param>
-    /// <remarks>This algorithm ensures to keep edges in their position by re-intersects segments if points are closer than the distanceTolerance but not identical.
+    /// <remarks>This algorithm keeps edges in position by using re-intersecting segments if points are closer than the distanceTolerance but not identical.
     /// The position of start and end point is NOT changed. Use Polyline2D.close to ensure start and end point are identical.</remarks>
     static member removeDuplicatePointsFaithfully (distanceTolerance:float) (pl:Polyline2D) : Polyline2D =
         let xys = pl.XYs
@@ -1892,7 +1892,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
                 // the distance is OK:
                 else
                     // (a) fix the last point if it was bad and not the first point
-                    if prevWasBad && nps.Count >= 4 then // if nps has less than 2 points we keep the start point exactly. like at the end see below.
+                    if prevWasBad && nps.Count >= 4 then // If nps has fewer than 2 points, keep the start point exactly, as at the end below.
                         // else, if nps has at least 2 points, re-intersect the edge from lastBad to this with the edge from prev back to the previous ok point
                         let lastBadX = xys.[i - 2] // prev is the last point of a cluster of too close points, so we use this as the last point of the edge.
                         let lastBadY = xys.[i - 1]
@@ -2053,9 +2053,9 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// <param name="polyLine"> A 2D Polyline, open or closed. </param>
     /// <param name="constantOffsetDistance">The offset distance for all segments of the polyline.
     /// A positive distance offset to the inside of the polyline. A negative distance offset to the outside of the polyline.</param>
-    /// <param name="loop">bool, Optional (false).
-    /// Set to true to explicitly consider last point and first point to be from a closed loop, even if they are not at the same location.</param>
-    /// <param name="checkOrientation">bool, Optional(true). By default the algorithm always checks if the polyline is clockwise or counter clockwise.
+    /// <param name="loop">bool, Optional (FALSE).
+    /// Set to TRUE to explicitly consider last point and first point to be from a closed loop, even if they are not at the same location.</param>
+    /// <param name="checkOrientation">bool, Optional(TRUE). By default the algorithm always checks if the polyline is clockwise or counter-clockwise.
     /// So that positive offset distances are always towards the inside of the polyline.
     /// Set this parameter to FALSE if you want to skip the orientation check.
     /// Clockwise polylines will offset to the outside, counter-clockwise polylines to the inside.</param>
@@ -2115,10 +2115,10 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// <param name="multipleOffsetDistances">The parallel offset distances for each segment of the polyline.
     /// A positive distance offsets inwards in corners, a negative offset outwards.
     /// For open and closed polylines this list of distances must have one item less than number of points in the polyline.
-    /// Except if the polyline is open and the loop parameter is set to true. Then points and distances list shall have the same count.</param>
-    /// <param name="loop">bool, Optional (false).
-    /// Set to true to explicitly consider last point and first point to be from a closed loop, even if they are not at the same location.</param>
-    /// <param name="checkOrientation">bool, Optional(true). By default the algorithm always checks if the polyline is clockwise or counter clockwise.
+    /// Except if the polyline is open and the loop parameter is set to TRUE. Then points and distances list shall have the same count.</param>
+    /// <param name="loop">bool, Optional (FALSE).
+    /// Set to TRUE to explicitly consider last point and first point to be from a closed loop, even if they are not at the same location.</param>
+    /// <param name="checkOrientation">bool, Optional(TRUE). By default the algorithm always checks if the polyline is clockwise or counter-clockwise.
     /// So that positive offset distances are always towards the inside of the polyline.
     /// Set this parameter to FALSE if you want to skip the orientation check.
     /// Clockwise polylines will offset to the outside, counter-clockwise polylines to the inside.</param>

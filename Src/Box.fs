@@ -1,4 +1,4 @@
-﻿namespace Euclid
+namespace Euclid
 
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
@@ -8,7 +8,7 @@ open System.Runtime.Serialization // for serialization of struct fields only but
 open System.Collections.Generic
 
 
-/// <summary>A struct of 9 floats  representing an immutable 3D Box with any rotation in 3D space.
+/// <summary>A struct of 9 floats  representing an immutable 3D box with any rotation in 3D space.
 /// Described by z, y and z of the Origin and x, y and z for each of the three Edge vectors.
 /// Similar to PPlane, however the three vectors are not unitized.
 /// This implementation guarantees the box to be always valid.
@@ -16,7 +16,7 @@ open System.Collections.Generic
 /// However the length of one of these axes might still be zero.
 /// <code>
 ///   local        local
-///   Z-Axis       Y-Axis
+///   Z-axis       Y-axis
 ///   ^           /
 ///   |   7      /        6
 ///   |   +---------------+
@@ -29,7 +29,7 @@ open System.Collections.Generic
 ///   |  / 3          |  / 2
 ///   | /             | /
 ///   |/              |/     local
-///   +---------------+----> X-Axis
+///   +---------------+----> X-axis
 ///   0               1
 ///
 
@@ -80,7 +80,7 @@ type Box =
     [<DataMember>] val public ZaxisZ: float
 
     /// Unsafe internal constructor, public only for inlining.
-    /// Creates a Box from origin coordinates and X, Y and Z axis vector components.
+    /// Creates a box from origin coordinates and X-, Y-, and Z-axis vector components.
     [<Obsolete("This is not Obsolete, but an unsafe internal constructor. the input is not verified, so it might create invalid geometry. It is exposed as a public member so that it can be inlined.") >]
     new (originX:float, originY:float, originZ:float,
          xAxisX:float, xAxisY:float, xAxisZ:float,
@@ -91,7 +91,7 @@ type Box =
             YaxisX=yAxisX; YaxisY=yAxisY; YaxisZ=yAxisZ
             ZaxisX=zAxisX; ZaxisY=zAxisY; ZaxisZ=zAxisZ}
 
-    /// Create a Box from origin coordinates and X, Y and Z axis vector components.
+    /// Create a box from origin coordinates and X-, Y-, and Z-axis vector components.
     /// It does NOT verify the orientation of vectors.
     static member inline createUnchecked (originX:float, originY:float, originZ:float,
                                              xAxisX:float, xAxisY:float, xAxisZ:float,
@@ -101,7 +101,7 @@ type Box =
         Box(originX, originY, originZ, xAxisX, xAxisY, xAxisZ, yAxisX, yAxisY, yAxisZ, zAxisX, zAxisY, zAxisZ)
         #warnon "44" // re-enable warning for obsolete usage
 
-    /// Unsafe constructor that creates a Box from origin point and three axis vectors.
+    /// Unsafe constructor that creates a box from origin point and three axis vectors.
     /// It does NOT verify the orientation of vectors.
     static member inline createUncheckedVec (origin:Pnt, xAxis:Vec, yAxis:Vec, zAxis:Vec) : Box =
         Box.createUnchecked(origin.X, origin.Y, origin.Z, xAxis.X, xAxis.Y, xAxis.Z, yAxis.X, yAxis.Y, yAxis.Z, zAxis.X, zAxis.Y, zAxis.Z)
@@ -186,7 +186,7 @@ type Box =
     static member inline sizeZSq (b:Box) : float =
         b.SizeZSq
 
-    /// Nicely formatted string representation of the Box including its size.
+    /// Nicely formatted string representation of the box including its size.
     override b.ToString() : string =
         let sizeX = Format.float b.SizeX
         let sizeY = Format.float b.SizeY
@@ -198,7 +198,7 @@ type Box =
         $"Euclid.Box %s{sizeX} x %s{sizeY} x %s{sizeZ} (Origin:%s{origin}| X-ax:%s{xAxis}|Y-ax:%s{yAxis}|Z-ax:%s{zAxis})"
 
 
-    /// Format Box into string with nice floating point number formatting of X, Y and Z size only.
+    /// Format box into string with nice floating point number formatting of X, Y and Z size only.
     /// But without type name as in v.ToString()
     member b.AsString : string =
         let sizeX = Format.float b.SizeX
@@ -210,7 +210,7 @@ type Box =
     static member inline asString (b:Box) : string =
         b.AsString
 
-    /// Format Box into an F# code string that can be used to recreate the box.
+    /// Format box into an F# code string that can be used to recreate the box.
     member b.AsFSharpCode : string =
         $"Box.createUnchecked({b.OriginX}, {b.OriginY}, {b.OriginZ}, {b.XaxisX}, {b.XaxisY}, {b.XaxisZ}, {b.YaxisX}, {b.YaxisY}, {b.YaxisZ}, {b.ZaxisX}, {b.ZaxisY}, {b.ZaxisZ})"
 
@@ -218,7 +218,7 @@ type Box =
     static member inline asFSharpCode (b:Box) : string =
         b.AsFSharpCode
 
-    /// Creates a unitized version of the local X-Axis.
+    /// Creates a unitized version of the local X-axis.
     member inline r.XaxisUnit : UnitVec =
         let x = r.XaxisX
         let y = r.XaxisY
@@ -233,7 +233,7 @@ type Box =
     static member inline xAxisUnit (b:Box) : UnitVec =
         b.XaxisUnit
 
-    /// Creates a unitized version of the local Y-Axis.
+    /// Creates a unitized version of the local Y-axis.
     member inline r.YaxisUnit : UnitVec =
         let x = r.YaxisX
         let y = r.YaxisY
@@ -248,7 +248,7 @@ type Box =
     static member inline yAxisUnit (b:Box) : UnitVec =
         b.YaxisUnit
 
-    /// Creates a unitized version of the local Z-Axis.
+    /// Creates a unitized version of the local Z-axis.
     member inline r.ZaxisUnit : UnitVec =
         let x = r.ZaxisX
         let y = r.ZaxisY
@@ -293,7 +293,7 @@ type Box =
     static member inline center (b:Box) : Pnt =
         b.Center
 
-    /// Evaluate a X, Y and Z parameter of the Box.
+    /// Evaluate an X, Y and Z parameter of the box.
     ///  0.0, 0.0, 0.0 returns the Origin.
     ///  1.0, 1.0, 1.0 returns the FarCorner.
     member inline b.EvaluateAt (xParameter:float, yParameter:float, zParameter:float) : Pnt =
@@ -301,7 +301,7 @@ type Box =
             b.OriginY + b.XaxisY*xParameter + b.YaxisY*yParameter + b.ZaxisY*zParameter,
             b.OriginZ + b.XaxisZ*xParameter + b.YaxisZ*yParameter + b.ZaxisZ*zParameter)
 
-    /// Evaluate a X, Y and Z parameter of the box.
+    /// Evaluate an X, Y and Z parameter of the box.
     static member inline evaluateAt xParameter yParameter zParameter (b:Box) : Pnt =
         b.EvaluateAt(xParameter, yParameter, zParameter)
 
@@ -358,26 +358,26 @@ type Box =
         b.ShortestEdgeSq
 
     /// Tests if all sides are smaller than the zeroLength tolerance.
-    /// This is the same as box.IsPoint.
+    /// Same as b.IsPoint.
     member inline b.IsZero : bool =
         isTooTinySq b.SizeXSq &&
         isTooTinySq b.SizeYSq &&
         isTooTinySq b.SizeZSq
 
     /// Tests if all sides are smaller than the zeroLength tolerance.
-    /// This is the same as isPoint.
+    /// Same as Box.isPoint.
     static member inline isZero (b:Box) : bool =
         b.IsZero
 
     /// Tests if all sides are smaller than the zeroLength tolerance.
-    /// This is the same as box.IsZero.
+    /// Same as b.IsZero.
     member inline b.IsPoint : bool =
         isTooTinySq b.SizeXSq &&
         isTooTinySq b.SizeYSq &&
         isTooTinySq b.SizeZSq
 
     /// Tests if all sides are smaller than the zeroLength tolerance.
-    /// This is the same as isZero.
+    /// Same as Box.isZero.
     static member inline isPoint (b:Box) : bool =
         b.IsPoint
 
@@ -392,37 +392,37 @@ type Box =
     static member inline countZeroSides (b:Box) : int =
         b.CountZeroSides
 
-    /// Tests if two of the X, Y and Z axis is smaller than the zeroLength tolerance.
+    /// Tests if two of the X, Y, and Z axes are smaller than the zeroLength tolerance.
     member inline b.IsLine : bool =
         b.CountZeroSides = 2
 
-    /// Tests if two of the X, Y and Z axis is smaller than the zeroLength tolerance.
+    /// Tests if two of the X, Y, and Z axes are smaller than the zeroLength tolerance.
     static member inline isLine (b:Box) : bool =
         b.IsLine
 
-    /// Tests if one of the X, Y and Z axis is smaller than the zeroLength tolerance.
+    /// Tests if one of the X, Y, and Z axes is smaller than the zeroLength tolerance.
     member inline b.IsFlat : bool =
         b.CountZeroSides = 1
 
-    /// Tests if one of the X, Y and Z axis is smaller than the zeroLength tolerance.
+    /// Tests if one of the X, Y, and Z axes is smaller than the zeroLength tolerance.
     static member inline isFlat (b:Box) : bool =
         b.IsFlat
 
-    /// Tests if no sides of the X, Y and Z axis is smaller than the zeroLength tolerance.
+    /// Tests if none of the X, Y, and Z axes are smaller than the zeroLength tolerance.
     /// Same as .HasVolume
     member inline b.IsValid : bool =
         b.CountZeroSides = 0
 
-    /// Tests if no sides of the X, Y and Z axis is smaller than the zeroLength tolerance.
+    /// Tests if none of the X, Y, and Z axes are smaller than the zeroLength tolerance.
     static member inline isValid (b:Box) : bool =
         b.IsValid
 
-    /// Tests if none of the X, Y and Z axis is smaller than the zeroLength tolerance.
+    /// Tests if none of the X, Y, and Z axes is smaller than the zeroLength tolerance.
     /// Same as .IsValid
     member inline b.HasVolume : bool =
         b.CountZeroSides = 0
 
-    /// Tests if none of the X, Y and Z axis is smaller than the zeroLength tolerance.
+    /// Tests if none of the X, Y, and Z axes is smaller than the zeroLength tolerance.
     static member inline hasVolume (b:Box) : bool =
         b.HasVolume
 
@@ -448,7 +448,7 @@ type Box =
     static member inline plane (b:Box) : PPlane =
         b.Plane
 
-    /// Scales the Box by a given factor.
+    /// Scales the box by a given factor.
     /// Scale center is World Origin 0,0
     member inline b.Scale (factor:float) : Box =
         Box.createUnchecked(
@@ -462,7 +462,7 @@ type Box =
     static member inline scale (factor:float) (b:Box) : Box =
         b.Scale factor
 
-    /// Scales the Box by a given factor on a given center point
+    /// Scales the box by a given factor on a given center point
     member inline l.ScaleOn (cen:Pnt) (factor:float) : Box =
         let cx = cen.X
         let cy = cen.Y
@@ -512,7 +512,7 @@ type Box =
         Box.createUnchecked(b.OriginX, b.OriginY, b.OriginZ + distance, b.XaxisX, b.XaxisY, b.XaxisZ, b.YaxisX, b.YaxisY, b.YaxisZ, b.ZaxisX, b.ZaxisY, b.ZaxisZ)
 
     /// Multiplies (or applies) a RigidMatrix to a 3D box.
-    /// The returned Box is guaranteed to have still orthogonal vectors.
+    /// The returned box is guaranteed to have still orthogonal vectors.
     member inline b.TransformRigid (m:RigidMatrix) : Box =
         let mutable x = b.OriginX
         let mutable y = b.OriginY
@@ -540,8 +540,8 @@ type Box =
         let zz = m.M13*x + m.M23*y + m.M33*z
         Box.createUnchecked(ox, oy, oz, xx, xy, xz, yx, yy, yz, zx, zy, zz)
 
-    /// Transforms the Box by the given RigidMatrix.
-    /// The returned Box is guaranteed to have still orthogonal vectors.
+    /// Transforms the box by the given RigidMatrix.
+    /// The returned box is guaranteed to have still orthogonal vectors.
     static member inline transformRigid (m:RigidMatrix) (b:Box) : Box =
         b.TransformRigid m
 
@@ -644,8 +644,8 @@ type Box =
         b.RotateWithCenter(cen, q)
 
     /// Check for point containment in the Box.
-    /// By doing 6 dot products with the sides of the rectangle.
-    /// A point exactly on the edge of the Box is considered inside.
+    /// By doing six dot products with the box axes to test its six faces.
+    /// A point exactly on the edge of the box is considered inside.
     member b.ContainsXYZ(x:float, y:float, z:float) : bool =
         let vx = x - b.OriginX
         let vy = y - b.OriginY
@@ -669,20 +669,20 @@ type Box =
         dotZ - zLenSq <= 0.
 
     /// Check for point containment in the Box.
-    /// By doing 6 dot products with the sides of the rectangle.
-    /// A point exactly on the edge of the Box is considered inside.
+    /// By doing six dot products with the box axes to test its six faces.
+    /// A point exactly on the edge of the box is considered inside.
     member b.Contains(p:Pnt) : bool =
         b.ContainsXYZ(p.X, p.Y, p.Z)
 
     /// Check for point containment in the Box.
-    /// By doing 6 dot products with the sides of the rectangle.
-    /// A point exactly on the edge of the Box is considered inside.
+    /// By doing six dot products with the box axes to test its six faces.
+    /// A point exactly on the edge of the box is considered inside.
     static member inline containsXYZ (x:float) (y:float) (z:float) (b:Box)  : bool =
         b.ContainsXYZ (x, y, z)
 
     /// Check for point containment in the Box.
-    /// By doing 6 dot products with the sides of the rectangle.
-    /// A point exactly on the edge of the Box is considered inside.
+    /// By doing six dot products with the box axes to test its six faces.
+    /// A point exactly on the edge of the box is considered inside.
     static member inline contains (p:Pnt) (b:Box)  : bool =
         b.Contains p
 
@@ -748,7 +748,7 @@ type Box =
         abs (a.ZaxisY  - b.ZaxisY ) > tol ||
         abs (a.ZaxisZ  - b.ZaxisZ ) > tol
 
-    /// Returns Box expanded by distance on all six sides.
+    /// Returns box expanded by distance on all six sides.
     /// Does check for underflow if distance is negative and raises EuclidException.
     static member expand dist (b:Box)  : Box =
         let siX = b.SizeX
@@ -777,9 +777,9 @@ type Box =
             b.YaxisX + yX*2., b.YaxisY + yY*2., b.YaxisZ + yZ*2.,
             b.ZaxisX + zX*2., b.ZaxisY + zY*2., b.ZaxisZ + zZ*2.)
 
-    /// Returns Box expanded by respective distances on all six sides.
+    /// Returns box expanded by respective distances on all six sides.
     /// Does check for overflow if distance is negative and fails.
-    /// distX, distY and distZ are for X, Y and Z-axis respectively.
+    /// distX, distY and distZ are for X-, Y-, and Z-axis respectively.
     static member expandXYZ distX distY distZ (b:Box) : Box =
         let siX = b.SizeX
         let siY = b.SizeY
@@ -865,7 +865,7 @@ type Box =
     static member inline createFromPlane x y z (pl:PPlane) : Box =
         Box.createUncheckedVec(pl.Origin, pl.Xaxis*x, pl.Yaxis*y, pl.Zaxis*z)
 
-    /// Creates a 3D box from a 3D a bounds (minX, minY, minZ) and (maxX, maxY, maxZ).
+    /// Creates a 3D box from the bounds (minX, minY, minZ) and (maxX, maxY, maxZ).
     static member inline createFromBounds(minX:float, minY:float, minZ:float, maxX:float, maxY:float, maxZ:float) : Box =
         Box.createUnchecked(minX, minY, minZ, maxX - minX, 0.0, 0.0, 0.0, maxY - minY, 0.0, 0.0, 0.0, maxZ - minZ)
 
@@ -889,12 +889,12 @@ type Box =
         let ny = r.XaxisZ * r.YaxisX - r.XaxisX * r.YaxisZ
         let nz = r.XaxisX * r.YaxisY - r.XaxisY * r.YaxisX
         let len = XYZ.length nx ny nz
-        // get the scacling factor for the zLow
+        // get the scaling factor for zLow
         let fLow = if isTooTiny len then 0.0 else zLow / len
         let ox = r.OriginX + nx * fLow
         let oy = r.OriginY + ny * fLow
         let oz = r.OriginZ + nz * fLow
-        // get the scacling factor for the zHigh
+        // get the scaling factor for zHigh
         let fHigh = if isTooTiny len then 0.0 else (zHigh - zLow) / len
         let zx = nx * fHigh
         let zy = ny * fHigh
@@ -968,17 +968,17 @@ type Box =
         let f = distZ / len
         Box.createUnchecked(b.OriginX + b.ZaxisX*f, b.OriginY + b.ZaxisY*f, b.OriginZ + b.ZaxisZ*f, b.XaxisX, b.XaxisY, b.XaxisZ, b.YaxisX, b.YaxisY, b.YaxisZ, b.ZaxisX, b.ZaxisY, b.ZaxisZ)
 
-    /// Move a 3D box by a vector. Same as Box.translate.
+    /// Move a 3D box by a vector. Same as Box.move.
     static member inline translate (v:Vec) (b:Box) : Box =
         Box.createUnchecked(b.OriginX + v.X, b.OriginY + v.Y, b.OriginZ + v.Z, b.XaxisX, b.XaxisY, b.XaxisZ, b.YaxisX, b.YaxisY, b.YaxisZ, b.ZaxisX, b.ZaxisY, b.ZaxisZ)
 
     /// <summary>Intersects an infinite ray (Line3D extended infinitely in both directions) with this Box.
     /// Uses the slab intersection method in the box's local coordinate system.
-    /// Returns None if the ray does not intersect the box or if the ray direction is too short.
-    /// Returns Some with entry and exit parameters on the ray if it intersects.
+    /// Returns ValueNone if the ray does not intersect the box or if the ray direction is too short.
+    /// Returns ValueSome with entry and exit parameters on the ray if it intersects.
     /// A parameter of 0.0 corresponds to the ray's From point, 1.0 to its To point.</summary>
     /// <param name="ray">The ray (Line3D) to intersect with the box.</param>
-    /// <returns>None if no intersection, Some(tEntry, tExit) with the entry and exit parameters on the ray.</returns>
+    /// <returns>ValueNone if there is no intersection; otherwise, ValueSome(tEntry, tExit).</returns>
     member b.IntersectRay(ray:Line3D) : voption<float*float> =
         // Transform ray to box's local coordinate system
         let rayDirX = ray.VectorX
@@ -1075,12 +1075,12 @@ type Box =
 
     /// <summary>Intersects an infinite ray (Line3D extended infinitely in both directions) with the Box.
     /// Uses the slab intersection method in the box's local coordinate system.
-    /// Returns None if the ray does not intersect the box or if the ray direction is too short.
-    /// Returns Some with entry and exit parameters on the ray if it intersects.
+    /// Returns ValueNone if the ray does not intersect the box or if the ray direction is too short.
+    /// Returns ValueSome with entry and exit parameters on the ray if it intersects.
     /// A parameter of 0.0 corresponds to the ray's From point, 1.0 to its To point.</summary>
     /// <param name="ray">The ray (Line3D) to intersect with the box.</param>
     /// <param name="box">The box to intersect with.</param>
-    /// <returns>None if no intersection, Some(tEntry, tExit) with the entry and exit parameters on the ray.</returns>
+    /// <returns>ValueNone if there is no intersection; otherwise, ValueSome(tEntry, tExit).</returns>
     static member inline intersectRay (ray:Line3D) (box:Box) : voption<float*float> =
         box.IntersectRay(ray)
 
@@ -1088,11 +1088,11 @@ type Box =
     // #endregion
     // #region Points
 
-    /// <summary>Returns the bottom corners of the Box in Counter-Clockwise order, starting at Origin.
-    /// Then the top corners staring above Origin. Returns an array of 8 Points.
+    /// <summary>Returns the bottom corners of the box in counter-clockwise order, starting at Origin.
+    /// Then the top corners starting above Origin. Returns an array of 8 Points.
     /// <code>
     ///   local        local
-    ///   Z-Axis       Y-Axis
+    ///   Z-axis       Y-axis
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -1105,7 +1105,7 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-axis
     ///   0               1
     /// </code>
     /// </summary>
@@ -1140,7 +1140,7 @@ type Box =
     /// <summary>Returns point 0 of the box, same box.Origin.
     /// <code>
     ///   local        local
-    ///   Z-Axis       Y-Axis
+    ///   Z-axis       Y-axis
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -1153,7 +1153,7 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-axis
     ///   0               1
     /// </code>
     /// </summary>
@@ -1167,7 +1167,7 @@ type Box =
     /// <summary>Returns point 1 of the box.
     /// <code>
     ///   local        local
-    ///   Z-Axis       Y-Axis
+    ///   Z-axis       Y-axis
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -1180,7 +1180,7 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-axis
     ///   0               1
     /// </code>
     /// </summary>
@@ -1194,7 +1194,7 @@ type Box =
     /// <summary>Returns point 2 of the box.
     /// <code>
     ///   local        local
-    ///   Z-Axis       Y-Axis
+    ///   Z-axis       Y-axis
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -1207,7 +1207,7 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-axis
     ///   0               1
     /// </code>
     /// </summary>
@@ -1221,7 +1221,7 @@ type Box =
     /// <summary>Returns point 3 of the box.
     /// <code>
     ///   local        local
-    ///   Z-Axis       Y-Axis
+    ///   Z-axis       Y-axis
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -1234,7 +1234,7 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-axis
     ///   0               1
     /// </code>
     /// </summary>
@@ -1248,7 +1248,7 @@ type Box =
     /// <summary>Returns point 4 of the box.
     /// <code>
     ///   local        local
-    ///   Z-Axis       Y-Axis
+    ///   Z-axis       Y-axis
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -1261,7 +1261,7 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-axis
     ///   0               1
     /// </code>
     /// </summary>
@@ -1275,7 +1275,7 @@ type Box =
     /// <summary>Returns point 5 of the box.
     /// <code>
     ///   local        local
-    ///   Z-Axis       Y-Axis
+    ///   Z-axis       Y-axis
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -1288,7 +1288,7 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-axis
     ///   0               1
     /// </code>
     /// </summary>
@@ -1302,7 +1302,7 @@ type Box =
     /// <summary>Returns point 6 of the box.
     /// <code>
     ///   local        local
-    ///   Z-Axis       Y-Axis
+    ///   Z-axis       Y-axis
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -1315,7 +1315,7 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-axis
     ///   0               1
     /// </code>
     /// </summary>
@@ -1329,7 +1329,7 @@ type Box =
     /// <summary>Returns point 7 of the box.
     /// <code>
     ///   local        local
-    ///   Z-Axis       Y-Axis
+    ///   Z-axis       Y-axis
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -1342,7 +1342,7 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-axis
     ///   0               1
     /// </code>
     /// </summary>
@@ -1353,11 +1353,11 @@ type Box =
     static member inline pt7 (b:Box) : Pnt =
         b.Pt7
 
-    /// <summary>Returns the point of the Box at the specified index.
+    /// <summary>Returns the point of the box at the specified index.
     /// The order of the points is: Pt0, Pt1, Pt2, Pt3, Pt4, Pt5, Pt6, Pt7.
     /// <code>
     ///   local        local
-    ///   Z-Axis       Y-Axis
+    ///   Z-axis       Y-axis
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -1370,7 +1370,7 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-axis
     ///   0               1
     /// </code>
     /// </summary>
@@ -1386,7 +1386,7 @@ type Box =
         | 7 -> b.Pt7
         | _ -> fail $"Box.GetPoint: pointIndex {pointIndex} is out of range. Valid range is 0 to 7."
 
-    /// Returns the point of the Box at the specified index.
+    /// Returns the point of the box at the specified index.
     static member inline getPoint (pointIndex:int) (b:Box) : Pnt =
         b.GetPoint pointIndex
 
@@ -1396,12 +1396,12 @@ type Box =
 
 
 
-    /// <summary>Returns the top face of the Box in Counter-Clockwise order, looking from above.
-    /// Returns Origin at point 4, X-Axis to point 5, Y-Axis to point 7.
+    /// <summary>Returns the top face of the box in counter-clockwise order, looking from above.
+    /// Returns Origin at point 4, X-axis to point 5, Y-axis to point 7.
     /// The normal of the Rect3D points away from the Box.
     /// <code>
     ///            local      F3(back)
-    ///            Z-Axis     F7(top)
+    ///            Z-axis     F7(top)
     ///            ^          |
     ///            |   7      |        6
     ///            |   +---------------+
@@ -1414,7 +1414,7 @@ type Box =
     ///            |  / 3          |  / 2
     ///            | /             | /
     ///            |/      |       |/     local
-    ///            +---------------+----> X-Axis
+    ///            +---------------+----> X-axis
     ///            0       |       1
     ///                    |
     ///                    F0(bottom)
@@ -1428,12 +1428,12 @@ type Box =
     static member inline topFace (b:Box) : Rect3D =
         b.TopFace
 
-    /// <summary>Returns the bottom face of the Box in Counter-Clockwise order, looking from above.
-    /// Returns Origin at point 0, X-Axis to point 1, Y-Axis to point 3.
+    /// <summary>Returns the bottom face of the box in counter-clockwise order, looking from above.
+    /// Returns Origin at point 0, X-axis to point 1, Y-axis to point 3.
     /// The normal of the Rect3D points into the Box.
     /// <code>
     ///            local      F3(back)
-    ///            Z-Axis     F7(top)
+    ///            Z-axis     F7(top)
     ///            ^          |
     ///            |   7      |        6
     ///            |   +---------------+
@@ -1446,7 +1446,7 @@ type Box =
     ///            |  / 3          |  / 2
     ///            | /             | /
     ///            |/      |       |/     local
-    ///            +---------------+----> X-Axis
+    ///            +---------------+----> X-axis
     ///            0       |       1
     ///                    |
     ///                    F0(bottom)
@@ -1460,12 +1460,12 @@ type Box =
     static member inline bottomFace (b:Box) : Rect3D =
         b.BottomFace
 
-    /// <summary>Returns the front face of the Box in Counter-Clockwise order, looking from front.
-    /// Returns Origin at point 0, X-Axis to point 1, Y-Axis to point 4.
+    /// <summary>Returns the front face of the box in counter-clockwise order, looking from front.
+    /// Returns Origin at point 0, X-axis to point 1, Y-axis to point 4.
     /// The normal of the Rect3D points away from the Box.
     /// <code>
     ///            local      F3(back)
-    ///            Z-Axis     F7(top)
+    ///            Z-axis     F7(top)
     ///            ^          |
     ///            |   7      |        6
     ///            |   +---------------+
@@ -1478,7 +1478,7 @@ type Box =
     ///            |  / 3          |  / 2
     ///            | /             | /
     ///            |/      |       |/     local
-    ///            +---------------+----> X-Axis
+    ///            +---------------+----> X-axis
     ///            0       |       1
     ///                    |
     ///                    F0(bottom)
@@ -1492,12 +1492,12 @@ type Box =
     static member inline frontFace (b:Box) : Rect3D =
         b.FrontFace
 
-    /// <summary>Returns the back face of the Box in Counter-Clockwise order, looking from front.
-    /// Returns Origin at point 3, X-Axis to point 2, Y-Axis to point 7.
+    /// <summary>Returns the back face of the box in counter-clockwise order, looking from front.
+    /// Returns Origin at point 3, X-axis to point 2, Y-axis to point 7.
     /// The normal of the Rect3D points into the Box.
     /// <code>
     ///            local      F3(back)
-    ///            Z-Axis     F7(top)
+    ///            Z-axis     F7(top)
     ///            ^          |
     ///            |   7      |        6
     ///            |   +---------------+
@@ -1510,7 +1510,7 @@ type Box =
     ///            |  / 3          |  / 2
     ///            | /             | /
     ///            |/      |       |/     local
-    ///            +---------------+----> X-Axis
+    ///            +---------------+----> X-axis
     ///            0       |       1
     ///                    |
     ///                    F0(bottom)
@@ -1524,12 +1524,12 @@ type Box =
     static member inline backFace (b:Box) : Rect3D =
         b.BackFace
 
-    /// <summary>Returns the right face of the Box in Counter-Clockwise order, looking from right.
-    /// Returns Origin at point 1, X-Axis to point 2, Y-Axis to point 5.
+    /// <summary>Returns the right face of the box in counter-clockwise order, looking from right.
+    /// Returns Origin at point 1, X-axis to point 2, Y-axis to point 5.
     /// The normal of the Rect3D points away from the Box.
     /// <code>
     ///            local      F3(back)
-    ///            Z-Axis     F7(top)
+    ///            Z-axis     F7(top)
     ///            ^          |
     ///            |   7      |        6
     ///            |   +---------------+
@@ -1542,7 +1542,7 @@ type Box =
     ///            |  / 3          |  / 2
     ///            | /             | /
     ///            |/      |       |/     local
-    ///            +---------------+----> X-Axis
+    ///            +---------------+----> X-axis
     ///            0       |       1
     ///                    |
     ///                    F0(bottom)
@@ -1556,12 +1556,12 @@ type Box =
     static member inline rightFace (b:Box) : Rect3D =
         b.RightFace
 
-    /// <summary>Returns the left face of the Box in Counter-Clockwise order, looking from right.
-    /// Returns Origin at point 0, X-Axis to point 3, Y-Axis to point 4.
+    /// <summary>Returns the left face of the box in counter-clockwise order, looking from right.
+    /// Returns Origin at point 0, X-axis to point 3, Y-axis to point 4.
     /// The normal of the Rect3D points into the Box.
     /// <code>
     ///            local      F3(back)
-    ///            Z-Axis     F7(top)
+    ///            Z-axis     F7(top)
     ///            ^          |
     ///            |   7      |        6
     ///            |   +---------------+
@@ -1574,7 +1574,7 @@ type Box =
     ///            |  / 3          |  / 2
     ///            | /             | /
     ///            |/      |       |/     local
-    ///            +---------------+----> X-Axis
+    ///            +---------------+----> X-axis
     ///            0       |       1
     ///                    |
     ///                    F0(bottom)
@@ -1589,12 +1589,12 @@ type Box =
         b.LeftFace
 
 
-    /// <summary>Returns 6 face of the Box in
-    /// The normal of the Rect3Ds are oriented with the X-Axis, Y-Axis or Z-Axis.
+    /// <summary>Returns the six faces of the box.
+    /// The normals of the Rect3Ds are oriented with the X-axis, Y-axis, or Z-axis.
     /// The order of the Rect3D is: BottomFace, FrontFace, RightFace, BackFace, LeftFace, TopFace.
     /// <code>
     ///   local        local
-    ///   Z-Axis       Y-Axis
+    ///   Z-axis       Y-axis
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -1607,7 +1607,7 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-axis
     ///   0               1
     /// </code>
     /// </summary>
@@ -1625,11 +1625,11 @@ type Box =
     static member inline faces (b:Box) : Rect3D[] =
         b.Faces
 
-    /// <summary>Returns the face of the Box at the specified index.
+    /// <summary>Returns the face of the box at the specified index.
     /// The order of the faces is: BottomFace, FrontFace, RightFace, BackFace, LeftFace, TopFace.
     /// <code>
     ///            local      F3(back)
-    ///            Z-Axis     F7(top)
+    ///            Z-axis     F7(top)
     ///            ^          |
     ///            |   7      |        6
     ///            |   +---------------+
@@ -1642,7 +1642,7 @@ type Box =
     ///            |  / 3          |  / 2
     ///            | /             | /
     ///            |/      |       |/     local
-    ///            +---------------+----> X-Axis
+    ///            +---------------+----> X-axis
     ///            0       |       1
     ///                    |
     ///                    F0(bottom)
@@ -1661,7 +1661,7 @@ type Box =
         | 5 -> b.TopFace
         | _ -> fail $"Box.GetFace: faceIndex {faceIndex} is out of range. Valid range is 0 to 5."
 
-    /// Returns the face of the Box at the specified index.
+    /// Returns the face of the box at the specified index.
     static member inline getFace (faceIndex:int) (b:Box) : Rect3D =
         b.GetFace faceIndex
 
@@ -2022,7 +2022,7 @@ type Box =
     /// The order of the edges is: 0-1, 1-2, 3-2, 0-3, 0-4, 1-5, 2-6, 3-7, 4-5, 5-6, 7-6, 4-7
     /// <code>
     ///   local        local
-    ///   Z-Axis       Y-Axis
+    ///   Z-axis       Y-axis
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -2035,7 +2035,7 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-axis
     ///   0               1
     /// </code>
     /// </summary>
@@ -2065,7 +2065,7 @@ type Box =
     /// 0-1, 1-2, 3-2, 0-3, 0-4, 1-5, 2-6, 3-7, 4-5, 5-6, 7-6, 4-7
     /// <code>
     ///   local        local
-    ///   Z-Axis       Y-Axis
+    ///   Z-axis       Y-axis
     ///   ^           /
     ///   |   7      /        6
     ///   |   +---------------+
@@ -2078,7 +2078,7 @@ type Box =
     ///   |  / 3          |  / 2
     ///   | /             | /
     ///   |/              |/     local
-    ///   +---------------+----> X-Axis
+    ///   +---------------+----> X-axis
     ///   0               1
     /// </code>
     /// </summary>

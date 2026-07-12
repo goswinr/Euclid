@@ -1,4 +1,4 @@
-﻿namespace Euclid
+namespace Euclid
 
 open System
 open UtilEuclid
@@ -57,8 +57,11 @@ module Offset3D =
     /// `perpDir` is the unit vector perpendicular to the local plane made by the adjacent segments.
     [<NoComparison; NoEquality>]
     type OffsetDirection = {
+        /// The in-plane unit direction perpendicular to the previous segment.
         prevInPlane: UnitVec
+        /// The in-plane unit direction perpendicular to the next segment.
         nextInPlane: UnitVec
+        /// The unit direction perpendicular to the plane of the adjacent segments.
         perpDir    : UnitVec
     }
 
@@ -68,8 +71,11 @@ module Offset3D =
     /// `prevOK` may be bigger than `nextOK` if the collinear point is at the start or end of a closed polyline.
     [<NoComparison; NoEquality>]
     type CollinearPoint = {
+        /// The index of the collinear point.
         idx: int
+        /// The index of the preceding point with a valid offset direction.
         prevOK: int
+        /// The index of the following point with a valid offset direction.
         nextOK: int
     }
 
@@ -243,7 +249,7 @@ module Offset3D =
 
 
     /// For points between collinear segments, ValueNone is returned.
-    /// For a open polyline, the first and last points will be ValueSome,
+    /// For an open polyline, the first and last points will be ValueSome,
     /// For a closed polyline, the first and last points will be identical, and they may be ValueNone if collinear.
     /// Segments are considered collinear if the cosine of the angle between them is less than considerCollinearBelow.
     /// Special case: If all points are in a line the first and last point will have directions derived from the refNormal. The inner points will be ValueNone.
@@ -455,7 +461,7 @@ module Offset3D =
     /// <param name="offDirs">The offset directions at each point of the polyline.</param>
     /// <param name="distsInPlane">The distance to offset in the local plane of each vertex.</param>
     /// <param name="distsPerpendicular">The distance to offset perpendicular to the local plane of each vertex.</param>
-    /// <param name="isClosed">Whether the polyline is closed (true) or open (false).</param>
+    /// <param name="isClosed">Whether the polyline is closed (TRUE) or open (FALSE).</param>
     /// <param name="varDistParallelBehavior">The behavior to use when collinear segments with different offset distances are found.</param>
     /// <returns>The offset points as a ResizeArray of interleaved coordinates.</returns>
     let offsetVariableWithDirections(   xyzs:ResizeArray<float>,
@@ -602,14 +608,14 @@ module Offset3D =
     /// <summary> A constant-distance offset algorithm for closed or open polylines in 3D.
     /// Uses default angles: collinear below 2.5 degrees, fails at U-turns above 175 degrees.</summary>
     /// <param name="refNormal">The reference normal vector to use for computing the local planes.
-    /// For a counterclockwise polyline in the XY plane this is upwards. If it points down, the offset direction is flipped.</param>
+    /// For a counter-clockwise polyline in the XY plane this is upwards. If it points down, the offset direction is flipped.</param>
     /// <param name="distInPlane">The offset distance in the local plane defined by two segments.
     /// A positive distance offsets to the inside of the polyline.
     /// A negative distance offsets to the outside.
     /// No matter how the polyline is oriented.</param>
     /// <param name="distPerpendicular">The offset distance perpendicular to the local plane.
     /// A positive distance offsets in the direction of the computed normal.
-    /// For a counterclockwise polyline in xy-plane this is Upwards.
+    /// For a counter-clockwise polyline in xy-plane this is Upwards.
     /// A negative distance offsets in the opposite direction.</param>
     /// <param name="xyzs"> The interleaved coordinates (x0, y0, z0, x1, y1, z1, ...) of the polyline to offset.</param>
     /// <returns> A new ResizeArray of interleaved coordinates.</returns>
@@ -628,7 +634,7 @@ module Offset3D =
     /// No matter how the polyline is oriented.</param>
     /// <param name="distPerpendicular">The offset distance perpendicular to the local plane.
     /// A positive distance offsets in the direction of the computed normal.
-    /// For a counterclockwise polyline in xy-plane this is Upwards.
+    /// For a counter-clockwise polyline in xy-plane this is Upwards.
     /// A negative distance offsets in the opposite direction.</param>
     /// <param name="xyzs"> The interleaved coordinates (x0, y0, z0, x1, y1, z1, ...) of the polyline to offset.</param>
     /// <returns> A new ResizeArray of interleaved coordinates.</returns>
@@ -641,14 +647,14 @@ module Offset3D =
     /// Uses default angles: collinear below 2.5 degrees, fails at U-turns above 175 degrees.</summary>
     /// <param name="varDistParallelBehavior">The behavior to use when collinear segments with different offset distances are found.</param>
     /// <param name="refNormal">The reference normal vector to use for computing the local planes.
-    /// For a counterclockwise polyline in the XY plane this is upwards. If it points down, the offset direction is flipped.</param>
+    /// For a counter-clockwise polyline in the XY plane this is upwards. If it points down, the offset direction is flipped.</param>
     /// <param name="distancesInPlane">The offset distances in the local plane defined by two segments.
     /// A positive distance offsets to the inside of the polyline.
     /// A negative distance offsets to the outside.
     /// No matter how the polyline is oriented.</param>
     /// <param name="distancesPerpendicular">The offset distances perpendicular to the local plane.
     /// A positive distance offsets in the direction of the computed normal.
-    /// For a counterclockwise polyline in xy-plane this is Upwards.
+    /// For a counter-clockwise polyline in xy-plane this is Upwards.
     /// A negative distance offsets in the opposite direction.</param>
     /// <param name="xyzs"> The interleaved coordinates (x0, y0, z0, x1, y1, z1, ...) of the polyline to offset.</param>
     /// <returns> A new ResizeArray of interleaved coordinates. If collinear segment handling is set to Skip the point count may differ from input.</returns>
@@ -668,7 +674,7 @@ module Offset3D =
     /// No matter how the polyline is oriented.</param>
     /// <param name="distancesPerpendicular">The offset distances perpendicular to the local plane.
     /// A positive distance offsets in the direction of the computed normal.
-    /// For a counterclockwise polyline in xy-plane this is Upwards.
+    /// For a counter-clockwise polyline in xy-plane this is Upwards.
     /// A negative distance offsets in the opposite direction.</param>
     /// <param name="xyzs"> The interleaved coordinates (x0, y0, z0, x1, y1, z1, ...) of the polyline to offset.</param>
     /// <returns> A new ResizeArray of interleaved coordinates.</returns>

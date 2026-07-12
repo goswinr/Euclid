@@ -7,10 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.50.0] - 2026-07-15
+## [0.50.0] - 2026-07-12
 ### Added
 - Axis-aligned bounds are now first-class conversion and intersection types:
-  - `BBox` has `AsBox`, `GetPoint`, `GetEdge`, `GetFace`, named faces, `Faces`, `createFromRect3D`, and `createFromBox`.
+  - `BBox` has `AsBox`, `GetPoint`, `GetEdge`, `GetFace`, named faces, `Faces`, `IntersectRay`/`intersectRay`, `createFromRect3D`, and `createFromBox`.
   - `BRect` has `AsRect2D`, `IntersectRay`, `intersectRay`, `createFromRect2D`, and `createFromRect3D`.
   - `Box` has `createFromBounds`, `GetPoint`, `GetEdge`, and `GetFace`; `Rect2D` has `createFromBounds`, ray intersection, and finite-line clipping.
 - `Box` and `FreeBox` edges can be addressed by endpoint names (`Edge01`, `Edge12`, ... `Edge37`), with matching static members. The old numeric `Edge0`-`Edge11` instance members remain as obsolete aliases.
@@ -18,6 +18,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Line2D` and `Line3D` now expose `Start`/`End` aliases and static `setFrom`/`setTo` helpers. `Line2D.intersectRays` returns the unchecked intersection of two non-parallel infinite rays.
 - `Tria3D.intersectRay`, `intersectRayXYZ`, and the allocation-free `intersectTriaVectorsWithRay` return the intersection parameter of an infinite line with a triangle.
 - Curried `setX`/`setY`/`setZ` helpers for points and vectors, and optimized `ResizeArr.getIdx`/`setIdx` helpers for Fable.
+- Missing 2D/3D conversion members: `Vec.AsPt`, `UnitVec.AsPt`, `UnitVec.AsUnitVc` and `Pnt.AsVc`.
+- `Points2D.center`, mirroring `Points3D.center`.
+- `Rect2D` instance members `Move`, `MoveX`, `MoveY`, `Rotate` and `RotateWithCenter`, plus static `moveX` and `moveY`, mirroring `Rect3D`.
+- `Line3D.isCoincidentAndOpposingToFast` static, mirroring `Line2D`.
+- `BRect.Edges` and `BRect.edges` returning all 4 edges, mirroring `BBox.Edges`.
+- Added `PPlane.asFSharpCode`, `FreeBox.edges`, `RigidMatrix.isIdentity`, and `Rect3D.pointsXYZLooped` static counterparts.
 
 ### Changed
 - Intersection APIs now consistently use `voption` where absence is expected. This includes the `XLine2D`/`XLine3D` `try*` APIs, line extension intersections, plane intersections, `Box.IntersectRay`, `Rect3D.intersectRay`/`intersectLine`, and `Tria3D.intersectLine`.
@@ -30,6 +36,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `RigidMatrix.Matrix` was renamed to `ToMatrix`. `Quaternion.createFromDegree` was renamed to `createFromDegrees`; the singular form remains obsolete.
 - Corrected the public spelling `Colinear` to `Collinear`, including `Polyline2D.removeDuplicateAndCollinearPoints`, `Polyline3D.removeDuplicateAndCollinearPoints`, and offset internals.
 - `Line3D.createFromLine2DwithZ` was renamed to `createFromLine2DWithZ`.
+- Standardized invalid-point checks and squared-distance naming with `Pt.IsInvalid`/`Pt.isInvalid`, `Pnt.IsInvalid`/`Pnt.isInvalid`, and `Pnt.SqDistanceInXYFromOrigin`/`Pnt.sqDistanceInXYFromOrigin`. The previous misspelled or inconsistent names remain as obsolete aliases.
+- Corrected the public spelling `Matrix.createFromColumMajorArray` to `createFromColumnMajorArray`; the misspelled name remains as an obsolete alias.
+- `BBox.Union(Pnt)` is now `BBox.UnionPnt` and static `BBox.unionPt` is now `unionPnt`, matching `BRect.UnionPt`/`unionPt`; the old names remain as obsolete aliases.
+- `Line2D` and `Line3D` squared point distances now use To-naming: `SqDistanceToPt`/`SqDistanceToXY` and `SqDistanceToPnt`/`SqDistanceToXYZ` replace the `SqDistanceFrom*` forms, which remain as obsolete aliases.
+- `Rect2D.PointsXYLoopedCCW`/`PointsXYLoopedCW` are now `PointsXYLooped_CCW`/`PointsXYLooped_CW` (with matching statics), consistent with `PointsXY_CCW`; the old names remain as obsolete aliases.
+- Removed duplicate static members that were defined on both the `Line2D`/`Line3D` types and their extension modules; the extension-module versions remain. `Line2D.Direction`, `Tangent` and `UnitTangent` are now extension members, like on `Line3D`.
+- Unified the spelling of the optional `varDistParallelBehavior` parameter of `Polyline3D` offsets to match `Polyline2D`.
+- Renamed the misleading `Rect3D.PointsXY`/`pointsXY` and `PointsLoopedXY` coordinate-buffer APIs to `PointsXYZ`/`pointsXYZ` and `PointsXYZLooped`/`pointsXYZLooped`; the old names remain as obsolete aliases.
+- `Format.rarr` and `Format.iList` are now internal implementation helpers.
+- Basic `Line3D` static helpers are declared in `AutoOpenLine3D`, consistently with `AutoOpenLine2D`.
 
 ### Fixed
 - Reworked 2D and 3D line relationships so intersection, closest-point, closest-parameter, overlap, and squared-distance results are invariant under line order and direction. This also fixes near-parallel, anti-parallel, perpendicular, overlapping, and zero-length cases.
@@ -38,6 +54,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Polyline2D` and `Polyline3D` offsetting now handles straight runs and intermediate collinear points without losing points or changing round-trip geometry.
 - Rectangle and box ray intersections now handle rays on faces or edges, corner grazing, rays starting inside, parallel slabs, and zero-length rays consistently.
 - `Line2D.lengthToPtOnLine` and `Line3D.lengthToPtOnLine` now return the signed projected distance from the line start, including points before or beyond the segment.
+- Audited and corrected the generated API documentation: counterpart summaries consistently describe their shared behavior without requiring explicit “Same as ...” wording, value-option results use `ValueSome`/`ValueNone`, orientation wording consistently uses “counter-clockwise”, and stale type names, parameter names, grammar, and spelling were corrected.
+- Corrected copy-paste doc comments: `Rect3D.Yaxis` and `Rect3D.xAxis` described the wrong axis; `Rect3D.isValid`/`hasArea` statics now cross-reference each other; removed doubled words in `Polyline2D.mapiPt`/`iteriPt` docs.
+- Corrected and completed API documentation for matrix fields, record fields, containment behavior, box faces, scaling, axes, coordinate buffers, and assorted spelling and grammar issues.
 
 ### Removed
 - The obsolete `Intersect` module and its `lineTriangle`/`lineCone` helpers.

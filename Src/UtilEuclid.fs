@@ -43,7 +43,7 @@ module UtilEuclid =
     let inline ( !^ ) (x:float) : float<'measure> =
         x |> LanguagePrimitives.FloatWithMeasure
 
-    /// Returns true if the float is NaN or Infinity.
+    /// Returns TRUE if the float is NaN or Infinity.
     let inline isNanInfinity (x:float) =
         Double.IsNaN x || Double.IsInfinity x
 
@@ -87,17 +87,17 @@ module UtilEuclid =
         x * x
 
 
-    /// Returns true for values smaller than 1e-6 and for NaN.
+    /// Returns TRUE for values smaller than 1e-6 and for NaN.
     let inline isTooSmall x =
         // use 'not' to catch a NaN too ( a Cross Product of infinite long vectors can give a NaN length)
         not ( x > 1e-6 )
 
-    /// Returns true for values smaller than 1e-12 (square of 1e-6)  and for NaN.
+    /// Returns TRUE for values smaller than 1e-12 (square of 1e-6)  and for NaN.
     let inline isTooSmallSq x =
         // use 'not' to catch a NaN too ( a Cross Product of infinite long vectors can give a NaN length)
         not ( x > 1e-12 )
 
-    /// Returns true for values smaller than 1e-12 and for NaN.
+    /// Returns TRUE for values smaller than 1e-12 and for NaN.
     /// Uses UtilEuclid.zeroLengthTolerance
     let inline isTooTiny x =
         // use 'not' to catch a NaN too ( a Cross Product of infinite long vectors can give a NaN length)
@@ -110,7 +110,7 @@ module UtilEuclid =
         // Catches a NaN too  ( a Cross Product of infinite long vectors can give a NaN length)
         if x > zeroLengthTolerance then 0 else 1
 
-    /// Returns true for values smaller than 1e-24 (square of 1e-12) and for NaN.
+    /// Returns TRUE for values smaller than 1e-24 (square of 1e-12) and for NaN.
     /// Uses UtilEuclid.zeroLengthTolSquared
     let inline isTooTinySq x =
         // Catches a NaN too  ( a Cross Product of infinite long vectors can give a NaN length)
@@ -123,7 +123,7 @@ module UtilEuclid =
         // Catches a NaN too ( a Cross Product of infinite long vectors can give a NaN length)
         if x > zeroLengthTolSquared then 0 else 1
 
-    /// Returns true for negative number and for NaN.
+    /// Returns TRUE for negative number and for NaN.
     /// 0.0  and -0.0 is not negative.
     let inline isNegative x =
         not (x >= 0.0)
@@ -213,7 +213,7 @@ module UtilEuclid =
 
     /// Tests if a number is NOT close to 1.0 by a 1e-6 tolerance.
     /// This is a float increment of 6 steps or decrement of 16 steps.
-    /// Also returns true for NaN.
+    /// Also returns TRUE for NaN.
     let inline isNotOne x =
         not (isOne x)
 
@@ -232,7 +232,7 @@ module UtilEuclid =
     /// Tests if a number is NOT close to 0.0 by 1e-6
     /// This is approximately the same tolerance that 6 increments of a float are away from 1.0.
     /// See Euclid.UtilEuclid.isOne function.
-    /// Also returns true for NaN.
+    /// Also returns TRUE for NaN.
     let inline isNotZero x =
         not (isZero x)
 
@@ -242,13 +242,13 @@ module UtilEuclid =
 
     /// Check if value is between 0.0 and +1.0 inclusive a tolerance of 1e-6 .
     ///  -1e-6 < x < 1.0 + 1e-6
-    /// Returns false for NaN.
+    /// Returns FALSE for NaN.
     let inline isBetweenZeroAndOneTolerantIncl (x:float) =
         -1e-6 < x && x < ``1.0 + 1e-6``
 
     /// Check if value is between 0.0 and +1.0 exclusive a tolerance of 1e-6 .
     /// 1e-6 < x < 1.0 - 1e-6
-    /// Returns false for NaN.
+    /// Returns FALSE for NaN.
     let inline isBetweenZeroAndOneTolerantExcl (x:float) =
         1e-6 < x && x < ``1.0 - 1e-6``
 
@@ -371,7 +371,7 @@ module Cosine =
     let ``0.5`` = 0.9999619230641713<cosine>
 
 
-    /// The cosine of an angle of 1 degrees.
+    /// The cosine of an angle of 1 degree.
     /// This is exactly 0.9998476951563913
     [<Literal>]
     let ``1.0`` = 0.9998476951563913<cosine>
@@ -773,7 +773,7 @@ module Tangent =
     let ``0.5`` = 0.00872686779075879<tangent>
 
 
-    /// The inverse or arc tangent (atan) for an angle of 1 degrees.
+    /// The inverse or arc tangent (atan) for an angle of 1 degree.
     /// This is exactly 0.017455064928217585,  calculated by  determinant / dot-product
     [<Literal>]
     let ``1.0`` = 0.017455064928217585<tangent>

@@ -1,4 +1,4 @@
-﻿namespace Euclid
+namespace Euclid
 
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
@@ -6,7 +6,7 @@ open Euclid.UtilEuclid
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 open EuclidErrors
 
-/// A struct containing 2 floats, representing a 2D Counter Clockwise rotation.
+/// A struct containing 2 floats, representing a 2D counter-clockwise rotation.
 /// It can be applied in World X, Y or Z plane.
 /// Internally stored just as a Sine and Cosine value.
 /// For arbitrary rotations use Quaternions or 4x4 Matrix.
@@ -108,20 +108,20 @@ type Rotation2D =
     static member inline add (ro:Rotation2D) (r:Rotation2D) : Rotation2D =
         r.Add(ro)
 
-    /// Create a new 2D Rotation that adds a counter clockwise angle in degrees to the existing one.
+    /// Create a new 2D Rotation that adds a counter-clockwise angle in degrees to the existing one.
     member inline r.AddDegrees(deg:float) : Rotation2D =
         let rad = toRadians deg
         r.Add(Rotation2D.createUnchecked (sin rad, cos rad))
 
-    /// Create a new 2D Rotation that adds a counter clockwise angle in degrees to the existing one.
+    /// Create a new 2D Rotation that adds a counter-clockwise angle in degrees to the existing one.
     static member inline addDegrees (deg:float) (r:Rotation2D) : Rotation2D =
         r.AddDegrees(deg)
 
-    /// Create a new 2D Rotation that adds a counter clockwise angle in radians to the existing one.
+    /// Create a new 2D Rotation that adds a counter-clockwise angle in radians to the existing one.
     member inline r.AddRadians(rad:float) : Rotation2D =
         r.Add(Rotation2D.createUnchecked (sin rad, cos rad))
 
-    /// Create a new 2D Rotation that adds a counter clockwise angle in radians to the existing one.
+    /// Create a new 2D Rotation that adds a counter-clockwise angle in radians to the existing one.
     static member inline addRadians (rad:float) (r:Rotation2D) : Rotation2D =
         r.AddRadians(rad)
 
@@ -145,18 +145,18 @@ type Rotation2D =
         abs(a.Sin-b.Sin) <= tol &&
         abs(a.Cos-b.Cos) <= tol
 
-    /// Construct a counter clockwise 2D Rotation from angle in radians.
+    /// Construct a counter-clockwise 2D Rotation from angle in radians.
     /// Use negative radians for clockwise rotation.
     static member inline createFromRadians rad : Rotation2D =
         Rotation2D.createUnchecked (sin rad, cos rad)
 
-    /// Construct a counter clockwise 2D Rotation from angle in degrees.
+    /// Construct a counter-clockwise 2D Rotation from angle in degrees.
     /// Use negative degrees for clockwise rotation.
     static member inline createFromDegrees deg : Rotation2D =
         let rad = toRadians deg
         Rotation2D.createUnchecked (sin rad, cos rad)
 
-    /// Construct a counter clockwise 2D Rotation from angle given in its cosine value.
+    /// Construct a counter-clockwise 2D Rotation from angle given in its cosine value.
     /// The input must be in the range [-1.0, +1.0].
     /// Note: Only angles in the range [0°, 180°] can be created since acos returns values in [0, π].
     static member inline createFromCosine cos : Rotation2D =
@@ -166,7 +166,7 @@ type Rotation2D =
         let sin = sqrt (1.0 - cos*cos)
         Rotation2D.createUnchecked (sin, cos)
 
-    /// Construct a counter clockwise 2D Rotation from angle given in its sine value.
+    /// Construct a counter-clockwise 2D Rotation from angle given in its sine value.
     /// The input must be in the range [-1.0, +1.0].
     /// Note: Only angles in the range [-90°, +90°] can be created since asin returns values in [-π/2, π/2].
     static member inline createFromSine sin : Rotation2D =

@@ -1,4 +1,4 @@
-﻿namespace Euclid
+namespace Euclid
 
 open System
 open Euclid.UtilEuclid
@@ -12,8 +12,8 @@ module AutoOpenLine2D =
 
   type Line2D with
 
-    /// Checks if 2D line is parallel to the world X axis. Ignoring orientation.
-    /// The absolute deviation tolerance along Y axis is 1e-9 (axisAlignmentTolerance).
+    /// Checks if 2D line is parallel to the world X-axis. Ignoring orientation.
+    /// The absolute deviation tolerance along the Y-axis is 1e-9 (axisAlignmentTolerance).
     /// Fails on lines shorter than 1e-6.
     member inline ln.IsXAligned : bool =
         let x = abs ln.VectorX
@@ -22,14 +22,14 @@ module AutoOpenLine2D =
             failTooSmall "Line2D.IsXAligned" ln
         y < axisAlignmentTolerance
 
-    /// Checks if 2D line is parallel to the world X axis. Ignoring orientation.
-    /// The absolute deviation tolerance along Y axis is 1e-9 (axisAlignmentTolerance).
+    /// Checks if 2D line is parallel to the world X-axis. Ignoring orientation.
+    /// The absolute deviation tolerance along the Y-axis is 1e-9 (axisAlignmentTolerance).
     /// Fails on lines shorter than 1e-6.
     static member inline isXAligned (l:Line2D) : bool =
         l.IsXAligned
 
-    /// Checks if 2D line is parallel to the world Y axis. Ignoring orientation.
-    /// The absolute deviation tolerance along X axis is 1e-9 (axisAlignmentTolerance).
+    /// Checks if 2D line is parallel to the world Y-axis. Ignoring orientation.
+    /// The absolute deviation tolerance along the X-axis is 1e-9 (axisAlignmentTolerance).
     /// Fails on lines shorter than 1e-6.
     member inline ln.IsYAligned : bool =
         let x = abs ln.VectorX
@@ -38,8 +38,8 @@ module AutoOpenLine2D =
             failTooSmall "Line2D.IsYAligned" ln
         x < axisAlignmentTolerance
 
-    /// Checks if 2D line is parallel to the world Y axis. Ignoring orientation.
-    /// The absolute deviation tolerance along X axis is 1e-9 (axisAlignmentTolerance).
+    /// Checks if 2D line is parallel to the world Y-axis. Ignoring orientation.
+    /// The absolute deviation tolerance along the X-axis is 1e-9 (axisAlignmentTolerance).
     /// Fails on lines shorter than 1e-6.
     static member inline isYAligned (l:Line2D) : bool =
         l.IsYAligned
@@ -84,32 +84,32 @@ module AutoOpenLine2D =
 
     /// Evaluate line at given parameters (parameters 0.0 to 1.0 are on the line).
     /// Returns a new line from evaluated points.
-    /// Same as ln.SubLine(start,ende).
-    member inline ln.Segment(start:float, ende:float) : Line2D =
+    /// Same as ln.SubLine(start, endParameter).
+    member inline ln.Segment(start:float, endParameter:float) : Line2D =
         let fromX = ln.FromX
         let fromY = ln.FromY
         let x = ln.ToX-fromX
         let y = ln.ToY-fromY
         Line2D( fromX + x * start,
                 fromY + y * start,
-                fromX + x * ende ,
-                fromY + y * ende )
+                fromX + x * endParameter ,
+                fromY + y * endParameter )
 
     /// Returns new Line2D from point at Parameter a to point at Parameter b.
     /// Same as Line2D.subLine
-    static member inline segment start ende (ln:Line2D) : Line2D =
-        ln.Segment (start, ende)
+    static member inline segment start endParameter (ln:Line2D) : Line2D =
+        ln.Segment (start, endParameter)
 
     /// Evaluate line at given parameters (parameters 0.0 to 1.0 are on the line).
     /// Returns a new line from evaluated points.
-    /// Same as ln.Segment(start,ende).
-    member inline ln.SubLine (start:float, ende:float) : Line2D =
-        ln.Segment (start, ende)
+    /// Same as ln.Segment(start, endParameter).
+    member inline ln.SubLine (start:float, endParameter:float) : Line2D =
+        ln.Segment (start, endParameter)
 
     /// Returns new Line2D from point at Parameter a to point at Parameter b.
     /// Same as Line2D.segment
-    static member inline subLine start ende (ln:Line2D) : Line2D =
-        ln.Segment (start, ende)
+    static member inline subLine start endParameter (ln:Line2D) : Line2D =
+        ln.Segment (start, endParameter)
 
     /// Returns the length of the line segment from the start point to the given parameter.
     /// This length is negative if the parameter is negative.
@@ -322,7 +322,7 @@ module AutoOpenLine2D =
                 ln.ToX+v.X,
                 ln.ToY+v.Y)
 
-    /// Move a Line2D by a vector. (same as Line2D.translate)
+    /// Move a Line2D by a vector. Same as Line2D.translate.
     static member inline move (v:Vc) (ln:Line2D)  : Line2D =
         ln.Move(v)
 
@@ -503,7 +503,7 @@ module AutoOpenLine2D =
 
     /// Assumes Line2D to be an infinite ray!
     /// Returns square distance from point to ray.
-    /// Fails on curves shorter than 1e-6 units. (ln.SqDistanceFromPoint does not.)
+    /// Fails on curves shorter than 1e-6 units. (ln.SqDistanceToPt does not.)
     member ln.SqDistanceRayXY(x:float, y:float) : float =
         let vAx = ln.VectorX
         let vAy = ln.VectorY
@@ -520,7 +520,7 @@ module AutoOpenLine2D =
 
     /// Assumes Line2D to be an infinite ray!
     /// Returns square distance from point to ray.
-    /// Fails on curves shorter than 1e-6 units. (ln.SqDistanceFromPoint does not.)
+    /// Fails on curves shorter than 1e-6 units. (ln.SqDistanceToPt does not.)
     member ln.SqDistanceRayPoint(p:Pt) : float =
         ln.SqDistanceRayXY(p.X, p.Y)
 
@@ -557,20 +557,20 @@ module AutoOpenLine2D =
         ln.DistanceRayPoint p
 
     /// Returns square distance from point to finite line.
-    member ln.SqDistanceFromXY(x:float, y:float) : float =
+    member ln.SqDistanceToXY(x:float, y:float) : float =
         XLineXY.sqDistLnPt'(ln, x, y)
 
     /// Returns square distance from point to finite line.
-    member ln.SqDistanceFromPoint(p:Pt) : float =
-        ln.SqDistanceFromXY(p.X, p.Y)
+    member ln.SqDistanceToPt(p:Pt) : float =
+        ln.SqDistanceToXY(p.X, p.Y)
 
     /// Returns the square distance from point to finite line.
-    static member inline sqDistanceFromXY(x:float) (y:float) (ln:Line2D) : float =
-        ln.SqDistanceFromXY (x, y)
+    static member inline sqDistanceToXY(x:float) (y:float) (ln:Line2D) : float =
+        ln.SqDistanceToXY (x, y)
 
     /// Returns the square distance from point to finite line.
-    static member inline sqDistanceFromPoint(p:Pt) (ln:Line2D) : float =
-        ln.SqDistanceFromPoint p
+    static member inline sqDistanceToPt(p:Pt) (ln:Line2D) : float =
+        ln.SqDistanceToPt p
 
     /// Returns distance from point to (finite) line.
     member inline ln.DistanceToXY(x:float, y:float) : float =
@@ -665,7 +665,7 @@ module AutoOpenLine2D =
     static member inline isParallelTo (minTangent:float<Tangent.tangent>) (lnA:Line2D) (lnB:Line2D) : bool =
         lnA.IsParallelTo(lnB, minTangent)
 
-    /// Checks if a 2D lines is parallel to a 2D vector.
+    /// Checks if a 2D line is parallel to a 2D vector.
     /// Ignores the line orientation.
     /// The default angle tolerance is 0.25 degrees. Tangent.``0.25`` is about 0.0044.
     /// This tolerance can be customized by an optional minimum Tangent value.
@@ -679,7 +679,7 @@ module AutoOpenLine2D =
         let tan = XLineXY.tangent (ax, ay, other.X, other.Y)
         abs tan < minTangent
 
-    /// Checks if a 2D lines is parallel to a 2D unit-vector.
+    /// Checks if a 2D line is parallel to a 2D unit-vector.
     /// Ignores the line orientation.
     /// The default angle tolerance is 0.25 degrees. Tangent.``0.25`` is about 0.0044.
     /// This tolerance can be customized by an optional minimum Tangent value.
@@ -715,7 +715,7 @@ module AutoOpenLine2D =
     static member inline isParallelAndOrientedTo (minTangent:float<Tangent.tangent>) (lnA:Line2D) (lnB:Line2D) : bool =
         lnA.IsParallelAndOrientedTo(lnB, minTangent)
 
-    /// Checks if a 2D lines is parallel to a 2D vector.
+    /// Checks if a 2D line is parallel to a 2D vector.
     /// Takes the line orientation into account too.
     /// The default angle tolerance is 0.25 degrees. Tangent.``0.25`` is about 0.0044.
     /// This tolerance can be customized by an optional minimum Tangent value.
@@ -729,7 +729,7 @@ module AutoOpenLine2D =
         let tan = XLineXY.tangent (ax, ay, other.X, other.Y)
         tan < minTangent
 
-    /// Checks if a 2D lines is parallel to a 2D unit-vector.
+    /// Checks if a 2D line is parallel to a 2D unit-vector.
     /// Takes the line orientation into account too.
     /// The default angle tolerance is 0.25 degrees. Tangent.``0.25`` is about 0.0044.
     /// This tolerance can be customized by an optional minimum Tangent value.
@@ -764,7 +764,7 @@ module AutoOpenLine2D =
     static member inline isPerpendicularTo (maxTangent:float<Tangent.tangent>) (lnA:Line2D) (lnB:Line2D) : bool =
         lnA.IsPerpendicularTo(lnB, maxTangent)
 
-    /// Checks if a 2D lines is perpendicular to a 2D vector.
+    /// Checks if a 2D line is perpendicular to a 2D vector.
     /// The default angle tolerance is 89.75 to 90.25 degrees. Tangent.``89.75`` is about 229.2.
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
@@ -777,7 +777,7 @@ module AutoOpenLine2D =
         let tan = XLineXY.tangent (ax, ay, other.X, other.Y)
         abs tan > maxTangent
 
-    /// Checks if a 2D lines is perpendicular to a 2D unit-vector.
+    /// Checks if a 2D line is perpendicular to a 2D unit-vector.
     /// The default angle tolerance is 89.75 to 90.25 degrees. Tangent.``89.75`` is about 229.2.
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
@@ -794,7 +794,7 @@ module AutoOpenLine2D =
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    /// Alias for ln.IsPerpendicularTo.
+    /// Same as ln.IsPerpendicularTo.
     member inline ln.IsNormalTo (other:Line2D, [<OPT;DEF(Tangent.``89.75``)>] maxTangent:float<Tangent.tangent> ) : bool =
         ln.IsPerpendicularTo(other, maxTangent)
 
@@ -802,31 +802,32 @@ module AutoOpenLine2D =
     /// Use a precomputed value from Euclid.Tangent module as tolerance.
     /// e.g. Tangent.``89.75`` is about 229.2.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    /// Same as Line2D.isPerpendicularTo.
     static member inline isNormalTo (maxTangent:float<Tangent.tangent>) (lnA:Line2D) (lnB:Line2D) : bool =
         lnA.IsNormalTo(lnB, maxTangent)
 
-    /// Checks if a 2D lines is perpendicular to a 2D vector.
+    /// Checks if a 2D line is perpendicular to a 2D vector.
     /// The default angle tolerance is 89.75 to 90.25 degrees. Tangent.``89.75`` is about 229.2.
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    /// Alias for ln.IsPerpendicularTo.
+    /// Same as ln.IsPerpendicularTo.
     member inline ln.IsNormalTo (other:Vc, [<OPT;DEF(Tangent.``89.75``)>] maxTangent:float<Tangent.tangent> ) : bool =
         ln.IsPerpendicularTo(other, maxTangent)
 
-    /// Checks if a 2D lines is perpendicular to a 2D unit-vector.
+    /// Checks if a 2D line is perpendicular to a 2D unit-vector.
     /// The default angle tolerance is 89.75 to 90.25 degrees. Tangent.``89.75`` is about 229.2.
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    /// Alias for ln.IsPerpendicularTo.
+    /// Same as ln.IsPerpendicularTo.
     member inline ln.IsNormalTo (other:UnitVc, [<OPT;DEF(Tangent.``89.75``)>] maxTangent:float<Tangent.tangent> ) : bool =
         ln.IsPerpendicularTo(other, maxTangent)
 
     /// Checks if two 2D lines are coincident on the same ray within the distance tolerance. 1e-6 by default.
     /// This means that lines are parallel within the angle tolerance
     /// and the distance of second start to the first line is less than the distance tolerance.
-    /// Also returns false on zero Length lines.
+    /// Also returns FALSE on zero Length lines.
     /// The default angle tolerance is 0.25 degrees. Tangent.``0.25`` is about 0.0044.
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
@@ -1030,13 +1031,13 @@ module AutoOpenLine2D =
 
     /// Looking in the direction of the line.
     /// Check if a given point is on the right side of the ray.
-    /// Also returns false if the point is on the line.
+    /// Also returns FALSE if the point is on the line.
     member inline ln.IsXYOnRight(x:float, y:float) : bool =
         ln.VectorY * (x - ln.FromX) - ln.VectorX * (y - ln.FromY) > 0.0
 
     /// Looking in the direction of the line.
     /// Check if a given point is on the right side of the ray.
-    /// Also returns false if the point is on the line.
+    /// Also returns FALSE if the point is on the line.
     member inline ln.IsPointOnRight(pt:Pt) : bool =
         ln.IsXYOnRight(pt.X, pt.Y)
 
@@ -1052,13 +1053,13 @@ module AutoOpenLine2D =
 
     /// Looking in the direction of the line.
     /// Check if a given point is on the left side of the infinite ray.
-    /// Also returns false if the point is on the line.
+    /// Also returns FALSE if the point is on the line.
     member inline ln.IsXYOnLeft(x:float, y:float) : bool =
         ln.VectorX * (y - ln.FromY) - ln.VectorY * (x - ln.FromX) > 0.0
 
     /// Looking in the direction of the line.
     /// Check if a given point is on the left side of the infinite ray.
-    /// Also returns false if the point is on the line.
+    /// Also returns FALSE if the point is on the line.
     member inline ln.IsPointOnLeft(pt:Pt) : bool =
         ln.IsXYOnLeft(pt.X, pt.Y)
 
@@ -1292,6 +1293,25 @@ module AutoOpenLine2D =
     static member inline setTo (pt:Pt) (ln:Line2D) : Line2D =
         Line2D( ln.FromX, ln.FromY, pt.X, pt.Y)
 
+    /// Same as ln.Vector or ln.Tangent.
+    /// The returned vector has the same length as the Line2D.
+    member inline ln.Direction : Vc =
+        Vc(ln.VectorX, ln.VectorY)
+
+    /// Same as ln.Vector or ln.Direction.
+    /// The returned vector has the same length as the Line2D.
+    member inline ln.Tangent : Vc =
+        Vc(ln.VectorX, ln.VectorY)
+
+    /// Returns a unit-vector of the line Direction.
+    member inline ln.UnitTangent : UnitVc =
+        let x = ln.VectorX
+        let y = ln.VectorY
+        let l = sqrt(x * x  + y * y)
+        if UtilEuclid.isTooTiny l then
+            EuclidErrors.failUnit2 "Line2D.UnitTangent" x y
+        UnitVc.createUnchecked (x/l, y/l)
+
     /// Same as Line2D.vector or Line2D.tangent.
     /// The returned vector has the same length as the Line2D.
     static member inline direction (ln:Line2D) : Vc =
@@ -1319,15 +1339,15 @@ module AutoOpenLine2D =
     static member inline lengthSq (l:Line2D) : float =
         l.LengthSq
 
-    /// Reverse or flip the Line2D (same as Line2D.flip)
+    /// Reverse or flip the Line2D. Same as Line2D.flip.
     static member inline reverse (ln:Line2D) : Line2D =
         ln.Reversed
 
-    /// Reverse or flip the Line2D (same as Line2D.reverse)
+    /// Reverse or flip the Line2D. Same as Line2D.reverse.
     static member inline flip (ln:Line2D) : Line2D =
         ln.Reversed
 
-    /// Move a Line2D by a vector. (same as Line2D.move)
+    /// Move a Line2D by a vector. Same as Line2D.move.
     static member inline translate (v:Vc) (ln:Line2D)  : Line2D =
         ln.Move(v)
 
@@ -1408,22 +1428,24 @@ module AutoOpenLine2D =
 
     /// Checks if a 2D line is perpendicular to a 2D vector.
     /// Use a precomputed value from Euclid.Tangent module as tolerance.
-    /// e.g. Tangent.``89.75`` is about 0.0044.
+    /// e.g. Tangent.``89.75`` is about 229.2.
     /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    /// Same as Line2D.isPerpendicularToVc.
     static member inline isNormalToVc (maxTangent:float<Tangent.tangent>) (other:Vc) (ln:Line2D) : bool =
         ln.IsNormalTo(other, maxTangent)
 
     /// Checks if a 2D line is perpendicular to a 2D unit-vector.
     /// Use a precomputed value from Euclid.Tangent module as tolerance.
-    /// e.g. Tangent.``89.75`` is about 0.0044.
+    /// e.g. Tangent.``89.75`` is about 229.2.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    /// Same as Line2D.isPerpendicularToUnitVc.
     static member inline isNormalToUnitVc (maxTangent:float<Tangent.tangent>) (other:UnitVc) (ln:Line2D) : bool =
         ln.IsNormalTo(other, maxTangent)
 
     /// A faster Check if two 2D lines are parallel. Ignoring orientation.
     /// The angle tolerance is 0.25 degrees.
     /// This function does not do a check for very short lines.
-    /// But will return false on zero-length lines.
+    /// But will return FALSE on zero-length lines.
     static member inline isParallelTo' (lnA:Line2D) (lnB:Line2D) : bool =
         let vtX = lnA.VectorX
         let vtY = lnA.VectorY
@@ -1437,7 +1459,7 @@ module AutoOpenLine2D =
     /// A faster Check if two 2D lines are not parallel. Ignoring orientation.
     /// The angle tolerance is 0.25 degrees.
     /// This function does not do a check for very short lines.
-    /// But will return false on zero-length lines.
+    /// But will return FALSE on zero-length lines.
     static member inline isNotParallelTo' (lnA:Line2D) (lnB:Line2D) : bool =
         let vtX = lnA.VectorX
         let vtY = lnA.VectorY
@@ -1451,7 +1473,7 @@ module AutoOpenLine2D =
     /// A faster Check if two 2D lines are perpendicular to each other.
     /// The angle tolerance is 89.75 to 90.25 degrees.
     /// This function does not do a check for very short lines.
-    /// But will return false on zero-length lines.
+    /// But will return FALSE on zero-length lines.
     /// Same as Line2D.isNormalTo'
     static member inline isPerpendicularTo' (lnA:Line2D) (lnB:Line2D) : bool =
         let vtX = lnA.VectorX
@@ -1466,7 +1488,7 @@ module AutoOpenLine2D =
     /// A faster Check if two 2D lines are perpendicular to each other.
     /// The angle tolerance is 89.75 to 90.25 degrees.
     /// This function does not do a check for very short lines.
-    /// But will return false on zero-length lines.
+    /// But will return FALSE on zero-length lines.
     /// Same as Line2D.isPerpendicularTo'
     static member inline isNormalTo' (lnA:Line2D) (lnB:Line2D) : bool =
         Line2D.isPerpendicularTo' lnA lnB
@@ -1755,7 +1777,7 @@ module AutoOpenLine2D =
     /// The parameters are between 0.0 and 1.0 on the target line
     /// The first parameter is from the start of the line to project.
     /// The second parameter is from the end of the line to project.
-    /// So the if the first parameter is bigger than the second, the lines are oriented in opposite direction.
+    /// Therefore, if the first parameter is greater than the second, the lines have opposite orientations.
     static member tryProjectOntoLineParam (onToLine:Line2D) (lineToProject:Line2D) : option<float*float> =
         let osx = onToLine.FromX
         let osy = onToLine.FromY
@@ -1781,7 +1803,7 @@ module AutoOpenLine2D =
         else
             Some (clamp01 bStartOnA, clamp01 bEndOnA)
 
-    /// Tries to a line onto another line considered finite.
+    /// Tries to project a line onto another line considered finite.
     /// Returns Some Line2D if there is an overlap.
     /// Returns None if there is no overlap.
     /// Keeps the orientation of the line to project.
@@ -1831,19 +1853,19 @@ module AutoOpenLine2D =
 
     /// <summary> A fast test tests if two finite 2D lines truly intersect.
     /// Does not use a default tolerance for parallel or coincident lines. Just checks within line range and not NaN.
-    /// Returns false on zero length lines or if parallel lines are touching or overlapping each other.</summary>
+    /// Returns FALSE on zero length lines or if parallel lines are touching or overlapping each other.</summary>
     /// <param name="lnA"> The first line.</param>
     /// <param name="lnB"> The second line.</param>
     /// <remarks> Use the XLine2D module for more specialized intersection calculations.
     /// Like getting the kind of Parallel relation between lines, only getting the parameter of one line,
     /// or setting a tolerance for when lines are parallel or coincident.</remarks>
-    /// <remarks> This does not check for an explicit angle tolerance, so overlapping almost parallel lines may return true.</remarks>
+    /// <remarks> This does not check for an explicit angle tolerance, so overlapping almost parallel lines may return TRUE.</remarks>
     static member doIntersect (lnA:Line2D) (lnB:Line2D) : bool =
         XLine2D.doIntersect(lnA, lnB)
 
     /// <summary> Tests if two finite 2D lines intersect or touch.
-    /// Also returns true if parallel lines are touching or overlapping each other.
-    /// Also returns true if a zero length lines are at the same location.</summary>
+    /// Also returns TRUE if parallel lines are touching or overlapping each other.
+    /// Also returns TRUE if a zero length lines are at the same location.</summary>
     /// <param name="lnA"> The first line.</param>
     /// <param name="lnB"> The second line.</param>
     /// <remarks> This method uses an angle of 0.25 degrees to classify Lines as parallel.
@@ -1866,7 +1888,7 @@ module AutoOpenLine2D =
     /// <param name="lnA"> The first line.</param>
     /// <param name="lnB"> The second line.</param>
     /// <returns> A Pt if the lines intersect truly,
-    /// None if apart, lines too short or if parallel lines are touching or overlapping each other.</returns>
+    /// ValueNone if apart, too short, or if parallel lines are touching or overlapping each other.</returns>
     /// <remarks> Use the XLine2D module for more specialized intersection calculations.
     /// Like getting the kind of Parallel relation between lines, only getting the parameter of one line,
     /// or setting a tolerance for when lines are parallel or coincident.</remarks>
@@ -1876,9 +1898,9 @@ module AutoOpenLine2D =
     /// <summary> Tries to get intersection point of two rays (rays are 2D lines extended infinitely).</summary>
     /// <param name="lineA"> First line.</param>
     /// <param name="lineB"> Second line.</param>
-    /// <returns> The point at which the two rays intersect or None.</returns>
+    /// <returns>The point at which the two rays intersect, or ValueNone.</returns>
     /// <remarks> If the lines are parallel or coincident, or if the parameter on Line A is bigger than 1e12 in absolute value,
-    /// None is returned.</remarks>
+    /// ValueNone is returned.</remarks>
     static member tryIntersectRay(lineA:Line2D) (lineB:Line2D) : Pt voption =
         XLine2D.tryIntersectRay(lineA, lineB)
 
@@ -2047,15 +2069,31 @@ module AutoOpenLine2D =
     static member inline distanceToPtInfinite(p:Pt) (ln:Line2D) : float =
         ln.DistanceRayPoint p
 
-    [<Obsolete("Use this.SqDistanceFromPoint instead. Obsolete since 0.20.0")>]
+    [<Obsolete("Use this.SqDistanceToPt instead. Obsolete since 0.20.0")>]
     member ln.DistanceSqFromPoint(p:Pt) : float =
         XLineXY.sqDistLnPt'(ln, p.X, p.Y)
 
     // Static members marked as Obsolete that have direct replacements:
 
-    [<Obsolete("Use Line2D.sqDistanceFromPoint instead. Obsolete since 0.20.0")>]
+    [<Obsolete("Use Line2D.sqDistanceToPt instead. Obsolete since 0.20.0")>]
     static member inline distanceSqFromPoint(p:Pt) (ln:Line2D) : float =
-        ln.SqDistanceFromPoint p
+        ln.SqDistanceToPt p
+
+    [<Obsolete("Use this.SqDistanceToXY instead")>]
+    member ln.SqDistanceFromXY(x:float, y:float) : float =
+        ln.SqDistanceToXY(x, y)
+
+    [<Obsolete("Use this.SqDistanceToPt instead")>]
+    member ln.SqDistanceFromPoint(p:Pt) : float =
+        ln.SqDistanceToPt p
+
+    [<Obsolete("Use Line2D.sqDistanceToXY instead")>]
+    static member inline sqDistanceFromXY(x:float) (y:float) (ln:Line2D) : float =
+        ln.SqDistanceToXY (x, y)
+
+    [<Obsolete("Use Line2D.sqDistanceToPt instead")>]
+    static member inline sqDistanceFromPoint(p:Pt) (ln:Line2D) : float =
+        ln.SqDistanceToPt p
 
     [<Obsolete("Use Line2D.isCoincidentTo instead. Obsolete since 0.20.0")>]
     static member inline areCoincident (a:Line2D) (b:Line2D) : bool =

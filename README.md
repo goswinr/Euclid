@@ -413,8 +413,8 @@ open Euclid
 let npl = NPlane(Pnt(0, 0, 5), UnitVec.Zaxis)
 
 // Signed distance from plane (positive = same side as normal)
-let d = npl.DistanceToPt (Pnt(3, 4, 8))         // 3.0
-let d2 = npl.DistanceToPt (Pnt(3, 4, 2))        // -3.0
+let d = npl.DistanceToPnt (Pnt(3, 4, 8))         // 3.0
+let d2 = npl.DistanceToPnt (Pnt(3, 4, 2))        // -3.0
 
 // Project a point onto the plane
 let proj = npl.ClosestPoint (Pnt(3, 4, 8))       // Pnt(3, 4, 5)

@@ -1,4 +1,4 @@
-﻿namespace Euclid
+namespace Euclid
 open System
 open UtilEuclid
 open EuclidErrors
@@ -25,6 +25,14 @@ module AutoOpenVec =
         /// Convert 3D vector to 2D vector, discarding the Z value.
         static member inline asVc(v:Vec) : Vc =
             Vc(v.X, v.Y)
+
+        /// Convert 3D vector to 2D point, discarding the Z value.
+        member inline v.AsPt : Pt =
+            Pt(v.X, v.Y)
+
+        /// Convert 3D vector to 2D point, discarding the Z value.
+        static member inline asPt(v:Vec) : Pt =
+            Pt(v.X, v.Y)
 
         /// Returns a boolean indicating whether X, Y and Z are all exactly 0.0.
         member inline v.IsZero : bool =
@@ -224,23 +232,23 @@ module AutoOpenVec =
         static member inline isUnit (v:Vec) : bool =
             v.IsUnit
 
-        /// Returns a perpendicular horizontal vector. Rotated counterclockwise.
+        /// Returns a perpendicular horizontal vector. Rotated counter-clockwise.
         /// Or Vec.Zero if input is vertical.
         /// Just does Vec(-v.Y, v.X, 0.0)
         member inline v.PerpendicularInXY : Vec =
             Vec(-v.Y, v.X, 0)
 
-        /// Returns a perpendicular horizontal vector. Rotated counterclockwise.
+        /// Returns a perpendicular horizontal vector. Rotated counter-clockwise.
         /// Just does Vec(-v.Y, v.X, 0.0)
         /// On vertical input vector resulting vector is of zero length.
         static member inline perpendicularInXY (v:Vec) : Vec =
             Vec(-v.Y, v.X, 0.0)
 
-        /// 90-degree rotation Counter-Clockwise around Z-axis.
+        /// 90-degree rotation counter-clockwise around Z-axis.
         member inline v.RotateOnZ90CCW : Vec =
             Vec( -v.Y, v.X, v.Z)
 
-        /// 90-degree rotation Counter-Clockwise around Z-axis.
+        /// 90-degree rotation counter-clockwise around Z-axis.
         static member inline rotateOnZ90CCW(v:Vec) : Vec =
             Vec( -v.Y, v.X, v.Z)
 
@@ -274,7 +282,7 @@ module AutoOpenVec =
         /// The diamond angle.
         /// Calculates the proportion of X to Y component.
         /// It is always positive and in the range of 0.0 to 4.0 (for 360 degrees)
-        /// 0.0 = Xaxis, going Counter-Clockwise.
+        /// 0.0 = Xaxis, going counter-clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
         member inline v.DirectionDiamondInXY : float =
@@ -294,14 +302,14 @@ module AutoOpenVec =
         /// The diamond angle.
         /// Calculates the proportion of X to Y component.
         /// It is always positive and in the range of 0.0 to 4.0 (for 360 degrees)
-        /// 0.0 = Xaxis, going Counter-Clockwise.
+        /// 0.0 = Xaxis, going counter-clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
         static member inline directionDiamondInXY(v:Vec) : float =
             v.DirectionDiamondInXY
 
         /// Returns the angle in radians from X-axis,
-        /// Going Counter-Clockwise till two Pi.
+        /// Going counter-clockwise till two Pi.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
         member inline v.Direction2PiInXY : float =
             // https://stackoverflow.com/a/14675998/969070
@@ -313,7 +321,7 @@ module AutoOpenVec =
                 a
 
         /// Returns the angle in radians from X-axis,
-        /// Going Counter-Clockwise till two Pi.
+        /// Going counter-clockwise till two Pi.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
         static member inline direction2PiInXY (v:Vec) : float =
             v.Direction2PiInXY
@@ -339,13 +347,13 @@ module AutoOpenVec =
             v.DirectionPiInXY
 
         /// Returns the angle in degrees from X-axis.
-        /// Going Counter-Clockwise till 360.
+        /// Going counter-clockwise till 360.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
         member inline v.Direction360InXY : float =
             v.Direction2PiInXY |> toDegrees
 
         /// Returns the angle in degrees from X-axis.
-        /// Going Counter-Clockwise till 360.
+        /// Going counter-clockwise till 360.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
         static member inline direction360InXY (v:Vec) : float =
             v.Direction360InXY
@@ -364,7 +372,7 @@ module AutoOpenVec =
         static member inline direction180InXY (v:Vec) : float =
             v.Direction180InXY
 
-        /// Returns positive angle for rotating Counter-Clockwise from this vector to vector 'b' .
+        /// Returns positive angle for rotating counter-clockwise from this vector to vector 'b' .
         /// In Diamond Angle. Using only proportion of X to Y components.
         /// Range of 0.0 to 4.0 (for 360 degrees)
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
@@ -374,7 +382,7 @@ module AutoOpenVec =
             if r >= 0. then  r
             else r + 4.0
 
-        /// Returns positive angle for rotating Counter-Clockwise from vector 'a' to vector 'b' .
+        /// Returns positive angle for rotating counter-clockwise from vector 'a' to vector 'b' .
         /// In Diamond Angle. Using only proportion of X to Y components.
         /// Range of 0.0 to 4.0 (for 360 degrees)
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
@@ -391,7 +399,7 @@ module AutoOpenVec =
             if isTooTinySq(other.LengthSq) then failTooSmall2 "Vec.MatchesOrientation" other v
             v *** other > 1e-12
 
-        /// Checks if the angle between this 3D vectors and a 3D unit-vector is less than 90 degrees.
+        /// Checks if the angle between this 3D vector and a 3D unit-vector is less than 90 degrees.
         /// Calculates the dot product of two 3D vectors.
         /// Then checks if it is bigger than 1e-12.
         /// Fails if the vector is shorter than zeroLengthTolerance (1e-12).
@@ -415,7 +423,7 @@ module AutoOpenVec =
             if isTooTinySq(other.LengthSq) then failTooSmall2 "Vec.IsOppositeOrientation" other v
             v *** other < -1e-12
 
-        /// Checks if the angle between this 3D vectors and a 3D unit-vector is more than 90 degrees.
+        /// Checks if the angle between this 3D vector and a 3D unit-vector is more than 90 degrees.
         /// Calculates the dot product of a 3D vector and a unit-vectors.
         /// Then checks if it is smaller than -1e-12.
         /// Fails if the vector is shorter than zeroLengthTolerance (1e-12).
@@ -430,8 +438,8 @@ module AutoOpenVec =
         static member inline isOppositeOrientation (v:Vec) (other:Vec) : bool =
             v.IsOppositeOrientation other
 
-        /// Checks if 3D vector is parallel to the world X axis. Ignoring orientation.
-        /// The absolute deviation tolerance along Y and Z axis is 1e-9 (axisAlignmentTolerance).
+        /// Checks if 3D vector is parallel to the world X-axis. Ignoring orientation.
+        /// The absolute deviation tolerance along the Y and Z axes is 1e-9 (axisAlignmentTolerance).
         /// Fails on vectors shorter than 1e-6.
         member inline v.IsXAligned : bool =
             let x = abs (v.X)
@@ -441,14 +449,14 @@ module AutoOpenVec =
                 failTooSmall "Vec.IsXAligned" v
             y < axisAlignmentTolerance && z < axisAlignmentTolerance
 
-        /// Checks if 3D vector is parallel to the world X axis. Ignoring orientation.
-        /// The absolute deviation tolerance along Y and Z axis is 1e-9 (axisAlignmentTolerance).
+        /// Checks if 3D vector is parallel to the world X-axis. Ignoring orientation.
+        /// The absolute deviation tolerance along the Y and Z axes is 1e-9 (axisAlignmentTolerance).
         /// Fails on vectors shorter than 1e-6.
         static member inline isXAligned (v:Vec) : bool =
             v.IsXAligned
 
-        /// Checks if 3D vector is parallel to the world Y axis. Ignoring orientation.
-        /// The absolute deviation tolerance along X and Z axis is 1e-9 (axisAlignmentTolerance).
+        /// Checks if 3D vector is parallel to the world Y-axis. Ignoring orientation.
+        /// The absolute deviation tolerance along the X and Z axes is 1e-9 (axisAlignmentTolerance).
         /// Fails on vectors shorter than 1e-6.
         member inline v.IsYAligned : bool =
             let x = abs (v.X)
@@ -458,14 +466,14 @@ module AutoOpenVec =
                 failTooSmall "Vec.IsYAligned" v
             x < axisAlignmentTolerance && z < axisAlignmentTolerance
 
-        /// Checks if 3D vector is parallel to the world Y axis. Ignoring orientation.
-        /// The absolute deviation tolerance along X and Z axis is 1e-9 (axisAlignmentTolerance).
+        /// Checks if 3D vector is parallel to the world Y-axis. Ignoring orientation.
+        /// The absolute deviation tolerance along the X and Z axes is 1e-9 (axisAlignmentTolerance).
         /// Fails on vectors shorter than 1e-6.
         static member inline isYAligned (v:Vec) : bool =
             v.IsYAligned
 
-        /// Checks if 3D vector is parallel to the world Z axis. Ignoring orientation.
-        /// The absolute deviation tolerance along X and Y axis is 1e-9 (axisAlignmentTolerance).
+        /// Checks if 3D vector is parallel to the world Z-axis. Ignoring orientation.
+        /// The absolute deviation tolerance along the X and Y axes is 1e-9 (axisAlignmentTolerance).
         /// Fails on vectors shorter than 1e-6.
         /// Same as v.IsVertical
         member inline v.IsZAligned : bool =
@@ -476,15 +484,15 @@ module AutoOpenVec =
                 failTooSmall "Vec.IsZAligned" v
             x < axisAlignmentTolerance && y < axisAlignmentTolerance
 
-        /// Checks if 3D vector is parallel to the world Z axis. Ignoring orientation.
-        /// The absolute deviation tolerance along X and Y axis is 1e-9 (axisAlignmentTolerance).
+        /// Checks if 3D vector is parallel to the world Z-axis. Ignoring orientation.
+        /// The absolute deviation tolerance along the X and Y axes is 1e-9 (axisAlignmentTolerance).
         /// Fails on vectors shorter than 1e-6.
         /// Same as v.IsVertical
         static member inline isZAligned (v:Vec) : bool =
             v.IsZAligned
 
-        /// Checks if 3D vector is parallel to the world Z axis. Ignoring orientation.
-        /// The absolute deviation tolerance along X and Y axis is 1e-9 (axisAlignmentTolerance).
+        /// Checks if 3D vector is parallel to the world Z-axis. Ignoring orientation.
+        /// The absolute deviation tolerance along the X and Y axes is 1e-9 (axisAlignmentTolerance).
         /// Fails on vectors shorter than 1e-6.
         /// Same as v.IsZAligned
         member inline v.IsVertical : bool =
@@ -495,15 +503,15 @@ module AutoOpenVec =
                 failTooSmall "Vec.IsVertical" v
             x < axisAlignmentTolerance && y < axisAlignmentTolerance
 
-        /// Checks if 3D vector is parallel to the world Z axis. Ignoring orientation.
-        /// The absolute deviation tolerance along X and Y axis is 1e-9 (axisAlignmentTolerance).
+        /// Checks if 3D vector is parallel to the world Z-axis. Ignoring orientation.
+        /// The absolute deviation tolerance along the X and Y axes is 1e-9 (axisAlignmentTolerance).
         /// Fails on vectors shorter than 1e-6.
         /// Same as v.IsZAligned
         static member inline isVertical (v:Vec) : bool =
             v.IsVertical
 
         /// Checks if 3D vector is horizontal (Z component is almost zero).
-        /// The absolute deviation tolerance along Z axis is 1e-9 (axisAlignmentTolerance).
+        /// The absolute deviation tolerance along the Z-axis is 1e-9 (axisAlignmentTolerance).
         /// Fails on vectors shorter than 1e-6.
         member inline v.IsHorizontal : bool =
             let x = abs (v.X)
@@ -514,7 +522,7 @@ module AutoOpenVec =
             z < axisAlignmentTolerance
 
         /// Checks if 3D vector is horizontal (Z component is almost zero).
-        /// The absolute deviation tolerance along Z axis is 1e-9 (axisAlignmentTolerance).
+        /// The absolute deviation tolerance along the Z-axis is 1e-9 (axisAlignmentTolerance).
         /// Fails on vectors shorter than 1e-6.
         static member inline isHorizontal (v:Vec) : bool =
             v.IsHorizontal
@@ -534,7 +542,7 @@ module AutoOpenVec =
             let bu = other * (1.0 / sqrt sb)
             abs(bu *** au) > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
 
-        /// Checks if this 3D vectors and a 3D unit-vector are parallel.
+        /// Checks if this 3D vector and a 3D unit-vector are parallel.
         /// Ignores the line orientation.
         /// The default angle tolerance is 0.25 degrees.
         /// This tolerance can be customized by an optional minimum cosine value.
@@ -554,7 +562,7 @@ module AutoOpenVec =
         static member inline isParallelTo (minCosine:float<Cosine.cosine>) (a:Vec) (b:Vec) : bool =
             a.IsParallelTo(b, minCosine)
 
-        /// Checks if this 3D vectors and a 3D unit-vector are parallel.
+        /// Checks if this 3D vector and a 3D unit-vector are parallel.
         /// Ignores the line orientation.
         /// This tolerance can be customized by an optional minimum cosine value.
         /// See Euclid.Cosine module.
@@ -577,7 +585,7 @@ module AutoOpenVec =
             let bu = other * (1.0 / sqrt sb)
             bu *** au > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
 
-        /// Checks if this 3D vectors and a 3D unit-vector are parallel.
+        /// Checks if this 3D vector and a 3D unit-vector are parallel.
         /// Takes the line orientation into account too.
         /// The default angle tolerance is 0.25 degrees.
         /// This tolerance can be customized by an optional minimum cosine value.
@@ -597,7 +605,7 @@ module AutoOpenVec =
         static member inline isParallelAndOrientedTo (minCosine:float<Cosine.cosine>) (a:Vec) (b:Vec) : bool =
             a.IsParallelAndOrientedTo(b, minCosine)
 
-        /// Checks if this 3D vectors and a 3D unit-vector are parallel.
+        /// Checks if this 3D vector and a 3D unit-vector are parallel.
         /// Takes the line orientation into account too.
         /// This tolerance can be customized by an optional minimum cosine value.
         /// See Euclid.Cosine module.
@@ -621,7 +629,7 @@ module AutoOpenVec =
             let d = bu *** au
             !^(abs d) < maxCosine
 
-        /// Checks if this 3D vectors and a 3D unit-vector are perpendicular to each other.
+        /// Checks if this 3D vector and a 3D unit-vector are perpendicular to each other.
         /// The default angle tolerance is 89.75 to 90.25 degrees.
         /// This tolerance can be customized by an optional minimum cosine value.
         /// The default cosine is 0.0043633 ( = 89.75 deg)
@@ -641,7 +649,7 @@ module AutoOpenVec =
         static member inline isPerpendicularTo (maxCosine:float<Cosine.cosine>) (a:Vec) (b:Vec) : bool =
             a.IsPerpendicularTo(b, maxCosine)
 
-        /// Checks if this 3D vectors and a 3D unit-vector are perpendicular to each other.
+        /// Checks if this 3D vector and a 3D unit-vector are perpendicular to each other.
         /// This tolerance can be customized by an optional minimum cosine value.
         /// See Euclid.Cosine module.
         /// Fails on vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -708,7 +716,7 @@ module AutoOpenVec =
             let z = a.Z - b.Z
             x*x + y*y + z*z
 
-        /// Accepts any type that has a X, Y and Z (UPPERCASE) member that can be converted to a float.
+        /// Accepts any type that has an X, Y and Z (UPPERCASE) member that can be converted to a float.
         /// Internally this is not using reflection at runtime but F# Statically Resolved Type Parameters at compile time.
         static member inline createFromMembersXYZ vec : Vec =
             let x = ( ^T : (member X : _) vec)
@@ -737,10 +745,6 @@ module AutoOpenVec =
         /// Create 3D vector from 3D unit-vector.
         static member inline createFromUnitVec (v:UnitVec) : Vec =
             Vec(v.X, v.Y, v.Z)
-
-        /// Convert 3D vector to 2D point by ignoring Z value.
-        static member inline asPt(v:Vec) : Pt =
-            Pt(v.X, v.Y)
 
         /// Gets the X part of this 3D vector.
         static member inline getX (v:Vec) : float =
@@ -804,8 +808,8 @@ module AutoOpenVec =
             Vec(x, y, z)
 
         /// Returns a new 3D vector from start and end point.
-        static member inline create (start:Pnt, ende:Pnt) : Vec =
-            ende-start
+        static member inline create (start:Pnt, endValue:Pnt) : Vec =
+            endValue-start
 
         /// Returns a 3D vector from z value and 2D vector.
         static member inline createFromVcWithZ (z:float) (v:Vc) : Vec =
@@ -816,12 +820,12 @@ module AutoOpenVec =
         static member inline projectToXYPlane (v:Vec) : Vec =
             Vec(v.X, v.Y, 0.0)
 
-        /// Negate or inverse a 3D vectors. Returns a new 3D vector.
+        /// Negate or inverse a 3D vector. Returns a new 3D vector.
         /// Same as Vec.flip.
         static member inline reverse (v:Vec) : Vec =
             -v
 
-        /// Negate or inverse a 3D vectors. Returns a new 3D vector.
+        /// Negate or inverse a 3D vector. Returns a new 3D vector.
         /// Same as Vec.reverse.
         static member inline flip (v:Vec) : Vec =
             -v
@@ -872,7 +876,7 @@ module AutoOpenVec =
 
         /// Returns three vector's Determinant.
         /// This is also the signed volume of the Parallelepipeds define by these three vectors.
-        /// Also called scalar triple product, mixed product, Box product, or in German: Spatprodukt.
+        /// Also called scalar triple product, mixed product, box product, or in German: Spatprodukt.
         /// It is defined as the dot product of one of the vectors with the Cross Product of the other two.
         static member inline determinant3 (u:Vec, v:Vec, w:Vec) : float =
             u.X*v.Y*w.Z + v.X*w.Y*u.Z + w.X*u.Y*v.Z - w.X*v.Y*u.Z - v.X*u.Y*w.Z - u.X*w.Y*v.Z
@@ -903,7 +907,7 @@ module AutoOpenVec =
 
         /// Returns positive angle from vector 'a' to vector 'b' projected in X-Y plane.
         /// In radians.
-        /// Considering Counter-Clockwise rotation round the World Zaxis.
+        /// Considering counter-clockwise rotation round the World Zaxis.
         /// Range: 0.0 to 2 Pi ( = 0 to 360 degrees)
         static member inline angle2PiInXY (a:Vec, b:Vec) : float =
             let r = b.Direction2PiInXY  - a.Direction2PiInXY
@@ -942,27 +946,27 @@ module AutoOpenVec =
         // magnitude, it has no location, so rotating it around a center point is not a valid operation.
         // See the "Points vs Vectors" section in README.md.
 
-        /// Rotate the 3D vector around X-axis, from Y to Z-axis, Counter Clockwise looking from right.
+        /// Rotate the 3D vector around X-axis, from Y to Z-axis, counter-clockwise looking from right.
         static member rotateOnX (r:Rotation2D) (v:Vec) : Vec =
             Vec (v.X, r.Cos*v.Y - r.Sin*v.Z, r.Sin*v.Y + r.Cos*v.Z)
 
-        /// Rotate the 3D vector around Y-axis, from Z to X-axis, Counter Clockwise looking from back.
+        /// Rotate the 3D vector around Y-axis, from Z to X-axis, counter-clockwise looking from back.
         static member rotateOnY (r:Rotation2D) (v:Vec) : Vec =
             Vec (r.Sin*v.Z + r.Cos*v.X, v.Y, r.Cos*v.Z - r.Sin*v.X)
 
-        /// Rotate the 3D vector around Z-axis, from X to Y-axis, Counter Clockwise looking from top.
+        /// Rotate the 3D vector around Z-axis, from X to Y-axis, counter-clockwise looking from top.
         static member rotateOnZ (r:Rotation2D) (v:Vec) : Vec =
             Vec (r.Cos*v.X - r.Sin*v.Y, r.Sin*v.X + r.Cos*v.Y, v.Z)
 
-        /// Rotate the 3D vector in degrees around X-axis, from Y to Z-axis, Counter Clockwise looking from right.
+        /// Rotate the 3D vector in degrees around X-axis, from Y to Z-axis, counter-clockwise looking from right.
         static member inline rotateOnXDeg (angDegree) (v:Vec) : Vec =
             Vec.rotateOnX (Rotation2D.createFromDegrees angDegree) v
 
-        /// Rotate the 3D vector in degrees around Y-axis, from Z to X-axis, Counter Clockwise looking from back.
+        /// Rotate the 3D vector in degrees around Y-axis, from Z to X-axis, counter-clockwise looking from back.
         static member inline rotateOnYDeg (angDegree) (v:Vec) : Vec =
             Vec.rotateOnY (Rotation2D.createFromDegrees angDegree) v
 
-        /// Rotate the 3D vector in degrees around Z-axis, from X to Y-axis, Counter Clockwise looking from top.
+        /// Rotate the 3D vector in degrees around Z-axis, from X to Y-axis, counter-clockwise looking from top.
         static member inline rotateOnZDeg (angDegree) (v:Vec) : Vec =
             Vec.rotateOnZ (Rotation2D.createFromDegrees angDegree) v
 
@@ -970,36 +974,36 @@ module AutoOpenVec =
         /// Linearly interpolates between two vectors.
         /// e.g. rel=0.5 will return the middle vector, rel=1.0 the end vector,
         /// rel=1.5 a vector half the distance beyond the end vector.
-        static member lerp (start:Vec, ende:Vec, rel:float) : Vec = // not curried because argument order is important and would be confusing
+        static member lerp (start:Vec, endValue:Vec, rel:float) : Vec = // not curried because argument order is important and would be confusing
             Vec(
-                start.X + rel * (ende.X - start.X),
-                start.Y + rel * (ende.Y - start.Y),
-                start.Z + rel * (ende.Z - start.Z)
+                start.X + rel * (endValue.X - start.X),
+                start.Y + rel * (endValue.Y - start.Y),
+                start.Z + rel * (endValue.Z - start.Z)
             )
 
         /// Spherically interpolates between start and end by amount rel (0.0 to 1.0).
         /// The difference between this and linear interpolation (aka, "lerp") is that the vectors are treated as directions rather than points in space.
         /// The direction of the returned vector is interpolated by the angle and its magnitude is interpolated between the magnitudes of start and end.
         /// Interpolation continues before and after the range of 0.0 and 1.0.
-        static member slerp (start:Vec, ende:Vec, rel:float) : Vec = // not curried because argument order is important and would be confusing
+        static member slerp (start:Vec, endValue:Vec, rel:float) : Vec = // not curried because argument order is important and would be confusing
             // https://en.wikipedia.org/wiki/Slerp
             // implementation tested in Rhino!
             let sLen = start.Length
-            let eLen = ende.Length
+            let eLen = endValue.Length
             if isTooTiny sLen then failTooSmall "Vec.slerp" start
-            if isTooTiny eLen then failTooSmall "Vec.slerp" ende
+            if isTooTiny eLen then failTooSmall "Vec.slerp" endValue
             let fs = 1.0 / sLen
             let fe = 1.0 / eLen
             let su  = start * fs //unitized start vector
-            let eu  = ende  * fe //unitized end   vector
+            let eu  = endValue  * fe //unitized end vector
             let dot = su *** eu
             if dot > float Cosine.``0.05`` then  // vectors are in the same direction interpolate linear only
-                Vec.lerp (start, ende, rel)
+                Vec.lerp (start, endValue, rel)
             elif dot < float Cosine.``179.95`` then
-                fail2 "Vec.slerp vectors are 180 deg opposite." start ende |> unbox // unbox to make type checker happy
+                fail2 "Vec.slerp vectors are 180 deg opposite." start endValue |> unbox // unbox to make type checker happy
             else
                 let ang = acos(dot) // the angle between the two vectors
-                let perp = eu - su * dot |> Vec.unitize // a vector perpendicular to start and in the same plane with ende.
+                let perp = eu - su * dot |> Vec.unitize // a vector perpendicular to start and in the same plane with endValue.
                 let theta = ang*rel // the angle part we want for the result
                 let theta360 = (theta + UtilEuclid.twoPi) % UtilEuclid.twoPi // make sure it is in the range 0.0 to 2 Pi (360 degrees)
                 let cosine = cos (theta360)

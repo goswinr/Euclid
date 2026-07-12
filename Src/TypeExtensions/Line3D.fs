@@ -1,4 +1,4 @@
-﻿namespace Euclid
+namespace Euclid
 
 open System
 open Euclid.UtilEuclid
@@ -12,9 +12,33 @@ module AutoOpenLine3D =
 
   type Line3D with
 
+    /// The X component of the line direction vector.
+    static member inline vectorX (ln:Line3D) : float =
+        ln.VectorX
 
-    /// Checks if 3D line is parallel to the world X axis. Ignoring orientation.
-    /// The absolute deviation tolerance along Y and Z axis is 1e-9 (axisAlignmentTolerance).
+    /// The Y component of the line direction vector.
+    static member inline vectorY (ln:Line3D) : float =
+        ln.VectorY
+
+    /// The Z component of the line direction vector.
+    static member inline vectorZ (ln:Line3D) : float =
+        ln.VectorZ
+
+    /// Format a 3D line into a string containing its start and end coordinates.
+    static member inline asString (ln:Line3D) : string =
+        ln.AsString
+
+    /// Format a 3D line into an F# code string that can be used to recreate the line.
+    static member inline asFSharpCode (ln:Line3D) : string =
+        ln.AsFSharpCode
+
+    /// Returns the line direction vector with the same length as the Line3D.
+    static member inline vector (ln:Line3D) : Vec =
+        ln.Vector
+
+
+    /// Checks if 3D line is parallel to the world X-axis. Ignoring orientation.
+    /// The absolute deviation tolerance along the Y and Z axes is 1e-9 (axisAlignmentTolerance).
     /// Fails on lines shorter than 1e-6.
     member inline ln.IsXAligned : bool =
         let x = abs ln.VectorX
@@ -24,14 +48,14 @@ module AutoOpenLine3D =
             failTooSmall "Line3D.IsXAligned" ln
         y < axisAlignmentTolerance && z < axisAlignmentTolerance
 
-    /// Checks if 3D line is parallel to the world X axis. Ignoring orientation.
-    /// The absolute deviation tolerance along Y and Z axis is 1e-9 (axisAlignmentTolerance).
+    /// Checks if 3D line is parallel to the world X-axis. Ignoring orientation.
+    /// The absolute deviation tolerance along the Y and Z axes is 1e-9 (axisAlignmentTolerance).
     /// Fails on lines shorter than 1e-6.
     static member inline isXAligned (l:Line3D) : bool =
         l.IsXAligned
 
-    /// Checks if 3D line is parallel to the world Y axis. Ignoring orientation.
-    /// The absolute deviation tolerance along X and Z axis is 1e-9 (axisAlignmentTolerance).
+    /// Checks if 3D line is parallel to the world Y-axis. Ignoring orientation.
+    /// The absolute deviation tolerance along the X and Z axes is 1e-9 (axisAlignmentTolerance).
     /// Fails on lines shorter than 1e-6.
     member inline ln.IsYAligned : bool =
         let x = abs ln.VectorX
@@ -41,14 +65,14 @@ module AutoOpenLine3D =
             failTooSmall "Line3D.IsYAligned" ln
         x < axisAlignmentTolerance && z < axisAlignmentTolerance
 
-    /// Checks if 3D line is parallel to the world Y axis. Ignoring orientation.
-    /// The absolute deviation tolerance along X and Z axis is 1e-9 (axisAlignmentTolerance).
+    /// Checks if 3D line is parallel to the world Y-axis. Ignoring orientation.
+    /// The absolute deviation tolerance along the X and Z axes is 1e-9 (axisAlignmentTolerance).
     /// Fails on lines shorter than 1e-6.
     static member inline isYAligned (l:Line3D) : bool =
         l.IsYAligned
 
-    /// Checks if 3D line is parallel to the world Z axis. Ignoring orientation.
-    /// The absolute deviation tolerance along X, Y and Z  axis is 1e-9 (axisAlignmentTolerance).
+    /// Checks if 3D line is parallel to the world Z-axis. Ignoring orientation.
+    /// The absolute deviation tolerance along the X, Y, and Z axes is 1e-9 (axisAlignmentTolerance).
     /// Fails on lines shorter than 1e-6.
     /// Same as ln.IsVertical
     member inline ln.IsZAligned : bool =
@@ -59,15 +83,15 @@ module AutoOpenLine3D =
             failTooSmall "Line3D.IsZAligned" ln
         x < axisAlignmentTolerance && y < axisAlignmentTolerance
 
-    /// Checks if 3D line is parallel to the world Z axis. Ignoring orientation.
-    /// The absolute deviation tolerance along X, Y and Z  axis is 1e-9 (axisAlignmentTolerance).
+    /// Checks if 3D line is parallel to the world Z-axis. Ignoring orientation.
+    /// The absolute deviation tolerance along the X, Y, and Z axes is 1e-9 (axisAlignmentTolerance).
     /// Fails on lines shorter than 1e-6.
     /// Same as ln.IsVertical
     static member inline isZAligned (l:Line3D) : bool =
         l.IsZAligned
 
-    /// Checks if 3D line is parallel to the world Z axis. Ignoring orientation.
-    /// The absolute deviation tolerance along X, Y and Z  axis is 1e-9 (axisAlignmentTolerance).
+    /// Checks if 3D line is parallel to the world Z-axis. Ignoring orientation.
+    /// The absolute deviation tolerance along the X, Y, and Z axes is 1e-9 (axisAlignmentTolerance).
     /// Fails on lines shorter than 1e-6.
     /// Same as ln.IsZAligned
     member inline ln.IsVertical : bool =
@@ -78,15 +102,15 @@ module AutoOpenLine3D =
             failTooSmall "Line3D.IsVertical" ln
         x < axisAlignmentTolerance && y < axisAlignmentTolerance
 
-    /// Checks if 3D line is parallel to the world Z axis. Ignoring orientation.
-    /// The absolute deviation tolerance along X, Y and Z  axis is 1e-9 (axisAlignmentTolerance).
+    /// Checks if 3D line is parallel to the world Z-axis. Ignoring orientation.
+    /// The absolute deviation tolerance along the X, Y, and Z axes is 1e-9 (axisAlignmentTolerance).
     /// Fails on lines shorter than 1e-6.
     /// Same as ln.IsZAligned
     static member inline isVertical (l:Line3D) : bool =
         l.IsVertical
 
     /// Checks if 3D line is horizontal.
-    /// The absolute deviation tolerance along Z axis is 1e-9 (axisAlignmentTolerance).
+    /// The absolute deviation tolerance along the Z-axis is 1e-9 (axisAlignmentTolerance).
     /// Fails on lines shorter than 1e-6.
     member inline ln.IsHorizontal : bool =
         let x = abs ln.VectorX
@@ -97,7 +121,7 @@ module AutoOpenLine3D =
         z < axisAlignmentTolerance
 
     /// Checks if 3D line is horizontal (Z component is almost zero).
-    /// The absolute deviation tolerance along Z axis is 1e-9 (axisAlignmentTolerance).
+    /// The absolute deviation tolerance along the Z-axis is 1e-9 (axisAlignmentTolerance).
     /// Fails on lines shorter than 1e-6.
     static member inline isHorizontal (l:Line3D) : bool =
         l.IsHorizontal
@@ -145,8 +169,8 @@ module AutoOpenLine3D =
 
     /// Evaluate line at a given parameters (parameters 0.0 to 1.0 are on the line),
     /// Return a new line from evaluated points.
-    /// Same as ln.Segment(start, ende).
-    member inline ln.SubLine (start:float, ende:float) : Line3D =
+    /// Same as ln.Segment(start, endParameter).
+    member inline ln.SubLine (start:float, endParameter:float) : Line3D =
         let fromX = ln.FromX
         let fromY = ln.FromY
         let fromZ = ln.FromZ
@@ -156,15 +180,15 @@ module AutoOpenLine3D =
         Line3D( fromX + x * start,
                 fromY + y * start,
                 fromZ + z * start,
-                fromX + x * ende ,
-                fromY + y * ende ,
-                fromZ + z * ende )
+                fromX + x * endParameter ,
+                fromY + y * endParameter ,
+                fromZ + z * endParameter )
 
     /// Evaluate line at a given parameters (parameters 0.0 to 1.0 are on the line),
     /// Return a new line from evaluated points.
     /// Same as Line3D.segment.
-    static member inline subLine start ende (ln:Line3D) : Line3D =
-        ln.SubLine(start, ende)
+    static member inline subLine start endParameter (ln:Line3D) : Line3D =
+        ln.SubLine(start, endParameter)
 
     /// Returns the length of the line segment from the start point to the given parameter.
     /// This length is negative if the parameter is negative.
@@ -426,7 +450,7 @@ module AutoOpenLine3D =
                 ln.ToY   + v.Y,
                 ln.ToZ   + v.Z)
 
-    /// Move a 3D line by a vector. (same as Line3D.translate)
+    /// Move a 3D line by a vector. Same as Line3D.translate.
     static member inline move (v:Vec) (ln:Line3D)  : Line3D =
         ln.Move(v)
 
@@ -669,7 +693,7 @@ module AutoOpenLine3D =
 
     /// Assumes Line3D to be an infinite ray.
     /// Returns square distance from point to ray.
-    /// Fails on curves shorter than 1e-6 units. (ln.SqDistanceFromPoint does not.)
+    /// Fails on curves shorter than 1e-6 units. (ln.SqDistanceToPnt does not.)
     member ln.SqDistanceRayXYZ(x:float, y:float, z:float) : float =
         let lnFromX = ln.FromX
         let lnFromY = ln.FromY
@@ -696,7 +720,7 @@ module AutoOpenLine3D =
 
     /// Assumes Line3D to be an infinite ray.
     /// Returns square distance from point to ray.
-    /// Fails on curves shorter than 1e-6 units. (ln.SqDistanceFromPoint does not.)
+    /// Fails on curves shorter than 1e-6 units. (ln.SqDistanceToPnt does not.)
     member ln.SqDistanceRayPoint(p:Pnt) : float =
         ln.SqDistanceRayXYZ(p.X, p.Y, p.Z)
 
@@ -733,26 +757,26 @@ module AutoOpenLine3D =
         ln.DistanceRayPoint p
 
     /// Returns square distance from point to finite line.
-    member inline ln.SqDistanceFromXYZ(x:float, y:float, z:float) : float =
+    member inline ln.SqDistanceToXYZ(x:float, y:float, z:float) : float =
         ln.ClosestParameterXYZ(x, y, z)
         |> ln.EvaluateAt
         |> Pnt.sqDist (Pnt(x, y, z))
 
     /// Returns square distance from point to finite line.
-    member inline ln.SqDistanceFromPoint(p:Pnt) : float =
-        ln.SqDistanceFromXYZ(p.X, p.Y, p.Z)
+    member inline ln.SqDistanceToPnt(p:Pnt) : float =
+        ln.SqDistanceToXYZ(p.X, p.Y, p.Z)
 
     /// Returns the square distance from point to (finite) line.
-    static member inline sqDistanceFromXYZ(x:float) (y:float) (z:float) (ln:Line3D) : float =
-        ln.SqDistanceFromXYZ (x, y, z)
+    static member inline sqDistanceToXYZ(x:float) (y:float) (z:float) (ln:Line3D) : float =
+        ln.SqDistanceToXYZ (x, y, z)
 
     /// Returns the square distance from point to (finite) line.
-    static member inline sqDistanceFromPoint(p:Pnt) (ln:Line3D) : float =
-        ln.SqDistanceFromPoint p
+    static member inline sqDistanceToPnt(p:Pnt) (ln:Line3D) : float =
+        ln.SqDistanceToPnt p
 
     /// Returns distance from point to (finite) line.
     member inline ln.DistanceToXYZ(x:float, y:float, z:float) : float =
-        ln.SqDistanceFromXYZ(x, y, z) |> sqrt
+        ln.SqDistanceToXYZ(x, y, z) |> sqrt
 
     /// Returns distance from point to (finite) line.
     member inline ln.DistanceToPnt(p:Pnt) : float =
@@ -952,7 +976,7 @@ module AutoOpenLine3D =
     static member inline isParallelTo (minTangent:float<Tangent.tangent>) (lnA:Line3D) (lnB:Line3D) : bool =
         lnA.IsParallelTo(lnB, minTangent)
 
-    /// Checks if a 3D lines is parallel to a 3D vector.
+    /// Checks if a 3D line is parallel to a 3D vector.
     /// Ignores the line orientation.
     /// The default angle tolerance is 0.25 degrees. Tangent.``0.25`` is about 0.0044.
     /// This tolerance can be customized by an optional minimum Tangent value.
@@ -967,7 +991,7 @@ module AutoOpenLine3D =
         let tan = XLineXYZ.tangent (ax, ay, az, other.X, other.Y, other.Z)
         abs tan < minTangent
 
-    /// Checks if a 3D lines is parallel to a 3D unit-vector.
+    /// Checks if a 3D line is parallel to a 3D unit-vector.
     /// Ignores the line orientation.
     /// The default angle tolerance is 0.25 degrees. Tangent.``0.25`` is about 0.0044.
     /// This tolerance can be customized by an optional minimum Tangent value.
@@ -1006,7 +1030,7 @@ module AutoOpenLine3D =
     static member inline isParallelAndOrientedTo (minTangent:float<Tangent.tangent>) (lnA:Line3D) (lnB:Line3D) : bool =
         lnA.IsParallelAndOrientedTo(lnB, minTangent)
 
-    /// Checks if a 3D lines is parallel to a 3D vector.
+    /// Checks if a 3D line is parallel to a 3D vector.
     /// Takes the line orientation into account too.
     /// The default angle tolerance is 0.25 degrees. Tangent.``0.25`` is about 0.0044.
     /// This tolerance can be customized by an optional minimum Tangent value.
@@ -1021,7 +1045,7 @@ module AutoOpenLine3D =
         let tan = XLineXYZ.tangent (ax, ay, az, other.X, other.Y, other.Z)
         tan < minTangent
 
-    /// Checks if a 3D lines is parallel to a 3D unit-vector.
+    /// Checks if a 3D line is parallel to a 3D unit-vector.
     /// Takes the line orientation into account too.
     /// The default angle tolerance is 0.25 degrees. Tangent.``0.25`` is about 0.0044.
     /// This tolerance can be customized by an optional minimum Tangent value.
@@ -1060,7 +1084,7 @@ module AutoOpenLine3D =
     static member inline isPerpendicularTo (maxTangent:float<Tangent.tangent>) (lnA:Line3D) (lnB:Line3D) : bool =
         lnA.IsPerpendicularTo(lnB, maxTangent)
 
-    /// Checks if a 3D lines is perpendicular to a 3D vector.
+    /// Checks if a 3D line is perpendicular to a 3D vector.
     /// The default angle tolerance is 89.75 to 90.25 degrees. Tangent.``89.75`` is about 229.2.
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
@@ -1074,7 +1098,7 @@ module AutoOpenLine3D =
         let tan = XLineXYZ.tangent (ax, ay, az, other.X, other.Y, other.Z)
         abs tan > maxTangent
 
-    /// Checks if a 3D lines is perpendicular to a 3D unit-vector.
+    /// Checks if a 3D line is perpendicular to a 3D unit-vector.
     /// The default angle tolerance is 89.75 to 90.25 degrees. Tangent.``89.75`` is about 229.2.
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
@@ -1092,7 +1116,7 @@ module AutoOpenLine3D =
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    /// Alias for ln.IsPerpendicularTo.
+    /// Same as ln.IsPerpendicularTo.
     member inline ln.IsNormalTo (other:Line3D, [<OPT;DEF(Tangent.``89.75``)>] maxTangent:float<Tangent.tangent> ) : bool =
         ln.IsPerpendicularTo(other, maxTangent)
 
@@ -1104,28 +1128,28 @@ module AutoOpenLine3D =
     static member inline isNormalTo (maxTangent:float<Tangent.tangent>) (lnA:Line3D) (lnB:Line3D) : bool =
         lnA.IsNormalTo(lnB, maxTangent)
 
-    /// Checks if a 3D lines is perpendicular to a 3D vector.
+    /// Checks if a 3D line is perpendicular to a 3D vector.
     /// The default angle tolerance is 89.75 to 90.25 degrees. Tangent.``89.75`` is about 229.2.
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    /// Alias for ln.IsPerpendicularTo.
+    /// Same as ln.IsPerpendicularTo.
     member inline ln.IsNormalTo (other:Vec, [<OPT;DEF(Tangent.``89.75``)>] maxTangent:float<Tangent.tangent> ) : bool =
         ln.IsPerpendicularTo(other, maxTangent)
 
-    /// Checks if a 3D lines is perpendicular to a 3D unit-vector.
+    /// Checks if a 3D line is perpendicular to a 3D unit-vector.
     /// The default angle tolerance is 89.75 to 90.25 degrees. Tangent.``89.75`` is about 229.2.
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    /// Alias for ln.IsPerpendicularTo.
+    /// Same as ln.IsPerpendicularTo.
     member inline ln.IsNormalTo (other:UnitVec, [<OPT;DEF(Tangent.``89.75``)>] maxTangent:float<Tangent.tangent> ) : bool =
         ln.IsPerpendicularTo(other, maxTangent)
 
     /// Checks if two 3D lines are coincident within the distance tolerance. 1e-6 by default.
     /// This means that lines are parallel within the angle tolerance.
     /// and the distance of second start to the first line is less than the distance tolerance.
-    /// Also returns false on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    /// Also returns FALSE on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     /// The default angle tolerance is 0.25 degrees. Tangent.``0.25`` is about 0.0044.
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
@@ -1410,10 +1434,14 @@ module AutoOpenLine3D =
         else
             false
 
+    /// A fast version of IsCoincidentAndOpposingTo that uses cross-product and dot-product checks.
+    static member inline isCoincidentAndOpposingToFast squaredParallelogramAreaTolerance maxDotProduct (lnA:Line3D) (lnB:Line3D) : bool =
+        lnA.IsCoincidentAndOpposingToFast(lnB, squaredParallelogramAreaTolerance, maxDotProduct)
+
     /// A faster Check if two 3D lines are parallel. Ignoring orientation.
     /// The angle tolerance is 0.25 degrees.
     /// This function does not do a check for very short lines.
-    /// But will return false on zero-length lines.
+    /// But will return FALSE on zero-length lines.
     static member inline isParallelTo' (lnA:Line3D) (lnB:Line3D) : bool =
         let vtX = lnA.VectorX
         let vtY = lnA.VectorY
@@ -1433,7 +1461,7 @@ module AutoOpenLine3D =
     /// A faster Check if two 3D lines are not parallel. Ignoring orientation.
     /// The angle tolerance is 0.25 degrees.
     /// This function does not do a check for very short lines.
-    /// But will return false on zero-length lines.
+    /// But will return FALSE on zero-length lines.
     static member inline isNotParallelTo' (lnA:Line3D) (lnB:Line3D) : bool =
         let vtX = lnA.VectorX
         let vtY = lnA.VectorY
@@ -1453,7 +1481,7 @@ module AutoOpenLine3D =
     /// A faster Check if two 3D lines are perpendicular to each other.
     /// The angle tolerance is 89.75 to 90.25 degrees.
     /// This function does not do a check for very short lines.
-    /// But will return false on zero-length lines.
+    /// But will return FALSE on zero-length lines.
     /// Same as Line3D.isNormalTo'
     static member inline isPerpendicularTo' (lnA:Line3D) (lnB:Line3D) : bool =
         let vtX = lnA.VectorX
@@ -1474,7 +1502,7 @@ module AutoOpenLine3D =
     /// A faster Check if two 3D lines are perpendicular to each other.
     /// The angle tolerance is 89.75 to 90.25 degrees.
     /// This function does not do a check for very short lines.
-    /// But will return false on zero-length lines.
+    /// But will return FALSE on zero-length lines.
     /// Same as Line3D.isPerpendicularTo'
     static member inline isNormalTo' (lnA:Line3D) (lnB:Line3D) : bool =
         Line3D.isPerpendicularTo' lnA lnB
@@ -1665,19 +1693,19 @@ module AutoOpenLine3D =
     static member inline lengthSq (l:Line3D) : float =
         l.LengthSq
 
-    /// Reverse or flip the 3D line (same as Line3D.flip)
+    /// Reverse or flip the 3D line. Same as Line3D.flip.
     static member inline reverse (ln:Line3D) : Line3D =
         ln.Reversed
 
-    /// Reverse or flip the 3D line (same as Line3D.reverse)
+    /// Reverse or flip the 3D line. Same as Line3D.reverse.
     static member inline flip (ln:Line3D) : Line3D =
         ln.Reversed
 
-    /// Move a 3D line by a vector. (same as Line3D.move)
+    /// Move a 3D line by a vector. Same as Line3D.move.
     static member inline translate (v:Vec) (ln:Line3D)  : Line3D =
         ln.Move(v)
 
-    /// Rotation a 3D line around Z-Axis.
+    /// Rotation a 3D line around Z-axis.
     static member inline rotateOnZ (r:Rotation2D) (ln:Line3D) : Line3D =
         Line3D(Pnt.rotateOnZ r ln.From, Pnt.rotateOnZ r ln.To)
 
@@ -1778,6 +1806,7 @@ module AutoOpenLine3D =
     /// Use a precomputed value from Euclid.Tangent module as tolerance.
     /// e.g. Tangent.``89.75``.
     /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    /// Same as Line3D.isPerpendicularToVec.
     static member inline isNormalToVec (maxTangent:float<Tangent.tangent>) (other:Vec) (ln:Line3D) : bool =
         ln.IsNormalTo(other, maxTangent)
 
@@ -1785,6 +1814,7 @@ module AutoOpenLine3D =
     /// Use a precomputed value from Euclid.Tangent module as tolerance.
     /// e.g. Tangent.``89.75``.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    /// Same as Line3D.isPerpendicularToUnitVec.
     static member inline isNormalToUnitVec (maxTangent:float<Tangent.tangent>) (other:UnitVec) (ln:Line3D) : bool =
         ln.IsNormalTo(other, maxTangent)
 
@@ -1890,7 +1920,7 @@ module AutoOpenLine3D =
                     ln.ToZ)
 
     /// Offsets a 3D line by two given distances.
-    /// The fist distance (distHorizontal) is applied in in X-Y plane.
+    /// The first distance (distHorizontal) is applied in the X-Y plane.
     /// The second distance (distNormal) is applied perpendicular to the line (made by the two 3D points)
     /// and perpendicular to the horizontal offset direction.
     /// This is in World.Z direction if both points are at the same Z level.
@@ -2236,7 +2266,7 @@ module AutoOpenLine3D =
 
     /// <summary>A fast test to check if two finite 3D lines truly intersect (or come very close in the skew case).
     /// Uses the default tolerance for parallel lines (0.25 degrees) and maximum skew distance (1e-6).
-    /// Returns false on zero length lines or if lines are parallel, apart, or don't intersect within their finite segments.</summary>
+    /// Returns FALSE on zero length lines or if lines are parallel, apart, or don't intersect within their finite segments.</summary>
     /// <param name="lnA">The first line.</param>
     /// <param name="lnB">The second line.</param>
     /// <remarks>Use the XLine3D module for more specialized intersection calculations with custom tolerances.</remarks>
@@ -2276,7 +2306,7 @@ module AutoOpenLine3D =
     /// <param name="lnA">The first line.</param>
     /// <param name="lnB">The second line.</param>
     /// <returns>A Pnt on line A if the lines intersect or are very close (skew distance less than 1e-6),
-    /// None if apart, lines too short, or if parallel lines are touching or overlapping.</returns>
+    /// ValueNone if apart, too short, or if parallel lines are touching or overlapping.</returns>
     /// <remarks>Use the XLine3D module for more specialized intersection calculations.</remarks>
     static member tryIntersect (lnA:Line3D) (lnB:Line3D) : Pnt voption =
         XLine3D.tryIntersect(lnA, lnB)
@@ -2284,8 +2314,8 @@ module AutoOpenLine3D =
     /// <summary>Tries to get intersection point of two rays (rays are 3D lines extended infinitely).</summary>
     /// <param name="lineA">First ray.</param>
     /// <param name="lineB">Second ray.</param>
-    /// <returns>The point at which the two rays intersect or the closest point on line A for skew lines, or None.</returns>
-    /// <remarks>If the lines are parallel or coincident, or if they are skew with distance > 1e-6, None is returned.
+    /// <returns>The point at which the two rays intersect or the closest point on line A for skew lines, or ValueNone.</returns>
+    /// <remarks>If the lines are parallel or coincident, or if they are skew with distance > 1e-6, ValueNone is returned.
     /// For skew lines within tolerance, returns the closest point on line A.</remarks>
     static member tryIntersectRay (lineA:Line3D) (lineB:Line3D) : Pnt voption =
         XLine3D.tryIntersectRay(lineA, lineB)
@@ -2458,17 +2488,33 @@ module AutoOpenLine3D =
     static member inline distanceToPntInfinite(p:Pnt) (ln:Line3D) : float =
         ln.DistanceRayPoint p
 
-    [<Obsolete("Use this.SqDistanceFromPoint instead")>]
+    [<Obsolete("Use this.SqDistanceToPnt instead")>]
     member inline ln.DistanceSqToPnt(p:Pnt) : float =
-        ln.SqDistanceFromPoint(p)
+        ln.SqDistanceToPnt(p)
 
 
 
     // Static members marked as Obsolete that have direct replacements:
 
-    [<Obsolete("Use Line3D.sqDistanceFromPoint instead")>]
+    [<Obsolete("Use Line3D.sqDistanceToPnt instead")>]
     static member inline distanceSqToPnt(p:Pnt) (ln:Line3D) : float =
-        ln.SqDistanceFromPoint p
+        ln.SqDistanceToPnt p
+
+    [<Obsolete("Use this.SqDistanceToXYZ instead")>]
+    member inline ln.SqDistanceFromXYZ(x:float, y:float, z:float) : float =
+        ln.SqDistanceToXYZ(x, y, z)
+
+    [<Obsolete("Use this.SqDistanceToPnt instead")>]
+    member inline ln.SqDistanceFromPoint(p:Pnt) : float =
+        ln.SqDistanceToPnt p
+
+    [<Obsolete("Use Line3D.sqDistanceToXYZ instead")>]
+    static member inline sqDistanceFromXYZ(x:float) (y:float) (z:float) (ln:Line3D) : float =
+        ln.SqDistanceToXYZ (x, y, z)
+
+    [<Obsolete("Use Line3D.sqDistanceToPnt instead")>]
+    static member inline sqDistanceFromPoint(p:Pnt) (ln:Line3D) : float =
+        ln.SqDistanceToPnt p
 
     [<Obsolete("Use Line3D.distanceToLine instead. Obsolete since 0.20.0")>]
     static member distanceBetweenLines(lnA:Line3D, lnB:Line3D) : float =

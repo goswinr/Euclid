@@ -1,4 +1,4 @@
-﻿namespace Euclid
+namespace Euclid
 
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
@@ -9,7 +9,7 @@ open EuclidErrors
 
 
 /// <summary>
-/// A class containing an array of 8 points representing an arbitrary 3D Box-like topology.
+/// A class containing an array of 8 points representing an arbitrary 3D box-like topology.
 /// The points can be in arbitrary position in space.
 /// <code>
 ///       7               6
@@ -40,7 +40,7 @@ type FreeBox private (pts:Pnt[]) =
     static member inline points (b:FreeBox) : Pnt array =
         b.Points
 
-    /// <summary>Gets or sets the point 0 of the Box array.<code>
+    /// <summary>Gets or sets the point 0 of the box array.<code>
     ///       7               6
     ///       +---------------+
     ///      /|              /|
@@ -59,10 +59,10 @@ type FreeBox private (pts:Pnt[]) =
         with get() : Pnt = pts.[0]
         and  set (p:Pnt) = pts.[0] <- p
 
-    /// Point 0 of the Box array. pts.[0]
+    /// Point 0 of the box array. pts.[0]
     static member inline pt0 (b:FreeBox) : Pnt = b.Pt0
 
-    /// Gets or sets the point 1 of the Box array.<code>
+    /// Gets or sets the point 1 of the box array.<code>
     ///       7               6
     ///       +---------------+
     ///      /|              /|
@@ -81,10 +81,10 @@ type FreeBox private (pts:Pnt[]) =
         with get() : Pnt = pts.[1]
         and  set (p:Pnt) = pts.[1] <- p
 
-    /// Point 1 of the Box array.
+    /// Point 1 of the box array.
     static member inline pt1 (b:FreeBox) : Pnt = b.Pt1
 
-    /// <summary>Gets or sets the point 2 of the Box array.<code>
+    /// <summary>Gets or sets the point 2 of the box array.<code>
     ///       7               6
     ///       +---------------+
     ///      /|              /|
@@ -103,10 +103,10 @@ type FreeBox private (pts:Pnt[]) =
         with get() : Pnt = pts.[2]
         and  set (p:Pnt) = pts.[2] <- p
 
-    /// The third point of the Box array. pts.[2]
+    /// The third point of the box array. pts.[2]
     static member inline pt2 (b:FreeBox) : Pnt = b.Pt2
 
-    /// <summary>Gets or sets the point 3 of the Box array.<code>
+    /// <summary>Gets or sets the point 3 of the box array.<code>
     ///       7               6
     ///       +---------------+
     ///      /|              /|
@@ -125,10 +125,10 @@ type FreeBox private (pts:Pnt[]) =
         with get() : Pnt = pts.[3]
         and  set (p:Pnt) = pts.[3] <- p
 
-    /// The fourth point of the Box array. pts.[3]
+    /// The fourth point of the box array. pts.[3]
     static member inline pt3 (b:FreeBox) : Pnt = b.Pt3
 
-    /// <summary>Gets or sets the point 4 of the Box array.<code>
+    /// <summary>Gets or sets the point 4 of the box array.<code>
     ///       7               6
     ///       +---------------+
     ///      /|              /|
@@ -147,10 +147,10 @@ type FreeBox private (pts:Pnt[]) =
         with get() : Pnt = pts.[4]
         and  set (p:Pnt) = pts.[4] <- p
 
-    /// The fifth point of the Box array. pts.[4]
+    /// The fifth point of the box array. pts.[4]
     static member inline pt4 (b:FreeBox) : Pnt = b.Pt4
 
-    /// <summary>Gets or sets the point 5 of the Box array.<code>
+    /// <summary>Gets or sets the point 5 of the box array.<code>
     ///       7               6
     ///       +---------------+
     ///      /|              /|
@@ -169,10 +169,10 @@ type FreeBox private (pts:Pnt[]) =
         with get() : Pnt = pts.[5]
         and  set (p:Pnt) = pts.[5] <- p
 
-    /// The sixth point of the Box array. pts.[5]
+    /// The sixth point of the box array. pts.[5]
     static member inline pt5 (b:FreeBox) : Pnt = b.Pt5
 
-    /// <summary>Gets or sets the point 6 of the Box array.<code>
+    /// <summary>Gets or sets the point 6 of the box array.<code>
     ///       7               6
     ///       +---------------+
     ///      /|              /|
@@ -191,10 +191,10 @@ type FreeBox private (pts:Pnt[]) =
         with get() : Pnt = pts.[6]
         and  set (p:Pnt) = pts.[6] <- p
 
-    /// The seventh point of the Box array. pts.[6]
+    /// The seventh point of the box array. pts.[6]
     static member inline pt6 (b:FreeBox) : Pnt = b.Pt6
 
-    /// <summary>Gets or sets the point 7 of the Box array.<code>
+    /// <summary>Gets or sets the point 7 of the box array.<code>
     ///       7               6
     ///       +---------------+
     ///      /|              /|
@@ -213,23 +213,23 @@ type FreeBox private (pts:Pnt[]) =
         with get() : Pnt = pts.[7]
         and  set (p:Pnt) = pts.[7] <- p
 
-    /// The eighth point of the Box array. pts.[7]
+    /// The eighth point of the box array. pts.[7]
     static member inline pt7 (b:FreeBox) : Pnt = b.Pt7
 
 
     #nowarn "52" // The value has been copied to ensure the original is not mutated by this operation
 
-    /// Nicely formatted string representation of the Box including Pt0 and Pt7.
+    /// Nicely formatted string representation of the box including Pt0 and Pt7.
     override b.ToString() : string =
         $"Euclid.FreeBox pt0 at {b.Pt0.AsString}, Pt7 at {b.Pt7.AsString}"
 
-    /// Nicely formatted string representation of the Box including Pt0.
+    /// Nicely formatted string representation of the box including Pt0.
     member b.AsString : string =
         $"FreeBox at {b.Pt0.AsString}"
 
     #warnon "52" // reenable warning
 
-    /// Nicely formatted string representation of the Box including Pt0.
+    /// Nicely formatted string representation of the box including Pt0.
     static member inline asString (b:FreeBox) : string = b.AsString
 
     /// Format FreeBox into an F# code string that can be used to recreate the box.
@@ -241,13 +241,13 @@ type FreeBox private (pts:Pnt[]) =
     static member inline asFSharpCode (b:FreeBox) : string = b.AsFSharpCode
 
 
-    /// Get the point at index in the Box array. Index must be between 0 and 7.
+    /// Get the point at index in the box array. Index must be between 0 and 7.
     member b.GetPt (i:int) : Pnt =
         if i < 0 || i > 7 then
             fail $"FreeBox.GetPt invalid index {i}"
         pts.[i]
 
-    /// Get the point at index in the Box array. Index must be between 0 and 7.
+    /// Get the point at index in the box array. Index must be between 0 and 7.
     static member inline getPt (i:int) (b:FreeBox) : Pnt =
         b.GetPt(i)
 
@@ -261,7 +261,7 @@ type FreeBox private (pts:Pnt[]) =
     static member inline setPt (i:int) (p:Pnt) (b:FreeBox) : unit =
         b.SetPt i p
 
-    /// Scales the 3D rectangle by a given factor on world origin (0,0,0)
+    /// Scales the FreeBox by a given factor on the world origin (0, 0, 0).
     member b.Scale (factor:float) : FreeBox =
         b.Points
         |> Array.map (fun p -> p * factor)
@@ -272,7 +272,7 @@ type FreeBox private (pts:Pnt[]) =
     static member inline scale (factor:float) (b:FreeBox) : FreeBox =
         b.Scale(factor)
 
-    /// Scales the 3D rectangle by a given factor on a given center point
+    /// Scales the FreeBox by a given factor on a given center point.
     member b.ScaleOn (cen:Pnt, factor:float) : FreeBox =
         let cx = cen.X
         let cy = cen.Y
@@ -287,7 +287,7 @@ type FreeBox private (pts:Pnt[]) =
             )
         |> FreeBox
 
-    /// Scales the 3D rectangle by a given factor on a given center point
+    /// Scales the FreeBox by a given factor on a given center point.
     static member inline scaleOn (cen:Pnt)  (factor:float) (b:FreeBox) : FreeBox =
         b.ScaleOn(cen, factor)
 
@@ -401,7 +401,7 @@ type FreeBox private (pts:Pnt[]) =
             pts[3].WithZ zMax// 7
             |]
 
-    /// Creates a FreeBox from four 2D points in counter clockwise order and a zMin and zMax value.
+    /// Creates a FreeBox from four 2D points in counter-clockwise order and a zMin and zMax value.
     static member createFromFour2DPointsArgs ( a:Pt, b:Pt, c:Pt, d:Pt, zMin, zMax) : FreeBox =
         //       7               6
         //       +---------------+
@@ -455,6 +455,10 @@ type FreeBox private (pts:Pnt[]) =
         [| b.Edge01; b.Edge12; b.Edge32; b.Edge03; // bottom face
            b.Edge04; b.Edge15; b.Edge26; b.Edge37; // vertical edges
            b.Edge45; b.Edge56; b.Edge76; b.Edge47 |] // top face
+
+    /// Returns the 12 box edges.
+    static member inline edges (b:FreeBox) : Line3D[] =
+        b.Edges
 
 
 

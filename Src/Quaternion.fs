@@ -560,7 +560,7 @@ type Quaternion =
 
     // static member inline ( *** ) ( p:Line3D, q:Quaternion) = // defined in Line3D.fs
 
-    // static member inline slerp (start:Quaternion, ende:Quaternion, rel) = start.Slerp(ende, rel)
+    // static member inline slerp (start:Quaternion, endValue:Quaternion, rel) = start.Slerp(endValue, rel)
 
 
     // #endregion

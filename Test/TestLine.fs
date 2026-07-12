@@ -851,10 +851,10 @@ let testsLine2DClosestPoint =
             "clamped to start" |> Expect.isTrue (eq cl ln.From)
         }
 
-        test "SqDistanceFromPoint" {
+        test "SqDistanceToPt" {
             let ln = Line2D(0., 0., 10., 0.)
             let pt = Pt(5., 3.)
-            let sqDist = ln.SqDistanceFromPoint pt
+            let sqDist = ln.SqDistanceToPt pt
             "squared distance is 9" |> expectEqualEpsilon sqDist 9.
         }
 
@@ -1939,10 +1939,10 @@ let testsLine3DClosestPoint =
             "closest point Z" |> expectEqualEpsilon cl.Z 0.
         }
 
-        test "SqDistanceFromPoint" {
+        test "SqDistanceToPnt" {
             let ln = Line3D(0., 0., 0., 10., 0., 0.)
             let pt = Pnt(5., 3., 4.)
-            let sqDist = ln.SqDistanceFromPoint pt
+            let sqDist = ln.SqDistanceToPnt pt
             "squared distance is 25" |> expectEqualEpsilon sqDist 25.
         }
 

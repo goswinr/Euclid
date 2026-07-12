@@ -17,7 +17,7 @@ open System.Runtime.Serialization // for serialization of struct fields only but
 /// A struct containing one 3D point and three 3D unit vectors, representing an immutable parametrized plane or frame
 /// with unitized X, Y and Z Direction.
 /// Internally it is stored as 12 floats (the Origin point coordinates and the three axis vector components),
-/// just like the Box type. The Origin, Xaxis, Yaxis and Zaxis properties reconstruct the Pnt and UnitVec on demand.
+/// just like the box type. The Origin, Xaxis, Yaxis and Zaxis properties reconstruct the Pnt and UnitVec on demand.
 /// This struct is called 'PPlane'; the other plane 'NPlane' refers to an un-oriented plane consisting only of an origin and a normal.
 /// Note: Never use the struct default constructor PPlane() as it will create an invalid zero length PPlane.
 /// Use PPlane.create or PPlane.createUnchecked instead.
@@ -64,7 +64,7 @@ type PPlane =
     [<DataMember>] val public ZaxisZ: float
 
     /// Unsafe internal constructor, doesn't check if the input is perpendicular or unitized, public only for inlining.
-    /// Creates a PPlane from Origin coordinates and X, Y and Z axis unit vector components.
+    /// Creates a PPlane from Origin coordinates and X-, Y-, and Z-axis unit vector components.
     [<Obsolete("Unsafe internal constructor, doesn't check if the input is perpendicular, but must be public for inlining. So marked Obsolete instead.") >]
     new (originX:float, originY:float, originZ:float,
          xAxisX:float, xAxisY:float, xAxisZ:float,
@@ -137,6 +137,10 @@ type PPlane =
     /// Format PPlane into an F# code string that can be used to recreate the plane.
     member pl.AsFSharpCode : string =
         $"PPlane.createUnchecked({pl.OriginX}, {pl.OriginY}, {pl.OriginZ}, {pl.XaxisX}, {pl.XaxisY}, {pl.XaxisZ}, {pl.YaxisX}, {pl.YaxisY}, {pl.YaxisZ}, {pl.ZaxisX}, {pl.ZaxisY}, {pl.ZaxisZ})"
+
+    /// Format PPlane into an F# code string that can be used to recreate the plane.
+    static member inline asFSharpCode (pl:PPlane) : string =
+        pl.AsFSharpCode
 
 
 

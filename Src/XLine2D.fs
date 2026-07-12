@@ -189,7 +189,7 @@ module XLine2D =
         /// Touching at both Start and End. Lines are identical and in same orientation.
         | Identical
 
-        /// Touching at both at the other Start or End. Lines are identical but in opposite orientation.
+        /// Both endpoints touch the opposite endpoints; the lines are identical but oppositely oriented.
         | IdenticalFlipped
 
 
@@ -393,10 +393,10 @@ module XLineXY =
     /// <param name="vAy"> The Y component of the vector of the first line.</param>
     /// <param name="vBx"> The X component of the vector of the second line.</param>
     /// <param name="vBy"> The Y component of the vector of the second line.</param>
-    /// <returns> True if both lines have an intersection parameter in the range 0.0 to 1.0 (with 1e-6 tolerance).
-    ///  False if the lines are parallel, coincident or at least one intersection parameter is outside of the range.
+    /// <returns> TRUE if both lines have an intersection parameter in the range 0.0 to 1.0 (with 1e-6 tolerance).
+    ///  FALSE if the lines are parallel, coincident or at least one intersection parameter is outside of the range.
     /// </returns>
-    /// <remarks> This does not check for an explicit angle tolerance, so overlapping almost parallel lines may return true.</remarks>
+    /// <remarks> This does not check for an explicit angle tolerance, so overlapping almost parallel lines may return TRUE.</remarks>
     let inline doIntersect(pAx:float, pAy:float, pBx:float, pBy:float, vAx:float, vAy:float, vBx:float, vBy:float): bool =
         let det = vAx * vBy - vAy * vBx // Cross product of vectors (determinant), this is 0.0 if vectors are parallel
         let dx = pBx - pAx
@@ -424,8 +424,8 @@ module XLineXY =
     /// <param name="maxParameterA"> The maximum parameter value of the range, inclusive.</param>
     /// <param name="minParameterB"> The minimum parameter value of the range, inclusive.</param>
     /// <param name="maxParameterB"> The maximum parameter value of the range, inclusive.</param>
-    /// <returns> True if both lines have an intersection parameter in the range (inclusive min and max value).
-    ///  False if the lines are parallel, coincident or at least one intersection parameter is outside of the range.
+    /// <returns> TRUE if both lines have an intersection parameter in the range (inclusive min and max value).
+    ///  FALSE if the lines are parallel, coincident or at least one intersection parameter is outside of the range.
     /// </returns>
     let inline isWithinRanges (pAx:float, pAy:float, pBx:float, pBy:float, vAx:float, vAy:float, vBx:float, vBy:float, minParameterA, maxParameterA, minParameterB, maxParameterB): bool =
         let det = vAx * vBy - vAy * vBx // Cross product of vectors (determinant), this is 0.0 if vectors are parallel
@@ -646,7 +646,7 @@ module XLineXY =
     /// <param name="vBx"> The X component of the vector of the second ray.</param>
     /// <param name="vBy"> The Y component of the vector of the second ray.</param>
     /// <returns> The parameter at which the two rays intersect on line A if it is smaller than 1e12 in absolute value,
-    /// or None if the parameter is bigger than 1e12 or if they are parallel or coincident.</returns>
+    /// or ValueNone if the parameter is bigger than 1e12 or if they are parallel or coincident.</returns>
     let inline tryParameterA (pAx:float, pAy:float, pBx:float, pBy:float, vAx:float, vAy:float, vBx:float, vBy:float): float voption =
         let det = vAx * vBy - vAy * vBx // Cross product of vectors (determinant), this is 0.0 if vectors are parallel
         let dx = pBx - pAx // difference in start points
@@ -670,7 +670,7 @@ module XLineXY =
     /// <param name="minParameterA"> The minimum parameter value of the range, inclusive.</param>
     /// <param name="maxParameterA"> The maximum parameter value of the range, inclusive.</param>
     /// <returns> A point if lineA has an intersection parameter in the range (inclusive min and max value).
-    ///  None if the lines are parallel, coincident or the intersection parameter is outside of the range.
+    ///  ValueNone if the lines are parallel, coincident or the intersection parameter is outside of the range.
     /// </returns>
     let inline tryIntersectInRangeA (pAx:float, pAy:float, pBx:float, pBy:float, vAx:float, vAy:float, vBx:float, vBy:float, minParameterA, maxParameterA): Pt voption =
         let det = vAx * vBy - vAy * vBx // Cross product of vectors (determinant), this is 0.0 if vectors are parallel
@@ -697,7 +697,7 @@ module XLineXY =
     /// <param name="minParameterB"> The minimum parameter value of the range, inclusive.</param>
     /// <param name="maxParameterB"> The maximum parameter value of the range, inclusive.</param>
     /// <returns> A point if both lines have an intersection parameter in the range (inclusive min and max value).
-    ///  None if the lines are parallel, coincident or at least one intersection parameter is outside of the range.
+    ///  ValueNone if the lines are parallel, coincident or at least one intersection parameter is outside of the range.
     /// </returns>
     let inline tryIntersectInRanges (pAx:float, pAy:float, pBx:float, pBy:float, vAx:float, vAy:float, vBx:float, vBy:float, minParameterA, maxParameterA, minParameterB, maxParameterB): Pt voption =
         let det = vAx * vBy - vAy * vBx // Cross product of vectors (determinant), this is 0.0 if vectors are parallel
@@ -724,7 +724,7 @@ module XLineXY =
     /// <param name="vBx"> The X component of the vector of the second line.</param>
     /// <param name="vBy"> The Y component of the vector of the second line.</param>
     /// <returns> The intersection point if both parameters are within 0.0 to 1.0;
-    /// None otherwise or if parallel/coincident.</returns>
+    /// ValueNone otherwise or if parallel/coincident.</returns>
     /// <remarks> This method uses a small tolerance of 1e-6 to account for numerical inaccuracies when checking the 0..1 range.</remarks>
     let inline tryIntersect (pAx:float, pAy:float, pBx:float, pBy:float, vAx:float, vAy:float, vBx:float, vBy:float): Pt voption =
         tryIntersectInRanges (pAx, pAy, pBx, pBy, vAx, vAy, vBx, vBy, -1e-6, ``1.0 + 1e-6``, -1e-6, ``1.0 + 1e-6``)
@@ -742,8 +742,8 @@ module XLineXY =
     /// <param name="vBy"> The Y component of the vector of the second ray.</param>
     /// <param name="tangent" > The tangent value of the maximum allowed angle between the two line vectors.
     ///  Use the module Euclid.UtilEuclid.Tangent to set another tolerance here.</param>
-    /// <returns> The point at which the two rays intersect or None.</returns>
-    /// <remarks> If the lines are parallel or coincident (within the tangent tolerance) or too short, None is returned.</remarks>
+    /// <returns> The point at which the two rays intersect or ValueNone.</returns>
+    /// <remarks> If the lines are parallel or coincident (within the tangent tolerance) or too short, ValueNone is returned.</remarks>
     let inline tryIntersectRay (pAx:float, pAy:float, pBx:float, pBy:float, vAx:float, vAy:float, vBx:float, vBy:float, tangent:float<Tangent.tangent>): Pt voption =
         let det = vAx * vBy - vAy * vBx // Cross product of vectors (determinant, or signed area of parallelogram between them), this is 0.0 if vectors are parallel or very short
         let dot = vAx * vBx + vAy * vBy // Dot product of vectors, may be 0.0 for perpendicular vectors
@@ -955,7 +955,7 @@ module XLineXY =
     /// Use the module Euclid.UtilEuclid.Tangent to set another tolerance here.</param>
     /// <param name="tooShortTolerance" > Is a length tolerance.
     ///  If one or both lines are shorter than this, then a 'TooShort' union case is returned.</param>
-    /// <returns> An ClParams Discriminated Union with the following cases:
+    /// <returns> A ClParams Discriminated Union with the following cases:
     /// | Intersect of parameterA:float * parameterB:float
     /// | Apart of parameterA:float * parameterB:float
     /// | Parallel of parameterA:float * parameterB:float
@@ -1033,7 +1033,7 @@ module XLineXY =
     /// Use the module Euclid.UtilEuclid.Tangent to set another tolerance here.</param>
     /// <param name="tooShortTolerance" > The length tolerance.
     ///  If one or both lines are shorter than this, then a 'TooShort' union case is returned.</param>
-    /// <returns> An ClPts Discriminated Union with the following cases:
+    /// <returns> A ClPts Discriminated Union with the following cases:
     /// | Intersect of Pt
     /// | Apart of Pt * Pt
     /// | Parallel of Pt * Pt
@@ -1130,20 +1130,20 @@ type XLine2D =
     /// <param name="pB"> The start point of the second line.</param>
     /// <param name="vA"> The direction vector of the first line.</param>
     /// <param name="vB"> The direction vector of the second line.</param>
-    /// <returns> True if both lines have an intersection parameter in the range 0.0 to 1.0 (with 1e-6 tolerance).
-    ///  False if the lines are parallel, coincident or at least one intersection parameter is outside of the range.
+    /// <returns> TRUE if both lines have an intersection parameter in the range 0.0 to 1.0 (with 1e-6 tolerance).
+    ///  FALSE if the lines are parallel, coincident or at least one intersection parameter is outside of the range.
     /// </returns>
-    /// <remarks> This does not check for an explicit angle tolerance, so overlapping almost parallel lines may return true.</remarks>
+    /// <remarks> This does not check for an explicit angle tolerance, so overlapping almost parallel lines may return TRUE.</remarks>
     static member inline doIntersect (pA:Pt, pB:Pt, vA:Vc, vB:Vc): bool =
         XLineXY.doIntersect (pA.X, pA.Y, pB.X, pB.Y, vA.X, vA.Y, vB.X, vB.Y)
 
     /// <summary> Checks if two 2D-lines intersect within the parameter range 0.0 to 1.0 (with 1e-6 tolerance) on both lines.</summary>
     /// <param name="lineA"> First line.</param>
     /// <param name="lineB"> Second line.</param>
-    /// <returns> True if both lines have an intersection parameter in the range 0.0 to 1.0 (with 1e-6 tolerance).
-    ///  False if the lines are parallel, coincident or at least one intersection parameter is outside of the range.
+    /// <returns> TRUE if both lines have an intersection parameter in the range 0.0 to 1.0 (with 1e-6 tolerance).
+    ///  FALSE if the lines are parallel, coincident or at least one intersection parameter is outside of the range.
     /// </returns>
-    /// <remarks> This does not check for an explicit angle tolerance, so overlapping almost parallel lines may return true.</remarks>
+    /// <remarks> This does not check for an explicit angle tolerance, so overlapping almost parallel lines may return TRUE.</remarks>
     static member inline doIntersect (lineA: Line2D, lineB: Line2D): bool =
         XLineXY.doIntersect( lineA.FromX, lineA.FromY, lineB.FromX, lineB.FromY, lineA.VectorX, lineA.VectorY, lineB.VectorX, lineB.VectorY )
 
@@ -1157,8 +1157,8 @@ type XLine2D =
     /// <param name="maxParameterA"> The maximum parameter value of the range, inclusive.</param>
     /// <param name="minParameterB"> The minimum parameter value of the range, inclusive.</param>
     /// <param name="maxParameterB"> The maximum parameter value of the range, inclusive.</param>
-    /// <returns> True if both lines have an intersection parameter in the range (inclusive min and max value).
-    ///  False if the lines are parallel, coincident or at least one intersection parameter is outside of the range.
+    /// <returns> TRUE if both lines have an intersection parameter in the range (inclusive min and max value).
+    ///  FALSE if the lines are parallel, coincident or at least one intersection parameter is outside of the range.
     /// </returns>
     static member inline isWithinRanges (pA:Pt, pB:Pt, vA:Vc, vB:Vc, minParameterA, maxParameterA, minParameterB, maxParameterB): bool =
         XLineXY.isWithinRanges (pA.X, pA.Y, pB.X, pB.Y, vA.X, vA.Y, vB.X, vB.Y, minParameterA, maxParameterA, minParameterB, maxParameterB)
@@ -1170,8 +1170,8 @@ type XLine2D =
     /// <param name="maxParameterA"> The maximum parameter value of the range, inclusive.</param>
     /// <param name="minParameterB"> The minimum parameter value of the range, inclusive.</param>
     /// <param name="maxParameterB"> The maximum parameter value of the range, inclusive.</param>
-    /// <returns> True if both lines have an intersection parameter in the range (inclusive min and max value).
-    ///  False if the lines are parallel, coincident or at least one intersection parameter is outside of the range.
+    /// <returns> TRUE if both lines have an intersection parameter in the range (inclusive min and max value).
+    ///  FALSE if the lines are parallel, coincident or at least one intersection parameter is outside of the range.
     /// </returns>
     static member inline isWithinRanges (lineA: Line2D, lineB: Line2D, minParameterA, maxParameterA, minParameterB, maxParameterB ): bool =
         XLineXY.isWithinRanges( lineA.FromX, lineA.FromY, lineB.FromX, lineB.FromY, lineA.VectorX, lineA.VectorY, lineB.VectorX, lineB.VectorY, minParameterA, maxParameterA, minParameterB, maxParameterB )
@@ -1259,7 +1259,7 @@ type XLine2D =
     /// <param name="vA"> The direction vector of the first ray.</param>
     /// <param name="vB"> The direction vector of the second ray.</param>
     /// <returns> The parameter on line A at the intersection with line B if it is smaller than 1e12 in absolute value,
-    /// or None if the parameter is bigger than 1e12 or if they are parallel or coincident.</returns>
+    /// or ValueNone if the parameter is bigger than 1e12 or if they are parallel or coincident.</returns>
     static member inline tryParameterA (pA:Pt, pB:Pt, vA:Vc, vB:Vc): float voption =
         XLineXY.tryParameterA (pA.X, pA.Y, pB.X, pB.Y, vA.X, vA.Y, vB.X, vB.Y)
 
@@ -1267,7 +1267,7 @@ type XLine2D =
     /// <param name="lineA"> First ray.</param>
     /// <param name="lineB"> Second ray.</param>
     /// <returns> The parameter on lineA at the intersection with lineB if it is smaller than 1e12 in absolute value,
-    /// or None if the parameter is bigger than 1e12 or if they are parallel or coincident.</returns>
+    /// or ValueNone if the parameter is bigger than 1e12 or if they are parallel or coincident.</returns>
     static member inline tryParameterA (lineA:Line2D, lineB:Line2D): float voption =
         XLineXY.tryParameterA (lineA.FromX, lineA.FromY, lineB.FromX, lineB.FromY, lineA.VectorX, lineA.VectorY, lineB.VectorX, lineB.VectorY )
 
@@ -1280,7 +1280,7 @@ type XLine2D =
     /// <param name="minParameterA"> The minimum parameter value of the range, inclusive.</param>
     /// <param name="maxParameterA"> The maximum parameter value of the range, inclusive.</param>
     /// <returns> A point if lineA has an intersection parameter in the range (inclusive min and max value).
-    /// None if the lines are parallel, coincident or the intersection parameter is outside of the range.
+    /// ValueNone if the lines are parallel, coincident or the intersection parameter is outside of the range.
     /// </returns>
     static member inline tryIntersectInRangeA (pA:Pt, pB:Pt, vA:Vc, vB:Vc, minParameterA, maxParameterA): Pt voption =
         XLineXY.tryIntersectInRangeA (pA.X, pA.Y, pB.X, pB.Y, vA.X, vA.Y, vB.X, vB.Y, minParameterA, maxParameterA)
@@ -1291,7 +1291,7 @@ type XLine2D =
     /// <param name="minParameterA"> The minimum parameter value of the range, inclusive.</param>
     /// <param name="maxParameterA"> The maximum parameter value of the range, inclusive.</param>
     /// <returns> A point if lineA has an intersection parameter in the range (inclusive min and max value).
-    /// None if the lines are parallel, coincident or the intersection parameter is outside of the range.
+    /// ValueNone if the lines are parallel, coincident or the intersection parameter is outside of the range.
     /// </returns>
     static member inline tryIntersectInRangeA (lineA: Line2D, lineB: Line2D, minParameterA, maxParameterA): Pt voption =
         XLineXY.tryIntersectInRangeA( lineA.FromX, lineA.FromY, lineB.FromX, lineB.FromY, lineA.VectorX, lineA.VectorY, lineB.VectorX, lineB.VectorY, minParameterA, maxParameterA )
@@ -1307,7 +1307,7 @@ type XLine2D =
     /// <param name="minParameterB"> The minimum parameter value of the range, inclusive.</param>
     /// <param name="maxParameterB"> The maximum parameter value of the range, inclusive.</param>
     /// <returns> A point if both lines have an intersection parameter in the range (inclusive
-    /// min and max value).     None if the lines are parallel, coincident or at least one intersection parameter is outside of the range.
+    /// min and max value).     ValueNone if the lines are parallel, coincident or at least one intersection parameter is outside of the range.
     /// </returns>
     static member inline tryIntersectInRanges (pA:Pt, pB:Pt, vA:Vc, vB:Vc, minParameterA, maxParameterA, minParameterB, maxParameterB): Pt voption =
         XLineXY.tryIntersectInRanges (pA.X, pA.Y, pB.X, pB.Y, vA.X, vA.Y, vB.X, vB.Y, minParameterA, maxParameterA, minParameterB, maxParameterB)
@@ -1320,7 +1320,7 @@ type XLine2D =
     /// <param name="minParameterB"> The minimum parameter value of the range, inclusive.</param>
     /// <param name="maxParameterB"> The maximum parameter value of the range, inclusive.</param>
     /// <returns> A point if both lines have an intersection parameter in the range (inclusive min and max value).
-    /// None if the lines are parallel, coincident or at least one intersection parameter is outside of the range.
+    /// ValueNone if the lines are parallel, coincident or at least one intersection parameter is outside of the range.
     /// </returns>
     static member inline tryIntersectInRanges (lineA: Line2D, lineB: Line2D, minParameterA, maxParameterA, minParameterB, maxParameterB): Pt voption =
         XLineXY.tryIntersectInRanges( lineA.FromX, lineA.FromY, lineB.FromX, lineB.FromY, lineA.VectorX, lineA.VectorY, lineB.VectorX, lineB.VectorY, minParameterA, maxParameterA, minParameterB, maxParameterB )
@@ -1332,7 +1332,7 @@ type XLine2D =
     /// <param name="vA"> Vector from pA to the other end of line A (its length defines the domain 0..1).</param>
     /// <param name="vB"> Vector from pB to the other end of line B (its length defines the domain 0..1).</param>
     /// <returns> The intersection point if both parameters are within 0.0 to 1.0;
-    /// None otherwise or if parallel/coincident.</returns>
+    /// ValueNone otherwise or if parallel/coincident.</returns>
     /// <remarks> This method uses a small tolerance of 1e-6 to account for numerical inaccuracies when checking the 0..1 range.</remarks>
     static member inline tryIntersect (pA:Pt, pB:Pt, vA:Vc, vB:Vc): Pt voption =
         XLineXY.tryIntersect (pA.X, pA.Y, pB.X, pB.Y, vA.X, vA.Y, vB.X, vB.Y)
@@ -1341,7 +1341,7 @@ type XLine2D =
     /// <param name="lineA"> First finite line segment.</param>
     /// <param name="lineB"> Second finite line segment.</param>
     /// <returns> The intersection point if both parameters are within 0.0 to 1.0;
-    /// None otherwise or if parallel/coincident.</returns>
+    /// ValueNone otherwise or if parallel/coincident.</returns>
     /// <remarks> This method uses a small tolerance of 1e-6 to account for numerical inaccuracies when checking the 0..1 range.</remarks>
     static member inline tryIntersect (lineA: Line2D, lineB: Line2D): Pt voption =
         XLineXY.tryIntersect( lineA.FromX, lineA.FromY, lineB.FromX, lineB.FromY, lineA.VectorX, lineA.VectorY, lineB.VectorX, lineB.VectorY )
@@ -1355,8 +1355,8 @@ type XLine2D =
     /// <param name="tangent" > Is an optional tangent of the maximum allowed angle between the two line vectors.
     ///  The default value is '0.00436' this corresponds to approx 0.25 degree. Below this angle the lines are considered parallel.
     ///  Use the module Euclid.UtilEuclid.Tangent to set another tolerance here.</param>
-    /// <returns> The point at which the two rays intersect or None.</returns>
-    /// <remarks> If the lines are parallel or coincident (within the tangent tolerance) or too short, None is returned.</remarks>
+    /// <returns> The point at which the two rays intersect or ValueNone.</returns>
+    /// <remarks> If the lines are parallel or coincident (within the tangent tolerance) or too short, ValueNone is returned.</remarks>
     static member inline tryIntersectRay (pA:Pt, pB:Pt, vA:Vc, vB:Vc, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>): Pt voption =
         XLineXY.tryIntersectRay (pA.X, pA.Y, pB.X, pB.Y, vA.X, vA.Y, vB.X, vB.Y, tangent)
 
@@ -1366,8 +1366,8 @@ type XLine2D =
     /// <param name="tangent" > Is an optional tangent of the maximum allowed angle between the two line vectors.
     ///  The default value is '0.00436' this corresponds to approx 0.25 degree. Below this angle the lines are considered parallel.
     ///  Use the module Euclid.UtilEuclid.Tangent to set another tolerance here.</param>
-    /// <returns> The point at which the two rays intersect or None.</returns>
-    /// <remarks> If the lines are parallel or coincident (within the tangent tolerance), or too short, None is returned.</remarks>
+    /// <returns> The point at which the two rays intersect or ValueNone.</returns>
+    /// <remarks> If the lines are parallel or coincident (within the tangent tolerance), or too short, ValueNone is returned.</remarks>
     static member inline tryIntersectRay (lineA: Line2D, lineB: Line2D, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>): Pt voption =
         XLineXY.tryIntersectRay (lineA.FromX, lineA.FromY, lineB.FromX, lineB.FromY, lineA.VectorX, lineA.VectorY, lineB.VectorX, lineB.VectorY, tangent)
 
@@ -1544,7 +1544,7 @@ type XLine2D =
     /// Use the module Euclid.UtilEuclid.Tangent to set another tolerance here.</param>
     /// <param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
     ///  If one or both lines are shorter than this, then a 'TooShort' union case is returned.</param>
-    /// <returns> An ClParams Discriminated Union with the following cases:
+    /// <returns> A ClParams Discriminated Union with the following cases:
     /// | Intersect of float*float
     /// | Apart of parameterA:float * parameterB:float * squareDistance:float
     /// | Parallel of float*float
@@ -1565,7 +1565,7 @@ type XLine2D =
     /// Use the module Euclid.UtilEuclid.Tangent to set another tolerance here.</param>
     /// <param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
     ///  If one or both lines are shorter than this, then a 'TooShort' union case is returned.</param>
-    /// <returns> An ClParams Discriminated Union with the following cases:
+    /// <returns> A ClParams Discriminated Union with the following cases:
     /// | Intersect of float*float
     /// | Apart of parameterA:float * parameterB:float * squareDistance:float
     /// | Parallel of float*float
@@ -1591,7 +1591,7 @@ type XLine2D =
     /// Use the module Euclid.UtilEuclid.Tangent to set another tolerance here.</param>
     /// <param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
     ///  If one or both lines are shorter than this, then the 'TooShort' union case is returned.</param>
-    /// <returns> An ClPts Discriminated Union with the following cases:
+    /// <returns> A ClPts Discriminated Union with the following cases:
     /// | Intersect of Pt
     /// | Apart of Pt * Pt * squareDistance:float
     /// | Parallel of Pt * Pt
@@ -1613,7 +1613,7 @@ type XLine2D =
     /// Use the module Euclid.UtilEuclid.Tangent to set another tolerance here.</param>
     /// <param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
     ///  If one or both lines are shorter than this, then the 'TooShort' union case is returned.</param>
-    /// <returns> An ClPts Discriminated Union with the following cases:
+    /// <returns> A ClPts Discriminated Union with the following cases:
     /// | Intersect of Pt
     /// | Apart of Pt * Pt * squareDistance:float
     /// | Parallel of Pt * Pt
