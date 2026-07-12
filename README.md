@@ -151,7 +151,7 @@ git clone https://github.com/goswinr/Euclid.git
 cd Euclid
 ```
 
-To build the libary and the tests for .NET
+To build the library and the tests for .NET
 ```bash
 dotnet build --configuration Release
 ```
