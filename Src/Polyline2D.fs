@@ -404,7 +404,8 @@ type Polyline2D private (xys: ResizeArray<float>) =
     member p.GetSegment(i:int) : Line2D =
         if i < 0 || i > p.PointCount - 2 then
             fail $"Polyline2D.GetSegment: index {i} is out of range for Polyline2D with {p.PointCount} points."
-        Line2D(getPt i xys, getPt (i+1) xys)
+        let j = i * 2
+        Line2D(xys.[j], xys.[j + 1], xys.[j + 2], xys.[j + 3])
 
     /// Gets the segment at index i of the Polyline2D.
     static member inline getSegment (i:int) (p:Polyline2D) : Line2D =
@@ -413,8 +414,8 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// Gets the last segment of the Polyline2D.
     member p.LastSegment : Line2D =
         if p.PointCount < 2 then failTooFewPoly2D "LastSegment" 2 p.PointCount
-        let i = p.PointCount - 1
-        Line2D(getPt (i-1) xys, getPt i xys)
+        let i = xys.Count - 4
+        Line2D(xys.[i], xys.[i + 1], xys.[i + 2], xys.[i + 3])
 
     /// Gets the last segment of the Polyline2D.
     static member inline lastSegment (p:Polyline2D) : Line2D =
@@ -423,7 +424,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// Gets the first segment of the Polyline2D.
     member p.FirstSegment : Line2D =
         if p.PointCount < 2 then failTooFewPoly2D "FirstSegment" 2 p.PointCount
-        Line2D(getPt 0 xys, getPt 1 xys)
+        Line2D(xys.[0], xys.[1], xys.[2], xys.[3])
 
     /// Gets the first segment of the Polyline2D.
     static member inline firstSegment (p:Polyline2D) : Line2D =
@@ -435,11 +436,10 @@ type Polyline2D private (xys: ResizeArray<float>) =
         if p.PointCount < 2 then
             lns
         else
-            let mutable a = getPt 0 xys
-            for i = 1 to p.PointCount - 1 do
-                let b = getPt i xys
-                lns.Add(Line2D(a, b))
-                a <- b
+            let mutable i = 0
+            while i < xys.Count - 2 do
+                lns.Add(Line2D(xys.[i], xys.[i + 1], xys.[i + 2], xys.[i + 3]))
+                i <- i + 2
             lns
 
     /// Returns all segments of the Polyline2D as a list of Line2D.
@@ -1138,7 +1138,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
     static member inline scaleOn (cen:Pt) (factor:float) (pl:Polyline2D) : Polyline2D =
         pl.ScaleOn cen factor
 
-    /// Returns a Polyline2D moved by a vector.
+    /// Returns a Polyline2D moved by a vector. Same as Polyline2D.move and Polyline2D.translate.
     member p.Move (v:Vc) : Polyline2D =
         Polyline2D.translate v p
 
@@ -1617,7 +1617,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// <param name="pl">The Polyline2D to iterate over.</param>
     /// <returns>Unit.</returns>
     static member inline iterLineSegments (action: Line2D -> unit) (pl:Polyline2D) : unit =
-        pl |> Polyline2D.iterSegments (fun x1 y1 x2 y2 -> action (Line2D(Pt(x1, y1), Pt(x2, y2))))
+        pl |> Polyline2D.iterSegments (fun x1 y1 x2 y2 -> action (Line2D(x1, y1, x2, y2)))
 
 
     /// <summary>Tests if two Polyline2D have the same point count and if their corresponding points are equal within a given tolerance.</summary>
@@ -1801,7 +1801,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// For example, for 179.9 degrees use 'Cosine.``179.9``'. </param>
     /// <param name="polyLine"> A 2D Polyline, open or closed. </param>
     /// <remarks>The Offset2D module also has a removeUTurns function that takes precomputed unit vectors and is therefore more efficient.
-    /// For nested U-turns and colinear points in U-turns segments use 'removeUTurnsDeeply'. That function calls repeatedly until no more U-turns are present.</remarks>
+    /// For nested U-turns and collinear points in U-turns segments use 'removeUTurnsDeeply'. That function calls repeatedly until no more U-turns are present.</remarks>
     /// <returns>If no U-turns are present, the List of points of the original Polyline2D is reused and a new Polyline2D is created with that list.
     /// If U-turns are present, a new ResizeArray of points is returned with simple U-turns removed.</returns>
     static member removeUTurns ( minCos:float<Cosine.cosine>) (polyLine:Polyline2D): Polyline2D =
@@ -1811,7 +1811,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
 
     /// <summary>Removes all sharp U-Turns from a Polyline recursively until no more U-turns are present.
     /// This function calls 'removeUTurns' repeatedly until no more U-turns are present.
-    /// Use this function when you have nested U-turns and colinear points in U-turns segments.</summary>
+    /// Use this function when you have nested U-turns and collinear points in U-turns segments.</summary>
     /// <param name="minCos"> The angle between segments so that they are considered a U-turn.
     /// For example, for 179.9 degrees use 'Cosine.``179.9``'. </param>
     /// <param name="polyLine"> A 2D Polyline, open or closed. </param>
@@ -1902,8 +1902,8 @@ type Polyline2D private (xys: ResizeArray<float>) =
                         let prevOkY = nps.[nps.Count - 3]
                         let vFirstX = prevOkX - prevX // Vc.create(prev, prevOkPt), prev is the first bad point
                         let vFirstY = prevOkY - prevY
-                        match XLine2D.tryParameterA(lastBadX, lastBadY, prevX, prevY, vLastX, vLastY, vFirstX, vFirstY) with
-                        |Some t ->
+                        match XLineXY.tryParameterA(lastBadX, lastBadY, prevX, prevY, vLastX, vLastY, vFirstX, vFirstY) with
+                        |ValueSome t ->
                             // the expected parameter on A is somewhere round 0.0, so use -0.4 to 0.4 as range,
                             let x = lastBadX + t * vLastX // t is the parameter on line A (lastBad, vLast)
                             let y = lastBadY + t * vLastY
@@ -1922,7 +1922,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
                                 // intersection is too far away or segments are near parallel, line fidelity is not kept, use the midpoint
                                 nps.[nps.Count - 2] <- (lastBadX + prevX) * 0.5
                                 nps.[nps.Count - 1] <- (lastBadY + prevY) * 0.5
-                        |None -> // segments are parallel, no intersection possible
+                        |ValueNone -> // segments are parallel, no intersection possible
                             nps.[nps.Count - 2] <- (lastBadX + prevX) * 0.5 // in this case line fidelity is not kept, use the midpoint
                             nps.[nps.Count - 1] <- (lastBadY + prevY) * 0.5
 
@@ -1947,18 +1947,18 @@ type Polyline2D private (xys: ResizeArray<float>) =
 
             Polyline2D.createDirectly nps
 
-    /// Removes consecutive duplicate points and colinear points from the Polyline2D within given tolerances.
+    /// Removes consecutive duplicate points and collinear points from the Polyline2D within given tolerances.
     /// This algorithm allows the last and first point to be identical if the Polyline2D is closed.
-    /// Colinear points are removed when the angle between segments is smaller than the cosine threshold (e.g. cosine of 0.5 degrees ).
-    /// If the Polyline2D is closed and starts and ends with colinear segments, the first point is replaced with the last non-colinear point.
-    /// So the joint of the loop is now moved to the last non-colinear point.
-    /// So that there are no colinear segments even between start and end.
+    /// Collinear points are removed when the angle between segments is smaller than the cosine threshold (e.g. cosine of 0.5 degrees ).
+    /// If the Polyline2D is closed and starts and ends with collinear segments, the first point is replaced with the last non-collinear point.
+    /// So the joint of the loop is now moved to the last non-collinear point.
+    /// So that there are no collinear segments even between start and end.
     /// Raises an error if all points are within the distanceTolerance of the first point.
-    static member removeDuplicateAndColinearPoints (angleTolerance:float<Cosine.cosine>) (distanceTolerance:float) (pl:Polyline2D) : Polyline2D =
+    static member removeDuplicateAndCollinearPoints (angleTolerance:float<Cosine.cosine>) (distanceTolerance:float) (pl:Polyline2D) : Polyline2D =
         if angleTolerance < Cosine.``45.0`` then
-            fail $"Polyline2D.removeDuplicateAndColinearPoints: angleTolerance must be at least Cosine.``45.0`` ( that is 0.707) but was {angleTolerance} (= {acos (float angleTolerance) |> toDegrees} degrees)."
+            fail $"Polyline2D.removeDuplicateAndCollinearPoints: angleTolerance must be at least Cosine.``45.0`` ( that is 0.707) but was {angleTolerance} (= {acos (float angleTolerance) |> toDegrees} degrees)."
         if angleTolerance > Cosine.``0.01`` then
-            fail $"Polyline2D.removeDuplicateAndColinearPoints: angleTolerance must be at most Cosine.``0.01`` ( that is 0.999999984) but was {angleTolerance} (= {acos (float angleTolerance) |> toDegrees} degrees)."
+            fail $"Polyline2D.removeDuplicateAndCollinearPoints: angleTolerance must be at most Cosine.``0.01`` ( that is 0.999999984) but was {angleTolerance} (= {acos (float angleTolerance) |> toDegrees} degrees)."
 
         let xys = pl.XYs
         if xys.Count < 4 then // single point or empty polyline
@@ -1985,7 +1985,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
                 i <- i + 2
 
             if len < distTol then
-                fail $"Polyline2D.removeDuplicateAndColinearPoints: all {xys.Count / 2} points are within the distanceTolerance {distTol} of the first point {Pt(prevX, prevY)}."
+                fail $"Polyline2D.removeDuplicateAndCollinearPoints: all {xys.Count / 2} points are within the distanceTolerance {distTol} of the first point {Pt(prevX, prevY)}."
 
             // first unit vector from prev to this
             let firstVecX = (thisX - prevX) / len
@@ -2001,12 +2001,12 @@ type Polyline2D private (xys: ResizeArray<float>) =
                 let vy = nextY - thisY
                 let len = vx * vx + vy * vy |> sqrt
                 if len > distTol then
-                    // not duplicate, now check if colinear
+                    // not duplicate, now check if collinear
                     let vNextX = vx / len
                     let vNextY = vy / len
                     let cos : float<Cosine.cosine> = LanguagePrimitives.FloatWithMeasure (vPrevX * vNextX + vPrevY * vNextY)
                     if cos < angleTolerance then
-                        // not colinear , keep this point
+                        // not collinear , keep this point
                         nps.Add thisX
                         nps.Add thisY
                         prevX <- thisX
@@ -2019,14 +2019,14 @@ type Polyline2D private (xys: ResizeArray<float>) =
 
             // (3) handle last segment to first point
             if pl.IsAlmostClosed distTol then
-                // closed polyline, now check if last and first segment are colinear
+                // closed polyline, now check if last and first segment are collinear
                 let cos : float<Cosine.cosine> = LanguagePrimitives.FloatWithMeasure (vPrevX * firstVecX + vPrevY * firstVecY)
                 if cos < angleTolerance then
-                    // not colinear , keep the original end point
+                    // not collinear , keep the original end point
                     nps.Add xys.[xys.Count - 2]
                     nps.Add xys.[xys.Count - 1]
                 else
-                    // colinear , replace first point with last non-colinear point
+                    // collinear , replace first point with last non-collinear point
                     nps.[0] <- nps.[nps.Count - 2]
                     nps.[1] <- nps.[nps.Count - 1]
             else
@@ -2109,7 +2109,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
 
     /// <summary> Offsets a Polyline in 2D space by finding the local offset in each corner.
     /// Auto detects if given points are from a closed Polyline (first point = last point) and loops them.
-    /// By default this function raises an Exception on duplicate points, 180 degree U-Turns, and variable distances at colinear segments.
+    /// By default this function raises an Exception on duplicate points, 180 degree U-Turns, and variable distances at collinear segments.
     /// But this can be configured with optional parameters.</summary>
     /// <param name="polyLine"> A 2D Polyline, open or closed.</param>
     /// <param name="multipleOffsetDistances">The parallel offset distances for each segment of the polyline.
@@ -2123,11 +2123,11 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// Set this parameter to FALSE if you want to skip the orientation check.
     /// Clockwise polylines will offset to the outside, counter-clockwise polylines to the inside.</param>
     /// <param name="varDistParallelBehavior"> Optional. Default value: `Offset2D.VarDistParallel.Fail`.
-    ///  What to do with colinear segments below 'useVarDistParallelBehaviorBelow' degrees when offset distances are different too.</param>
+    ///  What to do with collinear segments below 'useVarDistParallelBehaviorBelow' degrees when offset distances are different too.</param>
     /// <param name="uTurnBehavior"> Optional. Default value: `Offset2D.UTurn.Fail`.
     /// What to do at a 180 degree U-turn? Fail, Chamfer with two points, Use179 or Skip the point.</param>
     /// <param name="useVarDistParallelBehaviorBelow"> Optional. Default value: `Cosine.``5.0`` `.
-    /// The angle between normals below which points are considered colinear and VarDistParallelBehavior is applied if distances are not the same. </param>
+    /// The angle between normals below which points are considered collinear and VarDistParallelBehavior is applied if distances are not the same. </param>
     /// <param name="useUTurnBehaviorAbove"> Optional. Default value: `Cosine.``175.0`` `.
     /// The angle between normals after which, instead of a normal miter, the joint is chamfered by adding an extra point.</param>
     /// <returns>A new 2D polyline.</returns>
@@ -2211,9 +2211,9 @@ type Polyline2D private (xys: ResizeArray<float>) =
                 let mutable ptjy = xys.[j + 1]
                 let mutable sVjx = segmentVs.[j]
                 let mutable sVjy = segmentVs.[j + 1]
-                match XLine2D.tryIntersect(ptix, ptiy, ptjx, ptjy, sVix, sViy, sVjx, sVjy) with
-                | Some pt -> result <- Some (pt, 0, j / 2)
-                | None    -> ()
+                match XLineXY.tryIntersect(ptix, ptiy, ptjx, ptjy, sVix, sViy, sVjx, sVjy) with
+                | ValueSome pt -> result <- Some (pt, 0, j / 2)
+                | ValueNone    -> ()
                 j <- j + 2
 
             // The remaining segments from index 1 onward have no closure special case.
@@ -2229,9 +2229,9 @@ type Polyline2D private (xys: ResizeArray<float>) =
                     let mutable ptjy = xys.[j + 1]
                     let mutable sVjx = segmentVs.[j]
                     let mutable sVjy = segmentVs.[j + 1]
-                    match XLine2D.tryIntersect(ptix, ptiy, ptjx, ptjy, sVix, sViy, sVjx, sVjy) with
-                    | Some pt -> result <- Some (pt, i / 2, j / 2)
-                    | None    -> ()
+                    match XLineXY.tryIntersect(ptix, ptiy, ptjx, ptjy, sVix, sViy, sVjx, sVjy) with
+                    | ValueSome pt -> result <- Some (pt, i / 2, j / 2)
+                    | ValueNone    -> ()
                     j <- j + 2
                 i <- i + 2
             result
@@ -2293,9 +2293,9 @@ type Polyline2D private (xys: ResizeArray<float>) =
                     let mutable ptjy = xys.[j + 1]
                     let mutable sVjx = segmentVs.[j]
                     let mutable sVjy = segmentVs.[j + 1]
-                    match XLine2D.tryIntersect(ptix, ptiy, ptjx, ptjy, sVix, sViy, sVjx, sVjy) with
-                    | Some pt -> result <- Some (pt, 0, j / 2)
-                    | None    -> ()
+                    match XLineXY.tryIntersect(ptix, ptiy, ptjx, ptjy, sVix, sViy, sVjx, sVjy) with
+                    | ValueSome pt -> result <- Some (pt, 0, j / 2)
+                    | ValueNone    -> ()
                 j <- j + 2
 
             // The remaining segments from index 1 onward have no closure special case.
@@ -2313,9 +2313,9 @@ type Polyline2D private (xys: ResizeArray<float>) =
                         let mutable ptjy = xys.[j + 1]
                         let mutable sVjx = segmentVs.[j]
                         let mutable sVjy = segmentVs.[j + 1]
-                        match XLine2D.tryIntersect(ptix, ptiy, ptjx, ptjy, sVix, sViy, sVjx, sVjy) with
-                        | Some pt -> result <- Some (pt, i / 2, j / 2)
-                        | None    -> ()
+                        match XLineXY.tryIntersect(ptix, ptiy, ptjx, ptjy, sVix, sViy, sVjx, sVjy) with
+                        | ValueSome pt -> result <- Some (pt, i / 2, j / 2)
+                        | ValueNone    -> ()
                     j <- j + 2
                 i <- i + 2
             result

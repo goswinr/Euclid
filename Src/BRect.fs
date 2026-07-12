@@ -71,9 +71,6 @@ type BRect =
         let atY = Format.float r.MinY
         $"Euclid.BRect: sizeX=%s{sizeX}| sizeY=%s{sizeY}| at X=%s{atX}|Y=%s{atY}"
 
-    /// Nicely formatted string representation of the bounding rectangle, including its size.
-    static member inline toString (r:BRect) : string =
-        r.ToString()
 
     /// Format bounding rectangle into string with nice floating point number formatting of size and position.
     /// But without full type name as in rect.ToString()
@@ -145,6 +142,10 @@ type BRect =
     /// The center of the bounding rect.
     static member inline center (r:BRect) : Pt =
         r.Center
+
+    /// Returns a 2D rectangle representation of this bounding rectangle.
+    member r.AsRect2D : Rect2D =
+        Rect2D.createUnchecked(r.MinX, r.MinY, r.SizeX, 0.0, 0.0, r.SizeY)
 
     /// Returns a bounding rectangle expanded by distance.
     /// Does check for underflow if distance is negative and raises EuclidException.
@@ -340,30 +341,6 @@ type BRect =
         this.TouchingSide(other, tolerance)
 
 
-    // /// Returns TRUE if the two 2D bounding rectangles overlap by at least the specified threshold on every axis.
-    // /// (See note: when one box is smaller than the threshold on some axis but fully inside the other,
-    // ///  this returns FALSE.)
-    // member inline b.IsOverlappingMoreThan (a:Brect, threshold:float) : bool =
-    //     (min a.MaxX b.MaxX) - (max a.MinX b.MinX) >= threshold &&
-    //     (min a.MaxY b.MaxY) - (max a.MinY b.MinY) >= threshold &&
-    //     (min a.MaxZ b.MaxZ) - (max a.MinZ b.MinZ) >= threshold
-
-    // /// Returns TRUE if the two 2D bounding rectangles overlap by at least the specified threshold on every axis.
-    // /// Also returns TRUE if one box is completely inside the other (even if smaller than the threshold).
-    // /// Also returns TRUE if one box is completely surrounding the other.
-    // member inline b.IsOverlappingMoreThan (a:Brect, threshold:float) : bool =
-    //     (   (min a.MaxX b.MaxX) - (max a.MinX b.MinX) >= threshold &&
-    //         (min a.MaxY b.MaxY) - (max a.MinY b.MinY) >= threshold &&
-    //         (min a.MaxZ b.MaxZ) - (max a.MinZ b.MinZ) >= threshold    )
-    //     ||
-    //     (   a.MinX >= b.MinX && a.MaxX <= b.MaxX &&
-    //         a.MinY >= b.MinY && a.MaxY <= b.MaxY &&
-    //         a.MinZ >= b.MinZ && a.MaxZ <= b.MaxZ    )
-    //     ||
-    //     (   b.MinX >= a.MinX && b.MaxX <= a.MaxX &&
-    //         b.MinY >= a.MinY && b.MaxY <= a.MaxY &&
-    //         b.MinZ >= a.MinZ && b.MaxZ <= a.MaxZ    )
-
     /// Returns TRUE if the point is inside or exactly on this bounding rectangle.
     member inline r.ContainsXY (x:float, y:float) : bool =
         x >= r.MinX &&
@@ -530,6 +507,60 @@ type BRect =
     static member inline intersection (a:BRect) (b:BRect) : BRect voption =
         a.Intersection b
 
+    /// <summary>Intersects an infinite ray (Line2D extended infinitely in both directions) with this bounding rectangle.
+    /// Uses the slab intersection method.
+    /// Returns ValueNone if the ray does not intersect the rectangle or if the ray direction is too short.
+    /// Returns ValueSome with the entry and exit parameters on the ray if it intersects.
+    /// A parameter of 0.0 corresponds to the ray's From point, 1.0 to its To point.</summary>
+    /// <param name="ray">The ray (Line2D) to intersect with the bounding rectangle.</param>
+    /// <returns>ValueNone if no intersection, ValueSome(tEntry, tExit) with the entry and exit parameters on the ray.</returns>
+    member r.IntersectRay (ray:Line2D) : voption<float*float> =
+        let dirX = ray.VectorX
+        let dirY = ray.VectorY
+        if isTooSmallSq (dirX*dirX + dirY*dirY) then
+            ValueNone // Ray direction too short
+        else
+            let mutable tMin = Double.MinValue
+            let mutable tMax = Double.MaxValue
+
+            // Process X-axis slab
+            if abs dirX < 1e-12 then
+                // Ray is parallel to the X slab, check if the ray origin is within it
+                if ray.FromX < r.MinX || ray.FromX > r.MaxX then
+                    tMin <- Double.MaxValue // Force no intersection
+            else
+                let t1 = (r.MinX - ray.FromX) / dirX
+                let t2 = (r.MaxX - ray.FromX) / dirX
+                tMin <- max tMin (min t1 t2)
+                tMax <- min tMax (max t1 t2)
+
+            // Process Y-axis slab
+            if tMin <= tMax then
+                if abs dirY < 1e-12 then
+                    if ray.FromY < r.MinY || ray.FromY > r.MaxY then
+                        tMin <- Double.MaxValue
+                else
+                    let t1 = (r.MinY - ray.FromY) / dirY
+                    let t2 = (r.MaxY - ray.FromY) / dirY
+                    tMin <- max tMin (min t1 t2)
+                    tMax <- min tMax (max t1 t2)
+
+            if tMin <= tMax then
+                ValueSome (tMin, tMax)
+            else
+                ValueNone
+
+    /// <summary>Intersects an infinite ray (Line2D extended infinitely in both directions) with the bounding rectangle.
+    /// Uses the slab intersection method.
+    /// Returns ValueNone if the ray does not intersect the rectangle or if the ray direction is too short.
+    /// Returns ValueSome with the entry and exit parameters on the ray if it intersects.
+    /// A parameter of 0.0 corresponds to the ray's From point, 1.0 to its To point.</summary>
+    /// <param name="ray">The ray (Line2D) to intersect with the bounding rectangle.</param>
+    /// <param name="r">The bounding rectangle to intersect with.</param>
+    /// <returns>ValueNone if no intersection, ValueSome(tEntry, tExit) with the entry and exit parameters on the ray.</returns>
+    static member inline intersectRay (ray:Line2D) (r:BRect) : voption<float*float> =
+        r.IntersectRay ray
+
     /// Scales the 2D bounding rectangle by a given factor.
     /// Scale center is World Origin 0,0.
     /// A factor of 0.0 will collapse the rectangle to a point at the origin.
@@ -541,6 +572,9 @@ type BRect =
                 r.MinY * factor,
                 r.MaxX * factor,
                 r.MaxY * factor)
+
+    // #endregion
+    // #region Points
 
     /// <summary>Returns the point (0) or minX, minY.
     /// <code>
@@ -684,6 +718,10 @@ type BRect =
     static member inline pointsLooped (r:BRect) : Pt[] =
         r.PointsLooped
 
+
+    // #endregion
+    // #region Edges
+
     /// <summary>The bottom edge. The line from point 0 to 1.
     /// <code>
     ///   Y-Axis
@@ -778,7 +816,7 @@ type BRect =
 
 
     // #endregion
-    // #region Static members
+    // #region create
 
     /// Finds min and max values for x and y.
     static member inline create (a:Pt, b:Pt) : BRect =
@@ -852,6 +890,28 @@ type BRect =
         let minY = min l.FromY l.ToY
         let maxY = max l.FromY l.ToY
         BRect.createUnchecked(minX, minY, maxX, maxY)
+
+    /// Get the axis aligned 2D Bounding Rectangle of the 2D Rectangle.
+    static member inline createFromRect2D (r:Rect2D) : BRect =
+        // Each of the 4 corners is Origin plus any subset of the two axis
+        // components, so min/max decompose per coordinate.
+        let minX = r.OriginX + min 0. r.XaxisX + min 0. r.YaxisX
+        let minY = r.OriginY + min 0. r.XaxisY + min 0. r.YaxisY
+        let maxX = r.OriginX + max 0. r.XaxisX + max 0. r.YaxisX
+        let maxY = r.OriginY + max 0. r.XaxisY + max 0. r.YaxisY
+        BRect.createUnchecked(minX, minY, maxX, maxY)
+
+        /// Creates a 3D bounding box from a Rect3D.
+    static member createFromRect3D (r:Rect3D)  : BRect =
+        let minX = r.OriginX + min 0. r.XaxisX + min 0. r.YaxisX
+        let minY = r.OriginY + min 0. r.XaxisY + min 0. r.YaxisY
+        let maxX = r.OriginX + max 0. r.XaxisX + max 0. r.YaxisX
+        let maxY = r.OriginY + max 0. r.XaxisY + max 0. r.YaxisY
+        BRect.createUnchecked(minX, minY, maxX, maxY)
+
+
+    // #endregion
+    // #region Static members
 
     /// Returns the 2D bounding rectangle expanded by a relative factor on all four sides.
     /// Values between 0.0 and 1.0 shrink the rectangle.
@@ -958,3 +1018,29 @@ type BRect =
     member inline b.OverlapsWith (a:BRect, tolerance:float) : bool =
         b.IsOverlappingOrClose(a, tolerance)
 
+
+
+
+    // /// Returns TRUE if the two 2D bounding rectangles overlap by at least the specified threshold on every axis.
+    // /// (See note: when one box is smaller than the threshold on some axis but fully inside the other,
+    // ///  this returns FALSE.)
+    // member inline b.IsOverlappingMoreThan (a:Brect, threshold:float) : bool =
+    //     (min a.MaxX b.MaxX) - (max a.MinX b.MinX) >= threshold &&
+    //     (min a.MaxY b.MaxY) - (max a.MinY b.MinY) >= threshold &&
+    //     (min a.MaxZ b.MaxZ) - (max a.MinZ b.MinZ) >= threshold
+
+    // /// Returns TRUE if the two 2D bounding rectangles overlap by at least the specified threshold on every axis.
+    // /// Also returns TRUE if one box is completely inside the other (even if smaller than the threshold).
+    // /// Also returns TRUE if one box is completely surrounding the other.
+    // member inline b.IsOverlappingMoreThan (a:Brect, threshold:float) : bool =
+    //     (   (min a.MaxX b.MaxX) - (max a.MinX b.MinX) >= threshold &&
+    //         (min a.MaxY b.MaxY) - (max a.MinY b.MinY) >= threshold &&
+    //         (min a.MaxZ b.MaxZ) - (max a.MinZ b.MinZ) >= threshold    )
+    //     ||
+    //     (   a.MinX >= b.MinX && a.MaxX <= b.MaxX &&
+    //         a.MinY >= b.MinY && a.MaxY <= b.MaxY &&
+    //         a.MinZ >= b.MinZ && a.MaxZ <= b.MaxZ    )
+    //     ||
+    //     (   b.MinX >= a.MinX && b.MaxX <= a.MaxX &&
+    //         b.MinY >= a.MinY && b.MaxY <= a.MaxY &&
+    //         b.MinZ >= a.MinZ && b.MaxZ <= a.MaxZ    )

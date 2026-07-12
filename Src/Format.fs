@@ -36,7 +36,7 @@ module Format =
         let BelowUserZeroTolerance = "~0.0"
 
 
-    /// If the absolut value of a float is below this, display ~0.0
+    /// If the absolute value of a float is below this, display ~0.0
     /// The default is 1e-24
     /// This value can be set for example by hosting apps that have a built-in absolute tolerance like Rhino3d.
     let mutable userZeroTolerance = 1e-24 //  default = Double.Epsilon = no rounding down

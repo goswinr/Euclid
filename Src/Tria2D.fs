@@ -177,7 +177,6 @@ type Tria2D =
 
         elif abs (prevDist - nextDist) < zeroLengthTolerance && prevDir *** nextDir > 0.0 then // parallel, same direction, and offset distances are the same, so no intersection is needed
             ValueSome prevPt //(pt + prevN * prevDist + nextN * nextDist * 0.5) // average out?
-
         else
             ValueNone
 
@@ -186,7 +185,7 @@ type Tria2D =
     /// and their offset distances.
     /// A positive offset distance will be to the left side of the line from 'prev' to 'ptToOffset'.
     /// A negative offset distance inverts the direction.
-    /// This function use Tria2D.offsetVarByNormals(..) internally.
+    /// This function uses Tria2D.offsetPtVarByNormals(..) internally.
     static member offsetPtVar (ptToOffset:Pt, prev:Pt, next:Pt, distPrev:float, distNext:float) : ValueOption<Pt> =
         let vPrev = ptToOffset - prev |> Vc.unitize
         let vNext = next - ptToOffset |> Vc.unitize

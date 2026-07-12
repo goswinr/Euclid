@@ -28,6 +28,16 @@ open EuclidErrors
 ///   |/              |/
 ///   +---------------+----> X-Axis
 ///   0 MinPt         1
+///
+/// A BBox centered at the origin the points has these signs of X, Y and Z coordinates:
+/// Pt0 (-,-,-)
+/// Pt1 (+,-,-)
+/// Pt2 (+,-,+)
+/// Pt3 (-,-,+)
+/// Pt4 (-,+,-)
+/// Pt5 (+,+,-)
+/// Pt6 (+,+,+)
+/// Pt7 (-,+,+)
 /// </code>
 /// </summary>
 [<Struct; NoEquality; NoComparison>]
@@ -88,9 +98,6 @@ type BBox =
         let minZ = Format.float b.MinZ
         $"Euclid.BBox: Size: x=%s{sizeX}|y=%s{sizeY}|z=%s{sizeZ} (at X=%s{minX}|Y=%s{minY}|Z=%s{minZ})"
 
-    /// Returns a nicely formatted string representation of the 3D bounding box.
-    static member inline toString (b:BBox) : string =
-        b.ToString()
 
     /// Format bounding box into string with nice floating point number formatting of size and position.
     /// But without full type name as in bbox.ToString()
@@ -178,6 +185,15 @@ type BBox =
     /// Returns the volume of a 3D bounding box.
     static member inline volume (b:BBox)  : float =
         b.SizeX * b.SizeY * b.SizeZ
+
+    /// Returns a 3D box representation of this 3D bounding box.
+    member inline b.AsBox : Box =
+        Box.createUnchecked(b.MinX, b.MinY, b.MinZ, b.SizeX, 0.0, 0.0, 0.0, b.SizeY, 0.0, 0.0, 0.0, b.SizeZ)
+
+    /// Returns a 3D box representation of the given 3D bounding box.
+    static member inline asBox (b:BBox) : Box =
+        b.AsBox
+
 
     /// Returns a 3D bounding box expanded by distance.
     /// Does check for underflow if distance is negative and raises EuclidException.
@@ -320,6 +336,7 @@ type BBox =
         isTooTiny (b.MaxZ - b.MinZ)
 
     /// Returns TRUE if all box dimensions are below zero-length tolerance.
+    /// This is the same as isPoint.
     static member inline isZero (b:BBox) : bool =
         b.IsZero
 
@@ -356,6 +373,7 @@ type BBox =
         b.IsZero
 
     /// Returns TRUE if all dimensions are below zero-length tolerance.
+    /// This is the same as isZero.
     static member inline isPoint (b:BBox) : bool =
         b.IsPoint
 
@@ -547,6 +565,49 @@ type BBox =
     /// Evaluates X, Y and Z parameters on the 3D bounding box and returns a point.
     static member inline evaluateAt xParameter yParameter zParameter (b:BBox) : Pnt =
         b.EvaluateAt(xParameter, yParameter, zParameter)
+
+    /// Returns a 3D bounding box that contains both input 3D bounding boxes.
+    member inline b.Union (a:BBox) : BBox =
+        BBox.createUnchecked   (min b.MinX a.MinX, min b.MinY a.MinY, min b.MinZ a.MinZ,
+                                max b.MaxX a.MaxX, max b.MaxY a.MaxY, max b.MaxZ a.MaxZ)
+
+    /// Returns a bounding 3D bounding box that contains the input 3D bounding box and the point.
+    member inline b.Union (p:Pnt) : BBox =
+        BBox.createUnchecked   (min b.MinX p.X, min b.MinY p.Y, min b.MinZ p.Z,
+                                max b.MaxX p.X, max b.MaxY p.Y, max b.MaxZ p.Z)
+
+    /// Returns a 3D bounding box that contains both input a 3D bounding boxes.
+    static member inline union (a:BBox) (b:BBox)  : BBox =
+        BBox.createUnchecked   (min b.MinX a.MinX, min b.MinY a.MinY, min b.MinZ a.MinZ,
+                                max b.MaxX a.MaxX, max b.MaxY a.MaxY, max b.MaxZ a.MaxZ)
+
+    /// Returns a bounding a 3D bounding box that contains the input a 3D bounding box and the point.
+    static member inline unionPt (p:Pnt) (b:BBox) : BBox =
+        BBox.createUnchecked   (min b.MinX p.X, min b.MinY p.Y, min b.MinZ p.Z,
+                                max b.MaxX p.X, max b.MaxY p.Y, max b.MaxZ p.Z)
+
+    /// Returns the intersection of two 3D bounding boxes.
+    /// The returned BBox is the volume that is inside both input 3D bounding boxes.
+    /// Returns ValueNone if the two 3D bounding boxes do not overlap.
+    /// Just touching 3D bounding boxes will return ValueSome with a zero volume collapsed BBox.
+    member inline b.Intersection (a:BBox) : BBox voption =
+        let minX = max a.MinX b.MinX
+        let minY = max a.MinY b.MinY
+        let minZ = max a.MinZ b.MinZ
+        let maxX = min a.MaxX b.MaxX
+        let maxY = min a.MaxY b.MaxY
+        let maxZ = min a.MaxZ b.MaxZ
+        if minX <= maxX && minY <= maxY && minZ <= maxZ then
+            ValueSome (BBox.createUnchecked(minX, minY, minZ, maxX, maxY, maxZ))
+        else
+            ValueNone
+
+    /// Returns the intersection of two 3D bounding boxes.
+    /// The returned BBox is the volume that is inside both input 3D bounding boxes.
+    /// Returns ValueNone if the two 3D bounding boxes do not overlap.
+    /// Just touching 3D bounding boxes will return ValueSome with a zero volume collapsed BBox.
+    static member inline intersection (a:BBox) (b:BBox) : BBox voption =
+        a.Intersection(b)
 
 
     // #endregion
@@ -787,6 +848,44 @@ type BBox =
     static member inline points (b:BBox) : Pnt[] =
         b.Points
 
+
+    /// <summary>Returns the point of the Box at the specified index.
+    /// The order of the points is: Pt0, Pt1, Pt2, Pt3, Pt4, Pt5, Pt6, Pt7.
+    /// <code>
+    ///   Z-Axis       Y-Axis
+    ///   ^           /
+    ///   |   7      /        6 MaxPt
+    ///   |   +---------------+
+    ///   |  /|    /         /|
+    ///   | / |   /         / |
+    /// 4 |/  |  /       5 /  |
+    ///   +---------------+   |
+    ///   |   |/          |   |
+    ///   |   +-----------|---+
+    ///   |  / 3          |  / 2
+    ///   | /             | /
+    ///   |/              |/
+    ///   +---------------+----> X-Axis
+    ///   0 MinPt         1
+    /// </code>
+    /// </summary>
+    member b.GetPoint (pointIndex:int) : Pnt =
+        match pointIndex with
+        | 0 -> b.Pt0
+        | 1 -> b.Pt1
+        | 2 -> b.Pt2
+        | 3 -> b.Pt3
+        | 4 -> b.Pt4
+        | 5 -> b.Pt5
+        | 6 -> b.Pt6
+        | 7 -> b.Pt7
+        | _ -> fail $"Box.GetPoint: pointIndex {pointIndex} is out of range. Valid range is 0 to 7."
+
+    /// Returns the point of the Box at the specified index.
+    static member inline getPoint (pointIndex:int) (b:BBox) : Pnt =
+        b.GetPoint pointIndex
+
+
     /// <summary>Returns the bottom of the box as a Counter-Clockwise array of 4 Points.
     /// Starting at MinPt. Points 0, 1, 2, and 3.
     /// Last and first point are NOT the same.
@@ -904,97 +1003,97 @@ type BBox =
 
     /// Returns the X-aligned edge from point 0 to 1.
     member inline b.Edge01 : Line3D =
-        Line3D(b.Pt0, b.Pt1)
+        Line3D(b.MinX, b.MinY, b.MinZ, b.MaxX, b.MinY, b.MinZ)
 
-    /// Returns edge 0-1 of the 3D bounding box.
+    /// Returns the X-aligned edge from point 0 to 1.
     static member inline edge01 (b:BBox) : Line3D =
         b.Edge01
 
     /// Returns the Y-aligned edge from point 1 to 2.
     member inline b.Edge12 : Line3D =
-        Line3D(b.Pt1, b.Pt2)
+        Line3D(b.MaxX, b.MinY, b.MinZ, b.MaxX, b.MaxY, b.MinZ)
 
-    /// Returns edge 1-2 of the 3D bounding box.
+    /// Returns the Y-aligned edge from point 1 to 2.
     static member inline edge12 (b:BBox) : Line3D =
         b.Edge12
 
     /// Returns the X-aligned edge from point 3 to 2.
     member inline b.Edge32 : Line3D =
-        Line3D(b.Pt3, b.Pt2)
+        Line3D(b.MinX, b.MaxY, b.MinZ, b.MaxX, b.MaxY, b.MinZ)
 
-    /// Returns edge 3-2 of the 3D bounding box.
+    /// Returns the X-aligned edge from point 3 to 2.
     static member inline edge32 (b:BBox) : Line3D =
         b.Edge32
 
     /// Returns the Y-aligned edge from point 0 to 3.
     member inline b.Edge03 : Line3D =
-        Line3D(b.Pt0, b.Pt3)
+        Line3D(b.MinX, b.MinY, b.MinZ, b.MinX, b.MaxY, b.MinZ)
 
-    /// Returns edge 0-3 of the 3D bounding box.
+    /// Returns the Y-aligned edge from point 0 to 3.
     static member inline edge03 (b:BBox) : Line3D =
         b.Edge03
 
     /// Returns the Z-aligned edge from point 0 to 4.
     member inline b.Edge04 : Line3D =
-        Line3D(b.Pt0, b.Pt4)
+        Line3D(b.MinX, b.MinY, b.MinZ, b.MinX, b.MinY, b.MaxZ)
 
-    /// Returns edge 0-4 of the 3D bounding box.
+    /// Returns the Z-aligned edge from point 0 to 4.
     static member inline edge04 (b:BBox) : Line3D =
         b.Edge04
 
     /// Returns the Z-aligned edge from point 1 to 5.
     member inline b.Edge15 : Line3D =
-        Line3D(b.Pt1, b.Pt5)
+        Line3D(b.MaxX, b.MinY, b.MinZ, b.MaxX, b.MinY, b.MaxZ)
 
-    /// Returns edge 1-5 of the 3D bounding box.
+    /// Returns the Z-aligned edge from point 1 to 5.
     static member inline edge15 (b:BBox) : Line3D =
         b.Edge15
 
     /// Returns the Z-aligned edge from point 2 to 6.
     member inline b.Edge26 : Line3D =
-        Line3D(b.Pt2, b.Pt6)
+        Line3D(b.MaxX, b.MaxY, b.MinZ, b.MaxX, b.MaxY, b.MaxZ)
 
-    /// Returns edge 2-6 of the 3D bounding box.
+    /// Returns the Z-aligned edge from point 2 to 6.
     static member inline edge26 (b:BBox) : Line3D =
         b.Edge26
 
     /// Returns the Z-aligned edge from point 3 to 7.
     member inline b.Edge37 : Line3D =
-        Line3D(b.Pt3, b.Pt7)
+        Line3D(b.MinX, b.MaxY, b.MinZ, b.MinX, b.MaxY, b.MaxZ)
 
-    /// Returns edge 3-7 of the 3D bounding box.
+    /// Returns the Z-aligned edge from point 3 to 7.
     static member inline edge37 (b:BBox) : Line3D =
         b.Edge37
 
     /// Returns the X-aligned edge from point 4 to 5.
     member inline b.Edge45 : Line3D =
-        Line3D(b.Pt4, b.Pt5)
+        Line3D(b.MinX, b.MinY, b.MaxZ, b.MaxX, b.MinY, b.MaxZ)
 
-    /// Returns edge 4-5 of the 3D bounding box.
+    /// Returns the X-aligned edge from point 4 to 5.
     static member inline edge45 (b:BBox) : Line3D =
         b.Edge45
 
     /// Returns the Y-aligned edge from point 5 to 6.
     member inline b.Edge56 : Line3D =
-        Line3D(b.Pt5, b.Pt6)
+        Line3D(b.MaxX, b.MinY, b.MaxZ, b.MaxX, b.MaxY, b.MaxZ)
 
-    /// Returns edge 5-6 of the 3D bounding box.
+    /// Returns the Y-aligned edge from point 5 to 6.
     static member inline edge56 (b:BBox) : Line3D =
         b.Edge56
 
     /// Returns the X-aligned edge from point 7 to 6.
     member inline b.Edge76 : Line3D =
-        Line3D(b.Pt7, b.Pt6)
+        Line3D(b.MinX, b.MaxY, b.MaxZ, b.MaxX, b.MaxY, b.MaxZ)
 
-    /// Returns edge 7-6 of the 3D bounding box.
+    /// Returns the X-aligned edge from point 7 to 6.
     static member inline edge76 (b:BBox) : Line3D =
         b.Edge76
 
     /// Returns the Y-aligned edge from point 4 to 7.
     member inline b.Edge47 : Line3D =
-        Line3D(b.Pt4, b.Pt7)
+        Line3D(b.MinX, b.MinY, b.MaxZ, b.MinX, b.MaxY, b.MaxZ)
 
-    /// Returns edge 4-7 of the 3D bounding box.
+    /// Returns the Y-aligned edge from point 4 to 7.
     static member inline edge47 (b:BBox) : Line3D =
         b.Edge47
 
@@ -1028,52 +1127,338 @@ type BBox =
     static member inline edges (b:BBox) : Line3D[] =
         b.Edges
 
-    /// Returns a 3D bounding box that contains both input 3D bounding boxes.
-    member inline b.Union (a:BBox) : BBox =
-        BBox.createUnchecked   (min b.MinX a.MinX, min b.MinY a.MinY, min b.MinZ a.MinZ,
-                                max b.MaxX a.MaxX, max b.MaxY a.MaxY, max b.MaxZ a.MaxZ)
 
-    /// Returns a bounding 3D bounding box that contains the input 3D bounding box and the point.
-    member inline b.Union (p:Pnt) : BBox =
-        BBox.createUnchecked   (min b.MinX p.X, min b.MinY p.Y, min b.MinZ p.Z,
-                                max b.MaxX p.X, max b.MaxY p.Y, max b.MaxZ p.Z)
+    /// <summary>Returns the edge of this 3D bounding box at the specified index. Valid indices are 0 through 11.
+    /// Edges use this order:
+    /// 0-1, 1-2, 3-2, 0-3, 0-4, 1-5, 2-6, 3-7, 4-5, 5-6, 7-6, 4-7.
+    /// <code>
+    ///   Z-Axis       Y-Axis
+    ///   ^           /
+    ///   |   7      /        6 MaxPt
+    ///   |   +---------------+
+    ///   |  /|    /         /|
+    ///   | / |   /         / |
+    /// 4 |/  |  /       5 /  |
+    ///   +---------------+   |
+    ///   |   |/          |   |
+    ///   |   +-----------|---+
+    ///   |  / 3          |  / 2
+    ///   | /             | /
+    ///   |/              |/
+    ///   +---------------+----> X-Axis
+    ///   0 MinPt         1
+    /// </code>
+    /// </summary>
+    member b.GetEdge (edgeIndex:int) : Line3D =
+        match edgeIndex with
+        | 0  -> b.Edge01
+        | 1  -> b.Edge12
+        | 2  -> b.Edge32
+        | 3  -> b.Edge03
+        | 4  -> b.Edge04
+        | 5  -> b.Edge15
+        | 6  -> b.Edge26
+        | 7  -> b.Edge37
+        | 8  -> b.Edge45
+        | 9  -> b.Edge56
+        | 10 -> b.Edge76
+        | 11 -> b.Edge47
+        | _ -> fail $"BBox.GetEdge: edgeIndex {edgeIndex} is out of range. Valid range is 0 to 11."
 
-    /// Returns a 3D bounding box that contains both input a 3D bounding boxes.
-    static member inline union (a:BBox) (b:BBox)  : BBox =
-        BBox.createUnchecked   (min b.MinX a.MinX, min b.MinY a.MinY, min b.MinZ a.MinZ,
-                                max b.MaxX a.MaxX, max b.MaxY a.MaxY, max b.MaxZ a.MaxZ)
-
-    /// Returns a bounding a 3D bounding box that contains the input a 3D bounding box and the point.
-    static member inline unionPt (p:Pnt) (b:BBox) : BBox =
-        BBox.createUnchecked   (min b.MinX p.X, min b.MinY p.Y, min b.MinZ p.Z,
-                                max b.MaxX p.X, max b.MaxY p.Y, max b.MaxZ p.Z)
-
-    /// Returns the intersection of two 3D bounding boxes.
-    /// The returned BBox is the volume that is inside both input 3D bounding boxes.
-    /// Returns ValueNone if the two 3D bounding boxes do not overlap.
-    /// Just touching 3D bounding boxes will return ValueSome with a zero volume collapsed BBox.
-    member inline b.Intersection (a:BBox) : BBox voption =
-        let minX = max a.MinX b.MinX
-        let minY = max a.MinY b.MinY
-        let minZ = max a.MinZ b.MinZ
-        let maxX = min a.MaxX b.MaxX
-        let maxY = min a.MaxY b.MaxY
-        let maxZ = min a.MaxZ b.MaxZ
-        if minX <= maxX && minY <= maxY && minZ <= maxZ then
-            ValueSome (BBox.createUnchecked(minX, minY, minZ, maxX, maxY, maxZ))
-        else
-            ValueNone
-
-    /// Returns the intersection of two 3D bounding boxes.
-    /// The returned BBox is the volume that is inside both input 3D bounding boxes.
-    /// Returns ValueNone if the two 3D bounding boxes do not overlap.
-    /// Just touching 3D bounding boxes will return ValueSome with a zero volume collapsed BBox.
-    static member inline intersection (a:BBox) (b:BBox) : BBox voption =
-        a.Intersection(b)
+    /// Returns the edge of the BBox at the specified index.
+    static member inline getEdge (edgeIndex:int) (b:BBox): Line3D =
+        b.GetEdge(edgeIndex)
 
 
     // #endregion
-    // #region Static members
+    // #region Faces
+
+
+
+    /// <summary>Returns the top face of the bounding box , looking from above.
+    /// Returns Origin at point 4, X-Axis to point 5, Y-Axis to point 7.
+    /// The normal of the Rect3D points up, away from the Box.
+    /// <code>
+    ///            local      F3(back)
+    ///            Z-Axis     F7(top)
+    ///            ^          |
+    ///            |   7      |        6
+    ///            |   +---------------+
+    ///            |  /|      |       /|
+    ///            | / |             / |
+    ///          4 |/  |          5 /  |
+    ///            +---------------+  -|-- F2(right)
+    ///            |   |           |   |
+    ///  (left)F4--|-  +-----------|---+
+    ///            |  / 3          |  / 2
+    ///            | /             | /
+    ///            |/      |       |/     local
+    ///            +---------------+----> X-Axis
+    ///            0       |       1
+    ///                    |
+    ///                    F0(bottom)
+    ///                    F1(front)
+    /// </code>
+    /// </summary>
+    member b.TopFace :Rect3D =
+        Rect3D.createUnchecked(b.MinX, b.MinY, b.MaxZ, b.SizeX, 0.0, 0.0, 0.0, b.SizeY, 0.0)
+
+    /// Returns the top face of the bounding box , looking from above.
+    /// Returns Origin at point 4, X-Axis to point 5, Y-Axis to point 7.
+    /// The normal of the Rect3D points up, away from the Box.
+    static member inline topFace (b:BBox) : Rect3D =
+        b.TopFace
+
+    /// <summary>Returns the bottom face of the bounding box , looking from above.
+    /// Returns Origin at point 0, X-Axis to point 1, Y-Axis to point 3.
+    /// The normal of the Rect3D points into the bounding box.
+    /// <code>
+    ///            local      F3(back)
+    ///            Z-Axis     F7(top)
+    ///            ^          |
+    ///            |   7      |        6
+    ///            |   +---------------+
+    ///            |  /|      |       /|
+    ///            | / |             / |
+    ///          4 |/  |          5 /  |
+    ///            +---------------+  -|-- F2(right)
+    ///            |   |           |   |
+    ///  (left)F4--|-  +-----------|---+
+    ///            |  / 3          |  / 2
+    ///            | /             | /
+    ///            |/      |       |/     local
+    ///            +---------------+----> X-Axis
+    ///            0       |       1
+    ///                    |
+    ///                    F0(bottom)
+    ///                    F1(front)
+    /// </code>
+    /// </summary>
+    member b.BottomFace : Rect3D =
+        Rect3D.createUnchecked(b.MinX, b.MinY, b.MinZ,  b.SizeX, 0.0, 0.0,   0.0, b.SizeY, 0.0)
+
+    /// Returns the bottom face of the bounding box , looking from above.
+    /// Returns Origin at point 0, X-Axis to point 1, Y-Axis to point 3.
+    /// The normal of the Rect3D points into the bounding box.
+    static member inline bottomFace (b:BBox) : Rect3D =
+        b.BottomFace
+
+    /// <summary>Returns the front face of the bounding box , looking from front.
+    /// Returns Origin at point 0, X-Axis to point 1, Y-Axis to point 4.
+    /// The normal of the Rect3D points away from the bounding box.
+    /// <code>
+    ///            local      F3(back)
+    ///            Z-Axis     F7(top)
+    ///            ^          |
+    ///            |   7      |        6
+    ///            |   +---------------+
+    ///            |  /|      |       /|
+    ///            | / |             / |
+    ///          4 |/  |          5 /  |
+    ///            +---------------+  -|-- F2(right)
+    ///            |   |           |   |
+    ///  (left)F4--|-  +-----------|---+
+    ///            |  / 3          |  / 2
+    ///            | /             | /
+    ///            |/      |       |/     local
+    ///            +---------------+----> X-Axis
+    ///            0       |       1
+    ///                    |
+    ///                    F0(bottom)
+    ///                    F1(front)
+    /// </code>
+    /// </summary>
+    member b.FrontFace : Rect3D =
+        Rect3D.createUnchecked(b.MinX, b.MinY, b.MinZ,  b.SizeX, 0.0, 0.0,  0.0, 0.0, b.SizeZ)
+
+    /// Returns the front face of the bounding box , looking from front.
+    /// Returns Origin at point 0, X-Axis to point 1, Y-Axis to point 4.
+    /// The normal of the Rect3D points away from the bounding box.
+    static member inline frontFace (b:BBox) : Rect3D =
+        b.FrontFace
+
+    /// <summary>Returns the back face of the bounding box , looking from front.
+    /// Returns Origin at point 3, X-Axis to point 2, Y-Axis to point 7.
+    /// The normal of the Rect3D points into the bounding box.
+    /// <code>
+    ///            local      F3(back)
+    ///            Z-Axis     F7(top)
+    ///            ^          |
+    ///            |   7      |        6
+    ///            |   +---------------+
+    ///            |  /|      |       /|
+    ///            | / |             / |
+    ///          4 |/  |          5 /  |
+    ///            +---------------+  -|-- F2(right)
+    ///            |   |           |   |
+    ///  (left)F4--|-  +-----------|---+
+    ///            |  / 3          |  / 2
+    ///            | /             | /
+    ///            |/      |       |/     local
+    ///            +---------------+----> X-Axis
+    ///            0       |       1
+    ///                    |
+    ///                    F0(bottom)
+    ///                    F1(front)
+    /// </code>
+    /// </summary>
+    member b.BackFace : Rect3D =
+        Rect3D.createUnchecked(b.MinX, b.MaxY, b.MinZ,  b.SizeX, 0.0, 0.0,  0.0, 0.0, b.SizeZ)
+
+    /// Returns the back face of the bounding box , looking from front.
+    /// Returns Origin at point 3, X-Axis to point 2, Y-Axis to point 7.
+    /// The normal of the Rect3D points into the bounding box.
+    static member inline backFace (b:BBox) : Rect3D =
+        b.BackFace
+
+    /// <summary>Returns the right face of the bounding box , looking from right.
+    /// Returns Origin at point 1, X-Axis to point 2, Y-Axis to point 5.
+    /// The normal of the Rect3D points away from the bounding box.
+    /// <code>
+    ///            local      F3(back)
+    ///            Z-Axis     F7(top)
+    ///            ^          |
+    ///            |   7      |        6
+    ///            |   +---------------+
+    ///            |  /|      |       /|
+    ///            | / |             / |
+    ///          4 |/  |          5 /  |
+    ///            +---------------+  -|-- F2(right)
+    ///            |   |           |   |
+    ///  (left)F4--|-  +-----------|---+
+    ///            |  / 3          |  / 2
+    ///            | /             | /
+    ///            |/      |       |/     local
+    ///            +---------------+----> X-Axis
+    ///            0       |       1
+    ///                    |
+    ///                    F0(bottom)
+    ///                    F1(front)
+    /// </code>
+    /// </summary>
+    member b.RightFace : Rect3D =
+        Rect3D.createUnchecked(b.MaxX, b.MinY, b.MinZ,  0.0, b.SizeY, 0.0,  0.0, 0.0, b.SizeZ)
+
+    /// Returns the right face of the bounding box , looking from right.
+    /// Returns Origin at point 1, X-Axis to point 2, Y-Axis to point 5.
+    /// The normal of the Rect3D points away from the bounding box.
+    static member inline rightFace (b:BBox) : Rect3D =
+        b.RightFace
+
+    /// <summary>Returns the left face of the bounding box , looking from right.
+    /// Returns Origin at point 0, X-Axis to point 3, Y-Axis to point 4.
+    /// The normal of the Rect3D points into the bounding box.
+    /// <code>
+    ///            local      F3(back)
+    ///            Z-Axis     F7(top)
+    ///            ^          |
+    ///            |   7      |        6
+    ///            |   +---------------+
+    ///            |  /|      |       /|
+    ///            | / |             / |
+    ///          4 |/  |          5 /  |
+    ///            +---------------+  -|-- F2(right)
+    ///            |   |           |   |
+    ///  (left)F4--|-  +-----------|---+
+    ///            |  / 3          |  / 2
+    ///            | /             | /
+    ///            |/      |       |/     local
+    ///            +---------------+----> X-Axis
+    ///            0       |       1
+    ///                    |
+    ///                    F0(bottom)
+    ///                    F1(front)
+    /// </code>
+    /// </summary>
+    member b.LeftFace : Rect3D =
+        Rect3D.createUnchecked(b.MinX, b.MinY, b.MinZ,  0.0, b.SizeY, 0.0,  0.0, 0.0, b.SizeZ)
+
+    /// Returns the left face of the bounding box , looking from right.
+    /// Returns Origin at point 0, X-Axis to point 3, Y-Axis to point 4.
+    /// The normal of the Rect3D points into the bounding box.
+    static member inline leftFace (b:BBox) : Rect3D =
+        b.LeftFace
+
+
+    /// <summary>Returns 6 face of the Box in
+    /// The normal of the Rect3Ds are oriented with the X-Axis, Y-Axis or Z-Axis.
+    /// The order of the Rect3D is: BottomFace, FrontFace, RightFace, BackFace, LeftFace, TopFace.
+    /// <code>
+    ///   local        local
+    ///   Z-Axis       Y-Axis
+    ///   ^           /
+    ///   |   7      /        6
+    ///   |   +---------------+
+    ///   |  /|    /         /|
+    ///   | / |   /         / |
+    /// 4 |/  |  /       5 /  |
+    ///   +---------------+   |
+    ///   |   |/          |   |
+    ///   |   +-----------|---+
+    ///   |  / 3          |  / 2
+    ///   | /             | /
+    ///   |/              |/     local
+    ///   +---------------+----> X-Axis
+    ///   0               1
+    /// </code>
+    /// </summary>
+    member b.Faces : Rect3D[] =
+        [|
+        b.BottomFace
+        b.FrontFace
+        b.RightFace
+        b.BackFace
+        b.LeftFace
+        b.TopFace
+        |]
+
+    /// Returns the six faces of the box in documented order.
+    static member inline faces (b:BBox) : Rect3D[] =
+        b.Faces
+
+    /// <summary>Returns the face of the Box at the specified index.
+    /// The order of the faces is: BottomFace, FrontFace, RightFace, BackFace, LeftFace, TopFace.
+    /// <code>
+    ///            local      F3(back)
+    ///            Z-Axis     F7(top)
+    ///            ^          |
+    ///            |   7      |        6
+    ///            |   +---------------+
+    ///            |  /|      |       /|
+    ///            | / |             / |
+    ///          4 |/  |          5 /  |
+    ///            +---------------+  -|-- F2(right)
+    ///            |   |           |   |
+    ///  (left)F4--|-  +-----------|---+
+    ///            |  / 3          |  / 2
+    ///            | /             | /
+    ///            |/      |       |/     local
+    ///            +---------------+----> X-Axis
+    ///            0       |       1
+    ///                    |
+    ///                    F0(bottom)
+    ///                    F1(front)
+    /// </code>
+    /// </summary>
+    /// <param name="faceIndex">The index of the face to retrieve. Valid range is 0 to 5.</param>
+    /// <returns>The Rect3D representing the specified face of the Box.</returns>
+    member b.GetFace (faceIndex:int) : Rect3D =
+        match faceIndex with
+        | 0 -> b.BottomFace
+        | 1 -> b.FrontFace
+        | 2 -> b.RightFace
+        | 3 -> b.BackFace
+        | 4 -> b.LeftFace
+        | 5 -> b.TopFace
+        | _ -> fail $"Box.GetFace: faceIndex {faceIndex} is out of range. Valid range is 0 to 5."
+
+    /// Returns the face of the Box at the specified index.
+    static member inline getFace (faceIndex:int) (b:BBox) : Rect3D =
+        b.GetFace faceIndex
+
+
+    // #endregion
+    // #region  create
 
     /// Creates a 3D bounding box from two points.
     /// Automatically determines min and max values for each axis,
@@ -1156,8 +1541,38 @@ type BBox =
     /// Creates a 3D bounding box from a 2D bounding rectangle (BRect) and Z-axis bounds.
     /// The BRect defines the X and Y extents, while minZ and maxZ define the Z extent.
     static member createFromBRect minZ maxZ (r : BRect)  : BBox =
-        if minZ>maxZ then fail $"BBox.createFromBRect: minZ > maxZ: {minZ} > {maxZ}"
+        if minZ>maxZ then
+            fail $"BBox.createFromBRect: minZ > maxZ: {minZ} > {maxZ}"
         BBox.createUnchecked(r.MinX, r.MinY, minZ, r.MaxX, r.MaxY, maxZ)
+
+
+    /// Creates a 3D bounding box from a Rect3D.
+    static member createFromRect3D (r:Rect3D)  : BBox =
+        let minX = r.OriginX + min 0. r.XaxisX + min 0. r.YaxisX
+        let minY = r.OriginY + min 0. r.XaxisY + min 0. r.YaxisY
+        let minZ = r.OriginZ + min 0. r.XaxisZ + min 0. r.YaxisZ
+        let maxX = r.OriginX + max 0. r.XaxisX + max 0. r.YaxisX
+        let maxY = r.OriginY + max 0. r.XaxisY + max 0. r.YaxisY
+        let maxZ = r.OriginZ + max 0. r.XaxisZ + max 0. r.YaxisZ
+        BBox.createUnchecked(minX, minY, minZ, maxX, maxY, maxZ)
+
+
+    /// Gets the world axis aligned 3D BoundingBox of the Box.
+    static member createFromBox (b:Box) : BBox =
+        // Each of the 8 corners is Origin plus any subset of the three axis
+        // components, so min/max decompose per coordinate: sum the negative
+        // parts for the min, the positive parts for the max.
+        let minX = b.OriginX + min 0. b.XaxisX + min 0. b.YaxisX + min 0. b.ZaxisX
+        let minY = b.OriginY + min 0. b.XaxisY + min 0. b.YaxisY + min 0. b.ZaxisY
+        let minZ = b.OriginZ + min 0. b.XaxisZ + min 0. b.YaxisZ + min 0. b.ZaxisZ
+        let maxX = b.OriginX + max 0. b.XaxisX + max 0. b.YaxisX + max 0. b.ZaxisX
+        let maxY = b.OriginY + max 0. b.XaxisY + max 0. b.YaxisY + max 0. b.ZaxisY
+        let maxZ = b.OriginZ + max 0. b.XaxisZ + max 0. b.YaxisZ + max 0. b.ZaxisZ
+        BBox.createUnchecked(minX, minY, minZ, maxX, maxY, maxZ)
+
+
+    // #endregion
+    // #region Static members
 
     /// Checks if two 3D bounding boxes are equal within tolerance.
     /// Use a tolerance of 0.0 to check for an exact match.
@@ -1209,12 +1624,11 @@ type BBox =
         let sizeZ = b.SizeZ * factorZ
         BBox.createFromCenter(center, sizeX, sizeY, sizeZ)
 
-    /// Returns a 3D bounding box moved by a vector.
+    /// Returns a 3D bounding box moved by a vector. Same as BBox.translate.
     static member move (v:Vec) (b:BBox)  : BBox =
         BBox.createUnchecked(b.MinX+v.X, b.MinY+v.Y, b.MinZ+v.Z, b.MaxX+v.X, b.MaxY+v.Y, b.MaxZ+v.Z)
 
-    /// Returns a 3D bounding box moved by a vector.
-    /// This is an alias for the 'move' function.
+    /// Returns a 3D bounding box moved by a vector. Same as BBox.move.
     static member translate (v:Vec) (b:BBox)  : BBox =
         BBox.createUnchecked(b.MinX+v.X, b.MinY+v.Y, b.MinZ+v.Z, b.MaxX+v.X, b.MaxY+v.Y, b.MaxZ+v.Z)
 

@@ -286,7 +286,7 @@ let tests =
                     Pnt(1., 0., 1.); Pnt(2., 0., 1.); Pnt(2., 1., 1.); Pnt(1., 1., 1.)
                 |]
                 let box = FreeBox.createFromEightPoints pts
-                let q = Quaternion.createFromDegree(UnitVec.Zaxis, 90.)
+                let q = Quaternion.createFromDegrees(UnitVec.Zaxis, 90.)
                 let rotated = box.Rotate(q)
                 Expect.isTrue (eqPnt rotated.Pt0 (Pnt(0., 1., 0.))) "Pt0 should be rotated 90 degrees"
             }
@@ -297,7 +297,7 @@ let tests =
                     Pnt(1., 0., 1.); Pnt(2., 0., 1.); Pnt(2., 1., 1.); Pnt(1., 1., 1.)
                 |]
                 let box = FreeBox.createFromEightPoints pts
-                let q = Quaternion.createFromDegree(UnitVec.Zaxis, 90.)
+                let q = Quaternion.createFromDegrees(UnitVec.Zaxis, 90.)
                 let rotated = FreeBox.rotate q box
                 Expect.isTrue (eqPnt rotated.Pt0 (Pnt(0., 1., 0.))) "Pt0 should be rotated 90 degrees"
             }
@@ -309,7 +309,7 @@ let tests =
                 |]
                 let box = FreeBox.createFromEightPoints pts
                 let center = Pnt(1., 1., 1.)
-                let q = Quaternion.createFromDegree(UnitVec.Zaxis, 90.)
+                let q = Quaternion.createFromDegrees(UnitVec.Zaxis, 90.)
                 let rotated = box.RotateWithCenter(center, q)
                 // After rotation, center should still be at (1,1,1)
                 // Pt0 at (0,0,0) rotated 90 degrees around (1,1,1) in Z should go to (2,0,0)
@@ -323,7 +323,7 @@ let tests =
                 |]
                 let box = FreeBox.createFromEightPoints pts
                 let center = Pnt(1., 1., 1.)
-                let q = Quaternion.createFromDegree(UnitVec.Zaxis, 90.)
+                let q = Quaternion.createFromDegrees(UnitVec.Zaxis, 90.)
                 let rotated = FreeBox.rotateWithCenter center q box
                 Expect.isTrue (eqPnt rotated.Pt0 (Pnt(2., 0., 0.))) "Pt0 should be rotated around center"
             }

@@ -52,9 +52,9 @@ let tests =
         }
 
         test "clampBetweenZeroAndOne" {
-            Expect.equal (clampBetweenZeroAndOne -0.2) 0.0 "low clamp"
-            Expect.equal (clampBetweenZeroAndOne 1.2) 1.0 "high clamp"
-            Expect.equal (clampBetweenZeroAndOne 0.5) 0.5 "inside"
+            Expect.equal (clamp01 -0.2) 0.0 "low clamp"
+            Expect.equal (clamp01 1.2) 1.0 "high clamp"
+            Expect.equal (clamp01 0.5) 0.5 "inside"
         }
 
         test "asinSafe and acosSafe clamp" {

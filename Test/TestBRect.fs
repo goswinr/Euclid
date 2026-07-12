@@ -773,4 +773,72 @@ let tests =
                 Expect.isTrue (code.Contains("1")) "Should contain coordinates"
             }
         ]
+
+        testList "intersectRay" [
+            // rectangle: MinPt (0,0), MaxPt (10,5)
+            let r = BRect.createUnchecked(0., 0., 10., 5.)
+
+            test "horizontal ray through rectangle" {
+                let ray = Line2D(-5., 2., 15., 2.) // dir (20,0), x=0 at t=0.25, x=10 at t=0.75
+                match BRect.intersectRay ray r with
+                | ValueSome(tEntry, tExit) ->
+                    Expect.isTrue (abs(tEntry - 0.25) < 1e-9) $"entry should be 0.25, got {tEntry}"
+                    Expect.isTrue (abs(tExit - 0.75) < 1e-9) $"exit should be 0.75, got {tExit}"
+                | ValueNone -> failwith "should intersect"
+            }
+
+            test "diagonal ray corner to corner" {
+                let ray = Line2D(-1., -0.5, 11., 5.5) // passes (0,0) at t=1/12 and (10,5) at t=11/12
+                match BRect.intersectRay ray r with
+                | ValueSome(tEntry, tExit) ->
+                    Expect.isTrue (abs(tEntry - 1.0/12.0) < 1e-9) $"entry, got {tEntry}"
+                    Expect.isTrue (abs(tExit - 11.0/12.0) < 1e-9) $"exit, got {tExit}"
+                | ValueNone -> failwith "should intersect"
+            }
+
+            test "ray missing rectangle returns ValueNone" {
+                let ray = Line2D(-5., 8., 15., 8.) // parallel to X but y=8 is above MaxY
+                Expect.isTrue (BRect.intersectRay ray r).IsNone "should not intersect"
+            }
+
+            test "vertical ray inside X band intersects" {
+                let ray = Line2D(3., -2., 3., 9.) // dirX = 0, x=3 within [0,10]
+                match BRect.intersectRay ray r with
+                | ValueSome(tEntry, tExit) ->
+                    // y=0 at t=2/11, y=5 at t=7/11
+                    Expect.isTrue (abs(tEntry - 2.0/11.0) < 1e-9) $"entry, got {tEntry}"
+                    Expect.isTrue (abs(tExit - 7.0/11.0) < 1e-9) $"exit, got {tExit}"
+                | ValueNone -> failwith "should intersect"
+            }
+
+            test "vertical ray outside X band returns ValueNone" {
+                let ray = Line2D(20., -2., 20., 9.) // dirX = 0, x=20 outside [0,10]
+                Expect.isTrue (BRect.intersectRay ray r).IsNone "should not intersect"
+            }
+
+            test "ray starting inside has negative entry parameter" {
+                let ray = Line2D(5., 2., 15., 2.) // starts at center-height inside, dir (10,0)
+                match BRect.intersectRay ray r with
+                | ValueSome(tEntry, tExit) ->
+                    Expect.isTrue (tEntry < 0.0) $"entry behind origin, got {tEntry}"
+                    Expect.isTrue (tExit > 0.0) $"exit ahead, got {tExit}"
+                | ValueNone -> failwith "should intersect"
+            }
+
+            test "zero-length ray returns ValueNone" {
+                let ray = Line2D(5., 2., 5., 2.)
+                Expect.isTrue (BRect.intersectRay ray r).IsNone "degenerate ray"
+            }
+
+            test "intersection points reconstructed from parameters lie on boundary" {
+                let ray = Line2D(-5., 2., 15., 2.)
+                match BRect.intersectRay ray r with
+                | ValueSome(tEntry, tExit) ->
+                    let entryPt = Pt(ray.FromX + ray.VectorX*tEntry, ray.FromY + ray.VectorY*tEntry)
+                    let exitPt  = Pt(ray.FromX + ray.VectorX*tExit,  ray.FromY + ray.VectorY*tExit)
+                    Expect.isTrue (eqPt entryPt (Pt(0., 2.))) "entry on left edge"
+                    Expect.isTrue (eqPt exitPt (Pt(10., 2.))) "exit on right edge"
+                | ValueNone -> failwith "should intersect"
+            }
+        ]
     ]

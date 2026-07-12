@@ -188,7 +188,7 @@ module AutoOpenLine2D =
     /// Extend 2D line by absolute amount at start.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     static member inline extendStart (distAtStart:float) (ln:Line2D) : Line2D =
-        ln.ExtendStart(distAtStart)
+        ln.ExtendStart distAtStart
 
     /// Extend 2D line by absolute amount at end.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -315,7 +315,7 @@ module AutoOpenLine2D =
     static member inline shrinkEnd (distAtEnd:float) (ln:Line2D) : Line2D =
         ln.ShrinkEnd(distAtEnd)
 
-    /// Returns a Line2D moved by a vector.
+    /// Returns a Line2D moved by a vector. Same as Line2D.move and Line2D.translate.
     member inline ln.Move (v:Vc) : Line2D =
         Line2D( ln.FromX+v.X,
                 ln.FromY+v.Y,
@@ -399,7 +399,7 @@ module AutoOpenLine2D =
         if isTooSmallSq (lenSq) then // if the parameter is infinite we can still return 0.0 or 1.0 since that is our range
             if dot < 0.0 then 0.0 else 1.0
         else
-            dot / lenSq |> clampBetweenZeroAndOne
+            dot / lenSq |> clamp01
 
     /// Returns the parameter at which a point is closest to the (finite) line.
     /// The result is between 0.0 and 1.0.
@@ -460,12 +460,12 @@ module AutoOpenLine2D =
     /// <returns> A tuple of two Pt, the first is the closest point on lnA, the second on lnB.</returns>
     member lnA.ClosestPoints (lnB:Line2D) : Pt * Pt =
         match XLine2D.getClosestPoints(lnA, lnB) with
-        | XLine2D.ClPts.Apart (a,b, _) -> a,b
+        | XLine2D.ClPts.Apart (a,b) -> a,b
         | XLine2D.ClPts.Parallel (a,b) -> a,b
         | XLine2D.ClPts.Intersect a -> a,a
         | XLine2D.ClPts.TooShortBoth -> lnA.From , lnB.From // TODO or use midpoint, or use end point ? they are all kind off the same
-        | XLine2D.ClPts.TooShortA    -> lnA.From , XLine2D.clPtLn' (lnB, lnA.FromX, lnA.FromY)
-        | XLine2D.ClPts.TooShortB    -> XLine2D.clPtLn' (lnA, lnB.FromX, lnB.FromY), lnB.From
+        | XLine2D.ClPts.TooShortA    -> lnA.From , XLineXY.clPtLn' (lnB, lnA.FromX, lnA.FromY)
+        | XLine2D.ClPts.TooShortB    -> XLineXY.clPtLn' (lnA, lnB.FromX, lnB.FromY), lnB.From
 
     ///<summary> Finds the closest points between two finite 2D Lines, also works on parallel and overlapping lines.</summary>
     ///<param name="lnA"> The first line.</param>
@@ -485,12 +485,12 @@ module AutoOpenLine2D =
     /// <returns> A tuple of two floats, the first is the parameter on lnA, the second on lnB.</returns>
     member lnA.ClosestParameters (lnB:Line2D) : float * float =
         match XLine2D.getClosestParameters(lnA, lnB) with
-        | XLine2D.ClParams.Apart (a,b, _) -> a,b
+        | XLine2D.ClParams.Apart (a,b) -> a,b
         | XLine2D.ClParams.Parallel (a,b) -> a,b
         | XLine2D.ClParams.Intersect (a,b) -> a,b
         | XLine2D.ClParams.TooShortBoth -> 0.0  , 0.0 // TODO or use midpoint, or use end point ? they are all kind off the same
-        | XLine2D.ClParams.TooShortA    -> 0.0  , XLine2D.clParamLnPt (lnB, lnA.FromX, lnA.FromY)
-        | XLine2D.ClParams.TooShortB    -> XLine2D.clParamLnPt (lnA, lnB.FromX, lnB.FromY), 0.0
+        | XLine2D.ClParams.TooShortA    -> 0.0  , XLineXY.clParamLnPt (lnB, lnA.FromX, lnA.FromY)
+        | XLine2D.ClParams.TooShortB    -> XLineXY.clParamLnPt (lnA, lnB.FromX, lnB.FromY), 0.0
 
     ///<summary> Finds the parameters of closest points between two finite 2D Lines, also works on parallel and overlapping lines.</summary>
     /// <param name="lnA"> The first line.</param>
@@ -503,7 +503,7 @@ module AutoOpenLine2D =
 
     /// Assumes Line2D to be an infinite ray!
     /// Returns square distance from point to ray.
-    /// Fails on curves shorter than 1e-6 units. (ln.DistanceSqFromPoint does not.)
+    /// Fails on curves shorter than 1e-6 units. (ln.SqDistanceFromPoint does not.)
     member ln.SqDistanceRayXY(x:float, y:float) : float =
         let vAx = ln.VectorX
         let vAy = ln.VectorY
@@ -520,7 +520,7 @@ module AutoOpenLine2D =
 
     /// Assumes Line2D to be an infinite ray!
     /// Returns square distance from point to ray.
-    /// Fails on curves shorter than 1e-6 units. (ln.DistanceSqFromPoint does not.)
+    /// Fails on curves shorter than 1e-6 units. (ln.SqDistanceFromPoint does not.)
     member ln.SqDistanceRayPoint(p:Pt) : float =
         ln.SqDistanceRayXY(p.X, p.Y)
 
@@ -558,7 +558,7 @@ module AutoOpenLine2D =
 
     /// Returns square distance from point to finite line.
     member ln.SqDistanceFromXY(x:float, y:float) : float =
-        XLine2D.sqDistLnPt'(ln, x, y)
+        XLineXY.sqDistLnPt'(ln, x, y)
 
     /// Returns square distance from point to finite line.
     member ln.SqDistanceFromPoint(p:Pt) : float =
@@ -574,7 +574,7 @@ module AutoOpenLine2D =
 
     /// Returns distance from point to (finite) line.
     member inline ln.DistanceToXY(x:float, y:float) : float =
-        XLine2D.sqDistLnPt'(ln, x, y) |> sqrt
+        XLineXY.sqDistLnPt'(ln, x, y) |> sqrt
 
     /// Returns distance from point to (finite) line.
     member inline ln.DistanceToPt(p:Pt) : float =
@@ -592,11 +592,13 @@ module AutoOpenLine2D =
     /// So if the angle between their direction vectors is less than 90 degrees.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.MatchesOrientation (otherLn:Line2D) : bool =
-        let vLn = ln.Vector
-        let vOt = otherLn.Vector
-        if isTooTinySq(vLn.LengthSq) then failTooSmall2 "Line2D.MatchesOrientation this" ln otherLn
-        if isTooTinySq(vOt.LengthSq) then failTooSmall2 "Line2D.MatchesOrientation other" otherLn ln
-        vLn *** vOt > 1e-12
+        let ax = ln.VectorX
+        let ay = ln.VectorY
+        let bx = otherLn.VectorX
+        let by = otherLn.VectorY
+        if isTooTinySq(ax*ax + ay*ay) then failTooSmall2 "Line2D.MatchesOrientation this" ln otherLn
+        if isTooTinySq(bx*bx + by*by) then failTooSmall2 "Line2D.MatchesOrientation other" otherLn ln
+        ax*bx + ay*by > 1e-12
 
     /// Checks if the dot product between two 2D lines is positive.
     /// So if the angle between their direction vectors is less than 90 degrees.
@@ -608,27 +610,31 @@ module AutoOpenLine2D =
     /// So if the angle between their direction vectors is less than 90 degrees.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.MatchesOrientation (v:Vc) : bool =
-        let vLn = ln.Vector
+        let ax = ln.VectorX
+        let ay = ln.VectorY
         if isTooTinySq(v.LengthSq)   then failTooSmall2 "Line2D.MatchesOrientation this" v ln
-        if isTooTinySq(vLn.LengthSq) then failTooSmall2 "Line2D.MatchesOrientation other" ln v
-        vLn *** v > 1e-12
+        if isTooTinySq(ax*ax + ay*ay) then failTooSmall2 "Line2D.MatchesOrientation other" ln v
+        ax*v.X + ay*v.Y > 1e-12
 
     /// Checks if the dot product between a 2D line and a unit-vector is positive.
     /// So if the angle between their direction vectors is less than 90 degrees.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.MatchesOrientation (v:UnitVc) : bool =
-        let vLn = ln.Vector
-        if isTooTinySq(vLn.LengthSq) then failTooSmall2 "Line2D.MatchesOrientation other" ln v
-        vLn *** v > 1e-12
+        let ax = ln.VectorX
+        let ay = ln.VectorY
+        if isTooTinySq(ax*ax + ay*ay) then failTooSmall2 "Line2D.MatchesOrientation other" ln v
+        ax*v.X + ay*v.Y > 1e-12
 
     /// Checks if the angle between the two 2D lines is less than 45 degrees.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.MatchesOrientation45 (l:Line2D) : bool =
-        let vLn = ln.Vector
-        let vOt = l.Vector
-        if isTooTinySq(vLn.LengthSq) then failTooSmall2 "Line2D.MatchesOrientation45 this" vLn vOt
-        if isTooTinySq(vOt.LengthSq) then failTooSmall2 "Line2D.MatchesOrientation45 other" vOt vLn
-        let tan = XLine2D.tangent (vLn.X, vLn.Y, vOt.X, vOt.Y)
+        let ax = ln.VectorX
+        let ay = ln.VectorY
+        let bx = l.VectorX
+        let by = l.VectorY
+        if isTooTinySq(ax*ax + ay*ay) then failTooSmall2 "Line2D.MatchesOrientation45 this" ln l
+        if isTooTinySq(bx*bx + by*by) then failTooSmall2 "Line2D.MatchesOrientation45 other" l ln
+        let tan = XLineXY.tangent (ax, ay, bx, by)
         tan < Tangent.``45.0``
 
     /// Checks if the angle between the two 2D lines is less than 45 degrees.
@@ -643,11 +649,13 @@ module AutoOpenLine2D =
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.IsParallelTo( other:Line2D, [<OPT;DEF(Tangent.``0.25``)>] minTangent:float<Tangent.tangent> ) : bool =
-        let a = ln.Vector
-        let b = other.Vector
-        if isTooTinySq(a.LengthSq) then failTooSmall2 "Line2D.IsParallelTo this" a b
-        if isTooTinySq(b.LengthSq) then failTooSmall2 "Line2D.IsParallelTo other" b a
-        let tan = XLine2D.tangent (a.X, a.Y, b.X, b.Y)
+        let ax = ln.VectorX
+        let ay = ln.VectorY
+        let bx = other.VectorX
+        let by = other.VectorY
+        if isTooTinySq(ax*ax + ay*ay) then failTooSmall2 "Line2D.IsParallelTo this" ln other
+        if isTooTinySq(bx*bx + by*by) then failTooSmall2 "Line2D.IsParallelTo other" other ln
+        let tan = XLineXY.tangent (ax, ay, bx, by)
         abs tan < minTangent
 
     /// Checks if two 2D lines are parallel. Ignoring orientation.
@@ -664,10 +672,11 @@ module AutoOpenLine2D =
     /// See Euclid.Tangent module.
     /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.IsParallelTo( other:Vc, [<OPT;DEF(Tangent.``0.25``)>] minTangent:float<Tangent.tangent> ) : bool =
-        let a = ln.Vector
-        if isTooTinySq(a.LengthSq) then failTooSmall2 "Line2D.IsParallelTo" a other
-        if isTooTinySq(other.LengthSq) then failTooSmall2 "Line2D.IsParallelTo" other a
-        let tan = XLine2D.tangent (a.X, a.Y, other.X, other.Y)
+        let ax = ln.VectorX
+        let ay = ln.VectorY
+        if isTooTinySq(ax*ax + ay*ay) then failTooSmall2 "Line2D.IsParallelTo" ln other
+        if isTooTinySq(other.LengthSq) then failTooSmall2 "Line2D.IsParallelTo" other ln
+        let tan = XLineXY.tangent (ax, ay, other.X, other.Y)
         abs tan < minTangent
 
     /// Checks if a 2D lines is parallel to a 2D unit-vector.
@@ -677,9 +686,10 @@ module AutoOpenLine2D =
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.IsParallelTo( other:UnitVc, [<OPT;DEF(Tangent.``0.25``)>] minTangent:float<Tangent.tangent> ) : bool =
-        let a = ln.Vector
-        if isTooTinySq(a.LengthSq) then failTooSmall2 "Line2D.IsParallelTo" a other
-        let tan = XLine2D.tangent (a.X, a.Y, other.X, other.Y)
+        let ax = ln.VectorX
+        let ay = ln.VectorY
+        if isTooTinySq(ax*ax + ay*ay) then failTooSmall2 "Line2D.IsParallelTo" ln other
+        let tan = XLineXY.tangent (ax, ay, other.X, other.Y)
         abs tan < minTangent
 
     /// Checks if two 2D lines are parallel.
@@ -689,11 +699,13 @@ module AutoOpenLine2D =
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.IsParallelAndOrientedTo (other:Line2D, [<OPT;DEF(Tangent.``0.25``)>] minTangent:float<Tangent.tangent> ) : bool =
-        let a = ln.Vector
-        let b = other.Vector
-        if isTooTinySq(a.LengthSq) then failTooSmall2 "Line2D.IsParallelAndOrientedTo this" a b
-        if isTooTinySq(b.LengthSq) then failTooSmall2 "Line2D.IsParallelAndOrientedTo other" b a
-        let tan = XLine2D.tangent (a.X, a.Y, b.X, b.Y)
+        let ax = ln.VectorX
+        let ay = ln.VectorY
+        let bx = other.VectorX
+        let by = other.VectorY
+        if isTooTinySq(ax*ax + ay*ay) then failTooSmall2 "Line2D.IsParallelAndOrientedTo this" ln other
+        if isTooTinySq(bx*bx + by*by) then failTooSmall2 "Line2D.IsParallelAndOrientedTo other" other ln
+        let tan = XLineXY.tangent (ax, ay, bx, by)
         tan < minTangent
 
     /// Checks if two 2D lines are parallel and orientated the same way.
@@ -710,10 +722,11 @@ module AutoOpenLine2D =
     /// See Euclid.Tangent module.
     /// Fails on lines  or vectors shorter than 1e-12.
     member inline ln.IsParallelAndOrientedTo (other:Vc, [<OPT;DEF(Tangent.``0.25``)>] minTangent:float<Tangent.tangent> ) : bool =
-        let a = ln.Vector
-        if isTooTinySq(a.LengthSq) then failTooSmall2 "Line2D.IsParallelAndOrientedTo" a other
-        if isTooTinySq(other.LengthSq) then failTooSmall2 "Line2D.IsParallelAndOrientedTo" other a
-        let tan = XLine2D.tangent (a.X, a.Y, other.X, other.Y)
+        let ax = ln.VectorX
+        let ay = ln.VectorY
+        if isTooTinySq(ax*ax + ay*ay) then failTooSmall2 "Line2D.IsParallelAndOrientedTo" ln other
+        if isTooTinySq(other.LengthSq) then failTooSmall2 "Line2D.IsParallelAndOrientedTo" other ln
+        let tan = XLineXY.tangent (ax, ay, other.X, other.Y)
         tan < minTangent
 
     /// Checks if a 2D lines is parallel to a 2D unit-vector.
@@ -723,9 +736,10 @@ module AutoOpenLine2D =
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.IsParallelAndOrientedTo (other:UnitVc, [<OPT;DEF(Tangent.``0.25``)>] minTangent:float<Tangent.tangent> ) : bool =
-        let a = ln.Vector
-        if isTooTinySq(a.LengthSq) then failTooSmall2 "Line2D.IsParallelAndOrientedTo" a other
-        let tan = XLine2D.tangent (a.X, a.Y, other.X, other.Y)
+        let ax = ln.VectorX
+        let ay = ln.VectorY
+        if isTooTinySq(ax*ax + ay*ay) then failTooSmall2 "Line2D.IsParallelAndOrientedTo" ln other
+        let tan = XLineXY.tangent (ax, ay, other.X, other.Y)
         tan < minTangent
 
     /// Checks if two 2D lines are perpendicular to each other.
@@ -734,11 +748,13 @@ module AutoOpenLine2D =
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.IsPerpendicularTo (other:Line2D, [<OPT;DEF(Tangent.``89.75``)>] maxTangent:float<Tangent.tangent> ) : bool =
-        let a = ln.Vector
-        let b = other.Vector
-        if isTooTinySq(a.LengthSq) then failTooSmall2 "Line2D.IsPerpendicularTo this" a b
-        if isTooTinySq(b.LengthSq) then failTooSmall2 "Line2D.IsPerpendicularTo other" b a
-        let tan = XLine2D.tangent (a.X, a.Y, b.X, b.Y)
+        let ax = ln.VectorX
+        let ay = ln.VectorY
+        let bx = other.VectorX
+        let by = other.VectorY
+        if isTooTinySq(ax*ax + ay*ay) then failTooSmall2 "Line2D.IsPerpendicularTo this" ln other
+        if isTooTinySq(bx*bx + by*by) then failTooSmall2 "Line2D.IsPerpendicularTo other" other ln
+        let tan = XLineXY.tangent (ax, ay, bx, by)
         abs tan > maxTangent
 
     /// Checks if two 2D lines are perpendicular to each other.
@@ -754,10 +770,11 @@ module AutoOpenLine2D =
     /// See Euclid.Tangent module.
     /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.IsPerpendicularTo (other:Vc, [<OPT;DEF(Tangent.``89.75``)>] maxTangent:float<Tangent.tangent> ) : bool =
-        let a = ln.Vector
-        if isTooTinySq(a.LengthSq) then failTooSmall2 "Line2D.IsPerpendicularTo this" a other
-        if isTooTinySq(other.LengthSq) then failTooSmall2 "Line2D.IsPerpendicularTo other" other a
-        let tan = XLine2D.tangent (a.X, a.Y, other.X, other.Y)
+        let ax = ln.VectorX
+        let ay = ln.VectorY
+        if isTooTinySq(ax*ax + ay*ay) then failTooSmall2 "Line2D.IsPerpendicularTo this" ln other
+        if isTooTinySq(other.LengthSq) then failTooSmall2 "Line2D.IsPerpendicularTo other" other ln
+        let tan = XLineXY.tangent (ax, ay, other.X, other.Y)
         abs tan > maxTangent
 
     /// Checks if a 2D lines is perpendicular to a 2D unit-vector.
@@ -766,9 +783,10 @@ module AutoOpenLine2D =
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.IsPerpendicularTo (other:UnitVc, [<OPT;DEF(Tangent.``89.75``)>] maxTangent:float<Tangent.tangent> ) : bool =
-        let a = ln.Vector
-        if isTooTinySq(a.LengthSq) then failTooSmall2 "Line2D.IsPerpendicularTo this" a other
-        let tan = XLine2D.tangent (a.X, a.Y, other.X, other.Y)
+        let ax = ln.VectorX
+        let ay = ln.VectorY
+        if isTooTinySq(ax*ax + ay*ay) then failTooSmall2 "Line2D.IsPerpendicularTo this" ln other
+        let tan = XLineXY.tangent (ax, ay, other.X, other.Y)
         abs tan > maxTangent
 
     /// Checks if two 2D lines are perpendicular to each other.
@@ -823,8 +841,8 @@ module AutoOpenLine2D =
         if isTooTinySq(voX*voX + voY*voY) then failTooSmall2 "Line2D.IsCoincidentTo other" other ln
         let dot = vtX*voX + vtY*voY
         let det = vtX * voY - vtY * voX
-        let tan = det / dot |> abs
-        if !^ tan < minTangent then // handles NaN
+        // division-free parallel test: |det| / |dot| < minTangent  <=>  |det| < minTangent * |dot| (handles NaN/zero too)
+        if !^ (abs det) < minTangent * abs dot then
             // they are parallel, now check distance:
             let x = other.FromX - ln.FromX
             let y = other.FromY - ln.FromY
@@ -1014,9 +1032,7 @@ module AutoOpenLine2D =
     /// Check if a given point is on the right side of the ray.
     /// Also returns false if the point is on the line.
     member inline ln.IsXYOnRight(x:float, y:float) : bool =
-        let lv = ln.Vector.Rotate90CW
-        let pv = Vc(x - ln.FromX, y - ln.FromY)
-        lv *** pv > 0.0
+        ln.VectorY * (x - ln.FromX) - ln.VectorX * (y - ln.FromY) > 0.0
 
     /// Looking in the direction of the line.
     /// Check if a given point is on the right side of the ray.
@@ -1038,9 +1054,7 @@ module AutoOpenLine2D =
     /// Check if a given point is on the left side of the infinite ray.
     /// Also returns false if the point is on the line.
     member inline ln.IsXYOnLeft(x:float, y:float) : bool =
-        let lv = ln.Vector.Rotate90CCW
-        let pv = Vc(x - ln.FromX, y - ln.FromY)
-        lv *** pv > 0.0
+        ln.VectorX * (y - ln.FromY) - ln.VectorY * (x - ln.FromX) > 0.0
 
     /// Looking in the direction of the line.
     /// Check if a given point is on the left side of the infinite ray.
@@ -1259,11 +1273,23 @@ module AutoOpenLine2D =
         l.AsFSharpCode
 
     /// Set Line2D start point, returns a new line.
+    /// Same as Line2D.setFrom.
     static member inline setStart (pt:Pt) (ln:Line2D) : Line2D =
         Line2D( pt.X, pt.Y, ln.ToX, ln.ToY)
 
+    /// Set Line2D start point, returns a new line.
+    /// Same as Line2D.setStart.
+    static member inline setFrom (pt:Pt) (ln:Line2D) : Line2D =
+        Line2D( pt.X, pt.Y, ln.ToX, ln.ToY)
+
     /// Set Line2D end point, returns a new line.
+    /// Same as Line2D.setTo.
     static member inline setEnd (pt:Pt) (ln:Line2D) : Line2D =
+        Line2D( ln.FromX, ln.FromY, pt.X, pt.Y)
+
+    /// Set Line2D end point, returns a new line.
+    /// Same as Line2D.setEnd.
+    static member inline setTo (pt:Pt) (ln:Line2D) : Line2D =
         Line2D( ln.FromX, ln.FromY, pt.X, pt.Y)
 
     /// Same as Line2D.vector or Line2D.tangent.
@@ -1307,15 +1333,15 @@ module AutoOpenLine2D =
 
     /// Ensure 2D line has a positive dot product with given orientation line.
     static member inline matchOrientation (orientationToMatch:Line2D) (lineToFlip:Line2D) : Line2D =
-        if orientationToMatch.Vector *** lineToFlip.Vector < 0.0 then lineToFlip.Reversed else lineToFlip
+        if orientationToMatch.VectorX * lineToFlip.VectorX + orientationToMatch.VectorY * lineToFlip.VectorY < 0.0 then lineToFlip.Reversed else lineToFlip
 
     /// Ensure 2D line has a positive dot product with given orientation 2D vector.
     static member inline matchVcOrientation (orientationToMatch:Vc) (lineToFlip:Line2D) : Line2D =
-        if orientationToMatch *** lineToFlip.Vector < 0.0 then lineToFlip.Reversed else lineToFlip
+        if orientationToMatch.X * lineToFlip.VectorX + orientationToMatch.Y * lineToFlip.VectorY < 0.0 then lineToFlip.Reversed else lineToFlip
 
     /// Ensure 2D line has a positive dot product with given orientation 2D vector.
     static member inline matchUnitVcOrientation (orientationToMatch:UnitVc) (lineToFlip:Line2D) : Line2D =
-        if orientationToMatch *** lineToFlip.Vector < 0.0 then lineToFlip.Reversed else lineToFlip
+        if orientationToMatch.X * lineToFlip.VectorX + orientationToMatch.Y * lineToFlip.VectorY < 0.0 then lineToFlip.Reversed else lineToFlip
 
     /// Checks if the dot product between a 2D line and a vector is positive.
     /// So if the angle between their direction vectors is less than 90 degrees.
@@ -1405,8 +1431,8 @@ module AutoOpenLine2D =
         let voY = lnB.VectorY
         let dot = vtX*voX + vtY*voY
         let det = vtX * voY - vtY * voX
-        let tan = det / dot |> abs
-        !^ tan < Tangent.``0.25``
+        // division-free parallel test: |det| / |dot| < tan(0.25 deg)  <=>  |det| < tan(0.25 deg) * |dot|
+        !^ (abs det) < Tangent.``0.25`` * abs dot
 
     /// A faster Check if two 2D lines are not parallel. Ignoring orientation.
     /// The angle tolerance is 0.25 degrees.
@@ -1419,8 +1445,8 @@ module AutoOpenLine2D =
         let voY = lnB.VectorY
         let dot = vtX*voX + vtY*voY
         let det = vtX * voY - vtY * voX
-        let tan = det / dot |> abs
-        !^ tan > Tangent.``0.25``
+        // division-free parallel test: |det| / |dot| > tan(0.25 deg)  <=>  |det| > tan(0.25 deg) * |dot|
+        !^ (abs det) > Tangent.``0.25`` * abs dot
 
     /// A faster Check if two 2D lines are perpendicular to each other.
     /// The angle tolerance is 89.75 to 90.25 degrees.
@@ -1434,8 +1460,8 @@ module AutoOpenLine2D =
         let voY = lnB.VectorY
         let dot = vtX*voX + vtY*voY
         let det = vtX * voY - vtY * voX
-        let tan = det / dot |> abs
-        !^ tan > Tangent.``89.75``
+        // division-free perpendicularity test: |det| / |dot| > tan(89.75 deg)  <=>  |det| > tan(89.75 deg) * |dot|
+        !^ (abs det) > Tangent.``89.75`` * abs dot
 
     /// A faster Check if two 2D lines are perpendicular to each other.
     /// The angle tolerance is 89.75 to 90.25 degrees.
@@ -1449,9 +1475,15 @@ module AutoOpenLine2D =
     /// Returns the parameter at which a point is closest to the infinite ray.
     /// If it is smaller than 0.0 or bigger than 1.0 it is outside of the finite line.
     /// Get distance from start of line to point projected onto line, may be negative.
-    static member inline lengthToPtOnLine (line:Line2D) pt : float =
-        // TODO can be optimized by inlining floats.
-        line.UnitTangent *** (pt-line.From)
+    static member inline lengthToPtOnLine (ln:Line2D) (pt : Pt) : float =
+        let x = ln.VectorX
+        let y = ln.VectorY
+        let l = XY.length x y
+        if isTooTiny l then failTooSmall "Line2D.lengthToPtOnLine" ln
+        let dx = pt.X - ln.FromX
+        let dy = pt.Y - ln.FromY
+        let t = XY.dot x y dx dy
+        t / l
 
     /// Finds point at given distance from line start.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -1575,16 +1607,15 @@ module AutoOpenLine2D =
     static member split (gap:float) (segments:int) (ln:Line2D) : Line2D[] =
         if segments <= 0  then
             fail $"Line2D.split: invalid segments: {segments}"
-        let v = ln.Vector
-        let len = v.Length
+        let vx = ln.VectorX
+        let vy = ln.VectorY
+        let len = sqrt(vx*vx + vy*vy)
         let lenMinusGaps = len - gap * float (segments-1)
         let segLen = lenMinusGaps / float segments
         if isTooTiny (segLen) then
             [||]
         else
             let lns = Array.zeroCreate segments
-            let vx = v.X
-            let vy = v.Y
             let x = ln.FromX
             let y = ln.FromY
             for i = 0 to segments-1 do
@@ -1748,7 +1779,7 @@ module AutoOpenLine2D =
         elif bStartOnA > ``1.0 + 1e-6`` && bEndOnA > ``1.0 + 1e-6`` then
             None
         else
-            Some (clampBetweenZeroAndOne bStartOnA, clampBetweenZeroAndOne bEndOnA)
+            Some (clamp01 bStartOnA, clamp01 bEndOnA)
 
     /// Tries to a line onto another line considered finite.
     /// Returns Some Line2D if there is an overlap.
@@ -1777,8 +1808,8 @@ module AutoOpenLine2D =
         elif bStartOnA > ``1.0 + 1e-6`` && bEndOnA > ``1.0 + 1e-6`` then
             None
         else
-            let st = clampBetweenZeroAndOne bStartOnA
-            let en = clampBetweenZeroAndOne bEndOnA
+            let st = clamp01 bStartOnA
+            let en = clamp01 bEndOnA
             Some <| Line2D( osx + ovx * st,
                             osy + ovy * st,
                             osx + ovx * en,
@@ -1787,6 +1818,16 @@ module AutoOpenLine2D =
 
     // #endregion
     // #region Intersection
+
+
+    /// <summary> Intersects two infinite 2D lines. Fails if they are parallel.</summary>
+    /// <param name="lnA"> The first line.</param>
+    /// <param name="lnB"> The second line.</param>
+    /// <remarks> Use the XLine2D module for more specialized intersection calculations.
+    /// Like getting the kind of Parallel relation between lines, only getting the parameter of one line,
+    /// or setting a tolerance for when lines are parallel or coincident.</remarks>
+    static member intersectRays (lnA:Line2D) (lnB:Line2D) : Pt =
+        XLine2D.intersectRays(lnA, lnB)
 
     /// <summary> A fast test tests if two finite 2D lines truly intersect.
     /// Does not use a default tolerance for parallel or coincident lines. Just checks within line range and not NaN.
@@ -1815,9 +1856,9 @@ module AutoOpenLine2D =
         | XLine2D.XParam.Intersect _        -> true
         | XLine2D.XParam.Parallel           -> XLine2D.doOverlap(lnA, lnB)
         | XLine2D.XParam.Apart              -> false
-        | XLine2D.XParam.TooShortBoth       -> XLine2D.sqDistLnFromLnFrom (lnA, lnB) < 1e-12
-        | XLine2D.XParam.TooShortA          -> XLine2D.sqDistLnPt' (lnB, lnA.FromX, lnA.FromY) < 1e-12
-        | XLine2D.XParam.TooShortB          -> XLine2D.sqDistLnPt' (lnA, lnB.FromX, lnB.FromY) < 1e-12
+        | XLine2D.XParam.TooShortBoth       -> XLineXY.sqDistLnFromLnFrom (lnA, lnB) < 1e-12
+        | XLine2D.XParam.TooShortA          -> XLineXY.sqDistLnPt' (lnB, lnA.FromX, lnA.FromY) < 1e-12
+        | XLine2D.XParam.TooShortB          -> XLineXY.sqDistLnPt' (lnA, lnB.FromX, lnB.FromY) < 1e-12
 
     /// <summary> A fast intersection of two finite 2D lines.
     /// Does not use a default tolerance for parallel or coincident lines.
@@ -1829,7 +1870,7 @@ module AutoOpenLine2D =
     /// <remarks> Use the XLine2D module for more specialized intersection calculations.
     /// Like getting the kind of Parallel relation between lines, only getting the parameter of one line,
     /// or setting a tolerance for when lines are parallel or coincident.</remarks>
-    static member tryIntersect(lnA:Line2D) (lnB:Line2D) : Pt option =
+    static member tryIntersect(lnA:Line2D) (lnB:Line2D) : Pt voption =
         XLine2D.tryIntersectInRanges(lnA, lnB, -1e-6, ``1.0 + 1e-6``, -1e-6, ``1.0 + 1e-6``)
 
     /// <summary> Tries to get intersection point of two rays (rays are 2D lines extended infinitely).</summary>
@@ -1838,7 +1879,7 @@ module AutoOpenLine2D =
     /// <returns> The point at which the two rays intersect or None.</returns>
     /// <remarks> If the lines are parallel or coincident, or if the parameter on Line A is bigger than 1e12 in absolute value,
     /// None is returned.</remarks>
-    static member tryIntersectRay(lineA:Line2D) (lineB:Line2D) : Pt option =
+    static member tryIntersectRay(lineA:Line2D) (lineB:Line2D) : Pt voption =
         XLine2D.tryIntersectRay(lineA, lineB)
 
     /// <summary> Intersects two finite 2D Lines.
@@ -1860,16 +1901,16 @@ module AutoOpenLine2D =
         |XLine2D.XPt.Intersect p -> Some p
         |XLine2D.XPt.Apart -> None
         |XLine2D.XPt.Parallel ->
-            let sqDist = XLine2D.sqRayPtDist(lnA.FromX, lnA.FromY, lnA.VectorX, lnA.VectorY, lnB.FromX, lnB.FromY)
+            let sqDist = XLineXY.sqRayPtDist(lnA.FromX, lnA.FromY, lnA.VectorX, lnA.VectorY, lnB.FromX, lnB.FromY)
             if sqDist < 1e-12 then // squared distance: coincident within 1e-6
-                match lnB |> Line2D.tryProjectOntoLineParam lnA  with
+                match lnB |> Line2D.tryProjectOntoLineParam lnA with
                 | Some (s,e) -> Some <| lnA.EvaluateAt((s+e)*0.5)
                 | None -> None
             else
                 None
-        | XLine2D.XPt.TooShortBoth -> if XLine2D.sqDistLnFromLnFrom (lnA, lnB) < 1e-12           then Some lnA.From else None
-        | XLine2D.XPt.TooShortA    -> if XLine2D.sqDistLnPt' (lnB, lnA.FromX, lnA.FromY) < 1e-12 then Some lnA.From else None
-        | XLine2D.XPt.TooShortB    -> if XLine2D.sqDistLnPt' (lnA, lnB.FromX, lnB.FromY) < 1e-12 then Some lnB.From else None
+        | XLine2D.XPt.TooShortBoth -> if XLineXY.sqDistLnFromLnFrom (lnA, lnB) < 1e-12           then Some lnA.From else None
+        | XLine2D.XPt.TooShortA    -> if XLineXY.sqDistLnPt' (lnB, lnA.FromX, lnA.FromY) < 1e-12 then Some lnA.From else None
+        | XLine2D.XPt.TooShortB    -> if XLineXY.sqDistLnPt' (lnA, lnB.FromX, lnB.FromY) < 1e-12 then Some lnB.From else None
 
     /// <summary> Checks if lines are parallel, coincident and overlapping.</summary>
     /// <param name="lnA"> The first line.</param>
@@ -1882,14 +1923,16 @@ module AutoOpenLine2D =
     /// Parallel lines are treated as coincident when their perpendicular distance is below 1e-6
     /// (1e-12 squared), the same tolerance as Line2D.tryIntersectOrOverlap.</remarks>
     static member tryGetOverlap (lnA:Line2D) (lnB:Line2D) : option<float*float> =
-        let va = lnA.Vector
-        let vb = lnB.Vector
-        if XLine2D.isTooShort(va.X, va.Y, 1e-6) || XLine2D.isTooShort(vb.X, vb.Y, 1e-6) then
+        let vax = lnA.VectorX
+        let vay = lnA.VectorY
+        let vbx = lnB.VectorX
+        let vby = lnB.VectorY
+        if XLineXY.isTooShort(vax, vay, 1e-6) || XLineXY.isTooShort(vbx, vby, 1e-6) then
             None
         else
-            let tan = XLine2D.tangent(va.X, va.Y, vb.X, vb.Y)
+            let tan = XLineXY.tangent(vax, vay, vbx, vby)
             if abs tan < Tangent.``0.25`` then
-                let sqDist = XLine2D.sqRayPtDist(lnA.FromX, lnA.FromY, lnA.VectorX, lnA.VectorY, lnB.FromX, lnB.FromY)
+                let sqDist = XLineXY.sqRayPtDist(lnA.FromX, lnA.FromY, lnA.VectorX, lnA.VectorY, lnB.FromX, lnB.FromY)
                 if sqDist < 1e-12 then // squared distance: coincident within 1e-6
                     Line2D.tryProjectOntoLineParam lnA lnB
                 else
@@ -2006,7 +2049,7 @@ module AutoOpenLine2D =
 
     [<Obsolete("Use this.SqDistanceFromPoint instead. Obsolete since 0.20.0")>]
     member ln.DistanceSqFromPoint(p:Pt) : float =
-        XLine2D.sqDistLnPt'(ln, p.X, p.Y)
+        XLineXY.sqDistLnPt'(ln, p.X, p.Y)
 
     // Static members marked as Obsolete that have direct replacements:
 

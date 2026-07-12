@@ -57,11 +57,11 @@ let tests =
                 Expect.isTrue (eqFloat (normal *** (c-a)) 0.0) "Normal should be perpendicular to edge 2"
             }
 
-            test "createFrom3Points rejects colinear points" {
+            test "createFrom3Points rejects collinear points" {
                 let a = Pnt(0., 0., 0.)
                 let b = Pnt(1., 0., 0.)
                 let c = Pnt(2., 0., 0.)
-                Expect.throws (fun () -> NPlane.createFrom3Points a b c |> ignore) "Should throw for colinear points"
+                Expect.throws (fun () -> NPlane.createFrom3Points a b c |> ignore) "Should throw for collinear points"
             }
 
             test "xyPlane is at world origin with Z normal" {
@@ -72,31 +72,31 @@ let tests =
         ]
 
         testList "NPlane - Distance and Projection" [
-            test "DistanceToPt for point above plane" {
+            test "DistanceToPnt for point above plane" {
                 let plane = NPlane.create(Pnt(0., 0., 0.), Vec(0., 0., 1.))
                 let pt = Pnt(5., 5., 10.)
-                let dist = plane.DistanceToPt pt
+                let dist = plane.DistanceToPnt pt
                 Expect.equal dist 10. "Distance should be 10"
             }
 
-            test "DistanceToPt for point below plane returns absolute distance" {
+            test "DistanceToPnt for point below plane returns absolute distance" {
                 let plane = NPlane.create(Pnt(0., 0., 0.), Vec(0., 0., 1.))
                 let pt = Pnt(5., 5., -10.)
-                let dist = plane.DistanceToPt pt
+                let dist = plane.DistanceToPnt pt
                 Expect.equal dist 10. "Distance should be 10"
             }
 
-            test "DistanceToPtSigned for point below plane" {
+            test "DistanceToPntSigned for point below plane" {
                 let plane = NPlane.create(Pnt(0., 0., 0.), Vec(0., 0., 1.))
                 let pt = Pnt(5., 5., -10.)
-                let dist = plane.DistanceToPtSigned pt
+                let dist = plane.DistanceToPntSigned pt
                 Expect.equal dist -10. "Signed distance should be -10"
             }
 
-            test "DistanceToPt for point on plane" {
+            test "DistanceToPnt for point on plane" {
                 let plane = NPlane.create(Pnt(0., 0., 5.), Vec(0., 0., 1.))
                 let pt = Pnt(10., 10., 5.)
-                let dist = plane.DistanceToPt pt
+                let dist = plane.DistanceToPnt pt
                 Expect.isTrue (eqFloat dist 0.0) "Distance should be 0"
             }
 
@@ -114,10 +114,10 @@ let tests =
                 Expect.isTrue (eqPnt closest pt) "Closest point should be same as input"
             }
 
-            test "PlaneAtClPt" {
+            test "PlaneAtClPnt" {
                 let plane = NPlane.create(Pnt(0., 0., 0.), Vec(0., 0., 1.))
                 let pt = Pnt(5., 5., 10.)
-                let newPlane = plane.PlaneAtClPt pt
+                let newPlane = plane.PlaneAtClPnt pt
                 Expect.isTrue (eqPnt newPlane.Origin (Pnt(5., 5., 0.))) "New plane origin should be at closest point"
                 Expect.isTrue (eqVec newPlane.Normal.AsVec plane.Normal.AsVec) "Normal should be unchanged"
             }
@@ -222,10 +222,10 @@ let tests =
                 let b = NPlane.create(Pnt(-6., -8., 9.), Vec(90., 1., -68.))
                 match NPlane.intersect a b with
                 | Some line ->
-                    Expect.isTrue (a.DistanceToPt line.From < 1e-9) "Intersection line should be on plane A"
-                    Expect.isTrue (b.DistanceToPt line.From < 1e-9) "Intersection line should be on plane B"
-                    Expect.isTrue (a.DistanceToPt line.To < 1e-9) "Intersection line should be on plane A"
-                    Expect.isTrue (b.DistanceToPt line.To < 1e-9) "Intersection line should be on plane B"
+                    Expect.isTrue (a.DistanceToPnt line.From < 1e-9) "Intersection line should be on plane A"
+                    Expect.isTrue (b.DistanceToPnt line.From < 1e-9) "Intersection line should be on plane B"
+                    Expect.isTrue (a.DistanceToPnt line.To < 1e-9) "Intersection line should be on plane A"
+                    Expect.isTrue (b.DistanceToPnt line.To < 1e-9) "Intersection line should be on plane B"
 
                 | None -> failwith "Should have intersection"
             }
@@ -234,13 +234,13 @@ let tests =
                 let a = PPlane.createOriginNormal(Pnt(83., 1., 40), Vec(870., 0., 1.))
                 let b = PPlane.createOriginNormal(Pnt(-6., -8., 9.), Vec(90., 1., -68.))
                 match PPlane.intersect a b with
-                | Some line ->
-                    Expect.isTrue (a.DistanceToPt line.From < 1e-9) "Intersection line should be on plane A"
-                    Expect.isTrue (b.DistanceToPt line.From < 1e-9) "Intersection line should be on plane B"
-                    Expect.isTrue (a.DistanceToPt line.To < 1e-9) "Intersection line should be on plane A"
-                    Expect.isTrue (b.DistanceToPt line.To < 1e-9) "Intersection line should be on plane B"
+                | ValueSome line ->
+                    Expect.isTrue (a.DistanceToPnt line.From < 1e-9) "Intersection line should be on plane A"
+                    Expect.isTrue (b.DistanceToPnt line.From < 1e-9) "Intersection line should be on plane B"
+                    Expect.isTrue (a.DistanceToPnt line.To < 1e-9) "Intersection line should be on plane A"
+                    Expect.isTrue (b.DistanceToPnt line.To < 1e-9) "Intersection line should be on plane B"
 
-                | None -> failwith "Should have intersection"
+                | ValueNone -> failwith "Should have intersection"
             }
 
 
@@ -253,27 +253,27 @@ let tests =
                 | None -> ()
             }
 
-            test "intersectLineParameter for intersecting line" {
-                let plane = NPlane.create(Pnt(0., 0., 5.), Vec(0., 0., 1.))
-                let line = Line3D(Pnt(0., 0., 0.), Pnt(0., 0., 10.))
-                match NPlane.intersectLineParameter line plane with
-                | Some t ->
-                    Expect.isTrue (eqFloat t 0.5) "Should intersect at t=0.5"
-                | None -> failwith "Should have intersection"
-            }
-
-            test "intersectLineParameter for parallel line" {
-                let plane = NPlane.create(Pnt(0., 0., 5.), Vec(0., 0., 1.))
-                let line = Line3D(Pnt(0., 0., 0.), Pnt(10., 0., 0.))
-                match NPlane.intersectLineParameter line plane with
-                | Some _ -> failwith "Parallel line should not intersect"
-                | None -> ()
-            }
-
-            test "intersectRay returns point" {
+            test "intersectRay for intersecting line" {
                 let plane = NPlane.create(Pnt(0., 0., 5.), Vec(0., 0., 1.))
                 let line = Line3D(Pnt(0., 0., 0.), Pnt(0., 0., 10.))
                 match NPlane.intersectRay line plane with
+                | ValueSome t ->
+                    Expect.isTrue (eqFloat t 0.5) "Should intersect at t=0.5"
+                | ValueNone -> failwith "Should have intersection"
+            }
+
+            test "intersectRay for parallel line" {
+                let plane = NPlane.create(Pnt(0., 0., 5.), Vec(0., 0., 1.))
+                let line = Line3D(Pnt(0., 0., 0.), Pnt(10., 0., 0.))
+                match NPlane.intersectRay line plane with
+                | ValueSome _ -> failwith "Parallel line should not intersect"
+                | ValueNone -> ()
+            }
+
+            test "intersectLine returns point" {
+                let plane = NPlane.create(Pnt(0., 0., 5.), Vec(0., 0., 1.))
+                let line = Line3D(Pnt(0., 0., 0.), Pnt(0., 0., 10.))
+                match NPlane.intersectLine line plane with
                 | Some pt ->
                     Expect.isTrue (eqPnt pt (Pnt(0., 0., 5.))) "Intersection should be at (0, 0, 5)"
                 | None -> failwith "Should have intersection"
@@ -401,42 +401,42 @@ let tests =
         ]
 
         testList "PPlane - Distance and Evaluation" [
-            test "DistanceToPt for point above plane" {
+            test "DistanceToPnt for point above plane" {
                 let plane = PPlane.WorldXY
                 let pt = Pnt(5., 5., 10.)
-                let dist = plane.DistanceToPt pt
+                let dist = plane.DistanceToPnt pt
                 Expect.equal dist 10. "Distance should be 10"
             }
 
-            test "DistanceToPt for point below plane returns absolute distance" {
+            test "DistanceToPnt for point below plane returns absolute distance" {
                 let plane = PPlane.WorldXY
                 let pt = Pnt(5., 5., -10.)
-                let dist = plane.DistanceToPt pt
+                let dist = plane.DistanceToPnt pt
                 Expect.equal dist 10. "Distance should be 10"
             }
 
-            test "DistanceToPtSigned for point below plane" {
+            test "DistanceToPntSigned for point below plane" {
                 let plane = PPlane.WorldXY
                 let pt = Pnt(5., 5., -10.)
-                let dist = plane.DistanceToPtSigned pt
+                let dist = plane.DistanceToPntSigned pt
                 Expect.equal dist -10. "Signed distance should be -10"
             }
 
             test "EvaluateAt origin (0, 0, 0)" {
                 let plane = PPlane.createOriginXaxisYaxis(Pnt(1., 2., 3.), Vec.Xaxis, Vec.Yaxis)
-                let pt = plane.EvaluateAt(0., 0., 0.)
+                let pt = plane.EvaluateAtXYZ(0., 0., 0.)
                 Expect.isTrue (eqPnt pt plane.Origin) "Should return Origin at (0, 0, 0)"
             }
 
             test "EvaluateAt with positive parameters" {
                 let plane = PPlane.WorldXY
-                let pt = plane.EvaluateAt(5., 3., 2.)
+                let pt = plane.EvaluateAtXYZ(5., 3., 2.)
                 Expect.isTrue (eqPnt pt (Pnt(5., 3., 2.))) "Should evaluate correctly"
             }
 
             test "EvaluateAtXY" {
                 let plane = PPlane.WorldXY
-                let pt = plane.EvaluateAtXY(5., 3.)
+                let pt = plane.EvaluateAt(5., 3.)
                 Expect.isTrue (eqPnt pt (Pnt(5., 3., 0.))) "Should evaluate in XY only"
             }
 
@@ -558,10 +558,10 @@ let tests =
                 Expect.isTrue (eqPnt closest (Pnt(5., 5., 0.))) "Closest point should be (5, 5, 0)"
             }
 
-            test "PlaneAtClPt" {
+            test "PlaneAtClPnt" {
                 let plane = PPlane.WorldXY
                 let pt = Pnt(5., 5., 10.)
-                let newPlane = plane.PlaneAtClPt pt
+                let newPlane = plane.PlaneAtClPnt pt
                 Expect.isTrue (eqPnt newPlane.Origin (Pnt(5., 5., 0.))) "New plane origin should be at closest point"
             }
         ]

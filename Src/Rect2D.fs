@@ -151,9 +151,6 @@ type Rect2D =
         let yAxis = $"X={Format.float r.YaxisX}|Y={Format.float r.YaxisY}"
         $"Euclid.Rect2D {sizeX} x {sizeY} (Origin:{origin}| X-ax:{xAxis}|Y-ax:{yAxis})"
 
-    /// Returns a nicely formatted string representation of the 2D rectangle.
-    static member inline toString (r:Rect2D) : string =
-        r.ToString()
 
     /// Format the 2D Rectangle into string with nice floating point number formatting of X and Y size only.
     /// But without type name as in v.ToString()
@@ -340,6 +337,7 @@ type Rect2D =
         isTooTinySq (b.YaxisX*b.YaxisX + b.YaxisY*b.YaxisY)
 
     /// Returns TRUE if all sides are below zero-length tolerance.
+    /// This is the same as isPoint.
     static member inline isZero (r:Rect2D) : bool =
         r.IsZero
 
@@ -350,6 +348,7 @@ type Rect2D =
         isTooTinySq (b.YaxisX*b.YaxisX + b.YaxisY*b.YaxisY)
 
     /// Returns TRUE if the 2D rectangle degenerates to a point.
+    /// This is the same as isZero.
     static member inline isPoint (r:Rect2D) : bool =
         r.IsPoint
 
@@ -421,19 +420,7 @@ type Rect2D =
     static member inline contains (p:Pt) (r:Rect2D)  : bool =
         r.Contains p
 
-    /// Get the axis aligned 2D Bounding Rectangle of the 2D Rectangle.
-    member r.BRect : BRect =
-        // Each of the 4 corners is Origin plus any subset of the two axis
-        // components, so min/max decompose per coordinate.
-        let minX = r.OriginX + min 0. r.XaxisX + min 0. r.YaxisX
-        let minY = r.OriginY + min 0. r.XaxisY + min 0. r.YaxisY
-        let maxX = r.OriginX + max 0. r.XaxisX + max 0. r.YaxisX
-        let maxY = r.OriginY + max 0. r.XaxisY + max 0. r.YaxisY
-        BRect.createUnchecked(minX, minY, maxX, maxY)
 
-    /// Returns the axis-aligned bounding rectangle of the 2D rectangle.
-    static member inline bRect (r:Rect2D) : BRect =
-        r.BRect
 
 
     //#endregion
@@ -490,9 +477,10 @@ type Rect2D =
             -xY*yFac,
             xX*yFac)
 
-    /// Create a 2D Rectangle from an axis-aligned 2D Bounding Rectangle.
-    static member createFromBRect (b:BRect)  : Rect2D =
-        Rect2D.createUnchecked(b.MinX, b.MinY, b.SizeX, 0.0, 0.0, b.SizeY)
+    /// Create a 2D Rectangle from an axis-aligned 2D Bounds
+    /// given as minX, minY, maxX, maxY.
+    static member createFromBounds (minX:float, minY:float, maxX:float, maxY:float)  : Rect2D =
+        Rect2D.createUnchecked(minX, minY, maxX - minX, 0.0, 0.0, maxY - minY)
 
     /// Creates a 2D rectangle from a center point, the X direction, the X and the Y size.
     /// Fails on negative sizes.
@@ -515,6 +503,10 @@ type Rect2D =
         let yX = -x.Y * f // x and y swapped to rotate 90 degree
         let yY =  x.X * f
         Rect2D.createUnchecked(center.X - (x.X + yX)*0.5, center.Y - (x.Y + yY)*0.5, x.X, x.Y, yX, yY)
+
+
+    // #endregion
+    // #region static members
 
     /// Checks if two 2D Rectangles are equal within tolerance.
     /// Does not recognize congruent rectangles with different rotation as equal.
@@ -621,7 +613,7 @@ type Rect2D =
             yX,
             yY)
 
-    /// <summary>Creates a 2D rectangle from three points. Fails if points are too close to each other or all colinear.
+    /// <summary>Creates a 2D rectangle from three points. Fails if points are too close to each other or all collinear.
     /// The Origin, a point in X-axis direction and length, and a point for the length in Y-axis direction.
     /// Origin and x-point define the X-axis orientation of the Rectangle.
     /// The y-point only defines the length and side of the Y axis.
@@ -669,7 +661,7 @@ type Rect2D =
            //Rect2D.createUnchecked(origin + y, xv, -y) //alternative valid result: If the point Y is on the right side of the X-axis the origin will be at point 3, X at point 2.
            Rect2D.createUnchecked(xPt.X, xPt.Y, -xX, -xY, yrX, yrY) //the origin will be at point x, and the end of the x-Axis at the origin.
 
-    /// <summary>Tries to create a 2D rectangle from three points. Returns None if points are too close to each other or all colinear.
+    /// <summary>Tries to create a 2D rectangle from three points. Returns None if points are too close to each other or all collinear.
     /// The Origin, a point in X-axis direction and length, and a point for the length in Y-axis direction.
     /// Origin and x-point define the X-axis orientation of the Rectangle.
     /// The y-point only defines the length and side of the Y axis.
@@ -872,6 +864,111 @@ type Rect2D =
             rot.Sin*rect.XaxisX + rot.Cos*rect.XaxisY,
             rot.Cos*rect.YaxisX - rot.Sin*rect.YaxisY,
             rot.Sin*rect.YaxisX + rot.Cos*rect.YaxisY)
+
+
+    /// <summary>Intersects an infinite ray (Line2D extended infinitely in both directions) with a 2D rectangle.
+    /// Uses the slab intersection method in the rectangle's local coordinate system.
+    /// Returns None if the ray does not intersect the rectangle or if the ray direction is too short.
+    /// Returns Some with the entry and exit parameters on the ray if it intersects.
+    /// A parameter of 0.0 corresponds to the ray's From point, 1.0 to its To point.</summary>
+    /// <param name="ray">The 2D line considered infinite, to intersect with the rectangle.</param>
+    /// <param name="rect">The 2D rectangle to intersect with the line.</param>
+    /// <returns>A ValueSome with a tuple of (tEntry, tExit) with the entry and exit parameters on the ray.
+    /// or ValueNone if
+    ///  - The ray does not intersect the rectangle
+    ///  - The ray length is shorter than 1e-6
+    /// </returns>
+    static member intersectRay (ray:Line2D) (rect:Rect2D) : voption<float * float> =
+        // Transform ray to the rectangle's local coordinate system
+        let rayDirX = ray.VectorX
+        let rayDirY = ray.VectorY
+        let rayDirLenSq = rayDirX*rayDirX + rayDirY*rayDirY
+        if isTooSmallSq rayDirLenSq then
+            ValueNone // Ray direction too short
+        else
+            let rayOriginX = ray.FromX - rect.OriginX
+            let rayOriginY = ray.FromY - rect.OriginY
+
+            // Get rectangle axes squared lengths
+            let xLenSq = rect.XaxisX*rect.XaxisX + rect.XaxisY*rect.XaxisY
+            let yLenSq = rect.YaxisX*rect.YaxisX + rect.YaxisY*rect.YaxisY
+
+            // Initialize tMin and tMax
+            let mutable tMin = Double.MinValue
+            let mutable tMax = Double.MaxValue
+
+            // Process X-axis slab
+            if isTooTinySq xLenSq then
+                // Rectangle is flat in X direction, check if ray origin is within slab
+                let originDotX = rayOriginX*rect.XaxisX + rayOriginY*rect.XaxisY
+                if originDotX < 0.0 || originDotX > xLenSq then
+                    tMin <- Double.MaxValue // Force ValueNone return
+            else
+                let dirDotX = rayDirX*rect.XaxisX + rayDirY*rect.XaxisY
+                let originDotX = rayOriginX*rect.XaxisX + rayOriginY*rect.XaxisY
+                if abs dirDotX < 1e-12 then
+                    // Ray is parallel to X slab
+                    if originDotX < 0.0 || originDotX > xLenSq then
+                        tMin <- Double.MaxValue // Force ValueNone return
+                else
+                    let t1 = -originDotX / dirDotX
+                    let t2 = (xLenSq - originDotX) / dirDotX
+                    if t1 < t2 then
+                        tMin <- max tMin t1
+                        tMax <- min tMax t2
+                    else
+                        tMin <- max tMin t2
+                        tMax <- min tMax t1
+
+            // Process Y-axis slab
+            if tMin <= tMax then
+                if isTooTinySq yLenSq then
+                    let originDotY = rayOriginX*rect.YaxisX + rayOriginY*rect.YaxisY
+                    if originDotY < 0.0 || originDotY > yLenSq then
+                        tMin <- Double.MaxValue
+                else
+                    let dirDotY = rayDirX*rect.YaxisX + rayDirY*rect.YaxisY
+                    let originDotY = rayOriginX*rect.YaxisX + rayOriginY*rect.YaxisY
+                    if abs dirDotY < 1e-12 then
+                        if originDotY < 0.0 || originDotY > yLenSq then
+                            tMin <- Double.MaxValue
+                    else
+                        let t1 = -originDotY / dirDotY
+                        let t2 = (yLenSq - originDotY) / dirDotY
+                        if t1 < t2 then
+                            tMin <- max tMin t1
+                            tMax <- min tMax t2
+                        else
+                            tMin <- max tMin t2
+                            tMax <- min tMax t1
+
+            if tMin <= tMax then
+                ValueSome(tMin, tMax)
+            else
+                ValueNone
+
+    /// Intersects or clips a 2D line with a 2D rectangle.
+    /// Returns the clipped line segment of the intersection if it exists.
+    /// Same as Rect2D.clipLine.
+    static member intersectLine (line:Line2D) (rect:Rect2D) : voption<Line2D> =
+        match Rect2D.intersectRay line rect with
+        | ValueNone -> ValueNone
+        | ValueSome(tEntry, tExit) ->
+            let p = UtilEuclid.clamp01 tEntry
+            let t = UtilEuclid.clamp01 tExit
+            if p <> t then // if the line is outside the box p and t get both clamped to 0.0 or 1.0
+                ValueSome(line.SubLine(p,t))
+            else
+                ValueNone
+
+    /// Intersects or clips a 2D line with a 2D rectangle.
+    /// Returns the clipped line segment of the intersection if it exists.
+    /// Same as Rect2D.intersectLine.
+    static member inline clipLine (line:Line2D) (rect:Rect2D) : voption<Line2D> =
+        Rect2D.intersectLine line rect
+
+    // #endregion
+    // #region offset
 
     /// Offset a Rect2D inwards by a given distance.
     /// A negative distance will offset outwards.
@@ -1087,6 +1184,9 @@ type Rect2D =
         else
             fail $"Rect2D.offsetEdge: width {width} must be more than 1e-6" |> unbox // unbox to make type checker happy
 
+    // #endregion
+    // #region subDivide
+
     /// Divides a 2D Rectangle into a grid of sub-rectangles. The sub-rectangles are returned as an array of arrays.
     /// The gap between the sub-rectangles is given in x and y direction. It does not apply to the outer edges of the 2D Rectangle.
     /// The returned array has xCount elements, each element is an array of yCount sub-rectangles.
@@ -1200,6 +1300,9 @@ type Rect2D =
         let xCount = 2 + int (xLen / (xMaxLen*1.00001))
         let yCount = 2 + int (yLen / (yMaxLen*1.00001))
         Rect2D.grid (rect, xCount, yCount)
+
+    // #endregion
+    // #region Points
 
     /// <summary>Returns the corner diagonally opposite of corner from Origin (point 2).
     /// r.Origin + r.Xaxis + r.Yaxis
@@ -1364,6 +1467,248 @@ type Rect2D =
     /// Returns point 3 of the 2D rectangle.
     static member inline pt3 (r:Rect2D) : Pt =
         r.Pt3
+
+
+
+    /// <summary>Returns the 4 corners of the 2D Rectangle in Counter-Clockwise order, starting at Origin.
+    /// Returns an array of 4 Points: point 0 then 1, 2 and 3.
+    /// <code>
+    ///   local
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-Axis
+    ///  0-Origin       1
+    /// </code></summary>
+    member r.Points :Pt[] =
+        let p0 = Pt(r.OriginX, r.OriginY)
+        let p1 = Pt(r.OriginX + r.XaxisX, r.OriginY + r.XaxisY)
+        let p2 = Pt(r.OriginX + r.XaxisX + r.YaxisX, r.OriginY + r.XaxisY + r.YaxisY)
+        let p3 = Pt(r.OriginX + r.YaxisX, r.OriginY + r.YaxisY)
+        [| p0 ; p1 ; p2; p3|]
+
+    /// Returns the 4 corner points of the 2D rectangle.
+    static member inline points (r:Rect2D) : Pt[] =
+        r.Points
+
+    /// <summary>Returns the 4 corners of the 2D Rectangle as closed loop in Counter-Clockwise order, starting at Origin.
+    /// First and last point are the same.
+    /// Returns an array of 5 Points: point 0 then 1, 2, 3 and again 0.
+    /// <code>
+    ///   local
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-Axis
+    ///  0-Origin       1
+    /// </code></summary>
+    member r.PointsLooped :Pt[] =
+        let p0 = Pt(r.OriginX, r.OriginY)
+        let p1 = Pt(r.OriginX + r.XaxisX, r.OriginY + r.XaxisY)
+        let p2 = Pt(r.OriginX + r.XaxisX + r.YaxisX, r.OriginY + r.XaxisY + r.YaxisY)
+        let p3 = Pt(r.OriginX + r.YaxisX, r.OriginY + r.YaxisY)
+        [| p0 ; p1 ; p2; p3; p0|]
+
+    /// Returns the 4 corner points as a closed loop.
+    static member inline pointsLooped (r:Rect2D) : Pt[] =
+        r.PointsLooped
+
+    /// <summary> Returns the 4 corners of the 2D Rectangle as open loop in Counter-Clockwise order, starting at Origin.
+    /// Returns a ResizeArray of 8 floats: x and y of point 0, x and y of point 1, x and y of point 2, x and y of point 3.
+    /// <code>
+    ///   local
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-Axis
+    ///  0-Origin       1
+    /// </code></summary>
+    member r.PointsXY_CCW :ResizeArray<float> =
+        let xys = ResizeArray<float>(8)
+        xys.Add(r.OriginX)
+        xys.Add(r.OriginY)
+        xys.Add(r.OriginX + r.XaxisX)
+        xys.Add(r.OriginY + r.XaxisY)
+        xys.Add(r.OriginX + r.XaxisX + r.YaxisX)
+        xys.Add(r.OriginY + r.XaxisY + r.YaxisY)
+        xys.Add(r.OriginX + r.YaxisX)
+        xys.Add(r.OriginY + r.YaxisY)
+        xys
+
+    /// Returns the 4 corner points of the 2D rectangle as an open loop in counter-clockwise order, starting at Origin.
+    /// Returns a ResizeArray of 8 floats: x and y of point 0, x and y of point 1, x and y of point 2, x and y of point 3.
+    static member inline pointsXY_CCW (r:Rect2D) : ResizeArray<float> =
+        r.PointsXY_CCW
+
+    /// <summary> Returns the 4 corners of the 2D Rectangle as closed loop in Counter-Clockwise order, starting at Origin.
+    /// Returns a ResizeArray of 10 floats: x and y of point 0, x and y of point 1, x and y of point 2, x and y of point 3 and again x and y of point 0.
+    /// <code>
+    ///  local
+    ///  Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-Axis
+    ///  0-Origin       1
+    /// </code></summary>
+    member r.PointsXYLoopedCCW : ResizeArray<float> =
+        let xys = ResizeArray<float>(10)
+        xys.Add(r.OriginX)
+        xys.Add(r.OriginY)
+        xys.Add(r.OriginX + r.XaxisX)
+        xys.Add(r.OriginY + r.XaxisY)
+        xys.Add(r.OriginX + r.XaxisX + r.YaxisX)
+        xys.Add(r.OriginY + r.XaxisY + r.YaxisY)
+        xys.Add(r.OriginX + r.YaxisX)
+        xys.Add(r.OriginY + r.YaxisY)
+        xys.Add(r.OriginX) // loop back to first point
+        xys.Add(r.OriginY)
+        xys
+
+    /// Returns the 4 corner points as a closed loop in Counter-Clockwise order, starting at Origin.
+    /// Returns a ResizeArray of 10 floats: x and y of point 0, x and y of point 1, x and y of point 2, x and y of point 3 and again x and y of point 0.
+    static member inline pointsXYLoopedCCW (r:Rect2D) : ResizeArray<float> =
+        r.PointsXYLoopedCCW
+
+    // clockwise versions of the above:
+
+    /// <summary> Returns the 4 corners of the 2D Rectangle as open loop in Clockwise order, starting at Origin.
+    /// Returns a ResizeArray of 8 floats: x and y of point 0, x and y of point 3, x and y of point 2, x and y of point 1.
+    /// <code>
+    ///   local
+    ///   Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-Axis
+    ///  0-Origin       1
+    /// </code></summary>
+    member r.PointsXY_CW :ResizeArray<float> =
+        let xys = ResizeArray<float>(8)
+        xys.Add(r.OriginX)
+        xys.Add(r.OriginY)
+        xys.Add(r.OriginX + r.YaxisX)
+        xys.Add(r.OriginY + r.YaxisY)
+        xys.Add(r.OriginX + r.XaxisX + r.YaxisX)
+        xys.Add(r.OriginY + r.XaxisY + r.YaxisY)
+        xys.Add(r.OriginX + r.XaxisX)
+        xys.Add(r.OriginY + r.XaxisY)
+        xys
+
+    /// Returns the 4 corner points of the 2D rectangle as open loop in Clockwise order, starting at Origin.
+    /// Returns a ResizeArray of 8 floats: x and y of point 0, x and y of point 3, x and y of point 2, x and y of point 1.
+    static member inline pointsXY_CW (r:Rect2D) : ResizeArray<float> =
+        r.PointsXY_CW
+
+    /// <summary> Returns the 4 corners of the 2D Rectangle as closed loop in Clockwise order, starting at Origin.
+    /// Returns a ResizeArray of 10 floats: x and y of point 0, x and y of point 3, x and y of point 2, x and y of point 1 and again x and y of point 0.
+    /// <code>
+    ///  local
+    ///  Y-Axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-Axis
+    ///  0-Origin       1
+    /// </code></summary>
+    member r.PointsXYLoopedCW : ResizeArray<float> =
+        let xys = ResizeArray<float>(10)
+        xys.Add(r.OriginX)
+        xys.Add(r.OriginY)
+        xys.Add(r.OriginX + r.YaxisX)
+        xys.Add(r.OriginY + r.YaxisY)
+        xys.Add(r.OriginX + r.XaxisX + r.YaxisX)
+        xys.Add(r.OriginY + r.XaxisY + r.YaxisY)
+        xys.Add(r.OriginX + r.XaxisX)
+        xys.Add(r.OriginY + r.XaxisY)
+        xys.Add(r.OriginX) // loop back to first point
+        xys.Add(r.OriginY)
+        xys
+
+    /// Returns the 4 corner points as a closed loop in Clockwise order, starting at Origin.
+    /// Returns a ResizeArray of 10 floats: x and y of point 0, x and y of point 3, x and y of point 2, x and y of point 1 and again x and y of point 0.
+    static member inline pointsXYLoopedCW (r:Rect2D) : ResizeArray<float> =
+        r.PointsXYLoopedCW
+
+    /// <summary>Iterates the 4 corners of the 2D Rectangle in Counter-Clockwise order, starting at Origin.</summary>
+    /// <param name="action">The action to call 4 times . Once for each corner, with x and y as parameters.</param>
+    /// <param name="r">The rectangle to iterate the corners of.</param>
+    static member iterPointsCCW (action: float -> float -> unit) (r:Rect2D) : unit =
+        action r.OriginX r.OriginY
+        action (r.OriginX + r.XaxisX) (r.OriginY + r.XaxisY)
+        action (r.OriginX + r.XaxisX + r.YaxisX) (r.OriginY + r.XaxisY + r.YaxisY)
+        action (r.OriginX + r.YaxisX) (r.OriginY + r.YaxisY)
+
+    /// <summary>Iterates the 4 corners of the 2D Rectangle as closed loop in Counter-Clockwise order, starting and ending at Origin.</summary>
+    /// <param name="action">The action to call 5 times. With x and y as parameters.</param>
+    /// <param name="r">The rectangle to iterate the corners of.</param>
+    static member iterPointsLoopedCCW (action: float -> float -> unit) (r:Rect2D) : unit =
+        action r.OriginX r.OriginY
+        action (r.OriginX + r.XaxisX) (r.OriginY + r.XaxisY)
+        action (r.OriginX + r.XaxisX + r.YaxisX) (r.OriginY + r.XaxisY + r.YaxisY)
+        action (r.OriginX + r.YaxisX) (r.OriginY + r.YaxisY)
+        action r.OriginX r.OriginY
+
+    /// <summary>Iterates the 4 corners of the 2D Rectangle in Clockwise order, starting at Origin.</summary>
+    /// <param name="action">The action to call 4 times . Once for each corner, with x and y as parameters.</param>
+    /// <param name="r">The rectangle to iterate the corners of.</param>
+    static member iterPointsCW (action: float -> float -> unit) (r:Rect2D) : unit =
+        action r.OriginX r.OriginY
+        action (r.OriginX + r.YaxisX) (r.OriginY + r.YaxisY)
+        action (r.OriginX + r.XaxisX + r.YaxisX) (r.OriginY + r.XaxisY + r.YaxisY)
+        action (r.OriginX + r.XaxisX) (r.OriginY + r.XaxisY)
+
+    /// <summary>Iterates the 4 corners of the 2D Rectangle as closed loop in Clockwise order, starting and ending at Origin.</summary>
+    /// <param name="action">The action to call 5 times. With x and y as parameters.</param>
+    /// <param name="r">The rectangle to iterate the corners of.</param>
+    static member iterPointsLoopedCW (action: float -> float -> unit) (r:Rect2D) : unit =
+        action r.OriginX r.OriginY
+        action (r.OriginX + r.YaxisX) (r.OriginY + r.YaxisY)
+        action (r.OriginX + r.XaxisX + r.YaxisX) (r.OriginY + r.XaxisY + r.YaxisY)
+        action (r.OriginX + r.XaxisX) (r.OriginY + r.XaxisY)
+        action r.OriginX r.OriginY
+
+    // #endregion
+    // #region Edges
 
     /// <summary>Returns a 2D line from point 0 to 1 of the 2D rectangle.
     /// <code>
@@ -1608,246 +1953,6 @@ type Rect2D =
         r.RotateOrientation90CCW
 
 
-    // #endregion
-    // #region as array of points
-
-    /// <summary>Returns the 4 corners of the 2D Rectangle in Counter-Clockwise order, starting at Origin.
-    /// Returns an array of 4 Points: point 0 then 1, 2 and 3.
-    /// <code>
-    ///   local
-    ///   Y-Axis
-    ///   ^
-    ///   |
-    ///   |             2
-    /// 3 +------------+
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |       local
-    ///   +------------+-----> X-Axis
-    ///  0-Origin       1
-    /// </code></summary>
-    member r.Points :Pt[] =
-        let p0 = Pt(r.OriginX, r.OriginY)
-        let p1 = Pt(r.OriginX + r.XaxisX, r.OriginY + r.XaxisY)
-        let p2 = Pt(r.OriginX + r.XaxisX + r.YaxisX, r.OriginY + r.XaxisY + r.YaxisY)
-        let p3 = Pt(r.OriginX + r.YaxisX, r.OriginY + r.YaxisY)
-        [| p0 ; p1 ; p2; p3|]
-
-    /// Returns the 4 corner points of the 2D rectangle.
-    static member inline points (r:Rect2D) : Pt[] =
-        r.Points
-
-    /// <summary>Returns the 4 corners of the 2D Rectangle as closed loop in Counter-Clockwise order, starting at Origin.
-    /// First and last point are the same.
-    /// Returns an array of 5 Points: point 0 then 1, 2, 3 and again 0.
-    /// <code>
-    ///   local
-    ///   Y-Axis
-    ///   ^
-    ///   |
-    ///   |             2
-    /// 3 +------------+
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |       local
-    ///   +------------+-----> X-Axis
-    ///  0-Origin       1
-    /// </code></summary>
-    member r.PointsLooped :Pt[] =
-        let p0 = Pt(r.OriginX, r.OriginY)
-        let p1 = Pt(r.OriginX + r.XaxisX, r.OriginY + r.XaxisY)
-        let p2 = Pt(r.OriginX + r.XaxisX + r.YaxisX, r.OriginY + r.XaxisY + r.YaxisY)
-        let p3 = Pt(r.OriginX + r.YaxisX, r.OriginY + r.YaxisY)
-        [| p0 ; p1 ; p2; p3; p0|]
-
-    /// Returns the 4 corner points as a closed loop.
-    static member inline pointsLooped (r:Rect2D) : Pt[] =
-        r.PointsLooped
-
-    /// <summary> Returns the 4 corners of the 2D Rectangle as open loop in Counter-Clockwise order, starting at Origin.
-    /// Returns a ResizeArray of 8 floats: x and y of point 0, x and y of point 1, x and y of point 2, x and y of point 3.
-    /// <code>
-    ///   local
-    ///   Y-Axis
-    ///   ^
-    ///   |
-    ///   |             2
-    /// 3 +------------+
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |       local
-    ///   +------------+-----> X-Axis
-    ///  0-Origin       1
-    /// </code></summary>
-    member r.PointsXY_CCW :ResizeArray<float> =
-        let xys = ResizeArray<float>(8)
-        xys.Add(r.OriginX)
-        xys.Add(r.OriginY)
-        xys.Add(r.OriginX + r.XaxisX)
-        xys.Add(r.OriginY + r.XaxisY)
-        xys.Add(r.OriginX + r.XaxisX + r.YaxisX)
-        xys.Add(r.OriginY + r.XaxisY + r.YaxisY)
-        xys.Add(r.OriginX + r.YaxisX)
-        xys.Add(r.OriginY + r.YaxisY)
-        xys
-
-    /// Returns the 4 corner points of the 2D rectangl as open loop in Counter-Clockwise order, starting at Origin.
-    /// Returns a ResizeArray of 8 floats: x and y of point 0, x and y of point 1, x and y of point 2, x and y of point 3.
-    static member inline pointsXY_CCW (r:Rect2D) : ResizeArray<float> =
-        r.PointsXY_CCW
-
-    /// <summary> Returns the 4 corners of the 2D Rectangle as closed loop in Counter-Clockwise order, starting at Origin.
-    /// Returns a ResizeArray of 10 floats: x and y of point 0, x and y of point 1, x and y of point 2, x and y of point 3 and again x and y of point 0.
-    /// <code>
-    ///  local
-    ///  Y-Axis
-    ///   ^
-    ///   |
-    ///   |             2
-    /// 3 +------------+
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |       local
-    ///   +------------+-----> X-Axis
-    ///  0-Origin       1
-    /// </code></summary>
-    member r.PointsXYLoopedCCW : ResizeArray<float> =
-        let xys = ResizeArray<float>(10)
-        xys.Add(r.OriginX)
-        xys.Add(r.OriginY)
-        xys.Add(r.OriginX + r.XaxisX)
-        xys.Add(r.OriginY + r.XaxisY)
-        xys.Add(r.OriginX + r.XaxisX + r.YaxisX)
-        xys.Add(r.OriginY + r.XaxisY + r.YaxisY)
-        xys.Add(r.OriginX + r.YaxisX)
-        xys.Add(r.OriginY + r.YaxisY)
-        xys.Add(r.OriginX) // loop back to first point
-        xys.Add(r.OriginY)
-        xys
-
-    /// Returns the 4 corner points as a closed loop in Counter-Clockwise order, starting at Origin.
-    /// Returns a ResizeArray of 10 floats: x and y of point 0, x and y of point 1, x and y of point 2, x and y of point 3 and again x and y of point 0.
-    static member inline pointsXYLoopedCCW (r:Rect2D) : ResizeArray<float> =
-        r.PointsXYLoopedCCW
-
-    // clockwise versions of the above:
-
-    /// <summary> Returns the 4 corners of the 2D Rectangle as open loop in Clockwise order, starting at Origin.
-    /// Returns a ResizeArray of 8 floats: x and y of point 0, x and y of point 3, x and y of point 2, x and y of point 1.
-    /// <code>
-    ///   local
-    ///   Y-Axis
-    ///   ^
-    ///   |
-    ///   |             2
-    /// 3 +------------+
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |       local
-    ///   +------------+-----> X-Axis
-    ///  0-Origin       1
-    /// </code></summary>
-    member r.PointsXY_CW :ResizeArray<float> =
-        let xys = ResizeArray<float>(8)
-        xys.Add(r.OriginX)
-        xys.Add(r.OriginY)
-        xys.Add(r.OriginX + r.YaxisX)
-        xys.Add(r.OriginY + r.YaxisY)
-        xys.Add(r.OriginX + r.XaxisX + r.YaxisX)
-        xys.Add(r.OriginY + r.XaxisY + r.YaxisY)
-        xys.Add(r.OriginX + r.XaxisX)
-        xys.Add(r.OriginY + r.XaxisY)
-        xys
-
-    /// Returns the 4 corner points of the 2D rectangle as open loop in Clockwise order, starting at Origin.
-    /// Returns a ResizeArray of 8 floats: x and y of point 0, x and y of point 3, x and y of point 2, x and y of point 1.
-    static member inline pointsXY_CW (r:Rect2D) : ResizeArray<float> =
-        r.PointsXY_CW
-
-    /// <summary> Returns the 4 corners of the 2D Rectangle as closed loop in Clockwise order, starting at Origin.
-    /// Returns a ResizeArray of 10 floats: x and y of point 0, x and y of point 3, x and y of point 2, x and y of point 1 and again x and y of point 0.
-    /// <code>
-    ///  local
-    ///  Y-Axis
-    ///   ^
-    ///   |
-    ///   |             2
-    /// 3 +------------+
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |       local
-    ///   +------------+-----> X-Axis
-    ///  0-Origin       1
-    /// </code></summary>
-    member r.PointsXYLoopedCW : ResizeArray<float> =
-        let xys = ResizeArray<float>(10)
-        xys.Add(r.OriginX)
-        xys.Add(r.OriginY)
-        xys.Add(r.OriginX + r.YaxisX)
-        xys.Add(r.OriginY + r.YaxisY)
-        xys.Add(r.OriginX + r.XaxisX + r.YaxisX)
-        xys.Add(r.OriginY + r.XaxisY + r.YaxisY)
-        xys.Add(r.OriginX + r.XaxisX)
-        xys.Add(r.OriginY + r.XaxisY)
-        xys.Add(r.OriginX) // loop back to first point
-        xys.Add(r.OriginY)
-        xys
-
-    /// Returns the 4 corner points as a closed loop in Clockwise order, starting at Origin.
-    /// Returns a ResizeArray of 10 floats: x and y of point 0, x and y of point 3, x and y of point 2, x and y of point 1 and again x and y of point 0.
-    static member inline pointsXYLoopedCW (r:Rect2D) : ResizeArray<float> =
-        r.PointsXYLoopedCW
-
-    /// <summary>Iterates the 4 corners of the 2D Rectangle in Counter-Clockwise order, starting at Origin.</summary>
-    /// <param name="action">The action to call 4 times . Once for each corner, with x and y as parameters.</param>
-    /// <param name="r">The rectangle to iterate the corners of.</param>
-    static member iterPointsCCW (action: float -> float -> unit) (r:Rect2D) : unit =
-        action r.OriginX r.OriginY
-        action (r.OriginX + r.XaxisX) (r.OriginY + r.XaxisY)
-        action (r.OriginX + r.XaxisX + r.YaxisX) (r.OriginY + r.XaxisY + r.YaxisY)
-        action (r.OriginX + r.YaxisX) (r.OriginY + r.YaxisY)
-
-    /// <summary>Iterates the 4 corners of the 2D Rectangle as closed loop in Counter-Clockwise order, starting and ending at Origin.</summary>
-    /// <param name="action">The action to call 5 times. With x and y as parameters.</param>
-    /// <param name="r">The rectangle to iterate the corners of.</param>
-    static member iterPointsLoopedCCW (action: float -> float -> unit) (r:Rect2D) : unit =
-        action r.OriginX r.OriginY
-        action (r.OriginX + r.XaxisX) (r.OriginY + r.XaxisY)
-        action (r.OriginX + r.XaxisX + r.YaxisX) (r.OriginY + r.XaxisY + r.YaxisY)
-        action (r.OriginX + r.YaxisX) (r.OriginY + r.YaxisY)
-        action r.OriginX r.OriginY
-
-    /// <summary>Iterates the 4 corners of the 2D Rectangle in Clockwise order, starting at Origin.</summary>
-    /// <param name="action">The action to call 4 times . Once for each corner, with x and y as parameters.</param>
-    /// <param name="r">The rectangle to iterate the corners of.</param>
-    static member iterPointsCW (action: float -> float -> unit) (r:Rect2D) : unit =
-        action r.OriginX r.OriginY
-        action (r.OriginX + r.YaxisX) (r.OriginY + r.YaxisY)
-        action (r.OriginX + r.XaxisX + r.YaxisX) (r.OriginY + r.XaxisY + r.YaxisY)
-        action (r.OriginX + r.XaxisX) (r.OriginY + r.XaxisY)
-
-    /// <summary>Iterates the 4 corners of the 2D Rectangle as closed loop in Clockwise order, starting and ending at Origin.</summary>
-    /// <param name="action">The action to call 5 times. With x and y as parameters.</param>
-    /// <param name="r">The rectangle to iterate the corners of.</param>
-    static member iterPointsLoopedCW (action: float -> float -> unit) (r:Rect2D) : unit =
-        action r.OriginX r.OriginY
-        action (r.OriginX + r.YaxisX) (r.OriginY + r.YaxisY)
-        action (r.OriginX + r.XaxisX + r.YaxisX) (r.OriginY + r.XaxisY + r.YaxisY)
-        action (r.OriginX + r.XaxisX) (r.OriginY + r.XaxisY)
-        action r.OriginX r.OriginY
-
     /// <summary>Returns the 4 Edges of the 2D Rectangle in Counter-Clockwise order, starting at Origin.
     /// Returns an array of 4 Lines: from point 0 to 1, 1 to 2 to 3 and 3 to 0.
     /// <code>
@@ -1912,6 +2017,7 @@ type Rect2D =
     static member inline getEdge (i:int) (r:Rect2D) : Line2D =
         r.GetEdge i
 
+
     // #endregion
     // #region Obsolete
 
@@ -1927,3 +2033,24 @@ type Rect2D =
     member inline r.AreaSq : float =
         (r.XaxisX*r.XaxisX + r.XaxisY*r.XaxisY) * (r.YaxisX*r.YaxisX + r.YaxisY*r.YaxisY)
 
+
+    /// Takes minX, minY, maxX, maxY
+    [<Obsolete("use bRect.AsRect2D")>]
+    static member createFromBRect (minX:float, minY:float, maxX:float, maxY:float)  : Rect2D =
+        Rect2D.createUnchecked(minX, minY, maxX - minX, 0.0, 0.0, maxY - minY)
+
+    /// returns minX, minY, maxX, maxY
+    [<Obsolete("use BRect.createFromRect2D")>]
+    member r.BRect : float * float * float * float =
+        let minX = r.OriginX + min 0. r.XaxisX + min 0. r.YaxisX
+        let minY = r.OriginY + min 0. r.XaxisY + min 0. r.YaxisY
+        let maxX = r.OriginX + max 0. r.XaxisX + max 0. r.YaxisX
+        let maxY = r.OriginY + max 0. r.XaxisY + max 0. r.YaxisY
+        (minX, minY, maxX, maxY)
+
+    #nowarn "44"
+
+    /// Returns minX, minY, maxX, maxY
+    [<Obsolete("use BRect.createFromRect2D")>]
+    static member bRect (r:Rect2D) : float * float * float * float =
+        r.BRect

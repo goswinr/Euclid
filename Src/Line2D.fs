@@ -107,21 +107,37 @@ type Line2D =
     static member asFSharpCode (ln:Line2D) : string =
         $"Line2D({ln.FromX}, {ln.FromY}, {ln.ToX}, {ln.ToY})"
 
-    /// The start point of the Line2D.
+    /// The start point of the Line2D. Same as ln.Start.
     member inline ln.From : Pt =
         Pt(ln.FromX, ln.FromY)
 
-    /// The start point of the Line2D.
+    /// The start point of the Line2D. Same as Line2D.start.
     static member inline from (ln:Line2D) : Pt =
         Pt(ln.FromX, ln.FromY)
 
-    /// The end point of the Line2D.
+    /// The end point of the Line2D. Same as ln.End.
     member inline ln.To : Pt =
         Pt(ln.ToX, ln.ToY)
 
-    /// The end point of the Line2D.
+    /// The end point of the Line2D. Same as Line2D.end'.
     static member inline to' (ln:Line2D) : Pt =
         Pt(ln.ToX, ln.ToY)
+
+    /// The start point of the Line2D. Same as ln.From.
+    member inline ln.Start : Pt =
+        Pt(ln.FromX, ln.FromY)
+
+    /// The start point of the Line2D. Same as Line2D.from.
+    static member inline start (ln:Line2D) : Pt =
+        ln.Start
+
+    /// The end point of the Line2D. Same as ln.To.
+    member inline ln.End : Pt =
+        Pt(ln.ToX, ln.ToY)
+
+    /// The end point of the Line2D. Same as Line2D.to'.
+    static member inline end' (ln:Line2D) : Pt =
+        ln.End
 
     /// Same as ln.Vector or ln.Tangent.
     /// The returned vector has the same length as the Line2D.

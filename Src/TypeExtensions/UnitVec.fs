@@ -98,19 +98,19 @@ module AutoOpenUnitVec =
         static member inline perpendicularInXY (v:UnitVec) :Vec =
             Vec(-v.Y, v.X, 0.0)
 
-        /// 90 Degree rotation Counter-Clockwise around Z-axis.
+        /// 90-degree rotation Counter-Clockwise around Z-axis.
         member inline v.RotateOnZ90CCW : UnitVec =
             UnitVec.createUnchecked( -v.Y, v.X, v.Z)
 
-        /// 90 Degree rotation Counter-Clockwise around Z-axis.
+        /// 90-degree rotation Counter-Clockwise around Z-axis.
         static member inline rotateOnZ90CCW(v:UnitVec) : UnitVec =
             UnitVec.createUnchecked( -v.Y, v.X, v.Z)
 
-        /// 90 Degree rotation clockwise around Z-axis.
+        /// 90-degree rotation clockwise around Z-axis.
         member inline v.RotateOnZ90CW : UnitVec =
             UnitVec.createUnchecked(  v.Y, -v.X, v.Z)
 
-        /// 90 Degree rotation clockwise around Z-axis.
+        /// 90-degree rotation clockwise around Z-axis.
         static member inline rotateOnZ90CW(v:UnitVec) : UnitVec =
             UnitVec.createUnchecked(  v.Y, -v.X, v.Z)
 
@@ -213,7 +213,7 @@ module AutoOpenUnitVec =
             a.X * b.X + a.Y * b.Y  + a.Z * b.Z
             |> LanguagePrimitives.FloatWithMeasure
 
-        /// The diamond angle is always positive and in the range of 0.0 to 4.0 (for 360 Degrees)
+        /// The diamond angle is always positive and in the range of 0.0 to 4.0 (for 360 degrees)
         /// 0.0 = Xaxis, going Counter-Clockwise. Ignoring Z component.
         /// This is the fastest angle computation since it does not use Math.Cos or Math.Sin.
         /// It is useful for radial sorting.
@@ -232,7 +232,7 @@ module AutoOpenUnitVec =
                 else
                     3.0 + v.X/(v.X-v.Y)
 
-        /// The diamond angle is always positive and in the range of 0.0 to 4.0 (for 360 Degrees)
+        /// The diamond angle is always positive and in the range of 0.0 to 4.0 (for 360 degrees)
         /// 0.0 = Xaxis, going Counter-Clockwise. Ignoring Z component.
         /// This is the fastest angle computation since it does not use Math.Cos or Math.Sin.
         /// It is useful for radial sorting.
@@ -240,7 +240,7 @@ module AutoOpenUnitVec =
         static member inline directionDiamondInXY(v:UnitVec) : float =
             v.DirectionDiamondInXY
 
-        /// Returns the angle in Radians from X-axis,
+        /// Returns the angle in radians from X-axis,
         /// Going Counter-Clockwise till two Pi.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
         /// Fails if vector is vertical.
@@ -253,14 +253,14 @@ module AutoOpenUnitVec =
             else
                 a
 
-        /// Returns the angle in Radians from X-axis,
+        /// Returns the angle in radians from X-axis,
         /// Going Counter-Clockwise till two Pi.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
         /// Fails if vector is vertical.
         static member inline direction2PiInXY (v:UnitVec) : float =
             v.Direction2PiInXY
 
-        /// Returns the angle in Radians from X-axis in World X-Y plane,
+        /// Returns the angle in radians from X-axis in World X-Y plane,
         /// Ignores orientation.
         /// Range 0.0 to Pi.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
@@ -274,7 +274,7 @@ module AutoOpenUnitVec =
             else
                 a
 
-        /// Returns the angle in Radians from X-axis in World X-Y plane,
+        /// Returns the angle in radians from X-axis in World X-Y plane,
         /// Ignores orientation.
         /// Range 0.0 to Pi.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
@@ -282,26 +282,26 @@ module AutoOpenUnitVec =
         static member inline directionPiInXY (v:UnitVec) : float =
             v.DirectionPiInXY
 
-        /// Returns the angle in Degrees from X-axis in World X-Y plane.
+        /// Returns the angle in degrees from X-axis in World X-Y plane.
         /// Going Counter-Clockwise till 360.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
         member inline v.Direction360InXY : float =
             v.Direction2PiInXY |> toDegrees
 
-        /// Returns the angle in Degrees from X-axis in World X-Y plane.
+        /// Returns the angle in degrees from X-axis in World X-Y plane.
         /// Going Counter-Clockwise till 360.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
         static member inline direction360InXY (v:UnitVec) : float =
             v.Direction360InXY
 
-        /// Returns the angle in Degrees from X-axis,
+        /// Returns the angle in degrees from X-axis,
         /// Ignores orientation.
         /// Range 0.0 to 180.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
         member inline v.Direction180InXY : float =
             v.DirectionPiInXY |> toDegrees
 
-        /// Returns the angle in Degrees from X-axis,
+        /// Returns the angle in degrees from X-axis,
         /// Ignores orientation.
         /// Range 0.0 to 180.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
@@ -310,7 +310,7 @@ module AutoOpenUnitVec =
 
         /// Returns positive angle for rotating Counter-Clockwise from this vector to vector 'b' .
         /// In Diamond Angle. Using only proportion of X to Y components.
-        /// Range of 0.0 to 4.0 (for 360 Degrees)
+        /// Range of 0.0 to 4.0 (for 360 degrees)
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
         member inline v.AngleDiamondInXYTo (b:UnitVec) : float =
@@ -320,7 +320,7 @@ module AutoOpenUnitVec =
 
         /// Returns positive angle for rotating Counter-Clockwise from vector 'a' to vector 'b' .
         /// In Diamond Angle. Using only proportion of X to Y components.
-        /// Range of 0.0 to 4.0 (for 360 Degrees)
+        /// Range of 0.0 to 4.0 (for 360 degrees)
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
         static member inline angleDiamondInXY (a:UnitVec, b:UnitVec) : float =
@@ -667,7 +667,7 @@ module AutoOpenUnitVec =
             Vec (v.X, v.Y, v.Z+z)
 
         /// Project vector to World X-Y plane.
-        /// Use Vc.ofUnitVec to convert to 2D vector instance.
+        /// Use UnitVec.asVc to convert to a 2D vector instance.
         static member inline projectToXYPlane (v:UnitVec) : Vec =
             Vec(v.X, v.Y, 0.0)
 
@@ -692,9 +692,9 @@ module AutoOpenUnitVec =
         static member inline determinant3 (u:UnitVec, v:UnitVec, w:UnitVec) : float =
             u.X*v.Y*w.Z + v.X*w.Y*u.Z + w.X*u.Y*v.Z - w.X*v.Y*u.Z - v.X*u.Y*w.Z - u.X*w.Y*v.Z
 
-        /// Returns angle between two 3D unit-vectors in Radians.
+        /// Returns angle between two 3D unit-vectors in radians.
         /// Takes vector orientation into account.
-        /// Range 0.0 to Pi( = 0 to 180 Degree)
+        /// Range 0.0 to Pi( = 0 to 180 degrees)
         static member inline anglePi (a:UnitVec) (b:UnitVec) : float =
             // The "straight forward" method of acos(u.v) has large precision
             // issues when the dot product is near +/-1.  This is due to the
@@ -716,9 +716,9 @@ module AutoOpenUnitVec =
                 if dot < 0. then Math.PI - 2.0 * asin(vecDist3(-a.X, -a.Y, -a.Z, b.X, b.Y, b.Z) * 0.5)
                 else                       2.0 * asin(vecDist3(a.X ,  a.Y,  a.Z, b.X, b.Y, b.Z) * 0.5)
 
-        /// Returns positive angle between two 3D unit-vectors in Radians.
+        /// Returns positive angle between two 3D unit-vectors in radians.
         /// Ignores orientation.
-        /// Range 0.0 to Pi/2 ( = 0 to 90 Degree)
+        /// Range 0.0 to Pi/2 ( = 0 to 90 degrees)
         static member inline angleHalfPi (a:UnitVec) (b:UnitVec) : float =
             let dot = a *** b
             let dotAbs = abs dot
@@ -729,29 +729,29 @@ module AutoOpenUnitVec =
                 else             2.0 * asin(vecDist3(a.X ,  a.Y,  a.Z, b.X, b.Y, b.Z) * 0.5)
 
         /// Returns positive angle from vector 'a' to vector 'b' projected in X-Y plane.
-        /// In Radians.
+        /// In radians.
         /// Considering Counter-Clockwise rotation round the World Z-axis.
-        /// Range: 0.0 to 2 Pi ( = 0 to 360 Degrees)
+        /// Range: 0.0 to 2 Pi ( = 0 to 360 degrees)
         static member inline angle2PiInXY (a:UnitVec, b:UnitVec) : float = // not curried because argument order is important
             let r = b.Direction2PiInXY  - a.Direction2PiInXY
             if r >= 0. then  r
             else r + UtilEuclid.twoPi
 
-        /// Returns positive angle between two 3D unit-vectors in Degrees,
+        /// Returns positive angle between two 3D unit-vectors in degrees,
         /// Ignores vector orientation.
-        /// Range: 0 to 90 Degrees.
+        /// Range: 0 to 90 degrees.
         static member inline angle90 (a:UnitVec) (b:UnitVec) : float =
             UnitVec.angleHalfPi a b |>  toDegrees
 
-        /// Returns positive angle between two 3D unit-vectors in Degrees.
+        /// Returns positive angle between two 3D unit-vectors in degrees.
         /// Takes vector orientation into account.
-        /// Range 0 to 180 Degrees.
+        /// Range 0 to 180 degrees.
         static member inline angle180 (a:UnitVec) (b:UnitVec) : float =
             UnitVec.anglePi a b |>  toDegrees
 
-        /// Returns positive angle of two 3D unit-vector projected in X-Y plane in Degrees.
+        /// Returns positive angle of two 3D unit-vector projected in X-Y plane in degrees.
         /// Considering positive rotation round the World Z-axis.
-        /// Range:  0 to 360 Degrees.
+        /// Range:  0 to 360 degrees.
         static member inline angle360InXY (a:UnitVec, b:UnitVec) : float = // not curried because argument order is important
             UnitVec.angle2PiInXY (a, b) |> toDegrees
 
@@ -787,33 +787,33 @@ module AutoOpenUnitVec =
         static member inline rotateOnZ (r:Rotation2D) (v:UnitVec) : UnitVec =
             UnitVec.createUnchecked (r.Cos*v.X - r.Sin*v.Y, r.Sin*v.X + r.Cos*v.Y, v.Z)
 
-        /// Rotate the 3D unit-vector in Degrees around X-axis, from Y to Z-axis, Counter Clockwise looking from right.
+        /// Rotate the 3D unit-vector in degrees around X-axis, from Y to Z-axis, Counter Clockwise looking from right.
         static member inline rotateOnXDeg (angDegree) (v:UnitVec) : UnitVec =
             UnitVec.rotateOnX (Rotation2D.createFromDegrees angDegree) v
 
-        /// Rotate the 3D unit-vector in Degrees around Y-axis, from Z to X-axis, Counter Clockwise looking from back.
+        /// Rotate the 3D unit-vector in degrees around Y-axis, from Z to X-axis, Counter Clockwise looking from back.
         static member inline rotateOnYDeg (angDegree) (v:UnitVec) : UnitVec =
             UnitVec.rotateOnY (Rotation2D.createFromDegrees angDegree) v
 
-        /// Rotate the 3D unit-vector in Degrees around Z-axis, from X to Y-axis, Counter Clockwise looking from top.
+        /// Rotate the 3D unit-vector in degrees around Z-axis, from X to Y-axis, Counter Clockwise looking from top.
         static member inline rotateOnZDeg (angDegree) (v:UnitVec) : UnitVec =
             UnitVec.rotateOnZ (Rotation2D.createFromDegrees angDegree) v
 
-        /// Returns positive or negative slope of a 3D unit-vector in Radians.
+        /// Returns positive or negative slope of a 3D unit-vector in radians.
         /// This is the elevation angle from the World X-Y plane (not from the X-axis).
-        /// Range -1.57 to +1.57 Radians.
+        /// Range -1.57 to +1.57 radians.
         static member inline slopeRadians (v:UnitVec) : float =
             v.Z |> asinSafe
 
-        /// Returns positive or negative slope of a 3D unit-vector in Degrees.
+        /// Returns positive or negative slope of a 3D unit-vector in degrees.
         /// This is the elevation angle from the World X-Y plane (not from the X-axis).
-        /// Range -90 to +90 Degrees.
+        /// Range -90 to +90 degrees.
         static member inline slopeDegrees (v:UnitVec) : float =
             UnitVec.slopeRadians v |> toDegrees
 
         /// Returns positive or negative slope of a 3D unit-vector in Percent.
         /// This is the elevation angle from the World X-Y plane (not from the X-axis).
-        /// 100% = 45 Degrees.
+        /// 100% = 45 degrees.
         /// Returns positive (or negative) infinity if line is vertical.
         static member inline slopePercent (v:UnitVec) : float =
             //if isTooTiny (abs(v.Z)) then EuclidDivByZeroException.Raise "Euclid.UnitVec.slopePercent: Can't get Slope from vertical unit-vector %O" v
@@ -908,7 +908,7 @@ module AutoOpenUnitVec =
 
         [<Obsolete("Use Euclid.XLine3D module instead.")>]
         static member inline intersection (ptA:Pnt) (ptB:Pnt) (vA:UnitVec) (vB:UnitVec) : Option<float*float> =
-            Some (XLine3D.parameters(ptA.X, ptA.Y, ptA.Z, ptB.X, ptB.Y, ptB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z))
+            Some (XLineXYZ.parameters(ptA.X, ptA.Y, ptA.Z, ptB.X, ptB.Y, ptB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z))
 
         [<Obsolete("Use UnitVec.isParallelWithin instead.")>]
         static member inline isAngle90Below (cosineValue: float<Cosine.cosine>) (a:UnitVec) (b:UnitVec) : bool =

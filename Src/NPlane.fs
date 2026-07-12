@@ -120,12 +120,12 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
         pl.DistanceToXYZSigned (x, y, z)
 
     /// Returns signed distance of point to plane, also indicating on which side it is.
-    member inline pl.DistanceToPtSigned (pt:Pnt) : float =
+    member inline pl.DistanceToPntSigned (pt:Pnt) : float =
         pl.DistanceToXYZSigned (pt.X, pt.Y, pt.Z)
 
     /// Returns signed distance of point to plane, also indicating on which side it is.
-    static member inline distanceToPtSigned (pt:Pnt) (pl:NPlane) : float =
-        pl.DistanceToPtSigned pt
+    static member inline distanceToPntSigned (pt:Pnt) (pl:NPlane) : float =
+        pl.DistanceToPntSigned pt
 
     /// Returns absolute distance of point to plane.
     member inline pl.DistanceToXYZ (x:float, y:float, z:float) : float =
@@ -136,16 +136,16 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
         pl.DistanceToXYZ (x, y, z)
 
     /// Returns absolute distance of point to plane.
-    member inline pl.DistanceToPt (pt:Pnt) : float =
+    member inline pl.DistanceToPnt (pt:Pnt) : float =
         pl.DistanceToXYZ (pt.X, pt.Y, pt.Z)
 
     /// Returns absolute distance of point to plane.
-    static member inline distanceToPt (pt:Pnt) (pl:NPlane) : float =
-        pl.DistanceToPt pt
+    static member inline distanceToPnt (pt:Pnt) (pl:NPlane) : float =
+        pl.DistanceToPnt pt
 
     /// Returns the closest point on the plane from a test point.
     member inline pl.ClosestPoint (pt:Pnt) : Pnt =
-        let d = pl.DistanceToPtSigned pt
+        let d = pl.DistanceToPntSigned pt
         Pnt(pt.X - pl.NormalX*d, pt.Y - pl.NormalY*d, pt.Z - pl.NormalZ*d)
 
     /// Returns the closest point on the plane from a test point.
@@ -154,14 +154,14 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
 
     /// First finds the closest point on the plane from a test point.
     /// Then returns a new plane with Origin at this point and the same Normal.
-    member inline pl.PlaneAtClPt (pt:Pnt) : NPlane =
-        let d = pl.DistanceToPtSigned pt
+    member inline pl.PlaneAtClPnt (pt:Pnt) : NPlane =
+        let d = pl.DistanceToPntSigned pt
         NPlane.createUnchecked(pt.X - pl.NormalX*d, pt.Y - pl.NormalY*d, pt.Z - pl.NormalZ*d, pl.NormalX, pl.NormalY, pl.NormalZ)
 
     /// First finds the closest point on the plane from a test point.
     /// Then returns a new plane with Origin at this point and the same Normal.
-    static member inline planeAtClPt (pt:Pnt) (pl:NPlane) : NPlane =
-        pl.PlaneAtClPt pt
+    static member inline planeAtClPnt (pt:Pnt) (pl:NPlane) : NPlane =
+        pl.PlaneAtClPnt pt
 
     /// Returns the angle to another plane in degrees, ignoring the normal's orientation.
     /// So 0.0 if the planes are parallel, and 90 degrees if the planes are perpendicular to each other.
@@ -230,7 +230,7 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
                                     [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine>) : bool  =
         pl.Normal.IsParallelTo(other.Normal, minCosine)
         &&
-        pl.DistanceToPt other.Origin < distanceTolerance
+        pl.DistanceToPnt other.Origin < distanceTolerance
 
 
     // #endregion
@@ -270,7 +270,7 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
     /// Create Plane from 3 points.
     /// Point 'a' becomes the origin.
     /// Normal is calculated as cross product (c-b) × (a-b) following the right-hand rule.
-    /// Fails if the three points are colinear.
+    /// Fails if the three points are collinear.
     static member inline createFrom3Points (a:Pnt) (b:Pnt) (c:Pnt) : NPlane =
         let ux = c.X - b.X
         let uy = c.Y - b.Y
@@ -283,7 +283,7 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
         let nz = ux * vy - uy * vx
         let lSq = XYZ.sqLength nx ny nz
         if isTooSmallSq lSq then
-            failColinear "NPlane.createFrom3Points" a b c
+            failCollinear "NPlane.createFrom3Points" a b c
         let f = 1.0 / sqrt lSq
         NPlane.createUnchecked(a.X, a.Y, a.Z, nx*f, ny*f, nz*f)
 
@@ -296,7 +296,7 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
     static member inline xyPlane : NPlane =
         NPlane.createUnchecked(0.0, 0.0, 0.0, 0.0, 0.0, 1.0)
 
-    /// Returns the angle to another Plane in Degree, ignoring the normal's orientation.
+    /// Returns the angle to another Plane in degrees, ignoring the normal's orientation.
     /// So between 0 to 90 degrees.
     static member inline angleTo (a:NPlane) (b:NPlane) : float =
         a.Angle90ToPlane b
@@ -321,52 +321,37 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
             let zpt = a.OriginZ + pz * t
             Some (Line3D(xpt, ypt, zpt, xpt + vx, ypt + vy, zpt + vz))
 
-    /// Returns the parameter of intersection on a infinite line / ray with the Plane.
-    /// Or None if they are parallel.
-    static member intersectLineParameter (ln:Line3D) (pl:NPlane) : float option =
-        let vx = ln.VectorX
-        let vy = ln.VectorY
-        let vz = ln.VectorZ
-        let nenner = XYZ.dot vx vy vz pl.NormalX pl.NormalY pl.NormalZ
-        if isTooSmall(abs nenner) then
-            None
-        else
-            let dot = XYZ.dot (pl.OriginX - ln.FromX) (pl.OriginY - ln.FromY) (pl.OriginZ - ln.FromZ) pl.NormalX pl.NormalY pl.NormalZ
-            Some (dot / nenner)
 
-    /// Returns intersection point of a infinite line / ray with the Plane.
+    /// Returns the intersection parameter of an infinite line / ray with the plane.
     /// Or None if they are parallel.
-    static member intersectRay (ln:Line3D) (pl:NPlane) : Pnt option =
-        let vx = ln.VectorX
-        let vy = ln.VectorY
-        let vz = ln.VectorZ
-        let nenner = XYZ.dot vx vy vz pl.NormalX pl.NormalY pl.NormalZ
-        if isTooSmall(abs nenner) then
-            None
+    static member intersectRay (ln:Line3D) (pl:NPlane) : float voption =
+        let nenner = XYZ.dot ln.VectorX ln.VectorY ln.VectorZ pl.NormalX pl.NormalY pl.NormalZ
+        if isTooTiny(abs nenner) then
+            ValueNone
         else
             let dot = XYZ.dot (pl.OriginX - ln.FromX) (pl.OriginY - ln.FromY) (pl.OriginZ - ln.FromZ) pl.NormalX pl.NormalY pl.NormalZ
-            let t = dot / nenner
-            Some (Pnt(ln.FromX + vx*t, ln.FromY + vy*t, ln.FromZ + vz*t))
+            ValueSome (dot / nenner)
 
     /// Returns intersection point of a finite line  with the Plane.
     /// Or None if they are parallel or the domain of intersection is outside 0.0 to 1.0
     /// Intersection just below 0.0 or just above 1.0 within tolerance of 1e-6 are clamped to 0.0 or 1.0
     static member intersectLine (ln:Line3D) (pl:NPlane) : Pnt option =
-        match NPlane.intersectLineParameter ln pl with
-        | Some t ->
+        match NPlane.intersectRay ln pl with
+        | ValueSome t ->
             if isBetweenZeroAndOneTolerantIncl t then
-                let c = clampBetweenZeroAndOne t
+                let c = clamp01 t
                 Some (Pnt(ln.FromX + ln.VectorX*c, ln.FromY + ln.VectorY*c, ln.FromZ + ln.VectorZ*c))
             else
                 None
-        | None ->
+        | ValueNone ->
             None
 
     /// Checks if a finite Line3D intersects with Plane in one point.
     /// Returns false for parallel and coincident lines.
+    /// Adds a tolerance of 1e-6 to the line's domain, so that intersection just below 0.0 or just above 1.0 is considered intersecting.
     static member inline doLinePlaneIntersect (ln:Line3D) (pl:NPlane) : bool =
         let nenner = XYZ.dot ln.VectorX ln.VectorY ln.VectorZ pl.NormalX pl.NormalY pl.NormalZ
-        if isTooSmall (abs nenner) then
+        if isTooTiny (abs nenner) then
             false
         else
             let dot = XYZ.dot (pl.OriginX - ln.FromX) (pl.OriginY - ln.FromY) (pl.OriginZ - ln.FromZ) pl.NormalX pl.NormalY pl.NormalZ
@@ -386,14 +371,6 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
             NPlane.createUnchecked(pl.OriginX + pl.NormalX*dist, pl.OriginY + pl.NormalY*dist, pl.OriginZ + pl.NormalZ*dist, pl.NormalX, pl.NormalY, pl.NormalZ)
         else
             NPlane.createUnchecked(pl.OriginX - pl.NormalX*dist, pl.OriginY - pl.NormalY*dist, pl.OriginZ - pl.NormalZ*dist, pl.NormalX, pl.NormalY, pl.NormalZ)
-
-    /// Returns absolute distance of point to plane.
-    static member inline distToPt (pt:Pnt) (pl:NPlane) : float =
-        pl.DistanceToPt pt
-
-    /// Returns signed distance of point to plane, also indicating on which side it is.
-    static member inline distToPtSigned (pt:Pnt) (pl:NPlane) : float =
-        pl.DistanceToPtSigned pt
 
     /// Scales the plane's origin by a given factor from the world origin. The normal remains unchanged.
     static member inline scale (factor:float) (pl:NPlane) : NPlane =

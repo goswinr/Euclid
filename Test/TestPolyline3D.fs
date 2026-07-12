@@ -448,7 +448,7 @@ let tests =
             test "Rotate 90 degrees around Z axis" {
                 let pts = ResizeArray([Pnt(1,0,0); Pnt(2,0,0)])
                 let pl = Polyline3D(pts)
-                let q = Quaternion.createFromDegree(UnitVec.Zaxis, 90.)
+                let q = Quaternion.createFromDegrees(UnitVec.Zaxis, 90.)
                 let rotated = pl.Rotate(q)
                 "Rotate 90 - first point" |> Expect.isTrue (eqPnt rotated.FirstPoint (Pnt(0., 1., 0.)))
             }
@@ -456,7 +456,7 @@ let tests =
             test "rotate static method" {
                 let pts = ResizeArray([Pnt(1,0,0); Pnt(2,0,0)])
                 let pl = Polyline3D(pts)
-                let q = Quaternion.createFromDegree(UnitVec.Zaxis, 90.)
+                let q = Quaternion.createFromDegrees(UnitVec.Zaxis, 90.)
                 let rotated = Polyline3D.rotate q pl
                 "rotate - first point" |> Expect.isTrue (eqPnt rotated.FirstPoint (Pnt(0., 1., 0.)))
             }
@@ -465,7 +465,7 @@ let tests =
                 let pts = ResizeArray([Pnt(0,0,0); Pnt(2,0,0); Pnt(2,2,0); Pnt(0,2,0)])
                 let pl = Polyline3D(pts)
                 let center = pl.Center
-                let q = Quaternion.createFromDegree(UnitVec.Zaxis, 90.)
+                let q = Quaternion.createFromDegrees(UnitVec.Zaxis, 90.)
                 let rotated = pl.RotateWithCenter(center, q)
                 "RotateWithCenter - center" |> Expect.isTrue (eqPnt rotated.Center center)
             }
@@ -474,7 +474,7 @@ let tests =
                 let pts = ResizeArray([Pnt(0,0,0); Pnt(2,0,0); Pnt(2,2,0); Pnt(0,2,0)])
                 let pl = Polyline3D(pts)
                 let center = pl.Center
-                let q = Quaternion.createFromDegree(UnitVec.Zaxis, 90.)
+                let q = Quaternion.createFromDegrees(UnitVec.Zaxis, 90.)
                 let rotated = Polyline3D.rotateWithCenter center q pl
                 "rotateWithCenter - center" |> Expect.isTrue (eqPnt rotated.Center center)
             }
@@ -534,55 +534,55 @@ let tests =
                 Expect.equal result.PointCount 1 "collapses to one point"
                 "kept point is the first point" |> Expect.isTrue (eqPnt (result.GetPt 0) (Pnt(1.,1.,1.)))
             }
-            test "removeDuplicateAndColinearPoints removes colinear point" {
+            test "removeDuplicateAndCollinearPoints removes collinear point" {
                 let pl = Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(2.,0.,0.); Pnt(2.,2.,0.)]
-                let result = Polyline3D.removeDuplicateAndColinearPoints Cosine.``0.1`` 1e-6 pl
-                Expect.equal result.PointCount 3 "middle colinear point removed"
+                let result = Polyline3D.removeDuplicateAndCollinearPoints Cosine.``0.1`` 1e-6 pl
+                Expect.equal result.PointCount 3 "middle collinear point removed"
             }
-            test "removeDuplicateAndColinearPoints fails when all points are duplicates" {
+            test "removeDuplicateAndCollinearPoints fails when all points are duplicates" {
                 let pl = Polyline3D.createFromPts [Pnt(1.,1.,1.); Pnt(1.,1.,1.); Pnt(1.,1.,1.)]
-                Expect.throws (fun () -> Polyline3D.removeDuplicateAndColinearPoints Cosine.``0.1`` 1e-6 pl |> ignore) "all duplicates should fail with a clear error"
+                Expect.throws (fun () -> Polyline3D.removeDuplicateAndCollinearPoints Cosine.``0.1`` 1e-6 pl |> ignore) "all duplicates should fail with a clear error"
             }
-            test "removeDuplicateAndColinearPoints square" {
+            test "removeDuplicateAndCollinearPoints square" {
                 let pl = Polyline3D.createFromPts [ Pnt(2.,0.,0.); Pnt(4.,0.,0.); Pnt(4.,2.,0.); Pnt(4.,4.,0.); Pnt(2.,4.,0.); Pnt(0.,4.,0.); Pnt(0.,2.,0.); Pnt(0.,0.,0.); Pnt(2.,0.,0.)]
-                let simplified = Polyline3D.removeDuplicateAndColinearPoints Cosine.``0.1`` 1e-9 pl
-                Expect.equal simplified.PointCount 5 "colinear edge midpoints removed, corners kept, stays closed"
+                let simplified = Polyline3D.removeDuplicateAndCollinearPoints Cosine.``0.1`` 1e-9 pl
+                Expect.equal simplified.PointCount 5 "collinear edge midpoints removed, corners kept, stays closed"
                 Expect.isTrue simplified.IsClosed "remains closed"
             }
-            test "removeDuplicateAndColinearPoints open line with repeats" {
+            test "removeDuplicateAndCollinearPoints open line with repeats" {
                 let pl = Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(2.,0.,0.); Pnt(3.,0.,0.); Pnt(3.,0.,0.)]
-                let simplified = Polyline3D.removeDuplicateAndColinearPoints Cosine.``0.1`` 1e-9 pl
-                Expect.equal simplified.PointCount 2 "duplicate end removed; interior colinear points removed"
+                let simplified = Polyline3D.removeDuplicateAndCollinearPoints Cosine.``0.1`` 1e-9 pl
+                Expect.equal simplified.PointCount 2 "duplicate end removed; interior collinear points removed"
                 "start" |> Expect.isTrue (eqPnt (simplified.GetPt 0) (Pnt(0.,0.,0.)))
                 "end" |> Expect.isTrue (eqPnt (simplified.GetPt (simplified.PointCount - 1)) (Pnt(3.,0.,0.)))
             }
-            test "removeDuplicateAndColinearPoints colinear start/end segments closed polygon" {
+            test "removeDuplicateAndCollinearPoints collinear start/end segments closed polygon" {
                 let pl = Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(2.,0.,0.); Pnt(2.,2.,0.); Pnt(2.,4.,0.); Pnt(1.,4.,0.); Pnt(0.,4.,0.); Pnt(0.,2.,0.); Pnt(0.,0.,0.)]
-                let simplified = Polyline3D.removeDuplicateAndColinearPoints Cosine.``0.1`` 1e-9 pl
+                let simplified = Polyline3D.removeDuplicateAndCollinearPoints Cosine.``0.1`` 1e-9 pl
                 Expect.isTrue simplified.IsClosed "closed retained"
-                Expect.equal simplified.PointCount 5 "colinear removal at this tolerance"
+                Expect.equal simplified.PointCount 5 "collinear removal at this tolerance"
             }
-            test "removeDuplicateAndColinearPoints colinear in 3D space" {
-                // colinear points along a diagonal in 3D
+            test "removeDuplicateAndCollinearPoints collinear in 3D space" {
+                // collinear points along a diagonal in 3D
                 let pl = Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(1.,1.,1.); Pnt(2.,2.,2.); Pnt(3.,3.,0.)]
-                let simplified = Polyline3D.removeDuplicateAndColinearPoints Cosine.``0.1`` 1e-9 pl
-                Expect.equal simplified.PointCount 3 "middle colinear point on 3D diagonal removed"
+                let simplified = Polyline3D.removeDuplicateAndCollinearPoints Cosine.``0.1`` 1e-9 pl
+                Expect.equal simplified.PointCount 3 "middle collinear point on 3D diagonal removed"
             }
-            test "removeDuplicateAndColinearPoints almost colinear tiny angle retained" {
+            test "removeDuplicateAndCollinearPoints almost collinear tiny angle retained" {
                 let pl = Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(10.,0.,0.); Pnt(20.,0.2,0.); Pnt(30.,0.,0.)]
-                let simplified = Polyline3D.removeDuplicateAndColinearPoints Cosine.``0.01`` 1e-9 pl
+                let simplified = Polyline3D.removeDuplicateAndCollinearPoints Cosine.``0.01`` 1e-9 pl
                 Expect.equal simplified.PointCount 4 "almost straight kept"
             }
-            test "removeDuplicateAndColinearPoints single point returns same" {
+            test "removeDuplicateAndCollinearPoints single point returns same" {
                 let pl = Polyline3D.createFromPts [Pnt(1.,2.,3.)]
-                let result = Polyline3D.removeDuplicateAndColinearPoints Cosine.``0.1`` 1e-9 pl
+                let result = Polyline3D.removeDuplicateAndCollinearPoints Cosine.``0.1`` 1e-9 pl
                 Expect.equal result.PointCount 1 "single point unchanged"
             }
-            test "removeDuplicateAndColinearPoints tolerance too tight throws" {
+            test "removeDuplicateAndCollinearPoints tolerance too tight throws" {
                 let pl = Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(2.,0.,0.)]
                 let tooTight = UtilEuclid.withMeasure 0.9999999999 // cosine of ~0.0 degrees, above Cosine.``0.01``
                 Expect.throws
-                    (fun () -> Polyline3D.removeDuplicateAndColinearPoints tooTight 1e-9 pl |> ignore)
+                    (fun () -> Polyline3D.removeDuplicateAndCollinearPoints tooTight 1e-9 pl |> ignore)
                     "tolerance tighter than 0.01 degrees should throw"
             }
         ]

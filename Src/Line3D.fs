@@ -122,19 +122,35 @@ type Line3D =
     static member inline asFSharpCode (ln:Line3D) : string =
         ln.AsFSharpCode
 
-    /// The start point of the Line3D.
+    /// The start point of the Line3D. Same as ln.Start.
     member inline ln.From : Pnt =
         Pnt(ln.FromX, ln.FromY, ln.FromZ)
 
-    /// The start point of the Line3D.
+    /// The start point of the Line3D. Same as Line3D.start.
     static member inline from (ln:Line3D) : Pnt =
         ln.From
 
-    /// The end point of the Line3D.
+    /// The start point of the Line3D. Same as ln.From.
+    member inline ln.Start : Pnt =
+        Pnt(ln.FromX, ln.FromY, ln.FromZ)
+
+    /// The start point of the Line3D. Same as Line3D.from.
+    static member inline start (ln:Line3D) : Pnt =
+        ln.Start
+
+    /// The end point of the Line3D. Same as ln.To.
+    member inline ln.End : Pnt =
+        Pnt(ln.ToX, ln.ToY, ln.ToZ)
+
+    /// The end point of the Line3D. Same as Line3D.to'.
+    static member inline end' (ln:Line3D) : Pnt =
+        ln.End
+
+    /// The end point of the Line3D. Same as ln.End.
     member inline ln.To : Pnt =
         Pnt(ln.ToX, ln.ToY, ln.ToZ)
 
-    /// The end point of the Line3D.
+    /// The end point of the Line3D. Same as Line3D.end'.
     static member inline to' (ln:Line3D) : Pnt =
         ln.To
 

@@ -38,8 +38,8 @@ module Offset2D=
         | UseThreshold = 3
 
 
-    /// An Enum for describing what to do with colinear segments with different offset distances.
-    /// It is not possible to offset colinear segments if the distances are not the same.
+    /// An Enum for describing what to do with collinear segments with different offset distances.
+    /// It is not possible to offset collinear segments if the distances are not the same.
     /// This Enum describes the options:
     /// 1: Fail
     /// 2: just skip the point.
@@ -49,10 +49,10 @@ module Offset2D=
     // [<RequireQualifiedAccess>]
     type VarDistParallel = // needs to be an enum , so it can bve an optional parameter with default value
 
-        /// Fail if colinear segments with different offset distances are found.
+        /// Fail if collinear segments with different offset distances are found.
         | Fail = 1
 
-        /// Just skip colinear points with different offset distances.
+        /// Just skip collinear points with different offset distances.
         /// This introduces non parallel offset segments.
         /// This reduces the total point count.
         | Skip = 2
@@ -71,7 +71,7 @@ module Offset2D=
         /// The Proportional method is usually better.
         | Project = 4
 
-        /// Add a step with two points at the colinear segment.
+        /// Add a step with two points at the collinear segment.
         /// This keeps parallel offset segments.
         /// But introduces an extra point.
         | StepWithTwoPoints = 5
@@ -79,18 +79,18 @@ module Offset2D=
 
 
     /// Internal only.
-    /// So that colinear points can be fixed after the main offsetting loop is done.
+    /// So that collinear points can be fixed after the main offsetting loop is done.
     type internal IndexToFixProportional = {
-        /// the index of the colinear point in result
+        /// the index of the collinear point in result
         idxRes:int
-        /// index of colinear point in input.
+        /// index of collinear point in input.
         /// usually the same as idxRes, but a 180 uTurn with two points might have create a shifting of indices.
         idxOrig:int
     }
 
     [<NoComparison; NoEquality>]
     type internal IndexToProject = {
-        /// the index of the colinear point in result
+        /// the index of the collinear point in result
         idx:int
         /// x component of the direction to project along
         dirX: float
@@ -101,33 +101,34 @@ module Offset2D=
     module private XY =
 
         let inline pointCount (xys: ResizeArray<float>) : int =
-            xys.Count / 2
+            (ResizeArr.len xys) / 2
 
-        let failEven methodName (xys: ResizeArray<float>) =
-            fail $"Offset2D.{methodName}: ResizeArray must contain an even number of floats, but has {xys.Count} values."
 
         let inline checkEven methodName (xys: ResizeArray<float>) =
             if xys.Count % 2 <> 0 then
                 failEven methodName xys
 
         let inline getX i (xys: ResizeArray<float>) : float =
-            xys.[i * 2]
+            ResizeArr.getIdx (i * 2) xys
+
 
         let inline getY i (xys: ResizeArray<float>) : float =
-            xys.[i * 2 + 1]
+            ResizeArr.getIdx (i * 2 + 1) xys
+
 
         let inline getPt i (xys: ResizeArray<float>) : Pt =
-            Pt(xys.[i * 2], xys.[i * 2 + 1])
+            Pt( ResizeArr.getIdx (i * 2    ) xys,
+                ResizeArr.getIdx (i * 2 + 1) xys)
 
         let inline set i x y (xys: ResizeArray<float>) : unit =
-            xys.[i * 2    ] <- x
-            xys.[i * 2 + 1] <- y
+            ResizeArr.setIdx (i * 2) x xys
+            ResizeArr.setIdx (i * 2 + 1) y xys
 
         let inline add x y (xys: ResizeArray<float>) : unit =
             xys.Add x
             xys.Add y
 
-        let sqDistFirstLast (xys: ResizeArray<float>) : float =
+        let inline sqDistFirstLast (xys: ResizeArray<float>) : float =
             let dx = xys.[0] - xys.SecondLast
             let dy = xys.[1] - xys.Last
             dx * dx + dy * dy
@@ -373,7 +374,7 @@ module Offset2D=
         let ay = -nAx
         let bx =  nBy
         let by = -nBx
-        let t = XLine2D.parameterA(fromAx, fromAy, fromBx, fromBy, ax, ay, bx, by)
+        let t = XLineXY.parameterA(fromAx, fromAy, fromBx, fromBy, ax, ay, bx, by)
         let x = fromAx + ax*t
         let y = fromAy + ay*t
         res.Add x
@@ -508,19 +509,21 @@ module Offset2D=
 
 
     /// Only used when VarDistParallelBehavior.Proportional is selected.
-    let internal distributeProportionallyBadIdxs( res: ResizeArray<float>, colinearIdxs : ResizeArray<IndexToFixProportional>, origs: ResizeArray<float>) =
-        let chunks = colinearIdxs |> chunkBy (fun thisIdx prevIdx -> thisIdx.idxRes <> prevIdx.idxRes + 1 ) // return true for split if not  consecutive indices
+    let internal distributeProportionallyBadIdxs( res: ResizeArray<float>, collinearIdxs : ResizeArray<IndexToFixProportional>, origs: ResizeArray<float>) =
+        let chunks = collinearIdxs |> chunkBy (fun thisIdx prevIdx -> thisIdx.idxRes <> prevIdx.idxRes + 1 ) // return true for split if not  consecutive indices
         reLoop (XY.pointCount res - 1) (fun (i: IndexToFixProportional) -> i.idxRes) chunks
         for i=0 to chunks.LastIndex do
             let chunk = chunks.[i]
             let offLn =
                 let prevOkIdx = safeIdx (chunk.First.idxRes - 1) (XY.pointCount res)  // the previous point before the chunk
                 let nextOkIdx = safeIdx (chunk.Last.idxRes  + 1) (XY.pointCount res) // the next point after the chunk
-                Line2D(XY.getPt prevOkIdx res, XY.getPt nextOkIdx res)
+                Line2D( XY.getX prevOkIdx res, XY.getY prevOkIdx res,
+                        XY.getX nextOkIdx res, XY.getY nextOkIdx res)
             let origLn =
                 let origPrevOkIdx = safeIdx (chunk.First.idxOrig - 1 ) (XY.pointCount origs)
                 let origNextOkIdx = safeIdx (chunk.Last.idxOrig  + 1 ) (XY.pointCount origs)
-                Line2D(XY.getPt origPrevOkIdx origs, XY.getPt origNextOkIdx origs)
+                Line2D( XY.getX origPrevOkIdx origs, XY.getY origPrevOkIdx origs,
+                        XY.getX origNextOkIdx origs, XY.getY origNextOkIdx origs)
             for j=0 to chunk.LastIndex do
                 let bi = chunk.[j]
                 let origPt = XY.getPt bi.idxOrig origs // the original point to fix
@@ -529,8 +532,8 @@ module Offset2D=
                 XY.set bi.idxRes fixedPt.X fixedPt.Y res
 
     /// Only used when VarDistParallelBehavior.Project is selected.
-    let internal projectBadIdxs(res: ResizeArray<float>, colinearIdxs : ResizeArray<IndexToProject>) =
-       let chunks = colinearIdxs |> chunkBy (fun thisIdx prevIdx -> thisIdx.idx <> prevIdx.idx + 1 )  // return true for split if not consecutive indices
+    let internal projectBadIdxs(res: ResizeArray<float>, collinearIdxs : ResizeArray<IndexToProject>) =
+       let chunks = collinearIdxs |> chunkBy (fun thisIdx prevIdx -> thisIdx.idx <> prevIdx.idx + 1 )  // return true for split if not consecutive indices
        reLoop (XY.pointCount res - 1) _.idx chunks
        for i=0 to chunks.LastIndex do
            let chunk = chunks.[i]
@@ -540,10 +543,10 @@ module Offset2D=
            for j=0 to chunk.LastIndex do
                 let itp = chunk.[j]
                 let pt = XY.getPt itp.idx res // the point to fix
-                let pln = Line2D(pt, Pt(pt.X + itp.dirX, pt.Y + itp.dirY)) // the line from the point in the direction of the normal
+                let pln = Line2D(pt.X, pt.Y, pt.X + itp.dirX, pt.Y + itp.dirY) // the line from the point in the direction of the normal
                 // at shallow angles and strongly different distances, the projection may be outside of the segment
                 // Should we allow that? or check for it and skip ?
-                let fixedPt = XLine2D.tryIntersectRay(ln, pln).Value // Null Reference Exception should never happen here, because lines are not parallel
+                let fixedPt = XLine2D.intersectRays(ln, pln) //  Exception should never happen here, because lines are not parallel
                 XY.set itp.idx fixedPt.X fixedPt.Y res
 
     /// offset point calculation for variable distances:
@@ -551,17 +554,17 @@ module Offset2D=
         let delta = distPrev - distNext
         let vNextX = nNextY // the unit vector along the next segment
         let vNextY = -nNextX
-        let cos2 = dot nPrevX nPrevY vNextX vNextY // never 0.0 here, because vectors are already checked to be not colinear
+        let cos2 = dot nPrevX nPrevY vNextX vNextY // never 0.0 here, because vectors are already checked to be not collinear
         let common = distNext / (1.0 + cosine)
         let x = x + vNextX * (delta / cos2) + (nPrevX + nNextX) * common
         let y = y + vNextY * (delta / cos2) + (nPrevY + nNextY) * common
         res.Add x
         res.Add y
 
-    let internal handleVarOffsetColinear (i:int, x:float, y:float, nPrevX:float, nPrevY:float, nNextX:float, nNextY:float, dPrev:float, dNext:float, res:ResizeArray<float>, idxsToFixProportional: ResizeArray<IndexToFixProportional>, projectIdxs: ResizeArray<IndexToProject>, varDistParallelBehavior: VarDistParallel) =
+    let internal handleVarOffsetCollinear (i:int, x:float, y:float, nPrevX:float, nPrevY:float, nNextX:float, nNextY:float, dPrev:float, dNext:float, res:ResizeArray<float>, idxsToFixProportional: ResizeArray<IndexToFixProportional>, projectIdxs: ResizeArray<IndexToProject>, varDistParallelBehavior: VarDistParallel) =
         match varDistParallelBehavior with
         | VarDistParallel.Fail ->
-            fail $"Offset2D.offsetVariableWithDirections: point[{i}] and point[{i-1}] are colinear but have different distances {dPrev} and {dNext}."
+            fail $"Offset2D.offsetVariableWithDirections: point[{i}] and point[{i-1}] are collinear but have different distances {dPrev} and {dNext}."
         | VarDistParallel.Skip ->
             ()
         | VarDistParallel.Proportional ->
@@ -578,14 +581,14 @@ module Offset2D=
             fail $"Offset2D.VarDistParallelBehavior: enum value {x} not recognized."
 
 
-    /// <summary> Offsetting each segment by its own distance. For closed or open polylines. Adds 2 chamfer points at U-turns and skips colinear points.</summary>
+    /// <summary> Offsetting each segment by its own distance. For closed or open polylines. Adds 2 chamfer points at U-turns and skips collinear points.</summary>
     /// <remarks> This function requires precomputed segment normals; the simpler 'Offset2D.offsetVariable' uses it internally too.</remarks>
     /// <param name="xys">The points of the Polyline to offset as a flat array of coordinates.</param>
     /// <param name="nDirs">The interleaved directions or normals of the Polyline segments to offset. One vector less than xys. Must be created by counter clockwise rotation of each segment.</param>
     /// <param name="dists"> The distances to offset the Polyline. One item less than xys. Positive values will create inside offsets on counter-clockwise polylines.</param>
-    /// <param name="varDistParallelBehavior"> What to do with colinear segments below 'useVarDistParallelBehaviorBelow' degrees when offset distances are different too.</param>
+    /// <param name="varDistParallelBehavior"> What to do with collinear segments below 'useVarDistParallelBehaviorBelow' degrees when offset distances are different too.</param>
     /// <param name="uTurnBehavior"> What to do at a 180 degree U-turn? Fail, Chamfer with two points, or UseThreshold.</param>
-    /// <param name="useVarDistParallelBehaviorBelow"> The angle between normals below which points are considered colinear and VarDistParallelBehavior is applied if distances are not the same. </param>
+    /// <param name="useVarDistParallelBehaviorBelow"> The angle between normals below which points are considered collinear and VarDistParallelBehavior is applied if distances are not the same. </param>
     /// <param name="useUTurnBehaviorAbove"> The angle between normals after which uTurnBehavior is applied .</param>
     /// <returns> A new ResizeArray of Points as a flat array of coordinates. If UTurnBehavior.Chamfer is used the total point count may be more than the input.</returns>
     let offsetVariableWithDirections(xys : ResizeArray<float>,
@@ -644,12 +647,12 @@ module Offset2D=
             else
                 // (2) distances are different, so we need to find the intersection of the two offset lines
                 if withMeasure cosine > useUTurnBehaviorAbove || (i=0 && isOpen) then // exclude U-turns, but don't check the first point of an open polyline , ( check 2.01 )
-                    if withMeasure cosine < useVarDistParallelBehaviorBelow then // check for colinear segments
+                    if withMeasure cosine < useVarDistParallelBehaviorBelow then // check for collinear segments
                         // (2.1) the regular case for variable distances:
                         setOffCornerVar3 (res, x, y, dPrev, dNext, nPrevX, nPrevY, nNextX, nNextY, cosine) // the cheapest method, all are correct
                     else
-                        // (2.2) special case: colinear segments:
-                        handleVarOffsetColinear (i, x, y, nPrevX, nPrevY, nNextX, nNextY, dPrev, dNext, res, idxsToFixProportional, projectIdxs, varDistParallelBehavior)
+                        // (2.2) special case: collinear segments:
+                        handleVarOffsetCollinear (i, x, y, nPrevX, nPrevY, nNextX, nNextY, dPrev, dNext, res, idxsToFixProportional, projectIdxs, varDistParallelBehavior)
 
                 else
                     // (2.3) special case: sharp U-turn with variable distances:
@@ -669,9 +672,9 @@ module Offset2D=
         else
             XY.add res.[0] res.[1] res // add the last point, which is the same as the first point
 
-        // (4) now if there were colinear segments with different distances, we need to fix those points
+        // (4) now if there were collinear segments with different distances, we need to fix those points
         // first add another bad index at the end.
-        // then fix colinear points either proportionally or by projection
+        // then fix collinear points either proportionally or by projection
         if idxsToFixProportional.Count > 0 then
             // if the first index is to fix, then also add the last index to fix, to close the loop
             if idxsToFixProportional.First.idxRes = 0 then
@@ -732,11 +735,11 @@ module Offset2D=
 
 
     /// <summary> Offsetting each segment by its own distance. For closed or open polylines.
-    /// The behaviour and the limits for colinear and 180 degree U-turns are configurable.</summary>
+    /// The behaviour and the limits for collinear and 180 degree U-turns are configurable.</summary>
     /// <param name="useUTurnBehaviorAbove"> The angle between normals after which, instead of a normal miter, the joint is chamfered by adding an extra point.</param>
-    /// <param name="useVarDistParallelBehaviorBelow"> The angle between normals below which points are considered colinear and VarDistParallelBehavior is applied if distances are not the same. </param>
+    /// <param name="useVarDistParallelBehaviorBelow"> The angle between normals below which points are considered collinear and VarDistParallelBehavior is applied if distances are not the same. </param>
     /// <param name="uTurnBehavior"> What to do at a 180 degree U-turn? Fail, Chamfer with two points, or UseThreshold.</param>
-    /// <param name="varDistParallelBehavior"> What to do with colinear segments below 'useVarDistParallelBehaviorBelow' degrees when offset distances are different too.</param>
+    /// <param name="varDistParallelBehavior"> What to do with collinear segments below 'useVarDistParallelBehaviorBelow' degrees when offset distances are different too.</param>
     /// <param name="dists"> The distances to offset the Polyline. One item less than xys. Positive values will create inside offsets on counter-clockwise polylines.</param>
     /// <param name="xys">The points of the Polyline to offset.</param>
     /// <returns> A new ResizeArray of Points.
@@ -748,9 +751,9 @@ module Offset2D=
 
 
     /// <summary> Offsetting each segment by its own distance.
-    /// The behaviour for colinear and 180 degree U-turns is configurable.</summary>
+    /// The behaviour for collinear and 180 degree U-turns is configurable.</summary>
     /// <param name="uTurnBehavior"> What to do at a 180 degree U-turn? Fail, Chamfer with two points, or UseThreshold. Will be applied for joints bigger than 175° degrees.</param>
-    /// <param name="varDistParallelBehavior"> What to do with colinear segments within 2.5 degrees when offset distances are different too..</param>
+    /// <param name="varDistParallelBehavior"> What to do with collinear segments within 2.5 degrees when offset distances are different too.</param>
     /// <param name="dists"> The distances to offset the Polyline. One item less than xys. Positive values will create inside offsets on counter-clockwise polylines.</param>
     /// <param name="xys">The points of the Polyline to offset.</param>
     /// <returns> A new ResizeArray of Points.
@@ -762,7 +765,7 @@ module Offset2D=
 
 
     /// <summary> Offsetting each segment by its own distance. For closed or open polylines.
-    /// Fails at U-turns above 175 degrees and at colinear segments within less than 2.5 degrees. </summary>
+    /// Fails at U-turns above 175 degrees and at collinear segments within less than 2.5 degrees. </summary>
     /// <param name="dists"> The distances to offset the Polyline. One item less than xys.</param>
     /// <param name="xys">The points of the Polyline to offset. Positive values will create inside offsets on counter-clockwise polylines.</param>
     /// <returns> A new ResizeArray of Points. The point count is the same as the input.</returns>

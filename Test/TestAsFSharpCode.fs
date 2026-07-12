@@ -99,8 +99,9 @@ let tests =
                     eprintfn $"Exception during FSI execution: {ex.Message}\n{codeStr}"
                     result <- false
             finally
-                printfn $"Deleting temporary file: {tempFile}"
+                // printfn $"Deleting temporary file: {tempFile}"
                 if File.Exists(tempFile) then File.Delete(tempFile)
+
             #endif
 
             Expect.isTrue result $"AsFSharpCode generated invalid code"

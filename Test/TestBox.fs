@@ -11,6 +11,7 @@ open Expecto
 let inline eqPnt a b = Pnt.dist a b < 1e-9
 let inline eqVec a b = Vec.length (a - b) < 1e-9
 let inline eqFloat a b = abs(a - b) < 1e-9
+let inline eqLine (a:Line3D) (b:Line3D) = eqPnt a.From b.From && eqPnt a.To b.To
 
 let tests =
     testList "Box" [
@@ -77,7 +78,7 @@ let tests =
 
             test "createFromBoundingBox" {
                 let bbox = BBox.create(Pnt(0., 0., 0.), Pnt(10., 5., 3.))
-                let box = Box.createFromBoundingBox bbox
+                let box = bbox.AsBox
                 Expect.equal box.SizeX 10. "SizeX should be 10"
                 Expect.equal box.SizeY 5. "SizeY should be 5"
                 Expect.equal box.SizeZ 3. "SizeZ should be 3"
@@ -342,14 +343,14 @@ let tests =
 
             test "Rotate 90 degrees around Z axis" {
                 let box = Box.createUncheckedVec(Pnt(1., 0., 0.), Vec(1., 0., 0.), Vec(0., 1., 0.), Vec(0., 0., 1.))
-                let q = Quaternion.createFromDegree(UnitVec.Zaxis, 90.)
+                let q = Quaternion.createFromDegrees(UnitVec.Zaxis, 90.)
                 let rotated = box.Rotate(q)
                 Expect.isTrue (eqPnt rotated.Origin (Pnt(0., 1., 0.))) "Origin should be rotated 90 degrees"
             }
 
             test "rotate static method" {
                 let box = Box.createUncheckedVec(Pnt(1., 0., 0.), Vec(1., 0., 0.), Vec(0., 1., 0.), Vec(0., 0., 1.))
-                let q = Quaternion.createFromDegree(UnitVec.Zaxis, 90.)
+                let q = Quaternion.createFromDegrees(UnitVec.Zaxis, 90.)
                 let rotated = Box.rotate q box
                 Expect.isTrue (eqPnt rotated.Origin (Pnt(0., 1., 0.))) "Origin should be rotated 90 degrees"
             }
@@ -357,7 +358,7 @@ let tests =
             test "RotateWithCenter keeps center point fixed" {
                 let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
                 let center = box.Center
-                let q = Quaternion.createFromDegree(UnitVec.Zaxis, 90.)
+                let q = Quaternion.createFromDegrees(UnitVec.Zaxis, 90.)
                 let rotated = box.RotateWithCenter(center, q)
                 Expect.isTrue (eqPnt rotated.Center center) "Center should remain fixed"
             }
@@ -365,7 +366,7 @@ let tests =
             test "rotateWithCenter static method" {
                 let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
                 let center = box.Center
-                let q = Quaternion.createFromDegree(UnitVec.Zaxis, 90.)
+                let q = Quaternion.createFromDegrees(UnitVec.Zaxis, 90.)
                 let rotated = Box.rotateWithCenter center q box
                 Expect.isTrue (eqPnt rotated.Center center) "Center should remain fixed"
             }
@@ -486,7 +487,7 @@ let tests =
         testList "BBox Conversion" [
             test "BBox for axis-aligned box" {
                 let box = Box.createUncheckedVec(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
-                let bbox = box.BBox
+                let bbox = BBox.createFromBox box
                 Expect.equal bbox.MinX 1. "BBox MinX should be 1"
                 Expect.equal bbox.MinY 2. "BBox MinY should be 2"
                 Expect.equal bbox.MinZ 3. "BBox MinZ should be 3"
@@ -497,7 +498,7 @@ let tests =
 
             test "BBox for rotated box" {
                 let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 10., 0.), Vec(-10., 10., 0.), Vec(0., 0., 10.))
-                let bbox = box.BBox
+                let bbox = BBox.createFromBox box
                 Expect.isTrue (bbox.MinX <= 0.) "BBox should contain origin"
                 Expect.isTrue (bbox.MaxX >= 0.) "BBox should contain all corners"
             }
@@ -534,10 +535,37 @@ let tests =
                 Expect.equal edges.Length 12 "Should have 12 edges"
             }
 
-            test "Edge0 is parallel to Xaxis" {
+            test "Edge01 is parallel to Xaxis" {
                 let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
-                let edge = box.Edge0
-                Expect.isTrue (eqPnt edge.From box.Pt0) "Edge0 should start at Pt0"
+                let edge = box.Edge01
+                Expect.isTrue (eqPnt edge.From box.Pt0) "Edge01 should start at Pt0"
+            }
+
+            test "Box edges equal BBox edges after conversion" {
+                // An axis-aligned Box converts to an identical BBox, so every named edge must coincide.
+                let box = Box.createUncheckedVec(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let bbox = BBox.createFromBox box
+                Expect.isTrue (eqLine box.Edge01 bbox.Edge01) "Edge01 should match"
+                Expect.isTrue (eqLine box.Edge12 bbox.Edge12) "Edge12 should match"
+                Expect.isTrue (eqLine box.Edge32 bbox.Edge32) "Edge32 should match"
+                Expect.isTrue (eqLine box.Edge03 bbox.Edge03) "Edge03 should match"
+                Expect.isTrue (eqLine box.Edge04 bbox.Edge04) "Edge04 should match"
+                Expect.isTrue (eqLine box.Edge15 bbox.Edge15) "Edge15 should match"
+                Expect.isTrue (eqLine box.Edge26 bbox.Edge26) "Edge26 should match"
+                Expect.isTrue (eqLine box.Edge37 bbox.Edge37) "Edge37 should match"
+                Expect.isTrue (eqLine box.Edge45 bbox.Edge45) "Edge45 should match"
+                Expect.isTrue (eqLine box.Edge56 bbox.Edge56) "Edge56 should match"
+                Expect.isTrue (eqLine box.Edge76 bbox.Edge76) "Edge76 should match"
+                Expect.isTrue (eqLine box.Edge47 bbox.Edge47) "Edge47 should match"
+            }
+
+            test "Box edges equal BBox edges via GetEdge after conversion" {
+                // The 12 edges must also coincide index-by-index through GetEdge / Edges.
+                let box = Box.createUncheckedVec(Pnt(-4., 1., -2.), Vec(7., 0., 0.), Vec(0., 9., 0.), Vec(0., 0., 6.))
+                let bbox = BBox.createFromBox box
+                for i in 0..11 do
+                    Expect.isTrue (eqLine (box.GetEdge i) (bbox.GetEdge i)) $"Edge at index {i} should match"
+                    Expect.isTrue (eqLine box.Edges.[i] bbox.Edges.[i]) $"Edges.[{i}] should match"
             }
 
             test "Faces array has 6 faces" {
@@ -720,18 +748,32 @@ let tests =
 
             test "ray grazing box corner" {
                 let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
-                // Ray that just touches the corner at (2, 2, 2)
-                let ray = Line3D(Pnt(2., 2., 0.), Pnt(2., 2., 4.))
+                let ray = Line3D(Pnt(1., 3., 2.), Pnt(3., 1., 2.))
                 let result = box.IntersectRay(ray)
-                Expect.isTrue result.IsSome "Should intersect at corner edge"
+                Expect.isTrue result.IsSome "Should intersect at the corner only"
+                let tEntry, tExit = result.Value
+                Expect.isTrue (eqFloat tEntry 0.5) $"Entry parameter should be 0.5, got {tEntry}"
+                Expect.isTrue (eqFloat tExit 0.5) $"Exit parameter should be 0.5, got {tExit}"
             }
 
             test "ray along box edge" {
                 let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
-                // Ray along the edge from (0,0,0) to (0,0,2)
                 let ray = Line3D(Pnt(0., 0., -1.), Pnt(0., 0., 3.))
                 let result = box.IntersectRay(ray)
                 Expect.isTrue result.IsSome "Should intersect along edge"
+                let tEntry, tExit = result.Value
+                Expect.isTrue (eqFloat tEntry 0.25) $"Entry parameter should be 0.25, got {tEntry}"
+                Expect.isTrue (eqFloat tExit 0.75) $"Exit parameter should be 0.75, got {tExit}"
+            }
+
+            test "ray on box face" {
+                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
+                let ray = Line3D(Pnt(-1., 1., 0.), Pnt(3., 1., 0.))
+                let result = box.IntersectRay(ray)
+                Expect.isTrue result.IsSome "Should intersect along the bottom face"
+                let tEntry, tExit = result.Value
+                Expect.isTrue (eqFloat tEntry 0.25) $"Entry parameter should be 0.25, got {tEntry}"
+                Expect.isTrue (eqFloat tExit 0.75) $"Exit parameter should be 0.75, got {tExit}"
             }
 
             test "static intersectRay function" {

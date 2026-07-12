@@ -82,6 +82,7 @@ module AutoOpenVc =
             Vc (x, v.Y)
 
         /// Returns a new 2D vector with new X coordinate, Y stays the same.
+        /// Same as Vc.setX.
         static member inline withX x (v:Vc) : Vc =
             v.WithX x
 
@@ -90,6 +91,7 @@ module AutoOpenVc =
             Vc (v.X, y)
 
         /// Returns a new 2D vector with new Y coordinate, X stays the same.
+        /// Same as Vc.setY.
         static member inline withY y (v:Vc) : Vc =
             v.WithY y
 
@@ -221,42 +223,42 @@ module AutoOpenVc =
             Vc(r.Cos*v.X - r.Sin*v.Y,
                r.Sin*v.X + r.Cos*v.Y)
 
-        /// <summary>Rotate the 2D vector in Degrees. Counter Clockwise.</summary>
+        /// <summary>Rotate the 2D vector in degrees. Counter Clockwise.</summary>
         /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
         member inline v.Rotate angDegree : Vc =
             v.RotateBy (Rotation2D.createFromDegrees angDegree)
 
-        /// <summary>Rotate the 2D vector in Degrees. Counter Clockwise.</summary>
+        /// <summary>Rotate the 2D vector in degrees. Counter Clockwise.</summary>
         /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
         static member inline rotate (angDegree) (vec:Vc) : Vc =
             Vc.rotateBy (Rotation2D.createFromDegrees angDegree) vec
 
-        /// <summary>Rotate the 2D vector in Radians. Counter Clockwise.</summary>
+        /// <summary>Rotate the 2D vector in radians. Counter Clockwise.</summary>
         /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
         member inline v.RotateRadians angRadians : Vc =
             v.RotateBy (Rotation2D.createFromRadians angRadians)
 
-        /// <summary>Rotate the 2D vector in Radians. Counter Clockwise.</summary>
+        /// <summary>Rotate the 2D vector in radians. Counter Clockwise.</summary>
         /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
         static member inline rotateRadians angRadians (v:Vc) : Vc =
             v.RotateRadians angRadians
 
-        /// 90 Degree rotation Counter-Clockwise.
+        /// 90-degree rotation Counter-Clockwise.
         /// Vc(-y, x)
         member inline v.Rotate90CCW : Vc =
             Vc( -v.Y, v.X)
 
-        /// 90 Degree rotation Counter-Clockwise.
+        /// 90-degree rotation Counter-Clockwise.
         /// Vc(-y, x)
         static member inline rotate90CCW (v:Vc) : Vc =
             Vc( -v.Y, v.X)
 
-        /// 90 Degree rotation clockwise.
+        /// 90-degree rotation clockwise.
         /// Vc(y, -x)
         member inline v.Rotate90CW : Vc =
             Vc(v.Y, -v.X)
 
-        /// 90 Degree rotation clockwise.
+        /// 90-degree rotation clockwise.
         /// Vc(y, -x)
         static member inline rotate90CW (v:Vc) : Vc =
             Vc( v.Y, -v.X)
@@ -282,7 +284,7 @@ module AutoOpenVc =
 
         /// The diamond angle.
         /// Calculates the proportion of X to Y component.
-        /// It is always positive and in the range of 0.0 to 4.0 (for 360 Degrees)
+        /// It is always positive and in the range of 0.0 to 4.0 (for 360 degrees)
         /// 0.0 = Xaxis, going Counter-Clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         member inline v.DirectionDiamond : float =
@@ -304,7 +306,7 @@ module AutoOpenVc =
 
         /// The diamond angle.
         /// Calculates the proportion of X to Y component.
-        /// It is always positive and in the range of 0.0 to 4.0 (for 360 Degrees)
+        /// It is always positive and in the range of 0.0 to 4.0 (for 360 degrees)
         /// 0.0 = Xaxis, going Counter-Clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         static member inline directionDiamond(a:Vc) : float =
@@ -320,7 +322,7 @@ module AutoOpenVc =
                 else
                     3.0 + a.X/(a.X-a.Y)
 
-        /// Returns the angle in Radians from X-axis.
+        /// Returns the angle in radians from X-axis.
         /// Going Counter-Clockwise till two Pi.
         member inline v.Direction2Pi : float =
             // https://stackoverflow.com/a/14675998/969070
@@ -334,12 +336,12 @@ module AutoOpenVc =
                 else
                     a
 
-        /// Returns the angle in Radians from X-axis.
+        /// Returns the angle in radians from X-axis.
         /// Going Counter-Clockwise till two Pi.
         static member inline direction2Pi (v:Vc) : float =
             v.Direction2Pi
 
-        /// Returns the angle in Radians from X-axis.
+        /// Returns the angle in radians from X-axis.
         /// Going Counter-Clockwise till two Pi.
         /// Ignores orientation.
         /// Range 0.0 to Pi.
@@ -355,30 +357,30 @@ module AutoOpenVc =
                 else
                     a
 
-        /// Returns the angle in Radians from X-axis.
+        /// Returns the angle in radians from X-axis.
         /// Going Counter-Clockwise till two Pi.
         /// Ignores orientation.
         /// Range 0.0 to Pi.
         static member inline directionPi (v:Vc) : float =
             v.DirectionPi
 
-        /// Returns the angle in Degrees from X-axis.
+        /// Returns the angle in degrees from X-axis.
         /// Going Counter-Clockwise till 360.
         member inline v.Direction360 : float =
             v.Direction2Pi |> toDegrees
 
-        /// Returns the angle in Degrees from X-axis.
+        /// Returns the angle in degrees from X-axis.
         /// Going Counter-Clockwise till 360.
         static member inline direction360 (v:Vc) : float =
             v.Direction360
 
-        /// Returns the angle in Degrees from X-axis,
+        /// Returns the angle in degrees from X-axis,
         /// Ignores orientation.
         /// Range 0.0 to 180.
         member inline v.Direction180 : float =
             v.DirectionPi |> toDegrees
 
-        /// Returns the angle in Degrees from X-axis,
+        /// Returns the angle in degrees from X-axis,
         /// Ignores orientation.
         /// Range 0.0 to 180.
         static member inline direction180 (v:Vc) : float =
@@ -386,7 +388,7 @@ module AutoOpenVc =
 
         /// Returns positive angle for rotating Counter-Clockwise from this vector to vector 'b' .
         /// In Diamond Angle. Using only proportion of X to Y components.
-        /// Range of 0.0 to 4.0 (for 360 Degrees)
+        /// Range of 0.0 to 4.0 (for 360 degrees)
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         member inline v.AngleDiamondTo (b:Vc) : float =
             let r = b.DirectionDiamond - v.DirectionDiamond
@@ -395,7 +397,7 @@ module AutoOpenVc =
 
         /// Returns positive angle for rotating Counter-Clockwise from vector 'a' to vector 'b' .
         /// In Diamond Angle. Using only proportion of X to Y components.
-        /// Range of 0.0 to 4.0 (for 360 Degrees)
+        /// Range of 0.0 to 4.0 (for 360 degrees)
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         static member inline angleDiamond (a:Vc, b:Vc) : float =
             a.AngleDiamondTo(b)
@@ -585,6 +587,16 @@ module AutoOpenVc =
         // #endregion
         // #region Static members
 
+        /// Returns a new 2D vector with new X coordinate, Y stays the same.
+        /// Same as Vc.withX.
+        static member inline setX (x:float) (vc:Vc) : Vc =
+            Vc(x, vc.Y)
+
+        /// Returns a new 2D vector with new Y coordinate, X stays the same.
+        /// Same as Vc.withY.
+        static member inline setY (y:float) (vc:Vc) : Vc =
+            Vc(vc.X, y)
+
         /// Returns the World X-axis with length one: Vc(1, 0)
         static member inline Xaxis : Vc =
             Vc(1, 0)
@@ -730,9 +742,9 @@ module AutoOpenVc =
                 let f = 1.0 / sqrt(l)
                 UnitVc.createUnchecked(v.X*f, v.Y*f)
 
-        /// Returns angle between two 2D vectors in Radians.
+        /// Returns angle between two 2D vectors in radians.
         /// Takes vector orientation into account.
-        /// Range 0.0 to Pi ( = 180 Degree)
+        /// Range 0.0 to Pi ( = 180 degrees)
         static member inline anglePi (a:Vc) (b:Vc) : float =
             UnitVc.anglePi a.Unitized b.Unitized
             //    let mutable r = b.Direction2Pi  - a.Direction2Pi     // this does perform slightly worse than using unitizing and acos for anglePi
@@ -740,8 +752,8 @@ module AutoOpenVc =
             //    if r > Math.PI then  r <- UtilEuclid.twoPi - r
             //    r
 
-        /// Returns positive angle between two 2D vectors in Radians. Ignores orientation.
-        /// Range 0.0 to Pi/2 ( = 90 Degree)
+        /// Returns positive angle between two 2D vectors in radians. Ignores orientation.
+        /// Range 0.0 to Pi/2 ( = 90 degrees)
         static member inline angleHalfPi (a:Vc) (b:Vc) : float =
             UnitVc.angleHalfPi a.Unitized b.Unitized
             //    let mutable r = b.Direction2Pi  - a.Direction2Pi   // this does perform slightly worse than using unitizing and acos for anglePi
@@ -751,28 +763,28 @@ module AutoOpenVc =
             //    r
 
         /// Returns positive angle for rotating Counter-Clockwise from vector 'a' to vector 'b' .
-        /// In Radians.
-        /// Range: 0.0 to 2 Pi ( = 360 Degrees)
+        /// In radians.
+        /// Range: 0.0 to 2 Pi ( = 360 degrees)
         static member inline angle2Pi (a:Vc, b:Vc) : float = // not curried because argument order is important
             let r = b.Direction2Pi  - a.Direction2Pi
             if r >= 0. then  r
             else r + UtilEuclid.twoPi
 
-        /// Returns positive angle between two 2D vectors in Degrees,
+        /// Returns positive angle between two 2D vectors in degrees,
         /// Ignores vector orientation.
-        /// Range: 0 to 90 Degrees.
+        /// Range: 0 to 90 degrees.
         static member inline angle90 (a:Vc) (b:Vc) : float =
             Vc.angleHalfPi a b |>  toDegrees
 
-        /// Returns positive angle between two 2D vectors in Degrees.
+        /// Returns positive angle between two 2D vectors in degrees.
         /// Takes vector orientation into account.
-        /// Range 0 to 180 Degrees.
+        /// Range 0 to 180 degrees.
         static member inline angle180 (a:Vc) (b:Vc) : float =
             Vc.anglePi a b |>  toDegrees
 
         /// Returns positive angle for rotating Counter-Clockwise from vector 'a' to vector 'b' .
-        /// In Degree.
-        /// Range: 0 to 360 Degrees
+        /// In degrees.
+        /// Range: 0 to 360 degrees
         static member inline angle360 (a:Vc,b:Vc) : float =
             Vc.angle2Pi (a, b) |> toDegrees
 
@@ -832,9 +844,9 @@ module AutoOpenVc =
             let bu = b * (1.0 / sqrt sb)
             bu *** au < float cosineValue
 
-        /// Returns positive or negative slope of a 2D vector in Radians.
+        /// Returns positive or negative slope of a 2D vector in radians.
         /// This is the angle from the X-axis in the 2D plane (or its reverse).
-        /// Range -1.57 to +1.57 Radians.
+        /// Range -1.57 to +1.57 radians.
         /// This is just Math.Atan2(v.Y, v.X).
         static member inline slopeRadians (v:Vc) : float =
             if isTooTinySq(v.LengthSq) then failTooSmall $"Vc.slopeRadians" v
@@ -843,30 +855,30 @@ module AutoOpenVc =
             elif r < -halfPi then  r + Math.PI
             else r
 
-        /// Returns positive or negative slope of a 2D vector in Degrees.
+        /// Returns positive or negative slope of a 2D vector in degrees.
         /// This is the angle from the X-axis in the 2D plane (or its reverse).
-        /// Range -90 to +90 Degrees.
+        /// Range -90 to +90 degrees.
         /// This is just Math.Atan2(v.Y, v.X).
         static member inline slopeDegrees (v:Vc) : float =
             Vc.slopeRadians v |> toDegrees
 
         /// Returns positive or negative slope of a 2D vector in Percent.
         /// This is the angle from the X-axis in the 2D plane (or its reverse).
-        /// 100% = 45 Degrees.
+        /// 100% = 45 degrees.
         /// Returns positive (or negative) infinity if the vector is vertical.
         /// Returns NaN if the vector is zero-length.
         static member inline slopePercent (v:Vc) : float =
             100.0 * v.Y / abs(v.X)
 
-        /// Returns positive or negative angle of a vector in Radians from the X-axis.
-        /// Range -3.14 to +3.14 Radians.
+        /// Returns positive or negative angle of a vector in radians from the X-axis.
+        /// Range -3.14 to +3.14 radians.
         /// This is just atan2(v.Y, v.X).
         static member inline angleToXPi (vc:Vc) : float =
             if isTooTinySq(vc.LengthSq) then failTooSmall $"Vc.angleToXPi" vc
             Math.Atan2(vc.Y, vc.X)
 
-        /// Returns positive or negative angle of a vector in Degrees from the X-axis.
-        /// Range -180 to +180 Degrees.
+        /// Returns positive or negative angle of a vector in degrees from the X-axis.
+        /// Range -180 to +180 degrees.
         /// This is just atan2(v.Y, v.X) to degrees.
         static member inline angleToX180 (v:Vc) : float =
             Vc.angleToXPi v |> toDegrees
@@ -932,11 +944,6 @@ module AutoOpenVc =
         // #endregion
         // #region Obsolete
 
-        /// Returns the intersection parameters for two infinite lines.
-        /// Always returns Some since XLine2D.parameters handles parallel lines by returning infinity values.
-        [<Obsolete("Use XLine2D.getRayIntersectionParam instead.")>]
-        static member intersection (ptA:Pt, ptB:Pt, vA:Vc, vB:Vc) : ValueOption<float*float> =
-            ValueSome (XLine2D.parameters( ptA.X, ptA.Y, vA.X, vA.Y, ptB.X, ptB.Y, vB.X, vB.Y ))
 
         [<Obsolete("Use Vc.isParallelWithin instead.")>]
         static member inline isAngle90Below (cosineValue: float<Cosine.cosine>) (a:Vc) (b:Vc) : bool =

@@ -69,7 +69,7 @@ let tests =
 
 
         test "Matrix inverse rotate " {
-            let q = Quaternion.createFromDegree(Vec.Zaxis*9.0, 90.)
+            let q = Quaternion.createFromDegrees(Vec.Zaxis*9.0, 90.)
             let m = Matrix.createFromQuaternion q
             let a = Pnt(9,0,3)
             let inv = m.Inverse
@@ -79,7 +79,7 @@ let tests =
 
         test "Matrix inverse transform rot ***" {
             let t = Matrix.createTranslation (Vec(-2,-3,4))
-            let q = Quaternion.createFromDegree(Vec.Zaxis*9.0, 90.)
+            let q = Quaternion.createFromDegrees(Vec.Zaxis*9.0, 90.)
             let r = Matrix.createFromQuaternion q
             let m = t *** r
             let inv = m.Inverse
@@ -90,7 +90,7 @@ let tests =
 
         test "Matrix inverse transform rot inv ***" {
             let t = Matrix.createTranslation (Vec(-2,-3,4))
-            let q = Quaternion.createFromDegree(Vec.Zaxis*9.0, 90.)
+            let q = Quaternion.createFromDegrees(Vec.Zaxis*9.0, 90.)
             let r = Matrix.createFromQuaternion q
             let m = r *** t
             let inv = m.Inverse
@@ -240,7 +240,7 @@ let tests =
         }
 
         test "Matrix from quaternion" {
-            let q = Quaternion.createFromDegree(Vec.Zaxis, 90.0)
+            let q = Quaternion.createFromDegrees(Vec.Zaxis, 90.0)
             let m = Matrix.createFromQuaternion(q)
             let a = Pnt(1,0,0)
             let b = a *** m

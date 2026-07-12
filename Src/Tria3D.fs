@@ -61,11 +61,6 @@ type Tria3D =
         let bcLenSq = bc.LengthSq
         let caLenSq = ca.LengthSq
         let distSq = distanceTolerance*distanceTolerance
-        // previously:
-        // Fails if any of the points are closer than the given distance tolerance to each other.
-        // if not(distSq < abLenSq) then EuclidExcePntion.Raisef "Points.areInLine failed on very short line %O to %O " a b
-        // if not(distSq < bcLenSq) then EuclidExcePntion.Raisef "Points.areInLine failed on very short line %O to %O " b c
-        // if not(distSq < caLenSq) then EuclidExcePntion.Raisef "Points.areInLine failed on very short line %O to %O " c a
         if abLenSq < distSq || bcLenSq < distSq || caLenSq < distSq then // two or more points are too close to each other
             true
         else
@@ -120,7 +115,7 @@ type Tria3D =
         let perp = Vec.cross (vPrev, vNext)
         let lenSq = perp.LengthSq
         if isTooTinySq lenSq then
-            failColinear $"Tria3D.offsetPnt" pntToOffset prev next
+            failCollinear $"Tria3D.offsetPnt" pntToOffset prev next
 
         let nPrev = Vec.cross(perp, vPrev) |> Vec.unitize//Unchecked
         let nNext = Vec.cross(perp, vNext) |> Vec.unitize//Unchecked
@@ -139,7 +134,7 @@ type Tria3D =
         let vCA = a-c
         let perp = Vec.cross(vAB, vBC)
         if isTooSmallSq perp.LengthSq  then
-            failColinear $"Tria3D.offset" a b c
+            failCollinear $"Tria3D.offset" a b c
         let na = Vec.cross(perp,vAB) |> Vec.unitize
         let nb = Vec.cross(perp,vBC) |> Vec.unitize
         let nc = Vec.cross(perp,vCA) |> Vec.unitize
@@ -197,64 +192,126 @@ type Tria3D =
             ValueSome pt
 
 
-    /// Calculates the intersection of a finite line with a triangle.
-    /// Returns Some(Pnt) or None if no intersection was found,
-    /// or if the input line has near zero length,
-    /// or if the input triangle has near zero area.
-    /// This algorithm still returns an intersection even if line and triangle are almost parallel.
-    /// Since it is using the triple product, it is hard to find an appropriate tolerance for
-    /// considering lines and triangles parallel based on the volume of the tetrahedron between them.
-    static member intersectLine(line:Line3D, p1 :Pnt, p2:Pnt, p3:Pnt) : Pnt option =
-        // https://stackoverflow.com/questions/42740765/intersection-between-line-and-triangle-in-3d
-        let inline tetrahedronVolumeSigned(a:Pnt, b:Pnt, c:Pnt, d:Pnt) : float=
-            // computes the signed Volume of a Tetrahedron
-            //((Vec.cross(b-a, c-a)) * (d-a)) / 6.0 // the actual volume of a Tetrahedron
-            Vec.cross(b-a, c-a) *** (d-a) // divide by 6.0 is not needed, because we only need the sign of the result
+    /// Finds the intersection parameter on the infinite Line3D with a 3D triangle.
+    /// Returns ValueNone if
+    ///  - any of the direction vectors are too small,
+    ///  - the line is parallel to the triangle plane,
+    ///  - the intersection point is outside the triangle.
+    /// lnFromX, lnFromY, lnFromZ are the start point of the line
+    /// dirX, dirY, dirZ are the direction vector of the line (not the end point)
+    /// ptAx, ptAy, ptAz is the triangle points
+    /// e1x, e1y, e1z is the triangle edge1 vector (B-A)
+    /// e2x, e2y, e2z is the triangle edge2 vector (C-A)
+    static member intersectTriaVectorsWithRay(  lnFromX:float, lnFromY:float, lnFromZ:float,
+                                    dirX:float, dirY:float, dirZ:float,
+                                    ptAx:float, ptAy:float, ptAz:float,
+                                    e1x:float, e1y:float, e1z:float,
+                                    e2x:float, e2y:float, e2z:float) : voption<float> =
+        // Möller–Trumbore implementation, two-sided (no backface culling) and allocation-free:
+        // pVec = cross product dir × edge2
+        let px = dirY*e2z - dirZ*e2y
+        let py = dirZ*e2x - dirX*e2z
+        let pz = dirX*e2y - dirY*e2x
+        // det = edge1 · pVec  (== -dir · triangleNormal); ~0 means line parallel to triangle plane
+        let det = e1x*px + e1y*py + e1z*pz
 
-        let inline sign (x:float) =
-            if   x = 0 then 0
-            elif x > 0 then 1
-            else           -1
 
-        let q1 = line.From
-        let q2 = line.To
-        let s1 = sign (tetrahedronVolumeSigned(q1, p1, p2, p3))
-        let s2 = sign (tetrahedronVolumeSigned(q2, p1, p2, p3))
-        // if line and triangle are exactly in the same plane s1 and s2 are both 0
-        // It is hard to say at which very small volume it should be considers flat.
-        // TODO add a tolerance parameter for tangential triangles and lines
-        if s1 = s2 then
-            None
-        else
-            let s3 = sign (tetrahedronVolumeSigned(q1, q2, p1, p2))
-            let s4 = sign (tetrahedronVolumeSigned(q1, q2, p2, p3))
-            let s5 = sign (tetrahedronVolumeSigned(q1, q2, p3, p1))
-            if s3 = s4 && s4 = s5 then
-                let n = Vec.cross(p2-p1, p3-p1)
-                let v = q2-q1
-                let div = v *** n
-                if isTooTinySq(abs div) then
-                    None
+        // a degenerate (zero-area) triangle produces different results depending on which corner was duplicated,
+        // because the only degeneracy guard was the absolute test abs det > 1e-12:
+
+        // // Degeneracy guard: reject zero-area triangles (e.g. a coincident corner, so one edge is zero
+        // // or both edges are equal) up front. The absolute `abs det > 1e-12` test alone is unreliable and
+        // // inconsistent for these cases: when an edge is exactly zero det comes out exactly 0 (rejected),
+        // // but when the two edges are equal det is formed by cancellation and rounds to garbage ~1e-9 that
+        // // sails past 1e-12 (wrongly accepted). Testing the triangle normal (= edge1 × edge2 = 2·area)
+        // // relative to the edge lengths is scale-independent and is exactly 0 in both degenerate cases.
+        // let nx = e1y*e2z - e1z*e2y   // triangle normal = edge1 × edge2
+        // let ny = e1z*e2x - e1x*e2z
+        // let nz = e1x*e2y - e1y*e2x
+        // let nLenSq = nx*nx + ny*ny + nz*nz                 // (2 × area)²
+        // let e1Sq = e1x*e1x + e1y*e1y + e1z*e1z
+        // let e2Sq = e2x*e2x + e2y*e2y + e2z*e2z
+        // // nLenSq / (e1Sq*e2Sq) = sin²(angle between edges); below 1e-12 the triangle is effectively a sliver/point
+        // if nLenSq > 1e-12 * e1Sq * e2Sq && abs det > 1e-12 then // also catches zero length lines and rays parallel to the plane
+
+
+        if abs det > 1e-12 then // this catches zero length lines or edges
+            let invDet = 1.0 / det // det is not 0.0
+            // tVec = lnFrom - A
+            let tx = lnFromX - ptAx
+            let ty = lnFromY - ptAy
+            let tz = lnFromZ - ptAz
+            // u = (tVec · pVec) * invDet
+            let u = (tx*px + ty*py + tz*pz) * invDet
+            if isBetweenZeroAndOneTolerantIncl u then // first barycentric bounds check — it tests whether the intersection point falls outside the triangle along the first edge direction
+                // qVec = cross product tVec × edge1
+                let qx = ty*e1z - tz*e1y
+                let qy = tz*e1x - tx*e1z
+                let qz = tx*e1y - ty*e1x
+                // v = (dir · qVec) * invDet
+                let v = (dirX*qx + dirY*qy + dirZ*qz) * invDet
+                if v > -1e-6 && u + v <``1.0 + 1e-6`` then
+                    // t = (edge2 · qVec) * invDet
+                    let t = (e2x*qx + e2y*qy + e2z*qz) * invDet
+                    ValueSome t
                 else
-                    let t = ((p1-q1) *** n) / div
-                    // this extra check should not be needed,
-                    // but probably helps to deal with potential numerical precision issues:
-                    if isBetweenZeroAndOne t then
-                        Some (q1 + v * t)
-                    else
-                        None
-            else None
+                    ValueNone
+            else
+                ValueNone
+        else
+            ValueNone
 
-// #endregion
-// #region Obsolete
+    /// Calculates the intersection parameter on the infinite Ray / Line3D with a 3D triangle.
+    /// Returns:
+    /// ValueSome with the parameter on the line.
+    /// ValueNone if the ray/line
+    ///  - is parallel to the triangle plane,
+    ///  - is in the triangles plane ,
+    ///  - passes outside the triangle,
+    ///  - has zero length.
+    ///  - a triangle edge has zero length.
+    /// Note: A degenerated linear triangle that still intersects with the line may sometimes return Some or None depending on the order of input points.
+    static member inline intersectRayXYZ(   lnFromX:float, lnFromY:float, lnFromZ:float,
+                                             lnToX:float,   lnToY:float,   lnToZ:float,
+                                             ptAx:float, ptAy:float, ptAz:float,
+                                             ptBx:float, ptBy:float, ptBz:float,
+                                             ptCx:float, ptCy:float, ptCz:float) : voption<float> =
+        // Note a degenerated linear triangle that still intersects with the line
+        // may sometimes return Some or None depending on the order of input points.
+        // see .\Test\TestInRhino\xRayTria.fsx
+        let dirX = lnToX - lnFromX
+        let dirY = lnToY - lnFromY
+        let dirZ = lnToZ - lnFromZ
+        // edge1 = B - A,  edge2 = C - A
+        let e1x = ptBx - ptAx
+        let e1y = ptBy - ptAy
+        let e1z = ptBz - ptAz
+        let e2x = ptCx - ptAx
+        let e2y = ptCy - ptAy
+        let e2z = ptCz - ptAz
+        Tria3D.intersectTriaVectorsWithRay(lnFromX, lnFromY, lnFromZ, dirX, dirY, dirZ, ptAx, ptAy, ptAz, e1x, e1y, e1z, e2x, e2y, e2z)
 
-[<Obsolete("Use the module Euclid.Line3D or Euclid.XLine3D instead.")>]
-module Intersect =
+    /// Calculates the intersection parameter on the infinite Ray / Line3D with a 3D triangle.
+    /// Returns:
+    /// ValueSome with the parameter on the line.
+    /// ValueNone if the ray /line
+    ///  - is parallel to the triangle plane,
+    ///  - is in the triangles plane ,
+    ///  - passes outside the triangle,
+    ///  - has zero length.
+    ///  - a triangle edge has zero length.
+    static member inline intersectRay(line:Line3D, p1:Pnt, p2:Pnt, p3:Pnt) : voption<float> =
+        Tria3D.intersectRayXYZ(line.FromX, line.FromY, line.FromZ, line.ToX, line.ToY, line.ToZ, p1.X, p1.Y, p1.Z, p2.X, p2.Y, p2.Z, p3.X, p3.Y, p3.Z)
 
-    [<Obsolete("Use Tria3D.intersectLine instead.")>]
-    let lineTriangle(line:Line3D, p1 :Pnt, p2:Pnt, p3:Pnt) : Pnt option =
-       Tria3D.intersectLine(line, p1, p2, p3)
 
-    [<Obsolete("Use Line3D.intersectCone or XLine3D.intersectCone for a more detailed result instead.")>]
-    let lineCone (ln:Line3D, coneRadius, coneBaseZ, coneTipZ) : option<float*float> =
-        Line3D.intersectCone(ln, coneRadius, coneBaseZ, coneTipZ)
+    /// Calculates the intersection point on the finite Line3D with a 3D triangle.
+    /// Returns:
+    /// ValueSome with the intersection point.
+    /// ValueNone if the finite line
+    ///  - does not intersect the triangle,
+    ///  - has zero length.
+    ///  - a triangle edge has zero length.
+    static member inline intersectLine(line:Line3D, p1:Pnt, p2:Pnt, p3:Pnt) : Pnt voption =
+        match Tria3D.intersectRay(line, p1, p2, p3) with
+        | ValueSome t when isBetweenZeroAndOneTolerantIncl t -> ValueSome (line.EvaluateAt t)
+        | _ -> ValueNone

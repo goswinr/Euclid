@@ -223,9 +223,6 @@ type FreeBox private (pts:Pnt[]) =
     override b.ToString() : string =
         $"Euclid.FreeBox pt0 at {b.Pt0.AsString}, Pt7 at {b.Pt7.AsString}"
 
-    /// Nicely formatted string representation of the Box including Pt0 and Pt7.
-    static member inline toString (b:FreeBox) : string = b.ToString()
-
     /// Nicely formatted string representation of the Box including Pt0.
     member b.AsString : string =
         $"FreeBox at {b.Pt0.AsString}"
@@ -254,11 +251,13 @@ type FreeBox private (pts:Pnt[]) =
     static member inline getPt (i:int) (b:FreeBox) : Pnt =
         b.GetPt(i)
 
+    /// Sets the point at the specified index. The index must be between 0 and 7.
     member b.SetPt (i:int) (p:Pnt) : unit =
         if i < 0 || i > 7 then
             fail $"FreeBox.SetPt invalid index {i}"
         pts.[i] <- p
 
+    /// Sets the point at the specified index. The index must be between 0 and 7.
     static member inline setPt (i:int) (p:Pnt) (b:FreeBox) : unit =
         b.SetPt i p
 
@@ -292,7 +291,7 @@ type FreeBox private (pts:Pnt[]) =
     static member inline scaleOn (cen:Pnt)  (factor:float) (b:FreeBox) : FreeBox =
         b.ScaleOn(cen, factor)
 
-    /// Returns a FreeBox moved by a vector.
+    /// Returns a FreeBox moved by a vector. Same as FreeBox.move and FreeBox.translate.
     member b.Move (v:Vec) : FreeBox =
         b.Points
         |> Array.map (fun p -> p + v)
@@ -434,292 +433,126 @@ type FreeBox private (pts:Pnt[]) =
 
 
     /// <summary>Returns the 12 box edges.
+    /// Pairs in this order:
+    /// 0-1, 1-2, 3-2, 0-3, 0-4, 1-5, 2-6, 3-7, 4-5, 5-6, 7-6, 4-7
     /// <code>
     ///       7               6
-    ///       +--------E6-----+
+    ///       +---------------+
     ///      /|              /|
-    ///    E7 E11           E5|
+    ///     / |             / |
     /// 4  /  |          5 /  |
-    ///   +--------E4-----+   E10
-    ///   |   |           E9  |
-    ///   E8  +-----E2----|---+
+    ///   +---------------+   |
+    ///   |   |           |   |
+    ///   |   +-----------|---+
     ///   |  / 3          |  / 2
-    ///   | E3            | E1
+    ///   | /             | /
     ///   |/              |/
-    ///   +------E0 ------+
+    ///   +---------------+
     ///   0               1
     /// </code>
     /// </summary>
     member b.Edges :Line3D[] =
-        [|
-        Line3D(pts.[0], pts.[1]) // E0
-        Line3D(pts.[1], pts.[2]) // E1
-        Line3D(pts.[3], pts.[2]) // E2
-        Line3D(pts.[0], pts.[3]) // E3
-        Line3D(pts.[4], pts.[5]) // E4
-        Line3D(pts.[5], pts.[6]) // E5
-        Line3D(pts.[7], pts.[6]) // E6
-        Line3D(pts.[4], pts.[7]) // E7
-        Line3D(pts.[0], pts.[4]) // E8
-        Line3D(pts.[1], pts.[5]) // E9
-        Line3D(pts.[2], pts.[6]) // E10
-        Line3D(pts.[3], pts.[7]) // E11
-        |]
+        [| b.Edge01; b.Edge12; b.Edge32; b.Edge03; // bottom face
+           b.Edge04; b.Edge15; b.Edge26; b.Edge37; // vertical edges
+           b.Edge45; b.Edge56; b.Edge76; b.Edge47 |] // top face
 
 
 
-    /// <summary>Returns the edge between point 0 and point 1,
-    /// E0 of the 12 box edges
-    /// <code>
-    ///       7               6
-    ///       +--------E6-----+
-    ///      /|              /|
-    ///    E7 E11           E5|
-    /// 4  /  |          5 /  |
-    ///   +--------E4-----+   E10
-    ///   |   |           E9  |
-    ///   E8  +-----E2----|---+
-    ///   |  / 3          |  / 2
-    ///   | E3            | E1
-    ///   |/              |/
-    ///   +------E0 ------+
-    ///   0               1
-    /// </code>
-    /// </summary>
-    member b.Edge0 :Line3D =
-        Line3D(pts.[0], pts.[1]) // E0
+    /// Returns the edge between point 0 and point 1.
+    member b.Edge01 :Line3D =
+        Line3D(pts.[0].X, pts.[0].Y, pts.[0].Z, pts.[1].X, pts.[1].Y, pts.[1].Z)
 
+    /// Returns the edge between point 0 and point 1.
+    static member inline edge01 (b:FreeBox) :Line3D =
+        b.Edge01
 
-    /// <summary>Returns the edge between point 1 and point 2,
-    /// E1 of the 12 box edges
-    /// <code>
-    ///       7               6
-    ///       +--------E6-----+
-    ///      /|              /|
-    ///    E7 E11           E5|
-    /// 4  /  |          5 /  |
-    ///   +--------E4-----+   E10
-    ///   |   |           E9  |
-    ///   E8  +-----E2----|---+
-    ///   |  / 3          |  / 2
-    ///   | E3            | E1
-    ///   |/              |/
-    ///   +------E0 ------+
-    ///   0               1
-    /// </code>
-    /// </summary>
-    member b.Edge1 :Line3D =
-        Line3D(pts.[1], pts.[2]) // E1
+    /// Returns the edge between point 1 and point 2.
+    member b.Edge12 :Line3D =
+        Line3D(pts.[1].X, pts.[1].Y, pts.[1].Z, pts.[2].X, pts.[2].Y, pts.[2].Z)
 
-    /// <summary>Returns the edge between point 3 and point 2,
-    /// E2 of the 12 box edges
-    /// <code>
-    ///       7               6
-    ///       +--------E6-----+
-    ///      /|              /|
-    ///    E7 E11           E5|
-    /// 4  /  |          5 /  |
-    ///   +--------E4-----+   E10
-    ///   |   |           E9  |
-    ///   E8  +-----E2----|---+
-    ///   |  / 3          |  / 2
-    ///   | E3            | E1
-    ///   |/              |/
-    ///   +------E0 ------+
-    ///   0               1
-    /// </code>
-    /// </summary>
-    member b.Edge2 :Line3D =
-        Line3D(pts.[3], pts.[2]) // E2
+    /// Returns the edge between point 1 and point 2.
+    static member inline edge12 (b:FreeBox) :Line3D =
+        b.Edge12
 
-    /// <summary>Returns the edge between point 0 and point 3,
-    /// E3 of the 12 box edges
-    /// <code>
-    ///       7               6
-    ///       +--------E6-----+
-    ///      /|              /|
-    ///    E7 E11           E5|
-    /// 4  /  |          5 /  |
-    ///   +--------E4-----+   E10
-    ///   |   |           E9  |
-    ///   E8  +-----E2----|---+
-    ///   |  / 3          |  / 2
-    ///   | E3            | E1
-    ///   |/              |/
-    ///   +------E0 ------+
-    ///   0               1
-    /// </code>
-    /// </summary>
-    member b.Edge3 :Line3D =
-        Line3D(pts.[0], pts.[3]) // E3
+    /// Returns the edge between point 3 and point 2.
+    member b.Edge32 :Line3D =
+        Line3D(pts.[3].X, pts.[3].Y, pts.[3].Z, pts.[2].X, pts.[2].Y, pts.[2].Z)
 
-    /// <summary>Returns the edge between point 4 and point 5,
-    /// E4 of the 12 box edges
-    /// <code>
-    ///       7               6
-    ///       +--------E6-----+
-    ///      /|              /|
-    ///    E7 E11           E5|
-    /// 4  /  |          5 /  |
-    ///   +--------E4-----+   E10
-    ///   |   |           E9  |
-    ///   E8  +-----E2----|---+
-    ///   |  / 3          |  / 2
-    ///   | E3            | E1
-    ///   |/              |/
-    ///   +------E0 ------+
-    ///   0               1
-    /// </code>
-    /// </summary>
-    member b.Edge4 :Line3D =
-        Line3D(pts.[4], pts.[5]) // E4
+    /// Returns the edge between point 3 and point 2.
+    static member inline edge32 (b:FreeBox) :Line3D =
+        b.Edge32
 
-    /// <summary>Returns the edge between point 5 and point 6,
-    /// E5 of the 12 box edges
-    /// <code>
-    ///       7               6
-    ///       +--------E6-----+
-    ///      /|              /|
-    ///    E7 E11           E5|
-    /// 4  /  |          5 /  |
-    ///   +--------E4-----+   E10
-    ///   |   |           E9  |
-    ///   E8  +-----E2----|---+
-    ///   |  / 3          |  / 2
-    ///   | E3            | E1
-    ///   |/              |/
-    ///   +------E0 ------+
-    ///   0               1
-    /// </code>
-    /// </summary>
-    member b.Edge5 :Line3D =
-        Line3D(pts.[5], pts.[6]) // E5
+    /// Returns the edge between point 0 and point 3.
+    member b.Edge03 :Line3D =
+        Line3D(pts.[0].X, pts.[0].Y, pts.[0].Z, pts.[3].X, pts.[3].Y, pts.[3].Z)
 
-    /// <summary>Returns the edge between point 7 and point 6,
-    /// E6 of the 12 box edges
-    /// <code>
-    ///       7               6
-    ///       +--------E6-----+
-    ///      /|              /|
-    ///    E7 E11           E5|
-    /// 4  /  |          5 /  |
-    ///   +--------E4-----+   E10
-    ///   |   |           E9  |
-    ///   E8  +-----E2----|---+
-    ///   |  / 3          |  / 2
-    ///   | E3            | E1
-    ///   |/              |/
-    ///   +------E0 ------+
-    ///   0               1
-    /// </code>
-    /// </summary>
-    member b.Edge6 :Line3D =
-        Line3D(pts.[7], pts.[6]) // E6
+    /// Returns the edge between point 0 and point 3.
+    static member inline edge03 (b:FreeBox) :Line3D =
+        b.Edge03
 
-    /// <summary>Returns the edge between point 4 and point 7,
-    /// E7 of the 12 box edges
-    /// <code>
-    ///       7               6
-    ///       +--------E6-----+
-    ///      /|              /|
-    ///    E7 E11           E5|
-    /// 4  /  |          5 /  |
-    ///   +--------E4-----+   E10
-    ///   |   |           E9  |
-    ///   E8  +-----E2----|---+
-    ///   |  / 3          |  / 2
-    ///   | E3            | E1
-    ///   |/              |/
-    ///   +------E0 ------+
-    ///   0               1
-    /// </code>
-    /// </summary>
-    member b.Edge7 :Line3D =
-        Line3D(pts.[4], pts.[7]) // E7
+    /// Returns the edge between point 0 and point 4.
+    member b.Edge04 :Line3D =
+        Line3D(pts.[0].X, pts.[0].Y, pts.[0].Z, pts.[4].X, pts.[4].Y, pts.[4].Z)
 
-    /// <summary>Returns the edge between point 0 and point 4,
-    /// E8 of the 12 box edges
-    /// <code>
-    ///       7               6
-    ///       +--------E6-----+
-    ///      /|              /|
-    ///    E7 E11           E5|
-    /// 4  /  |          5 /  |
-    ///   +--------E4-----+   E10
-    ///   |   |           E9  |
-    ///   E8  +-----E2----|---+
-    ///   |  / 3          |  / 2
-    ///   | E3            | E1
-    ///   |/              |/
-    ///   +------E0 ------+
-    ///   0               1
-    /// </code>
-    /// </summary>
-    member b.Edge8 :Line3D =
-        Line3D(pts.[0], pts.[4]) // E8
+    /// Returns the edge between point 0 and point 4.
+    static member inline edge04 (b:FreeBox) :Line3D =
+        b.Edge04
 
-    /// <summary>Returns the edge between point 1 and point 5,
-    /// E9 of the 12 box edges
-    /// <code>
-    ///       7               6
-    ///       +--------E6-----+
-    ///      /|              /|
-    ///    E7 E11           E5|
-    /// 4  /  |          5 /  |
-    ///   +--------E4-----+   E10
-    ///   |   |           E9  |
-    ///   E8  +-----E2----|---+
-    ///   |  / 3          |  / 2
-    ///   | E3            | E1
-    ///   |/              |/
-    ///   +------E0 ------+
-    ///   0               1
-    /// </code>
-    /// </summary>
-    member b.Edge9 :Line3D =
-        Line3D(pts.[1], pts.[5]) // E9
+    /// Returns the edge between point 1 and point 5.
+    member b.Edge15 :Line3D =
+        Line3D(pts.[1].X, pts.[1].Y, pts.[1].Z, pts.[5].X, pts.[5].Y, pts.[5].Z)
 
-    /// <summary>Returns the edge between point 2 and point 6,
-    /// E10 of the 12 box edges
-    /// <code>
-    ///       7               6
-    ///       +--------E6-----+
-    ///      /|              /|
-    ///    E7 E11           E5|
-    /// 4  /  |          5 /  |
-    ///   +--------E4-----+   E10
-    ///   |   |           E9  |
-    ///   E8  +-----E2----|---+
-    ///   |  / 3          |  / 2
-    ///   | E3            | E1
-    ///   |/              |/
-    ///   +------E0 ------+
-    ///   0               1
-    /// </code>
-    /// </summary>
-    member b.Edge10 :Line3D =
-        Line3D(pts.[2], pts.[6]) // E10
+    /// Returns the edge between point 1 and point 5.
+    static member inline edge15 (b:FreeBox) :Line3D =
+        b.Edge15
 
-    /// <summary>Returns the edge between point 3 and point 7,
-    /// E11 of the 12 box edges
-    /// <code>
-    ///       7               6
-    ///       +--------E6-----+
-    ///      /|              /|
-    ///    E7 E11           E5|
-    /// 4  /  |          5 /  |
-    ///   +--------E4-----+   E10
-    ///   |   |           E9  |
-    ///   E8  +-----E2----|---+
-    ///   |  / 3          |  / 2
-    ///   | E3            | E1
-    ///   |/              |/
-    ///   +------E0 ------+
-    ///   0               1
-    /// </code>
-    /// </summary>
-    member b.Edge11 :Line3D =
-        Line3D(pts.[3], pts.[7]) // E11
+    /// Returns the edge between point 2 and point 6.
+    member b.Edge26 :Line3D =
+        Line3D(pts.[2].X, pts.[2].Y, pts.[2].Z, pts.[6].X, pts.[6].Y, pts.[6].Z)
+
+    /// Returns the edge between point 2 and point 6.
+    static member inline edge26 (b:FreeBox) :Line3D =
+        b.Edge26
+
+    /// Returns the edge between point 3 and point 7.
+    member b.Edge37 :Line3D =
+        Line3D(pts.[3].X, pts.[3].Y, pts.[3].Z, pts.[7].X, pts.[7].Y, pts.[7].Z)
+
+    /// Returns the edge between point 3 and point 7.
+    static member inline edge37 (b:FreeBox) :Line3D =
+        b.Edge37
+
+    /// Returns the edge between point 4 and point 5.
+    member b.Edge45 :Line3D =
+        Line3D(pts.[4].X, pts.[4].Y, pts.[4].Z, pts.[5].X, pts.[5].Y, pts.[5].Z)
+
+    /// Returns the edge between point 4 and point 5.
+    static member inline edge45 (b:FreeBox) :Line3D =
+        b.Edge45
+
+    /// Returns the edge between point 5 and point 6.
+    member b.Edge56 :Line3D =
+        Line3D(pts.[5].X, pts.[5].Y, pts.[5].Z, pts.[6].X, pts.[6].Y, pts.[6].Z)
+
+    /// Returns the edge between point 5 and point 6.
+    static member inline edge56 (b:FreeBox) :Line3D =
+        b.Edge56
+
+    /// Returns the edge between point 7 and point 6.
+    member b.Edge76 :Line3D =
+        Line3D(pts.[7].X, pts.[7].Y, pts.[7].Z, pts.[6].X, pts.[6].Y, pts.[6].Z)
+
+    /// Returns the edge between point 7 and point 6.
+    static member inline edge76 (b:FreeBox) :Line3D =
+        b.Edge76
+
+    /// Returns the edge between point 4 and point 7.
+    member b.Edge47 :Line3D =
+        Line3D(pts.[4].X, pts.[4].Y, pts.[4].Z, pts.[7].X, pts.[7].Y, pts.[7].Z)
+
+    /// Returns the edge between point 4 and point 7.
+    static member inline edge47 (b:FreeBox) :Line3D =
+        b.Edge47
 
 
 
@@ -774,3 +607,44 @@ type FreeBox private (pts:Pnt[]) =
 
     // /// The length of the Box from Pt0 to Pt4 in the Z direction.
     // static member inline sizeZ (b:FreeBox) : float = b.SizeZ
+
+
+    // #region Obsolete
+
+    [<Obsolete("Use .Edge01 instead.")>]
+    member b.Edge0 :Line3D = b.Edge01
+
+    [<Obsolete("Use .Edge12 instead.")>]
+    member b.Edge1 :Line3D = b.Edge12
+
+    [<Obsolete("Use .Edge32 instead.")>]
+    member b.Edge2 :Line3D = b.Edge32
+
+    [<Obsolete("Use .Edge03 instead.")>]
+    member b.Edge3 :Line3D = b.Edge03
+
+    [<Obsolete("Use .Edge45 instead.")>]
+    member b.Edge4 :Line3D = b.Edge45
+
+    [<Obsolete("Use .Edge56 instead.")>]
+    member b.Edge5 :Line3D = b.Edge56
+
+    [<Obsolete("Use .Edge76 instead.")>]
+    member b.Edge6 :Line3D = b.Edge76
+
+    [<Obsolete("Use .Edge47 instead.")>]
+    member b.Edge7 :Line3D = b.Edge47
+
+    [<Obsolete("Use .Edge04 instead.")>]
+    member b.Edge8 :Line3D = b.Edge04
+
+    [<Obsolete("Use .Edge15 instead.")>]
+    member b.Edge9 :Line3D = b.Edge15
+
+    [<Obsolete("Use .Edge26 instead.")>]
+    member b.Edge10 :Line3D = b.Edge26
+
+    [<Obsolete("Use .Edge37 instead.")>]
+    member b.Edge11 :Line3D = b.Edge37
+
+    // #endregion

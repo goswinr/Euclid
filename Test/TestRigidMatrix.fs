@@ -59,7 +59,7 @@ let tests =
 
         test "RigidMatrix inverse transform rot ***" {
                 let t = RigidMatrix.createTranslation (Vec(-2,-3,4))
-                let q = Quaternion.createFromDegree(Vec.Zaxis*9.0, 90.)
+                let q = Quaternion.createFromDegrees(Vec.Zaxis*9.0, 90.)
                 let r = RigidMatrix.createFromQuaternion q
                 let m = t *** r
                 let inv = m.Inverse
@@ -70,7 +70,7 @@ let tests =
 
         test "RigidMatrix inverse transform rot inv ***" {
                 let t = RigidMatrix.createTranslation (Vec(-2,-3,4))
-                let q = Quaternion.createFromDegree(Vec.Zaxis*9.0, 90.)
+                let q = Quaternion.createFromDegrees(Vec.Zaxis*9.0, 90.)
                 let r = RigidMatrix.createFromQuaternion q
                 let m = r *** t
                 let inv = m.Inverse
@@ -90,7 +90,7 @@ let tests =
 
 
         test "RigidMatrix inverse rotate " {
-            let q = Quaternion.createFromDegree(Vec.Zaxis*9.0, 90.)
+            let q = Quaternion.createFromDegrees(Vec.Zaxis*9.0, 90.)
             let m = RigidMatrix.createFromQuaternion q
             let a = Pnt(9,0,3)
             let inv = m.Inverse
@@ -202,7 +202,7 @@ let tests =
 
         test "RigidMatrix to/from matrix conversion" {
             let rm = RigidMatrix.createTranslation(Vec(1, 2, 3)) *** RigidMatrix.createRotationZ(30.0)
-            let matrix = rm.Matrix
+            let matrix = rm.ToMatrix
             let rmBack = RigidMatrix.createFromMatrix(matrix)
             "round trip conversion preserves matrix" |> Expect.isTrue (RigidMatrix.equals 1e-12 rm rmBack)
         }

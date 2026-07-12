@@ -321,7 +321,7 @@ type Topology2D  =
     /// It searches forward and backward from the first element to connect elements into loops or polylines.
     /// For the line end point it finds the next closest line start point.
     /// And for the line start point it finds the next closest line end point.
-    /// If the distance between two points is greater than the 'splitDistance' an new loop is started.
+    /// If the distance between two points is greater than the 'splitDistance' a new loop is started.
     /// </summary>
     /// <param name="getLine">A function that computes a Line2D from an element of type 'T.
     /// The Line2D is used as an abstraction to hold start and end of arbitrary object.
@@ -397,7 +397,7 @@ type Topology2D  =
     /// <param name="getLine">A function that takes an element of type 'T and returns a Line2D representing its start and end points.</param>
     /// <param name="splitDistance">A float value representing the maximum distance between points to be considered part of the same loop or polyline.</param>
     /// <param name="xs">A ResizeArray of elements of type 'T to be grouped into loops or polylines.</param>
-    /// <returns>A ResizeArray of ResizeArrays of tupels: 'T * Boolean, the Boolean values indicating if the element was reversed.
+    /// <returns>A ResizeArray of ResizeArrays of tuples: 'T * Boolean, the Boolean values indicating if the element was reversed.
     /// The Boolean value is true if the element was reversed, and false if it was not</returns>
     static member joinReversing(getLine: 'T -> Line2D, splitDistance:float , xs:ResizeArray<'T>) : ResizeArray<ResizeArray<'T*bool>> =
         let loops   = ResizeArray<LoopCollector<'T*bool>>()

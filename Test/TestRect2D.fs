@@ -246,7 +246,7 @@ let tests =
         // ---------------------------------------------------------------------
         testList "BRect" [
             test "Axis-aligned bounds of rotated rect" {
-                let b = rr.BRect
+                let b = BRect.createFromRect2D rr
                 "BRect MinPt" |> Expect.isTrue (eq b.MinPt (Pt(2., 3.)))
                 "BRect MaxPt" |> Expect.isTrue (eq b.MaxPt (Pt(13., 13.)))
                 "BRect SizeX" |> Expect.isTrue (eqf b.SizeX 11.)
@@ -314,7 +314,7 @@ let tests =
                 "flipped" |> Expect.throws (fun () -> Rect2D.createFromLine(line, -4., 1.) |> ignore)
             }
             test "createFromBRect round-trips an axis-aligned box" {
-                let r = Rect2D.createFromBRect rr.BRect
+                let r = (BRect.createFromRect2D rr).AsRect2D
                 "origin = min" |> Expect.isTrue (eq r.Origin (Pt(2., 3.)))
                 "SizeX" |> Expect.isTrue (eqf r.SizeX 11.)
                 "SizeY" |> Expect.isTrue (eqf r.SizeY 10.)
@@ -333,17 +333,17 @@ let tests =
                 "SizeX" |> Expect.isTrue (eqf r.SizeX 10.)
                 "SizeY" |> Expect.isTrue (eqf r.SizeY 5.)
             }
-            test "createFrom3Points rejects colinear points" {
-                "colinear" |> Expect.throws (fun () -> Rect2D.createFrom3Points(ro, p1, Pt(9., 6.)) |> ignore)
+            test "createFrom3Points rejects collinear points" {
+                "collinear" |> Expect.throws (fun () -> Rect2D.createFrom3Points(ro, p1, Pt(9., 6.)) |> ignore)
             }
             test "tryCreateFrom3Points returns Some for valid points" {
                 match Rect2D.tryCreateFrom3Points(ro, p1, p3) with
                 | Some r -> "equals canonical" |> Expect.isTrue (Rect2D.equals 1e-9 r rr)
                 | None   -> "should be Some" |> Expect.isTrue false
             }
-            test "tryCreateFrom3Points returns None for colinear points" {
+            test "tryCreateFrom3Points returns None for collinear points" {
                 let r = Rect2D.tryCreateFrom3Points(ro, p1, Pt(9., 6.))
-                "None for colinear" |> Expect.isTrue (Option.isNone r)
+                "None for collinear" |> Expect.isTrue (Option.isNone r)
             }
             test "createFromDirAndPoints fits the 4 corners" {
                 let pts = System.Collections.Generic.List([p0; p1; p2; p3])
@@ -668,6 +668,70 @@ let tests =
             test "AsFSharpCode references createUnchecked" {
                 let s = rr.AsFSharpCode
                 "has constructor" |> Expect.stringContains s "Rect2D.createUnchecked"
+            }
+        ]
+
+        // ---------------------------------------------------------------------
+        // intersectRay (infinite line vs rectangle, slab method)
+        // ---------------------------------------------------------------------
+        testList "intersectRay" [
+            test "horizontal ray through center of unit rectangle" {
+                // unit rect: origin (0,0), X-axis (1,0), Y-axis (0,1)
+                let ray = Line2D(-5., 0.5, 5., 0.5) // dir (10,0), crosses x=0 at t=0.5 and x=1 at t=0.6
+                match Rect2D.intersectRay ray rect with
+                | ValueSome(tEntry, tExit) ->
+                    "entry param" |> Expect.isTrue (eqf tEntry 0.5)
+                    "exit param"  |> Expect.isTrue (eqf tExit 0.6)
+                | ValueNone -> failwith "should intersect"
+            }
+
+            test "ray missing rectangle returns None" {
+                let ray = Line2D(-5., 5., 5., 5.) // parallel to X but y=5 is outside
+                "should not intersect" |> Expect.isTrue (Rect2D.intersectRay ray rect).IsNone
+            }
+
+            test "ray parallel to edge but inside slab intersects" {
+                let ray = Line2D(-5., 0.25, 5., 0.25) // y=0.25 inside [0,1]
+                "should intersect" |> Expect.isTrue (Rect2D.intersectRay ray rect).IsSome
+            }
+
+            test "ray starting inside rectangle has negative entry parameter" {
+                let ray = Line2D(0.5, 0.5, 5., 0.5) // dir (4.5,0)
+                match Rect2D.intersectRay ray rect with
+                | ValueSome(tEntry, tExit) ->
+                    "entry behind ray origin" |> Expect.isTrue (tEntry < 0.0)
+                    "exit ahead of ray origin" |> Expect.isTrue (tExit > 0.0)
+                | ValueNone -> failwith "should intersect"
+            }
+
+            test "zero-length ray returns None" {
+                let ray = Line2D(0.5, 0.5, 0.5, 0.5)
+                "degenerate ray" |> Expect.isTrue (Rect2D.intersectRay ray rect).IsNone
+            }
+
+            test "diagonal ray through unit rectangle corner to corner" {
+                let ray = Line2D(-1., -1., 2., 2.) // dir (3,3), passes (0,0) at t=1/3 and (1,1) at t=2/3
+                match Rect2D.intersectRay ray rect with
+                | ValueSome(tEntry, tExit) ->
+                    "entry at (0,0)" |> Expect.isTrue (eqf tEntry (1.0/3.0))
+                    "exit at (1,1)"  |> Expect.isTrue (eqf tExit (2.0/3.0))
+                | ValueNone -> failwith "should intersect"
+            }
+
+            test "static intersectRay matches and points lie on rotated rectangle" {
+                // rr: origin (5,3), corners p0(5,3) p1(13,9) p2(10,13) p3(2,7)
+                // horizontal line y=8 crosses edge p3-p2 at (10/3,8) and edge p0-p1 at (35/3,8)
+                let ray = Line2D(-10., 8., 20., 8.) // dir (30,0)
+                match Rect2D.intersectRay ray rr with
+                | ValueSome(tEntry, tExit) ->
+                    "entry param" |> Expect.isTrue (eqf tEntry ((10.0/3.0 + 10.0) / 30.0))
+                    "exit param"  |> Expect.isTrue (eqf tExit  ((35.0/3.0 + 10.0) / 30.0))
+                    // reconstruct the intersection points from the ray parameters
+                    let entryPt = Pt(ray.FromX + ray.VectorX*tEntry, ray.FromY + ray.VectorY*tEntry)
+                    let exitPt  = Pt(ray.FromX + ray.VectorX*tExit,  ray.FromY + ray.VectorY*tExit)
+                    "entry point on edge" |> Expect.isTrue (eq entryPt (Pt(10.0/3.0, 8.0)))
+                    "exit point on edge"  |> Expect.isTrue (eq exitPt  (Pt(35.0/3.0, 8.0)))
+                | ValueNone -> failwith "should intersect rotated rectangle"
             }
         ]
     ]

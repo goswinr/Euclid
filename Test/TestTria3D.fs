@@ -494,4 +494,83 @@ let tests =
         | _ -> failwith "Expected EuclidException"
         }
 
+        test "intersectLine with a real-world triangle and many lines" {
+        // Triangle and lines captured from Rhino, see .\TestInRhino\xTria\xRayTriaRh.fsx
+        let triaPt_a = Pnt(274.299666151928, 1.30123144462857, 423.86724430024054)
+        let triaPt_b = Pnt(453.1741748436796, -134.02380242987584, 206.17239974220166)
+        let triaPt_c = Pnt(150.97102968630978, -189.5755141913957, 367.6879295755854)
+
+        // Triangle plane normal, used to verify intersection points lie in the triangle's plane
+        let normal = Vec.cross(triaPt_b - triaPt_a, triaPt_c - triaPt_a) |> Vec.unitize
+
+        // Asserts the line intersects, the result lies on the line segment and in the triangle plane
+        let isHit (name:string) (ln:Line3D) =
+            match Tria3D.intersectLine(ln, triaPt_a, triaPt_b, triaPt_c) with
+            | ValueSome p ->
+                let distToPlane = abs ((p - triaPt_a) *** normal)
+                sprintf "%s: intersection point lies in triangle plane" name |> Expect.floatClose tol distToPlane 0.0
+                sprintf "%s: intersection point lies on the line" name |> Expect.floatClose tol (ln.DistanceToPnt p) 0.0
+            | ValueNone -> failwithf "%s: expected an intersection but got ValueNone" name
+
+        // Asserts the line does not intersect the triangle
+        let isMiss (name:string) (ln:Line3D) =
+            match Tria3D.intersectLine(ln, triaPt_a, triaPt_b, triaPt_c) with
+            | ValueNone -> sprintf "%s: correctly returns ValueNone" name |> Expect.isTrue true
+            | ValueSome p -> failwithf "%s: expected no intersection but got %A" name p
+
+        isHit  "ln0"  (Line3D(102.72246833783501, -122.94911894204799, 367.6879295755854, 322.54822750040285, -65.32516380471921, 423.86724430024054))
+        isHit  "ln1"  (Line3D(142.67455890821319, -199.70811815812138, 285.28835396582934, 362.500318070781, -142.0841630207926, 341.4676686904845))
+        isHit  "ln2"  (Line3D(231.03802167985143, -77.93481557304926, 314.6613319006782, 450.86378084241926, -20.310860435720492, 370.84064662533336))
+        isMiss "ln3"  (Line3D(92.76167932692925, -268.52009572678577, 257.1986966035018, 312.5874384894971, -210.896140589457, 313.37801132815696))
+        isHit  "ln4"  (Line3D(274.299666151928, 1.30123144462857, 423.86724430024054, 317.4064841710968, -74.82080619592374, 511.4495313410636))
+        isHit  "ln5"  (Line3D(453.1741748436796, -134.02380242987584, 206.17239974220166, 551.8861420073981, -308.33859589637893, 406.7304608510648))
+        isHit  "ln6"  (Line3D(274.299666151928, 1.30123144462857, 423.86724430024054, 317.4064841710968, -74.82080619592372, 511.4495313410636))
+        isHit  "ln7"  (Line3D(274.299666151928, 1.30123144462857, 423.86724430024054, 317.4064841710968, -74.82080619592372, 511.4495313410636))
+        isHit  "ln8"  (Line3D(274.299666151928, 1.30123144462857, 423.86724430024054, 317.4064841710968, -74.82080619592372, 511.4495313410636))
+        isHit  "ln9"  (Line3D(274.299666151928, 1.30123144462857, 423.86724430024054, 317.4064841710968, -74.82080619592372, 511.4495313410636))
+        isHit  "ln10" (Line3D(453.1741748436796, -134.02380242987584, 206.17239974220166, 551.8861420073981, -308.33859589637893, 406.73046085106483))
+        isHit  "ln11" (Line3D(453.1741748436796, -134.02380242987584, 206.17239974220166, 551.8861420073981, -308.33859589637893, 406.73046085106483))
+        isHit  "ln12" (Line3D(453.1741748436796, -134.02380242987584, 206.17239974220166, 551.8861420073981, -308.33859589637893, 406.73046085106483))
+        isHit  "ln13" (Line3D(453.1741748436796, -134.02380242987584, 206.17239974220166, 551.8861420073981, -308.33859589637893, 406.73046085106483))
+        isHit  "ln14" (Line3D(46.74059071089063, -5.515688772364626, 155.91771214323435, 231.173666293795, -331.2048063370528, 530.6396542346407))
+        isHit  "ln15" (Line3D(132.07393316766078, 12.725130139468362, 146.43622964803768, 321.173666293795, -321.2048063370528, 530.6396542346407))
+        isMiss "ln16" (Line3D(281.03802167985145, -57.93481557304926, 314.6613319006782, 500.86378084241926, -0.3108604357204925, 370.84064662533336))
+        isMiss "ln17" (Line3D(62.72246833783501, -122.94911894204799, 367.6879295755854, 282.54822750040285, -65.32516380471921, 423.86724430024054))
+        isMiss "ln18" (Line3D(347.0517209810619, -149.67763694946564, 298.77236661456413, 387.2876380945246, -220.72997014768868, 380.52170010549855))
+        isMiss "ln19" (Line3D(297.7007606236559, -62.52911069421449, 198.50354199752604, 330.5868331468975, -120.6024031685264, 265.31982711732036))
+        }
+
+        test "intersectLine is independent of triangle vertex order" {
+        // A line that intersects must do so regardless of the order the triangle points are given in
+        let a = Pnt(274.299666151928, 1.30123144462857, 423.86724430024054)
+        let b = Pnt(453.1741748436796, -134.02380242987584, 206.17239974220166)
+        let c = Pnt(150.97102968630978, -189.5755141913957, 367.6879295755854)
+        let ln = Line3D(231.03802167985143, -77.93481557304926, 314.6613319006782, 450.86378084241926, -20.310860435720492, 370.84064662533336)
+        match Tria3D.intersectLine(ln, a, b, c) with
+        | ValueSome p ->
+            "permutation (b,c,a) intersects" |> Expect.isTrue (Tria3D.intersectLine(ln, b, c, a)).IsSome
+            "permutation (c,a,b) intersects" |> Expect.isTrue (Tria3D.intersectLine(ln, c, a, b)).IsSome
+            "permutation (a,c,b) intersects" |> Expect.isTrue (Tria3D.intersectLine(ln, a, c, b)).IsSome
+            "permutation (b,a,c) intersects" |> Expect.isTrue (Tria3D.intersectLine(ln, b, a, c)).IsSome
+            "permutation (c,b,a) intersects" |> Expect.isTrue (Tria3D.intersectLine(ln, c, b, a)).IsSome
+            // all permutations must return the same intersection point
+            "permutation (b,c,a) same point" |> Expect.isTrue (eq p (Tria3D.intersectLine(ln, b, c, a)).Value)
+            "permutation (c,b,a) same point" |> Expect.isTrue (eq p (Tria3D.intersectLine(ln, c, b, a)).Value)
+        | ValueNone -> failwith "expected an intersection for the base vertex order"
+        }
+
+        test "intersectLine returns None when the segment ends before the triangle plane" {
+        // The infinite ray would hit the triangle, but the finite segment is too short to reach it
+        let a = Pnt(274.299666151928, 1.30123144462857, 423.86724430024054)
+        let b = Pnt(453.1741748436796, -134.02380242987584, 206.17239974220166)
+        let c = Pnt(150.97102968630978, -189.5755141913957, 367.6879295755854)
+        let full = Line3D(231.03802167985143, -77.93481557304926, 314.6613319006782, 450.86378084241926, -20.310860435720492, 370.84064662533336)
+        // the full segment intersects
+        "full segment intersects" |> Expect.isTrue (Tria3D.intersectLine(full, a, b, c)).IsSome
+        // a segment that stops at 10% of the way must not reach the triangle, but the infinite ray still does
+        let short = Line3D(full.From, full.From + (full.To - full.From) * 0.1)
+        "shortened segment does not reach the triangle" |> Expect.isTrue (Tria3D.intersectLine(short, a, b, c)).IsNone
+        "but the infinite ray still intersects" |> Expect.isTrue (Tria3D.intersectRay(short, a, b, c)).IsSome
+        }
+
     ]

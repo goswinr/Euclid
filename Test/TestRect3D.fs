@@ -181,14 +181,14 @@ let tests =
 
             test "Rotate 90 degrees around Z axis" {
                 let r = Rect3D.createFromVectors(Pnt(1., 0., 0.), Vec(1., 0., 0.), Vec(0., 1., 0.))
-                let q = Quaternion.createFromDegree(UnitVec.Zaxis, 90.)
+                let q = Quaternion.createFromDegrees(UnitVec.Zaxis, 90.)
                 let rotated = r.Rotate(q)
                 "Rotate 90 - origin" |> Expect.isTrue (eq rotated.Origin (Pnt(0., 1., 0.)))
             }
 
             test "rotate static method" {
                 let r = Rect3D.createFromVectors(Pnt(1., 0., 0.), Vec(1., 0., 0.), Vec(0., 1., 0.))
-                let q = Quaternion.createFromDegree(UnitVec.Zaxis, 90.)
+                let q = Quaternion.createFromDegrees(UnitVec.Zaxis, 90.)
                 let rotated = Rect3D.rotate q r
                 "rotate static - origin" |> Expect.isTrue (eq rotated.Origin (Pnt(0., 1., 0.)))
             }
@@ -196,7 +196,7 @@ let tests =
             test "RotateWithCenter keeps center fixed" {
                 let r = Rect3D.createFromVectors(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.))
                 let center = r.Center
-                let q = Quaternion.createFromDegree(UnitVec.Zaxis, 90.)
+                let q = Quaternion.createFromDegrees(UnitVec.Zaxis, 90.)
                 let rotated = r.RotateWithCenter(center, q)
                 "RotateWithCenter - center" |> Expect.isTrue (eq rotated.Center center)
             }
@@ -204,7 +204,7 @@ let tests =
             test "rotateWithCenter static method" {
                 let r = Rect3D.createFromVectors(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.))
                 let center = r.Center
-                let q = Quaternion.createFromDegree(UnitVec.Zaxis, 90.)
+                let q = Quaternion.createFromDegrees(UnitVec.Zaxis, 90.)
                 let rotated = Rect3D.rotateWithCenter center q r
                 "rotateWithCenter static - center" |> Expect.isTrue (eq rotated.Center center)
             }
@@ -308,81 +308,101 @@ let tests =
             // A 4 x 2 rectangle in the XY plane, normal pointing +Z
             let r = Rect3D.createFromVectors(Pnt(0.,0.,0.), Vec(4.,0.,0.), Vec(0.,2.,0.))
 
-            test "intersectRayParameters - hits inside the rectangle" {
+            let pointOnLine (ln:Line3D) t =
+                Pnt(ln.FromX + ln.VectorX*t, ln.FromY + ln.VectorY*t, ln.FromZ + ln.VectorZ*t)
+
+            let rayHitParameters (ln:Line3D) (r:Rect3D) =
+                match Rect3D.intersectRay ln r with
+                | ValueSome t ->
+                    let tx, ty = Rect3D.closestParameters (pointOnLine ln t) r
+                    ValueSome (t, tx, ty)
+                | ValueNone ->
+                    ValueNone
+
+            test "intersectRay - hits inside the rectangle" {
                 let ln = Line3D(Pnt(1.,0.5,5.), Pnt(1.,0.5,-5.))
-                match Rect3D.intersectRayParameters ln r with
-                | Some (t,tx,ty) ->
+                match rayHitParameters ln r with
+                | ValueSome (t,tx,ty) ->
                     "ray t"  |> Expect.isTrue (equ t 0.5)
                     "ray tx" |> Expect.isTrue (equ tx 0.25)
                     "ray ty" |> Expect.isTrue (equ ty 0.25)
-                | None ->
-                    "intersectRayParameters should hit" |> Expect.isTrue false
+                | ValueNone ->
+                    "intersectRay should hit" |> Expect.isTrue false
             }
 
-            test "intersectRayParameters - returns params even outside bounds" {
+            test "intersectRay - returns params even outside bounds" {
                 let ln = Line3D(Pnt(10.,0.5,5.), Pnt(10.,0.5,-5.))
-                match Rect3D.intersectRayParameters ln r with
-                | Some (t,tx,ty) ->
+                match rayHitParameters ln r with
+                | ValueSome (t,tx,ty) ->
                     "ray t"  |> Expect.isTrue (equ t 0.5)
                     "ray tx" |> Expect.isTrue (equ tx 2.5) // outside 0..1 on purpose
                     "ray ty" |> Expect.isTrue (equ ty 0.25)
-                | None ->
-                    "intersectRayParameters should still resolve" |> Expect.isTrue false
+                | ValueNone ->
+                    "intersectRay should still resolve" |> Expect.isTrue false
             }
 
-            test "intersectRayParameters - parallel returns None" {
+            test "intersectRay - parallel returns None" {
                 let ln = Line3D(Pnt(0.,0.,1.), Pnt(4.,0.,1.))
-                "parallel ray" |> Expect.isTrue (Option.isNone (Rect3D.intersectRayParameters ln r))
+                match Rect3D.intersectRay ln r with
+                | ValueSome _ -> "parallel ray" |> Expect.isTrue false
+                | ValueNone -> ()
             }
 
-            test "intersectRayParameter - returns line parameter" {
+            test "intersectRay - returns line parameter" {
                 let ln = Line3D(Pnt(1.,0.5,5.), Pnt(1.,0.5,-5.))
-                match Rect3D.intersectRayParameter ln r with
-                | Some t -> "ray param t" |> Expect.isTrue (equ t 0.5)
-                | None -> "intersectRayParameter should hit" |> Expect.isTrue false
+                match Rect3D.intersectRay ln r with
+                | ValueSome t -> "ray param t" |> Expect.isTrue (equ t 0.5)
+                | ValueNone -> "intersectRay should hit" |> Expect.isTrue false
                 // beyond the segment, the infinite-ray parameter is still returned
                 let ln2 = Line3D(Pnt(1.,0.5,10.), Pnt(1.,0.5,5.))
-                match Rect3D.intersectRayParameter ln2 r with
-                | Some t -> "ray param t2" |> Expect.isTrue (equ t 2.0)
-                | None -> "intersectRayParameter should resolve" |> Expect.isTrue false
-                "parallel ray param" |> Expect.isTrue (Option.isNone (Rect3D.intersectRayParameter (Line3D(Pnt(0.,0.,1.), Pnt(4.,0.,1.))) r))
+                match Rect3D.intersectRay ln2 r with
+                | ValueSome t -> "ray param t2" |> Expect.isTrue (equ t 2.0)
+                | ValueNone -> "intersectRay should resolve" |> Expect.isTrue false
+                match Rect3D.intersectRay (Line3D(Pnt(0.,0.,1.), Pnt(4.,0.,1.))) r with
+                | ValueSome _ -> "parallel ray param" |> Expect.isTrue false
+                | ValueNone -> ()
             }
 
-            test "intersectLineParameters - inside the segment and rectangle" {
+            test "intersectLine - inside the segment and rectangle" {
                 let ln = Line3D(Pnt(1.,0.5,5.), Pnt(1.,0.5,-5.))
-                match Rect3D.intersectLineParameters ln r with
-                | Some (t,tx,ty) ->
+                match rayHitParameters ln r, Rect3D.intersectLine ln r with
+                | ValueSome (t,tx,ty), ValueSome p ->
                     "line t"  |> Expect.isTrue (equ t 0.5)
                     "line tx" |> Expect.isTrue (equ tx 0.25)
                     "line ty" |> Expect.isTrue (equ ty 0.25)
-                | None ->
-                    "intersectLineParameters should hit" |> Expect.isTrue false
+                    "line point" |> Expect.isTrue (eq p (Pnt(1.,0.5,0.)))
+                | _ ->
+                    "intersectLine should hit" |> Expect.isTrue false
             }
 
-            test "intersectLineParameters - outside rectangle bounds returns None" {
+            test "intersectLine - outside rectangle bounds returns None" {
                 let ln = Line3D(Pnt(10.,0.5,5.), Pnt(10.,0.5,-5.))
-                "outside rect" |> Expect.isTrue (Option.isNone (Rect3D.intersectLineParameters ln r))
+                match Rect3D.intersectLine ln r with
+                | ValueSome _ -> "outside rect" |> Expect.isTrue false
+                | ValueNone -> ()
             }
 
-            test "intersectLineParameters - beyond segment returns None" {
+            test "intersectLine - beyond segment returns None" {
                 let ln = Line3D(Pnt(1.,0.5,10.), Pnt(1.,0.5,5.)) // plane crossed at t = 2.0
-                "beyond segment" |> Expect.isTrue (Option.isNone (Rect3D.intersectLineParameters ln r))
+                match Rect3D.intersectLine ln r with
+                | ValueSome _ -> "beyond segment" |> Expect.isTrue false
+                | ValueNone -> ()
             }
 
             test "intersectLine - returns intersection point inside" {
                 let ln = Line3D(Pnt(1.,0.5,5.), Pnt(1.,0.5,-5.))
                 match Rect3D.intersectLine ln r with
-                | Some p -> "line point" |> Expect.isTrue (eq p (Pnt(1.,0.5,0.)))
-                | None -> "intersectLine should hit" |> Expect.isTrue false
+                | ValueSome p -> "line point" |> Expect.isTrue (eq p (Pnt(1.,0.5,0.)))
+                | ValueNone -> "intersectLine should hit" |> Expect.isTrue false
             }
 
             test "intersectLine - None when outside, beyond, or parallel" {
                 let outside = Line3D(Pnt(10.,0.5,5.), Pnt(10.,0.5,-5.))
                 let beyond  = Line3D(Pnt(1.,0.5,10.), Pnt(1.,0.5,5.))
                 let paral   = Line3D(Pnt(0.,0.,1.), Pnt(4.,0.,1.))
-                "outside"  |> Expect.isTrue (Option.isNone (Rect3D.intersectLine outside r))
-                "beyond"   |> Expect.isTrue (Option.isNone (Rect3D.intersectLine beyond r))
-                "parallel" |> Expect.isTrue (Option.isNone (Rect3D.intersectLine paral r))
+                "outside"  |> Expect.isTrue (Rect3D.intersectLine outside r).IsNone
+                "beyond"   |> Expect.isTrue (Rect3D.intersectLine beyond r).IsNone
+                "parallel" |> Expect.isTrue (Rect3D.intersectLine paral r).IsNone
             }
         ]
 

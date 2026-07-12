@@ -1,10 +1,17 @@
+
+
 // A workaround for Fable compiler to not fail on DataContract and DataMember attributes
 // see https://github.com/fable-compiler/Fable/issues/2253
 #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
+
 namespace System.Runtime.Serialization
-type DataContract() = inherit System.Attribute() // just shadow the real attribute
-type DataMember()   = inherit System.Attribute() // just shadow the real attribute
+
+type DataContract() =
+    inherit System.Attribute() // just shadow the real attribute
+type DataMember()   =
+    inherit System.Attribute() // just shadow the real attribute
 #endif
+
 
 namespace Euclid
 
@@ -19,10 +26,8 @@ type internal DEF =
     Runtime.InteropServices.DefaultParameterValueAttribute
 
 
-
 // #endregion
 // #region UtilEuclid
-
 
 
 /// A module for math , logic utility functions and default tolerance values for use within Euclid.
@@ -38,17 +43,9 @@ module UtilEuclid =
     let inline ( !^ ) (x:float) : float<'measure> =
         x |> LanguagePrimitives.FloatWithMeasure
 
-    /// Test if a value is not null.
-    let inline notNull x =
-        match x with null -> false | _ -> true
-
     /// Returns true if the float is NaN or Infinity.
     let inline isNanInfinity (x:float) =
         Double.IsNaN x || Double.IsInfinity x
-
-    /// Squares a float value.
-    let inline sq (x:float) =
-        x * x
 
 
     /// Tolerance for axis alignment: 1e-9
@@ -66,6 +63,29 @@ module UtilEuclid =
     [<Literal>]
     let private zeroLengthTolSquared =
         zeroLengthTolerance * zeroLengthTolerance
+
+    (*  NaN and Infinity:
+    0.0 / 0.0                         =  nan
+    Double.Epsilon/0.0                =  infinity
+    -Double.Epsilon/0.0               =  -infinity
+    1.0 / Double.Epsilon              =  infinity
+    1.0 / -Double.Epsilon             =  -infinity
+    0.0 / Double.Epsilon              =  0.0
+    0.0 / -Double.Epsilon             =  -0.0
+    Double.Epsilon/Double.Epsilon     =  1.0
+    -Double.Epsilon/Double.Epsilon    =  -1.0
+
+    nan >  0.0: false
+    nan <  0.0: false
+    nan <= 0.0: false
+    nan >= 0.0: false
+    nan <> 0.0: true
+    *)
+
+    /// squares a float value
+    let inline internal sq (x:float) : float =
+        x * x
+
 
     /// Returns true for values smaller than 1e-6 and for NaN.
     let inline isTooSmall x =
@@ -120,35 +140,26 @@ module UtilEuclid =
     let halfPi =
         1.5707963267948966 // (Math.PI*0.5).ToString("R")
 
-    /// Converts Angles from Degrees to Radians.
+    /// Converts angles from degrees to radians.
     /// By multiplying with 0.0174... (PI / 180.)
     let inline toRadians degrees =
         0.017453292519943295 * degrees //  (Math.PI / 180.).ToString("R")
 
-    /// Converts Angles from Radians to Degrees.
+    /// Converts angles from radians to degrees.
     /// By multiplying with 57.29... (180. / PI)
     let inline toDegrees radians =
         57.295779513082323 * radians  // (180. / Math.PI).ToString("R")
 
-    /// Sorts two values and returns them as a tuple (min, max).
-    let inline sort2 (a:'T) (b:'T) =
-        if a <= b then a,b else b,a
 
-    /// Clamp value between -1.0 and +1.0.
-    /// Returns -1.0 for NaN
-    let inline clampBetweenMinusOneAndOne (x:float)=
-        if x > -1.0 then // to handle NaN too
-            if x < 1.0 then
-                x
-            else
-                1.0
-        else // x <= -1.0 or NaN
-            -1.0
+    /// Clamp value between 0.0 and +1.0.
+    /// Returns NaN for NaN
+    let inline clamp01 (x:float)=
+        max 0.0 (min 1.0 x)
 
     /// Clamp value between 0.0 and +1.0.
     /// Returns 0.0 for NaN
-    let inline clampBetweenZeroAndOne (x:float)=
-        if x > 0.0 then // to handle NaN too
+    let inline clamp01NaN (x:float) =
+        if x > 0.0 then // to handle NaN too /// Returns 0.0 for NaN
             if x < 1.0 then
                 x
             else
@@ -156,16 +167,20 @@ module UtilEuclid =
         else // x <= 0.0 or NaN
             0.0
 
+    /// Clamp value between -1.0 and +1.0.
+    /// Returns NaN for NaN
+    let inline clampBetweenMinusOneAndOne (x:float)=
+        max -1.0 (min 1.0 x)
 
     /// A safe arcsine (Inverse Sine) function.
-    /// It clamps the input between -1 and 1
+    /// It clamps values between -1 and 1
     let inline asinSafe a = // TODO fail if 'a' is bigger than  1.01 or smaller than -1.01 ??
-        a |> clampBetweenMinusOneAndOne |> Math.Asin
+        Math.Asin(max -1.0 (min 1.0 a))
 
     /// A safe arccosine (Inverse Cosine) function.
     /// It clamps the input between -1 and 1
     let inline acosSafe a = // TODO fail if 'a' is bigger than  1.01 or smaller than -1.01 ??
-        a |> clampBetweenMinusOneAndOne |> Math.Acos
+        Math.Acos(max -1.0 (min 1.0 a))
 
     /// The float literal that is 1.0 + 1e-6
     /// This is literally 1.000001
@@ -227,11 +242,13 @@ module UtilEuclid =
 
     /// Check if value is between 0.0 and +1.0 inclusive a tolerance of 1e-6 .
     ///  -1e-6 < x < 1.0 + 1e-6
+    /// Returns false for NaN.
     let inline isBetweenZeroAndOneTolerantIncl (x:float) =
         -1e-6 < x && x < ``1.0 + 1e-6``
 
     /// Check if value is between 0.0 and +1.0 exclusive a tolerance of 1e-6 .
     /// 1e-6 < x < 1.0 - 1e-6
+    /// Returns false for NaN.
     let inline isBetweenZeroAndOneTolerantExcl (x:float) =
         1e-6 < x && x < ``1.0 - 1e-6``
 
@@ -246,8 +263,7 @@ module UtilEuclid =
 
     /// Any positive or negative int will give a valid index for given collection size.
     /// Converts negative indices to positive ones and loops to start after last index is reached.
-    /// Returns a valid index for a collection of 'length' items for any integer.
-    let inline safeIdx i length =
+    let inline safeIdx (i:int) (length:int) =
         let t = i % length
         if t >= 0 then t
         else           t + length
@@ -269,7 +285,7 @@ module Cosine =
 
     /// Converts a cosine value to degrees.
     let inDegrees (c:float<cosine>) : float =
-        acos (unbox<float>  c) |> UtilEuclid.toDegrees
+        acos (unbox<float> c) |> UtilEuclid.toDegrees
 
     (*
     // to generate the below values use :
@@ -1058,16 +1074,16 @@ let UnsetValue = -1.23432101234321E+308
 
 module Units =
 
-    /// Degree (of Angle)
+    /// degree (of Angle)
     [<Measure>] type deg
 
-    /// Radians
+    /// radians
     [<Measure>] type rad
 
-    /// Converts Angels from Degrees to Radians.
+    /// Converts angles from degrees to radians.
     let inline toRadians (degrees:float<deg>)  : float<rad> = 0.0174532925199433<rad/deg> * degrees
 
-    /// Converts Angels from Radians to Degrees.
+    /// Converts angles from radians to degrees.
     let inline toDegrees (radians: float<rad>) :float<deg> = 57.2957795130823<deg/rad> * radians
 
 *)

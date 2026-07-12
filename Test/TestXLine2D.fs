@@ -10,6 +10,104 @@ open Fable.Mocha
 open Expecto
 #endif
 
+let expectValueNone result message =
+    match result with
+    | ValueNone -> ()
+    | ValueSome value -> failtest $"{message}. Got ValueSome %A{value}"
+
+let permute(a:Line2D, b:Line2D) =
+    let ar = a.Reversed
+    let br = b.Reversed
+    [ a,b; ar,b; a,br; ar,br
+      b,a; br,a; b,ar; br,ar ]
+
+let private sqPtDist (a:Pt) (b:Pt) =
+    let dx = a.X - b.X
+    let dy = a.Y - b.Y
+    dx*dx + dy*dy
+
+let private expectPtClose message (expected:Pt) (actual:Pt) =
+    Expect.floatClose Accuracy.high actual.X expected.X $"{message} X"
+    Expect.floatClose Accuracy.high actual.Y expected.Y $"{message} Y"
+
+let private expectUnorderedPairClose message (a0:Pt, b0:Pt) (a1:Pt, b1:Pt) =
+    let same = sqPtDist a0 a1 + sqPtDist b0 b1
+    let swapped = sqPtDist a0 b1 + sqPtDist b0 a1
+    Expect.isTrue (min same swapped < 1e-6) $"{message}. Expected %A{(a0,b0)}, got %A{(a1,b1)}"
+
+let private closestParameterGeometry (a:Line2D) (b:Line2D) =
+    match XLine2D.getClosestParameters(a, b) with
+    | XLine2D.ClParams.Intersect (t, u) -> "Intersect", ValueSome (a.EvaluateAt t, b.EvaluateAt u)
+    | XLine2D.ClParams.Apart (t, u) -> "Apart", ValueSome (a.EvaluateAt t, b.EvaluateAt u)
+    | XLine2D.ClParams.Parallel (t, u) -> "Parallel", ValueSome (a.EvaluateAt t, b.EvaluateAt u)
+    | XLine2D.ClParams.TooShortA -> "TooShortA", ValueNone
+    | XLine2D.ClParams.TooShortB -> "TooShortB", ValueNone
+    | XLine2D.ClParams.TooShortBoth -> "TooShortBoth", ValueNone
+
+let private closestPointGeometry (a:Line2D) (b:Line2D) =
+    match XLine2D.getClosestPoints(a, b) with
+    | XLine2D.ClPts.Intersect pt -> "Intersect", ValueSome (pt, pt)
+    | XLine2D.ClPts.Apart (ptA, ptB) -> "Apart", ValueSome (ptA, ptB)
+    | XLine2D.ClPts.Parallel (ptA, ptB) -> "Parallel", ValueSome (ptA, ptB)
+    | XLine2D.ClPts.TooShortA -> "TooShortA", ValueNone
+    | XLine2D.ClPts.TooShortB -> "TooShortB", ValueNone
+    | XLine2D.ClPts.TooShortBoth -> "TooShortBoth", ValueNone
+
+let private intersectionGeometry (a:Line2D) (b:Line2D) =
+    match XLine2D.getIntersection(a, b) with
+    | XLine2D.XPt.Intersect pt -> "Intersect", ValueSome pt
+    | XLine2D.XPt.Apart -> "Apart", ValueNone
+    | XLine2D.XPt.Parallel -> "Parallel", ValueNone
+    | XLine2D.XPt.TooShortA -> "TooShortA", ValueNone
+    | XLine2D.XPt.TooShortB -> "TooShortB", ValueNone
+    | XLine2D.XPt.TooShortBoth -> "TooShortBoth", ValueNone
+
+let private expectSqDistanceInvariant caseName expected (a:Line2D) (b:Line2D) =
+    for i, (x, y) in permute(a, b) |> List.indexed do
+        let actual = XLine2D.getSqDistance(x, y)
+        Expect.floatClose Accuracy.high actual expected $"{caseName} getSqDistance permutation {i}"
+
+let private expectTryIntersectInvariant caseName (a:Line2D) (b:Line2D) =
+    let expected = XLine2D.tryIntersect(a, b)
+    for i, (x, y) in permute(a, b) |> List.indexed do
+        match expected, XLine2D.tryIntersect(x, y) with
+        | ValueSome expectedPt, ValueSome actualPt -> expectPtClose $"{caseName} tryIntersect permutation {i}" expectedPt actualPt
+        | ValueNone, ValueNone -> ()
+        | _ -> failtest $"{caseName} tryIntersect permutation {i} changed result"
+
+let private expectIntersectionInvariant caseName (a:Line2D) (b:Line2D) =
+    let expectedKind, expectedPt = intersectionGeometry a b
+    for i, (x, y) in permute(a, b) |> List.indexed do
+        let actualKind, actualPt = intersectionGeometry x y
+        Expect.equal actualKind expectedKind $"{caseName} getIntersection kind permutation {i}"
+        match expectedPt, actualPt with
+        | ValueSome expected, ValueSome actual -> expectPtClose $"{caseName} getIntersection permutation {i}" expected actual
+        | ValueNone, ValueNone -> ()
+        | _ -> failtest $"{caseName} getIntersection permutation {i} changed point presence"
+
+let private expectClosestInvariant caseName (a:Line2D) (b:Line2D) =
+    let expectedParamKind, expectedParamPair = closestParameterGeometry a b
+    let expectedPointKind, expectedPointPair = closestPointGeometry a b
+    for i, (x, y) in permute(a, b) |> List.indexed do
+        let actualParamKind, actualParamPair = closestParameterGeometry x y
+        Expect.equal actualParamKind expectedParamKind $"{caseName} getClosestParameters kind permutation {i}"
+        match expectedParamPair, actualParamPair with
+        | ValueSome expected, ValueSome actual -> expectUnorderedPairClose $"{caseName} getClosestParameters permutation {i}" expected actual
+        | ValueNone, ValueNone -> ()
+        | _ -> failtest $"{caseName} getClosestParameters permutation {i} changed point presence"
+
+        let actualPointKind, actualPointPair = closestPointGeometry x y
+        Expect.equal actualPointKind expectedPointKind $"{caseName} getClosestPoints kind permutation {i}"
+        match expectedPointPair, actualPointPair with
+        | ValueSome expected, ValueSome actual -> expectUnorderedPairClose $"{caseName} getClosestPoints permutation {i}" expected actual
+        | ValueNone, ValueNone -> ()
+        | _ -> failtest $"{caseName} getClosestPoints permutation {i} changed point presence"
+
+let private expectBooleanInvariants caseName expectedIntersect expectedOverlap (a:Line2D) (b:Line2D) =
+    for i, (x, y) in permute(a, b) |> List.indexed do
+        Expect.equal (XLine2D.doIntersect(x, y)) expectedIntersect $"{caseName} doIntersect permutation {i}"
+        Expect.equal (XLine2D.doOverlap(x, y)) expectedOverlap $"{caseName} doOverlap permutation {i}"
+
 let tests =
     testList "XLine2D Tests" [
 
@@ -142,24 +240,24 @@ let tests =
                 let lineB = Line2D(Pt(5.0, -5.0), Pt(5.0, 5.0))
                 let result = XLine2D.tryIntersectInRangeA(lineA, lineB, 0.0, 1.0)
                 match result with
-                | Some pt ->
+                | ValueSome pt ->
                     Expect.floatClose Accuracy.high pt.X 5.0 "X should be 5.0"
                     Expect.floatClose Accuracy.high pt.Y 0.0 "Y should be 0.0"
-                | None -> failtest "Should have intersection"
+                | ValueNone -> failtest "Should have intersection"
             }
 
             test "Intersection outside range" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(5.0, -5.0), Pt(5.0, 5.0))
                 let result = XLine2D.tryIntersectInRangeA(lineA, lineB, 0.6, 1.0)
-                Expect.isNone result "Should be None when outside range"
+                expectValueNone result "Should be ValueNone when outside range"
             }
 
             test "Parallel lines" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(0.0, 1.0), Pt(10.0, 1.0))
                 let result = XLine2D.tryIntersectInRangeA(lineA, lineB, 0.0, 1.0)
-                Expect.isNone result "Parallel lines should return None"
+                expectValueNone result "Parallel lines should return ValueNone"
             }
         ]
 
@@ -169,17 +267,17 @@ let tests =
                 let lineB = Line2D(Pt(5.0, -5.0), Pt(5.0, 5.0))
                 let result = XLine2D.tryIntersectInRanges(lineA, lineB, 0.0, 1.0, 0.0, 1.0)
                 match result with
-                | Some pt ->
+                | ValueSome pt ->
                     Expect.floatClose Accuracy.high pt.X 5.0 "X should be 5.0"
                     Expect.floatClose Accuracy.high pt.Y 0.0 "Y should be 0.0"
-                | None -> failtest "Should have intersection"
+                | ValueNone -> failtest "Should have intersection"
             }
 
             test "Intersection outside range B" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(5.0, -5.0), Pt(5.0, 5.0))
                 let result = XLine2D.tryIntersectInRanges(lineA, lineB, 0.0, 1.0, 0.6, 1.0)
-                Expect.isNone result "Should be None when outside range B"
+                expectValueNone result "Should be ValueNone when outside range B"
             }
         ]
 
@@ -189,24 +287,24 @@ let tests =
                 let lineB = Line2D(Pt(5.0, -5.0), Pt(5.0, 5.0))
                 let result = XLine2D.tryIntersect(lineA, lineB)
                 match result with
-                | Some pt ->
+                | ValueSome pt ->
                     Expect.floatClose Accuracy.high pt.X 5.0 "X should be 5.0"
                     Expect.floatClose Accuracy.high pt.Y 0.0 "Y should be 0.0"
-                | None -> failtest "Should have intersection"
+                | ValueNone -> failtest "Should have intersection"
             }
 
             test "Lines not intersecting - parallel" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(0.0, 1.0), Pt(10.0, 1.0))
                 let result = XLine2D.tryIntersect(lineA, lineB)
-                Expect.isNone result "Parallel lines should return None"
+                expectValueNone result "Parallel lines should return ValueNone"
             }
 
             test "Lines not intersecting - apart" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(1.0, 0.0))
                 let lineB = Line2D(Pt(2.0, -1.0), Pt(2.0, 1.0))
                 let result = XLine2D.tryIntersect(lineA, lineB)
-                Expect.isNone result "Apart lines should return None"
+                expectValueNone result "Apart lines should return ValueNone"
             }
         ]
 
@@ -393,11 +491,11 @@ let tests =
                 let lineB = Line2D(Pt(1.0, 2.0), Pt(3.0, 3.0))
                 let result = XLine2D.getClosestParameters(lineA, lineB)
                 match result with
-                | XLine2D.ClParams.Apart (t, u, sqdist) ->
-                    let dist = Math.Sqrt(sqdist)
+                | XLine2D.ClParams.Apart (t, u) ->
+
                     let d = Pt.dist (lineA.EvaluateAt(t)) (lineB.EvaluateAt(u))
                     Expect.floatClose Accuracy.high t 1.0 "Parameter t should be 1.0"
-                    Expect.floatClose Accuracy.high d dist "Distance should match computed distance"
+
                     Expect.floatClose Accuracy.high d 2.0 "Distance should match computed distance"
                 | other -> failtest $"Should be apart but got: %A{other}"
             }
@@ -453,14 +551,107 @@ let tests =
                 let dist = XLine2D.getSqDistance(lineA, lineB)
                 Expect.isTrue (dist > 0.0) "Distance should be positive"
                 // Distance from (1,0) to (2,1) is sqrt(2), so squared is 2
-                Expect.floatClose Accuracy.high dist 2.0 "Distance should be 2.0"
+                Expect.floatClose Accuracy.high dist 2.0 "Squared Distance should be 2.0"
             }
 
             test "Parallel lines distance" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(0.0, 1.0), Pt(10.0, 1.0))
                 let dist = XLine2D.getSqDistance(lineA, lineB)
-                Expect.floatClose Accuracy.high dist 1.0 "Distance should be 1.0"
+                Expect.floatClose Accuracy.high dist 1.0 "Squared Distance should be 1.0"
+            }
+        ]
+
+        testList "permutation invariance" [
+            test "regular finite-line queries are invariant under order and direction permutations" {
+                let cases =
+                    [
+                        "interior cross",
+                            Line2D(0.0, 0.0, 10.0, 0.0),
+                            Line2D(5.0, -5.0, 5.0, 5.0),
+                            0.0, true, false
+
+                        "diagonal cross",
+                            Line2D(-2.0, -1.0, 4.0, 2.0),
+                            Line2D(1.0, 3.0, 3.0, -3.0),
+                            0.0, true, false
+
+                        "endpoint touch",
+                            Line2D(0.0, 0.0, 5.0, 0.0),
+                            Line2D(5.0, 0.0, 8.0, 3.0),
+                            0.0, true, false
+
+                        "apart but extended lines cross",
+                            Line2D(0.0, 0.0, 1.0, 0.0),
+                            Line2D(2.0, -1.0, 2.0, 1.0),
+                            1.0, false, false
+
+                        "perpendicular apart",
+                            Line2D(0.0, 0.0, 5.0, 0.0),
+                            Line2D(0.0, 2.0, 0.0, 7.0),
+                            4.0, false, false
+
+                        "parallel offset",
+                            Line2D(0.0, 0.0, 10.0, 0.0),
+                            Line2D(0.0, 2.0, 10.0, 2.0),
+                            4.0, false, false
+
+                        "collinear partial overlap",
+                            Line2D(0.0, 0.0, 10.0, 0.0),
+                            Line2D(3.0, 0.0, 7.0, 0.0),
+                            0.0, false, true
+
+                        "collinear end touch",
+                            Line2D(0.0, 0.0, 5.0, 0.0),
+                            Line2D(5.0, 0.0, 8.0, 0.0),
+                            0.0, false, true
+
+                        "collinear disjoint",
+                            Line2D(0.0, 0.0, 2.0, 0.0),
+                            Line2D(5.0, 0.0, 7.0, 0.0),
+                            9.0, false, false
+
+                        "large coordinate cross",
+                            Line2D(1e10, 1e10, 1e10 + 10.0, 1e10),
+                            Line2D(1e10 + 6.0, 1e10 - 5.0, 1e10 + 6.0, 1e10 + 5.0),
+                            0.0, true, false
+
+                        "small but above too-short tolerance",
+                            Line2D(0.0, 0.0, 1e-4, 0.0),
+                            Line2D(5e-5, -5e-5, 5e-5, 5e-5),
+                            0.0, true, false
+                    ]
+
+                for caseName, lineA, lineB, expectedSqDistance, expectedIntersect, expectedOverlap in cases do
+                    expectSqDistanceInvariant caseName expectedSqDistance lineA lineB
+                    expectTryIntersectInvariant caseName lineA lineB
+                    expectIntersectionInvariant caseName lineA lineB
+                    expectClosestInvariant caseName lineA lineB
+                    expectBooleanInvariants caseName expectedIntersect expectedOverlap lineA lineB
+            }
+
+            test "near-parallel closest results are invariant under all permutations" {
+                let lineA = Line2D(0.0, 0.0, 100.0, 0.0)
+                let lineB = Line2D(10.0, 1.0, 110.0, 1.01)
+
+                expectSqDistanceInvariant "near parallel" (XLine2D.getSqDistance(lineA, lineB)) lineA lineB
+                expectTryIntersectInvariant "near parallel" lineA lineB
+                expectIntersectionInvariant "near parallel" lineA lineB
+                expectClosestInvariant "near parallel" lineA lineB
+                expectBooleanInvariants "near parallel" false false lineA lineB
+            }
+
+            test "degenerate point-vs-segment squared distances are invariant under all permutations" {
+                let cases =
+                    [
+                        "point against segment", Line2D(1.0, 1.0, 1.0, 1.0), Line2D(3.0, 1.0, 3.0, 4.0), 4.0
+                        "point projected inside segment", Line2D(2.0, 3.0, 2.0, 3.0), Line2D(0.0, 0.0, 4.0, 0.0), 9.0
+                        "distinct points", Line2D(1.0, 1.0, 1.0, 1.0), Line2D(4.0, 5.0, 4.0, 5.0), 25.0
+                        "same point", Line2D(-2.0, 3.0, -2.0, 3.0), Line2D(-2.0, 3.0, -2.0, 3.0), 0.0
+                    ]
+
+                for caseName, lineA, lineB, expectedSqDistance in cases do
+                    expectSqDistanceInvariant caseName expectedSqDistance lineA lineB
             }
         ]
 
@@ -544,10 +735,10 @@ let tests =
                 let lineB = Line2D(Pt(1e10 + 5.0, -5.0), Pt(1e10 + 5.0, 5.0))
                 let result = XLine2D.tryIntersect(lineA, lineB)
                 match result with
-                | Some pt ->
+                | ValueSome pt ->
                     Expect.floatClose Accuracy.medium pt.X (1e10 + 5.0) "X should be 1e10 + 5.0"
                     Expect.floatClose Accuracy.medium pt.Y 0.0 "Y should be 0.0"
-                | None -> failtest "Should intersect"
+                | ValueNone -> failtest "Should intersect"
             }
 
             test "Nearly parallel lines with custom tolerance" {
@@ -575,10 +766,10 @@ let tests =
                 let lineB = Line2D(Pt(0.0, 10.0), Pt(10.0, 0.0))
                 let result = XLine2D.tryIntersect(lineA, lineB)
                 match result with
-                | Some pt ->
+                | ValueSome pt ->
                     Expect.floatClose Accuracy.high pt.X 5.0 "X should be 5.0"
                     Expect.floatClose Accuracy.high pt.Y 5.0 "Y should be 5.0"
-                | None -> failtest "Should intersect"
+                | ValueNone -> failtest "Should intersect"
             }
 
             test "Lines with negative coordinates" {
@@ -586,10 +777,10 @@ let tests =
                 let lineB = Line2D(Pt(0.0, -20.0), Pt(0.0, 0.0))
                 let result = XLine2D.tryIntersect(lineA, lineB)
                 match result with
-                | Some pt ->
+                | ValueSome pt ->
                     Expect.floatClose Accuracy.high pt.X 0.0 "X should be 0.0"
                     Expect.floatClose Accuracy.high pt.Y -10.0 "Y should be -10.0"
-                | None -> failtest "Should intersect"
+                | ValueNone -> failtest "Should intersect"
             }
 
 
@@ -647,13 +838,10 @@ let tests =
                 // Two lines that don't intersect and aren't parallel
                 let lnA = Line2D(0.0, 0.0, 1.0, 0.0)   // horizontal at Y=0
                 let lnB = Line2D(0.0, 1.0, 0.5, 2.0)   // diagonal starting at Y=1
-                let result = XLine2D.getClosestPoints(
-                    lnA.FromX, lnA.FromY, lnB.FromX, lnB.FromY,
-                    lnA.VectorX        , lnA.VectorY        ,
-                    lnB.VectorX        , lnB.VectorY        )
+                let result = XLine2D.getClosestPoints(lnA, lnB)
                 match result with
-                | XLine2D.ClPts.Apart (_, ptB, sqDist) ->
-                    Expect.isTrue (sqDist > 0.0) "square distance positive"
+                | XLine2D.ClPts.Apart (_, ptB) ->
+                    // Expect.isTrue (sqDist > 0.0) "square distance positive"
                     // Closest points should be the start of B and somewhere on A
                     Expect.floatClose Accuracy.medium ptB.Y 1.0 "ptB should be at Y=1"
                 | _ -> Expect.isTrue false (sprintf "Should return Apart, got %A" result)
@@ -662,10 +850,7 @@ let tests =
             test "getClosestPoints returns Parallel with two points" {
                 let lnA = Line2D(0.0, 0.0, 10.0, 0.0)
                 let lnB = Line2D(0.0, 1.0, 10.0, 1.0)
-                let result = XLine2D.getClosestPoints(
-                    lnA.FromX, lnA.FromY, lnB.FromX, lnB.FromY,
-                    lnA.VectorX        , lnA.VectorY        ,
-                    lnB.VectorX        , lnB.VectorY        )
+                let result = XLine2D.getClosestPoints(lnA, lnB)
                 match result with
                 | XLine2D.ClPts.Parallel (ptA, ptB) ->
                     Expect.floatClose Accuracy.high ptA.X 5.0 "ptA X midpoint"
@@ -683,10 +868,7 @@ let tests =
                 // Lines that cross in the middle
                 let lnA = Line2D(0.0, 0.0, 4.0, 0.0)
                 let lnB = Line2D(2.0, -2.0, 2.0, 2.0)
-                let sqDist = XLine2D.getSqDistance(
-                    lnA.FromX, lnA.FromY, lnB.FromX, lnB.FromY,
-                    lnA.VectorX        , lnA.VectorY        ,
-                    lnB.VectorX        , lnB.VectorY        )
+                let sqDist = XLine2D.getSqDistance(lnA, lnB)
                 Expect.floatClose Accuracy.veryHigh sqDist 0.0 "Intersecting lines should have 0 distance"
             }
 
@@ -721,7 +903,7 @@ let tests =
                 let sqDist = XLine2D.getSqDistance(lnA, lnB)
                 // Closest points: end of A (5,0) to start of B (10,2)
                 // Distance: sqrt((10-5)^2 + (2-0)^2) = sqrt(25 + 4) = sqrt(29)
-                Expect.floatClose Accuracy.high sqDist 29.0 "Distance should be sqrt(29)"
+                Expect.floatClose Accuracy.high sqDist 29.0 "Squared Distance should be 29"
             }
 
             test "getSqDistance for skew lines (would intersect if extended)" {
@@ -731,7 +913,7 @@ let tests =
                 let sqDist = XLine2D.getSqDistance(lnA, lnB)
                 // Closest: end of A (1,0) to closest point on B (2,0)
                 // Distance: sqrt((2-1)^2 + 0^2) = 1
-                Expect.floatClose Accuracy.veryHigh sqDist 1.0 "Distance should be 1^2 = 1"
+                Expect.floatClose Accuracy.veryHigh sqDist 1.0 "Squared Distance should be 1"
             }
 
             test "getSqDistance for perpendicular non-intersecting lines" {
@@ -741,7 +923,7 @@ let tests =
                 let sqDist = XLine2D.getSqDistance(lnA, lnB )
                 // Closest: start of A (0,0) to closest point on B (0,2)
                 // Distance: sqrt(0 + 4) = 2
-                Expect.floatClose Accuracy.veryHigh sqDist 4.0 "Distance should be 2^2 = 4"
+                Expect.floatClose Accuracy.veryHigh sqDist 4.0 "Squared Distance should be 2^2 = 4"
             }
 
             test "getSqDistance for diagonal lines" {
@@ -750,7 +932,7 @@ let tests =
                 let lnB = Line2D(3.0, 0.0, 5.0, 2.0)   // parallel diagonal offset
                 let sqDist = XLine2D.getSqDistance(lnA, lnB)
                 // Should be positive (lines don't touch)
-                Expect.floatClose Accuracy.veryHigh sqDist (1.5*1.5*2.0) "Diagonal lines should have positive distance"
+                Expect.floatClose Accuracy.veryHigh sqDist (1.5*1.5*2.0) "Squared Distance should be positive"
             }
 
             test "getSqDistance for coincident overlapping lines" {
@@ -787,7 +969,7 @@ let tests =
                     match XLine2D.getClosestParameters(lnA, lnB) with
                     | XLine2D.ClParams.Intersect (t, u) -> (t, u)
                     | XLine2D.ClParams.Parallel (t, u) -> (t, u)
-                    | XLine2D.ClParams.Apart (t, u, _) -> (t, u)
+                    | XLine2D.ClParams.Apart (t, u) -> (t, u)
                     | r -> failwithf $"Unexpected result: {r}"
 
                 Expect.floatClose Accuracy.veryHigh u (0.75 + 0.125) "getClosestParams u should be 0.75+0.125"
@@ -803,7 +985,7 @@ let tests =
                     match XLine2D.getClosestParameters(lnA, lnB) with
                     | XLine2D.ClParams.Intersect (t, u) -> (t, u)
                     | XLine2D.ClParams.Parallel (t, u) -> (t, u)
-                    | XLine2D.ClParams.Apart (t, u, _) -> (t, u)
+                    | XLine2D.ClParams.Apart (t, u) -> (t, u)
                     | r -> failwithf $"Unexpected result: {r}"
 
 
@@ -933,6 +1115,67 @@ let tests =
         //         // Parameter: 9/5 = 1.8
         //         Expect.floatClose Accuracy.high param 1.8 "Parameter should be 1.8"
         //     }
+        ]
+
+        // These tests target the division-free parallel test: |det| > tangent * |dot|
+        // (replacing the previous tan = det / dot then abs !^ tan > tangent).
+        testList "division-free parallel test" [
+
+            // helper: two lines crossing at (5,0), lineB rotated by 'deg' from the X-axis
+            let crossingAtFive (deg:float) =
+                let th = deg * System.Math.PI / 180.0
+                let vA = Vc(10.0, 0.0)
+                let pA = Pt(0.0, 0.0)
+                let vBx = 10.0 * cos th
+                let vBy = 10.0 * sin th
+                let vB = Vc(vBx, vBy)
+                let pB = Pt(5.0 - 0.5 * vBx, -0.5 * vBy) // centered so the crossing is at u = 0.5
+                pA, pB, vA, vB
+
+            test "angle just above tangent tolerance -> Intersect" {
+                let pA, pB, vA, vB = crossingAtFive 2.0
+                let result = XLine2D.getIntersectionParam(pA, pB, vA, vB, Tangent.``1.0``)
+                match result with
+                | XLine2D.XParam.Intersect (t, u) ->
+                    Expect.floatClose Accuracy.high t 0.5 "t should be 0.5"
+                    Expect.floatClose Accuracy.high u 0.5 "u should be 0.5"
+                | other -> failtest $"2deg > 1deg tolerance should Intersect but got: %A{other}"
+            }
+
+            test "angle just below tangent tolerance -> Parallel" {
+                let pA, pB, vA, vB = crossingAtFive 0.5
+                let result = XLine2D.getIntersectionParam(pA, pB, vA, vB, Tangent.``1.0``)
+                match result with
+                | XLine2D.XParam.Parallel -> ()
+                | other -> failtest $"0.5deg < 1deg tolerance should be Parallel but got: %A{other}"
+            }
+
+            test "anti-parallel (negative dot) below tolerance -> Parallel" {
+                // ~179.5 degrees between the vectors: dot is large negative, must still be Parallel
+                let th = 179.5 * System.Math.PI / 180.0
+                let pA = Pt(0.0, 0.0)
+                let vA = Vc(10.0, 0.0)
+                let pB = Pt(0.0, 1.0)
+                let vB = Vc(10.0 * cos th, 10.0 * sin th)
+                let result = XLine2D.getIntersectionParam(pA, pB, vA, vB, Tangent.``1.0``)
+                match result with
+                | XLine2D.XParam.Parallel -> ()
+                | other -> failtest $"Anti-parallel within tolerance should be Parallel but got: %A{other}"
+            }
+
+            test "perpendicular (dot = 0) still intersects" {
+                // dot = 0 makes the RHS tangent * |dot| = 0, so any non-zero |det| must pass
+                let pA = Pt(0.0, 0.0)
+                let vA = Vc(1.0, 0.0)
+                let pB = Pt(0.5, -0.5)
+                let vB = Vc(0.0, 1.0)
+                let result = XLine2D.getIntersectionParam(pA, pB, vA, vB, Tangent.``1.0``)
+                match result with
+                | XLine2D.XParam.Intersect (t, u) ->
+                    Expect.floatClose Accuracy.high t 0.5 "t should be 0.5"
+                    Expect.floatClose Accuracy.high u 0.5 "u should be 0.5"
+                | other -> failtest $"Perpendicular crossing lines should Intersect but got: %A{other}"
+            }
         ]
 
     ]

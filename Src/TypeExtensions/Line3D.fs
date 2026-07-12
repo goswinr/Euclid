@@ -17,9 +17,9 @@ module AutoOpenLine3D =
     /// The absolute deviation tolerance along Y and Z axis is 1e-9 (axisAlignmentTolerance).
     /// Fails on lines shorter than 1e-6.
     member inline ln.IsXAligned : bool =
-        let x = abs (ln.VectorX)
-        let y = abs (ln.VectorY)
-        let z = abs (ln.VectorZ)
+        let x = abs ln.VectorX
+        let y = abs ln.VectorY
+        let z = abs ln.VectorZ
         if isTooSmall (x+y+z) then
             failTooSmall "Line3D.IsXAligned" ln
         y < axisAlignmentTolerance && z < axisAlignmentTolerance
@@ -34,9 +34,9 @@ module AutoOpenLine3D =
     /// The absolute deviation tolerance along X and Z axis is 1e-9 (axisAlignmentTolerance).
     /// Fails on lines shorter than 1e-6.
     member inline ln.IsYAligned : bool =
-        let x = abs (ln.VectorX)
-        let y = abs (ln.VectorY)
-        let z = abs (ln.VectorZ)
+        let x = abs ln.VectorX
+        let y = abs ln.VectorY
+        let z = abs ln.VectorZ
         if isTooSmall (x+y+z) then
             failTooSmall "Line3D.IsYAligned" ln
         x < axisAlignmentTolerance && z < axisAlignmentTolerance
@@ -52,9 +52,9 @@ module AutoOpenLine3D =
     /// Fails on lines shorter than 1e-6.
     /// Same as ln.IsVertical
     member inline ln.IsZAligned : bool =
-        let x = abs (ln.VectorX)
-        let y = abs (ln.VectorY)
-        let z = abs (ln.VectorZ)
+        let x = abs ln.VectorX
+        let y = abs ln.VectorY
+        let z = abs ln.VectorZ
         if isTooSmall (x+y+z) then
             failTooSmall "Line3D.IsZAligned" ln
         x < axisAlignmentTolerance && y < axisAlignmentTolerance
@@ -71,9 +71,9 @@ module AutoOpenLine3D =
     /// Fails on lines shorter than 1e-6.
     /// Same as ln.IsZAligned
     member inline ln.IsVertical : bool =
-        let x = abs (ln.VectorX)
-        let y = abs (ln.VectorY)
-        let z = abs (ln.VectorZ)
+        let x = abs ln.VectorX
+        let y = abs ln.VectorY
+        let z = abs ln.VectorZ
         if isTooSmall (x+y+z) then
             failTooSmall "Line3D.IsVertical" ln
         x < axisAlignmentTolerance && y < axisAlignmentTolerance
@@ -89,9 +89,9 @@ module AutoOpenLine3D =
     /// The absolute deviation tolerance along Z axis is 1e-9 (axisAlignmentTolerance).
     /// Fails on lines shorter than 1e-6.
     member inline ln.IsHorizontal : bool =
-        let x = abs (ln.VectorX)
-        let y = abs (ln.VectorY)
-        let z = abs (ln.VectorZ)
+        let x = abs ln.VectorX
+        let y = abs ln.VectorY
+        let z = abs ln.VectorZ
         if isTooSmall (x+y+z) then
             failTooSmall "Line3D.IsHorizontal" ln
         z < axisAlignmentTolerance
@@ -145,6 +145,7 @@ module AutoOpenLine3D =
 
     /// Evaluate line at a given parameters (parameters 0.0 to 1.0 are on the line),
     /// Return a new line from evaluated points.
+    /// Same as ln.Segment(start, ende).
     member inline ln.SubLine (start:float, ende:float) : Line3D =
         let fromX = ln.FromX
         let fromY = ln.FromY
@@ -161,6 +162,7 @@ module AutoOpenLine3D =
 
     /// Evaluate line at a given parameters (parameters 0.0 to 1.0 are on the line),
     /// Return a new line from evaluated points.
+    /// Same as Line3D.segment.
     static member inline subLine start ende (ln:Line3D) : Line3D =
         ln.SubLine(start, ende)
 
@@ -212,6 +214,7 @@ module AutoOpenLine3D =
         ln.Reversed
 
     /// Returns a Line3D from point at Parameter a to point at Parameter b.
+    /// Same as ln.SubLine(a, b).
     member inline ln.Segment(a, b) : Line3D =
         let x = ln.VectorX
         let y = ln.VectorY
@@ -224,6 +227,7 @@ module AutoOpenLine3D =
                 ln.FromZ + z*b)
 
     /// Returns new 3D line from point at Parameter a to point at Parameter b.
+    /// Same as Line3D.subLine.
     static member inline segment a b (ln:Line3D) : Line3D =
         ln.Segment (a, b)
 
@@ -413,7 +417,7 @@ module AutoOpenLine3D =
     static member inline shrinkEnd (distAtEnd:float) (ln:Line3D) : Line3D =
         ln.ShrinkEnd(distAtEnd)
 
-    /// Returns a Line3D moved by a vector.
+    /// Returns a Line3D moved by a vector. Same as Line3D.move and Line3D.translate.
     member inline ln.Move (v:Vec) : Line3D =
         Line3D( ln.FromX + v.X,
                 ln.FromY + v.Y,
@@ -518,7 +522,7 @@ module AutoOpenLine3D =
         if isTooSmallSq(lenSq) then // the parameter is infinite but we ar constarined to 0.0 till 1.0
             if dot < 0.0 then 0.0 else 1.0
         else
-            dot / lenSq |> UtilEuclid.clampBetweenZeroAndOne
+            dot / lenSq |> UtilEuclid.clamp01
 
     /// Returns the parameter at which a point is closest to the (finite) line.
     /// The result is between 0.0 and 1.0.
@@ -586,8 +590,8 @@ module AutoOpenLine3D =
         | XLine3D.ClPts.Parallel (pA, pB) -> pA, pB
         | XLine3D.ClPts.Apart (pA, pB, _) -> pA, pB
         | XLine3D.ClPts.TooShortBoth      -> lnA.From, lnB.From
-        | XLine3D.ClPts.TooShortA         -> lnA.From, XLine3D.clPtLn'(lnB, lnA.FromX, lnA.FromY, lnA.FromZ)
-        | XLine3D.ClPts.TooShortB         -> XLine3D.clPtLn'(lnA, lnB.FromX, lnB.FromY, lnB.FromZ), lnB.From
+        | XLine3D.ClPts.TooShortA         -> lnA.From, XLineXYZ.clPtLn'(lnB, lnA.FromX, lnA.FromY, lnA.FromZ)
+        | XLine3D.ClPts.TooShortB         -> XLineXYZ.clPtLn'(lnA, lnB.FromX, lnB.FromY, lnB.FromZ), lnB.From
 
     /// <summary>Finds the closest points between two finite 3D Lines, also works on parallel and overlapping lines.</summary>
     /// <param name="lnA">The first line.</param>
@@ -614,8 +618,8 @@ module AutoOpenLine3D =
         | XLine3D.ClParams.Parallel (tA, tB)    -> tA, tB
         | XLine3D.ClParams.Apart (tA, tB, _)    -> tA, tB
         | XLine3D.ClParams.TooShortBoth         -> 0.0, 0.0
-        | XLine3D.ClParams.TooShortA            -> 0.0, XLine3D.clParamLnPt(lnB, lnA.FromX, lnA.FromY, lnA.FromZ)
-        | XLine3D.ClParams.TooShortB            -> XLine3D.clParamLnPt(lnA, lnB.FromX, lnB.FromY, lnB.FromZ), 0.0
+        | XLine3D.ClParams.TooShortA            -> 0.0, XLineXYZ.clParamLnPt(lnB, lnA.FromX, lnA.FromY, lnA.FromZ)
+        | XLine3D.ClParams.TooShortB            -> XLineXYZ.clParamLnPt(lnA, lnB.FromX, lnB.FromY, lnB.FromZ), 0.0
 
     /// <summary>Finds the parameters of closest points between two finite 3D Lines, also works on parallel and overlapping lines.</summary>
     /// <param name="lnA">The first line.</param>
@@ -635,8 +639,8 @@ module AutoOpenLine3D =
     /// <returns>Some tuple of two floats (parameter on this, parameter on lnB) if rays are not parallel and not too short, otherwise None.</returns>
     member lnA.RayClosestParameters (lnB:Line3D) : (float * float) option =
         match XLine3D.getRayClosestParam(lnA, lnB) with
-        | XRayParam.SkewOrX (t, u) -> Some (t, u)
-        | XRayParam.Parallel | XRayParam.TooShortA | XRayParam.TooShortB | XRayParam.TooShortBoth -> None
+        | XLine3D.XRayParam.SkewOrX (t, u) -> Some (t, u)
+        | XLine3D.XRayParam.Parallel | XLine3D.XRayParam.TooShortA | XLine3D.XRayParam.TooShortB | XLine3D.XRayParam.TooShortBoth -> None
 
     /// <summary>Finds the closest approach parameters of two infinite rays (Line3D treated as rays).</summary>
     /// <param name="lnA">The first line (treated as infinite ray).</param>
@@ -653,8 +657,8 @@ module AutoOpenLine3D =
     /// <returns>Some tuple of two points (closest point on this, closest point on lnB) if rays are not parallel and not too short, otherwise None.</returns>
     member lnA.RayClosestPoints (lnB:Line3D) : (Pnt * Pnt) option =
         match XLine3D.getRayClosestParam(lnA, lnB) with
-        | XRayParam.SkewOrX (t, u) -> Some (lnA.EvaluateAt t, lnB.EvaluateAt u)
-        | XRayParam.Parallel | XRayParam.TooShortA | XRayParam.TooShortB | XRayParam.TooShortBoth -> None
+        | XLine3D.XRayParam.SkewOrX (t, u) -> Some (lnA.EvaluateAt t, lnB.EvaluateAt u)
+        | XLine3D.XRayParam.Parallel | XLine3D.XRayParam.TooShortA | XLine3D.XRayParam.TooShortB | XLine3D.XRayParam.TooShortBoth -> None
 
     /// <summary>Finds the closest approach points of two infinite rays (Line3D treated as rays).</summary>
     /// <param name="lnA">The first line (treated as infinite ray).</param>
@@ -867,11 +871,15 @@ module AutoOpenLine3D =
     /// So if the angle between their direction vectors is less than 90 degrees.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.MatchesOrientation (otherLn:Line3D) : bool =
-        let vLn = ln.Vector
-        let vOt = otherLn.Vector
-        if isTooTinySq(vLn.LengthSq) then failTooSmall2 "Line3D.MatchesOrientation this" ln otherLn
-        if isTooTinySq(vOt.LengthSq) then failTooSmall2 "Line3D.MatchesOrientation other" otherLn ln
-        vLn *** vOt > 1e-12
+        let ax = ln.VectorX
+        let ay = ln.VectorY
+        let az = ln.VectorZ
+        let bx = otherLn.VectorX
+        let by = otherLn.VectorY
+        let bz = otherLn.VectorZ
+        if isTooTinySq(ax*ax + ay*ay + az*az) then failTooSmall2 "Line3D.MatchesOrientation this" ln otherLn
+        if isTooTinySq(bx*bx + by*by + bz*bz) then failTooSmall2 "Line3D.MatchesOrientation other" otherLn ln
+        ax*bx + ay*by + az*bz > 1e-12
 
     /// Checks if the dot product between the two 3D lines is positive.
     /// So if the angle between their direction vectors is less than 90 degrees.
@@ -883,27 +891,35 @@ module AutoOpenLine3D =
     /// So if the angle between their direction vectors is less than 90 degrees.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.MatchesOrientation (v:Vec) : bool =
-        let vLn = ln.Vector
+        let ax = ln.VectorX
+        let ay = ln.VectorY
+        let az = ln.VectorZ
         if isTooTinySq(v.LengthSq)   then failTooSmall2 "Line3D.MatchesOrientation this" v ln
-        if isTooTinySq(vLn.LengthSq) then failTooSmall2 "Line3D.MatchesOrientation other" ln v
-        vLn *** v > 1e-12
+        if isTooTinySq(ax*ax + ay*ay + az*az) then failTooSmall2 "Line3D.MatchesOrientation other" ln v
+        ax*v.X + ay*v.Y + az*v.Z > 1e-12
 
     /// Checks if the dot product between a 3D line and a unit-vector is positive.
     /// So if the angle between their direction vectors is less than 90 degrees.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.MatchesOrientation (v:UnitVec) : bool =
-        let vLn = ln.Vector
-        if isTooTinySq(vLn.LengthSq) then failTooSmall2 "Line3D.MatchesOrientation other" ln v
-        vLn *** v > 1e-12
+        let ax = ln.VectorX
+        let ay = ln.VectorY
+        let az = ln.VectorZ
+        if isTooTinySq(ax*ax + ay*ay + az*az) then failTooSmall2 "Line3D.MatchesOrientation other" ln v
+        ax*v.X + ay*v.Y + az*v.Z > 1e-12
 
     /// Checks if the angle between the two 3D lines is less than 45 degrees.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.MatchesOrientation45 (l:Line3D) : bool =
-        let vLn = ln.Vector
-        let vOt = l.Vector
-        if isTooTinySq(vLn.LengthSq) then failTooSmall2 "Line3D.MatchesOrientation45 this" vLn vOt
-        if isTooTinySq(vOt.LengthSq) then failTooSmall2 "Line3D.MatchesOrientation45 other" vOt vLn
-        let tan = XLine3D.tangent (vLn.X, vLn.Y, vLn.Z, vOt.X, vOt.Y, vOt.Z)
+        let ax = ln.VectorX
+        let ay = ln.VectorY
+        let az = ln.VectorZ
+        let bx = l.VectorX
+        let by = l.VectorY
+        let bz = l.VectorZ
+        if isTooTinySq(ax*ax + ay*ay + az*az) then failTooSmall2 "Line3D.MatchesOrientation45 this" ln l
+        if isTooTinySq(bx*bx + by*by + bz*bz) then failTooSmall2 "Line3D.MatchesOrientation45 other" l ln
+        let tan = XLineXYZ.tangent (ax, ay, az, bx, by, bz)
         tan < Tangent.``45.0``
 
     /// Checks if the angle between the two 3D lines is less than 45 degrees.
@@ -918,11 +934,15 @@ module AutoOpenLine3D =
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.IsParallelTo( other:Line3D, [<OPT;DEF(Tangent.``0.25``)>] minTangent:float<Tangent.tangent> ) : bool =
-        let a = ln.Vector
-        let b = other.Vector
-        if isTooTinySq(a.LengthSq) then failTooSmall2 "Line3D.IsParallelTo this" a b
-        if isTooTinySq(b.LengthSq) then failTooSmall2 "Line3D.IsParallelTo other" b a
-        let tan = XLine3D.tangent (a.X, a.Y, a.Z, b.X, b.Y, b.Z)
+        let ax = ln.VectorX
+        let ay = ln.VectorY
+        let az = ln.VectorZ
+        let bx = other.VectorX
+        let by = other.VectorY
+        let bz = other.VectorZ
+        if isTooTinySq(ax*ax + ay*ay + az*az) then failTooSmall2 "Line3D.IsParallelTo this" ln other
+        if isTooTinySq(bx*bx + by*by + bz*bz) then failTooSmall2 "Line3D.IsParallelTo other" other ln
+        let tan = XLineXYZ.tangent (ax, ay, az, bx, by, bz)
         abs tan < minTangent
 
     /// Checks if two 3D lines are parallel. Ignoring orientation.
@@ -939,10 +959,12 @@ module AutoOpenLine3D =
     /// See Euclid.Tangent module.
     /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.IsParallelTo( other:Vec, [<OPT;DEF(Tangent.``0.25``)>] minTangent:float<Tangent.tangent> ) : bool =
-        let a = ln.Vector
-        if isTooTinySq(a.LengthSq) then failTooSmall2 "Line3D.IsParallelTo" a other
-        if isTooTinySq(other.LengthSq) then failTooSmall2 "Line3D.IsParallelTo" other a
-        let tan = XLine3D.tangent (a.X, a.Y, a.Z, other.X, other.Y, other.Z)
+        let ax = ln.VectorX
+        let ay = ln.VectorY
+        let az = ln.VectorZ
+        if isTooTinySq(ax*ax + ay*ay + az*az) then failTooSmall2 "Line3D.IsParallelTo" ln other
+        if isTooTinySq(other.LengthSq) then failTooSmall2 "Line3D.IsParallelTo" other ln
+        let tan = XLineXYZ.tangent (ax, ay, az, other.X, other.Y, other.Z)
         abs tan < minTangent
 
     /// Checks if a 3D lines is parallel to a 3D unit-vector.
@@ -952,9 +974,11 @@ module AutoOpenLine3D =
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.IsParallelTo( other:UnitVec, [<OPT;DEF(Tangent.``0.25``)>] minTangent:float<Tangent.tangent> ) : bool =
-        let a = ln.Vector
-        if isTooTinySq(a.LengthSq) then failTooSmall2 "Line3D.IsParallelTo" a other
-        let tan = XLine3D.tangent (a.X, a.Y, a.Z, other.X, other.Y, other.Z)
+        let ax = ln.VectorX
+        let ay = ln.VectorY
+        let az = ln.VectorZ
+        if isTooTinySq(ax*ax + ay*ay + az*az) then failTooSmall2 "Line3D.IsParallelTo" ln other
+        let tan = XLineXYZ.tangent (ax, ay, az, other.X, other.Y, other.Z)
         abs tan < minTangent
 
     /// Checks if two 3D lines are parallel.
@@ -964,11 +988,15 @@ module AutoOpenLine3D =
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.IsParallelAndOrientedTo (other:Line3D, [<OPT;DEF(Tangent.``0.25``)>] minTangent:float<Tangent.tangent> ) : bool =
-        let a = ln.Vector
-        let b = other.Vector
-        if isTooTinySq(a.LengthSq) then failTooSmall2 "Line3D.IsParallelAndOrientedTo this" a b
-        if isTooTinySq(b.LengthSq) then failTooSmall2 "Line3D.IsParallelAndOrientedTo other" b a
-        let tan = XLine3D.tangent (a.X, a.Y, a.Z, b.X, b.Y, b.Z)
+        let ax = ln.VectorX
+        let ay = ln.VectorY
+        let az = ln.VectorZ
+        let bx = other.VectorX
+        let by = other.VectorY
+        let bz = other.VectorZ
+        if isTooTinySq(ax*ax + ay*ay + az*az) then failTooSmall2 "Line3D.IsParallelAndOrientedTo this" ln other
+        if isTooTinySq(bx*bx + by*by + bz*bz) then failTooSmall2 "Line3D.IsParallelAndOrientedTo other" other ln
+        let tan = XLineXYZ.tangent (ax, ay, az, bx, by, bz)
         tan < minTangent
 
     /// Checks if two 3D lines are parallel and orientated the same way.
@@ -985,10 +1013,12 @@ module AutoOpenLine3D =
     /// See Euclid.Tangent module.
     /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.IsParallelAndOrientedTo (other:Vec, [<OPT;DEF(Tangent.``0.25``)>] minTangent:float<Tangent.tangent> ) : bool =
-        let a = ln.Vector
-        if isTooTinySq(a.LengthSq) then failTooSmall2 "Line3D.IsParallelAndOrientedTo" a other
-        if isTooTinySq(other.LengthSq) then failTooSmall2 "Line3D.IsParallelAndOrientedTo" other a
-        let tan = XLine3D.tangent (a.X, a.Y, a.Z, other.X, other.Y, other.Z)
+        let ax = ln.VectorX
+        let ay = ln.VectorY
+        let az = ln.VectorZ
+        if isTooTinySq(ax*ax + ay*ay + az*az) then failTooSmall2 "Line3D.IsParallelAndOrientedTo" ln other
+        if isTooTinySq(other.LengthSq) then failTooSmall2 "Line3D.IsParallelAndOrientedTo" other ln
+        let tan = XLineXYZ.tangent (ax, ay, az, other.X, other.Y, other.Z)
         tan < minTangent
 
     /// Checks if a 3D lines is parallel to a 3D unit-vector.
@@ -998,9 +1028,11 @@ module AutoOpenLine3D =
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.IsParallelAndOrientedTo (other:UnitVec, [<OPT;DEF(Tangent.``0.25``)>] minTangent:float<Tangent.tangent> ) : bool =
-        let a = ln.Vector
-        if isTooTinySq(a.LengthSq) then failTooSmall2 "Line3D.IsParallelAndOrientedTo" a other
-        let tan = XLine3D.tangent (a.X, a.Y, a.Z, other.X, other.Y, other.Z)
+        let ax = ln.VectorX
+        let ay = ln.VectorY
+        let az = ln.VectorZ
+        if isTooTinySq(ax*ax + ay*ay + az*az) then failTooSmall2 "Line3D.IsParallelAndOrientedTo" ln other
+        let tan = XLineXYZ.tangent (ax, ay, az, other.X, other.Y, other.Z)
         tan < minTangent
 
     /// Checks if two 3D lines are perpendicular to each other.
@@ -1009,11 +1041,15 @@ module AutoOpenLine3D =
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.IsPerpendicularTo (other:Line3D, [<OPT;DEF(Tangent.``89.75``)>] maxTangent:float<Tangent.tangent> ) : bool =
-        let a = ln.Vector
-        let b = other.Vector
-        if isTooTinySq(a.LengthSq) then failTooSmall2 "Line3D.IsPerpendicularTo this" a b
-        if isTooTinySq(b.LengthSq) then failTooSmall2 "Line3D.IsPerpendicularTo other" b a
-        let tan = XLine3D.tangent (a.X, a.Y, a.Z, b.X, b.Y, b.Z)
+        let ax = ln.VectorX
+        let ay = ln.VectorY
+        let az = ln.VectorZ
+        let bx = other.VectorX
+        let by = other.VectorY
+        let bz = other.VectorZ
+        if isTooTinySq(ax*ax + ay*ay + az*az) then failTooSmall2 "Line3D.IsPerpendicularTo this" ln other
+        if isTooTinySq(bx*bx + by*by + bz*bz) then failTooSmall2 "Line3D.IsPerpendicularTo other" other ln
+        let tan = XLineXYZ.tangent (ax, ay, az, bx, by, bz)
         abs tan > maxTangent
 
     /// Checks if two 3D lines are perpendicular to each other.
@@ -1030,10 +1066,12 @@ module AutoOpenLine3D =
     /// See Euclid.Tangent module.
     /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.IsPerpendicularTo (other:Vec, [<OPT;DEF(Tangent.``89.75``)>] maxTangent:float<Tangent.tangent> ) : bool =
-        let a = ln.Vector
-        if isTooTinySq(a.LengthSq) then failTooSmall2 "Line3D.IsPerpendicularTo this" a other
-        if isTooTinySq(other.LengthSq) then failTooSmall2 "Line3D.IsPerpendicularTo other" other a
-        let tan = XLine3D.tangent (a.X, a.Y, a.Z, other.X, other.Y, other.Z)
+        let ax = ln.VectorX
+        let ay = ln.VectorY
+        let az = ln.VectorZ
+        if isTooTinySq(ax*ax + ay*ay + az*az) then failTooSmall2 "Line3D.IsPerpendicularTo this" ln other
+        if isTooTinySq(other.LengthSq) then failTooSmall2 "Line3D.IsPerpendicularTo other" other ln
+        let tan = XLineXYZ.tangent (ax, ay, az, other.X, other.Y, other.Z)
         abs tan > maxTangent
 
     /// Checks if a 3D lines is perpendicular to a 3D unit-vector.
@@ -1042,9 +1080,11 @@ module AutoOpenLine3D =
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     member inline ln.IsPerpendicularTo (other:UnitVec, [<OPT;DEF(Tangent.``89.75``)>] maxTangent:float<Tangent.tangent> ) : bool =
-        let a = ln.Vector
-        if isTooTinySq(a.LengthSq) then failTooSmall2 "Line3D.IsPerpendicularTo this" a other
-        let tan = XLine3D.tangent (a.X, a.Y, a.Z, other.X, other.Y, other.Z)
+        let ax = ln.VectorX
+        let ay = ln.VectorY
+        let az = ln.VectorZ
+        if isTooTinySq(ax*ax + ay*ay + az*az) then failTooSmall2 "Line3D.IsPerpendicularTo this" ln other
+        let tan = XLineXYZ.tangent (ax, ay, az, other.X, other.Y, other.Z)
         abs tan > maxTangent
 
     /// Checks if two 3D lines are perpendicular to each other.
@@ -1092,25 +1132,29 @@ module AutoOpenLine3D =
     member inline ln.IsCoincidentTo (other:Line3D,
                                     [<OPT;DEF(1e-6)>] distanceTolerance:float,
                                     [<OPT;DEF(Tangent.``0.25``)>] minTangent:float<Tangent.tangent>) : bool =
-        let a = ln.Vector
-        let b = other.Vector
-        if isTooTinySq(a.LengthSq) then failTooSmall2 "Line3D.IsCoincidentTo this" ln other
-        if isTooTinySq(b.LengthSq) then failTooSmall2 "Line3D.IsCoincidentTo other" other ln
-        let tan = XLine3D.tangent (a.X, a.Y, a.Z, b.X, b.Y, b.Z)
+        let ax = ln.VectorX
+        let ay = ln.VectorY
+        let az = ln.VectorZ
+        let bx = other.VectorX
+        let by = other.VectorY
+        let bz = other.VectorZ
+        if isTooTinySq(ax*ax + ay*ay + az*az) then failTooSmall2 "Line3D.IsCoincidentTo this" ln other
+        if isTooTinySq(bx*bx + by*by + bz*bz) then failTooSmall2 "Line3D.IsCoincidentTo other" other ln
+        let tan = XLineXYZ.tangent (ax, ay, az, bx, by, bz)
         if abs tan < minTangent then
             // they are parallel, now check distance:
             let pX = other.FromX
             let pY = other.FromY
             let pZ = other.FromZ
             //http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
-            let x = a.X
-            let y = a.Y
-            let z = a.Z
+            let x = ax
+            let y = ay
+            let z = az
             let u = ln.FromX - pX
             let v = ln.FromY - pY
             let w = ln.FromZ - pZ
             let dot = x*u + y*v + z*w
-            let sa = a.LengthSq
+            let sa = ax*ax + ay*ay + az*az
             let t = dot/sa
             let x' = ln.FromX - x*t
             let y' = ln.FromY - y*t
@@ -1383,8 +1427,8 @@ module AutoOpenLine3D =
         let cy = vtZ*voX - vtX*voZ
         let cz = vtX*voY - vtY*voX
         let crossSq = cx*cx + cy*cy + cz*cz
-        let tan = sqrt(crossSq) / dot |> abs
-        !^ tan < Tangent.``0.25``
+        // squared parallel test (no sqrt): |cross| / |dot| < tan(0.25 deg)  <=>  crossSq < tan(0.25 deg)^2 * dot^2
+        !^ crossSq < Tangent.``0.25`` * Tangent.``0.25`` * dot * dot
 
     /// A faster Check if two 3D lines are not parallel. Ignoring orientation.
     /// The angle tolerance is 0.25 degrees.
@@ -1403,8 +1447,8 @@ module AutoOpenLine3D =
         let cy = vtZ*voX - vtX*voZ
         let cz = vtX*voY - vtY*voX
         let crossSq = cx*cx + cy*cy + cz*cz
-        let tan = sqrt(crossSq) / dot |> abs
-        !^ tan > Tangent.``0.25``
+        // squared parallel test (no sqrt): |cross| / |dot| > tan(0.25 deg)  <=>  crossSq > tan(0.25 deg)^2 * dot^2
+        !^ crossSq > Tangent.``0.25`` * Tangent.``0.25`` * dot * dot
 
     /// A faster Check if two 3D lines are perpendicular to each other.
     /// The angle tolerance is 89.75 to 90.25 degrees.
@@ -1424,8 +1468,8 @@ module AutoOpenLine3D =
         let cy = vtZ*voX - vtX*voZ
         let cz = vtX*voY - vtY*voX
         let crossSq = cx*cx + cy*cy + cz*cz
-        let tan = sqrt(crossSq) / dot |> abs
-        !^ tan > Tangent.``89.75``
+        // squared perpendicularity test (no sqrt): |cross| / |dot| > tan(89.75 deg)  <=>  crossSq > tan(89.75 deg)^2 * dot^2
+        !^ crossSq > Tangent.``89.75`` * Tangent.``89.75`` * dot * dot
 
     /// A faster Check if two 3D lines are perpendicular to each other.
     /// The angle tolerance is 89.75 to 90.25 degrees.
@@ -1437,7 +1481,19 @@ module AutoOpenLine3D =
 
     /// Applies or multiplies a 4x4 transformation matrix to a 3D line.
     member inline l.Transform (m:Matrix) : Line3D =
-        Line3D(l.From *** m, l.To *** m)
+        // w = 1.0
+        let x' = m.M11*l.FromX + m.M21*l.FromY + m.M31*l.FromZ + m.X41 // * w
+        let y' = m.M12*l.FromX + m.M22*l.FromY + m.M32*l.FromZ + m.Y42 // * w
+        let z' = m.M13*l.FromX + m.M23*l.FromY + m.M33*l.FromZ + m.Z43 // * w
+        let w' = m.M14*l.FromX + m.M24*l.FromY + m.M34*l.FromZ + m.M44 // * w
+        let sc = 1.0 / w'
+        let x'' = m.M11*l.ToX + m.M21*l.ToY + m.M31*l.ToZ + m.X41 // * w
+        let y'' = m.M12*l.ToX + m.M22*l.ToY + m.M32*l.ToZ + m.Y42 // * w
+        let z'' = m.M13*l.ToX + m.M23*l.ToY + m.M33*l.ToZ + m.Z43 // * w
+        let w'' = m.M14*l.ToX + m.M24*l.ToY + m.M34*l.ToZ + m.M44 // * w
+        let sc'' = 1.0 / w''
+        Line3D(x' * sc, y'* sc, z'* sc, x'' * sc'', y'' * sc'', z'' * sc'')
+
 
     /// Applies or multiplies a 4x4 transformation matrix to a 3D line.
     static member inline transform (m:Matrix) (ln:Line3D) : Line3D =
@@ -1445,7 +1501,14 @@ module AutoOpenLine3D =
 
     /// Multiplies (or applies) a RigidMatrix to a 3D line .
     member inline l.TransformRigid (m:RigidMatrix) : Line3D =
-        Line3D(l.From *** m, l.To *** m)
+        Line3D(
+              m.M11*l.FromX + m.M21*l.FromY + m.M31*l.FromZ + m.X41
+            , m.M12*l.FromX + m.M22*l.FromY + m.M32*l.FromZ + m.Y42
+            , m.M13*l.FromX + m.M23*l.FromY + m.M33*l.FromZ + m.Z43
+            , m.M11*l.ToX   + m.M21*l.ToY   + m.M31*l.ToZ   + m.X41
+            , m.M12*l.ToX   + m.M22*l.ToY   + m.M32*l.ToZ   + m.Y42
+            , m.M13*l.ToX   + m.M23*l.ToY   + m.M33*l.ToZ   + m.Z43
+        )
 
     /// Multiplies (or applies) a RigidMatrix to a 3D line .
     static member inline transformRigid (m:RigidMatrix) (ln:Line3D) : Line3D =
@@ -1523,7 +1586,7 @@ module AutoOpenLine3D =
         Line3D(ln.FromX, ln.FromY, 0., ln.ToX, ln.ToY, 0.)
 
     /// Creates a 3D line from 2D line. Setting Z to given value.
-    static member inline createFromLine2DwithZ (zLevel) (ln:Line2D) : Line3D =
+    static member inline createFromLine2DWithZ (zLevel) (ln:Line2D) : Line3D =
         Line3D(ln.FromX, ln.FromY, zLevel, ln.ToX, ln.ToY, zLevel)
 
     /// Creates a 3D line starting at World Origin and going to along the given vector.
@@ -1575,11 +1638,23 @@ module AutoOpenLine3D =
         l.ToZ
 
     /// Set Line3D start point, returns a new line.
+    /// Same as Line3D.setFrom.
     static member inline setStart (pt:Pnt) (ln:Line3D) : Line3D =
         Line3D(pt.X, pt.Y, pt.Z, ln.ToX, ln.ToY, ln.ToZ)
 
+    /// Set Line3D start point, returns a new line.
+    /// Same as Line3D.setStart.
+    static member inline setFrom (pt:Pnt) (ln:Line3D) : Line3D =
+        Line3D(pt.X, pt.Y, pt.Z, ln.ToX, ln.ToY, ln.ToZ)
+
     /// Set Line3D end point, returns a new line.
+    /// Same as Line3D.setTo.
     static member inline setEnd (pt:Pnt) (ln:Line3D) : Line3D =
+        Line3D(ln.FromX, ln.FromY, ln.FromZ, pt.X, pt.Y, pt.Z)
+
+    /// Set Line3D end point, returns a new line.
+    /// Same as Line3D.setEnd.
+    static member inline setTo (pt:Pnt) (ln:Line3D) : Line3D =
         Line3D(ln.FromX, ln.FromY, ln.FromZ, pt.X, pt.Y, pt.Z)
 
     /// Returns the length of the line.
@@ -1612,15 +1687,30 @@ module AutoOpenLine3D =
 
     /// Ensure 3D line has a positive dot product with given orientation line.
     static member inline matchOrientation (orientationToMatch:Line3D) (lineToFlip:Line3D) : Line3D =
-        if orientationToMatch.Vector *** lineToFlip.Vector  < 0.0 then lineToFlip.Reversed else lineToFlip
+        if orientationToMatch.VectorX * lineToFlip.VectorX +
+            orientationToMatch.VectorY * lineToFlip.VectorY +
+            orientationToMatch.VectorZ * lineToFlip.VectorZ < 0.0 then
+                lineToFlip.Reversed
+        else
+            lineToFlip
 
     /// Ensure 3D line has a positive dot product with given 3D vector.
     static member inline matchVecOrientation (orientationToMatch:Vec) (lineToFlip:Line3D) : Line3D =
-        if orientationToMatch *** lineToFlip.Vector  < 0.0 then lineToFlip.Reversed else lineToFlip
+        if orientationToMatch.X * lineToFlip.VectorX +
+            orientationToMatch.Y * lineToFlip.VectorY +
+            orientationToMatch.Z * lineToFlip.VectorZ < 0.0 then
+                lineToFlip.Reversed
+        else
+            lineToFlip
 
     /// Ensure 3D line has a positive dot product with given 3D vector.
     static member inline matchUnitVecOrientation (orientationToMatch:UnitVec) (lineToFlip:Line3D) : Line3D =
-        if orientationToMatch *** lineToFlip.Vector  < 0.0 then lineToFlip.Reversed else lineToFlip
+        if orientationToMatch.X * lineToFlip.VectorX +
+            orientationToMatch.Y * lineToFlip.VectorY +
+            orientationToMatch.Z * lineToFlip.VectorZ < 0.0 then
+                lineToFlip.Reversed
+        else
+            lineToFlip
 
     /// Checks if the dot product between a 3D line and a vector is positive.
     /// So if the angle between their direction vectors is less than 90 degrees.
@@ -1698,13 +1788,23 @@ module AutoOpenLine3D =
     static member inline isNormalToUnitVec (maxTangent:float<Tangent.tangent>) (other:UnitVec) (ln:Line3D) : bool =
         ln.IsNormalTo(other, maxTangent)
 
+    /// Assumes Line3D to be an infinite ray!
+    /// Returns the parameter at which a point is closest to the infinite ray.
+    /// If it is smaller than 0.0 or bigger than 1.0 it is outside of the finite line.
     /// Get distance from start of line to point projected onto line, may be negative.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    static member inline lengthToPtOnLine (ln:Line3D) pt : float =
-        let t = ln.Vector
-        let l = t.Length
+    static member inline lengthToPtOnLine (ln:Line3D) (pt:Pnt) : float =
+        let x = ln.VectorX
+        let y = ln.VectorY
+        let z = ln.VectorZ
+        let l = XYZ.length x y z
         if isTooTiny l then failTooSmall "Line3D.lengthToPtOnLine" ln
-        (t/l) *** (pt-ln.From)
+        let dx = pt.X - ln.FromX
+        let dy = pt.Y - ln.FromY
+        let dz = pt.Z - ln.FromZ
+        let t = XYZ.dot x y z dx dy dz
+        t / l
+
 
     /// Finds point at given distance from line start.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -1712,7 +1812,7 @@ module AutoOpenLine3D =
         let x = ln.VectorX
         let y = ln.VectorY
         let z = ln.VectorZ
-        let len = sqrt(x*x + y*y + z*z)
+        let len = XYZ.length x y z
         if isTooTiny len then failTooSmall "Line3D.pointAtDistance" ln
         let f = dist/len
         Pnt(ln.FromX + x*f,
@@ -1725,7 +1825,7 @@ module AutoOpenLine3D =
         let x = ln.VectorX
         let y = ln.VectorY
         let z = ln.VectorZ
-        let l = sqrt(x*x + y*y + z*z)
+        let l = XYZ.length x y z
         if isTooTiny l then failTooSmall "Line3D.withLengthFromStart" ln
         let f = len/l
         Line3D( ln.FromX,
@@ -1741,7 +1841,7 @@ module AutoOpenLine3D =
         let x = ln.FromX-ln.ToX
         let y = ln.FromY-ln.ToY
         let z = ln.FromZ-ln.ToZ
-        let l = sqrt(x*x + y*y + z*z)
+        let l = XYZ.length x y z
         if isTooTiny l then failTooSmall "Line3D.withLengthToEnd" ln
         let f = len/l
         Line3D( ln.ToX + x*f,
@@ -1758,7 +1858,7 @@ module AutoOpenLine3D =
         let x = ln.FromX-ln.ToX
         let y = ln.FromY-ln.ToY
         let z = ln.FromZ-ln.ToZ
-        let l = sqrt(x*x + y*y + z*z)
+        let l = XYZ.length x y z
         if isTooTiny l then failTooSmall "Line3D.withLengthFromMid" ln
         let f = (len/l + 1.0) * 0.5
         Line3D( ln.ToX   + x*f,
@@ -1797,13 +1897,17 @@ module AutoOpenLine3D =
     /// If points are closer than 1e-6 units the World.Xaxis is used
     /// as first direction and World Z-axis as second direction.
     static member offset (distHorizontal:float) (distNormal:float) (l:Line3D ): Line3D=
-        let v = l.Vector
+        let vx = l.VectorX
+        let vy = l.VectorY
+        let vz = l.VectorZ
         let normHor =
-            Vec.cross(v, Vec.Zaxis)
+            Vec(vy, -vx, 0.0)
             |> Vec.unitizeOrDefault UnitVec.Xaxis
 
         let normFree =
-            Vec.cross(v, normHor)
+            Vec(vy * normHor.Z - vz * normHor.Y,
+                vz * normHor.X - vx * normHor.Z,
+                vx * normHor.Y - vy * normHor.X)
             |> Vec.unitizeOrDefault UnitVec.Zaxis
 
         let shift = distHorizontal * normHor + distNormal * normFree
@@ -1865,8 +1969,10 @@ module AutoOpenLine3D =
     /// Returns an array of 3D lines.
     /// Returns an empty array if the length of the line is less than gap-size x segment-count-minus-1.
     static member split (gap:float) (segments:int) (ln:Line3D) : Line3D[] =
-        let v = ln.Vector
-        let len = v.Length
+        let vx = ln.VectorX
+        let vy = ln.VectorY
+        let vz = ln.VectorZ
+        let len = sqrt(vx*vx + vy*vy + vz*vz)
         if segments <= 0  then
             fail $"Line3D.split: segments must be at least 1, was {segments}"
         if len < 1e-6 then
@@ -1877,9 +1983,6 @@ module AutoOpenLine3D =
             [||]
         else
             let lns = Array.zeroCreate segments
-            let vx = v.X
-            let vy = v.Y
-            let vz = v.Z
             let x = ln.FromX
             let y = ln.FromY
             let z = ln.FromZ
@@ -1970,23 +2073,23 @@ module AutoOpenLine3D =
                     pts.Add <| l.EvaluateAt (step * float i)
             pts
 
-    /// <summary>Intersects a ray with an infinite double cone that has its axis on the Z-axis.</summary>
-    /// <param name="ray">The Line3D to intersect. It is considered as infinite ray.</param>
-    /// <param name="coneRadius">The radius of the cone at the base. Parallel to the XY plane.</param>
+    /// <summary>Intersects an infinite ray / line with the base-side nappe of a cone whose axis is the Z-axis.</summary>
+    /// <param name="ray">The Line3D to intersect. It is considered infinite in both directions.</param>
+    /// <param name="coneRadius">The positive radius of the cone at the base, parallel to the XY plane.</param>
     /// <param name="coneBaseZ">The Z coordinate of the cone base.</param>
-    /// <param name="coneTipZ">The Z coordinate of the cone tip.</param>
+    /// <param name="coneTipZ">The Z coordinate of the cone tip. Must differ from coneBaseZ.</param>
     /// <returns>The two parameters on the ray where the intersections occur.
     /// If there is only one touching point both parameters are the same.
     /// If there is no intersection None is returned.
     /// </returns>
     static member intersectCone (ray:Line3D, coneRadius, coneBaseZ, coneTipZ) : Option<float*float> =
         match XLine3D.intersectCone(ray, coneRadius, coneBaseZ, coneTipZ) with
-        | XCone.NoIntersection -> None
-        | XCone.Intersecting (t1, t2) -> Some (t1, t2)
-        | XCone.IntersectingOne (t) -> Some (t, t)
-        | XCone.Touching (t) -> Some (t, t)
-        | XCone.ThroughTip (t) -> Some (t, t)
-        | XCone.LineOnCone (tipParam, _) -> Some (tipParam, tipParam)
+        | XLine3D.XCone.NoIntersection -> None
+        | XLine3D.XCone.Intersecting (t1, t2) -> Some (t1, t2)
+        | XLine3D.XCone.IntersectingOne t -> Some (t, t)
+        | XLine3D.XCone.Touching t -> Some (t, t)
+        | XLine3D.XCone.ThroughTip t -> Some (t, t)
+        | XLine3D.XCone.LineOnCone (tipParam, _) -> Some (tipParam, tipParam)
 
 
 
@@ -2085,7 +2188,7 @@ module AutoOpenLine3D =
         elif bStartOnA > ``1.0 + 1e-6`` && bEndOnA > ``1.0 + 1e-6`` then
             None
         else
-            Some (clampBetweenZeroAndOne bStartOnA, clampBetweenZeroAndOne bEndOnA)
+            Some (clamp01 bStartOnA, clamp01 bEndOnA)
 
     /// Tries to project a 3D line onto another line considered finite.
     /// Returns Some Line3D if there is an overlap.
@@ -2119,8 +2222,8 @@ module AutoOpenLine3D =
         elif bStartOnA > ``1.0 + 1e-6`` && bEndOnA > ``1.0 + 1e-6`` then
             None
         else
-            let st = clampBetweenZeroAndOne bStartOnA
-            let en = clampBetweenZeroAndOne bEndOnA
+            let st = clamp01 bStartOnA
+            let en = clamp01 bEndOnA
             Some <| Line3D( osx + ovx * st,
                             osy + ovy * st,
                             osz + ovz * st,
@@ -2138,7 +2241,7 @@ module AutoOpenLine3D =
     /// <param name="lnB">The second line.</param>
     /// <remarks>Use the XLine3D module for more specialized intersection calculations with custom tolerances.</remarks>
     static member doIntersect (lnA:Line3D) (lnB:Line3D) : bool =
-        XLine3D.tryIntersect(lnA, lnB).IsSome
+        XLine3D.doIntersect(lnA, lnB)
 
     /// <summary>A fast test to check if two infinite rays (3D lines extended infinitely) intersect (or come very close in the skew case).
     /// Uses a maximum skew distance of 1e-6.</summary>
@@ -2163,9 +2266,9 @@ module AutoOpenLine3D =
         | XLine3D.XParam.Skew _       -> false
         | XLine3D.XParam.Parallel     -> XLine3D.doOverlap(lnA, lnB)
         | XLine3D.XParam.Apart        -> false
-        | XLine3D.XParam.TooShortBoth -> XLine3D.sqDistLnFromLnFrom(lnA, lnB)                      < 1e-12
-        | XLine3D.XParam.TooShortA    -> XLine3D.sqDistLnPt'(lnB, lnA.FromX, lnA.FromY, lnA.FromZ) < 1e-12
-        | XLine3D.XParam.TooShortB    -> XLine3D.sqDistLnPt'(lnA, lnB.FromX, lnB.FromY, lnB.FromZ) < 1e-12
+        | XLine3D.XParam.TooShortBoth -> XLineXYZ.sqDistLnFromLnFrom(lnA, lnB)                      < 1e-12
+        | XLine3D.XParam.TooShortA    -> XLineXYZ.sqDistLnPt'(lnB, lnA.FromX, lnA.FromY, lnA.FromZ) < 1e-12
+        | XLine3D.XParam.TooShortB    -> XLineXYZ.sqDistLnPt'(lnA, lnB.FromX, lnB.FromY, lnB.FromZ) < 1e-12
 
     /// <summary>A fast intersection of two finite 3D lines.
     /// Returns the intersection point or the midpoint of closest approach for skew lines within tolerance.
@@ -2175,7 +2278,7 @@ module AutoOpenLine3D =
     /// <returns>A Pnt on line A if the lines intersect or are very close (skew distance less than 1e-6),
     /// None if apart, lines too short, or if parallel lines are touching or overlapping.</returns>
     /// <remarks>Use the XLine3D module for more specialized intersection calculations.</remarks>
-    static member tryIntersect (lnA:Line3D) (lnB:Line3D) : Pnt option =
+    static member tryIntersect (lnA:Line3D) (lnB:Line3D) : Pnt voption =
         XLine3D.tryIntersect(lnA, lnB)
 
     /// <summary>Tries to get intersection point of two rays (rays are 3D lines extended infinitely).</summary>
@@ -2184,7 +2287,7 @@ module AutoOpenLine3D =
     /// <returns>The point at which the two rays intersect or the closest point on line A for skew lines, or None.</returns>
     /// <remarks>If the lines are parallel or coincident, or if they are skew with distance > 1e-6, None is returned.
     /// For skew lines within tolerance, returns the closest point on line A.</remarks>
-    static member tryIntersectRay (lineA:Line3D) (lineB:Line3D) : Pnt option =
+    static member tryIntersectRay (lineA:Line3D) (lineB:Line3D) : Pnt voption =
         XLine3D.tryIntersectRay(lineA, lineB)
 
     /// <summary>Intersects two finite 3D Lines.
@@ -2204,16 +2307,16 @@ module AutoOpenLine3D =
         | XLine3D.XPnt.Skew _       -> None
         | XLine3D.XPnt.Apart        -> None
         | XLine3D.XPnt.Parallel ->
-            let sqDist = XLine3D.sqRayPtDist(lnA.FromX, lnA.FromY, lnA.FromZ, lnA.VectorX, lnA.VectorY, lnA.VectorZ, lnB.FromX, lnB.FromY, lnB.FromZ)
+            let sqDist = XLineXYZ.sqRayPtDist(lnA.FromX, lnA.FromY, lnA.FromZ, lnA.VectorX, lnA.VectorY, lnA.VectorZ, lnB.FromX, lnB.FromY, lnB.FromZ)
             if sqDist < 1e-12 then
                 match Line3D.tryProjectOntoLineParam lnA lnB with
                 | Some (s,e) ->Some <| lnA.EvaluateAt((s+e)*0.5)
                 | None -> None
             else
                 None
-        | XLine3D.XPnt.TooShortBoth -> if XLine3D.sqDistLnFromLnFrom(lnA, lnB) < 1e-12 then Some lnA.From else None
-        | XLine3D.XPnt.TooShortA    -> if XLine3D.sqDistLnPt'(lnB, lnA.FromX, lnA.FromY, lnA.FromZ) < 1e-12 then Some lnA.From else None
-        | XLine3D.XPnt.TooShortB    -> if XLine3D.sqDistLnPt'(lnA, lnB.FromX, lnB.FromY, lnB.FromZ) < 1e-12 then Some lnB.From else None
+        | XLine3D.XPnt.TooShortBoth -> if XLineXYZ.sqDistLnFromLnFrom(lnA, lnB) < 1e-12 then Some lnA.From else None
+        | XLine3D.XPnt.TooShortA    -> if XLineXYZ.sqDistLnPt'(lnB, lnA.FromX, lnA.FromY, lnA.FromZ) < 1e-12 then Some lnA.From else None
+        | XLine3D.XPnt.TooShortB    -> if XLineXYZ.sqDistLnPt'(lnA, lnB.FromX, lnB.FromY, lnB.FromZ) < 1e-12 then Some lnB.From else None
 
     /// <summary>Checks if lines are parallel, coincident and overlapping.</summary>
     /// <param name="lnA">The first line.</param>
@@ -2224,14 +2327,18 @@ module AutoOpenLine3D =
     /// <remarks>If the first parameter in the overlap is smaller than the second the lines are oriented in the same direction.
     /// If the first parameter is greater than the second the lines are oriented in the opposite direction.</remarks>
     static member tryGetOverlap (lnA:Line3D) (lnB:Line3D) : option<float*float> =
-        let va = lnA.Vector
-        let vb = lnB.Vector
-        if XLine3D.isTooShort(va.X, va.Y, va.Z, 1e-6) || XLine3D.isTooShort(vb.X, vb.Y, vb.Z, 1e-6) then
+        let vax = lnA.VectorX
+        let vay = lnA.VectorY
+        let vaz = lnA.VectorZ
+        let vbx = lnB.VectorX
+        let vby = lnB.VectorY
+        let vbz = lnB.VectorZ
+        if XLineXYZ.isTooShort(vax, vay, vaz, 1e-6) || XLineXYZ.isTooShort(vbx, vby, vbz, 1e-6) then
             None
         else
-            let tan = XLine3D.tangent(va.X, va.Y, va.Z, vb.X, vb.Y, vb.Z)
+            let tan = XLineXYZ.tangent(vax, vay, vaz, vbx, vby, vbz)
             if abs tan < Tangent.``0.25`` then
-                let sqDist = XLine3D.sqRayPtDist(lnA.FromX, lnA.FromY, lnA.FromZ, lnA.VectorX, lnA.VectorY, lnA.VectorZ, lnB.FromX, lnB.FromY, lnB.FromZ)
+                let sqDist = XLineXYZ.sqRayPtDist(lnA.FromX, lnA.FromY, lnA.FromZ, lnA.VectorX, lnA.VectorY, lnA.VectorZ, lnB.FromX, lnB.FromY, lnB.FromZ)
                 if sqDist < 1e-9 then
                     Line3D.tryProjectOntoLineParam lnA lnB
                 else

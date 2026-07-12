@@ -460,38 +460,38 @@ let tests =
                 Expect.isTrue (o.IsClosed) "large offset maintains closure"
             }
 
-            test "colinear segments offset" {
-                // Create a polyline with colinear segments (zigzag on same line)
-                let plColinear = Polyline2D.createFromPts [Pt(0.,0.); Pt(5.,0.); Pt(10.,0.); Pt(15.,0.); Pt(20.,0.)]
-                let o = Polyline2D.offset (plColinear, 2.)
-                "colinear offset point count" |> Expect.equal o.PointCount plColinear.PointCount
-                "colinear offset pt 0" |> (expectEqPts o.AsPoints.[0] (Pt(0.,2.)))
-                "colinear offset pt 1" |> (expectEqPts o.AsPoints.[1] (Pt(5.,2.)))
-                "colinear offset pt 2" |> (expectEqPts o.AsPoints.[2] (Pt(10.,2.)))
-                "colinear offset pt 3" |> (expectEqPts o.AsPoints.[3] (Pt(15.,2.)))
-                "colinear offset pt 4" |> (expectEqPts o.AsPoints.[4] (Pt(20.,2.)))
+            test "collinear segments offset" {
+                // Create a polyline with collinear segments (zigzag on same line)
+                let plCollinear = Polyline2D.createFromPts [Pt(0.,0.); Pt(5.,0.); Pt(10.,0.); Pt(15.,0.); Pt(20.,0.)]
+                let o = Polyline2D.offset (plCollinear, 2.)
+                "collinear offset point count" |> Expect.equal o.PointCount plCollinear.PointCount
+                "collinear offset pt 0" |> (expectEqPts o.AsPoints.[0] (Pt(0.,2.)))
+                "collinear offset pt 1" |> (expectEqPts o.AsPoints.[1] (Pt(5.,2.)))
+                "collinear offset pt 2" |> (expectEqPts o.AsPoints.[2] (Pt(10.,2.)))
+                "collinear offset pt 3" |> (expectEqPts o.AsPoints.[3] (Pt(15.,2.)))
+                "collinear offset pt 4" |> (expectEqPts o.AsPoints.[4] (Pt(20.,2.)))
             }
 
 
-            // test "colinear segments with different offset distances" {
-            //     // Test colinear segments with different offset distances per segment
-            //     let plColinear = Polyline2D.createFromPts [Pt(0.,0.); Pt(10.,0.); Pt(20.,0.); Pt(30.,0.)]
+            // test "collinear segments with different offset distances" {
+            //     // Test collinear segments with different offset distances per segment
+            //     let plCollinear = Polyline2D.createFromPts [Pt(0.,0.); Pt(10.,0.); Pt(20.,0.); Pt(30.,0.)]
             //     let distances = [| 1.; 2.; 3. |] // Different distance for each segment
-            //     let o = Polyline2D.offset (plColinear, distances)
-            //     "colinear different offsets point count" |> Expect.equal o.PointCount plColinear.PointCount
-            //     "colinear different offsets pt 0" |> (expectEqPts o.Points.[0] (Pt(0., 1.)))
-            //     "colinear different offsets pt 1" |> (expectEqPts o.Points.[1] (Pt(10.,2.)))
-            //     "colinear different offsets pt 2" |> (expectEqPts o.Points.[2] (Pt(20.,3.)))
-            //     "colinear different offsets pt 3" |> (expectEqPts o.Points.[3] (Pt(30.,3.)))
+            //     let o = Polyline2D.offset (plCollinear, distances)
+            //     "collinear different offsets point count" |> Expect.equal o.PointCount plCollinear.PointCount
+            //     "collinear different offsets pt 0" |> (expectEqPts o.Points.[0] (Pt(0., 1.)))
+            //     "collinear different offsets pt 1" |> (expectEqPts o.Points.[1] (Pt(10.,2.)))
+            //     "collinear different offsets pt 2" |> (expectEqPts o.Points.[2] (Pt(20.,3.)))
+            //     "collinear different offsets pt 3" |> (expectEqPts o.Points.[3] (Pt(30.,3.)))
             // }
 
 
 
 
-            test "L-shape with colinear extension" {
-                // Create an L-shape with colinear segments extending the arms
+            test "L-shape with collinear extension" {
+                // Create an L-shape with collinear segments extending the arms
                 let plLExtended = Polyline2D.createFromPts [
-                    Pt(0.,0.); Pt(5.,0.); Pt(10.,0.);  // Horizontal colinear segments
+                    Pt(0.,0.); Pt(5.,0.); Pt(10.,0.);  // Horizontal collinear segments
                     Pt(10.,5.); Pt(10.,10.)            // Vertical segments
                 ]
                 let o = Polyline2D.offset (plLExtended, 1.)
@@ -500,7 +500,7 @@ let tests =
             }
 
 
-            test "rect with colinear segments offset" {
+            test "rect with collinear segments offset" {
 
                 let plOpen = Polyline2D.createFromPts [
                     Pt(0.,0.)
@@ -512,12 +512,12 @@ let tests =
                     ]
                 let o = Polyline2D.offset (plOpen, 2.)
                 "point count" |> Expect.equal o.PointCount plOpen.PointCount
-                "colinear different offsets pt 0" |> expectEqPts o.AsPoints.[0]  (Pt(2.,2.))
-                "colinear different offsets pt 1" |> expectEqPts o.AsPoints.[1]  (Pt(5.,2.))
-                "colinear different offsets pt 2" |> expectEqPts o.AsPoints.[2]  (Pt(8.,2.))
-                "colinear different offsets pt 3" |> expectEqPts o.AsPoints.[3]  (Pt(8.,8.))
-                "colinear different offsets pt 4" |> expectEqPts o.AsPoints.[4]  (Pt(2.,8.))
-                "colinear different offsets pt 5" |> expectEqPts o.AsPoints.[5]  (Pt(2.,2.))
+                "collinear different offsets pt 0" |> expectEqPts o.AsPoints.[0]  (Pt(2.,2.))
+                "collinear different offsets pt 1" |> expectEqPts o.AsPoints.[1]  (Pt(5.,2.))
+                "collinear different offsets pt 2" |> expectEqPts o.AsPoints.[2]  (Pt(8.,2.))
+                "collinear different offsets pt 3" |> expectEqPts o.AsPoints.[3]  (Pt(8.,8.))
+                "collinear different offsets pt 4" |> expectEqPts o.AsPoints.[4]  (Pt(2.,8.))
+                "collinear different offsets pt 5" |> expectEqPts o.AsPoints.[5]  (Pt(2.,2.))
             }
 
 
@@ -766,38 +766,38 @@ let testsDup =
                 Expect.equal cleaned.PointCount 5 "one duplicate removed"
                 Expect.isTrue cleaned.IsClosed "should stay closed"
             }
-            test "removeDuplicateAndColinearPoints square" {
+            test "removeDuplicateAndCollinearPoints square" {
                 let pl = Polyline2D.createFromPts [ Pt(2.,0.); Pt(4.,0.); Pt(4.,2.); Pt(4.,4.); Pt(2.,4.); Pt(0.,4.); Pt(0.,2.); Pt(0.,0.); Pt(2.,0.)]
-                let simplified = Polyline2D.removeDuplicateAndColinearPoints Cosine.``0.1`` 1e-9  pl
-                Expect.equal simplified.PointCount 5 $"no colinear simplification with loose angle tolerance {simplified.AsFSharpCode}"
+                let simplified = Polyline2D.removeDuplicateAndCollinearPoints Cosine.``0.1`` 1e-9  pl
+                Expect.equal simplified.PointCount 5 $"no collinear simplification with loose angle tolerance {simplified.AsFSharpCode}"
                 Expect.isTrue simplified.IsClosed "remains closed"
             }
-            test "removeDuplicateAndColinearPoints open line with repeats" {
+            test "removeDuplicateAndCollinearPoints open line with repeats" {
                 let pl = Polyline2D.createFromPts [Pt(0.,0.); Pt(1.,0.); Pt(2.,0.); Pt(3.,0.); Pt(3.,0.)]
-                let simplified = Polyline2D.removeDuplicateAndColinearPoints Cosine.``0.1`` 1e-9 pl
-                Expect.equal simplified.PointCount 2 "duplicate end removed; interior colinear points removed"
+                let simplified = Polyline2D.removeDuplicateAndCollinearPoints Cosine.``0.1`` 1e-9 pl
+                Expect.equal simplified.PointCount 2 "duplicate end removed; interior collinear points removed"
                 "start" |> (expectEqPts simplified.AsPoints.[0] (Pt(0.,0.)))
                 "end" |> (expectEqPts simplified.AsPoints.[simplified.AsPoints.Count - 1] (Pt(3.,0.)))
             }
-            test "colinear start/end segments closed polygon" {
+            test "collinear start/end segments closed polygon" {
                 // square with duplicated first edge points and last edge points before closure
                 let pl = Polyline2D.createFromPts [Pt(0.,0.); Pt(1.,0.); Pt(2.,0.); Pt(2.,2.); Pt(2.,4.); Pt(1.,4.); Pt(0.,4.); Pt(0.,2.); Pt(0.,0.)]
-                let simplified = Polyline2D.removeDuplicateAndColinearPoints Cosine.``0.1`` 1e-9 pl
-                // currently interior colinear points retained
+                let simplified = Polyline2D.removeDuplicateAndCollinearPoints Cosine.``0.1`` 1e-9 pl
+                // currently interior collinear points retained
                 Expect.isTrue simplified.IsClosed "closed retained"
-                Expect.equal simplified.PointCount 5 " colinear removal at this tolerance"
+                Expect.equal simplified.PointCount 5 " collinear removal at this tolerance"
             }
-            test "almost colinear tiny angle retained" {
+            test "almost collinear tiny angle retained" {
                 // create slight bend ~0.01 degrees so cosine almost 1
                 let pl = Polyline2D.createFromPts [Pt(0.,0.); Pt(10.,0.); Pt(20.,0.2); Pt(30.,0.)]
-                let simplified = Polyline2D.removeDuplicateAndColinearPoints Cosine.``0.01`` 1e-9 pl
+                let simplified = Polyline2D.removeDuplicateAndCollinearPoints Cosine.``0.01`` 1e-9 pl
                 Expect.equal simplified.PointCount 4 "almost straight kept"
             }
-            test "open U-turn 180 collapse prevented (since method only removes colinear not u-turn)" {
+            test "open U-turn 180 collapse prevented (since method only removes collinear not u-turn)" {
                 // a U-turn creates 180 change; algorithm compares cosine; using points making a sharp reversal
                 let pl = Polyline2D.createFromPts [Pt(0.,0.); Pt(5.,0.); Pt(5.,0.); Pt(0.,0.); Pt(-5.,0.)]
-                let simplified = Polyline2D.removeDuplicateAndColinearPoints Cosine.``0.1`` 1e-9 pl
-                // current implementation removes duplicates and also collapses colinear first half leaving endpoints
+                let simplified = Polyline2D.removeDuplicateAndCollinearPoints Cosine.``0.1`` 1e-9 pl
+                // current implementation removes duplicates and also collapses collinear first half leaving endpoints
                 Expect.equal simplified.PointCount 3 "collapsed to endpoints after duplicate removal"
             }
 
@@ -1503,20 +1503,20 @@ let testsComprehensive =
             }
         ]
 
-        testList "removeDuplicateAndColinearPoints edge cases" [
+        testList "removeDuplicateAndCollinearPoints edge cases" [
             test "single point returns same" {
-                let result = Polyline2D.removeDuplicateAndColinearPoints Cosine.``0.1`` 1e-9 plSinglePoint
+                let result = Polyline2D.removeDuplicateAndCollinearPoints Cosine.``0.1`` 1e-9 plSinglePoint
                 Expect.equal result.PointCount 1 "single point unchanged"
             }
             test "empty returns same" {
-                let result = Polyline2D.removeDuplicateAndColinearPoints Cosine.``0.1`` 1e-9 plEmpty
+                let result = Polyline2D.removeDuplicateAndCollinearPoints Cosine.``0.1`` 1e-9 plEmpty
                 Expect.equal result.PointCount 0 "empty unchanged"
             }
             test "tolerance too tight throws" {
                 // Cosine.``0.01`` is the maximum allowed; a value above it (closer to 1.0) should throw
                 let tooTight = UtilEuclid.withMeasure 0.9999999999 // cosine of ~0.0 degrees, above Cosine.``0.01``
                 Expect.throws
-                    (fun () -> Polyline2D.removeDuplicateAndColinearPoints tooTight 1e-9 plOpen |> ignore)
+                    (fun () -> Polyline2D.removeDuplicateAndCollinearPoints tooTight 1e-9 plOpen |> ignore)
                     "tolerance tighter than 0.01 degrees should throw"
             }
         ]
@@ -1738,7 +1738,7 @@ let testsSpecial =
                 "negative signed area" |> Expect.isTrue (pl.SignedArea < 0.0)
             }
             test "createFromRectCCW is closed" {
-                let r = Rect2D.createFromBRect (BRect.create(Pt(0.,0.), Pt(10.,5.)))
+                let r = (BRect.create(Pt(0.,0.), Pt(10.,5.))).AsRect2D
                 let pl = Polyline2D.createFromRectCCW r
                 Expect.equal pl.PointCount 5 "rect loop has 5 points"
                 Expect.isTrue pl.IsClosed "should be closed"
@@ -1825,9 +1825,9 @@ let testsSpecial =
             test "SignedArea on single point returns zero" {
                 Expect.floatClose Accuracy.veryHigh plSinglePoint.SignedArea 0.0 "single point has zero area"
             }
-            test "removeDuplicateAndColinearPoints fails when all points are duplicates" {
+            test "removeDuplicateAndCollinearPoints fails when all points are duplicates" {
                 let pl = Polyline2D.createFromPts [Pt(1.,1.); Pt(1.,1.); Pt(1.,1.)]
-                Expect.throws (fun () -> Polyline2D.removeDuplicateAndColinearPoints Cosine.``0.1`` 1e-6 pl |> ignore) "all duplicates should fail with a clear error"
+                Expect.throws (fun () -> Polyline2D.removeDuplicateAndCollinearPoints Cosine.``0.1`` 1e-6 pl |> ignore) "all duplicates should fail with a clear error"
             }
             test "FindLabelPoint fails on zero or negative precision" {
                 Expect.throws (fun () -> plClosed.FindLabelPoint 0.0 |> ignore) "zero precision should fail"

@@ -8,26 +8,20 @@
     <LangVersion>preview</LangVersion>
     <NeutralLanguage>en</NeutralLanguage>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
-    <!--to only have the english resources for FSharp.Core-->
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>    <!--to only have the english resources for FSharp.Core-->
     <RootNamespace>Euclid</RootNamespace>
     <AssemblyName>Euclid</AssemblyName>
     <AssemblyTitle>Euclid</AssemblyTitle>
     <Title>Euclid</Title>
     <Product>Euclid</Product>
-    <PackageId>Euclid</PackageId>
-    <!-- <Version></Version>  done by Ionide.KeepAChangelog.Tasks-->
+    <PackageId>Euclid</PackageId>    <!-- <Version></Version>  done by Ionide.KeepAChangelog.Tasks-->
     <Authors>GoswinR</Authors>
     <Copyright>Goswin Rothenthal 2019-2026</Copyright>
     <Description>A 2D and 3D geometry library written in and for F# (and Fable)</Description>
-    <PackageDescription>A 2D and 3D geometry library written in and for F# (and Fable)</PackageDescription>
-    <!--used on nuget.org-->
-    <WarningLevel>5</WarningLevel>
-    <!-- WarningLevel 3 is default, see https://github.com/dsyme/fsharp-presentations/blob/master/design-notes/off-by-default-warnings.md -->
-    <OtherFlags>$(OtherFlags) --warnon:3390</OtherFlags>
-    <!-- warnon:3390 is to verify xml docstrings https://devblogs.microsoft.com/dotnet/announcing-f-5/#improved-compiler-analysis-for-library-authors -->
-    <OtherFlags>$(OtherFlags) --warnon:1182</OtherFlags>
-    <!-- 1182: warn on unused variables -->
+    <PackageDescription>A 2D and 3D geometry library written in and for F# (and Fable)</PackageDescription>    <!--used on nuget.org-->
+    <WarningLevel>5</WarningLevel>    <!-- WarningLevel 3 is default, see https://github.com/dsyme/fsharp-presentations/blob/master/design-notes/off-by-default-warnings.md -->
+    <OtherFlags>$(OtherFlags) --warnon:3390</OtherFlags>    <!-- warnon:3390 is to verify xml docstrings https://devblogs.microsoft.com/dotnet/announcing-f-5/#improved-compiler-analysis-for-library-authors -->
+    <OtherFlags>$(OtherFlags) --warnon:1182</OtherFlags>    <!-- 1182: warn on unused variables -->
   </PropertyGroup>
   <PropertyGroup>
     <PackageTags>fsharp;geometry;fable;fable-library;fable-all</PackageTags>
@@ -50,22 +44,23 @@
     <FsDocsWarnOnMissingDocs>true</FsDocsWarnOnMissingDocs>
     <ChangelogFile>./CHANGELOG.md</ChangelogFile>
   </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="6.0.7" />
-    <PackageReference Include="Fable.Core" Version="4.5.0" Condition="$(DefineConstants.Contains('FABLE_COMPILER'))" />
-    <!-- Fable.Core only to use number.toFixed() when formatting in JS -->
+    <PackageReference Include="Fable.Core" Version="4.5.0" Condition="$(DefineConstants.Contains('FABLE_COMPILER'))" />    <!-- Fable.Core only to use number.toFixed() when formatting in JS -->
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.300" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
     <PackageReference Include="Ionide.KeepAChangelog.Tasks" Version="0.3.3" PrivateAssets="all" />
+
     <None Include="./README.md" Pack="true" PackagePath="" />
-    <None Include="./Docs/img/logo128.png" Pack="true" PackagePath="" />
-    <!--PackagePath = "" makes the file available to nuget pack tool-->
-    <Content Include="*.fsproj; **/*.fs; **/*.fsi" PackagePath="fable/" />
-    <!--so that it can be used with Fable-->
+    <None Include="./Docs/img/logo128.png" Pack="true" PackagePath="" />    <!--PackagePath = "" makes the file available to nuget pack tool-->
+    <Content Include="*.fsproj; **/*.fs; **/*.fsi" PackagePath="fable/" />    <!--so that it can be used with Fable-->
+
     <Compile Include="Src/EuclidErrors.fs" />
     <Compile Include="Src/UtilEuclid.fs" />
     <Compile Include="Src/Format.fs" />
     <Compile Include="Src/XY.fs" />
     <Compile Include="Src/XYZ.fs" />
+
     <Compile Include="Src/Vc.fs" />
     <Compile Include="Src/UnitVc.fs" />
     <Compile Include="Src/Pt.fs" />
@@ -81,6 +76,7 @@
     <Compile Include="Src/Line3D.fs" />
     <Compile Include="Src/XLine2D.fs" />
     <Compile Include="Src/XLine3D.fs" />
+
     <Compile Include="Src/TypeExtensions/UnitVc.fs" />
     <Compile Include="Src/TypeExtensions/Vc.fs" />
     <Compile Include="Src/TypeExtensions/Pt.fs" />
@@ -92,13 +88,16 @@
     <Compile Include="Src/TypeExtensions/Quaternion.fs" />
     <Compile Include="Src/TypeExtensions/Line2D.fs" />
     <Compile Include="Src/TypeExtensions/Line3D.fs" />
-    <Compile Include="Src/BRect.fs" />
-    <Compile Include="Src/BBox.fs" />
+
     <Compile Include="Src/NPlane.fs" />
     <Compile Include="Src/Rect2D.fs" />
     <Compile Include="Src/Rect3D.fs" />
     <Compile Include="Src/Box.fs" />
     <Compile Include="Src/FreeBox.fs" />
+
+    <Compile Include="Src/BRect.fs" />
+    <Compile Include="Src/BBox.fs" />
+
     <Compile Include="Src/Tria2D.fs" />
     <Compile Include="Src/Tria3D.fs" />
     <Compile Include="Src/ResizeArr.fs" />
@@ -113,12 +112,10 @@
     <Compile Include="Src/Topology3D.fs" />
     <Compile Include="Src/Similarity2D.fs" />
   </ItemGroup>
-  <Target Name="CopyReadmeToDocs" AfterTargets="Build">
-    <!-- for fsdocs to build locally -->
+  <Target Name="CopyReadmeToDocs" AfterTargets="Build">    <!-- for fsdocs to build locally -->
     <Copy SourceFiles="./README.md" DestinationFiles="./Docs/index.md" ContinueOnError="false" />
   </Target>
-  <Target Name="WriteChangelogVersion" AfterTargets="AfterBuild">
-    <!-- for checking that the git tag matches the Changelog during github tag based builds -->
+  <Target Name="WriteChangelogVersion" AfterTargets="AfterBuild">    <!-- for checking that the git tag matches the Changelog during github tag based builds -->
     <WriteLinesToFile File="./bin/ChangelogVersion.txt" Lines="@(CurrentReleaseChangelog)" Overwrite="true" ContinueOnError="false" />
   </Target>
 </Project>

@@ -44,6 +44,12 @@ module EuclidErrors =
     let fail (msg:string) : 'Failed =
         raise <| EuclidException $"Euclid.{msg}"
 
+    let failEven methodName (xys: ResizeArray<float>) =
+        raise <| EuclidException $"Euclid.Offset2D.{methodName}: ResizeArray must contain an even number of floats, but has {xys.Count} values."
+
+    let failMod3 methodName (xyzs: ResizeArray<float>) =
+        raise <| EuclidException $"Euclid.Offset3D.{methodName}: coordinate buffer must contain a multiple of 3 floats, but has {xyzs.Count} values."
+
     let failRarr (msg:string) (xs: ResizeArray<'T>) : 'Failed =
         raise <| EuclidException $"Euclid.ResizeArr.{msg} failed on ResizeArray of {xs.Count} elements."
 
@@ -62,8 +68,8 @@ module EuclidErrors =
     let fail3 (msg:string) (a: 'T) (b:'U) (c:'V) : 'Failed =
         raise <| EuclidException $"{msg} failed on: {nl}  %O{a}{nl}  %O{b}{nl}  %O{c}."
 
-    let failColinear (msg:string) (a: 'T) (b:'U) (c:'V) : 'Failed =
-        raise <| EuclidException $"{msg} failed on colinear points {nl}  %O{a}{nl}  %O{b}{nl}  %O{c}."
+    let failCollinear (msg:string) (a: 'T) (b:'U) (c:'V) : 'Failed =
+        raise <| EuclidException $"{msg} failed on collinear points {nl}  %O{a}{nl}  %O{b}{nl}  %O{c}."
 
     let failDivide (msg:string) (div:float) (obj:'T) : 'Failed =
         raise <| EuclidDivByZeroException $"{msg}: {nl}  %O{obj} {nl}  cannot be divided by {div}."
@@ -107,7 +113,7 @@ module EuclidErrors =
     let failObsolete (funName:string) (newFunName:string) : 'Failed =
         raise <| EuclidObsoleteException $"{funName} is obsolete. Use the alternative function: {newFunName}."
 
-    let failVertical (msg:string) (v:'t) : 'Failed =
+    let failVertical (msg:string) (v:'T) : 'Failed =
         raise <| EuclidException $"{msg}: vector is vertical or zero length: {v}"
 
     let failTooFewPoly2D (name:string) (minCount:int) (actual:int): 'Failed =
@@ -117,9 +123,9 @@ module EuclidErrors =
         raise <| EuclidException $"Polyline3D.{name} failed on Polyline3D with {actual} points. Minimum required is {minCount} points."
 
     /// Raises an EuclidException when offsetting a 2D rectangle edge fails due to insufficient size.
-    let failRect2DOffsetEdge(offStart, offEnd, len, edgeIdx, d) : 'Failed =
+    let failRect2DOffsetEdge(offStart:float, offEnd:float, len:float, edgeIdx:int, d:float) : 'Failed =
         fail $"Rect2D.offsetEdge: the 2D Rectangle is too small to offsetEdge by {d} at edgeIdx {edgeIdx}. offStart: {offStart}, offEnd: {offEnd}, Length: {len}"
 
     /// Raises an EuclidException when offsetting a 3D rectangle edge fails due to insufficient size.
-    let failRect3DOffsetEdge(offStart, offEnd, len, edgeIdx, d) : 'Failed =
+    let failRect3DOffsetEdge(offStart:float, offEnd:float, len:float, edgeIdx:int, d:float) : 'Failed =
         fail $"Rect3D.offsetEdge: the 3D-rectangle is too small to offsetEdge by {d} at edgeIdx {edgeIdx}. offStart: {offStart}, offEnd: {offEnd}, Length: {len}"

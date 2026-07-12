@@ -631,7 +631,7 @@ type Matrix =
             0, 0, 0, 1  )
 
     /// <summary>Creates a rotation transformation matrix around the X-axis
-    /// by angle in Degrees (not Radians).
+    /// by angle in degrees (not radians).
     /// A positive rotation will be from Y towards Z-axis,
     /// so counter-clockwise the X-axis vector is pointing towards the observer.
     /// The resulting matrix will be:
@@ -641,7 +641,7 @@ type Matrix =
     /// 0 sin(θ) cos(θ)   0
     /// 0 0      0        1
     /// </code></summary>
-    /// <param name="angleDegrees">Rotation angle in Degrees.</param>
+    /// <param name="angleDegrees">Rotation angle in degrees.</param>
     static member createRotationX(angleDegrees) : Matrix =
         let angle = UtilEuclid.toRadians angleDegrees
         let c = cos angle
@@ -653,7 +653,7 @@ type Matrix =
             0, 0,  0, 1)
 
     /// <summary>Creates a rotation transformation matrix around the Y-axis
-    /// by angle in Degrees (not Radians).
+    /// by angle in degrees (not radians).
     /// A positive rotation will be from Z towards X-axis,
     /// so counter-clockwise the Y-axis vector is pointing towards the observer.
     /// The resulting matrix will be:
@@ -663,7 +663,7 @@ type Matrix =
     /// -sin(θ) 0 cos(θ) 0
     /// 0       0 0      1
     /// </code></summary>
-    /// <param name="angleDegrees">Rotation angle in Degrees.</param>
+    /// <param name="angleDegrees">Rotation angle in degrees.</param>
     static member createRotationY(angleDegrees) : Matrix =
         let angle = UtilEuclid.toRadians angleDegrees
         let c = cos angle
@@ -675,7 +675,7 @@ type Matrix =
             0  ,  0,  0,  1)
 
     /// <summary>Creates a rotation transformation matrix around the Z-axis
-    /// by angle in Degrees (not Radians).
+    /// by angle in degrees (not radians).
     /// A positive rotation will be from X toward Y-axis,
     /// so counter-clockwise the Z-axis vector is pointing towards the observer.
     /// The resulting matrix will be:
@@ -685,7 +685,7 @@ type Matrix =
     /// 0      0       1 0
     /// 0      0       0 1
     /// </code></summary>
-    /// <param name="angleDegrees">Rotation angle in Degrees.</param>
+    /// <param name="angleDegrees">Rotation angle in degrees.</param>
     static member createRotationZ(angleDegrees) : Matrix =
         let angle = UtilEuclid.toRadians angleDegrees
         let c = cos angle
@@ -699,7 +699,7 @@ type Matrix =
     /// <summary>Creates a rotation around an axis transformation matrix.
     /// A positive angle rotates counter-clockwise when the axis vector is pointing towards the observer (right-hand rule).</summary>
     /// <param name="axis">Rotation axis, as unit-vector.</param>
-    /// <param name="angleDegrees">Rotation angle in Degrees.</param>
+    /// <param name="angleDegrees">Rotation angle in degrees.</param>
     static member createRotationAxis(axis:UnitVec, angleDegrees:float) : Matrix =
         // Based on http://www.gamedev.net/reference/articles/article1199.asp
         let angle = UtilEuclid.toRadians angleDegrees
@@ -720,7 +720,7 @@ type Matrix =
     /// <summary>Creates a rotation around an axis transformation matrix.
     /// A positive angle rotates counter-clockwise when the axis vector is pointing towards the observer (right-hand rule).</summary>
     /// <param name="axis">Rotation axis, a vector of any length but 0.0.</param>
-    /// <param name="angleDegrees">Rotation angle in Degrees.</param>
+    /// <param name="angleDegrees">Rotation angle in degrees.</param>
     static member createRotationAxis(axis:Vec, angleDegrees:float) : Matrix =
         // first unitize
         let len = sqrt (axis.X*axis.X + axis.Y*axis.Y + axis.Z*axis.Z)
@@ -748,7 +748,7 @@ type Matrix =
     /// A positive angle rotates counter-clockwise when the axis vector is pointing towards the observer (right-hand rule).</summary>
     /// <param name="axis">Rotation axis, a vector of any length but 0.0.</param>
     /// <param name="cen">The center point for the rotation.</param>
-    /// <param name="angleDegrees">Rotation angle in Degrees.</param>
+    /// <param name="angleDegrees">Rotation angle in degrees.</param>
     static member createRotationAxisCenter(axis:Vec, cen:Pnt, angleDegrees:float) : Matrix =
         Matrix.createTranslation(-cen.X, -cen.Y, -cen.Z)
         *** Matrix.createRotationAxis(axis, angleDegrees)
@@ -758,7 +758,7 @@ type Matrix =
     /// A positive angle rotates counter-clockwise when the axis vector is pointing towards the observer (right-hand rule).</summary>
     /// <param name="axis">Rotation axis, a unit-vector.</param>
     /// <param name="cen">The center point for the rotation.</param>
-    /// <param name="angleDegrees">Rotation angle in Degrees.</param>
+    /// <param name="angleDegrees">Rotation angle in degrees.</param>
     static member createRotationAxisCenter(axis:UnitVec, cen:Pnt, angleDegrees:float) : Matrix =
         Matrix.createTranslation(-cen.X, -cen.Y, -cen.Z)
         *** Matrix.createRotationAxis(axis, angleDegrees)
@@ -796,7 +796,7 @@ type Matrix =
         else
             let v = vecFrom + vecTo
             if isTooTinySq v.LengthSq then // the vectors are almost exactly opposite
-                fail $"Matrix.createVecToVec failed to find a rotation axis for (almost) colinear unit-vectors in opposite directions: {vecFrom} and {vecTo}"
+                fail $"Matrix.createVecToVec failed to find a rotation axis for (almost) collinear unit-vectors in opposite directions: {vecFrom} and {vecTo}"
 
             let axis0 = UnitVec.cross(vecFrom, vecTo)
             let len = axis0.Length
@@ -851,7 +851,7 @@ type Matrix =
         else
             let v = fu + tu
             if isTooTinySq v.LengthSq then // the vectors are almost exactly opposite
-                fail $"Matrix.createVecToVec failed to find a rotation axis for (almost) colinear (or NaN) vectors in opposite directions: {vecFrom} and {vecTo}"
+                fail $"Matrix.createVecToVec failed to find a rotation axis for (almost) collinear (or NaN) vectors in opposite directions: {vecFrom} and {vecTo}"
 
             let axis0 = UnitVec.cross(fu, tu)
             let len = axis0.Length

@@ -14,7 +14,7 @@ open Euclid.UtilEuclid
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 open EuclidErrors
 
-/// A struct containing 3 floats, representing an 3D unitized vector.
+/// A struct containing 3 floats, representing a 3D unit vector.
 /// All instances of this type are guaranteed to be always unitized.
 /// A 3D vector represents a direction or translation in space, but not a location.
 /// A 4x4 transformation matrix applied to a vector will only rotate and scale the vector but not translate it.

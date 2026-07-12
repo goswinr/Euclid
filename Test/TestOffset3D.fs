@@ -117,15 +117,15 @@ let tests =
             Expect.isTrue (eqPnt result.AsPoints.[1] (Pnt(10, 0, 2))) $"Corner should be at Z=2, got {result.AsPoints.[1]}"
             Expect.isTrue (eqPnt result.AsPoints.[2] (Pnt(10, 10, 2))) $"End point should be at Z=2, got {result.AsPoints.[2]}"
 
-        testCase "Polyline3D.offset open straight line (colinear)" <| fun _ ->
-            // Straight line: all points colinear
+        testCase "Polyline3D.offset open straight line (collinear)" <| fun _ ->
+            // Straight line: all points collinear
             let pts = ResizeArray [Pnt(0,0,0); Pnt(5,0,0); Pnt(10,0,0)]
             let pl = Polyline3D(pts)
             let refNormal = UnitVec.Zaxis
             let inPlane, perp = 1.0, 0.0
             let result = Polyline3D.offsetWithRef(pl, inPlane, perp, refNormal)
-            recordTestCase "open straight line (colinear)" pl inPlane perp refNormal result
-            // Colinear points should all be offset in the same direction (perpendicular to line, in plane with refNormal)
+            recordTestCase "open straight line (collinear)" pl inPlane perp refNormal result
+            // Collinear points should all be offset in the same direction (perpendicular to line, in plane with refNormal)
             Expect.equal result.PointCount 3 "Should have 3 points"
             Expect.isTrue (eqPnt result.AsPoints.[0] (Pnt(0, 1, 0))) $"Start should be at Y=1, got {result.AsPoints.[0]}"
             Expect.isTrue (eqPnt result.AsPoints.[1] (Pnt(5, 1, 0))) $"Middle should be at Y=1, got {result.AsPoints.[1]}"
@@ -372,27 +372,27 @@ let tests =
             for i = 0 to pts.Count - 1 do
                 Expect.isTrue (eqPnt offset2.AsPoints.[i] pts.[i]) $"pt[{i}] returns to original (staircase)"
 
-        // ============ Colinear points ============
+        // ============ Collinear points ============
 
-        testCase "Polyline3D.offset with colinear points in middle" <| fun _ ->
-            // Square with an extra colinear point on one edge
+        testCase "Polyline3D.offset with collinear points in middle" <| fun _ ->
+            // Square with an extra collinear point on one edge
             let pts = ResizeArray [Pnt(0,0,0); Pnt(5,0,0); Pnt(10,0,0); Pnt(10,10,0); Pnt(0,10,0); Pnt(0,0,0)]
             let pl = Polyline3D(pts)
             let refNormal = UnitVec.Zaxis
             let d = 1.0
             let offset1 = Polyline3D.offsetWithRef(pl, d, 0.0, refNormal)
-            recordTestCase "square with colinear point" pl d 0.0 refNormal offset1
+            recordTestCase "square with collinear point" pl d 0.0 refNormal offset1
             let offset2 = Polyline3D.offsetWithRef(offset1, -d, 0.0, refNormal)
-            Expect.equal offset2.PointCount pts.Count "same count after roundtrip (colinear)"
+            Expect.equal offset2.PointCount pts.Count "same count after roundtrip (collinear)"
             for i = 0 to pts.Count - 1 do
-                Expect.isTrue (eqPnt offset2.AsPoints.[i] pts.[i]) $"pt[{i}] returns to original (colinear)"
+                Expect.isTrue (eqPnt offset2.AsPoints.[i] pts.[i]) $"pt[{i}] returns to original (collinear)"
 
-        testCase "Polyline3D.offset open line with multiple colinear points" <| fun _ ->
+        testCase "Polyline3D.offset open line with multiple collinear points" <| fun _ ->
             let pts = ResizeArray [Pnt(0,0,0); Pnt(5,0,0); Pnt(10,0,0); Pnt(15,0,0); Pnt(20,0,0)]
             let pl = Polyline3D(pts)
             let refNormal = UnitVec.Zaxis
             let result = Polyline3D.offsetWithRef(pl, 2.0, 0.0, refNormal)
-            recordTestCase "open line with multiple colinear points" pl 2.0 0.0 refNormal result
+            recordTestCase "open line with multiple collinear points" pl 2.0 0.0 refNormal result
             Expect.equal result.PointCount 5 "Should have 5 points"
             // All points should be offset by 2 in Y direction
             for i = 0 to result.PointCount - 1 do

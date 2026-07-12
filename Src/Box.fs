@@ -8,8 +8,8 @@ open System.Runtime.Serialization // for serialization of struct fields only but
 open System.Collections.Generic
 
 
-/// <summary>A struct of one Pnt and three Vec, representing an immutable 3D Box with any rotation in 3D space.
-/// Described by an Origin and three Edge vectors.
+/// <summary>A struct of 9 floats  representing an immutable 3D Box with any rotation in 3D space.
+/// Described by z, y and z of the Origin and x, y and z for each of the three Edge vectors.
 /// Similar to PPlane, however the three vectors are not unitized.
 /// This implementation guarantees the box to be always valid.
 /// That means the Min X, Y and Z axes cannot be flipped individually.
@@ -31,6 +31,8 @@ open System.Collections.Generic
 ///   |/              |/     local
 ///   +---------------+----> X-Axis
 ///   0               1
+///
+
 /// </code>
 /// </summary>
 [<Struct; NoEquality; NoComparison>] // because its made up from floats
@@ -195,9 +197,6 @@ type Box =
         let zAxis = $"X={Format.float b.ZaxisX}|Y={Format.float b.ZaxisY}|Z={Format.float b.ZaxisZ}"
         $"Euclid.Box %s{sizeX} x %s{sizeY} x %s{sizeZ} (Origin:%s{origin}| X-ax:%s{xAxis}|Y-ax:%s{yAxis}|Z-ax:%s{zAxis})"
 
-    /// Nicely formatted string representation of the box including its size.
-    static member inline toString (b:Box) : string =
-        b.ToString()
 
     /// Format Box into string with nice floating point number formatting of X, Y and Z size only.
     /// But without type name as in v.ToString()
@@ -366,6 +365,7 @@ type Box =
         isTooTinySq b.SizeZSq
 
     /// Tests if all sides are smaller than the zeroLength tolerance.
+    /// This is the same as isPoint.
     static member inline isZero (b:Box) : bool =
         b.IsZero
 
@@ -377,6 +377,7 @@ type Box =
         isTooTinySq b.SizeZSq
 
     /// Tests if all sides are smaller than the zeroLength tolerance.
+    /// This is the same as isZero.
     static member inline isPoint (b:Box) : bool =
         b.IsPoint
 
@@ -478,11 +479,11 @@ type Box =
     static member inline scaleOn (cen:Pnt) (factor:float) (b:Box) : Box =
         b.ScaleOn cen factor
 
-    /// Returns a 3D box moved by a vector.
+    /// Returns a 3D box moved by a vector. Same as Box.translate.
     member inline b.Move (v:Vec) : Box =
         Box.createUnchecked(b.OriginX + v.X, b.OriginY + v.Y, b.OriginZ + v.Z, b.XaxisX, b.XaxisY, b.XaxisZ, b.YaxisX, b.YaxisY, b.YaxisZ, b.ZaxisX, b.ZaxisY, b.ZaxisZ)
 
-    /// Creates a 3D box moved by a vector.
+    /// Creates a 3D box moved by a vector. Same as Box.translate.
     static member inline move (v:Vec) (b:Box)  : Box =
         Box.createUnchecked(b.OriginX + v.X, b.OriginY + v.Y, b.OriginZ + v.Z, b.XaxisX, b.XaxisY, b.XaxisZ, b.YaxisX, b.YaxisY, b.YaxisZ, b.ZaxisX, b.ZaxisY, b.ZaxisZ)
 
@@ -685,22 +686,7 @@ type Box =
     static member inline contains (p:Pnt) (b:Box)  : bool =
         b.Contains p
 
-    /// Gets the world axis aligned 3D BoundingBox of the Box.
-    member b.BBox : BBox =
-        // Each of the 8 corners is Origin plus any subset of the three axis
-        // components, so min/max decompose per coordinate: sum the negative
-        // parts for the min, the positive parts for the max.
-        let minX = b.OriginX + min 0. b.XaxisX + min 0. b.YaxisX + min 0. b.ZaxisX
-        let minY = b.OriginY + min 0. b.XaxisY + min 0. b.YaxisY + min 0. b.ZaxisY
-        let minZ = b.OriginZ + min 0. b.XaxisZ + min 0. b.YaxisZ + min 0. b.ZaxisZ
-        let maxX = b.OriginX + max 0. b.XaxisX + max 0. b.YaxisX + max 0. b.ZaxisX
-        let maxY = b.OriginY + max 0. b.XaxisY + max 0. b.YaxisY + max 0. b.ZaxisY
-        let maxZ = b.OriginZ + max 0. b.XaxisZ + max 0. b.YaxisZ + max 0. b.ZaxisZ
-        BBox.createUnchecked(minX, minY, minZ, maxX, maxY, maxZ)
 
-    /// Gets the axis aligned 3D bounding box of the box.
-    static member inline bbox (b:Box) : BBox =
-        b.BBox
 
     /// Returns the Area of the biggest face of the box.
     /// This is the biggest of the three faces X*Y, X*Z and Y*Z.
@@ -879,9 +865,9 @@ type Box =
     static member inline createFromPlane x y z (pl:PPlane) : Box =
         Box.createUncheckedVec(pl.Origin, pl.Xaxis*x, pl.Yaxis*y, pl.Zaxis*z)
 
-    /// Creates a 3D box from a 3D a bounding box.
-    static member inline createFromBoundingBox (b:BBox) : Box =
-        Box.createUnchecked(b.MinX, b.MinY, b.MinZ, b.SizeX, 0.0, 0.0, 0.0, b.SizeY, 0.0, 0.0, 0.0, b.SizeZ)
+    /// Creates a 3D box from a 3D a bounds (minX, minY, minZ) and (maxX, maxY, maxZ).
+    static member inline createFromBounds(minX:float, minY:float, minZ:float, maxX:float, maxY:float, maxZ:float) : Box =
+        Box.createUnchecked(minX, minY, minZ, maxX - minX, 0.0, 0.0, 0.0, maxY - minY, 0.0, 0.0, 0.0, maxZ - minZ)
 
     /// Creates a 3D box from a 2D rectangle and Z lower and upper position.
     static member createFromRect2D (zLow:float) (zHigh:float) (r:Rect2D) : Box =
@@ -945,7 +931,7 @@ type Box =
             let dotZ = v *** z
             minZ <- min minZ dotZ
             maxZ <- max maxZ dotZ
-        let bo = pl.EvaluateAt(minX, minY, minZ)
+        let bo = pl.EvaluateAtXYZ(minX, minY, minZ)
         let sizeX = maxX - minX
         let sizeY = maxY - minY
         let sizeZ = maxZ - minZ
@@ -993,14 +979,14 @@ type Box =
     /// A parameter of 0.0 corresponds to the ray's From point, 1.0 to its To point.</summary>
     /// <param name="ray">The ray (Line3D) to intersect with the box.</param>
     /// <returns>None if no intersection, Some(tEntry, tExit) with the entry and exit parameters on the ray.</returns>
-    member b.IntersectRay(ray:Line3D) : Option<float*float> =
+    member b.IntersectRay(ray:Line3D) : voption<float*float> =
         // Transform ray to box's local coordinate system
         let rayDirX = ray.VectorX
         let rayDirY = ray.VectorY
         let rayDirZ = ray.VectorZ
         let rayDirLenSq = rayDirX*rayDirX + rayDirY*rayDirY + rayDirZ*rayDirZ
         if isTooSmallSq rayDirLenSq then
-            None // Ray direction too short
+            ValueNone // Ray direction too short
         else
             let rayOriginX = ray.FromX - b.OriginX
             let rayOriginY = ray.FromY - b.OriginY
@@ -1083,9 +1069,9 @@ type Box =
                             tMax <- min tMax t1
 
             if tMin <= tMax then
-                Some(tMin, tMax)
+                ValueSome(tMin, tMax)
             else
-                None
+                ValueNone
 
     /// <summary>Intersects an infinite ray (Line3D extended infinitely in both directions) with the Box.
     /// Uses the slab intersection method in the box's local coordinate system.
@@ -1095,7 +1081,7 @@ type Box =
     /// <param name="ray">The ray (Line3D) to intersect with the box.</param>
     /// <param name="box">The box to intersect with.</param>
     /// <returns>None if no intersection, Some(tEntry, tExit) with the entry and exit parameters on the ray.</returns>
-    static member inline intersectRay (ray:Line3D) (box:Box) : Option<float*float> =
+    static member inline intersectRay (ray:Line3D) (box:Box) : voption<float*float> =
         box.IntersectRay(ray)
 
 
@@ -1367,9 +1353,241 @@ type Box =
     static member inline pt7 (b:Box) : Pnt =
         b.Pt7
 
+    /// <summary>Returns the point of the Box at the specified index.
+    /// The order of the points is: Pt0, Pt1, Pt2, Pt3, Pt4, Pt5, Pt6, Pt7.
+    /// <code>
+    ///   local        local
+    ///   Z-Axis       Y-Axis
+    ///   ^           /
+    ///   |   7      /        6
+    ///   |   +---------------+
+    ///   |  /|    /         /|
+    ///   | / |   /         / |
+    /// 4 |/  |  /       5 /  |
+    ///   +---------------+   |
+    ///   |   |/          |   |
+    ///   |   +-----------|---+
+    ///   |  / 3          |  / 2
+    ///   | /             | /
+    ///   |/              |/     local
+    ///   +---------------+----> X-Axis
+    ///   0               1
+    /// </code>
+    /// </summary>
+    member b.GetPoint (pointIndex:int) : Pnt =
+        match pointIndex with
+        | 0 -> b.Pt0
+        | 1 -> b.Pt1
+        | 2 -> b.Pt2
+        | 3 -> b.Pt3
+        | 4 -> b.Pt4
+        | 5 -> b.Pt5
+        | 6 -> b.Pt6
+        | 7 -> b.Pt7
+        | _ -> fail $"Box.GetPoint: pointIndex {pointIndex} is out of range. Valid range is 0 to 7."
+
+    /// Returns the point of the Box at the specified index.
+    static member inline getPoint (pointIndex:int) (b:Box) : Pnt =
+        b.GetPoint pointIndex
+
 
     // #endregion
     // #region Faces
+
+
+
+    /// <summary>Returns the top face of the Box in Counter-Clockwise order, looking from above.
+    /// Returns Origin at point 4, X-Axis to point 5, Y-Axis to point 7.
+    /// The normal of the Rect3D points away from the Box.
+    /// <code>
+    ///            local      F3(back)
+    ///            Z-Axis     F7(top)
+    ///            ^          |
+    ///            |   7      |        6
+    ///            |   +---------------+
+    ///            |  /|      |       /|
+    ///            | / |             / |
+    ///          4 |/  |          5 /  |
+    ///            +---------------+  -|-- F2(right)
+    ///            |   |           |   |
+    ///  (left)F4--|-  +-----------|---+
+    ///            |  / 3          |  / 2
+    ///            | /             | /
+    ///            |/      |       |/     local
+    ///            +---------------+----> X-Axis
+    ///            0       |       1
+    ///                    |
+    ///                    F0(bottom)
+    ///                    F1(front)
+    /// </code>
+    /// </summary>
+    member b.TopFace :Rect3D =
+        Rect3D.createUnchecked(b.OriginX + b.ZaxisX, b.OriginY + b.ZaxisY, b.OriginZ + b.ZaxisZ, b.XaxisX, b.XaxisY, b.XaxisZ, b.YaxisX, b.YaxisY, b.YaxisZ)
+
+    /// Returns the top face of the box.
+    static member inline topFace (b:Box) : Rect3D =
+        b.TopFace
+
+    /// <summary>Returns the bottom face of the Box in Counter-Clockwise order, looking from above.
+    /// Returns Origin at point 0, X-Axis to point 1, Y-Axis to point 3.
+    /// The normal of the Rect3D points into the Box.
+    /// <code>
+    ///            local      F3(back)
+    ///            Z-Axis     F7(top)
+    ///            ^          |
+    ///            |   7      |        6
+    ///            |   +---------------+
+    ///            |  /|      |       /|
+    ///            | / |             / |
+    ///          4 |/  |          5 /  |
+    ///            +---------------+  -|-- F2(right)
+    ///            |   |           |   |
+    ///  (left)F4--|-  +-----------|---+
+    ///            |  / 3          |  / 2
+    ///            | /             | /
+    ///            |/      |       |/     local
+    ///            +---------------+----> X-Axis
+    ///            0       |       1
+    ///                    |
+    ///                    F0(bottom)
+    ///                    F1(front)
+    /// </code>
+    /// </summary>
+    member b.BottomFace : Rect3D =
+        Rect3D.createUnchecked(b.OriginX, b.OriginY, b.OriginZ, b.XaxisX, b.XaxisY, b.XaxisZ, b.YaxisX, b.YaxisY, b.YaxisZ)
+
+    /// Returns the bottom face of the box.
+    static member inline bottomFace (b:Box) : Rect3D =
+        b.BottomFace
+
+    /// <summary>Returns the front face of the Box in Counter-Clockwise order, looking from front.
+    /// Returns Origin at point 0, X-Axis to point 1, Y-Axis to point 4.
+    /// The normal of the Rect3D points away from the Box.
+    /// <code>
+    ///            local      F3(back)
+    ///            Z-Axis     F7(top)
+    ///            ^          |
+    ///            |   7      |        6
+    ///            |   +---------------+
+    ///            |  /|      |       /|
+    ///            | / |             / |
+    ///          4 |/  |          5 /  |
+    ///            +---------------+  -|-- F2(right)
+    ///            |   |           |   |
+    ///  (left)F4--|-  +-----------|---+
+    ///            |  / 3          |  / 2
+    ///            | /             | /
+    ///            |/      |       |/     local
+    ///            +---------------+----> X-Axis
+    ///            0       |       1
+    ///                    |
+    ///                    F0(bottom)
+    ///                    F1(front)
+    /// </code>
+    /// </summary>
+    member b.FrontFace : Rect3D =
+        Rect3D.createUnchecked(b.OriginX, b.OriginY, b.OriginZ, b.XaxisX, b.XaxisY, b.XaxisZ, b.ZaxisX, b.ZaxisY, b.ZaxisZ)
+
+    /// Returns the front face of the box.
+    static member inline frontFace (b:Box) : Rect3D =
+        b.FrontFace
+
+    /// <summary>Returns the back face of the Box in Counter-Clockwise order, looking from front.
+    /// Returns Origin at point 3, X-Axis to point 2, Y-Axis to point 7.
+    /// The normal of the Rect3D points into the Box.
+    /// <code>
+    ///            local      F3(back)
+    ///            Z-Axis     F7(top)
+    ///            ^          |
+    ///            |   7      |        6
+    ///            |   +---------------+
+    ///            |  /|      |       /|
+    ///            | / |             / |
+    ///          4 |/  |          5 /  |
+    ///            +---------------+  -|-- F2(right)
+    ///            |   |           |   |
+    ///  (left)F4--|-  +-----------|---+
+    ///            |  / 3          |  / 2
+    ///            | /             | /
+    ///            |/      |       |/     local
+    ///            +---------------+----> X-Axis
+    ///            0       |       1
+    ///                    |
+    ///                    F0(bottom)
+    ///                    F1(front)
+    /// </code>
+    /// </summary>
+    member b.BackFace : Rect3D =
+        Rect3D.createUnchecked(b.OriginX + b.YaxisX, b.OriginY + b.YaxisY, b.OriginZ + b.YaxisZ, b.XaxisX, b.XaxisY, b.XaxisZ, b.ZaxisX, b.ZaxisY, b.ZaxisZ)
+
+    /// Returns the back face of the box.
+    static member inline backFace (b:Box) : Rect3D =
+        b.BackFace
+
+    /// <summary>Returns the right face of the Box in Counter-Clockwise order, looking from right.
+    /// Returns Origin at point 1, X-Axis to point 2, Y-Axis to point 5.
+    /// The normal of the Rect3D points away from the Box.
+    /// <code>
+    ///            local      F3(back)
+    ///            Z-Axis     F7(top)
+    ///            ^          |
+    ///            |   7      |        6
+    ///            |   +---------------+
+    ///            |  /|      |       /|
+    ///            | / |             / |
+    ///          4 |/  |          5 /  |
+    ///            +---------------+  -|-- F2(right)
+    ///            |   |           |   |
+    ///  (left)F4--|-  +-----------|---+
+    ///            |  / 3          |  / 2
+    ///            | /             | /
+    ///            |/      |       |/     local
+    ///            +---------------+----> X-Axis
+    ///            0       |       1
+    ///                    |
+    ///                    F0(bottom)
+    ///                    F1(front)
+    /// </code>
+    /// </summary>
+    member b.RightFace : Rect3D =
+        Rect3D.createUnchecked(b.OriginX + b.XaxisX, b.OriginY + b.XaxisY, b.OriginZ + b.XaxisZ, b.YaxisX, b.YaxisY, b.YaxisZ, b.ZaxisX, b.ZaxisY, b.ZaxisZ)
+
+    /// Returns the right face of the box.
+    static member inline rightFace (b:Box) : Rect3D =
+        b.RightFace
+
+    /// <summary>Returns the left face of the Box in Counter-Clockwise order, looking from right.
+    /// Returns Origin at point 0, X-Axis to point 3, Y-Axis to point 4.
+    /// The normal of the Rect3D points into the Box.
+    /// <code>
+    ///            local      F3(back)
+    ///            Z-Axis     F7(top)
+    ///            ^          |
+    ///            |   7      |        6
+    ///            |   +---------------+
+    ///            |  /|      |       /|
+    ///            | / |             / |
+    ///          4 |/  |          5 /  |
+    ///            +---------------+  -|-- F2(right)
+    ///            |   |           |   |
+    ///  (left)F4--|-  +-----------|---+
+    ///            |  / 3          |  / 2
+    ///            | /             | /
+    ///            |/      |       |/     local
+    ///            +---------------+----> X-Axis
+    ///            0       |       1
+    ///                    |
+    ///                    F0(bottom)
+    ///                    F1(front)
+    /// </code>
+    /// </summary>
+    member b.LeftFace : Rect3D =
+        Rect3D.createUnchecked(b.OriginX, b.OriginY, b.OriginZ, b.YaxisX, b.YaxisY, b.YaxisZ, b.ZaxisX, b.ZaxisY, b.ZaxisZ)
+
+    /// Returns the left face of the box.
+    static member inline leftFace (b:Box) : Rect3D =
+        b.LeftFace
+
 
     /// <summary>Returns 6 face of the Box in
     /// The normal of the Rect3Ds are oriented with the X-Axis, Y-Axis or Z-Axis.
@@ -1394,7 +1612,6 @@ type Box =
     /// </code>
     /// </summary>
     member b.Faces : Rect3D[] =
-
         [|
         b.BottomFace
         b.FrontFace
@@ -1408,601 +1625,511 @@ type Box =
     static member inline faces (b:Box) : Rect3D[] =
         b.Faces
 
-    /// <summary>Returns the top face of the Box in Counter-Clockwise order, looking from above.
-    /// Returns Origin at point 4, X-Axis to point 5, Y-Axis to point 7.
-    /// The normal of the Rect3D points away from the Box.
+    /// <summary>Returns the face of the Box at the specified index.
+    /// The order of the faces is: BottomFace, FrontFace, RightFace, BackFace, LeftFace, TopFace.
     /// <code>
-    ///   local        local
-    ///   Z-Axis       Y-Axis
-    ///   ^           /
-    ///   |   7      /        6
-    ///   |   +---------------+
-    ///   |  /|    /         /|
-    ///   | / |   /         / |
-    /// 4 |/  |  /       5 /  |
-    ///   +---------------+   |
-    ///   |   |/          |   |
-    ///   |   +-----------|---+
-    ///   |  / 3          |  / 2
-    ///   | /             | /
-    ///   |/              |/     local
-    ///   +---------------+----> X-Axis
-    ///   0               1
+    ///            local      F3(back)
+    ///            Z-Axis     F7(top)
+    ///            ^          |
+    ///            |   7      |        6
+    ///            |   +---------------+
+    ///            |  /|      |       /|
+    ///            | / |             / |
+    ///          4 |/  |          5 /  |
+    ///            +---------------+  -|-- F2(right)
+    ///            |   |           |   |
+    ///  (left)F4--|-  +-----------|---+
+    ///            |  / 3          |  / 2
+    ///            | /             | /
+    ///            |/      |       |/     local
+    ///            +---------------+----> X-Axis
+    ///            0       |       1
+    ///                    |
+    ///                    F0(bottom)
+    ///                    F1(front)
     /// </code>
     /// </summary>
-    member b.TopFace :Rect3D =
-        Rect3D.createUnchecked(b.OriginX + b.ZaxisX, b.OriginY + b.ZaxisY, b.OriginZ + b.ZaxisZ, b.XaxisX, b.XaxisY, b.XaxisZ, b.YaxisX, b.YaxisY, b.YaxisZ)
+    /// <param name="faceIndex">The index of the face to retrieve. Valid range is 0 to 5.</param>
+    /// <returns>The Rect3D representing the specified face of the Box.</returns>
+    member b.GetFace (faceIndex:int) : Rect3D =
+        match faceIndex with
+        | 0 -> b.BottomFace
+        | 1 -> b.FrontFace
+        | 2 -> b.RightFace
+        | 3 -> b.BackFace
+        | 4 -> b.LeftFace
+        | 5 -> b.TopFace
+        | _ -> fail $"Box.GetFace: faceIndex {faceIndex} is out of range. Valid range is 0 to 5."
 
-    /// Returns the top face of the box.
-    static member inline topFace (b:Box) : Rect3D =
-        b.TopFace
-
-    /// <summary>Returns the bottom face of the Box in Counter-Clockwise order, looking from above.
-    /// Returns Origin at point 0, X-Axis to point 1, Y-Axis to point 3.
-    /// The normal of the Rect3D points into the Box.
-    /// <code>
-    ///   local        local
-    ///   Z-Axis       Y-Axis
-    ///   ^           /
-    ///   |   7      /        6
-    ///   |   +---------------+
-    ///   |  /|    /         /|
-    ///   | / |   /         / |
-    /// 4 |/  |  /       5 /  |
-    ///   +---------------+   |
-    ///   |   |/          |   |
-    ///   |   +-----------|---+
-    ///   |  / 3          |  / 2
-    ///   | /             | /
-    ///   |/              |/     local
-    ///   +---------------+----> X-Axis
-    ///   0               1
-    /// </code>
-    /// </summary>
-    member b.BottomFace : Rect3D =
-        Rect3D.createUnchecked(b.OriginX, b.OriginY, b.OriginZ, b.XaxisX, b.XaxisY, b.XaxisZ, b.YaxisX, b.YaxisY, b.YaxisZ)
-
-    /// Returns the bottom face of the box.
-    static member inline bottomFace (b:Box) : Rect3D =
-        b.BottomFace
-
-    /// <summary>Returns the front face of the Box in Counter-Clockwise order, looking from front.
-    /// Returns Origin at point 0, X-Axis to point 1, Y-Axis to point 4.
-    /// The normal of the Rect3D points away from the Box.
-    /// <code>
-    ///   local        local
-    ///   Z-Axis       Y-Axis
-    ///   ^           /
-    ///   |   7      /        6
-    ///   |   +---------------+
-    ///   |  /|    /         /|
-    ///   | / |   /         / |
-    /// 4 |/  |  /       5 /  |
-    ///   +---------------+   |
-    ///   |   |/          |   |
-    ///   |   +-----------|---+
-    ///   |  / 3          |  / 2
-    ///   | /             | /
-    ///   |/              |/     local
-    ///   +---------------+----> X-Axis
-    ///   0               1
-    /// </code>
-    /// </summary>
-    member b.FrontFace : Rect3D =
-        Rect3D.createUnchecked(b.OriginX, b.OriginY, b.OriginZ, b.XaxisX, b.XaxisY, b.XaxisZ, b.ZaxisX, b.ZaxisY, b.ZaxisZ)
-
-    /// Returns the front face of the box.
-    static member inline frontFace (b:Box) : Rect3D =
-        b.FrontFace
-
-    /// <summary>Returns the back face of the Box in Counter-Clockwise order, looking from front.
-    /// Returns Origin at point 3, X-Axis to point 2, Y-Axis to point 7.
-    /// The normal of the Rect3D points into the Box.
-    /// <code>
-    ///   local        local
-    ///   Z-Axis       Y-Axis
-    ///   ^           /
-    ///   |   7      /        6
-    ///   |   +---------------+
-    ///   |  /|    /         /|
-    ///   | / |   /         / |
-    /// 4 |/  |  /       5 /  |
-    ///   +---------------+   |
-    ///   |   |/          |   |
-    ///   |   +-----------|---+
-    ///   |  / 3          |  / 2
-    ///   | /             | /
-    ///   |/              |/     local
-    ///   +---------------+----> X-Axis
-    ///   0               1
-    /// </code>
-    /// </summary>
-    member b.BackFace : Rect3D =
-        Rect3D.createUnchecked(b.OriginX + b.YaxisX, b.OriginY + b.YaxisY, b.OriginZ + b.YaxisZ, b.XaxisX, b.XaxisY, b.XaxisZ, b.ZaxisX, b.ZaxisY, b.ZaxisZ)
-
-    /// Returns the back face of the box.
-    static member inline backFace (b:Box) : Rect3D =
-        b.BackFace
-
-    /// <summary>Returns the right face of the Box in Counter-Clockwise order, looking from right.
-    /// Returns Origin at point 1, X-Axis to point 2, Y-Axis to point 5.
-    /// The normal of the Rect3D points away from the Box.
-    /// <code>
-    ///   local        local
-    ///   Z-Axis       Y-Axis
-    ///   ^           /
-    ///   |   7      /        6
-    ///   |   +---------------+
-    ///   |  /|    /         /|
-    ///   | / |   /         / |
-    /// 4 |/  |  /       5 /  |
-    ///   +---------------+   |
-    ///   |   |/          |   |
-    ///   |   +-----------|---+
-    ///   |  / 3          |  / 2
-    ///   | /             | /
-    ///   |/              |/     local
-    ///   +---------------+----> X-Axis
-    ///   0               1
-    /// </code>
-    /// </summary>
-    member b.RightFace : Rect3D =
-        Rect3D.createUnchecked(b.OriginX + b.XaxisX, b.OriginY + b.XaxisY, b.OriginZ + b.XaxisZ, b.YaxisX, b.YaxisY, b.YaxisZ, b.ZaxisX, b.ZaxisY, b.ZaxisZ)
-
-    /// Returns the right face of the box.
-    static member inline rightFace (b:Box) : Rect3D =
-        b.RightFace
-
-    /// <summary>Returns the left face of the Box in Counter-Clockwise order, looking from right.
-    /// Returns Origin at point 0, X-Axis to point 3, Y-Axis to point 4.
-    /// The normal of the Rect3D points into the Box.
-    /// <code>
-    ///   local        local
-    ///   Z-Axis       Y-Axis
-    ///   ^           /
-    ///   |   7      /        6
-    ///   |   +---------------+
-    ///   |  /|    /         /|
-    ///   | / |   /         / |
-    /// 4 |/  |  /       5 /  |
-    ///   +---------------+   |
-    ///   |   |/          |   |
-    ///   |   +-----------|---+
-    ///   |  / 3          |  / 2
-    ///   | /             | /
-    ///   |/              |/     local
-    ///   +---------------+----> X-Axis
-    ///   0               1
-    /// </code>
-    /// </summary>
-    member b.LeftFace : Rect3D =
-        Rect3D.createUnchecked(b.OriginX, b.OriginY, b.OriginZ, b.YaxisX, b.YaxisY, b.YaxisZ, b.ZaxisX, b.ZaxisY, b.ZaxisZ)
-
-    /// Returns the left face of the box.
-    static member inline leftFace (b:Box) : Rect3D =
-        b.LeftFace
-
+    /// Returns the face of the Box at the specified index.
+    static member inline getFace (faceIndex:int) (b:Box) : Rect3D =
+        b.GetFace faceIndex
 
     // #endregion
     // #region Edges
 
-    /// <summary>Returns the 12 box edges.
-    /// The returned lines are parallel to and oriented with the local X-Axis, Y-Axis or Z-Axis.
+
+    /// <summary>Returns the X-aligned edge from point 0 to 1.
+    /// <code>
+    ///   7------6
+    ///  /|     /|
+    /// 4------5 |
+    /// | |    | |
+    /// | 3----|-2
+    /// |/     |/
+    /// 0------1
+    /// </code>
+    /// </summary>
+    member inline b.Edge01 : Line3D =
+        Line3D(b.OriginX, b.OriginY, b.OriginZ,
+               b.OriginX + b.XaxisX, b.OriginY + b.XaxisY, b.OriginZ + b.XaxisZ)
+
+    /// <summary>Returns the X-aligned edge from point 0 to 1.
+    /// <code>
+    ///   7------6
+    ///  /|     /|
+    /// 4------5 |
+    /// | |    | |
+    /// | 3----|-2
+    /// |/     |/
+    /// 0------1
+    /// </code>
+    /// </summary>
+    static member inline edge01 (b:Box) : Line3D =
+        b.Edge01
+
+    /// <summary>Returns the Y-aligned edge from point 1 to 2.
+    /// <code>
+    ///   7------6
+    ///  /|     /|
+    /// 4------5 |
+    /// | |    | |
+    /// | 3----|-2
+    /// |/     |/
+    /// 0------1
+    /// </code>
+    /// </summary>
+    member inline b.Edge12 : Line3D =
+        Line3D(b.OriginX + b.XaxisX, b.OriginY + b.XaxisY, b.OriginZ + b.XaxisZ,
+               b.OriginX + b.XaxisX + b.YaxisX, b.OriginY + b.XaxisY + b.YaxisY, b.OriginZ + b.XaxisZ + b.YaxisZ)
+
+    /// <summary>Returns the Y-aligned edge from point 1 to 2.
+    /// <code>
+    ///   7------6
+    ///  /|     /|
+    /// 4------5 |
+    /// | |    | |
+    /// | 3----|-2
+    /// |/     |/
+    /// 0------1
+    /// </code>
+    /// </summary>
+    static member inline edge12 (b:Box) : Line3D =
+        b.Edge12
+
+    /// <summary>Returns the X-aligned edge from point 3 to 2.
+    /// <code>
+    ///   7------6
+    ///  /|     /|
+    /// 4------5 |
+    /// | |    | |
+    /// | 3----|-2
+    /// |/     |/
+    /// 0------1
+    /// </code>
+    /// </summary>
+    member inline b.Edge32 : Line3D =
+        Line3D(b.OriginX + b.YaxisX, b.OriginY + b.YaxisY, b.OriginZ + b.YaxisZ,
+               b.OriginX + b.XaxisX + b.YaxisX, b.OriginY + b.XaxisY + b.YaxisY, b.OriginZ + b.XaxisZ + b.YaxisZ)
+
+    /// <summary>Returns the X-aligned edge from point 3 to 2.
+    /// <code>
+    ///   7------6
+    ///  /|     /|
+    /// 4------5 |
+    /// | |    | |
+    /// | 3----|-2
+    /// |/     |/
+    /// 0------1
+    /// </code>
+    /// </summary>
+    static member inline edge32 (b:Box) : Line3D =
+        b.Edge32
+
+    /// <summary>Returns the Y-aligned edge from point 0 to 3.
+    /// <code>
+    ///   7------6
+    ///  /|     /|
+    /// 4------5 |
+    /// | |    | |
+    /// | 3----|-2
+    /// |/     |/
+    /// 0------1
+    /// </code>
+    /// </summary>
+    member inline b.Edge03 : Line3D =
+        Line3D(b.OriginX, b.OriginY, b.OriginZ,
+               b.OriginX + b.YaxisX, b.OriginY + b.YaxisY, b.OriginZ + b.YaxisZ)
+
+    /// <summary>Returns the Y-aligned edge from point 0 to 3.
+    /// <code>
+    ///   7------6
+    ///  /|     /|
+    /// 4------5 |
+    /// | |    | |
+    /// | 3----|-2
+    /// |/     |/
+    /// 0------1
+    /// </code>
+    /// </summary>
+    static member inline edge03 (b:Box) : Line3D =
+        b.Edge03
+
+    /// <summary>Returns the X-aligned edge from point 4 to 5.
+    /// <code>
+    ///   7------6
+    ///  /|     /|
+    /// 4------5 |
+    /// | |    | |
+    /// | 3----|-2
+    /// |/     |/
+    /// 0------1
+    /// </code>
+    /// </summary>
+    member inline b.Edge45 : Line3D =
+        Line3D(b.OriginX + b.ZaxisX, b.OriginY + b.ZaxisY, b.OriginZ + b.ZaxisZ,
+               b.OriginX + b.XaxisX + b.ZaxisX, b.OriginY + b.XaxisY + b.ZaxisY, b.OriginZ + b.XaxisZ + b.ZaxisZ)
+
+    /// <summary>Returns the X-aligned edge from point 4 to 5.
+    /// <code>
+    ///   7------6
+    ///  /|     /|
+    /// 4------5 |
+    /// | |    | |
+    /// | 3----|-2
+    /// |/     |/
+    /// 0------1
+    /// </code>
+    /// </summary>
+    static member inline edge45 (b:Box) : Line3D =
+        b.Edge45
+
+    /// <summary>Returns the Y-aligned edge from point 5 to 6.
+    /// <code>
+    ///   7------6
+    ///  /|     /|
+    /// 4------5 |
+    /// | |    | |
+    /// | 3----|-2
+    /// |/     |/
+    /// 0------1
+    /// </code>
+    /// </summary>
+    member inline b.Edge56 : Line3D =
+        Line3D(b.OriginX + b.XaxisX + b.ZaxisX, b.OriginY + b.XaxisY + b.ZaxisY, b.OriginZ + b.XaxisZ + b.ZaxisZ,
+               b.OriginX + b.XaxisX + b.YaxisX + b.ZaxisX, b.OriginY + b.XaxisY + b.YaxisY + b.ZaxisY, b.OriginZ + b.XaxisZ + b.YaxisZ + b.ZaxisZ)
+
+    /// <summary>Returns the Y-aligned edge from point 5 to 6.
+    /// <code>
+    ///   7------6
+    ///  /|     /|
+    /// 4------5 |
+    /// | |    | |
+    /// | 3----|-2
+    /// |/     |/
+    /// 0------1
+    /// </code>
+    /// </summary>
+    static member inline edge56 (b:Box) : Line3D =
+        b.Edge56
+
+    /// <summary>Returns the X-aligned edge from point 7 to 6.
+    /// <code>
+    ///   7------6
+    ///  /|     /|
+    /// 4------5 |
+    /// | |    | |
+    /// | 3----|-2
+    /// |/     |/
+    /// 0------1
+    /// </code>
+    /// </summary>
+    member inline b.Edge76 : Line3D =
+        Line3D(b.OriginX + b.YaxisX + b.ZaxisX, b.OriginY + b.YaxisY + b.ZaxisY, b.OriginZ + b.YaxisZ + b.ZaxisZ,
+               b.OriginX + b.XaxisX + b.YaxisX + b.ZaxisX, b.OriginY + b.XaxisY + b.YaxisY + b.ZaxisY, b.OriginZ + b.XaxisZ + b.YaxisZ + b.ZaxisZ)
+
+    /// <summary>Returns the X-aligned edge from point 7 to 6.
+    /// <code>
+    ///   7------6
+    ///  /|     /|
+    /// 4------5 |
+    /// | |    | |
+    /// | 3----|-2
+    /// |/     |/
+    /// 0------1
+    /// </code>
+    /// </summary>
+    static member inline edge76 (b:Box) : Line3D =
+        b.Edge76
+
+    /// <summary>Returns the Y-aligned edge from point 4 to 7.
+    /// <code>
+    ///   7------6
+    ///  /|     /|
+    /// 4------5 |
+    /// | |    | |
+    /// | 3----|-2
+    /// |/     |/
+    /// 0------1
+    /// </code>
+    /// </summary>
+    member inline b.Edge47 : Line3D =
+        Line3D(b.OriginX + b.ZaxisX, b.OriginY + b.ZaxisY, b.OriginZ + b.ZaxisZ,
+               b.OriginX + b.YaxisX + b.ZaxisX, b.OriginY + b.YaxisY + b.ZaxisY, b.OriginZ + b.YaxisZ + b.ZaxisZ)
+
+    /// <summary>Returns the Y-aligned edge from point 4 to 7.
+    /// <code>
+    ///   7------6
+    ///  /|     /|
+    /// 4------5 |
+    /// | |    | |
+    /// | 3----|-2
+    /// |/     |/
+    /// 0------1
+    /// </code>
+    /// </summary>
+    static member inline edge47 (b:Box) : Line3D =
+        b.Edge47
+
+    /// <summary>Returns the Z-aligned edge from point 0 to 4.
+    /// <code>
+    ///   7------6
+    ///  /|     /|
+    /// 4------5 |
+    /// | |    | |
+    /// | 3----|-2
+    /// |/     |/
+    /// 0------1
+    /// </code>
+    /// </summary>
+    member inline b.Edge04 : Line3D =
+        Line3D(b.OriginX, b.OriginY, b.OriginZ,
+               b.OriginX + b.ZaxisX, b.OriginY + b.ZaxisY, b.OriginZ + b.ZaxisZ)
+
+    /// <summary>Returns the Z-aligned edge from point 0 to 4.
+    /// <code>
+    ///   7------6
+    ///  /|     /|
+    /// 4------5 |
+    /// | |    | |
+    /// | 3----|-2
+    /// |/     |/
+    /// 0------1
+    /// </code>
+    /// </summary>
+    static member inline edge04 (b:Box) : Line3D =
+        b.Edge04
+
+    /// <summary>Returns the Z-aligned edge from point 1 to 5.
+    /// <code>
+    ///   7------6
+    ///  /|     /|
+    /// 4------5 |
+    /// | |    | |
+    /// | 3----|-2
+    /// |/     |/
+    /// 0------1
+    /// </code>
+    /// </summary>
+    member inline b.Edge15 : Line3D =
+        Line3D(b.OriginX + b.XaxisX, b.OriginY + b.XaxisY, b.OriginZ + b.XaxisZ,
+               b.OriginX + b.XaxisX + b.ZaxisX, b.OriginY + b.XaxisY + b.ZaxisY, b.OriginZ + b.XaxisZ + b.ZaxisZ)
+
+    /// <summary>Returns the Z-aligned edge from point 1 to 5.
+    /// <code>
+    ///   7------6
+    ///  /|     /|
+    /// 4------5 |
+    /// | |    | |
+    /// | 3----|-2
+    /// |/     |/
+    /// 0------1
+    /// </code>
+    /// </summary>
+    static member inline edge15 (b:Box) : Line3D =
+        b.Edge15
+
+    /// <summary>Returns the Z-aligned edge from point 2 to 6.
+    /// <code>
+    ///   7------6
+    ///  /|     /|
+    /// 4------5 |
+    /// | |    | |
+    /// | 3----|-2
+    /// |/     |/
+    /// 0------1
+    /// </code>
+    /// </summary>
+    member inline b.Edge26 : Line3D =
+        Line3D(b.OriginX + b.XaxisX + b.YaxisX, b.OriginY + b.XaxisY + b.YaxisY, b.OriginZ + b.XaxisZ + b.YaxisZ,
+               b.OriginX + b.XaxisX + b.YaxisX + b.ZaxisX, b.OriginY + b.XaxisY + b.YaxisY + b.ZaxisY, b.OriginZ + b.XaxisZ + b.YaxisZ + b.ZaxisZ)
+
+    /// <summary>Returns the Z-aligned edge from point 2 to 6.
+    /// <code>
+    ///   7------6
+    ///  /|     /|
+    /// 4------5 |
+    /// | |    | |
+    /// | 3----|-2
+    /// |/     |/
+    /// 0------1
+    /// </code>
+    /// </summary>
+    static member inline edge26 (b:Box) : Line3D =
+        b.Edge26
+
+    /// <summary>Returns the Z-aligned edge from point 3 to 7.
+    /// <code>
+    ///   7------6
+    ///  /|     /|
+    /// 4------5 |
+    /// | |    | |
+    /// | 3----|-2
+    /// |/     |/
+    /// 0------1
+    /// </code>
+    /// </summary>
+    member inline b.Edge37 : Line3D =
+        Line3D(b.OriginX + b.YaxisX, b.OriginY + b.YaxisY, b.OriginZ + b.YaxisZ,
+               b.OriginX + b.YaxisX + b.ZaxisX, b.OriginY + b.YaxisY + b.ZaxisY, b.OriginZ + b.YaxisZ + b.ZaxisZ)
+
+    /// <summary>Returns the Z-aligned edge from point 3 to 7.
+    /// <code>
+    ///   7------6
+    ///  /|     /|
+    /// 4------5 |
+    /// | |    | |
+    /// | 3----|-2
+    /// |/     |/
+    /// 0------1
+    /// </code>
+    /// </summary>
+    static member inline edge37 (b:Box) : Line3D =
+        b.Edge37
+
+
+    /// <summary>Returns the edge of the box at the specified index.
+    /// The order of the edges is: 0-1, 1-2, 3-2, 0-3, 0-4, 1-5, 2-6, 3-7, 4-5, 5-6, 7-6, 4-7
     /// <code>
     ///   local        local
     ///   Z-Axis       Y-Axis
     ///   ^           /
-    ///   |          /
-    ///   |   +--------E6-----+
+    ///   |   7      /        6
+    ///   |   +---------------+
     ///   |  /|    /         /|
-    ///   |E7 E11 /         E5|
-    ///   |/  |  /         /  |
-    ///   +--------E4-----+   E10
-    ///   |   |/          E9  |
-    ///   E8  +-----E2----|---+
-    ///   |  /            |  /
-    ///   | E3            | E1
-    ///   |/              |/       local
-    ///   +------E0 ------+------> X-Axis
+    ///   | / |   /         / |
+    /// 4 |/  |  /       5 /  |
+    ///   +---------------+   |
+    ///   |   |/          |   |
+    ///   |   +-----------|---+
+    ///   |  / 3          |  / 2
+    ///   | /             | /
+    ///   |/              |/     local
+    ///   +---------------+----> X-Axis
+    ///   0               1
     /// </code>
     /// </summary>
-    member b.Edges :Line3D[] =
-        let p0x = b.OriginX
-        let p0y = b.OriginY
-        let p0z = b.OriginZ
-        let p1x = p0x + b.XaxisX
-        let p1y = p0y + b.XaxisY
-        let p1z = p0z + b.XaxisZ
-        let p4x = p0x + b.ZaxisX
-        let p4y = p0y + b.ZaxisY
-        let p4z = p0z + b.ZaxisZ
-        let p5x = p4x + b.XaxisX
-        let p5y = p4y + b.XaxisY
-        let p5z = p4z + b.XaxisZ
-        let p2x = p1x + b.YaxisX
-        let p2y = p1y + b.YaxisY
-        let p2z = p1z + b.YaxisZ
-        let p3x = p0x + b.YaxisX
-        let p3y = p0y + b.YaxisY
-        let p3z = p0z + b.YaxisZ
-        let p6x = p5x + b.YaxisX
-        let p6y = p5y + b.YaxisY
-        let p6z = p5z + b.YaxisZ
-        let p7x = p4x + b.YaxisX
-        let p7y = p4y + b.YaxisY
-        let p7z = p4z + b.YaxisZ
-        [|
-        Line3D(p0x, p0y, p0z, p1x, p1y, p1z) // E0
-        Line3D(p1x, p1y, p1z, p2x, p2y, p2z) // E1
-        Line3D(p3x, p3y, p3z, p2x, p2y, p2z) // E2
-        Line3D(p0x, p0y, p0z, p3x, p3y, p3z) // E3
-        Line3D(p4x, p4y, p4z, p5x, p5y, p5z) // E4
-        Line3D(p5x, p5y, p5z, p6x, p6y, p6z) // E5
-        Line3D(p7x, p7y, p7z, p6x, p6y, p6z) // E6
-        Line3D(p4x, p4y, p4z, p7x, p7y, p7z) // E7
-        Line3D(p0x, p0y, p0z, p4x, p4y, p4z) // E8
-        Line3D(p1x, p1y, p1z, p5x, p5y, p5z) // E9
-        Line3D(p2x, p2y, p2z, p6x, p6y, p6z) // E10
-        Line3D(p3x, p3y, p3z, p7x, p7y, p7z) // E11
-        |]
+    member b.GetEdge (edgeIndex:int) : Line3D =
+        match edgeIndex with
+        | 0  -> b.Edge01
+        | 1  -> b.Edge12
+        | 2  -> b.Edge32
+        | 3  -> b.Edge03
+        | 4  -> b.Edge04
+        | 5  -> b.Edge15
+        | 6  -> b.Edge26
+        | 7  -> b.Edge37
+        | 8  -> b.Edge45
+        | 9  -> b.Edge56
+        | 10 -> b.Edge76
+        | 11 -> b.Edge47
+        | _ -> fail $"Box.GetEdge: edgeIndex {edgeIndex} is out of range. Valid range is 0 to 11."
 
-    /// Returns the 12 box edges.
+    /// Returns the edge of the box at the specified index.
+    static member inline getEdge (edgeIndex:int) (b:Box): Line3D =
+        b.GetEdge(edgeIndex)
+
+
+    /// <summary>Returns the 12 edges of this box as an array of 12 Lines.
+    /// Pairs in this order:
+    /// 0-1, 1-2, 3-2, 0-3, 0-4, 1-5, 2-6, 3-7, 4-5, 5-6, 7-6, 4-7
+    /// <code>
+    ///   local        local
+    ///   Z-Axis       Y-Axis
+    ///   ^           /
+    ///   |   7      /        6
+    ///   |   +---------------+
+    ///   |  /|    /         /|
+    ///   | / |   /         / |
+    /// 4 |/  |  /       5 /  |
+    ///   +---------------+   |
+    ///   |   |/          |   |
+    ///   |   +-----------|---+
+    ///   |  / 3          |  / 2
+    ///   | /             | /
+    ///   |/              |/     local
+    ///   +---------------+----> X-Axis
+    ///   0               1
+    /// </code>
+    /// </summary>
+    member b.Edges : Line3D[] = // this function needs to be defined after the EdgeXX members, because they are inlined.
+        [| b.Edge01; b.Edge12; b.Edge32; b.Edge03; // bottom face
+           b.Edge04; b.Edge15; b.Edge26; b.Edge37; // vertical edges
+           b.Edge45; b.Edge56; b.Edge76; b.Edge47 |] // top face
+
+    /// Returns all 12 edges of the box.
     static member inline edges (b:Box) : Line3D[] =
         b.Edges
 
-    /// <summary>Returns edge 1 (of the 12 box edges.)
-    /// The returned line is parallel to and oriented with the local X-Axis.
-    /// <code>
-    ///   local        local
-    ///   Z-Axis       Y-Axis
-    ///   ^           /
-    ///   |          /
-    ///   |   +--------E6-----+
-    ///   |  /|    /         /|
-    ///   |E7 E11 /         E5|
-    ///   |/  |  /         /  |
-    ///   +--------E4-----+   E10
-    ///   |   |/          E9  |
-    ///   E8  +-----E2----|---+
-    ///   |  /            |  /
-    ///   | E3            | E1
-    ///   |/              |/       local
-    ///   +------E0 ------+------> X-Axis
-    /// </code>
-    /// </summary>
-    member inline b.Edge0 : Line3D =
-        Line3D(b.OriginX, b.OriginY, b.OriginZ, b.OriginX + b.XaxisX, b.OriginY + b.XaxisY, b.OriginZ + b.XaxisZ)
-
-    /// Returns edge 0 of the box.
-    static member inline edge0 (b:Box) : Line3D =
-        b.Edge0
-
-    /// <summary>Returns edge 1 (of the 12 box edges.)
-    /// The returned line is parallel to and oriented with the local Y-Axis.
-    /// <code>
-    ///   local        local
-    ///   Z-Axis       Y-Axis
-    ///   ^           /
-    ///   |          /
-    ///   |   +--------E6-----+
-    ///   |  /|    /         /|
-    ///   |E7 E11 /         E5|
-    ///   |/  |  /         /  |
-    ///   +--------E4-----+   E10
-    ///   |   |/          E9  |
-    ///   E8  +-----E2----|---+
-    ///   |  /            |  /
-    ///   | E3            | E1
-    ///   |/              |/       local
-    ///   +------E0 ------+------> X-Axis
-    /// </code>
-    /// </summary>
-    member inline b.Edge1 : Line3D =
-        let stx = b.OriginX + b.XaxisX
-        let sty = b.OriginY + b.XaxisY
-        let stz = b.OriginZ + b.XaxisZ
-        Line3D(stx, sty, stz, stx + b.YaxisX, sty + b.YaxisY, stz + b.YaxisZ)
-
-    /// Returns edge 1 of the box.
-    static member inline edge1 (b:Box) : Line3D =
-        b.Edge1
-
-    /// <summary>Returns edge 2 (of the 12 box edges.)
-    /// The returned line is parallel to and oriented with the local X-Axis.
-    /// <code>
-    ///   local        local
-    ///   Z-Axis       Y-Axis
-    ///   ^           /
-    ///   |          /
-    ///   |   +--------E6-----+
-    ///   |  /|    /         /|
-    ///   |E7 E11 /         E5|
-    ///   |/  |  /         /  |
-    ///   +--------E4-----+   E10
-    ///   |   |/          E9  |
-    ///   E8  +-----E2----|---+
-    ///   |  /            |  /
-    ///   | E3            | E1
-    ///   |/              |/       local
-    ///   +------E0 ------+------> X-Axis
-    /// </code>
-    /// </summary>
-    member inline b.Edge2 : Line3D =
-        let stx = b.OriginX + b.YaxisX
-        let sty = b.OriginY + b.YaxisY
-        let stz = b.OriginZ + b.YaxisZ
-        Line3D(stx, sty, stz, stx + b.XaxisX, sty + b.XaxisY, stz + b.XaxisZ)
-
-    /// Returns edge 2 of the box.
-    static member inline edge2 (b:Box) : Line3D =
-        b.Edge2
-
-    /// <summary>Returns edge 3 (of the 12 box edges.)
-    /// The returned line is parallel to and oriented with the local Y-Axis.
-    /// <code>
-    ///   local        local
-    ///   Z-Axis       Y-Axis
-    ///   ^           /
-    ///   |          /
-    ///   |   +--------E6-----+
-    ///   |  /|    /         /|
-    ///   |E7 E11 /         E5|
-    ///   |/  |  /         /  |
-    ///   +--------E4-----+   E10
-    ///   |   |/          E9  |
-    ///   E8  +-----E2----|---+
-    ///   |  /            |  /
-    ///   | E3            | E1
-    ///   |/              |/       local
-    ///   +------E0 ------+------> X-Axis
-    /// </code>
-    /// </summary>
-    member inline b.Edge3 : Line3D =
-        Line3D(b.OriginX, b.OriginY, b.OriginZ, b.OriginX + b.YaxisX, b.OriginY + b.YaxisY, b.OriginZ + b.YaxisZ)
-
-    /// Returns edge 3 of the box.
-    static member inline edge3 (b:Box) : Line3D =
-        b.Edge3
-
-    /// <summary>Returns edge 4 (of the 12 box edges.)
-    /// The returned line is parallel to and oriented with the local X-Axis.
-    /// <code>
-    ///   local        local
-    ///   Z-Axis       Y-Axis
-    ///   ^           /
-    ///   |          /
-    ///   |   +--------E6-----+
-    ///   |  /|    /         /|
-    ///   |E7 E11 /         E5|
-    ///   |/  |  /         /  |
-    ///   +--------E4-----+   E10
-    ///   |   |/          E9  |
-    ///   E8  +-----E2----|---+
-    ///   |  /            |  /
-    ///   | E3            | E1
-    ///   |/              |/       local
-    ///   +------E0 ------+------> X-Axis
-    /// </code>
-    /// </summary>
-    member inline b.Edge4 : Line3D =
-        let stx = b.OriginX + b.ZaxisX
-        let sty = b.OriginY + b.ZaxisY
-        let stz = b.OriginZ + b.ZaxisZ
-        Line3D(stx, sty, stz, stx + b.XaxisX, sty + b.XaxisY, stz + b.XaxisZ)
-
-    /// Returns edge 4 of the box.
-    static member inline edge4 (b:Box) : Line3D =
-        b.Edge4
-
-    /// <summary>Returns edge 5 (of the 12 box edges.)
-    /// The returned line is parallel to and oriented with the local Y-Axis.
-    /// <code>
-    ///   local        local
-    ///   Z-Axis       Y-Axis
-    ///   ^           /
-    ///   |          /
-    ///   |   +--------E6-----+
-    ///   |  /|    /         /|
-    ///   |E7 E11 /         E5|
-    ///   |/  |  /         /  |
-    ///   +--------E4-----+   E10
-    ///   |   |/          E9  |
-    ///   E8  +-----E2----|---+
-    ///   |  /            |  /
-    ///   | E3            | E1
-    ///   |/              |/       local
-    ///   +------E0 ------+------> X-Axis
-    /// </code>
-    /// </summary>
-    member inline b.Edge5 : Line3D =
-        let stx = b.OriginX + b.ZaxisX + b.XaxisX
-        let sty = b.OriginY + b.ZaxisY + b.XaxisY
-        let stz = b.OriginZ + b.ZaxisZ + b.XaxisZ
-        Line3D(stx, sty, stz, stx + b.YaxisX, sty + b.YaxisY, stz + b.YaxisZ)
-
-    /// Returns edge 5 of the box.
-    static member inline edge5 (b:Box) : Line3D =
-        b.Edge5
-
-    /// <summary>Returns edge 6 (of the 12 box edges.)
-    /// The returned line is parallel to and oriented with the local X-Axis.
-    /// <code>
-    ///   local        local
-    ///   Z-Axis       Y-Axis
-    ///   ^           /
-    ///   |          /
-    ///   |   +--------E6-----+
-    ///   |  /|    /         /|
-    ///   |E7 E11 /         E5|
-    ///   |/  |  /         /  |
-    ///   +--------E4-----+   E10
-    ///   |   |/          E9  |
-    ///   E8  +-----E2----|---+
-    ///   |  /            |  /
-    ///   | E3            | E1
-    ///   |/              |/       local
-    ///   +------E0 ------+------> X-Axis
-    /// </code>
-    /// </summary>
-    member inline b.Edge6 : Line3D =
-        let stx = b.OriginX + b.ZaxisX + b.YaxisX
-        let sty = b.OriginY + b.ZaxisY + b.YaxisY
-        let stz = b.OriginZ + b.ZaxisZ + b.YaxisZ
-        Line3D(stx, sty, stz, stx - b.XaxisX + b.XaxisX, sty - b.XaxisY + b.XaxisY, stz - b.XaxisZ + b.XaxisZ)
-
-    /// Returns edge 6 of the box.
-    static member inline edge6 (b:Box) : Line3D =
-        b.Edge6
-
-    /// <summary>Returns edge 7 (of the 12 box edges.)
-    /// The returned line is parallel to and oriented with the local Y-Axis.
-    /// <code>
-    ///   local        local
-    ///   Z-Axis       Y-Axis
-    ///   ^           /
-    ///   |          /
-    ///   |   +--------E6-----+
-    ///   |  /|    /         /|
-    ///   |E7 E11 /         E5|
-    ///   |/  |  /         /  |
-    ///   +--------E4-----+   E10
-    ///   |   |/          E9  |
-    ///   E8  +-----E2----|---+
-    ///   |  /            |  /
-    ///   | E3            | E1
-    ///   |/              |/       local
-    ///   +------E0 ------+------> X-Axis
-    /// </code>
-    /// </summary>
-    member inline b.Edge7 : Line3D =
-        let stx = b.OriginX + b.ZaxisX
-        let sty = b.OriginY + b.ZaxisY
-        let stz = b.OriginZ + b.ZaxisZ
-        Line3D(stx, sty, stz, stx + b.YaxisX, sty + b.YaxisY, stz + b.YaxisZ)
-
-    /// Returns edge 7 of the box.
-    static member inline edge7 (b:Box) : Line3D =
-        b.Edge7
-
-    /// <summary>Returns edge 8 (of the 12 box edges.)
-    /// The returned line is parallel to and oriented with the local Z-Axis.
-    /// <code>
-    ///   local        local
-    ///   Z-Axis       Y-Axis
-    ///   ^           /
-    ///   |          /
-    ///   |   +--------E6-----+
-    ///   |  /|    /         /|
-    ///   |E7 E11 /         E5|
-    ///   |/  |  /         /  |
-    ///   +--------E4-----+   E10
-    ///   |   |/          E9  |
-    ///   E8  +-----E2----|---+
-    ///   |  /            |  /
-    ///   | E3            | E1
-    ///   |/              |/       local
-    ///   +------E0 ------+------> X-Axis
-    /// </code>
-    /// </summary>
-    member inline b.Edge8 : Line3D =
-        Line3D(b.OriginX, b.OriginY, b.OriginZ, b.OriginX + b.ZaxisX, b.OriginY + b.ZaxisY, b.OriginZ + b.ZaxisZ)
-
-    /// Returns edge 8 of the box.
-    static member inline edge8 (b:Box) : Line3D =
-        b.Edge8
-
-    /// <summary>Returns edge 9 (of the 12 box edges.)
-    /// The returned line is parallel to and oriented with the local Z-Axis.
-    /// <code>
-    ///   local        local
-    ///   Z-Axis       Y-Axis
-    ///   ^           /
-    ///   |          /
-    ///   |   +--------E6-----+
-    ///   |  /|    /         /|
-    ///   |E7 E11 /         E5|
-    ///   |/  |  /         /  |
-    ///   +--------E4-----+   E10
-    ///   |   |/          E9  |
-    ///   E8  +-----E2----|---+
-    ///   |  /            |  /
-    ///   | E3            | E1
-    ///   |/              |/       local
-    ///   +------E0 ------+------> X-Axis
-    /// </code>
-    /// </summary>
-    member inline b.Edge9 : Line3D =
-        let stx = b.OriginX + b.XaxisX
-        let sty = b.OriginY + b.XaxisY
-        let stz = b.OriginZ + b.XaxisZ
-        Line3D(stx, sty, stz, stx + b.ZaxisX, sty + b.ZaxisY, stz + b.ZaxisZ)
-
-    /// Returns edge 9 of the box.
-    static member inline edge9 (b:Box) : Line3D =
-        b.Edge9
-
-    /// <summary>Returns edge 10 (of the 12 box edges.)
-    /// The returned line is parallel to and oriented with the local Z-Axis.
-    /// <code>
-    ///   local        local
-    ///   Z-Axis       Y-Axis
-    ///   ^           /
-    ///   |          /
-    ///   |   +--------E6-----+
-    ///   |  /|    /         /|
-    ///   |E7 E11 /         E5|
-    ///   |/  |  /         /  |
-    ///   +--------E4-----+   E10
-    ///   |   |/          E9  |
-    ///   E8  +-----E2----|---+
-    ///   |  /            |  /
-    ///   | E3            | E1
-    ///   |/              |/       local
-    ///   +------E0 ------+------> X-Axis
-    /// </code>
-    /// </summary>
-    member inline b.Edge10 : Line3D =
-        let stx = b.OriginX + b.XaxisX + b.YaxisX
-        let sty = b.OriginY + b.XaxisY + b.YaxisY
-        let stz = b.OriginZ + b.XaxisZ + b.YaxisZ
-        Line3D(stx, sty, stz, stx + b.ZaxisX, sty + b.ZaxisY, stz + b.ZaxisZ)
-
-    /// Returns edge 10 of the box.
-    static member inline edge10 (b:Box) : Line3D =
-        b.Edge10
-
-    /// <summary>Returns edge 11 (of the 12 box edges.)
-    /// The returned line is parallel to and oriented with the local Z-Axis.
-    /// <code>
-    ///   local        local
-    ///   Z-Axis       Y-Axis
-    ///   ^           /
-    ///   |          /
-    ///   |   +--------E6-----+
-    ///   |  /|    /         /|
-    ///   |E7 E11 /         E5|
-    ///   |/  |  /         /  |
-    ///   +--------E4-----+   E10
-    ///   |   |/          E9  |
-    ///   E8  +-----E2----|---+
-    ///   |  /            |  /
-    ///   | E3            | E1
-    ///   |/              |/       local
-    ///   +------E0 ------+------> X-Axis
-    /// </code>
-    /// </summary>
-    member inline b.Edge11 : Line3D =
-        let stx = b.OriginX + b.YaxisX
-        let sty = b.OriginY + b.YaxisY
-        let stz = b.OriginZ + b.YaxisZ
-        Line3D(stx, sty, stz, stx + b.ZaxisX, sty + b.ZaxisY, stz + b.ZaxisZ)
-
-    /// Returns edge 11 of the box.
-    static member inline edge11 (b:Box) : Line3D =
-        b.Edge11
-
     // #endregion
     // #region Obsolete
+
+
+    [<Obsolete("Use .Edge01 instead.")>]
+    member inline b.Edge0 : Line3D = b.Edge01
+
+    [<Obsolete("Use .Edge12 instead.")>]
+    member inline b.Edge1 : Line3D = b.Edge12
+
+    [<Obsolete("Use .Edge32 instead.")>]
+    member inline b.Edge2 : Line3D = b.Edge32
+
+    [<Obsolete("Use .Edge03 instead.")>]
+    member inline b.Edge3 : Line3D = b.Edge03
+
+    [<Obsolete("Use .Edge45 instead.")>]
+    member inline b.Edge4 : Line3D = b.Edge45
+
+    [<Obsolete("Use .Edge56 instead.")>]
+    member inline b.Edge5 : Line3D = b.Edge56
+
+    [<Obsolete("Use .Edge76 instead.")>]
+    member inline b.Edge6 : Line3D = b.Edge76
+
+    [<Obsolete("Use .Edge47 instead.")>]
+    member inline b.Edge7 : Line3D = b.Edge47
+
+    [<Obsolete("Use .Edge04 instead.")>]
+    member inline b.Edge8 : Line3D = b.Edge04
+
+    [<Obsolete("Use .Edge15 instead.")>]
+    member inline b.Edge9 : Line3D = b.Edge15
+
+    [<Obsolete("Use .Edge26 instead.")>]
+    member inline b.Edge10 : Line3D = b.Edge26
+
+    [<Obsolete("Use .Edge37 instead.")>]
+    member inline b.Edge11 : Line3D = b.Edge37
 
     [<Obsolete("This is actually the volume, also this does not scale proportionally, use .Volume")>]
     member inline r.AreaSq : float =
@@ -2052,3 +2179,26 @@ type Box =
     static member inline transform (m:Matrix) (b:Box) : Box =
         b.Transform m
 
+
+    /// returns minX, minY, minZ, maxX, maxY, maxZ
+    [<Obsolete("Use BBox.createFromBox instead.")>]
+    member b.BBox : float * float * float * float * float * float =
+        // Each of the 8 corners is Origin plus any subset of the three axis
+        // components, so min/max decompose per coordinate: sum the negative
+        // parts for the min, the positive parts for the max.
+        let minX = b.OriginX + min 0. b.XaxisX + min 0. b.YaxisX + min 0. b.ZaxisX
+        let minY = b.OriginY + min 0. b.XaxisY + min 0. b.YaxisY + min 0. b.ZaxisY
+        let minZ = b.OriginZ + min 0. b.XaxisZ + min 0. b.YaxisZ + min 0. b.ZaxisZ
+        let maxX = b.OriginX + max 0. b.XaxisX + max 0. b.YaxisX + max 0. b.ZaxisX
+        let maxY = b.OriginY + max 0. b.XaxisY + max 0. b.YaxisY + max 0. b.ZaxisY
+        let maxZ = b.OriginZ + max 0. b.XaxisZ + max 0. b.YaxisZ + max 0. b.ZaxisZ
+        (minX, minY, minZ, maxX, maxY, maxZ)
+
+    /// minX, minY, minZ, maxX, maxY, maxZ
+    [<Obsolete("Use BBox.createFromBox instead.")>]
+    static member inline bbox (b:Box) : float * float * float * float * float * float =
+        b.BBox
+
+    [<Obsolete("Use bBox.AsBox instead.")>]
+    static member inline createFromBoundingBox (minX, minY, minZ, maxX, maxY, maxZ) : Box =
+        Box.createUnchecked(minX, minY, minZ, maxX - minX, 0.0, 0.0, 0.0, maxY - minY, 0.0, 0.0, 0.0, maxZ - minZ)

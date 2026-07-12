@@ -45,7 +45,7 @@ module Arr =
 /// An internal module with functions for working with ResizeArray<'T>.
 module ResizeArr =
 
-    /// returns a clone of the ResizeArray, but optimized in Fable
+    /// returns a clone of the ResizeArray, but optimized and unchecked in Fable
     let inline clone (resizeArray: ResizeArray<'T>) : ResizeArray<'T>=
         #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
             Fable.Core.JsInterop.emitJsExpr (resizeArray) "$0.slice()"
@@ -53,7 +53,26 @@ module ResizeArr =
             resizeArray.GetRange(0, resizeArray.Count)
         #endif
 
-    /// returns resizeArray.Count , but optimized in Fable
+    /// just resizeArray.[idx], but optimized and unchecked in Fable
+    let inline getIdx (idx:int) (resizeArray: ResizeArray<'T>) : 'T=
+        #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
+            Fable.Core.JsInterop.emitJsExpr (resizeArray,idx) "$0[$1]"
+        #else
+            resizeArray.[idx]
+        #endif
+
+
+    /// just resizeArray.[idx] <- value, but optimized and unchecked in Fable
+    let inline setIdx (idx:int) (value:'T) (resizeArray: ResizeArray<'T>) : unit =
+        #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
+            Fable.Core.JsInterop.emitJsStatement (resizeArray,idx,value) "$0[$1] = $2"
+        #else
+            resizeArray.[idx] <- value
+        #endif
+
+
+
+    /// returns resizeArray.Count , but optimized and unchecked in Fable
     let inline len  (resizeArray: ResizeArray<'T>) : int =
         #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
             Fable.Core.JsInterop.emitJsExpr (resizeArray) "$0.length" // avoid call to count() in fable lib
@@ -61,7 +80,7 @@ module ResizeArr =
             resizeArray.Count
         #endif
 
-    /// returns resizeArray.Count - 1 , but optimized in Fable
+    /// returns resizeArray.Count - 1 , but optimized and unchecked in Fable
     let inline lastIdx  (resizeArray: ResizeArray<'T>) : int =
         #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
             Fable.Core.JsInterop.emitJsExpr (resizeArray) "$0.length - 1" // avoid call to count() in fable lib
@@ -78,14 +97,16 @@ module ResizeArr =
             arr.Clear()
         #endif
 
+    /// just arr.RemoveAt(arr.Count - 1) , but optimized and unchecked in Fable
     let inline popOff (arr: ResizeArray<'T>) : unit =
         #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
-            Fable.Core.JsInterop.emitJsExpr (arr) "$0.pop()"
+            Fable.Core.JsInterop.emitJsStatement (arr) "$0.pop()"
         #else
             arr.RemoveAt(arr.Count - 1)
         #endif
 
 
+    /// just arr.RemoveAt(arr.Count - 1) , but optimized and unchecked in Fable
     let inline pop (arr: ResizeArray<'T>) : 'T =
         #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
             Fable.Core.JsInterop.emitJsExpr (arr) "$0.pop()"

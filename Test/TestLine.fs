@@ -1609,43 +1609,43 @@ let testsLine2DIntersection =
             let a = Line2D(0., 5., 10., 5.)
             let b = Line2D(5., 0., 5., 10.)
             match Line2D.tryIntersect a b with
-            | Some pt ->
+            | ValueSome pt ->
                 "intersection at (5,5)" |> Expect.isTrue (eq pt (Pt(5., 5.)))
-            | None -> failwith "expected Some"
+            | ValueNone -> failwith "expected ValueSome"
         }
 
         test "tryIntersect no intersection returns None" {
             let a = Line2D(0., 0., 10., 0.)
             let b = Line2D(0., 5., 10., 5.)
             match Line2D.tryIntersect a b with
-            | Some _ -> failwith "expected None"
-            | None -> Expect.isTrue true "parallel returns None"
+            | ValueSome _ -> failwith "expected ValueNone"
+            | ValueNone -> Expect.isTrue true "parallel returns ValueNone"
         }
 
         test "tryIntersect diagonal intersection" {
             let a = Line2D(0., 0., 10., 10.)
             let b = Line2D(0., 10., 10., 0.)
             match Line2D.tryIntersect a b with
-            | Some pt ->
+            | ValueSome pt ->
                 "intersection at center" |> Expect.isTrue (eq pt (Pt(5., 5.)))
-            | None -> failwith "expected Some"
+            | ValueNone -> failwith "expected ValueSome"
         }
 
         test "tryIntersectRay returns ray intersection" {
             let a = Line2D(0., 5., 5., 5.)
             let b = Line2D(10., 0., 10., 10.)
             match Line2D.tryIntersectRay a b with
-            | Some pt ->
+            | ValueSome pt ->
                 "ray extends to intersection" |> expectEqualEpsilon pt.X 10.
-            | None -> failwith "expected Some for ray intersection"
+            | ValueNone -> failwith "expected ValueSome for ray intersection"
         }
 
         test "tryIntersectRay parallel returns None" {
             let a = Line2D(0., 0., 10., 0.)
             let b = Line2D(0., 5., 10., 5.)
             match Line2D.tryIntersectRay a b with
-            | Some _ -> failwith "expected None"
-            | None -> Expect.isTrue true "parallel rays return None"
+            | ValueSome _ -> failwith "expected ValueNone"
+            | ValueNone -> Expect.isTrue true "parallel rays return ValueNone"
         }
 
         test "tryIntersectOrOverlap intersection" {
@@ -2574,6 +2574,41 @@ let testsLine3DWithLength =
             "too short throws" |> Expect.throws (fun () -> Line3D.withLengthFromMid 5. ln |> ignore)
         }
 
+        test "lengthToPtOnLine on segment" {
+            let ln = Line3D(0., 0., 0., 10., 0., 0.)
+            let dist = Line3D.lengthToPtOnLine ln (Pnt(-3., 1., 2.))
+            "distance from start" |> expectEqualEpsilon dist -3.
+        }
+
+        test "lengthToPtOnLine before start" {
+            let ln = Line3D(0., 0., 0., 10., 0., 0.)
+            let dist = Line3D.lengthToPtOnLine ln (Pnt(-2., 0., 0.))
+            "negative distance before start" |> expectEqualEpsilon dist -2.
+        }
+
+        test "lengthToPtOnLine beyond end" {
+            let ln = Line3D(0., 0., 0., 10., 0., 0.)
+            let dist = Line3D.lengthToPtOnLine ln (Pnt(15., 0., 0.))
+            "distance beyond end" |> expectEqualEpsilon dist 15.
+        }
+
+        test "lengthToPtOnLine ignores perpendicular offset" {
+            let ln = Line3D(0., 0., 0., 10., 0., 0.)
+            let dist = Line3D.lengthToPtOnLine ln (Pnt(5., 3., 4.))
+            "projected distance" |> expectEqualEpsilon dist 5.
+        }
+
+        test "lengthToPtOnLine diagonal line" {
+            let ln = Line3D(1., 2., 3., 4., 6., 3.)
+            let dist = Line3D.lengthToPtOnLine ln (Pnt(5.2, 7.6, 10.))
+            "diagonal projected distance" |> expectEqualEpsilon dist 7.
+        }
+
+        test "lengthToPtOnLine too short line throws" {
+            let ln = Line3D(0., 0., 0., 1e-13, 0., 0.)
+            "too short throws" |> Expect.throws (fun () -> Line3D.lengthToPtOnLine ln (Pnt(1., 0., 0.)) |> ignore)
+        }
+
         test "pointAtDistance positive" {
             let ln = Line3D(0., 0., 0., 10., 0., 0.)
             let pt = Line3D.pointAtDistance 3. ln
@@ -2673,10 +2708,10 @@ let testsLine3DIntersection =
             let lnB = Line3D(5., -5., 0., 5., 5., 0.)
             let result = Line3D.tryIntersect lnA lnB
             match result with
-            | Some pt ->
+            | ValueSome pt ->
                 "intersection at X=5" |> expectEqualEpsilon pt.X 5.
                 "intersection at Y=0" |> expectEqualEpsilon pt.Y 0.
-            | None -> Expect.isTrue false "expected Some but got None"
+            | ValueNone -> Expect.isTrue false "expected Some but got None"
         }
 
         test "tryIntersect no intersection returns None" {
@@ -2691,8 +2726,8 @@ let testsLine3DIntersection =
             let lnB = Line3D(15., -5., 0., 15., 5., 0.)
             let result = Line3D.tryIntersectRay lnA lnB
             match result with
-            | Some pt -> "ray intersection found" |> expectEqualEpsilon pt.X 15.
-            | None -> Expect.isTrue false "expected Some but got None"
+            | ValueSome pt -> "ray intersection found" |> expectEqualEpsilon pt.X 15.
+            | ValueNone -> Expect.isTrue false "expected Some but got None"
         }
 
         test "tryIntersectRay parallel returns None" {
@@ -3104,6 +3139,83 @@ let testsFastParallel3D =
     ]
 
 
+// Tests for the sqrt-free / division-free angle predicates:
+//   isParallelTo' / isNotParallelTo' / isPerpendicularTo'  (tangent^2 comparison, no sqrt/division)
+let testsPrimeAnglePredicates =
+    testList "Line prime angle predicates" [
+
+        // 3D line from origin in the XY plane at 'deg' from the X-axis
+        let line3dAtDeg (deg:float) =
+            let th = deg * System.Math.PI / 180.0
+            Line3D(0., 0., 0., cos th, sin th, 0.)
+        // 2D line from origin at 'deg' from the X-axis
+        let line2dAtDeg (deg:float) =
+            let th = deg * System.Math.PI / 180.0
+            Line2D(0., 0., cos th, sin th)
+
+        let xAxis3 = Line3D(0., 0., 0., 1., 0., 0.)
+        let xAxis2 = Line2D(0., 0., 1., 0.)
+
+        // --- Line3D.isParallelTo' (tolerance 0.25 deg) ---
+        test "3D isParallelTo' identical -> true" {
+            "identical" |> Expect.isTrue (Line3D.isParallelTo' xAxis3 xAxis3) }
+        test "3D isParallelTo' anti-parallel -> true (orientation ignored)" {
+            let b = Line3D(0., 0., 0., -1., 0., 0.)
+            "opposite direction is still parallel" |> Expect.isTrue (Line3D.isParallelTo' xAxis3 b) }
+        test "3D isParallelTo' within tolerance -> true" {
+            "0.1deg < 0.25deg" |> Expect.isTrue (Line3D.isParallelTo' xAxis3 (line3dAtDeg 0.1)) }
+        test "3D isParallelTo' outside tolerance -> false" {
+            "1deg > 0.25deg" |> Expect.isFalse (Line3D.isParallelTo' xAxis3 (line3dAtDeg 1.0)) }
+        test "3D isParallelTo' perpendicular -> false" {
+            let b = Line3D(0., 0., 0., 0., 1., 0.)
+            "perpendicular is not parallel" |> Expect.isFalse (Line3D.isParallelTo' xAxis3 b) }
+        test "3D isParallelTo' zero-length -> false" {
+            let b = Line3D(5., 5., 5., 5., 5., 5.)
+            "zero-length returns false" |> Expect.isFalse (Line3D.isParallelTo' xAxis3 b) }
+
+        // --- Line3D.isNotParallelTo' ---
+        test "3D isNotParallelTo' perpendicular -> true" {
+            let b = Line3D(0., 0., 0., 0., 1., 0.)
+            "perpendicular is not parallel" |> Expect.isTrue (Line3D.isNotParallelTo' xAxis3 b) }
+        test "3D isNotParallelTo' parallel -> false" {
+            "within tolerance is parallel" |> Expect.isFalse (Line3D.isNotParallelTo' xAxis3 (line3dAtDeg 0.1)) }
+        test "3D isNotParallelTo' zero-length -> false" {
+            let b = Line3D(5., 5., 5., 5., 5., 5.)
+            "zero-length returns false" |> Expect.isFalse (Line3D.isNotParallelTo' xAxis3 b) }
+
+        // --- Line3D.isPerpendicularTo' (89.75..90.25 deg) ---
+        test "3D isPerpendicularTo' perpendicular -> true" {
+            let b = Line3D(0., 0., 0., 0., 1., 0.)
+            "90deg is perpendicular" |> Expect.isTrue (Line3D.isPerpendicularTo' xAxis3 b) }
+        test "3D isPerpendicularTo' parallel -> false" {
+            "parallel is not perpendicular" |> Expect.isFalse (Line3D.isPerpendicularTo' xAxis3 (line3dAtDeg 0.1)) }
+        test "3D isPerpendicularTo' 45 deg -> false" {
+            "45deg is not perpendicular" |> Expect.isFalse (Line3D.isPerpendicularTo' xAxis3 (line3dAtDeg 45.0)) }
+
+        // --- Line2D.isParallelTo' ---
+        test "2D isParallelTo' anti-parallel -> true (orientation ignored)" {
+            let b = Line2D(0., 0., -1., 0.)
+            "opposite direction is still parallel" |> Expect.isTrue (Line2D.isParallelTo' xAxis2 b) }
+        test "2D isParallelTo' within tolerance -> true" {
+            "0.1deg < 0.25deg" |> Expect.isTrue (Line2D.isParallelTo' xAxis2 (line2dAtDeg 0.1)) }
+        test "2D isParallelTo' outside tolerance -> false" {
+            "1deg > 0.25deg" |> Expect.isFalse (Line2D.isParallelTo' xAxis2 (line2dAtDeg 1.0)) }
+        test "2D isParallelTo' perpendicular -> false" {
+            let b = Line2D(0., 0., 0., 1.)
+            "perpendicular is not parallel" |> Expect.isFalse (Line2D.isParallelTo' xAxis2 b) }
+
+        // --- Line2D.isNotParallelTo' / isPerpendicularTo' ---
+        test "2D isNotParallelTo' perpendicular -> true" {
+            let b = Line2D(0., 0., 0., 1.)
+            "perpendicular is not parallel" |> Expect.isTrue (Line2D.isNotParallelTo' xAxis2 b) }
+        test "2D isPerpendicularTo' perpendicular -> true" {
+            let b = Line2D(0., 0., 0., 1.)
+            "90deg is perpendicular" |> Expect.isTrue (Line2D.isPerpendicularTo' xAxis2 b) }
+        test "2D isPerpendicularTo' parallel -> false" {
+            "parallel is not perpendicular" |> Expect.isFalse (Line2D.isPerpendicularTo' xAxis2 (line2dAtDeg 0.1)) }
+    ]
+
+
 let tests =
     testList "All Line Tests" [
         testsIsCoincident
@@ -3129,4 +3241,5 @@ let tests =
         testsLine3DWithLength
         testsLine3DIntersection
         testsLine3DDistance
+        testsPrimeAnglePredicates
     ]

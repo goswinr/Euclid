@@ -177,7 +177,7 @@ module ApiVc =
     let (_:Vc) = Vc.DivideByInt(vc, 2)
 
     // Static members - Intersection
-    let (_:ValueOption<float*float>) = Vc.intersection(Pt(0., 0.), Pt(1., 0.), Vc(1., 1.), Vc(0., 1.))
+    let (_:(float*float)) = XLine2D.parameters(Pt(0., 0.), Pt(1., 0.), Vc(1., 1.), Vc(0., 1.))
 
 // ===== UnitVc (2D Unit Vector) =====
 
@@ -352,7 +352,7 @@ module UnitVcAPI =
     let (_:UnitVc) = UnitVc.matchVcOrientation (Vc(1., 0.)) u2
 
     // Static members - Intersection
-    let (_:ValueOption<float*float>) = UnitVc.intersection(Pt(0., 0.), Pt(1., 0.), UnitVc.Xaxis, UnitVc.Yaxis)
+    let (_:(float*float)) = XLine2D.parameters(Pt(0., 0.), Pt(1., 0.), UnitVc.asVc UnitVc.Xaxis, UnitVc.asVc UnitVc.Yaxis)
 
 // ===== Pt (2D Point) =====
 
@@ -601,8 +601,8 @@ module PntAPI =
     let (_:Pnt) = Pnt.rotateXWithCenterBy Pnt.Origin (Rotation2D.createFromDegrees 45.0) pnt
     let (_:Pnt) = Pnt.rotateYWithCenterBy Pnt.Origin (Rotation2D.createFromDegrees 45.0) pnt
     let (_:Pnt) = Pnt.rotateZWithCenterBy Pnt.Origin (Rotation2D.createFromDegrees 45.0) pnt
-    let (_:Pnt) = Pnt.rotateByQuaternion (Quaternion.createFromDegree(UnitVec.Zaxis, 45.0)) pnt
-    let (_:Pnt) = Pnt.rotateWithCenterByQuat Pnt.Origin (Quaternion.createFromDegree(UnitVec.Zaxis, 45.0)) pnt
+    let (_:Pnt) = Pnt.rotateByQuaternion (Quaternion.createFromDegrees(UnitVec.Zaxis, 45.0)) pnt
+    let (_:Pnt) = Pnt.rotateWithCenterByQuat Pnt.Origin (Quaternion.createFromDegrees(UnitVec.Zaxis, 45.0)) pnt
 
     // Static members - Other (additional)
     let (_:Pnt) = Pnt.snap 0.1 pnt
@@ -815,7 +815,7 @@ module VecAPI =
     let (_:Vec) = Vec.rotateOnZDeg 45.0 vec
     let (_:Vec) = Vec.rotateOnZ90CCW vec
     let (_:Vec) = Vec.rotateOnZ90CW vec
-    let (_:Vec) = Vec.rotateByQuaternion (Quaternion.createFromDegree(UnitVec.Zaxis, 45.0)) vec
+    let (_:Vec) = Vec.rotateByQuaternion (Quaternion.createFromDegrees(UnitVec.Zaxis, 45.0)) vec
     let (_:Vec) = Vec.perpendicularInXY vec
     let (_:Vec) = Vec.perpendicularInVerticalPlane vec
     let (_:Vec) = Vec.orientUp vec
@@ -1184,7 +1184,7 @@ module Line3DAPI =
     let (_:UnitVec) = line3d.UnitTangent
 
     // Instance members - Rotation
-    let q = Quaternion.createFromDegree(UnitVec.Zaxis, 45.0)
+    let q = Quaternion.createFromDegrees(UnitVec.Zaxis, 45.0)
     let (_:Line3D) = line3d.Rotate q
     let (_:Line3D) = line3d.RotateWithCenter(Pnt.Origin, q)
 
@@ -1206,7 +1206,7 @@ module Line3DAPI =
     // Static members - Creation
     let ln2d = Line2D(Pt(0., 0.), Pt(10., 0.))
     let (_:Line3D) = Line3D.createFromLine2D ln2d
-    let (_:Line3D) = Line3D.createFromLine2DwithZ 5.0 ln2d
+    let (_:Line3D) = Line3D.createFromLine2DWithZ 5.0 ln2d
     let (_:Line3D) = Line3D.createFromPntAndVec(Pnt.Origin, Vec(10., 0., 0.))
 
     // Static members - Properties
@@ -1434,8 +1434,8 @@ module BRectAPI =
 
 module QuaternionAPI =
     // Creation
-    let quaternion = Quaternion.createFromDegree(UnitVec.Zaxis, 45.0)
-    let q2 = Quaternion.createFromDegree(UnitVec.Xaxis, 90.0)
+    let quaternion = Quaternion.createFromDegrees(UnitVec.Zaxis, 45.0)
+    let q2 = Quaternion.createFromDegrees(UnitVec.Xaxis, 90.0)
 
     // Fields
     let (_:float) = quaternion.X
@@ -1457,8 +1457,8 @@ module QuaternionAPI =
     // Static members - Creation
     let (_:Quaternion) = Quaternion.createFromRadians(UnitVec.Zaxis, 0.785)
     let (_:Quaternion) = Quaternion.createFromRadians(Vec(0., 0., 1.), 0.785)
-    let (_:Quaternion) = Quaternion.createFromDegree(UnitVec.Zaxis, 45.0)
-    let (_:Quaternion) = Quaternion.createFromDegree(Vec(0., 0., 1.), 45.0)
+    let (_:Quaternion) = Quaternion.createFromDegrees(UnitVec.Zaxis, 45.0)
+    let (_:Quaternion) = Quaternion.createFromDegrees(Vec(0., 0., 1.), 45.0)
     let (_:Quaternion) = Quaternion.createVecToVec(UnitVec.Xaxis, UnitVec.Yaxis)
     let (_:Quaternion) = Quaternion.createVecToVec(Vec(1., 0., 0.), Vec(0., 1., 0.))
     let (_:Quaternion) = Quaternion.multiply(quaternion, q2)
@@ -1600,7 +1600,7 @@ module RigidMatrixAPI =
     let (_:float) = rigidmatrix.Determinant
     let (_:RigidMatrix) = rigidmatrix.Inverse
     let (_:bool) = rigidmatrix.IsIdentity
-    let (_:Matrix) = rigidmatrix.Matrix
+    let (_:Matrix) = rigidmatrix.ToMatrix
     let (_:float[]) = rigidmatrix.ToArrayByRows
     let (_:float[]) = rigidmatrix.ToArrayByColumns
 
@@ -1636,7 +1636,6 @@ module RigidMatrixAPI =
     let (_:RigidMatrix) = RigidMatrix.addTranslation (Vec(1., 2., 3.)) rigidmatrix
     let (_:RigidMatrix) = RigidMatrix.addTranslationXYZ 1.0 2.0 3.0 rigidmatrix
     let (_:RigidMatrix) = RigidMatrix.removeTranslation rigidmatrix
-    let (_:Matrix) = RigidMatrix.toMatrix rigidmatrix
 
     // Static members - Comparison
     let (_:bool) = RigidMatrix.equals 0.001 rigidmatrix rm2
@@ -1662,13 +1661,13 @@ module NPlaneAPI =
 
     // Instance members - Operations
     let (_:Pnt) = nplane.ClosestPoint(Pnt(1., 2., 3.))
-    let (_:float) = nplane.DistanceToPt(Pnt(1., 2., 3.))
+    let (_:float) = nplane.DistanceToPnt(Pnt(1., 2., 3.))
     let (_:bool) = nplane.IsCoincidentTo(np2, 0.001, 0.001<Cosine.cosine>)
     let (_:float) = nplane.Angle90ToPlane(np2)
     let (_:float) = nplane.Angle90ToLine(Line3D(Pnt.Origin, Pnt(1., 0., 0.)))
     let (_:float) = nplane.Angle90ToVec(UnitVec.Xaxis)
     let (_:float) = nplane.Angle90ToVec(Vec(1., 0., 0.))
-    let (_:NPlane) = nplane.PlaneAtClPt(Pnt(1., 2., 3.))
+    let (_:NPlane) = nplane.PlaneAtClPnt(Pnt(1., 2., 3.))
 
     // Static members - Constants
     let (_:NPlane) = NPlane.xyPlane
@@ -1689,13 +1688,13 @@ module NPlaneAPI =
     let (_:NPlane) = NPlane.move (Vec(1., 1., 1.)) nplane
     let (_:NPlane) = NPlane.translate (Vec(1., 1., 1.)) nplane
     let (_:NPlane) = NPlane.scale 2.0 nplane
-    let (_:float) = NPlane.distToPt (Pnt(1., 2., 3.)) nplane
+    let (_:float) = NPlane.distanceToPnt (Pnt(1., 2., 3.)) nplane
     let (_:float) = NPlane.angleTo nplane np2
     let (_:bool) = NPlane.areCoincident nplane np2
     let (_:bool) = NPlane.doLinePlaneIntersect (Line3D(Pnt.Origin, Pnt(0., 0., 10.))) nplane
     let (_:Line3D option) = NPlane.intersect nplane np2  // Intersection of two planes is a line
     let (_:Pnt option) = NPlane.intersectLine (Line3D(Pnt.Origin, Pnt(0., 0., 10.))) nplane
-    let (_:float option) = NPlane.intersectLineParameter (Line3D(Pnt.Origin, Pnt(0., 0., 10.))) nplane
+    // let (_:float option) = NPlane.intersectLineParameter (Line3D(Pnt.Origin, Pnt(0., 0., 10.))) nplane
 
     // Static members - Comparison
     let (_:bool) = NPlane.equals 0.001 nplane np2
@@ -1717,12 +1716,12 @@ module PPlaneAPI =
     let (_:UnitVec) = pplane.Zaxis
 
     // Instance members - Operations
-    let (_:Pnt) = pplane.EvaluateAt(1.0, 2.0, 0.0)
-    let (_:Pnt) = pplane.EvaluateAtXY(1.0, 2.0)
+    let (_:Pnt) = pplane.EvaluateAtXYZ(1.0, 2.0, 0.0)
+    let (_:Pnt) = pplane.EvaluateAt(1.0, 2.0)
     let (_:float*float*float) = pplane.PointParameters(Pnt(1., 2., 3.))
     let (_:Pnt) = pplane.ClosestPoint(Pnt(1., 2., 3.))
-    let (_:float) = pplane.DistanceToPt(Pnt(1., 2., 3.))
-    let (_:PPlane) = pplane.PlaneAtClPt(Pnt(1., 2., 3.))
+    let (_:float) = pplane.DistanceToPnt(Pnt(1., 2., 3.))
+    let (_:PPlane) = pplane.PlaneAtClPnt(Pnt(1., 2., 3.))
     let (_:float) = pplane.Angle90ToPlane(pp2)
     let (_:float) = pplane.Angle90ToVec(UnitVec.Xaxis)
     let (_:float) = pplane.Angle90ToVec(Vec(1., 0., 0.))
@@ -1777,10 +1776,10 @@ module PPlaneAPI =
 
     // Static members - Intersection
     let (_:bool) = PPlane.doLinePlaneIntersect (Line3D(Pnt.Origin, Pnt(0., 0., 10.))) pplane
-    let (_:Line3D option) = PPlane.intersect pplane pp2  // Intersection of two planes is a line
-    let (_:Pnt option) = PPlane.intersectLine (Line3D(Pnt.Origin, Pnt(0., 0., 10.))) pplane
-    let (_:float option) = PPlane.intersectLineParameter (Line3D(Pnt.Origin, Pnt(0., 0., 10.))) pplane
-    let (_:(float*float*float) option) = PPlane.intersectLineParameters (Line3D(Pnt.Origin, Pnt(0., 0., 10.))) pplane
+    // let (_:Line3D option) = PPlane.intersect pplane pp2  // Intersection of two planes is a line
+    // let (_:Pnt option) = PPlane.intersectLine (Line3D(Pnt.Origin, Pnt(0., 0., 10.))) pplane
+    // let (_:float option) = PPlane.intersectLineParameter (Line3D(Pnt.Origin, Pnt(0., 0., 10.))) pplane
+    // let (_:(float*float*float) option) = PPlane.intersectLineParameters (Line3D(Pnt.Origin, Pnt(0., 0., 10.))) pplane
 
     // Static members - Comparison
     let (_:bool) = PPlane.equals 0.001 pplane pp2
@@ -1837,7 +1836,7 @@ module Rect2DAPI =
     let (_:bool) = rect2d.IsPoint
     let (_:bool) = rect2d.IsLine
     // let (_:bool) = rect2d.HasVolume
-    let (_:BRect) = rect2d.BRect
+    let (_) = rect2d.BRect
     let (_:Rect2D) = rect2d.RotateOrientation90CW
     let (_:Rect2D) = rect2d.RotateOrientation90CCW
     let (_:Rect2D) = rect2d.RotateOrientation180
@@ -1852,7 +1851,8 @@ module Rect2DAPI =
 
     // Static members - Creation
     let (_:Rect2D) = Rect2D.createUncheckedVec(Pt.Origin, Vc(10., 0.), Vc(0., 5.))
-    let (_:Rect2D) = Rect2D.createFromBRect(BRect.create(Pt.Origin, Pt(10., 5.)))
+    // let (_:Rect2D) = Rect2D.createFromBRect(BRect.create(Pt.Origin, Pt(10., 5.)))
+    let (_:Rect2D) = Rect2D.createFromBRect(0.0, 0.0, 10.0, 5.0)
     let (_:Rect2D) = Rect2D.createFromLine(Line2D(Pt.Origin, Pt(10., 0.)), 2.5, 2.5)
     let (_:Rect2D) = Rect2D.createFromVectors(Pt.Origin, Vc(10., 0.), Vc(0., 5.))
     let (_:Rect2D) = Rect2D.createFromXVectorAndWidth(Pt.Origin, Vc(10., 0.), 5.0)
@@ -1946,8 +1946,8 @@ module Rect3DAPI =
     let (_:bool) = rect3d.IsPoint
     let (_:bool) = rect3d.IsLine
     // let (_:bool) = rect3d.HasVolume
-    let (_:BRect) = rect3d.BRect
-    let (_:BBox) = rect3d.BBox
+    let (_) = rect3d.BRect
+    let (_) = rect3d.BBox
     let (_:Rect3D) = rect3d.Flipped
     let (_:Rect3D) = rect3d.RotateOrientation90CW
     let (_:Rect3D) = rect3d.RotateOrientation90CCW
@@ -1962,7 +1962,7 @@ module Rect3DAPI =
 
     // Static members - Creation
     let (_:Rect3D) = Rect3D.createUncheckedVec(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.))
-    let (_:Rect3D) = Rect3D.createFromBRect (BRect.create(Pt.Origin, Pt(10., 5.)))
+    // let (_:Rect3D) = Rect3D.createFromBRect (BRect.create(Pt.Origin, Pt(10., 5.)))
     let (_:Rect3D) = Rect3D.createFromVectors(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.))
     let (_:Rect3D) = Rect3D.createFromPlane(PPlane.WorldXY, 10.0, 5.0)
     let (_:Rect3D) = Rect3D.createCenteredFromPlane(PPlane.WorldXY, 10.0, 5.0)
@@ -1996,10 +1996,10 @@ module Rect3DAPI =
 
     // Static members - Intersection
     let ln = Line3D(Pnt(5., 2.5, -10.), Pnt(5., 2.5, 10.))
-    let (_:Pnt option) = Rect3D.intersectLine ln rect3d
-    let (_:float option) = Rect3D.intersectLineParameterInfinite ln rect3d
-    let (_:(float*float*float) option) = Rect3D.intersectLineParameters ln rect3d
-    let (_:(float*float*float) option) = Rect3D.intersectLineParametersInfinite ln rect3d
+    let (_:Pnt voption) = Rect3D.intersectLine ln rect3d
+    // let (_:float option) = Rect3D.intersectLineParameterInfinite ln rect3d
+    // let (_:(float*float*float) option) = Rect3D.intersectLineParameters ln rect3d
+    // let (_:(float*float*float) option) = Rect3D.intersectLineParametersInfinite ln rect3d
 
     // Static members - Comparison
     let (_:bool) = Rect3D.equals 0.001 rect3d rect2
@@ -2026,18 +2026,18 @@ module BoxAPI =
     let (_:Pnt) = box.Pt6
     let (_:Pnt) = box.Pt7
     let (_:Pnt[]) = box.Points
-    let (_:Line3D) = box.Edge0
-    let (_:Line3D) = box.Edge1
-    let (_:Line3D) = box.Edge2
-    let (_:Line3D) = box.Edge3
-    let (_:Line3D) = box.Edge4
-    let (_:Line3D) = box.Edge5
-    let (_:Line3D) = box.Edge6
-    let (_:Line3D) = box.Edge7
-    let (_:Line3D) = box.Edge8
-    let (_:Line3D) = box.Edge9
-    let (_:Line3D) = box.Edge10
-    let (_:Line3D) = box.Edge11
+    let (_:Line3D) = box.Edge01
+    let (_:Line3D) = box.Edge12
+    let (_:Line3D) = box.Edge32
+    let (_:Line3D) = box.Edge03
+    let (_:Line3D) = box.Edge04
+    let (_:Line3D) = box.Edge15
+    let (_:Line3D) = box.Edge26
+    let (_:Line3D) = box.Edge37
+    let (_:Line3D) = box.Edge45
+    let (_:Line3D) = box.Edge56
+    let (_:Line3D) = box.Edge76
+    let (_:Line3D) = box.Edge47
     let (_:Line3D[]) = box.Edges
     let (_:Rect3D) = box.BottomFace
     let (_:Rect3D) = box.TopFace
@@ -2074,7 +2074,7 @@ module BoxAPI =
     let (_:bool) = box.IsLine
     let (_:bool) = box.IsFlat
     let (_:bool) = box.HasVolume
-    let (_:BBox) = box.BBox
+    let (_) = box.BBox
     let (_:float) = box.AreaSq
 
     // Instance members - Operations
@@ -2090,7 +2090,7 @@ module BoxAPI =
     let (_:Box) = Box.createFromPlane 1. 1. 1. PPlane.WorldXY
     let (_:Box) = Box.createFromRect2D 3.0 1. (Rect2D.createFromDirectionAndSizes(Pt.Origin, UnitVc.Xaxis, 10.0, 5.0))
     let (_:Box) = Box.createFromRect3D 3.0 1. (Rect3D.createFromPlane(PPlane.WorldXY, 10.0, 5.0))
-    let (_:Box) = Box.createFromBoundingBox (BBox.create(Pnt.Origin, Pnt(10., 5., 3.)))
+    // let (_:Box) = Box.createFromBoundingBox (BBox.create(Pnt.Origin, Pnt(10., 5., 3.)))
     let (_:Box) = Box.createFromPlaneAndPoints PPlane.WorldXY pts
     let (_:Box) = Box.createFromDirsAndPoints Vec.Xaxis Vec.Yaxis pts
 
@@ -2375,7 +2375,7 @@ module UtilAPI =
 
     // Static members - Clamping
     let (_:float) = UtilEuclid.clampBetweenMinusOneAndOne 1.5
-    let (_:float) = UtilEuclid.clampBetweenZeroAndOne 1.5
+    let (_:float) = UtilEuclid.clamp01 1.5
 
     // Static members - Safe trig
     let (_:float) = UtilEuclid.asinSafe 1.5
@@ -2403,10 +2403,10 @@ module IntersectAPI =
     let p1 = Pnt(0., 0., 5.)
     let p2 = Pnt(10., 0., 5.)
     let p3 = Pnt(5., 10., 5.)
-    let (_:Pnt option) = Intersect.lineTriangle(ln3d, p1, p2, p3)
-    let (_) = Intersect.lineCone(ln3d, 5.0, 10.0, 0.0) // coneRadius, coneBaseZ, coneTipZ
+    // let (_:Pnt option) = Intersect.lineTriangle(ln3d, p1, p2, p3)
+    // let (_) = Intersect.lineCone(ln3d, 5.0, 10.0, 0.0) // coneRadius, coneBaseZ, coneTipZ
 
-    // Note: doIntersectOrOverlapColinear, getRelation, getXPara, getXPointOrMid are internal/private
+    // Note: doIntersectOrOverlapCollinear, getRelation, getXPara, getXPointOrMid are internal/private
 
 // ===== Similarity2D (2D similarity transformation) =====
 

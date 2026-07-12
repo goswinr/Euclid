@@ -83,6 +83,7 @@ module AutoOpenPt =
             Pt (x, pt.Y)
 
         /// Returns new 2D point with new X coordinate, Y stays the same.
+        /// Same as Pt.setX.
         static member inline withX x (pt:Pt) : Pt =
             Pt(x, pt.Y)
 
@@ -91,6 +92,7 @@ module AutoOpenPt =
             Pt (pt.X, y)
 
         /// Returns new 2D point with new Y coordinate, X stays the same.
+        /// Same as Pt.setY.
         static member inline withY y (pt:Pt) : Pt =
             Pt(pt.X, y)
 
@@ -120,11 +122,12 @@ module AutoOpenPt =
             x*x + y*y
 
         /// Returns the distance between two 2D points.
+        /// Same as Pt.dist.
         member inline p.DistanceTo (b:Pt) : float =
             Pt.dist b p
 
         /// Returns the distance between two 2D points.
-        /// Same as Pt.dist
+        /// Same as Pt.dist.
         static member inline distanceTo (b:Pt) (p:Pt) : float =
             p.DistanceTo b
 
@@ -141,6 +144,7 @@ module AutoOpenPt =
 
         /// Returns the squared distance between two 2D points.
         /// This operation is slightly faster than the distance function, and sufficient for many algorithms like finding closest points.
+        /// Same as Pt.sqDist.
         member inline p.SqDistanceTo (b:Pt) : float =
             Pt.sqDist b p
 
@@ -198,39 +202,39 @@ module AutoOpenPt =
             Pt(r.Cos*p.X - r.Sin*p.Y,
                 r.Sin*p.X + r.Cos*p.Y)
 
-        /// <summary>Rotate the 2D point in Degrees. Counter Clockwise.</summary>
+        /// <summary>Rotate the 2D point in degrees. Counter Clockwise.</summary>
         /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
         member inline pt.Rotate angDegree : Pt =
             pt.RotateBy (Rotation2D.createFromDegrees angDegree)
 
-        /// <summary>Rotate the 2D point in Degrees. Counter Clockwise.</summary>
+        /// <summary>Rotate the 2D point in degrees. Counter Clockwise.</summary>
         /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
         static member inline rotate angDegree (vec:Pt) : Pt =
             Pt.rotateBy (Rotation2D.createFromDegrees angDegree) vec
 
-        /// <summary>Rotate the 2D point in Radians. Counter Clockwise.</summary>
+        /// <summary>Rotate the 2D point in radians. Counter Clockwise.</summary>
         /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
         member inline pt.RotateRadians angRadians  : Pt =
             pt.RotateBy (Rotation2D.createFromRadians angRadians)
 
-        /// <summary>Rotate the 2D point in Radians. Counter Clockwise.</summary>
+        /// <summary>Rotate the 2D point in radians. Counter Clockwise.</summary>
         /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
         static member inline rotateRadians angRadians (pt:Pt) : Pt =
             pt.RotateRadians angRadians
 
-        /// 90 Degree rotation Counter-Clockwise.
+        /// 90-degree rotation Counter-Clockwise.
         member inline pt.Rotate90CCW : Pt =
             Pt( -pt.Y, pt.X)
 
-        /// 90 Degree rotation Counter-Clockwise.
+        /// 90-degree rotation Counter-Clockwise.
         static member inline rotate90CCW (pt:Pt) : Pt =
             pt.Rotate90CCW
 
-        /// 90 Degree rotation clockwise.
+        /// 90-degree rotation clockwise.
         member inline pt.Rotate90CW : Pt =
             Pt(pt.Y, -pt.X)
 
-        /// 90 Degree rotation clockwise.
+        /// 90-degree rotation clockwise.
         static member inline rotate90CW (pt:Pt) : Pt =
             pt.Rotate90CW
 
@@ -255,7 +259,7 @@ module AutoOpenPt =
 
         /// Returns the Diamond Angle from this point to another point.
         /// Calculates the proportion of X to Y component.
-        /// It is always positive and in the range of 0.0 to 4.0 (for 360 Degrees)
+        /// It is always positive and in the range of 0.0 to 4.0 (for 360 degrees)
         /// 0.0 = Xaxis, going Counter-Clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         /// Fails if the two points are coincident or too close together.
@@ -277,14 +281,14 @@ module AutoOpenPt =
 
         /// Returns the Diamond Angle from this point to another point.
         /// Calculates the proportion of X to Y component.
-        /// It is always positive and in the range of 0.0 to 4.0 (for 360 Degrees)
+        /// It is always positive and in the range of 0.0 to 4.0 (for 360 degrees)
         /// 0.0 = Xaxis, going Counter-Clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         /// Fails if the two points are coincident or too close together.
         static member inline directionDiamondTo (o:Pt) (p:Pt) : float =
             p.DirectionDiamondTo(o)
 
-        /// Returns the angle in Radians from this point to another point.
+        /// Returns the angle in radians from this point to another point.
         /// 0.0 = Xaxis, going Counter-Clockwise till two Pi.
         /// Fails if the two points are coincident or too close together.
         member inline p.Angle2PiTo(o:Pt) : float =
@@ -296,19 +300,19 @@ module AutoOpenPt =
             if a < 0. then  a + UtilEuclid.twoPi
             else            a
 
-        /// Returns the angle in Radians from 'fromPt' to 'toPt'.
+        /// Returns the angle in radians from 'fromPt' to 'toPt'.
         /// 0.0 = Xaxis, going Counter-Clockwise till two Pi.
         /// Fails if the two points are coincident or too close together.
         static member inline angle2PiTo (fromPt:Pt, toPt:Pt) : float = // not curried because argument order is important
             fromPt.Angle2PiTo(toPt)
 
-        /// Returns the angle in Degrees from this point to another point.
+        /// Returns the angle in degrees from this point to another point.
         /// 0.0 = Xaxis, going Counter-Clockwise till 360.
         /// Fails if the two points are coincident or too close together.
         member inline p.Angle360To(o:Pt) : float =
             p.Angle2PiTo o |> toDegrees
 
-        /// Returns the angle in Degrees from 'fromPt' to 'toPt'.
+        /// Returns the angle in degrees from 'fromPt' to 'toPt'.
         /// 0.0 = Xaxis, going Counter-Clockwise till 360.
         /// Fails if the two points are coincident or too close together.
         static member inline angle360To (fromPt:Pt, toPt:Pt) : float =  // not curried because argument order is important
@@ -318,7 +322,7 @@ module AutoOpenPt =
         /// The line segment is given as a Line2D `ln`.
         /// Fails if the line is degenerate (zero-length).
         member inline testPt.ClosestPointOnLine(ln:Line2D) : Pt =
-            XLine2D.clPtLn(ln.FromX, ln.FromY, ln.VectorX, ln.VectorY, testPt.X, testPt.Y)
+            XLineXY.clPtLn(ln.FromX, ln.FromY, ln.VectorX, ln.VectorY, testPt.X, testPt.Y)
 
         /// Returns the closest point on a finite line segment to test point.
         /// The line segment is given as a Line2D `ln`.
@@ -329,7 +333,7 @@ module AutoOpenPt =
         /// Returns the squared distance between point and finite line segment.
         /// The line segment is given as a Line2D `ln`.
         member inline testPt.SqDistanceToLine(ln:Line2D) : float =
-            XLine2D.sqDistLnPt(ln.FromX, ln.FromY, ln.VectorX, ln.VectorY, testPt.X, testPt.Y)
+            XLineXY.sqDistLnPt(ln.FromX, ln.FromY, ln.VectorX, ln.VectorY, testPt.X, testPt.Y)
 
         /// Returns the squared distance between point and finite line segment.
         /// The line segment is given as a Line2D `ln`.
@@ -410,6 +414,16 @@ module AutoOpenPt =
         static member inline getY (pt:Pt) : float =
             pt.Y
 
+        /// Returns a new 2D point with new X coordinate, Y stays the same.
+        /// Same as Pt.withX.
+        static member inline setX (x:float) (pt:Pt) : Pt =
+            Pt(x, pt.Y)
+
+        /// Returns a new 2D point with new Y coordinate, X stays the same.
+        /// Same as Pt.withY.
+        static member inline setY (y:float) (pt:Pt) : Pt =
+            Pt(pt.X, y)
+
         /// Adds two 2D points. Returns a new 2D point.
         static member inline add (a:Pt) (b:Pt) : Pt =
             a + b
@@ -442,11 +456,11 @@ module AutoOpenPt =
         static member inline moveY (y:float) (pt:Pt) : Pt =
             Pt (pt.X, pt.Y+y)
 
-        /// Returns angle between three 2D Points in Radians. Range 0.0 to Pi.
+        /// Returns angle between three 2D Points in radians. Range 0.0 to Pi.
         static member inline anglePiPts (ptPrev:Pt, ptThis:Pt, ptNext:Pt) : float =
             Vc.anglePi (ptPrev-ptThis) (ptNext-ptThis)
 
-        /// Returns angle between three 2D Points in Degrees. Range 0.0 to 180
+        /// Returns angle between three 2D Points in degrees. Range 0.0 to 180
         static member inline angle180Pts (ptPrev:Pt, ptThis:Pt, ptNext:Pt) : float =
             Pt.anglePiPts(ptPrev, ptThis, ptNext) |> toDegrees
 
@@ -464,7 +478,7 @@ module AutoOpenPt =
             Pt (r.Cos*x - r.Sin*y + cen.X,
                 r.Sin*x + r.Cos*y + cen.Y)
 
-        /// Rotate 2D point around a center point Counter-Clockwise. Angle given in Degrees.
+        /// Rotate 2D point around a center point Counter-Clockwise. Angle given in degrees.
         static member inline rotateWithCenter (cen:Pt) (angDegree:float) (pt:Pt) : Pt =
             Pt.rotateWithCenterBy cen (Rotation2D.createFromDegrees angDegree) pt
 
@@ -508,7 +522,7 @@ module AutoOpenPt =
             Pt( (Math.Round (pt.X/precision)) * precision,
                 (Math.Round (pt.Y/precision)) * precision)
 
-        /// Returns angle in Degrees at mid point (thisPt).
+        /// Returns angle in degrees at mid point (thisPt).
         static member angleInCorner (prevPt:Pt, thisPt:Pt, nextPt:Pt) : float =
             let a = prevPt-thisPt
             let b = nextPt-thisPt
