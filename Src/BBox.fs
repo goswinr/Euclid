@@ -1,4 +1,4 @@
-namespace Euclid
+﻿namespace Euclid
 
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
@@ -1237,25 +1237,25 @@ type BBox =
     /// Returns Origin at point 4, X-axis to point 5, Y-axis to point 7.
     /// The normal of the Rect3D points up, away from the Box.
     /// <code>
-    ///            local      F3(back)
-    ///            Z-axis     F7(top)
+    ///                       (back)
+    ///            Z-axis     (top)
     ///            ^          |
     ///            |   7      |        6
     ///            |   +---------------+
     ///            |  /|      |       /|
     ///            | / |             / |
     ///          4 |/  |          5 /  |
-    ///            +---------------+  -|-- F2(right)
+    ///            +---------------+  -|-- (right)
     ///            |   |           |   |
-    ///  (left)F4--|-  +-----------|---+
+    ///    (left)--|-  +-----------|---+
     ///            |  / 3          |  / 2
     ///            | /             | /
-    ///            |/      |       |/     local
+    ///            |/      |       |/
     ///            +---------------+----> X-axis
     ///            0       |       1
     ///                    |
-    ///                    F0(bottom)
-    ///                    F1(front)
+    ///                    (bottom)
+    ///                    (front)
     /// </code>
     /// </summary>
     member b.TopFace :Rect3D =
@@ -1271,25 +1271,25 @@ type BBox =
     /// Returns Origin at point 0, X-axis to point 1, Y-axis to point 3.
     /// The normal of the Rect3D points into the bounding box.
     /// <code>
-    ///            local      F3(back)
-    ///            Z-axis     F7(top)
+    ///                       (back)
+    ///            Z-axis     (top)
     ///            ^          |
     ///            |   7      |        6
     ///            |   +---------------+
     ///            |  /|      |       /|
     ///            | / |             / |
     ///          4 |/  |          5 /  |
-    ///            +---------------+  -|-- F2(right)
+    ///            +---------------+  -|-- (right)
     ///            |   |           |   |
-    ///  (left)F4--|-  +-----------|---+
+    ///    (left)--|-  +-----------|---+
     ///            |  / 3          |  / 2
     ///            | /             | /
-    ///            |/      |       |/     local
+    ///            |/      |       |/
     ///            +---------------+----> X-axis
     ///            0       |       1
     ///                    |
-    ///                    F0(bottom)
-    ///                    F1(front)
+    ///                    (bottom)
+    ///                    (front)
     /// </code>
     /// </summary>
     member b.BottomFace : Rect3D =
@@ -1305,25 +1305,25 @@ type BBox =
     /// Returns Origin at point 0, X-axis to point 1, Y-axis to point 4.
     /// The normal of the Rect3D points away from the bounding box.
     /// <code>
-    ///            local      F3(back)
-    ///            Z-axis     F7(top)
+    ///                       (back)
+    ///            Z-axis     (top)
     ///            ^          |
     ///            |   7      |        6
     ///            |   +---------------+
     ///            |  /|      |       /|
     ///            | / |             / |
     ///          4 |/  |          5 /  |
-    ///            +---------------+  -|-- F2(right)
+    ///            +---------------+  -|-- (right)
     ///            |   |           |   |
-    ///  (left)F4--|-  +-----------|---+
+    ///    (left)--|-  +-----------|---+
     ///            |  / 3          |  / 2
     ///            | /             | /
-    ///            |/      |       |/     local
+    ///            |/      |       |/
     ///            +---------------+----> X-axis
     ///            0       |       1
     ///                    |
-    ///                    F0(bottom)
-    ///                    F1(front)
+    ///                    (bottom)
+    ///                    (front)
     /// </code>
     /// </summary>
     member b.FrontFace : Rect3D =
@@ -1339,25 +1339,25 @@ type BBox =
     /// Returns Origin at point 3, X-axis to point 2, Y-axis to point 7.
     /// The normal of the Rect3D points into the bounding box.
     /// <code>
-    ///            local      F3(back)
-    ///            Z-axis     F7(top)
+    ///                       (back)
+    ///            Z-axis     (top)
     ///            ^          |
     ///            |   7      |        6
     ///            |   +---------------+
     ///            |  /|      |       /|
     ///            | / |             / |
     ///          4 |/  |          5 /  |
-    ///            +---------------+  -|-- F2(right)
+    ///            +---------------+  -|-- (right)
     ///            |   |           |   |
-    ///  (left)F4--|-  +-----------|---+
+    ///    (left)--|-  +-----------|---+
     ///            |  / 3          |  / 2
     ///            | /             | /
-    ///            |/      |       |/     local
+    ///            |/      |       |/
     ///            +---------------+----> X-axis
     ///            0       |       1
     ///                    |
-    ///                    F0(bottom)
-    ///                    F1(front)
+    ///                    (bottom)
+    ///                    (front)
     /// </code>
     /// </summary>
     member b.BackFace : Rect3D =
@@ -1373,25 +1373,25 @@ type BBox =
     /// Returns Origin at point 1, X-axis to point 2, Y-axis to point 5.
     /// The normal of the Rect3D points away from the bounding box.
     /// <code>
-    ///            local      F3(back)
-    ///            Z-axis     F7(top)
+    ///                       (back)
+    ///            Z-axis     (top)
     ///            ^          |
     ///            |   7      |        6
     ///            |   +---------------+
     ///            |  /|      |       /|
     ///            | / |             / |
     ///          4 |/  |          5 /  |
-    ///            +---------------+  -|-- F2(right)
+    ///            +---------------+  -|-- (right)
     ///            |   |           |   |
-    ///  (left)F4--|-  +-----------|---+
+    ///    (left)--|-  +-----------|---+
     ///            |  / 3          |  / 2
     ///            | /             | /
-    ///            |/      |       |/     local
+    ///            |/      |       |/
     ///            +---------------+----> X-axis
     ///            0       |       1
     ///                    |
-    ///                    F0(bottom)
-    ///                    F1(front)
+    ///                    (bottom)
+    ///                    (front)
     /// </code>
     /// </summary>
     member b.RightFace : Rect3D =
@@ -1407,25 +1407,25 @@ type BBox =
     /// Returns Origin at point 0, X-axis to point 3, Y-axis to point 4.
     /// The normal of the Rect3D points into the bounding box.
     /// <code>
-    ///            local      F3(back)
-    ///            Z-axis     F7(top)
+    ///                       (back)
+    ///            Z-axis     (top)
     ///            ^          |
     ///            |   7      |        6
     ///            |   +---------------+
     ///            |  /|      |       /|
     ///            | / |             / |
     ///          4 |/  |          5 /  |
-    ///            +---------------+  -|-- F2(right)
+    ///            +---------------+  -|-- (right)
     ///            |   |           |   |
-    ///  (left)F4--|-  +-----------|---+
+    ///    (left)--|-  +-----------|---+
     ///            |  / 3          |  / 2
     ///            | /             | /
-    ///            |/      |       |/     local
+    ///            |/      |       |/
     ///            +---------------+----> X-axis
     ///            0       |       1
     ///                    |
-    ///                    F0(bottom)
-    ///                    F1(front)
+    ///                    (bottom)
+    ///                    (front)
     /// </code>
     /// </summary>
     member b.LeftFace : Rect3D =
@@ -1438,26 +1438,29 @@ type BBox =
         b.LeftFace
 
 
-    /// <summary>Returns the six faces of the box.
+    /// <summary>Returns the six faces of the bounding box.
     /// The normals of the Rect3Ds are oriented with the X-axis, Y-axis, or Z-axis.
     /// The order of the Rect3D is: BottomFace, FrontFace, RightFace, BackFace, LeftFace, TopFace.
     /// <code>
-    ///   local        local
-    ///   Z-axis       Y-axis
-    ///   ^           /
-    ///   |   7      /        6
-    ///   |   +---------------+
-    ///   |  /|    /         /|
-    ///   | / |   /         / |
-    /// 4 |/  |  /       5 /  |
-    ///   +---------------+   |
-    ///   |   |/          |   |
-    ///   |   +-----------|---+
-    ///   |  / 3          |  / 2
-    ///   | /             | /
-    ///   |/              |/     local
-    ///   +---------------+----> X-axis
-    ///   0               1
+    ///                       3 (back)
+    ///            Z-axis     5 (top)
+    ///            ^          |
+    ///            |   7      |        6
+    ///            |   +---------------+
+    ///            |  /|      |       /|
+    ///            | / |             / |
+    ///          4 |/  |          5 /  |
+    ///            +---------------+  -|-- 2 (right)
+    ///            |   |           |   |
+    ///  4 (left)--|-  +-----------|---+
+    ///            |  / 3          |  / 2
+    ///            | /             | /
+    ///            |/      |       |/
+    ///            +---------------+----> X-axis
+    ///            0       |       1
+    ///                    |
+    ///                   0 (bottom)
+    ///                   1 (front)
     /// </code>
     /// </summary>
     member b.Faces : Rect3D[] =
@@ -1470,32 +1473,32 @@ type BBox =
         b.TopFace
         |]
 
-    /// Returns the six faces of the box in documented order.
+    /// Returns the six faces of the bounding box in documented order.
     static member inline faces (b:BBox) : Rect3D[] =
         b.Faces
 
     /// <summary>Returns the face of the box at the specified index.
     /// The order of the faces is: BottomFace, FrontFace, RightFace, BackFace, LeftFace, TopFace.
     /// <code>
-    ///            local      F3(back)
-    ///            Z-axis     F7(top)
+    ///                       3 (back)
+    ///            Z-axis     5 (top)
     ///            ^          |
     ///            |   7      |        6
     ///            |   +---------------+
     ///            |  /|      |       /|
     ///            | / |             / |
     ///          4 |/  |          5 /  |
-    ///            +---------------+  -|-- F2(right)
+    ///            +---------------+  -|-- 2 (right)
     ///            |   |           |   |
-    ///  (left)F4--|-  +-----------|---+
+    ///  4 (left)--|-  +-----------|---+
     ///            |  / 3          |  / 2
     ///            | /             | /
-    ///            |/      |       |/     local
+    ///            |/      |       |/
     ///            +---------------+----> X-axis
     ///            0       |       1
     ///                    |
-    ///                    F0(bottom)
-    ///                    F1(front)
+    ///                   0 (bottom)
+    ///                   1 (front)
     /// </code>
     /// </summary>
     /// <param name="faceIndex">The index of the face to retrieve. Valid range is 0 to 5.</param>
@@ -1510,7 +1513,30 @@ type BBox =
         | 5 -> b.TopFace
         | _ -> fail $"Box.GetFace: faceIndex {faceIndex} is out of range. Valid range is 0 to 5."
 
-    /// Returns the face of the box at the specified index.
+    /// <summary>Returns the face of the box at the specified index.
+    /// The order of the faces is: BottomFace, FrontFace, RightFace, BackFace, LeftFace, TopFace.
+    /// <code>
+    ///                       3 (back)
+    ///            Z-axis     5 (top)
+    ///            ^          |
+    ///            |   7      |        6
+    ///            |   +---------------+
+    ///            |  /|      |       /|
+    ///            | / |             / |
+    ///          4 |/  |          5 /  |
+    ///            +---------------+  -|-- 2 (right)
+    ///            |   |           |   |
+    ///  4 (left)--|-  +-----------|---+
+    ///            |  / 3          |  / 2
+    ///            | /             | /
+    ///            |/      |       |/
+    ///            +---------------+----> X-axis
+    ///            0       |       1
+    ///                    |
+    ///                   0 (bottom)
+    ///                   1 (front)
+    /// </code>
+    /// </summary>
     static member inline getFace (faceIndex:int) (b:BBox) : Rect3D =
         b.GetFace faceIndex
 
