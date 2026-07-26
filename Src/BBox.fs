@@ -680,6 +680,144 @@ type BBox =
     static member inline intersectRay (ray:Line3D) (b:BBox) : voption<float*float> =
         b.IntersectRay ray
 
+    /// <summary>Checks if an infinite plane intersects this 3D bounding box.
+    /// Projects the box's half-diagonal onto the plane normal and compares it
+    /// with the distance from the box center to the plane. (center-extents test)
+    /// A plane that only touches a corner, an edge or a face of the box counts as intersecting too.</summary>
+    /// <param name="pl">The plane to test for intersection.</param>
+    /// <returns>TRUE if the plane intersects or touches this bounding box, FALSE otherwise.</returns>
+    member inline b.DoesIntersectPlane (pl:NPlane) : bool =
+        let s = pl.DistanceToXYZSigned((b.MinX + b.MaxX)*0.5, (b.MinY + b.MaxY)*0.5, (b.MinZ + b.MaxZ)*0.5)
+        let r = (abs pl.NormalX * (b.MaxX - b.MinX)
+               + abs pl.NormalY * (b.MaxY - b.MinY)
+               + abs pl.NormalZ * (b.MaxZ - b.MinZ)) * 0.5
+        abs s <= r
+
+    /// Same as b.DoesIntersectPlane(pl).
+    static member inline doesIntersectPlane (pl:NPlane) (b:BBox) : bool =
+        b.DoesIntersectPlane pl
+
+    /// <summary>Intersects an infinite plane with this 3D bounding box.
+    /// The intersection of a plane with a box is a convex polygon with 3 to 6 vertices.
+    /// The returned points are sorted counter-clockwise around the plane normal. (right-hand rule)
+    /// Box corners lying on the plane (within a tolerance of 1e-12) are returned as intersection points too.
+    /// So if the plane touches the box in just a corner or an edge, an array of only 1 or 2 points is returned.
+    /// If the plane coincides with one of the box's faces, the 4 corners of that face are returned.
+    /// A degenerate bounding box (with a size of zero in one or more axes) may return duplicate points.</summary>
+    /// <param name="pl">The plane to intersect with this bounding box.</param>
+    /// <returns>ValueNone if the plane does not intersect this bounding box.
+    /// Otherwise ValueSome with an array of 1 to 6 points.</returns>
+    member b.IntersectPlane (pl:NPlane) : Pnt[] voption =
+        let nx = pl.NormalX
+        let ny = pl.NormalY
+        let nz = pl.NormalZ
+        // local copies of the fields, because 'b' is a byref in a struct member and cannot be captured by the inner lerp functions:
+        let minX = b.MinX
+        let minY = b.MinY
+        let minZ = b.MinZ
+        let maxX = b.MaxX
+        let maxY = b.MaxY
+        let maxZ = b.MaxZ
+        // The signed distances of the 8 box corners to the plane need only 6 multiplications,
+        // because each corner coordinate is one of just two values per axis.
+        let xl = nx * minX
+        let xh = nx * maxX
+        let yl = ny * minY
+        let yh = ny * maxY
+        let zl = nz * minZ
+        let zh = nz * maxZ
+        let c = nx * pl.OriginX + ny * pl.OriginY + nz * pl.OriginZ
+        // Distances within zeroLengthTolerance are snapped to 0.0 so that a plane passing through a corner
+        // yields that corner exactly once, instead of several near-duplicate points on the adjacent edges.
+        let inline snap d = if isTooTiny (abs d) then 0.0 else d
+        // corner numbering as in b.Pt0 to b.Pt7:
+        let d0 = snap (xl + yl + zl - c)
+        let d1 = snap (xh + yl + zl - c)
+        let d2 = snap (xh + yh + zl - c)
+        let d3 = snap (xl + yh + zl - c)
+        let d4 = snap (xl + yl + zh - c)
+        let d5 = snap (xh + yl + zh - c)
+        let d6 = snap (xh + yh + zh - c)
+        let d7 = snap (xl + yh + zh - c)
+        // Each vertex of the intersection polygon is either a box corner on the plane
+        // or a crossing on an edge whose corners are strictly on opposite sides.
+        let pts = ResizeArray<Pnt>(8)
+        // box corners lying on the plane:
+        if d0 = 0.0 then pts.Add(Pnt(minX, minY, minZ))
+        if d1 = 0.0 then pts.Add(Pnt(maxX, minY, minZ))
+        if d2 = 0.0 then pts.Add(Pnt(maxX, maxY, minZ))
+        if d3 = 0.0 then pts.Add(Pnt(minX, maxY, minZ))
+        if d4 = 0.0 then pts.Add(Pnt(minX, minY, maxZ))
+        if d5 = 0.0 then pts.Add(Pnt(maxX, minY, maxZ))
+        if d6 = 0.0 then pts.Add(Pnt(maxX, maxY, maxZ))
+        if d7 = 0.0 then pts.Add(Pnt(minX, maxY, maxZ))
+        // The interpolation parameter reuses the corner distances.
+        // Only one coordinate varies per edge, since all edges are axis-aligned.
+        // The divisions are safe: da * db < 0.0 guarantees a non-zero denominator.
+        let inline lerpX da db = minX + da / (da - db) * (maxX - minX)
+        let inline lerpY da db = minY + da / (da - db) * (maxY - minY)
+        let inline lerpZ da db = minZ + da / (da - db) * (maxZ - minZ)
+        // the four edges along the X-axis:
+        if d0 * d1 < 0.0 then pts.Add(Pnt(lerpX d0 d1, minY, minZ))
+        if d3 * d2 < 0.0 then pts.Add(Pnt(lerpX d3 d2, maxY, minZ))
+        if d4 * d5 < 0.0 then pts.Add(Pnt(lerpX d4 d5, minY, maxZ))
+        if d7 * d6 < 0.0 then pts.Add(Pnt(lerpX d7 d6, maxY, maxZ))
+        // the four edges along the Y-axis:
+        if d0 * d3 < 0.0 then pts.Add(Pnt(minX, lerpY d0 d3, minZ))
+        if d1 * d2 < 0.0 then pts.Add(Pnt(maxX, lerpY d1 d2, minZ))
+        if d4 * d7 < 0.0 then pts.Add(Pnt(minX, lerpY d4 d7, maxZ))
+        if d5 * d6 < 0.0 then pts.Add(Pnt(maxX, lerpY d5 d6, maxZ))
+        // the four edges along the Z-axis:
+        if d0 * d4 < 0.0 then pts.Add(Pnt(minX, minY, lerpZ d0 d4))
+        if d1 * d5 < 0.0 then pts.Add(Pnt(maxX, minY, lerpZ d1 d5))
+        if d2 * d6 < 0.0 then pts.Add(Pnt(maxX, maxY, lerpZ d2 d6))
+        if d3 * d7 < 0.0 then pts.Add(Pnt(minX, maxY, lerpZ d3 d7))
+        if pts.Count = 0 then
+            ValueNone
+        else
+            let res = pts.ToArray()
+            if res.Length > 2 then
+                // Sort the vertices counter-clockwise around the plane normal:
+                // Project the points onto the coordinate plane most parallel to the polygon by dropping
+                // the dominant axis of the normal, this projection preserves the winding order.
+                // Then sort by the diamond angle around the centroid, which is monotonic with the true angle.
+                let mutable sx = 0.0
+                let mutable sy = 0.0
+                let mutable sz = 0.0
+                for i = 0 to res.Length - 1 do
+                    sx <- sx + res.[i].X
+                    sy <- sy + res.[i].Y
+                    sz <- sz + res.[i].Z
+                let cnt = float res.Length
+                let cx = sx / cnt
+                let cy = sy / cnt
+                let cz = sz / cnt
+                // Same as Vc.DirectionDiamond, but returns 0.0 for near-zero vectors instead of failing.
+                // A near-zero vector can only occur here for duplicate points from a degenerate box.
+                let inline diamond u v =
+                    if isTooTiny (abs u + abs v) then 0.0
+                    elif v >= 0.0 then
+                        if u >= 0.0 then v / (u + v) else 1.0 - u / (-u + v)
+                    else
+                        if u < 0.0 then 2.0 - v / (-u - v) else 3.0 + u / (u - v)
+                let ax = abs nx
+                let ay = abs ny
+                let az = abs nz
+                if az >= ax && az >= ay then // drop the Z-axis, sorting counter-clockwise around the world Z-axis
+                    res |> Array.sortInPlaceBy (fun p -> diamond (p.X - cx) (p.Y - cy))
+                    if nz < 0.0 then Array.Reverse res // flip to be counter-clockwise around the plane normal
+                elif ax >= ay then // drop the X-axis, sorting counter-clockwise around the world X-axis
+                    res |> Array.sortInPlaceBy (fun p -> diamond (p.Y - cy) (p.Z - cz))
+                    if nx < 0.0 then Array.Reverse res
+                else // drop the Y-axis, sorting counter-clockwise around the world Y-axis
+                    res |> Array.sortInPlaceBy (fun p -> diamond (p.Z - cz) (p.X - cx))
+                    if ny < 0.0 then Array.Reverse res
+            ValueSome res
+
+    /// Same as b.IntersectPlane(pl).
+    static member inline intersectPlane (pl:NPlane) (b:BBox) : Pnt[] voption =
+        b.IntersectPlane pl
+
 
     // #endregion
     // #region Points
