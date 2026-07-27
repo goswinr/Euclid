@@ -87,6 +87,8 @@ let run () =
     |||
     test TestVectors.tests
     |||
+    test TestJson.tests
+    |||
     test TestFormat.tests
     |||
     test TestUtilEuclid.tests

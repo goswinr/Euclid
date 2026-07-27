@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -23,8 +23,9 @@
     <OtherFlags>$(OtherFlags) --warnon:3390</OtherFlags>    <!-- warnon:3390 is to verify xml docstrings https://devblogs.microsoft.com/dotnet/announcing-f-5/#improved-compiler-analysis-for-library-authors -->
     <OtherFlags>$(OtherFlags) --warnon:1182</OtherFlags>    <!-- 1182: warn on unused variables -->
   </PropertyGroup>
+
   <PropertyGroup>
-    <PackageTags>fsharp;geometry;fable;fable-library;fable-all</PackageTags>
+    <PackageTags>fsharp;geometry;fable;fable-library</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <IncludeSymbols>true</IncludeSymbols>
     <!-- <SymbolPackageFormat>snupkg</SymbolPackageFormat>     -->
@@ -47,7 +48,10 @@
 
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="6.0.7" />
-    <PackageReference Include="Fable.Core" Version="4.5.0" Condition="$(DefineConstants.Contains('FABLE_COMPILER'))" />    <!-- Fable.Core only to use number.toFixed() when formatting in JS -->
+    <PackageReference Include="Fable.Core" Version="4.5.0"        Condition="$(DefineConstants.Contains('FABLE_COMPILER'))" />    <!-- Fable.Core only to use number.toFixed() and emitJSExpr -->
+    <PackageReference Include="System.Text.Json" Version="8.0.6"  Condition="!$(DefineConstants.Contains('FABLE_COMPILER'))" />
+
+    <!-- build time only : -->
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.301" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
     <PackageReference Include="Ionide.KeepAChangelog.Tasks" Version="0.3.3" PrivateAssets="all" />
 
@@ -58,6 +62,7 @@
     <Compile Include="Src/EuclidErrors.fs" />
     <Compile Include="Src/UtilEuclid.fs" />
     <Compile Include="Src/Format.fs" />
+    <Compile Include="Src/JsonConvert.fs" />
     <Compile Include="Src/XY.fs" />
     <Compile Include="Src/XYZ.fs" />
 
@@ -112,10 +117,13 @@
     <Compile Include="Src/Topology3D.fs" />
     <Compile Include="Src/Similarity2D.fs" />
   </ItemGroup>
+
   <Target Name="CopyReadmeToDocs" AfterTargets="Build">    <!-- for fsdocs to build locally -->
     <Copy SourceFiles="./README.md" DestinationFiles="./Docs/index.md" ContinueOnError="false" />
   </Target>
+
   <Target Name="WriteChangelogVersion" AfterTargets="AfterBuild">    <!-- for checking that the git tag matches the Changelog during github tag based builds -->
     <WriteLinesToFile File="./bin/ChangelogVersion.txt" Lines="@(CurrentReleaseChangelog)" Overwrite="true" ContinueOnError="false" />
   </Target>
+
 </Project>

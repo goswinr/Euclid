@@ -7,6 +7,7 @@
   <ItemGroup>
     <PackageReference Include="Expecto" Version="11.1.0" />
     <PackageReference Include="Fable.Mocha" Version="2.17.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" Condition="!$(DefineConstants.Contains('FABLE_COMPILER'))" />
     <ProjectReference Include="../Euclid.fsproj" />
 
     <Compile Include="TestAPI.fs" />
@@ -40,6 +41,7 @@
     <Compile Include="TestSimilarity2D.fs" />
     <Compile Include="TestHarmonization.fs" />
     <Compile Include="TestVectors.fs" />
+    <Compile Include="TestJson.fs" />
     <Compile Include="TestAsFSharpCode.fs" />
     <Compile Include="TestResizeArr.fs" />
     <Compile Include="TestMain.fs" />
