@@ -13,6 +13,9 @@ open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see http
 open Euclid.UtilEuclid
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 open EuclidErrors
+#if !FABLE_COMPILER
+open System.Text.Json.Serialization
+#endif
 
 
 /// A struct containing 3 floats, representing an immutable 3D point. X, Y, and Z.
@@ -21,17 +24,23 @@ open EuclidErrors
 [<Struct; NoEquality; NoComparison>] // because its made up from floats
 [<IsReadOnly>]
 //[<IsByRefLike>]
+#if !FABLE_COMPILER
 [<DataContract>] // for using DataMember on fields
+[<JsonConverter(typeof<PntJsonConverter>)>]
+#endif
 type Pnt =
 
     /// The field holding the X part of this 3D point.
-    [<DataMember>] val X : float
+    [<DataMember>]
+    val X : float
 
     /// The field holding the Y part of this 3D point.
-    [<DataMember>] val Y : float
+    [<DataMember>]
+    val Y : float
 
     /// The field holding the Z part of this 3D point.
-    [<DataMember>] val Z : float
+    [<DataMember>]
+    val Z : float
 
     /// <summary>Create a new 3D point from X, Y, and Z coordinates.</summary>
     /// <remarks>When compiled in DEBUG or with CHECK_EUCLID symbol defined, this constructor checks for
@@ -120,6 +129,21 @@ type Pnt =
         if i=0 then failDivide "Pnt.DivideByInt" 0.0 pt
         let d = float i
         Pnt(pt.X/d, pt.Y/d, pt.Z/d)
+
+#if !FABLE_COMPILER
+/// Serializes a Pnt as its X, Y, and Z coordinates with System.Text.Json.
+and PntJsonConverter() =
+    inherit JsonConverter<Pnt>()
+
+    let names = [| "X"; "Y"; "Z" |]
+
+    override _.Write(writer, p, options) =
+        JsonConvert.writeFloatProperties writer options "Euclid.Pnt" names [| p.X; p.Y; p.Z |]
+
+    override _.Read(reader, _, options) =
+        let values = JsonConvert.readFloatProperties &reader options "Euclid.Pnt" names
+        Pnt(values.[0], values.[1], values.[2])
+#endif
 
 
 (*
