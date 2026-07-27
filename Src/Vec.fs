@@ -13,6 +13,9 @@ open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see http
 open Euclid.UtilEuclid
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 open EuclidErrors
+#if !FABLE_COMPILER
+open System.Text.Json.Serialization
+#endif
 
 
 
@@ -24,10 +27,13 @@ open EuclidErrors
 [<Struct; NoEquality; NoComparison>]
 [<IsReadOnly>]
 //[<IsByRefLike>] // not used, see notes at end of file
-[<DataContract>] // for using DataMember on fields
+[<DataContract>] // for using DataMember on fields, for Newtonsoft.Json
+#if !FABLE_COMPILER
+[<JsonConverter(typeof<VecJsonConverter>)>]
+#endif
 type Vec =
 
-    //[<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
+    
 
     /// The field holding the X part of this 3D vector.
     [<DataMember>] val X : float
@@ -140,3 +146,17 @@ type Vec =
     static member inline Zero : Vec =
         Vec(0, 0, 0)  // this member is needed by Seq.sum, so that it doesn't fail on empty seq.
 
+#if !FABLE_COMPILER
+/// Serializes a Vec as its X, Y, and Z coordinates with System.Text.Json.
+and VecJsonConverter() =
+    inherit JsonConverter<Vec>()
+
+    let names = [| "X"; "Y"; "Z" |]
+
+    override _.Write(writer, v, options) =
+        JsonConvert.writeFloatProperties writer options "Euclid.Vec" names [| v.X; v.Y; v.Z |]
+
+    override _.Read(reader, _, options) =
+        let values = JsonConvert.readFloatProperties &reader options "Euclid.Vec" names
+        Vec(values.[0], values.[1], values.[2])
+#endif

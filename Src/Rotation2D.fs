@@ -5,6 +5,9 @@ open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see http
 open Euclid.UtilEuclid
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 open EuclidErrors
+#if !FABLE_COMPILER
+open System.Text.Json.Serialization
+#endif
 
 /// A struct containing 2 floats, representing a 2D counter-clockwise rotation.
 /// It can be applied in World X, Y or Z plane.
@@ -16,7 +19,10 @@ open EuclidErrors
 [<Struct; NoEquality; NoComparison>]
 [<IsReadOnly>]
 //[<IsByRefLike>]
-[<DataContract>] // for using DataMember on fields
+[<DataContract>] // for using DataMember on fields, for Newtonsoft.Json
+#if !FABLE_COMPILER
+[<JsonConverter(typeof<Rotation2DJsonConverter>)>]
+#endif
 type Rotation2D =
 
 
@@ -44,6 +50,14 @@ type Rotation2D =
         #nowarn "44"
         Rotation2D (sine, cosine)
         #warnon "44" // re-enable warning for obsolete usage
+
+    /// Construct a 2D rotation from sine and cosine components.
+    /// Fails if the components do not form a unit-length pair.
+    static member create (sine, cosine) : Rotation2D =
+        let lengthSquared = sine*sine + cosine*cosine
+        if isNotOne lengthSquared then
+            failRot sine cosine
+        Rotation2D.createUnchecked(sine, cosine)
 
     /// Format rotation into string showing angle in degrees as nicely formatted floating point number.
     override r.ToString() : string =
@@ -201,3 +215,17 @@ type Rotation2D =
         let cross = ax*by - ay*bx
         Rotation2D.createUnchecked (cross, dot)
 
+#if !FABLE_COMPILER
+/// Serializes a Rotation2D as its sine and cosine components with System.Text.Json.
+and Rotation2DJsonConverter() =
+    inherit JsonConverter<Rotation2D>()
+
+    let names = [| "Sin"; "Cos" |]
+
+    override _.Write(writer, rotation, options) =
+        JsonConvert.writeFloatProperties writer options "Euclid.Rotation2D" names [| rotation.Sin; rotation.Cos |]
+
+    override _.Read(reader, _, options) =
+        let values = JsonConvert.readFloatProperties &reader options "Euclid.Rotation2D" names
+        Rotation2D.create(values.[0], values.[1])
+#endif

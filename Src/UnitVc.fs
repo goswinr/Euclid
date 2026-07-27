@@ -7,6 +7,9 @@ open System.Runtime.CompilerServices
 open Euclid.UtilEuclid
 open System.Runtime.Serialization
 open EuclidErrors
+#if !FABLE_COMPILER
+open System.Text.Json.Serialization
+#endif
 
 /// <summary>A struct containing 2 floats, representing a 2D unitized vector.
 /// All instances of this type are guaranteed to be always unitized.
@@ -15,6 +18,9 @@ open EuclidErrors
 /// Use UnitVc.create or UnitVc.createUnchecked instead.</summary>
 /// <remarks>3D unit-vectors are called 'UnitVec'</remarks>
 [<Struct;DataContract;NoEquality;NoComparison;IsReadOnly>] //[<IsByRefLike>]
+#if !FABLE_COMPILER
+[<JsonConverter(typeof<UnitVcJsonConverter>)>]
+#endif
 type UnitVc =
 
     /// Gets the X part of this 2D unit-vector.
@@ -141,13 +147,32 @@ type UnitVc =
     /// Create 2D unit-vector. Does the unitizing too.
     static member inline create (x:float, y:float) : UnitVc =
         // this member cant be an extension method because it is used with SRTP in UnitV.createFromMembersXY
-        // see error FS1114: The value 'Euclid.AutoOpenUnitVc.create' was marked inline but was not bound in the optimization environment
         let l = sqrt(x * x  + y * y)
         if isTooTiny l then failUnit2 "UnitVc.create" x y
         UnitVc.createUnchecked(x/l, y/l)
 
 
+    /// Create 3D unit-vector. Does the unitizing too. Includes the provided string message if it fails
+    static member inline createFor (msg:string, x:float, y:float) : UnitVc =
+        let l = sqrt(x*x  + y*y)
+        if isTooTiny l then failUnit2 $"UnitVc.create for {msg}" x y
+        UnitVc.createUnchecked(x/l, y/l)
 
     // These members cannot be implemented since Array.sum and Array.average of UnitVc would return a 'Vc' and not a 'UnitVc'
     // static member Zero = UnitVc (0., 0.)  // needed by 'Array.sum'
     // static member inline DivideByInt (v:UnitVc, i:int) = v / float i  // needed by  'Array.average'
+
+#if !FABLE_COMPILER
+/// Serializes a UnitVc as its X and Y components with System.Text.Json.
+and UnitVcJsonConverter() =
+    inherit JsonConverter<UnitVc>()
+
+    let names = [| "X"; "Y" |]
+
+    override _.Write(writer, vector, options) =
+        JsonConvert.writeFloatProperties writer options "Euclid.UnitVc" names [| vector.X; vector.Y |]
+
+    override _.Read(reader, _, options) =
+        let v = JsonConvert.readFloatProperties &reader options "Euclid.UnitVc" names
+        UnitVc.create(v.[0], v.[1])
+#endif

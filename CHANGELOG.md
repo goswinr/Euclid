@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.51.0] - 2026-07-28
+### Added
+- Native `System.Text.Json` support for every Euclid type. (Newtonsoft.Json is already supported.)
+- Checked `create` functions for `Rotation2D`, `PPlane`, and `Box`.
+- JSON tests for deserialization and serialization.
+
+### Changed
+- `JsonConverter.Read` implementations use checked constructors and reject invalid unit vectors, rotations, quaternions, planes, rectangles, boxes, bounds, and matrices instead of constructing them unchecked.
+
 ## [0.50.0] - 2026-07-12
 ### Added
 - Axis-aligned bounds are now first-class conversion and intersection types:
@@ -322,7 +331,8 @@ The move* names remain as obsolete aliases. The move* members on location types 
 ### Added
 - first public release
 
-[Unreleased]: https://github.com/goswinr/Euclid/compare/0.50.0...HEAD
+[Unreleased]: https://github.com/goswinr/Euclid/compare/0.51.0...HEAD
+[0.51.0]: https://github.com/goswinr/Euclid/compare/0.50.0...0.51.0
 [0.50.0]: https://github.com/goswinr/Euclid/compare/0.42.0...0.50.0
 [0.42.0]: https://github.com/goswinr/Euclid/compare/0.41.0...0.42.0
 [0.41.0]: https://github.com/goswinr/Euclid/compare/0.40.0...0.41.0

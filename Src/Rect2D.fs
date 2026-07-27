@@ -6,6 +6,9 @@ open System.Runtime.Serialization // for serialization of struct fields only but
 open UtilEuclid
 open System.Collections.Generic
 open EuclidErrors
+#if !FABLE_COMPILER
+open System.Text.Json.Serialization
+#endif
 
 
 /// <summary>
@@ -33,10 +36,13 @@ open EuclidErrors
 [<Struct; NoEquality; NoComparison>] // because its made up from floats
 [<IsReadOnly>]
 //[<IsByRefLike>]
-[<DataContract>] // for using DataMember on fields
+[<DataContract>] // for using DataMember on fields, for Newtonsoft.Json
+#if !FABLE_COMPILER
+[<JsonConverter(typeof<Rect2DJsonConverter>)>]
+#endif
 type Rect2D =
 
-    //[<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
+    
 
     /// The X coordinate of the Origin Corner of the 2D Rectangle.
     [<DataMember>] val public OriginX: float
@@ -2098,3 +2104,21 @@ type Rect2D =
     [<Obsolete("use BRect.createFromRect2D")>]
     static member bRect (r:Rect2D) : float * float * float * float =
         r.BRect
+
+#if !FABLE_COMPILER
+/// Serializes a Rect2D as its origin and axis components with System.Text.Json.
+and Rect2DJsonConverter() =
+    inherit JsonConverter<Rect2D>()
+
+    let names = [| "OriginX"; "OriginY"; "XaxisX"; "XaxisY"; "YaxisX"; "YaxisY" |]
+
+    override _.Write(writer, rectangle, options) =
+        JsonConvert.writeFloatProperties writer options "Euclid.Rect2D" names
+            [| rectangle.OriginX; rectangle.OriginY
+               rectangle.XaxisX; rectangle.XaxisY
+               rectangle.YaxisX; rectangle.YaxisY |]
+
+    override _.Read(reader, _, options) =
+        let v = JsonConvert.readFloatProperties &reader options "Euclid.Rect2D" names
+        Rect2D.createFromVectors(Pt(v.[0], v.[1]), Vc(v.[2], v.[3]), Vc(v.[4], v.[5]))
+#endif

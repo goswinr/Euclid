@@ -25,7 +25,7 @@ open System.Text.Json.Serialization
 [<IsReadOnly>]
 //[<IsByRefLike>]
 #if !FABLE_COMPILER
-[<DataContract>] // for using DataMember on fields
+[<DataContract>] // for using DataMember on fields, for Newtonsoft.Json
 [<JsonConverter(typeof<PntJsonConverter>)>]
 #endif
 type Pnt =

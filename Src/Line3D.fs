@@ -3,11 +3,17 @@
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>]
 open System.Runtime.Serialization // for serialization of struct fields only, but not properties, via [<DataMember>] attribute with Newtonsoft.Json or similar
 open System
+#if !FABLE_COMPILER
+open System.Text.Json.Serialization
+#endif
 
 /// A struct containing 6 floats, representing an immutable finite line in 3D.
 [<Struct;NoEquality;NoComparison>] // because it's made up from floats
 [<IsReadOnly>]
-[<DataContract>] // for using DataMember on fields
+[<DataContract>] // for using DataMember on fields, for Newtonsoft.Json
+#if !FABLE_COMPILER
+[<JsonConverter(typeof<Line3DJsonConverter>)>]
+#endif
 type Line3D =
 
     //[<DataMember>] // to serialize this struct field (but not properties) with Newtonsoft.Json and similar
@@ -146,3 +152,18 @@ type Line3D =
                 y + qw * ty + qz * tx - qx * tz ,
                 z + qw * tz + qx * ty - qy * tx )
 
+#if !FABLE_COMPILER
+/// Serializes a Line3D as its start and end coordinates with System.Text.Json.
+and Line3DJsonConverter() =
+    inherit JsonConverter<Line3D>()
+
+    let names = [| "FromX"; "FromY"; "FromZ"; "ToX"; "ToY"; "ToZ" |]
+
+    override _.Write(writer, line, options) =
+        JsonConvert.writeFloatProperties writer options "Euclid.Line3D" names
+            [| line.FromX; line.FromY; line.FromZ; line.ToX; line.ToY; line.ToZ |]
+
+    override _.Read(reader, _, options) =
+        let v = JsonConvert.readFloatProperties &reader options "Euclid.Line3D" names
+        Line3D(v.[0], v.[1], v.[2], v.[3], v.[4], v.[5])
+#endif

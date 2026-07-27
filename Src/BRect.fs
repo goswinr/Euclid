@@ -5,6 +5,9 @@ open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see http
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 open UtilEuclid
 open EuclidErrors
+#if !FABLE_COMPILER
+open System.Text.Json.Serialization
+#endif
 
 
 /// <summary>A struct of 4 floats representing an immutable 2D bounding rectangle.
@@ -29,9 +32,12 @@ open EuclidErrors
 [<Struct; NoEquality; NoComparison>]
 [<IsReadOnly>]
 //[<IsByRefLike>]
-[<DataContract>] // for using DataMember on fields
+[<DataContract>] // for using DataMember on fields, for Newtonsoft.Json
+#if !FABLE_COMPILER
+[<JsonConverter(typeof<BRectJsonConverter>)>]
+#endif
 type BRect =
-    //[<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
+    
 
     /// The fields holding the minimum X value of this bounding rectangle.
     [<DataMember>]
@@ -1067,3 +1073,19 @@ type BRect =
     //     (   b.MinX >= a.MinX && b.MaxX <= a.MaxX &&
     //         b.MinY >= a.MinY && b.MaxY <= a.MaxY &&
     //         b.MinZ >= a.MinZ && b.MaxZ <= a.MaxZ    )
+
+#if !FABLE_COMPILER
+/// Serializes a BRect as its minimum and maximum coordinates with System.Text.Json.
+and BRectJsonConverter() =
+    inherit JsonConverter<BRect>()
+
+    let names = [| "MinX"; "MinY"; "MaxX"; "MaxY" |]
+
+    override _.Write(writer, rectangle, options) =
+        JsonConvert.writeFloatProperties writer options "Euclid.BRect" names
+            [| rectangle.MinX; rectangle.MinY; rectangle.MaxX; rectangle.MaxY |]
+
+    override _.Read(reader, _, options) =
+        let v = JsonConvert.readFloatProperties &reader options "Euclid.BRect" names
+        BRect.create(Pt(v.[0], v.[1]), Pt(v.[2], v.[3]))
+#endif

@@ -10,6 +10,11 @@ namespace Euclid
 open System
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see https://learn.microsoft.com/en-us/dotnet/api/system.type.isbyreflike
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
+open Euclid.UtilEuclid
+open EuclidErrors
+#if !FABLE_COMPILER
+open System.Text.Json.Serialization
+#endif
 
 
 
@@ -23,9 +28,12 @@ open System.Runtime.Serialization // for serialization of struct fields only but
 /// Use PPlane.create or PPlane.createUnchecked instead.
 [<Struct; NoEquality; NoComparison>] // because it's made up from floats
 [<IsReadOnly>]
-[<DataContract>] // for using DataMember on fields
+[<DataContract>] // for using DataMember on fields, for Newtonsoft.Json
+#if !FABLE_COMPILER
+[<JsonConverter(typeof<PPlaneJsonConverter>)>]
+#endif
 type PPlane =
-    //[<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
+
 
     /// The X coordinate of the Origin 3D point of this PPlane.
     [<DataMember>] val public OriginX: float
@@ -79,9 +87,9 @@ type PPlane =
     /// Unsafe internal constructor, doesn't check if the input is perpendicular or unitized.
     /// Requires correct input of unitized perpendicular vector components.
     static member inline createUnchecked(originX: float, originY: float, originZ: float,
-                                            xAxisX: float, xAxisY: float, xAxisZ: float,
-                                            yAxisX: float, yAxisY: float, yAxisZ: float,
-                                            zAxisX: float, zAxisY: float, zAxisZ: float) : PPlane =
+                                         xAxisX: float, xAxisY: float, xAxisZ: float,
+                                         yAxisX: float, yAxisY: float, yAxisZ: float,
+                                         zAxisX: float, zAxisY: float, zAxisZ: float) : PPlane =
         #nowarn "44"
         PPlane(originX, originY, originZ, xAxisX, xAxisY, xAxisZ, yAxisX, yAxisY, yAxisZ, zAxisX, zAxisY, zAxisZ)
         #warnon "44" // re-enable warning for obsolete usage
@@ -93,6 +101,20 @@ type PPlane =
                                   axisX.X, axisX.Y, axisX.Z,
                                   axisY.X, axisY.Y, axisY.Z,
                                   axisZ.X, axisZ.Y, axisZ.Z)
+
+
+    /// Creates a PPlane from an origin and three unit-length, mutually perpendicular, right-handed axes.
+    /// Fails if the axes do not form a valid orthonormal frame.
+    static member create(origin:Pnt, axisX:UnitVec, axisY:UnitVec, axisZ:UnitVec) : PPlane =
+        if isNotZero (axisX *** axisY) then fail $"PPlane.create failed. The X and Y axes must be mutually perpendicular."
+        if isNotZero (axisX *** axisZ) then fail $"PPlane.create failed. The X and Z axes must be mutually perpendicular."
+        if isNotZero (axisY *** axisZ) then fail $"PPlane.create failed. The Y and Z axes must be mutually perpendicular."
+        if isNotOne (UnitVec.cross(axisX, axisY) *** axisZ) then fail $"PPlane.create failed. The axes must form a right-handed frame."
+        PPlane.createUnchecked(
+            origin.X, origin.Y, origin.Z,
+            axisX.X, axisX.Y, axisX.Z,
+            axisY.X, axisY.Y, axisY.Z,
+            axisZ.X, axisZ.Y, axisZ.Z)
 
 
     /// Creates a 3D point from the Origin coordinates of this PPlane.
@@ -143,9 +165,31 @@ type PPlane =
         pl.AsFSharpCode
 
 
-
-
-
-
     // see extension members in folder 'TypeExtensions/PPlane.fs'
 
+#if !FABLE_COMPILER
+/// Serializes a PPlane as its origin and axis components with System.Text.Json.
+and PPlaneJsonConverter() =
+    inherit JsonConverter<PPlane>()
+
+    let names =
+        [| "OriginX"; "OriginY"; "OriginZ"
+           "XaxisX"; "XaxisY"; "XaxisZ"
+           "YaxisX"; "YaxisY"; "YaxisZ"
+           "ZaxisX"; "ZaxisY"; "ZaxisZ" |]
+
+    override _.Write(writer, plane, options) =
+        JsonConvert.writeFloatProperties writer options "Euclid.PPlane" names
+            [| plane.OriginX; plane.OriginY; plane.OriginZ
+               plane.XaxisX; plane.XaxisY; plane.XaxisZ
+               plane.YaxisX; plane.YaxisY; plane.YaxisZ
+               plane.ZaxisX; plane.ZaxisY; plane.ZaxisZ |]
+
+    override _.Read(reader, _, options) =
+        let v = JsonConvert.readFloatProperties &reader options "Euclid.PPlane" names
+        PPlane.create(
+            Pnt(v.[0], v.[1], v.[2]),
+            UnitVec.createFor("X axis of PPlane", v.[3], v.[4], v.[5]),
+            UnitVec.createFor("Y axis of PPlane", v.[6], v.[7], v.[8]),
+            UnitVec.createFor("Z axis of PPlane", v.[9], v.[10], v.[11]))
+#endif

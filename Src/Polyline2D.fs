@@ -5,6 +5,9 @@ open UtilEuclid
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 open EuclidErrors
 open Euclid.EuclidCollectionUtilities
+#if !FABLE_COMPILER
+open System.Text.Json.Serialization
+#endif
 
 
 module R = ResizeArr
@@ -37,7 +40,10 @@ open Polyline2DUtil
 /// The source-of-truth storage is an interleaved float buffer: x0, y0, x1, y1, ...
 // [<Struct>] // if it was a struct the Polyline2D() constructor would set _XYs to null, not empty.
 [<NoEquality; NoComparison>] // because its made up from floats
-[<DataContract>] // for using DataMember on fields
+[<DataContract>] // for using DataMember on fields, for Newtonsoft.Json
+#if !FABLE_COMPILER
+[<JsonConverter(typeof<Polyline2DJsonConverter>)>]
+#endif
 type Polyline2D private (xys: ResizeArray<float>) =
 
     // /// Create a new empty Polyline2D
@@ -2430,6 +2436,19 @@ type Polyline2D private (xys: ResizeArray<float>) =
     [<Obsolete("Use Euclid.Polyline2D.createFromPts instead.")>]
     static member create (pts: seq<Pt>) : Polyline2D =
         Polyline2D.createFromPts pts
+
+#if !FABLE_COMPILER
+/// Serializes a Polyline2D as its interleaved XY coordinate buffer with System.Text.Json.
+and Polyline2DJsonConverter() =
+    inherit JsonConverter<Polyline2D>()
+
+    override _.Write(writer, polyline, options) =
+        JsonConvert.writeProperty writer options "XYs" polyline.XYs
+
+    override _.Read(reader, _, options) =
+        let xys = JsonConvert.readProperty<ResizeArray<float>> &reader options "Euclid.Polyline2D" "XYs"
+        Polyline2D.createDirectly xys
+#endif
 
 [<Obsolete("Use Euclid.Loop has been removed from Euclid in 0.20.0. use Polyline2D instead.",true)>]
 type Loop private  () =

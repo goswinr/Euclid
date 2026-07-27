@@ -6,6 +6,9 @@ open UtilEuclid
 open EuclidErrors
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 open System.Collections.Generic
+#if !FABLE_COMPILER
+open System.Text.Json.Serialization
+#endif
 
 
 /// <summary>A struct of 9 floats  representing an immutable 3D box with any rotation in 3D space.
@@ -38,10 +41,13 @@ open System.Collections.Generic
 [<Struct; NoEquality; NoComparison>] // because its made up from floats
 [<IsReadOnly>]
 //[<IsByRefLike>]
-[<DataContract>] // for using DataMember on fields
+[<DataContract>] // for using DataMember on fields, for Newtonsoft.Json
+#if !FABLE_COMPILER
+[<JsonConverter(typeof<BoxJsonConverter>)>]
+#endif
 type Box =
 
-    //[<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
+
 
     /// The X coordinate of the Origin Corner of the Box.
     [<DataMember>] val public OriginX: float
@@ -105,6 +111,32 @@ type Box =
     /// It does NOT verify the orientation of vectors.
     static member inline createUncheckedVec (origin:Pnt, xAxis:Vec, yAxis:Vec, zAxis:Vec) : Box =
         Box.createUnchecked(origin.X, origin.Y, origin.Z, xAxis.X, xAxis.Y, xAxis.Z, yAxis.X, yAxis.Y, yAxis.Z, zAxis.X, zAxis.Y, zAxis.Z)
+
+    /// Creates a box from an origin and three non-zero, mutually perpendicular, right-handed edge vectors.
+    /// Fails if any coordinate is non-finite or the axes do not form valid box geometry.
+    static member create(origin:Pnt, xAxis:Vec, yAxis:Vec, zAxis:Vec) : Box =
+        let xLengthSquared = xAxis *** xAxis
+        let yLengthSquared = yAxis *** yAxis
+        let zLengthSquared = zAxis *** zAxis
+        if isTooSmallSq xLengthSquared then
+            fail $"Box.create failed. X axis must be longer than the zero-length tolerance."
+        if isTooSmallSq yLengthSquared then
+            fail $"Box.create failed. Y axis must be longer than the zero-length tolerance."
+        if isTooSmallSq zLengthSquared then
+            fail $"Box.create failed. Z axis must be longer than the zero-length tolerance."
+
+        let perpendicularTolerance = 1e-9
+        let arePerpendicular =
+            abs (xAxis *** yAxis) <= sqrt(xLengthSquared * yLengthSquared) * perpendicularTolerance &&
+            abs (xAxis *** zAxis) <= sqrt(xLengthSquared * zLengthSquared) * perpendicularTolerance &&
+            abs (yAxis *** zAxis) <= sqrt(yLengthSquared * zLengthSquared) * perpendicularTolerance
+        if not arePerpendicular then
+            fail $"Box.create failed. The axes must be mutually perpendicular."
+
+        if Vec.cross(xAxis, yAxis) *** zAxis <= 0.0 then
+            fail $"Box.create failed. The axes must form a right-handed frame."
+
+        Box.createUncheckedVec(origin, xAxis, yAxis, zAxis)
 
     /// Creates a 3D Point from b.OriginX, b.OriginY and b.OriginZ
     member b.Origin : Pnt =
@@ -2228,3 +2260,30 @@ type Box =
     [<Obsolete("Use bBox.AsBox instead.")>]
     static member inline createFromBoundingBox (minX, minY, minZ, maxX, maxY, maxZ) : Box =
         Box.createUnchecked(minX, minY, minZ, maxX - minX, 0.0, 0.0, 0.0, maxY - minY, 0.0, 0.0, 0.0, maxZ - minZ)
+
+#if !FABLE_COMPILER
+/// Serializes a Box as its origin and axis components with System.Text.Json.
+and BoxJsonConverter() =
+    inherit JsonConverter<Box>()
+
+    let names =
+        [| "OriginX"; "OriginY"; "OriginZ"
+           "XaxisX"; "XaxisY"; "XaxisZ"
+           "YaxisX"; "YaxisY"; "YaxisZ"
+           "ZaxisX"; "ZaxisY"; "ZaxisZ" |]
+
+    override _.Write(writer, box, options) =
+        JsonConvert.writeFloatProperties writer options "Euclid.Box" names
+            [| box.OriginX; box.OriginY; box.OriginZ
+               box.XaxisX; box.XaxisY; box.XaxisZ
+               box.YaxisX; box.YaxisY; box.YaxisZ
+               box.ZaxisX; box.ZaxisY; box.ZaxisZ |]
+
+    override _.Read(reader, _, options) =
+        let v = JsonConvert.readFloatProperties &reader options "Euclid.Box" names
+        Box.create(
+            Pnt(v.[0], v.[1], v.[2]),
+            Vec(v.[3], v.[4], v.[5]),
+            Vec(v.[6], v.[7], v.[8]),
+            Vec(v.[9], v.[10], v.[11]))
+#endif

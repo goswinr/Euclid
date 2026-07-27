@@ -51,7 +51,7 @@ it's a part of implementation of persistent vector data type,
 similar to FSharpX persistent vector, but it's 4.5 times faster and not allocating anything on heap when executed in loops.
 *)
 
-// The attributes [<DataContract>] is for using DataMember on fields for serialization.
+// The attributes [<DataContract>] is for using DataMember on fields, for Newtonsoft.Json for serialization.
 // [<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
 
 open System
@@ -59,13 +59,19 @@ open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>]
 open Euclid.UtilEuclid
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 open EuclidErrors
+#if !FABLE_COMPILER
+open System.Text.Json.Serialization
+#endif
 
 
 /// <summary> Pt is an immutable 2D point. Made up from 2 floats: X and Y.</summary>
 /// <remarks> 3D Points are called 'Pnt' </remarks>
 [<Struct;NoEquality;NoComparison>]// because its made up from floats
 [<IsReadOnly>] //[<IsByRefLike>]
-[<DataContract>] // for using DataMember on fields
+[<DataContract>] // for using DataMember on fields, for Newtonsoft.Json
+#if !FABLE_COMPILER
+[<JsonConverter(typeof<PtJsonConverter>)>]
+#endif
 type Pt =
 
     /// <summary>The field holding the X part of this 2D point.</summary>
@@ -165,4 +171,17 @@ type Pt =
     static member inline Origin : Pt =
         Pt (0., 0. )
 
+#if !FABLE_COMPILER
+/// Serializes a Pt as its X and Y coordinates with System.Text.Json.
+and PtJsonConverter() =
+    inherit JsonConverter<Pt>()
 
+    let names = [| "X"; "Y" |]
+
+    override _.Write(writer, p, options) =
+        JsonConvert.writeFloatProperties writer options "Euclid.Pt" names [| p.X; p.Y |]
+
+    override _.Read(reader, _, options) =
+        let values = JsonConvert.readFloatProperties &reader options "Euclid.Pt" names
+        Pt(values.[0], values.[1])
+#endif

@@ -5,6 +5,9 @@ open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see http
 open Euclid.UtilEuclid
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 open EuclidErrors
+#if !FABLE_COMPILER
+open System.Text.Json.Serialization
+#endif
 
 // why 3x4 ?
 // https://x.com/SebAaltonen/status/1761304184379347349
@@ -35,9 +38,12 @@ open EuclidErrors
 [<Struct; NoEquality; NoComparison>] // because its made up from floats
 [<IsReadOnly>]
 //[<IsByRefLike>]
-[<DataContract>] // for using DataMember on fields
+[<DataContract>] // for using DataMember on fields, for Newtonsoft.Json
+#if !FABLE_COMPILER
+[<JsonConverter(typeof<RigidMatrixJsonConverter>)>]
+#endif
 type RigidMatrix =
-    //[<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
+    
     /// The element in row 1, column 1 of the matrix.
     [<DataMember>] val M11 : float
     /// The element in row 1, column 2 of the matrix.
@@ -857,3 +863,26 @@ type RigidMatrix =
         let m = m.ToMatrix
         m.Determinant
 
+#if !FABLE_COMPILER
+/// Serializes a RigidMatrix as its 12 elements with System.Text.Json.
+and RigidMatrixJsonConverter() =
+    inherit JsonConverter<RigidMatrix>()
+
+    let names =
+        [| "M11"; "M21"; "M31"; "X41"
+           "M12"; "M22"; "M32"; "Y42"
+           "M13"; "M23"; "M33"; "Z43" |]
+
+    override _.Write(writer, matrix, options) =
+        JsonConvert.writeFloatProperties writer options "Euclid.RigidMatrix" names
+            [| matrix.M11; matrix.M21; matrix.M31; matrix.X41
+               matrix.M12; matrix.M22; matrix.M32; matrix.Y42
+               matrix.M13; matrix.M23; matrix.M33; matrix.Z43 |]
+
+    override _.Read(reader, _, options) =
+        let v = JsonConvert.readFloatProperties &reader options "Euclid.RigidMatrix" names
+        RigidMatrix.create(
+            v.[0], v.[1], v.[2], v.[3],
+            v.[4], v.[5], v.[6], v.[7],
+            v.[8], v.[9], v.[10], v.[11])
+#endif

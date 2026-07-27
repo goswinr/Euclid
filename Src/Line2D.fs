@@ -2,11 +2,17 @@
 
 open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>]
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
+#if !FABLE_COMPILER
+open System.Text.Json.Serialization
+#endif
 
 /// A struct containing 4 floats, representing an immutable finite line in 2D.
 [<Struct;NoEquality;NoComparison>] // because it's made up from floats
 [<IsReadOnly>]
-[<DataContract>] // for using DataMember on fields
+[<DataContract>] // for using DataMember on fields, for Newtonsoft.Json
+#if !FABLE_COMPILER
+[<JsonConverter(typeof<Line2DJsonConverter>)>]
+#endif
 type Line2D =
     // [<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
 
@@ -100,3 +106,18 @@ type Line2D =
     // /// Multiplies (or applies) a Rotation2D to a 2D line.
     // static member inline ( *** ) (ln:Line2D, r:Rotation2D) =  ln.Rotate(r)
 
+#if !FABLE_COMPILER
+/// Serializes a Line2D as its start and end coordinates with System.Text.Json.
+and Line2DJsonConverter() =
+    inherit JsonConverter<Line2D>()
+
+    let names = [| "FromX"; "FromY"; "ToX"; "ToY" |]
+
+    override _.Write(writer, line, options) =
+        JsonConvert.writeFloatProperties writer options "Euclid.Line2D" names
+            [| line.FromX; line.FromY; line.ToX; line.ToY |]
+
+    override _.Read(reader, _, options) =
+        let v = JsonConvert.readFloatProperties &reader options "Euclid.Line2D" names
+        Line2D(v.[0], v.[1], v.[2], v.[3])
+#endif

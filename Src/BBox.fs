@@ -5,6 +5,9 @@ open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see http
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 open UtilEuclid
 open EuclidErrors
+#if !FABLE_COMPILER
+open System.Text.Json.Serialization
+#endif
 
 
 /// <summary>
@@ -43,9 +46,12 @@ open EuclidErrors
 [<Struct; NoEquality; NoComparison>]
 [<IsReadOnly>]
 //[<IsByRefLike>]
-[<DataContract>] // for using DataMember on fields
+#if !FABLE_COMPILER
+[<DataContract>] // for using DataMember on fields, for Newtonsoft.Json
+[<JsonConverter(typeof<BBoxJsonConverter>)>]
+#endif
 type BBox =
-    //[<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
+
 
     /// The fields holding the minimum X value of this 3D bounding box.
     [<DataMember>]
@@ -1837,3 +1843,18 @@ type BBox =
     //         b.MinY >= a.MinY && b.MaxY <= a.MaxY &&
     //         b.MinZ >= a.MinZ && b.MaxZ <= a.MaxZ    )
 
+#if !FABLE_COMPILER
+/// Serializes a BBox as its minimum and maximum coordinates with System.Text.Json.
+and BBoxJsonConverter() =
+    inherit JsonConverter<BBox>()
+
+    let names = [| "MinX"; "MinY"; "MinZ"; "MaxX"; "MaxY"; "MaxZ" |]
+
+    override _.Write(writer, box, options) =
+        JsonConvert.writeFloatProperties writer options "Euclid.BBox" names
+            [| box.MinX; box.MinY; box.MinZ; box.MaxX; box.MaxY; box.MaxZ |]
+
+    override _.Read(reader, _, options) =
+        let v = JsonConvert.readFloatProperties &reader options "Euclid.BBox" names
+        BBox.create(Pnt(v.[0], v.[1], v.[2]), Pnt(v.[3], v.[4], v.[5]))
+#endif

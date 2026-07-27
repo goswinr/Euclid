@@ -6,11 +6,17 @@ open System.Runtime.CompilerServices
 open Euclid.UtilEuclid
 open System.Runtime.Serialization
 open EuclidErrors
+#if !FABLE_COMPILER
+open System.Text.Json.Serialization
+#endif
 
 /// <summary>Vc is an immutable 2D vector with any length. Made up from 2 floats: X and Y.</summary>
 /// <remarks>2D unit-vectors with length 1.0 are called 'UnitVc'.
 /// 3D vectors are called 'Vec'.</remarks>
 [<Struct;DataContract;NoEquality;NoComparison;IsReadOnly>] //[<IsByRefLike>]
+#if !FABLE_COMPILER
+[<JsonConverter(typeof<VcJsonConverter>)>]
+#endif
 type Vc =
 
     /// <summary>The field holding the X part of this 2D vector.</summary>
@@ -106,4 +112,19 @@ type Vc =
         if i = 0 then failDivide "Vc.DivideByInt by zero" 0.0 v
         let d = float i
         Vc(v.X/d, v.Y/d)
+
+#if !FABLE_COMPILER
+/// Serializes a Vc as its X and Y components with System.Text.Json.
+and VcJsonConverter() =
+    inherit JsonConverter<Vc>()
+
+    let names = [| "X"; "Y" |]
+
+    override _.Write(writer, vector, options) =
+        JsonConvert.writeFloatProperties writer options "Euclid.Vc" names [| vector.X; vector.Y |]
+
+    override _.Read(reader, _, options) =
+        let v = JsonConvert.readFloatProperties &reader options "Euclid.Vc" names
+        Vc(v.[0], v.[1])
+#endif
 

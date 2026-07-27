@@ -13,6 +13,9 @@ open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see http
 open Euclid.UtilEuclid
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 open EuclidErrors
+#if !FABLE_COMPILER
+open System.Text.Json.Serialization
+#endif
 
 /// A struct containing 3 floats, representing a 3D unit vector.
 /// All instances of this type are guaranteed to be always unitized.
@@ -25,7 +28,10 @@ open EuclidErrors
 [<Struct; NoEquality; NoComparison>]
 [<IsReadOnly>]
 //[<IsByRefLike>] // not used, see notes at end of file
-[<DataContract>] // for using DataMember on fields
+[<DataContract>] // for using DataMember on fields, for Newtonsoft.Json
+#if !FABLE_COMPILER
+[<JsonConverter(typeof<UnitVecJsonConverter>)>]
+#endif
 type UnitVec =
 
     /// Gets the X part of this 3D unit-vector.
@@ -150,9 +156,16 @@ type UnitVec =
     /// Create 3D unit-vector. Does the unitizing too.
     static member inline create (x:float, y:float, z:float) : UnitVec =
         // this member cant be an extension method because it is used with SRTP.
-        // see error FS1114: The value 'Euclid.AutoOpenUnitVc.create' was marked inline but was not bound in the optimization environment
         let l = sqrt(x*x  + y*y + z*z)
         if isTooTiny l then failUnit3 "UnitVec.create" x y z
+        let li = 1. / l
+        UnitVec.createUnchecked(li*x, li*y, li*z)
+
+
+    /// Create 3D unit-vector. Does the unitizing too. Includes the provided string message if it fails
+    static member inline createFor (msg:string, x:float, y:float, z:float) : UnitVec =
+        let l = sqrt(x*x  + y*y + z*z)
+        if isTooTiny l then failUnit3 $"UnitVec.create for {msg}" x y z
         let li = 1. / l
         UnitVec.createUnchecked(li*x, li*y, li*z)
 
@@ -160,3 +173,18 @@ type UnitVec =
     // Array.sum and Array.average of UnitVec would return a 'Vec' and not a 'UnitVec'
     // static member Zero = UnitVec (0, 0, 0)  // needed by 'Array.sum'
     // static member inline DivideByInt (v:UnitVec, i:int) = v / float i  // needed by  'Array.average'
+
+#if !FABLE_COMPILER
+/// Serializes a UnitVec as its X, Y, and Z coordinates with System.Text.Json.
+and UnitVecJsonConverter() =
+    inherit JsonConverter<UnitVec>()
+
+    let names = [| "X"; "Y"; "Z" |]
+
+    override _.Write(writer, v, options) =
+        JsonConvert.writeFloatProperties writer options "Euclid.UnitVec" names [| v.X; v.Y; v.Z |]
+
+    override _.Read(reader, _, options) =
+        let values = JsonConvert.readFloatProperties &reader options "Euclid.UnitVec" names
+        UnitVec.create(values.[0], values.[1], values.[2])
+#endif

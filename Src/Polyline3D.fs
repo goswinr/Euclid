@@ -6,6 +6,9 @@ open System.Runtime.Serialization // for serialization of struct fields only but
 open System.Collections.Generic
 open EuclidErrors
 open Euclid.EuclidCollectionUtilities
+#if !FABLE_COMPILER
+open System.Text.Json.Serialization
+#endif
 
 
 module private Polyline3DUtil =
@@ -40,7 +43,10 @@ open Polyline3DUtil
 /// The source-of-truth storage is an interleaved float buffer: x0, y0, z0, x1, y1, z1, ...
 // [<Struct>]
 [<NoEquality; NoComparison>] // because its made up from floats
-[<DataContract>] // for using DataMember on fields
+[<DataContract>] // for using DataMember on fields, for Newtonsoft.Json
+#if !FABLE_COMPILER
+[<JsonConverter(typeof<Polyline3DJsonConverter>)>]
+#endif
 type Polyline3D private (xyzs: ResizeArray<float>) =
 
     // /// Create a new empty Polyline3D
@@ -2334,5 +2340,16 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     member p.LastSegmentIndex : int =
         p.PointCount - 2
 
+#if !FABLE_COMPILER
+/// Serializes a Polyline3D as its interleaved XYZ coordinate buffer with System.Text.Json.
+and Polyline3DJsonConverter() =
+    inherit JsonConverter<Polyline3D>()
 
+    override _.Write(writer, polyline, options) =
+        JsonConvert.writeProperty writer options "XYZs" polyline.XYZs
+
+    override _.Read(reader, _, options) =
+        let xyzs = JsonConvert.readProperty<ResizeArray<float>> &reader options "Euclid.Polyline3D" "XYZs"
+        Polyline3D.createDirectly xyzs
+#endif
 

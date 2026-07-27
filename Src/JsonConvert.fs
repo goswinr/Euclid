@@ -29,6 +29,18 @@ let writeFloatProperties
         writer.WriteEndObject()
 
 
+/// Writes an object containing a single property whose value is serialized by System.Text.Json.
+let writeProperty<'T>
+    (writer:Utf8JsonWriter)
+    (options:JsonSerializerOptions)
+    (name:string)
+    (value:'T) =
+        writer.WriteStartObject()
+        writer.WritePropertyName(jsonPropertyName options name)
+        JsonSerializer.Serialize<'T>(writer, value, options)
+        writer.WriteEndObject()
+
+
 /// Reads an object into float values ordered like the supplied property names.
 let readFloatProperties
     (reader:byref<Utf8JsonReader>)
@@ -69,6 +81,47 @@ let readFloatProperties
             raise (JsonException $"Unexpected end of JSON while reading {typeName}.")
 
         values
+
+
+/// Reads a single property whose value is deserialized by System.Text.Json.
+let readProperty<'T>
+    (reader:byref<Utf8JsonReader>)
+    (options:JsonSerializerOptions)
+    (typeName:string)
+    (name:string) =
+        if reader.TokenType <> JsonTokenType.StartObject then
+            raise (JsonException $"Expected a JSON object for {typeName}.")
+
+        let jsonName = jsonPropertyName options name
+        let comparison =
+            if options.PropertyNameCaseInsensitive then
+                StringComparison.OrdinalIgnoreCase
+            else
+                StringComparison.Ordinal
+
+        let mutable value = Unchecked.defaultof<'T>
+        let mutable complete = false
+
+        while not complete && reader.Read() do
+            match reader.TokenType with
+            | JsonTokenType.EndObject ->
+                complete <- true
+            | JsonTokenType.PropertyName ->
+                let actualName = reader.GetString()
+                if not (reader.Read()) then
+                    raise (JsonException $"Unexpected end of JSON while reading {typeName}.")
+
+                if String.Equals(actualName, jsonName, comparison) then
+                    value <- JsonSerializer.Deserialize<'T>(&reader, options)
+                else
+                    reader.Skip()
+            | _ ->
+                raise (JsonException $"Expected a property name while reading {typeName}.")
+
+        if not complete then
+            raise (JsonException $"Unexpected end of JSON while reading {typeName}.")
+
+        value
 
 
 #endif

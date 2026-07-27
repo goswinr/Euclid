@@ -5,6 +5,9 @@ open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see http
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 open UtilEuclid
 open EuclidErrors
+#if !FABLE_COMPILER
+open System.Text.Json.Serialization
+#endif
 
 
 
@@ -28,7 +31,10 @@ open EuclidErrors
 /// </code>
 /// </summary>
 [<NoEquality; NoComparison>] // because its made up from floats
-[<DataContract>] // for using DataMember on fields
+[<DataContract>] // for using DataMember on fields, for Newtonsoft.Json
+#if !FABLE_COMPILER
+[<JsonConverter(typeof<FreeBoxJsonConverter>)>]
+#endif
 type FreeBox private (pts:Pnt[]) =
 
     /// The 8 points that make up the box.
@@ -652,3 +658,16 @@ type FreeBox private (pts:Pnt[]) =
     member b.Edge11 :Line3D = b.Edge37
 
     // #endregion
+
+#if !FABLE_COMPILER
+/// Serializes a FreeBox as its eight points with System.Text.Json.
+and FreeBoxJsonConverter() =
+    inherit JsonConverter<FreeBox>()
+
+    override _.Write(writer, box, options) =
+        JsonConvert.writeProperty writer options "Points" box.Points
+
+    override _.Read(reader, _, options) =
+        let points = JsonConvert.readProperty<Pnt array> &reader options "Euclid.FreeBox" "Points"
+        FreeBox.createFromEightPoints points
+#endif

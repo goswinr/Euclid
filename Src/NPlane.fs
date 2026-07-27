@@ -5,6 +5,9 @@ open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>]
 open Euclid.UtilEuclid
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 open EuclidErrors
+#if !FABLE_COMPILER
+open System.Text.Json.Serialization
+#endif
 
 
 /// A struct containing a point and a unit normal, representing an
@@ -16,10 +19,13 @@ open EuclidErrors
 /// Use NPlane.create or NPlane.createUnchecked instead.
 [<Struct;NoEquality;NoComparison>]// because it's made up from floats
 [<IsReadOnly>]
-[<DataContract>] // for using DataMember on fields
+[<DataContract>] // for using DataMember on fields, for Newtonsoft.Json
+#if !FABLE_COMPILER
+[<JsonConverter(typeof<NPlaneJsonConverter>)>]
+#endif
 type NPlane = // NPlane to avoid a name clash with Rhino Plane
 
-    //[<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
+    
 
     /// The X coordinate of the Origin 3D point of this NPlane.
     [<DataMember>] val public OriginX : float
@@ -386,3 +392,18 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
     static member inline move (translation:Vec) (pl:NPlane)  : NPlane =
         NPlane.createUnchecked(pl.OriginX + translation.X, pl.OriginY + translation.Y, pl.OriginZ + translation.Z, pl.NormalX, pl.NormalY, pl.NormalZ)
 
+#if !FABLE_COMPILER
+/// Serializes an NPlane as its origin and normal components with System.Text.Json.
+and NPlaneJsonConverter() =
+    inherit JsonConverter<NPlane>()
+
+    let names = [| "OriginX"; "OriginY"; "OriginZ"; "NormalX"; "NormalY"; "NormalZ" |]
+
+    override _.Write(writer, plane, options) =
+        JsonConvert.writeFloatProperties writer options "Euclid.NPlane" names
+            [| plane.OriginX; plane.OriginY; plane.OriginZ; plane.NormalX; plane.NormalY; plane.NormalZ |]
+
+    override _.Read(reader, _, options) =
+        let v = JsonConvert.readFloatProperties &reader options "Euclid.NPlane" names
+        NPlane.create(Pnt(v.[0], v.[1], v.[2]), Vec(v.[3], v.[4], v.[5]))
+#endif

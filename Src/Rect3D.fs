@@ -6,6 +6,9 @@ open UtilEuclid
 open EuclidErrors
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 open System.Collections.Generic
+#if !FABLE_COMPILER
+open System.Text.Json.Serialization
+#endif
 
 
 /// <summary>
@@ -34,10 +37,13 @@ open System.Collections.Generic
 [<Struct; NoEquality; NoComparison>] // because its made up from floats
 [<IsReadOnly>]
 //[<IsByRefLike>]
-[<DataContract>] // for using DataMember on fields
+[<DataContract>] // for using DataMember on fields, for Newtonsoft.Json
+#if !FABLE_COMPILER
+[<JsonConverter(typeof<Rect3DJsonConverter>)>]
+#endif
 type Rect3D =
 
-    //[<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
+    
 
     /// The X coordinate of the Origin Corner of the 3D-rectangle.
     [<DataMember>] val public OriginX: float
@@ -2186,3 +2192,27 @@ type Rect3D =
     [<Obsolete("Use BBox.createFromRect3D instead.")>]
     static member inline bBox (r:Rect3D) : float * float * float * float * float * float =
         r.BBox
+
+#if !FABLE_COMPILER
+/// Serializes a Rect3D as its origin and axis components with System.Text.Json.
+and Rect3DJsonConverter() =
+    inherit JsonConverter<Rect3D>()
+
+    let names =
+        [| "OriginX"; "OriginY"; "OriginZ"
+           "XaxisX"; "XaxisY"; "XaxisZ"
+           "YaxisX"; "YaxisY"; "YaxisZ" |]
+
+    override _.Write(writer, rectangle, options) =
+        JsonConvert.writeFloatProperties writer options "Euclid.Rect3D" names
+            [| rectangle.OriginX; rectangle.OriginY; rectangle.OriginZ
+               rectangle.XaxisX; rectangle.XaxisY; rectangle.XaxisZ
+               rectangle.YaxisX; rectangle.YaxisY; rectangle.YaxisZ |]
+
+    override _.Read(reader, _, options) =
+        let v = JsonConvert.readFloatProperties &reader options "Euclid.Rect3D" names
+        Rect3D.createFromVectors(
+            Pnt(v.[0], v.[1], v.[2]),
+            Vec(v.[3], v.[4], v.[5]),
+            Vec(v.[6], v.[7], v.[8]))
+#endif

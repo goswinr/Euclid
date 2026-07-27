@@ -5,6 +5,9 @@ open System.Runtime.CompilerServices // for [<IsByRefLike; IsReadOnly>] see http
 open Euclid.UtilEuclid
 open System.Runtime.Serialization // for serialization of struct fields only but not properties via  [<DataMember>] attribute. with Newtonsoft.Json or similar
 open EuclidErrors
+#if !FABLE_COMPILER
+open System.Text.Json.Serialization
+#endif
 
 /// A struct containing 4 floats, representing an immutable unitized Quaternion, for arbitrary 3D rotations.
 /// This implementation guarantees the Quaternion to be always unitized.
@@ -13,11 +16,14 @@ open EuclidErrors
 [<Struct; NoEquality; NoComparison>]
 [<IsReadOnly>]
 //[<IsByRefLike>]
-[<DataContract>] // for using DataMember on fields
+[<DataContract>] // for using DataMember on fields, for Newtonsoft.Json
+#if !FABLE_COMPILER
+[<JsonConverter(typeof<QuaternionJsonConverter>)>]
+#endif
 type Quaternion =
     //  https://github.com/mrdoob/three.js/blob/dev/src/math/Quaternion.js
 
-    //[<DataMember>] //to serialize this struct field (but not properties) with Newtonsoft.Json and similar
+    
 
     /// The field holding the X component of this Quaternion.
     [<DataMember>] val X:float
@@ -570,3 +576,18 @@ type Quaternion =
     member q.Magnitude : float =
         sqrt (q.X*q.X + q.Y*q.Y + q.Z*q.Z + q.W*q.W)
 
+#if !FABLE_COMPILER
+/// Serializes a Quaternion as its X, Y, Z, and W components with System.Text.Json.
+and QuaternionJsonConverter() =
+    inherit JsonConverter<Quaternion>()
+
+    let names = [| "X"; "Y"; "Z"; "W" |]
+
+    override _.Write(writer, quaternion, options) =
+        JsonConvert.writeFloatProperties writer options "Euclid.Quaternion" names
+            [| quaternion.X; quaternion.Y; quaternion.Z; quaternion.W |]
+
+    override _.Read(reader, _, options) =
+        let values = JsonConvert.readFloatProperties &reader options "Euclid.Quaternion" names
+        Quaternion.create(values.[0], values.[1], values.[2], values.[3])
+#endif
