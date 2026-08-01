@@ -1,0 +1,9 @@
+# Store all text files with LF in the repository, independent of each
+# contributor's core.autocrlf setting. Working copies still get native
+# line endings on checkout.
+* text=auto eol=lf
+
+# Binary files, never convert:
+*.3dm binary
+*.png binary
+*.ico binary
