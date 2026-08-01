@@ -43,7 +43,7 @@ open System.Text.Json.Serialization
 #endif
 type Rect3D =
 
-    
+
 
     /// The X coordinate of the Origin Corner of the 3D-rectangle.
     [<DataMember>] val public OriginX: float
@@ -1797,16 +1797,16 @@ type Rect3D =
     /// </code></param>
     ///<param name="xOffset">The local offset distances in x direction. (Applies to the y side.) Positive values offset to the inside of the rectangle, negative values will offset outwards.</param>
     ///<param name="yOffset">The local offset distances in y direction. (Applies to the x side.) Positive values offset to the inside of the rectangle, negative values will offset outwards.</param>
-    ///<param name="xWidth">The width (or size in x direction) that will be added to the current offset.</param>
-    ///<param name="yHeight">The height (or size in y direction) that will be added to the current offset.</param>
+    ///<param name="xSize">The  size in x direction that will be added to the current offset.</param>
+    ///<param name="ySize">The  size in y direction that will be added to the current offset.</param>
     ///<returns>A new 3D-rectangle. It will always have the same X- and Y-axis orientation as the input rectangle. Independent of negative or positive offsets</returns>
-    static member offsetCorner (rect:Rect3D, corner:int, xOffset:float, yOffset:float, xWidth:float, yHeight:float) : Rect3D =
+    static member offsetCorner (rect:Rect3D, corner:int, xOffset:float, yOffset:float, xSize:float, ySize:float) : Rect3D =
         let xl = rect.SizeX
         let yl = rect.SizeY
         if isTooTiny xl then failTooSmall "Rect3D.offsetCorner: Xaxis" rect
         if isTooTiny yl then failTooSmall "Rect3D.offsetCorner: Yaxis" rect
-        let xvf = xWidth/xl
-        let yvf = yHeight/yl
+        let xvf = xSize/xl
+        let yvf = ySize/yl
         let xvX = rect.XaxisX * xvf
         let xvY = rect.XaxisY * xvf
         let xvZ = rect.XaxisZ * xvf
@@ -1826,11 +1826,11 @@ type Rect3D =
         | 0 ->
             create xOffset yOffset
         | 1 ->
-            create (xl-xOffset-xWidth) yOffset
+            create (xl-xOffset-xSize) yOffset
         | 2 ->
-            create (xl-xOffset-xWidth) (yl-yOffset-yHeight)
+            create (xl-xOffset-xSize) (yl-yOffset-ySize)
         | 3 ->
-            create xOffset (yl-yOffset-yHeight)
+            create xOffset (yl-yOffset-ySize)
         | _ ->
             fail $"Rect3D.offsetCorner: corner {corner} out of range 0..3" |> unbox // unbox to make type checker happy
 

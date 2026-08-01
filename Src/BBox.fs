@@ -14,7 +14,6 @@ open System.Text.Json.Serialization
 /// A struct of 6 floats representing an immutable 3D bounding box.
 /// This implementation guarantees the box to always be valid.
 /// That means the Min X, Y, and Z values are always smaller or equal to the respective Max values.
-/// The X, Y, and Z axes are also called Width, Depth, and Height3D.
 /// <code>
 ///   Z-axis       Y-axis
 ///   ^           /
@@ -32,7 +31,7 @@ open System.Text.Json.Serialization
 ///   +---------------+----> X-axis
 ///   0 MinPnt        1
 ///
-/// A BBox centered at the origin the points has these signs of X, Y and Z coordinates:
+/// From the center of a BBox, the points have these signs of X, Y and Z coordinates:
 /// Pt0 (-,-,-)
 /// Pt1 (+,-,-)
 /// Pt2 (+,-,+)
@@ -151,11 +150,11 @@ type BBox =
     static member inline maxPnt (b:BBox) : Pnt =
         b.MaxPnt
 
-    /// The size in X direction, often also called Width.
+    /// The size in X direction
     member inline b.SizeX : float =
         b.MaxX - b.MinX
 
-    /// Returns the X-size (width) of the 3D bounding box.
+    /// Returns the X-size of the 3D bounding box.
     static member inline sizeX (b:BBox) : float =
         b.SizeX
 
@@ -163,15 +162,15 @@ type BBox =
     member inline b.SizeY : float =
         b.MaxY - b.MinY
 
-    /// Returns the Y-size (depth) of the 3D bounding box.
+    /// Returns the Y-size of the 3D bounding box.
     static member inline sizeY (b:BBox) : float =
         b.SizeY
 
-    /// The size in Z direction, also called Height.
+    /// Returns the Z-size of the 3D bounding box.
     member inline b.SizeZ : float =
         b.MaxZ - b.MinZ
 
-    /// Returns the Z-size (height) of the 3D bounding box.
+    /// Returns the Z-size of the 3D bounding box.
     static member inline sizeZ (b:BBox) : float =
         b.SizeZ
 
