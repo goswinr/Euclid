@@ -32,7 +32,7 @@ type UnitVc =
     /// Unsafe internal constructor, doesn't check or unitize the input, public only for inlining.
     [<Obsolete("Unsafe internal constructor, doesn't check or unitize the input (unless compiled in DEBUG mode), but must be public for inlining. So marked Obsolete instead.") >]
     new (x, y) =
-        #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode // TODO : with this test all  operations are 2.5 times slower
+        #if DEBUG || CHECKED_EUCLID // CHECKED_EUCLID so checks can still be enabled when using with Fable release mode // TODO : with this test all  operations are 2.5 times slower
             if Double.IsNaN x || Double.IsNaN y || Double.IsInfinity x || Double.IsInfinity y  then
                 failNaN2 "UnitVc()" x y
             let lenSq = x*x + y*y

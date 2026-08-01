@@ -325,7 +325,7 @@ module AutoOpenEuclidResizeArrayExtensions =
         /// Gets the index of the last item in the ResizeArr.
         /// Equal to this.Count - 1
         member inline this.LastIndex : int =
-            // #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode
+            // #if DEBUG || CHECKED_EUCLID // CHECKED_EUCLID so checks can still be enabled when using with Fable release mode
             // if this.Count = 0 then fail "ResizeArr.LastIndex: Failed to get LastIndex of of empty ResizeArray."
             // #endif
             this.Count - 1
@@ -334,12 +334,12 @@ module AutoOpenEuclidResizeArrayExtensions =
         /// Equal to this.[this.Count - 1]
         member inline this.Last
             with get() =
-                #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode
+                #if DEBUG || CHECKED_EUCLID // CHECKED_EUCLID so checks can still be enabled when using with Fable release mode
                     if this.Count = 0 then failRarr "Last.get" this
                 #endif
                     this.[this |> ResizeArr.lastIdx]
             and set (v:'T) =
-                #if DEBUG || CHECK_EUCLID
+                #if DEBUG || CHECKED_EUCLID
                     if this.Count = 0 then failRarr "Last.set" this
                 #endif
                     this.[this |> ResizeArr.lastIdx] <- v
@@ -348,12 +348,12 @@ module AutoOpenEuclidResizeArrayExtensions =
         /// Equal to this.[this.Count - 2]
         member inline this.SecondLast
             with get() =
-                #if DEBUG || CHECK_EUCLID
+                #if DEBUG || CHECKED_EUCLID
                     if this.Count < 2 then failRarr "SecondLast.get" this
                 #endif
                     this.[ResizeArr.len this - 2]
             and set (v:'T) =
-                #if DEBUG || CHECK_EUCLID
+                #if DEBUG || CHECKED_EUCLID
                     if this.Count < 2 then failRarr "SecondLast.set" this
                 #endif
                     this.[ResizeArr.len this - 2] <- v
@@ -362,12 +362,12 @@ module AutoOpenEuclidResizeArrayExtensions =
         /// Equal to this.[this.Count - 3]
         member inline this.ThirdLast
             with get() =
-                #if DEBUG || CHECK_EUCLID
+                #if DEBUG || CHECKED_EUCLID
                     if this.Count < 3 then failRarr "ThirdLast.get" this
                 #endif
                     this.[ResizeArr.len this - 3]
             and set (v:'T) =
-                #if DEBUG || CHECK_EUCLID
+                #if DEBUG || CHECKED_EUCLID
                     if this.Count < 3 then failRarr "ThirdLast.set" this
                 #endif
                     this.[ResizeArr.len this - 3] <- v
@@ -376,12 +376,12 @@ module AutoOpenEuclidResizeArrayExtensions =
         /// Equal to this.[0]
         member inline this.First
             with get() =
-                #if DEBUG || CHECK_EUCLID
+                #if DEBUG || CHECKED_EUCLID
                     if this.Count = 0 then failRarr "First.get" this
                 #endif
                     this.[0]
             and set (v:'T) =
-                #if DEBUG || CHECK_EUCLID
+                #if DEBUG || CHECKED_EUCLID
                     if this.Count = 0 then failRarr "First.set" this
                 #endif
                     this.[0] <- v
@@ -390,12 +390,12 @@ module AutoOpenEuclidResizeArrayExtensions =
         /// Equal to this.[1]
         member inline this.Second
             with get() =
-                #if DEBUG || CHECK_EUCLID
+                #if DEBUG || CHECKED_EUCLID
                     if this.Count < 2 then failRarr "Second.get" this
                 #endif
                     this.[1]
             and set (v:'T) =
-                #if DEBUG || CHECK_EUCLID
+                #if DEBUG || CHECKED_EUCLID
                     if this.Count < 2 then failRarr "Second.set" this
                 #endif
                     this.[1] <- v
@@ -404,19 +404,19 @@ module AutoOpenEuclidResizeArrayExtensions =
         /// Equal to this.[2]
         member inline this.Third
             with get() =
-                #if DEBUG || CHECK_EUCLID
+                #if DEBUG || CHECKED_EUCLID
                     if this.Count < 3 then failRarr "Third.get" this
                 #endif
                     this.[2]
             and set (v:'T) =
-                #if DEBUG || CHECK_EUCLID
+                #if DEBUG || CHECKED_EUCLID
                     if this.Count < 3 then failRarr "Third.set" this
                 #endif
                     this.[2] <- v
 
         /// Get and remove last item from ResizeArr.
         member inline this.Pop() : 'T =
-            #if DEBUG || CHECK_EUCLID
+            #if DEBUG || CHECKED_EUCLID
                 if this.Count=0 then failRarr "Pop" this
             #endif
                 let i = this.Count - 1
@@ -426,7 +426,7 @@ module AutoOpenEuclidResizeArrayExtensions =
 
         /// Get and remove item at index from ResizeArr.
         member inline this.PopAt(index:int) : 'T =
-            #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode
+            #if DEBUG || CHECKED_EUCLID // CHECKED_EUCLID so checks can still be enabled when using with Fable release mode
                 if index < 0 || index >= this.Count then
                     failRarr $"Pop({index})" this
             #endif
@@ -443,7 +443,7 @@ module AutoOpenEuclidResizeArrayExtensions =
 
         /// Set item at index in ResizeArray
         member inline this.SetIdx i v : unit =
-            #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode
+            #if DEBUG || CHECKED_EUCLID // CHECKED_EUCLID so checks can still be enabled when using with Fable release mode
                 if i < 0 || i >= this.Count then
                     failRarr $"SetIdx({i})" this
             #endif

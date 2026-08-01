@@ -51,12 +51,20 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
 
     /// Unsafe internal constructor, doesn't check if the normal is unitized, public only for inlining.
     /// Creates an NPlane from Origin coordinates and normal unit vector components.
-    [<Obsolete("Unsafe internal constructor, doesn't check if the normal is unitized, but must be public for inlining. So marked Obsolete instead.")>]
+    [<Obsolete("Unsafe internal constructor, doesn't check if the normal is unitized (unless compiled in DEBUG mode or with CHECKED_EUCLID), but must be public for inlining. So marked Obsolete instead.")>]
     new (originX:float, originY:float, originZ:float, normalX:float, normalY:float, normalZ:float) =
-        {OriginX = originX; OriginY = originY; OriginZ = originZ; NormalX = normalX; NormalY = normalY; NormalZ = normalZ}
+        #if DEBUG || CHECKED_EUCLID // CHECKED_EUCLID so checks can still be enabled when using with Fable release mode
+            if isNanInfinity originX || isNanInfinity originY || isNanInfinity originZ then
+                failNaN3 "NPlane() origin" originX originY originZ
+            let lenSq = normalX*normalX + normalY*normalY + normalZ*normalZ
+            if isNotOne lenSq then
+                failNotOne3 "NPlane() normal" normalX normalY normalZ
+        #endif
+            {OriginX = originX; OriginY = originY; OriginZ = originZ; NormalX = normalX; NormalY = normalY; NormalZ = normalZ}
 
     /// Unsafe internal constructor, doesn't check if the normal is unitized.
     /// Requires correct input of unitized normal vector components.
+    /// When compiled in DEBUG mode or with the CHECKED_EUCLID symbol defined the input is verified.
     static member inline createUnchecked(originX:float, originY:float, originZ:float, normalX:float, normalY:float, normalZ:float) : NPlane =
         #nowarn "44"
         NPlane(originX, originY, originZ, normalX, normalY, normalZ)

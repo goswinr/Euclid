@@ -43,11 +43,11 @@ type Pnt =
     val Z : float
 
     /// <summary>Create a new 3D point from X, Y, and Z coordinates.</summary>
-    /// <remarks>When compiled in DEBUG or with CHECK_EUCLID symbol defined, this constructor checks for
+    /// <remarks>When compiled in DEBUG or with CHECKED_EUCLID symbol defined, this constructor checks for
     /// NaN and Infinity values and raises an exception if any are found.
     /// This check is skipped in release mode for performance reasons.</remarks>
     new (x, y, z) =
-        #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode // with this test all Pnt operations are 2.5 times slower:
+        #if DEBUG || CHECKED_EUCLID // CHECKED_EUCLID so checks can still be enabled when using with Fable release mode // with this test all Pnt operations are 2.5 times slower:
             if isNanInfinity x || isNanInfinity y || isNanInfinity z then failNaN3 "Pnt()" x y z
         #endif
             {X=x; Y=y; Z=z}

@@ -54,16 +54,23 @@ type BRect =
 
 
     /// Unsafe internal constructor, public only for inlining.
-    [<Obsolete("This is not Obsolete, but an unsafe internal constructor. the input is not verified, so it might create invalid geometry. It is exposed as a public member so that it can be inlined.") >]
+    [<Obsolete("This is not Obsolete, but an unsafe internal constructor. the input is not verified (unless compiled in DEBUG mode or with CHECKED_EUCLID), so it might create invalid geometry. It is exposed as a public member so that it can be inlined.") >]
     new (minX, minY, maxX, maxY) =
-        {MinX = minX
-         MinY = minY
-         MaxX = maxX
-         MaxY = maxY}
+        #if DEBUG || CHECKED_EUCLID // CHECKED_EUCLID so checks can still be enabled when using with Fable release mode
+            if isNanInfinity minX || isNanInfinity minY then failNaN2 "BRect() min" minX minY
+            if isNanInfinity maxX || isNanInfinity maxY then failNaN2 "BRect() max" maxX maxY
+            if minX > maxX then fail $"BRect(): minX {minX} is bigger than maxX {maxX}. (minY: {minY}, maxY: {maxY})"
+            if minY > maxY then fail $"BRect(): minY {minY} is bigger than maxY {maxY}. (minX: {minX}, maxX: {maxX})"
+        #endif
+            {MinX = minX
+             MinY = minY
+             MaxX = maxX
+             MaxY = maxY}
 
 
     /// Does not verify the order of min and max values.
     /// Creates a new bounding rectangle.
+    /// When compiled in DEBUG mode or with the CHECKED_EUCLID symbol defined the input is verified.
     static member inline createUnchecked (minX, minY, maxX, maxY) : BRect =
         #nowarn "44"
         BRect(minX, minY, maxX, maxY)

@@ -87,18 +87,39 @@ type Box =
 
     /// Unsafe internal constructor, public only for inlining.
     /// Creates a box from origin coordinates and X-, Y-, and Z-axis vector components.
-    [<Obsolete("This is not Obsolete, but an unsafe internal constructor. the input is not verified, so it might create invalid geometry. It is exposed as a public member so that it can be inlined.") >]
+    [<Obsolete("This is not Obsolete, but an unsafe internal constructor. the input is not verified (unless compiled in DEBUG mode or with CHECKED_EUCLID), so it might create invalid geometry. It is exposed as a public member so that it can be inlined.") >]
     new (originX:float, originY:float, originZ:float,
          xAxisX:float, xAxisY:float, xAxisZ:float,
          yAxisX:float, yAxisY:float, yAxisZ:float,
          zAxisX:float, zAxisY:float, zAxisZ:float) =
-           {OriginX=originX; OriginY=originY; OriginZ=originZ
-            XaxisX=xAxisX; XaxisY=xAxisY; XaxisZ=xAxisZ
-            YaxisX=yAxisX; YaxisY=yAxisY; YaxisZ=yAxisZ
-            ZaxisX=zAxisX; ZaxisY=zAxisY; ZaxisZ=zAxisZ}
+        #if DEBUG || CHECKED_EUCLID // CHECKED_EUCLID so checks can still be enabled when using with Fable release mode
+            if isNanInfinity originX || isNanInfinity originY || isNanInfinity originZ then
+                failNaN3 "Box() origin" originX originY originZ
+            // the Vec constructor checks each component for NaN and Infinity:
+            let x = Vec(xAxisX, xAxisY, xAxisZ)
+            let y = Vec(yAxisX, yAxisY, yAxisZ)
+            let z = Vec(zAxisX, zAxisY, zAxisZ)
+            // a zero length axis is allowed, a Box may be flat, a line or a point. See Box.IsFlat, Box.IsLine and Box.IsPoint.
+            let lenX = sqrt(xAxisX*xAxisX + xAxisY*xAxisY + xAxisZ*xAxisZ)
+            let lenY = sqrt(yAxisX*yAxisX + yAxisY*yAxisY + yAxisZ*yAxisZ)
+            let lenZ = sqrt(zAxisX*zAxisX + zAxisY*zAxisY + zAxisZ*zAxisZ)
+            // scale the dot-product tolerance by the axis lengths so the check is a relative angle tolerance (independent of the box size):
+            if abs (xAxisX*yAxisX + xAxisY*yAxisY + xAxisZ*yAxisZ) > lenX*lenY * 1e-9 then fail3 "Box(): X-axis and Y-axis are not perpendicular" x y z
+            if abs (xAxisX*zAxisX + xAxisY*zAxisY + xAxisZ*zAxisZ) > lenX*lenZ * 1e-9 then fail3 "Box(): X-axis and Z-axis are not perpendicular" x y z
+            if abs (yAxisX*zAxisX + yAxisY*zAxisY + yAxisZ*zAxisZ) > lenY*lenZ * 1e-9 then fail3 "Box(): Y-axis and Z-axis are not perpendicular" x y z
+            let crossX = xAxisY*yAxisZ - xAxisZ*yAxisY
+            let crossY = xAxisZ*yAxisX - xAxisX*yAxisZ
+            let crossZ = xAxisX*yAxisY - xAxisY*yAxisX
+            if isNegative (crossX*zAxisX + crossY*zAxisY + crossZ*zAxisZ) then fail3 "Box(): X-, Y- and Z-axis do not form a right-handed frame" x y z
+        #endif
+            {OriginX=originX; OriginY=originY; OriginZ=originZ
+             XaxisX=xAxisX; XaxisY=xAxisY; XaxisZ=xAxisZ
+             YaxisX=yAxisX; YaxisY=yAxisY; YaxisZ=yAxisZ
+             ZaxisX=zAxisX; ZaxisY=zAxisY; ZaxisZ=zAxisZ}
 
     /// Create a box from origin coordinates and X-, Y-, and Z-axis vector components.
     /// It does NOT verify the orientation of vectors.
+    /// When compiled in DEBUG mode or with the CHECKED_EUCLID symbol defined the input is verified.
     static member inline createUnchecked (originX:float, originY:float, originZ:float,
                                              xAxisX:float, xAxisY:float, xAxisZ:float,
                                              yAxisX:float, yAxisY:float, yAxisZ:float,

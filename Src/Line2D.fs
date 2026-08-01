@@ -30,11 +30,12 @@ type Line2D =
 
     /// Create a Line2D from 2D start point and 2D end point.
     new (fromPt:Pt, toPt:Pt) =
-            {FromX=fromPt.X; FromY=fromPt.Y; ToX=toPt.X; ToY=toPt.Y; }
+        {FromX=fromPt.X; FromY=fromPt.Y; ToX=toPt.X; ToY=toPt.Y; }
 
     /// Create a Line2D from 2D start point's x and y and 2D end point's x and y.
     new (fromX, fromY, toX, toY) =
-            {FromX=fromX; FromY=fromY;  ToX=toX; ToY=toY}
+        {FromX=fromX; FromY=fromY;  ToX=toX; ToY=toY}
+
     /// The X component of the line Direction/Vector.
     member inline ln.VectorX : float =
         ln.ToX - ln.FromX

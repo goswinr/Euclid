@@ -133,6 +133,44 @@ a *** b         // Dot product for vectors, matrix multiplication for matrices
 Thanks to [Fable](https://fable.io/), Euclid can
 be used not only on .NET but also in JavaScript, TypeScript, Rust, and Python.
 
+## The `CHECKED_EUCLID` compiler flag
+
+Several hot paths contain extra validation that is only compiled in when the `DEBUG` or the
+`CHECKED_EUCLID` symbol is defined, for example:
+
+- `NaN` and `Infinity` checks in the `Pt`, `Pnt`, `Vc` and `Vec` constructors
+- verifying that `UnitVc` and `UnitVec` really have length 1.0
+- range checks in `Rotation2D.createFromSine` and `createFromCosine`
+- index bounds checks in `Polyline2D` and `Polyline3D`
+- validation in every unsafe `createUnchecked` constructor: perpendicular and right-handed
+  axes in `Rect2D`, `Rect3D`, `Box` and `PPlane`, a unitized normal in `NPlane`,
+  a unitized `Quaternion`, and min values not bigger than max values in `BRect` and `BBox`
+
+These checks are **off by default** in release builds because they can be expensive.
+Some primitive operations are up to 2.5 times slower with them enabled.
+
+`CHECKED_EUCLID` exists so that the checks can be turned on independently of `DEBUG`.
+This is mostly useful with Fable: Fable compiles the referenced libraries from source
+rather than consuming a pre-built assembly, so the symbol actually reaches Euclid's code
+and the checks end up in the generated JavaScript or TypeScript, even in a release build.
+
+Enable it in the consuming project file:
+
+```xml
+<PropertyGroup>
+  <DefineConstants>$(DefineConstants);CHECKED_EUCLID</DefineConstants>
+</PropertyGroup>
+```
+
+or on the command line:
+
+```bash
+dotnet fable --define CHECKED_EUCLID
+```
+
+On .NET the flag only has an effect when Euclid is built from source. The Euclid package
+on NuGet is pre-compiled without it.
+
 ## Development
 
 ### Use of AI and LLMs

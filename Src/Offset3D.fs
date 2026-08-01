@@ -324,7 +324,7 @@ module Offset3D =
     /// the distance, and the precomputed cosine (= dot product of nPrev * nNext).
     /// res.Add ((nPrev + nNext) * (dist / (1.0 + cosine)) + perpDir * distPerp + pt)
     let inline setOffCorner (res:ResizeArray<float>, x:float, y:float, z:float, distInPlane:float, distPerp:float, nPrev:UnitVec, nNext:UnitVec, perpDir:UnitVec, cosine:float) : unit =
-        #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode
+        #if DEBUG || CHECKED_EUCLID // CHECKED_EUCLID so checks can still be enabled when using with Fable release mode
             if cosine < -0.9999999 then
                 fail $"Offset3D.setOffCorner: cosine is {cosine} , a 180 degree U-turn, which is not allowed here for distInPlane {distInPlane}, nPrev {nPrev}, nNext {nNext} at pt ({x}, {y}, {z})."
         #endif

@@ -46,7 +46,7 @@ type UnitVec =
     /// Unsafe internal constructor, doesn't check or unitize the input, public only for inlining.
     [<Obsolete("This is not Obsolete, but an unsafe internal constructor. the input is not verified, so it might create invalid geometry. It is exposed as a public member so that it can be inlined. So marked Obsolete instead. Use #nowarn \"44\" to hide warning.") >]
     new (x, y, z) =
-        #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode //  with these tests all operations are 2.5 times slower
+        #if DEBUG || CHECKED_EUCLID // CHECKED_EUCLID so checks can still be enabled when using with Fable release mode //  with these tests all operations are 2.5 times slower
             if isNanInfinity x || isNanInfinity y || isNanInfinity z then
                 failNaN3 "UnitVec()" x y z
             let lenSq = x*x + y*y + z*z

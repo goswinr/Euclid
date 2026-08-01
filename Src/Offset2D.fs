@@ -330,7 +330,7 @@ module Offset2D=
     /// the distance, and the precomputed cosine (= dot product of nPrev * nNext).
     /// (pt + (nPrev + nNext) * (dist / (1.0 + cosine)))
     let inline setOffCorner (res:ResizeArray<float>, x:float, y:float, dist:float, nPrevX:float, nPrevY:float, nNextX:float, nNextY:float, cosine:float) : unit =
-        #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode
+        #if DEBUG || CHECKED_EUCLID // CHECKED_EUCLID so checks can still be enabled when using with Fable release mode
             if cosine < -0.9999999 then
                 fail $"Offset2D.setOffCorner: cosine is {cosine} , a 180 degree U-turn, which is not allowed here for dist {dist}, nPrev ({nPrevX}, {nPrevY}), nNext ({nNextX}, {nNextY}) at ({x}, {y})."
         #endif

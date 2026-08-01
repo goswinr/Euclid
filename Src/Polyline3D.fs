@@ -50,7 +50,7 @@ open Polyline3DUtil
 type Polyline3D private (xyzs: ResizeArray<float>) =
 
     // /// Create a new empty Polyline3D
-    // new () = Polyline3D(ResizeArray<float>()) // do not allow this, maybe it wil be a struct in the future, and then this constructor would set _XYZs to null, not empty.
+    // new () = Polyline3D(ResizeArray<float>()) // do not allow this, maybe it wil be a struct in the future, and then this constructor would set _XYZs to null, not empty Array.
 
     /// Create a new empty Polyline3D with predefined point count capacity.
     new (capacity:int) =
@@ -99,7 +99,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// Gets the x coordinate of the point at the given position.
     /// (does xyzs.[position * 3] internally)
     member _.GetX (position:int) : float =
-        #if DEBUG || CHECK_EUCLID
+        #if DEBUG || CHECKED_EUCLID
         let len = xyzs.Count
         if position < 0 || position > len / 3 - 1 then
             failPointIndex "GetX" position xyzs
@@ -114,7 +114,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// Gets the y coordinate of the point at the given position.
     /// (does xyzs.[position * 3 + 1] internally)
     member _.GetY (position:int) : float =
-        #if DEBUG || CHECK_EUCLID
+        #if DEBUG || CHECKED_EUCLID
         let len = xyzs.Count
         if position < 0 || position > len / 3 - 1 then
             failPointIndex "GetY" position xyzs
@@ -130,7 +130,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// Gets the z coordinate of the point at the given position.
     /// (does xyzs.[position * 3 + 2] internally)
     member _.GetZ (position:int) : float =
-        #if DEBUG || CHECK_EUCLID
+        #if DEBUG || CHECKED_EUCLID
         let len = xyzs.Count
         if position < 0 || position > len / 3 - 1 then
             failPointIndex "GetZ" position xyzs
@@ -146,7 +146,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// Gets the point at the given position.
     /// (does Pnt(xyzs.[position * 3], xyzs.[position * 3 + 1], xyzs.[position * 3 + 2]) internally)
     member p.GetPt (position:int) : Pnt =
-        #if DEBUG || CHECK_EUCLID
+        #if DEBUG || CHECKED_EUCLID
         let len = xyzs.Count
         if position < 0 || position > len / 3 - 1 then
             failPointIndex "GetPt" position xyzs
@@ -162,7 +162,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// Sets the point at given position to the given point.
     /// ( sets xyzs.[position * 3] and xyzs.[position * 3 + 1] and xyzs.[position * 3 + 2] internally)
     member p.SetPnt (position:int,pt:Pnt) : unit =
-        #if DEBUG || CHECK_EUCLID
+        #if DEBUG || CHECKED_EUCLID
         let len = xyzs.Count
         if position < 0 || position > len / 3 - 1 then
             failPointIndex "SetPnt" position xyzs
@@ -179,7 +179,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// Raises an error if the position is out of range.
     /// (sets xyzs.[position * 3] and xyzs.[position * 3 + 1] and xyzs.[position * 3 + 2]  internally)
     member p.SetPointXYZClosed (position:int, x:float, y:float, z:float): unit =
-        #if DEBUG || CHECK_EUCLID
+        #if DEBUG || CHECKED_EUCLID
         let len = xyzs.Count
         if position < 0 || position > len / 3 - 1 then
             failPointIndex "SetPointXYZClosed" position xyzs
@@ -202,7 +202,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// NOTE: setting the first or last point on a closed Polyline3D might open it.
     /// (sets xyzs.[position * 3], xyzs.[position * 3 + 1], and xyzs.[position * 3 + 2] internally )
     member p.SetPointXYZ (position:int, x:float, y:float, z:float) : unit =
-        #if DEBUG || CHECK_EUCLID
+        #if DEBUG || CHECKED_EUCLID
         let len = xyzs.Count
         if position < 0 || position > len / 3 - 1 then
             failPointIndex "SetPointXYZ" position xyzs

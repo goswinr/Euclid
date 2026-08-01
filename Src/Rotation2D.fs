@@ -37,7 +37,7 @@ type Rotation2D =
     /// Unsafe internal constructor, public only for inlining.
     [<Obsolete("This is not Obsolete, but an unsafe internal constructor. the input is not verified, so it might create invalid geometry. It is exposed as a public member so that it can be inlined. So marked Obsolete instead.") >]
     new (sin, cos) =
-        #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode
+        #if DEBUG || CHECKED_EUCLID // CHECKED_EUCLID so checks can still be enabled when using with Fable release mode
             let sum = sin*sin + cos*cos in
             if 0.99999 > sum || sum > 1.00001  then failRot sin cos
         #endif
@@ -174,7 +174,7 @@ type Rotation2D =
     /// The input must be in the range [-1.0, +1.0].
     /// Note: Only angles in the range [0°, 180°] can be created since acos returns values in [0, π].
     static member inline createFromCosine cos : Rotation2D =
-        #if DEBUG || CHECK_EUCLID
+        #if DEBUG || CHECKED_EUCLID
         if cos < -1.0 || cos > 1.0 then fail $"Rotation2D.createFromCosine: input cosine {cos} is out of range [-1.0, +1.0]."
         #endif
         let sin = sqrt (1.0 - cos*cos)
@@ -184,7 +184,7 @@ type Rotation2D =
     /// The input must be in the range [-1.0, +1.0].
     /// Note: Only angles in the range [-90°, +90°] can be created since asin returns values in [-π/2, π/2].
     static member inline createFromSine sin : Rotation2D =
-        #if DEBUG || CHECK_EUCLID
+        #if DEBUG || CHECKED_EUCLID
         if sin < -1.0 || sin > 1.0 then fail $"Rotation2D.createFromSine: input sine {sin} is out of range [-1.0, +1.0]."
         #endif
         let cos = sqrt (1.0 - sin*sin)

@@ -76,7 +76,7 @@ type Rect3D =
     /// Creates a 3D rectangle from origin coordinates and X- and Y-axis vector components.
     [<Obsolete("Unsafe internal constructor, doesn't check the input (unless compiled in DEBUG mode), but must be public for inlining. So marked Obsolete instead.") >]
     new (originX:float, originY:float, originZ:float, axisXX:float, axisXY:float, axisXZ:float, axisYX:float, axisYY:float, axisYZ:float) =
-        #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode
+        #if DEBUG || CHECKED_EUCLID // CHECKED_EUCLID so checks can still be enabled when using with Fable release mode
             let lenX = sqrt(axisXX*axisXX + axisXY*axisXY + axisXZ*axisXZ)
             let lenY = sqrt(axisYX*axisYX + axisYY*axisYY + axisYZ*axisYZ)
             if isTooSmall (lenX) then  failTooSmall2 "Rect3D() axisX" (Vec(axisXX, axisXY, axisXZ)) (Vec(axisYX, axisYY, axisYZ))

@@ -289,7 +289,7 @@ module AutoOpenVc =
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         member inline v.DirectionDiamond : float =
             // https://stackoverflow.com/a/14675998/969070
-            #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode
+            #if DEBUG || CHECKED_EUCLID // CHECKED_EUCLID so checks can still be enabled when using with Fable release mode
                 if isTooTiny (abs v.X + abs v.Y) then
                     failTooSmall "Vc.DirectionDiamond" v
             #endif
@@ -326,7 +326,7 @@ module AutoOpenVc =
         /// Going counter-clockwise till two Pi.
         member inline v.Direction2Pi : float =
             // https://stackoverflow.com/a/14675998/969070
-            #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode
+            #if DEBUG || CHECKED_EUCLID // CHECKED_EUCLID so checks can still be enabled when using with Fable release mode
                 if isTooTiny (abs v.X + abs v.Y) then
                     failTooSmall "Vc.Direction2Pi" v
             #endif
@@ -347,7 +347,7 @@ module AutoOpenVc =
         /// Range 0.0 to Pi.
         member inline v.DirectionPi : float =
             // https://stackoverflow.com/a/14675998/969070
-            #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode // TODO : with this test all  operations are 2.5 times slower
+            #if DEBUG || CHECKED_EUCLID // CHECKED_EUCLID so checks can still be enabled when using with Fable release mode // TODO : with this test all  operations are 2.5 times slower
                 if isTooTinySq(v.LengthSq)  then
                     failTooSmall "Vc.DirectionPi" v
             #endif

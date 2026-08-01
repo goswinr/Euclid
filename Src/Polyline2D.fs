@@ -47,7 +47,7 @@ open Polyline2DUtil
 type Polyline2D private (xys: ResizeArray<float>) =
 
     // /// Create a new empty Polyline2D
-    // new () = Polyline2D(ResizeArray<float>()) // do not allow this, maybe it wil be a struct in the future, and then this constructor would set _XYZs to null, not empty.
+    // new () = Polyline2D(ResizeArray<float>()) // do not allow this, maybe it wil be a struct in the future, and then this constructor would set _XYZs to null, not empty Array.
 
     /// Create a new empty Polyline2D with predefined point count capacity.
     new (capacity:int) =
@@ -85,7 +85,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// Gets the x coordinate of the point at the given position.
     /// (does xys.[position * 2] internally)
     member _.GetX (position:int) : float =
-        #if DEBUG || CHECK_EUCLID
+        #if DEBUG || CHECKED_EUCLID
         let len = xys.Count
         if position < 0 || position > len / 2 - 1 then
             failPointIndex "GetX" position xys
@@ -100,7 +100,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// Gets the y coordinate of the point at the given position.
     /// (does xys.[position * 2 + 1] internally)
     member _.GetY (position:int) : float =
-        #if DEBUG || CHECK_EUCLID
+        #if DEBUG || CHECKED_EUCLID
         let len = xys.Count
         if position < 0 || position > len / 2 - 1 then
             failPointIndex "GetY" position xys
@@ -115,7 +115,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// Gets the point at the given position.
     /// (does Pt(xys.[position * 2], xys.[position * 2 + 1]) internally)
     member p.GetPt (position:int) : Pt =
-        #if DEBUG || CHECK_EUCLID
+        #if DEBUG || CHECKED_EUCLID
         let len = xys.Count
         if position < 0 || position > len / 2 - 1 then
             failPointIndex "GetPt" position xys
@@ -130,7 +130,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// Sets the point at given position to the given point.
     /// ( sets xys.[position * 2] and xys.[position * 2 + 1] internally)
     member p.SetPt (position:int, pt:Pt) : unit =
-        #if DEBUG || CHECK_EUCLID
+        #if DEBUG || CHECKED_EUCLID
         let len = xys.Count
         if position < 0 || position > len / 2 - 1 then
             failPointIndex "SetPt" position xys
@@ -147,7 +147,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// Raises an error if the position is out of range.
     /// (sets xys.[position * 2] and xys.[position * 2 + 1] internally)
     member p.SetPointXYClosed (position:int, x:float, y:float) : unit =
-        #if DEBUG || CHECK_EUCLID
+        #if DEBUG || CHECKED_EUCLID
         let len = xys.Count
         if position < 0 || position > len / 2 - 1 then
             failPointIndex "SetPointXYClosed" position xys
@@ -170,7 +170,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// NOTE: setting the first or last point on a closed Polyline2D might open it.
     /// (sets xys.[position * 2] and xys.[position * 2 + 1] internally )
     member p.SetPointXY (position:int, x:float, y:float) : unit =
-        #if DEBUG || CHECK_EUCLID
+        #if DEBUG || CHECKED_EUCLID
         let len = xys.Count
         if position < 0 || position > len / 2 - 1 then
             failPointIndex "SetPointXY" position xys

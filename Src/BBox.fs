@@ -77,18 +77,25 @@ type BBox =
     val MaxZ : float
 
     /// Unsafe internal constructor, public only for inlining.
-    [<Obsolete("This is not Obsolete, but an unsafe internal constructor. the input is not verified, so it might create invalid geometry. It is exposed as a public member so that it can be inlined.") >]
-    new (minX, minY, minZ, maxX, maxY, maxZ) = {
-        MinX = minX
-        MinY = minY
-        MinZ = minZ
-        MaxX = maxX
-        MaxY = maxY
-        MaxZ = maxZ
-        }
+    [<Obsolete("This is not Obsolete, but an unsafe internal constructor. the input is not verified (unless compiled in DEBUG mode or with CHECKED_EUCLID), so it might create invalid geometry. It is exposed as a public member so that it can be inlined.") >]
+    new (minX, minY, minZ, maxX, maxY, maxZ) =
+        #if DEBUG || CHECKED_EUCLID // CHECKED_EUCLID so checks can still be enabled when using with Fable release mode
+            if isNanInfinity minX || isNanInfinity minY || isNanInfinity minZ then failNaN3 "BBox() min" minX minY minZ
+            if isNanInfinity maxX || isNanInfinity maxY || isNanInfinity maxZ then failNaN3 "BBox() max" maxX maxY maxZ
+            if minX > maxX then fail $"BBox(): minX {minX} is bigger than maxX {maxX}. (minY: {minY}, maxY: {maxY}, minZ: {minZ}, maxZ: {maxZ})"
+            if minY > maxY then fail $"BBox(): minY {minY} is bigger than maxY {maxY}. (minX: {minX}, maxX: {maxX}, minZ: {minZ}, maxZ: {maxZ})"
+            if minZ > maxZ then fail $"BBox(): minZ {minZ} is bigger than maxZ {maxZ}. (minX: {minX}, maxX: {maxX}, minY: {minY}, maxY: {maxY})"
+        #endif
+            {MinX = minX
+             MinY = minY
+             MinZ = minZ
+             MaxX = maxX
+             MaxY = maxY
+             MaxZ = maxZ}
 
     /// Creates a 3D bounding box from six coordinate values.
     /// Does not verify that min values are less than or equal to max values.
+    /// When compiled in DEBUG mode or with the CHECKED_EUCLID symbol defined the input is verified.
     static member inline createUnchecked (minX, minY, minZ, maxX, maxY, maxZ) : BBox =
         #nowarn "44"
         BBox(minX, minY, minZ, maxX, maxY, maxZ)

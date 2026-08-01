@@ -40,7 +40,7 @@ type Quaternion =
     /// Unsafe internal constructor, public only for inlining.
     [<Obsolete("This is not Obsolete, but an unsafe internal constructor. The input is not verified, so it might create invalid geometry. It is exposed as a public member so that it can be inlined. So marked Obsolete instead.") >]
     new (x, y, z, w) =
-        #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode
+        #if DEBUG || CHECKED_EUCLID // CHECKED_EUCLID so checks can still be enabled when using with Fable release mode
             let l = x*x  + y*y + z*z + w*w
             if isNotOne l then failQuat w x y z
         #endif

@@ -81,11 +81,11 @@ type Pt =
     [<DataMember>] val Y : float
 
     /// <summary>Create a new 2D point from X and Y coordinates.</summary>
-    /// <remarks>When compiled in DEBUG or with CHECK_EUCLID symbol defined, this constructor checks for
+    /// <remarks>When compiled in DEBUG or with CHECKED_EUCLID symbol defined, this constructor checks for
     /// NaN and Infinity values and raises an exception if any are found.
     /// This check is skipped in release mode for performance reasons.</remarks>
     new (x, y) =
-        #if DEBUG || CHECK_EUCLID // CHECK_EUCLID so checks can still be enabled when using with Fable release mode // TODO : with this test all operations are 2.5 times slower
+        #if DEBUG || CHECKED_EUCLID // CHECKED_EUCLID so checks can still be enabled when using with Fable release mode // TODO : with this test all operations are 2.5 times slower
             if isNanInfinity x || isNanInfinity y then failNaN2 "Pt()" x y
         #endif
             {X=x; Y=y}

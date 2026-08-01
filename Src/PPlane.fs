@@ -73,19 +73,39 @@ type PPlane =
 
     /// Unsafe internal constructor, doesn't check if the input is perpendicular or unitized, public only for inlining.
     /// Creates a PPlane from Origin coordinates and X-, Y-, and Z-axis unit vector components.
-    [<Obsolete("Unsafe internal constructor, doesn't check if the input is perpendicular, but must be public for inlining. So marked Obsolete instead.") >]
+    [<Obsolete("Unsafe internal constructor, doesn't check if the input is perpendicular (unless compiled in DEBUG mode or with CHECKED_EUCLID), but must be public for inlining. So marked Obsolete instead.") >]
     new (originX:float, originY:float, originZ:float,
          xAxisX:float, xAxisY:float, xAxisZ:float,
          yAxisX:float, yAxisY:float, yAxisZ:float,
          zAxisX:float, zAxisY:float, zAxisZ:float) =
-           {OriginX=originX; OriginY=originY; OriginZ=originZ
-            XaxisX=xAxisX; XaxisY=xAxisY; XaxisZ=xAxisZ
-            YaxisX=yAxisX; YaxisY=yAxisY; YaxisZ=yAxisZ
-            ZaxisX=zAxisX; ZaxisY=zAxisY; ZaxisZ=zAxisZ}
+        #if DEBUG || CHECKED_EUCLID // CHECKED_EUCLID so checks can still be enabled when using with Fable release mode
+            if isNanInfinity originX || isNanInfinity originY || isNanInfinity originZ then
+                failNaN3 "PPlane() origin" originX originY originZ
+            if isNotOne (xAxisX*xAxisX + xAxisY*xAxisY + xAxisZ*xAxisZ) then failNotOne3 "PPlane() Xaxis" xAxisX xAxisY xAxisZ
+            if isNotOne (yAxisX*yAxisX + yAxisY*yAxisY + yAxisZ*yAxisZ) then failNotOne3 "PPlane() Yaxis" yAxisX yAxisY yAxisZ
+            if isNotOne (zAxisX*zAxisX + zAxisY*zAxisY + zAxisZ*zAxisZ) then failNotOne3 "PPlane() Zaxis" zAxisX zAxisY zAxisZ
+            let x = Vec(xAxisX, xAxisY, xAxisZ)
+            let y = Vec(yAxisX, yAxisY, yAxisZ)
+            let z = Vec(zAxisX, zAxisY, zAxisZ)
+            // the axes are unitized, so the dot-product is the cosine of the angle between them:
+            if isNotZero (xAxisX*yAxisX + xAxisY*yAxisY + xAxisZ*yAxisZ) then fail3 "PPlane(): X-axis and Y-axis are not perpendicular" x y z
+            if isNotZero (xAxisX*zAxisX + xAxisY*zAxisY + xAxisZ*zAxisZ) then fail3 "PPlane(): X-axis and Z-axis are not perpendicular" x y z
+            if isNotZero (yAxisX*zAxisX + yAxisY*zAxisY + yAxisZ*zAxisZ) then fail3 "PPlane(): Y-axis and Z-axis are not perpendicular" x y z
+            // the cross product of two perpendicular unit vectors is a unit vector, so its dot-product with the Z-axis is one for a right-handed frame:
+            let crossX = xAxisY*yAxisZ - xAxisZ*yAxisY
+            let crossY = xAxisZ*yAxisX - xAxisX*yAxisZ
+            let crossZ = xAxisX*yAxisY - xAxisY*yAxisX
+            if isNotOne (crossX*zAxisX + crossY*zAxisY + crossZ*zAxisZ) then fail3 "PPlane(): X-, Y- and Z-axis do not form a right-handed frame" x y z
+        #endif
+            {OriginX=originX; OriginY=originY; OriginZ=originZ
+             XaxisX=xAxisX; XaxisY=xAxisY; XaxisZ=xAxisZ
+             YaxisX=yAxisX; YaxisY=yAxisY; YaxisZ=yAxisZ
+             ZaxisX=zAxisX; ZaxisY=zAxisY; ZaxisZ=zAxisZ}
 
 
     /// Unsafe internal constructor, doesn't check if the input is perpendicular or unitized.
     /// Requires correct input of unitized perpendicular vector components.
+    /// When compiled in DEBUG mode or with the CHECKED_EUCLID symbol defined the input is verified.
     static member inline createUnchecked(originX: float, originY: float, originZ: float,
                                          xAxisX: float, xAxisY: float, xAxisZ: float,
                                          yAxisX: float, yAxisY: float, yAxisZ: float,
