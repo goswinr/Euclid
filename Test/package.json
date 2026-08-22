@@ -9,7 +9,7 @@
     "test": "npm run build && mocha dist/testsRelease && mocha dist/testsDebug"
   },
   "devDependencies": {
-    "mocha": "12.0.0-rc.5",
+    "mocha": "12.0.0-rc.6",
     "typescript": "^7.0.2"
   }
 }
