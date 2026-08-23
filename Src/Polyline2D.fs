@@ -1869,7 +1869,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// The position of start and end point is NOT changed. Use Polyline2D.close to ensure start and end point are identical.</remarks>
     static member removeDuplicatePoints (distanceTolerance:float) (pl:Polyline2D) : Polyline2D =
         let xys = pl.XYs
-        if xys.Count < 4 then // single point or empty polyline
+        if xys.Count <= 2 then // single point or empty polyline
             pl
         else
             let toSq = distanceTolerance * distanceTolerance
@@ -1894,6 +1894,53 @@ type Polyline2D private (xys: ResizeArray<float>) =
                 nps.[nps.Count - 2] <- xys.[xys.Count - 2] // ensure last point is not moved by the algorithm, it might be off by distanceTolerance
                 nps.[nps.Count - 1] <- xys.[xys.Count - 1]
             Polyline2D.createDirectly nps
+
+    /// <summary>Checks the Polyline2D for consecutive duplicate points within a given tolerance.</summary>
+    /// <param name="distanceTolerance">The distance within which points are considered duplicates.</param>
+    /// <param name="pl">A 2D Polyline, open or closed.</param>
+    /// <returns>Ok with the original Polyline2D if no duplicates were found; otherwise Error with the cleaned Polyline2D and duplicate points, with consecutive identical entries listed once per run.</returns>
+    static member checkForDuplicatePoints (distanceTolerance:float) (pl:Polyline2D) : Result<Polyline2D, Polyline2D * ResizeArray<Pt>> =
+        let xys = pl.XYs
+        if xys.Count <= 2 then // single point or empty polyline
+            Ok pl
+        else
+            let len = xys.Count
+            let toleranceSq = distanceTolerance * distanceTolerance
+            let cleanedXYs = ResizeArray<float>(len)
+            let duplicatePoints = ResizeArray<Pt>()
+            let mutable lastX = xys.[0]
+            let mutable lastY = xys.[1]
+            cleanedXYs.Add lastX
+            cleanedXYs.Add lastY
+            let mutable i = 2
+            let mutable previousPointWasSkipped = false
+            while i < len do
+                let x = xys.[i]
+                let y = xys.[i + 1]
+                let dx = x - lastX
+                let dy = y - lastY
+                if dx * dx + dy * dy > toleranceSq then
+                    cleanedXYs.Add x
+                    cleanedXYs.Add y
+                    lastX <- x
+                    lastY <- y
+                    previousPointWasSkipped <- false
+                else
+                    if not previousPointWasSkipped then
+                        duplicatePoints.Add(Pt(x, y))
+                    else
+                        let previousDuplicate = duplicatePoints.[duplicatePoints.Count - 1]
+                        if previousDuplicate.X <> x || previousDuplicate.Y <> y then
+                            duplicatePoints.Add(Pt(x, y))
+                    previousPointWasSkipped <- true
+                i <- i + 2
+            if duplicatePoints.Count = 0 then
+                Ok pl
+            else
+                if cleanedXYs.Count >= 4 then
+                    cleanedXYs.[cleanedXYs.Count - 2] <- xys.[len - 2]
+                    cleanedXYs.[cleanedXYs.Count - 1] <- xys.[len - 1]
+                Error(Polyline2D.createDirectly cleanedXYs, duplicatePoints)
 
     /// <summary>Removes consecutive duplicate points from the Polyline2D within a given tolerance.</summary>
     /// <param name="distanceTolerance"> The distance within which points are considered duplicates. </param>

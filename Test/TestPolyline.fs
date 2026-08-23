@@ -766,6 +766,33 @@ let testsDup =
                 Expect.equal cleaned.PointCount 5 "one duplicate removed"
                 Expect.isTrue cleaned.IsClosed "should stay closed"
             }
+            test "checkForDuplicatePoints returns original polyline when unchanged" {
+                let pl = Polyline2D.createFromPts [Pt(0.,0.); Pt(1.,0.); Pt(2.,0.)]
+                match Polyline2D.checkForDuplicatePoints 0.01 pl with
+                | Ok unchanged -> Expect.isTrue (obj.ReferenceEquals(pl, unchanged)) "original instance returned"
+                | Error _ -> failwith "expected no duplicate points"
+            }
+            test "checkForDuplicatePoints lists identical consecutive duplicates once" {
+                let duplicate = Pt(0.005,0.)
+                let pl = Polyline2D.createFromPts [Pt(0.,0.); duplicate; duplicate; Pt(1.,0.)]
+                match Polyline2D.checkForDuplicatePoints 0.01 pl with
+                | Ok _ -> failwith "expected duplicate points"
+                | Error(cleaned, duplicates) ->
+                    Expect.equal cleaned.PointCount 2 "duplicate points removed"
+                    Expect.equal duplicates.Count 1 "each duplicate run listed once"
+                    expectEqPts duplicates.[0] duplicate "removed point returned"
+            }
+            test "checkForDuplicatePoints reports matching duplicates from separate runs" {
+                let duplicate = Pt(0.005,0.)
+                let pl = Polyline2D.createFromPts [Pt(0.,0.); duplicate; Pt(1.,0.); Pt(0.,0.); duplicate; Pt(2.,0.)]
+                match Polyline2D.checkForDuplicatePoints 0.01 pl with
+                | Ok _ -> failwith "expected duplicate points"
+                | Error(cleaned, duplicates) ->
+                    Expect.equal cleaned.PointCount 4 "only consecutive duplicate points removed"
+                    Expect.equal duplicates.Count 2 "same duplicate reported for each separate run"
+                    expectEqPts duplicates.[0] duplicate "first occurrence returned"
+                    expectEqPts duplicates.[1] duplicate "later occurrence returned"
+            }
             test "removeDuplicateAndCollinearPoints square" {
                 let pl = Polyline2D.createFromPts [ Pt(2.,0.); Pt(4.,0.); Pt(4.,2.); Pt(4.,4.); Pt(2.,4.); Pt(0.,4.); Pt(0.,2.); Pt(0.,0.); Pt(2.,0.)]
                 let simplified = Polyline2D.removeDuplicateAndCollinearPoints Cosine.``0.1`` 1e-9  pl

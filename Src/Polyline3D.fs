@@ -1832,7 +1832,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// The position of start and end point is NOT changed. Use Polyline3D.close to ensure start and end point are identical.</remarks>
     static member removeDuplicatePoints (distanceTolerance:float) (pl:Polyline3D) : Polyline3D =
         let xyzs = pl.XYZs
-        if xyzs.Count < 6 then // single point or empty polyline
+        if xyzs.Count <= 3 then // single point or empty polyline
             pl
         else
             let len = xyzs.Count
@@ -1865,6 +1865,60 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
                 nps.[nps.Count - 2] <- xyzs.[xyzs.Count - 2]
                 nps.[nps.Count - 1] <- xyzs.[xyzs.Count - 1]
             Polyline3D.createDirectly nps
+
+    /// <summary>Checks the Polyline3D for consecutive duplicate points within a given tolerance.</summary>
+    /// <param name="distanceTolerance">The distance within which points are considered duplicates.</param>
+    /// <param name="pl">A 3D Polyline, open or closed.</param>
+    /// <returns>Ok with the original Polyline3D if no duplicates were found; otherwise Error with the cleaned Polyline3D and duplicate points, with consecutive identical entries listed once per run.</returns>
+    static member checkForDuplicatePoints (distanceTolerance:float) (pl:Polyline3D) : Result<Polyline3D, Polyline3D * ResizeArray<Pnt>> =
+        let xyzs = pl.XYZs
+        if xyzs.Count <= 3 then // single point or empty polyline
+            Ok pl
+        else
+            let len = xyzs.Count
+            let toleranceSq = distanceTolerance * distanceTolerance
+            let cleanedXYZs = ResizeArray<float>(len)
+            let duplicatePoints = ResizeArray<Pnt>()
+            let mutable lastX = xyzs.[0]
+            let mutable lastY = xyzs.[1]
+            let mutable lastZ = xyzs.[2]
+            cleanedXYZs.Add lastX
+            cleanedXYZs.Add lastY
+            cleanedXYZs.Add lastZ
+            let mutable i = 3
+            let mutable previousPointWasSkipped = false
+            while i < len do
+                let x = xyzs.[i]
+                let y = xyzs.[i + 1]
+                let z = xyzs.[i + 2]
+                let dx = x - lastX
+                let dy = y - lastY
+                let dz = z - lastZ
+                if dx * dx + dy * dy + dz * dz > toleranceSq then
+                    cleanedXYZs.Add x
+                    cleanedXYZs.Add y
+                    cleanedXYZs.Add z
+                    lastX <- x
+                    lastY <- y
+                    lastZ <- z
+                    previousPointWasSkipped <- false
+                else
+                    if not previousPointWasSkipped then
+                        duplicatePoints.Add(Pnt(x, y, z))
+                    else
+                        let previousDuplicate = duplicatePoints.[duplicatePoints.Count - 1]
+                        if previousDuplicate.X <> x || previousDuplicate.Y <> y || previousDuplicate.Z <> z then
+                            duplicatePoints.Add(Pnt(x, y, z))
+                    previousPointWasSkipped <- true
+                i <- i + 3
+            if duplicatePoints.Count = 0 then
+                Ok pl
+            else
+                if cleanedXYZs.Count >= 6 then
+                    cleanedXYZs.[cleanedXYZs.Count - 3] <- xyzs.[len - 3]
+                    cleanedXYZs.[cleanedXYZs.Count - 2] <- xyzs.[len - 2]
+                    cleanedXYZs.[cleanedXYZs.Count - 1] <- xyzs.[len - 1]
+                Error(Polyline3D.createDirectly cleanedXYZs, duplicatePoints)
 
     /// <summary>Removes consecutive duplicate points from the Polyline3D within a given tolerance.</summary>
     /// <param name="distanceTolerance"> The distance within which points are considered duplicates. </param>

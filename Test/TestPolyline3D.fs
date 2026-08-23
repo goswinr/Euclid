@@ -279,6 +279,36 @@ let tests =
             "closure preserved" |> Expect.isTrue cleaned.IsClosed
         }
 
+        test "checkForDuplicatePoints returns original polyline when unchanged" {
+            let pl = Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(2.,0.,0.)]
+            match Polyline3D.checkForDuplicatePoints 0.01 pl with
+            | Ok unchanged -> Expect.isTrue (obj.ReferenceEquals(pl, unchanged)) "original instance returned"
+            | Error _ -> failwith "expected no duplicate points"
+        }
+
+        test "checkForDuplicatePoints lists identical consecutive duplicates once" {
+            let duplicate = Pnt(0.005,0.,0.)
+            let pl = Polyline3D.createFromPts [Pnt(0.,0.,0.); duplicate; duplicate; Pnt(1.,0.,0.)]
+            match Polyline3D.checkForDuplicatePoints 0.01 pl with
+            | Ok _ -> failwith "expected duplicate points"
+            | Error(cleaned, duplicates) ->
+                Expect.equal cleaned.PointCount 2 "duplicate points removed"
+                Expect.equal duplicates.Count 1 "each removed point listed once"
+                Expect.isTrue (eqPnt duplicates.[0] duplicate) "removed point returned"
+        }
+
+        test "checkForDuplicatePoints reports matching duplicates from separate runs" {
+            let duplicate = Pnt(0.005,0.,0.)
+            let pl = Polyline3D.createFromPts [Pnt(0.,0.,0.); duplicate; Pnt(1.,0.,0.); Pnt(0.,0.,0.); duplicate; Pnt(2.,0.,0.)]
+            match Polyline3D.checkForDuplicatePoints 0.01 pl with
+            | Ok _ -> failwith "expected duplicate points"
+            | Error(cleaned, duplicates) ->
+                Expect.equal cleaned.PointCount 4 "only consecutive duplicate points removed"
+                Expect.equal duplicates.Count 2 "same duplicate reported for each separate run"
+                Expect.isTrue (eqPnt duplicates.[0] duplicate) "first occurrence returned"
+                Expect.isTrue (eqPnt duplicates.[1] duplicate) "later occurrence returned"
+        }
+
         test "GetSegment out of range throws" {
             let pts = ResizeArray([Pnt(0,0,0); Pnt(1,0,0)])
             let pl = Polyline3D(pts)
