@@ -128,7 +128,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
         p.GetPt position
 
     /// Sets the point at given position to the given point.
-    /// ( sets xys.[position * 2] and xys.[position * 2 + 1] internally)
+    /// (sets xys.[position * 2] and xys.[position * 2 + 1] internally)
     member p.SetPt (position:int, pt:Pt) : unit =
         #if DEBUG || CHECKED_EUCLID
         let len = xys.Count
@@ -138,7 +138,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
         setCoordXY position pt.X pt.Y xys
 
     /// Sets the point at given position to the given point.
-    /// ( sets xys.[position * 2] and xys.[position * 2 + 1] internally)
+    /// (sets xys.[position * 2] and xys.[position * 2 + 1] internally)
     static member inline setPt (position:int) (pt:Pt) (p:Polyline2D) : unit =
         p.SetPt (position, pt)
 
@@ -168,7 +168,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
 
     /// Sets the x and y coordinates of the point at the given index.
     /// NOTE: setting the first or last point on a closed Polyline2D might open it.
-    /// (sets xys.[position * 2] and xys.[position * 2 + 1] internally )
+    /// (sets xys.[position * 2] and xys.[position * 2 + 1] internally)
     member p.SetPointXY (position:int, x:float, y:float) : unit =
         #if DEBUG || CHECKED_EUCLID
         let len = xys.Count
@@ -179,7 +179,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
 
     /// Sets the x and y coordinates of the point at the given index.
     /// NOTE: setting the first or last point on a closed Polyline2D might open it.
-    /// (sets xys.[position * 2] and xys.[position * 2 + 1] internally )
+    /// (sets xys.[position * 2] and xys.[position * 2 + 1] internally)
     static member inline setPointXY (x:float) ( y:float) (position:int) (p:Polyline2D) : unit =
         p.SetPointXY (position, x, y)
 
@@ -473,6 +473,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
             vs
 
     /// Returns the line vectors of all segments of the Polyline2D as a list of Vc.
+    /// The length of the list is one less than the point count.
     static member inline segmentVectors (p:Polyline2D) : ResizeArray<Vc> =
         p.SegmentVectors
 
@@ -619,7 +620,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
         pl.CloseInPlace toleranceForAddingPoint
         pl
 
-    /// Calculates the signed area of the Polyline2D .
+    /// Calculates the signed area of the Polyline2D.
     /// If it is positive the Polyline2D is counter-clockwise.
     /// Polyline does not need to be exactly closed.
     /// The segment from the last point to the first point is included in the area calculation.
@@ -642,7 +643,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
             i <- i + 2
         area * 0.5
 
-    /// Calculates the signed area of the Polyline2D .
+    /// Calculates the signed area of the Polyline2D.
     /// If it is positive the Polyline2D is counter-clockwise.
     /// Polyline does not need to be exactly closed.
     /// The segment from the last point to the first point is included in the area calculation.
@@ -650,13 +651,13 @@ type Polyline2D private (xys: ResizeArray<float>) =
     static member inline signedArea (p:Polyline2D) : float =
         p.SignedArea
 
-    /// Calculates the area of the Polyline2D .
+    /// Calculates the area of the Polyline2D.
     /// The segment from the last point to the first point is included in the area calculation.
     /// For self-intersecting Polylines the result is invalid.
     member p.Area : float =
         abs p.SignedArea
 
-    /// Calculates the area of the Polyline2D .
+    /// Calculates the area of the Polyline2D.
     /// The segment from the last point to the first point is included in the area calculation.
     /// For self-intersecting Polylines the result is invalid.
     static member inline area (p:Polyline2D) : float =
@@ -856,7 +857,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
     static member inline closestPoint (pl:Polyline2D) (pt:Pt) : Pt =
         pl.ClosestPoint pt
 
-    /// Returns the index into the Polylines point list of the point that is closest to the given point.
+    /// Returns the index into the Polyline2D's point list of the point that is closest to the given point.
     member pl.ClosestPointIndex(p:Pt) : int =
         if pl.PointCount = 0 then  fail "Polyline2D.ClosestPointIndex failed on empty Polyline2D"
         let px = p.X
@@ -880,7 +881,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
             i <- i + 2
         minIdx
 
-    /// Returns the index into the Polylines point list of the point that is closest to the given point.
+    /// Returns the index into the Polyline2D's point list of the point that is closest to the given point.
     static member inline closestPointIndex (pl:Polyline2D) (pt:Pt) : int =
         pl.ClosestPointIndex pt
 
@@ -1348,26 +1349,26 @@ type Polyline2D private (xys: ResizeArray<float>) =
     // #endregion
     // #region Static members
 
-    /// Tests if Polyline2D is Clockwise.
+    /// Tests if the Polyline2D is Clockwise.
     /// Returns the same instance if the Polyline2D is already Clockwise,
     /// otherwise returns a new reversed Polyline2D.
     static member inline ensureClockwise (pl:Polyline2D) : Polyline2D =
         if pl.IsClockwise then pl else pl.Reverse()
 
-    /// Tests if Polyline2D is counter-clockwise.
+    /// Tests if the Polyline2D is counter-clockwise.
     /// Returns the same instance if the Polyline2D is already counter-clockwise,
     /// otherwise returns a new reversed Polyline2D.
     static member inline ensureCounterClockwise (pl:Polyline2D) : Polyline2D =
         if pl.IsCounterClockwise then pl else pl.Reverse()
 
-    /// Tests if Polyline2D is Clockwise.
+    /// Tests if the Polyline2D is Clockwise.
     /// If not reverse the Polyline2D in place.
     /// Always returns the same instance.
     static member inline ensureClockwiseInPlace (pl:Polyline2D) : Polyline2D =
         if pl.IsCounterClockwise then pl.ReverseInPlace()
         pl
 
-    /// Tests if Polyline2D is counter-clockwise.
+    /// Tests if the Polyline2D is counter-clockwise.
     /// If not reverse the Polyline2D in place.
     /// Always returns the same instance.
     static member inline ensureCounterClockwiseInPlace (pl:Polyline2D) : Polyline2D =
@@ -1403,7 +1404,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
         Polyline2D(cs)
 
     /// <summary>Apply a mapping function to each point in the Polyline2D with point position (not float index). Returns new Polyline2D.</summary>
-    /// <param name="mapping">A function that takes the position of the point (index/2) and the point itself, and returns a new point.
+    /// <param name="mapping">A function that takes the position of the point ( = array index/2) and the point itself, and returns a new point.
     /// </param>
     /// <param name="pl">The Polyline2D to map over.</param>
     /// <returns>A new Polyline2D with the mapped points.</returns>
@@ -1435,7 +1436,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
             i <- i + 2
         Polyline2D(cs)
 
-    /// <summary>Iterate over each point in the Polyline2D and perform an action.</summary>
+    /// <summary>Iterate over each point in the Polyline2D.</summary>
     /// <param name="action">A function that takes a point.</param>
     /// <param name="pl">The Polyline2D to iterate over.</param>
     /// <returns>Unit.</returns>
@@ -1447,8 +1448,8 @@ type Polyline2D private (xys: ResizeArray<float>) =
             action (Pt(xys.[i], xys.[i + 1]))
             i <- i + 2
 
-    /// <summary>Iterate over each point in the Polyline2D with index and perform an action.</summary>
-    /// <param name="action">A function that takes the position of the point (index/2) and the point itself.</param>
+    /// <summary>Iterate over each point in the Polyline2D with index.</summary>
+    /// <param name="action">A function that takes the position of the point ( = array index/2) and the point itself.</param>
     /// <param name="pl">The Polyline2D to iterate over.</param>
     /// <returns>Unit.</returns>
     static member iteriPt (action:int -> Pt -> unit) (pl:Polyline2D) : unit =
@@ -1868,7 +1869,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// <summary>Removes consecutive duplicate points from the Polyline2D within a given tolerance.</summary>
     /// <param name="distanceTolerance"> The distance within which points are considered duplicates. </param>
     /// <param name="pl"> A 2D Polyline, open or closed. </param>
-    /// <remarks>This algorithm keeps edges in position by using re-intersecting segments if points are closer than the distanceTolerance but not identical.
+    /// <remarks>This algorithm keeps edges in their position by re-intersecting segments if points are closer than the distanceTolerance but not identical.
     /// The position of start and end point is NOT changed. Use Polyline2D.close to ensure start and end point are identical.</remarks>
     static member removeDuplicatePointsFaithfully (distanceTolerance:float) (pl:Polyline2D) : Polyline2D =
         let xys = pl.XYs
