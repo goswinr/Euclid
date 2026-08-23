@@ -49,7 +49,7 @@
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="6.0.7" />
     <PackageReference Include="Fable.Core" Version="4.5.0"        Condition="$(DefineConstants.Contains('FABLE_COMPILER'))" />    <!-- Fable.Core only to use number.toFixed() and emitJSExpr -->
-    <PackageReference Include="System.Text.Json" Version="10.0.10"  Condition="'$(TargetFramework)' == 'net472' and !$(DefineConstants.Contains('FABLE_COMPILER'))" /> <!-- only on net472 runtime -->
+    <PackageReference Include="System.Text.Json" Version="4.6.0"  Condition="'$(TargetFramework)' == 'net472' and !$(DefineConstants.Contains('FABLE_COMPILER'))" /> <!-- only on net472 runtime; pinned to lowest version with the required APIs, excluded from Dependabot updates in .github/dependabot.yml -->
 
     <!-- build time only : -->
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.301" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
