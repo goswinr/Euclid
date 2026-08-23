@@ -20,6 +20,7 @@ updates:
       - dependency-type: "all"
     ignore:
       - dependency-name: "FSharp.Core"
+      - dependency-name: "System.Text.Json" # pinned to lowest version supporting net472, see Euclid.fsproj
 
     cooldown:
       default-days: 7

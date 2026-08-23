@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - The `CHECK_EUCLID` compiler symbol was renamed to `CHECKED_EUCLID`.
+- Pinned the `System.Text.Json` package reference (net472 only) to the lowest version providing the required APIs, `4.6.0`, instead of tracking latest, and excluded it from Dependabot version updates.
 
 ## [0.51.0] - 2026-07-28
 ### Added
