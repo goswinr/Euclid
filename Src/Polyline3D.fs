@@ -16,7 +16,7 @@ module private Polyline3DUtil =
     let inline countPts (xyzs: ResizeArray<float>) = ResizeArr.len xyzs / 3
 
     let failPointIndex methodName idx (xyzs: ResizeArray<float>) =
-        fail $"Polyline3D.{methodName}: index {idx} is out of range for Polyline3D with {countPts xyzs} points."
+        fail $"Polyline3D.{methodName}: pointIndex {idx} is out of range for Polyline3D with {countPts xyzs} points."
 
 
     let inline getPt i (xyzs: ResizeArray<float>) = Pnt(xyzs.[i * 3], xyzs.[i * 3 + 1], xyzs.[i * 3 + 2])
@@ -96,124 +96,124 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     // #endregion
     // #region Get /Set
 
-    /// Gets the x coordinate of the point at the given position.
-    /// (does xyzs.[position * 3] internally)
-    member _.GetX (position:int) : float =
+    /// Gets the x coordinate of the 3D point at the given pointIndex in the list of points.
+    /// (this gets XYZs.[pointIndex * 3] from the internal flat list of x, y, and z coordinates )
+    member _.GetX (pointIndex:int) : float =
         #if DEBUG || CHECKED_EUCLID
         let len = xyzs.Count
-        if position < 0 || position > len / 3 - 1 then
-            failPointIndex "GetX" position xyzs
+        if pointIndex < 0 || pointIndex > len / 3 - 1 then
+            failPointIndex "GetX" pointIndex xyzs
         #endif
-        xyzs.[position * 3]
+        xyzs.[pointIndex * 3]
 
-    /// Gets the x coordinate of the point at the given index.
-    /// (does xyzs.[position * 3] internally)
-    static member inline getX (position:int) (p:Polyline3D) : float =
-        p.GetX position
+    /// Gets the x coordinate of the 3D point at the given pointIndex in the list of points.
+    /// (this gets XYZs.[pointIndex * 3] from the internal flat list of x, y, and z coordinates )
+    static member inline getX (pointIndex:int) (p:Polyline3D) : float =
+        p.GetX pointIndex
 
-    /// Gets the y coordinate of the point at the given position.
-    /// (does xyzs.[position * 3 + 1] internally)
-    member _.GetY (position:int) : float =
+    /// Gets the y coordinate of the 3D point at the given pointIndex in the list of points.
+    /// (this gets XYZs.[pointIndex * 3 + 1] from the internal flat list of x, y, and z coordinates )
+    member _.GetY (pointIndex:int) : float =
         #if DEBUG || CHECKED_EUCLID
         let len = xyzs.Count
-        if position < 0 || position > len / 3 - 1 then
-            failPointIndex "GetY" position xyzs
+        if pointIndex < 0 || pointIndex > len / 3 - 1 then
+            failPointIndex "GetY" pointIndex xyzs
         #endif
-        xyzs.[position * 3 + 1]
+        xyzs.[pointIndex * 3 + 1]
 
-    /// Gets the y coordinate of the point at the given index.
-    /// (does xyzs.[position * 3 + 1] internally)
-    static member inline getY(position:int) (p:Polyline3D) : float =
-        p.GetY position
+    /// Gets the y coordinate of the 3D point at the given pointIndex in the list of points.
+    /// (this gets XYZs.[pointIndex * 3 + 1] from the internal flat list of x, y, and z coordinates )
+    static member inline getY(pointIndex:int) (p:Polyline3D) : float =
+        p.GetY pointIndex
 
 
-    /// Gets the z coordinate of the point at the given position.
-    /// (does xyzs.[position * 3 + 2] internally)
-    member _.GetZ (position:int) : float =
+    /// Gets the z coordinate of the 3D point at the given pointIndex in the list of points.
+    /// (this gets XYZs.[pointIndex * 3 + 2] from the internal flat list of x, y, and z coordinates )
+    member _.GetZ (pointIndex:int) : float =
         #if DEBUG || CHECKED_EUCLID
         let len = xyzs.Count
-        if position < 0 || position > len / 3 - 1 then
-            failPointIndex "GetZ" position xyzs
+        if pointIndex < 0 || pointIndex > len / 3 - 1 then
+            failPointIndex "GetZ" pointIndex xyzs
         #endif
-        xyzs.[position * 3 + 2]
+        xyzs.[pointIndex * 3 + 2]
 
-    /// Gets the z coordinate of the point at the given index.
-    /// (does xyzs.[position * 3 + 2] internally)
-    static member inline getZ (position:int) (p:Polyline3D) : float =
-        p.GetZ position
+    /// Gets the z coordinate of the 3D point at the given pointIndex in the list of points.
+    /// (this gets XYZs.[pointIndex * 3 + 2] from the internal flat list of x, y, and z coordinates )
+    static member inline getZ (pointIndex:int) (p:Polyline3D) : float =
+        p.GetZ pointIndex
 
 
-    /// Gets the point at the given position.
-    /// (does Pnt(xyzs.[position * 3], xyzs.[position * 3 + 1], xyzs.[position * 3 + 2]) internally)
-    member p.GetPt (position:int) : Pnt =
+    /// Gets the 3D point at the given pointIndex in the list of points.
+    /// (this gets Pnt(XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1], XYZs.[pointIndex * 3 + 2]) from the internal flat list of x, y, and z coordinates )
+    member p.GetPt (pointIndex:int) : Pnt =
         #if DEBUG || CHECKED_EUCLID
         let len = xyzs.Count
-        if position < 0 || position > len / 3 - 1 then
-            failPointIndex "GetPt" position xyzs
+        if pointIndex < 0 || pointIndex > len / 3 - 1 then
+            failPointIndex "GetPt" pointIndex xyzs
         #endif
-        getPt position xyzs
+        getPt pointIndex xyzs
 
-    /// Gets the point at the given position.
-    /// (does Pnt(xyzs.[position * 3], xyzs.[position * 3 + 1], xyzs.[position * 3 + 2]) internally)
-    static member inline getPt (position:int) (p:Polyline3D) : Pnt =
-        p.GetPt position
+    /// Gets the 3D point at the given pointIndex in the list of points.
+    /// (this gets Pnt(XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1], XYZs.[pointIndex * 3 + 2]) from the internal flat list of x, y, and z coordinates )
+    static member inline getPt (pointIndex:int) (p:Polyline3D) : Pnt =
+        p.GetPt pointIndex
 
 
-    /// Sets the point at given position to the given point.
-    /// ( sets xyzs.[position * 3] and xyzs.[position * 3 + 1] and xyzs.[position * 3 + 2] internally)
-    member p.SetPnt (position:int,pt:Pnt) : unit =
+    /// Sets the 3D point at the given pointIndex in the list of points.
+    /// (this sets XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1], and XYZs.[pointIndex * 3 + 2] in the internal flat list of x, y, and z coordinates )
+    member p.SetPnt (pointIndex:int,pt:Pnt) : unit =
         #if DEBUG || CHECKED_EUCLID
         let len = xyzs.Count
-        if position < 0 || position > len / 3 - 1 then
-            failPointIndex "SetPnt" position xyzs
+        if pointIndex < 0 || pointIndex > len / 3 - 1 then
+            failPointIndex "SetPnt" pointIndex xyzs
         #endif
-        p.SetPointXYZ (position, pt.X, pt.Y, pt.Z)
+        p.SetPointXYZ (pointIndex, pt.X, pt.Y, pt.Z)
 
-    /// Sets the point at given position to the given point.
-    /// ( sets xyzs.[position * 3] and xyzs.[position * 3 + 1] and xyzs.[position * 3 + 2] internally)
-    static member inline setPnt (position:int) (pt:Pnt) (p:Polyline3D) : unit =
-        p.SetPnt (position, pt)
+    /// Sets the 3D point at the given pointIndex in the list of points.
+    /// (this sets XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1], and XYZs.[pointIndex * 3 + 2] in the internal flat list of x, y, and z coordinates )
+    static member inline setPnt (pointIndex:int) (pt:Pnt) (p:Polyline3D) : unit =
+        p.SetPnt (pointIndex, pt)
 
-    /// Sets the x, y, and z coordinates of the point at the given position.
+    /// Sets the x, y, and z coordinates of the 3D point at the given pointIndex in the list of points.
     /// On a closed Polyline3D, setting the first or last point will set both to the same point.
-    /// Raises an error if the position is out of range.
-    /// (sets xyzs.[position * 3] and xyzs.[position * 3 + 1] and xyzs.[position * 3 + 2]  internally)
-    member p.SetPointXYZClosed (position:int, x:float, y:float, z:float): unit =
+    /// Raises an error if the pointIndex is out of range.
+    /// (this sets XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1], and XYZs.[pointIndex * 3 + 2] in the internal flat list of x, y, and z coordinates )
+    member p.SetPointXYZClosed (pointIndex:int, x:float, y:float, z:float): unit =
         #if DEBUG || CHECKED_EUCLID
         let len = xyzs.Count
-        if position < 0 || position > len / 3 - 1 then
-            failPointIndex "SetPointXYZClosed" position xyzs
+        if pointIndex < 0 || pointIndex > len / 3 - 1 then
+            failPointIndex "SetPointXYZClosed" pointIndex xyzs
         #endif
         let wasClosed = p.IsClosed
-        if wasClosed && position = 0 then
+        if wasClosed && pointIndex = 0 then
             setCoordXYZ (p.PointCount-1) x y z xyzs
-        elif wasClosed && position = p.PointCount-1 then
+        elif wasClosed && pointIndex = p.PointCount-1 then
             setCoordXYZ 0 x y z xyzs
-        setCoordXYZ position x y z xyzs
+        setCoordXYZ pointIndex x y z xyzs
 
-    /// Sets the x, y, and z coordinates of the point at the given index.
+    /// Sets the x, y, and z coordinates of the 3D point at the given pointIndex in the list of points.
     /// On a closed Polyline3D, setting the first or last point will set both to the same point.
-    /// Raises an error if the index is out of range.
-    /// (sets xyzs.[position * 3], xyzs.[position * 3 + 1], and xyzs.[position * 3 + 2] internally)
-    static member inline setPointXYZClosed x y z (position:int) (p:Polyline3D) : unit =
-        p.SetPointXYZClosed (position, x, y, z)
+    /// Raises an error if the pointIndex is out of range.
+    /// (this sets XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1], and XYZs.[pointIndex * 3 + 2] in the internal flat list of x, y, and z coordinates )
+    static member inline setPointXYZClosed x y z (pointIndex:int) (p:Polyline3D) : unit =
+        p.SetPointXYZClosed (pointIndex, x, y, z)
 
-    /// Sets the x, y, and z coordinates of the point at the given index.
+    /// Sets the x, y, and z coordinates of the 3D point at the given pointIndex in the list of points.
     /// NOTE: setting the first or last point on a closed Polyline3D might open it.
-    /// (sets xyzs.[position * 3], xyzs.[position * 3 + 1], and xyzs.[position * 3 + 2] internally )
-    member p.SetPointXYZ (position:int, x:float, y:float, z:float) : unit =
+    /// (this sets XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1], and XYZs.[pointIndex * 3 + 2] in the internal flat list of x, y, and z coordinates )
+    member p.SetPointXYZ (pointIndex:int, x:float, y:float, z:float) : unit =
         #if DEBUG || CHECKED_EUCLID
         let len = xyzs.Count
-        if position < 0 || position > len / 3 - 1 then
-            failPointIndex "SetPointXYZ" position xyzs
+        if pointIndex < 0 || pointIndex > len / 3 - 1 then
+            failPointIndex "SetPointXYZ" pointIndex xyzs
         #endif
-        setCoordXYZ position x y z xyzs
+        setCoordXYZ pointIndex x y z xyzs
 
-    /// Sets the x, y, and z coordinates of the point at the given index.
+    /// Sets the x, y, and z coordinates of the 3D point at the given pointIndex in the list of points.
     /// NOTE: setting the first or last point on a closed Polyline3D might open it.
-    /// (sets xyzs.[position * 3], xyzs.[position * 3 + 1], and xyzs.[position * 3 + 2] internally )
-    static member inline setPointXYZ x y z (position:int) (p:Polyline3D) : unit =
-        p.SetPointXYZ (position, x, y, z)
+    /// (this sets XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1], and XYZs.[pointIndex * 3 + 2] in the internal flat list of x, y, and z coordinates )
+    static member inline setPointXYZ x y z (pointIndex:int) (p:Polyline3D) : unit =
+        p.SetPointXYZ (pointIndex, x, y, z)
 
     /// Adds a point from x, y, and z coordinates.
     member _.AddXYZ (x:float, y:float, z:float) : unit =
@@ -259,7 +259,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     static member inline asString (pl:Polyline3D) : string =
         pl.AsString
 
-    /// Format this 3D polyline into an F# code string that can be used to recreate the polyline.
+    /// Format a 3D polyline into an F# code string that can be used to recreate the polyline.
     member p.AsFSharpCode : string =
         let ptsAsCode =
             p.AsPoints
@@ -267,7 +267,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             |> String.concat "; "
         $"Polyline3D.create [| {ptsAsCode} |]"
 
-    /// Format this 3D polyline into an F# code string that can be used to recreate the polyline.
+    /// Format a 3D polyline into an F# code string that can be used to recreate the polyline.
     static member inline asFSharpCode (pl:Polyline3D) : string =
         pl.AsFSharpCode
 
@@ -294,7 +294,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     static member inline clone (pl:Polyline3D) : Polyline3D =
         pl.Clone()
 
-    /// Gets or sets first point of the Polyline3D
+    /// Gets or sets the first point of the Polyline3D.
     /// This is the point at index 0.
     /// Same as Polyline3D.FirstPoint
     member p.Start
@@ -307,11 +307,13 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             xyzs.[1] <- pt.Y
             xyzs.[2] <- pt.Z
 
-    /// Gets first point of the Polyline3D
+    /// Gets the first point of the Polyline3D.
+    /// This is the point at index 0.
+    /// Same as Polyline3D.FirstPoint
     static member inline start (pl:Polyline3D) : Pnt =
         pl.Start
 
-    /// Gets or sets last or end point of the Polyline3D
+    /// Gets or sets the last or end point of the Polyline3D.
     /// This is the point at index Points.Count - 1.
     /// Same as Polyline3D.LastPoint
     member p.End
@@ -326,7 +328,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             xyzs.[c - 2] <- pt.Y
             xyzs.[c - 1] <- pt.Z
 
-    /// Gets the last or end point of the Polyline3D
+    /// Gets the last or end point of the Polyline3D.
     /// This is the point at index Points.Count - 1.
     /// Same as Polyline3D.LastPoint
     static member inline end' (pl:Polyline3D) : Pnt =
@@ -406,7 +408,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     static member inline firstPoint (pl:Polyline3D) : Pnt =
         pl.FirstPoint
 
-    /// Gets the count of points in the Polyline3D
+    /// Gets the number of points in the Polyline3D.
     member p.PointCount : int =
         countPts xyzs
 
@@ -414,16 +416,18 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     static member inline pointCount (p:Polyline3D) : int =
         p.PointCount
 
-    /// Gets the count of segments in the Polyline3D
-    /// This is poly.Points.Count - 1
+    /// Gets the number of segments in the Polyline3D.
+    /// This is the point count minus one, but never negative.
     member p.SegmentCount : int =
         max 0 (p.PointCount - 1 )
 
     /// Gets the number of segments in the Polyline3D.
+    /// This is the point count minus one, but never negative.
     static member inline segmentCount (p:Polyline3D) : int =
         p.SegmentCount
 
-    /// Gets the length of the Polyline3D
+    /// Gets the length of the Polyline3D.
+    /// The sum of the lengths of all segments.
     /// Returns 0.0 if there are fewer than 2 points.
     member p.Length : float =
         let mutable l = 0.0
@@ -449,6 +453,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
 
     /// Gets the length of the Polyline3D.
     /// The sum of the lengths of all segments.
+    /// Returns 0.0 if there are fewer than 2 points.
     static member inline length (p:Polyline3D) : float =
         p.Length
 
@@ -656,10 +661,12 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
         p.ReverseInPlace()
         p
 
-    /// Close the Polyline3D if it is not already closed.
+    /// <summary>Close the Polyline3D if it is not already closed.
     /// If the ends are closer than the tolerance, the last point is set equal to the first point.
-    /// Otherwise the start point is added to the end of the Polyline3D.
-    /// The default tolerance is 1e-6
+    /// Otherwise the start point is added to the end of the Polyline3D.</summary>
+    /// <param name="toleranceForAddingPoint">Optional. 1e-6 by default
+    /// The tolerance used to decide whether to snap the last point to the first point.</param>
+    /// <returns>Unit.</returns>
     member p.CloseInPlace([<OPT; DEF(1e-6)>]toleranceForAddingPoint:float) : unit =
         if p.PointCount < 3 then failTooFewPoly3D "CloseInPlace" 3 p.PointCount
         let c = xyzs.Count
@@ -681,9 +688,9 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             xyzs.Add sy
             xyzs.Add sz
 
-    /// <summary>Closes the Polyline3D in place by adding a point.
-    /// If the first and last point are within the given tolerance of each other,
-    /// the last point is set equal to the first point instead.</summary>
+    /// <summary>Close the Polyline3D if it is not already closed.
+    /// If the ends are closer than the tolerance, the last point is set equal to the first point.
+    /// Otherwise the start point is added to the end of the Polyline3D.</summary>
     /// <param name="toleranceForAddingPoint">The tolerance used to decide whether to snap the last point to the first point.</param>
     /// <param name="pl">The Polyline3D to close.</param>
     /// <returns>A reference to the same Polyline3D as the input</returns>
@@ -693,9 +700,10 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
 
     /// Calculates the signed area of the Polyline3D when projected in 2D.
     /// Z values are ignored.
-    /// The Polyline3D does not need to be actually closed.
-    /// The signed area of the Polyline3D is calculated.
-    /// If it is positive the Polyline3D is CCW.
+    /// If it is positive the Polyline3D is counter-clockwise.
+    /// Polyline does not need to be exactly closed.
+    /// The segment from the last point to the first point is included in the area calculation.
+    /// For self-intersecting Polylines the result is invalid.
     /// Raises an error on an empty Polyline3D.
     member p.SignedAreaIn2D : float =
         //https://helloacm.com/sign-area-of-irregular-polygon/
@@ -718,9 +726,11 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
 
     /// Calculates the signed area of the Polyline3D when projected in 2D.
     /// Z values are ignored.
-    /// The Polyline3D does not need to be actually closed.
-    /// The signed area of the Polyline3D is calculated.
-    /// If it is positive the Polyline3D is CCW.
+    /// If it is positive the Polyline3D is counter-clockwise.
+    /// Polyline does not need to be exactly closed.
+    /// The segment from the last point to the first point is included in the area calculation.
+    /// For self-intersecting Polylines the result is invalid.
+    /// Raises an error on an empty Polyline3D.
     static member inline signedAreaIn2D (pl:Polyline3D) : float =
         pl.SignedAreaIn2D
 
@@ -742,7 +752,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// Z values are ignored.
     /// The Polyline3D does not need to be actually closed.
     /// The signed area of the Polyline3D is calculated.
-    /// If it is positive the Polyline3D is CCW.
+    /// If it is positive the Polyline3D is counter-clockwise.
     member p.IsCounterClockwiseIn2D : bool =
         let  area = p.SignedAreaIn2D
         if   abs(area) < UtilEuclid.zeroLengthTolerance then
@@ -753,7 +763,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// Z values are ignored.
     /// The Polyline3D does not need to be actually closed.
     /// The signed area of the Polyline3D is calculated.
-    /// If it is positive the Polyline3D is CCW.
+    /// If it is positive the Polyline3D is counter-clockwise.
     static member inline isCounterClockwiseIn2D (pl:Polyline3D) : bool =
         pl.IsCounterClockwiseIn2D
 
@@ -817,6 +827,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// The integer part of the parameter is the index of the segment that the point is on.
     /// The fractional part of the parameter is the parameter from 0.0 to 1.0 on the segment.
     /// The domain Polyline3D starts at 0.0 and ends at points.Count - 1.0 .
+    /// If the parameter is within 1e-6 of an integer value, the integer value is used as parameter.
     static member evaluateAt (t:float) (pl:Polyline3D) : Pnt =
         pl.EvaluateAt t
 
@@ -883,10 +894,6 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// The integer part of the parameter is the index of the segment that the point is on.
     /// The fractional part of the parameter is the parameter from 0.0 to 1.0 on the segment.
     /// The domain Polyline3D starts at 0.0 and ends at points.Count - 1.0 .
-    /// Returns the parameter on the Polyline3D that is the closest point to the given point.
-    /// The integer part of the parameter is the index of the segment that the point is on.
-    /// The fractional part of the parameter is the parameter from 0.0 to 1.0 on the segment.
-    /// The domain Polyline3D starts at 0.0 and ends at points.Count - 1.0 .
     member pl.ClosestParameter(p:Pnt) : float =
         pl.ClosestParameterXYZ(p.X, p.Y, p.Z)
 
@@ -905,6 +912,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
         pl.ClosestParameter pt
 
     /// Returns the point on the Polyline3D that is the closest point to the given point.
+    /// This might be a point on a segment or a vertex of the Polyline3D.
     member pl.ClosestPoint(p:Pnt) : Pnt =
         if pl.PointCount = 0 then  fail "Polyline3D.ClosestPoint failed on empty Polyline3D"
         let px = p.X
@@ -956,10 +964,11 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
         minPt
 
     /// Returns the point on the Polyline3D that is the closest point to the given point.
+    /// This might be a point on a segment or a vertex of the Polyline3D.
     static member inline closestPoint (pl:Polyline3D) (pt:Pnt) : Pnt =
         pl.ClosestPoint pt
 
-    /// Returns the index into the Polylines point list of the point that is closest to the given point.
+    /// Returns the index into the Polyline3D's point list of the point that is closest to the given point.
     member pl.ClosestPointIndex(p:Pnt) : int =
         if pl.PointCount = 0 then  fail "Polyline3D.ClosestPointIndex failed on empty Polyline3D"
         let px = p.X
@@ -1089,8 +1098,9 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     static member inline averageNormal (pl:Polyline3D) : Vec =
         pl.AverageNormal
 
-    /// Scales the 3D polyline by a given factor.
+    /// Scales the Polyline3D by a given factor.
     /// Scale center is World Origin 0,0,0
+    /// Returns a new Polyline3D.
     member p.Scale (factor:float) : Polyline3D =
         let len = xyzs.Count
         let cs = ResizeArray<float>(len)
@@ -1108,7 +1118,8 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     static member scale (factor:float) (pl:Polyline3D) : Polyline3D =
         pl.Scale factor
 
-    /// Scales the 3D polyline by a given factor on a given center point
+    /// Scales the Polyline3D by a given factor on a given center point.
+    /// Returns a new Polyline3D.
     member p.ScaleOn (cen:Pnt) (factor:float) : Polyline3D =
         let cx = cen.X
         let cy = cen.Y
@@ -1123,7 +1134,8 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             i <- i + 3
         Polyline3D cs
 
-    /// Scales the 3D polyline by a given factor on a given center point
+    /// Scales the Polyline3D by a given factor on a given center point.
+    /// Returns a new Polyline3D.
     static member inline scaleOn (cen:Pnt) (factor:float) (pl:Polyline3D) : Polyline3D =
         pl.ScaleOn cen factor
 
@@ -1142,7 +1154,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             i <- i + 3
         Polyline3D cs
 
-    /// Move a Polyline3D by a vector. Same as Polyline3D.translate.
+    /// Returns a Polyline3D moved by a vector. Same as Polyline3D.translate.
     static member move (v:Vec) (pl:Polyline3D)  : Polyline3D =
         pl.Move v
 
@@ -1216,7 +1228,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
         Polyline3D r
 
 
-    /// Applies a 4x4 transformation matrix.
+    /// Applies or multiplies a 4x4 transformation matrix to the Polyline3D.
     static member transform (m:Matrix) (pl:Polyline3D) : Polyline3D =
         pl.Transform m
 
@@ -1351,7 +1363,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     // #endregion
     // #region Static members
 
-    /// Move a Polyline3D by a vector. Same as Polyline3D.move.
+    /// Returns a Polyline3D moved by a vector. Same as Polyline3D.move.
     static member translate (v:Vec) (pl:Polyline3D)  : Polyline3D =
         pl.Move v
 
@@ -1386,7 +1398,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     // #endregion
     // #region Map and Iter
 
-    /// <summary>Apply a mapping function to each point in the 3D Polyline. Returns new Polyline3D.</summary>
+    /// <summary>Apply a mapping function to each point in the Polyline3D. Returns new Polyline3D.</summary>
     /// <param name="mapping">A function that takes a point and returns a new point.</param>
     /// <param name="pl">The Polyline3D to map over.</param>
     /// <returns>A new Polyline3D with the mapped points.</returns>
@@ -1404,8 +1416,8 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
         Polyline3D cs
 
 
-    /// <summary>Apply a mapping function to each point in the Polyline3D with point position (not float index). Returns new Polyline3D.</summary>
-    /// <param name="mapping">A function that takes the position ( = array index/3) of the point and the point itself, and returns a new point.
+    /// <summary>Apply a mapping function to each point in the Polyline3D with the pointIndex (not the index into the flat coordinate array). Returns new Polyline3D.</summary>
+    /// <param name="mapping">A function that takes the pointIndex of the point ( = array index/3) and the point itself, and returns a new point.
     /// </param>
     /// <param name="pl">The Polyline3D to map over.</param>
     /// <returns>A new Polyline3D with the mapped points.</returns>
@@ -1422,7 +1434,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             i <- i + 3
         Polyline3D(cs)
 
-    /// <summary>Apply a mapping function to each point in the 3D Polyline. Returns new Polyline3D.</summary>
+    /// <summary>Apply a mapping function to each point in the Polyline3D. Returns new Polyline3D.</summary>
     /// <param name="mapping">A function that takes the X, Y and Z coordinates of a point and returns a new point.</param>
     /// <param name="pl">The Polyline3D to map over.</param>
     /// <returns>A new Polyline3D with the mapped points.</returns>
@@ -1439,7 +1451,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             i <- i + 3
         Polyline3D cs
 
-    /// <summary>Apply a mapping function to each point in the 3D Polyline with index. Returns new Polyline3D.</summary>
+    /// <summary>Apply a mapping function to each point in the Polyline3D with index. Returns new Polyline3D.</summary>
     /// <param name="mapping">A function that takes the index of the X coordinate (in the flat coordinate array) and the X, Y and Z coordinates of a point and returns a new point.</param>
     /// <param name="pl">The Polyline3D to map over.</param>
     /// <returns>A new Polyline3D with the mapped points.</returns>
@@ -1518,7 +1530,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             i <- i + 3
 
     /// <summary>Iterate over each point in the Polyline3D with index.</summary>
-    /// <param name="action">A function that takes the position ( = array index/3) of the point and the point itself.</param>
+    /// <param name="action">A function that takes the pointIndex of the point ( = array index/3) and the point itself.</param>
     /// <param name="pl">The Polyline3D to iterate over.</param>
     /// <returns>Unit.</returns>
     static member iteriPnt (action:int -> Pnt -> unit) (pl:Polyline3D) : unit =
@@ -1690,6 +1702,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
         Polyline3D.createDirectly coordinates
 
     /// Create a new Polyline3D by copying over all points.
+    /// This will allocate a new ResizeArray and copy all points.
     static member createFromPts(points: seq<Pnt>) : Polyline3D =
         Polyline3D(points)
 
@@ -1811,8 +1824,12 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
                     i <- i + 1
             equal
 
-    /// Removes consecutive duplicate points from the Polyline3D within a given tolerance.
-    /// This algorithm allows the last and first point to be identical if the Polyline3D is closed.
+    /// <summary>Removes consecutive duplicate points from the Polyline3D within a given tolerance.</summary>
+    /// <param name="distanceTolerance"> The distance within which points are considered duplicates. </param>
+    /// <param name="pl"> A 3D Polyline, open or closed. </param>
+    /// <remarks>From a cluster of points that are closer than the distanceTolerance, only the first point is kept.
+    /// Use 'Polyline3D.removeDuplicatePointsFaithfully' if you want to keep the edges in their position by re-intersecting segments.
+    /// The position of start and end point is NOT changed. Use Polyline3D.close to ensure start and end point are identical.</remarks>
     static member removeDuplicatePoints (distanceTolerance:float) (pl:Polyline3D) : Polyline3D =
         let xyzs = pl.XYZs
         if xyzs.Count < 6 then // single point or empty polyline
@@ -1852,7 +1869,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// <summary>Removes consecutive duplicate points from the Polyline3D within a given tolerance.</summary>
     /// <param name="distanceTolerance"> The distance within which points are considered duplicates. </param>
     /// <param name="pl"> A 3D Polyline, open or closed. </param>
-    /// <remarks>This algorithm ensures to keep edges in their position by re-intersecting segments at their closest approach if points are closer than the distanceTolerance but not identical.
+    /// <remarks>This algorithm keeps edges in their position by re-intersecting segments at their closest approach if points are closer than the distanceTolerance but not identical.
     /// The position of start and end point is NOT changed. Use Polyline3D.close to ensure start and end point are identical.</remarks>
     static member removeDuplicatePointsFaithfully (distanceTolerance:float) (pl:Polyline3D) : Polyline3D =
         let xyzs = pl.XYZs
