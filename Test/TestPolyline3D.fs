@@ -10,6 +10,8 @@ open Expecto
 
 let inline eqPnt a b = Pnt.dist a b < 1e-9
 
+let inline eqVec a b = Vec.length (a - b) < 1e-9
+
 let tol = Accuracy.veryHigh
 
 let tests =
@@ -975,6 +977,62 @@ let tests =
                 match pl.TryPlane(1e-12) with
                 | Some pln -> "normal points up for a CCW tiny square" |> Expect.floatClose tol pln.Normal.Z 1.0
                 | None -> "tiny square has a plane" |> Expect.isTrue false
+            }
+
+            test "AverageNormal does not throw on collinear points, it returns a zero vector" {
+                let pl = Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(1.,1.,1.); Pnt(2.,2.,2.)]
+                "collinear points give a zero length average normal" |> Expect.floatClose tol pl.AverageNormal.Length 0.0
+                "AverageNormal throws only on an empty polyline" |> Expect.throws (fun () -> (Polyline3D([])).AverageNormal |> ignore)
+            }
+
+            test "TryAverageNormal returns the same vector as AverageNormal" {
+                let pl = Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(1.,1.,0.); Pnt(0.,1.,0.)]
+                match pl.TryAverageNormal with
+                | Some n ->
+                    "same vector as AverageNormal" |> Expect.isTrue (eqVec n pl.AverageNormal)
+                    "not unitized, its length is twice the area" |> Expect.floatClose tol n.Length 2.0
+                | None -> "square has an average normal" |> Expect.isTrue false
+                "static tryAverageNormal" |> Expect.isTrue (Polyline3D.tryAverageNormal pl |> Option.isSome)
+            }
+
+            test "TryAverageNormal returns None on degenerate input" {
+                let collinear = Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(1.,1.,1.); Pnt(2.,2.,2.)]
+                "collinear points" |> Expect.isTrue (collinear.TryAverageNormal |> Option.isNone)
+                "empty polyline" |> Expect.isTrue ((Polyline3D([])).TryAverageNormal |> Option.isNone)
+                "two points" |> Expect.isTrue ((Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(1.,0.,0.)]).TryAverageNormal |> Option.isNone)
+                let bowTie = Polyline3D.createFromPts [Pnt(0.,0.,4.); Pnt(1.,0.,4.); Pnt(0.,1.,4.); Pnt(1.,1.,4.)]
+                "the cross products cancel out on a bow tie" |> Expect.isTrue (bowTie.TryAverageNormal |> Option.isNone)
+                "but TryAveragePlane still finds the plane" |> Expect.isTrue (bowTie.TryAveragePlane() |> Option.isSome)
+            }
+
+            test "AveragePlane works on non planar points" {
+                let pl = Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(1.,1.,1.); Pnt(0.,1.,0.)]
+                "the warped quad is not planar" |> Expect.isFalse (pl.IsPlanar())
+                "so TryPlane finds nothing" |> Expect.isTrue (pl.TryPlane() |> Option.isNone)
+                "but there is an average plane" |> Expect.isTrue (pl.TryAveragePlane() |> Option.isSome)
+                let pln = pl.AveragePlane()
+                "origin is the average of all points" |> Expect.isTrue (eqPnt pln.Origin pl.Center)
+                "normal points up" |> Expect.isTrue (pln.Normal.Z > 0.0)
+                "normal is the unitized AverageNormal" |> Expect.floatClose tol (UnitVec.dot(pln.Normal, pl.AverageNormal.Unitized)) 1.0
+                "static averagePlane is curried" |> Expect.isTrue (eqPnt (Polyline3D.averagePlane 1e-6 pl).Origin pln.Origin)
+                "static tryAveragePlane is curried" |> Expect.isTrue (Polyline3D.tryAveragePlane 1e-6 pl |> Option.isSome)
+            }
+
+            test "AveragePlane of a planar polyline matches TryPlane" {
+                let pl = Polyline3D.createFromPts [Pnt(1.,2.,3.); Pnt(4.,2.,3.); Pnt(4.,5.,7.); Pnt(1.,5.,7.)]
+                match pl.TryPlane(), pl.TryAveragePlane() with
+                | Some strict, Some avg ->
+                    "same origin" |> Expect.isTrue (eqPnt strict.Origin avg.Origin)
+                    "same normal" |> Expect.floatClose tol (UnitVec.dot(strict.Normal, avg.Normal)) 1.0
+                | _ -> "planar polyline has both planes" |> Expect.isTrue false
+            }
+
+            test "AveragePlane fails on degenerate input" {
+                let collinear = Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(1.,1.,1.); Pnt(2.,2.,2.)]
+                "collinear points have no average plane" |> Expect.isTrue (collinear.TryAveragePlane() |> Option.isNone)
+                "AveragePlane throws on collinear points" |> Expect.throws (fun () -> collinear.AveragePlane() |> ignore)
+                "AveragePlane throws on too few points" |> Expect.throws (fun () -> (Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(1.,0.,0.)]).AveragePlane() |> ignore)
+                "AveragePlane throws on coincident points" |> Expect.throws (fun () -> (Polyline3D.createFromPts [Pnt(5.,5.,5.); Pnt(5.,5.,5.); Pnt(5.,5.,5.)]).AveragePlane() |> ignore)
             }
 
             test "polyline in a plane parallel to the world XZ plane" {

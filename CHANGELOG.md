@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Added `Polyline2D.checkForDuplicatePoints` and `Polyline3D.checkForDuplicatePoints`, which return the original polyline when unchanged or a cleaned polyline and reported duplicate points.
 - Added `Polyline3D.TryPlane` and `Polyline3D.IsPlanar`, plus the static `tryPlane` and `isPlanar`, to get the `NPlane` of a planar Polyline3D within a tolerance.
+- Added `Polyline3D.AveragePlane` and `Polyline3D.TryAveragePlane`, plus the static `averagePlane` and `tryAveragePlane`, to get the average `NPlane` of a Polyline3D even when its points are not planar.
+- Added `Polyline3D.TryAverageNormal` and the static `tryAverageNormal`, returning `None` where `AverageNormal` silently returns a zero length vector.
 - The unsafe internal constructors of `NPlane`, `PPlane`, `Box`, `BRect`, and `BBox`, and therefore all their `createUnchecked` members, now verify their input when compiled in DEBUG mode or with the `CHECKED_EUCLID` symbol defined. This covers unitized normals and axes, perpendicular and right-handed frames, `NaN` and `Infinity` values, and min values not being bigger than max values. The other unsafe constructors already did this.
 - Documented the `CHECKED_EUCLID` compiler flag in the Readme.
 
