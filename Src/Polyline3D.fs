@@ -47,71 +47,109 @@ module private Polyline3DUtil =
         if ptCount < 3 then
             ValueNone
         else
-            // the center of all points is the origin of the plane
-            let mutable cx = 0.0
-            let mutable cy = 0.0
-            let mutable cz = 0.0
-            let mutable i = 0
             let len = xyzs.Count
+            // the center of all points is the origin of the plane
+            let mutable ox = 0.0
+            let mutable oy = 0.0
+            let mutable oz = 0.0
+            let mutable i = 0
             while i < len do
-                cx <- cx + xyzs.[i]
-                cy <- cy + xyzs.[i + 1]
-                cz <- cz + xyzs.[i + 2]
+                ox <- ox + xyzs.[i    ]
+                oy <- oy + xyzs.[i + 1]
+                oz <- oz + xyzs.[i + 2]
                 i <- i + 3
-            let cen = Pnt(cx / float ptCount, cy / float ptCount, cz / float ptCount)
+            let count = float ptCount // divide, just like Polyline3D.Center does, so the origin is the very same point
+            ox <- ox / count
+            oy <- oy / count
+            oz <- oz / count
 
             // Newell's method: sum up the cross products of all points around the center.
             // This averages out the noise of near planar points.
             // At the same time find the point that is furthest from the center, it spans the main axis.
-            let mutable newell = Vec.Zero
-            let mutable axis = Vec.Zero
-            let mutable axisLenSq = 0.0
-            let mutable a = (getPt (ptCount - 1) xyzs) - cen
-            for j = 0 to ptCount - 1 do
-                let b = (getPt j xyzs) - cen
-                newell <- newell + Vec.cross(a, b)
-                let lenSq = b.LengthSq
-                if lenSq > axisLenSq then
-                    axisLenSq <- lenSq
-                    axis <- b
-                a <- b
+            let mutable nx = 0.0
+            let mutable ny = 0.0
+            let mutable nz = 0.0
+            let mutable ux = 0.0 // the main axis
+            let mutable uy = 0.0
+            let mutable uz = 0.0
+            let mutable uLenSq = 0.0
+            let mutable ax = xyzs.[len - 3] - ox // the previous point, starting at the last one to close the loop
+            let mutable ay = xyzs.[len - 2] - oy
+            let mutable az = xyzs.[len - 1] - oz
+            i <- 0
+            while i < len do
+                let bx = xyzs.[i    ] - ox
+                let by = xyzs.[i + 1] - oy
+                let bz = xyzs.[i + 2] - oz
+                nx <- nx + ay * bz - az * by
+                ny <- ny + az * bx - ax * bz
+                nz <- nz + ax * by - ay * bx
+                let lenSq = XYZ.sqLength bx by bz
+                if lenSq > uLenSq then
+                    uLenSq <- lenSq
+                    ux <- bx
+                    uy <- by
+                    uz <- bz
+                ax <- bx
+                ay <- by
+                az <- bz
+                i <- i + 3
 
-            if axisLenSq <= tolerance * tolerance then
+            if uLenSq <= tolerance * tolerance then
                 ValueNone // all points are within the tolerance of the center point, so there is no unique plane
             else
                 // find the point that is furthest away from the main axis.
                 // The length of this cross product is the distance from the axis times the length of the axis.
-                let mutable perp = Vec.Zero
-                let mutable perpLenSq = 0.0
-                for j = 0 to ptCount - 1 do
-                    let v = Vec.cross(axis, (getPt j xyzs) - cen)
-                    let lenSq = v.LengthSq
-                    if lenSq > perpLenSq then
-                        perpLenSq <- lenSq
-                        perp <- v
-                if perpLenSq <= tolerance * tolerance * axisLenSq then
+                let mutable px = 0.0
+                let mutable py = 0.0
+                let mutable pz = 0.0
+                let mutable pLenSq = 0.0
+                i <- 0
+                while i < len do
+                    let vx = xyzs.[i    ] - ox
+                    let vy = xyzs.[i + 1] - oy
+                    let vz = xyzs.[i + 2] - oz
+                    let wx = uy * vz - uz * vy
+                    let wy = uz * vx - ux * vz
+                    let wz = ux * vy - uy * vx
+                    let lenSq = XYZ.sqLength wx wy wz
+                    if lenSq > pLenSq then
+                        pLenSq <- lenSq
+                        px <- wx
+                        py <- wy
+                        pz <- wz
+                    i <- i + 3
+
+                if pLenSq <= tolerance * tolerance * uLenSq then
                     ValueNone // all points are within the tolerance of one line, so there is no unique plane
                 else
                     // Newell's normal is preferred, it uses all points. But it cancels out to zero on
                     // self intersecting or very small shapes. Then the normal of the widest triangle is used.
-                    let normal =
-                        if isTooSmallSq newell.LengthSq then
-                            if Vec.dot(perp, newell) < 0.0 then -perp else perp // keep the orientation of the point order if there is any
+                    let mutable mx = nx
+                    let mutable my = ny
+                    let mutable mz = nz
+                    if isTooSmallSq (XYZ.sqLength nx ny nz) then
+                        if XYZ.dot px py pz nx ny nz < 0.0 then // keep the orientation of the point order if there is any
+                            mx <- -px
+                            my <- -py
+                            mz <- -pz
                         else
-                            newell
-                    let f = 1.0 / normal.Length
-                    let nx = normal.X * f
-                    let ny = normal.Y * f
-                    let nz = normal.Z * f
+                            mx <- px
+                            my <- py
+                            mz <- pz
+                    let f = 1.0 / XYZ.length mx my mz
+                    let normX = mx * f
+                    let normY = my * f
+                    let normZ = mz * f
                     // check that all points are within the tolerance of this plane
                     let mutable isPlanar = true
                     let mutable k = if checkPlanarity then 0 else len
                     while isPlanar && k < len do
-                        let d = (xyzs.[k] - cen.X) * nx + (xyzs.[k + 1] - cen.Y) * ny + (xyzs.[k + 2] - cen.Z) * nz
+                        let d = (xyzs.[k] - ox) * normX + (xyzs.[k + 1] - oy) * normY + (xyzs.[k + 2] - oz) * normZ
                         if abs d > tolerance then isPlanar <- false
                         k <- k + 3
                     if isPlanar then
-                        ValueSome (NPlane.createUnchecked(cen.X, cen.Y, cen.Z, nx, ny, nz))
+                        ValueSome (NPlane.createUnchecked(ox, oy, oz, normX, normY, normZ))
                     else
                         ValueNone
 
@@ -1164,14 +1202,29 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// Only an empty Polyline3D fails. Use TryAverageNormal to get None instead of a zero length vector.
     member pl.AverageNormal : Vec =
         let c = pl.Center // fails on empty Polyline3D
-        let mutable normal = Vec.Zero
-        let n = pl.PointCount
-        let mutable a = (getPt (n-1) xyzs) - c
-        for i = 0 to n-1 do
-            let b = (getPt i xyzs) - c
-            normal <- normal + Vec.cross(a, b)
-            a <- b
-        normal
+        let ox = c.X
+        let oy = c.Y
+        let oz = c.Z
+        let len = xyzs.Count
+        let mutable nx = 0.0
+        let mutable ny = 0.0
+        let mutable nz = 0.0
+        let mutable ax = xyzs.[len - 3] - ox // the previous point, starting at the last one to close the loop
+        let mutable ay = xyzs.[len - 2] - oy
+        let mutable az = xyzs.[len - 1] - oz
+        let mutable i = 0
+        while i < len do
+            let bx = xyzs.[i    ] - ox
+            let by = xyzs.[i + 1] - oy
+            let bz = xyzs.[i + 2] - oz
+            nx <- nx + ay * bz - az * by
+            ny <- ny + az * bx - ax * bz
+            nz <- nz + ax * by - ay * bx
+            ax <- bx
+            ay <- by
+            az <- bz
+            i <- i + 3
+        Vec(nx, ny, nz)
 
     /// Returns the average normal vector of the Polyline3D.
     /// It is calculated by summing up the cross products of all segments around the center point.
