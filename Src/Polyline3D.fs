@@ -35,6 +35,164 @@ module private Polyline3DUtil =
     let inline copy (xyzs: ResizeArray<float>) : ResizeArray<float> =
         xyzs.GetRange(0, xyzs.Count)
 
+    /// Sums up the cross products of all points around their center: Newell's method.
+    /// The result is not unitized, its length is twice the area of the polygon projected onto that plane.
+    /// Does not check for bad input, the result may be zero length, e.g. if all points are in one line.
+    /// There must be at least one point.
+    let averageNormalOf (xyzs: ResizeArray<float>) : Vec =
+        let len = xyzs.Count
+        // the center of all points
+        let mutable ox = 0.0
+        let mutable oy = 0.0
+        let mutable oz = 0.0
+        let mutable i = 0
+        while i < len do
+            ox <- ox + xyzs.[i    ]
+            oy <- oy + xyzs.[i + 1]
+            oz <- oz + xyzs.[i + 2]
+            i <- i + 3
+        let count = float (len / 3) // divide, just like Polyline3D.Center does, so the same center is used
+        ox <- ox / count
+        oy <- oy / count
+        oz <- oz / count
+        let mutable nx = 0.0
+        let mutable ny = 0.0
+        let mutable nz = 0.0
+        let mutable ax = xyzs.[len - 3] - ox // the previous point, starting at the last one to close the loop
+        let mutable ay = xyzs.[len - 2] - oy
+        let mutable az = xyzs.[len - 1] - oz
+        i <- 0
+        while i < len do
+            let bx = xyzs.[i    ] - ox
+            let by = xyzs.[i + 1] - oy
+            let bz = xyzs.[i + 2] - oz
+            nx <- nx + ay * bz - az * by
+            ny <- ny + az * bx - ax * bz
+            nz <- nz + ax * by - ay * bx
+            ax <- bx
+            ay <- by
+            az <- bz
+            i <- i + 3
+        Vec(nx, ny, nz)
+
+    /// Tries to find the average plane of the points.
+    /// If 'checkPlanarity' is TRUE it also verifies that every point is within the tolerance of that plane.
+    /// The 'tolerance' is the maximum distance any point may have from the plane, and from one point or one line.
+    /// The origin of the returned plane is the average of all points.
+    /// Returns ValueNone if there are less than 3 points,
+    /// if all points are within the tolerance of one point or of one line,
+    /// or, when checking planarity, if any point is further away from the plane than the tolerance.
+    let tryPlaneOf (checkPlanarity:bool) (tolerance:float) (xyzs: ResizeArray<float>) : NPlane voption =
+        let ptCount = countPts xyzs
+        if ptCount < 3 then
+            ValueNone
+        else
+            let len = xyzs.Count
+            // the center of all points is the origin of the plane
+            let mutable ox = 0.0
+            let mutable oy = 0.0
+            let mutable oz = 0.0
+            let mutable i = 0
+            while i < len do
+                ox <- ox + xyzs.[i    ]
+                oy <- oy + xyzs.[i + 1]
+                oz <- oz + xyzs.[i + 2]
+                i <- i + 3
+            let count = float ptCount // divide, just like Polyline3D.Center does, so the origin is the very same point
+            ox <- ox / count
+            oy <- oy / count
+            oz <- oz / count
+
+            // Newell's method: sum up the cross products of all points around the center.
+            // This averages out the noise of near planar points.
+            // At the same time find the point that is furthest from the center, it spans the main axis.
+            let mutable nx = 0.0
+            let mutable ny = 0.0
+            let mutable nz = 0.0
+            let mutable ux = 0.0 // the main axis
+            let mutable uy = 0.0
+            let mutable uz = 0.0
+            let mutable uLenSq = 0.0
+            let mutable ax = xyzs.[len - 3] - ox // the previous point, starting at the last one to close the loop
+            let mutable ay = xyzs.[len - 2] - oy
+            let mutable az = xyzs.[len - 1] - oz
+            i <- 0
+            while i < len do
+                let bx = xyzs.[i    ] - ox
+                let by = xyzs.[i + 1] - oy
+                let bz = xyzs.[i + 2] - oz
+                nx <- nx + ay * bz - az * by
+                ny <- ny + az * bx - ax * bz
+                nz <- nz + ax * by - ay * bx
+                let lenSq = XYZ.sqLength bx by bz
+                if lenSq > uLenSq then
+                    uLenSq <- lenSq
+                    ux <- bx
+                    uy <- by
+                    uz <- bz
+                ax <- bx
+                ay <- by
+                az <- bz
+                i <- i + 3
+
+            if uLenSq <= tolerance * tolerance then
+                ValueNone // all points are within the tolerance of the center point, so there is no unique plane
+            else
+                // find the point that is furthest away from the main axis.
+                // The length of this cross product is the distance from the axis times the length of the axis.
+                let mutable px = 0.0
+                let mutable py = 0.0
+                let mutable pz = 0.0
+                let mutable pLenSq = 0.0
+                i <- 0
+                while i < len do
+                    let vx = xyzs.[i    ] - ox
+                    let vy = xyzs.[i + 1] - oy
+                    let vz = xyzs.[i + 2] - oz
+                    let wx = uy * vz - uz * vy
+                    let wy = uz * vx - ux * vz
+                    let wz = ux * vy - uy * vx
+                    let lenSq = XYZ.sqLength wx wy wz
+                    if lenSq > pLenSq then
+                        pLenSq <- lenSq
+                        px <- wx
+                        py <- wy
+                        pz <- wz
+                    i <- i + 3
+
+                if pLenSq <= tolerance * tolerance * uLenSq then
+                    ValueNone // all points are within the tolerance of one line, so there is no unique plane
+                else
+                    // Newell's normal is preferred, it uses all points. But it cancels out to zero on
+                    // self intersecting or very small shapes. Then the normal of the widest triangle is used.
+                    let mutable mx = nx
+                    let mutable my = ny
+                    let mutable mz = nz
+                    if isTooSmallSq (XYZ.sqLength nx ny nz) then
+                        if XYZ.dot px py pz nx ny nz < 0.0 then // keep the orientation of the point order if there is any
+                            mx <- -px
+                            my <- -py
+                            mz <- -pz
+                        else
+                            mx <- px
+                            my <- py
+                            mz <- pz
+                    let f = 1.0 / XYZ.length mx my mz
+                    let normX = mx * f
+                    let normY = my * f
+                    let normZ = mz * f
+                    // check that all points are within the tolerance of this plane
+                    let mutable isPlanar = true
+                    let mutable k = if checkPlanarity then 0 else len
+                    while isPlanar && k < len do
+                        let d = (xyzs.[k] - ox) * normX + (xyzs.[k + 1] - oy) * normY + (xyzs.[k + 2] - oz) * normZ
+                        if abs d > tolerance then isPlanar <- false
+                        k <- k + 3
+                    if isPlanar then
+                        ValueSome (NPlane.createUnchecked(ox, oy, oz, normX, normY, normZ))
+                    else
+                        ValueNone
+
 
 open Polyline3DUtil
 
@@ -1080,23 +1238,170 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
 
     /// Returns the average normal vector of the Polyline3D.
     /// It is calculated by summing up the cross products of all segments around the center point.
-    /// Does not check for bad input, may be zero length if points are collinear.
+    /// The returned vector is not unitized, its length is twice the area of the polygon projected onto that plane.
+    /// Fails if the summed normal is shorter than 1e-6, because then no normal can be found. This happens if:
+    /// the Polyline3D has less than 3 points,
+    /// or all points are in one line,
+    /// or the cross products cancel each other out on a self intersecting shape,
+    /// or the Polyline3D is very small.
+    /// Use TryAverageNormal to get None instead of an exception.
+    /// For the last two cases Polyline3D.AveragePlane still finds a plane.
     member pl.AverageNormal : Vec =
-        let c = pl.Center // fails on empty Polyline3D
-        let mutable normal = Vec.Zero
-        let n = pl.PointCount
-        let mutable a = (getPt (n-1) xyzs) - c
-        for i = 0 to n-1 do
-            let b = (getPt i xyzs) - c
-            normal <- normal + Vec.cross(a, b)
-            a <- b
-        normal
+        if pl.PointCount < 3 then failTooFewPoly3D "AverageNormal" 3 pl.PointCount
+        let n = averageNormalOf xyzs
+        if isTooSmallSq n.LengthSq then
+            fail $"Polyline3D.AverageNormal: no normal can be found. The points are in one line, or the cross products cancel each other out, or the Polyline3D is very small: {pl.AsString}"
+        n
 
     /// Returns the average normal vector of the Polyline3D.
     /// It is calculated by summing up the cross products of all segments around the center point.
-    /// Does not check for bad input, may be zero length if points are collinear.
+    /// The returned vector is not unitized, its length is twice the area of the polygon projected onto that plane.
+    /// Fails if the summed normal is shorter than 1e-6, because then no normal can be found. This happens if:
+    /// the Polyline3D has less than 3 points,
+    /// or all points are in one line,
+    /// or the cross products cancel each other out on a self intersecting shape,
+    /// or the Polyline3D is very small.
+    /// Use tryAverageNormal to get None instead of an exception.
+    /// For the last two cases Polyline3D.averagePlane still finds a plane.
     static member inline averageNormal (pl:Polyline3D) : Vec =
         pl.AverageNormal
+
+    /// Returns the average normal vector of the Polyline3D, or None if it is degenerate.
+    /// It is calculated by summing up the cross products of all segments around the center point,
+    /// so it is the same vector as Polyline3D.AverageNormal, but bad input returns None instead of raising an exception.
+    /// The returned vector is not unitized, its length is twice the area of the polygon projected onto that plane.
+    /// Returns None if the summed normal is shorter than 1e-6. This happens if:
+    /// the Polyline3D has less than 3 points,
+    /// or all points are in one line,
+    /// or the cross products cancel each other out on a self intersecting shape,
+    /// or the Polyline3D is very small.
+    /// For these last two cases Polyline3D.TryAveragePlane still finds a plane.
+    member pl.TryAverageNormal : Vec option =
+        if pl.PointCount < 3 then
+            None
+        else
+            let n = averageNormalOf xyzs
+            if isTooSmallSq n.LengthSq then None
+            else Some n
+
+    /// Returns the average normal vector of the Polyline3D, or None if it is degenerate.
+    /// It is calculated by summing up the cross products of all segments around the center point,
+    /// so it is the same vector as Polyline3D.averageNormal, but bad input returns None instead of raising an exception.
+    /// The returned vector is not unitized, its length is twice the area of the polygon projected onto that plane.
+    /// Returns None if the summed normal is shorter than 1e-6. This happens if:
+    /// the Polyline3D has less than 3 points,
+    /// or all points are in one line,
+    /// or the cross products cancel each other out on a self intersecting shape,
+    /// or the Polyline3D is very small.
+    /// For these last two cases Polyline3D.tryAveragePlane still finds a plane.
+    static member inline tryAverageNormal (pl:Polyline3D) : Vec option =
+        pl.TryAverageNormal
+
+    /// Returns the average plane of the Polyline3D, even if the points are not planar.
+    /// As opposed to Polyline3D.TryPlane this does not check if all points are on that plane.
+    /// The origin of the returned NPlane is the average of all points, see Polyline3D.Center.
+    /// The normal is the unitized Polyline3D.AverageNormal, so it follows the order of the points.
+    /// If they are counter-clockwise in the World X-Y plane, then the normal points in World Z direction.
+    /// On self intersecting shapes, where these cross products cancel each other out, the orientation is arbitrary.
+    /// The optional 'tolerance' is the maximum distance for considering all points to be on one point or on one line,
+    /// it defaults to 1e-6.
+    /// Fails if the Polyline3D has less than 3 points,
+    /// or if all points are within the tolerance of one point or of one line, because then there is no unique plane.
+    member p.AveragePlane([<OPT;DEF(1e-6)>] tolerance:float) : NPlane =
+        match tryPlaneOf false tolerance xyzs with
+        | ValueSome pln -> pln
+        | ValueNone ->
+            if p.PointCount < 3 then failTooFewPoly3D "AveragePlane" 3 p.PointCount
+            else fail $"Polyline3D.AveragePlane: all points are within the tolerance of {tolerance} of one point or of one line, so there is no unique plane: {p.AsString}"
+
+    /// Returns the average plane of the Polyline3D, even if the points are not planar.
+    /// As opposed to Polyline3D.tryPlane this does not check if all points are on that plane.
+    /// The origin of the returned NPlane is the average of all points, see Polyline3D.center.
+    /// The normal is the unitized Polyline3D.averageNormal, so it follows the order of the points.
+    /// If they are counter-clockwise in the World X-Y plane, then the normal points in World Z direction.
+    /// On self intersecting shapes, where these cross products cancel each other out, the orientation is arbitrary.
+    /// The 'tolerance' is the maximum distance for considering all points to be on one point or on one line.
+    /// Use 1e-6 as a default.
+    /// Fails if the Polyline3D has less than 3 points,
+    /// or if all points are within the tolerance of one point or of one line, because then there is no unique plane.
+    static member inline averagePlane (tolerance:float) (pl:Polyline3D) : NPlane =
+        pl.AveragePlane(tolerance)
+
+    /// Tries to find the average plane of the Polyline3D, even if the points are not planar.
+    /// As opposed to Polyline3D.TryPlane this does not check if all points are on that plane.
+    /// The origin of the returned NPlane is the average of all points, see Polyline3D.Center.
+    /// The normal is the unitized Polyline3D.AverageNormal, so it follows the order of the points.
+    /// If they are counter-clockwise in the World X-Y plane, then the normal points in World Z direction.
+    /// On self intersecting shapes, where these cross products cancel each other out, the orientation is arbitrary.
+    /// The optional 'tolerance' is the maximum distance for considering all points to be on one point or on one line,
+    /// it defaults to 1e-6.
+    /// Returns None if the Polyline3D has less than 3 points,
+    /// or if all points are within the tolerance of one point or of one line, because then there is no unique plane.
+    member _.TryAveragePlane([<OPT;DEF(1e-6)>] tolerance:float) : NPlane option =
+        match tryPlaneOf false tolerance xyzs with
+        | ValueSome pln -> Some pln
+        | ValueNone -> None
+
+    /// Tries to find the average plane of the Polyline3D, even if the points are not planar.
+    /// As opposed to Polyline3D.tryPlane this does not check if all points are on that plane.
+    /// The origin of the returned NPlane is the average of all points, see Polyline3D.center.
+    /// The normal is the unitized Polyline3D.averageNormal, so it follows the order of the points.
+    /// If they are counter-clockwise in the World X-Y plane, then the normal points in World Z direction.
+    /// On self intersecting shapes, where these cross products cancel each other out, the orientation is arbitrary.
+    /// The 'tolerance' is the maximum distance for considering all points to be on one point or on one line.
+    /// Use 1e-6 as a default.
+    /// Returns None if the Polyline3D has less than 3 points,
+    /// or if all points are within the tolerance of one point or of one line, because then there is no unique plane.
+    static member inline tryAveragePlane (tolerance:float) (pl:Polyline3D) : NPlane option =
+        pl.TryAveragePlane(tolerance)
+
+    /// Tries to find the plane that all points of the Polyline3D lie in.
+    /// The optional 'tolerance' is the maximum distance any point may have from the plane, it defaults to 1e-6.
+    /// The origin of the returned NPlane is the average of all points, see Polyline3D.Center.
+    /// The orientation of the normal follows the order of the points.
+    /// If they are counter-clockwise in the World X-Y plane, then the normal points in World Z direction.
+    /// On self intersecting shapes, where these cross products cancel each other out, the orientation is arbitrary.
+    /// Returns None if:
+    /// the Polyline3D has less than 3 points,
+    /// or all points are within the tolerance of one point or of one line, so that there is no unique plane,
+    /// or any point is further away from the plane than the tolerance.
+    /// Use Polyline3D.TryAveragePlane to get the average plane of non planar points too.
+    member _.TryPlane([<OPT;DEF(1e-6)>] tolerance:float) : NPlane option =
+        match tryPlaneOf true tolerance xyzs with
+        | ValueSome pl -> Some pl
+        | ValueNone -> None
+
+    /// Tries to find the plane that all points of the Polyline3D lie in.
+    /// The 'tolerance' is the maximum distance any point may have from the plane. Use 1e-6 as a default.
+    /// The origin of the returned NPlane is the average of all points, see Polyline3D.Center.
+    /// The orientation of the normal follows the order of the points.
+    /// If they are counter-clockwise in the World X-Y plane, then the normal points in World Z direction.
+    /// On self intersecting shapes, where these cross products cancel each other out, the orientation is arbitrary.
+    /// Returns None if:
+    /// the Polyline3D has less than 3 points,
+    /// or all points are within the tolerance of one point or of one line, so that there is no unique plane,
+    /// or any point is further away from the plane than the tolerance.
+    /// Use Polyline3D.tryAveragePlane to get the average plane of non planar points too.
+    static member inline tryPlane (tolerance:float) (pl:Polyline3D) : NPlane option =
+        pl.TryPlane(tolerance)
+
+    /// Tests if all points of the Polyline3D lie in one plane.
+    /// The optional 'tolerance' is the maximum distance any point may have from that plane, it defaults to 1e-6.
+    /// Returns FALSE if the Polyline3D has less than 3 points,
+    /// or if all points are within the tolerance of one point or of one line,
+    /// because then there is no unique plane.
+    member _.IsPlanar([<OPT;DEF(1e-6)>] tolerance:float) : bool =
+        match tryPlaneOf true tolerance xyzs with
+        | ValueSome _ -> true
+        | ValueNone -> false
+
+    /// Tests if all points of the Polyline3D lie in one plane.
+    /// The 'tolerance' is the maximum distance any point may have from that plane. Use 1e-6 as a default.
+    /// Returns FALSE if the Polyline3D has less than 3 points,
+    /// or if all points are within the tolerance of one point or of one line,
+    /// because then there is no unique plane.
+    static member inline isPlanar (tolerance:float) (pl:Polyline3D) : bool =
+        pl.IsPlanar(tolerance)
 
     /// Scales the Polyline3D by a given factor.
     /// Scale center is World Origin 0,0,0
@@ -2237,7 +2542,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
                             ) : Polyline3D =
         if polyLine.PointCount < 2 then
             fail $"Polyline3D.offset: Polyline3D must have at least 2 points but has {polyLine.PointCount} points."
-        let refNormal = polyLine.AverageNormal
+        let refNormal = averageNormalOf polyLine.XYZs // not Polyline3D.AverageNormal, a degenerate normal is reported below
         if refNormal.LengthSq < 1e-8 then
             fail $"Polyline3D.offset: Cannot compute average normal of Polyline3D, the {polyLine.PointCount} points are collinear or too close together: {polyLine}"
         Polyline3D.offsetWithRef(polyLine, inPlaneOffsetDistance, perpendicularOffsetDistance, refNormal.Unitized, loop)
@@ -2355,7 +2660,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
                             ) : Polyline3D =
         if polyLine.PointCount < 2 then
             fail $"Polyline3D.offsetVar: Polyline3D must have at least 2 points but has {polyLine.PointCount} points."
-        let refNormal = polyLine.AverageNormal
+        let refNormal = averageNormalOf polyLine.XYZs // not Polyline3D.AverageNormal, a degenerate normal is reported below
         if refNormal.LengthSq < 1e-8 then
             fail $"Polyline3D.offsetVar: Cannot compute average normal of Polyline3D, the {polyLine.PointCount} points are collinear or too close together: {polyLine}"
         Polyline3D.offsetVarWithRef(polyLine, inPlaneOffsetDistances, perpendicularOffsetDistances, refNormal.Unitized, loop, varDistParallelBehavior, considerCollinearBelow, failAtUTurnAbove)
