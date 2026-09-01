@@ -10,11 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `Polyline2D.checkForDuplicatePoints` and `Polyline3D.checkForDuplicatePoints`, which return the original polyline when unchanged or a cleaned polyline and reported duplicate points.
 - Added `Polyline3D.TryPlane` and `Polyline3D.IsPlanar`, plus the static `tryPlane` and `isPlanar`, to get the `NPlane` of a planar Polyline3D within a tolerance.
 - Added `Polyline3D.AveragePlane` and `Polyline3D.TryAveragePlane`, plus the static `averagePlane` and `tryAveragePlane`, to get the average `NPlane` of a Polyline3D even when its points are not planar.
-- Added `Polyline3D.TryAverageNormal` and the static `tryAverageNormal`, returning `None` where `AverageNormal` silently returns a zero length vector.
+- Added `Polyline3D.TryAverageNormal` and the static `tryAverageNormal`, returning `None` instead of failing where `AverageNormal` finds no normal.
 - The unsafe internal constructors of `NPlane`, `PPlane`, `Box`, `BRect`, and `BBox`, and therefore all their `createUnchecked` members, now verify their input when compiled in DEBUG mode or with the `CHECKED_EUCLID` symbol defined. This covers unitized normals and axes, perpendicular and right-handed frames, `NaN` and `Infinity` values, and min values not being bigger than max values. The other unsafe constructors already did this.
 - Documented the `CHECKED_EUCLID` compiler flag in the Readme.
 
 ### Changed
+- `Polyline3D.AverageNormal` now fails if no normal can be found, instead of silently returning an almost zero length vector. This is the case if the Polyline3D has less than 3 points, if all points are in one line, if the cross products cancel each other out on a self intersecting shape, or if the Polyline3D is very small. Use `Polyline3D.TryAverageNormal` to get `None` instead of an exception.
 - The `CHECK_EUCLID` compiler symbol was renamed to `CHECKED_EUCLID`.
 - Pinned the `System.Text.Json` package reference (net472 only) to the lowest version providing the required APIs, `4.6.0`, instead of tracking latest, and excluded it from Dependabot version updates.
 

@@ -979,10 +979,16 @@ let tests =
                 | None -> "tiny square has a plane" |> Expect.isTrue false
             }
 
-            test "AverageNormal does not throw on collinear points, it returns a zero vector" {
-                let pl = Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(1.,1.,1.); Pnt(2.,2.,2.)]
-                "collinear points give a zero length average normal" |> Expect.floatClose tol pl.AverageNormal.Length 0.0
-                "AverageNormal throws only on an empty polyline" |> Expect.throws (fun () -> (Polyline3D([])).AverageNormal |> ignore)
+            test "AverageNormal fails when no normal can be found" {
+                let collinear = Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(1.,1.,1.); Pnt(2.,2.,2.)]
+                "collinear points have no average normal" |> Expect.throws (fun () -> collinear.AverageNormal |> ignore)
+                "empty polyline" |> Expect.throws (fun () -> (Polyline3D([])).AverageNormal |> ignore)
+                "two points" |> Expect.throws (fun () -> (Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(1.,0.,0.)]).AverageNormal |> ignore)
+                "coincident points" |> Expect.throws (fun () -> (Polyline3D.createFromPts [Pnt(5.,5.,5.); Pnt(5.,5.,5.); Pnt(5.,5.,5.)]).AverageNormal |> ignore)
+                let bowTie = Polyline3D.createFromPts [Pnt(0.,0.,4.); Pnt(1.,0.,4.); Pnt(0.,1.,4.); Pnt(1.,1.,4.)]
+                "the cross products cancel out on a bow tie" |> Expect.throws (fun () -> bowTie.AverageNormal |> ignore)
+                "but AveragePlane still finds the plane" |> Expect.floatClose tol (abs (bowTie.AveragePlane()).Normal.Z) 1.0
+                "static averageNormal fails too" |> Expect.throws (fun () -> Polyline3D.averageNormal collinear |> ignore)
             }
 
             test "TryAverageNormal returns the same vector as AverageNormal" {

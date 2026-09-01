@@ -35,6 +35,46 @@ module private Polyline3DUtil =
     let inline copy (xyzs: ResizeArray<float>) : ResizeArray<float> =
         xyzs.GetRange(0, xyzs.Count)
 
+    /// Sums up the cross products of all points around their center: Newell's method.
+    /// The result is not unitized, its length is twice the area of the polygon projected onto that plane.
+    /// Does not check for bad input, the result may be zero length, e.g. if all points are in one line.
+    /// There must be at least one point.
+    let averageNormalOf (xyzs: ResizeArray<float>) : Vec =
+        let len = xyzs.Count
+        // the center of all points
+        let mutable ox = 0.0
+        let mutable oy = 0.0
+        let mutable oz = 0.0
+        let mutable i = 0
+        while i < len do
+            ox <- ox + xyzs.[i    ]
+            oy <- oy + xyzs.[i + 1]
+            oz <- oz + xyzs.[i + 2]
+            i <- i + 3
+        let count = float (len / 3) // divide, just like Polyline3D.Center does, so the same center is used
+        ox <- ox / count
+        oy <- oy / count
+        oz <- oz / count
+        let mutable nx = 0.0
+        let mutable ny = 0.0
+        let mutable nz = 0.0
+        let mutable ax = xyzs.[len - 3] - ox // the previous point, starting at the last one to close the loop
+        let mutable ay = xyzs.[len - 2] - oy
+        let mutable az = xyzs.[len - 1] - oz
+        i <- 0
+        while i < len do
+            let bx = xyzs.[i    ] - ox
+            let by = xyzs.[i + 1] - oy
+            let bz = xyzs.[i + 2] - oz
+            nx <- nx + ay * bz - az * by
+            ny <- ny + az * bx - ax * bz
+            nz <- nz + ax * by - ay * bx
+            ax <- bx
+            ay <- by
+            az <- bz
+            i <- i + 3
+        Vec(nx, ny, nz)
+
     /// Tries to find the average plane of the points.
     /// If 'checkPlanarity' is TRUE it also verifies that every point is within the tolerance of that plane.
     /// The 'tolerance' is the maximum distance any point may have from the plane, and from one point or one line.
@@ -1198,44 +1238,37 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
 
     /// Returns the average normal vector of the Polyline3D.
     /// It is calculated by summing up the cross products of all segments around the center point.
-    /// Does not check for bad input, may be zero length if points are collinear.
-    /// Only an empty Polyline3D fails. Use TryAverageNormal to get None instead of a zero length vector.
+    /// The returned vector is not unitized, its length is twice the area of the polygon projected onto that plane.
+    /// Fails if the summed normal is shorter than 1e-6, because then no normal can be found. This happens if:
+    /// the Polyline3D has less than 3 points,
+    /// or all points are in one line,
+    /// or the cross products cancel each other out on a self intersecting shape,
+    /// or the Polyline3D is very small.
+    /// Use TryAverageNormal to get None instead of an exception.
+    /// For the last two cases Polyline3D.AveragePlane still finds a plane.
     member pl.AverageNormal : Vec =
-        let c = pl.Center // fails on empty Polyline3D
-        let ox = c.X
-        let oy = c.Y
-        let oz = c.Z
-        let len = xyzs.Count
-        let mutable nx = 0.0
-        let mutable ny = 0.0
-        let mutable nz = 0.0
-        let mutable ax = xyzs.[len - 3] - ox // the previous point, starting at the last one to close the loop
-        let mutable ay = xyzs.[len - 2] - oy
-        let mutable az = xyzs.[len - 1] - oz
-        let mutable i = 0
-        while i < len do
-            let bx = xyzs.[i    ] - ox
-            let by = xyzs.[i + 1] - oy
-            let bz = xyzs.[i + 2] - oz
-            nx <- nx + ay * bz - az * by
-            ny <- ny + az * bx - ax * bz
-            nz <- nz + ax * by - ay * bx
-            ax <- bx
-            ay <- by
-            az <- bz
-            i <- i + 3
-        Vec(nx, ny, nz)
+        if pl.PointCount < 3 then failTooFewPoly3D "AverageNormal" 3 pl.PointCount
+        let n = averageNormalOf xyzs
+        if isTooSmallSq n.LengthSq then
+            fail $"Polyline3D.AverageNormal: no normal can be found. The points are in one line, or the cross products cancel each other out, or the Polyline3D is very small: {pl.AsString}"
+        n
 
     /// Returns the average normal vector of the Polyline3D.
     /// It is calculated by summing up the cross products of all segments around the center point.
-    /// Does not check for bad input, may be zero length if points are collinear.
-    /// Only an empty Polyline3D fails. Use tryAverageNormal to get None instead of a zero length vector.
+    /// The returned vector is not unitized, its length is twice the area of the polygon projected onto that plane.
+    /// Fails if the summed normal is shorter than 1e-6, because then no normal can be found. This happens if:
+    /// the Polyline3D has less than 3 points,
+    /// or all points are in one line,
+    /// or the cross products cancel each other out on a self intersecting shape,
+    /// or the Polyline3D is very small.
+    /// Use tryAverageNormal to get None instead of an exception.
+    /// For the last two cases Polyline3D.averagePlane still finds a plane.
     static member inline averageNormal (pl:Polyline3D) : Vec =
         pl.AverageNormal
 
     /// Returns the average normal vector of the Polyline3D, or None if it is degenerate.
     /// It is calculated by summing up the cross products of all segments around the center point,
-    /// so it is the same vector as Polyline3D.AverageNormal, but bad input returns None instead of a zero length vector.
+    /// so it is the same vector as Polyline3D.AverageNormal, but bad input returns None instead of raising an exception.
     /// The returned vector is not unitized, its length is twice the area of the polygon projected onto that plane.
     /// Returns None if the summed normal is shorter than 1e-6. This happens if:
     /// the Polyline3D has less than 3 points,
@@ -1247,13 +1280,13 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
         if pl.PointCount < 3 then
             None
         else
-            let n = pl.AverageNormal
+            let n = averageNormalOf xyzs
             if isTooSmallSq n.LengthSq then None
             else Some n
 
     /// Returns the average normal vector of the Polyline3D, or None if it is degenerate.
     /// It is calculated by summing up the cross products of all segments around the center point,
-    /// so it is the same vector as Polyline3D.averageNormal, but bad input returns None instead of a zero length vector.
+    /// so it is the same vector as Polyline3D.averageNormal, but bad input returns None instead of raising an exception.
     /// The returned vector is not unitized, its length is twice the area of the polygon projected onto that plane.
     /// Returns None if the summed normal is shorter than 1e-6. This happens if:
     /// the Polyline3D has less than 3 points,
@@ -2509,7 +2542,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
                             ) : Polyline3D =
         if polyLine.PointCount < 2 then
             fail $"Polyline3D.offset: Polyline3D must have at least 2 points but has {polyLine.PointCount} points."
-        let refNormal = polyLine.AverageNormal
+        let refNormal = averageNormalOf polyLine.XYZs // not Polyline3D.AverageNormal, a degenerate normal is reported below
         if refNormal.LengthSq < 1e-8 then
             fail $"Polyline3D.offset: Cannot compute average normal of Polyline3D, the {polyLine.PointCount} points are collinear or too close together: {polyLine}"
         Polyline3D.offsetWithRef(polyLine, inPlaneOffsetDistance, perpendicularOffsetDistance, refNormal.Unitized, loop)
@@ -2627,7 +2660,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
                             ) : Polyline3D =
         if polyLine.PointCount < 2 then
             fail $"Polyline3D.offsetVar: Polyline3D must have at least 2 points but has {polyLine.PointCount} points."
-        let refNormal = polyLine.AverageNormal
+        let refNormal = averageNormalOf polyLine.XYZs // not Polyline3D.AverageNormal, a degenerate normal is reported below
         if refNormal.LengthSq < 1e-8 then
             fail $"Polyline3D.offsetVar: Cannot compute average normal of Polyline3D, the {polyLine.PointCount} points are collinear or too close together: {polyLine}"
         Polyline3D.offsetVarWithRef(polyLine, inPlaneOffsetDistances, perpendicularOffsetDistances, refNormal.Unitized, loop, varDistParallelBehavior, considerCollinearBelow, failAtUTurnAbove)
