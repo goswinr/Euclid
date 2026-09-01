@@ -35,6 +35,85 @@ module private Polyline3DUtil =
     let inline copy (xyzs: ResizeArray<float>) : ResizeArray<float> =
         xyzs.GetRange(0, xyzs.Count)
 
+    /// Tries to find the plane that all points lie in.
+    /// The 'tolerance' is the maximum distance any point may have from the plane.
+    /// The origin of the returned plane is the average of all points.
+    /// Returns ValueNone if there are less than 3 points,
+    /// if all points are within the tolerance of one point or of one line,
+    /// or if any point is further away from the plane than the tolerance.
+    let tryPlaneOf (tolerance:float) (xyzs: ResizeArray<float>) : NPlane voption =
+        let ptCount = countPts xyzs
+        if ptCount < 3 then
+            ValueNone
+        else
+            // the center of all points is the origin of the plane
+            let mutable cx = 0.0
+            let mutable cy = 0.0
+            let mutable cz = 0.0
+            let mutable i = 0
+            let len = xyzs.Count
+            while i < len do
+                cx <- cx + xyzs.[i]
+                cy <- cy + xyzs.[i + 1]
+                cz <- cz + xyzs.[i + 2]
+                i <- i + 3
+            let cen = Pnt(cx / float ptCount, cy / float ptCount, cz / float ptCount)
+
+            // Newell's method: sum up the cross products of all points around the center.
+            // This averages out the noise of near planar points.
+            // At the same time find the point that is furthest from the center, it spans the main axis.
+            let mutable newell = Vec.Zero
+            let mutable axis = Vec.Zero
+            let mutable axisLenSq = 0.0
+            let mutable a = (getPt (ptCount - 1) xyzs) - cen
+            for j = 0 to ptCount - 1 do
+                let b = (getPt j xyzs) - cen
+                newell <- newell + Vec.cross(a, b)
+                let lenSq = b.LengthSq
+                if lenSq > axisLenSq then
+                    axisLenSq <- lenSq
+                    axis <- b
+                a <- b
+
+            if axisLenSq <= tolerance * tolerance then
+                ValueNone // all points are within the tolerance of the center point, so there is no unique plane
+            else
+                // find the point that is furthest away from the main axis.
+                // The length of this cross product is the distance from the axis times the length of the axis.
+                let mutable perp = Vec.Zero
+                let mutable perpLenSq = 0.0
+                for j = 0 to ptCount - 1 do
+                    let v = Vec.cross(axis, (getPt j xyzs) - cen)
+                    let lenSq = v.LengthSq
+                    if lenSq > perpLenSq then
+                        perpLenSq <- lenSq
+                        perp <- v
+                if perpLenSq <= tolerance * tolerance * axisLenSq then
+                    ValueNone // all points are within the tolerance of one line, so there is no unique plane
+                else
+                    // Newell's normal is preferred, it uses all points. But it cancels out to zero on
+                    // self intersecting or very small shapes. Then the normal of the widest triangle is used.
+                    let normal =
+                        if isTooSmallSq newell.LengthSq then
+                            if Vec.dot(perp, newell) < 0.0 then -perp else perp // keep the orientation of the point order if there is any
+                        else
+                            newell
+                    let f = 1.0 / normal.Length
+                    let nx = normal.X * f
+                    let ny = normal.Y * f
+                    let nz = normal.Z * f
+                    // check that all points are within the tolerance of this plane
+                    let mutable isPlanar = true
+                    let mutable k = 0
+                    while isPlanar && k < len do
+                        let d = (xyzs.[k] - cen.X) * nx + (xyzs.[k + 1] - cen.Y) * ny + (xyzs.[k + 2] - cen.Z) * nz
+                        if abs d > tolerance then isPlanar <- false
+                        k <- k + 3
+                    if isPlanar then
+                        ValueSome (NPlane.createUnchecked(cen.X, cen.Y, cen.Z, nx, ny, nz))
+                    else
+                        ValueNone
+
 
 open Polyline3DUtil
 
@@ -1097,6 +1176,52 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// Does not check for bad input, may be zero length if points are collinear.
     static member inline averageNormal (pl:Polyline3D) : Vec =
         pl.AverageNormal
+
+    /// Tries to find the plane that all points of the Polyline3D lie in.
+    /// The optional 'tolerance' is the maximum distance any point may have from the plane, it defaults to 1e-6.
+    /// The origin of the returned NPlane is the average of all points, see Polyline3D.Center.
+    /// The orientation of the normal follows the order of the points.
+    /// If they are counter-clockwise in the World X-Y plane, then the normal points in World Z direction.
+    /// On self intersecting shapes, where these cross products cancel each other out, the orientation is arbitrary.
+    /// Returns None if:
+    /// the Polyline3D has less than 3 points,
+    /// or all points are within the tolerance of one point or of one line, so that there is no unique plane,
+    /// or any point is further away from the plane than the tolerance.
+    member _.TryPlane([<OPT;DEF(1e-6)>] tolerance:float) : NPlane option =
+        match tryPlaneOf tolerance xyzs with
+        | ValueSome pl -> Some pl
+        | ValueNone -> None
+
+    /// Tries to find the plane that all points of the Polyline3D lie in.
+    /// The 'tolerance' is the maximum distance any point may have from the plane. Use 1e-6 as a default.
+    /// The origin of the returned NPlane is the average of all points, see Polyline3D.Center.
+    /// The orientation of the normal follows the order of the points.
+    /// If they are counter-clockwise in the World X-Y plane, then the normal points in World Z direction.
+    /// On self intersecting shapes, where these cross products cancel each other out, the orientation is arbitrary.
+    /// Returns None if:
+    /// the Polyline3D has less than 3 points,
+    /// or all points are within the tolerance of one point or of one line, so that there is no unique plane,
+    /// or any point is further away from the plane than the tolerance.
+    static member inline tryPlane (tolerance:float) (pl:Polyline3D) : NPlane option =
+        pl.TryPlane(tolerance)
+
+    /// Tests if all points of the Polyline3D lie in one plane.
+    /// The optional 'tolerance' is the maximum distance any point may have from that plane, it defaults to 1e-6.
+    /// Returns FALSE if the Polyline3D has less than 3 points,
+    /// or if all points are within the tolerance of one point or of one line,
+    /// because then there is no unique plane.
+    member _.IsPlanar([<OPT;DEF(1e-6)>] tolerance:float) : bool =
+        match tryPlaneOf tolerance xyzs with
+        | ValueSome _ -> true
+        | ValueNone -> false
+
+    /// Tests if all points of the Polyline3D lie in one plane.
+    /// The 'tolerance' is the maximum distance any point may have from that plane. Use 1e-6 as a default.
+    /// Returns FALSE if the Polyline3D has less than 3 points,
+    /// or if all points are within the tolerance of one point or of one line,
+    /// because then there is no unique plane.
+    static member inline isPlanar (tolerance:float) (pl:Polyline3D) : bool =
+        pl.IsPlanar(tolerance)
 
     /// Scales the Polyline3D by a given factor.
     /// Scale center is World Origin 0,0,0

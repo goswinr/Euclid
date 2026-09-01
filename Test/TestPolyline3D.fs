@@ -882,4 +882,108 @@ let tests =
                 Expect.equal cleaned.PointCount 1 "single point returned as is"
             }
         ]
+
+        testList "TryPlane and IsPlanar" [
+            test "counterclockwise square in XY plane" {
+                let pl = Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(1.,1.,0.); Pnt(0.,1.,0.); Pnt(0.,0.,0.)]
+                "square is planar" |> Expect.isTrue (pl.IsPlanar())
+                match pl.TryPlane() with
+                | Some pln ->
+                    "normal points up for a CCW square in the XY plane" |> Expect.floatClose tol pln.Normal.Z 1.0
+                    "origin is the average of all points" |> Expect.isTrue (eqPnt pln.Origin pl.Center)
+                    "origin is on the XY plane" |> Expect.floatClose tol pln.Origin.Z 0.0
+                | None ->
+                    "square has a plane" |> Expect.isTrue false
+            }
+
+            test "clockwise square has a flipped normal" {
+                let pl = Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(0.,1.,0.); Pnt(1.,1.,0.); Pnt(1.,0.,0.)]
+                match pl.TryPlane() with
+                | Some pln -> "normal points down for a CW square in the XY plane" |> Expect.floatClose tol pln.Normal.Z -1.0
+                | None -> "square has a plane" |> Expect.isTrue false
+            }
+
+            test "triangle in a tilted plane" {
+                let a = Pnt(1.,2.,3.)
+                let b = Pnt(4.,2.,3.)
+                let c = Pnt(1.,5.,7.)
+                let pl = Polyline3D.createFromPts [a; b; c]
+                let expected = (NPlane.createFrom3Points a b c).Normal
+                match pl.TryPlane() with
+                | Some pln ->
+                    "normal matches the plane through the three points" |> Expect.floatClose tol (UnitVec.dot(pln.Normal, expected)) 1.0
+                    "all points are on the plane" |> Expect.isTrue (pl.AsPoints |> Seq.forall (fun p -> abs (NPlane.distanceToPntSigned p pln) < 1e-9))
+                | None -> "triangle has a plane" |> Expect.isTrue false
+            }
+
+            test "non planar polyline returns None" {
+                let pl = Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(1.,1.,1.); Pnt(0.,1.,0.)]
+                "warped quad is not planar" |> Expect.isFalse (pl.IsPlanar())
+                "warped quad has no plane" |> Expect.isTrue (pl.TryPlane() |> Option.isNone)
+            }
+
+            test "tolerance decides on an almost planar polyline" {
+                let pl = Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(1.,1.,0.001); Pnt(0.,1.,0.)]
+                "not planar within the default tolerance" |> Expect.isFalse (pl.IsPlanar())
+                "planar within a 0.01 tolerance" |> Expect.isTrue (pl.IsPlanar(0.01))
+                "static isPlanar is curried" |> Expect.isTrue (Polyline3D.isPlanar 0.01 pl)
+                "static tryPlane is curried" |> Expect.isTrue (Polyline3D.tryPlane 0.01 pl |> Option.isSome)
+                "static tryPlane with a tight tolerance" |> Expect.isTrue (Polyline3D.tryPlane 1e-6 pl |> Option.isNone)
+            }
+
+            test "less than three points has no plane" {
+                "empty polyline" |> Expect.isFalse ((Polyline3D([])).IsPlanar())
+                "one point" |> Expect.isFalse ((Polyline3D.createFromPts [Pnt(1.,2.,3.)]).IsPlanar())
+                "two points" |> Expect.isFalse ((Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(1.,0.,0.)]).IsPlanar())
+                "two points have no plane" |> Expect.isTrue ((Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(1.,0.,0.)]).TryPlane() |> Option.isNone)
+            }
+
+            test "collinear points have no unique plane" {
+                let pl = Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(1.,1.,1.); Pnt(2.,2.,2.); Pnt(3.,3.,3.)]
+                "collinear points are not planar" |> Expect.isFalse (pl.IsPlanar())
+                "collinear points have no plane" |> Expect.isTrue (pl.TryPlane() |> Option.isNone)
+            }
+
+            test "almost collinear points still define a plane" {
+                let pl = Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(1.,0.001,0.); Pnt(2.,0.,0.)]
+                "the tiny offset is bigger than the tolerance" |> Expect.isTrue (pl.IsPlanar())
+                "within a 0.01 tolerance the points are on one line" |> Expect.isFalse (pl.IsPlanar(0.01))
+            }
+
+            test "duplicate points have no unique plane" {
+                let pl = Polyline3D.createFromPts [Pnt(5.,5.,5.); Pnt(5.,5.,5.); Pnt(5.,5.,5.); Pnt(5.,5.,5.)]
+                "coincident points are not planar" |> Expect.isFalse (pl.IsPlanar())
+                "coincident points have no plane" |> Expect.isTrue (pl.TryPlane() |> Option.isNone)
+            }
+
+            test "self intersecting planar polyline still finds the plane" {
+                // a bow tie, the summed cross products of Newell's method cancel out to zero here
+                let pl = Polyline3D.createFromPts [Pnt(0.,0.,4.); Pnt(1.,0.,4.); Pnt(0.,1.,4.); Pnt(1.,1.,4.); Pnt(0.,0.,4.)]
+                "bow tie is planar" |> Expect.isTrue (pl.IsPlanar())
+                match pl.TryPlane() with
+                | Some pln ->
+                    "normal is vertical" |> Expect.floatClose tol (abs pln.Normal.Z) 1.0
+                    "plane is at z=4" |> Expect.floatClose tol pln.Origin.Z 4.0
+                | None -> "bow tie has a plane" |> Expect.isTrue false
+            }
+
+            test "very small polyline is still planar" {
+                // the summed normal of Newell's method is shorter than 1e-6 here
+                let s = 1e-4
+                let pl = Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(s,0.,0.); Pnt(s,s,0.); Pnt(0.,s,0.)]
+                "tiny square is planar" |> Expect.isTrue (pl.IsPlanar(1e-12))
+                match pl.TryPlane(1e-12) with
+                | Some pln -> "normal points up for a CCW tiny square" |> Expect.floatClose tol pln.Normal.Z 1.0
+                | None -> "tiny square has a plane" |> Expect.isTrue false
+            }
+
+            test "polyline in a plane parallel to the world XZ plane" {
+                let pl = Polyline3D.createFromPts [Pnt(0.,7.,0.); Pnt(1.,7.,0.); Pnt(1.,7.,1.); Pnt(0.,7.,1.)]
+                match pl.TryPlane() with
+                | Some pln ->
+                    "normal is along Y" |> Expect.floatClose tol (abs pln.Normal.Y) 1.0
+                    "origin y is 7" |> Expect.floatClose tol pln.Origin.Y 7.0
+                | None -> "vertical square has a plane" |> Expect.isTrue false
+            }
+        ]
     ]
