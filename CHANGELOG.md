@@ -13,11 +13,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `Polyline3D.TryAverageNormal` and the static `tryAverageNormal`, returning `None` instead of failing where `AverageNormal` finds no normal.
 - The unsafe internal constructors of `NPlane`, `PPlane`, `Box`, `BRect`, and `BBox`, and therefore all their `createUnchecked` members, now verify their input when compiled in DEBUG mode or with the `CHECKED_EUCLID` symbol defined. This covers unitized normals and axes, perpendicular and right-handed frames, `NaN` and `Infinity` values, and min values not being bigger than max values. The other unsafe constructors already did this.
 - Documented the `CHECKED_EUCLID` compiler flag in the Readme.
+- Added `Rect3D.translateLocalZ`, an alias of `Rect3D.offsetZ`, for naming consistency with `Box.translateLocalX/Y/Z` and `Rect3D.translateLocalX/Y`.
 
 ### Changed
 - `Polyline3D.AverageNormal` now fails if no normal can be found, instead of silently returning an almost zero length vector. This is the case if the Polyline3D has less than 3 points, if all points are in one line, if the cross products cancel each other out on a self intersecting shape, or if the Polyline3D is very small. Use `Polyline3D.TryAverageNormal` to get `None` instead of an exception.
 - The `CHECK_EUCLID` compiler symbol was renamed to `CHECKED_EUCLID`.
 - Pinned the `System.Text.Json` package reference (net472 only) to the lowest version providing the required APIs, `4.6.0`, instead of tracking latest, and excluded it from Dependabot version updates.
+- Clarified the docstrings of `Box.MoveX/Y/Z`, `Rect2D.MoveX/Y`, and `Rect3D.MoveX/Y/Z` (instance and static) to state that they move along the **world** X/Y/Z axes, not the shape's own (possibly rotated) local axes. Use `translateLocalX/Y/Z` for local-axis moves.
+
+### Deprecated
+- `Box.translate`, `Rect2D.translate`, `Rect3D.translate`, and `PPlane.translate` are obsolete. They were plain aliases for `.move` (a world-space vector translation), which is ambiguous alongside the local-axis `translateLocalX/Y/Z` members on the same types. Use `.move` (or `PPlane.translateBy`) for a world-space vector, or `.translateLocalX/Y/Z` to move along the shape's own axes.
 
 ## [0.51.0] - 2026-07-28
 ### Added

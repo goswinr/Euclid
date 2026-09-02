@@ -842,30 +842,35 @@ type Rect2D =
         Rect2D.createUnchecked(r.OriginX + r.YaxisX*f, r.OriginY + r.YaxisY*f, r.XaxisX, r.XaxisY, r.YaxisX, r.YaxisY)
 
     /// Translate by a 2D vector. (Same as Rect2D.move)
+    [<Obsolete("This was an alias for Rect2D.move, ambiguous with the local-axis translateLocalX/Y members. Use Rect2D.move for a world-space vector, or Rect2D.translateLocalX/Y to move along the rectangle's own axes.")>]
     static member translate (v:Vc) (r:Rect2D)  : Rect2D =
         Rect2D.createUnchecked(r.OriginX + v.X, r.OriginY + v.Y, r.XaxisX, r.XaxisY, r.YaxisX, r.YaxisY)
 
-    /// Translate by a 2D vector. (Same as Rect2D.translate)
+    /// Translate by a 2D vector in world space. (Same as Rect2D.Move)
     static member move (v:Vc) (r:Rect2D)  : Rect2D =
         Rect2D.createUnchecked(r.OriginX + v.X, r.OriginY + v.Y, r.XaxisX, r.XaxisY, r.YaxisX, r.YaxisY)
 
-    /// Returns a 2D rectangle moved by a vector. Same as Rect2D.move and Rect2D.translate.
+    /// Returns a 2D rectangle moved by a vector in world space. Same as Rect2D.move.
     member inline r.Move (v:Vc) : Rect2D =
         Rect2D.createUnchecked(r.OriginX + v.X, r.OriginY + v.Y, r.XaxisX, r.XaxisY, r.YaxisX, r.YaxisY)
 
-    /// Returns a 2D rectangle moved by a given distance in X direction.
+    /// Returns a 2D rectangle moved by a given distance along the world X-axis.
+    /// This is not the rectangle's own (possibly rotated) local X-axis, use Rect2D.translateLocalX for that.
     member inline r.MoveX (distance:float) : Rect2D =
         Rect2D.createUnchecked(r.OriginX + distance, r.OriginY, r.XaxisX, r.XaxisY, r.YaxisX, r.YaxisY)
 
-    /// Returns a 2D rectangle moved by a given distance in X direction.
+    /// Returns a 2D rectangle moved by a given distance along the world X-axis.
+    /// This is not the rectangle's own (possibly rotated) local X-axis, use Rect2D.translateLocalX for that.
     static member inline moveX (distance:float) (r:Rect2D) : Rect2D =
         Rect2D.createUnchecked(r.OriginX + distance, r.OriginY, r.XaxisX, r.XaxisY, r.YaxisX, r.YaxisY)
 
-    /// Returns a 2D rectangle moved by a given distance in Y direction.
+    /// Returns a 2D rectangle moved by a given distance along the world Y-axis.
+    /// This is not the rectangle's own (possibly rotated) local Y-axis, use Rect2D.translateLocalY for that.
     member inline r.MoveY (distance:float) : Rect2D =
         Rect2D.createUnchecked(r.OriginX, r.OriginY + distance, r.XaxisX, r.XaxisY, r.YaxisX, r.YaxisY)
 
-    /// Returns a 2D rectangle moved by a given distance in Y direction.
+    /// Returns a 2D rectangle moved by a given distance along the world Y-axis.
+    /// This is not the rectangle's own (possibly rotated) local Y-axis, use Rect2D.translateLocalY for that.
     static member inline moveY (distance:float) (r:Rect2D) : Rect2D =
         Rect2D.createUnchecked(r.OriginX, r.OriginY + distance, r.XaxisX, r.XaxisY, r.YaxisX, r.YaxisY)
 

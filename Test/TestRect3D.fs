@@ -231,6 +231,14 @@ let tests =
                 let down = Rect3D.offsetZ -3.0 r
                 "offsetZ neg origin" |> Expect.isTrue (eq down.Origin (Pnt(0.,0.,-3.)))
             }
+
+            test "Rect3D.translateLocalZ is same as offsetZ" {
+                let r = Rect3D.createFromVectors(Pnt(0.,0.,0.), Vec(4.,0.,0.), Vec(0.,2.,0.))
+                let a = Rect3D.translateLocalZ 5.0 r
+                let b = Rect3D.offsetZ 5.0 r
+                "translateLocalZ origin" |> Expect.isTrue (eq a.Origin (Pnt(0.,0.,5.)))
+                "translateLocalZ = offsetZ" |> Expect.isTrue (Rect3D.equals 1e-9 a b)
+            }
         ]
 
         testList "Rect3D offsets" [

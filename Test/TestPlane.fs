@@ -1,5 +1,7 @@
 module TestPlane
 
+#nowarn "44" // PPlane.translate is obsolete; still exercised here for backward-compatibility coverage.
+
 open Euclid
 
 #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
@@ -522,7 +524,7 @@ let tests =
                 Expect.isTrue (eqVec moved.Xaxis.AsVec (UnitVec.Xaxis.AsVec)) "Axes should be unchanged"
             }
 
-            test "translate is alias for move" {
+            test "obsolete translate is still an alias for move" {
                 let plane = PPlane.WorldXY
                 let moved = PPlane.translate (Vec(5., 5., 5.)) plane
                 Expect.isTrue (eqPnt moved.Origin (Pnt(5., 5., 5.))) "Origin should be moved"

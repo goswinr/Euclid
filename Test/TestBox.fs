@@ -1,5 +1,7 @@
 module TestBox
 
+#nowarn "44" // Box.translate is obsolete; still exercised here for backward-compatibility coverage.
+
 open Euclid
 
 #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
@@ -293,7 +295,7 @@ let tests =
                 Expect.isTrue (eqPnt moved.Origin (Pnt(0., 0., 2.))) "Origin should be moved in Z"
             }
 
-            test "translate static method" {
+            test "obsolete translate static method is still an alias for move" {
                 let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 let moved = Box.translate (Vec(5., 3., 2.)) box
                 Expect.isTrue (eqPnt moved.Origin (Pnt(5., 3., 2.))) "Origin should be translated"

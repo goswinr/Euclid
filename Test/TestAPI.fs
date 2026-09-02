@@ -1982,6 +1982,7 @@ module Rect3DAPI =
     let (_:Rect3D) = Rect3D.translate (Vec(1., 1., 1.)) rect3d
     let (_:Rect3D) = Rect3D.translateLocalX 1.0 rect3d
     let (_:Rect3D) = Rect3D.translateLocalY 1.0 rect3d
+    let (_:Rect3D) = Rect3D.translateLocalZ 1.0 rect3d
     let (_:Rect3D) = Rect3D.move (Vec(1., 1., 1.)) rect3d
     let (_:Rect3D) = Rect3D.transformRigid (RigidMatrix.identity) rect3d
     let (_:Rect3D) = Rect3D.scale 2.0 rect3d
