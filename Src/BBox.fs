@@ -1169,7 +1169,7 @@ type BBox =
 
     /// Returns the X-aligned edge from point 1 to 0. This is the reverse of Edge01.
     member inline b.Edge10 : Line3D =
-        b.Edge01.Reversed
+        Line3D(b.MaxX, b.MinY, b.MinZ, b.MinX, b.MinY, b.MinZ)
 
     /// Returns the X-aligned edge from point 1 to 0. This is the reverse of Edge01.
     static member inline edge10 (b:BBox) : Line3D =
@@ -1177,7 +1177,7 @@ type BBox =
 
     /// Returns the Y-aligned edge from point 2 to 1. This is the reverse of Edge12.
     member inline b.Edge21 : Line3D =
-        b.Edge12.Reversed
+        Line3D(b.MaxX, b.MaxY, b.MinZ, b.MaxX, b.MinY, b.MinZ)
 
     /// Returns the Y-aligned edge from point 2 to 1. This is the reverse of Edge12.
     static member inline edge21 (b:BBox) : Line3D =
@@ -1185,7 +1185,7 @@ type BBox =
 
     /// Returns the X-aligned edge from point 2 to 3. This is the reverse of Edge32.
     member inline b.Edge23 : Line3D =
-        b.Edge32.Reversed
+        Line3D(b.MaxX, b.MaxY, b.MinZ, b.MinX, b.MaxY, b.MinZ)
 
     /// Returns the X-aligned edge from point 2 to 3. This is the reverse of Edge32.
     static member inline edge23 (b:BBox) : Line3D =
@@ -1193,7 +1193,7 @@ type BBox =
 
     /// Returns the Y-aligned edge from point 3 to 0. This is the reverse of Edge03.
     member inline b.Edge30 : Line3D =
-        b.Edge03.Reversed
+        Line3D(b.MinX, b.MaxY, b.MinZ, b.MinX, b.MinY, b.MinZ)
 
     /// Returns the Y-aligned edge from point 3 to 0. This is the reverse of Edge03.
     static member inline edge30 (b:BBox) : Line3D =
@@ -1201,7 +1201,7 @@ type BBox =
 
     /// Returns the Z-aligned edge from point 4 to 0. This is the reverse of Edge04.
     member inline b.Edge40 : Line3D =
-        b.Edge04.Reversed
+        Line3D(b.MinX, b.MinY, b.MaxZ, b.MinX, b.MinY, b.MinZ)
 
     /// Returns the Z-aligned edge from point 4 to 0. This is the reverse of Edge04.
     static member inline edge40 (b:BBox) : Line3D =
@@ -1209,7 +1209,7 @@ type BBox =
 
     /// Returns the Z-aligned edge from point 5 to 1. This is the reverse of Edge15.
     member inline b.Edge51 : Line3D =
-        b.Edge15.Reversed
+        Line3D(b.MaxX, b.MinY, b.MaxZ, b.MaxX, b.MinY, b.MinZ)
 
     /// Returns the Z-aligned edge from point 5 to 1. This is the reverse of Edge15.
     static member inline edge51 (b:BBox) : Line3D =
@@ -1217,7 +1217,7 @@ type BBox =
 
     /// Returns the Z-aligned edge from point 6 to 2. This is the reverse of Edge26.
     member inline b.Edge62 : Line3D =
-        b.Edge26.Reversed
+        Line3D(b.MaxX, b.MaxY, b.MaxZ, b.MaxX, b.MaxY, b.MinZ)
 
     /// Returns the Z-aligned edge from point 6 to 2. This is the reverse of Edge26.
     static member inline edge62 (b:BBox) : Line3D =
@@ -1225,7 +1225,7 @@ type BBox =
 
     /// Returns the Z-aligned edge from point 7 to 3. This is the reverse of Edge37.
     member inline b.Edge73 : Line3D =
-        b.Edge37.Reversed
+        Line3D(b.MinX, b.MaxY, b.MaxZ, b.MinX, b.MaxY, b.MinZ)
 
     /// Returns the Z-aligned edge from point 7 to 3. This is the reverse of Edge37.
     static member inline edge73 (b:BBox) : Line3D =
@@ -1233,7 +1233,7 @@ type BBox =
 
     /// Returns the X-aligned edge from point 5 to 4. This is the reverse of Edge45.
     member inline b.Edge54 : Line3D =
-        b.Edge45.Reversed
+        Line3D(b.MaxX, b.MinY, b.MaxZ, b.MinX, b.MinY, b.MaxZ)
 
     /// Returns the X-aligned edge from point 5 to 4. This is the reverse of Edge45.
     static member inline edge54 (b:BBox) : Line3D =
@@ -1241,7 +1241,7 @@ type BBox =
 
     /// Returns the Y-aligned edge from point 6 to 5. This is the reverse of Edge56.
     member inline b.Edge65 : Line3D =
-        b.Edge56.Reversed
+        Line3D(b.MaxX, b.MaxY, b.MaxZ, b.MaxX, b.MinY, b.MaxZ)
 
     /// Returns the Y-aligned edge from point 6 to 5. This is the reverse of Edge56.
     static member inline edge65 (b:BBox) : Line3D =
@@ -1249,7 +1249,7 @@ type BBox =
 
     /// Returns the X-aligned edge from point 6 to 7. This is the reverse of Edge76.
     member inline b.Edge67 : Line3D =
-        b.Edge76.Reversed
+        Line3D(b.MaxX, b.MaxY, b.MaxZ, b.MinX, b.MaxY, b.MaxZ)
 
     /// Returns the X-aligned edge from point 6 to 7. This is the reverse of Edge76.
     static member inline edge67 (b:BBox) : Line3D =
@@ -1257,7 +1257,7 @@ type BBox =
 
     /// Returns the Y-aligned edge from point 7 to 4. This is the reverse of Edge47.
     member inline b.Edge74 : Line3D =
-        b.Edge47.Reversed
+        Line3D(b.MinX, b.MaxY, b.MaxZ, b.MinX, b.MinY, b.MaxZ)
 
     /// Returns the Y-aligned edge from point 7 to 4. This is the reverse of Edge47.
     static member inline edge74 (b:BBox) : Line3D =

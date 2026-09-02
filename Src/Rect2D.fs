@@ -1857,7 +1857,7 @@ type Rect2D =
     ///  0-Origin       1
     /// </code></summary>
     member inline r.Edge10 : Line2D =
-        r.Edge01.Reversed
+        Line2D(r.OriginX + r.XaxisX, r.OriginY + r.XaxisY, r.OriginX, r.OriginY)
 
     /// Returns edge 1-0 of the 2D rectangle. This is the reverse of Edge01.
     static member inline edge10 (r:Rect2D) : Line2D =
@@ -1880,7 +1880,9 @@ type Rect2D =
     ///  0-Origin       1
     /// </code></summary>
     member inline r.Edge21 : Line2D =
-        r.Edge12.Reversed
+        let sx = r.OriginX + r.XaxisX
+        let sy = r.OriginY + r.XaxisY
+        Line2D(sx + r.YaxisX, sy + r.YaxisY, sx, sy)
 
     /// Returns edge 2-1 of the 2D rectangle. This is the reverse of Edge12.
     static member inline edge21 (r:Rect2D) : Line2D =
@@ -1903,7 +1905,9 @@ type Rect2D =
     ///  0-Origin       1
     /// </code></summary>
     member inline r.Edge32 : Line2D =
-        r.Edge23.Reversed
+        let p3x = r.OriginX + r.YaxisX
+        let p3y = r.OriginY + r.YaxisY
+        Line2D(p3x, p3y, p3x + r.XaxisX, p3y + r.XaxisY)
 
     /// Returns edge 3-2 of the 2D rectangle. This is the reverse of Edge23.
     static member inline edge32 (r:Rect2D) : Line2D =
@@ -1926,7 +1930,7 @@ type Rect2D =
     ///  0-Origin       1
     /// </code></summary>
     member inline r.Edge03 : Line2D =
-        r.Edge30.Reversed
+        Line2D(r.OriginX, r.OriginY, r.OriginX + r.YaxisX, r.OriginY + r.YaxisY)
 
     /// Returns edge 0-3 of the 2D rectangle. This is the reverse of Edge30.
     static member inline edge03 (r:Rect2D) : Line2D =

@@ -844,7 +844,7 @@ type BRect =
     /// </code>
     /// </summary>
     member r.Edge10 : Line2D =
-        r.Edge01.Reversed
+        Line2D(r.MaxX,r.MinY,r.MinX,r.MinY)
 
     /// The bottom edge reversed. The line from point 1 to 0. This is the reverse of Edge01.
     static member inline edge10 (r:BRect) : Line2D =
@@ -867,7 +867,7 @@ type BRect =
     /// </code>
     /// </summary>
     member r.Edge21 : Line2D =
-        r.Edge12.Reversed
+        Line2D(r.MaxX,r.MaxY,r.MaxX,r.MinY)
 
     /// The right edge reversed. The line from point 2 to 1. This is the reverse of Edge12.
     static member inline edge21 (r:BRect) : Line2D =
@@ -890,7 +890,7 @@ type BRect =
     /// </code>
     /// </summary>
     member r.Edge32 : Line2D =
-        r.Edge23.Reversed
+        Line2D(r.MinX,r.MaxY,r.MaxX,r.MaxY)
 
     /// The top edge reversed. The line from point 3 to 2. This is the reverse of Edge23.
     static member inline edge32 (r:BRect) : Line2D =
@@ -913,7 +913,7 @@ type BRect =
     /// </code>
     /// </summary>
     member r.Edge03 : Line2D =
-        r.Edge30.Reversed
+        Line2D(r.MinX,r.MinY,r.MinX,r.MaxY)
 
     /// The left edge reversed. The line from point 0 to 3. This is the reverse of Edge30.
     static member inline edge03 (r:BRect) : Line2D =

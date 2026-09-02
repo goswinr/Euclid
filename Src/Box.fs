@@ -2108,7 +2108,8 @@ type Box =
     /// </code>
     /// </summary>
     member inline b.Edge10 : Line3D =
-        b.Edge01.Reversed
+        Line3D(b.OriginX + b.XaxisX, b.OriginY + b.XaxisY, b.OriginZ + b.XaxisZ,
+               b.OriginX, b.OriginY, b.OriginZ)
 
     /// Returns the X-aligned edge from point 1 to 0. This is the reverse of Edge01.
     static member inline edge10 (b:Box) : Line3D =
@@ -2126,7 +2127,8 @@ type Box =
     /// </code>
     /// </summary>
     member inline b.Edge21 : Line3D =
-        b.Edge12.Reversed
+        Line3D(b.OriginX + b.XaxisX + b.YaxisX, b.OriginY + b.XaxisY + b.YaxisY, b.OriginZ + b.XaxisZ + b.YaxisZ,
+               b.OriginX + b.XaxisX, b.OriginY + b.XaxisY, b.OriginZ + b.XaxisZ)
 
     /// Returns the Y-aligned edge from point 2 to 1. This is the reverse of Edge12.
     static member inline edge21 (b:Box) : Line3D =
@@ -2144,7 +2146,8 @@ type Box =
     /// </code>
     /// </summary>
     member inline b.Edge23 : Line3D =
-        b.Edge32.Reversed
+        Line3D(b.OriginX + b.XaxisX + b.YaxisX, b.OriginY + b.XaxisY + b.YaxisY, b.OriginZ + b.XaxisZ + b.YaxisZ,
+               b.OriginX + b.YaxisX, b.OriginY + b.YaxisY, b.OriginZ + b.YaxisZ)
 
     /// Returns the X-aligned edge from point 2 to 3. This is the reverse of Edge32.
     static member inline edge23 (b:Box) : Line3D =
@@ -2162,7 +2165,8 @@ type Box =
     /// </code>
     /// </summary>
     member inline b.Edge30 : Line3D =
-        b.Edge03.Reversed
+        Line3D(b.OriginX + b.YaxisX, b.OriginY + b.YaxisY, b.OriginZ + b.YaxisZ,
+               b.OriginX, b.OriginY, b.OriginZ)
 
     /// Returns the Y-aligned edge from point 3 to 0. This is the reverse of Edge03.
     static member inline edge30 (b:Box) : Line3D =
@@ -2180,7 +2184,8 @@ type Box =
     /// </code>
     /// </summary>
     member inline b.Edge54 : Line3D =
-        b.Edge45.Reversed
+        Line3D(b.OriginX + b.XaxisX + b.ZaxisX, b.OriginY + b.XaxisY + b.ZaxisY, b.OriginZ + b.XaxisZ + b.ZaxisZ,
+               b.OriginX + b.ZaxisX, b.OriginY + b.ZaxisY, b.OriginZ + b.ZaxisZ)
 
     /// Returns the X-aligned edge from point 5 to 4. This is the reverse of Edge45.
     static member inline edge54 (b:Box) : Line3D =
@@ -2198,7 +2203,8 @@ type Box =
     /// </code>
     /// </summary>
     member inline b.Edge65 : Line3D =
-        b.Edge56.Reversed
+        Line3D(b.OriginX + b.XaxisX + b.YaxisX + b.ZaxisX, b.OriginY + b.XaxisY + b.YaxisY + b.ZaxisY, b.OriginZ + b.XaxisZ + b.YaxisZ + b.ZaxisZ,
+               b.OriginX + b.XaxisX + b.ZaxisX, b.OriginY + b.XaxisY + b.ZaxisY, b.OriginZ + b.XaxisZ + b.ZaxisZ)
 
     /// Returns the Y-aligned edge from point 6 to 5. This is the reverse of Edge56.
     static member inline edge65 (b:Box) : Line3D =
@@ -2216,7 +2222,8 @@ type Box =
     /// </code>
     /// </summary>
     member inline b.Edge67 : Line3D =
-        b.Edge76.Reversed
+        Line3D(b.OriginX + b.XaxisX + b.YaxisX + b.ZaxisX, b.OriginY + b.XaxisY + b.YaxisY + b.ZaxisY, b.OriginZ + b.XaxisZ + b.YaxisZ + b.ZaxisZ,
+               b.OriginX + b.YaxisX + b.ZaxisX, b.OriginY + b.YaxisY + b.ZaxisY, b.OriginZ + b.YaxisZ + b.ZaxisZ)
 
     /// Returns the X-aligned edge from point 6 to 7. This is the reverse of Edge76.
     static member inline edge67 (b:Box) : Line3D =
@@ -2234,7 +2241,8 @@ type Box =
     /// </code>
     /// </summary>
     member inline b.Edge74 : Line3D =
-        b.Edge47.Reversed
+        Line3D(b.OriginX + b.YaxisX + b.ZaxisX, b.OriginY + b.YaxisY + b.ZaxisY, b.OriginZ + b.YaxisZ + b.ZaxisZ,
+               b.OriginX + b.ZaxisX, b.OriginY + b.ZaxisY, b.OriginZ + b.ZaxisZ)
 
     /// Returns the Y-aligned edge from point 7 to 4. This is the reverse of Edge47.
     static member inline edge74 (b:Box) : Line3D =
@@ -2252,7 +2260,8 @@ type Box =
     /// </code>
     /// </summary>
     member inline b.Edge40 : Line3D =
-        b.Edge04.Reversed
+        Line3D(b.OriginX + b.ZaxisX, b.OriginY + b.ZaxisY, b.OriginZ + b.ZaxisZ,
+               b.OriginX, b.OriginY, b.OriginZ)
 
     /// Returns the Z-aligned edge from point 4 to 0. This is the reverse of Edge04.
     static member inline edge40 (b:Box) : Line3D =
@@ -2270,7 +2279,8 @@ type Box =
     /// </code>
     /// </summary>
     member inline b.Edge51 : Line3D =
-        b.Edge15.Reversed
+        Line3D(b.OriginX + b.XaxisX + b.ZaxisX, b.OriginY + b.XaxisY + b.ZaxisY, b.OriginZ + b.XaxisZ + b.ZaxisZ,
+               b.OriginX + b.XaxisX, b.OriginY + b.XaxisY, b.OriginZ + b.XaxisZ)
 
     /// Returns the Z-aligned edge from point 5 to 1. This is the reverse of Edge15.
     static member inline edge51 (b:Box) : Line3D =
@@ -2288,7 +2298,8 @@ type Box =
     /// </code>
     /// </summary>
     member inline b.Edge62 : Line3D =
-        b.Edge26.Reversed
+        Line3D(b.OriginX + b.XaxisX + b.YaxisX + b.ZaxisX, b.OriginY + b.XaxisY + b.YaxisY + b.ZaxisY, b.OriginZ + b.XaxisZ + b.YaxisZ + b.ZaxisZ,
+               b.OriginX + b.XaxisX + b.YaxisX, b.OriginY + b.XaxisY + b.YaxisY, b.OriginZ + b.XaxisZ + b.YaxisZ)
 
     /// Returns the Z-aligned edge from point 6 to 2. This is the reverse of Edge26.
     static member inline edge62 (b:Box) : Line3D =
@@ -2306,7 +2317,8 @@ type Box =
     /// </code>
     /// </summary>
     member inline b.Edge73 : Line3D =
-        b.Edge37.Reversed
+        Line3D(b.OriginX + b.YaxisX + b.ZaxisX, b.OriginY + b.YaxisY + b.ZaxisY, b.OriginZ + b.YaxisZ + b.ZaxisZ,
+               b.OriginX + b.YaxisX, b.OriginY + b.YaxisY, b.OriginZ + b.YaxisZ)
 
     /// Returns the Z-aligned edge from point 7 to 3. This is the reverse of Edge37.
     static member inline edge73 (b:Box) : Line3D =
