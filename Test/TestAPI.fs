@@ -1115,6 +1115,7 @@ module Line2DAPI =
     let (_:Line2D) = Line2D.shrinkStart 1.0 line2d
     let (_:Line2D) = Line2D.shrinkEnd 1.0 line2d
     let (_:Pt) = Line2D.pointAtDistance 5.0 line2d
+    let (_:Pt) = Line2D.pointAtDistanceFromEnd 5.0 line2d
     let (_:Line2D) = Line2D.withLengthFromStart 5.0 line2d
     let (_:Line2D) = Line2D.withLengthToEnd 5.0 line2d
     let (_:Line2D) = Line2D.withLengthFromMid 5.0 line2d
