@@ -550,6 +550,18 @@ let tests =
                 Expect.isTrue (eqPt r.Edge30.From r.Pt3) "Edge30 should start at Pt3"
                 Expect.isTrue (eqPt r.Edge30.To r.Pt0) "Edge30 should end at Pt0"
             }
+
+            test "Reverse edges are correct" {
+                let r = BRect.create(Pt(1., 2.), Pt(5., 7.))
+                Expect.isTrue (eqPt r.Edge10.From r.Pt1) "Edge10 should start at Pt1"
+                Expect.isTrue (eqPt r.Edge10.To r.Pt0) "Edge10 should end at Pt0"
+                Expect.isTrue (eqPt r.Edge21.From r.Pt2) "Edge21 should start at Pt2"
+                Expect.isTrue (eqPt r.Edge21.To r.Pt1) "Edge21 should end at Pt1"
+                Expect.isTrue (eqPt r.Edge32.From r.Pt3) "Edge32 should start at Pt3"
+                Expect.isTrue (eqPt r.Edge32.To r.Pt2) "Edge32 should end at Pt2"
+                Expect.isTrue (eqPt r.Edge03.From r.Pt0) "Edge03 should start at Pt0"
+                Expect.isTrue (eqPt r.Edge03.To r.Pt3) "Edge03 should end at Pt3"
+            }
         ]
 
         testList "Equality" [

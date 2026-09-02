@@ -559,6 +559,23 @@ let tests =
                 Expect.isTrue (eqLine box.Edge47 bbox.Edge47) "Edge47 should match"
             }
 
+            test "Box reverse edges are the reverse of the forward edges" {
+                let box = Box.createUncheckedVec(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let isReverseOf (fwd:Line3D) (rev:Line3D) = eqPnt fwd.From rev.To && eqPnt fwd.To rev.From
+                Expect.isTrue (isReverseOf box.Edge01 box.Edge10) "Edge10 should be the reverse of Edge01"
+                Expect.isTrue (isReverseOf box.Edge12 box.Edge21) "Edge21 should be the reverse of Edge12"
+                Expect.isTrue (isReverseOf box.Edge32 box.Edge23) "Edge23 should be the reverse of Edge32"
+                Expect.isTrue (isReverseOf box.Edge03 box.Edge30) "Edge30 should be the reverse of Edge03"
+                Expect.isTrue (isReverseOf box.Edge04 box.Edge40) "Edge40 should be the reverse of Edge04"
+                Expect.isTrue (isReverseOf box.Edge15 box.Edge51) "Edge51 should be the reverse of Edge15"
+                Expect.isTrue (isReverseOf box.Edge26 box.Edge62) "Edge62 should be the reverse of Edge26"
+                Expect.isTrue (isReverseOf box.Edge37 box.Edge73) "Edge73 should be the reverse of Edge37"
+                Expect.isTrue (isReverseOf box.Edge45 box.Edge54) "Edge54 should be the reverse of Edge45"
+                Expect.isTrue (isReverseOf box.Edge56 box.Edge65) "Edge65 should be the reverse of Edge56"
+                Expect.isTrue (isReverseOf box.Edge76 box.Edge67) "Edge67 should be the reverse of Edge76"
+                Expect.isTrue (isReverseOf box.Edge47 box.Edge74) "Edge74 should be the reverse of Edge47"
+            }
+
             test "Box edges equal BBox edges via GetEdge after conversion" {
                 // The 12 edges must also coincide index-by-index through GetEdge / Edges.
                 let box = Box.createUncheckedVec(Pnt(-4., 1., -2.), Vec(7., 0., 0.), Vec(0., 9., 0.), Vec(0., 0., 6.))
