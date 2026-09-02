@@ -900,6 +900,98 @@ type Rect3D =
     static member inline edge30 (r:Rect3D) : Line3D =
         r.Edge30
 
+    /// <summary>Returns a 3D line from point 1 to 0 of the 3D-rectangle. This is the reverse of Edge01.
+    /// <code>
+    ///   local
+    ///   Y-axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-axis
+    ///  0-Origin       1
+    /// </code></summary>
+    member inline r.Edge10 : Line3D =
+        r.Edge01.Reversed
+
+    /// Returns a 3D line from point 1 to 0 of the rectangle. This is the reverse of Edge01.
+    static member inline edge10 (r:Rect3D) : Line3D =
+        r.Edge10
+
+    /// <summary>Returns a 3D line from point 2 to 1 of the 3D-rectangle. This is the reverse of Edge12.
+    /// <code>
+    ///   local
+    ///   Y-axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-axis
+    ///  0-Origin       1
+    /// </code></summary>
+    member inline r.Edge21 : Line3D =
+        r.Edge12.Reversed
+
+    /// Returns a 3D line from point 2 to 1 of the rectangle. This is the reverse of Edge12.
+    static member inline edge21 (r:Rect3D) : Line3D =
+        r.Edge21
+
+    /// <summary>Returns a 3D line from point 3 to 2 of the 3D-rectangle. This is the reverse of Edge23.
+    /// <code>
+    ///   local
+    ///   Y-axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-axis
+    ///  0-Origin       1
+    /// </code></summary>
+    member inline r.Edge32 : Line3D =
+        r.Edge23.Reversed
+
+    /// Returns a 3D line from point 3 to 2 of the rectangle. This is the reverse of Edge23.
+    static member inline edge32 (r:Rect3D) : Line3D =
+        r.Edge32
+
+    /// <summary>Returns a 3D line from point 0 to 3 of the 3D-rectangle. This is the reverse of Edge30.
+    /// <code>
+    ///   local
+    ///   Y-axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-axis
+    ///  0-Origin       1
+    /// </code></summary>
+    member inline r.Edge03 : Line3D =
+        r.Edge30.Reversed
+
+    /// Returns a 3D line from point 0 to 3 of the rectangle. This is the reverse of Edge30.
+    static member inline edge03 (r:Rect3D) : Line3D =
+        r.Edge03
+
     /// <summary>Returns the local X side as the 3D line from point 0 to 1 of the 3D-rectangle.
     /// <code>
     ///   local

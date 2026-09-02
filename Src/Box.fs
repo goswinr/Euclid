@@ -2096,6 +2096,222 @@ type Box =
     static member inline edge37 (b:Box) : Line3D =
         b.Edge37
 
+    /// <summary>Returns the X-aligned edge from point 1 to 0. This is the reverse of Edge01.
+    /// <code>
+    ///   7------6
+    ///  /|     /|
+    /// 4------5 |
+    /// | |    | |
+    /// | 3----|-2
+    /// |/     |/
+    /// 0------1
+    /// </code>
+    /// </summary>
+    member inline b.Edge10 : Line3D =
+        b.Edge01.Reversed
+
+    /// Returns the X-aligned edge from point 1 to 0. This is the reverse of Edge01.
+    static member inline edge10 (b:Box) : Line3D =
+        b.Edge10
+
+    /// <summary>Returns the Y-aligned edge from point 2 to 1. This is the reverse of Edge12.
+    /// <code>
+    ///   7------6
+    ///  /|     /|
+    /// 4------5 |
+    /// | |    | |
+    /// | 3----|-2
+    /// |/     |/
+    /// 0------1
+    /// </code>
+    /// </summary>
+    member inline b.Edge21 : Line3D =
+        b.Edge12.Reversed
+
+    /// Returns the Y-aligned edge from point 2 to 1. This is the reverse of Edge12.
+    static member inline edge21 (b:Box) : Line3D =
+        b.Edge21
+
+    /// <summary>Returns the X-aligned edge from point 2 to 3. This is the reverse of Edge32.
+    /// <code>
+    ///   7------6
+    ///  /|     /|
+    /// 4------5 |
+    /// | |    | |
+    /// | 3----|-2
+    /// |/     |/
+    /// 0------1
+    /// </code>
+    /// </summary>
+    member inline b.Edge23 : Line3D =
+        b.Edge32.Reversed
+
+    /// Returns the X-aligned edge from point 2 to 3. This is the reverse of Edge32.
+    static member inline edge23 (b:Box) : Line3D =
+        b.Edge23
+
+    /// <summary>Returns the Y-aligned edge from point 3 to 0. This is the reverse of Edge03.
+    /// <code>
+    ///   7------6
+    ///  /|     /|
+    /// 4------5 |
+    /// | |    | |
+    /// | 3----|-2
+    /// |/     |/
+    /// 0------1
+    /// </code>
+    /// </summary>
+    member inline b.Edge30 : Line3D =
+        b.Edge03.Reversed
+
+    /// Returns the Y-aligned edge from point 3 to 0. This is the reverse of Edge03.
+    static member inline edge30 (b:Box) : Line3D =
+        b.Edge30
+
+    /// <summary>Returns the X-aligned edge from point 5 to 4. This is the reverse of Edge45.
+    /// <code>
+    ///   7------6
+    ///  /|     /|
+    /// 4------5 |
+    /// | |    | |
+    /// | 3----|-2
+    /// |/     |/
+    /// 0------1
+    /// </code>
+    /// </summary>
+    member inline b.Edge54 : Line3D =
+        b.Edge45.Reversed
+
+    /// Returns the X-aligned edge from point 5 to 4. This is the reverse of Edge45.
+    static member inline edge54 (b:Box) : Line3D =
+        b.Edge54
+
+    /// <summary>Returns the Y-aligned edge from point 6 to 5. This is the reverse of Edge56.
+    /// <code>
+    ///   7------6
+    ///  /|     /|
+    /// 4------5 |
+    /// | |    | |
+    /// | 3----|-2
+    /// |/     |/
+    /// 0------1
+    /// </code>
+    /// </summary>
+    member inline b.Edge65 : Line3D =
+        b.Edge56.Reversed
+
+    /// Returns the Y-aligned edge from point 6 to 5. This is the reverse of Edge56.
+    static member inline edge65 (b:Box) : Line3D =
+        b.Edge65
+
+    /// <summary>Returns the X-aligned edge from point 6 to 7. This is the reverse of Edge76.
+    /// <code>
+    ///   7------6
+    ///  /|     /|
+    /// 4------5 |
+    /// | |    | |
+    /// | 3----|-2
+    /// |/     |/
+    /// 0------1
+    /// </code>
+    /// </summary>
+    member inline b.Edge67 : Line3D =
+        b.Edge76.Reversed
+
+    /// Returns the X-aligned edge from point 6 to 7. This is the reverse of Edge76.
+    static member inline edge67 (b:Box) : Line3D =
+        b.Edge67
+
+    /// <summary>Returns the Y-aligned edge from point 7 to 4. This is the reverse of Edge47.
+    /// <code>
+    ///   7------6
+    ///  /|     /|
+    /// 4------5 |
+    /// | |    | |
+    /// | 3----|-2
+    /// |/     |/
+    /// 0------1
+    /// </code>
+    /// </summary>
+    member inline b.Edge74 : Line3D =
+        b.Edge47.Reversed
+
+    /// Returns the Y-aligned edge from point 7 to 4. This is the reverse of Edge47.
+    static member inline edge74 (b:Box) : Line3D =
+        b.Edge74
+
+    /// <summary>Returns the Z-aligned edge from point 4 to 0. This is the reverse of Edge04.
+    /// <code>
+    ///   7------6
+    ///  /|     /|
+    /// 4------5 |
+    /// | |    | |
+    /// | 3----|-2
+    /// |/     |/
+    /// 0------1
+    /// </code>
+    /// </summary>
+    member inline b.Edge40 : Line3D =
+        b.Edge04.Reversed
+
+    /// Returns the Z-aligned edge from point 4 to 0. This is the reverse of Edge04.
+    static member inline edge40 (b:Box) : Line3D =
+        b.Edge40
+
+    /// <summary>Returns the Z-aligned edge from point 5 to 1. This is the reverse of Edge15.
+    /// <code>
+    ///   7------6
+    ///  /|     /|
+    /// 4------5 |
+    /// | |    | |
+    /// | 3----|-2
+    /// |/     |/
+    /// 0------1
+    /// </code>
+    /// </summary>
+    member inline b.Edge51 : Line3D =
+        b.Edge15.Reversed
+
+    /// Returns the Z-aligned edge from point 5 to 1. This is the reverse of Edge15.
+    static member inline edge51 (b:Box) : Line3D =
+        b.Edge51
+
+    /// <summary>Returns the Z-aligned edge from point 6 to 2. This is the reverse of Edge26.
+    /// <code>
+    ///   7------6
+    ///  /|     /|
+    /// 4------5 |
+    /// | |    | |
+    /// | 3----|-2
+    /// |/     |/
+    /// 0------1
+    /// </code>
+    /// </summary>
+    member inline b.Edge62 : Line3D =
+        b.Edge26.Reversed
+
+    /// Returns the Z-aligned edge from point 6 to 2. This is the reverse of Edge26.
+    static member inline edge62 (b:Box) : Line3D =
+        b.Edge62
+
+    /// <summary>Returns the Z-aligned edge from point 7 to 3. This is the reverse of Edge37.
+    /// <code>
+    ///   7------6
+    ///  /|     /|
+    /// 4------5 |
+    /// | |    | |
+    /// | 3----|-2
+    /// |/     |/
+    /// 0------1
+    /// </code>
+    /// </summary>
+    member inline b.Edge73 : Line3D =
+        b.Edge37.Reversed
+
+    /// Returns the Z-aligned edge from point 7 to 3. This is the reverse of Edge37.
+    static member inline edge73 (b:Box) : Line3D =
+        b.Edge73
+
 
     /// <summary>Returns the edge of the box at the specified index.
     /// The order of the edges is: 0-1, 1-2, 3-2, 0-3, 0-4, 1-5, 2-6, 3-7, 4-5, 5-6, 7-6, 4-7
@@ -2172,43 +2388,6 @@ type Box =
 
     // #endregion
     // #region Obsolete
-
-
-    [<Obsolete("Use .Edge01 instead.")>]
-    member inline b.Edge0 : Line3D = b.Edge01
-
-    [<Obsolete("Use .Edge12 instead.")>]
-    member inline b.Edge1 : Line3D = b.Edge12
-
-    [<Obsolete("Use .Edge32 instead.")>]
-    member inline b.Edge2 : Line3D = b.Edge32
-
-    [<Obsolete("Use .Edge03 instead.")>]
-    member inline b.Edge3 : Line3D = b.Edge03
-
-    [<Obsolete("Use .Edge45 instead.")>]
-    member inline b.Edge4 : Line3D = b.Edge45
-
-    [<Obsolete("Use .Edge56 instead.")>]
-    member inline b.Edge5 : Line3D = b.Edge56
-
-    [<Obsolete("Use .Edge76 instead.")>]
-    member inline b.Edge6 : Line3D = b.Edge76
-
-    [<Obsolete("Use .Edge47 instead.")>]
-    member inline b.Edge7 : Line3D = b.Edge47
-
-    [<Obsolete("Use .Edge04 instead.")>]
-    member inline b.Edge8 : Line3D = b.Edge04
-
-    [<Obsolete("Use .Edge15 instead.")>]
-    member inline b.Edge9 : Line3D = b.Edge15
-
-    [<Obsolete("Use .Edge26 instead.")>]
-    member inline b.Edge10 : Line3D = b.Edge26
-
-    [<Obsolete("Use .Edge37 instead.")>]
-    member inline b.Edge11 : Line3D = b.Edge37
 
     [<Obsolete("This is actually the volume, also this does not scale proportionally, use .Volume")>]
     member inline r.AreaSq : float =

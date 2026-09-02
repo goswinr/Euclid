@@ -564,6 +564,102 @@ type FreeBox private (pts:Pnt[]) =
     static member inline edge47 (b:FreeBox) :Line3D =
         b.Edge47
 
+    /// Returns the edge between point 1 and point 0. This is the reverse of Edge01.
+    member b.Edge10 :Line3D =
+        b.Edge01.Reversed
+
+    /// Returns the edge between point 1 and point 0. This is the reverse of Edge01.
+    static member inline edge10 (b:FreeBox) :Line3D =
+        b.Edge10
+
+    /// Returns the edge between point 2 and point 1. This is the reverse of Edge12.
+    member b.Edge21 :Line3D =
+        b.Edge12.Reversed
+
+    /// Returns the edge between point 2 and point 1. This is the reverse of Edge12.
+    static member inline edge21 (b:FreeBox) :Line3D =
+        b.Edge21
+
+    /// Returns the edge between point 2 and point 3. This is the reverse of Edge32.
+    member b.Edge23 :Line3D =
+        b.Edge32.Reversed
+
+    /// Returns the edge between point 2 and point 3. This is the reverse of Edge32.
+    static member inline edge23 (b:FreeBox) :Line3D =
+        b.Edge23
+
+    /// Returns the edge between point 3 and point 0. This is the reverse of Edge03.
+    member b.Edge30 :Line3D =
+        b.Edge03.Reversed
+
+    /// Returns the edge between point 3 and point 0. This is the reverse of Edge03.
+    static member inline edge30 (b:FreeBox) :Line3D =
+        b.Edge30
+
+    /// Returns the edge between point 4 and point 0. This is the reverse of Edge04.
+    member b.Edge40 :Line3D =
+        b.Edge04.Reversed
+
+    /// Returns the edge between point 4 and point 0. This is the reverse of Edge04.
+    static member inline edge40 (b:FreeBox) :Line3D =
+        b.Edge40
+
+    /// Returns the edge between point 5 and point 1. This is the reverse of Edge15.
+    member b.Edge51 :Line3D =
+        b.Edge15.Reversed
+
+    /// Returns the edge between point 5 and point 1. This is the reverse of Edge15.
+    static member inline edge51 (b:FreeBox) :Line3D =
+        b.Edge51
+
+    /// Returns the edge between point 6 and point 2. This is the reverse of Edge26.
+    member b.Edge62 :Line3D =
+        b.Edge26.Reversed
+
+    /// Returns the edge between point 6 and point 2. This is the reverse of Edge26.
+    static member inline edge62 (b:FreeBox) :Line3D =
+        b.Edge62
+
+    /// Returns the edge between point 7 and point 3. This is the reverse of Edge37.
+    member b.Edge73 :Line3D =
+        b.Edge37.Reversed
+
+    /// Returns the edge between point 7 and point 3. This is the reverse of Edge37.
+    static member inline edge73 (b:FreeBox) :Line3D =
+        b.Edge73
+
+    /// Returns the edge between point 5 and point 4. This is the reverse of Edge45.
+    member b.Edge54 :Line3D =
+        b.Edge45.Reversed
+
+    /// Returns the edge between point 5 and point 4. This is the reverse of Edge45.
+    static member inline edge54 (b:FreeBox) :Line3D =
+        b.Edge54
+
+    /// Returns the edge between point 6 and point 5. This is the reverse of Edge56.
+    member b.Edge65 :Line3D =
+        b.Edge56.Reversed
+
+    /// Returns the edge between point 6 and point 5. This is the reverse of Edge56.
+    static member inline edge65 (b:FreeBox) :Line3D =
+        b.Edge65
+
+    /// Returns the edge between point 6 and point 7. This is the reverse of Edge76.
+    member b.Edge67 :Line3D =
+        b.Edge76.Reversed
+
+    /// Returns the edge between point 6 and point 7. This is the reverse of Edge76.
+    static member inline edge67 (b:FreeBox) :Line3D =
+        b.Edge67
+
+    /// Returns the edge between point 7 and point 4. This is the reverse of Edge47.
+    member b.Edge74 :Line3D =
+        b.Edge47.Reversed
+
+    /// Returns the edge between point 7 and point 4. This is the reverse of Edge47.
+    static member inline edge74 (b:FreeBox) :Line3D =
+        b.Edge74
+
 
 
     // these members don't make sense for a FreeBox:
@@ -620,42 +716,6 @@ type FreeBox private (pts:Pnt[]) =
 
 
     // #region Obsolete
-
-    [<Obsolete("Use .Edge01 instead.")>]
-    member b.Edge0 :Line3D = b.Edge01
-
-    [<Obsolete("Use .Edge12 instead.")>]
-    member b.Edge1 :Line3D = b.Edge12
-
-    [<Obsolete("Use .Edge32 instead.")>]
-    member b.Edge2 :Line3D = b.Edge32
-
-    [<Obsolete("Use .Edge03 instead.")>]
-    member b.Edge3 :Line3D = b.Edge03
-
-    [<Obsolete("Use .Edge45 instead.")>]
-    member b.Edge4 :Line3D = b.Edge45
-
-    [<Obsolete("Use .Edge56 instead.")>]
-    member b.Edge5 :Line3D = b.Edge56
-
-    [<Obsolete("Use .Edge76 instead.")>]
-    member b.Edge6 :Line3D = b.Edge76
-
-    [<Obsolete("Use .Edge47 instead.")>]
-    member b.Edge7 :Line3D = b.Edge47
-
-    [<Obsolete("Use .Edge04 instead.")>]
-    member b.Edge8 :Line3D = b.Edge04
-
-    [<Obsolete("Use .Edge15 instead.")>]
-    member b.Edge9 :Line3D = b.Edge15
-
-    [<Obsolete("Use .Edge26 instead.")>]
-    member b.Edge10 :Line3D = b.Edge26
-
-    [<Obsolete("Use .Edge37 instead.")>]
-    member b.Edge11 :Line3D = b.Edge37
 
     // #endregion
 

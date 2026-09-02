@@ -827,6 +827,98 @@ type BRect =
     static member inline edge30 (r:BRect) : Line2D =
         r.Edge30
 
+    /// <summary>The bottom edge reversed. The line from point 1 to 0. This is the reverse of Edge01.
+    /// <code>
+    ///   Y-axis
+    ///   ^
+    ///   |
+    ///   |             2  = max X,Y
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   +------------+-----> X-axis
+    ///  0 = min X,Y    1
+    /// </code>
+    /// </summary>
+    member r.Edge10 : Line2D =
+        r.Edge01.Reversed
+
+    /// The bottom edge reversed. The line from point 1 to 0. This is the reverse of Edge01.
+    static member inline edge10 (r:BRect) : Line2D =
+        r.Edge10
+
+    /// <summary>The right edge reversed. The line from point 2 to 1. This is the reverse of Edge12.
+    /// <code>
+    ///   Y-axis
+    ///   ^
+    ///   |
+    ///   |             2  = max X,Y
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   +------------+-----> X-axis
+    ///  0 = min X,Y    1
+    /// </code>
+    /// </summary>
+    member r.Edge21 : Line2D =
+        r.Edge12.Reversed
+
+    /// The right edge reversed. The line from point 2 to 1. This is the reverse of Edge12.
+    static member inline edge21 (r:BRect) : Line2D =
+        r.Edge21
+
+    /// <summary>The top edge reversed. The line from point 3 to 2. This is the reverse of Edge23.
+    /// <code>
+    ///   Y-axis
+    ///   ^
+    ///   |
+    ///   |             2  = max X,Y
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   +------------+-----> X-axis
+    ///  0 = min X,Y    1
+    /// </code>
+    /// </summary>
+    member r.Edge32 : Line2D =
+        r.Edge23.Reversed
+
+    /// The top edge reversed. The line from point 3 to 2. This is the reverse of Edge23.
+    static member inline edge32 (r:BRect) : Line2D =
+        r.Edge32
+
+    /// <summary>The left edge reversed. The line from point 0 to 3. This is the reverse of Edge30.
+    /// <code>
+    ///   Y-axis
+    ///   ^
+    ///   |
+    ///   |             2  = max X,Y
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   +------------+-----> X-axis
+    ///  0 = min X,Y    1
+    /// </code>
+    /// </summary>
+    member r.Edge03 : Line2D =
+        r.Edge30.Reversed
+
+    /// The left edge reversed. The line from point 0 to 3. This is the reverse of Edge30.
+    static member inline edge03 (r:BRect) : Line2D =
+        r.Edge03
+
     /// <summary>Returns all 4 edges of this bounding rectangle in counter-clockwise order: Edge01, Edge12, Edge23 and Edge30.
     /// <code>
     ///   Y-axis
