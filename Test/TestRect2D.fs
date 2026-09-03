@@ -1,5 +1,7 @@
 module TestRect2D
 
+#nowarn "44" // Rect2D.translate is obsolete; still exercised here for backward-compatibility coverage.
+
 open Euclid
 
 #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
@@ -388,11 +390,11 @@ let tests =
                 "notEquals false" |> Expect.isFalse (Rect2D.notEquals 0.0 rr rr)
             }
             test "within tolerance" {
-                let r2 = Rect2D.translate (Vc(1e-10, 0.)) rr
+                let r2 = Rect2D.move (Vc(1e-10, 0.)) rr
                 "equals within tol" |> Expect.isTrue (Rect2D.equals 1e-9 rr r2)
             }
             test "not equal when moved" {
-                let r2 = Rect2D.translate (Vc(1., 0.)) rr
+                let r2 = Rect2D.move (Vc(1., 0.)) rr
                 "notEquals true"  |> Expect.isTrue (Rect2D.notEquals 1e-9 rr r2)
                 "equals false"    |> Expect.isFalse (Rect2D.equals 1e-9 rr r2)
             }
@@ -440,7 +442,7 @@ let tests =
         // Translation
         // ---------------------------------------------------------------------
         testList "Translation" [
-            test "translate / move are equal" {
+            test "obsolete translate is still an alias for move" {
                 let a = Rect2D.translate (Vc(1., 2.)) rr
                 let b = Rect2D.move (Vc(1., 2.)) rr
                 "origin moved" |> Expect.isTrue (eq a.Origin (Pt(6., 5.)))

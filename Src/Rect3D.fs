@@ -375,35 +375,41 @@ type Rect3D =
     static member inline scaleOn (cen:Pnt) (factor:float) (r:Rect3D) : Rect3D =
         r.ScaleOn cen factor
 
-    /// Returns a 3D rectangle moved by a vector. Same as Rect3D.move and Rect3D.translate.
+    /// Returns a 3D rectangle moved by a vector in world space. Same as Rect3D.move.
     member inline r.Move (v:Vec) : Rect3D =
         Rect3D.createUnchecked(r.OriginX + v.X, r.OriginY + v.Y, r.OriginZ + v.Z, r.XaxisX, r.XaxisY, r.XaxisZ, r.YaxisX, r.YaxisY, r.YaxisZ)
 
-    /// Move the 3D rectangle by a vector. Same as Rect3D.translate.
+    /// Move the 3D rectangle by a vector in world space. Same as Rect3D.Move.
     static member move (v:Vec) (r:Rect3D)  : Rect3D =
         Rect3D.createUnchecked(r.OriginX + v.X, r.OriginY + v.Y, r.OriginZ + v.Z, r.XaxisX, r.XaxisY, r.XaxisZ, r.YaxisX, r.YaxisY, r.YaxisZ)
 
-    /// Returns a 3D rectangle moved by a given distance in X direction.
+    /// Returns a 3D rectangle moved by a given distance along the world X-axis.
+    /// This is not the rectangle's own (possibly rotated) local X-axis, use Rect3D.translateLocalX for that.
     member inline r.MoveX (distance:float) : Rect3D =
         Rect3D.createUnchecked(r.OriginX + distance, r.OriginY, r.OriginZ, r.XaxisX, r.XaxisY, r.XaxisZ, r.YaxisX, r.YaxisY, r.YaxisZ)
 
-    /// Returns a 3D rectangle moved by a given distance in X direction.
+    /// Returns a 3D rectangle moved by a given distance along the world X-axis.
+    /// This is not the rectangle's own (possibly rotated) local X-axis, use Rect3D.translateLocalX for that.
     static member inline moveX (distance:float) (r:Rect3D) : Rect3D =
         Rect3D.createUnchecked(r.OriginX + distance, r.OriginY, r.OriginZ, r.XaxisX, r.XaxisY, r.XaxisZ, r.YaxisX, r.YaxisY, r.YaxisZ)
 
-    /// Returns a 3D rectangle moved by a given distance in Y direction.
+    /// Returns a 3D rectangle moved by a given distance along the world Y-axis.
+    /// This is not the rectangle's own (possibly rotated) local Y-axis, use Rect3D.translateLocalY for that.
     member inline r.MoveY (distance:float) : Rect3D =
         Rect3D.createUnchecked(r.OriginX, r.OriginY + distance, r.OriginZ, r.XaxisX, r.XaxisY, r.XaxisZ, r.YaxisX, r.YaxisY, r.YaxisZ)
 
-    /// Returns a 3D rectangle moved by a given distance in Y direction.
+    /// Returns a 3D rectangle moved by a given distance along the world Y-axis.
+    /// This is not the rectangle's own (possibly rotated) local Y-axis, use Rect3D.translateLocalY for that.
     static member inline moveY (distance:float) (r:Rect3D) : Rect3D =
         Rect3D.createUnchecked(r.OriginX, r.OriginY + distance, r.OriginZ, r.XaxisX, r.XaxisY, r.XaxisZ, r.YaxisX, r.YaxisY, r.YaxisZ)
 
-    /// Returns a 3D rectangle moved by a given distance in Z direction.
+    /// Returns a 3D rectangle moved by a given distance along the world Z-axis.
+    /// This is not the rectangle's own (possibly rotated) local Z-axis, use Rect3D.translateLocalZ for that.
     member inline r.MoveZ (distance:float) : Rect3D =
         Rect3D.createUnchecked(r.OriginX, r.OriginY, r.OriginZ + distance, r.XaxisX, r.XaxisY, r.XaxisZ, r.YaxisX, r.YaxisY, r.YaxisZ)
 
-    /// Returns a 3D rectangle moved by a given distance in Z direction.
+    /// Returns a 3D rectangle moved by a given distance along the world Z-axis.
+    /// This is not the rectangle's own (possibly rotated) local Z-axis, use Rect3D.translateLocalZ for that.
     static member inline moveZ (distance:float) (r:Rect3D) : Rect3D =
         Rect3D.createUnchecked(r.OriginX, r.OriginY, r.OriginZ + distance, r.XaxisX, r.XaxisY, r.XaxisZ, r.YaxisX, r.YaxisY, r.YaxisZ)
 
@@ -1682,26 +1688,39 @@ type Rect3D =
         Rect3D.createUnchecked(r.OriginX + r.YaxisX*f, r.OriginY + r.YaxisY*f, r.OriginZ + r.YaxisZ*f, r.XaxisX, r.XaxisY, r.XaxisZ, r.YaxisX, r.YaxisY, r.YaxisZ)
 
     /// Translate by a 3D vector. Same as Rect3D.move.
+    [<Obsolete("This was an alias for Rect3D.move, ambiguous with the local-axis translateLocalX/Y/Z members. Use Rect3D.move for a world-space vector, or Rect3D.translateLocalX/Y/Z to move along the rectangle's own axes.")>]
     static member translate (v:Vec) (r:Rect3D)  : Rect3D =
         Rect3D.createUnchecked(r.OriginX + v.X, r.OriginY + v.Y, r.OriginZ + v.Z, r.XaxisX, r.XaxisY, r.XaxisZ, r.YaxisX, r.YaxisY, r.YaxisZ)
 
-    /// Offset or Translate along the local Z-axis.
-    /// The local Z-axis is calculated from Cross Product of X- and Y-axis of the 3D-rectangle.
-    static member offsetZ (offsetDistance :float) (r:Rect3D) : Rect3D =
+    /// Moves the 3D-rectangle rigidly along its local Z-axis by the given distance. Same as Rect3D.offsetZ.
+    /// The local Z-axis is calculated from the Cross Product of the X- and Y-axis of the 3D-rectangle.
+    /// The rectangle's Origin moves but its SizeX, SizeY and axes are unchanged.
+    /// This is unrelated to Rect3D.offset, which resizes the rectangle in its own plane instead of moving it.
+    static member translateLocalZ (distZ:float) (r:Rect3D) : Rect3D =
         let zX = r.XaxisY*r.YaxisZ - r.XaxisZ*r.YaxisY
         let zY = r.XaxisZ*r.YaxisX - r.XaxisX*r.YaxisZ
         let zZ = r.XaxisX*r.YaxisY - r.XaxisY*r.YaxisX
         let len = XYZ.length zX zY zZ
-        if isTooTiny len then failTooSmall "Rect3D.offsetZ: rect" r
-        let f = offsetDistance/len
+        if isTooTiny len then failTooSmall "Rect3D.translateLocalZ: rect" r
+        let f = distZ/len
         Rect3D.createUnchecked(
             r.OriginX + zX*f, r.OriginY + zY*f, r.OriginZ + zZ*f,
             r.XaxisX, r.XaxisY, r.XaxisZ,
             r.YaxisX, r.YaxisY, r.YaxisZ)
 
-    /// Offset a Rect3D like a Polyline inwards by a given distance.
-    /// Negative distances will offset outwards.
+    /// Moves the 3D-rectangle rigidly along its local Z-axis by the given distance. Same as Rect3D.translateLocalZ.
+    /// The local Z-axis is calculated from Cross Product of X- and Y-axis of the 3D-rectangle.
+    /// The rectangle's Origin moves but its SizeX, SizeY and axes are unchanged.
+    /// This is unrelated to Rect3D.offset, which resizes the rectangle in its own plane instead of moving it.
+    static member offsetZ (offsetDistance :float) (r:Rect3D) : Rect3D =
+        Rect3D.translateLocalZ offsetDistance r
+
+    /// Resizes a Rect3D like a Polyline offset, shrinking it inwards on all four edges by a given distance,
+    /// within the rectangle's own X-Y plane. The rectangle stays in the same plane; SizeX and SizeY shrink
+    /// by twice the distance and the Origin re-centers, but the rectangle does not move along its local Z-axis.
+    /// Negative distances will offset outwards, growing the rectangle instead.
     /// Fails if the distance is larger than half the size of the rectangle.
+    /// This is unrelated to Rect3D.offsetZ / translateLocalZ, which move the rectangle instead of resizing it.
     static member offset dist (rect:Rect3D) : Rect3D =
         let xl = rect.SizeX
         let yl = rect.SizeY
