@@ -1692,8 +1692,10 @@ type Rect3D =
     static member translate (v:Vec) (r:Rect3D)  : Rect3D =
         Rect3D.createUnchecked(r.OriginX + v.X, r.OriginY + v.Y, r.OriginZ + v.Z, r.XaxisX, r.XaxisY, r.XaxisZ, r.YaxisX, r.YaxisY, r.YaxisZ)
 
-    /// Translate along the local Z-axis of the 3D-rectangle. Same as Rect3D.offsetZ.
+    /// Moves the 3D-rectangle rigidly along its local Z-axis by the given distance. Same as Rect3D.offsetZ.
     /// The local Z-axis is calculated from the Cross Product of the X- and Y-axis of the 3D-rectangle.
+    /// The rectangle's Origin moves but its SizeX, SizeY and axes are unchanged.
+    /// This is unrelated to Rect3D.offset, which resizes the rectangle in its own plane instead of moving it.
     static member translateLocalZ (distZ:float) (r:Rect3D) : Rect3D =
         let zX = r.XaxisY*r.YaxisZ - r.XaxisZ*r.YaxisY
         let zY = r.XaxisZ*r.YaxisX - r.XaxisX*r.YaxisZ
@@ -1706,14 +1708,19 @@ type Rect3D =
             r.XaxisX, r.XaxisY, r.XaxisZ,
             r.YaxisX, r.YaxisY, r.YaxisZ)
 
-    /// Offset or Translate along the local Z-axis. Same as Rect3D.translateLocalZ.
+    /// Moves the 3D-rectangle rigidly along its local Z-axis by the given distance. Same as Rect3D.translateLocalZ.
     /// The local Z-axis is calculated from Cross Product of X- and Y-axis of the 3D-rectangle.
+    /// The rectangle's Origin moves but its SizeX, SizeY and axes are unchanged.
+    /// This is unrelated to Rect3D.offset, which resizes the rectangle in its own plane instead of moving it.
     static member offsetZ (offsetDistance :float) (r:Rect3D) : Rect3D =
         Rect3D.translateLocalZ offsetDistance r
 
-    /// Offset a Rect3D like a Polyline inwards by a given distance.
-    /// Negative distances will offset outwards.
+    /// Resizes a Rect3D like a Polyline offset, shrinking it inwards on all four edges by a given distance,
+    /// within the rectangle's own X-Y plane. The rectangle stays in the same plane; SizeX and SizeY shrink
+    /// by twice the distance and the Origin re-centers, but the rectangle does not move along its local Z-axis.
+    /// Negative distances will offset outwards, growing the rectangle instead.
     /// Fails if the distance is larger than half the size of the rectangle.
+    /// This is unrelated to Rect3D.offsetZ / translateLocalZ, which move the rectangle instead of resizing it.
     static member offset dist (rect:Rect3D) : Rect3D =
         let xl = rect.SizeX
         let yl = rect.SizeY
