@@ -52,7 +52,7 @@
     <PackageReference Include="System.Text.Json" Version="4.6.0"  Condition="'$(TargetFramework)' == 'net472' and !$(DefineConstants.Contains('FABLE_COMPILER'))" /> <!-- only on net472 runtime; pinned to lowest version with the required APIs, excluded from Dependabot updates in .github/dependabot.yml -->
 
     <!-- build time only : -->
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.301" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.400" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
     <PackageReference Include="Ionide.KeepAChangelog.Tasks" Version="0.3.3" PrivateAssets="all" />
 
     <None Include="./README.md" Pack="true" PackagePath="" />
