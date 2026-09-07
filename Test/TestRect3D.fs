@@ -10,6 +10,7 @@ open Expecto
 
 let inline eq a b = Pnt.dist a b < 1e-9
 let inline equ a (b:float) = abs(a-b) < 1e-9
+let inline eqLine (ln:Line3D) (a:Pnt) (b:Pnt) = eq ln.From a && eq ln.To b
 
 
 let o = Pnt.Origin
@@ -19,6 +20,18 @@ let rect = Rect3D.createFromVectors(o,x,y)
 
 let tests =
     testList "Rect3D" [
+
+        test "Rect3D Edge01..Edge30 and reverse edges" {
+            let p0, p1, p2, p3 = rect.Pt0, rect.Pt1, rect.Pt2, rect.Pt3
+            "Edge01" |> Expect.isTrue (eqLine rect.Edge01 p0 p1)
+            "Edge12" |> Expect.isTrue (eqLine rect.Edge12 p1 p2)
+            "Edge23" |> Expect.isTrue (eqLine rect.Edge23 p2 p3)
+            "Edge30" |> Expect.isTrue (eqLine rect.Edge30 p3 p0)
+            "Edge10" |> Expect.isTrue (eqLine rect.Edge10 p1 p0)
+            "Edge21" |> Expect.isTrue (eqLine rect.Edge21 p2 p1)
+            "Edge32" |> Expect.isTrue (eqLine rect.Edge32 p3 p2)
+            "Edge03" |> Expect.isTrue (eqLine rect.Edge03 p0 p3)
+        }
 
         test "Rect3D.grid" {
         let grid = Rect3D.grid (rect, 2, 2)

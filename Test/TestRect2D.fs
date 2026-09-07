@@ -168,6 +168,12 @@ let tests =
                 "Edge23" |> Expect.isTrue (eqLine rr.Edge23 p2 p3)
                 "Edge30" |> Expect.isTrue (eqLine rr.Edge30 p3 p0)
             }
+            test "Edge10..Edge03 (reverse edges)" {
+                "Edge10" |> Expect.isTrue (eqLine rr.Edge10 p1 p0)
+                "Edge21" |> Expect.isTrue (eqLine rr.Edge21 p2 p1)
+                "Edge32" |> Expect.isTrue (eqLine rr.Edge32 p3 p2)
+                "Edge03" |> Expect.isTrue (eqLine rr.Edge03 p0 p3)
+            }
             test "EdgeX / EdgeY" {
                 "EdgeX is 0->1" |> Expect.isTrue (eqLine rr.EdgeX p0 p1)
                 "EdgeY is 0->3" |> Expect.isTrue (eqLine rr.EdgeY p0 p3)
