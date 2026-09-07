@@ -606,10 +606,11 @@ module AutoOpenPPlane =
             PPlane.createUnchecked(pl.OriginX * factor, pl.OriginY * factor, pl.OriginZ * factor, pl.XaxisX, pl.XaxisY, pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
 
         /// Move plane origin by vector. Same as PPlane.move.
+        [<Obsolete("This was an alias for PPlane.move, ambiguous with the local-axis translateLocalX/Y/Z members. Use PPlane.move (or translateBy) for a world-space vector, or PPlane.translateLocalX/Y/Z to move along the plane's own axes.")>]
         static member inline translate (translation:Vec) (pl:PPlane)  : PPlane =
             PPlane.createUnchecked(pl.OriginX + translation.X, pl.OriginY + translation.Y, pl.OriginZ + translation.Z, pl.XaxisX, pl.XaxisY, pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
 
-        /// Move plane origin by vector. Same as PPlane.translate.
+        /// Move plane origin by vector in world space. Same as PPlane.translateBy.
         static member inline move (translation:Vec) (pl:PPlane)  : PPlane =
             PPlane.createUnchecked(pl.OriginX + translation.X, pl.OriginY + translation.Y, pl.OriginZ + translation.Z, pl.XaxisX, pl.XaxisY, pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
 

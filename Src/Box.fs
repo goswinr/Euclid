@@ -532,35 +532,41 @@ type Box =
     static member inline scaleOn (cen:Pnt) (factor:float) (b:Box) : Box =
         b.ScaleOn cen factor
 
-    /// Returns a 3D box moved by a vector. Same as Box.translate.
+    /// Returns a 3D box moved by a vector in world space. The box's axes are unchanged.
     member inline b.Move (v:Vec) : Box =
         Box.createUnchecked(b.OriginX + v.X, b.OriginY + v.Y, b.OriginZ + v.Z, b.XaxisX, b.XaxisY, b.XaxisZ, b.YaxisX, b.YaxisY, b.YaxisZ, b.ZaxisX, b.ZaxisY, b.ZaxisZ)
 
-    /// Creates a 3D box moved by a vector. Same as Box.translate.
+    /// Creates a 3D box moved by a vector in world space. The box's axes are unchanged.
     static member inline move (v:Vec) (b:Box)  : Box =
         Box.createUnchecked(b.OriginX + v.X, b.OriginY + v.Y, b.OriginZ + v.Z, b.XaxisX, b.XaxisY, b.XaxisZ, b.YaxisX, b.YaxisY, b.YaxisZ, b.ZaxisX, b.ZaxisY, b.ZaxisZ)
 
-    /// Returns a 3D box moved by a given distance in X direction.
+    /// Returns a 3D box moved by a given distance along the world X-axis.
+    /// This is not the box's own (possibly rotated) local X-axis, use Box.translateLocalX for that.
     member inline b.MoveX (distance:float) : Box =
         Box.createUnchecked(b.OriginX + distance, b.OriginY, b.OriginZ, b.XaxisX, b.XaxisY, b.XaxisZ, b.YaxisX, b.YaxisY, b.YaxisZ, b.ZaxisX, b.ZaxisY, b.ZaxisZ)
 
-    /// Returns the 3D box moved by a given distance in X direction.
+    /// Returns the 3D box moved by a given distance along the world X-axis.
+    /// This is not the box's own (possibly rotated) local X-axis, use Box.translateLocalX for that.
     static member inline moveX (distance:float) (b:Box) : Box =
         Box.createUnchecked(b.OriginX + distance, b.OriginY, b.OriginZ, b.XaxisX, b.XaxisY, b.XaxisZ, b.YaxisX, b.YaxisY, b.YaxisZ, b.ZaxisX, b.ZaxisY, b.ZaxisZ)
 
-    /// Returns a 3D box moved by a given distance in Y direction.
+    /// Returns a 3D box moved by a given distance along the world Y-axis.
+    /// This is not the box's own (possibly rotated) local Y-axis, use Box.translateLocalY for that.
     member inline b.MoveY (distance:float) : Box =
         Box.createUnchecked(b.OriginX, b.OriginY + distance, b.OriginZ, b.XaxisX, b.XaxisY, b.XaxisZ, b.YaxisX, b.YaxisY, b.YaxisZ, b.ZaxisX, b.ZaxisY, b.ZaxisZ)
 
-    /// Returns the 3D box moved by a given distance in Y direction.
+    /// Returns the 3D box moved by a given distance along the world Y-axis.
+    /// This is not the box's own (possibly rotated) local Y-axis, use Box.translateLocalY for that.
     static member inline moveY (distance:float) (b:Box) : Box =
         Box.createUnchecked(b.OriginX, b.OriginY + distance, b.OriginZ, b.XaxisX, b.XaxisY, b.XaxisZ, b.YaxisX, b.YaxisY, b.YaxisZ, b.ZaxisX, b.ZaxisY, b.ZaxisZ)
 
-    /// Returns a 3D box moved by a given distance in Z direction.
+    /// Returns a 3D box moved by a given distance along the world Z-axis.
+    /// This is not the box's own (possibly rotated) local Z-axis, use Box.translateLocalZ for that.
     member inline b.MoveZ (distance:float) : Box =
         Box.createUnchecked(b.OriginX, b.OriginY, b.OriginZ + distance, b.XaxisX, b.XaxisY, b.XaxisZ, b.YaxisX, b.YaxisY, b.YaxisZ, b.ZaxisX, b.ZaxisY, b.ZaxisZ)
 
-    /// Returns the 3D box moved by a given distance in Z direction.
+    /// Returns the 3D box moved by a given distance along the world Z-axis.
+    /// This is not the box's own (possibly rotated) local Z-axis, use Box.translateLocalZ for that.
     static member inline moveZ (distance:float) (b:Box) : Box =
         Box.createUnchecked(b.OriginX, b.OriginY, b.OriginZ + distance, b.XaxisX, b.XaxisY, b.XaxisZ, b.YaxisX, b.YaxisY, b.YaxisZ, b.ZaxisX, b.ZaxisY, b.ZaxisZ)
 
@@ -1022,6 +1028,7 @@ type Box =
         Box.createUnchecked(b.OriginX + b.ZaxisX*f, b.OriginY + b.ZaxisY*f, b.OriginZ + b.ZaxisZ*f, b.XaxisX, b.XaxisY, b.XaxisZ, b.YaxisX, b.YaxisY, b.YaxisZ, b.ZaxisX, b.ZaxisY, b.ZaxisZ)
 
     /// Move a 3D box by a vector. Same as Box.move.
+    [<Obsolete("This was an alias for Box.move, ambiguous with the local-axis translateLocalX/Y/Z members. Use Box.move for a world-space vector, or Box.translateLocalX/Y/Z to move along the box's own axes.")>]
     static member inline translate (v:Vec) (b:Box) : Box =
         Box.createUnchecked(b.OriginX + v.X, b.OriginY + v.Y, b.OriginZ + v.Z, b.XaxisX, b.XaxisY, b.XaxisZ, b.YaxisX, b.YaxisY, b.YaxisZ, b.ZaxisX, b.ZaxisY, b.ZaxisZ)
 
