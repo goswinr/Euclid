@@ -1849,6 +1849,19 @@ module AutoOpenLine3D =
             ln.FromY + y*f,
             ln.FromZ + z*f)
 
+    /// Finds point at given distance from line end, going towards start.
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    static member inline pointAtDistanceFromEnd dist (ln:Line3D) : Pnt =
+        let x = ln.VectorX
+        let y = ln.VectorY
+        let z = ln.VectorZ
+        let len = XYZ.length x y z
+        if isTooTiny len then failTooSmall "Line3D.pointAtDistanceFromEnd" ln
+        let f = dist/len
+        Pnt(ln.ToX - x*f,
+            ln.ToY - y*f,
+            ln.ToZ - z*f)
+
     /// Returns new Line3D with given length, going out from start in direction of end.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     static member inline withLengthFromStart len (ln:Line3D) : Line3D =

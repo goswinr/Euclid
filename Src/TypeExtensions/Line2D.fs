@@ -1517,6 +1517,16 @@ module AutoOpenLine2D =
         Pt(ln.FromX + x*dist/len,
             ln.FromY + y*dist/len)
 
+    /// Finds point at given distance from line end, going towards start.
+    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    static member inline pointAtDistanceFromEnd dist (ln:Line2D) : Pt =
+        let x = ln.VectorX
+        let y = ln.VectorY
+        let len = sqrt(x*x + y*y)
+        if isTooTiny len then failTooSmall "Line2D.pointAtDistanceFromEnd" ln
+        Pt(ln.ToX - x*dist/len,
+            ln.ToY - y*dist/len)
+
     /// Returns new Line2D with given length, going out from start in direction of end.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     static member inline withLengthFromStart len (ln:Line2D) : Line2D =
