@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - `Rect2D`, `Rect3D`, `BRect`, `Box`, `BBox`, and `FreeBox` now have a reverse-direction instance and static member for every named edge (e.g. `Edge10` next to `Edge01`, `Edge23` next to `Edge32`), so every edge can be addressed in either direction.
+- Added `Line2D.pointAtDistanceFromEnd` and `Line3D.pointAtDistanceFromEnd`, finding a point at a given distance from the line end, going towards the start.
 - Added `Polyline2D.checkForDuplicatePoints` and `Polyline3D.checkForDuplicatePoints`, which return the original polyline when unchanged or a cleaned polyline and reported duplicate points.
 - Added `Polyline3D.TryPlane` and `Polyline3D.IsPlanar`, plus the static `tryPlane` and `isPlanar`, to get the `NPlane` of a planar Polyline3D within a tolerance.
 - Added `Polyline3D.AveragePlane` and `Polyline3D.TryAveragePlane`, plus the static `averagePlane` and `tryAveragePlane`, to get the average `NPlane` of a Polyline3D even when its points are not planar.

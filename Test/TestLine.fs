@@ -1557,6 +1557,35 @@ let testsLine2DWithLength =
             let ln = Line2D(0., 0., 1e-13, 0.)
             "too short throws" |> Expect.throws (fun () -> Line2D.pointAtDistance 1. ln |> ignore)
         }
+
+        test "pointAtDistanceFromEnd positive" {
+            let ln = Line2D(0., 0., 10., 0.)
+            let pt = Line2D.pointAtDistanceFromEnd 3. ln
+            "point at distance 3 from end" |> expectEqualEpsilon pt.X 7.
+        }
+
+        test "pointAtDistanceFromEnd negative" {
+            let ln = Line2D(0., 0., 10., 0.)
+            let pt = Line2D.pointAtDistanceFromEnd -2. ln
+            "negative goes beyond end" |> expectEqualEpsilon pt.X 12.
+        }
+
+        test "pointAtDistanceFromEnd beyond start" {
+            let ln = Line2D(0., 0., 10., 0.)
+            let pt = Line2D.pointAtDistanceFromEnd 15. ln
+            "extends beyond start" |> expectEqualEpsilon pt.X -5.
+        }
+
+        test "pointAtDistanceFromEnd diagonal" {
+            let ln = Line2D(0., 0., 3., 4.)
+            let pt = Line2D.pointAtDistanceFromEnd 5. ln
+            "at line start for 3-4-5 triangle" |> Expect.isTrue (eq pt ln.From)
+        }
+
+        test "pointAtDistanceFromEnd too short line throws" {
+            let ln = Line2D(0., 0., 1e-13, 0.)
+            "too short throws" |> Expect.throws (fun () -> Line2D.pointAtDistanceFromEnd 1. ln |> ignore)
+        }
     ]
 
 
@@ -2636,6 +2665,35 @@ let testsLine3DWithLength =
         test "pointAtDistance too short line throws" {
             let ln = Line3D(0., 0., 0., 1e-13, 0., 0.)
             "too short throws" |> Expect.throws (fun () -> Line3D.pointAtDistance 3. ln |> ignore)
+        }
+
+        test "pointAtDistanceFromEnd positive" {
+            let ln = Line3D(0., 0., 0., 10., 0., 0.)
+            let pt = Line3D.pointAtDistanceFromEnd 3. ln
+            "point at distance 3 from end" |> expectEqualEpsilon pt.X 7.
+        }
+
+        test "pointAtDistanceFromEnd negative" {
+            let ln = Line3D(0., 0., 0., 10., 0., 0.)
+            let pt = Line3D.pointAtDistanceFromEnd -3. ln
+            "negative goes beyond end" |> expectEqualEpsilon pt.X 13.
+        }
+
+        test "pointAtDistanceFromEnd beyond start" {
+            let ln = Line3D(0., 0., 0., 10., 0., 0.)
+            let pt = Line3D.pointAtDistanceFromEnd 15. ln
+            "point beyond start" |> expectEqualEpsilon pt.X -5.
+        }
+
+        test "pointAtDistanceFromEnd diagonal" {
+            let ln = Line3D(0., 0., 0., 10., 10., 10.)
+            let pt = Line3D.pointAtDistanceFromEnd (ln.Length / 2.) ln
+            "midpoint" |> Expect.isTrue (Pnt.dist pt ln.Mid < 1e-9)
+        }
+
+        test "pointAtDistanceFromEnd too short line throws" {
+            let ln = Line3D(0., 0., 0., 1e-13, 0., 0.)
+            "too short throws" |> Expect.throws (fun () -> Line3D.pointAtDistanceFromEnd 3. ln |> ignore)
         }
     ]
 
