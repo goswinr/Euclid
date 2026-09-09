@@ -2138,6 +2138,12 @@ module FreeBoxAPI =
     let (_:float) = freebox.GetX 0
     let (_:float) = freebox.GetY 0
     let (_:float) = freebox.GetZ 0
+    let (_:float) = freebox.Pt0X
+    let (_:float) = freebox.Pt0Y
+    let (_:float) = freebox.Pt0Z
+    let (_:float) = freebox.Pt7X
+    let (_:float) = freebox.Pt7Y
+    let (_:float) = freebox.Pt7Z
 
     // Instance members - Operations
     let (_:FreeBox) = freebox.Duplicate()
@@ -2147,6 +2153,12 @@ module FreeBoxAPI =
     // Static members
     let (_:float[]) = FreeBox.getXYZs freebox
     let (_:Pnt[]) = FreeBox.asPoints freebox
+    let (_:float) = FreeBox.pt0X freebox
+    let (_:float) = FreeBox.pt0Y freebox
+    let (_:float) = FreeBox.pt0Z freebox
+    let (_:float) = FreeBox.pt7X freebox
+    let (_:float) = FreeBox.pt7Y freebox
+    let (_:float) = FreeBox.pt7Z freebox
     let (_:FreeBox) = FreeBox.createDirectly (Array.copy freebox.XYZs)
     let (_:FreeBox) = FreeBox.createFromEightPoints freebox.AsPoints
 

@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Documented the `CHECKED_EUCLID` compiler flag in the Readme.
 - Added `Rect3D.translateLocalZ`, an alias of `Rect3D.offsetZ`, for naming consistency with `Box.translateLocalX/Y/Z` and `Rect3D.translateLocalX/Y`.
 - Added `FreeBox.XYZs` (and the static `getXYZs`) to access the flat array of 24 floats a `FreeBox` is now made of, `FreeBox.AsPoints` (and the static `asPoints`) to convert it to the 8 corner points, `FreeBox.createDirectly` to build one from an existing array of 24 floats, `FreeBox.GetX/GetY/GetZ` to read single coordinates, `FreeBox.SetPtXYZ` to set a corner from x, y and z, and `FreeBox.Duplicate` to copy one.
+- Added the settable single coordinate properties `FreeBox.Pt0X`, `FreeBox.Pt0Y`, `FreeBox.Pt0Z` ... up to `FreeBox.Pt7Z`, one for each of the 24 floats of a `FreeBox`, plus the static getters `FreeBox.pt0X` ... `FreeBox.pt7Z`.
 
 ### Removed
 - The obsolete numeric `Edge0`-`Edge11` instance members on `Box` and `FreeBox` (deprecated aliases for the endpoint-named edges) have been removed; `Edge10` is now used for the reverse of `Edge01` instead.

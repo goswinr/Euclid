@@ -109,6 +109,33 @@ type FreeBox private (xyzs:float[]) =
     /// Point 0 of the box.
     static member inline pt0 (b:FreeBox) : Pnt = b.Pt0
 
+    /// Gets or sets the X coordinate of the point 0 of the box.
+    /// (this gets or sets XYZs.[0] of the internal flat array of x, y, and z coordinates)
+    member _.Pt0X
+        with get() : float = xyzs.[0]
+        and  set (v:float) = xyzs.[0] <- v
+
+    /// The X coordinate of the point 0 of the box. (this is XYZs.[0])
+    static member inline pt0X (b:FreeBox) : float = b.Pt0X
+
+    /// Gets or sets the Y coordinate of the point 0 of the box.
+    /// (this gets or sets XYZs.[1] of the internal flat array of x, y, and z coordinates)
+    member _.Pt0Y
+        with get() : float = xyzs.[1]
+        and  set (v:float) = xyzs.[1] <- v
+
+    /// The Y coordinate of the point 0 of the box. (this is XYZs.[1])
+    static member inline pt0Y (b:FreeBox) : float = b.Pt0Y
+
+    /// Gets or sets the Z coordinate of the point 0 of the box.
+    /// (this gets or sets XYZs.[2] of the internal flat array of x, y, and z coordinates)
+    member _.Pt0Z
+        with get() : float = xyzs.[2]
+        and  set (v:float) = xyzs.[2] <- v
+
+    /// The Z coordinate of the point 0 of the box. (this is XYZs.[2])
+    static member inline pt0Z (b:FreeBox) : float = b.Pt0Z
+
     /// <summary>Gets or sets the point 1 of the box.
     /// (this gets or sets XYZs.[3], XYZs.[4] and XYZs.[5] of the internal flat array of x, y, and z coordinates)<code>
     ///       7               6
@@ -131,6 +158,33 @@ type FreeBox private (xyzs:float[]) =
 
     /// Point 1 of the box.
     static member inline pt1 (b:FreeBox) : Pnt = b.Pt1
+
+    /// Gets or sets the X coordinate of the point 1 of the box.
+    /// (this gets or sets XYZs.[3] of the internal flat array of x, y, and z coordinates)
+    member _.Pt1X
+        with get() : float = xyzs.[3]
+        and  set (v:float) = xyzs.[3] <- v
+
+    /// The X coordinate of the point 1 of the box. (this is XYZs.[3])
+    static member inline pt1X (b:FreeBox) : float = b.Pt1X
+
+    /// Gets or sets the Y coordinate of the point 1 of the box.
+    /// (this gets or sets XYZs.[4] of the internal flat array of x, y, and z coordinates)
+    member _.Pt1Y
+        with get() : float = xyzs.[4]
+        and  set (v:float) = xyzs.[4] <- v
+
+    /// The Y coordinate of the point 1 of the box. (this is XYZs.[4])
+    static member inline pt1Y (b:FreeBox) : float = b.Pt1Y
+
+    /// Gets or sets the Z coordinate of the point 1 of the box.
+    /// (this gets or sets XYZs.[5] of the internal flat array of x, y, and z coordinates)
+    member _.Pt1Z
+        with get() : float = xyzs.[5]
+        and  set (v:float) = xyzs.[5] <- v
+
+    /// The Z coordinate of the point 1 of the box. (this is XYZs.[5])
+    static member inline pt1Z (b:FreeBox) : float = b.Pt1Z
 
     /// <summary>Gets or sets the point 2 of the box.
     /// (this gets or sets XYZs.[6], XYZs.[7] and XYZs.[8] of the internal flat array of x, y, and z coordinates)<code>
@@ -155,6 +209,33 @@ type FreeBox private (xyzs:float[]) =
     /// Point 2 of the box.
     static member inline pt2 (b:FreeBox) : Pnt = b.Pt2
 
+    /// Gets or sets the X coordinate of the point 2 of the box.
+    /// (this gets or sets XYZs.[6] of the internal flat array of x, y, and z coordinates)
+    member _.Pt2X
+        with get() : float = xyzs.[6]
+        and  set (v:float) = xyzs.[6] <- v
+
+    /// The X coordinate of the point 2 of the box. (this is XYZs.[6])
+    static member inline pt2X (b:FreeBox) : float = b.Pt2X
+
+    /// Gets or sets the Y coordinate of the point 2 of the box.
+    /// (this gets or sets XYZs.[7] of the internal flat array of x, y, and z coordinates)
+    member _.Pt2Y
+        with get() : float = xyzs.[7]
+        and  set (v:float) = xyzs.[7] <- v
+
+    /// The Y coordinate of the point 2 of the box. (this is XYZs.[7])
+    static member inline pt2Y (b:FreeBox) : float = b.Pt2Y
+
+    /// Gets or sets the Z coordinate of the point 2 of the box.
+    /// (this gets or sets XYZs.[8] of the internal flat array of x, y, and z coordinates)
+    member _.Pt2Z
+        with get() : float = xyzs.[8]
+        and  set (v:float) = xyzs.[8] <- v
+
+    /// The Z coordinate of the point 2 of the box. (this is XYZs.[8])
+    static member inline pt2Z (b:FreeBox) : float = b.Pt2Z
+
     /// <summary>Gets or sets the point 3 of the box.
     /// (this gets or sets XYZs.[9], XYZs.[10] and XYZs.[11] of the internal flat array of x, y, and z coordinates)<code>
     ///       7               6
@@ -177,6 +258,33 @@ type FreeBox private (xyzs:float[]) =
 
     /// Point 3 of the box.
     static member inline pt3 (b:FreeBox) : Pnt = b.Pt3
+
+    /// Gets or sets the X coordinate of the point 3 of the box.
+    /// (this gets or sets XYZs.[9] of the internal flat array of x, y, and z coordinates)
+    member _.Pt3X
+        with get() : float = xyzs.[9]
+        and  set (v:float) = xyzs.[9] <- v
+
+    /// The X coordinate of the point 3 of the box. (this is XYZs.[9])
+    static member inline pt3X (b:FreeBox) : float = b.Pt3X
+
+    /// Gets or sets the Y coordinate of the point 3 of the box.
+    /// (this gets or sets XYZs.[10] of the internal flat array of x, y, and z coordinates)
+    member _.Pt3Y
+        with get() : float = xyzs.[10]
+        and  set (v:float) = xyzs.[10] <- v
+
+    /// The Y coordinate of the point 3 of the box. (this is XYZs.[10])
+    static member inline pt3Y (b:FreeBox) : float = b.Pt3Y
+
+    /// Gets or sets the Z coordinate of the point 3 of the box.
+    /// (this gets or sets XYZs.[11] of the internal flat array of x, y, and z coordinates)
+    member _.Pt3Z
+        with get() : float = xyzs.[11]
+        and  set (v:float) = xyzs.[11] <- v
+
+    /// The Z coordinate of the point 3 of the box. (this is XYZs.[11])
+    static member inline pt3Z (b:FreeBox) : float = b.Pt3Z
 
     /// <summary>Gets or sets the point 4 of the box.
     /// (this gets or sets XYZs.[12], XYZs.[13] and XYZs.[14] of the internal flat array of x, y, and z coordinates)<code>
@@ -201,6 +309,33 @@ type FreeBox private (xyzs:float[]) =
     /// Point 4 of the box.
     static member inline pt4 (b:FreeBox) : Pnt = b.Pt4
 
+    /// Gets or sets the X coordinate of the point 4 of the box.
+    /// (this gets or sets XYZs.[12] of the internal flat array of x, y, and z coordinates)
+    member _.Pt4X
+        with get() : float = xyzs.[12]
+        and  set (v:float) = xyzs.[12] <- v
+
+    /// The X coordinate of the point 4 of the box. (this is XYZs.[12])
+    static member inline pt4X (b:FreeBox) : float = b.Pt4X
+
+    /// Gets or sets the Y coordinate of the point 4 of the box.
+    /// (this gets or sets XYZs.[13] of the internal flat array of x, y, and z coordinates)
+    member _.Pt4Y
+        with get() : float = xyzs.[13]
+        and  set (v:float) = xyzs.[13] <- v
+
+    /// The Y coordinate of the point 4 of the box. (this is XYZs.[13])
+    static member inline pt4Y (b:FreeBox) : float = b.Pt4Y
+
+    /// Gets or sets the Z coordinate of the point 4 of the box.
+    /// (this gets or sets XYZs.[14] of the internal flat array of x, y, and z coordinates)
+    member _.Pt4Z
+        with get() : float = xyzs.[14]
+        and  set (v:float) = xyzs.[14] <- v
+
+    /// The Z coordinate of the point 4 of the box. (this is XYZs.[14])
+    static member inline pt4Z (b:FreeBox) : float = b.Pt4Z
+
     /// <summary>Gets or sets the point 5 of the box.
     /// (this gets or sets XYZs.[15], XYZs.[16] and XYZs.[17] of the internal flat array of x, y, and z coordinates)<code>
     ///       7               6
@@ -223,6 +358,33 @@ type FreeBox private (xyzs:float[]) =
 
     /// Point 5 of the box.
     static member inline pt5 (b:FreeBox) : Pnt = b.Pt5
+
+    /// Gets or sets the X coordinate of the point 5 of the box.
+    /// (this gets or sets XYZs.[15] of the internal flat array of x, y, and z coordinates)
+    member _.Pt5X
+        with get() : float = xyzs.[15]
+        and  set (v:float) = xyzs.[15] <- v
+
+    /// The X coordinate of the point 5 of the box. (this is XYZs.[15])
+    static member inline pt5X (b:FreeBox) : float = b.Pt5X
+
+    /// Gets or sets the Y coordinate of the point 5 of the box.
+    /// (this gets or sets XYZs.[16] of the internal flat array of x, y, and z coordinates)
+    member _.Pt5Y
+        with get() : float = xyzs.[16]
+        and  set (v:float) = xyzs.[16] <- v
+
+    /// The Y coordinate of the point 5 of the box. (this is XYZs.[16])
+    static member inline pt5Y (b:FreeBox) : float = b.Pt5Y
+
+    /// Gets or sets the Z coordinate of the point 5 of the box.
+    /// (this gets or sets XYZs.[17] of the internal flat array of x, y, and z coordinates)
+    member _.Pt5Z
+        with get() : float = xyzs.[17]
+        and  set (v:float) = xyzs.[17] <- v
+
+    /// The Z coordinate of the point 5 of the box. (this is XYZs.[17])
+    static member inline pt5Z (b:FreeBox) : float = b.Pt5Z
 
     /// <summary>Gets or sets the point 6 of the box.
     /// (this gets or sets XYZs.[18], XYZs.[19] and XYZs.[20] of the internal flat array of x, y, and z coordinates)<code>
@@ -247,6 +409,33 @@ type FreeBox private (xyzs:float[]) =
     /// Point 6 of the box.
     static member inline pt6 (b:FreeBox) : Pnt = b.Pt6
 
+    /// Gets or sets the X coordinate of the point 6 of the box.
+    /// (this gets or sets XYZs.[18] of the internal flat array of x, y, and z coordinates)
+    member _.Pt6X
+        with get() : float = xyzs.[18]
+        and  set (v:float) = xyzs.[18] <- v
+
+    /// The X coordinate of the point 6 of the box. (this is XYZs.[18])
+    static member inline pt6X (b:FreeBox) : float = b.Pt6X
+
+    /// Gets or sets the Y coordinate of the point 6 of the box.
+    /// (this gets or sets XYZs.[19] of the internal flat array of x, y, and z coordinates)
+    member _.Pt6Y
+        with get() : float = xyzs.[19]
+        and  set (v:float) = xyzs.[19] <- v
+
+    /// The Y coordinate of the point 6 of the box. (this is XYZs.[19])
+    static member inline pt6Y (b:FreeBox) : float = b.Pt6Y
+
+    /// Gets or sets the Z coordinate of the point 6 of the box.
+    /// (this gets or sets XYZs.[20] of the internal flat array of x, y, and z coordinates)
+    member _.Pt6Z
+        with get() : float = xyzs.[20]
+        and  set (v:float) = xyzs.[20] <- v
+
+    /// The Z coordinate of the point 6 of the box. (this is XYZs.[20])
+    static member inline pt6Z (b:FreeBox) : float = b.Pt6Z
+
     /// <summary>Gets or sets the point 7 of the box.
     /// (this gets or sets XYZs.[21], XYZs.[22] and XYZs.[23] of the internal flat array of x, y, and z coordinates)<code>
     ///       7               6
@@ -269,6 +458,33 @@ type FreeBox private (xyzs:float[]) =
 
     /// Point 7 of the box.
     static member inline pt7 (b:FreeBox) : Pnt = b.Pt7
+
+    /// Gets or sets the X coordinate of the point 7 of the box.
+    /// (this gets or sets XYZs.[21] of the internal flat array of x, y, and z coordinates)
+    member _.Pt7X
+        with get() : float = xyzs.[21]
+        and  set (v:float) = xyzs.[21] <- v
+
+    /// The X coordinate of the point 7 of the box. (this is XYZs.[21])
+    static member inline pt7X (b:FreeBox) : float = b.Pt7X
+
+    /// Gets or sets the Y coordinate of the point 7 of the box.
+    /// (this gets or sets XYZs.[22] of the internal flat array of x, y, and z coordinates)
+    member _.Pt7Y
+        with get() : float = xyzs.[22]
+        and  set (v:float) = xyzs.[22] <- v
+
+    /// The Y coordinate of the point 7 of the box. (this is XYZs.[22])
+    static member inline pt7Y (b:FreeBox) : float = b.Pt7Y
+
+    /// Gets or sets the Z coordinate of the point 7 of the box.
+    /// (this gets or sets XYZs.[23] of the internal flat array of x, y, and z coordinates)
+    member _.Pt7Z
+        with get() : float = xyzs.[23]
+        and  set (v:float) = xyzs.[23] <- v
+
+    /// The Z coordinate of the point 7 of the box. (this is XYZs.[23])
+    static member inline pt7Z (b:FreeBox) : float = b.Pt7Z
 
 
     #nowarn "52" // The value has been copied to ensure the original is not mutated by this operation
