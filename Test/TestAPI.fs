@@ -2149,15 +2149,17 @@ module FreeBoxAPI =
     let (_:FreeBox) = freebox.Duplicate()
     let (_:FreeBox) = freebox.Scale 2.0
     let (_:FreeBox) = freebox.ScaleOn (Pnt.Origin, 2.0)
-    let (_:FreeBox) = freebox.MovePt(0, Vec.Xaxis)
-    let (_:FreeBox) = freebox.MovePt0 Vec.Xaxis
-    let (_:FreeBox) = freebox.MovePt1 Vec.Xaxis
-    let (_:FreeBox) = freebox.MovePt2 Vec.Xaxis
-    let (_:FreeBox) = freebox.MovePt3 Vec.Xaxis
-    let (_:FreeBox) = freebox.MovePt4 Vec.Xaxis
-    let (_:FreeBox) = freebox.MovePt5 Vec.Xaxis
-    let (_:FreeBox) = freebox.MovePt6 Vec.Xaxis
-    let (_:FreeBox) = freebox.MovePt7 Vec.Xaxis
+    // Instance members - Mutations
+    let mutableBox = FreeBox.createFromEightPoints freebox.AsPoints
+    let (_:unit) = mutableBox.MovePt(0, Vec.Xaxis)
+    let (_:unit) = mutableBox.MovePt0 Vec.Xaxis
+    let (_:unit) = mutableBox.MovePt1 Vec.Xaxis
+    let (_:unit) = mutableBox.MovePt2 Vec.Xaxis
+    let (_:unit) = mutableBox.MovePt3 Vec.Xaxis
+    let (_:unit) = mutableBox.MovePt4 Vec.Xaxis
+    let (_:unit) = mutableBox.MovePt5 Vec.Xaxis
+    let (_:unit) = mutableBox.MovePt6 Vec.Xaxis
+    let (_:unit) = mutableBox.MovePt7 Vec.Xaxis
 
     // Static members
     let (_:float[]) = FreeBox.getXYZs freebox
@@ -2168,9 +2170,9 @@ module FreeBoxAPI =
     let (_:float) = FreeBox.pt7X freebox
     let (_:float) = FreeBox.pt7Y freebox
     let (_:float) = FreeBox.pt7Z freebox
-    let (_:FreeBox) = FreeBox.movePt 0 Vec.Xaxis freebox
-    let (_:FreeBox) = FreeBox.movePt0 Vec.Xaxis freebox
-    let (_:FreeBox) = FreeBox.movePt7 Vec.Xaxis freebox
+    let (_:unit) = FreeBox.movePt 0 Vec.Xaxis mutableBox
+    let (_:unit) = FreeBox.movePt0 Vec.Xaxis mutableBox
+    let (_:unit) = FreeBox.movePt7 Vec.Xaxis mutableBox
     let (_:FreeBox) = FreeBox.createDirectly (Array.copy freebox.XYZs)
     let (_:FreeBox) = FreeBox.createFromEightPoints freebox.AsPoints
 

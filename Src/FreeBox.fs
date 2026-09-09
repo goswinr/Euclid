@@ -27,13 +27,11 @@ module private FreeBoxUtil =
         xyzs.[i * 3 + 1] <- y
         xyzs.[i * 3 + 2] <- z
 
-    /// Returns a copy of the coordinate array with the point at index 'i' moved by the vector.
-    let inline movedPt (i:int) (v:Vec) (xyzs:float[]) : float[] =
-        let r = Array.copy xyzs
-        r.[i * 3    ] <- r.[i * 3    ] + v.X
-        r.[i * 3 + 1] <- r.[i * 3 + 1] + v.Y
-        r.[i * 3 + 2] <- r.[i * 3 + 2] + v.Z
-        r
+    /// Moves the point at index 'i' by the vector, in place, in the given coordinate array.
+    let inline movePtBy (i:int) (v:Vec) (xyzs:float[]) : unit =
+        xyzs.[i * 3    ] <- xyzs.[i * 3    ] + v.X
+        xyzs.[i * 3 + 1] <- xyzs.[i * 3 + 1] + v.Y
+        xyzs.[i * 3 + 2] <- xyzs.[i * 3 + 2] + v.Z
 
     let inline edge (a:int) (b:int) (xyzs:float[]) : Line3D =
         Line3D(xyzs.[a * 3], xyzs.[a * 3 + 1], xyzs.[a * 3 + 2],
@@ -686,80 +684,98 @@ type FreeBox private (xyzs:float[]) =
     static member inline moveZ (distance:float) (b:FreeBox) : FreeBox =
         b.MoveZ(distance)
 
-    /// Returns a FreeBox with only the point at the given point index moved by a vector.
-    /// All other points stay where they are. The index must be between 0 and 7.
-    member _.MovePt (pointIndex:int, v:Vec) : FreeBox =
+    /// Moves the point at the given point index by a vector. The index must be between 0 and 7.
+    /// NOTE: unlike Move, MoveX, MoveY and MoveZ, that return a new FreeBox, this mutates this FreeBox in place.
+    /// All other points stay where they are.
+    member _.MovePt (pointIndex:int, v:Vec) : unit =
         if pointIndex < 0 || pointIndex > 7 then
             failPointIndex "MovePt" pointIndex
-        FreeBox(movedPt pointIndex v xyzs)
+        movePtBy pointIndex v xyzs
 
-    /// Returns a FreeBox with only the point at the given point index moved by a vector.
-    /// All other points stay where they are. The index must be between 0 and 7.
-    static member inline movePt (pointIndex:int) (v:Vec) (b:FreeBox) : FreeBox =
+    /// Moves the point at the given point index by a vector. The index must be between 0 and 7.
+    /// NOTE: unlike FreeBox.move, moveX, moveY and moveZ, that return a new FreeBox, this mutates the given FreeBox in place.
+    /// All other points stay where they are.
+    static member inline movePt (pointIndex:int) (v:Vec) (b:FreeBox) : unit =
         b.MovePt(pointIndex, v)
 
-    /// Returns a FreeBox with only the point 0 moved by a vector. All other points stay where they are.
-    member _.MovePt0 (v:Vec) : FreeBox =
-        FreeBox(movedPt 0 v xyzs)
+    /// Moves the point 0 of the box by a vector. All other points stay where they are.
+    /// NOTE: unlike Move, MoveX, MoveY and MoveZ, that return a new FreeBox, this mutates this FreeBox in place.
+    member _.MovePt0 (v:Vec) : unit =
+        movePtBy 0 v xyzs
 
-    /// Returns a FreeBox with only the point 0 moved by a vector. All other points stay where they are.
-    static member inline movePt0 (v:Vec) (b:FreeBox) : FreeBox =
+    /// Moves the point 0 of the box by a vector. All other points stay where they are.
+    /// NOTE: unlike FreeBox.move, moveX, moveY and moveZ, that return a new FreeBox, this mutates the given FreeBox in place.
+    static member inline movePt0 (v:Vec) (b:FreeBox) : unit =
         b.MovePt0(v)
 
-    /// Returns a FreeBox with only the point 1 moved by a vector. All other points stay where they are.
-    member _.MovePt1 (v:Vec) : FreeBox =
-        FreeBox(movedPt 1 v xyzs)
+    /// Moves the point 1 of the box by a vector. All other points stay where they are.
+    /// NOTE: unlike Move, MoveX, MoveY and MoveZ, that return a new FreeBox, this mutates this FreeBox in place.
+    member _.MovePt1 (v:Vec) : unit =
+        movePtBy 1 v xyzs
 
-    /// Returns a FreeBox with only the point 1 moved by a vector. All other points stay where they are.
-    static member inline movePt1 (v:Vec) (b:FreeBox) : FreeBox =
+    /// Moves the point 1 of the box by a vector. All other points stay where they are.
+    /// NOTE: unlike FreeBox.move, moveX, moveY and moveZ, that return a new FreeBox, this mutates the given FreeBox in place.
+    static member inline movePt1 (v:Vec) (b:FreeBox) : unit =
         b.MovePt1(v)
 
-    /// Returns a FreeBox with only the point 2 moved by a vector. All other points stay where they are.
-    member _.MovePt2 (v:Vec) : FreeBox =
-        FreeBox(movedPt 2 v xyzs)
+    /// Moves the point 2 of the box by a vector. All other points stay where they are.
+    /// NOTE: unlike Move, MoveX, MoveY and MoveZ, that return a new FreeBox, this mutates this FreeBox in place.
+    member _.MovePt2 (v:Vec) : unit =
+        movePtBy 2 v xyzs
 
-    /// Returns a FreeBox with only the point 2 moved by a vector. All other points stay where they are.
-    static member inline movePt2 (v:Vec) (b:FreeBox) : FreeBox =
+    /// Moves the point 2 of the box by a vector. All other points stay where they are.
+    /// NOTE: unlike FreeBox.move, moveX, moveY and moveZ, that return a new FreeBox, this mutates the given FreeBox in place.
+    static member inline movePt2 (v:Vec) (b:FreeBox) : unit =
         b.MovePt2(v)
 
-    /// Returns a FreeBox with only the point 3 moved by a vector. All other points stay where they are.
-    member _.MovePt3 (v:Vec) : FreeBox =
-        FreeBox(movedPt 3 v xyzs)
+    /// Moves the point 3 of the box by a vector. All other points stay where they are.
+    /// NOTE: unlike Move, MoveX, MoveY and MoveZ, that return a new FreeBox, this mutates this FreeBox in place.
+    member _.MovePt3 (v:Vec) : unit =
+        movePtBy 3 v xyzs
 
-    /// Returns a FreeBox with only the point 3 moved by a vector. All other points stay where they are.
-    static member inline movePt3 (v:Vec) (b:FreeBox) : FreeBox =
+    /// Moves the point 3 of the box by a vector. All other points stay where they are.
+    /// NOTE: unlike FreeBox.move, moveX, moveY and moveZ, that return a new FreeBox, this mutates the given FreeBox in place.
+    static member inline movePt3 (v:Vec) (b:FreeBox) : unit =
         b.MovePt3(v)
 
-    /// Returns a FreeBox with only the point 4 moved by a vector. All other points stay where they are.
-    member _.MovePt4 (v:Vec) : FreeBox =
-        FreeBox(movedPt 4 v xyzs)
+    /// Moves the point 4 of the box by a vector. All other points stay where they are.
+    /// NOTE: unlike Move, MoveX, MoveY and MoveZ, that return a new FreeBox, this mutates this FreeBox in place.
+    member _.MovePt4 (v:Vec) : unit =
+        movePtBy 4 v xyzs
 
-    /// Returns a FreeBox with only the point 4 moved by a vector. All other points stay where they are.
-    static member inline movePt4 (v:Vec) (b:FreeBox) : FreeBox =
+    /// Moves the point 4 of the box by a vector. All other points stay where they are.
+    /// NOTE: unlike FreeBox.move, moveX, moveY and moveZ, that return a new FreeBox, this mutates the given FreeBox in place.
+    static member inline movePt4 (v:Vec) (b:FreeBox) : unit =
         b.MovePt4(v)
 
-    /// Returns a FreeBox with only the point 5 moved by a vector. All other points stay where they are.
-    member _.MovePt5 (v:Vec) : FreeBox =
-        FreeBox(movedPt 5 v xyzs)
+    /// Moves the point 5 of the box by a vector. All other points stay where they are.
+    /// NOTE: unlike Move, MoveX, MoveY and MoveZ, that return a new FreeBox, this mutates this FreeBox in place.
+    member _.MovePt5 (v:Vec) : unit =
+        movePtBy 5 v xyzs
 
-    /// Returns a FreeBox with only the point 5 moved by a vector. All other points stay where they are.
-    static member inline movePt5 (v:Vec) (b:FreeBox) : FreeBox =
+    /// Moves the point 5 of the box by a vector. All other points stay where they are.
+    /// NOTE: unlike FreeBox.move, moveX, moveY and moveZ, that return a new FreeBox, this mutates the given FreeBox in place.
+    static member inline movePt5 (v:Vec) (b:FreeBox) : unit =
         b.MovePt5(v)
 
-    /// Returns a FreeBox with only the point 6 moved by a vector. All other points stay where they are.
-    member _.MovePt6 (v:Vec) : FreeBox =
-        FreeBox(movedPt 6 v xyzs)
+    /// Moves the point 6 of the box by a vector. All other points stay where they are.
+    /// NOTE: unlike Move, MoveX, MoveY and MoveZ, that return a new FreeBox, this mutates this FreeBox in place.
+    member _.MovePt6 (v:Vec) : unit =
+        movePtBy 6 v xyzs
 
-    /// Returns a FreeBox with only the point 6 moved by a vector. All other points stay where they are.
-    static member inline movePt6 (v:Vec) (b:FreeBox) : FreeBox =
+    /// Moves the point 6 of the box by a vector. All other points stay where they are.
+    /// NOTE: unlike FreeBox.move, moveX, moveY and moveZ, that return a new FreeBox, this mutates the given FreeBox in place.
+    static member inline movePt6 (v:Vec) (b:FreeBox) : unit =
         b.MovePt6(v)
 
-    /// Returns a FreeBox with only the point 7 moved by a vector. All other points stay where they are.
-    member _.MovePt7 (v:Vec) : FreeBox =
-        FreeBox(movedPt 7 v xyzs)
+    /// Moves the point 7 of the box by a vector. All other points stay where they are.
+    /// NOTE: unlike Move, MoveX, MoveY and MoveZ, that return a new FreeBox, this mutates this FreeBox in place.
+    member _.MovePt7 (v:Vec) : unit =
+        movePtBy 7 v xyzs
 
-    /// Returns a FreeBox with only the point 7 moved by a vector. All other points stay where they are.
-    static member inline movePt7 (v:Vec) (b:FreeBox) : FreeBox =
+    /// Moves the point 7 of the box by a vector. All other points stay where they are.
+    /// NOTE: unlike FreeBox.move, moveX, moveY and moveZ, that return a new FreeBox, this mutates the given FreeBox in place.
+    static member inline movePt7 (v:Vec) (b:FreeBox) : unit =
         b.MovePt7(v)
 
     /// Applies or multiplies a 4x4 transformation matrix to the FreeBox.
