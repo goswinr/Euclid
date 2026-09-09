@@ -2132,11 +2132,49 @@ module FreeBoxAPI =
     let fb2 = FreeBox.createFromFour2DPointsArgs (Pt(0., 0.), Pt(10., 0.), Pt(10., 10.), Pt(0., 10.), 1., 2.)
 
     // Instance members - Properties
-    let (_:Pnt[]) = freebox.Points
+    let (_:float[]) = freebox.XYZs
+    let (_:Pnt[]) = freebox.AsPoints
+    let (_:Pnt) = freebox.GetPt 0
+    let (_:float) = freebox.GetX 0
+    let (_:float) = freebox.GetY 0
+    let (_:float) = freebox.GetZ 0
+    let (_:float) = freebox.Pt0X
+    let (_:float) = freebox.Pt0Y
+    let (_:float) = freebox.Pt0Z
+    let (_:float) = freebox.Pt7X
+    let (_:float) = freebox.Pt7Y
+    let (_:float) = freebox.Pt7Z
 
     // Instance members - Operations
+    let (_:FreeBox) = freebox.Duplicate()
     let (_:FreeBox) = freebox.Scale 2.0
     let (_:FreeBox) = freebox.ScaleOn (Pnt.Origin, 2.0)
+    // Instance members - Mutations
+    let mutableBox = FreeBox.createFromEightPoints freebox.AsPoints
+    let (_:unit) = mutableBox.MovePt(0, Vec.Xaxis)
+    let (_:unit) = mutableBox.MovePt0 Vec.Xaxis
+    let (_:unit) = mutableBox.MovePt1 Vec.Xaxis
+    let (_:unit) = mutableBox.MovePt2 Vec.Xaxis
+    let (_:unit) = mutableBox.MovePt3 Vec.Xaxis
+    let (_:unit) = mutableBox.MovePt4 Vec.Xaxis
+    let (_:unit) = mutableBox.MovePt5 Vec.Xaxis
+    let (_:unit) = mutableBox.MovePt6 Vec.Xaxis
+    let (_:unit) = mutableBox.MovePt7 Vec.Xaxis
+
+    // Static members
+    let (_:float[]) = FreeBox.getXYZs freebox
+    let (_:Pnt[]) = FreeBox.asPoints freebox
+    let (_:float) = FreeBox.pt0X freebox
+    let (_:float) = FreeBox.pt0Y freebox
+    let (_:float) = FreeBox.pt0Z freebox
+    let (_:float) = FreeBox.pt7X freebox
+    let (_:float) = FreeBox.pt7Y freebox
+    let (_:float) = FreeBox.pt7Z freebox
+    let (_:unit) = FreeBox.movePt 0 Vec.Xaxis mutableBox
+    let (_:unit) = FreeBox.movePt0 Vec.Xaxis mutableBox
+    let (_:unit) = FreeBox.movePt7 Vec.Xaxis mutableBox
+    let (_:FreeBox) = FreeBox.createDirectly (Array.copy freebox.XYZs)
+    let (_:FreeBox) = FreeBox.createFromEightPoints freebox.AsPoints
 
 // ===== Polyline2D (2D Polyline) =====
 

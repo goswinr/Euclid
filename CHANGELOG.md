@@ -16,17 +16,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The unsafe internal constructors of `NPlane`, `PPlane`, `Box`, `BRect`, and `BBox`, and therefore all their `createUnchecked` members, now verify their input when compiled in DEBUG mode or with the `CHECKED_EUCLID` symbol defined. This covers unitized normals and axes, perpendicular and right-handed frames, `NaN` and `Infinity` values, and min values not being bigger than max values. The other unsafe constructors already did this.
 - Documented the `CHECKED_EUCLID` compiler flag in the Readme.
 - Added `Rect3D.translateLocalZ`, an alias of `Rect3D.offsetZ`, for naming consistency with `Box.translateLocalX/Y/Z` and `Rect3D.translateLocalX/Y`.
+- Added `FreeBox.XYZs` (and the static `getXYZs`) to access the flat array of 24 floats a `FreeBox` is now made of, `FreeBox.AsPoints` (and the static `asPoints`) to convert it to the 8 corner points, `FreeBox.createDirectly` to build one from an existing array of 24 floats, `FreeBox.GetX/GetY/GetZ` to read single coordinates, `FreeBox.SetPtXYZ` to set a corner from x, y and z, and `FreeBox.Duplicate` to copy one.
+- Added the settable single coordinate properties `FreeBox.Pt0X`, `FreeBox.Pt0Y`, `FreeBox.Pt0Z` ... up to `FreeBox.Pt7Z`, one for each of the 24 floats of a `FreeBox`, plus the static getters `FreeBox.pt0X` ... `FreeBox.pt7Z`.
+- Added `FreeBox.MovePt0` ... `FreeBox.MovePt7`, and the indexed `FreeBox.MovePt`, which translate one corner of a `FreeBox` by a vector and leave the other seven where they are. Unlike `Move`, `MoveX`, `MoveY` and `MoveZ`, which return a new `FreeBox`, these mutate the `FreeBox` in place and return `unit`. Static counterparts `FreeBox.movePt0` ... `FreeBox.movePt7` and `FreeBox.movePt` are provided too.
 
 ### Removed
 - The obsolete numeric `Edge0`-`Edge11` instance members on `Box` and `FreeBox` (deprecated aliases for the endpoint-named edges) have been removed; `Edge10` is now used for the reverse of `Edge01` instead.
 
 ### Changed
+- `FreeBox` now stores its 8 corners as a flat array of 24 interleaved floats (`x0, y0, z0, x1, y1, z1, ... x7, y7, z7`), instead of an array of 8 `Pnt`. This matches how `Polyline2D` and `Polyline3D` store their points, and lets all transformations run on the raw floats without allocating intermediate points. The corner accessors `Pt0`-`Pt7`, `GetPt`, `SetPt` and all edges are unchanged. JSON serialization of a `FreeBox` now writes the `XYZs` array of 24 floats instead of a `Points` array of 8 points.
 - `Polyline3D.AverageNormal` now fails if no normal can be found, instead of silently returning an almost zero length vector. This is the case if the Polyline3D has less than 3 points, if all points are in one line, if the cross products cancel each other out on a self intersecting shape, or if the Polyline3D is very small. Use `Polyline3D.TryAverageNormal` to get `None` instead of an exception.
 - The `CHECK_EUCLID` compiler symbol was renamed to `CHECKED_EUCLID`.
 - Pinned the `System.Text.Json` package reference (net472 only) to the lowest version providing the required APIs, `4.6.0`, instead of tracking latest, and excluded it from Dependabot version updates.
 - Clarified the docstrings of `Box.MoveX/Y/Z`, `Rect2D.MoveX/Y`, and `Rect3D.MoveX/Y/Z` (instance and static) to state that they move along the **world** X/Y/Z axes, not the shape's own (possibly rotated) local axes. Use `translateLocalX/Y/Z` for local-axis moves.
 
 ### Deprecated
+- `FreeBox.Points` and the static `FreeBox.points` are obsolete. Since `FreeBox` stores a flat array of 24 floats they do not return the live internal buffer any more, but a copy. Use `FreeBox.AsPoints` for the 8 corner points, or `FreeBox.XYZs` for the live buffer.
 - `Box.translate`, `Rect2D.translate`, `Rect3D.translate`, and `PPlane.translate` are obsolete. They were plain aliases for `.move` (a world-space vector translation), which is ambiguous alongside the local-axis `translateLocalX/Y/Z` members on the same types. Use `.move` (or `PPlane.translateBy`) for a world-space vector, or `.translateLocalX/Y/Z` to move along the shape's own axes.
 
 ## [0.51.0] - 2026-07-28
