@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- Added `with`-prefixed replacements for all members that had a `set` prefix but returned a new value instead of mutating: `Line2D.withStart/withFrom/withEnd/withTo`, `Line3D.withStart/withFrom/withEnd/withTo`, `PPlane.withOrigin/withOriginX/withOriginY/withOriginZ`, and `Quaternion.WithAngleInRadians/WithAngleInDegrees` (plus the static `withAngleInRadians`/`withAngleInDegrees`).
 - `Rect2D`, `Rect3D`, `BRect`, `Box`, `BBox`, and `FreeBox` now have a reverse-direction instance and static member for every named edge (e.g. `Edge10` next to `Edge01`, `Edge23` next to `Edge32`), so every edge can be addressed in either direction.
 - Added `Line2D.pointAtDistanceFromEnd` and `Line3D.pointAtDistanceFromEnd`, finding a point at a given distance from the line end, going towards the start.
 - Added `Polyline2D.checkForDuplicatePoints` and `Polyline3D.checkForDuplicatePoints`, which return the original polyline when unchanged or a cleaned polyline and reported duplicate points.
@@ -27,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Clarified the docstrings of `Box.MoveX/Y/Z`, `Rect2D.MoveX/Y`, and `Rect3D.MoveX/Y/Z` (instance and static) to state that they move along the **world** X/Y/Z axes, not the shape's own (possibly rotated) local axes. Use `translateLocalX/Y/Z` for local-axis moves.
 
 ### Deprecated
+- All members with a `set` prefix that return a new value instead of mutating are obsolete, use the `with`-prefixed member of the same name instead. The `set` prefix suggested in-place mutation, which these never did. This affects `Pt.setX/setY`, `Pnt.setX/setY/setZ`, `Vc.setX/setY`, `Vec.setX/setY/setZ`, `Line2D.setStart/setFrom/setEnd/setTo`, `Line3D.setStart/setFrom/setEnd/setTo`, `PPlane.setOrigin/setOriginX/setOriginY/setOriginZ`, and `Quaternion.SetAngleInRadians/SetAngleInDegrees` (plus the static `setAngleInRadians`/`setAngleInDegrees`). The genuinely mutating `Set` members on `Polyline2D`, `Polyline3D`, `FreeBox`, and `ResizeArr` are unchanged.
 - `Box.translate`, `Rect2D.translate`, `Rect3D.translate`, and `PPlane.translate` are obsolete. They were plain aliases for `.move` (a world-space vector translation), which is ambiguous alongside the local-axis `translateLocalX/Y/Z` members on the same types. Use `.move` (or `PPlane.translateBy`) for a world-space vector, or `.translateLocalX/Y/Z` to move along the shape's own axes.
 
 ## [0.51.0] - 2026-07-28

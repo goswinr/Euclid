@@ -552,6 +552,43 @@ let tests =
             }
         ]
 
+        testList "PPlane - WithOrigin" [
+            test "withOrigin moves the origin and keeps the axes" {
+                let pl = PPlane.WorldXY
+                let moved = PPlane.withOrigin (Pnt(1., 2., 3.)) pl
+                Expect.isTrue (eqPnt moved.Origin (Pnt(1., 2., 3.))) "Origin should be the given point"
+                Expect.isTrue (eqVec moved.Xaxis.AsVec pl.Xaxis.AsVec) "Xaxis should be unchanged"
+                Expect.isTrue (eqVec moved.Yaxis.AsVec pl.Yaxis.AsVec) "Yaxis should be unchanged"
+                Expect.isTrue (eqVec moved.Zaxis.AsVec pl.Zaxis.AsVec) "Zaxis should be unchanged"
+                Expect.isTrue (eqPnt pl.Origin Pnt.Origin) "Input plane should be unchanged"
+            }
+
+            test "withOriginX changes only the X value of the origin" {
+                let pl = PPlane.withOrigin (Pnt(1., 2., 3.)) PPlane.WorldXY
+                let moved = PPlane.withOriginX 9. pl
+                Expect.isTrue (eqPnt moved.Origin (Pnt(9., 2., 3.))) "Only X should change"
+            }
+
+            test "withOriginY changes only the Y value of the origin" {
+                let pl = PPlane.withOrigin (Pnt(1., 2., 3.)) PPlane.WorldXY
+                let moved = PPlane.withOriginY 9. pl
+                Expect.isTrue (eqPnt moved.Origin (Pnt(1., 9., 3.))) "Only Y should change"
+            }
+
+            test "withOriginZ changes only the Z value of the origin" {
+                let pl = PPlane.withOrigin (Pnt(1., 2., 3.)) PPlane.WorldXY
+                let moved = PPlane.withOriginZ 9. pl
+                Expect.isTrue (eqPnt moved.Origin (Pnt(1., 2., 9.))) "Only Z should change"
+            }
+
+            test "withOrigin on a rotated plane keeps the rotated axes" {
+                let pl = PPlane.createOriginXaxisYaxis(Pnt(5., 5., 5.), Vec(0., 1., 0.), Vec(-1., 0., 0.))
+                let moved = PPlane.withOrigin Pnt.Origin pl
+                Expect.isTrue (eqPnt moved.Origin Pnt.Origin) "Origin should be at world origin"
+                Expect.isTrue (eqVec moved.Xaxis.AsVec (Vec(0., 1., 0.))) "Xaxis should stay rotated"
+            }
+        ]
+
         testList "PPlane - Projection and Closest Point" [
             test "ClosestPoint on plane" {
                 let plane = PPlane.WorldXY
