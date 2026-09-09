@@ -1450,6 +1450,46 @@ let testsLine2DOffset =
     ]
 
 
+let testsLine2DWithStartEnd =
+    testList "Line2D WithStart / WithEnd" [
+
+        test "withStart replaces the start point only" {
+            let ln = Line2D(0., 0., 10., 0.)
+            let result = Line2D.withStart (Pt(1., 2.)) ln
+            "new start" |> Expect.isTrue (eq result.From (Pt(1., 2.)))
+            "end unchanged" |> Expect.isTrue (eq result.To ln.To)
+            "input unchanged" |> Expect.isTrue (eq ln.From (Pt(0., 0.)))
+        }
+
+        test "withFrom is the same as withStart" {
+            let ln = Line2D(0., 0., 10., 0.)
+            let a = Line2D.withStart (Pt(1., 2.)) ln
+            let b = Line2D.withFrom (Pt(1., 2.)) ln
+            "withFrom equals withStart" |> Expect.isTrue (eq a.From b.From && eq a.To b.To)
+        }
+
+        test "withEnd replaces the end point only" {
+            let ln = Line2D(0., 0., 10., 0.)
+            let result = Line2D.withEnd (Pt(3., 4.)) ln
+            "start unchanged" |> Expect.isTrue (eq result.From ln.From)
+            "new end" |> Expect.isTrue (eq result.To (Pt(3., 4.)))
+            "input unchanged" |> Expect.isTrue (eq ln.To (Pt(10., 0.)))
+        }
+
+        test "withTo is the same as withEnd" {
+            let ln = Line2D(0., 0., 10., 0.)
+            let a = Line2D.withEnd (Pt(3., 4.)) ln
+            let b = Line2D.withTo (Pt(3., 4.)) ln
+            "withTo equals withEnd" |> Expect.isTrue (eq a.From b.From && eq a.To b.To)
+        }
+
+        test "withStart to the end point gives a zero length line" {
+            let ln = Line2D(0., 0., 10., 0.)
+            let result = Line2D.withStart ln.To ln
+            "zero length" |> expectEqualEpsilon result.Length 0.
+        }
+    ]
+
 let testsLine2DWithLength =
     testList "Line2D WithLength Methods" [
 
@@ -2520,6 +2560,46 @@ let testsLine3DOffset =
     ]
 
 
+let testsLine3DWithStartEnd =
+    testList "Line3D WithStart / WithEnd" [
+
+        test "withStart replaces the start point only" {
+            let ln = Line3D(0., 0., 0., 10., 0., 0.)
+            let result = Line3D.withStart (Pnt(1., 2., 3.)) ln
+            "new start" |> Expect.isTrue (Pnt.dist result.From (Pnt(1., 2., 3.)) < 1e-9)
+            "end unchanged" |> Expect.isTrue (Pnt.dist result.To ln.To < 1e-9)
+            "input unchanged" |> Expect.isTrue (Pnt.dist ln.From Pnt.Origin < 1e-9)
+        }
+
+        test "withFrom is the same as withStart" {
+            let ln = Line3D(0., 0., 0., 10., 0., 0.)
+            let a = Line3D.withStart (Pnt(1., 2., 3.)) ln
+            let b = Line3D.withFrom (Pnt(1., 2., 3.)) ln
+            "withFrom equals withStart" |> Expect.isTrue (Pnt.dist a.From b.From < 1e-9 && Pnt.dist a.To b.To < 1e-9)
+        }
+
+        test "withEnd replaces the end point only" {
+            let ln = Line3D(0., 0., 0., 10., 0., 0.)
+            let result = Line3D.withEnd (Pnt(4., 5., 6.)) ln
+            "start unchanged" |> Expect.isTrue (Pnt.dist result.From ln.From < 1e-9)
+            "new end" |> Expect.isTrue (Pnt.dist result.To (Pnt(4., 5., 6.)) < 1e-9)
+            "input unchanged" |> Expect.isTrue (Pnt.dist ln.To (Pnt(10., 0., 0.)) < 1e-9)
+        }
+
+        test "withTo is the same as withEnd" {
+            let ln = Line3D(0., 0., 0., 10., 0., 0.)
+            let a = Line3D.withEnd (Pnt(4., 5., 6.)) ln
+            let b = Line3D.withTo (Pnt(4., 5., 6.)) ln
+            "withTo equals withEnd" |> Expect.isTrue (Pnt.dist a.From b.From < 1e-9 && Pnt.dist a.To b.To < 1e-9)
+        }
+
+        test "withEnd to the start point gives a zero length line" {
+            let ln = Line3D(0., 0., 0., 10., 0., 0.)
+            let result = Line3D.withEnd ln.From ln
+            "zero length" |> expectEqualEpsilon result.Length 0.
+        }
+    ]
+
 let testsLine3DWithLength =
     testList "Line3D WithLength Methods" [
 
@@ -3286,6 +3366,7 @@ let tests =
         testsLine2DProjection
         testsLine2DDivide
         testsLine2DOffset
+        testsLine2DWithStartEnd
         testsLine2DWithLength
         testsLine2DIntersection
         testsFastParallel3D
@@ -3296,6 +3377,7 @@ let tests =
         testsLine3DProjection
         testsLine3DDivide
         testsLine3DOffset
+        testsLine3DWithStartEnd
         testsLine3DWithLength
         testsLine3DIntersection
         testsLine3DDistance

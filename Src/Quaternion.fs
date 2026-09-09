@@ -144,10 +144,10 @@ type Quaternion =
 
     /// Get a new Quaternion that rotates around the same axis but with a different angle. In radians.
     /// Fails for identity or near-identity quaternions where the rotation axis is not defined (angle ≈ 0).
-    member q.SetAngleInRadians (angleInRadians:float) : Quaternion =
+    member q.WithAngleInRadians (angleInRadians:float) : Quaternion =
         let length = sqrt(q.X*q.X + q.Y*q.Y + q.Z*q.Z)
         if isTooTiny(length) then
-            fail $"Quaternion.setAngleInRadians failed. The length of the axis is too short: {q.Axis}"
+            fail $"Quaternion.withAngleInRadians failed. The length of the axis is too short: {q.Axis}"
         let sc = 1. / length // inverse for unitizing vector:
         let angHalf = angleInRadians * 0.5
         let sa = sc * sin angHalf
@@ -157,18 +157,19 @@ type Quaternion =
                      cos angHalf )
 
     /// Returns a quaternion with the same rotation axis and the specified angle in radians.
-    static member inline setAngleInRadians (angleInRadians:float) (q:Quaternion) : Quaternion =
-        q.SetAngleInRadians angleInRadians
+    /// Fails for identity or near-identity quaternions where the rotation axis is not defined (angle ≈ 0).
+    static member inline withAngleInRadians (angleInRadians:float) (q:Quaternion) : Quaternion =
+        q.WithAngleInRadians angleInRadians
 
     /// Get a new Quaternion that rotates around the same axis but with a different angle. In degrees.
     /// Fails for identity or near-identity quaternions where the rotation axis is not defined (angle ≈ 0).
-    member inline q.SetAngleInDegrees (angleInDegrees:float) : Quaternion =
-        q.SetAngleInRadians (toRadians angleInDegrees)
+    member inline q.WithAngleInDegrees (angleInDegrees:float) : Quaternion =
+        q.WithAngleInRadians (toRadians angleInDegrees)
 
     /// Get a new Quaternion that rotates around the same axis but with a different angle. In degrees.
     /// Fails for identity or near-identity quaternions where the rotation axis is not defined (angle ≈ 0).
-    static member inline setAngleInDegrees (angleInDegrees:float) (q:Quaternion) : Quaternion =
-        q.SetAngleInRadians (toRadians angleInDegrees)
+    static member inline withAngleInDegrees (angleInDegrees:float) (q:Quaternion) : Quaternion =
+        q.WithAngleInRadians (toRadians angleInDegrees)
 
     (* TODO the interpolation follows a Cone. is that correct ?
 
@@ -575,6 +576,26 @@ type Quaternion =
     [<Obsolete("The Magnitude is always one. This function only exist for testing.")>]
     member q.Magnitude : float =
         sqrt (q.X*q.X + q.Y*q.Y + q.Z*q.Z + q.W*q.W)
+
+    /// Obsolete name. Same as q.WithAngleInRadians.
+    [<Obsolete("Use q.WithAngleInRadians instead. This returns a new Quaternion, it does not mutate, so the 'With' prefix is clearer.")>]
+    member inline q.SetAngleInRadians (angleInRadians:float) : Quaternion =
+        q.WithAngleInRadians angleInRadians
+
+    /// Obsolete name. Same as Quaternion.withAngleInRadians.
+    [<Obsolete("Use Quaternion.withAngleInRadians instead. This returns a new Quaternion, it does not mutate, so the 'with' prefix is clearer.")>]
+    static member inline setAngleInRadians (angleInRadians:float) (q:Quaternion) : Quaternion =
+        q.WithAngleInRadians angleInRadians
+
+    /// Obsolete name. Same as q.WithAngleInDegrees.
+    [<Obsolete("Use q.WithAngleInDegrees instead. This returns a new Quaternion, it does not mutate, so the 'With' prefix is clearer.")>]
+    member inline q.SetAngleInDegrees (angleInDegrees:float) : Quaternion =
+        q.WithAngleInRadians (toRadians angleInDegrees)
+
+    /// Obsolete name. Same as Quaternion.withAngleInDegrees.
+    [<Obsolete("Use Quaternion.withAngleInDegrees instead. This returns a new Quaternion, it does not mutate, so the 'with' prefix is clearer.")>]
+    static member inline setAngleInDegrees (angleInDegrees:float) (q:Quaternion) : Quaternion =
+        q.WithAngleInRadians (toRadians angleInDegrees)
 
 #if !FABLE_COMPILER
 /// Serializes a Quaternion as its X, Y, Z, and W components with System.Text.Json.

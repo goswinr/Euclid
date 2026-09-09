@@ -93,7 +93,6 @@ module AutoOpenVec =
             Vec (x, v.Y, v.Z)
 
         /// Returns a new 3D vector with new X coordinate, Y and Z stay the same.
-        /// Same as Vec.setX.
         static member inline withX  x (v:Vec) : Vec =
             v.WithX x
 
@@ -102,7 +101,6 @@ module AutoOpenVec =
             Vec (v.X, y, v.Z)
 
         /// Returns a new 3D vector with new y coordinate, X and Z stay the same.
-        /// Same as Vec.setY.
         static member inline withY  y (v:Vec) : Vec =
             v.WithY y
 
@@ -111,7 +109,6 @@ module AutoOpenVec =
             Vec (v.X, v.Y, z)
 
         /// Returns a new 3D vector with new z coordinate, X and Y stay the same.
-        /// Same as Vec.setZ.
         static member inline withZ z (v:Vec) : Vec =
             v.WithZ z
 
@@ -758,21 +755,6 @@ module AutoOpenVec =
         static member inline getZ (v:Vec) : float =
             v.Z
 
-        /// Returns a new 3D vector with new X coordinate, Y and Z stay the same.
-        /// Same as Vec.withX.
-        static member inline setX (x:float) (v:Vec) : Vec =
-            Vec(x, v.Y, v.Z)
-
-        /// Returns a new 3D vector with new Y coordinate, X and Z stay the same.
-        /// Same as Vec.withY.
-        static member inline setY (y:float) (v:Vec) : Vec =
-            Vec(v.X, y, v.Z)
-
-        /// Returns a new 3D vector with new Z coordinate, X and Y stay the same.
-        /// Same as Vec.withZ.
-        static member inline setZ (z:float) (v:Vec) : Vec =
-            Vec(v.X, v.Y, z)
-
         /// Add two 3D vectors together. Returns a new 3D vector.
         static member inline add (a:Vec) (b:Vec) : Vec =
             Vec (a.X + b.X, a.Y + b.Y, a.Z + b.Z)
@@ -1119,6 +1101,21 @@ module AutoOpenVec =
 
         // #endregion
         // #region Obsolete
+
+        /// Obsolete name. Same as Vec.withX.
+        [<Obsolete("Use Vec.withX instead. This returns a new 3D vector, it does not mutate, so the 'with' prefix is clearer.")>]
+        static member inline setX (x:float) (v:Vec) : Vec =
+            Vec(x, v.Y, v.Z)
+
+        /// Obsolete name. Same as Vec.withY.
+        [<Obsolete("Use Vec.withY instead. This returns a new 3D vector, it does not mutate, so the 'with' prefix is clearer.")>]
+        static member inline setY (y:float) (v:Vec) : Vec =
+            Vec(v.X, y, v.Z)
+
+        /// Obsolete name. Same as Vec.withZ.
+        [<Obsolete("Use Vec.withZ instead. This returns a new 3D vector, it does not mutate, so the 'with' prefix is clearer.")>]
+        static member inline setZ (z:float) (v:Vec) : Vec =
+            Vec(v.X, v.Y, z)
 
         [<Obsolete("Use Vec.isParallelWithin instead.")>]
         static member inline isAngle90Below (cosineValue: float<Cosine.cosine>) (a:Vec) (b:Vec) : bool =

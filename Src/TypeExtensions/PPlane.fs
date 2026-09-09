@@ -414,20 +414,20 @@ module AutoOpenPPlane =
             //abs (a.ZaxisY - b.ZaxisY) <= tol &&
             //abs (a.ZaxisZ - b.ZaxisZ) <= tol
 
-        /// Returns a new plane with given Origin.
-        static member inline setOrigin (pt:Pnt) (pl:PPlane) : PPlane =
+        /// Returns a new plane with given Origin. The axes stay the same.
+        static member inline withOrigin (pt:Pnt) (pl:PPlane) : PPlane =
             PPlane.createUnchecked(pt.X, pt.Y, pt.Z, pl.XaxisX, pl.XaxisY, pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
 
-        /// Returns a new plane with given Origin X value changed.
-        static member inline setOriginX (x:float) (pl:PPlane) : PPlane =
+        /// Returns a new plane with given Origin X value changed. The axes stay the same.
+        static member inline withOriginX (x:float) (pl:PPlane) : PPlane =
             PPlane.createUnchecked(x, pl.OriginY, pl.OriginZ, pl.XaxisX, pl.XaxisY, pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
 
-        /// Returns a new plane with given Origin Y value changed.
-        static member inline setOriginY (y:float) (pl:PPlane) : PPlane =
+        /// Returns a new plane with given Origin Y value changed. The axes stay the same.
+        static member inline withOriginY (y:float) (pl:PPlane) : PPlane =
             PPlane.createUnchecked(pl.OriginX, y, pl.OriginZ, pl.XaxisX, pl.XaxisY, pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
 
-        /// Returns a new plane with given Origin Z value changed.
-        static member inline setOriginZ (z:float) (pl:PPlane) : PPlane =
+        /// Returns a new plane with given Origin Z value changed. The axes stay the same.
+        static member inline withOriginZ (z:float) (pl:PPlane) : PPlane =
             PPlane.createUnchecked(pl.OriginX, pl.OriginY, z, pl.XaxisX, pl.XaxisY, pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
 
         /// Returns a new plane with Origin translated by Vec.
@@ -622,4 +622,24 @@ module AutoOpenPPlane =
         [<Obsolete("rename to PPlane.transformRigid for clarity")>]
         static member transform (m:RigidMatrix) (pl:PPlane) : PPlane =
             PPlane.transformRigid m pl
+
+        /// Obsolete name. Same as PPlane.withOrigin.
+        [<Obsolete("Use PPlane.withOrigin instead. This returns a new plane, it does not mutate, so the 'with' prefix is clearer.")>]
+        static member inline setOrigin (pt:Pnt) (pl:PPlane) : PPlane =
+            PPlane.createUnchecked(pt.X, pt.Y, pt.Z, pl.XaxisX, pl.XaxisY, pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
+
+        /// Obsolete name. Same as PPlane.withOriginX.
+        [<Obsolete("Use PPlane.withOriginX instead. This returns a new plane, it does not mutate, so the 'with' prefix is clearer.")>]
+        static member inline setOriginX (x:float) (pl:PPlane) : PPlane =
+            PPlane.createUnchecked(x, pl.OriginY, pl.OriginZ, pl.XaxisX, pl.XaxisY, pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
+
+        /// Obsolete name. Same as PPlane.withOriginY.
+        [<Obsolete("Use PPlane.withOriginY instead. This returns a new plane, it does not mutate, so the 'with' prefix is clearer.")>]
+        static member inline setOriginY (y:float) (pl:PPlane) : PPlane =
+            PPlane.createUnchecked(pl.OriginX, y, pl.OriginZ, pl.XaxisX, pl.XaxisY, pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
+
+        /// Obsolete name. Same as PPlane.withOriginZ.
+        [<Obsolete("Use PPlane.withOriginZ instead. This returns a new plane, it does not mutate, so the 'with' prefix is clearer.")>]
+        static member inline setOriginZ (z:float) (pl:PPlane) : PPlane =
+            PPlane.createUnchecked(pl.OriginX, pl.OriginY, z, pl.XaxisX, pl.XaxisY, pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
 

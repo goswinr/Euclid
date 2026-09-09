@@ -82,7 +82,6 @@ module AutoOpenVc =
             Vc (x, v.Y)
 
         /// Returns a new 2D vector with new X coordinate, Y stays the same.
-        /// Same as Vc.setX.
         static member inline withX x (v:Vc) : Vc =
             v.WithX x
 
@@ -91,7 +90,6 @@ module AutoOpenVc =
             Vc (v.X, y)
 
         /// Returns a new 2D vector with new Y coordinate, X stays the same.
-        /// Same as Vc.setY.
         static member inline withY y (v:Vc) : Vc =
             v.WithY y
 
@@ -587,16 +585,6 @@ module AutoOpenVc =
         // #endregion
         // #region Static members
 
-        /// Returns a new 2D vector with new X coordinate, Y stays the same.
-        /// Same as Vc.withX.
-        static member inline setX (x:float) (vc:Vc) : Vc =
-            Vc(x, vc.Y)
-
-        /// Returns a new 2D vector with new Y coordinate, X stays the same.
-        /// Same as Vc.withY.
-        static member inline setY (y:float) (vc:Vc) : Vc =
-            Vc(vc.X, y)
-
         /// Returns the World X-axis with length one: Vc(1, 0)
         static member inline Xaxis : Vc =
             Vc(1, 0)
@@ -943,6 +931,16 @@ module AutoOpenVc =
 
         // #endregion
         // #region Obsolete
+
+        /// Obsolete name. Same as Vc.withX.
+        [<Obsolete("Use Vc.withX instead. This returns a new 2D vector, it does not mutate, so the 'with' prefix is clearer.")>]
+        static member inline setX (x:float) (vc:Vc) : Vc =
+            Vc(x, vc.Y)
+
+        /// Obsolete name. Same as Vc.withY.
+        [<Obsolete("Use Vc.withY instead. This returns a new 2D vector, it does not mutate, so the 'with' prefix is clearer.")>]
+        static member inline setY (y:float) (vc:Vc) : Vc =
+            Vc(vc.X, y)
 
 
         [<Obsolete("Use Vc.isParallelWithin instead.")>]

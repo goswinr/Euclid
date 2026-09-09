@@ -81,7 +81,6 @@ module AutoOpenPnt =
             Pnt (x, pt.Y, pt.Z)
 
         /// Returns new 3D point with new X coordinate, Y and Z stay the same.
-        /// Same as Pnt.setX.
         static member inline withX x (pt:Pnt) : Pnt =
             Pnt(x, pt.Y, pt.Z)
 
@@ -90,7 +89,6 @@ module AutoOpenPnt =
             Pnt (pt.X, y, pt.Z)
 
         /// Returns a new 3D point with new Y coordinate, X and Z stay the same.
-        /// Same as Pnt.setY.
         static member inline withY y (pt:Pnt) : Pnt =
             Pnt(pt.X, y, pt.Z)
 
@@ -99,7 +97,6 @@ module AutoOpenPnt =
             Pnt (pt.X, pt.Y, z)
 
         /// Returns a new 3D point with new Z coordinate, X and Y stay the same.
-        /// Same as Pnt.setZ.
         static member inline withZ z (pt:Pnt) : Pnt =
             Pnt(pt.X, pt.Y, z)
 
@@ -408,21 +405,6 @@ module AutoOpenPnt =
         static member inline getZ (pt:Pnt) : float =
             pt.Z
 
-        /// Returns a new 3D point with new X coordinate, Y and Z stay the same.
-        /// Same as Pnt.withX.
-        static member inline setX (x:float) (pt:Pnt) : Pnt =
-            Pnt(x, pt.Y, pt.Z)
-
-        /// Returns a new 3D point with new Y coordinate, X and Z stay the same.
-        /// Same as Pnt.withY.
-        static member inline setY (y:float) (pt:Pnt) : Pnt =
-            Pnt(pt.X, y, pt.Z)
-
-        /// Returns a new 3D point with new Z coordinate, X and Y stay the same.
-        /// Same as Pnt.withZ.
-        static member inline setZ (z:float) (pt:Pnt) : Pnt =
-            Pnt(pt.X, pt.Y, z)
-
         /// Adds two 3D points and return new 3D point.
         static member inline add (a:Pnt) (b:Pnt) : Pnt =
             a + b
@@ -708,6 +690,21 @@ module AutoOpenPnt =
 
         // #endregion
         // #region Obsolete
+
+        /// Obsolete name. Same as Pnt.withX.
+        [<Obsolete("Use Pnt.withX instead. This returns a new 3D point, it does not mutate, so the 'with' prefix is clearer.")>]
+        static member inline setX (x:float) (pt:Pnt) : Pnt =
+            Pnt(x, pt.Y, pt.Z)
+
+        /// Obsolete name. Same as Pnt.withY.
+        [<Obsolete("Use Pnt.withY instead. This returns a new 3D point, it does not mutate, so the 'with' prefix is clearer.")>]
+        static member inline setY (y:float) (pt:Pnt) : Pnt =
+            Pnt(pt.X, y, pt.Z)
+
+        /// Obsolete name. Same as Pnt.withZ.
+        [<Obsolete("Use Pnt.withZ instead. This returns a new 3D point, it does not mutate, so the 'with' prefix is clearer.")>]
+        static member inline setZ (z:float) (pt:Pnt) : Pnt =
+            Pnt(pt.X, pt.Y, z)
 
         /// Obsolete typo. Same as p.IsInvalid.
         [<Obsolete("Typo, use IsInvalid instead.")>]

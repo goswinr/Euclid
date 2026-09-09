@@ -112,9 +112,9 @@ let tests =
             Expect.floatClose Accuracy.high q.AngleInRadians (System.Math.PI / 3.0) "angle in radians"
         }
 
-        test "Quaternion set angle" {
+        test "Quaternion with angle" {
             let q = Quaternion.createFromDegrees(Vec.Zaxis, 90.)
-            let q2 = q.SetAngleInDegrees(45.)
+            let q2 = q.WithAngleInDegrees(45.)
             let a = Pnt(1,0,0)
             let result = a *** q2
             let sqrt2_2 = sqrt(2.0) / 2.0
@@ -220,15 +220,36 @@ let tests =
             Expect.throws (fun () -> Quaternion.createFromDegrees(tinyAxis, 45.) |> ignore) "very short axis should fail"
         }
 
-        test "Quaternion setAngle on identity should fail" {
-            let q = Quaternion.identity
-            Expect.throws (fun () -> q.SetAngleInRadians 1.0 |> ignore) "setAngle on identity should fail"
-            Expect.throws (fun () -> q.SetAngleInDegrees 45. |> ignore) "setAngle on identity should fail"
+        test "Quaternion withAngle static members match instance members" {
+            let q = Quaternion.createFromDegrees(Vec.Zaxis, 90.)
+            let a = Quaternion.withAngleInDegrees 45. q
+            let b = q.WithAngleInDegrees 45.
+            let c = Quaternion.withAngleInRadians (System.Math.PI * 0.25) q
+            Expect.floatClose Accuracy.high a.AngleInDegrees 45.0 "static withAngleInDegrees"
+            Expect.floatClose Accuracy.high b.AngleInDegrees 45.0 "instance WithAngleInDegrees"
+            Expect.floatClose Accuracy.high c.AngleInDegrees 45.0 "static withAngleInRadians"
+            Expect.floatClose Accuracy.high q.AngleInDegrees 90.0 "input quaternion is unchanged"
         }
 
-        test "Quaternion setAngle on near-identity should fail" {
+        test "Quaternion withAngle keeps the rotation axis" {
+            let axis = Vec(1., 2., 3.)
+            let q = Quaternion.createFromDegrees(axis, 30.)
+            let q2 = q.WithAngleInDegrees 120.
+            Expect.floatClose Accuracy.high q2.AngleInDegrees 120.0 "new angle"
+            let a1 = Vec.unitize q.Axis
+            let a2 = Vec.unitize q2.Axis
+            Expect.isTrue (Vec.length (a1.AsVec - a2.AsVec) < 1e-9) "axis stays the same"
+        }
+
+        test "Quaternion withAngle on identity should fail" {
+            let q = Quaternion.identity
+            Expect.throws (fun () -> q.WithAngleInRadians 1.0 |> ignore) "withAngle on identity should fail"
+            Expect.throws (fun () -> q.WithAngleInDegrees 45. |> ignore) "withAngle on identity should fail"
+        }
+
+        test "Quaternion withAngle on near-identity should fail" {
             let q = Quaternion.createFromDegrees(Vec.Zaxis, 1e-10)
-            Expect.throws (fun () -> q.SetAngleInRadians 1.0 |> ignore) "setAngle on near-identity should fail"
+            Expect.throws (fun () -> q.WithAngleInRadians 1.0 |> ignore) "withAngle on near-identity should fail"
         }
 
         test "Quaternion Axis on identity returns zero vector" {
