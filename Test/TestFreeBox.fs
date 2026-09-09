@@ -11,6 +11,32 @@ open Expecto
 let inline eqPnt a b = Pnt.dist a b < 1e-9
 let inline eqFloat a b = abs(a - b) < 1e-9
 
+/// The 8 corners of a rotated box that is off the world origin.
+/// The base rectangle starts at (5, 3, 2), with the X-axis (8, 6, 0) (length 10)
+/// and the Y-axis (-3, 4, 0) (length 5), extruded by the Z-axis (0, 0, 7).
+let rotatedPts = [|
+    Pnt( 5.,  3.,  2.) // 0
+    Pnt(13.,  9.,  2.) // 1
+    Pnt(10., 13.,  2.) // 2
+    Pnt( 2.,  7.,  2.) // 3
+    Pnt( 5.,  3.,  9.) // 4
+    Pnt(13.,  9.,  9.) // 5
+    Pnt(10., 13.,  9.) // 6
+    Pnt( 2.,  7.,  9.) // 7
+    |]
+
+/// The 24 interleaved x, y, and z coordinates of the corners in 'rotatedPts'.
+let rotatedXYZs = [|
+    5.;  3.;  2.;
+    13.; 9.;  2.;
+    10.; 13.; 2.;
+    2.;  7.;  2.;
+    5.;  3.;  9.;
+    13.; 9.;  9.;
+    10.; 13.; 9.;
+    2.;  7.;  9.
+    |]
+
 let tests =
     testList "FreeBox" [
 
@@ -21,7 +47,8 @@ let tests =
                     Pnt(0., 0., 3.); Pnt(10., 0., 3.); Pnt(10., 5., 3.); Pnt(0., 5., 3.)
                 |]
                 let box = FreeBox.createFromEightPoints pts
-                Expect.equal box.Points.Length 8 "Should have 8 points"
+                Expect.equal box.XYZs.Length 24 "Should have 24 floats"
+                Expect.equal box.AsPoints.Length 8 "Should have 8 points"
                 Expect.isTrue (eqPnt box.Pt0 pts.[0]) "Pt0 should match input"
                 Expect.isTrue (eqPnt box.Pt6 pts.[6]) "Pt6 should match input"
             }
@@ -31,6 +58,93 @@ let tests =
                 Expect.throws (fun () -> FreeBox.createFromEightPoints pts |> ignore) "Should throw with wrong number of points"
             }
 
+        ]
+
+        testList "Flat coordinate array" [
+            test "XYZs holds the 24 interleaved coordinates" {
+                let box = FreeBox.createFromEightPoints rotatedPts
+                Expect.equal box.XYZs.Length 24 "Should have 24 floats"
+                for i = 0 to 23 do
+                    Expect.isTrue (eqFloat box.XYZs.[i] rotatedXYZs.[i]) $"Coordinate {i} should match"
+            }
+
+            test "createDirectly uses the array without copying it" {
+                let xyzs = Array.copy rotatedXYZs
+                let box = FreeBox.createDirectly xyzs
+                Expect.isTrue (eqPnt box.Pt0 rotatedPts.[0]) "Pt0 should match"
+                Expect.isTrue (eqPnt box.Pt6 rotatedPts.[6]) "Pt6 should match"
+                xyzs.[0] <- 99.
+                Expect.isTrue (eqFloat box.Pt0.X 99.) "The array is the live internal buffer"
+            }
+
+            test "createDirectly rejects a wrong number of floats" {
+                Expect.throws (fun () -> FreeBox.createDirectly [| 1.; 2.; 3. |] |> ignore) "Should throw with 3 floats"
+                Expect.throws (fun () -> FreeBox.createDirectly (Array.zeroCreate 25) |> ignore) "Should throw with 25 floats"
+            }
+
+            test "XYZs is the live internal buffer" {
+                let box = FreeBox.createFromEightPoints rotatedPts
+                box.XYZs.[21] <- -4.5 // the x of Pt7
+                Expect.isTrue (eqFloat box.Pt7.X -4.5) "Writing to XYZs should change Pt7"
+            }
+
+            test "AsPoints is a copy, not the live buffer" {
+                let box = FreeBox.createFromEightPoints rotatedPts
+                let pts = box.AsPoints
+                pts.[0] <- Pnt(99., 99., 99.)
+                Expect.isTrue (eqPnt box.Pt0 rotatedPts.[0]) "Pt0 should be unchanged"
+            }
+
+            test "GetX, GetY and GetZ read single coordinates" {
+                let box = FreeBox.createFromEightPoints rotatedPts
+                for i = 0 to 7 do
+                    Expect.isTrue (eqFloat (box.GetX i) rotatedPts.[i].X) $"GetX {i} should match"
+                    Expect.isTrue (eqFloat (box.GetY i) rotatedPts.[i].Y) $"GetY {i} should match"
+                    Expect.isTrue (eqFloat (box.GetZ i) rotatedPts.[i].Z) $"GetZ {i} should match"
+            }
+
+            test "GetX, GetY and GetZ throw on an invalid index" {
+                let box = FreeBox.createFromEightPoints rotatedPts
+                Expect.throws (fun () -> box.GetX 8 |> ignore) "GetX should throw for index 8"
+                Expect.throws (fun () -> box.GetY -1 |> ignore) "GetY should throw for a negative index"
+                Expect.throws (fun () -> box.GetZ 8 |> ignore) "GetZ should throw for index 8"
+            }
+
+            test "Pt setters write into the flat array" {
+                let box = FreeBox.createFromEightPoints rotatedPts
+                box.Pt3 <- Pnt(-1.5, 2.5, -3.5)
+                Expect.isTrue (eqFloat box.XYZs.[ 9] -1.5) "XYZs.[9] should be the new x"
+                Expect.isTrue (eqFloat box.XYZs.[10]  2.5) "XYZs.[10] should be the new y"
+                Expect.isTrue (eqFloat box.XYZs.[11] -3.5) "XYZs.[11] should be the new z"
+                Expect.isTrue (eqPnt box.Pt3 (Pnt(-1.5, 2.5, -3.5))) "Pt3 should be the new point"
+            }
+
+            test "SetPt and SetPtXYZ write into the flat array" {
+                let box = FreeBox.createFromEightPoints rotatedPts
+                box.SetPt 5 (Pnt(1., 2., 3.))
+                Expect.isTrue (eqPnt box.Pt5 (Pnt(1., 2., 3.))) "SetPt should set Pt5"
+                box.SetPtXYZ(6, 4., 5., 6.)
+                Expect.isTrue (eqPnt box.Pt6 (Pnt(4., 5., 6.))) "SetPtXYZ should set Pt6"
+                Expect.throws (fun () -> box.SetPtXYZ(8, 0., 0., 0.)) "SetPtXYZ should throw for index 8"
+            }
+
+            test "Duplicate has its own array" {
+                let box = FreeBox.createFromEightPoints rotatedPts
+                let copy = box.Duplicate()
+                copy.Pt0 <- Pnt(0., 0., 0.)
+                Expect.isTrue (eqPnt box.Pt0 rotatedPts.[0]) "The original should be unchanged"
+                Expect.isTrue (eqPnt copy.Pt1 rotatedPts.[1]) "The copy should hold the other points"
+            }
+
+            test "Transformations keep the 24 float array" {
+                let box = FreeBox.createFromEightPoints rotatedPts
+                let q = Quaternion.createFromDegrees(UnitVec.Xaxis, 30.)
+                let moved = box.Move(Vec(1., 2., 3.))
+                let rotated = box.RotateWithCenter(Pnt(5., 3., 2.), q)
+                Expect.equal moved.XYZs.Length 24 "Move should keep 24 floats"
+                Expect.equal rotated.XYZs.Length 24 "RotateWithCenter should keep 24 floats"
+                Expect.isTrue (eqPnt rotated.Pt0 rotatedPts.[0]) "The rotation center should stay fixed"
+            }
         ]
 
         testList "Creation from Box" [

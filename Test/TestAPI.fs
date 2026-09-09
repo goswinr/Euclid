@@ -2132,11 +2132,23 @@ module FreeBoxAPI =
     let fb2 = FreeBox.createFromFour2DPointsArgs (Pt(0., 0.), Pt(10., 0.), Pt(10., 10.), Pt(0., 10.), 1., 2.)
 
     // Instance members - Properties
-    let (_:Pnt[]) = freebox.Points
+    let (_:float[]) = freebox.XYZs
+    let (_:Pnt[]) = freebox.AsPoints
+    let (_:Pnt) = freebox.GetPt 0
+    let (_:float) = freebox.GetX 0
+    let (_:float) = freebox.GetY 0
+    let (_:float) = freebox.GetZ 0
 
     // Instance members - Operations
+    let (_:FreeBox) = freebox.Duplicate()
     let (_:FreeBox) = freebox.Scale 2.0
     let (_:FreeBox) = freebox.ScaleOn (Pnt.Origin, 2.0)
+
+    // Static members
+    let (_:float[]) = FreeBox.getXYZs freebox
+    let (_:Pnt[]) = FreeBox.asPoints freebox
+    let (_:FreeBox) = FreeBox.createDirectly (Array.copy freebox.XYZs)
+    let (_:FreeBox) = FreeBox.createFromEightPoints freebox.AsPoints
 
 // ===== Polyline2D (2D Polyline) =====
 
