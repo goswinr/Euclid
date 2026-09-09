@@ -2149,6 +2149,15 @@ module FreeBoxAPI =
     let (_:FreeBox) = freebox.Duplicate()
     let (_:FreeBox) = freebox.Scale 2.0
     let (_:FreeBox) = freebox.ScaleOn (Pnt.Origin, 2.0)
+    let (_:FreeBox) = freebox.MovePt(0, Vec.Xaxis)
+    let (_:FreeBox) = freebox.MovePt0 Vec.Xaxis
+    let (_:FreeBox) = freebox.MovePt1 Vec.Xaxis
+    let (_:FreeBox) = freebox.MovePt2 Vec.Xaxis
+    let (_:FreeBox) = freebox.MovePt3 Vec.Xaxis
+    let (_:FreeBox) = freebox.MovePt4 Vec.Xaxis
+    let (_:FreeBox) = freebox.MovePt5 Vec.Xaxis
+    let (_:FreeBox) = freebox.MovePt6 Vec.Xaxis
+    let (_:FreeBox) = freebox.MovePt7 Vec.Xaxis
 
     // Static members
     let (_:float[]) = FreeBox.getXYZs freebox
@@ -2159,6 +2168,9 @@ module FreeBoxAPI =
     let (_:float) = FreeBox.pt7X freebox
     let (_:float) = FreeBox.pt7Y freebox
     let (_:float) = FreeBox.pt7Z freebox
+    let (_:FreeBox) = FreeBox.movePt 0 Vec.Xaxis freebox
+    let (_:FreeBox) = FreeBox.movePt0 Vec.Xaxis freebox
+    let (_:FreeBox) = FreeBox.movePt7 Vec.Xaxis freebox
     let (_:FreeBox) = FreeBox.createDirectly (Array.copy freebox.XYZs)
     let (_:FreeBox) = FreeBox.createFromEightPoints freebox.AsPoints
 

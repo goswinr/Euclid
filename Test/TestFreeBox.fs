@@ -186,6 +186,65 @@ let tests =
                 Expect.throws (fun () -> box.SetPtXYZ(8, 0., 0., 0.)) "SetPtXYZ should throw for index 8"
             }
 
+            test "MovePt0 to MovePt7 move only that one point" {
+                let box = FreeBox.createFromEightPoints rotatedPts
+                let v = Vec(1.5, -2.5, 3.5)
+                let moves = [|
+                    box.MovePt0 v; box.MovePt1 v; box.MovePt2 v; box.MovePt3 v
+                    box.MovePt4 v; box.MovePt5 v; box.MovePt6 v; box.MovePt7 v |]
+                for moved = 0 to 7 do
+                    let b = moves.[moved]
+                    for i = 0 to 7 do
+                        let expected =
+                            if i = moved then rotatedPts.[i] + v
+                            else rotatedPts.[i]
+                        Expect.isTrue (eqPnt (b.GetPt i) expected) $"MovePt{moved}: point {i}"
+            }
+
+            test "MovePt0 does not change the original box" {
+                let box = FreeBox.createFromEightPoints rotatedPts
+                let moved = box.MovePt0 (Vec(1., 2., 3.))
+                Expect.isTrue (eqPnt box.Pt0 rotatedPts.[0]) "The original Pt0 should be unchanged"
+                Expect.isTrue (eqPnt moved.Pt0 (rotatedPts.[0] + Vec(1., 2., 3.))) "The returned box should have the moved Pt0"
+                moved.Pt1 <- Pnt(0., 0., 0.)
+                Expect.isTrue (eqPnt box.Pt1 rotatedPts.[1]) "The two boxes should not share the array"
+            }
+
+            test "MovePt with an index matches MovePt0 to MovePt7" {
+                let box = FreeBox.createFromEightPoints rotatedPts
+                let v = Vec(-3., 4., 5.)
+                let byName = [|
+                    box.MovePt0 v; box.MovePt1 v; box.MovePt2 v; box.MovePt3 v
+                    box.MovePt4 v; box.MovePt5 v; box.MovePt6 v; box.MovePt7 v |]
+                for i = 0 to 7 do
+                    let byIndex = box.MovePt(i, v)
+                    for k = 0 to 7 do
+                        Expect.isTrue (eqPnt (byIndex.GetPt k) (byName.[i].GetPt k)) $"MovePt({i}) point {k}"
+            }
+
+            test "MovePt throws on an invalid index" {
+                let box = FreeBox.createFromEightPoints rotatedPts
+                Expect.throws (fun () -> box.MovePt(8, Vec(1., 1., 1.)) |> ignore) "Should throw for index 8"
+                Expect.throws (fun () -> box.MovePt(-1, Vec(1., 1., 1.)) |> ignore) "Should throw for a negative index"
+            }
+
+            test "static movePt0 to movePt7 and movePt" {
+                let box = FreeBox.createFromEightPoints rotatedPts
+                let v = Vec(2., 3., 4.)
+                Expect.isTrue (eqPnt (FreeBox.movePt0 v box).Pt0 (rotatedPts.[0] + v)) "movePt0"
+                Expect.isTrue (eqPnt (FreeBox.movePt3 v box).Pt3 (rotatedPts.[3] + v)) "movePt3"
+                Expect.isTrue (eqPnt (FreeBox.movePt7 v box).Pt7 (rotatedPts.[7] + v)) "movePt7"
+                Expect.isTrue (eqPnt (FreeBox.movePt 5 v box).Pt5 (rotatedPts.[5] + v)) "movePt 5"
+                Expect.isTrue (eqPnt (FreeBox.movePt0 v box).Pt1 rotatedPts.[1]) "movePt0 should leave Pt1 alone"
+            }
+
+            test "MovePt0 with a zero vector returns an equal box" {
+                let box = FreeBox.createFromEightPoints rotatedPts
+                let moved = box.MovePt0 Vec.Zero
+                for i = 0 to 7 do
+                    Expect.isTrue (eqPnt (moved.GetPt i) rotatedPts.[i]) $"point {i} should be unchanged"
+            }
+
             test "Duplicate has its own array" {
                 let box = FreeBox.createFromEightPoints rotatedPts
                 let copy = box.Duplicate()
