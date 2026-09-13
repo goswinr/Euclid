@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.52.0] - 2026-09-07
 ### Added
 - `Rect2D`, `Rect3D`, `BRect`, `Box`, `BBox`, and `FreeBox` now have a reverse-direction instance and static member for every named edge (e.g. `Edge10` next to `Edge01`, `Edge23` next to `Edge32`), so every edge can be addressed in either direction.
 - Added `Line2D.pointAtDistanceFromEnd` and `Line3D.pointAtDistanceFromEnd`, finding a point at a given distance from the line end, going towards the start.
@@ -28,6 +28,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Deprecated
 - `Box.translate`, `Rect2D.translate`, `Rect3D.translate`, and `PPlane.translate` are obsolete. They were plain aliases for `.move` (a world-space vector translation), which is ambiguous alongside the local-axis `translateLocalX/Y/Z` members on the same types. Use `.move` (or `PPlane.translateBy`) for a world-space vector, or `.translateLocalX/Y/Z` to move along the shape's own axes.
+
+### Fixed
+- Packaging: the Fable source files are now packed from the Src folder instead of the repository root, so the package no longer ships test sources or generated obj files.
 
 ## [0.51.0] - 2026-07-28
 ### Added

@@ -57,7 +57,10 @@
 
     <None Include="./README.md" Pack="true" PackagePath="" />
     <None Include="./Docs/img/logo128.png" Pack="true" PackagePath="" />    <!--PackagePath = "" makes the file available to nuget pack tool-->
-    <Content Include="*.fsproj; **/*.fs; **/*.fsi" PackagePath="fable/" />    <!--so that it can be used with Fable-->
+    <!--so that it can be used with Fable. Only Src, not the tests or the generated obj files.
+        The Src items need their own PackagePath because MSBuild strips the part of the path before the wildcard.-->
+    <Content Include="*.fsproj" PackagePath="fable/" />
+    <Content Include="Src/**/*.fs; Src/**/*.fsi" PackagePath="fable/Src/" />
 
     <Compile Include="Src/EuclidErrors.fs" />
     <Compile Include="Src/UtilEuclid.fs" />
