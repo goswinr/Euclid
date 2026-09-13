@@ -92,7 +92,7 @@ module UtilEuclid =
         // use 'not' to catch a NaN too ( a Cross Product of infinite long vectors can give a NaN length)
         not ( x > 1e-6 )
 
-    /// Returns TRUE for values smaller than 1e-12 (square of 1e-6)  and for NaN.
+    /// Returns TRUE for values smaller than 1e-12 (square of 1e-6) and for NaN.
     let inline isTooSmallSq x =
         // use 'not' to catch a NaN too ( a Cross Product of infinite long vectors can give a NaN length)
         not ( x > 1e-12 )

@@ -1146,16 +1146,20 @@ type Box =
 
 
 
-/// Checks if the axes of both boxes are aligned, meaning they are parallel and have the same orientation
-    static member areBoxesAligned (a:Box) (b:Box) : bool =
-        Vec.isParallelAndOrientedTo Cosine.``0.025`` a.Xaxis b.Xaxis &&
-        Vec.isParallelAndOrientedTo Cosine.``0.025`` a.Yaxis b.Yaxis &&
-        Vec.isParallelAndOrientedTo Cosine.``0.025`` a.Zaxis b.Zaxis
+    /// Checks if the axes of both boxes are aligned, meaning they are parallel and have the same orientation
+    static member areBoxesAligned (cosineTolerance:float<Cosine.cosine>) (a:Box) (b:Box) : bool =
+        Vec.isParallelAndOrientedTo cosineTolerance a.Xaxis b.Xaxis &&
+        Vec.isParallelAndOrientedTo cosineTolerance a.Yaxis b.Yaxis &&
+        Vec.isParallelAndOrientedTo cosineTolerance a.Zaxis b.Zaxis
+
+    /// Gets the maximum angular deviation in degrees between the corresponding axes (X, Y, Z) of two boxes.
+    static member getBoxesAlignment  (a:Box) (b:Box) : float =
+        max (Vec.angle180 a.Xaxis b.Xaxis) (max (Vec.angle180 a.Yaxis b.Yaxis) (Vec.angle180 a.Zaxis b.Zaxis))
 
 
     /// when used in F# pipe returns the box before the pipe operator.
     static member failIfBoxesNotAlignedTo (a:Box) (msg:string) (b:Box) : Box =
-        if not (Box.areBoxesAligned a b) then
+        if not (Box.areBoxesAligned Cosine.``0.025`` a b) then
             fail $"Box.failIfBoxesNotAlignedTo: Boxes are not aligned: {msg}:\n%A{a}\n%A{b}"
         b
 
@@ -1163,8 +1167,8 @@ type Box =
     /// The resulting box is touching both input boxes and has the same orientation as them.
     /// Returns None if the Boxes are overlapping or too far apart so that no in between box exists.
     static member tryGetBoxBetween (a:Box) (b:Box) : Box option =
-        if not (Box.areBoxesAligned a b) then
-            fail $"Box.tryGetBoxBetween: Boxes are not aligned:\n%A{a}\n%A{b}"
+        if not (Box.areBoxesAligned Cosine.``0.01`` a b) then
+            fail $"Box.tryGetBoxBetween: Boxes are not aligned by {Box.getBoxesAlignment a b} degrees:\n%A{a}\n%A{b}"
         let orig = a.Origin
         let v = b.Origin - orig
         let lenX = a.SizeX
@@ -1183,6 +1187,12 @@ type Box =
         let fdy = fv.Dot uy
         let fdz = fv.Dot uz
 
+        let inline tryCreate (no:Pnt) (nx:Vec) (ny:Vec) (nz:Vec) =
+            if isTooSmallSq nx.LengthSq || isTooSmallSq ny.LengthSq || isTooSmallSq nz.LengthSq then
+                None
+            else
+                Some <| Box.create (no, nx, ny, nz)
+
         let mutable result = None
 
         // check if Z Stacking
@@ -1199,7 +1209,7 @@ type Box =
                     let nx = ux * (endX - insetX)
                     let ny = uy * (endY - insetY)
                     let nz = uz * (dz - lenZ)
-                    result <- Some <| Box.create (no, nx, ny, nz)
+                    result <- tryCreate no nx ny nz
                 elif fdz < 0. then // Box B is below Box A
                     let insetX = max 0.0 dx
                     let insetY = max 0.0 dy
@@ -1209,7 +1219,7 @@ type Box =
                     let nx = ux * (endX - insetX)
                     let ny = uy * (endY - insetY)
                     let nz = uz * -fdz
-                    result <- Some <| Box.create (no, nx, ny, nz)
+                    result <- tryCreate no nx ny nz
 
         // Check if X Stacking
         if result.IsNone then
@@ -1225,7 +1235,7 @@ type Box =
                         let nz = uz * (endZ - insetZ)
                         let ny = uy * (endY - insetY)
                         let nx = ux * (dx - lenX)
-                        result <- Some <| Box.create (no, nx, ny, nz)
+                        result <- tryCreate no nx ny nz
                     elif fdx < 0. then // Box B is left of Box A
                         let insetZ = max 0.0 dz
                         let insetY = max 0.0 dy
@@ -1235,7 +1245,7 @@ type Box =
                         let nz = uz * (endZ - insetZ)
                         let ny = uy * (endY - insetY)
                         let nx = ux * -fdx
-                        result <- Some <| Box.create (no, nx, ny, nz)
+                        result <- tryCreate no nx ny nz
 
         // Check if Y Stacking
         if result.IsNone then
@@ -1251,7 +1261,7 @@ type Box =
                         let nz = uz * (endZ - insetZ)
                         let nx = ux * (endX - insetX)
                         let ny = uy * (dy - lenY)
-                        result <- Some <| Box.create (no, nx, ny, nz)
+                        result <- tryCreate no nx ny nz
                     elif fdy < 0. then // Box B is behind Box A
                         let insetZ = max 0.0 dz
                         let insetX = max 0.0 dx
@@ -1261,7 +1271,7 @@ type Box =
                         let nz = uz * (endZ - insetZ)
                         let nx = ux * (endX - insetX)
                         let ny = uy * -fdy
-                        result <- Some <| Box.create (no, nx, ny, nz)
+                        result <- tryCreate no nx ny nz
         result
 
 

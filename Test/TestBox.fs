@@ -703,6 +703,32 @@ let tests =
             }
         ]
 
+        testList "tryGetBoxBetween" [
+            test "returns the box between separated boxes" {
+                let a = Box.createFromBounds(0., 0., 0., 1., 1., 1.)
+                let b = Box.createFromBounds(0., 0., 2., 1., 1., 3.)
+                let result = Box.tryGetBoxBetween a b
+                Expect.isTrue result.IsSome "Should find the box between the inputs"
+                Expect.isTrue (eqFloat result.Value.SizeZ 1.) "The gap should be one unit high"
+            }
+
+            test "returns None for a gap below the box size tolerance" {
+                let tiny = 0.5e-6
+                let a = Box.createFromBounds(0., 0., 0., 1., 1., 1.)
+                let b = Box.createFromBounds(0., 0., 1. + tiny, 1., 1., 2. + tiny)
+                let result = Box.tryGetBoxBetween a b
+                Expect.isTrue result.IsNone "A gap below the valid box size should return None"
+            }
+
+            test "returns None for a transverse overlap below the box size tolerance" {
+                let tiny = 0.5e-6
+                let a = Box.createFromBounds(0., 0., 0., 1., 1., 1.)
+                let b = Box.createFromBounds(1. - tiny, 0., 2., 2. - tiny, 1., 3.)
+                let result = Box.tryGetBoxBetween a b
+                Expect.isTrue result.IsNone "A transverse overlap below the valid box size should return None"
+            }
+        ]
+
         testList "IntersectRay" [
             test "ray through center of axis-aligned box" {
                 let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
