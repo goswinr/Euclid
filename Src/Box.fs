@@ -1145,6 +1145,167 @@ type Box =
         box.IntersectRay(ray)
 
 
+
+/// Checks if the axes of both boxes are aligned, meaning they are parallel and have the same orientation
+    static member areBoxesAligned (a:Box) (b:Box) : bool =
+        Vec.isParallelAndOrientedTo Cosine.``0.025`` a.Xaxis b.Xaxis &&
+        Vec.isParallelAndOrientedTo Cosine.``0.025`` a.Yaxis b.Yaxis &&
+        Vec.isParallelAndOrientedTo Cosine.``0.025`` a.Zaxis b.Zaxis
+
+
+    /// when used in F# pipe returns the box before the pipe operator.
+    static member failIfBoxesNotAlignedTo (a:Box) (msg:string) (b:Box) : Box =
+        if not (Box.areBoxesAligned a b) then
+            fail $"Box.failIfBoxesNotAlignedTo: Boxes are not aligned: {msg}:\n%A{a}\n%A{b}"
+        b
+
+    /// Gets the space between two boxes, Boxes need to have aligned and parallel axes. Fails if not
+    /// The resulting box is touching both input boxes and has the same orientation as them.
+    /// Returns None if the Boxes are overlapping or too far apart so that no in between box exists.
+    static member tryGetBoxBetween (a:Box) (b:Box) : Box option =
+        if not (Box.areBoxesAligned a b) then
+            fail $"Box.tryGetBoxBetween: Boxes are not aligned:\n%A{a}\n%A{b}"
+        let orig = a.Origin
+        let v = b.Origin - orig
+        let lenX = a.SizeX
+        let lenY = a.SizeY
+        let lenZ = a.SizeZ
+        let ux = a.Xaxis/lenX
+        let uy = a.Yaxis/lenY
+        let uz = a.Zaxis/lenZ
+
+        let dx = v.Dot ux
+        let dy = v.Dot uy
+        let dz = v.Dot uz
+
+        let fv = b.FarCorner - orig
+        let fdx = fv.Dot ux
+        let fdy = fv.Dot uy
+        let fdz = fv.Dot uz
+
+        let mutable result = None
+
+        // check if Z Stacking
+        // if Boxes have no overlap when projected on their XY plane
+        if dx < lenX && dy < lenY  // Box B Origin  is not after Box A in X or Y direction
+            && fdx > 0. && fdy > 0. then // Box B Far Corner is not before Box A in X or Y direction
+                // check if Box B is above Box A
+                if dz > lenZ then // Box B  is above
+                    let insetX = max 0.0 dx
+                    let insetY = max 0.0 dy
+                    let no = orig + ux * insetX + uy * insetY + uz * lenZ // new Origin on top of Box A
+                    let endX = min lenX fdx
+                    let endY = min lenY fdy
+                    let nx = ux * (endX - insetX)
+                    let ny = uy * (endY - insetY)
+                    let nz = uz * (dz - lenZ)
+                    result <- Some <| Box.create (no, nx, ny, nz)
+                elif fdz < 0. then // Box B is below Box A
+                    let insetX = max 0.0 dx
+                    let insetY = max 0.0 dy
+                    let no = orig + ux * insetX + uy * insetY + uz * fdz // new Origin on top of Box B
+                    let endX = min lenX fdx
+                    let endY = min lenY fdy
+                    let nx = ux * (endX - insetX)
+                    let ny = uy * (endY - insetY)
+                    let nz = uz * -fdz
+                    result <- Some <| Box.create (no, nx, ny, nz)
+
+        // Check if X Stacking
+        if result.IsNone then
+            if dz < lenZ && dy < lenY  // Box B Origin  is not after Box A in Z or Y direction
+                && fdz > 0. && fdy > 0. then // Box B Far Corner is not before Box A in Z or Y direction
+                    // check if Box B is right of Box A
+                    if dx > lenX then // Box B  is right of Box A
+                        let insetZ = max 0.0 dz
+                        let insetY = max 0.0 dy
+                        let no = orig + uz * insetZ + uy * insetY + ux * lenX // new Origin on right of Box A
+                        let endZ = min lenZ fdz
+                        let endY = min lenY fdy
+                        let nz = uz * (endZ - insetZ)
+                        let ny = uy * (endY - insetY)
+                        let nx = ux * (dx - lenX)
+                        result <- Some <| Box.create (no, nx, ny, nz)
+                    elif fdx < 0. then // Box B is left of Box A
+                        let insetZ = max 0.0 dz
+                        let insetY = max 0.0 dy
+                        let no = orig + uz * insetZ + uy * insetY + ux * fdx // new Origin on left of Box B
+                        let endZ = min lenZ fdz
+                        let endY = min lenY fdy
+                        let nz = uz * (endZ - insetZ)
+                        let ny = uy * (endY - insetY)
+                        let nx = ux * -fdx
+                        result <- Some <| Box.create (no, nx, ny, nz)
+
+        // Check if Y Stacking
+        if result.IsNone then
+            if dz < lenZ && dx < lenX  // Box B Origin  is not after Box A in Z or X direction
+                && fdz > 0. && fdx > 0. then // Box B Far Corner is not before Box A in Z or X direction
+                    // check if Box B is in front of Box A
+                    if dy > lenY then // Box B  is in front of Box A
+                        let insetZ = max 0.0 dz
+                        let insetX = max 0.0 dx
+                        let no = orig + uz * insetZ + ux * insetX + uy * lenY // new Origin on front of Box A
+                        let endZ = min lenZ fdz
+                        let endX = min lenX fdx
+                        let nz = uz * (endZ - insetZ)
+                        let nx = ux * (endX - insetX)
+                        let ny = uy * (dy - lenY)
+                        result <- Some <| Box.create (no, nx, ny, nz)
+                    elif fdy < 0. then // Box B is behind Box A
+                        let insetZ = max 0.0 dz
+                        let insetX = max 0.0 dx
+                        let no = orig + uz * insetZ + ux * insetX + uy * fdy // new Origin on back of Box B
+                        let endZ = min lenZ fdz
+                        let endX = min lenX fdx
+                        let nz = uz * (endZ - insetZ)
+                        let nx = ux * (endX - insetX)
+                        let ny = uy * -fdy
+                        result <- Some <| Box.create (no, nx, ny, nz)
+        result
+
+
+    /// Gets the space between two boxes, Boxes need to have aligned and parallel axes. Fails if not
+    /// The resulting box is touching both input boxes and has the same orientation as them.
+    static member getBoxBetween (a:Box) (b:Box) : Box =
+        match Box.tryGetBoxBetween a b with
+        | Some box -> box
+        | None -> failwith $"getBoxBetween: Boxes are overlapping or too far apart:\n%A{a}\n%A{b}"
+
+
+    /// Returns a new Box with the same orientation and origin as the input box, but with the specified size in X direction
+    static member withSizeX (sizeX:float) (b:Box) : Box =
+        let f =  sizeX / b.SizeX
+        Box.createUnchecked(b.OriginX, b.OriginY, b.OriginZ,
+                            b.XaxisX * f, b.XaxisY * f, b.XaxisZ * f,
+                            b.YaxisX, b.YaxisY, b.YaxisZ,
+                            b.ZaxisX, b.ZaxisY, b.ZaxisZ)
+
+    /// Returns a new Box with the same orientation and origin as the input box, but with the specified size in Y direction
+    static member withSizeY (sizeY:float) (b:Box) : Box =
+        let f =  sizeY / b.SizeY
+        Box.createUnchecked(b.OriginX, b.OriginY, b.OriginZ,
+                            b.XaxisX, b.XaxisY, b.XaxisZ,
+                            b.YaxisX * f, b.YaxisY * f, b.YaxisZ * f,
+                            b.ZaxisX, b.ZaxisY, b.ZaxisZ)
+
+    /// Returns a new Box with the same orientation and origin as the input box, but with the specified size in Z direction
+    static member withSizeZ (sizeZ:float) (b:Box) : Box =
+        let f =  sizeZ / b.SizeZ
+        Box.createUnchecked(b.OriginX, b.OriginY, b.OriginZ,
+                            b.XaxisX, b.XaxisY, b.XaxisZ,
+                            b.YaxisX, b.YaxisY, b.YaxisZ,
+                            b.ZaxisX * f, b.ZaxisY * f, b.ZaxisZ * f)
+
+    /// Returns a new Box with the same orientation and size as the input box, but with the specified origin
+    static member withOrigin (origin:Pnt) (b:Box) : Box =
+        Box.createUnchecked(origin.X, origin.Y, origin.Z,
+                            b.XaxisX, b.XaxisY, b.XaxisZ,
+                            b.YaxisX, b.YaxisY, b.YaxisZ,
+                            b.ZaxisX, b.ZaxisY, b.ZaxisZ)
+
+
+
     // #endregion
     // #region Points
 
