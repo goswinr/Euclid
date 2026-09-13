@@ -356,7 +356,7 @@ The move* names remain as obsolete aliases. The move* members on location types 
 ### Added
 - first public release
 
-[Unreleased]: https://github.com/goswinr/Euclid/compare/0.51.0...HEAD
+[0.52.0]: https://github.com/goswinr/Euclid/compare/0.51.0...0.52.0
 [0.51.0]: https://github.com/goswinr/Euclid/compare/0.50.0...0.51.0
 [0.50.0]: https://github.com/goswinr/Euclid/compare/0.42.0...0.50.0
 [0.42.0]: https://github.com/goswinr/Euclid/compare/0.41.0...0.42.0
