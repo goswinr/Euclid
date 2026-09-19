@@ -849,6 +849,101 @@ let tests =
             }
         ]
 
+        testList "IntersectPlane" [
+            test "returns an empty ResizeArray when the plane misses" {
+                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
+                let plane = NPlane.create(Pnt(0., 0., 11.), Vec(0., 0., 1.))
+                let points: ResizeArray<Pnt> = box.IntersectPlane plane
+                Expect.equal points.Count 0 "A plane outside the box should return an empty ResizeArray"
+            }
+
+            test "returns the four points of an axis-aligned section" {
+                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
+                let plane = NPlane.create(Pnt(0., 0., 5.), Vec(0., 0., 1.))
+                let points = box.IntersectPlane plane
+                let expected =
+                    [Pnt(0., 0., 5.); Pnt(10., 0., 5.); Pnt(10., 10., 5.); Pnt(0., 10., 5.)]
+
+                Expect.equal points.Count 4 "A plane through the middle should produce a quadrilateral"
+                for expectedPoint in expected do
+                    Expect.isTrue
+                        (points |> Seq.exists (eqPnt expectedPoint))
+                        $"The intersection should contain {expectedPoint}"
+            }
+
+            test "returns six points for a diagonal section" {
+                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
+                let plane = NPlane.create(Pnt(5., 5., 5.), Vec(1., 1., 1.))
+                let points = box.IntersectPlane plane
+
+                Expect.equal points.Count 6 "A diagonal plane through the cube center should produce a hexagon"
+                for point in points do
+                    Expect.isTrue (box.ContainsPnt point) "Every intersection point should lie on the box"
+                    Expect.isTrue
+                        (abs (plane.DistanceToPntSigned point) < 1e-9)
+                        "Every intersection point should lie on the plane"
+            }
+
+            test "sorts polygon points counter-clockwise around the plane normal" {
+                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
+                let plane = NPlane.create(Pnt(5., 5., 5.), Vec(-2., 1., 3.))
+                let points = box.IntersectPlane plane
+                let mutable twiceAreaDotNormal = 0.0
+
+                for i = 0 to points.Count - 1 do
+                    let a = points.[i]
+                    let b = points.[(i + 1) % points.Count]
+                    twiceAreaDotNormal <-
+                        twiceAreaDotNormal
+                        + plane.NormalX * (a.Y * b.Z - a.Z * b.Y)
+                        + plane.NormalY * (a.Z * b.X - a.X * b.Z)
+                        + plane.NormalZ * (a.X * b.Y - a.Y * b.X)
+
+                Expect.isGreaterThan twiceAreaDotNormal 0.0 "The winding should follow the plane normal"
+            }
+
+            test "returns one point when the plane touches a corner" {
+                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
+                let plane = NPlane.create(Pnt(0., 0., 0.), Vec(1., 1., 1.))
+                let points = box.IntersectPlane plane
+
+                Expect.equal points.Count 1 "A corner touch should return one point"
+                Expect.isTrue (eqPnt points.[0] box.MinPnt) "The touching corner should be returned"
+            }
+
+            test "returns two points when the plane touches an edge" {
+                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
+                let plane = NPlane.create(Pnt(0., 0., 0.), Vec(1., 1., 0.))
+                let points = box.IntersectPlane plane
+
+                Expect.equal points.Count 2 "An edge touch should return its two endpoints"
+                Expect.isTrue (points |> Seq.exists (eqPnt (Pnt(0., 0., 0.)))) "The lower edge point should be returned"
+                Expect.isTrue (points |> Seq.exists (eqPnt (Pnt(0., 0., 10.)))) "The upper edge point should be returned"
+            }
+
+            test "returns four unique corners when the plane coincides with a face" {
+                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
+                let plane = NPlane.create(Pnt(0., 0., 0.), Vec(0., 0., 1.))
+                let points = box.IntersectPlane plane
+
+                Expect.equal points.Count 4 "A coincident face should return its four corners"
+                for i = 0 to points.Count - 1 do
+                    for j = i + 1 to points.Count - 1 do
+                        Expect.isFalse (eqPnt points.[i] points.[j]) "Face corners should not be duplicated"
+            }
+
+            test "static member agrees with the instance member" {
+                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
+                let plane = NPlane.create(Pnt(5., 5., 5.), Vec(1., 2., 3.))
+                let instancePoints = box.IntersectPlane plane
+                let staticPoints = BBox.intersectPlane plane box
+
+                Expect.equal staticPoints.Count instancePoints.Count "Both APIs should return the same point count"
+                for i = 0 to instancePoints.Count - 1 do
+                    Expect.isTrue (eqPnt staticPoints.[i] instancePoints.[i]) "Both APIs should return the same points"
+            }
+        ]
+
         testList "Conversion Methods" [
             test "asBRect" {
                 let box = BBox.create(Pnt(1., 2., 3.), Pnt(5., 7., 9.))

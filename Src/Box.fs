@@ -1144,6 +1144,155 @@ type Box =
     static member inline intersectRay (ray:Line3D) (box:Box) : voption<float*float> =
         box.IntersectRay(ray)
 
+    /// <summary>Checks if an infinite plane intersects this oriented 3D box.
+    /// Projects the box's three half-axis vectors onto the plane normal and compares their sum
+    /// with the distance from the box center to the plane. (center-extents test)
+    /// A plane that only touches a corner, an edge or a face of the box counts as intersecting too.</summary>
+    /// <param name="pl">The plane to test for intersection.</param>
+    /// <returns>TRUE if the plane intersects or touches this box, FALSE otherwise.</returns>
+    member inline b.DoesIntersectPlane (pl:NPlane) : bool =
+        let centerX = b.OriginX + (b.XaxisX + b.YaxisX + b.ZaxisX) * 0.5
+        let centerY = b.OriginY + (b.XaxisY + b.YaxisY + b.ZaxisY) * 0.5
+        let centerZ = b.OriginZ + (b.XaxisZ + b.YaxisZ + b.ZaxisZ) * 0.5
+        let s = pl.DistanceToXYZSigned(centerX, centerY, centerZ)
+        let r =
+            (abs (pl.NormalX*b.XaxisX + pl.NormalY*b.XaxisY + pl.NormalZ*b.XaxisZ)
+           + abs (pl.NormalX*b.YaxisX + pl.NormalY*b.YaxisY + pl.NormalZ*b.YaxisZ)
+           + abs (pl.NormalX*b.ZaxisX + pl.NormalY*b.ZaxisY + pl.NormalZ*b.ZaxisZ)) * 0.5
+        abs s <= r
+
+    /// Same as b.DoesIntersectPlane(pl).
+    static member inline doesIntersectPlane (pl:NPlane) (b:Box) : bool =
+        b.DoesIntersectPlane pl
+
+    /// <summary>Intersects an infinite plane with this oriented 3D box.
+    /// The intersection of a plane with a box is a convex polygon with 3 to 6 vertices.
+    /// The returned points are sorted counter-clockwise around the plane normal. (right-hand rule)
+    /// Box corners lying on the plane (within a tolerance of 1e-12) are returned as intersection points too.
+    /// So if the plane touches the box in just a corner or an edge, a ResizeArray of only 1 or 2 points is returned.
+    /// If the plane coincides with one of the box's faces, the 4 corners of that face are returned.
+    /// A degenerate box (with a size of zero in one or more axes) may return duplicate points.</summary>
+    /// <param name="pl">The plane to intersect with this box.</param>
+    /// <returns>A ResizeArray of 1 to 6 points, or an empty ResizeArray if the plane does not intersect this box.</returns>
+    member b.IntersectPlane (pl:NPlane) : ResizeArray<Pnt> =
+        let nx = pl.NormalX
+        let ny = pl.NormalY
+        let nz = pl.NormalZ
+        // Local copies because 'b' is a byref in a struct member and cannot be captured by inner functions.
+        let ox = b.OriginX
+        let oy = b.OriginY
+        let oz = b.OriginZ
+        let xx = b.XaxisX
+        let xy = b.XaxisY
+        let xz = b.XaxisZ
+        let yx = b.YaxisX
+        let yy = b.YaxisY
+        let yz = b.YaxisZ
+        let zx = b.ZaxisX
+        let zy = b.ZaxisY
+        let zz = b.ZaxisZ
+        let c = nx * pl.OriginX + ny * pl.OriginY + nz * pl.OriginZ
+        // The signed distances need only one dot product per box axis.
+        let dOrigin = nx*ox + ny*oy + nz*oz - c
+        let dX = nx*xx + ny*xy + nz*xz
+        let dY = nx*yx + ny*yy + nz*yz
+        let dZ = nx*zx + ny*zy + nz*zz
+        let inline snap d = if isTooTiny (abs d) then 0.0 else d
+        // Corner numbering as in b.Pt0 to b.Pt7.
+        let d0 = snap dOrigin
+        let d1 = snap (dOrigin + dX)
+        let d2 = snap (dOrigin + dX + dY)
+        let d3 = snap (dOrigin + dY)
+        let d4 = snap (dOrigin + dZ)
+        let d5 = snap (dOrigin + dX + dZ)
+        let d6 = snap (dOrigin + dX + dY + dZ)
+        let d7 = snap (dOrigin + dY + dZ)
+        let p1x = ox + xx
+        let p1y = oy + xy
+        let p1z = oz + xz
+        let p3x = ox + yx
+        let p3y = oy + yy
+        let p3z = oz + yz
+        let p2x = p1x + yx
+        let p2y = p1y + yy
+        let p2z = p1z + yz
+        let p4x = ox + zx
+        let p4y = oy + zy
+        let p4z = oz + zz
+        let p5x = p1x + zx
+        let p5y = p1y + zy
+        let p5z = p1z + zz
+        let p7x = p3x + zx
+        let p7y = p3y + zy
+        let p7z = p3z + zz
+        let p6x = p2x + zx
+        let p6y = p2y + zy
+        let p6z = p2z + zz
+        let pts = ResizeArray<Pnt>(8)
+        // Box corners lying on the plane.
+        if d0 = 0.0 then pts.Add(Pnt(ox, oy, oz))
+        if d1 = 0.0 then pts.Add(Pnt(p1x, p1y, p1z))
+        if d2 = 0.0 then pts.Add(Pnt(p2x, p2y, p2z))
+        if d3 = 0.0 then pts.Add(Pnt(p3x, p3y, p3z))
+        if d4 = 0.0 then pts.Add(Pnt(p4x, p4y, p4z))
+        if d5 = 0.0 then pts.Add(Pnt(p5x, p5y, p5z))
+        if d6 = 0.0 then pts.Add(Pnt(p6x, p6y, p6z))
+        if d7 = 0.0 then pts.Add(Pnt(p7x, p7y, p7z))
+        // Add a crossing when the edge endpoints are strictly on opposite sides of the plane.
+        let inline addCross da db ax ay az bx by bz =
+            if da * db < 0.0 then
+                let t = da / (da - db)
+                pts.Add(Pnt(ax + t*(bx-ax), ay + t*(by-ay), az + t*(bz-az)))
+        // The four edges along each local box axis.
+        addCross d0 d1 ox oy oz p1x p1y p1z
+        addCross d3 d2 p3x p3y p3z p2x p2y p2z
+        addCross d4 d5 p4x p4y p4z p5x p5y p5z
+        addCross d7 d6 p7x p7y p7z p6x p6y p6z
+        addCross d0 d3 ox oy oz p3x p3y p3z
+        addCross d1 d2 p1x p1y p1z p2x p2y p2z
+        addCross d4 d7 p4x p4y p4z p7x p7y p7z
+        addCross d5 d6 p5x p5y p5z p6x p6y p6z
+        addCross d0 d4 ox oy oz p4x p4y p4z
+        addCross d1 d5 p1x p1y p1z p5x p5y p5z
+        addCross d2 d6 p2x p2y p2z p6x p6y p6z
+        addCross d3 d7 p3x p3y p3z p7x p7y p7z
+        if pts.Count > 2 then
+            // Sort the vertices counter-clockwise around the plane normal.
+            let mutable sx = 0.0
+            let mutable sy = 0.0
+            let mutable sz = 0.0
+            for i = 0 to pts.Count - 1 do
+                sx <- sx + pts.[i].X
+                sy <- sy + pts.[i].Y
+                sz <- sz + pts.[i].Z
+            let cnt = float pts.Count
+            let cx = sx / cnt
+            let cy = sy / cnt
+            let cz = sz / cnt
+            let inline diamond u v =
+                if isTooTiny (abs u + abs v) then 0.0
+                elif v >= 0.0 then
+                    if u >= 0.0 then v / (u + v) else 1.0 - u / (-u + v)
+                else
+                    if u < 0.0 then 2.0 - v / (-u - v) else 3.0 + u / (u - v)
+            let ax = abs nx
+            let ay = abs ny
+            let az = abs nz
+            if az >= ax && az >= ay then
+                pts.Sort(fun p q -> compare (diamond (p.X - cx) (p.Y - cy)) (diamond (q.X - cx) (q.Y - cy)))
+                if nz < 0.0 then pts.Reverse()
+            elif ax >= ay then
+                pts.Sort(fun p q -> compare (diamond (p.Y - cy) (p.Z - cz)) (diamond (q.Y - cy) (q.Z - cz)))
+                if nx < 0.0 then pts.Reverse()
+            else
+                pts.Sort(fun p q -> compare (diamond (p.Z - cz) (p.X - cx)) (diamond (q.Z - cz) (q.X - cx)))
+                if ny < 0.0 then pts.Reverse()
+        pts
+
+    /// Same as b.IntersectPlane(pl).
+    static member inline intersectPlane (pl:NPlane) (b:Box) : ResizeArray<Pnt> =
+        b.IntersectPlane pl
+
 
 
     /// Checks if the axes of both boxes are aligned, meaning they are parallel and have the same orientation
