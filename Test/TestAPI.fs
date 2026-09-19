@@ -1570,7 +1570,7 @@ module MatrixAPI =
     let (_:Matrix) = Matrix.createPlaneToPlane(plane, plane)
     let (_:Matrix) = Matrix.createMirror plane
     let (_:Matrix) = Matrix.createShear(0.1, 0.1, 0.1, 0.1, 0.1, 0.1)
-    let (_:Matrix) = Matrix.createPerspective(1.0, 100.0, 1.0, 2.0)
+    let (_:Matrix) = Matrix.createPerspectiveAlongNegZ(1.0, 100.0, 1.0, 2.0)
 
     // Static members - Operations
     let (_:Matrix) = Matrix.multiply(matrix, m2)

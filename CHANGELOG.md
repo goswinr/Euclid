@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.52.0] - 2026-09-07
 ### Added
+- Added `Matrix.createPerspectiveAlongNegZ` and `Matrix.createPerspectiveAlongPosY` for perspective cameras looking along -Z with +Y up, or +Y with +Z up, respectively.
+- Added `Matrix.createLookAt` and `Matrix.createPerspectiveLookAt` for cameras with an arbitrary position, target, and preferred up vector.
+- Added `Matrix.createLookAtZUp` and `Matrix.createPerspectiveLookAtZUp` to keep world +Z up without camera roll while pitching toward the target. Vertical and nearly vertical views use world +Y as the fallback up direction.
 - `Rect2D`, `Rect3D`, `BRect`, `Box`, `BBox`, and `FreeBox` now have a reverse-direction instance and static member for every named edge (e.g. `Edge10` next to `Edge01`, `Edge23` next to `Edge32`), so every edge can be addressed in either direction.
 - Added `Line2D.pointAtDistanceFromEnd` and `Line3D.pointAtDistanceFromEnd`, finding a point at a given distance from the line end, going towards the start.
 - Added `Polyline2D.checkForDuplicatePoints` and `Polyline3D.checkForDuplicatePoints`, which return the original polyline when unchanged or a cleaned polyline and reported duplicate points.
@@ -27,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Clarified the docstrings of `Box.MoveX/Y/Z`, `Rect2D.MoveX/Y`, and `Rect3D.MoveX/Y/Z` (instance and static) to state that they move along the **world** X/Y/Z axes, not the shape's own (possibly rotated) local axes. Use `translateLocalX/Y/Z` for local-axis moves.
 
 ### Deprecated
+- `Matrix.createPerspective` is obsolete. Use `Matrix.createPerspectiveAlongNegZ` instead; the old name remains a compatibility alias with the same projection behavior.
 - `Box.translate`, `Rect2D.translate`, `Rect3D.translate`, and `PPlane.translate` are obsolete. They were plain aliases for `.move` (a world-space vector translation), which is ambiguous alongside the local-axis `translateLocalX/Y/Z` members on the same types. Use `.move` (or `PPlane.translateBy`) for a world-space vector, or `.translateLocalX/Y/Z` to move along the shape's own axes.
 
 ### Fixed

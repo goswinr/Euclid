@@ -373,38 +373,124 @@ let tests =
 
         // Edge case tests for IsProjecting
         test "Matrix perspective projection IsProjecting" {
-            let m = Matrix.createPerspective(800.0, 600.0, 0.1, 100.0)
+            let m = Matrix.createPerspectiveAlongNegZ(800.0, 600.0, 0.1, 100.0)
             "perspective matrix should be projecting" |> Expect.isTrue m.IsProjecting
             "perspective matrix should not be affine" |> Expect.isFalse m.IsAffine
         }
 
         // Edge case tests for createPerspective
         test "Matrix perspective negative near plane should fail" {
-            "negative near plane should throw" |> Expect.throws (fun () -> Matrix.createPerspective(800.0, 600.0, -0.1, 100.0) |> ignore)
+            "negative near plane should throw" |> Expect.throws (fun () -> Matrix.createPerspectiveAlongNegZ(800.0, 600.0, -0.1, 100.0) |> ignore)
         }
 
         test "Matrix perspective zero near plane should fail" {
-            "zero near plane should throw" |> Expect.throws (fun () -> Matrix.createPerspective(800.0, 600.0, 0.0, 100.0) |> ignore)
+            "zero near plane should throw" |> Expect.throws (fun () -> Matrix.createPerspectiveAlongNegZ(800.0, 600.0, 0.0, 100.0) |> ignore)
         }
 
         test "Matrix perspective negative far plane should fail" {
-            "negative far plane should throw" |> Expect.throws (fun () -> Matrix.createPerspective(800.0, 600.0, 0.1, -100.0) |> ignore)
+            "negative far plane should throw" |> Expect.throws (fun () -> Matrix.createPerspectiveAlongNegZ(800.0, 600.0, 0.1, -100.0) |> ignore)
         }
 
         test "Matrix perspective near >= far should fail" {
-            "near >= far should throw" |> Expect.throws (fun () -> Matrix.createPerspective(800.0, 600.0, 100.0, 50.0) |> ignore)
+            "near >= far should throw" |> Expect.throws (fun () -> Matrix.createPerspectiveAlongNegZ(800.0, 600.0, 100.0, 50.0) |> ignore)
         }
 
         test "Matrix perspective near == far should fail" {
-            "near == far should throw" |> Expect.throws (fun () -> Matrix.createPerspective(800.0, 600.0, 100.0, 100.0) |> ignore)
+            "near == far should throw" |> Expect.throws (fun () -> Matrix.createPerspectiveAlongNegZ(800.0, 600.0, 100.0, 100.0) |> ignore)
         }
 
         test "Matrix perspective valid parameters" {
-            let m = Matrix.createPerspective(800.0, 600.0, 0.1, 100.0)
+            let m = Matrix.createPerspectiveAlongNegZ(2.0, 2.0, 1.0, 10.0)
             "valid perspective should not throw" |> Expect.isTrue m.IsProjecting
-            let a = Pnt(1,1,10)
-            let b = a *** m
-            "perspective transformation should work" |> Expect.isTrue (Pnt.dist b Pnt.Origin > 0.0)
+            "near corner" |> expectEqual (Pnt(1,1,-1) *** m) (Pnt(1,1,0))
+            "perspective divide" |> expectEqual (Pnt(1,1,-2) *** m) (Pnt(0.5,0.5,5.0/9.0))
+            "far depth" |> expectEqual (Pnt(1,1,-10) *** m) (Pnt(0.1,0.1,1))
+        }
+
+        test "Matrix perspective named axes" {
+            let negZ = Matrix.createPerspectiveAlongNegZ(4., 2., 1., 10.)
+            let posY = Matrix.createPerspectiveAlongPosY(4., 2., 1., 10.)
+            "NegZ right and up" |> expectEqual (Pnt(2,1,-1) *** negZ) (Pnt(1,1,0))
+            "PosY right and Z up" |> expectEqual (Pnt(2,1,1) *** posY) (Pnt(1,1,0))
+            "PosY perspective divide" |> expectEqual (Pnt(2,2,1) *** posY) (Pnt(0.5,0.5,5.0/9.0))
+            "PosY far depth" |> expectEqual (Pnt(0,10,0) *** posY) (Pnt(0,0,1))
+        }
+
+        test "Matrix named perspective infinite far plane" {
+            let negZ = Matrix.createPerspectiveAlongNegZ(2., 2., 1., infinity)
+            let posY = Matrix.createPerspectiveAlongPosY(2., 2., 1., infinity)
+            "NegZ infinite far" |> expectEqual (Pnt(1,1,-2) *** negZ) (Pnt(0.5,0.5,0.5))
+            "PosY infinite far" |> expectEqual (Pnt(1,2,1) *** posY) (Pnt(0.5,0.5,0.5))
+        }
+
+        test "Matrix look at translates and rotates camera" {
+            let eye = Pnt(10,-10,5)
+            let view = Matrix.createLookAt(eye, Pnt.Origin, Vec(0,0,1))
+            "eye becomes origin" |> expectEqual (eye *** view) Pnt.Origin
+            "target lies along local negative Z" |> expectEqual (Pnt.Origin *** view) (Pnt(0,0,-15))
+            "view is orthogonal and right-handed" |> Expect.isTrue (view.IsOrthogonal && not view.IsMirroring)
+            let point = Pnt(3,4,7)
+            "view round trip" |> expectEqual ((point *** view) *** view.Inverse) point
+        }
+
+        test "Matrix look at respects custom up" {
+            let view = Matrix.createLookAt(Pnt.Origin, Pnt(0,0,-1), Vec(1,0,0))
+            "world X becomes screen up" |> expectEqual (Pnt(1,0,-2) *** view) (Pnt(0,1,-2))
+            "world negative Y becomes screen right" |> expectEqual (Pnt(0,-1,-2) *** view) (Pnt(1,0,-2))
+        }
+
+        test "Matrix perspective look at expected camera coordinates" {
+            let eye = Pnt(10,20,30)
+            let camera = Matrix.createPerspectiveLookAt(eye, Pnt(10,21,30), Vec(0,0,1), 2., 2., 1., 10.)
+            "target at near center" |> expectEqual (Pnt(10,21,30) *** camera) Pnt.Origin
+            "translated right and up" |> expectEqual (Pnt(11,22,31) *** camera) (Pnt(0.5,0.5,5.0/9.0))
+            "translated far center" |> expectEqual (Pnt(10,30,30) *** camera) (Pnt(0,0,1))
+        }
+
+        test "Matrix Z up camera has no roll while pitching" {
+            let eye = Pnt(10,-10,5)
+            let view = Matrix.createLookAtZUp(eye, Pnt.Origin)
+            let aboveEye = (eye + Vec(0,0,1)) *** view
+            "world Z has no screen-right component" |> Expect.isTrue (abs aboveEye.X < 1e-12)
+            "world Z points toward screen up" |> Expect.isTrue (aboveEye.Y > 0.)
+            "target direction includes pitch" |> expectEqual (Pnt.Origin *** view) (Pnt(0,0,-15))
+            let camera = Matrix.createPerspectiveLookAtZUp(eye, Pnt.Origin, 2., 2., 1., 100.)
+            "oblique target centered with correct depth" |> expectEqual (Pnt.Origin *** camera) (Pnt(0,0,280.0/297.0))
+            let point = Pnt(2,3,4)
+            let sequential = (point *** view) *** Matrix.createPerspectiveAlongNegZ(2., 2., 1., 100.)
+            "combined view and projection" |> expectEqual (point *** camera) sequential
+        }
+
+        test "Matrix Z up vertical views use Y up fallback" {
+            let eye = Pnt(3,4,5)
+            for direction in [Vec(0,0,-1); Vec(0,0,1)] do
+                let target = eye + direction
+                let view = Matrix.createLookAtZUp(eye, target)
+                "vertical target" |> expectEqual (target *** view) (Pnt(0,0,-1))
+                "world Y is fallback screen up" |> expectEqual ((eye + Vec(0,1,0)) *** view) (Pnt(0,1,0))
+                "vertical view is orthogonal and right-handed" |> Expect.isTrue (view.IsOrthogonal && not view.IsMirroring)
+                let camera = Matrix.createPerspectiveLookAtZUp(eye, target, 2., 2., 1., 10.)
+                "vertical near center" |> expectEqual (target *** camera) Pnt.Origin
+            let down = Matrix.createPerspectiveLookAtZUp(Pnt.Origin, Pnt(0,0,-1), 2., 2., 1., 10.)
+            "down matches NegZ" |> Expect.isTrue (Matrix.equals 1e-12 down (Matrix.createPerspectiveAlongNegZ(2., 2., 1., 10.)))
+            let forward = Matrix.createPerspectiveLookAtZUp(Pnt.Origin, Pnt(0,1,0), 2., 2., 1., 10.)
+            "forward matches PosY" |> Expect.isTrue (Matrix.equals 1e-12 forward (Matrix.createPerspectiveAlongPosY(2., 2., 1., 10.)))
+        }
+
+        test "Matrix Z up nearly vertical fallback stays valid" {
+            for horizontal in [1e-13; 1e-10] do
+                let target = Pnt(horizontal,0,-1)
+                let view = Matrix.createLookAtZUp(Pnt.Origin, target)
+                "nearly vertical view is orthogonal and right-handed" |> Expect.isTrue (view.IsOrthogonal && not view.IsMirroring)
+                "nearly vertical target" |> expectEqual (target *** view) (Pnt(0,0,-1))
+        }
+
+        test "Matrix look at rejects degenerate input" {
+            for target in [Pnt.Origin; Pnt(1e-14,0,0); Pnt(1e300,0,0)] do
+                "invalid viewing direction" |> Expect.throws (fun () -> Matrix.createLookAt(Pnt.Origin, target, Vec(0,0,1)) |> ignore)
+                "invalid ZUp viewing direction" |> Expect.throws (fun () -> Matrix.createLookAtZUp(Pnt.Origin, target) |> ignore)
+            for up in [Vec(0,0,0); Vec(0,1,0); Vec(0,-1,0); Vec(1e-14,1,0); Vec(1e300,0,0)] do
+                "invalid up vector" |> Expect.throws (fun () -> Matrix.createLookAt(Pnt.Origin, Pnt(0,1,0), up) |> ignore)
         }
 
         // Edge case tests for array creation

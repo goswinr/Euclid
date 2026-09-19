@@ -36,7 +36,7 @@ open System.Text.Json.Serialization
 [<JsonConverter(typeof<MatrixJsonConverter>)>]
 #endif
 type Matrix =
-    
+
     /// The element in row 1, column 1 of the matrix.
     [<DataMember>] val M11 : float
     /// The element in row 1, column 2 of the matrix.
@@ -1065,6 +1065,7 @@ type Matrix =
     /// <param name="z">The Z component of the 3D point to transform.</param>
     /// <param name="m">The transformation matrix.</param>
     static member inline transformXYZ (x:float) (y:float) (z:float) ( m:Matrix) : Pnt =
+        // from applyMatrix4(m) in  https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
         //let w = 1.0
         let x' = m.M11*x + m.M21*y + m.M31*z + m.X41 // * w
         let y' = m.M12*x + m.M22*y + m.M32*z + m.Y42 // * w
@@ -1080,17 +1081,7 @@ type Matrix =
     /// <param name="p">The 3D point to transform.</param>
     /// <param name="m">The transformation matrix.</param>
     static member inline ( *** ) (p:Pnt, m:Matrix) : Pnt =
-        // from applyMatrix4(m) in  https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
-        let x = p.X
-        let y = p.Y
-        let z = p.Z
-        //let w = 1.0
-        let x' = m.M11*x + m.M21*y + m.M31*z + m.X41 // * w
-        let y' = m.M12*x + m.M22*y + m.M32*z + m.Y42 // * w
-        let z' = m.M13*x + m.M23*y + m.M33*z + m.Z43 // * w
-        let w' = m.M14*x + m.M24*y + m.M34*z + m.M44 // * w
-        let sc = 1.0 / w'
-        Pnt(x' * sc, y'* sc, z'* sc)
+        Matrix.transformXYZ p.X p.Y p.Z m
 
 
     // see \TypeExtensions\Matrix.fs:
@@ -1098,23 +1089,25 @@ type Matrix =
 
     /// <summary>
     /// Creates a perspective projection matrix from the given view volume dimensions.
+    /// The camera is at the origin, looking along -Z, with screen right +X and screen up +Y.
+    /// Near and far plane depths map to 0 and 1.
     /// </summary>
     /// <param name="width">Width of the view volume at the near view plane.</param>
     /// <param name="height">Height of the view volume at the near view plane.</param>
     /// <param name="nearPlaneDistance">Distance to the near view plane. Must be greater than 0.0.</param>
     /// <param name="farPlaneDistance">Distance to the far view plane. Must be greater than 0.0 and greater than nearPlaneDistance.</param>
     /// <returns>The perspective projection matrix.</returns>
-    static member createPerspective(width, height, nearPlaneDistance, farPlaneDistance) : Matrix =
+    static member createPerspectiveAlongNegZ(width, height, nearPlaneDistance, farPlaneDistance) : Matrix =
         // from https://github.com/vimaec/Math3D/blob/dev/src/Matrix4x4.cs#L762
 
         if nearPlaneDistance <= 0.0 then
-            fail $"Matrix.createPerspective: nearPlaneDistance must be greater than 0.0 but got {nearPlaneDistance}"
+            fail $"Matrix.createPerspectiveAlongNegZ: nearPlaneDistance must be greater than 0.0 but got {nearPlaneDistance}"
 
         if farPlaneDistance <= 0.0 then
-            fail $"Matrix.createPerspective: farPlaneDistance must be greater than 0.0 but got {farPlaneDistance}"
+            fail $"Matrix.createPerspectiveAlongNegZ: farPlaneDistance must be greater than 0.0 but got {farPlaneDistance}"
 
         if nearPlaneDistance >= farPlaneDistance then
-            fail $"Matrix.createPerspective: nearPlaneDistance ({nearPlaneDistance}) must be less than farPlaneDistance ({farPlaneDistance})"
+            fail $"Matrix.createPerspectiveAlongNegZ: nearPlaneDistance ({nearPlaneDistance}) must be less than farPlaneDistance ({farPlaneDistance})"
 
         let negFarRange = if Double.IsPositiveInfinity(farPlaneDistance) then -1.0 else  farPlaneDistance / (nearPlaneDistance - farPlaneDistance)
         Matrix(
@@ -1123,6 +1116,98 @@ type Matrix =
             0                               , 0                                , negFarRange, nearPlaneDistance * negFarRange,
             0                               , 0                                , -1         ,                               0
             )
+
+    /// <summary>Obsolete. Use createPerspectiveAlongNegZ instead.
+    /// Creates a perspective projection at the origin, looking along -Z, with screen right +X and screen up +Y.</summary>
+    /// <param name="width">Width of the view volume at the near plane, in world units.</param>
+    /// <param name="height">Height of the view volume at the near plane, in world units.</param>
+    /// <param name="nearPlaneDistance">Positive distance to the near plane.</param>
+    /// <param name="farPlaneDistance">Distance greater than nearPlaneDistance; may be positive infinity.</param>
+    [<Obsolete("Use Matrix.createPerspectiveAlongNegZ instead.")>]
+    static member createPerspective(width, height, nearPlaneDistance, farPlaneDistance) : Matrix =
+        Matrix.createPerspectiveAlongNegZ(width, height, nearPlaneDistance, farPlaneDistance)
+
+    /// <summary>Creates a perspective projection at the origin, looking along +Y.
+    /// Screen right is +X and screen up is +Z. Near and far plane depths map to 0 and 1.</summary>
+    /// <param name="width">Width of the view volume at the near plane, in world units.</param>
+    /// <param name="height">Height of the view volume at the near plane, in world units.</param>
+    /// <param name="nearPlaneDistance">Positive distance to the near plane.</param>
+    /// <param name="farPlaneDistance">Distance greater than nearPlaneDistance; may be positive infinity.</param>
+    static member createPerspectiveAlongPosY(width, height, nearPlaneDistance, farPlaneDistance) : Matrix =
+        let view = Matrix(
+            1., 0.,  0., 0.,
+            0., 0.,  1., 0.,
+            0., -1., 0., 0.,
+            0., 0.,  0., 1.)
+        view *** Matrix.createPerspectiveAlongNegZ(width, height, nearPlaneDistance, farPlaneDistance)
+
+    /// <summary>Creates a world-to-camera view matrix, placing eye at the origin and target along local -Z.
+    /// Screen right is local +X. Screen up is the normalized projection of up onto the plane perpendicular
+    /// to the viewing direction. This matrix does not apply perspective.</summary>
+    /// <param name="eye">Finite camera position, distinct from target.</param>
+    /// <param name="target">Finite point to look at.</param>
+    /// <param name="up">Finite, nonzero preferred up vector. Must not be parallel to the viewing direction.</param>
+    static member createLookAt(eye:Pnt, target:Pnt, up:Vec) : Matrix =
+        let normalize name (v:Vec) =
+            let length = v.Length
+            if isTooTiny length || Double.IsInfinity length then
+                fail $"Matrix.createLookAt: {name} must have finite length greater than {zeroLengthTolerance}. Eye and target must differ, and up must not be parallel to the viewing direction."
+            v / length
+
+        let backward = normalize "eye - target" (eye - target)
+        let right = normalize "up cross backward" (Vec.cross(normalize "up" up, backward))
+        let cameraUp = normalize "camera up" (Vec.cross(backward, right))
+        let translation (axis:Vec) =
+            -(axis.X * eye.X + axis.Y * eye.Y + axis.Z * eye.Z)
+
+        Matrix(
+            right.X,    right.Y,    right.Z,    translation right,
+            cameraUp.X, cameraUp.Y, cameraUp.Z, translation cameraUp,
+            backward.X, backward.Y, backward.Z, translation backward,
+            0.,         0.,         0.,         1.)
+
+    /// <summary>Creates a world-to-camera view matrix with world +Z as the preferred up direction, preventing roll.
+    /// The camera still pitches up or down to face target. When the normalized viewing direction's horizontal
+    /// length is at most 1e-12, world +Y is used as the fallback up direction.
+    /// This matrix does not apply perspective.</summary>
+    /// <param name="eye">Finite camera position, distinct from target.</param>
+    /// <param name="target">Finite point to look at.</param>
+    static member createLookAtZUp(eye:Pnt, target:Pnt) : Matrix =
+        let direction = target - eye
+        let length = direction.Length
+        if isTooTiny length || Double.IsInfinity length then
+            fail "Matrix.createLookAtZUp: eye and target must be finite and distinct."
+        let forward = direction / length
+        let horizontalLength = sqrt(forward.X * forward.X + forward.Y * forward.Y)
+        let up = if isTooTiny horizontalLength then Vec(0., 1., 0.) else Vec(0., 0., 1.)
+        Matrix.createLookAt(eye, target, up)
+
+    /// <summary>Creates a combined world-to-camera and perspective matrix, looking from eye toward target.
+    /// Screen up follows the projection of up perpendicular to the viewing direction.
+    /// Near and far plane depths map to 0 and 1. Does not clip points outside the view volume.</summary>
+    /// <param name="eye">Finite camera position, distinct from target.</param>
+    /// <param name="target">Finite point to look at.</param>
+    /// <param name="up">Finite, nonzero preferred up vector, not parallel to the viewing direction.</param>
+    /// <param name="width">Width of the view volume at the near plane, in world units.</param>
+    /// <param name="height">Height of the view volume at the near plane, in world units.</param>
+    /// <param name="nearPlaneDistance">Positive distance to the near plane.</param>
+    /// <param name="farPlaneDistance">Distance greater than nearPlaneDistance; may be positive infinity.</param>
+    static member createPerspectiveLookAt(eye:Pnt, target:Pnt, up:Vec, width, height, nearPlaneDistance, farPlaneDistance) : Matrix =
+        let view = Matrix.createLookAt(eye, target, up)
+        view *** Matrix.createPerspectiveAlongNegZ(width, height, nearPlaneDistance, farPlaneDistance)
+
+    /// <summary>Creates a combined world-to-camera and perspective matrix with world +Z as up, preventing roll.
+    /// The camera still pitches to face target. Uses the same world +Y fallback as createLookAtZUp for vertical views.
+    /// Near and far plane depths map to 0 and 1. Does not clip points outside the view volume.</summary>
+    /// <param name="eye">Finite camera position, distinct from target.</param>
+    /// <param name="target">Finite point to look at.</param>
+    /// <param name="width">Width of the view volume at the near plane, in world units.</param>
+    /// <param name="height">Height of the view volume at the near plane, in world units.</param>
+    /// <param name="nearPlaneDistance">Positive distance to the near plane.</param>
+    /// <param name="farPlaneDistance">Distance greater than nearPlaneDistance; may be positive infinity.</param>
+    static member createPerspectiveLookAtZUp(eye:Pnt, target:Pnt, width, height, nearPlaneDistance, farPlaneDistance) : Matrix =
+        let view = Matrix.createLookAtZUp(eye, target)
+        view *** Matrix.createPerspectiveAlongNegZ(width, height, nearPlaneDistance, farPlaneDistance)
 
     // ----------------------------------------------
     // operators for matrix multiplication:

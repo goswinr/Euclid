@@ -323,7 +323,7 @@ let tests =
         }
 
         test "RigidMatrix createFromMatrix with projection matrix fails" {
-            let projectionMatrix = Matrix.createPerspective(90.0, 1.0, 0.1, 100.0)
+            let projectionMatrix = Matrix.createPerspectiveAlongNegZ(90.0, 1.0, 0.1, 100.0)
             let result = RigidMatrix.tryCreateFromMatrix(projectionMatrix)
             "projection matrix should return None" |> Expect.isNone result
         }
