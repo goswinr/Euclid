@@ -842,4 +842,118 @@ let tests =
                 Expect.isTrue (eqFloat exitPt.X 4.0) $"Exit X should be 4, got {exitPt.X}"
             }
         ]
+
+        testList "IntersectPlane" [
+            test "returns an empty ResizeArray when the plane misses" {
+                let s = sqrt 0.5
+                let box = Box.createUncheckedVec(Pnt.Origin, Vec(2.*s, 2.*s, 0.), Vec(-2.*s, 2.*s, 0.), Vec(0., 0., 2.))
+                let plane = NPlane.create(Pnt(0., 0., 3.), Vec(0., 0., 1.))
+                let points: ResizeArray<Pnt> = box.IntersectPlane plane
+
+                Expect.equal points.Count 0 "A plane outside the oriented box should return an empty ResizeArray"
+                Expect.isFalse (box.DoesIntersectPlane plane) "DoesIntersectPlane should report the miss"
+                Expect.isFalse (Box.doesIntersectPlane plane box) "The static member should report the miss"
+            }
+
+            test "returns four points through the middle of a rotated box" {
+                let s = sqrt 0.5
+                let box = Box.createUncheckedVec(Pnt.Origin, Vec(2.*s, 2.*s, 0.), Vec(-2.*s, 2.*s, 0.), Vec(0., 0., 2.))
+                let plane = NPlane.create(Pnt(0., 0., 1.), Vec(0., 0., 1.))
+                let points = box.IntersectPlane plane
+
+                Expect.equal points.Count 4 "A plane through the middle should produce a quadrilateral"
+                Expect.isTrue (box.DoesIntersectPlane plane) "DoesIntersectPlane should report the intersection"
+                for point in points do
+                    Expect.isTrue (box.Contains point) "Every intersection point should lie on the rotated box"
+                    Expect.isTrue (abs (plane.DistanceToPntSigned point) < 1e-9) "Every point should lie on the plane"
+            }
+
+            test "returns six points for a diagonal section of a rotated box" {
+                let s = sqrt 0.5
+                let xAxis = Vec(2.*s, 2.*s, 0.)
+                let yAxis = Vec(-2.*s, 2.*s, 0.)
+                let zAxis = Vec(0., 0., 2.)
+                let box = Box.createUncheckedVec(Pnt.Origin, xAxis, yAxis, zAxis)
+                let plane = NPlane.create(box.Center, xAxis + yAxis + zAxis)
+                let points = box.IntersectPlane plane
+
+                Expect.equal points.Count 6 "A diagonal plane through the center should produce a hexagon"
+                for point in points do
+                    Expect.isTrue (box.Contains point) "Every intersection point should lie on the rotated box"
+                    Expect.isTrue (abs (plane.DistanceToPntSigned point) < 1e-9) "Every point should lie on the plane"
+            }
+
+            test "sorts polygon points counter-clockwise around the plane normal" {
+                let s = sqrt 0.5
+                let box = Box.createUncheckedVec(Pnt.Origin, Vec(2.*s, 2.*s, 0.), Vec(-2.*s, 2.*s, 0.), Vec(0., 0., 2.))
+                let plane = NPlane.create(box.Center, Vec(-2., 1., 3.))
+                let points = box.IntersectPlane plane
+                let mutable twiceAreaDotNormal = 0.0
+
+                for i = 0 to points.Count - 1 do
+                    let a = points.[i]
+                    let b = points.[(i + 1) % points.Count]
+                    twiceAreaDotNormal <-
+                        twiceAreaDotNormal
+                        + plane.NormalX * (a.Y * b.Z - a.Z * b.Y)
+                        + plane.NormalY * (a.Z * b.X - a.X * b.Z)
+                        + plane.NormalZ * (a.X * b.Y - a.Y * b.X)
+
+                Expect.isTrue (twiceAreaDotNormal > 0.0) "The winding should follow the plane normal"
+            }
+
+            test "returns one point when the plane touches a corner" {
+                let s = sqrt 0.5
+                let xAxis = Vec(2.*s, 2.*s, 0.)
+                let yAxis = Vec(-2.*s, 2.*s, 0.)
+                let zAxis = Vec(0., 0., 2.)
+                let box = Box.createUncheckedVec(Pnt.Origin, xAxis, yAxis, zAxis)
+                let plane = NPlane.create(box.Origin, xAxis + yAxis + zAxis)
+                let points = box.IntersectPlane plane
+
+                Expect.equal points.Count 1 "A corner touch should return one point"
+                Expect.isTrue (eqPnt points.[0] box.Origin) "The touching corner should be returned"
+            }
+
+            test "returns two points when the plane touches an edge" {
+                let s = sqrt 0.5
+                let xAxis = Vec(2.*s, 2.*s, 0.)
+                let yAxis = Vec(-2.*s, 2.*s, 0.)
+                let zAxis = Vec(0., 0., 2.)
+                let box = Box.createUncheckedVec(Pnt.Origin, xAxis, yAxis, zAxis)
+                let plane = NPlane.create(box.Origin, xAxis + yAxis)
+                let points = box.IntersectPlane plane
+
+                Expect.equal points.Count 2 "An edge touch should return its two endpoints"
+                Expect.isTrue (points |> Seq.exists (eqPnt box.Origin)) "The lower edge point should be returned"
+                Expect.isTrue (points |> Seq.exists (eqPnt (box.Origin + zAxis))) "The upper edge point should be returned"
+            }
+
+            test "returns four unique corners when the plane coincides with a face" {
+                let s = sqrt 0.5
+                let xAxis = Vec(2.*s, 2.*s, 0.)
+                let yAxis = Vec(-2.*s, 2.*s, 0.)
+                let zAxis = Vec(0., 0., 2.)
+                let box = Box.createUncheckedVec(Pnt.Origin, xAxis, yAxis, zAxis)
+                let plane = NPlane.create(box.Origin, zAxis)
+                let points = box.IntersectPlane plane
+
+                Expect.equal points.Count 4 "A coincident face should return its four corners"
+                for i = 0 to points.Count - 1 do
+                    for j = i + 1 to points.Count - 1 do
+                        Expect.isFalse (eqPnt points.[i] points.[j]) "Face corners should not be duplicated"
+            }
+
+            test "static member agrees with the instance member" {
+                let s = sqrt 0.5
+                let box = Box.createUncheckedVec(Pnt.Origin, Vec(2.*s, 2.*s, 0.), Vec(-2.*s, 2.*s, 0.), Vec(0., 0., 2.))
+                let plane = NPlane.create(box.Center, Vec(1., 2., 3.))
+                let instancePoints = box.IntersectPlane plane
+                let staticPoints = Box.intersectPlane plane box
+
+                Expect.equal staticPoints.Count instancePoints.Count "Both APIs should return the same point count"
+                for i = 0 to instancePoints.Count - 1 do
+                    Expect.isTrue (eqPnt staticPoints.[i] instancePoints.[i]) "Both APIs should return the same points"
+            }
+        ]
     ]
