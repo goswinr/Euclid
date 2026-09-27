@@ -3,11 +3,7 @@ module TestPolyline
 open Euclid
 
 
-#if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
-open Fable.Mocha
-#else
-open Expecto
-#endif
+open EuclidTestSupport
 
 
 let inline expectEqPts (a:Pt) (b:Pt) : string -> unit=

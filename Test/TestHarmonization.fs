@@ -2,11 +2,7 @@ module TestHarmonization
 
 open Euclid
 
-#if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
-open Fable.Mocha
-#else
-open Expecto
-#endif
+open EuclidTestSupport
 
 let tests =
     testList "Harmonization Tests" [

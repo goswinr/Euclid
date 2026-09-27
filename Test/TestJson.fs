@@ -3,7 +3,7 @@ module TestJson
 open Euclid
 
 #if FABLE_COMPILER
-open Fable.Mocha
+open EuclidTestSupport
 
 let tests =
     testList "Pnt JSON serialization" []
@@ -12,7 +12,7 @@ open System
 open System.Runtime.Serialization
 open System.Text.Json
 open System.Text.Json.Serialization
-open Expecto
+open EuclidTestSupport
 
 let private pnt = Pnt(1.5, -2.25, 3.75)
 let private json = """{"X":1.5,"Y":-2.25,"Z":3.75}"""

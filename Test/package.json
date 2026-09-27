@@ -3,13 +3,12 @@
   "scripts": {
     "checkTS": "tsc",
     "buildTS": "dotnet fable ../Euclid.fsproj --lang typescript --outDir ./_ts --configuration Release --run npm run checkTS",
-    "buildJS": "dotnet fable --outDir dist/testsRelease --noCache --configuration Release",
-    "buildDb": "dotnet fable --outDir dist/testsDebug --noCache --configuration Debug",
-    "build": "dotnet tool restore && npm run buildJS && npm run buildDb && npm run buildTS",
-    "test": "npm run build && mocha dist/testsRelease && mocha dist/testsDebug"
+    "testJS": "dotnet fable --outDir dist/testsRelease --noCache --configuration Release --runScript",
+    "testJSDebug": "dotnet fable --outDir dist/testsDebug --noCache --configuration Debug --runScript",
+    "build": "dotnet tool restore && npm run buildTS",
+    "test": "dotnet tool restore && npm run testJS && npm run testJSDebug && npm run buildTS"
   },
   "devDependencies": {
-    "mocha": "12.0.0-rc.6",
     "typescript": "^7.0.2"
   }
 }

@@ -17,7 +17,7 @@ open Euclid
 
 
 // do not build this with Fable
-// because the js gets evaluated and might throw runtime exceptions while testing with mocha
+// because the JS gets evaluated and might throw runtime exceptions while running the Fable test target
 // this file is only about compile time API surface, so it's fine to exclude it from Fable builds
 #if !FABLE_COMPILER
 

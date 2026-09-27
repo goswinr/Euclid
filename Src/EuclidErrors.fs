@@ -60,19 +60,19 @@ module EuclidErrors =
         raise <| EuclidEmptySeqException $"Euclid.{funcName} argument {arg} is an empty sequence."
 
     let fail1 (msg:string) (a: 'T) : 'Failed =
-        raise <| EuclidException $"{msg} failed on: {nl}  %O{a}."
+        raise <| EuclidException $"{msg} failed on: {nl} %O{a}."
 
     let fail2 (msg:string) (a: 'T) (b: 'U) : 'Failed =
-        raise <| EuclidException $"{msg} failed on {nl}  %O{a}{nl}  %O{b}."
+        raise <| EuclidException $"{msg} failed on {nl} %O{a}{nl} %O{b}."
 
     let fail3 (msg:string) (a: 'T) (b:'U) (c:'V) : 'Failed =
-        raise <| EuclidException $"{msg} failed on: {nl}  %O{a}{nl}  %O{b}{nl}  %O{c}."
+        raise <| EuclidException $"{msg} failed on: {nl} %O{a}{nl} %O{b}{nl} %O{c}."
 
     let failCollinear (msg:string) (a: 'T) (b:'U) (c:'V) : 'Failed =
-        raise <| EuclidException $"{msg} failed on collinear points {nl}  %O{a}{nl}  %O{b}{nl}  %O{c}."
+        raise <| EuclidException $"{msg} failed on collinear points {nl} %O{a}{nl} %O{b}{nl} %O{c}."
 
     let failDivide (msg:string) (div:float) (obj:'T) : 'Failed =
-        raise <| EuclidDivByZeroException $"{msg}: {nl}  %O{obj} {nl}  cannot be divided by {div}."
+        raise <| EuclidDivByZeroException $"{msg}: {nl} %O{obj} {nl} cannot be divided by {div}."
 
     let failRot (x:float) (y:float) : 'Failed =
         raise <| EuclidUnitizingException $"Rotation2D(sine {x}, cosine {y}): sin*sin + cos*cos length is not one."
@@ -87,10 +87,10 @@ module EuclidErrors =
         raise <| EuclidUnitizingException $"{msg}: length of vector with components X:{x}, Y:{y}, Z:{z} is not one."
 
     let failNaN2 (msg:string) (x:float) (y:float)  : 'Failed =
-        raise <| EuclidNanInfinityException $"NaN or Infinity in {msg}  X:{x}, Y:{y}."
+        raise <| EuclidNanInfinityException $"NaN or Infinity in {msg} X:{x}, Y:{y}."
 
     let failNaN3 (msg:string) (x:float) (y:float) (z:float) : 'Failed =
-        raise <| EuclidNanInfinityException $"NaN or Infinity in {msg}  X:{x}, Y:{y}, Z:{z}."
+        raise <| EuclidNanInfinityException $"NaN or Infinity in {msg} X:{x}, Y:{y}, Z:{z}."
 
     let failUnit2 (msg:string) (x:float) (y:float) : 'Failed =
         raise <| EuclidUnitizingException $"{msg} unitizing failed for too small input: X:{x}, Y:{y}."
@@ -99,13 +99,13 @@ module EuclidErrors =
         raise <| EuclidUnitizingException $"{msg} unitizing failed for too small input: X:{x}, Y:{y}, Z:{z}."
 
     let failTooSmall (msg:string) (this:'T)  : 'Failed =
-        raise <| EuclidTooSmallException $"{msg}: {nl}  %O{this} {nl}  is too small."
+        raise <| EuclidTooSmallException $"{msg}: {nl} %O{this} {nl} is too small."
 
     let failTooSmall2 (msg:string) (this:'T) (other:'U) : 'Failed =
-        raise <| EuclidTooSmallException $"{msg}: {nl}  %O{this} {nl}  is too small. Other: {nl}  %O{other}."
+        raise <| EuclidTooSmallException $"{msg}: {nl} %O{this} {nl} is too small. Other: {nl} %O{other}."
 
     let failTooClose (msg:string) (this:'T) (other:'U) : 'Failed =
-        raise <| EuclidTooSmallException $"{msg}: {nl}  %O{this} {nl}  and {nl}  %O{other} are too close to get a direction."
+        raise <| EuclidTooSmallException $"{msg}: {nl} %O{this} {nl} and {nl} %O{other} are too close to get a direction."
 
     let failObsoleteV20 (funName:string) (newFunName:string) : 'Failed =
         raise <| EuclidObsoleteException $"{funName} is obsolete from Euclid version 0.20.0 or higher. Use the alternative function: {newFunName}."

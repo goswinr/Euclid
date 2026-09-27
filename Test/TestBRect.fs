@@ -2,11 +2,7 @@ module TestBRect
 
 open Euclid
 
-#if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
-open Fable.Mocha
-#else
-open Expecto
-#endif
+open EuclidTestSupport
 
 let inline eqPt a b = Pt.dist a b < 1e-9
 let inline eqVc a b = Vc.length (a - b) < 1e-9

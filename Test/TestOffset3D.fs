@@ -5,11 +5,7 @@ open System.IO
 open System.Text
 open Euclid
 
-#if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
-open Fable.Mocha
-#else
-open Expecto
-#endif
+open EuclidTestSupport
 
 let inline eqPnt a b = Pnt.dist a b < 1e-6
 

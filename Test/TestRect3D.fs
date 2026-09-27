@@ -2,11 +2,7 @@ module TestRect3D
 
 open Euclid
 
-#if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
-open Fable.Mocha
-#else
-open Expecto
-#endif
+open EuclidTestSupport
 
 let inline eq a b = Pnt.dist a b < 1e-9
 let inline equ a (b:float) = abs(a-b) < 1e-9

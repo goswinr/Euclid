@@ -2,11 +2,7 @@ module TestPolyLabel
 
 open Euclid
 
-#if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
-open Fable.Mocha
-#else
-open Expecto
-#endif
+open EuclidTestSupport
 
 let inline close (a:Pt) (b:Pt) = Pt.dist a b < 1e-3
 
