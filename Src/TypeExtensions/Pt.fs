@@ -83,7 +83,6 @@ module AutoOpenPt =
             Pt (x, pt.Y)
 
         /// Returns new 2D point with new X coordinate, Y stays the same.
-        /// Same as Pt.setX.
         static member inline withX x (pt:Pt) : Pt =
             Pt(x, pt.Y)
 
@@ -92,7 +91,6 @@ module AutoOpenPt =
             Pt (pt.X, y)
 
         /// Returns new 2D point with new Y coordinate, X stays the same.
-        /// Same as Pt.setY.
         static member inline withY y (pt:Pt) : Pt =
             Pt(pt.X, y)
 
@@ -414,16 +412,6 @@ module AutoOpenPt =
         static member inline getY (pt:Pt) : float =
             pt.Y
 
-        /// Returns a new 2D point with new X coordinate, Y stays the same.
-        /// Same as Pt.withX.
-        static member inline setX (x:float) (pt:Pt) : Pt =
-            Pt(x, pt.Y)
-
-        /// Returns a new 2D point with new Y coordinate, X stays the same.
-        /// Same as Pt.withY.
-        static member inline setY (y:float) (pt:Pt) : Pt =
-            Pt(pt.X, y)
-
         /// Adds two 2D points. Returns a new 2D point.
         static member inline add (a:Pt) (b:Pt) : Pt =
             a + b
@@ -579,6 +567,16 @@ module AutoOpenPt =
 
         // #endregion
         // #region Obsolete
+
+        /// Obsolete name. Same as Pt.withX.
+        [<Obsolete("Use Pt.withX instead. This returns a new 2D point, it does not mutate, so the 'with' prefix is clearer.")>]
+        static member inline setX (x:float) (pt:Pt) : Pt =
+            Pt(x, pt.Y)
+
+        /// Obsolete name. Same as Pt.withY.
+        [<Obsolete("Use Pt.withY instead. This returns a new 2D point, it does not mutate, so the 'with' prefix is clearer.")>]
+        static member inline setY (y:float) (pt:Pt) : Pt =
+            Pt(pt.X, y)
 
         /// Obsolete typo. Same as p.IsInvalid.
         [<Obsolete("Typo, use IsInvalid instead.")>]

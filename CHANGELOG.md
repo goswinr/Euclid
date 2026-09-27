@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+### Added
+- Added `with`-prefixed replacements for all members that had a `set` prefix but returned a new value instead of mutating: `Line2D.withStart/withFrom/withEnd/withTo`, `Line3D.withStart/withFrom/withEnd/withTo`, `PPlane.withOrigin/withOriginX/withOriginY/withOriginZ`, and `Quaternion.WithAngleInRadians/WithAngleInDegrees` (plus the static `withAngleInRadians`/`withAngleInDegrees`).
+
+### Deprecated
+- All members with a `set` prefix that return a new value instead of mutating are obsolete, use the `with`-prefixed member of the same name instead. The `set` prefix suggested in-place mutation, which these never did. This affects `Pt.setX/setY`, `Pnt.setX/setY/setZ`, `Vc.setX/setY`, `Vec.setX/setY/setZ`, `Line2D.setStart/setFrom/setEnd/setTo`, `Line3D.setStart/setFrom/setEnd/setTo`, `PPlane.setOrigin/setOriginX/setOriginY/setOriginZ`, and `Quaternion.SetAngleInRadians/SetAngleInDegrees` (plus the static `setAngleInRadians`/`setAngleInDegrees`). The genuinely mutating `Set` members on `Polyline2D`, `Polyline3D`, `FreeBox`, and `ResizeArr` are unchanged.
+
 ## [0.52.0] - 2026-09-07
 ### Added
 - Added `Matrix.createPerspectiveAlongNegZ` and `Matrix.createPerspectiveAlongPosY` for perspective cameras looking along -Z with +Y up, or +Y with +Z up, respectively.
@@ -360,6 +367,7 @@ The move* names remain as obsolete aliases. The move* members on location types 
 ### Added
 - first public release
 
+[Unreleased]: https://github.com/goswinr/Euclid/compare/0.52.0...HEAD
 [0.52.0]: https://github.com/goswinr/Euclid/compare/0.51.0...0.52.0
 [0.51.0]: https://github.com/goswinr/Euclid/compare/0.50.0...0.51.0
 [0.50.0]: https://github.com/goswinr/Euclid/compare/0.42.0...0.50.0

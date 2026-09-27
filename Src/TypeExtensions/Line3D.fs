@@ -1665,24 +1665,24 @@ module AutoOpenLine3D =
     static member inline toZ (l:Line3D) : float =
         l.ToZ
 
-    /// Set Line3D start point, returns a new line.
-    /// Same as Line3D.setFrom.
-    static member inline setStart (pt:Pnt) (ln:Line3D) : Line3D =
+    /// Returns a new 3D line with a new start point, the end point stays the same.
+    /// Same as Line3D.withFrom.
+    static member inline withStart (pt:Pnt) (ln:Line3D) : Line3D =
         Line3D(pt.X, pt.Y, pt.Z, ln.ToX, ln.ToY, ln.ToZ)
 
-    /// Set Line3D start point, returns a new line.
-    /// Same as Line3D.setStart.
-    static member inline setFrom (pt:Pnt) (ln:Line3D) : Line3D =
+    /// Returns a new 3D line with a new start point, the end point stays the same.
+    /// Same as Line3D.withStart.
+    static member inline withFrom (pt:Pnt) (ln:Line3D) : Line3D =
         Line3D(pt.X, pt.Y, pt.Z, ln.ToX, ln.ToY, ln.ToZ)
 
-    /// Set Line3D end point, returns a new line.
-    /// Same as Line3D.setTo.
-    static member inline setEnd (pt:Pnt) (ln:Line3D) : Line3D =
+    /// Returns a new 3D line with a new end point, the start point stays the same.
+    /// Same as Line3D.withTo.
+    static member inline withEnd (pt:Pnt) (ln:Line3D) : Line3D =
         Line3D(ln.FromX, ln.FromY, ln.FromZ, pt.X, pt.Y, pt.Z)
 
-    /// Set Line3D end point, returns a new line.
-    /// Same as Line3D.setEnd.
-    static member inline setTo (pt:Pnt) (ln:Line3D) : Line3D =
+    /// Returns a new 3D line with a new end point, the start point stays the same.
+    /// Same as Line3D.withEnd.
+    static member inline withTo (pt:Pnt) (ln:Line3D) : Line3D =
         Line3D(ln.FromX, ln.FromY, ln.FromZ, pt.X, pt.Y, pt.Z)
 
     /// Returns the length of the line.
@@ -2042,7 +2042,7 @@ module AutoOpenLine3D =
                 let ze = z + vz*ef
                 lns.[i] <- Line3D(xs,ys,zs,xe,ye,ze)
             // correct last point to avoid numerical errors
-            lns.[segments-1] <- Line3D.setEnd ln.To lns.[segments-1]
+            lns.[segments-1] <- Line3D.withEnd ln.To lns.[segments-1]
             lns
 
     /// Divides a 3D line into as many as segments as possible respecting the minimum segment length and the gap.
@@ -2438,6 +2438,26 @@ module AutoOpenLine3D =
 
     // #endregion
     // #region Obsolete
+
+    /// Obsolete name. Same as Line3D.withStart.
+    [<Obsolete("Use Line3D.withStart instead. This returns a new 3D line, it does not mutate, so the 'with' prefix is clearer.")>]
+    static member inline setStart (pt:Pnt) (ln:Line3D) : Line3D =
+        Line3D(pt.X, pt.Y, pt.Z, ln.ToX, ln.ToY, ln.ToZ)
+
+    /// Obsolete name. Same as Line3D.withFrom.
+    [<Obsolete("Use Line3D.withFrom instead. This returns a new 3D line, it does not mutate, so the 'with' prefix is clearer.")>]
+    static member inline setFrom (pt:Pnt) (ln:Line3D) : Line3D =
+        Line3D(pt.X, pt.Y, pt.Z, ln.ToX, ln.ToY, ln.ToZ)
+
+    /// Obsolete name. Same as Line3D.withEnd.
+    [<Obsolete("Use Line3D.withEnd instead. This returns a new 3D line, it does not mutate, so the 'with' prefix is clearer.")>]
+    static member inline setEnd (pt:Pnt) (ln:Line3D) : Line3D =
+        Line3D(ln.FromX, ln.FromY, ln.FromZ, pt.X, pt.Y, pt.Z)
+
+    /// Obsolete name. Same as Line3D.withTo.
+    [<Obsolete("Use Line3D.withTo instead. This returns a new 3D line, it does not mutate, so the 'with' prefix is clearer.")>]
+    static member inline setTo (pt:Pnt) (ln:Line3D) : Line3D =
+        Line3D(ln.FromX, ln.FromY, ln.FromZ, pt.X, pt.Y, pt.Z)
 
 
 

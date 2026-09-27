@@ -1273,24 +1273,24 @@ module AutoOpenLine2D =
     static member inline asFSharpCode (l:Line2D) : string =
         l.AsFSharpCode
 
-    /// Set Line2D start point, returns a new line.
-    /// Same as Line2D.setFrom.
-    static member inline setStart (pt:Pt) (ln:Line2D) : Line2D =
+    /// Returns a new 2D line with a new start point, the end point stays the same.
+    /// Same as Line2D.withFrom.
+    static member inline withStart (pt:Pt) (ln:Line2D) : Line2D =
         Line2D( pt.X, pt.Y, ln.ToX, ln.ToY)
 
-    /// Set Line2D start point, returns a new line.
-    /// Same as Line2D.setStart.
-    static member inline setFrom (pt:Pt) (ln:Line2D) : Line2D =
+    /// Returns a new 2D line with a new start point, the end point stays the same.
+    /// Same as Line2D.withStart.
+    static member inline withFrom (pt:Pt) (ln:Line2D) : Line2D =
         Line2D( pt.X, pt.Y, ln.ToX, ln.ToY)
 
-    /// Set Line2D end point, returns a new line.
-    /// Same as Line2D.setTo.
-    static member inline setEnd (pt:Pt) (ln:Line2D) : Line2D =
+    /// Returns a new 2D line with a new end point, the start point stays the same.
+    /// Same as Line2D.withTo.
+    static member inline withEnd (pt:Pt) (ln:Line2D) : Line2D =
         Line2D( ln.FromX, ln.FromY, pt.X, pt.Y)
 
-    /// Set Line2D end point, returns a new line.
-    /// Same as Line2D.setEnd.
-    static member inline setTo (pt:Pt) (ln:Line2D) : Line2D =
+    /// Returns a new 2D line with a new end point, the start point stays the same.
+    /// Same as Line2D.withEnd.
+    static member inline withTo (pt:Pt) (ln:Line2D) : Line2D =
         Line2D( ln.FromX, ln.FromY, pt.X, pt.Y)
 
     /// Same as ln.Vector or ln.Tangent.
@@ -1661,7 +1661,7 @@ module AutoOpenLine2D =
                 let ye = y + vy*ef
                 lns.[i] <- Line2D(xs,ys,xe,ye)
             // correct last point to avoid numerical errors
-            lns.[segments-1] <- Line2D.setEnd ln.To lns.[segments-1]
+            lns.[segments-1] <- Line2D.withEnd ln.To lns.[segments-1]
             lns
 
     /// Divides a 2D line into as many as segments as possible respecting the minimum segment length and the gap.
@@ -2014,6 +2014,26 @@ module AutoOpenLine2D =
 
     // #endregion
     // #region Obsolete
+
+    /// Obsolete name. Same as Line2D.withStart.
+    [<Obsolete("Use Line2D.withStart instead. This returns a new 2D line, it does not mutate, so the 'with' prefix is clearer.")>]
+    static member inline setStart (pt:Pt) (ln:Line2D) : Line2D =
+        Line2D( pt.X, pt.Y, ln.ToX, ln.ToY)
+
+    /// Obsolete name. Same as Line2D.withFrom.
+    [<Obsolete("Use Line2D.withFrom instead. This returns a new 2D line, it does not mutate, so the 'with' prefix is clearer.")>]
+    static member inline setFrom (pt:Pt) (ln:Line2D) : Line2D =
+        Line2D( pt.X, pt.Y, ln.ToX, ln.ToY)
+
+    /// Obsolete name. Same as Line2D.withEnd.
+    [<Obsolete("Use Line2D.withEnd instead. This returns a new 2D line, it does not mutate, so the 'with' prefix is clearer.")>]
+    static member inline setEnd (pt:Pt) (ln:Line2D) : Line2D =
+        Line2D( ln.FromX, ln.FromY, pt.X, pt.Y)
+
+    /// Obsolete name. Same as Line2D.withTo.
+    [<Obsolete("Use Line2D.withTo instead. This returns a new 2D line, it does not mutate, so the 'with' prefix is clearer.")>]
+    static member inline setTo (pt:Pt) (ln:Line2D) : Line2D =
+        Line2D( ln.FromX, ln.FromY, pt.X, pt.Y)
 
 
     // Instance members marked as Obsolete that have direct replacements:
