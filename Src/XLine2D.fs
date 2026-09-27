@@ -572,15 +572,15 @@ module XLineXY =
                 let mutable ta = 0.0
                 let mutable tb = 0.0
                 let b = vAx*vBx + vAy*vBy // vA·vB
-                let denom = a*e - b*b     // = 0 if parallel
-                if denom <> 0.0 then
-                    // The denom <> 0.0 exact-zero test is deliberately not a tolerance check.
-                    // For merely near-parallel segments, dividing by a tiny denom can throw s way out of range,
-                    // but the subsequent clamp-and-recompute steps pull it back to the correct endpoint — so the exact test is actually the robust choice here.
-                    ta <- max 0.0 (min 1.0 ((b*f - c*e) / denom))
+                let det = vAx*vBy - vAy*vBx // 2D cross product vA × vB
+                if det <> 0.0 then
+                    // In 2D, (b*f - c*e) / (a*e - b*b) = (vB × r) / (vA × vB).
+                    // Use this directly to avoid cancellation in the dot-product formula,
+                    // which can round a*e - b*b to zero even for intersecting segments.
+                    ta <- max 0.0 (min 1.0 ((vBx*ry - vBy*rx) / det))
 
-                // else parallel: keep s = 0, the t-clamp below recovers the correct distance
-                tb <- (b*ta + f) / e  // closest point on line B to A(s)
+                // Exactly parallel: keep ta = 0, the tb-clamp below recovers the correct distance.
+                tb <- (b*ta + f) / e  // closest point on line B to A(ta)
                 if tb <= 0.0 then
                     let ta = max 0.0 (min 1.0 (-c / a))
                     distToBStart ta

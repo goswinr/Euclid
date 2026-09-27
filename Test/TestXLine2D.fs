@@ -534,6 +534,68 @@ let tests =
 
 
         testList "getSqDistance tests" [
+            let checkOrientations (lineA:Line2D) (lineB:Line2D) expected tolerance =
+                for i, (first, second) in permute(lineA, lineB) |> List.indexed do
+                    let actual = XLine2D.getSqDistance(first, second)
+                    Expect.isTrue (abs (actual - expected) <= tolerance)
+                        $"Squared distance should be {expected}, got {actual} for permutation {i}"
+
+            test "Long nearly parallel segments intersect" {
+                let lineA = Line2D(0.0, 0.0, 1_000_000.0, 0.0)
+                let lineB = Line2D(0.0, -0.001, 1_000_000.0, 0.001)
+                checkOrientations lineA lineB 0.0 1e-18
+            }
+
+            test "Nearly parallel crossing with a nonzero rounded determinant" {
+                let lineA = Line2D(0.0, 0.0, 1_000_000.0, 0.0)
+                let lineB = Line2D(0.0, -0.1, 1_000_000.0, 0.1)
+                checkOrientations lineA lineB 0.0 1e-18
+            }
+
+            test "Nearly parallel crossing away from the coordinate axes" {
+                let lineA = Line2D(0.0, 0.0, 1_000_000.0, 1_000_000.0)
+                let lineB = Line2D(0.0, -0.001, 1_000_000.0, 1_000_000.0 + 0.001)
+                checkOrientations lineA lineB 0.0 1e-16
+            }
+
+            test "Long nearly parallel segments separated by a small start offset" {
+                let lineA = Line2D(0.0, 0.0, 1_000_000.0, 0.0)
+                let lineB = Line2D(0.0, 0.0001, 1_000_000.0, 0.0002)
+                checkOrientations lineA lineB (0.0001 * 0.0001) 1e-18
+            }
+
+            test "Long nearly parallel segments closest at adjoining ends" {
+                let lineA = Line2D(0.0, 0.0, 1_000_000.0, 0.0)
+                let lineB = Line2D(1_000_000.0, 0.0001, 2_000_000.0, 0.0002)
+                checkOrientations lineA lineB (0.0001 * 0.0001) 1e-18
+            }
+
+            test "Long nearly parallel segments separated by a longitudinal gap" {
+                let lineA = Line2D(0.0, 0.0, 1_000_000.0, 0.0)
+                let lineB = Line2D(1_001_000.0, 0.0001, 2_000_000.0, 0.0002)
+                checkOrientations lineA lineB (1000.0 * 1000.0 + 0.0001 * 0.0001) 1e-9
+            }
+
+            test "Long nearly parallel segments cross with unequal endpoint offsets" {
+                let lineA = Line2D(0.0, 0.0, 1_000_000.0, 0.0)
+                let lineB = Line2D(0.0, 0.0001, 1_000_000.0, -0.0002)
+                checkOrientations lineA lineB 0.0 1e-18
+            }
+
+            test "Parallel and collinear segments keep endpoint handling" {
+                let lineA = Line2D(0.0, 0.0, 10.0, 0.0)
+                checkOrientations lineA (Line2D(5.0, 0.0, 15.0, 0.0)) 0.0 1e-18
+                checkOrientations lineA (Line2D(5.0, 2.0, 15.0, 2.0)) 4.0 1e-12
+                checkOrientations lineA (Line2D(12.0, 0.0, 15.0, 0.0)) 4.0 1e-12
+            }
+
+            test "Degenerate segments retain point distances" {
+                let point = Line2D(5.0, 2.0, 5.0, 2.0)
+                let line = Line2D(0.0, 0.0, 10.0, 0.0)
+                checkOrientations point line 4.0 1e-12
+                checkOrientations point (Line2D(5.0, 5.0, 5.0, 5.0)) 9.0 1e-12
+            }
+
             test "Intersecting lines have zero distance" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(5.0, -5.0), Pt(5.0, 5.0))
