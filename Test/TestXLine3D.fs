@@ -449,6 +449,85 @@ let tests =
         ]
 
         testList "getSqDistance tests" [
+            let checkOrientations (lineA:Line3D) (lineB:Line3D) expected tolerance =
+                for a in [lineA; Line3D(lineA.To, lineA.From)] do
+                    for b in [lineB; Line3D(lineB.To, lineB.From)] do
+                        for first, second in [a, b; b, a] do
+                            let actual = XLine3D.getSqDistance(first, second)
+                            Expect.isTrue (abs (actual - expected) <= tolerance)
+                                $"Squared distance should be {expected}, got {actual}"
+
+            test "Long nearly parallel segments intersect" {
+                let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(1e6, 0.0, 0.0))
+                let lineB = Line3D(Pnt(0.0, -0.001, 0.0), Pnt(1e6, 0.001, 0.0))
+                checkOrientations lineA lineB 0.0 1e-18
+            }
+
+            test "Nearly parallel crossing with a nonzero rounded determinant" {
+                let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(1e6, 0.0, 0.0))
+                let lineB = Line3D(Pnt(0.0, -0.1, 0.0), Pnt(1e6, 0.1, 0.0))
+                checkOrientations lineA lineB 0.0 1e-18
+            }
+
+            test "Nearly parallel crossing away from the coordinate axes" {
+                // Both segments pass through (500000, 500000, 500000).
+                let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(1e6, 1e6, 1e6))
+                let lineB = Line3D(Pnt(0.0, -0.001, 0.001), Pnt(1e6, 1e6 + 0.001, 1e6 - 0.001))
+                checkOrientations lineA lineB 0.0 1e-16
+            }
+
+            test "Nearly parallel skew segments retain their separation" {
+                let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(1e6, 0.0, 0.0))
+                let lineB = Line3D(Pnt(0.0, -0.001, 0.003), Pnt(1e6, 0.001, 0.003))
+                checkOrientations lineA lineB 9e-6 1e-16
+            }
+
+            test "Nearly parallel segments clamp an intersection outside their extents" {
+                let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(1e6, 0.0, 0.0))
+                let lineB = Line3D(Pnt(0.0, 0.001, 0.0), Pnt(1e6, 0.003, 0.0))
+                checkOrientations lineA lineB 1e-6 1e-16
+            }
+
+            test "Long nearly parallel segments separated by a small start offset" {
+                let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(1_000_000.0, 0.0, 0.0))
+                let lineB = Line3D(Pnt(0.0, 0.0001, 0.0), Pnt(1_000_000.0, 0.0002, 0.0))
+                checkOrientations lineA lineB (0.0001 * 0.0001) 1e-18
+            }
+
+            test "Long nearly parallel segments closest at adjoining ends" {
+                let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(1_000_000.0, 0.0, 0.0))
+                let lineB = Line3D(Pnt(1_000_000.0, 0.0001, 0.0), Pnt(2_000_000.0, 0.0002, 0.0))
+                // The closest pair is A's end and B's start, whose Y offset is 0.0001.
+                checkOrientations lineA lineB (0.0001 * 0.0001) 1e-18
+            }
+
+            test "Long nearly parallel segments separated by a longitudinal gap" {
+                let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(1_000_000.0, 0.0, 0.0))
+                let lineB = Line3D(Pnt(1_001_000.0, 0.0001, 0.0), Pnt(2_000_000.0, 0.0002, 0.0))
+                // Include both the 1000-unit X gap and the small Y offset.
+                checkOrientations lineA lineB (1000.0 * 1000.0 + 0.0001 * 0.0001) 1e-9
+            }
+
+            test "Long nearly parallel segments cross with unequal endpoint offsets" {
+                let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(1_000_000.0, 0.0, 0.0))
+                let lineB = Line3D(Pnt(0.0, 0.0001, 0.0), Pnt(1_000_000.0, -0.0002, 0.0))
+                checkOrientations lineA lineB 0.0 1e-18
+            }
+
+            test "Parallel and collinear segments keep endpoint handling" {
+                let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
+                checkOrientations lineA (Line3D(Pnt(5.0, 0.0, 0.0), Pnt(15.0, 0.0, 0.0))) 0.0 1e-18
+                checkOrientations lineA (Line3D(Pnt(5.0, 2.0, 0.0), Pnt(15.0, 2.0, 0.0))) 4.0 1e-12
+                checkOrientations lineA (Line3D(Pnt(12.0, 0.0, 0.0), Pnt(15.0, 0.0, 0.0))) 4.0 1e-12
+            }
+
+            test "Degenerate segments retain point distances" {
+                let point = Line3D(Pnt(5.0, 2.0, 0.0), Pnt(5.0, 2.0, 0.0))
+                let line = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
+                checkOrientations point line 4.0 1e-12
+                checkOrientations point (Line3D(Pnt(5.0, 5.0, 0.0), Pnt(5.0, 5.0, 0.0))) 9.0 1e-12
+            }
+
             test "Intersecting lines have zero distance" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(5.0, -5.0, 0.0), Pnt(5.0, 5.0, 0.0))

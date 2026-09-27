@@ -679,7 +679,7 @@ module XLineXYZ =
     /// <param name="vBz"> The Z component of the vector of the second line.</param>
     /// <returns> the squared distance between the two lines </returns>
     let sqDistance(pAx:float, pAy:float, pAz:float, pBx:float, pBy:float, pBz:float,
-                                vAx:float, vAy:float, vAz:float, vBx:float, vBy:float, vBz:float ): float =
+                   vAx:float, vAy:float, vAz:float, vBx:float, vBy:float, vBz:float ): float =
         // Ericson's parametric segment–segment routine (Real-Time Collision Detection, §5.1.9).
         let inline distToAStart tb = // takes parameter on vec B
             // closest point on B is cB = pB + tb·vB, distance to pA
@@ -735,14 +735,26 @@ module XLineXYZ =
                 let mutable ta = 0.0
                 let mutable tb = 0.0
                 let b = vAx*vBx + vAy*vBy + vAz*vBz // vA·vB
-                let denom = a*e - b*b     // = |vA×vB|² (Lagrange identity), 0 if parallel
-                if denom <> 0.0 then
-                    // The denom <> 0.0 exact-zero test is deliberately not a tolerance check.
-                    // For merely near-parallel segments, dividing by a tiny denom can throw ta way out of range,
-                    // but the subsequent clamp-and-recompute steps pull it back to the correct endpoint — so the exact test is actually the robust choice here.
+                let ae = a*e
+                let denom = ae - b*b // = |vA×vB|², but cancellation can round it to zero or negative
+                if denom > 1e-8 * ae then
                     ta <- max 0.0 (min 1.0 ((b*f - c*e) / denom))
+                else
+                    // Near parallel: compute both denominator and numerator with cross products.
+                    // The relative threshold only selects a more stable formula; it does not
+                    // classify nearly parallel segments as parallel (they may still intersect).
+                    let nx = vAy*vBz - vAz*vBy
+                    let ny = vAz*vBx - vAx*vBz
+                    let nz = vAx*vBy - vAy*vBx
+                    let crossSq = nx*nx + ny*ny + nz*nz
+                    if crossSq <> 0.0 then
+                        // (vB × r) · (vA × vB) = b*f - c*e
+                        let cx = vBy*rz - vBz*ry
+                        let cy = vBz*rx - vBx*rz
+                        let cz = vBx*ry - vBy*rx
+                        ta <- max 0.0 (min 1.0 ((cx*nx + cy*ny + cz*nz) / crossSq))
 
-                // else parallel: keep ta = 0, the tb-clamp below recovers the correct distance
+                // Exactly parallel: keep ta = 0, the tb-clamp below recovers the correct distance.
                 tb <- (b*ta + f) / e  // closest point on line B to A(ta)
                 if tb <= 0.0 then
                     let ta = max 0.0 (min 1.0 (-c / a))
