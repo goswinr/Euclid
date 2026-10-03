@@ -176,7 +176,7 @@ type UnitVec =
 
 #if !FABLE_COMPILER
 /// Serializes a UnitVec as its X, Y, and Z coordinates with System.Text.Json.
-and UnitVecJsonConverter() =
+and internal UnitVecJsonConverter() =
     inherit JsonConverter<UnitVec>()
 
     let names = [| "X"; "Y"; "Z" |]

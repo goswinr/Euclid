@@ -109,7 +109,7 @@ type Line2D =
 
 #if !FABLE_COMPILER
 /// Serializes a Line2D as its start and end coordinates with System.Text.Json.
-and Line2DJsonConverter() =
+and internal Line2DJsonConverter() =
     inherit JsonConverter<Line2D>()
 
     let names = [| "FromX"; "FromY"; "ToX"; "ToY" |]

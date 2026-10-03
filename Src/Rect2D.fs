@@ -2208,7 +2208,7 @@ type Rect2D =
 
 #if !FABLE_COMPILER
 /// Serializes a Rect2D as its origin and axis components with System.Text.Json.
-and Rect2DJsonConverter() =
+and internal Rect2DJsonConverter() =
     inherit JsonConverter<Rect2D>()
 
     let names = [| "OriginX"; "OriginY"; "XaxisX"; "XaxisY"; "YaxisX"; "YaxisY" |]

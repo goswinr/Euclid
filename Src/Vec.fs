@@ -148,7 +148,7 @@ type Vec =
 
 #if !FABLE_COMPILER
 /// Serializes a Vec as its X, Y, and Z coordinates with System.Text.Json.
-and VecJsonConverter() =
+and internal VecJsonConverter() =
     inherit JsonConverter<Vec>()
 
     let names = [| "X"; "Y"; "Z" |]

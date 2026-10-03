@@ -132,7 +132,7 @@ type Pnt =
 
 #if !FABLE_COMPILER
 /// Serializes a Pnt as its X, Y, and Z coordinates with System.Text.Json.
-and PntJsonConverter() =
+and internal PntJsonConverter() =
     inherit JsonConverter<Pnt>()
 
     let names = [| "X"; "Y"; "Z" |]

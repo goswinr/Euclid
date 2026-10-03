@@ -599,7 +599,7 @@ type Quaternion =
 
 #if !FABLE_COMPILER
 /// Serializes a Quaternion as its X, Y, Z, and W components with System.Text.Json.
-and QuaternionJsonConverter() =
+and internal QuaternionJsonConverter() =
     inherit JsonConverter<Quaternion>()
 
     let names = [| "X"; "Y"; "Z"; "W" |]

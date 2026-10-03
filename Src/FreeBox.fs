@@ -721,7 +721,7 @@ type FreeBox private (pts:Pnt[]) =
 
 #if !FABLE_COMPILER
 /// Serializes a FreeBox as its eight points with System.Text.Json.
-and FreeBoxJsonConverter() =
+and internal FreeBoxJsonConverter() =
     inherit JsonConverter<FreeBox>()
 
     override _.Write(writer, box, options) =

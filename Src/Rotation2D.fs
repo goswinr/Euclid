@@ -217,7 +217,7 @@ type Rotation2D =
 
 #if !FABLE_COMPILER
 /// Serializes a Rotation2D as its sine and cosine components with System.Text.Json.
-and Rotation2DJsonConverter() =
+and internal Rotation2DJsonConverter() =
     inherit JsonConverter<Rotation2D>()
 
     let names = [| "Sin"; "Cos" |]

@@ -1175,7 +1175,7 @@ type BRect =
 
 #if !FABLE_COMPILER
 /// Serializes a BRect as its minimum and maximum coordinates with System.Text.Json.
-and BRectJsonConverter() =
+and internal BRectJsonConverter() =
     inherit JsonConverter<BRect>()
 
     let names = [| "MinX"; "MinY"; "MaxX"; "MaxY" |]

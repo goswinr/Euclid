@@ -189,7 +189,7 @@ type PPlane =
 
 #if !FABLE_COMPILER
 /// Serializes a PPlane as its origin and axis components with System.Text.Json.
-and PPlaneJsonConverter() =
+and internal PPlaneJsonConverter() =
     inherit JsonConverter<PPlane>()
 
     let names =

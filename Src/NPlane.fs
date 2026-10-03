@@ -402,7 +402,7 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
 
 #if !FABLE_COMPILER
 /// Serializes an NPlane as its origin and normal components with System.Text.Json.
-and NPlaneJsonConverter() =
+and internal NPlaneJsonConverter() =
     inherit JsonConverter<NPlane>()
 
     let names = [| "OriginX"; "OriginY"; "OriginZ"; "NormalX"; "NormalY"; "NormalZ" |]

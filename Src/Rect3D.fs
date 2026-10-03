@@ -2312,7 +2312,7 @@ type Rect3D =
 
 #if !FABLE_COMPILER
 /// Serializes a Rect3D as its origin and axis components with System.Text.Json.
-and Rect3DJsonConverter() =
+and internal Rect3DJsonConverter() =
     inherit JsonConverter<Rect3D>()
 
     let names =

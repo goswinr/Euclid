@@ -164,7 +164,7 @@ type UnitVc =
 
 #if !FABLE_COMPILER
 /// Serializes a UnitVc as its X and Y components with System.Text.Json.
-and UnitVcJsonConverter() =
+and internal UnitVcJsonConverter() =
     inherit JsonConverter<UnitVc>()
 
     let names = [| "X"; "Y" |]

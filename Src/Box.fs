@@ -2838,7 +2838,7 @@ type Box =
 
 #if !FABLE_COMPILER
 /// Serializes a Box as its origin and axis components with System.Text.Json.
-and BoxJsonConverter() =
+and internal BoxJsonConverter() =
     inherit JsonConverter<Box>()
 
     let names =

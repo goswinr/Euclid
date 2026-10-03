@@ -1344,7 +1344,7 @@ type Matrix =
 
 #if !FABLE_COMPILER
 /// Serializes a Matrix as its 16 elements with System.Text.Json.
-and MatrixJsonConverter() =
+and internal MatrixJsonConverter() =
     inherit JsonConverter<Matrix>()
 
     let names =

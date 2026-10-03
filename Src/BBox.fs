@@ -2080,7 +2080,7 @@ type BBox =
 
 #if !FABLE_COMPILER
 /// Serializes a BBox as its minimum and maximum coordinates with System.Text.Json.
-and BBoxJsonConverter() =
+and internal BBoxJsonConverter() =
     inherit JsonConverter<BBox>()
 
     let names = [| "MinX"; "MinY"; "MinZ"; "MaxX"; "MaxY"; "MaxZ" |]

@@ -173,7 +173,7 @@ type Pt =
 
 #if !FABLE_COMPILER
 /// Serializes a Pt as its X and Y coordinates with System.Text.Json.
-and PtJsonConverter() =
+and internal PtJsonConverter() =
     inherit JsonConverter<Pt>()
 
     let names = [| "X"; "Y" |]

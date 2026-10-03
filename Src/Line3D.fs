@@ -154,7 +154,7 @@ type Line3D =
 
 #if !FABLE_COMPILER
 /// Serializes a Line3D as its start and end coordinates with System.Text.Json.
-and Line3DJsonConverter() =
+and internal Line3DJsonConverter() =
     inherit JsonConverter<Line3D>()
 
     let names = [| "FromX"; "FromY"; "FromZ"; "ToX"; "ToY"; "ToZ" |]

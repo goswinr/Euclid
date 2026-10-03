@@ -2516,7 +2516,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
 
 #if !FABLE_COMPILER
 /// Serializes a Polyline2D as its interleaved XY coordinate buffer with System.Text.Json.
-and Polyline2DJsonConverter() =
+and internal Polyline2DJsonConverter() =
     inherit JsonConverter<Polyline2D>()
 
     override _.Write(writer, polyline, options) =

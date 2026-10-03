@@ -865,7 +865,7 @@ type RigidMatrix =
 
 #if !FABLE_COMPILER
 /// Serializes a RigidMatrix as its 12 elements with System.Text.Json.
-and RigidMatrixJsonConverter() =
+and internal RigidMatrixJsonConverter() =
     inherit JsonConverter<RigidMatrix>()
 
     let names =

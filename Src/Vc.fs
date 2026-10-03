@@ -115,7 +115,7 @@ type Vc =
 
 #if !FABLE_COMPILER
 /// Serializes a Vc as its X and Y components with System.Text.Json.
-and VcJsonConverter() =
+and internal VcJsonConverter() =
     inherit JsonConverter<Vc>()
 
     let names = [| "X"; "Y" |]
