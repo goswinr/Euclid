@@ -78,7 +78,8 @@ type Rotation2D =
     /// Format Rotation2D into an F# code string that can be used to recreate the rotation.
     member r.AsFSharpCode : string =
         // $"Rotation2D.createFromDegrees({r.Sin |> asinSafe |> toDegrees})"
-        $"Rotation2D.createUnchecked({r.Sin}, {r.Cos})"
+        let f = Format.floatAsFSharpCode
+        $"Rotation2D.createUnchecked({f r.Sin}, {f r.Cos})"
 
     /// Format Rotation2D into an F# code string that can be used to recreate the rotation.
     static member inline asFSharpCode (r:Rotation2D) : string =

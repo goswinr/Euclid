@@ -178,7 +178,8 @@ type PPlane =
 
     /// Format PPlane into an F# code string that can be used to recreate the plane.
     member pl.AsFSharpCode : string =
-        $"PPlane.createUnchecked({pl.OriginX}, {pl.OriginY}, {pl.OriginZ}, {pl.XaxisX}, {pl.XaxisY}, {pl.XaxisZ}, {pl.YaxisX}, {pl.YaxisY}, {pl.YaxisZ}, {pl.ZaxisX}, {pl.ZaxisY}, {pl.ZaxisZ})"
+        let f = Format.floatAsFSharpCode
+        $"PPlane.createUnchecked({f pl.OriginX}, {f pl.OriginY}, {f pl.OriginZ}, {f pl.XaxisX}, {f pl.XaxisY}, {f pl.XaxisZ}, {f pl.YaxisX}, {f pl.YaxisY}, {f pl.YaxisZ}, {f pl.ZaxisX}, {f pl.ZaxisY}, {f pl.ZaxisZ})"
 
     /// Format PPlane into an F# code string that can be used to recreate the plane.
     static member inline asFSharpCode (pl:PPlane) : string =

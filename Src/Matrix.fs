@@ -150,7 +150,8 @@ type Matrix =
     /// <summary>Format Matrix into an F# code string that can be used to recreate the matrix.
     /// The output matches the constructor's row-major parameter order.</summary>
     member m.AsFSharpCode : string =
-        $"Matrix({m.M11}, {m.M21}, {m.M31}, {m.X41}, {m.M12}, {m.M22}, {m.M32}, {m.Y42}, {m.M13}, {m.M23}, {m.M33}, {m.Z43}, {m.M14}, {m.M24}, {m.M34}, {m.M44})"
+        let f = Format.floatAsFSharpCode
+        $"Matrix({f m.M11}, {f m.M21}, {f m.M31}, {f m.X41}, {f m.M12}, {f m.M22}, {f m.M32}, {f m.Y42}, {f m.M13}, {f m.M23}, {f m.M33}, {f m.Z43}, {f m.M14}, {f m.M24}, {f m.M34}, {f m.M44})"
 
     /// <summary>Format Matrix into an F# code string that can be used to recreate the matrix.
     /// The output matches the constructor's row-major parameter order.</summary>

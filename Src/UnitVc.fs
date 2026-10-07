@@ -63,7 +63,8 @@ type UnitVc =
 
     /// Format 2D unit-vector into an F# code string that can be used to recreate the unit-vector.
     member v.AsFSharpCode : string =
-        $"UnitVc.create({v.X}, {v.Y})"
+        let f = Format.floatAsFSharpCode
+        $"UnitVc.create({f v.X}, {f v.Y})"
 
     /// Negate or inverse a 2D unit-vector. Returns a new 2D unit-vector.
     static member inline ( ~- ) (v:UnitVc) : UnitVc =

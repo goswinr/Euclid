@@ -128,7 +128,8 @@ type BBox =
 
     /// Format bounding box into an F# code string that can be used to recreate the bounding box.
     member b.AsFSharpCode : string =
-        $"BBox.createUnchecked({b.MinX}, {b.MinY}, {b.MinZ}, {b.MaxX}, {b.MaxY}, {b.MaxZ})"
+        let f = Format.floatAsFSharpCode
+        $"BBox.createUnchecked({f b.MinX}, {f b.MinY}, {f b.MinZ}, {f b.MaxX}, {f b.MaxY}, {f b.MaxZ})"
 
     /// Returns an F# code string that recreates the 3D bounding box.
     static member inline asFSharpCode (b:BBox) : string =

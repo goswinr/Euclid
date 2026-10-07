@@ -10,6 +10,45 @@ open EuclidTestSupport
 let tests =
     testList "AsFSharpCode" [
 
+        testCase "Float expressions round-trip without losing precision" <| fun _ ->
+            let values =
+                [ 0.0; -0.0; 1.0; -1.0; 0.1; Math.PI
+                  0.6822871999174; 1.0000000000000002
+                  Double.Epsilon; -Double.Epsilon
+                  Double.MaxValue; Double.MinValue; 1e-200; 1e200 ]
+            for x in values do
+                let code = Format.floatAsFSharpCode x
+                let expected = if x = 0.0 then 0.0 else x
+                #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
+                let parsed : float = Fable.Core.JsInterop.emitJsExpr code "Number($0)"
+                let same : bool = Fable.Core.JsInterop.emitJsExpr (expected, parsed) "Object.is($0, $1)"
+                #else
+                let parsed = Double.Parse(code, Globalization.CultureInfo.InvariantCulture)
+                let same = BitConverter.DoubleToInt64Bits expected = BitConverter.DoubleToInt64Bits parsed
+                #endif
+                Expect.isTrue same $"Float expression {code} must preserve the original value"
+
+        testCase "Float expressions use F# literals and special values" <| fun _ ->
+            Expect.equal (Format.floatAsFSharpCode 42.0) "42.0" "Integral float literal"
+            Expect.equal (Format.floatAsFSharpCode -0.0) "0.0" "Negative zero is normalized"
+            Expect.equal (Format.floatAsFSharpCode Double.NaN) "System.Double.NaN" "NaN expression"
+            Expect.equal (Format.floatAsFSharpCode Double.PositiveInfinity) "System.Double.PositiveInfinity" "Positive infinity expression"
+            Expect.equal (Format.floatAsFSharpCode Double.NegativeInfinity) "System.Double.NegativeInfinity" "Negative infinity expression"
+
+        #if !FABLE_COMPILER
+        testCase "AsFSharpCode is invariant under Austrian culture" <| fun _ ->
+            let previous = Globalization.CultureInfo.CurrentCulture
+            try
+                Globalization.CultureInfo.CurrentCulture <- Globalization.CultureInfo.GetCultureInfo "de-AT"
+                Expect.equal (Pnt(1.5, 2.5, 3.5).AsFSharpCode) "Pnt(1.5, 2.5, 3.5)" "Point uses decimal dots"
+                Expect.equal
+                    (BBox.createUnchecked(1.5, 2.5, 3.5, 4.5, 5.5, 6.5).AsFSharpCode)
+                    "BBox.createUnchecked(1.5, 2.5, 3.5, 4.5, 5.5, 6.5)"
+                    "Bounding box uses decimal dots"
+            finally
+                Globalization.CultureInfo.CurrentCulture <- previous
+        #endif
+
         testCase "Verify AsFSharpCode generates valid F# syntax" <| fun _ ->
             let mutable result = true
 

@@ -70,7 +70,8 @@ type Pnt =
 
     /// Format 3D point into an F# code string that can be used to recreate the point.
     member p.AsFSharpCode : string =
-        $"Pnt({p.X}, {p.Y}, {p.Z})"
+        let f = Format.floatAsFSharpCode
+        $"Pnt({f p.X}, {f p.Y}, {f p.Z})"
 
     /// Subtract one 3D point from another.
     /// 'a-b' returns a new 3D vector from b to a.

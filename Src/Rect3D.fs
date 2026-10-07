@@ -177,7 +177,8 @@ type Rect3D =
 
     /// Format Rect3D into an F# code string that can be used to recreate the rectangle.
     member r.AsFSharpCode : string =
-        $"Rect3D.createUnchecked({r.OriginX}, {r.OriginY}, {r.OriginZ}, {r.XaxisX}, {r.XaxisY}, {r.XaxisZ}, {r.YaxisX}, {r.YaxisY}, {r.YaxisZ})"
+        let f = Format.floatAsFSharpCode
+        $"Rect3D.createUnchecked({f r.OriginX}, {f r.OriginY}, {f r.OriginZ}, {f r.XaxisX}, {f r.XaxisY}, {f r.XaxisZ}, {f r.YaxisX}, {f r.YaxisY}, {f r.YaxisZ})"
 
     /// Format Rect3D into an F# code string that can be used to recreate the rectangle.
     static member inline asFSharpCode (r:Rect3D) : string =

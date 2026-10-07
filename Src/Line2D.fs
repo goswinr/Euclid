@@ -78,7 +78,8 @@ type Line2D =
 
     /// Format 2D line into an F# code string that can be used to recreate the line.
     member ln.AsFSharpCode : string =
-        $"Line2D({ln.FromX}, {ln.FromY}, {ln.ToX}, {ln.ToY})"
+        let f = Format.floatAsFSharpCode
+        $"Line2D({f ln.FromX}, {f ln.FromY}, {f ln.ToX}, {f ln.ToY})"
 
     /// The start point of the Line2D. Same as ln.Start.
     member inline ln.From : Pt =

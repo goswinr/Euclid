@@ -101,7 +101,8 @@ type BRect =
 
     /// Format bounding rectangle into an F# code string that can be used to recreate the rectangle.
     member r.AsFSharpCode : string =
-        $"BRect.createUnchecked({r.MinX}, {r.MinY}, {r.MaxX}, {r.MaxY})"
+        let f = Format.floatAsFSharpCode
+        $"BRect.createUnchecked({f r.MinX}, {f r.MinY}, {f r.MaxX}, {f r.MaxY})"
 
     /// Format bounding rectangle into an F# code string that can be used to recreate the rectangle.
     static member inline asFSharpCode (r:BRect) : string =

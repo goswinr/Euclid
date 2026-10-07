@@ -74,7 +74,8 @@ type UnitVec =
 
     /// Format 3D unit-vector into an F# code string that can be used to recreate the unit-vector.
     member v.AsFSharpCode : string =
-        $"UnitVec.create({v.X}, {v.Y}, {v.Z})"
+        let f = Format.floatAsFSharpCode
+        $"UnitVec.create({f v.X}, {f v.Y}, {f v.Z})"
 
     /// Negate or inverse a 3D unit-vector. Returns a new 3D unit-vector.
     static member inline ( ~- ) (v:UnitVec) : UnitVec =

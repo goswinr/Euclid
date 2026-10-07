@@ -111,7 +111,8 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
 
     /// Format NPlane into an F# code string that can be used to recreate the plane.
     member pl.AsFSharpCode : string =
-        $"NPlane.createUnchecked({pl.OriginX}, {pl.OriginY}, {pl.OriginZ}, {pl.NormalX}, {pl.NormalY}, {pl.NormalZ})"
+        let f = Format.floatAsFSharpCode
+        $"NPlane.createUnchecked({f pl.OriginX}, {f pl.OriginY}, {f pl.OriginZ}, {f pl.NormalX}, {f pl.NormalY}, {f pl.NormalZ})"
 
     /// Format NPlane into an F# code string that can be used to recreate the plane.
     static member inline asFSharpCode (pl:NPlane) : string =

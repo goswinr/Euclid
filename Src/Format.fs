@@ -6,6 +6,28 @@ open System
 /// A module with functions for formatting floats with adaptive precision.
 module Format =
 
+    /// Formats a double as an invariant F# expression that preserves its value.
+    /// Normalizes negative zero to positive zero; NaN payload bits are not preserved.
+    let floatAsFSharpCode (x:float) : string =
+        if Double.IsNaN x then "System.Double.NaN"
+        elif x = Double.PositiveInfinity then "System.Double.PositiveInfinity"
+        elif x = Double.NegativeInfinity then "System.Double.NegativeInfinity"
+        elif x = 0.0 then "0.0"
+        else
+            let s : string =
+                #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
+                Fable.Core.JsInterop.emitJsExpr x "($0).toString()"
+                #else
+                #if NET472
+                x.ToString("G17", Globalization.CultureInfo.InvariantCulture)
+                #else
+                x.ToString("R", Globalization.CultureInfo.InvariantCulture)
+                #endif
+                #endif
+            // Integral values must also be emitted as float literals.
+            if s.Contains(".") || s.Contains("e") || s.Contains("E") then s
+            else s + ".0"
+
 
     module internal Literals =
 

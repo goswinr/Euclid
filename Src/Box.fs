@@ -265,7 +265,8 @@ type Box =
 
     /// Format box into an F# code string that can be used to recreate the box.
     member b.AsFSharpCode : string =
-        $"Box.createUnchecked({b.OriginX}, {b.OriginY}, {b.OriginZ}, {b.XaxisX}, {b.XaxisY}, {b.XaxisZ}, {b.YaxisX}, {b.YaxisY}, {b.YaxisZ}, {b.ZaxisX}, {b.ZaxisY}, {b.ZaxisZ})"
+        let f = Format.floatAsFSharpCode
+        $"Box.createUnchecked({f b.OriginX}, {f b.OriginY}, {f b.OriginZ}, {f b.XaxisX}, {f b.XaxisY}, {f b.XaxisZ}, {f b.YaxisX}, {f b.YaxisY}, {f b.YaxisZ}, {f b.ZaxisX}, {f b.ZaxisY}, {f b.ZaxisZ})"
 
     /// Format box into an F# code string that can be used to recreate it.
     static member inline asFSharpCode (b:Box) : string =

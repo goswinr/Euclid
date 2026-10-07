@@ -127,7 +127,8 @@ type RigidMatrix =
 
     /// <summary>Formats a RigidMatrix into an F# code string that can be used to recreate the matrix.</summary>
     member m.AsFSharpCode : string =
-        $"RigidMatrix.create({m.M11}, {m.M21}, {m.M31}, {m.X41}, {m.M12}, {m.M22}, {m.M32}, {m.Y42}, {m.M13}, {m.M23}, {m.M33}, {m.Z43})"
+        let f = Format.floatAsFSharpCode
+        $"RigidMatrix.create({f m.M11}, {f m.M21}, {f m.M31}, {f m.X41}, {f m.M12}, {f m.M22}, {f m.M32}, {f m.Y42}, {f m.M13}, {f m.M23}, {f m.M33}, {f m.Z43})"
 
     /// <summary>Formats a RigidMatrix into an F# code string that can be used to recreate the matrix.</summary>
     static member inline asFSharpCode (m:RigidMatrix) : string =

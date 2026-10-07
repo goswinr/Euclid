@@ -106,7 +106,8 @@ type Pt =
 
     /// Format 2D point into an F# code string that can be used to recreate the point.
     member p.AsFSharpCode : string =
-        $"Pt({p.X}, {p.Y})"
+        let f = Format.floatAsFSharpCode
+        $"Pt({f p.X}, {f p.Y})"
 
     /// Subtract one 2D point from another.
     /// 'a-b' returns a new 2D vector from b to a.

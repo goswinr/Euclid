@@ -171,7 +171,8 @@ type Rect2D =
 
     /// Format Rect2D into an F# code string that can be used to recreate the rectangle.
     member r.AsFSharpCode : string =
-        $"Rect2D.createUnchecked({r.OriginX}, {r.OriginY}, {r.XaxisX}, {r.XaxisY}, {r.YaxisX}, {r.YaxisY})"
+        let f = Format.floatAsFSharpCode
+        $"Rect2D.createUnchecked({f r.OriginX}, {f r.OriginY}, {f r.XaxisX}, {f r.XaxisY}, {f r.YaxisX}, {f r.YaxisY})"
 
     /// Returns an F# code string that recreates the 2D rectangle.
     static member inline asFSharpCode (r:Rect2D) : string =

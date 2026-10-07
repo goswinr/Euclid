@@ -72,7 +72,8 @@ type Quaternion =
 
     /// Format Quaternion into an F# code string that can be used to recreate the quaternion.
     member q.AsFSharpCode : string =
-        $"Quaternion.create({q.X}, {q.Y}, {q.Z}, {q.W})"
+        let f = Format.floatAsFSharpCode
+        $"Quaternion.create({f q.X}, {f q.Y}, {f q.Z}, {f q.W})"
 
     /// Format Quaternion into an F# code string that can be used to recreate the quaternion.
     static member inline asFSharpCode (q:Quaternion) : string =

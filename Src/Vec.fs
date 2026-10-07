@@ -73,7 +73,8 @@ type Vec =
 
     /// Format 3D vector into an F# code string that can be used to recreate the vector.
     member v.AsFSharpCode : string =
-        $"Vec({v.X}, {v.Y}, {v.Z})"
+        let f = Format.floatAsFSharpCode
+        $"Vec({f v.X}, {f v.Y}, {f v.Z})"
 
     /// Returns the length of the 3D vector.
     member inline v.Length : float =

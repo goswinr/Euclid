@@ -98,7 +98,8 @@ type Line3D =
 
     /// Format 3D line into an F# code string that can be used to recreate the line.
     member ln.AsFSharpCode : string =
-        $"Line3D({ln.FromX}, {ln.FromY}, {ln.FromZ}, {ln.ToX}, {ln.ToY}, {ln.ToZ})"
+        let f = Format.floatAsFSharpCode
+        $"Line3D({f ln.FromX}, {f ln.FromY}, {f ln.FromZ}, {f ln.ToX}, {f ln.ToY}, {f ln.ToZ})"
 
     /// The start point of the Line3D. Same as ln.Start.
     member inline ln.From : Pnt =

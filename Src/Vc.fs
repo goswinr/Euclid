@@ -52,7 +52,8 @@ type Vc =
 
     /// Format 2D vector into an F# code string that can be used to recreate the vector.
     member v.AsFSharpCode : string =
-        $"Vc({v.X}, {v.Y})"
+        let f = Format.floatAsFSharpCode
+        $"Vc({f v.X}, {f v.Y})"
 
     /// Negate or inverse a 2D vector. Returns a new 2D vector.
     static member inline ( ~- ) (v:Vc) : Vc =
