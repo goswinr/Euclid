@@ -824,7 +824,6 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// Otherwise the start point is added to the end of the Polyline3D.</summary>
     /// <param name="toleranceForAddingPoint">Optional. 1e-6 by default
     /// The tolerance used to decide whether to snap the last point to the first point.</param>
-    /// <returns>Unit.</returns>
     member p.CloseInPlace([<OPT; DEF(1e-6)>]toleranceForAddingPoint:float) : unit =
         if p.PointCount < 3 then failTooFewPoly3D "CloseInPlace" 3 p.PointCount
         let c = xyzs.Count
@@ -1776,7 +1775,6 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// <summary>Iterate over each point in the Polyline3D.</summary>
     /// <param name="action">A function that takes the X, Y and Z coordinates of a point.</param>
     /// <param name="pl">The Polyline3D to iterate over.</param>
-    /// <returns>Unit.</returns>
     static member inline iter (action:float -> float -> float -> unit) (pl:Polyline3D) : unit =
         let xyzs = pl.XYZs
         let len = xyzs.Count
@@ -1788,7 +1786,6 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// <summary>Iterate over each point in the Polyline3D.</summary>
     /// <param name="action">A function that takes a point.</param>
     /// <param name="pl">The Polyline3D to iterate over.</param>
-    /// <returns>Unit.</returns>
     static member iterPnt (action:Pnt -> unit) (pl:Polyline3D) : unit =
         let xyzs = pl.XYZs
         let len = xyzs.Count
@@ -1797,35 +1794,32 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             action (Pnt(xyzs.[i], xyzs.[i + 1], xyzs.[i + 2]))
             i <- i + 3
 
-    /// <summary>Iterate over each point in the Polyline3D except the last point.</summary>
-    /// <param name="action">A function that takes the X, Y and Z coordinates of a point.</param>
-    /// <param name="pl">The Polyline3D to iterate over.</param>
-    /// <returns>Unit.</returns>
-    static member inline iterSkipLast (action:float -> float -> float -> unit) (pl:Polyline3D) : unit =
-        let xyzs = pl.XYZs
-        let len = xyzs.Count - 3 // skip last point
-        let mutable i = 0
-        while i < len do
-            action xyzs.[i] xyzs.[i + 1] xyzs.[i + 2]
-            i <- i + 3
+    // /// <summary>Iterate over each point in the Polyline3D except the last point.</summary>
+    // /// <param name="action">A function that takes the X, Y and Z coordinates of a point.</param>
+    // /// <param name="pl">The Polyline3D to iterate over.</param>
+    // static member inline iterSkipLast (action:float -> float -> float -> unit) (pl:Polyline3D) : unit =
+    //     let xyzs = pl.XYZs
+    //     let len = xyzs.Count - 3 // skip last point
+    //     let mutable i = 0
+    //     while i < len do
+    //         action xyzs.[i] xyzs.[i + 1] xyzs.[i + 2]
+    //         i <- i + 3
 
-    /// <summary>Iterate over each point in the Polyline3D except the last point.</summary>
-    /// <param name="action">A function that takes a point.</param>
-    /// <param name="pl">The Polyline3D to iterate over.</param>
-    /// <returns>Unit.</returns>
-    static member inline iterPntSkipLast (action:Pnt -> unit) (pl:Polyline3D) : unit =
-        let xyzs = pl.XYZs
-        let len = xyzs.Count - 3 // skip last point
-        let mutable i = 0
-        while i < len do
-            action (Pnt(xyzs.[i], xyzs.[i + 1], xyzs.[i + 2]))
-            i <- i + 3
+    // /// <summary>Iterate over each point in the Polyline3D except the last point.</summary>
+    // /// <param name="action">A function that takes a point.</param>
+    // /// <param name="pl">The Polyline3D to iterate over.</param>
+    // static member inline iterPntSkipLast (action:Pnt -> unit) (pl:Polyline3D) : unit =
+    //     let xyzs = pl.XYZs
+    //     let len = xyzs.Count - 3 // skip last point
+    //     let mutable i = 0
+    //     while i < len do
+    //         action (Pnt(xyzs.[i], xyzs.[i + 1], xyzs.[i + 2]))
+    //         i <- i + 3
 
 
     /// <summary>Iterate over each point in the Polyline3D with index.</summary>
     /// <param name="action">A function that takes the index of the X coordinate (in the flat coordinate array) and the X, Y and Z coordinates of a point.</param>
     /// <param name="pl">The Polyline3D to iterate over.</param>
-    /// <returns>Unit.</returns>
     static member iteri (action:int -> float -> float -> float -> unit) (pl:Polyline3D) : unit =
         let xyzs = pl.XYZs
         let len = xyzs.Count
@@ -1837,7 +1831,6 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// <summary>Iterate over each point in the Polyline3D with index.</summary>
     /// <param name="action">A function that takes the pointIndex of the point ( = array index/3) and the point itself.</param>
     /// <param name="pl">The Polyline3D to iterate over.</param>
-    /// <returns>Unit.</returns>
     static member iteriPnt (action:int -> Pnt -> unit) (pl:Polyline3D) : unit =
         let xyzs = pl.XYZs
         let len = xyzs.Count
@@ -1927,7 +1920,6 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// <summary>Iterate over each segment in the Polyline3D.</summary>
     /// <param name="action">A function that takes startX, startY, startZ, endX, endY, and endZ coordinates of a segment.</param>
     /// <param name="pl">The Polyline3D to iterate over.</param>
-    /// <returns>Unit.</returns>
     static member inline iterSegments (action: float -> float -> float -> float -> float -> float -> unit) (pl:Polyline3D) : unit =
         let xyzs = pl.XYZs
         let len = xyzs.Count
@@ -1951,7 +1943,6 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// <summary>Iterate over each segment in the Polyline3D.</summary>
     /// <param name="action">A function that takes a Line3D representing the segment.</param>
     /// <param name="pl">The Polyline3D to iterate over.</param>
-    /// <returns>Unit.</returns>
     static member inline iterLineSegments (action: Line3D -> unit) (pl:Polyline3D) : unit =
         pl |> Polyline3D.iterSegments (fun x1 y1 z1 x2 y2 z2 -> action (Line3D(Pnt(x1, y1, z1), Pnt(x2, y2, z2))))
 

@@ -599,7 +599,6 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// Otherwise the start point is added to the end of the Polyline2D.</summary>
     /// <param name="toleranceForAddingPoint">Optional. 1e-6 by default
     /// The tolerance used to decide whether to snap the last point to the first point.</param>
-    /// <returns>Unit.</returns>
     member p.CloseInPlace([<OPT;DEF(1e-6)>]toleranceForAddingPoint:float) : unit =
         if p.PointCount < 3 then failTooFewPoly2D "CloseInPlace" 3 p.PointCount
         let sx = xys.[0]
@@ -1239,8 +1238,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
         Polyline2D.rotateWithCenter cen r p
 
 
-    // #endregion
-    // #region LablePoint
+
 
     /// Rotates a Polyline2D around a given center point by a Rotation2D.
     static member rotateWithCenter (cen:Pt) (r:Rotation2D) (pl:Polyline2D) : Polyline2D =
@@ -1260,9 +1258,9 @@ type Polyline2D private (xys: ResizeArray<float>) =
             i <- i + 2
         Polyline2D(cs)
 
-
     // #endregion
-    // #region Map and Iter
+    // #region LablePoint
+
 
     /// Finds a point inside a closed Polyline2D that is the farthest away from the edges of the Polyline2D.
     /// Uses the Polylabel algorithm from Mapbox. It is a highly optimized algorithm specifically designed to find the
@@ -1416,6 +1414,9 @@ type Polyline2D private (xys: ResizeArray<float>) =
             i <- i + 2
         Polyline2D(cs)
 
+    // #endregion
+    // #region Map and Iter
+
     /// <summary>Apply a mapping function to each point in the Polyline2D. Returns new Polyline2D.</summary>
     /// <param name="mapping">A function that takes a point and returns a new point.</param>
     /// <param name="pl">The Polyline2D to map over.</param>
@@ -1468,7 +1469,6 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// <summary>Iterate over each point in the Polyline2D.</summary>
     /// <param name="action">A function that takes a point.</param>
     /// <param name="pl">The Polyline2D to iterate over.</param>
-    /// <returns>Unit.</returns>
     static member iterPt (action:Pt -> unit) (pl:Polyline2D) : unit =
         let xys = pl.XYs
         let len = xys.Count
@@ -1480,7 +1480,6 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// <summary>Iterate over each point in the Polyline2D with index.</summary>
     /// <param name="action">A function that takes the pointIndex of the point ( = array index/2) and the point itself.</param>
     /// <param name="pl">The Polyline2D to iterate over.</param>
-    /// <returns>Unit.</returns>
     static member iteriPt (action:int -> Pt -> unit) (pl:Polyline2D) : unit =
         let xys = pl.XYs
         let len = xys.Count
@@ -1508,7 +1507,6 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// <summary>Iterate over each point in the Polyline2D.</summary>
     /// <param name="action">A function that takes the X and Y coordinates of a point.</param>
     /// <param name="pl">The Polyline2D to iterate over.</param>
-    /// <returns>Unit.</returns>
     static member inline iter (action:float -> float -> unit) (pl:Polyline2D) : unit =
         let xys = pl.XYs
         let len = xys.Count
@@ -1517,34 +1515,31 @@ type Polyline2D private (xys: ResizeArray<float>) =
             action xys.[i] xys.[i + 1]
             i <- i + 2
 
-    /// <summary>Iterate over each point in the Polyline2D except the last point.</summary>
-    /// <param name="action">A function that takes the X and Y coordinates of a point.</param>
-    /// <param name="pl">The Polyline2D to iterate over.</param>
-    /// <returns>Unit.</returns>
-    static member inline iterSkipLast (action:float -> float -> unit) (pl:Polyline2D) : unit =
-        let xys = pl.XYs
-        let len = xys.Count - 2
-        let mutable i = 0
-        while i < len do
-            action xys.[i] xys.[i + 1]
-            i <- i + 2
+    // /// <summary>Iterate over each point in the Polyline2D except the last point.</summary>
+    // /// <param name="action">A function that takes the X and Y coordinates of a point.</param>
+    // /// <param name="pl">The Polyline2D to iterate over.</param>
+    // static member inline iterSkipLast (action:float -> float -> unit) (pl:Polyline2D) : unit =
+    //     let xys = pl.XYs
+    //     let len = xys.Count - 2
+    //     let mutable i = 0
+    //     while i < len do
+    //         action xys.[i] xys.[i + 1]
+    //         i <- i + 2
 
-    /// <summary>Iterate over each point in the Polyline2D except the last point.</summary>
-    /// <param name="action">A function that takes a point.</param>
-    /// <param name="pl">The Polyline2D to iterate over.</param>
-    /// <returns>Unit.</returns>
-    static member inline iterPtSkipLast (action:Pt-> unit) (pl:Polyline2D) : unit =
-        let xys = pl.XYs
-        let len = xys.Count - 2
-        let mutable i = 0
-        while i < len do
-            action (Pt(xys.[i], xys.[i + 1]))
-            i <- i + 2
+    // /// <summary>Iterate over each point in the Polyline2D except the last point.</summary>
+    // /// <param name="action">A function that takes a point.</param>
+    // /// <param name="pl">The Polyline2D to iterate over.</param>
+    // static member inline iterPtSkipLast (action:Pt-> unit) (pl:Polyline2D) : unit =
+    //     let xys = pl.XYs
+    //     let len = xys.Count - 2
+    //     let mutable i = 0
+    //     while i < len do
+    //         action (Pt(xys.[i], xys.[i + 1]))
+    //         i <- i + 2
 
     /// <summary>Iterate over each point in the Polyline2D with index.</summary>
     /// <param name="action">A function that takes the index of the X coordinate (in the flat coordinate array) and the X and Y coordinates of a point.</param>
     /// <param name="pl">The Polyline2D to iterate over.</param>
-    /// <returns>Unit.</returns>
     static member iteri (action:int -> float -> float -> unit) (pl:Polyline2D) : unit =
         let xys = pl.XYs
         let len = xys.Count
@@ -1630,7 +1625,6 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// <summary>Iterate over each segment in the Polyline2D.</summary>
     /// <param name="action">A function that takes startX, startY, endX, and endY coordinates of a segment.</param>
     /// <param name="pl">The Polyline2D to iterate over.</param>
-    /// <returns>Unit.</returns>
     static member inline iterSegments (action: float -> float -> float -> float -> unit) (pl:Polyline2D) : unit =
         let xys = pl.XYs
         let len = xys.Count
@@ -1651,7 +1645,6 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// <summary>Iterate over each segment in the Polyline2D.</summary>
     /// <param name="action">A function that takes a Line2D representing the segment.</param>
     /// <param name="pl">The Polyline2D to iterate over.</param>
-    /// <returns>Unit.</returns>
     static member inline iterLineSegments (action: Line2D -> unit) (pl:Polyline2D) : unit =
         pl |> Polyline2D.iterSegments (fun x1 y1 x2 y2 -> action (Line2D(x1, y1, x2, y2)))
 
