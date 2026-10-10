@@ -6,14 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.52.0] - 2026-10-10
 ### Added
 - Added `with`-prefixed replacements for all members that had a `set` prefix but returned a new value instead of mutating: `Line2D.withStart/withFrom/withEnd/withTo`, `Line3D.withStart/withFrom/withEnd/withTo`, `PPlane.withOrigin/withOriginX/withOriginY/withOriginZ`, and `Quaternion.WithAngleInRadians/WithAngleInDegrees` (plus the static `withAngleInRadians`/`withAngleInDegrees`).
-
-### Deprecated
-- All members with a `set` prefix that return a new value instead of mutating are obsolete, use the `with`-prefixed member of the same name instead. The `set` prefix suggested in-place mutation, which these never did. This affects `Pt.setX/setY`, `Pnt.setX/setY/setZ`, `Vc.setX/setY`, `Vec.setX/setY/setZ`, `Line2D.setStart/setFrom/setEnd/setTo`, `Line3D.setStart/setFrom/setEnd/setTo`, `PPlane.setOrigin/setOriginX/setOriginY/setOriginZ`, and `Quaternion.SetAngleInRadians/SetAngleInDegrees` (plus the static `setAngleInRadians`/`setAngleInDegrees`). The genuinely mutating `Set` members on `Polyline2D`, `Polyline3D`, `FreeBox`, and `ResizeArr` are unchanged.
-
-## [0.52.0] - 2026-09-07
-### Added
+- Added `Box.DoesIntersectPlane` and `Box.IntersectPlane`, plus `BBox.DoesIntersectPlane` and `BBox.IntersectPlane`, and their static counterparts, to test for and get the intersection polygon points of a box with an `NPlane`.
+- Added `Box.tryGetBoxBetween` and `Box.getBoxBetween` to get the box filling the gap between two aligned boxes.
+- Added `Box.areBoxesAligned`, `Box.getBoxesAlignment`, and `Box.failIfBoxesNotAlignedTo` to check if the axes of two boxes are parallel and equally oriented.
+- Added `Box.withSizeX`, `Box.withSizeY`, `Box.withSizeZ`, and `Box.withOrigin`.
 - Added `Matrix.createPerspectiveAlongNegZ` and `Matrix.createPerspectiveAlongPosY` for perspective cameras looking along -Z with +Y up, or +Y with +Z up, respectively.
 - Added `Matrix.createLookAt` and `Matrix.createPerspectiveLookAt` for cameras with an arbitrary position, target, and preferred up vector.
 - Added `Matrix.createLookAtZUp` and `Matrix.createPerspectiveLookAtZUp` to keep world +Z up without camera roll while pitching toward the target. Vertical and nearly vertical views use world +Y as the fallback up direction.
@@ -29,19 +29,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 - The obsolete numeric `Edge0`-`Edge11` instance members on `Box` and `FreeBox` (deprecated aliases for the endpoint-named edges) have been removed; `Edge10` is now used for the reverse of `Edge01` instead.
+- `Polyline2D.iterSkipLast`, `Polyline2D.iterPtSkipLast`, `Polyline3D.iterSkipLast`, and `Polyline3D.iterPtSkipLast` have been removed.
 
 ### Changed
+- The `System.Text.Json` converter types (e.g. `BBoxJsonConverter`) are now internal. Serialization with `System.Text.Json` works as before, since the types still reference their converters via attributes.
+- Builds use the .NET SDK's built-in SourceLink instead of the `Microsoft.SourceLink.GitHub` package.
 - `Polyline3D.AverageNormal` now fails if no normal can be found, instead of silently returning an almost zero length vector. This is the case if the Polyline3D has less than 3 points, if all points are in one line, if the cross products cancel each other out on a self intersecting shape, or if the Polyline3D is very small. Use `Polyline3D.TryAverageNormal` to get `None` instead of an exception.
 - The `CHECK_EUCLID` compiler symbol was renamed to `CHECKED_EUCLID`.
 - Pinned the `System.Text.Json` package reference (net472 only) to the lowest version providing the required APIs, `4.6.0`, instead of tracking latest, and excluded it from Dependabot version updates.
 - Clarified the docstrings of `Box.MoveX/Y/Z`, `Rect2D.MoveX/Y`, and `Rect3D.MoveX/Y/Z` (instance and static) to state that they move along the **world** X/Y/Z axes, not the shape's own (possibly rotated) local axes. Use `translateLocalX/Y/Z` for local-axis moves.
 
 ### Deprecated
+- All members with a `set` prefix that return a new value instead of mutating are obsolete, use the `with`-prefixed member of the same name instead. The `set` prefix suggested in-place mutation, which these never did. This affects `Pt.setX/setY`, `Pnt.setX/setY/setZ`, `Vc.setX/setY`, `Vec.setX/setY/setZ`, `Line2D.setStart/setFrom/setEnd/setTo`, `Line3D.setStart/setFrom/setEnd/setTo`, `PPlane.setOrigin/setOriginX/setOriginY/setOriginZ`, and `Quaternion.SetAngleInRadians/SetAngleInDegrees` (plus the static `setAngleInRadians`/`setAngleInDegrees`). The genuinely mutating `Set` members on `Polyline2D`, `Polyline3D`, `FreeBox`, and `ResizeArr` are unchanged.
 - `Matrix.createPerspective` is obsolete. Use `Matrix.createPerspectiveAlongNegZ` instead; the old name remains a compatibility alias with the same projection behavior.
 - `Box.translate`, `Rect2D.translate`, `Rect3D.translate`, and `PPlane.translate` are obsolete. They were plain aliases for `.move` (a world-space vector translation), which is ambiguous alongside the local-axis `translateLocalX/Y/Z` members on the same types. Use `.move` (or `PPlane.translateBy`) for a world-space vector, or `.translateLocalX/Y/Z` to move along the shape's own axes.
 
 ### Fixed
 - Packaging: the Fable source files are now packed from the Src folder instead of the repository root, so the package no longer ships test sources or generated obj files.
+- `XLineXY.sqDistance` and `XLineXYZ.sqDistance` (and the 2D and 3D line distance functions built on them) now return the correct squared distance for nearly parallel segments, where numeric cancellation could give a wrong result.
+- `AsFSharpCode` of all types now formats floats with the invariant culture and round-trip precision, so the generated code compiles and recreates the exact values on any system locale.
 
 ## [0.51.0] - 2026-07-28
 ### Added
