@@ -27,12 +27,6 @@ module private FreeBoxUtil =
         xyzs.[i * 3 + 1] <- y
         xyzs.[i * 3 + 2] <- z
 
-    /// Moves the point at index 'i' by the vector, in place, in the given coordinate array.
-    let inline movePtBy (i:int) (v:Vec) (xyzs:float[]) : unit =
-        xyzs.[i * 3    ] <- xyzs.[i * 3    ] + v.X
-        xyzs.[i * 3 + 1] <- xyzs.[i * 3 + 1] + v.Y
-        xyzs.[i * 3 + 2] <- xyzs.[i * 3 + 2] + v.Z
-
     let inline edge (a:int) (b:int) (xyzs:float[]) : Line3D =
         Line3D(xyzs.[a * 3], xyzs.[a * 3 + 1], xyzs.[a * 3 + 2],
                xyzs.[b * 3], xyzs.[b * 3 + 1], xyzs.[b * 3 + 2])
@@ -683,82 +677,6 @@ type FreeBox private (xyzs:float[]) =
     /// Returns a new FreeBox moved by a given distance in world Z direction.
     static member inline moveZ (distance:float) (b:FreeBox) : FreeBox =
         b.MoveZ(distance)
-
-    /// Moves the point at the given point index by a vector. The index must be between 0 and 7.
-    /// All other points stay where they are.
-    member _.MovePtInPlace (pointIndex:int, v:Vec) : unit =
-        if pointIndex < 0 || pointIndex > 7 then
-            failPointIndex "MovePtInPlace" pointIndex
-        movePtBy pointIndex v xyzs
-
-    /// Moves the point at the given point index by a vector. The index must be between 0 and 7.
-    /// All other points stay where they are.
-    static member inline movePtInPlace (pointIndex:int) (v:Vec) (b:FreeBox) : unit =
-        b.MovePtInPlace(pointIndex, v)
-
-    /// Moves the point 0 of the box by a vector. All other points stay where they are.
-    member _.MovePt0InPlace (v:Vec) : unit =
-        movePtBy 0 v xyzs
-
-    /// Moves the point 0 of the box by a vector. All other points stay where they are.
-    static member inline movePt0InPlace (v:Vec) (b:FreeBox) : unit =
-        b.MovePt0InPlace(v)
-
-    /// Moves the point 1 of the box by a vector. All other points stay where they are.
-    member _.MovePt1InPlace (v:Vec) : unit =
-        movePtBy 1 v xyzs
-
-    /// Moves the point 1 of the box by a vector. All other points stay where they are.
-    static member inline movePt1InPlace (v:Vec) (b:FreeBox) : unit =
-        b.MovePt1InPlace(v)
-
-    /// Moves the point 2 of the box by a vector. All other points stay where they are.
-    member _.MovePt2InPlace (v:Vec) : unit =
-        movePtBy 2 v xyzs
-
-    /// Moves the point 2 of the box by a vector. All other points stay where they are.
-    static member inline movePt2InPlace (v:Vec) (b:FreeBox) : unit =
-        b.MovePt2InPlace(v)
-
-    /// Moves the point 3 of the box by a vector. All other points stay where they are.
-    member _.MovePt3InPlace (v:Vec) : unit =
-        movePtBy 3 v xyzs
-
-    /// Moves the point 3 of the box by a vector. All other points stay where they are.
-    static member inline movePt3InPlace (v:Vec) (b:FreeBox) : unit =
-        b.MovePt3InPlace(v)
-
-    /// Moves the point 4 of the box by a vector. All other points stay where they are.
-    member _.MovePt4InPlace (v:Vec) : unit =
-        movePtBy 4 v xyzs
-
-    /// Moves the point 4 of the box by a vector. All other points stay where they are.
-    static member inline movePt4InPlace (v:Vec) (b:FreeBox) : unit =
-        b.MovePt4InPlace(v)
-
-    /// Moves the point 5 of the box by a vector. All other points stay where they are.
-    member _.MovePt5InPlace (v:Vec) : unit =
-        movePtBy 5 v xyzs
-
-    /// Moves the point 5 of the box by a vector. All other points stay where they are.
-    static member inline movePt5InPlace (v:Vec) (b:FreeBox) : unit =
-        b.MovePt5InPlace(v)
-
-    /// Moves the point 6 of the box by a vector. All other points stay where they are.
-    member _.MovePt6InPlace (v:Vec) : unit =
-        movePtBy 6 v xyzs
-
-    /// Moves the point 6 of the box by a vector. All other points stay where they are.
-    static member inline movePt6InPlace (v:Vec) (b:FreeBox) : unit =
-        b.MovePt6InPlace(v)
-
-    /// Moves the point 7 of the box by a vector. All other points stay where they are.
-    member _.MovePt7InPlace (v:Vec) : unit =
-        movePtBy 7 v xyzs
-
-    /// Moves the point 7 of the box by a vector. All other points stay where they are.
-    static member inline movePt7InPlace (v:Vec) (b:FreeBox) : unit =
-        b.MovePt7InPlace(v)
 
     /// Returns a new FreeBox with a 4x4 transformation matrix applied to it.
     member _.Transform (m:Matrix) : FreeBox =
