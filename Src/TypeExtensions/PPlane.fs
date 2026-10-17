@@ -76,7 +76,7 @@ module AutoOpenPPlane =
         /// Returns the angle to another Plane in degrees, ignoring the normal's orientation.
         /// So 0.0 if the planes are parallel. And 90 degrees if the planes are perpendicular to each other.
         member inline this.Angle90ToPlane (pl:PPlane) : float =
-            UnitVec.angle90 this.Zaxis pl.Zaxis
+            XYZ.angleHalfPiOfUnit this.ZaxisX this.ZaxisY this.ZaxisZ pl.ZaxisX pl.ZaxisY pl.ZaxisZ |> toDegrees
 
         /// Returns the angle to another Plane in degrees, ignoring the normal's orientation.
         /// So 0.0 if the planes are parallel. And 90 degrees if the planes are perpendicular to each other.
@@ -86,12 +86,18 @@ module AutoOpenPPlane =
         /// Returns the angle to 3D vector in degrees, ignoring the plane's orientation.
         /// So 0.0 if the vector is parallel to the Plane. And 90 degrees if the vector is perpendicular to the plane.
         member inline pl.Angle90ToVec (v:Vec) : float =
-            90.0 - UnitVec.angle90 v.Unitized pl.Zaxis
+            let x = v.X
+            let y = v.Y
+            let z = v.Z
+            let l = sqrt (x*x + y*y + z*z)
+            if isTooTiny l then failUnit3 "PPlane.Angle90ToVec" x y z
+            let f = 1. / l
+            90.0 - (XYZ.angleHalfPiOfUnit (f*x) (f*y) (f*z) pl.ZaxisX pl.ZaxisY pl.ZaxisZ |> toDegrees)
 
         /// Returns the angle to 3D unit-vector in degrees, ignoring the plane's orientation.
         /// So 0.0 if the vector is parallel to the Plane. And 90 degrees if the vector is perpendicular to the plane.
         member inline pl.Angle90ToVec (v:UnitVec) : float =
-            90.0 - UnitVec.angle90 v pl.Zaxis
+            90.0 - (XYZ.angleHalfPiOfUnit v.X v.Y v.Z pl.ZaxisX pl.ZaxisY pl.ZaxisZ |> toDegrees)
 
         /// Returns the angle to 3D vector in degrees, ignoring the plane's orientation.
         /// So 0.0 if the vector is parallel to the Plane. And 90 degrees if the vector is perpendicular to the plane.
@@ -112,8 +118,7 @@ module AutoOpenPPlane =
             let l = sqrt(x * x  + y * y + z * z)
             if isTooTiny l then
                 failTooSmall "PPlane.Angle90ToLine" ln
-            let u = UnitVec.createUnchecked (x/ l, y/ l, z/ l)
-            90.0 - UnitVec.angle90 u pl.Zaxis
+            90.0 - (XYZ.angleHalfPiOfUnit (x/ l) (y/ l) (z/ l) pl.ZaxisX pl.ZaxisY pl.ZaxisZ |> toDegrees)
 
         /// Returns the angle to a Line3D in degrees, ignoring the Zaxis's orientation.
         /// So 0.0 if the line is parallel to the Plane. And 90 degrees if the line is perpendicular to the plane.
@@ -149,9 +154,10 @@ module AutoOpenPPlane =
         member inline pl.IsCoincidentTo (other:PPlane,
                                         [<OPT;DEF(1e-6)>] distanceTolerance:float,
                                         [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine>) : bool =
-            pl.Zaxis.IsParallelTo(other.Zaxis, minCosine)
+            // the Z-axes are parallel:
+            abs (XYZ.dot other.ZaxisX other.ZaxisY other.ZaxisZ pl.ZaxisX pl.ZaxisY pl.ZaxisZ) > float minCosine
             &&
-            pl.DistanceToPnt other.Origin < distanceTolerance
+            pl.DistanceToXYZ (other.OriginX, other.OriginY, other.OriginZ) < distanceTolerance
 
         /// Checks if two PPlanes are coincident within the given tolerances.
         /// This means that their Z-axes are parallel within the angle tolerance
@@ -449,14 +455,33 @@ module AutoOpenPPlane =
         /// Rotate about Z-axis of the Plane by an angle in degrees.
         /// Positive angles rotate counter-clockwise in top view (for the WorldXY plane).
         static member inline rotateZ (angDegree:float) (pl:PPlane) : PPlane =
-            let m = RigidMatrix.createRotationAxisCenter (pl.Zaxis, pl.Origin, angDegree)
-            // Only the rotational 3x3 part of the matrix is applied to the local axis directions.
-            let xx = m.M11*pl.XaxisX + m.M21*pl.XaxisY + m.M31*pl.XaxisZ
-            let xy = m.M12*pl.XaxisX + m.M22*pl.XaxisY + m.M32*pl.XaxisZ
-            let xz = m.M13*pl.XaxisX + m.M23*pl.XaxisY + m.M33*pl.XaxisZ
-            let yx = m.M11*pl.YaxisX + m.M21*pl.YaxisY + m.M31*pl.YaxisZ
-            let yy = m.M12*pl.YaxisX + m.M22*pl.YaxisY + m.M32*pl.YaxisZ
-            let yz = m.M13*pl.YaxisX + m.M23*pl.YaxisY + m.M33*pl.YaxisZ
+            // The rotational 3x3 part of RigidMatrix.createRotationAxis (pl.Zaxis, angDegree),
+            // which is also the 3x3 part of a rotation about the Z-axis at the origin of the plane.
+            // Only this part is applied to the local axis directions.
+            let angle = UtilEuclid.toRadians angDegree
+            let c = cos angle
+            let s = sin angle
+            let t = 1.0 - c
+            let x = pl.ZaxisX
+            let y = pl.ZaxisY
+            let z = pl.ZaxisZ
+            let tx = t * x
+            let ty = t * y
+            let m11 = tx * x + c
+            let m21 = tx * y - s * z
+            let m31 = tx * z + s * y
+            let m12 = tx * y + s * z
+            let m22 = ty * y + c
+            let m32 = ty * z - s * x
+            let m13 = tx * z - s * y
+            let m23 = ty * z + s * x
+            let m33 = t  * z * z + c
+            let xx = m11*pl.XaxisX + m21*pl.XaxisY + m31*pl.XaxisZ
+            let xy = m12*pl.XaxisX + m22*pl.XaxisY + m32*pl.XaxisZ
+            let xz = m13*pl.XaxisX + m23*pl.XaxisY + m33*pl.XaxisZ
+            let yx = m11*pl.YaxisX + m21*pl.YaxisY + m31*pl.YaxisZ
+            let yy = m12*pl.YaxisX + m22*pl.YaxisY + m32*pl.YaxisZ
+            let yz = m13*pl.YaxisX + m23*pl.YaxisY + m33*pl.YaxisZ
             PPlane.createUnchecked(pl.OriginX, pl.OriginY, pl.OriginZ, xx, xy, xz, yx, yy, yz, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
 
         /// Move Plane along the local X-axis by the given distance.

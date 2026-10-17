@@ -181,7 +181,7 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
     /// Returns the angle to another plane in degrees, ignoring the normal's orientation.
     /// So 0.0 if the planes are parallel, and 90 degrees if the planes are perpendicular to each other.
     member inline this.Angle90ToPlane (pl:NPlane) : float =
-        UnitVec.angle90 this.Normal pl.Normal
+        XYZ.angleHalfPiOfUnit this.NormalX this.NormalY this.NormalZ pl.NormalX pl.NormalY pl.NormalZ |> toDegrees
 
     /// Returns the angle to another plane in degrees, ignoring the normal's orientation.
     /// So 0.0 if the planes are parallel, and 90 degrees if the planes are perpendicular to each other.
@@ -198,13 +198,12 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
         if isTooTiny l then
             failTooSmall "NPlane.Angle90ToVec" v
         let f = 1.0 / l
-        let u = UnitVec.createUnchecked(x*f, y*f, z*f)
-        90.0 - UnitVec.angle90 u pl.Normal
+        90.0 - (XYZ.angleHalfPiOfUnit (x*f) (y*f) (z*f) pl.NormalX pl.NormalY pl.NormalZ |> toDegrees)
 
     /// Returns the angle to 3D unit-vector in degrees, ignoring the plane's orientation.
     /// So 0.0 if the vector is parallel to the plane, and 90 degrees if the vector is perpendicular to the plane.
     member inline pl.Angle90ToVec (v:UnitVec) : float =
-        90.0 - UnitVec.angle90 v pl.Normal
+        90.0 - (XYZ.angleHalfPiOfUnit v.X v.Y v.Z pl.NormalX pl.NormalY pl.NormalZ |> toDegrees)
 
     /// Returns the angle to 3D vector in degrees, ignoring the plane's orientation.
     /// So 0.0 if the vector is parallel to the plane, and 90 degrees if the vector is perpendicular to the plane.
@@ -226,8 +225,7 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
         if isTooTiny l then
             failTooSmall "NPlane.Angle90ToLine" ln
         let f = 1.0 / l
-        let u = UnitVec.createUnchecked(x*f, y*f, z*f)
-        90.0 - UnitVec.angle90 u pl.Normal
+        90.0 - (XYZ.angleHalfPiOfUnit (x*f) (y*f) (z*f) pl.NormalX pl.NormalY pl.NormalZ |> toDegrees)
 
     /// Returns the angle to a Line3D in degrees, ignoring the normal's orientation.
     /// So 0.0 if the line is parallel to the plane, and 90 degrees if the line is perpendicular to the plane.
@@ -243,9 +241,10 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
     member inline pl.IsCoincidentTo (other:NPlane,
                                     [<OPT;DEF(1e-6)>] distanceTolerance:float,
                                     [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine>) : bool  =
-        pl.Normal.IsParallelTo(other.Normal, minCosine)
+        // the normals are parallel:
+        abs (XYZ.dot other.NormalX other.NormalY other.NormalZ pl.NormalX pl.NormalY pl.NormalZ) > float minCosine
         &&
-        pl.DistanceToPnt other.Origin < distanceTolerance
+        pl.DistanceToXYZ (other.OriginX, other.OriginY, other.OriginZ) < distanceTolerance
 
 
     // #endregion
