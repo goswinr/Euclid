@@ -146,6 +146,38 @@ let tests =
                 let pts = ResizeArray([Pnt(0., 0., 0.); Pnt(10., 0., 0.)])
                 Expect.throws (fun () -> Box.createFromDirsAndPoints Vec.Xaxis Vec.Zero pts |> ignore) "Should throw with zero dirY"
             }
+
+            // a rotated, right-handed frame away from the origin, with exact integer dot products
+            let crOrigin = Pnt(10., -20., 5.)
+            let crX = Vec(2., 2., 1.)
+            let crY = Vec(-1., 2., -2.)
+            let crZ = Vec(-4., 2., 4.)
+
+            test "create keeps a rotated right-handed frame exactly" {
+                let box = Box.create(crOrigin, crX, crY, crZ)
+                let expected = Box.createUncheckedVec(crOrigin, crX, crY, crZ)
+                Expect.isTrue (Box.equals 0.0 box expected) "Box.create should store origin and axes unchanged"
+            }
+
+            test "create accepts axes skewed within the perpendicular tolerance" {
+                let y = crY + Vec(0., 0., 3e-10)
+                let box = Box.create(crOrigin, crX, y, crZ)
+                Expect.equal box.YaxisZ y.Z "Y-axis should be stored unchanged"
+            }
+
+            test "create rejects a left-handed frame" {
+                Expect.throws (fun () -> Box.create(crOrigin, crX, crY, -crZ) |> ignore) "Should throw for a left-handed frame"
+            }
+
+            test "create rejects axes that are not perpendicular" {
+                Expect.throws (fun () -> Box.create(crOrigin, crX, crY + Vec(0., 0., 1e-6), crZ) |> ignore) "Should throw for skewed axes"
+            }
+
+            test "create rejects a zero-length axis" {
+                Expect.throws (fun () -> Box.create(crOrigin, Vec.Zero, crY, crZ) |> ignore) "Should throw for zero X-axis"
+                Expect.throws (fun () -> Box.create(crOrigin, crX, Vec.Zero, crZ) |> ignore) "Should throw for zero Y-axis"
+                Expect.throws (fun () -> Box.create(crOrigin, crX, crY, Vec.Zero) |> ignore) "Should throw for zero Z-axis"
+            }
         ]
 
         testList "Unit Axis Methods" [

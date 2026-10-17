@@ -154,7 +154,10 @@ type Box =
         if not arePerpendicular then
             fail $"Box.create failed. The axes must be mutually perpendicular."
 
-        if Vec.cross(xAxis, yAxis) *** zAxis <= 0.0 then
+        let crossX = xAxis.Y*yAxis.Z - xAxis.Z*yAxis.Y
+        let crossY = xAxis.Z*yAxis.X - xAxis.X*yAxis.Z
+        let crossZ = xAxis.X*yAxis.Y - xAxis.Y*yAxis.X
+        if crossX*zAxis.X + crossY*zAxis.Y + crossZ*zAxis.Z <= 0.0 then
             fail $"Box.create failed. The axes must form a right-handed frame."
 
         Box.createUncheckedVec(origin, xAxis, yAxis, zAxis)
