@@ -303,18 +303,18 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
 
     /// Gets the 3D point at the given pointIndex in the list of points.
     /// (this gets Pnt(XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1], XYZs.[pointIndex * 3 + 2]) from the internal flat list of x, y, and z coordinates )
-    member p.GetPt (pointIndex:int) : Pnt =
+    member p.GetPnt (pointIndex:int) : Pnt =
         #if DEBUG || CHECKED_EUCLID
         let len = xyzs.Count
         if pointIndex < 0 || pointIndex > len / 3 - 1 then
-            failPointIndex "GetPt" pointIndex xyzs
+            failPointIndex "GetPnt" pointIndex xyzs
         #endif
         getPt pointIndex xyzs
 
     /// Gets the 3D point at the given pointIndex in the list of points.
     /// (this gets Pnt(XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1], XYZs.[pointIndex * 3 + 2]) from the internal flat list of x, y, and z coordinates )
-    static member inline getPt (pointIndex:int) (p:Polyline3D) : Pnt =
-        p.GetPt pointIndex
+    static member inline getPnt (pointIndex:int) (p:Polyline3D) : Pnt =
+        p.GetPnt pointIndex
 
 
     /// Sets the 3D point at the given pointIndex in the list of points.
@@ -2669,6 +2669,14 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
 
     // #endregion
     // #region Obsolete
+
+    [<Obsolete("Renamed to GetPnt.")>]
+    member p.GetPt (pointIndex:int) : Pnt =
+        p.GetPnt pointIndex
+
+    [<Obsolete("Renamed to getPnt.")>]
+    static member inline getPt (pointIndex:int) (p:Polyline3D) : Pnt =
+        p.GetPnt pointIndex
 
     [<Obsolete("This is no longer the internal structure of Polyline3D, use .XYZs instead. Or .AsPoints to get points.")>]
     member p.Points : ResizeArray<Pnt> =

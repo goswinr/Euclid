@@ -560,7 +560,7 @@ let tests =
                 let pl = Polyline3D.createFromPts [Pnt(1.,1.,1.); Pnt(1.0000001,1.,1.)]
                 let result = Polyline3D.removeDuplicatePoints 1e-6 pl
                 Expect.equal result.PointCount 1 "collapses to one point"
-                "kept point is the first point" |> Expect.isTrue (eqPnt (result.GetPt 0) (Pnt(1.,1.,1.)))
+                "kept point is the first point" |> Expect.isTrue (eqPnt (result.GetPnt 0) (Pnt(1.,1.,1.)))
             }
             test "removeDuplicateAndCollinearPoints removes collinear point" {
                 let pl = Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(2.,0.,0.); Pnt(2.,2.,0.)]
@@ -581,8 +581,8 @@ let tests =
                 let pl = Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(2.,0.,0.); Pnt(3.,0.,0.); Pnt(3.,0.,0.)]
                 let simplified = Polyline3D.removeDuplicateAndCollinearPoints Cosine.``0.1`` 1e-9 pl
                 Expect.equal simplified.PointCount 2 "duplicate end removed; interior collinear points removed"
-                "start" |> Expect.isTrue (eqPnt (simplified.GetPt 0) (Pnt(0.,0.,0.)))
-                "end" |> Expect.isTrue (eqPnt (simplified.GetPt (simplified.PointCount - 1)) (Pnt(3.,0.,0.)))
+                "start" |> Expect.isTrue (eqPnt (simplified.GetPnt 0) (Pnt(0.,0.,0.)))
+                "end" |> Expect.isTrue (eqPnt (simplified.GetPnt (simplified.PointCount - 1)) (Pnt(3.,0.,0.)))
             }
             test "removeDuplicateAndCollinearPoints collinear start/end segments closed polygon" {
                 let pl = Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(2.,0.,0.); Pnt(2.,2.,0.); Pnt(2.,4.,0.); Pnt(1.,4.,0.); Pnt(0.,4.,0.); Pnt(0.,2.,0.); Pnt(0.,0.,0.)]
@@ -812,13 +812,13 @@ let tests =
                 let pl = Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(5.,0.,0.); Pnt(5.,5.,0.); Pnt(5.,1.,0.); Pnt(9.,1.,0.)]
                 let simplified = Polyline3D.removeUTurns Cosine.``179.99`` pl
                 Expect.equal simplified.PointCount 4 "should remove the U-turn point"
-                "removed the U-turn vertex (5,5,0)" |> Expect.isTrue (eqPnt (simplified.GetPt 2) (Pnt(5.,1.,0.)))
+                "removed the U-turn vertex (5,5,0)" |> Expect.isTrue (eqPnt (simplified.GetPnt 2) (Pnt(5.,1.,0.)))
             }
             test "U-turn in a non-axis-aligned (XZ) plane is detected" {
                 let pl = Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(2.,0.,0.); Pnt(2.,0.,2.); Pnt(2.,0.,0.5); Pnt(5.,0.,0.5)]
                 let simplified = Polyline3D.removeUTurns Cosine.``179.99`` pl
                 Expect.equal simplified.PointCount 4 "should remove the 3D U-turn point"
-                "removed the U-turn vertex (2,0,2)" |> Expect.isTrue (eqPnt (simplified.GetPt 2) (Pnt(2.,0.,0.5)))
+                "removed the U-turn vertex (2,0,2)" |> Expect.isTrue (eqPnt (simplified.GetPnt 2) (Pnt(2.,0.,0.5)))
             }
             test "no U-turns returns an equal polyline" {
                 let pl = Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(1.,1.,0.); Pnt(0.,1.,0.)]
@@ -849,7 +849,7 @@ let tests =
                 let pl = Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(0.993,0.,0.); Pnt(1.0,0.002,0.); Pnt(1.,1.,0.)]
                 let cleaned = Polyline3D.removeDuplicatePointsFaithfully 0.01 pl
                 Expect.equal cleaned.PointCount 3 "one point removed as duplicate within tolerance"
-                "edges re-intersected, not moved to the average" |> Expect.isTrue (eqPnt (cleaned.GetPt 1) (Pnt(1.0,0.0,0.)))
+                "edges re-intersected, not moved to the average" |> Expect.isTrue (eqPnt (cleaned.GetPnt 1) (Pnt(1.0,0.0,0.)))
                 "start preserved" |> Expect.isTrue (eqPnt cleaned.Start pl.Start)
                 "end preserved"   |> Expect.isTrue (eqPnt cleaned.End pl.End)
             }
@@ -859,7 +859,7 @@ let tests =
                 let pl = Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(0.993,0.,0.993); Pnt(1.0,0.002,1.0); Pnt(1.,1.,1.)]
                 let cleaned = Polyline3D.removeDuplicatePointsFaithfully 0.02 pl
                 Expect.equal cleaned.PointCount 3 "one point removed"
-                "intersection computed in the tilted plane" |> Expect.isTrue (eqPnt (cleaned.GetPt 1) (Pnt(1.0,0.0,1.0)))
+                "intersection computed in the tilted plane" |> Expect.isTrue (eqPnt (cleaned.GetPnt 1) (Pnt(1.0,0.0,1.0)))
                 "start preserved" |> Expect.isTrue (eqPnt cleaned.Start pl.Start)
                 "end preserved"   |> Expect.isTrue (eqPnt cleaned.End pl.End)
             }
@@ -867,7 +867,7 @@ let tests =
                 let pl = Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(1.005,0.,0.); Pnt(2.,0.,0.)]
                 let cleaned = Polyline3D.removeDuplicatePointsFaithfully 0.01 pl
                 Expect.equal cleaned.PointCount 3 "one point removed"
-                "no intersection possible, so the midpoint of the too-close cluster is used" |> Expect.isTrue (eqPnt (cleaned.GetPt 1) (Pnt(1.0025,0.,0.)))
+                "no intersection possible, so the midpoint of the too-close cluster is used" |> Expect.isTrue (eqPnt (cleaned.GetPnt 1) (Pnt(1.0025,0.,0.)))
             }
             test "no change when no points are within tolerance" {
                 let pl = Polyline3D.createFromPts [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(1.,1.,0.)]
