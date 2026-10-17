@@ -882,7 +882,11 @@ module AutoOpenVc =
         /// Returns a bisector vector in the middle direction.
         /// Code : a.Unitized + b.Unitized
         static member inline bisector (a:Vc) (b:Vc) : Vc =
-            a.Unitized + b.Unitized
+            let la = sqrt (a.X*a.X + a.Y*a.Y)
+            if isTooTiny la then failTooSmall "Vc.bisector: a" a
+            let lb = sqrt (b.X*b.X + b.Y*b.Y)
+            if isTooTiny lb then failTooSmall "Vc.bisector: b" b
+            Vc(a.X/la + b.X/lb, a.Y/la + b.Y/lb)
 
         /// Ensure that the 2D vector has a positive dot product with the given 2D orientation vector.
         static member inline matchOrientation (orientationToMatch:Vc) (vecToFlip:Vc) : Vc =

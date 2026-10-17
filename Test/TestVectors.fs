@@ -367,4 +367,55 @@ let tests =
                 "negative Z is -5.0" |> Expect.floatClose tol neg.Z -5.0
             }
         ]
+
+        // The expected values are the exact results of the previous implementation with the Pnt, Pt, Vec and Vc operators.
+        testList "Point and vector helpers (exact values)" [
+            let a = Pnt(0.1, 0.2, 0.3)
+            let b = Pnt(1.7, -2.3, 0.9)
+            let c = Pnt(3.3, 4.1, -1.2)
+            let a2 = Pt(0.1, 0.2)
+            let b2 = Pt(1.7, -2.3)
+            let c2 = Pt(3.3, 4.1)
+            let inline expectPnt (p:Pnt) x y z = Expect.isTrue (p.X = x && p.Y = y && p.Z = z) $"expected {x}, {y}, {z} but got {p.X}, {p.Y}, {p.Z}"
+            let inline expectVec (v:Vec) x y z = Expect.isTrue (v.X = x && v.Y = y && v.Z = z) $"expected {x}, {y}, {z} but got {v.X}, {v.Y}, {v.Z}"
+            let inline expectPt (p:Pt) x y = Expect.isTrue (p.X = x && p.Y = y) $"expected {x}, {y} but got {p.X}, {p.Y}"
+            let inline expectVc (v:Vc) x y = Expect.isTrue (v.X = x && v.Y = y) $"expected {x}, {y} but got {v.X}, {v.Y}"
+
+            test "midPt" {
+                expectPnt (Pnt.midPt a b) 0.9 -1.0499999999999998 0.6
+                expectPt (Pt.midPt a2 b2) 0.9 -1.0499999999999998
+            }
+
+            test "bisector" {
+                expectVec (Pnt.bisector(a, b, c)) -0.29725786343783056 1.7500074769917058 -0.5014676062610133
+                expectVc (Pt.bisector(a2, b2, c2)) -0.29651807138703434 1.8124139008068432
+                expectVec (Vec.bisector (Vec(1.1, -0.3, 2.2)) (Vec(-0.7, 3.3, 0.4))) 0.2378631884558816 0.850358788684926 1.0055967053802806
+                expectVc (Vc.bisector (Vc(1.1, -0.3)) (Vc(-0.7, 3.3))) 0.757259612882669 0.7151167193103325
+            }
+
+            test "bisector fails on zero length" {
+                "Pnt.bisector" |> Expect.throws (fun () -> Pnt.bisector(a, a, c) |> ignore)
+                "Pt.bisector" |> Expect.throws (fun () -> Pt.bisector(a2, a2, c2) |> ignore)
+                "Vec.bisector" |> Expect.throws (fun () -> Vec.bisector Vec.Zero (Vec(1, 0, 0)) |> ignore)
+                "Vc.bisector" |> Expect.throws (fun () -> Vc.bisector Vc.Zero (Vc(1, 0)) |> ignore)
+            }
+
+            test "normalOf3Pts" {
+                expectVec (Pnt.normalOf3Pts(a, b, c)) 1.4100000000000001 4.32 14.239999999999998
+            }
+
+            test "extendToZLevel" {
+                expectPnt (Pnt.extendToZLevel(a, b, 2.7)) 6.499999999999999 -9.8 2.7
+                "same level" |> Expect.throws (fun () -> Pnt.extendToZLevel(Pnt(0, 0, 1), Pnt(1, 0, 1), 2.0) |> ignore)
+            }
+
+            test "projectedParameter" {
+                "Pnt uv"  |> Expect.equal (Pnt.projectedParameter(a, UnitVec.create(0.3, 0.4, 0.5), c)) 2.503158005400378
+                "Pnt vec" |> Expect.equal (Pnt.projectedParameter(a, Vec(0.3, 0.4, 0.5), c)) 3.539999999999999
+                "Pnt pts" |> Expect.equal (Pnt.projectedParameter(a, b, c)) -0.6030534351145038
+                "Pt uv"   |> Expect.equal (Pt.projectedParameter(a2, UnitVc.create(0.3, 0.4), c2)) 5.039999999999999
+                "Pt vec"  |> Expect.equal (Pt.projectedParameter(a2, Vc(0.3, 0.4), c2)) 10.079999999999998
+                "Pt pts"  |> Expect.equal (Pt.projectedParameter(a2, b2, c2)) -0.5255391600454029
+            }
+        ]
     ]

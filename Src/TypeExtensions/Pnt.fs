@@ -415,7 +415,7 @@ module AutoOpenPnt =
 
         /// Returns the midpoint of two 3D points.
         static member inline midPt (a:Pnt) (b:Pnt) : Pnt =
-            (a+b) * 0.5
+            Pnt((a.X + b.X) * 0.5, (a.Y + b.Y) * 0.5, (a.Z + b.Z) * 0.5)
 
         /// Scale a 3D point by a scalar and return new 3D point.
         static member inline scale (f:float) (pt:Pnt) : Pnt =
@@ -459,7 +459,19 @@ module AutoOpenPnt =
         /// Code : (ptPrev-ptThis).Unitized  + (ptNext-ptThis).Unitized
         /// ptPrev * ptThis * ptNext ->   bisector vector
         static member inline bisector (ptPrev:Pnt, ptThis:Pnt, ptNext:Pnt) : Vec =
-            (ptPrev-ptThis).Unitized  + (ptNext-ptThis).Unitized
+            let ax = ptPrev.X - ptThis.X
+            let ay = ptPrev.Y - ptThis.Y
+            let az = ptPrev.Z - ptThis.Z
+            let bx = ptNext.X - ptThis.X
+            let by = ptNext.Y - ptThis.Y
+            let bz = ptNext.Z - ptThis.Z
+            let la = sqrt (ax*ax + ay*ay + az*az)
+            if isTooTiny la then failUnit3 "Pnt.bisector: ptPrev to ptThis" ax ay az
+            let lb = sqrt (bx*bx + by*by + bz*bz)
+            if isTooTiny lb then failUnit3 "Pnt.bisector: ptNext to ptThis" bx by bz
+            let fa = 1. / la
+            let fb = 1. / lb
+            Vec(fa*ax + fb*bx, fa*ay + fb*by, fa*az + fb*bz)
 
         /// For three Points describing a plane return a normal.
         /// The points 'a', 'b' and 'c' in counter-clockwise order return a normal pointing towards the
@@ -467,7 +479,16 @@ module AutoOpenPnt =
         /// Points3D.normalOfPoints. The result is not unitized.
         /// If the returned vector has length zero then the points are in one line.
         static member normalOf3Pts (a:Pnt, b:Pnt, c:Pnt) : Vec =
-            Vec.cross (b-a, c-a)
+            // cross product of (b - a) and (c - a)
+            let vx = b.X - a.X
+            let vy = b.Y - a.Y
+            let vz = b.Z - a.Z
+            let wx = c.X - a.X
+            let wy = c.Y - a.Y
+            let wz = c.Z - a.Z
+            Vec(vy * wz - vz * wy,
+                vz * wx - vx * wz,
+                vx * wy - vy * wx)
 
         /// Returns a point that is at a given distance from a 3D point in the direction of another point.
         static member inline distPt (fromPt:Pnt, dirPt:Pnt, distance:float) : Pnt =
@@ -500,14 +521,16 @@ module AutoOpenPnt =
         /// Returns a point that is at a given Z level,
         /// going from a point in the direction of another point.
         static member extendToZLevel  (fromPt:Pnt,toPt:Pnt, z:float) : Pnt =
-            let v = toPt - fromPt
+            let vx = toPt.X - fromPt.X
+            let vy = toPt.Y - fromPt.Y
+            let vz = toPt.Z - fromPt.Z
             if fromPt.Z < toPt.Z && z < fromPt.Z  then fail $"Pnt.extendToZLevel: cannot be reached for fromPt:{fromPt} toPt:{toPt} z:{z}"
             if fromPt.Z > toPt.Z && z > fromPt.Z  then fail $"Pnt.extendToZLevel: cannot be reached for fromPt:{fromPt} toPt:{toPt} z:{z}"
-            let dot = abs (v *** Vec.Zaxis)
+            let dot = abs vz // the dot product with the Z-axis
             if dot < 0.0001 then fail $"Pnt.extendToZLevel: cannot be reached for fromPt:{fromPt} toPt:{toPt} because they are both at the same level. target z:{z}"
             let diffZ = abs (fromPt.Z - z)
             let fac = diffZ / dot
-            fromPt + v * fac
+            Pnt(fromPt.X + vx * fac, fromPt.Y + vy * fac, fromPt.Z + vz * fac)
 
         /// Snaps to a point if it is within the snapDistance.
         /// otherwise returns the original point.
@@ -647,8 +670,7 @@ module AutoOpenPnt =
         /// <param name="testPt">The point to be projected onto the line.</param>
         /// <returns>The parameter (scalar value) along the unit vector at which the projection of testPt falls on the line.</returns>
         static member inline projectedParameter (fromPt:Pnt, uv:UnitVec, testPt:Pnt) : float =
-            let dir = testPt - fromPt
-            Vec.dot (dir, uv)
+            (testPt.X - fromPt.X) * uv.X + (testPt.Y - fromPt.Y) * uv.Y + (testPt.Z - fromPt.Z) * uv.Z
 
         /// <summary>
         /// Projects a test point onto an endless line defined by an origin point and a direction vector.
@@ -658,10 +680,9 @@ module AutoOpenPnt =
         /// <param name="testPt">The point to be projected onto the line.</param>
         /// <returns>The parameter (scaling factor for the direction vector) at which the projection of testPt falls on the line.</returns>
         static member inline projectedParameter (fromPt:Pnt, v:Vec, testPt:Pnt) : float =
-            let dir = testPt - fromPt
             let lenSq = v.LengthSq
             if isTooTinySq(lenSq) then failTooSmall "Pnt.projectedParameter" v
-            Vec.dot (v, dir) / lenSq
+            (v.X * (testPt.X - fromPt.X) + v.Y * (testPt.Y - fromPt.Y) + v.Z * (testPt.Z - fromPt.Z)) / lenSq
 
         /// <summary>
         /// Projects a test point onto an endless line defined by two points.
@@ -672,11 +693,12 @@ module AutoOpenPnt =
         /// <returns>The parameter along the line direction (fromPt to toPt) at which the projection of testPt falls.
         /// A value of 0.0 corresponds to fromPt, 1.0 corresponds to toPt.</returns>
         static member inline projectedParameter (fromPt:Pnt, toPt:Pnt, testPt:Pnt) : float =
-            let dir  = testPt - fromPt
-            let v    = toPt   - fromPt
-            let lenSq = v.LengthSq
+            let vx = toPt.X - fromPt.X
+            let vy = toPt.Y - fromPt.Y
+            let vz = toPt.Z - fromPt.Z
+            let lenSq = vx*vx + vy*vy + vz*vz
             if isTooTinySq(lenSq) then failTooClose "Pnt.projectedParameter" fromPt toPt
-            Vec.dot (v, dir) / lenSq
+            (vx * (testPt.X - fromPt.X) + vy * (testPt.Y - fromPt.Y) + vz * (testPt.Z - fromPt.Z)) / lenSq
 
         /// Returns the closer point of the two points to the reference given point.
         /// When both points are equally close, the first point is returned.

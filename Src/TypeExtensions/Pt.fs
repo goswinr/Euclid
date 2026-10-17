@@ -422,7 +422,7 @@ module AutoOpenPt =
 
         /// Returns the midpoint of two 2D points.
         static member inline midPt (a:Pt) (b:Pt) : Pt =
-            (a+b) * 0.5
+            Pt((a.X + b.X) * 0.5, (a.Y + b.Y) * 0.5)
 
         /// Scales a 2D point by a factor. Returns a new 2D point.
         static member inline scale (f:float) (pt:Pt) : Pt =
@@ -456,7 +456,15 @@ module AutoOpenPt =
         /// Code : (ptPrev-ptThis).Unitized  + (ptNext-ptThis).Unitized
         /// ptPrev * ptThis * ptNext ->   bisector vector
         static member inline bisector (ptPrev:Pt, ptThis:Pt, ptNext:Pt) : Vc =
-           (ptPrev-ptThis).Unitized  + (ptNext-ptThis).Unitized
+            let ax = ptPrev.X - ptThis.X
+            let ay = ptPrev.Y - ptThis.Y
+            let bx = ptNext.X - ptThis.X
+            let by = ptNext.Y - ptThis.Y
+            let la = sqrt (ax*ax + ay*ay)
+            if isTooTiny la then failTooSmall "Pt.bisector: ptPrev to ptThis" (Vc(ax, ay))
+            let lb = sqrt (bx*bx + by*by)
+            if isTooTiny lb then failTooSmall "Pt.bisector: ptNext to ptThis" (Vc(bx, by))
+            Vc(ax/la + bx/lb, ay/la + by/lb)
 
         /// Rotate the 2D point counter-clockwise around a center point.
         /// By a 2D Rotation (that has cos and sin precomputed)
@@ -524,8 +532,7 @@ module AutoOpenPt =
         /// <param name="testPt">The point to be projected onto the line.</param>
         /// <returns>The parameter (scalar value) along the unit vector at which the projection of testPt falls on the line.</returns>
         static member inline projectedParameter (fromPt:Pt, uv:UnitVc, testPt:Pt) : float =
-            let dir = testPt - fromPt
-            Vc.dot (dir, uv)
+            (testPt.X - fromPt.X) * uv.X + (testPt.Y - fromPt.Y) * uv.Y
 
         /// <summary>
         /// Projects a test point onto an endless line defined by an origin point and a direction vector.
@@ -535,10 +542,9 @@ module AutoOpenPt =
         /// <param name="testPt">The point to be projected onto the line.</param>
         /// <returns>The parameter (scaling factor for the direction vector) at which the projection of testPt falls on the line.</returns>
         static member inline projectedParameter (fromPt:Pt, v:Vc, testPt:Pt) : float =
-            let dir = testPt - fromPt
             let lenSq = v.LengthSq
             if isTooTinySq(lenSq) then failTooSmall "Pt.projectedParameter" v
-            Vc.dot (v, dir) / lenSq
+            (v.X * (testPt.X - fromPt.X) + v.Y * (testPt.Y - fromPt.Y)) / lenSq
 
         /// <summary>
         /// Projects a test point onto an endless line defined by two points.
@@ -549,11 +555,11 @@ module AutoOpenPt =
         /// <returns>The parameter along the line direction (fromPt to toPt) at which the projection of testPt falls.
         /// A value of 0.0 corresponds to fromPt, 1.0 corresponds to toPt.</returns>
         static member inline projectedParameter (fromPt:Pt, toPt:Pt, testPt:Pt) : float =
-            let dir  = testPt - fromPt
-            let v    = toPt   - fromPt
-            let lenSq = v.LengthSq
+            let vx = toPt.X - fromPt.X
+            let vy = toPt.Y - fromPt.Y
+            let lenSq = vx*vx + vy*vy
             if isTooTinySq(lenSq) then failTooClose "Pt.projectedParameter" fromPt toPt
-            Vc.dot (v, dir) / lenSq
+            (vx * (testPt.X - fromPt.X) + vy * (testPt.Y - fromPt.Y)) / lenSq
 
         /// Returns the closer point of the two points to the reference given point.
         /// When both points are equally close, the first point is returned.

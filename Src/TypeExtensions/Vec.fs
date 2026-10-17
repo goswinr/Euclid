@@ -910,7 +910,13 @@ module AutoOpenVec =
         /// Returns a (not unitized) bisector vector in the middle direction.
         /// Code : a.Unitized + b.Unitized.
         static member inline bisector (a:Vec) (b:Vec) : Vec =
-            a.Unitized + b.Unitized
+            let la = sqrt (a.X*a.X + a.Y*a.Y + a.Z*a.Z)
+            if isTooTiny la then failUnit3 "Vec.bisector: a" a.X a.Y a.Z
+            let lb = sqrt (b.X*b.X + b.Y*b.Y + b.Z*b.Z)
+            if isTooTiny lb then failUnit3 "Vec.bisector: b" b.X b.Y b.Z
+            let fa = 1. / la
+            let fb = 1. / lb
+            Vec(fa*a.X + fb*b.X, fa*a.Y + fb*b.Y, fa*a.Z + fb*b.Z)
 
         /// Ensure that the 3D  vector has a positive dot product with given 3D orientation vector.
         static member inline matchOrientation (orientationToMatch:Vec) (vecToFlip:Vec) : Vec =
