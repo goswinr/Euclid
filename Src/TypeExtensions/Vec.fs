@@ -535,9 +535,10 @@ module AutoOpenVec =
             if isTooTinySq(sa) then failTooSmall2 "Vec.IsParallelTo" this other
             let sb = other.LengthSq
             if isTooTinySq(sb) then failTooSmall2 "Vec.IsParallelTo" other this
-            let au = this  * (1.0 / sqrt sa)
-            let bu = other * (1.0 / sqrt sb)
-            abs(bu *** au) > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
+            let fa = 1.0 / sqrt sa
+            let fb = 1.0 / sqrt sb
+            let d = (other.X*fb)*(this.X*fa) + (other.Y*fb)*(this.Y*fa) + (other.Z*fb)*(this.Z*fa) // dot product of the unitized vectors
+            abs d > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
 
         /// Checks if this 3D vector and a 3D unit-vector are parallel.
         /// Ignores the line orientation.
@@ -548,8 +549,9 @@ module AutoOpenVec =
         member inline this.IsParallelTo(other:UnitVec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) : bool =
             let sa = this.LengthSq
             if isTooTinySq(sa) then failTooSmall2 "Vec.IsParallelTo" this other
-            let au = this * (1.0 / sqrt sa)
-            abs(other *** au) > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
+            let fa = 1.0 / sqrt sa
+            let d = other.X*(this.X*fa) + other.Y*(this.Y*fa) + other.Z*(this.Z*fa) // dot product of the unitized vectors
+            abs d > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
 
         /// Checks if two 3D vectors are parallel.
         /// Ignores the line orientation.
@@ -578,9 +580,10 @@ module AutoOpenVec =
             if isTooTinySq(sa) then failTooSmall2 "Vec.IsParallelAndOrientedTo" this other
             let sb = other.LengthSq
             if isTooTinySq(sb) then failTooSmall2 "Vec.IsParallelAndOrientedTo" other this
-            let au = this  * (1.0 / sqrt sa)
-            let bu = other * (1.0 / sqrt sb)
-            bu *** au > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
+            let fa = 1.0 / sqrt sa
+            let fb = 1.0 / sqrt sb
+            let d = (other.X*fb)*(this.X*fa) + (other.Y*fb)*(this.Y*fa) + (other.Z*fb)*(this.Z*fa) // dot product of the unitized vectors
+            d > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
 
         /// Checks if this 3D vector and a 3D unit-vector are parallel.
         /// Takes the line orientation into account too.
@@ -591,8 +594,9 @@ module AutoOpenVec =
         member inline this.IsParallelAndOrientedTo (other:UnitVec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) : bool =
             let sa = this.LengthSq
             if isTooTinySq(sa) then failTooSmall2 "Vec.IsParallelAndOrientedTo" this other
-            let au = this * (1.0 / sqrt sa)
-            other *** au > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
+            let fa = 1.0 / sqrt sa
+            let d = other.X*(this.X*fa) + other.Y*(this.Y*fa) + other.Z*(this.Z*fa) // dot product of the unitized vectors
+            d > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
 
         /// Checks if two 3D vectors are parallel.
         /// Takes the line orientation into account too.
@@ -621,9 +625,9 @@ module AutoOpenVec =
             if isTooTinySq(sa) then failTooSmall2 "Vec.IsPerpendicularTo" this other
             let sb = other.LengthSq
             if isTooTinySq(sb) then failTooSmall2 "Vec.IsPerpendicularTo" other this
-            let au = this  * (1.0 / sqrt sa)
-            let bu = other * (1.0 / sqrt sb)
-            let d = bu *** au
+            let fa = 1.0 / sqrt sa
+            let fb = 1.0 / sqrt sb
+            let d = (other.X*fb)*(this.X*fa) + (other.Y*fb)*(this.Y*fa) + (other.Z*fb)*(this.Z*fa) // dot product of the unitized vectors
             !^(abs d) < maxCosine
 
         /// Checks if this 3D vector and a 3D unit-vector are perpendicular to each other.
@@ -635,8 +639,8 @@ module AutoOpenVec =
         member inline this.IsPerpendicularTo (other:UnitVec, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) : bool =
             let sa = this.LengthSq
             if isTooTinySq(sa) then failTooSmall2 "Vec.IsPerpendicularTo" this other
-            let au = this * (1.0 / sqrt sa)
-            let d = other *** au
+            let fa = 1.0 / sqrt sa
+            let d = other.X*(this.X*fa) + other.Y*(this.Y*fa) + other.Z*(this.Z*fa) // dot product of the unitized vectors
             !^(abs d) < maxCosine
 
         /// Checks if two 3D vectors are perpendicular to each other.
@@ -1051,9 +1055,10 @@ module AutoOpenVec =
             if isTooTinySq(sa) then failTooSmall2 "Vec.isParallelWithin" a b
             let sb = b.LengthSq
             if isTooTinySq(sb) then failTooSmall2 "Vec.isParallelWithin" b a
-            let au = a * (1.0 / sqrt sa)
-            let bu = b * (1.0 / sqrt sb)
-            abs(bu *** au) > float cosineValue
+            let fa = 1.0 / sqrt sa
+            let fb = 1.0 / sqrt sb
+            let d = (b.X*fb)*(a.X*fa) + (b.Y*fb)*(a.Y*fa) + (b.Z*fb)*(a.Z*fa) // dot product of the unitized vectors
+            abs d > float cosineValue
 
         /// Checks if the angle between two vectors is bigger than a threshold angle specified as a precomputed cosine value.
         /// Ignores vector orientation. So the angle is between 0 to 90 degrees ignoring their orientation.
@@ -1065,9 +1070,10 @@ module AutoOpenVec =
             if isTooTinySq(sa) then failTooSmall2 "Vec.isNotParallelWithin" a b
             let sb = b.LengthSq
             if isTooTinySq(sb) then failTooSmall2 "Vec.isNotParallelWithin" b a
-            let au = a * (1.0 / sqrt sa)
-            let bu = b * (1.0 / sqrt sb)
-            abs(bu *** au) < float cosineValue
+            let fa = 1.0 / sqrt sa
+            let fb = 1.0 / sqrt sb
+            let d = (b.X*fb)*(a.X*fa) + (b.Y*fb)*(a.Y*fa) + (b.Z*fb)*(a.Z*fa) // dot product of the unitized vectors
+            abs d < float cosineValue
 
         /// Checks if the angle between two vectors is smaller than a threshold angle specified as a precomputed cosine value.
         /// Considers the vector orientation too. So the angle is between 0 to 180 degrees.
@@ -1079,9 +1085,10 @@ module AutoOpenVec =
             if isTooTinySq(sa) then failTooSmall2 "Vec.isAngleBelow" a b
             let sb = b.LengthSq
             if isTooTinySq(sb) then failTooSmall2 "Vec.isAngleBelow" b a
-            let au = a * (1.0 / sqrt sa)
-            let bu = b * (1.0 / sqrt sb)
-            bu *** au > float cosineValue
+            let fa = 1.0 / sqrt sa
+            let fb = 1.0 / sqrt sb
+            let d = (b.X*fb)*(a.X*fa) + (b.Y*fb)*(a.Y*fa) + (b.Z*fb)*(a.Z*fa) // dot product of the unitized vectors
+            d > float cosineValue
 
         /// Checks if the angle between two vectors is bigger than a threshold angle specified as a precomputed cosine value.
         /// Considers the vector orientation too. So the angle is between 0 to 180 degrees.
@@ -1093,9 +1100,10 @@ module AutoOpenVec =
             if isTooTinySq(sa) then failTooSmall2 "Vec.isAngleAbove" a b
             let sb = b.LengthSq
             if isTooTinySq(sb) then failTooSmall2 "Vec.isAngleAbove" b a
-            let au = a * (1.0 / sqrt sa)
-            let bu = b * (1.0 / sqrt sb)
-            bu *** au < float cosineValue
+            let fa = 1.0 / sqrt sa
+            let fb = 1.0 / sqrt sb
+            let d = (b.X*fb)*(a.X*fa) + (b.Y*fb)*(a.Y*fa) + (b.Z*fb)*(a.Z*fa) // dot product of the unitized vectors
+            d < float cosineValue
 
 
 

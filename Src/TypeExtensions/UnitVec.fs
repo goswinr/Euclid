@@ -454,8 +454,9 @@ module AutoOpenUnitVec =
         member inline this.IsParallelTo(other:Vec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) : bool =
             let sb = other.LengthSq
             if isTooTinySq(sb) then failTooSmall "UnitVec.IsParallelTo" other
-            let ou = other * (1.0 / sqrt sb)
-            abs(ou *** this) > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
+            let fb = 1.0 / sqrt sb
+            let d = (other.X*fb)*this.X + (other.Y*fb)*this.Y + (other.Z*fb)*this.Z // dot product of the unitized vectors
+            abs d > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
 
         /// Checks if two 3D unit-vectors are parallel. Ignoring orientation.
         /// Use a precomputed value from Euclid.Cosine module as tolerance.
@@ -478,8 +479,9 @@ module AutoOpenUnitVec =
         member inline this.IsParallelAndOrientedTo (other:Vec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) : bool =
             let sb = other.LengthSq
             if isTooTinySq(sb) then failTooSmall "UnitVec.IsParallelAndOrientedTo" other
-            let ou = other * (1.0 / sqrt sb)
-            ou *** this > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
+            let fb = 1.0 / sqrt sb
+            let d = (other.X*fb)*this.X + (other.Y*fb)*this.Y + (other.Z*fb)*this.Z // dot product of the unitized vectors
+            d > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
 
         /// Checks if two 3D unit-vectors are parallel and orientated the same way.
         /// Use a precomputed value from Euclid.Cosine module as tolerance.
@@ -503,8 +505,8 @@ module AutoOpenUnitVec =
         member inline this.IsPerpendicularTo (other:Vec, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) : bool =
             let sb = other.LengthSq
             if isTooTinySq(sb) then failTooSmall "UnitVec.IsPerpendicularTo" other
-            let ou = other * (1.0 / sqrt sb)
-            let d = ou *** this
+            let fb = 1.0 / sqrt sb
+            let d = (other.X*fb)*this.X + (other.Y*fb)*this.Y + (other.Z*fb)*this.Z // dot product of the unitized vectors
             float -maxCosine < d && d  < float maxCosine // = cosine of 89.75 and 90.25 degrees
 
         /// Checks if two 3D unit-vectors are perpendicular to each other.
