@@ -100,11 +100,17 @@ type Points3D   =
 
     /// Finds the center, mean, or average point.
     static member center (pts: IList<Pnt>) : Pnt =
-        let mutable sum = Pnt.Origin
+        if pts.Count = 0 then failDivide "Points3D.center: empty list of points" 0.0 pts
+        let mutable x = 0.0
+        let mutable y = 0.0
+        let mutable z = 0.0
         for i = 0 to pts.Count-1 do
             let pt = pts.[i]
-            sum <- sum + pt
-        sum / float pts.Count
+            x <- x + pt.X
+            y <- y + pt.Y
+            z <- z + pt.Z
+        let n = float pts.Count
+        Pnt(x / n, y / n, z / n)
 
     /// Finds the mean normal of many points.
     /// It finds the center point and then takes cross-products, iterating all points in pairs of two.
@@ -117,24 +123,60 @@ type Points3D   =
             fail $"Points3D.normalOfPoints can't find normal of two or less points: {Format.iList pts}"
 
         if pts.Count = 3  then
-            let a = pts.[0] - pts.[1]
-            let b = pts.[2] - pts.[1]
-            let v= Vec.cross(b, a)
-            if isTooSmallSq v.LengthSq  then
+            let p0 = pts.[0]
+            let p1 = pts.[1]
+            let p2 = pts.[2]
+            // a = p0 - p1 and b = p2 - p1
+            let ax = p0.X - p1.X
+            let ay = p0.Y - p1.Y
+            let az = p0.Z - p1.Z
+            let bx = p2.X - p1.X
+            let by = p2.Y - p1.Y
+            let bz = p2.Z - p1.Z
+            // cross product b x a
+            let vx = by * az - bz * ay
+            let vy = bz * ax - bx * az
+            let vz = bx * ay - by * ax
+            if isTooSmallSq (vx*vx + vy*vy + vz*vz) then
                 fail $"Points3D.normalOfPoints: three points are in a line: {Format.iList pts}"
-            v
+            Vec(vx, vy, vz)
         else
             let cen = pts |> Points3D.center
-            let mutable v = Vec.Zero
-            let mutable t = pts.[0]
+            let cx = cen.X
+            let cy = cen.Y
+            let cz = cen.Z
+            let mutable vx = 0.0
+            let mutable vy = 0.0
+            let mutable vz = 0.0
+            // the previous point, relative to the center
+            let mutable tx = pts.[0].X - cx
+            let mutable ty = pts.[0].Y - cy
+            let mutable tz = pts.[0].Z - cz
             for i=1 to pts.Count-1 do
-                let n = pts.[i]
-                let x = Vec.cross(t-cen, n-cen)  |> Vec.matchOrientation v // TODO do this matching? first cross product defines orientation
-                v <- v + x
-                t <- n
-            if isTooSmallSq v.LengthSq  then
+                let p = pts.[i]
+                // this point, relative to the center
+                let nx = p.X - cx
+                let ny = p.Y - cy
+                let nz = p.Z - cz
+                // cross product t x n
+                let x = ty * nz - tz * ny
+                let y = tz * nx - tx * nz
+                let z = tx * ny - ty * nx
+                // match the orientation of the sum so far // TODO do this matching? first cross product defines orientation
+                if vx * x + vy * y + vz * z < 0.0 then
+                    vx <- vx - x
+                    vy <- vy - y
+                    vz <- vz - z
+                else
+                    vx <- vx + x
+                    vy <- vy + y
+                    vz <- vz + z
+                tx <- nx
+                ty <- ny
+                tz <- nz
+            if isTooSmallSq (vx*vx + vy*vy + vz*vz) then
                 fail $"Points3D.normalOfPoints: points are in a line or sphere without clear normal: {Format.iList pts}"
-            v
+            Vec(vx, vy, vz)
 
 // #endregion
 // #region Obsolete

@@ -13,11 +13,15 @@ type Points2D   =
 
     /// Finds the center, mean, or average point.
     static member center (pts: IList<Pt>) : Pt =
-        let mutable sum = Pt.Origin
+        if pts.Count = 0 then failDivide "Points2D.center: empty list of points" 0.0 pts
+        let mutable x = 0.0
+        let mutable y = 0.0
         for i = 0 to pts.Count-1 do
             let pt = pts.[i]
-            sum <- sum + pt
-        sum / float pts.Count
+            x <- x + pt.X
+            y <- y + pt.Y
+        let n = float pts.Count
+        Pt(x / n, y / n)
 
     /// The sign is negative if the loop is clockwise.
     /// Last and first point should be the same.

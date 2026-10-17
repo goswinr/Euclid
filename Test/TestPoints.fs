@@ -13,6 +13,18 @@ let tests =
     testList "Points2D and Points3D" [
 
         testList "Points2D" [
+            // the expected values are the exact results of the previous implementation with Pt operators
+            test "center is the exact average" {
+                let pts = ResizeArray([Pt(0.1, 0.2); Pt(1.7, -2.3); Pt(3.3, 4.1); Pt(-0.4, 2.2)])
+                let c = Points2D.center pts
+                "center X" |> Expect.equal c.X 1.1749999999999998
+                "center Y" |> Expect.equal c.Y 1.05
+            }
+
+            test "center of empty list throws" {
+                "empty list" |> Expect.throws (fun () -> Points2D.center (ResizeArray<Pt>()) |> ignore)
+            }
+
             test "closestPointIdx finds closest point" {
                 let pts = ResizeArray([Pt(0,0); Pt(1,0); Pt(2,0)])
                 let target = Pt(0.9, 0.1)
@@ -127,6 +139,46 @@ let tests =
         ]
 
         testList "Points3D" [
+            // the expected values are the exact results of the previous implementation with Pnt and Vec operators
+            test "center is the exact average" {
+                let pts = ResizeArray([Pnt(0.1, 0.2, 0.3); Pnt(1.7, -2.3, 0.9); Pnt(3.3, 4.1, -1.2); Pnt(-0.4, 2.2, 5.5); Pnt(2.0, 2.0, 2.0)])
+                let c = Points3D.center pts
+                "center X" |> Expect.equal c.X 1.3399999999999999
+                "center Y" |> Expect.equal c.Y 1.24
+                "center Z" |> Expect.equal c.Z 1.5
+            }
+
+            test "center of empty list throws" {
+                "empty list" |> Expect.throws (fun () -> Points3D.center (ResizeArray<Pnt>()) |> ignore)
+            }
+
+            test "normalOfPoints of three points" {
+                let pts = ResizeArray([Pnt(0.1, 0.2, 0.3); Pnt(1.7, -2.3, 0.9); Pnt(3.3, 4.1, -1.2)])
+                let n = Points3D.normalOfPoints pts
+                "normal X" |> Expect.equal n.X 1.4099999999999997
+                "normal Y" |> Expect.equal n.Y 4.32
+                "normal Z" |> Expect.equal n.Z 14.239999999999998
+            }
+
+            test "normalOfPoints of five points" {
+                let pts = ResizeArray([Pnt(0.1, 0.2, 0.3); Pnt(1.7, -2.3, 0.9); Pnt(3.3, 4.1, -1.2); Pnt(-0.4, 2.2, 5.5); Pnt(2.0, 2.0, 2.0)])
+                let n = Points3D.normalOfPoints pts
+                "normal X" |> Expect.equal n.X -31.49
+                "normal Y" |> Expect.equal n.Y 5.680000000000001
+                "normal Z" |> Expect.equal n.Z -12.017999999999999
+            }
+
+            test "normalOfPoints of a square in XY is along Z" {
+                let pts = ResizeArray([Pnt(0, 0, 0); Pnt(1, 0, 0); Pnt(1, 1, 0); Pnt(0, 1, 0)])
+                let n = Points3D.normalOfPoints pts
+                "normal is parallel to Z" |> Expect.isTrue (abs n.X < 1e-12 && abs n.Y < 1e-12 && n.Z > 0.0)
+            }
+
+            test "normalOfPoints of collinear points fails" {
+                let pts = ResizeArray([Pnt(0, 0, 0); Pnt(1, 0, 0); Pnt(2, 0, 0); Pnt(3, 0, 0)])
+                "collinear points" |> Expect.throws (fun () -> Points3D.normalOfPoints pts |> ignore)
+            }
+
             test "closestPointIdx finds closest point" {
                 let pts = ResizeArray([Pnt(0,0,0); Pnt(1,0,0); Pnt(2,0,0)])
                 let target = Pnt(0.9, 0.1, 0.1)
