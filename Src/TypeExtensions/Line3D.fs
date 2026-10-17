@@ -1707,11 +1707,35 @@ module AutoOpenLine3D =
 
     /// Rotation a 3D line around Z-axis.
     static member inline rotateOnZ (r:Rotation2D) (ln:Line3D) : Line3D =
-        Line3D(Pnt.rotateOnZ r ln.From, Pnt.rotateOnZ r ln.To)
+        let fx = ln.FromX
+        let fy = ln.FromY
+        let tx = ln.ToX
+        let ty = ln.ToY
+        let c = r.Cos
+        let s = r.Sin
+        Line3D( c*fx - s*fy,
+                s*fx + c*fy,
+                ln.FromZ,
+                c*tx - s*ty,
+                s*tx + c*ty,
+                ln.ToZ)
 
     /// Rotation a 3D line round a given center point an a local Z-axis.
     static member inline rotateOnZWithCenter (cen:Pnt) (r:Rotation2D) (ln:Line3D) : Line3D =
-        Line3D(Pnt.rotateOnZWithCenter cen r ln.From, Pnt.rotateOnZWithCenter cen r ln.To)
+        let cx = cen.X
+        let cy = cen.Y
+        let fx = ln.FromX - cx
+        let fy = ln.FromY - cy
+        let tx = ln.ToX - cx
+        let ty = ln.ToY - cy
+        let c = r.Cos
+        let s = r.Sin
+        Line3D( c*fx - s*fy + cx,
+                s*fx + c*fy + cy,
+                ln.FromZ,
+                c*tx - s*ty + cx,
+                s*tx + c*ty + cy,
+                ln.ToZ)
 
     /// Ensure 3D line has a positive dot product with given orientation line.
     static member inline matchOrientation (orientationToMatch:Line3D) (lineToFlip:Line3D) : Line3D =
