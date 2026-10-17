@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - `Box.createFromPlaneAndPoints` and `Box.createFromDirsAndPoints` skipped the first point, so the resulting box did not always contain it.
+- `Tria3D.offsetVar` returned a wrong point: it moved along the offset normal instead of along the previous segment to reach the intersection of the two offset lines.
 
 ### Deprecated
 - `FreeBox.Points` and the static `FreeBox.points` are obsolete. Since `FreeBox` stores a flat array of 24 floats they do not return the live internal buffer any more, but a copy. Use `FreeBox.AsPoints` for the 8 corner points, or `FreeBox.XYZs` for the live buffer.

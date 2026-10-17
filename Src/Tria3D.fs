@@ -188,7 +188,7 @@ type Tria3D =
             let e = bx*vx + by*vy + bz*vz
             let d = ax*vx + ay*vy + az*vz
             let tPrev = (b * e - d) / discriminant
-            let pt = lnAFrom + nPrevU * tPrev // the offset point
+            let pt = lnAFrom - vPrevU * tPrev // the offset point, on line A, which runs along vPrevU
             ValueSome pt
 
 

@@ -227,6 +227,42 @@ let tests =
         | ValueNone -> failwith "offsetVar returned None unexpectedly"
         }
 
+        test "offsetVar with different distances hits the intersection of both offset lines" {
+        let prev = Pnt(0,0,0)
+        let pt   = Pnt(1,0,0)
+        let next = Pnt(1,1,0)
+        // prev segment y=0 offset to y=0.2, next segment x=1 offset to x=0.3
+        match Tria3D.offsetVar(pt, prev, next, 0.2, 0.7) with
+        | ValueSome o -> $"offsetVar should be at (0.3, 0.2, 0) but is {o}" |> Expect.isTrue (eq o (Pnt(0.3, 0.2, 0.)))
+        | ValueNone -> failwith "offsetVar returned None unexpectedly"
+        }
+
+        test "offsetVar with equal distances matches Tria3D.offset" {
+        let a = Pnt(0,0,0)
+        let b = Pnt(1,0,0)
+        let c = Pnt(1,1,0)
+        let d = 0.25
+        let (_, ob, _) = Tria3D.offset(a, b, c, d)
+        match Tria3D.offsetVar(b, a, c, d, d) with
+        | ValueSome o -> $"offsetVar should match Tria3D.offset {ob} but is {o}" |> Expect.isTrue (eq o ob)
+        | ValueNone -> failwith "offsetVar returned None unexpectedly"
+        }
+
+        test "offsetVar result has the given distances to both segment lines (skew corner in 3D)" {
+        let prev = Pnt(-2, 1, 3)
+        let pt   = Pnt(1, 0.5, 2)
+        let next = Pnt(2, 3, -1)
+        let dPrev = 0.3
+        let dNext = 0.8
+        match Tria3D.offsetVar(pt, prev, next, dPrev, dNext) with
+        | ValueSome o ->
+            let distPrev = sqrt (Line3D(prev, pt).DistanceSqToPntInfinite o)
+            let distNext = sqrt (Line3D(pt, next).DistanceSqToPntInfinite o)
+            $"distance to prev segment line should be {dPrev} but is {distPrev}" |> Expect.isTrue (abs (distPrev - dPrev) < 1e-9)
+            $"distance to next segment line should be {dNext} but is {distNext}" |> Expect.isTrue (abs (distNext - dNext) < 1e-9)
+        | ValueNone -> failwith "offsetVar returned None unexpectedly"
+        }
+
         test "offsetVar handles collinear input gracefully" {
         let prev = Pnt(0,0,0)
         let pt   = Pnt(1,1,1)
