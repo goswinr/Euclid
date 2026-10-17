@@ -11,9 +11,18 @@ type Tria3D =
     /// This is the fastest way to get a comparison or sorting value for the areas of triangles.
     /// This is just the length of the cross product vector.
     static member inline areaDouble (a:Pnt, b:Pnt, c:Pnt) :float =
-        let v = b - a
-        let w = c - a
-        Vec.cross (v, w) |> Vec.length
+        // v = b - a and w = c - a
+        let vx = b.X - a.X
+        let vy = b.Y - a.Y
+        let vz = b.Z - a.Z
+        let wx = c.X - a.X
+        let wy = c.Y - a.Y
+        let wz = c.Z - a.Z
+        // length of the cross product v x w
+        let x = vy * wz - vz * wy
+        let y = vz * wx - vx * wz
+        let z = vx * wy - vy * wx
+        sqrt (x*x + y*y + z*z)
 
     /// Returns the area of a triangle described by 3 points.
     static member inline area (a:Pnt, b:Pnt, c:Pnt) : float =
@@ -54,19 +63,25 @@ type Tria3D =
             let w' = z' - p.Z
             u'*u' + v'*v' + w'*w'
 
-        let ab = b-a
-        let bc = c-b
-        let ca = a-c
-        let abLenSq = ab.LengthSq
-        let bcLenSq = bc.LengthSq
-        let caLenSq = ca.LengthSq
+        let abX = b.X - a.X
+        let abY = b.Y - a.Y
+        let abZ = b.Z - a.Z
+        let bcX = c.X - b.X
+        let bcY = c.Y - b.Y
+        let bcZ = c.Z - b.Z
+        let caX = a.X - c.X
+        let caY = a.Y - c.Y
+        let caZ = a.Z - c.Z
+        let abLenSq = abX*abX + abY*abY + abZ*abZ
+        let bcLenSq = bcX*bcX + bcY*bcY + bcZ*bcZ
+        let caLenSq = caX*caX + caY*caY + caZ*caZ
         let distSq = distanceTolerance*distanceTolerance
         if abLenSq < distSq || bcLenSq < distSq || caLenSq < distSq then // two or more points are too close to each other
             true
         else
-            let dotA = ab *** ca
-            let dotB = bc *** ab
-            let dotC = ca *** bc
+            let dotA = abX*caX + abY*caY + abZ*caZ
+            let dotB = bcX*abX + bcY*abY + bcZ*abZ
+            let dotC = caX*bcX + caY*bcY + caZ*bcZ
             // the corner with the biggest dot product is the one with the biggest angle,
             // so the one with the closest distance to the opposite line in this triangle
             if dotA > dotB && dotA > dotC then
