@@ -1159,6 +1159,42 @@ type FreeBox private (xyzs:float[]) =
     static member inline edge74 (b:FreeBox) :Line3D =
         b.Edge74
 
+    /// <summary>Returns the line from the corner point at the start index to the corner point at the end index.
+    /// Any two different indices from 0 to 7 are valid, so besides the 12 edges this also returns face diagonals and space diagonals.
+    /// The direction of the line follows the order of the indices: GetLine(0, 1) is Edge01 and GetLine(1, 0) is Edge10.
+    /// <code>
+    ///       7               6
+    ///       +---------------+
+    ///      /|              /|
+    ///     / |             / |
+    /// 4  /  |          5 /  |
+    ///   +---------------+   |
+    ///   |   |           |   |
+    ///   |   +-----------|---+
+    ///   |  / 3          |  / 2
+    ///   | /             | /
+    ///   |/              |/
+    ///   +---------------+
+    ///   0               1
+    /// </code>
+    /// </summary>
+    /// <param name="startPointIndex">The index of the corner point where the line starts. Must be between 0 and 7.</param>
+    /// <param name="endPointIndex">The index of the corner point where the line ends. Must be between 0 and 7 and different from startPointIndex.</param>
+    /// <returns>A Line3D from the start corner point to the end corner point.</returns>
+    member _.GetLine (startPointIndex:int, endPointIndex:int) : Line3D =
+        if startPointIndex < 0 || startPointIndex > 7 then
+            failPointIndex "GetLine" startPointIndex
+        if endPointIndex < 0 || endPointIndex > 7 then
+            failPointIndex "GetLine" endPointIndex
+        if startPointIndex = endPointIndex then
+            fail $"FreeBox.GetLine: startPointIndex and endPointIndex are both {startPointIndex}. They must be different."
+        edge startPointIndex endPointIndex xyzs
+
+    /// Returns the line from the corner point at the start index to the corner point at the end index of the FreeBox.
+    /// Any two different indices from 0 to 7 are valid.
+    static member inline getLine (startPointIndex:int) (endPointIndex:int) (b:FreeBox) : Line3D =
+        b.GetLine(startPointIndex, endPointIndex)
+
 
 
     // these members don't make sense for a FreeBox:

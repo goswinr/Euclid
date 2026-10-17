@@ -710,6 +710,36 @@ let tests =
                 Expect.isTrue (isReverseOf box.Edge76 box.Edge67) "Edge67 should be the reverse of Edge76"
                 Expect.isTrue (isReverseOf box.Edge47 box.Edge74) "Edge74 should be the reverse of Edge47"
             }
+
+            test "GetLine returns the line between any two different corners" {
+                let box = BBox.create(Pnt(-4., 1., 2.), Pnt(6., 6., 9.))
+                let pts = box.Points
+                for i in 0..7 do
+                    for j in 0..7 do
+                        if i <> j then
+                            let ln = box.GetLine(i, j)
+                            Expect.isTrue (eqPnt ln.From pts.[i]) $"GetLine({i}, {j}).From should be point {i}"
+                            Expect.isTrue (eqPnt ln.To pts.[j]) $"GetLine({i}, {j}).To should be point {j}"
+                            Expect.isTrue (eqPnt (BBox.getLine i j box).To pts.[j]) $"BBox.getLine {i} {j} should match GetLine"
+            }
+
+            test "GetLine matches the named edges" {
+                let box = BBox.create(Pnt(-4., 1., 2.), Pnt(6., 6., 9.))
+                let same (a:Line3D) (b:Line3D) = eqPnt a.From b.From && eqPnt a.To b.To
+                Expect.isTrue (same (box.GetLine(0, 1)) box.Edge01) "GetLine(0, 1) should be Edge01"
+                Expect.isTrue (same (box.GetLine(1, 0)) box.Edge10) "GetLine(1, 0) should be Edge10"
+                Expect.isTrue (same (box.GetLine(3, 2)) box.Edge32) "GetLine(3, 2) should be Edge32"
+                Expect.isTrue (same (box.GetLine(2, 6)) box.Edge26) "GetLine(2, 6) should be Edge26"
+                Expect.isTrue (same (box.GetLine(7, 4)) box.Edge74) "GetLine(7, 4) should be Edge74"
+            }
+
+            test "GetLine fails on equal or out of range indices" {
+                let box = BBox.create(Pnt(-4., 1., 2.), Pnt(6., 6., 9.))
+                Expect.throws (fun () -> box.GetLine(3, 3) |> ignore) "Equal indices should throw"
+                Expect.throws (fun () -> box.GetLine(-1, 2) |> ignore) "Negative start index should throw"
+                Expect.throws (fun () -> box.GetLine(2, 8) |> ignore) "End index 8 should throw"
+                Expect.throws (fun () -> box.GetLine(8, 8) |> ignore) "Equal out of range indices should throw"
+            }
         ]
 
         testList "Validation Methods" [

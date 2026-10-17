@@ -1470,6 +1470,65 @@ type BBox =
         b.GetEdge(edgeIndex)
 
 
+    /// <summary>Returns the line from the corner point at the start index to the corner point at the end index.
+    /// Any two different indices from 0 to 7 are valid, so besides the 12 edges this also returns face diagonals and space diagonals.
+    /// The direction of the line follows the order of the indices: GetLine(0, 1) is Edge01 and GetLine(1, 0) is Edge10.
+    /// <code>
+    ///   Z-axis       Y-axis
+    ///   ^           /
+    ///   |   7      /        6 MaxPnt
+    ///   |   +---------------+
+    ///   |  /|    /         /|
+    ///   | / |   /         / |
+    /// 4 |/  |  /       5 /  |
+    ///   +---------------+   |
+    ///   |   |/          |   |
+    ///   |   +-----------|---+
+    ///   |  / 3          |  / 2
+    ///   | /             | /
+    ///   |/              |/
+    ///   +---------------+----> X-axis
+    ///   0 MinPnt         1
+    /// </code>
+    /// </summary>
+    /// <param name="startPointIndex">The index of the corner point where the line starts. Must be between 0 and 7.</param>
+    /// <param name="endPointIndex">The index of the corner point where the line ends. Must be between 0 and 7 and different from startPointIndex.</param>
+    /// <returns>A Line3D from the start corner point to the end corner point.</returns>
+    member b.GetLine (startPointIndex:int, endPointIndex:int) : Line3D =
+        if startPointIndex < 0 || startPointIndex > 7 then
+            fail $"BBox.GetLine: startPointIndex {startPointIndex} is out of range. It must be between 0 and 7."
+        if endPointIndex < 0 || endPointIndex > 7 then
+            fail $"BBox.GetLine: endPointIndex {endPointIndex} is out of range. It must be between 0 and 7."
+        if startPointIndex = endPointIndex then
+            fail $"BBox.GetLine: startPointIndex and endPointIndex are both {startPointIndex}. They must be different."
+        let s =
+            match startPointIndex with
+            | 0 -> b.Pt0
+            | 1 -> b.Pt1
+            | 2 -> b.Pt2
+            | 3 -> b.Pt3
+            | 4 -> b.Pt4
+            | 5 -> b.Pt5
+            | 6 -> b.Pt6
+            | _ -> b.Pt7
+        let e =
+            match endPointIndex with
+            | 0 -> b.Pt0
+            | 1 -> b.Pt1
+            | 2 -> b.Pt2
+            | 3 -> b.Pt3
+            | 4 -> b.Pt4
+            | 5 -> b.Pt5
+            | 6 -> b.Pt6
+            | _ -> b.Pt7
+        Line3D(s, e)
+
+    /// Returns the line from the corner point at the start index to the corner point at the end index of the 3D bounding box.
+    /// Any two different indices from 0 to 7 are valid.
+    static member inline getLine (startPointIndex:int) (endPointIndex:int) (b:BBox) : Line3D =
+        b.GetLine(startPointIndex, endPointIndex)
+
+
     // #endregion
     // #region Faces
 
