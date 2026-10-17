@@ -432,12 +432,10 @@ type Matrix =
     member m.IsOrthogonal : bool =
         m.IsAffine &&
         (
-        let x = Vec(m.M11, m.M12, m.M13)
-        let y = Vec(m.M21, m.M22, m.M23)
-        let z = Vec(m.M31, m.M32, m.M33)
-        UtilEuclid.isZero (x *** y) &&
-        UtilEuclid.isZero (x *** z) &&
-        UtilEuclid.isZero (y *** z)
+        // dot products of the column vectors x = (M11, M12, M13), y = (M21, M22, M23) and z = (M31, M32, M33)
+        UtilEuclid.isZero (XYZ.dot m.M11 m.M12 m.M13  m.M21 m.M22 m.M23) &&
+        UtilEuclid.isZero (XYZ.dot m.M11 m.M12 m.M13  m.M31 m.M32 m.M33) &&
+        UtilEuclid.isZero (XYZ.dot m.M21 m.M22 m.M23  m.M31 m.M32 m.M33)
         )
 
     /// <summary>Returns if the Matrix is orthogonal.
@@ -453,10 +451,12 @@ type Matrix =
     member m.IsMirroring : bool =
         m.IsAffine &&
         (
-        let x = Vec(m.M11, m.M12, m.M13)
-        let y = Vec(m.M21, m.M22, m.M23)
-        let z = Vec(m.M31, m.M32, m.M33)
-        (Vec.cross (x, y)) *** z  < 0.0
+        // the cross product of the column vectors x = (M11, M12, M13) and y = (M21, M22, M23)
+        let cx = m.M12 * m.M23 - m.M13 * m.M22
+        let cy = m.M13 * m.M21 - m.M11 * m.M23
+        let cz = m.M11 * m.M22 - m.M12 * m.M21
+        // its dot product with the column vector z = (M31, M32, M33)
+        XYZ.dot cx cy cz  m.M31 m.M32 m.M33 < 0.0
         )
 
     /// <summary>Returns if the Matrix is mirroring or reflection.
@@ -486,10 +486,10 @@ type Matrix =
     member m.IsScaling : bool =
         m.IsAffine &&
         (
-        let inline sqLen    (v:Vec) = v.X*v.X + v.Y*v.Y + v.Z*v.Z // defined here again, because Vec extension members are not in scope here
-        UtilEuclid.isNotOne (sqLen (Vec(m.M11, m.M12, m.M13))) || // exclude scaling
-        UtilEuclid.isNotOne (sqLen (Vec(m.M21, m.M22, m.M23))) ||
-        UtilEuclid.isNotOne (sqLen (Vec(m.M31, m.M32, m.M33)))
+        // squared lengths of the three column vectors
+        UtilEuclid.isNotOne (XYZ.sqLength m.M11 m.M12 m.M13) || // exclude scaling
+        UtilEuclid.isNotOne (XYZ.sqLength m.M21 m.M22 m.M23) ||
+        UtilEuclid.isNotOne (XYZ.sqLength m.M31 m.M32 m.M33)
         )
 
     /// <summary>Returns if the Matrix is scaling.
