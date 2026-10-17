@@ -7,7 +7,7 @@
 # install it here and restore the project's tools and dependencies.
 #
 # This runs in async mode: the session starts immediately while the SDK installs in
-# the background. See the cloud-session note in README.md / CLAUDE.md.
+# the background. See the cloud-session note in AGENTS.md.
 set -euo pipefail
 
 # Enable async mode so session startup isn't blocked by the SDK download.

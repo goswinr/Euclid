@@ -35,7 +35,7 @@ If `$file` is `*`, check all source files in current project.
 
 ## Testing Standards
 
-Follow the coding standards in `.github/copilot-instructions.md` when writing tests.
+Follow the coding standards in `AGENTS.md` when writing tests.
 
 ### Test Structure
 

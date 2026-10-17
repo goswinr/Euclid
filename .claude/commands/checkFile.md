@@ -68,4 +68,4 @@ If suggesting code changes:
 
 If discrepancies are minor and unambiguous to fix, apply corrections directly using the replace tools. Otherwise, present findings and await user approval before making changes.
 
-Follow the coding standards in `.github/copilot-instructions.md` throughout the review.
+Follow the coding standards in `AGENTS.md` throughout the review.
