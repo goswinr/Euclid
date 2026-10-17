@@ -105,6 +105,33 @@ let tests =
                 Expect.isTrue (box.SizeX >= 0.) "Should create valid box"
             }
 
+            test "createFromDirsAndPoints includes the first point" {
+                // the first point is the plane origin, all others lie in the positive octant
+                let pts = ResizeArray([Pnt(0., 0., 0.); Pnt(10., 2., 1.); Pnt(4., 5., 3.)])
+                let box = Box.createFromDirsAndPoints Vec.Xaxis Vec.Yaxis pts
+                Expect.isTrue (eqPnt box.Origin Pnt.Origin) $"Origin should be at the first point, but is {box.Origin}"
+                Expect.isTrue (eqFloat box.SizeX 10.) $"SizeX should be 10, but is {box.SizeX}"
+                Expect.isTrue (eqFloat box.SizeY 5.) $"SizeY should be 5, but is {box.SizeY}"
+                Expect.isTrue (eqFloat box.SizeZ 3.) $"SizeZ should be 3, but is {box.SizeZ}"
+            }
+
+            test "createFromPlaneAndPoints includes the first point" {
+                // the first point is the only one with negative coordinates
+                let pts = ResizeArray([Pnt(-5., -5., -5.); Pnt(1., 1., 1.); Pnt(2., 3., 4.)])
+                let box = Box.createFromPlaneAndPoints PPlane.WorldXY pts
+                Expect.isTrue (eqPnt box.Origin (Pnt(-5., -5., -5.))) $"Origin should be at the first point, but is {box.Origin}"
+                Expect.isTrue (eqFloat box.SizeX 7.) $"SizeX should be 7, but is {box.SizeX}"
+                Expect.isTrue (eqFloat box.SizeY 8.) $"SizeY should be 8, but is {box.SizeY}"
+                Expect.isTrue (eqFloat box.SizeZ 9.) $"SizeZ should be 9, but is {box.SizeZ}"
+            }
+
+            test "createFromPlaneAndPoints with two points" {
+                let pts = ResizeArray([Pnt(3., 4., 5.); Pnt(1., 1., 1.)])
+                let box = Box.createFromPlaneAndPoints PPlane.WorldXY pts
+                Expect.isTrue (eqPnt box.Origin (Pnt(1., 1., 1.))) $"Origin should be at the min corner, but is {box.Origin}"
+                Expect.isTrue (eqPnt box.FarCorner (Pnt(3., 4., 5.))) $"FarCorner should be at the first point, but is {box.FarCorner}"
+            }
+
             test "createFromDirsAndPoints rejects too few points" {
                 let pts = ResizeArray([Pnt(0., 0., 0.)])
                 Expect.throws (fun () -> Box.createFromDirsAndPoints Vec.Xaxis Vec.Yaxis pts |> ignore) "Should throw with just 1 point"

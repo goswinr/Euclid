@@ -984,7 +984,7 @@ type Box =
         let mutable maxY = Double.MinValue
         let mutable minZ = Double.MaxValue
         let mutable maxZ = Double.MinValue
-        for i = 1 to pts.Count-1 do
+        for i = 0 to pts.Count-1 do
             let v = pts.[i] - o
             let dotX = v *** x
             minX <- min minX dotX

@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - `FreeBox` now stores its 8 corners as a flat array of 24 interleaved floats (`x0, y0, z0, x1, y1, z1, ... x7, y7, z7`), instead of an array of 8 `Pnt`. This matches how `Polyline2D` and `Polyline3D` store their points, and lets all transformations run on the raw floats without allocating intermediate points. The corner accessors `Pt0`-`Pt7`, `GetPt`, `SetPt` and all edges are unchanged. JSON serialization of a `FreeBox` now writes the `XYZs` array of 24 floats instead of a `Points` array of 8 points.
 
+### Fixed
+- `Box.createFromPlaneAndPoints` and `Box.createFromDirsAndPoints` skipped the first point, so the resulting box did not always contain it.
+
 ### Deprecated
 - `FreeBox.Points` and the static `FreeBox.points` are obsolete. Since `FreeBox` stores a flat array of 24 floats they do not return the live internal buffer any more, but a copy. Use `FreeBox.AsPoints` for the 8 corner points, or `FreeBox.XYZs` for the live buffer.
 
