@@ -174,22 +174,30 @@ type Tria3D =
             let bz = vNextU.Z
             // let a = ax*ax + ay*ay + az*az // square length of A // always 1.0
             // let c = bx*bx + by*by + bz*bz // square length of B // always 1.0
-            let lnAFrom = ptToOffset + nPrevU * distPrev
-            let lnBFrom = ptToOffset + nNextU * distNext
+            let px = ptToOffset.X
+            let py = ptToOffset.Y
+            let pz = ptToOffset.Z
+            // the start points of the two offset lines A and B:
+            let aFromX = px + nPrevU.X * distPrev
+            let aFromY = py + nPrevU.Y * distPrev
+            let aFromZ = pz + nPrevU.Z * distPrev
+            let bFromX = px + nNextU.X * distNext
+            let bFromY = py + nNextU.Y * distNext
+            let bFromZ = pz + nNextU.Z * distNext
 
             // do line-line intersection:
             let b = ax*bx + ay*by + az*bz // dot product of both lines
-            let vx = lnBFrom.X - lnAFrom.X
-            let vy = lnBFrom.Y - lnAFrom.Y
-            let vz = lnBFrom.Z - lnAFrom.Z
+            let vx = bFromX - aFromX
+            let vy = bFromY - aFromY
+            let vz = bFromZ - aFromZ
             //let ac = a * c // square of square length, never negative// always 1.0
             let bb = b * b // never negative
             let discriminant = 1.0 - bb //ac - bb // never negative, the dot product cannot be bigger than the two square length multiplied with each other
             let e = bx*vx + by*vy + bz*vz
             let d = ax*vx + ay*vy + az*vz
             let tPrev = (b * e - d) / discriminant
-            let pt = lnAFrom - vPrevU * tPrev // the offset point, on line A, which runs along vPrevU
-            ValueSome pt
+            // the offset point, on line A, which runs along vPrevU:
+            ValueSome (Pnt(aFromX - ax * tPrev, aFromY - ay * tPrev, aFromZ - az * tPrev))
 
 
     /// Finds the intersection parameter on the infinite Line3D with a 3D triangle.
