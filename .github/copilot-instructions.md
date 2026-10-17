@@ -60,6 +60,7 @@ In 3D, the positive X-axis points to the right, the positive Y-axis points forwa
 ## Performance Considerations
 - Avoid allocating intermediate arrays; prefer `ResizeArray<_>` reuse patterns aligned with existing modules.
 - Keep hot-path math inline; avoid unnecessary allocations (e.g., tuple deconstruction causing closures).
+- To find and remove intermediate `Pnt`/`Vec`/`Pt`/`Vc` temporaries without changing results, follow [.claude/commands/findAllocations.md](../.claude/commands/findAllocations.md).
 
 ## Adding New Geometry
 1. Add functional operations as extension members in a matching file under `Src/TypeExtensions`.
