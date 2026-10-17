@@ -311,7 +311,15 @@ type Rect3D =
     /// Returns the closest point on the 3D-rectangle to a given point.
     /// If the closest parameter is outside 0.0 to 1.0, the closest point will still be clamped onto the edge of the rectangle.
     member r.ClosestPoint (p:Pnt) : Pnt =
-        let xParam, yParam = r.ClosestParameters(p)
+        let vx = p.X - r.OriginX
+        let vy = p.Y - r.OriginY
+        let vz = p.Z - r.OriginZ
+        let xLenSq = r.SizeXSq
+        let yLenSq = r.SizeYSq
+        if isTooTiny (xLenSq) || isTooTiny (yLenSq) then
+            failTooSmall "Rect3D.ClosestPoint: rect Xaxis or Yaxis" r
+        let xParam = (vx*r.XaxisX + vy*r.XaxisY + vz*r.XaxisZ) / xLenSq
+        let yParam = (vx*r.YaxisX + vy*r.YaxisY + vz*r.YaxisZ) / yLenSq
         r.EvaluateAt(UtilEuclid.clamp01 xParam, UtilEuclid.clamp01 yParam)
 
     /// Returns the closest point on the 3D-rectangle to a given point.

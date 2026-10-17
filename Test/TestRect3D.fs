@@ -29,6 +29,22 @@ let tests =
             "Edge03" |> Expect.isTrue (eqLine rect.Edge03 p0 p3)
         }
 
+        test "Rect3D.ClosestPoint - inside, clamped to edge and corner, rotated and off origin" {
+            // rotated in 3D and away from the world origin, so translation and rotation bugs show
+            let r = Rect3D.createFromVectors(Pnt(10.,20.,30.), Vec(1.,2.,2.), Vec(2.,-2.,1.))
+            let inside = r.EvaluateAt(0.5, 0.25)
+            "inside point stays" |> Expect.isTrue (eq (r.ClosestPoint inside) inside)
+            let above = inside + r.Normal
+            "point off the plane is projected onto it" |> Expect.isTrue (eq (r.ClosestPoint above) inside)
+            "beyond X edge clamps to X=1" |> Expect.isTrue (eq (r.ClosestPoint (r.EvaluateAt(2.0, 0.5))) (r.EvaluateAt(1.0, 0.5)))
+            "beyond corner clamps to Pt3" |> Expect.isTrue (eq (r.ClosestPoint (r.EvaluateAt(-1.0, 3.0))) r.Pt3)
+        }
+
+        test "Rect3D.ClosestPoint - zero-length axis throws" {
+            // built inside the lambda: the Debug constructor checks axes too
+            Expect.throws (fun () -> (Rect3D.createUnchecked(1., 2., 3., 0., 0., 0., 0., 3., 0.)).ClosestPoint(Pnt(1., 1., 1.)) |> ignore) "Should throw on zero-length X-axis"
+        }
+
         test "Rect3D.grid" {
         let grid = Rect3D.grid (rect, 2, 2)
         "2-Rect3D.grid: array outer length" |> Expect.equal grid.Length 2
