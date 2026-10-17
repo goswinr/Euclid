@@ -1318,13 +1318,25 @@ type Box =
 
     /// Checks if the axes of both boxes are aligned, meaning they are parallel and have the same orientation
     static member areBoxesAligned (cosineTolerance:float<Cosine.cosine>) (a:Box) (b:Box) : bool =
-        Vec.isParallelAndOrientedTo cosineTolerance a.Xaxis b.Xaxis &&
-        Vec.isParallelAndOrientedTo cosineTolerance a.Yaxis b.Yaxis &&
-        Vec.isParallelAndOrientedTo cosineTolerance a.Zaxis b.Zaxis
+        // same as Vec.isParallelAndOrientedTo on the axis vectors, but without building them
+        let inline isParallelAndOriented (ax:float) (ay:float) (az:float) (bx:float) (by:float) (bz:float) =
+            let sa = ax*ax + ay*ay + az*az
+            if isTooTinySq(sa) then failTooSmall2 "Box.areBoxesAligned" (Vec(ax, ay, az)) (Vec(bx, by, bz))
+            let sb = bx*bx + by*by + bz*bz
+            if isTooTinySq(sb) then failTooSmall2 "Box.areBoxesAligned" (Vec(bx, by, bz)) (Vec(ax, ay, az))
+            let fa = 1.0 / sqrt sa
+            let fb = 1.0 / sqrt sb
+            (bx*fb)*(ax*fa) + (by*fb)*(ay*fa) + (bz*fb)*(az*fa) > float cosineTolerance
+        isParallelAndOriented a.XaxisX a.XaxisY a.XaxisZ b.XaxisX b.XaxisY b.XaxisZ &&
+        isParallelAndOriented a.YaxisX a.YaxisY a.YaxisZ b.YaxisX b.YaxisY b.YaxisZ &&
+        isParallelAndOriented a.ZaxisX a.ZaxisY a.ZaxisZ b.ZaxisX b.ZaxisY b.ZaxisZ
 
     /// Gets the maximum angular deviation in degrees between the corresponding axes (X, Y, Z) of two boxes.
     static member getBoxesAlignment  (a:Box) (b:Box) : float =
-        max (Vec.angle180 a.Xaxis b.Xaxis) (max (Vec.angle180 a.Yaxis b.Yaxis) (Vec.angle180 a.Zaxis b.Zaxis))
+        let x = anglePiOfVecs "Box.getBoxesAlignment" a.XaxisX a.XaxisY a.XaxisZ b.XaxisX b.XaxisY b.XaxisZ |> toDegrees
+        let y = anglePiOfVecs "Box.getBoxesAlignment" a.YaxisX a.YaxisY a.YaxisZ b.YaxisX b.YaxisY b.YaxisZ |> toDegrees
+        let z = anglePiOfVecs "Box.getBoxesAlignment" a.ZaxisX a.ZaxisY a.ZaxisZ b.ZaxisX b.ZaxisY b.ZaxisZ |> toDegrees
+        max x (max y z)
 
 
     /// when used in F# pipe returns the box before the pipe operator.
