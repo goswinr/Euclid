@@ -2854,27 +2854,7 @@ type Box =
             fail $"Box.GetLine: endPointIndex {endPointIndex} is out of range. It must be between 0 and 7."
         if startPointIndex = endPointIndex then
             fail $"Box.GetLine: startPointIndex and endPointIndex are both {startPointIndex}. They must be different."
-        let s =
-            match startPointIndex with
-            | 0 -> b.Pt0
-            | 1 -> b.Pt1
-            | 2 -> b.Pt2
-            | 3 -> b.Pt3
-            | 4 -> b.Pt4
-            | 5 -> b.Pt5
-            | 6 -> b.Pt6
-            | _ -> b.Pt7
-        let e =
-            match endPointIndex with
-            | 0 -> b.Pt0
-            | 1 -> b.Pt1
-            | 2 -> b.Pt2
-            | 3 -> b.Pt3
-            | 4 -> b.Pt4
-            | 5 -> b.Pt5
-            | 6 -> b.Pt6
-            | _ -> b.Pt7
-        Line3D(s, e)
+        Line3D(b.GetPoint startPointIndex, b.GetPoint endPointIndex)
 
     /// Returns the line from the corner point at the start index to the corner point at the end index of the box.
     /// Any two different indices from 0 to 7 are valid.

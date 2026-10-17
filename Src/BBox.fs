@@ -1083,7 +1083,7 @@ type BBox =
         | 5 -> b.Pt5
         | 6 -> b.Pt6
         | 7 -> b.Pt7
-        | _ -> fail $"Box.GetPoint: pointIndex {pointIndex} is out of range. Valid range is 0 to 7."
+        | _ -> fail $"BBox.GetPoint: pointIndex {pointIndex} is out of range. Valid range is 0 to 7."
 
     /// Returns the point of the box at the specified index.
     static member inline getPoint (pointIndex:int) (b:BBox) : Pnt =
@@ -1501,27 +1501,7 @@ type BBox =
             fail $"BBox.GetLine: endPointIndex {endPointIndex} is out of range. It must be between 0 and 7."
         if startPointIndex = endPointIndex then
             fail $"BBox.GetLine: startPointIndex and endPointIndex are both {startPointIndex}. They must be different."
-        let s =
-            match startPointIndex with
-            | 0 -> b.Pt0
-            | 1 -> b.Pt1
-            | 2 -> b.Pt2
-            | 3 -> b.Pt3
-            | 4 -> b.Pt4
-            | 5 -> b.Pt5
-            | 6 -> b.Pt6
-            | _ -> b.Pt7
-        let e =
-            match endPointIndex with
-            | 0 -> b.Pt0
-            | 1 -> b.Pt1
-            | 2 -> b.Pt2
-            | 3 -> b.Pt3
-            | 4 -> b.Pt4
-            | 5 -> b.Pt5
-            | 6 -> b.Pt6
-            | _ -> b.Pt7
-        Line3D(s, e)
+        Line3D(b.GetPoint startPointIndex, b.GetPoint endPointIndex)
 
     /// Returns the line from the corner point at the start index to the corner point at the end index of the 3D bounding box.
     /// Any two different indices from 0 to 7 are valid.
