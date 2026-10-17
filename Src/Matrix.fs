@@ -931,10 +931,10 @@ type Matrix =
     /// <param name="p">The target plane.</param>
     static member createToPlane(p:PPlane) : Matrix =
         Matrix(
-            p.Xaxis.X, p.Yaxis.X, p.Zaxis.X,  p.Origin.X,
-            p.Xaxis.Y, p.Yaxis.Y, p.Zaxis.Y,  p.Origin.Y,
-            p.Xaxis.Z, p.Yaxis.Z, p.Zaxis.Z,  p.Origin.Z,
-            0        ,         0,         0,           1)
+            p.XaxisX, p.YaxisX, p.ZaxisX,  p.OriginX,
+            p.XaxisY, p.YaxisY, p.ZaxisY,  p.OriginY,
+            p.XaxisZ, p.YaxisZ, p.ZaxisZ,  p.OriginZ,
+            0       ,        0,        0,          1)
 
     /// <summary>Creates a Matrix to transform from one Plane or Coordinate System to another Plane.</summary>
     /// <param name="fromPlane">The source plane.</param>

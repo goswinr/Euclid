@@ -639,9 +639,9 @@ type RigidMatrix =
     /// <param name="p">The target plane.</param>
     static member createToPlane(p:PPlane) : RigidMatrix =
         RigidMatrix(
-            p.Xaxis.X , p.Yaxis.X , p.Zaxis.X ,  p.Origin.X ,
-            p.Xaxis.Y , p.Yaxis.Y , p.Zaxis.Y ,  p.Origin.Y ,
-            p.Xaxis.Z , p.Yaxis.Z , p.Zaxis.Z ,  p.Origin.Z)
+            p.XaxisX , p.YaxisX , p.ZaxisX ,  p.OriginX ,
+            p.XaxisY , p.YaxisY , p.ZaxisY ,  p.OriginY ,
+            p.XaxisZ , p.YaxisZ , p.ZaxisZ ,  p.OriginZ)
 
     /// <summary>Creates a RigidMatrix to transform from one Plane or Coordinate System to another Plane.</summary>
     /// <param name="fromPlane">The source plane.</param>
