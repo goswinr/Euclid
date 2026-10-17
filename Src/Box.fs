@@ -974,10 +974,18 @@ type Box =
     /// The orientation of the Y-axis is defined by the dirY vector.
     static member createFromPlaneAndPoints (pl:PPlane) (pts:IList<Pnt>) : Box =
         if pts.Count < 2 then fail $"Box.createFromPlaneAndPoints: cannot create a Box from just {pts.Count} points"
-        let o = pl.Origin
-        let x = pl.Xaxis
-        let y = pl.Yaxis
-        let z = pl.Zaxis
+        let ox = pl.OriginX
+        let oy = pl.OriginY
+        let oz = pl.OriginZ
+        let xx = pl.XaxisX
+        let xy = pl.XaxisY
+        let xz = pl.XaxisZ
+        let yx = pl.YaxisX
+        let yy = pl.YaxisY
+        let yz = pl.YaxisZ
+        let zx = pl.ZaxisX
+        let zy = pl.ZaxisY
+        let zz = pl.ZaxisZ
         let mutable minX = Double.MaxValue
         let mutable minY = Double.MaxValue
         let mutable maxX = Double.MinValue
@@ -985,21 +993,29 @@ type Box =
         let mutable minZ = Double.MaxValue
         let mutable maxZ = Double.MinValue
         for i = 0 to pts.Count-1 do
-            let v = pts.[i] - o
-            let dotX = v *** x
+            let p = pts.[i]
+            let vx = p.X - ox
+            let vy = p.Y - oy
+            let vz = p.Z - oz
+            let dotX = vx * xx + vy * xy + vz * xz
             minX <- min minX dotX
             maxX <- max maxX dotX
-            let dotY = v *** y
+            let dotY = vx * yx + vy * yy + vz * yz
             minY <- min minY dotY
             maxY <- max maxY dotY
-            let dotZ = v *** z
+            let dotZ = vx * zx + vy * zy + vz * zz
             minZ <- min minZ dotZ
             maxZ <- max maxZ dotZ
-        let bo = pl.EvaluateAtXYZ(minX, minY, minZ)
         let sizeX = maxX - minX
         let sizeY = maxY - minY
         let sizeZ = maxZ - minZ
-        Box.createUncheckedVec(bo, x*sizeX, y*sizeY, z*sizeZ)
+        Box.createUnchecked(
+            ox + xx*minX + yx*minY + zx*minZ,
+            oy + xy*minX + yy*minY + zy*minZ,
+            oz + xz*minX + yz*minY + zz*minZ,
+            xx*sizeX, xy*sizeX, xz*sizeX,
+            yx*sizeY, yy*sizeY, yz*sizeY,
+            zx*sizeZ, zy*sizeZ, zz*sizeZ)
 
     /// Finds the oriented bounding box in 3D of a set of points.
     /// The orientation of the X-axis is defined by the dirX vector.
