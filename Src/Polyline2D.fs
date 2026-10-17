@@ -824,7 +824,9 @@ type Polyline2D private (xys: ResizeArray<float>) =
         let py = p.Y
         let mutable ax = xys.[0]
         let mutable ay = xys.[1]
-        let mutable minPt = Pt(ax, ay) // this handles the case of a single point Polyline2D
+        // the closest point found so far, starting with the first point, this handles the case of a single point Polyline2D
+        let mutable minX = ax
+        let mutable minY = ay
         let mutable minDistSq =
             let dx = px - ax
             let dy = py - ay
@@ -846,18 +848,20 @@ type Polyline2D private (xys: ResizeArray<float>) =
                 let distSq = dpx * dpx + dpy * dpy
                 if distSq < minDistSq then
                     minDistSq <- distSq
-                    minPt <- Pt(projX, projY)
+                    minX <- projX
+                    minY <- projY
             else
                 let dpx = px - ax
                 let dpy = py - ay
                 let distSq = dpx * dpx + dpy * dpy
                 if distSq < minDistSq then
                     minDistSq <- distSq
-                    minPt <- Pt(ax, ay)
+                    minX <- ax
+                    minY <- ay
             ax <- bx
             ay <- by
             i <- i + 2
-        minPt
+        Pt(minX, minY)
 
     /// Returns the point on the Polyline2D that is the closest point to the given point.
     /// This might be a point on a segment or a vertex of the Polyline2D.

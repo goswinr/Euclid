@@ -1078,7 +1078,10 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
         let mutable ax = xyzs.[0]
         let mutable ay = xyzs.[1]
         let mutable az = xyzs.[2]
-        let mutable minPt = Pnt(ax, ay, az) // this handles the case of a single point Polyline3D
+        // the closest point found so far, starting with the first point, this handles the case of a single point Polyline3D
+        let mutable minX = ax
+        let mutable minY = ay
+        let mutable minZ = az
         let mutable minDistSq =
             let dx = px - ax
             let dy = py - ay
@@ -1105,7 +1108,9 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
                 let distSq = dpx * dpx + dpy * dpy + dpz * dpz
                 if distSq < minDistSq then
                     minDistSq <- distSq
-                    minPt <- Pnt(projX, projY, projZ)
+                    minX <- projX
+                    minY <- projY
+                    minZ <- projZ
             else
                 let dpx = px - ax
                 let dpy = py - ay
@@ -1113,12 +1118,14 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
                 let distSq = dpx * dpx + dpy * dpy + dpz * dpz
                 if distSq < minDistSq then
                     minDistSq <- distSq
-                    minPt <- Pnt(ax, ay, az)
+                    minX <- ax
+                    minY <- ay
+                    minZ <- az
             ax <- bx
             ay <- by
             az <- bz
             i <- i + 3
-        minPt
+        Pnt(minX, minY, minZ)
 
     /// Returns the point on the Polyline3D that is the closest point to the given point.
     /// This might be a point on a segment or a vertex of the Polyline3D.
