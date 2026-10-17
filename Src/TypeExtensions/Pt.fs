@@ -446,7 +446,9 @@ module AutoOpenPt =
 
         /// Returns angle between three 2D Points in radians. Range 0.0 to Pi.
         static member inline anglePiPts (ptPrev:Pt, ptThis:Pt, ptNext:Pt) : float =
-            Vc.anglePi (ptPrev-ptThis) (ptNext-ptThis)
+            anglePiOfVcs "Pt.anglePiPts"
+                (ptPrev.X - ptThis.X) (ptPrev.Y - ptThis.Y)
+                (ptNext.X - ptThis.X) (ptNext.Y - ptThis.Y)
 
         /// Returns angle between three 2D Points in degrees. Range 0.0 to 180
         static member inline angle180Pts (ptPrev:Pt, ptThis:Pt, ptNext:Pt) : float =
@@ -520,9 +522,10 @@ module AutoOpenPt =
 
         /// Returns angle in degrees at mid point (thisPt).
         static member angleInCorner (prevPt:Pt, thisPt:Pt, nextPt:Pt) : float =
-            let a = prevPt-thisPt
-            let b = nextPt-thisPt
-            Vc.angle180 a b
+            anglePiOfVcs "Pt.angleInCorner"
+                (prevPt.X - thisPt.X) (prevPt.Y - thisPt.Y)
+                (nextPt.X - thisPt.X) (nextPt.Y - thisPt.Y)
+            |> toDegrees
 
         /// <summary>
         /// Projects a test point onto an endless line defined by an origin point and a unit direction vector.

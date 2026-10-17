@@ -8,6 +8,30 @@ open EuclidErrors
 [<AutoOpen>]
 module AutoOpenVec =
 
+    /// Unitizes two 3D vectors given by their components and returns the angle between them in radians.
+    /// Takes vector orientation into account. Range 0.0 to Pi ( = 0 to 180 degrees).
+    /// Fails with funcName in the message if one of them is shorter than 1e-12.
+    let inline internal anglePiOfVecs (funcName:string) (ax:float) (ay:float) (az:float) (bx:float) (by:float) (bz:float) : float =
+        let la = sqrt (ax*ax + ay*ay + az*az)
+        if isTooTiny la then failUnit3 funcName ax ay az
+        let lb = sqrt (bx*bx + by*by + bz*bz)
+        if isTooTiny lb then failUnit3 funcName bx by bz
+        let fa = 1. / la
+        let fb = 1. / lb
+        XYZ.anglePiOfUnit (fa*ax) (fa*ay) (fa*az) (fb*bx) (fb*by) (fb*bz)
+
+    /// Unitizes two 3D vectors given by their components and returns the angle between them in radians.
+    /// Ignores vector orientation. Range 0.0 to Pi/2 ( = 0 to 90 degrees).
+    /// Fails with funcName in the message if one of them is shorter than 1e-12.
+    let inline internal angleHalfPiOfVecs (funcName:string) (ax:float) (ay:float) (az:float) (bx:float) (by:float) (bz:float) : float =
+        let la = sqrt (ax*ax + ay*ay + az*az)
+        if isTooTiny la then failUnit3 funcName ax ay az
+        let lb = sqrt (bx*bx + by*by + bz*bz)
+        if isTooTiny lb then failUnit3 funcName bx by bz
+        let fa = 1. / la
+        let fb = 1. / lb
+        XYZ.angleHalfPiOfUnit (fa*ax) (fa*ay) (fa*az) (fb*bx) (fb*by) (fb*bz)
+
     type Vec with
 
         /// Convert 3D vector to 3D point.
@@ -871,25 +895,25 @@ module AutoOpenVec =
         /// Takes vector orientation into account,
         /// Range 0.0 to Pi( = 0 to 180 degrees).
         static member inline anglePi (a:Vec) (b:Vec) : float =
-            UnitVec.anglePi a.Unitized b.Unitized
+            anglePiOfVecs "Vec.anglePi" a.X a.Y a.Z b.X b.Y b.Z
 
         /// Returns positive angle between two 3D vectors in degrees.
         /// Takes vector orientation into account,
         /// Range 0 to 180 degrees.
         static member inline angle180 (a:Vec) (b:Vec) : float =
-            UnitVec.angle180 a.Unitized b.Unitized
+            anglePiOfVecs "Vec.angle180" a.X a.Y a.Z b.X b.Y b.Z |> toDegrees
 
         /// Returns positive angle between two 3D vectors in radians.
         /// Ignores vector orientation,
         /// Range: 0.0 to Pi/2 ( = 0 to 90 degrees)
         static member inline angleHalfPi (a:Vec) (b:Vec) : float =
-            UnitVec.angleHalfPi a.Unitized b.Unitized
+            angleHalfPiOfVecs "Vec.angleHalfPi" a.X a.Y a.Z b.X b.Y b.Z
 
         /// Returns positive angle between two 3D vectors in degrees.
         /// Ignores vector orientation,
         /// Range: 0 to 90 degrees.
         static member inline angle90 (a:Vec) (b:Vec) : float =
-            UnitVec.angle90 a.Unitized b.Unitized
+            angleHalfPiOfVecs "Vec.angle90" a.X a.Y a.Z b.X b.Y b.Z |> toDegrees
 
         /// Returns positive angle from vector 'a' to vector 'b' projected in X-Y plane.
         /// In radians.

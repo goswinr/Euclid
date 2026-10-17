@@ -10,14 +10,6 @@ open EuclidErrors
 module AutoOpenUnitVec =
     open UtilEuclid
 
-    /// Returns distance between the tips of two 3D unit-vectors.
-    let inline private vecDist3(ax:float, ay:float, az:float, bx:float, by:float, bz:float) =
-        let x = bx-ax
-        let y = by-ay
-        let z = bz-az
-        sqrt(x*x + y*y + z*z)
-
-
     type UnitVec with
 
         /// Convert 3D unit-vector to 3D vector.
@@ -720,24 +712,13 @@ module AutoOpenUnitVec =
             // The largest possible value of |u-v| occurs with perpendicular
             // vectors and is sqrt(2)/2 which is well away from extreme slope
             // at +/-1. (See Windows OS Bug 01706299 for details) (from WPF reference source code)
-            let dot = a *** b
-            if -0.98 < dot && dot < 0.98 then // threshold for switching 0.98 ?
-                acos dot
-            else
-                if dot < 0. then Math.PI - 2.0 * asin(vecDist3(-a.X, -a.Y, -a.Z, b.X, b.Y, b.Z) * 0.5)
-                else                       2.0 * asin(vecDist3(a.X ,  a.Y,  a.Z, b.X, b.Y, b.Z) * 0.5)
+            XYZ.anglePiOfUnit a.X a.Y a.Z b.X b.Y b.Z
 
         /// Returns positive angle between two 3D unit-vectors in radians.
         /// Ignores orientation.
         /// Range 0.0 to Pi/2 ( = 0 to 90 degrees)
         static member inline angleHalfPi (a:UnitVec) (b:UnitVec) : float =
-            let dot = a *** b
-            let dotAbs = abs dot
-            if dotAbs < 0.98 then
-                acos dotAbs
-            else
-                if dot < 0. then 2.0 * asin(vecDist3(-a.X, -a.Y, -a.Z, b.X, b.Y, b.Z) * 0.5)
-                else             2.0 * asin(vecDist3(a.X ,  a.Y,  a.Z, b.X, b.Y, b.Z) * 0.5)
+            XYZ.angleHalfPiOfUnit a.X a.Y a.Z b.X b.Y b.Z
 
         /// Returns positive angle from vector 'a' to vector 'b' projected in X-Y plane.
         /// In radians.

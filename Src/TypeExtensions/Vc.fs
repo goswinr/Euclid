@@ -9,6 +9,26 @@ open EuclidErrors
 [<AutoOpen>]
 module AutoOpenVc =
 
+    /// Unitizes two 2D vectors given by their components and returns the angle between them in radians.
+    /// Takes vector orientation into account. Range 0.0 to Pi ( = 0 to 180 degrees).
+    /// Fails with funcName in the message if one of them is shorter than 1e-12.
+    let inline internal anglePiOfVcs (funcName:string) (ax:float) (ay:float) (bx:float) (by:float) : float =
+        let la = sqrt (ax*ax + ay*ay)
+        if isTooTiny la then failTooSmall funcName (Vc(ax, ay))
+        let lb = sqrt (bx*bx + by*by)
+        if isTooTiny lb then failTooSmall funcName (Vc(bx, by))
+        XY.anglePiOfUnit (ax/la) (ay/la) (bx/lb) (by/lb)
+
+    /// Unitizes two 2D vectors given by their components and returns the angle between them in radians.
+    /// Ignores vector orientation. Range 0.0 to Pi/2 ( = 0 to 90 degrees).
+    /// Fails with funcName in the message if one of them is shorter than 1e-12.
+    let inline internal angleHalfPiOfVcs (funcName:string) (ax:float) (ay:float) (bx:float) (by:float) : float =
+        let la = sqrt (ax*ax + ay*ay)
+        if isTooTiny la then failTooSmall funcName (Vc(ax, ay))
+        let lb = sqrt (bx*bx + by*by)
+        if isTooTiny lb then failTooSmall funcName (Vc(bx, by))
+        XY.angleHalfPiOfUnit (ax/la) (ay/la) (bx/lb) (by/lb)
+
     type Vc with
 
         /// Convert 2D vector to 2D point.
@@ -738,7 +758,7 @@ module AutoOpenVc =
         /// Takes vector orientation into account.
         /// Range 0.0 to Pi ( = 180 degrees)
         static member inline anglePi (a:Vc) (b:Vc) : float =
-            UnitVc.anglePi a.Unitized b.Unitized
+            anglePiOfVcs "Vc.anglePi" a.X a.Y b.X b.Y
             //    let mutable r = b.Direction2Pi  - a.Direction2Pi     // this does perform slightly worse than using unitizing and acos for anglePi
             //    if r < 0.      then  r <- r + UtilEuclid.twoPi
             //    if r > Math.PI then  r <- UtilEuclid.twoPi - r
@@ -747,7 +767,7 @@ module AutoOpenVc =
         /// Returns positive angle between two 2D vectors in radians. Ignores orientation.
         /// Range 0.0 to Pi/2 ( = 90 degrees)
         static member inline angleHalfPi (a:Vc) (b:Vc) : float =
-            UnitVc.angleHalfPi a.Unitized b.Unitized
+            angleHalfPiOfVcs "Vc.angleHalfPi" a.X a.Y b.X b.Y
             //    let mutable r = b.Direction2Pi  - a.Direction2Pi   // this does perform slightly worse than using unitizing and acos for anglePi
             //    if r < 0.      then  r <- r + UtilEuclid.twoPi
             //    if r > Math.PI then  r <- UtilEuclid.twoPi - r

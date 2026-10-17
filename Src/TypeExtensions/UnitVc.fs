@@ -10,12 +10,6 @@ open EuclidErrors
 module AutoOpenUnitVc =
     open UtilEuclid
 
-    /// Returns distance between the tips of two 2D vectors.
-    let inline internal vecDist2(ax:float, ay:float, bx:float, by:float) =
-        let x = bx-ax
-        let y = by-ay
-        sqrt(x*x+y*y)
-
     type UnitVc with
 
         /// Convert 2D unit-vector to 2D point.
@@ -612,12 +606,7 @@ module AutoOpenUnitVc =
             // The largest possible value of |u-v| occurs with perpendicular
             // vectors and is sqrt(2)/2 which is well away from extreme slope
             // at +/-1. (See Windows OS Bug 01706299 for details) (from WPF reference source code)
-            let dot = a *** b
-            if -0.98 < dot && dot < 0.98 then // threshold for switching 0.98 ?
-                acos dot
-            else
-                if dot < 0. then Math.PI - 2.0 * asin(vecDist2(-a.X, -a.Y, b.X, b.Y) * 0.5)
-                else                       2.0 * asin(vecDist2( a.X,  a.Y, b.X, b.Y) * 0.5)
+            XY.anglePiOfUnit a.X a.Y b.X b.Y
             //let mutable r = b.Direction2Pi  - a.Direction2Pi  // this alternative calculation is about 10x slower for unit-vectors
             //if r < 0.      then  r <- r + UtilEuclid.twoPi
             //if r > Math.PI then  r <- UtilEuclid.twoPi - r
@@ -628,13 +617,7 @@ module AutoOpenUnitVc =
         /// Ignores order of input vectors. angleHalfPi(a, b) = angleHalfPi(b, a) = angleHalfPi(-b, a) = angleHalfPi(-b, -a)
         /// Range 0.0 to Pi/2 ( = 90 degrees)
         static member inline angleHalfPi (a:UnitVc) (b:UnitVc) : float =
-            let dot = a *** b
-            let dotAbs = abs dot // constrains the result to range 0-90 degrees
-            if dotAbs < 0.98 then
-                acos dotAbs
-            else
-                if dot < 0. then 2.0 * asin(vecDist2(-a.X, -a.Y, b.X, b.Y) * 0.5)
-                else             2.0 * asin(vecDist2( a.X,  a.Y, b.X, b.Y) * 0.5)
+            XY.angleHalfPiOfUnit a.X a.Y b.X b.Y
             //let mutable r = b.Direction2Pi  - a.Direction2Pi // this alternative calculation is about 10x slower for unit-vectors
             //if r < 0.      then  r <- r + UtilEuclid.twoPi
             //if r > Math.PI then  r <- UtilEuclid.twoPi - r
