@@ -923,7 +923,11 @@ type Box =
 
     /// Creates a 3D box from PPlane and x, y and Z size.
     static member inline createFromPlane x y z (pl:PPlane) : Box =
-        Box.createUncheckedVec(pl.Origin, pl.Xaxis*x, pl.Yaxis*y, pl.Zaxis*z)
+        Box.createUnchecked(
+            pl.OriginX, pl.OriginY, pl.OriginZ,
+            pl.XaxisX*x, pl.XaxisY*x, pl.XaxisZ*x,
+            pl.YaxisX*y, pl.YaxisY*y, pl.YaxisZ*y,
+            pl.ZaxisX*z, pl.ZaxisY*z, pl.ZaxisZ*z)
 
     /// Creates a 3D box from the bounds (minX, minY, minZ) and (maxX, maxY, maxZ).
     static member inline createFromBounds(minX:float, minY:float, minZ:float, maxX:float, maxY:float, maxZ:float) : Box =

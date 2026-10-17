@@ -1477,7 +1477,10 @@ type Rect3D =
     static member createFromPlane (pl:PPlane, sizeX:float, sizeY:float) : Rect3D =
         if isNegative sizeX then fail $"Rect3D.createFromPlane sizeX is negative: {sizeX}, sizeY is: {sizeY}, plane: {pl.AsString}"
         if isNegative sizeY then fail $"Rect3D.createFromPlane sizeY is negative: {sizeY}, sizeX is: {sizeX}, plane: {pl.AsString}"
-        Rect3D.createUncheckedVec(pl.Origin, pl.Xaxis*sizeX, pl.Yaxis*sizeY)
+        Rect3D.createUnchecked(
+            pl.OriginX, pl.OriginY, pl.OriginZ,
+            pl.XaxisX*sizeX, pl.XaxisY*sizeX, pl.XaxisZ*sizeX,
+            pl.YaxisX*sizeY, pl.YaxisY*sizeY, pl.YaxisZ*sizeY)
 
     /// Give PPlane and sizes.
     /// The Rect3D's center will be at the plane's Origin.
@@ -1485,9 +1488,18 @@ type Rect3D =
     static member createCenteredFromPlane (pl:PPlane, sizeX:float, sizeY:float) : Rect3D =
         if isNegative sizeX then fail $"Rect3D.createCenteredFromPlane sizeX is negative: {sizeX}, sizeY is: {sizeY}, plane: {pl.AsString}"
         if isNegative sizeY then fail $"Rect3D.createCenteredFromPlane sizeY is negative: {sizeY}, sizeX is: {sizeX}, plane: {pl.AsString}"
-        let x = pl.Xaxis*sizeX
-        let y = pl.Yaxis*sizeY
-        Rect3D.createUncheckedVec(pl.Origin- x*0.5 - y*0.5, x, y)
+        let xx = pl.XaxisX*sizeX
+        let xy = pl.XaxisY*sizeX
+        let xz = pl.XaxisZ*sizeX
+        let yx = pl.YaxisX*sizeY
+        let yy = pl.YaxisY*sizeY
+        let yz = pl.YaxisZ*sizeY
+        Rect3D.createUnchecked(
+            pl.OriginX - xx*0.5 - yx*0.5,
+            pl.OriginY - xy*0.5 - yy*0.5,
+            pl.OriginZ - xz*0.5 - yz*0.5,
+            xx, xy, xz,
+            yx, yy, yz)
 
     /// Creates a 3D-rectangle from the given bounds in 2D. The rectangle will be in the XY-plane with Z=0.
     static member createFromBounds2D (minX, minY, maxX, maxY)  : Rect3D =
