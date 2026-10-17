@@ -758,9 +758,12 @@ module AutoOpenLine3D =
 
     /// Returns square distance from point to finite line.
     member inline ln.SqDistanceToXYZ(x:float, y:float, z:float) : float =
-        ln.ClosestParameterXYZ(x, y, z)
-        |> ln.EvaluateAt
-        |> Pnt.sqDist (Pnt(x, y, z))
+        let t = ln.ClosestParameterXYZ(x, y, z)
+        // vector from the point to the closest point on the line:
+        let dx = ln.FromX + ln.VectorX*t - x
+        let dy = ln.FromY + ln.VectorY*t - y
+        let dz = ln.FromZ + ln.VectorZ*t - z
+        dx*dx + dy*dy + dz*dz
 
     /// Returns square distance from point to finite line.
     member inline ln.SqDistanceToPnt(p:Pnt) : float =
