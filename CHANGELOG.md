@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Added `FreeBox.XYZs` (and the static `getXYZs`) to access the flat array of 24 floats a `FreeBox` is now made of, `FreeBox.AsPoints` (and the static `asPoints`) to convert it to the 8 corner points, `FreeBox.createDirectly` to build one from an existing array of 24 floats, `FreeBox.GetX/GetY/GetZ` to read single coordinates, `FreeBox.SetPtXYZ` to set a corner from x, y and z, and `FreeBox.Duplicate` to copy one.
+- Added the settable single coordinate properties `FreeBox.Pt0X`, `FreeBox.Pt0Y`, `FreeBox.Pt0Z` ... up to `FreeBox.Pt7Z`, one for each of the 24 floats of a `FreeBox`, plus the static getters `FreeBox.pt0X` ... `FreeBox.pt7Z`.
+- Added `FreeBox.MovePt0InPlace` ... `FreeBox.MovePt7InPlace`, and the indexed `FreeBox.MovePtInPlace`, which translate one corner of a `FreeBox` by a vector and leave the other seven where they are. Unlike `Move`, `MoveX`, `MoveY` and `MoveZ`, which return a new `FreeBox`, these mutate the `FreeBox` in place and return `unit`. Static counterparts `FreeBox.movePt0InPlace` ... `FreeBox.movePt7InPlace` and `FreeBox.movePtInPlace` are provided too.
+
+### Changed
+- `FreeBox` now stores its 8 corners as a flat array of 24 interleaved floats (`x0, y0, z0, x1, y1, z1, ... x7, y7, z7`), instead of an array of 8 `Pnt`. This matches how `Polyline2D` and `Polyline3D` store their points, and lets all transformations run on the raw floats without allocating intermediate points. The corner accessors `Pt0`-`Pt7`, `GetPt`, `SetPt` and all edges are unchanged. JSON serialization of a `FreeBox` now writes the `XYZs` array of 24 floats instead of a `Points` array of 8 points.
+
+### Deprecated
+- `FreeBox.Points` and the static `FreeBox.points` are obsolete. Since `FreeBox` stores a flat array of 24 floats they do not return the live internal buffer any more, but a copy. Use `FreeBox.AsPoints` for the 8 corner points, or `FreeBox.XYZs` for the live buffer.
 
 ## [0.52.0] - 2026-10-10
 ### Added

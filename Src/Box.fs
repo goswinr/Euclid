@@ -1734,6 +1734,62 @@ type Box =
     static member inline pt7 (b:Box) : Pnt =
         b.Pt7
 
+    /// Returns the X coordinate of point 0 of the box, same as b.OriginX.
+    member inline b.Pt0X : float = b.OriginX
+    /// Returns the Y coordinate of point 0 of the box, same as b.OriginY.
+    member inline b.Pt0Y : float = b.OriginY
+    /// Returns the Z coordinate of point 0 of the box, same as b.OriginZ.
+    member inline b.Pt0Z : float = b.OriginZ
+
+    /// Returns the X coordinate of point 1 of the box, without allocating a point.
+    member inline b.Pt1X : float = b.OriginX + b.XaxisX
+    /// Returns the Y coordinate of point 1 of the box, without allocating a point.
+    member inline b.Pt1Y : float = b.OriginY + b.XaxisY
+    /// Returns the Z coordinate of point 1 of the box, without allocating a point.
+    member inline b.Pt1Z : float = b.OriginZ + b.XaxisZ
+
+    /// Returns the X coordinate of point 2 of the box, without allocating a point.
+    member inline b.Pt2X : float = b.OriginX + b.XaxisX + b.YaxisX
+    /// Returns the Y coordinate of point 2 of the box, without allocating a point.
+    member inline b.Pt2Y : float = b.OriginY + b.XaxisY + b.YaxisY
+    /// Returns the Z coordinate of point 2 of the box, without allocating a point.
+    member inline b.Pt2Z : float = b.OriginZ + b.XaxisZ + b.YaxisZ
+
+    /// Returns the X coordinate of point 3 of the box, without allocating a point.
+    member inline b.Pt3X : float = b.OriginX + b.YaxisX
+    /// Returns the Y coordinate of point 3 of the box, without allocating a point.
+    member inline b.Pt3Y : float = b.OriginY + b.YaxisY
+    /// Returns the Z coordinate of point 3 of the box, without allocating a point.
+    member inline b.Pt3Z : float = b.OriginZ + b.YaxisZ
+
+    /// Returns the X coordinate of point 4 of the box, without allocating a point.
+    member inline b.Pt4X : float = b.OriginX + b.ZaxisX
+    /// Returns the Y coordinate of point 4 of the box, without allocating a point.
+    member inline b.Pt4Y : float = b.OriginY + b.ZaxisY
+    /// Returns the Z coordinate of point 4 of the box, without allocating a point.
+    member inline b.Pt4Z : float = b.OriginZ + b.ZaxisZ
+
+    /// Returns the X coordinate of point 5 of the box, without allocating a point.
+    member inline b.Pt5X : float = b.OriginX + b.XaxisX + b.ZaxisX
+    /// Returns the Y coordinate of point 5 of the box, without allocating a point.
+    member inline b.Pt5Y : float = b.OriginY + b.XaxisY + b.ZaxisY
+    /// Returns the Z coordinate of point 5 of the box, without allocating a point.
+    member inline b.Pt5Z : float = b.OriginZ + b.XaxisZ + b.ZaxisZ
+
+    /// Returns the X coordinate of point 6 of the box, without allocating a point.
+    member inline b.Pt6X : float = b.OriginX + b.XaxisX + b.YaxisX + b.ZaxisX
+    /// Returns the Y coordinate of point 6 of the box, without allocating a point.
+    member inline b.Pt6Y : float = b.OriginY + b.XaxisY + b.YaxisY + b.ZaxisY
+    /// Returns the Z coordinate of point 6 of the box, without allocating a point.
+    member inline b.Pt6Z : float = b.OriginZ + b.XaxisZ + b.YaxisZ + b.ZaxisZ
+
+    /// Returns the X coordinate of point 7 of the box, without allocating a point.
+    member inline b.Pt7X : float = b.OriginX + b.YaxisX + b.ZaxisX
+    /// Returns the Y coordinate of point 7 of the box, without allocating a point.
+    member inline b.Pt7Y : float = b.OriginY + b.YaxisY + b.ZaxisY
+    /// Returns the Z coordinate of point 7 of the box, without allocating a point.
+    member inline b.Pt7Z : float = b.OriginZ + b.YaxisZ + b.ZaxisZ
+
     /// <summary>Returns the point of the box at the specified index.
     /// The order of the points is: Pt0, Pt1, Pt2, Pt3, Pt4, Pt5, Pt6, Pt7.
     /// <code>
