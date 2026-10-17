@@ -116,10 +116,6 @@ module Offset2D=
             ResizeArr.getIdx (i * 2 + 1) xys
 
 
-        let inline getPt i (xys: ResizeArray<float>) : Pt =
-            Pt( ResizeArr.getIdx (i * 2    ) xys,
-                ResizeArr.getIdx (i * 2 + 1) xys)
-
         let inline set i x y (xys: ResizeArray<float>) : unit =
             ResizeArr.setIdx (i * 2) x xys
             ResizeArr.setIdx (i * 2 + 1) y xys
@@ -526,10 +522,10 @@ module Offset2D=
                         XY.getX origNextOkIdx origs, XY.getY origNextOkIdx origs)
             for j=0 to chunk.LastIndex do
                 let bi = chunk.[j]
-                let origPt = XY.getPt bi.idxOrig origs // the original point to fix
-                let t = origLn.RayClosestParameter(origPt) // the parameter on the original line
-                let fixedPt = offLn.EvaluateAt t
-                XY.set bi.idxRes fixedPt.X fixedPt.Y res
+                // the parameter of the original point to fix on the original line:
+                let t = origLn.RayClosestParameterXY(XY.getX bi.idxOrig origs, XY.getY bi.idxOrig origs)
+                // evaluate the offset line at that parameter:
+                XY.set bi.idxRes (offLn.FromX + offLn.VectorX * t) (offLn.FromY + offLn.VectorY * t) res
 
     /// Only used when VarDistParallelBehavior.Project is selected.
     let internal projectBadIdxs(res: ResizeArray<float>, collinearIdxs : ResizeArray<IndexToProject>) =
@@ -537,13 +533,14 @@ module Offset2D=
        reLoop (XY.pointCount res - 1) _.idx chunks
        for i=0 to chunks.LastIndex do
            let chunk = chunks.[i]
-           let prev = XY.getPt (safeIdx (chunk.First.idx - 1) (XY.pointCount res)) res // the previous point before the chunk
-           let next = XY.getPt (safeIdx (chunk.Last.idx + 1) (XY.pointCount res)) res // the next point after the chunk
-           let ln = Line2D(prev,next)
+           let prevIdx = safeIdx (chunk.First.idx - 1) (XY.pointCount res) // the previous point before the chunk
+           let nextIdx = safeIdx (chunk.Last.idx + 1) (XY.pointCount res) // the next point after the chunk
+           let ln = Line2D(XY.getX prevIdx res, XY.getY prevIdx res, XY.getX nextIdx res, XY.getY nextIdx res)
            for j=0 to chunk.LastIndex do
                 let itp = chunk.[j]
-                let pt = XY.getPt itp.idx res // the point to fix
-                let pln = Line2D(pt.X, pt.Y, pt.X + itp.dirX, pt.Y + itp.dirY) // the line from the point in the direction of the normal
+                let x = XY.getX itp.idx res // the point to fix
+                let y = XY.getY itp.idx res
+                let pln = Line2D(x, y, x + itp.dirX, y + itp.dirY) // the line from the point in the direction of the normal
                 // at shallow angles and strongly different distances, the projection may be outside of the segment
                 // Should we allow that? or check for it and skip ?
                 let fixedPt = XLine2D.intersectRays(ln, pln) //  Exception should never happen here, because lines are not parallel
