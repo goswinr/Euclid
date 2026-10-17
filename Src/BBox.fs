@@ -1073,7 +1073,7 @@ type BBox =
     ///   0 MinPnt         1
     /// </code>
     /// </summary>
-    member b.GetPoint (pointIndex:int) : Pnt =
+    member b.GetPnt (pointIndex:int) : Pnt =
         match pointIndex with
         | 0 -> b.Pt0
         | 1 -> b.Pt1
@@ -1083,11 +1083,11 @@ type BBox =
         | 5 -> b.Pt5
         | 6 -> b.Pt6
         | 7 -> b.Pt7
-        | _ -> fail $"BBox.GetPoint: pointIndex {pointIndex} is out of range. Valid range is 0 to 7."
+        | _ -> fail $"BBox.GetPnt: pointIndex {pointIndex} is out of range. Valid range is 0 to 7."
 
     /// Returns the point of the box at the specified index.
-    static member inline getPoint (pointIndex:int) (b:BBox) : Pnt =
-        b.GetPoint pointIndex
+    static member inline getPnt (pointIndex:int) (b:BBox) : Pnt =
+        b.GetPnt pointIndex
 
 
     /// <summary>Returns the bottom of the box as a counter-clockwise array of 4 Points.
@@ -1501,7 +1501,7 @@ type BBox =
             fail $"BBox.GetLine: endPointIndex {endPointIndex} is out of range. It must be between 0 and 7."
         if startPointIndex = endPointIndex then
             fail $"BBox.GetLine: startPointIndex and endPointIndex are both {startPointIndex}. They must be different."
-        Line3D(b.GetPoint startPointIndex, b.GetPoint endPointIndex)
+        Line3D(b.GetPnt startPointIndex, b.GetPnt endPointIndex)
 
     /// Returns the line from the corner point at the start index to the corner point at the end index of the 3D bounding box.
     /// Any two different indices from 0 to 7 are valid.
@@ -2032,6 +2032,14 @@ type BBox =
 
     // #endregion
     // #region Obsolete
+
+    [<Obsolete("Renamed to GetPnt.")>]
+    member b.GetPoint (pointIndex:int) : Pnt =
+        b.GetPnt pointIndex
+
+    [<Obsolete("Renamed to getPnt.")>]
+    static member inline getPoint (pointIndex:int) (b:BBox) : Pnt =
+        b.GetPnt pointIndex
 
     [<Obsolete("use .isOverlapping instead")>]
     static member doOverlap(a:BBox) (b:BBox) : bool =

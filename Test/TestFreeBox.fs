@@ -175,7 +175,7 @@ let tests =
 
             test "SetPt and SetPtXYZ write into the flat array" {
                 let box = FreeBox.createFromEightPoints rotatedPts
-                box.SetPt 5 (Pnt(1., 2., 3.))
+                box.SetPnt 5 (Pnt(1., 2., 3.))
                 Expect.isTrue (eqPnt box.Pt5 (Pnt(1., 2., 3.))) "SetPt should set Pt5"
                 box.SetPtXYZ(6, 4., 5., 6.)
                 Expect.isTrue (eqPnt box.Pt6 (Pnt(4., 5., 6.))) "SetPtXYZ should set Pt6"
@@ -199,7 +199,7 @@ let tests =
                         let expected =
                             if i = moved then rotatedPts.[i] + v
                             else rotatedPts.[i]
-                        Expect.isTrue (eqPnt (box.GetPt i) expected) $"MovePtInPlace{moved}: point {i}"
+                        Expect.isTrue (eqPnt (box.GetPnt i) expected) $"MovePtInPlace{moved}: point {i}"
             }
 
             test "MovePt0InPlace mutates the box it is called on" {
@@ -237,7 +237,7 @@ let tests =
                     let byIndex = FreeBox.createFromEightPoints rotatedPts
                     byIndex.MovePtInPlace(i, v)
                     for k = 0 to 7 do
-                        Expect.isTrue (eqPnt (byIndex.GetPt k) (byName.GetPt k)) $"MovePtInPlace({i}) point {k}"
+                        Expect.isTrue (eqPnt (byIndex.GetPnt k) (byName.GetPnt k)) $"MovePtInPlace({i}) point {k}"
             }
 
             test "MovePtInPlace throws on an invalid index" {
@@ -267,7 +267,7 @@ let tests =
                 let box = FreeBox.createFromEightPoints rotatedPts
                 box.MovePt0InPlace Vec.Zero
                 for i = 0 to 7 do
-                    Expect.isTrue (eqPnt (box.GetPt i) rotatedPts.[i]) $"point {i} should be unchanged"
+                    Expect.isTrue (eqPnt (box.GetPnt i) rotatedPts.[i]) $"point {i} should be unchanged"
             }
 
             test "MovePt0InPlace does not move a box that was duplicated from it" {
@@ -332,24 +332,24 @@ let tests =
         ]
 
         testList "Point Access" [
-            test "GetPt with valid index" {
+            test "GetPnt with valid index" {
                 let pts = [|
                     Pnt(0., 0., 0.); Pnt(10., 0., 0.); Pnt(10., 5., 0.); Pnt(0., 5., 0.)
                     Pnt(0., 0., 3.); Pnt(10., 0., 3.); Pnt(10., 5., 3.); Pnt(0., 5., 3.)
                 |]
                 let box = FreeBox.createFromEightPoints pts
-                Expect.isTrue (eqPnt (box.GetPt 0) pts.[0]) "GetPt 0 should return Pt0"
-                Expect.isTrue (eqPnt (box.GetPt 7) pts.[7]) "GetPt 7 should return Pt7"
+                Expect.isTrue (eqPnt (box.GetPnt 0) pts.[0]) "GetPnt 0 should return Pt0"
+                Expect.isTrue (eqPnt (box.GetPnt 7) pts.[7]) "GetPnt 7 should return Pt7"
             }
 
-            test "GetPt with invalid index throws" {
+            test "GetPnt with invalid index throws" {
                 let pts = [|
                     Pnt(0., 0., 0.); Pnt(10., 0., 0.); Pnt(10., 5., 0.); Pnt(0., 5., 0.)
                     Pnt(0., 0., 3.); Pnt(10., 0., 3.); Pnt(10., 5., 3.); Pnt(0., 5., 3.)
                 |]
                 let box = FreeBox.createFromEightPoints pts
-                Expect.throws (fun () -> box.GetPt 8 |> ignore) "Should throw for index 8"
-                Expect.throws (fun () -> box.GetPt -1 |> ignore) "Should throw for negative index"
+                Expect.throws (fun () -> box.GetPnt 8 |> ignore) "Should throw for index 8"
+                Expect.throws (fun () -> box.GetPnt -1 |> ignore) "Should throw for negative index"
             }
 
             test "All Pt properties work" {

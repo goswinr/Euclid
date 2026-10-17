@@ -11,8 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added the settable single coordinate properties `FreeBox.Pt0X`, `FreeBox.Pt0Y`, `FreeBox.Pt0Z` ... up to `FreeBox.Pt7Z`, one for each of the 24 floats of a `FreeBox`, plus the static getters `FreeBox.pt0X` ... `FreeBox.pt7Z`.
 - Added `FreeBox.MovePt0InPlace` ... `FreeBox.MovePt7InPlace`, and the indexed `FreeBox.MovePtInPlace`, which translate one corner of a `FreeBox` by a vector and leave the other seven where they are. Unlike `Move`, `MoveX`, `MoveY` and `MoveZ`, which return a new `FreeBox`, these mutate the `FreeBox` in place and return `unit`. Static counterparts `FreeBox.movePt0InPlace` ... `FreeBox.movePt7InPlace` and `FreeBox.movePtInPlace` are provided too.
 - Added `Box.GetLine`, `BBox.GetLine` and `FreeBox.GetLine` (and the static `getLine`), which return the `Line3D` between any two different corner points by their indices 0 to 7. Besides the 12 edges this also gives face and space diagonals.
+- Added `Box.GetPnt`, `BBox.GetPnt` and `FreeBox.GetPnt` (and the static `getPnt`), and `FreeBox.SetPnt` (and the static `setPnt`), to get or set a corner point by its index 0 to 7.
 
 ### Changed
+- Renamed `Box.GetPoint` and `BBox.GetPoint` to `GetPnt`, and `FreeBox.GetPt` and `FreeBox.SetPt` to `GetPnt` and `SetPnt`, so the name matches the returned `Pnt` type. The old names, and their static counterparts, still work but are marked obsolete.
 - `FreeBox` now stores its 8 corners as a flat array of 24 interleaved floats (`x0, y0, z0, x1, y1, z1, ... x7, y7, z7`), instead of an array of 8 `Pnt`. This matches how `Polyline2D` and `Polyline3D` store their points, and lets all transformations run on the raw floats without allocating intermediate points. The corner accessors `Pt0`-`Pt7`, `GetPt`, `SetPt` and all edges are unchanged. JSON serialization of a `FreeBox` now writes the `XYZs` array of 24 floats instead of a `Points` array of 8 points.
 
 ### Fixed

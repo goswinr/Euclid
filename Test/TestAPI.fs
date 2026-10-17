@@ -2134,7 +2134,7 @@ module FreeBoxAPI =
     // Instance members - Properties
     let (_:float[]) = freebox.XYZs
     let (_:Pnt[]) = freebox.AsPoints
-    let (_:Pnt) = freebox.GetPt 0
+    let (_:Pnt) = freebox.GetPnt 0
     let (_:float) = freebox.GetX 0
     let (_:float) = freebox.GetY 0
     let (_:float) = freebox.GetZ 0

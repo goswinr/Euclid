@@ -555,27 +555,27 @@ type FreeBox private (xyzs:float[]) =
 
     /// Get the point at the given point index. The index must be between 0 and 7.
     /// (this gets Pnt(XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1], XYZs.[pointIndex * 3 + 2]) from the internal flat array of x, y, and z coordinates)
-    member _.GetPt (pointIndex:int) : Pnt =
+    member _.GetPnt (pointIndex:int) : Pnt =
         if pointIndex < 0 || pointIndex > 7 then
-            failPointIndex "GetPt" pointIndex
+            failPointIndex "GetPnt" pointIndex
         getPt pointIndex xyzs
 
     /// Get the point at the given point index. The index must be between 0 and 7.
     /// (this gets Pnt(XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1], XYZs.[pointIndex * 3 + 2]) from the internal flat array of x, y, and z coordinates)
-    static member inline getPt (pointIndex:int) (b:FreeBox) : Pnt =
-        b.GetPt(pointIndex)
+    static member inline getPnt (pointIndex:int) (b:FreeBox) : Pnt =
+        b.GetPnt(pointIndex)
 
     /// Sets the point at the given point index. The index must be between 0 and 7.
     /// (this sets XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1] and XYZs.[pointIndex * 3 + 2] of the internal flat array of x, y, and z coordinates)
-    member _.SetPt (pointIndex:int) (p:Pnt) : unit =
+    member _.SetPnt (pointIndex:int) (p:Pnt) : unit =
         if pointIndex < 0 || pointIndex > 7 then
-            failPointIndex "SetPt" pointIndex
+            failPointIndex "SetPnt" pointIndex
         setCoordXYZ pointIndex p.X p.Y p.Z xyzs
 
     /// Sets the point at the given point index. The index must be between 0 and 7.
     /// (this sets XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1] and XYZs.[pointIndex * 3 + 2] of the internal flat array of x, y, and z coordinates)
-    static member inline setPt (pointIndex:int) (p:Pnt) (b:FreeBox) : unit =
-        b.SetPt pointIndex p
+    static member inline setPnt (pointIndex:int) (p:Pnt) (b:FreeBox) : unit =
+        b.SetPnt pointIndex p
 
     /// Sets the x, y, and z coordinates of the point at the given point index. The index must be between 0 and 7.
     /// (this sets XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1] and XYZs.[pointIndex * 3 + 2] of the internal flat array of x, y, and z coordinates)
@@ -1251,6 +1251,22 @@ type FreeBox private (xyzs:float[]) =
 
 
     // #region Obsolete
+
+    [<Obsolete("Renamed to GetPnt.")>]
+    member b.GetPt (pointIndex:int) : Pnt =
+        b.GetPnt pointIndex
+
+    [<Obsolete("Renamed to getPnt.")>]
+    static member inline getPt (pointIndex:int) (b:FreeBox) : Pnt =
+        b.GetPnt pointIndex
+
+    [<Obsolete("Renamed to SetPnt.")>]
+    member b.SetPt (pointIndex:int) (p:Pnt) : unit =
+        b.SetPnt pointIndex p
+
+    [<Obsolete("Renamed to setPnt.")>]
+    static member inline setPt (pointIndex:int) (p:Pnt) (b:FreeBox) : unit =
+        b.SetPnt pointIndex p
 
     /// The 8 points that make up the box.
     [<Obsolete("Since the internal structure of FreeBox has changed to a flat array of 24 floats, this is not the live internal buffer any more, but a copy. Use FreeBox.AsPoints instead, or FreeBox.XYZs to get the live buffer.")>]

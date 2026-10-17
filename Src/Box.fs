@@ -1846,7 +1846,7 @@ type Box =
     ///   0               1
     /// </code>
     /// </summary>
-    member b.GetPoint (pointIndex:int) : Pnt =
+    member b.GetPnt (pointIndex:int) : Pnt =
         match pointIndex with
         | 0 -> b.Pt0
         | 1 -> b.Pt1
@@ -1856,11 +1856,11 @@ type Box =
         | 5 -> b.Pt5
         | 6 -> b.Pt6
         | 7 -> b.Pt7
-        | _ -> fail $"Box.GetPoint: pointIndex {pointIndex} is out of range. Valid range is 0 to 7."
+        | _ -> fail $"Box.GetPnt: pointIndex {pointIndex} is out of range. Valid range is 0 to 7."
 
     /// Returns the point of the box at the specified index.
-    static member inline getPoint (pointIndex:int) (b:Box) : Pnt =
-        b.GetPoint pointIndex
+    static member inline getPnt (pointIndex:int) (b:Box) : Pnt =
+        b.GetPnt pointIndex
 
 
     // #endregion
@@ -2854,7 +2854,7 @@ type Box =
             fail $"Box.GetLine: endPointIndex {endPointIndex} is out of range. It must be between 0 and 7."
         if startPointIndex = endPointIndex then
             fail $"Box.GetLine: startPointIndex and endPointIndex are both {startPointIndex}. They must be different."
-        Line3D(b.GetPoint startPointIndex, b.GetPoint endPointIndex)
+        Line3D(b.GetPnt startPointIndex, b.GetPnt endPointIndex)
 
     /// Returns the line from the corner point at the start index to the corner point at the end index of the box.
     /// Any two different indices from 0 to 7 are valid.
@@ -2895,6 +2895,14 @@ type Box =
 
     // #endregion
     // #region Obsolete
+
+    [<Obsolete("Renamed to GetPnt.")>]
+    member b.GetPoint (pointIndex:int) : Pnt =
+        b.GetPnt pointIndex
+
+    [<Obsolete("Renamed to getPnt.")>]
+    static member inline getPoint (pointIndex:int) (b:Box) : Pnt =
+        b.GetPnt pointIndex
 
     [<Obsolete("This is actually the volume, also this does not scale proportionally, use .Volume")>]
     member inline r.AreaSq : float =
