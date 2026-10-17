@@ -1049,10 +1049,12 @@ type BRect =
     static member expandRel factor (r:BRect) : BRect =
         if factor < 0.0 then
             fail $"BRect.expandRel: a negative factor {factor} is not allowed for expanding the 2D bounding rectangle {r.AsString}"
-        let center = r.Center
-        let sizeX = r.SizeX * factor
-        let sizeY = r.SizeY * factor
-        BRect.createFromCenter(center, sizeX, sizeY)
+        let cx = (r.MaxX + r.MinX) * 0.5
+        let cy = (r.MaxY + r.MinY) * 0.5
+        let f = factor * 0.5
+        let hx = r.SizeX * f // half the new size
+        let hy = r.SizeY * f
+        BRect.createUnchecked(cx - hx, cy - hy, cx + hx, cy + hy)
 
     /// Returns the 2D bounding rectangle expanded by a relative factor on all four sides, separately for X and Y.
     /// Values between 0.0 and 1.0 shrink the rectangle.
@@ -1063,10 +1065,11 @@ type BRect =
             fail $"BRect.expandRelXY: a negative factorX {factorX} is not allowed for expanding the 2D bounding rectangle {r.AsString}"
         if factorY < 0.0 then
             fail $"BRect.expandRelXY: a negative factorY {factorY} is not allowed for expanding the 2D bounding rectangle {r.AsString}"
-        let center = r.Center
-        let sizeX = r.SizeX * factorX
-        let sizeY = r.SizeY * factorY
-        BRect.createFromCenter(center, sizeX, sizeY)
+        let cx = (r.MaxX + r.MinX) * 0.5
+        let cy = (r.MaxY + r.MinY) * 0.5
+        let hx = r.SizeX * (factorX * 0.5) // half the new size
+        let hy = r.SizeY * (factorY * 0.5)
+        BRect.createUnchecked(cx - hx, cy - hy, cx + hx, cy + hy)
 
     /// Checks if two 2D bounding rectangles are equal within tolerance.
     /// Use a tolerance of 0.0 to check for an exact match.

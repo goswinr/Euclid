@@ -1927,11 +1927,14 @@ type BBox =
     static member expandRel factor (b:BBox)  : BBox =
         if factor < 0.0 then
             fail $"BBox.expandRel: a negative factor {factor} is not allowed for expanding the 3D bounding box {b.AsString}"
-        let center = b.Center
-        let sizeX = b.SizeX * factor
-        let sizeY = b.SizeY * factor
-        let sizeZ = b.SizeZ * factor
-        BBox.createFromCenter(center, sizeX, sizeY, sizeZ)
+        let cx = (b.MaxX + b.MinX)*0.5
+        let cy = (b.MaxY + b.MinY)*0.5
+        let cz = (b.MaxZ + b.MinZ)*0.5
+        let f = factor * 0.5
+        let hx = b.SizeX * f // half the new size
+        let hy = b.SizeY * f
+        let hz = b.SizeZ * f
+        BBox.createUnchecked(cx - hx, cy - hy, cz - hz, cx + hx, cy + hy, cz + hz)
 
     /// Returns the 3D bounding box expanded by a relative factor on all six sides, separately for X, Y, Z.
     /// Values between 0.0 and 1.0 shrink the box.
@@ -1944,11 +1947,13 @@ type BBox =
             fail $"BBox.expandRelXYZ: a negative factorY {factorY} is not allowed for expanding the 3D bounding box {b.AsString}"
         if factorZ < 0.0 then
             fail $"BBox.expandRelXYZ: a negative factorZ {factorZ} is not allowed for expanding the 3D bounding box {b.AsString}"
-        let center = b.Center
-        let sizeX = b.SizeX * factorX
-        let sizeY = b.SizeY * factorY
-        let sizeZ = b.SizeZ * factorZ
-        BBox.createFromCenter(center, sizeX, sizeY, sizeZ)
+        let cx = (b.MaxX + b.MinX)*0.5
+        let cy = (b.MaxY + b.MinY)*0.5
+        let cz = (b.MaxZ + b.MinZ)*0.5
+        let hx = b.SizeX * (factorX * 0.5) // half the new size
+        let hy = b.SizeY * (factorY * 0.5)
+        let hz = b.SizeZ * (factorZ * 0.5)
+        BBox.createUnchecked(cx - hx, cy - hy, cz - hz, cx + hx, cy + hy, cz + hz)
 
     /// Returns a 3D bounding box moved by a vector. Same as BBox.translate.
     static member move (v:Vec) (b:BBox)  : BBox =
