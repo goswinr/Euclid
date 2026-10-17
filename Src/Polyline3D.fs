@@ -619,7 +619,8 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     member p.GetSegment(i:int) : Line3D =
         if i < 0 || i > p.PointCount - 2 then
             fail $"Polyline3D.GetSegment: index {i} is out of range for Polyline3D with {p.PointCount} points."
-        Line3D(getPt i xyzs, getPt (i+1) xyzs)
+        let j = i * 3
+        Line3D(xyzs.[j], xyzs.[j + 1], xyzs.[j + 2], xyzs.[j + 3], xyzs.[j + 4], xyzs.[j + 5])
 
     /// Gets the segment at index i of the Polyline3D.
     static member inline getSegment (i:int) (pl:Polyline3D) : Line3D =
@@ -628,8 +629,8 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// Gets the last segment of the Polyline3D.
     member p.LastSegment : Line3D =
         if p.PointCount < 2 then failTooFewPoly3D "LastSegment" 2 p.PointCount
-        let i = p.PointCount - 1
-        Line3D(getPt (i-1) xyzs, getPt i xyzs)
+        let i = xyzs.Count - 6
+        Line3D(xyzs.[i], xyzs.[i + 1], xyzs.[i + 2], xyzs.[i + 3], xyzs.[i + 4], xyzs.[i + 5])
 
     /// Gets the last segment of the Polyline3D.
     static member inline lastSegment (pl:Polyline3D) : Line3D =
@@ -638,7 +639,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// Gets the first segment of the Polyline3D.
     member p.FirstSegment : Line3D =
         if p.PointCount < 2 then failTooFewPoly3D "FirstSegment" 2 p.PointCount
-        Line3D(getPt 0 xyzs, getPt 1 xyzs)
+        Line3D(xyzs.[0], xyzs.[1], xyzs.[2], xyzs.[3], xyzs.[4], xyzs.[5])
 
     /// Gets the first segment of the Polyline3D.
     static member inline firstSegment (pl:Polyline3D) : Line3D =
@@ -650,11 +651,10 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
         if p.PointCount < 2 then
             lns
         else
-            let mutable a = getPt 0 xyzs
-            for i = 1 to p.PointCount - 1 do
-                let b = getPt i xyzs
-                lns.Add(Line3D(a, b))
-                a <- b
+            let mutable i = 0
+            while i < xyzs.Count - 3 do
+                lns.Add(Line3D(xyzs.[i], xyzs.[i + 1], xyzs.[i + 2], xyzs.[i + 3], xyzs.[i + 4], xyzs.[i + 5]))
+                i <- i + 3
             lns
 
     /// Returns all segments of the Polyline3D as a list of Line3D.
@@ -1944,7 +1944,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// <param name="action">A function that takes a Line3D representing the segment.</param>
     /// <param name="pl">The Polyline3D to iterate over.</param>
     static member inline iterLineSegments (action: Line3D -> unit) (pl:Polyline3D) : unit =
-        pl |> Polyline3D.iterSegments (fun x1 y1 z1 x2 y2 z2 -> action (Line3D(Pnt(x1, y1, z1), Pnt(x2, y2, z2))))
+        pl |> Polyline3D.iterSegments (fun x1 y1 z1 x2 y2 z2 -> action (Line3D(x1, y1, z1, x2, y2, z2)))
 
 
 
