@@ -328,7 +328,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
         if pointIndex < 0 || pointIndex > len / 3 - 1 then
             failPointIndex "SetPnt" pointIndex xyzs
         #endif
-        p.SetPointXYZ (pointIndex, pnt.X, pnt.Y, pnt.Z)
+        p.SetPntXYZ (pointIndex, pnt.X, pnt.Y, pnt.Z)
 
     /// Sets the 3D point at the given pointIndex in the list of points.
     /// (this sets XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1], and XYZs.[pointIndex * 3 + 2] in the internal flat list of x, y, and z coordinates )
@@ -339,11 +339,11 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// On a closed Polyline3D, setting the first or last point will set both to the same point.
     /// Raises an error if the pointIndex is out of range.
     /// (this sets XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1], and XYZs.[pointIndex * 3 + 2] in the internal flat list of x, y, and z coordinates )
-    member p.SetPointXYZClosed (pointIndex:int, x:float, y:float, z:float): unit =
+    member p.SetPntXYZClosed (pointIndex:int, x:float, y:float, z:float): unit =
         #if DEBUG || CHECKED_EUCLID
         let len = xyzs.Count
         if pointIndex < 0 || pointIndex > len / 3 - 1 then
-            failPointIndex "SetPointXYZClosed" pointIndex xyzs
+            failPointIndex "SetPntXYZClosed" pointIndex xyzs
         #endif
         let wasClosed = p.IsClosed
         if wasClosed && pointIndex = 0 then
@@ -356,25 +356,25 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// On a closed Polyline3D, setting the first or last point will set both to the same point.
     /// Raises an error if the pointIndex is out of range.
     /// (this sets XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1], and XYZs.[pointIndex * 3 + 2] in the internal flat list of x, y, and z coordinates )
-    static member inline setPointXYZClosed x y z (pointIndex:int) (p:Polyline3D) : unit =
-        p.SetPointXYZClosed (pointIndex, x, y, z)
+    static member inline setPntXYZClosed (pointIndex:int) x y z (p:Polyline3D) : unit =
+        p.SetPntXYZClosed (pointIndex, x, y, z)
 
     /// Sets the x, y, and z coordinates of the 3D point at the given pointIndex in the list of points.
     /// NOTE: setting the first or last point on a closed Polyline3D might open it.
     /// (this sets XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1], and XYZs.[pointIndex * 3 + 2] in the internal flat list of x, y, and z coordinates )
-    member p.SetPointXYZ (pointIndex:int, x:float, y:float, z:float) : unit =
+    member p.SetPntXYZ (pointIndex:int, x:float, y:float, z:float) : unit =
         #if DEBUG || CHECKED_EUCLID
         let len = xyzs.Count
         if pointIndex < 0 || pointIndex > len / 3 - 1 then
-            failPointIndex "SetPointXYZ" pointIndex xyzs
+            failPointIndex "SetPntXYZ" pointIndex xyzs
         #endif
         setCoordXYZ pointIndex x y z xyzs
 
     /// Sets the x, y, and z coordinates of the 3D point at the given pointIndex in the list of points.
     /// NOTE: setting the first or last point on a closed Polyline3D might open it.
     /// (this sets XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1], and XYZs.[pointIndex * 3 + 2] in the internal flat list of x, y, and z coordinates )
-    static member inline setPointXYZ x y z (pointIndex:int) (p:Polyline3D) : unit =
-        p.SetPointXYZ (pointIndex, x, y, z)
+    static member inline setPntXYZ (pointIndex:int) x y z (p:Polyline3D) : unit =
+        p.SetPntXYZ (pointIndex, x, y, z)
 
     /// Adds a point from x, y, and z coordinates.
     member _.AddXYZ (x:float, y:float, z:float) : unit =
@@ -2621,6 +2621,26 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     [<Obsolete("Use Polyline3D.createFromPnts instead.")>]
     static member createFromPts(points: seq<Pnt>) : Polyline3D =
         Polyline3D.createFromPnts points
+
+    /// Obsolete name. Same as p.SetPntXYZ.
+    [<Obsolete("Use SetPntXYZ instead.")>]
+    member p.SetPointXYZ (pointIndex:int, x:float, y:float, z:float) : unit =
+        p.SetPntXYZ (pointIndex, x, y, z)
+
+    /// Obsolete name. Same as Polyline3D.setPntXYZ, but with the point index after the coordinates.
+    [<Obsolete("Use Polyline3D.setPntXYZ instead. It takes the point index first.")>]
+    static member inline setPointXYZ (x:float) (y:float) (z:float) (pointIndex:int) (p:Polyline3D) : unit =
+        p.SetPntXYZ (pointIndex, x, y, z)
+
+    /// Obsolete name. Same as p.SetPntXYZClosed.
+    [<Obsolete("Use SetPntXYZClosed instead.")>]
+    member p.SetPointXYZClosed (pointIndex:int, x:float, y:float, z:float) : unit =
+        p.SetPntXYZClosed (pointIndex, x, y, z)
+
+    /// Obsolete name. Same as Polyline3D.setPntXYZClosed, but with the point index after the coordinates.
+    [<Obsolete("Use Polyline3D.setPntXYZClosed instead. It takes the point index first.")>]
+    static member inline setPointXYZClosed (x:float) (y:float) (z:float) (pointIndex:int) (p:Polyline3D) : unit =
+        p.SetPntXYZClosed (pointIndex, x, y, z)
 
 #if !FABLE_COMPILER
 /// Serializes a Polyline3D as its interleaved XYZ coordinate buffer with System.Text.Json.

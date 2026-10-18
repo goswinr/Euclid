@@ -204,10 +204,10 @@ let tests =
             "point updated" |> Expect.isTrue (eqPnt pl.AsPoints.[1] (Pnt(2,2,2)))
         }
 
-        test "SetPointXYZClosed on closed polyline updates both first and last" {
+        test "SetPntXYZClosed on closed polyline updates both first and last" {
             let pts = ResizeArray([Pnt(0,0,0); Pnt(1,0,0); Pnt(1,1,0); Pnt(0,0,0)])
             let pl = Polyline3D(pts)
-            pl.SetPointXYZClosed (0, 5., 5., 5.)
+            pl.SetPntXYZClosed (0, 5., 5., 5.)
             "first point updated" |> Expect.isTrue (eqPnt pl.FirstPoint (Pnt(5,5,5)))
             "last point also updated" |> Expect.isTrue (eqPnt pl.LastPoint (Pnt(5,5,5)))
         }
@@ -247,9 +247,9 @@ let tests =
             "projected area is not doubled" |> Expect.floatClose tol pl.SignedAreaIn2D 100.0
         }
 
-        test "static setPointXYZ is curried like setPointXY" {
+        test "static setPntXYZ takes the point index before coordinates" {
             let pl = Polyline3D.createFromPnts [Pnt(0.,0.,0.); Pnt(1.,0.,0.)]
-            Polyline3D.setPointXYZ 2. 3. 4. 1 pl
+            Polyline3D.setPntXYZ 1 2. 3. 4. pl
             "point updated" |> Expect.isTrue (eqPnt pl.LastPoint (Pnt(2.,3.,4.)))
         }
 

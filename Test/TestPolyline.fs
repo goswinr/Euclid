@@ -1000,13 +1000,13 @@ let testsComprehensive =
             }
             test "set first vertex on closed polyline updates last" {
                 let pl = Polyline2D.createFromPts [Pt(0.,0.); Pt(10.,0.); Pt(10.,10.); Pt(0.,10.); Pt(0.,0.)]
-                pl.SetPointXYClosed (0, 1., 1.)
+                pl.SetPtXYClosed (0, 1., 1.)
                 "first vertex updated" |> expectEqPts pl.AsPoints.[0] (Pt(1.,1.))
                 "last vertex updated too" |> expectEqPts pl.AsPoints.[4] (Pt(1.,1.))
             }
             test "set last vertex on closed polyline updates first" {
                 let pl = Polyline2D.createFromPts [Pt(0.,0.); Pt(10.,0.); Pt(10.,10.); Pt(0.,10.); Pt(0.,0.)]
-                pl.SetPointXYClosed (4, 2., 2.)
+                pl.SetPtXYClosed (4, 2., 2.)
                 "last vertex updated" |> expectEqPts pl.AsPoints.[4] (Pt(2.,2.))
                 "first vertex updated too" |> expectEqPts pl.AsPoints.[0] (Pt(2.,2.))
             }
@@ -1298,7 +1298,7 @@ let testsComprehensive =
                 let pl = Polyline2D.createFromPts [Pt(0.,0.); Pt(1.,1.)]
                 Expect.equal (pl.GetX 1) 1.0 "x accessor"
                 Expect.equal (pl.GetY 1) 1.0 "y accessor"
-                pl.SetPointXY (1, 2.0, 3.0)
+                pl.SetPtXY (1, 2.0, 3.0)
                 "updated point" |> expectEqPts pl.AsPoints.[1] (Pt(2.,3.))
                 pl.AddXY (4.0, 5.0)
                 Expect.equal pl.PointCount 3 "added coordinate pair"
@@ -1713,7 +1713,7 @@ let testsSpecial =
             test "mutating a duplicate does not affect the original" {
                 let orig = Polyline2D.createFromPts [Pt(0.,0.); Pt(1.,1.)]
                 let dup = orig.Duplicate()
-                dup.SetPointXY(0, 9., 9.)
+                dup.SetPtXY(0, 9., 9.)
                 "original unchanged" |> expectEqPts orig.AsPoints.[0] (Pt(0.,0.))
                 "duplicate changed" |> expectEqPts dup.AsPoints.[0] (Pt(9.,9.))
             }

@@ -149,11 +149,11 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// On a closed Polyline2D, setting the first or last point will set both to the same point.
     /// Raises an error if the pointIndex is out of range.
     /// (this sets XYs.[pointIndex * 2] and XYs.[pointIndex * 2 + 1] in the internal flat list of x and y coordinates )
-    member p.SetPointXYClosed (pointIndex:int, x:float, y:float) : unit =
+    member p.SetPtXYClosed (pointIndex:int, x:float, y:float) : unit =
         #if DEBUG || CHECKED_EUCLID
         let len = xys.Count
         if pointIndex < 0 || pointIndex > len / 2 - 1 then
-            failPointIndex "SetPointXYClosed" pointIndex xys
+            failPointIndex "SetPtXYClosed" pointIndex xys
         #endif
         let wasClosed = p.IsClosed
         if wasClosed && pointIndex = 0 then
@@ -166,25 +166,25 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// On a closed Polyline2D, setting the first or last point will set both to the same point.
     /// Raises an error if the pointIndex is out of range.
     /// (this sets XYs.[pointIndex * 2] and XYs.[pointIndex * 2 + 1] in the internal flat list of x and y coordinates )
-    static member inline setPointXYClosed (x:float) (y:float) (pointIndex:int) (p:Polyline2D) : unit =
-        p.SetPointXYClosed (pointIndex, x, y)
+    static member inline setPtXYClosed (pointIndex:int) (x:float) (y:float) (p:Polyline2D) : unit =
+        p.SetPtXYClosed (pointIndex, x, y)
 
     /// Sets the x and y coordinates of the 2D point at the given pointIndex in the list of points.
     /// NOTE: setting the first or last point on a closed Polyline2D might open it.
     /// (this sets XYs.[pointIndex * 2] and XYs.[pointIndex * 2 + 1] in the internal flat list of x and y coordinates )
-    member p.SetPointXY (pointIndex:int, x:float, y:float) : unit =
+    member p.SetPtXY (pointIndex:int, x:float, y:float) : unit =
         #if DEBUG || CHECKED_EUCLID
         let len = xys.Count
         if pointIndex < 0 || pointIndex > len / 2 - 1 then
-            failPointIndex "SetPointXY" pointIndex xys
+            failPointIndex "SetPtXY" pointIndex xys
         #endif
         setCoordXY pointIndex x y xys
 
     /// Sets the x and y coordinates of the 2D point at the given pointIndex in the list of points.
     /// NOTE: setting the first or last point on a closed Polyline2D might open it.
     /// (this sets XYs.[pointIndex * 2] and XYs.[pointIndex * 2 + 1] in the internal flat list of x and y coordinates )
-    static member inline setPointXY (x:float) ( y:float) (pointIndex:int) (p:Polyline2D) : unit =
-        p.SetPointXY (pointIndex, x, y)
+    static member inline setPtXY (pointIndex:int) (x:float) ( y:float) (p:Polyline2D) : unit =
+        p.SetPtXY (pointIndex, x, y)
 
     /// Adds a point from x and y coordinates.
     member _.AddXY( x:float, y:float ) : unit =
@@ -2434,6 +2434,26 @@ type Polyline2D private (xys: ResizeArray<float>) =
     [<Obsolete("Use Euclid.Polyline2D.createFromPts instead.")>]
     static member create (pts: seq<Pt>) : Polyline2D =
         Polyline2D.createFromPts pts
+
+    /// Obsolete name. Same as p.SetPtXY.
+    [<Obsolete("Use SetPtXY instead.")>]
+    member p.SetPointXY (pointIndex:int, x:float, y:float) : unit =
+        p.SetPtXY (pointIndex, x, y)
+
+    /// Obsolete name. Same as Polyline2D.setPtXY, but with the point index after the coordinates.
+    [<Obsolete("Use Polyline2D.setPtXY instead. It takes the point index first.")>]
+    static member inline setPointXY (x:float) (y:float) (pointIndex:int) (p:Polyline2D) : unit =
+        p.SetPtXY (pointIndex, x, y)
+
+    /// Obsolete name. Same as p.SetPtXYClosed.
+    [<Obsolete("Use SetPtXYClosed instead.")>]
+    member p.SetPointXYClosed (pointIndex:int, x:float, y:float) : unit =
+        p.SetPtXYClosed (pointIndex, x, y)
+
+    /// Obsolete name. Same as Polyline2D.setPtXYClosed, but with the point index after the coordinates.
+    [<Obsolete("Use Polyline2D.setPtXYClosed instead. It takes the point index first.")>]
+    static member inline setPointXYClosed (x:float) (y:float) (pointIndex:int) (p:Polyline2D) : unit =
+        p.SetPtXYClosed (pointIndex, x, y)
 
 #if !FABLE_COMPILER
 /// Serializes a Polyline2D as its interleaved XY coordinate buffer with System.Text.Json.
