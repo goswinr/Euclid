@@ -27,6 +27,11 @@ module private FreeBoxUtil =
         xyzs.[i * 3 + 1] <- y
         xyzs.[i * 3 + 2] <- z
 
+    let inline moveCoordXYZ (i:int) (x:float) (y:float) (z:float) (xyzs:float[]) : unit =
+        xyzs.[i * 3    ] <- xyzs.[i * 3    ] + x
+        xyzs.[i * 3 + 1] <- xyzs.[i * 3 + 1] + y
+        xyzs.[i * 3 + 2] <- xyzs.[i * 3 + 2] + z
+
     let inline edge (a:int) (b:int) (xyzs:float[]) : Line3D =
         Line3D(xyzs.[a * 3], xyzs.[a * 3 + 1], xyzs.[a * 3 + 2],
                xyzs.[b * 3], xyzs.[b * 3 + 1], xyzs.[b * 3 + 2])
@@ -584,6 +589,42 @@ type FreeBox private (xyzs:float[]) =
     /// (this sets XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1] and XYZs.[pointIndex * 3 + 2] of the internal flat array of x, y, and z coordinates)
     static member inline setPntXYZ (pointIndex:int) (x:float) (y:float) (z:float) (b:FreeBox) : unit =
         b.SetPntXYZ(pointIndex, x, y, z)
+
+    /// <summary>Moves the point at the given point index in place by a vector. The other 7 points stay where they are.
+    /// (this adds v.X, v.Y and v.Z to XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1] and XYZs.[pointIndex * 3 + 2] of the internal flat array of x, y, and z coordinates)</summary>
+    /// <param name="pointIndex">The index of the point to move. Must be between 0 and 7.</param>
+    /// <param name="v">The vector to move the point by.</param>
+    member _.MovePnt (pointIndex:int, v:Vec) : unit =
+        if pointIndex < 0 || pointIndex > 7 then
+            failPointIndex "MovePnt" pointIndex
+        moveCoordXYZ pointIndex v.X v.Y v.Z xyzs
+
+    /// <summary>Moves the point at the given point index in place by a vector. The other 7 points stay where they are.</summary>
+    /// <param name="pointIndex">The index of the point to move. Must be between 0 and 7.</param>
+    /// <param name="v">The vector to move the point by.</param>
+    /// <param name="b">The FreeBox to change.</param>
+    static member inline movePnt (pointIndex:int) (v:Vec) (b:FreeBox) : unit =
+        b.MovePnt(pointIndex, v)
+
+    /// <summary>Moves the point at the given point index in place by the given x, y, and z distances. The other 7 points stay where they are.
+    /// (this adds x, y and z to XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1] and XYZs.[pointIndex * 3 + 2] of the internal flat array of x, y, and z coordinates)</summary>
+    /// <param name="pointIndex">The index of the point to move. Must be between 0 and 7.</param>
+    /// <param name="x">The distance to move the point in X direction.</param>
+    /// <param name="y">The distance to move the point in Y direction.</param>
+    /// <param name="z">The distance to move the point in Z direction.</param>
+    member _.MovePntXYZ (pointIndex:int, x:float, y:float, z:float) : unit =
+        if pointIndex < 0 || pointIndex > 7 then
+            failPointIndex "MovePntXYZ" pointIndex
+        moveCoordXYZ pointIndex x y z xyzs
+
+    /// <summary>Moves the point at the given point index in place by the given x, y, and z distances. The other 7 points stay where they are.</summary>
+    /// <param name="pointIndex">The index of the point to move. Must be between 0 and 7.</param>
+    /// <param name="x">The distance to move the point in X direction.</param>
+    /// <param name="y">The distance to move the point in Y direction.</param>
+    /// <param name="z">The distance to move the point in Z direction.</param>
+    /// <param name="b">The FreeBox to change.</param>
+    static member inline movePntXYZ (pointIndex:int) (x:float) (y:float) (z:float) (b:FreeBox) : unit =
+        b.MovePntXYZ(pointIndex, x, y, z)
 
     /// <summary>Creates a copy of this FreeBox. Same as Clone().</summary>
     /// <returns>A new FreeBox with its own flat array of 24 floats.</returns>

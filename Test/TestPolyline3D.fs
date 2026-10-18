@@ -10,6 +10,17 @@ let inline eqVec a b = Vec.length (a - b) < 1e-9
 
 let tol = Accuracy.veryHigh
 
+/// A closed, non-planar quadrilateral that is rotated and away from the origin, for the MovePnt tests.
+let movePntQuad () =
+    Polyline3D.createFromPnts [Pnt(12.5, 7.25, 3.5); Pnt(17.75, 9.5, 4.25); Pnt(15.25, 14.75, 6.0); Pnt(10.5, 12.25, 5.25); Pnt(12.5, 7.25, 3.5)]
+
+/// The vector the MovePnt tests move by.
+let movePntVec = Vec(0.3, -1.7, 2.9)
+
+/// Checks that two points are bit-identical, not just close.
+let expectSamePnt (a:Pnt) (b:Pnt) (msg:string) =
+    Expect.isTrue (a.X = b.X && a.Y = b.Y && a.Z = b.Z) $"{msg}: {a.AsString} is not exactly {b.AsString}"
+
 let tests =
     testList "Polyline3D" [
 
@@ -223,6 +234,118 @@ let tests =
                 Expect.throws (fun () -> pl.SetPntXYZ (i, 0., 0., 0.)) $"SetPntXYZ {i}"
                 Expect.throws (fun () -> pl.SetPntXYZClosed (i, 0., 0., 0.)) $"SetPntXYZClosed {i}"
             "point count unchanged" |> Expect.equal pl.PointCount 3
+        }
+
+        test "MovePnt moves only the point at the index" {
+            let pl = movePntQuad ()
+            let orig = pl.AsPoints
+            pl.MovePnt (2, movePntVec)
+            "moved point" |> Expect.isTrue (eqPnt (pl.GetPnt 2) (orig.[2] + movePntVec))
+            for i in [0; 1; 3; 4] do
+                expectSamePnt (pl.GetPnt i) orig.[i] $"point {i} unchanged"
+        }
+
+        test "MovePntXYZ gives the same coordinates as MovePnt" {
+            let a = movePntQuad ()
+            let b = movePntQuad ()
+            a.MovePnt (1, movePntVec)
+            b.MovePntXYZ (1, movePntVec.X, movePntVec.Y, movePntVec.Z)
+            "same coordinates" |> Expect.isTrue (Seq.forall2 (=) a.XYZs b.XYZs)
+        }
+
+        test "static movePnt and movePntXYZ take the point index first" {
+            let pl = movePntQuad ()
+            let orig = pl.AsPoints
+            Polyline3D.movePnt 3 movePntVec pl
+            "movePnt moved point 3" |> Expect.isTrue (eqPnt (pl.GetPnt 3) (orig.[3] + movePntVec))
+            Polyline3D.movePntXYZ 1 0.5 (-2.0) 1.25 pl
+            "movePntXYZ moved point 1" |> Expect.isTrue (eqPnt (pl.GetPnt 1) (Pnt(18.25, 7.5, 5.5)))
+        }
+
+        test "MovePnt on the first point opens a closed polyline" {
+            let pl = movePntQuad ()
+            pl.MovePnt (0, movePntVec)
+            "polyline is open" |> Expect.isFalse pl.IsClosed
+            expectSamePnt pl.LastPoint (Pnt(12.5, 7.25, 3.5)) "last point unchanged"
+        }
+
+        test "MovePntClosed on the first point moves the last point too" {
+            let pl = movePntQuad ()
+            let orig = pl.AsPoints
+            pl.MovePntClosed (0, movePntVec)
+            "polyline still closed" |> Expect.isTrue pl.IsClosed
+            "first point moved" |> Expect.isTrue (eqPnt pl.FirstPoint (orig.[0] + movePntVec))
+            for i in 1 .. 3 do
+                expectSamePnt (pl.GetPnt i) orig.[i] $"point {i} unchanged"
+        }
+
+        test "MovePntClosed on the last point moves the first point too" {
+            let pl = movePntQuad ()
+            let orig = pl.AsPoints
+            pl.MovePntClosed (4, movePntVec)
+            "polyline still closed" |> Expect.isTrue pl.IsClosed
+            "last point moved" |> Expect.isTrue (eqPnt pl.LastPoint (orig.[4] + movePntVec))
+            for i in 1 .. 3 do
+                expectSamePnt (pl.GetPnt i) orig.[i] $"point {i} unchanged"
+        }
+
+        test "MovePntXYZClosed keeps a closed polyline closed" {
+            let pl = movePntQuad ()
+            pl.MovePntXYZClosed (0, movePntVec.X, movePntVec.Y, movePntVec.Z)
+            pl.MovePntXYZClosed (4, -0.7, 0.9, -1.1)
+            "polyline still closed" |> Expect.isTrue pl.IsClosed
+            "first point moved twice" |> Expect.isTrue (eqPnt pl.FirstPoint (Pnt(12.5 + 0.3 - 0.7, 7.25 - 1.7 + 0.9, 3.5 + 2.9 - 1.1)))
+        }
+
+        test "static movePntClosed and movePntXYZClosed keep a closed polyline closed" {
+            let pl = movePntQuad ()
+            Polyline3D.movePntClosed 4 movePntVec pl
+            Polyline3D.movePntXYZClosed 0 0.5 (-2.0) 1.25 pl
+            "polyline still closed" |> Expect.isTrue pl.IsClosed
+        }
+
+        test "MovePntClosed by a tiny vector keeps the ends bit-identical" {
+            let pl = movePntQuad ()
+            pl.MovePntClosed (0, Vec(1e-13, -3e-14, 2e-14))
+            "first point moved" |> Expect.isFalse (pl.FirstPoint.X = 12.5)
+            "polyline still closed" |> Expect.isTrue pl.IsClosed
+        }
+
+        test "MovePntClosed on an open polyline moves only the point" {
+            let pl = Polyline3D.createFromPnts [Pnt(12.5, 7.25, 3.5); Pnt(17.75, 9.5, 4.25); Pnt(15.25, 14.75, 6.0); Pnt(10.5, 12.25, 5.25)]
+            pl.MovePntClosed (0, movePntVec)
+            "first point moved" |> Expect.isTrue (eqPnt pl.FirstPoint (Pnt(12.5, 7.25, 3.5) + movePntVec))
+            expectSamePnt pl.LastPoint (Pnt(10.5, 12.25, 5.25)) "last point unchanged"
+        }
+
+        test "moving by a zero vector leaves the polyline unchanged" {
+            let pl = movePntQuad ()
+            let orig = movePntQuad ()
+            pl.MovePnt (1, Vec(0., 0., 0.))
+            pl.MovePntClosed (0, Vec(0., 0., 0.))
+            pl.MovePntXYZ (2, 0., 0., 0.)
+            pl.MovePntXYZClosed (4, 0., 0., 0.)
+            "same coordinates" |> Expect.isTrue (Seq.forall2 (=) pl.XYZs orig.XYZs)
+        }
+
+        test "moving the point of a single point polyline" {
+            let pl = Polyline3D.createFromPnts [Pnt(-3.5, 8.25, -1.75)]
+            pl.MovePnt (0, movePntVec)
+            pl.MovePntClosed (0, movePntVec)
+            "point moved twice" |> Expect.isTrue (eqPnt pl.FirstPoint (Pnt(-3.5, 8.25, -1.75) + movePntVec + movePntVec))
+            "still one point" |> Expect.equal pl.PointCount 1
+        }
+
+        test "MovePnt throws on a pointIndex out of range" {
+            let pl = movePntQuad ()
+            for i in [ -1; pl.PointCount ] do
+                Expect.throws (fun () -> pl.MovePnt (i, movePntVec)) $"MovePnt {i}"
+                Expect.throws (fun () -> pl.MovePntXYZ (i, 1., 1., 1.)) $"MovePntXYZ {i}"
+                Expect.throws (fun () -> pl.MovePntClosed (i, movePntVec)) $"MovePntClosed {i}"
+                Expect.throws (fun () -> pl.MovePntXYZClosed (i, 1., 1., 1.)) $"MovePntXYZClosed {i}"
+            "same coordinates" |> Expect.isTrue (Seq.forall2 (=) pl.XYZs (movePntQuad ()).XYZs)
+            let empty = Polyline3D.createEmpty 4
+            Expect.throws (fun () -> empty.MovePnt (0, movePntVec)) "empty polyline"
         }
 
 

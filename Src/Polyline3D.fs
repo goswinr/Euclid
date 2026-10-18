@@ -26,6 +26,11 @@ module private Polyline3DUtil =
         xyzs.[i * 3 + 1] <- y
         xyzs.[i * 3 + 2] <- z
 
+    let inline moveCoordXYZ i x y z (xyzs: ResizeArray<float>) =
+        xyzs.[i * 3    ] <- xyzs.[i * 3    ] + x
+        xyzs.[i * 3 + 1] <- xyzs.[i * 3 + 1] + y
+        xyzs.[i * 3 + 2] <- xyzs.[i * 3 + 2] + z
+
 
     let inline appendXYZ x y z (xyzs: ResizeArray<float>) =
         xyzs.Add x
@@ -361,6 +366,104 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// (this sets XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1], and XYZs.[pointIndex * 3 + 2] in the internal flat list of x, y, and z coordinates )
     static member inline setPntXYZ (pointIndex:int) x y z (p:Polyline3D) : unit =
         p.SetPntXYZ (pointIndex, x, y, z)
+
+    /// <summary>Moves the 3D point at the given pointIndex in place by a vector.
+    /// NOTE: moving the first or last point on a closed Polyline3D opens it. Use MovePntClosed to keep it closed.
+    /// (this adds v.X, v.Y and v.Z to XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1] and XYZs.[pointIndex * 3 + 2] in the internal flat list of x, y, and z coordinates )</summary>
+    /// <param name="pointIndex">The index of the point to move. Must be between 0 and PointCount - 1.</param>
+    /// <param name="v">The vector to move the point by.</param>
+    member _.MovePnt (pointIndex:int, v:Vec) : unit =
+        let len = xyzs.Count
+        if pointIndex < 0 || pointIndex > len / 3 - 1 then
+            failPointIndex "MovePnt" pointIndex xyzs
+        moveCoordXYZ pointIndex v.X v.Y v.Z xyzs
+
+    /// <summary>Moves the 3D point at the given pointIndex in place by a vector.
+    /// NOTE: moving the first or last point on a closed Polyline3D opens it. Use Polyline3D.movePntClosed to keep it closed.</summary>
+    /// <param name="pointIndex">The index of the point to move. Must be between 0 and PointCount - 1.</param>
+    /// <param name="v">The vector to move the point by.</param>
+    /// <param name="p">The Polyline3D to change.</param>
+    static member inline movePnt (pointIndex:int) (v:Vec) (p:Polyline3D) : unit =
+        p.MovePnt (pointIndex, v)
+
+    /// <summary>Moves the 3D point at the given pointIndex in place by the given x, y, and z distances.
+    /// NOTE: moving the first or last point on a closed Polyline3D opens it. Use MovePntXYZClosed to keep it closed.
+    /// (this adds x, y and z to XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1] and XYZs.[pointIndex * 3 + 2] in the internal flat list of x, y, and z coordinates )</summary>
+    /// <param name="pointIndex">The index of the point to move. Must be between 0 and PointCount - 1.</param>
+    /// <param name="x">The distance to move the point in X direction.</param>
+    /// <param name="y">The distance to move the point in Y direction.</param>
+    /// <param name="z">The distance to move the point in Z direction.</param>
+    member _.MovePntXYZ (pointIndex:int, x:float, y:float, z:float) : unit =
+        let len = xyzs.Count
+        if pointIndex < 0 || pointIndex > len / 3 - 1 then
+            failPointIndex "MovePntXYZ" pointIndex xyzs
+        moveCoordXYZ pointIndex x y z xyzs
+
+    /// <summary>Moves the 3D point at the given pointIndex in place by the given x, y, and z distances.
+    /// NOTE: moving the first or last point on a closed Polyline3D opens it. Use Polyline3D.movePntXYZClosed to keep it closed.</summary>
+    /// <param name="pointIndex">The index of the point to move. Must be between 0 and PointCount - 1.</param>
+    /// <param name="x">The distance to move the point in X direction.</param>
+    /// <param name="y">The distance to move the point in Y direction.</param>
+    /// <param name="z">The distance to move the point in Z direction.</param>
+    /// <param name="p">The Polyline3D to change.</param>
+    static member inline movePntXYZ (pointIndex:int) (x:float) (y:float) (z:float) (p:Polyline3D) : unit =
+        p.MovePntXYZ (pointIndex, x, y, z)
+
+    /// <summary>Moves the 3D point at the given pointIndex in place by a vector.
+    /// On a closed Polyline3D, moving the first or last point moves both, so it stays closed.
+    /// (this adds v.X, v.Y and v.Z to XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1] and XYZs.[pointIndex * 3 + 2] in the internal flat list of x, y, and z coordinates )</summary>
+    /// <param name="pointIndex">The index of the point to move. Must be between 0 and PointCount - 1.</param>
+    /// <param name="v">The vector to move the point by.</param>
+    member p.MovePntClosed (pointIndex:int, v:Vec) : unit =
+        let len = xyzs.Count
+        if pointIndex < 0 || pointIndex > len / 3 - 1 then
+            failPointIndex "MovePntClosed" pointIndex xyzs
+        let wasClosed = p.IsClosed
+        moveCoordXYZ pointIndex v.X v.Y v.Z xyzs
+        if wasClosed then
+            let last = p.PointCount - 1
+            if pointIndex = 0 then
+                setCoordXYZ last xyzs.[0] xyzs.[1] xyzs.[2] xyzs
+            elif pointIndex = last then
+                setCoordXYZ 0 xyzs.[last * 3] xyzs.[last * 3 + 1] xyzs.[last * 3 + 2] xyzs
+
+    /// <summary>Moves the 3D point at the given pointIndex in place by a vector.
+    /// On a closed Polyline3D, moving the first or last point moves both, so it stays closed.</summary>
+    /// <param name="pointIndex">The index of the point to move. Must be between 0 and PointCount - 1.</param>
+    /// <param name="v">The vector to move the point by.</param>
+    /// <param name="p">The Polyline3D to change.</param>
+    static member inline movePntClosed (pointIndex:int) (v:Vec) (p:Polyline3D) : unit =
+        p.MovePntClosed (pointIndex, v)
+
+    /// <summary>Moves the 3D point at the given pointIndex in place by the given x, y, and z distances.
+    /// On a closed Polyline3D, moving the first or last point moves both, so it stays closed.
+    /// (this adds x, y and z to XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1] and XYZs.[pointIndex * 3 + 2] in the internal flat list of x, y, and z coordinates )</summary>
+    /// <param name="pointIndex">The index of the point to move. Must be between 0 and PointCount - 1.</param>
+    /// <param name="x">The distance to move the point in X direction.</param>
+    /// <param name="y">The distance to move the point in Y direction.</param>
+    /// <param name="z">The distance to move the point in Z direction.</param>
+    member p.MovePntXYZClosed (pointIndex:int, x:float, y:float, z:float) : unit =
+        let len = xyzs.Count
+        if pointIndex < 0 || pointIndex > len / 3 - 1 then
+            failPointIndex "MovePntXYZClosed" pointIndex xyzs
+        let wasClosed = p.IsClosed
+        moveCoordXYZ pointIndex x y z xyzs
+        if wasClosed then
+            let last = p.PointCount - 1
+            if pointIndex = 0 then
+                setCoordXYZ last xyzs.[0] xyzs.[1] xyzs.[2] xyzs
+            elif pointIndex = last then
+                setCoordXYZ 0 xyzs.[last * 3] xyzs.[last * 3 + 1] xyzs.[last * 3 + 2] xyzs
+
+    /// <summary>Moves the 3D point at the given pointIndex in place by the given x, y, and z distances.
+    /// On a closed Polyline3D, moving the first or last point moves both, so it stays closed.</summary>
+    /// <param name="pointIndex">The index of the point to move. Must be between 0 and PointCount - 1.</param>
+    /// <param name="x">The distance to move the point in X direction.</param>
+    /// <param name="y">The distance to move the point in Y direction.</param>
+    /// <param name="z">The distance to move the point in Z direction.</param>
+    /// <param name="p">The Polyline3D to change.</param>
+    static member inline movePntXYZClosed (pointIndex:int) (x:float) (y:float) (z:float) (p:Polyline3D) : unit =
+        p.MovePntXYZClosed (pointIndex, x, y, z)
 
     /// Adds a point from x, y, and z coordinates.
     member _.AddXYZ (x:float, y:float, z:float) : unit =

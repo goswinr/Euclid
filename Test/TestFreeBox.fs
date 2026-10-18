@@ -287,6 +287,49 @@ let tests =
                 Expect.isTrue (eqPnt box.Pnt6 pts.[6]) "Pnt6 should match"
                 Expect.isTrue (eqPnt box.Pnt7 pts.[7]) "Pnt7 should match"
             }
+
+            test "MovePnt moves only the corner at the index" {
+                let box = FreeBox.createFromEightPoints rotatedPts
+                let v = Vec(0.3, -1.7, 2.9)
+                box.MovePnt(6, v)
+                Expect.isTrue (eqPnt box.Pnt6 (rotatedPts.[6] + v)) "corner 6 moved"
+                for i in [0; 1; 2; 3; 4; 5; 7] do
+                    let p = box.GetPnt i
+                    Expect.isTrue (p.X = rotatedPts.[i].X && p.Y = rotatedPts.[i].Y && p.Z = rotatedPts.[i].Z) $"corner {i} unchanged"
+                Expect.isTrue (eqPnt box.Edge56.To box.Pnt6) "Edge56 ends at the moved corner"
+                Expect.isTrue (eqPnt box.Edge26.To box.Pnt6) "Edge26 ends at the moved corner"
+            }
+
+            test "MovePntXYZ gives the same coordinates as MovePnt" {
+                let a = FreeBox.createFromEightPoints rotatedPts
+                let b = FreeBox.createFromEightPoints rotatedPts
+                a.MovePnt(0, Vec(0.3, -1.7, 2.9))
+                b.MovePntXYZ(0, 0.3, -1.7, 2.9)
+                Expect.isTrue (Array.forall2 (=) a.XYZs b.XYZs) "same coordinates"
+            }
+
+            test "static movePnt and movePntXYZ take the point index first" {
+                let box = FreeBox.createFromEightPoints rotatedPts
+                FreeBox.movePnt 7 (Vec(0.5, -2.0, 1.25)) box
+                Expect.isTrue (eqPnt box.Pnt7 (Pnt(2.5, 5., 10.25))) "movePnt moved corner 7"
+                FreeBox.movePntXYZ 1 0.5 (-2.0) 1.25 box
+                Expect.isTrue (eqPnt box.Pnt1 (Pnt(13.5, 7., 3.25))) "movePntXYZ moved corner 1"
+            }
+
+            test "MovePnt by a zero vector leaves the box unchanged" {
+                let box = FreeBox.createFromEightPoints rotatedPts
+                box.MovePnt(3, Vec(0., 0., 0.))
+                box.MovePntXYZ(4, 0., 0., 0.)
+                Expect.isTrue (Array.forall2 (=) box.XYZs rotatedXYZs) "same coordinates"
+            }
+
+            test "MovePnt with invalid index throws" {
+                let box = FreeBox.createFromEightPoints rotatedPts
+                for i in [ -1; 8 ] do
+                    Expect.throws (fun () -> box.MovePnt(i, Vec(1., 1., 1.))) $"MovePnt {i}"
+                    Expect.throws (fun () -> box.MovePntXYZ(i, 1., 1., 1.)) $"MovePntXYZ {i}"
+                Expect.isTrue (Array.forall2 (=) box.XYZs rotatedXYZs) "box unchanged"
+            }
         ]
 
         testList "Edges" [

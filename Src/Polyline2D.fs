@@ -25,6 +25,10 @@ module private Polyline2DUtil =
         xys.[i * 2    ] <- x
         xys.[i * 2 + 1] <- y
 
+    let inline moveCoordXY i x y (xys: ResizeArray<float>) =
+        xys.[i * 2    ] <- xys.[i * 2    ] + x
+        xys.[i * 2 + 1] <- xys.[i * 2 + 1] + y
+
     let inline appendXY x y (xys: ResizeArray<float>) =
         xys.Add x
         xys.Add y
@@ -173,6 +177,100 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// (this sets XYs.[pointIndex * 2] and XYs.[pointIndex * 2 + 1] in the internal flat list of x and y coordinates )
     static member inline setPtXY (pointIndex:int) (x:float) ( y:float) (p:Polyline2D) : unit =
         p.SetPtXY (pointIndex, x, y)
+
+    /// <summary>Moves the 2D point at the given pointIndex in place by a vector.
+    /// NOTE: moving the first or last point on a closed Polyline2D opens it. Use MovePtClosed to keep it closed.
+    /// (this adds v.X and v.Y to XYs.[pointIndex * 2] and XYs.[pointIndex * 2 + 1] in the internal flat list of x and y coordinates )</summary>
+    /// <param name="pointIndex">The index of the point to move. Must be between 0 and PointCount - 1.</param>
+    /// <param name="v">The vector to move the point by.</param>
+    member _.MovePt (pointIndex:int, v:Vc) : unit =
+        let len = xys.Count
+        if pointIndex < 0 || pointIndex > len / 2 - 1 then
+            failPointIndex "MovePt" pointIndex xys
+        moveCoordXY pointIndex v.X v.Y xys
+
+    /// <summary>Moves the 2D point at the given pointIndex in place by a vector.
+    /// NOTE: moving the first or last point on a closed Polyline2D opens it. Use Polyline2D.movePtClosed to keep it closed.</summary>
+    /// <param name="pointIndex">The index of the point to move. Must be between 0 and PointCount - 1.</param>
+    /// <param name="v">The vector to move the point by.</param>
+    /// <param name="p">The Polyline2D to change.</param>
+    static member inline movePt (pointIndex:int) (v:Vc) (p:Polyline2D) : unit =
+        p.MovePt (pointIndex, v)
+
+    /// <summary>Moves the 2D point at the given pointIndex in place by the given x and y distances.
+    /// NOTE: moving the first or last point on a closed Polyline2D opens it. Use MovePtXYClosed to keep it closed.
+    /// (this adds x and y to XYs.[pointIndex * 2] and XYs.[pointIndex * 2 + 1] in the internal flat list of x and y coordinates )</summary>
+    /// <param name="pointIndex">The index of the point to move. Must be between 0 and PointCount - 1.</param>
+    /// <param name="x">The distance to move the point in X direction.</param>
+    /// <param name="y">The distance to move the point in Y direction.</param>
+    member _.MovePtXY (pointIndex:int, x:float, y:float) : unit =
+        let len = xys.Count
+        if pointIndex < 0 || pointIndex > len / 2 - 1 then
+            failPointIndex "MovePtXY" pointIndex xys
+        moveCoordXY pointIndex x y xys
+
+    /// <summary>Moves the 2D point at the given pointIndex in place by the given x and y distances.
+    /// NOTE: moving the first or last point on a closed Polyline2D opens it. Use Polyline2D.movePtXYClosed to keep it closed.</summary>
+    /// <param name="pointIndex">The index of the point to move. Must be between 0 and PointCount - 1.</param>
+    /// <param name="x">The distance to move the point in X direction.</param>
+    /// <param name="y">The distance to move the point in Y direction.</param>
+    /// <param name="p">The Polyline2D to change.</param>
+    static member inline movePtXY (pointIndex:int) (x:float) (y:float) (p:Polyline2D) : unit =
+        p.MovePtXY (pointIndex, x, y)
+
+    /// <summary>Moves the 2D point at the given pointIndex in place by a vector.
+    /// On a closed Polyline2D, moving the first or last point moves both, so it stays closed.
+    /// (this adds v.X and v.Y to XYs.[pointIndex * 2] and XYs.[pointIndex * 2 + 1] in the internal flat list of x and y coordinates )</summary>
+    /// <param name="pointIndex">The index of the point to move. Must be between 0 and PointCount - 1.</param>
+    /// <param name="v">The vector to move the point by.</param>
+    member p.MovePtClosed (pointIndex:int, v:Vc) : unit =
+        let len = xys.Count
+        if pointIndex < 0 || pointIndex > len / 2 - 1 then
+            failPointIndex "MovePtClosed" pointIndex xys
+        let wasClosed = p.IsClosed
+        moveCoordXY pointIndex v.X v.Y xys
+        if wasClosed then
+            let last = p.PointCount - 1
+            if pointIndex = 0 then
+                setCoordXY last xys.[0] xys.[1] xys
+            elif pointIndex = last then
+                setCoordXY 0 xys.[last * 2] xys.[last * 2 + 1] xys
+
+    /// <summary>Moves the 2D point at the given pointIndex in place by a vector.
+    /// On a closed Polyline2D, moving the first or last point moves both, so it stays closed.</summary>
+    /// <param name="pointIndex">The index of the point to move. Must be between 0 and PointCount - 1.</param>
+    /// <param name="v">The vector to move the point by.</param>
+    /// <param name="p">The Polyline2D to change.</param>
+    static member inline movePtClosed (pointIndex:int) (v:Vc) (p:Polyline2D) : unit =
+        p.MovePtClosed (pointIndex, v)
+
+    /// <summary>Moves the 2D point at the given pointIndex in place by the given x and y distances.
+    /// On a closed Polyline2D, moving the first or last point moves both, so it stays closed.
+    /// (this adds x and y to XYs.[pointIndex * 2] and XYs.[pointIndex * 2 + 1] in the internal flat list of x and y coordinates )</summary>
+    /// <param name="pointIndex">The index of the point to move. Must be between 0 and PointCount - 1.</param>
+    /// <param name="x">The distance to move the point in X direction.</param>
+    /// <param name="y">The distance to move the point in Y direction.</param>
+    member p.MovePtXYClosed (pointIndex:int, x:float, y:float) : unit =
+        let len = xys.Count
+        if pointIndex < 0 || pointIndex > len / 2 - 1 then
+            failPointIndex "MovePtXYClosed" pointIndex xys
+        let wasClosed = p.IsClosed
+        moveCoordXY pointIndex x y xys
+        if wasClosed then
+            let last = p.PointCount - 1
+            if pointIndex = 0 then
+                setCoordXY last xys.[0] xys.[1] xys
+            elif pointIndex = last then
+                setCoordXY 0 xys.[last * 2] xys.[last * 2 + 1] xys
+
+    /// <summary>Moves the 2D point at the given pointIndex in place by the given x and y distances.
+    /// On a closed Polyline2D, moving the first or last point moves both, so it stays closed.</summary>
+    /// <param name="pointIndex">The index of the point to move. Must be between 0 and PointCount - 1.</param>
+    /// <param name="x">The distance to move the point in X direction.</param>
+    /// <param name="y">The distance to move the point in Y direction.</param>
+    /// <param name="p">The Polyline2D to change.</param>
+    static member inline movePtXYClosed (pointIndex:int) (x:float) (y:float) (p:Polyline2D) : unit =
+        p.MovePtXYClosed (pointIndex, x, y)
 
     /// Adds a point from x and y coordinates.
     member _.AddXY( x:float, y:float ) : unit =
