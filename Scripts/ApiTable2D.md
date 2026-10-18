@@ -48,10 +48,10 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `.Y` | `float` |
 | `.AngleDiamondTo` | `b: Vc -> float` |
 | `.AsFSharpCode` | `string` |
-| `.AsPnt` | `Pnt` |
-| `Vc.asPnt` | `v: Vc -> Pnt` |
 | `.AsPt` | `Pt` |
+| `.AsPnt` | `Pnt` |
 | `Vc.asPt` | `v: Vc -> Pt` |
+| `Vc.asPnt` | `v: Vc -> Pnt` |
 | `.AsString` | `string` |
 | `.AsVec` | `Vec` |
 | `Vc.asVec` | `v: Vc -> Vec` |
@@ -197,10 +197,10 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `.Y` | `float` |
 | `.AngleDiamondTo` | `b: UnitVc -> float` |
 | `.AsFSharpCode` | `string` |
-| `.AsPnt` | `Pnt` |
-| `UnitVc.asPnt` | `v: UnitVc -> Pnt` |
 | `.AsPt` | `Pt` |
+| `.AsPnt` | `Pnt` |
 | `UnitVc.asPt` | `v: UnitVc -> Pt` |
+| `UnitVc.asPnt` | `v: UnitVc -> Pnt` |
 | `.AsString` | `string` |
 | `.AsUnitVec` | `UnitVec` |
 | `UnitVc.asUnitVec` | `v: UnitVc -> UnitVec` |

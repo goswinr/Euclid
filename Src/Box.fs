@@ -1222,7 +1222,7 @@ type Box =
         let dY = nx*yx + ny*yy + nz*yz
         let dZ = nx*zx + ny*zy + nz*zz
         let inline snap d = if isTooTiny (abs d) then 0.0 else d
-        // Corner numbering as in b.Pt0 to b.Pt7.
+        // Corner numbering as in b.Pnt0 to b.Pnt7.
         let d0 = snap dOrigin
         let d1 = snap (dOrigin + dX)
         let d2 = snap (dOrigin + dX + dY)
@@ -1573,12 +1573,12 @@ type Box =
     ///   0               1
     /// </code>
     /// </summary>
-    member inline b.Pt0 : Pnt =
+    member inline b.Pnt0 : Pnt =
         Pnt(b.OriginX, b.OriginY, b.OriginZ)
 
     /// Returns point 0 of the box, same as Origin.
-    static member inline pt0 (b:Box) : Pnt =
-        b.Pt0
+    static member inline pnt0 (b:Box) : Pnt =
+        b.Pnt0
 
     /// <summary>Returns point 1 of the box.
     /// <code>
@@ -1600,12 +1600,12 @@ type Box =
     ///   0               1
     /// </code>
     /// </summary>
-    member inline b.Pt1 : Pnt =
+    member inline b.Pnt1 : Pnt =
         Pnt(b.OriginX + b.XaxisX, b.OriginY + b.XaxisY, b.OriginZ + b.XaxisZ)
 
     /// Returns point 1 of the box.
-    static member inline pt1 (b:Box) : Pnt =
-        b.Pt1
+    static member inline pnt1 (b:Box) : Pnt =
+        b.Pnt1
 
     /// <summary>Returns point 2 of the box.
     /// <code>
@@ -1627,12 +1627,12 @@ type Box =
     ///   0               1
     /// </code>
     /// </summary>
-    member inline b.Pt2 : Pnt =
+    member inline b.Pnt2 : Pnt =
         Pnt(b.OriginX + b.XaxisX + b.YaxisX, b.OriginY + b.XaxisY + b.YaxisY, b.OriginZ + b.XaxisZ + b.YaxisZ)
 
     /// Returns point 2 of the box.
-    static member inline pt2 (b:Box) : Pnt =
-        b.Pt2
+    static member inline pnt2 (b:Box) : Pnt =
+        b.Pnt2
 
     /// <summary>Returns point 3 of the box.
     /// <code>
@@ -1654,12 +1654,12 @@ type Box =
     ///   0               1
     /// </code>
     /// </summary>
-    member inline b.Pt3 : Pnt =
+    member inline b.Pnt3 : Pnt =
         Pnt(b.OriginX + b.YaxisX, b.OriginY + b.YaxisY, b.OriginZ + b.YaxisZ)
 
     /// Returns point 3 of the box.
-    static member inline pt3 (b:Box) : Pnt =
-        b.Pt3
+    static member inline pnt3 (b:Box) : Pnt =
+        b.Pnt3
 
     /// <summary>Returns point 4 of the box.
     /// <code>
@@ -1681,12 +1681,12 @@ type Box =
     ///   0               1
     /// </code>
     /// </summary>
-    member inline b.Pt4 : Pnt =
+    member inline b.Pnt4 : Pnt =
         Pnt(b.OriginX + b.ZaxisX, b.OriginY + b.ZaxisY, b.OriginZ + b.ZaxisZ)
 
     /// Returns point 4 of the box.
-    static member inline pt4 (b:Box) : Pnt =
-        b.Pt4
+    static member inline pnt4 (b:Box) : Pnt =
+        b.Pnt4
 
     /// <summary>Returns point 5 of the box.
     /// <code>
@@ -1708,12 +1708,12 @@ type Box =
     ///   0               1
     /// </code>
     /// </summary>
-    member inline b.Pt5 : Pnt =
+    member inline b.Pnt5 : Pnt =
         Pnt(b.OriginX + b.XaxisX + b.ZaxisX, b.OriginY + b.XaxisY + b.ZaxisY, b.OriginZ + b.XaxisZ + b.ZaxisZ)
 
     /// Returns point 5 of the box.
-    static member inline pt5 (b:Box) : Pnt =
-        b.Pt5
+    static member inline pnt5 (b:Box) : Pnt =
+        b.Pnt5
 
     /// <summary>Returns point 6 of the box.
     /// <code>
@@ -1735,12 +1735,12 @@ type Box =
     ///   0               1
     /// </code>
     /// </summary>
-    member inline b.Pt6 : Pnt =
+    member inline b.Pnt6 : Pnt =
         Pnt(b.OriginX + b.XaxisX + b.YaxisX + b.ZaxisX, b.OriginY + b.XaxisY + b.YaxisY + b.ZaxisY, b.OriginZ + b.XaxisZ + b.YaxisZ + b.ZaxisZ)
 
     /// Returns point 6 of the box.
-    static member inline pt6 (b:Box) : Pnt =
-        b.Pt6
+    static member inline pnt6 (b:Box) : Pnt =
+        b.Pnt6
 
     /// <summary>Returns point 7 of the box.
     /// <code>
@@ -1762,71 +1762,71 @@ type Box =
     ///   0               1
     /// </code>
     /// </summary>
-    member inline b.Pt7 : Pnt =
+    member inline b.Pnt7 : Pnt =
         Pnt(b.OriginX + b.YaxisX + b.ZaxisX, b.OriginY + b.YaxisY + b.ZaxisY, b.OriginZ + b.YaxisZ + b.ZaxisZ)
 
     /// Returns point 7 of the box.
-    static member inline pt7 (b:Box) : Pnt =
-        b.Pt7
+    static member inline pnt7 (b:Box) : Pnt =
+        b.Pnt7
 
     /// Returns the X coordinate of point 0 of the box, same as b.OriginX.
-    member inline b.Pt0X : float = b.OriginX
+    member inline b.Pnt0X : float = b.OriginX
     /// Returns the Y coordinate of point 0 of the box, same as b.OriginY.
-    member inline b.Pt0Y : float = b.OriginY
+    member inline b.Pnt0Y : float = b.OriginY
     /// Returns the Z coordinate of point 0 of the box, same as b.OriginZ.
-    member inline b.Pt0Z : float = b.OriginZ
+    member inline b.Pnt0Z : float = b.OriginZ
 
     /// Returns the X coordinate of point 1 of the box, without allocating a point.
-    member inline b.Pt1X : float = b.OriginX + b.XaxisX
+    member inline b.Pnt1X : float = b.OriginX + b.XaxisX
     /// Returns the Y coordinate of point 1 of the box, without allocating a point.
-    member inline b.Pt1Y : float = b.OriginY + b.XaxisY
+    member inline b.Pnt1Y : float = b.OriginY + b.XaxisY
     /// Returns the Z coordinate of point 1 of the box, without allocating a point.
-    member inline b.Pt1Z : float = b.OriginZ + b.XaxisZ
+    member inline b.Pnt1Z : float = b.OriginZ + b.XaxisZ
 
     /// Returns the X coordinate of point 2 of the box, without allocating a point.
-    member inline b.Pt2X : float = b.OriginX + b.XaxisX + b.YaxisX
+    member inline b.Pnt2X : float = b.OriginX + b.XaxisX + b.YaxisX
     /// Returns the Y coordinate of point 2 of the box, without allocating a point.
-    member inline b.Pt2Y : float = b.OriginY + b.XaxisY + b.YaxisY
+    member inline b.Pnt2Y : float = b.OriginY + b.XaxisY + b.YaxisY
     /// Returns the Z coordinate of point 2 of the box, without allocating a point.
-    member inline b.Pt2Z : float = b.OriginZ + b.XaxisZ + b.YaxisZ
+    member inline b.Pnt2Z : float = b.OriginZ + b.XaxisZ + b.YaxisZ
 
     /// Returns the X coordinate of point 3 of the box, without allocating a point.
-    member inline b.Pt3X : float = b.OriginX + b.YaxisX
+    member inline b.Pnt3X : float = b.OriginX + b.YaxisX
     /// Returns the Y coordinate of point 3 of the box, without allocating a point.
-    member inline b.Pt3Y : float = b.OriginY + b.YaxisY
+    member inline b.Pnt3Y : float = b.OriginY + b.YaxisY
     /// Returns the Z coordinate of point 3 of the box, without allocating a point.
-    member inline b.Pt3Z : float = b.OriginZ + b.YaxisZ
+    member inline b.Pnt3Z : float = b.OriginZ + b.YaxisZ
 
     /// Returns the X coordinate of point 4 of the box, without allocating a point.
-    member inline b.Pt4X : float = b.OriginX + b.ZaxisX
+    member inline b.Pnt4X : float = b.OriginX + b.ZaxisX
     /// Returns the Y coordinate of point 4 of the box, without allocating a point.
-    member inline b.Pt4Y : float = b.OriginY + b.ZaxisY
+    member inline b.Pnt4Y : float = b.OriginY + b.ZaxisY
     /// Returns the Z coordinate of point 4 of the box, without allocating a point.
-    member inline b.Pt4Z : float = b.OriginZ + b.ZaxisZ
+    member inline b.Pnt4Z : float = b.OriginZ + b.ZaxisZ
 
     /// Returns the X coordinate of point 5 of the box, without allocating a point.
-    member inline b.Pt5X : float = b.OriginX + b.XaxisX + b.ZaxisX
+    member inline b.Pnt5X : float = b.OriginX + b.XaxisX + b.ZaxisX
     /// Returns the Y coordinate of point 5 of the box, without allocating a point.
-    member inline b.Pt5Y : float = b.OriginY + b.XaxisY + b.ZaxisY
+    member inline b.Pnt5Y : float = b.OriginY + b.XaxisY + b.ZaxisY
     /// Returns the Z coordinate of point 5 of the box, without allocating a point.
-    member inline b.Pt5Z : float = b.OriginZ + b.XaxisZ + b.ZaxisZ
+    member inline b.Pnt5Z : float = b.OriginZ + b.XaxisZ + b.ZaxisZ
 
     /// Returns the X coordinate of point 6 of the box, without allocating a point.
-    member inline b.Pt6X : float = b.OriginX + b.XaxisX + b.YaxisX + b.ZaxisX
+    member inline b.Pnt6X : float = b.OriginX + b.XaxisX + b.YaxisX + b.ZaxisX
     /// Returns the Y coordinate of point 6 of the box, without allocating a point.
-    member inline b.Pt6Y : float = b.OriginY + b.XaxisY + b.YaxisY + b.ZaxisY
+    member inline b.Pnt6Y : float = b.OriginY + b.XaxisY + b.YaxisY + b.ZaxisY
     /// Returns the Z coordinate of point 6 of the box, without allocating a point.
-    member inline b.Pt6Z : float = b.OriginZ + b.XaxisZ + b.YaxisZ + b.ZaxisZ
+    member inline b.Pnt6Z : float = b.OriginZ + b.XaxisZ + b.YaxisZ + b.ZaxisZ
 
     /// Returns the X coordinate of point 7 of the box, without allocating a point.
-    member inline b.Pt7X : float = b.OriginX + b.YaxisX + b.ZaxisX
+    member inline b.Pnt7X : float = b.OriginX + b.YaxisX + b.ZaxisX
     /// Returns the Y coordinate of point 7 of the box, without allocating a point.
-    member inline b.Pt7Y : float = b.OriginY + b.YaxisY + b.ZaxisY
+    member inline b.Pnt7Y : float = b.OriginY + b.YaxisY + b.ZaxisY
     /// Returns the Z coordinate of point 7 of the box, without allocating a point.
-    member inline b.Pt7Z : float = b.OriginZ + b.YaxisZ + b.ZaxisZ
+    member inline b.Pnt7Z : float = b.OriginZ + b.YaxisZ + b.ZaxisZ
 
     /// <summary>Returns the point of the box at the specified index.
-    /// The order of the points is: Pt0, Pt1, Pt2, Pt3, Pt4, Pt5, Pt6, Pt7.
+    /// The order of the points is: Pnt0, Pnt1, Pnt2, Pnt3, Pnt4, Pnt5, Pnt6, Pnt7.
     /// <code>
     ///   local        local
     ///   Z-axis       Y-axis
@@ -1848,14 +1848,14 @@ type Box =
     /// </summary>
     member b.GetPoint (pointIndex:int) : Pnt =
         match pointIndex with
-        | 0 -> b.Pt0
-        | 1 -> b.Pt1
-        | 2 -> b.Pt2
-        | 3 -> b.Pt3
-        | 4 -> b.Pt4
-        | 5 -> b.Pt5
-        | 6 -> b.Pt6
-        | 7 -> b.Pt7
+        | 0 -> b.Pnt0
+        | 1 -> b.Pnt1
+        | 2 -> b.Pnt2
+        | 3 -> b.Pnt3
+        | 4 -> b.Pnt4
+        | 5 -> b.Pnt5
+        | 6 -> b.Pnt6
+        | 7 -> b.Pnt7
         | _ -> fail $"Box.GetPoint: pointIndex {pointIndex} is out of range. Valid range is 0 to 7."
 
     /// Returns the point of the box at the specified index.

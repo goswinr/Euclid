@@ -26,7 +26,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 - [XLine3D.XParam](#xline3dxparam)
 - [XLine3D.XPnt](#xline3dxpnt)
 - [XLine3D.ClParams](#xline3dclparams)
-- [XLine3D.ClPts](#xline3dclpts)
+- [XLine3D.ClPnts](#xline3dclpnts)
 - [XLine3D.XEnds](#xline3dxends)
 - [module XLineXYZ](#module-xlinexyz)
 - [XLine3D](#xline3d)
@@ -55,8 +55,8 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `.AngleDiamondInXYTo` | `b: Vec -> float` |
 | `.AsFSharpCode` | `string` |
 | `.AsPnt` | `Pnt` |
-| `Vec.asPnt` | `v: Vec -> Pnt` |
 | `.AsPt` | `Pt` |
+| `Vec.asPnt` | `v: Vec -> Pnt` |
 | `Vec.asPt` | `v: Vec -> Pt` |
 | `.AsString` | `string` |
 | `.AsVc` | `Vc` |
@@ -231,8 +231,8 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `.AngleDiamondInXYTo` | `b: UnitVec -> float` |
 | `.AsFSharpCode` | `string` |
 | `.AsPnt` | `Pnt` |
-| `UnitVec.asPnt` | `v: UnitVec -> Pnt` |
 | `.AsPt` | `Pt` |
+| `UnitVec.asPnt` | `v: UnitVec -> Pnt` |
 | `UnitVec.asPt` | `v: UnitVec -> Pt` |
 | `.AsString` | `string` |
 | `.AsUnitVc` | `UnitVc` |
@@ -322,7 +322,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `UnitVec.angleHalfPi` | `a: UnitVec -> b: UnitVec -> float` |
 | `UnitVec.anglePi` | `a: UnitVec -> b: UnitVec -> float` |
 | `UnitVec.create` | `x: float * y: float * z: float -> UnitVec` |
-| `UnitVec.create` | `fromPt: Pnt * toPt: Pnt -> UnitVec` |
+| `UnitVec.create` | `fromPnt: Pnt * toPnt: Pnt -> UnitVec` |
 | `UnitVec.createFor` | `msg: string * x: float * y: float * z: float -> UnitVec` |
 | `UnitVec.createFromMembersXYZ` | `vec: ^T -> UnitVec` |
 | `UnitVec.createFromMembersxyz` | `vec: ^T -> UnitVec` |
@@ -390,9 +390,9 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `.Y` | `float` |
 | `.Z` | `float` |
 | `.Angle2PiInXYTo` | `o: Pnt -> float` |
-| `Pnt.angle2PiInXYTo` | `fromPt: Pnt * toPt: Pnt -> float` |
+| `Pnt.angle2PiInXYTo` | `fromPnt: Pnt * toPnt: Pnt -> float` |
 | `.Angle360InXYTo` | `o: Pnt -> float` |
-| `Pnt.angle360InXYTo` | `fromPt: Pnt * toPt: Pnt -> float` |
+| `Pnt.angle360InXYTo` | `fromPnt: Pnt * toPnt: Pnt -> float` |
 | `.AsFSharpCode` | `string` |
 | `.AsPt` | `Pt` |
 | `Pnt.asPt` | `pt: Pnt -> Pt` |
@@ -402,9 +402,9 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `.AsVec` | `Vec` |
 | `Pnt.asVec` | `pt: Pnt -> Vec` |
 | `.ClosestPointOnLine` | `ln: Line3D -> Pnt` |
-| `Pnt.closestPointOnLine` | `ln: Line3D -> testPt: Pnt -> Pnt` |
+| `Pnt.closestPointOnLine` | `ln: Line3D -> testPnt: Pnt -> Pnt` |
 | `.DirectionDiamondInXYTo` | `o: Pnt -> float` |
-| `Pnt.directionDiamondInXYTo` | `fromPt: Pnt * toPt: Pnt -> float` |
+| `Pnt.directionDiamondInXYTo` | `fromPnt: Pnt * toPnt: Pnt -> float` |
 | `.DistanceFromOrigin` | `float` |
 | `Pnt.distanceFromOrigin` | `pt: Pnt -> float` |
 | `.DistanceInXYFromOrigin` | `float` |
@@ -412,7 +412,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `.DistanceTo` | `b: Pnt -> float` |
 | `Pnt.distanceTo` | `b: Pnt -> p: Pnt -> float` |
 | `.DistanceToLine` | `ln: Line3D -> float` |
-| `Pnt.distanceToLine` | `ln: Line3D -> testPt: Pnt -> float` |
+| `Pnt.distanceToLine` | `ln: Line3D -> testPnt: Pnt -> float` |
 | `.DistanceToXYZ` | `x: float * y: float * z: float -> float` |
 | `Pnt.distanceToXYZ` | `x: float * y: float * z: float -> p: Pnt -> float` |
 | `.IsAlmostOrigin` | `tol: float -> bool` |
@@ -432,7 +432,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `.SqDistanceTo` | `b: Pnt -> float` |
 | `Pnt.sqDistanceTo` | `b: Pnt -> p: Pnt -> float` |
 | `.SqDistanceToLine` | `ln: Line3D -> float` |
-| `Pnt.sqDistanceToLine` | `ln: Line3D -> testPt: Pnt -> float` |
+| `Pnt.sqDistanceToLine` | `ln: Line3D -> testPnt: Pnt -> float` |
 | `.SqDistanceToXYZ` | `x: float * y: float * z: float -> float` |
 | `Pnt.sqDistanceToXYZ` | `x: float * y: float * z: float -> p: Pnt -> float` |
 | `.ToString` | `unit -> string` |
@@ -453,9 +453,9 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | **Other static members** | |
 | `Pnt.add` | `a: Pnt -> b: Pnt -> Pnt` |
 | `Pnt.addVec` | `v: Vec -> a: Pnt -> Pnt` |
-| `Pnt.angle180Pts` | `ptPrev: Pnt * ptThis: Pnt * ptNext: Pnt -> float` |
-| `Pnt.angleInCorner` | `prevPt: Pnt * thisPt: Pnt * nextPt: Pnt -> float` |
-| `Pnt.anglePiPts` | `ptPrev: Pnt * ptThis: Pnt * ptNext: Pnt -> float` |
+| `Pnt.angle180Pnts` | `ptPrev: Pnt * ptThis: Pnt * ptNext: Pnt -> float` |
+| `Pnt.angleInCorner` | `prevPnt: Pnt * thisPnt: Pnt * nextPnt: Pnt -> float` |
+| `Pnt.anglePiPnts` | `ptPrev: Pnt * ptThis: Pnt * ptNext: Pnt -> float` |
 | `Pnt.bisector` | `ptPrev: Pnt * ptThis: Pnt * ptNext: Pnt -> Vec` |
 | `Pnt.closestOfTwo` | `pt1: Pnt -> pt2: Pnt -> referencePoint: Pnt -> Pnt` |
 | `Pnt.createFromMembersXYZ` | `pt: ^T -> Pnt` |
@@ -466,27 +466,27 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Pnt.createFromVec` | `v: Vec -> Pnt` |
 | `Pnt.dist` | `b: Pnt -> p: Pnt -> float` |
 | `Pnt.distanceInXY` | `a: Pnt -> b: Pnt -> float` |
-| `Pnt.distPt` | `fromPt: Pnt * dirPt: Pnt * distance: float -> Pnt` |
+| `Pnt.distPnt` | `fromPnt: Pnt * dirPnt: Pnt * distance: float -> Pnt` |
 | `Pnt.DivideByInt` | `pt: Pnt * i: int -> Pnt` |
-| `Pnt.divPt` | `fromPt: Pnt * toPt: Pnt * rel: float -> Pnt` |
+| `Pnt.divPnt` | `fromPnt: Pnt * toPnt: Pnt * rel: float -> Pnt` |
 | `Pnt.equals` | `tol: float -> a: Pnt -> b: Pnt -> bool` |
-| `Pnt.extendToZLevel` | `fromPt: Pnt * toPt: Pnt * z: float -> Pnt` |
+| `Pnt.extendToZLevel` | `fromPnt: Pnt * toPnt: Pnt * z: float -> Pnt` |
 | `Pnt.getX` | `pt: Pnt -> float` |
 | `Pnt.getY` | `pt: Pnt -> float` |
 | `Pnt.getZ` | `pt: Pnt -> float` |
-| `Pnt.lerp` | `fromPt: Pnt * toPt: Pnt * rel: float -> Pnt` |
-| `Pnt.midPt` | `a: Pnt -> b: Pnt -> Pnt` |
+| `Pnt.lerp` | `fromPnt: Pnt * toPnt: Pnt * rel: float -> Pnt` |
+| `Pnt.midPnt` | `a: Pnt -> b: Pnt -> Pnt` |
 | `Pnt.move` | `shift: Vec -> pt: Pnt -> Pnt` |
 | `Pnt.moveX` | `x: float -> pt: Pnt -> Pnt` |
 | `Pnt.moveY` | `y: float -> pt: Pnt -> Pnt` |
 | `Pnt.moveZ` | `z: float -> pt: Pnt -> Pnt` |
-| `Pnt.normalOf3Pts` | `a: Pnt * b: Pnt * c: Pnt -> Vec` |
-| `Pnt.normalOfTwoPointsInXY` | `fromPt: Pnt * toPt: Pnt -> Vec` |
+| `Pnt.normalOf3Pnts` | `a: Pnt * b: Pnt * c: Pnt -> Vec` |
+| `Pnt.normalOfTwoPointsInXY` | `fromPnt: Pnt * toPnt: Pnt -> Vec` |
 | `Pnt.notEquals` | `tol: float -> a: Pnt -> b: Pnt -> bool` |
 | `Pnt.Origin` | `Pnt` |
-| `Pnt.projectedParameter` | `fromPt: Pnt * uv: UnitVec * testPt: Pnt -> float` |
-| `Pnt.projectedParameter` | `fromPt: Pnt * v: Vec * testPt: Pnt -> float` |
-| `Pnt.projectedParameter` | `fromPt: Pnt * toPt: Pnt * testPt: Pnt -> float` |
+| `Pnt.projectedParameter` | `fromPnt: Pnt * uv: UnitVec * testPnt: Pnt -> float` |
+| `Pnt.projectedParameter` | `fromPnt: Pnt * v: Vec * testPnt: Pnt -> float` |
+| `Pnt.projectedParameter` | `fromPnt: Pnt * toPnt: Pnt * testPnt: Pnt -> float` |
 | `Pnt.projectToXYPlane` | `pt: Pnt -> Pnt` |
 | `Pnt.rotate` | `q: Quaternion -> pt: Pnt -> Pnt` |
 | `Pnt.rotateOnX` | `r: Rotation2D -> p: Pnt -> Pnt` |
@@ -637,7 +637,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `PPlane.createOriginNormalXaxis` | `origin: Pnt * normal: Vec * xAxis: Vec -> PPlane` |
 | `PPlane.createOriginXaxisYaxis` | `origin: Pnt * xAxis: UnitVec * yAxis: UnitVec -> PPlane` |
 | `PPlane.createOriginXaxisYaxis` | `origin: Pnt * xAxis: Vec * yAxis: Vec -> PPlane` |
-| `PPlane.createThreePoints` | `origin: Pnt -> xPt: Pnt -> yPt: Pnt -> PPlane` |
+| `PPlane.createThreePoints` | `origin: Pnt -> xPnt: Pnt -> yPnt: Pnt -> PPlane` |
 | `PPlane.createUnchecked` | `originX: float * originY: float * originZ: float * xAxisX: float * xAxisY: float * xAxisZ: float * yAxisX: float * yAxisY: float * yAxisZ: float * zAxisX: float * zAxisY: float * zAxisZ: float -> PPlane` |
 | `PPlane.createUncheckedVec` | `origin: Pnt * axisX: UnitVec * axisY: UnitVec * axisZ: UnitVec -> PPlane` |
 | `PPlane.doLinePlaneIntersect` | `ln: Line3D -> pl: PPlane -> bool` |
@@ -851,7 +851,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 
 | Line3D | Signature |
 |:--|:--|
-| `new` | `fromPt: Pnt * toPt: Pnt -> Line3D` |
+| `new` | `fromPnt: Pnt * toPnt: Pnt -> Line3D` |
 | `new` | `fromX: float * fromY: float * fromZ: float * toX: float * toY: float * toZ: float -> Line3D` |
 | `.FromX` | `float` |
 | `.FromY` | `float` |
@@ -1063,7 +1063,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Line3D.isPerpendicularToUnitVec` | `maxTangent: float<tangent> -> other: UnitVec -> ln: Line3D -> bool` |
 | `Line3D.isPerpendicularToVec` | `maxTangent: float<tangent> -> other: Vec -> ln: Line3D -> bool` |
 | `Line3D.isTouchingEndOf` | `squareTolerance: float -> a: Line3D -> b: Line3D -> bool` |
-| `Line3D.lengthToPtOnLine` | `ln: Line3D -> pt: Pnt -> float` |
+| `Line3D.lengthToPntOnLine` | `ln: Line3D -> pt: Pnt -> float` |
 | `Line3D.matchesOrientationUnitVec` | `v: UnitVec -> ln: Line3D -> bool` |
 | `Line3D.matchesOrientationVec` | `v: Vec -> ln: Line3D -> bool` |
 | `Line3D.matchOrientation` | `orientationToMatch: Line3D -> lineToFlip: Line3D -> Line3D` |
@@ -1128,8 +1128,8 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 
 | XRay | Signature |
 |:--|:--|
-| `Intersect` | `xPt: Pnt -> XRay` |
-| `Skew` | `closestPtA: Pnt * closestPtB: Pnt * squareDist: float -> XRay` |
+| `Intersect` | `xPnt: Pnt -> XRay` |
+| `Skew` | `closestPntA: Pnt * closestPntB: Pnt * squareDist: float -> XRay` |
 | `Parallel` | `XRay` |
 | `TooShortA` | `XRay` |
 | `TooShortB` | `XRay` |
@@ -1171,17 +1171,17 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `TooShortB` | `ClParams` |
 | `TooShortBoth` | `ClParams` |
 
-## XLine3D.ClPts
+## XLine3D.ClPnts
 
-| ClPts | Signature |
+| ClPnts | Signature |
 |:--|:--|
-| `Intersect` | `pt: Pnt -> ClPts` |
-| `Skew` | `ptA: Pnt * ptB: Pnt * squareDist: float -> ClPts` |
-| `Parallel` | `ptA: Pnt * ptB: Pnt -> ClPts` |
-| `Apart` | `ptA: Pnt * ptB: Pnt * squareDist: float -> ClPts` |
-| `TooShortA` | `ClPts` |
-| `TooShortB` | `ClPts` |
-| `TooShortBoth` | `ClPts` |
+| `Intersect` | `pt: Pnt -> ClPnts` |
+| `Skew` | `ptA: Pnt * ptB: Pnt * squareDist: float -> ClPnts` |
+| `Parallel` | `ptA: Pnt * ptB: Pnt -> ClPnts` |
+| `Apart` | `ptA: Pnt * ptB: Pnt * squareDist: float -> ClPnts` |
+| `TooShortA` | `ClPnts` |
+| `TooShortB` | `ClPnts` |
+| `TooShortBoth` | `ClPnts` |
 
 ## XLine3D.XEnds
 
@@ -1203,7 +1203,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `XLineXYZ.doOverlap` | `pAx: float * pAy: float * pAz: float * pBx: float * pBy: float * pBz: float * vAx: float * vAy: float * vAz: float * vBx: float * vBy: float * vBz: float * tolerance: float -> bool` |
 | `XLineXYZ.doRaysIntersect` | `pAx: float * pAy: float * pAz: float * pBx: float * pBy: float * pBz: float * vAx: float * vAy: float * vAz: float * vBx: float * vBy: float * vBz: float * maxSkewDistance: float -> bool` |
 | `XLineXYZ.getClosestParameters` | `pAx: float * pAy: float * pAz: float * pBx: float * pBy: float * pBz: float * vAx: float * vAy: float * vAz: float * vBx: float * vBy: float * vBz: float * tangent: float<tangent> * tooShortTolerance: float -> ClParams` |
-| `XLineXYZ.getClosestPoints` | `pAx: float * pAy: float * pAz: float * pBx: float * pBy: float * pBz: float * vAx: float * vAy: float * vAz: float * vBx: float * vBy: float * vBz: float * tangent: float<tangent> * tooShortTolerance: float -> ClPts` |
+| `XLineXYZ.getClosestPoints` | `pAx: float * pAy: float * pAz: float * pBx: float * pBy: float * pBz: float * vAx: float * vAy: float * vAz: float * vBx: float * vBy: float * vBz: float * tangent: float<tangent> * tooShortTolerance: float -> ClPnts` |
 | `XLineXYZ.getIntersection` | `pAx: float * pAy: float * pAz: float * pBx: float * pBy: float * pBz: float * vAx: float * vAy: float * vAz: float * vBx: float * vBy: float * vBz: float * maxSkewDistance: float * tangent: float<tangent> * tooShortTolerance: float -> XPnt` |
 | `XLineXYZ.getIntersectionParam` | `pAx: float * pAy: float * pAz: float * pBx: float * pBy: float * pBz: float * vAx: float * vAy: float * vAz: float * vBx: float * vBy: float * vBz: float * maxSkewDistance: float * tangent: float<tangent> * tooShortTolerance: float -> XParam` |
 | `XLineXYZ.getRayClosestParam` | `pAx: float * pAy: float * pAz: float * pBx: float * pBy: float * pBz: float * vAx: float * vAy: float * vAz: float * vBx: float * vBy: float * vBz: float * tangent: float<tangent> * tooShortTolerance: float -> XRayParam` |
@@ -1228,8 +1228,8 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `XLine3D.doRaysIntersect` | `lineA: Line3D * lineB: Line3D * ?maxSkewDistance: float -> bool` |
 | `XLine3D.getClosestParameters` | `pA: Pnt * pB: Pnt * vA: Vec * vB: Vec * ?tangent: float<tangent> * ?tooShortTolerance: float -> ClParams` |
 | `XLine3D.getClosestParameters` | `lineA: Line3D * lineB: Line3D * ?tangent: float<tangent> * ?tooShortTolerance: float -> ClParams` |
-| `XLine3D.getClosestPoints` | `pA: Pnt * pB: Pnt * vA: Vec * vB: Vec * ?tangent: float<tangent> * ?tooShortTolerance: float -> ClPts` |
-| `XLine3D.getClosestPoints` | `lineA: Line3D * lineB: Line3D * ?tangent: float<tangent> * ?tooShortTolerance: float -> ClPts` |
+| `XLine3D.getClosestPoints` | `pA: Pnt * pB: Pnt * vA: Vec * vB: Vec * ?tangent: float<tangent> * ?tooShortTolerance: float -> ClPnts` |
+| `XLine3D.getClosestPoints` | `lineA: Line3D * lineB: Line3D * ?tangent: float<tangent> * ?tooShortTolerance: float -> ClPnts` |
 | `XLine3D.getEndsTouching` | `a: Line3D * b: Line3D * ?tolerance: float -> XEnds` |
 | `XLine3D.getIntersection` | `pA: Pnt * pB: Pnt * vA: Vec * vB: Vec * ?maxSkewDistance: float * ?tangent: float<tangent> * ?tooShortTolerance: float -> XPnt` |
 | `XLine3D.getIntersection` | `lineA: Line3D * lineB: Line3D * ?maxSkewDistance: float * ?tangent: float<tangent> * ?tooShortTolerance: float -> XPnt` |
@@ -1314,7 +1314,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `NPlane.intersectRay` | `ln: Line3D -> pl: NPlane -> float voption` |
 | `NPlane.move` | `translation: Vec -> pl: NPlane -> NPlane` |
 | `NPlane.offset` | `dist: float -> pl: NPlane -> NPlane` |
-| `NPlane.offsetInDir` | `dirPt: Pnt -> dist: float -> pl: NPlane -> NPlane` |
+| `NPlane.offsetInDir` | `dirPnt: Pnt -> dist: float -> pl: NPlane -> NPlane` |
 | `NPlane.scale` | `factor: float -> pl: NPlane -> NPlane` |
 | `NPlane.translate` | `translation: Vec -> pl: NPlane -> NPlane` |
 | `NPlane.xyPlane` | `NPlane` |
@@ -1420,14 +1420,10 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Rect3D.pointsXYZ` | `r: Rect3D -> ResizeArray<float>` |
 | `.PointsXYZLooped` | `ResizeArray<float>` |
 | `Rect3D.pointsXYZLooped` | `r: Rect3D -> ResizeArray<float>` |
-| `.Pt0` | `Pnt` |
-| `Rect3D.pt0` | `r: Rect3D -> Pnt` |
-| `.Pt1` | `Pnt` |
-| `Rect3D.pt1` | `r: Rect3D -> Pnt` |
-| `.Pt2` | `Pnt` |
-| `Rect3D.pt2` | `r: Rect3D -> Pnt` |
-| `.Pt3` | `Pnt` |
-| `Rect3D.pt3` | `r: Rect3D -> Pnt` |
+| `.Pnt0` | `Pnt` |
+| `.Pnt1` | `Pnt` |
+| `.Pnt2` | `Pnt` |
+| `.Pnt3` | `Pnt` |
 | `.Rotate` | `q: Quaternion -> Rect3D` |
 | `Rect3D.rotate` | `q: Quaternion -> r: Rect3D -> Rect3D` |
 | `.RotateOrientation180` | `Rect3D` |
@@ -1471,7 +1467,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Rect3D.yCorner` | `r: Rect3D -> Pnt` |
 | **Other static members** | |
 | `Rect3D.createCenteredFromPlane` | `pl: PPlane * sizeX: float * sizeY: float -> Rect3D` |
-| `Rect3D.createFrom3Points` | `origin: Pnt * xPt: Pnt * yPt: Pnt -> Rect3D` |
+| `Rect3D.createFrom3Points` | `origin: Pnt * xPnt: Pnt * yPnt: Pnt -> Rect3D` |
 | `Rect3D.createFromBounds2D` | `minX: float * minY: float * maxX: float * maxY: float -> Rect3D` |
 | `Rect3D.createFromPlane` | `pl: PPlane * sizeX: float * sizeY: float -> Rect3D` |
 | `Rect3D.createFromVectors` | `origin: Pnt * x: Vec * y: Vec -> Rect3D` |
@@ -1499,13 +1495,17 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Rect3D.offsetEdge` | `rect: Rect3D * edgeIdx: int * offEdge: float * width: float * offStart: float * offEnd: float -> Rect3D` |
 | `Rect3D.offsetVar` | `dist: float array -> rect: Rect3D -> Rect3D` |
 | `Rect3D.offsetZ` | `offsetDistance: float -> r: Rect3D -> Rect3D` |
+| `Rect3D.pnt0` | `r: Rect3D -> Pnt` |
+| `Rect3D.pnt1` | `r: Rect3D -> Pnt` |
+| `Rect3D.pnt2` | `r: Rect3D -> Pnt` |
+| `Rect3D.pnt3` | `r: Rect3D -> Pnt` |
 | `Rect3D.subDivide` | `rect: Rect3D * xCount: int * yCount: int * xGap: float * yGap: float -> Rect3D array array` |
 | `Rect3D.subDivideMaxLength` | `rect: Rect3D * xMaxLen: float * yMaxLen: float * xGap: float * yGap: float -> Rect3D array array` |
 | `Rect3D.subDivideMinLength` | `rect: Rect3D * xMinLen: float * yMinLen: float * xGap: float * yGap: float -> Rect3D array array` |
 | `Rect3D.translateLocalX` | `distX: float -> r: Rect3D -> Rect3D` |
 | `Rect3D.translateLocalY` | `distY: float -> r: Rect3D -> Rect3D` |
 | `Rect3D.translateLocalZ` | `distZ: float -> r: Rect3D -> Rect3D` |
-| `Rect3D.tryCreateFrom3Points` | `origin: Pnt * xPt: Pnt * yPt: Pnt -> Rect3D option` |
+| `Rect3D.tryCreateFrom3Points` | `origin: Pnt * xPnt: Pnt * yPnt: Pnt -> Rect3D option` |
 
 ## Box
 
@@ -1647,46 +1647,38 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Box.plane` | `b: Box -> PPlane` |
 | `.Points` | `Pnt array` |
 | `Box.points` | `b: Box -> Pnt array` |
-| `.Pt0` | `Pnt` |
-| `Box.pt0` | `b: Box -> Pnt` |
-| `.Pt0X` | `float` |
-| `.Pt0Y` | `float` |
-| `.Pt0Z` | `float` |
-| `.Pt1` | `Pnt` |
-| `Box.pt1` | `b: Box -> Pnt` |
-| `.Pt1X` | `float` |
-| `.Pt1Y` | `float` |
-| `.Pt1Z` | `float` |
-| `.Pt2` | `Pnt` |
-| `Box.pt2` | `b: Box -> Pnt` |
-| `.Pt2X` | `float` |
-| `.Pt2Y` | `float` |
-| `.Pt2Z` | `float` |
-| `.Pt3` | `Pnt` |
-| `Box.pt3` | `b: Box -> Pnt` |
-| `.Pt3X` | `float` |
-| `.Pt3Y` | `float` |
-| `.Pt3Z` | `float` |
-| `.Pt4` | `Pnt` |
-| `Box.pt4` | `b: Box -> Pnt` |
-| `.Pt4X` | `float` |
-| `.Pt4Y` | `float` |
-| `.Pt4Z` | `float` |
-| `.Pt5` | `Pnt` |
-| `Box.pt5` | `b: Box -> Pnt` |
-| `.Pt5X` | `float` |
-| `.Pt5Y` | `float` |
-| `.Pt5Z` | `float` |
-| `.Pt6` | `Pnt` |
-| `Box.pt6` | `b: Box -> Pnt` |
-| `.Pt6X` | `float` |
-| `.Pt6Y` | `float` |
-| `.Pt6Z` | `float` |
-| `.Pt7` | `Pnt` |
-| `Box.pt7` | `b: Box -> Pnt` |
-| `.Pt7X` | `float` |
-| `.Pt7Y` | `float` |
-| `.Pt7Z` | `float` |
+| `.Pnt0` | `Pnt` |
+| `.Pnt0X` | `float` |
+| `.Pnt0Y` | `float` |
+| `.Pnt0Z` | `float` |
+| `.Pnt1` | `Pnt` |
+| `.Pnt1X` | `float` |
+| `.Pnt1Y` | `float` |
+| `.Pnt1Z` | `float` |
+| `.Pnt2` | `Pnt` |
+| `.Pnt2X` | `float` |
+| `.Pnt2Y` | `float` |
+| `.Pnt2Z` | `float` |
+| `.Pnt3` | `Pnt` |
+| `.Pnt3X` | `float` |
+| `.Pnt3Y` | `float` |
+| `.Pnt3Z` | `float` |
+| `.Pnt4` | `Pnt` |
+| `.Pnt4X` | `float` |
+| `.Pnt4Y` | `float` |
+| `.Pnt4Z` | `float` |
+| `.Pnt5` | `Pnt` |
+| `.Pnt5X` | `float` |
+| `.Pnt5Y` | `float` |
+| `.Pnt5Z` | `float` |
+| `.Pnt6` | `Pnt` |
+| `.Pnt6X` | `float` |
+| `.Pnt6Y` | `float` |
+| `.Pnt6Z` | `float` |
+| `.Pnt7` | `Pnt` |
+| `.Pnt7X` | `float` |
+| `.Pnt7Y` | `float` |
+| `.Pnt7Z` | `float` |
 | `.RightFace` | `Rect3D` |
 | `Box.rightFace` | `b: Box -> Rect3D` |
 | `.Rotate` | `q: Quaternion -> Box` |
@@ -1752,6 +1744,14 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Box.getBoxBetween` | `a: Box -> b: Box -> Box` |
 | `Box.getBoxesAlignment` | `a: Box -> b: Box -> float` |
 | `Box.notEquals` | `tol: float -> a: Box -> b: Box -> bool` |
+| `Box.pnt0` | `b: Box -> Pnt` |
+| `Box.pnt1` | `b: Box -> Pnt` |
+| `Box.pnt2` | `b: Box -> Pnt` |
+| `Box.pnt3` | `b: Box -> Pnt` |
+| `Box.pnt4` | `b: Box -> Pnt` |
+| `Box.pnt5` | `b: Box -> Pnt` |
+| `Box.pnt6` | `b: Box -> Pnt` |
+| `Box.pnt7` | `b: Box -> Pnt` |
 | `Box.translateLocalX` | `distX: float -> b: Box -> Box` |
 | `Box.translateLocalY` | `distY: float -> b: Box -> Box` |
 | `Box.translateLocalZ` | `distZ: float -> b: Box -> Box` |
@@ -1825,8 +1825,8 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `FreeBox.edge76` | `b: FreeBox -> Line3D` |
 | `.Edges` | `Line3D array` |
 | `FreeBox.edges` | `b: FreeBox -> Line3D array` |
-| `.GetPt` | `pointIndex: int -> Pnt` |
-| `FreeBox.getPt` | `pointIndex: int -> b: FreeBox -> Pnt` |
+| `.GetPnt` | `pointIndex: int -> Pnt` |
+| `FreeBox.getPnt` | `pointIndex: int -> b: FreeBox -> Pnt` |
 | `.GetX` | `pointIndex: int -> float` |
 | `FreeBox.getX` | `pointIndex: int -> b: FreeBox -> float` |
 | `.GetY` | `pointIndex: int -> float` |
@@ -1841,70 +1841,38 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `FreeBox.moveY` | `distance: float -> b: FreeBox -> unit` |
 | `.MoveZ` | `distance: float -> unit` |
 | `FreeBox.moveZ` | `distance: float -> b: FreeBox -> unit` |
-| `.Pt0` | `Pnt with get, set` |
-| `FreeBox.pt0` | `b: FreeBox -> Pnt` |
-| `.Pt0X` | `float with get, set` |
-| `FreeBox.pt0X` | `b: FreeBox -> float` |
-| `.Pt0Y` | `float with get, set` |
-| `FreeBox.pt0Y` | `b: FreeBox -> float` |
-| `.Pt0Z` | `float with get, set` |
-| `FreeBox.pt0Z` | `b: FreeBox -> float` |
-| `.Pt1` | `Pnt with get, set` |
-| `FreeBox.pt1` | `b: FreeBox -> Pnt` |
-| `.Pt1X` | `float with get, set` |
-| `FreeBox.pt1X` | `b: FreeBox -> float` |
-| `.Pt1Y` | `float with get, set` |
-| `FreeBox.pt1Y` | `b: FreeBox -> float` |
-| `.Pt1Z` | `float with get, set` |
-| `FreeBox.pt1Z` | `b: FreeBox -> float` |
-| `.Pt2` | `Pnt with get, set` |
-| `FreeBox.pt2` | `b: FreeBox -> Pnt` |
-| `.Pt2X` | `float with get, set` |
-| `FreeBox.pt2X` | `b: FreeBox -> float` |
-| `.Pt2Y` | `float with get, set` |
-| `FreeBox.pt2Y` | `b: FreeBox -> float` |
-| `.Pt2Z` | `float with get, set` |
-| `FreeBox.pt2Z` | `b: FreeBox -> float` |
-| `.Pt3` | `Pnt with get, set` |
-| `FreeBox.pt3` | `b: FreeBox -> Pnt` |
-| `.Pt3X` | `float with get, set` |
-| `FreeBox.pt3X` | `b: FreeBox -> float` |
-| `.Pt3Y` | `float with get, set` |
-| `FreeBox.pt3Y` | `b: FreeBox -> float` |
-| `.Pt3Z` | `float with get, set` |
-| `FreeBox.pt3Z` | `b: FreeBox -> float` |
-| `.Pt4` | `Pnt with get, set` |
-| `FreeBox.pt4` | `b: FreeBox -> Pnt` |
-| `.Pt4X` | `float with get, set` |
-| `FreeBox.pt4X` | `b: FreeBox -> float` |
-| `.Pt4Y` | `float with get, set` |
-| `FreeBox.pt4Y` | `b: FreeBox -> float` |
-| `.Pt4Z` | `float with get, set` |
-| `FreeBox.pt4Z` | `b: FreeBox -> float` |
-| `.Pt5` | `Pnt with get, set` |
-| `FreeBox.pt5` | `b: FreeBox -> Pnt` |
-| `.Pt5X` | `float with get, set` |
-| `FreeBox.pt5X` | `b: FreeBox -> float` |
-| `.Pt5Y` | `float with get, set` |
-| `FreeBox.pt5Y` | `b: FreeBox -> float` |
-| `.Pt5Z` | `float with get, set` |
-| `FreeBox.pt5Z` | `b: FreeBox -> float` |
-| `.Pt6` | `Pnt with get, set` |
-| `FreeBox.pt6` | `b: FreeBox -> Pnt` |
-| `.Pt6X` | `float with get, set` |
-| `FreeBox.pt6X` | `b: FreeBox -> float` |
-| `.Pt6Y` | `float with get, set` |
-| `FreeBox.pt6Y` | `b: FreeBox -> float` |
-| `.Pt6Z` | `float with get, set` |
-| `FreeBox.pt6Z` | `b: FreeBox -> float` |
-| `.Pt7` | `Pnt with get, set` |
-| `FreeBox.pt7` | `b: FreeBox -> Pnt` |
-| `.Pt7X` | `float with get, set` |
-| `FreeBox.pt7X` | `b: FreeBox -> float` |
-| `.Pt7Y` | `float with get, set` |
-| `FreeBox.pt7Y` | `b: FreeBox -> float` |
-| `.Pt7Z` | `float with get, set` |
-| `FreeBox.pt7Z` | `b: FreeBox -> float` |
+| `.Pnt0` | `Pnt with get, set` |
+| `.Pnt0X` | `float with get, set` |
+| `.Pnt0Y` | `float with get, set` |
+| `.Pnt0Z` | `float with get, set` |
+| `.Pnt1` | `Pnt with get, set` |
+| `.Pnt1X` | `float with get, set` |
+| `.Pnt1Y` | `float with get, set` |
+| `.Pnt1Z` | `float with get, set` |
+| `.Pnt2` | `Pnt with get, set` |
+| `.Pnt2X` | `float with get, set` |
+| `.Pnt2Y` | `float with get, set` |
+| `.Pnt2Z` | `float with get, set` |
+| `.Pnt3` | `Pnt with get, set` |
+| `.Pnt3X` | `float with get, set` |
+| `.Pnt3Y` | `float with get, set` |
+| `.Pnt3Z` | `float with get, set` |
+| `.Pnt4` | `Pnt with get, set` |
+| `.Pnt4X` | `float with get, set` |
+| `.Pnt4Y` | `float with get, set` |
+| `.Pnt4Z` | `float with get, set` |
+| `.Pnt5` | `Pnt with get, set` |
+| `.Pnt5X` | `float with get, set` |
+| `.Pnt5Y` | `float with get, set` |
+| `.Pnt5Z` | `float with get, set` |
+| `.Pnt6` | `Pnt with get, set` |
+| `.Pnt6X` | `float with get, set` |
+| `.Pnt6Y` | `float with get, set` |
+| `.Pnt6Z` | `float with get, set` |
+| `.Pnt7` | `Pnt with get, set` |
+| `.Pnt7X` | `float with get, set` |
+| `.Pnt7Y` | `float with get, set` |
+| `.Pnt7Z` | `float with get, set` |
 | `.Rotate` | `q: Quaternion -> unit` |
 | `FreeBox.rotate` | `q: Quaternion -> b: FreeBox -> unit` |
 | `.RotateWithCenter` | `cen: Pnt * q: Quaternion -> unit` |
@@ -1913,10 +1881,10 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `FreeBox.scale` | `factor: float -> b: FreeBox -> unit` |
 | `.ScaleOn` | `cen: Pnt * factor: float -> unit` |
 | `FreeBox.scaleOn` | `cen: Pnt -> factor: float -> b: FreeBox -> unit` |
-| `.SetPt` | `pointIndex: int -> p: Pnt -> unit` |
-| `FreeBox.setPt` | `pointIndex: int -> p: Pnt -> b: FreeBox -> unit` |
-| `.SetPtXYZ` | `pointIndex: int * x: float * y: float * z: float -> unit` |
-| `FreeBox.setPtXYZ` | `pointIndex: int -> x: float -> y: float -> z: float -> b: FreeBox -> unit` |
+| `.SetPnt` | `pointIndex: int -> p: Pnt -> unit` |
+| `FreeBox.setPnt` | `pointIndex: int -> p: Pnt -> b: FreeBox -> unit` |
+| `.SetPntXYZ` | `pointIndex: int * x: float * y: float * z: float -> unit` |
+| `FreeBox.setPntXYZ` | `pointIndex: int -> x: float -> y: float -> z: float -> b: FreeBox -> unit` |
 | `.ToString` | `unit -> string` |
 | `.Transform` | `m: Matrix -> unit` |
 | `FreeBox.transform` | `m: Matrix -> b: FreeBox -> unit` |
@@ -1930,6 +1898,38 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `FreeBox.createFromFour2DPoints` | `zMin: float -> zMax: float -> pts: Pt array -> FreeBox` |
 | `FreeBox.createFromFour2DPointsArgs` | `a: Pt * b: Pt * c: Pt * d: Pt * zMin: float * zMax: float -> FreeBox` |
 | `FreeBox.getXYZs` | `b: FreeBox -> float array` |
+| `FreeBox.pnt0` | `b: FreeBox -> Pnt` |
+| `FreeBox.pnt0X` | `b: FreeBox -> float` |
+| `FreeBox.pnt0Y` | `b: FreeBox -> float` |
+| `FreeBox.pnt0Z` | `b: FreeBox -> float` |
+| `FreeBox.pnt1` | `b: FreeBox -> Pnt` |
+| `FreeBox.pnt1X` | `b: FreeBox -> float` |
+| `FreeBox.pnt1Y` | `b: FreeBox -> float` |
+| `FreeBox.pnt1Z` | `b: FreeBox -> float` |
+| `FreeBox.pnt2` | `b: FreeBox -> Pnt` |
+| `FreeBox.pnt2X` | `b: FreeBox -> float` |
+| `FreeBox.pnt2Y` | `b: FreeBox -> float` |
+| `FreeBox.pnt2Z` | `b: FreeBox -> float` |
+| `FreeBox.pnt3` | `b: FreeBox -> Pnt` |
+| `FreeBox.pnt3X` | `b: FreeBox -> float` |
+| `FreeBox.pnt3Y` | `b: FreeBox -> float` |
+| `FreeBox.pnt3Z` | `b: FreeBox -> float` |
+| `FreeBox.pnt4` | `b: FreeBox -> Pnt` |
+| `FreeBox.pnt4X` | `b: FreeBox -> float` |
+| `FreeBox.pnt4Y` | `b: FreeBox -> float` |
+| `FreeBox.pnt4Z` | `b: FreeBox -> float` |
+| `FreeBox.pnt5` | `b: FreeBox -> Pnt` |
+| `FreeBox.pnt5X` | `b: FreeBox -> float` |
+| `FreeBox.pnt5Y` | `b: FreeBox -> float` |
+| `FreeBox.pnt5Z` | `b: FreeBox -> float` |
+| `FreeBox.pnt6` | `b: FreeBox -> Pnt` |
+| `FreeBox.pnt6X` | `b: FreeBox -> float` |
+| `FreeBox.pnt6Y` | `b: FreeBox -> float` |
+| `FreeBox.pnt6Z` | `b: FreeBox -> float` |
+| `FreeBox.pnt7` | `b: FreeBox -> Pnt` |
+| `FreeBox.pnt7X` | `b: FreeBox -> float` |
+| `FreeBox.pnt7Y` | `b: FreeBox -> float` |
+| `FreeBox.pnt7Z` | `b: FreeBox -> float` |
 | `FreeBox.translate` | `v: Vec -> b: FreeBox -> unit` |
 
 ## BBox
@@ -2080,22 +2080,14 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `BBox.minPnt` | `b: BBox -> Pnt` |
 | `.Points` | `Pnt array` |
 | `BBox.points` | `b: BBox -> Pnt array` |
-| `.Pt0` | `Pnt` |
-| `BBox.pt0` | `b: BBox -> Pnt` |
-| `.Pt1` | `Pnt` |
-| `BBox.pt1` | `b: BBox -> Pnt` |
-| `.Pt2` | `Pnt` |
-| `BBox.pt2` | `b: BBox -> Pnt` |
-| `.Pt3` | `Pnt` |
-| `BBox.pt3` | `b: BBox -> Pnt` |
-| `.Pt4` | `Pnt` |
-| `BBox.pt4` | `b: BBox -> Pnt` |
-| `.Pt5` | `Pnt` |
-| `BBox.pt5` | `b: BBox -> Pnt` |
-| `.Pt6` | `Pnt` |
-| `BBox.pt6` | `b: BBox -> Pnt` |
-| `.Pt7` | `Pnt` |
-| `BBox.pt7` | `b: BBox -> Pnt` |
+| `.Pnt0` | `Pnt` |
+| `.Pnt1` | `Pnt` |
+| `.Pnt2` | `Pnt` |
+| `.Pnt3` | `Pnt` |
+| `.Pnt4` | `Pnt` |
+| `.Pnt5` | `Pnt` |
+| `.Pnt6` | `Pnt` |
+| `.Pnt7` | `Pnt` |
 | `.RightFace` | `Rect3D` |
 | `BBox.rightFace` | `b: BBox -> Rect3D` |
 | `.ShortestEdge` | `float` |
@@ -2141,6 +2133,14 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `BBox.moveY` | `translation: float -> b: BBox -> BBox` |
 | `BBox.moveZ` | `translation: float -> b: BBox -> BBox` |
 | `BBox.notEquals` | `tol: float -> a: BBox -> b: BBox -> bool` |
+| `BBox.pnt0` | `b: BBox -> Pnt` |
+| `BBox.pnt1` | `b: BBox -> Pnt` |
+| `BBox.pnt2` | `b: BBox -> Pnt` |
+| `BBox.pnt3` | `b: BBox -> Pnt` |
+| `BBox.pnt4` | `b: BBox -> Pnt` |
+| `BBox.pnt5` | `b: BBox -> Pnt` |
+| `BBox.pnt6` | `b: BBox -> Pnt` |
+| `BBox.pnt7` | `b: BBox -> Pnt` |
 | `BBox.scale` | `factor: float -> b: BBox -> BBox` |
 | `BBox.translate` | `v: Vec -> b: BBox -> BBox` |
 
@@ -2269,8 +2269,8 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Polyline3D.firstPoint` | `pl: Polyline3D -> Pnt` |
 | `.FirstSegment` | `Line3D` |
 | `Polyline3D.firstSegment` | `pl: Polyline3D -> Line3D` |
-| `.GetPt` | `pointIndex: int -> Pnt` |
-| `Polyline3D.getPt` | `pointIndex: int -> p: Polyline3D -> Pnt` |
+| `.GetPnt` | `pointIndex: int -> Pnt` |
+| `Polyline3D.getPnt` | `pointIndex: int -> p: Polyline3D -> Pnt` |
 | `.GetSegment` | `i: int -> Line3D` |
 | `Polyline3D.getSegment` | `i: int -> pl: Polyline3D -> Line3D` |
 | `.GetX` | `pointIndex: int -> float` |
@@ -2331,12 +2331,12 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Polyline3D.segmentVectors` | `pl: Polyline3D -> ResizeArray<Vec>` |
 | `.SegmentVectorsXYZ` | `ResizeArray<float>` |
 | `Polyline3D.segmentVectorsXYZ` | `p: Polyline3D -> ResizeArray<float>` |
-| `.SetPnt` | `pointIndex: int * pt: Pnt -> unit` |
-| `Polyline3D.setPnt` | `pointIndex: int -> pt: Pnt -> p: Polyline3D -> unit` |
 | `.SetPointXYZ` | `pointIndex: int * x: float * y: float * z: float -> unit` |
 | `Polyline3D.setPointXYZ` | `x: float -> y: float -> z: float -> pointIndex: int -> p: Polyline3D -> unit` |
 | `.SetPointXYZClosed` | `pointIndex: int * x: float * y: float * z: float -> unit` |
 | `Polyline3D.setPointXYZClosed` | `x: float -> y: float -> z: float -> pointIndex: int -> p: Polyline3D -> unit` |
+| `.SetPnt` | `pointIndex: int * pt: Pnt -> unit` |
+| `Polyline3D.setPnt` | `pointIndex: int -> pt: Pnt -> p: Polyline3D -> unit` |
 | `.SignedAreaIn2D` | `float` |
 | `Polyline3D.signedAreaIn2D` | `pl: Polyline3D -> float` |
 | `.Start` | `Pnt with get, set` |
@@ -2358,7 +2358,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Polyline3D.createEmpty` | `capacity: int -> Polyline3D` |
 | `Polyline3D.createFrom2DXYMembers` | `xyObjs: ^T seq -> Polyline3D` |
 | `Polyline3D.createFrom2DxyMembers` | `xyObjs: ^T seq -> Polyline3D` |
-| `Polyline3D.createFromPts` | `points: Pnt seq -> Polyline3D` |
+| `Polyline3D.createFromPnts` | `points: Pnt seq -> Polyline3D` |
 | `Polyline3D.createFromRect3D` | `r: Rect3D -> Polyline3D` |
 | `Polyline3D.createFromXYZMembers` | `xyzObjs: ^T seq -> Polyline3D` |
 | `Polyline3D.createFromxyzMembers` | `xyzObjs: ^T seq -> Polyline3D` |

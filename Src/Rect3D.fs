@@ -739,12 +739,12 @@ type Rect3D =
     ///   +------------+-----> X-axis
     ///  0-Origin       1
     /// </code></summary>
-    member inline r.Pt0 : Pnt =
+    member inline r.Pnt0 : Pnt =
         Pnt(r.OriginX, r.OriginY, r.OriginZ)
 
     /// Returns point 0 of the 3D-rectangle.
-    static member inline pt0 (r:Rect3D) : Pnt =
-        r.Pt0
+    static member inline pnt0 (r:Rect3D) : Pnt =
+        r.Pnt0
 
     /// <summary>Returns point 1 of the 3D-rectangle.
     /// <code>
@@ -762,12 +762,12 @@ type Rect3D =
     ///   +------------+-----> X-axis
     ///  0-Origin       1
     /// </code></summary>
-    member inline r.Pt1 : Pnt =
+    member inline r.Pnt1 : Pnt =
         Pnt(r.OriginX + r.XaxisX, r.OriginY + r.XaxisY, r.OriginZ + r.XaxisZ)
 
     /// Returns point 1 of the 3D-rectangle.
-    static member inline pt1 (r:Rect3D) : Pnt =
-        r.Pt1
+    static member inline pnt1 (r:Rect3D) : Pnt =
+        r.Pnt1
 
     /// <summary>Returns point 2 of the 3D-rectangle. Same as rect.FarCorner.
     /// <code>
@@ -785,14 +785,14 @@ type Rect3D =
     ///   +------------+-----> X-axis
     ///  0-Origin       1
     /// </code></summary>
-    member inline r.Pt2 : Pnt =
+    member inline r.Pnt2 : Pnt =
         Pnt(r.OriginX + r.XaxisX + r.YaxisX,
             r.OriginY + r.XaxisY + r.YaxisY,
             r.OriginZ + r.XaxisZ + r.YaxisZ)
 
     /// Returns point 2 of the 3D-rectangle.
-    static member inline pt2 (r:Rect3D) : Pnt =
-        r.Pt2
+    static member inline pnt2 (r:Rect3D) : Pnt =
+        r.Pnt2
 
     /// <summary>Returns point 3 of the 3D-rectangle.
     /// <code>
@@ -810,12 +810,12 @@ type Rect3D =
     ///   +------------+-----> X-axis
     ///  0-Origin       1
     /// </code></summary>
-    member inline r.Pt3 : Pnt =
+    member inline r.Pnt3 : Pnt =
         Pnt(r.OriginX + r.YaxisX, r.OriginY + r.YaxisY, r.OriginZ + r.YaxisZ)
 
     /// Returns point 3 of the 3D-rectangle.
-    static member inline pt3 (r:Rect3D) : Pnt =
-        r.Pt3
+    static member inline pnt3 (r:Rect3D) : Pnt =
+        r.Pnt3
 
     /// <summary>Returns a 3D line from point 0 to 1 of the 3D-rectangle.
     /// <code>
@@ -1532,13 +1532,13 @@ type Rect3D =
     ///   +------------+-----> X-axis
     ///  0-Origin       1
     /// </code></summary>
-    static member createFrom3Points (origin:Pnt, xPt:Pnt, yPt:Pnt) : Rect3D =
-        let x = xPt - origin
-        if isTooSmallSq x.LengthSq  then fail $"Rect3D.createFrom3Points: X-Point {xPt.AsString} too close to origin: {origin.AsString}."
-        let y = yPt - origin
-        if isTooSmallSq y.LengthSq  then fail $"Rect3D.createFrom3Points: Y-Point {yPt.AsString} too close to origin: {origin.AsString}."
+    static member createFrom3Points (origin:Pnt, xPnt:Pnt, yPnt:Pnt) : Rect3D =
+        let x = xPnt - origin
+        if isTooSmallSq x.LengthSq  then fail $"Rect3D.createFrom3Points: X-Point {xPnt.AsString} too close to origin: {origin.AsString}."
+        let y = yPnt - origin
+        if isTooSmallSq y.LengthSq  then fail $"Rect3D.createFrom3Points: Y-Point {yPnt.AsString} too close to origin: {origin.AsString}."
         let z = Vec.cross(x,y)
-        if isTooSmallSq z.LengthSq  then fail $"Rect3D.createFrom3Points: Y-Point {yPt.AsString} is too close to Xaxis."
+        if isTooSmallSq z.LengthSq  then fail $"Rect3D.createFrom3Points: Y-Point {yPnt.AsString} is too close to Xaxis."
         let yu = Vec.cross(z, x).Unitized
         let yr = yu * (yu *** y) // get the y point projected on the y axis
         Rect3D.createUncheckedVec(origin, x, yr)
@@ -1562,11 +1562,11 @@ type Rect3D =
     ///   +------------+-----> X-axis
     ///  0-Origin       1
     /// </code></summary>
-    static member tryCreateFrom3Points (origin:Pnt, xPt:Pnt, yPt:Pnt) : Rect3D option =
-        let x = xPt - origin
+    static member tryCreateFrom3Points (origin:Pnt, xPnt:Pnt, yPnt:Pnt) : Rect3D option =
+        let x = xPnt - origin
         if isTooSmallSq x.LengthSq  then None
         else
-            let y = yPt - origin
+            let y = yPnt - origin
             if isTooSmallSq y.LengthSq  then None
             else
                 let z = Vec.cross(x,y)

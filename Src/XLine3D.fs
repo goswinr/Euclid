@@ -81,11 +81,11 @@ module XLine3D =
     type XRay =
 
         /// The rays (3d-lines extended infinitely) are intersecting in one well defined point (coplanar case).
-        | Intersect of xPt : Pnt
+        | Intersect of xPnt : Pnt
 
         /// The rays are skew (not parallel, not intersecting).
         /// Contains the closest points on both rays and the squared distance between them.
-        | Skew of closestPtA : Pnt *  closestPtB : Pnt * squareDist : float
+        | Skew of closestPntA : Pnt *  closestPntB : Pnt * squareDist : float
 
         /// The lines are parallel, within the given tolerance.
         /// They have infinity many or no points in common.
@@ -199,7 +199,7 @@ module XLine3D =
     /// Describes the possible cases of the closest points between finite 3D lines.
     [<NoEquality; NoComparison>]
     [<RequireQualifiedAccess>]
-    type ClPts =
+    type ClPnts =
 
         /// The lines intersect. Contains the intersection point.
         | Intersect of pt:Pnt
@@ -1443,7 +1443,7 @@ module XLineXYZ =
     /// Use the module Euclid.UtilEuclid.Tangent to set another tolerance here.</param>
     /// <param name="tooShortTolerance" > Is a length tolerance.
     ///  If one or both lines are shorter than this, then the 'TooShort' union case is returned.</param>
-    /// <returns> A ClPts Discriminated Union with the following cases:
+    /// <returns> A ClPnts Discriminated Union with the following cases:
     /// | Intersect of Pnt
     /// | Skew of Pnt * Pnt * float
     /// | Parallel of Pnt * Pnt
@@ -1455,23 +1455,23 @@ module XLineXYZ =
                                    vAx:float, vAy:float, vAz:float, vBx:float, vBy:float, vBz:float,
                                    tangent:float<Tangent.tangent>,
                                    tooShortTolerance:float
-                                   ): ClPts =
+                                   ): ClPnts =
         match getClosestParameters (pAx, pAy, pAz, pBx, pBy, pBz, vAx, vAy, vAz, vBx, vBy, vBz, tangent, tooShortTolerance) with
-        | ClParams.TooShortA -> ClPts.TooShortA
-        | ClParams.TooShortB -> ClPts.TooShortB
-        | ClParams.TooShortBoth -> ClPts.TooShortBoth
+        | ClParams.TooShortA -> ClPnts.TooShortA
+        | ClParams.TooShortB -> ClPnts.TooShortB
+        | ClParams.TooShortBoth -> ClPnts.TooShortBoth
         | ClParams.Intersect (sa, _) ->
-            ClPts.Intersect (Pnt(pAx + sa * vAx, pAy + sa * vAy, pAz + sa * vAz))
+            ClPnts.Intersect (Pnt(pAx + sa * vAx, pAy + sa * vAy, pAz + sa * vAz))
         | ClParams.Skew (sa, sb, sqDist) ->
-            ClPts.Skew (Pnt(pAx + sa * vAx, pAy + sa * vAy, pAz + sa * vAz),
+            ClPnts.Skew (Pnt(pAx + sa * vAx, pAy + sa * vAy, pAz + sa * vAz),
                         Pnt(pBx + sb * vBx, pBy + sb * vBy, pBz + sb * vBz),
                         sqDist)
         | ClParams.Apart (sa, sb, sqDist) ->
-            ClPts.Apart (Pnt(pAx + sa * vAx, pAy + sa * vAy, pAz + sa * vAz),
+            ClPnts.Apart (Pnt(pAx + sa * vAx, pAy + sa * vAy, pAz + sa * vAz),
                          Pnt(pBx + sb * vBx, pBy + sb * vBy, pBz + sb * vBz),
                          sqDist)
         | ClParams.Parallel (sa, sb) ->
-            ClPts.Parallel (Pnt(pAx + sa * vAx, pAy + sa * vAy, pAz + sa * vAz),
+            ClPnts.Parallel (Pnt(pAx + sa * vAx, pAy + sa * vAy, pAz + sa * vAz),
                             Pnt(pBx + sb * vBx, pBy + sb * vBy, pBz + sb * vBz))
 
 
@@ -1985,7 +1985,7 @@ type XLine3D =
     /// Use the module Euclid.UtilEuclid.Tangent to set another tolerance here.</param>
     /// <param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
     ///  If one or both lines are shorter than this, then the 'TooShort' union case is returned.</param>
-    /// <returns> A ClPts Discriminated Union with the following cases:
+    /// <returns> A ClPnts Discriminated Union with the following cases:
     /// | Intersect of Pnt
     /// | Skew of Pnt * Pnt * float
     /// | Parallel of Pnt * Pnt
@@ -1993,7 +1993,7 @@ type XLine3D =
     /// | TooShortBoth
     /// | TooShortA
     /// | TooShortB </returns>
-    static member inline getClosestPoints (pA:Pnt, pB:Pnt, vA:Vec, vB:Vec, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float) : ClPts =
+    static member inline getClosestPoints (pA:Pnt, pB:Pnt, vA:Vec, vB:Vec, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float) : ClPnts =
         XLineXYZ.getClosestPoints (pA.X, pA.Y, pA.Z, pB.X, pB.Y, pB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z, tangent, tooShortTolerance)
 
     /// <summary> Gets the point or points on the finite lines where the lines are closest to each other.
@@ -2007,7 +2007,7 @@ type XLine3D =
     /// Use the module Euclid.UtilEuclid.Tangent to set another tolerance here.</param>
     /// <param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
     ///  If one or both lines are shorter than this, then the 'TooShort' union case is returned.</param>
-    /// <returns> A ClPts Discriminated Union with the following cases:
+    /// <returns> A ClPnts Discriminated Union with the following cases:
     /// | Intersect of Pnt
     /// | Skew of Pnt * Pnt * float
     /// | Parallel of Pnt * Pnt
@@ -2015,7 +2015,7 @@ type XLine3D =
     /// | TooShortBoth
     /// | TooShortA
     /// | TooShortB </returns>
-    static member inline getClosestPoints (lineA: Line3D, lineB: Line3D, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float) : ClPts =
+    static member inline getClosestPoints (lineA: Line3D, lineB: Line3D, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float) : ClPnts =
         XLineXYZ.getClosestPoints (lineA.FromX, lineA.FromY, lineA.FromZ, lineB.FromX, lineB.FromY, lineB.FromZ, lineA.VectorX, lineA.VectorY, lineA.VectorZ, lineB.VectorX, lineB.VectorY, lineB.VectorZ, tangent, tooShortTolerance)
 
 

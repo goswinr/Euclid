@@ -306,18 +306,18 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
 
     /// Gets the 3D point at the given pointIndex in the list of points.
     /// (this gets Pnt(XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1], XYZs.[pointIndex * 3 + 2]) from the internal flat list of x, y, and z coordinates )
-    member p.GetPt (pointIndex:int) : Pnt =
+    member p.GetPnt (pointIndex:int) : Pnt =
         #if DEBUG || CHECKED_EUCLID
         let len = xyzs.Count
         if pointIndex < 0 || pointIndex > len / 3 - 1 then
-            failPointIndex "GetPt" pointIndex xyzs
+            failPointIndex "GetPnt" pointIndex xyzs
         #endif
         getPt pointIndex xyzs
 
     /// Gets the 3D point at the given pointIndex in the list of points.
     /// (this gets Pnt(XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1], XYZs.[pointIndex * 3 + 2]) from the internal flat list of x, y, and z coordinates )
-    static member inline getPt (pointIndex:int) (p:Polyline3D) : Pnt =
-        p.GetPt pointIndex
+    static member inline getPnt (pointIndex:int) (p:Polyline3D) : Pnt =
+        p.GetPnt pointIndex
 
 
     /// Sets the 3D point at the given pointIndex in the list of points.
@@ -1934,7 +1934,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
 
     /// Create a new Polyline3D by copying over all points.
     /// This will allocate a new ResizeArray and copy all points.
-    static member createFromPts(points: seq<Pnt>) : Polyline3D =
+    static member createFromPnts(points: seq<Pnt>) : Polyline3D =
         Polyline3D(points)
 
     /// Create a new Polyline3D by using the provided X, Y and Z interleaved ResizeArray directly.
@@ -2606,6 +2606,21 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     [<Obsolete("Since the internal structure of Polyline3D has changed to a flat array using this for looping doesn't make sense any more.")>]
     member p.LastSegmentIndex : int =
         p.PointCount - 2
+
+    /// Obsolete name. Same as p.GetPnt.
+    [<Obsolete("Use GetPnt instead.")>]
+    member p.GetPt (pointIndex:int) : Pnt =
+        p.GetPnt pointIndex
+
+    /// Obsolete name. Same as Polyline3D.getPnt.
+    [<Obsolete("Use Polyline3D.getPnt instead.")>]
+    static member inline getPt (pointIndex:int) (p:Polyline3D) : Pnt =
+        p.GetPnt pointIndex
+
+    /// Obsolete name. Same as Polyline3D.createFromPnts.
+    [<Obsolete("Use Polyline3D.createFromPnts instead.")>]
+    static member createFromPts(points: seq<Pnt>) : Polyline3D =
+        Polyline3D.createFromPnts points
 
 #if !FABLE_COMPILER
 /// Serializes a Polyline3D as its interleaved XYZ coordinate buffer with System.Text.Json.

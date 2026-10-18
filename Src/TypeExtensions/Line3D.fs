@@ -609,13 +609,13 @@ module AutoOpenLine3D =
     /// For more control over tolerances, use <see cref="XLine3D.getClosestPoints"/>.</remarks>
     member lnA.ClosestPoints (lnB:Line3D) : Pnt * Pnt =
         match XLine3D.getClosestPoints(lnA, lnB) with
-        | XLine3D.ClPts.Intersect p       -> p, p
-        | XLine3D.ClPts.Skew (pA, pB, _)  -> pA, pB
-        | XLine3D.ClPts.Parallel (pA, pB) -> pA, pB
-        | XLine3D.ClPts.Apart (pA, pB, _) -> pA, pB
-        | XLine3D.ClPts.TooShortBoth      -> lnA.From, lnB.From
-        | XLine3D.ClPts.TooShortA         -> lnA.From, XLineXYZ.clPtLn'(lnB, lnA.FromX, lnA.FromY, lnA.FromZ)
-        | XLine3D.ClPts.TooShortB         -> XLineXYZ.clPtLn'(lnA, lnB.FromX, lnB.FromY, lnB.FromZ), lnB.From
+        | XLine3D.ClPnts.Intersect p       -> p, p
+        | XLine3D.ClPnts.Skew (pA, pB, _)  -> pA, pB
+        | XLine3D.ClPnts.Parallel (pA, pB) -> pA, pB
+        | XLine3D.ClPnts.Apart (pA, pB, _) -> pA, pB
+        | XLine3D.ClPnts.TooShortBoth      -> lnA.From, lnB.From
+        | XLine3D.ClPnts.TooShortA         -> lnA.From, XLineXYZ.clPtLn'(lnB, lnA.FromX, lnA.FromY, lnA.FromZ)
+        | XLine3D.ClPnts.TooShortB         -> XLineXYZ.clPtLn'(lnA, lnB.FromX, lnB.FromY, lnB.FromZ), lnB.From
 
     /// <summary>Finds the closest points between two finite 3D Lines, also works on parallel and overlapping lines.</summary>
     /// <param name="lnA">The first line.</param>
@@ -1850,12 +1850,12 @@ module AutoOpenLine3D =
     /// If it is smaller than 0.0 or bigger than 1.0 it is outside of the finite line.
     /// Get distance from start of line to point projected onto line, may be negative.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    static member inline lengthToPtOnLine (ln:Line3D) (pt:Pnt) : float =
+    static member inline lengthToPntOnLine (ln:Line3D) (pt:Pnt) : float =
         let x = ln.VectorX
         let y = ln.VectorY
         let z = ln.VectorZ
         let l = XYZ.length x y z
-        if isTooTiny l then failTooSmall "Line3D.lengthToPtOnLine" ln
+        if isTooTiny l then failTooSmall "Line3D.lengthToPntOnLine" ln
         let dx = pt.X - ln.FromX
         let dy = pt.Y - ln.FromY
         let dz = pt.Z - ln.FromZ
@@ -2465,6 +2465,11 @@ module AutoOpenLine3D =
 
     // #endregion
     // #region Obsolete
+
+    /// Obsolete name. Same as Line3D.lengthToPntOnLine.
+    [<Obsolete("Use Line3D.lengthToPntOnLine instead.")>]
+    static member inline lengthToPtOnLine (ln:Line3D) (pt:Pnt) : float =
+        Line3D.lengthToPntOnLine ln pt
 
     /// Obsolete name. Same as Line3D.withStart.
     [<Obsolete("Use Line3D.withStart instead. This returns a new 3D line, it does not mutate, so the 'with' prefix is clearer.")>]

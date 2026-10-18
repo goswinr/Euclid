@@ -40,8 +40,8 @@ let cross = v.Cross(Vc(1.0, 0.0))
 let p1 = Pnt(1.0, 2.0, 3.0)
 let p2 = Pnt(4.0, 6.0, 3.0)
 let dist3d = p1.DistanceTo p2
-let mid3d = Pnt.midPt p1 p2
-let lerp = Pnt.divPt(p1, p2, 0.25)
+let mid3d = Pnt.midPnt p1 p2
+let lerp = Pnt.divPnt(p1, p2, 0.25)
 let v1 = Vec(1.0, 0.0, 0.0)
 let v2 = Vec(0.0, 1.0, 0.0)
 let normal = v1.Cross v2
@@ -148,7 +148,7 @@ let seg = pl2d.GetSegment(1)
 pl2d.SetPt (2, Pt(12, 5))
 let copy = pl2d.Duplicate()
 copy.Move(Vc(0, 3))
-let pl3d = Polyline3D.createFromPts [ Pnt(0, 0, 0); Pnt(10, 0, 0); Pnt(10, 5, 3) ]
+let pl3d = Polyline3D.createFromPnts [ Pnt(0, 0, 0); Pnt(10, 0, 0); Pnt(10, 5, 3) ]
 let totalLen = pl3d.Length
 
 // Transformations with Matrices

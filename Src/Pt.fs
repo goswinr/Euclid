@@ -135,7 +135,7 @@ type Pt =
 
     /// Add two 2D points together. Returns a new 2D point.
     static member inline ( + ) (a:Pt, b:Pt) : Pt =
-        Pt (a.X + b.X, a.Y + b.Y) // required for Seq.average and Pnt.midPt
+        Pt (a.X + b.X, a.Y + b.Y) // required for Seq.average and Pt.midPt
 
     /// Multiplies a 2D point with a scalar, also called scaling a point.
     /// Returns a new 2D point.

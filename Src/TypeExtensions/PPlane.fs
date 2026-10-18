@@ -293,21 +293,21 @@ module AutoOpenPPlane =
         /// Builds Plane at first point, X-axis to second point,
         /// Y-axis to third point or at least in plane with third point.
         /// Fails if points are closer than 1e-6.
-        static member createThreePoints (origin:Pnt) (xPt:Pnt) (yPt:Pnt) : PPlane =
-            let x = xPt-origin
-            let y = yPt-origin
+        static member createThreePoints (origin:Pnt) (xPnt:Pnt) (yPnt:Pnt) : PPlane =
+            let x = xPnt-origin
+            let y = yPnt-origin
             let lx = x.Length
             let ly = y.Length
             if isTooSmall lx then
-                failTooClose "PPlane.createThreePoints xPt" origin xPt
+                failTooClose "PPlane.createThreePoints xPnt" origin xPnt
             if isTooSmall ly then
-                failTooClose "PPlane.createThreePoints yPt" origin yPt
+                failTooClose "PPlane.createThreePoints yPnt" origin yPnt
             let xf = 1./lx
             let yf = 1./ly
             let xu = UnitVec.createUnchecked(x.X*xf, x.Y*xf, x.Z*xf)
             let yu = UnitVec.createUnchecked(y.X*yf, y.Y*yf, y.Z*yf)
             if xu.IsParallelTo(yu, Cosine.``1.0``) then
-                failCollinear "PPlane.createThreePoints" origin xPt yPt
+                failCollinear "PPlane.createThreePoints" origin xPnt yPnt
             let z = UnitVec.cross (xu, yu)
             let y' = Vec.cross (z, x)
             PPlane.createUncheckedVec(origin, xu, y'.Unitized, z.Unitized)

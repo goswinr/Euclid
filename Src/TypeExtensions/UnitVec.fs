@@ -530,12 +530,12 @@ module AutoOpenUnitVec =
         // #region Static members
 
         /// Create 3D unit-vector from start and endpoint. Does the unitizing too.
-        static member inline create (fromPt:Pnt, toPt:Pnt) : UnitVec =
-            let x = toPt.X - fromPt.X
-            let y = toPt.Y - fromPt.Y
-            let z = toPt.Z - fromPt.Z
+        static member inline create (fromPnt:Pnt, toPnt:Pnt) : UnitVec =
+            let x = toPnt.X - fromPnt.X
+            let y = toPnt.Y - fromPnt.Y
+            let z = toPnt.Z - fromPnt.Z
             let l = sqrt(x * x  + y * y + z * z)
-            if isTooTiny l then failTooClose "UnitVec.create" fromPt toPt
+            if isTooTiny l then failTooClose "UnitVec.create" fromPnt toPnt
             let f = 1.0/l
             UnitVec.createUnchecked(x*f, y*f, z*f)
 

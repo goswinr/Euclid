@@ -335,8 +335,8 @@ let p2 = Pnt(4.0, 6.0, 3.0)
 
 // Distance, midpoint, lerp
 let dist = p1.DistanceTo p2             // 5.0
-let mid  = Pnt.midPt p1 p2              // Pnt(2.5, 4.0, 3.0)
-let lerp = Pnt.divPt(p1, p2, 0.25)     // 25% from p1 towards p2
+let mid  = Pnt.midPnt p1 p2             // Pnt(2.5, 4.0, 3.0)
+let lerp = Pnt.divPnt(p1, p2, 0.25)    // 25% from p1 towards p2
 
 // 3D vectors
 let v1 = Vec(1.0, 0.0, 0.0)
@@ -543,7 +543,7 @@ let copy = pl2d.Duplicate()                // deep copy
 copy.Move(Vc(0, 3))                        // transformations change the polyline in place
 
 // 3D polyline
-let pl3d = Polyline3D.createFromPts [Pnt(0,0,0); Pnt(10,0,0); Pnt(10,5,3)]
+let pl3d = Polyline3D.createFromPnts [Pnt(0,0,0); Pnt(10,0,0); Pnt(10,5,3)]
 let totalLen = pl3d.Length
 ```
 

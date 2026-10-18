@@ -88,7 +88,7 @@ type Pnt =
 
     /// Add two 3D points together. Returns a new 3D point.
     static member inline ( + ) (a:Pnt, b:Pnt) : Pnt =
-        Pnt (a.X + b.X, a.Y + b.Y, a.Z + b.Z) // required for Seq.average and Pnt.midPt
+        Pnt (a.X + b.X, a.Y + b.Y, a.Z + b.Z) // required for Seq.average and Pnt.midPnt
 
     /// Add a vector to a 3D point. Returns a new 3D point.
     static member inline ( + ) (p:Pnt, v:Vec) : Pnt =

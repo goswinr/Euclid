@@ -37,7 +37,7 @@ The flat-storage types (`FreeBox`, `Polyline2D`, `Polyline3D`) and the float-fie
 | Pattern | Replace with |
 |---|---|
 | `let p = x.Prop` and `p` is only read through `.X` `.Y` `.Z` | read the fields directly |
-| `p.Xaxis.X`, `pl.Origin.X`, `pl.Normal.X`, `ln.From.X` | `p.XaxisX`, `pl.OriginX`, `pl.NormalX`, `ln.FromX` (also `ln.VectorX`, `b.MinX`, `m.M11`, `box.Pt0X` ... `box.Pt7Z`) |
+| `p.Xaxis.X`, `pl.Origin.X`, `pl.Normal.X`, `ln.From.X` | `p.XaxisX`, `pl.OriginX`, `pl.NormalX`, `ln.FromX` (also `ln.VectorX`, `b.MinX`, `m.M11`, `box.Pnt0X` ... `box.Pnt7Z`) |
 | `createUncheckedVec(pl.Origin, pl.Xaxis*x, ...)` | `createUnchecked(pl.OriginX, ..., pl.XaxisX*x, ...)` |
 | `(a - b).Length`, `Vec.cross(b-a, c-a)`, `(p-q) *** v` | coordinate differences written out |
 | `a * (1.0 / sqrt sa)` followed by `***` | per-component dot product with the same factors |

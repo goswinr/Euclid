@@ -379,8 +379,8 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
     /// Offsets the plane by the given distance in the direction determined by a point.
     /// If the point is on the positive side of the plane (same direction as normal), offsets in the normal direction.
     /// If the point is on the negative side, offsets in the opposite direction.
-    static member inline offsetInDir (dirPt:Pnt) (dist:float) (pl:NPlane) : NPlane =
-        let dot = XYZ.dot pl.NormalX pl.NormalY pl.NormalZ (dirPt.X - pl.OriginX) (dirPt.Y - pl.OriginY) (dirPt.Z - pl.OriginZ)
+    static member inline offsetInDir (dirPnt:Pnt) (dist:float) (pl:NPlane) : NPlane =
+        let dot = XYZ.dot pl.NormalX pl.NormalY pl.NormalZ (dirPnt.X - pl.OriginX) (dirPnt.Y - pl.OriginY) (dirPnt.Z - pl.OriginZ)
         if dot >= 0.0 then
             NPlane.createUnchecked(pl.OriginX + pl.NormalX*dist, pl.OriginY + pl.NormalY*dist, pl.OriginZ + pl.NormalZ*dist, pl.NormalX, pl.NormalY, pl.NormalZ)
         else

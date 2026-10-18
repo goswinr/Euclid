@@ -37,8 +37,8 @@ type Line3D =
     [<DataMember>] val ToZ  :float
 
     /// Create Line3D from 3D start point and 3D end point.
-    new (fromPt:Pnt, toPt:Pnt) =
-        {FromX=fromPt.X; FromY=fromPt.Y; FromZ=fromPt.Z; ToX=toPt.X; ToY=toPt.Y; ToZ=toPt.Z}
+    new (fromPnt:Pnt, toPnt:Pnt) =
+        {FromX=fromPnt.X; FromY=fromPnt.Y; FromZ=fromPnt.Z; ToX=toPnt.X; ToY=toPnt.Y; ToZ=toPnt.Z}
 
     /// Create Line3D from 3D start point's x, y, and z and 3D end point's x, y, and z.
     new (fromX, fromY, fromZ, toX, toY, toZ) =

@@ -32,14 +32,14 @@ open System.Text.Json.Serialization
 ///   0 MinPnt        1
 ///
 /// From the center of a BBox, the points have these signs of X, Y and Z coordinates:
-/// Pt0 (-,-,-)
-/// Pt1 (+,-,-)
-/// Pt2 (+,-,+)
-/// Pt3 (-,-,+)
-/// Pt4 (-,+,-)
-/// Pt5 (+,+,-)
-/// Pt6 (+,+,+)
-/// Pt7 (-,+,+)
+/// Pnt0 (-,-,-)
+/// Pnt1 (+,-,-)
+/// Pnt2 (+,-,+)
+/// Pnt3 (-,-,+)
+/// Pnt4 (-,+,-)
+/// Pnt5 (+,+,-)
+/// Pnt6 (+,+,+)
+/// Pnt7 (-,+,+)
 /// </code>
 /// </summary>
 [<Struct; NoEquality; NoComparison>]
@@ -729,7 +729,7 @@ type BBox =
         // Distances within zeroLengthTolerance are snapped to 0.0 so that a plane passing through a corner
         // yields that corner exactly once, instead of several near-duplicate points on the adjacent edges.
         let inline snap d = if isTooTiny (abs d) then 0.0 else d
-        // corner numbering as in b.Pt0 to b.Pt7:
+        // corner numbering as in b.Pnt0 to b.Pnt7:
         let d0 = snap (xl + yl + zl - c)
         let d1 = snap (xh + yl + zl - c)
         let d2 = snap (xh + yh + zl - c)
@@ -836,12 +836,12 @@ type BBox =
     ///   0 MinPnt         1
     /// </code>
     /// </summary>
-    member inline b.Pt0 : Pnt =
+    member inline b.Pnt0 : Pnt =
         Pnt(b.MinX, b.MinY, b.MinZ)
 
     /// Returns corner point 0 of the 3D bounding box.
-    static member inline pt0 (b:BBox) : Pnt =
-        b.Pt0
+    static member inline pnt0 (b:BBox) : Pnt =
+        b.Pnt0
 
     /// <summary>Returns point 1 of this 3D bounding box.
     /// <code>
@@ -862,12 +862,12 @@ type BBox =
     ///   0 MinPnt         1
     /// </code>
     /// </summary>
-    member inline b.Pt1 : Pnt =
+    member inline b.Pnt1 : Pnt =
         Pnt(b.MaxX, b.MinY, b.MinZ)
 
     /// Returns corner point 1 of the 3D bounding box.
-    static member inline pt1 (b:BBox) : Pnt =
-        b.Pt1
+    static member inline pnt1 (b:BBox) : Pnt =
+        b.Pnt1
 
     /// <summary>Returns point 2 of this 3D bounding box.
     /// <code>
@@ -888,12 +888,12 @@ type BBox =
     ///   0 MinPnt         1
     /// </code>
     /// </summary>
-    member inline b.Pt2 : Pnt =
+    member inline b.Pnt2 : Pnt =
         Pnt(b.MaxX, b.MaxY, b.MinZ)
 
     /// Returns corner point 2 of the 3D bounding box.
-    static member inline pt2 (b:BBox) : Pnt =
-        b.Pt2
+    static member inline pnt2 (b:BBox) : Pnt =
+        b.Pnt2
 
     /// <summary>Returns point 3 of this 3D bounding box.
     /// <code>
@@ -914,12 +914,12 @@ type BBox =
     ///   0 MinPnt         1
     /// </code>
     /// </summary>
-    member inline b.Pt3 : Pnt =
+    member inline b.Pnt3 : Pnt =
         Pnt(b.MinX, b.MaxY, b.MinZ)
 
     /// Returns corner point 3 of the 3D bounding box.
-    static member inline pt3 (b:BBox) : Pnt =
-        b.Pt3
+    static member inline pnt3 (b:BBox) : Pnt =
+        b.Pnt3
 
     /// <summary>Returns point 4 of this 3D bounding box.
     /// <code>
@@ -940,12 +940,12 @@ type BBox =
     ///   0 MinPnt         1
     /// </code>
     /// </summary>
-    member inline b.Pt4 : Pnt =
+    member inline b.Pnt4 : Pnt =
         Pnt(b.MinX, b.MinY, b.MaxZ)
 
     /// Returns corner point 4 of the 3D bounding box.
-    static member inline pt4 (b:BBox) : Pnt =
-        b.Pt4
+    static member inline pnt4 (b:BBox) : Pnt =
+        b.Pnt4
 
     /// <summary>Returns point 5 of this 3D bounding box.
     /// <code>
@@ -966,12 +966,12 @@ type BBox =
     ///   0 MinPnt         1
     /// </code>
     /// </summary>
-    member inline b.Pt5 : Pnt =
+    member inline b.Pnt5 : Pnt =
         Pnt(b.MaxX, b.MinY, b.MaxZ)
 
     /// Returns corner point 5 of the 3D bounding box.
-    static member inline pt5 (b:BBox) : Pnt =
-        b.Pt5
+    static member inline pnt5 (b:BBox) : Pnt =
+        b.Pnt5
 
     /// <summary>Returns point 6 of this 3D bounding box.
     /// <code>
@@ -992,12 +992,12 @@ type BBox =
     ///   0 MinPnt         1
     /// </code>
     /// </summary>
-    member inline b.Pt6 : Pnt =
+    member inline b.Pnt6 : Pnt =
         Pnt(b.MaxX, b.MaxY, b.MaxZ)
 
     /// Returns corner point 6 of the 3D bounding box.
-    static member inline pt6 (b:BBox) : Pnt =
-        b.Pt6
+    static member inline pnt6 (b:BBox) : Pnt =
+        b.Pnt6
 
     /// <summary>Returns point 7 of this 3D bounding box.
     /// <code>
@@ -1018,12 +1018,12 @@ type BBox =
     ///   0 MinPnt         1
     /// </code>
     /// </summary>
-    member inline b.Pt7 : Pnt =
+    member inline b.Pnt7 : Pnt =
         Pnt(b.MinX, b.MaxY, b.MaxZ)
 
     /// Returns corner point 7 of the 3D bounding box.
-    static member inline pt7 (b:BBox) : Pnt =
-        b.Pt7
+    static member inline pnt7 (b:BBox) : Pnt =
+        b.Pnt7
 
     /// <summary>Returns the bottom corners of this 3D bounding box in counter-clockwise order, starting at MinPnt.
     /// Then the top corners starting above MinPnt. Returns an array of 8 Points.
@@ -1046,7 +1046,7 @@ type BBox =
     /// </code>
     /// </summary>
     member b.Points : Pnt[] =
-        [|b.Pt0; b.Pt1; b.Pt2; b.Pt3; b.Pt4; b.Pt5; b.Pt6; b.Pt7|]
+        [|b.Pnt0; b.Pnt1; b.Pnt2; b.Pnt3; b.Pnt4; b.Pnt5; b.Pnt6; b.Pnt7|]
 
     /// Returns all 8 corner points of the 3D bounding box.
     static member inline points (b:BBox) : Pnt[] =
@@ -1054,7 +1054,7 @@ type BBox =
 
 
     /// <summary>Returns the point of the box at the specified index.
-    /// The order of the points is: Pt0, Pt1, Pt2, Pt3, Pt4, Pt5, Pt6, Pt7.
+    /// The order of the points is: Pnt0, Pnt1, Pnt2, Pnt3, Pnt4, Pnt5, Pnt6, Pnt7.
     /// <code>
     ///   Z-axis       Y-axis
     ///   ^           /
@@ -1075,14 +1075,14 @@ type BBox =
     /// </summary>
     member b.GetPoint (pointIndex:int) : Pnt =
         match pointIndex with
-        | 0 -> b.Pt0
-        | 1 -> b.Pt1
-        | 2 -> b.Pt2
-        | 3 -> b.Pt3
-        | 4 -> b.Pt4
-        | 5 -> b.Pt5
-        | 6 -> b.Pt6
-        | 7 -> b.Pt7
+        | 0 -> b.Pnt0
+        | 1 -> b.Pnt1
+        | 2 -> b.Pnt2
+        | 3 -> b.Pnt3
+        | 4 -> b.Pnt4
+        | 5 -> b.Pnt5
+        | 6 -> b.Pnt6
+        | 7 -> b.Pnt7
         | _ -> fail $"Box.GetPoint: pointIndex {pointIndex} is out of range. Valid range is 0 to 7."
 
     /// Returns the point of the box at the specified index.
@@ -1112,7 +1112,7 @@ type BBox =
     /// </code>
     /// </summary>
     member b.BottomPoints : Pnt[] =
-        [|b.Pt0; b.Pt1; b.Pt2; b.Pt3|]
+        [|b.Pnt0; b.Pnt1; b.Pnt2; b.Pnt3|]
 
     /// Returns the 4 bottom face points of the 3D bounding box.
     static member inline bottomPoints (b:BBox) : Pnt[] =
@@ -1140,7 +1140,7 @@ type BBox =
     /// </code>
     /// </summary>
     member b.BottomPointsLooped : Pnt[] =
-        [|b.Pt0; b.Pt1; b.Pt2; b.Pt3; b.Pt0|]
+        [|b.Pnt0; b.Pnt1; b.Pnt2; b.Pnt3; b.Pnt0|]
 
     /// Returns the looped 5-point bottom face polyline of the 3D bounding box.
     static member inline bottomPointsLooped (b:BBox) : Pnt[] =
@@ -1168,7 +1168,7 @@ type BBox =
     /// </code>
     /// </summary>
     member b.TopPoints : Pnt[] =
-        [|b.Pt4; b.Pt5; b.Pt6; b.Pt7|]
+        [|b.Pnt4; b.Pnt5; b.Pnt6; b.Pnt7|]
 
     /// Returns the 4 top face points of the 3D bounding box.
     static member inline topPoints (b:BBox) : Pnt[] =
@@ -1196,7 +1196,7 @@ type BBox =
     /// </code>
     /// </summary>
     member b.TopPointsLooped : Pnt[] =
-        [|b.Pt4; b.Pt5; b.Pt6; b.Pt7; b.Pt4|]
+        [|b.Pnt4; b.Pnt5; b.Pnt6; b.Pnt7; b.Pnt4|]
 
     /// Returns the looped 5-point top face polyline of the 3D bounding box.
     static member inline topPointsLooped (b:BBox) : Pnt[] =

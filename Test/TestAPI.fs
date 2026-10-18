@@ -560,7 +560,7 @@ module PntAPI =
     // Static members - Operations
     let (_:Pnt) = Pnt.add pnt p2
     let (_:Pnt) = Pnt.addVec (Vec(1., 2., 3.)) pnt
-    let (_:Pnt) = Pnt.midPt pnt p2
+    let (_:Pnt) = Pnt.midPnt pnt p2
     let (_:Pnt) = Pnt.scale 2.0 pnt
     let (_:Pnt) = Pnt.translate (Vec(1., 2., 3.)) pnt
     let (_:Pnt) = Pnt.move (Vec(1., 2., 3.)) pnt
@@ -579,15 +579,15 @@ module PntAPI =
     let (_:Pnt) = Pnt.setDistanceFromOrigin 5.0 pnt
 
     // Static members - Angles
-    let (_:float) = Pnt.anglePiPts(pnt, Pnt.Origin, p2)
-    let (_:float) = Pnt.angle180Pts(pnt, Pnt.Origin, p2)
+    let (_:float) = Pnt.anglePiPnts(pnt, Pnt.Origin, p2)
+    let (_:float) = Pnt.angle180Pnts(pnt, Pnt.Origin, p2)
     let (_:Vec) = Pnt.bisector(pnt, Pnt.Origin, p2)
-    let (_:Vec) = Pnt.normalOf3Pts(pnt, Pnt.Origin, p2)
+    let (_:Vec) = Pnt.normalOf3Pnts(pnt, Pnt.Origin, p2)
 
     // Static members - Interpolation
-    let (_:Pnt) = Pnt.divPt(pnt, p2, 0.5)
+    let (_:Pnt) = Pnt.divPnt(pnt, p2, 0.5)
     let (_:Pnt) = Pnt.lerp(pnt, p2, 0.5)
-    let (_:Pnt) = Pnt.distPt(pnt, p2, 5.0)
+    let (_:Pnt) = Pnt.distPnt(pnt, p2, 5.0)
     let (_:Pnt) = Pnt.snapIfClose 0.1 pnt p2
 
     // Static members - Other
@@ -1306,14 +1306,14 @@ module BBoxAPI =
     // let (_:BRect) = bbox.asBRect // use asBRect instead of deprecated asRect
 
     // Instance members - Corner points
-    let (_:Pnt) = bbox.Pt0
-    let (_:Pnt) = bbox.Pt1
-    let (_:Pnt) = bbox.Pt2
-    let (_:Pnt) = bbox.Pt3
-    let (_:Pnt) = bbox.Pt4
-    let (_:Pnt) = bbox.Pt5
-    let (_:Pnt) = bbox.Pt6
-    let (_:Pnt) = bbox.Pt7
+    let (_:Pnt) = bbox.Pnt0
+    let (_:Pnt) = bbox.Pnt1
+    let (_:Pnt) = bbox.Pnt2
+    let (_:Pnt) = bbox.Pnt3
+    let (_:Pnt) = bbox.Pnt4
+    let (_:Pnt) = bbox.Pnt5
+    let (_:Pnt) = bbox.Pnt6
+    let (_:Pnt) = bbox.Pnt7
     let (_:Pnt[]) = bbox.Points
     let (_:Pnt[]) = bbox.BottomPoints
     let (_:Pnt[]) = bbox.BottomPointsLooped
@@ -1914,10 +1914,10 @@ module Rect3DAPI =
     let (_:string) = rect3d.AsString
 
     // Instance members - Properties
-    let (_:Pnt) = rect3d.Pt0
-    let (_:Pnt) = rect3d.Pt1
-    let (_:Pnt) = rect3d.Pt2
-    let (_:Pnt) = rect3d.Pt3
+    let (_:Pnt) = rect3d.Pnt0
+    let (_:Pnt) = rect3d.Pnt1
+    let (_:Pnt) = rect3d.Pnt2
+    let (_:Pnt) = rect3d.Pnt3
     let (_:Pnt[]) = rect3d.Points
     let (_:Pnt[]) = rect3d.PointsLooped
     let (_:Line3D) = rect3d.Edge01
@@ -2028,14 +2028,14 @@ module BoxAPI =
     let (_:string) = box.AsString
 
     // Instance members - Properties
-    let (_:Pnt) = box.Pt0
-    let (_:Pnt) = box.Pt1
-    let (_:Pnt) = box.Pt2
-    let (_:Pnt) = box.Pt3
-    let (_:Pnt) = box.Pt4
-    let (_:Pnt) = box.Pt5
-    let (_:Pnt) = box.Pt6
-    let (_:Pnt) = box.Pt7
+    let (_:Pnt) = box.Pnt0
+    let (_:Pnt) = box.Pnt1
+    let (_:Pnt) = box.Pnt2
+    let (_:Pnt) = box.Pnt3
+    let (_:Pnt) = box.Pnt4
+    let (_:Pnt) = box.Pnt5
+    let (_:Pnt) = box.Pnt6
+    let (_:Pnt) = box.Pnt7
     let (_:Pnt[]) = box.Points
     let (_:Line3D) = box.Edge01
     let (_:Line3D) = box.Edge12
@@ -2134,16 +2134,16 @@ module FreeBoxAPI =
     // Instance members - Properties
     let (_:float[]) = freebox.XYZs
     let (_:Pnt[]) = freebox.AsPoints
-    let (_:Pnt) = freebox.GetPt 0
+    let (_:Pnt) = freebox.GetPnt 0
     let (_:float) = freebox.GetX 0
     let (_:float) = freebox.GetY 0
     let (_:float) = freebox.GetZ 0
-    let (_:float) = freebox.Pt0X
-    let (_:float) = freebox.Pt0Y
-    let (_:float) = freebox.Pt0Z
-    let (_:float) = freebox.Pt7X
-    let (_:float) = freebox.Pt7Y
-    let (_:float) = freebox.Pt7Z
+    let (_:float) = freebox.Pnt0X
+    let (_:float) = freebox.Pnt0Y
+    let (_:float) = freebox.Pnt0Z
+    let (_:float) = freebox.Pnt7X
+    let (_:float) = freebox.Pnt7Y
+    let (_:float) = freebox.Pnt7Z
 
     // Instance members - Operations
     let (_:FreeBox) = freebox.Duplicate()
@@ -2157,12 +2157,12 @@ module FreeBoxAPI =
     // Static members
     let (_:float[]) = FreeBox.getXYZs freebox
     let (_:Pnt[]) = FreeBox.asPoints freebox
-    let (_:float) = FreeBox.pt0X freebox
-    let (_:float) = FreeBox.pt0Y freebox
-    let (_:float) = FreeBox.pt0Z freebox
-    let (_:float) = FreeBox.pt7X freebox
-    let (_:float) = FreeBox.pt7Y freebox
-    let (_:float) = FreeBox.pt7Z freebox
+    let (_:float) = FreeBox.pnt0X freebox
+    let (_:float) = FreeBox.pnt0Y freebox
+    let (_:float) = FreeBox.pnt0Z freebox
+    let (_:float) = FreeBox.pnt7X freebox
+    let (_:float) = FreeBox.pnt7Y freebox
+    let (_:float) = FreeBox.pnt7Z freebox
     let (_:FreeBox) = FreeBox.createDirectly (Array.copy freebox.XYZs)
     let (_:FreeBox) = FreeBox.createFromEightPoints freebox.AsPoints
     let (_:unit) = FreeBox.translate (Vec(1., 1., 1.)) freebox
@@ -2266,7 +2266,7 @@ module Polyline2DAPI =
 
 module Polyline3DAPI =
     // Creation
-    let polyline3d = Polyline3D.createFromPts(ResizeArray [Pnt(0., 0., 0.); Pnt(10., 0., 0.); Pnt(10., 10., 0.); Pnt(0., 10., 0.)])
+    let polyline3d = Polyline3D.createFromPnts(ResizeArray [Pnt(0., 0., 0.); Pnt(10., 0., 0.); Pnt(10., 10., 0.); Pnt(0., 10., 0.)])
     let pl2 = Polyline3D.createEmpty(0)
 
     // Instance members - String
@@ -2313,7 +2313,7 @@ module Polyline3DAPI =
     let (_:unit) = polyline3d.Rotate Quaternion.identity
 
     // Static members - Creation
-    let (_:Polyline3D) = Polyline3D.createFromPts(ResizeArray [Pnt(0., 0., 0.); Pnt(10., 0., 0.); Pnt(10., 10., 0.)])
+    let (_:Polyline3D) = Polyline3D.createFromPnts(ResizeArray [Pnt(0., 0., 0.); Pnt(10., 0., 0.); Pnt(10., 10., 0.)])
     let (_:Polyline3D) = Polyline3D.createEmpty(0)
     let (_:Polyline3D) = Polyline3D.createDirectlyUnsafe(ResizeArray [Pnt(0., 0., 0.); Pnt(10., 0., 0.); Pnt(10., 10., 0.)])
 

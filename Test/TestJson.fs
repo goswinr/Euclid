@@ -106,7 +106,7 @@ let private contractValues : (string * obj) list = [
     "BRect", box (BRect.createUnchecked(-2.25, -1.5, 3.75, 4.5))
     "BBox", box (BBox.createUnchecked(-3.75, -2.25, -1.5, 4.5, 5.5, 6.5))
     "Polyline2D", box (Polyline2D.createFromPts [Pt(1.5, -2.25); Pt(3.75, 4.5)])
-    "Polyline3D", box (Polyline3D.createFromPts [Pnt(1.5, -2.25, 3.75); Pnt(4.5, 5.5, 6.5)])
+    "Polyline3D", box (Polyline3D.createFromPnts [Pnt(1.5, -2.25, 3.75); Pnt(4.5, 5.5, 6.5)])
 ]
 
 let private roundTripTests =

@@ -576,14 +576,14 @@ let tests =
                 Expect.equal pts.Length 8 "Should have 8 points"
             }
 
-            test "Pt0 is Origin" {
+            test "Pnt0 is Origin" {
                 let box = Box.createUncheckedVec(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
-                Expect.isTrue (eqPnt box.Pt0 box.Origin) "Pt0 should equal Origin"
+                Expect.isTrue (eqPnt box.Pnt0 box.Origin) "Pnt0 should equal Origin"
             }
 
-            test "Pt6 is FarCorner" {
+            test "Pnt6 is FarCorner" {
                 let box = Box.createUncheckedVec(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
-                Expect.isTrue (eqPnt box.Pt6 box.FarCorner) "Pt6 should equal FarCorner"
+                Expect.isTrue (eqPnt box.Pnt6 box.FarCorner) "Pnt6 should equal FarCorner"
             }
 
             test "Edges array has 12 edges" {
@@ -595,7 +595,7 @@ let tests =
             test "Edge01 is parallel to Xaxis" {
                 let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 let edge = box.Edge01
-                Expect.isTrue (eqPnt edge.From box.Pt0) "Edge01 should start at Pt0"
+                Expect.isTrue (eqPnt edge.From box.Pnt0) "Edge01 should start at Pnt0"
             }
 
             test "Box edges equal BBox edges after conversion" {

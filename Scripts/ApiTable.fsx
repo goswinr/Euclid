@@ -1,5 +1,6 @@
 // Generates a Markdown overview of the public API of Euclid.
 // Corresponding 2D and 3D types share one four column table, so that members of the same name sit side by side.
+// For this, "Pt" and "Pnt" in a name count as the same, so that Pt.midPt sits next to Pnt.midPnt.
 // Static members are listed right below the instance member of the same name.
 //
 // Usage, from the repo root:
@@ -41,6 +42,10 @@ let explicitPairs =
 
 /// Types that only exist in 3D and do not have "3D" in their name.
 let only3D = set [ "Box"; "FreeBox"; "PPlane"; "NPlane"; "Matrix"; "RigidMatrix" ]
+
+/// The name used to pair 2D with 3D types and members.
+/// "Pt" and "Pnt" count as the same, so that e.g. Pt.midPt sits next to Pnt.midPnt and XLine2D.ClPts next to XLine3D.ClPnts.
+let pairingName (name: string) = name.Replace("Pnt", "Pt")
 
 // #endregion
 // #region Type checking
@@ -160,7 +165,7 @@ type Kind =
 type Item = {
     Kind: Kind
     Name: string      // shown in the name column
-    Key: string       // the bare name, used to pair 2D with 3D members
+    Key: string       // the bare name with "Pnt" as "Pt", used to pair 2D with 3D members
     Signature: string
     Order: int * int  // file index and line, to sort overloads
     }
@@ -192,7 +197,7 @@ let fullName (e: FSharpEntity) = defaultArg e.TryFullName e.CompiledName
 let extensions = ResizeArray<FSharpMemberOrFunctionOrValue>()
 
 let fieldItem (name: string) (signature: string) (r: range) =
-    { Kind = Field; Name = name; Key = name; Signature = signature; Order = position r }
+    { Kind = Field; Name = name; Key = pairingName name; Signature = signature; Order = position r }
 
 let rec walk (parentPath: string list) (e: FSharpEntity) =
     if e.Accessibility.IsPublic && not (isHidden e.Attributes) && not e.IsMeasure && not e.IsFSharpAbbreviation then
@@ -302,7 +307,7 @@ let itemsOf (s: Section) : Item list =
                 | Static when not (m.DisplayName.StartsWith "(") -> $"{prefix}.{displayName m}"
                 | Instance -> $".{displayName m}"
                 | _ -> displayName m
-            { Kind = kind; Name = name; Key = m.DisplayName; Signature = signature; Order = position m.DeclarationLocation }
+            { Kind = kind; Name = name; Key = pairingName m.DisplayName; Signature = signature; Order = position m.DeclarationLocation }
         let kind = if m.IsInstanceMember then Instance else Static
         if m.IsConstructor then
             yield { item Ctor (fmtFunction m) with Name = "new"; Key = "new" }
@@ -450,10 +455,10 @@ let groups, general =
     let pairs =
         [ for s, d in sectionDims do
             if d = D2 then
-                let partnerPath = s.Path |> List.map to3D
+                let partnerPath = s.Path |> List.map (to3D >> pairingName)
                 let partner =
                     sectionDims
-                    |> List.tryFind (fun (o, od) -> od = D3 && o.Path = partnerPath && o.IsModule = s.IsModule)
+                    |> List.tryFind (fun (o, od) -> od = D3 && List.map pairingName o.Path = partnerPath && o.IsModule = s.IsModule)
                 match partner with
                 | Some (o, _) ->
                     paired.Add s.Key |> ignore

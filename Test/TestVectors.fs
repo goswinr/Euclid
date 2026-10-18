@@ -191,7 +191,7 @@ let tests =
                 let a = Pnt(0.0, 0.0, 0.0)
                 let b = Pnt(1.0, 0.0, 0.0)
                 let c = Pnt(0.0, 1.0, 0.0)
-                let n = Pnt.normalOf3Pts(a, b, c) |> Vec.unitize
+                let n = Pnt.normalOf3Pnts(a, b, c) |> Vec.unitize
                 "normal is +Z" |> Expect.floatClose tol n.Z 1.0
             }
         ]
@@ -382,7 +382,7 @@ let tests =
             let inline expectVc (v:Vc) x y = Expect.isTrue (v.X = x && v.Y = y) $"expected {x}, {y} but got {v.X}, {v.Y}"
 
             test "midPt" {
-                expectPnt (Pnt.midPt a b) 0.9 -1.0499999999999998 0.6
+                expectPnt (Pnt.midPnt a b) 0.9 -1.0499999999999998 0.6
                 expectPt (Pt.midPt a2 b2) 0.9 -1.0499999999999998
             }
 
@@ -401,7 +401,7 @@ let tests =
             }
 
             test "normalOf3Pts" {
-                expectVec (Pnt.normalOf3Pts(a, b, c)) 1.4100000000000001 4.32 14.239999999999998
+                expectVec (Pnt.normalOf3Pnts(a, b, c)) 1.4100000000000001 4.32 14.239999999999998
             }
 
             test "extendToZLevel" {

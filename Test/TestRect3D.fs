@@ -18,7 +18,7 @@ let tests =
     testList "Rect3D" [
 
         test "Rect3D Edge01..Edge30 and reverse edges" {
-            let p0, p1, p2, p3 = rect.Pt0, rect.Pt1, rect.Pt2, rect.Pt3
+            let p0, p1, p2, p3 = rect.Pnt0, rect.Pnt1, rect.Pnt2, rect.Pnt3
             "Edge01" |> Expect.isTrue (eqLine rect.Edge01 p0 p1)
             "Edge12" |> Expect.isTrue (eqLine rect.Edge12 p1 p2)
             "Edge23" |> Expect.isTrue (eqLine rect.Edge23 p2 p3)
@@ -37,7 +37,7 @@ let tests =
             let above = inside + r.Normal
             "point off the plane is projected onto it" |> Expect.isTrue (eq (r.ClosestPoint above) inside)
             "beyond X edge clamps to X=1" |> Expect.isTrue (eq (r.ClosestPoint (r.EvaluateAt(2.0, 0.5))) (r.EvaluateAt(1.0, 0.5)))
-            "beyond corner clamps to Pt3" |> Expect.isTrue (eq (r.ClosestPoint (r.EvaluateAt(-1.0, 3.0))) r.Pt3)
+            "beyond corner clamps to Pnt3" |> Expect.isTrue (eq (r.ClosestPoint (r.EvaluateAt(-1.0, 3.0))) r.Pnt3)
         }
 
         test "Rect3D.ClosestPoint - zero-length axis throws" {

@@ -417,7 +417,7 @@ let tests =
                 let lineB = Line3D(Pnt(5.0, -5.0, 0.0), Pnt(5.0, 5.0, 0.0))
                 let result = XLine3D.getClosestPoints(lineA, lineB)
                 match result with
-                | XLine3D.ClPts.Intersect pt ->
+                | XLine3D.ClPnts.Intersect pt ->
                     Expect.floatClose Accuracy.high pt.X 5.0 "X should be 5.0"
                     Expect.floatClose Accuracy.high pt.Y 0.0 "Y should be 0.0"
                     Expect.floatClose Accuracy.high pt.Z 0.0 "Z should be 0.0"
@@ -429,7 +429,7 @@ let tests =
                 let lineB = Line3D(Pnt(0.0, 1.0, 0.0), Pnt(10.0, 1.0, 0.0))
                 let result = XLine3D.getClosestPoints(lineA, lineB)
                 match result with
-                | XLine3D.ClPts.Parallel (ptA, ptB) ->
+                | XLine3D.ClPnts.Parallel (ptA, ptB) ->
                     let d = Pnt.dist ptA ptB
                     Expect.floatClose Accuracy.medium d 1.0 "Distance should be 1.0"
                 | _ -> failtest "Should be parallel"
@@ -440,7 +440,7 @@ let tests =
                 let lineB = Line3D(Pnt(5.0, 0.0, 1.0), Pnt(5.0, 10.0, 1.0))
                 let result = XLine3D.getClosestPoints(lineA, lineB)
                 match result with
-                | XLine3D.ClPts.Skew (ptA, ptB, sqdist) ->
+                | XLine3D.ClPnts.Skew (ptA, ptB, sqdist) ->
                     Expect.floatClose Accuracy.high ptA.X 5.0 "ptA X should be 5.0"
                     Expect.floatClose Accuracy.high ptB.X 5.0 "ptB X should be 5.0"
                     Expect.floatClose Accuracy.high sqdist 1.0 "Squared distance should be 1.0"

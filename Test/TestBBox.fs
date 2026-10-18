@@ -634,24 +634,24 @@ let tests =
                 Expect.equal pts.Length 8 "Should have 8 points"
             }
 
-            test "Pt0 is MinPnt" {
+            test "Pnt0 is MinPnt" {
                 let box = BBox.create(Pnt(1., 2., 3.), Pnt(5., 7., 9.))
-                Expect.isTrue (eqPnt box.Pt0 box.MinPnt) "Pt0 should equal MinPnt"
+                Expect.isTrue (eqPnt box.Pnt0 box.MinPnt) "Pnt0 should equal MinPnt"
             }
 
-            test "Pt6 is MaxPnt" {
+            test "Pnt6 is MaxPnt" {
                 let box = BBox.create(Pnt(1., 2., 3.), Pnt(5., 7., 9.))
-                Expect.isTrue (eqPnt box.Pt6 box.MaxPnt) "Pt6 should equal MaxPnt"
+                Expect.isTrue (eqPnt box.Pnt6 box.MaxPnt) "Pnt6 should equal MaxPnt"
             }
 
             test "Bottom points are counter-clockwise" {
                 let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
                 let bottom = box.BottomPoints
                 Expect.equal bottom.Length 4 "Should have 4 bottom points"
-                Expect.isTrue (eqPnt bottom.[0] (Pnt(0., 0., 0.))) "First point should be Pt0"
-                Expect.isTrue (eqPnt bottom.[1] (Pnt(10., 0., 0.))) "Second point should be Pt1"
-                Expect.isTrue (eqPnt bottom.[2] (Pnt(10., 10., 0.))) "Third point should be Pt2"
-                Expect.isTrue (eqPnt bottom.[3] (Pnt(0., 10., 0.))) "Fourth point should be Pt3"
+                Expect.isTrue (eqPnt bottom.[0] (Pnt(0., 0., 0.))) "First point should be Pnt0"
+                Expect.isTrue (eqPnt bottom.[1] (Pnt(10., 0., 0.))) "Second point should be Pnt1"
+                Expect.isTrue (eqPnt bottom.[2] (Pnt(10., 10., 0.))) "Third point should be Pnt2"
+                Expect.isTrue (eqPnt bottom.[3] (Pnt(0., 10., 0.))) "Fourth point should be Pnt3"
             }
 
             test "Bottom points looped has 5 points" {
@@ -683,15 +683,15 @@ let tests =
             test "Edge01 is X-aligned" {
                 let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 5., 3.))
                 let edge = box.Edge01
-                Expect.isTrue (eqPnt edge.From (Pnt(0., 0., 0.))) "From should be Pt0"
-                Expect.isTrue (eqPnt edge.To (Pnt(10., 0., 0.))) "To should be Pt1"
+                Expect.isTrue (eqPnt edge.From (Pnt(0., 0., 0.))) "From should be Pnt0"
+                Expect.isTrue (eqPnt edge.To (Pnt(10., 0., 0.))) "To should be Pnt1"
             }
 
             test "Edge37 is Z-aligned" {
                 let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 5., 3.))
                 let edge = box.Edge37
-                Expect.isTrue (eqPnt edge.From box.Pt3) "From should be Pt3"
-                Expect.isTrue (eqPnt edge.To box.Pt7) "To should be Pt7"
+                Expect.isTrue (eqPnt edge.From box.Pnt3) "From should be Pnt3"
+                Expect.isTrue (eqPnt edge.To box.Pnt7) "To should be Pnt7"
             }
 
             test "BBox reverse edges are the reverse of the forward edges" {
