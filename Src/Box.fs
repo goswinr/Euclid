@@ -870,6 +870,67 @@ type Box =
             b.YaxisX + yX*2., b.YaxisY + yY*2., b.YaxisZ + yZ*2.,
             b.ZaxisX + zX*2., b.ZaxisY + zY*2., b.ZaxisZ + zZ*2.)
 
+    /// <summary>Offsets each of the six faces of the box by its own distance along the face normal.
+    /// Positive distances offset outwards and grow the box. Negative distances offset inwards and shrink it.
+    /// The distances are given in the same face order as in Box.Faces:
+    /// <code>
+    ///   Index  Face    Normal  Vertex indices (CCW)
+    ///   0      Bottom  -Z      0, 3, 2, 1
+    ///   1      Front   -Y      0, 1, 5, 4
+    ///   2      Right   +X      1, 2, 6, 5
+    ///   3      Back    +Y      2, 3, 7, 6
+    ///   4      Left    -X      3, 0, 4, 7
+    ///   5      Top     +Z      4, 5, 6, 7
+    /// </code>
+    /// Fails if the inward offsets of two opposite faces would invert the box, that is if a resulting size is negative.
+    /// A resulting size of exactly zero is allowed and gives a flat box.
+    /// A zero-length local axis takes its direction from the cross product of the other two axes.
+    /// Fails if that direction cannot be determined because a second axis is zero-length too,
+    /// unless both distances along the zero-length axis are zero.
+    /// </summary>
+    /// <param name="distBottom">The offset distance of face 0, the bottom face with normal -Z.</param>
+    /// <param name="distFront">The offset distance of face 1, the front face with normal -Y.</param>
+    /// <param name="distRight">The offset distance of face 2, the right face with normal +X.</param>
+    /// <param name="distBack">The offset distance of face 3, the back face with normal +Y.</param>
+    /// <param name="distLeft">The offset distance of face 4, the left face with normal -X.</param>
+    /// <param name="distTop">The offset distance of face 5, the top face with normal +Z.</param>
+    /// <param name="b">The box to offset.</param>
+    /// <returns>A new box with the six faces offset.</returns>
+    static member offset (distBottom:float) (distFront:float) (distRight:float) (distBack:float) (distLeft:float) (distTop:float) (b:Box) : Box =
+        let sx = b.SizeX
+        let sy = b.SizeY
+        let sz = b.SizeZ
+        let nx = sx + distLeft + distRight
+        let ny = sy + distFront + distBack
+        let nz = sz + distBottom + distTop
+        // 'not (n >= 0.0)' also catches NaN
+        if not (nx >= 0.0 && ny >= 0.0 && nz >= 0.0) then
+            fail $"Box.offset: Box {b.AsString} would get inverted by the offset distances bottom {distBottom}, front {distFront}, right {distRight}, back {distBack}, left {distLeft}, top {distTop}. The resulting sizes would be X {nx}, Y {ny}, Z {nz}"
+        let xa = b.Xaxis
+        let ya = b.Yaxis
+        let za = b.Zaxis
+        // Unit direction of a local axis. A zero-length axis takes its direction from the cross product of the other two, since the box is right-handed.
+        let inline unitAxis (axis:Vec) (len:float) (a:Vec) (c:Vec) (name:string) : Vec =
+            if isTooSmall len then
+                let n = Vec.cross(a, c)
+                let l = n.Length
+                if isTooSmall l then
+                    fail $"Box.offset: the direction of the zero-length {name} of Box {b.AsString} cannot be determined because a second axis is zero-length too."
+                n / l
+            else
+                axis / len
+        let zeroX = distLeft = 0.0 && distRight = 0.0
+        let zeroY = distFront = 0.0 && distBack = 0.0
+        let zeroZ = distBottom = 0.0 && distTop = 0.0
+        let ux = if zeroX then Vec.Zero else unitAxis xa sx ya za "X-axis"
+        let uy = if zeroY then Vec.Zero else unitAxis ya sy za xa "Y-axis"
+        let uz = if zeroZ then Vec.Zero else unitAxis za sz xa ya "Z-axis"
+        Box.createUncheckedVec(
+            b.Origin - ux*distLeft - uy*distFront - uz*distBottom,
+            (if zeroX then xa else ux*nx),
+            (if zeroY then ya else uy*ny),
+            (if zeroZ then za else uz*nz))
+
     /// Returns the 3D box expanded by a relative factor on all six sides.
     /// Values between 0.0 and 1.0 shrink the box.
     /// Values larger than 1.0 expand the box.

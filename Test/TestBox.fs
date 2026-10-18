@@ -513,6 +513,77 @@ let tests =
                 Expect.equal expanded.SizeY 5. "SizeY should be 5"
                 Expect.equal expanded.SizeZ 20. "SizeZ should be 20"
             }
+
+            // rotated and away from the origin, so that translation and rotation bugs show up
+            let rotBox () =
+                let q = Quaternion.createFromEulerXYZ(23., -41., 67.)
+                Box.createUncheckedVec(Pnt(13., -7., 5.), Vec(10., 0., 0.), Vec(0., 6., 0.), Vec(0., 0., 4.)).Rotate q
+
+            // signed distance of each new face plane from the old one, along the old outward face normal
+            let faceShifts (before:Box) (after:Box) =
+                let normals = [| -before.ZaxisUnit; -before.YaxisUnit; before.XaxisUnit; before.YaxisUnit; -before.XaxisUnit; before.ZaxisUnit |]
+                Array.init 6 (fun i -> (after.Faces.[i].Center - before.Faces.[i].Center) *** normals.[i])
+
+            test "offset moves each face by its own distance" {
+                let box = rotBox ()
+                let d = [| 0.5; -1.0; 2.0; -0.25; 1.5; -3.0 |]
+                let r = Box.offset d.[0] d.[1] d.[2] d.[3] d.[4] d.[5] box
+                let shifts = faceShifts box r
+                for i = 0 to 5 do
+                    Expect.isTrue (eqFloat shifts.[i] d.[i]) $"Face {i} should move by {d.[i]} but moved by {shifts.[i]}"
+                Expect.isTrue (eqFloat r.SizeX (10. + 1.5 + 2.0)) "SizeX"
+                Expect.isTrue (eqFloat r.SizeY (6. - 1.0 - 0.25)) "SizeY"
+                Expect.isTrue (eqFloat r.SizeZ (4. + 0.5 - 3.0)) "SizeZ"
+                Expect.isTrue (eqVec r.XaxisUnit.AsVec box.XaxisUnit.AsVec) "X direction kept"
+                Expect.isTrue (eqVec r.YaxisUnit.AsVec box.YaxisUnit.AsVec) "Y direction kept"
+                Expect.isTrue (eqVec r.ZaxisUnit.AsVec box.ZaxisUnit.AsVec) "Z direction kept"
+            }
+
+            test "offset with equal distances matches expand" {
+                let box = rotBox ()
+                Expect.isTrue (Box.equals 1e-9 (Box.offset 1.2 1.2 1.2 1.2 1.2 1.2 box) (Box.expand 1.2 box)) "positive"
+                Expect.isTrue (Box.equals 1e-9 (Box.offset -0.7 -0.7 -0.7 -0.7 -0.7 -0.7 box) (Box.expand -0.7 box)) "negative"
+            }
+
+            test "offset with all zero distances returns the same box" {
+                let box = rotBox ()
+                Expect.isTrue (Box.equals 0.0 (Box.offset 0. 0. 0. 0. 0. 0. box) box) "unchanged"
+            }
+
+            test "offset inwards down to exactly zero size gives a flat box" {
+                let box = rotBox ()
+                let r = Box.offset -1. 0. 0. 0. 0. -3. box
+                Expect.isTrue (eqFloat r.SizeZ 0.0) "SizeZ should be zero"
+                Expect.isTrue r.IsFlat "should be flat"
+            }
+
+            test "offset fails if the box would get inverted" {
+                let box = rotBox ()
+                Expect.throws (fun () -> Box.offset 0. 0. -6. 0. -4.1 0. box |> ignore) "X inverted"
+                Expect.throws (fun () -> Box.offset 0. -3. 0. -3.1 0. 0. box |> ignore) "Y inverted"
+                Expect.throws (fun () -> Box.offset -4.1 0. 0. 0. 0. 0. box |> ignore) "Z inverted by a single face"
+            }
+
+            test "offset fails on NaN" {
+                let box = rotBox ()
+                Expect.throws (fun () -> Box.offset 0. 0. nan 0. 0. 0. box |> ignore) "NaN"
+            }
+
+            test "offset of a flat box takes the missing direction from the other two axes" {
+                let q = Quaternion.createFromEulerXYZ(10., 20., 30.)
+                let flat = Box.createUncheckedVec(Pnt(3., 4., 5.), Vec(10., 0., 0.), Vec(0., 6., 0.), Vec.Zero).Rotate q
+                let r = Box.offset 1. 0. 0. 0. 0. 2. flat
+                Expect.isTrue (eqFloat r.SizeZ 3.0) "SizeZ should be 3"
+                Expect.isTrue (eqVec r.ZaxisUnit.AsVec (Vec.cross(flat.Xaxis, flat.Yaxis).Unitized.AsVec)) "Z direction from X cross Y"
+                Expect.isTrue (eqPnt r.Origin (flat.Origin - r.ZaxisUnit.AsVec)) "Origin moved down by the bottom distance"
+            }
+
+            test "offset of a line box works along its only axis but fails across it" {
+                let line = Box.createUncheckedVec(Pnt(3., 4., 5.), Vec(1., 2., 3.), Vec.Zero, Vec.Zero)
+                let r = Box.offset 0. 0. 1. 0. 2. 0. line
+                Expect.isTrue (eqFloat r.SizeX (line.SizeX + 3.)) "SizeX grows"
+                Expect.throws (fun () -> Box.offset 1. 0. 0. 0. 0. 0. line |> ignore) "Z direction undefined"
+            }
         ]
 
         testList "Containment" [

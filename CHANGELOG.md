@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- Added `Box.offset distBottom distFront distRight distBack distLeft distTop`, which offsets each of the six faces of a `Box` by its own distance, in the face order of `Box.Faces`. Positive distances offset outwards and negative distances offset inwards. It fails if the box would get inverted.
 - Added `FreeBox.XYZs` (and the static `getXYZs`) to access the flat array of 24 floats a `FreeBox` is now made of, `FreeBox.AsPoints` (and the static `asPoints`) to convert it to the 8 corner points, `FreeBox.createDirectly` to build one from an existing array of 24 floats, `FreeBox.GetX/GetY/GetZ` to read single coordinates, `FreeBox.SetPtXYZ` to set a corner from x, y and z, and `FreeBox.Duplicate` to copy one.
 - Added the settable single coordinate properties `FreeBox.Pt0X`, `FreeBox.Pt0Y`, `FreeBox.Pt0Z` ... up to `FreeBox.Pt7Z`, one for each of the 24 floats of a `FreeBox`, plus the static getters `FreeBox.pt0X` ... `FreeBox.pt7Z`.
 - Added `FreeBox.MovePt0InPlace` ... `FreeBox.MovePt7InPlace`, and the indexed `FreeBox.MovePtInPlace`, which translate one corner of a `FreeBox` by a vector and leave the other seven where they are. Unlike `Move`, `MoveX`, `MoveY` and `MoveZ`, which return a new `FreeBox`, these mutate the `FreeBox` in place and return `unit`. Static counterparts `FreeBox.movePt0InPlace` ... `FreeBox.movePt7InPlace` and `FreeBox.movePtInPlace` are provided too.
