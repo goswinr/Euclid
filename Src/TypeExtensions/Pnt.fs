@@ -448,29 +448,29 @@ module AutoOpenPnt =
             sqrt(x*x + y*y)
 
         /// Returns angle between three 3D Points in radians. Range 0.0 to Pi.
-        static member inline anglePiPnts (ptPrev:Pnt, ptThis:Pnt, ptNext:Pnt) : float =
+        static member inline anglePiPnts (pntPrev:Pnt, pntThis:Pnt, pntNext:Pnt) : float =
             anglePiOfVecs "Pnt.anglePiPnts"
-                (ptPrev.X - ptThis.X) (ptPrev.Y - ptThis.Y) (ptPrev.Z - ptThis.Z)
-                (ptNext.X - ptThis.X) (ptNext.Y - ptThis.Y) (ptNext.Z - ptThis.Z)
+                (pntPrev.X - pntThis.X) (pntPrev.Y - pntThis.Y) (pntPrev.Z - pntThis.Z)
+                (pntNext.X - pntThis.X) (pntNext.Y - pntThis.Y) (pntNext.Z - pntThis.Z)
 
         /// Returns angle between three 3D Points in degrees. Range 0.0 to 180
-        static member inline angle180Pnts (ptPrev:Pnt, ptThis:Pnt, ptNext:Pnt) : float =
-            Pnt.anglePiPnts(ptPrev, ptThis, ptNext) |> toDegrees
+        static member inline angle180Pnts (pntPrev:Pnt, pntThis:Pnt, pntNext:Pnt) : float =
+            Pnt.anglePiPnts(pntPrev, pntThis, pntNext) |> toDegrees
 
-        /// Returns a (not unitized) bisector vector in the middle direction from ptThis.
-        /// Code : (ptPrev-ptThis).Unitized  + (ptNext-ptThis).Unitized
-        /// ptPrev * ptThis * ptNext ->   bisector vector
-        static member inline bisector (ptPrev:Pnt, ptThis:Pnt, ptNext:Pnt) : Vec =
-            let ax = ptPrev.X - ptThis.X
-            let ay = ptPrev.Y - ptThis.Y
-            let az = ptPrev.Z - ptThis.Z
-            let bx = ptNext.X - ptThis.X
-            let by = ptNext.Y - ptThis.Y
-            let bz = ptNext.Z - ptThis.Z
+        /// Returns a (not unitized) bisector vector in the middle direction from pntThis.
+        /// Code : (pntPrev-pntThis).Unitized  + (pntNext-pntThis).Unitized
+        /// pntPrev * pntThis * pntNext ->   bisector vector
+        static member inline bisector (pntPrev:Pnt, pntThis:Pnt, pntNext:Pnt) : Vec =
+            let ax = pntPrev.X - pntThis.X
+            let ay = pntPrev.Y - pntThis.Y
+            let az = pntPrev.Z - pntThis.Z
+            let bx = pntNext.X - pntThis.X
+            let by = pntNext.Y - pntThis.Y
+            let bz = pntNext.Z - pntThis.Z
             let la = sqrt (ax*ax + ay*ay + az*az)
-            if isTooTiny la then failUnit3 "Pnt.bisector: ptPrev to ptThis" ax ay az
+            if isTooTiny la then failUnit3 "Pnt.bisector: pntPrev to pntThis" ax ay az
             let lb = sqrt (bx*bx + by*by + bz*bz)
-            if isTooTiny lb then failUnit3 "Pnt.bisector: ptNext to ptThis" bx by bz
+            if isTooTiny lb then failUnit3 "Pnt.bisector: pntNext to pntThis" bx by bz
             let fa = 1. / la
             let fb = 1. / lb
             Vec(fa*ax + fb*bx, fa*ay + fb*by, fa*az + fb*bz)
@@ -705,13 +705,13 @@ module AutoOpenPnt =
 
         /// Returns the closer point of the two points to the reference given point.
         /// When both points are equally close, the first point is returned.
-        static member closestOfTwo (pt1:Pnt) (pt2:Pnt) (referencePoint:Pnt) : Pnt =
-            let d1 = Pnt.sqDistanceTo pt1 referencePoint
-            let d2 = Pnt.sqDistanceTo pt2 referencePoint
+        static member closestOfTwo (pnt1:Pnt) (pnt2:Pnt) (referencePoint:Pnt) : Pnt =
+            let d1 = Pnt.sqDistanceTo pnt1 referencePoint
+            let d2 = Pnt.sqDistanceTo pnt2 referencePoint
             if d1 <= d2 then
-                pt1
+                pnt1
             else
-                pt2
+                pnt2
 
         // #endregion
         // #region Obsolete
@@ -723,13 +723,13 @@ module AutoOpenPnt =
 
         /// Obsolete name. Same as Pnt.anglePiPnts.
         [<Obsolete("Use Pnt.anglePiPnts instead.")>]
-        static member inline anglePiPts (ptPrev:Pnt, ptThis:Pnt, ptNext:Pnt) : float =
-            Pnt.anglePiPnts(ptPrev, ptThis, ptNext)
+        static member inline anglePiPts (pntPrev:Pnt, pntThis:Pnt, pntNext:Pnt) : float =
+            Pnt.anglePiPnts(pntPrev, pntThis, pntNext)
 
         /// Obsolete name. Same as Pnt.angle180Pnts.
         [<Obsolete("Use Pnt.angle180Pnts instead.")>]
-        static member inline angle180Pts (ptPrev:Pnt, ptThis:Pnt, ptNext:Pnt) : float =
-            Pnt.angle180Pnts(ptPrev, ptThis, ptNext)
+        static member inline angle180Pts (pntPrev:Pnt, pntThis:Pnt, pntNext:Pnt) : float =
+            Pnt.angle180Pnts(pntPrev, pntThis, pntNext)
 
         /// Obsolete name. Same as Pnt.normalOf3Pnts.
         [<Obsolete("Use Pnt.normalOf3Pnts instead.")>]

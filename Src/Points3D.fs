@@ -31,13 +31,13 @@ type Points3D   =
 
     /// Returns the closest of two 3D points to a given reference 3D point.
     /// If both points are equidistant the first point is returned.
-    static member closestOfTwo (pt1:Pnt) (pt2:Pnt) (referencePoint:Pnt) : Pnt =
-        let d1 = Pnt.sqDist pt1 referencePoint
-        let d2 = Pnt.sqDist pt2 referencePoint
+    static member closestOfTwo (pnt1:Pnt) (pnt2:Pnt) (referencePoint:Pnt) : Pnt =
+        let d1 = Pnt.sqDist pnt1 referencePoint
+        let d2 = Pnt.sqDist pnt2 referencePoint
         if d1 <= d2 then
-            pt1
+            pnt1
         else
-            pt2
+            pnt2
 
 
     /// Returns the indices of the 3D points that are closest to each other.
@@ -264,8 +264,8 @@ type Points() =
 
 
     [<Obsolete("Use Points3D.closestOfTwo instead")>]
-    static member closestOfTwo (pt1:Pnt) (pt2:Pnt) (referencePoint:Pnt) : Pnt =
-        Points3D.closestOfTwo pt1 pt2 referencePoint
+    static member closestOfTwo (pnt1:Pnt) (pnt2:Pnt) (referencePoint:Pnt) : Pnt =
+        Points3D.closestOfTwo pnt1 pnt2 referencePoint
 
 
     [<Obsolete("Use Points3D.minDistBetweenPointSets instead")>]

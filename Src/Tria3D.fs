@@ -164,15 +164,15 @@ type Tria3D =
     /// Finds the offset point based on
     /// the previous and next unit normals (= offset direction),
     /// and their offset distances.
-    static member offsetVar (ptToOffset:Pnt, prev:Pnt, next:Pnt, distPrev:float, distNext:float)  : ValueOption<Pnt> =
-        let vPrev = ptToOffset - prev
-        let vNext = next - ptToOffset
+    static member offsetVar (pntToOffset:Pnt, prev:Pnt, next:Pnt, distPrev:float, distNext:float)  : ValueOption<Pnt> =
+        let vPrev = pntToOffset - prev
+        let vNext = next - pntToOffset
         let perp = Vec.cross (vPrev, vNext)
         let lenPerpSq = perp.LengthSq
         if isTooTinySq lenPerpSq then
             // test if lines are long enough but just parallel
             //if isTooSmallSq vPrev.LengthSq || isTooSmallSq vNext.LengthSq then
-            // EuclidException.Raisef "Tria3D.offsetVar: Points are too close or collinear: %O, %O, %O" ptToOffset prev next
+            // EuclidException.Raisef "Tria3D.offsetVar: Points are too close or collinear: %O, %O, %O" pntToOffset prev next
             ValueNone
         else
             // shadow the original values:
@@ -189,9 +189,9 @@ type Tria3D =
             let bz = vNextU.Z
             // let a = ax*ax + ay*ay + az*az // square length of A // always 1.0
             // let c = bx*bx + by*by + bz*bz // square length of B // always 1.0
-            let px = ptToOffset.X
-            let py = ptToOffset.Y
-            let pz = ptToOffset.Z
+            let px = pntToOffset.X
+            let py = pntToOffset.Y
+            let pz = pntToOffset.Z
             // the start points of the two offset lines A and B:
             let aFromX = px + nPrevU.X * distPrev
             let aFromY = py + nPrevU.Y * distPrev

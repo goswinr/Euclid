@@ -899,8 +899,8 @@ module AutoOpenUnitVec =
         // #region Obsolete
 
         [<Obsolete("Use Euclid.XLine3D module instead.")>]
-        static member inline intersection (ptA:Pnt) (ptB:Pnt) (vA:UnitVec) (vB:UnitVec) : Option<float*float> =
-            Some (XLineXYZ.parameters(ptA.X, ptA.Y, ptA.Z, ptB.X, ptB.Y, ptB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z))
+        static member inline intersection (pntA:Pnt) (pntB:Pnt) (vA:UnitVec) (vB:UnitVec) : Option<float*float> =
+            Some (XLineXYZ.parameters(pntA.X, pntA.Y, pntA.Z, pntB.X, pntB.Y, pntB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z))
 
         [<Obsolete("Use UnitVec.isParallelWithin instead.")>]
         static member inline isAngle90Below (cosineValue: float<Cosine.cosine>) (a:UnitVec) (b:UnitVec) : bool =

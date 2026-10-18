@@ -192,7 +192,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Vec.perpendicularInVerticalPlane` | `v: Vec -> Vec` |
 | `Vec.projectToXYPlane` | `v: Vec -> Vec` |
 | `Vec.reverse` | `v: Vec -> Vec` |
-| `Vec.rotate` | `q: Quaternion -> pt: Vec -> Vec` |
+| `Vec.rotate` | `q: Quaternion -> vec: Vec -> Vec` |
 | `Vec.rotateOnX` | `r: Rotation2D -> v: Vec -> Vec` |
 | `Vec.rotateOnXDeg` | `angDegree: float -> v: Vec -> Vec` |
 | `Vec.rotateOnY` | `r: Rotation2D -> v: Vec -> Vec` |
@@ -351,7 +351,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `UnitVec.perpendicularInVerticalPlane` | `v: UnitVec -> Vec` |
 | `UnitVec.projectToXYPlane` | `v: UnitVec -> Vec` |
 | `UnitVec.reverse` | `v: UnitVec -> UnitVec` |
-| `UnitVec.rotate` | `q: Quaternion -> pt: UnitVec -> UnitVec` |
+| `UnitVec.rotate` | `q: Quaternion -> uVec: UnitVec -> UnitVec` |
 | `UnitVec.rotateOnX` | `r: Rotation2D -> v: UnitVec -> UnitVec` |
 | `UnitVec.rotateOnXDeg` | `angDegree: float -> v: UnitVec -> UnitVec` |
 | `UnitVec.rotateOnY` | `r: Rotation2D -> v: UnitVec -> UnitVec` |
@@ -453,11 +453,11 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | **Other static members** | |
 | `Pnt.add` | `a: Pnt -> b: Pnt -> Pnt` |
 | `Pnt.addVec` | `v: Vec -> a: Pnt -> Pnt` |
-| `Pnt.angle180Pnts` | `ptPrev: Pnt * ptThis: Pnt * ptNext: Pnt -> float` |
+| `Pnt.angle180Pnts` | `pntPrev: Pnt * pntThis: Pnt * pntNext: Pnt -> float` |
 | `Pnt.angleInCorner` | `prevPnt: Pnt * thisPnt: Pnt * nextPnt: Pnt -> float` |
-| `Pnt.anglePiPnts` | `ptPrev: Pnt * ptThis: Pnt * ptNext: Pnt -> float` |
-| `Pnt.bisector` | `ptPrev: Pnt * ptThis: Pnt * ptNext: Pnt -> Vec` |
-| `Pnt.closestOfTwo` | `pt1: Pnt -> pt2: Pnt -> referencePoint: Pnt -> Pnt` |
+| `Pnt.anglePiPnts` | `pntPrev: Pnt * pntThis: Pnt * pntNext: Pnt -> float` |
+| `Pnt.bisector` | `pntPrev: Pnt * pntThis: Pnt * pntNext: Pnt -> Vec` |
+| `Pnt.closestOfTwo` | `pnt1: Pnt -> pnt2: Pnt -> referencePoint: Pnt -> Pnt` |
 | `Pnt.createFromMembersXYZ` | `pt: ^T -> Pnt` |
 | `Pnt.createFromMembersxyz` | `pt: ^T -> Pnt` |
 | `Pnt.createFromPt` | `p: Pt -> Pnt` |
@@ -1176,9 +1176,9 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | ClPnts | Signature |
 |:--|:--|
 | `Intersect` | `pnt: Pnt -> ClPnts` |
-| `Skew` | `ptA: Pnt * ptB: Pnt * squareDist: float -> ClPnts` |
-| `Parallel` | `ptA: Pnt * ptB: Pnt -> ClPnts` |
-| `Apart` | `ptA: Pnt * ptB: Pnt * squareDist: float -> ClPnts` |
+| `Skew` | `pntA: Pnt * pntB: Pnt * squareDist: float -> ClPnts` |
+| `Parallel` | `pntA: Pnt * pntB: Pnt -> ClPnts` |
+| `Apart` | `pntA: Pnt * pntB: Pnt * squareDist: float -> ClPnts` |
 | `TooShortA` | `ClPnts` |
 | `TooShortB` | `ClPnts` |
 | `TooShortBoth` | `ClPnts` |
@@ -2158,14 +2158,14 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Tria3D.isLinearFast` | `a: Pnt * b: Pnt * c: Pnt * ?maxAreaParallelogram: float -> bool` |
 | `Tria3D.offset` | `a: Pnt * b: Pnt * c: Pnt * dist: float -> Pnt * Pnt * Pnt` |
 | `Tria3D.offsetPnt` | `pntToOffset: Pnt * prev: Pnt * next: Pnt * dist: float -> Pnt` |
-| `Tria3D.offsetVar` | `ptToOffset: Pnt * prev: Pnt * next: Pnt * distPrev: float * distNext: float -> ValueOption<Pnt>` |
+| `Tria3D.offsetVar` | `pntToOffset: Pnt * prev: Pnt * next: Pnt * distPrev: float * distNext: float -> ValueOption<Pnt>` |
 
 ## Points3D
 
 | Points3D | Signature |
 |:--|:--|
 | `Points3D.center` | `pts: IList<Pnt> -> Pnt` |
-| `Points3D.closestOfTwo` | `pt1: Pnt -> pt2: Pnt -> referencePoint: Pnt -> Pnt` |
+| `Points3D.closestOfTwo` | `pnt1: Pnt -> pnt2: Pnt -> referencePoint: Pnt -> Pnt` |
 | `Points3D.closestPoint` | `pts: IList<Pnt> * pnt: Pnt -> Pnt` |
 | `Points3D.closestPointIdx` | `pts: IList<Pnt> * pnt: Pnt -> int` |
 | `Points3D.closestPointsIdx` | `xs: IList<Pnt> * ys: IList<Pnt> -> int * int` |

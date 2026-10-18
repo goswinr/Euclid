@@ -1172,8 +1172,8 @@ module AutoOpenVec =
             Vec.isAngleAbove cosineValue a b
 
         [<Obsolete("Use Euclid.XLine3D module instead.")>]
-        static member inline intersection (ptA:Pnt,ptB:Pnt,vA:Vec,vB:Vec) : ValueOption<float*float> =
-            ValueSome (XLineXYZ.parameters(ptA.X, ptA.Y, ptA.Z, ptB.X, ptB.Y, ptB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z))
+        static member inline intersection (pntA:Pnt,pntB:Pnt,vA:Vec,vB:Vec) : ValueOption<float*float> =
+            ValueSome (XLineXYZ.parameters(pntA.X, pntA.Y, pntA.Z, pntB.X, pntB.Y, pntB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z))
 
         [<Obsolete("Use Vec.isParallelTo instead. Obsolete since 0.21.0")>]
         static member inline areParallel (other:Vec) (v:Vec) : bool =

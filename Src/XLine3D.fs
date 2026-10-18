@@ -205,13 +205,13 @@ module XLine3D =
         | Intersect of pnt:Pnt
 
         /// The lines are skew (not parallel, not coplanar). Contains the closest points on both lines and the squared distance between them.
-        | Skew of ptA:Pnt * ptB:Pnt * squareDist:float
+        | Skew of pntA:Pnt * pntB:Pnt * squareDist:float
 
         /// The lines are parallel or coincident. Contains the points at the middle of any overlapping segment on both lines.
-        | Parallel of ptA:Pnt * ptB:Pnt
+        | Parallel of pntA:Pnt * pntB:Pnt
 
         /// The lines are apart. Contains the closest points on both lines and the squared distance between them.
-        | Apart of ptA:Pnt * ptB:Pnt * squareDist:float
+        | Apart of pntA:Pnt * pntB:Pnt * squareDist:float
 
         /// Line A is shorter than the given minimum length tolerance.
         | TooShortA
@@ -1125,12 +1125,12 @@ module XLineXYZ =
                 let dz2 = ptAz - ptBz
                 let sqDist = dx2*dx2 + dy2*dy2 + dz2*dz2
                 if sqDist < maxSkewDistance*maxSkewDistance then // approximately intersecting (coplanar within tolerance)
-                    let ptA = Pnt(ptAx, ptAy, ptAz)
-                    XRay.Intersect ptA
+                    let pntA = Pnt(ptAx, ptAy, ptAz)
+                    XRay.Intersect pntA
                 else // skew lines
-                    let ptA = Pnt(ptAx, ptAy, ptAz)
-                    let ptB = Pnt(ptBx, ptBy, ptBz)
-                    XRay.Skew (ptA, ptB, sqDist)
+                    let pntA = Pnt(ptAx, ptAy, ptAz)
+                    let pntB = Pnt(ptBx, ptBy, ptBz)
+                    XRay.Skew (pntA, pntB, sqDist)
             else
                 XRay.Parallel
 

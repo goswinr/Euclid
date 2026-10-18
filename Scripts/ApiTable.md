@@ -168,7 +168,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 |  |  | `.PerpendicularInXY` | `Vec` |
 |  |  | `Vec.perpendicularInXY` | `v: Vec -> Vec` |
 | `.Rotate` | `angDegree: float -> Vc` |  |  |
-| `Vc.rotate` | `angDegree: float -> vec: Vc -> Vc` | `Vec.rotate` | `q: Quaternion -> pt: Vec -> Vec` |
+| `Vc.rotate` | `angDegree: float -> vec: Vc -> Vc` | `Vec.rotate` | `q: Quaternion -> vec: Vec -> Vec` |
 | `.Rotate90CCW` | `Vc` |  |  |
 | `Vc.rotate90CCW` | `v: Vc -> Vc` |  |  |
 | `.Rotate90CW` | `Vc` |  |  |
@@ -366,7 +366,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 |  |  | `.PerpendicularInXY` | `Vec` |
 |  |  | `UnitVec.perpendicularInXY` | `v: UnitVec -> Vec` |
 | `.Rotate` | `angDegree: float -> UnitVc` |  |  |
-| `UnitVc.rotate` | `angDegree: float -> vec: UnitVc -> UnitVc` | `UnitVec.rotate` | `q: Quaternion -> pt: UnitVec -> UnitVec` |
+| `UnitVc.rotate` | `angDegree: float -> vec: UnitVc -> UnitVc` | `UnitVec.rotate` | `q: Quaternion -> uVec: UnitVec -> UnitVec` |
 | `.Rotate90CCW` | `UnitVc` |  |  |
 | `UnitVc.rotate90CCW` | `v: UnitVc -> UnitVc` |  |  |
 | `.Rotate90CW` | `UnitVc` |  |  |
@@ -566,11 +566,11 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Pt.add` | `a: Pt -> b: Pt -> Pt` | `Pnt.add` | `a: Pnt -> b: Pnt -> Pnt` |
 | `Pt.addVc` | `v: Vc -> a: Pt -> Pt` |  |  |
 |  |  | `Pnt.addVec` | `v: Vec -> a: Pnt -> Pnt` |
-| `Pt.angle180Pts` | `ptPrev: Pt * ptThis: Pt * ptNext: Pt -> float` | `Pnt.angle180Pnts` | `ptPrev: Pnt * ptThis: Pnt * ptNext: Pnt -> float` |
+| `Pt.angle180Pts` | `ptPrev: Pt * ptThis: Pt * ptNext: Pt -> float` | `Pnt.angle180Pnts` | `pntPrev: Pnt * pntThis: Pnt * pntNext: Pnt -> float` |
 | `Pt.angleInCorner` | `prevPt: Pt * thisPt: Pt * nextPt: Pt -> float` | `Pnt.angleInCorner` | `prevPnt: Pnt * thisPnt: Pnt * nextPnt: Pnt -> float` |
-| `Pt.anglePiPts` | `ptPrev: Pt * ptThis: Pt * ptNext: Pt -> float` | `Pnt.anglePiPnts` | `ptPrev: Pnt * ptThis: Pnt * ptNext: Pnt -> float` |
-| `Pt.bisector` | `ptPrev: Pt * ptThis: Pt * ptNext: Pt -> Vc` | `Pnt.bisector` | `ptPrev: Pnt * ptThis: Pnt * ptNext: Pnt -> Vec` |
-| `Pt.closestOfTwo` | `pt1: Pt -> pt2: Pt -> referencePoint: Pt -> Pt` | `Pnt.closestOfTwo` | `pt1: Pnt -> pt2: Pnt -> referencePoint: Pnt -> Pnt` |
+| `Pt.anglePiPts` | `ptPrev: Pt * ptThis: Pt * ptNext: Pt -> float` | `Pnt.anglePiPnts` | `pntPrev: Pnt * pntThis: Pnt * pntNext: Pnt -> float` |
+| `Pt.bisector` | `ptPrev: Pt * ptThis: Pt * ptNext: Pt -> Vc` | `Pnt.bisector` | `pntPrev: Pnt * pntThis: Pnt * pntNext: Pnt -> Vec` |
+| `Pt.closestOfTwo` | `pt1: Pt -> pt2: Pt -> referencePoint: Pt -> Pt` | `Pnt.closestOfTwo` | `pnt1: Pnt -> pnt2: Pnt -> referencePoint: Pnt -> Pnt` |
 | `Pt.createFromMembersXY` | `pt: ^T -> Pt` |  |  |
 | `Pt.createFromMembersxy` | `pt: ^T -> Pt` |  |  |
 |  |  | `Pnt.createFromMembersXYZ` | `pt: ^T -> Pnt` |
@@ -1338,12 +1338,12 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | ClPts | Signature | ClPnts | Signature |
 |:--|:--|:--|:--|
 | `Intersect` | `pt: Pt -> ClPts` | `Intersect` | `pnt: Pnt -> ClPnts` |
-| `Parallel` | `ptA: Pt * ptB: Pt -> ClPts` | `Parallel` | `ptA: Pnt * ptB: Pnt -> ClPnts` |
-| `Apart` | `ptA: Pt * ptB: Pt -> ClPts` | `Apart` | `ptA: Pnt * ptB: Pnt * squareDist: float -> ClPnts` |
+| `Parallel` | `ptA: Pt * ptB: Pt -> ClPts` | `Parallel` | `pntA: Pnt * pntB: Pnt -> ClPnts` |
+| `Apart` | `ptA: Pt * ptB: Pt -> ClPts` | `Apart` | `pntA: Pnt * pntB: Pnt * squareDist: float -> ClPnts` |
 | `TooShortA` | `ClPts` | `TooShortA` | `ClPnts` |
 | `TooShortB` | `ClPts` | `TooShortB` | `ClPnts` |
 | `TooShortBoth` | `ClPts` | `TooShortBoth` | `ClPnts` |
-|  |  | `Skew` | `ptA: Pnt * ptB: Pnt * squareDist: float -> ClPnts` |
+|  |  | `Skew` | `pntA: Pnt * pntB: Pnt * squareDist: float -> ClPnts` |
 
 ## XLine2D.XEnds / XLine3D.XEnds
 
@@ -2401,14 +2401,14 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Tria2D.offsetPt` | `ptToOffset: Pt * prev: Pt * next: Pt * dist: float -> Pt` | `Tria3D.offsetPnt` | `pntToOffset: Pnt * prev: Pnt * next: Pnt * dist: float -> Pnt` |
 | `Tria2D.offsetPtVar` | `ptToOffset: Pt * prev: Pt * next: Pt * distPrev: float * distNext: float -> ValueOption<Pt>` |  |  |
 | `Tria2D.offsetPtVarByNormals` | `ptToOffset: Pt * prevN: UnitVc * nextN: UnitVc * prevDist: float * nextDist: float -> ValueOption<Pt>` |  |  |
-|  |  | `Tria3D.offsetVar` | `ptToOffset: Pnt * prev: Pnt * next: Pnt * distPrev: float * distNext: float -> ValueOption<Pnt>` |
+|  |  | `Tria3D.offsetVar` | `pntToOffset: Pnt * prev: Pnt * next: Pnt * distPrev: float * distNext: float -> ValueOption<Pnt>` |
 
 ## Points2D / Points3D
 
 | Points2D | Signature | Points3D | Signature |
 |:--|:--|:--|:--|
 | `Points2D.center` | `pts: IList<Pt> -> Pt` | `Points3D.center` | `pts: IList<Pnt> -> Pnt` |
-| `Points2D.closestOfTwo` | `pt1: Pt -> pt2: Pt -> referencePoint: Pt -> Pt` | `Points3D.closestOfTwo` | `pt1: Pnt -> pt2: Pnt -> referencePoint: Pnt -> Pnt` |
+| `Points2D.closestOfTwo` | `pt1: Pt -> pt2: Pt -> referencePoint: Pt -> Pt` | `Points3D.closestOfTwo` | `pnt1: Pnt -> pnt2: Pnt -> referencePoint: Pnt -> Pnt` |
 | `Points2D.closestPoint` | `pts: IList<Pt> * pt: Pt -> Pt` | `Points3D.closestPoint` | `pts: IList<Pnt> * pnt: Pnt -> Pnt` |
 | `Points2D.closestPointIdx` | `pts: IList<Pt> * pt: Pt -> int` | `Points3D.closestPointIdx` | `pts: IList<Pnt> * pnt: Pnt -> int` |
 | `Points2D.closestPointsIdx` | `xs: IList<Pt> * ys: IList<Pt> -> int * int` | `Points3D.closestPointsIdx` | `xs: IList<Pnt> * ys: IList<Pnt> -> int * int` |
