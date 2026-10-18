@@ -1073,7 +1073,7 @@ type BBox =
     ///   0 MinPnt         1
     /// </code>
     /// </summary>
-    member b.GetPoint (pointIndex:int) : Pnt =
+    member b.GetPnt (pointIndex:int) : Pnt =
         match pointIndex with
         | 0 -> b.Pnt0
         | 1 -> b.Pnt1
@@ -1083,11 +1083,11 @@ type BBox =
         | 5 -> b.Pnt5
         | 6 -> b.Pnt6
         | 7 -> b.Pnt7
-        | _ -> fail $"Box.GetPoint: pointIndex {pointIndex} is out of range. Valid range is 0 to 7."
+        | _ -> fail $"BBox.GetPnt: pointIndex {pointIndex} is out of range. Valid range is 0 to 7."
 
     /// Returns the point of the box at the specified index.
-    static member inline getPoint (pointIndex:int) (b:BBox) : Pnt =
-        b.GetPoint pointIndex
+    static member inline getPnt (pointIndex:int) (b:BBox) : Pnt =
+        b.GetPnt pointIndex
 
 
     /// <summary>Returns the bottom of the box as a counter-clockwise array of 4 Points.
@@ -1468,6 +1468,51 @@ type BBox =
     /// Returns the edge of the BBox at the specified index.
     static member inline getEdge (edgeIndex:int) (b:BBox): Line3D =
         b.GetEdge(edgeIndex)
+
+
+    /// <summary>Returns the line from the corner point at the start index to the corner point at the end index.
+    /// Any two different indices from 0 to 7 are valid, so besides the 12 edges this also returns face diagonals and space diagonals.
+    /// The direction of the line follows the order of the indices: GetLine(0, 1) is Edge01 and GetLine(1, 0) is Edge10.
+    /// <code>
+    ///   Z-axis       Y-axis
+    ///   ^           /
+    ///   |   7      /        6 MaxPnt
+    ///   |   +---------------+
+    ///   |  /|    /         /|
+    ///   | / |   /         / |
+    /// 4 |/  |  /       5 /  |
+    ///   +---------------+   |
+    ///   |   |/          |   |
+    ///   |   +-----------|---+
+    ///   |  / 3          |  / 2
+    ///   | /             | /
+    ///   |/              |/
+    ///   +---------------+----> X-axis
+    ///   0 MinPnt         1
+    /// </code>
+    /// </summary>
+    /// <param name="startPointIndex">The index of the corner point where the line starts. Must be between 0 and 7.</param>
+    /// <param name="endPointIndex">The index of the corner point where the line ends. Must be between 0 and 7 and different from startPointIndex.</param>
+    /// <returns>A Line3D from the start corner point to the end corner point.</returns>
+    member b.GetLine (startPointIndex:int, endPointIndex:int) : Line3D =
+        if startPointIndex < 0 || startPointIndex > 7 then
+            fail $"BBox.GetLine: startPointIndex {startPointIndex} is out of range. It must be between 0 and 7."
+        if endPointIndex < 0 || endPointIndex > 7 then
+            fail $"BBox.GetLine: endPointIndex {endPointIndex} is out of range. It must be between 0 and 7."
+        if startPointIndex = endPointIndex then
+            fail $"BBox.GetLine: startPointIndex and endPointIndex are both {startPointIndex}. They must be different."
+        // corners 1, 2, 5 and 6 are at MaxX, corners 2, 3, 6 and 7 at MaxY, corners 4 to 7 at MaxZ
+        Line3D((match startPointIndex with 1 | 2 | 5 | 6 -> b.MaxX | _ -> b.MinX),
+               (match startPointIndex with 2 | 3 | 6 | 7 -> b.MaxY | _ -> b.MinY),
+               (if startPointIndex < 4 then b.MinZ else b.MaxZ),
+               (match endPointIndex   with 1 | 2 | 5 | 6 -> b.MaxX | _ -> b.MinX),
+               (match endPointIndex   with 2 | 3 | 6 | 7 -> b.MaxY | _ -> b.MinY),
+               (if endPointIndex < 4 then b.MinZ else b.MaxZ))
+
+    /// Returns the line from the corner point at the start index to the corner point at the end index of the 3D bounding box.
+    /// Any two different indices from 0 to 7 are valid.
+    static member inline getLine (startPointIndex:int) (endPointIndex:int) (b:BBox) : Line3D =
+        b.GetLine(startPointIndex, endPointIndex)
 
 
     // #endregion
@@ -1993,6 +2038,16 @@ type BBox =
 
     // #endregion
     // #region Obsolete
+
+    /// Obsolete name. Same as b.GetPnt.
+    [<Obsolete("Use GetPnt instead.")>]
+    member b.GetPoint (pointIndex:int) : Pnt =
+        b.GetPnt pointIndex
+
+    /// Obsolete name. Same as BBox.getPnt.
+    [<Obsolete("Use BBox.getPnt instead.")>]
+    static member inline getPoint (pointIndex:int) (b:BBox) : Pnt =
+        b.GetPnt pointIndex
 
     [<Obsolete("use .isOverlapping instead")>]
     static member doOverlap(a:BBox) (b:BBox) : bool =

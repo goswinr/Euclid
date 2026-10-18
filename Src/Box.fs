@@ -11,6 +11,26 @@ open System.Text.Json.Serialization
 #endif
 
 
+module private BoxUtil =
+
+    /// Returns one coordinate of the corner point at the given index 0 to 7,
+    /// from that coordinate of the Origin and of the X, Y and Z axes.
+    /// The additions are in the same order as in Box.Pnt0 to Box.Pnt7, so the result is bit-identical.
+    let inline cornerCoord (pointIndex:int) (o:float) (x:float) (y:float) (z:float) : float =
+        match pointIndex with
+        | 0 -> o
+        | 1 -> o + x
+        | 2 -> o + x + y
+        | 3 -> o + y
+        | 4 -> o + z
+        | 5 -> o + x + z
+        | 6 -> o + x + y + z
+        | _ -> o + y + z
+
+
+open BoxUtil
+
+
 /// <summary>A struct of 9 floats  representing an immutable 3D box with any rotation in 3D space.
 /// Described by z, y and z of the Origin and x, y and z for each of the three Edge vectors.
 /// Similar to PPlane, however the three vectors are not unitized.
@@ -1907,7 +1927,7 @@ type Box =
     ///   0               1
     /// </code>
     /// </summary>
-    member b.GetPoint (pointIndex:int) : Pnt =
+    member b.GetPnt (pointIndex:int) : Pnt =
         match pointIndex with
         | 0 -> b.Pnt0
         | 1 -> b.Pnt1
@@ -1917,11 +1937,11 @@ type Box =
         | 5 -> b.Pnt5
         | 6 -> b.Pnt6
         | 7 -> b.Pnt7
-        | _ -> fail $"Box.GetPoint: pointIndex {pointIndex} is out of range. Valid range is 0 to 7."
+        | _ -> fail $"Box.GetPnt: pointIndex {pointIndex} is out of range. Valid range is 0 to 7."
 
     /// Returns the point of the box at the specified index.
-    static member inline getPoint (pointIndex:int) (b:Box) : Pnt =
-        b.GetPoint pointIndex
+    static member inline getPnt (pointIndex:int) (b:Box) : Pnt =
+        b.GetPnt pointIndex
 
 
     // #endregion
@@ -2883,6 +2903,51 @@ type Box =
         b.GetEdge(edgeIndex)
 
 
+    /// <summary>Returns the line from the corner point at the start index to the corner point at the end index.
+    /// Any two different indices from 0 to 7 are valid, so besides the 12 edges this also returns face diagonals and space diagonals.
+    /// The direction of the line follows the order of the indices: GetLine(0, 1) is Edge01 and GetLine(1, 0) is Edge10.
+    /// <code>
+    ///   local        local
+    ///   Z-axis       Y-axis
+    ///   ^           /
+    ///   |   7      /        6
+    ///   |   +---------------+
+    ///   |  /|    /         /|
+    ///   | / |   /         / |
+    /// 4 |/  |  /       5 /  |
+    ///   +---------------+   |
+    ///   |   |/          |   |
+    ///   |   +-----------|---+
+    ///   |  / 3          |  / 2
+    ///   | /             | /
+    ///   |/              |/     local
+    ///   +---------------+----> X-axis
+    ///   0               1
+    /// </code>
+    /// </summary>
+    /// <param name="startPointIndex">The index of the corner point where the line starts. Must be between 0 and 7.</param>
+    /// <param name="endPointIndex">The index of the corner point where the line ends. Must be between 0 and 7 and different from startPointIndex.</param>
+    /// <returns>A Line3D from the start corner point to the end corner point.</returns>
+    member b.GetLine (startPointIndex:int, endPointIndex:int) : Line3D =
+        if startPointIndex < 0 || startPointIndex > 7 then
+            fail $"Box.GetLine: startPointIndex {startPointIndex} is out of range. It must be between 0 and 7."
+        if endPointIndex < 0 || endPointIndex > 7 then
+            fail $"Box.GetLine: endPointIndex {endPointIndex} is out of range. It must be between 0 and 7."
+        if startPointIndex = endPointIndex then
+            fail $"Box.GetLine: startPointIndex and endPointIndex are both {startPointIndex}. They must be different."
+        Line3D(cornerCoord startPointIndex b.OriginX b.XaxisX b.YaxisX b.ZaxisX,
+               cornerCoord startPointIndex b.OriginY b.XaxisY b.YaxisY b.ZaxisY,
+               cornerCoord startPointIndex b.OriginZ b.XaxisZ b.YaxisZ b.ZaxisZ,
+               cornerCoord endPointIndex   b.OriginX b.XaxisX b.YaxisX b.ZaxisX,
+               cornerCoord endPointIndex   b.OriginY b.XaxisY b.YaxisY b.ZaxisY,
+               cornerCoord endPointIndex   b.OriginZ b.XaxisZ b.YaxisZ b.ZaxisZ)
+
+    /// Returns the line from the corner point at the start index to the corner point at the end index of the box.
+    /// Any two different indices from 0 to 7 are valid.
+    static member inline getLine (startPointIndex:int) (endPointIndex:int) (b:Box) : Line3D =
+        b.GetLine(startPointIndex, endPointIndex)
+
+
     /// <summary>Returns the 12 edges of this box as an array of 12 Lines.
     /// Pairs in this order:
     /// 0-1, 1-2, 3-2, 0-3, 0-4, 1-5, 2-6, 3-7, 4-5, 5-6, 7-6, 4-7
@@ -2916,6 +2981,16 @@ type Box =
 
     // #endregion
     // #region Obsolete
+
+    /// Obsolete name. Same as b.GetPnt.
+    [<Obsolete("Use GetPnt instead.")>]
+    member b.GetPoint (pointIndex:int) : Pnt =
+        b.GetPnt pointIndex
+
+    /// Obsolete name. Same as Box.getPnt.
+    [<Obsolete("Use Box.getPnt instead.")>]
+    static member inline getPoint (pointIndex:int) (b:Box) : Pnt =
+        b.GetPnt pointIndex
 
     [<Obsolete("This is actually the volume, also this does not scale proportionally, use .Volume")>]
     member inline r.AreaSq : float =
