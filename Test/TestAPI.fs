@@ -2116,6 +2116,7 @@ module BoxAPI =
     let (_:Box) = Box.expandRel 0.1 box
     let (_:Box) = Box.expandRelXYZ 0.1 0.2 0.3 box
     let (_:Box) = Box.expandXYZ 1.0 2.0 3.0 box
+    let (_:Box) = Box.offset 1.0 2.0 3.0 4.0 5.0 6.0 box
     let (_:bool) = Box.contains (Pnt(5., 2.5, 1.5)) box
 
     // Static members - Comparison
