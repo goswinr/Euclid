@@ -88,11 +88,9 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// Gets the x coordinate of the 2D point at the given pointIndex in the list of points.
     /// (this gets XYs.[pointIndex * 2] from the internal flat list of x and y coordinates )
     member _.GetX (pointIndex:int) : float =
-        #if DEBUG || CHECKED_EUCLID
         let len = xys.Count
         if pointIndex < 0 || pointIndex > len / 2 - 1 then
             failPointIndex "GetX" pointIndex xys
-        #endif
         xys.[pointIndex * 2]
 
     /// Gets the x coordinate of the 2D point at the given pointIndex in the list of points.
@@ -103,11 +101,9 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// Gets the y coordinate of the 2D point at the given pointIndex in the list of points.
     /// (this gets XYs.[pointIndex * 2 + 1] from the internal flat list of x and y coordinates )
     member _.GetY (pointIndex:int) : float =
-        #if DEBUG || CHECKED_EUCLID
         let len = xys.Count
         if pointIndex < 0 || pointIndex > len / 2 - 1 then
             failPointIndex "GetY" pointIndex xys
-        #endif
         xys.[pointIndex * 2 + 1]
 
     /// Gets the y coordinate of the 2D point at the given pointIndex in the list of points.
@@ -118,11 +114,9 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// Gets the 2D point at the given pointIndex in the list of points.
     /// (this gets Pt(XYs.[pointIndex * 2], XYs.[pointIndex * 2 + 1]) from the internal flat list of x and y coordinates )
     member p.GetPt (pointIndex:int) : Pt =
-        #if DEBUG || CHECKED_EUCLID
         let len = xys.Count
         if pointIndex < 0 || pointIndex > len / 2 - 1 then
             failPointIndex "GetPt" pointIndex xys
-        #endif
         getPt pointIndex xys
 
     /// Gets the 2D point at the given pointIndex in the list of points.
@@ -133,11 +127,9 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// Sets the 2D point at the given pointIndex in the list of points.
     /// (this sets XYs.[pointIndex * 2] and XYs.[pointIndex * 2 + 1] in the internal flat list of x and y coordinates )
     member p.SetPt (pointIndex:int, pt:Pt) : unit =
-        #if DEBUG || CHECKED_EUCLID
         let len = xys.Count
         if pointIndex < 0 || pointIndex > len / 2 - 1 then
             failPointIndex "SetPt" pointIndex xys
-        #endif
         setCoordXY pointIndex pt.X pt.Y xys
 
     /// Sets the 2D point at the given pointIndex in the list of points.
@@ -150,11 +142,9 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// Raises an error if the pointIndex is out of range.
     /// (this sets XYs.[pointIndex * 2] and XYs.[pointIndex * 2 + 1] in the internal flat list of x and y coordinates )
     member p.SetPtXYClosed (pointIndex:int, x:float, y:float) : unit =
-        #if DEBUG || CHECKED_EUCLID
         let len = xys.Count
         if pointIndex < 0 || pointIndex > len / 2 - 1 then
             failPointIndex "SetPtXYClosed" pointIndex xys
-        #endif
         let wasClosed = p.IsClosed
         if wasClosed && pointIndex = 0 then
             setCoordXY (p.PointCount-1) x y xys
@@ -173,11 +163,9 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// NOTE: setting the first or last point on a closed Polyline2D might open it.
     /// (this sets XYs.[pointIndex * 2] and XYs.[pointIndex * 2 + 1] in the internal flat list of x and y coordinates )
     member p.SetPtXY (pointIndex:int, x:float, y:float) : unit =
-        #if DEBUG || CHECKED_EUCLID
         let len = xys.Count
         if pointIndex < 0 || pointIndex > len / 2 - 1 then
             failPointIndex "SetPtXY" pointIndex xys
-        #endif
         setCoordXY pointIndex x y xys
 
     /// Sets the x and y coordinates of the 2D point at the given pointIndex in the list of points.

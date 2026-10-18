@@ -260,11 +260,9 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// Gets the x coordinate of the 3D point at the given pointIndex in the list of points.
     /// (this gets XYZs.[pointIndex * 3] from the internal flat list of x, y, and z coordinates )
     member _.GetX (pointIndex:int) : float =
-        #if DEBUG || CHECKED_EUCLID
         let len = xyzs.Count
         if pointIndex < 0 || pointIndex > len / 3 - 1 then
             failPointIndex "GetX" pointIndex xyzs
-        #endif
         xyzs.[pointIndex * 3]
 
     /// Gets the x coordinate of the 3D point at the given pointIndex in the list of points.
@@ -275,11 +273,9 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// Gets the y coordinate of the 3D point at the given pointIndex in the list of points.
     /// (this gets XYZs.[pointIndex * 3 + 1] from the internal flat list of x, y, and z coordinates )
     member _.GetY (pointIndex:int) : float =
-        #if DEBUG || CHECKED_EUCLID
         let len = xyzs.Count
         if pointIndex < 0 || pointIndex > len / 3 - 1 then
             failPointIndex "GetY" pointIndex xyzs
-        #endif
         xyzs.[pointIndex * 3 + 1]
 
     /// Gets the y coordinate of the 3D point at the given pointIndex in the list of points.
@@ -291,11 +287,9 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// Gets the z coordinate of the 3D point at the given pointIndex in the list of points.
     /// (this gets XYZs.[pointIndex * 3 + 2] from the internal flat list of x, y, and z coordinates )
     member _.GetZ (pointIndex:int) : float =
-        #if DEBUG || CHECKED_EUCLID
         let len = xyzs.Count
         if pointIndex < 0 || pointIndex > len / 3 - 1 then
             failPointIndex "GetZ" pointIndex xyzs
-        #endif
         xyzs.[pointIndex * 3 + 2]
 
     /// Gets the z coordinate of the 3D point at the given pointIndex in the list of points.
@@ -307,11 +301,9 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// Gets the 3D point at the given pointIndex in the list of points.
     /// (this gets Pnt(XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1], XYZs.[pointIndex * 3 + 2]) from the internal flat list of x, y, and z coordinates )
     member p.GetPnt (pointIndex:int) : Pnt =
-        #if DEBUG || CHECKED_EUCLID
         let len = xyzs.Count
         if pointIndex < 0 || pointIndex > len / 3 - 1 then
             failPointIndex "GetPnt" pointIndex xyzs
-        #endif
         getPt pointIndex xyzs
 
     /// Gets the 3D point at the given pointIndex in the list of points.
@@ -322,13 +314,11 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
 
     /// Sets the 3D point at the given pointIndex in the list of points.
     /// (this sets XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1], and XYZs.[pointIndex * 3 + 2] in the internal flat list of x, y, and z coordinates )
-    member p.SetPnt (pointIndex:int,pnt:Pnt) : unit =
-        #if DEBUG || CHECKED_EUCLID
+    member _.SetPnt (pointIndex:int,pnt:Pnt) : unit =
         let len = xyzs.Count
         if pointIndex < 0 || pointIndex > len / 3 - 1 then
             failPointIndex "SetPnt" pointIndex xyzs
-        #endif
-        p.SetPntXYZ (pointIndex, pnt.X, pnt.Y, pnt.Z)
+        setCoordXYZ pointIndex pnt.X pnt.Y pnt.Z xyzs
 
     /// Sets the 3D point at the given pointIndex in the list of points.
     /// (this sets XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1], and XYZs.[pointIndex * 3 + 2] in the internal flat list of x, y, and z coordinates )
@@ -340,11 +330,9 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// Raises an error if the pointIndex is out of range.
     /// (this sets XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1], and XYZs.[pointIndex * 3 + 2] in the internal flat list of x, y, and z coordinates )
     member p.SetPntXYZClosed (pointIndex:int, x:float, y:float, z:float): unit =
-        #if DEBUG || CHECKED_EUCLID
         let len = xyzs.Count
         if pointIndex < 0 || pointIndex > len / 3 - 1 then
             failPointIndex "SetPntXYZClosed" pointIndex xyzs
-        #endif
         let wasClosed = p.IsClosed
         if wasClosed && pointIndex = 0 then
             setCoordXYZ (p.PointCount-1) x y z xyzs
@@ -363,11 +351,9 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// NOTE: setting the first or last point on a closed Polyline3D might open it.
     /// (this sets XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1], and XYZs.[pointIndex * 3 + 2] in the internal flat list of x, y, and z coordinates )
     member p.SetPntXYZ (pointIndex:int, x:float, y:float, z:float) : unit =
-        #if DEBUG || CHECKED_EUCLID
         let len = xyzs.Count
         if pointIndex < 0 || pointIndex > len / 3 - 1 then
             failPointIndex "SetPntXYZ" pointIndex xyzs
-        #endif
         setCoordXYZ pointIndex x y z xyzs
 
     /// Sets the x, y, and z coordinates of the 3D point at the given pointIndex in the list of points.

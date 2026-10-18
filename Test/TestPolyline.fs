@@ -1024,6 +1024,16 @@ let testsComprehensive =
                 Expect.throws (fun () -> pl.SetPt (-1, Pt(0.,0.))) "negative index"
                 Expect.throws (fun () -> pl.SetPt (2, Pt(0.,0.))) "too large index"
             }
+            test "point getters and setters throw on a pointIndex out of range" {
+                let pl = Polyline2D.createFromPts [Pt(3.,4.); Pt(6.,4.); Pt(6.,8.)]
+                for i in [ -1; pl.PointCount ] do
+                    Expect.throws (fun () -> pl.GetX i |> ignore) $"GetX {i}"
+                    Expect.throws (fun () -> pl.GetY i |> ignore) $"GetY {i}"
+                    Expect.throws (fun () -> pl.GetPt i |> ignore) $"GetPt {i}"
+                    Expect.throws (fun () -> pl.SetPtXY (i, 0., 0.)) $"SetPtXY {i}"
+                    Expect.throws (fun () -> pl.SetPtXYClosed (i, 0., 0.)) $"SetPtXYClosed {i}"
+                "point count unchanged" |> Expect.equal pl.PointCount 3
+            }
         ]
 
         testList "SecondPoint and SecondLastPoint" [

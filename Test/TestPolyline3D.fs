@@ -212,6 +212,19 @@ let tests =
             "last point also updated" |> Expect.isTrue (eqPnt pl.LastPoint (Pnt(5,5,5)))
         }
 
+        test "point getters and setters throw on a pointIndex out of range" {
+            let pl = Polyline3D.createFromPnts [Pnt(3.,4.,5.); Pnt(6.,4.,5.); Pnt(6.,8.,5.)]
+            for i in [ -1; pl.PointCount ] do
+                Expect.throws (fun () -> pl.GetX i |> ignore) $"GetX {i}"
+                Expect.throws (fun () -> pl.GetY i |> ignore) $"GetY {i}"
+                Expect.throws (fun () -> pl.GetZ i |> ignore) $"GetZ {i}"
+                Expect.throws (fun () -> pl.GetPnt i |> ignore) $"GetPnt {i}"
+                Expect.throws (fun () -> pl.SetPnt (i, Pnt(0.,0.,0.))) $"SetPnt {i}"
+                Expect.throws (fun () -> pl.SetPntXYZ (i, 0., 0., 0.)) $"SetPntXYZ {i}"
+                Expect.throws (fun () -> pl.SetPntXYZClosed (i, 0., 0., 0.)) $"SetPntXYZClosed {i}"
+            "point count unchanged" |> Expect.equal pl.PointCount 3
+        }
+
 
 
         test "ToString works for empty polyline" {
