@@ -94,30 +94,30 @@ type Tria3D =
 
     /// Returns the offset point based on the previous and next normals, the distance and the precomputed cosine (= dot product of nPrev * nNext).
     /// Returns Infinity if the cosine is -1.0 (normals in opposite directions at a 180-degree U-turn).
-    static member inline private offsetPntCore (pt:Pnt) (dist:float) (nPrev:UnitVec) (nNext:UnitVec) (cosine:float) : Pnt =
+    static member inline private offsetPntCore (pnt:Pnt) (dist:float) (nPrev:UnitVec) (nNext:UnitVec) (cosine:float) : Pnt =
         // based on https://www.angusj.com/clipper2/Docs/Trigonometry.htm
-        pt + (nPrev + nNext) * (dist / (1.0 + cosine)) // offset point
+        pnt + (nPrev + nNext) * (dist / (1.0 + cosine)) // offset point
 
 
     /// Returns the capped offset point for a near-180-degree U-turn corner, in the triangle plane around 'perp'.
     /// The exact miter would shoot towards infinity, so the corner is capped at the 179-degree
     /// threshold. The result is scaled by 'dist' and lies on the same side as 'offsetPntCore'.
     /// This is the 3D analog of Tria2D.offsetPtUTurn ('perp' need not be unit length).
-    static member inline private offsetPntUTurn (pt:Pnt) (dist:float) (nPrev:UnitVec) (nNext:UnitVec) (perp:Vec) : Pnt =
+    static member inline private offsetPntUTurn (pnt:Pnt) (dist:float) (nPrev:UnitVec) (nNext:UnitVec) (perp:Vec) : Pnt =
         let cosHalf = sqrt ((1.0 + float Cosine.``179.0``) / 2.0) // cosine of half the threshold angle = cosine of 89.5 degrees
         let f = 0.5 * dist / cosHalf // hypotenuse = adjacent / cos(angle); *0.5 because the summed direction length is almost 2.0
         let dirPrev = Vec.cross (perp, nPrev) |> Vec.withLength f // 90-degree rotation of nPrev in the triangle plane
         let dirNext = Vec.cross (nNext, perp) |> Vec.withLength f // 90-degree rotation of nNext in the triangle plane
-        pt + dirPrev + dirNext
+        pnt + dirPrev + dirNext
 
 
     /// Returns the offset point based on the previous and next normals, the distance and the precomputed cosine (= dot product of nPrev * nNext).
     /// Checks for 180 degrees U-turns and caps them at 179 degrees.
-    static member inline private offsetPntCoreSafe (pt:Pnt) (dist:float) (nPrev:UnitVec) (nNext:UnitVec) (perp:Vec) (cosine:float) : Pnt =
+    static member inline private offsetPntCoreSafe (pnt:Pnt) (dist:float) (nPrev:UnitVec) (nNext:UnitVec) (perp:Vec) (cosine:float) : Pnt =
         if withMeasure cosine < Cosine.``179.0`` then // check for 180 degrees U-turns, (0.0 degrees are handled fine)
-            Tria3D.offsetPntUTurn pt dist nPrev nNext perp
+            Tria3D.offsetPntUTurn pnt dist nPrev nNext perp
         else
-            Tria3D.offsetPntCore pt dist nPrev nNext cosine
+            Tria3D.offsetPntCore pnt dist nPrev nNext cosine
 
 
     /// Offsets one point by a given distance.

@@ -606,11 +606,11 @@ module AutoOpenUnitVec =
                 fail2 "UnitVec.createFromMembersxyz" vec e  |> unbox // unbox to make type checker happy
 
         /// Create 3D unit-vector from 3D point. Does the unitizing too.
-        static member inline createFromPnt (pt:Pnt) : UnitVec =
-            let l = sqrt (pt.X*pt.X + pt.Y*pt.Y + pt.Z*pt.Z)
-            if isTooTiny(l) then failTooSmall "UnitVec.createFromPnt" pt
+        static member inline createFromPnt (pnt:Pnt) : UnitVec =
+            let l = sqrt (pnt.X*pnt.X + pnt.Y*pnt.Y + pnt.Z*pnt.Z)
+            if isTooTiny(l) then failTooSmall "UnitVec.createFromPnt" pnt
             let li = 1. / l
-            UnitVec.createUnchecked(li*pt.X, li*pt.Y, li*pt.Z)
+            UnitVec.createUnchecked(li*pnt.X, li*pnt.Y, li*pnt.Z)
 
         /// Create 3D unit-vector from 3D vector. Does the unitizing too.
         static member inline createFromVec (v:Vec) : UnitVec =
@@ -758,9 +758,9 @@ module AutoOpenUnitVec =
         // #endregion
         // #region Rotate
 
-        /// Rotate by Quaternion around Origin
-        static member inline rotate (q:Quaternion) (pt:UnitVec) : UnitVec =
-            pt *** q  // operator * is defined in Quaternion.fs
+        /// Rotate the 3D unit-vector by Quaternion around the Origin
+        static member inline rotate (q:Quaternion) (uVec:UnitVec) : UnitVec =
+            uVec *** q  // operator * is defined in Quaternion.fs
 
         // Note: there is intentionally no UnitVec.rotateWithCenter: a vector is only a direction with
         // magnitude, it has no location, so rotating it around a center point is not a valid operation

@@ -202,7 +202,7 @@ module XLine3D =
     type ClPnts =
 
         /// The lines intersect. Contains the intersection point.
-        | Intersect of pt:Pnt
+        | Intersect of pnt:Pnt
 
         /// The lines are skew (not parallel, not coplanar). Contains the closest points on both lines and the squared distance between them.
         | Skew of ptA:Pnt * ptB:Pnt * squareDist:float

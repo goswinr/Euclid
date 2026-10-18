@@ -16,89 +16,89 @@ module AutoOpenPnt =
         member inline p.IsInvalid : bool =
             isNanInfinity p.X || isNanInfinity p.Y || isNanInfinity p.Z
 
-        /// Same as pt.IsInvalid.
-        static member inline isInvalid (pt:Pnt) : bool =
-            pt.IsInvalid
+        /// Same as pnt.IsInvalid.
+        static member inline isInvalid (pnt:Pnt) : bool =
+            pnt.IsInvalid
 
         /// Returns a boolean indicating whether X, Y and Z are valid (not NaN or Infinity).
         member inline p.IsValid : bool =
             not p.IsInvalid
 
         /// Returns a boolean indicating whether X, Y and Z are valid (not NaN or Infinity).
-        static member inline isValid (pt:Pnt) : bool =
-            pt.IsValid
+        static member inline isValid (pnt:Pnt) : bool =
+            pnt.IsValid
 
         /// Returns the 3D point as 3D vector.
         member inline p.AsVec : Vec =
             Vec(p.X, p.Y, p.Z)
 
         /// Returns the 3D point as 3D vector.
-        static member inline asVec (pt:Pnt) : Vec =
-            pt.AsVec
+        static member inline asVec (pnt:Pnt) : Vec =
+            pnt.AsVec
 
         /// Returns the 3D point as 2D point.
         member inline p.AsPt : Pt =
             Pt(p.X, p.Y)
 
         /// Returns the 3D point as 2D point.
-        static member inline asPt (pt:Pnt) : Pt =
-            pt.AsPt
+        static member inline asPt (pnt:Pnt) : Pt =
+            pnt.AsPt
 
         /// Returns the 3D point as 2D vector, discarding the Z value.
         member inline p.AsVc : Vc =
             Vc(p.X, p.Y)
 
         /// Returns the 3D point as 2D vector, discarding the Z value.
-        static member inline asVc (pt:Pnt) : Vc =
-            pt.AsVc
+        static member inline asVc (pnt:Pnt) : Vc =
+            pnt.AsVc
 
         /// Returns a boolean indicating whether X, Y and Z are exactly 0.0.
-        member inline pt.IsOrigin : bool =
-            pt.X = 0.0 && pt.Y = 0.0 && pt.Z = 0.0
+        member inline pnt.IsOrigin : bool =
+            pnt.X = 0.0 && pnt.Y = 0.0 && pnt.Z = 0.0
 
         /// Returns a boolean indicating whether X, Y and Z are exactly 0.0.
-        static member inline isOrigin (pt:Pnt) : bool =
-            pt.IsOrigin
+        static member inline isOrigin (pnt:Pnt) : bool =
+            pnt.IsOrigin
 
         /// Returns a boolean indicating if any of X, Y and Z is not exactly 0.0.
         member inline p.IsNotOrigin : bool =
             p.X <> 0.0 || p.Y <> 0.0 || p.Z <> 0.0
 
         /// Returns a boolean indicating if any of X, Y and Z is not exactly 0.0.
-        static member inline isNotOrigin (pt:Pnt) : bool =
-            pt.IsNotOrigin
+        static member inline isNotOrigin (pnt:Pnt) : bool =
+            pnt.IsNotOrigin
 
         /// Returns a boolean indicating whether the absolute value of X, Y and Z is each less than the given tolerance.
-        member inline pt.IsAlmostOrigin tol : bool =
-            abs pt.X < tol && abs pt.Y < tol && abs pt.Z < tol
+        member inline pnt.IsAlmostOrigin tol : bool =
+            abs pnt.X < tol && abs pnt.Y < tol && abs pnt.Z < tol
 
         /// Returns a boolean indicating whether the absolute value of X, Y and Z is each less than the given tolerance.
-        static member inline isAlmostOrigin tol (pt:Pnt) : bool =
-            pt.IsAlmostOrigin tol
+        static member inline isAlmostOrigin tol (pnt:Pnt) : bool =
+            pnt.IsAlmostOrigin tol
 
         /// Returns new 3D point with new X coordinate, Y and Z stay the same.
-        member inline pt.WithX x : Pnt =
-            Pnt (x, pt.Y, pt.Z)
+        member inline pnt.WithX x : Pnt =
+            Pnt (x, pnt.Y, pnt.Z)
 
         /// Returns new 3D point with new X coordinate, Y and Z stay the same.
-        static member inline withX x (pt:Pnt) : Pnt =
-            Pnt(x, pt.Y, pt.Z)
+        static member inline withX x (pnt:Pnt) : Pnt =
+            Pnt(x, pnt.Y, pnt.Z)
 
         /// Returns a new 3D point with new Y coordinate, X and Z stay the same.
-        member inline pt.WithY y : Pnt =
-            Pnt (pt.X, y, pt.Z)
+        member inline pnt.WithY y : Pnt =
+            Pnt (pnt.X, y, pnt.Z)
 
         /// Returns a new 3D point with new Y coordinate, X and Z stay the same.
-        static member inline withY y (pt:Pnt) : Pnt =
-            Pnt(pt.X, y, pt.Z)
+        static member inline withY y (pnt:Pnt) : Pnt =
+            Pnt(pnt.X, y, pnt.Z)
 
         /// Returns a new 3D point with new Z coordinate, X and Y stay the same.
-        member inline pt.WithZ z : Pnt =
-            Pnt (pt.X, pt.Y, z)
+        member inline pnt.WithZ z : Pnt =
+            Pnt (pnt.X, pnt.Y, z)
 
         /// Returns a new 3D point with new Z coordinate, X and Y stay the same.
-        static member inline withZ z (pt:Pnt) : Pnt =
-            Pnt(pt.X, pt.Y, z)
+        static member inline withZ z (pnt:Pnt) : Pnt =
+            Pnt(pnt.X, pnt.Y, z)
 
 
         /// Returns the distance between two 3D points.
@@ -168,46 +168,46 @@ module AutoOpenPnt =
 
 
         /// Returns the distance from Origin (0, 0, 0)
-        member inline pt.DistanceFromOrigin : float =
-            sqrt (pt.X*pt.X + pt.Y*pt.Y + pt.Z*pt.Z)
+        member inline pnt.DistanceFromOrigin : float =
+            sqrt (pnt.X*pnt.X + pnt.Y*pnt.Y + pnt.Z*pnt.Z)
 
         /// Returns the distance from Origin (0, 0, 0)
-        static member inline distanceFromOrigin (pt:Pnt) : float =
-            pt.DistanceFromOrigin
+        static member inline distanceFromOrigin (pnt:Pnt) : float =
+            pnt.DistanceFromOrigin
 
         /// Returns the squared distance from Origin (0, 0, 0)
-        member inline pt.SqDistanceFromOrigin : float =
-            pt.X*pt.X + pt.Y*pt.Y + pt.Z*pt.Z
+        member inline pnt.SqDistanceFromOrigin : float =
+            pnt.X*pnt.X + pnt.Y*pnt.Y + pnt.Z*pnt.Z
 
         /// Returns the squared distance from Origin (0, 0, 0)
-        static member inline sqDistanceFromOrigin (pt:Pnt) : float =
-            pt.SqDistanceFromOrigin
+        static member inline sqDistanceFromOrigin (pnt:Pnt) : float =
+            pnt.SqDistanceFromOrigin
 
         /// Returns the projected distance from Origin (0, 0, 0). Ignoring the Z component.
-        member inline pt.DistanceInXYFromOrigin : float =
-            sqrt (pt.X*pt.X + pt.Y*pt.Y)
+        member inline pnt.DistanceInXYFromOrigin : float =
+            sqrt (pnt.X*pnt.X + pnt.Y*pnt.Y)
 
         /// Returns the projected distance from Origin (0, 0, 0). Ignoring the Z component.
-        static member inline distanceInXYFromOrigin (pt:Pnt) : float =
-            pt.DistanceInXYFromOrigin
+        static member inline distanceInXYFromOrigin (pnt:Pnt) : float =
+            pnt.DistanceInXYFromOrigin
 
         /// Returns the projected squared distance from Origin (0, 0, 0). Ignoring the Z component.
-        member inline pt.SqDistanceInXYFromOrigin : float =
-            pt.X*pt.X + pt.Y*pt.Y
+        member inline pnt.SqDistanceInXYFromOrigin : float =
+            pnt.X*pnt.X + pnt.Y*pnt.Y
 
-        /// Same as pt.SqDistanceInXYFromOrigin.
-        static member inline sqDistanceInXYFromOrigin (pt:Pnt) : float =
-            pt.SqDistanceInXYFromOrigin
-
-        /// Returns new 3D point with given distance from Origin by scaling it up or down.
-        member inline pt.WithDistanceFromOrigin (l:float) : Pnt =
-            let d = pt.DistanceFromOrigin
-            if isTooTiny d then failTooSmall "Pnt.WithDistanceFromOrigin" pt
-            pt * (l/d)
+        /// Same as pnt.SqDistanceInXYFromOrigin.
+        static member inline sqDistanceInXYFromOrigin (pnt:Pnt) : float =
+            pnt.SqDistanceInXYFromOrigin
 
         /// Returns new 3D point with given distance from Origin by scaling it up or down.
-        static member inline withDistanceFromOrigin (l:float) (pt:Pnt) : Pnt =
-            pt.WithDistanceFromOrigin l
+        member inline pnt.WithDistanceFromOrigin (l:float) : Pnt =
+            let d = pnt.DistanceFromOrigin
+            if isTooTiny d then failTooSmall "Pnt.WithDistanceFromOrigin" pnt
+            pnt * (l/d)
+
+        /// Returns new 3D point with given distance from Origin by scaling it up or down.
+        static member inline withDistanceFromOrigin (l:float) (pnt:Pnt) : Pnt =
+            pnt.WithDistanceFromOrigin l
 
         /// Returns the Diamond Angle from this point to another point projected in X-Y plane.
         /// The diamond angle is always positive and in the range of 0.0 to 4.0 (for 360 degrees)
@@ -390,20 +390,20 @@ module AutoOpenPnt =
 
         /// Project point to World X-Y plane.
         /// Use Pnt.asPt to convert to a 2D point instance.
-        static member inline projectToXYPlane (pt:Pnt) : Pnt =
-            Pnt(pt.X, pt.Y, 0.0)
+        static member inline projectToXYPlane (pnt:Pnt) : Pnt =
+            Pnt(pnt.X, pnt.Y, 0.0)
 
         /// Gets the X value of 3D point.
-        static member inline getX (pt:Pnt) : float =
-            pt.X
+        static member inline getX (pnt:Pnt) : float =
+            pnt.X
 
         /// Gets the Y value of 3D point.
-        static member inline getY (pt:Pnt) : float =
-            pt.Y
+        static member inline getY (pnt:Pnt) : float =
+            pnt.Y
 
         /// Gets the Z value of 3D point.
-        static member inline getZ (pt:Pnt) : float =
-            pt.Z
+        static member inline getZ (pnt:Pnt) : float =
+            pnt.Z
 
         /// Adds two 3D points and return new 3D point.
         static member inline add (a:Pnt) (b:Pnt) : Pnt =
@@ -418,28 +418,28 @@ module AutoOpenPnt =
             Pnt((a.X + b.X) * 0.5, (a.Y + b.Y) * 0.5, (a.Z + b.Z) * 0.5)
 
         /// Scale a 3D point by a scalar and return new 3D point.
-        static member inline scale (f:float) (pt:Pnt) : Pnt =
-            pt*f
+        static member inline scale (f:float) (pnt:Pnt) : Pnt =
+            pnt*f
 
         /// Move point 3D by vector. Same as Pnt.move.
-        static member inline translate (shift:Vec) (pt:Pnt) : Pnt =
-            pt + shift
+        static member inline translate (shift:Vec) (pnt:Pnt) : Pnt =
+            pnt + shift
 
         /// Move point 3D by vector. Same as Pnt.translate.
-        static member inline move (shift:Vec) (pt:Pnt) : Pnt =
-            pt + shift
+        static member inline move (shift:Vec) (pnt:Pnt) : Pnt =
+            pnt + shift
 
         /// Add float to X component of a 3D point and return new 3D point.
-        static member inline moveX (x:float) (pt:Pnt) : Pnt =
-            Pnt (pt.X+x, pt.Y, pt.Z)
+        static member inline moveX (x:float) (pnt:Pnt) : Pnt =
+            Pnt (pnt.X+x, pnt.Y, pnt.Z)
 
         /// Add float to Y component of a 3D point and return new 3D point.
-        static member inline moveY (y:float) (pt:Pnt) : Pnt =
-            Pnt (pt.X, pt.Y+y, pt.Z)
+        static member inline moveY (y:float) (pnt:Pnt) : Pnt =
+            Pnt (pnt.X, pnt.Y+y, pnt.Z)
 
         /// Add float to Z component of a 3D point and return new 3D point.
-        static member inline moveZ (z:float) (pt:Pnt) : Pnt =
-            Pnt (pt.X, pt.Y, pt.Z+z)
+        static member inline moveZ (z:float) (pnt:Pnt) : Pnt =
+            Pnt (pnt.X, pnt.Y, pnt.Z+z)
 
         /// Returns the horizontal distance between two 3D points(ignoring their Z Value)
         static member inline distanceInXY (a:Pnt) (b:Pnt) : float =
@@ -536,19 +536,19 @@ module AutoOpenPnt =
 
         /// Snaps to a point if it is within the snapDistance.
         /// otherwise returns the original point.
-        static member inline snapIfClose (snapDistance:float) (snapTo:Pnt) (pt:Pnt) : Pnt =
-            let v = snapTo-pt
-            if v.Length < snapDistance then snapTo else pt
+        static member inline snapIfClose (snapDistance:float) (snapTo:Pnt) (pnt:Pnt) : Pnt =
+            let v = snapTo-pnt
+            if v.Length < snapDistance then snapTo else pnt
 
         /// Snaps the points coordinate to the given precision.
         /// e.g. snap 0.1 Pnt(0.123, 0.456, 0) -> Pnt(0.1, 0.5, 0)
         /// e.g. snap 10  Pnt(3    , 19   , 0) -> Pnt(0  , 20 , 0)
         /// does: (Math.Round (x/precision)) * precision
-        static member inline snap (precision:float) (pt:Pnt) : Pnt =
+        static member inline snap (precision:float) (pnt:Pnt) : Pnt =
             if isTooTiny (precision) then fail $"Pnt.snap: precision too small or negative:{precision}"
-            Pnt( (Math.Round (pt.X/precision)) * precision,
-                 (Math.Round (pt.Y/precision)) * precision,
-                 (Math.Round (pt.Z/precision)) * precision)
+            Pnt( (Math.Round (pnt.X/precision)) * precision,
+                 (Math.Round (pnt.Y/precision)) * precision,
+                 (Math.Round (pnt.Z/precision)) * precision)
 
         /// Every 3D line has a normal vector in the X-Y plane.
         /// Rotated counter-clockwise in top view.
@@ -567,15 +567,15 @@ module AutoOpenPnt =
         // #region Rotate
 
         /// Rotate by Quaternion around Origin
-        static member inline rotate (q:Quaternion) (pt:Pnt) : Pnt =
-            pt *** q  // operator * is defined in Quaternion.fs
+        static member inline rotate (q:Quaternion) (pnt:Pnt) : Pnt =
+            pnt *** q  // operator * is defined in Quaternion.fs
 
         /// Rotate by Quaternion around given center point.
-        static member inline rotateWithCenter (cen:Pnt) (q:Quaternion) (pt:Pnt) : Pnt =
+        static member inline rotateWithCenter (cen:Pnt) (q:Quaternion) (pnt:Pnt) : Pnt =
             // adapted from https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
-            let x = pt.X - cen.X
-            let y = pt.Y - cen.Y
-            let z = pt.Z - cen.Z
+            let x = pnt.X - cen.X
+            let y = pnt.Y - cen.Y
+            let z = pnt.Z - cen.Z
             let qx = q.X
             let qy = q.Y
             let qz = q.Z
@@ -605,56 +605,56 @@ module AutoOpenPnt =
             Pnt (r.Cos*p.X - r.Sin*p.Y, r.Sin*p.X + r.Cos*p.Y, p.Z)
 
         /// Rotate the 3D point around a center 3D point and an X-aligned axis, from Y to Z-axis, counter-clockwise looking from right.
-        static member rotateOnXWithCenter (cen:Pnt) (r:Rotation2D) (pt:Pnt) : Pnt =
-            let x = pt.X - cen.X
-            let y = pt.Y - cen.Y
-            let z = pt.Z - cen.Z
+        static member rotateOnXWithCenter (cen:Pnt) (r:Rotation2D) (pnt:Pnt) : Pnt =
+            let x = pnt.X - cen.X
+            let y = pnt.Y - cen.Y
+            let z = pnt.Z - cen.Z
             Pnt  (  x                 + cen.X,
                     r.Cos*y - r.Sin*z + cen.Y,
                     r.Sin*y + r.Cos*z + cen.Z)
 
         /// Rotate the 3D point around a center point and a Y aligned axis, from Z to X-axis, counter-clockwise looking from back.
-        static member rotateOnYWithCenter (cen:Pnt) (r:Rotation2D) (pt:Pnt) : Pnt =
-            let x = pt.X - cen.X
-            let y = pt.Y - cen.Y
-            let z = pt.Z - cen.Z
+        static member rotateOnYWithCenter (cen:Pnt) (r:Rotation2D) (pnt:Pnt) : Pnt =
+            let x = pnt.X - cen.X
+            let y = pnt.Y - cen.Y
+            let z = pnt.Z - cen.Z
             Pnt (   r.Sin*z + r.Cos*x + cen.X,
                     y                 + cen.Y,
                     r.Cos*z - r.Sin*x + cen.Z)
 
         /// Rotate the 3D point around a center point and a Z aligned axis, from X to Y-axis, counter-clockwise looking from top.
-        static member rotateOnZWithCenter (cen:Pnt) (r:Rotation2D) (pt:Pnt) : Pnt =
-            let x = pt.X - cen.X
-            let y = pt.Y - cen.Y
-            let z = pt.Z - cen.Z
+        static member rotateOnZWithCenter (cen:Pnt) (r:Rotation2D) (pnt:Pnt) : Pnt =
+            let x = pnt.X - cen.X
+            let y = pnt.Y - cen.Y
+            let z = pnt.Z - cen.Z
             Pnt (   r.Cos*x - r.Sin*y + cen.X,
                     r.Sin*x + r.Cos*y + cen.Y,
                     z                 + cen.Z)
 
         /// Rotate the 3D point in degrees around X-axis, from Y to Z-axis, counter-clockwise looking from right.
-        static member inline rotateOnXDeg (angDegree) (pt:Pnt) : Pnt =
-            Pnt.rotateOnX (Rotation2D.createFromDegrees angDegree) pt
+        static member inline rotateOnXDeg (angDegree) (pnt:Pnt) : Pnt =
+            Pnt.rotateOnX (Rotation2D.createFromDegrees angDegree) pnt
 
         /// Rotate the 3D point in degrees around Y-axis, from Z to X-axis, counter-clockwise looking from back.
-        static member inline rotateOnYDeg (angDegree) (pt:Pnt) : Pnt =
-            Pnt.rotateOnY (Rotation2D.createFromDegrees angDegree) pt
+        static member inline rotateOnYDeg (angDegree) (pnt:Pnt) : Pnt =
+            Pnt.rotateOnY (Rotation2D.createFromDegrees angDegree) pnt
 
         /// Rotate the 3D point in degrees around Z-axis, from X to Y-axis, counter-clockwise looking from top.
-        static member inline rotateOnZDeg (angDegree) (pt:Pnt) : Pnt =
-            Pnt.rotateOnZ (Rotation2D.createFromDegrees angDegree) pt
+        static member inline rotateOnZDeg (angDegree) (pnt:Pnt) : Pnt =
+            Pnt.rotateOnZ (Rotation2D.createFromDegrees angDegree) pnt
 
 
         /// Rotate the 3D point in degrees around center point and an X-aligned axis, from Y to Z-axis, counter-clockwise looking from right.
-        static member inline rotateOnXWithCenterDeg (cen:Pnt) (angDegree) (pt:Pnt) : Pnt =
-            Pnt.rotateOnXWithCenter cen (Rotation2D.createFromDegrees angDegree) pt
+        static member inline rotateOnXWithCenterDeg (cen:Pnt) (angDegree) (pnt:Pnt) : Pnt =
+            Pnt.rotateOnXWithCenter cen (Rotation2D.createFromDegrees angDegree) pnt
 
         /// Rotate the 3D point in degrees around center point and a Y aligned axis, from Z to X-axis, counter-clockwise looking from back.
-        static member inline rotateOnYWithCenterDeg (cen:Pnt) (angDegree) (pt:Pnt) : Pnt =
-            Pnt.rotateOnYWithCenter cen (Rotation2D.createFromDegrees angDegree) pt
+        static member inline rotateOnYWithCenterDeg (cen:Pnt) (angDegree) (pnt:Pnt) : Pnt =
+            Pnt.rotateOnYWithCenter cen (Rotation2D.createFromDegrees angDegree) pnt
 
         /// Rotate the 3D point in degrees around center point and a Z aligned axis, from X to Y-axis, counter-clockwise looking from top.
-        static member inline rotateOnZWithCenterDeg (cen:Pnt) (angDegree) (pt:Pnt) : Pnt =
-            Pnt.rotateOnZWithCenter cen (Rotation2D.createFromDegrees angDegree) pt
+        static member inline rotateOnZWithCenterDeg (cen:Pnt) (angDegree) (pnt:Pnt) : Pnt =
+            Pnt.rotateOnZWithCenter cen (Rotation2D.createFromDegrees angDegree) pnt
 
 
 
@@ -748,18 +748,18 @@ module AutoOpenPnt =
 
         /// Obsolete name. Same as Pnt.withX.
         [<Obsolete("Use Pnt.withX instead. This returns a new 3D point, it does not mutate, so the 'with' prefix is clearer.")>]
-        static member inline setX (x:float) (pt:Pnt) : Pnt =
-            Pnt(x, pt.Y, pt.Z)
+        static member inline setX (x:float) (pnt:Pnt) : Pnt =
+            Pnt(x, pnt.Y, pnt.Z)
 
         /// Obsolete name. Same as Pnt.withY.
         [<Obsolete("Use Pnt.withY instead. This returns a new 3D point, it does not mutate, so the 'with' prefix is clearer.")>]
-        static member inline setY (y:float) (pt:Pnt) : Pnt =
-            Pnt(pt.X, y, pt.Z)
+        static member inline setY (y:float) (pnt:Pnt) : Pnt =
+            Pnt(pnt.X, y, pnt.Z)
 
         /// Obsolete name. Same as Pnt.withZ.
         [<Obsolete("Use Pnt.withZ instead. This returns a new 3D point, it does not mutate, so the 'with' prefix is clearer.")>]
-        static member inline setZ (z:float) (pt:Pnt) : Pnt =
-            Pnt(pt.X, pt.Y, z)
+        static member inline setZ (z:float) (pnt:Pnt) : Pnt =
+            Pnt(pnt.X, pnt.Y, z)
 
         /// Obsolete typo. Same as p.IsInvalid.
         [<Obsolete("Typo, use IsInvalid instead.")>]
@@ -768,30 +768,30 @@ module AutoOpenPnt =
 
         /// Obsolete typo. Same as Pnt.isInvalid.
         [<Obsolete("Typo, use isInvalid instead.")>]
-        static member inline isInValid (pt:Pnt) : bool =
-            pt.IsInvalid
+        static member inline isInValid (pnt:Pnt) : bool =
+            pnt.IsInvalid
 
-        /// Obsolete name. Same as pt.SqDistanceInXYFromOrigin.
+        /// Obsolete name. Same as pnt.SqDistanceInXYFromOrigin.
         [<Obsolete("Use SqDistanceInXYFromOrigin instead.")>]
-        member inline pt.DistanceInXYFromOriginSquare : float =
-            pt.SqDistanceInXYFromOrigin
+        member inline pnt.DistanceInXYFromOriginSquare : float =
+            pnt.SqDistanceInXYFromOrigin
 
         /// Obsolete name. Same as Pnt.sqDistanceInXYFromOrigin.
         [<Obsolete("Use sqDistanceInXYFromOrigin instead.")>]
-        static member inline distanceInXYFromOriginSquare (pt:Pnt) : float =
-            pt.SqDistanceInXYFromOrigin
+        static member inline distanceInXYFromOriginSquare (pnt:Pnt) : float =
+            pnt.SqDistanceInXYFromOrigin
 
         [<Obsolete("Use SqDistanceTo instead.")>]
         member inline p.DistanceToSquare (b:Pnt) : float =
             p.SqDistanceTo b
 
         [<Obsolete("Use SqDistanceFromOrigin instead.")>]
-        member inline pt.DistanceFromOriginSquare : float =
-            pt.SqDistanceFromOrigin
+        member inline pnt.DistanceFromOriginSquare : float =
+            pnt.SqDistanceFromOrigin
 
         [<Obsolete("Use sqDistanceFromOrigin instead.")>]
-        static member inline distanceFromOriginSquare (pt:Pnt) : float =
-            pt.SqDistanceFromOrigin
+        static member inline distanceFromOriginSquare (pnt:Pnt) : float =
+            pnt.SqDistanceFromOrigin
 
 
         [<Obsolete("Use .distanceTo or .dist instead.")>]
@@ -803,8 +803,8 @@ module AutoOpenPnt =
             Pnt.sqDistanceTo a b
 
         [<Obsolete("Use .withDistanceFromOrigin instead.")>]
-        static member inline setDistanceFromOrigin f (pt:Pnt) : Pnt =
-            Pnt.withDistanceFromOrigin f pt
+        static member inline setDistanceFromOrigin f (pnt:Pnt) : Pnt =
+            Pnt.withDistanceFromOrigin f pnt
 
         [<Obsolete("Use .distanceInXY instead.")>]
         static member inline distanceToXY (a:Pnt) (b:Pnt) : float =
@@ -825,60 +825,60 @@ module AutoOpenPnt =
             fromPt +  shift, toPt + shift
 
         [<Obsolete("Use Pnt.rotateOnXDeg instead.")>]
-        static member inline rotateX (angDegree) (pt:Pnt) : Pnt =
-            Pnt.rotateOnXDeg angDegree pt
+        static member inline rotateX (angDegree) (pnt:Pnt) : Pnt =
+            Pnt.rotateOnXDeg angDegree pnt
 
         [<Obsolete("Use Pnt.rotateOnYDeg instead.")>]
-        static member inline rotateY (angDegree) (pt:Pnt) : Pnt =
-            Pnt.rotateOnYDeg angDegree pt
+        static member inline rotateY (angDegree) (pnt:Pnt) : Pnt =
+            Pnt.rotateOnYDeg angDegree pnt
 
         [<Obsolete("Use Pnt.rotateOnZDeg instead.")>]
-        static member inline rotateZ (angDegree) (pt:Pnt) : Pnt =
-            Pnt.rotateOnZDeg angDegree pt
+        static member inline rotateZ (angDegree) (pnt:Pnt) : Pnt =
+            Pnt.rotateOnZDeg angDegree pnt
 
         [<Obsolete("Use Pnt.rotateOnX instead.")>]
-        static member inline rotateXBy (r:Rotation2D) (pt:Pnt) : Pnt =
-            Pnt.rotateOnX r pt
+        static member inline rotateXBy (r:Rotation2D) (pnt:Pnt) : Pnt =
+            Pnt.rotateOnX r pnt
 
         [<Obsolete("Use Pnt.rotateOnY instead.")>]
-        static member inline rotateYBy (r:Rotation2D) (pt:Pnt) : Pnt =
-            Pnt.rotateOnY r pt
+        static member inline rotateYBy (r:Rotation2D) (pnt:Pnt) : Pnt =
+            Pnt.rotateOnY r pnt
 
         [<Obsolete("Use Pnt.rotateOnZ instead.")>]
-        static member inline rotateZBy (r:Rotation2D) (pt:Pnt) : Pnt =
-            Pnt.rotateOnZ r pt
+        static member inline rotateZBy (r:Rotation2D) (pnt:Pnt) : Pnt =
+            Pnt.rotateOnZ r pnt
 
         [<Obsolete("Use Pnt.rotateOnXWithCenterDeg instead.")>]
-        static member inline rotateXWithCenter (cen:Pnt) (angDegree) (pt:Pnt) : Pnt =
-            Pnt.rotateOnXWithCenterDeg cen angDegree pt
+        static member inline rotateXWithCenter (cen:Pnt) (angDegree) (pnt:Pnt) : Pnt =
+            Pnt.rotateOnXWithCenterDeg cen angDegree pnt
 
         [<Obsolete("Use Pnt.rotateOnYWithCenterDeg instead.")>]
-        static member inline rotateYWithCenter (cen:Pnt) (angDegree) (pt:Pnt) : Pnt =
-            Pnt.rotateOnYWithCenterDeg cen angDegree pt
+        static member inline rotateYWithCenter (cen:Pnt) (angDegree) (pnt:Pnt) : Pnt =
+            Pnt.rotateOnYWithCenterDeg cen angDegree pnt
 
         [<Obsolete("Use Pnt.rotateOnZWithCenterDeg instead.")>]
-        static member inline rotateZWithCenter (cen:Pnt) (angDegree) (pt:Pnt) : Pnt =
-            Pnt.rotateOnZWithCenterDeg cen angDegree pt
+        static member inline rotateZWithCenter (cen:Pnt) (angDegree) (pnt:Pnt) : Pnt =
+            Pnt.rotateOnZWithCenterDeg cen angDegree pnt
 
         [<Obsolete("Use Pnt.rotateOnXWithCenter instead.")>]
-        static member inline rotateXWithCenterBy (cen:Pnt) (r:Rotation2D) (pt:Pnt) : Pnt =
-            Pnt.rotateOnXWithCenter cen r pt
+        static member inline rotateXWithCenterBy (cen:Pnt) (r:Rotation2D) (pnt:Pnt) : Pnt =
+            Pnt.rotateOnXWithCenter cen r pnt
 
         [<Obsolete("Use Pnt.rotateOnYWithCenter instead.")>]
-        static member inline rotateYWithCenterBy (cen:Pnt) (r:Rotation2D) (pt:Pnt) : Pnt =
-            Pnt.rotateOnYWithCenter cen r pt
+        static member inline rotateYWithCenterBy (cen:Pnt) (r:Rotation2D) (pnt:Pnt) : Pnt =
+            Pnt.rotateOnYWithCenter cen r pnt
 
         [<Obsolete("Use Pnt.rotateOnZWithCenter instead.")>]
-        static member inline rotateZWithCenterBy (cen:Pnt) (r:Rotation2D) (pt:Pnt) : Pnt =
-            Pnt.rotateOnZWithCenter cen r pt
+        static member inline rotateZWithCenterBy (cen:Pnt) (r:Rotation2D) (pnt:Pnt) : Pnt =
+            Pnt.rotateOnZWithCenter cen r pnt
 
         [<Obsolete("Use Pnt.rotate instead.")>]
-        static member inline rotateByQuaternion (q:Quaternion) (pt:Pnt) : Pnt =
-            Pnt.rotate q pt
+        static member inline rotateByQuaternion (q:Quaternion) (pnt:Pnt) : Pnt =
+            Pnt.rotate q pnt
 
         [<Obsolete("Use Pnt.rotateWithCenter instead.")>]
-        static member inline rotateWithCenterByQuat (cen:Pnt) (q:Quaternion) (pt:Pnt) : Pnt =
-            Pnt.rotateWithCenter cen q pt
+        static member inline rotateWithCenterByQuat (cen:Pnt) (q:Quaternion) (pnt:Pnt) : Pnt =
+            Pnt.rotateWithCenter cen q pnt
 
         [<Obsolete("Use the constructor Pnt(x, y, z) instead.")>]
         static member inline create (x:float, y:float, z:float) : Pnt =
@@ -889,25 +889,25 @@ module AutoOpenPnt =
             Pnt.distanceInXY a b
 
         [<Obsolete("Use Pnt.rotateOnXWithCenterDeg instead.")>]
-        static member inline rotateXwithCenter (cen:Pnt) (angDegree) (pt:Pnt) : Pnt =
-            Pnt.rotateOnXWithCenterDeg cen angDegree pt
+        static member inline rotateXwithCenter (cen:Pnt) (angDegree) (pnt:Pnt) : Pnt =
+            Pnt.rotateOnXWithCenterDeg cen angDegree pnt
 
         [<Obsolete("Use Pnt.rotateOnYWithCenterDeg instead.")>]
-        static member inline rotateYwithCenter (cen:Pnt) (angDegree) (pt:Pnt) : Pnt =
-            Pnt.rotateOnYWithCenterDeg cen angDegree pt
+        static member inline rotateYwithCenter (cen:Pnt) (angDegree) (pnt:Pnt) : Pnt =
+            Pnt.rotateOnYWithCenterDeg cen angDegree pnt
 
         [<Obsolete("Use Pnt.rotateOnZWithCenterDeg instead.")>]
-        static member inline rotateZwithCenter (cen:Pnt) (angDegree) (pt:Pnt) : Pnt =
-            Pnt.rotateOnZWithCenterDeg cen angDegree pt
+        static member inline rotateZwithCenter (cen:Pnt) (angDegree) (pnt:Pnt) : Pnt =
+            Pnt.rotateOnZWithCenterDeg cen angDegree pnt
 
         [<Obsolete("Use Pnt.rotateOnXWithCenter instead.")>]
-        static member inline rotateXwithCenterBy (cen:Pnt) (r:Rotation2D) (pt:Pnt) : Pnt =
-            Pnt.rotateOnXWithCenter cen r pt
+        static member inline rotateXwithCenterBy (cen:Pnt) (r:Rotation2D) (pnt:Pnt) : Pnt =
+            Pnt.rotateOnXWithCenter cen r pnt
 
         [<Obsolete("Use Pnt.rotateOnYWithCenter instead.")>]
-        static member inline rotateYwithCenterBy (cen:Pnt) (r:Rotation2D) (pt:Pnt) : Pnt =
-            Pnt.rotateOnYWithCenter cen r pt
+        static member inline rotateYwithCenterBy (cen:Pnt) (r:Rotation2D) (pnt:Pnt) : Pnt =
+            Pnt.rotateOnYWithCenter cen r pnt
 
         [<Obsolete("Use Pnt.rotateOnZWithCenter instead.")>]
-        static member inline rotateZwithCenterBy (cen:Pnt) (r:Rotation2D) (pt:Pnt) : Pnt =
-            Pnt.rotateOnZWithCenter cen r pt
+        static member inline rotateZwithCenterBy (cen:Pnt) (r:Rotation2D) (pnt:Pnt) : Pnt =
+            Pnt.rotateOnZWithCenter cen r pnt

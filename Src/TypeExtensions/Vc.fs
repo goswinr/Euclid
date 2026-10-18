@@ -662,8 +662,8 @@ module AutoOpenVc =
                 fail2 "Vc.failedCreateFromMembersxy" vec e |> unbox // unbox to make type checker happy
 
         /// Create 2D vector from 3D point (ignoring Z coordinate).
-        static member inline createFromPnt (pt:Pnt) : Vc =
-            Vc(pt.X, pt.Y)
+        static member inline createFromPnt (pnt:Pnt) : Vc =
+            Vc(pnt.X, pnt.Y)
 
         /// Create 2D vector from 2D unit-vector.
         static member inline createFromUnitVc (v:UnitVc) : Vc =

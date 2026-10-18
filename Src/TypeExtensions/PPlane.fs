@@ -20,12 +20,12 @@ module AutoOpenPPlane =
             pl.DistanceToXYZSigned (x, y, z)
 
         /// Returns signed distance of point to plane, also indicating on which side it is.
-        member inline pl.DistanceToPntSigned (pt:Pnt) : float =
-            pl.DistanceToXYZSigned (pt.X, pt.Y, pt.Z)
+        member inline pl.DistanceToPntSigned (pnt:Pnt) : float =
+            pl.DistanceToXYZSigned (pnt.X, pnt.Y, pnt.Z)
 
         /// Returns signed distance of point to plane, also indicating on which side it is.
-        static member inline distanceToPntSigned pt (pl:PPlane) : float =
-            pl.DistanceToPntSigned pt
+        static member inline distanceToPntSigned pnt (pl:PPlane) : float =
+            pl.DistanceToPntSigned pnt
 
         /// Returns absolute distance of point to plane.
         member inline pl.DistanceToXYZ (x:float, y:float, z:float) : float =
@@ -36,42 +36,42 @@ module AutoOpenPPlane =
             pl.DistanceToXYZ (x, y, z)
 
         /// Returns absolute distance of point to plane.
-        member inline pl.DistanceToPnt (pt:Pnt) : float =
-            pl.DistanceToXYZ (pt.X, pt.Y, pt.Z)
+        member inline pl.DistanceToPnt (pnt:Pnt) : float =
+            pl.DistanceToXYZ (pnt.X, pnt.Y, pnt.Z)
 
         /// Returns absolute distance of point to plane.
-        static member inline distanceToPnt pt (pl:PPlane) : float =
-            pl.DistanceToPnt pt
+        static member inline distanceToPnt pnt (pl:PPlane) : float =
+            pl.DistanceToPnt pnt
 
 
 
         /// Returns the X, Y and Z parameters of a point with regards to the plane.
-        member inline pl.PointParameters (pt:Pnt) : float * float * float =
-            let vx = pt.X - pl.OriginX
-            let vy = pt.Y - pl.OriginY
-            let vz = pt.Z - pl.OriginZ
+        member inline pl.PointParameters (pnt:Pnt) : float * float * float =
+            let vx = pnt.X - pl.OriginX
+            let vy = pnt.Y - pl.OriginY
+            let vz = pnt.Z - pl.OriginZ
             XYZ.dot pl.XaxisX pl.XaxisY pl.XaxisZ vx vy vz,
             XYZ.dot pl.YaxisX pl.YaxisY pl.YaxisZ vx vy vz,
             XYZ.dot pl.ZaxisX pl.ZaxisY pl.ZaxisZ vx vy vz
 
         /// Returns the X, Y and Z parameters of a point with regards to the plane.
-        static member inline pointParameters pt (pl:PPlane) : float * float * float =
-            pl.PointParameters pt
+        static member inline pointParameters pnt (pl:PPlane) : float * float * float =
+            pl.PointParameters pnt
 
         /// First finds the closest point on plane from a test point.
         /// Then returns a new plane with Origin at this point and the same Axes vectors.
-        member inline pl.PlaneAtClPnt (pt:Pnt) : PPlane =
-            let d = pl.DistanceToPntSigned pt
+        member inline pl.PlaneAtClPnt (pnt:Pnt) : PPlane =
+            let d = pl.DistanceToPntSigned pnt
             PPlane.createUnchecked(
-                pt.X - pl.ZaxisX*d, pt.Y - pl.ZaxisY*d, pt.Z - pl.ZaxisZ*d,
+                pnt.X - pl.ZaxisX*d, pnt.Y - pl.ZaxisY*d, pnt.Z - pl.ZaxisZ*d,
                 pl.XaxisX, pl.XaxisY, pl.XaxisZ,
                 pl.YaxisX, pl.YaxisY, pl.YaxisZ,
                 pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
 
         /// First finds the closest point on plane from a test point.
         /// Then returns a new plane with Origin at this point and the same Axes vectors.
-        static member inline planeAtClPnt pt (pl:PPlane) : PPlane =
-            pl.PlaneAtClPnt pt
+        static member inline planeAtClPnt pnt (pl:PPlane) : PPlane =
+            pl.PlaneAtClPnt pnt
 
         /// Returns the angle to another Plane in degrees, ignoring the normal's orientation.
         /// So 0.0 if the planes are parallel. And 90 degrees if the planes are perpendicular to each other.
@@ -182,13 +182,13 @@ module AutoOpenPPlane =
 
 
         /// Returns the closest point on the plane from a test point.
-        member inline pl.ClosestPoint (pt:Pnt) : Pnt =
-            let d = pl.DistanceToPntSigned pt
-            Pnt(pt.X - pl.ZaxisX*d, pt.Y - pl.ZaxisY*d, pt.Z - pl.ZaxisZ*d)
+        member inline pl.ClosestPoint (pnt:Pnt) : Pnt =
+            let d = pl.DistanceToPntSigned pnt
+            Pnt(pnt.X - pl.ZaxisX*d, pnt.Y - pl.ZaxisY*d, pnt.Z - pl.ZaxisZ*d)
 
         /// Returns the closest point on the plane from a test point.
-        static member inline closestPoint pt (pl:PPlane) : Pnt =
-            pl.ClosestPoint pt
+        static member inline closestPoint pnt (pl:PPlane) : Pnt =
+            pl.ClosestPoint pnt
 
     // #endregion
     // #region Predefined Planes
@@ -421,8 +421,8 @@ module AutoOpenPPlane =
             //abs (a.ZaxisZ - b.ZaxisZ) <= tol
 
         /// Returns a new plane with given Origin. The axes stay the same.
-        static member inline withOrigin (pt:Pnt) (pl:PPlane) : PPlane =
-            PPlane.createUnchecked(pt.X, pt.Y, pt.Z, pl.XaxisX, pl.XaxisY, pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
+        static member inline withOrigin (pnt:Pnt) (pl:PPlane) : PPlane =
+            PPlane.createUnchecked(pnt.X, pnt.Y, pnt.Z, pl.XaxisX, pl.XaxisY, pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
 
         /// Returns a new plane with given Origin X value changed. The axes stay the same.
         static member inline withOriginX (x:float) (pl:PPlane) : PPlane =
@@ -650,8 +650,8 @@ module AutoOpenPPlane =
 
         /// Obsolete name. Same as PPlane.withOrigin.
         [<Obsolete("Use PPlane.withOrigin instead. This returns a new plane, it does not mutate, so the 'with' prefix is clearer.")>]
-        static member inline setOrigin (pt:Pnt) (pl:PPlane) : PPlane =
-            PPlane.createUnchecked(pt.X, pt.Y, pt.Z, pl.XaxisX, pl.XaxisY, pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
+        static member inline setOrigin (pnt:Pnt) (pl:PPlane) : PPlane =
+            PPlane.createUnchecked(pnt.X, pnt.Y, pnt.Z, pl.XaxisX, pl.XaxisY, pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
 
         /// Obsolete name. Same as PPlane.withOriginX.
         [<Obsolete("Use PPlane.withOriginX instead. This returns a new plane, it does not mutate, so the 'with' prefix is clearer.")>]

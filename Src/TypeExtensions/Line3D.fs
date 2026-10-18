@@ -1670,23 +1670,23 @@ module AutoOpenLine3D =
 
     /// Returns a new 3D line with a new start point, the end point stays the same.
     /// Same as Line3D.withFrom.
-    static member inline withStart (pt:Pnt) (ln:Line3D) : Line3D =
-        Line3D(pt.X, pt.Y, pt.Z, ln.ToX, ln.ToY, ln.ToZ)
+    static member inline withStart (pnt:Pnt) (ln:Line3D) : Line3D =
+        Line3D(pnt.X, pnt.Y, pnt.Z, ln.ToX, ln.ToY, ln.ToZ)
 
     /// Returns a new 3D line with a new start point, the end point stays the same.
     /// Same as Line3D.withStart.
-    static member inline withFrom (pt:Pnt) (ln:Line3D) : Line3D =
-        Line3D(pt.X, pt.Y, pt.Z, ln.ToX, ln.ToY, ln.ToZ)
+    static member inline withFrom (pnt:Pnt) (ln:Line3D) : Line3D =
+        Line3D(pnt.X, pnt.Y, pnt.Z, ln.ToX, ln.ToY, ln.ToZ)
 
     /// Returns a new 3D line with a new end point, the start point stays the same.
     /// Same as Line3D.withTo.
-    static member inline withEnd (pt:Pnt) (ln:Line3D) : Line3D =
-        Line3D(ln.FromX, ln.FromY, ln.FromZ, pt.X, pt.Y, pt.Z)
+    static member inline withEnd (pnt:Pnt) (ln:Line3D) : Line3D =
+        Line3D(ln.FromX, ln.FromY, ln.FromZ, pnt.X, pnt.Y, pnt.Z)
 
     /// Returns a new 3D line with a new end point, the start point stays the same.
     /// Same as Line3D.withEnd.
-    static member inline withTo (pt:Pnt) (ln:Line3D) : Line3D =
-        Line3D(ln.FromX, ln.FromY, ln.FromZ, pt.X, pt.Y, pt.Z)
+    static member inline withTo (pnt:Pnt) (ln:Line3D) : Line3D =
+        Line3D(ln.FromX, ln.FromY, ln.FromZ, pnt.X, pnt.Y, pnt.Z)
 
     /// Returns the length of the line.
     static member inline length (l:Line3D) : float =
@@ -1850,15 +1850,15 @@ module AutoOpenLine3D =
     /// If it is smaller than 0.0 or bigger than 1.0 it is outside of the finite line.
     /// Get distance from start of line to point projected onto line, may be negative.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    static member inline lengthToPntOnLine (ln:Line3D) (pt:Pnt) : float =
+    static member inline lengthToPntOnLine (ln:Line3D) (pnt:Pnt) : float =
         let x = ln.VectorX
         let y = ln.VectorY
         let z = ln.VectorZ
         let l = XYZ.length x y z
         if isTooTiny l then failTooSmall "Line3D.lengthToPntOnLine" ln
-        let dx = pt.X - ln.FromX
-        let dy = pt.Y - ln.FromY
-        let dz = pt.Z - ln.FromZ
+        let dx = pnt.X - ln.FromX
+        let dy = pnt.Y - ln.FromY
+        let dz = pnt.Z - ln.FromZ
         let t = XYZ.dot x y z dx dy dz
         t / l
 
@@ -2468,28 +2468,28 @@ module AutoOpenLine3D =
 
     /// Obsolete name. Same as Line3D.lengthToPntOnLine.
     [<Obsolete("Use Line3D.lengthToPntOnLine instead.")>]
-    static member inline lengthToPtOnLine (ln:Line3D) (pt:Pnt) : float =
-        Line3D.lengthToPntOnLine ln pt
+    static member inline lengthToPtOnLine (ln:Line3D) (pnt:Pnt) : float =
+        Line3D.lengthToPntOnLine ln pnt
 
     /// Obsolete name. Same as Line3D.withStart.
     [<Obsolete("Use Line3D.withStart instead. This returns a new 3D line, it does not mutate, so the 'with' prefix is clearer.")>]
-    static member inline setStart (pt:Pnt) (ln:Line3D) : Line3D =
-        Line3D(pt.X, pt.Y, pt.Z, ln.ToX, ln.ToY, ln.ToZ)
+    static member inline setStart (pnt:Pnt) (ln:Line3D) : Line3D =
+        Line3D(pnt.X, pnt.Y, pnt.Z, ln.ToX, ln.ToY, ln.ToZ)
 
     /// Obsolete name. Same as Line3D.withFrom.
     [<Obsolete("Use Line3D.withFrom instead. This returns a new 3D line, it does not mutate, so the 'with' prefix is clearer.")>]
-    static member inline setFrom (pt:Pnt) (ln:Line3D) : Line3D =
-        Line3D(pt.X, pt.Y, pt.Z, ln.ToX, ln.ToY, ln.ToZ)
+    static member inline setFrom (pnt:Pnt) (ln:Line3D) : Line3D =
+        Line3D(pnt.X, pnt.Y, pnt.Z, ln.ToX, ln.ToY, ln.ToZ)
 
     /// Obsolete name. Same as Line3D.withEnd.
     [<Obsolete("Use Line3D.withEnd instead. This returns a new 3D line, it does not mutate, so the 'with' prefix is clearer.")>]
-    static member inline setEnd (pt:Pnt) (ln:Line3D) : Line3D =
-        Line3D(ln.FromX, ln.FromY, ln.FromZ, pt.X, pt.Y, pt.Z)
+    static member inline setEnd (pnt:Pnt) (ln:Line3D) : Line3D =
+        Line3D(ln.FromX, ln.FromY, ln.FromZ, pnt.X, pnt.Y, pnt.Z)
 
     /// Obsolete name. Same as Line3D.withTo.
     [<Obsolete("Use Line3D.withTo instead. This returns a new 3D line, it does not mutate, so the 'with' prefix is clearer.")>]
-    static member inline setTo (pt:Pnt) (ln:Line3D) : Line3D =
-        Line3D(ln.FromX, ln.FromY, ln.FromZ, pt.X, pt.Y, pt.Z)
+    static member inline setTo (pnt:Pnt) (ln:Line3D) : Line3D =
+        Line3D(ln.FromX, ln.FromY, ln.FromZ, pnt.X, pnt.Y, pnt.Z)
 
 
 

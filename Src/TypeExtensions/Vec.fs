@@ -764,8 +764,8 @@ module AutoOpenVec =
                 fail2 "Vec.createFromMembersxyz" vec e |> unbox // unbox to make type checker happy
 
         /// Create 3D vector from 3D point.
-        static member inline createFromPnt (pt:Pnt) : Vec =
-            Vec(pt.X, pt.Y, pt.Z)
+        static member inline createFromPnt (pnt:Pnt) : Vec =
+            Vec(pnt.X, pnt.Y, pnt.Z)
 
         /// Create 3D vector from 3D unit-vector.
         static member inline createFromUnitVec (v:UnitVec) : Vec =
@@ -954,9 +954,9 @@ module AutoOpenVec =
         // #endregion
         // #region Rotate
 
-        /// Rotate by Quaternion around Origin
-        static member inline rotate (q:Quaternion) (pt:Vec) : Vec =
-            pt *** q  // operator * is defined in Quaternion.fs
+        /// Rotate the 3D vector by Quaternion around the Origin
+        static member inline rotate (q:Quaternion) (vec:Vec) : Vec =
+            vec *** q  // operator * is defined in Quaternion.fs
 
         // Note: there is intentionally no Vec.rotateWithCenter: a vector is only a direction with
         // magnitude, it has no location, so rotating it around a center point is not a valid operation.

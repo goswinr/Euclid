@@ -554,8 +554,8 @@ type BBox =
         b.ContainsXYZ (p.X, p.Y, p.Z)
 
     /// Returns TRUE if the point is inside or on a 3D bounding box.
-    static member inline containsPnt (pt:Pnt) (box:BBox)  : bool =
-        box.ContainsPnt(pt)
+    static member inline containsPnt (pnt:Pnt) (box:BBox)  : bool =
+        box.ContainsPnt(pnt)
 
     /// Returns TRUE if the other 3D bounding box is inside or exactly on this bounding box.
     member inline b.Contains (o:BBox) : bool =

@@ -163,7 +163,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Vec.create` | `start: Pnt * endValue: Pnt -> Vec` |
 | `Vec.createFromMembersXYZ` | `vec: ^T -> Vec` |
 | `Vec.createFromMembersxyz` | `vec: ^T -> Vec` |
-| `Vec.createFromPnt` | `pt: Pnt -> Vec` |
+| `Vec.createFromPnt` | `pnt: Pnt -> Vec` |
 | `Vec.createFromUnitVec` | `v: UnitVec -> Vec` |
 | `Vec.createFromVcWithZ` | `z: float -> v: Vc -> Vec` |
 | `Vec.determinant3` | `u: Vec * v: Vec * w: Vec -> float` |
@@ -326,7 +326,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `UnitVec.createFor` | `msg: string * x: float * y: float * z: float -> UnitVec` |
 | `UnitVec.createFromMembersXYZ` | `vec: ^T -> UnitVec` |
 | `UnitVec.createFromMembersxyz` | `vec: ^T -> UnitVec` |
-| `UnitVec.createFromPnt` | `pt: Pnt -> UnitVec` |
+| `UnitVec.createFromPnt` | `pnt: Pnt -> UnitVec` |
 | `UnitVec.createFromVec` | `v: Vec -> UnitVec` |
 | `UnitVec.createUnchecked` | `x: float * y: float * z: float -> UnitVec` |
 | `UnitVec.determinant3` | `u: UnitVec * v: UnitVec * w: UnitVec -> float` |
@@ -395,20 +395,20 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Pnt.angle360InXYTo` | `fromPnt: Pnt * toPnt: Pnt -> float` |
 | `.AsFSharpCode` | `string` |
 | `.AsPt` | `Pt` |
-| `Pnt.asPt` | `pt: Pnt -> Pt` |
+| `Pnt.asPt` | `pnt: Pnt -> Pt` |
 | `.AsString` | `string` |
 | `.AsVc` | `Vc` |
-| `Pnt.asVc` | `pt: Pnt -> Vc` |
+| `Pnt.asVc` | `pnt: Pnt -> Vc` |
 | `.AsVec` | `Vec` |
-| `Pnt.asVec` | `pt: Pnt -> Vec` |
+| `Pnt.asVec` | `pnt: Pnt -> Vec` |
 | `.ClosestPointOnLine` | `ln: Line3D -> Pnt` |
 | `Pnt.closestPointOnLine` | `ln: Line3D -> testPnt: Pnt -> Pnt` |
 | `.DirectionDiamondInXYTo` | `o: Pnt -> float` |
 | `Pnt.directionDiamondInXYTo` | `fromPnt: Pnt * toPnt: Pnt -> float` |
 | `.DistanceFromOrigin` | `float` |
-| `Pnt.distanceFromOrigin` | `pt: Pnt -> float` |
+| `Pnt.distanceFromOrigin` | `pnt: Pnt -> float` |
 | `.DistanceInXYFromOrigin` | `float` |
-| `Pnt.distanceInXYFromOrigin` | `pt: Pnt -> float` |
+| `Pnt.distanceInXYFromOrigin` | `pnt: Pnt -> float` |
 | `.DistanceTo` | `b: Pnt -> float` |
 | `Pnt.distanceTo` | `b: Pnt -> p: Pnt -> float` |
 | `.DistanceToLine` | `ln: Line3D -> float` |
@@ -416,19 +416,19 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `.DistanceToXYZ` | `x: float * y: float * z: float -> float` |
 | `Pnt.distanceToXYZ` | `x: float * y: float * z: float -> p: Pnt -> float` |
 | `.IsAlmostOrigin` | `tol: float -> bool` |
-| `Pnt.isAlmostOrigin` | `tol: float -> pt: Pnt -> bool` |
+| `Pnt.isAlmostOrigin` | `tol: float -> pnt: Pnt -> bool` |
 | `.IsInvalid` | `bool` |
-| `Pnt.isInvalid` | `pt: Pnt -> bool` |
+| `Pnt.isInvalid` | `pnt: Pnt -> bool` |
 | `.IsNotOrigin` | `bool` |
-| `Pnt.isNotOrigin` | `pt: Pnt -> bool` |
+| `Pnt.isNotOrigin` | `pnt: Pnt -> bool` |
 | `.IsOrigin` | `bool` |
-| `Pnt.isOrigin` | `pt: Pnt -> bool` |
+| `Pnt.isOrigin` | `pnt: Pnt -> bool` |
 | `.IsValid` | `bool` |
-| `Pnt.isValid` | `pt: Pnt -> bool` |
+| `Pnt.isValid` | `pnt: Pnt -> bool` |
 | `.SqDistanceFromOrigin` | `float` |
-| `Pnt.sqDistanceFromOrigin` | `pt: Pnt -> float` |
+| `Pnt.sqDistanceFromOrigin` | `pnt: Pnt -> float` |
 | `.SqDistanceInXYFromOrigin` | `float` |
-| `Pnt.sqDistanceInXYFromOrigin` | `pt: Pnt -> float` |
+| `Pnt.sqDistanceInXYFromOrigin` | `pnt: Pnt -> float` |
 | `.SqDistanceTo` | `b: Pnt -> float` |
 | `Pnt.sqDistanceTo` | `b: Pnt -> p: Pnt -> float` |
 | `.SqDistanceToLine` | `ln: Line3D -> float` |
@@ -443,13 +443,13 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `.TransformRigidRotateOnly` | `m: RigidMatrix -> Pnt` |
 | `Pnt.transformRigidRotateOnly` | `m: RigidMatrix -> p: Pnt -> Pnt` |
 | `.WithDistanceFromOrigin` | `l: float -> Pnt` |
-| `Pnt.withDistanceFromOrigin` | `l: float -> pt: Pnt -> Pnt` |
+| `Pnt.withDistanceFromOrigin` | `l: float -> pnt: Pnt -> Pnt` |
 | `.WithX` | `x: float -> Pnt` |
-| `Pnt.withX` | `x: float -> pt: Pnt -> Pnt` |
+| `Pnt.withX` | `x: float -> pnt: Pnt -> Pnt` |
 | `.WithY` | `y: float -> Pnt` |
-| `Pnt.withY` | `y: float -> pt: Pnt -> Pnt` |
+| `Pnt.withY` | `y: float -> pnt: Pnt -> Pnt` |
 | `.WithZ` | `z: float -> Pnt` |
-| `Pnt.withZ` | `z: float -> pt: Pnt -> Pnt` |
+| `Pnt.withZ` | `z: float -> pnt: Pnt -> Pnt` |
 | **Other static members** | |
 | `Pnt.add` | `a: Pnt -> b: Pnt -> Pnt` |
 | `Pnt.addVec` | `v: Vec -> a: Pnt -> Pnt` |
@@ -467,19 +467,19 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Pnt.dist` | `b: Pnt -> p: Pnt -> float` |
 | `Pnt.distanceInXY` | `a: Pnt -> b: Pnt -> float` |
 | `Pnt.distPnt` | `fromPnt: Pnt * dirPnt: Pnt * distance: float -> Pnt` |
-| `Pnt.DivideByInt` | `pt: Pnt * i: int -> Pnt` |
+| `Pnt.DivideByInt` | `pnt: Pnt * i: int -> Pnt` |
 | `Pnt.divPnt` | `fromPnt: Pnt * toPnt: Pnt * rel: float -> Pnt` |
 | `Pnt.equals` | `tol: float -> a: Pnt -> b: Pnt -> bool` |
 | `Pnt.extendToZLevel` | `fromPnt: Pnt * toPnt: Pnt * z: float -> Pnt` |
-| `Pnt.getX` | `pt: Pnt -> float` |
-| `Pnt.getY` | `pt: Pnt -> float` |
-| `Pnt.getZ` | `pt: Pnt -> float` |
+| `Pnt.getX` | `pnt: Pnt -> float` |
+| `Pnt.getY` | `pnt: Pnt -> float` |
+| `Pnt.getZ` | `pnt: Pnt -> float` |
 | `Pnt.lerp` | `fromPnt: Pnt * toPnt: Pnt * rel: float -> Pnt` |
 | `Pnt.midPnt` | `a: Pnt -> b: Pnt -> Pnt` |
-| `Pnt.move` | `shift: Vec -> pt: Pnt -> Pnt` |
-| `Pnt.moveX` | `x: float -> pt: Pnt -> Pnt` |
-| `Pnt.moveY` | `y: float -> pt: Pnt -> Pnt` |
-| `Pnt.moveZ` | `z: float -> pt: Pnt -> Pnt` |
+| `Pnt.move` | `shift: Vec -> pnt: Pnt -> Pnt` |
+| `Pnt.moveX` | `x: float -> pnt: Pnt -> Pnt` |
+| `Pnt.moveY` | `y: float -> pnt: Pnt -> Pnt` |
+| `Pnt.moveZ` | `z: float -> pnt: Pnt -> Pnt` |
 | `Pnt.normalOf3Pnts` | `a: Pnt * b: Pnt * c: Pnt -> Vec` |
 | `Pnt.normalOfTwoPointsInXY` | `fromPnt: Pnt * toPnt: Pnt -> Vec` |
 | `Pnt.notEquals` | `tol: float -> a: Pnt -> b: Pnt -> bool` |
@@ -487,26 +487,26 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Pnt.projectedParameter` | `fromPnt: Pnt * uv: UnitVec * testPnt: Pnt -> float` |
 | `Pnt.projectedParameter` | `fromPnt: Pnt * v: Vec * testPnt: Pnt -> float` |
 | `Pnt.projectedParameter` | `fromPnt: Pnt * toPnt: Pnt * testPnt: Pnt -> float` |
-| `Pnt.projectToXYPlane` | `pt: Pnt -> Pnt` |
-| `Pnt.rotate` | `q: Quaternion -> pt: Pnt -> Pnt` |
+| `Pnt.projectToXYPlane` | `pnt: Pnt -> Pnt` |
+| `Pnt.rotate` | `q: Quaternion -> pnt: Pnt -> Pnt` |
 | `Pnt.rotateOnX` | `r: Rotation2D -> p: Pnt -> Pnt` |
-| `Pnt.rotateOnXDeg` | `angDegree: float -> pt: Pnt -> Pnt` |
-| `Pnt.rotateOnXWithCenter` | `cen: Pnt -> r: Rotation2D -> pt: Pnt -> Pnt` |
-| `Pnt.rotateOnXWithCenterDeg` | `cen: Pnt -> angDegree: float -> pt: Pnt -> Pnt` |
+| `Pnt.rotateOnXDeg` | `angDegree: float -> pnt: Pnt -> Pnt` |
+| `Pnt.rotateOnXWithCenter` | `cen: Pnt -> r: Rotation2D -> pnt: Pnt -> Pnt` |
+| `Pnt.rotateOnXWithCenterDeg` | `cen: Pnt -> angDegree: float -> pnt: Pnt -> Pnt` |
 | `Pnt.rotateOnY` | `r: Rotation2D -> p: Pnt -> Pnt` |
-| `Pnt.rotateOnYDeg` | `angDegree: float -> pt: Pnt -> Pnt` |
-| `Pnt.rotateOnYWithCenter` | `cen: Pnt -> r: Rotation2D -> pt: Pnt -> Pnt` |
-| `Pnt.rotateOnYWithCenterDeg` | `cen: Pnt -> angDegree: float -> pt: Pnt -> Pnt` |
+| `Pnt.rotateOnYDeg` | `angDegree: float -> pnt: Pnt -> Pnt` |
+| `Pnt.rotateOnYWithCenter` | `cen: Pnt -> r: Rotation2D -> pnt: Pnt -> Pnt` |
+| `Pnt.rotateOnYWithCenterDeg` | `cen: Pnt -> angDegree: float -> pnt: Pnt -> Pnt` |
 | `Pnt.rotateOnZ` | `r: Rotation2D -> p: Pnt -> Pnt` |
-| `Pnt.rotateOnZDeg` | `angDegree: float -> pt: Pnt -> Pnt` |
-| `Pnt.rotateOnZWithCenter` | `cen: Pnt -> r: Rotation2D -> pt: Pnt -> Pnt` |
-| `Pnt.rotateOnZWithCenterDeg` | `cen: Pnt -> angDegree: float -> pt: Pnt -> Pnt` |
-| `Pnt.rotateWithCenter` | `cen: Pnt -> q: Quaternion -> pt: Pnt -> Pnt` |
-| `Pnt.scale` | `f: float -> pt: Pnt -> Pnt` |
-| `Pnt.snap` | `precision: float -> pt: Pnt -> Pnt` |
-| `Pnt.snapIfClose` | `snapDistance: float -> snapTo: Pnt -> pt: Pnt -> Pnt` |
+| `Pnt.rotateOnZDeg` | `angDegree: float -> pnt: Pnt -> Pnt` |
+| `Pnt.rotateOnZWithCenter` | `cen: Pnt -> r: Rotation2D -> pnt: Pnt -> Pnt` |
+| `Pnt.rotateOnZWithCenterDeg` | `cen: Pnt -> angDegree: float -> pnt: Pnt -> Pnt` |
+| `Pnt.rotateWithCenter` | `cen: Pnt -> q: Quaternion -> pnt: Pnt -> Pnt` |
+| `Pnt.scale` | `f: float -> pnt: Pnt -> Pnt` |
+| `Pnt.snap` | `precision: float -> pnt: Pnt -> Pnt` |
+| `Pnt.snapIfClose` | `snapDistance: float -> snapTo: Pnt -> pnt: Pnt -> Pnt` |
 | `Pnt.sqDist` | `b: Pnt -> p: Pnt -> float` |
-| `Pnt.translate` | `shift: Vec -> pt: Pnt -> Pnt` |
+| `Pnt.translate` | `shift: Vec -> pnt: Pnt -> Pnt` |
 | `Pnt.Zero` | `Pnt` |
 | `( * )` | `a: Pnt * f: float -> Pnt` |
 | `( * )` | `f: float * a: Pnt -> Pnt` |
@@ -603,12 +603,12 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `PPlane.asString` | `pl: PPlane -> string` |
 | `.ClosestParameters` | `p: Pnt -> float * float` |
 | `PPlane.closestParameters` | `p: Pnt -> pl: PPlane -> float * float` |
-| `.ClosestPoint` | `pt: Pnt -> Pnt` |
-| `PPlane.closestPoint` | `pt: Pnt -> pl: PPlane -> Pnt` |
-| `.DistanceToPnt` | `pt: Pnt -> float` |
-| `PPlane.distanceToPnt` | `pt: Pnt -> pl: PPlane -> float` |
-| `.DistanceToPntSigned` | `pt: Pnt -> float` |
-| `PPlane.distanceToPntSigned` | `pt: Pnt -> pl: PPlane -> float` |
+| `.ClosestPoint` | `pnt: Pnt -> Pnt` |
+| `PPlane.closestPoint` | `pnt: Pnt -> pl: PPlane -> Pnt` |
+| `.DistanceToPnt` | `pnt: Pnt -> float` |
+| `PPlane.distanceToPnt` | `pnt: Pnt -> pl: PPlane -> float` |
+| `.DistanceToPntSigned` | `pnt: Pnt -> float` |
+| `PPlane.distanceToPntSigned` | `pnt: Pnt -> pl: PPlane -> float` |
 | `.DistanceToXYZ` | `x: float * y: float * z: float -> float` |
 | `PPlane.distanceToXYZ` | `x: float -> y: float -> z: float -> pl: PPlane -> float` |
 | `.DistanceToXYZSigned` | `x: float * y: float * z: float -> float` |
@@ -620,10 +620,10 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `.IsCoincidentTo` | `other: PPlane * distanceTolerance: float * minCosine: float<cosine> -> bool` |
 | `PPlane.isCoincidentTo` | `distanceTolerance: float -> minCosine: float<cosine> -> a: PPlane -> b: PPlane -> bool` |
 | `.Origin` | `Pnt` |
-| `.PlaneAtClPnt` | `pt: Pnt -> PPlane` |
-| `PPlane.planeAtClPnt` | `pt: Pnt -> pl: PPlane -> PPlane` |
-| `.PointParameters` | `pt: Pnt -> float * float * float` |
-| `PPlane.pointParameters` | `pt: Pnt -> pl: PPlane -> float * float * float` |
+| `.PlaneAtClPnt` | `pnt: Pnt -> PPlane` |
+| `PPlane.planeAtClPnt` | `pnt: Pnt -> pl: PPlane -> PPlane` |
+| `.PointParameters` | `pnt: Pnt -> float * float * float` |
+| `PPlane.pointParameters` | `pnt: Pnt -> pl: PPlane -> float * float * float` |
 | `.ToString` | `unit -> string` |
 | `.Xaxis` | `UnitVec` |
 | `.Yaxis` | `UnitVec` |
@@ -663,7 +663,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `PPlane.translateLocalX` | `d: float -> pl: PPlane -> PPlane` |
 | `PPlane.translateLocalY` | `d: float -> pl: PPlane -> PPlane` |
 | `PPlane.translateLocalZ` | `d: float -> pl: PPlane -> PPlane` |
-| `PPlane.withOrigin` | `pt: Pnt -> pl: PPlane -> PPlane` |
+| `PPlane.withOrigin` | `pnt: Pnt -> pl: PPlane -> PPlane` |
 | `PPlane.withOriginX` | `x: float -> pl: PPlane -> PPlane` |
 | `PPlane.withOriginY` | `y: float -> pl: PPlane -> PPlane` |
 | `PPlane.withOriginZ` | `z: float -> pl: PPlane -> PPlane` |
@@ -1063,7 +1063,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Line3D.isPerpendicularToUnitVec` | `maxTangent: float<tangent> -> other: UnitVec -> ln: Line3D -> bool` |
 | `Line3D.isPerpendicularToVec` | `maxTangent: float<tangent> -> other: Vec -> ln: Line3D -> bool` |
 | `Line3D.isTouchingEndOf` | `squareTolerance: float -> a: Line3D -> b: Line3D -> bool` |
-| `Line3D.lengthToPntOnLine` | `ln: Line3D -> pt: Pnt -> float` |
+| `Line3D.lengthToPntOnLine` | `ln: Line3D -> pnt: Pnt -> float` |
 | `Line3D.matchesOrientationUnitVec` | `v: UnitVec -> ln: Line3D -> bool` |
 | `Line3D.matchesOrientationVec` | `v: Vec -> ln: Line3D -> bool` |
 | `Line3D.matchOrientation` | `orientationToMatch: Line3D -> lineToFlip: Line3D -> Line3D` |
@@ -1095,13 +1095,13 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Line3D.tryIntersectRay` | `lineA: Line3D -> lineB: Line3D -> Pnt voption` |
 | `Line3D.tryProjectOntoLine` | `onToLine: Line3D -> lineToProject: Line3D -> Line3D option` |
 | `Line3D.tryProjectOntoLineParam` | `onToLine: Line3D -> lineToProject: Line3D -> (float * float) option` |
-| `Line3D.withEnd` | `pt: Pnt -> ln: Line3D -> Line3D` |
-| `Line3D.withFrom` | `pt: Pnt -> ln: Line3D -> Line3D` |
+| `Line3D.withEnd` | `pnt: Pnt -> ln: Line3D -> Line3D` |
+| `Line3D.withFrom` | `pnt: Pnt -> ln: Line3D -> Line3D` |
 | `Line3D.withLengthFromMid` | `len: float -> ln: Line3D -> Line3D` |
 | `Line3D.withLengthFromStart` | `len: float -> ln: Line3D -> Line3D` |
 | `Line3D.withLengthToEnd` | `len: float -> ln: Line3D -> Line3D` |
-| `Line3D.withStart` | `pt: Pnt -> ln: Line3D -> Line3D` |
-| `Line3D.withTo` | `pt: Pnt -> ln: Line3D -> Line3D` |
+| `Line3D.withStart` | `pnt: Pnt -> ln: Line3D -> Line3D` |
+| `Line3D.withTo` | `pnt: Pnt -> ln: Line3D -> Line3D` |
 
 ## XLine3D.XCone
 
@@ -1175,7 +1175,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 
 | ClPnts | Signature |
 |:--|:--|
-| `Intersect` | `pt: Pnt -> ClPnts` |
+| `Intersect` | `pnt: Pnt -> ClPnts` |
 | `Skew` | `ptA: Pnt * ptB: Pnt * squareDist: float -> ClPnts` |
 | `Parallel` | `ptA: Pnt * ptB: Pnt -> ClPnts` |
 | `Apart` | `ptA: Pnt * ptB: Pnt * squareDist: float -> ClPnts` |
@@ -1259,7 +1259,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 
 | NPlane | Signature |
 |:--|:--|
-| `new` | `pt: Pnt * n: UnitVec -> NPlane` |
+| `new` | `pnt: Pnt * n: UnitVec -> NPlane` |
 | `.OriginX` | `float` |
 | `.OriginY` | `float` |
 | `.OriginZ` | `float` |
@@ -1277,12 +1277,12 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `NPlane.asFSharpCode` | `pl: NPlane -> string` |
 | `.AsString` | `string` |
 | `NPlane.asString` | `pl: NPlane -> string` |
-| `.ClosestPoint` | `pt: Pnt -> Pnt` |
-| `NPlane.closestPoint` | `pt: Pnt -> pl: NPlane -> Pnt` |
-| `.DistanceToPnt` | `pt: Pnt -> float` |
-| `NPlane.distanceToPnt` | `pt: Pnt -> pl: NPlane -> float` |
-| `.DistanceToPntSigned` | `pt: Pnt -> float` |
-| `NPlane.distanceToPntSigned` | `pt: Pnt -> pl: NPlane -> float` |
+| `.ClosestPoint` | `pnt: Pnt -> Pnt` |
+| `NPlane.closestPoint` | `pnt: Pnt -> pl: NPlane -> Pnt` |
+| `.DistanceToPnt` | `pnt: Pnt -> float` |
+| `NPlane.distanceToPnt` | `pnt: Pnt -> pl: NPlane -> float` |
+| `.DistanceToPntSigned` | `pnt: Pnt -> float` |
+| `NPlane.distanceToPntSigned` | `pnt: Pnt -> pl: NPlane -> float` |
 | `.DistanceToXYZ` | `x: float * y: float * z: float -> float` |
 | `NPlane.distanceToXYZ` | `x: float -> y: float -> z: float -> pl: NPlane -> float` |
 | `.DistanceToXYZSigned` | `x: float * y: float * z: float -> float` |
@@ -1294,15 +1294,15 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `NPlane.normal` | `p: NPlane -> UnitVec` |
 | `.Origin` | `Pnt` |
 | `NPlane.origin` | `a: NPlane -> Pnt` |
-| `.PlaneAtClPnt` | `pt: Pnt -> NPlane` |
-| `NPlane.planeAtClPnt` | `pt: Pnt -> pl: NPlane -> NPlane` |
+| `.PlaneAtClPnt` | `pnt: Pnt -> NPlane` |
+| `NPlane.planeAtClPnt` | `pnt: Pnt -> pl: NPlane -> NPlane` |
 | `.ToString` | `unit -> string` |
 | **Other static members** | |
 | `NPlane.angle90ToUnitVec` | `v: UnitVec -> pl: NPlane -> float` |
 | `NPlane.angleTo` | `a: NPlane -> b: NPlane -> float` |
 | `NPlane.areCoincident` | `a: NPlane -> b: NPlane -> bool` |
-| `NPlane.create` | `pt: Pnt * normal: Vec -> NPlane` |
-| `NPlane.create` | `pt: Pnt * normal: UnitVec -> NPlane` |
+| `NPlane.create` | `pnt: Pnt * normal: Vec -> NPlane` |
+| `NPlane.create` | `pnt: Pnt * normal: UnitVec -> NPlane` |
 | `NPlane.createFrom3Points` | `a: Pnt -> b: Pnt -> c: Pnt -> NPlane` |
 | `NPlane.createFromPPlane` | `p: PPlane -> NPlane` |
 | `NPlane.createUnchecked` | `originX: float * originY: float * originZ: float * normalX: float * normalY: float * normalZ: float -> NPlane` |
@@ -1963,7 +1963,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `.Contains` | `o: BBox -> bool` |
 | `BBox.contains` | `boxInside: BBox -> surroundingBox: BBox -> bool` |
 | `.ContainsPnt` | `p: Pnt -> bool` |
-| `BBox.containsPnt` | `pt: Pnt -> box: BBox -> bool` |
+| `BBox.containsPnt` | `pnt: Pnt -> box: BBox -> bool` |
 | `.ContainsXYZ` | `x: float * y: float * z: float -> bool` |
 | `BBox.containsXYZ` | `x: float -> y: float -> z: float -> box: BBox -> bool` |
 | `.CountZeroSides` | `int` |
@@ -2166,8 +2166,8 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 |:--|:--|
 | `Points3D.center` | `pts: IList<Pnt> -> Pnt` |
 | `Points3D.closestOfTwo` | `pt1: Pnt -> pt2: Pnt -> referencePoint: Pnt -> Pnt` |
-| `Points3D.closestPoint` | `pts: IList<Pnt> * pt: Pnt -> Pnt` |
-| `Points3D.closestPointIdx` | `pts: IList<Pnt> * pt: Pnt -> int` |
+| `Points3D.closestPoint` | `pts: IList<Pnt> * pnt: Pnt -> Pnt` |
+| `Points3D.closestPointIdx` | `pts: IList<Pnt> * pnt: Pnt -> int` |
 | `Points3D.closestPointsIdx` | `xs: IList<Pnt> * ys: IList<Pnt> -> int * int` |
 | `Points3D.minDistBetweenPointSets` | `xs: IList<Pnt> * ys: IList<Pnt> -> float` |
 | `Points3D.mostDistantPoint` | `findPointFrom: IList<Pnt> * checkAgainst: IList<Pnt> -> Pnt` |
@@ -2224,8 +2224,8 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 |:--|:--|
 | `new` | `capacity: int -> Polyline3D` |
 | `new` | `points: Pnt seq -> Polyline3D` |
-| `.AddPoint` | `pt: Pnt -> unit` |
-| `Polyline3D.addPoint` | `pt: Pnt -> p: Polyline3D -> unit` |
+| `.AddPoint` | `pnt: Pnt -> unit` |
+| `Polyline3D.addPoint` | `pnt: Pnt -> p: Polyline3D -> unit` |
 | `.AddXYZ` | `x: float * y: float * z: float -> unit` |
 | `Polyline3D.addXYZ` | `x: float -> y: float -> z: float -> p: Polyline3D -> unit` |
 | `.AreaIn2D` | `float` |
@@ -2249,15 +2249,15 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `.Close` | `?toleranceForAddingPoint: float -> unit` |
 | `Polyline3D.close` | `toleranceForAddingPoint: float -> pl: Polyline3D -> unit` |
 | `.ClosestParameter` | `p: Pnt -> float` |
-| `Polyline3D.closestParameter` | `pl: Polyline3D -> pt: Pnt -> float` |
+| `Polyline3D.closestParameter` | `pl: Polyline3D -> pnt: Pnt -> float` |
 | `.ClosestParameterXYZ` | `x: float * y: float * z: float -> float` |
 | `Polyline3D.closestParameterXYZ` | `pl: Polyline3D -> x: float -> y: float -> z: float -> float` |
 | `.ClosestPoint` | `p: Pnt -> Pnt` |
-| `Polyline3D.closestPoint` | `pl: Polyline3D -> pt: Pnt -> Pnt` |
+| `Polyline3D.closestPoint` | `pl: Polyline3D -> pnt: Pnt -> Pnt` |
 | `.ClosestPointIndex` | `p: Pnt -> int` |
-| `Polyline3D.closestPointIndex` | `pl: Polyline3D -> pt: Pnt -> int` |
+| `Polyline3D.closestPointIndex` | `pl: Polyline3D -> pnt: Pnt -> int` |
 | `.DistanceTo` | `p: Pnt -> float` |
-| `Polyline3D.distanceTo` | `pl: Polyline3D -> pt: Pnt -> float` |
+| `Polyline3D.distanceTo` | `pl: Polyline3D -> pnt: Pnt -> float` |
 | `.DistanceToXYZ` | `x: float * y: float * z: float -> float` |
 | `Polyline3D.distanceToXYZ` | `pl: Polyline3D -> x: float -> y: float -> z: float -> float` |
 | `.Duplicate` | `unit -> Polyline3D` |
@@ -2335,8 +2335,8 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Polyline3D.setPointXYZ` | `x: float -> y: float -> z: float -> pointIndex: int -> p: Polyline3D -> unit` |
 | `.SetPointXYZClosed` | `pointIndex: int * x: float * y: float * z: float -> unit` |
 | `Polyline3D.setPointXYZClosed` | `x: float -> y: float -> z: float -> pointIndex: int -> p: Polyline3D -> unit` |
-| `.SetPnt` | `pointIndex: int * pt: Pnt -> unit` |
-| `Polyline3D.setPnt` | `pointIndex: int -> pt: Pnt -> p: Polyline3D -> unit` |
+| `.SetPnt` | `pointIndex: int * pnt: Pnt -> unit` |
+| `Polyline3D.setPnt` | `pointIndex: int -> pnt: Pnt -> p: Polyline3D -> unit` |
 | `.SignedAreaIn2D` | `float` |
 | `Polyline3D.signedAreaIn2D` | `pl: Polyline3D -> float` |
 | `.Start` | `Pnt with get, set` |

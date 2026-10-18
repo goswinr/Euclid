@@ -61,7 +61,7 @@ type Pnt =
 
 
     /// Format 3D point into string with nice floating point number formatting of X, Y and Z
-    /// But without full type name as in pt.ToString()
+    /// But without full type name as in pnt.ToString()
     member p.AsString : string =
         let x = Format.float p.X
         let y = Format.float p.Y
@@ -126,10 +126,10 @@ type Pnt =
 
     /// Divides the 3D point by an integer.
     /// (This member is needed by Array.average and similar functions)
-    static member DivideByInt (pt:Pnt, i:int) : Pnt = // needed by  'Array.average'
-        if i=0 then failDivide "Pnt.DivideByInt" 0.0 pt
+    static member DivideByInt (pnt:Pnt, i:int) : Pnt = // needed by  'Array.average'
+        if i=0 then failDivide "Pnt.DivideByInt" 0.0 pnt
         let d = float i
-        Pnt(pt.X/d, pt.Y/d, pt.Z/d)
+        Pnt(pnt.X/d, pnt.Y/d, pnt.Z/d)
 
 #if !FABLE_COMPILER
 /// Serializes a Pnt as its X, Y, and Z coordinates with System.Text.Json.

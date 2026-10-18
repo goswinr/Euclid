@@ -46,8 +46,8 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
     [<DataMember>] val public NormalZ : float
 
     /// Create NPlane from a 3D origin point and normal unit vector.
-    new (pt:Pnt, n:UnitVec) =
-        {OriginX = pt.X; OriginY = pt.Y; OriginZ = pt.Z; NormalX = n.X; NormalY = n.Y; NormalZ = n.Z}
+    new (pnt:Pnt, n:UnitVec) =
+        {OriginX = pnt.X; OriginY = pnt.Y; OriginZ = pnt.Z; NormalX = n.X; NormalY = n.Y; NormalZ = n.Z}
 
     /// Unsafe internal constructor, doesn't check if the normal is unitized, public only for inlining.
     /// Creates an NPlane from Origin coordinates and normal unit vector components.
@@ -135,12 +135,12 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
         pl.DistanceToXYZSigned (x, y, z)
 
     /// Returns signed distance of point to plane, also indicating on which side it is.
-    member inline pl.DistanceToPntSigned (pt:Pnt) : float =
-        pl.DistanceToXYZSigned (pt.X, pt.Y, pt.Z)
+    member inline pl.DistanceToPntSigned (pnt:Pnt) : float =
+        pl.DistanceToXYZSigned (pnt.X, pnt.Y, pnt.Z)
 
     /// Returns signed distance of point to plane, also indicating on which side it is.
-    static member inline distanceToPntSigned (pt:Pnt) (pl:NPlane) : float =
-        pl.DistanceToPntSigned pt
+    static member inline distanceToPntSigned (pnt:Pnt) (pl:NPlane) : float =
+        pl.DistanceToPntSigned pnt
 
     /// Returns absolute distance of point to plane.
     member inline pl.DistanceToXYZ (x:float, y:float, z:float) : float =
@@ -151,32 +151,32 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
         pl.DistanceToXYZ (x, y, z)
 
     /// Returns absolute distance of point to plane.
-    member inline pl.DistanceToPnt (pt:Pnt) : float =
-        pl.DistanceToXYZ (pt.X, pt.Y, pt.Z)
+    member inline pl.DistanceToPnt (pnt:Pnt) : float =
+        pl.DistanceToXYZ (pnt.X, pnt.Y, pnt.Z)
 
     /// Returns absolute distance of point to plane.
-    static member inline distanceToPnt (pt:Pnt) (pl:NPlane) : float =
-        pl.DistanceToPnt pt
+    static member inline distanceToPnt (pnt:Pnt) (pl:NPlane) : float =
+        pl.DistanceToPnt pnt
 
     /// Returns the closest point on the plane from a test point.
-    member inline pl.ClosestPoint (pt:Pnt) : Pnt =
-        let d = pl.DistanceToPntSigned pt
-        Pnt(pt.X - pl.NormalX*d, pt.Y - pl.NormalY*d, pt.Z - pl.NormalZ*d)
+    member inline pl.ClosestPoint (pnt:Pnt) : Pnt =
+        let d = pl.DistanceToPntSigned pnt
+        Pnt(pnt.X - pl.NormalX*d, pnt.Y - pl.NormalY*d, pnt.Z - pl.NormalZ*d)
 
     /// Returns the closest point on the plane from a test point.
-    static member inline closestPoint (pt:Pnt) (pl:NPlane) : Pnt =
-        pl.ClosestPoint pt
+    static member inline closestPoint (pnt:Pnt) (pl:NPlane) : Pnt =
+        pl.ClosestPoint pnt
 
     /// First finds the closest point on the plane from a test point.
     /// Then returns a new plane with Origin at this point and the same Normal.
-    member inline pl.PlaneAtClPnt (pt:Pnt) : NPlane =
-        let d = pl.DistanceToPntSigned pt
-        NPlane.createUnchecked(pt.X - pl.NormalX*d, pt.Y - pl.NormalY*d, pt.Z - pl.NormalZ*d, pl.NormalX, pl.NormalY, pl.NormalZ)
+    member inline pl.PlaneAtClPnt (pnt:Pnt) : NPlane =
+        let d = pl.DistanceToPntSigned pnt
+        NPlane.createUnchecked(pnt.X - pl.NormalX*d, pnt.Y - pl.NormalY*d, pnt.Z - pl.NormalZ*d, pl.NormalX, pl.NormalY, pl.NormalZ)
 
     /// First finds the closest point on the plane from a test point.
     /// Then returns a new plane with Origin at this point and the same Normal.
-    static member inline planeAtClPnt (pt:Pnt) (pl:NPlane) : NPlane =
-        pl.PlaneAtClPnt pt
+    static member inline planeAtClPnt (pnt:Pnt) (pl:NPlane) : NPlane =
+        pl.PlaneAtClPnt pnt
 
     /// Returns the angle to another plane in degrees, ignoring the normal's orientation.
     /// So 0.0 if the planes are parallel, and 90 degrees if the planes are perpendicular to each other.
@@ -268,18 +268,18 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
         a.IsCoincidentTo (b)
 
     /// Create Plane, normal vector gets unitized in constructor.
-    static member create(pt:Pnt, normal:Vec) : NPlane =
+    static member create(pnt:Pnt, normal:Vec) : NPlane =
         let x = normal.X
         let y = normal.Y
         let z = normal.Z
         let l = XYZ.length x y z
         if isTooTiny l then failTooSmall "NPlane.create" normal
         let li = 1.0 / l
-        NPlane.createUnchecked(pt.X, pt.Y, pt.Z, li*x, li*y, li*z)
+        NPlane.createUnchecked(pnt.X, pnt.Y, pnt.Z, li*x, li*y, li*z)
 
     /// Create Plane from already normalized input vector.
-    static member inline create(pt:Pnt, normal:UnitVec) : NPlane =
-        NPlane.createUnchecked(pt.X, pt.Y, pt.Z, normal.X, normal.Y, normal.Z)
+    static member inline create(pnt:Pnt, normal:UnitVec) : NPlane =
+        NPlane.createUnchecked(pnt.X, pnt.Y, pnt.Z, normal.X, normal.Y, normal.Z)
 
     /// Create Plane from 3 points.
     /// Point 'a' becomes the origin.

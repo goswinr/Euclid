@@ -150,7 +150,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Vc.create` | `start: Pt * endValue: Pt -> Vc` |
 | `Vc.createFromMembersXY` | `vec: ^T -> Vc` |
 | `Vc.createFromMembersxy` | `vec: ^T -> Vc` |
-| `Vc.createFromPnt` | `pt: Pnt -> Vc` |
+| `Vc.createFromPnt` | `pnt: Pnt -> Vc` |
 | `Vc.createFromUnitVc` | `v: UnitVc -> Vc` |
 | `Vc.difference` | `a: Vc -> b: Vc -> float` |
 | `Vc.differenceSq` | `a: Vc -> b: Vc -> float` |

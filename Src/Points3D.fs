@@ -13,21 +13,21 @@ type Points3D   =
 
 
     /// Returns the closest 3D point index from a 3D point list to a given 3D point.
-    static member closestPointIdx (pts:IList<Pnt>, pt:Pnt) : int =
+    static member closestPointIdx (pts:IList<Pnt>, pnt:Pnt) : int =
         if pts.Count = 0 then fail "Points3D.closestPoint: empty List of Points: pts"
         let mutable mi = -1
         let mutable mid = Double.MaxValue
         for i=0 to pts.Count - 1 do
             let p = pts.[i]
-            let d = Pnt.sqDist p pt
+            let d = Pnt.sqDist p pnt
             if d < mid then
                 mid <- d
                 mi <- i
         mi
 
     /// Returns the closest point from a 3D point list to a given 3D point.
-    static member closestPoint (pts:IList<Pnt>, pt:Pnt) : Pnt=
-        pts.[Points3D.closestPointIdx (pts, pt)]
+    static member closestPoint (pts:IList<Pnt>, pnt:Pnt) : Pnt=
+        pts.[Points3D.closestPointIdx (pts, pnt)]
 
     /// Returns the closest of two 3D points to a given reference 3D point.
     /// If both points are equidistant the first point is returned.
@@ -48,9 +48,9 @@ type Points3D   =
         let mutable yj = -1
         let mutable minD = Double.MaxValue
         for i=0 to xs.Count-1 do
-            let pt = xs.[i]
+            let pnt = xs.[i]
             for j=0 to ys.Count-1 do
-                let d = Pnt.sqDist pt ys.[j]
+                let d = Pnt.sqDist pnt ys.[j]
                 if d < minD then
                     minD <- d
                     xi <- i
@@ -78,10 +78,10 @@ type Points3D   =
         let mutable checkAgainstTempIdx = -1
         let mutable checkAgainstIdx = -1
         for i=0 to findPointFrom.Count-1 do
-            let pt = findPointFrom.[i]
+            let pnt = findPointFrom.[i]
             let mutable minD = Double.MaxValue
             for j=0 to checkAgainst.Count-1 do
-                let d = Pnt.sqDist pt checkAgainst.[j]
+                let d = Pnt.sqDist pnt checkAgainst.[j]
                 if d < minD then
                     minD <- d
                     checkAgainstTempIdx <-j
@@ -105,10 +105,10 @@ type Points3D   =
         let mutable y = 0.0
         let mutable z = 0.0
         for i = 0 to pts.Count-1 do
-            let pt = pts.[i]
-            x <- x + pt.X
-            y <- y + pt.Y
-            z <- z + pt.Z
+            let pnt = pts.[i]
+            x <- x + pnt.X
+            y <- y + pnt.Y
+            z <- z + pnt.Z
         let n = float pts.Count
         Pnt(x / n, y / n, z / n)
 
@@ -239,16 +239,16 @@ type Points() =
         Points2D.getSignedArea(ps)
 
     [<Obsolete("Use Points3D.closestPointIdx instead")>]
-    static member closestPointIdx (pts:ResizeArray<Pnt>, pt:Pnt) : int =
-        Points3D.closestPointIdx(pts, pt)
+    static member closestPointIdx (pts:ResizeArray<Pnt>, pnt:Pnt) : int =
+        Points3D.closestPointIdx(pts, pnt)
 
     [<Obsolete("Use Points2D.closestPointIdx instead")>]
     static member closestPointIdx (pts:ResizeArray<Pt>, pt:Pt) : int =
         Points2D.closestPointIdx(pts, pt)
 
     [<Obsolete("Use Points3D.closestPoint instead")>]
-    static member closestPoint (pts:ResizeArray<Pnt>, pt:Pnt) : Pnt=
-        Points3D.closestPoint(pts, pt)
+    static member closestPoint (pts:ResizeArray<Pnt>, pnt:Pnt) : Pnt=
+        Points3D.closestPoint(pts, pnt)
 
     [<Obsolete("Use Points2D.closestPoint instead")>]
     static member closestPoint (pts:ResizeArray<Pt>, pt:Pt) : Pt=
