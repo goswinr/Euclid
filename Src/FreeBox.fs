@@ -39,6 +39,8 @@ open FreeBoxUtil
 /// A class containing a flat array of 24 floats representing an arbitrary 3D box-like topology.
 /// The 8 corner points are stored interleaved as x0, y0, z0, x1, y1, z1, ... x7, y7, z7.
 /// The points can be in arbitrary position in space.
+/// All transformations, like Move, Scale or Rotate, mutate the FreeBox in place and return unit.
+/// Use Duplicate() first to keep the original.
 /// <code>
 ///       7               6
 ///       +---------------+
@@ -583,104 +585,105 @@ type FreeBox private (xyzs:float[]) =
     static member inline setPtXYZ (pointIndex:int) (x:float) (y:float) (z:float) (b:FreeBox) : unit =
         b.SetPtXYZ(pointIndex, x, y, z)
 
-    /// Returns a new FreeBox that is a copy of this one, with its own flat array of 24 floats.
+    /// <summary>Creates a copy of this FreeBox. Same as Clone().</summary>
+    /// <returns>A new FreeBox with its own flat array of 24 floats.</returns>
     member _.Duplicate() : FreeBox =
         FreeBox(Array.copy xyzs)
 
-    /// Returns a new FreeBox that is a copy of the given one, with its own flat array of 24 floats.
+    /// <summary>Creates a copy of the given FreeBox. Same as FreeBox.clone.</summary>
+    /// <param name="b">The FreeBox to copy.</param>
+    /// <returns>A new FreeBox with its own flat array of 24 floats.</returns>
     static member inline duplicate (b:FreeBox) : FreeBox =
         b.Duplicate()
 
-    /// Returns a new FreeBox scaled by a given factor on the world origin (0, 0, 0).
-    member _.Scale (factor:float) : FreeBox =
-        let r = Array.zeroCreate<float> coordinateCount
-        for i = 0 to coordinateCount - 1 do
-            r.[i] <- xyzs.[i] * factor
-        FreeBox r
+    /// <summary>Creates a copy of this FreeBox. Same as Duplicate().</summary>
+    /// <returns>A new FreeBox with its own flat array of 24 floats.</returns>
+    member _.Clone() : FreeBox =
+        FreeBox(Array.copy xyzs)
 
-    /// Returns a new FreeBox scaled by a given factor.
+    /// <summary>Creates a copy of the given FreeBox. Same as FreeBox.duplicate.</summary>
+    /// <param name="b">The FreeBox to copy.</param>
+    /// <returns>A new FreeBox with its own flat array of 24 floats.</returns>
+    static member inline clone (b:FreeBox) : FreeBox =
+        b.Clone()
+
+    /// Scales the FreeBox in place by a given factor on the world origin (0, 0, 0).
+    member _.Scale (factor:float) : unit =
+        for i = 0 to coordinateCount - 1 do
+            xyzs.[i] <- xyzs.[i] * factor
+
+    /// Scales the FreeBox in place by a given factor.
     /// Scale center is World Origin 0,0,0
-    static member inline scale (factor:float) (b:FreeBox) : FreeBox =
+    static member inline scale (factor:float) (b:FreeBox) : unit =
         b.Scale(factor)
 
-    /// Returns a new FreeBox scaled by a given factor on a given center point.
-    member _.ScaleOn (cen:Pnt, factor:float) : FreeBox =
+    /// Scales the FreeBox in place by a given factor on a given center point.
+    member _.ScaleOn (cen:Pnt, factor:float) : unit =
         let cx = cen.X
         let cy = cen.Y
         let cz = cen.Z
-        let r = Array.zeroCreate<float> coordinateCount
         let mutable i = 0
         while i < coordinateCount do
-            r.[i    ] <- cx + (xyzs.[i    ] - cx) * factor
-            r.[i + 1] <- cy + (xyzs.[i + 1] - cy) * factor
-            r.[i + 2] <- cz + (xyzs.[i + 2] - cz) * factor
+            xyzs.[i    ] <- cx + (xyzs.[i    ] - cx) * factor
+            xyzs.[i + 1] <- cy + (xyzs.[i + 1] - cy) * factor
+            xyzs.[i + 2] <- cz + (xyzs.[i + 2] - cz) * factor
             i <- i + 3
-        FreeBox r
 
-    /// Returns a new FreeBox scaled by a given factor on a given center point.
-    static member inline scaleOn (cen:Pnt)  (factor:float) (b:FreeBox) : FreeBox =
+    /// Scales the FreeBox in place by a given factor on a given center point.
+    static member inline scaleOn (cen:Pnt)  (factor:float) (b:FreeBox) : unit =
         b.ScaleOn(cen, factor)
 
-    /// Returns a new FreeBox moved by a vector. Same as FreeBox.move and FreeBox.translate.
-    member _.Move (v:Vec) : FreeBox =
+    /// Moves the FreeBox in place by a vector. Same as FreeBox.move and FreeBox.translate.
+    member _.Move (v:Vec) : unit =
         let vx = v.X
         let vy = v.Y
         let vz = v.Z
-        let r = Array.zeroCreate<float> coordinateCount
         let mutable i = 0
         while i < coordinateCount do
-            r.[i    ] <- xyzs.[i    ] + vx
-            r.[i + 1] <- xyzs.[i + 1] + vy
-            r.[i + 2] <- xyzs.[i + 2] + vz
+            xyzs.[i    ] <- xyzs.[i    ] + vx
+            xyzs.[i + 1] <- xyzs.[i + 1] + vy
+            xyzs.[i + 2] <- xyzs.[i + 2] + vz
             i <- i + 3
-        FreeBox r
 
-    /// Returns a new FreeBox moved by a vector. Same as FreeBox.translate.
-    static member inline move (v:Vec) (b:FreeBox) : FreeBox =
+    /// Moves the FreeBox in place by a vector. Same as FreeBox.translate.
+    static member inline move (v:Vec) (b:FreeBox) : unit =
         b.Move(v)
 
-    /// Returns a new FreeBox moved by a given distance in world X direction.
-    member _.MoveX (distance:float) : FreeBox =
-        let r = Array.copy xyzs
+    /// Moves the FreeBox in place by a given distance in world X direction.
+    member _.MoveX (distance:float) : unit =
         let mutable i = 0
         while i < coordinateCount do
-            r.[i] <- r.[i] + distance
+            xyzs.[i] <- xyzs.[i] + distance
             i <- i + 3
-        FreeBox r
 
-    /// Returns a new FreeBox moved by a given distance in world X direction.
-    static member inline moveX (distance:float) (b:FreeBox) : FreeBox =
+    /// Moves the FreeBox in place by a given distance in world X direction.
+    static member inline moveX (distance:float) (b:FreeBox) : unit =
         b.MoveX(distance)
 
-    /// Returns a new FreeBox moved by a given distance in world Y direction.
-    member _.MoveY (distance:float) : FreeBox =
-        let r = Array.copy xyzs
+    /// Moves the FreeBox in place by a given distance in world Y direction.
+    member _.MoveY (distance:float) : unit =
         let mutable i = 1
         while i < coordinateCount do
-            r.[i] <- r.[i] + distance
+            xyzs.[i] <- xyzs.[i] + distance
             i <- i + 3
-        FreeBox r
 
-    /// Returns a new FreeBox moved by a given distance in world Y direction.
-    static member inline moveY (distance:float) (b:FreeBox) : FreeBox =
+    /// Moves the FreeBox in place by a given distance in world Y direction.
+    static member inline moveY (distance:float) (b:FreeBox) : unit =
         b.MoveY(distance)
 
-    /// Returns a new FreeBox moved by a given distance in world Z direction.
-    member _.MoveZ (distance:float) : FreeBox =
-        let r = Array.copy xyzs
+    /// Moves the FreeBox in place by a given distance in world Z direction.
+    member _.MoveZ (distance:float) : unit =
         let mutable i = 2
         while i < coordinateCount do
-            r.[i] <- r.[i] + distance
+            xyzs.[i] <- xyzs.[i] + distance
             i <- i + 3
-        FreeBox r
 
-    /// Returns a new FreeBox moved by a given distance in world Z direction.
-    static member inline moveZ (distance:float) (b:FreeBox) : FreeBox =
+    /// Moves the FreeBox in place by a given distance in world Z direction.
+    static member inline moveZ (distance:float) (b:FreeBox) : unit =
         b.MoveZ(distance)
 
-    /// Returns a new FreeBox with a 4x4 transformation matrix applied to it.
-    member _.Transform (m:Matrix) : FreeBox =
-        let r = Array.zeroCreate<float> coordinateCount
+    /// Applies a 4x4 transformation matrix to the FreeBox in place.
+    member _.Transform (m:Matrix) : unit =
         let mutable i = 0
         while i < coordinateCount do
             let x = xyzs.[i    ]
@@ -691,42 +694,38 @@ type FreeBox private (xyzs:float[]) =
             let z' = m.M13*x + m.M23*y + m.M33*z + m.Z43 // * w
             let w' = m.M14*x + m.M24*y + m.M34*z + m.M44 // * w
             let sc = 1.0 / w'
-            r.[i    ] <- x' * sc
-            r.[i + 1] <- y' * sc
-            r.[i + 2] <- z' * sc
+            xyzs.[i    ] <- x' * sc
+            xyzs.[i + 1] <- y' * sc
+            xyzs.[i + 2] <- z' * sc
             i <- i + 3
-        FreeBox r
 
-    /// Returns a new FreeBox with a 4x4 transformation matrix applied to it.
-    static member inline transform (m:Matrix) (b:FreeBox) : FreeBox =
+    /// Applies a 4x4 transformation matrix to the FreeBox in place.
+    static member inline transform (m:Matrix) (b:FreeBox) : unit =
         b.Transform(m)
 
-    /// Returns a new FreeBox with a RigidMatrix applied to it.
-    member _.TransformRigid (m:RigidMatrix) : FreeBox =
-        let r = Array.zeroCreate<float> coordinateCount
+    /// Applies a RigidMatrix to the FreeBox in place.
+    member _.TransformRigid (m:RigidMatrix) : unit =
         let mutable i = 0
         while i < coordinateCount do
             let x = xyzs.[i    ]
             let y = xyzs.[i + 1]
             let z = xyzs.[i + 2]
-            r.[i    ] <- m.M11*x + m.M21*y + m.M31*z + m.X41
-            r.[i + 1] <- m.M12*x + m.M22*y + m.M32*z + m.Y42
-            r.[i + 2] <- m.M13*x + m.M23*y + m.M33*z + m.Z43
+            xyzs.[i    ] <- m.M11*x + m.M21*y + m.M31*z + m.X41
+            xyzs.[i + 1] <- m.M12*x + m.M22*y + m.M32*z + m.Y42
+            xyzs.[i + 2] <- m.M13*x + m.M23*y + m.M33*z + m.Z43
             i <- i + 3
-        FreeBox r
 
-    /// Returns a new FreeBox with a RigidMatrix applied to it.
-    static member inline transformRigid (m:RigidMatrix) (b:FreeBox) : FreeBox =
+    /// Applies a RigidMatrix to the FreeBox in place.
+    static member inline transformRigid (m:RigidMatrix) (b:FreeBox) : unit =
         b.TransformRigid(m)
 
-    /// Returns a new FreeBox rotated by a Quaternion.
+    /// Rotates the FreeBox in place by a Quaternion.
     /// The box is rotated around the World Origin.
-    member _.Rotate (q:Quaternion) : FreeBox =
+    member _.Rotate (q:Quaternion) : unit =
         let qx = q.X
         let qy = q.Y
         let qz = q.Z
         let qw = q.W
-        let r = Array.zeroCreate<float> coordinateCount
         let mutable i = 0
         while i < coordinateCount do
             let x = xyzs.[i    ]
@@ -736,19 +735,18 @@ type FreeBox private (xyzs:float[]) =
             let ty = 2.0 * (qz * x - qx * z)
             let tz = 2.0 * (qx * y - qy * x)
             // v + q.w * t + cross(q.xyz, t)
-            r.[i    ] <- x + qw * tx + qy * tz - qz * ty
-            r.[i + 1] <- y + qw * ty + qz * tx - qx * tz
-            r.[i + 2] <- z + qw * tz + qx * ty - qy * tx
+            xyzs.[i    ] <- x + qw * tx + qy * tz - qz * ty
+            xyzs.[i + 1] <- y + qw * ty + qz * tx - qx * tz
+            xyzs.[i + 2] <- z + qw * tz + qx * ty - qy * tx
             i <- i + 3
-        FreeBox r
 
-    /// Returns a new FreeBox rotated by a Quaternion.
+    /// Rotates the FreeBox in place by a Quaternion.
     /// The box is rotated around the World Origin.
-    static member inline rotate (q:Quaternion) (b:FreeBox) : FreeBox =
+    static member inline rotate (q:Quaternion) (b:FreeBox) : unit =
         b.Rotate(q)
 
-    /// Returns a new FreeBox rotated by a Quaternion around a given center point.
-    member _.RotateWithCenter (cen:Pnt, q:Quaternion) : FreeBox =
+    /// Rotates the FreeBox in place by a Quaternion around a given center point.
+    member _.RotateWithCenter (cen:Pnt, q:Quaternion) : unit =
         let cx = cen.X
         let cy = cen.Y
         let cz = cen.Z
@@ -756,7 +754,6 @@ type FreeBox private (xyzs:float[]) =
         let qy = q.Y
         let qz = q.Z
         let qw = q.W
-        let r = Array.zeroCreate<float> coordinateCount
         let mutable i = 0
         while i < coordinateCount do
             let x = xyzs.[i    ] - cx
@@ -766,14 +763,13 @@ type FreeBox private (xyzs:float[]) =
             let ty = 2.0 * (qz * x - qx * z)
             let tz = 2.0 * (qx * y - qy * x)
             // v + q.w * t + cross(q.xyz, t)
-            r.[i    ] <- x + qw * tx + qy * tz - qz * ty + cx
-            r.[i + 1] <- y + qw * ty + qz * tx - qx * tz + cy
-            r.[i + 2] <- z + qw * tz + qx * ty - qy * tx + cz
+            xyzs.[i    ] <- x + qw * tx + qy * tz - qz * ty + cx
+            xyzs.[i + 1] <- y + qw * ty + qz * tx - qx * tz + cy
+            xyzs.[i + 2] <- z + qw * tz + qx * ty - qy * tx + cz
             i <- i + 3
-        FreeBox r
 
-    /// Returns a new FreeBox rotated by a Quaternion around a given center point.
-    static member inline rotateWithCenter (cen:Pnt) (q:Quaternion) (b:FreeBox) : FreeBox =
+    /// Rotates the FreeBox in place by a Quaternion around a given center point.
+    static member inline rotateWithCenter (cen:Pnt) (q:Quaternion) (b:FreeBox) : unit =
         b.RotateWithCenter(cen, q)
 
     /// <summary>Creates a FreeBox from a flat array of 24 floats:
@@ -850,8 +846,8 @@ type FreeBox private (xyzs:float[]) =
         setCoordXYZ 7 d.X d.Y zMax xyzs
         FreeBox xyzs
 
-    /// Returns a new FreeBox translated by a vector. Same as FreeBox.move.
-    static member inline translate (v:Vec) (b:FreeBox) : FreeBox =
+    /// Moves the FreeBox in place by a vector. Same as FreeBox.move.
+    static member inline translate (v:Vec) (b:FreeBox) : unit =
         b.Move(v)
 
 

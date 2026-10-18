@@ -11,11 +11,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added the settable single coordinate properties `FreeBox.Pt0X`, `FreeBox.Pt0Y`, `FreeBox.Pt0Z` ... up to `FreeBox.Pt7Z`, one for each of the 24 floats of a `FreeBox`, plus the static getters `FreeBox.pt0X` ... `FreeBox.pt7Z`.
 
 ### Changed
+- **Breaking:** All transformations of `Polyline2D`, `Polyline3D` and `FreeBox` now mutate the object in place and return `unit`, instead of returning a new object. This covers the members `Scale`, `ScaleOn`, `Move`, `MoveX`, `MoveY`, `MoveZ`, `Transform`, `TransformRigid`, `Rotate`, `RotateWithCenter`, `RotateOnZ` and `RotateOnZWithCenter`, and their static counterparts `scale`, `scaleOn`, `move`, `translate`, `moveX`, `moveY`, `moveZ`, `transform`, `transformRigid`, `rotate`, `rotateWithCenter`, `rotateOnZ` and `rotateOnZWithCenter`, as far as each type has them. The obsolete `Polyline3D.rotateByQuaternion`, `rotateWithCenterByQuaternion` and `rotate2D` follow along. They no longer allocate a new coordinate buffer. Call `Duplicate()` first to keep the original.
+- **Breaking:** `Polyline2D` and `Polyline3D` now also reverse, close and reorient in place and return `unit`: `Reverse`, `reverse`, `close`, `ensureClockwise` and `ensureCounterClockwise` on `Polyline2D`, and `ensureClockwiseIn2D` and `ensureCounterClockwiseIn2D` on `Polyline3D`. The member `CloseInPlace` is renamed to `Close`.
+- **Breaking:** The clean up functions `removeDuplicatePoints`, `removeDuplicatePointsFaithfully`, `removeDuplicateAndCollinearPoints`, `removeUTurns` and `removeUTurnsDeeply` of `Polyline2D` and `Polyline3D` now remove the points in place and return `unit`. The resulting points are bit-identical to before. If one of them raises an error, the polyline is not changed.
+- **Breaking:** `Polyline2D.checkForDuplicatePoints` and `Polyline3D.checkForDuplicatePoints` are renamed to `removeDuplicatePointsAndReport`. They now remove the duplicate points in place and return the removed points as a `ResizeArray`, which is empty if there were none, instead of a `Result`.
+- The map functions, `subPolyline` and all offset functions of `Polyline2D` and `Polyline3D` still return a new polyline and leave the input unchanged.
 - `FreeBox` now stores its 8 corners as a flat array of 24 interleaved floats (`x0, y0, z0, x1, y1, z1, ... x7, y7, z7`), instead of an array of 8 `Pnt`. This matches how `Polyline2D` and `Polyline3D` store their points, and lets all transformations run on the raw floats without allocating intermediate points. The corner accessors `Pt0`-`Pt7`, `GetPt`, `SetPt` and all edges are unchanged. JSON serialization of a `FreeBox` now writes the `XYZs` array of 24 floats instead of a `Points` array of 8 points.
 
 ### Fixed
 - `Box.createFromPlaneAndPoints` and `Box.createFromDirsAndPoints` skipped the first point, so the resulting box did not always contain it.
 - `Tria3D.offsetVar` returned a wrong point: it moved along the offset normal instead of along the previous segment to reach the intersection of the two offset lines.
+
+### Removed
+- **Breaking:** Removed the in-place variants of `Polyline2D` and `Polyline3D`, since the functions without the suffix now mutate in place: `ReverseInPlace`, `reverseInPlace`, `CloseInPlace` (now `Close`), `closeInPlace`, `Polyline2D.ensureClockwiseInPlace`, `Polyline2D.ensureCounterClockwiseInPlace`, `Polyline3D.ensureClockwiseInPlaceIn2D` and `Polyline3D.ensureCounterClockwiseInPlaceIn2D`. Also removed the obsolete `CloseIfOpen` and `Polyline3D.closeIfOpen`.
 
 ### Deprecated
 - `FreeBox.Points` and the static `FreeBox.points` are obsolete. Since `FreeBox` stores a flat array of 24 floats they do not return the live internal buffer any more, but a copy. Use `FreeBox.AsPoints` for the 8 corner points, or `FreeBox.XYZs` for the live buffer.

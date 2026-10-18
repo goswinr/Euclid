@@ -147,6 +147,7 @@ let firstSeg = pl2d.FirstSegment
 let seg = pl2d.GetSegment(1)
 pl2d.SetPt (2, Pt(12, 5))
 let copy = pl2d.Duplicate()
+copy.Move(Vc(0, 3))
 let pl3d = Polyline3D.createFromPts [ Pnt(0, 0, 0); Pnt(10, 0, 0); Pnt(10, 5, 3) ]
 let totalLen = pl3d.Length
 

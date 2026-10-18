@@ -256,8 +256,8 @@ let tests =
         let dNext = 0.8
         match Tria3D.offsetVar(pt, prev, next, dPrev, dNext) with
         | ValueSome o ->
-            let distPrev = sqrt (Line3D(prev, pt).DistanceSqToPntInfinite o)
-            let distNext = sqrt (Line3D(pt, next).DistanceSqToPntInfinite o)
+            let distPrev = sqrt (Line3D(prev, pt).SqDistanceRayPoint o)
+            let distNext = sqrt (Line3D(pt, next).SqDistanceRayPoint o)
             $"distance to prev segment line should be {dPrev} but is {distPrev}" |> Expect.isTrue (abs (distPrev - dPrev) < 1e-9)
             $"distance to next segment line should be {dNext} but is {distNext}" |> Expect.isTrue (abs (distNext - dNext) < 1e-9)
         | ValueNone -> failwith "offsetVar returned None unexpectedly"

@@ -2147,8 +2147,12 @@ module FreeBoxAPI =
 
     // Instance members - Operations
     let (_:FreeBox) = freebox.Duplicate()
-    let (_:FreeBox) = freebox.Scale 2.0
-    let (_:FreeBox) = freebox.ScaleOn (Pnt.Origin, 2.0)
+    let (_:unit) = freebox.Scale 2.0
+    let (_:unit) = freebox.ScaleOn (Pnt.Origin, 2.0)
+    let (_:unit) = freebox.Move (Vec(1., 1., 1.))
+    let (_:unit) = freebox.MoveZ 1.0
+    let (_:unit) = freebox.Transform Matrix.identity
+    let (_:unit) = freebox.Rotate Quaternion.identity
 
     // Static members
     let (_:float[]) = FreeBox.getXYZs freebox
@@ -2161,6 +2165,10 @@ module FreeBoxAPI =
     let (_:float) = FreeBox.pt7Z freebox
     let (_:FreeBox) = FreeBox.createDirectly (Array.copy freebox.XYZs)
     let (_:FreeBox) = FreeBox.createFromEightPoints freebox.AsPoints
+    let (_:unit) = FreeBox.translate (Vec(1., 1., 1.)) freebox
+    let (_:unit) = FreeBox.scale 2.0 freebox
+    let (_:unit) = FreeBox.transformRigid RigidMatrix.identity freebox
+    let (_:unit) = FreeBox.rotateWithCenter Pnt.Origin Quaternion.identity freebox
 
 // ===== Polyline2D (2D Polyline) =====
 
@@ -2209,11 +2217,12 @@ module Polyline2DAPI =
     let (_:int) = polyline2d.WindingNumber pt
     let (_:Polyline2D) = polyline2d.Duplicate()
     let (_:Polyline2D) = polyline2d.Clone()
-    let (_:Polyline2D) = polyline2d.Reverse()
-    let (_:unit) = polyline2d.ReverseInPlace()
-    let (_:unit) = polyline2d.CloseIfOpen(0.0)
-    let (_:Polyline2D) = polyline2d.Scale 2.0
-    let (_:Polyline2D) = polyline2d.ScaleOn Pt.Origin 2.0
+    let (_:unit) = polyline2d.Reverse()
+    let (_:unit) = polyline2d.Close(0.0)
+    let (_:unit) = polyline2d.Scale 2.0
+    let (_:unit) = polyline2d.ScaleOn Pt.Origin 2.0
+    let (_:unit) = polyline2d.Move (Vc(1., 1.))
+    let (_:unit) = polyline2d.Rotate (Rotation2D.createFromDegrees 45.0)
 
     // Static members - Creation
     let (_:Polyline2D) = Polyline2D.createFromPts(ResizeArray [Pt(0., 0.); Pt(10., 0.); Pt(10., 10.)])
@@ -2227,17 +2236,18 @@ module Polyline2DAPI =
     // Static members - Operations
     let vc = Vc(1., 1.)
     let (_:Pt) = Polyline2D.evaluateAt 0.5 polyline2d
-    let (_:Polyline2D) = Polyline2D.translate  vc polyline2d
-    let (_:Polyline2D) = Polyline2D.move  vc polyline2d
-    let (_:Polyline2D) = Polyline2D.moveX 1.0 polyline2d
-    let (_:Polyline2D) = Polyline2D.moveY 1.0 polyline2d
-    let (_:Polyline2D) = Polyline2D.rotate (Rotation2D.createFromDegrees 45.0) polyline2d
-    let (_:Polyline2D) = Polyline2D.rotateWithCenter Pt.Origin (Rotation2D.createFromDegrees 45.0) polyline2d
-    let (_:Polyline2D) = Polyline2D.scale 2.0 polyline2d
-    let (_:Polyline2D) = Polyline2D.reverse polyline2d
-    let (_:Polyline2D) = Polyline2D.reverseInPlace polyline2d
-    let (_:Polyline2D) = Polyline2D.close 1e-6 polyline2d
-    let (_:Polyline2D) = Polyline2D.closeInPlace 1e-6 polyline2d
+    let (_:unit) = Polyline2D.translate  vc polyline2d
+    let (_:unit) = Polyline2D.move  vc polyline2d
+    let (_:unit) = Polyline2D.moveX 1.0 polyline2d
+    let (_:unit) = Polyline2D.moveY 1.0 polyline2d
+    let (_:unit) = Polyline2D.rotate (Rotation2D.createFromDegrees 45.0) polyline2d
+    let (_:unit) = Polyline2D.rotateWithCenter Pt.Origin (Rotation2D.createFromDegrees 45.0) polyline2d
+    let (_:unit) = Polyline2D.scale 2.0 polyline2d
+    let (_:unit) = Polyline2D.reverse polyline2d
+    let (_:unit) = Polyline2D.close 1e-6 polyline2d
+    let (_:unit) = Polyline2D.ensureCounterClockwise polyline2d
+    let (_:unit) = Polyline2D.removeDuplicatePoints 1e-6 polyline2d
+    let (_:Pt ResizeArray) = Polyline2D.removeDuplicatePointsAndReport 1e-6 polyline2d
     let (_:Polyline2D) = Polyline2D.subPolyline 0.2 0.8 polyline2d
     let (_:float) = Polyline2D.closestParameter polyline2d pt
     let (_:Pt) = Polyline2D.closestPoint polyline2d pt
@@ -2295,11 +2305,12 @@ module Polyline3DAPI =
     let (_:Pnt) = polyline3d.ClosestPoint(Pnt(5., 5., 0.))
     let (_:Polyline3D) = polyline3d.Duplicate()
     let (_:Polyline3D) = polyline3d.Clone()
-    let (_:Polyline3D) = polyline3d.Reverse()
-    let (_:unit) = polyline3d.ReverseInPlace()
-    let (_:unit) = polyline3d.CloseIfOpen(0.0)
-    let (_:Polyline3D) = polyline3d.Scale 2.0
-    let (_:Polyline3D) = polyline3d.ScaleOn Pnt.Origin 2.0
+    let (_:unit) = polyline3d.Reverse()
+    let (_:unit) = polyline3d.Close(0.0)
+    let (_:unit) = polyline3d.Scale 2.0
+    let (_:unit) = polyline3d.ScaleOn Pnt.Origin 2.0
+    let (_:unit) = polyline3d.Move (Vec(1., 1., 1.))
+    let (_:unit) = polyline3d.Rotate Quaternion.identity
 
     // Static members - Creation
     let (_:Polyline3D) = Polyline3D.createFromPts(ResizeArray [Pnt(0., 0., 0.); Pnt(10., 0., 0.); Pnt(10., 10., 0.)])
@@ -2312,19 +2323,21 @@ module Polyline3DAPI =
 
     // Static members - Operations
     let (_:Pnt) = Polyline3D.evaluateAt 0.5 polyline3d
-    let (_:Polyline3D) = Polyline3D.translate (Vec(1., 1., 1.)) polyline3d
-    let (_:Polyline3D) = Polyline3D.transform Matrix.identity polyline3d
-    let (_:Polyline3D) = Polyline3D.move (Vec(1., 1., 1.)) polyline3d
-    let (_:Polyline3D) = Polyline3D.moveX 1.0 polyline3d
-    let (_:Polyline3D) = Polyline3D.moveY 1.0 polyline3d
-    let (_:Polyline3D) = Polyline3D.moveZ 1.0 polyline3d
-    let (_:Polyline3D) = Polyline3D.rotateOnZ (Rotation2D.createFromDegrees 45.0) polyline3d
-    let (_:Polyline3D) = Polyline3D.rotateOnZWithCenter Pnt.Origin (Rotation2D.createFromDegrees 45.0) polyline3d
-    let (_:Polyline3D) = Polyline3D.scale 2.0 polyline3d
-    let (_:Polyline3D) = Polyline3D.reverse polyline3d
-    let (_:Polyline3D) = Polyline3D.reverseInPlace polyline3d
-    let (_:Polyline3D) = Polyline3D.close 0.0 polyline3d
-    let (_:Polyline3D) = Polyline3D.closeInPlace 0.0 polyline3d
+    let (_:unit) = Polyline3D.translate (Vec(1., 1., 1.)) polyline3d
+    let (_:unit) = Polyline3D.transform Matrix.identity polyline3d
+    let (_:unit) = Polyline3D.transformRigid RigidMatrix.identity polyline3d
+    let (_:unit) = Polyline3D.move (Vec(1., 1., 1.)) polyline3d
+    let (_:unit) = Polyline3D.moveX 1.0 polyline3d
+    let (_:unit) = Polyline3D.moveY 1.0 polyline3d
+    let (_:unit) = Polyline3D.moveZ 1.0 polyline3d
+    let (_:unit) = Polyline3D.rotateOnZ (Rotation2D.createFromDegrees 45.0) polyline3d
+    let (_:unit) = Polyline3D.rotateOnZWithCenter Pnt.Origin (Rotation2D.createFromDegrees 45.0) polyline3d
+    let (_:unit) = Polyline3D.scale 2.0 polyline3d
+    let (_:unit) = Polyline3D.reverse polyline3d
+    let (_:unit) = Polyline3D.close 0.0 polyline3d
+    let (_:unit) = Polyline3D.ensureCounterClockwiseIn2D polyline3d
+    let (_:unit) = Polyline3D.removeDuplicatePoints 1e-6 polyline3d
+    let (_:Pnt ResizeArray) = Polyline3D.removeDuplicatePointsAndReport 1e-6 polyline3d
     let (_:Polyline3D) = Polyline3D.subPolyline 0.2 0.8 polyline3d
     let (_:float) = Polyline3D.closestParameter polyline3d (Pnt(5., 5., 0.))
     let (_:Pnt) = Polyline3D.closestPoint polyline3d (Pnt(5., 5., 0.))

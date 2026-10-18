@@ -38,6 +38,9 @@ open Polyline2DUtil
 /// A class holding a list of 2D points representing a mutable 2D Polyline.
 /// If the last point is the same as the first point, the Polyline2D is considered closed.
 /// The source-of-truth storage is an interleaved float buffer: x0, y0, x1, y1, ...
+/// All transformations, like Move, Scale or Rotate, and all clean up functions, like Reverse, Close or removeDuplicatePoints,
+/// mutate the Polyline2D in place and return unit. Use Duplicate() first to keep the original.
+/// Only the map functions, subPolyline and the offset functions return a new Polyline2D.
 // [<Struct>] // if it was a struct the Polyline2D() constructor would set _XYs to null, not empty.
 [<NoEquality; NoComparison>] // because its made up from floats
 [<DataContract>] // for using DataMember on fields, for Newtonsoft.Json
@@ -559,22 +562,8 @@ type Polyline2D private (xys: ResizeArray<float>) =
     static member inline isAlmostClosed tolerance (p:Polyline2D) : bool =
         p.IsAlmostClosed tolerance
 
-    /// Returns new Polyline2D in reversed Order.
-    member p.Reverse () : Polyline2D =
-        let rev = ResizeArray<float>(xys.Count)
-        let mutable i = xys.Count - 2
-        while i >= 0 do
-            rev.Add xys.[i]
-            rev.Add xys.[i + 1]
-            i <- i - 2
-        Polyline2D.createDirectly rev
-
-    /// Returns new Polyline2D in reversed Order.
-    static member reverse (p:Polyline2D) : Polyline2D =
-        p.Reverse()
-
-    /// Reverse order of the Polyline2D in place.
-    member p.ReverseInPlace() : unit =
+    /// Reverses the order of the Polyline2D in place.
+    member p.Reverse() : unit =
         let mutable left = 0
         let mutable right = xys.Count - 2
         while left < right do
@@ -587,20 +576,18 @@ type Polyline2D private (xys: ResizeArray<float>) =
             left <- left + 2
             right <- right - 2
 
-    /// <summary>Reverse order of the Polyline2D in place.</summary>
-    /// <param name="p">The Polyline2D to reverse.</param>
-    /// <returns>A reference to the same Polyline2D as the input</returns>
-    static member reverseInPlace (p:Polyline2D) : Polyline2D =
-        p.ReverseInPlace()
-        p
+    /// Reverses the order of the Polyline2D in place.
+    static member reverse (p:Polyline2D) : unit =
+        p.Reverse()
 
-    /// <summary>Close the Polyline2D if it is not already closed.
+    /// <summary>Closes the Polyline2D in place if it is not already closed.
     /// If the ends are closer than the tolerance, the last point is set equal to the first point.
-    /// Otherwise the start point is added to the end of the Polyline2D.</summary>
+    /// Otherwise the start point is added to the end of the Polyline2D.
+    /// Raises an error if the Polyline2D has fewer than 3 points.</summary>
     /// <param name="toleranceForAddingPoint">Optional. 1e-6 by default
     /// The tolerance used to decide whether to snap the last point to the first point.</param>
-    member p.CloseInPlace([<OPT;DEF(1e-6)>]toleranceForAddingPoint:float) : unit =
-        if p.PointCount < 3 then failTooFewPoly2D "CloseInPlace" 3 p.PointCount
+    member p.Close([<OPT;DEF(1e-6)>]toleranceForAddingPoint:float) : unit =
+        if p.PointCount < 3 then failTooFewPoly2D "Close" 3 p.PointCount
         let sx = xys.[0]
         let sy = xys.[1]
         let ex = xys.SecondLast
@@ -614,15 +601,14 @@ type Polyline2D private (xys: ResizeArray<float>) =
             xys.Add sx
             xys.Add sy
 
-    /// <summary>Close the Polyline2D if it is not already closed.
+    /// <summary>Closes the Polyline2D in place if it is not already closed.
     /// If the ends are closer than the tolerance, the last point is set equal to the first point.
-    /// Otherwise the start point is added to the end of the Polyline2D.</summary>
+    /// Otherwise the start point is added to the end of the Polyline2D.
+    /// Raises an error if the Polyline2D has fewer than 3 points.</summary>
     /// <param name="toleranceForAddingPoint">The tolerance used to decide whether to snap the last point to the first point.</param>
     /// <param name="pl">The Polyline2D to close.</param>
-    /// <returns>A reference to the same Polyline2D as the input</returns>
-    static member closeInPlace (toleranceForAddingPoint:float) (pl:Polyline2D) : Polyline2D =
-        pl.CloseInPlace toleranceForAddingPoint
-        pl
+    static member close (toleranceForAddingPoint:float) (pl:Polyline2D) : unit =
+        pl.Close toleranceForAddingPoint
 
     /// Calculates the signed area of the Polyline2D.
     /// If it is positive the Polyline2D is counter-clockwise.
@@ -1139,91 +1125,75 @@ type Polyline2D private (xys: ResizeArray<float>) =
     static member inline center (p:Polyline2D) : Pt =
         p.Center
 
-    /// Scales the Polyline2D by a given factor.
+    /// Scales the Polyline2D in place by a given factor.
     /// Scale center is World Origin 0,0
-    /// Returns a new Polyline2D.
-    member p.Scale (factor:float) : Polyline2D =
-        let cs = ResizeArray<float>(xys.Count)
+    member p.Scale (factor:float) : unit =
         let mutable i = 0
         let len = xys.Count
         while i < len do
-            cs.Add(xys.[i] * factor)
-            cs.Add(xys.[i + 1] * factor)
-            i <- i + 2
-        Polyline2D(cs)
+            xys.[i] <- xys.[i] * factor
+            i <- i + 1
 
-    /// Scales the Polyline2D by a given factor.
+    /// Scales the Polyline2D in place by a given factor.
     /// Scale center is World Origin 0,0
-    /// Returns a new Polyline2D.
-    static member scale (factor:float) (pl:Polyline2D) : Polyline2D =
+    static member scale (factor:float) (pl:Polyline2D) : unit =
         pl.Scale factor
 
-    /// Scales the Polyline2D by a given factor on a given center point.
-    /// Returns a new Polyline2D.
-    member p.ScaleOn (cen:Pt) (factor:float) : Polyline2D =
+    /// Scales the Polyline2D in place by a given factor on a given center point.
+    member p.ScaleOn (cen:Pt) (factor:float) : unit =
         let cx = cen.X
         let cy = cen.Y
-        let cs = ResizeArray<float>(xys.Count)
         let mutable i = 0
         let len = xys.Count
         while i < len do
-            cs.Add(cx + (xys.[i    ] - cx) * factor)
-            cs.Add(cy + (xys.[i + 1] - cy) * factor)
+            xys.[i    ] <- cx + (xys.[i    ] - cx) * factor
+            xys.[i + 1] <- cy + (xys.[i + 1] - cy) * factor
             i <- i + 2
-        Polyline2D(cs)
 
-    /// Scales the Polyline2D by a given factor on a given center point.
-    /// Returns a new Polyline2D.
-    static member inline scaleOn (cen:Pt) (factor:float) (pl:Polyline2D) : Polyline2D =
+    /// Scales the Polyline2D in place by a given factor on a given center point.
+    static member inline scaleOn (cen:Pt) (factor:float) (pl:Polyline2D) : unit =
         pl.ScaleOn cen factor
 
-    /// Returns a Polyline2D moved by a vector. Same as Polyline2D.move and Polyline2D.translate.
-    member p.Move (v:Vc) : Polyline2D =
+    /// Moves the Polyline2D in place by a vector. Same as Polyline2D.move and Polyline2D.translate.
+    member p.Move (v:Vc) : unit =
         Polyline2D.translate v p
 
-    /// Returns a Polyline2D moved by a vector. Same as Polyline2D.translate.
-    static member move (v:Vc) (pl:Polyline2D)  : Polyline2D =
+    /// Moves the Polyline2D in place by a vector. Same as Polyline2D.translate.
+    static member move (v:Vc) (pl:Polyline2D) : unit =
         Polyline2D.translate v pl
 
-    /// Returns a Polyline2D moved by a given distance in X direction.
-    member p.MoveX (distance:float) : Polyline2D =
+    /// Moves the Polyline2D in place by a given distance in X direction.
+    member p.MoveX (distance:float) : unit =
         Polyline2D.moveX distance p
 
-    /// Returns a Polyline2D moved by a given distance in X direction.
-    static member moveX (distance:float) (pl:Polyline2D)  : Polyline2D =
-        let cs = ResizeArray<float>(pl.XYs.Count)
+    /// Moves the Polyline2D in place by a given distance in X direction.
+    static member moveX (distance:float) (pl:Polyline2D) : unit =
         let mutable i = 0
         let xys = pl.XYs
         let len = xys.Count
         while i < len do
-            cs.Add(xys.[i] + distance)
-            cs.Add(xys.[i + 1])
+            xys.[i] <- xys.[i] + distance
             i <- i + 2
-        Polyline2D(cs)
 
-    /// Returns a Polyline2D moved by a given distance in Y direction.
-    member p.MoveY (distance:float) : Polyline2D =
+    /// Moves the Polyline2D in place by a given distance in Y direction.
+    member p.MoveY (distance:float) : unit =
         Polyline2D.moveY distance p
 
-    /// Returns a Polyline2D moved by a given distance in Y direction.
-    static member moveY (distance:float) (pl:Polyline2D)  : Polyline2D =
-        let cs = ResizeArray<float>(pl.XYs.Count)
-        let mutable i = 0
+    /// Moves the Polyline2D in place by a given distance in Y direction.
+    static member moveY (distance:float) (pl:Polyline2D) : unit =
+        let mutable i = 1
         let xys = pl.XYs
         let len = xys.Count
         while i < len do
-            cs.Add(xys.[i])
-            cs.Add(xys.[i + 1] + distance)
+            xys.[i] <- xys.[i] + distance
             i <- i + 2
-        Polyline2D(cs)
 
-    /// Rotates a Polyline2D around the world origin by a Rotation2D.
-    member p.Rotate (r:Rotation2D) : Polyline2D =
+    /// Rotates the Polyline2D in place around the world origin by a Rotation2D.
+    member p.Rotate (r:Rotation2D) : unit =
         Polyline2D.rotate r p
 
-    /// Rotates a Polyline2D around the world origin by a Rotation2D.
-    static member rotate (r:Rotation2D) (pl:Polyline2D) : Polyline2D =
-        let cs = ResizeArray<float>(pl.XYs.Count)
+    /// Rotates the Polyline2D in place around the world origin by a Rotation2D.
+    static member rotate (r:Rotation2D) (pl:Polyline2D) : unit =
         let mutable i = 0
         let xys = pl.XYs
         let len = xys.Count
@@ -1232,21 +1202,16 @@ type Polyline2D private (xys: ResizeArray<float>) =
         while i < len do
             let x = xys.[i]
             let y = xys.[i + 1]
-            cs.Add (cos * x - sin * y)
-            cs.Add (sin * x + cos * y)
+            xys.[i    ] <- cos * x - sin * y
+            xys.[i + 1] <- sin * x + cos * y
             i <- i + 2
-        Polyline2D(cs)
 
-    /// Rotates a Polyline2D around a given center point by a Rotation2D.
-    member p.RotateWithCenter (cen:Pt, r:Rotation2D) : Polyline2D =
+    /// Rotates the Polyline2D in place around a given center point by a Rotation2D.
+    member p.RotateWithCenter (cen:Pt, r:Rotation2D) : unit =
         Polyline2D.rotateWithCenter cen r p
 
-
-
-
-    /// Rotates a Polyline2D around a given center point by a Rotation2D.
-    static member rotateWithCenter (cen:Pt) (r:Rotation2D) (pl:Polyline2D) : Polyline2D =
-        let cs = ResizeArray<float>(pl.XYs.Count)
+    /// Rotates the Polyline2D in place around a given center point by a Rotation2D.
+    static member rotateWithCenter (cen:Pt) (r:Rotation2D) (pl:Polyline2D) : unit =
         let mutable i = 0
         let xys = pl.XYs
         let len = xys.Count
@@ -1257,10 +1222,9 @@ type Polyline2D private (xys: ResizeArray<float>) =
         while i < len do
             let x = xys.[i] - cx
             let y = xys.[i + 1] - cy
-            cs.Add (cx + cos * x - sin * y)
-            cs.Add (cy + sin * x + cos * y)
+            xys.[i    ] <- cx + cos * x - sin * y
+            xys.[i + 1] <- cy + sin * x + cos * y
             i <- i + 2
-        Polyline2D(cs)
 
     // #endregion
     // #region LablePoint
@@ -1381,42 +1345,28 @@ type Polyline2D private (xys: ResizeArray<float>) =
     // #region Static members
 
     /// Tests if the Polyline2D is Clockwise.
-    /// Returns the same instance if the Polyline2D is already Clockwise,
-    /// otherwise returns a new reversed Polyline2D.
-    static member inline ensureClockwise (pl:Polyline2D) : Polyline2D =
-        if pl.IsClockwise then pl else pl.Reverse()
+    /// If not, reverses the Polyline2D in place.
+    /// Raises an error if the area of the Polyline2D is zero.
+    static member inline ensureClockwise (pl:Polyline2D) : unit =
+        if pl.IsCounterClockwise then pl.Reverse()
 
     /// Tests if the Polyline2D is counter-clockwise.
-    /// Returns the same instance if the Polyline2D is already counter-clockwise,
-    /// otherwise returns a new reversed Polyline2D.
-    static member inline ensureCounterClockwise (pl:Polyline2D) : Polyline2D =
-        if pl.IsCounterClockwise then pl else pl.Reverse()
+    /// If not, reverses the Polyline2D in place.
+    /// Raises an error if the area of the Polyline2D is zero.
+    static member inline ensureCounterClockwise (pl:Polyline2D) : unit =
+        if pl.IsClockwise then pl.Reverse()
 
-    /// Tests if the Polyline2D is Clockwise.
-    /// If not reverse the Polyline2D in place.
-    /// Always returns the same instance.
-    static member inline ensureClockwiseInPlace (pl:Polyline2D) : Polyline2D =
-        if pl.IsCounterClockwise then pl.ReverseInPlace()
-        pl
-
-    /// Tests if the Polyline2D is counter-clockwise.
-    /// If not reverse the Polyline2D in place.
-    /// Always returns the same instance.
-    static member inline ensureCounterClockwiseInPlace (pl:Polyline2D) : Polyline2D =
-        if pl.IsClockwise then pl.ReverseInPlace()
-        pl
-
-    /// Returns a Polyline2D moved by a vector. Same as Polyline2D.move.
-    static member translate (v:Vc) (pl:Polyline2D)  : Polyline2D =
-        let cs = ResizeArray<float>(pl.XYs.Count)
+    /// Moves the Polyline2D in place by a vector. Same as Polyline2D.move.
+    static member translate (v:Vc) (pl:Polyline2D) : unit =
         let mutable i = 0
         let xys = pl.XYs
         let len = xys.Count
+        let vx = v.X
+        let vy = v.Y
         while i < len do
-            cs.Add(xys.[i]     + v.X)
-            cs.Add(xys.[i + 1] + v.Y)
+            xys.[i    ] <- xys.[i    ] + vx
+            xys.[i + 1] <- xys.[i + 1] + vy
             i <- i + 2
-        Polyline2D(cs)
 
     // #endregion
     // #region Map and Iter
@@ -1802,113 +1752,93 @@ type Polyline2D private (xys: ResizeArray<float>) =
             np.AddXY (p.X, p.Y)
         // reverse if necessary
         if rev then
-            np.ReverseInPlace()
-        np
-
-    /// Returns a new closed Polyline2D.
-    /// If the first and last point are within the tolerance of each other, the last point is set equal to the first point.
-    /// Otherwise one point is added.
-    /// Raises an error if the Polyline2D has fewer than 3 points, same as CloseInPlace.
-    static member close (toleranceForAddingPoint:float) (pl:Polyline2D) : Polyline2D =
-        if pl.PointCount < 3 then failTooFewPoly2D "close" 3 pl.PointCount
-        let np = pl.Duplicate()
-        let sx = np.GetX 0
-        let sy = np.GetY 0
-        let lastIdx = np.PointCount - 1
-        let ex = np.GetX lastIdx
-        let ey = np.GetY lastIdx
-        let dx = sx - ex
-        let dy = sy - ey
-        if dx * dx + dy * dy <= toleranceForAddingPoint * toleranceForAddingPoint then // <= needed so it works with 0.0
-            np.SetPointXY (lastIdx, sx, sy) // set last point equal to first
-        else
-            np.AddXY (sx, sy)
+            np.Reverse()
         np
 
 
     // #endregion
     // #region Clean up
 
-    /// <summary>Removes simple sharp U-Turns from a Polyline</summary>
+    /// <summary>Removes simple sharp U-Turns from the Polyline2D in place.</summary>
     /// <param name="minCos"> The angle between segments so that they are considered a U-turn.
     /// For example, for 179.9 degrees use 'Cosine.``179.9``'. </param>
     /// <param name="polyLine"> A 2D Polyline, open or closed. </param>
     /// <remarks>The Offset2D module also has a removeUTurns function that takes precomputed unit vectors and is therefore more efficient.
     /// For nested U-turns and collinear points in U-turns segments use 'removeUTurnsDeeply'. That function calls repeatedly until no more U-turns are present.</remarks>
-    /// <returns>If no U-turns are present, the List of points of the original Polyline2D is reused and a new Polyline2D is created with that list.
-    /// If U-turns are present, a new ResizeArray of points is returned with simple U-turns removed.</returns>
-    static member removeUTurns ( minCos:float<Cosine.cosine>) (polyLine:Polyline2D): Polyline2D =
-        let vs  = Offset2D.makeUnitTangents polyLine.XYs
-        let pts = Offset2D.removeUTurns(polyLine.XYs,vs,minCos)
-        Polyline2D pts
+    static member removeUTurns ( minCos:float<Cosine.cosine>) (polyLine:Polyline2D): unit =
+        let xys = polyLine.XYs
+        let vs  = Offset2D.makeUnitTangents xys
+        let res = Offset2D.removeUTurns(xys, vs, minCos)
+        if not (Object.ReferenceEquals(res, xys)) then // Offset2D.removeUTurns returns the input list if there are no U-turns
+            R.clear xys
+            xys.AddRange res
 
-    /// <summary>Removes all sharp U-Turns from a Polyline recursively until no more U-turns are present.
+    /// <summary>Removes all sharp U-Turns from the Polyline2D in place, recursively until no more U-turns are present.
     /// This function calls 'removeUTurns' repeatedly until no more U-turns are present.
     /// Use this function when you have nested U-turns and collinear points in U-turns segments.</summary>
     /// <param name="minCos"> The angle between segments so that they are considered a U-turn.
     /// For example, for 179.9 degrees use 'Cosine.``179.9``'. </param>
     /// <param name="polyLine"> A 2D Polyline, open or closed. </param>
-    /// <returns>If no U-turns are present, the List of points of the original Polyline2D is reused and a new Polyline2D is created with that list.
-    /// If U-turns are present, a new ResizeArray of points is returned with all U-turns removed.</returns>
-    static member removeUTurnsDeeply ( minCos:float<Cosine.cosine>) (polyLine:Polyline2D): Polyline2D =
-        let mutable input = polyLine
-        let mutable output = Polyline2D.removeUTurns minCos polyLine
-        while output.PointCount <> input.PointCount do
+    /// <remarks>If an error is raised in any of the repeated calls, the Polyline2D is not changed.</remarks>
+    static member removeUTurnsDeeply ( minCos:float<Cosine.cosine>) (polyLine:Polyline2D): unit =
+        let xys = polyLine.XYs
+        let mutable input = xys
+        let mutable output = Offset2D.removeUTurns(input, Offset2D.makeUnitTangents input, minCos)
+        while output.Count <> input.Count do
             input  <- output
-            output <- Polyline2D.removeUTurns minCos input
-        output
+            output <- Offset2D.removeUTurns(input, Offset2D.makeUnitTangents input, minCos)
+        if not (Object.ReferenceEquals(output, xys)) then // only write back once all passes succeeded
+            R.clear xys
+            xys.AddRange output
 
-    /// <summary>Removes consecutive duplicate points from the Polyline2D within a given tolerance.</summary>
+    /// <summary>Removes consecutive duplicate points from the Polyline2D in place, within a given tolerance.</summary>
     /// <param name="distanceTolerance"> The distance within which points are considered duplicates. </param>
     /// <param name="pl"> A 2D Polyline, open or closed. </param>
     /// <remarks>From a cluster of points that are closer than the distanceTolerance, only the first point is kept.
     /// Use 'Polyline2D.removeDuplicatePointsFaithfully' if you want to keep the edges in their position by re-intersecting segments.
     /// The position of start and end point is NOT changed. Use Polyline2D.close to ensure start and end point are identical.</remarks>
-    static member removeDuplicatePoints (distanceTolerance:float) (pl:Polyline2D) : Polyline2D =
+    static member removeDuplicatePoints (distanceTolerance:float) (pl:Polyline2D) : unit =
         let xys = pl.XYs
-        if xys.Count <= 2 then // single point or empty polyline
-            pl
-        else
+        if xys.Count > 2 then // skip a single point or empty polyline
+            let len = xys.Count
             let toSq = distanceTolerance * distanceTolerance
-            let nps = ResizeArray<float>(xys.Count)
             let mutable prevX = xys.[0]
             let mutable prevY = xys.[1]
-            nps.Add prevX
-            nps.Add prevY
+            let mutable w = 2 // write index for the kept points, it never gets ahead of the read index i
             let mutable i = 2
-            while i < xys.Count do
+            while i < len do
                 let px = xys.[i]
                 let py = xys.[i + 1]
                 let dx = abs (px - prevX)
                 let dy = abs (py - prevY)
                 if dx * dx + dy * dy > toSq then
-                    nps.Add px
-                    nps.Add py
+                    xys.[w    ] <- px
+                    xys.[w + 1] <- py
+                    w <- w + 2
                     prevX <- px
                     prevY <- py
                 i <- i + 2
-            if nps.Count >= 4 then // if only one point is left keep the start point, don't overwrite it with the end point
-                nps.[nps.Count - 2] <- xys.[xys.Count - 2] // ensure last point is not moved by the algorithm, it might be off by distanceTolerance
-                nps.[nps.Count - 1] <- xys.[xys.Count - 1]
-            Polyline2D.createDirectly nps
+            if w >= 4 then // if only one point is left keep the start point, don't overwrite it with the end point
+                xys.[w - 2] <- xys.[len - 2] // ensure last point is not moved by the algorithm, it might be off by distanceTolerance
+                xys.[w - 1] <- xys.[len - 1]
+            if w < len then
+                xys.RemoveRange(w, len - w)
 
-    /// <summary>Checks the Polyline2D for consecutive duplicate points within a given tolerance.</summary>
+    /// <summary>Removes consecutive duplicate points from the Polyline2D in place, within a given tolerance, and returns them.
+    /// Same as 'Polyline2D.removeDuplicatePoints', but also reports the points that were removed.</summary>
     /// <param name="distanceTolerance">The distance within which points are considered duplicates.</param>
     /// <param name="pl">A 2D Polyline, open or closed.</param>
-    /// <returns>Ok with the original Polyline2D if no duplicates were found; otherwise Error with the cleaned Polyline2D and duplicate points, with consecutive identical entries listed once per run.</returns>
-    static member checkForDuplicatePoints (distanceTolerance:float) (pl:Polyline2D) : Result<Polyline2D, Polyline2D * ResizeArray<Pt>> =
+    /// <returns>The removed duplicate points, with consecutive identical entries listed once per run.
+    /// An empty list if no duplicates were found and the Polyline2D was not changed.</returns>
+    static member removeDuplicatePointsAndReport (distanceTolerance:float) (pl:Polyline2D) : ResizeArray<Pt> =
         let xys = pl.XYs
-        if xys.Count <= 2 then // single point or empty polyline
-            Ok pl
-        else
+        let duplicatePoints = ResizeArray<Pt>()
+        if xys.Count > 2 then // skip a single point or empty polyline
             let len = xys.Count
             let toleranceSq = distanceTolerance * distanceTolerance
-            let cleanedXYs = ResizeArray<float>(len)
-            let duplicatePoints = ResizeArray<Pt>()
             let mutable lastX = xys.[0]
             let mutable lastY = xys.[1]
-            cleanedXYs.Add lastX
-            cleanedXYs.Add lastY
+            let mutable w = 2 // write index for the kept points, it never gets ahead of the read index i
             let mutable i = 2
             let mutable previousPointWasSkipped = false
             while i < len do
@@ -1917,8 +1847,9 @@ type Polyline2D private (xys: ResizeArray<float>) =
                 let dx = x - lastX
                 let dy = y - lastY
                 if dx * dx + dy * dy > toleranceSq then
-                    cleanedXYs.Add x
-                    cleanedXYs.Add y
+                    xys.[w    ] <- x
+                    xys.[w + 1] <- y
+                    w <- w + 2
                     lastX <- x
                     lastY <- y
                     previousPointWasSkipped <- false
@@ -1931,33 +1862,29 @@ type Polyline2D private (xys: ResizeArray<float>) =
                             duplicatePoints.Add(Pt(x, y))
                     previousPointWasSkipped <- true
                 i <- i + 2
-            if duplicatePoints.Count = 0 then
-                Ok pl
-            else
-                if cleanedXYs.Count >= 4 then
-                    cleanedXYs.[cleanedXYs.Count - 2] <- xys.[len - 2]
-                    cleanedXYs.[cleanedXYs.Count - 1] <- xys.[len - 1]
-                Error(Polyline2D.createDirectly cleanedXYs, duplicatePoints)
+            if w < len then // duplicates were found
+                if w >= 4 then
+                    xys.[w - 2] <- xys.[len - 2]
+                    xys.[w - 1] <- xys.[len - 1]
+                xys.RemoveRange(w, len - w)
+        duplicatePoints
 
-    /// <summary>Removes consecutive duplicate points from the Polyline2D within a given tolerance.</summary>
+    /// <summary>Removes consecutive duplicate points from the Polyline2D in place, within a given tolerance.</summary>
     /// <param name="distanceTolerance"> The distance within which points are considered duplicates. </param>
     /// <param name="pl"> A 2D Polyline, open or closed. </param>
     /// <remarks>This algorithm keeps edges in their position by re-intersecting segments if points are closer than the distanceTolerance but not identical.
     /// The position of start and end point is NOT changed. Use Polyline2D.close to ensure start and end point are identical.</remarks>
-    static member removeDuplicatePointsFaithfully (distanceTolerance:float) (pl:Polyline2D) : Polyline2D =
+    static member removeDuplicatePointsFaithfully (distanceTolerance:float) (pl:Polyline2D) : unit =
         let xys = pl.XYs
-        if xys.Count < 4 then // single point or empty polyline
-            pl
-        else
+        if xys.Count >= 4 then // skip a single point or empty polyline
+            let len = xys.Count
             let tolSq = distanceTolerance * distanceTolerance
-            let nps = ResizeArray<float>(xys.Count)
             let mutable prevX = xys.[0]
             let mutable prevY = xys.[1]
             let mutable prevWasBad = false
-            nps.Add prevX
-            nps.Add prevY
+            let mutable w = 2 // write index for the kept points, it never gets ahead of the read index i
             let mutable i = 2
-            while i < xys.Count do
+            while i < len do
                 let thisX = xys.[i]
                 let thisY = xys.[i + 1]
                 let dx = thisX - prevX
@@ -1972,14 +1899,15 @@ type Polyline2D private (xys: ResizeArray<float>) =
                 // the distance is OK:
                 else
                     // (a) fix the last point if it was bad and not the first point
-                    if prevWasBad && nps.Count >= 4 then // If nps has fewer than 2 points, keep the start point exactly, as at the end below.
-                        // else, if nps has at least 2 points, re-intersect the edge from lastBad to this with the edge from prev back to the previous ok point
+                    if prevWasBad && w >= 4 then // If fewer than 2 points are kept, keep the start point exactly, as at the end below.
+                        // else, if at least 2 points are kept, re-intersect the edge from lastBad to this with the edge from prev back to the previous ok point
+                        // lastBad is not overwritten yet: a bad point was skipped, so the write index is at least one point behind it.
                         let lastBadX = xys.[i - 2] // prev is the last point of a cluster of too close points, so we use this as the last point of the edge.
                         let lastBadY = xys.[i - 1]
                         let vLastX = thisX - lastBadX // Vc.create(lastBadPt, this)
                         let vLastY = thisY - lastBadY
-                        let prevOkX = nps.[nps.Count - 4] // the point in nps before prev
-                        let prevOkY = nps.[nps.Count - 3]
+                        let prevOkX = xys.[w - 4] // the kept point before prev
+                        let prevOkY = xys.[w - 3]
                         let vFirstX = prevOkX - prevX // Vc.create(prev, prevOkPt), prev is the first bad point
                         let vFirstY = prevOkY - prevY
                         match XLineXY.tryParameterA(lastBadX, lastBadY, prevX, prevY, vLastX, vLastY, vFirstX, vFirstY) with
@@ -1996,19 +1924,20 @@ type Polyline2D private (xys: ResizeArray<float>) =
                             if t > -0.4 && t < 0.4
                                && dPrevX * dPrevX + dPrevY * dPrevY < tolSq
                                && dLastX * dLastX + dLastY * dLastY < tolSq then
-                                nps.[nps.Count - 2] <- x // replace prev that was already set
-                                nps.[nps.Count - 1] <- y
+                                xys.[w - 2] <- x // replace prev that was already set
+                                xys.[w - 1] <- y
                             else
                                 // intersection is too far away or segments are near parallel, line fidelity is not kept, use the midpoint
-                                nps.[nps.Count - 2] <- (lastBadX + prevX) * 0.5
-                                nps.[nps.Count - 1] <- (lastBadY + prevY) * 0.5
+                                xys.[w - 2] <- (lastBadX + prevX) * 0.5
+                                xys.[w - 1] <- (lastBadY + prevY) * 0.5
                         |ValueNone -> // segments are parallel, no intersection possible
-                            nps.[nps.Count - 2] <- (lastBadX + prevX) * 0.5 // in this case line fidelity is not kept, use the midpoint
-                            nps.[nps.Count - 1] <- (lastBadY + prevY) * 0.5
+                            xys.[w - 2] <- (lastBadX + prevX) * 0.5 // in this case line fidelity is not kept, use the midpoint
+                            xys.[w - 1] <- (lastBadY + prevY) * 0.5
 
                     // (b) just use this point, no last points to fix
-                    nps.Add thisX
-                    nps.Add thisY
+                    xys.[w    ] <- thisX
+                    xys.[w + 1] <- thisY
+                    w <- w + 2
                     prevX <- thisX
                     prevY <- thisY
                     prevWasBad <- false
@@ -2022,36 +1951,33 @@ type Polyline2D private (xys: ResizeArray<float>) =
                 // this might lead to less fidelity in the last segment though.
                 // an alternative with higher line fidelity would be to pull the last point onto the last good segment and use this as endpoint.
                 // then the same would have to be done at the start.
-                nps.[nps.Count - 2] <- xys.[xys.Count - 2]
-                nps.[nps.Count - 1] <- xys.[xys.Count - 1]
+                xys.[w - 2] <- xys.[len - 2]
+                xys.[w - 1] <- xys.[len - 1]
 
-            Polyline2D.createDirectly nps
+            if w < len then
+                xys.RemoveRange(w, len - w)
 
-    /// Removes consecutive duplicate points and collinear points from the Polyline2D within given tolerances.
+    /// Removes consecutive duplicate points and collinear points from the Polyline2D in place, within given tolerances.
     /// This algorithm allows the last and first point to be identical if the Polyline2D is closed.
     /// Collinear points are removed when the angle between segments is smaller than the cosine threshold (e.g. cosine of 0.5 degrees ).
     /// If the Polyline2D is closed and starts and ends with collinear segments, the first point is replaced with the last non-collinear point.
     /// So the joint of the loop is now moved to the last non-collinear point.
     /// So that there are no collinear segments even between start and end.
-    /// Raises an error if all points are within the distanceTolerance of the first point.
-    static member removeDuplicateAndCollinearPoints (angleTolerance:float<Cosine.cosine>) (distanceTolerance:float) (pl:Polyline2D) : Polyline2D =
+    /// Raises an error if all points are within the distanceTolerance of the first point. In that case the Polyline2D is not changed.
+    static member removeDuplicateAndCollinearPoints (angleTolerance:float<Cosine.cosine>) (distanceTolerance:float) (pl:Polyline2D) : unit =
         if angleTolerance < Cosine.``45.0`` then
             fail $"Polyline2D.removeDuplicateAndCollinearPoints: angleTolerance must be at least Cosine.``45.0`` ( that is 0.707) but was {angleTolerance} (= {acos (float angleTolerance) |> toDegrees} degrees)."
         if angleTolerance > Cosine.``0.01`` then
             fail $"Polyline2D.removeDuplicateAndCollinearPoints: angleTolerance must be at most Cosine.``0.01`` ( that is 0.999999984) but was {angleTolerance} (= {acos (float angleTolerance) |> toDegrees} degrees)."
 
         let xys = pl.XYs
-        if xys.Count < 4 then // single point or empty polyline
-            pl
-        else
+        if xys.Count >= 4 then // skip a single point or empty polyline
             let distTol = max distanceTolerance 1e-6 // vectors need to be longer than zero, otherwise unitizing would fail
-            let nps = ResizeArray<float>(xys.Count)
 
             let lastIdx = xys.Count
-            let mutable prevX = xys.[0]
+            let mutable prevX = xys.[0] // the first point stays in place
             let mutable prevY = xys.[1]
-            nps.Add prevX // add first  point
-            nps.Add prevY
+            let mutable w = 2 // write index for the kept points, it stays at least one point behind the read index i
 
             // (1)find first non-duplicate point:
             let mutable thisX = xys.[2]
@@ -2087,8 +2013,9 @@ type Polyline2D private (xys: ResizeArray<float>) =
                     let cos : float<Cosine.cosine> = LanguagePrimitives.FloatWithMeasure (vPrevX * vNextX + vPrevY * vNextY)
                     if cos < angleTolerance then
                         // not collinear , keep this point
-                        nps.Add thisX
-                        nps.Add thisY
+                        xys.[w    ] <- thisX
+                        xys.[w + 1] <- thisY
+                        w <- w + 2
                         prevX <- thisX
                         prevY <- thisY
                         vPrevX <- vNextX // advance previous vector only when point kept
@@ -2098,30 +2025,31 @@ type Polyline2D private (xys: ResizeArray<float>) =
                 i <- i + 2
 
             // (3) handle last segment to first point
-            if pl.IsAlmostClosed distTol then
+            if pl.IsAlmostClosed distTol then // the first and the last point are not overwritten yet
                 // closed polyline, now check if last and first segment are collinear
                 let cos : float<Cosine.cosine> = LanguagePrimitives.FloatWithMeasure (vPrevX * firstVecX + vPrevY * firstVecY)
                 if cos < angleTolerance then
                     // not collinear , keep the original end point
-                    nps.Add xys.[xys.Count - 2]
-                    nps.Add xys.[xys.Count - 1]
+                    xys.[w    ] <- xys.[lastIdx - 2]
+                    xys.[w + 1] <- xys.[lastIdx - 1]
+                    w <- w + 2
                 else
                     // collinear , replace first point with last non-collinear point
-                    nps.[0] <- nps.[nps.Count - 2]
-                    nps.[1] <- nps.[nps.Count - 1]
+                    xys.[0] <- xys.[w - 2]
+                    xys.[1] <- xys.[w - 1]
             else
                 if abs (thisX - prevX) > distTol || abs (thisY - prevY) > distTol then
                     // open polyline , just add last point if not duplicate
-                    nps.Add thisX
-                    nps.Add thisY
+                    xys.[w    ] <- thisX
+                    xys.[w + 1] <- thisY
+                    w <- w + 2
                 else
                     // ensure last point is not changed, it might be off by distanceTolerance
-                    nps.[nps.Count - 2] <- xys.[xys.Count - 2]
-                    nps.[nps.Count - 1] <- xys.[xys.Count - 1]
+                    xys.[w - 2] <- xys.[lastIdx - 2]
+                    xys.[w - 1] <- xys.[lastIdx - 1]
 
-            Polyline2D.createDirectly nps
-
-
+            if w < lastIdx then
+                xys.RemoveRange(w, lastIdx - w)
 
     // #endregion
     // #region Offset
@@ -2486,10 +2414,6 @@ type Polyline2D private (xys: ResizeArray<float>) =
     [<Obsolete("This was semantically unclear, what happens at point? Use GetSegment(i).UnitTangent instead")>]
     member pl.TangentAt(_t:float) : 'a =
         fail "Polyline2D.TangentAt is obsolete, use GetSegment(i).UnitTangent instead." |> unbox // unbox to make type checker happy
-
-    [<Obsolete("Use polyline2D.CloseInPlace instead.")>]
-    member p.CloseIfOpen(t) : unit =
-        p.CloseInPlace(t)
 
     [<Obsolete("Renamed to Polyline2D.subPolyline")>]
     static member segment a b (pl:Polyline2D) :Polyline2D =
