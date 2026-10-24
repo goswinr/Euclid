@@ -42,9 +42,11 @@ open Polyline2DUtil
 /// A class holding a list of 2D points representing a mutable 2D Polyline.
 /// If the last point is the same as the first point, the Polyline2D is considered closed.
 /// The source-of-truth storage is an interleaved float buffer: x0, y0, x1, y1, ...
-/// All transformations, like Move, Scale or Rotate, and all clean up functions, like Reverse, Close or removeDuplicatePoints,
-/// mutate the Polyline2D in place and return unit. Use Duplicate() first to keep the original.
-/// Only the map functions, subPolyline and the offset functions return a new Polyline2D.
+/// The instance members for transformations, like Move, Scale or Rotate, and for clean up, like Reverse, Close or RemoveDuplicatePoints,
+/// mutate the Polyline2D in place and return unit.
+/// Their static counterparts, like Polyline2D.move, Polyline2D.reverse or Polyline2D.removeDuplicatePoints,
+/// return a new Polyline2D and leave the input unchanged.
+/// Only the point setters, like SetPt, MovePt or AddPoint, mutate in place as static functions too.
 // [<Struct>] // if it was a struct the Polyline2D() constructor would set _XYs to null, not empty.
 [<NoEquality; NoComparison>] // because its made up from floats
 [<DataContract>] // for using DataMember on fields, for Newtonsoft.Json
@@ -662,9 +664,12 @@ type Polyline2D private (xys: ResizeArray<float>) =
             left <- left + 2
             right <- right - 2
 
-    /// Reverses the order of the Polyline2D in place.
-    static member reverse (p:Polyline2D) : unit =
-        p.Reverse()
+    /// Returns a new Polyline2D with the order of the points reversed.
+    /// The input Polyline2D is not changed. Use p.Reverse() to reverse in place.
+    static member reverse (p:Polyline2D) : Polyline2D =
+        let res = p.Duplicate()
+        res.Reverse()
+        res
 
     /// <summary>Closes the Polyline2D in place if it is not already closed.
     /// If the ends are closer than the tolerance, the last point is set equal to the first point.
@@ -687,14 +692,17 @@ type Polyline2D private (xys: ResizeArray<float>) =
             xys.Add sx
             xys.Add sy
 
-    /// <summary>Closes the Polyline2D in place if it is not already closed.
+    /// <summary>Returns a new closed Polyline2D. The input Polyline2D is not changed.
     /// If the ends are closer than the tolerance, the last point is set equal to the first point.
     /// Otherwise the start point is added to the end of the Polyline2D.
     /// Raises an error if the Polyline2D has fewer than 3 points.</summary>
     /// <param name="toleranceForAddingPoint">The tolerance used to decide whether to snap the last point to the first point.</param>
     /// <param name="pl">The Polyline2D to close.</param>
-    static member close (toleranceForAddingPoint:float) (pl:Polyline2D) : unit =
-        pl.Close toleranceForAddingPoint
+    /// <returns>A new closed Polyline2D. Use p.Close to close in place.</returns>
+    static member close (toleranceForAddingPoint:float) (pl:Polyline2D) : Polyline2D =
+        let res = pl.Duplicate()
+        res.Close toleranceForAddingPoint
+        res
 
     /// Calculates the signed area of the Polyline2D.
     /// If it is positive the Polyline2D is counter-clockwise.
@@ -1220,10 +1228,12 @@ type Polyline2D private (xys: ResizeArray<float>) =
             xys.[i] <- xys.[i] * factor
             i <- i + 1
 
-    /// Scales the Polyline2D in place by a given factor.
+    /// Returns a new Polyline2D scaled by a given factor. The input Polyline2D is not changed.
     /// Scale center is World Origin 0,0
-    static member scale (factor:float) (pl:Polyline2D) : unit =
-        pl.Scale factor
+    static member scale (factor:float) (pl:Polyline2D) : Polyline2D =
+        let res = pl.Duplicate()
+        res.Scale factor
+        res
 
     /// <summary>Scales the Polyline2D in place by a given factor around a given center point.</summary>
     /// <param name="cen">The center point of the scaling.</param>
@@ -1238,58 +1248,68 @@ type Polyline2D private (xys: ResizeArray<float>) =
             xys.[i + 1] <- cy + (xys.[i + 1] - cy) * factor
             i <- i + 2
 
-    /// <summary>Scales the Polyline2D in place by a given factor around a given center point.</summary>
+    /// <summary>Returns a new Polyline2D scaled by a given factor around a given center point.</summary>
     /// <param name="cen">The center point of the scaling.</param>
     /// <param name="factor">The scale factor.</param>
-    /// <param name="pl">The Polyline2D to change.</param>
-    static member inline scaleOn (cen:Pt) (factor:float) (pl:Polyline2D) : unit =
-        pl.ScaleOn cen factor
+    /// <param name="pl">The Polyline2D to scale. It is not changed.</param>
+    /// <returns>A new Polyline2D. Use p.ScaleOn to scale in place.</returns>
+    static member inline scaleOn (cen:Pt) (factor:float) (pl:Polyline2D) : Polyline2D =
+        let res = pl.Duplicate()
+        res.ScaleOn cen factor
+        res
 
-    /// Moves the Polyline2D in place by a vector. Same as Polyline2D.move and Polyline2D.translate.
+    /// Moves the Polyline2D in place by a vector.
     member p.Move (v:Vc) : unit =
-        Polyline2D.translate v p
+        let vx = v.X
+        let vy = v.Y
+        let len = xys.Count
+        let mutable i = 0
+        while i < len do
+            xys.[i    ] <- xys.[i    ] + vx
+            xys.[i + 1] <- xys.[i + 1] + vy
+            i <- i + 2
 
-    /// Moves the Polyline2D in place by a vector. Same as Polyline2D.translate.
-    static member move (v:Vc) (pl:Polyline2D) : unit =
-        Polyline2D.translate v pl
+    /// Returns a new Polyline2D moved by a vector. The input Polyline2D is not changed.
+    /// Same as Polyline2D.translate.
+    static member move (v:Vc) (pl:Polyline2D) : Polyline2D =
+        let res = pl.Duplicate()
+        res.Move v
+        res
 
     /// Moves the Polyline2D in place by a given distance in X direction.
     member p.MoveX (distance:float) : unit =
-        Polyline2D.moveX distance p
-
-    /// Moves the Polyline2D in place by a given distance in X direction.
-    static member moveX (distance:float) (pl:Polyline2D) : unit =
-        let mutable i = 0
-        let xys = pl.XYs
         let len = xys.Count
+        let mutable i = 0
         while i < len do
             xys.[i] <- xys.[i] + distance
             i <- i + 2
+
+    /// Returns a new Polyline2D moved by a given distance in X direction. The input Polyline2D is not changed.
+    static member moveX (distance:float) (pl:Polyline2D) : Polyline2D =
+        let res = pl.Duplicate()
+        res.MoveX distance
+        res
 
     /// Moves the Polyline2D in place by a given distance in Y direction.
     member p.MoveY (distance:float) : unit =
-        Polyline2D.moveY distance p
-
-    /// Moves the Polyline2D in place by a given distance in Y direction.
-    static member moveY (distance:float) (pl:Polyline2D) : unit =
-        let mutable i = 1
-        let xys = pl.XYs
         let len = xys.Count
+        let mutable i = 1
         while i < len do
             xys.[i] <- xys.[i] + distance
             i <- i + 2
 
-    /// Rotates the Polyline2D in place around the world origin by a Rotation2D.
-    member p.Rotate (r:Rotation2D) : unit =
-        Polyline2D.rotate r p
+    /// Returns a new Polyline2D moved by a given distance in Y direction. The input Polyline2D is not changed.
+    static member moveY (distance:float) (pl:Polyline2D) : Polyline2D =
+        let res = pl.Duplicate()
+        res.MoveY distance
+        res
 
     /// Rotates the Polyline2D in place around the world origin by a Rotation2D.
-    static member rotate (r:Rotation2D) (pl:Polyline2D) : unit =
-        let mutable i = 0
-        let xys = pl.XYs
+    member p.Rotate (r:Rotation2D) : unit =
         let len = xys.Count
         let sin = r.Sin
         let cos = r.Cos
+        let mutable i = 0
         while i < len do
             let x = xys.[i]
             let y = xys.[i + 1]
@@ -1297,82 +1317,94 @@ type Polyline2D private (xys: ResizeArray<float>) =
             xys.[i + 1] <- sin * x + cos * y
             i <- i + 2
 
+    /// Returns a new Polyline2D rotated around the world origin by a Rotation2D. The input Polyline2D is not changed.
+    static member rotate (r:Rotation2D) (pl:Polyline2D) : Polyline2D =
+        let res = pl.Duplicate()
+        res.Rotate r
+        res
+
     /// <summary>Rotates the Polyline2D in place counter-clockwise around the world origin by an angle in degrees.</summary>
     /// <param name="angDegree">The rotation angle in degrees.</param>
     /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.Rotate(rotation2D).</remarks>
     member p.RotateDegrees (angDegree:float) : unit =
-        Polyline2D.rotate (Rotation2D.createFromDegrees angDegree) p
+        p.Rotate (Rotation2D.createFromDegrees angDegree)
 
-    /// <summary>Rotates the Polyline2D in place counter-clockwise around the world origin by an angle in degrees.</summary>
+    /// <summary>Returns a new Polyline2D rotated counter-clockwise around the world origin by an angle in degrees.</summary>
     /// <param name="angDegree">The rotation angle in degrees.</param>
-    /// <param name="pl">The Polyline2D to change.</param>
+    /// <param name="pl">The Polyline2D to rotate. It is not changed.</param>
+    /// <returns>A new Polyline2D. Use p.RotateDegrees to rotate in place.</returns>
     /// <remarks>For better performance precompute the Rotation2D struct and rotate with Polyline2D.rotate.</remarks>
-    static member rotateDegrees (angDegree:float) (pl:Polyline2D) : unit =
+    static member rotateDegrees (angDegree:float) (pl:Polyline2D) : Polyline2D =
         Polyline2D.rotate (Rotation2D.createFromDegrees angDegree) pl
 
     /// <summary>Rotates the Polyline2D in place counter-clockwise around the world origin by an angle in radians.</summary>
     /// <param name="angRadians">The rotation angle in radians.</param>
     /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.Rotate(rotation2D).</remarks>
     member p.RotateRadians (angRadians:float) : unit =
-        Polyline2D.rotate (Rotation2D.createFromRadians angRadians) p
+        p.Rotate (Rotation2D.createFromRadians angRadians)
 
-    /// <summary>Rotates the Polyline2D in place counter-clockwise around the world origin by an angle in radians.</summary>
+    /// <summary>Returns a new Polyline2D rotated counter-clockwise around the world origin by an angle in radians.</summary>
     /// <param name="angRadians">The rotation angle in radians.</param>
-    /// <param name="pl">The Polyline2D to change.</param>
+    /// <param name="pl">The Polyline2D to rotate. It is not changed.</param>
+    /// <returns>A new Polyline2D. Use p.RotateRadians to rotate in place.</returns>
     /// <remarks>For better performance precompute the Rotation2D struct and rotate with Polyline2D.rotate.</remarks>
-    static member rotateRadians (angRadians:float) (pl:Polyline2D) : unit =
+    static member rotateRadians (angRadians:float) (pl:Polyline2D) : Polyline2D =
         Polyline2D.rotate (Rotation2D.createFromRadians angRadians) pl
 
     /// <summary>Rotates the Polyline2D in place counter-clockwise around a given center point by a Rotation2D.</summary>
     /// <param name="cen">The center point of the rotation.</param>
     /// <param name="r">The rotation to apply.</param>
     member p.RotateAround (cen:Pt) (r:Rotation2D) : unit =
-        Polyline2D.rotateAround cen r p
-
-    /// <summary>Rotates the Polyline2D in place counter-clockwise around a given center point by an angle in degrees.</summary>
-    /// <param name="cen">The center point of the rotation.</param>
-    /// <param name="angDegree">The rotation angle in degrees.</param>
-    member p.RotateAroundDegrees (cen:Pt) (angDegree:float) : unit =
-        Polyline2D.rotateAround cen (Rotation2D.createFromDegrees angDegree) p
-
-    /// <summary>Rotates the Polyline2D in place counter-clockwise around a given center point by an angle in degrees.</summary>
-    /// <param name="cen">The center point of the rotation.</param>
-    /// <param name="angDegree">The rotation angle in degrees.</param>
-    /// <param name="pl">The Polyline2D to change.</param>
-    static member rotateAroundDegrees (cen:Pt) (angDegree:float) (pl:Polyline2D) : unit =
-        Polyline2D.rotateAround cen (Rotation2D.createFromDegrees angDegree) pl
-
-    /// <summary>Rotates the Polyline2D in place counter-clockwise around a given center point by an angle in radians.</summary>
-    /// <param name="cen">The center point of the rotation.</param>
-    /// <param name="angRadians">The rotation angle in radians.</param>
-    member p.RotateAroundRadians (cen:Pt) (angRadians:float) : unit =
-        Polyline2D.rotateAround cen (Rotation2D.createFromRadians angRadians) p
-
-    /// <summary>Rotates the Polyline2D in place counter-clockwise around a given center point by an angle in radians.</summary>
-    /// <param name="cen">The center point of the rotation.</param>
-    /// <param name="angRadians">The rotation angle in radians.</param>
-    /// <param name="pl">The Polyline2D to change.</param>
-    static member rotateAroundRadians (cen:Pt) (angRadians:float) (pl:Polyline2D) : unit =
-        Polyline2D.rotateAround cen (Rotation2D.createFromRadians angRadians) pl
-
-    /// <summary>Rotates the Polyline2D in place counter-clockwise around a given center point by a Rotation2D.</summary>
-    /// <param name="cen">The center point of the rotation.</param>
-    /// <param name="r">The rotation to apply.</param>
-    /// <param name="pl">The Polyline2D to change.</param>
-    static member rotateAround (cen:Pt) (r:Rotation2D) (pl:Polyline2D) : unit =
-        let mutable i = 0
-        let xys = pl.XYs
         let len = xys.Count
         let sin = r.Sin
         let cos = r.Cos
         let cx = cen.X
         let cy = cen.Y
+        let mutable i = 0
         while i < len do
             let x = xys.[i] - cx
             let y = xys.[i + 1] - cy
             xys.[i    ] <- cx + cos * x - sin * y
             xys.[i + 1] <- cy + sin * x + cos * y
             i <- i + 2
+
+    /// <summary>Rotates the Polyline2D in place counter-clockwise around a given center point by an angle in degrees.</summary>
+    /// <param name="cen">The center point of the rotation.</param>
+    /// <param name="angDegree">The rotation angle in degrees.</param>
+    member p.RotateAroundDegrees (cen:Pt) (angDegree:float) : unit =
+        p.RotateAround cen (Rotation2D.createFromDegrees angDegree)
+
+    /// <summary>Returns a new Polyline2D rotated counter-clockwise around a given center point by an angle in degrees.</summary>
+    /// <param name="cen">The center point of the rotation.</param>
+    /// <param name="angDegree">The rotation angle in degrees.</param>
+    /// <param name="pl">The Polyline2D to rotate. It is not changed.</param>
+    /// <returns>A new Polyline2D. Use p.RotateAroundDegrees to rotate in place.</returns>
+    static member rotateAroundDegrees (cen:Pt) (angDegree:float) (pl:Polyline2D) : Polyline2D =
+        Polyline2D.rotateAround cen (Rotation2D.createFromDegrees angDegree) pl
+
+    /// <summary>Rotates the Polyline2D in place counter-clockwise around a given center point by an angle in radians.</summary>
+    /// <param name="cen">The center point of the rotation.</param>
+    /// <param name="angRadians">The rotation angle in radians.</param>
+    member p.RotateAroundRadians (cen:Pt) (angRadians:float) : unit =
+        p.RotateAround cen (Rotation2D.createFromRadians angRadians)
+
+    /// <summary>Returns a new Polyline2D rotated counter-clockwise around a given center point by an angle in radians.</summary>
+    /// <param name="cen">The center point of the rotation.</param>
+    /// <param name="angRadians">The rotation angle in radians.</param>
+    /// <param name="pl">The Polyline2D to rotate. It is not changed.</param>
+    /// <returns>A new Polyline2D. Use p.RotateAroundRadians to rotate in place.</returns>
+    static member rotateAroundRadians (cen:Pt) (angRadians:float) (pl:Polyline2D) : Polyline2D =
+        Polyline2D.rotateAround cen (Rotation2D.createFromRadians angRadians) pl
+
+    /// <summary>Returns a new Polyline2D rotated counter-clockwise around a given center point by a Rotation2D.</summary>
+    /// <param name="cen">The center point of the rotation.</param>
+    /// <param name="r">The rotation to apply.</param>
+    /// <param name="pl">The Polyline2D to rotate. It is not changed.</param>
+    /// <returns>A new Polyline2D. Use p.RotateAround to rotate in place.</returns>
+    static member rotateAround (cen:Pt) (r:Rotation2D) (pl:Polyline2D) : Polyline2D =
+        let res = pl.Duplicate()
+        res.RotateAround cen r
+        res
 
     // #endregion
     // #region LablePoint
@@ -1495,26 +1527,37 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// Tests if the Polyline2D is Clockwise.
     /// If not, reverses the Polyline2D in place.
     /// Raises an error if the area of the Polyline2D is zero.
-    static member inline ensureClockwise (pl:Polyline2D) : unit =
+    member pl.EnsureClockwise() : unit =
         if pl.IsCounterClockwise then pl.Reverse()
+
+    /// Returns a new Polyline2D that is Clockwise.
+    /// It is reversed if the input is counter-clockwise. The input Polyline2D is not changed.
+    /// Raises an error if the area of the Polyline2D is zero.
+    static member inline ensureClockwise (pl:Polyline2D) : Polyline2D =
+        let res = pl.Duplicate()
+        res.EnsureClockwise()
+        res
 
     /// Tests if the Polyline2D is counter-clockwise.
     /// If not, reverses the Polyline2D in place.
     /// Raises an error if the area of the Polyline2D is zero.
-    static member inline ensureCounterClockwise (pl:Polyline2D) : unit =
+    member pl.EnsureCounterClockwise() : unit =
         if pl.IsClockwise then pl.Reverse()
 
-    /// Moves the Polyline2D in place by a vector. Same as Polyline2D.move.
-    static member translate (v:Vc) (pl:Polyline2D) : unit =
-        let mutable i = 0
-        let xys = pl.XYs
-        let len = xys.Count
-        let vx = v.X
-        let vy = v.Y
-        while i < len do
-            xys.[i    ] <- xys.[i    ] + vx
-            xys.[i + 1] <- xys.[i + 1] + vy
-            i <- i + 2
+    /// Returns a new Polyline2D that is counter-clockwise.
+    /// It is reversed if the input is clockwise. The input Polyline2D is not changed.
+    /// Raises an error if the area of the Polyline2D is zero.
+    static member inline ensureCounterClockwise (pl:Polyline2D) : Polyline2D =
+        let res = pl.Duplicate()
+        res.EnsureCounterClockwise()
+        res
+
+    /// Returns a new Polyline2D moved by a vector. The input Polyline2D is not changed.
+    /// Same as Polyline2D.move.
+    static member translate (v:Vc) (pl:Polyline2D) : Polyline2D =
+        let res = pl.Duplicate()
+        res.Move v
+        res
 
     // #endregion
     // #region Map and Iter
@@ -1910,26 +1953,35 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// <summary>Removes simple sharp U-Turns from the Polyline2D in place.</summary>
     /// <param name="minCos"> The angle between segments so that they are considered a U-turn.
     /// For example, for 179.9 degrees use 'Cosine.``179.9``'. </param>
-    /// <param name="polyLine"> A 2D Polyline, open or closed. </param>
     /// <remarks>The Offset2D module also has a removeUTurns function that takes precomputed unit vectors and is therefore more efficient.
-    /// For nested U-turns and collinear points in U-turns segments use 'removeUTurnsDeeply'. That function calls repeatedly until no more U-turns are present.</remarks>
-    static member removeUTurns ( minCos:float<Cosine.cosine>) (polyLine:Polyline2D): unit =
-        let xys = polyLine.XYs
+    /// For nested U-turns and collinear points in U-turns segments use 'RemoveUTurnsDeeply'. That function calls repeatedly until no more U-turns are present.</remarks>
+    member pl.RemoveUTurns (minCos:float<Cosine.cosine>) : unit =
+        let xys = pl.XYs
         let vs  = Offset2D.makeUnitTangents xys
         let res = Offset2D.removeUTurns(xys, vs, minCos)
         if not (Object.ReferenceEquals(res, xys)) then // Offset2D.removeUTurns returns the input list if there are no U-turns
             R.clear xys
             xys.AddRange res
 
-    /// <summary>Removes all sharp U-Turns from the Polyline2D in place, recursively until no more U-turns are present.
-    /// This function calls 'removeUTurns' repeatedly until no more U-turns are present.
-    /// Use this function when you have nested U-turns and collinear points in U-turns segments.</summary>
+    /// <summary>Returns a new Polyline2D with simple sharp U-Turns removed. The input Polyline2D is not changed.</summary>
     /// <param name="minCos"> The angle between segments so that they are considered a U-turn.
     /// For example, for 179.9 degrees use 'Cosine.``179.9``'. </param>
     /// <param name="polyLine"> A 2D Polyline, open or closed. </param>
+    /// <returns>A new Polyline2D. Use p.RemoveUTurns to remove the U-turns in place.</returns>
+    /// <remarks>For nested U-turns and collinear points in U-turns segments use 'removeUTurnsDeeply'.</remarks>
+    static member removeUTurns (minCos:float<Cosine.cosine>) (polyLine:Polyline2D) : Polyline2D =
+        let res = polyLine.Duplicate()
+        res.RemoveUTurns minCos
+        res
+
+    /// <summary>Removes all sharp U-Turns from the Polyline2D in place, recursively until no more U-turns are present.
+    /// This function calls 'RemoveUTurns' repeatedly until no more U-turns are present.
+    /// Use this function when you have nested U-turns and collinear points in U-turns segments.</summary>
+    /// <param name="minCos"> The angle between segments so that they are considered a U-turn.
+    /// For example, for 179.9 degrees use 'Cosine.``179.9``'. </param>
     /// <remarks>If an error is raised in any of the repeated calls, the Polyline2D is not changed.</remarks>
-    static member removeUTurnsDeeply ( minCos:float<Cosine.cosine>) (polyLine:Polyline2D): unit =
-        let xys = polyLine.XYs
+    member pl.RemoveUTurnsDeeply (minCos:float<Cosine.cosine>) : unit =
+        let xys = pl.XYs
         let mutable input = xys
         let mutable output = Offset2D.removeUTurns(input, Offset2D.makeUnitTangents input, minCos)
         while output.Count <> input.Count do
@@ -1939,13 +1991,24 @@ type Polyline2D private (xys: ResizeArray<float>) =
             R.clear xys
             xys.AddRange output
 
+    /// <summary>Returns a new Polyline2D with all sharp U-Turns removed, recursively until no more U-turns are present.
+    /// The input Polyline2D is not changed.
+    /// Use this function when you have nested U-turns and collinear points in U-turns segments.</summary>
+    /// <param name="minCos"> The angle between segments so that they are considered a U-turn.
+    /// For example, for 179.9 degrees use 'Cosine.``179.9``'. </param>
+    /// <param name="polyLine"> A 2D Polyline, open or closed. </param>
+    /// <returns>A new Polyline2D. Use p.RemoveUTurnsDeeply to remove the U-turns in place.</returns>
+    static member removeUTurnsDeeply (minCos:float<Cosine.cosine>) (polyLine:Polyline2D) : Polyline2D =
+        let res = polyLine.Duplicate()
+        res.RemoveUTurnsDeeply minCos
+        res
+
     /// <summary>Removes consecutive duplicate points from the Polyline2D in place, within a given tolerance.</summary>
     /// <param name="distanceTolerance"> The distance within which points are considered duplicates. </param>
-    /// <param name="pl"> A 2D Polyline, open or closed. </param>
     /// <remarks>From a cluster of points that are closer than the distanceTolerance, only the first point is kept.
-    /// Use 'Polyline2D.removeDuplicatePointsFaithfully' if you want to keep the edges in their position by re-intersecting segments.
-    /// The position of start and end point is NOT changed. Use Polyline2D.close to ensure start and end point are identical.</remarks>
-    static member removeDuplicatePoints (distanceTolerance:float) (pl:Polyline2D) : unit =
+    /// Use 'RemoveDuplicatePointsFaithfully' if you want to keep the edges in their position by re-intersecting segments.
+    /// The position of start and end point is NOT changed. Use Close to ensure start and end point are identical.</remarks>
+    member pl.RemoveDuplicatePoints (distanceTolerance:float) : unit =
         let xys = pl.XYs
         if xys.Count > 2 then // skip a single point or empty polyline
             let len = xys.Count
@@ -1972,13 +2035,25 @@ type Polyline2D private (xys: ResizeArray<float>) =
             if w < len then
                 xys.RemoveRange(w, len - w)
 
+    /// <summary>Returns a new Polyline2D with consecutive duplicate points removed, within a given tolerance.
+    /// The input Polyline2D is not changed.</summary>
+    /// <param name="distanceTolerance"> The distance within which points are considered duplicates. </param>
+    /// <param name="pl"> A 2D Polyline, open or closed. </param>
+    /// <returns>A new Polyline2D. Use p.RemoveDuplicatePoints to remove the points in place.</returns>
+    /// <remarks>From a cluster of points that are closer than the distanceTolerance, only the first point is kept.
+    /// Use 'Polyline2D.removeDuplicatePointsFaithfully' if you want to keep the edges in their position by re-intersecting segments.
+    /// The position of start and end point is NOT changed. Use Polyline2D.close to ensure start and end point are identical.</remarks>
+    static member removeDuplicatePoints (distanceTolerance:float) (pl:Polyline2D) : Polyline2D =
+        let res = pl.Duplicate()
+        res.RemoveDuplicatePoints distanceTolerance
+        res
+
     /// <summary>Removes consecutive duplicate points from the Polyline2D in place, within a given tolerance, and returns them.
-    /// Same as 'Polyline2D.removeDuplicatePoints', but also reports the points that were removed.</summary>
+    /// Same as 'RemoveDuplicatePoints', but also reports the points that were removed.</summary>
     /// <param name="distanceTolerance">The distance within which points are considered duplicates.</param>
-    /// <param name="pl">A 2D Polyline, open or closed.</param>
     /// <returns>The removed duplicate points, with consecutive identical entries listed once per run.
     /// An empty list if no duplicates were found and the Polyline2D was not changed.</returns>
-    static member removeDuplicatePointsAndReport (distanceTolerance:float) (pl:Polyline2D) : ResizeArray<Pt> =
+    member pl.RemoveDuplicatePointsAndReport (distanceTolerance:float) : ResizeArray<Pt> =
         let xys = pl.XYs
         let duplicatePoints = ResizeArray<Pt>()
         if xys.Count > 2 then // skip a single point or empty polyline
@@ -2017,12 +2092,24 @@ type Polyline2D private (xys: ResizeArray<float>) =
                 xys.RemoveRange(w, len - w)
         duplicatePoints
 
+    /// <summary>Returns a new Polyline2D with consecutive duplicate points removed, within a given tolerance, and the removed points.
+    /// Same as 'Polyline2D.removeDuplicatePoints', but also reports the points that were removed.
+    /// The input Polyline2D is not changed.</summary>
+    /// <param name="distanceTolerance">The distance within which points are considered duplicates.</param>
+    /// <param name="pl">A 2D Polyline, open or closed.</param>
+    /// <returns>A tuple of the new Polyline2D and the removed duplicate points, with consecutive identical entries listed once per run.
+    /// The list of removed points is empty if no duplicates were found.
+    /// Use p.RemoveDuplicatePointsAndReport to remove the points in place.</returns>
+    static member removeDuplicatePointsAndReport (distanceTolerance:float) (pl:Polyline2D) : Polyline2D * ResizeArray<Pt> =
+        let res = pl.Duplicate()
+        let duplicatePoints = res.RemoveDuplicatePointsAndReport distanceTolerance
+        res, duplicatePoints
+
     /// <summary>Removes consecutive duplicate points from the Polyline2D in place, within a given tolerance.</summary>
     /// <param name="distanceTolerance"> The distance within which points are considered duplicates. </param>
-    /// <param name="pl"> A 2D Polyline, open or closed. </param>
     /// <remarks>This algorithm keeps edges in their position by re-intersecting segments if points are closer than the distanceTolerance but not identical.
-    /// The position of start and end point is NOT changed. Use Polyline2D.close to ensure start and end point are identical.</remarks>
-    static member removeDuplicatePointsFaithfully (distanceTolerance:float) (pl:Polyline2D) : unit =
+    /// The position of start and end point is NOT changed. Use Close to ensure start and end point are identical.</remarks>
+    member pl.RemoveDuplicatePointsFaithfully (distanceTolerance:float) : unit =
         let xys = pl.XYs
         if xys.Count >= 4 then // skip a single point or empty polyline
             let len = xys.Count
@@ -2105,6 +2192,18 @@ type Polyline2D private (xys: ResizeArray<float>) =
             if w < len then
                 xys.RemoveRange(w, len - w)
 
+    /// <summary>Returns a new Polyline2D with consecutive duplicate points removed, within a given tolerance.
+    /// The input Polyline2D is not changed.</summary>
+    /// <param name="distanceTolerance"> The distance within which points are considered duplicates. </param>
+    /// <param name="pl"> A 2D Polyline, open or closed. </param>
+    /// <returns>A new Polyline2D. Use p.RemoveDuplicatePointsFaithfully to remove the points in place.</returns>
+    /// <remarks>This algorithm keeps edges in their position by re-intersecting segments if points are closer than the distanceTolerance but not identical.
+    /// The position of start and end point is NOT changed. Use Polyline2D.close to ensure start and end point are identical.</remarks>
+    static member removeDuplicatePointsFaithfully (distanceTolerance:float) (pl:Polyline2D) : Polyline2D =
+        let res = pl.Duplicate()
+        res.RemoveDuplicatePointsFaithfully distanceTolerance
+        res
+
     /// Removes consecutive duplicate points and collinear points from the Polyline2D in place, within given tolerances.
     /// This algorithm allows the last and first point to be identical if the Polyline2D is closed.
     /// Collinear points are removed when the angle between segments is smaller than the cosine threshold (e.g. cosine of 0.5 degrees ).
@@ -2112,7 +2211,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// So the joint of the loop is now moved to the last non-collinear point.
     /// So that there are no collinear segments even between start and end.
     /// Raises an error if all points are within the distanceTolerance of the first point. In that case the Polyline2D is not changed.
-    static member removeDuplicateAndCollinearPoints (angleTolerance:float<Cosine.cosine>) (distanceTolerance:float) (pl:Polyline2D) : unit =
+    member pl.RemoveDuplicateAndCollinearPoints (angleTolerance:float<Cosine.cosine>) (distanceTolerance:float) : unit =
         if angleTolerance < Cosine.``45.0`` then
             fail $"Polyline2D.removeDuplicateAndCollinearPoints: angleTolerance must be at least Cosine.``45.0`` ( that is 0.707) but was {angleTolerance} (= {acos (float angleTolerance) |> toDegrees} degrees)."
         if angleTolerance > Cosine.``0.01`` then
@@ -2198,6 +2297,19 @@ type Polyline2D private (xys: ResizeArray<float>) =
 
             if w < lastIdx then
                 xys.RemoveRange(w, lastIdx - w)
+
+    /// Returns a new Polyline2D with consecutive duplicate points and collinear points removed, within given tolerances.
+    /// The input Polyline2D is not changed. Use p.RemoveDuplicateAndCollinearPoints to remove the points in place.
+    /// This algorithm allows the last and first point to be identical if the Polyline2D is closed.
+    /// Collinear points are removed when the angle between segments is smaller than the cosine threshold (e.g. cosine of 0.5 degrees ).
+    /// If the Polyline2D is closed and starts and ends with collinear segments, the first point is replaced with the last non-collinear point.
+    /// So the joint of the loop is now moved to the last non-collinear point.
+    /// So that there are no collinear segments even between start and end.
+    /// Raises an error if all points are within the distanceTolerance of the first point.
+    static member removeDuplicateAndCollinearPoints (angleTolerance:float<Cosine.cosine>) (distanceTolerance:float) (pl:Polyline2D) : Polyline2D =
+        let res = pl.Duplicate()
+        res.RemoveDuplicateAndCollinearPoints angleTolerance distanceTolerance
+        res
 
     // #endregion
     // #region Offset
@@ -2548,11 +2660,11 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// Obsolete name. Same as p.RotateAround, but with tupled arguments.
     [<Obsolete("Use p.RotateAround instead. It takes curried arguments: p.RotateAround cen r. Like it, this rotates the Polyline2D in place.")>]
     member p.RotateWithCenter (cen:Pt, r:Rotation2D) : unit =
-        Polyline2D.rotateAround cen r p
+        p.RotateAround cen r
 
     /// Obsolete name. Same as Polyline2D.rotateAround.
-    [<Obsolete("Use Polyline2D.rotateAround instead. Like it, this rotates the Polyline2D in place.")>]
-    static member rotateWithCenter (cen:Pt) (r:Rotation2D) (pl:Polyline2D) : unit =
+    [<Obsolete("Use Polyline2D.rotateAround instead. Like it, this returns a new Polyline2D.")>]
+    static member rotateWithCenter (cen:Pt) (r:Rotation2D) (pl:Polyline2D) : Polyline2D =
         Polyline2D.rotateAround cen r pl
 
     /// Obsolete misspelling, use Polyline2D.FindLabelPoint instead.

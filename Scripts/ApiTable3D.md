@@ -489,6 +489,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Pnt.projectedParameter` | `fromPnt: Pnt * toPnt: Pnt * testPnt: Pnt -> float` |
 | `Pnt.projectToXYPlane` | `pnt: Pnt -> Pnt` |
 | `Pnt.rotate` | `q: Quaternion -> pnt: Pnt -> Pnt` |
+| `Pnt.rotateAround` | `cen: Pnt -> q: Quaternion -> pnt: Pnt -> Pnt` |
 | `Pnt.rotateOnX` | `r: Rotation2D -> p: Pnt -> Pnt` |
 | `Pnt.rotateOnXDeg` | `angDegree: float -> pnt: Pnt -> Pnt` |
 | `Pnt.rotateOnXWithCenter` | `cen: Pnt -> r: Rotation2D -> pnt: Pnt -> Pnt` |
@@ -501,8 +502,8 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Pnt.rotateOnZDeg` | `angDegree: float -> pnt: Pnt -> Pnt` |
 | `Pnt.rotateOnZWithCenter` | `cen: Pnt -> r: Rotation2D -> pnt: Pnt -> Pnt` |
 | `Pnt.rotateOnZWithCenterDeg` | `cen: Pnt -> angDegree: float -> pnt: Pnt -> Pnt` |
-| `Pnt.rotateWithCenter` | `cen: Pnt -> q: Quaternion -> pnt: Pnt -> Pnt` |
 | `Pnt.scale` | `f: float -> pnt: Pnt -> Pnt` |
+| `Pnt.scaleOn` | `cen: Pnt -> factor: float -> pnt: Pnt -> Pnt` |
 | `Pnt.snap` | `precision: float -> pnt: Pnt -> Pnt` |
 | `Pnt.snapIfClose` | `snapDistance: float -> snapTo: Pnt -> pnt: Pnt -> Pnt` |
 | `Pnt.sqDist` | `b: Pnt -> p: Pnt -> float` |
@@ -542,6 +543,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Quaternion.inverse` | `q: Quaternion -> Quaternion` |
 | `.Normalize` | `unit -> Quaternion` |
 | `Quaternion.normalize` | `q: Quaternion -> Quaternion` |
+| `.Then` | `other: Quaternion -> Quaternion` |
 | `.ToString` | `unit -> string` |
 | `.WithAngleInDegrees` | `angleInDegrees: float -> Quaternion` |
 | `Quaternion.withAngleInDegrees` | `angleInDegrees: float -> q: Quaternion -> Quaternion` |
@@ -731,6 +733,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Matrix.isScaling` | `m: Matrix -> bool` |
 | `.IsTranslating` | `bool` |
 | `Matrix.isTranslating` | `m: Matrix -> bool` |
+| `.Then` | `other: Matrix -> Matrix` |
 | `.ToArrayByColumns` | `float array` |
 | `Matrix.toArrayByColumns` | `m: Matrix -> float array` |
 | `.ToArrayByRows` | `float array` |
@@ -805,6 +808,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `RigidMatrix.inverse` | `m: RigidMatrix -> RigidMatrix` |
 | `.IsIdentity` | `bool` |
 | `RigidMatrix.isIdentity` | `m: RigidMatrix -> bool` |
+| `.Then` | `other: RigidMatrix -> RigidMatrix` |
 | `.ToArrayByColumns` | `float array` |
 | `RigidMatrix.toArrayByColumns` | `m: RigidMatrix -> float array` |
 | `.ToArrayByRows` | `float array` |
@@ -984,8 +988,8 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Line3D.reversed` | `ln: Line3D -> Line3D` |
 | `.Rotate` | `q: Quaternion -> Line3D` |
 | `Line3D.rotate` | `q: Quaternion -> ln: Line3D -> Line3D` |
-| `.RotateWithCenter` | `cen: Pnt * q: Quaternion -> Line3D` |
-| `Line3D.rotateWithCenter` | `cen: Pnt -> q: Quaternion -> ln: Line3D -> Line3D` |
+| `.RotateAround` | `cen: Pnt -> q: Quaternion -> Line3D` |
+| `Line3D.rotateAround` | `cen: Pnt -> q: Quaternion -> ln: Line3D -> Line3D` |
 | `.Scale` | `factor: float -> Line3D` |
 | `Line3D.scale` | `factor: float -> ln: Line3D -> Line3D` |
 | `.ScaleOn` | `cen: Pnt -> factor: float -> Line3D` |
@@ -1063,7 +1067,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Line3D.isPerpendicularToUnitVec` | `maxTangent: float<tangent> -> other: UnitVec -> ln: Line3D -> bool` |
 | `Line3D.isPerpendicularToVec` | `maxTangent: float<tangent> -> other: Vec -> ln: Line3D -> bool` |
 | `Line3D.isTouchingEndOf` | `squareTolerance: float -> a: Line3D -> b: Line3D -> bool` |
-| `Line3D.lengthToPntOnLine` | `ln: Line3D -> pnt: Pnt -> float` |
+| `Line3D.lengthToPntOnLine` | `pnt: Pnt -> ln: Line3D -> float` |
 | `Line3D.matchesOrientationUnitVec` | `v: UnitVec -> ln: Line3D -> bool` |
 | `Line3D.matchesOrientationVec` | `v: Vec -> ln: Line3D -> bool` |
 | `Line3D.matchOrientation` | `orientationToMatch: Line3D -> lineToFlip: Line3D -> Line3D` |
@@ -1426,14 +1430,14 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `.Pnt3` | `Pnt` |
 | `.Rotate` | `q: Quaternion -> Rect3D` |
 | `Rect3D.rotate` | `q: Quaternion -> r: Rect3D -> Rect3D` |
+| `.RotateAround` | `cen: Pnt -> q: Quaternion -> Rect3D` |
+| `Rect3D.rotateAround` | `cen: Pnt -> q: Quaternion -> r: Rect3D -> Rect3D` |
 | `.RotateOrientation180` | `Rect3D` |
 | `Rect3D.rotateOrientation180` | `r: Rect3D -> Rect3D` |
 | `.RotateOrientation90CCW` | `Rect3D` |
 | `Rect3D.rotateOrientation90CCW` | `r: Rect3D -> Rect3D` |
 | `.RotateOrientation90CW` | `Rect3D` |
 | `Rect3D.rotateOrientation90CW` | `r: Rect3D -> Rect3D` |
-| `.RotateWithCenter` | `cen: Pnt * q: Quaternion -> Rect3D` |
-| `Rect3D.rotateWithCenter` | `cen: Pnt -> q: Quaternion -> r: Rect3D -> Rect3D` |
 | `.Scale` | `factor: float -> Rect3D` |
 | `Rect3D.scale` | `factor: float -> r: Rect3D -> Rect3D` |
 | `.ScaleOn` | `cen: Pnt -> factor: float -> Rect3D` |
@@ -1609,8 +1613,10 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Box.getEdge` | `edgeIndex: int -> b: Box -> Line3D` |
 | `.GetFace` | `faceIndex: int -> Rect3D` |
 | `Box.getFace` | `faceIndex: int -> b: Box -> Rect3D` |
-| `.GetPoint` | `pointIndex: int -> Pnt` |
-| `Box.getPoint` | `pointIndex: int -> b: Box -> Pnt` |
+| `.GetLine` | `startPointIndex: int * endPointIndex: int -> Line3D` |
+| `Box.getLine` | `startPointIndex: int -> endPointIndex: int -> b: Box -> Line3D` |
+| `.GetPnt` | `pointIndex: int -> Pnt` |
+| `Box.getPnt` | `pointIndex: int -> b: Box -> Pnt` |
 | `.HasVolume` | `bool` |
 | `Box.hasVolume` | `b: Box -> bool` |
 | `.IntersectPlane` | `pl: NPlane -> ResizeArray<Pnt>` |
@@ -1683,8 +1689,8 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Box.rightFace` | `b: Box -> Rect3D` |
 | `.Rotate` | `q: Quaternion -> Box` |
 | `Box.rotate` | `q: Quaternion -> b: Box -> Box` |
-| `.RotateWithCenter` | `cen: Pnt * q: Quaternion -> Box` |
-| `Box.rotateWithCenter` | `cen: Pnt -> q: Quaternion -> b: Box -> Box` |
+| `.RotateAround` | `cen: Pnt -> q: Quaternion -> Box` |
+| `Box.rotateAround` | `cen: Pnt -> q: Quaternion -> b: Box -> Box` |
 | `.Scale` | `factor: float -> Box` |
 | `Box.scale` | `factor: float -> b: Box -> Box` |
 | `.ScaleOn` | `cen: Pnt -> factor: float -> Box` |
@@ -1744,6 +1750,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Box.getBoxBetween` | `a: Box -> b: Box -> Box` |
 | `Box.getBoxesAlignment` | `a: Box -> b: Box -> float` |
 | `Box.notEquals` | `tol: float -> a: Box -> b: Box -> bool` |
+| `Box.offset` | `distBottom: float -> distFront: float -> distRight: float -> distBack: float -> distLeft: float -> distTop: float -> b: Box -> Box` |
 | `Box.pnt0` | `b: Box -> Pnt` |
 | `Box.pnt1` | `b: Box -> Pnt` |
 | `Box.pnt2` | `b: Box -> Pnt` |
@@ -1825,6 +1832,8 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `FreeBox.edge76` | `b: FreeBox -> Line3D` |
 | `.Edges` | `Line3D array` |
 | `FreeBox.edges` | `b: FreeBox -> Line3D array` |
+| `.GetLine` | `startPointIndex: int -> endPointIndex: int -> Line3D` |
+| `FreeBox.getLine` | `startPointIndex: int -> endPointIndex: int -> b: FreeBox -> Line3D` |
 | `.GetPnt` | `pointIndex: int -> Pnt` |
 | `FreeBox.getPnt` | `pointIndex: int -> b: FreeBox -> Pnt` |
 | `.GetX` | `pointIndex: int -> float` |
@@ -1834,13 +1843,17 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `.GetZ` | `pointIndex: int -> float` |
 | `FreeBox.getZ` | `pointIndex: int -> b: FreeBox -> float` |
 | `.Move` | `v: Vec -> unit` |
-| `FreeBox.move` | `v: Vec -> b: FreeBox -> unit` |
+| `FreeBox.move` | `v: Vec -> b: FreeBox -> FreeBox` |
+| `.MovePnt` | `pointIndex: int -> v: Vec -> unit` |
+| `FreeBox.movePnt` | `pointIndex: int -> v: Vec -> b: FreeBox -> unit` |
+| `.MovePntXYZ` | `pointIndex: int -> x: float -> y: float -> z: float -> unit` |
+| `FreeBox.movePntXYZ` | `pointIndex: int -> x: float -> y: float -> z: float -> b: FreeBox -> unit` |
 | `.MoveX` | `distance: float -> unit` |
-| `FreeBox.moveX` | `distance: float -> b: FreeBox -> unit` |
+| `FreeBox.moveX` | `distance: float -> b: FreeBox -> FreeBox` |
 | `.MoveY` | `distance: float -> unit` |
-| `FreeBox.moveY` | `distance: float -> b: FreeBox -> unit` |
+| `FreeBox.moveY` | `distance: float -> b: FreeBox -> FreeBox` |
 | `.MoveZ` | `distance: float -> unit` |
-| `FreeBox.moveZ` | `distance: float -> b: FreeBox -> unit` |
+| `FreeBox.moveZ` | `distance: float -> b: FreeBox -> FreeBox` |
 | `.Pnt0` | `Pnt with get, set` |
 | `.Pnt0X` | `float with get, set` |
 | `.Pnt0Y` | `float with get, set` |
@@ -1874,29 +1887,29 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `.Pnt7Y` | `float with get, set` |
 | `.Pnt7Z` | `float with get, set` |
 | `.Rotate` | `q: Quaternion -> unit` |
-| `FreeBox.rotate` | `q: Quaternion -> b: FreeBox -> unit` |
-| `.RotateWithCenter` | `cen: Pnt * q: Quaternion -> unit` |
-| `FreeBox.rotateWithCenter` | `cen: Pnt -> q: Quaternion -> b: FreeBox -> unit` |
+| `FreeBox.rotate` | `q: Quaternion -> b: FreeBox -> FreeBox` |
+| `.RotateAround` | `cen: Pnt -> q: Quaternion -> unit` |
+| `FreeBox.rotateAround` | `cen: Pnt -> q: Quaternion -> b: FreeBox -> FreeBox` |
 | `.Scale` | `factor: float -> unit` |
-| `FreeBox.scale` | `factor: float -> b: FreeBox -> unit` |
-| `.ScaleOn` | `cen: Pnt * factor: float -> unit` |
-| `FreeBox.scaleOn` | `cen: Pnt -> factor: float -> b: FreeBox -> unit` |
+| `FreeBox.scale` | `factor: float -> b: FreeBox -> FreeBox` |
+| `.ScaleOn` | `cen: Pnt -> factor: float -> unit` |
+| `FreeBox.scaleOn` | `cen: Pnt -> factor: float -> b: FreeBox -> FreeBox` |
 | `.SetPnt` | `pointIndex: int -> p: Pnt -> unit` |
 | `FreeBox.setPnt` | `pointIndex: int -> p: Pnt -> b: FreeBox -> unit` |
-| `.SetPntXYZ` | `pointIndex: int * x: float * y: float * z: float -> unit` |
+| `.SetPntXYZ` | `pointIndex: int -> x: float -> y: float -> z: float -> unit` |
 | `FreeBox.setPntXYZ` | `pointIndex: int -> x: float -> y: float -> z: float -> b: FreeBox -> unit` |
 | `.ToString` | `unit -> string` |
 | `.Transform` | `m: Matrix -> unit` |
-| `FreeBox.transform` | `m: Matrix -> b: FreeBox -> unit` |
+| `FreeBox.transform` | `m: Matrix -> b: FreeBox -> FreeBox` |
 | `.TransformRigid` | `m: RigidMatrix -> unit` |
-| `FreeBox.transformRigid` | `m: RigidMatrix -> b: FreeBox -> unit` |
+| `FreeBox.transformRigid` | `m: RigidMatrix -> b: FreeBox -> FreeBox` |
 | `.XYZs` | `float array` |
 | **Other static members** | |
 | `FreeBox.createDirectly` | `xyzs: float array -> FreeBox` |
 | `FreeBox.createFromBox` | `box: Box -> FreeBox` |
 | `FreeBox.createFromEightPoints` | `pts: Pnt array -> FreeBox` |
 | `FreeBox.createFromFour2DPoints` | `zMin: float -> zMax: float -> pts: Pt array -> FreeBox` |
-| `FreeBox.createFromFour2DPointsArgs` | `a: Pt * b: Pt * c: Pt * d: Pt * zMin: float * zMax: float -> FreeBox` |
+| `FreeBox.createFromFour2DPointsArgs` | `zMin: float -> zMax: float -> a: Pt -> b: Pt -> c: Pt -> d: Pt -> FreeBox` |
 | `FreeBox.getXYZs` | `b: FreeBox -> float array` |
 | `FreeBox.pnt0` | `b: FreeBox -> Pnt` |
 | `FreeBox.pnt0X` | `b: FreeBox -> float` |
@@ -1930,7 +1943,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `FreeBox.pnt7X` | `b: FreeBox -> float` |
 | `FreeBox.pnt7Y` | `b: FreeBox -> float` |
 | `FreeBox.pnt7Z` | `b: FreeBox -> float` |
-| `FreeBox.translate` | `v: Vec -> b: FreeBox -> unit` |
+| `FreeBox.translate` | `v: Vec -> b: FreeBox -> FreeBox` |
 
 ## BBox
 
@@ -2044,8 +2057,10 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `BBox.getEdge` | `edgeIndex: int -> b: BBox -> Line3D` |
 | `.GetFace` | `faceIndex: int -> Rect3D` |
 | `BBox.getFace` | `faceIndex: int -> b: BBox -> Rect3D` |
-| `.GetPoint` | `pointIndex: int -> Pnt` |
-| `BBox.getPoint` | `pointIndex: int -> b: BBox -> Pnt` |
+| `.GetLine` | `startPointIndex: int * endPointIndex: int -> Line3D` |
+| `BBox.getLine` | `startPointIndex: int -> endPointIndex: int -> b: BBox -> Line3D` |
+| `.GetPnt` | `pointIndex: int -> Pnt` |
+| `BBox.getPnt` | `pointIndex: int -> b: BBox -> Pnt` |
 | `.HasVolume` | `bool` |
 | `BBox.hasVolume` | `b: BBox -> bool` |
 | `.Intersection` | `a: BBox -> BBox voption` |
@@ -2247,22 +2262,26 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `.Clone` | `unit -> Polyline3D` |
 | `Polyline3D.clone` | `pl: Polyline3D -> Polyline3D` |
 | `.Close` | `?toleranceForAddingPoint: float -> unit` |
-| `Polyline3D.close` | `toleranceForAddingPoint: float -> pl: Polyline3D -> unit` |
+| `Polyline3D.close` | `toleranceForAddingPoint: float -> pl: Polyline3D -> Polyline3D` |
 | `.ClosestParameter` | `p: Pnt -> float` |
-| `Polyline3D.closestParameter` | `pl: Polyline3D -> pnt: Pnt -> float` |
+| `Polyline3D.closestParameter` | `pnt: Pnt -> pl: Polyline3D -> float` |
 | `.ClosestParameterXYZ` | `x: float * y: float * z: float -> float` |
-| `Polyline3D.closestParameterXYZ` | `pl: Polyline3D -> x: float -> y: float -> z: float -> float` |
+| `Polyline3D.closestParameterXYZ` | `x: float -> y: float -> z: float -> pl: Polyline3D -> float` |
 | `.ClosestPoint` | `p: Pnt -> Pnt` |
-| `Polyline3D.closestPoint` | `pl: Polyline3D -> pnt: Pnt -> Pnt` |
+| `Polyline3D.closestPoint` | `pnt: Pnt -> pl: Polyline3D -> Pnt` |
 | `.ClosestPointIndex` | `p: Pnt -> int` |
-| `Polyline3D.closestPointIndex` | `pl: Polyline3D -> pnt: Pnt -> int` |
+| `Polyline3D.closestPointIndex` | `pnt: Pnt -> pl: Polyline3D -> int` |
 | `.DistanceTo` | `p: Pnt -> float` |
-| `Polyline3D.distanceTo` | `pl: Polyline3D -> pnt: Pnt -> float` |
+| `Polyline3D.distanceTo` | `pnt: Pnt -> pl: Polyline3D -> float` |
 | `.DistanceToXYZ` | `x: float * y: float * z: float -> float` |
-| `Polyline3D.distanceToXYZ` | `pl: Polyline3D -> x: float -> y: float -> z: float -> float` |
+| `Polyline3D.distanceToXYZ` | `x: float -> y: float -> z: float -> pl: Polyline3D -> float` |
 | `.Duplicate` | `unit -> Polyline3D` |
 | `Polyline3D.duplicate` | `pl: Polyline3D -> Polyline3D` |
 | `.End` | `Pnt with get, set` |
+| `.EnsureClockwiseIn2D` | `unit -> unit` |
+| `Polyline3D.ensureClockwiseIn2D` | `pl: Polyline3D -> Polyline3D` |
+| `.EnsureCounterClockwiseIn2D` | `unit -> unit` |
+| `Polyline3D.ensureCounterClockwiseIn2D` | `pl: Polyline3D -> Polyline3D` |
 | `.EvaluateAt` | `t: float -> Pnt` |
 | `Polyline3D.evaluateAt` | `t: float -> pl: Polyline3D -> Pnt` |
 | `.FirstPoint` | `Pnt with get, set` |
@@ -2296,29 +2315,49 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `.Length` | `float` |
 | `Polyline3D.length` | `p: Polyline3D -> float` |
 | `.Move` | `v: Vec -> unit` |
-| `Polyline3D.move` | `v: Vec -> pl: Polyline3D -> unit` |
+| `Polyline3D.move` | `v: Vec -> pl: Polyline3D -> Polyline3D` |
+| `.MovePnt` | `pointIndex: int * v: Vec -> unit` |
+| `Polyline3D.movePnt` | `pointIndex: int -> v: Vec -> p: Polyline3D -> unit` |
+| `.MovePntClosed` | `pointIndex: int * v: Vec -> unit` |
+| `Polyline3D.movePntClosed` | `pointIndex: int -> v: Vec -> p: Polyline3D -> unit` |
+| `.MovePntXYZ` | `pointIndex: int * x: float * y: float * z: float -> unit` |
+| `Polyline3D.movePntXYZ` | `pointIndex: int -> x: float -> y: float -> z: float -> p: Polyline3D -> unit` |
+| `.MovePntXYZClosed` | `pointIndex: int * x: float * y: float * z: float -> unit` |
+| `Polyline3D.movePntXYZClosed` | `pointIndex: int -> x: float -> y: float -> z: float -> p: Polyline3D -> unit` |
 | `.MoveX` | `distance: float -> unit` |
-| `Polyline3D.moveX` | `distance: float -> pl: Polyline3D -> unit` |
+| `Polyline3D.moveX` | `distance: float -> pl: Polyline3D -> Polyline3D` |
 | `.MoveY` | `distance: float -> unit` |
-| `Polyline3D.moveY` | `distance: float -> pl: Polyline3D -> unit` |
+| `Polyline3D.moveY` | `distance: float -> pl: Polyline3D -> Polyline3D` |
 | `.MoveZ` | `distance: float -> unit` |
-| `Polyline3D.moveZ` | `distance: float -> pl: Polyline3D -> unit` |
+| `Polyline3D.moveZ` | `distance: float -> pl: Polyline3D -> Polyline3D` |
 | `.PointCount` | `int` |
 | `Polyline3D.pointCount` | `p: Polyline3D -> int` |
+| `.RemoveDuplicateAndCollinearPoints` | `angleTolerance: float<cosine> -> distanceTolerance: float -> unit` |
+| `Polyline3D.removeDuplicateAndCollinearPoints` | `angleTolerance: float<cosine> -> distanceTolerance: float -> pl: Polyline3D -> Polyline3D` |
+| `.RemoveDuplicatePoints` | `distanceTolerance: float -> unit` |
+| `Polyline3D.removeDuplicatePoints` | `distanceTolerance: float -> pl: Polyline3D -> Polyline3D` |
+| `.RemoveDuplicatePointsAndReport` | `distanceTolerance: float -> ResizeArray<Pnt>` |
+| `Polyline3D.removeDuplicatePointsAndReport` | `distanceTolerance: float -> pl: Polyline3D -> Polyline3D * ResizeArray<Pnt>` |
+| `.RemoveDuplicatePointsFaithfully` | `distanceTolerance: float -> unit` |
+| `Polyline3D.removeDuplicatePointsFaithfully` | `distanceTolerance: float -> pl: Polyline3D -> Polyline3D` |
+| `.RemoveUTurns` | `minCos: float<cosine> -> unit` |
+| `Polyline3D.removeUTurns` | `minCos: float<cosine> -> polyLine: Polyline3D -> Polyline3D` |
+| `.RemoveUTurnsDeeply` | `minCos: float<cosine> -> unit` |
+| `Polyline3D.removeUTurnsDeeply` | `minCos: float<cosine> -> polyLine: Polyline3D -> Polyline3D` |
 | `.Reverse` | `unit -> unit` |
-| `Polyline3D.reverse` | `p: Polyline3D -> unit` |
+| `Polyline3D.reverse` | `p: Polyline3D -> Polyline3D` |
 | `.Rotate` | `q: Quaternion -> unit` |
-| `Polyline3D.rotate` | `q: Quaternion -> pl: Polyline3D -> unit` |
+| `Polyline3D.rotate` | `q: Quaternion -> pl: Polyline3D -> Polyline3D` |
+| `.RotateAround` | `cen: Pnt -> q: Quaternion -> unit` |
+| `Polyline3D.rotateAround` | `cen: Pnt -> q: Quaternion -> pl: Polyline3D -> Polyline3D` |
 | `.RotateOnZ` | `r: Rotation2D -> unit` |
-| `Polyline3D.rotateOnZ` | `r: Rotation2D -> pl: Polyline3D -> unit` |
+| `Polyline3D.rotateOnZ` | `r: Rotation2D -> pl: Polyline3D -> Polyline3D` |
 | `.RotateOnZWithCenter` | `cen: Pnt -> r: Rotation2D -> unit` |
-| `Polyline3D.rotateOnZWithCenter` | `cen: Pnt -> r: Rotation2D -> pl: Polyline3D -> unit` |
-| `.RotateWithCenter` | `cen: Pnt * q: Quaternion -> unit` |
-| `Polyline3D.rotateWithCenter` | `cen: Pnt -> q: Quaternion -> pl: Polyline3D -> unit` |
+| `Polyline3D.rotateOnZWithCenter` | `cen: Pnt -> r: Rotation2D -> pl: Polyline3D -> Polyline3D` |
 | `.Scale` | `factor: float -> unit` |
-| `Polyline3D.scale` | `factor: float -> pl: Polyline3D -> unit` |
+| `Polyline3D.scale` | `factor: float -> pl: Polyline3D -> Polyline3D` |
 | `.ScaleOn` | `cen: Pnt -> factor: float -> unit` |
-| `Polyline3D.scaleOn` | `cen: Pnt -> factor: float -> pl: Polyline3D -> unit` |
+| `Polyline3D.scaleOn` | `cen: Pnt -> factor: float -> pl: Polyline3D -> Polyline3D` |
 | `.SecondLastPoint` | `Pnt with get, set` |
 | `Polyline3D.secondLastPoint` | `pl: Polyline3D -> Pnt` |
 | `.SecondPoint` | `Pnt with get, set` |
@@ -2331,21 +2370,21 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Polyline3D.segmentVectors` | `pl: Polyline3D -> ResizeArray<Vec>` |
 | `.SegmentVectorsXYZ` | `ResizeArray<float>` |
 | `Polyline3D.segmentVectorsXYZ` | `p: Polyline3D -> ResizeArray<float>` |
-| `.SetPointXYZ` | `pointIndex: int * x: float * y: float * z: float -> unit` |
-| `Polyline3D.setPointXYZ` | `x: float -> y: float -> z: float -> pointIndex: int -> p: Polyline3D -> unit` |
-| `.SetPointXYZClosed` | `pointIndex: int * x: float * y: float * z: float -> unit` |
-| `Polyline3D.setPointXYZClosed` | `x: float -> y: float -> z: float -> pointIndex: int -> p: Polyline3D -> unit` |
 | `.SetPnt` | `pointIndex: int * pnt: Pnt -> unit` |
 | `Polyline3D.setPnt` | `pointIndex: int -> pnt: Pnt -> p: Polyline3D -> unit` |
+| `.SetPntXYZ` | `pointIndex: int * x: float * y: float * z: float -> unit` |
+| `Polyline3D.setPntXYZ` | `pointIndex: int -> x: float -> y: float -> z: float -> p: Polyline3D -> unit` |
+| `.SetPntXYZClosed` | `pointIndex: int * x: float * y: float * z: float -> unit` |
+| `Polyline3D.setPntXYZClosed` | `pointIndex: int -> x: float -> y: float -> z: float -> p: Polyline3D -> unit` |
 | `.SignedAreaIn2D` | `float` |
 | `Polyline3D.signedAreaIn2D` | `pl: Polyline3D -> float` |
 | `.Start` | `Pnt with get, set` |
 | `Polyline3D.start` | `pl: Polyline3D -> Pnt` |
 | `.ToString` | `unit -> string` |
 | `.Transform` | `m: Matrix -> unit` |
-| `Polyline3D.transform` | `m: Matrix -> pl: Polyline3D -> unit` |
+| `Polyline3D.transform` | `m: Matrix -> pl: Polyline3D -> Polyline3D` |
 | `.TransformRigid` | `m: RigidMatrix -> unit` |
-| `Polyline3D.transformRigid` | `m: RigidMatrix -> pl: Polyline3D -> unit` |
+| `Polyline3D.transformRigid` | `m: RigidMatrix -> pl: Polyline3D -> Polyline3D` |
 | `.TryAverageNormal` | `Vec option` |
 | `Polyline3D.tryAverageNormal` | `pl: Polyline3D -> Vec option` |
 | `.TryAveragePlane` | `?tolerance: float -> NPlane option` |
@@ -2363,8 +2402,6 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Polyline3D.createFromXYZMembers` | `xyzObjs: ^T seq -> Polyline3D` |
 | `Polyline3D.createFromxyzMembers` | `xyzObjs: ^T seq -> Polyline3D` |
 | `Polyline3D.end'` | `pl: Polyline3D -> Pnt` |
-| `Polyline3D.ensureClockwiseIn2D` | `pl: Polyline3D -> unit` |
-| `Polyline3D.ensureCounterClockwiseIn2D` | `pl: Polyline3D -> unit` |
 | `Polyline3D.equals` | `pl1: Polyline3D -> pl2: Polyline3D -> bool` |
 | `Polyline3D.equalsTol` | `tol: float -> pl1: Polyline3D -> pl2: Polyline3D -> bool` |
 | `Polyline3D.getXYZs` | `p: Polyline3D -> ResizeArray<float>` |
@@ -2383,14 +2420,8 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Polyline3D.offsetVar` | `polyLine: Polyline3D * inPlaneOffsetDistances: ResizeArray<float> * perpendicularOffsetDistances: ResizeArray<float> * ?loop: bool * ?varDistParallelBehavior: VarDistParallel * ?considerCollinearBelow: float<cosine> * ?failAtUTurnAbove: float<cosine> -> Polyline3D` |
 | `Polyline3D.offsetVarWithRef` | `polyLine: Polyline3D * inPlaneOffsetDistances: IList<float> * perpendicularOffsetDistances: IList<float> * refNormal: UnitVec * ?loop: bool * ?varDistParallelBehavior: VarDistParallel * ?considerCollinearBelow: float<cosine> * ?failAtUTurnAbove: float<cosine> -> Polyline3D` |
 | `Polyline3D.offsetWithRef` | `polyLine: Polyline3D * inPlaneOffsetDistance: float * perpendicularOffsetDistance: float * refNormal: UnitVec * ?loop: bool -> Polyline3D` |
-| `Polyline3D.removeDuplicateAndCollinearPoints` | `angleTolerance: float<cosine> -> distanceTolerance: float -> pl: Polyline3D -> unit` |
-| `Polyline3D.removeDuplicatePoints` | `distanceTolerance: float -> pl: Polyline3D -> unit` |
-| `Polyline3D.removeDuplicatePointsAndReport` | `distanceTolerance: float -> pl: Polyline3D -> ResizeArray<Pnt>` |
-| `Polyline3D.removeDuplicatePointsFaithfully` | `distanceTolerance: float -> pl: Polyline3D -> unit` |
-| `Polyline3D.removeUTurns` | `minCos: float<cosine> -> polyLine: Polyline3D -> unit` |
-| `Polyline3D.removeUTurnsDeeply` | `minCos: float<cosine> -> polyLine: Polyline3D -> unit` |
 | `Polyline3D.subPolyline` | `a: float -> b: float -> pl: Polyline3D -> Polyline3D` |
-| `Polyline3D.translate` | `v: Vec -> pl: Polyline3D -> unit` |
+| `Polyline3D.translate` | `v: Vec -> pl: Polyline3D -> Polyline3D` |
 | `Polyline3D.tryFind` | `condition: (float -> float -> float -> bool) -> pl: Polyline3D -> Pnt option` |
 | `Polyline3D.tryFindIndex` | `condition: (float -> float -> float -> bool) -> pl: Polyline3D -> int option` |
 | `Polyline3D.tryFindLast` | `condition: (float -> float -> float -> bool) -> pl: Polyline3D -> Pnt option` |

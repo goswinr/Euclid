@@ -810,42 +810,47 @@ let tests =
                 Expect.isTrue (eqPt aroundOwnCenter.Center gRect.Center) "rotating around its own center keeps it fixed"
             }
 
-            test "Polyline2D rotate variants change it in place" {
+            test "Polyline2D rotate instance members change it in place, statics return a new one" {
                 let expectedOrigin = Polyline2D.createFromPts ((gPl ()).AsPoints |> Seq.map (Pt.rotate gRot))
                 let expectedAround = Polyline2D.createFromPts ((gPl ()).AsPoints |> Seq.map (refRotAround gCen gRot))
-                let check name (expected:Polyline2D) (f:Polyline2D -> unit) =
+                let checkInPlace name (expected:Polyline2D) (f:Polyline2D -> unit) =
                     let pl = gPl ()
                     f pl
                     Expect.isTrue (eqPl expected pl) name
-                check "rotateDegrees"        expectedOrigin (Polyline2D.rotateDegrees gDeg)
-                check "rotateRadians"        expectedOrigin (Polyline2D.rotateRadians gRad)
-                check "RotateDegrees"        expectedOrigin (fun pl -> pl.RotateDegrees gDeg)
-                check "RotateRadians"        expectedOrigin (fun pl -> pl.RotateRadians gRad)
-                check "rotateAround"         expectedAround (Polyline2D.rotateAround gCen gRot)
-                check "rotateAroundDegrees"  expectedAround (Polyline2D.rotateAroundDegrees gCen gDeg)
-                check "rotateAroundRadians"  expectedAround (Polyline2D.rotateAroundRadians gCen gRad)
-                check "RotateAround"         expectedAround (fun pl -> pl.RotateAround gCen gRot)
-                check "RotateAroundDegrees"  expectedAround (fun pl -> pl.RotateAroundDegrees gCen gDeg)
-                check "RotateAroundRadians"  expectedAround (fun pl -> pl.RotateAroundRadians gCen gRad)
+                let checkStatic name (expected:Polyline2D) (f:Polyline2D -> Polyline2D) =
+                    let pl = gPl ()
+                    Expect.isTrue (eqPl expected (f pl)) name
+                    Expect.isTrue (eqPl (gPl ()) pl) $"{name} should not change the input"
+                checkStatic  "rotateDegrees"        expectedOrigin (Polyline2D.rotateDegrees gDeg)
+                checkStatic  "rotateRadians"        expectedOrigin (Polyline2D.rotateRadians gRad)
+                checkInPlace "RotateDegrees"        expectedOrigin (fun pl -> pl.RotateDegrees gDeg)
+                checkInPlace "RotateRadians"        expectedOrigin (fun pl -> pl.RotateRadians gRad)
+                checkStatic  "rotateAround"         expectedAround (Polyline2D.rotateAround gCen gRot)
+                checkStatic  "rotateAroundDegrees"  expectedAround (Polyline2D.rotateAroundDegrees gCen gDeg)
+                checkStatic  "rotateAroundRadians"  expectedAround (Polyline2D.rotateAroundRadians gCen gRad)
+                checkInPlace "RotateAround"         expectedAround (fun pl -> pl.RotateAround gCen gRot)
+                checkInPlace "RotateAroundDegrees"  expectedAround (fun pl -> pl.RotateAroundDegrees gCen gDeg)
+                checkInPlace "RotateAroundRadians"  expectedAround (fun pl -> pl.RotateAroundRadians gCen gRad)
             }
 
             test "Polyline2D rotateAroundDegrees with empty, single and duplicate points" {
                 let empty = Polyline2D.createFromPts []
-                Polyline2D.rotateAroundDegrees gCen gDeg empty
-                Expect.equal empty.PointCount 0 "empty stays empty"
+                let rotatedEmpty = Polyline2D.rotateAroundDegrees gCen gDeg empty
+                Expect.equal rotatedEmpty.PointCount 0 "empty stays empty"
                 let single = Polyline2D.createFromPts [gPt]
                 single.RotateAroundDegrees gCen gDeg
                 Expect.isTrue (eqPt (single.GetPt 0) (refRotAround gCen gRot gPt)) "single point is rotated"
                 let dup = Polyline2D.createFromPts [gPt; gPt]
-                Polyline2D.rotateAroundRadians gCen gRad dup
-                Expect.isTrue (eqPt (dup.GetPt 0) (dup.GetPt 1)) "duplicate points stay duplicates"
+                let rotatedDup = Polyline2D.rotateAroundRadians gCen gRad dup
+                Expect.isTrue (eqPt (rotatedDup.GetPt 0) (rotatedDup.GetPt 1)) "duplicate points stay duplicates"
+                Expect.isTrue (eqPt (dup.GetPt 0) gPt) "input is not rotated"
             }
 
-            test "Polyline2D.scaleOn changes it in place" {
+            test "Polyline2D.scaleOn returns a new one, ScaleOn changes it in place" {
                 let expected = Polyline2D.createFromPts ((gPl ()).AsPoints |> Seq.map (Pt.scaleOn gCen 1.5))
                 let pl = gPl ()
-                Polyline2D.scaleOn gCen 1.5 pl
-                Expect.isTrue (eqPl expected pl) "scaleOn"
+                Expect.isTrue (eqPl expected (Polyline2D.scaleOn gCen 1.5 pl)) "scaleOn"
+                Expect.isTrue (eqPl (gPl ()) pl) "scaleOn should not change the input"
                 let pl2 = gPl ()
                 pl2.ScaleOn gCen 1.5
                 Expect.isTrue (eqPl expected pl2) "ScaleOn"

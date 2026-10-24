@@ -110,16 +110,16 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `.MatchesOrientation` | `other: Vc -> bool` |
 | `.MatchesOrientation` | `other: UnitVc -> bool` |
 | `Vc.matchesOrientation` | `v: Vc -> other: Vc -> bool` |
-| `.Rotate` | `angDegree: float -> Vc` |
-| `Vc.rotate` | `angDegree: float -> vec: Vc -> Vc` |
+| `.Rotate` | `r: Rotation2D -> Vc` |
+| `Vc.rotate` | `r: Rotation2D -> v: Vc -> Vc` |
 | `.Rotate90CCW` | `Vc` |
 | `Vc.rotate90CCW` | `v: Vc -> Vc` |
 | `.Rotate90CW` | `Vc` |
 | `Vc.rotate90CW` | `v: Vc -> Vc` |
-| `.RotateBy` | `r: Rotation2D -> Vc` |
-| `Vc.rotateBy` | `r: Rotation2D -> v: Vc -> Vc` |
 | `.RotateByQuarterCircle` | `numberOfQuarters: int -> Vc` |
 | `Vc.rotateByQuarterCircle` | `numberOfQuarters: int -> v: Vc -> Vc` |
+| `.RotateDegrees` | `angDegree: float -> Vc` |
+| `Vc.rotateDegrees` | `angDegree: float -> v: Vc -> Vc` |
 | `.RotateRadians` | `angRadians: float -> Vc` |
 | `Vc.rotateRadians` | `angRadians: float -> v: Vc -> Vc` |
 | `.ToString` | `unit -> string` |
@@ -249,16 +249,16 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `.MatchesOrientation` | `other: UnitVc -> bool` |
 | `.MatchesOrientation` | `other: Vc -> bool` |
 | `UnitVc.matchesOrientation` | `other: UnitVc -> v: UnitVc -> bool` |
-| `.Rotate` | `angDegree: float -> UnitVc` |
-| `UnitVc.rotate` | `angDegree: float -> vec: UnitVc -> UnitVc` |
+| `.Rotate` | `r: Rotation2D -> UnitVc` |
+| `UnitVc.rotate` | `r: Rotation2D -> v: UnitVc -> UnitVc` |
 | `.Rotate90CCW` | `UnitVc` |
 | `UnitVc.rotate90CCW` | `v: UnitVc -> UnitVc` |
 | `.Rotate90CW` | `UnitVc` |
 | `UnitVc.rotate90CW` | `v: UnitVc -> UnitVc` |
-| `.RotateBy` | `r: Rotation2D -> UnitVc` |
-| `UnitVc.rotateBy` | `r: Rotation2D -> v: UnitVc -> UnitVc` |
 | `.RotateByQuarterCircle` | `numberOfQuarters: int -> UnitVc` |
 | `UnitVc.rotateByQuarterCircle` | `numberOfQuarters: int -> v: UnitVc -> UnitVc` |
+| `.RotateDegrees` | `angDegree: float -> UnitVc` |
+| `UnitVc.rotateDegrees` | `angDegree: float -> v: UnitVc -> UnitVc` |
 | `.RotateRadians` | `angRadians: float -> UnitVc` |
 | `UnitVc.rotateRadians` | `angRadians: float -> v: UnitVc -> UnitVc` |
 | `.ToString` | `unit -> string` |
@@ -287,7 +287,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `UnitVc.createFromMembersXY` | `vec: ^T -> UnitVc` |
 | `UnitVc.createFromMembersxy` | `vec: ^T -> UnitVc` |
 | `UnitVc.createFromPt` | `pt: Pt -> UnitVc` |
-| `UnitVc.createFromVec` | `v: Vc -> UnitVc` |
+| `UnitVc.createFromVc` | `v: Vc -> UnitVc` |
 | `UnitVc.createUnchecked` | `x: float * y: float -> UnitVc` |
 | `UnitVc.difference` | `a: UnitVc -> b: UnitVc -> float` |
 | `UnitVc.differenceSq` | `a: UnitVc -> b: UnitVc -> float` |
@@ -369,16 +369,22 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Pt.isOrigin` | `pt: Pt -> bool` |
 | `.IsValid` | `bool` |
 | `Pt.isValid` | `pt: Pt -> bool` |
-| `.Rotate` | `angDegree: float -> Pt` |
-| `Pt.rotate` | `angDegree: float -> vec: Pt -> Pt` |
+| `.Rotate` | `r: Rotation2D -> Pt` |
+| `Pt.rotate` | `r: Rotation2D -> p: Pt -> Pt` |
 | `.Rotate90CCW` | `Pt` |
 | `Pt.rotate90CCW` | `pt: Pt -> Pt` |
 | `.Rotate90CW` | `Pt` |
 | `Pt.rotate90CW` | `pt: Pt -> Pt` |
-| `.RotateBy` | `r: Rotation2D -> Pt` |
-| `Pt.rotateBy` | `r: Rotation2D -> p: Pt -> Pt` |
+| `.RotateAround` | `cen: Pt -> r: Rotation2D -> Pt` |
+| `Pt.rotateAround` | `cen: Pt -> r: Rotation2D -> pt: Pt -> Pt` |
+| `.RotateAroundDegrees` | `cen: Pt -> angDegree: float -> Pt` |
+| `Pt.rotateAroundDegrees` | `cen: Pt -> angDegree: float -> pt: Pt -> Pt` |
+| `.RotateAroundRadians` | `cen: Pt -> angRadians: float -> Pt` |
+| `Pt.rotateAroundRadians` | `cen: Pt -> angRadians: float -> pt: Pt -> Pt` |
 | `.RotateByQuarterCircle` | `numberOfQuarters: int -> Pt` |
 | `Pt.rotateByQuarterCircle` | `numberOfQuarters: int -> v: Pt -> Pt` |
+| `.RotateDegrees` | `angDegree: float -> Pt` |
+| `Pt.rotateDegrees` | `angDegree: float -> pt: Pt -> Pt` |
 | `.RotateRadians` | `angRadians: float -> Pt` |
 | `Pt.rotateRadians` | `angRadians: float -> pt: Pt -> Pt` |
 | `.SqDistanceFromOrigin` | `float` |
@@ -428,9 +434,8 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Pt.projectedParameter` | `fromPt: Pt * uv: UnitVc * testPt: Pt -> float` |
 | `Pt.projectedParameter` | `fromPt: Pt * v: Vc * testPt: Pt -> float` |
 | `Pt.projectedParameter` | `fromPt: Pt * toPt: Pt * testPt: Pt -> float` |
-| `Pt.rotateWithCenter` | `cen: Pt -> angDegree: float -> pt: Pt -> Pt` |
-| `Pt.rotateWithCenterBy` | `cen: Pt -> r: Rotation2D -> pt: Pt -> Pt` |
 | `Pt.scale` | `f: float -> pt: Pt -> Pt` |
+| `Pt.scaleOn` | `cen: Pt -> factor: float -> pt: Pt -> Pt` |
 | `Pt.snap` | `precision: float -> pt: Pt -> Pt` |
 | `Pt.snapIfClose` | `snapDistance: float -> snapTo: Pt -> pt: Pt -> Pt` |
 | `Pt.sqDist` | `b: Pt -> p: Pt -> float` |
@@ -612,8 +617,16 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Line2D.reversed` | `ln: Line2D -> Line2D` |
 | `.Rotate` | `r: Rotation2D -> Line2D` |
 | `Line2D.rotate` | `r: Rotation2D -> ln: Line2D -> Line2D` |
-| `.RotateWithCenter` | `cen: Pt * r: Rotation2D -> Line2D` |
-| `Line2D.rotateWithCenter` | `cen: Pt -> r: Rotation2D -> ln: Line2D -> Line2D` |
+| `.RotateAround` | `cen: Pt -> r: Rotation2D -> Line2D` |
+| `Line2D.rotateAround` | `cen: Pt -> r: Rotation2D -> ln: Line2D -> Line2D` |
+| `.RotateAroundDegrees` | `cen: Pt -> angDegree: float -> Line2D` |
+| `Line2D.rotateAroundDegrees` | `cen: Pt -> angDegree: float -> ln: Line2D -> Line2D` |
+| `.RotateAroundRadians` | `cen: Pt -> angRadians: float -> Line2D` |
+| `Line2D.rotateAroundRadians` | `cen: Pt -> angRadians: float -> ln: Line2D -> Line2D` |
+| `.RotateDegrees` | `angDegree: float -> Line2D` |
+| `Line2D.rotateDegrees` | `angDegree: float -> ln: Line2D -> Line2D` |
+| `.RotateRadians` | `angRadians: float -> Line2D` |
+| `Line2D.rotateRadians` | `angRadians: float -> ln: Line2D -> Line2D` |
 | `.Scale` | `factor: float -> Line2D` |
 | `Line2D.scale` | `factor: float -> ln: Line2D -> Line2D` |
 | `.ScaleOn` | `cen: Pt -> factor: float -> Line2D` |
@@ -653,7 +666,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | **Other static members** | |
 | `Line2D.createFromLine3D` | `ln: Line3D -> Line2D` |
 | `Line2D.createFromPtAndVc` | `p: Pt * v: Vc -> Line2D` |
-| `Line2D.createFromVec` | `v: Vc -> Line2D` |
+| `Line2D.createFromVc` | `v: Vc -> Line2D` |
 | `Line2D.cross` | `a: Line2D -> b: Line2D -> float` |
 | `Line2D.det` | `a: Line2D -> b: Line2D -> float` |
 | `Line2D.distanceToLine` | `lnA: Line2D -> lnB: Line2D -> float` |
@@ -684,7 +697,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Line2D.isPerpendicularToUnitVc` | `maxTangent: float<tangent> -> other: UnitVc -> ln: Line2D -> bool` |
 | `Line2D.isPerpendicularToVc` | `maxTangent: float<tangent> -> other: Vc -> ln: Line2D -> bool` |
 | `Line2D.isTouchingEndOf` | `squareTolerance: float -> a: Line2D -> b: Line2D -> bool` |
-| `Line2D.lengthToPtOnLine` | `ln: Line2D -> pt: Pt -> float` |
+| `Line2D.lengthToPtOnLine` | `pt: Pt -> ln: Line2D -> float` |
 | `Line2D.matchesOrientationUnitVc` | `v: UnitVc -> ln: Line2D -> bool` |
 | `Line2D.matchesOrientationVc` | `v: Vc -> ln: Line2D -> bool` |
 | `Line2D.matchOrientation` | `orientationToMatch: Line2D -> lineToFlip: Line2D -> Line2D` |
@@ -966,14 +979,22 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Rect2D.pt3` | `r: Rect2D -> Pt` |
 | `.Rotate` | `rot: Rotation2D -> Rect2D` |
 | `Rect2D.rotate` | `rot: Rotation2D -> rect: Rect2D -> Rect2D` |
+| `.RotateAround` | `cen: Pt -> rot: Rotation2D -> Rect2D` |
+| `Rect2D.rotateAround` | `cen: Pt -> rot: Rotation2D -> rect: Rect2D -> Rect2D` |
+| `.RotateAroundDegrees` | `cen: Pt -> angDegree: float -> Rect2D` |
+| `Rect2D.rotateAroundDegrees` | `cen: Pt -> angDegree: float -> r: Rect2D -> Rect2D` |
+| `.RotateAroundRadians` | `cen: Pt -> angRadians: float -> Rect2D` |
+| `Rect2D.rotateAroundRadians` | `cen: Pt -> angRadians: float -> r: Rect2D -> Rect2D` |
+| `.RotateDegrees` | `angDegree: float -> Rect2D` |
+| `Rect2D.rotateDegrees` | `angDegree: float -> r: Rect2D -> Rect2D` |
 | `.RotateOrientation180` | `Rect2D` |
 | `Rect2D.rotateOrientation180` | `r: Rect2D -> Rect2D` |
 | `.RotateOrientation90CCW` | `Rect2D` |
 | `Rect2D.rotateOrientation90CCW` | `r: Rect2D -> Rect2D` |
 | `.RotateOrientation90CW` | `Rect2D` |
 | `Rect2D.rotateOrientation90CW` | `r: Rect2D -> Rect2D` |
-| `.RotateWithCenter` | `cen: Pt * rot: Rotation2D -> Rect2D` |
-| `Rect2D.rotateWithCenter` | `cen: Pt -> rot: Rotation2D -> rect: Rect2D -> Rect2D` |
+| `.RotateRadians` | `angRadians: float -> Rect2D` |
+| `Rect2D.rotateRadians` | `angRadians: float -> r: Rect2D -> Rect2D` |
 | `.Scale` | `factor: float -> Rect2D` |
 | `Rect2D.scale` | `factor: float -> r: Rect2D -> Rect2D` |
 | `.ScaleOn` | `cen: Pt -> factor: float -> Rect2D` |
@@ -1264,26 +1285,30 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `.Clone` | `unit -> Polyline2D` |
 | `Polyline2D.clone` | `p: Polyline2D -> Polyline2D` |
 | `.Close` | `?toleranceForAddingPoint: float -> unit` |
-| `Polyline2D.close` | `toleranceForAddingPoint: float -> pl: Polyline2D -> unit` |
+| `Polyline2D.close` | `toleranceForAddingPoint: float -> pl: Polyline2D -> Polyline2D` |
 | `.ClosestParameter` | `p: Pt -> float` |
-| `Polyline2D.closestParameter` | `pl: Polyline2D -> pt: Pt -> float` |
+| `Polyline2D.closestParameter` | `pt: Pt -> pl: Polyline2D -> float` |
 | `.ClosestParameterXY` | `x: float * y: float -> float` |
-| `Polyline2D.closestParameterXY` | `pl: Polyline2D -> x: float -> y: float -> float` |
+| `Polyline2D.closestParameterXY` | `x: float -> y: float -> pl: Polyline2D -> float` |
 | `.ClosestPoint` | `p: Pt -> Pt` |
-| `Polyline2D.closestPoint` | `pl: Polyline2D -> pt: Pt -> Pt` |
+| `Polyline2D.closestPoint` | `pt: Pt -> pl: Polyline2D -> Pt` |
 | `.ClosestPointIndex` | `p: Pt -> int` |
-| `Polyline2D.closestPointIndex` | `pl: Polyline2D -> pt: Pt -> int` |
+| `Polyline2D.closestPointIndex` | `pt: Pt -> pl: Polyline2D -> int` |
 | `.Contains` | `pt: Pt -> bool` |
 | `Polyline2D.contains` | `pt: Pt -> pl: Polyline2D -> bool` |
 | `.ContainsXY` | `x: float * y: float -> bool` |
 | `Polyline2D.containsXY` | `x: float -> y: float -> pl: Polyline2D -> bool` |
 | `.DistanceTo` | `p: Pt -> float` |
-| `Polyline2D.distanceTo` | `pl: Polyline2D -> pt: Pt -> float` |
+| `Polyline2D.distanceTo` | `pt: Pt -> pl: Polyline2D -> float` |
 | `.DistanceToXY` | `x: float * y: float -> float` |
-| `Polyline2D.distanceToXY` | `pl: Polyline2D -> x: float -> y: float -> float` |
+| `Polyline2D.distanceToXY` | `x: float -> y: float -> pl: Polyline2D -> float` |
 | `.Duplicate` | `unit -> Polyline2D` |
 | `Polyline2D.duplicate` | `p: Polyline2D -> Polyline2D` |
 | `.End` | `Pt with get, set` |
+| `.EnsureClockwise` | `unit -> unit` |
+| `Polyline2D.ensureClockwise` | `pl: Polyline2D -> Polyline2D` |
+| `.EnsureCounterClockwise` | `unit -> unit` |
+| `Polyline2D.ensureCounterClockwise` | `pl: Polyline2D -> Polyline2D` |
 | `.EvaluateAt` | `t: float -> Pt` |
 | `Polyline2D.evaluateAt` | `t: float -> pl: Polyline2D -> Pt` |
 | `.FindLabelPoint` | `precision: float -> Pt * float` |
@@ -1315,23 +1340,51 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `.Length` | `float` |
 | `Polyline2D.length` | `p: Polyline2D -> float` |
 | `.Move` | `v: Vc -> unit` |
-| `Polyline2D.move` | `v: Vc -> pl: Polyline2D -> unit` |
+| `Polyline2D.move` | `v: Vc -> pl: Polyline2D -> Polyline2D` |
+| `.MovePt` | `pointIndex: int * v: Vc -> unit` |
+| `Polyline2D.movePt` | `pointIndex: int -> v: Vc -> p: Polyline2D -> unit` |
+| `.MovePtClosed` | `pointIndex: int * v: Vc -> unit` |
+| `Polyline2D.movePtClosed` | `pointIndex: int -> v: Vc -> p: Polyline2D -> unit` |
+| `.MovePtXY` | `pointIndex: int * x: float * y: float -> unit` |
+| `Polyline2D.movePtXY` | `pointIndex: int -> x: float -> y: float -> p: Polyline2D -> unit` |
+| `.MovePtXYClosed` | `pointIndex: int * x: float * y: float -> unit` |
+| `Polyline2D.movePtXYClosed` | `pointIndex: int -> x: float -> y: float -> p: Polyline2D -> unit` |
 | `.MoveX` | `distance: float -> unit` |
-| `Polyline2D.moveX` | `distance: float -> pl: Polyline2D -> unit` |
+| `Polyline2D.moveX` | `distance: float -> pl: Polyline2D -> Polyline2D` |
 | `.MoveY` | `distance: float -> unit` |
-| `Polyline2D.moveY` | `distance: float -> pl: Polyline2D -> unit` |
+| `Polyline2D.moveY` | `distance: float -> pl: Polyline2D -> Polyline2D` |
 | `.PointCount` | `int` |
 | `Polyline2D.pointCount` | `p: Polyline2D -> int` |
+| `.RemoveDuplicateAndCollinearPoints` | `angleTolerance: float<cosine> -> distanceTolerance: float -> unit` |
+| `Polyline2D.removeDuplicateAndCollinearPoints` | `angleTolerance: float<cosine> -> distanceTolerance: float -> pl: Polyline2D -> Polyline2D` |
+| `.RemoveDuplicatePoints` | `distanceTolerance: float -> unit` |
+| `Polyline2D.removeDuplicatePoints` | `distanceTolerance: float -> pl: Polyline2D -> Polyline2D` |
+| `.RemoveDuplicatePointsAndReport` | `distanceTolerance: float -> ResizeArray<Pt>` |
+| `Polyline2D.removeDuplicatePointsAndReport` | `distanceTolerance: float -> pl: Polyline2D -> Polyline2D * ResizeArray<Pt>` |
+| `.RemoveDuplicatePointsFaithfully` | `distanceTolerance: float -> unit` |
+| `Polyline2D.removeDuplicatePointsFaithfully` | `distanceTolerance: float -> pl: Polyline2D -> Polyline2D` |
+| `.RemoveUTurns` | `minCos: float<cosine> -> unit` |
+| `Polyline2D.removeUTurns` | `minCos: float<cosine> -> polyLine: Polyline2D -> Polyline2D` |
+| `.RemoveUTurnsDeeply` | `minCos: float<cosine> -> unit` |
+| `Polyline2D.removeUTurnsDeeply` | `minCos: float<cosine> -> polyLine: Polyline2D -> Polyline2D` |
 | `.Reverse` | `unit -> unit` |
-| `Polyline2D.reverse` | `p: Polyline2D -> unit` |
+| `Polyline2D.reverse` | `p: Polyline2D -> Polyline2D` |
 | `.Rotate` | `r: Rotation2D -> unit` |
-| `Polyline2D.rotate` | `r: Rotation2D -> pl: Polyline2D -> unit` |
-| `.RotateWithCenter` | `cen: Pt * r: Rotation2D -> unit` |
-| `Polyline2D.rotateWithCenter` | `cen: Pt -> r: Rotation2D -> pl: Polyline2D -> unit` |
+| `Polyline2D.rotate` | `r: Rotation2D -> pl: Polyline2D -> Polyline2D` |
+| `.RotateAround` | `cen: Pt -> r: Rotation2D -> unit` |
+| `Polyline2D.rotateAround` | `cen: Pt -> r: Rotation2D -> pl: Polyline2D -> Polyline2D` |
+| `.RotateAroundDegrees` | `cen: Pt -> angDegree: float -> unit` |
+| `Polyline2D.rotateAroundDegrees` | `cen: Pt -> angDegree: float -> pl: Polyline2D -> Polyline2D` |
+| `.RotateAroundRadians` | `cen: Pt -> angRadians: float -> unit` |
+| `Polyline2D.rotateAroundRadians` | `cen: Pt -> angRadians: float -> pl: Polyline2D -> Polyline2D` |
+| `.RotateDegrees` | `angDegree: float -> unit` |
+| `Polyline2D.rotateDegrees` | `angDegree: float -> pl: Polyline2D -> Polyline2D` |
+| `.RotateRadians` | `angRadians: float -> unit` |
+| `Polyline2D.rotateRadians` | `angRadians: float -> pl: Polyline2D -> Polyline2D` |
 | `.Scale` | `factor: float -> unit` |
-| `Polyline2D.scale` | `factor: float -> pl: Polyline2D -> unit` |
+| `Polyline2D.scale` | `factor: float -> pl: Polyline2D -> Polyline2D` |
 | `.ScaleOn` | `cen: Pt -> factor: float -> unit` |
-| `Polyline2D.scaleOn` | `cen: Pt -> factor: float -> pl: Polyline2D -> unit` |
+| `Polyline2D.scaleOn` | `cen: Pt -> factor: float -> pl: Polyline2D -> Polyline2D` |
 | `.SecondLastPoint` | `Pt with get, set` |
 | `Polyline2D.secondLastPoint` | `p: Polyline2D -> Pt` |
 | `.SecondPoint` | `Pt with get, set` |
@@ -1344,12 +1397,12 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Polyline2D.segmentVectors` | `p: Polyline2D -> ResizeArray<Vc>` |
 | `.SegmentVectorsXY` | `ResizeArray<float>` |
 | `Polyline2D.segmentVectorsXY` | `p: Polyline2D -> ResizeArray<float>` |
-| `.SetPointXY` | `pointIndex: int * x: float * y: float -> unit` |
-| `Polyline2D.setPointXY` | `x: float -> y: float -> pointIndex: int -> p: Polyline2D -> unit` |
-| `.SetPointXYClosed` | `pointIndex: int * x: float * y: float -> unit` |
-| `Polyline2D.setPointXYClosed` | `x: float -> y: float -> pointIndex: int -> p: Polyline2D -> unit` |
 | `.SetPt` | `pointIndex: int * pt: Pt -> unit` |
 | `Polyline2D.setPt` | `pointIndex: int -> pt: Pt -> p: Polyline2D -> unit` |
+| `.SetPtXY` | `pointIndex: int * x: float * y: float -> unit` |
+| `Polyline2D.setPtXY` | `pointIndex: int -> x: float -> y: float -> p: Polyline2D -> unit` |
+| `.SetPtXYClosed` | `pointIndex: int * x: float * y: float -> unit` |
+| `Polyline2D.setPtXYClosed` | `pointIndex: int -> x: float -> y: float -> p: Polyline2D -> unit` |
 | `.SignedArea` | `float` |
 | `Polyline2D.signedArea` | `p: Polyline2D -> float` |
 | `.SignedDistanceTo` | `point: Pt -> float` |
@@ -1373,8 +1426,6 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Polyline2D.createFromXYMembers` | `xyObjs: ^T seq -> Polyline2D` |
 | `Polyline2D.createFromxyMembers` | `xyObjs: ^T seq -> Polyline2D` |
 | `Polyline2D.end'` | `p: Polyline2D -> Pt` |
-| `Polyline2D.ensureClockwise` | `pl: Polyline2D -> unit` |
-| `Polyline2D.ensureCounterClockwise` | `pl: Polyline2D -> unit` |
 | `Polyline2D.equals` | `pl1: Polyline2D -> pl2: Polyline2D -> bool` |
 | `Polyline2D.equalsTol` | `tol: float -> pl1: Polyline2D -> pl2: Polyline2D -> bool` |
 | `Polyline2D.getXYs` | `p: Polyline2D -> ResizeArray<float>` |
@@ -1391,14 +1442,8 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Polyline2D.offset` | `polyLine: Polyline2D * constantOffsetDistance: float * ?loop: bool * ?checkOrientation: bool * ?uTurnBehavior: UTurn * ?useUTurnBehaviorAbove: float<cosine> -> Polyline2D` |
 | `Polyline2D.offset'` | `offsetDistance: float -> pl: Polyline2D -> Polyline2D` |
 | `Polyline2D.offsetVar` | `polyLine: Polyline2D * multipleOffsetDistances: IList<float> * ?loop: bool * ?checkOrientation: bool * ?varDistParallelBehavior: VarDistParallel * ?uTurnBehavior: UTurn * ?useVarDistParallelBehaviorBelow: float<cosine> * ?useUTurnBehaviorAbove: float<cosine> -> Polyline2D` |
-| `Polyline2D.removeDuplicateAndCollinearPoints` | `angleTolerance: float<cosine> -> distanceTolerance: float -> pl: Polyline2D -> unit` |
-| `Polyline2D.removeDuplicatePoints` | `distanceTolerance: float -> pl: Polyline2D -> unit` |
-| `Polyline2D.removeDuplicatePointsAndReport` | `distanceTolerance: float -> pl: Polyline2D -> ResizeArray<Pt>` |
-| `Polyline2D.removeDuplicatePointsFaithfully` | `distanceTolerance: float -> pl: Polyline2D -> unit` |
-| `Polyline2D.removeUTurns` | `minCos: float<cosine> -> polyLine: Polyline2D -> unit` |
-| `Polyline2D.removeUTurnsDeeply` | `minCos: float<cosine> -> polyLine: Polyline2D -> unit` |
 | `Polyline2D.subPolyline` | `a: float -> b: float -> pl: Polyline2D -> Polyline2D` |
-| `Polyline2D.translate` | `v: Vc -> pl: Polyline2D -> unit` |
+| `Polyline2D.translate` | `v: Vc -> pl: Polyline2D -> Polyline2D` |
 | `Polyline2D.tryFind` | `condition: (float -> float -> bool) -> pl: Polyline2D -> Pt option` |
 | `Polyline2D.tryFindIndex` | `condition: (float -> float -> bool) -> pl: Polyline2D -> int option` |
 | `Polyline2D.tryFindLast` | `condition: (float -> float -> bool) -> pl: Polyline2D -> Pt option` |

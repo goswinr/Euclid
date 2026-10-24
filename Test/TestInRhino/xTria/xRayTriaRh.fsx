@@ -26,7 +26,8 @@ let pts =
     rs.GetObject("Select Tria", rs.Filter.Surface)
     |> rs.SurfacePoints
     |> Polyline3D.createFromXYZMembers
-    |> fun pl -> Polyline3D.removeDuplicatePoints 0.001 pl; pl.AsPoints
+    |> Polyline3D.removeDuplicatePoints 0.001
+    |> _.AsPoints
 
 
 // rs.AddPolyline [rpt pts[0]; rpt pts[1]; rpt pts[2]; rpt pts[0]] |> rs.setLayer "tria"

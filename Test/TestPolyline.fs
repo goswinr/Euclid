@@ -178,20 +178,19 @@ let tests =
 
             test "translation" {
                 let vec = Vc(5., 3.)
-                let moved = plOpen.Duplicate()
-                Polyline2D.translate vec moved
+                let moved = Polyline2D.translate vec plOpen
                 "first point translated" |> (expectEqPts  moved.AsPoints.[0] (Pt(5.,3.)))
                 "second point translated" |> (expectEqPts  moved.AsPoints.[1] (Pt(15.,3.)))
+                "original unchanged" |> (expectEqPts  plOpen.AsPoints.[0] (Pt(0.,0.)))
             }
 
             test "move X and Y" {
-                let movedX = plOpen.Duplicate()
-                Polyline2D.moveX 5. movedX
+                let movedX = Polyline2D.moveX 5. plOpen
                 "moved X" |> (expectEqPts  movedX.AsPoints.[0] (Pt(5.,0.)))
 
-                let movedY = plOpen.Duplicate()
-                Polyline2D.moveY 3. movedY
+                let movedY = Polyline2D.moveY 3. plOpen
                 "moved Y" |> (expectEqPts  movedY.AsPoints.[0] (Pt(0.,3.)))
+                "original unchanged" |> (expectEqPts  plOpen.AsPoints.[0] (Pt(0.,0.)))
             }
 
             test "reverse" {
@@ -346,9 +345,9 @@ let tests =
 
             test "rotation" {
                 let rotation = Rotation2D.createFromRadians(System.Math.PI / 2.0) // 90 degrees
-                let rotated = plLine.Duplicate()
-                Polyline2D.rotate rotation rotated
+                let rotated = Polyline2D.rotate rotation plLine
                 "rotated point" |> (expectEqPts  rotated.AsPoints.[1] (Pt(0.,10.)))
+                "original unchanged" |> (expectEqPts  plLine.AsPoints.[1] (Pt(10.,0.)))
             }
 
             ]
@@ -622,8 +621,7 @@ let testsDup =
             "scaled polyline preserves duplicate count" |> Expect.equal scaled.PointCount plWithDuplicates.PointCount
             "scaled duplicate points remain duplicates" |> expectEqPts scaled.AsPoints.[0] scaled.AsPoints.[1]
 
-            let translated = plAllDuplicates.Duplicate()
-            Polyline2D.translate (Vc(1., 1.)) translated
+            let translated = Polyline2D.translate (Vc(1., 1.)) plAllDuplicates
             "translated all duplicates remain same" |> expectEqPts translated.AsPoints.[0] translated.AsPoints.[3]
             "translated duplicate points moved correctly" |> expectEqPts translated.AsPoints.[0] (Pt(2., 2.))
         }
@@ -694,9 +692,9 @@ let testsDup =
         testList "Polyline2D remove Uturns" [
             test "removeUturns simple U" {
                 let pl = Polyline2D.createFromPts [Pt(0.,0.); Pt(5.,0.); Pt(5.,5.); Pt(5.,1.); Pt(9.,1.)]
-                let simplified = pl.Duplicate()
-                Polyline2D.removeUTurns Cosine.``179.99`` simplified
+                let simplified = Polyline2D.removeUTurns Cosine.``179.99`` pl
                 Expect.equal simplified.PointCount 4 "should remove the U-turn point"
+                Expect.equal pl.PointCount 5 "input should be unchanged"
 
             }
 
@@ -708,9 +706,9 @@ let testsDup =
                 let expected = Polyline2D.createFromPts [| Pt(367.51025839920425, 2485.8582078421523); Pt(383.9582306518063, 2759.6732692377213); Pt(833.2165539365033, 2783.9037269221644); Pt(1022.2972159629621, 2946.319167380789); Pt(955.7761998003084, 2982.681424979096); Pt(983.9156549202881, 3238.860723379728); Pt(941.7304411118008, 3259.569828340258);
                                 Pt(1060.4455983546752, 3534.242442693297); Pt(1076.8083479531188, 3602.4205660201455); Pt(1117.4915124820616, 3584.8646992634817)
                                 |]
-                let simplified = input.Duplicate()
-                Polyline2D.removeUTurnsDeeply Cosine.``170.0`` simplified
+                let simplified = Polyline2D.removeUTurnsDeeply Cosine.``170.0`` input
                 Expect.equal simplified.PointCount expected.PointCount "removeUTurnsDeeply point count should match expected"
+                Expect.equal input.PointCount 19 "input should be unchanged"
                 for i = 0 to expected.PointCount - 1 do
                     let expectedPt = expected.AsPoints.[i]
                     let actualPt = simplified.AsPoints.[i]
@@ -721,8 +719,7 @@ let testsDup =
                 // closed polyline whose shared start/end vertex is itself a sharp U-turn
                 let pl = Polyline2D.createFromPts [Pt(0.,0.); Pt(10.,0.); Pt(10.,10.); Pt(0.,10.); Pt(5.,0.001); Pt(0.,0.)]
                 Expect.isTrue pl.IsClosed "input should be closed"
-                let simplified = pl.Duplicate()
-                Polyline2D.removeUTurns Cosine.``179.9`` simplified
+                let simplified = Polyline2D.removeUTurns Cosine.``179.9`` pl
                 Expect.isTrue simplified.IsClosed "closed polyline must stay closed after removing seam U-turn"
             }
 
@@ -730,7 +727,7 @@ let testsDup =
                 let pl = Polyline2D.createFromPts [Pt(0.,0.); Pt(10.,0.); Pt(10.,10.); Pt(0.,10.); Pt(5.,0.001); Pt(0.,0.)]
                 Expect.isTrue pl.IsClosed "input should be closed"
                 let simplified = pl.Duplicate()
-                Polyline2D.removeUTurnsDeeply Cosine.``179.9`` simplified
+                simplified.RemoveUTurnsDeeply Cosine.``179.9``
                 Expect.isTrue simplified.IsClosed "closed polyline must stay closed after removing seam U-turn"
             }
 
@@ -741,8 +738,8 @@ let testsDup =
 
             test "removeDuplicatePointsFaithfully3" {
                 let pl = Polyline2D.createFromPts [Pt(0.,0.); Pt(0.993,0.); Pt(1.0,0.002); Pt(1.,1.) ]
-                let cleaned = pl.Duplicate()
-                Polyline2D.removeDuplicatePointsFaithfully 0.01 cleaned
+                let cleaned = Polyline2D.removeDuplicatePointsFaithfully 0.01 pl
+                Expect.equal pl.PointCount 4 "input should be unchanged"
                 // printfn $"cleaned points: {cleaned.AsFSharpCode}"
                 Expect.equal cleaned.PointCount 3 "one point removed as duplicate within tolerance"
                 expectEqPts cleaned.AsPoints.[1] (Pt(1.0,0.0))  "edges re-intersected , not moved to average"
@@ -753,7 +750,7 @@ let testsDup =
             test "removeDuplicatePointsFaithfully4" {
                 let pl = Polyline2D.createFromPts [Pt(0.,1.); Pt(0.,0.); Pt(0.994,0.); Pt(1.0,0.002); Pt(1.,1.) ]
                 let cleaned = pl.Duplicate()
-                Polyline2D.removeDuplicatePointsFaithfully 0.01 cleaned
+                cleaned.RemoveDuplicatePointsFaithfully 0.01
                 Expect.equal cleaned.PointCount 4 "one point removed as duplicate within tolerance"
                 expectEqPts cleaned.AsPoints.[2] (Pt(1.0,0.0))  "edges re-intersected , not moved to average"
                 expectEqPts cleaned.Start pl.Start  "start should be preserved"
@@ -763,36 +760,36 @@ let testsDup =
 
             test "removeDuplicatePoints" {
                 let pl = Polyline2D.createFromPts [Pt(0.,0.); Pt(0.999,0.); Pt(1.0,0.001); Pt(1.,1.) ]
-                let cleaned = pl.Duplicate()
-                Polyline2D.removeDuplicatePoints 0.005 cleaned
+                let cleaned = Polyline2D.removeDuplicatePoints 0.005 pl
                 Expect.equal cleaned.PointCount 3 "first point of duplicates kept"
+                Expect.equal pl.PointCount 4 "input should be unchanged"
             }
 
             test "removeDuplicatePoints open" {
                 let pl = Polyline2D.createFromPts [Pt(0.,0.); Pt(0.,0.); Pt(1.,0.); Pt(1.,0.); Pt(2.,0.)]
-                let cleaned = pl.Duplicate()
-                Polyline2D.removeDuplicatePoints 1e-9 cleaned
+                let cleaned = Polyline2D.removeDuplicatePoints 1e-9 pl
                 Expect.equal cleaned.PointCount 3 "duplicates removed keeping endpoints"
                 Expect.isFalse cleaned.IsClosed "open polyline remains open"
             }
             test "removeDuplicatePoints closed" {
                 let pl = Polyline2D.createFromPts [Pt(0.,0.); Pt(1.,0.); Pt(1.,1.); Pt(0.,1.); Pt(0.,1.); Pt(0.,0.)]
                 let cleaned = pl.Duplicate()
-                Polyline2D.removeDuplicatePoints 1e-9 cleaned
+                cleaned.RemoveDuplicatePoints 1e-9
                 // last duplicate before closing removed but closure preserved
                 Expect.equal cleaned.PointCount 5 "one duplicate removed"
                 Expect.isTrue cleaned.IsClosed "should stay closed"
             }
-            test "removeDuplicatePointsAndReport returns an empty list and keeps the polyline when unchanged" {
+            test "removeDuplicatePointsAndReport returns an empty list and an unchanged copy" {
                 let pl = Polyline2D.createFromPts [Pt(0.,0.); Pt(1.,0.); Pt(2.,0.)]
-                let duplicates = Polyline2D.removeDuplicatePointsAndReport 0.01 pl
+                let cleaned, duplicates = Polyline2D.removeDuplicatePointsAndReport 0.01 pl
                 Expect.equal duplicates.Count 0 "no duplicate points"
-                Expect.equal pl.PointCount 3 "polyline unchanged"
+                Expect.isTrue (Polyline2D.equals cleaned pl) "copy has the same points"
+                Expect.isFalse (obj.ReferenceEquals(cleaned.XYs, pl.XYs)) "copy has its own coordinate list"
             }
             test "removeDuplicatePointsAndReport lists identical consecutive duplicates once" {
                 let duplicate = Pt(0.005,0.)
                 let pl = Polyline2D.createFromPts [Pt(0.,0.); duplicate; duplicate; Pt(1.,0.)]
-                let duplicates = Polyline2D.removeDuplicatePointsAndReport 0.01 pl
+                let duplicates = pl.RemoveDuplicatePointsAndReport 0.01
                 Expect.equal pl.PointCount 2 "duplicate points removed in place"
                 Expect.equal duplicates.Count 1 "each duplicate run listed once"
                 expectEqPts duplicates.[0] duplicate "removed point returned"
@@ -800,23 +797,24 @@ let testsDup =
             test "removeDuplicatePointsAndReport reports matching duplicates from separate runs" {
                 let duplicate = Pt(0.005,0.)
                 let pl = Polyline2D.createFromPts [Pt(0.,0.); duplicate; Pt(1.,0.); Pt(0.,0.); duplicate; Pt(2.,0.)]
-                let duplicates = Polyline2D.removeDuplicatePointsAndReport 0.01 pl
-                Expect.equal pl.PointCount 4 "only consecutive duplicate points removed"
+                let cleaned, duplicates = Polyline2D.removeDuplicatePointsAndReport 0.01 pl
+                Expect.equal cleaned.PointCount 4 "only consecutive duplicate points removed"
+                Expect.equal pl.PointCount 6 "input should be unchanged"
                 Expect.equal duplicates.Count 2 "same duplicate reported for each separate run"
                 expectEqPts duplicates.[0] duplicate "first occurrence returned"
                 expectEqPts duplicates.[1] duplicate "later occurrence returned"
             }
             test "removeDuplicateAndCollinearPoints square" {
                 let pl = Polyline2D.createFromPts [ Pt(2.,0.); Pt(4.,0.); Pt(4.,2.); Pt(4.,4.); Pt(2.,4.); Pt(0.,4.); Pt(0.,2.); Pt(0.,0.); Pt(2.,0.)]
-                let simplified = pl.Duplicate()
-                Polyline2D.removeDuplicateAndCollinearPoints Cosine.``0.1`` 1e-9  simplified
+                let simplified = Polyline2D.removeDuplicateAndCollinearPoints Cosine.``0.1`` 1e-9 pl
                 Expect.equal simplified.PointCount 5 $"no collinear simplification with loose angle tolerance {simplified.AsFSharpCode}"
                 Expect.isTrue simplified.IsClosed "remains closed"
+                Expect.equal pl.PointCount 9 "input should be unchanged"
             }
             test "removeDuplicateAndCollinearPoints open line with repeats" {
                 let pl = Polyline2D.createFromPts [Pt(0.,0.); Pt(1.,0.); Pt(2.,0.); Pt(3.,0.); Pt(3.,0.)]
                 let simplified = pl.Duplicate()
-                Polyline2D.removeDuplicateAndCollinearPoints Cosine.``0.1`` 1e-9 simplified
+                simplified.RemoveDuplicateAndCollinearPoints Cosine.``0.1`` 1e-9
                 Expect.equal simplified.PointCount 2 "duplicate end removed; interior collinear points removed"
                 "start" |> (expectEqPts simplified.AsPoints.[0] (Pt(0.,0.)))
                 "end" |> (expectEqPts simplified.AsPoints.[simplified.AsPoints.Count - 1] (Pt(3.,0.)))
@@ -824,8 +822,7 @@ let testsDup =
             test "collinear start/end segments closed polygon" {
                 // square with duplicated first edge points and last edge points before closure
                 let pl = Polyline2D.createFromPts [Pt(0.,0.); Pt(1.,0.); Pt(2.,0.); Pt(2.,2.); Pt(2.,4.); Pt(1.,4.); Pt(0.,4.); Pt(0.,2.); Pt(0.,0.)]
-                let simplified = pl.Duplicate()
-                Polyline2D.removeDuplicateAndCollinearPoints Cosine.``0.1`` 1e-9 simplified
+                let simplified = Polyline2D.removeDuplicateAndCollinearPoints Cosine.``0.1`` 1e-9 pl
                 // currently interior collinear points retained
                 Expect.isTrue simplified.IsClosed "closed retained"
                 Expect.equal simplified.PointCount 5 " collinear removal at this tolerance"
@@ -833,15 +830,13 @@ let testsDup =
             test "almost collinear tiny angle retained" {
                 // create slight bend ~0.01 degrees so cosine almost 1
                 let pl = Polyline2D.createFromPts [Pt(0.,0.); Pt(10.,0.); Pt(20.,0.2); Pt(30.,0.)]
-                let simplified = pl.Duplicate()
-                Polyline2D.removeDuplicateAndCollinearPoints Cosine.``0.01`` 1e-9 simplified
+                let simplified = Polyline2D.removeDuplicateAndCollinearPoints Cosine.``0.01`` 1e-9 pl
                 Expect.equal simplified.PointCount 4 "almost straight kept"
             }
             test "open U-turn 180 collapse prevented (since method only removes collinear not u-turn)" {
                 // a U-turn creates 180 change; algorithm compares cosine; using points making a sharp reversal
                 let pl = Polyline2D.createFromPts [Pt(0.,0.); Pt(5.,0.); Pt(5.,0.); Pt(0.,0.); Pt(-5.,0.)]
-                let simplified = pl.Duplicate()
-                Polyline2D.removeDuplicateAndCollinearPoints Cosine.``0.1`` 1e-9 simplified
+                let simplified = Polyline2D.removeDuplicateAndCollinearPoints Cosine.``0.1`` 1e-9 pl
                 // current implementation removes duplicates and also collapses collinear first half leaving endpoints
                 Expect.equal simplified.PointCount 3 "collapsed to endpoints after duplicate removal"
             }
@@ -1277,24 +1272,24 @@ let testsComprehensive =
 
         testList "Static close" [
             test "close open polyline" {
-                let closed = plOpen.Duplicate()
-                Polyline2D.close 1e-6 closed
+                let closed = Polyline2D.close 1e-6 plOpen
                 Expect.isTrue closed.IsClosed "should be closed"
                 Expect.equal closed.PointCount (plOpen.PointCount + 1) "one point added"
                 "first equals last" |> expectEqPts closed.AsPoints.[0] closed.AsPoints.[closed.PointCount - 1]
+                Expect.isFalse plOpen.IsClosed "input should stay open"
             }
             test "close already closed polyline" {
-                let closed = plClosed.Duplicate()
-                Polyline2D.close 1e-6 closed
+                let closed = Polyline2D.close 1e-6 plClosed
                 Expect.isTrue closed.IsClosed "should remain closed"
                 Expect.equal closed.PointCount plClosed.PointCount "no extra point added"
+                Expect.isFalse (obj.ReferenceEquals(closed, plClosed)) "returns a new Polyline2D even if already closed"
             }
             test "close nearly closed polyline snaps last" {
                 let pl = Polyline2D.createFromPts [Pt(0.,0.); Pt(10.,0.); Pt(10.,10.); Pt(0.,0.00000001)]
-                let closed = pl.Duplicate()
-                Polyline2D.close 1e-6 closed
+                let closed = Polyline2D.close 1e-6 pl
                 Expect.isTrue closed.IsClosed "should be closed"
                 "last snapped to first" |> expectEqPts closed.AsPoints.[0] closed.AsPoints.[closed.PointCount - 1]
+                Expect.isFalse pl.IsClosed "input should not be snapped"
             }
             test "close fails with less than 3 points" {
                 Expect.throws (fun () -> Polyline2D.close 1e-6 plSinglePoint |> ignore) "single point close should fail"
@@ -1302,15 +1297,15 @@ let testsComprehensive =
             }
         ]
 
-        testList "Static close in place" [
+        testList "Close in place" [
             test "close on open" {
                 let pl = plOpen.Clone()
-                Polyline2D.close 1e-6 pl
+                pl.Close(1e-6)
                 Expect.isTrue pl.IsClosed "should be closed after close"
             }
             test "close on nearly closed snaps" {
                 let pl = Polyline2D.createFromPts [Pt(0.,0.); Pt(10.,0.); Pt(10.,10.); Pt(0.,0.00000001)]
-                Polyline2D.close 1e-6 pl
+                pl.Close(1e-6)
                 "last snapped to first" |> expectEqPts pl.AsPoints.[0] pl.AsPoints.[pl.PointCount - 1]
                 // Should not add extra point, just snap
                 Expect.equal pl.PointCount 4 "no extra point, just snapped"
@@ -1341,8 +1336,7 @@ let testsComprehensive =
             test "rotate 90 degrees around center" {
                 let r = Rotation2D.createFromDegrees 90.0
                 let cen = Pt(5., 5.)
-                let rotated = plLine.Duplicate()
-                Polyline2D.rotateAround cen r rotated
+                let rotated = Polyline2D.rotateAround cen r plLine
                 // plLine is (0,0) to (10,0)
                 // (0,0) relative to (5,5) is (-5,-5), rotated 90 CCW is (5,-5), absolute (10,0)
                 "rotated first point" |> expectEqPts rotated.AsPoints.[0] (Pt(10., 0.))
@@ -1368,8 +1362,7 @@ let testsComprehensive =
                 Expect.equal (Polyline2D.segmentCount plOpen) plOpen.SegmentCount "static segmentCount"
             }
             test "static reverse" {
-                let rev = plOpen.Duplicate()
-                Polyline2D.reverse rev
+                let rev = Polyline2D.reverse plOpen
                 "first after reverse" |> expectEqPts rev.AsPoints.[0] (Pt(0.,10.))
                 "original unchanged" |> expectEqPts plOpen.AsPoints.[0] (Pt(0.,0.))
             }
@@ -1399,9 +1392,7 @@ let testsComprehensive =
                 let r = Rotation2D.createFromDegrees 30.
                 let v = Vc(100., -40.)
                 let place (p:Pt) = p |> Pt.rotateAround cen r |> Pt.move v
-                let pl = plOpen.Duplicate()
-                pl |> Polyline2D.rotateAround cen r
-                pl |> Polyline2D.move v
+                let pl = plOpen |> Polyline2D.rotateAround cen r |> Polyline2D.move v
                 let q = place (Pt(5.,-1.)) // closest to the middle of the first segment
                 "closestParameter" |> Expect.isTrue (abs((pl |> Polyline2D.closestParameter q) - 0.5) < 1e-9)
                 "closestParameterXY" |> Expect.isTrue (abs((pl |> Polyline2D.closestParameterXY q.X q.Y) - 0.5) < 1e-9)
@@ -1421,9 +1412,9 @@ let testsComprehensive =
                 "last point set too" |> expectEqPts closed.LastPoint (Pt(107., -33.))
             }
             test "static scale" {
-                let s = plLine.Duplicate()
-                Polyline2D.scale 3.0 s
+                let s = Polyline2D.scale 3.0 plLine
                 "static scale" |> expectEqPts s.AsPoints.[1] (Pt(30.,0.))
+                "original unchanged" |> expectEqPts plLine.AsPoints.[1] (Pt(10.,0.))
             }
             test "static windingNumber" {
                 let wn = Polyline2D.windingNumber (Pt(5.,5.)) plClosed
@@ -1702,13 +1693,11 @@ let testsComprehensive =
 
         testList "removeDuplicateAndCollinearPoints edge cases" [
             test "single point returns same" {
-                let result = plSinglePoint.Duplicate()
-                Polyline2D.removeDuplicateAndCollinearPoints Cosine.``0.1`` 1e-9 result
+                let result = Polyline2D.removeDuplicateAndCollinearPoints Cosine.``0.1`` 1e-9 plSinglePoint
                 Expect.equal result.PointCount 1 "single point unchanged"
             }
             test "empty returns same" {
-                let result = plEmpty.Duplicate()
-                Polyline2D.removeDuplicateAndCollinearPoints Cosine.``0.1`` 1e-9 result
+                let result = Polyline2D.removeDuplicateAndCollinearPoints Cosine.``0.1`` 1e-9 plEmpty
                 Expect.equal result.PointCount 0 "empty unchanged"
             }
             test "tolerance too tight throws" {
@@ -1722,19 +1711,17 @@ let testsComprehensive =
 
         testList "removeDuplicatePoints edge cases" [
             test "no duplicates returns same count" {
-                let result = plOpen.Duplicate()
-                Polyline2D.removeDuplicatePoints 1e-9 result
+                let result = Polyline2D.removeDuplicatePoints 1e-9 plOpen
                 Expect.equal result.PointCount plOpen.PointCount "no duplicates, same count"
             }
             test "all same points" {
                 let pl = Polyline2D.createFromPts [Pt(1.,1.); Pt(1.,1.); Pt(1.,1.)]
-                let result = pl.Duplicate()
-                Polyline2D.removeDuplicatePoints 1e-9 result
+                let result = Polyline2D.removeDuplicatePoints 1e-9 pl
                 Expect.equal result.PointCount 1 "all same reduces to 1"
+                Expect.equal pl.PointCount 3 "input should be unchanged"
             }
             test "single point" {
-                let result = plSinglePoint.Duplicate()
-                Polyline2D.removeDuplicatePoints 1e-9 result
+                let result = Polyline2D.removeDuplicatePoints 1e-9 plSinglePoint
                 Expect.equal result.PointCount 1 "single point unchanged"
             }
         ]
@@ -1758,10 +1745,8 @@ let testsComprehensive =
         testList "move static same as translate" [
             test "move equals translate" {
                 let v = Vc(3., 4.)
-                let moved = plOpen.Duplicate()
-                Polyline2D.move v moved
-                let translated = plOpen.Duplicate()
-                Polyline2D.translate v translated
+                let moved = Polyline2D.move v plOpen
+                let translated = Polyline2D.translate v plOpen
                 for i = 0 to moved.PointCount - 1 do
                     $"point {i}" |> expectEqPts moved.AsPoints.[i] translated.AsPoints.[i]
             }
@@ -1889,8 +1874,7 @@ let testsSpecial =
             }
             test "scaleOn by zero collapses to center" {
                 let cen = Pt(5.,5.)
-                let s = plOpen.Duplicate()
-                Polyline2D.scaleOn cen 0.0 s
+                let s = Polyline2D.scaleOn cen 0.0 plOpen
                 for i = 0 to s.PointCount - 1 do
                     $"point {i} at center" |> expectEqPts s.AsPoints.[i] cen
             }
@@ -1961,8 +1945,8 @@ let testsSpecial =
         testList "removeUTurns no-op" [
             test "polyline without U-turns keeps all points" {
                 let pl = Polyline2D.createFromPts [Pt(0.,0.); Pt(5.,0.); Pt(5.,5.); Pt(0.,5.)]
-                let r = pl.Duplicate()
-                Polyline2D.removeUTurns Cosine.``179.0`` r
+                let r = Polyline2D.removeUTurns Cosine.``179.0`` pl
+                Expect.isFalse (obj.ReferenceEquals(r.XYs, pl.XYs)) "returns a copy even without U-turns"
                 Expect.equal r.PointCount pl.PointCount "no U-turns, point count preserved"
                 "first preserved" |> expectEqPts r.AsPoints.[0] pl.AsPoints.[0]
                 "last preserved" |> expectEqPts r.AsPoints.[r.PointCount - 1] pl.AsPoints.[pl.PointCount - 1]
@@ -1988,8 +1972,7 @@ let testsSpecial =
 
         testList "zero tolerance closing" [
             test "close with 0.0 tolerance on exactly closed polyline adds no point" {
-                let closed = plClosed.Duplicate()
-                Polyline2D.close 0.0 closed
+                let closed = Polyline2D.close 0.0 plClosed
                 Expect.equal closed.PointCount plClosed.PointCount "no extra point added"
                 Expect.isTrue closed.IsClosed "still closed"
             }
@@ -2002,8 +1985,7 @@ let testsSpecial =
         testList "removeDuplicatePoints keeps first point" [
             test "two near-duplicate points collapse to the first point" {
                 let pl = Polyline2D.createFromPts [Pt(1.,1.); Pt(1.0000001, 1.)]
-                let result = pl.Duplicate()
-                Polyline2D.removeDuplicatePoints 1e-6 result
+                let result = Polyline2D.removeDuplicatePoints 1e-6 pl
                 Expect.equal result.PointCount 1 "collapses to one point"
                 "kept point is the first point" |> expectEqPts result.AsPoints.[0] (Pt(1.,1.))
             }
@@ -2048,8 +2030,7 @@ let testsSpecial =
                 let pl = Polyline2D.createFromPts [Pt(0.,0.); Pt(10.,0.); Pt(10.,10.)]
                 let moved = pl.Duplicate()
                 moved.Move(Vc(5.,3.))
-                let translated = pl.Duplicate()
-                Polyline2D.translate (Vc(5.,3.)) translated
+                let translated = Polyline2D.translate (Vc(5.,3.)) pl
                 "Move matches translate" |> expectEqPts moved.Start translated.Start
                 "Move - last point" |> expectEqPts moved.End (Pt(15.,13.))
                 let movedX = pl.Duplicate()
@@ -2065,8 +2046,7 @@ let testsSpecial =
                 let r = Rotation2D.createFromDegrees 90.
                 let rotated = pl.Duplicate()
                 rotated.Rotate r
-                let rotatedStatic = pl.Duplicate()
-                Polyline2D.rotate r rotatedStatic
+                let rotatedStatic = Polyline2D.rotate r pl
                 "Rotate - first point goes to (0,10)" |> expectEqPts rotated.Start (Pt(0.,10.))
                 "Rotate matches static" |> expectEqPts rotated.End rotatedStatic.End
             }
@@ -2076,8 +2056,7 @@ let testsSpecial =
                 let r = Rotation2D.createFromDegrees 90.
                 let rotated = pl.Duplicate()
                 rotated.RotateAround cen r
-                let rotatedStatic = pl.Duplicate()
-                Polyline2D.rotateAround cen r rotatedStatic
+                let rotatedStatic = Polyline2D.rotateAround cen r pl
                 "center stays put" |> expectEqPts rotated.Center cen
                 "matches static rotateAround" |> expectEqPts rotated.Start rotatedStatic.Start
                 "original not mutated" |> expectEqPts pl.Start (Pt(0.,0.))
@@ -2092,42 +2071,144 @@ let testsSpecial =
                 pl.RotateAround (Pt(4.,6.)) (Rotation2D.createFromDegrees 30.)
                 pl.ScaleOn (Pt(1.,-1.)) 1.5
                 Expect.isTrue (obj.ReferenceEquals(xys, pl.XYs)) "same coordinate list"
-                let expected = Polyline2D.createFromPts [Pt(3.,2.); Pt(9.,4.); Pt(7.,8.); Pt(3.,2.)]
-                Polyline2D.translate (Vc(-2.,5.)) expected
-                Polyline2D.rotateAround (Pt(4.,6.)) (Rotation2D.createFromDegrees 30.) expected
-                Polyline2D.scaleOn (Pt(1.,-1.)) 1.5 expected
+                let expected =
+                    Polyline2D.createFromPts [Pt(3.,2.); Pt(9.,4.); Pt(7.,8.); Pt(3.,2.)]
+                    |> Polyline2D.translate (Vc(-2.,5.))
+                    |> Polyline2D.rotateAround (Pt(4.,6.)) (Rotation2D.createFromDegrees 30.)
+                    |> Polyline2D.scaleOn (Pt(1.,-1.)) 1.5
                 Expect.isTrue (Polyline2D.equalsTol 1e-12 pl expected) "instance and static calls give the same result"
                 "first point moved" |> expectNotEqPts pl.Start (Pt(3.,2.))
             }
-            test "removeDuplicatePoints shrinks the same coordinate list" {
+            test "RemoveDuplicatePoints shrinks the same coordinate list" {
                 let pl = Polyline2D.createFromPts [Pt(3.,2.); Pt(3.001,2.); Pt(9.,4.); Pt(9.,4.); Pt(7.,8.)]
                 let xys = pl.XYs
-                Polyline2D.removeDuplicatePoints 0.01 pl
+                pl.RemoveDuplicatePoints 0.01
                 Expect.isTrue (obj.ReferenceEquals(xys, pl.XYs)) "same coordinate list"
                 Expect.equal pl.PointCount 3 "two duplicates removed"
                 "end point kept" |> expectEqPts pl.End (Pt(7.,8.))
             }
-            test "removeUTurns without U-turns keeps the polyline unchanged" {
+            test "RemoveDuplicatePointsFaithfully and RemoveDuplicateAndCollinearPoints shrink the same coordinate list" {
+                let pl = Polyline2D.createFromPts [Pt(3.,2.); Pt(9.,4.); Pt(9.004,4.002); Pt(7.,8.)]
+                let xys = pl.XYs
+                pl.RemoveDuplicatePointsFaithfully 0.01
+                Expect.isTrue (obj.ReferenceEquals(xys, pl.XYs)) "same coordinate list after RemoveDuplicatePointsFaithfully"
+                Expect.equal pl.PointCount 3 "one duplicate removed"
+                let line = Polyline2D.createFromPts [Pt(3.,2.); Pt(5.,3.); Pt(7.,4.); Pt(7.,4.); Pt(9.,5.)]
+                let lineXys = line.XYs
+                line.RemoveDuplicateAndCollinearPoints Cosine.``0.1`` 1e-9
+                Expect.isTrue (obj.ReferenceEquals(lineXys, line.XYs)) "same coordinate list after RemoveDuplicateAndCollinearPoints"
+                Expect.equal line.PointCount 2 "collinear and duplicate points removed"
+            }
+            test "EnsureClockwise and EnsureCounterClockwise reverse in place" {
+                let ccw = Polyline2D.createFromPts [Pt(3.,2.); Pt(9.,4.); Pt(7.,8.); Pt(3.,2.)]
+                let xys = ccw.XYs
+                Expect.isTrue ccw.IsCounterClockwise "test input should be counter-clockwise"
+                ccw.EnsureCounterClockwise()
+                "already counter-clockwise is unchanged" |> expectEqPts (ccw.GetPt 1) (Pt(9.,4.))
+                ccw.EnsureClockwise()
+                Expect.isTrue (obj.ReferenceEquals(xys, ccw.XYs)) "same coordinate list"
+                Expect.isTrue ccw.IsClockwise "should be clockwise now"
+                "reversed in place" |> expectEqPts (ccw.GetPt 1) (Pt(7.,8.))
+            }
+            test "RemoveUTurns without U-turns keeps the polyline unchanged" {
                 let pl = Polyline2D.createFromPts [Pt(3.,2.); Pt(9.,4.); Pt(7.,8.); Pt(3.,2.)]
                 let xys = pl.XYs
-                Polyline2D.removeUTurns Cosine.``170.0`` pl
+                pl.RemoveUTurns Cosine.``170.0``
                 Expect.isTrue (obj.ReferenceEquals(xys, pl.XYs)) "same coordinate list"
                 Expect.equal pl.PointCount 4 "no point removed"
             }
-            test "removeUTurnsDeeply leaves the polyline unchanged when a later pass fails" {
+            test "RemoveUTurnsDeeply leaves the polyline unchanged when a later pass fails" {
                 // the first pass removes the spike, the second pass leaves too few points and fails
                 let pl = Polyline2D.createFromPts [Pt(3.,2.); Pt(13.,2.5); Pt(3.2,3.); Pt(3.,2.)]
-                let once = pl.Duplicate()
-                Polyline2D.removeUTurns Cosine.``170.0`` once
+                let once = Polyline2D.removeUTurns Cosine.``170.0`` pl
                 Expect.equal once.PointCount 3 "a single pass removes the spike"
-                Expect.throws (fun () -> Polyline2D.removeUTurnsDeeply Cosine.``170.0`` pl) "repeated passes fail"
+                Expect.throws (fun () -> pl.RemoveUTurnsDeeply Cosine.``170.0``) "repeated passes fail"
                 Expect.equal pl.PointCount 4 "point count unchanged"
                 "spike still there" |> expectEqPts (pl.GetPt 1) (Pt(13.,2.5))
             }
-            test "removeDuplicateAndCollinearPoints leaves the polyline unchanged when it fails" {
+            test "RemoveDuplicateAndCollinearPoints leaves the polyline unchanged when it fails" {
                 let pl = Polyline2D.createFromPts [Pt(3.,2.); Pt(3.,2.); Pt(3.,2.)]
-                Expect.throws (fun () -> Polyline2D.removeDuplicateAndCollinearPoints Cosine.``0.1`` 1e-6 pl) "all points are duplicates"
+                Expect.throws (fun () -> pl.RemoveDuplicateAndCollinearPoints Cosine.``0.1`` 1e-6) "all points are duplicates"
                 Expect.equal pl.PointCount 3 "point count unchanged"
+            }
+        ]
+
+        testList "Static functions return a new Polyline2D" [
+
+            test "all static transformations and clean up functions leave the input unchanged" {
+                // a closed counter-clockwise polygon off the origin, with one duplicate point
+                let withDuplicate () = Polyline2D.createFromPts [Pt(3.,2.); Pt(9.,4.); Pt(9.,4.); Pt(7.,8.); Pt(5.,6.); Pt(3.,2.)]
+                let withoutDuplicate () = Polyline2D.createFromPts [Pt(3.,2.); Pt(9.,4.); Pt(7.,8.); Pt(5.,6.); Pt(3.,2.)] // U-turn removal fails on duplicates
+                let check (name:string) (original:unit -> Polyline2D) (op:Polyline2D -> Polyline2D) =
+                    let pl = original ()
+                    let xys = pl.XYs
+                    let res = op pl
+                    Expect.isFalse (obj.ReferenceEquals(res, pl)) $"{name} should return a new Polyline2D"
+                    Expect.isFalse (obj.ReferenceEquals(res.XYs, pl.XYs)) $"{name} should return its own coordinate list"
+                    Expect.isTrue (obj.ReferenceEquals(xys, pl.XYs)) $"{name} should keep the coordinate list of the input"
+                    Expect.isTrue (Polyline2D.equals pl (original ())) $"{name} should not change the input"
+                let expectNewAndInputUnchanged name op = check name withDuplicate op
+                let r = Rotation2D.createFromDegrees 30.
+                let cen = Pt(4.,6.)
+                expectNewAndInputUnchanged "scale" (Polyline2D.scale 1.5)
+                expectNewAndInputUnchanged "scaleOn" (Polyline2D.scaleOn cen 1.5)
+                expectNewAndInputUnchanged "move" (Polyline2D.move (Vc(-2.,5.)))
+                expectNewAndInputUnchanged "translate" (Polyline2D.translate (Vc(-2.,5.)))
+                expectNewAndInputUnchanged "moveX" (Polyline2D.moveX 3.)
+                expectNewAndInputUnchanged "moveY" (Polyline2D.moveY 3.)
+                expectNewAndInputUnchanged "rotate" (Polyline2D.rotate r)
+                expectNewAndInputUnchanged "rotateDegrees" (Polyline2D.rotateDegrees 30.)
+                expectNewAndInputUnchanged "rotateRadians" (Polyline2D.rotateRadians 0.5)
+                expectNewAndInputUnchanged "rotateAround" (Polyline2D.rotateAround cen r)
+                expectNewAndInputUnchanged "rotateAroundDegrees" (Polyline2D.rotateAroundDegrees cen 30.)
+                expectNewAndInputUnchanged "rotateAroundRadians" (Polyline2D.rotateAroundRadians cen 0.5)
+                expectNewAndInputUnchanged "reverse" Polyline2D.reverse
+                expectNewAndInputUnchanged "close" (Polyline2D.close 1e-6)
+                expectNewAndInputUnchanged "ensureClockwise" Polyline2D.ensureClockwise
+                expectNewAndInputUnchanged "ensureCounterClockwise" Polyline2D.ensureCounterClockwise
+                check "removeUTurns" withoutDuplicate (Polyline2D.removeUTurns Cosine.``170.0``)
+                check "removeUTurnsDeeply" withoutDuplicate (Polyline2D.removeUTurnsDeeply Cosine.``170.0``)
+                expectNewAndInputUnchanged "removeDuplicatePoints" (Polyline2D.removeDuplicatePoints 0.01)
+                expectNewAndInputUnchanged "removeDuplicatePointsAndReport" (Polyline2D.removeDuplicatePointsAndReport 0.01 >> fst)
+                expectNewAndInputUnchanged "removeDuplicatePointsFaithfully" (Polyline2D.removeDuplicatePointsFaithfully 0.01)
+                expectNewAndInputUnchanged "removeDuplicateAndCollinearPoints" (Polyline2D.removeDuplicateAndCollinearPoints Cosine.``0.1`` 1e-6)
+            }
+
+            test "static functions give the same result as their instance members" {
+                let original () = Polyline2D.createFromPts [Pt(3.,2.); Pt(9.,4.); Pt(9.,4.); Pt(7.,8.); Pt(5.,6.); Pt(3.,2.)]
+                let r = Rotation2D.createFromDegrees 30.
+                let cen = Pt(4.,6.)
+                let check (name:string) (op:Polyline2D -> Polyline2D) (inPlace:Polyline2D -> unit) =
+                    let expected = original ()
+                    inPlace expected
+                    Expect.isTrue (Polyline2D.equals (op (original ())) expected) $"{name} should match its instance member"
+                check "scaleOn" (Polyline2D.scaleOn cen 1.5) (fun p -> p.ScaleOn cen 1.5)
+                check "rotateAround" (Polyline2D.rotateAround cen r) (fun p -> p.RotateAround cen r)
+                check "rotateAroundDegrees" (Polyline2D.rotateAroundDegrees cen 30.) (fun p -> p.RotateAroundDegrees cen 30.)
+                check "reverse" Polyline2D.reverse (fun p -> p.Reverse())
+                check "close" (Polyline2D.close 1e-6) (fun p -> p.Close(1e-6))
+                check "ensureClockwise" Polyline2D.ensureClockwise (fun p -> p.EnsureClockwise())
+                check "removeDuplicatePoints" (Polyline2D.removeDuplicatePoints 0.01) (fun p -> p.RemoveDuplicatePoints 0.01)
+                check "removeDuplicateAndCollinearPoints" (Polyline2D.removeDuplicateAndCollinearPoints Cosine.``0.1`` 1e-6) (fun p -> p.RemoveDuplicateAndCollinearPoints Cosine.``0.1`` 1e-6)
+            }
+
+            test "ensureClockwise returns a reversed copy of a counter-clockwise polyline" {
+                let pl = Polyline2D.createFromPts [Pt(3.,2.); Pt(9.,4.); Pt(7.,8.); Pt(5.,6.); Pt(3.,2.)]
+                Expect.isTrue pl.IsCounterClockwise "test input should be counter-clockwise"
+                let cw = Polyline2D.ensureClockwise pl
+                Expect.isTrue cw.IsClockwise "result should be clockwise"
+                Expect.isTrue pl.IsCounterClockwise "input should stay counter-clockwise"
+                let ccw = Polyline2D.ensureCounterClockwise pl
+                Expect.isTrue (Polyline2D.equals ccw pl) "already counter-clockwise gives an equal copy"
+            }
+
+            test "removeDuplicatePointsAndReport returns the cleaned copy and the removed points" {
+                let pl = Polyline2D.createFromPts [Pt(3.,2.); Pt(9.,4.); Pt(9.,4.); Pt(7.,8.); Pt(5.,6.); Pt(3.,2.)]
+                let cleaned, removed = Polyline2D.removeDuplicatePointsAndReport 0.01 pl
+                Expect.equal cleaned.PointCount 5 "one duplicate removed from the copy"
+                Expect.equal removed.Count 1 "one removed point reported"
+                "removed point" |> expectEqPts removed.[0] (Pt(9.,4.))
+                Expect.equal pl.PointCount 6 "input keeps all points"
             }
         ]
     ]

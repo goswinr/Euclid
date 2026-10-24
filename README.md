@@ -578,7 +578,8 @@ let seg = pl2d.GetSegment(1)               // Line2D(Pt(10,0), Pt(10,5))
 // Modify (polylines are mutable)
 pl2d.SetPt (2, Pt(12, 5))                 // move a vertex
 let copy = pl2d.Duplicate()                // deep copy
-copy.Move(Vc(0, 3))                        // transformations change the polyline in place
+copy.Move(Vc(0, 3))                        // instance members change the polyline in place
+let movedPl = Polyline2D.move (Vc(0, 3)) pl2d // static functions return a new polyline
 
 // 3D polyline
 let pl3d = Polyline3D.createFromPnts [Pnt(0,0,0); Pnt(10,0,0); Pnt(10,5,3)]

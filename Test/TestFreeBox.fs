@@ -467,8 +467,10 @@ let tests =
                     Pnt(0., 0., 10.); Pnt(10., 0., 10.); Pnt(10., 10., 10.); Pnt(0., 10., 10.)
                 |]
                 let box = FreeBox.createFromEightPoints pts
-                FreeBox.move (Vec(5., 3., 2.)) box
-                Expect.isTrue (eqPnt box.Pnt0 (Pnt(5., 3., 2.))) "Pnt0 should be moved"
+                let moved = FreeBox.move (Vec(5., 3., 2.)) box
+                Expect.isTrue (eqPnt moved.Pnt0 (Pnt(5., 3., 2.))) "Pnt0 should be moved"
+                Expect.isTrue (eqPnt box.Pnt0 pts.[0]) "input box should be unchanged"
+                Expect.isFalse (obj.ReferenceEquals(moved.XYZs, box.XYZs)) "result should have its own buffer"
             }
 
             test "translate static method" {
@@ -477,8 +479,9 @@ let tests =
                     Pnt(0., 0., 10.); Pnt(10., 0., 10.); Pnt(10., 10., 10.); Pnt(0., 10., 10.)
                 |]
                 let box = FreeBox.createFromEightPoints pts
-                FreeBox.translate (Vec(5., 3., 2.)) box
-                Expect.isTrue (eqPnt box.Pnt0 (Pnt(5., 3., 2.))) "Pnt0 should be translated"
+                let moved = FreeBox.translate (Vec(5., 3., 2.)) box
+                Expect.isTrue (eqPnt moved.Pnt0 (Pnt(5., 3., 2.))) "Pnt0 should be translated"
+                Expect.isTrue (eqPnt box.Pnt0 pts.[0]) "input box should be unchanged"
             }
 
             test "moveX, moveY, moveZ static methods" {
@@ -487,13 +490,15 @@ let tests =
                     Pnt(0., 0., 10.); Pnt(10., 0., 10.); Pnt(10., 10., 10.); Pnt(0., 10., 10.)
                 |]
                 let box = FreeBox.createFromEightPoints pts
-                FreeBox.moveX 5. box
-                Expect.isTrue (eqPnt box.Pnt0 (Pnt(5., 0., 0.))) "moveX should work"
-                FreeBox.moveY 3. box
-                Expect.isTrue (eqPnt box.Pnt0 (Pnt(5., 3., 0.))) "moveY should work"
-                FreeBox.moveZ 2. box
-                Expect.isTrue (eqPnt box.Pnt0 (Pnt(5., 3., 2.))) "moveZ should work"
-                Expect.isTrue (eqPnt box.Pnt6 (Pnt(15., 13., 12.))) "all corners should be moved"
+                let movedX = FreeBox.moveX 5. box
+                Expect.isTrue (eqPnt movedX.Pnt0 (Pnt(5., 0., 0.))) "moveX should work"
+                let movedXY = FreeBox.moveY 3. movedX
+                Expect.isTrue (eqPnt movedXY.Pnt0 (Pnt(5., 3., 0.))) "moveY should work"
+                let movedXYZ = FreeBox.moveZ 2. movedXY
+                Expect.isTrue (eqPnt movedXYZ.Pnt0 (Pnt(5., 3., 2.))) "moveZ should work"
+                Expect.isTrue (eqPnt movedXYZ.Pnt6 (Pnt(15., 13., 12.))) "all corners should be moved"
+                Expect.isTrue (eqPnt box.Pnt0 pts.[0]) "input box should be unchanged"
+                Expect.isTrue (eqPnt movedX.Pnt0 (Pnt(5., 0., 0.))) "intermediate box should be unchanged by moveY"
             }
 
             test "Transform with identity matrix" {
@@ -524,8 +529,9 @@ let tests =
                 |]
                 let box = FreeBox.createFromEightPoints pts
                 let m = Matrix.createTranslation(Vec(5., 3., 2.))
-                FreeBox.transform m box
-                Expect.isTrue (eqPnt box.Pnt0 (Pnt(5., 3., 2.))) "Pnt0 should be translated"
+                let transformed = FreeBox.transform m box
+                Expect.isTrue (eqPnt transformed.Pnt0 (Pnt(5., 3., 2.))) "Pnt0 should be translated"
+                Expect.isTrue (eqPnt box.Pnt0 pts.[0]) "input box should be unchanged"
             }
 
             test "TransformRigid instance method" {
@@ -546,8 +552,9 @@ let tests =
                 |]
                 let box = FreeBox.createFromEightPoints pts
                 let m = RigidMatrix.createTranslation(Vec(5., 3., 2.))
-                FreeBox.transformRigid m box
-                Expect.isTrue (eqPnt box.Pnt0 (Pnt(5., 3., 2.))) "Pnt0 should be translated"
+                let transformed = FreeBox.transformRigid m box
+                Expect.isTrue (eqPnt transformed.Pnt0 (Pnt(5., 3., 2.))) "Pnt0 should be translated"
+                Expect.isTrue (eqPnt box.Pnt0 pts.[0]) "input box should be unchanged"
             }
 
             test "Rotate with identity quaternion" {
@@ -578,8 +585,9 @@ let tests =
                 |]
                 let box = FreeBox.createFromEightPoints pts
                 let q = Quaternion.createFromDegrees(UnitVec.Zaxis, 90.)
-                FreeBox.rotate q box
-                Expect.isTrue (eqPnt box.Pnt0 (Pnt(0., 1., 0.))) "Pnt0 should be rotated 90 degrees"
+                let rotated = FreeBox.rotate q box
+                Expect.isTrue (eqPnt rotated.Pnt0 (Pnt(0., 1., 0.))) "Pnt0 should be rotated 90 degrees"
+                Expect.isTrue (eqPnt box.Pnt0 pts.[0]) "input box should be unchanged"
             }
 
             test "RotateAround keeps center point fixed" {
@@ -604,8 +612,9 @@ let tests =
                 let box = FreeBox.createFromEightPoints pts
                 let center = Pnt(1., 1., 1.)
                 let q = Quaternion.createFromDegrees(UnitVec.Zaxis, 90.)
-                FreeBox.rotateAround center q box
-                Expect.isTrue (eqPnt box.Pnt0 (Pnt(2., 0., 0.))) "Pnt0 should be rotated around center"
+                let rotated = FreeBox.rotateAround center q box
+                Expect.isTrue (eqPnt rotated.Pnt0 (Pnt(2., 0., 0.))) "Pnt0 should be rotated around center"
+                Expect.isTrue (eqPnt box.Pnt0 pts.[0]) "input box should be unchanged"
             }
 
             test "scale static method" {
@@ -614,8 +623,23 @@ let tests =
                     Pnt(1., 2., 6.); Pnt(11., 2., 6.); Pnt(11., 7., 6.); Pnt(1., 7., 6.)
                 |]
                 let box = FreeBox.createFromEightPoints pts
-                FreeBox.scale 2. box
-                Expect.isTrue (eqPnt box.Pnt0 (Pnt(2., 4., 6.))) "Pnt0 should be scaled"
+                let scaled = FreeBox.scale 2. box
+                Expect.isTrue (eqPnt scaled.Pnt0 (Pnt(2., 4., 6.))) "Pnt0 should be scaled"
+                Expect.isTrue (eqPnt box.Pnt0 pts.[0]) "input box should be unchanged"
+            }
+
+            test "scaleOn static method matches ScaleOn instance method" {
+                let pts = [|
+                    Pnt(1., 2., 3.); Pnt(11., 2., 3.); Pnt(11., 7., 3.); Pnt(1., 7., 3.)
+                    Pnt(1., 2., 6.); Pnt(11., 2., 6.); Pnt(11., 7., 6.); Pnt(1., 7., 6.)
+                |]
+                let box = FreeBox.createFromEightPoints pts
+                let cen = Pnt(4., -2., 5.)
+                let scaled = FreeBox.scaleOn cen 1.5 box
+                Expect.isTrue (eqPnt box.Pnt6 pts.[6]) "input box should be unchanged"
+                box.ScaleOn cen 1.5
+                for i = 0 to 7 do
+                    Expect.isTrue (eqPnt (scaled.GetPnt i) (box.GetPnt i)) $"point {i} of static and instance scaleOn should match"
             }
         ]
 
