@@ -539,7 +539,7 @@ module AutoOpenUnitVc =
             UnitVc.createUnchecked(pt.X / l, pt.Y / l)
 
         /// Create 2D unit-vector from 2D vector. Does the unitizing too.
-        static member inline createFromVec (v:Vc) : UnitVc =
+        static member inline createFromVc (v:Vc) : UnitVc =
             let l = sqrt (v.X*v.X + v.Y*v.Y)
             if isTooTiny l then
                 failTooSmall "UnitVc.createFromVec" v

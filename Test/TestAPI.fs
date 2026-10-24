@@ -261,7 +261,7 @@ module UnitVcAPI =
     let (_:UnitVc) = UnitVc.createUnchecked(1.0, 0.0)
     // let (_:UnitVc) = UnitVc.createUnchecked(Vc(1., 0.))
     let (_:UnitVc) = UnitVc.createFromPt(Pt(1., 0.))
-    let (_:UnitVc) = UnitVc.createFromVec(Vc(1., 0.))
+    let (_:UnitVc) = UnitVc.createFromVc(Vc(1., 0.))
     let (_:UnitVc) = UnitVc.createFromMembersXY (Pt(1., 0.))  // Pt has X and Y members
     // createFromMembersxy requires lowercase x/y members which Euclid types don't have
 
@@ -1056,7 +1056,7 @@ module Line2DAPI =
     let (_:Line2D) = line2d.ScaleOn Pt.Origin 2.0
 
     // Static members - Creation
-    let (_:Line2D) = Line2D.createFromVec(Vc(10., 0.))
+    let (_:Line2D) = Line2D.createFromVc(Vc(10., 0.))
     let (_:Line2D) = Line2D.createFromPtAndVc(Pt.Origin, Vc(10., 0.))
 
     // Static members - Properties

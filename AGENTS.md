@@ -62,6 +62,7 @@ In 3D, +X points right, +Y points forward and +Z points up.
 ## Design rules
 
 - **2D/3D symmetry.** Mirror names across dimensions: `Pt`/`Pnt`, `Vc`/`Vec`, `UnitVc`/`UnitVec`, `Line2D`/`Line3D`. Before you add a feature, find the counterpart in the other dimension and copy its style.
+  - Member names follow the same split: a 2D member that takes or returns points or vectors says `Pt` or `Vc` in its name, and its 3D counterpart says `Pnt` or `Vec`. Examples: `BRect.MinPt`/`BBox.MinPnt`, `Tria2D.offsetPt`/`Tria3D.offsetPnt`, `Line2D.isParallelToVc`/`Line3D.isParallelToVec`.
 - **Keep the structs minimal.** Do not put behavior on the core struct types. Add it as extension members in the matching file under `Src/TypeExtensions/`.
 - **Points and vectors are different types.** Vectors carry no location, so they get no `translate`, `rotateAround` or `scaleAround` members.
 - **Only polylines and `FreeBox` are mutable.** `Polyline2D`, `Polyline3D` and `FreeBox` can be changed in place. Every other type is immutable, so do not add in-place mutation to it.

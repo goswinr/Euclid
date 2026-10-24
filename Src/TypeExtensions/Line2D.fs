@@ -1291,7 +1291,7 @@ module AutoOpenLine2D =
         Line2D(ln.FromX, ln.FromY, ln.ToX, ln.ToY)
 
     /// Creates a 2D line starting at World Origin and going to along the given vector.
-    static member inline createFromVec (v:Vc) : Line2D =
+    static member inline createFromVc (v:Vc) : Line2D =
         Line2D(0., 0., v.X, v.Y)
 
     /// Creates a 2D line starting at given point and going to along the given vector.

@@ -96,6 +96,12 @@ Values below 0.0 or above 1.0 are valid results.
 | Rectangle | `Rect2D` | `Rect3D` |
 | Bounding Rect/Box | `BRect` | `BBox` |
 
+Member names follow the same split:
+2D members that take or return points or vectors usually say `Pt` or `Vc` in their name,
+and their 3D counterparts say `Pnt` or `Vec`.
+For example `BRect.MinPt` and `BBox.MinPnt`, `Tria2D.offsetPt` and `Tria3D.offsetPnt`,
+or `Line2D.isParallelToVc` and `Line3D.isParallelToVec`.
+
 **3D-only Types:**
 
 | Type | Description |
