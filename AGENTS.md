@@ -63,8 +63,9 @@ In 3D, +X points right, +Y points forward and +Z points up.
 
 - **2D/3D symmetry.** Mirror names across dimensions: `Pt`/`Pnt`, `Vc`/`Vec`, `UnitVc`/`UnitVec`, `Line2D`/`Line3D`. Before you add a feature, find the counterpart in the other dimension and copy its style.
   - Member names follow the same split: a 2D member that takes or returns points or vectors says `Pt` or `Vc` in its name, and its 3D counterpart says `Pnt` or `Vec`. Examples: `BRect.MinPt`/`BBox.MinPnt`, `Tria2D.offsetPt`/`Tria3D.offsetPnt`, `Line2D.isParallelToVc`/`Line3D.isParallelToVec`.
+  - The indexed point accessors of polylines and boxes are the exception. They say `Point` in both dimensions: `GetPoint`, `SetPoint` and `MovePoint` on `Polyline2D`, `Polyline3D`, `FreeBox`, `Box` and `BBox`.
 - **Keep the structs minimal.** Do not put behavior on the core struct types. Add it as extension members in the matching file under `Src/TypeExtensions/`.
-- **Points and vectors are different types.** Vectors carry no location, so they get no `translate`, `rotateAround` or `scaleOn` members.
+- **Points and vectors are different types.** Vectors carry no location, so they get no `move`, `rotateAround` or `scaleOn` members.
 - **Only polylines and `FreeBox` are mutable.** `Polyline2D`, `Polyline3D` and `FreeBox` can be changed in place. Every other type is immutable, so do not add in-place mutation to it.
 - **Rays are infinite lines.** A ray is a `Line2D` or `Line3D` extended infinitely in both directions, not a half-line. Name and document `*Ray*` functions this way.
 - **No new dependencies.** The library has no third-party runtime dependencies. It only uses `System.Text.Json` on net472.
@@ -83,6 +84,23 @@ In 3D, +X points right, +Y points forward and +Z points up.
   Instance members use the same prefixes in PascalCase, for example `b.TryIntersectRay` and `b.IntersectRay`.
   When you add a `tryOperation`, add the throwing `operation` next to it.
 - **One equality contract.** `equalsExact a b` compares each field with `=`. `equalsWithin tol a b` and `notEqualsWithin tol a b` apply the tolerance to each coordinate separately, not to the Euclidean distance. Say so in the docstring. Do not add `equals` members that take a tolerance.
+- **Serialized names are API names.** A JSON property has the name of the field or property it stores, such as `XAxisX` or `XYs`. Mark the member with a plain `[<DataMember>]`, without `Name = …`, and write and read the same name in the System.Text.Json converter. Do not accept other names when reading.
+
+## API shape
+
+- **Curried static members.** A static member with more than one argument is curried, so it works with `|>` and partial application. A curried name has exactly one signature: split overloads into explicit names, such as `Vc.create x y` and `Vc.createFromTo start finish`. These stay tupled:
+  - members with more than three arguments of the same type, such as `Quaternion.create` or `FreeBox.createFrom4Pts`. `float` and `float<Cosine.cosine>` count as different types, and so do `Vec` and `UnitVec`. If the last argument, the geometry, has another type, the member may still be curried, as in `Box.offset distBottom distFront distRight distBack distLeft distTop box`;
+  - `create…Unchecked` factories;
+  - `cross`, `determinant3`, `Tria2D.det` and the `multiply` methods, because their operand order matters;
+  - names ending in `Custom`;
+  - the raw kernels in `XLineXY` and `XLineXYZ`, and the offset kernels `…ByDirections`, `getOffsetDirections`, `removeUTurns` and `setOffCorner` in `Offset2D` and `Offset3D`.
+- **Argument order.** Put configuration first and the geometry last: sizes before a plane, distances before a line, tolerances before inputs. Keep natural orders such as `x y z`, `start finish` and `from to`. Interpolation keeps the factor last: `lerp start finish factor`. A line from a point and a vector takes the point first: `Line2D.createFromPtAndVc point vector`.
+- **Optional parameters.** A static member with optional parameters gets a curried default under its plain name and a tupled `…Custom` form that keeps the optional parameters, for example `XLine2D.tryIntersectRay lineA lineB` and `XLine2D.tryIntersectRayCustom(lineA, lineB, tangent = t)`. Module functions cannot have optional parameters, so their `…Custom` form takes every setting explicitly. Do not add options records. An extra geometric input of an offset variant is named `By<Noun>`, as in `offsetByNormal`. Other names keep `With` in its plain meaning, as in `createFromPtWithZ` or `unitizeWithErrorMessage`.
+- **Names.** Compose a name as operation, object or input type, `Sq`, `Degrees` or `Radians`, representation such as `FromPtsAndVcs`, `Custom`, and finally `Unchecked` or `OrDefault`: `distanceToLineSq`, `createRotationAroundVecDegrees`, `tryIntersectRayCustom`. Spell out abbreviations: `Distance`, `Index`, `Variable`, `Degrees`, `ErrorMessage`. A raw angle argument names its unit, and every `Degrees` factory has a `Radians` partner.
+- **Factories.** Factories start with `create`. `From` names the inputs, `Around` replaces it when a center point is given, as in `createRotationAroundVecDegrees center axis degrees`. A leading `Unit` means every vector input is a unit vector, as in `createFromUnitNormalAndXAxis`. Use `createCentered…` for factories that take a center point.
+- **Axes.** Instance members and fields spell axes `XAxis`, `XAxisUnit` and `XAxisX`; the static world axes are `Vec.xAxis`, `UnitVec.zAxis` and so on.
+- **Movement and composition.** `move` and `Move` are the only translation verbs; do not add `translate` aliases. `a.Then b` and `a |> T.andThen b` first apply `a` and then `b`, on `Rotation2D`, `Quaternion`, `Matrix` and `RigidMatrix`.
+- **Mutation.** On `Polyline2D`, `Polyline3D` and `FreeBox`, instance transforms mutate in place and return `unit`, and the matching static members return a copy. The indexed point setters and movers (`setPoint…`, `setXY…`, `setXYZ…`, `movePoint…`, `moveXY…`, `moveXYZ…`) and `addPoint`, `addXY` and `addXYZ` mutate as static members too. The indexed movers take the point index first, as in `moveXY pointIndex x y polyline`, unlike the whole-geometry `moveX`. Their variants that keep a closed polyline closed end in `PreservingClosure`, as in `setXYPreservingClosure`. A point index alone does not mean mutation: `getPoint` only reads. The live buffer is `XYs` or `XYZs` (static `xys` or `xyzs`), and `createFromXYs` and `createFromXYZs` build an instance that shares the given buffer. On immutable types, an operation that replaces one component and returns a copy is named `with…`, never `set…`. Do not use an `InPlace` suffix.
 
 ## Performance
 

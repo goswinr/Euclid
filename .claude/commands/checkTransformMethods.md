@@ -40,7 +40,7 @@ A raw angle argument always names its unit in the member name (`Degrees` or `Rad
 | `scaleOn center factor geometry` | `ScaleOn center factor` |
 
 Vectors carry no location, so they get no `rotateAround` or `scaleOn` members.
-Do not use the obsolete names `rotateBy`, `rotateWithCenter` or `rotateWithCenterBy`.
+Do not use the obsolete names `rotateBy`, `rotateWithCenter`, `rotateWithCenterBy`, `rotateOnZWithCenter` or `translate`.
 
 ### Quaternion Rotations only for 3D Types
 - [ ] `Rotate(q:Quaternion)` - instance member for rotation around origin
@@ -55,16 +55,16 @@ Do not use the obsolete names `rotateBy`, `rotateWithCenter` or `rotateWithCente
 - [ ] `RotateByQuarterCircle(n:int)` - rotation by multiples of 90°
 
 ### Rotation in the XY Plane for 3D Types
-- [ ] `rotateOnZ (r:Rotation2D)` and `rotateOnZWithCenter (cen:Pnt) (r:Rotation2D)` - rotation around the world Z-axis
+- [ ] `rotateOnZ (r:Rotation2D)` and `rotateAroundOnZ (cen:Pnt) (r:Rotation2D)` - rotation around the world Z-axis
 
 ### Scale
 - [ ] `Scale` / `scale` - scale from the origin
 - [ ] `ScaleOn` / `scaleOn` - scale from a center point (not for vectors)
 
 ### Translation / Move Methods
-- [ ] `Move(v:Vec)` or `Move(v:Vc)` - instance member to translate by a vector
+- [ ] `Move(v:Vec)` or `Move(v:Vc)` - instance member to move by a vector
 - [ ] `move (v:Vec)` or `move (v:Vc)` - static member with curried arguments
-- [ ] `translate (v:Vec)` - static member (alias for move)
+- Do not add `translate` aliases, `move` is the only translation verb.
 
 ### Axis-Aligned Translation
 - [ ] `MoveX(distance:float)` - instance member to move along X-axis
