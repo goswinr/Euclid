@@ -4,7 +4,9 @@ Euclid is a 2D and 3D geometry library in F# for precision engineering and compu
 It runs on .NET and, through Fable, on JavaScript and TypeScript.
 It ships to NuGet, so its public API is versioned.
 
-If a guideline or task is unclear, ask before you proceed.
+Ask the user before you proceed if a prompt, task or guideline is unclear,
+or if there are several reasonable ways to design the solution.
+In that case, list the options with their trade-offs and let the user choose.
 
 ## Commands
 
