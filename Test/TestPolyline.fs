@@ -7,7 +7,7 @@ open EuclidTestSupport
 
 
 let inline expectEqPts (a:Pt) (b:Pt) : string -> unit=
-      let d = Pt.dist a b
+      let d = Pt.distanceTo a b
       let r = d < 1e-9
     #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
       Expect.equal r true
@@ -18,7 +18,7 @@ let inline expectEqPts (a:Pt) (b:Pt) : string -> unit=
     #endif
 
 let inline expectNotEqPts (a:Pt) (b:Pt) : string -> unit=
-      let d = Pt.dist a b
+      let d = Pt.distanceTo a b
       let r = d < 1e-9
     #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
       Expect.equal r false
@@ -178,7 +178,7 @@ let tests =
 
             test "translation" {
                 let vec = Vc(5., 3.)
-                let moved = Polyline2D.translate vec plOpen
+                let moved = Polyline2D.move vec plOpen
                 "first point translated" |> (expectEqPts  moved.AsPoints.[0] (Pt(5.,3.)))
                 "second point translated" |> (expectEqPts  moved.AsPoints.[1] (Pt(15.,3.)))
                 "original unchanged" |> (expectEqPts  plOpen.AsPoints.[0] (Pt(0.,0.)))
@@ -355,7 +355,7 @@ let tests =
         testList "Offsetting" [
 
             test "5 points" {
-                let o = Polyline2D.offset (plClosed, 2.)
+                let o = Polyline2D.offset 2. plClosed
                 "pt 0 ok" |> (expectEqPts  o.AsPoints.[0] (Pt(2,2)))
                 "pt 1 ok" |> (expectEqPts  o.AsPoints.[1] (Pt(8,2)))
                 "pt 2 ok" |> (expectEqPts  o.AsPoints.[2] (Pt(8,8)))
@@ -364,7 +364,7 @@ let tests =
             }
 
             test "4 points open" {
-                let o = Polyline2D.offset (plOpen, 2.)
+                let o = Polyline2D.offset 2. plOpen
                 "pt 0 ok" |> (expectEqPts  o.AsPoints.[0] (Pt(0,2)))
                 "pt 1 ok" |> (expectEqPts  o.AsPoints.[1] (Pt(8,2)))
                 "pt 2 ok" |> (expectEqPts  o.AsPoints.[2] (Pt(8,8)))
@@ -372,7 +372,7 @@ let tests =
             }
 
             test "4 points looped" {
-                let o = Polyline2D.offset (plOpen, 2., loop=true)
+                let o = Polyline2D.offsetCustom (plOpen, 2., loop=true)
                 "pt 0 ok" |> (expectEqPts  o.AsPoints.[0] (Pt(2,2)))
                 "pt 1 ok" |> (expectEqPts  o.AsPoints.[1] (Pt(8,2)))
                 "pt 2 ok" |> (expectEqPts  o.AsPoints.[2] (Pt(8,8)))
@@ -380,7 +380,7 @@ let tests =
             }
 
             test "4 points looped  2 loop" {
-                let o = Polyline2D.offset (plOpen, 2., loop=true)
+                let o = Polyline2D.offsetCustom (plOpen, 2., loop=true)
                 "pt 0 ok" |> (expectEqPts  o.AsPoints.[0] (Pt(2,2)))
                 "pt 1 ok" |> (expectEqPts  o.AsPoints.[1] (Pt(8,2)))
                 "pt 2 ok" |> (expectEqPts  o.AsPoints.[2] (Pt(8,8)))
@@ -389,7 +389,7 @@ let tests =
 
             test "4 points looped -2 loop" {
                 // bad orient, so offset is in the other direction
-                let o = Polyline2D.offset (plOpen, -2., loop=true)
+                let o = Polyline2D.offsetCustom (plOpen, -2., loop=true)
                 "pt 0 ok" |> (expectNotEqPts  o.AsPoints.[0] (Pt(2,2)))
                 "pt 1 ok" |> (expectNotEqPts  o.AsPoints.[1] (Pt(8,2)))
                 "pt 2 ok" |> (expectNotEqPts  o.AsPoints.[2] (Pt(8,8)))
@@ -397,12 +397,12 @@ let tests =
             }
 
             test "wrong dist count " {
-                Expect.throws (fun () -> Polyline2D.offsetVar (plOpen, ResizeArray [|0.;0.|]) |> ignore ) " just two distances"
-                Expect.throws (fun () -> Polyline2D.offsetVar (plOpen, ResizeArray [| 0.; 0.; 0.; 0.|]) |> ignore ) " four but 3 wanted distances"
+                Expect.throws (fun () -> Polyline2D.offsetVariable (ResizeArray [|0.;0.|]) plOpen |> ignore ) " just two distances"
+                Expect.throws (fun () -> Polyline2D.offsetVariable (ResizeArray [| 0.; 0.; 0.; 0.|]) plOpen |> ignore ) " four but 3 wanted distances"
             }
 
             test "4 points looped, 4 params" {
-                let o = Polyline2D.offsetVar (plOpen,  ResizeArray [| 4.; 2.; 2.; 2. |] , loop=true)
+                let o = Polyline2D.offsetVariableCustom (plOpen,  ResizeArray [| 4.; 2.; 2.; 2. |] , loop=true)
                 "pt 0 ok" |> (expectEqPts  o.AsPoints.[0] (Pt(2,4)))
                 "pt 1 ok" |> (expectEqPts  o.AsPoints.[1] (Pt(8,4)))
                 "pt 2 ok" |> (expectEqPts  o.AsPoints.[2] (Pt(8,8)))
@@ -410,7 +410,7 @@ let tests =
             }
 
             test "4 points open, 3 params" {
-                let o = Polyline2D.offsetVar (plOpen, ResizeArray [| 4.; 2.; 2. |] )
+                let o = Polyline2D.offsetVariable (ResizeArray [| 4.; 2.; 2. |]) plOpen
                 "pt 0 ok" |> (expectEqPts  o.AsPoints.[0] (Pt(0,4)))
                 "pt 1 ok" |> (expectEqPts  o.AsPoints.[1] (Pt(8,4)))
                 "pt 2 ok" |> (expectEqPts  o.AsPoints.[2] (Pt(8,8)))
@@ -418,7 +418,7 @@ let tests =
             }
 
             test "5 points, 4 params" {
-                let o = Polyline2D.offsetVar (plClosed, ResizeArray [| 4.; 2.; 2.; 2. |], loop=true)
+                let o = Polyline2D.offsetVariableCustom (plClosed, ResizeArray [| 4.; 2.; 2.; 2. |], loop=true)
                 "pt 0 ok" |> (expectEqPts  o.AsPoints.[0] (Pt(2,4)))
                 "pt 1 ok" |> (expectEqPts  o.AsPoints.[1] (Pt(8,4)))
                 "pt 2 ok" |> (expectEqPts  o.AsPoints.[2] (Pt(8,8)))
@@ -427,7 +427,7 @@ let tests =
             }
 
             test "5 points outwards" {
-                let o = Polyline2D.offset (plClosed, -2.)
+                let o = Polyline2D.offset (-2.) plClosed
                 "pt 0 ok" |> (expectEqPts  o.AsPoints.[0] (Pt(-2,-2)))
                 "pt 1 ok" |> (expectEqPts  o.AsPoints.[1] (Pt(12,-2)))
                 "pt 2 ok" |> (expectEqPts  o.AsPoints.[2] (Pt(12,12)))
@@ -436,30 +436,30 @@ let tests =
             }
 
             test "triangle offset inward" {
-                let o = Polyline2D.offset (plTriangle, 0.5)
+                let o = Polyline2D.offset 0.5 plTriangle
                 Expect.isTrue (o.PointCount = 4) "triangle offset should have 4 points"
                 Expect.isTrue (o.IsClosed) "triangle offset should be closed"
             }
 
             test "L-shape offset" {
-                let o = Polyline2D.offset (plLShape, 0.5, loop=true)
+                let o = Polyline2D.offsetCustom (plLShape, 0.5, loop=true)
                 Expect.isTrue (o.PointCount = 6) "L-shape offset should have 6 points"
             }
 
             test "zero offset" {
-                let o = Polyline2D.offset (plClosed, 0.0)
+                let o = Polyline2D.offset 0.0 plClosed
                 "zero offset preserves shape" |> Expect.isTrue (o.PointCount = plClosed.PointCount)
                 "zero offset first point" |> (expectEqPts  o.AsPoints.[0] plClosed.AsPoints.[0])
             }
 
             test "small offset validation" {
-                let o = Polyline2D.offset (plClosed, 0.1)
+                let o = Polyline2D.offset 0.1 plClosed
                 Expect.isTrue (o.PointCount = plClosed.PointCount) "small offset maintains point count"
                 Expect.isTrue (o.IsClosed) "small offset maintains closure"
             }
 
             test "large offset validation" {
-                let o = Polyline2D.offset (plClosed, 4.5) // almost half the size
+                let o = Polyline2D.offset 4.5 plClosed // almost half the size
                 Expect.isTrue (o.PointCount = plClosed.PointCount) "large offset maintains point count"
                 Expect.isTrue (o.IsClosed) "large offset maintains closure"
             }
@@ -467,7 +467,7 @@ let tests =
             test "collinear segments offset" {
                 // Create a polyline with collinear segments (zigzag on same line)
                 let plCollinear = Polyline2D.createFromPts [Pt(0.,0.); Pt(5.,0.); Pt(10.,0.); Pt(15.,0.); Pt(20.,0.)]
-                let o = Polyline2D.offset (plCollinear, 2.)
+                let o = Polyline2D.offset 2. plCollinear
                 "collinear offset point count" |> Expect.equal o.PointCount plCollinear.PointCount
                 "collinear offset pt 0" |> (expectEqPts o.AsPoints.[0] (Pt(0.,2.)))
                 "collinear offset pt 1" |> (expectEqPts o.AsPoints.[1] (Pt(5.,2.)))
@@ -498,7 +498,7 @@ let tests =
                     Pt(0.,0.); Pt(5.,0.); Pt(10.,0.);  // Horizontal collinear segments
                     Pt(10.,5.); Pt(10.,10.)            // Vertical segments
                 ]
-                let o = Polyline2D.offset (plLExtended, 1.)
+                let o = Polyline2D.offset 1. plLExtended
                 "L-extended offset point count" |> Expect.equal o.AsPoints.Count plLExtended.AsPoints.Count
                 "L-extended offset maintains structure" |> Expect.isTrue (o.AsPoints.Count = 5)
             }
@@ -514,7 +514,7 @@ let tests =
                     Pt(0.,10.)
                     Pt(0.,0.)
                     ]
-                let o = Polyline2D.offset (plOpen, 2.)
+                let o = Polyline2D.offset 2. plOpen
                 "point count" |> Expect.equal o.PointCount plOpen.PointCount
                 "collinear different offsets pt 0" |> expectEqPts o.AsPoints.[0]  (Pt(2.,2.))
                 "collinear different offsets pt 1" |> expectEqPts o.AsPoints.[1]  (Pt(5.,2.))
@@ -621,7 +621,7 @@ let testsDup =
             "scaled polyline preserves duplicate count" |> Expect.equal scaled.PointCount plWithDuplicates.PointCount
             "scaled duplicate points remain duplicates" |> expectEqPts scaled.AsPoints.[0] scaled.AsPoints.[1]
 
-            let translated = Polyline2D.translate (Vc(1., 1.)) plAllDuplicates
+            let translated = Polyline2D.move (Vc(1., 1.)) plAllDuplicates
             "translated all duplicates remain same" |> expectEqPts translated.AsPoints.[0] translated.AsPoints.[3]
             "translated duplicate points moved correctly" |> expectEqPts translated.AsPoints.[0] (Pt(2., 2.))
         }
@@ -982,11 +982,11 @@ let testsDup =
     ]
 
 
-/// A closed quadrilateral that is rotated and away from the origin, for the MovePt tests.
+/// A closed quadrilateral that is rotated and away from the origin, for the MovePoint tests.
 let movePtQuad () =
     Polyline2D.createFromPts [Pt(12.5, 7.25); Pt(17.75, 9.5); Pt(15.25, 14.75); Pt(10.5, 12.25); Pt(12.5, 7.25)]
 
-/// The vector the MovePt tests move by.
+/// The vector the MovePoint tests move by.
 let movePtVc = Vc(0.3, -1.7)
 
 /// Checks that two points are bit-identical, not just close.
@@ -999,21 +999,49 @@ let testsComprehensive =
         testList "SetPoint" [
             test "set vertex on open polyline" {
                 let pl = Polyline2D.createFromPts [Pt(0.,0.); Pt(1.,0.); Pt(2.,0.); Pt(3.,0.)]
-                pl.SetPt (1, Pt(1.,5.))
+                pl.SetPoint (1, Pt(1.,5.))
                 "vertex 1 changed" |> expectEqPts pl.AsPoints.[1] (Pt(1.,5.))
                 "vertex 0 unchanged" |> expectEqPts pl.AsPoints.[0] (Pt(0.,0.))
             }
             test "set first vertex on closed polyline updates last" {
                 let pl = Polyline2D.createFromPts [Pt(0.,0.); Pt(10.,0.); Pt(10.,10.); Pt(0.,10.); Pt(0.,0.)]
-                pl.SetPtXYClosed (0, 1., 1.)
+                pl.SetXYPreservingClosure (0, 1., 1.)
                 "first vertex updated" |> expectEqPts pl.AsPoints.[0] (Pt(1.,1.))
                 "last vertex updated too" |> expectEqPts pl.AsPoints.[4] (Pt(1.,1.))
             }
             test "set last vertex on closed polyline updates first" {
                 let pl = Polyline2D.createFromPts [Pt(0.,0.); Pt(10.,0.); Pt(10.,10.); Pt(0.,10.); Pt(0.,0.)]
-                pl.SetPtXYClosed (4, 2., 2.)
+                pl.SetXYPreservingClosure (4, 2., 2.)
                 "last vertex updated" |> expectEqPts pl.AsPoints.[4] (Pt(2.,2.))
                 "first vertex updated too" |> expectEqPts pl.AsPoints.[0] (Pt(2.,2.))
+            }
+            test "SetPointPreservingClosure on the first or last point keeps a closed polyline closed" {
+                let pl = movePtQuad ()
+                let orig = pl.AsPoints
+                pl.SetPointPreservingClosure (0, Pt(11.75, 6.5))
+                "polyline still closed after setting the first point" |> Expect.isTrue pl.IsClosed
+                expectSamePt pl.LastPoint (Pt(11.75, 6.5)) "last point set too"
+                Polyline2D.setPointPreservingClosure 4 (Pt(-3.25, 8.5)) pl
+                "polyline still closed after setting the last point" |> Expect.isTrue pl.IsClosed
+                expectSamePt pl.FirstPoint (Pt(-3.25, 8.5)) "first point set too"
+                for i in 1 .. 3 do
+                    expectSamePt (pl.GetPoint i) orig.[i] $"point {i} unchanged"
+            }
+            test "SetPointPreservingClosure on an open polyline or an inner point sets only that point" {
+                let pl = Polyline2D.createFromPts [Pt(12.5, 7.25); Pt(17.75, 9.5); Pt(15.25, 14.75); Pt(10.5, 12.25)]
+                pl.SetPointPreservingClosure (0, Pt(11.75, 6.5))
+                expectSamePt pl.LastPoint (Pt(10.5, 12.25)) "last point of open polyline unchanged"
+                let closed = movePtQuad ()
+                closed.SetPointPreservingClosure (2, Pt(16.5, 15.25))
+                expectSamePt closed.FirstPoint (Pt(12.5, 7.25)) "first point unchanged"
+                expectSamePt closed.LastPoint (Pt(12.5, 7.25)) "last point unchanged"
+                expectSamePt (closed.GetPoint 2) (Pt(16.5, 15.25)) "inner point set"
+            }
+            test "SetPointPreservingClosure on a single point polyline" {
+                let pl = Polyline2D.createFromPts [Pt(-3.5, 8.25)]
+                pl.SetPointPreservingClosure (0, Pt(4.75, -1.5))
+                expectSamePt pl.FirstPoint (Pt(4.75, -1.5)) "point set"
+                "still one point" |> Expect.equal pl.PointCount 1
             }
             // test "point property setters on closed polyline keep endpoints paired" {
             //     let pl = Polyline2D.createFromPts [Pt(0.,0.); Pt(10.,0.); Pt(10.,10.); Pt(0.,10.); Pt(0.,0.)]
@@ -1026,120 +1054,121 @@ let testsComprehensive =
             // }
             test "set vertex out of range throws" {
                 let pl = Polyline2D.createFromPts [Pt(0.,0.); Pt(1.,0.)]
-                Expect.throws (fun () -> pl.SetPt (-1, Pt(0.,0.))) "negative index"
-                Expect.throws (fun () -> pl.SetPt (2, Pt(0.,0.))) "too large index"
+                Expect.throws (fun () -> pl.SetPoint (-1, Pt(0.,0.))) "negative index"
+                Expect.throws (fun () -> pl.SetPoint (2, Pt(0.,0.))) "too large index"
             }
             test "point getters and setters throw on a pointIndex out of range" {
                 let pl = Polyline2D.createFromPts [Pt(3.,4.); Pt(6.,4.); Pt(6.,8.)]
                 for i in [ -1; pl.PointCount ] do
                     Expect.throws (fun () -> pl.GetX i |> ignore) $"GetX {i}"
                     Expect.throws (fun () -> pl.GetY i |> ignore) $"GetY {i}"
-                    Expect.throws (fun () -> pl.GetPt i |> ignore) $"GetPt {i}"
-                    Expect.throws (fun () -> pl.SetPtXY (i, 0., 0.)) $"SetPtXY {i}"
-                    Expect.throws (fun () -> pl.SetPtXYClosed (i, 0., 0.)) $"SetPtXYClosed {i}"
+                    Expect.throws (fun () -> pl.GetPoint i |> ignore) $"GetPoint {i}"
+                    Expect.throws (fun () -> pl.SetXY (i, 0., 0.)) $"SetXY {i}"
+                    Expect.throws (fun () -> pl.SetXYPreservingClosure (i, 0., 0.)) $"SetXYPreservingClosure {i}"
+                    Expect.throws (fun () -> pl.SetPointPreservingClosure (i, Pt(0., 0.))) $"SetPointPreservingClosure {i}"
                 "point count unchanged" |> Expect.equal pl.PointCount 3
             }
         ]
 
-        testList "MovePt" [
-            test "MovePt moves only the point at the index" {
+        testList "MovePoint" [
+            test "MovePoint moves only the point at the index" {
                 let pl = movePtQuad ()
                 let orig = pl.AsPoints
-                pl.MovePt (2, movePtVc)
-                "moved point" |> expectEqPts (pl.GetPt 2) (orig.[2] + movePtVc)
+                pl.MovePoint (2, movePtVc)
+                "moved point" |> expectEqPts (pl.GetPoint 2) (orig.[2] + movePtVc)
                 for i in [0; 1; 3; 4] do
-                    expectSamePt (pl.GetPt i) orig.[i] $"point {i} unchanged"
+                    expectSamePt (pl.GetPoint i) orig.[i] $"point {i} unchanged"
             }
-            test "MovePtXY gives the same coordinates as MovePt" {
+            test "MoveXY gives the same coordinates as MovePoint" {
                 let a = movePtQuad ()
                 let b = movePtQuad ()
-                a.MovePt (1, movePtVc)
-                b.MovePtXY (1, movePtVc.X, movePtVc.Y)
+                a.MovePoint (1, movePtVc)
+                b.MoveXY (1, movePtVc.X, movePtVc.Y)
                 "same coordinates" |> Expect.isTrue (Seq.forall2 (=) a.XYs b.XYs)
             }
-            test "static movePt and movePtXY take the point index first" {
+            test "static movePoint and moveXY take the point index first" {
                 let pl = movePtQuad ()
                 let orig = pl.AsPoints
-                Polyline2D.movePt 3 movePtVc pl
-                "movePt moved point 3" |> expectEqPts (pl.GetPt 3) (orig.[3] + movePtVc)
-                Polyline2D.movePtXY 1 0.5 (-2.0) pl
-                "movePtXY moved point 1" |> expectEqPts (pl.GetPt 1) (Pt(18.25, 7.5))
+                Polyline2D.movePoint 3 movePtVc pl
+                "movePoint moved point 3" |> expectEqPts (pl.GetPoint 3) (orig.[3] + movePtVc)
+                Polyline2D.moveXY 1 0.5 (-2.0) pl
+                "moveXY moved point 1" |> expectEqPts (pl.GetPoint 1) (Pt(18.25, 7.5))
             }
-            test "MovePt on the first point opens a closed polyline" {
+            test "MovePoint on the first point opens a closed polyline" {
                 let pl = movePtQuad ()
-                pl.MovePt (0, movePtVc)
+                pl.MovePoint (0, movePtVc)
                 "polyline is open" |> Expect.isFalse pl.IsClosed
                 expectSamePt pl.LastPoint (Pt(12.5, 7.25)) "last point unchanged"
             }
-            test "MovePtClosed on the first point moves the last point too" {
+            test "MovePointPreservingClosure on the first point moves the last point too" {
                 let pl = movePtQuad ()
                 let orig = pl.AsPoints
-                pl.MovePtClosed (0, movePtVc)
+                pl.MovePointPreservingClosure (0, movePtVc)
                 "polyline still closed" |> Expect.isTrue pl.IsClosed
                 "first point moved" |> expectEqPts pl.FirstPoint (orig.[0] + movePtVc)
                 for i in 1 .. 3 do
-                    expectSamePt (pl.GetPt i) orig.[i] $"point {i} unchanged"
+                    expectSamePt (pl.GetPoint i) orig.[i] $"point {i} unchanged"
             }
-            test "MovePtClosed on the last point moves the first point too" {
+            test "MovePointPreservingClosure on the last point moves the first point too" {
                 let pl = movePtQuad ()
                 let orig = pl.AsPoints
-                pl.MovePtClosed (4, movePtVc)
+                pl.MovePointPreservingClosure (4, movePtVc)
                 "polyline still closed" |> Expect.isTrue pl.IsClosed
                 "last point moved" |> expectEqPts pl.LastPoint (orig.[4] + movePtVc)
                 for i in 1 .. 3 do
-                    expectSamePt (pl.GetPt i) orig.[i] $"point {i} unchanged"
+                    expectSamePt (pl.GetPoint i) orig.[i] $"point {i} unchanged"
             }
-            test "MovePtXYClosed keeps a closed polyline closed" {
+            test "MoveXYPreservingClosure keeps a closed polyline closed" {
                 let pl = movePtQuad ()
-                pl.MovePtXYClosed (0, movePtVc.X, movePtVc.Y)
-                pl.MovePtXYClosed (4, -0.7, 0.9)
+                pl.MoveXYPreservingClosure (0, movePtVc.X, movePtVc.Y)
+                pl.MoveXYPreservingClosure (4, -0.7, 0.9)
                 "polyline still closed" |> Expect.isTrue pl.IsClosed
                 "first point moved twice" |> expectEqPts pl.FirstPoint (Pt(12.5 + 0.3 - 0.7, 7.25 - 1.7 + 0.9))
             }
-            test "static movePtClosed and movePtXYClosed keep a closed polyline closed" {
+            test "static movePointPreservingClosure and moveXYPreservingClosure keep a closed polyline closed" {
                 let pl = movePtQuad ()
-                Polyline2D.movePtClosed 4 movePtVc pl
-                Polyline2D.movePtXYClosed 0 0.5 (-2.0) pl
+                Polyline2D.movePointPreservingClosure 4 movePtVc pl
+                Polyline2D.moveXYPreservingClosure 0 0.5 (-2.0) pl
                 "polyline still closed" |> Expect.isTrue pl.IsClosed
             }
-            test "MovePtClosed by a tiny vector keeps the ends bit-identical" {
+            test "MovePointPreservingClosure by a tiny vector keeps the ends bit-identical" {
                 let pl = movePtQuad ()
-                pl.MovePtClosed (0, Vc(1e-13, -3e-14))
+                pl.MovePointPreservingClosure (0, Vc(1e-13, -3e-14))
                 "first point moved" |> Expect.isFalse (pl.FirstPoint.X = 12.5)
                 "polyline still closed" |> Expect.isTrue pl.IsClosed
             }
-            test "MovePtClosed on an open polyline moves only the point" {
+            test "MovePointPreservingClosure on an open polyline moves only the point" {
                 let pl = Polyline2D.createFromPts [Pt(12.5, 7.25); Pt(17.75, 9.5); Pt(15.25, 14.75); Pt(10.5, 12.25)]
-                pl.MovePtClosed (0, movePtVc)
+                pl.MovePointPreservingClosure (0, movePtVc)
                 "first point moved" |> expectEqPts pl.FirstPoint (Pt(12.5, 7.25) + movePtVc)
                 expectSamePt pl.LastPoint (Pt(10.5, 12.25)) "last point unchanged"
             }
             test "moving by a zero vector leaves the polyline unchanged" {
                 let pl = movePtQuad ()
                 let orig = movePtQuad ()
-                pl.MovePt (1, Vc(0., 0.))
-                pl.MovePtClosed (0, Vc(0., 0.))
-                pl.MovePtXY (2, 0., 0.)
-                pl.MovePtXYClosed (4, 0., 0.)
+                pl.MovePoint (1, Vc(0., 0.))
+                pl.MovePointPreservingClosure (0, Vc(0., 0.))
+                pl.MoveXY (2, 0., 0.)
+                pl.MoveXYPreservingClosure (4, 0., 0.)
                 "same coordinates" |> Expect.isTrue (Seq.forall2 (=) pl.XYs orig.XYs)
             }
             test "moving the point of a single point polyline" {
                 let pl = Polyline2D.createFromPts [Pt(-3.5, 8.25)]
-                pl.MovePt (0, movePtVc)
-                pl.MovePtClosed (0, movePtVc)
+                pl.MovePoint (0, movePtVc)
+                pl.MovePointPreservingClosure (0, movePtVc)
                 "point moved twice" |> expectEqPts pl.FirstPoint (Pt(-3.5, 8.25) + movePtVc + movePtVc)
                 "still one point" |> Expect.equal pl.PointCount 1
             }
-            test "MovePt throws on a pointIndex out of range" {
+            test "MovePoint throws on a pointIndex out of range" {
                 let pl = movePtQuad ()
                 for i in [ -1; pl.PointCount ] do
-                    Expect.throws (fun () -> pl.MovePt (i, movePtVc)) $"MovePt {i}"
-                    Expect.throws (fun () -> pl.MovePtXY (i, 1., 1.)) $"MovePtXY {i}"
-                    Expect.throws (fun () -> pl.MovePtClosed (i, movePtVc)) $"MovePtClosed {i}"
-                    Expect.throws (fun () -> pl.MovePtXYClosed (i, 1., 1.)) $"MovePtXYClosed {i}"
+                    Expect.throws (fun () -> pl.MovePoint (i, movePtVc)) $"MovePoint {i}"
+                    Expect.throws (fun () -> pl.MoveXY (i, 1., 1.)) $"MoveXY {i}"
+                    Expect.throws (fun () -> pl.MovePointPreservingClosure (i, movePtVc)) $"MovePointPreservingClosure {i}"
+                    Expect.throws (fun () -> pl.MoveXYPreservingClosure (i, 1., 1.)) $"MoveXYPreservingClosure {i}"
                 "same coordinates" |> Expect.isTrue (Seq.forall2 (=) pl.XYs (movePtQuad ()).XYs)
                 let empty = Polyline2D.createEmpty 4
-                Expect.throws (fun () -> empty.MovePt (0, movePtVc)) "empty polyline"
+                Expect.throws (fun () -> empty.MovePoint (0, movePtVc)) "empty polyline"
             }
         ]
 
@@ -1400,13 +1429,13 @@ let testsComprehensive =
                 "distanceTo" |> Expect.isTrue (abs((pl |> Polyline2D.distanceTo q) - 1.0) < 1e-9)
                 "distanceToXY" |> Expect.isTrue (abs((pl |> Polyline2D.distanceToXY q.X q.Y) - 1.0) < 1e-9)
             }
-            test "static setPtXY takes the index first and the polyline last" {
+            test "static setXY takes the index first and the polyline last" {
                 let pl = plOpen.Clone()
-                pl |> Polyline2D.setPtXY 2 107. (-33.)
-                "point set" |> expectEqPts (pl.GetPt 2) (Pt(107., -33.))
-                "other points unchanged" |> expectEqPts (pl.GetPt 1) (plOpen.GetPt 1)
+                pl |> Polyline2D.setXY 2 107. (-33.)
+                "point set" |> expectEqPts (pl.GetPoint 2) (Pt(107., -33.))
+                "other points unchanged" |> expectEqPts (pl.GetPoint 1) (plOpen.GetPoint 1)
                 let closed = plClosed.Clone()
-                closed |> Polyline2D.setPtXYClosed 0 107. (-33.)
+                closed |> Polyline2D.setXYPreservingClosure 0 107. (-33.)
                 "first point set" |> expectEqPts closed.FirstPoint (Pt(107., -33.))
                 "last point set too" |> expectEqPts closed.LastPoint (Pt(107., -33.))
             }
@@ -1438,7 +1467,7 @@ let testsComprehensive =
                 let pl = Polyline2D.createFromPts [Pt(0.,0.); Pt(1.,1.)]
                 Expect.equal (pl.GetX 1) 1.0 "x accessor"
                 Expect.equal (pl.GetY 1) 1.0 "y accessor"
-                pl.SetPtXY (1, 2.0, 3.0)
+                pl.SetXY (1, 2.0, 3.0)
                 "updated point" |> expectEqPts pl.AsPoints.[1] (Pt(2.,3.))
                 pl.AddXY (4.0, 5.0)
                 Expect.equal pl.PointCount 3 "added coordinate pair"
@@ -1446,7 +1475,7 @@ let testsComprehensive =
             }
             test "coordinatesUnsafeInternal returns live buffer" {
                 let pl = Polyline2D.createFromPts [Pt(0.,0.); Pt(1.,1.)]
-                let cs = Polyline2D.getXYs pl
+                let cs = Polyline2D.xys pl
                 cs.Add 2.0
                 cs.Add 2.0
                 Expect.equal pl.PointCount 3 "coordinate mutation reflected in polyline"
@@ -1454,7 +1483,7 @@ let testsComprehensive =
             }
             test "createDirectlyUnsafeCoordinates shares coordinate buffer" {
                 let cs = ResizeArray [0.0; 0.0; 1.0; 1.0]
-                let pl = Polyline2D.createDirectly cs
+                let pl = Polyline2D.createFromXYs cs
                 cs.Add 2.0
                 cs.Add 2.0
                 Expect.equal pl.PointCount 3 "shared coordinates reflect changes"
@@ -1683,10 +1712,10 @@ let testsComprehensive =
 
         testList "Offset edge cases" [
             test "offset fails with less than 2 points" {
-                Expect.throws (fun () -> Polyline2D.offset(plSinglePoint, 1.0) |> ignore) "single point offset"
+                Expect.throws (fun () -> Polyline2D.offset 1.0 plSinglePoint |> ignore) "single point offset"
             }
-            test "offsetVar fails with less than 2 points" {
-                Expect.throws (fun () -> Polyline2D.offsetVar(plSinglePoint, ResizeArray [|1.0|]) |> ignore) "single point offsetVar"
+            test "offsetVariable fails with less than 2 points" {
+                Expect.throws (fun () -> Polyline2D.offsetVariable (ResizeArray [|1.0|]) plSinglePoint |> ignore) "single point offsetVar"
             }
         ]
 
@@ -1745,7 +1774,7 @@ let testsComprehensive =
             test "move equals translate" {
                 let v = Vc(3., 4.)
                 let moved = Polyline2D.move v plOpen
-                let translated = Polyline2D.translate v plOpen
+                let translated = Polyline2D.move v plOpen
                 for i = 0 to moved.PointCount - 1 do
                     $"point {i}" |> expectEqPts moved.AsPoints.[i] translated.AsPoints.[i]
             }
@@ -1847,7 +1876,7 @@ let testsSpecial =
             test "mutating a duplicate does not affect the original" {
                 let orig = Polyline2D.createFromPts [Pt(0.,0.); Pt(1.,1.)]
                 let dup = orig.Duplicate()
-                dup.SetPtXY(0, 9., 9.)
+                dup.SetXY(0, 9., 9.)
                 "original unchanged" |> expectEqPts orig.AsPoints.[0] (Pt(0.,0.))
                 "duplicate changed" |> expectEqPts dup.AsPoints.[0] (Pt(9.,9.))
             }
@@ -1905,13 +1934,13 @@ let testsSpecial =
 
         testList "create helpers" [
             test "createFromXYMembers from points" {
-                let pl = Polyline2D.createFromXYMembers [Pt(1.,2.); Pt(3.,4.)]
+                let pl = Polyline2D.createFromMembersXY [Pt(1.,2.); Pt(3.,4.)]
                 Expect.equal pl.PointCount 2 "two points"
                 "first" |> expectEqPts pl.AsPoints.[0] (Pt(1.,2.))
                 "second" |> expectEqPts pl.AsPoints.[1] (Pt(3.,4.))
             }
             test "createFromBRectCCW is closed and counter-clockwise" {
-                let br = BRect.create(Pt(0.,0.), Pt(10.,5.))
+                let br = BRect.create (Pt(0.,0.)) (Pt(10.,5.))
                 let pl = Polyline2D.createFromBRectCCW br
                 Expect.equal pl.PointCount 5 "rect loop has 5 points"
                 Expect.isTrue pl.IsClosed "should be closed"
@@ -1919,14 +1948,14 @@ let testsSpecial =
                 "positive signed area" |> Expect.isTrue (pl.SignedArea > 0.0)
             }
             test "createFromBRectCW is closed and clockwise" {
-                let br = BRect.create(Pt(0.,0.), Pt(10.,5.))
+                let br = BRect.create (Pt(0.,0.)) (Pt(10.,5.))
                 let pl = Polyline2D.createFromBRectCW br
                 Expect.equal pl.PointCount 5 "rect loop has 5 points"
                 Expect.isTrue pl.IsClosed "should be closed"
                 "negative signed area" |> Expect.isTrue (pl.SignedArea < 0.0)
             }
             test "createFromRectCCW is closed" {
-                let r = (BRect.create(Pt(0.,0.), Pt(10.,5.))).AsRect2D
+                let r = (BRect.create (Pt(0.,0.)) (Pt(10.,5.))).AsRect2D
                 let pl = Polyline2D.createFromRectCCW r
                 Expect.equal pl.PointCount 5 "rect loop has 5 points"
                 Expect.isTrue pl.IsClosed "should be closed"
@@ -2029,7 +2058,7 @@ let testsSpecial =
                 let pl = Polyline2D.createFromPts [Pt(0.,0.); Pt(10.,0.); Pt(10.,10.)]
                 let moved = pl.Duplicate()
                 moved.Move(Vc(5.,3.))
-                let translated = Polyline2D.translate (Vc(5.,3.)) pl
+                let translated = Polyline2D.move (Vc(5.,3.)) pl
                 "Move matches translate" |> expectEqPts moved.Start translated.Start
                 "Move - last point" |> expectEqPts moved.End (Pt(15.,13.))
                 let movedX = pl.Duplicate()
@@ -2072,7 +2101,7 @@ let testsSpecial =
                 Expect.isTrue (obj.ReferenceEquals(xys, pl.XYs)) "same coordinate list"
                 let expected =
                     Polyline2D.createFromPts [Pt(3.,2.); Pt(9.,4.); Pt(7.,8.); Pt(3.,2.)]
-                    |> Polyline2D.translate (Vc(-2.,5.))
+                    |> Polyline2D.move (Vc(-2.,5.))
                     |> Polyline2D.rotateAround (Pt(4.,6.)) (Rotation2D.createFromDegrees 30.)
                     |> Polyline2D.scaleOn (Pt(1.,-1.)) 1.5
                 Expect.isTrue (Polyline2D.equalsWithin 1e-12 pl expected) "instance and static calls give the same result"
@@ -2103,11 +2132,11 @@ let testsSpecial =
                 let xys = ccw.XYs
                 Expect.isTrue ccw.IsCounterClockwise "test input should be counter-clockwise"
                 ccw.EnsureCounterClockwise()
-                "already counter-clockwise is unchanged" |> expectEqPts (ccw.GetPt 1) (Pt(9.,4.))
+                "already counter-clockwise is unchanged" |> expectEqPts (ccw.GetPoint 1) (Pt(9.,4.))
                 ccw.EnsureClockwise()
                 Expect.isTrue (obj.ReferenceEquals(xys, ccw.XYs)) "same coordinate list"
                 Expect.isTrue ccw.IsClockwise "should be clockwise now"
-                "reversed in place" |> expectEqPts (ccw.GetPt 1) (Pt(7.,8.))
+                "reversed in place" |> expectEqPts (ccw.GetPoint 1) (Pt(7.,8.))
             }
             test "RemoveUTurns without U-turns keeps the polyline unchanged" {
                 let pl = Polyline2D.createFromPts [Pt(3.,2.); Pt(9.,4.); Pt(7.,8.); Pt(3.,2.)]
@@ -2123,7 +2152,7 @@ let testsSpecial =
                 Expect.equal once.PointCount 3 "a single pass removes the spike"
                 Expect.throws (fun () -> pl.RemoveUTurnsDeeply Cosine.``170.0``) "repeated passes fail"
                 Expect.equal pl.PointCount 4 "point count unchanged"
-                "spike still there" |> expectEqPts (pl.GetPt 1) (Pt(13.,2.5))
+                "spike still there" |> expectEqPts (pl.GetPoint 1) (Pt(13.,2.5))
             }
             test "RemoveDuplicateAndCollinearPoints leaves the polyline unchanged when it fails" {
                 let pl = Polyline2D.createFromPts [Pt(3.,2.); Pt(3.,2.); Pt(3.,2.)]
@@ -2152,7 +2181,7 @@ let testsSpecial =
                 expectNewAndInputUnchanged "scale" (Polyline2D.scale 1.5)
                 expectNewAndInputUnchanged "scaleOn" (Polyline2D.scaleOn cen 1.5)
                 expectNewAndInputUnchanged "move" (Polyline2D.move (Vc(-2.,5.)))
-                expectNewAndInputUnchanged "translate" (Polyline2D.translate (Vc(-2.,5.)))
+                expectNewAndInputUnchanged "translate" (Polyline2D.move (Vc(-2.,5.)))
                 expectNewAndInputUnchanged "moveX" (Polyline2D.moveX 3.)
                 expectNewAndInputUnchanged "moveY" (Polyline2D.moveY 3.)
                 expectNewAndInputUnchanged "rotate" (Polyline2D.rotate r)

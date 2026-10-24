@@ -42,13 +42,13 @@ for c in rs.GetObjects("crvs", printCount=false)  do
         incr k
         Printfn.orange $"""{ind0}test "offset const dist {dist}-{k.Value}" {{""" 
         
-        Offset2D.offset'' Cosine.``170.0`` Offset2D.UTurnBehavior.Chamfer dist pl.AsPoints
+        Offset2D.offsetCustom(pl.AsPoints, dist, Offset2D.UTurnBehavior.Chamfer, Cosine.``170.0``)
         |> (fun ps -> Printfn.orange $"{ind0}{ind}let plExp = {Polyline2D(ps).AsFSharpCode}" ; ps)
         |> ResizeArray.map pt3
         |> rs.AddPolyline
         |> rs.setLayer $"O::Constant-dist<{dist}>"
 
-        Printfn.orange $"{ind0}{ind}let plr = Offset2D.offset'' Cosine.``170.0`` Offset2D.UTurnBehavior.Chamfer {dist} pli.AsPoints |> Polyline2D"
+        Printfn.orange $"{ind0}{ind}let plr = Offset2D.offsetCustom(pli.AsPoints, {dist}, Offset2D.UTurnBehavior.Chamfer, Cosine.``170.0``) |> Polyline2D"
         
         Printfn.orange $"""{ind0}{ind}"offset {k.Value}: dist {dist} on {pl.PointCount} points" |> Expect.isTrue (Polyline2D.equalsWithin 0.0001 plr plExp)"""
         Printfn.blue $"{ind0}{ind}}}\n"

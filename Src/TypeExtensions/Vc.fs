@@ -227,19 +227,13 @@ module AutoOpenVc =
 
         /// Dot product, or scalar product of two 2D vectors.
         /// Returns a float.
-        static member inline dot (a:Vc, b:Vc)  : float =
+        static member inline dot (a:Vc) (b:Vc)  : float =
             a.X * b.X + a.Y * b.Y
 
         /// Dot product, or scalar product of a 2D vector with a 2D unit-vector.
         /// Returns a float.
         /// This float is the projected length of the 2D vector on the direction of the unit-vector.
-        static member inline dot (a:Vc, b:UnitVc)  : float =
-            a.X * b.X + a.Y * b.Y
-
-        /// Dot product, or scalar product of a 2D vector with a 2D unit-vector.
-        /// Returns a float.
-        /// This float is the projected length of the 2D vector on the direction of the unit-vector.
-        static member inline dot (a:UnitVc, b:Vc)  : float =
+        static member inline dotUnitVc (a:Vc) (b:UnitVc)  : float =
             a.X * b.X + a.Y * b.Y
 
         /// <summary>Rotate the 2D vector counter-clockwise by a 2D Rotation (that has cos and sin precomputed).</summary>
@@ -324,7 +318,7 @@ module AutoOpenVc =
         /// The diamond angle.
         /// Calculates the proportion of X to Y component.
         /// It is always positive and in the range of 0.0 to 4.0 (for 360 degrees)
-        /// 0.0 = Xaxis, going counter-clockwise.
+        /// 0.0 = XAxis, going counter-clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         member inline v.DirectionDiamond : float =
             // https://stackoverflow.com/a/14675998/969070
@@ -346,7 +340,7 @@ module AutoOpenVc =
         /// The diamond angle.
         /// Calculates the proportion of X to Y component.
         /// It is always positive and in the range of 0.0 to 4.0 (for 360 degrees)
-        /// 0.0 = Xaxis, going counter-clockwise.
+        /// 0.0 = XAxis, going counter-clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         static member inline directionDiamond(a:Vc) : float =
             // https://stackoverflow.com/a/14675998/969070
@@ -438,7 +432,7 @@ module AutoOpenVc =
         /// In Diamond Angle. Using only proportion of X to Y components.
         /// Range of 0.0 to 4.0 (for 360 degrees)
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
-        static member inline angleDiamond (a:Vc, b:Vc) : float =
+        static member inline angleDiamond (a:Vc) (b:Vc) : float =
             a.AngleDiamondTo(b)
 
         /// Checks if the angle between the two 2D vectors is less than 90 degrees.
@@ -639,11 +633,11 @@ module AutoOpenVc =
         // #region Static members
 
         /// Returns the World X-axis with length one: Vc(1, 0)
-        static member inline Xaxis : Vc =
+        static member inline xAxis : Vc =
             Vc(1, 0)
 
         /// Returns the World Y-axis with length one: Vc(0, 1)
-        static member inline Yaxis : Vc =
+        static member inline yAxis : Vc =
             Vc(0, 1)
 
         /// Checks if two 2D vectors are equal within tolerance.
@@ -740,21 +734,15 @@ module AutoOpenVc =
             v.LengthSq
 
         /// Returns a new 2D vector from X and Y parts.
-        static member inline create (x:float, y:float) : Vc =
+        static member inline create (x:float) (y:float) : Vc =
             Vc(x, y)
 
         /// Returns a new 2D vector from start and end point.
-        static member inline create (start:Pt, endValue:Pt) : Vc =
+        static member inline createFromTo (start:Pt) (endValue:Pt) : Vc =
             endValue-start
 
         /// Negate or inverse a 2D vector. Returns a new 2D vector.
-        /// Same as Vc.flip.
         static member inline reverse (v:Vc) : Vc =
-            -v
-
-        /// Negate or inverse a 2D vector. Returns a new 2D vector.
-        /// Same as Vc.reverse.
-        static member inline flip (v:Vc) : Vc =
             -v
 
         /// Returns the 2D vector unitized, fails on zero length vectors.
@@ -767,12 +755,12 @@ module AutoOpenVc =
             Vc(x/l, y/l)
 
         /// Returns 2D vector unitized, the error message is used in the Exception if the vector is too short.
-        static member inline unitizeWithErrMsg (errMsg:string) (v:Vc) : UnitVc =
+        static member inline unitizeWithErrorMessage (errMsg:string) (v:Vc) : UnitVc =
             let x = v.X
             let y = v.Y
             let l = sqrt (x*x + y*y)
             if isTooTiny l then
-                failTooSmall $"Vc.unitizeWithErrMsg: {errMsg}" v
+                failTooSmall $"Vc.unitizeWithErrorMessage: {errMsg}" v
             UnitVc.createUnchecked(x/l,y/l)
 
         /// Returns the 2D vector unitized without guarding against zero length.
@@ -813,7 +801,7 @@ module AutoOpenVc =
         /// Returns positive angle for rotating counter-clockwise from vector 'a' to vector 'b' .
         /// In radians.
         /// Range: 0.0 to 2 Pi ( = 360 degrees)
-        static member inline angle2Pi (a:Vc, b:Vc) : float = // not curried because argument order is important
+        static member inline angle2Pi (a:Vc) (b:Vc) : float =
             let r = b.Direction2Pi  - a.Direction2Pi
             if r >= 0. then  r
             else r + UtilEuclid.twoPi
@@ -833,8 +821,8 @@ module AutoOpenVc =
         /// Returns positive angle for rotating counter-clockwise from vector 'a' to vector 'b' .
         /// In degrees.
         /// Range: 0 to 360 degrees
-        static member inline angle360 (a:Vc,b:Vc) : float =
-            Vc.angle2Pi (a, b) |> toDegrees
+        static member inline angle360 (a:Vc) (b:Vc) : float =
+            Vc.angle2Pi a b |> toDegrees
 
         /// Checks if the angle between two vectors is smaller than a threshold angle specified as a precomputed cosine value.
         /// Ignores vector orientation. So the angle is between 0 to 90 degrees ignoring their orientation.
@@ -955,7 +943,7 @@ module AutoOpenVc =
         /// Linearly interpolates between two vectors.
         /// e.g. rel=0.5 will return the middle vector, rel=1.0 the end vector,
         /// rel=1.5 a vector half the distance beyond the end vector.
-        static member lerp (start:Vc, endValue:Vc, rel:float) : Vc = // not curried because argument order is important and would be confusing
+        static member lerp (start:Vc) (endValue:Vc) (rel:float) : Vc =
             Vc( start.X + rel * (endValue.X - start.X),
                 start.Y + rel * (endValue.Y - start.Y))
 
@@ -963,7 +951,7 @@ module AutoOpenVc =
         /// The difference between this and linear interpolation (aka, "lerp") is that the vectors are treated as directions rather than points in space.
         /// The direction of the returned vector is interpolated by the angle and its magnitude is interpolated between the magnitudes of start and end.
         /// Interpolation continues before and after the range of 0.0 and 1.0.
-        static member slerp (start:Vc, endValue:Vc, rel:float) : Vc = // not curried because argument order is important and would be confusing
+        static member slerp (start:Vc) (endValue:Vc) (rel:float) : Vc =
             // https://en.wikipedia.org/wiki/Slerp
             // implementation tested in Rhino!
             let sLen = start.Length
@@ -976,7 +964,7 @@ module AutoOpenVc =
             let eu  = endValue  * fe //unitized end vector
             let dot = su *** eu
             if dot > float Cosine.``0.05`` then  // vectors are in the same direction interpolate length only
-                Vc.lerp(start, endValue, rel)
+                Vc.lerp start endValue rel
             elif dot < float Cosine.``179.95`` then
                 fail2 "Vc.slerp vectors are 180 deg opposite." start endValue  |> unbox // unbox to make type checker happy
             else

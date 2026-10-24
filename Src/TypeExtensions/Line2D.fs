@@ -315,14 +315,14 @@ module AutoOpenLine2D =
     static member inline shrinkEnd (distAtEnd:float) (ln:Line2D) : Line2D =
         ln.ShrinkEnd(distAtEnd)
 
-    /// Returns a Line2D moved by a vector. Same as Line2D.move and Line2D.translate.
+    /// Returns a Line2D moved by a vector. Same as Line2D.move.
     member inline ln.Move (v:Vc) : Line2D =
         Line2D( ln.FromX+v.X,
                 ln.FromY+v.Y,
                 ln.ToX+v.X,
                 ln.ToY+v.Y)
 
-    /// Move a Line2D by a vector. Same as Line2D.translate.
+    /// Move a Line2D by a vector.
     static member inline move (v:Vc) (ln:Line2D)  : Line2D =
         ln.Move(v)
 
@@ -459,7 +459,7 @@ module AutoOpenLine2D =
     /// For more control over these tolerances, use XLine2D.classifyClosestPoints directly.</remarks>
     /// <returns> A tuple of two Pt, the first is the closest point on lnA, the second on lnB.</returns>
     member lnA.ClosestPoints (lnB:Line2D) : Pt * Pt =
-        match XLine2D.classifyClosestPoints(lnA, lnB) with
+        match XLine2D.classifyClosestPoints lnA lnB with
         | XLine2D.ClPts.Apart (a,b) -> a,b
         | XLine2D.ClPts.Parallel (a,b) -> a,b
         | XLine2D.ClPts.Intersect a -> a,a
@@ -484,7 +484,7 @@ module AutoOpenLine2D =
     /// For more control over these tolerances, use XLine2D.classifyClosestParameters directly.</remarks>
     /// <returns> A tuple of two floats, the first is the parameter on lnA, the second on lnB.</returns>
     member lnA.ClosestParameters (lnB:Line2D) : float * float =
-        match XLine2D.classifyClosestParameters(lnA, lnB) with
+        match XLine2D.classifyClosestParameters lnA lnB with
         | XLine2D.ClParams.Apart (a,b) -> a,b
         | XLine2D.ClParams.Parallel (a,b) -> a,b
         | XLine2D.ClParams.Intersect (a,b) -> a,b
@@ -503,8 +503,8 @@ module AutoOpenLine2D =
 
     /// Assumes Line2D to be an infinite ray!
     /// Returns square distance from point to ray.
-    /// Fails on curves shorter than 1e-6 units. (ln.SqDistanceToPt does not.)
-    member ln.SqDistanceRayXY(x:float, y:float) : float =
+    /// Fails on curves shorter than 1e-6 units. (ln.DistanceToPtSq does not.)
+    member ln.DistanceRayXYSq(x:float, y:float) : float =
         let vAx = ln.VectorX
         let vAy = ln.VectorY
         // normal vector:
@@ -512,7 +512,7 @@ module AutoOpenLine2D =
         let ny = vAx
         let lenSq = nx*nx + ny*ny
         if isTooSmallSq(lenSq) then
-            failTooSmall2 "Line2D.SqDistanceRayPoint" ln (Pt(x, y))
+            failTooSmall2 "Line2D.DistanceRayPointSq" ln (Pt(x, y))
         let u = ln.FromX - x
         let v = ln.FromY - y
         let dot = nx*u + ny*v
@@ -520,25 +520,25 @@ module AutoOpenLine2D =
 
     /// Assumes Line2D to be an infinite ray!
     /// Returns square distance from point to ray.
-    /// Fails on curves shorter than 1e-6 units. (ln.SqDistanceToPt does not.)
-    member ln.SqDistanceRayPoint(p:Pt) : float =
-        ln.SqDistanceRayXY(p.X, p.Y)
+    /// Fails on curves shorter than 1e-6 units. (ln.DistanceToPtSq does not.)
+    member ln.DistanceRayPointSq(p:Pt) : float =
+        ln.DistanceRayXYSq(p.X, p.Y)
 
     /// Assumes Line2D to be an infinite ray!
     /// Returns the square distance from point to ray.
-    static member inline sqDistanceRayXY(x:float) (y:float) (ln:Line2D) : float =
-        ln.SqDistanceRayXY (x, y)
+    static member inline distanceRayXYSq(x:float) (y:float) (ln:Line2D) : float =
+        ln.DistanceRayXYSq (x, y)
 
     /// Assumes Line2D to be an infinite ray!
     /// Returns the square distance from point to ray.
-    static member inline sqDistanceRayPoint(p:Pt) (ln:Line2D) : float =
-        ln.SqDistanceRayPoint p
+    static member inline distanceRayPointSq(p:Pt) (ln:Line2D) : float =
+        ln.DistanceRayPointSq p
 
     /// Assumes Line2D to be an infinite ray!
     /// Returns distance from point to ray.
     /// Fails on curves shorter than 1e-6 units. (ln.DistanceToPt does not.)
     member inline ln.DistanceRayXY(x:float, y:float) : float =
-        ln.SqDistanceRayXY(x, y) |> sqrt
+        ln.DistanceRayXYSq(x, y) |> sqrt
 
     /// Assumes Line2D to be an infinite ray!
     /// Returns distance from point to ray.
@@ -557,20 +557,20 @@ module AutoOpenLine2D =
         ln.DistanceRayPoint p
 
     /// Returns square distance from point to finite line.
-    member ln.SqDistanceToXY(x:float, y:float) : float =
+    member ln.DistanceToXYSq(x:float, y:float) : float =
         XLineXY.sqDistLnPt'(ln, x, y)
 
     /// Returns square distance from point to finite line.
-    member ln.SqDistanceToPt(p:Pt) : float =
-        ln.SqDistanceToXY(p.X, p.Y)
+    member ln.DistanceToPtSq(p:Pt) : float =
+        ln.DistanceToXYSq(p.X, p.Y)
 
     /// Returns the square distance from point to finite line.
-    static member inline sqDistanceToXY(x:float) (y:float) (ln:Line2D) : float =
-        ln.SqDistanceToXY (x, y)
+    static member inline distanceToXYSq(x:float) (y:float) (ln:Line2D) : float =
+        ln.DistanceToXYSq (x, y)
 
     /// Returns the square distance from point to finite line.
-    static member inline sqDistanceToPt(p:Pt) (ln:Line2D) : float =
-        ln.SqDistanceToPt p
+    static member inline distanceToPtSq(p:Pt) (ln:Line2D) : float =
+        ln.DistanceToPtSq p
 
     /// Returns distance from point to (finite) line.
     member inline ln.DistanceToXY(x:float, y:float) : float =
@@ -1270,19 +1270,8 @@ module AutoOpenLine2D =
     /// Returns the Cross Product or Determinant between the vectors of the Two lines.
     /// In 2D it is just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
     /// If the result is zero the two lines are parallel (or one line is zero-length).
-    /// Same as Line2D.det
-    static member inline cross (a:Line2D) (b:Line2D)  : float =
-        let ax = a.VectorX
-        let ay = a.VectorY
-        let bx = b.VectorX
-        let by = b.VectorY
-        ax*by - ay*bx
-
-    /// Returns the Cross Product or Determinant between the vectors of the Two lines.
-    /// In 2D it is just a scalar equal to the signed area of the parallelogram spanned by the input vectors.
-    /// If the result is zero the two lines are parallel (or one line is zero-length).
-    /// Same as Line2D.cross.
-    static member inline det (a:Line2D) (b:Line2D) : float =
+    /// This is tupled, like Vc.cross, because the order of the arguments matters.
+    static member inline cross (a:Line2D, b:Line2D) : float =
         let ax = a.VectorX
         let ay = a.VectorY
         let bx = b.VectorX
@@ -1290,8 +1279,7 @@ module AutoOpenLine2D =
         ax*by - ay*bx
 
     /// Creates a 3D line from a 2D line with Z coordinates set to the specified level.
-    /// The default zLevel is 0.0 if not provided.
-    static member inline toLine3D ([<OPT;DEF(0.0)>]zLevel:float) (ln:Line2D) : Line3D =
+    static member inline toLine3D (zLevel:float) (ln:Line2D) : Line3D =
         Line3D(ln.FromX, ln.FromY, zLevel, ln.ToX, ln.ToY, zLevel)
 
     /// Creates a 2D line from a 3D line by projecting onto the XY plane.
@@ -1303,8 +1291,13 @@ module AutoOpenLine2D =
     static member inline createFromVc (v:Vc) : Line2D =
         Line2D(0., 0., v.X, v.Y)
 
+    /// Creates a 2D line from a start and an end point.
+    /// Same as the Line2D(start, finish) constructor. Zero length lines are allowed.
+    static member inline create (start:Pt) (finish:Pt) : Line2D =
+        Line2D(start.X, start.Y, finish.X, finish.Y)
+
     /// Creates a 2D line starting at given point and going to along the given vector.
-    static member inline createFromPtAndVc (p:Pt, v:Vc) : Line2D =
+    static member inline createFromPtAndVc (p:Pt) (v:Vc) : Line2D =
         Line2D(p.X, p.Y, p.X+v.X, p.Y+v.Y)
 
     /// Returns the Start point of the line. Same as Line2D.from.
@@ -1423,17 +1416,9 @@ module AutoOpenLine2D =
     static member inline lengthSq (l:Line2D) : float =
         l.LengthSq
 
-    /// Reverse or flip the Line2D. Same as Line2D.flip.
+    /// Reverse or flip the Line2D.
     static member inline reverse (ln:Line2D) : Line2D =
         ln.Reversed
-
-    /// Reverse or flip the Line2D. Same as Line2D.reverse.
-    static member inline flip (ln:Line2D) : Line2D =
-        ln.Reversed
-
-    /// Move a Line2D by a vector. Same as Line2D.move.
-    static member inline translate (v:Vc) (ln:Line2D)  : Line2D =
-        ln.Move(v)
 
     /// Ensure 2D line has a positive dot product with given orientation line.
     static member inline matchOrientation (orientationToMatch:Line2D) (lineToFlip:Line2D) : Line2D =
@@ -1943,7 +1928,7 @@ module AutoOpenLine2D =
     /// Like getting the kind of Parallel relation between lines, only getting the parameter of one line,
     /// or setting a tolerance for when lines are parallel or coincident.</remarks>
     static member intersectRays (lnA:Line2D) (lnB:Line2D) : Pt =
-        XLine2D.intersectRays(lnA, lnB)
+        XLine2D.intersectRays lnA lnB
 
     /// <summary> A fast test tests if two finite 2D lines truly intersect.
     /// Does not use a default tolerance for parallel or coincident lines. Just checks within line range and not NaN.
@@ -1955,7 +1940,7 @@ module AutoOpenLine2D =
     /// or setting a tolerance for when lines are parallel or coincident.</remarks>
     /// <remarks> This does not check for an explicit angle tolerance, so overlapping almost parallel lines may return TRUE.</remarks>
     static member doIntersect (lnA:Line2D) (lnB:Line2D) : bool =
-        XLine2D.doIntersect(lnA, lnB)
+        XLine2D.doIntersect lnA lnB
 
     /// <summary> Tests if two finite 2D lines intersect or touch.
     /// Also returns TRUE if parallel lines are touching or overlapping each other.
@@ -1968,9 +1953,9 @@ module AutoOpenLine2D =
     /// Like getting the kind of Parallel relation between lines, only getting the parameter of one line,
     /// or setting a tolerance for when lines are parallel or coincident.</remarks>
     static member doIntersectOrOverlap (lnA:Line2D) (lnB:Line2D) : bool =
-        match XLine2D.classifyIntersectionParam(lnA, lnB) with
+        match XLine2D.classifyIntersectionParam lnA lnB with
         | XLine2D.XParam.Intersect _        -> true
-        | XLine2D.XParam.Parallel           -> XLine2D.doOverlap(lnA, lnB)
+        | XLine2D.XParam.Parallel           -> XLine2D.doOverlap lnA lnB
         | XLine2D.XParam.Apart              -> false
         | XLine2D.XParam.TooShortBoth       -> XLineXY.sqDistLnFromLnFrom (lnA, lnB) < 1e-12
         | XLine2D.XParam.TooShortA          -> XLineXY.sqDistLnPt' (lnB, lnA.FromX, lnA.FromY) < 1e-12
@@ -1996,7 +1981,7 @@ module AutoOpenLine2D =
     /// <remarks> If the lines are parallel or coincident, or if the parameter on Line A is bigger than 1e12 in absolute value,
     /// ValueNone is returned.</remarks>
     static member tryIntersectRay(lineA:Line2D) (lineB:Line2D) : Pt voption =
-        XLine2D.tryIntersectRay(lineA, lineB)
+        XLine2D.tryIntersectRay lineA lineB
 
     /// <summary> Intersects two finite 2D Lines.
     /// Also returns a point if parallel lines are touching or overlapping each other.
@@ -2013,7 +1998,7 @@ module AutoOpenLine2D =
     /// <returns> A voption of Pt
     /// If the lines are coincident and overlapping this point is in the center of their overlap.</returns>
     static member tryIntersectOrOverlap(lnA:Line2D) (lnB:Line2D) : Pt voption =
-        match XLine2D.classifyIntersection(lnA, lnB) with
+        match XLine2D.classifyIntersection lnA lnB with
         |XLine2D.XPt.Intersect p -> ValueSome p
         |XLine2D.XPt.Apart -> ValueNone
         |XLine2D.XPt.Parallel ->
@@ -2060,15 +2045,15 @@ module AutoOpenLine2D =
     /// <param name="lnA"> The first line.</param>
     /// <param name="lnB"> The second line.</param>
     /// <returns> The squared distance between the two lines. No matter if they are zero length or parallel</returns>
-    static member sqDistanceToLine (lnA:Line2D) (lnB:Line2D) : float =
-        XLine2D.getSqDistance(lnA, lnB)
+    static member distanceToLineSq (lnA:Line2D) (lnB:Line2D) : float =
+        XLine2D.distanceSq lnA lnB
 
     /// <summary> Computes the distance between two finite 2D lines.</summary>
     /// <param name="lnA"> The first line.</param>
     /// <param name="lnB"> The second line.</param>
     /// <returns> The distance between the two lines. No matter if they are zero length or parallel</returns>
     static member distanceToLine (lnA:Line2D) (lnB:Line2D) : float =
-        XLine2D.getSqDistance(lnA, lnB) |> sqrt
+        XLine2D.distanceSq lnA lnB |> sqrt
 
     /// <summary>Checks if the two finite 2D lines are touching each other at any of end points
     /// within the given tolerance.

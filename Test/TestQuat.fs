@@ -4,7 +4,7 @@ open Euclid
 
 open EuclidTestSupport
 
-let inline eq a b = Pnt.dist a b < 1e-12
+let inline eq a b = Pnt.distanceTo a b < 1e-12
 
 let inline expectEqual a b msg =
     let same = eq a b
@@ -18,7 +18,7 @@ let tests =
     testList "Quaternion transformations" [
 
         test "Quaternion 90 z" {
-            let q = Quaternion.createFromDegrees(Vec.Zaxis*9.0, 90.)
+            let q = Quaternion.createFromVecDegrees (Vec.zAxis*9.0) 90.
             let a = Pnt(9,0,3)
             let b = a *** q
             let expected = Pnt(0,9,3)
@@ -28,7 +28,7 @@ let tests =
         }
 
         test "Quaternion 90 x" {
-            let q = Quaternion.createFromDegrees(Vec.Xaxis*9.0, 90.)
+            let q = Quaternion.createFromVecDegrees (Vec.xAxis*9.0) 90.
             let a = Pnt(0,9,0)
             let b = a *** q
             let expected = Pnt(0,0,9)
@@ -38,7 +38,7 @@ let tests =
         }
 
         test "Quaternion 90 y" {
-            let q = Quaternion.createFromDegrees(Vec.Yaxis, 90.)
+            let q = Quaternion.createFromVecDegrees Vec.yAxis 90.
             let a = Pnt(9,0,0)
             let b = a *** q
             let expected = Pnt(0,0,-9)
@@ -48,7 +48,7 @@ let tests =
         }
 
         test "Quaternion 90 inverse" {
-            let q = Quaternion.createFromDegrees(Vec.Zaxis*9.0, 90.)
+            let q = Quaternion.createFromVecDegrees (Vec.zAxis*9.0) 90.
             let a = Pnt(9,0,3)
             let b = a *** q
             let iq = q.Inverse
@@ -59,7 +59,7 @@ let tests =
         }
 
         test "Quaternion 180 degrees" {
-            let q = Quaternion.createFromDegrees(Vec.Zaxis, 180.)
+            let q = Quaternion.createFromVecDegrees Vec.zAxis 180.
             let a = Pnt(5,3,7)
             let b = a *** q
             let expected = Pnt(-5,-3,7)
@@ -67,7 +67,7 @@ let tests =
         }
 
         test "Quaternion 45 degrees" {
-            let q = Quaternion.createFromDegrees(Vec.Zaxis, 45.)
+            let q = Quaternion.createFromVecDegrees Vec.zAxis 45.
             let a = Pnt(1,0,0)
             let b = a *** q
             let sqrt2_2 = sqrt(2.0) / 2.0
@@ -77,7 +77,7 @@ let tests =
 
         test "Quaternion arbitrary axis" {
             let axis = Vec(1,1,1)
-            let q = Quaternion.createFromDegrees(axis, 120.)
+            let q = Quaternion.createFromVecDegrees axis 120.
             let a = Pnt(1,0,0)
             let b = a *** q
             let expected = Pnt(0,1,0)
@@ -85,10 +85,10 @@ let tests =
         }
 
         test "Quaternion multiplication composition" {
-            let q1 = Quaternion.createFromDegrees(Vec.Zaxis, 45.)
-            let q2 = Quaternion.createFromDegrees(Vec.Zaxis, 45.)
+            let q1 = Quaternion.createFromVecDegrees Vec.zAxis 45.
+            let q2 = Quaternion.createFromVecDegrees Vec.zAxis 45.
             let qCombined = q1 *** q2
-            let qDirect = Quaternion.createFromDegrees(Vec.Zaxis, 90.)
+            let qDirect = Quaternion.createFromVecDegrees Vec.zAxis 90.
             let a = Pnt(1,0,0)
             let result1 = a *** qCombined
             let result2 = a *** qDirect
@@ -96,8 +96,8 @@ let tests =
         }
 
         test "Quaternion Then applies first rotation first" {
-            let qx = Quaternion.createFromDegrees(Vec.Xaxis, 90.)
-            let qy = Quaternion.createFromDegrees(Vec.Yaxis, 90.)
+            let qx = Quaternion.createFromVecDegrees Vec.xAxis 90.
+            let qy = Quaternion.createFromVecDegrees Vec.yAxis 90.
             let a = Pnt(2,3,5)
             let viaThen = a *** (qx.Then qy)
             let viaSteps = (a *** qx) *** qy // note: *** is right associative, so the parentheses are needed
@@ -111,12 +111,12 @@ let tests =
 
         test "Quaternion Then matches Matrix and RigidMatrix order" {
             let axis = Vec(1., 2., 3.)
-            let q1 = Quaternion.createFromDegrees(axis, 70.)
-            let q2 = Quaternion.createFromDegrees(Vec(-2., 1., 4.), 33.)
-            let m1 = Matrix.createRotationAxis(axis, 70.)
-            let m2 = Matrix.createRotationAxis(Vec(-2., 1., 4.), 33.)
-            let r1 = RigidMatrix.createRotationAxis(axis, 70.)
-            let r2 = RigidMatrix.createRotationAxis(Vec(-2., 1., 4.), 33.)
+            let q1 = Quaternion.createFromVecDegrees axis 70.
+            let q2 = Quaternion.createFromVecDegrees (Vec(-2., 1., 4.)) 33.
+            let m1 = Matrix.createRotationFromVecDegrees axis 70.
+            let m2 = Matrix.createRotationFromVecDegrees (Vec(-2., 1., 4.)) 33.
+            let r1 = RigidMatrix.createRotationFromVecDegrees axis 70.
+            let r2 = RigidMatrix.createRotationFromVecDegrees (Vec(-2., 1., 4.)) 33.
             let a = Pnt(12.3, -4.5, 6.7)
             let pq = a *** (q1.Then q2)
             "Quaternion vs Matrix" |> expectEqual pq (a *** (m1.Then m2))
@@ -133,13 +133,13 @@ let tests =
         }
 
         test "Quaternion angle properties" {
-            let q = Quaternion.createFromDegrees(Vec.Xaxis, 60.)
+            let q = Quaternion.createFromVecDegrees Vec.xAxis 60.
             Expect.floatClose Accuracy.high q.AngleInDegrees 60.0 "angle in degrees"
             Expect.floatClose Accuracy.high q.AngleInRadians (System.Math.PI / 3.0) "angle in radians"
         }
 
         test "Quaternion with angle" {
-            let q = Quaternion.createFromDegrees(Vec.Zaxis, 90.)
+            let q = Quaternion.createFromVecDegrees Vec.zAxis 90.
             let q2 = q.WithAngleInDegrees(45.)
             let a = Pnt(1,0,0)
             let result = a *** q2
@@ -149,25 +149,25 @@ let tests =
         }
 
         test "Quaternion vector to vector" {
-            let from = UnitVec.Xaxis
-            let toPt = UnitVec.Yaxis
-            let q = Quaternion.createVecToVec(from, toPt)
-            let result = UnitVec.Xaxis *** q
-            let expected = UnitVec.Yaxis
+            let from = UnitVec.xAxis
+            let toPt = UnitVec.yAxis
+            let q = Quaternion.createFromUnitVecs from toPt
+            let result = UnitVec.xAxis *** q
+            let expected = UnitVec.yAxis
             Expect.floatClose Accuracy.high result.X expected.X "vec to vec X"
             Expect.floatClose Accuracy.high result.Y expected.Y "vec to vec Y"
             Expect.floatClose Accuracy.high result.Z expected.Z "vec to vec Z"
         }
 
         test "Quaternion Euler XYZ" {
-            let q = Quaternion.createFromEulerXYZ(30., 45., 60.)
+            let q = Quaternion.createFromEulerXYZDegrees 30. 45. 60.
             // Test that the quaternion is valid (has unit length)
             Expect.floatClose Accuracy.high (q.X*q.X + q.Y*q.Y + q.Z*q.Z + q.W*q.W) 1.0 "quaternion is unit length"
         }
 
         test "Quaternion Euler roundtrip ZYX" {
             let originalZ, originalY, originalX = 30., 45., 60.
-            let q = Quaternion.createFromEulerZYX(originalZ, originalY, originalX)
+            let q = Quaternion.createFromEulerZYXDegrees originalZ originalY originalX
             let (z, y, x) = Quaternion.toEulerAnglesZYX(q)
             Expect.floatClose Accuracy.medium z originalZ "roundtrip Z"
             Expect.floatClose Accuracy.medium y originalY "roundtrip Y"
@@ -175,7 +175,7 @@ let tests =
         }
 
         test "Quaternion conjugate equals inverse" {
-            let q = Quaternion.createFromDegrees(Vec(1,2,3), 47.)
+            let q = Quaternion.createFromVecDegrees (Vec(1,2,3)) 47.
             let conj = q.Conjugate
             let inv = q.Inverse
             Expect.floatClose Accuracy.high conj.X inv.X "conjugate X = inverse X"
@@ -185,9 +185,9 @@ let tests =
         }
 
         test "Quaternion multiple rotations" {
-            let q1 = Quaternion.createFromDegrees(Vec.Xaxis, 90.) // no chnage, pt is on X axis
-            let q2 = Quaternion.createFromDegrees(Vec.Yaxis, 90.)
-            let q3 = Quaternion.createFromDegrees(Vec.Zaxis, 90.) // no change, pt is on Z axis
+            let q1 = Quaternion.createFromVecDegrees Vec.xAxis 90. // no chnage, pt is on X axis
+            let q2 = Quaternion.createFromVecDegrees Vec.yAxis 90.
+            let q3 = Quaternion.createFromVecDegrees Vec.zAxis 90. // no change, pt is on Z axis
             let a = Pnt(1,0,0)
             let result = a *** q1 *** q2 *** q3
             // After X:90°, Y:90°, Z:90° rotations
@@ -196,9 +196,9 @@ let tests =
         }
 
         test "Quaternion multiple rotations2" {
-            let q1 = Quaternion.createFromDegrees(Vec.Xaxis, 90.)
-            let q2 = Quaternion.createFromDegrees(Vec.Yaxis, 90.)
-            let q3 = Quaternion.createFromDegrees(Vec.Zaxis, 90.)
+            let q1 = Quaternion.createFromVecDegrees Vec.xAxis 90.
+            let q2 = Quaternion.createFromVecDegrees Vec.yAxis 90.
+            let q3 = Quaternion.createFromVecDegrees Vec.zAxis 90.
             let a = Pnt(0,1,0)
             let result = a *** q1 *** q2 *** q3
             // After X:90°, Y:90°, Z:90° rotations
@@ -207,7 +207,7 @@ let tests =
         }
 
         test "Quaternion small angles" {
-            let q = Quaternion.createFromDegrees(Vec.Zaxis, 0.001)
+            let q = Quaternion.createFromVecDegrees Vec.zAxis 0.001
             let a = Pnt(1000,0,0)
             let b = a *** q
             // For very small angles, should be approximately the same
@@ -216,9 +216,9 @@ let tests =
         }
 
         test "Quaternion opposite vectors error" {
-            let from = UnitVec.Xaxis
+            let from = UnitVec.xAxis
             let toPt = UnitVec.createFromVec(Vec(-1,0,0))
-            Expect.throws (fun () -> Quaternion.createVecToVec(from, toPt) |> ignore) "opposite vectors should throw"
+            Expect.throws (fun () -> Quaternion.createFromUnitVecs from toPt |> ignore) "opposite vectors should throw"
         }
 
         // Edge case tests based on documentation review and coding standards
@@ -233,21 +233,21 @@ let tests =
 
         test "Quaternion createFromRadians with zero-length axis should fail" {
             let zeroAxis = Vec(0., 0., 0.)
-            Expect.throws (fun () -> Quaternion.createFromRadians(zeroAxis, 90.) |> ignore) "zero-length axis should fail"
+            Expect.throws (fun () -> Quaternion.createFromVecRadians zeroAxis 90. |> ignore) "zero-length axis should fail"
         }
 
         test "Quaternion createFromRadians with very short axis should fail" {
             let tinyAxis = Vec(1e-20, 1e-20, 1e-20)
-            Expect.throws (fun () -> Quaternion.createFromRadians(tinyAxis, 90.) |> ignore) "very short axis should fail"
+            Expect.throws (fun () -> Quaternion.createFromVecRadians tinyAxis 90. |> ignore) "very short axis should fail"
         }
 
         test "Quaternion createFromDegree with very short axis should fail" {
             let tinyAxis = Vec(1e-15, 0., 0.)
-            Expect.throws (fun () -> Quaternion.createFromDegrees(tinyAxis, 45.) |> ignore) "very short axis should fail"
+            Expect.throws (fun () -> Quaternion.createFromVecDegrees tinyAxis 45. |> ignore) "very short axis should fail"
         }
 
         test "Quaternion withAngle static members match instance members" {
-            let q = Quaternion.createFromDegrees(Vec.Zaxis, 90.)
+            let q = Quaternion.createFromVecDegrees Vec.zAxis 90.
             let a = Quaternion.withAngleInDegrees 45. q
             let b = q.WithAngleInDegrees 45.
             let c = Quaternion.withAngleInRadians (System.Math.PI * 0.25) q
@@ -259,7 +259,7 @@ let tests =
 
         test "Quaternion withAngle keeps the rotation axis" {
             let axis = Vec(1., 2., 3.)
-            let q = Quaternion.createFromDegrees(axis, 30.)
+            let q = Quaternion.createFromVecDegrees axis 30.
             let q2 = q.WithAngleInDegrees 120.
             Expect.floatClose Accuracy.high q2.AngleInDegrees 120.0 "new angle"
             let a1 = Vec.unitize q.Axis
@@ -274,7 +274,7 @@ let tests =
         }
 
         test "Quaternion withAngle on near-identity should fail" {
-            let q = Quaternion.createFromDegrees(Vec.Zaxis, 1e-10)
+            let q = Quaternion.createFromVecDegrees Vec.zAxis 1e-10
             Expect.throws (fun () -> q.WithAngleInRadians 1.0 |> ignore) "withAngle on near-identity should fail"
         }
 
@@ -287,7 +287,7 @@ let tests =
         }
 
         test "Quaternion Axis length equals sin(angle/2)" {
-            let q = Quaternion.createFromDegrees(Vec.Zaxis, 60.)
+            let q = Quaternion.createFromVecDegrees Vec.zAxis 60.
             let axis = q.Axis
             let expectedLength = sin(System.Math.PI / 6.0) // sin(30°) for 60° rotation
             let actualLength = sqrt(axis.X*axis.X + axis.Y*axis.Y + axis.Z*axis.Z)
@@ -295,7 +295,7 @@ let tests =
         }
 
         test "Quaternion equals with double-coverage (q vs -q)" {
-            let q = Quaternion.createFromDegrees(Vec.Zaxis, 45.)
+            let q = Quaternion.createFromVecDegrees Vec.zAxis 45.
             let qNeg = Quaternion.createUnchecked(-q.X, -q.Y, -q.Z, -q.W)
             // q and -q represent the same rotation but should compare as unequal
             Expect.isFalse (Quaternion.equalsWithin 1e-10 q qNeg) "q and -q should be unequal (component-wise)"
@@ -307,13 +307,13 @@ let tests =
         }
 
         test "Quaternion equalsRotation with same quaternion" {
-            let q1 = Quaternion.createFromDegrees(Vec.Zaxis, 45.)
-            let q2 = Quaternion.createFromDegrees(Vec.Zaxis, 45.)
+            let q1 = Quaternion.createFromVecDegrees Vec.zAxis 45.
+            let q2 = Quaternion.createFromVecDegrees Vec.zAxis 45.
             Expect.isTrue (Quaternion.equalsRotationWithin 1e-10 q1 q2) "same quaternions should be rotationally equal"
         }
 
         test "Quaternion equalsRotation with negated quaternion (q vs -q)" {
-            let q = Quaternion.createFromDegrees(Vec.Zaxis, 45.)
+            let q = Quaternion.createFromVecDegrees Vec.zAxis 45.
             let qNeg = Quaternion.createUnchecked(-q.X, -q.Y, -q.Z, -q.W)
             // equalsRotation should recognize q and -q as the same rotation
             Expect.isTrue (Quaternion.equalsRotationWithin 1e-10 q qNeg) "q and -q should be rotationally equal"
@@ -322,20 +322,20 @@ let tests =
         }
 
         test "Quaternion equalsRotation with different rotations" {
-            let q1 = Quaternion.createFromDegrees(Vec.Zaxis, 45.)
-            let q2 = Quaternion.createFromDegrees(Vec.Zaxis, 90.)
+            let q1 = Quaternion.createFromVecDegrees Vec.zAxis 45.
+            let q2 = Quaternion.createFromVecDegrees Vec.zAxis 90.
             Expect.isFalse (Quaternion.equalsRotationWithin 1e-10 q1 q2) "different rotations should not be equal"
         }
 
         test "Quaternion equalsRotation with different axes" {
-            let q1 = Quaternion.createFromDegrees(Vec.Zaxis, 45.)
-            let q2 = Quaternion.createFromDegrees(Vec.Xaxis, 45.)
+            let q1 = Quaternion.createFromVecDegrees Vec.zAxis 45.
+            let q2 = Quaternion.createFromVecDegrees Vec.xAxis 45.
             Expect.isFalse (Quaternion.equalsRotationWithin 1e-10 q1 q2) "same angle different axis should not be equal"
         }
 
         test "Quaternion equalsRotation with tolerance" {
-            let q1 = Quaternion.createFromDegrees(Vec.Zaxis, 45.0)
-            let q2 = Quaternion.createFromDegrees(Vec.Zaxis, 45.001)
+            let q1 = Quaternion.createFromVecDegrees Vec.zAxis 45.0
+            let q2 = Quaternion.createFromVecDegrees Vec.zAxis 45.001
             // Should be equal within loose tolerance
             Expect.isTrue (Quaternion.equalsRotationWithin 0.01 q1 q2) "similar quaternions within tolerance"
             // Should be unequal with tight tolerance
@@ -343,8 +343,8 @@ let tests =
         }
 
         test "Quaternion equalsRotation with negated and tolerance" {
-            let q1 = Quaternion.createFromDegrees(Vec.Zaxis, 45.0)
-            let q2 = Quaternion.createFromDegrees(Vec.Zaxis, 45.001)
+            let q1 = Quaternion.createFromVecDegrees Vec.zAxis 45.0
+            let q2 = Quaternion.createFromVecDegrees Vec.zAxis 45.001
             let q2Neg = Quaternion.createUnchecked(-q2.X, -q2.Y, -q2.Z, -q2.W)
             // Should be equal within tolerance even when negated
             Expect.isTrue (Quaternion.equalsRotationWithin 0.01 q1 q2Neg) "negated similar quaternions within tolerance"
@@ -357,7 +357,7 @@ let tests =
         }
 
         test "Quaternion equalsRotation with zero tolerance" {
-            let q = Quaternion.createFromDegrees(Vec.Zaxis, 45.)
+            let q = Quaternion.createFromVecDegrees Vec.zAxis 45.
             let qNeg = Quaternion.createUnchecked(-q.X, -q.Y, -q.Z, -q.W)
             // Even with zero tolerance, q and -q should be rotationally equal
             Expect.isTrue (Quaternion.equalsRotationWithin 0.0 q qNeg) "q and -q equal with zero tolerance"
@@ -365,7 +365,7 @@ let tests =
 
         test "Quaternion equalsRotation consistency with rotation result" {
             // If equalsRotation returns true, both should rotate a point to the same position
-            let q1 = Quaternion.createFromDegrees(Vec(1,1,1), 60.)
+            let q1 = Quaternion.createFromVecDegrees (Vec(1,1,1)) 60.
             let q2 = Quaternion.createUnchecked(-q1.X, -q1.Y, -q1.Z, -q1.W)
             Expect.isTrue (Quaternion.equalsRotationWithin 1e-10 q1 q2) "q and -q are rotationally equal"
             // Verify they produce the same rotation
@@ -377,23 +377,23 @@ let tests =
 
         test "Quaternion equalsRotation with 180 degree rotation" {
             // 180° rotation is special - q and -q might behave differently
-            let q1 = Quaternion.createFromDegrees(Vec.Zaxis, 180.)
+            let q1 = Quaternion.createFromVecDegrees Vec.zAxis 180.
             let q1Neg = Quaternion.createUnchecked(-q1.X, -q1.Y, -q1.Z, -q1.W)
             Expect.isTrue (Quaternion.equalsRotationWithin 1e-10 q1 q1Neg) "180° rotation q and -q are equal"
         }
 
         test "Quaternion createVecToVec with nearly identical vectors returns identity" {
-            let from = UnitVec.Xaxis
+            let from = UnitVec.xAxis
             let toPt = UnitVec.createFromVec(Vec(1.0, 1e-13, 0.))
-            let q = Quaternion.createVecToVec(from, toPt)
+            let q = Quaternion.createFromUnitVecs from toPt
             // Should return identity quaternion
             Expect.floatClose Accuracy.medium q.AngleInDegrees 0.0 "nearly identical vectors produce near-identity"
         }
 
         test "Quaternion createVecToVec with exactly identical vectors returns identity" {
-            let from = UnitVec.Xaxis
-            let toPt = UnitVec.Xaxis
-            let q = Quaternion.createVecToVec(from, toPt)
+            let from = UnitVec.xAxis
+            let toPt = UnitVec.xAxis
+            let q = Quaternion.createFromUnitVecs from toPt
             Expect.floatClose Accuracy.high q.X 0.0 "identical vectors X"
             Expect.floatClose Accuracy.high q.Y 0.0 "identical vectors Y"
             Expect.floatClose Accuracy.high q.Z 0.0 "identical vectors Z"
@@ -403,24 +403,24 @@ let tests =
         test "Quaternion createVecToVec (Vec overload) with zero-length from should fail" {
             let zeroVec = Vec(0., 0., 0.)
             let target = Vec(1., 0., 0.)
-            Expect.throws (fun () -> Quaternion.createVecToVec(zeroVec, target) |> ignore) "zero-length vecFrom should fail"
+            Expect.throws (fun () -> Quaternion.createFromVecs zeroVec target |> ignore) "zero-length vecFrom should fail"
         }
 
         test "Quaternion createVecToVec (Vec overload) with zero-length to should fail" {
             let source = Vec(1., 0., 0.)
             let zeroVec = Vec(0., 0., 0.)
-            Expect.throws (fun () -> Quaternion.createVecToVec(source, zeroVec) |> ignore) "zero-length vecTo should fail"
+            Expect.throws (fun () -> Quaternion.createFromVecs source zeroVec |> ignore) "zero-length vecTo should fail"
         }
 
         test "Quaternion createVecToVec (Vec overload) with very short vectors should fail" {
             let tinyVec = Vec(1e-20, 0., 0.)
             let target = Vec(1., 0., 0.)
-            Expect.throws (fun () -> Quaternion.createVecToVec(tinyVec, target) |> ignore) "very short vector should fail"
+            Expect.throws (fun () -> Quaternion.createFromVecs tinyVec target |> ignore) "very short vector should fail"
         }
 
         test "Quaternion numerical drift from repeated multiplications" {
             // Start with a small rotation
-            let q = Quaternion.createFromDegrees(Vec.Zaxis, 1.0)
+            let q = Quaternion.createFromVecDegrees Vec.zAxis 1.0
             // Multiply it 360 times to make a full circle
             let mutable result = Quaternion.identity
             for _ in 1 .. 360 do
@@ -437,7 +437,7 @@ let tests =
 
         test "Quaternion toEulerAnglesZYX gimbal lock near 90 degrees" {
             // Test near gimbal lock condition (Beta ≈ 90°)
-            let q = Quaternion.createFromEulerZYX(30., 89.9, 60.)
+            let q = Quaternion.createFromEulerZYXDegrees 30. 89.9 60.
             let _z, y, _x = Quaternion.toEulerAnglesZYX q
             // Near gimbal lock, the conversion may have reduced accuracy
             Expect.floatClose Accuracy.low y 89.9 "near gimbal lock Y"
@@ -445,15 +445,15 @@ let tests =
 
         test "Quaternion toEulerAnglesZYX at exact 90 degrees" {
             // Test at exact gimbal lock condition (Beta = 90°)
-            let q = Quaternion.createFromEulerZYX(30., 90., 60.)
+            let q = Quaternion.createFromEulerZYXDegrees 30. 90. 60.
             let _z, y, _x = Quaternion.toEulerAnglesZYX q
             // At gimbal lock, Y should still be 90
             Expect.floatClose Accuracy.medium y 90.0 "gimbal lock Y = 90"
         }
 
         test "Quaternion equals with different tolerances" {
-            let q1 = Quaternion.createFromDegrees(Vec.Zaxis, 45.)
-            let q2 = Quaternion.createFromDegrees(Vec.Zaxis, 45.001)
+            let q1 = Quaternion.createFromVecDegrees Vec.zAxis 45.
+            let q2 = Quaternion.createFromVecDegrees Vec.zAxis 45.001
             // Should be equal with loose tolerance
             Expect.isTrue (Quaternion.equalsWithin 0.01 q1 q2) "similar quaternions within loose tolerance"
             // Should be unequal with tight tolerance
@@ -461,29 +461,29 @@ let tests =
         }
 
         test "Quaternion zero angle rotation" {
-            let q = Quaternion.createFromDegrees(Vec.Zaxis, 0.)
+            let q = Quaternion.createFromVecDegrees Vec.zAxis 0.
             let a = Pnt(5,3,7)
             let b = a *** q
             "zero angle rotation" |> expectEqual a b
         }
 
         test "Quaternion 360 degree rotation" {
-            let q = Quaternion.createFromDegrees(Vec.Zaxis, 360.)
+            let q = Quaternion.createFromVecDegrees Vec.zAxis 360.
             let a = Pnt(5,3,7)
             let b = a *** q
             "360° rotation returns to original" |> expectEqual a b
         }
 
         test "Quaternion very large angle" {
-            let q = Quaternion.createFromDegrees(Vec.Zaxis, 720.) // Two full rotations
+            let q = Quaternion.createFromVecDegrees Vec.zAxis 720. // Two full rotations
             let a = Pnt(5,3,7)
             let b = a *** q
             "720° rotation returns to original" |> expectEqual a b
         }
 
         test "Quaternion negative angle" {
-            let q1 = Quaternion.createFromDegrees(Vec.Zaxis, -90.)
-            let q2 = Quaternion.createFromDegrees(Vec.Zaxis, 270.)
+            let q1 = Quaternion.createFromVecDegrees Vec.zAxis (-90.)
+            let q2 = Quaternion.createFromVecDegrees Vec.zAxis 270.
             let a = Pnt(1,0,0)
             let result1 = a *** q1
             let result2 = a *** q2
@@ -492,7 +492,7 @@ let tests =
 
         test "Quaternion Normalize restores unit length" {
             // Create a slightly denormalized quaternion (simulates drift from multiplications)
-            let q1 = Quaternion.createFromDegrees(Vec.Zaxis, 45.)
+            let q1 = Quaternion.createFromVecDegrees Vec.zAxis 45.
             // Manually create a slightly off-unit quaternion by scaling
             let scale = 1.001 // slightly larger than 1
             let qBad = Quaternion.create(q1.X * scale, q1.Y * scale, q1.Z * scale, q1.W * scale)
@@ -504,7 +504,7 @@ let tests =
 
         test "Quaternion Normalize preserves rotation direction" {
             // Start with a valid quaternion and verify normalize keeps it valid
-            let q = Quaternion.createFromDegrees(Vec.Zaxis, 60.)
+            let q = Quaternion.createFromVecDegrees Vec.zAxis 60.
             let qNormalized = q.Normalize()
             let a = Pnt(1,0,0)
             let result1 = a *** q
@@ -514,7 +514,7 @@ let tests =
         }
 
         test "Quaternion Normalize after many multiplications" {
-            let q = Quaternion.createFromDegrees(Vec.Zaxis, 1.0)
+            let q = Quaternion.createFromVecDegrees Vec.zAxis 1.0
             let mutable result = Quaternion.identity
             for _ in 1 .. 1000 do
                 result <- result *** q
@@ -528,7 +528,7 @@ let tests =
         }
 
         test "Quaternion Normalize on already normalized quaternion" {
-            let q = Quaternion.createFromDegrees(Vec.Zaxis, 45.)
+            let q = Quaternion.createFromVecDegrees Vec.zAxis 45.
             let qNormalized = q.Normalize()
             // Should be very close to the original (already unit length)
             Expect.floatClose Accuracy.high qNormalized.X q.X "normalized X matches original"
@@ -542,6 +542,39 @@ let tests =
             Expect.throws (fun () -> Quaternion.create(0., 0., 0., 0.) |> ignore) "create zero quaternion should fail"
             // Also test with very small values
             Expect.throws (fun () -> Quaternion.create(1e-20, 1e-20, 1e-20, 1e-20) |> ignore) "create tiny quaternion should fail"
+        }
+
+
+        test "Quaternion Euler Radians factories match their Degrees partners" {
+            let a, b, c = 17.3, -123.4, 271.5
+            let r = UtilEuclid.toRadians
+            "XYZ" |> Expect.isTrue (Quaternion.equalsExact (Quaternion.createFromEulerXYZDegrees a b c) (Quaternion.createFromEulerXYZRadians (r a) (r b) (r c)))
+            "XZY" |> Expect.isTrue (Quaternion.equalsExact (Quaternion.createFromEulerXZYDegrees a b c) (Quaternion.createFromEulerXZYRadians (r a) (r b) (r c)))
+            "YXZ" |> Expect.isTrue (Quaternion.equalsExact (Quaternion.createFromEulerYXZDegrees a b c) (Quaternion.createFromEulerYXZRadians (r a) (r b) (r c)))
+            "YZX" |> Expect.isTrue (Quaternion.equalsExact (Quaternion.createFromEulerYZXDegrees a b c) (Quaternion.createFromEulerYZXRadians (r a) (r b) (r c)))
+            "ZXY" |> Expect.isTrue (Quaternion.equalsExact (Quaternion.createFromEulerZXYDegrees a b c) (Quaternion.createFromEulerZXYRadians (r a) (r b) (r c)))
+            "ZYX" |> Expect.isTrue (Quaternion.equalsExact (Quaternion.createFromEulerZYXDegrees a b c) (Quaternion.createFromEulerZYXRadians (r a) (r b) (r c)))
+        }
+
+        test "Quaternion curried factories support partial application" {
+            let aroundZ = Quaternion.createFromUnitVecDegrees UnitVec.zAxis
+            let qs = [ 10.0; 20.0; 30.0 ] |> List.map aroundZ
+            "three rotations" |> Expect.equal qs.Length 3
+            "same as full application" |> Expect.isTrue (Quaternion.equalsExact qs.[1] (Quaternion.createFromUnitVecDegrees UnitVec.zAxis 20.0))
+            let fromX = Quaternion.createFromVecs Vec.xAxis
+            let q = fromX (Vec(0.0, 3.0, 0.0))
+            let rotated = Vec.xAxis *** q
+            "X to Y" |> Expect.isTrue ((rotated - Vec.yAxis).Length < 1e-12)
+        }
+
+        test "Quaternion.andThen applies the current rotation first" {
+            let qx = Quaternion.createFromUnitVecDegrees UnitVec.xAxis 90.0
+            let qz = Quaternion.createFromUnitVecDegrees UnitVec.zAxis 90.0
+            let v = Vec(1.0, 2.0, 3.0)
+            let viaPipe = qx |> Quaternion.andThen qz
+            "andThen equals Then" |> Expect.isTrue (Quaternion.equalsExact viaPipe (qx.Then qz))
+            "x first, then z" |> Expect.isTrue (((v *** viaPipe) - ((v *** qx) *** qz)).Length < 1e-12)
+            "noncommuting" |> Expect.isFalse (((v *** viaPipe) - (v *** (qz |> Quaternion.andThen qx))).Length < 1e-9)
         }
 
     ]

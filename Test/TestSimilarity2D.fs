@@ -4,7 +4,7 @@ open Euclid
 
 open EuclidTestSupport
 
-let inline eqPt a b = Pt.dist a b < 1e-9
+let inline eqPt a b = Pt.distanceTo a b < 1e-9
 
 let tol = Accuracy.veryHigh
 
@@ -103,7 +103,7 @@ let tests =
                 Similarity2D.getSimilarityData(ResizeArray([("cat1", ResizeArray([Pt(0,0); Pt(2,0)]))]))
                 Similarity2D.getSimilarityData(ResizeArray([("cat1", ResizeArray([Pt(0,0); Pt(1,0)]))]))
             ])
-            let groups = Similarity2D.getGrouped(0.01, items, sims)
+            let groups = Similarity2D.getGrouped 0.01 sims items
             "two groups created" |> Expect.equal groups.Count 2
             // Items 1, 2, and 4 should be in one group (similar)
             // Item 3 should be in another group (different)
@@ -119,7 +119,7 @@ let tests =
                 Similarity2D.getSimilarityData(ResizeArray([("cat1", ResizeArray([Pt(0,0); Pt(2,0)]))]))
                 Similarity2D.getSimilarityData(ResizeArray([("cat1", ResizeArray([Pt(0,0); Pt(3,0)]))]))
             ])
-            let groups = Similarity2D.getGrouped(0.01, items, sims)
+            let groups = Similarity2D.getGrouped 0.01 sims items
             "three unique groups" |> Expect.equal groups.Count 3
         }
 
@@ -127,7 +127,7 @@ let tests =
             let items = ResizeArray([1; 2; 3])
             let simData = Similarity2D.getSimilarityData(ResizeArray([("cat1", ResizeArray([Pt(0,0); Pt(1,0)]))]))
             let sims = ResizeArray([simData; simData; simData])
-            let groups = Similarity2D.getGrouped(0.01, items, sims)
+            let groups = Similarity2D.getGrouped 0.01 sims items
             "one group for identical items" |> Expect.equal groups.Count 1
             "group contains all items" |> Expect.equal groups.[0].Count 3
         }
@@ -137,7 +137,7 @@ let tests =
             let sims = ResizeArray([
                 Similarity2D.getSimilarityData(ResizeArray([("cat1", ResizeArray([Pt(0,0)]))]))
             ])
-            let f() = Similarity2D.getGrouped(0.01, items, sims) |> ignore
+            let f() = Similarity2D.getGrouped 0.01 sims items |> ignore
             "throws on count mismatch" |> Expect.throws f
         }
 

@@ -16,7 +16,7 @@ open System.Text.Json.Serialization
 /// Internally it is stored as 6 floats (the Origin point coordinates and the normal vector components),
 /// just like the PPlane type. The Origin and Normal properties reconstruct the Pnt and UnitVec on demand.
 /// Note: Never use the struct default constructor NPlane() as it will create an invalid zero plane.
-/// Use NPlane.create or NPlane.createUnchecked instead.
+/// Use NPlane.createFromNormal or NPlane.createUnchecked instead.
 [<Struct;NoEquality;NoComparison>]// because it's made up from floats
 [<IsReadOnly>]
 [<DataContract>] // for using DataMember on fields, for Newtonsoft.Json
@@ -72,7 +72,7 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
 
     /// Unsafe internal constructor, doesn't check if the normal is unitized.
     /// Requires correct input of a unitized normal vector.
-    static member inline createUncheckedVec (origin:Pnt, normal:UnitVec) : NPlane =
+    static member inline createFromUnitNormalUnchecked (origin:Pnt, normal:UnitVec) : NPlane =
         NPlane.createUnchecked(origin.X, origin.Y, origin.Z, normal.X, normal.Y, normal.Z)
 
     /// Creates the Origin 3D point of this NPlane.
@@ -277,25 +277,25 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
     static member inline areCoincident (a:NPlane) (b:NPlane) : bool =
         a.IsCoincidentTo (b)
 
-    /// Create Plane, normal vector gets unitized in constructor.
-    static member create(pnt:Pnt, normal:Vec) : NPlane =
+    /// Create Plane from a normal vector and an origin point. The normal vector gets unitized.
+    static member createFromNormal (normal:Vec) (pnt:Pnt) : NPlane =
         let x = normal.X
         let y = normal.Y
         let z = normal.Z
         let l = XYZ.length x y z
-        if isTooTiny l then failTooSmall "NPlane.create" normal
+        if isTooTiny l then failTooSmall "NPlane.createFromNormal" normal
         let li = 1.0 / l
         NPlane.createUnchecked(pnt.X, pnt.Y, pnt.Z, li*x, li*y, li*z)
 
-    /// Create Plane from already normalized input vector.
-    static member inline create(pnt:Pnt, normal:UnitVec) : NPlane =
+    /// Create Plane from an already normalized normal vector and an origin point.
+    static member inline createFromUnitNormal (normal:UnitVec) (pnt:Pnt) : NPlane =
         NPlane.createUnchecked(pnt.X, pnt.Y, pnt.Z, normal.X, normal.Y, normal.Z)
 
     /// Create Plane from 3 points.
     /// Point 'a' becomes the origin.
     /// Normal is calculated as cross product (c-b) × (a-b) following the right-hand rule.
     /// Fails if the three points are collinear.
-    static member inline createFrom3Points (a:Pnt) (b:Pnt) (c:Pnt) : NPlane =
+    static member inline createFrom3Pnts (a:Pnt) (b:Pnt) (c:Pnt) : NPlane =
         let ux = c.X - b.X
         let uy = c.Y - b.Y
         let uz = c.Z - b.Z
@@ -305,16 +305,16 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
         let nx = uy * vz - uz * vy
         let ny = uz * vx - ux * vz
         let nz = ux * vy - uy * vx
-        let lSq = XYZ.sqLength nx ny nz
+        let lSq = XYZ.lengthSq nx ny nz
         if isTooSmallSq lSq then
-            failCollinear "NPlane.createFrom3Points" a b c
+            failCollinear "NPlane.createFrom3Pnts" a b c
         let f = 1.0 / sqrt lSq
         NPlane.createUnchecked(a.X, a.Y, a.Z, nx*f, ny*f, nz*f)
 
     /// Creates an NPlane from a parametrized PPlane.
     /// Uses the PPlane's origin and Z-axis (which becomes the normal).
     static member inline createFromPPlane (p:PPlane) : NPlane =
-        NPlane.createUnchecked(p.OriginX, p.OriginY, p.OriginZ, p.ZaxisX, p.ZaxisY, p.ZaxisZ)
+        NPlane.createUnchecked(p.OriginX, p.OriginY, p.OriginZ, p.ZAxisX, p.ZAxisY, p.ZAxisZ)
 
     /// Gets the Plane at world origin with normal in world Z direction.
     static member inline xyPlane : NPlane =
@@ -331,7 +331,7 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
         let vx = a.NormalY * b.NormalZ - a.NormalZ * b.NormalY
         let vy = a.NormalZ * b.NormalX - a.NormalX * b.NormalZ
         let vz = a.NormalX * b.NormalY - a.NormalY * b.NormalX
-        if isTooSmallSq (XYZ.sqLength vx vy vz) then
+        if isTooSmallSq (XYZ.lengthSq vx vy vz) then
             ValueNone
         else
             let px = vy * a.NormalZ - vz * a.NormalY
@@ -426,12 +426,6 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
         NPlane.createUnchecked(pl.OriginX * factor, pl.OriginY * factor, pl.OriginZ * factor, pl.NormalX, pl.NormalY, pl.NormalZ)
 
     /// Move plane origin by vector.
-    /// Same as NPlane.move.
-    static member inline translate (translation:Vec) (pl:NPlane)  : NPlane =
-        NPlane.createUnchecked(pl.OriginX + translation.X, pl.OriginY + translation.Y, pl.OriginZ + translation.Z, pl.NormalX, pl.NormalY, pl.NormalZ)
-
-    /// Move plane origin by vector.
-    /// Same as NPlane.translate.
     static member inline move (translation:Vec) (pl:NPlane)  : NPlane =
         NPlane.createUnchecked(pl.OriginX + translation.X, pl.OriginY + translation.Y, pl.OriginZ + translation.Z, pl.NormalX, pl.NormalY, pl.NormalZ)
 
@@ -459,5 +453,5 @@ and internal NPlaneJsonConverter() =
         let normalY = JsonConvert.readFloat &reader options "Euclid.NPlane" "NormalY"
         let normalZ = JsonConvert.readFloat &reader options "Euclid.NPlane" "NormalZ"
         JsonConvert.readEndObject &reader "Euclid.NPlane"
-        NPlane.create(Pnt(originX, originY, originZ), Vec(normalX, normalY, normalZ))
+        NPlane.createFromNormal (Vec(normalX, normalY, normalZ)) (Pnt(originX, originY, originZ))
 #endif

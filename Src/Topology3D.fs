@@ -19,7 +19,7 @@ type Topology3D  =
     /// For each line end point it finds the next closest line start point.</param>
     /// <param name="ts">A ResizeArray of elements of type 'T' to be sorted in place.</param>
     /// <returns>The input array 'ts' is modified in place to be sorted in a circular structure.</returns>
-    static member sortToLoop(getLine: 'T -> Line3D, ts:ResizeArray<'T>) : unit =
+    static member sortToLoop (getLine: 'T -> Line3D) (ts:ResizeArray<'T>) : unit =
         let count = ts.Count
         for i = 0 to count - 2 do // only run till second last
             let thisLine = getLine ts.[i]
@@ -43,7 +43,7 @@ type Topology3D  =
     /// or it might modify the element in place if 'T is a reference type.</param>
     /// <param name="ts">A ResizeArray of elements of type 'T' to be sorted in place.</param>
     /// <returns>The input array 'ts' is modified in place to be sorted in a circular structure.</returns>
-    static member sortToLoopWithReversing (getLine: 'T -> Line3D, reverseInPlace: int -> 'T -> unit, ts:ResizeArray<'T>) : unit =
+    static member sortToLoopWithReversing (getLine: 'T -> Line3D) (reverseInPlace: int -> 'T -> unit) (ts:ResizeArray<'T>) : unit =
         let count = ts.Count
         for i = 0 to count - 2 do // only run till second last
             let thisLine = getLine ts.[i]
@@ -77,7 +77,7 @@ type Topology3D  =
     /// <param name="xs">A ResizeArray of elements of type 'T to be grouped into loops or polylines.</param>
     /// <returns>A ResizeArray of ResizeArrays of 'T, where each inner ResizeArray represents a group of consecutive elements
     /// that are part of the same loop or polyline.</returns>
-    static member join(getLine: 'T -> Line3D, splitDistance:float , xs:ResizeArray<'T>) : ResizeArray<ResizeArray<'T>> =
+    static member join (getLine: 'T -> Line3D) (splitDistance:float) (xs:ResizeArray<'T>) : ResizeArray<ResizeArray<'T>> =
         let loops   = ResizeArray<LoopCollector<'T>>()
         let distSq  = splitDistance * splitDistance
         //let lns     = ResizeArray.map getLine xs // TODO precompute lines if getLine is expensive, then swap them too?
@@ -144,7 +144,7 @@ type Topology3D  =
     /// <param name="xs">A ResizeArray of elements of type 'T to be grouped into loops or polylines.</param>
     /// <returns>A ResizeArray of ResizeArrays of tuples: 'T * Boolean, the Boolean values indicating if the element was reversed.
     /// The Boolean value is TRUE if the element was reversed, and FALSE if it was not</returns>
-    static member joinReversing(getLine: 'T -> Line3D, splitDistance:float , xs:ResizeArray<'T>) : ResizeArray<ResizeArray<'T*bool>> =
+    static member joinReversing (getLine: 'T -> Line3D) (splitDistance:float) (xs:ResizeArray<'T>) : ResizeArray<ResizeArray<'T*bool>> =
         let loops   = ResizeArray<LoopCollector<'T*bool>>()
         let distSq  = splitDistance * splitDistance
         //let lns     = ResizeArray.map getLine xs // TODO precompute lines if getLine is expensive, then swap and reverse them too?
@@ -213,7 +213,4 @@ type Topology3D  =
             l.backward.Reverse()
             l.backward.AddRange l.forward
             l.backward)
-
-
-// #endregion
 

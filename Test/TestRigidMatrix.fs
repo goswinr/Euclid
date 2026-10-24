@@ -4,7 +4,7 @@ open Euclid
 
 open EuclidTestSupport
 
-let inline eq a b = Pnt.dist a b < 1e-12
+let inline eq a b = Pnt.distanceTo a b < 1e-12
 
 let inline expectEqual a b msg =
     let same = eq a b
@@ -55,7 +55,7 @@ let tests =
 
         test "RigidMatrix inverse transform rot ***" {
                 let t = RigidMatrix.createTranslation (Vec(-2,-3,4))
-                let q = Quaternion.createFromDegrees(Vec.Zaxis*9.0, 90.)
+                let q = Quaternion.createFromVecDegrees (Vec.zAxis*9.0) 90.
                 let r = RigidMatrix.createFromQuaternion q
                 let m = t *** r
                 let inv = m.Inverse
@@ -66,7 +66,7 @@ let tests =
 
         test "RigidMatrix inverse transform rot inv ***" {
                 let t = RigidMatrix.createTranslation (Vec(-2,-3,4))
-                let q = Quaternion.createFromDegrees(Vec.Zaxis*9.0, 90.)
+                let q = Quaternion.createFromVecDegrees (Vec.zAxis*9.0) 90.
                 let r = RigidMatrix.createFromQuaternion q
                 let m = r *** t
                 let inv = m.Inverse
@@ -86,7 +86,7 @@ let tests =
 
 
         test "RigidMatrix inverse rotate " {
-            let q = Quaternion.createFromDegrees(Vec.Zaxis*9.0, 90.)
+            let q = Quaternion.createFromVecDegrees (Vec.zAxis*9.0) 90.
             let m = RigidMatrix.createFromQuaternion q
             let a = Pnt(9,0,3)
             let inv = m.Inverse
@@ -95,21 +95,21 @@ let tests =
         }
 
         test "RigidMatrix rotation X axis" {
-            let m = RigidMatrix.createRotationX(90.0)
+            let m = RigidMatrix.createRotationXDegrees(90.0)
             let p = Pnt(0, 1, 0)
             let result = p *** m
             "90° rotation around X-axis" |> expectEqual result (Pnt(0, 0, 1))
         }
 
         test "RigidMatrix rotation Y axis" {
-            let m = RigidMatrix.createRotationY(90.0)
+            let m = RigidMatrix.createRotationYDegrees(90.0)
             let p = Pnt(1, 0, 0)
             let result = p *** m
             "90° rotation around Y-axis" |> expectEqual result (Pnt(0, 0, -1))
         }
 
         test "RigidMatrix rotation Z axis" {
-            let m = RigidMatrix.createRotationZ(90.0)
+            let m = RigidMatrix.createRotationZDegrees(90.0)
             let p = Pnt(1, 0, 0)
             let result = p *** m
             "90° rotation around Z-axis" |> expectEqual result (Pnt(0, 1, 0))
@@ -117,7 +117,7 @@ let tests =
 
         test "RigidMatrix rotation arbitrary axis" {
             let axis = Vec(1, 1, 1)
-            let m = RigidMatrix.createRotationAxis(axis, 120.0)
+            let m = RigidMatrix.createRotationFromVecDegrees axis 120.0
             let p = Pnt(1, 0, 0)
             let result = p *** m
             let resultBack = result *** m *** m
@@ -125,25 +125,25 @@ let tests =
         }
 
         test "RigidMatrix rotation with center point" {
-            let axis = Vec.Zaxis
+            let axis = Vec.zAxis
             let center = Pnt(1, 1, 0)
-            let m = RigidMatrix.createRotationAxisCenter(axis, center, 90.0)
+            let m = RigidMatrix.createRotationAroundVecDegrees center axis 90.0
             let p = Pnt(2, 1, 0)
             let result = p *** m
             "90° rotation around Z at center (1,1,0)" |> expectEqual result (Pnt(1, 2, 0))
         }
 
         test "RigidMatrix vec to vec rotation" {
-            let fromVec = UnitVec.Xaxis
-            let toVec = UnitVec.Yaxis
-            let m = RigidMatrix.createVecToVec(fromVec, toVec)
+            let fromVec = UnitVec.xAxis
+            let toVec = UnitVec.yAxis
+            let m = RigidMatrix.createRotationFromUnitVecs fromVec toVec
             let result = fromVec *** m
             "rotation from X to Y axis" |> expectEqual result.AsPnt toVec.AsPnt
         }
 
         test "RigidMatrix vec to vec same direction" {
-            let vec = UnitVec.create(1, 2, 3)
-            let m = RigidMatrix.createVecToVec(vec, vec)
+            let vec = UnitVec.create 1 2 3
+            let m = RigidMatrix.createRotationFromUnitVecs vec vec
             "same direction should give identity" |> Expect.isTrue m.IsIdentity
         }
 
@@ -155,7 +155,7 @@ let tests =
 
         test "RigidMatrix composition order" {
             let t1 = RigidMatrix.createTranslation(Vec(1, 0, 0))
-            let r1 = RigidMatrix.createRotationZ(90.0)
+            let r1 = RigidMatrix.createRotationZDegrees(90.0)
             let p = Pnt(1, 0, 0)
 
             let m1 = t1 *** r1  // translate then rotate
@@ -177,8 +177,8 @@ let tests =
         }
 
         test "RigidMatrix unit vector transformation preserves length" {
-            let m = RigidMatrix.createRotationAxis(Vec(1, 1, 1), 45.0)
-            let uv = Vec.create(1, 2, 3)
+            let m = RigidMatrix.createRotationFromVecDegrees (Vec(1, 1, 1)) 45.0
+            let uv = Vec.create 1 2 3
             let result = uv *** m
             "unit vector length preserved" |> Expect.floatClose Accuracy.high result.Length uv.Length
         }
@@ -190,14 +190,14 @@ let tests =
         }
 
         test "RigidMatrix add translation" {
-            let m1 = RigidMatrix.createRotationZ(45.0)
+            let m1 = RigidMatrix.createRotationZDegrees(45.0)
             let m2 = RigidMatrix.addTranslation(Vec(1, 2, 3)) m1
             let expected = m1 *** RigidMatrix.createTranslation(Vec(1, 2, 3))
             "add translation equivalent to multiplication" |> Expect.isTrue (RigidMatrix.equalsWithin 1e-12 m2 expected)
         }
 
         test "RigidMatrix to/from matrix conversion" {
-            let rm = RigidMatrix.createTranslation(Vec(1, 2, 3)) *** RigidMatrix.createRotationZ(30.0)
+            let rm = RigidMatrix.createTranslation(Vec(1, 2, 3)) *** RigidMatrix.createRotationZDegrees(30.0)
             let matrix = rm.ToMatrix
             let rmBack = RigidMatrix.createFromMatrix(matrix)
             "round trip conversion preserves matrix" |> Expect.isTrue (RigidMatrix.equalsWithin 1e-12 rm rmBack)
@@ -211,15 +211,15 @@ let tests =
 
         test "RigidMatrix plane to plane" {
             let fromPlane = PPlane.WorldXY
-            let toPlane = PPlane.createOriginXaxisYaxis(Pnt.Origin, UnitVec.Zaxis, UnitVec.Xaxis)
-            let m = RigidMatrix.createPlaneToPlane(fromPlane, toPlane)
+            let toPlane = PPlane.createFromUnitXAxisAndYAxis UnitVec.zAxis UnitVec.xAxis Pnt.Origin
+            let m = RigidMatrix.createPlaneToPlane fromPlane toPlane
             let p = Pnt(1, 0, 0)
             let result = p *** m
             "transform from XY to YZ plane" |> expectEqual result (Pnt(0, 0, 1))
         }
 
         test "RigidMatrix column vectors are orthonormal" {
-            let m = RigidMatrix.createRotationAxis(Vec(1, 2, 3), 42.0)
+            let m = RigidMatrix.createRotationFromVecDegrees (Vec(1, 2, 3)) 42.0
             let c1 = m.ColumnVector1
             let c2 = m.ColumnVector2
             let c3 = m.ColumnVector3
@@ -234,18 +234,18 @@ let tests =
 
 
         test "RigidMatrix equals with tolerance" {
-            let m1 = RigidMatrix.createRotationZ(45.0)
-            let m2 = RigidMatrix.createRotationZ(45.0000001)
-            let m3 = RigidMatrix.createRotationZ(46.0)
+            let m1 = RigidMatrix.createRotationZDegrees(45.0)
+            let m2 = RigidMatrix.createRotationZDegrees(45.0000001)
+            let m3 = RigidMatrix.createRotationZDegrees(46.0)
 
             "matrices equal within tolerance" |> Expect.isTrue (RigidMatrix.equalsWithin 1e-6 m1 m2)
             "matrices not equal outside tolerance" |> Expect.isFalse (RigidMatrix.equalsWithin 1e-6 m1 m3)
         }
 
         test "RigidMatrix zero rotation angle" {
-            let m1 = RigidMatrix.createRotationX(0.0)
-            let m2 = RigidMatrix.createRotationY(0.0)
-            let m3 = RigidMatrix.createRotationZ(0.0)
+            let m1 = RigidMatrix.createRotationXDegrees(0.0)
+            let m2 = RigidMatrix.createRotationYDegrees(0.0)
+            let m3 = RigidMatrix.createRotationZDegrees(0.0)
 
             "zero X rotation is identity" |> Expect.isTrue m1.IsIdentity
             "zero Y rotation is identity" |> Expect.isTrue m2.IsIdentity
@@ -254,9 +254,9 @@ let tests =
 
         test "RigidMatrix 360 degree rotation" {
             let p = Pnt(1, 2, 3)
-            let m1 = RigidMatrix.createRotationX(360.0)
-            let m2 = RigidMatrix.createRotationY(360.0)
-            let m3 = RigidMatrix.createRotationZ(360.0)
+            let m1 = RigidMatrix.createRotationXDegrees(360.0)
+            let m2 = RigidMatrix.createRotationYDegrees(360.0)
+            let m3 = RigidMatrix.createRotationZDegrees(360.0)
 
             "360° X rotation returns to start" |> expectEqual (p *** m1) p
             "360° Y rotation returns to start" |> expectEqual (p *** m2) p
@@ -266,16 +266,16 @@ let tests =
         test "RigidMatrix very small rotation angles" {
             let smallAngle = 1e-10
             let p = Pnt(1, 0, 0)
-            let m = RigidMatrix.createRotationZ(smallAngle)
+            let m = RigidMatrix.createRotationZDegrees(smallAngle)
             let result = p *** m
 
-            "very small rotation preserves approximately same position" |> Expect.floatClose Accuracy.medium (Pnt.dist p result) 0.0
+            "very small rotation preserves approximately same position" |> Expect.floatClose Accuracy.medium (Pnt.distanceTo p result) 0.0
         }
 
         test "RigidMatrix large rotation angles" {
             let largeAngle = 7200.0  // 20 full rotations
             let p = Pnt(1, 0, 0)
-            let m = RigidMatrix.createRotationZ(largeAngle)
+            let m = RigidMatrix.createRotationZDegrees(largeAngle)
             let result = p *** m
 
             "large angle rotation equivalent to modulo 360" |> expectEqual result p
@@ -283,8 +283,8 @@ let tests =
 
         test "RigidMatrix negative rotation angles" {
             let p = Pnt(1, 0, 0)
-            let m1 = RigidMatrix.createRotationZ(90.0)
-            let m2 = RigidMatrix.createRotationZ(-90.0)
+            let m1 = RigidMatrix.createRotationZDegrees(90.0)
+            let m2 = RigidMatrix.createRotationZDegrees(-90.0)
             let result1 = p *** m1
             let result2 = p *** m2
 
@@ -294,24 +294,24 @@ let tests =
 
         test "RigidMatrix rotation axis too short throws exception" {
             let tinyAxis = Vec(1e-15, 1e-15, 1e-15)
-            Expect.throws (fun () -> RigidMatrix.createRotationAxis(tinyAxis, 45.0) |> ignore) "Should throw for tiny axis"
+            Expect.throws (fun () -> RigidMatrix.createRotationFromVecDegrees tinyAxis 45.0 |> ignore) "Should throw for tiny axis"
         }
 
         test "RigidMatrix vec to vec opposite vectors throws exception" {
-            let vec1 = UnitVec.Xaxis
+            let vec1 = UnitVec.xAxis
             let vec2 = -vec1
-            Expect.throws (fun () -> RigidMatrix.createVecToVec(vec1, vec2) |> ignore) "Should throw for opposite vectors"
+            Expect.throws (fun () -> RigidMatrix.createRotationFromUnitVecs vec1 vec2 |> ignore) "Should throw for opposite vectors"
         }
 
         test "RigidMatrix vec to vec with zero vectors throws exception" {
             let zeroVec = Vec(0, 0, 0)
             let normalVec = Vec(1, 0, 0)
-            Expect.throws (fun () -> RigidMatrix.createVecToVec(zeroVec, normalVec) |> ignore) "Should throw for zero from vector"
-            Expect.throws (fun () -> RigidMatrix.createVecToVec(normalVec, zeroVec) |> ignore) "Should throw for zero to vector"
+            Expect.throws (fun () -> RigidMatrix.createRotationFromVecs zeroVec normalVec |> ignore) "Should throw for zero from vector"
+            Expect.throws (fun () -> RigidMatrix.createRotationFromVecs normalVec zeroVec |> ignore) "Should throw for zero to vector"
         }
 
         test "RigidMatrix createFromMatrix with scaling matrix fails" {
-            let scalingMatrix = Matrix.createScale(2.0, 2.0, 2.0)
+            let scalingMatrix = Matrix.createScale 2.0 2.0 2.0
             let result = RigidMatrix.tryCreateFromMatrix(scalingMatrix)
             "scaling matrix should return ValueNone" |> Expect.isValueNone result
 
@@ -349,19 +349,19 @@ let tests =
         test "RigidMatrix numerical precision with multiple operations" {
             let p = Pnt(1, 2, 3)
             let mutable current = p
-            let rotation = RigidMatrix.createRotationZ(1.0)  // 1 degree
+            let rotation = RigidMatrix.createRotationZDegrees(1.0)  // 1 degree
 
             // Apply 360 small rotations (should return to start)
             for _ = 1 to 360 do
                 current <- current *** rotation
 
-            "360 small rotations return approximately to start" |> Expect.floatClose Accuracy.low (Pnt.dist p current) 0.0
+            "360 small rotations return approximately to start" |> Expect.floatClose Accuracy.low (Pnt.distanceTo p current) 0.0
         }
 
         test "RigidMatrix inverse numerical stability" {
             let matrices = [
-                RigidMatrix.createRotationAxis(Vec(1, 1, 1), 179.9)  // Nearly 180 degrees
-                RigidMatrix.createRotationX(0.001)  // Very small angle
+                RigidMatrix.createRotationFromVecDegrees (Vec(1, 1, 1)) 179.9  // Nearly 180 degrees
+                RigidMatrix.createRotationXDegrees(0.001)  // Very small angle
                 RigidMatrix.createTranslation(Vec(1e-10, 1e-10, 1e-10))  // Tiny translation
             ]
 
@@ -372,7 +372,7 @@ let tests =
         }
 
         test "RigidMatrix addTranslation with zero vector" {
-            let m1 = RigidMatrix.createRotationZ(45.0)
+            let m1 = RigidMatrix.createRotationZDegrees(45.0)
             let m2 = RigidMatrix.addTranslation(Vec.Zero) m1
             "adding zero translation doesn't change matrix" |> Expect.isTrue (RigidMatrix.equalsWithin 1e-15 m1 m2)
         }
@@ -387,23 +387,23 @@ let tests =
             let axis = Vec(0, 0, 1)
             let center = Pnt.Origin
             let angle = 90.0
-            let m1 = RigidMatrix.createRotationAxisCenter(axis, center, angle)
-            let m2 = RigidMatrix.createRotationZ(angle)
+            let m1 = RigidMatrix.createRotationAroundVecDegrees center axis angle
+            let m2 = RigidMatrix.createRotationZDegrees(angle)
 
             "rotation around origin same as simple rotation" |> Expect.isTrue (RigidMatrix.equalsWithin 1e-15 m1 m2)
         }
 
         test "RigidMatrix equals with zero tolerance" {
-            let m1 = RigidMatrix.createRotationZ(45.0)
-            let m2 = RigidMatrix.createRotationZ(45.0)
-            let m3 = RigidMatrix.createRotationZ(45.0000001)
+            let m1 = RigidMatrix.createRotationZDegrees(45.0)
+            let m2 = RigidMatrix.createRotationZDegrees(45.0)
+            let m3 = RigidMatrix.createRotationZDegrees(45.0000001)
 
             "identical matrices equal with zero tolerance" |> Expect.isTrue (RigidMatrix.equalsExact m1 m2)
             "slightly different matrices not equal with zero tolerance" |> Expect.isFalse (RigidMatrix.equalsExact m1 m3)
         }
 
         test "RigidMatrix column vectors form right-handed system" {
-            let m = RigidMatrix.createRotationAxis(Vec(1, 2, 3), 42.0)
+            let m = RigidMatrix.createRotationFromVecDegrees (Vec(1, 2, 3)) 42.0
             let c1 = m.ColumnVector1
             let c2 = m.ColumnVector2
             let c3 = m.ColumnVector3
@@ -415,20 +415,20 @@ let tests =
         }
 
         test "RigidMatrix transformation preserves distances" {
-            let m = RigidMatrix.createRotationAxis(Vec(1, 1, 1), 67.0) *** RigidMatrix.createTranslation(Vec(5, -3, 2))
+            let m = RigidMatrix.createRotationFromVecDegrees (Vec(1, 1, 1)) 67.0 *** RigidMatrix.createTranslation(Vec(5, -3, 2))
             let p1 = Pnt(1, 2, 3)
             let p2 = Pnt(4, 5, 6)
-            let originalDistance = Pnt.dist p1 p2
+            let originalDistance = Pnt.distanceTo p1 p2
 
             let tp1 = p1 *** m
             let tp2 = p2 *** m
-            let transformedDistance = Pnt.dist tp1 tp2
+            let transformedDistance = Pnt.distanceTo tp1 tp2
 
             "rigid transformation preserves distances" |> Expect.floatClose Accuracy.high transformedDistance originalDistance
         }
 
         test "RigidMatrix transformation preserves angles" {
-            let m = RigidMatrix.createRotationY(30.0) *** RigidMatrix.createTranslation(Vec(1, 2, 3))
+            let m = RigidMatrix.createRotationYDegrees(30.0) *** RigidMatrix.createTranslation(Vec(1, 2, 3))
             let v1 = Vec(1, 0, 0)
             let v2 = Vec(0, 1, 0)
             let originalAngle = Vec.angle180 v1 v2
@@ -444,13 +444,13 @@ let tests =
 
         test "RigidMatrix createRotationAxis with non-unit Vec" {
             let axis = Vec(2, 4, 6)  // Non-unit vector
-            let m = RigidMatrix.createRotationAxis(axis, 90.0)
+            let m = RigidMatrix.createRotationFromVecDegrees axis 90.0
             let p = Pnt(1, 0, 0)
             let result = p *** m
 
             // Should give same result as unitized axis
-            let unitAxis = UnitVec.create(2, 4, 6)
-            let mUnit = RigidMatrix.createRotationAxis(unitAxis, 90.0)
+            let unitAxis = UnitVec.create 2 4 6
+            let mUnit = RigidMatrix.createRotationFromUnitVecDegrees unitAxis 90.0
             let resultUnit = p *** mUnit
 
             "non-unit axis gives same result as unitized" |> expectEqual result resultUnit
@@ -459,11 +459,11 @@ let tests =
         test "RigidMatrix createRotationAxisCenter with non-unit Vec" {
             let axis = Vec(1, 2, 1)  // Non-unit vector
             let center = Pnt(2, 3, 4)
-            let m = RigidMatrix.createRotationAxisCenter(axis, center, 45.0)
+            let m = RigidMatrix.createRotationAroundVecDegrees center axis 45.0
 
             // Should give same result as unitized axis
-            let unitAxis = UnitVec.create(1, 2, 1)
-            let mUnit = RigidMatrix.createRotationAxisCenter(unitAxis, center, 45.0)
+            let unitAxis = UnitVec.create 1 2 1
+            let mUnit = RigidMatrix.createRotationAroundUnitVecDegrees center unitAxis 45.0
 
             "non-unit axis center rotation same as unitized" |> Expect.isTrue (RigidMatrix.equalsWithin 1e-12 m mUnit)
         }
@@ -471,7 +471,7 @@ let tests =
         test "RigidMatrix createVecToVec with non-unit Vec" {
             let fromVec = Vec(3, 0, 0)  // Non-unit
             let toVec = Vec(0, 5, 0)    // Non-unit
-            let m = RigidMatrix.createVecToVec(fromVec, toVec)
+            let m = RigidMatrix.createRotationFromVecs fromVec toVec
 
             // The rotation rotates the direction, but doesn't change the length
             let result = fromVec *** m
@@ -507,9 +507,9 @@ let tests =
         // ===== Tests for Nearly-Identical Vectors =====
 
         test "RigidMatrix createVecToVec with nearly identical vectors" {
-            let vec1 = UnitVec.Xaxis
-            let vec2 = UnitVec.create(1.0, 1e-13, 0.0)  // Almost identical
-            let m = RigidMatrix.createVecToVec(vec1, vec2)
+            let vec1 = UnitVec.xAxis
+            let vec2 = UnitVec.create 1.0 1e-13 0.0  // Almost identical
+            let m = RigidMatrix.createRotationFromUnitVecs vec1 vec2
 
             "nearly identical vectors give identity" |> Expect.isTrue m.IsIdentity
         }
@@ -517,7 +517,7 @@ let tests =
         test "RigidMatrix createVecToVec Vec overload with nearly identical vectors" {
             let vec1 = Vec(5, 0, 0)
             let vec2 = Vec(5.0, 1e-13, 0.0)  // Almost identical when unitized
-            let m = RigidMatrix.createVecToVec(vec1, vec2)
+            let m = RigidMatrix.createRotationFromVecs vec1 vec2
 
             "nearly identical non-unit vectors give identity" |> Expect.isTrue m.IsIdentity
         }
@@ -546,7 +546,7 @@ let tests =
         }
 
         test "RigidMatrix addTranslationXYZ" {
-            let m1 = RigidMatrix.createRotationZ(45.0)
+            let m1 = RigidMatrix.createRotationZDegrees(45.0)
             let m2 = RigidMatrix.addTranslationXYZ 1.0 2.0 3.0 m1
             let expected = RigidMatrix.addTranslation(Vec(1, 2, 3)) m1
             "addTranslationXYZ same as addTranslation Vec" |> Expect.isTrue (RigidMatrix.equalsWithin 1e-15 m2 expected)
@@ -566,7 +566,7 @@ let tests =
 
         test "RigidMatrix ToArrayByRows ordering" {
             // Use a rotation matrix with translation
-            let m = RigidMatrix.createRotationZ(90.0) *** RigidMatrix.createTranslation(Vec(1, 2, 3))
+            let m = RigidMatrix.createRotationZDegrees(90.0) *** RigidMatrix.createTranslation(Vec(1, 2, 3))
             let arr = m.ToArrayByRows
             // Should be in row order: M11, M21, M31, X41, M12, M22, M32, Y42, M13, M23, M33, Z43
 
@@ -587,8 +587,8 @@ let tests =
         }
 
         test "RigidMatrix UnitVec transformation preserves unit length explicitly" {
-            let m = RigidMatrix.createRotationAxis(Vec(1, 1, 1), 67.0) *** RigidMatrix.createTranslation(Vec(5, -3, 2))
-            let uv = UnitVec.create(2, 3, 4)
+            let m = RigidMatrix.createRotationFromVecDegrees (Vec(1, 1, 1)) 67.0 *** RigidMatrix.createTranslation(Vec(5, -3, 2))
+            let uv = UnitVec.create 2 3 4
             let result = uv *** m
 
             // UnitVec is always unit length by design, verify it's still a valid UnitVec
@@ -607,9 +607,9 @@ let tests =
         }
 
         test "RigidMatrix multiple matrix compositions" {
-            let m1 = RigidMatrix.createRotationX(30.0)
-            let m2 = RigidMatrix.createRotationY(45.0)
-            let m3 = RigidMatrix.createRotationZ(60.0)
+            let m1 = RigidMatrix.createRotationXDegrees(30.0)
+            let m2 = RigidMatrix.createRotationYDegrees(45.0)
+            let m3 = RigidMatrix.createRotationZDegrees(60.0)
             let m4 = RigidMatrix.createTranslation(Vec(1, 2, 3))
 
             let combined = m1 *** m2 *** m3 *** m4
@@ -622,21 +622,21 @@ let tests =
         }
 
         test "RigidMatrix column vectors extraction" {
-            let m = RigidMatrix.createRotationZ(45.0)
+            let m = RigidMatrix.createRotationZDegrees(45.0)
             let _c1 = m.ColumnVector1
             let _c2 = m.ColumnVector2
             let c3 = m.ColumnVector3
 
             // For Z rotation, third column should be Z-axis
-            "third column is Z-axis for Z rotation" |> expectEqual c3.AsPnt Vec.Zaxis.AsPnt
+            "third column is Z-axis for Z rotation" |> expectEqual c3.AsPnt Vec.zAxis.AsPnt
         }
 
         // ===== Additional createVecToVec Edge Case Tests =====
 
         test "RigidMatrix createVecToVec 90 degree rotation" {
-            let from = UnitVec.Xaxis
-            let to_ = UnitVec.Yaxis
-            let m = RigidMatrix.createVecToVec(from, to_)
+            let from = UnitVec.xAxis
+            let to_ = UnitVec.yAxis
+            let m = RigidMatrix.createRotationFromUnitVecs from to_
             let result = from *** m
 
             "90° rotation X to Y" |> expectEqual result.AsPnt to_.AsPnt
@@ -644,28 +644,28 @@ let tests =
 
         test "RigidMatrix createVecToVec 180 degree rotation alternative" {
             // Not exactly opposite, but very close to 180°
-            let from = UnitVec.create(1, 0, 0)
-            let to_ = UnitVec.create(-0.99999, 0.00001, 0)
-            let m = RigidMatrix.createVecToVec(from, to_)
+            let from = UnitVec.create 1 0 0
+            let to_ = UnitVec.create (-0.99999) 0.00001 0
+            let m = RigidMatrix.createRotationFromUnitVecs from to_
             let result = from *** m
 
             // Should rotate successfully even though angle is very close to 180°
-            "near-180° rotation works" |> Expect.floatClose Accuracy.low (Pnt.dist result.AsPnt to_.AsPnt) 0.0
+            "near-180° rotation works" |> Expect.floatClose Accuracy.low (Pnt.distanceTo result.AsPnt to_.AsPnt) 0.0
         }
 
         test "RigidMatrix createVecToVec with perpendicular vectors" {
-            let from = UnitVec.Xaxis
-            let to_ = UnitVec.Zaxis
-            let m = RigidMatrix.createVecToVec(from, to_)
+            let from = UnitVec.xAxis
+            let to_ = UnitVec.zAxis
+            let m = RigidMatrix.createRotationFromUnitVecs from to_
             let result = from *** m
 
             "perpendicular rotation X to Z" |> expectEqual result.AsPnt to_.AsPnt
         }
 
         test "RigidMatrix createVecToVec with arbitrary unit vectors" {
-            let from = UnitVec.create(1, 2, 3)
-            let to_ = UnitVec.create(3, 1, 2)
-            let m = RigidMatrix.createVecToVec(from, to_)
+            let from = UnitVec.create 1 2 3
+            let to_ = UnitVec.create 3 1 2
+            let m = RigidMatrix.createRotationFromUnitVecs from to_
             let result = from *** m
 
             "arbitrary unit vector rotation" |> expectEqual result.AsPnt to_.AsPnt
@@ -674,7 +674,7 @@ let tests =
         test "RigidMatrix createVecToVec Vec overload preserves orthogonality" {
             let from = Vec(2, 0, 0)
             let to_ = Vec(0, 3, 0)
-            let m = RigidMatrix.createVecToVec(from, to_)
+            let m = RigidMatrix.createRotationFromVecs from to_
 
             // Check that perpendicular vector stays perpendicular
             let perp = Vec(0, 0, 1)
@@ -685,18 +685,18 @@ let tests =
 
         test "RigidMatrix createVecToVec small angle rotation numerical stability" {
             // Test numerical stability with very small rotation angle
-            let from = UnitVec.Xaxis
-            let to_ = UnitVec.create(0.99999999, 0.0001, 0.0)  // ~0.57 degree angle
-            let m = RigidMatrix.createVecToVec(from, to_)
+            let from = UnitVec.xAxis
+            let to_ = UnitVec.create 0.99999999 0.0001 0.0  // ~0.57 degree angle
+            let m = RigidMatrix.createRotationFromUnitVecs from to_
             let result = from *** m
 
-            "small angle rotation numerically stable" |> Expect.floatClose Accuracy.medium (Pnt.dist result.AsPnt to_.AsPnt) 0.0
+            "small angle rotation numerically stable" |> Expect.floatClose Accuracy.medium (Pnt.distanceTo result.AsPnt to_.AsPnt) 0.0
         }
 
         test "RigidMatrix createVecToVec with different length vectors" {
             let from = Vec(5, 0, 0)
             let to_ = Vec(0, 0, 3)
-            let m = RigidMatrix.createVecToVec(from, to_)
+            let m = RigidMatrix.createRotationFromVecs from to_
             let result = from *** m
 
             // Should preserve the length of 'from' but rotate direction to 'to'
@@ -708,10 +708,10 @@ let tests =
         }
 
         test "RigidMatrix createVecToVec is transpose of reverse rotation" {
-            let from = UnitVec.create(1, 1, 0)
-            let to_ = UnitVec.create(0, 1, 1)
-            let m1 = RigidMatrix.createVecToVec(from, to_)
-            let m2 = RigidMatrix.createVecToVec(to_, from)
+            let from = UnitVec.create 1 1 0
+            let to_ = UnitVec.create 0 1 1
+            let m1 = RigidMatrix.createRotationFromUnitVecs from to_
+            let m2 = RigidMatrix.createRotationFromUnitVecs to_ from
 
             // m2 should be the inverse of m1
             let composed = m1 *** m2
@@ -719,13 +719,45 @@ let tests =
         }
 
         test "RigidMatrix createVecToVec maintains handedness" {
-            let from = UnitVec.Xaxis
-            let to_ = UnitVec.Yaxis
-            let m = RigidMatrix.createVecToVec(from, to_)
+            let from = UnitVec.xAxis
+            let to_ = UnitVec.yAxis
+            let m = RigidMatrix.createRotationFromUnitVecs from to_
 
             // Check that Z-axis stays Z-axis (preserves right-handedness)
-            let zTransformed = UnitVec.Zaxis *** m
-            "maintains right-handed coordinate system" |> Expect.floatClose Accuracy.high (zTransformed *** UnitVec.Zaxis) 1.0
+            let zTransformed = UnitVec.zAxis *** m
+            "maintains right-handed coordinate system" |> Expect.floatClose Accuracy.high (zTransformed *** UnitVec.zAxis) 1.0
+        }
+
+
+        test "RigidMatrix Radians factories match their Degrees partners" {
+            let center = Pnt(3.5, -7.25, 11.0)
+            let axis = Vec(1.0, -2.0, 0.5)
+            let uAxis = axis.Unitized
+            for deg in [ 0.0; 17.3; -123.4; 90.0; 271.5 ] do
+                let rad = UtilEuclid.toRadians deg
+                "X" |> Expect.isTrue (RigidMatrix.equalsExact (RigidMatrix.createRotationXDegrees deg) (RigidMatrix.createRotationXRadians rad))
+                "Y" |> Expect.isTrue (RigidMatrix.equalsExact (RigidMatrix.createRotationYDegrees deg) (RigidMatrix.createRotationYRadians rad))
+                "Z" |> Expect.isTrue (RigidMatrix.equalsExact (RigidMatrix.createRotationZDegrees deg) (RigidMatrix.createRotationZRadians rad))
+                "Vec" |> Expect.isTrue (RigidMatrix.equalsExact (RigidMatrix.createRotationFromVecDegrees axis deg) (RigidMatrix.createRotationFromVecRadians axis rad))
+                "UnitVec" |> Expect.isTrue (RigidMatrix.equalsExact (RigidMatrix.createRotationFromUnitVecDegrees uAxis deg) (RigidMatrix.createRotationFromUnitVecRadians uAxis rad))
+                "Around Vec" |> Expect.isTrue (RigidMatrix.equalsExact (RigidMatrix.createRotationAroundVecDegrees center axis deg) (RigidMatrix.createRotationAroundVecRadians center axis rad))
+                "Around UnitVec" |> Expect.isTrue (RigidMatrix.equalsExact (RigidMatrix.createRotationAroundUnitVecDegrees center uAxis deg) (RigidMatrix.createRotationAroundUnitVecRadians center uAxis rad))
+        }
+
+        test "RigidMatrix rotation around a center keeps the center fixed" {
+            let center = Pnt(3.5, -7.25, 11.0)
+            let m = RigidMatrix.createRotationAroundUnitVecDegrees center (Vec(1.0, -2.0, 0.5).Unitized) 37.0
+            let c = center *** m
+            "center is fixed" |> Expect.isTrue (Pnt.distanceTo c center < 1e-12)
+        }
+
+        test "RigidMatrix.andThen applies the current matrix first" {
+            let rot = RigidMatrix.createRotationAroundVecDegrees (Pnt(3.0, -2.0, 5.0)) (Vec(1.0, 2.0, -0.5)) 33.0
+            let move = RigidMatrix.createTranslationXYZ 7.0 -4.0 2.5
+            let p = Pnt(-6.0, 11.0, 4.0)
+            let viaPipe = rot |> RigidMatrix.andThen move
+            "andThen equals Then" |> Expect.isTrue (RigidMatrix.equalsExact viaPipe (rot.Then move))
+            "rotation first, then translation" |> Expect.isTrue (Pnt.distanceTo (p *** viaPipe) ((p *** rot) *** move) < 1e-9)
         }
 
     ]

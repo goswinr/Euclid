@@ -116,7 +116,7 @@ module AutoOpenUnitVc =
 
         /// Dot product, or scalar product of a 2D unit-vector with a 2D vector.
         /// Returns a float. This float is the projected length of the 2D vector on the direction of the unit-vector.
-        static member inline dot (a:UnitVc, b:Vc)  : float =
+        static member inline dotVc (a:UnitVc) (b:Vc)  : float =
             a.X * b.X + a.Y * b.Y
 
         /// Dot product, or scalar product of two 2D unit-vectors.
@@ -139,11 +139,6 @@ module AutoOpenUnitVc =
         /// If the rotation from 'a' to 'b' is counter-clockwise the result is positive.
         static member inline cross (a:Vc, b:UnitVc)  : float =
             a.X*b.Y - a.Y*b.X
-
-        /// Dot product, or scalar product of a 2D vector with a 2D unit-vector.
-        /// Returns a float. This float is the projected length of the 2D vector on the direction of the unit-vector.
-        static member inline dot (a:Vc, b:UnitVc)  : float =
-            a.X * b.X + a.Y * b.Y
 
         /// <summary>Rotate the 2D unit-vector counter-clockwise by a 2D Rotation (that has cos and sin precomputed).</summary>
         /// <param name="r">The rotation to apply.</param>
@@ -225,7 +220,7 @@ module AutoOpenUnitVc =
         /// The diamond angle.
         /// Calculates the proportion of X to Y component.
         /// It is always positive and in the range of 0.0 to 4.0 (for 360 degrees)
-        /// 0.0 = Xaxis, going counter-clockwise.
+        /// 0.0 = XAxis, going counter-clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         member inline v.DirectionDiamond : float =
             // https://stackoverflow.com/a/14675998/969070
@@ -243,7 +238,7 @@ module AutoOpenUnitVc =
         /// The diamond angle.
         /// Calculates the proportion of X to Y component.
         /// It is always positive and in the range of 0.0 to 4.0 (for 360 degrees)
-        /// 0.0 = Xaxis, going counter-clockwise.
+        /// 0.0 = XAxis, going counter-clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         static member inline directionDiamond(a:UnitVc) : float =
             a.DirectionDiamond
@@ -315,7 +310,7 @@ module AutoOpenUnitVc =
         /// In Diamond Angle. Using only proportion of X to Y components.
         /// Range of 0.0 to 4.0 (for 360 degrees)
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
-        static member inline angleDiamond (a:UnitVc, b:UnitVc) : float =
+        static member inline angleDiamond (a:UnitVc) (b:UnitVc) : float =
             a.AngleDiamondTo(b)
 
         /// Checks if the angle between the two 2D unit-vectors is less than 90 degrees.
@@ -488,19 +483,19 @@ module AutoOpenUnitVc =
             abs (a.Y-b.Y) > tol
 
         /// Create 2D unit-vector from start and endpoint. Does the unitizing too.
-        static member inline create (fromPt:Pt, toPt:Pt) : UnitVc =
+        static member inline createFromTo (fromPt:Pt) (toPt:Pt) : UnitVc =
             let x = toPt.X - fromPt.X
             let y = toPt.Y - fromPt.Y
             let l = sqrt(x * x  + y * y)
-            if isTooTiny l then failTooClose "UnitVc.create" fromPt toPt
+            if isTooTiny l then failTooClose "UnitVc.createFromTo" fromPt toPt
             UnitVc.createUnchecked(x/l, y/l)
 
         /// Returns the World X-axis with length one: UnitVc(1, 0)
-        static member inline Xaxis : UnitVc =
+        static member inline xAxis : UnitVc =
             UnitVc.createUnchecked (1.0, 0.0)
 
         /// Returns the World Y-axis with length one: UnitVc(0, 1)
-        static member inline Yaxis : UnitVc =
+        static member inline yAxis : UnitVc =
             UnitVc.createUnchecked (0.0, 1.0)
 
         /// Returns the distance between the tips of two 2D unit-vectors.
@@ -523,7 +518,7 @@ module AutoOpenUnitVc =
             let x = ( ^T : (member X : _) vec)
             let y = ( ^T : (member Y : _) vec)
             try
-                UnitVc.create(float x, float y)
+                UnitVc.create (float x) (float y)
             with e ->
                 fail2 "UnitVc.createFromMembersXY" vec e |> unbox // unbox to make type checker happy
 
@@ -534,7 +529,7 @@ module AutoOpenUnitVc =
             let x = ( ^T : (member x : _) vec)
             let y = ( ^T : (member y : _) vec)
             try
-                UnitVc.create(float x, float y)
+                UnitVc.create (float x) (float y)
             with e ->
                 fail2 "UnitVc.createFromMembersxy" vec e |> unbox // unbox to make type checker happy
 
@@ -596,12 +591,6 @@ module AutoOpenUnitVc =
             Vc (v.X, v.Y+y)
 
         /// Negate or inverse a 2D unit-vector. Returns a new 2D unit-vector.
-        /// Same as UnitVc.reverse.
-        static member inline flip (v:UnitVc) : UnitVc =
-            UnitVc.createUnchecked(-v.X, -v.Y)
-
-        /// Negate or inverse a 2D unit-vector. Returns a new 2D unit-vector.
-        /// Same as UnitVc.flip.
         static member inline reverse (v:UnitVc) : UnitVc =
             UnitVc.createUnchecked(-v.X, -v.Y)
 
@@ -644,7 +633,7 @@ module AutoOpenUnitVc =
         /// Returns positive angle for rotating counter-clockwise from vector 'a' to vector 'b'.
         /// In radians.
         /// Range: 0.0 to 2 Pi ( = 360 degrees)
-        static member inline angle2Pi (a:UnitVc, b:UnitVc) : float =  // not curried because argument order is important
+        static member inline angle2Pi (a:UnitVc) (b:UnitVc) : float =
             let r = b.Direction2Pi  - a.Direction2Pi
             if r >= 0. then  r
             else r + UtilEuclid.twoPi
@@ -666,8 +655,8 @@ module AutoOpenUnitVc =
         /// Returns positive angle for rotating counter-clockwise from vector 'a' to vector 'b'.
         /// In degrees.
         /// Range: 0 to 360 degrees
-        static member inline angle360 (a:UnitVc, b:UnitVc) : float = // not curried because argument order is important
-            UnitVc.angle2Pi (a, b) |> toDegrees
+        static member inline angle360 (a:UnitVc) (b:UnitVc) : float =
+            UnitVc.angle2Pi a b |> toDegrees
 
         /// Checks if the angle between two unit-vectors is smaller than a threshold angle specified as a precomputed cosine value.
         /// Ignores vector orientation. So the angle is between 0 to 90 degrees ignoring their orientation.
@@ -744,7 +733,7 @@ module AutoOpenUnitVc =
         /// Linearly interpolates between two vectors.
         /// e.g. rel=0.5 will return the middle vector, rel=1.0 the end vector,
         /// rel=1.5 a vector half the distance beyond the end vector.
-        static member lerp (start:UnitVc, endValue:UnitVc, rel:float) : Vc = // not curried because argument order is important and would be confusing
+        static member lerp (start:UnitVc) (endValue:UnitVc) (rel:float) : Vc =
             Vc (start.X + (endValue.X - start.X) * rel,
                 start.Y + (endValue.Y - start.Y) * rel)
 
@@ -752,7 +741,7 @@ module AutoOpenUnitVc =
         /// The difference between this and linear interpolation (aka, "lerp") is that the vectors are treated as directions rather than points in space.
         /// The direction of the returned vector is interpolated by the angle and its magnitude is interpolated between the magnitudes of start and end.
         /// Interpolation continues before and after the range of 0.0 and 1.0
-        static member slerp (start:UnitVc, endValue:UnitVc, rel:float) :UnitVc = // not curried because argument order is important and would be confusing
+        static member slerp (start:UnitVc) (endValue:UnitVc) (rel:float) :UnitVc =
             // https://en.wikipedia.org/wiki/Slerp
             // implementation tested in Rhino!
             let dot = start *** endValue
@@ -763,7 +752,7 @@ module AutoOpenUnitVc =
             else
                 let ang = acos(dot) // the angle between the two vectors
                 let p = endValue - start*dot  // a vector perpendicular to start and in the same plane with endValue.
-                let perp = UnitVc.create(p.X, p.Y)
+                let perp = UnitVc.create p.X p.Y
                 let theta = ang*rel // the angle part we want for the result
                 let theta360 = (theta+UtilEuclid.twoPi) % UtilEuclid.twoPi // make sure it is in the range 0.0 to 2 Pi (360 degrees)
                 let cosine = cos (theta360)

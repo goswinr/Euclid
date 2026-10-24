@@ -39,28 +39,28 @@ type Points2D   =
 
 
     /// Returns the closest 2D point index from a 2D point list to a given 2D point.
-    static member closestPointIdx (pts:IList<Pt>, pt:Pt) : int =
+    static member closestPointIndex (pt:Pt) (pts:IList<Pt>) : int =
         if pts.Count = 0 then fail "Points2D.closestPoint: empty List of Points: pts"
         let mutable mi = -1
         let mutable mid = Double.MaxValue
         for i=0 to pts.Count - 1 do
             let p = pts.[i]
-            let d = Pt.sqDist p pt
+            let d = Pt.distanceToSq p pt
             if d < mid then
                 mid <- d
                 mi <- i
         mi
 
     /// Returns the closest 2D point from a point list to a given 2D point.
-    static member closestPoint (pts:IList<Pt>, pt:Pt) : Pt =
-        pts.[Points2D.closestPointIdx (pts, pt)]
+    static member closestPoint (pt:Pt) (pts:IList<Pt>) : Pt =
+        pts.[Points2D.closestPointIndex pt pts]
 
 
     /// Returns the closest of two 2D points to a given reference 2D point.
     /// If both points are equidistant the first point is returned.
     static member closestOfTwo (pt1:Pt) (pt2:Pt) (referencePoint:Pt) : Pt =
-        let d1 = Pt.sqDist pt1 referencePoint
-        let d2 = Pt.sqDist pt2 referencePoint
+        let d1 = Pt.distanceToSq pt1 referencePoint
+        let d2 = Pt.distanceToSq pt2 referencePoint
         if d1 <= d2 then
             pt1
         else
@@ -68,7 +68,7 @@ type Points2D   =
 
 
     /// Returns the indices of the 2D points that are closest to each other.
-    static member closestPointsIdx (xs:IList<Pt>, ys:IList<Pt>) : int*int =
+    static member closestPointsIndices (xs:IList<Pt>) (ys:IList<Pt>) : int*int =
         //TODO
         // (1)
         // the current quadratic runtime could be optimized by first sorting the points in x (or y) direction
@@ -77,15 +77,15 @@ type Points2D   =
         // alternatively a spatial hash could be used to cluster nearby objects. the challenge would be to find the right cell size for each point
         // (3)
         // the bounding Rectangles of each set could be intersected. then expanded. then used to filter both lists.
-        if xs.Count = 0 then fail "Points2D.closestPointsIdx: empty List of Points: xs"
-        if ys.Count = 0 then fail "Points2D.closestPointsIdx: empty List of Points: ys"
+        if xs.Count = 0 then fail "Points2D.closestPointsIndices: empty List of Points: xs"
+        if ys.Count = 0 then fail "Points2D.closestPointsIndices: empty List of Points: ys"
         let mutable xi = -1
         let mutable yj = -1
         let mutable minD = Double.MaxValue
         for i=0 to xs.Count-1 do
             let pt = xs.[i]
             for j=0 to ys.Count-1 do
-                let d = Pt.sqDist pt ys.[j]
+                let d = Pt.distanceToSq pt ys.[j]
                 if d < minD then
                     minD <- d
                     xi <- i
@@ -95,18 +95,19 @@ type Points2D   =
 
 
     /// Given two lists of 2D points finds the pair that are closest to each other and returns their distance.
-    static member minDistBetweenPointSets (xs:IList<Pt>, ys:IList<Pt>) : float =
-        if xs.Count = 0 then fail "Points2D.minDistBetweenPointSets: empty List of Points: xs"
-        if ys.Count = 0 then fail "Points2D.minDistBetweenPointSets: empty List of Points: ys"
-        let i, j = Points2D.closestPointsIdx (xs, ys)
-        Pt.dist xs.[i]  ys.[j]
+    static member minDistanceBetweenPointSets (xs:IList<Pt>) (ys:IList<Pt>) : float =
+        if xs.Count = 0 then fail "Points2D.minDistanceBetweenPointSets: empty List of Points: xs"
+        if ys.Count = 0 then fail "Points2D.minDistanceBetweenPointSets: empty List of Points: ys"
+        let i, j = Points2D.closestPointsIndices xs ys
+        Pt.distanceTo xs.[i]  ys.[j]
 
 
 
     /// Find the index of the 2D point that has the biggest distance to any 2D point from the other set.
     /// Basically the most lonely point in 'findPointFrom' list with respect to 'checkAgainst' list.
+    /// The list to check against comes first, the list to find the point from comes last.
     /// Returns findPointFromIdx * checkAgainstIdx
-    static member mostDistantPointIdx (findPointFrom:IList<Pt>, checkAgainst:IList<Pt>) : int*int=
+    static member mostDistantPointIndices (checkAgainst:IList<Pt>) (findPointFrom:IList<Pt>) : int*int=
         if findPointFrom.Count = 0 then fail "Points2D.mostDistantPoint: empty List of Points: findPointFrom"
         if checkAgainst.Count = 0 then fail "Points2D.mostDistantPoint: empty List of Points: checkAgainst"
         let mutable maxD = Double.MinValue
@@ -117,7 +118,7 @@ type Points2D   =
             let pt = findPointFrom.[i]
             let mutable minD = Double.MaxValue
             for j=0 to checkAgainst.Count-1 do
-                let d = Pt.sqDist pt checkAgainst.[j]
+                let d = Pt.distanceToSq pt checkAgainst.[j]
                 if d < minD then
                     minD <- d
                     checkAgainstTempIdx <-j
@@ -128,7 +129,8 @@ type Points2D   =
         findPointFromIdx, checkAgainstIdx
 
 
-    /// Find the 2D point that has the biggest distance to any 2D point from another set.
-    static member mostDistantPoint (findPointFrom:IList<Pt>, checkAgainst:IList<Pt>) : Pt =
-        let i, _ = Points2D.mostDistantPointIdx (findPointFrom, checkAgainst)
+    /// Find the 2D point in 'findPointFrom' that has the biggest distance to any 2D point in 'checkAgainst'.
+    /// The list to check against comes first, the list to find the point from comes last.
+    static member mostDistantPoint (checkAgainst:IList<Pt>) (findPointFrom:IList<Pt>) : Pt =
+        let i, _ = Points2D.mostDistantPointIndices checkAgainst findPointFrom
         findPointFrom.[i]

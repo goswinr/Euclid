@@ -189,7 +189,7 @@ type BRect =
     /// Returns a bounding rectangle expanded by a distance for X- and Y-axis each.
     /// If expansion is negative it shrinks the Rectangle. It also prevents the rectangle from collapsing past its center.
     /// When the negative expansion is bigger than the size, Min and Max values will be both at the center point.
-    member b.ExpandSafeXY(xDist:float, yDist:float) : BRect =
+    member b.ExpandClampedXY(xDist:float, yDist:float) : BRect =
         let mutable minXCh = b.MinX - xDist
         let mutable maxXCh = b.MaxX + xDist
         if minXCh > maxXCh then  // Overflow! Set both to the same mid point
@@ -208,24 +208,24 @@ type BRect =
     /// Returns a bounding rectangle expanded by a distance for X- and Y-axis each.
     /// If expansion is negative it shrinks the Rectangle. It also prevents the rectangle from collapsing past its center.
     /// When the negative expansion is bigger than the size, Min and Max values will be both at the center point.
-    static member inline expandSafeXY (xDist:float) (yDist:float) (r:BRect) : BRect =
-        r.ExpandSafeXY(xDist, yDist)
+    static member inline expandClampedXY (xDist:float) (yDist:float) (r:BRect) : BRect =
+        r.ExpandClampedXY(xDist, yDist)
 
     /// Returns a bounding rectangle expanded by a distance.
     /// If expansion is negative it shrinks the Rectangle. It also prevents the rectangle from collapsing past its center.
     /// When the negative expansion is bigger than the size, Min and Max values will be both at the center point.
-    member inline b.ExpandSafe(dist:float) : BRect =
-        b.ExpandSafeXY(dist, dist)
+    member inline b.ExpandClamped(dist:float) : BRect =
+        b.ExpandClampedXY(dist, dist)
 
     /// Returns a bounding rectangle expanded by a distance.
     /// If expansion is negative it shrinks the Rectangle. It also makes sure that there is no underflow.
     /// When the negative expansion is bigger than the size, Min and Max values will be both in the middle from where they were before.
-    static member inline expandSafe (dist:float) (r:BRect) : BRect =
-        r.ExpandSafeXY(dist, dist)
+    static member inline expandClamped (dist:float) (r:BRect) : BRect =
+        r.ExpandClampedXY(dist, dist)
 
     /// Returns a bounding rectangle expanded only in X direction by different distances for start(minX) and end (maxX).
     /// Does check for underflow if distance is negative and raises EuclidException.
-    member inline r.ExpandXaxis(startDist, endDist) : BRect =
+    member inline r.ExpandXAxis(startDist, endDist) : BRect =
         let n = BRect.createUnchecked(r.MinX-startDist, r.MinY, r.MaxX+endDist, r.MaxY)
         if n.MinX > n.MaxX then
             fail $"BRect.ExpandXaxis: Negative distances for start({startDist}) and end ({endDist}) cause an underflow, on {r.AsString}"
@@ -233,12 +233,12 @@ type BRect =
 
     /// Returns bounding rectangle expanded only in X direction by different distances for start(minX) and end (maxX).
     /// Does check for underflow if distance is negative and raises EuclidException.
-    static member inline expandXaxis startDist endDist (r:BRect) : BRect =
-        r.ExpandXaxis(startDist, endDist)
+    static member inline expandXAxis startDist endDist (r:BRect) : BRect =
+        r.ExpandXAxis(startDist, endDist)
 
     /// Returns a bounding rectangle expanded only in Y direction by different distances for start(minY) and end (maxY).
     /// Does check for underflow if distance is negative and raises EuclidException.
-    member inline r.ExpandYaxis(startDist, endDist) : BRect =
+    member inline r.ExpandYAxis(startDist, endDist) : BRect =
         let n = BRect.createUnchecked(r.MinX, r.MinY-startDist, r.MaxX, r.MaxY+endDist)
         if n.MinY > n.MaxY then
             fail $"BRect.ExpandYaxis: Negative distances for start({startDist}) and end({endDist}) cause an underflow, on {r.AsString}"
@@ -246,8 +246,8 @@ type BRect =
 
     /// Returns bounding rectangle expanded only in Y direction by different distances for start(minY) and end (maxY).
     /// Does check for underflow if distance is negative and raises EuclidException.
-    static member inline expandYaxis startDist endDist (r:BRect) : BRect =
-        r.ExpandYaxis(startDist, endDist)
+    static member inline expandYAxis startDist endDist (r:BRect) : BRect =
+        r.ExpandYAxis(startDist, endDist)
 
     /// Returns TRUE if the two 2D bounding rectangles do overlap or touch exactly.
     /// Also returns TRUE if one box is completely inside the other.
@@ -985,7 +985,7 @@ type BRect =
     // #region create
 
     /// Finds min and max values for x and y.
-    static member inline create (a:Pt, b:Pt) : BRect =
+    static member inline create (a:Pt) (b:Pt) : BRect =
         BRect.createUnchecked(
             min a.X b.X,
             min a.Y b.Y,
@@ -1038,11 +1038,11 @@ type BRect =
             maxY <- max maxY p.Y
         BRect.createUnchecked(minX, minY, maxX, maxY)
 
-    /// Creates a bounding rectangle from a center point and the total X and Y size.
+    /// Creates a bounding rectangle from the total X and Y size and a center point.
     /// Fails if sizeX or sizeY is negative.
-    static member inline createFromCenter (center:Pt, sizeX, sizeY) : BRect =
-        if isNegative sizeX then fail $"BRect.createFromCenter sizeX is negative: {sizeX}, sizeY is: {sizeY}, center: {center.AsString}"
-        if isNegative sizeY then fail $"BRect.createFromCenter sizeY is negative: {sizeY}, sizeX is: {sizeX}, center: {center.AsString}"
+    static member inline createCentered (sizeX:float) (sizeY:float) (center:Pt) : BRect =
+        if isNegative sizeX then fail $"BRect.createCentered sizeX is negative: {sizeX}, sizeY is: {sizeY}, center: {center.AsString}"
+        if isNegative sizeY then fail $"BRect.createCentered sizeY is negative: {sizeY}, sizeX is: {sizeX}, center: {center.AsString}"
         let minX = center.X - sizeX*0.5
         let minY = center.Y - sizeY*0.5
         let maxX = center.X + sizeX*0.5
@@ -1061,18 +1061,18 @@ type BRect =
     static member inline createFromRect2D (r:Rect2D) : BRect =
         // Each of the 4 corners is Origin plus any subset of the two axis
         // components, so min/max decompose per coordinate.
-        let minX = r.OriginX + min 0. r.XaxisX + min 0. r.YaxisX
-        let minY = r.OriginY + min 0. r.XaxisY + min 0. r.YaxisY
-        let maxX = r.OriginX + max 0. r.XaxisX + max 0. r.YaxisX
-        let maxY = r.OriginY + max 0. r.XaxisY + max 0. r.YaxisY
+        let minX = r.OriginX + min 0. r.XAxisX + min 0. r.YAxisX
+        let minY = r.OriginY + min 0. r.XAxisY + min 0. r.YAxisY
+        let maxX = r.OriginX + max 0. r.XAxisX + max 0. r.YAxisX
+        let maxY = r.OriginY + max 0. r.XAxisY + max 0. r.YAxisY
         BRect.createUnchecked(minX, minY, maxX, maxY)
 
     /// Creates a 2D bounding rectangle by projecting a Rect3D onto the World XY plane.
     static member createFromRect3D (r:Rect3D)  : BRect =
-        let minX = r.OriginX + min 0. r.XaxisX + min 0. r.YaxisX
-        let minY = r.OriginY + min 0. r.XaxisY + min 0. r.YaxisY
-        let maxX = r.OriginX + max 0. r.XaxisX + max 0. r.YaxisX
-        let maxY = r.OriginY + max 0. r.XaxisY + max 0. r.YaxisY
+        let minX = r.OriginX + min 0. r.XAxisX + min 0. r.YAxisX
+        let minY = r.OriginY + min 0. r.XAxisY + min 0. r.YAxisY
+        let maxX = r.OriginX + max 0. r.XAxisX + max 0. r.YAxisX
+        let maxY = r.OriginY + max 0. r.XAxisY + max 0. r.YAxisY
         BRect.createUnchecked(minX, minY, maxX, maxY)
 
 
@@ -1134,13 +1134,7 @@ type BRect =
         abs(a.MaxY-b.MaxY) > tol
 
     /// Returns a new 2D-bounding-rectangle moved by a vector.
-    /// Same as BRect.translate.
     static member inline move (v:Vc) (r:BRect) : BRect =
-        BRect.createUnchecked(r.MinX+v.X, r.MinY+v.Y, r.MaxX+v.X, r.MaxY+v.Y)
-
-    /// Returns a new 2D-bounding-rectangle moved by a vector.
-    /// Same as BRect.move.
-    static member inline translate (v:Vc) (r:BRect) : BRect =
         BRect.createUnchecked(r.MinX+v.X, r.MinY+v.Y, r.MaxX+v.X, r.MaxY+v.Y)
 
     /// Returns a new 2D-bounding-rectangle moved in X-axis direction.
@@ -1199,5 +1193,5 @@ and internal BRectJsonConverter() =
         let maxX = JsonConvert.readFloat &reader options "Euclid.BRect" "MaxX"
         let maxY = JsonConvert.readFloat &reader options "Euclid.BRect" "MaxY"
         JsonConvert.readEndObject &reader "Euclid.BRect"
-        BRect.create(Pt(minX, minY), Pt(maxX, maxY))
+        BRect.create (Pt(minX, minY)) (Pt(maxX, maxY))
 #endif

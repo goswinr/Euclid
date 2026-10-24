@@ -13,9 +13,9 @@ type rs = RhinoScriptSyntax
 
 /// Checks if the axes of both boxes are aligned, meaning they are parallel and have the same orientation
 let areBoxesAligned (a:Box) (b:Box) : bool =
-    Vec.isParallelAndOrientedTo Cosine.``0.025`` a.Xaxis b.Xaxis &&
-    Vec.isParallelAndOrientedTo Cosine.``0.025`` a.Yaxis b.Yaxis &&
-    Vec.isParallelAndOrientedTo Cosine.``0.025`` a.Zaxis b.Zaxis
+    Vec.isParallelAndOrientedTo Cosine.``0.025`` a.XAxis b.XAxis &&
+    Vec.isParallelAndOrientedTo Cosine.``0.025`` a.YAxis b.YAxis &&
+    Vec.isParallelAndOrientedTo Cosine.``0.025`` a.ZAxis b.ZAxis
 
 /// Gets the space between two boxes, assuming they are aligned.
 /// The resulting box is touching both input boxes and has the same orientation as them.
@@ -28,9 +28,9 @@ let getBoxBetween (a:Box) (b:Box) : Box option =
     let lenX = a.SizeX
     let lenY = a.SizeY
     let lenZ = a.SizeZ
-    let ux = a.Xaxis/lenX
-    let uy = a.Yaxis/lenY
-    let uz = a.Zaxis/lenZ
+    let ux = a.XAxis/lenX
+    let uy = a.YAxis/lenY
+    let uz = a.ZAxis/lenZ
 
     let dx = v.Dot ux
     let dy = v.Dot uy
@@ -133,7 +133,7 @@ let u() = UnitVec.create(r.NextDouble() , r.NextDouble() , r.NextDouble())
 let b (o: Pnt)=
     let x = u()
     let y = u()
-    let pl = PPlane.createOriginXaxisYaxis(o, x, y)
+    let pl = PPlane.createOriginXAxisYAxis(o, x, y)
     Box.createFromPlane (r.NextDouble())  (r.NextDouble()) (r.NextDouble())  pl
 
 rs.DeleteObjects(rs.AllObjects() )

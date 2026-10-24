@@ -487,9 +487,9 @@ type Matrix =
         m.IsAffine &&
         (
         // squared lengths of the three column vectors
-        UtilEuclid.isNotOne (XYZ.sqLength m.M11 m.M12 m.M13) || // exclude scaling
-        UtilEuclid.isNotOne (XYZ.sqLength m.M21 m.M22 m.M23) ||
-        UtilEuclid.isNotOne (XYZ.sqLength m.M31 m.M32 m.M33)
+        UtilEuclid.isNotOne (XYZ.lengthSq m.M11 m.M12 m.M13) || // exclude scaling
+        UtilEuclid.isNotOne (XYZ.lengthSq m.M21 m.M22 m.M23) ||
+        UtilEuclid.isNotOne (XYZ.lengthSq m.M31 m.M32 m.M33)
         )
 
     /// <summary>Returns if the Matrix is scaling.
@@ -635,6 +635,14 @@ type Matrix =
     member inline m.Then (other:Matrix) : Matrix =
         Matrix.multiply(m, other)
 
+    /// <summary>Combines two transformations for use in a pipeline: 'm |> Matrix.andThen next' first does m and then next.
+    /// Same as m.Then next and Matrix.multiply(m, next).</summary>
+    /// <param name="next">The Matrix applied second.</param>
+    /// <param name="m">The Matrix applied first.</param>
+    /// <returns>A new Matrix that transforms like m followed by next.</returns>
+    static member inline andThen (next:Matrix) (m:Matrix) : Matrix =
+        m.Then next
+
     /// <summary>Transposes the Matrix by swapping rows and columns.
     /// For transformation matrices, this swaps the effect of row-major and column-major conventions.
     /// For orthogonal rotation matrices, the transpose equals the inverse.</summary>
@@ -670,7 +678,7 @@ type Matrix =
     /// <param name="x">The amount to translate in the X-axis.</param>
     /// <param name="y">The amount to translate in the Y-axis.</param>
     /// <param name="z">The amount to translate in the Z-axis.</param>
-    static member createTranslation(x, y, z) : Matrix =
+    static member createTranslationXYZ (x:float) (y:float) (z:float) : Matrix =
         Matrix(
             1, 0, 0, x,
             0, 1, 0, y,
@@ -705,10 +713,24 @@ type Matrix =
     /// 0 0      0        1
     /// </code></summary>
     /// <param name="angleDegrees">Rotation angle in degrees.</param>
-    static member createRotationX(angleDegrees) : Matrix =
-        let angle = UtilEuclid.toRadians angleDegrees
-        let c = cos angle
-        let s = sin angle
+    static member createRotationXDegrees (angleDegrees:float) : Matrix =
+        Matrix.createRotationXRadians (UtilEuclid.toRadians angleDegrees)
+
+    /// <summary>Creates a rotation transformation matrix around the X-axis
+    /// by angle in radians (not degrees).
+    /// A positive rotation will be from Y towards Z-axis,
+    /// so counter-clockwise the X-axis vector is pointing towards the observer.
+    /// The resulting matrix will be:
+    /// <code>
+    /// 1 0      0        0
+    /// 0 cos(θ) -sin(θ)  0
+    /// 0 sin(θ) cos(θ)   0
+    /// 0 0      0        1
+    /// </code></summary>
+    /// <param name="angleRadians">Rotation angle in radians.</param>
+    static member createRotationXRadians (angleRadians:float) : Matrix =
+        let c = cos angleRadians
+        let s = sin angleRadians
         Matrix(
             1, 0,  0, 0,
             0, c, -s, 0,
@@ -727,10 +749,24 @@ type Matrix =
     /// 0       0 0      1
     /// </code></summary>
     /// <param name="angleDegrees">Rotation angle in degrees.</param>
-    static member createRotationY(angleDegrees) : Matrix =
-        let angle = UtilEuclid.toRadians angleDegrees
-        let c = cos angle
-        let s = sin angle
+    static member createRotationYDegrees (angleDegrees:float) : Matrix =
+        Matrix.createRotationYRadians (UtilEuclid.toRadians angleDegrees)
+
+    /// <summary>Creates a rotation transformation matrix around the Y-axis
+    /// by angle in radians (not degrees).
+    /// A positive rotation will be from Z towards X-axis,
+    /// so counter-clockwise the Y-axis vector is pointing towards the observer.
+    /// The resulting matrix will be:
+    /// <code>
+    /// cos(θ)  0 sin(θ) 0
+    /// 0       1 0      0
+    /// -sin(θ) 0 cos(θ) 0
+    /// 0       0 0      1
+    /// </code></summary>
+    /// <param name="angleRadians">Rotation angle in radians.</param>
+    static member createRotationYRadians (angleRadians:float) : Matrix =
+        let c = cos angleRadians
+        let s = sin angleRadians
         Matrix(
             c  ,  0,  s,  0,
             0  ,  1,  0,  0,
@@ -749,10 +785,24 @@ type Matrix =
     /// 0      0       0 1
     /// </code></summary>
     /// <param name="angleDegrees">Rotation angle in degrees.</param>
-    static member createRotationZ(angleDegrees) : Matrix =
-        let angle = UtilEuclid.toRadians angleDegrees
-        let c = cos angle
-        let s = sin angle
+    static member createRotationZDegrees (angleDegrees:float) : Matrix =
+        Matrix.createRotationZRadians (UtilEuclid.toRadians angleDegrees)
+
+    /// <summary>Creates a rotation transformation matrix around the Z-axis
+    /// by angle in radians (not degrees).
+    /// A positive rotation will be from X toward Y-axis,
+    /// so counter-clockwise the Z-axis vector is pointing towards the observer.
+    /// The resulting matrix will be:
+    /// <code>
+    /// cos(θ) -sin(θ) 0 0
+    /// sin(θ) cos(θ)  0 0
+    /// 0      0       1 0
+    /// 0      0       0 1
+    /// </code></summary>
+    /// <param name="angleRadians">Rotation angle in radians.</param>
+    static member createRotationZRadians (angleRadians:float) : Matrix =
+        let c = cos angleRadians
+        let s = sin angleRadians
         Matrix(
             c, -s,  0,  0,
             s,  c,  0,  0,
@@ -763,11 +813,17 @@ type Matrix =
     /// A positive angle rotates counter-clockwise when the axis vector is pointing towards the observer (right-hand rule).</summary>
     /// <param name="axis">Rotation axis, as unit-vector.</param>
     /// <param name="angleDegrees">Rotation angle in degrees.</param>
-    static member createRotationAxis(axis:UnitVec, angleDegrees:float) : Matrix =
+    static member createRotationFromUnitVecDegrees (axis:UnitVec) (angleDegrees:float) : Matrix =
+        Matrix.createRotationFromUnitVecRadians axis (UtilEuclid.toRadians angleDegrees)
+
+    /// <summary>Creates a rotation around an axis transformation matrix.
+    /// A positive angle rotates counter-clockwise when the axis vector is pointing towards the observer (right-hand rule).</summary>
+    /// <param name="axis">Rotation axis, as unit-vector.</param>
+    /// <param name="angleRadians">Rotation angle in radians.</param>
+    static member createRotationFromUnitVecRadians (axis:UnitVec) (angleRadians:float) : Matrix =
         // Based on http://www.gamedev.net/reference/articles/article1199.asp
-        let angle = UtilEuclid.toRadians angleDegrees
-        let c = cos angle
-        let s = sin angle
+        let c = cos angleRadians
+        let s = sin angleRadians
         let t = 1.0 - c
         let x = axis.X
         let y = axis.Y
@@ -784,20 +840,26 @@ type Matrix =
     /// A positive angle rotates counter-clockwise when the axis vector is pointing towards the observer (right-hand rule).</summary>
     /// <param name="axis">Rotation axis, a vector of any length but 0.0.</param>
     /// <param name="angleDegrees">Rotation angle in degrees.</param>
-    static member createRotationAxis(axis:Vec, angleDegrees:float) : Matrix =
+    static member createRotationFromVecDegrees (axis:Vec) (angleDegrees:float) : Matrix =
+        Matrix.createRotationFromVecRadians axis (UtilEuclid.toRadians angleDegrees)
+
+    /// <summary>Creates a rotation around an axis transformation matrix.
+    /// A positive angle rotates counter-clockwise when the axis vector is pointing towards the observer (right-hand rule).</summary>
+    /// <param name="axis">Rotation axis, a vector of any length but 0.0.</param>
+    /// <param name="angleRadians">Rotation angle in radians.</param>
+    static member createRotationFromVecRadians (axis:Vec) (angleRadians:float) : Matrix =
         // first unitize
         let len = sqrt (axis.X*axis.X + axis.Y*axis.Y + axis.Z*axis.Z)
         if isTooTiny(len) then
-            fail $"Matrix.createRotationAxis failed on too short axis: {axis} and rotation: {angleDegrees}° Degrees."
+            fail $"Matrix.createRotationFromVecRadians failed on too short axis: {axis} and rotation: {angleRadians} radians."
 
         let sc = 1. / len
         let x = axis.X * sc
         let y = axis.Y * sc
         let z = axis.Z * sc
         // Based on http://www.gamedev.net/reference/articles/article1199.asp
-        let angle = UtilEuclid.toRadians angleDegrees
-        let c = cos angle
-        let s = sin angle
+        let c = cos angleRadians
+        let s = sin angleRadians
         let t = 1.0 - c
         let tx = t * x
         let ty = t * y
@@ -809,23 +871,43 @@ type Matrix =
 
     /// <summary>Creates a rotation matrix around an axis at a given center point.
     /// A positive angle rotates counter-clockwise when the axis vector is pointing towards the observer (right-hand rule).</summary>
-    /// <param name="axis">Rotation axis, a vector of any length but 0.0.</param>
     /// <param name="cen">The center point for the rotation.</param>
+    /// <param name="axis">Rotation axis, a vector of any length but 0.0.</param>
     /// <param name="angleDegrees">Rotation angle in degrees.</param>
-    static member createRotationAxisCenter(axis:Vec, cen:Pnt, angleDegrees:float) : Matrix =
-        Matrix.createTranslation(-cen.X, -cen.Y, -cen.Z)
-        *** Matrix.createRotationAxis(axis, angleDegrees)
-        *** Matrix.createTranslation(cen.X, cen.Y, cen.Z)
+    static member createRotationAroundVecDegrees (cen:Pnt) (axis:Vec) (angleDegrees:float) : Matrix =
+        Matrix.createTranslationXYZ (-cen.X) (-cen.Y) (-cen.Z)
+        *** Matrix.createRotationFromVecDegrees axis angleDegrees
+        *** Matrix.createTranslationXYZ cen.X cen.Y cen.Z
 
     /// <summary>Creates a rotation matrix around an axis at a given center point.
     /// A positive angle rotates counter-clockwise when the axis vector is pointing towards the observer (right-hand rule).</summary>
-    /// <param name="axis">Rotation axis, a unit-vector.</param>
     /// <param name="cen">The center point for the rotation.</param>
+    /// <param name="axis">Rotation axis, a vector of any length but 0.0.</param>
+    /// <param name="angleRadians">Rotation angle in radians.</param>
+    static member createRotationAroundVecRadians (cen:Pnt) (axis:Vec) (angleRadians:float) : Matrix =
+        Matrix.createTranslationXYZ (-cen.X) (-cen.Y) (-cen.Z)
+        *** Matrix.createRotationFromVecRadians axis angleRadians
+        *** Matrix.createTranslationXYZ cen.X cen.Y cen.Z
+
+    /// <summary>Creates a rotation matrix around an axis at a given center point.
+    /// A positive angle rotates counter-clockwise when the axis vector is pointing towards the observer (right-hand rule).</summary>
+    /// <param name="cen">The center point for the rotation.</param>
+    /// <param name="axis">Rotation axis, a unit-vector.</param>
     /// <param name="angleDegrees">Rotation angle in degrees.</param>
-    static member createRotationAxisCenter(axis:UnitVec, cen:Pnt, angleDegrees:float) : Matrix =
-        Matrix.createTranslation(-cen.X, -cen.Y, -cen.Z)
-        *** Matrix.createRotationAxis(axis, angleDegrees)
-        *** Matrix.createTranslation(cen.X, cen.Y, cen.Z)
+    static member createRotationAroundUnitVecDegrees (cen:Pnt) (axis:UnitVec) (angleDegrees:float) : Matrix =
+        Matrix.createTranslationXYZ (-cen.X) (-cen.Y) (-cen.Z)
+        *** Matrix.createRotationFromUnitVecDegrees axis angleDegrees
+        *** Matrix.createTranslationXYZ cen.X cen.Y cen.Z
+
+    /// <summary>Creates a rotation matrix around an axis at a given center point.
+    /// A positive angle rotates counter-clockwise when the axis vector is pointing towards the observer (right-hand rule).</summary>
+    /// <param name="cen">The center point for the rotation.</param>
+    /// <param name="axis">Rotation axis, a unit-vector.</param>
+    /// <param name="angleRadians">Rotation angle in radians.</param>
+    static member createRotationAroundUnitVecRadians (cen:Pnt) (axis:UnitVec) (angleRadians:float) : Matrix =
+        Matrix.createTranslationXYZ (-cen.X) (-cen.Y) (-cen.Z)
+        *** Matrix.createRotationFromUnitVecRadians axis angleRadians
+        *** Matrix.createTranslationXYZ cen.X cen.Y cen.Z
 
     /// <summary>Creates a scale transformation matrix.
     /// The resulting matrix will be:
@@ -838,7 +920,7 @@ type Matrix =
     /// <param name="x">The amount to scale in the X-axis.</param>
     /// <param name="y">The amount to scale in the Y-axis.</param>
     /// <param name="z">The amount to scale in the Z-axis.</param>
-    static member createScale(x, y, z) : Matrix =
+    static member createScale (x:float) (y:float) (z:float) : Matrix =
         Matrix(
             x, 0, 0, 0,
             0, y, 0, 0,
@@ -852,14 +934,14 @@ type Matrix =
     /// there is no valid unique 180 degree rotation that can be found, so an exception is raised.</summary>
     /// <param name="vecFrom">The source unit-vector direction.</param>
     /// <param name="vecTo">The target unit-vector direction.</param>
-    static member createVecToVec(vecFrom:UnitVec, vecTo:UnitVec) : Matrix =
+    static member createRotationFromUnitVecs (vecFrom:UnitVec) (vecTo:UnitVec) : Matrix =
         let vt = vecFrom - vecTo
         if isTooTinySq vt.LengthSq then // the vectors are almost the same
             Matrix.identity
         else
             let v = vecFrom + vecTo
             if isTooTinySq v.LengthSq then // the vectors are almost exactly opposite
-                fail $"Matrix.createVecToVec failed to find a rotation axis for (almost) collinear unit-vectors in opposite directions: {vecFrom} and {vecTo}"
+                fail $"Matrix.createRotationFromUnitVecs failed to find a rotation axis for (almost) collinear unit-vectors in opposite directions: {vecFrom} and {vecTo}"
 
             let axis0 = UnitVec.cross(vecFrom, vecTo)
             let len = axis0.Length
@@ -888,14 +970,14 @@ type Matrix =
     /// Fails if either vector is too short (length less than 1e-6).</summary>
     /// <param name="vecFrom">The source vector direction.</param>
     /// <param name="vecTo">The target vector direction.</param>
-    static member createVecToVec(vecFrom:Vec, vecTo:Vec) : Matrix =
+    static member createRotationFromVecs (vecFrom:Vec) (vecTo:Vec) : Matrix =
         let fu =
             let x = vecFrom.X
             let y = vecFrom.Y
             let z = vecFrom.Z
             let length = sqrt(x*x + y*y + z*z)
             if isTooSmall length then
-                fail $"Matrix.createVecToVec failed. The vector is too short: vecFrom: {vecFrom}"
+                fail $"Matrix.createRotationFromVecs failed. The vector is too short: vecFrom: {vecFrom}"
             let sc = 1.0 / length // inverse for unitizing vector:
             UnitVec.createUnchecked(x*sc, y*sc, z*sc)
         let tu =
@@ -904,7 +986,7 @@ type Matrix =
             let z = vecTo.Z
             let length = sqrt(x*x + y*y + z*z)
             if isTooSmall length then
-                fail $"Matrix.createVecToVec failed. The vector is too short: vecTo: {vecTo}"
+                fail $"Matrix.createRotationFromVecs failed. The vector is too short: vecTo: {vecTo}"
             let sc = 1.0 / length // inverse for unitizing vector:
             UnitVec.createUnchecked(x*sc, y*sc, z*sc)
 
@@ -914,7 +996,7 @@ type Matrix =
         else
             let v = fu + tu
             if isTooTinySq v.LengthSq then // the vectors are almost exactly opposite
-                fail $"Matrix.createVecToVec failed to find a rotation axis for (almost) collinear (or NaN) vectors in opposite directions: {vecFrom} and {vecTo}"
+                fail $"Matrix.createRotationFromVecs failed to find a rotation axis for (almost) collinear (or NaN) vectors in opposite directions: {vecFrom} and {vecTo}"
 
             let axis0 = UnitVec.cross(fu, tu)
             let len = axis0.Length
@@ -959,15 +1041,15 @@ type Matrix =
     /// <param name="p">The target plane.</param>
     static member createToPlane(p:PPlane) : Matrix =
         Matrix(
-            p.XaxisX, p.YaxisX, p.ZaxisX,  p.OriginX,
-            p.XaxisY, p.YaxisY, p.ZaxisY,  p.OriginY,
-            p.XaxisZ, p.YaxisZ, p.ZaxisZ,  p.OriginZ,
+            p.XAxisX, p.YAxisX, p.ZAxisX,  p.OriginX,
+            p.XAxisY, p.YAxisY, p.ZAxisY,  p.OriginY,
+            p.XAxisZ, p.YAxisZ, p.ZAxisZ,  p.OriginZ,
             0       ,        0,        0,          1)
 
     /// <summary>Creates a Matrix to transform from one Plane or Coordinate System to another Plane.</summary>
     /// <param name="fromPlane">The source plane.</param>
     /// <param name="toPlane">The target plane.</param>
-    static member createPlaneToPlane(fromPlane:PPlane, toPlane:PPlane) : Matrix =
+    static member createPlaneToPlane (fromPlane:PPlane) (toPlane:PPlane) : Matrix =
         let f = fromPlane |> Matrix.createToPlane |> Matrix.inverse
         let t = toPlane   |> Matrix.createToPlane
         f *** t
@@ -977,7 +1059,7 @@ type Matrix =
     static member createMirror (p:PPlane) : Matrix =
         let toPlane   = Matrix.createToPlane p
         let fromPlane = toPlane.Inverse
-        let zFlip     = Matrix.createScale(1, 1, -1)
+        let zFlip     = Matrix.createScale 1 1 (-1)
         fromPlane *** zFlip *** toPlane
 
     /// <summary>Create Matrix from Quaternion.</summary>
@@ -1157,10 +1239,10 @@ type Matrix =
     /// <summary>Creates a world-to-camera view matrix, placing eye at the origin and target along local -Z.
     /// Screen right is local +X. Screen up is the normalized projection of up onto the plane perpendicular
     /// to the viewing direction. This matrix does not apply perspective.</summary>
+    /// <param name="up">Finite, nonzero preferred up vector. Must not be parallel to the viewing direction.</param>
     /// <param name="eye">Finite camera position, distinct from target.</param>
     /// <param name="target">Finite point to look at.</param>
-    /// <param name="up">Finite, nonzero preferred up vector. Must not be parallel to the viewing direction.</param>
-    static member createLookAt(eye:Pnt, target:Pnt, up:Vec) : Matrix =
+    static member createLookAt (up:Vec) (eye:Pnt) (target:Pnt) : Matrix =
         let normalize name (v:Vec) =
             let length = v.Length
             if isTooTiny length || Double.IsInfinity length then
@@ -1185,7 +1267,7 @@ type Matrix =
     /// This matrix does not apply perspective.</summary>
     /// <param name="eye">Finite camera position, distinct from target.</param>
     /// <param name="target">Finite point to look at.</param>
-    static member createLookAtZUp(eye:Pnt, target:Pnt) : Matrix =
+    static member createLookAtZUp (eye:Pnt) (target:Pnt) : Matrix =
         let direction = target - eye
         let length = direction.Length
         if isTooTiny length || Double.IsInfinity length then
@@ -1193,7 +1275,7 @@ type Matrix =
         let forward = direction / length
         let horizontalLength = sqrt(forward.X * forward.X + forward.Y * forward.Y)
         let up = if isTooTiny horizontalLength then Vec(0., 1., 0.) else Vec(0., 0., 1.)
-        Matrix.createLookAt(eye, target, up)
+        Matrix.createLookAt up eye target
 
     /// <summary>Creates a combined world-to-camera and perspective matrix, looking from eye toward target.
     /// Screen up follows the projection of up perpendicular to the viewing direction.
@@ -1206,7 +1288,7 @@ type Matrix =
     /// <param name="nearPlaneDistance">Positive distance to the near plane.</param>
     /// <param name="farPlaneDistance">Distance greater than nearPlaneDistance; may be positive infinity.</param>
     static member createPerspectiveLookAt(eye:Pnt, target:Pnt, up:Vec, width, height, nearPlaneDistance, farPlaneDistance) : Matrix =
-        let view = Matrix.createLookAt(eye, target, up)
+        let view = Matrix.createLookAt up eye target
         view *** Matrix.createPerspectiveAlongNegZ(width, height, nearPlaneDistance, farPlaneDistance)
 
     /// <summary>Creates a combined world-to-camera and perspective matrix with world +Z as up, preventing roll.
@@ -1219,7 +1301,7 @@ type Matrix =
     /// <param name="nearPlaneDistance">Positive distance to the near plane.</param>
     /// <param name="farPlaneDistance">Distance greater than nearPlaneDistance; may be positive infinity.</param>
     static member createPerspectiveLookAtZUp(eye:Pnt, target:Pnt, width, height, nearPlaneDistance, farPlaneDistance) : Matrix =
-        let view = Matrix.createLookAtZUp(eye, target)
+        let view = Matrix.createLookAtZUp eye target
         view *** Matrix.createPerspectiveAlongNegZ(width, height, nearPlaneDistance, farPlaneDistance)
 
 #if !FABLE_COMPILER

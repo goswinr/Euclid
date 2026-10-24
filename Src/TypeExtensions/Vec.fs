@@ -104,13 +104,13 @@ module AutoOpenVec =
 
         /// Returns the squared length of the 3D vector projected into World X-Y plane.
         /// The square length is faster to calculate and often good enough for use cases such as sorting vectors by length.
-        member inline v.LengthSqInXY : float =
+        member inline v.LengthInXYSq : float =
             v.X*v.X + v.Y*v.Y
 
         /// Returns the squared length of the 3D vector projected into World X-Y plane.
         /// The square length is faster to calculate and often good enough for use cases such as sorting vectors by length.
-        static member inline lengthSqInXY (v:Vec) : float =
-            v.LengthSqInXY
+        static member inline lengthInXYSq (v:Vec) : float =
+            v.LengthInXYSq
 
         /// Returns a new 3D vector with new X coordinate, Y and Z stay the same.
         member inline v.WithX x : Vec =
@@ -190,13 +190,7 @@ module AutoOpenVec =
         /// Dot product, or scalar product of a 3D vector with a 3D unit-vector.
         /// Returns a float.
         /// This float is the projected length of the 3D vector on the direction of the unit-vector.
-        static member inline dot (a:Vec, b:UnitVec)  : float =
-            a.X * b.X + a.Y * b.Y + a.Z * b.Z
-
-        /// Dot product, or scalar product of a 3D unit-vector with a 3D vector.
-        /// Returns a float.
-        /// This float is the projected length of the 3D vector on the direction of the unit-vector.
-        static member inline dot (a:UnitVec, b:Vec)  : float =
+        static member inline dotUnitVec (a:Vec) (b:UnitVec)  : float =
             a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
         /// Returns a new 3D vector scaled to the desired length.
@@ -280,19 +274,19 @@ module AutoOpenVec =
             Vec(-v.Y, v.X, 0.0)
 
         /// 90-degree rotation counter-clockwise around Z-axis.
-        member inline v.RotateOnZ90CCW : Vec =
+        member inline v.Rotate2Dby90CCW : Vec =
             Vec( -v.Y, v.X, v.Z)
 
         /// 90-degree rotation counter-clockwise around Z-axis.
-        static member inline rotateOnZ90CCW(v:Vec) : Vec =
+        static member inline rotate2Dby90CCW(v:Vec) : Vec =
             Vec( -v.Y, v.X, v.Z)
 
         /// 90-degree rotation clockwise around Z-axis.
-        member inline v.RotateOnZ90CW : Vec =
+        member inline v.Rotate2Dby90CW : Vec =
             Vec(v.Y, -v.X, v.Z)
 
         /// 90-degree rotation clockwise around Z-axis.
-        static member inline rotateOnZ90CW(v:Vec) : Vec =
+        static member inline rotate2Dby90CW(v:Vec) : Vec =
             Vec(  v.Y, -v.X, v.Z)
 
         /// Rotates the 3D vector around the Z-axis by a given number of quarter-circles (i.e. multiples of 90
@@ -317,7 +311,7 @@ module AutoOpenVec =
         /// The diamond angle.
         /// Calculates the proportion of X to Y component.
         /// It is always positive and in the range of 0.0 to 4.0 (for 360 degrees)
-        /// 0.0 = Xaxis, going counter-clockwise.
+        /// 0.0 = XAxis, going counter-clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
         member inline v.DirectionDiamondInXY : float =
@@ -337,7 +331,7 @@ module AutoOpenVec =
         /// The diamond angle.
         /// Calculates the proportion of X to Y component.
         /// It is always positive and in the range of 0.0 to 4.0 (for 360 degrees)
-        /// 0.0 = Xaxis, going counter-clockwise.
+        /// 0.0 = XAxis, going counter-clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
         static member inline directionDiamondInXY(v:Vec) : float =
@@ -422,7 +416,7 @@ module AutoOpenVec =
         /// Range of 0.0 to 4.0 (for 360 degrees)
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
-        static member inline angleDiamondInXY (a:Vec, b:Vec) : float =
+        static member inline angleDiamondInXY (a:Vec) (b:Vec) : float =
             a.AngleDiamondInXYTo(b)
 
         /// Checks if the angle between the two 3D vectors is less than 90 degrees.
@@ -714,15 +708,15 @@ module AutoOpenVec =
 
 
         /// Returns the World X-axis with length one: Vec(1, 0, 0)
-        static member inline Xaxis : Vec =
+        static member inline xAxis : Vec =
             Vec(1, 0, 0)
 
         /// Returns the World Y-axis with length one: Vec(0, 1, 0)
-        static member inline Yaxis : Vec =
+        static member inline yAxis : Vec =
             Vec(0, 1, 0)
 
         /// Returns the World Z-axis with length one: Vec(0, 0, 1)
-        static member inline Zaxis : Vec =
+        static member inline zAxis : Vec =
             Vec(0, 0, 1)
 
         /// Checks if two 3D vectors are equal within tolerance.
@@ -836,11 +830,11 @@ module AutoOpenVec =
             v.LengthSq
 
         /// Returns a new 3D vector from X, Y and Z parts.
-        static member inline create (x:float, y:float, z:float) : Vec =
+        static member inline create (x:float) (y:float) (z:float) : Vec =
             Vec(x, y, z)
 
         /// Returns a new 3D vector from start and end point.
-        static member inline create (start:Pnt, endValue:Pnt) : Vec =
+        static member inline createFromTo (start:Pnt) (endValue:Pnt) : Vec =
             endValue-start
 
         /// Returns a 3D vector from z value and 2D vector.
@@ -853,13 +847,7 @@ module AutoOpenVec =
             Vec(v.X, v.Y, 0.0)
 
         /// Negate or inverse a 3D vector. Returns a new 3D vector.
-        /// Same as Vec.flip.
         static member inline reverse (v:Vec) : Vec =
-            -v
-
-        /// Negate or inverse a 3D vector. Returns a new 3D vector.
-        /// Same as Vec.reverse.
-        static member inline flip (v:Vec) : Vec =
             -v
 
         /// Flips the vector if Z part is smaller than 0.0
@@ -878,13 +866,13 @@ module AutoOpenVec =
             Vec(f*x, f*y, f*z)
 
         /// Returns 3D vector unitized, the error message is used in the Exception if the vector is too short.
-        static member inline unitizeWithErrMsg (errMsg:string) (v:Vec) : UnitVec =
+        static member inline unitizeWithErrorMessage (errMsg:string) (v:Vec) : UnitVec =
             let x = v.X
             let y = v.Y
             let z = v.Z
             let l = sqrt (x*x + y*y + z*z)
             if isTooTiny l then
-                failTooSmall $"Vec.unitizeWithErrMsg: {errMsg}" v
+                failTooSmall $"Vec.unitizeWithErrorMessage: {errMsg}" v
             let f = 1. / l
             UnitVec.createUnchecked(x*f, y*f, z*f)
 
@@ -939,9 +927,9 @@ module AutoOpenVec =
 
         /// Returns positive angle from vector 'a' to vector 'b' projected in X-Y plane.
         /// In radians.
-        /// Considering counter-clockwise rotation round the World Zaxis.
+        /// Considering counter-clockwise rotation round the World ZAxis.
         /// Range: 0.0 to 2 Pi ( = 0 to 360 degrees)
-        static member inline angle2PiInXY (a:Vec, b:Vec) : float =
+        static member inline angle2PiInXY (a:Vec) (b:Vec) : float =
             let r = b.Direction2PiInXY  - a.Direction2PiInXY
             if r >= 0. then  r
             else r + UtilEuclid.twoPi
@@ -950,8 +938,8 @@ module AutoOpenVec =
         /// In degrees.
         /// Considering positive rotation round the World Z-axis.
         /// Range: 0 to 360 degrees.
-        static member inline angle360InXY (a:Vec, b:Vec) : float =
-            Vec.angle2PiInXY (a, b) |> toDegrees
+        static member inline angle360InXY (a:Vec) (b:Vec) : float =
+            Vec.angle2PiInXY a b |> toDegrees
 
         /// Returns a (not unitized) bisector vector in the middle direction.
         /// Code : a.Unitized + b.Unitized.
@@ -1003,22 +991,22 @@ module AutoOpenVec =
             Vec (r.Cos*v.X - r.Sin*v.Y, r.Sin*v.X + r.Cos*v.Y, v.Z)
 
         /// Rotate the 3D vector in degrees around X-axis, from Y to Z-axis, counter-clockwise looking from right.
-        static member inline rotateOnXDeg (angDegree) (v:Vec) : Vec =
+        static member inline rotateOnXDegrees (angDegree) (v:Vec) : Vec =
             Vec.rotateOnX (Rotation2D.createFromDegrees angDegree) v
 
         /// Rotate the 3D vector in degrees around Y-axis, from Z to X-axis, counter-clockwise looking from back.
-        static member inline rotateOnYDeg (angDegree) (v:Vec) : Vec =
+        static member inline rotateOnYDegrees (angDegree) (v:Vec) : Vec =
             Vec.rotateOnY (Rotation2D.createFromDegrees angDegree) v
 
         /// Rotate the 3D vector in degrees around Z-axis, from X to Y-axis, counter-clockwise looking from top.
-        static member inline rotateOnZDeg (angDegree) (v:Vec) : Vec =
+        static member inline rotateOnZDegrees (angDegree) (v:Vec) : Vec =
             Vec.rotateOnZ (Rotation2D.createFromDegrees angDegree) v
 
 
         /// Linearly interpolates between two vectors.
         /// e.g. rel=0.5 will return the middle vector, rel=1.0 the end vector,
         /// rel=1.5 a vector half the distance beyond the end vector.
-        static member lerp (start:Vec, endValue:Vec, rel:float) : Vec = // not curried because argument order is important and would be confusing
+        static member lerp (start:Vec) (endValue:Vec) (rel:float) : Vec =
             Vec(
                 start.X + rel * (endValue.X - start.X),
                 start.Y + rel * (endValue.Y - start.Y),
@@ -1029,7 +1017,7 @@ module AutoOpenVec =
         /// The difference between this and linear interpolation (aka, "lerp") is that the vectors are treated as directions rather than points in space.
         /// The direction of the returned vector is interpolated by the angle and its magnitude is interpolated between the magnitudes of start and end.
         /// Interpolation continues before and after the range of 0.0 and 1.0.
-        static member slerp (start:Vec, endValue:Vec, rel:float) : Vec = // not curried because argument order is important and would be confusing
+        static member slerp (start:Vec) (endValue:Vec) (rel:float) : Vec =
             // https://en.wikipedia.org/wiki/Slerp
             // implementation tested in Rhino!
             let sLen = start.Length
@@ -1042,7 +1030,7 @@ module AutoOpenVec =
             let eu  = endValue  * fe //unitized end vector
             let dot = su *** eu
             if dot > float Cosine.``0.05`` then  // vectors are in the same direction interpolate linear only
-                Vec.lerp (start, endValue, rel)
+                Vec.lerp start endValue rel
             elif dot < float Cosine.``179.95`` then
                 fail2 "Vec.slerp vectors are 180 deg opposite." start endValue |> unbox // unbox to make type checker happy
             else

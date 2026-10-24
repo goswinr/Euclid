@@ -28,6 +28,12 @@ module Format =
             if s.Contains(".") || s.Contains("e") || s.Contains("E") then s
             else s + ".0"
 
+    /// Formats a double like floatAsFSharpCode, for use as an argument of a curried function call.
+    /// A negative value is put in parentheses, so that it is not read as a subtraction.
+    let internal floatAsFSharpArgument (x:float) : string =
+        let s = floatAsFSharpCode x
+        if s.StartsWith "-" then "(" + s + ")" else s
+
 
     module internal Literals =
 

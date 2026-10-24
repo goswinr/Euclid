@@ -53,7 +53,8 @@ type Rotation2D =
 
     /// Construct a 2D rotation from sine and cosine components.
     /// Fails if the components do not form a unit-length pair.
-    static member create (sine, cosine) : Rotation2D =
+    /// Unlike Quaternion.create, this does not normalize its input, it only validates it.
+    static member create (sine:float) (cosine:float) : Rotation2D =
         let lengthSquared = sine*sine + cosine*cosine
         if isNotOne lengthSquared then
             failRot sine cosine
@@ -87,23 +88,23 @@ type Rotation2D =
 
     /// Returns the angle represented by this 2D Rotation in radians.
     /// The returned angle is in the range [-π, π] (-180° to +180°).
-    member inline r.InRadians : float =
+    member inline r.AngleInRadians : float =
         atan2 r.Sin r.Cos
 
     /// Returns the angle represented by this 2D Rotation in radians.
     /// The returned angle is in the range [-π, π] (-180° to +180°).
-    static member inline inRadians (r:Rotation2D) : float =
-        r.InRadians
+    static member inline angleInRadians (r:Rotation2D) : float =
+        r.AngleInRadians
 
     /// Returns the angle represented by this 2D Rotation in degrees.
     /// The returned angle is in the range [-180°, +180°].
-    member inline r.InDegrees : float =
-        r.InRadians |> toDegrees
+    member inline r.AngleInDegrees : float =
+        r.AngleInRadians |> toDegrees
 
     /// Returns the angle represented by this 2D Rotation in degrees.
     /// The returned angle is in the range [-180°, +180°].
-    static member inline inDegrees (r:Rotation2D) : float =
-        r.InDegrees
+    static member inline angleInDegrees (r:Rotation2D) : float =
+        r.AngleInDegrees
 
     /// Returns the 2D Rotation in the opposite direction.
     member inline r.Inverse : Rotation2D =
@@ -113,20 +114,28 @@ type Rotation2D =
     static member inline inverse (r:Rotation2D) : Rotation2D =
         r.Inverse
 
-    /// Create a new 2D Rotation that adds a 2D Rotation to the existing one.
-    member inline r.Add(ro:Rotation2D) : Rotation2D =
+    /// <summary>Combines this rotation with another one.
+    /// The resulting rotation will first do this rotation and then the other one, like Quaternion.Then, Matrix.Then and RigidMatrix.Then.
+    /// In 2D the rotation angles just add up.</summary>
+    /// <param name="ro">The other rotation (applied second).</param>
+    /// <returns>A new 2D Rotation that rotates like this one followed by ro.</returns>
+    member inline r.Then(ro:Rotation2D) : Rotation2D =
         //use 2x2 matrix multiplication logic for better performance:
         Rotation2D.createUnchecked ( r.Sin*ro.Cos + r.Cos*ro.Sin
                                    , r.Cos*ro.Cos - r.Sin*ro.Sin)
 
-    /// Create a new 2D Rotation that adds a 2D Rotation to the existing one.
-    static member inline add (ro:Rotation2D) (r:Rotation2D) : Rotation2D =
-        r.Add(ro)
+    /// <summary>Combines two rotations for use in a pipeline: 'r |> Rotation2D.andThen ro' first does r and then ro.
+    /// Same as r.Then ro.</summary>
+    /// <param name="ro">The rotation applied second.</param>
+    /// <param name="r">The rotation applied first.</param>
+    /// <returns>A new 2D Rotation that rotates like r followed by ro.</returns>
+    static member inline andThen (ro:Rotation2D) (r:Rotation2D) : Rotation2D =
+        r.Then(ro)
 
     /// Create a new 2D Rotation that adds a counter-clockwise angle in degrees to the existing one.
     member inline r.AddDegrees(deg:float) : Rotation2D =
         let rad = toRadians deg
-        r.Add(Rotation2D.createUnchecked (sin rad, cos rad))
+        r.Then(Rotation2D.createUnchecked (sin rad, cos rad))
 
     /// Create a new 2D Rotation that adds a counter-clockwise angle in degrees to the existing one.
     static member inline addDegrees (deg:float) (r:Rotation2D) : Rotation2D =
@@ -134,7 +143,7 @@ type Rotation2D =
 
     /// Create a new 2D Rotation that adds a counter-clockwise angle in radians to the existing one.
     member inline r.AddRadians(rad:float) : Rotation2D =
-        r.Add(Rotation2D.createUnchecked (sin rad, cos rad))
+        r.Then(Rotation2D.createUnchecked (sin rad, cos rad))
 
     /// Create a new 2D Rotation that adds a counter-clockwise angle in radians to the existing one.
     static member inline addRadians (rad:float) (r:Rotation2D) : Rotation2D =
@@ -200,7 +209,7 @@ type Rotation2D =
     /// Construct a 2D Rotation from two unit vectors.
     /// The rotation represents the counter-clockwise angle from vector 'a' to vector 'b'.
     /// Uses the dot product for cosine and cross product for sine.
-    static member createFromVectors (a:UnitVc,b:UnitVc) : Rotation2D =
+    static member createFromUnitVcs (a:UnitVc) (b:UnitVc) : Rotation2D =
         let dot = a *** b
         let cross = UnitVc.cross(a, b)
         Rotation2D.createUnchecked (cross, dot)
@@ -209,11 +218,11 @@ type Rotation2D =
     /// The rotation represents the counter-clockwise angle from vector 'a' to vector 'b'.
     /// Normalizes both vectors internally and uses dot product for cosine and cross product for sine.
     /// Fails if either vector has near-zero length.
-    static member createFromVectors (a:Vc,b:Vc) : Rotation2D =
+    static member createFromVcs (a:Vc) (b:Vc) : Rotation2D =
         let la = a.Length
         let lb = b.Length
         if isTooTiny la || isTooTiny lb then
-            failUnit2 "Rotation2D.createFromVectors" la lb
+            failUnit2 "Rotation2D.createFromVcs" la lb
         let ax = a.X/la
         let ay = a.Y/la
         let bx = b.X/lb
@@ -238,5 +247,5 @@ and internal Rotation2DJsonConverter() =
         let sine = JsonConvert.readFloat &reader options "Euclid.Rotation2D" "Sin"
         let cosine = JsonConvert.readFloat &reader options "Euclid.Rotation2D" "Cos"
         JsonConvert.readEndObject &reader "Euclid.Rotation2D"
-        Rotation2D.create(sine, cosine)
+        Rotation2D.create sine cosine
 #endif

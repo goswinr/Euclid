@@ -13,27 +13,27 @@ type Points3D   =
 
 
     /// Returns the closest 3D point index from a 3D point list to a given 3D point.
-    static member closestPointIdx (pts:IList<Pnt>, pnt:Pnt) : int =
+    static member closestPointIndex (pnt:Pnt) (pts:IList<Pnt>) : int =
         if pts.Count = 0 then fail "Points3D.closestPoint: empty List of Points: pts"
         let mutable mi = -1
         let mutable mid = Double.MaxValue
         for i=0 to pts.Count - 1 do
             let p = pts.[i]
-            let d = Pnt.sqDist p pnt
+            let d = Pnt.distanceToSq p pnt
             if d < mid then
                 mid <- d
                 mi <- i
         mi
 
     /// Returns the closest point from a 3D point list to a given 3D point.
-    static member closestPoint (pts:IList<Pnt>, pnt:Pnt) : Pnt=
-        pts.[Points3D.closestPointIdx (pts, pnt)]
+    static member closestPoint (pnt:Pnt) (pts:IList<Pnt>) : Pnt=
+        pts.[Points3D.closestPointIndex pnt pts]
 
     /// Returns the closest of two 3D points to a given reference 3D point.
     /// If both points are equidistant the first point is returned.
     static member closestOfTwo (pnt1:Pnt) (pnt2:Pnt) (referencePoint:Pnt) : Pnt =
-        let d1 = Pnt.sqDist pnt1 referencePoint
-        let d2 = Pnt.sqDist pnt2 referencePoint
+        let d1 = Pnt.distanceToSq pnt1 referencePoint
+        let d2 = Pnt.distanceToSq pnt2 referencePoint
         if d1 <= d2 then
             pnt1
         else
@@ -41,16 +41,16 @@ type Points3D   =
 
 
     /// Returns the indices of the 3D points that are closest to each other.
-    static member closestPointsIdx (xs:IList<Pnt>, ys:IList<Pnt>) : int * int =
-        if xs.Count = 0 then fail "Points3D.closestPointsIdx: empty List of Points: xs"
-        if ys.Count = 0 then fail "Points3D.closestPointsIdx: empty List of Points: ys"
+    static member closestPointsIndices (xs:IList<Pnt>) (ys:IList<Pnt>) : int * int =
+        if xs.Count = 0 then fail "Points3D.closestPointsIndices: empty List of Points: xs"
+        if ys.Count = 0 then fail "Points3D.closestPointsIndices: empty List of Points: ys"
         let mutable xi = -1
         let mutable yj = -1
         let mutable minD = Double.MaxValue
         for i=0 to xs.Count-1 do
             let pnt = xs.[i]
             for j=0 to ys.Count-1 do
-                let d = Pnt.sqDist pnt ys.[j]
+                let d = Pnt.distanceToSq pnt ys.[j]
                 if d < minD then
                     minD <- d
                     xi <- i
@@ -59,18 +59,19 @@ type Points3D   =
 
 
     /// Given two lists of 3D points finds the pair that are closest to each other and returns their distance.
-    static member minDistBetweenPointSets (xs:IList<Pnt>, ys:IList<Pnt>) : float =
-        if xs.Count = 0 then fail "Points3D.minDistBetweenPointSets: empty List of Points: xs"
-        if ys.Count = 0 then fail "Points3D.minDistBetweenPointSets: empty List of Points: ys"
-        let (i, j) = Points3D.closestPointsIdx (xs, ys)
-        Pnt.dist xs.[i]  ys.[j]
+    static member minDistanceBetweenPointSets (xs:IList<Pnt>) (ys:IList<Pnt>) : float =
+        if xs.Count = 0 then fail "Points3D.minDistanceBetweenPointSets: empty List of Points: xs"
+        if ys.Count = 0 then fail "Points3D.minDistanceBetweenPointSets: empty List of Points: ys"
+        let (i, j) = Points3D.closestPointsIndices xs ys
+        Pnt.distanceTo xs.[i]  ys.[j]
 
 
 
     /// Find the index of the 3D point that has the biggest distance to any 3D point from the other set.
     /// Basically the most lonely point in 'findPointFrom' list with respect to 'checkAgainst' list.
+    /// The list to check against comes first, the list to find the point from comes last.
     /// Returns findPointFromIdx * checkAgainstIdx
-    static member mostDistantPointIdx (findPointFrom:IList<Pnt>, checkAgainst:IList<Pnt>) : int*int=
+    static member mostDistantPointIndices (checkAgainst:IList<Pnt>) (findPointFrom:IList<Pnt>) : int*int=
         if findPointFrom.Count = 0 then fail "Points3D.mostDistantPoint: empty List of Points: findPointFrom"
         if checkAgainst.Count = 0 then fail "Points3D.mostDistantPoint: empty List of Points: checkAgainst"
         let mutable maxD = Double.MinValue
@@ -81,7 +82,7 @@ type Points3D   =
             let pnt = findPointFrom.[i]
             let mutable minD = Double.MaxValue
             for j=0 to checkAgainst.Count-1 do
-                let d = Pnt.sqDist pnt checkAgainst.[j]
+                let d = Pnt.distanceToSq pnt checkAgainst.[j]
                 if d < minD then
                     minD <- d
                     checkAgainstTempIdx <-j
@@ -92,9 +93,10 @@ type Points3D   =
         findPointFromIdx, checkAgainstIdx
 
 
-    /// Find the 3D point that has the biggest distance to any 3D point from another set.
-    static member mostDistantPoint (findPointFrom:IList<Pnt>, checkAgainst:IList<Pnt>) : Pnt =
-        let i, _ = Points3D.mostDistantPointIdx (findPointFrom, checkAgainst)
+    /// Find the 3D point in 'findPointFrom' that has the biggest distance to any 3D point in 'checkAgainst'.
+    /// The list to check against comes first, the list to find the point from comes last.
+    static member mostDistantPoint (checkAgainst:IList<Pnt>) (findPointFrom:IList<Pnt>) : Pnt =
+        let i, _ = Points3D.mostDistantPointIndices checkAgainst findPointFrom
         findPointFrom.[i]
 
 

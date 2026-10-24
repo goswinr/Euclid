@@ -8,7 +8,7 @@ open EuclidTestSupport
 // 'equalsWithin' compares each coordinate within a tolerance and 'equalsExact' compares exactly.
 
 // Test shapes are rotated and moved, so that they are not axis aligned at the origin.
-let private q = Quaternion.createFromDegrees(Vec(1., 2., 3.), 33.)
+let private q = Quaternion.createFromVecDegrees (Vec(1., 2., 3.)) 33.
 let private shift = Vec(12.5, -7.25, 3.5)
 let private place (p:Pnt) = Pnt.rotate q p + shift
 let private placeXYZ x y z = place (Pnt(x, y, z))
@@ -21,8 +21,8 @@ let private place2 x y = Pt.rotate r2 (Pt(x, y)) + shift2
 let private placeLn2 (ax, ay) (bx, by) = Line2D(place2 ax ay, place2 bx by)
 let private placeVc x y = place2 x y - place2 0. 0.
 
-let inline private eqPnt a b = Pnt.dist a b < 1e-9
-let inline private eqPt a b = Pt.dist a b < 1e-9
+let inline private eqPnt a b = Pnt.distanceTo a b < 1e-9
+let inline private eqPt a b = Pt.distanceTo a b < 1e-9
 let private close = Accuracy.veryHigh
 
 let tests =
@@ -34,7 +34,7 @@ let tests =
                 let a = placeXYZ 1. 2. 3.
                 let b = Pnt(a.X + 0.9, a.Y - 0.9, a.Z + 0.9)
                 "each coordinate is within 1.0" |> Expect.isTrue (Pnt.equalsWithin 1.0 a b)
-                "although the distance is bigger than 1.0" |> Expect.isTrue (Pnt.dist a b > 1.0)
+                "although the distance is bigger than 1.0" |> Expect.isTrue (Pnt.distanceTo a b > 1.0)
                 "a coordinate is outside 0.8" |> Expect.isFalse (Pnt.equalsWithin 0.8 a b)
                 "notEqualsWithin 0.8" |> Expect.isTrue (Pnt.notEqualsWithin 0.8 a b)
                 "notEqualsWithin 1.0" |> Expect.isFalse (Pnt.notEqualsWithin 1.0 a b)
@@ -45,7 +45,7 @@ let tests =
                 let a = place2 1. 2.
                 let b = Pt(a.X + 0.9, a.Y - 0.9)
                 "each coordinate is within 1.0" |> Expect.isTrue (Pt.equalsWithin 1.0 a b)
-                "although the distance is bigger than 1.0" |> Expect.isTrue (Pt.dist a b > 1.0)
+                "although the distance is bigger than 1.0" |> Expect.isTrue (Pt.distanceTo a b > 1.0)
                 "a coordinate is outside 0.8" |> Expect.isFalse (Pt.equalsWithin 0.8 a b)
                 "notEqualsWithin 0.8" |> Expect.isTrue (Pt.notEqualsWithin 0.8 a b)
             }
@@ -72,11 +72,11 @@ let tests =
                 let ln2 = placeLn2 (1., 2.) (4., 5.)
                 "Line2D same" |> Expect.isTrue (Line2D.equalsExact ln2 ln2)
                 "Line2D reversed" |> Expect.isFalse (Line2D.equalsExact ln2 ln2.Reversed)
-                let b = BBox.create(Pnt(10., 20., 30.), Pnt(14., 25., 33.))
+                let b = BBox.create (Pnt(10., 20., 30.)) (Pnt(14., 25., 33.))
                 "BBox same" |> Expect.isTrue (BBox.equalsExact b b)
                 "BBox expanded" |> Expect.isFalse (BBox.equalsExact b (BBox.expand 1e-9 b))
                 "BBox expanded within" |> Expect.isTrue (BBox.equalsWithin 1e-6 b (BBox.expand 1e-9 b))
-                let pl = PPlane.createThreePoints (placeXYZ 0. 0. 0.) (placeXYZ 1. 0. 0.) (placeXYZ 0. 1. 0.)
+                let pl = PPlane.createFrom3Pnts (placeXYZ 0. 0. 0.) (placeXYZ 1. 0. 0.) (placeXYZ 0. 1. 0.)
                 "PPlane same" |> Expect.isTrue (PPlane.equalsExact pl pl)
                 "PPlane moved" |> Expect.isFalse (PPlane.equalsExact pl (PPlane.move (Vec(0., 0., 1e-9)) pl))
                 "Matrix same" |> Expect.isTrue (Matrix.equalsExact Matrix.identity Matrix.identity)
@@ -95,8 +95,8 @@ let tests =
                 "exact copy" |> Expect.isTrue (Polyline3D.equalsExact a (Polyline3D.createFromPnts pts))
                 "different point count" |> Expect.isFalse (Polyline3D.equalsWithin 1.0 a (Polyline3D.createFromPnts pts.Tail))
                 // the constructors of Pnt and Vec reject NaN in DEBUG builds, but a Polyline3D can hold it
-                let n1 = Polyline3D.createDirectly (ResizeArray [ nan; 1.; 2. ])
-                let n2 = Polyline3D.createDirectly (ResizeArray [ nan; 1.; 2. ])
+                let n1 = Polyline3D.createFromXYZs (ResizeArray [ nan; 1.; 2. ])
+                let n2 = Polyline3D.createFromXYZs (ResizeArray [ nan; 1.; 2. ])
                 "NaN is never exactly equal" |> Expect.isFalse (Polyline3D.equalsExact n1 n2)
                 "NaN is never equal within a tolerance" |> Expect.isFalse (Polyline3D.equalsWithin 1.0 n1 n2)
                 "but the same instance is equal to itself" |> Expect.isTrue (Polyline3D.equalsExact n1 n1)
@@ -147,9 +147,9 @@ let tests =
         testList "operation fails where tryOperation returns ValueNone" [
 
             test "PPlane intersections" {
-                let a = PPlane.createThreePoints (placeXYZ 0. 0. 0.) (placeXYZ 1. 0. 0.) (placeXYZ 0. 1. 0.)
-                let b = PPlane.createThreePoints (placeXYZ 0. 0. 0.) (placeXYZ 1. 0. 0.) (placeXYZ 0. 0. 1.)
-                let parallelPl = PPlane.createThreePoints (placeXYZ 0. 0. 5.) (placeXYZ 1. 0. 5.) (placeXYZ 0. 1. 5.)
+                let a = PPlane.createFrom3Pnts (placeXYZ 0. 0. 0.) (placeXYZ 1. 0. 0.) (placeXYZ 0. 1. 0.)
+                let b = PPlane.createFrom3Pnts (placeXYZ 0. 0. 0.) (placeXYZ 1. 0. 0.) (placeXYZ 0. 0. 1.)
+                let parallelPl = PPlane.createFrom3Pnts (placeXYZ 0. 0. 5.) (placeXYZ 1. 0. 5.) (placeXYZ 0. 1. 5.)
                 match PPlane.tryIntersect a b with
                 | ValueSome ln -> "intersect same as tryIntersect" |> Expect.isTrue (Line3D.equalsExact ln (PPlane.intersect a b))
                 | ValueNone -> failtest "expected ValueSome"
@@ -176,9 +176,9 @@ let tests =
 
             test "NPlane intersections" {
                 let o = placeXYZ 0. 0. 0.
-                let a = NPlane.create(o, placeVec (Vec(0., 0., 1.)))
-                let b = NPlane.create(o, placeVec (Vec(0., 1., 0.)))
-                let parallelPl = NPlane.create(placeXYZ 0. 0. 5., placeVec (Vec(0., 0., 1.)))
+                let a = NPlane.createFromNormal (placeVec (Vec(0., 0., 1.))) o
+                let b = NPlane.createFromNormal (placeVec (Vec(0., 1., 0.))) o
+                let parallelPl = NPlane.createFromNormal (placeVec (Vec(0., 0., 1.))) (placeXYZ 0. 0. 5.)
                 match NPlane.tryIntersect a b with
                 | ValueSome ln -> "intersect same as tryIntersect" |> Expect.isTrue (Line3D.equalsExact ln (NPlane.intersect a b))
                 | ValueNone -> failtest "expected ValueSome"
@@ -197,10 +197,10 @@ let tests =
             }
 
             test "BBox intersections" {
-                let a = BBox.create(Pnt(10., 20., 30.), Pnt(14., 25., 33.))
-                let b = BBox.create(Pnt(12., 22., 31.), Pnt(18., 28., 40.))
-                let apart = BBox.create(Pnt(100., 100., 100.), Pnt(101., 101., 101.))
-                let expected = BBox.create(Pnt(12., 22., 31.), Pnt(14., 25., 33.))
+                let a = BBox.create (Pnt(10., 20., 30.)) (Pnt(14., 25., 33.))
+                let b = BBox.create (Pnt(12., 22., 31.)) (Pnt(18., 28., 40.))
+                let apart = BBox.create (Pnt(100., 100., 100.)) (Pnt(101., 101., 101.))
+                let expected = BBox.create (Pnt(12., 22., 31.)) (Pnt(14., 25., 33.))
                 "intersection" |> Expect.isTrue (BBox.equalsExact (BBox.intersection a b) expected)
                 "Intersection" |> Expect.isTrue (BBox.equalsExact (a.Intersection b) expected)
                 match BBox.tryIntersection a b with
@@ -224,10 +224,10 @@ let tests =
             }
 
             test "BRect intersections" {
-                let a = BRect.create(Pt(10., 20.), Pt(14., 25.))
-                let b = BRect.create(Pt(12., 22.), Pt(18., 28.))
-                let apart = BRect.create(Pt(100., 100.), Pt(101., 101.))
-                let expected = BRect.create(Pt(12., 22.), Pt(14., 25.))
+                let a = BRect.create (Pt(10., 20.)) (Pt(14., 25.))
+                let b = BRect.create (Pt(12., 22.)) (Pt(18., 28.))
+                let apart = BRect.create (Pt(100., 100.)) (Pt(101., 101.))
+                let expected = BRect.create (Pt(12., 22.)) (Pt(14., 25.))
                 "intersection" |> Expect.isTrue (BRect.equalsExact (BRect.intersection a b) expected)
                 "Intersection" |> Expect.isTrue (BRect.equalsExact (a.Intersection b) expected)
                 "apart" |> Expect.isValueNone (BRect.tryIntersection a apart)
@@ -245,7 +245,7 @@ let tests =
 
             test "Box.intersectRay" {
                 let o = placeXYZ 0. 0. 0.
-                let box = Box.create(o, placeVec (Vec(4., 0., 0.)), placeVec (Vec(0., 3., 0.)), placeVec (Vec(0., 0., 2.)))
+                let box = Box.create (placeVec (Vec(4., 0., 0.))) (placeVec (Vec(0., 3., 0.))) (placeVec (Vec(0., 0., 2.))) o
                 let ray = placeLn (1., 1., -1.) (1., 1., 1.)
                 let tEntry, tExit = Box.intersectRay ray box
                 "entry" |> Expect.floatClose close tEntry 0.5
@@ -258,7 +258,7 @@ let tests =
             }
 
             test "Rect2D intersections" {
-                let rect = Rect2D.createFromVectors(place2 0. 0., placeVc 4. 0., placeVc 0. 3.)
+                let rect = Rect2D.createFromVcs (placeVc 4. 0.) (placeVc 0. 3.) (place2 0. 0.)
                 let ray = placeLn2 (-1., 1.) (1., 1.)
                 let tEntry, tExit = Rect2D.intersectRay ray rect
                 "entry" |> Expect.floatClose close tEntry 0.5
@@ -279,7 +279,7 @@ let tests =
             }
 
             test "Rect3D intersections" {
-                let rect = Rect3D.createFromVectors(placeXYZ 0. 0. 0., placeVec (Vec(4., 0., 0.)), placeVec (Vec(0., 3., 0.)))
+                let rect = Rect3D.createFromVecs (placeVec (Vec(4., 0., 0.))) (placeVec (Vec(0., 3., 0.))) (placeXYZ 0. 0. 0.)
                 let ray = placeLn (1., 1., -1.) (1., 1., 1.)
                 "intersectRay" |> Expect.floatClose close (Rect3D.intersectRay ray rect) 0.5
                 "intersectLine" |> Expect.isTrue (eqPnt (Rect3D.intersectLine ray rect) (placeXYZ 1. 1. 0.))
@@ -296,52 +296,52 @@ let tests =
                 let pt = place2 0. 0.
                 let prev = place2 -5. 0.
                 let next = place2 0. 5.
-                "offsetPtVar" |> Expect.isTrue (eqPt (Tria2D.offsetPtVar(pt, prev, next, 1.0, 2.0)) (place2 -2. 1.))
-                match Tria2D.tryOffsetPtVar(pt, prev, next, 1.0, 2.0) with
-                | ValueSome p -> "tryOffsetPtVar" |> Expect.isTrue (Pt.equalsExact p (Tria2D.offsetPtVar(pt, prev, next, 1.0, 2.0)))
+                "offsetPtVariable" |> Expect.isTrue (eqPt (Tria2D.offsetPtVariable 1.0 2.0 prev next pt) (place2 -2. 1.))
+                match Tria2D.tryOffsetPtVariable 1.0 2.0 prev next pt with
+                | ValueSome p -> "tryOffsetPtVar" |> Expect.isTrue (Pt.equalsExact p (Tria2D.offsetPtVariable 1.0 2.0 prev next pt))
                 | ValueNone -> failtest "expected ValueSome"
                 let nPrev = Vc.unitize (placeVc 0. 1.)
                 let nNext = Vc.unitize (placeVc -1. 0.)
-                "offsetPtVarByNormals" |> Expect.isTrue (eqPt (Tria2D.offsetPtVarByNormals(pt, nPrev, nNext, 1.0, 2.0)) (place2 -2. 1.))
+                "offsetPtVariableByNormals" |> Expect.isTrue (eqPt (Tria2D.offsetPtVariableByNormals 1.0 2.0 nPrev nNext pt) (place2 -2. 1.))
                 let straight = place2 5. 0.
-                "collinear with equal distances" |> Expect.isTrue (eqPt (Tria2D.offsetPtVar(pt, prev, straight, 1.0, 1.0)) (place2 0. 1.))
-                "collinear with different distances" |> Expect.isValueNone (Tria2D.tryOffsetPtVar(pt, prev, straight, 1.0, 2.0))
-                "collinear with different distances fails" |> Expect.throws (fun () -> Tria2D.offsetPtVar(pt, prev, straight, 1.0, 2.0) |> ignore)
-                "parallel normals fail" |> Expect.throws (fun () -> Tria2D.offsetPtVarByNormals(pt, nPrev, nPrev, 1.0, 2.0) |> ignore)
+                "collinear with equal distances" |> Expect.isTrue (eqPt (Tria2D.offsetPtVariable 1.0 1.0 prev straight pt) (place2 0. 1.))
+                "collinear with different distances" |> Expect.isValueNone (Tria2D.tryOffsetPtVariable 1.0 2.0 prev straight pt)
+                "collinear with different distances fails" |> Expect.throws (fun () -> Tria2D.offsetPtVariable 1.0 2.0 prev straight pt |> ignore)
+                "parallel normals fail" |> Expect.throws (fun () -> Tria2D.offsetPtVariableByNormals 1.0 2.0 nPrev nPrev pt |> ignore)
             }
 
             test "Tria3D offsets and intersections" {
                 let pnt = placeXYZ 0. 0. 0.
                 let prev = placeXYZ -5. 0. 0.
                 let next = placeXYZ 0. 5. 0.
-                match Tria3D.tryOffsetPntVar(pnt, prev, next, 1.0, 2.0) with
-                | ValueSome p -> "offsetPntVar same as tryOffsetPntVar" |> Expect.isTrue (Pnt.equalsExact p (Tria3D.offsetPntVar(pnt, prev, next, 1.0, 2.0)))
+                match Tria3D.tryOffsetPntVariable 1.0 2.0 prev next pnt with
+                | ValueSome p -> "offsetPntVariable same as tryOffsetPntVar" |> Expect.isTrue (Pnt.equalsExact p (Tria3D.offsetPntVariable 1.0 2.0 prev next pnt))
                 | ValueNone -> failtest "expected ValueSome"
                 let straight = placeXYZ 5. 0. 0.
-                "collinear" |> Expect.isValueNone (Tria3D.tryOffsetPntVar(pnt, prev, straight, 1.0, 2.0))
-                "collinear fails" |> Expect.throws (fun () -> Tria3D.offsetPntVar(pnt, prev, straight, 1.0, 2.0) |> ignore)
+                "collinear" |> Expect.isValueNone (Tria3D.tryOffsetPntVariable 1.0 2.0 prev straight pnt)
+                "collinear fails" |> Expect.throws (fun () -> Tria3D.offsetPntVariable 1.0 2.0 prev straight pnt |> ignore)
 
                 let a = placeXYZ 0. 0. 0.
                 let b = placeXYZ 4. 0. 0.
                 let c = placeXYZ 0. 4. 0.
                 let ray = placeLn (1., 1., -1.) (1., 1., 1.)
-                let t = Tria3D.intersectRay(ray, a, b, c)
+                let t = Tria3D.intersectRay a b c ray
                 "intersectRay" |> Expect.floatClose close t 0.5
                 "intersectRayXYZ" |> Expect.equal (Tria3D.intersectRayXYZ(ray.FromX, ray.FromY, ray.FromZ, ray.ToX, ray.ToY, ray.ToZ, a.X, a.Y, a.Z, b.X, b.Y, b.Z, c.X, c.Y, c.Z)) t
                 let e1 = b - a
                 let e2 = c - a
                 let v = ray.Vector
                 "intersectTriaVectorsWithRay" |> Expect.equal (Tria3D.intersectTriaVectorsWithRay(ray.FromX, ray.FromY, ray.FromZ, v.X, v.Y, v.Z, a.X, a.Y, a.Z, e1.X, e1.Y, e1.Z, e2.X, e2.Y, e2.Z)) t
-                "intersectLine" |> Expect.isTrue (eqPnt (Tria3D.intersectLine(ray, a, b, c)) (placeXYZ 1. 1. 0.))
+                "intersectLine" |> Expect.isTrue (eqPnt (Tria3D.intersectLine a b c ray) (placeXYZ 1. 1. 0.))
 
                 let miss = placeLn (5., 5., -1.) (5., 5., 1.)
-                "miss" |> Expect.isValueNone (Tria3D.tryIntersectRay(miss, a, b, c))
-                "miss fails" |> Expect.throws (fun () -> Tria3D.intersectRay(miss, a, b, c) |> ignore)
+                "miss" |> Expect.isValueNone (Tria3D.tryIntersectRay a b c miss)
+                "miss fails" |> Expect.throws (fun () -> Tria3D.intersectRay a b c miss |> ignore)
                 "miss fails XYZ" |> Expect.throws (fun () -> Tria3D.intersectRayXYZ(miss.FromX, miss.FromY, miss.FromZ, miss.ToX, miss.ToY, miss.ToZ, a.X, a.Y, a.Z, b.X, b.Y, b.Z, c.X, c.Y, c.Z) |> ignore)
                 let short = placeLn (1., 1., 1.) (1., 1., 2.)
-                "short line, but the ray hits" |> Expect.floatClose close (Tria3D.intersectRay(short, a, b, c)) -1.0
-                "short line" |> Expect.isValueNone (Tria3D.tryIntersectLine(short, a, b, c))
-                "short line fails" |> Expect.throws (fun () -> Tria3D.intersectLine(short, a, b, c) |> ignore)
+                "short line, but the ray hits" |> Expect.floatClose close (Tria3D.intersectRay a b c short) -1.0
+                "short line" |> Expect.isValueNone (Tria3D.tryIntersectLine a b c short)
+                "short line fails" |> Expect.throws (fun () -> Tria3D.intersectLine a b c short |> ignore)
             }
 
             test "Line3D ray closest parameters and points" {
@@ -368,15 +368,15 @@ let tests =
             test "Line3D.intersectCone" {
                 // the cone axis is the world Z-axis, so the ray is moved off the axis instead
                 let ray = Line3D(Pnt(-10., 0.5, 2.), Pnt(10., 0.5, 2.))
-                let t1, t2 = Line3D.intersectCone(ray, 5.0, 0.0, 10.0)
-                "tryIntersectCone" |> Expect.equal (Line3D.tryIntersectCone(ray, 5.0, 0.0, 10.0)) (ValueSome (t1, t2))
+                let t1, t2 = Line3D.intersectCone 5.0 0.0 10.0 ray
+                "tryIntersectCone" |> Expect.equal (Line3D.tryIntersectCone 5.0 0.0 10.0 ray) (ValueSome (t1, t2))
                 // at Z = 2.0 the cone has a radius of 4.0
                 let radiusAt t = let p = ray.EvaluateAt t in sqrt (p.X*p.X + p.Y*p.Y)
                 "first hit on the cone" |> Expect.floatClose Accuracy.medium (radiusAt t1) 4.0
                 "second hit on the cone" |> Expect.floatClose Accuracy.medium (radiusAt t2) 4.0
                 let miss = Line3D(Pnt(-10., 20., 2.), Pnt(10., 20., 2.))
-                "miss" |> Expect.isValueNone (Line3D.tryIntersectCone(miss, 5.0, 0.0, 10.0))
-                "miss fails" |> Expect.throws (fun () -> Line3D.intersectCone(miss, 5.0, 0.0, 10.0) |> ignore)
+                "miss" |> Expect.isValueNone (Line3D.tryIntersectCone 5.0 0.0 10.0 miss)
+                "miss fails" |> Expect.throws (fun () -> Line3D.intersectCone 5.0 0.0 10.0 miss |> ignore)
             }
         ]
     ]

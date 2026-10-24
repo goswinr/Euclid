@@ -55,7 +55,7 @@ for c in rs.GetObjects("crvs", printCount=false)  do
         |> rs.AddPolyline
         |> rs.setLayer $"O::Constant-dist<{dist}>"
 
-        Printfn.orange $"{ind0}{ind}let plr = Offset2D.offset'' Cosine.``170.0`` Offset2D.UTurnBehavior.Chamfer {dist} pli.AsPoints |> Polyline2D"
+        Printfn.orange $"{ind0}{ind}let plr = Offset2D.offsetCustom(pli.AsPoints, {dist}, Offset2D.UTurnBehavior.Chamfer, Cosine.``170.0``) |> Polyline2D"
 
         Printfn.orange $"""{ind0}{ind}"offset {k.Value}: dist {dist} on {pl.PointCount} points" |> Expect.isTrue (Polyline2D.equalsWithin 0.0001 plr plExp)"""
         Printfn.blue $"{ind0}{ind}}}\n"

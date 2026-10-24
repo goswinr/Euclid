@@ -96,7 +96,7 @@ let private contractValues : (string * obj) list = [
         0.0, 1.0, 0.0,
         0.0, 0.0, 1.0))
     "Matrix", box matrix
-    "RigidMatrix", box (RigidMatrix.createTranslation(1.5, -2.25, 3.75))
+    "RigidMatrix", box (RigidMatrix.createTranslationXYZ 1.5 (-2.25) 3.75)
     "Line2D", box (Line2D(1.5, -2.25, 3.75, 4.5))
     "Line3D", box (Line3D(1.5, -2.25, 3.75, 4.5, 5.5, 6.5))
     "NPlane", box (NPlane.createUnchecked(1.5, -2.25, 3.75, 0.0, 0.0, 1.0))
@@ -254,9 +254,9 @@ let tests =
             let polyline3D = fixture "Polyline3D" :?> Polyline3D
             // Each function creates an object like the one a read returns, with a coordinate buffer of the same size.
             let results : (string * obj * (unit -> unit)) list = [
-                "FreeBox", box freeBox, fun () -> FreeBox.createDirectly (Array.zeroCreate freeBox.XYZs.Length) |> ignore
-                "Polyline2D", box polyline2D, fun () -> Polyline2D.createDirectly (ResizeArray<float>(polyline2D.XYs.Count)) |> ignore
-                "Polyline3D", box polyline3D, fun () -> Polyline3D.createDirectly (ResizeArray<float>(polyline3D.XYZs.Count)) |> ignore
+                "FreeBox", box freeBox, fun () -> FreeBox.createFromXYZs (Array.zeroCreate freeBox.XYZs.Length) |> ignore
+                "Polyline2D", box polyline2D, fun () -> Polyline2D.createFromXYs (ResizeArray<float>(polyline2D.XYs.Count)) |> ignore
+                "Polyline3D", box polyline3D, fun () -> Polyline3D.createFromXYZs (ResizeArray<float>(polyline3D.XYZs.Count)) |> ignore
             ]
             Expect.equal (results |> List.map (fun (name, _, _) -> name) |> Set.ofList) collectionTypes "collection types"
             for name, value, createResult in results do
@@ -284,6 +284,36 @@ let tests =
             Expect.throws (fun () -> JsonSerializer.Deserialize<Polyline2D>("""{}""") |> ignore) "a missing array"
             Expect.throws (fun () -> JsonSerializer.Deserialize<FreeBox>("""{"XYZs":[1,2,3]}""") |> ignore) "a FreeBox with 3 instead of 24 floats"
 
+        testCase "System.Text.Json writes the names of the DataMember fields and properties" <| fun _ ->
+            for name, value in contractValues do
+                let contractType = value.GetType()
+                let memberNames =
+                    contractType.GetMembers()
+                    |> Array.filter (fun m -> m.GetCustomAttributes(typeof<DataMemberAttribute>, false).Length > 0)
+                    |> Array.map (fun m -> m.Name)
+                    |> Set.ofArray
+                use document = JsonDocument.Parse(JsonSerializer.Serialize(value, contractType))
+                let jsonNames = document.RootElement.EnumerateObject() |> Seq.map (fun p -> p.Name) |> Set.ofSeq
+                Expect.equal jsonNames memberNames $"{name}: JSON property names"
+
+        testCase "System.Text.Json rejects the axis property names of earlier versions" <| fun _ ->
+            let legacyValues : (string * Type * string) list = [
+                "PPlane", typeof<PPlane>,
+                    """{"OriginX":0,"OriginY":0,"OriginZ":0,"XaxisX":1,"XaxisY":0,"XaxisZ":0,"YaxisX":0,"YaxisY":1,"YaxisZ":0,"ZaxisX":0,"ZaxisY":0,"ZaxisZ":1}"""
+                "Rect2D", typeof<Rect2D>,
+                    """{"OriginX":0,"OriginY":0,"XaxisX":1,"XaxisY":0,"YaxisX":0,"YaxisY":1}"""
+                "Rect3D", typeof<Rect3D>,
+                    """{"OriginX":0,"OriginY":0,"OriginZ":0,"XaxisX":1,"XaxisY":0,"XaxisZ":0,"YaxisX":0,"YaxisY":1,"YaxisZ":0}"""
+                "Box", typeof<Box>,
+                    """{"OriginX":0,"OriginY":0,"OriginZ":0,"XaxisX":1,"XaxisY":0,"XaxisZ":0,"YaxisX":0,"YaxisY":1,"YaxisZ":0,"ZaxisX":0,"ZaxisY":0,"ZaxisZ":1}"""
+            ]
+            for name, contractType, legacyJson in legacyValues do
+                Expect.throws
+                    (fun () -> JsonSerializer.Deserialize(legacyJson, contractType) |> ignore)
+                    $"{name}: JSON with Xaxis names should be rejected"
+                let current = legacyJson.Replace("axis", "Axis")
+                Expect.isTrue (not (isNull (JsonSerializer.Deserialize(current, contractType)))) $"{name}: the same JSON with XAxis names is read"
+
         testCase "System.Text.Json rejects invalid geometry during deserialization" <| fun _ ->
             let invalidValues : (string * Type * string) list = [
                 "UnitVc", typeof<UnitVc>, """{"X":0,"Y":0}"""
@@ -291,17 +321,17 @@ let tests =
                 "Rotation2D", typeof<Rotation2D>, """{"Sin":0,"Cos":0}"""
                 "Quaternion", typeof<Quaternion>, """{"X":0,"Y":0,"Z":0,"W":0}"""
                 "PPlane", typeof<PPlane>,
-                    """{"OriginX":0,"OriginY":0,"OriginZ":0,"XaxisX":1,"XaxisY":0,"XaxisZ":0,"YaxisX":1,"YaxisY":0,"YaxisZ":0,"ZaxisX":0,"ZaxisY":0,"ZaxisZ":1}"""
+                    """{"OriginX":0,"OriginY":0,"OriginZ":0,"XAxisX":1,"XAxisY":0,"XAxisZ":0,"YAxisX":1,"YAxisY":0,"YAxisZ":0,"ZAxisX":0,"ZAxisY":0,"ZAxisZ":1}"""
                 "RigidMatrix", typeof<RigidMatrix>,
                     """{"M11":2,"M21":0,"M31":0,"X41":0,"M12":0,"M22":1,"M32":0,"Y42":0,"M13":0,"M23":0,"M33":1,"Z43":0}"""
                 "NPlane", typeof<NPlane>,
                     """{"OriginX":0,"OriginY":0,"OriginZ":0,"NormalX":0,"NormalY":0,"NormalZ":0}"""
                 "Rect2D", typeof<Rect2D>,
-                    """{"OriginX":0,"OriginY":0,"XaxisX":1,"XaxisY":0,"YaxisX":1,"YaxisY":0}"""
+                    """{"OriginX":0,"OriginY":0,"XAxisX":1,"XAxisY":0,"YAxisX":1,"YAxisY":0}"""
                 "Rect3D", typeof<Rect3D>,
-                    """{"OriginX":0,"OriginY":0,"OriginZ":0,"XaxisX":1,"XaxisY":0,"XaxisZ":0,"YaxisX":1,"YaxisY":0,"YaxisZ":0}"""
+                    """{"OriginX":0,"OriginY":0,"OriginZ":0,"XAxisX":1,"XAxisY":0,"XAxisZ":0,"YAxisX":1,"YAxisY":0,"YAxisZ":0}"""
                 "Box", typeof<Box>,
-                    """{"OriginX":0,"OriginY":0,"OriginZ":0,"XaxisX":1,"XaxisY":0,"XaxisZ":0,"YaxisX":1,"YaxisY":0,"YaxisZ":0,"ZaxisX":0,"ZaxisY":0,"ZaxisZ":1}"""
+                    """{"OriginX":0,"OriginY":0,"OriginZ":0,"XAxisX":1,"XAxisY":0,"XAxisZ":0,"YAxisX":1,"YAxisY":0,"YAxisZ":0,"ZAxisX":0,"ZAxisY":0,"ZAxisZ":1}"""
             ]
 
             for name, contractType, invalidJson in invalidValues do

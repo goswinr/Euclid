@@ -118,7 +118,7 @@ type Vec =
 
     /// Dot product, or scalar product of two 3D vectors.
     /// Returns a float.
-    static member inline dot (a:Vec, b:Vec)  : float =
+    static member inline dot (a:Vec) (b:Vec)  : float =
         a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
     /// The Cross Product of two 3D vectors.

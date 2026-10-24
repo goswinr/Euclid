@@ -5,12 +5,12 @@ open Euclid
 open EuclidTestSupport
 
 let inline eqFloat a b = abs(a - b) < 1e-9
-let inline eqPt a b = Pt.dist a b < 1e-9
+let inline eqPt a b = Pt.distanceTo a b < 1e-9
 let inline eqVc a b = Vc.length (a - b) < 1e-9
 let eqLn (a:Line2D) (b:Line2D) = eqPt a.From b.From && eqPt a.To b.To
-let eqRect (a:Rect2D) (b:Rect2D) = eqPt a.Origin b.Origin && eqVc a.Xaxis b.Xaxis && eqVc a.Yaxis b.Yaxis
+let eqRect (a:Rect2D) (b:Rect2D) = eqPt a.Origin b.Origin && eqVc a.XAxis b.XAxis && eqVc a.YAxis b.YAxis
 let eqPl (a:Polyline2D) (b:Polyline2D) =
-    a.PointCount = b.PointCount && Seq.forall (fun i -> eqPt (a.GetPt i) (b.GetPt i)) [0 .. a.PointCount - 1]
+    a.PointCount = b.PointCount && Seq.forall (fun i -> eqPt (a.GetPoint i) (b.GetPoint i)) [0 .. a.PointCount - 1]
 
 // Shapes for the rotation and scale grammar tests, away from the origin and not axis-aligned.
 let gCen = Pt(12.0, -7.0)
@@ -19,7 +19,7 @@ let gRad = UtilEuclid.toRadians gDeg
 let gRot = Rotation2D.createFromDegrees gDeg
 let gPt = Pt(15.5, -3.25)
 let gLn = Line2D(Pt(14.0, -5.0), Pt(19.0, -2.5))
-let gRect = Rect2D.createFromVectors(Pt(13.0, -4.0), Vc(4.0, 3.0), Vc(-1.5, 2.0))
+let gRect = Rect2D.createFromVcs (Vc(4.0, 3.0)) (Vc(-1.5, 2.0)) (Pt(13.0, -4.0))
 let gPl () = Polyline2D.createFromPts [Pt(14., -5.); Pt(19., -2.5); Pt(17., 1.); Pt(14., -5.)]
 /// Rotates around a center by translating to the origin, rotating with Vc.rotate and translating back.
 let refRotAround (cen:Pt) (r:Rotation2D) (p:Pt) = cen + Vc.rotate r (p - cen)
@@ -70,48 +70,48 @@ let tests =
 
             test "InDegrees 45°" {
                 let r = Rotation2D.createFromDegrees 45.0
-                Expect.isTrue (eqFloat r.InDegrees 45.0) "Should return 45°"
+                Expect.isTrue (eqFloat r.AngleInDegrees 45.0) "Should return 45°"
             }
 
             test "InDegrees 90°" {
                 let r = Rotation2D.createFromDegrees 90.0
-                Expect.isTrue (eqFloat r.InDegrees 90.0) "Should return 90°"
+                Expect.isTrue (eqFloat r.AngleInDegrees 90.0) "Should return 90°"
             }
 
             test "InDegrees 135°" {
                 let r = Rotation2D.createFromDegrees 135.0
-                Expect.isTrue (eqFloat r.InDegrees 135.0) "Should return 135° not 45°"
+                Expect.isTrue (eqFloat r.AngleInDegrees 135.0) "Should return 135° not 45°"
             }
 
             test "InDegrees 180°" {
                 let r = Rotation2D.createFromDegrees 180.0
-                let deg = abs(r.InDegrees)
+                let deg = abs(r.AngleInDegrees)
                 Expect.isTrue (eqFloat deg 180.0) "Should return ±180°"
             }
 
             test "InDegrees 270°" {
                 let r = Rotation2D.createFromDegrees 270.0
-                Expect.isTrue (eqFloat r.InDegrees -90.0) "Should return -90° (equivalent to 270°)"
+                Expect.isTrue (eqFloat r.AngleInDegrees -90.0) "Should return -90° (equivalent to 270°)"
             }
 
             test "InDegrees -90°" {
                 let r = Rotation2D.createFromDegrees -90.0
-                Expect.isTrue (eqFloat r.InDegrees -90.0) "Should return -90°"
+                Expect.isTrue (eqFloat r.AngleInDegrees -90.0) "Should return -90°"
             }
 
             test "InDegrees -135°" {
                 let r = Rotation2D.createFromDegrees -135.0
-                Expect.isTrue (eqFloat r.InDegrees -135.0) "Should return -135°"
+                Expect.isTrue (eqFloat r.AngleInDegrees -135.0) "Should return -135°"
             }
 
             test "InRadians π/4" {
                 let r = Rotation2D.createFromRadians (System.Math.PI / 4.0)
-                Expect.isTrue (eqFloat r.InRadians (System.Math.PI / 4.0)) "Should return π/4"
+                Expect.isTrue (eqFloat r.AngleInRadians (System.Math.PI / 4.0)) "Should return π/4"
             }
 
             test "InRadians 3π/4" {
                 let r = Rotation2D.createFromRadians (3.0 * System.Math.PI / 4.0)
-                Expect.isTrue (eqFloat r.InRadians (3.0 * System.Math.PI / 4.0)) "Should return 3π/4"
+                Expect.isTrue (eqFloat r.AngleInRadians (3.0 * System.Math.PI / 4.0)) "Should return 3π/4"
             }
         ]
 
@@ -120,19 +120,19 @@ let tests =
             test "Inverse of 45°" {
                 let r = Rotation2D.createFromDegrees 45.0
                 let inv = r.Inverse
-                Expect.isTrue (eqFloat inv.InDegrees -45.0) "Inverse should be -45°"
+                Expect.isTrue (eqFloat inv.AngleInDegrees -45.0) "Inverse should be -45°"
             }
 
             test "Inverse of -90°" {
                 let r = Rotation2D.createFromDegrees -90.0
                 let inv = r.Inverse
-                Expect.isTrue (eqFloat inv.InDegrees 90.0) "Inverse should be 90°"
+                Expect.isTrue (eqFloat inv.AngleInDegrees 90.0) "Inverse should be 90°"
             }
 
             test "Inverse of 135°" {
                 let r = Rotation2D.createFromDegrees 135.0
                 let inv = r.Inverse
-                Expect.isTrue (eqFloat inv.InDegrees -135.0) "Inverse should be -135°"
+                Expect.isTrue (eqFloat inv.AngleInDegrees -135.0) "Inverse should be -135°"
             }
 
             test "Double inverse returns original" {
@@ -147,88 +147,88 @@ let tests =
             test "Add 45° + 45° = 90°" {
                 let r1 = Rotation2D.createFromDegrees 45.0
                 let r2 = Rotation2D.createFromDegrees 45.0
-                let result = r1.Add r2
-                Expect.isTrue (eqFloat result.InDegrees 90.0) "45° + 45° should be 90°"
+                let result = r1.Then r2
+                Expect.isTrue (eqFloat result.AngleInDegrees 90.0) "45° + 45° should be 90°"
             }
 
             test "Add 90° + 90° = 180°" {
                 let r1 = Rotation2D.createFromDegrees 90.0
                 let r2 = Rotation2D.createFromDegrees 90.0
-                let result = r1.Add r2
-                let deg = abs(result.InDegrees)
+                let result = r1.Then r2
+                let deg = abs(result.AngleInDegrees)
                 Expect.isTrue (eqFloat deg 180.0) "90° + 90° should be ±180°"
             }
 
             test "Add 135° + 90° = -135°" {
                 let r1 = Rotation2D.createFromDegrees 135.0
                 let r2 = Rotation2D.createFromDegrees 90.0
-                let result = r1.Add r2
-                Expect.isTrue (eqFloat result.InDegrees -135.0) "135° + 90° wraps to -135°"
+                let result = r1.Then r2
+                Expect.isTrue (eqFloat result.AngleInDegrees -135.0) "135° + 90° wraps to -135°"
             }
 
             test "Add negative angles" {
                 let r1 = Rotation2D.createFromDegrees -45.0
                 let r2 = Rotation2D.createFromDegrees -45.0
-                let result = r1.Add r2
-                Expect.isTrue (eqFloat result.InDegrees -90.0) "-45° + -45° should be -90°"
+                let result = r1.Then r2
+                Expect.isTrue (eqFloat result.AngleInDegrees -90.0) "-45° + -45° should be -90°"
             }
 
             test "AddDegrees 30° + 60° = 90°" {
                 let r = Rotation2D.createFromDegrees 30.0
                 let result = r.AddDegrees 60.0
-                Expect.isTrue (eqFloat result.InDegrees 90.0) "30° + 60° should be 90°"
+                Expect.isTrue (eqFloat result.AngleInDegrees 90.0) "30° + 60° should be 90°"
             }
 
             test "AddRadians π/4 + π/4 = π/2" {
                 let r = Rotation2D.createFromRadians (System.Math.PI / 4.0)
                 let result = r.AddRadians (System.Math.PI / 4.0)
-                Expect.isTrue (eqFloat result.InRadians (System.Math.PI / 2.0)) "π/4 + π/4 should be π/2"
+                Expect.isTrue (eqFloat result.AngleInRadians (System.Math.PI / 2.0)) "π/4 + π/4 should be π/2"
             }
         ]
 
         testList "createFromVectors with UnitVc" [
 
             test "From Xaxis to Yaxis = 90°" {
-                let a = UnitVc.Xaxis
-                let b = UnitVc.Yaxis
-                let r = Rotation2D.createFromVectors(a, b)
-                Expect.isTrue (eqFloat r.InDegrees 90.0) "Xaxis to Yaxis should be 90°"
+                let a = UnitVc.xAxis
+                let b = UnitVc.yAxis
+                let r = Rotation2D.createFromUnitVcs a b
+                Expect.isTrue (eqFloat r.AngleInDegrees 90.0) "Xaxis to Yaxis should be 90°"
             }
 
             test "From Yaxis to Xaxis = -90°" {
-                let a = UnitVc.Yaxis
-                let b = UnitVc.Xaxis
-                let r = Rotation2D.createFromVectors(a, b)
-                Expect.isTrue (eqFloat r.InDegrees -90.0) "Yaxis to Xaxis should be -90°"
+                let a = UnitVc.yAxis
+                let b = UnitVc.xAxis
+                let r = Rotation2D.createFromUnitVcs a b
+                Expect.isTrue (eqFloat r.AngleInDegrees -90.0) "Yaxis to Xaxis should be -90°"
             }
 
             test "From Xaxis to -Xaxis = 180°" {
-                let a = UnitVc.Xaxis
+                let a = UnitVc.xAxis
                 let b = Vc(-1.0, 0.0) |> Vc.unitize
-                let r = Rotation2D.createFromVectors(a, b)
-                let deg = abs(r.InDegrees)
+                let r = Rotation2D.createFromUnitVcs a b
+                let deg = abs(r.AngleInDegrees)
                 Expect.isTrue (eqFloat deg 180.0) "Xaxis to -Xaxis should be ±180°"
             }
 
             test "Same vector = 0°" {
-                let a = UnitVc.Xaxis
-                let b = UnitVc.Xaxis
-                let r = Rotation2D.createFromVectors(a, b)
-                Expect.isTrue (eqFloat r.InDegrees 0.0) "Same vector should be 0°"
+                let a = UnitVc.xAxis
+                let b = UnitVc.xAxis
+                let r = Rotation2D.createFromUnitVcs a b
+                Expect.isTrue (eqFloat r.AngleInDegrees 0.0) "Same vector should be 0°"
             }
 
             test "45° rotation" {
-                let a = UnitVc.Xaxis
+                let a = UnitVc.xAxis
                 let b = Vc(1.0, 1.0) |> Vc.unitize
-                let r = Rotation2D.createFromVectors(a, b)
-                Expect.isTrue (eqFloat r.InDegrees 45.0) "Should be 45°"
+                let r = Rotation2D.createFromUnitVcs a b
+                Expect.isTrue (eqFloat r.AngleInDegrees 45.0) "Should be 45°"
             }
 
             test "135° rotation" {
-                let a = UnitVc.Xaxis
+                let a = UnitVc.xAxis
                 let b = Vc(-1.0, 1.0) |> Vc.unitize
-                let r = Rotation2D.createFromVectors(a, b)
-                Expect.isTrue (eqFloat r.InDegrees 135.0) "Should be 135°"
+                let r = Rotation2D.createFromUnitVcs a b
+                Expect.isTrue (eqFloat r.AngleInDegrees 135.0) "Should be 135°"
             }
         ]
 
@@ -237,46 +237,46 @@ let tests =
             test "From (1,0) to (0,1) = 90°" {
                 let a = Vc(1.0, 0.0)
                 let b = Vc(0.0, 1.0)
-                let r = Rotation2D.createFromVectors(a, b)
-                Expect.isTrue (eqFloat r.InDegrees 90.0) "(1,0) to (0,1) should be 90°"
+                let r = Rotation2D.createFromVcs a b
+                Expect.isTrue (eqFloat r.AngleInDegrees 90.0) "(1,0) to (0,1) should be 90°"
             }
 
             test "From (2,0) to (0,3) = 90°" {
                 let a = Vc(2.0, 0.0)
                 let b = Vc(0.0, 3.0)
-                let r = Rotation2D.createFromVectors(a, b)
-                Expect.isTrue (eqFloat r.InDegrees 90.0) "Magnitude doesn't affect angle"
+                let r = Rotation2D.createFromVcs a b
+                Expect.isTrue (eqFloat r.AngleInDegrees 90.0) "Magnitude doesn't affect angle"
             }
 
             test "From (1,1) to (-1,1) = 90°" {
                 let a = Vc(1.0, 1.0)
                 let b = Vc(-1.0, 1.0)
-                let r = Rotation2D.createFromVectors(a, b)
-                Expect.isTrue (eqFloat r.InDegrees 90.0) "(1,1) to (-1,1) should be 90°"
+                let r = Rotation2D.createFromVcs a b
+                Expect.isTrue (eqFloat r.AngleInDegrees 90.0) "(1,1) to (-1,1) should be 90°"
             }
 
             test "Zero-length vector a throws" {
                 let a = Vc(0.0, 0.0)
                 let b = Vc(1.0, 0.0)
-                Expect.throws (fun () -> Rotation2D.createFromVectors(a, b) |> ignore) "Should throw for zero-length vector a"
+                Expect.throws (fun () -> Rotation2D.createFromVcs a b |> ignore) "Should throw for zero-length vector a"
             }
 
             test "Zero-length vector b throws" {
                 let a = Vc(1.0, 0.0)
                 let b = Vc(0.0, 0.0)
-                Expect.throws (fun () -> Rotation2D.createFromVectors(a, b) |> ignore) "Should throw for zero-length vector b"
+                Expect.throws (fun () -> Rotation2D.createFromVcs a b |> ignore) "Should throw for zero-length vector b"
             }
 
             test "Very small vector a throws" {
                 let a = Vc(1e-20, 0.0)
                 let b = Vc(1.0, 0.0)
-                Expect.throws (fun () -> Rotation2D.createFromVectors(a, b) |> ignore) "Should throw for very small vector a"
+                Expect.throws (fun () -> Rotation2D.createFromVcs a b |> ignore) "Should throw for very small vector a"
             }
 
             test "Very small vector b throws" {
                 let a = Vc(1.0, 0.0)
                 let b = Vc(0.0, 1e-20)
-                Expect.throws (fun () -> Rotation2D.createFromVectors(a, b) |> ignore) "Should throw for very small vector b"
+                Expect.throws (fun () -> Rotation2D.createFromVcs a b |> ignore) "Should throw for very small vector b"
             }
         ]
 
@@ -351,15 +351,15 @@ let tests =
             test "Add with wrapping positive" {
                 let r1 = Rotation2D.createFromDegrees 200.0
                 let r2 = Rotation2D.createFromDegrees 200.0
-                let result = r1.Add r2
-                Expect.isTrue (eqFloat result.InDegrees 40.0) "200° + 200° should wrap to 40°"
+                let result = r1.Then r2
+                Expect.isTrue (eqFloat result.AngleInDegrees 40.0) "200° + 200° should wrap to 40°"
             }
 
             test "Add with wrapping negative" {
                 let r1 = Rotation2D.createFromDegrees -200.0
                 let r2 = Rotation2D.createFromDegrees -200.0
-                let result = r1.Add r2
-                Expect.isTrue (eqFloat result.InDegrees -40.0) "-200° + -200° should wrap to -40°"
+                let result = r1.Then r2
+                Expect.isTrue (eqFloat result.AngleInDegrees -40.0) "-200° + -200° should wrap to -40°"
             }
         ]
 
@@ -367,64 +367,64 @@ let tests =
 
             test "90° + 90° + 90° + 90° = 0° (full rotation counterclockwise)" {
                 let r90 = Rotation2D.createFromDegrees 90.0
-                let result = r90.Add(r90).Add(r90).Add(r90).Add(r90).Add(r90).Add(r90).Add(r90)
-                Expect.isTrue (eqFloat result.InDegrees 0.0) "Eight 90° rotations should return to 0°"
+                let result = r90.Then(r90).Then(r90).Then(r90).Then(r90).Then(r90).Then(r90).Then(r90)
+                Expect.isTrue (eqFloat result.AngleInDegrees 0.0) "Eight 90° rotations should return to 0°"
             }
 
             test "45° added eight times = 0° (full rotation counterclockwise)" {
                 let r45 = Rotation2D.createFromDegrees 45.0
-                let result = r45.Add(r45).Add(r45).Add(r45).Add(r45).Add(r45).Add(r45).Add(r45)
-                Expect.isTrue (eqFloat result.InDegrees 0.0) "Eight 45° rotations (360°) should return to 0°"
+                let result = r45.Then(r45).Then(r45).Then(r45).Then(r45).Then(r45).Then(r45).Then(r45)
+                Expect.isTrue (eqFloat result.AngleInDegrees 0.0) "Eight 45° rotations (360°) should return to 0°"
             }
 
             test "-90° + -90° + -90° + -90° = 0° (full rotation clockwise)" {
                 let rNeg90 = Rotation2D.createFromDegrees -90.0
-                let result = rNeg90.Add(rNeg90).Add(rNeg90).Add(rNeg90)
-                Expect.isTrue (eqFloat result.InDegrees 0.0) "Four -90° rotations should return to 0°"
+                let result = rNeg90.Then(rNeg90).Then(rNeg90).Then(rNeg90)
+                Expect.isTrue (eqFloat result.AngleInDegrees 0.0) "Four -90° rotations should return to 0°"
             }
 
             test "100° + 100° + 100° + 100° = 40° (wraps counterclockwise)" {
                 let r100 = Rotation2D.createFromDegrees 100.0
-                let result = r100.Add(r100).Add(r100).Add(r100)
-                Expect.isTrue (eqFloat result.InDegrees 40.0) "Four 100° rotations (400°) should wrap to 40°"
+                let result = r100.Then(r100).Then(r100).Then(r100)
+                Expect.isTrue (eqFloat result.AngleInDegrees 40.0) "Four 100° rotations (400°) should wrap to 40°"
             }
 
             test "Adding 720° worth of rotations: 180° + 180° + 180° + 180° = 0°" {
                 let r180 = Rotation2D.createFromDegrees 180.0
-                let result = r180.Add(r180).Add(r180).Add(r180)
-                Expect.isTrue (eqFloat (abs result.InDegrees) 0.0) "Four 180° rotations (720°) should return to 0°"
+                let result = r180.Then(r180).Then(r180).Then(r180)
+                Expect.isTrue (eqFloat (abs result.AngleInDegrees) 0.0) "Four 180° rotations (720°) should return to 0°"
             }
 
             test "Mixing positive and negative: 270° + -90° = 180°" {
                 let r270 = Rotation2D.createFromDegrees 270.0
                 let rNeg90 = Rotation2D.createFromDegrees -90.0
-                let result = r270.Add rNeg90
-                let deg = abs(result.InDegrees)
+                let result = r270.Then rNeg90
+                let deg = abs(result.AngleInDegrees)
                 Expect.isTrue (eqFloat deg 180.0) "270° + -90° should be ±180°"
             }
 
             test "Large positive accumulation: 250° + 250° = 140°" {
                 let r250 = Rotation2D.createFromDegrees 250.0
-                let result = r250.Add r250
-                Expect.isTrue (eqFloat result.InDegrees 140.0) "500° should wrap to 140° (500 - 360 )"
+                let result = r250.Then r250
+                Expect.isTrue (eqFloat result.AngleInDegrees 140.0) "500° should wrap to 140° (500 - 360 )"
             }
 
             test "Large negative accumulation: -250° + -250° = -140°" {
                 let rNeg250 = Rotation2D.createFromDegrees -250.0
-                let result = rNeg250.Add rNeg250
-                Expect.isTrue (eqFloat result.InDegrees -140.0) "-500° should wrap to -140° (-500 + 360 )"
+                let result = rNeg250.Then rNeg250
+                Expect.isTrue (eqFloat result.AngleInDegrees -140.0) "-500° should wrap to -140° (-500 + 360 )"
             }
 
             test "135° added three times = 45° (wraps once)" {
                 let r135 = Rotation2D.createFromDegrees 135.0
-                let result = r135.Add(r135).Add(r135)
-                Expect.isTrue (eqFloat result.InDegrees 45.0) "Three 135° rotations (405°) should wrap to 45°"
+                let result = r135.Then(r135).Then(r135)
+                Expect.isTrue (eqFloat result.AngleInDegrees 45.0) "Three 135° rotations (405°) should wrap to 45°"
             }
 
             test "-135° added three times = -45° (wraps once clockwise)" {
                 let rNeg135 = Rotation2D.createFromDegrees -135.0
-                let result = rNeg135.Add(rNeg135).Add(rNeg135)
-                Expect.isTrue (eqFloat result.InDegrees -45.0) "Three -135° rotations (-405°) should wrap to -45°"
+                let result = rNeg135.Then(rNeg135).Then(rNeg135)
+                Expect.isTrue (eqFloat result.AngleInDegrees -45.0) "Three -135° rotations (-405°) should wrap to -45°"
             }
 
             test "Very large accumulation: 1000° equivalent to 280°" {
@@ -444,20 +444,20 @@ let tests =
                 let r36 = Rotation2D.createFromDegrees 36.0
                 let mutable result = r36
                 for _i in 1..9 do
-                    result <- result.Add r36
-                Expect.isTrue (eqFloat result.InDegrees 0.0) "Ten 36° rotations should accumulate to 360° = 0°"
+                    result <- result.Then r36
+                Expect.isTrue (eqFloat result.AngleInDegrees 0.0) "Ten 36° rotations should accumulate to 360° = 0°"
             }
 
             test "AddDegrees with accumulation beyond 360°" {
                 let r = Rotation2D.createFromDegrees 100.0
                 let result = r.AddDegrees(100.0).AddDegrees(100.0).AddDegrees(100.0)
-                Expect.isTrue (eqFloat result.InDegrees 40.0) "100° + 300° via AddDegrees should be 40°"
+                Expect.isTrue (eqFloat result.AngleInDegrees 40.0) "100° + 300° via AddDegrees should be 40°"
             }
 
             test "AddRadians with accumulation beyond 2π" {
                 let r = Rotation2D.createFromRadians (System.Math.PI / 2.0)
                 let result = r.AddRadians(System.Math.PI / 2.0).AddRadians(System.Math.PI / 2.0).AddRadians(System.Math.PI / 2.0)
-                Expect.isTrue (eqFloat result.InRadians 0.0) "Four π/2 rotations via AddRadians should be 0"
+                Expect.isTrue (eqFloat result.AngleInRadians 0.0) "Four π/2 rotations via AddRadians should be 0"
             }
         ]
 
@@ -713,7 +713,7 @@ let tests =
                 Expect.isTrue (eqPt expected (gPt.RotateAround gCen gRot)) "RotateAround"
                 Expect.isTrue (eqPt expected (gPt.RotateAroundDegrees gCen gDeg)) "RotateAroundDegrees"
                 Expect.isTrue (eqPt expected (gPt.RotateAroundRadians gCen gRad)) "RotateAroundRadians"
-                Expect.isTrue (eqFloat (Pt.dist gCen expected) (Pt.dist gCen gPt)) "distance to center is kept"
+                Expect.isTrue (eqFloat (Pt.distanceTo gCen expected) (Pt.distanceTo gCen gPt)) "distance to center is kept"
             }
 
             test "Pt rotateAround identities" {
@@ -734,9 +734,9 @@ let tests =
                 let cen = Pnt(12.0, -7.0, 3.0)
                 let p = Pnt(15.5, -3.25, -1.0)
                 let expected = Pnt(12.0 + 3.5 * 2.5, -7.0 + 3.75 * 2.5, 3.0 - 4.0 * 2.5)
-                Expect.isTrue (Pnt.dist expected (Pnt.scaleOn cen 2.5 p) < 1e-9) "factor 2.5"
-                Expect.isTrue (Pnt.dist cen (Pnt.scaleOn cen 0.0 p) < 1e-9) "factor 0 collapses to center"
-                Expect.isTrue (Pnt.dist (Pnt.scale 3.0 p) (Pnt.scaleOn Pnt.Origin 3.0 p) < 1e-9) "origin center equals scale"
+                Expect.isTrue (Pnt.distanceTo expected (Pnt.scaleOn cen 2.5 p) < 1e-9) "factor 2.5"
+                Expect.isTrue (Pnt.distanceTo cen (Pnt.scaleOn cen 0.0 p) < 1e-9) "factor 0 collapses to center"
+                Expect.isTrue (Pnt.distanceTo (Pnt.scale 3.0 p) (Pnt.scaleOn Pnt.Origin 3.0 p) < 1e-9) "origin center equals scale"
             }
 
             test "Vc and UnitVc rotateDegrees and rotateRadians agree with rotate" {
@@ -746,7 +746,7 @@ let tests =
                 Expect.isTrue (eqVc expected (Vc.rotateRadians gRad v)) "Vc.rotateRadians"
                 Expect.isTrue (eqVc expected (v.RotateDegrees gDeg)) "Vc.RotateDegrees"
                 Expect.isTrue (eqVc expected (v.Rotate gRot)) "Vc.Rotate"
-                let u = UnitVc.create(3.0, -2.0)
+                let u = UnitVc.create 3.0 (-2.0)
                 let uExpected = UnitVc.rotate gRot u
                 Expect.isTrue (eqVc uExpected.AsVc (UnitVc.rotateDegrees gDeg u).AsVc) "UnitVc.rotateDegrees"
                 Expect.isTrue (eqVc uExpected.AsVc (UnitVc.rotateRadians gRad u).AsVc) "UnitVc.rotateRadians"
@@ -800,7 +800,7 @@ let tests =
             test "Rect2D rotateAround variants agree" {
                 let expected = Rect2D.rotateAround gCen gRot gRect
                 Expect.isTrue (eqPt expected.Origin (refRotAround gCen gRot gRect.Origin)) "origin is rotated around center"
-                Expect.isTrue (eqVc expected.Xaxis (Vc.rotate gRot gRect.Xaxis)) "X-axis is rotated"
+                Expect.isTrue (eqVc expected.XAxis (Vc.rotate gRot gRect.XAxis)) "X-axis is rotated"
                 Expect.isTrue (eqRect expected (Rect2D.rotateAroundDegrees gCen gDeg gRect)) "rotateAroundDegrees"
                 Expect.isTrue (eqRect expected (Rect2D.rotateAroundRadians gCen gRad gRect)) "rotateAroundRadians"
                 Expect.isTrue (eqRect expected (gRect.RotateAround gCen gRot)) "RotateAround"
@@ -839,11 +839,11 @@ let tests =
                 Expect.equal rotatedEmpty.PointCount 0 "empty stays empty"
                 let single = Polyline2D.createFromPts [gPt]
                 single.RotateAroundDegrees gCen gDeg
-                Expect.isTrue (eqPt (single.GetPt 0) (refRotAround gCen gRot gPt)) "single point is rotated"
+                Expect.isTrue (eqPt (single.GetPoint 0) (refRotAround gCen gRot gPt)) "single point is rotated"
                 let dup = Polyline2D.createFromPts [gPt; gPt]
                 let rotatedDup = Polyline2D.rotateAroundRadians gCen gRad dup
-                Expect.isTrue (eqPt (rotatedDup.GetPt 0) (rotatedDup.GetPt 1)) "duplicate points stay duplicates"
-                Expect.isTrue (eqPt (dup.GetPt 0) gPt) "input is not rotated"
+                Expect.isTrue (eqPt (rotatedDup.GetPoint 0) (rotatedDup.GetPoint 1)) "duplicate points stay duplicates"
+                Expect.isTrue (eqPt (dup.GetPoint 0) gPt) "input is not rotated"
             }
 
             test "Polyline2D.scaleOn returns a new one, ScaleOn changes it in place" {
@@ -856,4 +856,10 @@ let tests =
                 Expect.isTrue (eqPl expected pl2) "ScaleOn"
             }
         ]
+        test "Rotation2D.andThen is Then in a pipeline" {
+            let a = Rotation2D.createFromDegrees 30.0
+            let b = Rotation2D.createFromDegrees -75.0
+            "same as Then" |> Expect.isTrue (Rotation2D.equalsExact (a |> Rotation2D.andThen b) (a.Then b))
+            "angles add" |> Expect.isTrue (abs ((a |> Rotation2D.andThen b).AngleInDegrees - -45.0) < 1e-9)
+        }
     ]

@@ -4,7 +4,7 @@ open Euclid
 
 open EuclidTestSupport
 
-let inline eqPnt a b = Pnt.dist a b < 1e-9
+let inline eqPnt a b = Pnt.distanceTo a b < 1e-9
 let inline eqVec a b = Vec.length (a - b) < 1e-9
 let inline eqFloat a b = abs(a - b) < 1e-9
 let inline eqLine (a:Line3D) (b:Line3D) = eqPnt a.From b.From && eqPnt a.To b.To
@@ -18,54 +18,54 @@ let tests =
                 let xAxis = Vec(10., 0., 0.)
                 let yAxis = Vec(0., 5., 0.)
                 let zAxis = Vec(0., 0., 3.)
-                let box = Box.createUncheckedVec(origin, xAxis, yAxis, zAxis)
+                let box = Box.createFromAxesUnchecked(origin, xAxis, yAxis, zAxis)
                 Expect.isTrue (eqPnt box.Origin origin) "Origin should match"
-                Expect.isTrue (eqVec box.Xaxis xAxis) "Xaxis should match"
-                Expect.isTrue (eqVec box.Yaxis yAxis) "Yaxis should match"
-                Expect.isTrue (eqVec box.Zaxis zAxis) "Zaxis should match"
+                Expect.isTrue (eqVec box.XAxis xAxis) "Xaxis should match"
+                Expect.isTrue (eqVec box.YAxis yAxis) "Yaxis should match"
+                Expect.isTrue (eqVec box.ZAxis zAxis) "Zaxis should match"
             }
 
             test "SizeX, SizeY, SizeZ" {
-                let box = Box.createUncheckedVec(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 Expect.equal box.SizeX 10. "SizeX should be 10"
                 Expect.equal box.SizeY 5. "SizeY should be 5"
                 Expect.equal box.SizeZ 3. "SizeZ should be 3"
             }
 
             test "SizeXSq, SizeYSq, SizeZSq" {
-                let box = Box.createUncheckedVec(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 Expect.equal box.SizeXSq 100. "SizeXSq should be 100"
                 Expect.equal box.SizeYSq 25. "SizeYSq should be 25"
                 Expect.equal box.SizeZSq 9. "SizeZSq should be 9"
             }
 
             test "FarCorner" {
-                let box = Box.createUncheckedVec(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 let expected = Pnt(11., 7., 6.)
                 Expect.isTrue (eqPnt box.FarCorner expected) "FarCorner should be sum of origin and all axes"
             }
 
             test "Diagonal" {
-                let box = Box.createUncheckedVec(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 let expected = Vec(10., 5., 3.)
                 Expect.isTrue (eqVec box.Diagonal expected) "Diagonal should be sum of all axes"
             }
 
             test "Center" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
                 let expected = Pnt(5., 5., 5.)
                 Expect.isTrue (eqPnt box.Center expected) "Center should be at (5, 5, 5)"
             }
 
             test "Volume" {
-                let box = Box.createUncheckedVec(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 Expect.equal box.Volume 150. "Volume should be 150"
             }
         ]
 
         testList "Creation Methods" [
             test "createFromPlane" {
-                let pl = PPlane.createOriginXaxisYaxis(Pnt.Origin, Vec.Xaxis, Vec.Yaxis)
+                let pl = PPlane.createFromXAxisAndYAxis Vec.xAxis Vec.yAxis Pnt.Origin
                 let box = Box.createFromPlane 10. 5. 3. pl
                 Expect.equal box.SizeX 10. "SizeX should be 10"
                 Expect.equal box.SizeY 5. "SizeY should be 5"
@@ -73,7 +73,7 @@ let tests =
             }
 
             test "createFromBoundingBox" {
-                let bbox = BBox.create(Pnt(0., 0., 0.), Pnt(10., 5., 3.))
+                let bbox = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 5., 3.))
                 let box = bbox.AsBox
                 Expect.equal box.SizeX 10. "SizeX should be 10"
                 Expect.equal box.SizeY 5. "SizeY should be 5"
@@ -82,7 +82,7 @@ let tests =
             }
 
             test "createFromRect2D" {
-                let rect = Rect2D.createFromDirectionAndSizes(Pt.Origin, UnitVc.Xaxis, 10., 5.)
+                let rect = Rect2D.createFromUnitVc 10. 5. UnitVc.xAxis Pt.Origin
                 let box = Box.createFromRect2D 2. 8. rect
                 Expect.equal box.SizeX 10. "SizeX should be 10"
                 Expect.equal box.SizeY 5. "SizeY should be 5"
@@ -90,7 +90,7 @@ let tests =
             }
 
             test "createFromRect3D" {
-                let rect = Rect3D.createFromVectors(Pnt.Origin, Vec.Xaxis*10., Vec.Yaxis*5.)
+                let rect = Rect3D.createFromVecs (Vec.xAxis*10.) (Vec.yAxis*5.) Pnt.Origin
                 let box = Box.createFromRect3D 2. 8. rect
                 Expect.equal box.SizeX 10. "SizeX should be 10"
                 Expect.equal box.SizeY 5. "SizeY should be 5"
@@ -99,14 +99,14 @@ let tests =
 
             test "createFromDirsAndPoints with multiple points" {
                 let pts = ResizeArray([Pnt(0., 0., 0.); Pnt(10., 0., 0.); Pnt(0., 5., 0.); Pnt(0., 0., 3.)])
-                let box = Box.createFromDirsAndPoints Vec.Xaxis Vec.Yaxis pts
+                let box = Box.createFromVecsAndPnts Vec.xAxis Vec.yAxis pts
                 Expect.isTrue (box.SizeX >= 0.) "Should create valid box"
             }
 
             test "createFromDirsAndPoints includes the first point" {
                 // the first point is the plane origin, all others lie in the positive octant
                 let pts = ResizeArray([Pnt(0., 0., 0.); Pnt(10., 2., 1.); Pnt(4., 5., 3.)])
-                let box = Box.createFromDirsAndPoints Vec.Xaxis Vec.Yaxis pts
+                let box = Box.createFromVecsAndPnts Vec.xAxis Vec.yAxis pts
                 Expect.isTrue (eqPnt box.Origin Pnt.Origin) $"Origin should be at the first point, but is {box.Origin}"
                 Expect.isTrue (eqFloat box.SizeX 10.) $"SizeX should be 10, but is {box.SizeX}"
                 Expect.isTrue (eqFloat box.SizeY 5.) $"SizeY should be 5, but is {box.SizeY}"
@@ -116,7 +116,7 @@ let tests =
             test "createFromPlaneAndPoints includes the first point" {
                 // the first point is the only one with negative coordinates
                 let pts = ResizeArray([Pnt(-5., -5., -5.); Pnt(1., 1., 1.); Pnt(2., 3., 4.)])
-                let box = Box.createFromPlaneAndPoints PPlane.WorldXY pts
+                let box = Box.createFromPlaneAndPnts PPlane.WorldXY pts
                 Expect.isTrue (eqPnt box.Origin (Pnt(-5., -5., -5.))) $"Origin should be at the first point, but is {box.Origin}"
                 Expect.isTrue (eqFloat box.SizeX 7.) $"SizeX should be 7, but is {box.SizeX}"
                 Expect.isTrue (eqFloat box.SizeY 8.) $"SizeY should be 8, but is {box.SizeY}"
@@ -125,24 +125,24 @@ let tests =
 
             test "createFromPlaneAndPoints with two points" {
                 let pts = ResizeArray([Pnt(3., 4., 5.); Pnt(1., 1., 1.)])
-                let box = Box.createFromPlaneAndPoints PPlane.WorldXY pts
+                let box = Box.createFromPlaneAndPnts PPlane.WorldXY pts
                 Expect.isTrue (eqPnt box.Origin (Pnt(1., 1., 1.))) $"Origin should be at the min corner, but is {box.Origin}"
                 Expect.isTrue (eqPnt box.FarCorner (Pnt(3., 4., 5.))) $"FarCorner should be at the first point, but is {box.FarCorner}"
             }
 
             test "createFromDirsAndPoints rejects too few points" {
                 let pts = ResizeArray([Pnt(0., 0., 0.)])
-                Expect.throws (fun () -> Box.createFromDirsAndPoints Vec.Xaxis Vec.Yaxis pts |> ignore) "Should throw with just 1 point"
+                Expect.throws (fun () -> Box.createFromVecsAndPnts Vec.xAxis Vec.yAxis pts |> ignore) "Should throw with just 1 point"
             }
 
             test "createFromDirsAndPoints rejects zero-length dirX" {
                 let pts = ResizeArray([Pnt(0., 0., 0.); Pnt(10., 0., 0.)])
-                Expect.throws (fun () -> Box.createFromDirsAndPoints Vec.Zero Vec.Yaxis pts |> ignore) "Should throw with zero dirX"
+                Expect.throws (fun () -> Box.createFromVecsAndPnts Vec.Zero Vec.yAxis pts |> ignore) "Should throw with zero dirX"
             }
 
             test "createFromDirsAndPoints rejects zero-length dirY" {
                 let pts = ResizeArray([Pnt(0., 0., 0.); Pnt(10., 0., 0.)])
-                Expect.throws (fun () -> Box.createFromDirsAndPoints Vec.Xaxis Vec.Zero pts |> ignore) "Should throw with zero dirY"
+                Expect.throws (fun () -> Box.createFromVecsAndPnts Vec.xAxis Vec.Zero pts |> ignore) "Should throw with zero dirY"
             }
 
             // a rotated, right-handed frame away from the origin, with exact integer dot products
@@ -152,72 +152,72 @@ let tests =
             let crZ = Vec(-4., 2., 4.)
 
             test "create keeps a rotated right-handed frame exactly" {
-                let box = Box.create(crOrigin, crX, crY, crZ)
-                let expected = Box.createUncheckedVec(crOrigin, crX, crY, crZ)
+                let box = Box.create crX crY crZ crOrigin
+                let expected = Box.createFromAxesUnchecked(crOrigin, crX, crY, crZ)
                 Expect.isTrue (Box.equalsExact box expected) "Box.create should store origin and axes unchanged"
             }
 
             test "create accepts axes skewed within the perpendicular tolerance" {
                 let y = crY + Vec(0., 0., 3e-10)
-                let box = Box.create(crOrigin, crX, y, crZ)
-                Expect.equal box.YaxisZ y.Z "Y-axis should be stored unchanged"
+                let box = Box.create crX y crZ crOrigin
+                Expect.equal box.YAxisZ y.Z "Y-axis should be stored unchanged"
             }
 
             test "create rejects a left-handed frame" {
-                Expect.throws (fun () -> Box.create(crOrigin, crX, crY, -crZ) |> ignore) "Should throw for a left-handed frame"
+                Expect.throws (fun () -> Box.create crX crY (-crZ) crOrigin |> ignore) "Should throw for a left-handed frame"
             }
 
             test "create rejects axes that are not perpendicular" {
-                Expect.throws (fun () -> Box.create(crOrigin, crX, crY + Vec(0., 0., 1e-6), crZ) |> ignore) "Should throw for skewed axes"
+                Expect.throws (fun () -> Box.create crX (crY + Vec(0., 0., 1e-6)) crZ crOrigin |> ignore) "Should throw for skewed axes"
             }
 
             test "create rejects a zero-length axis" {
-                Expect.throws (fun () -> Box.create(crOrigin, Vec.Zero, crY, crZ) |> ignore) "Should throw for zero X-axis"
-                Expect.throws (fun () -> Box.create(crOrigin, crX, Vec.Zero, crZ) |> ignore) "Should throw for zero Y-axis"
-                Expect.throws (fun () -> Box.create(crOrigin, crX, crY, Vec.Zero) |> ignore) "Should throw for zero Z-axis"
+                Expect.throws (fun () -> Box.create Vec.Zero crY crZ crOrigin |> ignore) "Should throw for zero X-axis"
+                Expect.throws (fun () -> Box.create crX Vec.Zero crZ crOrigin |> ignore) "Should throw for zero Y-axis"
+                Expect.throws (fun () -> Box.create crX crY Vec.Zero crOrigin |> ignore) "Should throw for zero Z-axis"
             }
         ]
 
         testList "Unit Axis Methods" [
             test "XaxisUnit for standard box" {
-                let box = Box.createUncheckedVec(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
-                let unitX = box.XaxisUnit
+                let box = Box.createFromAxesUnchecked(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let unitX = box.XAxisUnit
                 Expect.isTrue (eqVec unitX.AsVec (Vec(1., 0., 0.))) "XaxisUnit should be (1, 0, 0)"
             }
 
             test "YaxisUnit for standard box" {
-                let box = Box.createUncheckedVec(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
-                let unitY = box.YaxisUnit
+                let box = Box.createFromAxesUnchecked(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let unitY = box.YAxisUnit
                 Expect.isTrue (eqVec unitY.AsVec (Vec(0., 1., 0.))) "YaxisUnit should be (0, 1, 0)"
             }
 
             test "ZaxisUnit for standard box" {
-                let box = Box.createUncheckedVec(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
-                let unitZ = box.ZaxisUnit
+                let box = Box.createFromAxesUnchecked(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let unitZ = box.ZAxisUnit
                 Expect.isTrue (eqVec unitZ.AsVec (Vec(0., 0., 1.))) "ZaxisUnit should be (0, 0, 1)"
             }
 
             test "XaxisUnit throws for zero-length axis" {
-                let box = Box.createUncheckedVec(Pnt.Origin, Vec.Zero, Vec(0., 5., 0.), Vec(0., 0., 3.))
-                Expect.throws (fun () -> box.XaxisUnit |> ignore) "Should throw for zero-length Xaxis"
+                let box = Box.createFromAxesUnchecked(Pnt.Origin, Vec.Zero, Vec(0., 5., 0.), Vec(0., 0., 3.))
+                Expect.throws (fun () -> box.XAxisUnit |> ignore) "Should throw for zero-length Xaxis"
             }
         ]
 
         testList "Evaluation" [
             test "EvaluateAt origin (0, 0, 0)" {
-                let box = Box.createUncheckedVec(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 let pt = box.EvaluateAt(0., 0., 0.)
                 Expect.isTrue (eqPnt pt box.Origin) "Should return Origin at (0, 0, 0)"
             }
 
             test "EvaluateAt far corner (1, 1, 1)" {
-                let box = Box.createUncheckedVec(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 let pt = box.EvaluateAt(1., 1., 1.)
                 Expect.isTrue (eqPnt pt box.FarCorner) "Should return FarCorner at (1, 1, 1)"
             }
 
             test "EvaluateAt center (0.5, 0.5, 0.5)" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
                 let pt = box.EvaluateAt(0.5, 0.5, 0.5)
                 Expect.isTrue (eqPnt pt (Pnt(5., 5., 5.))) "Should return center at (0.5, 0.5, 0.5)"
             }
@@ -225,221 +225,221 @@ let tests =
 
         testList "Size Methods" [
             test "LongestEdge" {
-                let box = Box.createUncheckedVec(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 Expect.equal box.LongestEdge 10. "Longest edge should be 10"
             }
 
             test "ShortestEdge" {
-                let box = Box.createUncheckedVec(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 Expect.equal box.ShortestEdge 3. "Shortest edge should be 3"
             }
 
             test "LongestEdgeSq" {
-                let box = Box.createUncheckedVec(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 Expect.equal box.LongestEdgeSq 100. "Longest edge squared should be 100"
             }
 
             test "ShortestEdgeSq" {
-                let box = Box.createUncheckedVec(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 Expect.equal box.ShortestEdgeSq 9. "Shortest edge squared should be 9"
             }
         ]
 
         testList "Validation Methods" [
             test "IsZero for tiny box" {
-                let box = Box.createUncheckedVec(Pnt.Origin, Vec(1e-13, 0., 0.), Vec(0., 1e-13, 0.), Vec(0., 0., 1e-13))
+                let box = Box.createFromAxesUnchecked(Pnt.Origin, Vec(1e-13, 0., 0.), Vec(0., 1e-13, 0.), Vec(0., 0., 1e-13))
                 Expect.isTrue box.IsZero "Tiny box should be zero"
             }
 
             test "IsPoint is same as IsZero" {
-                let box = Box.createUncheckedVec(Pnt.Origin, Vec(1e-13, 0., 0.), Vec(0., 1e-13, 0.), Vec(0., 0., 1e-13))
+                let box = Box.createFromAxesUnchecked(Pnt.Origin, Vec(1e-13, 0., 0.), Vec(0., 1e-13, 0.), Vec(0., 0., 1e-13))
                 Expect.equal box.IsPoint box.IsZero "IsPoint should equal IsZero"
             }
 
             test "IsLine for box with one dimension" {
-                let box = Box.createUncheckedVec(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 1e-13, 0.), Vec(0., 0., 1e-13))
+                let box = Box.createFromAxesUnchecked(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 1e-13, 0.), Vec(0., 0., 1e-13))
                 Expect.isTrue box.IsLine "Box with one dimension should be a line"
             }
 
             test "IsFlat for box with two dimensions" {
-                let box = Box.createUncheckedVec(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 1e-13))
+                let box = Box.createFromAxesUnchecked(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 1e-13))
                 Expect.isTrue box.IsFlat "Box with two dimensions should be flat"
             }
 
             test "IsValid for normal box" {
-                let box = Box.createUncheckedVec(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 Expect.isTrue box.IsValid "Normal box should be valid"
             }
 
             test "HasVolume for normal box" {
-                let box = Box.createUncheckedVec(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 Expect.isTrue box.HasVolume "Normal box should have volume"
             }
 
             test "CountZeroSides for normal box" {
-                let box = Box.createUncheckedVec(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 Expect.equal box.CountZeroSides 0 "Normal box should have 0 zero sides"
             }
 
             test "CountZeroSides for flat box" {
-                let box = Box.createUncheckedVec(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 1e-13))
+                let box = Box.createFromAxesUnchecked(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 1e-13))
                 Expect.equal box.CountZeroSides 1 "Flat box should have 1 zero side"
             }
 
             test "CountZeroSides for line box" {
-                let box = Box.createUncheckedVec(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 1e-13, 0.), Vec(0., 0., 1e-13))
+                let box = Box.createFromAxesUnchecked(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 1e-13, 0.), Vec(0., 0., 1e-13))
                 Expect.equal box.CountZeroSides 2 "Line box should have 2 zero sides"
             }
 
             test "CountZeroSides for point box" {
-                let box = Box.createUncheckedVec(Pnt.Origin, Vec(1e-13, 0., 0.), Vec(0., 1e-13, 0.), Vec(0., 0., 1e-13))
+                let box = Box.createFromAxesUnchecked(Pnt.Origin, Vec(1e-13, 0., 0.), Vec(0., 1e-13, 0.), Vec(0., 0., 1e-13))
                 Expect.equal box.CountZeroSides 3 "Point box should have 3 zero sides"
             }
         ]
 
         testList "Transformation Methods" [
             test "move by vector" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 let moved = Box.move (Vec(5., 3., 2.)) box
                 Expect.isTrue (eqPnt moved.Origin (Pnt(5., 3., 2.))) "Origin should be moved"
-                Expect.isTrue (eqVec moved.Xaxis box.Xaxis) "Xaxis should be unchanged"
+                Expect.isTrue (eqVec moved.XAxis box.XAxis) "Xaxis should be unchanged"
             }
 
             test "Move instance method" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 let moved = box.Move(Vec(5., 3., 2.))
                 Expect.isTrue (eqPnt moved.Origin (Pnt(5., 3., 2.))) "Origin should be moved"
-                Expect.isTrue (eqVec moved.Xaxis box.Xaxis) "Xaxis should be unchanged"
+                Expect.isTrue (eqVec moved.XAxis box.XAxis) "Xaxis should be unchanged"
             }
 
             test "MoveX instance method" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 let moved = box.MoveX(5.)
                 Expect.isTrue (eqPnt moved.Origin (Pnt(5., 0., 0.))) "Origin should be moved in X"
             }
 
             test "MoveY instance method" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 let moved = box.MoveY(3.)
                 Expect.isTrue (eqPnt moved.Origin (Pnt(0., 3., 0.))) "Origin should be moved in Y"
             }
 
             test "MoveZ instance method" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 let moved = box.MoveZ(2.)
                 Expect.isTrue (eqPnt moved.Origin (Pnt(0., 0., 2.))) "Origin should be moved in Z"
             }
 
             test "moveX static method" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 let moved = Box.moveX 5. box
                 Expect.isTrue (eqPnt moved.Origin (Pnt(5., 0., 0.))) "Origin should be moved in X"
             }
 
             test "moveY static method" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 let moved = Box.moveY 3. box
                 Expect.isTrue (eqPnt moved.Origin (Pnt(0., 3., 0.))) "Origin should be moved in Y"
             }
 
             test "moveZ static method" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 let moved = Box.moveZ 2. box
                 Expect.isTrue (eqPnt moved.Origin (Pnt(0., 0., 2.))) "Origin should be moved in Z"
             }
 
             test "Transform with identity matrix" {
-                let box = Box.createUncheckedVec(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 let transformed = box.TransformRigid(RigidMatrix.identity)
                 Expect.isTrue (eqPnt transformed.Origin box.Origin) "Origin should be unchanged with identity"
-                Expect.isTrue (eqVec transformed.Xaxis box.Xaxis) "Xaxis should be unchanged"
+                Expect.isTrue (eqVec transformed.XAxis box.XAxis) "Xaxis should be unchanged"
             }
 
             test "Transform with translation matrix" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 let m = RigidMatrix.createTranslation(Vec(5., 3., 2.))
                 let transformed = box.TransformRigid(m)
                 Expect.isTrue (eqPnt transformed.Origin (Pnt(5., 3., 2.))) "Origin should be translated"
             }
 
             test "transform static method" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 let m = RigidMatrix.createTranslation(Vec(5., 3., 2.))
                 let transformed = Box.transformRigid m box
                 Expect.isTrue (eqPnt transformed.Origin (Pnt(5., 3., 2.))) "Origin should be translated"
             }
 
             test "TransformRigid instance method" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 let m = RigidMatrix.createTranslation(Vec(5., 3., 2.))
                 let transformed = box.TransformRigid(m)
                 Expect.isTrue (eqPnt transformed.Origin (Pnt(5., 3., 2.))) "Origin should be translated"
             }
 
             test "transformRigid static method" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 let m = RigidMatrix.createTranslation(Vec(5., 3., 2.))
                 let transformed = Box.transformRigid m box
                 Expect.isTrue (eqPnt transformed.Origin (Pnt(5., 3., 2.))) "Origin should be translated"
             }
 
             test "Rotate with identity quaternion" {
-                let box = Box.createUncheckedVec(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 let rotated = box.Rotate(Quaternion.identity)
                 Expect.isTrue (eqPnt rotated.Origin box.Origin) "Origin should be unchanged with identity quaternion"
-                Expect.isTrue (eqVec rotated.Xaxis box.Xaxis) "Xaxis should be unchanged"
+                Expect.isTrue (eqVec rotated.XAxis box.XAxis) "Xaxis should be unchanged"
             }
 
             test "Rotate 90 degrees around Z axis" {
-                let box = Box.createUncheckedVec(Pnt(1., 0., 0.), Vec(1., 0., 0.), Vec(0., 1., 0.), Vec(0., 0., 1.))
-                let q = Quaternion.createFromDegrees(UnitVec.Zaxis, 90.)
+                let box = Box.createFromAxesUnchecked(Pnt(1., 0., 0.), Vec(1., 0., 0.), Vec(0., 1., 0.), Vec(0., 0., 1.))
+                let q = Quaternion.createFromUnitVecDegrees UnitVec.zAxis 90.
                 let rotated = box.Rotate(q)
                 Expect.isTrue (eqPnt rotated.Origin (Pnt(0., 1., 0.))) "Origin should be rotated 90 degrees"
             }
 
             test "rotate static method" {
-                let box = Box.createUncheckedVec(Pnt(1., 0., 0.), Vec(1., 0., 0.), Vec(0., 1., 0.), Vec(0., 0., 1.))
-                let q = Quaternion.createFromDegrees(UnitVec.Zaxis, 90.)
+                let box = Box.createFromAxesUnchecked(Pnt(1., 0., 0.), Vec(1., 0., 0.), Vec(0., 1., 0.), Vec(0., 0., 1.))
+                let q = Quaternion.createFromUnitVecDegrees UnitVec.zAxis 90.
                 let rotated = Box.rotate q box
                 Expect.isTrue (eqPnt rotated.Origin (Pnt(0., 1., 0.))) "Origin should be rotated 90 degrees"
             }
 
             test "RotateAround keeps center point fixed" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
                 let center = box.Center
-                let q = Quaternion.createFromDegrees(UnitVec.Zaxis, 90.)
+                let q = Quaternion.createFromUnitVecDegrees UnitVec.zAxis 90.
                 let rotated = box.RotateAround center q
                 Expect.isTrue (eqPnt rotated.Center center) "Center should remain fixed"
             }
 
             test "rotateAround static method" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
                 let center = box.Center
-                let q = Quaternion.createFromDegrees(UnitVec.Zaxis, 90.)
+                let q = Quaternion.createFromUnitVecDegrees UnitVec.zAxis 90.
                 let rotated = Box.rotateAround center q box
                 Expect.isTrue (eqPnt rotated.Center center) "Center should remain fixed"
             }
 
-            test "translateLocalX" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
-                let moved = Box.translateLocalX 5. box
+            test "moveAlongLocalX" {
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let moved = Box.moveAlongLocalX 5. box
                 Expect.isTrue (eqPnt moved.Origin (Pnt(5., 0., 0.))) "Should move along X-axis"
             }
 
-            test "translateLocalY" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
-                let moved = Box.translateLocalY 3. box
+            test "moveAlongLocalY" {
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let moved = Box.moveAlongLocalY 3. box
                 Expect.isTrue (eqPnt moved.Origin (Pnt(0., 3., 0.))) "Should move along Y-axis"
             }
 
-            test "translateLocalZ" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
-                let moved = Box.translateLocalZ 2. box
+            test "moveAlongLocalZ" {
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let moved = Box.moveAlongLocalZ 2. box
                 Expect.isTrue (eqPnt moved.Origin (Pnt(0., 0., 2.))) "Should move along Z-axis"
             }
 
             test "Scale from world origin" {
-                let box = Box.createUncheckedVec(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 let scaled = box.Scale 2.
                 Expect.isTrue (eqPnt scaled.Origin (Pnt(2., 4., 6.))) "Origin should be scaled"
                 Expect.equal scaled.SizeX 20. "SizeX should be scaled"
@@ -448,14 +448,14 @@ let tests =
             }
 
             test "ScaleOn center point" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
                 let scaled = box.ScaleOn (Pnt(5., 5., 5.)) 2.
                 Expect.isTrue (eqPnt scaled.Center box.Center) "Center should remain at same position"
                 Expect.equal scaled.SizeX 20. "SizeX should be scaled"
             }
 
             test "scale static method" {
-                let box = Box.createUncheckedVec(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 let scaled = Box.scale 2. box
                 Expect.equal scaled.SizeX 20. "SizeX should be scaled"
             }
@@ -463,7 +463,7 @@ let tests =
 
         testList "Expansion Methods" [
             test "expand by positive distance" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
                 let expanded = Box.expand 1. box
                 Expect.isTrue (box.SizeX < expanded.SizeX) "Should expand in X"
                 Expect.isTrue (box.SizeY < expanded.SizeY) "Should expand in Y"
@@ -471,12 +471,12 @@ let tests =
             }
 
             test "expand throws on underflow" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
                 Expect.throws (fun () -> Box.expand -2. box |> ignore) "Should throw when shrinking causes underflow"
             }
 
             test "expandXYZ with different distances" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
                 let expanded = Box.expandXYZ 1. 2. 3. box
                 Expect.isTrue (box.SizeX < expanded.SizeX) "Should expand in X"
                 Expect.isTrue (box.SizeY < expanded.SizeY) "Should expand in Y"
@@ -484,7 +484,7 @@ let tests =
             }
 
             test "expandRel with factor 1.5" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
                 let expanded = Box.expandRel 1.5 box
                 Expect.isTrue (eqPnt expanded.Center box.Center) "Center should remain the same"
                 Expect.equal expanded.SizeX 15. "SizeX should be 15"
@@ -493,12 +493,12 @@ let tests =
             }
 
             test "expandRel rejects negative factor" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
                 Expect.throws (fun () -> Box.expandRel -0.5 box |> ignore) "Should throw on negative factor"
             }
 
             test "expandRelXYZ with different factors" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
                 let expanded = Box.expandRelXYZ 1.5 0.5 2.0 box
                 Expect.isTrue (eqPnt expanded.Center box.Center) "Center should remain the same"
                 Expect.equal expanded.SizeX 15. "SizeX should be 15"
@@ -508,12 +508,12 @@ let tests =
 
             // rotated and away from the origin, so that translation and rotation bugs show up
             let rotBox () =
-                let q = Quaternion.createFromEulerXYZ(23., -41., 67.)
-                Box.createUncheckedVec(Pnt(13., -7., 5.), Vec(10., 0., 0.), Vec(0., 6., 0.), Vec(0., 0., 4.)).Rotate q
+                let q = Quaternion.createFromEulerXYZDegrees 23. (-41.) 67.
+                Box.createFromAxesUnchecked(Pnt(13., -7., 5.), Vec(10., 0., 0.), Vec(0., 6., 0.), Vec(0., 0., 4.)).Rotate q
 
             // signed distance of each new face plane from the old one, along the old inward face normal
             let faceShifts (before:Box) (after:Box) =
-                let normals = [| before.ZaxisUnit; before.YaxisUnit; -before.XaxisUnit; -before.YaxisUnit; before.XaxisUnit; -before.ZaxisUnit |]
+                let normals = [| before.ZAxisUnit; before.YAxisUnit; -before.XAxisUnit; -before.YAxisUnit; before.XAxisUnit; -before.ZAxisUnit |]
                 Array.init 6 (fun i -> (after.Faces.[i].Center - before.Faces.[i].Center) *** normals.[i])
 
             test "offset moves each face by its own distance" {
@@ -526,15 +526,15 @@ let tests =
                 Expect.isTrue (eqFloat r.SizeX (10. - 1.5 - 2.0)) "SizeX"
                 Expect.isTrue (eqFloat r.SizeY (6. + 1.0 + 0.25)) "SizeY"
                 Expect.isTrue (eqFloat r.SizeZ (4. - 0.5 + 3.0)) "SizeZ"
-                Expect.isTrue (eqVec r.XaxisUnit.AsVec box.XaxisUnit.AsVec) "X direction kept"
-                Expect.isTrue (eqVec r.YaxisUnit.AsVec box.YaxisUnit.AsVec) "Y direction kept"
-                Expect.isTrue (eqVec r.ZaxisUnit.AsVec box.ZaxisUnit.AsVec) "Z direction kept"
+                Expect.isTrue (eqVec r.XAxisUnit.AsVec box.XAxisUnit.AsVec) "X direction kept"
+                Expect.isTrue (eqVec r.YAxisUnit.AsVec box.YAxisUnit.AsVec) "Y direction kept"
+                Expect.isTrue (eqVec r.ZAxisUnit.AsVec box.ZAxisUnit.AsVec) "Z direction kept"
             }
 
             test "offset with equal distances matches expand by the negated distance" {
                 let box = rotBox ()
                 Expect.isTrue (Box.equalsWithin 1e-9 (Box.offset 1.2 1.2 1.2 1.2 1.2 1.2 box) (Box.expand -1.2 box)) "positive"
-                Expect.isTrue (Box.equalsWithin 1e-9 (Box.offset -0.7 -0.7 -0.7 -0.7 -0.7 -0.7 box) (Box.expand 0.7 box)) "negative"
+                Expect.isTrue (Box.equalsWithin 1e-9 (Box.offset (-0.7) (-0.7) (-0.7) (-0.7) (-0.7) (-0.7) box) (Box.expand 0.7 box)) "negative"
             }
 
             test "offset with all zero distances returns the same box" {
@@ -562,43 +562,43 @@ let tests =
             }
 
             test "offset of a flat box takes the missing direction from the other two axes" {
-                let q = Quaternion.createFromEulerXYZ(10., 20., 30.)
-                let flat = Box.createUncheckedVec(Pnt(3., 4., 5.), Vec(10., 0., 0.), Vec(0., 6., 0.), Vec.Zero).Rotate q
-                let r = Box.offset -1. 0. 0. 0. 0. -2. flat
+                let q = Quaternion.createFromEulerXYZDegrees 10. 20. 30.
+                let flat = Box.createFromAxesUnchecked(Pnt(3., 4., 5.), Vec(10., 0., 0.), Vec(0., 6., 0.), Vec.Zero).Rotate q
+                let r = Box.offset (-1.) 0. 0. 0. 0. (-2.) flat
                 Expect.isTrue (eqFloat r.SizeZ 3.0) "SizeZ should be 3"
-                Expect.isTrue (eqVec r.ZaxisUnit.AsVec (Vec.cross(flat.Xaxis, flat.Yaxis).Unitized.AsVec)) "Z direction from X cross Y"
-                Expect.isTrue (eqPnt r.Origin (flat.Origin - r.ZaxisUnit.AsVec)) "Origin moved down by the bottom distance"
+                Expect.isTrue (eqVec r.ZAxisUnit.AsVec (Vec.cross(flat.XAxis, flat.YAxis).Unitized.AsVec)) "Z direction from X cross Y"
+                Expect.isTrue (eqPnt r.Origin (flat.Origin - r.ZAxisUnit.AsVec)) "Origin moved down by the bottom distance"
             }
 
             test "offset of a line box works along its only axis but fails across it" {
-                let line = Box.createUncheckedVec(Pnt(3., 4., 5.), Vec(1., 2., 3.), Vec.Zero, Vec.Zero)
-                let r = Box.offset 0. 0. -1. 0. -2. 0. line
+                let line = Box.createFromAxesUnchecked(Pnt(3., 4., 5.), Vec(1., 2., 3.), Vec.Zero, Vec.Zero)
+                let r = Box.offset 0. 0. (-1.) 0. (-2.) 0. line
                 Expect.isTrue (eqFloat r.SizeX (line.SizeX + 3.)) "SizeX grows"
-                Expect.throws (fun () -> Box.offset -1. 0. 0. 0. 0. 0. line |> ignore) "Z direction undefined"
+                Expect.throws (fun () -> Box.offset (-1.) 0. 0. 0. 0. 0. line |> ignore) "Z direction undefined"
             }
         ]
 
         testList "Containment" [
             test "Contains point inside" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
                 let pt = Pnt(5., 5., 5.)
                 Expect.isTrue (box.Contains pt) "Box should contain point inside"
             }
 
             test "Contains point on boundary" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
                 let pt = Pnt(10., 5., 5.)
                 Expect.isTrue (box.Contains pt) "Box should contain point on boundary"
             }
 
             test "Contains point outside" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
                 let pt = Pnt(11., 5., 5.)
                 Expect.isFalse (box.Contains pt) "Box should not contain point outside"
             }
 
             test "contains static method" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
                 let pt = Pnt(5., 5., 5.)
                 Expect.isTrue (Box.contains pt box) "Static method should work"
             }
@@ -606,7 +606,7 @@ let tests =
 
         testList "BBox Conversion" [
             test "BBox for axis-aligned box" {
-                let box = Box.createUncheckedVec(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 let bbox = BBox.createFromBox box
                 Expect.equal bbox.MinX 1. "BBox MinX should be 1"
                 Expect.equal bbox.MinY 2. "BBox MinY should be 2"
@@ -617,7 +617,7 @@ let tests =
             }
 
             test "BBox for rotated box" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 10., 0.), Vec(-10., 10., 0.), Vec(0., 0., 10.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 10., 0.), Vec(-10., 10., 0.), Vec(0., 0., 10.))
                 let bbox = BBox.createFromBox box
                 Expect.isTrue (bbox.MinX <= 0.) "BBox should contain origin"
                 Expect.isTrue (bbox.MaxX >= 0.) "BBox should contain all corners"
@@ -626,7 +626,7 @@ let tests =
 
         testList "Plane Conversion" [
             test "Plane from box" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 let plane = box.Plane
                 Expect.isTrue (eqPnt plane.Origin box.Origin) "Plane origin should match box origin"
             }
@@ -634,36 +634,36 @@ let tests =
 
         testList "Points and Edges" [
             test "Points array has 8 points" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
                 let pts = box.Points
                 Expect.equal pts.Length 8 "Should have 8 points"
             }
 
             test "Pnt0 is Origin" {
-                let box = Box.createUncheckedVec(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 Expect.isTrue (eqPnt box.Pnt0 box.Origin) "Pnt0 should equal Origin"
             }
 
             test "Pnt6 is FarCorner" {
-                let box = Box.createUncheckedVec(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 Expect.isTrue (eqPnt box.Pnt6 box.FarCorner) "Pnt6 should equal FarCorner"
             }
 
             test "Edges array has 12 edges" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
                 let edges = box.Edges
                 Expect.equal edges.Length 12 "Should have 12 edges"
             }
 
             test "Edge01 is parallel to Xaxis" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 let edge = box.Edge01
                 Expect.isTrue (eqPnt edge.From box.Pnt0) "Edge01 should start at Pnt0"
             }
 
             test "Box edges equal BBox edges after conversion" {
                 // An axis-aligned Box converts to an identical BBox, so every named edge must coincide.
-                let box = Box.createUncheckedVec(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 let bbox = BBox.createFromBox box
                 Expect.isTrue (eqLine box.Edge01 bbox.Edge01) "Edge01 should match"
                 Expect.isTrue (eqLine box.Edge12 bbox.Edge12) "Edge12 should match"
@@ -680,7 +680,7 @@ let tests =
             }
 
             test "Box reverse edges are the reverse of the forward edges" {
-                let box = Box.createUncheckedVec(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 let isReverseOf (fwd:Line3D) (rev:Line3D) = eqPnt fwd.From rev.To && eqPnt fwd.To rev.From
                 Expect.isTrue (isReverseOf box.Edge01 box.Edge10) "Edge10 should be the reverse of Edge01"
                 Expect.isTrue (isReverseOf box.Edge12 box.Edge21) "Edge21 should be the reverse of Edge12"
@@ -697,7 +697,7 @@ let tests =
             }
 
             test "GetLine returns the line between any two different corners" {
-                let box = Box.createUncheckedVec(Pnt(5., 3., 2.), Vec(8., 6., 0.), Vec(-3., 4., 0.), Vec(0., 0., 7.))
+                let box = Box.createFromAxesUnchecked(Pnt(5., 3., 2.), Vec(8., 6., 0.), Vec(-3., 4., 0.), Vec(0., 0., 7.))
                 let pts = box.Points
                 for i in 0..7 do
                     for j in 0..7 do
@@ -708,21 +708,21 @@ let tests =
                             Expect.isTrue (eqPnt (Box.getLine i j box).To pts.[j]) $"Box.getLine {i} {j} should match GetLine"
             }
 
-            test "GetLine is bit-identical to GetPnt" {
+            test "GetLine is bit-identical to GetPoint" {
                 let box =
-                    Box.createUncheckedVec(Pnt(1.1, -2.3, 0.7), Vec(0.3, 0., 0.), Vec(0., 0.7, 0.), Vec(0., 0., 0.9))
-                    |> Box.rotate (Quaternion.createFromDegrees(Vec(1., 2., 3.), 37.))
+                    Box.createFromAxesUnchecked(Pnt(1.1, -2.3, 0.7), Vec(0.3, 0., 0.), Vec(0., 0.7, 0.), Vec(0., 0., 0.9))
+                    |> Box.rotate (Quaternion.createFromVecDegrees (Vec(1., 2., 3.)) 37.)
                 for i in 0..7 do
                     for j in 0..7 do
                         if i <> j then
                             let ln = box.GetLine(i, j)
-                            let a = box.GetPnt i
-                            let b = box.GetPnt j
+                            let a = box.GetPoint i
+                            let b = box.GetPoint j
                             Expect.equal [ln.FromX; ln.FromY; ln.FromZ; ln.ToX; ln.ToY; ln.ToZ] [a.X; a.Y; a.Z; b.X; b.Y; b.Z] $"GetLine({i}, {j})"
             }
 
             test "GetLine matches the named edges" {
-                let box = Box.createUncheckedVec(Pnt(5., 3., 2.), Vec(8., 6., 0.), Vec(-3., 4., 0.), Vec(0., 0., 7.))
+                let box = Box.createFromAxesUnchecked(Pnt(5., 3., 2.), Vec(8., 6., 0.), Vec(-3., 4., 0.), Vec(0., 0., 7.))
                 let same (a:Line3D) (b:Line3D) = eqPnt a.From b.From && eqPnt a.To b.To
                 Expect.isTrue (same (box.GetLine(0, 1)) box.Edge01) "GetLine(0, 1) should be Edge01"
                 Expect.isTrue (same (box.GetLine(1, 0)) box.Edge10) "GetLine(1, 0) should be Edge10"
@@ -732,7 +732,7 @@ let tests =
             }
 
             test "GetLine fails on equal or out of range indices" {
-                let box = Box.createUncheckedVec(Pnt(5., 3., 2.), Vec(8., 6., 0.), Vec(-3., 4., 0.), Vec(0., 0., 7.))
+                let box = Box.createFromAxesUnchecked(Pnt(5., 3., 2.), Vec(8., 6., 0.), Vec(-3., 4., 0.), Vec(0., 0., 7.))
                 Expect.throws (fun () -> box.GetLine(3, 3) |> ignore) "Equal indices should throw"
                 Expect.throws (fun () -> box.GetLine(-1, 2) |> ignore) "Negative start index should throw"
                 Expect.throws (fun () -> box.GetLine(2, 8) |> ignore) "End index 8 should throw"
@@ -741,7 +741,7 @@ let tests =
 
             test "Box edges equal BBox edges via GetEdge after conversion" {
                 // The 12 edges must also coincide index-by-index through GetEdge / Edges.
-                let box = Box.createUncheckedVec(Pnt(-4., 1., -2.), Vec(7., 0., 0.), Vec(0., 9., 0.), Vec(0., 0., 6.))
+                let box = Box.createFromAxesUnchecked(Pnt(-4., 1., -2.), Vec(7., 0., 0.), Vec(0., 9., 0.), Vec(0., 0., 6.))
                 let bbox = BBox.createFromBox box
                 for i in 0..11 do
                     Expect.isTrue (eqLine (box.GetEdge i) (bbox.GetEdge i)) $"Edge at index {i} should match"
@@ -749,54 +749,54 @@ let tests =
             }
 
             test "Faces array has 6 faces" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
                 let faces = box.Faces
                 Expect.equal faces.Length 6 "Should have 6 faces"
             }
 
             test "BottomFace has correct origin" {
-                let box = Box.createUncheckedVec(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 let bottom = box.BottomFace
                 Expect.isTrue (eqPnt bottom.Origin box.Origin) "Bottom face should start at origin"
             }
 
             test "TopFace has correct origin" {
-                let box = Box.createUncheckedVec(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 let top = box.TopFace
-                Expect.isTrue (eqPnt top.Origin (box.Origin + box.Zaxis)) "Top face should be offset by Zaxis"
+                Expect.isTrue (eqPnt top.Origin (box.Origin + box.ZAxis)) "Top face should be offset by Zaxis"
             }
         ]
 
         testList "Equality Methods" [
             test "equals with exact match" {
-                let a = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
-                let b = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
+                let a = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
+                let b = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
                 Expect.isTrue (Box.equalsExact a b) "Exact boxes should be equal"
             }
 
             test "equals with tolerance" {
-                let a = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
-                let b = Box.createUncheckedVec(Pnt(0.001, 0.001, 0.001), Vec(10.001, 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
+                let a = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
+                let b = Box.createFromAxesUnchecked(Pnt(0.001, 0.001, 0.001), Vec(10.001, 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
                 Expect.isTrue (Box.equalsWithin 0.01 a b) "Boxes should be equal within tolerance"
                 Expect.isFalse (Box.equalsWithin 0.0001 a b) "Boxes should not be equal with small tolerance"
             }
 
             test "notEquals" {
-                let a = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
-                let b = Box.createUncheckedVec(Pnt(1., 1., 1.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
+                let a = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
+                let b = Box.createFromAxesUnchecked(Pnt(1., 1., 1.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
                 Expect.isTrue (Box.notEqualsWithin 0.5 a b) "Different boxes should not be equal"
             }
         ]
 
         testList "Face Area Methods" [
             test "AreaOfBiggestFace" {
-                let box = Box.createUncheckedVec(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 let area = box.AreaOfBiggestFace
                 Expect.equal area 50. "Biggest face should be X*Y = 50"
             }
 
             test "AreaOfSmallestFace" {
-                let box = Box.createUncheckedVec(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
                 let area = box.AreaOfSmallestFace
                 Expect.equal area 15. "Smallest face should be Y*Z = 15"
             }
@@ -809,7 +809,7 @@ let tests =
                 // Points all in positive octant
                 let pts = [| Pnt(1., 1., 1.); Pnt(2., 1., 1.); Pnt(2., 2., 1.); Pnt(1., 2., 1.)
                              Pnt(1., 1., 2.); Pnt(2., 1., 2.); Pnt(2., 2., 2.); Pnt(1., 2., 2.) |]
-                let box = Box.createFromPlaneAndPoints pl pts
+                let box = Box.createFromPlaneAndPnts pl pts
                 "positive - origin X" |> Expect.isTrue (eqFloat box.Origin.X 1.0)
                 "positive - origin Y" |> Expect.isTrue (eqFloat box.Origin.Y 1.0)
                 "positive - origin Z" |> Expect.isTrue (eqFloat box.Origin.Z 1.0)
@@ -824,7 +824,7 @@ let tests =
                 // Points all in negative octant
                 let pts = [| Pnt(-2., -2., -2.); Pnt(-1., -2., -2.); Pnt(-1., -1., -2.); Pnt(-2., -1., -2.)
                              Pnt(-2., -2., -1.); Pnt(-1., -2., -1.); Pnt(-1., -1., -1.); Pnt(-2., -1., -1.) |]
-                let box = Box.createFromPlaneAndPoints pl pts
+                let box = Box.createFromPlaneAndPnts pl pts
                 "negative - origin X" |> Expect.isTrue (eqFloat box.Origin.X -2.0)
                 "negative - origin Y" |> Expect.isTrue (eqFloat box.Origin.Y -2.0)
                 "negative - origin Z" |> Expect.isTrue (eqFloat box.Origin.Z -2.0)
@@ -839,7 +839,7 @@ let tests =
                 // Points spanning across origin
                 let pts = [| Pnt(-1., -1., -1.); Pnt(2., -1., -1.); Pnt(2., 1., -1.); Pnt(-1., 1., -1.)
                              Pnt(-1., -1., 1.); Pnt(2., -1., 1.); Pnt(2., 1., 1.); Pnt(-1., 1., 1.) |]
-                let box = Box.createFromPlaneAndPoints pl pts
+                let box = Box.createFromPlaneAndPnts pl pts
                 "mixed - origin X" |> Expect.isTrue (eqFloat box.Origin.X -1.0)
                 "mixed - origin Y" |> Expect.isTrue (eqFloat box.Origin.Y -1.0)
                 "mixed - origin Z" |> Expect.isTrue (eqFloat box.Origin.Z -1.0)
@@ -850,11 +850,11 @@ let tests =
 
             test "offset plane" {
                 // Plane offset from origin
-                let pl = PPlane.createOriginXaxisYaxis(Pnt(10., 10., 10.), Vec.Xaxis, Vec.Yaxis)
+                let pl = PPlane.createFromXAxisAndYAxis Vec.xAxis Vec.yAxis (Pnt(10., 10., 10.))
                 // Points relative to offset
                 let pts = [| Pnt(11., 11., 11.); Pnt(13., 11., 11.); Pnt(13., 12., 11.); Pnt(11., 12., 11.)
                              Pnt(11., 11., 12.); Pnt(13., 11., 12.); Pnt(13., 12., 12.); Pnt(11., 12., 12.) |]
-                let box = Box.createFromPlaneAndPoints pl pts
+                let box = Box.createFromPlaneAndPnts pl pts
                 "offset - origin X" |> Expect.isTrue (eqFloat box.Origin.X 11.0)
                 "offset - origin Y" |> Expect.isTrue (eqFloat box.Origin.Y 11.0)
                 "offset - origin Z" |> Expect.isTrue (eqFloat box.Origin.Z 11.0)
@@ -892,7 +892,7 @@ let tests =
 
         testList "IntersectRay" [
             test "ray through center of axis-aligned box" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
                 let ray = Line3D(Pnt(-5., 1., 1.), Pnt(5., 1., 1.))
                 let result = box.TryIntersectRay(ray)
                 Expect.isTrue result.IsSome "Should intersect"
@@ -902,14 +902,14 @@ let tests =
             }
 
             test "ray missing box" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
                 let ray = Line3D(Pnt(-5., 10., 10.), Pnt(5., 10., 10.))
                 let result = box.TryIntersectRay(ray)
                 Expect.isTrue result.IsNone "Should not intersect"
             }
 
             test "ray starting inside box" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
                 let ray = Line3D(Pnt(1., 1., 1.), Pnt(3., 1., 1.))
                 let result = box.TryIntersectRay(ray)
                 Expect.isTrue result.IsSome "Should intersect"
@@ -919,14 +919,14 @@ let tests =
             }
 
             test "ray parallel to box face but outside" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
                 let ray = Line3D(Pnt(-1., 5., 1.), Pnt(3., 5., 1.)) // parallel to X, but Y=5 is outside
                 let result = box.TryIntersectRay(ray)
                 Expect.isTrue result.IsNone "Should not intersect (ray parallel but outside)"
             }
 
             test "ray parallel to box face inside slab" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
                 let ray = Line3D(Pnt(-5., 1., 1.), Pnt(5., 1., 1.)) // parallel to X, Y and Z inside box
                 let result = box.TryIntersectRay(ray)
                 Expect.isTrue result.IsSome "Should intersect"
@@ -938,7 +938,7 @@ let tests =
                 let xAxis = Vec(sqrt2over2, sqrt2over2, 0.) * 2.0
                 let yAxis = Vec(-sqrt2over2, sqrt2over2, 0.) * 2.0
                 let zAxis = Vec(0., 0., 2.)
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), xAxis, yAxis, zAxis)
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), xAxis, yAxis, zAxis)
                 // Ray along world X through center height
                 let ray = Line3D(Pnt(-5., 0., 1.), Pnt(5., 0., 1.))
                 let result = box.TryIntersectRay(ray)
@@ -946,14 +946,14 @@ let tests =
             }
 
             test "ray too short (zero length)" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
                 let ray = Line3D(Pnt(1., 1., 1.), Pnt(1., 1., 1.))
                 let result = box.TryIntersectRay(ray)
                 Expect.isTrue result.IsNone "Should return None for zero-length ray"
             }
 
             test "ray grazing box corner" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
                 let ray = Line3D(Pnt(1., 3., 2.), Pnt(3., 1., 2.))
                 let result = box.TryIntersectRay(ray)
                 Expect.isTrue result.IsSome "Should intersect at the corner only"
@@ -963,7 +963,7 @@ let tests =
             }
 
             test "ray along box edge" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
                 let ray = Line3D(Pnt(0., 0., -1.), Pnt(0., 0., 3.))
                 let result = box.TryIntersectRay(ray)
                 Expect.isTrue result.IsSome "Should intersect along edge"
@@ -973,7 +973,7 @@ let tests =
             }
 
             test "ray on box face" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
                 let ray = Line3D(Pnt(-1., 1., 0.), Pnt(3., 1., 0.))
                 let result = box.TryIntersectRay(ray)
                 Expect.isTrue result.IsSome "Should intersect along the bottom face"
@@ -983,14 +983,14 @@ let tests =
             }
 
             test "static intersectRay function" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
                 let ray = Line3D(Pnt(-5., 1., 1.), Pnt(5., 1., 1.))
                 let result = Box.tryIntersectRay ray box
                 Expect.isTrue result.IsSome "Static function should also work"
             }
 
             test "intersection points can be computed from parameters" {
-                let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(4., 0., 0.), Vec(0., 4., 0.), Vec(0., 0., 4.))
+                let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(4., 0., 0.), Vec(0., 4., 0.), Vec(0., 0., 4.))
                 let ray = Line3D(Pnt(-2., 2., 2.), Pnt(6., 2., 2.))
                 let result = box.TryIntersectRay(ray)
                 Expect.isTrue result.IsSome "Should intersect"
@@ -1007,8 +1007,8 @@ let tests =
         testList "IntersectPlane" [
             test "returns an empty ResizeArray when the plane misses" {
                 let s = sqrt 0.5
-                let box = Box.createUncheckedVec(Pnt.Origin, Vec(2.*s, 2.*s, 0.), Vec(-2.*s, 2.*s, 0.), Vec(0., 0., 2.))
-                let plane = NPlane.create(Pnt(0., 0., 3.), Vec(0., 0., 1.))
+                let box = Box.createFromAxesUnchecked(Pnt.Origin, Vec(2.*s, 2.*s, 0.), Vec(-2.*s, 2.*s, 0.), Vec(0., 0., 2.))
+                let plane = NPlane.createFromNormal (Vec(0., 0., 1.)) (Pnt(0., 0., 3.))
                 let points: ResizeArray<Pnt> = box.IntersectPlane plane
 
                 Expect.equal points.Count 0 "A plane outside the oriented box should return an empty ResizeArray"
@@ -1018,8 +1018,8 @@ let tests =
 
             test "returns four points through the middle of a rotated box" {
                 let s = sqrt 0.5
-                let box = Box.createUncheckedVec(Pnt.Origin, Vec(2.*s, 2.*s, 0.), Vec(-2.*s, 2.*s, 0.), Vec(0., 0., 2.))
-                let plane = NPlane.create(Pnt(0., 0., 1.), Vec(0., 0., 1.))
+                let box = Box.createFromAxesUnchecked(Pnt.Origin, Vec(2.*s, 2.*s, 0.), Vec(-2.*s, 2.*s, 0.), Vec(0., 0., 2.))
+                let plane = NPlane.createFromNormal (Vec(0., 0., 1.)) (Pnt(0., 0., 1.))
                 let points = box.IntersectPlane plane
 
                 Expect.equal points.Count 4 "A plane through the middle should produce a quadrilateral"
@@ -1034,8 +1034,8 @@ let tests =
                 let xAxis = Vec(2.*s, 2.*s, 0.)
                 let yAxis = Vec(-2.*s, 2.*s, 0.)
                 let zAxis = Vec(0., 0., 2.)
-                let box = Box.createUncheckedVec(Pnt.Origin, xAxis, yAxis, zAxis)
-                let plane = NPlane.create(box.Center, xAxis + yAxis + zAxis)
+                let box = Box.createFromAxesUnchecked(Pnt.Origin, xAxis, yAxis, zAxis)
+                let plane = NPlane.createFromNormal (xAxis + yAxis + zAxis) box.Center
                 let points = box.IntersectPlane plane
 
                 Expect.equal points.Count 6 "A diagonal plane through the center should produce a hexagon"
@@ -1046,8 +1046,8 @@ let tests =
 
             test "sorts polygon points counter-clockwise around the plane normal" {
                 let s = sqrt 0.5
-                let box = Box.createUncheckedVec(Pnt.Origin, Vec(2.*s, 2.*s, 0.), Vec(-2.*s, 2.*s, 0.), Vec(0., 0., 2.))
-                let plane = NPlane.create(box.Center, Vec(-2., 1., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt.Origin, Vec(2.*s, 2.*s, 0.), Vec(-2.*s, 2.*s, 0.), Vec(0., 0., 2.))
+                let plane = NPlane.createFromNormal (Vec(-2., 1., 3.)) box.Center
                 let points = box.IntersectPlane plane
                 let mutable twiceAreaDotNormal = 0.0
 
@@ -1068,8 +1068,8 @@ let tests =
                 let xAxis = Vec(2.*s, 2.*s, 0.)
                 let yAxis = Vec(-2.*s, 2.*s, 0.)
                 let zAxis = Vec(0., 0., 2.)
-                let box = Box.createUncheckedVec(Pnt.Origin, xAxis, yAxis, zAxis)
-                let plane = NPlane.create(box.Origin, xAxis + yAxis + zAxis)
+                let box = Box.createFromAxesUnchecked(Pnt.Origin, xAxis, yAxis, zAxis)
+                let plane = NPlane.createFromNormal (xAxis + yAxis + zAxis) box.Origin
                 let points = box.IntersectPlane plane
 
                 Expect.equal points.Count 1 "A corner touch should return one point"
@@ -1081,8 +1081,8 @@ let tests =
                 let xAxis = Vec(2.*s, 2.*s, 0.)
                 let yAxis = Vec(-2.*s, 2.*s, 0.)
                 let zAxis = Vec(0., 0., 2.)
-                let box = Box.createUncheckedVec(Pnt.Origin, xAxis, yAxis, zAxis)
-                let plane = NPlane.create(box.Origin, xAxis + yAxis)
+                let box = Box.createFromAxesUnchecked(Pnt.Origin, xAxis, yAxis, zAxis)
+                let plane = NPlane.createFromNormal (xAxis + yAxis) box.Origin
                 let points = box.IntersectPlane plane
 
                 Expect.equal points.Count 2 "An edge touch should return its two endpoints"
@@ -1095,8 +1095,8 @@ let tests =
                 let xAxis = Vec(2.*s, 2.*s, 0.)
                 let yAxis = Vec(-2.*s, 2.*s, 0.)
                 let zAxis = Vec(0., 0., 2.)
-                let box = Box.createUncheckedVec(Pnt.Origin, xAxis, yAxis, zAxis)
-                let plane = NPlane.create(box.Origin, zAxis)
+                let box = Box.createFromAxesUnchecked(Pnt.Origin, xAxis, yAxis, zAxis)
+                let plane = NPlane.createFromNormal zAxis box.Origin
                 let points = box.IntersectPlane plane
 
                 Expect.equal points.Count 4 "A coincident face should return its four corners"
@@ -1107,8 +1107,8 @@ let tests =
 
             test "static member agrees with the instance member" {
                 let s = sqrt 0.5
-                let box = Box.createUncheckedVec(Pnt.Origin, Vec(2.*s, 2.*s, 0.), Vec(-2.*s, 2.*s, 0.), Vec(0., 0., 2.))
-                let plane = NPlane.create(box.Center, Vec(1., 2., 3.))
+                let box = Box.createFromAxesUnchecked(Pnt.Origin, Vec(2.*s, 2.*s, 0.), Vec(-2.*s, 2.*s, 0.), Vec(0., 0., 2.))
+                let plane = NPlane.createFromNormal (Vec(1., 2., 3.)) box.Center
                 let instancePoints = box.IntersectPlane plane
                 let staticPoints = Box.intersectPlane plane box
 

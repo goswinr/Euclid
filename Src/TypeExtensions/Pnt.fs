@@ -102,7 +102,6 @@ module AutoOpenPnt =
 
 
         /// Returns the distance between two 3D points.
-        /// Same as Pnt.dist.
         member inline p.DistanceTo (b:Pnt) : float =
             let x = p.X-b.X
             let y = p.Y-b.Y
@@ -110,7 +109,6 @@ module AutoOpenPnt =
             sqrt(x*x + y*y + z*z)
 
         /// Returns the distance between two 3D points.
-        /// Same as Pnt.dist.
         static member inline distanceTo (b:Pnt) (p:Pnt) : float =
             p.DistanceTo b
 
@@ -122,13 +120,12 @@ module AutoOpenPnt =
             sqrt(dx*dx + dy*dy + dz*dz)
 
         /// Returns the distance between a 3D point and given x, y, z coordinates.
-        static member inline distanceToXYZ (x:float, y:float, z:float) (p:Pnt) : float =
+        static member inline distanceToXYZ (x:float) (y:float) (z:float) (p:Pnt) : float =
             p.DistanceToXYZ (x, y, z)
 
         /// Returns the squared distance between two 3D points.
         /// This operation is slightly faster than the distance function, and sufficient for many algorithms like finding closest points.
-        /// Same as Pnt.sqDist.
-        member inline p.SqDistanceTo (b:Pnt) : float =
+        member inline p.DistanceToSq (b:Pnt) : float =
             let x = p.X-b.X
             let y = p.Y-b.Y
             let z = p.Z-b.Z
@@ -136,35 +133,23 @@ module AutoOpenPnt =
 
         /// Returns the squared distance between two 3D points.
         /// This operation is slightly faster than the distance function, and sufficient for many algorithms like finding closest points.
-        /// Same as Pnt.sqDist
-        static member inline sqDistanceTo (b:Pnt) (p:Pnt) : float =
-            p.SqDistanceTo b
+        static member inline distanceToSq (b:Pnt) (p:Pnt) : float =
+            p.DistanceToSq b
 
 
         /// Returns the squared distance between a 3D point and given x, y, z coordinates.
-        member inline p.SqDistanceToXYZ (x:float, y:float, z:float) : float =
+        member inline p.DistanceToXYZSq (x:float, y:float, z:float) : float =
             let dx = p.X - x
             let dy = p.Y - y
             let dz = p.Z - z
             dx*dx + dy*dy + dz*dz
 
         /// Returns the squared distance between a 3D point and given x, y, z coordinates.
-        static member inline sqDistanceToXYZ (x:float, y:float, z:float) (p:Pnt) : float =
-            p.SqDistanceToXYZ (x, y, z)
+        static member inline distanceToXYZSq (x:float) (y:float) (z:float) (p:Pnt) : float =
+            p.DistanceToXYZSq (x, y, z)
 
 
 
-        /// Returns the distance between two 3D points.
-        /// Same as Pnt.distanceTo.
-        static member inline dist (b:Pnt) (p:Pnt) : float =
-            p.DistanceTo b
-
-
-        /// Returns the squared distance between two 3D points.
-        /// This operation is slightly faster than the distance function, and sufficient for many algorithms like finding closest points.
-        /// Same as Pnt.sqDistanceTo.
-        static member inline sqDist (b:Pnt) (p:Pnt) : float =
-            p.SqDistanceTo b
 
 
         /// Returns the distance from Origin (0, 0, 0)
@@ -176,12 +161,12 @@ module AutoOpenPnt =
             pnt.DistanceFromOrigin
 
         /// Returns the squared distance from Origin (0, 0, 0)
-        member inline pnt.SqDistanceFromOrigin : float =
+        member inline pnt.DistanceFromOriginSq : float =
             pnt.X*pnt.X + pnt.Y*pnt.Y + pnt.Z*pnt.Z
 
         /// Returns the squared distance from Origin (0, 0, 0)
-        static member inline sqDistanceFromOrigin (pnt:Pnt) : float =
-            pnt.SqDistanceFromOrigin
+        static member inline distanceFromOriginSq (pnt:Pnt) : float =
+            pnt.DistanceFromOriginSq
 
         /// Returns the projected distance from Origin (0, 0, 0). Ignoring the Z component.
         member inline pnt.DistanceInXYFromOrigin : float =
@@ -192,12 +177,12 @@ module AutoOpenPnt =
             pnt.DistanceInXYFromOrigin
 
         /// Returns the projected squared distance from Origin (0, 0, 0). Ignoring the Z component.
-        member inline pnt.SqDistanceInXYFromOrigin : float =
+        member inline pnt.DistanceInXYFromOriginSq : float =
             pnt.X*pnt.X + pnt.Y*pnt.Y
 
-        /// Same as pnt.SqDistanceInXYFromOrigin.
-        static member inline sqDistanceInXYFromOrigin (pnt:Pnt) : float =
-            pnt.SqDistanceInXYFromOrigin
+        /// Same as pnt.DistanceInXYFromOriginSq.
+        static member inline distanceInXYFromOriginSq (pnt:Pnt) : float =
+            pnt.DistanceInXYFromOriginSq
 
         /// Returns new 3D point with given distance from Origin by scaling it up or down.
         member inline pnt.WithDistanceFromOrigin (l:float) : Pnt =
@@ -211,7 +196,7 @@ module AutoOpenPnt =
 
         /// Returns the Diamond Angle from this point to another point projected in X-Y plane.
         /// The diamond angle is always positive and in the range of 0.0 to 4.0 (for 360 degrees)
-        /// 0.0 = Xaxis, going counter-clockwise. Ignoring Z component.
+        /// 0.0 = XAxis, going counter-clockwise. Ignoring Z component.
         /// This is the fastest angle computation since it does not use Math.Cos or Math.Sin.
         /// It is useful for radial sorting.
         member inline p.DirectionDiamondInXYTo(o:Pnt) : float =
@@ -232,14 +217,14 @@ module AutoOpenPnt =
 
         /// Returns the Diamond Angle from 'fromPnt' to 'toPnt' projected in X-Y plane.
         /// The diamond angle is always positive and in the range of 0.0 to 4.0 (for 360 degrees)
-        /// 0.0 = Xaxis, going counter-clockwise. Ignoring Z component.
+        /// 0.0 = XAxis, going counter-clockwise. Ignoring Z component.
         /// This is the fastest angle computation since it does not use Math.Cos or Math.Sin.
         /// It is useful for radial sorting.
-        static member inline directionDiamondInXYTo (fromPnt:Pnt, toPnt:Pnt) : float = // not curried because argument order is important
+        static member inline directionDiamondInXYTo (fromPnt:Pnt) (toPnt:Pnt) : float =
             fromPnt.DirectionDiamondInXYTo(toPnt)
 
         /// Returns the angle in radians from this point to another point projected in X-Y plane.
-        /// 0.0 = Xaxis, going counter-clockwise till two Pi.
+        /// 0.0 = XAxis, going counter-clockwise till two Pi.
         member inline p.Angle2PiInXYTo(o:Pnt) : float =
             // https://stackoverflow.com/a/14675998/969070
             let x = o.X-p.X
@@ -250,18 +235,18 @@ module AutoOpenPnt =
             else            a
 
         /// Returns the angle in radians from 'fromPnt' to 'toPnt' projected in X-Y plane.
-        /// 0.0 = Xaxis, going counter-clockwise till two Pi.
-        static member inline angle2PiInXYTo (fromPnt:Pnt, toPnt:Pnt) : float = // not curried because argument order is important
+        /// 0.0 = XAxis, going counter-clockwise till two Pi.
+        static member inline angle2PiInXYTo (fromPnt:Pnt) (toPnt:Pnt) : float =
             fromPnt.Angle2PiInXYTo(toPnt)
 
         /// Returns the angle in degrees from this point to another point projected in X-Y plane.
-        /// 0.0 = Xaxis, going counter-clockwise till 360.
+        /// 0.0 = XAxis, going counter-clockwise till 360.
         member inline p.Angle360InXYTo(o:Pnt) : float =
             p.Angle2PiInXYTo o |> toDegrees
 
         /// Returns the angle in degrees from 'fromPnt' to 'toPnt' projected in X-Y plane.
-        /// 0.0 = Xaxis, going counter-clockwise till 360.
-        static member inline angle360InXYTo (fromPnt:Pnt, toPnt:Pnt) : float = // not curried because argument order is important
+        /// 0.0 = XAxis, going counter-clockwise till 360.
+        static member inline angle360InXYTo (fromPnt:Pnt) (toPnt:Pnt) : float =
             fromPnt.Angle360InXYTo(toPnt)
 
         /// Returns the closest point on a finite line segment to test point.
@@ -278,18 +263,18 @@ module AutoOpenPnt =
 
         /// Returns the squared distance between point and finite line segment.
         /// The line segment is given as a Line3D `ln`.
-        member inline testPnt.SqDistanceToLine(ln:Line3D) : float =
+        member inline testPnt.DistanceToLineSq(ln:Line3D) : float =
             XLineXYZ.sqDistLnPt(ln.FromX, ln.FromY, ln.FromZ, ln.VectorX, ln.VectorY, ln.VectorZ, testPnt.X, testPnt.Y, testPnt.Z)
 
         /// Returns the squared distance between point and finite line segment.
         /// The line segment is given as a Line3D `ln`.
-        static member inline sqDistanceToLine (ln:Line3D) (testPnt:Pnt) : float =
-            testPnt.SqDistanceToLine(ln)
+        static member inline distanceToLineSq (ln:Line3D) (testPnt:Pnt) : float =
+            testPnt.DistanceToLineSq(ln)
 
         /// Returns the distance between point and finite line segment.
         /// The line segment is given as a Line3D `ln`.
         member inline testPnt.DistanceToLine(ln:Line3D) : float =
-            testPnt.SqDistanceToLine ln |> sqrt
+            testPnt.DistanceToLineSq ln |> sqrt
 
         /// Returns the distance between point and finite line segment.
         /// The line segment is given as a Line3D `ln`.
@@ -389,8 +374,9 @@ module AutoOpenPnt =
         static member inline createFromUnitVec (v:UnitVec) : Pnt =
             Pnt (v.X, v.Y, v.Z)
 
-        // /// Create 3D point from X, Y and Z components.
-        // static member inline create (x:float) (y:float) (z:float) : Pnt = Pnt(x, y, z)
+        /// Create 3D point from X, Y and Z components.
+        static member inline create (x:float) (y:float) (z:float) : Pnt =
+            Pnt(x, y, z)
 
         /// Returns a 3D point from Z level and 2D point.
         static member inline createFromPtWithZ (z:float) (p:Pt) : Pnt =
@@ -417,10 +403,6 @@ module AutoOpenPnt =
         static member inline add (a:Pnt) (b:Pnt) : Pnt =
             a + b
 
-        /// Add a 3D point to a 3D vector and return new 3D point.
-        static member inline addVec (v:Vec) (a:Pnt) : Pnt =
-            a + v
-
         /// Returns the midpoint of two 3D points.
         static member inline midPnt (a:Pnt) (b:Pnt) : Pnt =
             Pnt((a.X + b.X) * 0.5, (a.Y + b.Y) * 0.5, (a.Z + b.Z) * 0.5)
@@ -439,11 +421,7 @@ module AutoOpenPnt =
                 cen.Y + (pnt.Y - cen.Y) * factor,
                 cen.Z + (pnt.Z - cen.Z) * factor)
 
-        /// Move point 3D by vector. Same as Pnt.move.
-        static member inline translate (shift:Vec) (pnt:Pnt) : Pnt =
-            pnt + shift
-
-        /// Move point 3D by vector. Same as Pnt.translate.
+        /// Move point 3D by vector.
         static member inline move (shift:Vec) (pnt:Pnt) : Pnt =
             pnt + shift
 
@@ -466,19 +444,19 @@ module AutoOpenPnt =
             sqrt(x*x + y*y)
 
         /// Returns angle between three 3D Points in radians. Range 0.0 to Pi.
-        static member inline anglePiPnts (pntPrev:Pnt, pntThis:Pnt, pntNext:Pnt) : float =
+        static member inline anglePiPnts (pntPrev:Pnt) (pntThis:Pnt) (pntNext:Pnt) : float =
             anglePiOfVecs "Pnt.anglePiPnts"
                 (pntPrev.X - pntThis.X) (pntPrev.Y - pntThis.Y) (pntPrev.Z - pntThis.Z)
                 (pntNext.X - pntThis.X) (pntNext.Y - pntThis.Y) (pntNext.Z - pntThis.Z)
 
         /// Returns angle between three 3D Points in degrees. Range 0.0 to 180
-        static member inline angle180Pnts (pntPrev:Pnt, pntThis:Pnt, pntNext:Pnt) : float =
-            Pnt.anglePiPnts(pntPrev, pntThis, pntNext) |> toDegrees
+        static member inline angle180Pnts (pntPrev:Pnt) (pntThis:Pnt) (pntNext:Pnt) : float =
+            Pnt.anglePiPnts pntPrev pntThis pntNext |> toDegrees
 
         /// Returns a (not unitized) bisector vector in the middle direction from pntThis.
         /// Code : (pntPrev-pntThis).Unitized  + (pntNext-pntThis).Unitized
         /// pntPrev * pntThis * pntNext ->   bisector vector
-        static member inline bisector (pntPrev:Pnt, pntThis:Pnt, pntNext:Pnt) : Vec =
+        static member inline bisector (pntPrev:Pnt) (pntThis:Pnt) (pntNext:Pnt) : Vec =
             let ax = pntPrev.X - pntThis.X
             let ay = pntPrev.Y - pntThis.Y
             let az = pntPrev.Z - pntThis.Z
@@ -495,10 +473,10 @@ module AutoOpenPnt =
 
         /// For three Points describing a plane return a normal.
         /// The points 'a', 'b' and 'c' in counter-clockwise order return a normal pointing towards the
-        /// viewer (e.g. +Z for points in the XY plane), matching NPlane.createFrom3Points and
+        /// viewer (e.g. +Z for points in the XY plane), matching NPlane.createFrom3Pnts and
         /// Points3D.normalOfPoints. The result is not unitized.
         /// If the returned vector has length zero then the points are in one line.
-        static member normalOf3Pnts (a:Pnt, b:Pnt, c:Pnt) : Vec =
+        static member normalOf3Pnts (a:Pnt) (b:Pnt) (c:Pnt) : Vec =
             // cross product of (b - a) and (c - a)
             let vx = b.X - a.X
             let vy = b.Y - a.Y
@@ -511,7 +489,7 @@ module AutoOpenPnt =
                 vx * wy - vy * wx)
 
         /// Returns a point that is at a given distance from a 3D point in the direction of another point.
-        static member inline distPnt (fromPnt:Pnt, dirPnt:Pnt, distance:float) : Pnt =
+        static member inline distPnt (fromPnt:Pnt) (dirPnt:Pnt) (distance:float) : Pnt =
             let x = dirPnt.X - fromPnt.X
             let y = dirPnt.Y - fromPnt.Y
             let z = dirPnt.Z - fromPnt.Z
@@ -526,7 +504,7 @@ module AutoOpenPnt =
         /// e.g. rel=0.5 will return the middle point, rel=1.0 the endPoint,
         /// rel=3.0 a point three times the distance beyond the end point.
         /// Same as Pnt.lerp.
-        static member inline divPnt (fromPnt:Pnt, toPnt:Pnt, rel:float) : Pnt = // not curried because argument order is important and would be confusing
+        static member inline divPnt (fromPnt:Pnt) (toPnt:Pnt) (rel:float) : Pnt =
             Pnt(fromPnt.X + (toPnt.X-fromPnt.X)*rel,
                 fromPnt.Y + (toPnt.Y-fromPnt.Y)*rel,
                 fromPnt.Z + (toPnt.Z-fromPnt.Z)*rel)
@@ -535,12 +513,12 @@ module AutoOpenPnt =
         /// e.g. rel=0.5 will return the middle point, rel=1.0 the endPoint,
         /// rel=3.0 a point three times the distance beyond the end point.
         /// Same as Pnt.divPnt.
-        static member inline lerp (fromPnt:Pnt, toPnt:Pnt, rel:float) : Pnt = // not curried because argument order is important and would be confusing
-            Pnt.divPnt(fromPnt, toPnt, rel)
+        static member inline lerp (fromPnt:Pnt) (toPnt:Pnt) (rel:float) : Pnt =
+            Pnt.divPnt fromPnt toPnt rel
 
         /// Returns a point that is at a given Z level,
         /// going from a point in the direction of another point.
-        static member extendToZLevel  (fromPnt:Pnt,toPnt:Pnt, z:float) : Pnt =
+        static member extendToZLevel (fromPnt:Pnt) (toPnt:Pnt) (z:float) : Pnt =
             let vx = toPnt.X - fromPnt.X
             let vy = toPnt.Y - fromPnt.Y
             let vz = toPnt.Z - fromPnt.Z
@@ -571,13 +549,13 @@ module AutoOpenPnt =
         /// Every 3D line has a normal vector in the X-Y plane.
         /// Rotated counter-clockwise in top view.
         /// The result is unitized.
-        /// If line is vertical then Xaxis is returned.
+        /// If line is vertical then XAxis is returned.
         /// see also : Vec.perpendicularVecInXY.
-        static member normalOfTwoPointsInXY (fromPnt:Pnt, toPnt:Pnt) : Vec =
+        static member normalOfTwoPointsInXY (fromPnt:Pnt) (toPnt:Pnt) : Vec =
             let x = toPnt.Y - fromPnt.Y
-            let y = fromPnt.X - toPnt.X  // this is the same as: Vec.cross v Vec.Zaxis
+            let y = fromPnt.X - toPnt.X  // this is the same as: Vec.cross v Vec.zAxis
             let len = sqrt(x*x + y*y)
-            if isTooTiny len then Vec.Xaxis
+            if isTooTiny len then Vec.xAxis
             else Vec(x/len, y/len, 0.0)
 
 
@@ -640,7 +618,7 @@ module AutoOpenPnt =
             Pnt (r.Cos*p.X - r.Sin*p.Y, r.Sin*p.X + r.Cos*p.Y, p.Z)
 
         /// Rotate the 3D point around a center 3D point and an X-aligned axis, from Y to Z-axis, counter-clockwise looking from right.
-        static member rotateOnXWithCenter (cen:Pnt) (r:Rotation2D) (pnt:Pnt) : Pnt =
+        static member rotateAroundOnX (cen:Pnt) (r:Rotation2D) (pnt:Pnt) : Pnt =
             let x = pnt.X - cen.X
             let y = pnt.Y - cen.Y
             let z = pnt.Z - cen.Z
@@ -649,7 +627,7 @@ module AutoOpenPnt =
                     r.Sin*y + r.Cos*z + cen.Z)
 
         /// Rotate the 3D point around a center point and a Y aligned axis, from Z to X-axis, counter-clockwise looking from back.
-        static member rotateOnYWithCenter (cen:Pnt) (r:Rotation2D) (pnt:Pnt) : Pnt =
+        static member rotateAroundOnY (cen:Pnt) (r:Rotation2D) (pnt:Pnt) : Pnt =
             let x = pnt.X - cen.X
             let y = pnt.Y - cen.Y
             let z = pnt.Z - cen.Z
@@ -658,7 +636,7 @@ module AutoOpenPnt =
                     r.Cos*z - r.Sin*x + cen.Z)
 
         /// Rotate the 3D point around a center point and a Z aligned axis, from X to Y-axis, counter-clockwise looking from top.
-        static member rotateOnZWithCenter (cen:Pnt) (r:Rotation2D) (pnt:Pnt) : Pnt =
+        static member rotateAroundOnZ (cen:Pnt) (r:Rotation2D) (pnt:Pnt) : Pnt =
             let x = pnt.X - cen.X
             let y = pnt.Y - cen.Y
             let z = pnt.Z - cen.Z
@@ -667,44 +645,44 @@ module AutoOpenPnt =
                     z                 + cen.Z)
 
         /// Rotate the 3D point in degrees around X-axis, from Y to Z-axis, counter-clockwise looking from right.
-        static member inline rotateOnXDeg (angDegree) (pnt:Pnt) : Pnt =
+        static member inline rotateOnXDegrees (angDegree) (pnt:Pnt) : Pnt =
             Pnt.rotateOnX (Rotation2D.createFromDegrees angDegree) pnt
 
         /// Rotate the 3D point in degrees around Y-axis, from Z to X-axis, counter-clockwise looking from back.
-        static member inline rotateOnYDeg (angDegree) (pnt:Pnt) : Pnt =
+        static member inline rotateOnYDegrees (angDegree) (pnt:Pnt) : Pnt =
             Pnt.rotateOnY (Rotation2D.createFromDegrees angDegree) pnt
 
         /// Rotate the 3D point in degrees around Z-axis, from X to Y-axis, counter-clockwise looking from top.
-        static member inline rotateOnZDeg (angDegree) (pnt:Pnt) : Pnt =
+        static member inline rotateOnZDegrees (angDegree) (pnt:Pnt) : Pnt =
             Pnt.rotateOnZ (Rotation2D.createFromDegrees angDegree) pnt
 
 
         /// Rotate the 3D point in degrees around center point and an X-aligned axis, from Y to Z-axis, counter-clockwise looking from right.
-        static member inline rotateOnXWithCenterDeg (cen:Pnt) (angDegree) (pnt:Pnt) : Pnt =
-            Pnt.rotateOnXWithCenter cen (Rotation2D.createFromDegrees angDegree) pnt
+        static member inline rotateAroundOnXDegrees (cen:Pnt) (angDegree) (pnt:Pnt) : Pnt =
+            Pnt.rotateAroundOnX cen (Rotation2D.createFromDegrees angDegree) pnt
 
         /// Rotate the 3D point in degrees around center point and a Y aligned axis, from Z to X-axis, counter-clockwise looking from back.
-        static member inline rotateOnYWithCenterDeg (cen:Pnt) (angDegree) (pnt:Pnt) : Pnt =
-            Pnt.rotateOnYWithCenter cen (Rotation2D.createFromDegrees angDegree) pnt
+        static member inline rotateAroundOnYDegrees (cen:Pnt) (angDegree) (pnt:Pnt) : Pnt =
+            Pnt.rotateAroundOnY cen (Rotation2D.createFromDegrees angDegree) pnt
 
         /// Rotate the 3D point in degrees around center point and a Z aligned axis, from X to Y-axis, counter-clockwise looking from top.
-        static member inline rotateOnZWithCenterDeg (cen:Pnt) (angDegree) (pnt:Pnt) : Pnt =
-            Pnt.rotateOnZWithCenter cen (Rotation2D.createFromDegrees angDegree) pnt
+        static member inline rotateAroundOnZDegrees (cen:Pnt) (angDegree) (pnt:Pnt) : Pnt =
+            Pnt.rotateAroundOnZ cen (Rotation2D.createFromDegrees angDegree) pnt
 
         /// 90-degree rotation counter-clockwise around the Z-axis through the World Origin.
-        member inline pnt.RotateOnZ90CCW : Pnt =
+        member inline pnt.Rotate2Dby90CCW : Pnt =
             Pnt(-pnt.Y, pnt.X, pnt.Z)
 
         /// 90-degree rotation counter-clockwise around the Z-axis through the World Origin.
-        static member inline rotateOnZ90CCW (pnt:Pnt) : Pnt =
+        static member inline rotate2Dby90CCW (pnt:Pnt) : Pnt =
             Pnt(-pnt.Y, pnt.X, pnt.Z)
 
         /// 90-degree rotation clockwise around the Z-axis through the World Origin.
-        member inline pnt.RotateOnZ90CW : Pnt =
+        member inline pnt.Rotate2Dby90CW : Pnt =
             Pnt(pnt.Y, -pnt.X, pnt.Z)
 
         /// 90-degree rotation clockwise around the Z-axis through the World Origin.
-        static member inline rotateOnZ90CW (pnt:Pnt) : Pnt =
+        static member inline rotate2Dby90CW (pnt:Pnt) : Pnt =
             Pnt(pnt.Y, -pnt.X, pnt.Z)
 
         /// Rotates the 3D point around the Z-axis through the World Origin by a given number of quarter-circles (i.e. multiples of 90
@@ -729,7 +707,7 @@ module AutoOpenPnt =
 
 
         /// Returns angle in degrees at mid point (thisPnt).
-        static member angleInCorner (prevPnt:Pnt, thisPnt:Pnt, nextPnt:Pnt) : float =
+        static member angleInCorner (prevPnt:Pnt) (thisPnt:Pnt) (nextPnt:Pnt) : float =
             anglePiOfVecs "Pnt.angleInCorner"
                 (prevPnt.X - thisPnt.X) (prevPnt.Y - thisPnt.Y) (prevPnt.Z - thisPnt.Z)
                 (nextPnt.X - thisPnt.X) (nextPnt.Y - thisPnt.Y) (nextPnt.Z - thisPnt.Z)
@@ -742,7 +720,7 @@ module AutoOpenPnt =
         /// <param name="uv">The unit direction vector describing the orientation of the endless line.</param>
         /// <param name="testPnt">The point to be projected onto the line.</param>
         /// <returns>The parameter (scalar value) along the unit vector at which the projection of testPnt falls on the line.</returns>
-        static member inline projectedParameter (fromPnt:Pnt, uv:UnitVec, testPnt:Pnt) : float =
+        static member inline projectedParameterOnUnitVec (fromPnt:Pnt) (uv:UnitVec) (testPnt:Pnt) : float =
             (testPnt.X - fromPnt.X) * uv.X + (testPnt.Y - fromPnt.Y) * uv.Y + (testPnt.Z - fromPnt.Z) * uv.Z
 
         /// <summary>
@@ -752,9 +730,9 @@ module AutoOpenPnt =
         /// <param name="v">The direction vector of the endless line. Does not need to be unitized.</param>
         /// <param name="testPnt">The point to be projected onto the line.</param>
         /// <returns>The parameter (scaling factor for the direction vector) at which the projection of testPnt falls on the line.</returns>
-        static member inline projectedParameter (fromPnt:Pnt, v:Vec, testPnt:Pnt) : float =
+        static member inline projectedParameterOnVec (fromPnt:Pnt) (v:Vec) (testPnt:Pnt) : float =
             let lenSq = v.LengthSq
-            if isTooTinySq(lenSq) then failTooSmall "Pnt.projectedParameter" v
+            if isTooTinySq(lenSq) then failTooSmall "Pnt.projectedParameterOnVec" v
             (v.X * (testPnt.X - fromPnt.X) + v.Y * (testPnt.Y - fromPnt.Y) + v.Z * (testPnt.Z - fromPnt.Z)) / lenSq
 
         /// <summary>
@@ -765,19 +743,19 @@ module AutoOpenPnt =
         /// <param name="testPnt">The point to be projected onto the line.</param>
         /// <returns>The parameter along the line direction (fromPnt to toPnt) at which the projection of testPnt falls.
         /// A value of 0.0 corresponds to fromPnt, 1.0 corresponds to toPnt.</returns>
-        static member inline projectedParameter (fromPnt:Pnt, toPnt:Pnt, testPnt:Pnt) : float =
+        static member inline projectedParameterBetweenPnts (fromPnt:Pnt) (toPnt:Pnt) (testPnt:Pnt) : float =
             let vx = toPnt.X - fromPnt.X
             let vy = toPnt.Y - fromPnt.Y
             let vz = toPnt.Z - fromPnt.Z
             let lenSq = vx*vx + vy*vy + vz*vz
-            if isTooTinySq(lenSq) then failTooClose "Pnt.projectedParameter" fromPnt toPnt
+            if isTooTinySq(lenSq) then failTooClose "Pnt.projectedParameterBetweenPnts" fromPnt toPnt
             (vx * (testPnt.X - fromPnt.X) + vy * (testPnt.Y - fromPnt.Y) + vz * (testPnt.Z - fromPnt.Z)) / lenSq
 
         /// Returns the closer point of the two points to the reference given point.
         /// When both points are equally close, the first point is returned.
         static member closestOfTwo (pnt1:Pnt) (pnt2:Pnt) (referencePoint:Pnt) : Pnt =
-            let d1 = Pnt.sqDistanceTo pnt1 referencePoint
-            let d2 = Pnt.sqDistanceTo pnt2 referencePoint
+            let d1 = Pnt.distanceToSq pnt1 referencePoint
+            let d2 = Pnt.distanceToSq pnt2 referencePoint
             if d1 <= d2 then
                 pnt1
             else

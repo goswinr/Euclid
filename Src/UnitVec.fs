@@ -74,8 +74,8 @@ type UnitVec =
 
     /// Format 3D unit-vector into an F# code string that can be used to recreate the unit-vector.
     member v.AsFSharpCode : string =
-        let f = Format.floatAsFSharpCode
-        $"UnitVec.create({f v.X}, {f v.Y}, {f v.Z})"
+        let f = Format.floatAsFSharpArgument
+        $"UnitVec.create {f v.X} {f v.Y} {f v.Z}"
 
     /// Negate or inverse a 3D unit-vector. Returns a new 3D unit-vector.
     static member inline ( ~- ) (v:UnitVec) : UnitVec =
@@ -136,7 +136,7 @@ type UnitVec =
     /// Dot product, or scalar product of two 3D unit-vectors.
     /// Returns a float.
     /// This float for unit-vectors is the Cosine of the angle between the two vectors.
-    static member inline dot (a:UnitVec, b:UnitVec) : float =
+    static member inline dot (a:UnitVec) (b:UnitVec) : float =
         a.X * b.X +
         a.Y * b.Y +
         a.Z * b.Z
@@ -155,7 +155,7 @@ type UnitVec =
 
 
     /// Create 3D unit-vector. Does the unitizing too.
-    static member inline create (x:float, y:float, z:float) : UnitVec =
+    static member inline create (x:float) (y:float) (z:float) : UnitVec =
         // this member cant be an extension method because it is used with SRTP.
         let l = sqrt(x*x  + y*y + z*z)
         if isTooTiny l then failUnit3 "UnitVec.create" x y z
@@ -163,8 +163,8 @@ type UnitVec =
         UnitVec.createUnchecked(li*x, li*y, li*z)
 
 
-    /// Create 3D unit-vector. Does the unitizing too. Includes the provided string message if it fails
-    static member inline createFor (msg:string, x:float, y:float, z:float) : UnitVec =
+    /// Create 3D unit-vector. Does the unitizing too. Includes the provided string message if it fails.
+    static member inline createWithErrorMessage (msg:string) (x:float) (y:float) (z:float) : UnitVec =
         let l = sqrt(x*x  + y*y + z*z)
         if isTooTiny l then failUnit3 $"UnitVec.create for {msg}" x y z
         let li = 1. / l
@@ -193,5 +193,5 @@ and internal UnitVecJsonConverter() =
         let y = JsonConvert.readFloat &reader options "Euclid.UnitVec" "Y"
         let z = JsonConvert.readFloat &reader options "Euclid.UnitVec" "Z"
         JsonConvert.readEndObject &reader "Euclid.UnitVec"
-        UnitVec.create(x, y, z)
+        UnitVec.create x y z
 #endif

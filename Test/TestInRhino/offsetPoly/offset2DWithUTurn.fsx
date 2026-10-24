@@ -29,7 +29,7 @@ let handleUTurn (pt:Pt, cosine:float, nPrev:UnitVc, nNext:UnitVc, dist:float, re
         let chamferTangent = (nPrev - nNext).Unitized
         let chamferNormal = chamferTangent.Rotate90CCW
         let chamferNormalChecked = if chamferNormal *** nPrev >= 0.0 then chamferNormal else -chamferNormal
-        let cos = UnitVc.dot (nPrev , chamferNormal)
+        let cos = UnitVc.dot nPrev chamferNormal
         res.Add <| setOffCorner pt dist nPrev                chamferNormalChecked cos // the first chamfer point
         res.Add <| setOffCorner pt dist chamferNormalChecked nNext                cos // the second chamfer point
 
@@ -68,7 +68,7 @@ let offsetWithDirections(pts:ResizeArray<Pt>, dirs: ResizeArray<UnitVc>, dist:fl
     for i = fromIdx to pts.Count - 2 do // last point is skipped; it's dealt with at the end
         let nNext = dirs.[i] // the normal vector for the segment from pt to next point
         let pt = pts.[i]
-        let cosine = UnitVc.dot (nPrev , nNext)
+        let cosine = UnitVc.dot nPrev nNext
         if withMeasure cosine > useUTurnBehaviorAbove then // exclude U-turns
             // (1.1) the regular case:
             res.Add <| setOffCorner pt dist nPrev nNext cosine
@@ -131,8 +131,8 @@ for i=0 to 25 do
     //let o = Polyline2D.offset(pl, -0.22, uTurnBehavior=Offset2D.UTurn.UseThreshold, useUTurnBehaviorAbove=Cosine.``160.0``)
     //o.RhPolylineCurve |> rs.Ot.Add |> rs.setLayer $"o::{i}"
 
-    //let ov = Polyline2D.offsetVar(pl, [| -0.2;  -0.3 |], uTurnBehavior=Offset2D.UTurn.UseThreshold, useUTurnBehaviorAbove=Cosine.``160.0``)
+    //let ov = Polyline2D.offsetVariableCustom(pl, [| -0.2;  -0.3 |], uTurnBehavior=Offset2D.UTurn.UseThreshold, useUTurnBehaviorAbove=Cosine.``160.0``)
     //ov.RhPolylineCurve |> rs.Ot.Add |> rs.setLayer $"ov::{i}"
 
-    let oc = Polyline2D.offsetVar(pl, [| -0.2;  -0.3 |], uTurnBehavior=Offset2D.UTurn.Chamfer, useUTurnBehaviorAbove=Cosine.``170.0``)
+    let oc = Polyline2D.offsetVariableCustom(pl, [| -0.2;  -0.3 |], uTurnBehavior=Offset2D.UTurn.Chamfer, useUTurnBehaviorAbove=Cosine.``170.0``)
     oc.RhPolylineCurve |> rs.Ot.Add |> rs.setLayer $"ov::{i}"

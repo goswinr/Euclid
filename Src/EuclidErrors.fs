@@ -77,7 +77,7 @@ module EuclidErrors =
     let failRot (x:float) (y:float) : 'Failed =
         raise <| EuclidUnitizingException $"Rotation2D(sine {x}, cosine {y}): sin*sin + cos*cos length is not one."
 
-    let failQuat (w:float) (x:float) (y:float) (z:float) : 'Failed =
+    let failQuat (w:float, x:float, y:float, z:float) : 'Failed =
         raise <| EuclidUnitizingException $"Quaternion(w:{w}, x:{x}, y:{y}, z:{z}): w*w + x*x + y*y + z*z length is not one."
 
     let failNotOne2 (msg:string) (x:float) (y:float) : 'Failed =

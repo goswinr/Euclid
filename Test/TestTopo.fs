@@ -4,7 +4,7 @@ open Euclid
 
 open EuclidTestSupport
 
-let inline eq a b = Pt.dist a b < 1e-9
+let inline eq a b = Pt.distanceTo a b < 1e-9
 
 
 /// Element type used in all tests. Carries an index so we can verify ordering
@@ -49,7 +49,7 @@ let idx3Seq (g: ResizeArray<Li3>) : int list =
 let idxRev3Seq (g: ResizeArray<Li3*bool>) : (int * bool) list =
     [ for x, r in g -> x.idx, r ]
 
-let inline eq3 (a:Pnt) (b:Pnt) = Pnt.dist a b < 1e-9
+let inline eq3 (a:Pnt) (b:Pnt) = Pnt.distanceTo a b < 1e-9
 
 /// Check the [FromX;FromY;ToX;ToY] cache returned by the 2D cached sorts is
 /// coordinate-consistent with the (possibly reordered/reversed) elements.
@@ -91,13 +91,13 @@ let v1 = Vc(0,1)
 let h1 = Vc(1,0)
 let lns =
     [|
-    {idx = 0; ln = Line2D.createFromPtAndVc (Pt(0,2), v1)}
-    {idx = 1; ln = Line2D.createFromPtAndVc (Pt(0,3), v1)}
-    {idx = 2; ln = Line2D.createFromPtAndVc (Pt(0,1), v1)}
-    {idx = 3; ln = Line2D.createFromPtAndVc (Pt(0,0), v1)}
+    {idx = 0; ln = Line2D.createFromPtAndVc (Pt(0,2)) v1}
+    {idx = 1; ln = Line2D.createFromPtAndVc (Pt(0,3)) v1}
+    {idx = 2; ln = Line2D.createFromPtAndVc (Pt(0,1)) v1}
+    {idx = 3; ln = Line2D.createFromPtAndVc (Pt(0,0)) v1}
 
-    {idx = 4; ln = Line2D.createFromPtAndVc (Pt(1,5), h1)}
-    {idx = 5; ln = Line2D.createFromPtAndVc (Pt(0,5), h1)}
+    {idx = 4; ln = Line2D.createFromPtAndVc (Pt(1,5)) h1}
+    {idx = 5; ln = Line2D.createFromPtAndVc (Pt(0,5)) h1}
     |]
     |> ResizeArray
 
@@ -107,7 +107,7 @@ let tests =
     testList "Topology " [
 
         test "join2D lines" {
-            let gs = Topology2D.join( (fun (ln:Li) -> ln.ln), 0.001, lns)
+            let gs = Topology2D.join (fun (ln:Li) -> ln.ln) 0.001 lns
             "gs length" |> Expect.equal gs.Count  2
             "gs[0] length" |> Expect.equal gs.[0].Count  4
             "gs[1] length" |> Expect.equal gs.[1].Count  2
@@ -127,7 +127,7 @@ let tests =
             // Docstring: groups returned reflect the input; an empty input
             // therefore yields zero groups.
             let xs = ResizeArray<Li>()
-            let gs = Topology2D.join(getLn, 0.001, xs)
+            let gs = Topology2D.join getLn 0.001 xs
             "no groups for empty input" |> Expect.equal gs.Count 0
         }
 
@@ -135,7 +135,7 @@ let tests =
             // Docstring: every element must end up in some group; a single
             // disconnected element therefore forms its own singleton group.
             let xs = ResizeArray [ mkLi 0 0 0 1 0 ]
-            let gs = Topology2D.join(getLn, 0.001, xs)
+            let gs = Topology2D.join getLn 0.001 xs
             "exactly one group" |> Expect.equal gs.Count 1
             "group has one element" |> Expect.equal gs.[0].Count 1
             "preserves the element" |> Expect.equal gs.[0].[0].idx 0
@@ -149,7 +149,7 @@ let tests =
                 mkLi 0  0 0 1 0
                 mkLi 1 10 0 11 0
             ]
-            let gs = Topology2D.join(getLn, 0.1, xs)
+            let gs = Topology2D.join getLn 0.1 xs
             "two singleton groups" |> Expect.equal gs.Count 2
             "first group is element 0" |> Expect.equal (idxSeq gs.[0]) [0]
             "second group is element 1" |> Expect.equal (idxSeq gs.[1]) [1]
@@ -165,7 +165,7 @@ let tests =
                 mkLi 2 2 0 3 0
                 mkLi 3 3 0 4 0
             ]
-            let gs = Topology2D.join(getLn, 0.001, xs)
+            let gs = Topology2D.join getLn 0.001 xs
             "one chain"   |> Expect.equal gs.Count 1
             "chain order" |> Expect.equal (idxSeq gs.[0]) [0;1;2;3]
         }
@@ -182,7 +182,7 @@ let tests =
                 mkLi 2 1 0 2 0
                 mkLi 3 0 0 1 0   // first segment
             ]
-            let gs = Topology2D.join(getLn, 0.001, xs)
+            let gs = Topology2D.join getLn 0.001 xs
             "one chain"        |> Expect.equal gs.Count 1
             "chain head-to-tail" |> Expect.equal (idxSeq gs.[0]) [3;2;1;0]
         }
@@ -198,7 +198,7 @@ let tests =
                 mkLi 2 1 1 0 1
                 mkLi 3 0 1 0 0
             ]
-            let gs = Topology2D.join(getLn, 0.001, xs)
+            let gs = Topology2D.join getLn 0.001 xs
             "one closed loop" |> Expect.equal gs.Count 1
             "sides in order"  |> Expect.equal (idxSeq gs.[0]) [0;1;2;3]
         }
@@ -216,7 +216,7 @@ let tests =
                 mkLi 3 3 0 4 0
                 mkLi 1 1 0 2 0
             ]
-            let gs = Topology2D.join(getLn, 0.001, xs)
+            let gs = Topology2D.join getLn 0.001 xs
             "one polyline" |> Expect.equal gs.Count 1
             "elements in head-to-tail order" |> Expect.equal (idxSeq gs.[0]) [0;1;2;3;4]
         }
@@ -230,7 +230,7 @@ let tests =
                 mkLi 0 0 0 1 0   // end at (1,0)
                 mkLi 1 2 0 3 0   // start at (2,0), exactly 1.0 away
             ]
-            let gs = Topology2D.join(getLn, 1.0, xs)
+            let gs = Topology2D.join getLn 1.0 xs
             "joined in one group" |> Expect.equal gs.Count 1
             "ordered head-to-tail" |> Expect.equal (idxSeq gs.[0]) [0;1]
         }
@@ -242,7 +242,7 @@ let tests =
                 mkLi 0 0 0 1 0           // end at (1,0)
                 mkLi 1 2.001 0 3.001 0   // start at (2.001,0) – just over 1.0 from previous end
             ]
-            let gs = Topology2D.join(getLn, 1.0, xs)
+            let gs = Topology2D.join getLn 1.0 xs
             "two singleton groups" |> Expect.equal gs.Count 2
             "first group" |> Expect.equal (idxSeq gs.[0]) [0]
             "second group" |> Expect.equal (idxSeq gs.[1]) [1]
@@ -259,7 +259,7 @@ let tests =
                 mkLi 2  0 10   1 10
                 mkLi 3  1 10   2 10
             ]
-            let gs = Topology2D.join(getLn, 0.001, xs)
+            let gs = Topology2D.join getLn 0.001 xs
             "two groups" |> Expect.equal gs.Count 2
             "group A length" |> Expect.equal gs.[0].Count 2
             "group B length" |> Expect.equal gs.[1].Count 2
@@ -274,7 +274,7 @@ let tests =
 
         test "joinReversing: empty input returns empty result" {
             let xs = ResizeArray<Li>()
-            let gs = Topology2D.joinReversing(getLn, 0.001, xs)
+            let gs = Topology2D.joinReversing getLn 0.001 xs
             "no groups for empty input" |> Expect.equal gs.Count 0
         }
 
@@ -283,7 +283,7 @@ let tests =
             // element was reversed. A standalone element keeps its native
             // orientation, i.e. false.
             let xs = ResizeArray [ mkLi 0 0 0 1 0 ]
-            let gs = Topology2D.joinReversing(getLn, 0.001, xs)
+            let gs = Topology2D.joinReversing getLn 0.001 xs
             "exactly one group" |> Expect.equal gs.Count 1
             "group has one element" |> Expect.equal gs.[0].Count 1
             "not reversed" |> Expect.equal (idxRevSeq gs.[0]) [(0, false)]
@@ -298,7 +298,7 @@ let tests =
                 mkLi 1 1 0 2 0
                 mkLi 2 2 0 3 0
             ]
-            let gs = Topology2D.joinReversing(getLn, 0.001, xs)
+            let gs = Topology2D.joinReversing getLn 0.001 xs
             "one chain"   |> Expect.equal gs.Count 1
             "all unreversed in order" |> Expect.equal (idxRevSeq gs.[0]) [(0,false);(1,false);(2,false)]
         }
@@ -312,7 +312,7 @@ let tests =
                 mkLi 0 0 0 1 0   // ends at (1,0)
                 mkLi 1 2 0 1 0   // also ends at (1,0); must be flagged reversed
             ]
-            let gs = Topology2D.joinReversing(getLn, 0.001, xs)
+            let gs = Topology2D.joinReversing getLn 0.001 xs
             "one chain" |> Expect.equal gs.Count 1
             "second element reversed" |> Expect.equal (idxRevSeq gs.[0]) [(0,false);(1,true)]
         }
@@ -325,7 +325,7 @@ let tests =
                 mkLi 0 1 0 2 0   // starts at (1,0)
                 mkLi 1 1 0 0 0   // also starts at (1,0); should be reversed and prepended
             ]
-            let gs = Topology2D.joinReversing(getLn, 0.001, xs)
+            let gs = Topology2D.joinReversing getLn 0.001 xs
             "one chain" |> Expect.equal gs.Count 1
             "reversed element first, original second" |> Expect.equal (idxRevSeq gs.[0]) [(1,true);(0,false)]
         }
@@ -345,7 +345,7 @@ let tests =
                 mkLi 2 2 0 3 0
                 mkLi 3 4 0 3 0
             ]
-            let gs = Topology2D.joinReversing(getLn, 0.001, xs)
+            let gs = Topology2D.joinReversing getLn 0.001 xs
             "one polyline" |> Expect.equal gs.Count 1
             "expected orientation flags" |> Expect.equal
                 (idxRevSeq gs.[0]) [(0,false);(1,true);(2,false);(3,true)]
@@ -361,7 +361,7 @@ let tests =
                 mkLi 3 4 0 3 0
                 mkLi 1 2 0 1 0
             ]
-            let gs = Topology2D.joinReversing(getLn, 0.001, xs)
+            let gs = Topology2D.joinReversing getLn 0.001 xs
             "one polyline" |> Expect.equal gs.Count 1
             "elements in chain order" |> Expect.equal
                 (idxRevSeq gs.[0] |> List.map fst) [0;1;2;3]
@@ -375,7 +375,7 @@ let tests =
                 mkLi 0  0 0  1 0
                 mkLi 1 10 0 11 0
             ]
-            let gs = Topology2D.joinReversing(getLn, 0.1, xs)
+            let gs = Topology2D.joinReversing getLn 0.1 xs
             "two groups" |> Expect.equal gs.Count 2
             "group 0 contents" |> Expect.equal (idxRevSeq gs.[0]) [(0,false)]
             "group 1 contents" |> Expect.equal (idxRevSeq gs.[1]) [(1,false)]
@@ -396,7 +396,7 @@ let tests =
                 mkLi 0 0 0 1 0   // ends at (1,0)
                 mkLi 1 2 0 3 0   // starts at (2,0), exactly 1.0 from previous end
             ]
-            let gs = Topology2D.joinReversing(getLn, 1.0, xs)
+            let gs = Topology2D.joinReversing getLn 1.0 xs
             "joined in one group" |> Expect.equal gs.Count 1
             "ordered head-to-tail" |> Expect.equal
                 (idxRevSeq gs.[0]) [(0,false);(1,false)]
@@ -411,7 +411,7 @@ let tests =
             // Docstring: 'Sorts elements in place'. An empty ResizeArray
             // simply stays empty; no exception must escape.
             let xs = ResizeArray<Li>()
-            Topology2D.sortToLoop(getLn, xs)
+            Topology2D.sortToLoop getLn xs
             "still empty" |> Expect.equal xs.Count 0
         }
 
@@ -419,7 +419,7 @@ let tests =
             // Docstring: sort acts in place; with one element there is
             // nothing to reorder and the array must be untouched.
             let xs = ResizeArray [ mkLi 7 0 0 1 0 ]
-            Topology2D.sortToLoop(getLn, xs)
+            Topology2D.sortToLoop getLn xs
             "still one element" |> Expect.equal xs.Count 1
             "same element"      |> Expect.equal xs.[0].idx 7
         }
@@ -435,7 +435,7 @@ let tests =
                 mkLi 3 0 1 0 0
                 mkLi 1 1 0 1 1
             ]
-            Topology2D.sortToLoop(getLn, xs)
+            Topology2D.sortToLoop getLn xs
             "sorted in loop order" |> Expect.equal (idxSeq xs) [0;1;2;3]
         }
 
@@ -448,7 +448,7 @@ let tests =
                 mkLi 3 3 0 4 0
                 mkLi 1 1 0 2 0
             ]
-            Topology2D.sortToLoop(getLn, xs)
+            Topology2D.sortToLoop getLn xs
             "sorted in chain order" |> Expect.equal (idxSeq xs) [0;1;2;3]
         }
 
@@ -461,7 +461,7 @@ let tests =
             let xs = ResizeArray<Li>()
             let revInPlace (i:int) (_x:Li) =
                 xs.[i] <- {xs.[i] with ln = Line2D(xs.[i].ln.To, xs.[i].ln.From)}
-            Topology2D.sortToLoopWithReversing(getLn, revInPlace, xs)
+            Topology2D.sortToLoopWithReversing getLn revInPlace xs
             "still empty" |> Expect.equal xs.Count 0
         }
 
@@ -471,7 +471,7 @@ let tests =
             let originalTo   = xs.[0].ln.To
             let revInPlace (i:int) (_x:Li) =
                 xs.[i] <- {xs.[i] with ln = Line2D(xs.[i].ln.To, xs.[i].ln.From)}
-            Topology2D.sortToLoopWithReversing(getLn, revInPlace, xs)
+            Topology2D.sortToLoopWithReversing getLn revInPlace xs
             "still one element" |> Expect.equal xs.Count 1
             "same idx"          |> Expect.equal xs.[0].idx 7
             "orientation From untouched" |> Expect.equal (eq xs.[0].ln.From originalFrom) true
@@ -500,7 +500,7 @@ let tests =
             let revInPlace (i:int) (_x:Li) =
                 let cur = xs.[i]
                 xs.[i] <- {cur with ln = Line2D(cur.ln.To, cur.ln.From)}
-            Topology2D.sortToLoopWithReversing(getLn, revInPlace, xs)
+            Topology2D.sortToLoopWithReversing getLn revInPlace xs
             "idx order" |> Expect.equal (idxSeq xs) [0;1;2;3]
             "seg A start" |> Expect.equal (eq xs.[0].ln.From (Pt(0., 0.))) true
             "seg A end"   |> Expect.equal (eq xs.[0].ln.To   (Pt(1., 0.))) true
@@ -526,7 +526,7 @@ let tests =
                 mkLi 0 0 0 1 0
                 mkLi 1 0 0 1 0
             ]
-            let gs = Topology2D.join(getLn, 0.001, xs)
+            let gs = Topology2D.join getLn 0.001 xs
             "two groups"   |> Expect.equal gs.Count 2
             "group 0 idx"  |> Expect.equal (idxSeq gs.[0]) [0]
             "group 1 idx"  |> Expect.equal (idxSeq gs.[1]) [1]
@@ -541,7 +541,7 @@ let tests =
                 mkLi 0 0 0 1 0
                 mkLi 1 2 0 1 0
             ]
-            let gs = Topology2D.join(getLn, 0.001, xs)
+            let gs = Topology2D.join getLn 0.001 xs
             "two groups" |> Expect.equal gs.Count 2
             "group 0" |> Expect.equal (idxSeq gs.[0]) [0]
             "group 1" |> Expect.equal (idxSeq gs.[1]) [1]
@@ -554,7 +554,7 @@ let tests =
                 mkLi 0 0 0 1 0
                 mkLi 1 0 0 0 1
             ]
-            let gs = Topology2D.join(getLn, 0.001, xs)
+            let gs = Topology2D.join getLn 0.001 xs
             "two groups" |> Expect.equal gs.Count 2
         }
 
@@ -568,7 +568,7 @@ let tests =
                 mkLi 0 0 0 1 0
                 mkLi 1 1 0 0 0
             ]
-            let gs = Topology2D.join(getLn, 0.001, xs)
+            let gs = Topology2D.join getLn 0.001 xs
             "single combined group" |> Expect.equal gs.Count 1
             "chain order" |> Expect.equal (idxSeq gs.[0]) [0;1]
         }
@@ -581,7 +581,7 @@ let tests =
                 mkLi 0 0 0 1 0
                 mkLi 1 0 0 1 0
             ]
-            let gs = Topology2D.joinReversing(getLn, 0.001, xs)
+            let gs = Topology2D.joinReversing getLn 0.001 xs
             "one chain"            |> Expect.equal gs.Count 1
             "duplicate is reversed"|> Expect.equal (idxRevSeq gs.[0]) [(0,false);(1,true)]
         }
@@ -594,7 +594,7 @@ let tests =
                 mkLi 0 0 0 1 0
                 mkLi 1 1 0 0 0
             ]
-            let gs = Topology2D.joinReversing(getLn, 0.001, xs)
+            let gs = Topology2D.joinReversing getLn 0.001 xs
             "one chain" |> Expect.equal gs.Count 1
             "reversed duplicate added unreversed"
                 |> Expect.equal (idxRevSeq gs.[0]) [(0,false);(1,false)]
@@ -610,7 +610,7 @@ let tests =
                 mkLi 1  1 0  2 0      // (1,0) -> (2,0) — main chain continuation
                 mkLi 2  1 0  1 1      // (1,0) -> (1,1) — branch
             ]
-            let gs = Topology2D.join(getLn, 0.001, xs)
+            let gs = Topology2D.join getLn 0.001 xs
             "two groups"            |> Expect.equal gs.Count 2
             "main chain captured"   |> Expect.equal (idxSeq gs.[0]) [0;1]
             "branch is singleton"   |> Expect.equal (idxSeq gs.[1]) [2]
@@ -627,7 +627,7 @@ let tests =
                 mkLi 2  1 0  1 1      // branch first
                 mkLi 1  1 0  2 0
             ]
-            let gs = Topology2D.join(getLn, 0.001, xs)
+            let gs = Topology2D.join getLn 0.001 xs
             "two groups"               |> Expect.equal gs.Count 2
             "branch taken by chain"    |> Expect.equal (idxSeq gs.[0]) [0;2]
             "continuation is orphaned" |> Expect.equal (idxSeq gs.[1]) [1]
@@ -649,7 +649,7 @@ let tests =
                 mkLi 3  0 1  0 0
                 mkLi 7 10 1 10 0
             ]
-            let gs = Topology2D.join(getLn, 0.001, xs)
+            let gs = Topology2D.join getLn 0.001 xs
             "two loops" |> Expect.equal gs.Count 2
             "loop A order" |> Expect.equal (idxSeq gs.[0]) [0;1;2;3]
             "loop B order" |> Expect.equal (idxSeq gs.[1]) [4;5;6;7]
@@ -664,7 +664,7 @@ let tests =
                 mkLi 1 1.000001 0.0  2.0      0.0
                 mkLi 2 1.999999 0.0  3.0      0.0
             ]
-            let gs = Topology2D.join(getLn, 1e-3, xs)
+            let gs = Topology2D.join getLn 1e-3 xs
             "one chain" |> Expect.equal gs.Count 1
             "all three in order" |> Expect.equal (idxSeq gs.[0]) [0;1;2]
         }
@@ -678,7 +678,7 @@ let tests =
                 mkLi 1 1 0 2 0
                 mkLi 2 2 0 3 0
             ]
-            let gs = Topology2D.join(getLn, 0.0, xs)
+            let gs = Topology2D.join getLn 0.0 xs
             "one chain by exact match" |> Expect.equal gs.Count 1
             "ordered head-to-tail" |> Expect.equal (idxSeq gs.[0]) [0;1;2]
         }
@@ -691,7 +691,7 @@ let tests =
                 mkLi 0 0.0      0.0  1.0      0.0
                 mkLi 1 1.000001 0.0  2.0      0.0
             ]
-            let gs = Topology2D.join(getLn, 0.0, xs)
+            let gs = Topology2D.join getLn 0.0 xs
             "two singleton groups" |> Expect.equal gs.Count 2
         }
 
@@ -704,7 +704,7 @@ let tests =
                 mkLi 0 0 0  1 0
                 mkLi 1 11 0 12 0
             ]
-            let gs = Topology2D.join(getLn, 100.0, xs)
+            let gs = Topology2D.join getLn 100.0 xs
             "merged into one group" |> Expect.equal gs.Count 1
             "order preserved"       |> Expect.equal (idxSeq gs.[0]) [0;1]
         }
@@ -718,7 +718,7 @@ let tests =
                 mkLi 0 0 0  1 0    // (0,0) -> (1,0); chain start at (0,0)
                 mkLi 1 0 0  0 0    // zero-length at (0,0)
             ]
-            let gs = Topology2D.join(getLn, 0.001, xs)
+            let gs = Topology2D.join getLn 0.001 xs
             "single combined group" |> Expect.equal gs.Count 1
             "contains both elements" |> Expect.equal gs.[0].Count 2
         }
@@ -731,7 +731,7 @@ let tests =
             let xs = ResizeArray<Li>()
             for k in 0 .. n - 1 do
                 xs.Add (mkLi k k 0 (k + 1) 0)
-            let gs = Topology2D.join(getLn, 0.001, xs)
+            let gs = Topology2D.join getLn 0.001 xs
             "single group" |> Expect.equal gs.Count 1
             "length matches input" |> Expect.equal gs.[0].Count n
             "indices in order"     |> Expect.equal (idxSeq gs.[0]) [for k in 0 .. n - 1 -> k]
@@ -753,7 +753,7 @@ let tests =
                 mkLi 6 11 1 10 1
                 mkLi 7 10 0 10 1
             ]
-            let gs = Topology2D.joinReversing(getLn, 0.001, xs)
+            let gs = Topology2D.joinReversing getLn 0.001 xs
             "two groups" |> Expect.equal gs.Count 2
             "loop A length" |> Expect.equal gs.[0].Count 4
             "loop B length" |> Expect.equal gs.[1].Count 4
@@ -768,7 +768,7 @@ let tests =
                 mkLi 1 1.000001 0.0  2.0      0.0
                 mkLi 2 1.999999 0.0  3.0      0.0
             ]
-            let gs = Topology2D.joinReversing(getLn, 1e-3, xs)
+            let gs = Topology2D.joinReversing getLn 1e-3 xs
             "one chain" |> Expect.equal gs.Count 1
             "all unreversed in order"
                 |> Expect.equal (idxRevSeq gs.[0]) [(0,false);(1,false);(2,false)]
@@ -785,7 +785,7 @@ let tests =
                 mkLi 4 2 2 3 2
                 mkLi 5 3 2 3 3
             ]
-            let (_:unit) = Topology2D.sortToLoop(getLn, xs)
+            let (_:unit) = Topology2D.sortToLoop getLn xs
             "count preserved" |> Expect.equal xs.Count 6
             let idxs = idxSeq xs |> List.sort
             "all original indices present" |> Expect.equal idxs [0;1;2;3;4;5]
@@ -804,7 +804,7 @@ let tests =
                 mkLi 1  2 0  2 1
                 mkLi 3  1 2  0 1
             ]
-            let (_:unit) = Topology2D.sortToLoop(getLn, xs)
+            let (_:unit) = Topology2D.sortToLoop getLn xs
             "loop order recovered from start element" |> Expect.equal (idxSeq xs) [2;3;4;0;1]
         }
 
@@ -823,7 +823,7 @@ let tests =
             let revInPlace (i:int) (_x:Li) =
                 let cur = xs.[i]
                 xs.[i] <- {cur with ln = Line2D(cur.ln.To, cur.ln.From)}
-            let (_:unit) = Topology2D.sortToLoopWithReversing(getLn, revInPlace, xs)
+            let (_:unit) = Topology2D.sortToLoopWithReversing getLn revInPlace xs
             "idx in chain order" |> Expect.equal (idxSeq xs) [0;1;2;3;4;5]
             for k in 0 .. 5 do
                 let expFrom = Pt(float k,     0.)
@@ -850,13 +850,13 @@ let tests3D =
 
         test "join3D: empty input returns empty result" {
             let xs = ResizeArray<Li3>()
-            let gs = Topology3D.join(getLn3, 0.001, xs)
+            let gs = Topology3D.join getLn3 0.001 xs
             "no groups for empty input" |> Expect.equal gs.Count 0
         }
 
         test "join3D: single element returns one group of one" {
             let xs = ResizeArray [ mkLi3 0  0 0 0  1 1 1 ]
-            let gs = Topology3D.join(getLn3, 0.001, xs)
+            let gs = Topology3D.join getLn3 0.001 xs
             "exactly one group" |> Expect.equal gs.Count 1
             "group has one element" |> Expect.equal gs.[0].Count 1
             "preserves the element" |> Expect.equal gs.[0].[0].idx 0
@@ -867,7 +867,7 @@ let tests3D =
                 mkLi3 0  0 0 0   1 0 0
                 mkLi3 1 10 0 0  11 0 0
             ]
-            let gs = Topology3D.join(getLn3, 0.1, xs)
+            let gs = Topology3D.join getLn3 0.1 xs
             "two singleton groups" |> Expect.equal gs.Count 2
             "first group is element 0" |> Expect.equal (idx3Seq gs.[0]) [0]
             "second group is element 1" |> Expect.equal (idx3Seq gs.[1]) [1]
@@ -879,7 +879,7 @@ let tests3D =
                 mkLi3 1  1 1 1  2 2 2
                 mkLi3 2  2 2 2  3 3 3
             ]
-            let gs = Topology3D.join(getLn3, 0.001, xs)
+            let gs = Topology3D.join getLn3 0.001 xs
             "one chain"   |> Expect.equal gs.Count 1
             "chain order" |> Expect.equal (idx3Seq gs.[0]) [0;1;2]
         }
@@ -894,7 +894,7 @@ let tests3D =
                 mkLi3 3  3 0 3  4 0 4
                 mkLi3 1  1 0 1  2 0 2
             ]
-            let gs = Topology3D.join(getLn3, 0.001, xs)
+            let gs = Topology3D.join getLn3 0.001 xs
             "one polyline" |> Expect.equal gs.Count 1
             "elements head-to-tail" |> Expect.equal (idx3Seq gs.[0]) [0;1;2;3;4]
         }
@@ -907,7 +907,7 @@ let tests3D =
                 mkLi3 2  1 1 2  0 1 1   // C->D
                 mkLi3 3  0 1 1  0 0 0   // D->A
             ]
-            let gs = Topology3D.join(getLn3, 0.001, xs)
+            let gs = Topology3D.join getLn3 0.001 xs
             "one closed loop" |> Expect.equal gs.Count 1
             "sides in order"  |> Expect.equal (idx3Seq gs.[0]) [0;1;2;3]
         }
@@ -919,7 +919,7 @@ let tests3D =
                 mkLi3 0  0 0 0   1 0 0
                 mkLi3 1  1 3 4   1 6 8
             ]
-            let gs = Topology3D.join(getLn3, 5.0, xs)
+            let gs = Topology3D.join getLn3 5.0 xs
             "joined in one group"  |> Expect.equal gs.Count 1
             "ordered head-to-tail" |> Expect.equal (idx3Seq gs.[0]) [0;1]
         }
@@ -930,7 +930,7 @@ let tests3D =
                 mkLi3 0  0 0 0   1 0 0
                 mkLi3 1  1 3 4   1 6 8
             ]
-            let gs = Topology3D.join(getLn3, 4.9, xs)
+            let gs = Topology3D.join getLn3 4.9 xs
             "two singleton groups" |> Expect.equal gs.Count 2
             "first group"  |> Expect.equal (idx3Seq gs.[0]) [0]
             "second group" |> Expect.equal (idx3Seq gs.[1]) [1]
@@ -943,7 +943,7 @@ let tests3D =
 
         test "joinReversing3D: single element returns one group of one, not reversed" {
             let xs = ResizeArray [ mkLi3 0  0 0 0  1 1 1 ]
-            let gs = Topology3D.joinReversing(getLn3, 0.001, xs)
+            let gs = Topology3D.joinReversing getLn3 0.001 xs
             "exactly one group" |> Expect.equal gs.Count 1
             "not reversed" |> Expect.equal (idxRev3Seq gs.[0]) [(0, false)]
         }
@@ -954,7 +954,7 @@ let tests3D =
                 mkLi3 0  0 0 1   1 0 1   // ends at (1,0,1)
                 mkLi3 1  2 5 9   1 0 1   // also ends at (1,0,1)
             ]
-            let gs = Topology3D.joinReversing(getLn3, 0.001, xs)
+            let gs = Topology3D.joinReversing getLn3 0.001 xs
             "one chain" |> Expect.equal gs.Count 1
             "second element reversed" |> Expect.equal (idxRev3Seq gs.[0]) [(0,false);(1,true)]
         }
@@ -965,7 +965,7 @@ let tests3D =
                 mkLi3 0  1 0 2   2 0 2   // starts at (1,0,2)
                 mkLi3 1  1 0 2   0 9 9   // also starts at (1,0,2)
             ]
-            let gs = Topology3D.joinReversing(getLn3, 0.001, xs)
+            let gs = Topology3D.joinReversing getLn3 0.001 xs
             "one chain" |> Expect.equal gs.Count 1
             "reversed element first" |> Expect.equal (idxRev3Seq gs.[0]) [(1,true);(0,false)]
         }
@@ -978,7 +978,7 @@ let tests3D =
                 mkLi3 2  2 0 2   3 0 3   // P2->P3
                 mkLi3 3  4 0 4   3 0 3   // P4->P3 (reversed)
             ]
-            let gs = Topology3D.joinReversing(getLn3, 0.001, xs)
+            let gs = Topology3D.joinReversing getLn3 0.001 xs
             "one polyline" |> Expect.equal gs.Count 1
             "expected orientation flags" |> Expect.equal
                 (idxRev3Seq gs.[0]) [(0,false);(1,true);(2,false);(3,true)]
@@ -989,7 +989,7 @@ let tests3D =
                 mkLi3 0  0 0 0   1 0 0
                 mkLi3 1  1 3 4   1 6 8   // starts 5.0 away from previous end
             ]
-            let gs = Topology3D.joinReversing(getLn3, 5.0, xs)
+            let gs = Topology3D.joinReversing getLn3 5.0 xs
             "joined in one group" |> Expect.equal gs.Count 1
             "ordered head-to-tail" |> Expect.equal
                 (idxRev3Seq gs.[0]) [(0,false);(1,false)]
@@ -1002,7 +1002,7 @@ let tests3D =
 
         test "sortToLoop3D: empty input is a no-op" {
             let xs = ResizeArray<Li3>()
-            Topology3D.sortToLoop(getLn3, xs)
+            Topology3D.sortToLoop getLn3 xs
             "still empty" |> Expect.equal xs.Count 0
         }
 
@@ -1013,7 +1013,7 @@ let tests3D =
                 mkLi3 3  0 1 1  0 0 0   // D->A
                 mkLi3 1  1 0 1  1 1 2   // B->C
             ]
-            Topology3D.sortToLoop(getLn3, xs)
+            Topology3D.sortToLoop getLn3 xs
             "sorted in loop order" |> Expect.equal (idx3Seq xs) [0;1;2;3]
         }
 
@@ -1034,7 +1034,7 @@ let tests3D =
             let revInPlace3 (i:int) (_x:Li3) =
                 let cur = xs.[i]
                 xs.[i] <- {cur with ln3 = Line3D(cur.ln3.To, cur.ln3.From)}
-            Topology3D.sortToLoopWithReversing(getLn3, revInPlace3, xs)
+            Topology3D.sortToLoopWithReversing getLn3 revInPlace3 xs
             "idx order" |> Expect.equal (idx3Seq xs) [0;1;2;3]
             for k in 0 .. 3 do
                 let expFrom = Pnt(float k,     0., float k)
