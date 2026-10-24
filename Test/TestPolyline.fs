@@ -1378,20 +1378,47 @@ let testsComprehensive =
                 "static evaluateAt" |> expectEqPts pt (Pt(5.,0.))
             }
             test "static closestParameter" {
-                let p = Polyline2D.closestParameter plOpen (Pt(5.,-1.))
+                let p = Polyline2D.closestParameter (Pt(5.,-1.)) plOpen
                 "static closestParameter" |> Expect.isTrue (abs(p - 0.5) < 1e-9)
             }
             test "static closestPoint" {
-                let pt = Polyline2D.closestPoint plOpen (Pt(5.,-1.))
+                let pt = Polyline2D.closestPoint (Pt(5.,-1.)) plOpen
                 "static closestPoint" |> expectEqPts pt (Pt(5.,0.))
             }
             test "static closestPointIndex" {
-                let idx = Polyline2D.closestPointIndex plOpen (Pt(9.,0.5))
+                let idx = Polyline2D.closestPointIndex (Pt(9.,0.5)) plOpen
                 Expect.equal idx 1 "static closestPointIndex nearest to (10,0)"
             }
             test "static distanceTo" {
-                let d = Polyline2D.distanceTo plOpen (Pt(5.,-3.))
+                let d = Polyline2D.distanceTo (Pt(5.,-3.)) plOpen
                 "static distanceTo" |> Expect.isTrue (abs(d - 3.0) < 1e-9)
+            }
+            test "static point queries take the point first and the polyline last" {
+                // rotated and moved off the origin, so a swapped coordinate shows up
+                let cen = Pt(5., 5.)
+                let r = Rotation2D.createFromDegrees 30.
+                let v = Vc(100., -40.)
+                let place (p:Pt) = p |> Pt.rotateWithCenterBy cen r |> Pt.move v
+                let pl = plOpen.Duplicate()
+                pl |> Polyline2D.rotateWithCenter cen r
+                pl |> Polyline2D.move v
+                let q = place (Pt(5.,-1.)) // closest to the middle of the first segment
+                "closestParameter" |> Expect.isTrue (abs((pl |> Polyline2D.closestParameter q) - 0.5) < 1e-9)
+                "closestParameterXY" |> Expect.isTrue (abs((pl |> Polyline2D.closestParameterXY q.X q.Y) - 0.5) < 1e-9)
+                "closestPoint" |> expectEqPts (pl |> Polyline2D.closestPoint q) (place (Pt(5.,0.)))
+                "closestPointIndex" |> Expect.equal (pl |> Polyline2D.closestPointIndex (place (Pt(9.,0.5)))) 1
+                "distanceTo" |> Expect.isTrue (abs((pl |> Polyline2D.distanceTo q) - 1.0) < 1e-9)
+                "distanceToXY" |> Expect.isTrue (abs((pl |> Polyline2D.distanceToXY q.X q.Y) - 1.0) < 1e-9)
+            }
+            test "static setPtXY takes the index first and the polyline last" {
+                let pl = plOpen.Clone()
+                pl |> Polyline2D.setPtXY 2 107. (-33.)
+                "point set" |> expectEqPts (pl.GetPt 2) (Pt(107., -33.))
+                "other points unchanged" |> expectEqPts (pl.GetPt 1) (plOpen.GetPt 1)
+                let closed = plClosed.Clone()
+                closed |> Polyline2D.setPtXYClosed 0 107. (-33.)
+                "first point set" |> expectEqPts closed.FirstPoint (Pt(107., -33.))
+                "last point set too" |> expectEqPts closed.LastPoint (Pt(107., -33.))
             }
             test "static scale" {
                 let s = plLine.Duplicate()

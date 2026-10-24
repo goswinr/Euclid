@@ -580,7 +580,7 @@ type FreeBox private (xyzs:float[]) =
 
     /// Sets the x, y, and z coordinates of the point at the given point index. The index must be between 0 and 7.
     /// (this sets XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1] and XYZs.[pointIndex * 3 + 2] of the internal flat array of x, y, and z coordinates)
-    member _.SetPntXYZ (pointIndex:int, x:float, y:float, z:float) : unit =
+    member _.SetPntXYZ (pointIndex:int) (x:float) (y:float) (z:float) : unit =
         if pointIndex < 0 || pointIndex > 7 then
             failPointIndex "SetPntXYZ" pointIndex
         setCoordXYZ pointIndex x y z xyzs
@@ -588,13 +588,13 @@ type FreeBox private (xyzs:float[]) =
     /// Sets the x, y, and z coordinates of the point at the given point index. The index must be between 0 and 7.
     /// (this sets XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1] and XYZs.[pointIndex * 3 + 2] of the internal flat array of x, y, and z coordinates)
     static member inline setPntXYZ (pointIndex:int) (x:float) (y:float) (z:float) (b:FreeBox) : unit =
-        b.SetPntXYZ(pointIndex, x, y, z)
+        b.SetPntXYZ pointIndex x y z
 
     /// <summary>Moves the point at the given point index in place by a vector. The other 7 points stay where they are.
     /// (this adds v.X, v.Y and v.Z to XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1] and XYZs.[pointIndex * 3 + 2] of the internal flat array of x, y, and z coordinates)</summary>
     /// <param name="pointIndex">The index of the point to move. Must be between 0 and 7.</param>
     /// <param name="v">The vector to move the point by.</param>
-    member _.MovePnt (pointIndex:int, v:Vec) : unit =
+    member _.MovePnt (pointIndex:int) (v:Vec) : unit =
         if pointIndex < 0 || pointIndex > 7 then
             failPointIndex "MovePnt" pointIndex
         moveCoordXYZ pointIndex v.X v.Y v.Z xyzs
@@ -604,7 +604,7 @@ type FreeBox private (xyzs:float[]) =
     /// <param name="v">The vector to move the point by.</param>
     /// <param name="b">The FreeBox to change.</param>
     static member inline movePnt (pointIndex:int) (v:Vec) (b:FreeBox) : unit =
-        b.MovePnt(pointIndex, v)
+        b.MovePnt pointIndex v
 
     /// <summary>Moves the point at the given point index in place by the given x, y, and z distances. The other 7 points stay where they are.
     /// (this adds x, y and z to XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1] and XYZs.[pointIndex * 3 + 2] of the internal flat array of x, y, and z coordinates)</summary>
@@ -612,7 +612,7 @@ type FreeBox private (xyzs:float[]) =
     /// <param name="x">The distance to move the point in X direction.</param>
     /// <param name="y">The distance to move the point in Y direction.</param>
     /// <param name="z">The distance to move the point in Z direction.</param>
-    member _.MovePntXYZ (pointIndex:int, x:float, y:float, z:float) : unit =
+    member _.MovePntXYZ (pointIndex:int) (x:float) (y:float) (z:float) : unit =
         if pointIndex < 0 || pointIndex > 7 then
             failPointIndex "MovePntXYZ" pointIndex
         moveCoordXYZ pointIndex x y z xyzs
@@ -624,7 +624,7 @@ type FreeBox private (xyzs:float[]) =
     /// <param name="z">The distance to move the point in Z direction.</param>
     /// <param name="b">The FreeBox to change.</param>
     static member inline movePntXYZ (pointIndex:int) (x:float) (y:float) (z:float) (b:FreeBox) : unit =
-        b.MovePntXYZ(pointIndex, x, y, z)
+        b.MovePntXYZ pointIndex x y z
 
     /// <summary>Creates a copy of this FreeBox. Same as Clone().</summary>
     /// <returns>A new FreeBox with its own flat array of 24 floats.</returns>
@@ -659,7 +659,7 @@ type FreeBox private (xyzs:float[]) =
         b.Scale(factor)
 
     /// Scales the FreeBox in place by a given factor on a given center point.
-    member _.ScaleOn (cen:Pnt, factor:float) : unit =
+    member _.ScaleOn (cen:Pnt) (factor:float) : unit =
         let cx = cen.X
         let cy = cen.Y
         let cz = cen.Z
@@ -672,7 +672,7 @@ type FreeBox private (xyzs:float[]) =
 
     /// Scales the FreeBox in place by a given factor on a given center point.
     static member inline scaleOn (cen:Pnt)  (factor:float) (b:FreeBox) : unit =
-        b.ScaleOn(cen, factor)
+        b.ScaleOn cen factor
 
     /// Moves the FreeBox in place by a vector. Same as FreeBox.move and FreeBox.translate.
     member _.Move (v:Vec) : unit =
@@ -787,7 +787,7 @@ type FreeBox private (xyzs:float[]) =
         b.Rotate(q)
 
     /// Rotates the FreeBox in place by a Quaternion around a given center point.
-    member _.RotateWithCenter (cen:Pnt, q:Quaternion) : unit =
+    member _.RotateWithCenter (cen:Pnt) (q:Quaternion) : unit =
         let cx = cen.X
         let cy = cen.Y
         let cz = cen.Z
@@ -811,7 +811,7 @@ type FreeBox private (xyzs:float[]) =
 
     /// Rotates the FreeBox in place by a Quaternion around a given center point.
     static member inline rotateWithCenter (cen:Pnt) (q:Quaternion) (b:FreeBox) : unit =
-        b.RotateWithCenter(cen, q)
+        b.RotateWithCenter cen q
 
     /// <summary>Creates a FreeBox from a flat array of 24 floats:
     /// x0, y0, z0, x1, y1, z1, ... x7, y7, z7.
@@ -862,7 +862,7 @@ type FreeBox private (xyzs:float[]) =
         FreeBox xyzs
 
     /// Creates a FreeBox from four 2D points in counter-clockwise order and a zMin and zMax value.
-    static member createFromFour2DPointsArgs (a:Pt, b:Pt, c:Pt, d:Pt, zMin:float, zMax:float) : FreeBox =
+    static member createFromFour2DPointsArgs (zMin:float) (zMax:float) (a:Pt) (b:Pt) (c:Pt) (d:Pt) : FreeBox =
         //       7               6
         //       +---------------+
         //      /|              /|
@@ -1116,7 +1116,7 @@ type FreeBox private (xyzs:float[]) =
 
     /// <summary>Returns the line from the corner point at the start index to the corner point at the end index.
     /// Any two different indices from 0 to 7 are valid, so besides the 12 edges this also returns face diagonals and space diagonals.
-    /// The direction of the line follows the order of the indices: GetLine(0, 1) is Edge01 and GetLine(1, 0) is Edge10.
+    /// The direction of the line follows the order of the indices: GetLine 0 1 is Edge01 and GetLine 1 0 is Edge10.
     /// <code>
     ///       7               6
     ///       +---------------+
@@ -1136,7 +1136,7 @@ type FreeBox private (xyzs:float[]) =
     /// <param name="startPointIndex">The index of the corner point where the line starts. Must be between 0 and 7.</param>
     /// <param name="endPointIndex">The index of the corner point where the line ends. Must be between 0 and 7 and different from startPointIndex.</param>
     /// <returns>A Line3D from the start corner point to the end corner point.</returns>
-    member _.GetLine (startPointIndex:int, endPointIndex:int) : Line3D =
+    member _.GetLine (startPointIndex:int) (endPointIndex:int) : Line3D =
         if startPointIndex < 0 || startPointIndex > 7 then
             failPointIndex "GetLine" startPointIndex
         if endPointIndex < 0 || endPointIndex > 7 then
@@ -1148,7 +1148,7 @@ type FreeBox private (xyzs:float[]) =
     /// Returns the line from the corner point at the start index to the corner point at the end index of the FreeBox.
     /// Any two different indices from 0 to 7 are valid.
     static member inline getLine (startPointIndex:int) (endPointIndex:int) (b:FreeBox) : Line3D =
-        b.GetLine(startPointIndex, endPointIndex)
+        b.GetLine startPointIndex endPointIndex
 
 
 

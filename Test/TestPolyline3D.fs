@@ -389,6 +389,29 @@ let tests =
             "point updated" |> Expect.isTrue (eqPnt pl.LastPoint (Pnt(2.,3.,4.)))
         }
 
+        test "static setPntXYZClosed takes the index first and the polyline last" {
+            let pl = Polyline3D.createFromPnts [Pnt(10.,20.,30.); Pnt(15.,20.,30.); Pnt(15.,26.,31.); Pnt(10.,20.,30.)]
+            pl |> Polyline3D.setPntXYZClosed 0 107. (-33.) 12.
+            "first point set" |> Expect.isTrue (eqPnt pl.FirstPoint (Pnt(107.,-33.,12.)))
+            "last point set too" |> Expect.isTrue (eqPnt pl.LastPoint (Pnt(107.,-33.,12.)))
+            "middle point unchanged" |> Expect.isTrue (eqPnt (pl.GetPnt 1) (Pnt(15.,20.,30.)))
+        }
+
+        test "static point queries take the point first and the polyline last" {
+            // rotated and moved off the origin, so a swapped coordinate shows up
+            let m = RigidMatrix.createRotationAxis(Vec(1., 2., 3.), 40.) *** RigidMatrix.createTranslation(100., -40., 25.)
+            let place (p:Pnt) = p *** m
+            let pl = Polyline3D.createFromPnts [Pnt(0.,0.,0.); Pnt(10.,0.,0.); Pnt(10.,10.,0.); Pnt(0.,10.,0.)]
+            pl |> Polyline3D.transformRigid m
+            let q = place (Pnt(5.,-1.,2.)) // closest to the middle of the first segment
+            "closestParameter" |> Expect.floatClose tol (pl |> Polyline3D.closestParameter q) 0.5
+            "closestParameterXYZ" |> Expect.floatClose tol (pl |> Polyline3D.closestParameterXYZ q.X q.Y q.Z) 0.5
+            "closestPoint" |> Expect.isTrue (eqPnt (pl |> Polyline3D.closestPoint q) (place (Pnt(5.,0.,0.))))
+            "closestPointIndex" |> Expect.equal (pl |> Polyline3D.closestPointIndex (place (Pnt(9.,0.5,1.)))) 1
+            "distanceTo" |> Expect.floatClose tol (pl |> Polyline3D.distanceTo q) (sqrt 5.)
+            "distanceToXYZ" |> Expect.floatClose tol (pl |> Polyline3D.distanceToXYZ q.X q.Y q.Z) (sqrt 5.)
+        }
+
         test "Close with zero tolerance snaps already matching ends" {
             let pl = Polyline3D.createFromPnts [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(0.,0.,0.)]
             pl.Close(0.0)

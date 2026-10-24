@@ -878,14 +878,14 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// The integer part of the parameter is the index of the segment that the point is on.
     /// The fractional part of the parameter is the parameter from 0.0 to 1.0 on the segment.
     /// The domain Polyline2D starts at 0.0 and ends at points.Count - 1.0 .
-    static member inline closestParameterXY (pl:Polyline2D) (x:float) (y:float) : float =
+    static member inline closestParameterXY (x:float) (y:float) (pl:Polyline2D) : float =
         pl.ClosestParameterXY (x, y)
 
     /// Returns the parameter on the Polyline2D that is the closest point to the given point.
     /// The integer part of the parameter is the index of the segment that the point is on.
     /// The fractional part of the parameter is the parameter from 0.0 to 1.0 on the segment.
     /// The domain Polyline2D starts at 0.0 and ends at points.Count - 1.0 .
-    static member inline closestParameter (pl:Polyline2D) (pt:Pt) : float =
+    static member inline closestParameter (pt:Pt) (pl:Polyline2D) : float =
         pl.ClosestParameter pt
 
     /// Returns the point on the Polyline2D that is the closest point to the given point.
@@ -937,7 +937,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
 
     /// Returns the point on the Polyline2D that is the closest point to the given point.
     /// This might be a point on a segment or a vertex of the Polyline2D.
-    static member inline closestPoint (pl:Polyline2D) (pt:Pt) : Pt =
+    static member inline closestPoint (pt:Pt) (pl:Polyline2D) : Pt =
         pl.ClosestPoint pt
 
     /// Returns the index into the Polyline2D's point list of the point that is closest to the given point.
@@ -965,7 +965,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
         minIdx
 
     /// Returns the index into the Polyline2D's point list of the point that is closest to the given point.
-    static member inline closestPointIndex (pl:Polyline2D) (pt:Pt) : int =
+    static member inline closestPointIndex (pt:Pt) (pl:Polyline2D) : int =
         pl.ClosestPointIndex pt
 
     /// Returns the distance of the test point to the closest point on the Polyline2D.
@@ -1012,11 +1012,11 @@ type Polyline2D private (xys: ResizeArray<float>) =
         pl.DistanceToXY(p.X, p.Y)
 
     /// Returns the distance of the test point to the closest point on the Polyline2D.
-    static member inline distanceToXY (pl:Polyline2D) (x:float) (y:float) : float =
+    static member inline distanceToXY (x:float) (y:float) (pl:Polyline2D) : float =
         pl.DistanceToXY (x, y)
 
     /// Returns the distance of the test point to the closest point on the Polyline2D.
-    static member inline distanceTo (pl:Polyline2D) (pt:Pt) : float =
+    static member inline distanceTo (pt:Pt) (pl:Polyline2D) : float =
         pl.DistanceTo pt
 
     /// <summary>Count how many times the polygon winds around the point.

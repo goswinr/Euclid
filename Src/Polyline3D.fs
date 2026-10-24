@@ -1132,14 +1132,14 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// The integer part of the parameter is the index of the segment that the point is on.
     /// The fractional part of the parameter is the parameter from 0.0 to 1.0 on the segment.
     /// The domain Polyline3D starts at 0.0 and ends at points.Count - 1.0 .
-    static member inline closestParameterXYZ (pl:Polyline3D) (x:float) (y:float) (z:float) : float =
+    static member inline closestParameterXYZ (x:float) (y:float) (z:float) (pl:Polyline3D) : float =
         pl.ClosestParameterXYZ (x, y, z)
 
     /// Returns the parameter on the Polyline3D that is the closest point to the given point.
     /// The integer part of the parameter is the index of the segment that the point is on.
     /// The fractional part of the parameter is the parameter from 0.0 to 1.0 on the segment.
     /// The domain Polyline3D starts at 0.0 and ends at points.Count - 1.0 .
-    static member inline closestParameter (pl:Polyline3D) (pnt:Pnt) : float =
+    static member inline closestParameter (pnt:Pnt) (pl:Polyline3D) : float =
         pl.ClosestParameter pnt
 
     /// Returns the point on the Polyline3D that is the closest point to the given point.
@@ -1203,7 +1203,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
 
     /// Returns the point on the Polyline3D that is the closest point to the given point.
     /// This might be a point on a segment or a vertex of the Polyline3D.
-    static member inline closestPoint (pl:Polyline3D) (pnt:Pnt) : Pnt =
+    static member inline closestPoint (pnt:Pnt) (pl:Polyline3D) : Pnt =
         pl.ClosestPoint pnt
 
     /// Returns the index into the Polyline3D's point list of the point that is closest to the given point.
@@ -1234,7 +1234,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
         minIdx
 
     /// Returns the index into the Polyline3D's point list of the point that is closest to the given point.
-    static member inline closestPointIndex (pl:Polyline3D) (pnt:Pnt) : int =
+    static member inline closestPointIndex (pnt:Pnt) (pl:Polyline3D) : int =
         pl.ClosestPointIndex pnt
 
     /// Returns the distance of the test point to the closest point on the Polyline3D.
@@ -1290,11 +1290,11 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
         pl.DistanceToXYZ(p.X, p.Y, p.Z)
 
     /// Returns the distance of the test point to the closest point on the Polyline3D.
-    static member inline distanceToXYZ (pl:Polyline3D) (x:float) (y:float) (z:float) : float =
+    static member inline distanceToXYZ (x:float) (y:float) (z:float) (pl:Polyline3D) : float =
         pl.DistanceToXYZ (x, y, z)
 
     /// Returns the distance of the test point to the closest point on the Polyline3D.
-    static member inline distanceTo (pl:Polyline3D) (pnt:Pnt) : float =
+    static member inline distanceTo (pnt:Pnt) (pl:Polyline3D) : float =
         pl.DistanceTo pnt
 
     /// Returns the average center of all points of the Polyline3D.

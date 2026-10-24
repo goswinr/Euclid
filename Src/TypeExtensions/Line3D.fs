@@ -1850,7 +1850,7 @@ module AutoOpenLine3D =
     /// If it is smaller than 0.0 or bigger than 1.0 it is outside of the finite line.
     /// Get distance from start of line to point projected onto line, may be negative.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    static member inline lengthToPntOnLine (ln:Line3D) (pnt:Pnt) : float =
+    static member inline lengthToPntOnLine (pnt:Pnt) (ln:Line3D) : float =
         let x = ln.VectorX
         let y = ln.VectorY
         let z = ln.VectorZ
@@ -2469,7 +2469,7 @@ module AutoOpenLine3D =
     /// Obsolete name. Same as Line3D.lengthToPntOnLine.
     [<Obsolete("Use Line3D.lengthToPntOnLine instead.")>]
     static member inline lengthToPtOnLine (ln:Line3D) (pnt:Pnt) : float =
-        Line3D.lengthToPntOnLine ln pnt
+        Line3D.lengthToPntOnLine pnt ln
 
     /// Obsolete name. Same as Line3D.withStart.
     [<Obsolete("Use Line3D.withStart instead. This returns a new 3D line, it does not mutate, so the 'with' prefix is clearer.")>]

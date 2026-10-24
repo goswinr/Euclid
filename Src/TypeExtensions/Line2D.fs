@@ -1497,7 +1497,7 @@ module AutoOpenLine2D =
     /// Returns the parameter at which a point is closest to the infinite ray.
     /// If it is smaller than 0.0 or bigger than 1.0 it is outside of the finite line.
     /// Get distance from start of line to point projected onto line, may be negative.
-    static member inline lengthToPtOnLine (ln:Line2D) (pt : Pt) : float =
+    static member inline lengthToPtOnLine (pt:Pt) (ln:Line2D) : float =
         let x = ln.VectorX
         let y = ln.VectorY
         let l = XY.length x y

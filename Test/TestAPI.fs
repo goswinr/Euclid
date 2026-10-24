@@ -1131,7 +1131,7 @@ module Line2DAPI =
     let (_:float) = Line2D.distanceToPtInfinite pt line2d
     let (_:float) = Line2D.distanceSqFromPoint pt line2d
     let (_:float) = Line2D.distanceToPt pt line2d
-    let (_:float) = Line2D.lengthToPtOnLine line2d (Pt(5., 0.))
+    let (_:float) = Line2D.lengthToPtOnLine (Pt(5., 0.)) line2d
     let (_:float) = Line2D.distanceBetweenLines (line2d, ln2)
 
     // Static members - Division
@@ -2133,7 +2133,7 @@ module FreeBoxAPI =
 
     let pts = [| Pt(0., 0.); Pt(10., 0.); Pt(10., 10.); Pt(0., 10.) |]
     let freebox = FreeBox.createFromFour2DPoints 1. 2. pts
-    let fb2 = FreeBox.createFromFour2DPointsArgs (Pt(0., 0.), Pt(10., 0.), Pt(10., 10.), Pt(0., 10.), 1., 2.)
+    let fb2 = FreeBox.createFromFour2DPointsArgs 1. 2. (Pt(0., 0.)) (Pt(10., 0.)) (Pt(10., 10.)) (Pt(0., 10.))
 
     // Instance members - Properties
     let (_:float[]) = freebox.XYZs
@@ -2152,7 +2152,7 @@ module FreeBoxAPI =
     // Instance members - Operations
     let (_:FreeBox) = freebox.Duplicate()
     let (_:unit) = freebox.Scale 2.0
-    let (_:unit) = freebox.ScaleOn (Pnt.Origin, 2.0)
+    let (_:unit) = freebox.ScaleOn Pnt.Origin 2.0
     let (_:unit) = freebox.Move (Vec(1., 1., 1.))
     let (_:unit) = freebox.MoveZ 1.0
     let (_:unit) = freebox.Transform Matrix.identity
@@ -2253,9 +2253,9 @@ module Polyline2DAPI =
     let (_:unit) = Polyline2D.removeDuplicatePoints 1e-6 polyline2d
     let (_:Pt ResizeArray) = Polyline2D.removeDuplicatePointsAndReport 1e-6 polyline2d
     let (_:Polyline2D) = Polyline2D.subPolyline 0.2 0.8 polyline2d
-    let (_:float) = Polyline2D.closestParameter polyline2d pt
-    let (_:Pt) = Polyline2D.closestPoint polyline2d pt
-    let (_:float) = Polyline2D.distanceTo polyline2d pt
+    let (_:float) = Polyline2D.closestParameter pt polyline2d
+    let (_:Pt) = Polyline2D.closestPoint pt polyline2d
+    let (_:float) = Polyline2D.distanceTo pt polyline2d
     let (_:Polyline2D) = Polyline2D.mapPt (fun p -> p + Vc(1., 1.)) polyline2d
     // let (_:Pt ResizeArray) = Polyline2D.as polyline2d // returns accessor function
     let (_:Polyline2D) = Polyline2D.offset (polyline2d, 1.0)
@@ -2343,9 +2343,9 @@ module Polyline3DAPI =
     let (_:unit) = Polyline3D.removeDuplicatePoints 1e-6 polyline3d
     let (_:Pnt ResizeArray) = Polyline3D.removeDuplicatePointsAndReport 1e-6 polyline3d
     let (_:Polyline3D) = Polyline3D.subPolyline 0.2 0.8 polyline3d
-    let (_:float) = Polyline3D.closestParameter polyline3d (Pnt(5., 5., 0.))
-    let (_:Pnt) = Polyline3D.closestPoint polyline3d (Pnt(5., 5., 0.))
-    let (_:float) = Polyline3D.distanceTo polyline3d (Pnt(5., 5., 0.))
+    let (_:float) = Polyline3D.closestParameter (Pnt(5., 5., 0.)) polyline3d
+    let (_:Pnt) = Polyline3D.closestPoint (Pnt(5., 5., 0.)) polyline3d
+    let (_:float) = Polyline3D.distanceTo (Pnt(5., 5., 0.)) polyline3d
     let (_:Polyline3D) = Polyline3D.mapPnt (fun p -> p + Vec(1., 1., 1.)) polyline3d
     // let (_:Pnt ResizeArray) = Polyline3D.pointsUnsafeInternal polyline3d
     let (_:Polyline3D) = Polyline3D.offset(polyline3d, 1.0, 0)

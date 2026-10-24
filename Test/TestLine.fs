@@ -2680,37 +2680,37 @@ let testsLine3DWithLength =
 
         test "lengthToPtOnLine on segment" {
             let ln = Line3D(0., 0., 0., 10., 0., 0.)
-            let dist = Line3D.lengthToPntOnLine ln (Pnt(-3., 1., 2.))
+            let dist = Line3D.lengthToPntOnLine (Pnt(-3., 1., 2.)) ln
             "distance from start" |> expectEqualEpsilon dist -3.
         }
 
         test "lengthToPtOnLine before start" {
             let ln = Line3D(0., 0., 0., 10., 0., 0.)
-            let dist = Line3D.lengthToPntOnLine ln (Pnt(-2., 0., 0.))
+            let dist = Line3D.lengthToPntOnLine (Pnt(-2., 0., 0.)) ln
             "negative distance before start" |> expectEqualEpsilon dist -2.
         }
 
         test "lengthToPtOnLine beyond end" {
             let ln = Line3D(0., 0., 0., 10., 0., 0.)
-            let dist = Line3D.lengthToPntOnLine ln (Pnt(15., 0., 0.))
+            let dist = Line3D.lengthToPntOnLine (Pnt(15., 0., 0.)) ln
             "distance beyond end" |> expectEqualEpsilon dist 15.
         }
 
         test "lengthToPtOnLine ignores perpendicular offset" {
             let ln = Line3D(0., 0., 0., 10., 0., 0.)
-            let dist = Line3D.lengthToPntOnLine ln (Pnt(5., 3., 4.))
+            let dist = Line3D.lengthToPntOnLine (Pnt(5., 3., 4.)) ln
             "projected distance" |> expectEqualEpsilon dist 5.
         }
 
         test "lengthToPtOnLine diagonal line" {
             let ln = Line3D(1., 2., 3., 4., 6., 3.)
-            let dist = Line3D.lengthToPntOnLine ln (Pnt(5.2, 7.6, 10.))
+            let dist = Line3D.lengthToPntOnLine (Pnt(5.2, 7.6, 10.)) ln
             "diagonal projected distance" |> expectEqualEpsilon dist 7.
         }
 
         test "lengthToPtOnLine too short line throws" {
             let ln = Line3D(0., 0., 0., 1e-13, 0., 0.)
-            "too short throws" |> Expect.throws (fun () -> Line3D.lengthToPntOnLine ln (Pnt(1., 0., 0.)) |> ignore)
+            "too short throws" |> Expect.throws (fun () -> Line3D.lengthToPntOnLine (Pnt(1., 0., 0.)) ln |> ignore)
         }
 
         test "pointAtDistance positive" {
