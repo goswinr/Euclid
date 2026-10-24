@@ -283,19 +283,19 @@ let tests =
                 let r = Rect2D.createFromXVectorAndWidth(ro, rvx, 5.)
                 "SizeX from vector" |> Expect.isTrue (eqf r.SizeX 10.)
                 "SizeY absolute"    |> Expect.isTrue (eqf r.SizeY 5.)
-                "equals canonical"  |> Expect.isTrue (Rect2D.equals 1e-9 r rr)
+                "equals canonical"  |> Expect.isTrue (Rect2D.equalsWithin 1e-9 r rr)
             }
             test "createFromCenterAndVector uses absolute Y size and centers" {
                 let r = Rect2D.createFromCenterAndVector(rCenter, rvx, 5.)
                 "SizeX from vector" |> Expect.isTrue (eqf r.SizeX 10.)
                 "SizeY absolute"    |> Expect.isTrue (eqf r.SizeY 5.)
                 "center kept"       |> Expect.isTrue (eq r.Center rCenter)
-                "equals canonical"  |> Expect.isTrue (Rect2D.equals 1e-9 r rr)
+                "equals canonical"  |> Expect.isTrue (Rect2D.equalsWithin 1e-9 r rr)
             }
             test "createFromDirectionAndSizes" {
                 let dir = (Vc(8., 6.)).Unitized
                 let r = Rect2D.createFromDirectionAndSizes(ro, dir, 10., 5.)
-                "equals canonical" |> Expect.isTrue (Rect2D.equals 1e-9 r rr)
+                "equals canonical" |> Expect.isTrue (Rect2D.equalsWithin 1e-9 r rr)
             }
             test "createFromDirectionAndSizes rejects negative size" {
                 let dir = (Vc(8., 6.)).Unitized
@@ -304,7 +304,7 @@ let tests =
             test "createFromCenterAndDirection" {
                 let dir = (Vc(8., 6.)).Unitized
                 let r = Rect2D.createFromCenterAndDirection(rCenter, dir, 10., 5.)
-                "equals canonical" |> Expect.isTrue (Rect2D.equals 1e-9 r rr)
+                "equals canonical" |> Expect.isTrue (Rect2D.equalsWithin 1e-9 r rr)
             }
             test "createFromLine with right and left offset" {
                 let line = Line2D(ro, p1) // vector (8,6), length 10
@@ -327,7 +327,7 @@ let tests =
             }
             test "createFrom3Points with Y on the left keeps origin" {
                 let r = Rect2D.createFrom3Points(ro, p1, p3)
-                "equals canonical" |> Expect.isTrue (Rect2D.equals 1e-9 r rr)
+                "equals canonical" |> Expect.isTrue (Rect2D.equalsWithin 1e-9 r rr)
             }
             test "createFrom3Points with Y on the right reverses X axis" {
                 // y-point on the right side of the X-axis -> origin moves to the x-point
@@ -340,19 +340,19 @@ let tests =
             test "createFrom3Points rejects collinear points" {
                 "collinear" |> Expect.throws (fun () -> Rect2D.createFrom3Points(ro, p1, Pt(9., 6.)) |> ignore)
             }
-            test "tryCreateFrom3Points returns Some for valid points" {
+            test "tryCreateFrom3Points returns ValueSome for valid points" {
                 match Rect2D.tryCreateFrom3Points(ro, p1, p3) with
-                | Some r -> "equals canonical" |> Expect.isTrue (Rect2D.equals 1e-9 r rr)
-                | None   -> "should be Some" |> Expect.isTrue false
+                | ValueSome r -> "equals canonical" |> Expect.isTrue (Rect2D.equalsWithin 1e-9 r rr)
+                | ValueNone   -> "should be ValueSome" |> Expect.isTrue false
             }
-            test "tryCreateFrom3Points returns None for collinear points" {
+            test "tryCreateFrom3Points returns ValueNone for collinear points" {
                 let r = Rect2D.tryCreateFrom3Points(ro, p1, Pt(9., 6.))
-                "None for collinear" |> Expect.isTrue (Option.isNone r)
+                "ValueNone for collinear" |> Expect.isTrue (ValueOption.isNone r)
             }
             test "createFromDirAndPoints fits the 4 corners" {
                 let pts = System.Collections.Generic.List([p0; p1; p2; p3])
                 let r = Rect2D.createFromDirAndPoints rvx pts
-                "equals canonical" |> Expect.isTrue (Rect2D.equals 1e-9 r rr)
+                "equals canonical" |> Expect.isTrue (Rect2D.equalsWithin 1e-9 r rr)
             }
             test "createFromDirAndPoints with fewer than 2 points throws" {
                 let pts = System.Collections.Generic.List([p0])
@@ -371,7 +371,7 @@ let tests =
             test "fits two opposite corners back to the full rect" {
                 let pts = System.Collections.Generic.List([p0; p2])
                 let r = Rect2D.fitToPoints pts rr
-                "equals canonical" |> Expect.isTrue (Rect2D.equals 1e-9 r rr)
+                "equals canonical" |> Expect.isTrue (Rect2D.equalsWithin 1e-9 r rr)
             }
             test "fits interior points to a smaller rect, same orientation" {
                 let pts = System.Collections.Generic.List([rCenter; p1])
@@ -388,17 +388,17 @@ let tests =
         // ---------------------------------------------------------------------
         testList "equals / notEquals" [
             test "equal to itself" {
-                "equals 0 tol" |> Expect.isTrue (Rect2D.equals 0.0 rr rr)
-                "notEquals false" |> Expect.isFalse (Rect2D.notEquals 0.0 rr rr)
+                "equals 0 tol" |> Expect.isTrue (Rect2D.equalsExact rr rr)
+                "notEquals false" |> Expect.isFalse (Rect2D.notEqualsWithin 0.0 rr rr)
             }
             test "within tolerance" {
                 let r2 = Rect2D.move (Vc(1e-10, 0.)) rr
-                "equals within tol" |> Expect.isTrue (Rect2D.equals 1e-9 rr r2)
+                "equals within tol" |> Expect.isTrue (Rect2D.equalsWithin 1e-9 rr r2)
             }
             test "not equal when moved" {
                 let r2 = Rect2D.move (Vc(1., 0.)) rr
-                "notEquals true"  |> Expect.isTrue (Rect2D.notEquals 1e-9 rr r2)
-                "equals false"    |> Expect.isFalse (Rect2D.equals 1e-9 rr r2)
+                "notEquals true"  |> Expect.isTrue (Rect2D.notEqualsWithin 1e-9 rr r2)
+                "equals false"    |> Expect.isFalse (Rect2D.equalsWithin 1e-9 rr r2)
             }
         ]
 
@@ -450,7 +450,7 @@ let tests =
                 "origin moved" |> Expect.isTrue (eq a.Origin (Pt(6., 5.)))
                 "axes unchanged X" |> Expect.isTrue (eqv a.Xaxis rvx)
                 "axes unchanged Y" |> Expect.isTrue (eqv a.Yaxis rvy)
-                "translate=move" |> Expect.isTrue (Rect2D.equals 1e-9 a b)
+                "translate=move" |> Expect.isTrue (Rect2D.equalsWithin 1e-9 a b)
             }
             test "translateLocalX moves along the local X-axis" {
                 let r = Rect2D.translateLocalX 10. rr
@@ -485,7 +485,7 @@ let tests =
             test "four 90 degree rotations return to start" {
                 let rot = Rotation2D.createFromDegrees 90.
                 let r = rr |> Rect2D.rotate rot |> Rect2D.rotate rot |> Rect2D.rotate rot |> Rect2D.rotate rot
-                "back to start" |> Expect.isTrue (Rect2D.equals 1e-9 r rr)
+                "back to start" |> Expect.isTrue (Rect2D.equalsWithin 1e-9 r rr)
             }
         ]
 
@@ -552,7 +552,7 @@ let tests =
             test "offsetVar uniform equals offset" {
                 let a = Rect2D.offsetVar [|1.;1.;1.;1.|] rr
                 let b = Rect2D.offset 1. rr
-                "equal" |> Expect.isTrue (Rect2D.equals 1e-9 a b)
+                "equal" |> Expect.isTrue (Rect2D.equalsWithin 1e-9 a b)
             }
             test "offsetVar with distinct edge distances" {
                 // distances for Edge01, Edge12, Edge23, Edge30
@@ -616,7 +616,7 @@ let tests =
             }
             test "four CW reorientations return to start" {
                 let r = rr.RotateOrientation90CW.RotateOrientation90CW.RotateOrientation90CW.RotateOrientation90CW
-                "back to start" |> Expect.isTrue (Rect2D.equals 1e-9 r rr)
+                "back to start" |> Expect.isTrue (Rect2D.equalsWithin 1e-9 r rr)
             }
         ]
 
@@ -682,7 +682,7 @@ let tests =
             test "horizontal ray through center of unit rectangle" {
                 // unit rect: origin (0,0), X-axis (1,0), Y-axis (0,1)
                 let ray = Line2D(-5., 0.5, 5., 0.5) // dir (10,0), crosses x=0 at t=0.5 and x=1 at t=0.6
-                match Rect2D.intersectRay ray rect with
+                match Rect2D.tryIntersectRay ray rect with
                 | ValueSome(tEntry, tExit) ->
                     "entry param" |> Expect.isTrue (eqf tEntry 0.5)
                     "exit param"  |> Expect.isTrue (eqf tExit 0.6)
@@ -691,17 +691,17 @@ let tests =
 
             test "ray missing rectangle returns None" {
                 let ray = Line2D(-5., 5., 5., 5.) // parallel to X but y=5 is outside
-                "should not intersect" |> Expect.isTrue (Rect2D.intersectRay ray rect).IsNone
+                "should not intersect" |> Expect.isTrue (Rect2D.tryIntersectRay ray rect).IsNone
             }
 
             test "ray parallel to edge but inside slab intersects" {
                 let ray = Line2D(-5., 0.25, 5., 0.25) // y=0.25 inside [0,1]
-                "should intersect" |> Expect.isTrue (Rect2D.intersectRay ray rect).IsSome
+                "should intersect" |> Expect.isTrue (Rect2D.tryIntersectRay ray rect).IsSome
             }
 
             test "ray starting inside rectangle has negative entry parameter" {
                 let ray = Line2D(0.5, 0.5, 5., 0.5) // dir (4.5,0)
-                match Rect2D.intersectRay ray rect with
+                match Rect2D.tryIntersectRay ray rect with
                 | ValueSome(tEntry, tExit) ->
                     "entry behind ray origin" |> Expect.isTrue (tEntry < 0.0)
                     "exit ahead of ray origin" |> Expect.isTrue (tExit > 0.0)
@@ -710,12 +710,12 @@ let tests =
 
             test "zero-length ray returns None" {
                 let ray = Line2D(0.5, 0.5, 0.5, 0.5)
-                "degenerate ray" |> Expect.isTrue (Rect2D.intersectRay ray rect).IsNone
+                "degenerate ray" |> Expect.isTrue (Rect2D.tryIntersectRay ray rect).IsNone
             }
 
             test "diagonal ray through unit rectangle corner to corner" {
                 let ray = Line2D(-1., -1., 2., 2.) // dir (3,3), passes (0,0) at t=1/3 and (1,1) at t=2/3
-                match Rect2D.intersectRay ray rect with
+                match Rect2D.tryIntersectRay ray rect with
                 | ValueSome(tEntry, tExit) ->
                     "entry at (0,0)" |> Expect.isTrue (eqf tEntry (1.0/3.0))
                     "exit at (1,1)"  |> Expect.isTrue (eqf tExit (2.0/3.0))
@@ -726,7 +726,7 @@ let tests =
                 // rr: origin (5,3), corners p0(5,3) p1(13,9) p2(10,13) p3(2,7)
                 // horizontal line y=8 crosses edge p3-p2 at (10/3,8) and edge p0-p1 at (35/3,8)
                 let ray = Line2D(-10., 8., 20., 8.) // dir (30,0)
-                match Rect2D.intersectRay ray rr with
+                match Rect2D.tryIntersectRay ray rr with
                 | ValueSome(tEntry, tExit) ->
                     "entry param" |> Expect.isTrue (eqf tEntry ((10.0/3.0 + 10.0) / 30.0))
                     "exit param"  |> Expect.isTrue (eqf tExit  ((35.0/3.0 + 10.0) / 30.0))

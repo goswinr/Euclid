@@ -442,7 +442,7 @@ let tests =
             let pl = Polyline3D.createFromPnts [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(2.,0.,0.)]
             let cleaned, duplicates = Polyline3D.removeDuplicatePointsAndReport 0.01 pl
             Expect.equal duplicates.Count 0 "no duplicate points"
-            Expect.isTrue (Polyline3D.equals cleaned pl) "copy has the same points"
+            Expect.isTrue (Polyline3D.equalsExact cleaned pl) "copy has the same points"
             Expect.isFalse (obj.ReferenceEquals(cleaned.XYZs, pl.XYZs)) "copy has its own coordinate list"
         }
 
@@ -800,15 +800,15 @@ let tests =
         testList "Coverage for untested members" [
             test "equals on clones and on different counts" {
                 let pl = Polyline3D.createFromPnts [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(1.,1.,0.)]
-                Expect.isTrue (Polyline3D.equalsTol  1e-9 pl (pl.Clone())) "clones are equal"
+                Expect.isTrue (Polyline3D.equalsWithin  1e-9 pl (pl.Clone())) "clones are equal"
                 let shorter = Polyline3D.createFromPnts [Pnt(0.,0.,0.); Pnt(1.,0.,0.)]
-                Expect.isFalse (Polyline3D.equalsTol  1e-9 pl shorter) "different counts are not equal"
+                Expect.isFalse (Polyline3D.equalsWithin  1e-9 pl shorter) "different counts are not equal"
             }
             test "equals uses  distance  per-axis" {
                 let a = Polyline3D.createFromPnts [Pnt(0.,0.,0.);Pnt(0.,0.,0.)]
                 let b = Polyline3D.createFromPnts [Pnt(0.,0.,0.);Pnt(0.008, 0.008, 0.008)] // each axis within 0.001, Euclidean distance ~0.001386
-                Expect.isFalse (Polyline3D.equalsTol  0.007 a b) "outside Euclidean tolerance"
-                Expect.isTrue (Polyline3D.equalsTol   0.009 a b) "inside Euclidean tolerance"
+                Expect.isFalse (Polyline3D.equalsWithin  0.007 a b) "outside Euclidean tolerance"
+                Expect.isTrue (Polyline3D.equalsWithin   0.009 a b) "inside Euclidean tolerance"
             }
             test "EvaluateAt start, mid-segment and out of range" {
                 let pl = Polyline3D.createFromPnts [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(1.,1.,0.)]
@@ -860,21 +860,21 @@ let tests =
                 let pl = Polyline3D.createFromPnts [Pnt(0.,0.,0.); Pnt(5.,1.,2.); Pnt(10.,1.,2.); Pnt(5.,3.,4.)]
 
                 match Polyline3D.tryFind (fun x _ _ -> x = 5.0) pl with
-                | Some pt -> "first matching point" |> Expect.isTrue (eqPnt pt (Pnt(5.,1.,2.)))
-                | None -> "first matching point" |> Expect.isTrue false
+                | ValueSome pt -> "first matching point" |> Expect.isTrue (eqPnt pt (Pnt(5.,1.,2.)))
+                | ValueNone -> "first matching point" |> Expect.isTrue false
 
                 match Polyline3D.tryFindLast (fun x _ _ -> x = 5.0) pl with
-                | Some pt -> "last matching point" |> Expect.isTrue (eqPnt pt (Pnt(5.,3.,4.)))
-                | None -> "last matching point" |> Expect.isTrue false
+                | ValueSome pt -> "last matching point" |> Expect.isTrue (eqPnt pt (Pnt(5.,3.,4.)))
+                | ValueNone -> "last matching point" |> Expect.isTrue false
 
-                "first matching flat index" |> Expect.equal (Polyline3D.tryFindIndex (fun x _ _ -> x = 5.0) pl) (Some 3)
-                "last matching flat index" |> Expect.equal (Polyline3D.tryFindLastIndex (fun x _ _ -> x = 5.0) pl) (Some 9)
+                "first matching flat index" |> Expect.equal (Polyline3D.tryFindIndex (fun x _ _ -> x = 5.0) pl) (ValueSome 3)
+                "last matching flat index" |> Expect.equal (Polyline3D.tryFindLastIndex (fun x _ _ -> x = 5.0) pl) (ValueSome 9)
                 let noPointMatch =
                     match Polyline3D.tryFind (fun _ _ z -> z = 99.0) pl with
-                    | None -> true
-                    | Some _ -> false
+                    | ValueNone -> true
+                    | ValueSome _ -> false
                 "no point match" |> Expect.isTrue noPointMatch
-                "no index match on empty polyline" |> Expect.equal (Polyline3D.tryFindIndex (fun _ _ _ -> true) (Polyline3D([]))) None
+                "no index match on empty polyline" |> Expect.equal (Polyline3D.tryFindIndex (fun _ _ _ -> true) (Polyline3D([]))) ValueNone
             }
             test "iter visits every point" {
                 let pl = Polyline3D.createFromPnts [Pnt(0.,0.,0.); Pnt(1.,2.,3.); Pnt(4.,5.,6.)]
@@ -949,7 +949,7 @@ let tests =
                 let pl = Polyline3D.createFromPnts [Pnt(0.,0.,0.); Pnt(10.,0.,0.); Pnt(10.,10.,0.); Pnt(0.,10.,0.); Pnt(0.,0.,0.)]
                 let viaTupled = Polyline3D.offset(pl, 1.0, 0.5)
                 let viaCurried = Polyline3D.offset' 1.0 0.5 pl
-                Expect.isTrue (Polyline3D.equalsTol  1e-9 viaTupled viaCurried) "offset' argument order matches offset"
+                Expect.isTrue (Polyline3D.equalsWithin  1e-9 viaTupled viaCurried) "offset' argument order matches offset"
             }
         ]
 
@@ -1005,7 +1005,7 @@ let tests =
             test "no U-turns returns an equal polyline" {
                 let pl = Polyline3D.createFromPnts [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(1.,1.,0.); Pnt(0.,1.,0.)]
                 let r = Polyline3D.removeUTurns Cosine.``179.0`` pl
-                Expect.isTrue (Polyline3D.equalsTol  1e-9 r pl) "unchanged when no U-turns"
+                Expect.isTrue (Polyline3D.equalsWithin  1e-9 r pl) "unchanged when no U-turns"
                 Expect.isFalse (obj.ReferenceEquals(r.XYZs, pl.XYZs)) "returns a copy even without U-turns"
             }
             test "U-turn at seam keeps closed polyline closed" {
@@ -1073,19 +1073,19 @@ let tests =
                 let pl = Polyline3D.createFromPnts [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(1.,1.,0.); Pnt(0.,1.,0.); Pnt(0.,0.,0.)]
                 "square is planar" |> Expect.isTrue (pl.IsPlanar())
                 match pl.TryPlane() with
-                | Some pln ->
+                | ValueSome pln ->
                     "normal points up for a CCW square in the XY plane" |> Expect.floatClose tol pln.Normal.Z 1.0
                     "origin is the average of all points" |> Expect.isTrue (eqPnt pln.Origin pl.Center)
                     "origin is on the XY plane" |> Expect.floatClose tol pln.Origin.Z 0.0
-                | None ->
+                | ValueNone ->
                     "square has a plane" |> Expect.isTrue false
             }
 
             test "clockwise square has a flipped normal" {
                 let pl = Polyline3D.createFromPnts [Pnt(0.,0.,0.); Pnt(0.,1.,0.); Pnt(1.,1.,0.); Pnt(1.,0.,0.)]
                 match pl.TryPlane() with
-                | Some pln -> "normal points down for a CW square in the XY plane" |> Expect.floatClose tol pln.Normal.Z -1.0
-                | None -> "square has a plane" |> Expect.isTrue false
+                | ValueSome pln -> "normal points down for a CW square in the XY plane" |> Expect.floatClose tol pln.Normal.Z -1.0
+                | ValueNone -> "square has a plane" |> Expect.isTrue false
             }
 
             test "triangle in a tilted plane" {
@@ -1095,16 +1095,16 @@ let tests =
                 let pl = Polyline3D.createFromPnts [a; b; c]
                 let expected = (NPlane.createFrom3Points a b c).Normal
                 match pl.TryPlane() with
-                | Some pln ->
+                | ValueSome pln ->
                     "normal matches the plane through the three points" |> Expect.floatClose tol (UnitVec.dot(pln.Normal, expected)) 1.0
                     "all points are on the plane" |> Expect.isTrue (pl.AsPoints |> Seq.forall (fun p -> abs (NPlane.distanceToPntSigned p pln) < 1e-9))
-                | None -> "triangle has a plane" |> Expect.isTrue false
+                | ValueNone -> "triangle has a plane" |> Expect.isTrue false
             }
 
-            test "non planar polyline returns None" {
+            test "non planar polyline returns ValueNone" {
                 let pl = Polyline3D.createFromPnts [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(1.,1.,1.); Pnt(0.,1.,0.)]
                 "warped quad is not planar" |> Expect.isFalse (pl.IsPlanar())
-                "warped quad has no plane" |> Expect.isTrue (pl.TryPlane() |> Option.isNone)
+                "warped quad has no plane" |> Expect.isTrue (pl.TryPlane() |> ValueOption.isNone)
             }
 
             test "tolerance decides on an almost planar polyline" {
@@ -1112,21 +1112,21 @@ let tests =
                 "not planar within the default tolerance" |> Expect.isFalse (pl.IsPlanar())
                 "planar within a 0.01 tolerance" |> Expect.isTrue (pl.IsPlanar(0.01))
                 "static isPlanar is curried" |> Expect.isTrue (Polyline3D.isPlanar 0.01 pl)
-                "static tryPlane is curried" |> Expect.isTrue (Polyline3D.tryPlane 0.01 pl |> Option.isSome)
-                "static tryPlane with a tight tolerance" |> Expect.isTrue (Polyline3D.tryPlane 1e-6 pl |> Option.isNone)
+                "static tryPlane is curried" |> Expect.isTrue (Polyline3D.tryPlane 0.01 pl |> ValueOption.isSome)
+                "static tryPlane with a tight tolerance" |> Expect.isTrue (Polyline3D.tryPlane 1e-6 pl |> ValueOption.isNone)
             }
 
             test "less than three points has no plane" {
                 "empty polyline" |> Expect.isFalse ((Polyline3D([])).IsPlanar())
                 "one point" |> Expect.isFalse ((Polyline3D.createFromPnts [Pnt(1.,2.,3.)]).IsPlanar())
                 "two points" |> Expect.isFalse ((Polyline3D.createFromPnts [Pnt(0.,0.,0.); Pnt(1.,0.,0.)]).IsPlanar())
-                "two points have no plane" |> Expect.isTrue ((Polyline3D.createFromPnts [Pnt(0.,0.,0.); Pnt(1.,0.,0.)]).TryPlane() |> Option.isNone)
+                "two points have no plane" |> Expect.isTrue ((Polyline3D.createFromPnts [Pnt(0.,0.,0.); Pnt(1.,0.,0.)]).TryPlane() |> ValueOption.isNone)
             }
 
             test "collinear points have no unique plane" {
                 let pl = Polyline3D.createFromPnts [Pnt(0.,0.,0.); Pnt(1.,1.,1.); Pnt(2.,2.,2.); Pnt(3.,3.,3.)]
                 "collinear points are not planar" |> Expect.isFalse (pl.IsPlanar())
-                "collinear points have no plane" |> Expect.isTrue (pl.TryPlane() |> Option.isNone)
+                "collinear points have no plane" |> Expect.isTrue (pl.TryPlane() |> ValueOption.isNone)
             }
 
             test "almost collinear points still define a plane" {
@@ -1138,7 +1138,7 @@ let tests =
             test "duplicate points have no unique plane" {
                 let pl = Polyline3D.createFromPnts [Pnt(5.,5.,5.); Pnt(5.,5.,5.); Pnt(5.,5.,5.); Pnt(5.,5.,5.)]
                 "coincident points are not planar" |> Expect.isFalse (pl.IsPlanar())
-                "coincident points have no plane" |> Expect.isTrue (pl.TryPlane() |> Option.isNone)
+                "coincident points have no plane" |> Expect.isTrue (pl.TryPlane() |> ValueOption.isNone)
             }
 
             test "self intersecting planar polyline still finds the plane" {
@@ -1146,10 +1146,10 @@ let tests =
                 let pl = Polyline3D.createFromPnts [Pnt(0.,0.,4.); Pnt(1.,0.,4.); Pnt(0.,1.,4.); Pnt(1.,1.,4.); Pnt(0.,0.,4.)]
                 "bow tie is planar" |> Expect.isTrue (pl.IsPlanar())
                 match pl.TryPlane() with
-                | Some pln ->
+                | ValueSome pln ->
                     "normal is vertical" |> Expect.floatClose tol (abs pln.Normal.Z) 1.0
                     "plane is at z=4" |> Expect.floatClose tol pln.Origin.Z 4.0
-                | None -> "bow tie has a plane" |> Expect.isTrue false
+                | ValueNone -> "bow tie has a plane" |> Expect.isTrue false
             }
 
             test "very small polyline is still planar" {
@@ -1158,8 +1158,8 @@ let tests =
                 let pl = Polyline3D.createFromPnts [Pnt(0.,0.,0.); Pnt(s,0.,0.); Pnt(s,s,0.); Pnt(0.,s,0.)]
                 "tiny square is planar" |> Expect.isTrue (pl.IsPlanar(1e-12))
                 match pl.TryPlane(1e-12) with
-                | Some pln -> "normal points up for a CCW tiny square" |> Expect.floatClose tol pln.Normal.Z 1.0
-                | None -> "tiny square has a plane" |> Expect.isTrue false
+                | ValueSome pln -> "normal points up for a CCW tiny square" |> Expect.floatClose tol pln.Normal.Z 1.0
+                | ValueNone -> "tiny square has a plane" |> Expect.isTrue false
             }
 
             test "AverageNormal fails when no normal can be found" {
@@ -1177,40 +1177,40 @@ let tests =
             test "TryAverageNormal returns the same vector as AverageNormal" {
                 let pl = Polyline3D.createFromPnts [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(1.,1.,0.); Pnt(0.,1.,0.)]
                 match pl.TryAverageNormal with
-                | Some n ->
+                | ValueSome n ->
                     "same vector as AverageNormal" |> Expect.isTrue (eqVec n pl.AverageNormal)
                     "not unitized, its length is twice the area" |> Expect.floatClose tol n.Length 2.0
-                | None -> "square has an average normal" |> Expect.isTrue false
-                "static tryAverageNormal" |> Expect.isTrue (Polyline3D.tryAverageNormal pl |> Option.isSome)
+                | ValueNone -> "square has an average normal" |> Expect.isTrue false
+                "static tryAverageNormal" |> Expect.isTrue (Polyline3D.tryAverageNormal pl |> ValueOption.isSome)
             }
 
-            test "TryAverageNormal returns None on degenerate input" {
+            test "TryAverageNormal returns ValueNone on degenerate input" {
                 let collinear = Polyline3D.createFromPnts [Pnt(0.,0.,0.); Pnt(1.,1.,1.); Pnt(2.,2.,2.)]
-                "collinear points" |> Expect.isTrue (collinear.TryAverageNormal |> Option.isNone)
-                "empty polyline" |> Expect.isTrue ((Polyline3D([])).TryAverageNormal |> Option.isNone)
-                "two points" |> Expect.isTrue ((Polyline3D.createFromPnts [Pnt(0.,0.,0.); Pnt(1.,0.,0.)]).TryAverageNormal |> Option.isNone)
+                "collinear points" |> Expect.isTrue (collinear.TryAverageNormal |> ValueOption.isNone)
+                "empty polyline" |> Expect.isTrue ((Polyline3D([])).TryAverageNormal |> ValueOption.isNone)
+                "two points" |> Expect.isTrue ((Polyline3D.createFromPnts [Pnt(0.,0.,0.); Pnt(1.,0.,0.)]).TryAverageNormal |> ValueOption.isNone)
                 let bowTie = Polyline3D.createFromPnts [Pnt(0.,0.,4.); Pnt(1.,0.,4.); Pnt(0.,1.,4.); Pnt(1.,1.,4.)]
-                "the cross products cancel out on a bow tie" |> Expect.isTrue (bowTie.TryAverageNormal |> Option.isNone)
-                "but TryAveragePlane still finds the plane" |> Expect.isTrue (bowTie.TryAveragePlane() |> Option.isSome)
+                "the cross products cancel out on a bow tie" |> Expect.isTrue (bowTie.TryAverageNormal |> ValueOption.isNone)
+                "but TryAveragePlane still finds the plane" |> Expect.isTrue (bowTie.TryAveragePlane() |> ValueOption.isSome)
             }
 
             test "AveragePlane works on non planar points" {
                 let pl = Polyline3D.createFromPnts [Pnt(0.,0.,0.); Pnt(1.,0.,0.); Pnt(1.,1.,1.); Pnt(0.,1.,0.)]
                 "the warped quad is not planar" |> Expect.isFalse (pl.IsPlanar())
-                "so TryPlane finds nothing" |> Expect.isTrue (pl.TryPlane() |> Option.isNone)
-                "but there is an average plane" |> Expect.isTrue (pl.TryAveragePlane() |> Option.isSome)
+                "so TryPlane finds nothing" |> Expect.isTrue (pl.TryPlane() |> ValueOption.isNone)
+                "but there is an average plane" |> Expect.isTrue (pl.TryAveragePlane() |> ValueOption.isSome)
                 let pln = pl.AveragePlane()
                 "origin is the average of all points" |> Expect.isTrue (eqPnt pln.Origin pl.Center)
                 "normal points up" |> Expect.isTrue (pln.Normal.Z > 0.0)
                 "normal is the unitized AverageNormal" |> Expect.floatClose tol (UnitVec.dot(pln.Normal, pl.AverageNormal.Unitized)) 1.0
                 "static averagePlane is curried" |> Expect.isTrue (eqPnt (Polyline3D.averagePlane 1e-6 pl).Origin pln.Origin)
-                "static tryAveragePlane is curried" |> Expect.isTrue (Polyline3D.tryAveragePlane 1e-6 pl |> Option.isSome)
+                "static tryAveragePlane is curried" |> Expect.isTrue (Polyline3D.tryAveragePlane 1e-6 pl |> ValueOption.isSome)
             }
 
             test "AveragePlane of a planar polyline matches TryPlane" {
                 let pl = Polyline3D.createFromPnts [Pnt(1.,2.,3.); Pnt(4.,2.,3.); Pnt(4.,5.,7.); Pnt(1.,5.,7.)]
                 match pl.TryPlane(), pl.TryAveragePlane() with
-                | Some strict, Some avg ->
+                | ValueSome strict, ValueSome avg ->
                     "same origin" |> Expect.isTrue (eqPnt strict.Origin avg.Origin)
                     "same normal" |> Expect.floatClose tol (UnitVec.dot(strict.Normal, avg.Normal)) 1.0
                 | _ -> "planar polyline has both planes" |> Expect.isTrue false
@@ -1218,7 +1218,7 @@ let tests =
 
             test "AveragePlane fails on degenerate input" {
                 let collinear = Polyline3D.createFromPnts [Pnt(0.,0.,0.); Pnt(1.,1.,1.); Pnt(2.,2.,2.)]
-                "collinear points have no average plane" |> Expect.isTrue (collinear.TryAveragePlane() |> Option.isNone)
+                "collinear points have no average plane" |> Expect.isTrue (collinear.TryAveragePlane() |> ValueOption.isNone)
                 "AveragePlane throws on collinear points" |> Expect.throws (fun () -> collinear.AveragePlane() |> ignore)
                 "AveragePlane throws on too few points" |> Expect.throws (fun () -> (Polyline3D.createFromPnts [Pnt(0.,0.,0.); Pnt(1.,0.,0.)]).AveragePlane() |> ignore)
                 "AveragePlane throws on coincident points" |> Expect.throws (fun () -> (Polyline3D.createFromPnts [Pnt(5.,5.,5.); Pnt(5.,5.,5.); Pnt(5.,5.,5.)]).AveragePlane() |> ignore)
@@ -1227,10 +1227,10 @@ let tests =
             test "polyline in a plane parallel to the world XZ plane" {
                 let pl = Polyline3D.createFromPnts [Pnt(0.,7.,0.); Pnt(1.,7.,0.); Pnt(1.,7.,1.); Pnt(0.,7.,1.)]
                 match pl.TryPlane() with
-                | Some pln ->
+                | ValueSome pln ->
                     "normal is along Y" |> Expect.floatClose tol (abs pln.Normal.Y) 1.0
                     "origin y is 7" |> Expect.floatClose tol pln.Origin.Y 7.0
-                | None -> "vertical square has a plane" |> Expect.isTrue false
+                | ValueNone -> "vertical square has a plane" |> Expect.isTrue false
             }
         ]
 
@@ -1252,7 +1252,7 @@ let tests =
                     |> Polyline3D.rotateAround (Pnt(4.,6.,1.)) q
                     |> Polyline3D.transform m
                     |> Polyline3D.scaleOn (Pnt(1.,-1.,2.)) 1.5
-                Expect.isTrue (Polyline3D.equalsTol 1e-12 pl expected) "instance and static calls give the same result"
+                Expect.isTrue (Polyline3D.equalsWithin 1e-12 pl expected) "instance and static calls give the same result"
                 Expect.isFalse (eqPnt pl.Start (Pnt(3.,2.,1.))) "first point moved"
             }
             test "RemoveDuplicatePoints shrinks the same coordinate list" {
@@ -1311,7 +1311,7 @@ let tests =
                     Expect.isFalse (obj.ReferenceEquals(res, pl)) $"{name} should return a new Polyline3D"
                     Expect.isFalse (obj.ReferenceEquals(res.XYZs, pl.XYZs)) $"{name} should return its own coordinate list"
                     Expect.isTrue (obj.ReferenceEquals(xyzs, pl.XYZs)) $"{name} should keep the coordinate list of the input"
-                    Expect.isTrue (Polyline3D.equals pl (original ())) $"{name} should not change the input"
+                    Expect.isTrue (Polyline3D.equalsExact pl (original ())) $"{name} should not change the input"
                 let expectNewAndInputUnchanged name op = check name withDuplicate op
                 let q = Quaternion.createFromDegrees(Vec(1.,2.,3.), 40.)
                 let r = Rotation2D.createFromDegrees 30.
@@ -1349,7 +1349,7 @@ let tests =
                 let check (name:string) (op:Polyline3D -> Polyline3D) (inPlace:Polyline3D -> unit) =
                     let expected = original ()
                     inPlace expected
-                    Expect.isTrue (Polyline3D.equals (op (original ())) expected) $"{name} should match its instance member"
+                    Expect.isTrue (Polyline3D.equalsExact (op (original ())) expected) $"{name} should match its instance member"
                 check "scaleOn" (Polyline3D.scaleOn cen 1.5) (fun p -> p.ScaleOn cen 1.5)
                 check "rotateAround" (Polyline3D.rotateAround cen q) (fun p -> p.RotateAround cen q)
                 check "reverse" Polyline3D.reverse (fun p -> p.Reverse())

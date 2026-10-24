@@ -277,11 +277,11 @@ type RigidMatrix =
 
     /// <summary>Checks if two Matrices are equal within tolerance.
     /// By comparing the fields M11 to Z43 each with the given tolerance.
-    /// Use a tolerance of 0.0 to check for an exact match.</summary>
+    /// Use RigidMatrix.equalsExact to check for an exact match.</summary>
     /// <param name="tol">The tolerance for comparing each matrix element.</param>
     /// <param name="a">The first matrix.</param>
     /// <param name="b">The second matrix.</param>
-    static member equals (tol:float) (a:RigidMatrix) (b:RigidMatrix)  : bool =
+    static member equalsWithin (tol:float) (a:RigidMatrix) (b:RigidMatrix)  : bool =
         abs(a.M11-b.M11) <= tol &&
         abs(a.M12-b.M12) <= tol &&
         abs(a.M13-b.M13) <= tol &&
@@ -294,6 +294,27 @@ type RigidMatrix =
         abs(a.X41-b.X41) <= tol &&
         abs(a.Y42-b.Y42) <= tol &&
         abs(a.Z43-b.Z43) <= tol
+
+    /// Checks if two matrices are exactly equal.
+    /// Compares each field with the = operator, so a NaN value is never equal.
+    static member inline equalsExact (a:RigidMatrix) (b:RigidMatrix) : bool =
+        a.M11 = b.M11 &&
+        a.M12 = b.M12 &&
+        a.M13 = b.M13 &&
+        a.M21 = b.M21 &&
+        a.M22 = b.M22 &&
+        a.M23 = b.M23 &&
+        a.M31 = b.M31 &&
+        a.M32 = b.M32 &&
+        a.M33 = b.M33 &&
+        a.X41 = b.X41 &&
+        a.Y42 = b.Y42 &&
+        a.Z43 = b.Z43
+
+    /// Obsolete name. Same as RigidMatrix.equalsWithin.
+    [<Obsolete("Use RigidMatrix.equalsWithin instead, or RigidMatrix.equalsExact for an exact match.")>]
+    static member equals (tol:float) (a:RigidMatrix) (b:RigidMatrix) : bool =
+        RigidMatrix.equalsWithin tol a b
 
     /// <summary>Multiplies matrixA with matrixB.
     /// The resulting transformation will first do matrixA and then matrixB.</summary>
@@ -660,12 +681,12 @@ type RigidMatrix =
         f *** t
 
     /// <summary>Tries to create a 3x4 RigidMatrix from a general 4x4 matrix.
-    /// Returns None if the input matrix does scale, shear, flip, mirror, reflect or project.
+    /// Returns ValueNone if the input matrix does scale, shear, flip, mirror, reflect or project.
     /// However, translation is allowed.</summary>
     /// <param name="m">The general 4x4 matrix to convert.</param>
-    static member tryCreateFromMatrix (m:Matrix) : RigidMatrix option =
+    static member tryCreateFromMatrix (m:Matrix) : RigidMatrix voption =
         if m.IsProjecting then // checks the last row is 0,0,0,1
-            None
+            ValueNone
         else
             let x = Vec(m.M11, m.M12, m.M13)
             let y = Vec(m.M21, m.M22, m.M23)
@@ -679,12 +700,12 @@ type RigidMatrix =
                 UtilEuclid.isZero (x *** z) &&
                 UtilEuclid.isZero (y *** z) &&
                 UtilEuclid.isOne  (Vec.cross (x, y) *** z) then // check it's not reflecting (would be -1)
-                    Some (RigidMatrix(  m.M11, m.M21, m.M31, m.X41,
+                    ValueSome (RigidMatrix(  m.M11, m.M21, m.M31, m.X41,
                                         m.M12, m.M22, m.M32, m.Y42,
                                         m.M13, m.M23, m.M33, m.Z43)
                         )
             else
-                None
+                ValueNone
 
     /// <summary>Creates an immutable 4x3 Transformation Matrix.
     /// Checks the input values to ensure they form a valid RigidMatrix.
@@ -719,9 +740,9 @@ type RigidMatrix =
     /// <param name="m">The general 4x4 matrix to convert.</param>
     static member createFromMatrix (m:Matrix) : RigidMatrix =
         match RigidMatrix.tryCreateFromMatrix m with
-        | Some m ->
+        | ValueSome m ->
             m
-        | None ->
+        | ValueNone ->
             fail $"RigidMatrix.createFromMatrix failed. The input matrix does scale, shear, flip, mirror, reflect or project: {m}"
             |> unbox // to make the type checker happy
 

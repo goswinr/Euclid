@@ -193,14 +193,14 @@ let tests =
             let m1 = RigidMatrix.createRotationZ(45.0)
             let m2 = RigidMatrix.addTranslation(Vec(1, 2, 3)) m1
             let expected = m1 *** RigidMatrix.createTranslation(Vec(1, 2, 3))
-            "add translation equivalent to multiplication" |> Expect.isTrue (RigidMatrix.equals 1e-12 m2 expected)
+            "add translation equivalent to multiplication" |> Expect.isTrue (RigidMatrix.equalsWithin 1e-12 m2 expected)
         }
 
         test "RigidMatrix to/from matrix conversion" {
             let rm = RigidMatrix.createTranslation(Vec(1, 2, 3)) *** RigidMatrix.createRotationZ(30.0)
             let matrix = rm.ToMatrix
             let rmBack = RigidMatrix.createFromMatrix(matrix)
-            "round trip conversion preserves matrix" |> Expect.isTrue (RigidMatrix.equals 1e-12 rm rmBack)
+            "round trip conversion preserves matrix" |> Expect.isTrue (RigidMatrix.equalsWithin 1e-12 rm rmBack)
         }
 
         test "RigidMatrix plane transformations" {
@@ -238,8 +238,8 @@ let tests =
             let m2 = RigidMatrix.createRotationZ(45.0000001)
             let m3 = RigidMatrix.createRotationZ(46.0)
 
-            "matrices equal within tolerance" |> Expect.isTrue (RigidMatrix.equals 1e-6 m1 m2)
-            "matrices not equal outside tolerance" |> Expect.isFalse (RigidMatrix.equals 1e-6 m1 m3)
+            "matrices equal within tolerance" |> Expect.isTrue (RigidMatrix.equalsWithin 1e-6 m1 m2)
+            "matrices not equal outside tolerance" |> Expect.isFalse (RigidMatrix.equalsWithin 1e-6 m1 m3)
         }
 
         test "RigidMatrix zero rotation angle" {
@@ -313,7 +313,7 @@ let tests =
         test "RigidMatrix createFromMatrix with scaling matrix fails" {
             let scalingMatrix = Matrix.createScale(2.0, 2.0, 2.0)
             let result = RigidMatrix.tryCreateFromMatrix(scalingMatrix)
-            "scaling matrix should return None" |> Expect.isNone result
+            "scaling matrix should return ValueNone" |> Expect.isValueNone result
 
             Expect.throws (fun () -> RigidMatrix.createFromMatrix(scalingMatrix) |> ignore) "Should throw for scaling matrix"
         }
@@ -321,7 +321,7 @@ let tests =
         test "RigidMatrix createFromMatrix with projection matrix fails" {
             let projectionMatrix = Matrix.createPerspectiveAlongNegZ(90.0, 1.0, 0.1, 100.0)
             let result = RigidMatrix.tryCreateFromMatrix(projectionMatrix)
-            "projection matrix should return None" |> Expect.isNone result
+            "projection matrix should return ValueNone" |> Expect.isValueNone result
         }
 
         test "RigidMatrix createFromMatrix with shear matrix fails" {
@@ -332,7 +332,7 @@ let tests =
                 0.0, 0.0, 1.0, 0.0,
                 0.0, 0.0, 0.0, 1.0)
             let result = RigidMatrix.tryCreateFromMatrix(shearMatrix)
-            "shear matrix should return None" |> Expect.isNone result
+            "shear matrix should return ValueNone" |> Expect.isValueNone result
         }
 
 
@@ -374,7 +374,7 @@ let tests =
         test "RigidMatrix addTranslation with zero vector" {
             let m1 = RigidMatrix.createRotationZ(45.0)
             let m2 = RigidMatrix.addTranslation(Vec.Zero) m1
-            "adding zero translation doesn't change matrix" |> Expect.isTrue (RigidMatrix.equals 1e-15 m1 m2)
+            "adding zero translation doesn't change matrix" |> Expect.isTrue (RigidMatrix.equalsWithin 1e-15 m1 m2)
         }
 
         test "RigidMatrix removeTranslation from identity" {
@@ -390,7 +390,7 @@ let tests =
             let m1 = RigidMatrix.createRotationAxisCenter(axis, center, angle)
             let m2 = RigidMatrix.createRotationZ(angle)
 
-            "rotation around origin same as simple rotation" |> Expect.isTrue (RigidMatrix.equals 1e-15 m1 m2)
+            "rotation around origin same as simple rotation" |> Expect.isTrue (RigidMatrix.equalsWithin 1e-15 m1 m2)
         }
 
         test "RigidMatrix equals with zero tolerance" {
@@ -398,8 +398,8 @@ let tests =
             let m2 = RigidMatrix.createRotationZ(45.0)
             let m3 = RigidMatrix.createRotationZ(45.0000001)
 
-            "identical matrices equal with zero tolerance" |> Expect.isTrue (RigidMatrix.equals 0.0 m1 m2)
-            "slightly different matrices not equal with zero tolerance" |> Expect.isFalse (RigidMatrix.equals 0.0 m1 m3)
+            "identical matrices equal with zero tolerance" |> Expect.isTrue (RigidMatrix.equalsExact m1 m2)
+            "slightly different matrices not equal with zero tolerance" |> Expect.isFalse (RigidMatrix.equalsExact m1 m3)
         }
 
         test "RigidMatrix column vectors form right-handed system" {
@@ -465,7 +465,7 @@ let tests =
             let unitAxis = UnitVec.create(1, 2, 1)
             let mUnit = RigidMatrix.createRotationAxisCenter(unitAxis, center, 45.0)
 
-            "non-unit axis center rotation same as unitized" |> Expect.isTrue (RigidMatrix.equals 1e-12 m mUnit)
+            "non-unit axis center rotation same as unitized" |> Expect.isTrue (RigidMatrix.equalsWithin 1e-12 m mUnit)
         }
 
         test "RigidMatrix createVecToVec with non-unit Vec" {
@@ -501,7 +501,7 @@ let tests =
                 0.0, 0.0, 1.0, 0.0,
                 0.0, 0.0, 0.0, 1.0)
             let result = RigidMatrix.tryCreateFromMatrix(reflectionMatrix)
-            "reflection matrix should return None" |> Expect.isNone result
+            "reflection matrix should return ValueNone" |> Expect.isValueNone result
         }
 
         // ===== Tests for Nearly-Identical Vectors =====
@@ -549,7 +549,7 @@ let tests =
             let m1 = RigidMatrix.createRotationZ(45.0)
             let m2 = RigidMatrix.addTranslationXYZ 1.0 2.0 3.0 m1
             let expected = RigidMatrix.addTranslation(Vec(1, 2, 3)) m1
-            "addTranslationXYZ same as addTranslation Vec" |> Expect.isTrue (RigidMatrix.equals 1e-15 m2 expected)
+            "addTranslationXYZ same as addTranslation Vec" |> Expect.isTrue (RigidMatrix.equalsWithin 1e-15 m2 expected)
         }
 
         // ===== Tests for Array Conversions =====
@@ -573,7 +573,7 @@ let tests =
             "row-major ordering length correct" |> Expect.equal arr.Length 12
             // Verify it can be reconstructed
             let mBack = RigidMatrix.create(arr.[0], arr.[1], arr.[2], arr.[3], arr.[4], arr.[5], arr.[6], arr.[7], arr.[8], arr.[9], arr.[10], arr.[11])
-            "reconstructed matrix equals original" |> Expect.isTrue (RigidMatrix.equals 1e-15 m mBack)
+            "reconstructed matrix equals original" |> Expect.isTrue (RigidMatrix.equalsWithin 1e-15 m mBack)
         }
 
         // ===== Tests for Translation Property and UnitVec Preservation =====

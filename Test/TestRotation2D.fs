@@ -285,25 +285,25 @@ let tests =
             test "Exact equality with tolerance 0.0" {
                 let r1 = Rotation2D.createFromDegrees 45.0
                 let r2 = Rotation2D.createFromDegrees 45.0
-                Expect.isTrue (Rotation2D.equals 0.0 r1 r2) "Same rotations should be equal with 0.0 tolerance"
+                Expect.isTrue (Rotation2D.equalsExact r1 r2) "Same rotations should be equal with 0.0 tolerance"
             }
 
             test "Within tolerance" {
                 let r1 = Rotation2D.createFromDegrees 45.0
                 let r2 = Rotation2D.createFromDegrees 45.001
-                Expect.isTrue (Rotation2D.equals 0.001 r1 r2) "Should be equal within tolerance"
+                Expect.isTrue (Rotation2D.equalsWithin 0.001 r1 r2) "Should be equal within tolerance"
             }
 
             test "Outside tolerance" {
                 let r1 = Rotation2D.createFromDegrees 45.0
                 let r2 = Rotation2D.createFromDegrees 46.0
-                Expect.isFalse (Rotation2D.equals 0.001 r1 r2) "Should not be equal outside tolerance"
+                Expect.isFalse (Rotation2D.equalsWithin 0.001 r1 r2) "Should not be equal outside tolerance"
             }
 
             test "Different rotations not equal" {
                 let r1 = Rotation2D.createFromDegrees 45.0
                 let r2 = Rotation2D.createFromDegrees 90.0
-                Expect.isFalse (Rotation2D.equals 0.0 r1 r2) "Different rotations should not be equal"
+                Expect.isFalse (Rotation2D.equalsExact r1 r2) "Different rotations should not be equal"
             }
         ]
 
@@ -333,19 +333,19 @@ let tests =
             test "360° equals 0°" {
                 let r360 = Rotation2D.createFromDegrees 360.0
                 let r0 = Rotation2D.createFromDegrees 0.0
-                Expect.isTrue (Rotation2D.equals 1e-9 r360 r0) "360° should equal 0°"
+                Expect.isTrue (Rotation2D.equalsWithin 1e-9 r360 r0) "360° should equal 0°"
             }
 
             test "720° equals 0°" {
                 let r720 = Rotation2D.createFromDegrees 720.0
                 let r0 = Rotation2D.createFromDegrees 0.0
-                Expect.isTrue (Rotation2D.equals 1e-9 r720 r0) "720° should equal 0°"
+                Expect.isTrue (Rotation2D.equalsWithin 1e-9 r720 r0) "720° should equal 0°"
             }
 
             test "-360° equals 0°" {
                 let rNeg360 = Rotation2D.createFromDegrees -360.0
                 let r0 = Rotation2D.createFromDegrees 0.0
-                Expect.isTrue (Rotation2D.equals 1e-9 rNeg360 r0) "-360° should equal 0°"
+                Expect.isTrue (Rotation2D.equalsWithin 1e-9 rNeg360 r0) "-360° should equal 0°"
             }
 
             test "Add with wrapping positive" {
@@ -430,13 +430,13 @@ let tests =
             test "Very large accumulation: 1000° equivalent to 280°" {
                 let r1000 = Rotation2D.createFromDegrees 1000.0
                 let r280 = Rotation2D.createFromDegrees 280.0
-                Expect.isTrue (Rotation2D.equals 1e-9 r1000 r280) "1000° (2 full rotations + 280°) should equal 280°"
+                Expect.isTrue (Rotation2D.equalsWithin 1e-9 r1000 r280) "1000° (2 full rotations + 280°) should equal 280°"
             }
 
             test "Very large negative accumulation: -1000° equivalent to -280°" {
                 let rNeg1000 = Rotation2D.createFromDegrees -1000.0
                 let rNeg280 = Rotation2D.createFromDegrees -280.0
-                Expect.isTrue (Rotation2D.equals 1e-9 rNeg1000 rNeg280) "-1000° should equal -280°"
+                Expect.isTrue (Rotation2D.equalsWithin 1e-9 rNeg1000 rNeg280) "-1000° should equal -280°"
             }
 
             test "Accumulated rotation maintains precision over many adds" {

@@ -188,14 +188,14 @@ module ResizeArr =
     /// that satisfies the given predicate.</summary>
     /// <param name="predicate">The function to test the input elements.</param>
     /// <param name="xs">The input ResizeArr.</param>
-    /// <returns>The index of the first element that satisfies the predicate, or <c>None</c>.</returns>
-    let tryFindIndex (predicate:'T->bool) (xs: ResizeArray<'T>) : option<int>=
+    /// <returns>The index of the first element that satisfies the predicate, or <c>ValueNone</c>.</returns>
+    let tryFindIndex (predicate:'T->bool) (xs: ResizeArray<'T>) : voption<int>=
         let elementIndex = xs.FindIndex (System.Predicate predicate)
         match elementIndex with
         | -1 ->
-            None
+            ValueNone
         | index ->
-            Some index
+            ValueSome index
 
     /// <summary>Returns the index of the first element in the ResizeArray
     /// that satisfies the given predicate.</summary>
@@ -299,18 +299,18 @@ module ResizeArr =
 
 
     /// <summary>Returns the last element for which the given function returns <c>TRUE</c>.
-    /// Return None if no such element exists.</summary>
+    /// Return ValueNone if no such element exists.</summary>
     /// <param name="predicate">The function to test the input elements.</param>
     /// <param name="resizeArray">The input ResizeArray.</param>
-    /// <returns>The last element that satisfies the predicate, or <c>None</c>.</returns>
-    let tryFindBack (predicate: 'T -> bool) (resizeArray: ResizeArray<'T>) : option<'T> =
+    /// <returns>The last element that satisfies the predicate, or <c>ValueNone</c>.</returns>
+    let tryFindBack (predicate: 'T -> bool) (resizeArray: ResizeArray<'T>) : voption<'T> =
         let mutable i = resizeArray.Count - 1
-        let mutable result = None
+        let mutable result = ValueNone
         while i >= 0  do
             let element = resizeArray.[i]
             i <- i - 1
             if predicate element then
-                result <- Some element
+                result <- ValueSome element
                 i <- -1 // break the loop
         result
 

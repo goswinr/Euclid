@@ -814,8 +814,9 @@ type Box =
 
     /// Checks if two 3D-boxes are equal within tolerance.
     /// Does not recognize congruent boxes with different rotation as equal.
-    /// Use a tolerance of 0.0 to check for an exact match.
-    static member equals (tol:float) (a:Box) (b:Box)  : bool =
+    /// The tolerance applies to each coordinate of the origin and of the axis vectors separately, not to the Euclidean distance between them.
+    /// Use Box.equalsExact to check for an exact match.
+    static member equalsWithin (tol:float) (a:Box) (b:Box)  : bool =
         abs (a.OriginX - b.OriginX) <= tol &&
         abs (a.OriginY - b.OriginY) <= tol &&
         abs (a.OriginZ - b.OriginZ) <= tol &&
@@ -829,9 +830,25 @@ type Box =
         abs (a.ZaxisY  - b.ZaxisY ) <= tol &&
         abs (a.ZaxisZ  - b.ZaxisZ ) <= tol
 
+    /// Checks if two 3D-boxes are exactly equal.
+    /// Compares each field with the = operator, so a NaN value is never equal.
+    static member inline equalsExact (a:Box) (b:Box) : bool =
+        a.OriginX = b.OriginX &&
+        a.OriginY = b.OriginY &&
+        a.OriginZ = b.OriginZ &&
+        a.XaxisX = b.XaxisX &&
+        a.XaxisY = b.XaxisY &&
+        a.XaxisZ = b.XaxisZ &&
+        a.YaxisX = b.YaxisX &&
+        a.YaxisY = b.YaxisY &&
+        a.YaxisZ = b.YaxisZ &&
+        a.ZaxisX = b.ZaxisX &&
+        a.ZaxisY = b.ZaxisY &&
+        a.ZaxisZ = b.ZaxisZ
+
     /// Check if two 3D-boxes are not equal within a given tolerance.
-    /// Use a tolerance of 0.0 to check if the two 3D-boxes are not exactly equal.
-    static member notEquals (tol:float) (a:Box) (b:Box)  : bool =
+    /// The tolerance applies to each coordinate of the origin and of the axis vectors separately, not to the Euclidean distance between them.
+    static member notEqualsWithin (tol:float) (a:Box) (b:Box)  : bool =
         abs (a.OriginX - b.OriginX) > tol ||
         abs (a.OriginY - b.OriginY) > tol ||
         abs (a.OriginZ - b.OriginZ) > tol ||
@@ -1158,7 +1175,7 @@ type Box =
     /// A parameter of 0.0 corresponds to the ray's From point, 1.0 to its To point.</summary>
     /// <param name="ray">The ray (Line3D) to intersect with the box.</param>
     /// <returns>ValueNone if there is no intersection; otherwise, ValueSome(tEntry, tExit).</returns>
-    member b.IntersectRay(ray:Line3D) : voption<float*float> =
+    member b.TryIntersectRay(ray:Line3D) : voption<float*float> =
         // Transform ray to box's local coordinate system
         let rayDirX = ray.VectorX
         let rayDirY = ray.VectorY
@@ -1252,6 +1269,16 @@ type Box =
             else
                 ValueNone
 
+    /// <summary>Intersects an infinite ray (Line3D extended infinitely in both directions) with this Box.
+    /// Same as b.TryIntersectRay, but fails if the ray does not intersect the box or if the ray direction is too short.
+    /// A parameter of 0.0 corresponds to the ray's From point, 1.0 to its To point.</summary>
+    /// <param name="ray">The ray (Line3D) to intersect with the box.</param>
+    /// <returns>The entry and exit parameters on the ray (tEntry, tExit).</returns>
+    member b.IntersectRay(ray:Line3D) : float*float =
+        match b.TryIntersectRay ray with
+        | ValueSome ts -> ts
+        | ValueNone -> fail $"Box.IntersectRay: the ray does not intersect the Box or is too short:{nl}{ray}{nl}{b}"
+
     /// <summary>Intersects an infinite ray (Line3D extended infinitely in both directions) with the Box.
     /// Uses the slab intersection method in the box's local coordinate system.
     /// Returns ValueNone if the ray does not intersect the box or if the ray direction is too short.
@@ -1260,7 +1287,16 @@ type Box =
     /// <param name="ray">The ray (Line3D) to intersect with the box.</param>
     /// <param name="box">The box to intersect with.</param>
     /// <returns>ValueNone if there is no intersection; otherwise, ValueSome(tEntry, tExit).</returns>
-    static member inline intersectRay (ray:Line3D) (box:Box) : voption<float*float> =
+    static member inline tryIntersectRay (ray:Line3D) (box:Box) : voption<float*float> =
+        box.TryIntersectRay(ray)
+
+    /// <summary>Intersects an infinite ray (Line3D extended infinitely in both directions) with the Box.
+    /// Same as Box.tryIntersectRay, but fails if the ray does not intersect the box or if the ray direction is too short.
+    /// A parameter of 0.0 corresponds to the ray's From point, 1.0 to its To point.</summary>
+    /// <param name="ray">The ray (Line3D) to intersect with the box.</param>
+    /// <param name="box">The box to intersect with.</param>
+    /// <returns>The entry and exit parameters on the ray (tEntry, tExit).</returns>
+    static member inline intersectRay (ray:Line3D) (box:Box) : float*float =
         box.IntersectRay(ray)
 
     /// <summary>Checks if an infinite plane intersects this oriented 3D box.
@@ -1445,8 +1481,8 @@ type Box =
 
     /// Gets the space between two boxes, Boxes need to have aligned and parallel axes. Fails if not
     /// The resulting box is touching both input boxes and has the same orientation as them.
-    /// Returns None if the Boxes are overlapping or too far apart so that no in between box exists.
-    static member tryGetBoxBetween (a:Box) (b:Box) : Box option =
+    /// Returns ValueNone if the Boxes are overlapping or too far apart so that no in between box exists.
+    static member tryGetBoxBetween (a:Box) (b:Box) : Box voption =
         if not (Box.areBoxesAligned Cosine.``0.01`` a b) then
             fail $"Box.tryGetBoxBetween: Boxes are not aligned by {Box.getBoxesAlignment a b} degrees:\n%A{a}\n%A{b}"
         let orig = a.Origin
@@ -1469,11 +1505,11 @@ type Box =
 
         let inline tryCreate (no:Pnt) (nx:Vec) (ny:Vec) (nz:Vec) =
             if isTooSmallSq nx.LengthSq || isTooSmallSq ny.LengthSq || isTooSmallSq nz.LengthSq then
-                None
+                ValueNone
             else
-                Some <| Box.create (no, nx, ny, nz)
+                ValueSome <| Box.create (no, nx, ny, nz)
 
-        let mutable result = None
+        let mutable result = ValueNone
 
         // check if Z Stacking
         // if Boxes have no overlap when projected on their XY plane
@@ -1559,8 +1595,8 @@ type Box =
     /// The resulting box is touching both input boxes and has the same orientation as them.
     static member getBoxBetween (a:Box) (b:Box) : Box =
         match Box.tryGetBoxBetween a b with
-        | Some box -> box
-        | None -> failwith $"getBoxBetween: Boxes are overlapping or too far apart:\n%A{a}\n%A{b}"
+        | ValueSome box -> box
+        | ValueNone -> fail $"Box.getBoxBetween: Boxes are overlapping or too far apart:\n%A{a}\n%A{b}"
 
 
     /// Returns a new Box with the same orientation and origin as the input box, but with the specified size in X direction
@@ -2995,6 +3031,16 @@ type Box =
 
     // #endregion
     // #region Obsolete
+
+    /// Obsolete name. Same as Box.equalsWithin.
+    [<Obsolete("Use Box.equalsWithin instead, or Box.equalsExact for an exact match.")>]
+    static member equals (tol:float) (a:Box) (b:Box) : bool =
+        Box.equalsWithin tol a b
+
+    /// Obsolete name. Same as Box.notEqualsWithin.
+    [<Obsolete("Use Box.notEqualsWithin instead.")>]
+    static member notEquals (tol:float) (a:Box) (b:Box) : bool =
+        Box.notEqualsWithin tol a b
 
     /// Obsolete name. Same as b.RotateAround, but with tupled arguments.
     [<Obsolete("Use b.RotateAround instead. It takes curried arguments: b.RotateAround cen q")>]

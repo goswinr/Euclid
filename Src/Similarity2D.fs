@@ -182,9 +182,9 @@ module Similarity2D =
         let groups = Dictionary<int, ResizeArray<'T>>()
         for sid, it in Seq.zip sims items do
             match unique|> ResizeArr.tryFindIndex (areSimilar tolerance sid) with
-            | Some i ->
+            | ValueSome i ->
                 groups.[i].Add it
-            | None ->
+            | ValueNone ->
                 let r = ResizeArray()
                 r.Add it
                 groups.[unique.Count] <- r

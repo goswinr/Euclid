@@ -469,14 +469,21 @@ module AutoOpenUnitVc =
 
         /// Checks if two 2D unit-vectors are equal within tolerance.
         /// Identical unit-vectors in opposite directions are not considered equal.
-        /// Use a tolerance of 0.0 to check for an exact match.
-        static member inline equals (tol:float) (a:UnitVc) (b:UnitVc) : bool =
+        /// The tolerance applies to the X and Y components separately, not to the Euclidean distance between the tips.
+        /// Use UnitVc.equalsExact to check for an exact match.
+        static member inline equalsWithin (tol:float) (a:UnitVc) (b:UnitVc) : bool =
             abs (a.X-b.X) <= tol &&
             abs (a.Y-b.Y) <= tol
 
+        /// Checks if two 2D unit-vectors are exactly equal.
+        /// Compares each field with the = operator, so a NaN value is never equal.
+        static member inline equalsExact (a:UnitVc) (b:UnitVc) : bool =
+            a.X = b.X &&
+            a.Y = b.Y
+
         /// Check if two 2d unit vectors are not equal within a given tolerance.
-        /// Use a tolerance of 0.0 to check if the two unit vectors are not exactly equal.
-        static member notEquals (tol:float) (a:UnitVc) (b:UnitVc) : bool =
+        /// The tolerance applies to the X and Y components separately, not to the Euclidean distance between the tips.
+        static member notEqualsWithin (tol:float) (a:UnitVc) (b:UnitVc) : bool =
             abs (a.X-b.X) > tol ||
             abs (a.Y-b.Y) > tol
 
@@ -770,6 +777,16 @@ module AutoOpenUnitVc =
 
         // #endregion
         // #region Obsolete
+
+        /// Obsolete name. Same as UnitVc.equalsWithin.
+        [<Obsolete("Use UnitVc.equalsWithin instead, or UnitVc.equalsExact for an exact match.")>]
+        static member inline equals (tol:float) (a:UnitVc) (b:UnitVc) : bool =
+            UnitVc.equalsWithin tol a b
+
+        /// Obsolete name. Same as UnitVc.notEqualsWithin.
+        [<Obsolete("Use UnitVc.notEqualsWithin instead.")>]
+        static member notEquals (tol:float) (a:UnitVc) (b:UnitVc) : bool =
+            UnitVc.notEqualsWithin tol a b
 
         /// Obsolete name. Same as v.Rotate.
         [<Obsolete("Use v.Rotate instead.")>]

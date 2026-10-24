@@ -70,6 +70,19 @@ In 3D, +X points right, +Y points forward and +Z points up.
 - **No new dependencies.** The library has no third-party runtime dependencies. It only uses `System.Text.Json` on net472.
 - **Preserve public signatures** unless you are explicitly extending the API.
 - **Handle degenerate cases.** Provide tolerant variants for operations that can degenerate, such as zero length, colinearity or parallel inputs.
+- **One failure contract.** The name of a member says how it handles a missing result:
+
+  | Form | Contract |
+  |------|----------|
+  | `operation` | Returns the result. Throws through `EuclidErrors` when its preconditions fail. |
+  | `tryOperation` | Returns a `voption`, never an `option`. Returns `ValueNone` when an ordinary geometric result may be absent. |
+  | `classify…` | Returns a discriminated union that describes the relationship. |
+  | `operationOrDefault` | Returns an explicit fallback value. |
+  | `operationUnchecked` | Skips the documented checks. |
+
+  Instance members use the same prefixes in PascalCase, for example `b.TryIntersectRay` and `b.IntersectRay`.
+  When you add a `tryOperation`, add the throwing `operation` next to it.
+- **One equality contract.** `equalsExact a b` compares each field with `=`. `equalsWithin tol a b` and `notEqualsWithin tol a b` apply the tolerance to each coordinate separately, not to the Euclidean distance. Say so in the docstring. Do not add `equals` members that take a tolerance.
 
 ## Performance
 

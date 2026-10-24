@@ -553,15 +553,23 @@ module AutoOpenUnitVec =
 
         /// Checks if two 3D unit-vectors are equal within tolerance.
         /// Identical unit-vectors in opposite directions are not considered equal.
-        /// Use a tolerance of 0.0 to check for an exact match.
-        static member inline equals (tol:float) (a:UnitVec) (b:UnitVec) : bool =
+        /// The tolerance applies to the X, Y and Z components separately, not to the Euclidean distance between the tips.
+        /// Use UnitVec.equalsExact to check for an exact match.
+        static member inline equalsWithin (tol:float) (a:UnitVec) (b:UnitVec) : bool =
             abs (a.X-b.X) <= tol &&
             abs (a.Y-b.Y) <= tol &&
             abs (a.Z-b.Z) <= tol
 
+        /// Checks if two 3D unit-vectors are exactly equal.
+        /// Compares each field with the = operator, so a NaN value is never equal.
+        static member inline equalsExact (a:UnitVec) (b:UnitVec) : bool =
+            a.X = b.X &&
+            a.Y = b.Y &&
+            a.Z = b.Z
+
         /// Check if two 3D unit-vectors  are not equal within a given tolerance.
-        /// Use a tolerance of 0.0 to check if the two unit-vectors  are not exactly equal.
-        static member notEquals (tol:float) (a:UnitVec) (b:UnitVec) : bool =
+        /// The tolerance applies to the X, Y and Z components separately, not to the Euclidean distance between the tips.
+        static member notEqualsWithin (tol:float) (a:UnitVec) (b:UnitVec) : bool =
             abs (a.X-b.X) > tol ||
             abs (a.Y-b.Y) > tol ||
             abs (a.Z-b.Z) > tol
@@ -897,6 +905,16 @@ module AutoOpenUnitVec =
 
         // #endregion
         // #region Obsolete
+
+        /// Obsolete name. Same as UnitVec.equalsWithin.
+        [<Obsolete("Use UnitVec.equalsWithin instead, or UnitVec.equalsExact for an exact match.")>]
+        static member inline equals (tol:float) (a:UnitVec) (b:UnitVec) : bool =
+            UnitVec.equalsWithin tol a b
+
+        /// Obsolete name. Same as UnitVec.notEqualsWithin.
+        [<Obsolete("Use UnitVec.notEqualsWithin instead.")>]
+        static member notEquals (tol:float) (a:UnitVec) (b:UnitVec) : bool =
+            UnitVec.notEqualsWithin tol a b
 
         [<Obsolete("Use Euclid.XLine3D module instead.")>]
         static member inline intersection (pntA:Pnt) (pntB:Pnt) (vA:UnitVec) (vB:UnitVec) : Option<float*float> =

@@ -1332,7 +1332,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// or all points are in one line,
     /// or the cross products cancel each other out on a self intersecting shape,
     /// or the Polyline3D is very small.
-    /// Use TryAverageNormal to get None instead of an exception.
+    /// Use TryAverageNormal to get ValueNone instead of an exception.
     /// For the last two cases Polyline3D.AveragePlane still finds a plane.
     member pl.AverageNormal : Vec =
         if pl.PointCount < 3 then failTooFewPoly3D "AverageNormal" 3 pl.PointCount
@@ -1349,40 +1349,40 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// or all points are in one line,
     /// or the cross products cancel each other out on a self intersecting shape,
     /// or the Polyline3D is very small.
-    /// Use tryAverageNormal to get None instead of an exception.
+    /// Use tryAverageNormal to get ValueNone instead of an exception.
     /// For the last two cases Polyline3D.averagePlane still finds a plane.
     static member inline averageNormal (pl:Polyline3D) : Vec =
         pl.AverageNormal
 
-    /// Returns the average normal vector of the Polyline3D, or None if it is degenerate.
+    /// Returns the average normal vector of the Polyline3D, or ValueNone if it is degenerate.
     /// It is calculated by summing up the cross products of all segments around the center point,
-    /// so it is the same vector as Polyline3D.AverageNormal, but bad input returns None instead of raising an exception.
+    /// so it is the same vector as Polyline3D.AverageNormal, but bad input returns ValueNone instead of raising an exception.
     /// The returned vector is not unitized, its length is twice the area of the polygon projected onto that plane.
-    /// Returns None if the summed normal is shorter than 1e-6. This happens if:
+    /// Returns ValueNone if the summed normal is shorter than 1e-6. This happens if:
     /// the Polyline3D has less than 3 points,
     /// or all points are in one line,
     /// or the cross products cancel each other out on a self intersecting shape,
     /// or the Polyline3D is very small.
     /// For these last two cases Polyline3D.TryAveragePlane still finds a plane.
-    member pl.TryAverageNormal : Vec option =
+    member pl.TryAverageNormal : Vec voption =
         if pl.PointCount < 3 then
-            None
+            ValueNone
         else
             let n = averageNormalOf xyzs
-            if isTooSmallSq n.LengthSq then None
-            else Some n
+            if isTooSmallSq n.LengthSq then ValueNone
+            else ValueSome n
 
-    /// Returns the average normal vector of the Polyline3D, or None if it is degenerate.
+    /// Returns the average normal vector of the Polyline3D, or ValueNone if it is degenerate.
     /// It is calculated by summing up the cross products of all segments around the center point,
-    /// so it is the same vector as Polyline3D.averageNormal, but bad input returns None instead of raising an exception.
+    /// so it is the same vector as Polyline3D.averageNormal, but bad input returns ValueNone instead of raising an exception.
     /// The returned vector is not unitized, its length is twice the area of the polygon projected onto that plane.
-    /// Returns None if the summed normal is shorter than 1e-6. This happens if:
+    /// Returns ValueNone if the summed normal is shorter than 1e-6. This happens if:
     /// the Polyline3D has less than 3 points,
     /// or all points are in one line,
     /// or the cross products cancel each other out on a self intersecting shape,
     /// or the Polyline3D is very small.
     /// For these last two cases Polyline3D.tryAveragePlane still finds a plane.
-    static member inline tryAverageNormal (pl:Polyline3D) : Vec option =
+    static member inline tryAverageNormal (pl:Polyline3D) : Vec voption =
         pl.TryAverageNormal
 
     /// Returns the average plane of the Polyline3D, even if the points are not planar.
@@ -1423,12 +1423,10 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// On self intersecting shapes, where these cross products cancel each other out, the orientation is arbitrary.
     /// The optional 'tolerance' is the maximum distance for considering all points to be on one point or on one line,
     /// it defaults to 1e-6.
-    /// Returns None if the Polyline3D has less than 3 points,
+    /// Returns ValueNone if the Polyline3D has less than 3 points,
     /// or if all points are within the tolerance of one point or of one line, because then there is no unique plane.
-    member _.TryAveragePlane([<OPT;DEF(1e-6)>] tolerance:float) : NPlane option =
-        match tryPlaneOf false tolerance xyzs with
-        | ValueSome pln -> Some pln
-        | ValueNone -> None
+    member _.TryAveragePlane([<OPT;DEF(1e-6)>] tolerance:float) : NPlane voption =
+        tryPlaneOf false tolerance xyzs
 
     /// Tries to find the average plane of the Polyline3D, even if the points are not planar.
     /// As opposed to Polyline3D.tryPlane this does not check if all points are on that plane.
@@ -1438,9 +1436,9 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// On self intersecting shapes, where these cross products cancel each other out, the orientation is arbitrary.
     /// The 'tolerance' is the maximum distance for considering all points to be on one point or on one line.
     /// Use 1e-6 as a default.
-    /// Returns None if the Polyline3D has less than 3 points,
+    /// Returns ValueNone if the Polyline3D has less than 3 points,
     /// or if all points are within the tolerance of one point or of one line, because then there is no unique plane.
-    static member inline tryAveragePlane (tolerance:float) (pl:Polyline3D) : NPlane option =
+    static member inline tryAveragePlane (tolerance:float) (pl:Polyline3D) : NPlane voption =
         pl.TryAveragePlane(tolerance)
 
     /// Tries to find the plane that all points of the Polyline3D lie in.
@@ -1449,15 +1447,13 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// The orientation of the normal follows the order of the points.
     /// If they are counter-clockwise in the World X-Y plane, then the normal points in World Z direction.
     /// On self intersecting shapes, where these cross products cancel each other out, the orientation is arbitrary.
-    /// Returns None if:
+    /// Returns ValueNone if:
     /// the Polyline3D has less than 3 points,
     /// or all points are within the tolerance of one point or of one line, so that there is no unique plane,
     /// or any point is further away from the plane than the tolerance.
     /// Use Polyline3D.TryAveragePlane to get the average plane of non planar points too.
-    member _.TryPlane([<OPT;DEF(1e-6)>] tolerance:float) : NPlane option =
-        match tryPlaneOf true tolerance xyzs with
-        | ValueSome pl -> Some pl
-        | ValueNone -> None
+    member _.TryPlane([<OPT;DEF(1e-6)>] tolerance:float) : NPlane voption =
+        tryPlaneOf true tolerance xyzs
 
     /// Tries to find the plane that all points of the Polyline3D lie in.
     /// The 'tolerance' is the maximum distance any point may have from the plane. Use 1e-6 as a default.
@@ -1465,12 +1461,12 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// The orientation of the normal follows the order of the points.
     /// If they are counter-clockwise in the World X-Y plane, then the normal points in World Z direction.
     /// On self intersecting shapes, where these cross products cancel each other out, the orientation is arbitrary.
-    /// Returns None if:
+    /// Returns ValueNone if:
     /// the Polyline3D has less than 3 points,
     /// or all points are within the tolerance of one point or of one line, so that there is no unique plane,
     /// or any point is further away from the plane than the tolerance.
     /// Use Polyline3D.tryAveragePlane to get the average plane of non planar points too.
-    static member inline tryPlane (tolerance:float) (pl:Polyline3D) : NPlane option =
+    static member inline tryPlane (tolerance:float) (pl:Polyline3D) : NPlane voption =
         pl.TryPlane(tolerance)
 
     /// Tests if all points of the Polyline3D lie in one plane.
@@ -1927,12 +1923,12 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             action (i/3) (Pnt(xyzs.[i], xyzs.[i + 1], xyzs.[i + 2]))
             i <- i + 3
 
-    /// <summary>Find the first point in the Polyline3D that satisfies a given condition. Returns Some(point) if found, otherwise None.</summary>
+    /// <summary>Find the first point in the Polyline3D that satisfies a given condition. Returns ValueSome(point) if found, otherwise ValueNone.</summary>
     /// <param name="condition">A function that takes the X, Y and Z coordinates of a point and returns a boolean indicating whether the condition is satisfied.</param>
     /// <param name="pl">The Polyline3D to search through.</param>
-    /// <returns>Some(Pnt) if a point satisfying the condition is found, otherwise None.</returns>
-    static member inline tryFind (condition: float -> float -> float -> bool) (pl:Polyline3D) : Pnt option =
-        let mutable result = None
+    /// <returns>ValueSome(Pnt) if a point satisfying the condition is found, otherwise ValueNone.</returns>
+    static member inline tryFind (condition: float -> float -> float -> bool) (pl:Polyline3D) : Pnt voption =
+        let mutable result = ValueNone
         let xyzs = pl.XYZs
         let len = xyzs.Count
         let mutable i = 0
@@ -1941,18 +1937,18 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             let y = xyzs.[i + 1]
             let z = xyzs.[i + 2]
             if condition x y z then
-                result <- Some (Pnt(x, y, z))
+                result <- ValueSome (Pnt(x, y, z))
                 i <- len // exit loop
             else
                 i <- i + 3
         result
 
-    /// <summary>Find the last point in the Polyline3D that satisfies a given condition. Returns Some(point) if found, otherwise None.</summary>
+    /// <summary>Find the last point in the Polyline3D that satisfies a given condition. Returns ValueSome(point) if found, otherwise ValueNone.</summary>
     /// <param name="condition">A function that takes the X, Y and Z coordinates of a point and returns a boolean indicating whether the condition is satisfied.</param>
     /// <param name="pl">The Polyline3D to search through.</param>
-    /// <returns>Some(Pnt) if a point satisfying the condition is found, otherwise None.</returns>
-    static member inline tryFindLast (condition: float -> float -> float -> bool) (pl:Polyline3D) : Pnt option =
-        let mutable result = None
+    /// <returns>ValueSome(Pnt) if a point satisfying the condition is found, otherwise ValueNone.</returns>
+    static member inline tryFindLast (condition: float -> float -> float -> bool) (pl:Polyline3D) : Pnt voption =
+        let mutable result = ValueNone
         let xyzs = pl.XYZs
         let mutable i = xyzs.Count - 3
         while i >= 0 do
@@ -1960,18 +1956,18 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             let y = xyzs.[i + 1]
             let z = xyzs.[i + 2]
             if condition x y z then
-                result <- Some (Pnt(x, y, z))
+                result <- ValueSome (Pnt(x, y, z))
                 i <- -3 // exit loop
             else
                 i <- i - 3
         result
 
-    /// <summary>Find the index of the first point in the Polyline3D that satisfies a given condition. Returns Some(index) if found, otherwise None.</summary>
+    /// <summary>Find the index of the first point in the Polyline3D that satisfies a given condition. Returns ValueSome(index) if found, otherwise ValueNone.</summary>
     /// <param name="condition">A function that takes the X, Y and Z coordinates of a point and returns a boolean indicating whether the condition is satisfied.</param>
     /// <param name="pl">The Polyline3D to search through.</param>
-    /// <returns>Some(index of x) the index of the x value in the polyline's flat array if found, otherwise None.</returns>
-    static member inline tryFindIndex (condition: float -> float -> float -> bool) (pl:Polyline3D) : int option =
-        let mutable result = None
+    /// <returns>ValueSome(index of x) the index of the x value in the polyline's flat array if found, otherwise ValueNone.</returns>
+    static member inline tryFindIndex (condition: float -> float -> float -> bool) (pl:Polyline3D) : int voption =
+        let mutable result = ValueNone
         let xyzs = pl.XYZs
         let len = xyzs.Count
         let mutable i = 0
@@ -1980,18 +1976,18 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             let y = xyzs.[i + 1]
             let z = xyzs.[i + 2]
             if condition x y z then
-                result <- Some i
+                result <- ValueSome i
                 i <- len // exit loop
             else
                 i <- i + 3
         result
 
-    /// <summary>Find the index of the last point in the Polyline3D that satisfies a given condition. Returns Some(index) if found, otherwise None.</summary>
+    /// <summary>Find the index of the last point in the Polyline3D that satisfies a given condition. Returns ValueSome(index) if found, otherwise ValueNone.</summary>
     /// <param name="condition">A function that takes the X, Y and Z coordinates of a point and returns a boolean indicating whether the condition is satisfied.</param>
     /// <param name="pl">The Polyline3D to search through.</param>
-    /// <returns>Some(index of x) the index of the x value in the polyline's flat array if found, otherwise None.</returns>
-    static member inline tryFindLastIndex (condition: float -> float -> float -> bool) (pl:Polyline3D) : int option =
-        let mutable result = None
+    /// <returns>ValueSome(index of x) the index of the x value in the polyline's flat array if found, otherwise ValueNone.</returns>
+    static member inline tryFindLastIndex (condition: float -> float -> float -> bool) (pl:Polyline3D) : int voption =
+        let mutable result = ValueNone
         let xyzs = pl.XYZs
         let mutable i = xyzs.Count - 3
         while i >= 0 do
@@ -1999,7 +1995,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             let y = xyzs.[i + 1]
             let z = xyzs.[i + 2]
             if condition x y z then
-                result <- Some i
+                result <- ValueSome i
                 i <- -3 // exit loop
             else
                 i <- i - 3
@@ -2140,11 +2136,15 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             np.Reverse()
         np
 
-    /// <summary>Tests if two Polyline3D have the same point count and if their corresponding points are equal within a given tolerance.</summary>
-    /// <param name="tol">The tolerance value for comparing the coordinates.</param>
+    /// <summary>Tests if two Polyline3D have the same point count and if their corresponding points are equal within a given tolerance.
+    /// The tolerance applies to the X, Y and Z coordinates of each point separately, not to the Euclidean distance between the points.
+    /// The same instance is always equal to itself. Otherwise a NaN coordinate is never equal.
+    /// Use Polyline3D.equalsExact to check for an exact match.</summary>
+    /// <param name="tol">The tolerance value for comparing each coordinate.</param>
     /// <param name="pl1">The first Polyline3D instance.</param>
     /// <param name="pl2">The second Polyline3D instance.</param>
-    static member equalsTol (tol:float) (pl1:Polyline3D) (pl2:Polyline3D) : bool =
+    /// <returns>TRUE if the two Polyline3D instances are equal within the tolerance, otherwise FALSE.</returns>
+    static member equalsWithin (tol:float) (pl1:Polyline3D) (pl2:Polyline3D) : bool =
         if Object.ReferenceEquals(pl1, pl2) then
             true
         elif pl1.XYZs.Count <> pl2.XYZs.Count then
@@ -2156,18 +2156,19 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             let mutable i = 0
             let mutable equal = true
             while i < len do
-                if abs (xyzs1.[i] - xyzs2.[i]) > tol then
+                if not (abs (xyzs1.[i] - xyzs2.[i]) <= tol) then // 'not' to catch NaN too
                     equal <- false
                     i <- len // exit loop
                 else
                     i <- i + 1
             equal
 
-    /// <summary>Tests if two Polyline3D have the same point count and if their corresponding points are exactly equal.</summary>
+    /// <summary>Tests if two Polyline3D have the same point count and if their corresponding points are exactly equal.
+    /// The same instance is always equal to itself. Otherwise a NaN coordinate is never equal.</summary>
     /// <param name="pl1">The first Polyline3D instance.</param>
     /// <param name="pl2">The second Polyline3D instance.</param>
     /// <returns>TRUE if the two Polyline3D instances are equal, otherwise FALSE.</returns>
-    static member equals (pl1:Polyline3D) (pl2:Polyline3D) : bool =
+    static member equalsExact (pl1:Polyline3D) (pl2:Polyline3D) : bool =
         if Object.ReferenceEquals(pl1, pl2) then
             true
         elif pl1.XYZs.Count <> pl2.XYZs.Count then
@@ -2792,6 +2793,16 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
 
     // #endregion
     // #region Obsolete
+
+    /// Obsolete name. Same as Polyline3D.equalsWithin.
+    [<Obsolete("Use Polyline3D.equalsWithin instead.")>]
+    static member equalsTol (tol:float) (pl1:Polyline3D) (pl2:Polyline3D) : bool =
+        Polyline3D.equalsWithin tol pl1 pl2
+
+    /// Obsolete name. Same as Polyline3D.equalsExact.
+    [<Obsolete("Use Polyline3D.equalsExact instead.")>]
+    static member equals (pl1:Polyline3D) (pl2:Polyline3D) : bool =
+        Polyline3D.equalsExact pl1 pl2
 
     [<Obsolete("This is no longer the internal structure of Polyline3D, use .XYZs instead. Or .AsPoints to get points.")>]
     member p.Points : ResizeArray<Pnt> =

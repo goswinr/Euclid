@@ -1557,7 +1557,7 @@ type Rect3D =
         let yr = yu * (yu *** y) // get the y point projected on the y axis
         Rect3D.createUncheckedVec(origin, x, yr)
 
-    /// <summary>Tries to create a 3D-rectangle from three points. Returns None if points are too close to each other or all collinear.
+    /// <summary>Tries to create a 3D-rectangle from three points. Returns ValueNone if points are too close to each other or all collinear.
     /// The Origin, a point in X-axis direction and length, and a point for the length in Y-axis direction.
     /// Origin and x-point define the X-axis orientation of the Rectangle.
     /// The y-point only defines the length and side of the Y-axis.
@@ -1576,19 +1576,19 @@ type Rect3D =
     ///   +------------+-----> X-axis
     ///  0-Origin       1
     /// </code></summary>
-    static member tryCreateFrom3Points (origin:Pnt, xPnt:Pnt, yPnt:Pnt) : Rect3D option =
+    static member tryCreateFrom3Points (origin:Pnt, xPnt:Pnt, yPnt:Pnt) : Rect3D voption =
         let x = xPnt - origin
-        if isTooSmallSq x.LengthSq  then None
+        if isTooSmallSq x.LengthSq  then ValueNone
         else
             let y = yPnt - origin
-            if isTooSmallSq y.LengthSq  then None
+            if isTooSmallSq y.LengthSq  then ValueNone
             else
                 let z = Vec.cross(x,y)
-                if isTooSmallSq z.LengthSq  then None
+                if isTooSmallSq z.LengthSq  then ValueNone
                 else
                     let yu = Vec.cross(z, x).Unitized
                     let yr = yu * (yu *** y) // get the y point projected on the y axis
-                    Some <| Rect3D.createUncheckedVec(origin, x, yr)
+                    ValueSome <| Rect3D.createUncheckedVec(origin, x, yr)
 
     /// Creates a new 3D rectangle( = oriented bounding rectangle ) to contain the projections of all given points.
     /// But not the corners of the reference rectangle.
@@ -1660,8 +1660,9 @@ type Rect3D =
 
     /// Checks if two 3D-rectangles are equal within tolerance.
     /// Does not recognize congruent rectangles with different rotation as equal.
-    /// Use a tolerance of 0.0 to check for an exact match.
-    static member equals (tol:float) (a:Rect3D) (b:Rect3D)  : bool =
+    /// The tolerance applies to each coordinate of the origin and of the axis vectors separately, not to the Euclidean distance between them.
+    /// Use Rect3D.equalsExact to check for an exact match.
+    static member equalsWithin (tol:float) (a:Rect3D) (b:Rect3D)  : bool =
         abs (a.OriginX - b.OriginX) <= tol &&
         abs (a.OriginY - b.OriginY) <= tol &&
         abs (a.OriginZ - b.OriginZ) <= tol &&
@@ -1672,9 +1673,22 @@ type Rect3D =
         abs (a.YaxisY  - b.YaxisY ) <= tol &&
         abs (a.YaxisZ  - b.YaxisZ ) <= tol
 
+    /// Checks if two 3D-rectangles are exactly equal.
+    /// Compares each field with the = operator, so a NaN value is never equal.
+    static member inline equalsExact (a:Rect3D) (b:Rect3D) : bool =
+        a.OriginX = b.OriginX &&
+        a.OriginY = b.OriginY &&
+        a.OriginZ = b.OriginZ &&
+        a.XaxisX = b.XaxisX &&
+        a.XaxisY = b.XaxisY &&
+        a.XaxisZ = b.XaxisZ &&
+        a.YaxisX = b.YaxisX &&
+        a.YaxisY = b.YaxisY &&
+        a.YaxisZ = b.YaxisZ
+
     /// Check if two 3D-rectangles are not equal within a given tolerance.
-    /// Use a tolerance of 0.0 to check if the two rectangles are not exactly equal.
-    static member notEquals (tol:float) (a:Rect3D) (b:Rect3D)  : bool =
+    /// The tolerance applies to each coordinate of the origin and of the axis vectors separately, not to the Euclidean distance between them.
+    static member notEqualsWithin (tol:float) (a:Rect3D) (b:Rect3D)  : bool =
         abs (a.OriginX - b.OriginX) > tol ||
         abs (a.OriginY - b.OriginY) > tol ||
         abs (a.OriginZ - b.OriginZ) > tol ||
@@ -2197,7 +2211,7 @@ type Rect3D =
     /// The parameter is the intersection point of the ray with the infinitely extended Rect3D.
     /// The intersection point lies on the line segment itself only if the parameter is within the range 0.0 to 1.0.
     /// Returns ValueNone if they are parallel or coincident.
-    static member intersectRay (ln:Line3D) (r:Rect3D) : voption<float> =
+    static member tryIntersectRay (ln:Line3D) (r:Rect3D) : voption<float> =
         // (1) get the unit normal of the rectangle
         let mutable nx = r.XaxisY * r.YaxisZ - r.XaxisZ * r.YaxisY
         let mutable ny = r.XaxisZ * r.YaxisX - r.XaxisX * r.YaxisZ
@@ -2229,15 +2243,25 @@ type Rect3D =
             let t = (lnOrX * nx + lnOrY * ny + lnOrZ * nz) / nenner
             ValueSome t
 
+    /// Returns the line parameter.
+    /// The parameter is the intersection point of the ray with the infinitely extended Rect3D.
+    /// The intersection point lies on the line segment itself only if the parameter is within the range 0.0 to 1.0.
+    /// Fails if they are parallel or coincident.
+    /// Use Rect3D.tryIntersectRay to get ValueNone instead.
+    static member intersectRay (ln:Line3D) (r:Rect3D) : float =
+        match Rect3D.tryIntersectRay ln r with
+        | ValueSome t -> t
+        | ValueNone -> fail $"Rect3D.intersectRay: the line is parallel to the rectangle or too short:{nl}{ln}{nl}{r}"
+
 
     /// Returns intersection point of a Line3D with Rect3D.
     /// Returns ValueNone if the intersection point is outside their bounds.
-    /// Use Rect3D.intersectRay to get the parameters of the intersection point.
+    /// Use Rect3D.tryIntersectRay to get the parameters of the intersection point.
     /// Returns ValueNone if they are parallel or coincident, or if the line has zero length.
     /// If the intersection parameters on the line and the rectangle are within 1e-6 of the bounds 0.0 or 1.0,
     /// it will still be considered as inside the rectangle and line.
-    static member intersectLine (ln:Line3D) (r:Rect3D) : voption<Pnt> =
-        match Rect3D.intersectRay ln r with
+    static member tryIntersectLine (ln:Line3D) (r:Rect3D) : voption<Pnt> =
+        match Rect3D.tryIntersectRay ln r with
         | ValueNone -> ValueNone
         | ValueSome t ->
             if UtilEuclid.isBetweenZeroAndOneTolerantIncl t then
@@ -2262,8 +2286,28 @@ type Rect3D =
             else
                 ValueNone
 
+    /// Returns intersection point of a Line3D with Rect3D.
+    /// If the intersection parameters on the line and the rectangle are within 1e-6 of the bounds 0.0 or 1.0,
+    /// it will still be considered as inside the rectangle and line.
+    /// Fails if they are parallel or coincident, if the line has zero length, or if the intersection point is outside their bounds.
+    /// Use Rect3D.tryIntersectLine to get ValueNone instead.
+    static member intersectLine (ln:Line3D) (r:Rect3D) : Pnt =
+        match Rect3D.tryIntersectLine ln r with
+        | ValueSome pnt -> pnt
+        | ValueNone -> fail $"Rect3D.intersectLine: the line does not intersect the rectangle:{nl}{ln}{nl}{r}"
+
     // #endregion
     // #region Obsolete
+
+    /// Obsolete name. Same as Rect3D.equalsWithin.
+    [<Obsolete("Use Rect3D.equalsWithin instead, or Rect3D.equalsExact for an exact match.")>]
+    static member equals (tol:float) (a:Rect3D) (b:Rect3D) : bool =
+        Rect3D.equalsWithin tol a b
+
+    /// Obsolete name. Same as Rect3D.notEqualsWithin.
+    [<Obsolete("Use Rect3D.notEqualsWithin instead.")>]
+    static member notEquals (tol:float) (a:Rect3D) (b:Rect3D) : bool =
+        Rect3D.notEqualsWithin tol a b
 
     /// Obsolete name. Same as r.RotateAround, but with tupled arguments.
     [<Obsolete("Use r.RotateAround instead. It takes curried arguments: r.RotateAround cen q")>]

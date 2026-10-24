@@ -257,7 +257,7 @@ let tests =
             let m = Matrix(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16)
             let mt = Matrix.transpose(m)
             let expected = Matrix(1,5,9,13,2,6,10,14,3,7,11,15,4,8,12,16)
-            "matrix transpose" |> Expect.isTrue (Matrix.equals 1e-12 mt expected)
+            "matrix transpose" |> Expect.isTrue (Matrix.equalsWithin 1e-12 mt expected)
         }
 
         test "Matrix multiply associativity" {
@@ -267,7 +267,7 @@ let tests =
 
             let abc1 = (a *** b) *** c
             let abc2 = a *** (b *** c)
-            "matrix multiplication associativity" |> Expect.isTrue (Matrix.equals 1e-12 abc1 abc2)
+            "matrix multiplication associativity" |> Expect.isTrue (Matrix.equalsWithin 1e-12 abc1 abc2)
         }
 
         test "Matrix determinant scaling" {
@@ -284,8 +284,8 @@ let tests =
             let mFromRows = Matrix.createFromRowMajorArray(rowArray)
             let mFromCols = Matrix.createFromColumnMajorArray(colArray)
 
-            "matrix from row array" |> Expect.isTrue (Matrix.equals 1e-12 m mFromRows)
-            "matrix from column array" |> Expect.isTrue (Matrix.equals 1e-12 m mFromCols)
+            "matrix from row array" |> Expect.isTrue (Matrix.equalsWithin 1e-12 m mFromRows)
+            "matrix from column array" |> Expect.isTrue (Matrix.equalsWithin 1e-12 m mFromCols)
         }
 
         test "Matrix add translation" {
@@ -468,9 +468,9 @@ let tests =
                 let camera = Matrix.createPerspectiveLookAtZUp(eye, target, 2., 2., 1., 10.)
                 "vertical near center" |> expectEqual (target *** camera) Pnt.Origin
             let down = Matrix.createPerspectiveLookAtZUp(Pnt.Origin, Pnt(0,0,-1), 2., 2., 1., 10.)
-            "down matches NegZ" |> Expect.isTrue (Matrix.equals 1e-12 down (Matrix.createPerspectiveAlongNegZ(2., 2., 1., 10.)))
+            "down matches NegZ" |> Expect.isTrue (Matrix.equalsWithin 1e-12 down (Matrix.createPerspectiveAlongNegZ(2., 2., 1., 10.)))
             let forward = Matrix.createPerspectiveLookAtZUp(Pnt.Origin, Pnt(0,1,0), 2., 2., 1., 10.)
-            "forward matches PosY" |> Expect.isTrue (Matrix.equals 1e-12 forward (Matrix.createPerspectiveAlongPosY(2., 2., 1., 10.)))
+            "forward matches PosY" |> Expect.isTrue (Matrix.equalsWithin 1e-12 forward (Matrix.createPerspectiveAlongPosY(2., 2., 1., 10.)))
         }
 
         test "Matrix Z up nearly vertical fallback stays valid" {

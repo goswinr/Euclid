@@ -193,10 +193,9 @@ module AutoOpenPPlane =
     // #endregion
     // #region Predefined Planes
 
-        /// Checks if two Parametrized Planes are NOT equal within tolerance distance.
-        /// For the tips of its unit vectors and its origin.
-        /// Use a tolerance of 0.0 to check for an exact mismatch.
-        static member inline notEquals (tol:float) (a:PPlane) (b:PPlane)  : bool =
+        /// Checks if two Parametrized Planes are NOT equal within tolerance.
+        /// The tolerance applies to each coordinate of the origin and of the X-axis and Y-axis separately, not to the Euclidean distance between them.
+        static member inline notEqualsWithin (tol:float) (a:PPlane) (b:PPlane)  : bool =
             abs (a.OriginX - b.OriginX) > tol ||
             abs (a.OriginY - b.OriginY) > tol ||
             abs (a.OriginZ - b.OriginZ) > tol ||
@@ -403,10 +402,10 @@ module AutoOpenPPlane =
     // #endregion
     // #region Static members
 
-        /// Checks if two Parametrized Planes are equal within tolerance distance.
-        /// For the tips of its unit vectors and its origin.
-        /// Use a tolerance of 0.0 to check for an exact match.
-        static member inline equals (tol:float) (a:PPlane) (b:PPlane)  : bool =
+        /// Checks if two Parametrized Planes are equal within tolerance.
+        /// The tolerance applies to each coordinate of the origin and of the X-axis and Y-axis separately, not to the Euclidean distance between them.
+        /// Use PPlane.equalsExact to check for an exact match.
+        static member inline equalsWithin (tol:float) (a:PPlane) (b:PPlane)  : bool =
             abs (a.OriginX - b.OriginX) <= tol &&
             abs (a.OriginY - b.OriginY) <= tol &&
             abs (a.OriginZ - b.OriginZ) <= tol &&
@@ -419,6 +418,29 @@ module AutoOpenPPlane =
             //abs (a.ZaxisX - b.ZaxisX) <= tol &&
             //abs (a.ZaxisY - b.ZaxisY) <= tol &&
             //abs (a.ZaxisZ - b.ZaxisZ) <= tol
+
+        /// Checks if two Parametrized Planes are exactly equal.
+        /// Compares each field with the = operator, so a NaN value is never equal.
+        static member inline equalsExact (a:PPlane) (b:PPlane) : bool =
+            a.OriginX = b.OriginX &&
+            a.OriginY = b.OriginY &&
+            a.OriginZ = b.OriginZ &&
+            a.XaxisX = b.XaxisX &&
+            a.XaxisY = b.XaxisY &&
+            a.XaxisZ = b.XaxisZ &&
+            a.YaxisX = b.YaxisX &&
+            a.YaxisY = b.YaxisY &&
+            a.YaxisZ = b.YaxisZ
+
+        /// Obsolete name. Same as PPlane.equalsWithin.
+        [<Obsolete("Use PPlane.equalsWithin instead, or PPlane.equalsExact for an exact match.")>]
+        static member inline equals (tol:float) (a:PPlane) (b:PPlane) : bool =
+            PPlane.equalsWithin tol a b
+
+        /// Obsolete name. Same as PPlane.notEqualsWithin.
+        [<Obsolete("Use PPlane.notEqualsWithin instead.")>]
+        static member inline notEquals (tol:float) (a:PPlane) (b:PPlane) : bool =
+            PPlane.notEqualsWithin tol a b
 
         /// Returns a new plane with given Origin. The axes stay the same.
         static member inline withOrigin (pnt:Pnt) (pl:PPlane) : PPlane =
@@ -542,7 +564,7 @@ module AutoOpenPPlane =
 
         /// Returns the line of intersection between two planes.
         /// Returns ValueNone if they are parallel or coincident.
-        static member intersect (a:PPlane) (b:PPlane) : Line3D voption=
+        static member tryIntersect (a:PPlane) (b:PPlane) : Line3D voption=
             // cross product of the planes' normals gives the direction of the line of intersection.
             let vx = a.ZaxisY * b.ZaxisZ - a.ZaxisZ * b.ZaxisY
             let vy = a.ZaxisZ * b.ZaxisX - a.ZaxisX * b.ZaxisZ
@@ -565,10 +587,18 @@ module AutoOpenPPlane =
                                   xpx + vx, xpy + vy, xpz + vz)
                              )
 
+        /// Returns the line of intersection between two planes.
+        /// Fails if they are parallel or coincident.
+        /// Use PPlane.tryIntersect to get ValueNone instead.
+        static member intersect (a:PPlane) (b:PPlane) : Line3D =
+            match PPlane.tryIntersect a b with
+            | ValueSome ln -> ln
+            | ValueNone -> fail $"PPlane.intersect: the planes are parallel or coincident:{nl}{a}{nl}{b}"
+
         /// Returns the parameter on the line.
         /// The parameter is the intersection point of the infinite ray with the PPlane.
         /// Returns ValueNone if they are parallel or coincident.
-        static member intersectRay  (ln:Line3D) (pl:PPlane) : float voption =
+        static member tryIntersectRay (ln:Line3D) (pl:PPlane) : float voption =
             let nenner = XYZ.dot ln.VectorX ln.VectorY ln.VectorZ pl.ZaxisX pl.ZaxisY pl.ZaxisZ
             if isTooSmall (abs nenner) then
                 ValueNone
@@ -576,11 +606,20 @@ module AutoOpenPPlane =
                 let dot = XYZ.dot (pl.OriginX - ln.FromX) (pl.OriginY - ln.FromY) (pl.OriginZ - ln.FromZ) pl.ZaxisX pl.ZaxisY pl.ZaxisZ
                 ValueSome (dot / nenner)
 
+        /// Returns the parameter on the line.
+        /// The parameter is the intersection point of the infinite ray with the PPlane.
+        /// Fails if they are parallel or coincident, or if the line is too short.
+        /// Use PPlane.tryIntersectRay to get ValueNone instead.
+        static member intersectRay (ln:Line3D) (pl:PPlane) : float =
+            match PPlane.tryIntersectRay ln pl with
+            | ValueSome t -> t
+            | ValueNone -> fail $"PPlane.intersectRay: the line is parallel to the plane or too short:{nl}{ln}{nl}{pl}"
+
 
         /// Returns the line parameter and the X and Y parameters on the Plane. as tuple (pLn, pPlX, pPlY).
         /// The parameters is the intersection point of the infinite ray with the PPlane.
         /// Returns ValueNone if they are parallel or coincident.
-        static member intersectRayAllParameters  (ln:Line3D) (pl:PPlane) : voption<float*float*float> =
+        static member tryIntersectRayAllParameters (ln:Line3D) (pl:PPlane) : voption<float*float*float> =
             let vx = ln.VectorX
             let vy = ln.VectorY
             let vz = ln.VectorZ
@@ -599,12 +638,21 @@ module AutoOpenPPlane =
                 let dotY = XYZ.dot pl.YaxisX pl.YaxisY pl.YaxisZ wx wy wz
                 ValueSome (t, dotX, dotY)
 
+        /// Returns the line parameter and the X and Y parameters on the Plane. as tuple (pLn, pPlX, pPlY).
+        /// The parameters is the intersection point of the infinite ray with the PPlane.
+        /// Fails if they are parallel or coincident, or if the line is too short.
+        /// Use PPlane.tryIntersectRayAllParameters to get ValueNone instead.
+        static member intersectRayAllParameters (ln:Line3D) (pl:PPlane) : float*float*float =
+            match PPlane.tryIntersectRayAllParameters ln pl with
+            | ValueSome ps -> ps
+            | ValueNone -> fail $"PPlane.intersectRayAllParameters: the line is parallel to the plane or too short:{nl}{ln}{nl}{pl}"
+
         /// Returns intersection point of a finite line with the Plane.
         /// Returns ValueNone if they are parallel or the domain of intersection is outside 0.0 to 1.0.
         /// Intersection just below 0.0 or just above 1.0 within tolerance of 1e-6 are clamped to 0.0 or 1.0.
         /// Returns ValueNone if the line is too short.
-        static member intersectLine (ln:Line3D) (pl:PPlane) : Pnt voption =
-            match PPlane.intersectRay ln pl with
+        static member tryIntersectLine (ln:Line3D) (pl:PPlane) : Pnt voption =
+            match PPlane.tryIntersectRay ln pl with
             | ValueSome (t) ->
                 if isBetweenZeroAndOneTolerantIncl t then
                     let c = clamp01 t
@@ -613,6 +661,15 @@ module AutoOpenPPlane =
                     ValueNone
             | ValueNone ->
                 ValueNone
+
+        /// Returns intersection point of a finite line with the Plane.
+        /// Intersection just below 0.0 or just above 1.0 within tolerance of 1e-6 are clamped to 0.0 or 1.0.
+        /// Fails if they are parallel, if the line is too short, or if the domain of intersection is outside 0.0 to 1.0.
+        /// Use PPlane.tryIntersectLine to get ValueNone instead.
+        static member intersectLine (ln:Line3D) (pl:PPlane) : Pnt =
+            match PPlane.tryIntersectLine ln pl with
+            | ValueSome pnt -> pnt
+            | ValueNone -> fail $"PPlane.intersectLine: the line does not intersect the plane, it is parallel, too short or does not reach it:{nl}{ln}{nl}{pl}"
 
         /// Checks if a finite Line3D intersects with Plane in one point.
         /// Returns FALSE for NaN values or (almost) parallel or coincident lines.

@@ -45,6 +45,7 @@
     <Compile Include="TestJson.fs" />
     <Compile Include="TestAsFSharpCode.fs" />
     <Compile Include="TestResizeArr.fs" />
+    <Compile Include="TestContracts.fs" />
     <Compile Include="TestMain.fs" />
   </ItemGroup>
 </Project>

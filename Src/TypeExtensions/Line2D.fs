@@ -456,10 +456,10 @@ module AutoOpenLine2D =
     /// If the lines intersect the returned points are exactly the same.
     /// This method uses a default angle tolerance of 0.25 degrees for parallel detection
     /// and a length tolerance of 1e-6 for detecting lines that are too short.
-    /// For more control over these tolerances, use XLine2D.getClosestPoints directly.</remarks>
+    /// For more control over these tolerances, use XLine2D.classifyClosestPoints directly.</remarks>
     /// <returns> A tuple of two Pt, the first is the closest point on lnA, the second on lnB.</returns>
     member lnA.ClosestPoints (lnB:Line2D) : Pt * Pt =
-        match XLine2D.getClosestPoints(lnA, lnB) with
+        match XLine2D.classifyClosestPoints(lnA, lnB) with
         | XLine2D.ClPts.Apart (a,b) -> a,b
         | XLine2D.ClPts.Parallel (a,b) -> a,b
         | XLine2D.ClPts.Intersect a -> a,a
@@ -481,10 +481,10 @@ module AutoOpenLine2D =
     /// If the lines intersect the returned parameters are exactly the same.
     /// This method uses a default angle tolerance of 0.25 degrees for parallel detection
     /// and a length tolerance of 1e-6 for detecting lines that are too short.
-    /// For more control over these tolerances, use XLine2D.getClosestParameters directly.</remarks>
+    /// For more control over these tolerances, use XLine2D.classifyClosestParameters directly.</remarks>
     /// <returns> A tuple of two floats, the first is the parameter on lnA, the second on lnB.</returns>
     member lnA.ClosestParameters (lnB:Line2D) : float * float =
-        match XLine2D.getClosestParameters(lnA, lnB) with
+        match XLine2D.classifyClosestParameters(lnA, lnB) with
         | XLine2D.ClParams.Apart (a,b) -> a,b
         | XLine2D.ClParams.Parallel (a,b) -> a,b
         | XLine2D.ClParams.Intersect (a,b) -> a,b
@@ -1243,16 +1243,25 @@ module AutoOpenLine2D =
 
     /// Checks if two 2D lines are equal within tolerance.
     /// Identical Lines in opposite directions are not considered equal.
-    /// Use a tolerance of 0.0 to check for an exact match.
-    static member inline equals (tol:float) (a:Line2D) (b:Line2D)  : bool =
+    /// The tolerance applies to each coordinate of the start and end points separately, not to the Euclidean distance between them.
+    /// Use Line2D.equalsExact to check for an exact match.
+    static member inline equalsWithin (tol:float) (a:Line2D) (b:Line2D)  : bool =
         abs (a.FromX - b.FromX) <= tol &&
         abs (a.FromY - b.FromY) <= tol &&
         abs (a.ToX   - b.ToX  ) <= tol &&
         abs (a.ToY   - b.ToY  ) <= tol
 
+    /// Checks if two 2D lines are exactly equal.
+    /// Compares each field with the = operator, so a NaN value is never equal.
+    static member inline equalsExact (a:Line2D) (b:Line2D) : bool =
+        a.FromX = b.FromX &&
+        a.FromY = b.FromY &&
+        a.ToX = b.ToX &&
+        a.ToY = b.ToY
+
     /// Check if two 2D lines are not equal within a given tolerance.
-    /// Use a tolerance of 0.0 to check if the two 2D-lines are not exactly equal.
-    static member notEquals (tol:float) (a:Line2D) (b:Line2D)  : bool =
+    /// The tolerance applies to each coordinate of the start and end points separately, not to the Euclidean distance between them.
+    static member notEqualsWithin (tol:float) (a:Line2D) (b:Line2D)  : bool =
         abs (a.FromX - b.FromX) > tol ||
         abs (a.FromY - b.FromY) > tol ||
         abs (a.ToX   - b.ToX  ) > tol ||
@@ -1857,13 +1866,13 @@ module AutoOpenLine2D =
                 osy + ovy * e)
 
     /// Tries to project a line onto another line considered finite.
-    /// Returns None if there is no overlap.
-    /// Returns Some (startParam, endParam) if there is an overlap.
+    /// Returns ValueNone if there is no overlap.
+    /// Returns ValueSome (startParam, endParam) if there is an overlap.
     /// The parameters are between 0.0 and 1.0 on the target line
     /// The first parameter is from the start of the line to project.
     /// The second parameter is from the end of the line to project.
     /// Therefore, if the first parameter is greater than the second, the lines have opposite orientations.
-    static member tryProjectOntoLineParam (onToLine:Line2D) (lineToProject:Line2D) : option<float*float> =
+    static member tryProjectOntoLineParam (onToLine:Line2D) (lineToProject:Line2D) : voption<float*float> =
         let osx = onToLine.FromX
         let osy = onToLine.FromY
         let ovx = onToLine.ToX - osx
@@ -1882,17 +1891,17 @@ module AutoOpenLine2D =
         let dot = ovx*u + ovy*v
         let bEndOnA =  dot / lenSq
         if bStartOnA < -1e-6 && bEndOnA < -1e-6 then
-            None
+            ValueNone
         elif bStartOnA > ``1.0 + 1e-6`` && bEndOnA > ``1.0 + 1e-6`` then
-            None
+            ValueNone
         else
-            Some (clamp01 bStartOnA, clamp01 bEndOnA)
+            ValueSome (clamp01 bStartOnA, clamp01 bEndOnA)
 
     /// Tries to project a line onto another line considered finite.
-    /// Returns Some Line2D if there is an overlap.
-    /// Returns None if there is no overlap.
+    /// Returns ValueSome Line2D if there is an overlap.
+    /// Returns ValueNone if there is no overlap.
     /// Keeps the orientation of the line to project.
-    static member tryProjectOntoLine (onToLine:Line2D) (lineToProject:Line2D) : option<Line2D> =
+    static member tryProjectOntoLine (onToLine:Line2D) (lineToProject:Line2D) : voption<Line2D> =
         let osx = onToLine.FromX
         let osy = onToLine.FromY
         let ovx = onToLine.ToX - osx
@@ -1911,13 +1920,13 @@ module AutoOpenLine2D =
         let dot = ovx*u + ovy*v
         let bEndOnA =  dot / lenSq
         if bStartOnA < -1e-6 && bEndOnA < -1e-6 then
-            None
+            ValueNone
         elif bStartOnA > ``1.0 + 1e-6`` && bEndOnA > ``1.0 + 1e-6`` then
-            None
+            ValueNone
         else
             let st = clamp01 bStartOnA
             let en = clamp01 bEndOnA
-            Some <| Line2D( osx + ovx * st,
+            ValueSome <| Line2D( osx + ovx * st,
                             osy + ovy * st,
                             osx + ovx * en,
                             osy + ovy * en)
@@ -1959,7 +1968,7 @@ module AutoOpenLine2D =
     /// Like getting the kind of Parallel relation between lines, only getting the parameter of one line,
     /// or setting a tolerance for when lines are parallel or coincident.</remarks>
     static member doIntersectOrOverlap (lnA:Line2D) (lnB:Line2D) : bool =
-        match XLine2D.getIntersectionParam(lnA, lnB) with
+        match XLine2D.classifyIntersectionParam(lnA, lnB) with
         | XLine2D.XParam.Intersect _        -> true
         | XLine2D.XParam.Parallel           -> XLine2D.doOverlap(lnA, lnB)
         | XLine2D.XParam.Apart              -> false
@@ -2001,41 +2010,41 @@ module AutoOpenLine2D =
     /// Use the Euclid's XLine2D module for more specialized intersection calculations.
     /// Like getting the kind of Parallel relation between lines, only getting the parameter of one line,
     /// or setting a tolerance for when lines are parallel or coincident.</remarks>
-    /// <returns> An option of Pt
+    /// <returns> A voption of Pt
     /// If the lines are coincident and overlapping this point is in the center of their overlap.</returns>
-    static member tryIntersectOrOverlap(lnA:Line2D) (lnB:Line2D) : Pt option =
-        match XLine2D.getIntersection(lnA, lnB) with
-        |XLine2D.XPt.Intersect p -> Some p
-        |XLine2D.XPt.Apart -> None
+    static member tryIntersectOrOverlap(lnA:Line2D) (lnB:Line2D) : Pt voption =
+        match XLine2D.classifyIntersection(lnA, lnB) with
+        |XLine2D.XPt.Intersect p -> ValueSome p
+        |XLine2D.XPt.Apart -> ValueNone
         |XLine2D.XPt.Parallel ->
             let sqDist = XLineXY.sqRayPtDist(lnA.FromX, lnA.FromY, lnA.VectorX, lnA.VectorY, lnB.FromX, lnB.FromY)
             if sqDist < 1e-12 then // squared distance: coincident within 1e-6
                 match lnB |> Line2D.tryProjectOntoLineParam lnA with
-                | Some (s,e) -> Some <| lnA.EvaluateAt((s+e)*0.5)
-                | None -> None
+                | ValueSome (s,e) -> ValueSome <| lnA.EvaluateAt((s+e)*0.5)
+                | ValueNone -> ValueNone
             else
-                None
-        | XLine2D.XPt.TooShortBoth -> if XLineXY.sqDistLnFromLnFrom (lnA, lnB) < 1e-12           then Some lnA.From else None
-        | XLine2D.XPt.TooShortA    -> if XLineXY.sqDistLnPt' (lnB, lnA.FromX, lnA.FromY) < 1e-12 then Some lnA.From else None
-        | XLine2D.XPt.TooShortB    -> if XLineXY.sqDistLnPt' (lnA, lnB.FromX, lnB.FromY) < 1e-12 then Some lnB.From else None
+                ValueNone
+        | XLine2D.XPt.TooShortBoth -> if XLineXY.sqDistLnFromLnFrom (lnA, lnB) < 1e-12           then ValueSome lnA.From else ValueNone
+        | XLine2D.XPt.TooShortA    -> if XLineXY.sqDistLnPt' (lnB, lnA.FromX, lnA.FromY) < 1e-12 then ValueSome lnA.From else ValueNone
+        | XLine2D.XPt.TooShortB    -> if XLineXY.sqDistLnPt' (lnA, lnB.FromX, lnB.FromY) < 1e-12 then ValueSome lnB.From else ValueNone
 
     /// <summary> Checks if lines are parallel, coincident and overlapping.</summary>
     /// <param name="lnA"> The first line.</param>
     /// <param name="lnB"> The second line.</param>
-    /// <returns> An option of a tuple of two floats.
+    /// <returns> A voption of a tuple of two floats.
     /// Returns the tuple containing the start and end parameter of the overlap on lnA if the lines are parallel and overlapping.
-    /// Returns None if the lines are not parallel, not overlapping, or too short.</returns>
+    /// Returns ValueNone if the lines are not parallel, not overlapping, or too short.</returns>
     /// <remarks> If the first parameter in the overlap is smaller than the second the lines are oriented in the same direction.
     /// If the first parameter is greater than the second the lines are oriented in the opposite direction.
     /// Parallel lines are treated as coincident when their perpendicular distance is below 1e-6
     /// (1e-12 squared), the same tolerance as Line2D.tryIntersectOrOverlap.</remarks>
-    static member tryGetOverlap (lnA:Line2D) (lnB:Line2D) : option<float*float> =
+    static member tryGetOverlap (lnA:Line2D) (lnB:Line2D) : voption<float*float> =
         let vax = lnA.VectorX
         let vay = lnA.VectorY
         let vbx = lnB.VectorX
         let vby = lnB.VectorY
         if XLineXY.isTooShort(vax, vay, 1e-6) || XLineXY.isTooShort(vbx, vby, 1e-6) then
-            None
+            ValueNone
         else
             let tan = XLineXY.tangent(vax, vay, vbx, vby)
             if abs tan < Tangent.``0.25`` then
@@ -2043,9 +2052,9 @@ module AutoOpenLine2D =
                 if sqDist < 1e-12 then // squared distance: coincident within 1e-6
                     Line2D.tryProjectOntoLineParam lnA lnB
                 else
-                    None
+                    ValueNone
             else
-                None
+                ValueNone
 
     /// <summary> Computes the squared distance between two finite 2D lines.</summary>
     /// <param name="lnA"> The first line.</param>
@@ -2067,7 +2076,7 @@ module AutoOpenLine2D =
     /// <param name="squareTolerance"> The squared tolerance for the distance between the end points.</param>
     /// <param name="a"> The first line.</param>
     /// <param name="b"> The second line.</param>
-    /// <remarks> Use <see cref="XLine2D.getEndsTouching"/> to get more detailed information about which ends are touching.</remarks>
+    /// <remarks> Use <see cref="XLine2D.classifyEndsTouching"/> to get more detailed information about which ends are touching.</remarks>
     static member isTouchingEndOf squareTolerance (a:Line2D) (b:Line2D)  : bool =
         (
             let x = a.ToX-b.FromX
@@ -2089,6 +2098,16 @@ module AutoOpenLine2D =
 
     // #endregion
     // #region Obsolete
+
+    /// Obsolete name. Same as Line2D.equalsWithin.
+    [<Obsolete("Use Line2D.equalsWithin instead, or Line2D.equalsExact for an exact match.")>]
+    static member inline equals (tol:float) (a:Line2D) (b:Line2D) : bool =
+        Line2D.equalsWithin tol a b
+
+    /// Obsolete name. Same as Line2D.notEqualsWithin.
+    [<Obsolete("Use Line2D.notEqualsWithin instead.")>]
+    static member notEquals (tol:float) (a:Line2D) (b:Line2D) : bool =
+        Line2D.notEqualsWithin tol a b
 
     /// Obsolete name. Same as ln.RotateAround, but with tupled arguments.
     [<Obsolete("Use ln.RotateAround instead. It takes curried arguments: ln.RotateAround cen r")>]
@@ -2238,35 +2257,35 @@ module AutoOpenLine2D =
 
     // Obsolete members that don't have a direct replacement:
 
-    [<Obsolete("Use XLine2D.getIntersectionParam instead. Obsolete since 0.20.0",error=true)>]
+    [<Obsolete("Use XLine2D.classifyIntersectionParam instead. Obsolete since 0.20.0",error=true)>]
     static member intersectionParamInfinite(_lnA:Line2D, _lnB:Line2D) : float  =
-        failObsoleteV20 "Line2D.intersectionParamInfinite" "XLine2D.getIntersectionParam"
+        failObsoleteV20 "Line2D.intersectionParamInfinite" "XLine2D.classifyIntersectionParam"
 
-    [<Obsolete("Use XLine2D.getIntersection instead. Obsolete since 0.20.0",error=true)>]
+    [<Obsolete("Use XLine2D.classifyIntersection instead. Obsolete since 0.20.0",error=true)>]
     static member intersectionInfinite(_lnA:Line2D, _lnB:Line2D) : Pt =
-        failObsoleteV20 "Line2D.intersectionInfinite" "XLine2D.getIntersection"
+        failObsoleteV20 "Line2D.intersectionInfinite" "XLine2D.classifyIntersection"
 
     [<Obsolete("Use XLine2D.tryIntersectRay instead. Obsolete since 0.20.0",error=true)>]
     static member intersectionPointInfinite(_lnA:Line2D, _lnB:Line2D)  : Pt =
         failObsoleteV20 "Line2D.intersectionPointInfinite" "XLine2D.tryIntersectRay"
 
-    [<Obsolete("Use XLine2D.getClosestParameters instead. Obsolete since 0.20.0",error=true)>]
+    [<Obsolete("Use XLine2D.classifyClosestParameters instead. Obsolete since 0.20.0",error=true)>]
     static member intersectionParam(_lnA:Line2D, _lnB:Line2D) : float =
-        failObsoleteV20 "Line2D.intersectionParam" "XLine2D.getClosestParameters"
+        failObsoleteV20 "Line2D.intersectionParam" "XLine2D.classifyClosestParameters"
 
-    [<Obsolete("Use XLine2D.getClosestPoints instead. Obsolete since 0.20.0",error=true)>]
+    [<Obsolete("Use XLine2D.classifyClosestPoints instead. Obsolete since 0.20.0",error=true)>]
     static member intersection(_lnA:Line2D, _lnB:Line2D) : Pt =
-        failObsoleteV20 "Line2D.intersection" "XLine2D.getClosestPoints"
+        failObsoleteV20 "Line2D.intersection" "XLine2D.classifyClosestPoints"
 
     [<Obsolete("Use Line2D.tryIntersect or Line2D.tryIntersectOrOverlap instead. Obsolete since 0.20.0",error=true)>]
     static member intersectionPoint(_lnA:Line2D, _lnB:Line2D) : Pt =
         failObsoleteV20 "Line2D.intersectionPoint" "Line2D.tryIntersect or Line2D.tryIntersectOrOverlap"
 
-    [<Obsolete("Use isTouchingEndOf or  XLine2D.getEndsTouching instead. Obsolete since 0.20.0",error=true)>]
+    [<Obsolete("Use isTouchingEndOf or  XLine2D.classifyEndsTouching instead. Obsolete since 0.20.0",error=true)>]
     static member areTouchingAny(tol:float)( a:Line2D)( b:Line2D) : XLine2D.XEnds =
-        XLine2D.getEndsTouching(a,b,tol)
+        XLine2D.classifyEndsTouching(a,b,tol)
 
-    [<Obsolete("Use isTouchingEndOf or XLine2D.getEndsTouching instead. Obsolete since 0.20.0",error=true)>]
+    [<Obsolete("Use isTouchingEndOf or XLine2D.classifyEndsTouching instead. Obsolete since 0.20.0",error=true)>]
     static member areTouchingEither(tol:float)( a:Line2D)( b:Line2D) : XLine2D.XEnds =
-        XLine2D.getEndsTouching(a,b,tol)
+        XLine2D.classifyEndsTouching(a,b,tol)
 

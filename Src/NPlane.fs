@@ -251,15 +251,30 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
     // #region Static members
 
     /// Checks if two 3D planes are equal within tolerance.
-    /// The same tolerance is used for the origin and the tips of the normal.
-    /// Use a tolerance of 0.0 to check for an exact match.
-    static member inline equals (tol:float) (a:NPlane) (b:NPlane)  : bool =
+    /// The tolerance applies to each coordinate of the origin and of the normal separately, not to the Euclidean distance between them.
+    /// Use NPlane.equalsExact to check for an exact match.
+    static member inline equalsWithin (tol:float) (a:NPlane) (b:NPlane)  : bool =
         abs (a.OriginX - b.OriginX) <= tol &&
         abs (a.OriginY - b.OriginY) <= tol &&
         abs (a.OriginZ - b.OriginZ) <= tol &&
         abs (a.NormalX - b.NormalX) <= tol &&
         abs (a.NormalY - b.NormalY) <= tol &&
         abs (a.NormalZ - b.NormalZ) <= tol
+
+    /// Checks if two 3D planes are exactly equal.
+    /// Compares each field with the = operator, so a NaN value is never equal.
+    static member inline equalsExact (a:NPlane) (b:NPlane) : bool =
+        a.OriginX = b.OriginX &&
+        a.OriginY = b.OriginY &&
+        a.OriginZ = b.OriginZ &&
+        a.NormalX = b.NormalX &&
+        a.NormalY = b.NormalY &&
+        a.NormalZ = b.NormalZ
+
+    /// Obsolete name. Same as NPlane.equalsWithin.
+    [<Obsolete("Use NPlane.equalsWithin instead, or NPlane.equalsExact for an exact match.")>]
+    static member inline equals (tol:float) (a:NPlane) (b:NPlane) : bool =
+        NPlane.equalsWithin tol a b
 
     /// Checks if two 3D planes are coincident.
     /// This means that the normals are parallel within 0.25 degrees
@@ -316,13 +331,13 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
         a.Angle90ToPlane b
 
     /// Returns the line of intersection between two planes.
-    /// Or None if they are parallel or coincident.
-    static member intersect (a:NPlane) (b:NPlane) : Line3D option =
+    /// Or ValueNone if they are parallel or coincident.
+    static member tryIntersect (a:NPlane) (b:NPlane) : Line3D voption =
         let vx = a.NormalY * b.NormalZ - a.NormalZ * b.NormalY
         let vy = a.NormalZ * b.NormalX - a.NormalX * b.NormalZ
         let vz = a.NormalX * b.NormalY - a.NormalY * b.NormalX
         if isTooSmallSq (XYZ.sqLength vx vy vz) then
-            None
+            ValueNone
         else
             let px = vy * a.NormalZ - vz * a.NormalY
             let py = vz * a.NormalX - vx * a.NormalZ
@@ -333,12 +348,20 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
             let xpt = a.OriginX + px * t
             let ypt = a.OriginY + py * t
             let zpt = a.OriginZ + pz * t
-            Some (Line3D(xpt, ypt, zpt, xpt + vx, ypt + vy, zpt + vz))
+            ValueSome (Line3D(xpt, ypt, zpt, xpt + vx, ypt + vy, zpt + vz))
+
+    /// Returns the line of intersection between two planes.
+    /// Fails if they are parallel or coincident.
+    /// Use NPlane.tryIntersect to get ValueNone instead.
+    static member intersect (a:NPlane) (b:NPlane) : Line3D =
+        match NPlane.tryIntersect a b with
+        | ValueSome ln -> ln
+        | ValueNone -> fail $"NPlane.intersect: the planes are parallel or coincident:{nl}{a}{nl}{b}"
 
 
     /// Returns the intersection parameter of an infinite line / ray with the plane.
     /// Or ValueNone if they are parallel.
-    static member intersectRay (ln:Line3D) (pl:NPlane) : float voption =
+    static member tryIntersectRay (ln:Line3D) (pl:NPlane) : float voption =
         let nenner = XYZ.dot ln.VectorX ln.VectorY ln.VectorZ pl.NormalX pl.NormalY pl.NormalZ
         if isTooTiny(abs nenner) then
             ValueNone
@@ -346,19 +369,36 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
             let dot = XYZ.dot (pl.OriginX - ln.FromX) (pl.OriginY - ln.FromY) (pl.OriginZ - ln.FromZ) pl.NormalX pl.NormalY pl.NormalZ
             ValueSome (dot / nenner)
 
+    /// Returns the intersection parameter of an infinite line / ray with the plane.
+    /// Fails if they are parallel, or if the line has zero length.
+    /// Use NPlane.tryIntersectRay to get ValueNone instead.
+    static member intersectRay (ln:Line3D) (pl:NPlane) : float =
+        match NPlane.tryIntersectRay ln pl with
+        | ValueSome t -> t
+        | ValueNone -> fail $"NPlane.intersectRay: the line is parallel to the plane or has zero length:{nl}{ln}{nl}{pl}"
+
     /// Returns intersection point of a finite line  with the Plane.
-    /// Or None if they are parallel or the domain of intersection is outside 0.0 to 1.0
+    /// Or ValueNone if they are parallel or the domain of intersection is outside 0.0 to 1.0
     /// Intersection just below 0.0 or just above 1.0 within tolerance of 1e-6 are clamped to 0.0 or 1.0
-    static member intersectLine (ln:Line3D) (pl:NPlane) : Pnt option =
-        match NPlane.intersectRay ln pl with
+    static member tryIntersectLine (ln:Line3D) (pl:NPlane) : Pnt voption =
+        match NPlane.tryIntersectRay ln pl with
         | ValueSome t ->
             if isBetweenZeroAndOneTolerantIncl t then
                 let c = clamp01 t
-                Some (Pnt(ln.FromX + ln.VectorX*c, ln.FromY + ln.VectorY*c, ln.FromZ + ln.VectorZ*c))
+                ValueSome (Pnt(ln.FromX + ln.VectorX*c, ln.FromY + ln.VectorY*c, ln.FromZ + ln.VectorZ*c))
             else
-                None
+                ValueNone
         | ValueNone ->
-            None
+            ValueNone
+
+    /// Returns intersection point of a finite line with the Plane.
+    /// Intersection just below 0.0 or just above 1.0 within tolerance of 1e-6 are clamped to 0.0 or 1.0
+    /// Fails if they are parallel, if the line has zero length, or if the domain of intersection is outside 0.0 to 1.0.
+    /// Use NPlane.tryIntersectLine to get ValueNone instead.
+    static member intersectLine (ln:Line3D) (pl:NPlane) : Pnt =
+        match NPlane.tryIntersectLine ln pl with
+        | ValueSome pnt -> pnt
+        | ValueNone -> fail $"NPlane.intersectLine: the line does not intersect the plane, it is parallel, too short or does not reach it:{nl}{ln}{nl}{pl}"
 
     /// Checks if a finite Line3D intersects with Plane in one point.
     /// Returns FALSE for parallel and coincident lines.

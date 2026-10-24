@@ -124,7 +124,7 @@ let tests =
         let prev = Pnt(0,0,0)
         let pt   = Pnt(1,0,0)
         let next = Pnt(1,1,0)
-        match Tria3D.offsetVar(pt, prev, next, 0.0, 0.0) with
+        match Tria3D.tryOffsetVar(pt, prev, next, 0.0, 0.0) with
         | ValueSome o -> "offsetVar(0,0)==pt" |> Expect.isTrue (eq o pt)
         | ValueNone -> failwith "expected point for zero distances"
         }
@@ -219,7 +219,7 @@ let tests =
         let next = Pnt(1,1,0)
         let dPrev = 0.2
         let dNext = 0.7
-        match Tria3D.offsetVar(pt, prev, next, dPrev, dNext) with
+        match Tria3D.tryOffsetVar(pt, prev, next, dPrev, dNext) with
         | ValueSome o ->
             // For 3D, the offset calculation is more complex than 2D
             // Let's just verify the point is reasonable and not infinite
@@ -232,7 +232,7 @@ let tests =
         let pt   = Pnt(1,0,0)
         let next = Pnt(1,1,0)
         // prev segment y=0 offset to y=0.2, next segment x=1 offset to x=0.3
-        match Tria3D.offsetVar(pt, prev, next, 0.2, 0.7) with
+        match Tria3D.tryOffsetVar(pt, prev, next, 0.2, 0.7) with
         | ValueSome o -> $"offsetVar should be at (0.3, 0.2, 0) but is {o}" |> Expect.isTrue (eq o (Pnt(0.3, 0.2, 0.)))
         | ValueNone -> failwith "offsetVar returned None unexpectedly"
         }
@@ -243,7 +243,7 @@ let tests =
         let c = Pnt(1,1,0)
         let d = 0.25
         let (_, ob, _) = Tria3D.offset(a, b, c, d)
-        match Tria3D.offsetVar(b, a, c, d, d) with
+        match Tria3D.tryOffsetVar(b, a, c, d, d) with
         | ValueSome o -> $"offsetVar should match Tria3D.offset {ob} but is {o}" |> Expect.isTrue (eq o ob)
         | ValueNone -> failwith "offsetVar returned None unexpectedly"
         }
@@ -254,7 +254,7 @@ let tests =
         let next = Pnt(2, 3, -1)
         let dPrev = 0.3
         let dNext = 0.8
-        match Tria3D.offsetVar(pt, prev, next, dPrev, dNext) with
+        match Tria3D.tryOffsetVar(pt, prev, next, dPrev, dNext) with
         | ValueSome o ->
             let distPrev = sqrt (Line3D(prev, pt).SqDistanceRayPoint o)
             let distNext = sqrt (Line3D(pt, next).SqDistanceRayPoint o)
@@ -267,7 +267,7 @@ let tests =
         let prev = Pnt(0,0,0)
         let pt   = Pnt(1,1,1)
         let next = Pnt(2,2,2) // collinear points
-        match Tria3D.offsetVar(pt, prev, next, 0.5, 0.5) with
+        match Tria3D.tryOffsetVar(pt, prev, next, 0.5, 0.5) with
         | ValueSome _ -> failwith "expected None for collinear points"
         | ValueNone -> "offsetVar correctly returns None for collinear points" |> Expect.isTrue true
         }
@@ -325,14 +325,14 @@ let tests =
         let next = Pnt(1,1,0)
         let d = 0.25
         // First offset by positive distance (equal distances)
-        match Tria3D.offsetVar(pt, prev, next, d, d) with
+        match Tria3D.tryOffsetVar(pt, prev, next, d, d) with
         | ValueSome o1 ->
             // Calculate new prev and next positions relative to offset point
             let displacement = o1 - pt
             let newPrev = prev + displacement
             let newNext = next + displacement
             // Then offset back by negative distance
-            match Tria3D.offsetVar(o1, newPrev, newNext, -d, -d) with
+            match Tria3D.tryOffsetVar(o1, newPrev, newNext, -d, -d) with
             | ValueSome o2 ->
             "offsetVar point returns to original after +d then -d (equal)" |> Expect.isTrue (eq o2 pt)
             | ValueNone -> failwith "second offsetVar returned None"
@@ -345,14 +345,14 @@ let tests =
         let next = Pnt(1,1,0)
         let d = 0.25
         // First offset by negative distance (equal distances)
-        match Tria3D.offsetVar(pt, prev, next, -d, -d) with
+        match Tria3D.tryOffsetVar(pt, prev, next, -d, -d) with
         | ValueSome o1 ->
             // Calculate new prev and next positions relative to offset point
             let displacement = o1 - pt
             let newPrev = prev + displacement
             let newNext = next + displacement
             // Then offset back by positive distance
-            match Tria3D.offsetVar(o1, newPrev, newNext, d, d) with
+            match Tria3D.tryOffsetVar(o1, newPrev, newNext, d, d) with
             | ValueSome o2 ->
             "offsetVar point returns to original after -d then +d (equal)" |> Expect.isTrue (eq o2 pt)
             | ValueNone -> failwith "second offsetVar returned None"
@@ -366,14 +366,14 @@ let tests =
         let dPrev = 0.2
         let dNext = 0.3
         // First offset by positive distances
-        match Tria3D.offsetVar(pt, prev, next, dPrev, dNext) with
+        match Tria3D.tryOffsetVar(pt, prev, next, dPrev, dNext) with
         | ValueSome o1 ->
             // Calculate new prev and next positions relative to offset point
             let displacement = o1 - pt
             let newPrev = prev + displacement
             let newNext = next + displacement
             // Then offset back by negative distances
-            match Tria3D.offsetVar(o1, newPrev, newNext, -dPrev, -dNext) with
+            match Tria3D.tryOffsetVar(o1, newPrev, newNext, -dPrev, -dNext) with
             | ValueSome o2 ->
             "offsetVar point returns to original after +d then -d (different)" |> Expect.isTrue (eq o2 pt)
             | ValueNone -> failwith "second offsetVar returned None"
@@ -387,14 +387,14 @@ let tests =
         let dPrev = 0.15
         let dNext = 0.35
         // First offset by negative distances
-        match Tria3D.offsetVar(pt, prev, next, -dPrev, -dNext) with
+        match Tria3D.tryOffsetVar(pt, prev, next, -dPrev, -dNext) with
         | ValueSome o1 ->
             // Calculate new prev and next positions relative to offset point
             let displacement = o1 - pt
             let newPrev = prev + displacement
             let newNext = next + displacement
             // Then offset back by positive distances
-            match Tria3D.offsetVar(o1, newPrev, newNext, dPrev, dNext) with
+            match Tria3D.tryOffsetVar(o1, newPrev, newNext, dPrev, dNext) with
             | ValueSome o2 ->
             "offsetVar point returns to original after -d then +d (different XZ)" |> Expect.isTrue (eq o2 pt)
             | ValueNone -> failwith "second offsetVar returned None"
@@ -537,7 +537,7 @@ let tests =
 
         // Asserts the line intersects, the result lies on the line segment and in the triangle plane
         let isHit (name:string) (ln:Line3D) =
-            match Tria3D.intersectLine(ln, triaPt_a, triaPt_b, triaPt_c) with
+            match Tria3D.tryIntersectLine(ln, triaPt_a, triaPt_b, triaPt_c) with
             | ValueSome p ->
                 let distToPlane = abs ((p - triaPt_a) *** normal)
                 sprintf "%s: intersection point lies in triangle plane" name |> Expect.floatClose tol distToPlane 0.0
@@ -546,7 +546,7 @@ let tests =
 
         // Asserts the line does not intersect the triangle
         let isMiss (name:string) (ln:Line3D) =
-            match Tria3D.intersectLine(ln, triaPt_a, triaPt_b, triaPt_c) with
+            match Tria3D.tryIntersectLine(ln, triaPt_a, triaPt_b, triaPt_c) with
             | ValueNone -> sprintf "%s: correctly returns ValueNone" name |> Expect.isTrue true
             | ValueSome p -> failwithf "%s: expected no intersection but got %A" name p
 
@@ -578,16 +578,16 @@ let tests =
         let b = Pnt(453.1741748436796, -134.02380242987584, 206.17239974220166)
         let c = Pnt(150.97102968630978, -189.5755141913957, 367.6879295755854)
         let ln = Line3D(231.03802167985143, -77.93481557304926, 314.6613319006782, 450.86378084241926, -20.310860435720492, 370.84064662533336)
-        match Tria3D.intersectLine(ln, a, b, c) with
+        match Tria3D.tryIntersectLine(ln, a, b, c) with
         | ValueSome p ->
-            "permutation (b,c,a) intersects" |> Expect.isTrue (Tria3D.intersectLine(ln, b, c, a)).IsSome
-            "permutation (c,a,b) intersects" |> Expect.isTrue (Tria3D.intersectLine(ln, c, a, b)).IsSome
-            "permutation (a,c,b) intersects" |> Expect.isTrue (Tria3D.intersectLine(ln, a, c, b)).IsSome
-            "permutation (b,a,c) intersects" |> Expect.isTrue (Tria3D.intersectLine(ln, b, a, c)).IsSome
-            "permutation (c,b,a) intersects" |> Expect.isTrue (Tria3D.intersectLine(ln, c, b, a)).IsSome
+            "permutation (b,c,a) intersects" |> Expect.isTrue (Tria3D.tryIntersectLine(ln, b, c, a)).IsSome
+            "permutation (c,a,b) intersects" |> Expect.isTrue (Tria3D.tryIntersectLine(ln, c, a, b)).IsSome
+            "permutation (a,c,b) intersects" |> Expect.isTrue (Tria3D.tryIntersectLine(ln, a, c, b)).IsSome
+            "permutation (b,a,c) intersects" |> Expect.isTrue (Tria3D.tryIntersectLine(ln, b, a, c)).IsSome
+            "permutation (c,b,a) intersects" |> Expect.isTrue (Tria3D.tryIntersectLine(ln, c, b, a)).IsSome
             // all permutations must return the same intersection point
-            "permutation (b,c,a) same point" |> Expect.isTrue (eq p (Tria3D.intersectLine(ln, b, c, a)).Value)
-            "permutation (c,b,a) same point" |> Expect.isTrue (eq p (Tria3D.intersectLine(ln, c, b, a)).Value)
+            "permutation (b,c,a) same point" |> Expect.isTrue (eq p (Tria3D.tryIntersectLine(ln, b, c, a)).Value)
+            "permutation (c,b,a) same point" |> Expect.isTrue (eq p (Tria3D.tryIntersectLine(ln, c, b, a)).Value)
         | ValueNone -> failwith "expected an intersection for the base vertex order"
         }
 
@@ -598,11 +598,11 @@ let tests =
         let c = Pnt(150.97102968630978, -189.5755141913957, 367.6879295755854)
         let full = Line3D(231.03802167985143, -77.93481557304926, 314.6613319006782, 450.86378084241926, -20.310860435720492, 370.84064662533336)
         // the full segment intersects
-        "full segment intersects" |> Expect.isTrue (Tria3D.intersectLine(full, a, b, c)).IsSome
+        "full segment intersects" |> Expect.isTrue (Tria3D.tryIntersectLine(full, a, b, c)).IsSome
         // a segment that stops at 10% of the way must not reach the triangle, but the infinite ray still does
         let short = Line3D(full.From, full.From + (full.To - full.From) * 0.1)
-        "shortened segment does not reach the triangle" |> Expect.isTrue (Tria3D.intersectLine(short, a, b, c)).IsNone
-        "but the infinite ray still intersects" |> Expect.isTrue (Tria3D.intersectRay(short, a, b, c)).IsSome
+        "shortened segment does not reach the triangle" |> Expect.isTrue (Tria3D.tryIntersectLine(short, a, b, c)).IsNone
+        "but the infinite ray still intersects" |> Expect.isTrue (Tria3D.tryIntersectRay(short, a, b, c)).IsSome
         }
 
     ]

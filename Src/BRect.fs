@@ -504,7 +504,7 @@ type BRect =
     /// The returned rectangle is the area that is inside both input rectangles.
     /// Returns ValueNone if the two rectangles do not overlap.
     /// Just touching rectangles will return ValueSome with zero area collapsed BRect.
-    member inline b.Intersection (a:BRect) : BRect voption =
+    member inline b.TryIntersection (a:BRect) : BRect voption =
         let minX = max a.MinX b.MinX
         let minY = max a.MinY b.MinY
         let maxX = min a.MaxX b.MaxX
@@ -516,9 +516,27 @@ type BRect =
 
     /// Returns the intersection of two bounding rectangles.
     /// The returned rectangle is the area that is inside both input rectangles.
+    /// Just touching rectangles will return a zero area collapsed BRect.
+    /// Fails if the two rectangles do not overlap.
+    /// Use b.TryIntersection to get ValueNone instead.
+    member b.Intersection (a:BRect) : BRect =
+        match b.TryIntersection a with
+        | ValueSome r -> r
+        | ValueNone -> fail $"BRect.Intersection: the two bounding rectangles do not overlap:{nl}{b}{nl}{a}"
+
+    /// Returns the intersection of two bounding rectangles.
+    /// The returned rectangle is the area that is inside both input rectangles.
     /// Returns ValueNone if the two rectangles do not overlap.
     /// Just touching rectangles will return ValueSome with zero area collapsed BRect.
-    static member inline intersection (a:BRect) (b:BRect) : BRect voption =
+    static member inline tryIntersection (a:BRect) (b:BRect) : BRect voption =
+        a.TryIntersection b
+
+    /// Returns the intersection of two bounding rectangles.
+    /// The returned rectangle is the area that is inside both input rectangles.
+    /// Just touching rectangles will return a zero area collapsed BRect.
+    /// Fails if the two rectangles do not overlap.
+    /// Use BRect.tryIntersection to get ValueNone instead.
+    static member inline intersection (a:BRect) (b:BRect) : BRect =
         a.Intersection b
 
     /// <summary>Intersects an infinite ray (Line2D extended infinitely in both directions) with this bounding rectangle.
@@ -528,7 +546,7 @@ type BRect =
     /// A parameter of 0.0 corresponds to the ray's From point, 1.0 to its To point.</summary>
     /// <param name="ray">The ray (Line2D) to intersect with the bounding rectangle.</param>
     /// <returns>ValueNone if no intersection, ValueSome(tEntry, tExit) with the entry and exit parameters on the ray.</returns>
-    member r.IntersectRay (ray:Line2D) : voption<float*float> =
+    member r.TryIntersectRay (ray:Line2D) : voption<float*float> =
         let dirX = ray.VectorX
         let dirY = ray.VectorY
         if isTooSmallSq (dirX*dirX + dirY*dirY) then
@@ -564,6 +582,16 @@ type BRect =
             else
                 ValueNone
 
+    /// <summary>Intersects an infinite ray (Line2D extended infinitely in both directions) with this bounding rectangle.
+    /// Same as r.TryIntersectRay, but fails if the ray does not intersect the rectangle or if the ray direction is too short.
+    /// A parameter of 0.0 corresponds to the ray's From point, 1.0 to its To point.</summary>
+    /// <param name="ray">The ray (Line2D) to intersect with the bounding rectangle.</param>
+    /// <returns>The entry and exit parameters on the ray (tEntry, tExit).</returns>
+    member r.IntersectRay (ray:Line2D) : float*float =
+        match r.TryIntersectRay ray with
+        | ValueSome ts -> ts
+        | ValueNone -> fail $"BRect.IntersectRay: the ray does not intersect the bounding rectangle or is too short:{nl}{ray}{nl}{r}"
+
     /// <summary>Intersects an infinite ray (Line2D extended infinitely in both directions) with the bounding rectangle.
     /// Uses the slab intersection method.
     /// Returns ValueNone if the ray does not intersect the rectangle or if the ray direction is too short.
@@ -572,7 +600,16 @@ type BRect =
     /// <param name="ray">The ray (Line2D) to intersect with the bounding rectangle.</param>
     /// <param name="r">The bounding rectangle to intersect with.</param>
     /// <returns>ValueNone if no intersection, ValueSome(tEntry, tExit) with the entry and exit parameters on the ray.</returns>
-    static member inline intersectRay (ray:Line2D) (r:BRect) : voption<float*float> =
+    static member inline tryIntersectRay (ray:Line2D) (r:BRect) : voption<float*float> =
+        r.TryIntersectRay ray
+
+    /// <summary>Intersects an infinite ray (Line2D extended infinitely in both directions) with the bounding rectangle.
+    /// Same as BRect.tryIntersectRay, but fails if the ray does not intersect the rectangle or if the ray direction is too short.
+    /// A parameter of 0.0 corresponds to the ray's From point, 1.0 to its To point.</summary>
+    /// <param name="ray">The ray (Line2D) to intersect with the bounding rectangle.</param>
+    /// <param name="r">The bounding rectangle to intersect with.</param>
+    /// <returns>The entry and exit parameters on the ray (tEntry, tExit).</returns>
+    static member inline intersectRay (ray:Line2D) (r:BRect) : float*float =
         r.IntersectRay ray
 
     /// Scales the 2D bounding rectangle by a given factor.
@@ -1072,16 +1109,25 @@ type BRect =
         BRect.createUnchecked(cx - hx, cy - hy, cx + hx, cy + hy)
 
     /// Checks if two 2D bounding rectangles are equal within tolerance.
-    /// Use a tolerance of 0.0 to check for an exact match.
-    static member inline equals (tol:float) (a:BRect) (b:BRect) : bool =
+    /// The tolerance applies to each minimum and maximum coordinate separately, not to the Euclidean distance between the corners.
+    /// Use BRect.equalsExact to check for an exact match.
+    static member inline equalsWithin (tol:float) (a:BRect) (b:BRect) : bool =
         abs(a.MinX-b.MinX) <= tol &&
         abs(a.MinY-b.MinY) <= tol &&
         abs(a.MaxX-b.MaxX) <= tol &&
         abs(a.MaxY-b.MaxY) <= tol
 
+    /// Checks if two 2D bounding rectangles are exactly equal.
+    /// Compares each field with the = operator, so a NaN value is never equal.
+    static member inline equalsExact (a:BRect) (b:BRect) : bool =
+        a.MinX = b.MinX &&
+        a.MinY = b.MinY &&
+        a.MaxX = b.MaxX &&
+        a.MaxY = b.MaxY
+
     /// Check if two 2D bounding rectangles  are not equal within a given tolerance.
-    /// Use a tolerance of 0.0 to check if the two 2D bounding rectangles  are not exactly equal.
-    static member inline notEquals (tol:float) (a:BRect) (b:BRect) : bool =
+    /// The tolerance applies to each minimum and maximum coordinate separately, not to the Euclidean distance between the corners.
+    static member inline notEqualsWithin (tol:float) (a:BRect) (b:BRect) : bool =
         abs(a.MinX-b.MinX) > tol ||
         abs(a.MinY-b.MinY) > tol ||
         abs(a.MaxX-b.MaxX) > tol ||
@@ -1109,6 +1155,16 @@ type BRect =
 
     // #endregion
     // #region Obsolete
+
+    /// Obsolete name. Same as BRect.equalsWithin.
+    [<Obsolete("Use BRect.equalsWithin instead, or BRect.equalsExact for an exact match.")>]
+    static member inline equals (tol:float) (a:BRect) (b:BRect) : bool =
+        BRect.equalsWithin tol a b
+
+    /// Obsolete name. Same as BRect.notEqualsWithin.
+    [<Obsolete("Use BRect.notEqualsWithin instead.")>]
+    static member inline notEquals (tol:float) (a:BRect) (b:BRect) : bool =
+        BRect.notEqualsWithin tol a b
 
     [<Obsolete("use .isOverlapping instead")>]
     static member inline doOverlap(a:BRect) (b:BRect) : bool =

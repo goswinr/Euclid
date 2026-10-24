@@ -208,30 +208,30 @@ let tests =
             test "intersect two planes" {
                 let a = NPlane.create(Pnt(0., 0., 0.), Vec(0., 0., 1.))
                 let b = NPlane.create(Pnt(0., 0., 0.), Vec(0., 1., 0.))
-                match NPlane.intersect a b with
-                | Some line ->
+                match NPlane.tryIntersect a b with
+                | ValueSome line ->
                     // Line should be along X-axis
                     Expect.isTrue (eqPnt line.From Pnt.Origin) "Intersection line should pass through origin"
-                | None -> failwith "Should have intersection"
+                | ValueNone -> failwith "Should have intersection"
             }
 
             test "intersect two planes random example" {
                 let a = NPlane.create(Pnt(83., 1., 40), Vec(870., 0., 1.))
                 let b = NPlane.create(Pnt(-6., -8., 9.), Vec(90., 1., -68.))
-                match NPlane.intersect a b with
-                | Some line ->
+                match NPlane.tryIntersect a b with
+                | ValueSome line ->
                     Expect.isTrue (a.DistanceToPnt line.From < 1e-9) "Intersection line should be on plane A"
                     Expect.isTrue (b.DistanceToPnt line.From < 1e-9) "Intersection line should be on plane B"
                     Expect.isTrue (a.DistanceToPnt line.To < 1e-9) "Intersection line should be on plane A"
                     Expect.isTrue (b.DistanceToPnt line.To < 1e-9) "Intersection line should be on plane B"
 
-                | None -> failwith "Should have intersection"
+                | ValueNone -> failwith "Should have intersection"
             }
 
             test "PPlane intersect two planes random example" {
                 let a = PPlane.createOriginNormal(Pnt(83., 1., 40), Vec(870., 0., 1.))
                 let b = PPlane.createOriginNormal(Pnt(-6., -8., 9.), Vec(90., 1., -68.))
-                match PPlane.intersect a b with
+                match PPlane.tryIntersect a b with
                 | ValueSome line ->
                     Expect.isTrue (a.DistanceToPnt line.From < 1e-9) "Intersection line should be on plane A"
                     Expect.isTrue (b.DistanceToPnt line.From < 1e-9) "Intersection line should be on plane B"
@@ -246,15 +246,15 @@ let tests =
             test "intersect parallel planes" {
                 let a = NPlane.create(Pnt(0., 0., 0.), Vec(0., 0., 1.))
                 let b = NPlane.create(Pnt(0., 0., 10.), Vec(0., 0., 1.))
-                match NPlane.intersect a b with
-                | Some _ -> failwith "Parallel planes should not intersect"
-                | None -> ()
+                match NPlane.tryIntersect a b with
+                | ValueSome _ -> failwith "Parallel planes should not intersect"
+                | ValueNone -> ()
             }
 
             test "intersectRay for intersecting line" {
                 let plane = NPlane.create(Pnt(0., 0., 5.), Vec(0., 0., 1.))
                 let line = Line3D(Pnt(0., 0., 0.), Pnt(0., 0., 10.))
-                match NPlane.intersectRay line plane with
+                match NPlane.tryIntersectRay line plane with
                 | ValueSome t ->
                     Expect.isTrue (eqFloat t 0.5) "Should intersect at t=0.5"
                 | ValueNone -> failwith "Should have intersection"
@@ -263,7 +263,7 @@ let tests =
             test "intersectRay for parallel line" {
                 let plane = NPlane.create(Pnt(0., 0., 5.), Vec(0., 0., 1.))
                 let line = Line3D(Pnt(0., 0., 0.), Pnt(10., 0., 0.))
-                match NPlane.intersectRay line plane with
+                match NPlane.tryIntersectRay line plane with
                 | ValueSome _ -> failwith "Parallel line should not intersect"
                 | ValueNone -> ()
             }
@@ -271,10 +271,10 @@ let tests =
             test "intersectLine returns point" {
                 let plane = NPlane.create(Pnt(0., 0., 5.), Vec(0., 0., 1.))
                 let line = Line3D(Pnt(0., 0., 0.), Pnt(0., 0., 10.))
-                match NPlane.intersectLine line plane with
-                | Some pt ->
+                match NPlane.tryIntersectLine line plane with
+                | ValueSome pt ->
                     Expect.isTrue (eqPnt pt (Pnt(0., 0., 5.))) "Intersection should be at (0, 0, 5)"
-                | None -> failwith "Should have intersection"
+                | ValueNone -> failwith "Should have intersection"
             }
 
             test "doLinePlaneIntersect for finite line intersecting" {
@@ -344,14 +344,14 @@ let tests =
             test "equals with exact match" {
                 let a = NPlane.create(Pnt(0., 0., 0.), Vec(0., 0., 1.))
                 let b = NPlane.create(Pnt(0., 0., 0.), Vec(0., 0., 1.))
-                Expect.isTrue (NPlane.equals 0.0 a b) "Exact planes should be equal"
+                Expect.isTrue (NPlane.equalsExact a b) "Exact planes should be equal"
             }
 
             test "equals with tolerance" {
                 let a = NPlane.create(Pnt(0., 0., 0.), Vec(0., 0., 1.))
                 let b = NPlane.create(Pnt(0.001, 0.001, 0.001), Vec(0., 0., 1.))
-                Expect.isTrue (NPlane.equals 0.01 a b) "Planes should be equal within tolerance"
-                Expect.isFalse (NPlane.equals 0.0001 a b) "Planes should not be equal with small tolerance"
+                Expect.isTrue (NPlane.equalsWithin 0.01 a b) "Planes should be equal within tolerance"
+                Expect.isFalse (NPlane.equalsWithin 0.0001 a b) "Planes should not be equal with small tolerance"
             }
         ]
 
@@ -394,7 +394,7 @@ let tests =
             test "WorldTop is same as WorldXY" {
                 let xy = PPlane.WorldXY
                 let top = PPlane.WorldTop
-                Expect.isTrue (PPlane.equals 0.0 xy top) "WorldTop should equal WorldXY"
+                Expect.isTrue (PPlane.equalsExact xy top) "WorldTop should equal WorldXY"
             }
         ]
 
@@ -531,20 +531,20 @@ let tests =
             test "equals with exact match" {
                 let a = PPlane.WorldXY
                 let b = PPlane.WorldXY
-                Expect.isTrue (PPlane.equals 0.0 a b) "Exact planes should be equal"
+                Expect.isTrue (PPlane.equalsExact a b) "Exact planes should be equal"
             }
 
             test "equals with tolerance" {
                 let a = PPlane.WorldXY
                 let b = PPlane.createOriginXaxisYaxis(Pnt(0.001, 0.001, 0.001), Vec.Xaxis, Vec.Yaxis)
-                Expect.isTrue (PPlane.equals 0.01 a b) "Planes should be equal within tolerance"
-                Expect.isFalse (PPlane.equals 0.0001 a b) "Planes should not be equal with small tolerance"
+                Expect.isTrue (PPlane.equalsWithin 0.01 a b) "Planes should be equal within tolerance"
+                Expect.isFalse (PPlane.equalsWithin 0.0001 a b) "Planes should not be equal with small tolerance"
             }
 
             test "notEquals" {
                 let a = PPlane.WorldXY
                 let b = PPlane.createOriginXaxisYaxis(Pnt(1., 1., 1.), Vec.Xaxis, Vec.Yaxis)
-                Expect.isTrue (PPlane.notEquals 0.5 a b) "Different planes should not be equal"
+                Expect.isTrue (PPlane.notEqualsWithin 0.5 a b) "Different planes should not be equal"
             }
         ]
 

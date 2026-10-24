@@ -298,7 +298,7 @@ let tests =
             let q = Quaternion.createFromDegrees(Vec.Zaxis, 45.)
             let qNeg = Quaternion.createUnchecked(-q.X, -q.Y, -q.Z, -q.W)
             // q and -q represent the same rotation but should compare as unequal
-            Expect.isFalse (Quaternion.equals 1e-10 q qNeg) "q and -q should be unequal (component-wise)"
+            Expect.isFalse (Quaternion.equalsWithin 1e-10 q qNeg) "q and -q should be unequal (component-wise)"
             // But they should produce the same rotation result
             let a = Pnt(1,0,0)
             let result1 = a *** q
@@ -309,37 +309,37 @@ let tests =
         test "Quaternion equalsRotation with same quaternion" {
             let q1 = Quaternion.createFromDegrees(Vec.Zaxis, 45.)
             let q2 = Quaternion.createFromDegrees(Vec.Zaxis, 45.)
-            Expect.isTrue (Quaternion.equalsRotation 1e-10 q1 q2) "same quaternions should be rotationally equal"
+            Expect.isTrue (Quaternion.equalsRotationWithin 1e-10 q1 q2) "same quaternions should be rotationally equal"
         }
 
         test "Quaternion equalsRotation with negated quaternion (q vs -q)" {
             let q = Quaternion.createFromDegrees(Vec.Zaxis, 45.)
             let qNeg = Quaternion.createUnchecked(-q.X, -q.Y, -q.Z, -q.W)
             // equalsRotation should recognize q and -q as the same rotation
-            Expect.isTrue (Quaternion.equalsRotation 1e-10 q qNeg) "q and -q should be rotationally equal"
+            Expect.isTrue (Quaternion.equalsRotationWithin 1e-10 q qNeg) "q and -q should be rotationally equal"
             // Regular equals should still return false
-            Expect.isFalse (Quaternion.equals 1e-10 q qNeg) "q and -q should be component-wise unequal"
+            Expect.isFalse (Quaternion.equalsWithin 1e-10 q qNeg) "q and -q should be component-wise unequal"
         }
 
         test "Quaternion equalsRotation with different rotations" {
             let q1 = Quaternion.createFromDegrees(Vec.Zaxis, 45.)
             let q2 = Quaternion.createFromDegrees(Vec.Zaxis, 90.)
-            Expect.isFalse (Quaternion.equalsRotation 1e-10 q1 q2) "different rotations should not be equal"
+            Expect.isFalse (Quaternion.equalsRotationWithin 1e-10 q1 q2) "different rotations should not be equal"
         }
 
         test "Quaternion equalsRotation with different axes" {
             let q1 = Quaternion.createFromDegrees(Vec.Zaxis, 45.)
             let q2 = Quaternion.createFromDegrees(Vec.Xaxis, 45.)
-            Expect.isFalse (Quaternion.equalsRotation 1e-10 q1 q2) "same angle different axis should not be equal"
+            Expect.isFalse (Quaternion.equalsRotationWithin 1e-10 q1 q2) "same angle different axis should not be equal"
         }
 
         test "Quaternion equalsRotation with tolerance" {
             let q1 = Quaternion.createFromDegrees(Vec.Zaxis, 45.0)
             let q2 = Quaternion.createFromDegrees(Vec.Zaxis, 45.001)
             // Should be equal within loose tolerance
-            Expect.isTrue (Quaternion.equalsRotation 0.01 q1 q2) "similar quaternions within tolerance"
+            Expect.isTrue (Quaternion.equalsRotationWithin 0.01 q1 q2) "similar quaternions within tolerance"
             // Should be unequal with tight tolerance
-            Expect.isFalse (Quaternion.equalsRotation 1e-10 q1 q2) "similar quaternions outside tight tolerance"
+            Expect.isFalse (Quaternion.equalsRotationWithin 1e-10 q1 q2) "similar quaternions outside tight tolerance"
         }
 
         test "Quaternion equalsRotation with negated and tolerance" {
@@ -347,27 +347,27 @@ let tests =
             let q2 = Quaternion.createFromDegrees(Vec.Zaxis, 45.001)
             let q2Neg = Quaternion.createUnchecked(-q2.X, -q2.Y, -q2.Z, -q2.W)
             // Should be equal within tolerance even when negated
-            Expect.isTrue (Quaternion.equalsRotation 0.01 q1 q2Neg) "negated similar quaternions within tolerance"
+            Expect.isTrue (Quaternion.equalsRotationWithin 0.01 q1 q2Neg) "negated similar quaternions within tolerance"
         }
 
         test "Quaternion equalsRotation with identity" {
             let q1 = Quaternion.identity
             let q2 = Quaternion.identity
-            Expect.isTrue (Quaternion.equalsRotation 1e-10 q1 q2) "identity quaternions should be equal"
+            Expect.isTrue (Quaternion.equalsRotationWithin 1e-10 q1 q2) "identity quaternions should be equal"
         }
 
         test "Quaternion equalsRotation with zero tolerance" {
             let q = Quaternion.createFromDegrees(Vec.Zaxis, 45.)
             let qNeg = Quaternion.createUnchecked(-q.X, -q.Y, -q.Z, -q.W)
             // Even with zero tolerance, q and -q should be rotationally equal
-            Expect.isTrue (Quaternion.equalsRotation 0.0 q qNeg) "q and -q equal with zero tolerance"
+            Expect.isTrue (Quaternion.equalsRotationWithin 0.0 q qNeg) "q and -q equal with zero tolerance"
         }
 
         test "Quaternion equalsRotation consistency with rotation result" {
             // If equalsRotation returns true, both should rotate a point to the same position
             let q1 = Quaternion.createFromDegrees(Vec(1,1,1), 60.)
             let q2 = Quaternion.createUnchecked(-q1.X, -q1.Y, -q1.Z, -q1.W)
-            Expect.isTrue (Quaternion.equalsRotation 1e-10 q1 q2) "q and -q are rotationally equal"
+            Expect.isTrue (Quaternion.equalsRotationWithin 1e-10 q1 q2) "q and -q are rotationally equal"
             // Verify they produce the same rotation
             let testPt = Pnt(5, 3, 7)
             let result1 = testPt *** q1
@@ -379,7 +379,7 @@ let tests =
             // 180° rotation is special - q and -q might behave differently
             let q1 = Quaternion.createFromDegrees(Vec.Zaxis, 180.)
             let q1Neg = Quaternion.createUnchecked(-q1.X, -q1.Y, -q1.Z, -q1.W)
-            Expect.isTrue (Quaternion.equalsRotation 1e-10 q1 q1Neg) "180° rotation q and -q are equal"
+            Expect.isTrue (Quaternion.equalsRotationWithin 1e-10 q1 q1Neg) "180° rotation q and -q are equal"
         }
 
         test "Quaternion createVecToVec with nearly identical vectors returns identity" {
@@ -455,9 +455,9 @@ let tests =
             let q1 = Quaternion.createFromDegrees(Vec.Zaxis, 45.)
             let q2 = Quaternion.createFromDegrees(Vec.Zaxis, 45.001)
             // Should be equal with loose tolerance
-            Expect.isTrue (Quaternion.equals 0.01 q1 q2) "similar quaternions within loose tolerance"
+            Expect.isTrue (Quaternion.equalsWithin 0.01 q1 q2) "similar quaternions within loose tolerance"
             // Should be unequal with tight tolerance
-            Expect.isFalse (Quaternion.equals 1e-10 q1 q2) "similar quaternions outside tight tolerance"
+            Expect.isFalse (Quaternion.equalsWithin 1e-10 q1 q2) "similar quaternions outside tight tolerance"
         }
 
         test "Quaternion zero angle rotation" {

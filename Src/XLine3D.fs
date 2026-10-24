@@ -556,7 +556,7 @@ module XLineXYZ =
 
     /// <summary> Checks if two 3D-rays actually intersect within a given maximum skew distance.
     /// Returns FALSE if rays are parallel or even identical, or if input lines are of zero length.
-    /// Use XLine3D.getRayIntersection to check for those cases too.</summary>
+    /// Use XLine3D.classifyRayIntersection to check for those cases too.</summary>
     /// <param name="pAx"> The X coordinate of the start point on the first ray.</param>
     /// <param name="pAy"> The Y coordinate of the start point on the first ray.</param>
     /// <param name="pAz"> The Z coordinate of the start point on the first ray.</param>
@@ -1018,7 +1018,7 @@ module XLineXYZ =
     /// | TooShortBoth
     /// | TooShortA
     /// | TooShortB </returns>
-    let getRayClosestParam(pAx:float, pAy:float, pAz:float, pBx:float, pBy:float, pBz:float,
+    let classifyRayClosestParam(pAx:float, pAy:float, pAz:float, pBx:float, pBy:float, pBz:float,
                                           vAx:float, vAy:float, vAz:float, vBx:float, vBy:float, vBz:float,
                                           tangent:float<Tangent.tangent>,
                                           tooShortTolerance:float
@@ -1052,6 +1052,15 @@ module XLineXYZ =
             else
                 XRayParam.Parallel
 
+    /// Obsolete name. Same as XLineXYZ.classifyRayClosestParam.
+    [<Obsolete("Use XLineXYZ.classifyRayClosestParam instead.")>]
+    let getRayClosestParam(pAx:float, pAy:float, pAz:float, pBx:float, pBy:float, pBz:float,
+                                          vAx:float, vAy:float, vAz:float, vBx:float, vBy:float, vBz:float,
+                                          tangent:float<Tangent.tangent>,
+                                          tooShortTolerance:float
+                                          ) : XRayParam =
+        classifyRayClosestParam(pAx, pAy, pAz, pBx, pBy, pBz, vAx, vAy, vAz, vBx, vBy, vBz, tangent, tooShortTolerance)
+
 
 
 
@@ -1081,7 +1090,7 @@ module XLineXYZ =
     /// | TooShortBoth
     /// | TooShortA
     /// | TooShortB</returns>
-    let getRayIntersection(pAx:float, pAy:float, pAz:float, pBx:float, pBy:float, pBz:float,
+    let classifyRayIntersection(pAx:float, pAy:float, pAz:float, pBx:float, pBy:float, pBz:float,
                                      vAx:float, vAy:float, vAz:float, vBx:float, vBy:float, vBz:float,
                                      maxSkewDistance:float,
                                      tangent:float<Tangent.tangent>,
@@ -1134,6 +1143,16 @@ module XLineXYZ =
             else
                 XRay.Parallel
 
+    /// Obsolete name. Same as XLineXYZ.classifyRayIntersection.
+    [<Obsolete("Use XLineXYZ.classifyRayIntersection instead.")>]
+    let getRayIntersection(pAx:float, pAy:float, pAz:float, pBx:float, pBy:float, pBz:float,
+                                     vAx:float, vAy:float, vAz:float, vBx:float, vBy:float, vBz:float,
+                                     maxSkewDistance:float,
+                                     tangent:float<Tangent.tangent>,
+                                     tooShortTolerance:float
+                                     ) : XRay =
+        classifyRayIntersection(pAx, pAy, pAz, pBx, pBy, pBz, vAx, vAy, vAz, vBx, vBy, vBz, maxSkewDistance, tangent, tooShortTolerance)
+
 
 
 
@@ -1164,7 +1183,7 @@ module XLineXYZ =
     /// | TooShortBoth
     /// | TooShortA
     /// | TooShortB </returns>
-    let getIntersectionParam(pAx:float, pAy:float, pAz:float, pBx:float, pBy:float, pBz:float,
+    let classifyIntersectionParam(pAx:float, pAy:float, pAz:float, pBx:float, pBy:float, pBz:float,
                                        vAx:float, vAy:float, vAz:float, vBx:float, vBy:float, vBz:float,
                                        maxSkewDistance:float,
                                        tangent:float<Tangent.tangent>,
@@ -1217,6 +1236,16 @@ module XLineXYZ =
             else
                 XParam.Parallel
 
+    /// Obsolete name. Same as XLineXYZ.classifyIntersectionParam.
+    [<Obsolete("Use XLineXYZ.classifyIntersectionParam instead.")>]
+    let getIntersectionParam(pAx:float, pAy:float, pAz:float, pBx:float, pBy:float, pBz:float,
+                                       vAx:float, vAy:float, vAz:float, vBx:float, vBy:float, vBz:float,
+                                       maxSkewDistance:float,
+                                       tangent:float<Tangent.tangent>,
+                                       tooShortTolerance:float
+                                       ) : XParam =
+        classifyIntersectionParam(pAx, pAy, pAz, pBx, pBy, pBz, vAx, vAy, vAz, vBx, vBy, vBz, maxSkewDistance, tangent, tooShortTolerance)
+
 
 
 
@@ -1247,7 +1276,7 @@ module XLineXYZ =
     /// | TooShortBoth
     /// | TooShortA
     /// | TooShortB </returns>
-    let getIntersection(pAx:float, pAy:float, pAz:float, pBx:float, pBy:float, pBz:float,
+    let classifyIntersection(pAx:float, pAy:float, pAz:float, pBx:float, pBy:float, pBz:float,
                                   vAx:float, vAy:float, vAz:float, vBx:float, vBy:float, vBz:float,
                                   maxSkewDistance:float,
                                   tangent:float<Tangent.tangent>,
@@ -1299,6 +1328,16 @@ module XLineXYZ =
             else
                 XPnt.Parallel
 
+    /// Obsolete name. Same as XLineXYZ.classifyIntersection.
+    [<Obsolete("Use XLineXYZ.classifyIntersection instead.")>]
+    let getIntersection(pAx:float, pAy:float, pAz:float, pBx:float, pBy:float, pBz:float,
+                                  vAx:float, vAy:float, vAz:float, vBx:float, vBy:float, vBz:float,
+                                  maxSkewDistance:float,
+                                  tangent:float<Tangent.tangent>,
+                                  tooShortTolerance:float
+                                  ) : XPnt =
+        classifyIntersection(pAx, pAy, pAz, pBx, pBy, pBz, vAx, vAy, vAz, vBx, vBy, vBz, maxSkewDistance, tangent, tooShortTolerance)
+
 
 
 
@@ -1331,7 +1370,7 @@ module XLineXYZ =
     /// | TooShortBoth
     /// | TooShortA
     /// | TooShortB </returns>
-    let getClosestParameters(pAx:float, pAy:float, pAz:float, pBx:float, pBy:float, pBz:float,
+    let classifyClosestParameters(pAx:float, pAy:float, pAz:float, pBx:float, pBy:float, pBz:float,
                                        vAx:float, vAy:float, vAz:float, vBx:float, vBy:float, vBz:float,
                                        tangent:float<Tangent.tangent>,
                                        tooShortTolerance:float
@@ -1418,6 +1457,15 @@ module XLineXYZ =
                 let sb = clamp01 ((cx * vBx + cy * vBy + cz * vBz) / sqLenB) // ... onto line B
                 ClParams.Parallel (sa, sb)
 
+    /// Obsolete name. Same as XLineXYZ.classifyClosestParameters.
+    [<Obsolete("Use XLineXYZ.classifyClosestParameters instead.")>]
+    let getClosestParameters(pAx:float, pAy:float, pAz:float, pBx:float, pBy:float, pBz:float,
+                                       vAx:float, vAy:float, vAz:float, vBx:float, vBy:float, vBz:float,
+                                       tangent:float<Tangent.tangent>,
+                                       tooShortTolerance:float
+                                       ): ClParams =
+        classifyClosestParameters(pAx, pAy, pAz, pBx, pBy, pBz, vAx, vAy, vAz, vBx, vBy, vBz, tangent, tooShortTolerance)
+
 
 
 
@@ -1451,12 +1499,12 @@ module XLineXYZ =
     /// | TooShortBoth
     /// | TooShortA
     /// | TooShortB </returns>
-    let getClosestPoints(pAx:float, pAy:float, pAz:float, pBx:float, pBy:float, pBz:float,
+    let classifyClosestPoints(pAx:float, pAy:float, pAz:float, pBx:float, pBy:float, pBz:float,
                                    vAx:float, vAy:float, vAz:float, vBx:float, vBy:float, vBz:float,
                                    tangent:float<Tangent.tangent>,
                                    tooShortTolerance:float
                                    ): ClPnts =
-        match getClosestParameters (pAx, pAy, pAz, pBx, pBy, pBz, vAx, vAy, vAz, vBx, vBy, vBz, tangent, tooShortTolerance) with
+        match classifyClosestParameters (pAx, pAy, pAz, pBx, pBy, pBz, vAx, vAy, vAz, vBx, vBy, vBz, tangent, tooShortTolerance) with
         | ClParams.TooShortA -> ClPnts.TooShortA
         | ClParams.TooShortB -> ClPnts.TooShortB
         | ClParams.TooShortBoth -> ClPnts.TooShortBoth
@@ -1473,6 +1521,15 @@ module XLineXYZ =
         | ClParams.Parallel (sa, sb) ->
             ClPnts.Parallel (Pnt(pAx + sa * vAx, pAy + sa * vAy, pAz + sa * vAz),
                             Pnt(pBx + sb * vBx, pBy + sb * vBy, pBz + sb * vBz))
+
+    /// Obsolete name. Same as XLineXYZ.classifyClosestPoints.
+    [<Obsolete("Use XLineXYZ.classifyClosestPoints instead.")>]
+    let getClosestPoints(pAx:float, pAy:float, pAz:float, pBx:float, pBy:float, pBz:float,
+                                   vAx:float, vAy:float, vAz:float, vBx:float, vBy:float, vBz:float,
+                                   tangent:float<Tangent.tangent>,
+                                   tooShortTolerance:float
+                                   ): ClPnts =
+        classifyClosestPoints(pAx, pAy, pAz, pBx, pBy, pBz, vAx, vAy, vAz, vBx, vBy, vBz, tangent, tooShortTolerance)
 
 
 
@@ -1607,7 +1664,7 @@ type XLine3D =
 
     /// <summary> Checks if two 3D-rays actually intersect within a given maximum skew distance.
     /// Returns FALSE if rays are parallel or even identical, or if input lines are of zero length.
-    /// Use XLine3D.getRayIntersection to check for those cases too.</summary>
+    /// Use XLine3D.classifyRayIntersection to check for those cases too.</summary>
     /// <param name="pA"> The start point on the first ray.</param>
     /// <param name="pB"> The start point on the second ray.</param>
     /// <param name="vA"> The direction vector of the first ray.</param>
@@ -1621,7 +1678,7 @@ type XLine3D =
 
     /// <summary> Checks if two 3D-rays actually intersect within a given maximum skew distance.
     /// Returns FALSE if rays are parallel or even identical, or if input lines are of zero length.
-    /// Use XLine3D.getRayIntersection to check for those cases too.</summary>
+    /// Use XLine3D.classifyRayIntersection to check for those cases too.</summary>
     /// <param name="lineA"> The first ray.</param>
     /// <param name="lineB"> The second ray.</param>
     /// <param name="maxSkewDistance" > Is an optional maximum distance tolerance. 1e-6 by default.
@@ -1774,8 +1831,13 @@ type XLine3D =
     /// | TooShortBoth
     /// | TooShortA
     /// | TooShortB </returns>
+    static member inline classifyRayClosestParam(pA:Pnt, pB:Pnt, vA:Vec, vB:Vec, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float ) : XRayParam =
+        XLineXYZ.classifyRayClosestParam (pA.X, pA.Y, pA.Z, pB.X, pB.Y, pB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z, tangent, tooShortTolerance)
+
+    /// Obsolete name. Same as XLine3D.classifyRayClosestParam.
+    [<Obsolete("Use XLine3D.classifyRayClosestParam instead.")>]
     static member inline getRayClosestParam(pA:Pnt, pB:Pnt, vA:Vec, vB:Vec, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float ) : XRayParam =
-        XLineXYZ.getRayClosestParam (pA.X, pA.Y, pA.Z, pB.X, pB.Y, pB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z, tangent, tooShortTolerance)
+        XLine3D.classifyRayClosestParam(pA, pB, vA, vB, tangent, tooShortTolerance)
 
     /// <summary> Tries to get closest approach parameters of two rays (rays are 3D lines extended infinitely).</summary>
     /// <param name="lineA"> First ray.</param>
@@ -1791,8 +1853,13 @@ type XLine3D =
     /// | TooShortBoth
     /// | TooShortA
     /// | TooShortB </returns>
+    static member inline classifyRayClosestParam(lineA: Line3D, lineB: Line3D, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float ) : XRayParam =
+        XLineXYZ.classifyRayClosestParam(lineA.FromX, lineA.FromY, lineA.FromZ, lineB.FromX, lineB.FromY, lineB.FromZ, lineA.VectorX, lineA.VectorY, lineA.VectorZ, lineB.VectorX, lineB.VectorY, lineB.VectorZ, tangent, tooShortTolerance)
+
+    /// Obsolete name. Same as XLine3D.classifyRayClosestParam.
+    [<Obsolete("Use XLine3D.classifyRayClosestParam instead.")>]
     static member inline getRayClosestParam(lineA: Line3D, lineB: Line3D, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float ) : XRayParam =
-        XLineXYZ.getRayClosestParam(lineA.FromX, lineA.FromY, lineA.FromZ, lineB.FromX, lineB.FromY, lineB.FromZ, lineA.VectorX, lineA.VectorY, lineA.VectorZ, lineB.VectorX, lineB.VectorY, lineB.VectorZ, tangent, tooShortTolerance)
+        XLine3D.classifyRayClosestParam(lineA, lineB, tangent, tooShortTolerance)
 
 
 
@@ -1814,8 +1881,13 @@ type XLine3D =
     /// | TooShortBoth
     /// | TooShortA
     /// | TooShortB </returns>
+    static member inline classifyRayIntersection(pA:Pnt, pB:Pnt, vA:Vec, vB:Vec, [<OPT;DEF(1e-6)>] maxSkewDistance:float,[<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float ) : XRay =
+        XLineXYZ.classifyRayIntersection(pA.X, pA.Y, pA.Z, pB.X, pB.Y, pB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z, maxSkewDistance, tangent, tooShortTolerance)
+
+    /// Obsolete name. Same as XLine3D.classifyRayIntersection.
+    [<Obsolete("Use XLine3D.classifyRayIntersection instead.")>]
     static member inline getRayIntersection(pA:Pnt, pB:Pnt, vA:Vec, vB:Vec, [<OPT;DEF(1e-6)>] maxSkewDistance:float,[<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float ) : XRay =
-        XLineXYZ.getRayIntersection(pA.X, pA.Y, pA.Z, pB.X, pB.Y, pB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z, maxSkewDistance, tangent, tooShortTolerance)
+        XLine3D.classifyRayIntersection(pA, pB, vA, vB, maxSkewDistance, tangent, tooShortTolerance)
 
     /// <summary> Classifies the relationship between two rays (treated as infinite lines) and returns their intersection or closest approach.</summary>
     /// <param name="lineA"> First ray.</param>
@@ -1833,8 +1905,13 @@ type XLine3D =
     /// | TooShortBoth
     /// | TooShortA
     /// | TooShortB </returns>
+    static member inline classifyRayIntersection(lineA: Line3D, lineB: Line3D, [<OPT;DEF(1e-6)>] maxSkewDistance:float,[<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float ) : XRay =
+        XLineXYZ.classifyRayIntersection(lineA.FromX, lineA.FromY, lineA.FromZ, lineB.FromX, lineB.FromY, lineB.FromZ, lineA.VectorX, lineA.VectorY, lineA.VectorZ, lineB.VectorX, lineB.VectorY, lineB.VectorZ, maxSkewDistance, tangent, tooShortTolerance)
+
+    /// Obsolete name. Same as XLine3D.classifyRayIntersection.
+    [<Obsolete("Use XLine3D.classifyRayIntersection instead.")>]
     static member inline getRayIntersection(lineA: Line3D, lineB: Line3D, [<OPT;DEF(1e-6)>] maxSkewDistance:float,[<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float ) : XRay =
-        XLineXYZ.getRayIntersection(lineA.FromX, lineA.FromY, lineA.FromZ, lineB.FromX, lineB.FromY, lineB.FromZ, lineA.VectorX, lineA.VectorY, lineA.VectorZ, lineB.VectorX, lineB.VectorY, lineB.VectorZ, maxSkewDistance, tangent, tooShortTolerance)
+        XLine3D.classifyRayIntersection(lineA, lineB, maxSkewDistance, tangent, tooShortTolerance)
 
 
 
@@ -1857,8 +1934,13 @@ type XLine3D =
     /// | TooShortBoth
     /// | TooShortA
     /// | TooShortB </returns>
+    static member inline classifyIntersectionParam(pA:Pnt, pB:Pnt, vA:Vec, vB:Vec, [<OPT;DEF(1e-6)>] maxSkewDistance:float, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float ) : XParam =
+        XLineXYZ.classifyIntersectionParam (pA.X, pA.Y, pA.Z, pB.X, pB.Y, pB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z, maxSkewDistance, tangent, tooShortTolerance)
+
+    /// Obsolete name. Same as XLine3D.classifyIntersectionParam.
+    [<Obsolete("Use XLine3D.classifyIntersectionParam instead.")>]
     static member inline getIntersectionParam(pA:Pnt, pB:Pnt, vA:Vec, vB:Vec, [<OPT;DEF(1e-6)>] maxSkewDistance:float, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float ) : XParam =
-        XLineXYZ.getIntersectionParam (pA.X, pA.Y, pA.Z, pB.X, pB.Y, pB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z, maxSkewDistance, tangent, tooShortTolerance)
+        XLine3D.classifyIntersectionParam(pA, pB, vA, vB, maxSkewDistance, tangent, tooShortTolerance)
 
     /// <summary> Tries to get intersection or closest approach parameters of two finite 3D-lines.</summary>
     /// <param name="lnA"> First line.</param>
@@ -1877,8 +1959,13 @@ type XLine3D =
     /// | TooShortBoth
     /// | TooShortA
     /// | TooShortB </returns>
+    static member inline classifyIntersectionParam(lnA: Line3D, lnB: Line3D, [<OPT;DEF(1e-6)>] maxSkewDistance:float, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float ) : XParam =
+        XLineXYZ.classifyIntersectionParam(lnA.FromX, lnA.FromY, lnA.FromZ, lnB.FromX, lnB.FromY, lnB.FromZ, lnA.VectorX, lnA.VectorY, lnA.VectorZ, lnB.VectorX, lnB.VectorY, lnB.VectorZ, maxSkewDistance, tangent, tooShortTolerance)
+
+    /// Obsolete name. Same as XLine3D.classifyIntersectionParam.
+    [<Obsolete("Use XLine3D.classifyIntersectionParam instead.")>]
     static member inline getIntersectionParam(lnA: Line3D, lnB: Line3D, [<OPT;DEF(1e-6)>] maxSkewDistance:float, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float ) : XParam =
-        XLineXYZ.getIntersectionParam(lnA.FromX, lnA.FromY, lnA.FromZ, lnB.FromX, lnB.FromY, lnB.FromZ, lnA.VectorX, lnA.VectorY, lnA.VectorZ, lnB.VectorX, lnB.VectorY, lnB.VectorZ, maxSkewDistance, tangent, tooShortTolerance)
+        XLine3D.classifyIntersectionParam(lnA, lnB, maxSkewDistance, tangent, tooShortTolerance)
 
 
 
@@ -1901,8 +1988,13 @@ type XLine3D =
     /// | TooShortBoth
     /// | TooShortA
     /// | TooShortB </returns>
+    static member inline classifyIntersection(pA:Pnt, pB:Pnt, vA:Vec, vB:Vec, [<OPT;DEF(1e-6)>] maxSkewDistance:float, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>,[<OPT;DEF(1e-6)>] tooShortTolerance:float) : XPnt =
+        XLineXYZ.classifyIntersection(pA.X, pA.Y, pA.Z, pB.X, pB.Y, pB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z, maxSkewDistance, tangent, tooShortTolerance)
+
+    /// Obsolete name. Same as XLine3D.classifyIntersection.
+    [<Obsolete("Use XLine3D.classifyIntersection instead.")>]
     static member inline getIntersection(pA:Pnt, pB:Pnt, vA:Vec, vB:Vec, [<OPT;DEF(1e-6)>] maxSkewDistance:float, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>,[<OPT;DEF(1e-6)>] tooShortTolerance:float) : XPnt =
-        XLineXYZ.getIntersection(pA.X, pA.Y, pA.Z, pB.X, pB.Y, pB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z, maxSkewDistance, tangent, tooShortTolerance)
+        XLine3D.classifyIntersection(pA, pB, vA, vB, maxSkewDistance, tangent, tooShortTolerance)
 
     /// <summary> Tries to get intersection or closest approach point of two finite 3D lines.</summary>
     /// <param name="lineA"> First finite line segment.</param>
@@ -1921,8 +2013,13 @@ type XLine3D =
     /// | TooShortBoth
     /// | TooShortA
     /// | TooShortB </returns>
+    static member inline classifyIntersection(lineA: Line3D, lineB: Line3D, [<OPT;DEF(1e-6)>] maxSkewDistance:float, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float ) : XPnt =
+        XLineXYZ.classifyIntersection(lineA.FromX, lineA.FromY, lineA.FromZ, lineB.FromX, lineB.FromY, lineB.FromZ, lineA.VectorX, lineA.VectorY, lineA.VectorZ, lineB.VectorX, lineB.VectorY, lineB.VectorZ, maxSkewDistance, tangent, tooShortTolerance)
+
+    /// Obsolete name. Same as XLine3D.classifyIntersection.
+    [<Obsolete("Use XLine3D.classifyIntersection instead.")>]
     static member inline getIntersection(lineA: Line3D, lineB: Line3D, [<OPT;DEF(1e-6)>] maxSkewDistance:float, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float ) : XPnt =
-        XLineXYZ.getIntersection(lineA.FromX, lineA.FromY, lineA.FromZ, lineB.FromX, lineB.FromY, lineB.FromZ, lineA.VectorX, lineA.VectorY, lineA.VectorZ, lineB.VectorX, lineB.VectorY, lineB.VectorZ, maxSkewDistance, tangent, tooShortTolerance)
+        XLine3D.classifyIntersection(lineA, lineB, maxSkewDistance, tangent, tooShortTolerance)
 
 
     /// <summary> Gets the parameters on the finite lines where the lines are closest to each other.
@@ -1946,8 +2043,13 @@ type XLine3D =
     /// | TooShortBoth
     /// | TooShortA
     /// | TooShortB </returns>
+    static member inline classifyClosestParameters (pA:Pnt, pB:Pnt, vA:Vec, vB:Vec, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float): ClParams =
+        XLineXYZ.classifyClosestParameters (pA.X, pA.Y, pA.Z, pB.X, pB.Y, pB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z, tangent, tooShortTolerance)
+
+    /// Obsolete name. Same as XLine3D.classifyClosestParameters.
+    [<Obsolete("Use XLine3D.classifyClosestParameters instead.")>]
     static member inline getClosestParameters (pA:Pnt, pB:Pnt, vA:Vec, vB:Vec, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float): ClParams =
-        XLineXYZ.getClosestParameters (pA.X, pA.Y, pA.Z, pB.X, pB.Y, pB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z, tangent, tooShortTolerance)
+        XLine3D.classifyClosestParameters(pA, pB, vA, vB, tangent, tooShortTolerance)
 
     /// <summary> Gets the parameters on the finite lines where the lines are closest to each other.
     /// For parallel lines, this will return the parameter at the middle point of any overlapping segment.
@@ -1968,8 +2070,13 @@ type XLine3D =
     /// | TooShortBoth
     /// | TooShortA
     /// | TooShortB </returns>
+    static member inline classifyClosestParameters (lineA:Line3D, lineB:Line3D, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float): ClParams =
+        XLineXYZ.classifyClosestParameters (lineA.FromX, lineA.FromY, lineA.FromZ, lineB.FromX, lineB.FromY, lineB.FromZ, lineA.VectorX, lineA.VectorY, lineA.VectorZ, lineB.VectorX, lineB.VectorY, lineB.VectorZ, tangent, tooShortTolerance)
+
+    /// Obsolete name. Same as XLine3D.classifyClosestParameters.
+    [<Obsolete("Use XLine3D.classifyClosestParameters instead.")>]
     static member inline getClosestParameters (lineA:Line3D, lineB:Line3D, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float): ClParams =
-        XLineXYZ.getClosestParameters (lineA.FromX, lineA.FromY, lineA.FromZ, lineB.FromX, lineB.FromY, lineB.FromZ, lineA.VectorX, lineA.VectorY, lineA.VectorZ, lineB.VectorX, lineB.VectorY, lineB.VectorZ, tangent, tooShortTolerance)
+        XLine3D.classifyClosestParameters(lineA, lineB, tangent, tooShortTolerance)
 
 
     /// <summary> Gets the point or points on the finite lines where the lines are closest to each other.
@@ -1993,8 +2100,13 @@ type XLine3D =
     /// | TooShortBoth
     /// | TooShortA
     /// | TooShortB </returns>
+    static member inline classifyClosestPoints (pA:Pnt, pB:Pnt, vA:Vec, vB:Vec, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float) : ClPnts =
+        XLineXYZ.classifyClosestPoints (pA.X, pA.Y, pA.Z, pB.X, pB.Y, pB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z, tangent, tooShortTolerance)
+
+    /// Obsolete name. Same as XLine3D.classifyClosestPoints.
+    [<Obsolete("Use XLine3D.classifyClosestPoints instead.")>]
     static member inline getClosestPoints (pA:Pnt, pB:Pnt, vA:Vec, vB:Vec, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float) : ClPnts =
-        XLineXYZ.getClosestPoints (pA.X, pA.Y, pA.Z, pB.X, pB.Y, pB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z, tangent, tooShortTolerance)
+        XLine3D.classifyClosestPoints(pA, pB, vA, vB, tangent, tooShortTolerance)
 
     /// <summary> Gets the point or points on the finite lines where the lines are closest to each other.
     /// For parallel lines, this will return the middle point of any overlapping segment.
@@ -2015,8 +2127,13 @@ type XLine3D =
     /// | TooShortBoth
     /// | TooShortA
     /// | TooShortB </returns>
+    static member inline classifyClosestPoints (lineA: Line3D, lineB: Line3D, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float) : ClPnts =
+        XLineXYZ.classifyClosestPoints (lineA.FromX, lineA.FromY, lineA.FromZ, lineB.FromX, lineB.FromY, lineB.FromZ, lineA.VectorX, lineA.VectorY, lineA.VectorZ, lineB.VectorX, lineB.VectorY, lineB.VectorZ, tangent, tooShortTolerance)
+
+    /// Obsolete name. Same as XLine3D.classifyClosestPoints.
+    [<Obsolete("Use XLine3D.classifyClosestPoints instead.")>]
     static member inline getClosestPoints (lineA: Line3D, lineB: Line3D, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float) : ClPnts =
-        XLineXYZ.getClosestPoints (lineA.FromX, lineA.FromY, lineA.FromZ, lineB.FromX, lineB.FromY, lineB.FromZ, lineA.VectorX, lineA.VectorY, lineA.VectorZ, lineB.VectorX, lineB.VectorY, lineB.VectorZ, tangent, tooShortTolerance)
+        XLine3D.classifyClosestPoints(lineA, lineB, tangent, tooShortTolerance)
 
 
     /// <summary> Gets the squared distance between two finite lines. Works on parallel and skew lines too.</summary>
@@ -2052,7 +2169,7 @@ type XLine3D =
     /// | Identical
     /// | IdenticalFlipped
     /// </returns>
-    static member getEndsTouching (a:Line3D, b:Line3D, [<OPT;DEF(1e-6)>] tolerance:float) : XLine3D.XEnds =
+    static member classifyEndsTouching (a:Line3D, b:Line3D, [<OPT;DEF(1e-6)>] tolerance:float) : XLine3D.XEnds =
         let sqTolerance = tolerance * tolerance
         if sq(a.ToX-b.FromX) + sq(a.ToY-b.FromY) + sq(a.ToZ-b.FromZ) < sqTolerance then
             if sq(a.FromX-b.ToX) + sq(a.FromY-b.ToY) + sq(a.FromZ-b.ToZ) < sqTolerance then
@@ -2071,6 +2188,11 @@ type XLine3D =
         else
             XEnds.NotTouching
 
+    /// Obsolete name. Same as XLine3D.classifyEndsTouching.
+    [<Obsolete("Use XLine3D.classifyEndsTouching instead.")>]
+    static member getEndsTouching (a:Line3D, b:Line3D, [<OPT;DEF(1e-6)>] tolerance:float) : XLine3D.XEnds =
+        XLine3D.classifyEndsTouching(a, b, tolerance)
+
 
     /// <summary>Intersects an infinite ray / line with the base-side nappe of a cone whose axis is the Z-axis.</summary>
     /// <param name="ray">The Line3D to intersect. It is considered infinite in both directions.</param>
@@ -2079,7 +2201,7 @@ type XLine3D =
     /// <param name="coneTipZ">The Z coordinate of the cone tip. Must differ from coneBaseZ.
     /// Only the nappe on the base side of the tip is considered part of the cone.</param>
     /// <returns>An XCone discriminated union, see its documentation for all cases.</returns>
-    static member intersectCone (ray:Line3D, coneRadius:float, coneBaseZ:float, coneTipZ:float) : XCone =
+    static member classifyConeIntersection (ray:Line3D, coneRadius:float, coneBaseZ:float, coneTipZ:float) : XCone =
 
         // Relative tolerance used for all coefficient comparisons.
         // Each coefficient is compared against the sum of the absolute values of the
@@ -2093,10 +2215,10 @@ type XLine3D =
 
         let height = coneBaseZ - coneTipZ
         if abs height < 1e-12 then
-            fail "Line3D.intersectCone: coneBaseZ and coneTipZ are equal (%g), the cone is degenerate." coneBaseZ
+            fail $"XLine3D.classifyConeIntersection: coneBaseZ and coneTipZ are equal ({coneBaseZ}), the cone is degenerate."
             // in Euclid use: EuclidException.Raisef "..."
         if coneRadius < 1e-12 then
-            fail "Line3D.intersectCone: coneRadius %g is zero or negative, the cone is degenerate." coneRadius
+            fail $"XLine3D.classifyConeIntersection: coneRadius {coneRadius} is zero or negative, the cone is degenerate."
 
         // Slope of the cone flank: radius change per unit of Z. Only k² is used in the quadratic.
         let k  = coneRadius / height
@@ -2114,7 +2236,7 @@ type XLine3D =
         let dz = ray.ToZ - ray.FromZ
 
         if dx*dx + dy*dy + dz*dz < 1e-24 then
-            fail "Line3D.intersectCone: ray is too short: %O" ray
+            fail $"XLine3D.classifyConeIntersection: ray is too short: {ray}"
 
         // Implicit double cone equation with tip at the origin:   x² + y² - k²·z² = 0
         // Substituting the line  P(t) = O + t·D  yields the quadratic  a·t² + b·t + c = 0 :
@@ -2192,6 +2314,11 @@ type XLine3D =
                 elif pz * signH > 0.0               then XCone.Touching   t // tangent point on the valid nappe
                 else                                     XCone.NoIntersection // tangent to the mirrored nappe only
 
+    /// Obsolete name. Same as XLine3D.classifyConeIntersection.
+    [<Obsolete("Use XLine3D.classifyConeIntersection instead.")>]
+    static member intersectCone (ray:Line3D, coneRadius:float, coneBaseZ:float, coneTipZ:float) : XCone =
+        XLine3D.classifyConeIntersection(ray, coneRadius, coneBaseZ, coneTipZ)
+
 
     // /// <summary>Intersects a ray with an infinite double cone that has its axis on the Z-axis.</summary>
     // /// <param name="ray">The Line3D to intersect. It is considered as infinite ray.</param>
@@ -2205,10 +2332,10 @@ type XLine3D =
     // /// | ParallelInside of float: The line is parallel to a generator line of the cone but still pierces it at one point, contains the parameter on the line.
     // /// | Intersecting of float*float: The line intersects the cone at two points, contains both parameters on the line.
     // /// </returns>
-    // static member intersectCone (ray:Line3D, coneRadius, coneBaseZ, coneTipZ) : XLine3D.XCone =
+    // static member classifyConeIntersection (ray:Line3D, coneRadius, coneBaseZ, coneTipZ) : XLine3D.XCone =
     //     let h = coneBaseZ-coneTipZ
     //     if isTooTiny( abs h )then
-    //         fail $"XLine3D.intersectCone: cone has zero height: coneRadius: {coneRadius}, coneBaseZ: {coneBaseZ}, coneTipZ: {coneTipZ}"
+    //         fail $"XLine3D.classifyConeIntersection: cone has zero height: coneRadius: {coneRadius}, coneBaseZ: {coneBaseZ}, coneTipZ: {coneTipZ}"
     //     let lam = coneRadius / h
     //     let lam = lam * lam
     //     let vx = ray.VectorX

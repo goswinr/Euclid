@@ -155,10 +155,21 @@ type Rotation2D =
     /// Checks if two 2D Rotations are equal within tolerance.
     /// By comparing the fields Sin and Cos each with the given tolerance.
     /// The range of these fields is -1.0 to +1.0
-    /// Use a tolerance of 0.0 to check for an exact match.
-    static member inline equals (tol:float) (a:Rotation2D) (b:Rotation2D)  : bool =
+    /// Use Rotation2D.equalsExact to check for an exact match.
+    static member inline equalsWithin (tol:float) (a:Rotation2D) (b:Rotation2D)  : bool =
         abs(a.Sin-b.Sin) <= tol &&
         abs(a.Cos-b.Cos) <= tol
+
+    /// Checks if two 2D Rotations are exactly equal.
+    /// Compares each field with the = operator, so a NaN value is never equal.
+    static member inline equalsExact (a:Rotation2D) (b:Rotation2D) : bool =
+        a.Sin = b.Sin &&
+        a.Cos = b.Cos
+
+    /// Obsolete name. Same as Rotation2D.equalsWithin.
+    [<Obsolete("Use Rotation2D.equalsWithin instead, or Rotation2D.equalsExact for an exact match.")>]
+    static member inline equals (tol:float) (a:Rotation2D) (b:Rotation2D) : bool =
+        Rotation2D.equalsWithin tol a b
 
     /// Construct a counter-clockwise 2D Rotation from angle in radians.
     /// Use negative radians for clockwise rotation.

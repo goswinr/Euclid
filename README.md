@@ -77,7 +77,7 @@ Call `Duplicate()` to get an independent copy before you change a shared instanc
 
 ### Rays
 A ray in Euclid is a line extended infinitely in both directions, not a half-line that starts at a point.
-Functions with `Ray` in their name, such as `XLine2D.getRayIntersection`, `Line3D.RayClosestParameters`
+Functions with `Ray` in their name, such as `XLine2D.classifyRayIntersection`, `Line3D.RayClosestParameters`
 or `BBox.IntersectRay`, take a finite `Line2D` or `Line3D` and treat it as infinite.
 Their parameters are measured along that line: 0.0 is at its `From` point and 1.0 at its `To` point.
 Values below 0.0 or above 1.0 are valid results.
@@ -150,6 +150,23 @@ Rotations and scaling share one curried naming grammar, with the geometry as the
 
 A raw angle argument always names its unit. The instance members use the same names in PascalCase, e.g. `ln.RotateAround cen r`.
 For repeated rotations, precompute the `Rotation2D` once and use `rotate` or `rotateAround`.
+
+### Failure and Tolerance Contracts
+The name of a function tells what it does when there is no result or when its input is degenerate:
+
+| Form | Contract | Example |
+|------|----------|---------|
+| `operation` | Returns the result. Raises an `EuclidException` if its preconditions fail | `PPlane.intersectLine`, `Vec.unitize` |
+| `tryOperation` | Returns a `voption`. `ValueNone` if an ordinary geometric result is absent | `PPlane.tryIntersectLine`, `Vec.tryUnitize` |
+| `classify…` | Returns a discriminated union that describes the relationship | `XLine2D.classifyIntersection` |
+| `operationOrDefault` | Returns the given fallback instead of failing | `Vec.unitizeOrDefault` |
+| `operationUnchecked` | Skips the documented checks | `Vec.unitizeUnchecked`, `UnitVec.createUnchecked` |
+
+Equality follows the same idea: `equalsExact a b` compares each coordinate with `=`,
+and `equalsWithin tol a b` allows each coordinate to differ by up to `tol`.
+The tolerance applies to each coordinate separately, not to the Euclidean distance.
+So two 3D points that differ by `tol` in X, Y and Z are equal, although they are `sqrt 3.0 * tol` apart.
+To compare by distance, use `Pnt.dist a b <= tol` or `Pnt.sqDist a b <= tol * tol`.
 
 ### Custom Operators
 
@@ -454,7 +471,7 @@ let lineA = Line2D(Pt(0, 0), Pt(10, 0))
 let lineB = Line2D(Pt(5, -5), Pt(5, 5))
 
 // Finite segment intersection - returns XPt discriminated union
-match XLine2D.getIntersection(lineA, lineB) with
+match XLine2D.classifyIntersection(lineA, lineB) with
 | XLine2D.XPt.Intersect pt       -> printfn $"Lines cross at {pt}"
 | XLine2D.XPt.Apart              -> printfn "Segments don't reach each other"
 | XLine2D.XPt.Parallel           -> printfn "Lines are parallel"
@@ -463,7 +480,7 @@ match XLine2D.getIntersection(lineA, lineB) with
 | XLine2D.XPt.TooShortBoth       -> printfn "Both lines are too short"
 
 // Ray intersection (rays are lines extended infinitely in both directions)
-match XLine2D.getRayIntersection(lineA, lineB) with
+match XLine2D.classifyRayIntersection(lineA, lineB) with
 | XLine2D.XRay.Intersect pt       -> printfn $"Rays meet at {pt}"
 | XLine2D.XRay.Parallel           -> printfn "Rays are parallel"
 | _                               -> ()
@@ -472,7 +489,7 @@ match XLine2D.getRayIntersection(lineA, lineB) with
 let ln3A = Line3D(Pnt(0, 0, 0), Pnt(10, 0, 0))
 let ln3B = Line3D(Pnt(5, 0, 5), Pnt(5, 10, 5))
 
-match XLine3D.getIntersection(ln3A, ln3B) with
+match XLine3D.classifyIntersection(ln3A, ln3B) with
 | XLine3D.XPnt.Intersect pt       -> printfn $"Lines intersect at {pt}"
 | XLine3D.XPnt.Skew (ptA, ptB, d) -> printfn $"Closest approach: {d} between {ptA} and {ptB}"
 | XLine3D.XPnt.Apart              -> printfn "Segments don't reach each other"

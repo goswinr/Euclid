@@ -59,4 +59,5 @@ let main _ =
             TestPolyLabel.tests
             TestAsFSharpCode.tests
             TestResizeArr.tests
+            TestContracts.tests
         ])

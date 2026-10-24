@@ -61,7 +61,7 @@ for c in rs.GetObjects("crvs", printCount=false)  do
                 |> rs.AddPolyline
                 |> rs.setLayer $"O-loop::{vh}::Var< {dist} >" 
                 Printfn.orange $"{ind0}{ind}let plr = Polyline2D.offset(pli, {pr offs}, loop=true, varDistParallelBehavior = {vh},  uTurnBehavior = Offset2D.UTurnBehavior.Chamfer)" 
-                Printfn.orange $"""{ind0}{ind}"loop offset {k.Value} VarDistParallelBehavior.{vh}: dist {dist} on {pli.PointCount} points" |> Expect.isTrue (Polyline2D.equals 1e-6 plr plExp)"""
+                Printfn.orange $"""{ind0}{ind}"loop offset {k.Value} VarDistParallelBehavior.{vh}: dist {dist} on {pli.PointCount} points" |> Expect.isTrue (Polyline2D.equalsWithin 1e-6 plr plExp)"""
                 Printfn.orange $"{ind0}{ind}}}\n"
 
 
@@ -77,7 +77,7 @@ for c in rs.GetObjects("crvs", printCount=false)  do
                 |> rs.AddPolyline
                 |> rs.setLayer $"O::{vh}::Var< {dist} >" 
                 Printfn.orange $"{ind0}{ind}let plr = Polyline2D.offset(pli, {pr offs}, varDistParallelBehavior = {vh},  uTurnBehavior = Offset2D.UTurnBehavior.Chamfer)" 
-                Printfn.orange $"""{ind0}{ind}"open offset {k.Value} VarDistParallelBehavior.{vh}: dist {dist} on {pli.PointCount} points" |> Expect.isTrue (Polyline2D.equals 1e-6 plr plExp)"""
+                Printfn.orange $"""{ind0}{ind}"open offset {k.Value} VarDistParallelBehavior.{vh}: dist {dist} on {pli.PointCount} points" |> Expect.isTrue (Polyline2D.equalsWithin 1e-6 plr plExp)"""
                 Printfn.orange $"{ind0}{ind}}}\n"
                 
                 

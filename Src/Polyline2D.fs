@@ -1693,12 +1693,12 @@ type Polyline2D private (xys: ResizeArray<float>) =
             action i xys.[i] xys.[i + 1]
             i <- i + 2
 
-    /// <summary>Find the first point in the Polyline2D that satisfies a given condition. Returns Some(point) if found, otherwise None.</summary>
+    /// <summary>Find the first point in the Polyline2D that satisfies a given condition. Returns ValueSome(point) if found, otherwise ValueNone.</summary>
     /// <param name="condition">A function that takes the X and Y coordinates of a point and returns a boolean indicating whether the condition is satisfied.</param>
     /// <param name="pl">The Polyline2D to search through.</param>
-    /// <returns>Some(Pt) if a point satisfying the condition is found, otherwise None.</returns>
-    static member inline tryFind (condition: float -> float -> bool) (pl:Polyline2D) : Pt option =
-        let mutable result = None
+    /// <returns>ValueSome(Pt) if a point satisfying the condition is found, otherwise ValueNone.</returns>
+    static member inline tryFind (condition: float -> float -> bool) (pl:Polyline2D) : Pt voption =
+        let mutable result = ValueNone
         let xys = pl.XYs
         let len = xys.Count
         let mutable i = 0
@@ -1706,36 +1706,36 @@ type Polyline2D private (xys: ResizeArray<float>) =
             let x = xys.[i]
             let y = xys.[i + 1]
             if condition x y then
-                result <- Some (Pt(x, y))
+                result <- ValueSome (Pt(x, y))
                 i <- len // exit loop
             else
                 i <- i + 2
         result
 
-    /// <summary>Find the last point in the Polyline2D that satisfies a given condition. Returns Some(point) if found, otherwise None.</summary>
+    /// <summary>Find the last point in the Polyline2D that satisfies a given condition. Returns ValueSome(point) if found, otherwise ValueNone.</summary>
     /// <param name="condition">A function that takes the X and Y coordinates of a point and returns a boolean indicating whether the condition is satisfied.</param>
     /// <param name="pl">The Polyline2D to search through.</param>
-    /// <returns>Some(Pt) if a point satisfying the condition is found, otherwise None.</returns>
-    static member inline tryFindLast (condition: float -> float -> bool) (pl:Polyline2D) : Pt option =
-        let mutable result = None
+    /// <returns>ValueSome(Pt) if a point satisfying the condition is found, otherwise ValueNone.</returns>
+    static member inline tryFindLast (condition: float -> float -> bool) (pl:Polyline2D) : Pt voption =
+        let mutable result = ValueNone
         let xys = pl.XYs
         let mutable i = xys.Count - 2
         while i >= 0 do
             let x = xys.[i]
             let y = xys.[i + 1]
             if condition x y then
-                result <- Some (Pt(x, y))
+                result <- ValueSome (Pt(x, y))
                 i <- -2 // exit loop
             else
                 i <- i - 2
         result
 
-    /// <summary>Find the index of the first point in the Polyline2D that satisfies a given condition. Returns Some(index) if found, otherwise None.</summary>
+    /// <summary>Find the index of the first point in the Polyline2D that satisfies a given condition. Returns ValueSome(index) if found, otherwise ValueNone.</summary>
     /// <param name="condition">A function that takes the X and Y coordinates of a point and returns a boolean indicating whether the condition is satisfied.</param>
     /// <param name="pl">The Polyline2D to search through.</param>
-    /// <returns>Some(index of x) the index of the x value in the polyline's flat array if found, otherwise None.</returns>
-    static member inline tryFindIndex (condition: float -> float -> bool) (pl:Polyline2D) : int option =
-        let mutable result = None
+    /// <returns>ValueSome(index of x) the index of the x value in the polyline's flat array if found, otherwise ValueNone.</returns>
+    static member inline tryFindIndex (condition: float -> float -> bool) (pl:Polyline2D) : int voption =
+        let mutable result = ValueNone
         let xys = pl.XYs
         let len = xys.Count
         let mutable i = 0
@@ -1743,25 +1743,25 @@ type Polyline2D private (xys: ResizeArray<float>) =
             let x = xys.[i]
             let y = xys.[i + 1]
             if condition x y then
-                result <- Some i
+                result <- ValueSome i
                 i <- len // exit loop
             else
                 i <- i + 2
         result
 
-    /// <summary>Find the index of the last point in the Polyline2D that satisfies a given condition. Returns Some(index) if found, otherwise None.</summary>
+    /// <summary>Find the index of the last point in the Polyline2D that satisfies a given condition. Returns ValueSome(index) if found, otherwise ValueNone.</summary>
     /// <param name="condition">A function that takes the X and Y coordinates of a point and returns a boolean indicating whether the condition is satisfied.</param>
     /// <param name="pl">The Polyline2D to search through.</param>
-    /// <returns>Some(index of x) the index of the x value in the polyline's flat array if found, otherwise None.</returns>
-    static member inline tryFindLastIndex (condition: float -> float -> bool) (pl:Polyline2D) : int option =
-        let mutable result = None
+    /// <returns>ValueSome(index of x) the index of the x value in the polyline's flat array if found, otherwise ValueNone.</returns>
+    static member inline tryFindLastIndex (condition: float -> float -> bool) (pl:Polyline2D) : int voption =
+        let mutable result = ValueNone
         let xys = pl.XYs
         let mutable i = xys.Count - 2
         while i >= 0 do
             let x = xys.[i]
             let y = xys.[i + 1]
             if condition x y then
-                result <- Some i
+                result <- ValueSome i
                 i <- -2 // exit loop
             else
                 i <- i - 2
@@ -1794,11 +1794,15 @@ type Polyline2D private (xys: ResizeArray<float>) =
         pl |> Polyline2D.iterSegments (fun x1 y1 x2 y2 -> action (Line2D(x1, y1, x2, y2)))
 
 
-    /// <summary>Tests if two Polyline2D have the same point count and if their corresponding points are equal within a given tolerance.</summary>
-    /// <param name="tol">The tolerance value for comparing the coordinates.</param>
+    /// <summary>Tests if two Polyline2D have the same point count and if their corresponding points are equal within a given tolerance.
+    /// The tolerance applies to the X and Y coordinates of each point separately, not to the Euclidean distance between the points.
+    /// The same instance is always equal to itself. Otherwise a NaN coordinate is never equal.
+    /// Use Polyline2D.equalsExact to check for an exact match.</summary>
+    /// <param name="tol">The tolerance value for comparing each coordinate.</param>
     /// <param name="pl1">The first Polyline2D instance.</param>
     /// <param name="pl2">The second Polyline2D instance.</param>
-    static member equalsTol (tol:float) (pl1:Polyline2D) (pl2:Polyline2D) : bool =
+    /// <returns>TRUE if the two Polyline2D instances are equal within the tolerance, otherwise FALSE.</returns>
+    static member equalsWithin (tol:float) (pl1:Polyline2D) (pl2:Polyline2D) : bool =
         if Object.ReferenceEquals(pl1, pl2) then
             true
         elif pl1.XYs.Count <> pl2.XYs.Count then
@@ -1810,18 +1814,19 @@ type Polyline2D private (xys: ResizeArray<float>) =
             let mutable i = 0
             let mutable equal = true
             while i < len do
-                if abs (xys1.[i] - xys2.[i]) > tol then
+                if not (abs (xys1.[i] - xys2.[i]) <= tol) then // 'not' to catch NaN too
                     equal <- false
                     i <- len // exit loop
                 else
                     i <- i + 1
             equal
 
-    /// <summary>Tests if two Polyline2D have the same point count and if their corresponding points are exactly equal.</summary>
+    /// <summary>Tests if two Polyline2D have the same point count and if their corresponding points are exactly equal.
+    /// The same instance is always equal to itself. Otherwise a NaN coordinate is never equal.</summary>
     /// <param name="pl1">The first Polyline2D instance.</param>
     /// <param name="pl2">The second Polyline2D instance.</param>
     /// <returns>TRUE if the two Polyline2D instances are equal, otherwise FALSE.</returns>
-    static member equals (pl1:Polyline2D) (pl2:Polyline2D) : bool =
+    static member equalsExact (pl1:Polyline2D) (pl2:Polyline2D) : bool =
         if Object.ReferenceEquals(pl1, pl2) then
             true
         elif pl1.XYs.Count <> pl2.XYs.Count then
@@ -2450,23 +2455,23 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// Tries to find a self intersection in Polyline2D.
     /// This function is optimized for polylines with fewer than 50 points.
     /// A closed Polyline2D, is not reported as a self intersection.
-    /// Also returns Some if two non-adjacent segments are just touching.
+    /// Also returns ValueSome if two non-adjacent segments are just touching.
     /// If found returns the first intersection point and the indices of the two segments that intersect.
-    /// If no intersection is found returns None.
-    /// Returns None for Polylines with fewer than 3 points (less than two segments).
+    /// If no intersection is found returns ValueNone.
+    /// Returns ValueNone for Polylines with fewer than 3 points (less than two segments).
     /// This is an iterative O(n^2) algorithm
     /// For larger polylines with more than 50 points, tryFindSelfIntersectionWithBRect is faster on .NET, but never on Fable JS.
-    static member tryFindSelfIntersection(pl:Polyline2D) : Option<Pt * int * int> =
+    static member tryFindSelfIntersection(pl:Polyline2D) : voption<Pt * int * int> =
         // see Test\BenchmarkPolyline2DSelfIntersection.fsx for performance tests and comparison of this algorithm with tryFindSelfIntersectionBig.
         let xys = pl.XYs
         let len = xys.Count
         if len < 6 then
-            None // a polyline with fewer than two segments cannot intersect itself
+            ValueNone // a polyline with fewer than two segments cannot intersect itself
         else
             let segmentVs = pl.SegmentVectorsXY
             let segLastIdx = segmentVs.LastIndex
             let isClosed = pl.IsAlmostClosed 1e-7
-            let mutable result = None
+            let mutable result = ValueNone
 
             let firstRowEnd = if isClosed then segLastIdx - 3 else segLastIdx
             let mutable j = 4 // +2 to skip the adjacent segment
@@ -2480,7 +2485,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
                 let mutable sVjx = segmentVs.[j]
                 let mutable sVjy = segmentVs.[j + 1]
                 match XLineXY.tryIntersect(ptix, ptiy, ptjx, ptjy, sVix, sViy, sVjx, sVjy) with
-                | ValueSome pt -> result <- Some (pt, 0, j / 2)
+                | ValueSome pt -> result <- ValueSome (pt, 0, j / 2)
                 | ValueNone    -> ()
                 j <- j + 2
 
@@ -2498,7 +2503,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
                     let mutable sVjx = segmentVs.[j]
                     let mutable sVjy = segmentVs.[j + 1]
                     match XLineXY.tryIntersect(ptix, ptiy, ptjx, ptjy, sVix, sViy, sVjx, sVjy) with
-                    | ValueSome pt -> result <- Some (pt, i / 2, j / 2)
+                    | ValueSome pt -> result <- ValueSome (pt, i / 2, j / 2)
                     | ValueNone    -> ()
                     j <- j + 2
                 i <- i + 2
@@ -2508,18 +2513,18 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// This function is the same as tryFindSelfIntersection but with an initial broad phase using bounding rectangles to quickly exclude non-intersecting segments.
     /// It runs faster than tryFindSelfIntersection for polylines with more than 50 points, but only on .NET, not on Fable JS.
     /// A closed Polyline2D, is not reported as a self intersection.
-    /// Also returns Some if two non-adjacent segments are just touching.
+    /// Also returns ValueSome if two non-adjacent segments are just touching.
     /// If found returns the first intersection point and the indices of the two segments that intersect.
-    /// If no intersection is found returns None.
-    /// Returns None for Polylines with fewer than 3 points (less than two segments).
+    /// If no intersection is found returns ValueNone.
+    /// Returns ValueNone for Polylines with fewer than 3 points (less than two segments).
     /// This is an iterative O(n^2) algorithm
     /// This function is optimized for polylines with more than 50 points.
-    static member tryFindSelfIntersectionWithBRect (pl:Polyline2D) : Option<Pt * int * int> =
+    static member tryFindSelfIntersectionWithBRect (pl:Polyline2D) : voption<Pt * int * int> =
         // see Test\BenchmarkPolyline2DSelfIntersection.fsx for performance tests and comparison of this algorithm with tryFindSelfIntersectionSmall.
         let xys = pl.XYs
         let len = xys.Count
         if len < 6 then
-            None // a polyline with fewer than two segments cannot intersect itself
+            ValueNone // a polyline with fewer than two segments cannot intersect itself
         else
 
             // brs is indexed per segment (0,1,2,..), while i and j below are flat (x,y)
@@ -2540,7 +2545,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
             let segLastIdx = segmentVs.LastIndex
             let isClosed = pl.IsAlmostClosed 1e-7
 
-            let mutable result = None
+            let mutable result = ValueNone
 
             // Segment 0 is handled first because its range depends on whether the Polyline2D is closed:
             // on a closed Polyline2D the first and last segment share the closure vertex and are therefore
@@ -2562,7 +2567,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
                     let mutable sVjx = segmentVs.[j]
                     let mutable sVjy = segmentVs.[j + 1]
                     match XLineXY.tryIntersect(ptix, ptiy, ptjx, ptjy, sVix, sViy, sVjx, sVjy) with
-                    | ValueSome pt -> result <- Some (pt, 0, j / 2)
+                    | ValueSome pt -> result <- ValueSome (pt, 0, j / 2)
                     | ValueNone    -> ()
                 j <- j + 2
 
@@ -2582,7 +2587,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
                         let mutable sVjx = segmentVs.[j]
                         let mutable sVjy = segmentVs.[j + 1]
                         match XLineXY.tryIntersect(ptix, ptiy, ptjx, ptjy, sVix, sViy, sVjx, sVjy) with
-                        | ValueSome pt -> result <- Some (pt, i / 2, j / 2)
+                        | ValueSome pt -> result <- ValueSome (pt, i / 2, j / 2)
                         | ValueNone    -> ()
                     j <- j + 2
                 i <- i + 2
@@ -2595,17 +2600,17 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// exists only for performance comparison with tryFindSelfIntersectionSmall, not used in production code.
     /// allocating 4 Vc or Pt objects for XLine2D.tryIntersect is 600% slower in js!
 
-    static member tryFindSelfIntersectionWithPtObjects (pl:Polyline2D) : Option<Pt * int * int> =
+    static member tryFindSelfIntersectionWithPtObjects (pl:Polyline2D) : voption<Pt * int * int> =
         // see Test\BenchmarkPolyline2DSelfIntersection.js for performance tests and comparison of this algorithm with tryFindSelfIntersectionBig.
         let xys = pl.XYs
         let len = xys.Count
         if len < 6 then
-            None // a polyline with fewer than two segments cannot intersect itself
+            ValueNone // a polyline with fewer than two segments cannot intersect itself
         else
             let segmentVs = pl.SegmentVectorsXY
             let segLastIdx = segmentVs.LastIndex
             let isClosed = pl.IsAlmostClosed 1e-7
-            let mutable result = None
+            let mutable result = ValueNone
 
             let firstRowEnd = if isClosed then segLastIdx - 3 else segLastIdx
             let mutable j = 4 // +2 to skip the adjacent segment
@@ -2623,8 +2628,8 @@ type Polyline2D private (xys: ResizeArray<float>) =
                 let pb = Pt(ptjx, ptjy)
                 let vb = Vc(sVjx, sVjy)
                 match XLine2D.tryIntersect(pa, pb, va, vb) with
-                | Some pt -> result <- Some (pt, 0, j / 2)
-                | None    -> ()
+                | ValueSome pt -> result <- ValueSome (pt, 0, j / 2)
+                | ValueNone    -> ()
                 j <- j + 2
 
             // The remaining segments from index 1 onward have no closure special case.
@@ -2645,8 +2650,8 @@ type Polyline2D private (xys: ResizeArray<float>) =
                     let pb = Pt(ptjx, ptjy)
                     let vb = Vc(sVjx, sVjy)
                     match XLine2D.tryIntersect(pa, pb, va, vb) with
-                    | Some pt -> result <- Some (pt, i / 2, j / 2)
-                    | None    -> ()
+                    | ValueSome pt -> result <- ValueSome (pt, i / 2, j / 2)
+                    | ValueNone    -> ()
                     j <- j + 2
                 i <- i + 2
             result
@@ -2656,6 +2661,16 @@ type Polyline2D private (xys: ResizeArray<float>) =
 
     // #endregion
     // #region Obsolete
+
+    /// Obsolete name. Same as Polyline2D.equalsWithin.
+    [<Obsolete("Use Polyline2D.equalsWithin instead.")>]
+    static member equalsTol (tol:float) (pl1:Polyline2D) (pl2:Polyline2D) : bool =
+        Polyline2D.equalsWithin tol pl1 pl2
+
+    /// Obsolete name. Same as Polyline2D.equalsExact.
+    [<Obsolete("Use Polyline2D.equalsExact instead.")>]
+    static member equals (pl1:Polyline2D) (pl2:Polyline2D) : bool =
+        Polyline2D.equalsExact pl1 pl2
 
     /// Obsolete name. Same as p.RotateAround, but with tupled arguments.
     [<Obsolete("Use p.RotateAround instead. It takes curried arguments: p.RotateAround cen r. Like it, this rotates the Polyline2D in place.")>]

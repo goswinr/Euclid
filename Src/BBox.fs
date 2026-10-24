@@ -603,7 +603,7 @@ type BBox =
     /// The returned BBox is the volume that is inside both input 3D bounding boxes.
     /// Returns ValueNone if the two 3D bounding boxes do not overlap.
     /// Just touching 3D bounding boxes will return ValueSome with a zero volume collapsed BBox.
-    member inline b.Intersection (a:BBox) : BBox voption =
+    member inline b.TryIntersection (a:BBox) : BBox voption =
         let minX = max a.MinX b.MinX
         let minY = max a.MinY b.MinY
         let minZ = max a.MinZ b.MinZ
@@ -617,9 +617,27 @@ type BBox =
 
     /// Returns the intersection of two 3D bounding boxes.
     /// The returned BBox is the volume that is inside both input 3D bounding boxes.
+    /// Just touching 3D bounding boxes will return a zero volume collapsed BBox.
+    /// Fails if the two 3D bounding boxes do not overlap.
+    /// Use b.TryIntersection to get ValueNone instead.
+    member b.Intersection (a:BBox) : BBox =
+        match b.TryIntersection a with
+        | ValueSome r -> r
+        | ValueNone -> fail $"BBox.Intersection: the two 3D bounding boxes do not overlap:{nl}{b}{nl}{a}"
+
+    /// Returns the intersection of two 3D bounding boxes.
+    /// The returned BBox is the volume that is inside both input 3D bounding boxes.
     /// Returns ValueNone if the two 3D bounding boxes do not overlap.
     /// Just touching 3D bounding boxes will return ValueSome with a zero volume collapsed BBox.
-    static member inline intersection (a:BBox) (b:BBox) : BBox voption =
+    static member inline tryIntersection (a:BBox) (b:BBox) : BBox voption =
+        a.TryIntersection(b)
+
+    /// Returns the intersection of two 3D bounding boxes.
+    /// The returned BBox is the volume that is inside both input 3D bounding boxes.
+    /// Just touching 3D bounding boxes will return a zero volume collapsed BBox.
+    /// Fails if the two 3D bounding boxes do not overlap.
+    /// Use BBox.tryIntersection to get ValueNone instead.
+    static member inline intersection (a:BBox) (b:BBox) : BBox =
         a.Intersection(b)
 
     /// <summary>Intersects an infinite ray (a Line3D extended infinitely in both directions) with this 3D bounding box.
@@ -632,7 +650,7 @@ type BBox =
     /// A ray that touches only one box corner returns ValueSome(t, t), where t is the corner parameter.</summary>
     /// <param name="ray">The ray to intersect with the bounding box.</param>
     /// <returns>ValueNone if there is no intersection; otherwise, ValueSome(tEntry, tExit).</returns>
-    member b.IntersectRay (ray:Line3D) : voption<float*float> =
+    member b.TryIntersectRay (ray:Line3D) : voption<float*float> =
         let dirX = ray.VectorX
         let dirY = ray.VectorY
         let dirZ = ray.VectorZ
@@ -676,8 +694,24 @@ type BBox =
             else
                 ValueNone
 
+    /// <summary>Intersects an infinite ray (a Line3D extended infinitely in both directions) with this 3D bounding box.
+    /// Same as b.TryIntersectRay, but fails if the ray does not intersect the bounding box or if the ray direction is too short.
+    /// A parameter of 0.0 corresponds to the ray's From point, and 1.0 to its To point.</summary>
+    /// <param name="ray">The ray to intersect with the bounding box.</param>
+    /// <returns>The entry and exit parameters on the ray (tEntry, tExit).</returns>
+    member b.IntersectRay (ray:Line3D) : float*float =
+        match b.TryIntersectRay ray with
+        | ValueSome ts -> ts
+        | ValueNone -> fail $"BBox.IntersectRay: the ray does not intersect the 3D bounding box or is too short:{nl}{ray}{nl}{b}"
+
+    /// Same as b.TryIntersectRay(ray).
+    static member inline tryIntersectRay (ray:Line3D) (b:BBox) : voption<float*float> =
+        b.TryIntersectRay ray
+
     /// Same as b.IntersectRay(ray).
-    static member inline intersectRay (ray:Line3D) (b:BBox) : voption<float*float> =
+    /// Fails if the ray does not intersect the bounding box or if the ray direction is too short.
+    /// Use BBox.tryIntersectRay to get ValueNone instead.
+    static member inline intersectRay (ray:Line3D) (b:BBox) : float*float =
         b.IntersectRay ray
 
     /// <summary>Checks if an infinite plane intersects this 3D bounding box.
@@ -1946,8 +1980,9 @@ type BBox =
     // #region Static members
 
     /// Checks if two 3D bounding boxes are equal within tolerance.
-    /// Use a tolerance of 0.0 to check for an exact match.
-    static member equals (tol:float) (a:BBox) (b:BBox)  : bool =
+    /// The tolerance applies to each minimum and maximum coordinate separately, not to the Euclidean distance between the corners.
+    /// Use BBox.equalsExact to check for an exact match.
+    static member equalsWithin (tol:float) (a:BBox) (b:BBox)  : bool =
         abs(a.MinX-b.MinX) <= tol &&
         abs(a.MinY-b.MinY) <= tol &&
         abs(a.MinZ-b.MinZ) <= tol &&
@@ -1955,9 +1990,19 @@ type BBox =
         abs(a.MaxY-b.MaxY) <= tol &&
         abs(a.MaxZ-b.MaxZ) <= tol
 
+    /// Checks if two 3D bounding boxes are exactly equal.
+    /// Compares each field with the = operator, so a NaN value is never equal.
+    static member inline equalsExact (a:BBox) (b:BBox) : bool =
+        a.MinX = b.MinX &&
+        a.MinY = b.MinY &&
+        a.MinZ = b.MinZ &&
+        a.MaxX = b.MaxX &&
+        a.MaxY = b.MaxY &&
+        a.MaxZ = b.MaxZ
+
     /// Check if two 3D bounding boxes are not equal within a given tolerance.
-    /// Use a tolerance of 0.0 to check if the two 3D bounding boxes are not exactly equal.
-    static member notEquals (tol:float) (a:BBox) (b:BBox)  : bool =
+    /// The tolerance applies to each minimum and maximum coordinate separately, not to the Euclidean distance between the corners.
+    static member notEqualsWithin (tol:float) (a:BBox) (b:BBox)  : bool =
         abs(a.MinX-b.MinX) > tol ||
         abs(a.MinY-b.MinY) > tol ||
         abs(a.MinZ-b.MinZ) > tol ||
@@ -2038,6 +2083,16 @@ type BBox =
 
     // #endregion
     // #region Obsolete
+
+    /// Obsolete name. Same as BBox.equalsWithin.
+    [<Obsolete("Use BBox.equalsWithin instead, or BBox.equalsExact for an exact match.")>]
+    static member equals (tol:float) (a:BBox) (b:BBox) : bool =
+        BBox.equalsWithin tol a b
+
+    /// Obsolete name. Same as BBox.notEqualsWithin.
+    [<Obsolete("Use BBox.notEqualsWithin instead.")>]
+    static member notEquals (tol:float) (a:BBox) (b:BBox) : bool =
+        BBox.notEqualsWithin tol a b
 
     /// Obsolete name. Same as b.GetPnt.
     [<Obsolete("Use GetPnt instead.")>]

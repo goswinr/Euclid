@@ -193,25 +193,25 @@ let tests =
         test "ResizeArr.tryFindIndex finds element" {
             let r = ResizeArray<int>([| 1; 2; 3; 4; 5 |])
             let idx = ResizeArr.tryFindIndex (fun x -> x = 3) r
-            Expect.equal idx (Some 2) "found at index 2"
+            Expect.equal idx (ValueSome 2) "found at index 2"
         }
 
-        test "ResizeArr.tryFindIndex returns None when not found" {
+        test "ResizeArr.tryFindIndex returns ValueNone when not found" {
             let r = ResizeArray<int>([| 1; 2; 3 |])
             let idx = ResizeArr.tryFindIndex (fun x -> x = 99) r
-            Expect.equal idx None "not found"
+            Expect.equal idx ValueNone "not found"
         }
 
         test "ResizeArr.tryFindIndex empty array" {
             let r = ResizeArray<int>()
             let idx = ResizeArr.tryFindIndex (fun _ -> true) r
-            Expect.equal idx None "empty returns None"
+            Expect.equal idx ValueNone "empty returns ValueNone"
         }
 
         test "ResizeArr.tryFindIndex returns first match" {
             let r = ResizeArray<int>([| 1; 2; 2; 3 |])
             let idx = ResizeArr.tryFindIndex (fun x -> x = 2) r
-            Expect.equal idx (Some 1) "first occurrence"
+            Expect.equal idx (ValueSome 1) "first occurrence"
         }
 
         test "ResizeArr.findIndex finds element" {
@@ -413,19 +413,19 @@ let tests =
         test "ResizeArr.tryFindBack finds last match" {
             let r = ResizeArray<int>([| 1; 2; 3; 2; 1 |])
             let result = ResizeArr.tryFindBack (fun x -> x = 2) r
-            Expect.equal result (Some 2) "found 2"
+            Expect.equal result (ValueSome 2) "found 2"
         }
 
-        test "ResizeArr.tryFindBack returns None when not found" {
+        test "ResizeArr.tryFindBack returns ValueNone when not found" {
             let r = ResizeArray<int>([| 1; 2; 3 |])
             let result = ResizeArr.tryFindBack (fun x -> x = 99) r
-            Expect.equal result None "not found"
+            Expect.equal result ValueNone "not found"
         }
 
         test "ResizeArr.tryFindBack empty array" {
             let r = ResizeArray<int>()
             let result = ResizeArr.tryFindBack (fun _ -> true) r
-            Expect.equal result None "empty returns None"
+            Expect.equal result ValueNone "empty returns ValueNone"
         }
 
         test "ResizeArr.tryFindBack input unchanged" {

@@ -235,6 +235,20 @@ module AutoOpenVec =
             let f = 1. / l
             UnitVec.createUnchecked(f*x, f*y, f*z)
 
+        /// Tries to unitize the 3D vector.
+        /// Returns ValueNone if the length of the vector is
+        /// less than 1e-12 (UtilEuclid.zeroLengthTolerance) or NaN.
+        /// Use Vec.unitize to raise an exception instead, or Vec.unitizeOrDefault for a fallback.
+        static member inline tryUnitize (v:Vec) : UnitVec voption =
+            let x = v.X
+            let y = v.Y
+            let z = v.Z
+            let l = sqrt (x*x + y*y + z*z)
+            if isTooTiny l then ValueNone
+            else
+                let f = 1. / l
+                ValueSome (UnitVec.createUnchecked(f*x, f*y, f*z))
+
 
         // Returns the 3D vector unitized.
         // If the length of the vector is 0.0 an invalid unit-vector is returned.
@@ -713,15 +727,23 @@ module AutoOpenVec =
 
         /// Checks if two 3D vectors are equal within tolerance.
         /// Identical vectors in opposite directions are not considered equal.
-        /// Use a tolerance of 0.0 to check for an exact match.
-        static member inline equals (tol:float) (a:Vec) (b:Vec) : bool =
+        /// The tolerance applies to the X, Y and Z components separately, not to the Euclidean distance between the tips.
+        /// Use Vec.equalsExact to check for an exact match.
+        static member inline equalsWithin (tol:float) (a:Vec) (b:Vec) : bool =
             abs (a.X-b.X) <= tol &&
             abs (a.Y-b.Y) <= tol &&
             abs (a.Z-b.Z) <= tol
 
+        /// Checks if two 3D vectors are exactly equal.
+        /// Compares each field with the = operator, so a NaN value is never equal.
+        static member inline equalsExact (a:Vec) (b:Vec) : bool =
+            a.X = b.X &&
+            a.Y = b.Y &&
+            a.Z = b.Z
+
         /// Check if two 3D vectors  are not equal within a given tolerance.
-        /// Use a tolerance of 0.0 to check if the two vectors are not exactly equal.
-        static member notEquals (tol:float) (a:Vec) (b:Vec) : bool =
+        /// The tolerance applies to the X, Y and Z components separately, not to the Euclidean distance between the tips.
+        static member notEqualsWithin (tol:float) (a:Vec) (b:Vec) : bool =
             abs (a.X-b.X) > tol ||
             abs (a.Y-b.Y) > tol ||
             abs (a.Z-b.Z) > tol
@@ -1139,6 +1161,16 @@ module AutoOpenVec =
 
         // #endregion
         // #region Obsolete
+
+        /// Obsolete name. Same as Vec.equalsWithin.
+        [<Obsolete("Use Vec.equalsWithin instead, or Vec.equalsExact for an exact match.")>]
+        static member inline equals (tol:float) (a:Vec) (b:Vec) : bool =
+            Vec.equalsWithin tol a b
+
+        /// Obsolete name. Same as Vec.notEqualsWithin.
+        [<Obsolete("Use Vec.notEqualsWithin instead.")>]
+        static member notEquals (tol:float) (a:Vec) (b:Vec) : bool =
+            Vec.notEqualsWithin tol a b
 
         /// Obsolete name. Same as Vec.withX.
         [<Obsolete("Use Vec.withX instead. This returns a new 3D vector, it does not mutate, so the 'with' prefix is clearer.")>]

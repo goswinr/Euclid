@@ -1350,8 +1350,8 @@ module BBoxAPI =
     let (_:bool) = bbox.Contains box2
     let (_:BBox) = bbox.UnionPnt(Pnt(15., 15., 15.))
     let (_:BBox) = bbox.Union box2
-    let (_:BBox voption) = bbox.Intersection box2
-    let (_:(float * float) voption) = bbox.IntersectRay ray
+    let (_:BBox voption) = bbox.TryIntersection box2 // Breaking: Intersection now fails instead of returning ValueNone
+    let (_:(float * float) voption) = bbox.TryIntersectRay ray // Breaking: IntersectRay now fails instead of returning ValueNone
     let (_:bool) = bbox.IsTouching(box2, 0.001)
 
     // Instance members - Overlap
@@ -1386,8 +1386,8 @@ module BBoxAPI =
     let (_:bool) = BBox.contains box2 bbox
     let (_:BBox) = BBox.unionPnt (Pnt(15., 15., 15.)) bbox
     let (_:BBox) = BBox.union bbox box2
-    let (_:BBox voption) = BBox.intersection bbox box2
-    let (_:(float * float) voption) = BBox.intersectRay ray bbox
+    let (_:BBox voption) = BBox.tryIntersection bbox box2 // Breaking: intersection now fails instead of returning ValueNone
+    let (_:(float * float) voption) = BBox.tryIntersectRay ray bbox // Breaking: intersectRay now fails instead of returning ValueNone
 
     // Static members - Comparison
     let (_:bool) = BBox.equals 0.001 bbox box2
@@ -1639,7 +1639,7 @@ module RigidMatrixAPI =
     let (_:RigidMatrix) = RigidMatrix.createToPlane plane
     let (_:RigidMatrix) = RigidMatrix.createPlaneToPlane(plane, plane)
     let (_:RigidMatrix) = RigidMatrix.createFromMatrix(Matrix.identity)
-    let (_:RigidMatrix option) = RigidMatrix.tryCreateFromMatrix(Matrix.identity)
+    let (_:RigidMatrix voption) = RigidMatrix.tryCreateFromMatrix(Matrix.identity) // Breaking: returns a voption now
 
     // Static members - Operations
     let (_:RigidMatrix) = RigidMatrix.multiply(rigidmatrix, rm2)
@@ -1705,8 +1705,8 @@ module NPlaneAPI =
     let (_:float) = NPlane.angleTo nplane np2
     let (_:bool) = NPlane.areCoincident nplane np2
     let (_:bool) = NPlane.doLinePlaneIntersect (Line3D(Pnt.Origin, Pnt(0., 0., 10.))) nplane
-    let (_:Line3D option) = NPlane.intersect nplane np2  // Intersection of two planes is a line
-    let (_:Pnt option) = NPlane.intersectLine (Line3D(Pnt.Origin, Pnt(0., 0., 10.))) nplane
+    let (_:Line3D voption) = NPlane.tryIntersect nplane np2  // Intersection of two planes is a line. Breaking: intersect now fails instead of returning None
+    let (_:Pnt voption) = NPlane.tryIntersectLine (Line3D(Pnt.Origin, Pnt(0., 0., 10.))) nplane // Breaking: intersectLine now fails instead of returning None
     // let (_:float option) = NPlane.intersectLineParameter (Line3D(Pnt.Origin, Pnt(0., 0., 10.))) nplane
 
     // Static members - Comparison
@@ -1874,7 +1874,7 @@ module Rect2DAPI =
     let (_:Rect2D) = Rect2D.createFromDirectionAndSizes(Pt.Origin, UnitVc.Xaxis, 10.0, 5.0)
     let (_:Rect2D) = Rect2D.createFromDirAndPoints (Vc(1., 0.)) (ResizeArray [Pt.Origin; Pt(10., 5.)])
     let (_:Rect2D) = Rect2D.createFrom3Points(Pt.Origin, Pt(10., 0.), Pt(0., 5.))
-    let (_:Rect2D option) = Rect2D.tryCreateFrom3Points(Pt.Origin, Pt(10., 0.), Pt(0., 5.))
+    let (_:Rect2D voption) = Rect2D.tryCreateFrom3Points(Pt.Origin, Pt(10., 0.), Pt(0., 5.)) // Breaking: returns a voption now
 
     // Static members - Operations
     let vc = Vc(1., 1.)
@@ -1980,7 +1980,7 @@ module Rect3DAPI =
     let (_:Rect3D) = Rect3D.createFromPlane(PPlane.WorldXY, 10.0, 5.0)
     let (_:Rect3D) = Rect3D.createCenteredFromPlane(PPlane.WorldXY, 10.0, 5.0)
     let (_:Rect3D) = Rect3D.createFrom3Points(Pnt.Origin, Pnt(10., 0., 0.), Pnt(0., 5., 0.))
-    let (_:Rect3D option) = Rect3D.tryCreateFrom3Points(Pnt.Origin, Pnt(10., 0., 0.), Pnt(0., 5., 0.))
+    let (_:Rect3D voption) = Rect3D.tryCreateFrom3Points(Pnt.Origin, Pnt(10., 0., 0.), Pnt(0., 5., 0.)) // Breaking: returns a voption now
 
     // Static members - Operations
     let (_:Rect3D) = Rect3D.translate (Vec(1., 1., 1.)) rect3d
@@ -2010,7 +2010,7 @@ module Rect3DAPI =
 
     // Static members - Intersection
     let ln = Line3D(Pnt(5., 2.5, -10.), Pnt(5., 2.5, 10.))
-    let (_:Pnt voption) = Rect3D.intersectLine ln rect3d
+    let (_:Pnt voption) = Rect3D.tryIntersectLine ln rect3d // Breaking: intersectLine now fails instead of returning ValueNone
     // let (_:float option) = Rect3D.intersectLineParameterInfinite ln rect3d
     // let (_:(float*float*float) option) = Rect3D.intersectLineParameters ln rect3d
     // let (_:(float*float*float) option) = Rect3D.intersectLineParametersInfinite ln rect3d

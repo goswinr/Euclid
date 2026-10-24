@@ -56,7 +56,7 @@ let tests =
             let prev = Pt(0,0)
             let pt   = Pt(1,0)
             let next = Pt(1,1)
-            match Tria2D.offsetPtVar(pt, prev, next, 0.0, 0.0) with
+            match Tria2D.tryOffsetPtVar(pt, prev, next, 0.0, 0.0) with
             | ValueSome o -> "offsetVarByNormals(0,0)==pt" |> Expect.isTrue (eq o pt)
             | ValueNone -> failwith "expected point for zero distances"
         }
@@ -159,7 +159,7 @@ let tests =
             let d = 0.37
             let nPrev = (pt - prev) |> Vc.unitize |> UnitVc.rotate90CCW
             let nNext = (next - pt) |> Vc.unitize |> UnitVc.rotate90CCW
-            match Tria2D.offsetPtVarByNormals(pt, nPrev, nNext, d, d) with
+            match Tria2D.tryOffsetPtVarByNormals(pt, nPrev, nNext, d, d) with
             | ValueSome o ->
             let expected = Pt(1.0 - d, d)
             sprintf "offsetVarByNormals(expected=%A, got=%A)" expected o |> Expect.isTrue (eq o expected)
@@ -174,7 +174,7 @@ let tests =
             let dNext = 0.7
             let nPrev = (pt - prev) |> Vc.unitize |> UnitVc.rotate90CCW
             let nNext = (next - pt) |> Vc.unitize |> UnitVc.rotate90CCW
-            match Tria2D.offsetPtVarByNormals(pt, nPrev, nNext, dPrev, dNext) with
+            match Tria2D.tryOffsetPtVarByNormals(pt, nPrev, nNext, dPrev, dNext) with
             | ValueSome o ->
             let expected = Pt(1.0 - dNext, dPrev)
             sprintf "offsetVarByNormals(expected=%A, got=%A)" expected o |> Expect.isTrue (eq o expected)
@@ -188,7 +188,7 @@ let tests =
             let next = Pt(1,1)
             let dPrev = 0.2
             let dNext = 0.7
-            match Tria2D.offsetPtVar(pt, prev, next, dPrev, dNext) with
+            match Tria2D.tryOffsetPtVar(pt, prev, next, dPrev, dNext) with
             | ValueSome o ->
             let expected = Pt(1.0 - dNext, dPrev)
             sprintf "offsetVarByNormals(expected=%A, got=%A)" expected o |> Expect.isTrue (eq o expected)
@@ -202,7 +202,7 @@ let tests =
             let next = Pt(0,0)
             let dPrev = 0.2
             let dNext = 0.7
-            match Tria2D.offsetPtVar(pt, prev, next,  dPrev, dNext) with
+            match Tria2D.tryOffsetPtVar(pt, prev, next,  dPrev, dNext) with
             | ValueSome o ->
             let expected = Pt(1.0 + dPrev, -dNext)
             sprintf "offsetVarByNormals(expected=%A, got=%A)" expected o |> Expect.isTrue (eq o expected)
@@ -220,9 +220,9 @@ let tests =
             let nb = (c - b) |> Vc.unitize |> UnitVc.rotate90CCW
             let nc = (a - c) |> Vc.unitize |> UnitVc.rotate90CCW
             // expected via line-line intersection approach
-            let ea = match Tria2D.offsetPtVarByNormals(a, na, nc, d, d) with ValueSome p -> p | _ -> failwith "expected ea"
-            let eb = match Tria2D.offsetPtVarByNormals(b, na, nb, d, d) with ValueSome p -> p | _ -> failwith "expected eb"
-            let ec = match Tria2D.offsetPtVarByNormals(c, nb, nc, d, d) with ValueSome p -> p | _ -> failwith "expected ec"
+            let ea = match Tria2D.tryOffsetPtVarByNormals(a, na, nc, d, d) with ValueSome p -> p | _ -> failwith "expected ea"
+            let eb = match Tria2D.tryOffsetPtVarByNormals(b, na, nb, d, d) with ValueSome p -> p | _ -> failwith "expected eb"
+            let ec = match Tria2D.tryOffsetPtVarByNormals(c, nb, nc, d, d) with ValueSome p -> p | _ -> failwith "expected ec"
             let (oa, ob, oc) = Tria2D.offset(a,b,c, d)
             "oa matches" |> Expect.isTrue (eq oa ea)
             "ob matches" |> Expect.isTrue (eq ob eb)
@@ -237,9 +237,9 @@ let tests =
             let na = (b - a) |> Vc.unitize |> UnitVc.rotate90CCW
             let nb = (c - b) |> Vc.unitize |> UnitVc.rotate90CCW
             let nc = (a - c) |> Vc.unitize |> UnitVc.rotate90CCW
-            let ea = match Tria2D.offsetPtVarByNormals(a, na, nc, d, d) with ValueSome p -> p | _ -> failwith "expected ea"
-            let eb = match Tria2D.offsetPtVarByNormals(b, na, nb, d, d) with ValueSome p -> p | _ -> failwith "expected eb"
-            let ec = match Tria2D.offsetPtVarByNormals(c, nb, nc, d, d) with ValueSome p -> p | _ -> failwith "expected ec"
+            let ea = match Tria2D.tryOffsetPtVarByNormals(a, na, nc, d, d) with ValueSome p -> p | _ -> failwith "expected ea"
+            let eb = match Tria2D.tryOffsetPtVarByNormals(b, na, nb, d, d) with ValueSome p -> p | _ -> failwith "expected eb"
+            let ec = match Tria2D.tryOffsetPtVarByNormals(c, nb, nc, d, d) with ValueSome p -> p | _ -> failwith "expected ec"
             let (oa, ob, oc) = Tria2D.offset(a,b,c, d)
             "oa matches (rev/neg)" |> Expect.isTrue (eq oa ea)
             "ob matches (rev/neg)" |> Expect.isTrue (eq ob eb)
@@ -323,10 +323,10 @@ let tests =
             let next = Pt(1,1)
             let d = 0.25
             // First offset by positive distance (equal distances)
-            match Tria2D.offsetPtVar(pt, prev, next, d, d) with
+            match Tria2D.tryOffsetPtVar(pt, prev, next, d, d) with
             | ValueSome o1 ->
                 // Then offset back by negative distance
-                match Tria2D.offsetPtVar(o1, prev + (o1 - pt), next + (o1 - pt), -d, -d) with
+                match Tria2D.tryOffsetPtVar(o1, prev + (o1 - pt), next + (o1 - pt), -d, -d) with
                 | ValueSome o2 ->
                     "offsetPtVar point returns to original after +d then -d (equal)" |> Expect.isTrue (eq o2 pt)
                 | ValueNone -> failwith "second offsetPtVar returned None"
@@ -339,10 +339,10 @@ let tests =
             let next = Pt(1,1)
             let d = 0.25
             // First offset by negative distance (equal distances)
-            match Tria2D.offsetPtVar(pt, prev, next, -d, -d) with
+            match Tria2D.tryOffsetPtVar(pt, prev, next, -d, -d) with
             | ValueSome o1 ->
                 // Then offset back by positive distance
-                match Tria2D.offsetPtVar(o1, prev + (o1 - pt), next + (o1 - pt), d, d) with
+                match Tria2D.tryOffsetPtVar(o1, prev + (o1 - pt), next + (o1 - pt), d, d) with
                 | ValueSome o2 ->
                     "offsetPtVar point returns to original after -d then +d (equal)" |> Expect.isTrue (eq o2 pt)
                 | ValueNone -> failwith "second offsetPtVar returned None"
@@ -356,13 +356,13 @@ let tests =
             let dPrev = 0.2
             let dNext = 0.3
             // First offset by positive distances
-            match Tria2D.offsetPtVar(pt, prev, next, dPrev, dNext) with
+            match Tria2D.tryOffsetPtVar(pt, prev, next, dPrev, dNext) with
             | ValueSome o1 ->
                 // Calculate new prev and next positions relative to offset point
                 let newPrev = prev + (o1 - pt)
                 let newNext = next + (o1 - pt)
                 // Then offset back by negative distances
-                match Tria2D.offsetPtVar(o1, newPrev, newNext, -dPrev, -dNext) with
+                match Tria2D.tryOffsetPtVar(o1, newPrev, newNext, -dPrev, -dNext) with
                 | ValueSome o2 ->
                     "offsetPtVar point returns to original after +d then -d (different)" |> Expect.isTrue (eq o2 pt)
                 | ValueNone -> failwith "second offsetPtVar returned None"
@@ -376,13 +376,13 @@ let tests =
             let dPrev = 0.15
             let dNext = 0.35
             // First offset by negative distances
-            match Tria2D.offsetPtVar(pt, prev, next, -dPrev, -dNext) with
+            match Tria2D.tryOffsetPtVar(pt, prev, next, -dPrev, -dNext) with
             | ValueSome o1 ->
                 // Calculate new prev and next positions relative to offset point
                 let newPrev = prev + (o1 - pt)
                 let newNext = next + (o1 - pt)
                 // Then offset back by positive distances
-                match Tria2D.offsetPtVar(o1, newPrev, newNext, dPrev, dNext) with
+                match Tria2D.tryOffsetPtVar(o1, newPrev, newNext, dPrev, dNext) with
                 | ValueSome o2 ->
                     "offsetPtVar point returns to original after -d then +d (different)" |> Expect.isTrue (eq o2 pt)
                 | ValueNone -> failwith "second offsetPtVar returned None"

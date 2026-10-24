@@ -524,8 +524,9 @@ type Rect2D =
 
     /// Checks if two 2D rectangles are equal within tolerance.
     /// Does not recognize congruent rectangles with different rotation as equal.
-    /// Use a tolerance of 0.0 to check for an exact match of exactly equal rectangles.
-    static member equals (tol:float) (a:Rect2D) (b:Rect2D)  : bool =
+    /// The tolerance applies to each coordinate of the origin and of the axis vectors separately, not to the Euclidean distance between them.
+    /// Use Rect2D.equalsExact to check for an exact match.
+    static member equalsWithin (tol:float) (a:Rect2D) (b:Rect2D)  : bool =
         abs (a.OriginX - b.OriginX) <= tol && //TODO raise an exception if the tolerance is negative ?
         abs (a.OriginY - b.OriginY) <= tol &&
         abs (a.XaxisX -  b.XaxisX ) <= tol &&
@@ -533,9 +534,19 @@ type Rect2D =
         abs (a.YaxisX -  b.YaxisX ) <= tol &&
         abs (a.YaxisY -  b.YaxisY ) <= tol
 
+    /// Checks if two 2D rectangles are exactly equal.
+    /// Compares each field with the = operator, so a NaN value is never equal.
+    static member inline equalsExact (a:Rect2D) (b:Rect2D) : bool =
+        a.OriginX = b.OriginX &&
+        a.OriginY = b.OriginY &&
+        a.XaxisX = b.XaxisX &&
+        a.XaxisY = b.XaxisY &&
+        a.YaxisX = b.YaxisX &&
+        a.YaxisY = b.YaxisY
+
     /// Check if two 2D rectangles are not equal within a given tolerance.
-    /// Use a tolerance of 0.0 to check if the two rectangles are not exactly equal.
-    static member notEquals (tol:float) (a:Rect2D) (b:Rect2D)  : bool =
+    /// The tolerance applies to each coordinate of the origin and of the axis vectors separately, not to the Euclidean distance between them.
+    static member notEqualsWithin (tol:float) (a:Rect2D) (b:Rect2D)  : bool =
         abs (a.OriginX - b.OriginX) > tol || //TODO raise an exception if the tolerance is negative ?
         abs (a.OriginY - b.OriginY) > tol ||
         abs (a.XaxisX -  b.XaxisX ) > tol ||
@@ -675,7 +686,7 @@ type Rect2D =
            //Rect2D.createUnchecked(origin + y, xv, -y) //alternative valid result: If the point Y is on the right side of the X-axis the origin will be at point 3, X at point 2.
            Rect2D.createUnchecked(xPt.X, xPt.Y, -xX, -xY, yrX, yrY) //the origin will be at point x, and the end of the x-Axis at the origin.
 
-    /// <summary>Tries to create a 2D rectangle from three points. Returns None if points are too close to each other or all collinear.
+    /// <summary>Tries to create a 2D rectangle from three points. Returns ValueNone if points are too close to each other or all collinear.
     /// The Origin, a point in X-axis direction and length, and a point for the length in Y-axis direction.
     /// Origin and x-point define the X-axis orientation of the Rectangle.
     /// The y-point only defines the length and side of the Y-axis.
@@ -697,30 +708,30 @@ type Rect2D =
     ///   +------------+-----> X-axis
     ///  0-Origin       1
     /// </code></summary>
-    static member tryCreateFrom3Points (origin:Pt, xPt:Pt, yPt:Pt) :Rect2D option=
+    static member tryCreateFrom3Points (origin:Pt, xPt:Pt, yPt:Pt) :Rect2D voption=
         let xX = xPt.X - origin.X
         let xY = xPt.Y - origin.Y
         let xLenSq = xX*xX + xY*xY
-        if isTooSmallSq xLenSq  then None
+        if isTooSmallSq xLenSq  then ValueNone
         else
             let yX = yPt.X - origin.X
             let yY = yPt.Y - origin.Y
-            if isTooSmallSq (yX*yX + yY*yY)  then None
+            if isTooSmallSq (yX*yX + yY*yY)  then ValueNone
             else
                 let xLen = sqrt xLenSq
                 let yuX = -xY / xLen
                 let yuY =  xX / xLen
                 //if y0 * yv < 0. then EuclidException.Raise "Euclid.Rect2D.createThreePoints: Y-Point %s is on right side but should be on the left of X-Point %s." origin.AsString y.AsString
                 let dot = yuX*yX + yuY*yY
-                if isTooSmall (abs dot) then None
+                if isTooSmall (abs dot) then ValueNone
                 else
                     let yrX = yuX * dot // get the y point projected on the y axis
                     let yrY = yuY * dot
                     if dot > 0. then
-                        Some <| Rect2D.createUnchecked(origin.X, origin.Y, xX, xY, yrX, yrY) //point is on left side of X-axis
+                        ValueSome <| Rect2D.createUnchecked(origin.X, origin.Y, xX, xY, yrX, yrY) //point is on left side of X-axis
                     else
                         //Rect2D.createUnchecked(origin + y, xv, -y) //alternative valid result: If the point Y is on the right side of the X-axis the origin will be at point 3, X at point 2.
-                        Some <| Rect2D.createUnchecked(xPt.X, xPt.Y, -xX, -xY, yrX, yrY) //the origin will be at point x, and the end of the x-Axis at the origin.
+                        ValueSome <| Rect2D.createUnchecked(xPt.X, xPt.Y, -xX, -xY, yrX, yrY) //the origin will be at point x, and the end of the x-Axis at the origin.
 
     /// Finds the oriented bounding rectangle of a set of points.
     /// The orientation of the X-axis is defined by the direction vector.
@@ -992,7 +1003,7 @@ type Rect2D =
     ///  - The ray does not intersect the rectangle
     ///  - The ray length is shorter than 1e-6
     /// </returns>
-    static member intersectRay (ray:Line2D) (rect:Rect2D) : voption<float * float> =
+    static member tryIntersectRay (ray:Line2D) (rect:Rect2D) : voption<float * float> =
         // Transform ray to the rectangle's local coordinate system
         let rayDirX = ray.VectorX
         let rayDirY = ray.VectorY
@@ -1061,11 +1072,22 @@ type Rect2D =
             else
                 ValueNone
 
+    /// <summary>Intersects an infinite ray (Line2D extended infinitely in both directions) with a 2D rectangle.
+    /// Same as Rect2D.tryIntersectRay, but fails if the ray does not intersect the rectangle or if the ray direction is too short.
+    /// A parameter of 0.0 corresponds to the ray's From point, 1.0 to its To point.</summary>
+    /// <param name="ray">The 2D line considered infinite, to intersect with the rectangle.</param>
+    /// <param name="rect">The 2D rectangle to intersect with the line.</param>
+    /// <returns>The entry and exit parameters on the ray (tEntry, tExit).</returns>
+    static member intersectRay (ray:Line2D) (rect:Rect2D) : float * float =
+        match Rect2D.tryIntersectRay ray rect with
+        | ValueSome ts -> ts
+        | ValueNone -> fail $"Rect2D.intersectRay: the ray does not intersect the rectangle or is too short:{nl}{ray}{nl}{rect}"
+
     /// Intersects or clips a 2D line with a 2D rectangle.
     /// Returns the clipped line segment of the intersection if it exists.
-    /// Same as Rect2D.clipLine.
-    static member intersectLine (line:Line2D) (rect:Rect2D) : voption<Line2D> =
-        match Rect2D.intersectRay line rect with
+    /// Same as Rect2D.tryClipLine.
+    static member tryIntersectLine (line:Line2D) (rect:Rect2D) : voption<Line2D> =
+        match Rect2D.tryIntersectRay line rect with
         | ValueNone -> ValueNone
         | ValueSome(tEntry, tExit) ->
             let p = UtilEuclid.clamp01 tEntry
@@ -1076,9 +1098,27 @@ type Rect2D =
                 ValueNone
 
     /// Intersects or clips a 2D line with a 2D rectangle.
+    /// Returns the clipped line segment of the intersection.
+    /// Fails if the line does not intersect the rectangle.
+    /// Use Rect2D.tryIntersectLine to get ValueNone instead.
+    /// Same as Rect2D.clipLine.
+    static member intersectLine (line:Line2D) (rect:Rect2D) : Line2D =
+        match Rect2D.tryIntersectLine line rect with
+        | ValueSome ln -> ln
+        | ValueNone -> fail $"Rect2D.intersectLine: the line does not intersect the rectangle:{nl}{line}{nl}{rect}"
+
+    /// Intersects or clips a 2D line with a 2D rectangle.
     /// Returns the clipped line segment of the intersection if it exists.
+    /// Same as Rect2D.tryIntersectLine.
+    static member inline tryClipLine (line:Line2D) (rect:Rect2D) : voption<Line2D> =
+        Rect2D.tryIntersectLine line rect
+
+    /// Intersects or clips a 2D line with a 2D rectangle.
+    /// Returns the clipped line segment of the intersection.
+    /// Fails if the line does not intersect the rectangle.
+    /// Use Rect2D.tryClipLine to get ValueNone instead.
     /// Same as Rect2D.intersectLine.
-    static member inline clipLine (line:Line2D) (rect:Rect2D) : voption<Line2D> =
+    static member inline clipLine (line:Line2D) (rect:Rect2D) : Line2D =
         Rect2D.intersectLine line rect
 
     // #endregion
@@ -2230,6 +2270,16 @@ type Rect2D =
 
     // #endregion
     // #region Obsolete
+
+    /// Obsolete name. Same as Rect2D.equalsWithin.
+    [<Obsolete("Use Rect2D.equalsWithin instead, or Rect2D.equalsExact for an exact match.")>]
+    static member equals (tol:float) (a:Rect2D) (b:Rect2D) : bool =
+        Rect2D.equalsWithin tol a b
+
+    /// Obsolete name. Same as Rect2D.notEqualsWithin.
+    [<Obsolete("Use Rect2D.notEqualsWithin instead.")>]
+    static member notEquals (tol:float) (a:Rect2D) (b:Rect2D) : bool =
+        Rect2D.notEqualsWithin tol a b
 
     /// Obsolete name. Same as r.RotateAround, but with tupled arguments.
     [<Obsolete("Use r.RotateAround instead. It takes curried arguments: r.RotateAround cen rot")>]

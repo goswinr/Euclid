@@ -326,21 +326,21 @@ let tests =
                 let pl = Polyline2D.createFromPts [Pt(0.,0.); Pt(5.,1.); Pt(10.,1.); Pt(5.,3.)]
 
                 match Polyline2D.tryFind (fun x _ -> x = 5.0) pl with
-                | Some pt -> "first matching point" |> expectEqPts pt (Pt(5.,1.))
-                | None -> "first matching point" |> Expect.isTrue false
+                | ValueSome pt -> "first matching point" |> expectEqPts pt (Pt(5.,1.))
+                | ValueNone -> "first matching point" |> Expect.isTrue false
 
                 match Polyline2D.tryFindLast (fun x _ -> x = 5.0) pl with
-                | Some pt -> "last matching point" |> expectEqPts pt (Pt(5.,3.))
-                | None -> "last matching point" |> Expect.isTrue false
+                | ValueSome pt -> "last matching point" |> expectEqPts pt (Pt(5.,3.))
+                | ValueNone -> "last matching point" |> Expect.isTrue false
 
-                "first matching flat index" |> Expect.equal (Polyline2D.tryFindIndex (fun x _ -> x = 5.0) pl) (Some 2)
-                "last matching flat index" |> Expect.equal (Polyline2D.tryFindLastIndex (fun x _ -> x = 5.0) pl) (Some 6)
+                "first matching flat index" |> Expect.equal (Polyline2D.tryFindIndex (fun x _ -> x = 5.0) pl) (ValueSome 2)
+                "last matching flat index" |> Expect.equal (Polyline2D.tryFindLastIndex (fun x _ -> x = 5.0) pl) (ValueSome 6)
                 let noPointMatch =
                     match Polyline2D.tryFind (fun _ y -> y = 99.0) pl with
-                    | None -> true
-                    | Some _ -> false
+                    | ValueNone -> true
+                    | ValueSome _ -> false
                 "no point match" |> Expect.isTrue noPointMatch
-                "no index match on empty polyline" |> Expect.equal (Polyline2D.tryFindIndex (fun _ _ -> true) (Polyline2D(1))) None
+                "no index match on empty polyline" |> Expect.equal (Polyline2D.tryFindIndex (fun _ _ -> true) (Polyline2D(1))) ValueNone
             }
 
             test "rotation" {
@@ -783,7 +783,7 @@ let testsDup =
                 let pl = Polyline2D.createFromPts [Pt(0.,0.); Pt(1.,0.); Pt(2.,0.)]
                 let cleaned, duplicates = Polyline2D.removeDuplicatePointsAndReport 0.01 pl
                 Expect.equal duplicates.Count 0 "no duplicate points"
-                Expect.isTrue (Polyline2D.equals cleaned pl) "copy has the same points"
+                Expect.isTrue (Polyline2D.equalsExact cleaned pl) "copy has the same points"
                 Expect.isFalse (obj.ReferenceEquals(cleaned.XYs, pl.XYs)) "copy has its own coordinate list"
             }
             test "removeDuplicatePointsAndReport lists identical consecutive duplicates once" {
@@ -1314,21 +1314,21 @@ let testsComprehensive =
 
         testList "Static equals" [
             test "same polylines are equal" {
-                Expect.isTrue (Polyline2D.equalsTol  1e-9 plOpen (plOpen.Clone())) "clones should be equal"
+                Expect.isTrue (Polyline2D.equalsWithin  1e-9 plOpen (plOpen.Clone())) "clones should be equal"
             }
             test "different polylines are not equal" {
-                Expect.isFalse (Polyline2D.equalsTol  1e-9 plOpen plClosed) "open vs closed not equal"
+                Expect.isFalse (Polyline2D.equalsWithin  1e-9 plOpen plClosed) "open vs closed not equal"
             }
             test "almost equal within tolerance" {
                 let pl1 = Polyline2D.createFromPts [Pt(0.,0.); Pt(1.,0.)]
                 let pl2 = Polyline2D.createFromPts [Pt(0.,0.); Pt(1.0001,0.)]
-                Expect.isTrue (Polyline2D.equalsTol  0.001 pl1 pl2) "within tolerance"
-                Expect.isFalse (Polyline2D.equalsTol  0.00001 pl1 pl2) "outside tolerance"
+                Expect.isTrue (Polyline2D.equalsWithin  0.001 pl1 pl2) "within tolerance"
+                Expect.isFalse (Polyline2D.equalsWithin  0.00001 pl1 pl2) "outside tolerance"
             }
             test "different counts not equal" {
                 let pl1 = Polyline2D.createFromPts [Pt(0.,0.); Pt(1.,0.)]
                 let pl2 = Polyline2D.createFromPts [Pt(0.,0.); Pt(1.,0.); Pt(2.,0.)]
-                Expect.isFalse (Polyline2D.equalsTol  1e-9 pl1 pl2) "different counts"
+                Expect.isFalse (Polyline2D.equalsWithin  1e-9 pl1 pl2) "different counts"
             }
         ]
 
@@ -1574,24 +1574,24 @@ let testsComprehensive =
         testList "tryFindSelfIntersection" [
             test "no intersection in simple polyline" {
                 let result = Polyline2D.tryFindSelfIntersection plOpen
-                Expect.isNone result "simple polyline has no self intersection"
+                Expect.isValueNone result "simple polyline has no self intersection"
             }
             test "no intersection in L-shape open polyline" {
                 // Open polyline with many segments but no crossings
                 let result = Polyline2D.tryFindSelfIntersection plLShape
-                Expect.isNone result "L-shape open polyline has no self intersection"
+                Expect.isValueNone result "L-shape open polyline has no self intersection"
             }
             test "self intersection in figure-8" {
                 let fig8 = Polyline2D.createFromPts [
                     Pt(0.,0.); Pt(10.,10.); Pt(10.,0.); Pt(0.,10.); Pt(0.,0.)
                 ]
                 let result = Polyline2D.tryFindSelfIntersection fig8
-                Expect.isSome result "figure 8 has self intersection"
+                Expect.isValueSome result "figure 8 has self intersection"
                 match result with
-                | Some (pt, i, j) ->
+                | ValueSome (pt, i, j) ->
                     "intersection near center" |> expectEqPts pt (Pt(5.,5.))
                     Expect.equal (i, j) (0, 2) "returns segment indices, not flat coordinate indices"
-                | None -> ()
+                | ValueNone -> ()
             }
             test "touching segments" {
                 // Two segments that share an endpoint but overlap via a separate crossing
@@ -1599,19 +1599,19 @@ let testsComprehensive =
                     Pt(0.,0.); Pt(5.,5.); Pt(10.,0.); Pt(5.,5.); Pt(0.,10.)
                 ]
                 let result = Polyline2D.tryFindSelfIntersection pl
-                Expect.isSome result "touching segments should find intersection"
+                Expect.isValueSome result "touching segments should find intersection"
             }
             test "first and last segment intersect in open polyline" {
                 let pl = Polyline2D.createFromPts [
                     Pt(0.,0.); Pt(10.,0.); Pt(10.,3.); Pt(10.,5.); Pt(2.,-2.)
                 ]
                 let result = Polyline2D.tryFindSelfIntersection pl
-                Expect.isSome result "open polyline should report crossing between first and last segment"
+                Expect.isValueSome result "open polyline should report crossing between first and last segment"
                 match result with
-                | Some (pt, i, j) ->
+                | ValueSome (pt, i, j) ->
                     "intersection point" |> expectEqPts pt (Pt(30. / 7., 0.))
                     Expect.equal (i, j) (0, 3) "returns segment indices, not flat coordinate indices"
-                | None -> ()
+                | ValueNone -> ()
             }
         ]
 
@@ -1761,35 +1761,35 @@ let testsSpecial =
             test "simple closed square has no self intersection" {
                 // The shared start/end (closure) vertex of a closed polyline is not a self intersection.
                 let result = Polyline2D.tryFindSelfIntersection plClosed
-                Expect.isNone result "closure seam of a simple closed square must not be reported"
+                Expect.isValueNone result "closure seam of a simple closed square must not be reported"
             }
             test "closed triangle has no self intersection" {
                 let result = Polyline2D.tryFindSelfIntersection plTriangle
-                Expect.isNone result "closed triangle has no self intersection"
+                Expect.isValueNone result "closed triangle has no self intersection"
             }
             test "open 3-point corner has no self intersection" {
                 // first and last segment are adjacent (share the middle vertex), so their corner is not a crossing
                 let pl = Polyline2D.createFromPts [Pt(0.,0.); Pt(5.,0.); Pt(5.,5.)]
                 let result = Polyline2D.tryFindSelfIntersection pl
-                Expect.isNone result "an open corner of two adjacent segments is not a self intersection"
+                Expect.isValueNone result "an open corner of two adjacent segments is not a self intersection"
             }
             test "degenerate polylines have no self intersection" {
-                Expect.isNone (Polyline2D.tryFindSelfIntersection plEmpty) "empty has no self intersection"
-                Expect.isNone (Polyline2D.tryFindSelfIntersection plSinglePoint) "single point has no self intersection"
-                Expect.isNone (Polyline2D.tryFindSelfIntersection plLine) "single segment has no self intersection"
+                Expect.isValueNone (Polyline2D.tryFindSelfIntersection plEmpty) "empty has no self intersection"
+                Expect.isValueNone (Polyline2D.tryFindSelfIntersection plSinglePoint) "single point has no self intersection"
+                Expect.isValueNone (Polyline2D.tryFindSelfIntersection plLine) "single segment has no self intersection"
             }
             test "closed figure-8 is still detected" {
                 let fig8 = Polyline2D.createFromPts [Pt(0.,0.); Pt(10.,10.); Pt(10.,0.); Pt(0.,10.); Pt(0.,0.)]
                 let result = Polyline2D.tryFindSelfIntersection fig8
-                Expect.isSome result "a real crossing must still be found"
+                Expect.isValueSome result "a real crossing must still be found"
                 match result with
-                | Some (pt, _, _) -> "crossing near center" |> expectEqPts pt (Pt(5.,5.))
-                | None -> ()
+                | ValueSome (pt, _, _) -> "crossing near center" |> expectEqPts pt (Pt(5.,5.))
+                | ValueNone -> ()
             }
             test "non-adjacent touching segments are reported" {
                 // two non-adjacent segments meet at (5,5)
                 let pl = Polyline2D.createFromPts [Pt(0.,0.); Pt(5.,5.); Pt(10.,0.); Pt(5.,5.); Pt(0.,10.)]
-                Expect.isSome (Polyline2D.tryFindSelfIntersection pl) "non-adjacent touching segments should be found"
+                Expect.isValueSome (Polyline2D.tryFindSelfIntersection pl) "non-adjacent touching segments should be found"
             }
         ]
 
@@ -1995,7 +1995,7 @@ let testsSpecial =
             test "bowtie intersection found by both variants" {
                 let bowtie = Polyline2D.createFromPts [Pt(0.,0.); Pt(10.,10.); Pt(10.,0.); Pt(0.,10.)]
                 match Polyline2D.tryFindSelfIntersection bowtie, Polyline2D.tryFindSelfIntersectionWithBRect bowtie with
-                | Some (pt1, i1, j1), Some (pt2, i2, j2) ->
+                | ValueSome (pt1, i1, j1), ValueSome (pt2, i2, j2) ->
                     "same intersection point" |> expectEqPts pt1 pt2
                     Expect.equal (i1, j1) (i2, j2) "same segment indices"
                     "intersection at (5,5)" |> expectEqPts pt1 (Pt(5.,5.))
@@ -2003,8 +2003,8 @@ let testsSpecial =
                     failwithf "both variants should find the intersection but got %A and %A" a b
             }
             test "closed square is not a self intersection in both variants" {
-                Expect.isNone (Polyline2D.tryFindSelfIntersection plClosed) "closed square has no self intersection"
-                Expect.isNone (Polyline2D.tryFindSelfIntersectionWithBRect plClosed) "closed square has no self intersection with BRect"
+                Expect.isValueNone (Polyline2D.tryFindSelfIntersection plClosed) "closed square has no self intersection"
+                Expect.isValueNone (Polyline2D.tryFindSelfIntersectionWithBRect plClosed) "closed square has no self intersection with BRect"
             }
         ]
 
@@ -2076,7 +2076,7 @@ let testsSpecial =
                     |> Polyline2D.translate (Vc(-2.,5.))
                     |> Polyline2D.rotateAround (Pt(4.,6.)) (Rotation2D.createFromDegrees 30.)
                     |> Polyline2D.scaleOn (Pt(1.,-1.)) 1.5
-                Expect.isTrue (Polyline2D.equalsTol 1e-12 pl expected) "instance and static calls give the same result"
+                Expect.isTrue (Polyline2D.equalsWithin 1e-12 pl expected) "instance and static calls give the same result"
                 "first point moved" |> expectNotEqPts pl.Start (Pt(3.,2.))
             }
             test "RemoveDuplicatePoints shrinks the same coordinate list" {
@@ -2146,7 +2146,7 @@ let testsSpecial =
                     Expect.isFalse (obj.ReferenceEquals(res, pl)) $"{name} should return a new Polyline2D"
                     Expect.isFalse (obj.ReferenceEquals(res.XYs, pl.XYs)) $"{name} should return its own coordinate list"
                     Expect.isTrue (obj.ReferenceEquals(xys, pl.XYs)) $"{name} should keep the coordinate list of the input"
-                    Expect.isTrue (Polyline2D.equals pl (original ())) $"{name} should not change the input"
+                    Expect.isTrue (Polyline2D.equalsExact pl (original ())) $"{name} should not change the input"
                 let expectNewAndInputUnchanged name op = check name withDuplicate op
                 let r = Rotation2D.createFromDegrees 30.
                 let cen = Pt(4.,6.)
@@ -2181,7 +2181,7 @@ let testsSpecial =
                 let check (name:string) (op:Polyline2D -> Polyline2D) (inPlace:Polyline2D -> unit) =
                     let expected = original ()
                     inPlace expected
-                    Expect.isTrue (Polyline2D.equals (op (original ())) expected) $"{name} should match its instance member"
+                    Expect.isTrue (Polyline2D.equalsExact (op (original ())) expected) $"{name} should match its instance member"
                 check "scaleOn" (Polyline2D.scaleOn cen 1.5) (fun p -> p.ScaleOn cen 1.5)
                 check "rotateAround" (Polyline2D.rotateAround cen r) (fun p -> p.RotateAround cen r)
                 check "rotateAroundDegrees" (Polyline2D.rotateAroundDegrees cen 30.) (fun p -> p.RotateAroundDegrees cen 30.)
@@ -2199,7 +2199,7 @@ let testsSpecial =
                 Expect.isTrue cw.IsClockwise "result should be clockwise"
                 Expect.isTrue pl.IsCounterClockwise "input should stay counter-clockwise"
                 let ccw = Polyline2D.ensureCounterClockwise pl
-                Expect.isTrue (Polyline2D.equals ccw pl) "already counter-clockwise gives an equal copy"
+                Expect.isTrue (Polyline2D.equalsExact ccw pl) "already counter-clockwise gives an equal copy"
             }
 
             test "removeDuplicatePointsAndReport returns the cleaned copy and the removed points" {

@@ -385,7 +385,7 @@ let tests =
             test "Intersection - overlapping boxes" {
                 let a = BBox.create(Pnt(0., 0., 0.), Pnt(5., 5., 5.))
                 let b = BBox.create(Pnt(3., 3., 3.), Pnt(8., 8., 8.))
-                match a.Intersection b with
+                match a.TryIntersection b with
                 | ValueSome intersect ->
                     Expect.equal intersect.MinX 3. "Intersection MinX should be 3"
                     Expect.equal intersect.MinY 3. "Intersection MinY should be 3"
@@ -399,7 +399,7 @@ let tests =
             test "Intersection - touching boxes" {
                 let a = BBox.create(Pnt(0., 0., 0.), Pnt(5., 5., 5.))
                 let b = BBox.create(Pnt(5., 0., 0.), Pnt(10., 5., 5.))
-                match a.Intersection b with
+                match a.TryIntersection b with
                 | ValueSome intersect ->
                     Expect.isTrue intersect.IsFlat "Intersection should be flat"
                 | ValueNone -> failwith "Should have intersection (touching)"
@@ -408,7 +408,7 @@ let tests =
             test "Intersection - separated boxes" {
                 let a = BBox.create(Pnt(0., 0., 0.), Pnt(5., 5., 5.))
                 let b = BBox.create(Pnt(6., 6., 6.), Pnt(10., 10., 10.))
-                match a.Intersection b with
+                match a.TryIntersection b with
                 | ValueSome _ -> failwith "Should not have intersection"
                 | ValueNone -> ()
             }
@@ -416,7 +416,7 @@ let tests =
             test "intersection static method" {
                 let a = BBox.create(Pnt(0., 0., 0.), Pnt(5., 5., 5.))
                 let b = BBox.create(Pnt(3., 3., 3.), Pnt(8., 8., 8.))
-                match BBox.intersection a b with
+                match BBox.tryIntersection a b with
                 | ValueSome intersect ->
                     Expect.equal intersect.MinX 3. "Intersection MinX should be 3"
                 | ValueNone -> failwith "Should have intersection"
@@ -846,7 +846,7 @@ let tests =
             test "returns entry and exit parameters" {
                 let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
                 let ray = Line3D(Pnt(-5., 5., 5.), Pnt(0., 5., 5.))
-                match box.IntersectRay ray with
+                match box.TryIntersectRay ray with
                 | ValueSome(tEntry, tExit) ->
                     Expect.isTrue (eqFloat tEntry 1.) "Entry parameter should be 1"
                     Expect.isTrue (eqFloat tExit 3.) "Exit parameter should be 3"
@@ -856,33 +856,33 @@ let tests =
             test "returns parameters on both sides when starting inside" {
                 let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
                 let ray = Line3D(Pnt(5., 5., 5.), Pnt(6., 5., 5.))
-                Expect.equal (box.IntersectRay ray) (ValueSome(-5., 5.)) "Expected intersections behind and ahead of the origin"
+                Expect.equal (box.TryIntersectRay ray) (ValueSome(-5., 5.)) "Expected intersections behind and ahead of the origin"
             }
 
             test "returns ValueNone for a parallel ray outside a slab" {
                 let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
                 let ray = Line3D(Pnt(-5., 11., 5.), Pnt(0., 11., 5.))
-                Expect.equal (box.IntersectRay ray) ValueNone "Expected the ray to miss the bounding box"
+                Expect.equal (box.TryIntersectRay ray) ValueNone "Expected the ray to miss the bounding box"
             }
 
             test "supports collapsed bounding boxes" {
                 let box = BBox.create(Pnt(2., 0., 0.), Pnt(2., 10., 10.))
                 let hit = Line3D(Pnt(0., 5., 5.), Pnt(1., 5., 5.))
                 let miss = Line3D(Pnt(0., 11., 5.), Pnt(1., 11., 5.))
-                Expect.equal (box.IntersectRay hit) (ValueSome(2., 2.)) "Expected one intersection with the collapsed X slab"
-                Expect.equal (box.IntersectRay miss) ValueNone "Expected the ray to miss the collapsed bounding box"
+                Expect.equal (box.TryIntersectRay hit) (ValueSome(2., 2.)) "Expected one intersection with the collapsed X slab"
+                Expect.equal (box.TryIntersectRay miss) ValueNone "Expected the ray to miss the collapsed bounding box"
             }
 
             test "returns ValueNone for a zero-length ray" {
                 let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
                 let ray = Line3D(Pnt(5., 5., 5.), Pnt(5., 5., 5.))
-                Expect.equal (box.IntersectRay ray) ValueNone "A zero-length ray has no direction"
+                Expect.equal (box.TryIntersectRay ray) ValueNone "A zero-length ray has no direction"
             }
 
             test "static member is the same as the instance member" {
                 let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
                 let ray = Line3D(Pnt(-5., 5., 5.), Pnt(0., 5., 5.))
-                Expect.equal (BBox.intersectRay ray box) (box.IntersectRay ray) "Static and instance members should agree"
+                Expect.equal (BBox.tryIntersectRay ray box) (box.TryIntersectRay ray) "Static and instance members should agree"
             }
         ]
 
@@ -1002,20 +1002,20 @@ let tests =
             test "equals with exact match" {
                 let a = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
                 let b = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
-                Expect.isTrue (BBox.equals 0.0 a b) "Exact boxes should be equal"
+                Expect.isTrue (BBox.equalsExact a b) "Exact boxes should be equal"
             }
 
             test "equals with tolerance" {
                 let a = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
                 let b = BBox.create(Pnt(0.001, 0.001, 0.001), Pnt(10.001, 10.001, 10.001))
-                Expect.isTrue (BBox.equals 0.01 a b) "Boxes should be equal within tolerance"
-                Expect.isFalse (BBox.equals 0.0001 a b) "Boxes should not be equal with small tolerance"
+                Expect.isTrue (BBox.equalsWithin 0.01 a b) "Boxes should be equal within tolerance"
+                Expect.isFalse (BBox.equalsWithin 0.0001 a b) "Boxes should not be equal with small tolerance"
             }
 
             test "notEquals" {
                 let a = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
                 let b = BBox.create(Pnt(1., 1., 1.), Pnt(10., 10., 10.))
-                Expect.isTrue (BBox.notEquals 0.5 a b) "Different boxes should not be equal"
+                Expect.isTrue (BBox.notEqualsWithin 0.5 a b) "Different boxes should not be equal"
             }
         ]
     ]

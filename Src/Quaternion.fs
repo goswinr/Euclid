@@ -215,23 +215,33 @@ type Quaternion =
 
 
 
-    /// Checks if two Quaternion are equal within tolerance (component-wise comparison).
-    /// Use a tolerance of 0.0 to check for an exact match.
+    /// Checks if two Quaternion are equal within tolerance.
+    /// The tolerance applies to each of the X, Y, Z and W components separately.
+    /// Use Quaternion.equalsExact to check for an exact match.
     /// Note: A Quaternion with every component negated represents the same rotation but will be considered unequal by this function.
-    /// For rotational equivalence, consider using Quaternion.equalsRotation function.
-    static member inline equals (tolerance:float) (a:Quaternion) (b:Quaternion)  : bool =
+    /// For rotational equivalence, consider using Quaternion.equalsRotationWithin function.
+    static member inline equalsWithin (tolerance:float) (a:Quaternion) (b:Quaternion)  : bool =
         abs(a.X-b.X) <= tolerance &&
         abs(a.Y-b.Y) <= tolerance &&
         abs(a.Z-b.Z) <= tolerance &&
         abs(a.W-b.W) <= tolerance
 
-    /// Checks if two Quaternion represent an equal rotation.
+    /// Checks if two Quaternions are exactly equal.
+    /// Compares each field with the = operator, so a NaN value is never equal.
+    static member inline equalsExact (a:Quaternion) (b:Quaternion) : bool =
+        a.X = b.X &&
+        a.Y = b.Y &&
+        a.Z = b.Z &&
+        a.W = b.W
+
+    /// Checks if two Quaternion represent an equal rotation within tolerance.
+    /// The tolerance applies to each of the X, Y, Z and W components separately, as in Quaternion.equalsWithin.
     /// Use a tolerance of 0.0 to check for an exact match.
     /// Note: A Quaternion with every component negated represents the same rotation and will be considered equal by this function.
-    /// For component-wise equality, consider using Quaternion.equals function.
-    static member inline equalsRotation (tolerance:float) (a:Quaternion) (b:Quaternion) : bool =
-        Quaternion.equals tolerance a b ||
-        Quaternion.equals tolerance a (Quaternion.createUnchecked(-b.X, -b.Y, -b.Z, -b.W))
+    /// For component-wise equality, consider using Quaternion.equalsWithin function.
+    static member inline equalsRotationWithin (tolerance:float) (a:Quaternion) (b:Quaternion) : bool =
+        Quaternion.equalsWithin tolerance a b ||
+        Quaternion.equalsWithin tolerance a (Quaternion.createUnchecked(-b.X, -b.Y, -b.Z, -b.W))
 
     /// Multiply two Quaternions (Hamilton product l * r).
     /// Note: The resulting rotation first does r and then l. This is the opposite order of Matrix.multiply and RigidMatrix.multiply.
@@ -585,6 +595,16 @@ type Quaternion =
 
     // #endregion
     // #region Obsolete
+
+    /// Obsolete name. Same as Quaternion.equalsWithin.
+    [<Obsolete("Use Quaternion.equalsWithin instead, or Quaternion.equalsExact for an exact match.")>]
+    static member inline equals (tolerance:float) (a:Quaternion) (b:Quaternion) : bool =
+        Quaternion.equalsWithin tolerance a b
+
+    /// Obsolete name. Same as Quaternion.equalsRotationWithin.
+    [<Obsolete("Use Quaternion.equalsRotationWithin instead.")>]
+    static member inline equalsRotation (tolerance:float) (a:Quaternion) (b:Quaternion) : bool =
+        Quaternion.equalsRotationWithin tolerance a b
 
     [<Obsolete("The Magnitude is always one. This function only exist for testing.")>]
     member q.Magnitude : float =

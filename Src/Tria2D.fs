@@ -2,6 +2,7 @@ namespace Euclid
 
 open System
 open UtilEuclid
+open EuclidErrors
 
 /// A type containing only static member functions for operations on 2D Triangles.
 type Tria2D =
@@ -157,8 +158,9 @@ type Tria2D =
     /// Finds the offset point based on
     /// the previous and next unit normals (= offset direction),
     /// and their offset distances.
+    /// Returns ValueNone if the two normals are parallel, unless they point in the same direction and the distances are equal.
     /// This is the core function for offsetting variable. it is used by Tria2D.offsetVar(..).
-    static member offsetPtVarByNormals (ptToOffset:Pt, prevN:UnitVc, nextN:UnitVc, prevDist:float, nextDist:float) : ValueOption<Pt> =
+    static member tryOffsetPtVarByNormals (ptToOffset:Pt, prevN:UnitVc, nextN:UnitVc, prevDist:float, nextDist:float) : Pt voption =
         // first get two offset lines to intersect:
         let prevPt = ptToOffset + prevN * prevDist
         let nextPt = ptToOffset + nextN * nextDist
@@ -184,15 +186,38 @@ type Tria2D =
             ValueNone
 
     /// Finds the offset point based on
+    /// the previous and next unit normals (= offset direction),
+    /// and their offset distances.
+    /// Fails if the two normals are parallel, unless they point in the same direction and the distances are equal.
+    /// Use Tria2D.tryOffsetPtVarByNormals to get ValueNone instead.
+    static member offsetPtVarByNormals (ptToOffset:Pt, prevN:UnitVc, nextN:UnitVc, prevDist:float, nextDist:float) : Pt =
+        match Tria2D.tryOffsetPtVarByNormals(ptToOffset, prevN, nextN, prevDist, nextDist) with
+        | ValueSome pt -> pt
+        | ValueNone -> fail $"Tria2D.offsetPtVarByNormals: the normals {prevN} and {nextN} are parallel, so the offset lines at distances {prevDist} and {nextDist} from {ptToOffset} do not intersect."
+
+    /// Finds the offset point based on
     /// the previous and next points,
     /// and their offset distances.
     /// A positive offset distance will be to the left side of the line from 'prev' to 'ptToOffset'.
     /// A negative offset distance inverts the direction.
-    /// This function uses Tria2D.offsetPtVarByNormals(..) internally.
-    static member offsetPtVar (ptToOffset:Pt, prev:Pt, next:Pt, distPrev:float, distNext:float) : ValueOption<Pt> =
+    /// Returns ValueNone if the three points are collinear, unless they go in the same direction and the distances are equal.
+    /// This function uses Tria2D.tryOffsetPtVarByNormals(..) internally.
+    static member tryOffsetPtVar (ptToOffset:Pt, prev:Pt, next:Pt, distPrev:float, distNext:float) : Pt voption =
         let vPrev = ptToOffset - prev |> Vc.unitize
         let vNext = next - ptToOffset |> Vc.unitize
         let nPrev = vPrev |> UnitVc.rotate90CCW
         let nNext = vNext |> UnitVc.rotate90CCW
-        Tria2D.offsetPtVarByNormals(ptToOffset, nPrev, nNext, distPrev, distNext)
+        Tria2D.tryOffsetPtVarByNormals(ptToOffset, nPrev, nNext, distPrev, distNext)
+
+    /// Finds the offset point based on
+    /// the previous and next points,
+    /// and their offset distances.
+    /// A positive offset distance will be to the left side of the line from 'prev' to 'ptToOffset'.
+    /// A negative offset distance inverts the direction.
+    /// Fails if the three points are collinear, unless they go in the same direction and the distances are equal.
+    /// Use Tria2D.tryOffsetPtVar to get ValueNone instead.
+    static member offsetPtVar (ptToOffset:Pt, prev:Pt, next:Pt, distPrev:float, distNext:float) : Pt =
+        match Tria2D.tryOffsetPtVar(ptToOffset, prev, next, distPrev, distNext) with
+        | ValueSome pt -> pt
+        | ValueNone -> fail $"Tria2D.offsetPtVar: the points are collinear, so the offset lines at distances {distPrev} and {distNext} do not intersect: prev {prev}, ptToOffset {ptToOffset}, next {next}"
 

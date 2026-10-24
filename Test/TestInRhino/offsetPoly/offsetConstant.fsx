@@ -50,7 +50,7 @@ for c in rs.GetObjects("crvs", printCount=false)  do
 
         Printfn.orange $"{ind0}{ind}let plr = Offset2D.offset'' Cosine.``170.0`` Offset2D.UTurnBehavior.Chamfer {dist} pli.Points |> Polyline2D"
         
-        Printfn.orange $"""{ind0}{ind}"offset {k.Value}: dist {dist} on {pl.PointCount} points" |> Expect.isTrue (Polyline2D.equals 0.0001 plr plExp)"""
+        Printfn.orange $"""{ind0}{ind}"offset {k.Value}: dist {dist} on {pl.PointCount} points" |> Expect.isTrue (Polyline2D.equalsWithin 0.0001 plr plExp)"""
         Printfn.blue $"{ind0}{ind}}}\n"
 
 

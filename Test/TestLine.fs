@@ -947,75 +947,75 @@ let testsLine2DProjection =
             let onToLine = Line2D(0., 0., 10., 0.)
             let ln = Line2D(2., 5., 8., 5.)
             match Line2D.tryProjectOntoLineParam onToLine ln with
-            | Some (p1, p2) ->
+            | ValueSome (p1, p2) ->
                 "start in range" |> expectEqualEpsilon p1 0.2
                 "end in range" |> expectEqualEpsilon p2 0.8
-            | None -> failwith "expected Some"
+            | ValueNone -> failwith "expected ValueSome"
         }
 
         test "tryProjectOntoLineParam partial overlap at start" {
             let onToLine = Line2D(5., 0., 10., 0.)
             let ln = Line2D(0., 5., 7., 5.)
             match Line2D.tryProjectOntoLineParam onToLine ln with
-            | Some (p1, p2) ->
+            | ValueSome (p1, p2) ->
                 "clamped start" |> expectEqualEpsilon p1 0.
                 "end parameter" |> expectEqualEpsilon p2 0.4
-            | None -> failwith "expected Some"
+            | ValueNone -> failwith "expected ValueSome"
         }
 
         test "tryProjectOntoLineParam partial overlap at end" {
             let onToLine = Line2D(0., 0., 10., 0.)
             let ln = Line2D(8., 5., 15., 5.)
             match Line2D.tryProjectOntoLineParam onToLine ln with
-            | Some (p1, p2) ->
+            | ValueSome (p1, p2) ->
                 "start parameter" |> expectEqualEpsilon p1 0.8
                 "clamped end" |> expectEqualEpsilon p2 1.0
-            | None -> failwith "expected Some"
+            | ValueNone -> failwith "expected ValueSome"
         }
 
         test "tryProjectOntoLineParam no overlap before line" {
             let onToLine = Line2D(10., 0., 20., 0.)
             let ln = Line2D(0., 5., 5., 5.)
             match Line2D.tryProjectOntoLineParam onToLine ln with
-            | Some _ -> failwith "expected None"
-            | None -> Expect.isTrue true "no overlap returns None"
+            | ValueSome _ -> failwith "expected ValueNone"
+            | ValueNone -> Expect.isTrue true "no overlap returns ValueNone"
         }
 
         test "tryProjectOntoLineParam no overlap after line" {
             let onToLine = Line2D(0., 0., 10., 0.)
             let ln = Line2D(15., 5., 20., 5.)
             match Line2D.tryProjectOntoLineParam onToLine ln with
-            | Some _ -> failwith "expected None"
-            | None -> Expect.isTrue true "no overlap returns None"
+            | ValueSome _ -> failwith "expected ValueNone"
+            | ValueNone -> Expect.isTrue true "no overlap returns ValueNone"
         }
 
         test "tryProjectOntoLineParam opposite direction overlap" {
             let onToLine = Line2D(0., 0., 10., 0.)
             let ln = Line2D(8., 5., 2., 5.)
             match Line2D.tryProjectOntoLineParam onToLine ln with
-            | Some (p1, p2) ->
+            | ValueSome (p1, p2) ->
                 "from param" |> expectEqualEpsilon p1 0.8
                 "to param" |> expectEqualEpsilon p2 0.2
-            | None -> failwith "expected Some"
+            | ValueNone -> failwith "expected ValueSome"
         }
 
         test "tryProjectOntoLineParam encompassing line" {
             let onToLine = Line2D(5., 0., 7., 0.)
             let ln = Line2D(0., 5., 20., 5.)
             match Line2D.tryProjectOntoLineParam onToLine ln with
-            | Some (p1, p2) ->
+            | ValueSome (p1, p2) ->
                 "clamped to 0" |> expectEqualEpsilon p1 0.
                 "clamped to 1" |> expectEqualEpsilon p2 1.
-            | None -> failwith "expected Some"
+            | ValueNone -> failwith "expected ValueSome"
         }
 
         test "tryProjectOntoLineParam zero length line to project" {
             let onToLine = Line2D(0., 0., 10., 0.)
             let ln = Line2D(5., 5., 5., 5.)
             match Line2D.tryProjectOntoLineParam onToLine ln with
-            | Some (p1, p2) ->
+            | ValueSome (p1, p2) ->
                 "zero length projects to point" |> expectEqualEpsilon p1 p2
-            | None -> failwith "expected Some for zero length"
+            | ValueNone -> failwith "expected ValueSome for zero length"
         }
 
         test "tryProjectOntoLineParam too short target line throws" {
@@ -1028,56 +1028,56 @@ let testsLine2DProjection =
             let onToLine = Line2D(0., 0., 10., 0.)
             let ln = Line2D(2., 5., 8., 5.)
             match Line2D.tryProjectOntoLine onToLine ln with
-            | Some proj ->
+            | ValueSome proj ->
                 "projection from" |> expectEqualEpsilon proj.FromX 2.
                 "projection to" |> expectEqualEpsilon proj.ToX 8.
-            | None -> failwith "expected Some"
+            | ValueNone -> failwith "expected ValueSome"
         }
 
         test "tryProjectOntoLine partial overlap preserves orientation" {
             let onToLine = Line2D(0., 0., 10., 0.)
             let ln = Line2D(8., 5., 15., 5.)
             match Line2D.tryProjectOntoLine onToLine ln with
-            | Some proj ->
+            | ValueSome proj ->
                 "from X" |> expectEqualEpsilon proj.FromX 8.
                 "to X at boundary" |> expectEqualEpsilon proj.ToX 10.
-            | None -> failwith "expected Some"
+            | ValueNone -> failwith "expected ValueSome"
         }
 
         test "tryProjectOntoLine no overlap" {
             let onToLine = Line2D(0., 0., 10., 0.)
             let ln = Line2D(15., 5., 20., 5.)
             match Line2D.tryProjectOntoLine onToLine ln with
-            | Some _ -> failwith "expected None"
-            | None -> Expect.isTrue true "no overlap"
+            | ValueSome _ -> failwith "expected ValueNone"
+            | ValueNone -> Expect.isTrue true "no overlap"
         }
 
         test "tryProjectOntoLine diagonal" {
             let onToLine = Line2D(0., 0., 10., 10.)
             let ln = Line2D(0., 5., 5., 10.)
             match Line2D.tryProjectOntoLine onToLine ln with
-            | Some proj ->
+            | ValueSome proj ->
                 "projection exists" |> Expect.isTrue (proj.Length > 0.)
-            | None -> failwith "expected Some for diagonal"
+            | ValueNone -> failwith "expected ValueSome for diagonal"
         }
 
         test "tryProjectOntoLine perpendicular collapse" {
             let onToLine = Line2D(0., 0., 10., 0.)
             let ln = Line2D(5., 2., 5., 8.)
             match Line2D.tryProjectOntoLine onToLine ln with
-            | Some proj ->
+            | ValueSome proj ->
                 "collapses to zero length" |> Expect.isTrue (proj.Length < 1e-9)
                 "at parameter 0.5" |> expectEqualEpsilon proj.FromX 5.
-            | None -> failwith "expected Some"
+            | ValueNone -> failwith "expected ValueSome"
         }
 
         test "tryProjectOntoLine within tolerance at start" {
             let onToLine = Line2D(0., 0., 10., 0.)
             let ln = Line2D(-0.0000001, 5., 5., 5.)
             match Line2D.tryProjectOntoLine onToLine ln with
-            | Some proj ->
+            | ValueSome proj ->
                 "tolerance allows start" |> Expect.isTrue (abs proj.FromX < 1e-6)
-            | None -> failwith "expected Some within tolerance"
+            | ValueNone -> failwith "expected ValueSome within tolerance"
         }
     ]
 
@@ -1390,8 +1390,8 @@ let testsLine2DDivide =
             let ps = Line2D.divideEvery 11. ln
             // div = 10/11 = 0.909, floor = 0, so just returns start and end
             "returns 2 points" |> Expect.equal ps.Count 2
-            "first point is start"  |> Expect.isTrue(Pt.equals 1e-12 ps[0] ln.From )
-            "second point is end" |> Expect.isTrue(Pt.equals 1e-12 ps[1] ln.To )
+            "first point is start"  |> Expect.isTrue(Pt.equalsWithin 1e-12 ps[0] ln.From )
+            "second point is end" |> Expect.isTrue(Pt.equalsWithin 1e-12 ps[1] ln.To )
 
         }
     ]
@@ -1716,16 +1716,16 @@ let testsLine2DIntersection =
             let a = Line2D(0., 5., 10., 5.)
             let b = Line2D(5., 0., 5., 10.)
             match Line2D.tryIntersectOrOverlap a b with
-            | Some pt -> Expect.isTrue (eq pt (Pt(5., 5.))) "intersection point"
-            | None -> failwith "expected Some"
+            | ValueSome pt -> Expect.isTrue (eq pt (Pt(5., 5.))) "intersection point"
+            | ValueNone -> failwith "expected ValueSome"
         }
 
         test "tryIntersectOrOverlap overlapping returns touching point" {
             let a = Line2D(0., 0., 10., 0.)
             let b = Line2D(10., 0., 20., 0.)
             match Line2D.tryIntersectOrOverlap a b with
-            | Some pt -> Expect.isTrue (eq pt (Pt(10., 0.))) "touching point"
-            | None -> failwith "expected Some for touching"
+            | ValueSome pt -> Expect.isTrue (eq pt (Pt(10., 0.))) "touching point"
+            | ValueNone -> failwith "expected ValueSome for touching"
         }
 
         test "tryGetOverlap touching at point returns parameters" {
@@ -1733,26 +1733,26 @@ let testsLine2DIntersection =
             let b = Line2D(10., 0., 20., 0.)
             let result = Line2D.tryGetOverlap a b
             match result with
-            | Some (s, e) ->
+            | ValueSome (s, e) ->
                 "touching at end start parameter" |> expectEqualEpsilon s 1.0
                 "touching at end end parameter" |> expectEqualEpsilon e 1.0
-            | None -> failwith "expected Some for touching endpoints"
+            | ValueNone -> failwith "expected ValueSome for touching endpoints"
         }
 
         test "tryGetOverlap overlapping collinear returns parameters" {
             let a = Line2D(0., 0., 10., 0.)
             let b = Line2D(5., 0., 15., 0.)
             match Line2D.tryGetOverlap a b with
-            | Some (s, e) ->
+            | ValueSome (s, e) ->
                 "overlap start" |> expectEqualEpsilon s 0.5
                 "overlap end" |> expectEqualEpsilon e 1.0
-            | None -> failwith "expected overlap"
+            | ValueNone -> failwith "expected overlap"
         }
 
         test "isTouchingEndsOf not touching" {
             let a = Line2D(0., 0., 10., 0.)
             let b = Line2D(0., 5., 10., 5.)
-            let result = XLine2D.getEndsTouching(a,b)
+            let result = XLine2D.classifyEndsTouching(a,b)
             match result with
             | XLine2D.XEnds.NotTouching -> Expect.isTrue true "not touching"
             | _ -> failwith "expected NotTouching"
@@ -1761,7 +1761,7 @@ let testsLine2DIntersection =
         test "isTouchingEndsOf StartA_StartB" {
             let a = Line2D(0., 0., 10., 0.)
             let b = Line2D(0., 0., 0., 10.)
-            let result = XLine2D.getEndsTouching(a,b)
+            let result = XLine2D.classifyEndsTouching(a,b)
             match result with
             | XLine2D.XEnds.StartA_StartB -> Expect.isTrue true "StartA_StartB"
             | _ -> failwith "expected StartA_StartB"
@@ -1770,7 +1770,7 @@ let testsLine2DIntersection =
         test "isTouchingEndsOf EndA_EndB" {
             let a = Line2D(0., 0., 10., 0.)
             let b = Line2D(0., 10., 10., 0.)
-            let result = XLine2D.getEndsTouching(a,b)
+            let result = XLine2D.classifyEndsTouching(a,b)
             match result with
             | XLine2D.XEnds.EndA_EndB -> Expect.isTrue true "EndA_EndB"
             | _ -> failwith "expected EndA_EndB"
@@ -1779,7 +1779,7 @@ let testsLine2DIntersection =
         test "isTouchingEndsOf identical" {
             let a = Line2D(0., 0., 10., 0.)
             let b = Line2D(0., 0., 10., 0.)
-            let result = XLine2D.getEndsTouching(a,b)
+            let result = XLine2D.classifyEndsTouching(a,b)
             match result with
             | XLine2D.XEnds.Identical -> Expect.isTrue true "identical"
             | _ -> failwith "expected Identical"
@@ -2112,10 +2112,10 @@ let testsLine3DProjection =
             let lineToProject = Line3D(2., 5., 0., 8., 5., 0.)
             let result = Line3D.tryProjectOntoLineParam onToLine lineToProject
             match result with
-            | Some (s, e) ->
+            | ValueSome (s, e) ->
                 "start parameter" |> expectEqualEpsilon s 0.2
                 "end parameter" |> expectEqualEpsilon e 0.8
-            | None -> Expect.isTrue false "expected Some but got None"
+            | ValueNone -> Expect.isTrue false "expected ValueSome but got ValueNone"
         }
 
         test "tryProjectOntoLineParam partial overlap at start" {
@@ -2123,10 +2123,10 @@ let testsLine3DProjection =
             let lineToProject = Line3D(-2., 5., 0., 5., 5., 0.)
             let result = Line3D.tryProjectOntoLineParam onToLine lineToProject
             match result with
-            | Some (s, e) ->
+            | ValueSome (s, e) ->
                 "start parameter clamped to 0" |> expectEqualEpsilon s 0.
                 "end parameter" |> expectEqualEpsilon e 0.5
-            | None -> Expect.isTrue false "expected Some but got None"
+            | ValueNone -> Expect.isTrue false "expected ValueSome but got ValueNone"
         }
 
         test "tryProjectOntoLineParam partial overlap at end" {
@@ -2134,10 +2134,10 @@ let testsLine3DProjection =
             let lineToProject = Line3D(5., 5., 0., 15., 5., 0.)
             let result = Line3D.tryProjectOntoLineParam onToLine lineToProject
             match result with
-            | Some (s, e) ->
+            | ValueSome (s, e) ->
                 "start parameter" |> expectEqualEpsilon s 0.5
                 "end parameter clamped to 1" |> expectEqualEpsilon e 1.0
-            | None -> Expect.isTrue false "expected Some but got None"
+            | ValueNone -> Expect.isTrue false "expected ValueSome but got ValueNone"
         }
 
         test "tryProjectOntoLineParam no overlap before line" {
@@ -2159,10 +2159,10 @@ let testsLine3DProjection =
             let lineToProject = Line3D(8., 5., 0., 2., 5., 0.)
             let result = Line3D.tryProjectOntoLineParam onToLine lineToProject
             match result with
-            | Some (s, e) ->
+            | ValueSome (s, e) ->
                 "start parameter from lineToProject start" |> expectEqualEpsilon s 0.8
                 "end parameter from lineToProject end" |> expectEqualEpsilon e 0.2
-            | None -> Expect.isTrue false "expected Some but got None"
+            | ValueNone -> Expect.isTrue false "expected ValueSome but got ValueNone"
         }
 
         test "tryProjectOntoLineParam encompassing line" {
@@ -2170,10 +2170,10 @@ let testsLine3DProjection =
             let lineToProject = Line3D(0., 5., 0., 10., 5., 0.)
             let result = Line3D.tryProjectOntoLineParam onToLine lineToProject
             match result with
-            | Some (s, e) ->
+            | ValueSome (s, e) ->
                 "start parameter clamped" |> expectEqualEpsilon s 0.
                 "end parameter clamped" |> expectEqualEpsilon e 1.0
-            | None -> Expect.isTrue false "expected Some but got None"
+            | ValueNone -> Expect.isTrue false "expected ValueSome but got ValueNone"
         }
 
         test "tryProjectOntoLineParam zero length line to project" {
@@ -2181,10 +2181,10 @@ let testsLine3DProjection =
             let lineToProject = Line3D(5., 5., 0., 5., 5., 0.)
             let result = Line3D.tryProjectOntoLineParam onToLine lineToProject
             match result with
-            | Some (s, e) ->
+            | ValueSome (s, e) ->
                 "both parameters equal" |> expectEqualEpsilon s 0.5
                 "both parameters equal" |> expectEqualEpsilon e 0.5
-            | None -> Expect.isTrue false "expected Some but got None"
+            | ValueNone -> Expect.isTrue false "expected ValueSome but got ValueNone"
         }
 
         test "tryProjectOntoLineParam too short target line throws" {
@@ -2198,11 +2198,11 @@ let testsLine3DProjection =
             let lineToProject = Line3D(2., 5., 0., 8., 5., 0.)
             let result = Line3D.tryProjectOntoLine onToLine lineToProject
             match result with
-            | Some projected ->
+            | ValueSome projected ->
                 "projected start X" |> expectEqualEpsilon projected.FromX 2.
                 "projected end X" |> expectEqualEpsilon projected.ToX 8.
                 "projected Y is 0" |> expectEqualEpsilon projected.FromY 0.
-            | None -> Expect.isTrue false "expected Some but got None"
+            | ValueNone -> Expect.isTrue false "expected ValueSome but got ValueNone"
         }
 
         test "tryProjectOntoLine partial overlap preserves orientation" {
@@ -2210,10 +2210,10 @@ let testsLine3DProjection =
             let lineToProject = Line3D(12., 5., 0., 5., 5., 0.)
             let result = Line3D.tryProjectOntoLine onToLine lineToProject
             match result with
-            | Some projected ->
+            | ValueSome projected ->
                 "projected starts at clamped end" |> expectEqualEpsilon projected.FromX 10.
                 "projected ends inside" |> expectEqualEpsilon projected.ToX 5.
-            | None -> Expect.isTrue false "expected Some but got None"
+            | ValueNone -> Expect.isTrue false "expected ValueSome but got ValueNone"
         }
 
         test "tryProjectOntoLine no overlap" {
@@ -2228,15 +2228,15 @@ let testsLine3DProjection =
             let lineToProject = Line3D(3., 3., 0., 7., 7., 0.)
             let result = Line3D.tryProjectOntoLine onToLine lineToProject
             match result with
-            | Some projected ->
-                let (s, e) = match Line3D.tryProjectOntoLineParam onToLine lineToProject with | Some p -> p | None -> (0., 0.)
+            | ValueSome projected ->
+                let (s, e) = match Line3D.tryProjectOntoLineParam onToLine lineToProject with | ValueSome p -> p | ValueNone -> (0., 0.)
                 let expectedStart = onToLine.EvaluateAt s
                 let expectedEnd = onToLine.EvaluateAt e
                 let dist1 = Pnt.dist projected.From expectedStart
                 let dist2 = Pnt.dist projected.To expectedEnd
                 "projected start matches parameter" |> Expect.isTrue (dist1 < 1e-9)
                 "projected end matches parameter" |> Expect.isTrue (dist2 < 1e-9)
-            | None -> Expect.isTrue false "expected Some but got None"
+            | ValueNone -> Expect.isTrue false "expected ValueSome but got ValueNone"
         }
 
         test "tryProjectOntoLine perpendicular collapse" {
@@ -2244,11 +2244,11 @@ let testsLine3DProjection =
             let lineToProject = Line3D(5., 0., 0., 5., 10., 0.)
             let result = Line3D.tryProjectOntoLine onToLine lineToProject
             match result with
-            | Some projected ->
+            | ValueSome projected ->
                 "collapsed to point start X" |> expectEqualEpsilon projected.FromX 5.
                 "collapsed to point end X" |> expectEqualEpsilon projected.ToX 5.
                 "zero length result" |> Expect.isTrue projected.IsZeroLength
-            | None -> Expect.isTrue false "expected Some but got None"
+            | ValueNone -> Expect.isTrue false "expected ValueSome but got ValueNone"
         }
 
         test "tryProjectOntoLine within tolerance at start" {
@@ -2446,7 +2446,7 @@ let testsLine3DDivide =
             "point at 3" |> expectEqualEpsilon pts.[1].X 3.
             "point at 6" |> expectEqualEpsilon pts.[2].X 6.
             "point at 9" |> expectEqualEpsilon pts.[3].X 9.
-            "end point" |> Expect.isTrue (Pnt.equals 1e-12 pts.[4] ln.To)
+            "end point" |> Expect.isTrue (Pnt.equalsWithin 1e-12 pts.[4] ln.To)
         }
 
         test "divideInsideEvery excludes endpoints" {
@@ -2481,8 +2481,8 @@ let testsLine3DDivide =
         test "divideEvery distance larger than line" {
             let ln = Line3D(0., 0., 0., 10., 0., 0.)
             let ps = Line3D.divideEvery 11. ln
-            "first point beyond line length"  |> Expect.isTrue(Pnt.equals 1e-12 ps[0] ln.From )
-            "second point beyond line length" |> Expect.isTrue(Pnt.equals 1e-12 ps[1] ln.To )
+            "first point beyond line length"  |> Expect.isTrue(Pnt.equalsWithin 1e-12 ps[0] ln.From )
+            "second point beyond line length" |> Expect.isTrue(Pnt.equalsWithin 1e-12 ps[1] ln.To )
         }
     ]
 
@@ -2873,7 +2873,7 @@ let testsLine3DIntersection =
         test "isTouchingEndsOf touching at ends" {
             let lnA = Line3D(0., 0., 0., 10., 0., 0.)
             let lnB = Line3D(10., 0., 0., 20., 0., 0.)
-            let result = XLine3D.getEndsTouching(lnA, lnB)
+            let result = XLine3D.classifyEndsTouching(lnA, lnB)
             match result with
             | XLine3D.XEnds.EndA_StartB -> Expect.isTrue true "correct end touching"
             | _ -> Expect.isTrue false "wrong touching type"
@@ -2882,7 +2882,7 @@ let testsLine3DIntersection =
         test "isTouchingEndsOf not touching" {
             let lnA = Line3D(0., 0., 0., 10., 0., 0.)
             let lnB = Line3D(15., 0., 0., 20., 0., 0.)
-            let result = XLine3D.getEndsTouching(lnA, lnB)
+            let result = XLine3D.classifyEndsTouching(lnA, lnB)
             match result with
             | XLine3D.XEnds.NotTouching -> Expect.isTrue true "correctly not touching"
             | _ -> Expect.isTrue false "should not be touching"
@@ -2891,7 +2891,7 @@ let testsLine3DIntersection =
         test "isTouchingEndsOf identical" {
             let lnA = Line3D(0., 0., 0., 10., 0., 0.)
             let lnB = Line3D(0., 0., 0., 10., 0., 0.)
-            let result = XLine3D.getEndsTouching(lnA, lnB)
+            let result = XLine3D.classifyEndsTouching(lnA, lnB)
             match result with
             | XLine3D.XEnds.Identical -> Expect.isTrue true "correctly identical"
             | _ -> Expect.isTrue false "should be identical"
@@ -2968,10 +2968,10 @@ let testsLine3DDistance =
             let lnB = Line3D(5., 0., 0., 15., 0., 0.)
             let result = Line3D.tryGetOverlap lnA lnB
             match result with
-            | Some (s, e) ->
+            | ValueSome (s, e) ->
                 "overlap start" |> expectEqualEpsilon s 0.5
                 "overlap end" |> expectEqualEpsilon e 1.0
-            | None -> Expect.isTrue false "expected Some but got None"
+            | ValueNone -> Expect.isTrue false "expected ValueSome but got ValueNone"
         }
 
         test "tryGetOverlap no overlap collinear" {
@@ -2993,10 +2993,10 @@ let testsLine3DDistance =
             let lnB = Line3D(10., 0., 0., 20., 0., 0.)
             let result = Line3D.tryGetOverlap lnA lnB
             match result with
-            | Some (s, e) ->
+            | ValueSome (s, e) ->
                 "touching at end start parameter" |> expectEqualEpsilon s 1.0
                 "touching at end end parameter" |> expectEqualEpsilon e 1.0
-            | None -> failwith "expected Some for touching endpoints"
+            | ValueNone -> failwith "expected ValueSome for touching endpoints"
         }
     ]
 

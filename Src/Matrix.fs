@@ -522,11 +522,11 @@ type Matrix =
 
     /// <summary>Checks if two matrices are equal within tolerance.
     /// By comparing the fields M11 to M44 each with the given tolerance.
-    /// Use a tolerance of 0.0 to check for an exact match.</summary>
+    /// Use Matrix.equalsExact to check for an exact match.</summary>
     /// <param name="tol">The tolerance for comparing each matrix element.</param>
     /// <param name="a">The first matrix.</param>
     /// <param name="b">The second matrix.</param>
-    static member equals (tol:float) (a:Matrix) (b:Matrix)  : bool =
+    static member equalsWithin (tol:float) (a:Matrix) (b:Matrix)  : bool =
         abs(a.M11-b.M11) <= tol &&
         abs(a.M12-b.M12) <= tol &&
         abs(a.M13-b.M13) <= tol &&
@@ -543,6 +543,31 @@ type Matrix =
         abs(a.Y42-b.Y42) <= tol &&
         abs(a.Z43-b.Z43) <= tol &&
         abs(a.M44-b.M44) <= tol
+
+    /// Checks if two matrices are exactly equal.
+    /// Compares each field with the = operator, so a NaN value is never equal.
+    static member inline equalsExact (a:Matrix) (b:Matrix) : bool =
+        a.M11 = b.M11 &&
+        a.M12 = b.M12 &&
+        a.M13 = b.M13 &&
+        a.M14 = b.M14 &&
+        a.M21 = b.M21 &&
+        a.M22 = b.M22 &&
+        a.M23 = b.M23 &&
+        a.M24 = b.M24 &&
+        a.M31 = b.M31 &&
+        a.M32 = b.M32 &&
+        a.M33 = b.M33 &&
+        a.M34 = b.M34 &&
+        a.X41 = b.X41 &&
+        a.Y42 = b.Y42 &&
+        a.Z43 = b.Z43 &&
+        a.M44 = b.M44
+
+    /// Obsolete name. Same as Matrix.equalsWithin.
+    [<Obsolete("Use Matrix.equalsWithin instead, or Matrix.equalsExact for an exact match.")>]
+    static member equals (tol:float) (a:Matrix) (b:Matrix) : bool =
+        Matrix.equalsWithin tol a b
 
     /// <summary>Multiplies matrixA with matrixB.
     /// The resulting transformation will first do matrixA and then matrixB.</summary>

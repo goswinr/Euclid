@@ -40,7 +40,7 @@ let prLn (ln:Line3D) (a:Pnt) (b:Pnt) (c:Pnt) =
 
 
 let someToo lo (ln:Line3D) (a:Pnt) (b:Pnt) (c:Pnt) =
-    if (Tria3D.intersectLine (ln, a, b, c)).IsNone then
+    if (Tria3D.tryIntersectLine (ln, a, b, c)).IsNone then
         rs.SelectObject lo
         // edge1 = B - A,  edge2 = C - A
         rs.AddLine(rpt ln.From, rpt ln.To) |> rs.setLayer "Unexpected No Intersection"
@@ -48,10 +48,10 @@ let someToo lo (ln:Line3D) (a:Pnt) (b:Pnt) (c:Pnt) =
         try rs.AddLine(rpt c, rpt a) |> rs.setLayer "Unexpected No Intersection" with _ -> ()
         eprintfn "//Line does not intersect triangle:"
         prLn ln a b c
-        printfn "Tria3D.intersectLine (ln, a, b, c) |> printfn \" %%A \" "
+        printfn "Tria3D.tryIntersectLine (ln, a, b, c) |> printfn \" %%A \" "
 
 let noneToo lo (ln:Line3D) (a:Pnt) (b:Pnt) (c:Pnt) =
-    if (Tria3D.intersectLine (ln, a, b, c)).IsSome then
+    if (Tria3D.tryIntersectLine (ln, a, b, c)).IsSome then
         rs.SelectObject lo
         eprintfn "Line intersects triangle !!!!!"
 
@@ -67,7 +67,7 @@ for i, lo in rs.GetObjects("Select Lines", rs.Filter.Curve) |> Seq.indexed do
         let s, e = rs.CurveStartPoint(lo), rs.CurveEndPoint(lo)
         let l = Line3D (pnt s, pnt e)
         
-        let p = Tria3D.intersectLine (l, a, b, c)
+        let p = Tria3D.tryIntersectLine (l, a, b, c)
         match p with
         | ValueSome p ->
             printfn $"let ln{i}_intersectiong = {l.AsFSharpCode}"

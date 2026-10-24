@@ -163,6 +163,17 @@ module AutoOpenVc =
             if isTooTiny l then failUnit2 "Vc.unitize" x y
             UnitVc.createUnchecked(x/l, y/l)
 
+        /// Tries to unitize the 2D vector.
+        /// Returns ValueNone if the length of the vector is
+        /// less than 1e-12 (UtilEuclid.zeroLengthTolerance) or NaN.
+        /// Use Vc.unitize to raise an exception instead, or Vc.unitizeOrDefault for a fallback.
+        static member inline tryUnitize (v:Vc) : UnitVc voption =
+            let x = v.X
+            let y = v.Y
+            let l = sqrt (x*x + y*y)
+            if isTooTiny l then ValueNone
+            else ValueSome (UnitVc.createUnchecked(x/l, y/l))
+
         /// Test if the 2D vector is a unit-vector.
         /// Tests if the squared length is between 0.999999 and 1.000001 (1e-6 tolerance).
         member inline v.IsUnit : bool =
@@ -629,14 +640,21 @@ module AutoOpenVc =
 
         /// Checks if two 2D vectors are equal within tolerance.
         /// Identical vectors in opposite directions are not considered equal.
-        /// Use a tolerance of 0.0 to check for an exact match.
-        static member inline equals (tol:float) (a:Vc) (b:Vc) : bool =
+        /// The tolerance applies to the X and Y components separately, not to the Euclidean distance between the tips.
+        /// Use Vc.equalsExact to check for an exact match.
+        static member inline equalsWithin (tol:float) (a:Vc) (b:Vc) : bool =
             abs (a.X-b.X) <= tol &&
             abs (a.Y-b.Y) <= tol
 
+        /// Checks if two 2D vectors are exactly equal.
+        /// Compares each field with the = operator, so a NaN value is never equal.
+        static member inline equalsExact (a:Vc) (b:Vc) : bool =
+            a.X = b.X &&
+            a.Y = b.Y
+
         /// Check if two 2D vectors  are not equal within a given tolerance.
-        /// Use a tolerance of 0.0 to check if the two vectors are not exactly equal.
-        static member notEquals (tol:float) (a:Vc) (b:Vc) : bool =
+        /// The tolerance applies to the X and Y components separately, not to the Euclidean distance between the tips.
+        static member notEqualsWithin (tol:float) (a:Vc) (b:Vc) : bool =
             abs (a.X-b.X) > tol ||
             abs (a.Y-b.Y) > tol
 
@@ -973,6 +991,16 @@ module AutoOpenVc =
 
         // #endregion
         // #region Obsolete
+
+        /// Obsolete name. Same as Vc.equalsWithin.
+        [<Obsolete("Use Vc.equalsWithin instead, or Vc.equalsExact for an exact match.")>]
+        static member inline equals (tol:float) (a:Vc) (b:Vc) : bool =
+            Vc.equalsWithin tol a b
+
+        /// Obsolete name. Same as Vc.notEqualsWithin.
+        [<Obsolete("Use Vc.notEqualsWithin instead.")>]
+        static member notEquals (tol:float) (a:Vc) (b:Vc) : bool =
+            Vc.notEqualsWithin tol a b
 
         /// Obsolete name. Same as Vc.withX.
         [<Obsolete("Use Vc.withX instead. This returns a new 2D vector, it does not mutate, so the 'with' prefix is clearer.")>]

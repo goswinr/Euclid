@@ -156,7 +156,7 @@ let tests =
             test "create keeps a rotated right-handed frame exactly" {
                 let box = Box.create(crOrigin, crX, crY, crZ)
                 let expected = Box.createUncheckedVec(crOrigin, crX, crY, crZ)
-                Expect.isTrue (Box.equals 0.0 box expected) "Box.create should store origin and axes unchanged"
+                Expect.isTrue (Box.equalsExact box expected) "Box.create should store origin and axes unchanged"
             }
 
             test "create accepts axes skewed within the perpendicular tolerance" {
@@ -541,13 +541,13 @@ let tests =
 
             test "offset with equal distances matches expand by the negated distance" {
                 let box = rotBox ()
-                Expect.isTrue (Box.equals 1e-9 (Box.offset 1.2 1.2 1.2 1.2 1.2 1.2 box) (Box.expand -1.2 box)) "positive"
-                Expect.isTrue (Box.equals 1e-9 (Box.offset -0.7 -0.7 -0.7 -0.7 -0.7 -0.7 box) (Box.expand 0.7 box)) "negative"
+                Expect.isTrue (Box.equalsWithin 1e-9 (Box.offset 1.2 1.2 1.2 1.2 1.2 1.2 box) (Box.expand -1.2 box)) "positive"
+                Expect.isTrue (Box.equalsWithin 1e-9 (Box.offset -0.7 -0.7 -0.7 -0.7 -0.7 -0.7 box) (Box.expand 0.7 box)) "negative"
             }
 
             test "offset with all zero distances returns the same box" {
                 let box = rotBox ()
-                Expect.isTrue (Box.equals 0.0 (Box.offset 0. 0. 0. 0. 0. 0. box) box) "unchanged"
+                Expect.isTrue (Box.equalsExact (Box.offset 0. 0. 0. 0. 0. 0. box) box) "unchanged"
             }
 
             test "offset inwards down to exactly zero size gives a flat box" {
@@ -779,20 +779,20 @@ let tests =
             test "equals with exact match" {
                 let a = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
                 let b = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
-                Expect.isTrue (Box.equals 0.0 a b) "Exact boxes should be equal"
+                Expect.isTrue (Box.equalsExact a b) "Exact boxes should be equal"
             }
 
             test "equals with tolerance" {
                 let a = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
                 let b = Box.createUncheckedVec(Pnt(0.001, 0.001, 0.001), Vec(10.001, 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
-                Expect.isTrue (Box.equals 0.01 a b) "Boxes should be equal within tolerance"
-                Expect.isFalse (Box.equals 0.0001 a b) "Boxes should not be equal with small tolerance"
+                Expect.isTrue (Box.equalsWithin 0.01 a b) "Boxes should be equal within tolerance"
+                Expect.isFalse (Box.equalsWithin 0.0001 a b) "Boxes should not be equal with small tolerance"
             }
 
             test "notEquals" {
                 let a = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
                 let b = Box.createUncheckedVec(Pnt(1., 1., 1.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
-                Expect.isTrue (Box.notEquals 0.5 a b) "Different boxes should not be equal"
+                Expect.isTrue (Box.notEqualsWithin 0.5 a b) "Different boxes should not be equal"
             }
         ]
 
@@ -902,7 +902,7 @@ let tests =
             test "ray through center of axis-aligned box" {
                 let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
                 let ray = Line3D(Pnt(-5., 1., 1.), Pnt(5., 1., 1.))
-                let result = box.IntersectRay(ray)
+                let result = box.TryIntersectRay(ray)
                 Expect.isTrue result.IsSome "Should intersect"
                 let tEntry, tExit = result.Value
                 Expect.isTrue (eqFloat tEntry 0.5) $"Entry parameter should be 0.5, got {tEntry}"
@@ -912,14 +912,14 @@ let tests =
             test "ray missing box" {
                 let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
                 let ray = Line3D(Pnt(-5., 10., 10.), Pnt(5., 10., 10.))
-                let result = box.IntersectRay(ray)
+                let result = box.TryIntersectRay(ray)
                 Expect.isTrue result.IsNone "Should not intersect"
             }
 
             test "ray starting inside box" {
                 let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
                 let ray = Line3D(Pnt(1., 1., 1.), Pnt(3., 1., 1.))
-                let result = box.IntersectRay(ray)
+                let result = box.TryIntersectRay(ray)
                 Expect.isTrue result.IsSome "Should intersect"
                 let tEntry, tExit = result.Value
                 Expect.isTrue (tEntry < 0.0) $"Entry should be negative (behind ray origin), got {tEntry}"
@@ -929,14 +929,14 @@ let tests =
             test "ray parallel to box face but outside" {
                 let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
                 let ray = Line3D(Pnt(-1., 5., 1.), Pnt(3., 5., 1.)) // parallel to X, but Y=5 is outside
-                let result = box.IntersectRay(ray)
+                let result = box.TryIntersectRay(ray)
                 Expect.isTrue result.IsNone "Should not intersect (ray parallel but outside)"
             }
 
             test "ray parallel to box face inside slab" {
                 let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
                 let ray = Line3D(Pnt(-5., 1., 1.), Pnt(5., 1., 1.)) // parallel to X, Y and Z inside box
-                let result = box.IntersectRay(ray)
+                let result = box.TryIntersectRay(ray)
                 Expect.isTrue result.IsSome "Should intersect"
             }
 
@@ -949,21 +949,21 @@ let tests =
                 let box = Box.createUncheckedVec(Pnt(0., 0., 0.), xAxis, yAxis, zAxis)
                 // Ray along world X through center height
                 let ray = Line3D(Pnt(-5., 0., 1.), Pnt(5., 0., 1.))
-                let result = box.IntersectRay(ray)
+                let result = box.TryIntersectRay(ray)
                 Expect.isTrue result.IsSome "Should intersect rotated box"
             }
 
             test "ray too short (zero length)" {
                 let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
                 let ray = Line3D(Pnt(1., 1., 1.), Pnt(1., 1., 1.))
-                let result = box.IntersectRay(ray)
+                let result = box.TryIntersectRay(ray)
                 Expect.isTrue result.IsNone "Should return None for zero-length ray"
             }
 
             test "ray grazing box corner" {
                 let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
                 let ray = Line3D(Pnt(1., 3., 2.), Pnt(3., 1., 2.))
-                let result = box.IntersectRay(ray)
+                let result = box.TryIntersectRay(ray)
                 Expect.isTrue result.IsSome "Should intersect at the corner only"
                 let tEntry, tExit = result.Value
                 Expect.isTrue (eqFloat tEntry 0.5) $"Entry parameter should be 0.5, got {tEntry}"
@@ -973,7 +973,7 @@ let tests =
             test "ray along box edge" {
                 let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
                 let ray = Line3D(Pnt(0., 0., -1.), Pnt(0., 0., 3.))
-                let result = box.IntersectRay(ray)
+                let result = box.TryIntersectRay(ray)
                 Expect.isTrue result.IsSome "Should intersect along edge"
                 let tEntry, tExit = result.Value
                 Expect.isTrue (eqFloat tEntry 0.25) $"Entry parameter should be 0.25, got {tEntry}"
@@ -983,7 +983,7 @@ let tests =
             test "ray on box face" {
                 let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
                 let ray = Line3D(Pnt(-1., 1., 0.), Pnt(3., 1., 0.))
-                let result = box.IntersectRay(ray)
+                let result = box.TryIntersectRay(ray)
                 Expect.isTrue result.IsSome "Should intersect along the bottom face"
                 let tEntry, tExit = result.Value
                 Expect.isTrue (eqFloat tEntry 0.25) $"Entry parameter should be 0.25, got {tEntry}"
@@ -993,14 +993,14 @@ let tests =
             test "static intersectRay function" {
                 let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
                 let ray = Line3D(Pnt(-5., 1., 1.), Pnt(5., 1., 1.))
-                let result = Box.intersectRay ray box
+                let result = Box.tryIntersectRay ray box
                 Expect.isTrue result.IsSome "Static function should also work"
             }
 
             test "intersection points can be computed from parameters" {
                 let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(4., 0., 0.), Vec(0., 4., 0.), Vec(0., 0., 4.))
                 let ray = Line3D(Pnt(-2., 2., 2.), Pnt(6., 2., 2.))
-                let result = box.IntersectRay(ray)
+                let result = box.TryIntersectRay(ray)
                 Expect.isTrue result.IsSome "Should intersect"
                 let tEntry, tExit = result.Value
                 // Compute actual intersection points

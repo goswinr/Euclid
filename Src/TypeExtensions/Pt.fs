@@ -366,14 +366,21 @@ module AutoOpenPt =
 
 
         /// Checks if two 2D points are equal within tolerance.
-        /// Use a tolerance of 0.0 to check for an exact match.
-        static member inline equals (tol:float) (a:Pt) (b:Pt) : bool =
+        /// The tolerance applies to the X and Y coordinates separately, not to the Euclidean distance between the points.
+        /// Use Pt.equalsExact to check for an exact match.
+        static member inline equalsWithin (tol:float) (a:Pt) (b:Pt) : bool =
             abs (a.X-b.X) <= tol &&
             abs (a.Y-b.Y) <= tol
 
+        /// Checks if two 2D points are exactly equal.
+        /// Compares each field with the = operator, so a NaN value is never equal.
+        static member inline equalsExact (a:Pt) (b:Pt) : bool =
+            a.X = b.X &&
+            a.Y = b.Y
+
         /// Check if two 2D points are not equal within a given tolerance.
-        /// Use a tolerance of 0.0 to check if the two points are not exactly equal.
-        static member notEquals (tol:float) (a:Pt) (b:Pt) : bool =
+        /// The tolerance applies to the X and Y coordinates separately, not to the Euclidean distance between the points.
+        static member notEqualsWithin (tol:float) (a:Pt) (b:Pt) : bool =
             abs (a.X-b.X) > tol ||
             abs (a.Y-b.Y) > tol
 
@@ -631,6 +638,16 @@ module AutoOpenPt =
 
         // #endregion
         // #region Obsolete
+
+        /// Obsolete name. Same as Pt.equalsWithin.
+        [<Obsolete("Use Pt.equalsWithin instead, or Pt.equalsExact for an exact match.")>]
+        static member inline equals (tol:float) (a:Pt) (b:Pt) : bool =
+            Pt.equalsWithin tol a b
+
+        /// Obsolete name. Same as Pt.notEqualsWithin.
+        [<Obsolete("Use Pt.notEqualsWithin instead.")>]
+        static member notEquals (tol:float) (a:Pt) (b:Pt) : bool =
+            Pt.notEqualsWithin tol a b
 
         /// Obsolete name. Same as Pt.withX.
         [<Obsolete("Use Pt.withX instead. This returns a new 2D point, it does not mutate, so the 'with' prefix is clearer.")>]

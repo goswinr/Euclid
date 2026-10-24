@@ -334,15 +334,23 @@ module AutoOpenPnt =
 
 
         /// Checks if two 3D points are equal within tolerance.
-        /// Use a tolerance of 0.0 to check for an exact match.
-        static member inline equals (tol:float) (a:Pnt) (b:Pnt) : bool =
+        /// The tolerance applies to the X, Y and Z coordinates separately, not to the Euclidean distance between the points.
+        /// Use Pnt.equalsExact to check for an exact match.
+        static member inline equalsWithin (tol:float) (a:Pnt) (b:Pnt) : bool =
             abs (a.X-b.X) <= tol &&
             abs (a.Y-b.Y) <= tol &&
             abs (a.Z-b.Z) <= tol
 
+        /// Checks if two 3D points are exactly equal.
+        /// Compares each field with the = operator, so a NaN value is never equal.
+        static member inline equalsExact (a:Pnt) (b:Pnt) : bool =
+            a.X = b.X &&
+            a.Y = b.Y &&
+            a.Z = b.Z
+
         /// Check if two 3D points are not equal within a given tolerance.
-        /// Use a tolerance of 0.0 to check if the two points are not exactly equal.
-        static member notEquals (tol:float) (a:Pnt) (b:Pnt) : bool =
+        /// The tolerance applies to the X, Y and Z coordinates separately, not to the Euclidean distance between the points.
+        static member notEqualsWithin (tol:float) (a:Pnt) (b:Pnt) : bool =
             abs (a.X-b.X) > tol ||
             abs (a.Y-b.Y) > tol ||
             abs (a.Z-b.Z) > tol
@@ -729,6 +737,16 @@ module AutoOpenPnt =
 
         // #endregion
         // #region Obsolete
+
+        /// Obsolete name. Same as Pnt.equalsWithin.
+        [<Obsolete("Use Pnt.equalsWithin instead, or Pnt.equalsExact for an exact match.")>]
+        static member inline equals (tol:float) (a:Pnt) (b:Pnt) : bool =
+            Pnt.equalsWithin tol a b
+
+        /// Obsolete name. Same as Pnt.notEqualsWithin.
+        [<Obsolete("Use Pnt.notEqualsWithin instead.")>]
+        static member notEquals (tol:float) (a:Pnt) (b:Pnt) : bool =
+            Pnt.notEqualsWithin tol a b
 
         /// Obsolete name. Same as Pnt.midPnt.
         [<Obsolete("Use Pnt.midPnt instead.")>]

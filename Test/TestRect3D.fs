@@ -262,7 +262,7 @@ let tests =
                 let a = Rect3D.translateLocalZ 5.0 r
                 let b = Rect3D.offsetZ 5.0 r
                 "translateLocalZ origin" |> Expect.isTrue (eq a.Origin (Pnt(0.,0.,5.)))
-                "translateLocalZ = offsetZ" |> Expect.isTrue (Rect3D.equals 1e-9 a b)
+                "translateLocalZ = offsetZ" |> Expect.isTrue (Rect3D.equalsWithin 1e-9 a b)
             }
         ]
 
@@ -345,7 +345,7 @@ let tests =
                 Pnt(ln.FromX + ln.VectorX*t, ln.FromY + ln.VectorY*t, ln.FromZ + ln.VectorZ*t)
 
             let rayHitParameters (ln:Line3D) (r:Rect3D) =
-                match Rect3D.intersectRay ln r with
+                match Rect3D.tryIntersectRay ln r with
                 | ValueSome t ->
                     let tx, ty = Rect3D.closestParameters (pointOnLine ln t) r
                     ValueSome (t, tx, ty)
@@ -376,29 +376,29 @@ let tests =
 
             test "intersectRay - parallel returns None" {
                 let ln = Line3D(Pnt(0.,0.,1.), Pnt(4.,0.,1.))
-                match Rect3D.intersectRay ln r with
+                match Rect3D.tryIntersectRay ln r with
                 | ValueSome _ -> "parallel ray" |> Expect.isTrue false
                 | ValueNone -> ()
             }
 
             test "intersectRay - returns line parameter" {
                 let ln = Line3D(Pnt(1.,0.5,5.), Pnt(1.,0.5,-5.))
-                match Rect3D.intersectRay ln r with
+                match Rect3D.tryIntersectRay ln r with
                 | ValueSome t -> "ray param t" |> Expect.isTrue (equ t 0.5)
                 | ValueNone -> "intersectRay should hit" |> Expect.isTrue false
                 // beyond the segment, the infinite-ray parameter is still returned
                 let ln2 = Line3D(Pnt(1.,0.5,10.), Pnt(1.,0.5,5.))
-                match Rect3D.intersectRay ln2 r with
+                match Rect3D.tryIntersectRay ln2 r with
                 | ValueSome t -> "ray param t2" |> Expect.isTrue (equ t 2.0)
                 | ValueNone -> "intersectRay should resolve" |> Expect.isTrue false
-                match Rect3D.intersectRay (Line3D(Pnt(0.,0.,1.), Pnt(4.,0.,1.))) r with
+                match Rect3D.tryIntersectRay (Line3D(Pnt(0.,0.,1.), Pnt(4.,0.,1.))) r with
                 | ValueSome _ -> "parallel ray param" |> Expect.isTrue false
                 | ValueNone -> ()
             }
 
             test "intersectLine - inside the segment and rectangle" {
                 let ln = Line3D(Pnt(1.,0.5,5.), Pnt(1.,0.5,-5.))
-                match rayHitParameters ln r, Rect3D.intersectLine ln r with
+                match rayHitParameters ln r, Rect3D.tryIntersectLine ln r with
                 | ValueSome (t,tx,ty), ValueSome p ->
                     "line t"  |> Expect.isTrue (equ t 0.5)
                     "line tx" |> Expect.isTrue (equ tx 0.25)
@@ -410,21 +410,21 @@ let tests =
 
             test "intersectLine - outside rectangle bounds returns None" {
                 let ln = Line3D(Pnt(10.,0.5,5.), Pnt(10.,0.5,-5.))
-                match Rect3D.intersectLine ln r with
+                match Rect3D.tryIntersectLine ln r with
                 | ValueSome _ -> "outside rect" |> Expect.isTrue false
                 | ValueNone -> ()
             }
 
             test "intersectLine - beyond segment returns None" {
                 let ln = Line3D(Pnt(1.,0.5,10.), Pnt(1.,0.5,5.)) // plane crossed at t = 2.0
-                match Rect3D.intersectLine ln r with
+                match Rect3D.tryIntersectLine ln r with
                 | ValueSome _ -> "beyond segment" |> Expect.isTrue false
                 | ValueNone -> ()
             }
 
             test "intersectLine - returns intersection point inside" {
                 let ln = Line3D(Pnt(1.,0.5,5.), Pnt(1.,0.5,-5.))
-                match Rect3D.intersectLine ln r with
+                match Rect3D.tryIntersectLine ln r with
                 | ValueSome p -> "line point" |> Expect.isTrue (eq p (Pnt(1.,0.5,0.)))
                 | ValueNone -> "intersectLine should hit" |> Expect.isTrue false
             }
@@ -433,9 +433,9 @@ let tests =
                 let outside = Line3D(Pnt(10.,0.5,5.), Pnt(10.,0.5,-5.))
                 let beyond  = Line3D(Pnt(1.,0.5,10.), Pnt(1.,0.5,5.))
                 let paral   = Line3D(Pnt(0.,0.,1.), Pnt(4.,0.,1.))
-                "outside"  |> Expect.isTrue (Rect3D.intersectLine outside r).IsNone
-                "beyond"   |> Expect.isTrue (Rect3D.intersectLine beyond r).IsNone
-                "parallel" |> Expect.isTrue (Rect3D.intersectLine paral r).IsNone
+                "outside"  |> Expect.isTrue (Rect3D.tryIntersectLine outside r).IsNone
+                "beyond"   |> Expect.isTrue (Rect3D.tryIntersectLine beyond r).IsNone
+                "parallel" |> Expect.isTrue (Rect3D.tryIntersectLine paral r).IsNone
             }
         ]
 

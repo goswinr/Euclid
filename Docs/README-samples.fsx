@@ -78,7 +78,7 @@ let movedLn = ln2d.Move(Vc(0.0, 5.0))
 let lineA = Line2D(Pt(0, 0), Pt(10, 0))
 let lineB = Line2D(Pt(5, -5), Pt(5, 5))
 
-match XLine2D.getIntersection(lineA, lineB) with
+match XLine2D.classifyIntersection(lineA, lineB) with
 | XLine2D.XPt.Intersect pt -> printfn $"Lines cross at {pt}"
 | XLine2D.XPt.Apart -> printfn "Segments don't reach each other"
 | XLine2D.XPt.Parallel -> printfn "Lines are parallel"
@@ -86,7 +86,7 @@ match XLine2D.getIntersection(lineA, lineB) with
 | XLine2D.XPt.TooShortB -> printfn "Line B is too short"
 | XLine2D.XPt.TooShortBoth -> printfn "Both lines are too short"
 
-match XLine2D.getRayIntersection(lineA, lineB) with
+match XLine2D.classifyRayIntersection(lineA, lineB) with
 | XLine2D.XRay.Intersect pt -> printfn $"Rays meet at {pt}"
 | XLine2D.XRay.Parallel -> printfn "Rays are parallel"
 | _ -> ()
@@ -94,7 +94,7 @@ match XLine2D.getRayIntersection(lineA, lineB) with
 let ln3A = Line3D(Pnt(0, 0, 0), Pnt(10, 0, 0))
 let ln3B = Line3D(Pnt(5, 0, 5), Pnt(5, 10, 5))
 
-match XLine3D.getIntersection(ln3A, ln3B) with
+match XLine3D.classifyIntersection(ln3A, ln3B) with
 | XLine3D.XPnt.Intersect pt -> printfn $"Lines intersect at {pt}"
 | XLine3D.XPnt.Skew (ptA, ptB, d) -> printfn $"Closest approach: {d} between {ptA} and {ptB}"
 | XLine3D.XPnt.Apart -> printfn "Segments don't reach each other"

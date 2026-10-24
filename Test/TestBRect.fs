@@ -283,7 +283,7 @@ let tests =
             test "Intersection of overlapping rectangles" {
                 let r1 = BRect.create(Pt(0., 0.), Pt(10., 10.))
                 let r2 = BRect.create(Pt(5., 5.), Pt(15., 15.))
-                match r1.Intersection r2 with
+                match r1.TryIntersection r2 with
                 | ValueSome inter ->
                     Expect.equal inter.MinX 5. "Intersection MinX should be 5"
                     Expect.equal inter.MinY 5. "Intersection MinY should be 5"
@@ -296,7 +296,7 @@ let tests =
             test "Intersection of touching rectangles returns zero-area BRect" {
                 let r1 = BRect.create(Pt(0., 0.), Pt(10., 10.))
                 let r2 = BRect.create(Pt(10., 0.), Pt(20., 10.))
-                match r1.Intersection r2 with
+                match r1.TryIntersection r2 with
                 | ValueSome inter ->
                     Expect.equal inter.MinX 10. "Intersection MinX should be 10"
                     Expect.equal inter.MaxX 10. "Intersection MaxX should be 10"
@@ -308,7 +308,7 @@ let tests =
             test "Intersection of non-overlapping rectangles returns None" {
                 let r1 = BRect.create(Pt(0., 0.), Pt(10., 10.))
                 let r2 = BRect.create(Pt(11., 11.), Pt(20., 20.))
-                match r1.Intersection r2 with
+                match r1.TryIntersection r2 with
                 | ValueSome _ -> failtest "Should not have intersection"
                 | ValueNone -> ()
             }
@@ -316,11 +316,11 @@ let tests =
             test "Static intersection method matches member method" {
                 let r1 = BRect.create(Pt(0., 0.), Pt(10., 10.))
                 let r2 = BRect.create(Pt(5., 5.), Pt(15., 15.))
-                let memberResult = r1.Intersection r2
-                let staticResult = BRect.intersection r1 r2
+                let memberResult = r1.TryIntersection r2
+                let staticResult = BRect.tryIntersection r1 r2
                 match memberResult, staticResult with
                 | ValueSome m, ValueSome s ->
-                    Expect.isTrue (BRect.equals 0.0 m s) "Member and static methods should return same result"
+                    Expect.isTrue (BRect.equalsExact m s) "Member and static methods should return same result"
                 | ValueNone, ValueNone -> ()
                 | _ -> failtest "Member and static methods should match"
             }
@@ -328,11 +328,11 @@ let tests =
             test "Static intersection of touching rectangles matches member" {
                 let r1 = BRect.create(Pt(0., 0.), Pt(10., 10.))
                 let r2 = BRect.create(Pt(10., 0.), Pt(20., 10.))
-                let memberResult = r1.Intersection r2
-                let staticResult = BRect.intersection r1 r2
+                let memberResult = r1.TryIntersection r2
+                let staticResult = BRect.tryIntersection r1 r2
                 match memberResult, staticResult with
                 | ValueSome m, ValueSome s ->
-                    Expect.isTrue (BRect.equals 0.0 m s) "Both should return zero-area intersection"
+                    Expect.isTrue (BRect.equalsExact m s) "Both should return zero-area intersection"
                 | ValueNone, ValueNone -> failtest "Both should return zero-area intersection, not None"
                 | _ -> failtest "Member and static intersection methods should behave identically"
             }
@@ -352,7 +352,7 @@ let tests =
             test "Union with point inside" {
                 let r = BRect.create(Pt(0., 0.), Pt(10., 10.))
                 let union = r.UnionPt(Pt(5., 5.))
-                Expect.isTrue (BRect.equals 0.0 r union) "Union with interior point should not change rectangle"
+                Expect.isTrue (BRect.equalsExact r union) "Union with interior point should not change rectangle"
             }
 
             test "Union with point outside" {
@@ -399,7 +399,7 @@ let tests =
                 let r = BRect.create(Pt(0., 0.), Pt(10., 10.))
                 let moved = BRect.move (Vc(5., 3.)) r
                 let translated = BRect.translate (Vc(5., 3.)) r
-                Expect.isTrue (BRect.equals 0.0 moved translated) "move and translate should be identical"
+                Expect.isTrue (BRect.equalsExact moved translated) "move and translate should be identical"
             }
 
             test "moveX" {
@@ -423,7 +423,7 @@ let tests =
             test "expandRel with factor 1.0 keeps same size" {
                 let r = BRect.create(Pt(0., 0.), Pt(10., 10.))
                 let expanded = BRect.expandRel 1.0 r
-                Expect.isTrue (BRect.equals 0.001 r expanded) "Factor 1.0 should keep same size"
+                Expect.isTrue (BRect.equalsWithin 0.001 r expanded) "Factor 1.0 should keep same size"
             }
 
             test "expandRel with factor 2.0 doubles size" {
@@ -564,25 +564,25 @@ let tests =
             test "equals with exact match" {
                 let r1 = BRect.create(Pt(1., 2.), Pt(5., 7.))
                 let r2 = BRect.create(Pt(1., 2.), Pt(5., 7.))
-                Expect.isTrue (BRect.equals 0.0 r1 r2) "Identical rectangles should be equal"
+                Expect.isTrue (BRect.equalsExact r1 r2) "Identical rectangles should be equal"
             }
 
             test "equals with tolerance" {
                 let r1 = BRect.create(Pt(1., 2.), Pt(5., 7.))
                 let r2 = BRect.create(Pt(1.001, 2.001), Pt(5.001, 7.001))
-                Expect.isTrue (BRect.equals 0.01 r1 r2) "Should be equal within tolerance"
+                Expect.isTrue (BRect.equalsWithin 0.01 r1 r2) "Should be equal within tolerance"
             }
 
             test "notEquals with different rectangles" {
                 let r1 = BRect.create(Pt(1., 2.), Pt(5., 7.))
                 let r2 = BRect.create(Pt(2., 3.), Pt(6., 8.))
-                Expect.isTrue (BRect.notEquals 0.1 r1 r2) "Different rectangles should not be equal"
+                Expect.isTrue (BRect.notEqualsWithin 0.1 r1 r2) "Different rectangles should not be equal"
             }
 
             test "equals outside tolerance" {
                 let r1 = BRect.create(Pt(1., 2.), Pt(5., 7.))
                 let r2 = BRect.create(Pt(1.1, 2.), Pt(5., 7.))
-                Expect.isFalse (BRect.equals 0.01 r1 r2) "Should not be equal outside tolerance"
+                Expect.isFalse (BRect.equalsWithin 0.01 r1 r2) "Should not be equal outside tolerance"
             }
         ]
 
@@ -746,16 +746,16 @@ let tests =
             test "Intersection of one rect inside another" {
                 let outer = BRect.create(Pt(0., 0.), Pt(20., 20.))
                 let inner = BRect.create(Pt(5., 5.), Pt(15., 15.))
-                match outer.Intersection inner with
+                match outer.TryIntersection inner with
                 | ValueSome i ->
-                    Expect.isTrue (BRect.equals 0.0 i inner) "Intersection should equal inner rect"
+                    Expect.isTrue (BRect.equalsExact i inner) "Intersection should equal inner rect"
                 | ValueNone -> failtest "Should have intersection"
             }
 
             test "Union of identical rects returns same rect" {
                 let r = BRect.create(Pt(0., 0.), Pt(10., 10.))
                 let u = r.Union r
-                Expect.isTrue (BRect.equals 0.0 u r) "Union of same rect should be identical"
+                Expect.isTrue (BRect.equalsExact u r) "Union of same rect should be identical"
             }
         ]
 
@@ -788,7 +788,7 @@ let tests =
 
             test "horizontal ray through rectangle" {
                 let ray = Line2D(-5., 2., 15., 2.) // dir (20,0), x=0 at t=0.25, x=10 at t=0.75
-                match BRect.intersectRay ray r with
+                match BRect.tryIntersectRay ray r with
                 | ValueSome(tEntry, tExit) ->
                     Expect.isTrue (abs(tEntry - 0.25) < 1e-9) $"entry should be 0.25, got {tEntry}"
                     Expect.isTrue (abs(tExit - 0.75) < 1e-9) $"exit should be 0.75, got {tExit}"
@@ -797,7 +797,7 @@ let tests =
 
             test "diagonal ray corner to corner" {
                 let ray = Line2D(-1., -0.5, 11., 5.5) // passes (0,0) at t=1/12 and (10,5) at t=11/12
-                match BRect.intersectRay ray r with
+                match BRect.tryIntersectRay ray r with
                 | ValueSome(tEntry, tExit) ->
                     Expect.isTrue (abs(tEntry - 1.0/12.0) < 1e-9) $"entry, got {tEntry}"
                     Expect.isTrue (abs(tExit - 11.0/12.0) < 1e-9) $"exit, got {tExit}"
@@ -806,12 +806,12 @@ let tests =
 
             test "ray missing rectangle returns ValueNone" {
                 let ray = Line2D(-5., 8., 15., 8.) // parallel to X but y=8 is above MaxY
-                Expect.isTrue (BRect.intersectRay ray r).IsNone "should not intersect"
+                Expect.isTrue (BRect.tryIntersectRay ray r).IsNone "should not intersect"
             }
 
             test "vertical ray inside X band intersects" {
                 let ray = Line2D(3., -2., 3., 9.) // dirX = 0, x=3 within [0,10]
-                match BRect.intersectRay ray r with
+                match BRect.tryIntersectRay ray r with
                 | ValueSome(tEntry, tExit) ->
                     // y=0 at t=2/11, y=5 at t=7/11
                     Expect.isTrue (abs(tEntry - 2.0/11.0) < 1e-9) $"entry, got {tEntry}"
@@ -821,12 +821,12 @@ let tests =
 
             test "vertical ray outside X band returns ValueNone" {
                 let ray = Line2D(20., -2., 20., 9.) // dirX = 0, x=20 outside [0,10]
-                Expect.isTrue (BRect.intersectRay ray r).IsNone "should not intersect"
+                Expect.isTrue (BRect.tryIntersectRay ray r).IsNone "should not intersect"
             }
 
             test "ray starting inside has negative entry parameter" {
                 let ray = Line2D(5., 2., 15., 2.) // starts at center-height inside, dir (10,0)
-                match BRect.intersectRay ray r with
+                match BRect.tryIntersectRay ray r with
                 | ValueSome(tEntry, tExit) ->
                     Expect.isTrue (tEntry < 0.0) $"entry behind origin, got {tEntry}"
                     Expect.isTrue (tExit > 0.0) $"exit ahead, got {tExit}"
@@ -835,12 +835,12 @@ let tests =
 
             test "zero-length ray returns ValueNone" {
                 let ray = Line2D(5., 2., 5., 2.)
-                Expect.isTrue (BRect.intersectRay ray r).IsNone "degenerate ray"
+                Expect.isTrue (BRect.tryIntersectRay ray r).IsNone "degenerate ray"
             }
 
             test "intersection points reconstructed from parameters lie on boundary" {
                 let ray = Line2D(-5., 2., 15., 2.)
-                match BRect.intersectRay ray r with
+                match BRect.tryIntersectRay ray r with
                 | ValueSome(tEntry, tExit) ->
                     let entryPt = Pt(ray.FromX + ray.VectorX*tEntry, ray.FromY + ray.VectorY*tEntry)
                     let exitPt  = Pt(ray.FromX + ray.VectorX*tExit,  ray.FromY + ray.VectorY*tExit)
