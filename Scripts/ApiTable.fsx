@@ -1,7 +1,11 @@
 // Generates a Markdown overview of the public API of Euclid.
 // Corresponding 2D and 3D types share one four column table, so that members of the same name sit side by side.
-// For this, "Pt" and "Pnt" in a name count as the same, so that Pt.midPt sits next to Pnt.midPnt.
+// For this, a 2D name is translated to 3D with the parts in 'dimParts', so that Pt.midPt sits next to Pnt.midPnt
+// and Vc.isParallelToVc next to Vec.isParallelToVec. Counterparts with other names are listed in 'renamed'.
 // Static members are listed right below the instance member of the same name.
+//
+// A member without a counterpart either exists in one dimension on purpose, see 'only2DMembers' and 'only3DMembers',
+// or leaves an empty cell. So the empty cells are a checklist of gaps in the API and of names that do not match.
 //
 // Usage, from the repo root:
 //     dotnet fsi Scripts/ApiTable.fsx [output.md]
@@ -28,24 +32,83 @@ open FSharp.Compiler.Text
 /// Set to TRUE to also list types and members marked with [<Obsolete>].
 let includeObsolete = false
 
-/// 2D names whose 3D counterpart does not follow the rule of replacing "2D" with "3D".
+/// Parts of names that differ between 2D and 3D, as 2D part and 3D part.
+/// A part only counts as a whole camel case word, optionally in plural: the "Pt" in "ClPts" counts, the one in "Ptr" does not.
+/// A part in lowercase only counts at the start of a name, like "pt0" and "pnt0".
+let dimParts = [
+    "Pt", "Pnt"   // Pt.midPt and Pnt.midPnt, XLine2D.ClPts and XLine3D.ClPnts
+    "Vc", "Vec"   // Vc.isParallelToVc and Vec.isParallelToVec, UnitVc and UnitVec
+    "2D", "3D"    // Line2D and Line3D
+    "XY", "XYZ"   // Pt.distanceToXY and Pnt.distanceToXYZ, XLineXY and XLineXYZ
+    "pt", "pnt"
+    "vc", "vec"
+    ]
+
+/// 2D types whose 3D counterpart is not found by translating the parts in 'dimParts'.
 let explicitPairs =
     dict [
-        "Pt"        , "Pnt"
-        "Vc"        , "Vec"
-        "UnitVc"    , "UnitVec"
         "BRect"     , "BBox"
         "Rotation2D", "Quaternion"
-        "XLineXY"   , "XLineXYZ"
-        "XPt"       , "XPnt"
         ]
 
 /// Types that only exist in 3D and do not have "3D" in their name.
 let only3D = set [ "Box"; "FreeBox"; "PPlane"; "NPlane"; "Matrix"; "RigidMatrix" ]
 
-/// The name used to pair 2D with 3D types and members.
-/// "Pt" and "Pnt" count as the same, so that e.g. Pt.midPt sits next to Pnt.midPnt and XLine2D.ClPts next to XLine3D.ClPnts.
-let pairingName (name: string) = name.Replace("Pnt", "Pt")
+/// Members whose 3D counterpart has another name, as 2D type, 2D name and 3D name. The type "" stands for all types.
+/// A name also covers the static member of the same name in lowercase, so "Area" pairs BRect.Area with BBox.Volume and BRect.area with BBox.volume.
+/// Besides these, a 3D name with "InXY" or "In2D" pairs with the 2D name without it, e.g. Vec.direction180InXY with Vc.direction180.
+let renamed = [
+    ""          , "Rotate90CCW"                 , "RotateOnZ90CCW"
+    ""          , "Rotate90CW"                  , "RotateOnZ90CW"
+    ""          , "createFromMembersxy"         , "createFromMembersxyz"
+    ""          , "classifyRayIntersectionParam", "classifyRayClosestParam"
+    ""          , "tryParameterA"               , "tryClosestParameterRayA"
+    "XRayParam" , "Intersect"                   , "SkewOrX"
+    "Rotation2D", "Add"                         , "Then"
+    "Rotation2D", "InDegrees"                   , "AngleInDegrees"
+    "Rotation2D", "InRadians"                   , "AngleInRadians"
+    "Rotation2D", "createFromVectors"           , "createVecToVec"
+    "Rect2D"    , "createFromBounds"            , "createFromBounds2D"
+    "BRect"     , "Area"                        , "Volume"
+    "BRect"     , "HasArea"                     , "HasVolume"
+    "BRect"     , "AsRect2D"                    , "AsBox"
+    "Offset2D"  , "makeUnitTangents"            , "getSegmentUnitVectors"
+    "Polyline2D", "BoundingRectangle"           , "BoundingBox"
+    "Polyline2D", "createFromxyMembers"         , "createFromxyzMembers"
+    ]
+
+/// Members that only exist in 2D on purpose, as 2D type, regular expression for the name and reason.
+/// The type "" stands for all types. The reason is shown in the empty 3D cell next to the member.
+/// The expression is matched against the name with its first letter in uppercase, so it covers instance and static members alike.
+/// The first matching rule gives the reason.
+/// A member whose name refers to the other dimension, like BRect.createFromRect3D, counts as a conversion between 2D and 3D.
+/// Any other member without a counterpart leaves an empty cell: a gap in the API, or a name that does not match its counterpart.
+let only2DMembers = [
+    ""          , @"Left|Right"                                   , "side of a line"
+    ""          , @"(?<![0-9])CC?W(?![a-z])|Clockwise|Winding|Signed", "orientation in the plane"
+    ""          , @"^Rotate(Around)?(Degrees|Radians)$"           , "a 3D rotation also needs an axis"
+    ""          , @"^Contains(XY)?$|LabelPoint"                   , "inside of a planar area"
+    ""          , @"^(Cross|Det)$"                                , "scalar cross product"
+    ""          , @"IntersectRays|IntersectInRange"               , "rays in 3D are mostly skew"
+    "Rotation2D", @"^(Sin|Cos)$|^CreateFrom(Sine|Cosine)$"        , "sine and cosine"
+    "Rotation2D", @"^Add(Degrees|Radians)$"                       , "a 3D rotation also needs an axis"
+    ]
+
+/// Members that only exist in 3D on purpose, as 3D type, regular expression for the name and reason.
+/// The type "" stands for all types. The reason is shown in the empty 2D cell next to the member.
+let only3DMembers = [
+    "Quaternion", @"^[XYZW]$|Axis|Conjugate|Euler"                , "quaternion components"
+    "BBox"      , @"Edge\d*[4-7]|Pnt[4-7]|Face|TopPoints|BottomPoints|IsFlat", "corners, edges and faces of a box"
+    ""          , @"On[XYZ](?![a-z])"                             , "rotation about a world axis"
+    ""          , @"(?<![A-Z])Z(?![a-z])|Zaxis"                   , "Z axis"
+    ""          , @"In(XY|2D)(?![a-z])|XYPlane|^OffsetXY$"        , "projection to the XY plane"
+    ""          , @"Vertical|Horizontal|Up(?![a-z])|Down(?![a-z])", "vertical direction"
+    ""          , @"Transform|Matrix"                             , "transformation matrix"
+    ""          , @"Normal(?![a-z])|Plane|Planar|WithRef|^Flip(ped)?$", "plane or normal"
+    ""          , @"Skew|Closest\w*Ray|Ray\w*Closest|DoRaysIntersect", "rays in 3D are mostly skew"
+    ""          , @"Cone"                                         , "cone"
+    ""          , @"^Determinant3$"                               , "triple product"
+    ]
 
 // #endregion
 // #region Type checking
@@ -165,7 +228,8 @@ type Kind =
 type Item = {
     Kind: Kind
     Name: string      // shown in the name column
-    Key: string       // the bare name with "Pnt" as "Pt", used to pair 2D with 3D members
+    Bare: string      // the name as declared
+    Key: string       // the bare name, translated to 3D on the 2D side of a table to pair 2D with 3D members
     Signature: string
     Order: int * int  // file index and line, to sort overloads
     }
@@ -197,7 +261,7 @@ let fullName (e: FSharpEntity) = defaultArg e.TryFullName e.CompiledName
 let extensions = ResizeArray<FSharpMemberOrFunctionOrValue>()
 
 let fieldItem (name: string) (signature: string) (r: range) =
-    { Kind = Field; Name = name; Key = pairingName name; Signature = signature; Order = position r }
+    { Kind = Field; Name = name; Bare = name; Key = name; Signature = signature; Order = position r }
 
 let rec walk (parentPath: string list) (e: FSharpEntity) =
     if e.Accessibility.IsPublic && not (isHidden e.Attributes) && not e.IsMeasure && not e.IsFSharpAbbreviation then
@@ -307,10 +371,10 @@ let itemsOf (s: Section) : Item list =
                 | Static when not (m.DisplayName.StartsWith "(") -> $"{prefix}.{displayName m}"
                 | Instance -> $".{displayName m}"
                 | _ -> displayName m
-            { Kind = kind; Name = name; Key = pairingName m.DisplayName; Signature = signature; Order = position m.DeclarationLocation }
+            { Kind = kind; Name = name; Bare = m.DisplayName; Key = m.DisplayName; Signature = signature; Order = position m.DeclarationLocation }
         let kind = if m.IsInstanceMember then Instance else Static
         if m.IsConstructor then
-            yield { item Ctor (fmtFunction m) with Name = "new"; Key = "new" }
+            yield { item Ctor (fmtFunction m) with Name = "new"; Bare = "new"; Key = "new" }
         elif m.IsPropertyGetterMethod then
             yield item kind (fmtProperty m (visible |> List.exists (isAccessorPair m)))
         elif m.IsPropertySetterMethod then
@@ -324,18 +388,103 @@ let itemsOf (s: Section) : Item list =
 // #endregion
 // #region Pairing 2D with 3D
 
+/// Matches the parts in 'dimParts', longer parts first, so that "XYZ" is not read as "XY".
+/// A part that starts with a digit, like "2D", may be followed by a lowercase letter, as in Polyline3D.createFrom2DxyMembers.
+let dimPartRegex =
+    dimParts
+    |> List.collect (fun (a, b) -> [ a; b ])
+    |> List.sortByDescending String.length
+    |> List.map (fun p ->
+        if Char.IsDigit p.[0] then p
+        elif Char.IsLower p.[0] then $"(?<![A-Za-z0-9_]){p}(?=s?(?![a-z]))"
+        else $"{p}(?=s?(?![a-z]))")
+    |> String.concat "|"
+    |> Regex
+
+let parts2D = dimParts |> List.map fst |> set
+let parts3D = dimParts |> List.map snd |> set
+let otherPart = dict [ for a, b in dimParts do yield a, b; yield b, a ]
+let explicit3D = dict [ for KeyValue(a, b) in explicitPairs -> b, a ]
+
+/// Translates a name from the 2D side of a table to the name of its 3D counterpart.
+/// The 3D parts in it turn into 2D parts, so that conversions to the other dimension sit side by side,
+/// e.g. Pt.asPnt next to Pnt.asPt and Vc.asVec next to Vec.asVc.
 let to3D (name: string) =
     match explicitPairs.TryGetValue name with
     | true, n -> n
-    | _ -> name.Replace("2D", "3D")
+    | _ ->
+        match explicit3D.TryGetValue name with
+        | true, n -> n
+        | _ -> dimPartRegex.Replace(name, fun m -> otherPart.[m.Value])
+
+let lowerFirst (s: string) =
+    if s = "" then s else string (Char.ToLowerInvariant s.[0]) + s.Substring 1
+
+let upperFirst (s: string) =
+    if s = "" then s else string (Char.ToUpperInvariant s.[0]) + s.Substring 1
+
+/// The name of the 3D counterpart of a member of a 2D type, from 'renamed' or else from 'to3D'.
+let memberTo3D (typeName: string) (name: string) =
+    renamed
+    |> List.tryPick (fun (ty, name2D, name3D) ->
+        if ty <> "" && ty <> typeName then None
+        elif name = name2D then Some name3D
+        elif name = lowerFirst name2D then Some (lowerFirst name3D)
+        else None)
+    |> Option.defaultWith (fun () -> to3D name)
+
+/// Sets the keys of the items of a 2D type to the names of their 3D counterparts.
+/// A 2D name stays the key when only the name itself exists in 3D,
+/// e.g. Rect2D.expandXY and Rect3D.expandXY, where "XY" means the local X and Y in both.
+let keysFor3D (typeName: string) (right: Item list) (left: Item list) =
+    let rightKeys = right |> List.map (fun i -> i.Key) |> set
+    let translated = left |> List.map (fun i -> memberTo3D typeName i.Key) |> set
+    left |> List.map (fun i ->
+        let key = memberTo3D typeName i.Key
+        if not (rightKeys.Contains key) && rightKeys.Contains i.Key && not (translated.Contains i.Key) then i
+        else { i with Key = key })
+
+let inXYRegex = Regex @"In(XY|2D)(?![a-z])"
+
+/// Sets the key of a 3D item to its name without "InXY" or "In2D" when only that name exists in 2D,
+/// e.g. Vec.direction180InXY pairs with Vc.direction180 and Polyline3D.IsClockwiseIn2D with Polyline2D.IsClockwise.
+let keysWithoutInXY (left: Item list) (right: Item list) =
+    let leftKeys = left |> List.map (fun i -> i.Key) |> set
+    let rightKeys = right |> List.map (fun i -> i.Key) |> set
+    right |> List.map (fun i ->
+        let key = inXYRegex.Replace(i.Key, "")
+        if key <> i.Key && leftKeys.Contains key && not (rightKeys.Contains key) && not (leftKeys.Contains i.Key) then { i with Key = key }
+        else i)
 
 type Dim = D2 | D3 | Neutral
 
-let dimOf (s: Section) =
-    let explicit3D = set explicitPairs.Values
-    if s.Path |> List.exists (fun n -> n.Contains "2D" || explicitPairs.ContainsKey n) then D2
-    elif s.Path |> List.exists (fun n -> n.Contains "3D" || explicit3D.Contains n || only3D.Contains n) then D3
+let dimOfName (name: string) =
+    let parts = dimPartRegex.Matches name |> Seq.map (fun m -> m.Value) |> List.ofSeq
+    if explicitPairs.ContainsKey name || parts |> List.exists parts2D.Contains then D2
+    elif explicit3D.ContainsKey name || only3D.Contains name || not parts.IsEmpty then D3
     else Neutral
+
+let dimOf (s: Section) =
+    let dims = s.Path |> List.map dimOfName
+    if List.contains D2 dims then D2
+    elif List.contains D3 dims then D3
+    else Neutral
+
+/// TRUE if a name refers to a type of the given dimension, like "createFromBRect" to 2D.
+/// "XY" and "XYZ" name coordinates, not types, so they do not count.
+let refersTo (dim: Dim) (name: string) =
+    let parts, types = if dim = D2 then parts2D, explicitPairs.Keys else parts3D, explicitPairs.Values
+    let parts = parts - set [ "XY"; "XYZ" ]
+    (dimPartRegex.Matches name |> Seq.exists (fun m -> parts.Contains m.Value))
+    || (types |> Seq.exists name.Contains)
+
+/// The reason why a member has no counterpart on purpose, from rules like 'only2DMembers', or None for a gap.
+/// A member that refers to the other dimension is a conversion between 2D and 3D.
+let reasonFor (rules: (string * string * string) list) (otherDim: Dim) (typeName: string) (i: Item) =
+    rules
+    |> List.tryPick (fun (ty, pattern, reason) ->
+        if (ty = "" || ty = typeName) && Regex.IsMatch(upperFirst i.Bare, pattern) then Some reason else None)
+    |> Option.orElse (if refersTo otherDim i.Bare then Some "conversion between 2D and 3D" else None)
 
 /// Sorts names alphabetically, numbers like ``2.5`` by value, and operators last.
 let compareKeys (a: string) (b: string) =
@@ -378,18 +527,18 @@ let pairUp (left: Item list) (right: Item list) : (Item option * Item option) li
         yield None, Some r ]
 
 type Row =
-    | Cells of Item option * Item option
+    | Cells of Item option * Item option * reason: string option // the reason why one cell is empty on purpose
     | Label of string
 
 let rowsOf (isModule: bool) (left: Item list) (right: Item list) : Row list =
     let ofKind k (xs: Item list) = xs |> List.filter (fun i -> i.Kind = k)
     let withKey key (xs: Item list) = xs |> List.filter (fun i -> i.Key = key)
-    let pairKeys keys l r = [ for k in keys do for a, b in pairUp (withKey k l) (withKey k r) -> Cells(a, b) ]
+    let pairKeys keys l r = [ for k in keys do for a, b in pairUp (withKey k l) (withKey k r) -> Cells(a, b, None) ]
     let sortedKeys (xs: Item list) = xs |> List.map (fun i -> i.Key) |> List.distinct |> List.sortWith compareKeys
     let lower (i: Item) = i.Key.ToLowerInvariant()
 
     // constructors, then fields and cases in declaration order
-    let ctors = pairUp (ofKind Ctor left) (ofKind Ctor right) |> List.map Cells
+    let ctors = pairUp (ofKind Ctor left) (ofKind Ctor right) |> List.map (fun (a, b) -> Cells(a, b, None))
     let fl, fr = ofKind Field left, ofKind Field right
     let fields = pairKeys ((fl @ fr) |> List.map (fun i -> i.Key) |> List.distinct) fl fr
 
@@ -412,6 +561,19 @@ let rowsOf (isModule: bool) (left: Item list) (right: Item list) : Row list =
     let before = ctors @ fields @ instanceRows
     if before.IsEmpty || staticRows.IsEmpty then before @ staticRows
     else before @ (Label (if isModule then "Functions and values" else "Other static members") :: staticRows)
+
+/// Adds the reason to each row of a 2D and a 3D type where one member exists in one dimension only on purpose.
+let withReasons (left: Section) (right: Section) (rows: Row list) =
+    rows |> List.map (function
+        | Cells(Some l, None, _) -> Cells(Some l, None, reasonFor only2DMembers D3 (List.last left.Path) l)
+        | Cells(None, Some r, _) -> Cells(None, Some r, reasonFor only3DMembers D2 (List.last right.Path) r)
+        | row -> row)
+
+/// TRUE for a row with an empty cell that is not explained by a reason.
+let isGap (row: Row) =
+    match row with
+    | Cells(Some _, None, None) | Cells(None, Some _, None) -> true
+    | _ -> false
 
 // #endregion
 // #region Markdown
@@ -455,15 +617,17 @@ let groups, general =
     let pairs =
         [ for s, d in sectionDims do
             if d = D2 then
-                let partnerPath = s.Path |> List.map (to3D >> pairingName)
+                let partnerPath = s.Path |> List.map to3D
                 let partner =
                     sectionDims
-                    |> List.tryFind (fun (o, od) -> od = D3 && List.map pairingName o.Path = partnerPath && o.IsModule = s.IsModule)
+                    |> List.tryFind (fun (o, od) -> od = D3 && o.Path = partnerPath && o.IsModule = s.IsModule)
                 match partner with
                 | Some (o, _) ->
                     paired.Add s.Key |> ignore
                     paired.Add o.Key |> ignore
-                    yield { Left = s; Right = Some o; Rows = rowsOf s.IsModule (itemsOf s) (itemsOf o) }
+                    let left = itemsOf s |> keysFor3D (List.last s.Path) (itemsOf o)
+                    let right = itemsOf o |> keysWithoutInXY left
+                    yield { Left = s; Right = Some o; Rows = rowsOf s.IsModule left right |> withReasons s o }
                 | None -> () ]
     let singles dims =
         [ for s, d in sectionDims do
@@ -479,6 +643,13 @@ let titleOf (g: Group) =
     match g.Right with
     | Some r -> $"{g.Left.Title} / {r.Title}"
     | None -> g.Left.Title
+
+/// The number of empty cells without a reason in the tables that pair a 2D with a 3D type.
+let gapCount (gs: Group list) =
+    gs |> List.sumBy (fun g -> if g.Right.IsSome then g.Rows |> List.filter isGap |> List.length else 0)
+
+let plural (n: int) (word: string) =
+    if n = 1 then $"1 {word}" else $"{n} {word}s"
 
 /// Notes on the notation, shared by all files.
 let notation = [
@@ -502,7 +673,9 @@ let writeFile (path: string) (intro: string list) (parts: (string * Group list) 
         if parts.Length > 1 then
             line $"**{label}**"
             line ""
-        for g in gs do line $"- [{titleOf g}](#{anchor (titleOf g)})"
+        for g in gs do
+            let gaps = if g.Right.IsSome then ", " + plural (gapCount [ g ]) "gap" else ""
+            line $"- [{titleOf g}](#{anchor (titleOf g)}){gaps}"
 
     let mutable rowCount = 0
     let all = parts |> List.collect snd
@@ -517,15 +690,16 @@ let writeFile (path: string) (intro: string list) (parts: (string * Group list) 
         | None ->
             line $"| {List.last g.Left.Path} | Signature |"
             line "|:--|:--|"
-        let cells (i: Item option) =
-            match i with
-            | Some i -> $"{code i.Name} | {code i.Signature}"
-            | None -> " | "
+        let cells (i: Item option) (reason: string option) =
+            match i, reason with
+            | Some i, _ -> $"{code i.Name} | {code i.Signature}"
+            | None, Some r -> $"— | *{r}*"
+            | None, None -> " | "
         for row in g.Rows do
             rowCount <- rowCount + 1
             match row, g.Right with
-            | Cells(l, r), Some _ -> line $"| {cells l} | {cells r} |"
-            | Cells(l, _), None -> line $"| {cells l} |"
+            | Cells(l, r, reason), Some _ -> line $"| {cells l reason} | {cells r reason} |"
+            | Cells(l, _, _), None -> line $"| {cells l None} |"
             | Label text, Some _ -> line $"| **{text}** | | | |"
             | Label text, None -> line $"| **{text}** | |"
 
@@ -536,12 +710,17 @@ let writeFile (path: string) (intro: string list) (parts: (string * Group list) 
 let withSuffix (suffix: string) =
     Path.Combine(Path.GetDirectoryName outFile, Path.GetFileNameWithoutExtension outFile + suffix + Path.GetExtension outFile)
 
+let allGaps = plural (gapCount groups) "gap"
+
 writeFile outFile
     [ "# Euclid API"
       ""
       "All public types, members and functions of Euclid. Corresponding 2D and 3D types share one table."
       ""
-      "- Members of the same name share a row. An empty cell means that the member only exists in one dimension."
+      "- Corresponding members share a row, also when their names differ, like `Pt.midPt` and `Pnt.midPnt`."
+      "- `—` and a reason in italics mark a member that exists in one dimension only on purpose."
+      $"- An empty cell marks one of {allGaps}: a member that is missing in one dimension,"
+      "  or a member whose name does not match its counterpart. The contents list the gaps per table."
       yield! notation ]
     [ "2D and 3D", groups
       "General", general ]
