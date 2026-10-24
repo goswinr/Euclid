@@ -30,7 +30,7 @@ This helps to skip checks for zero length vectors in many operations.
 ✨ **Key Characteristics**
 - **Zero dependencies:** lightweight and self-contained<br>
 - **Double precision:** designed for CAD/manufacturing accuracy<br>
-- **Immutable types:** all primitive types are immutable for safety and ease of reasoning<br>
+- **Immutable types:** all types are immutable for safety and ease of reasoning, except `Polyline2D`, `Polyline3D` and `FreeBox`<br>
 - **Cross-platform:** compiles to .NET, JavaScript, TypeScript, Rust, Python via Fable<br>
 - **Performance Focus:** All small types are structs, functions are often inline and try to minimize the allocation.<br>
 - **Interoperability:** Can be used with [Rhino3D](https://github.com/goswinr/Euclid.Rhino), Revit, or any .NET environment, and also in JavaScript/TypeScript projects via Fable.<br>
@@ -68,6 +68,20 @@ The API enforces this: vector types (`Vc`, `Vec`, `UnitVc`, `UnitVec`) deliberat
 `translate` or `rotateWithCenter` members. (The two members that violated this rule,
 `Vec.rotateWithCenter` and `UnitVec.rotateWithCenter`, are scheduled for removal.)
 
+### Mutability
+All types are immutable, except `Polyline2D`, `Polyline3D` and `FreeBox`.
+These three are classes that wrap a flat buffer of coordinates.
+Members such as `SetPt`, `AddPoint` or `ReverseInPlace` change the instance in place.
+Transformations such as `Move`, `Rotate` or `Transform` still return a new instance.
+Call `Duplicate()` to get an independent copy before you change a shared instance.
+
+### Rays
+A ray in Euclid is a line extended infinitely in both directions, not a half-line that starts at a point.
+Functions with `Ray` in their name, such as `XLine2D.getRayIntersection`, `Line3D.RayClosestParameters`
+or `BBox.IntersectRay`, take a finite `Line2D` or `Line3D` and treat it as infinite.
+Their parameters are measured along that line: 0.0 is at its `From` point and 1.0 at its `To` point.
+Values below 0.0 or above 1.0 are valid results.
+
 ### Naming Conventions
 
 **Core Types (2D and 3D):**
@@ -89,6 +103,7 @@ The API enforces this: vector types (`Vc`, `Vec`, `UnitVc`, `UnitVec`) deliberat
 | `PPlane` | Parametrized plane (origin + X/Y/Z axes) |
 | `NPlane` | Normal plane (origin + normal vector) |
 | `Box` | Oriented 3D box (origin + 3 axis vectors) |
+| `FreeBox` | Mutable box-like shape with 8 freely placed corner points |
 | `Matrix` | 4x4 transformation matrix |
 | `RigidMatrix` | 4x3 rigid transformation (rotation + translation only) |
 | `Quaternion` | Unitized quaternion for 3D rotations |
@@ -424,7 +439,7 @@ match XLine2D.getIntersection(lineA, lineB) with
 | XLine2D.XPt.TooShortB          -> printfn "Line B is too short"
 | XLine2D.XPt.TooShortBoth       -> printfn "Both lines are too short"
 
-// Ray intersection (extends lines infinitely)
+// Ray intersection (rays are lines extended infinitely in both directions)
 match XLine2D.getRayIntersection(lineA, lineB) with
 | XLine2D.XRay.Intersect pt       -> printfn $"Rays meet at {pt}"
 | XLine2D.XRay.Parallel           -> printfn "Rays are parallel"

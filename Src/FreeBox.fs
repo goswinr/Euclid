@@ -41,7 +41,7 @@ open FreeBoxUtil
 
 
 /// <summary>
-/// A class containing a flat array of 24 floats representing an arbitrary 3D box-like topology.
+/// A mutable class containing a flat array of 24 floats representing an arbitrary 3D box-like topology.
 /// The 8 corner points are stored interleaved as x0, y0, z0, x1, y1, z1, ... x7, y7, z7.
 /// The points can be in arbitrary position in space.
 /// All transformations, like Move, Scale or Rotate, mutate the FreeBox in place and return unit.
