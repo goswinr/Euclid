@@ -58,23 +58,22 @@ let only3D = set [ "Box"; "FreeBox"; "PPlane"; "NPlane"; "Matrix"; "RigidMatrix"
 /// A name also covers the static member of the same name in lowercase, so "Area" pairs BRect.Area with BBox.Volume and BRect.area with BBox.volume.
 /// Besides these, a 3D name with "InXY" or "In2D" pairs with the 2D name without it, e.g. Vec.direction180InXY with Vc.direction180.
 let renamed = [
-    ""          , "Rotate90CCW"                 , "RotateOnZ90CCW"
-    ""          , "Rotate90CW"                  , "RotateOnZ90CW"
+    ""          , "Rotate90CCW"                 , "Rotate2Dby90CCW"
+    ""          , "Rotate90CW"                  , "Rotate2Dby90CW"
     ""          , "createFromMembersxy"         , "createFromMembersxyz"
     ""          , "classifyRayIntersectionParam", "classifyRayClosestParam"
+    ""          , "classifyRayIntersectionParamFromPtsAndVcs", "classifyRayClosestParamFromPntsAndVecs"
+    ""          , "classifyRayIntersectionParamCustom", "classifyRayClosestParamCustom"
     ""          , "tryParameterA"               , "tryClosestParameterRayA"
+    ""          , "tryParameterAFromPtsAndVcs"  , "tryClosestParameterRayAFromPntsAndVecs"
     "XRayParam" , "Intersect"                   , "SkewOrX"
-    "Rotation2D", "Add"                         , "Then"
-    "Rotation2D", "InDegrees"                   , "AngleInDegrees"
-    "Rotation2D", "InRadians"                   , "AngleInRadians"
-    "Rotation2D", "createFromVectors"           , "createVecToVec"
     "Rect2D"    , "createFromBounds"            , "createFromBounds2D"
     "BRect"     , "Area"                        , "Volume"
     "BRect"     , "HasArea"                     , "HasVolume"
     "BRect"     , "AsRect2D"                    , "AsBox"
     "Offset2D"  , "makeUnitTangents"            , "getSegmentUnitVectors"
     "Polyline2D", "BoundingRectangle"           , "BoundingBox"
-    "Polyline2D", "createFromxyMembers"         , "createFromxyzMembers"
+    "Polyline2D", "xys"                         , "xyzs"
     ]
 
 /// Members that only exist in 2D on purpose, as 2D type, regular expression for the name and reason.
@@ -91,20 +90,23 @@ let only2DMembers = [
     ""          , @"^(Cross|Det)$"                                , "scalar cross product"
     ""          , @"IntersectRays|IntersectInRange"               , "rays in 3D are mostly skew"
     "Rotation2D", @"^(Sin|Cos)$|^CreateFrom(Sine|Cosine)$"        , "sine and cosine"
-    "Rotation2D", @"^Add(Degrees|Radians)$"                       , "a 3D rotation also needs an axis"
+    "Rotation2D", @"^Add(Degrees|Radians)$|^CreateFrom(Degrees|Radians)$", "a 3D rotation also needs an axis"
     ]
 
 /// Members that only exist in 3D on purpose, as 3D type, regular expression for the name and reason.
 /// The type "" stands for all types. The reason is shown in the empty 2D cell next to the member.
 let only3DMembers = [
     "Quaternion", @"^[XYZW]$|Axis|Conjugate|Euler"                , "quaternion components"
+    "Quaternion", @"^CreateFrom(Unit)?Vec(Degrees|Radians)$"      , "rotation about an axis vector"
+    "XLine3D"   , @"^(DoIntersect|TryIntersect)Custom$"           , "skew tolerance of 3D lines"
     "BBox"      , @"Edge\d*[4-7]|Pnt[4-7]|Face|TopPoints|BottomPoints|IsFlat", "corners, edges and faces of a box"
     ""          , @"On[XYZ](?![a-z])"                             , "rotation about a world axis"
-    ""          , @"(?<![A-Z])Z(?![a-z])|Zaxis"                   , "Z axis"
+    ""          , @"(?<![A-Z])Z(?![a-z])"                         , "Z axis"
+    "Polyline3D", @"^CreateFromMembers(XY|xy)$"                   , "import of 2D points"
     ""          , @"In(XY|2D)(?![a-z])|XYPlane|^OffsetXY$"        , "projection to the XY plane"
     ""          , @"Vertical|Horizontal|Up(?![a-z])|Down(?![a-z])", "vertical direction"
     ""          , @"Transform|Matrix"                             , "transformation matrix"
-    ""          , @"Normal(?![a-z])|Plane|Planar|WithRef|^Flip(ped)?$", "plane or normal"
+    ""          , @"Normal(?![a-z])|Plane|Planar|^Flip(ped)?$"    , "plane or normal"
     ""          , @"Skew|Closest\w*Ray|Ray\w*Closest|DoRaysIntersect", "rays in 3D are mostly skew"
     ""          , @"Cone"                                         , "cone"
     ""          , @"^Determinant3$"                               , "triple product"
