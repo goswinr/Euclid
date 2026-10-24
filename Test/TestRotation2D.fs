@@ -7,6 +7,22 @@ open EuclidTestSupport
 let inline eqFloat a b = abs(a - b) < 1e-9
 let inline eqPt a b = Pt.dist a b < 1e-9
 let inline eqVc a b = Vc.length (a - b) < 1e-9
+let eqLn (a:Line2D) (b:Line2D) = eqPt a.From b.From && eqPt a.To b.To
+let eqRect (a:Rect2D) (b:Rect2D) = eqPt a.Origin b.Origin && eqVc a.Xaxis b.Xaxis && eqVc a.Yaxis b.Yaxis
+let eqPl (a:Polyline2D) (b:Polyline2D) =
+    a.PointCount = b.PointCount && Seq.forall (fun i -> eqPt (a.GetPt i) (b.GetPt i)) [0 .. a.PointCount - 1]
+
+// Shapes for the rotation and scale grammar tests, away from the origin and not axis-aligned.
+let gCen = Pt(12.0, -7.0)
+let gDeg = 37.0
+let gRad = UtilEuclid.toRadians gDeg
+let gRot = Rotation2D.createFromDegrees gDeg
+let gPt = Pt(15.5, -3.25)
+let gLn = Line2D(Pt(14.0, -5.0), Pt(19.0, -2.5))
+let gRect = Rect2D.createFromVectors(Pt(13.0, -4.0), Vc(4.0, 3.0), Vc(-1.5, 2.0))
+let gPl () = Polyline2D.createFromPts [Pt(14., -5.); Pt(19., -2.5); Pt(17., 1.); Pt(14., -5.)]
+/// Rotates around a center by translating to the origin, rotating with Vc.rotate and translating back.
+let refRotAround (cen:Pt) (r:Rotation2D) (p:Pt) = cen + Vc.rotate r (p - cen)
 
 let tests =
     testList "Rotation2D" [
@@ -455,8 +471,8 @@ let tests =
                 let testPt = Pt(3.0, 4.0)
                 let r = Rotation2D.createFromDegrees 0.0
                 let half = r.Half
-                let fullResult = Pt.rotateBy r testPt
-                let halfTwiceResult = testPt |> Pt.rotateBy half |> Pt.rotateBy half
+                let fullResult = Pt.rotate r testPt
+                let halfTwiceResult = testPt |> Pt.rotate half |> Pt.rotate half
                 Expect.isTrue (eqPt fullResult halfTwiceResult) "Rotating by half twice should equal full rotation for 0°"
             }
 
@@ -464,8 +480,8 @@ let tests =
                 let testPt = Pt(3.0, 4.0)
                 let r = Rotation2D.createFromDegrees 30.0
                 let half = r.Half
-                let fullResult = Pt.rotateBy r testPt
-                let halfTwiceResult = testPt |> Pt.rotateBy half |> Pt.rotateBy half
+                let fullResult = Pt.rotate r testPt
+                let halfTwiceResult = testPt |> Pt.rotate half |> Pt.rotate half
                 Expect.isTrue (eqPt fullResult halfTwiceResult) "Rotating by half twice should equal full rotation for 30°"
             }
 
@@ -476,8 +492,8 @@ let tests =
                 let testPt = Pt(3.0, 4.0)
                 let r = Rotation2D.createFromDegrees 120.0
                 let half = r.Half
-                let fullResult = Pt.rotateBy r testPt
-                let halfTwiceResult = testPt |> Pt.rotateBy half |> Pt.rotateBy half
+                let fullResult = Pt.rotate r testPt
+                let halfTwiceResult = testPt |> Pt.rotate half |> Pt.rotate half
                 Expect.isTrue (eqPt fullResult halfTwiceResult) "Rotating by half twice should equal full rotation for 120°"
             }
 
@@ -486,8 +502,8 @@ let tests =
                 let testPt = Pt(3.0, 4.0)
                 let r = Rotation2D.createFromDegrees -60.0
                 let half = r.Half
-                let fullResult = Pt.rotateBy r testPt
-                let halfTwiceResult = testPt |> Pt.rotateBy half |> Pt.rotateBy half
+                let fullResult = Pt.rotate r testPt
+                let halfTwiceResult = testPt |> Pt.rotate half |> Pt.rotate half
                 Expect.isTrue (eqPt fullResult halfTwiceResult) "Rotating by half twice should equal full rotation for -60°"
             }
 
@@ -496,8 +512,8 @@ let tests =
                 let testPt = Pt(3.0, 4.0)
                 let r = Rotation2D.createFromDegrees -15.0
                 let half = r.Half
-                let fullResult = Pt.rotateBy r testPt
-                let halfTwiceResult = testPt |> Pt.rotateBy half |> Pt.rotateBy half
+                let fullResult = Pt.rotate r testPt
+                let halfTwiceResult = testPt |> Pt.rotate half |> Pt.rotate half
                 Expect.isTrue (eqPt fullResult halfTwiceResult) "Rotating by half twice should equal full rotation for -15°"
             }
 
@@ -506,8 +522,8 @@ let tests =
                 let testPt = Pt(3.0, 4.0)
                 let r = Rotation2D.createFromDegrees -0.1
                 let half = r.Half
-                let fullResult = Pt.rotateBy r testPt
-                let halfTwiceResult = testPt |> Pt.rotateBy half |> Pt.rotateBy half
+                let fullResult = Pt.rotate r testPt
+                let halfTwiceResult = testPt |> Pt.rotate half |> Pt.rotate half
                 Expect.isTrue (eqPt fullResult halfTwiceResult) "Rotating by half twice should equal full rotation for -0.1°"
             }
 
@@ -516,8 +532,8 @@ let tests =
                 let testPt = Pt(3.0, 4.0)
                 let r = Rotation2D.createFromDegrees 89.0
                 let half = r.Half
-                let fullResult = Pt.rotateBy r testPt
-                let halfTwiceResult = testPt |> Pt.rotateBy half |> Pt.rotateBy half
+                let fullResult = Pt.rotate r testPt
+                let halfTwiceResult = testPt |> Pt.rotate half |> Pt.rotate half
                 Expect.isTrue (eqPt fullResult halfTwiceResult) "Rotating by half twice should equal full rotation for 89°"
             }
 
@@ -525,8 +541,8 @@ let tests =
                 let testPt = Pt(3.0, 4.0)
                 let r = Rotation2D.createFromDegrees 91.0
                 let half = r.Half
-                let fullResult = Pt.rotateBy r testPt
-                let halfTwiceResult = testPt |> Pt.rotateBy half |> Pt.rotateBy half
+                let fullResult = Pt.rotate r testPt
+                let halfTwiceResult = testPt |> Pt.rotate half |> Pt.rotate half
                 Expect.isTrue (eqPt fullResult halfTwiceResult) "Rotating by half twice should equal full rotation for 91°"
             }
 
@@ -534,8 +550,8 @@ let tests =
                 let testPt = Pt(3.0, 4.0)
                 let r = Rotation2D.createFromDegrees 179.0
                 let half = r.Half
-                let fullResult = Pt.rotateBy r testPt
-                let halfTwiceResult = testPt |> Pt.rotateBy half |> Pt.rotateBy half
+                let fullResult = Pt.rotate r testPt
+                let halfTwiceResult = testPt |> Pt.rotate half |> Pt.rotate half
                 Expect.isTrue (eqPt fullResult halfTwiceResult) "Rotating by half twice should equal full rotation for 179°"
             }
 
@@ -543,8 +559,8 @@ let tests =
                 let testPt = Pt(3.0, 4.0)
                 let r = Rotation2D.createFromDegrees -179.0
                 let half = r.Half
-                let fullResult = Pt.rotateBy r testPt
-                let halfTwiceResult = testPt |> Pt.rotateBy half |> Pt.rotateBy half
+                let fullResult = Pt.rotate r testPt
+                let halfTwiceResult = testPt |> Pt.rotate half |> Pt.rotate half
                 Expect.isTrue (eqPt fullResult halfTwiceResult) "Rotating by half twice should equal full rotation for -179°"
             }
 
@@ -553,8 +569,8 @@ let tests =
                 let testPt = Pt(3.0, 4.0)
                 let r = Rotation2D.createFromRadians (System.Math.PI / 2.0)
                 let half = r.Half
-                let fullResult = Pt.rotateBy r testPt
-                let halfTwiceResult = testPt |> Pt.rotateBy half |> Pt.rotateBy half
+                let fullResult = Pt.rotate r testPt
+                let halfTwiceResult = testPt |> Pt.rotate half |> Pt.rotate half
                 Expect.isTrue (eqPt fullResult halfTwiceResult) "Rotating by half twice should equal full rotation for π/2"
             }
 
@@ -562,8 +578,8 @@ let tests =
                 let testPt = Pt(3.0, 4.0)
                 let r = Rotation2D.createFromRadians System.Math.PI
                 let half = r.Half
-                let fullResult = Pt.rotateBy r testPt
-                let halfTwiceResult = testPt |> Pt.rotateBy half |> Pt.rotateBy half
+                let fullResult = Pt.rotate r testPt
+                let halfTwiceResult = testPt |> Pt.rotate half |> Pt.rotate half
                 Expect.isTrue (eqPt fullResult halfTwiceResult) "Rotating by half twice should equal full rotation for π"
             }
 
@@ -571,8 +587,8 @@ let tests =
                 let testPt = Pt(3.0, 4.0)
                 let r = Rotation2D.createFromRadians (-System.Math.PI / 2.0)
                 let half = r.Half
-                let fullResult = Pt.rotateBy r testPt
-                let halfTwiceResult = testPt |> Pt.rotateBy half |> Pt.rotateBy half
+                let fullResult = Pt.rotate r testPt
+                let halfTwiceResult = testPt |> Pt.rotate half |> Pt.rotate half
                 Expect.isTrue (eqPt fullResult halfTwiceResult) "Rotating by half twice should equal full rotation for -π/2"
             }
 
@@ -587,8 +603,8 @@ let tests =
                     for testPt in testPts do
                         let r = Rotation2D.createFromDegrees deg
                         let half = r.Half
-                        let fullResult = Pt.rotateBy r testPt
-                        let halfTwiceResult = testPt |> Pt.rotateBy half |> Pt.rotateBy half
+                        let fullResult = Pt.rotate r testPt
+                        let halfTwiceResult = testPt |> Pt.rotate half |> Pt.rotate half
                         if not (eqPt fullResult halfTwiceResult) then
                             failwith $"Half rotation twice should equal full rotation for {deg}° at point {testPt}"
             }
@@ -598,8 +614,8 @@ let tests =
                 let testVc = Vc(3.0, 4.0)
                 let r = Rotation2D.createFromDegrees 90.0
                 let half = r.Half
-                let fullResult = Vc.rotateBy r testVc
-                let halfTwiceResult = testVc |> Vc.rotateBy half |> Vc.rotateBy half
+                let fullResult = Vc.rotate r testVc
+                let halfTwiceResult = testVc |> Vc.rotate half |> Vc.rotate half
                 Expect.isTrue (eqVc fullResult halfTwiceResult) "Vector: half twice should equal full for 90°"
             }
 
@@ -607,8 +623,8 @@ let tests =
                 let testVc = Vc(3.0, 4.0)
                 let r = Rotation2D.createFromDegrees 180.0
                 let half = r.Half
-                let fullResult = Vc.rotateBy r testVc
-                let halfTwiceResult = testVc |> Vc.rotateBy half |> Vc.rotateBy half
+                let fullResult = Vc.rotate r testVc
+                let halfTwiceResult = testVc |> Vc.rotate half |> Vc.rotate half
                 Expect.isTrue (eqVc fullResult halfTwiceResult) "Vector: half twice should equal full for 180°"
             }
 
@@ -616,8 +632,8 @@ let tests =
                 let testVc = Vc(3.0, 4.0)
                 let r = Rotation2D.createFromDegrees -135.0
                 let half = r.Half
-                let fullResult = Vc.rotateBy r testVc
-                let halfTwiceResult = testVc |> Vc.rotateBy half |> Vc.rotateBy half
+                let fullResult = Vc.rotate r testVc
+                let halfTwiceResult = testVc |> Vc.rotate half |> Vc.rotate half
                 Expect.isTrue (eqVc fullResult halfTwiceResult) "Vector: half twice should equal full for -135°"
             }
 
@@ -627,8 +643,8 @@ let tests =
                 let r = Rotation2D.createFromDegrees 180.0
                 let half = r.Half       // 90°
                 let quarter = half.Half // 45°
-                let expectedPt = Pt.rotate 45.0 testPt
-                let actualPt = Pt.rotateBy quarter testPt
+                let expectedPt = Pt.rotateDegrees 45.0 testPt
+                let actualPt = Pt.rotate quarter testPt
                 Expect.isTrue (eqPt expectedPt actualPt) "Half of Half of 180° should rotate point by 45°"
             }
 
@@ -638,8 +654,8 @@ let tests =
                 let half1 = r.Half       // 80°
                 let half2 = half1.Half   // 40°
                 let half3 = half2.Half   // 20°
-                let expectedPt = Pt.rotate 20.0 testPt
-                let actualPt = Pt.rotateBy half3 testPt
+                let expectedPt = Pt.rotateDegrees 20.0 testPt
+                let actualPt = Pt.rotate half3 testPt
                 Expect.isTrue (eqPt expectedPt actualPt) "160° / 2 / 2 / 2 = 20° - verified by point position"
             }
 
@@ -651,8 +667,8 @@ let tests =
                 let r = Rotation2D.createFromDegrees 45.0
                 let half = r.Half
                 for testPt in testPts do
-                    let fullResult = Pt.rotateBy r testPt
-                    let halfTwiceResult = testPt |> Pt.rotateBy half |> Pt.rotateBy half
+                    let fullResult = Pt.rotate r testPt
+                    let halfTwiceResult = testPt |> Pt.rotate half |> Pt.rotate half
                     if not (eqPt fullResult halfTwiceResult) then
                         failwith $"Half rotation twice should equal full rotation for 45° at point {testPt}"
             }
@@ -664,10 +680,175 @@ let tests =
                 let r = Rotation2D.createFromDegrees -120.0
                 let half = r.Half
                 for testPt in testPts do
-                    let fullResult = Pt.rotateBy r testPt
-                    let halfTwiceResult = testPt |> Pt.rotateBy half |> Pt.rotateBy half
+                    let fullResult = Pt.rotate r testPt
+                    let halfTwiceResult = testPt |> Pt.rotate half |> Pt.rotate half
                     if not (eqPt fullResult halfTwiceResult) then
                         failwith $"Half rotation twice should equal full rotation for -120° at point {testPt}"
+            }
+        ]
+
+        testList "Rotation and scale grammar" [
+
+            test "Pt.rotateAroundDegrees known values" {
+                Expect.isTrue (eqPt (Pt.rotateAroundDegrees (Pt(2., 1.)) 90.0 (Pt(3., 1.))) (Pt(2., 2.))) "90° CCW"
+                Expect.isTrue (eqPt (Pt.rotateAroundDegrees (Pt(2., 1.)) -90.0 (Pt(3., 1.))) (Pt(2., 0.))) "-90° is CW"
+                Expect.isTrue (eqPt (Pt.rotateAroundRadians (Pt(2., 1.)) System.Math.PI (Pt(3., 1.))) (Pt(1., 1.))) "Pi radians"
+            }
+
+            test "Pt rotate, rotateDegrees and rotateRadians agree" {
+                let expected = Pt.rotate gRot gPt
+                Expect.isTrue (eqPt expected (Pt(gPt.X * gRot.Cos - gPt.Y * gRot.Sin, gPt.X * gRot.Sin + gPt.Y * gRot.Cos))) "rotate"
+                Expect.isTrue (eqPt expected (Pt.rotateDegrees gDeg gPt)) "rotateDegrees"
+                Expect.isTrue (eqPt expected (Pt.rotateRadians gRad gPt)) "rotateRadians"
+                Expect.isTrue (eqPt expected (gPt.Rotate gRot)) "Rotate"
+                Expect.isTrue (eqPt expected (gPt.RotateDegrees gDeg)) "RotateDegrees"
+                Expect.isTrue (eqPt expected (gPt.RotateRadians gRad)) "RotateRadians"
+            }
+
+            test "Pt rotateAround variants agree and keep the distance to the center" {
+                let expected = refRotAround gCen gRot gPt
+                Expect.isTrue (eqPt expected (Pt.rotateAround gCen gRot gPt)) "rotateAround"
+                Expect.isTrue (eqPt expected (Pt.rotateAroundDegrees gCen gDeg gPt)) "rotateAroundDegrees"
+                Expect.isTrue (eqPt expected (Pt.rotateAroundRadians gCen gRad gPt)) "rotateAroundRadians"
+                Expect.isTrue (eqPt expected (gPt.RotateAround gCen gRot)) "RotateAround"
+                Expect.isTrue (eqPt expected (gPt.RotateAroundDegrees gCen gDeg)) "RotateAroundDegrees"
+                Expect.isTrue (eqPt expected (gPt.RotateAroundRadians gCen gRad)) "RotateAroundRadians"
+                Expect.isTrue (eqFloat (Pt.dist gCen expected) (Pt.dist gCen gPt)) "distance to center is kept"
+            }
+
+            test "Pt rotateAround identities" {
+                Expect.isTrue (eqPt gPt (Pt.rotateAroundDegrees gCen 0.0 gPt)) "0°"
+                Expect.isTrue (eqPt gPt (Pt.rotateAroundDegrees gCen 360.0 gPt)) "360°"
+                Expect.isTrue (eqPt gPt (Pt.rotateAroundDegrees gPt 123.0 gPt)) "point at the center stays"
+            }
+
+            test "Pt.scaleAround" {
+                Expect.isTrue (eqPt (Pt.scaleAround gCen 2.5 gPt) (gCen + (gPt - gCen) * 2.5)) "factor 2.5"
+                Expect.isTrue (eqPt (Pt.scaleAround gCen 1.0 gPt) gPt) "factor 1 is identity"
+                Expect.isTrue (eqPt (Pt.scaleAround gCen 0.0 gPt) gCen) "factor 0 collapses to center"
+                Expect.isTrue (eqPt (Pt.scaleAround gCen -1.0 gPt) (gCen - (gPt - gCen))) "factor -1 mirrors through center"
+                Expect.isTrue (eqPt (Pt.scaleAround Pt.Origin 3.0 gPt) (Pt.scale 3.0 gPt)) "origin center equals scale"
+            }
+
+            test "Pnt.scaleAround" {
+                let cen = Pnt(12.0, -7.0, 3.0)
+                let p = Pnt(15.5, -3.25, -1.0)
+                let expected = Pnt(12.0 + 3.5 * 2.5, -7.0 + 3.75 * 2.5, 3.0 - 4.0 * 2.5)
+                Expect.isTrue (Pnt.dist expected (Pnt.scaleAround cen 2.5 p) < 1e-9) "factor 2.5"
+                Expect.isTrue (Pnt.dist cen (Pnt.scaleAround cen 0.0 p) < 1e-9) "factor 0 collapses to center"
+                Expect.isTrue (Pnt.dist (Pnt.scale 3.0 p) (Pnt.scaleAround Pnt.Origin 3.0 p) < 1e-9) "origin center equals scale"
+            }
+
+            test "Vc and UnitVc rotateDegrees and rotateRadians agree with rotate" {
+                let v = Vc(3.0, -2.0)
+                let expected = Vc.rotate gRot v
+                Expect.isTrue (eqVc expected (Vc.rotateDegrees gDeg v)) "Vc.rotateDegrees"
+                Expect.isTrue (eqVc expected (Vc.rotateRadians gRad v)) "Vc.rotateRadians"
+                Expect.isTrue (eqVc expected (v.RotateDegrees gDeg)) "Vc.RotateDegrees"
+                Expect.isTrue (eqVc expected (v.Rotate gRot)) "Vc.Rotate"
+                let u = UnitVc.create(3.0, -2.0)
+                let uExpected = UnitVc.rotate gRot u
+                Expect.isTrue (eqVc uExpected.AsVc (UnitVc.rotateDegrees gDeg u).AsVc) "UnitVc.rotateDegrees"
+                Expect.isTrue (eqVc uExpected.AsVc (UnitVc.rotateRadians gRad u).AsVc) "UnitVc.rotateRadians"
+                Expect.isTrue (eqVc uExpected.AsVc (u.RotateDegrees gDeg).AsVc) "UnitVc.RotateDegrees"
+                Expect.isTrue (eqFloat (u.RotateDegrees 123.0).AsVc.Length 1.0) "UnitVc stays unit length"
+            }
+
+            test "Line2D rotateDegrees and rotateRadians agree with rotate" {
+                let expected = Line2D.rotate gRot gLn
+                Expect.isTrue (eqLn expected (Line2D(Pt.rotate gRot gLn.From, Pt.rotate gRot gLn.To))) "rotate"
+                Expect.isTrue (eqLn expected (Line2D.rotateDegrees gDeg gLn)) "rotateDegrees"
+                Expect.isTrue (eqLn expected (Line2D.rotateRadians gRad gLn)) "rotateRadians"
+                Expect.isTrue (eqLn expected (gLn.RotateDegrees gDeg)) "RotateDegrees"
+                Expect.isTrue (eqLn expected (gLn.RotateRadians gRad)) "RotateRadians"
+            }
+
+            test "Line2D rotateAround variants agree and keep the length" {
+                let expected = Line2D(refRotAround gCen gRot gLn.From, refRotAround gCen gRot gLn.To)
+                Expect.isTrue (eqLn expected (Line2D.rotateAround gCen gRot gLn)) "rotateAround"
+                Expect.isTrue (eqLn expected (Line2D.rotateAroundDegrees gCen gDeg gLn)) "rotateAroundDegrees"
+                Expect.isTrue (eqLn expected (Line2D.rotateAroundRadians gCen gRad gLn)) "rotateAroundRadians"
+                Expect.isTrue (eqLn expected (gLn.RotateAround gCen gRot)) "RotateAround"
+                Expect.isTrue (eqLn expected (gLn.RotateAroundDegrees gCen gDeg)) "RotateAroundDegrees"
+                Expect.isTrue (eqLn expected (gLn.RotateAroundRadians gCen gRad)) "RotateAroundRadians"
+                Expect.isTrue (eqFloat expected.Length gLn.Length) "length is kept"
+            }
+
+            test "Line2D rotateAroundDegrees on a zero-length line" {
+                let ln = Line2D(gPt, gPt)
+                let r = Line2D.rotateAroundDegrees gCen gDeg ln
+                let p = refRotAround gCen gRot gPt
+                Expect.isTrue (eqPt r.From p && eqPt r.To p) "both ends rotate to the same point"
+            }
+
+            test "Line2D.scaleAround" {
+                let expected = Line2D(Pt.scaleAround gCen 2.5 gLn.From, Pt.scaleAround gCen 2.5 gLn.To)
+                Expect.isTrue (eqLn expected (Line2D.scaleAround gCen 2.5 gLn)) "scaleAround"
+                Expect.isTrue (eqLn expected (gLn.ScaleAround gCen 2.5)) "ScaleAround"
+                Expect.isTrue (eqLn (Line2D(gCen, gCen)) (Line2D.scaleAround gCen 0.0 gLn)) "factor 0 collapses to center"
+            }
+
+            test "Rect2D rotateDegrees and rotateRadians agree with rotate" {
+                let expected = Rect2D.rotate gRot gRect
+                Expect.isTrue (eqPt expected.Origin (Pt.rotate gRot gRect.Origin)) "origin is rotated"
+                Expect.isTrue (eqRect expected (Rect2D.rotateDegrees gDeg gRect)) "rotateDegrees"
+                Expect.isTrue (eqRect expected (Rect2D.rotateRadians gRad gRect)) "rotateRadians"
+                Expect.isTrue (eqRect expected (gRect.RotateDegrees gDeg)) "RotateDegrees"
+                Expect.isTrue (eqRect expected (gRect.RotateRadians gRad)) "RotateRadians"
+            }
+
+            test "Rect2D rotateAround variants agree" {
+                let expected = Rect2D.rotateAround gCen gRot gRect
+                Expect.isTrue (eqPt expected.Origin (refRotAround gCen gRot gRect.Origin)) "origin is rotated around center"
+                Expect.isTrue (eqVc expected.Xaxis (Vc.rotate gRot gRect.Xaxis)) "X-axis is rotated"
+                Expect.isTrue (eqRect expected (Rect2D.rotateAroundDegrees gCen gDeg gRect)) "rotateAroundDegrees"
+                Expect.isTrue (eqRect expected (Rect2D.rotateAroundRadians gCen gRad gRect)) "rotateAroundRadians"
+                Expect.isTrue (eqRect expected (gRect.RotateAround gCen gRot)) "RotateAround"
+                Expect.isTrue (eqRect expected (gRect.RotateAroundDegrees gCen gDeg)) "RotateAroundDegrees"
+                Expect.isTrue (eqRect expected (gRect.RotateAroundRadians gCen gRad)) "RotateAroundRadians"
+                let aroundOwnCenter = Rect2D.rotateAroundDegrees gRect.Center gDeg gRect
+                Expect.isTrue (eqPt aroundOwnCenter.Center gRect.Center) "rotating around its own center keeps it fixed"
+            }
+
+            test "Polyline2D rotate variants change it in place" {
+                let expectedOrigin = Polyline2D.createFromPts ((gPl ()).AsPoints |> Seq.map (Pt.rotate gRot))
+                let expectedAround = Polyline2D.createFromPts ((gPl ()).AsPoints |> Seq.map (refRotAround gCen gRot))
+                let check name (expected:Polyline2D) (f:Polyline2D -> unit) =
+                    let pl = gPl ()
+                    f pl
+                    Expect.isTrue (eqPl expected pl) name
+                check "rotateDegrees"        expectedOrigin (Polyline2D.rotateDegrees gDeg)
+                check "rotateRadians"        expectedOrigin (Polyline2D.rotateRadians gRad)
+                check "RotateDegrees"        expectedOrigin (fun pl -> pl.RotateDegrees gDeg)
+                check "RotateRadians"        expectedOrigin (fun pl -> pl.RotateRadians gRad)
+                check "rotateAround"         expectedAround (Polyline2D.rotateAround gCen gRot)
+                check "rotateAroundDegrees"  expectedAround (Polyline2D.rotateAroundDegrees gCen gDeg)
+                check "rotateAroundRadians"  expectedAround (Polyline2D.rotateAroundRadians gCen gRad)
+                check "RotateAround"         expectedAround (fun pl -> pl.RotateAround gCen gRot)
+                check "RotateAroundDegrees"  expectedAround (fun pl -> pl.RotateAroundDegrees gCen gDeg)
+                check "RotateAroundRadians"  expectedAround (fun pl -> pl.RotateAroundRadians gCen gRad)
+            }
+
+            test "Polyline2D rotateAroundDegrees with empty, single and duplicate points" {
+                let empty = Polyline2D.createFromPts []
+                Polyline2D.rotateAroundDegrees gCen gDeg empty
+                Expect.equal empty.PointCount 0 "empty stays empty"
+                let single = Polyline2D.createFromPts [gPt]
+                single.RotateAroundDegrees gCen gDeg
+                Expect.isTrue (eqPt (single.GetPt 0) (refRotAround gCen gRot gPt)) "single point is rotated"
+                let dup = Polyline2D.createFromPts [gPt; gPt]
+                Polyline2D.rotateAroundRadians gCen gRad dup
+                Expect.isTrue (eqPt (dup.GetPt 0) (dup.GetPt 1)) "duplicate points stay duplicates"
+            }
+
+            test "Polyline2D.scaleAround changes it in place" {
+                let expected = Polyline2D.createFromPts ((gPl ()).AsPoints |> Seq.map (Pt.scaleAround gCen 1.5))
+                let pl = gPl ()
+                Polyline2D.scaleAround gCen 1.5 pl
+                Expect.isTrue (eqPl expected pl) "scaleAround"
+                let pl2 = gPl ()
+                pl2.ScaleAround gCen 1.5
+                Expect.isTrue (eqPl expected pl2) "ScaleAround"
             }
         ]
     ]

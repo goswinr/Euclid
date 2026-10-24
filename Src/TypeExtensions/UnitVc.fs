@@ -145,35 +145,45 @@ module AutoOpenUnitVc =
         static member inline dot (a:Vc, b:UnitVc)  : float =
             a.X * b.X + a.Y * b.Y
 
-        /// Rotate a 2D unit-vector counter-clockwise by a 2D Rotation (that has cos and sin precomputed)
-        member inline v.RotateBy (r:Rotation2D) : UnitVc =
+        /// <summary>Rotate the 2D unit-vector counter-clockwise by a 2D Rotation (that has cos and sin precomputed).</summary>
+        /// <param name="r">The rotation to apply.</param>
+        /// <returns>The rotated 2D unit-vector.</returns>
+        member inline v.Rotate (r:Rotation2D) : UnitVc =
             UnitVc.createUnchecked (
                 r.Cos*v.X - r.Sin*v.Y,
                 r.Sin*v.X + r.Cos*v.Y)
 
-        /// Rotate a 2D unit-vector counter-clockwise by a 2D Rotation (that has cos and sin precomputed)
-        static member inline rotateBy (r:Rotation2D) (v:UnitVc) : UnitVc =
+        /// <summary>Rotate a 2D unit-vector counter-clockwise by a 2D Rotation (that has cos and sin precomputed).</summary>
+        /// <param name="r">The rotation to apply.</param>
+        /// <param name="v">The 2D unit-vector to rotate.</param>
+        /// <returns>The rotated 2D unit-vector.</returns>
+        static member inline rotate (r:Rotation2D) (v:UnitVc) : UnitVc =
             UnitVc.createUnchecked (
                 r.Cos*v.X - r.Sin*v.Y,
                 r.Sin*v.X + r.Cos*v.Y)
 
         /// <summary>Rotate the 2D unit-vector counter-clockwise by an angle in degrees.</summary>
-        /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
-        member inline v.Rotate (angDegree) : UnitVc =
-            v.RotateBy (Rotation2D.createFromDegrees angDegree)
+        /// <param name="angDegree">The rotation angle in degrees.</param>
+        /// <returns>The rotated 2D unit-vector.</returns>
+        /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.Rotate(rotation2D).</remarks>
+        member inline v.RotateDegrees (angDegree:float) : UnitVc =
+            v.Rotate (Rotation2D.createFromDegrees angDegree)
 
-        /// <summary>Rotate the 2D unit-vector counter-clockwise by an angle in degrees.</summary>
-        /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
-        static member inline rotate (angDegree) (vec:UnitVc) : UnitVc =
-            UnitVc.rotateBy (Rotation2D.createFromDegrees angDegree) vec
+        /// <summary>Rotate a 2D unit-vector counter-clockwise by an angle in degrees.</summary>
+        /// <param name="angDegree">The rotation angle in degrees.</param>
+        /// <param name="v">The 2D unit-vector to rotate.</param>
+        /// <returns>The rotated 2D unit-vector.</returns>
+        /// <remarks>For better performance precompute the Rotation2D struct and rotate with UnitVc.rotate.</remarks>
+        static member inline rotateDegrees (angDegree:float) (v:UnitVc) : UnitVc =
+            UnitVc.rotate (Rotation2D.createFromDegrees angDegree) v
 
         /// <summary>Rotate the 2D unit-vector counter-clockwise by an angle in radians.</summary>
-        /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
+        /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.Rotate(rotation2D).</remarks>
         member inline v.RotateRadians (angRadians) : UnitVc =
-            v.RotateBy (Rotation2D.createFromRadians angRadians)
+            v.Rotate (Rotation2D.createFromRadians angRadians)
 
         /// <summary>Rotate the 2D unit-vector counter-clockwise by an angle in radians.</summary>
-        /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
+        /// <remarks>For better performance precompute the Rotation2D struct and rotate with UnitVc.rotate.</remarks>
         static member inline rotateRadians angRadians (v:UnitVc) : UnitVc =
             v.RotateRadians angRadians
 
@@ -761,6 +771,15 @@ module AutoOpenUnitVc =
         // #endregion
         // #region Obsolete
 
+        /// Obsolete name. Same as v.Rotate.
+        [<Obsolete("Use v.Rotate instead.")>]
+        member inline v.RotateBy (r:Rotation2D) : UnitVc =
+            v.Rotate r
+
+        /// Obsolete name. Same as UnitVc.rotate.
+        [<Obsolete("Use UnitVc.rotate instead.")>]
+        static member inline rotateBy (r:Rotation2D) (v:UnitVc) : UnitVc =
+            UnitVc.rotate r v
 
         [<Obsolete("Use UnitVc.isParallelWithin instead.")>]
         static member inline isAngle90Below (cosineValue: float<Cosine.cosine>) (a:UnitVc) (b:UnitVc) : bool =

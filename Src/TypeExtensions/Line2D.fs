@@ -1090,8 +1090,11 @@ module AutoOpenLine2D =
                ln.ToX * factor,
                ln.ToY * factor)
 
-    /// Scales the 2D line by a given factor on a given center point
-    member inline l.ScaleOn (cen:Pt) (factor:float) : Line2D =
+    /// <summary>Scales the 2D line by a given factor around a given center point.</summary>
+    /// <param name="cen">The center point of the scaling.</param>
+    /// <param name="factor">The scale factor.</param>
+    /// <returns>The scaled 2D line.</returns>
+    member inline l.ScaleAround (cen:Pt) (factor:float) : Line2D =
         let cx = cen.X
         let cy = cen.Y
         Line2D(
@@ -1100,9 +1103,13 @@ module AutoOpenLine2D =
             cx + (l.ToX   - cx) * factor,
             cy + (l.ToY   - cy) * factor)
 
-    /// Scale the 2D line by a given factor on a given center point.
-    static member inline scaleOn (cen:Pt) (factor:float) (ln:Line2D) : Line2D =
-        ln.ScaleOn cen factor
+    /// <summary>Scales a 2D line by a given factor around a given center point.</summary>
+    /// <param name="cen">The center point of the scaling.</param>
+    /// <param name="factor">The scale factor.</param>
+    /// <param name="ln">The 2D line to scale.</param>
+    /// <returns>The scaled 2D line.</returns>
+    static member inline scaleAround (cen:Pt) (factor:float) (ln:Line2D) : Line2D =
+        ln.ScaleAround cen factor
 
     /// Rotate a Line2D by a Rotation2D.
     /// The resulting line has the same length as the input.
@@ -1131,9 +1138,42 @@ module AutoOpenLine2D =
                 c*tx - s*ty,
                 s*tx + c*ty)
 
-    /// Rotate a Line2D by a Rotation2D around a given center point.
-    /// The resulting line has the same length as the input.
-    member inline ln.RotateWithCenter (cen:Pt, r:Rotation2D) : Line2D =
+    /// <summary>Rotate the Line2D counter-clockwise around the World Origin by an angle in degrees.</summary>
+    /// <param name="angDegree">The rotation angle in degrees.</param>
+    /// <returns>The rotated 2D line.</returns>
+    /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.Rotate(rotation2D).</remarks>
+    member inline ln.RotateDegrees (angDegree:float) : Line2D =
+        Line2D.rotate (Rotation2D.createFromDegrees angDegree) ln
+
+    /// <summary>Rotate a Line2D counter-clockwise around the World Origin by an angle in degrees.</summary>
+    /// <param name="angDegree">The rotation angle in degrees.</param>
+    /// <param name="ln">The 2D line to rotate.</param>
+    /// <returns>The rotated 2D line.</returns>
+    /// <remarks>For better performance precompute the Rotation2D struct and rotate with Line2D.rotate.</remarks>
+    static member inline rotateDegrees (angDegree:float) (ln:Line2D) : Line2D =
+        Line2D.rotate (Rotation2D.createFromDegrees angDegree) ln
+
+    /// <summary>Rotate the Line2D counter-clockwise around the World Origin by an angle in radians.</summary>
+    /// <param name="angRadians">The rotation angle in radians.</param>
+    /// <returns>The rotated 2D line.</returns>
+    /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.Rotate(rotation2D).</remarks>
+    member inline ln.RotateRadians (angRadians:float) : Line2D =
+        Line2D.rotate (Rotation2D.createFromRadians angRadians) ln
+
+    /// <summary>Rotate a Line2D counter-clockwise around the World Origin by an angle in radians.</summary>
+    /// <param name="angRadians">The rotation angle in radians.</param>
+    /// <param name="ln">The 2D line to rotate.</param>
+    /// <returns>The rotated 2D line.</returns>
+    /// <remarks>For better performance precompute the Rotation2D struct and rotate with Line2D.rotate.</remarks>
+    static member inline rotateRadians (angRadians:float) (ln:Line2D) : Line2D =
+        Line2D.rotate (Rotation2D.createFromRadians angRadians) ln
+
+    /// <summary>Rotate the Line2D counter-clockwise around a given center point by a Rotation2D.
+    /// The resulting line has the same length as the input.</summary>
+    /// <param name="cen">The center point of the rotation.</param>
+    /// <param name="r">The rotation to apply.</param>
+    /// <returns>The rotated 2D line.</returns>
+    member inline ln.RotateAround (cen:Pt) (r:Rotation2D) : Line2D =
         let cx = cen.X
         let cy = cen.Y
         let fx = ln.FromX - cx
@@ -1147,8 +1187,43 @@ module AutoOpenLine2D =
                 c*tx - s*ty + cx,
                 s*tx + c*ty + cy)
 
-    /// Rotation a Line2D around a given center.
-    static member inline rotateWithCenter (cen:Pt) (r:Rotation2D) (ln:Line2D) : Line2D =
+    /// <summary>Rotate the Line2D counter-clockwise around a given center point by an angle in degrees.</summary>
+    /// <param name="cen">The center point of the rotation.</param>
+    /// <param name="angDegree">The rotation angle in degrees.</param>
+    /// <returns>The rotated 2D line.</returns>
+    member inline ln.RotateAroundDegrees (cen:Pt) (angDegree:float) : Line2D =
+        ln.RotateAround cen (Rotation2D.createFromDegrees angDegree)
+
+    /// <summary>Rotate a Line2D counter-clockwise around a given center point by an angle in degrees.</summary>
+    /// <param name="cen">The center point of the rotation.</param>
+    /// <param name="angDegree">The rotation angle in degrees.</param>
+    /// <param name="ln">The 2D line to rotate.</param>
+    /// <returns>The rotated 2D line.</returns>
+    static member inline rotateAroundDegrees (cen:Pt) (angDegree:float) (ln:Line2D) : Line2D =
+        ln.RotateAround cen (Rotation2D.createFromDegrees angDegree)
+
+    /// <summary>Rotate the Line2D counter-clockwise around a given center point by an angle in radians.</summary>
+    /// <param name="cen">The center point of the rotation.</param>
+    /// <param name="angRadians">The rotation angle in radians.</param>
+    /// <returns>The rotated 2D line.</returns>
+    member inline ln.RotateAroundRadians (cen:Pt) (angRadians:float) : Line2D =
+        ln.RotateAround cen (Rotation2D.createFromRadians angRadians)
+
+    /// <summary>Rotate a Line2D counter-clockwise around a given center point by an angle in radians.</summary>
+    /// <param name="cen">The center point of the rotation.</param>
+    /// <param name="angRadians">The rotation angle in radians.</param>
+    /// <param name="ln">The 2D line to rotate.</param>
+    /// <returns>The rotated 2D line.</returns>
+    static member inline rotateAroundRadians (cen:Pt) (angRadians:float) (ln:Line2D) : Line2D =
+        ln.RotateAround cen (Rotation2D.createFromRadians angRadians)
+
+    /// <summary>Rotate a Line2D counter-clockwise around a given center point by a Rotation2D.
+    /// The resulting line has the same length as the input.</summary>
+    /// <param name="cen">The center point of the rotation.</param>
+    /// <param name="r">The rotation to apply.</param>
+    /// <param name="ln">The 2D line to rotate.</param>
+    /// <returns>The rotated 2D line.</returns>
+    static member inline rotateAround (cen:Pt) (r:Rotation2D) (ln:Line2D) : Line2D =
         let cx = cen.X
         let cy = cen.Y
         let fx = ln.FromX - cx
@@ -2014,6 +2089,26 @@ module AutoOpenLine2D =
 
     // #endregion
     // #region Obsolete
+
+    /// Obsolete name. Same as ln.ScaleAround.
+    [<Obsolete("Use ln.ScaleAround instead.")>]
+    member inline l.ScaleOn (cen:Pt) (factor:float) : Line2D =
+        l.ScaleAround cen factor
+
+    /// Obsolete name. Same as Line2D.scaleAround.
+    [<Obsolete("Use Line2D.scaleAround instead.")>]
+    static member inline scaleOn (cen:Pt) (factor:float) (ln:Line2D) : Line2D =
+        ln.ScaleAround cen factor
+
+    /// Obsolete name. Same as ln.RotateAround, but with tupled arguments.
+    [<Obsolete("Use ln.RotateAround instead. It takes curried arguments: ln.RotateAround cen r")>]
+    member inline ln.RotateWithCenter (cen:Pt, r:Rotation2D) : Line2D =
+        ln.RotateAround cen r
+
+    /// Obsolete name. Same as Line2D.rotateAround.
+    [<Obsolete("Use Line2D.rotateAround instead.")>]
+    static member inline rotateWithCenter (cen:Pt) (r:Rotation2D) (ln:Line2D) : Line2D =
+        Line2D.rotateAround cen r ln
 
     /// Obsolete name. Same as Line2D.withStart.
     [<Obsolete("Use Line2D.withStart instead. This returns a new 2D line, it does not mutate, so the 'with' prefix is clearer.")>]

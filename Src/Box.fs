@@ -539,8 +539,11 @@ type Box =
     static member inline scale (factor:float) (b:Box) : Box =
         b.Scale factor
 
-    /// Scales the box by a given factor on a given center point
-    member inline l.ScaleOn (cen:Pnt) (factor:float) : Box =
+    /// <summary>Scales the box by a given factor around a given center point.</summary>
+    /// <param name="cen">The center point of the scaling.</param>
+    /// <param name="factor">The scale factor.</param>
+    /// <returns>The scaled box.</returns>
+    member inline l.ScaleAround (cen:Pnt) (factor:float) : Box =
         let cx = cen.X
         let cy = cen.Y
         let cz = cen.Z
@@ -552,9 +555,13 @@ type Box =
             l.YaxisX * factor, l.YaxisY * factor, l.YaxisZ * factor,
             l.ZaxisX * factor, l.ZaxisY * factor, l.ZaxisZ * factor)
 
-    /// Scales the box by a given factor around a given center point.
-    static member inline scaleOn (cen:Pnt) (factor:float) (b:Box) : Box =
-        b.ScaleOn cen factor
+    /// <summary>Scales a box by a given factor around a given center point.</summary>
+    /// <param name="cen">The center point of the scaling.</param>
+    /// <param name="factor">The scale factor.</param>
+    /// <param name="b">The box to scale.</param>
+    /// <returns>The scaled box.</returns>
+    static member inline scaleAround (cen:Pnt) (factor:float) (b:Box) : Box =
+        b.ScaleAround cen factor
 
     /// Returns a 3D box moved by a vector in world space. The box's axes are unchanged.
     member inline b.Move (v:Vec) : Box =
@@ -678,8 +685,11 @@ type Box =
     static member inline rotate (q:Quaternion) (b:Box) : Box =
         b.Rotate q
 
-    /// Multiplies (or applies) a Quaternion to a 3D box around a given center point.
-    member inline b.RotateWithCenter (cen:Pnt, q:Quaternion) : Box =
+    /// <summary>Multiplies (or applies) a Quaternion to a 3D box around a given center point.</summary>
+    /// <param name="cen">The center point of the rotation.</param>
+    /// <param name="q">The rotation to apply.</param>
+    /// <returns>The rotated box.</returns>
+    member inline b.RotateAround (cen:Pnt) (q:Quaternion) : Box =
         let qx = q.X
         let qy = q.Y
         let qz = q.Z
@@ -722,9 +732,13 @@ type Box =
         let zz = z + qw * tz + qx * ty - qy * tx
         Box.createUnchecked(ox, oy, oz, xx, xy, xz, yx, yy, yz, zx, zy, zz)
 
-    /// Multiplies (or applies) a Quaternion to a 3D box around a given center point.
-    static member inline rotateWithCenter (cen:Pnt) (q:Quaternion) (b:Box) : Box =
-        b.RotateWithCenter(cen, q)
+    /// <summary>Multiplies (or applies) a Quaternion to a 3D box around a given center point.</summary>
+    /// <param name="cen">The center point of the rotation.</param>
+    /// <param name="q">The rotation to apply.</param>
+    /// <param name="b">The box to rotate.</param>
+    /// <returns>The rotated box.</returns>
+    static member inline rotateAround (cen:Pnt) (q:Quaternion) (b:Box) : Box =
+        b.RotateAround cen q
 
     /// Check for point containment in the Box.
     /// By doing six dot products with the box axes to test its six faces.
@@ -2981,6 +2995,26 @@ type Box =
 
     // #endregion
     // #region Obsolete
+
+    /// Obsolete name. Same as b.ScaleAround.
+    [<Obsolete("Use b.ScaleAround instead.")>]
+    member inline b.ScaleOn (cen:Pnt) (factor:float) : Box =
+        b.ScaleAround cen factor
+
+    /// Obsolete name. Same as Box.scaleAround.
+    [<Obsolete("Use Box.scaleAround instead.")>]
+    static member inline scaleOn (cen:Pnt) (factor:float) (b:Box) : Box =
+        b.ScaleAround cen factor
+
+    /// Obsolete name. Same as b.RotateAround, but with tupled arguments.
+    [<Obsolete("Use b.RotateAround instead. It takes curried arguments: b.RotateAround cen q")>]
+    member inline b.RotateWithCenter (cen:Pnt, q:Quaternion) : Box =
+        b.RotateAround cen q
+
+    /// Obsolete name. Same as Box.rotateAround.
+    [<Obsolete("Use Box.rotateAround instead.")>]
+    static member inline rotateWithCenter (cen:Pnt) (q:Quaternion) (b:Box) : Box =
+        b.RotateAround cen q
 
     /// Obsolete name. Same as b.GetPnt.
     [<Obsolete("Use GetPnt instead.")>]

@@ -170,7 +170,7 @@ let testsIsCoincident =
         for i = 1 to 10 do
             let scale = rFloat 0.1 100.
             let angle = rFloat -180. 180.
-            let vec = Vc.Xaxis.Rotate(angle) * scale
+            let vec = Vc.Xaxis.RotateDegrees(angle) * scale
             let a = Line2D.createFromPtAndVc(Pt.Origin, vec)
             let b = Line2D.createFromPtAndVc(a.EvaluateAt(rFloat -10. 10.), a.Tangent * (rFloat 0.1 2.))
             test (sprintf "IsCoincidentTo random same ray %d" i) {
@@ -181,7 +181,7 @@ let testsIsCoincident =
             let scale = rFloat 0.1 100.
             let angle = rFloat -180. 180.
             let dist = rFloat 0.5 5.
-            let vec = Vc.Xaxis.Rotate(angle) * scale
+            let vec = Vc.Xaxis.RotateDegrees(angle) * scale
             let a = Line2D.createFromPtAndVc(Pt.Origin, vec)
             let normal = a.Tangent.Rotate90CCW.Unitized
             let offset = Pt.Origin + normal * dist
@@ -194,8 +194,8 @@ let testsIsCoincident =
             let scale = rFloat 0.1 100.
             let angle1 = rFloat -180. 180.
             let angle2 = angle1 + (rFloat 5. 175.)
-            let vec1 = Vc.Xaxis.Rotate(angle1) * scale
-            let vec2 = Vc.Xaxis.Rotate(angle2) * scale
+            let vec1 = Vc.Xaxis.RotateDegrees(angle1) * scale
+            let vec2 = Vc.Xaxis.RotateDegrees(angle2) * scale
             let a = Line2D.createFromPtAndVc(Pt.Origin, vec1)
             let b = Line2D.createFromPtAndVc(Pt.Origin, vec2)
             test (sprintf "IsCoincidentTo random non-parallel %d" i) {
@@ -401,7 +401,7 @@ let testsFastMethods =
         for i = 1 to 10 do
             let angle = rFloat -180. 180.
             let scale = rFloat 1. 100.
-            let vec = Vc.Xaxis.Rotate(angle) * scale
+            let vec = Vc.Xaxis.RotateDegrees(angle) * scale
             let a = Line2D.createFromPtAndVc(Pt.Origin, vec)
             let b = Line2D.createFromPtAndVc(a.EvaluateAt(rFloat 0. 1.), a.Tangent * (rFloat 0.5 2.))
             test (sprintf "Fast methods random same ray oriented %d" i) {
@@ -412,7 +412,7 @@ let testsFastMethods =
         for i = 1 to 10 do
             let angle = rFloat -180. 180.
             let scale = rFloat 1. 100.
-            let vec = Vc.Xaxis.Rotate(angle) * scale
+            let vec = Vc.Xaxis.RotateDegrees(angle) * scale
             let a = Line2D.createFromPtAndVc(Pt.Origin, vec)
             let b = Line2D.createFromPtAndVc(a.EvaluateAt(rFloat 0. 1.), -a.Tangent * (rFloat 0.5 2.))
             test (sprintf "Fast methods random same ray opposing %d" i) {
@@ -750,10 +750,10 @@ let testsLine2DMove =
             "to Y scaled" |> expectEqualEpsilon scaled.ToY 8.
         }
 
-        test "ScaleOn center point" {
+        test "ScaleAround center point" {
             let ln = Line2D(0., 0., 10., 0.)
             let cen = Pt(5., 0.)
-            let scaled = ln.ScaleOn cen 2.
+            let scaled = ln.ScaleAround cen 2.
             "from X scaled from center" |> expectEqualEpsilon scaled.FromX -5.
             "to X scaled from center" |> expectEqualEpsilon scaled.ToX 15.
         }
@@ -767,11 +767,11 @@ let testsLine2DMove =
             "rotated to Y" |> expectEqualEpsilon rotated.ToY 10.
         }
 
-        test "RotateWithCenter" {
+        test "RotateAround" {
             let ln = Line2D(0., 0., 10., 0.)
             let cen = Pt(5., 0.)
             let rot = Rotation2D.createFromDegrees 90.
-            let rotated = ln.RotateWithCenter(cen, rot)
+            let rotated = ln.RotateAround cen rot
             "rotated around center from X" |> expectEqualEpsilon rotated.FromX 5.
             "rotated around center from Y" |> expectEqualEpsilon rotated.FromY -5.
             "rotated around center to X" |> expectEqualEpsilon rotated.ToX 5.

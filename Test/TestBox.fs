@@ -412,19 +412,19 @@ let tests =
                 Expect.isTrue (eqPnt rotated.Origin (Pnt(0., 1., 0.))) "Origin should be rotated 90 degrees"
             }
 
-            test "RotateWithCenter keeps center point fixed" {
+            test "RotateAround keeps center point fixed" {
                 let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
                 let center = box.Center
                 let q = Quaternion.createFromDegrees(UnitVec.Zaxis, 90.)
-                let rotated = box.RotateWithCenter(center, q)
+                let rotated = box.RotateAround center q
                 Expect.isTrue (eqPnt rotated.Center center) "Center should remain fixed"
             }
 
-            test "rotateWithCenter static method" {
+            test "rotateAround static method" {
                 let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
                 let center = box.Center
                 let q = Quaternion.createFromDegrees(UnitVec.Zaxis, 90.)
-                let rotated = Box.rotateWithCenter center q box
+                let rotated = Box.rotateAround center q box
                 Expect.isTrue (eqPnt rotated.Center center) "Center should remain fixed"
             }
 
@@ -455,9 +455,9 @@ let tests =
                 Expect.equal scaled.SizeZ 6. "SizeZ should be scaled"
             }
 
-            test "ScaleOn center point" {
+            test "ScaleAround center point" {
                 let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
-                let scaled = box.ScaleOn (Pnt(5., 5., 5.)) 2.
+                let scaled = box.ScaleAround (Pnt(5., 5., 5.)) 2.
                 Expect.isTrue (eqPnt scaled.Center box.Center) "Center should remain at same position"
                 Expect.equal scaled.SizeX 20. "SizeX should be scaled"
             }

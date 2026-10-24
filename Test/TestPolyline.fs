@@ -171,7 +171,7 @@ let tests =
             test "scale on center" {
                 let center = Pt(5., 5.)
                 let scaled = plOpen.Duplicate()
-                scaled.ScaleOn center 2.0
+                scaled.ScaleAround center 2.0
                 "first point scaled on center" |> (expectEqPts  scaled.AsPoints.[0] (Pt(-5.,-5.)))
                 "second point scaled on center" |> (expectEqPts  scaled.AsPoints.[1] (Pt(15.,-5.)))
             }
@@ -1337,12 +1337,12 @@ let testsComprehensive =
             }
         ]
 
-        testList "Static rotateWithCenter" [
+        testList "Static rotateAround" [
             test "rotate 90 degrees around center" {
                 let r = Rotation2D.createFromDegrees 90.0
                 let cen = Pt(5., 5.)
                 let rotated = plLine.Duplicate()
-                Polyline2D.rotateWithCenter cen r rotated
+                Polyline2D.rotateAround cen r rotated
                 // plLine is (0,0) to (10,0)
                 // (0,0) relative to (5,5) is (-5,-5), rotated 90 CCW is (5,-5), absolute (10,0)
                 "rotated first point" |> expectEqPts rotated.AsPoints.[0] (Pt(10., 0.))
@@ -1398,9 +1398,9 @@ let testsComprehensive =
                 let cen = Pt(5., 5.)
                 let r = Rotation2D.createFromDegrees 30.
                 let v = Vc(100., -40.)
-                let place (p:Pt) = p |> Pt.rotateWithCenterBy cen r |> Pt.move v
+                let place (p:Pt) = p |> Pt.rotateAround cen r |> Pt.move v
                 let pl = plOpen.Duplicate()
-                pl |> Polyline2D.rotateWithCenter cen r
+                pl |> Polyline2D.rotateAround cen r
                 pl |> Polyline2D.move v
                 let q = place (Pt(5.,-1.)) // closest to the middle of the first segment
                 "closestParameter" |> Expect.isTrue (abs((pl |> Polyline2D.closestParameter q) - 0.5) < 1e-9)
@@ -1887,10 +1887,10 @@ let testsSpecial =
                 for i = 0 to s.PointCount - 1 do
                     $"point {i} at origin" |> expectEqPts s.AsPoints.[i] (Pt(0.,0.))
             }
-            test "scaleOn by zero collapses to center" {
+            test "scaleAround by zero collapses to center" {
                 let cen = Pt(5.,5.)
                 let s = plOpen.Duplicate()
-                Polyline2D.scaleOn cen 0.0 s
+                Polyline2D.scaleAround cen 0.0 s
                 for i = 0 to s.PointCount - 1 do
                     $"point {i} at center" |> expectEqPts s.AsPoints.[i] cen
             }
@@ -2070,16 +2070,16 @@ let testsSpecial =
                 "Rotate - first point goes to (0,10)" |> expectEqPts rotated.Start (Pt(0.,10.))
                 "Rotate matches static" |> expectEqPts rotated.End rotatedStatic.End
             }
-            test "RotateWithCenter keeps the center fixed and matches the static" {
+            test "RotateAround keeps the center fixed and matches the static" {
                 let pl = Polyline2D.createFromPts [Pt(0.,0.); Pt(2.,0.); Pt(2.,2.); Pt(0.,2.)]
                 let cen = pl.Center
                 let r = Rotation2D.createFromDegrees 90.
                 let rotated = pl.Duplicate()
-                rotated.RotateWithCenter(cen, r)
+                rotated.RotateAround cen r
                 let rotatedStatic = pl.Duplicate()
-                Polyline2D.rotateWithCenter cen r rotatedStatic
+                Polyline2D.rotateAround cen r rotatedStatic
                 "center stays put" |> expectEqPts rotated.Center cen
-                "matches static rotateWithCenter" |> expectEqPts rotated.Start rotatedStatic.Start
+                "matches static rotateAround" |> expectEqPts rotated.Start rotatedStatic.Start
                 "original not mutated" |> expectEqPts pl.Start (Pt(0.,0.))
             }
         ]
@@ -2089,13 +2089,13 @@ let testsSpecial =
                 let pl = Polyline2D.createFromPts [Pt(3.,2.); Pt(9.,4.); Pt(7.,8.); Pt(3.,2.)]
                 let xys = pl.XYs
                 pl.Move(Vc(-2.,5.))
-                pl.RotateWithCenter(Pt(4.,6.), Rotation2D.createFromDegrees 30.)
-                pl.ScaleOn (Pt(1.,-1.)) 1.5
+                pl.RotateAround (Pt(4.,6.)) (Rotation2D.createFromDegrees 30.)
+                pl.ScaleAround (Pt(1.,-1.)) 1.5
                 Expect.isTrue (obj.ReferenceEquals(xys, pl.XYs)) "same coordinate list"
                 let expected = Polyline2D.createFromPts [Pt(3.,2.); Pt(9.,4.); Pt(7.,8.); Pt(3.,2.)]
                 Polyline2D.translate (Vc(-2.,5.)) expected
-                Polyline2D.rotateWithCenter (Pt(4.,6.)) (Rotation2D.createFromDegrees 30.) expected
-                Polyline2D.scaleOn (Pt(1.,-1.)) 1.5 expected
+                Polyline2D.rotateAround (Pt(4.,6.)) (Rotation2D.createFromDegrees 30.) expected
+                Polyline2D.scaleAround (Pt(1.,-1.)) 1.5 expected
                 Expect.isTrue (Polyline2D.equalsTol 1e-12 pl expected) "instance and static calls give the same result"
                 "first point moved" |> expectNotEqPts pl.Start (Pt(3.,2.))
             }

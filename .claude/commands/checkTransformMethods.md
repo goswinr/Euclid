@@ -24,16 +24,42 @@ For each geometry type (points, vectors, lines, planes, boxes, etc.), verify the
 - [ ] `TransformRigid(m:RigidMatrix)` - instance member
 - [ ] `transformRigid (m:RigidMatrix)` - static member with curried arguments
 
+### Rotation and Scale Naming Grammar
+All rotate and scale members are curried and take the geometry last.
+A raw angle argument always names its unit in the member name (`Degrees` or `Radians`).
+
+| Static member | Instance member |
+|---------------|-----------------|
+| `rotate rotation geometry` | `Rotate rotation` |
+| `rotateDegrees degrees geometry` | `RotateDegrees degrees` |
+| `rotateRadians radians geometry` | `RotateRadians radians` |
+| `rotateAround center rotation geometry` | `RotateAround center rotation` |
+| `rotateAroundDegrees center degrees geometry` | `RotateAroundDegrees center degrees` |
+| `rotateAroundRadians center radians geometry` | `RotateAroundRadians center radians` |
+| `scale factor geometry` | `Scale factor` |
+| `scaleAround center factor geometry` | `ScaleAround center factor` |
+
+Vectors carry no location, so they get no `rotateAround` or `scaleAround` members.
+Do not use the obsolete names `rotateBy`, `rotateWithCenter`, `rotateWithCenterBy` or `scaleOn`.
+
 ### Quaternion Rotations only for 3D Types
 - [ ] `Rotate(q:Quaternion)` - instance member for rotation around origin
 - [ ] `rotate (q:Quaternion)` - static member with curried arguments
-- [ ] `RotateWithCenter(cen:Pnt, q:Quaternion)` - instance member for rotation around a point
-- [ ] `rotateWithCenter (cen:Pnt) (q:Quaternion)` - static member with curried arguments
+- [ ] `RotateAround (cen:Pnt) (q:Quaternion)` - curried instance member for rotation around a point
+- [ ] `rotateAround (cen:Pnt) (q:Quaternion)` - static member with curried arguments
 
-### 2D Rotation (for 2D types or 3D types rotating in XY plane)
-- [ ] `Rotate2D` and `Rotate2DWithCenter` - rotation around Z-axis
+### 2D Rotation for 2D Types
+- [ ] `Rotate`, `RotateDegrees`, `RotateRadians` and their static counterparts - rotation around the origin
+- [ ] `RotateAround`, `RotateAroundDegrees`, `RotateAroundRadians` and their static counterparts - rotation around a center (not for vectors)
 - [ ] `Rotate90CW` / `Rotate90CCW` - quarter-turn rotations
 - [ ] `RotateByQuarterCircle(n:int)` - rotation by multiples of 90°
+
+### Rotation in the XY Plane for 3D Types
+- [ ] `rotateOnZ (r:Rotation2D)` and `rotateOnZWithCenter (cen:Pnt) (r:Rotation2D)` - rotation around the world Z-axis
+
+### Scale
+- [ ] `Scale` / `scale` - scale from the origin
+- [ ] `ScaleAround` / `scaleAround` - scale from a center point (not for vectors)
 
 ### Translation / Move Methods
 - [ ] `Move(v:Vec)` or `Move(v:Vc)` - instance member to translate by a vector
@@ -86,8 +112,8 @@ For each transformation method found:
 
 Generate a summary table showing:
 
-| Type | Matrix | RigidMatrix | Quaternion | QuatWithCenter | Rotate2D | Move | MoveX | MoveY | MoveZ |
-|------|--------|-------------|------------|----------------|----------|------|-------|-------|-------|
+| Type | Matrix | RigidMatrix | Quaternion | QuatAround | Rotate2D | Move | MoveX | MoveY | MoveZ |
+|------|--------|-------------|------------|------------|----------|------|-------|-------|-------|
 | Pnt  | ✓/✗    | ✓/✗         | ✓/✗        | ✓/✗            | N/A      | ✓/✗  | ✓/✗   | ✓/✗   | ✓/✗   |
 | Vec  | ✓/✗    | ✓/✗         | ✓/✗        | N/A            | ✓/✗      | N/A  | N/A   | N/A   | N/A   |
 | ...  | ...    | ...         | ...        | ...            | ...      | ...  | ...   | ...   | ...   |

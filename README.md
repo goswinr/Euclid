@@ -65,7 +65,7 @@ Therefore transformations that depend on a location never apply to vectors:
   Vectors only rotate around the origin (a pure rotation, e.g. `Vec.rotate`, `Vec.rotateOnZ`).
 
 The API enforces this: vector types (`Vc`, `Vec`, `UnitVc`, `UnitVec`) deliberately offer no
-`translate` or `rotateWithCenter` members. (The two members that violated this rule,
+`translate`, `rotateAround` or `scaleAround` members. (The two members that violated this rule,
 `Vec.rotateWithCenter` and `UnitVec.rotateWithCenter`, are scheduled for removal.)
 
 ### Mutability
@@ -127,6 +127,23 @@ myPoint
 |> Pnt.rotateOnZDeg 45.0
 |> Pnt.transform myMatrix
 ```
+
+### Rotating and Scaling
+Rotations and scaling share one curried naming grammar, with the geometry as the last argument:
+
+| Function | Meaning |
+|----------|---------|
+| `rotate rotation geometry` | Rotate around the origin by a `Rotation2D` (2D) or a `Quaternion` (3D) |
+| `rotateDegrees degrees geometry` | Rotate around the origin by an angle in degrees (2D) |
+| `rotateRadians radians geometry` | Rotate around the origin by an angle in radians (2D) |
+| `rotateAround center rotation geometry` | Rotate around a center point |
+| `rotateAroundDegrees center degrees geometry` | Rotate around a center point by an angle in degrees (2D) |
+| `rotateAroundRadians center radians geometry` | Rotate around a center point by an angle in radians (2D) |
+| `scale factor geometry` | Scale from the origin |
+| `scaleAround center factor geometry` | Scale from a center point |
+
+A raw angle argument always names its unit. The instance members use the same names in PascalCase, e.g. `ln.RotateAround cen r`.
+For repeated rotations, precompute the `Rotation2D` once and use `rotate` or `rotateAround`.
 
 ### Custom Operators
 
@@ -491,7 +508,7 @@ open Euclid
 let rect = Rect2D.createFromXVectorAndWidth(Pt(0, 0), Vc(10, 0), 5.0)
 
 // From direction and sizes
-let dir = UnitVc.rotate 45.0 UnitVc.Xaxis
+let dir = UnitVc.rotateDegrees 45.0 UnitVc.Xaxis
 let rotRect = Rect2D.createFromDirectionAndSizes(Pt(0, 0), dir, 10.0, 5.0)
 
 // Rectangle properties

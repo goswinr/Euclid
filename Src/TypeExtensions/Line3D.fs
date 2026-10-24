@@ -860,9 +860,12 @@ module AutoOpenLine3D =
     static member inline rotate (q:Quaternion) (ln:Line3D) : Line3D =
         ln.Rotate(q)
 
-    /// Multiplies (or applies) a Quaternion to a 3D line around a given center point.
-    /// The resulting line has the same length as the input.
-    member inline l.RotateWithCenter (cen:Pnt, q:Quaternion) : Line3D =
+    /// <summary>Multiplies (or applies) a Quaternion to a 3D line around a given center point.
+    /// The resulting line has the same length as the input.</summary>
+    /// <param name="cen">The center point of the rotation.</param>
+    /// <param name="q">The rotation to apply.</param>
+    /// <returns>The rotated 3D line.</returns>
+    member inline l.RotateAround (cen:Pnt) (q:Quaternion) : Line3D =
         let cX = cen.X
         let cY = cen.Y
         let cZ = cen.Z
@@ -889,10 +892,14 @@ module AutoOpenLine3D =
                 y + qw * ty + qz * tx - qx * tz + cY ,
                 z + qw * tz + qx * ty - qy * tx + cZ )
 
-    /// Multiplies (or applies) a Quaternion to a 3D line around a given center point.
-    /// The resulting line has the same length as the input.
-    static member inline rotateWithCenter (cen:Pnt) (q:Quaternion) (ln:Line3D) : Line3D =
-        ln.RotateWithCenter (cen, q)
+    /// <summary>Multiplies (or applies) a Quaternion to a 3D line around a given center point.
+    /// The resulting line has the same length as the input.</summary>
+    /// <param name="cen">The center point of the rotation.</param>
+    /// <param name="q">The rotation to apply.</param>
+    /// <param name="ln">The 3D line to rotate.</param>
+    /// <returns>The rotated 3D line.</returns>
+    static member inline rotateAround (cen:Pnt) (q:Quaternion) (ln:Line3D) : Line3D =
+        ln.RotateAround cen q
 
     /// Checks if the dot product between the two 3D lines is positive.
     /// So if the angle between their direction vectors is less than 90 degrees.
@@ -1566,8 +1573,11 @@ module AutoOpenLine3D =
                ln.ToY * factor,
                ln.ToZ * factor)
 
-    /// Scales the 3D line by a given factor on a given center point
-    member inline l.ScaleOn (cen:Pnt) (factor:float) : Line3D =
+    /// <summary>Scales the 3D line by a given factor around a given center point.</summary>
+    /// <param name="cen">The center point of the scaling.</param>
+    /// <param name="factor">The scale factor.</param>
+    /// <returns>The scaled 3D line.</returns>
+    member inline l.ScaleAround (cen:Pnt) (factor:float) : Line3D =
         let cx = cen.X
         let cy = cen.Y
         let cz = cen.Z
@@ -1579,9 +1589,13 @@ module AutoOpenLine3D =
             cy + (l.ToY   - cy) * factor,
             cz + (l.ToZ   - cz) * factor)
 
-    /// Scales the 3D line by a given factor on a given center point
-    static member inline scaleOn (cen:Pnt) (factor:float) (ln:Line3D) : Line3D =
-        ln.ScaleOn cen factor
+    /// <summary>Scales a 3D line by a given factor around a given center point.</summary>
+    /// <param name="cen">The center point of the scaling.</param>
+    /// <param name="factor">The scale factor.</param>
+    /// <param name="ln">The 3D line to scale.</param>
+    /// <returns>The scaled 3D line.</returns>
+    static member inline scaleAround (cen:Pnt) (factor:float) (ln:Line3D) : Line3D =
+        ln.ScaleAround cen factor
 
 
     // #endregion
@@ -2465,6 +2479,26 @@ module AutoOpenLine3D =
 
     // #endregion
     // #region Obsolete
+
+    /// Obsolete name. Same as ln.ScaleAround.
+    [<Obsolete("Use ln.ScaleAround instead.")>]
+    member inline l.ScaleOn (cen:Pnt) (factor:float) : Line3D =
+        l.ScaleAround cen factor
+
+    /// Obsolete name. Same as Line3D.scaleAround.
+    [<Obsolete("Use Line3D.scaleAround instead.")>]
+    static member inline scaleOn (cen:Pnt) (factor:float) (ln:Line3D) : Line3D =
+        ln.ScaleAround cen factor
+
+    /// Obsolete name. Same as ln.RotateAround, but with tupled arguments.
+    [<Obsolete("Use ln.RotateAround instead. It takes curried arguments: ln.RotateAround cen q")>]
+    member inline l.RotateWithCenter (cen:Pnt, q:Quaternion) : Line3D =
+        l.RotateAround cen q
+
+    /// Obsolete name. Same as Line3D.rotateAround.
+    [<Obsolete("Use Line3D.rotateAround instead.")>]
+    static member inline rotateWithCenter (cen:Pnt) (q:Quaternion) (ln:Line3D) : Line3D =
+        ln.RotateAround cen q
 
     /// Obsolete name. Same as Line3D.lengthToPntOnLine.
     [<Obsolete("Use Line3D.lengthToPntOnLine instead.")>]

@@ -427,14 +427,14 @@ let tests =
                 "SizeY scaled"  |> Expect.isTrue (eqf r.SizeY 10.)
                 "center scaled" |> Expect.isTrue (eq r.Center (Pt(15., 16.)))
             }
-            test "ScaleOn a center keeps that center fixed" {
-                let r = rr.ScaleOn rCenter 2.
+            test "ScaleAround a center keeps that center fixed" {
+                let r = rr.ScaleAround rCenter 2.
                 "center kept"  |> Expect.isTrue (eq r.Center rCenter)
                 "SizeX scaled" |> Expect.isTrue (eqf r.SizeX 20.)
                 "SizeY scaled" |> Expect.isTrue (eqf r.SizeY 10.)
             }
-            test "scaleOn static" {
-                let r = Rect2D.scaleOn rCenter 0.5 rr
+            test "scaleAround static" {
+                let r = Rect2D.scaleAround rCenter 0.5 rr
                 "center kept"   |> Expect.isTrue (eq r.Center rCenter)
                 "SizeX shrunk"  |> Expect.isTrue (eqf r.SizeX 5.)
             }
@@ -476,9 +476,9 @@ let tests =
                 "SizeX kept" |> Expect.isTrue (eqf r.SizeX 10.)
                 "SizeY kept" |> Expect.isTrue (eqf r.SizeY 5.)
             }
-            test "rotateWithCenter keeps the center fixed" {
+            test "rotateAround keeps the center fixed" {
                 let rot = Rotation2D.createFromDegrees 90.
-                let r = Rect2D.rotateWithCenter rCenter rot rr
+                let r = Rect2D.rotateAround rCenter rot rr
                 "center kept" |> Expect.isTrue (eq r.Center rCenter)
                 "SizeX kept"  |> Expect.isTrue (eqf r.SizeX 10.)
             }

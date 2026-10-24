@@ -115,7 +115,7 @@ let ppl =
 
 // Rectangles
 let rect = Rect2D.createFromXVectorAndWidth(Pt(0, 0), Vc(10, 0), 5.0)
-let dirRect = UnitVc.rotate 45.0 UnitVc.Xaxis
+let dirRect = UnitVc.rotateDegrees 45.0 UnitVc.Xaxis
 let rotRect = Rect2D.createFromDirectionAndSizes(Pt(0, 0), dirRect, 10.0, 5.0)
 let area = rect.Area
 let cx = rect.SizeX

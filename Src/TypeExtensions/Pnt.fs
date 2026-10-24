@@ -421,6 +421,16 @@ module AutoOpenPnt =
         static member inline scale (f:float) (pnt:Pnt) : Pnt =
             pnt*f
 
+        /// <summary>Scales a 3D point by a factor around a given center point.</summary>
+        /// <param name="cen">The center point of the scaling.</param>
+        /// <param name="factor">The scale factor.</param>
+        /// <param name="pnt">The 3D point to scale.</param>
+        /// <returns>The scaled 3D point.</returns>
+        static member inline scaleAround (cen:Pnt) (factor:float) (pnt:Pnt) : Pnt =
+            Pnt(cen.X + (pnt.X - cen.X) * factor,
+                cen.Y + (pnt.Y - cen.Y) * factor,
+                cen.Z + (pnt.Z - cen.Z) * factor)
+
         /// Move point 3D by vector. Same as Pnt.move.
         static member inline translate (shift:Vec) (pnt:Pnt) : Pnt =
             pnt + shift
@@ -570,8 +580,12 @@ module AutoOpenPnt =
         static member inline rotate (q:Quaternion) (pnt:Pnt) : Pnt =
             pnt *** q  // operator * is defined in Quaternion.fs
 
-        /// Rotate by Quaternion around given center point.
-        static member inline rotateWithCenter (cen:Pnt) (q:Quaternion) (pnt:Pnt) : Pnt =
+        /// <summary>Rotate a 3D point by a Quaternion around a given center point.</summary>
+        /// <param name="cen">The center point of the rotation.</param>
+        /// <param name="q">The rotation to apply.</param>
+        /// <param name="pnt">The 3D point to rotate.</param>
+        /// <returns>The rotated 3D point.</returns>
+        static member inline rotateAround (cen:Pnt) (q:Quaternion) (pnt:Pnt) : Pnt =
             // adapted from https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
             let x = pnt.X - cen.X
             let y = pnt.Y - cen.Y
@@ -876,9 +890,14 @@ module AutoOpenPnt =
         static member inline rotateByQuaternion (q:Quaternion) (pnt:Pnt) : Pnt =
             Pnt.rotate q pnt
 
-        [<Obsolete("Use Pnt.rotateWithCenter instead.")>]
+        [<Obsolete("Use Pnt.rotateAround instead.")>]
         static member inline rotateWithCenterByQuat (cen:Pnt) (q:Quaternion) (pnt:Pnt) : Pnt =
-            Pnt.rotateWithCenter cen q pnt
+            Pnt.rotateAround cen q pnt
+
+        /// Obsolete name. Same as Pnt.rotateAround.
+        [<Obsolete("Use Pnt.rotateAround instead.")>]
+        static member inline rotateWithCenter (cen:Pnt) (q:Quaternion) (pnt:Pnt) : Pnt =
+            Pnt.rotateAround cen q pnt
 
         [<Obsolete("Use the constructor Pnt(x, y, z) instead.")>]
         static member inline create (x:float, y:float, z:float) : Pnt =

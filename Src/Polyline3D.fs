@@ -1497,8 +1497,10 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     static member scale (factor:float) (pl:Polyline3D) : unit =
         pl.Scale factor
 
-    /// Scales the Polyline3D in place by a given factor on a given center point.
-    member p.ScaleOn (cen:Pnt) (factor:float) : unit =
+    /// <summary>Scales the Polyline3D in place by a given factor around a given center point.</summary>
+    /// <param name="cen">The center point of the scaling.</param>
+    /// <param name="factor">The scale factor.</param>
+    member p.ScaleAround (cen:Pnt) (factor:float) : unit =
         let cx = cen.X
         let cy = cen.Y
         let cz = cen.Z
@@ -1510,9 +1512,12 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             xyzs.[i + 2] <- cz + (xyzs.[i + 2] - cz) * factor
             i <- i + 3
 
-    /// Scales the Polyline3D in place by a given factor on a given center point.
-    static member inline scaleOn (cen:Pnt) (factor:float) (pl:Polyline3D) : unit =
-        pl.ScaleOn cen factor
+    /// <summary>Scales the Polyline3D in place by a given factor around a given center point.</summary>
+    /// <param name="cen">The center point of the scaling.</param>
+    /// <param name="factor">The scale factor.</param>
+    /// <param name="pl">The Polyline3D to change.</param>
+    static member inline scaleAround (cen:Pnt) (factor:float) (pl:Polyline3D) : unit =
+        pl.ScaleAround cen factor
 
     /// Moves the Polyline3D in place by a vector. Same as Polyline3D.move and Polyline3D.translate.
     member p.Move (v:Vec) : unit =
@@ -1638,8 +1643,10 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     static member inline rotate (q:Quaternion) (pl:Polyline3D) : unit =
         pl.Rotate q
 
-    /// Multiplies (or applies) a Quaternion to the Polyline3D in place, to rotate around a given center point.
-    member p.RotateWithCenter (cen:Pnt, q:Quaternion) : unit =
+    /// <summary>Multiplies (or applies) a Quaternion to the Polyline3D in place, to rotate around a given center point.</summary>
+    /// <param name="cen">The center point of the rotation.</param>
+    /// <param name="q">The rotation to apply.</param>
+    member p.RotateAround (cen:Pnt) (q:Quaternion) : unit =
         let len = xyzs.Count
         let cx = cen.X
         let cy = cen.Y
@@ -1662,9 +1669,12 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             xyzs.[i + 2] <- z + qw * tz + qx * ty - qy * tx + cz
             i <- i + 3
 
-    /// Multiplies (or applies) a Quaternion to the Polyline3D in place, to rotate around a given center point.
-    static member rotateWithCenter (cen:Pnt) (q:Quaternion) (pl:Polyline3D) : unit =
-        pl.RotateWithCenter (cen, q)
+    /// <summary>Multiplies (or applies) a Quaternion to the Polyline3D in place, to rotate around a given center point.</summary>
+    /// <param name="cen">The center point of the rotation.</param>
+    /// <param name="q">The rotation to apply.</param>
+    /// <param name="pl">The Polyline3D to change.</param>
+    static member rotateAround (cen:Pnt) (q:Quaternion) (pl:Polyline3D) : unit =
+        pl.RotateAround cen q
 
     /// Rotates the Polyline3D in place around the Z-axis.
     member p.RotateOnZ (r:Rotation2D) : unit =
@@ -2676,9 +2686,29 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     static member rotateByQuaternion (q:Quaternion) (pl:Polyline3D) : unit =
         Polyline3D.rotate q pl
 
-    [<Obsolete("Use Polyline3D.rotateWithCenter instead. Like it, this rotates the Polyline3D in place.")>]
+    [<Obsolete("Use Polyline3D.rotateAround instead. Like it, this rotates the Polyline3D in place.")>]
     static member rotateWithCenterByQuaternion (cen:Pnt) (q:Quaternion) (pl:Polyline3D) : unit =
-        Polyline3D.rotateWithCenter cen q pl
+        Polyline3D.rotateAround cen q pl
+
+    /// Obsolete name. Same as p.ScaleAround.
+    [<Obsolete("Use p.ScaleAround instead. Like it, this scales the Polyline3D in place.")>]
+    member p.ScaleOn (cen:Pnt) (factor:float) : unit =
+        p.ScaleAround cen factor
+
+    /// Obsolete name. Same as Polyline3D.scaleAround.
+    [<Obsolete("Use Polyline3D.scaleAround instead. Like it, this scales the Polyline3D in place.")>]
+    static member inline scaleOn (cen:Pnt) (factor:float) (pl:Polyline3D) : unit =
+        pl.ScaleAround cen factor
+
+    /// Obsolete name. Same as p.RotateAround, but with tupled arguments.
+    [<Obsolete("Use p.RotateAround instead. It takes curried arguments: p.RotateAround cen q. Like it, this rotates the Polyline3D in place.")>]
+    member p.RotateWithCenter (cen:Pnt, q:Quaternion) : unit =
+        p.RotateAround cen q
+
+    /// Obsolete name. Same as Polyline3D.rotateAround.
+    [<Obsolete("Use Polyline3D.rotateAround instead. Like it, this rotates the Polyline3D in place.")>]
+    static member rotateWithCenter (cen:Pnt) (q:Quaternion) (pl:Polyline3D) : unit =
+        Polyline3D.rotateAround cen q pl
 
     [<Obsolete("Use Polyline3D.rotateOnZ instead. Like it, this rotates the Polyline3D in place.")>]
     static member rotate2D (r:Rotation2D) (pl:Polyline3D) : unit =

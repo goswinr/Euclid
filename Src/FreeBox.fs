@@ -658,8 +658,10 @@ type FreeBox private (xyzs:float[]) =
     static member inline scale (factor:float) (b:FreeBox) : unit =
         b.Scale(factor)
 
-    /// Scales the FreeBox in place by a given factor on a given center point.
-    member _.ScaleOn (cen:Pnt) (factor:float) : unit =
+    /// <summary>Scales the FreeBox in place by a given factor around a given center point.</summary>
+    /// <param name="cen">The center point of the scaling.</param>
+    /// <param name="factor">The scale factor.</param>
+    member _.ScaleAround (cen:Pnt) (factor:float) : unit =
         let cx = cen.X
         let cy = cen.Y
         let cz = cen.Z
@@ -670,9 +672,12 @@ type FreeBox private (xyzs:float[]) =
             xyzs.[i + 2] <- cz + (xyzs.[i + 2] - cz) * factor
             i <- i + 3
 
-    /// Scales the FreeBox in place by a given factor on a given center point.
-    static member inline scaleOn (cen:Pnt)  (factor:float) (b:FreeBox) : unit =
-        b.ScaleOn cen factor
+    /// <summary>Scales the FreeBox in place by a given factor around a given center point.</summary>
+    /// <param name="cen">The center point of the scaling.</param>
+    /// <param name="factor">The scale factor.</param>
+    /// <param name="b">The FreeBox to change.</param>
+    static member inline scaleAround (cen:Pnt) (factor:float) (b:FreeBox) : unit =
+        b.ScaleAround cen factor
 
     /// Moves the FreeBox in place by a vector. Same as FreeBox.move and FreeBox.translate.
     member _.Move (v:Vec) : unit =
@@ -786,8 +791,10 @@ type FreeBox private (xyzs:float[]) =
     static member inline rotate (q:Quaternion) (b:FreeBox) : unit =
         b.Rotate(q)
 
-    /// Rotates the FreeBox in place by a Quaternion around a given center point.
-    member _.RotateWithCenter (cen:Pnt) (q:Quaternion) : unit =
+    /// <summary>Rotates the FreeBox in place by a Quaternion around a given center point.</summary>
+    /// <param name="cen">The center point of the rotation.</param>
+    /// <param name="q">The rotation to apply.</param>
+    member _.RotateAround (cen:Pnt) (q:Quaternion) : unit =
         let cx = cen.X
         let cy = cen.Y
         let cz = cen.Z
@@ -809,9 +816,12 @@ type FreeBox private (xyzs:float[]) =
             xyzs.[i + 2] <- z + qw * tz + qx * ty - qy * tx + cz
             i <- i + 3
 
-    /// Rotates the FreeBox in place by a Quaternion around a given center point.
-    static member inline rotateWithCenter (cen:Pnt) (q:Quaternion) (b:FreeBox) : unit =
-        b.RotateWithCenter cen q
+    /// <summary>Rotates the FreeBox in place by a Quaternion around a given center point.</summary>
+    /// <param name="cen">The center point of the rotation.</param>
+    /// <param name="q">The rotation to apply.</param>
+    /// <param name="b">The FreeBox to change.</param>
+    static member inline rotateAround (cen:Pnt) (q:Quaternion) (b:FreeBox) : unit =
+        b.RotateAround cen q
 
     /// <summary>Creates a FreeBox from a flat array of 24 floats:
     /// x0, y0, z0, x1, y1, z1, ... x7, y7, z7.
@@ -1206,6 +1216,26 @@ type FreeBox private (xyzs:float[]) =
 
 
     // #region Obsolete
+
+    /// Obsolete name. Same as b.ScaleAround.
+    [<Obsolete("Use b.ScaleAround instead. Like it, this scales the FreeBox in place.")>]
+    member b.ScaleOn (cen:Pnt) (factor:float) : unit =
+        b.ScaleAround cen factor
+
+    /// Obsolete name. Same as FreeBox.scaleAround.
+    [<Obsolete("Use FreeBox.scaleAround instead. Like it, this scales the FreeBox in place.")>]
+    static member inline scaleOn (cen:Pnt) (factor:float) (b:FreeBox) : unit =
+        b.ScaleAround cen factor
+
+    /// Obsolete name. Same as b.RotateAround.
+    [<Obsolete("Use b.RotateAround instead. Like it, this rotates the FreeBox in place.")>]
+    member b.RotateWithCenter (cen:Pnt) (q:Quaternion) : unit =
+        b.RotateAround cen q
+
+    /// Obsolete name. Same as FreeBox.rotateAround.
+    [<Obsolete("Use FreeBox.rotateAround instead. Like it, this rotates the FreeBox in place.")>]
+    static member inline rotateWithCenter (cen:Pnt) (q:Quaternion) (b:FreeBox) : unit =
+        b.RotateAround cen q
 
     /// The 8 points that make up the box.
     [<Obsolete("Since the internal structure of FreeBox has changed to a flat array of 24 floats, this is not the live internal buffer any more, but a copy. Use FreeBox.AsPoints instead, or FreeBox.XYZs to get the live buffer.")>]

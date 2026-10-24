@@ -363,8 +363,11 @@ type Rect3D =
                 r.YaxisY * factor,
                 r.YaxisZ * factor)
 
-    /// Scales the 3D rectangle by a given factor on a given center point
-    member inline l.ScaleOn (cen:Pnt) (factor:float) : Rect3D =
+    /// <summary>Scales the 3D rectangle by a given factor around a given center point.</summary>
+    /// <param name="cen">The center point of the scaling.</param>
+    /// <param name="factor">The scale factor.</param>
+    /// <returns>The scaled 3D rectangle.</returns>
+    member inline l.ScaleAround (cen:Pnt) (factor:float) : Rect3D =
         let cx = cen.X
         let cy = cen.Y
         let cz = cen.Z
@@ -380,9 +383,13 @@ type Rect3D =
             l.YaxisZ * factor
         )
 
-    /// Scales the 3D rectangle by a given factor on a given center point.
-    static member inline scaleOn (cen:Pnt) (factor:float) (r:Rect3D) : Rect3D =
-        r.ScaleOn cen factor
+    /// <summary>Scales a 3D rectangle by a given factor around a given center point.</summary>
+    /// <param name="cen">The center point of the scaling.</param>
+    /// <param name="factor">The scale factor.</param>
+    /// <param name="r">The 3D rectangle to scale.</param>
+    /// <returns>The scaled 3D rectangle.</returns>
+    static member inline scaleAround (cen:Pnt) (factor:float) (r:Rect3D) : Rect3D =
+        r.ScaleAround cen factor
 
     /// Returns a 3D rectangle moved by a vector in world space. Same as Rect3D.move.
     member inline r.Move (v:Vec) : Rect3D =
@@ -491,8 +498,11 @@ type Rect3D =
     static member inline rotate (q:Quaternion) (r:Rect3D) : Rect3D =
         r.Rotate q
 
-    /// Multiplies (or applies) a Quaternion to a 3D rectangle around a given center point.
-    member inline r.RotateWithCenter (cen:Pnt, q:Quaternion) : Rect3D =
+    /// <summary>Multiplies (or applies) a Quaternion to a 3D rectangle around a given center point.</summary>
+    /// <param name="cen">The center point of the rotation.</param>
+    /// <param name="q">The rotation to apply.</param>
+    /// <returns>The rotated 3D rectangle.</returns>
+    member inline r.RotateAround (cen:Pnt) (q:Quaternion) : Rect3D =
         let qx = q.X
         let qy = q.Y
         let qz = q.Z
@@ -526,9 +536,13 @@ type Rect3D =
         let yz =  z + qw * tz + qx * ty - qy * tx
         Rect3D.createUnchecked(ox, oy, oz, xx, xy, xz, yx, yy, yz)
 
-    /// Multiplies (or applies) a Quaternion to a 3D rectangle around a given center point.
-    static member inline rotateWithCenter (cen:Pnt) (q:Quaternion) (r:Rect3D) : Rect3D =
-        r.RotateWithCenter( cen, q)
+    /// <summary>Multiplies (or applies) a Quaternion to a 3D rectangle around a given center point.</summary>
+    /// <param name="cen">The center point of the rotation.</param>
+    /// <param name="q">The rotation to apply.</param>
+    /// <param name="r">The 3D rectangle to rotate.</param>
+    /// <returns>The rotated 3D rectangle.</returns>
+    static member inline rotateAround (cen:Pnt) (q:Quaternion) (r:Rect3D) : Rect3D =
+        r.RotateAround cen q
 
     /// Returns the longest edge of the Rect3D.
     member inline b.LongestEdge : float =
@@ -2250,6 +2264,26 @@ type Rect3D =
 
     // #endregion
     // #region Obsolete
+
+    /// Obsolete name. Same as r.ScaleAround.
+    [<Obsolete("Use r.ScaleAround instead.")>]
+    member inline r.ScaleOn (cen:Pnt) (factor:float) : Rect3D =
+        r.ScaleAround cen factor
+
+    /// Obsolete name. Same as Rect3D.scaleAround.
+    [<Obsolete("Use Rect3D.scaleAround instead.")>]
+    static member inline scaleOn (cen:Pnt) (factor:float) (r:Rect3D) : Rect3D =
+        r.ScaleAround cen factor
+
+    /// Obsolete name. Same as r.RotateAround, but with tupled arguments.
+    [<Obsolete("Use r.RotateAround instead. It takes curried arguments: r.RotateAround cen q")>]
+    member inline r.RotateWithCenter (cen:Pnt, q:Quaternion) : Rect3D =
+        r.RotateAround cen q
+
+    /// Obsolete name. Same as Rect3D.rotateAround.
+    [<Obsolete("Use Rect3D.rotateAround instead.")>]
+    static member inline rotateWithCenter (cen:Pnt) (q:Quaternion) (r:Rect3D) : Rect3D =
+        r.RotateAround cen q
 
     [<Obsolete("Renamed to Rect3D.xAxisUnit for naming consistency with Rect2D.")>]
     static member xaxisUnit (r:Rect3D) : UnitVec =

@@ -1225,8 +1225,10 @@ type Polyline2D private (xys: ResizeArray<float>) =
     static member scale (factor:float) (pl:Polyline2D) : unit =
         pl.Scale factor
 
-    /// Scales the Polyline2D in place by a given factor on a given center point.
-    member p.ScaleOn (cen:Pt) (factor:float) : unit =
+    /// <summary>Scales the Polyline2D in place by a given factor around a given center point.</summary>
+    /// <param name="cen">The center point of the scaling.</param>
+    /// <param name="factor">The scale factor.</param>
+    member p.ScaleAround (cen:Pt) (factor:float) : unit =
         let cx = cen.X
         let cy = cen.Y
         let mutable i = 0
@@ -1236,9 +1238,12 @@ type Polyline2D private (xys: ResizeArray<float>) =
             xys.[i + 1] <- cy + (xys.[i + 1] - cy) * factor
             i <- i + 2
 
-    /// Scales the Polyline2D in place by a given factor on a given center point.
-    static member inline scaleOn (cen:Pt) (factor:float) (pl:Polyline2D) : unit =
-        pl.ScaleOn cen factor
+    /// <summary>Scales the Polyline2D in place by a given factor around a given center point.</summary>
+    /// <param name="cen">The center point of the scaling.</param>
+    /// <param name="factor">The scale factor.</param>
+    /// <param name="pl">The Polyline2D to change.</param>
+    static member inline scaleAround (cen:Pt) (factor:float) (pl:Polyline2D) : unit =
+        pl.ScaleAround cen factor
 
     /// Moves the Polyline2D in place by a vector. Same as Polyline2D.move and Polyline2D.translate.
     member p.Move (v:Vc) : unit =
@@ -1292,12 +1297,69 @@ type Polyline2D private (xys: ResizeArray<float>) =
             xys.[i + 1] <- sin * x + cos * y
             i <- i + 2
 
-    /// Rotates the Polyline2D in place around a given center point by a Rotation2D.
-    member p.RotateWithCenter (cen:Pt, r:Rotation2D) : unit =
-        Polyline2D.rotateWithCenter cen r p
+    /// <summary>Rotates the Polyline2D in place counter-clockwise around the world origin by an angle in degrees.</summary>
+    /// <param name="angDegree">The rotation angle in degrees.</param>
+    /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.Rotate(rotation2D).</remarks>
+    member p.RotateDegrees (angDegree:float) : unit =
+        Polyline2D.rotate (Rotation2D.createFromDegrees angDegree) p
 
-    /// Rotates the Polyline2D in place around a given center point by a Rotation2D.
-    static member rotateWithCenter (cen:Pt) (r:Rotation2D) (pl:Polyline2D) : unit =
+    /// <summary>Rotates the Polyline2D in place counter-clockwise around the world origin by an angle in degrees.</summary>
+    /// <param name="angDegree">The rotation angle in degrees.</param>
+    /// <param name="pl">The Polyline2D to change.</param>
+    /// <remarks>For better performance precompute the Rotation2D struct and rotate with Polyline2D.rotate.</remarks>
+    static member rotateDegrees (angDegree:float) (pl:Polyline2D) : unit =
+        Polyline2D.rotate (Rotation2D.createFromDegrees angDegree) pl
+
+    /// <summary>Rotates the Polyline2D in place counter-clockwise around the world origin by an angle in radians.</summary>
+    /// <param name="angRadians">The rotation angle in radians.</param>
+    /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.Rotate(rotation2D).</remarks>
+    member p.RotateRadians (angRadians:float) : unit =
+        Polyline2D.rotate (Rotation2D.createFromRadians angRadians) p
+
+    /// <summary>Rotates the Polyline2D in place counter-clockwise around the world origin by an angle in radians.</summary>
+    /// <param name="angRadians">The rotation angle in radians.</param>
+    /// <param name="pl">The Polyline2D to change.</param>
+    /// <remarks>For better performance precompute the Rotation2D struct and rotate with Polyline2D.rotate.</remarks>
+    static member rotateRadians (angRadians:float) (pl:Polyline2D) : unit =
+        Polyline2D.rotate (Rotation2D.createFromRadians angRadians) pl
+
+    /// <summary>Rotates the Polyline2D in place counter-clockwise around a given center point by a Rotation2D.</summary>
+    /// <param name="cen">The center point of the rotation.</param>
+    /// <param name="r">The rotation to apply.</param>
+    member p.RotateAround (cen:Pt) (r:Rotation2D) : unit =
+        Polyline2D.rotateAround cen r p
+
+    /// <summary>Rotates the Polyline2D in place counter-clockwise around a given center point by an angle in degrees.</summary>
+    /// <param name="cen">The center point of the rotation.</param>
+    /// <param name="angDegree">The rotation angle in degrees.</param>
+    member p.RotateAroundDegrees (cen:Pt) (angDegree:float) : unit =
+        Polyline2D.rotateAround cen (Rotation2D.createFromDegrees angDegree) p
+
+    /// <summary>Rotates the Polyline2D in place counter-clockwise around a given center point by an angle in degrees.</summary>
+    /// <param name="cen">The center point of the rotation.</param>
+    /// <param name="angDegree">The rotation angle in degrees.</param>
+    /// <param name="pl">The Polyline2D to change.</param>
+    static member rotateAroundDegrees (cen:Pt) (angDegree:float) (pl:Polyline2D) : unit =
+        Polyline2D.rotateAround cen (Rotation2D.createFromDegrees angDegree) pl
+
+    /// <summary>Rotates the Polyline2D in place counter-clockwise around a given center point by an angle in radians.</summary>
+    /// <param name="cen">The center point of the rotation.</param>
+    /// <param name="angRadians">The rotation angle in radians.</param>
+    member p.RotateAroundRadians (cen:Pt) (angRadians:float) : unit =
+        Polyline2D.rotateAround cen (Rotation2D.createFromRadians angRadians) p
+
+    /// <summary>Rotates the Polyline2D in place counter-clockwise around a given center point by an angle in radians.</summary>
+    /// <param name="cen">The center point of the rotation.</param>
+    /// <param name="angRadians">The rotation angle in radians.</param>
+    /// <param name="pl">The Polyline2D to change.</param>
+    static member rotateAroundRadians (cen:Pt) (angRadians:float) (pl:Polyline2D) : unit =
+        Polyline2D.rotateAround cen (Rotation2D.createFromRadians angRadians) pl
+
+    /// <summary>Rotates the Polyline2D in place counter-clockwise around a given center point by a Rotation2D.</summary>
+    /// <param name="cen">The center point of the rotation.</param>
+    /// <param name="r">The rotation to apply.</param>
+    /// <param name="pl">The Polyline2D to change.</param>
+    static member rotateAround (cen:Pt) (r:Rotation2D) (pl:Polyline2D) : unit =
         let mutable i = 0
         let xys = pl.XYs
         let len = xys.Count
@@ -2482,6 +2544,26 @@ type Polyline2D private (xys: ResizeArray<float>) =
 
     // #endregion
     // #region Obsolete
+
+    /// Obsolete name. Same as p.ScaleAround.
+    [<Obsolete("Use p.ScaleAround instead. Like it, this scales the Polyline2D in place.")>]
+    member p.ScaleOn (cen:Pt) (factor:float) : unit =
+        p.ScaleAround cen factor
+
+    /// Obsolete name. Same as Polyline2D.scaleAround.
+    [<Obsolete("Use Polyline2D.scaleAround instead. Like it, this scales the Polyline2D in place.")>]
+    static member inline scaleOn (cen:Pt) (factor:float) (pl:Polyline2D) : unit =
+        pl.ScaleAround cen factor
+
+    /// Obsolete name. Same as p.RotateAround, but with tupled arguments.
+    [<Obsolete("Use p.RotateAround instead. It takes curried arguments: p.RotateAround cen r. Like it, this rotates the Polyline2D in place.")>]
+    member p.RotateWithCenter (cen:Pt, r:Rotation2D) : unit =
+        Polyline2D.rotateAround cen r p
+
+    /// Obsolete name. Same as Polyline2D.rotateAround.
+    [<Obsolete("Use Polyline2D.rotateAround instead. Like it, this rotates the Polyline2D in place.")>]
+    static member rotateWithCenter (cen:Pt) (r:Rotation2D) (pl:Polyline2D) : unit =
+        Polyline2D.rotateAround cen r pl
 
     /// Obsolete misspelling, use Polyline2D.FindLabelPoint instead.
     [<Obsolete("Use Polyline2D.FindLabelPoint instead.")>]

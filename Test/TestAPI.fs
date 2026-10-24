@@ -54,7 +54,7 @@ module ApiVc =
     let (_:float) = vc.Cross v2
     let (_:float) = vc.Dot v2
     let (_:Vc) = vc.RotateBy (Rotation2D.createFromDegrees 45.0)
-    let (_:Vc) = vc.Rotate 45.0
+    let (_:Vc) = vc.RotateDegrees 45.0 // Breaking: Rotate now takes a Rotation2D
     let (_:Vc) = vc.Rotate90CCW
     let (_:Vc) = vc.Rotate90CW
     let (_:float) = vc.DirectionDiamond
@@ -161,7 +161,7 @@ module ApiVc =
 
     // Static members - Rotation
     let (_:Vc) = Vc.rotateBy (Rotation2D.createFromDegrees 45.0) vc
-    let (_:Vc) = Vc.rotate 45.0 vc
+    let (_:Vc) = Vc.rotateDegrees 45.0 vc // Breaking: rotate now takes a Rotation2D
     let (_:Vc) = Vc.rotate90CCW vc
     let (_:Vc) = Vc.rotate90CW vc
     let (_:Vc) = Vc.rotateByQuarterCircle 1 vc
@@ -214,7 +214,7 @@ module UnitVcAPI =
 
     // Instance members - Rotation
     let (_:UnitVc) = unitvc.RotateBy (Rotation2D.createFromDegrees 45.0)
-    let (_:UnitVc) = unitvc.Rotate 45.0
+    let (_:UnitVc) = unitvc.RotateDegrees 45.0 // Breaking: Rotate now takes a Rotation2D
     let (_:UnitVc) = unitvc.Rotate90CCW
     let (_:UnitVc) = unitvc.Rotate90CW
 
@@ -338,7 +338,7 @@ module UnitVcAPI =
 
     // Static members - Rotation
     let (_:UnitVc) = UnitVc.rotateBy (Rotation2D.createFromDegrees 45.0) unitvc
-    let (_:UnitVc) = UnitVc.rotate 45.0 unitvc
+    let (_:UnitVc) = UnitVc.rotateDegrees 45.0 unitvc // Breaking: rotate now takes a Rotation2D
     let (_:UnitVc) = UnitVc.rotate90CCW unitvc
     let (_:UnitVc) = UnitVc.rotate90CW unitvc
     let (_:UnitVc) = UnitVc.rotateByQuarterCircle 1 unitvc
@@ -458,7 +458,7 @@ module PtAPI =
 
     // Static members - Rotation
     let (_:Pt) = Pt.rotateBy (Rotation2D.createFromDegrees 45.0) pt
-    let (_:Pt) = Pt.rotate 45.0 pt
+    let (_:Pt) = Pt.rotateDegrees 45.0 pt // Breaking: rotate now takes a Rotation2D
     let (_:Pt) = Pt.rotateWithCenterBy Pt.Origin (Rotation2D.createFromDegrees 45.0) pt
     let (_:Pt) = Pt.rotateWithCenter Pt.Origin 45.0 pt
 

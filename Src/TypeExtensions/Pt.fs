@@ -190,33 +190,43 @@ module AutoOpenPt =
         static member inline withDistanceFromOrigin (l:float) (pt:Pt) : Pt =
             pt.WithDistanceFromOrigin l
 
-        /// Rotate a 2D point counter-clockwise by a 2D Rotation (that has cos and sin precomputed)
-        member inline pt.RotateBy (r:Rotation2D) : Pt =
+        /// <summary>Rotate the 2D point counter-clockwise around the World Origin by a 2D Rotation (that has cos and sin precomputed).</summary>
+        /// <param name="r">The rotation to apply.</param>
+        /// <returns>The rotated 2D point.</returns>
+        member inline pt.Rotate (r:Rotation2D) : Pt =
             Pt(r.Cos*pt.X - r.Sin*pt.Y,
                 r.Sin*pt.X + r.Cos*pt.Y)
 
-        /// Rotate a 2D point counter-clockwise by a 2D Rotation (that has cos and sin precomputed)
-        static member inline rotateBy (r:Rotation2D) (p:Pt) : Pt =
+        /// <summary>Rotate a 2D point counter-clockwise around the World Origin by a 2D Rotation (that has cos and sin precomputed).</summary>
+        /// <param name="r">The rotation to apply.</param>
+        /// <param name="p">The 2D point to rotate.</param>
+        /// <returns>The rotated 2D point.</returns>
+        static member inline rotate (r:Rotation2D) (p:Pt) : Pt =
             Pt(r.Cos*p.X - r.Sin*p.Y,
                 r.Sin*p.X + r.Cos*p.Y)
 
-        /// <summary>Rotate the 2D point counter-clockwise by an angle in degrees.</summary>
-        /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
-        member inline pt.Rotate angDegree : Pt =
-            pt.RotateBy (Rotation2D.createFromDegrees angDegree)
+        /// <summary>Rotate the 2D point counter-clockwise around the World Origin by an angle in degrees.</summary>
+        /// <param name="angDegree">The rotation angle in degrees.</param>
+        /// <returns>The rotated 2D point.</returns>
+        /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.Rotate(rotation2D).</remarks>
+        member inline pt.RotateDegrees (angDegree:float) : Pt =
+            pt.Rotate (Rotation2D.createFromDegrees angDegree)
 
-        /// <summary>Rotate the 2D point counter-clockwise by an angle in degrees.</summary>
-        /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
-        static member inline rotate angDegree (vec:Pt) : Pt =
-            Pt.rotateBy (Rotation2D.createFromDegrees angDegree) vec
+        /// <summary>Rotate a 2D point counter-clockwise around the World Origin by an angle in degrees.</summary>
+        /// <param name="angDegree">The rotation angle in degrees.</param>
+        /// <param name="pt">The 2D point to rotate.</param>
+        /// <returns>The rotated 2D point.</returns>
+        /// <remarks>For better performance precompute the Rotation2D struct and rotate with Pt.rotate.</remarks>
+        static member inline rotateDegrees (angDegree:float) (pt:Pt) : Pt =
+            Pt.rotate (Rotation2D.createFromDegrees angDegree) pt
 
         /// <summary>Rotate the 2D point counter-clockwise by an angle in radians.</summary>
-        /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
+        /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.Rotate(rotation2D).</remarks>
         member inline pt.RotateRadians angRadians  : Pt =
-            pt.RotateBy (Rotation2D.createFromRadians angRadians)
+            pt.Rotate (Rotation2D.createFromRadians angRadians)
 
         /// <summary>Rotate the 2D point counter-clockwise by an angle in radians.</summary>
-        /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
+        /// <remarks>For better performance precompute the Rotation2D struct and rotate with Pt.rotate.</remarks>
         static member inline rotateRadians angRadians (pt:Pt) : Pt =
             pt.RotateRadians angRadians
 
@@ -428,6 +438,15 @@ module AutoOpenPt =
         static member inline scale (f:float) (pt:Pt) : Pt =
             pt*f
 
+        /// <summary>Scales a 2D point by a factor around a given center point.</summary>
+        /// <param name="cen">The center point of the scaling.</param>
+        /// <param name="factor">The scale factor.</param>
+        /// <param name="pt">The 2D point to scale.</param>
+        /// <returns>The scaled 2D point.</returns>
+        static member inline scaleAround (cen:Pt) (factor:float) (pt:Pt) : Pt =
+            Pt(cen.X + (pt.X - cen.X) * factor,
+               cen.Y + (pt.Y - cen.Y) * factor)
+
         /// Move a 2D point by a vector. Same as Pt.move.
         static member inline translate (shift:Vc) (pt:Pt) : Pt =
             pt + shift
@@ -468,17 +487,53 @@ module AutoOpenPt =
             if isTooTiny lb then failTooSmall "Pt.bisector: ptNext to ptThis" (Vc(bx, by))
             Vc(ax/la + bx/lb, ay/la + by/lb)
 
-        /// Rotate the 2D point counter-clockwise around a center point.
-        /// By a 2D Rotation (that has cos and sin precomputed)
-        static member inline rotateWithCenterBy (cen:Pt) (r:Rotation2D) (pt:Pt) : Pt =
+        /// <summary>Rotate a 2D point counter-clockwise around a center point by a 2D Rotation (that has cos and sin precomputed).</summary>
+        /// <param name="cen">The center point of the rotation.</param>
+        /// <param name="r">The rotation to apply.</param>
+        /// <param name="pt">The 2D point to rotate.</param>
+        /// <returns>The rotated 2D point.</returns>
+        static member inline rotateAround (cen:Pt) (r:Rotation2D) (pt:Pt) : Pt =
             let x = pt.X - cen.X
             let y = pt.Y - cen.Y
             Pt (r.Cos*x - r.Sin*y + cen.X,
                 r.Sin*x + r.Cos*y + cen.Y)
 
-        /// Rotate 2D point around a center point counter-clockwise. Angle given in degrees.
-        static member inline rotateWithCenter (cen:Pt) (angDegree:float) (pt:Pt) : Pt =
-            Pt.rotateWithCenterBy cen (Rotation2D.createFromDegrees angDegree) pt
+        /// <summary>Rotate the 2D point counter-clockwise around a center point by a 2D Rotation (that has cos and sin precomputed).</summary>
+        /// <param name="cen">The center point of the rotation.</param>
+        /// <param name="r">The rotation to apply.</param>
+        /// <returns>The rotated 2D point.</returns>
+        member inline pt.RotateAround (cen:Pt) (r:Rotation2D) : Pt =
+            Pt.rotateAround cen r pt
+
+        /// <summary>Rotate the 2D point counter-clockwise around a center point by an angle in degrees.</summary>
+        /// <param name="cen">The center point of the rotation.</param>
+        /// <param name="angDegree">The rotation angle in degrees.</param>
+        /// <returns>The rotated 2D point.</returns>
+        member inline pt.RotateAroundDegrees (cen:Pt) (angDegree:float) : Pt =
+            Pt.rotateAround cen (Rotation2D.createFromDegrees angDegree) pt
+
+        /// <summary>Rotate a 2D point counter-clockwise around a center point by an angle in degrees.</summary>
+        /// <param name="cen">The center point of the rotation.</param>
+        /// <param name="angDegree">The rotation angle in degrees.</param>
+        /// <param name="pt">The 2D point to rotate.</param>
+        /// <returns>The rotated 2D point.</returns>
+        static member inline rotateAroundDegrees (cen:Pt) (angDegree:float) (pt:Pt) : Pt =
+            Pt.rotateAround cen (Rotation2D.createFromDegrees angDegree) pt
+
+        /// <summary>Rotate the 2D point counter-clockwise around a center point by an angle in radians.</summary>
+        /// <param name="cen">The center point of the rotation.</param>
+        /// <param name="angRadians">The rotation angle in radians.</param>
+        /// <returns>The rotated 2D point.</returns>
+        member inline pt.RotateAroundRadians (cen:Pt) (angRadians:float) : Pt =
+            Pt.rotateAround cen (Rotation2D.createFromRadians angRadians) pt
+
+        /// <summary>Rotate a 2D point counter-clockwise around a center point by an angle in radians.</summary>
+        /// <param name="cen">The center point of the rotation.</param>
+        /// <param name="angRadians">The rotation angle in radians.</param>
+        /// <param name="pt">The 2D point to rotate.</param>
+        /// <returns>The rotated 2D point.</returns>
+        static member inline rotateAroundRadians (cen:Pt) (angRadians:float) (pt:Pt) : Pt =
+            Pt.rotateAround cen (Rotation2D.createFromRadians angRadians) pt
 
         /// Returns a point that is at a given distance from a 2D point in the direction of another point.
         static member inline distPt ( fromPt:Pt, dirPt:Pt, distance:float) : Pt = // not curried because argument order is important and would be confusing
@@ -586,6 +641,26 @@ module AutoOpenPt =
         [<Obsolete("Use Pt.withY instead. This returns a new 2D point, it does not mutate, so the 'with' prefix is clearer.")>]
         static member inline setY (y:float) (pt:Pt) : Pt =
             Pt(pt.X, y)
+
+        /// Obsolete name. Same as pt.Rotate.
+        [<Obsolete("Use pt.Rotate instead.")>]
+        member inline pt.RotateBy (r:Rotation2D) : Pt =
+            pt.Rotate r
+
+        /// Obsolete name. Same as Pt.rotate.
+        [<Obsolete("Use Pt.rotate instead.")>]
+        static member inline rotateBy (r:Rotation2D) (p:Pt) : Pt =
+            Pt.rotate r p
+
+        /// Obsolete name. Same as Pt.rotateAround.
+        [<Obsolete("Use Pt.rotateAround instead.")>]
+        static member inline rotateWithCenterBy (cen:Pt) (r:Rotation2D) (pt:Pt) : Pt =
+            Pt.rotateAround cen r pt
+
+        /// Obsolete name. Same as Pt.rotateAroundDegrees.
+        [<Obsolete("Use Pt.rotateAroundDegrees instead, or Pt.rotateAround with a precomputed Rotation2D.")>]
+        static member inline rotateWithCenter (cen:Pt) (angDegree:float) (pt:Pt) : Pt =
+            Pt.rotateAroundDegrees cen angDegree pt
 
         /// Obsolete typo. Same as p.IsInvalid.
         [<Obsolete("Typo, use IsInvalid instead.")>]

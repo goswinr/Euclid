@@ -198,9 +198,9 @@ let tests =
                 box.Move(Vec(1., 2., 3.))
                 Expect.isTrue (obj.ReferenceEquals(xyzs, box.XYZs)) "Move should keep the same array"
                 Expect.isTrue (eqPnt box.Pnt0 movedPt0) "Move should change the box in place"
-                box.RotateWithCenter movedPt0 q
-                Expect.isTrue (obj.ReferenceEquals(xyzs, box.XYZs)) "RotateWithCenter should keep the same array"
-                Expect.equal box.XYZs.Length 24 "RotateWithCenter should keep 24 floats"
+                box.RotateAround movedPt0 q
+                Expect.isTrue (obj.ReferenceEquals(xyzs, box.XYZs)) "RotateAround should keep the same array"
+                Expect.equal box.XYZs.Length 24 "RotateAround should keep 24 floats"
                 Expect.isTrue (eqPnt box.Pnt0 movedPt0) "The rotation center should stay fixed"
                 Expect.isFalse (eqPnt box.Pnt6 (rotatedPts.[6] + Vec(1., 2., 3.))) "Pnt6 should be rotated"
             }
@@ -208,7 +208,7 @@ let tests =
             test "Transforming a Duplicate leaves the original unchanged" {
                 let box = FreeBox.createFromEightPoints rotatedPts
                 let copy = box.Duplicate()
-                copy.RotateWithCenter (Pnt(7., -4., 3.)) (Quaternion.createFromDegrees(UnitVec.Zaxis, 35.))
+                copy.RotateAround (Pnt(7., -4., 3.)) (Quaternion.createFromDegrees(UnitVec.Zaxis, 35.))
                 copy.Move(Vec(-2., 5., 1.))
                 for i = 0 to 7 do
                     Expect.isTrue (eqPnt (box.GetPnt i) rotatedPts.[i]) $"Pt{i} of the original should be unchanged"
@@ -397,14 +397,14 @@ let tests =
                 Expect.isTrue (eqPnt box.Pnt6 (Pnt(22., 14., 12.))) "Pnt6 should be scaled"
             }
 
-            test "ScaleOn center point" {
+            test "ScaleAround center point" {
                 let pts = [|
                     Pnt(0., 0., 0.); Pnt(10., 0., 0.); Pnt(10., 10., 0.); Pnt(0., 10., 0.)
                     Pnt(0., 0., 10.); Pnt(10., 0., 10.); Pnt(10., 10., 10.); Pnt(0., 10., 10.)
                 |]
                 let box = FreeBox.createFromEightPoints pts
                 let center = Pnt(5., 5., 5.)
-                box.ScaleOn center 2.
+                box.ScaleAround center 2.
                 Expect.isTrue (eqPnt box.Pnt0 (Pnt(-5., -5., -5.))) "Pnt0 should be scaled around center"
                 Expect.isTrue (eqPnt box.Pnt6 (Pnt(15., 15., 15.))) "Pnt6 should be scaled around center"
             }
@@ -582,7 +582,7 @@ let tests =
                 Expect.isTrue (eqPnt box.Pnt0 (Pnt(0., 1., 0.))) "Pnt0 should be rotated 90 degrees"
             }
 
-            test "RotateWithCenter keeps center point fixed" {
+            test "RotateAround keeps center point fixed" {
                 let pts = [|
                     Pnt(0., 0., 0.); Pnt(2., 0., 0.); Pnt(2., 2., 0.); Pnt(0., 2., 0.)
                     Pnt(0., 0., 2.); Pnt(2., 0., 2.); Pnt(2., 2., 2.); Pnt(0., 2., 2.)
@@ -590,13 +590,13 @@ let tests =
                 let box = FreeBox.createFromEightPoints pts
                 let center = Pnt(1., 1., 1.)
                 let q = Quaternion.createFromDegrees(UnitVec.Zaxis, 90.)
-                box.RotateWithCenter center q
+                box.RotateAround center q
                 // After rotation, center should still be at (1,1,1)
                 // Pnt0 at (0,0,0) rotated 90 degrees around (1,1,1) in Z should go to (2,0,0)
                 Expect.isTrue (eqPnt box.Pnt0 (Pnt(2., 0., 0.))) "Pnt0 should be rotated around center"
             }
 
-            test "rotateWithCenter static method" {
+            test "rotateAround static method" {
                 let pts = [|
                     Pnt(0., 0., 0.); Pnt(2., 0., 0.); Pnt(2., 2., 0.); Pnt(0., 2., 0.)
                     Pnt(0., 0., 2.); Pnt(2., 0., 2.); Pnt(2., 2., 2.); Pnt(0., 2., 2.)
@@ -604,7 +604,7 @@ let tests =
                 let box = FreeBox.createFromEightPoints pts
                 let center = Pnt(1., 1., 1.)
                 let q = Quaternion.createFromDegrees(UnitVec.Zaxis, 90.)
-                FreeBox.rotateWithCenter center q box
+                FreeBox.rotateAround center q box
                 Expect.isTrue (eqPnt box.Pnt0 (Pnt(2., 0., 0.))) "Pnt0 should be rotated around center"
             }
 

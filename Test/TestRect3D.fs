@@ -218,20 +218,20 @@ let tests =
                 "rotate static - origin" |> Expect.isTrue (eq rotated.Origin (Pnt(0., 1., 0.)))
             }
 
-            test "RotateWithCenter keeps center fixed" {
+            test "RotateAround keeps center fixed" {
                 let r = Rect3D.createFromVectors(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.))
                 let center = r.Center
                 let q = Quaternion.createFromDegrees(UnitVec.Zaxis, 90.)
-                let rotated = r.RotateWithCenter(center, q)
-                "RotateWithCenter - center" |> Expect.isTrue (eq rotated.Center center)
+                let rotated = r.RotateAround center q
+                "RotateAround - center" |> Expect.isTrue (eq rotated.Center center)
             }
 
-            test "rotateWithCenter static method" {
+            test "rotateAround static method" {
                 let r = Rect3D.createFromVectors(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.))
                 let center = r.Center
                 let q = Quaternion.createFromDegrees(UnitVec.Zaxis, 90.)
-                let rotated = Rect3D.rotateWithCenter center q r
-                "rotateWithCenter static - center" |> Expect.isTrue (eq rotated.Center center)
+                let rotated = Rect3D.rotateAround center q r
+                "rotateAround static - center" |> Expect.isTrue (eq rotated.Center center)
             }
         ]
 

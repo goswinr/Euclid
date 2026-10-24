@@ -665,24 +665,24 @@ let tests =
                 "rotate - first point" |> Expect.isTrue (eqPnt rotated.FirstPoint (Pnt(0., 1., 0.)))
             }
 
-            test "RotateWithCenter keeps center fixed" {
+            test "RotateAround keeps center fixed" {
                 let pts = ResizeArray([Pnt(0,0,0); Pnt(2,0,0); Pnt(2,2,0); Pnt(0,2,0)])
                 let pl = Polyline3D(pts)
                 let center = pl.Center
                 let q = Quaternion.createFromDegrees(UnitVec.Zaxis, 90.)
                 let rotated = pl.Duplicate()
-                rotated.RotateWithCenter(center, q)
-                "RotateWithCenter - center" |> Expect.isTrue (eqPnt rotated.Center center)
+                rotated.RotateAround center q
+                "RotateAround - center" |> Expect.isTrue (eqPnt rotated.Center center)
             }
 
-            test "rotateWithCenter static method" {
+            test "rotateAround static method" {
                 let pts = ResizeArray([Pnt(0,0,0); Pnt(2,0,0); Pnt(2,2,0); Pnt(0,2,0)])
                 let pl = Polyline3D(pts)
                 let center = pl.Center
                 let q = Quaternion.createFromDegrees(UnitVec.Zaxis, 90.)
                 let rotated = pl.Duplicate()
-                Polyline3D.rotateWithCenter center q rotated
-                "rotateWithCenter - center" |> Expect.isTrue (eqPnt rotated.Center center)
+                Polyline3D.rotateAround center q rotated
+                "rotateAround - center" |> Expect.isTrue (eqPnt rotated.Center center)
             }
 
             test "Scale instance method" {
@@ -1247,15 +1247,15 @@ let tests =
                 let q = Quaternion.createFromDegrees(Vec(1.,2.,3.), 40.)
                 let m = Matrix.createRotationAxisCenter(Vec(-1.,1.,2.), Pnt(4.,6.,1.), 25.)
                 pl.Move(Vec(-2.,5.,3.))
-                pl.RotateWithCenter(Pnt(4.,6.,1.), q)
+                pl.RotateAround (Pnt(4.,6.,1.)) q
                 pl.Transform m
-                pl.ScaleOn (Pnt(1.,-1.,2.)) 1.5
+                pl.ScaleAround (Pnt(1.,-1.,2.)) 1.5
                 Expect.isTrue (obj.ReferenceEquals(xyzs, pl.XYZs)) "same coordinate list"
                 let expected = Polyline3D.createFromPnts pts
                 Polyline3D.translate (Vec(-2.,5.,3.)) expected
-                Polyline3D.rotateWithCenter (Pnt(4.,6.,1.)) q expected
+                Polyline3D.rotateAround (Pnt(4.,6.,1.)) q expected
                 Polyline3D.transform m expected
-                Polyline3D.scaleOn (Pnt(1.,-1.,2.)) 1.5 expected
+                Polyline3D.scaleAround (Pnt(1.,-1.,2.)) 1.5 expected
                 Expect.isTrue (Polyline3D.equalsTol 1e-12 pl expected) "instance and static calls give the same result"
                 Expect.isFalse (eqPnt pl.Start (Pnt(3.,2.,1.))) "first point moved"
             }

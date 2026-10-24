@@ -280,8 +280,11 @@ type Rect2D =
                 r.YaxisX * factor,
                 r.YaxisY * factor)
 
-    /// Scales the 2D rectangle by a given factor on a given center point
-    member inline l.ScaleOn (cen:Pt) (factor:float) : Rect2D =
+    /// <summary>Scales the 2D rectangle by a given factor around a given center point.</summary>
+    /// <param name="cen">The center point of the scaling.</param>
+    /// <param name="factor">The scale factor.</param>
+    /// <returns>The scaled 2D rectangle.</returns>
+    member inline l.ScaleAround (cen:Pt) (factor:float) : Rect2D =
         let cx = cen.X
         let cy = cen.Y
         Rect2D.createUnchecked(
@@ -293,9 +296,13 @@ type Rect2D =
             l.YaxisY * factor
         )
 
-    /// Scales the 2D rectangle around a given center point.
-    static member inline scaleOn (cen:Pt) (factor:float) (r:Rect2D) : Rect2D =
-        r.ScaleOn cen factor
+    /// <summary>Scales a 2D rectangle by a given factor around a given center point.</summary>
+    /// <param name="cen">The center point of the scaling.</param>
+    /// <param name="factor">The scale factor.</param>
+    /// <param name="r">The 2D rectangle to scale.</param>
+    /// <returns>The scaled 2D rectangle.</returns>
+    static member inline scaleAround (cen:Pt) (factor:float) (r:Rect2D) : Rect2D =
+        r.ScaleAround cen factor
 
     /// Returns the longest edge of the Rect2D.
     member inline b.LongestEdge : float =
@@ -885,8 +892,12 @@ type Rect2D =
             rot.Cos*rect.YaxisX - rot.Sin*rect.YaxisY,
             rot.Sin*rect.YaxisX + rot.Cos*rect.YaxisY)
 
-    /// Rotation of a Rect2D. around a given center.
-    static member rotateWithCenter (cen:Pt) (rot:Rotation2D) (rect:Rect2D) : Rect2D =
+    /// <summary>Rotates a 2D rectangle counter-clockwise around a given center point by a Rotation2D.</summary>
+    /// <param name="cen">The center point of the rotation.</param>
+    /// <param name="rot">The rotation to apply.</param>
+    /// <param name="rect">The 2D rectangle to rotate.</param>
+    /// <returns>The rotated 2D rectangle.</returns>
+    static member rotateAround (cen:Pt) (rot:Rotation2D) (rect:Rect2D) : Rect2D =
         let ox = rect.OriginX - cen.X
         let oy = rect.OriginY - cen.Y
         Rect2D.createUnchecked(
@@ -901,9 +912,72 @@ type Rect2D =
     member inline r.Rotate (rot:Rotation2D) : Rect2D =
         Rect2D.rotate rot r
 
-    /// Rotates the 2D rectangle around a given center point. Same as Rect2D.rotateWithCenter.
-    member inline r.RotateWithCenter (cen:Pt, rot:Rotation2D) : Rect2D =
-        Rect2D.rotateWithCenter cen rot r
+    /// <summary>Rotates the 2D rectangle counter-clockwise around the World Origin by an angle in degrees.</summary>
+    /// <param name="angDegree">The rotation angle in degrees.</param>
+    /// <returns>The rotated 2D rectangle.</returns>
+    /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.Rotate(rotation2D).</remarks>
+    member inline r.RotateDegrees (angDegree:float) : Rect2D =
+        Rect2D.rotate (Rotation2D.createFromDegrees angDegree) r
+
+    /// <summary>Rotates a 2D rectangle counter-clockwise around the World Origin by an angle in degrees.</summary>
+    /// <param name="angDegree">The rotation angle in degrees.</param>
+    /// <param name="r">The 2D rectangle to rotate.</param>
+    /// <returns>The rotated 2D rectangle.</returns>
+    /// <remarks>For better performance precompute the Rotation2D struct and rotate with Rect2D.rotate.</remarks>
+    static member inline rotateDegrees (angDegree:float) (r:Rect2D) : Rect2D =
+        Rect2D.rotate (Rotation2D.createFromDegrees angDegree) r
+
+    /// <summary>Rotates the 2D rectangle counter-clockwise around the World Origin by an angle in radians.</summary>
+    /// <param name="angRadians">The rotation angle in radians.</param>
+    /// <returns>The rotated 2D rectangle.</returns>
+    /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.Rotate(rotation2D).</remarks>
+    member inline r.RotateRadians (angRadians:float) : Rect2D =
+        Rect2D.rotate (Rotation2D.createFromRadians angRadians) r
+
+    /// <summary>Rotates a 2D rectangle counter-clockwise around the World Origin by an angle in radians.</summary>
+    /// <param name="angRadians">The rotation angle in radians.</param>
+    /// <param name="r">The 2D rectangle to rotate.</param>
+    /// <returns>The rotated 2D rectangle.</returns>
+    /// <remarks>For better performance precompute the Rotation2D struct and rotate with Rect2D.rotate.</remarks>
+    static member inline rotateRadians (angRadians:float) (r:Rect2D) : Rect2D =
+        Rect2D.rotate (Rotation2D.createFromRadians angRadians) r
+
+    /// <summary>Rotates the 2D rectangle counter-clockwise around a given center point by a Rotation2D. Same as Rect2D.rotateAround.</summary>
+    /// <param name="cen">The center point of the rotation.</param>
+    /// <param name="rot">The rotation to apply.</param>
+    /// <returns>The rotated 2D rectangle.</returns>
+    member inline r.RotateAround (cen:Pt) (rot:Rotation2D) : Rect2D =
+        Rect2D.rotateAround cen rot r
+
+    /// <summary>Rotates the 2D rectangle counter-clockwise around a given center point by an angle in degrees.</summary>
+    /// <param name="cen">The center point of the rotation.</param>
+    /// <param name="angDegree">The rotation angle in degrees.</param>
+    /// <returns>The rotated 2D rectangle.</returns>
+    member inline r.RotateAroundDegrees (cen:Pt) (angDegree:float) : Rect2D =
+        Rect2D.rotateAround cen (Rotation2D.createFromDegrees angDegree) r
+
+    /// <summary>Rotates a 2D rectangle counter-clockwise around a given center point by an angle in degrees.</summary>
+    /// <param name="cen">The center point of the rotation.</param>
+    /// <param name="angDegree">The rotation angle in degrees.</param>
+    /// <param name="r">The 2D rectangle to rotate.</param>
+    /// <returns>The rotated 2D rectangle.</returns>
+    static member inline rotateAroundDegrees (cen:Pt) (angDegree:float) (r:Rect2D) : Rect2D =
+        Rect2D.rotateAround cen (Rotation2D.createFromDegrees angDegree) r
+
+    /// <summary>Rotates the 2D rectangle counter-clockwise around a given center point by an angle in radians.</summary>
+    /// <param name="cen">The center point of the rotation.</param>
+    /// <param name="angRadians">The rotation angle in radians.</param>
+    /// <returns>The rotated 2D rectangle.</returns>
+    member inline r.RotateAroundRadians (cen:Pt) (angRadians:float) : Rect2D =
+        Rect2D.rotateAround cen (Rotation2D.createFromRadians angRadians) r
+
+    /// <summary>Rotates a 2D rectangle counter-clockwise around a given center point by an angle in radians.</summary>
+    /// <param name="cen">The center point of the rotation.</param>
+    /// <param name="angRadians">The rotation angle in radians.</param>
+    /// <param name="r">The 2D rectangle to rotate.</param>
+    /// <returns>The rotated 2D rectangle.</returns>
+    static member inline rotateAroundRadians (cen:Pt) (angRadians:float) (r:Rect2D) : Rect2D =
+        Rect2D.rotateAround cen (Rotation2D.createFromRadians angRadians) r
 
 
     /// <summary>Intersects an infinite ray (Line2D extended infinitely in both directions) with a 2D rectangle.
@@ -2156,6 +2230,26 @@ type Rect2D =
 
     // #endregion
     // #region Obsolete
+
+    /// Obsolete name. Same as r.ScaleAround.
+    [<Obsolete("Use r.ScaleAround instead.")>]
+    member inline r.ScaleOn (cen:Pt) (factor:float) : Rect2D =
+        r.ScaleAround cen factor
+
+    /// Obsolete name. Same as Rect2D.scaleAround.
+    [<Obsolete("Use Rect2D.scaleAround instead.")>]
+    static member inline scaleOn (cen:Pt) (factor:float) (r:Rect2D) : Rect2D =
+        r.ScaleAround cen factor
+
+    /// Obsolete name. Same as r.RotateAround, but with tupled arguments.
+    [<Obsolete("Use r.RotateAround instead. It takes curried arguments: r.RotateAround cen rot")>]
+    member inline r.RotateWithCenter (cen:Pt, rot:Rotation2D) : Rect2D =
+        Rect2D.rotateAround cen rot r
+
+    /// Obsolete name. Same as Rect2D.rotateAround.
+    [<Obsolete("Use Rect2D.rotateAround instead.")>]
+    static member rotateWithCenter (cen:Pt) (rot:Rotation2D) (rect:Rect2D) : Rect2D =
+        Rect2D.rotateAround cen rot rect
 
     [<Obsolete("use SizeX")>]
     member inline r.Width : float =

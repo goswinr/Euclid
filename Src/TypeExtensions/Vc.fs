@@ -231,33 +231,43 @@ module AutoOpenVc =
         static member inline dot (a:UnitVc, b:Vc)  : float =
             a.X * b.X + a.Y * b.Y
 
-        /// Rotate a 2D vector counter-clockwise by a 2D Rotation (that has cos and sin precomputed)
-        member inline v.RotateBy (r:Rotation2D) : Vc =
+        /// <summary>Rotate the 2D vector counter-clockwise by a 2D Rotation (that has cos and sin precomputed).</summary>
+        /// <param name="r">The rotation to apply.</param>
+        /// <returns>The rotated 2D vector.</returns>
+        member inline v.Rotate (r:Rotation2D) : Vc =
             Vc(r.Cos*v.X - r.Sin*v.Y,
                 r.Sin*v.X + r.Cos*v.Y)
 
-        /// Rotate a 2D vector counter-clockwise by a 2D Rotation (that has cos and sin precomputed)
-        static member inline rotateBy (r:Rotation2D) (v:Vc) : Vc =
+        /// <summary>Rotate a 2D vector counter-clockwise by a 2D Rotation (that has cos and sin precomputed).</summary>
+        /// <param name="r">The rotation to apply.</param>
+        /// <param name="v">The 2D vector to rotate.</param>
+        /// <returns>The rotated 2D vector.</returns>
+        static member inline rotate (r:Rotation2D) (v:Vc) : Vc =
             Vc(r.Cos*v.X - r.Sin*v.Y,
                r.Sin*v.X + r.Cos*v.Y)
 
         /// <summary>Rotate the 2D vector counter-clockwise by an angle in degrees.</summary>
-        /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
-        member inline v.Rotate angDegree : Vc =
-            v.RotateBy (Rotation2D.createFromDegrees angDegree)
+        /// <param name="angDegree">The rotation angle in degrees.</param>
+        /// <returns>The rotated 2D vector.</returns>
+        /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.Rotate(rotation2D).</remarks>
+        member inline v.RotateDegrees (angDegree:float) : Vc =
+            v.Rotate (Rotation2D.createFromDegrees angDegree)
 
-        /// <summary>Rotate the 2D vector counter-clockwise by an angle in degrees.</summary>
-        /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
-        static member inline rotate (angDegree) (vec:Vc) : Vc =
-            Vc.rotateBy (Rotation2D.createFromDegrees angDegree) vec
+        /// <summary>Rotate a 2D vector counter-clockwise by an angle in degrees.</summary>
+        /// <param name="angDegree">The rotation angle in degrees.</param>
+        /// <param name="v">The 2D vector to rotate.</param>
+        /// <returns>The rotated 2D vector.</returns>
+        /// <remarks>For better performance precompute the Rotation2D struct and rotate with Vc.rotate.</remarks>
+        static member inline rotateDegrees (angDegree:float) (v:Vc) : Vc =
+            Vc.rotate (Rotation2D.createFromDegrees angDegree) v
 
         /// <summary>Rotate the 2D vector counter-clockwise by an angle in radians.</summary>
-        /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
+        /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.Rotate(rotation2D).</remarks>
         member inline v.RotateRadians angRadians : Vc =
-            v.RotateBy (Rotation2D.createFromRadians angRadians)
+            v.Rotate (Rotation2D.createFromRadians angRadians)
 
         /// <summary>Rotate the 2D vector counter-clockwise by an angle in radians.</summary>
-        /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
+        /// <remarks>For better performance precompute the Rotation2D struct and rotate with Vc.rotate.</remarks>
         static member inline rotateRadians angRadians (v:Vc) : Vc =
             v.RotateRadians angRadians
 
@@ -974,6 +984,15 @@ module AutoOpenVc =
         static member inline setY (y:float) (vc:Vc) : Vc =
             Vc(vc.X, y)
 
+        /// Obsolete name. Same as v.Rotate.
+        [<Obsolete("Use v.Rotate instead.")>]
+        member inline v.RotateBy (r:Rotation2D) : Vc =
+            v.Rotate r
+
+        /// Obsolete name. Same as Vc.rotate.
+        [<Obsolete("Use Vc.rotate instead.")>]
+        static member inline rotateBy (r:Rotation2D) (v:Vc) : Vc =
+            Vc.rotate r v
 
         [<Obsolete("Use Vc.isParallelWithin instead.")>]
         static member inline isAngle90Below (cosineValue: float<Cosine.cosine>) (a:Vc) (b:Vc) : bool =
