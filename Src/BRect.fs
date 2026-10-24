@@ -179,7 +179,7 @@ type BRect =
     member inline r.ExpandXY(xDist, yDist) : BRect =
         let n = BRect.createUnchecked(r.MinX-xDist, r.MinY-yDist, r.MaxX+xDist, r.MaxY+yDist)
         if n.MinX > n.MaxX ||  n.MinY > n.MaxY then
-            fail $"BRect.Expand(x, y): Distance(s) X: {xDist} and Y: {yDist} cause an underflow, on {r.AsString}"
+            fail $"BRect.ExpandXY: Distance(s) X: {xDist} and Y: {yDist} cause an underflow, on {r.AsString}"
         n
 
     /// Returns a bounding rectangle expanded by a distance for X- and Y-axis each.

@@ -162,10 +162,10 @@ type Tria3D =
 
 
     /// Finds the offset point based on
-    /// the previous and next unit normals (= offset direction),
+    /// the previous and next points,
     /// and their offset distances.
     /// Returns ValueNone if the three points are collinear or too close to each other.
-    static member tryOffsetVar (pntToOffset:Pnt, prev:Pnt, next:Pnt, distPrev:float, distNext:float)  : Pnt voption =
+    static member tryOffsetPntVar (pntToOffset:Pnt, prev:Pnt, next:Pnt, distPrev:float, distNext:float)  : Pnt voption =
         let vPrev = pntToOffset - prev
         let vNext = next - pntToOffset
         let perp = Vec.cross (vPrev, vNext)
@@ -173,7 +173,7 @@ type Tria3D =
         if isTooTinySq lenPerpSq then
             // test if lines are long enough but just parallel
             //if isTooSmallSq vPrev.LengthSq || isTooSmallSq vNext.LengthSq then
-            // EuclidException.Raisef "Tria3D.offsetVar: Points are too close or collinear: %O, %O, %O" pntToOffset prev next
+            // EuclidException.Raisef "Tria3D.offsetPntVar: Points are too close or collinear: %O, %O, %O" pntToOffset prev next
             ValueNone
         else
             // shadow the original values:
@@ -216,14 +216,14 @@ type Tria3D =
             ValueSome (Pnt(aFromX - ax * tPrev, aFromY - ay * tPrev, aFromZ - az * tPrev))
 
     /// Finds the offset point based on
-    /// the previous and next unit normals (= offset direction),
+    /// the previous and next points,
     /// and their offset distances.
     /// Fails if the three points are collinear or too close to each other.
-    /// Use Tria3D.tryOffsetVar to get ValueNone instead.
-    static member offsetVar (pntToOffset:Pnt, prev:Pnt, next:Pnt, distPrev:float, distNext:float) : Pnt =
-        match Tria3D.tryOffsetVar(pntToOffset, prev, next, distPrev, distNext) with
+    /// Use Tria3D.tryOffsetPntVar to get ValueNone instead.
+    static member offsetPntVar (pntToOffset:Pnt, prev:Pnt, next:Pnt, distPrev:float, distNext:float) : Pnt =
+        match Tria3D.tryOffsetPntVar(pntToOffset, prev, next, distPrev, distNext) with
         | ValueSome pnt -> pnt
-        | ValueNone -> fail $"Tria3D.offsetVar: the points are collinear or too close: prev {prev}, pntToOffset {pntToOffset}, next {next}"
+        | ValueNone -> fail $"Tria3D.offsetPntVar: the points are collinear or too close: prev {prev}, pntToOffset {pntToOffset}, next {next}"
 
 
     /// Finds the intersection parameter on the infinite Line3D with a 3D triangle.

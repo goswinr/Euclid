@@ -128,6 +128,8 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Vec.matchesOrientation` | `v: Vec -> other: Vec -> bool` |
 | `.PerpendicularInXY` | `Vec` |
 | `Vec.perpendicularInXY` | `v: Vec -> Vec` |
+| `.Rotate` | `q: Quaternion -> Vec` |
+| `Vec.rotate` | `q: Quaternion -> vec: Vec -> Vec` |
 | `.RotateByQuarterCircle` | `numberOfQuarters: int -> Vec` |
 | `Vec.rotateByQuarterCircle` | `numberOfQuarters: int -> v: Vec -> Vec` |
 | `.RotateOnZ90CCW` | `Vec` |
@@ -193,7 +195,6 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Vec.perpendicularInVerticalPlane` | `v: Vec -> Vec` |
 | `Vec.projectToXYPlane` | `v: Vec -> Vec` |
 | `Vec.reverse` | `v: Vec -> Vec` |
-| `Vec.rotate` | `q: Quaternion -> vec: Vec -> Vec` |
 | `Vec.rotateOnX` | `r: Rotation2D -> v: Vec -> Vec` |
 | `Vec.rotateOnXDeg` | `angDegree: float -> v: Vec -> Vec` |
 | `Vec.rotateOnY` | `r: Rotation2D -> v: Vec -> Vec` |
@@ -296,6 +297,8 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `UnitVec.matchesOrientation` | `other: UnitVec -> v: UnitVec -> bool` |
 | `.PerpendicularInXY` | `Vec` |
 | `UnitVec.perpendicularInXY` | `v: UnitVec -> Vec` |
+| `.Rotate` | `q: Quaternion -> UnitVec` |
+| `UnitVec.rotate` | `q: Quaternion -> uVec: UnitVec -> UnitVec` |
 | `.RotateByQuarterCircle` | `numberOfQuarters: int -> UnitVec` |
 | `UnitVec.rotateByQuarterCircle` | `numberOfQuarters: int -> v: UnitVec -> UnitVec` |
 | `.RotateOnZ90CCW` | `UnitVec` |
@@ -354,7 +357,6 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `UnitVec.perpendicularInVerticalPlane` | `v: UnitVec -> Vec` |
 | `UnitVec.projectToXYPlane` | `v: UnitVec -> Vec` |
 | `UnitVec.reverse` | `v: UnitVec -> UnitVec` |
-| `UnitVec.rotate` | `q: Quaternion -> uVec: UnitVec -> UnitVec` |
 | `UnitVec.rotateOnX` | `r: Rotation2D -> v: UnitVec -> UnitVec` |
 | `UnitVec.rotateOnXDeg` | `angDegree: float -> v: UnitVec -> UnitVec` |
 | `UnitVec.rotateOnY` | `r: Rotation2D -> v: UnitVec -> UnitVec` |
@@ -428,6 +430,16 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Pnt.isOrigin` | `pnt: Pnt -> bool` |
 | `.IsValid` | `bool` |
 | `Pnt.isValid` | `pnt: Pnt -> bool` |
+| `.Rotate` | `q: Quaternion -> Pnt` |
+| `Pnt.rotate` | `q: Quaternion -> pnt: Pnt -> Pnt` |
+| `.RotateAround` | `cen: Pnt -> q: Quaternion -> Pnt` |
+| `Pnt.rotateAround` | `cen: Pnt -> q: Quaternion -> pnt: Pnt -> Pnt` |
+| `.RotateByQuarterCircle` | `numberOfQuarters: int -> Pnt` |
+| `Pnt.rotateByQuarterCircle` | `numberOfQuarters: int -> pnt: Pnt -> Pnt` |
+| `.RotateOnZ90CCW` | `Pnt` |
+| `Pnt.rotateOnZ90CCW` | `pnt: Pnt -> Pnt` |
+| `.RotateOnZ90CW` | `Pnt` |
+| `Pnt.rotateOnZ90CW` | `pnt: Pnt -> Pnt` |
 | `.SqDistanceFromOrigin` | `float` |
 | `Pnt.sqDistanceFromOrigin` | `pnt: Pnt -> float` |
 | `.SqDistanceInXYFromOrigin` | `float` |
@@ -492,8 +504,6 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Pnt.projectedParameter` | `fromPnt: Pnt * v: Vec * testPnt: Pnt -> float` |
 | `Pnt.projectedParameter` | `fromPnt: Pnt * toPnt: Pnt * testPnt: Pnt -> float` |
 | `Pnt.projectToXYPlane` | `pnt: Pnt -> Pnt` |
-| `Pnt.rotate` | `q: Quaternion -> pnt: Pnt -> Pnt` |
-| `Pnt.rotateAround` | `cen: Pnt -> q: Quaternion -> pnt: Pnt -> Pnt` |
 | `Pnt.rotateOnX` | `r: Rotation2D -> p: Pnt -> Pnt` |
 | `Pnt.rotateOnXDeg` | `angDegree: float -> pnt: Pnt -> Pnt` |
 | `Pnt.rotateOnXWithCenter` | `cen: Pnt -> r: Rotation2D -> pnt: Pnt -> Pnt` |
@@ -2066,13 +2076,15 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `.EvaluateAt` | `xParameter: float * yParameter: float * zParameter: float -> Pnt` |
 | `BBox.evaluateAt` | `xParameter: float -> yParameter: float -> zParameter: float -> b: BBox -> Pnt` |
 | `.Expand` | `dist: float -> BBox` |
-| `.Expand` | `xDist: float * yDist: float * zDist: float -> BBox` |
 | `BBox.expand` | `dist: float -> b: BBox -> BBox` |
-| `.ExpandSafe` | `xDist: float * yDist: float * zDist: float -> BBox` |
 | `.ExpandSafe` | `dist: float -> BBox` |
 | `BBox.expandSafe` | `dist: float -> b: BBox -> BBox` |
+| `.ExpandSafeXYZ` | `xDist: float * yDist: float * zDist: float -> BBox` |
+| `BBox.expandSafeXYZ` | `xDist: float -> yDist: float -> zDist: float -> b: BBox -> BBox` |
 | `.ExpandXaxis` | `startDist: float * endDist: float -> BBox` |
 | `BBox.expandXaxis` | `startDist: float -> endDist: float -> b: BBox -> BBox` |
+| `.ExpandXYZ` | `xDist: float * yDist: float * zDist: float -> BBox` |
+| `BBox.expandXYZ` | `xDist: float -> yDist: float -> zDist: float -> b: BBox -> BBox` |
 | `.ExpandYaxis` | `startDist: float * endDist: float -> BBox` |
 | `BBox.expandYaxis` | `startDist: float -> endDist: float -> b: BBox -> BBox` |
 | `.ExpandZaxis` | `startDist: float * endDist: float -> BBox` |
@@ -2182,8 +2194,6 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `BBox.equalsWithin` | `tol: float -> a: BBox -> b: BBox -> bool` |
 | `BBox.expandRel` | `factor: float -> b: BBox -> BBox` |
 | `BBox.expandRelXYZ` | `factorX: float -> factorY: float -> factorZ: float -> b: BBox -> BBox` |
-| `BBox.expandSafeXYZ` | `xDist: float -> yDist: float -> zDist: float -> b: BBox -> BBox` |
-| `BBox.expandXYZ` | `xDist: float -> yDist: float -> zDist: float -> b: BBox -> BBox` |
 | `BBox.move` | `v: Vec -> b: BBox -> BBox` |
 | `BBox.moveX` | `translation: float -> b: BBox -> BBox` |
 | `BBox.moveY` | `translation: float -> b: BBox -> BBox` |
@@ -2206,12 +2216,12 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Tria3D.isLinearFast` | `a: Pnt * b: Pnt * c: Pnt * ?maxAreaParallelogram: float -> bool` |
 | `Tria3D.offset` | `a: Pnt * b: Pnt * c: Pnt * dist: float -> Pnt * Pnt * Pnt` |
 | `Tria3D.offsetPnt` | `pntToOffset: Pnt * prev: Pnt * next: Pnt * dist: float -> Pnt` |
-| `Tria3D.offsetVar` | `pntToOffset: Pnt * prev: Pnt * next: Pnt * distPrev: float * distNext: float -> Pnt` |
+| `Tria3D.offsetPntVar` | `pntToOffset: Pnt * prev: Pnt * next: Pnt * distPrev: float * distNext: float -> Pnt` |
 | `Tria3D.tryIntersectLine` | `line: Line3D * p1: Pnt * p2: Pnt * p3: Pnt -> Pnt voption` |
 | `Tria3D.tryIntersectRay` | `line: Line3D * p1: Pnt * p2: Pnt * p3: Pnt -> float voption` |
 | `Tria3D.tryIntersectRayXYZ` | `lnFromX: float * lnFromY: float * lnFromZ: float * lnToX: float * lnToY: float * lnToZ: float * ptAx: float * ptAy: float * ptAz: float * ptBx: float * ptBy: float * ptBz: float * ptCx: float * ptCy: float * ptCz: float -> float voption` |
 | `Tria3D.tryIntersectTriaVectorsWithRay` | `lnFromX: float * lnFromY: float * lnFromZ: float * dirX: float * dirY: float * dirZ: float * ptAx: float * ptAy: float * ptAz: float * e1x: float * e1y: float * e1z: float * e2x: float * e2y: float * e2z: float -> float voption` |
-| `Tria3D.tryOffsetVar` | `pntToOffset: Pnt * prev: Pnt * next: Pnt * distPrev: float * distNext: float -> Pnt voption` |
+| `Tria3D.tryOffsetPntVar` | `pntToOffset: Pnt * prev: Pnt * next: Pnt * distPrev: float * distNext: float -> Pnt voption` |
 
 ## Points3D
 

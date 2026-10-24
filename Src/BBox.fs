@@ -219,11 +219,11 @@ type BBox =
 
     /// Returns a 3D bounding box expanded by a distance for X, Y, and Z-axis each.
     /// Does check for underflow if distance is negative and raises EuclidException.
-    member inline b.Expand(xDist, yDist, zDist) : BBox =
+    member inline b.ExpandXYZ(xDist, yDist, zDist) : BBox =
         let n = BBox.createUnchecked(   b.MinX-xDist, b.MinY-yDist, b.MinZ-zDist,
                                         b.MaxX+xDist, b.MaxY+yDist, b.MaxZ+zDist)
         if n.MinX > n.MaxX ||  n.MinY > n.MaxY ||  n.MinZ > n.MaxZ then
-            fail $"BBox.Expand(x, y, z): Negative distance(s) X: {xDist} Y: {yDist} and Z: {zDist} cause an underflow, on {b.AsString}"
+            fail $"BBox.ExpandXYZ: Negative distance(s) X: {xDist} Y: {yDist} and Z: {zDist} cause an underflow, on {b.AsString}"
         n
 
     /// Returns a 3D bounding box expanded by distance.
@@ -233,13 +233,13 @@ type BBox =
 
     /// Returns a 3D bounding box expanded by separate distances in X, Y and Z.
     static member inline expandXYZ xDist yDist zDist (b:BBox) : BBox =
-        b.Expand(xDist, yDist, zDist)
+        b.ExpandXYZ(xDist, yDist, zDist)
 
     /// Returns a 3D bounding box expanded by a distance for X, Y, and Z-axis each.
     /// If expansion is negative it shrinks the box without causing underflow.
     /// When the negative expansion is bigger than the size on any axis, both Min and Max values
     /// on that axis will be set to the midpoint of their original values (the box collapses to a plane or line on that axis).
-    member inline b.ExpandSafe(xDist, yDist, zDist) : BBox =
+    member inline b.ExpandSafeXYZ(xDist, yDist, zDist) : BBox =
         let mutable minXCh = b.MinX - xDist
         let mutable maxXCh = b.MaxX + xDist
         if minXCh > maxXCh then  // Underflow! Set both to the same mid point
@@ -267,7 +267,7 @@ type BBox =
     /// When the negative expansion is bigger than the size on any axis, both Min and Max values
     /// on that axis will be set to the midpoint of their original values (the box collapses to a plane or line on that axis).
     member inline b.ExpandSafe(dist) : BBox =
-        b.ExpandSafe(dist, dist, dist)
+        b.ExpandSafeXYZ(dist, dist, dist)
 
     /// Returns a 3D bounding box expanded by distance.
     /// If expansion is negative it shrinks the box without causing underflow.
@@ -278,7 +278,7 @@ type BBox =
 
     /// Returns a 3D bounding box safely expanded by separate distances in X, Y and Z.
     static member inline expandSafeXYZ xDist yDist zDist (b:BBox) : BBox =
-        b.ExpandSafe(xDist, yDist, zDist)
+        b.ExpandSafeXYZ(xDist, yDist, zDist)
 
     /// Returns a 3D bounding box expanded only in X direction by different distances for start(minX) and end (maxX).
     /// Does check for underflow if distance is negative and raises EuclidException.
@@ -2140,13 +2140,21 @@ type BBox =
     member b.Height3D : float =
         b.MaxZ - b.MinZ
 
-    [<Obsolete("typo, use ExpandSafe instead")>]
+    [<Obsolete("typo, use ExpandSafeXYZ instead")>]
     member b.ExpandSave(xDist, yDist, zDist) : BBox =
-        b.ExpandSafe(xDist, yDist, zDist)
+        b.ExpandSafeXYZ(xDist, yDist, zDist)
 
     [<Obsolete("typo, use ExpandSafe instead")>]
     member b.ExpandSave(dist) : BBox =
-        b.ExpandSafe(dist, dist, dist)
+        b.ExpandSafeXYZ(dist, dist, dist)
+
+    [<Obsolete("Use ExpandXYZ instead.")>]
+    member inline b.Expand(xDist:float, yDist:float, zDist:float) : BBox =
+        b.ExpandXYZ(xDist, yDist, zDist)
+
+    [<Obsolete("Use ExpandSafeXYZ instead.")>]
+    member inline b.ExpandSafe(xDist:float, yDist:float, zDist:float) : BBox =
+        b.ExpandSafeXYZ(xDist, yDist, zDist)
 
 
     // [<Obsolete("Use .AsBRect instead")>]

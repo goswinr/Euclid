@@ -158,6 +158,7 @@ module ApiVc =
     let (_:bool) = Vc.isAngle90Above Cosine.``45.0`` vc v2
     let (_:bool) = Vc.isAngle180Below Cosine.``45.0`` vc v2
     let (_:bool) = Vc.isAngle180Above Cosine.``45.0`` vc v2
+    let (_:bool) = Vc.isParallelToUnitVc Cosine.``0.25`` UnitVc.Xaxis vc
 
     // Static members - Rotation
     let (_:Vc) = Vc.rotateBy (Rotation2D.createFromDegrees 45.0) vc
@@ -517,6 +518,16 @@ module PntAPI =
     let (_:float) = pnt.Angle2PiInXYTo p2
     let (_:float) = pnt.Angle360InXYTo p2
 
+    // Instance and static members - Rotation
+    let (_:Pnt) = pnt.Rotate (Quaternion.createFromDegrees(UnitVec.Zaxis, 45.0))
+    let (_:Pnt) = pnt.RotateAround p2 (Quaternion.createFromDegrees(UnitVec.Zaxis, 45.0))
+    let (_:Pnt) = pnt.RotateOnZ90CCW
+    let (_:Pnt) = pnt.RotateOnZ90CW
+    let (_:Pnt) = pnt.RotateByQuarterCircle 1
+    let (_:Pnt) = Pnt.rotateOnZ90CCW pnt
+    let (_:Pnt) = Pnt.rotateOnZ90CW pnt
+    let (_:Pnt) = Pnt.rotateByQuarterCircle 1 pnt
+
     // Instance members - Line operations , only used on deprecated Loop
     // let (_:Pnt) = pnt.ClosestPointOnLine(Pnt.Origin, p2)
     // let (_:Pnt) = pnt.ClosestPointOnLine(Pnt.Origin, UnitVec.Xaxis, 10.0)
@@ -673,6 +684,7 @@ module VecAPI =
     let (_:Vec) = vec.PerpendicularInXY
     let (_:Vec) = vec.RotateOnZ90CCW
     let (_:Vec) = vec.RotateOnZ90CW
+    let (_:Vec) = vec.Rotate (Quaternion.createFromDegrees(UnitVec.Zaxis, 45.0))
 
     // Instance members - Direction/Angles
     let (_:float) = vec.DirectionDiamondInXY
@@ -889,6 +901,7 @@ module UnitVecAPI =
     let (_:Vec) = unitvec.PerpendicularInXY
     let (_:UnitVec) = unitvec.RotateOnZ90CCW
     let (_:UnitVec) = unitvec.RotateOnZ90CW
+    let (_:UnitVec) = unitvec.Rotate (Quaternion.createFromDegrees(UnitVec.Zaxis, 45.0))
 
     // Instance members - Direction/Angles
     let (_:float) = unitvec.DirectionDiamondInXY
@@ -1337,9 +1350,9 @@ module BBoxAPI =
 
     // Instance members - Expand
     let (_:BBox) = bbox.Expand 1.0
-    let (_:BBox) = bbox.Expand(1.0, 2.0, 3.0)
+    let (_:BBox) = bbox.ExpandXYZ(1.0, 2.0, 3.0)
     let (_:BBox) = bbox.ExpandSafe 1.0
-    let (_:BBox) = bbox.ExpandSafe(1.0, 2.0, 3.0)
+    let (_:BBox) = bbox.ExpandSafeXYZ(1.0, 2.0, 3.0)
     let (_:BBox) = bbox.ExpandXaxis(1.0, 2.0)
     let (_:BBox) = bbox.ExpandYaxis(1.0, 2.0)
     let (_:BBox) = bbox.ExpandZaxis(1.0, 2.0)
@@ -1857,6 +1870,10 @@ module Rect2DAPI =
     // Instance members - Operations
     let (_:Pt) = rect2d.EvaluateAt(0.5, 0.5)
     let (_:Pt) = rect2d.EvaluateDist(5.0, 2.5)
+    let (_:float*float) = rect2d.ClosestParameters(Pt(1., 2.))
+    let (_:Pt) = rect2d.ClosestPoint(Pt(1., 2.))
+    let (_:float*float) = Rect2D.closestParameters (Pt(1., 2.)) rect2d
+    let (_:Pt) = Rect2D.closestPoint (Pt(1., 2.)) rect2d
     let (_:Line2D) = rect2d.GetEdge 0
     let (_:bool) = rect2d.Contains(Pt(5., 2.5))
     let (_:Rect2D) = rect2d.Scale 2.0

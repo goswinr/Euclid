@@ -159,7 +159,7 @@ type Tria2D =
     /// the previous and next unit normals (= offset direction),
     /// and their offset distances.
     /// Returns ValueNone if the two normals are parallel, unless they point in the same direction and the distances are equal.
-    /// This is the core function for offsetting variable. it is used by Tria2D.offsetVar(..).
+    /// This is the core function for offsetting variable. it is used by Tria2D.tryOffsetPtVar(..).
     static member tryOffsetPtVarByNormals (ptToOffset:Pt, prevN:UnitVc, nextN:UnitVc, prevDist:float, nextDist:float) : Pt voption =
         // first get two offset lines to intersect:
         let prevPt = ptToOffset + prevN * prevDist

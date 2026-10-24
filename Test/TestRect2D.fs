@@ -220,6 +220,37 @@ let tests =
             }
         ]
 
+        testList "ClosestParameters and ClosestPoint" [
+            test "ClosestParameters inside and outside" {
+                let xi, yi = rr.ClosestParameters(rr.EvaluateAt(0.3, 0.6))
+                "inside x param" |> Expect.isTrue (eqf xi 0.3)
+                "inside y param" |> Expect.isTrue (eqf yi 0.6)
+                let xo, yo = rr.ClosestParameters(rr.EvaluateAt(1.5, -0.25))
+                "outside x param is not clamped" |> Expect.isTrue (eqf xo 1.5)
+                "outside y param is not clamped" |> Expect.isTrue (eqf yo -0.25)
+                "static matches member" |> Expect.equal (Rect2D.closestParameters p2 rr) (rr.ClosestParameters p2)
+            }
+            test "ClosestPoint of an inside point is the point itself" {
+                let p = rr.EvaluateAt(0.3, 0.6)
+                "inside" |> Expect.isTrue (eq (rr.ClosestPoint p) p)
+                "center" |> Expect.isTrue (eq (rr.ClosestPoint rCenter) rCenter)
+                "corner" |> Expect.isTrue (eq (rr.ClosestPoint p1) p1)
+            }
+            test "ClosestPoint of an outside point is clamped onto the edge" {
+                "beside X edge" |> Expect.isTrue (eq (rr.ClosestPoint(rr.EvaluateAt(1.5, 0.4))) (rr.EvaluateAt(1.0, 0.4)))
+                "beside Y edge" |> Expect.isTrue (eq (rr.ClosestPoint(rr.EvaluateAt(0.7, -3.0))) (rr.EvaluateAt(0.7, 0.0)))
+                "beyond origin corner" |> Expect.isTrue (eq (rr.ClosestPoint(rr.EvaluateAt(-0.5, -2.0))) p0)
+                "beyond far corner" |> Expect.isTrue (eq (rr.ClosestPoint(rr.EvaluateAt(3.0, 4.0))) p2)
+                "static matches member" |> Expect.isTrue (Pt.equalsExact (Rect2D.closestPoint (Pt(20., 20.)) rr) (rr.ClosestPoint(Pt(20., 20.))))
+            }
+            test "ClosestPoint and ClosestParameters fail on a degenerate rectangle" {
+                // In DEBUG builds the constructor already fails, otherwise ClosestPoint and ClosestParameters do.
+                let flat () = Rect2D.createUncheckedVec(ro, rvx, Vc(0., 1e-7))
+                "ClosestPoint fails" |> Expect.throws (fun () -> (flat ()).ClosestPoint ro |> ignore)
+                "ClosestParameters fails" |> Expect.throws (fun () -> (flat ()).ClosestParameters ro |> ignore)
+            }
+        ]
+
         // ---------------------------------------------------------------------
         // Contains
         // ---------------------------------------------------------------------

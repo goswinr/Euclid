@@ -338,22 +338,22 @@ type Points() =
     // Tria3D
 
 
-    [<Obsolete("Use Tria3D.tryOffsetVar instead")>]
+    [<Obsolete("Use Tria3D.tryOffsetPntVar instead")>]
     static member offsetInCorner(thisPt:Pnt, prevToThis:Vec, thisToNext:Vec, prevDist:float, nextDist:float) : ValueOption<Pnt> =
-        Tria3D.tryOffsetVar(thisPt, thisPt+prevToThis, thisPt+thisToNext, prevDist, nextDist)
+        Tria3D.tryOffsetPntVar(thisPt, thisPt+prevToThis, thisPt+thisToNext, prevDist, nextDist)
 
-    [<Obsolete("Use Tria3D.tryOffsetVar instead")>]
+    [<Obsolete("Use Tria3D.tryOffsetPntVar instead")>]
     static member offsetInCorner(prevPt:Pnt, thisPt:Pnt, nextPt:Pnt, prevDist:float, nextDist:float) : ValueOption<Pnt> =
-        Tria3D.tryOffsetVar(prevPt, thisPt, nextPt, prevDist, nextDist)
+        Tria3D.tryOffsetPntVar(prevPt, thisPt, nextPt, prevDist, nextDist)
 
-    [<Obsolete("Use Tria3D.tryOffsetVar instead", error=true)>]
+    [<Obsolete("Use Tria3D.tryOffsetPntVar instead", error=true)>]
     static member offsetInCornerEx(_thisPt:Pnt, _prevToThis:Vec, _thisToNext:Vec, _prevDist:float, _nextDist:float, _referenceNormal:Vec) : ValueOption<Pnt*UnitVec*Vec*Vec> =
-        fail "Points.offsetInCornerEx with referenceNormal is deprecated, referenceNormal is ignored, use Tria3D.tryOffsetVar instead." |> unbox // unbox to make type checker happy
+        fail "Points.offsetInCornerEx with referenceNormal is deprecated, referenceNormal is ignored, use Tria3D.tryOffsetPntVar instead." |> unbox // unbox to make type checker happy
 
 
-    [<Obsolete("Use Tria3D.tryOffsetVar instead", error=true)>]
+    [<Obsolete("Use Tria3D.tryOffsetPntVar instead", error=true)>]
     static member offsetInCornerEx(_prevPt:Pnt, _thisPt:Pnt, _nextPt:Pnt, _prevDist:float, _nextDist:float, _referenceNormal:Vec) : ValueOption<Pnt*UnitVec*Vec*Vec> =
-        fail "Points.offsetInCornerEx with referenceNormal is deprecated, referenceNormal is ignored, use Tria3D.tryOffsetVar instead." |> unbox // unbox to make type checker happy
+        fail "Points.offsetInCornerEx with referenceNormal is deprecated, referenceNormal is ignored, use Tria3D.tryOffsetPntVar instead." |> unbox // unbox to make type checker happy
 
 
 

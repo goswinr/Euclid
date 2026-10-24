@@ -314,12 +314,12 @@ let tests =
                 let pnt = placeXYZ 0. 0. 0.
                 let prev = placeXYZ -5. 0. 0.
                 let next = placeXYZ 0. 5. 0.
-                match Tria3D.tryOffsetVar(pnt, prev, next, 1.0, 2.0) with
-                | ValueSome p -> "offsetVar same as tryOffsetVar" |> Expect.isTrue (Pnt.equalsExact p (Tria3D.offsetVar(pnt, prev, next, 1.0, 2.0)))
+                match Tria3D.tryOffsetPntVar(pnt, prev, next, 1.0, 2.0) with
+                | ValueSome p -> "offsetPntVar same as tryOffsetPntVar" |> Expect.isTrue (Pnt.equalsExact p (Tria3D.offsetPntVar(pnt, prev, next, 1.0, 2.0)))
                 | ValueNone -> failtest "expected ValueSome"
                 let straight = placeXYZ 5. 0. 0.
-                "collinear" |> Expect.isValueNone (Tria3D.tryOffsetVar(pnt, prev, straight, 1.0, 2.0))
-                "collinear fails" |> Expect.throws (fun () -> Tria3D.offsetVar(pnt, prev, straight, 1.0, 2.0) |> ignore)
+                "collinear" |> Expect.isValueNone (Tria3D.tryOffsetPntVar(pnt, prev, straight, 1.0, 2.0))
+                "collinear fails" |> Expect.throws (fun () -> Tria3D.offsetPntVar(pnt, prev, straight, 1.0, 2.0) |> ignore)
 
                 let a = placeXYZ 0. 0. 0.
                 let b = placeXYZ 4. 0. 0.

@@ -120,12 +120,12 @@ let tests =
         "offsetPnt(0) == pt (XZ)" |> Expect.isTrue (eq o pt)
         }
 
-        test "offsetVar with zero distances returns original point" {
+        test "offsetPntVar with zero distances returns original point" {
         let prev = Pnt(0,0,0)
         let pt   = Pnt(1,0,0)
         let next = Pnt(1,1,0)
-        match Tria3D.tryOffsetVar(pt, prev, next, 0.0, 0.0) with
-        | ValueSome o -> "offsetVar(0,0)==pt" |> Expect.isTrue (eq o pt)
+        match Tria3D.tryOffsetPntVar(pt, prev, next, 0.0, 0.0) with
+        | ValueSome o -> "offsetPntVar(0,0)==pt" |> Expect.isTrue (eq o pt)
         | ValueNone -> failwith "expected point for zero distances"
         }
 
@@ -213,63 +213,63 @@ let tests =
         "c returns to original after +d then -d (medium offset)" |> Expect.isTrue (eq oc2 c)
         }
 
-        test "offsetVar with different distances (90-degree corner in XY)" {
+        test "offsetPntVar with different distances (90-degree corner in XY)" {
         let prev = Pnt(0,0,0)
         let pt   = Pnt(1,0,0)
         let next = Pnt(1,1,0)
         let dPrev = 0.2
         let dNext = 0.7
-        match Tria3D.tryOffsetVar(pt, prev, next, dPrev, dNext) with
+        match Tria3D.tryOffsetPntVar(pt, prev, next, dPrev, dNext) with
         | ValueSome o ->
             // For 3D, the offset calculation is more complex than 2D
             // Let's just verify the point is reasonable and not infinite
-            sprintf "offsetVar with different distances result: %A" o |> Expect.isTrue (not (System.Double.IsInfinity o.X || System.Double.IsInfinity o.Y || System.Double.IsInfinity o.Z))
-        | ValueNone -> failwith "offsetVar returned None unexpectedly"
+            sprintf "offsetPntVar with different distances result: %A" o |> Expect.isTrue (not (System.Double.IsInfinity o.X || System.Double.IsInfinity o.Y || System.Double.IsInfinity o.Z))
+        | ValueNone -> failwith "offsetPntVar returned None unexpectedly"
         }
 
-        test "offsetVar with different distances hits the intersection of both offset lines" {
+        test "offsetPntVar with different distances hits the intersection of both offset lines" {
         let prev = Pnt(0,0,0)
         let pt   = Pnt(1,0,0)
         let next = Pnt(1,1,0)
         // prev segment y=0 offset to y=0.2, next segment x=1 offset to x=0.3
-        match Tria3D.tryOffsetVar(pt, prev, next, 0.2, 0.7) with
-        | ValueSome o -> $"offsetVar should be at (0.3, 0.2, 0) but is {o}" |> Expect.isTrue (eq o (Pnt(0.3, 0.2, 0.)))
-        | ValueNone -> failwith "offsetVar returned None unexpectedly"
+        match Tria3D.tryOffsetPntVar(pt, prev, next, 0.2, 0.7) with
+        | ValueSome o -> $"offsetPntVar should be at (0.3, 0.2, 0) but is {o}" |> Expect.isTrue (eq o (Pnt(0.3, 0.2, 0.)))
+        | ValueNone -> failwith "offsetPntVar returned None unexpectedly"
         }
 
-        test "offsetVar with equal distances matches Tria3D.offset" {
+        test "offsetPntVar with equal distances matches Tria3D.offset" {
         let a = Pnt(0,0,0)
         let b = Pnt(1,0,0)
         let c = Pnt(1,1,0)
         let d = 0.25
         let (_, ob, _) = Tria3D.offset(a, b, c, d)
-        match Tria3D.tryOffsetVar(b, a, c, d, d) with
-        | ValueSome o -> $"offsetVar should match Tria3D.offset {ob} but is {o}" |> Expect.isTrue (eq o ob)
-        | ValueNone -> failwith "offsetVar returned None unexpectedly"
+        match Tria3D.tryOffsetPntVar(b, a, c, d, d) with
+        | ValueSome o -> $"offsetPntVar should match Tria3D.offset {ob} but is {o}" |> Expect.isTrue (eq o ob)
+        | ValueNone -> failwith "offsetPntVar returned None unexpectedly"
         }
 
-        test "offsetVar result has the given distances to both segment lines (skew corner in 3D)" {
+        test "offsetPntVar result has the given distances to both segment lines (skew corner in 3D)" {
         let prev = Pnt(-2, 1, 3)
         let pt   = Pnt(1, 0.5, 2)
         let next = Pnt(2, 3, -1)
         let dPrev = 0.3
         let dNext = 0.8
-        match Tria3D.tryOffsetVar(pt, prev, next, dPrev, dNext) with
+        match Tria3D.tryOffsetPntVar(pt, prev, next, dPrev, dNext) with
         | ValueSome o ->
             let distPrev = sqrt (Line3D(prev, pt).SqDistanceRayPoint o)
             let distNext = sqrt (Line3D(pt, next).SqDistanceRayPoint o)
             $"distance to prev segment line should be {dPrev} but is {distPrev}" |> Expect.isTrue (abs (distPrev - dPrev) < 1e-9)
             $"distance to next segment line should be {dNext} but is {distNext}" |> Expect.isTrue (abs (distNext - dNext) < 1e-9)
-        | ValueNone -> failwith "offsetVar returned None unexpectedly"
+        | ValueNone -> failwith "offsetPntVar returned None unexpectedly"
         }
 
-        test "offsetVar handles collinear input gracefully" {
+        test "offsetPntVar handles collinear input gracefully" {
         let prev = Pnt(0,0,0)
         let pt   = Pnt(1,1,1)
         let next = Pnt(2,2,2) // collinear points
-        match Tria3D.tryOffsetVar(pt, prev, next, 0.5, 0.5) with
+        match Tria3D.tryOffsetPntVar(pt, prev, next, 0.5, 0.5) with
         | ValueSome _ -> failwith "expected None for collinear points"
-        | ValueNone -> "offsetVar correctly returns None for collinear points" |> Expect.isTrue true
+        | ValueNone -> "offsetPntVar correctly returns None for collinear points" |> Expect.isTrue true
         }
 
         test "offsetPnt handles U-turn gracefully (in XY plane)" {
@@ -319,86 +319,86 @@ let tests =
         "equilateral triangle area = sqrt(3)" |> Expect.floatClose tol (Tria3D.area(a2,b2,c2)) sqrt3
         }
 
-        test "offsetVar positive then negative returns to original (equal distances)" {
+        test "offsetPntVar positive then negative returns to original (equal distances)" {
         let prev = Pnt(0,0,0)
         let pt   = Pnt(1,0,0)
         let next = Pnt(1,1,0)
         let d = 0.25
         // First offset by positive distance (equal distances)
-        match Tria3D.tryOffsetVar(pt, prev, next, d, d) with
+        match Tria3D.tryOffsetPntVar(pt, prev, next, d, d) with
         | ValueSome o1 ->
             // Calculate new prev and next positions relative to offset point
             let displacement = o1 - pt
             let newPrev = prev + displacement
             let newNext = next + displacement
             // Then offset back by negative distance
-            match Tria3D.tryOffsetVar(o1, newPrev, newNext, -d, -d) with
+            match Tria3D.tryOffsetPntVar(o1, newPrev, newNext, -d, -d) with
             | ValueSome o2 ->
-            "offsetVar point returns to original after +d then -d (equal)" |> Expect.isTrue (eq o2 pt)
-            | ValueNone -> failwith "second offsetVar returned None"
-        | ValueNone -> failwith "first offsetVar returned None"
+            "offsetPntVar point returns to original after +d then -d (equal)" |> Expect.isTrue (eq o2 pt)
+            | ValueNone -> failwith "second offsetPntVar returned None"
+        | ValueNone -> failwith "first offsetPntVar returned None"
         }
 
-        test "offsetVar negative then positive returns to original (equal distances)" {
+        test "offsetPntVar negative then positive returns to original (equal distances)" {
         let prev = Pnt(0,0,0)
         let pt   = Pnt(1,0,0)
         let next = Pnt(1,1,0)
         let d = 0.25
         // First offset by negative distance (equal distances)
-        match Tria3D.tryOffsetVar(pt, prev, next, -d, -d) with
+        match Tria3D.tryOffsetPntVar(pt, prev, next, -d, -d) with
         | ValueSome o1 ->
             // Calculate new prev and next positions relative to offset point
             let displacement = o1 - pt
             let newPrev = prev + displacement
             let newNext = next + displacement
             // Then offset back by positive distance
-            match Tria3D.tryOffsetVar(o1, newPrev, newNext, d, d) with
+            match Tria3D.tryOffsetPntVar(o1, newPrev, newNext, d, d) with
             | ValueSome o2 ->
-            "offsetVar point returns to original after -d then +d (equal)" |> Expect.isTrue (eq o2 pt)
-            | ValueNone -> failwith "second offsetVar returned None"
-        | ValueNone -> failwith "first offsetVar returned None"
+            "offsetPntVar point returns to original after -d then +d (equal)" |> Expect.isTrue (eq o2 pt)
+            | ValueNone -> failwith "second offsetPntVar returned None"
+        | ValueNone -> failwith "first offsetPntVar returned None"
         }
 
-        test "offsetVar positive then negative returns to original (different distances)" {
+        test "offsetPntVar positive then negative returns to original (different distances)" {
         let prev = Pnt(0,0,0)
         let pt   = Pnt(1,0,0)
         let next = Pnt(1,1,0)
         let dPrev = 0.2
         let dNext = 0.3
         // First offset by positive distances
-        match Tria3D.tryOffsetVar(pt, prev, next, dPrev, dNext) with
+        match Tria3D.tryOffsetPntVar(pt, prev, next, dPrev, dNext) with
         | ValueSome o1 ->
             // Calculate new prev and next positions relative to offset point
             let displacement = o1 - pt
             let newPrev = prev + displacement
             let newNext = next + displacement
             // Then offset back by negative distances
-            match Tria3D.tryOffsetVar(o1, newPrev, newNext, -dPrev, -dNext) with
+            match Tria3D.tryOffsetPntVar(o1, newPrev, newNext, -dPrev, -dNext) with
             | ValueSome o2 ->
-            "offsetVar point returns to original after +d then -d (different)" |> Expect.isTrue (eq o2 pt)
-            | ValueNone -> failwith "second offsetVar returned None"
-        | ValueNone -> failwith "first offsetVar returned None"
+            "offsetPntVar point returns to original after +d then -d (different)" |> Expect.isTrue (eq o2 pt)
+            | ValueNone -> failwith "second offsetPntVar returned None"
+        | ValueNone -> failwith "first offsetPntVar returned None"
         }
 
-        test "offsetVar negative then positive returns to original (different distances in XZ)" {
+        test "offsetPntVar negative then positive returns to original (different distances in XZ)" {
         let prev = Pnt(0,0,0)
         let pt   = Pnt(1,0,0)
         let next = Pnt(1,0,1)
         let dPrev = 0.15
         let dNext = 0.35
         // First offset by negative distances
-        match Tria3D.tryOffsetVar(pt, prev, next, -dPrev, -dNext) with
+        match Tria3D.tryOffsetPntVar(pt, prev, next, -dPrev, -dNext) with
         | ValueSome o1 ->
             // Calculate new prev and next positions relative to offset point
             let displacement = o1 - pt
             let newPrev = prev + displacement
             let newNext = next + displacement
             // Then offset back by positive distances
-            match Tria3D.tryOffsetVar(o1, newPrev, newNext, dPrev, dNext) with
+            match Tria3D.tryOffsetPntVar(o1, newPrev, newNext, dPrev, dNext) with
             | ValueSome o2 ->
-            "offsetVar point returns to original after -d then +d (different XZ)" |> Expect.isTrue (eq o2 pt)
-            | ValueNone -> failwith "second offsetVar returned None"
-        | ValueNone -> failwith "first offsetVar returned None"
+            "offsetPntVar point returns to original after -d then +d (different XZ)" |> Expect.isTrue (eq o2 pt)
+            | ValueNone -> failwith "second offsetPntVar returned None"
+        | ValueNone -> failwith "first offsetPntVar returned None"
         }
 
         test "offset inward reduces area (equilateral triangle in XY plane)" {

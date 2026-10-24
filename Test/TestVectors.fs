@@ -112,6 +112,21 @@ let tests =
                 // the reverse direction is 3.0 (three quarter turns CCW)
                 "from +Y to +X is 3.0" |> Expect.floatClose tol (Vc.angleDiamond(Vc(0.0, 1.0), Vc(1.0, 0.0))) 3.0
             }
+
+            test "isParallelToUnitVc ignores orientation and fails on zero length" {
+                let u = UnitVc.create(3.0, 4.0)
+                let v = Vc(6.0, 8.0)
+                "same direction" |> Expect.isTrue (Vc.isParallelToUnitVc Cosine.``0.25`` u v)
+                "opposite direction" |> Expect.isTrue (Vc.isParallelToUnitVc Cosine.``0.25`` u (Vc(-0.3, -0.4)))
+                "0.1 degrees off is within 0.25 degrees" |> Expect.isTrue (Vc.isParallelToUnitVc Cosine.``0.25`` u (v.RotateDegrees 0.1))
+                let off = v.RotateDegrees 1.0
+                "1 degree off is outside 0.25 degrees" |> Expect.isFalse (Vc.isParallelToUnitVc Cosine.``0.25`` u off)
+                "1 degree off is within 2.5 degrees" |> Expect.isTrue (Vc.isParallelToUnitVc Cosine.``2.5`` u off)
+                "perpendicular" |> Expect.isFalse (Vc.isParallelToUnitVc Cosine.``0.25`` u (Vc(-4.0, 3.0)))
+                "static matches member" |> Expect.equal (Vc.isParallelToUnitVc Cosine.``2.5`` u off) (off.IsParallelTo(u, Cosine.``2.5``))
+                "zero length fails" |> Expect.throws (fun () -> Vc.isParallelToUnitVc Cosine.``0.25`` u Vc.Zero |> ignore)
+                "very short fails" |> Expect.throws (fun () -> Vc.isParallelToUnitVc Cosine.``0.25`` u (Vc(1e-13, 0.0)) |> ignore)
+            }
         ]
 
         testList "UnitVc (2D Unit Vector)" [

@@ -556,6 +556,14 @@ module AutoOpenVc =
         static member inline isParallelTo minCosine (a:Vc) (b:Vc) : bool =
             a.IsParallelTo(b, minCosine)
 
+        /// Checks if this 2D vector and a 2D unit-vector are parallel.
+        /// Ignores the line orientation.
+        /// This tolerance can be customized by an optional minimum cosine value.
+        /// See Euclid.Cosine module.
+        /// Fails on vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+        static member inline isParallelToUnitVc (minCosine:float<Cosine.cosine>) (b:UnitVc) (a:Vc): bool =
+            a.IsParallelTo(b, minCosine)
+
         /// Checks if two 2D vectors are parallel.
         /// Takes the line orientation into account too.
         /// The default angle tolerance is 0.25 degrees.

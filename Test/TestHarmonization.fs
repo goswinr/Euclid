@@ -161,6 +161,70 @@ let tests =
             }
         ]
 
+        testList "Pnt, Vec and UnitVec rotation members" [
+            test "Pnt.Rotate matches Pnt.rotate and Vec.Rotate" {
+                let q = Quaternion.createFromDegrees(UnitVec.create(1.0, 2.0, 3.0), 37.0)
+                let p = Pnt(3.0, -7.0, 11.0)
+                let r = p.Rotate q
+                "matches static" |> Expect.isTrue (Pnt.equalsExact r (Pnt.rotate q p))
+                let v = Vec(p.X, p.Y, p.Z).Rotate q
+                "matches Vec.Rotate" |> Expect.isTrue (Pnt.dist r (Pnt(v.X, v.Y, v.Z)) < 1e-9)
+                "keeps distance to origin" |> Expect.floatClose Accuracy.high (Pnt.dist r Pnt.Origin) (Pnt.dist p Pnt.Origin)
+            }
+
+            test "Pnt.Rotate by 90 degrees around Z equals RotateOnZ90CCW" {
+                let q = Quaternion.createFromDegrees(UnitVec.Zaxis, 90.0)
+                let p = Pnt(3.0, 1.0, 2.0)
+                "rotated" |> Expect.isTrue (Pnt.dist (p.Rotate q) (Pnt(-1.0, 3.0, 2.0)) < 1e-9)
+                "same as RotateOnZ90CCW" |> Expect.isTrue (Pnt.dist (p.Rotate q) p.RotateOnZ90CCW < 1e-9)
+            }
+
+            test "Pnt.RotateAround matches static and rotates the offset from the center" {
+                let q = Quaternion.createFromDegrees(UnitVec.create(-2.0, 1.0, 0.5), 123.0)
+                let p = Pnt(3.0, -7.0, 11.0)
+                let cen = Pnt(-4.0, 5.0, 2.5)
+                let r = p.RotateAround cen q
+                "matches static" |> Expect.isTrue (Pnt.equalsExact r (Pnt.rotateAround cen q p))
+                "equals rotated offset" |> Expect.isTrue (Pnt.dist r (cen + (p - cen).Rotate q) < 1e-9)
+                "keeps distance to center" |> Expect.floatClose Accuracy.high (Pnt.dist r cen) (Pnt.dist p cen)
+                "the center itself does not move" |> Expect.isTrue (Pnt.dist (cen.RotateAround cen q) cen < 1e-12)
+            }
+
+            test "Pnt.RotateOnZ90CCW and RotateOnZ90CW" {
+                let p = Pnt(3.0, -7.0, 11.0)
+                "CCW" |> Expect.isTrue (Pnt.equalsExact p.RotateOnZ90CCW (Pnt(7.0, 3.0, 11.0)))
+                "CW" |> Expect.isTrue (Pnt.equalsExact p.RotateOnZ90CW (Pnt(-7.0, -3.0, 11.0)))
+                "CCW then CW" |> Expect.isTrue (Pnt.equalsExact p.RotateOnZ90CCW.RotateOnZ90CW p)
+                "static CCW" |> Expect.isTrue (Pnt.equalsExact (Pnt.rotateOnZ90CCW p) p.RotateOnZ90CCW)
+                "static CW" |> Expect.isTrue (Pnt.equalsExact (Pnt.rotateOnZ90CW p) p.RotateOnZ90CW)
+                let v = Vec(p.X, p.Y, p.Z).RotateOnZ90CCW
+                "same as Vec" |> Expect.isTrue (Pnt.equalsExact p.RotateOnZ90CCW (Pnt(v.X, v.Y, v.Z)))
+            }
+
+            test "Pnt.RotateByQuarterCircle" {
+                let p = Pnt(3.0, -7.0, 11.0)
+                for n in [-5; -4; -3; -2; -1; 0; 1; 2; 3; 4; 5; 1000; -1001] do
+                    let r = p.RotateByQuarterCircle n
+                    $"static matches member for {n}" |> Expect.isTrue (Pnt.equalsExact r (Pnt.rotateByQuarterCircle n p))
+                    $"matches rotateOnZDeg for {n}" |> Expect.isTrue (Pnt.dist r (Pnt.rotateOnZDeg (90.0 * float n) p) < 1e-9)
+                    $"Z preserved for {n}" |> Expect.equal r.Z p.Z
+                "1 is RotateOnZ90CCW" |> Expect.isTrue (Pnt.equalsExact (p.RotateByQuarterCircle 1) p.RotateOnZ90CCW)
+                "-1 is RotateOnZ90CW" |> Expect.isTrue (Pnt.equalsExact (p.RotateByQuarterCircle(-1)) p.RotateOnZ90CW)
+                "4 is identity" |> Expect.isTrue (Pnt.equalsExact (p.RotateByQuarterCircle 4) p)
+            }
+
+            test "Vec.Rotate and UnitVec.Rotate match their static members" {
+                let q = Quaternion.createFromDegrees(UnitVec.create(1.0, -2.0, 0.7), 71.0)
+                let v = Vec(3.0, -7.0, 11.0)
+                "Vec" |> Expect.isTrue (Vec.equalsExact (v.Rotate q) (Vec.rotate q v))
+                "Vec length" |> Expect.floatClose Accuracy.high (v.Rotate q).Length v.Length
+                let u = UnitVec.create(3.0, -7.0, 11.0)
+                "UnitVec" |> Expect.isTrue (UnitVec.equalsExact (u.Rotate q) (UnitVec.rotate q u))
+                let ur = u.Rotate q
+                "UnitVec stays unit" |> Expect.floatClose Accuracy.high (ur.X*ur.X + ur.Y*ur.Y + ur.Z*ur.Z) 1.0
+            }
+        ]
+
         testList "Static vs Member consistency" [
             test "Vc.rotateByQuarterCircle static matches member" {
                 let v = Vc(3.0, 4.0)

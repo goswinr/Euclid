@@ -250,6 +250,58 @@ type Rect2D =
     static member inline evaluateDist (xDistance:float) (yDistance:float) (r:Rect2D) : Pt =
         r.EvaluateDist(xDistance, yDistance)
 
+    /// <summary>Returns the X and Y parameters of the closest point on the 2D rectangle to a given point.
+    /// If the parameters are outside the range of 0.0 to 1.0, the given point is outside the rectangle.
+    /// Fails if the X- or Y-axis of the rectangle is shorter than 1e-6.</summary>
+    /// <param name="p">The point to find the closest parameters for.</param>
+    /// <returns>A tuple of the X and Y parameters, not clamped to the range 0.0 to 1.0.</returns>
+    member r.ClosestParameters (p:Pt) : float*float =
+        let vx = p.X - r.OriginX
+        let vy = p.Y - r.OriginY
+        let xLenSq = r.SizeXSq
+        let yLenSq = r.SizeYSq
+        if isTooSmallSq xLenSq || isTooSmallSq yLenSq then
+            failTooSmall "Rect2D.ClosestParameters: rect Xaxis or Yaxis" r
+        let xParam = (vx*r.XaxisX + vy*r.XaxisY) / xLenSq
+        let yParam = (vx*r.YaxisX + vy*r.YaxisY) / yLenSq
+        xParam, yParam
+
+    /// <summary>Returns the X and Y parameters of the closest point on the 2D rectangle to a given point.
+    /// If the parameters are outside the range of 0.0 to 1.0, the given point is outside the rectangle.
+    /// Fails if the X- or Y-axis of the rectangle is shorter than 1e-6.</summary>
+    /// <param name="p">The point to find the closest parameters for.</param>
+    /// <param name="r">The 2D rectangle.</param>
+    /// <returns>A tuple of the X and Y parameters, not clamped to the range 0.0 to 1.0.</returns>
+    static member inline closestParameters (p:Pt) (r:Rect2D) : float*float =
+        r.ClosestParameters(p)
+
+    /// <summary>Returns the closest point on the 2D rectangle to a given point.
+    /// For a point inside the rectangle, this is the point itself, up to floating-point rounding.
+    /// A point outside the rectangle is clamped onto its edge.
+    /// Fails if the X- or Y-axis of the rectangle is shorter than 1e-6.</summary>
+    /// <param name="p">The point to find the closest point for.</param>
+    /// <returns>The closest point on or inside the 2D rectangle.</returns>
+    member r.ClosestPoint (p:Pt) : Pt =
+        let vx = p.X - r.OriginX
+        let vy = p.Y - r.OriginY
+        let xLenSq = r.SizeXSq
+        let yLenSq = r.SizeYSq
+        if isTooSmallSq xLenSq || isTooSmallSq yLenSq then
+            failTooSmall "Rect2D.ClosestPoint: rect Xaxis or Yaxis" r
+        let xParam = (vx*r.XaxisX + vy*r.XaxisY) / xLenSq
+        let yParam = (vx*r.YaxisX + vy*r.YaxisY) / yLenSq
+        r.EvaluateAt(UtilEuclid.clamp01 xParam, UtilEuclid.clamp01 yParam)
+
+    /// <summary>Returns the closest point on the 2D rectangle to a given point.
+    /// For a point inside the rectangle, this is the point itself, up to floating-point rounding.
+    /// A point outside the rectangle is clamped onto its edge.
+    /// Fails if the X- or Y-axis of the rectangle is shorter than 1e-6.</summary>
+    /// <param name="p">The point to find the closest point for.</param>
+    /// <param name="r">The 2D rectangle.</param>
+    /// <returns>The closest point on or inside the 2D rectangle.</returns>
+    static member inline closestPoint (p:Pt) (r:Rect2D) : Pt =
+        r.ClosestPoint(p)
+
     /// Calculates the area of the 2D Rectangle.
     member inline r.Area : float =
         sqrt(r.XaxisX*r.XaxisX + r.XaxisY*r.XaxisY) * sqrt(r.YaxisX*r.YaxisX + r.YaxisY*r.YaxisY)

@@ -189,15 +189,21 @@ let tests =
                 Expect.throws (fun () -> box.Expand(-2.) |> ignore) "Should throw when shrinking causes underflow"
             }
 
-            test "Expand with XYZ distances" {
+            test "ExpandXYZ with XYZ distances" {
                 let box = BBox.create(Pnt(2., 3., 4.), Pnt(8., 9., 10.))
-                let expanded = box.Expand(1., 2., 3.)
+                let expanded = box.ExpandXYZ(1., 2., 3.)
                 Expect.equal expanded.MinX 1. "MinX should be 1"
                 Expect.equal expanded.MinY 1. "MinY should be 1"
                 Expect.equal expanded.MinZ 1. "MinZ should be 1"
                 Expect.equal expanded.MaxX 9. "MaxX should be 9"
                 Expect.equal expanded.MaxY 11. "MaxY should be 11"
                 Expect.equal expanded.MaxZ 13. "MaxZ should be 13"
+            }
+
+            test "ExpandXYZ throws on underflow" {
+                let box = BBox.create(Pnt(2., 3., 4.), Pnt(8., 9., 10.))
+                Expect.throws (fun () -> box.ExpandXYZ(0., 0., -4.) |> ignore) "Should throw when shrinking Z causes underflow"
+                Expect.equal (BBox.expandXYZ 1. 2. 3. box).MaxZ 13. "static expandXYZ should match"
             }
 
             test "ExpandSafe with positive distance" {
@@ -217,9 +223,9 @@ let tests =
                 Expect.equal shrunk.MaxY 1. "MaxY should be midpoint 1"
             }
 
-            test "ExpandSafe with mixed underflow" {
+            test "ExpandSafeXYZ with mixed underflow" {
                 let box = BBox.create(Pnt(0., 0., 0.), Pnt(2., 10., 4.))
-                let shrunk = box.ExpandSafe(-3., -1., -5.)
+                let shrunk = box.ExpandSafeXYZ(-3., -1., -5.)
                 // X should collapse, Y and Z should shrink normally
                 Expect.equal shrunk.MinX 1. "MinX should collapse to midpoint"
                 Expect.equal shrunk.MaxX 1. "MaxX should collapse to midpoint"

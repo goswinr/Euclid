@@ -4,7 +4,7 @@ All public types, members and functions of Euclid. Corresponding 2D and 3D types
 
 - Corresponding members share a row, also when their names differ, like `Pt.midPt` and `Pnt.midPnt`.
 - `—` and a reason in italics mark a member that exists in one dimension only on purpose.
-- An empty cell marks one of 101 gaps: a member that is missing in one dimension,
+- An empty cell marks one of 80 gaps: a member that is missing in one dimension,
   or a member whose name does not match its counterpart. The contents list the gaps per table.
 - Instance members and fields start with `.`, e.g. `.DistanceTo`.
 - Static members are qualified with their type name. They are listed right below the instance member of the same name.
@@ -17,9 +17,9 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 
 **2D and 3D**
 
-- [Vc / Vec](#vc--vec), 6 gaps
-- [UnitVc / UnitVec](#unitvc--unitvec), 5 gaps
-- [Pt / Pnt](#pt--pnt), 6 gaps
+- [Vc / Vec](#vc--vec), 4 gaps
+- [UnitVc / UnitVec](#unitvc--unitvec), 4 gaps
+- [Pt / Pnt](#pt--pnt), 0 gaps
 - [Rotation2D / Quaternion](#rotation2d--quaternion), 17 gaps
 - [PPlane](#pplane)
 - [Matrix](#matrix)
@@ -36,11 +36,11 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 - [XLine2D / XLine3D](#xline2d--xline3d), 4 gaps
 - [XLine3D.XCone](#xline3dxcone)
 - [NPlane](#nplane)
-- [Rect2D / Rect3D](#rect2d--rect3d), 17 gaps
+- [Rect2D / Rect3D](#rect2d--rect3d), 13 gaps
 - [Box](#box)
 - [FreeBox](#freebox)
-- [BRect / BBox](#brect--bbox), 15 gaps
-- [Tria2D / Tria3D](#tria2d--tria3d), 14 gaps
+- [BRect / BBox](#brect--bbox), 11 gaps
+- [Tria2D / Tria3D](#tria2d--tria3d), 10 gaps
 - [Points2D / Points3D](#points2d--points3d), 0 gaps
 - [module Offset2D / module Offset3D](#module-offset2d--module-offset3d), 10 gaps
 - [Offset2D.UTurn](#offset2duturn)
@@ -157,7 +157,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Vc.matchesOrientation` | `v: Vc -> other: Vc -> bool` | `Vec.matchesOrientation` | `v: Vec -> other: Vec -> bool` |
 | — | *projection to the XY plane* | `.PerpendicularInXY` | `Vec` |
 | — | *projection to the XY plane* | `Vec.perpendicularInXY` | `v: Vec -> Vec` |
-| `.Rotate` | `r: Rotation2D -> Vc` |  |  |
+| `.Rotate` | `r: Rotation2D -> Vc` | `.Rotate` | `q: Quaternion -> Vec` |
 | `Vc.rotate` | `r: Rotation2D -> v: Vc -> Vc` | `Vec.rotate` | `q: Quaternion -> vec: Vec -> Vec` |
 | `.RotateByQuarterCircle` | `numberOfQuarters: int -> Vc` | `.RotateByQuarterCircle` | `numberOfQuarters: int -> Vec` |
 | `Vc.rotateByQuarterCircle` | `numberOfQuarters: int -> v: Vc -> Vc` | `Vec.rotateByQuarterCircle` | `numberOfQuarters: int -> v: Vec -> Vec` |
@@ -218,7 +218,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Vc.isAngleBelow` | `cosineValue: float<cosine> -> a: Vc -> b: Vc -> bool` | `Vec.isAngleBelow` | `cosineValue: float<cosine> -> a: Vec -> b: Vec -> bool` |
 | `Vc.isNotParallelWithin` | `cosineValue: float<cosine> -> a: Vc -> b: Vc -> bool` | `Vec.isNotParallelWithin` | `cosineValue: float<cosine> -> a: Vec -> b: Vec -> bool` |
 |  |  | `Vec.isParallelAndOrientedToUnitVec` | `minCosine: float<cosine> -> b: UnitVec -> a: Vec -> bool` |
-|  |  | `Vec.isParallelToUnitVec` | `minCosine: float<cosine> -> b: UnitVec -> a: Vec -> bool` |
+| `Vc.isParallelToUnitVc` | `minCosine: float<cosine> -> b: UnitVc -> a: Vc -> bool` | `Vec.isParallelToUnitVec` | `minCosine: float<cosine> -> b: UnitVec -> a: Vec -> bool` |
 | `Vc.isParallelWithin` | `cosineValue: float<cosine> -> a: Vc -> b: Vc -> bool` | `Vec.isParallelWithin` | `cosineValue: float<cosine> -> a: Vec -> b: Vec -> bool` |
 |  |  | `Vec.isPerpendicularToUnitVec` | `maxCosine: float<cosine> -> b: UnitVec -> a: Vec -> bool` |
 | `Vc.lerp` | `start: Vc * endValue: Vc * rel: float -> Vc` | `Vec.lerp` | `start: Vec * endValue: Vec * rel: float -> Vec` |
@@ -332,7 +332,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `UnitVc.matchesOrientation` | `other: UnitVc -> v: UnitVc -> bool` | `UnitVec.matchesOrientation` | `other: UnitVec -> v: UnitVec -> bool` |
 | — | *projection to the XY plane* | `.PerpendicularInXY` | `Vec` |
 | — | *projection to the XY plane* | `UnitVec.perpendicularInXY` | `v: UnitVec -> Vec` |
-| `.Rotate` | `r: Rotation2D -> UnitVc` |  |  |
+| `.Rotate` | `r: Rotation2D -> UnitVc` | `.Rotate` | `q: Quaternion -> UnitVec` |
 | `UnitVc.rotate` | `r: Rotation2D -> v: UnitVc -> UnitVc` | `UnitVec.rotate` | `q: Quaternion -> uVec: UnitVec -> UnitVec` |
 | `.RotateByQuarterCircle` | `numberOfQuarters: int -> UnitVc` | `.RotateByQuarterCircle` | `numberOfQuarters: int -> UnitVec` |
 | `UnitVc.rotateByQuarterCircle` | `numberOfQuarters: int -> v: UnitVc -> UnitVc` | `UnitVec.rotateByQuarterCircle` | `numberOfQuarters: int -> v: UnitVec -> UnitVec` |
@@ -473,22 +473,22 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Pt.isOrigin` | `pt: Pt -> bool` | `Pnt.isOrigin` | `pnt: Pnt -> bool` |
 | `.IsValid` | `bool` | `.IsValid` | `bool` |
 | `Pt.isValid` | `pt: Pt -> bool` | `Pnt.isValid` | `pnt: Pnt -> bool` |
-| `.Rotate` | `r: Rotation2D -> Pt` |  |  |
+| `.Rotate` | `r: Rotation2D -> Pt` | `.Rotate` | `q: Quaternion -> Pnt` |
 | `Pt.rotate` | `r: Rotation2D -> p: Pt -> Pt` | `Pnt.rotate` | `q: Quaternion -> pnt: Pnt -> Pnt` |
-| `.RotateAround` | `cen: Pt -> r: Rotation2D -> Pt` |  |  |
+| `.RotateAround` | `cen: Pt -> r: Rotation2D -> Pt` | `.RotateAround` | `cen: Pnt -> q: Quaternion -> Pnt` |
 | `Pt.rotateAround` | `cen: Pt -> r: Rotation2D -> pt: Pt -> Pt` | `Pnt.rotateAround` | `cen: Pnt -> q: Quaternion -> pnt: Pnt -> Pnt` |
 | `.RotateAroundDegrees` | `cen: Pt -> angDegree: float -> Pt` | — | *a 3D rotation also needs an axis* |
 | `Pt.rotateAroundDegrees` | `cen: Pt -> angDegree: float -> pt: Pt -> Pt` | — | *a 3D rotation also needs an axis* |
 | `.RotateAroundRadians` | `cen: Pt -> angRadians: float -> Pt` | — | *a 3D rotation also needs an axis* |
 | `Pt.rotateAroundRadians` | `cen: Pt -> angRadians: float -> pt: Pt -> Pt` | — | *a 3D rotation also needs an axis* |
-| `.RotateByQuarterCircle` | `numberOfQuarters: int -> Pt` |  |  |
-| `Pt.rotateByQuarterCircle` | `numberOfQuarters: int -> v: Pt -> Pt` |  |  |
+| `.RotateByQuarterCircle` | `numberOfQuarters: int -> Pt` | `.RotateByQuarterCircle` | `numberOfQuarters: int -> Pnt` |
+| `Pt.rotateByQuarterCircle` | `numberOfQuarters: int -> v: Pt -> Pt` | `Pnt.rotateByQuarterCircle` | `numberOfQuarters: int -> pnt: Pnt -> Pnt` |
 | `.RotateDegrees` | `angDegree: float -> Pt` | — | *a 3D rotation also needs an axis* |
 | `Pt.rotateDegrees` | `angDegree: float -> pt: Pt -> Pt` | — | *a 3D rotation also needs an axis* |
-| `.Rotate90CCW` | `Pt` | — | *orientation in the plane* |
-| `Pt.rotate90CCW` | `pt: Pt -> Pt` | — | *orientation in the plane* |
-| `.Rotate90CW` | `Pt` |  |  |
-| `Pt.rotate90CW` | `pt: Pt -> Pt` |  |  |
+| `.Rotate90CCW` | `Pt` | `.RotateOnZ90CCW` | `Pnt` |
+| `Pt.rotate90CCW` | `pt: Pt -> Pt` | `Pnt.rotateOnZ90CCW` | `pnt: Pnt -> Pnt` |
+| `.Rotate90CW` | `Pt` | `.RotateOnZ90CW` | `Pnt` |
+| `Pt.rotate90CW` | `pt: Pt -> Pt` | `Pnt.rotateOnZ90CW` | `pnt: Pnt -> Pnt` |
 | `.RotateRadians` | `angRadians: float -> Pt` | — | *a 3D rotation also needs an axis* |
 | `Pt.rotateRadians` | `angRadians: float -> pt: Pt -> Pt` | — | *a 3D rotation also needs an axis* |
 | `.SqDistanceFromOrigin` | `float` | `.SqDistanceFromOrigin` | `float` |
@@ -1471,10 +1471,10 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Rect2D.asString` | `r: Rect2D -> string` | `Rect3D.asString` | `r: Rect3D -> string` |
 | `.Center` | `Pt` | `.Center` | `Pnt` |
 | `Rect2D.center` | `r: Rect2D -> Pt` | `Rect3D.center` | `r: Rect3D -> Pnt` |
-|  |  | `.ClosestParameters` | `p: Pnt -> float * float` |
-|  |  | `Rect3D.closestParameters` | `p: Pnt -> r: Rect3D -> float * float` |
-|  |  | `.ClosestPoint` | `p: Pnt -> Pnt` |
-|  |  | `Rect3D.closestPoint` | `p: Pnt -> r: Rect3D -> Pnt` |
+| `.ClosestParameters` | `p: Pt -> float * float` | `.ClosestParameters` | `p: Pnt -> float * float` |
+| `Rect2D.closestParameters` | `p: Pt -> r: Rect2D -> float * float` | `Rect3D.closestParameters` | `p: Pnt -> r: Rect3D -> float * float` |
+| `.ClosestPoint` | `p: Pt -> Pt` | `.ClosestPoint` | `p: Pnt -> Pnt` |
+| `Rect2D.closestPoint` | `p: Pt -> r: Rect2D -> Pt` | `Rect3D.closestPoint` | `p: Pnt -> r: Rect3D -> Pnt` |
 | `.Contains` | `p: Pt -> bool` | — | *inside of a planar area* |
 | `Rect2D.contains` | `p: Pt -> r: Rect2D -> bool` | — | *inside of a planar area* |
 | `.ContainsXY` | `x: float * y: float -> bool` | — | *inside of a planar area* |
@@ -2200,16 +2200,14 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `.EvaluateAt` | `xParameter: float * yParameter: float -> Pt` | `.EvaluateAt` | `xParameter: float * yParameter: float * zParameter: float -> Pnt` |
 | `BRect.evaluateAt` | `xParameter: float -> yParameter: float -> r: BRect -> Pt` | `BBox.evaluateAt` | `xParameter: float -> yParameter: float -> zParameter: float -> b: BBox -> Pnt` |
 | `.Expand` | `dist: float -> BRect` | `.Expand` | `dist: float -> BBox` |
-|  |  | `.Expand` | `xDist: float * yDist: float * zDist: float -> BBox` |
 | `BRect.expand` | `dist: float -> r: BRect -> BRect` | `BBox.expand` | `dist: float -> b: BBox -> BBox` |
 | `.ExpandSafe` | `dist: float -> BRect` | `.ExpandSafe` | `dist: float -> BBox` |
-|  |  | `.ExpandSafe` | `xDist: float * yDist: float * zDist: float -> BBox` |
 | `BRect.expandSafe` | `dist: float -> r: BRect -> BRect` | `BBox.expandSafe` | `dist: float -> b: BBox -> BBox` |
-| `.ExpandSafeXY` | `xDist: float * yDist: float -> BRect` |  |  |
+| `.ExpandSafeXY` | `xDist: float * yDist: float -> BRect` | `.ExpandSafeXYZ` | `xDist: float * yDist: float * zDist: float -> BBox` |
 | `BRect.expandSafeXY` | `xDist: float -> yDist: float -> r: BRect -> BRect` | `BBox.expandSafeXYZ` | `xDist: float -> yDist: float -> zDist: float -> b: BBox -> BBox` |
 | `.ExpandXaxis` | `startDist: float * endDist: float -> BRect` | `.ExpandXaxis` | `startDist: float * endDist: float -> BBox` |
 | `BRect.expandXaxis` | `startDist: float -> endDist: float -> r: BRect -> BRect` | `BBox.expandXaxis` | `startDist: float -> endDist: float -> b: BBox -> BBox` |
-| `.ExpandXY` | `xDist: float * yDist: float -> BRect` |  |  |
+| `.ExpandXY` | `xDist: float * yDist: float -> BRect` | `.ExpandXYZ` | `xDist: float * yDist: float * zDist: float -> BBox` |
 | `BRect.expandXY` | `xDist: float -> yDist: float -> r: BRect -> BRect` | `BBox.expandXYZ` | `xDist: float -> yDist: float -> zDist: float -> b: BBox -> BBox` |
 | `.ExpandYaxis` | `startDist: float * endDist: float -> BRect` | `.ExpandYaxis` | `startDist: float * endDist: float -> BBox` |
 | `BRect.expandYaxis` | `startDist: float -> endDist: float -> r: BRect -> BRect` | `BBox.expandYaxis` | `startDist: float -> endDist: float -> b: BBox -> BBox` |
@@ -2348,16 +2346,14 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Tria2D.isLinearFast` | `a: Pt * b: Pt * c: Pt * ?maxAreaParallelogram: float -> bool` | `Tria3D.isLinearFast` | `a: Pnt * b: Pnt * c: Pnt * ?maxAreaParallelogram: float -> bool` |
 | `Tria2D.offset` | `a: Pt * b: Pt * c: Pt * dist: float -> Pt * Pt * Pt` | `Tria3D.offset` | `a: Pnt * b: Pnt * c: Pnt * dist: float -> Pnt * Pnt * Pnt` |
 | `Tria2D.offsetPt` | `ptToOffset: Pt * prev: Pt * next: Pt * dist: float -> Pt` | `Tria3D.offsetPnt` | `pntToOffset: Pnt * prev: Pnt * next: Pnt * dist: float -> Pnt` |
-| `Tria2D.offsetPtVar` | `ptToOffset: Pt * prev: Pt * next: Pt * distPrev: float * distNext: float -> Pt` |  |  |
+| `Tria2D.offsetPtVar` | `ptToOffset: Pt * prev: Pt * next: Pt * distPrev: float * distNext: float -> Pt` | `Tria3D.offsetPntVar` | `pntToOffset: Pnt * prev: Pnt * next: Pnt * distPrev: float * distNext: float -> Pnt` |
 | `Tria2D.offsetPtVarByNormals` | `ptToOffset: Pt * prevN: UnitVc * nextN: UnitVc * prevDist: float * nextDist: float -> Pt` |  |  |
-|  |  | `Tria3D.offsetVar` | `pntToOffset: Pnt * prev: Pnt * next: Pnt * distPrev: float * distNext: float -> Pnt` |
 |  |  | `Tria3D.tryIntersectLine` | `line: Line3D * p1: Pnt * p2: Pnt * p3: Pnt -> Pnt voption` |
 |  |  | `Tria3D.tryIntersectRay` | `line: Line3D * p1: Pnt * p2: Pnt * p3: Pnt -> float voption` |
 |  |  | `Tria3D.tryIntersectRayXYZ` | `lnFromX: float * lnFromY: float * lnFromZ: float * lnToX: float * lnToY: float * lnToZ: float * ptAx: float * ptAy: float * ptAz: float * ptBx: float * ptBy: float * ptBz: float * ptCx: float * ptCy: float * ptCz: float -> float voption` |
 |  |  | `Tria3D.tryIntersectTriaVectorsWithRay` | `lnFromX: float * lnFromY: float * lnFromZ: float * dirX: float * dirY: float * dirZ: float * ptAx: float * ptAy: float * ptAz: float * e1x: float * e1y: float * e1z: float * e2x: float * e2y: float * e2z: float -> float voption` |
-| `Tria2D.tryOffsetPtVar` | `ptToOffset: Pt * prev: Pt * next: Pt * distPrev: float * distNext: float -> Pt voption` |  |  |
+| `Tria2D.tryOffsetPtVar` | `ptToOffset: Pt * prev: Pt * next: Pt * distPrev: float * distNext: float -> Pt voption` | `Tria3D.tryOffsetPntVar` | `pntToOffset: Pnt * prev: Pnt * next: Pnt * distPrev: float * distNext: float -> Pnt voption` |
 | `Tria2D.tryOffsetPtVarByNormals` | `ptToOffset: Pt * prevN: UnitVc * nextN: UnitVc * prevDist: float * nextDist: float -> Pt voption` |  |  |
-|  |  | `Tria3D.tryOffsetVar` | `pntToOffset: Pnt * prev: Pnt * next: Pnt * distPrev: float * distNext: float -> Pnt voption` |
 
 ## Points2D / Points3D
 

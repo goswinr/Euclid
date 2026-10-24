@@ -766,6 +766,12 @@ module AutoOpenUnitVec =
         // #endregion
         // #region Rotate
 
+        /// <summary>Rotate the 3D unit-vector by a Quaternion around the Origin.</summary>
+        /// <param name="q">The rotation to apply.</param>
+        /// <returns>The rotated 3D unit-vector.</returns>
+        member inline v.Rotate (q:Quaternion) : UnitVec =
+            v *** q  // operator * is defined in Quaternion.fs
+
         /// Rotate the 3D unit-vector by Quaternion around the Origin
         static member inline rotate (q:Quaternion) (uVec:UnitVec) : UnitVec =
             uVec *** q  // operator * is defined in Quaternion.fs

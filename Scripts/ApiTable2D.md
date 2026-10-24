@@ -163,6 +163,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Vc.isAngleAbove` | `cosineValue: float<cosine> -> a: Vc -> b: Vc -> bool` |
 | `Vc.isAngleBelow` | `cosineValue: float<cosine> -> a: Vc -> b: Vc -> bool` |
 | `Vc.isNotParallelWithin` | `cosineValue: float<cosine> -> a: Vc -> b: Vc -> bool` |
+| `Vc.isParallelToUnitVc` | `minCosine: float<cosine> -> b: UnitVc -> a: Vc -> bool` |
 | `Vc.isParallelWithin` | `cosineValue: float<cosine> -> a: Vc -> b: Vc -> bool` |
 | `Vc.lerp` | `start: Vc * endValue: Vc * rel: float -> Vc` |
 | `Vc.matchOrientation` | `orientationToMatch: Vc -> vecToFlip: Vc -> Vc` |
@@ -901,6 +902,10 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Rect2D.asString` | `r: Rect2D -> string` |
 | `.Center` | `Pt` |
 | `Rect2D.center` | `r: Rect2D -> Pt` |
+| `.ClosestParameters` | `p: Pt -> float * float` |
+| `Rect2D.closestParameters` | `p: Pt -> r: Rect2D -> float * float` |
+| `.ClosestPoint` | `p: Pt -> Pt` |
+| `Rect2D.closestPoint` | `p: Pt -> r: Rect2D -> Pt` |
 | `.Contains` | `p: Pt -> bool` |
 | `Rect2D.contains` | `p: Pt -> r: Rect2D -> bool` |
 | `.ContainsXY` | `x: float * y: float -> bool` |

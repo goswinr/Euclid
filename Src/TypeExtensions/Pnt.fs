@@ -584,6 +584,12 @@ module AutoOpenPnt =
         // #endregion
         // #region Rotate
 
+        /// <summary>Rotate the 3D point by a Quaternion around the World Origin.</summary>
+        /// <param name="q">The rotation to apply.</param>
+        /// <returns>The rotated 3D point.</returns>
+        member inline pnt.Rotate (q:Quaternion) : Pnt =
+            pnt *** q  // operator * is defined in Quaternion.fs
+
         /// Rotate by Quaternion around Origin
         static member inline rotate (q:Quaternion) (pnt:Pnt) : Pnt =
             pnt *** q  // operator * is defined in Quaternion.fs
@@ -612,6 +618,13 @@ module AutoOpenPnt =
                 , iy * qw + iw * - qy + iz * - qx - ix * - qz  + cen.Y
                 , iz * qw + iw * - qz + ix * - qy - iy * - qx  + cen.Z
                 )
+
+        /// <summary>Rotate the 3D point by a Quaternion around a given center point.</summary>
+        /// <param name="cen">The center point of the rotation.</param>
+        /// <param name="q">The rotation to apply.</param>
+        /// <returns>The rotated 3D point.</returns>
+        member inline pnt.RotateAround (cen:Pnt) (q:Quaternion) : Pnt =
+            Pnt.rotateAround cen q pnt
 
 
         /// Rotate the 3D point around X-axis, from Y to Z-axis, counter-clockwise looking from right.
@@ -677,6 +690,41 @@ module AutoOpenPnt =
         /// Rotate the 3D point in degrees around center point and a Z aligned axis, from X to Y-axis, counter-clockwise looking from top.
         static member inline rotateOnZWithCenterDeg (cen:Pnt) (angDegree) (pnt:Pnt) : Pnt =
             Pnt.rotateOnZWithCenter cen (Rotation2D.createFromDegrees angDegree) pnt
+
+        /// 90-degree rotation counter-clockwise around the Z-axis through the World Origin.
+        member inline pnt.RotateOnZ90CCW : Pnt =
+            Pnt(-pnt.Y, pnt.X, pnt.Z)
+
+        /// 90-degree rotation counter-clockwise around the Z-axis through the World Origin.
+        static member inline rotateOnZ90CCW (pnt:Pnt) : Pnt =
+            Pnt(-pnt.Y, pnt.X, pnt.Z)
+
+        /// 90-degree rotation clockwise around the Z-axis through the World Origin.
+        member inline pnt.RotateOnZ90CW : Pnt =
+            Pnt(pnt.Y, -pnt.X, pnt.Z)
+
+        /// 90-degree rotation clockwise around the Z-axis through the World Origin.
+        static member inline rotateOnZ90CW (pnt:Pnt) : Pnt =
+            Pnt(pnt.Y, -pnt.X, pnt.Z)
+
+        /// Rotates the 3D point around the Z-axis through the World Origin by a given number of quarter-circles (i.e. multiples of 90
+        /// degrees or Pi/2 radians). A positive number rotates counter-clockwise, a
+        /// negative number rotates clockwise. The Z coordinate is preserved.
+        member inline pnt.RotateByQuarterCircle(numberOfQuarters:int) : Pnt =
+            Pnt.rotateByQuarterCircle numberOfQuarters pnt
+
+        /// Rotates a 3D point around the Z-axis through the World Origin by a given number of quarter-circles (i.e. multiples of 90
+        /// degrees or Pi/2 radians). A positive number rotates counter-clockwise, a
+        /// negative number rotates clockwise. The Z coordinate is preserved.
+        static member rotateByQuarterCircle (numberOfQuarters:int) (pnt:Pnt) : Pnt =
+            let mutable nQuad = numberOfQuarters % 4
+            if nQuad < 0 then nQuad <- nQuad + 4
+            match nQuad with
+            | 0 -> pnt
+            | 1 -> Pnt(-pnt.Y, pnt.X, pnt.Z)
+            | 2 -> Pnt(-pnt.X, -pnt.Y, pnt.Z)
+            | 3 -> Pnt(pnt.Y, -pnt.X, pnt.Z)
+            | _ -> pnt // should never happen because of the modulo % 4 operation
 
 
 

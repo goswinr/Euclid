@@ -23,8 +23,6 @@ open System.Text.Json.Serialization
 type Quaternion =
     //  https://github.com/mrdoob/three.js/blob/dev/src/math/Quaternion.js
 
-    
-
     /// The field holding the X component of this Quaternion.
     [<DataMember>] val X:float
 
@@ -46,11 +44,19 @@ type Quaternion =
         #endif
             {X=x; Y=y; Z=z; W=w}
 
-    /// This unsafe constructor does NOT do any unitizing.
+    /// This unsafe constructor does NOT do any unitizing or zero length checks.
     static member inline createUnchecked (x, y, z, w) : Quaternion =
         #nowarn "44"
         Quaternion(x, y, z, w)
         #warnon "44" // re-enable warning for obsolete usage
+
+    /// This constructor does unitizing too. And fails if the input has near-zero length.
+    static member create (x, y, z, w) : Quaternion =
+        let l = sqrt(x*x  + y*y + z*z + w*w)
+        if isTooTiny (abs l) then
+            fail $"Quaternion create failed for x:{x}, y:{y}, z:{z}, w:{w}. The length needs to be bigger than zero."
+        let sc = 1./l
+        Quaternion.createUnchecked(x*sc, y*sc, z*sc, w*sc)
 
     /// Format Quaternion into string also showing angle in degrees as nicely formatted floating point number.
     override q.ToString() : string =
@@ -269,13 +275,7 @@ type Quaternion =
     member inline q.Then (other:Quaternion) : Quaternion =
         Quaternion.multiply(other, q)
 
-    /// This constructor does unitizing too.
-    static member create (x, y, z, w) : Quaternion =
-        let l = sqrt(x*x  + y*y + z*z + w*w)
-        if isTooTiny (abs l) then
-            fail $"Quaternion create failed for x:{x}, y:{y}, z:{z}, w:{w}. The length needs to be bigger than zero."
-        let sc = 1./l
-        Quaternion.createUnchecked(x*sc, y*sc, z*sc, w*sc)
+
 
     /// The identity quaternion that does not do any rotation.
     /// This is Quaternion(x=0, y=0, z=0, w=1)
