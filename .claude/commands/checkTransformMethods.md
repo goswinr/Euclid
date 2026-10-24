@@ -37,10 +37,10 @@ A raw angle argument always names its unit in the member name (`Degrees` or `Rad
 | `rotateAroundDegrees center degrees geometry` | `RotateAroundDegrees center degrees` |
 | `rotateAroundRadians center radians geometry` | `RotateAroundRadians center radians` |
 | `scale factor geometry` | `Scale factor` |
-| `scaleAround center factor geometry` | `ScaleAround center factor` |
+| `scaleOn center factor geometry` | `ScaleOn center factor` |
 
-Vectors carry no location, so they get no `rotateAround` or `scaleAround` members.
-Do not use the obsolete names `rotateBy`, `rotateWithCenter`, `rotateWithCenterBy` or `scaleOn`.
+Vectors carry no location, so they get no `rotateAround` or `scaleOn` members.
+Do not use the obsolete names `rotateBy`, `rotateWithCenter` or `rotateWithCenterBy`.
 
 ### Quaternion Rotations only for 3D Types
 - [ ] `Rotate(q:Quaternion)` - instance member for rotation around origin
@@ -59,7 +59,7 @@ Do not use the obsolete names `rotateBy`, `rotateWithCenter`, `rotateWithCenterB
 
 ### Scale
 - [ ] `Scale` / `scale` - scale from the origin
-- [ ] `ScaleAround` / `scaleAround` - scale from a center point (not for vectors)
+- [ ] `ScaleOn` / `scaleOn` - scale from a center point (not for vectors)
 
 ### Translation / Move Methods
 - [ ] `Move(v:Vec)` or `Move(v:Vc)` - instance member to translate by a vector

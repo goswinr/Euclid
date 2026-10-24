@@ -722,21 +722,21 @@ let tests =
                 Expect.isTrue (eqPt gPt (Pt.rotateAroundDegrees gPt 123.0 gPt)) "point at the center stays"
             }
 
-            test "Pt.scaleAround" {
-                Expect.isTrue (eqPt (Pt.scaleAround gCen 2.5 gPt) (gCen + (gPt - gCen) * 2.5)) "factor 2.5"
-                Expect.isTrue (eqPt (Pt.scaleAround gCen 1.0 gPt) gPt) "factor 1 is identity"
-                Expect.isTrue (eqPt (Pt.scaleAround gCen 0.0 gPt) gCen) "factor 0 collapses to center"
-                Expect.isTrue (eqPt (Pt.scaleAround gCen -1.0 gPt) (gCen - (gPt - gCen))) "factor -1 mirrors through center"
-                Expect.isTrue (eqPt (Pt.scaleAround Pt.Origin 3.0 gPt) (Pt.scale 3.0 gPt)) "origin center equals scale"
+            test "Pt.scaleOn" {
+                Expect.isTrue (eqPt (Pt.scaleOn gCen 2.5 gPt) (gCen + (gPt - gCen) * 2.5)) "factor 2.5"
+                Expect.isTrue (eqPt (Pt.scaleOn gCen 1.0 gPt) gPt) "factor 1 is identity"
+                Expect.isTrue (eqPt (Pt.scaleOn gCen 0.0 gPt) gCen) "factor 0 collapses to center"
+                Expect.isTrue (eqPt (Pt.scaleOn gCen -1.0 gPt) (gCen - (gPt - gCen))) "factor -1 mirrors through center"
+                Expect.isTrue (eqPt (Pt.scaleOn Pt.Origin 3.0 gPt) (Pt.scale 3.0 gPt)) "origin center equals scale"
             }
 
-            test "Pnt.scaleAround" {
+            test "Pnt.scaleOn" {
                 let cen = Pnt(12.0, -7.0, 3.0)
                 let p = Pnt(15.5, -3.25, -1.0)
                 let expected = Pnt(12.0 + 3.5 * 2.5, -7.0 + 3.75 * 2.5, 3.0 - 4.0 * 2.5)
-                Expect.isTrue (Pnt.dist expected (Pnt.scaleAround cen 2.5 p) < 1e-9) "factor 2.5"
-                Expect.isTrue (Pnt.dist cen (Pnt.scaleAround cen 0.0 p) < 1e-9) "factor 0 collapses to center"
-                Expect.isTrue (Pnt.dist (Pnt.scale 3.0 p) (Pnt.scaleAround Pnt.Origin 3.0 p) < 1e-9) "origin center equals scale"
+                Expect.isTrue (Pnt.dist expected (Pnt.scaleOn cen 2.5 p) < 1e-9) "factor 2.5"
+                Expect.isTrue (Pnt.dist cen (Pnt.scaleOn cen 0.0 p) < 1e-9) "factor 0 collapses to center"
+                Expect.isTrue (Pnt.dist (Pnt.scale 3.0 p) (Pnt.scaleOn Pnt.Origin 3.0 p) < 1e-9) "origin center equals scale"
             }
 
             test "Vc and UnitVc rotateDegrees and rotateRadians agree with rotate" {
@@ -781,11 +781,11 @@ let tests =
                 Expect.isTrue (eqPt r.From p && eqPt r.To p) "both ends rotate to the same point"
             }
 
-            test "Line2D.scaleAround" {
-                let expected = Line2D(Pt.scaleAround gCen 2.5 gLn.From, Pt.scaleAround gCen 2.5 gLn.To)
-                Expect.isTrue (eqLn expected (Line2D.scaleAround gCen 2.5 gLn)) "scaleAround"
-                Expect.isTrue (eqLn expected (gLn.ScaleAround gCen 2.5)) "ScaleAround"
-                Expect.isTrue (eqLn (Line2D(gCen, gCen)) (Line2D.scaleAround gCen 0.0 gLn)) "factor 0 collapses to center"
+            test "Line2D.scaleOn" {
+                let expected = Line2D(Pt.scaleOn gCen 2.5 gLn.From, Pt.scaleOn gCen 2.5 gLn.To)
+                Expect.isTrue (eqLn expected (Line2D.scaleOn gCen 2.5 gLn)) "scaleOn"
+                Expect.isTrue (eqLn expected (gLn.ScaleOn gCen 2.5)) "ScaleOn"
+                Expect.isTrue (eqLn (Line2D(gCen, gCen)) (Line2D.scaleOn gCen 0.0 gLn)) "factor 0 collapses to center"
             }
 
             test "Rect2D rotateDegrees and rotateRadians agree with rotate" {
@@ -841,14 +841,14 @@ let tests =
                 Expect.isTrue (eqPt (dup.GetPt 0) (dup.GetPt 1)) "duplicate points stay duplicates"
             }
 
-            test "Polyline2D.scaleAround changes it in place" {
-                let expected = Polyline2D.createFromPts ((gPl ()).AsPoints |> Seq.map (Pt.scaleAround gCen 1.5))
+            test "Polyline2D.scaleOn changes it in place" {
+                let expected = Polyline2D.createFromPts ((gPl ()).AsPoints |> Seq.map (Pt.scaleOn gCen 1.5))
                 let pl = gPl ()
-                Polyline2D.scaleAround gCen 1.5 pl
-                Expect.isTrue (eqPl expected pl) "scaleAround"
+                Polyline2D.scaleOn gCen 1.5 pl
+                Expect.isTrue (eqPl expected pl) "scaleOn"
                 let pl2 = gPl ()
-                pl2.ScaleAround gCen 1.5
-                Expect.isTrue (eqPl expected pl2) "ScaleAround"
+                pl2.ScaleOn gCen 1.5
+                Expect.isTrue (eqPl expected pl2) "ScaleOn"
             }
         ]
     ]

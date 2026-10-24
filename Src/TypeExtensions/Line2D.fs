@@ -1094,7 +1094,7 @@ module AutoOpenLine2D =
     /// <param name="cen">The center point of the scaling.</param>
     /// <param name="factor">The scale factor.</param>
     /// <returns>The scaled 2D line.</returns>
-    member inline l.ScaleAround (cen:Pt) (factor:float) : Line2D =
+    member inline l.ScaleOn (cen:Pt) (factor:float) : Line2D =
         let cx = cen.X
         let cy = cen.Y
         Line2D(
@@ -1108,8 +1108,8 @@ module AutoOpenLine2D =
     /// <param name="factor">The scale factor.</param>
     /// <param name="ln">The 2D line to scale.</param>
     /// <returns>The scaled 2D line.</returns>
-    static member inline scaleAround (cen:Pt) (factor:float) (ln:Line2D) : Line2D =
-        ln.ScaleAround cen factor
+    static member inline scaleOn (cen:Pt) (factor:float) (ln:Line2D) : Line2D =
+        ln.ScaleOn cen factor
 
     /// Rotate a Line2D by a Rotation2D.
     /// The resulting line has the same length as the input.
@@ -2089,16 +2089,6 @@ module AutoOpenLine2D =
 
     // #endregion
     // #region Obsolete
-
-    /// Obsolete name. Same as ln.ScaleAround.
-    [<Obsolete("Use ln.ScaleAround instead.")>]
-    member inline l.ScaleOn (cen:Pt) (factor:float) : Line2D =
-        l.ScaleAround cen factor
-
-    /// Obsolete name. Same as Line2D.scaleAround.
-    [<Obsolete("Use Line2D.scaleAround instead.")>]
-    static member inline scaleOn (cen:Pt) (factor:float) (ln:Line2D) : Line2D =
-        ln.ScaleAround cen factor
 
     /// Obsolete name. Same as ln.RotateAround, but with tupled arguments.
     [<Obsolete("Use ln.RotateAround instead. It takes curried arguments: ln.RotateAround cen r")>]

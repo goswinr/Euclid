@@ -750,10 +750,10 @@ let testsLine2DMove =
             "to Y scaled" |> expectEqualEpsilon scaled.ToY 8.
         }
 
-        test "ScaleAround center point" {
+        test "ScaleOn center point" {
             let ln = Line2D(0., 0., 10., 0.)
             let cen = Pt(5., 0.)
-            let scaled = ln.ScaleAround cen 2.
+            let scaled = ln.ScaleOn cen 2.
             "from X scaled from center" |> expectEqualEpsilon scaled.FromX -5.
             "to X scaled from center" |> expectEqualEpsilon scaled.ToX 15.
         }

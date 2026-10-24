@@ -543,7 +543,7 @@ type Box =
     /// <param name="cen">The center point of the scaling.</param>
     /// <param name="factor">The scale factor.</param>
     /// <returns>The scaled box.</returns>
-    member inline l.ScaleAround (cen:Pnt) (factor:float) : Box =
+    member inline l.ScaleOn (cen:Pnt) (factor:float) : Box =
         let cx = cen.X
         let cy = cen.Y
         let cz = cen.Z
@@ -560,8 +560,8 @@ type Box =
     /// <param name="factor">The scale factor.</param>
     /// <param name="b">The box to scale.</param>
     /// <returns>The scaled box.</returns>
-    static member inline scaleAround (cen:Pnt) (factor:float) (b:Box) : Box =
-        b.ScaleAround cen factor
+    static member inline scaleOn (cen:Pnt) (factor:float) (b:Box) : Box =
+        b.ScaleOn cen factor
 
     /// Returns a 3D box moved by a vector in world space. The box's axes are unchanged.
     member inline b.Move (v:Vec) : Box =
@@ -2995,16 +2995,6 @@ type Box =
 
     // #endregion
     // #region Obsolete
-
-    /// Obsolete name. Same as b.ScaleAround.
-    [<Obsolete("Use b.ScaleAround instead.")>]
-    member inline b.ScaleOn (cen:Pnt) (factor:float) : Box =
-        b.ScaleAround cen factor
-
-    /// Obsolete name. Same as Box.scaleAround.
-    [<Obsolete("Use Box.scaleAround instead.")>]
-    static member inline scaleOn (cen:Pnt) (factor:float) (b:Box) : Box =
-        b.ScaleAround cen factor
 
     /// Obsolete name. Same as b.RotateAround, but with tupled arguments.
     [<Obsolete("Use b.RotateAround instead. It takes curried arguments: b.RotateAround cen q")>]

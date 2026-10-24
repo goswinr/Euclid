@@ -1228,7 +1228,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// <summary>Scales the Polyline2D in place by a given factor around a given center point.</summary>
     /// <param name="cen">The center point of the scaling.</param>
     /// <param name="factor">The scale factor.</param>
-    member p.ScaleAround (cen:Pt) (factor:float) : unit =
+    member p.ScaleOn (cen:Pt) (factor:float) : unit =
         let cx = cen.X
         let cy = cen.Y
         let mutable i = 0
@@ -1242,8 +1242,8 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// <param name="cen">The center point of the scaling.</param>
     /// <param name="factor">The scale factor.</param>
     /// <param name="pl">The Polyline2D to change.</param>
-    static member inline scaleAround (cen:Pt) (factor:float) (pl:Polyline2D) : unit =
-        pl.ScaleAround cen factor
+    static member inline scaleOn (cen:Pt) (factor:float) (pl:Polyline2D) : unit =
+        pl.ScaleOn cen factor
 
     /// Moves the Polyline2D in place by a vector. Same as Polyline2D.move and Polyline2D.translate.
     member p.Move (v:Vc) : unit =
@@ -2544,16 +2544,6 @@ type Polyline2D private (xys: ResizeArray<float>) =
 
     // #endregion
     // #region Obsolete
-
-    /// Obsolete name. Same as p.ScaleAround.
-    [<Obsolete("Use p.ScaleAround instead. Like it, this scales the Polyline2D in place.")>]
-    member p.ScaleOn (cen:Pt) (factor:float) : unit =
-        p.ScaleAround cen factor
-
-    /// Obsolete name. Same as Polyline2D.scaleAround.
-    [<Obsolete("Use Polyline2D.scaleAround instead. Like it, this scales the Polyline2D in place.")>]
-    static member inline scaleOn (cen:Pt) (factor:float) (pl:Polyline2D) : unit =
-        pl.ScaleAround cen factor
 
     /// Obsolete name. Same as p.RotateAround, but with tupled arguments.
     [<Obsolete("Use p.RotateAround instead. It takes curried arguments: p.RotateAround cen r. Like it, this rotates the Polyline2D in place.")>]

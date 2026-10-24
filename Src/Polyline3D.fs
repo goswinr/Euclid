@@ -1500,7 +1500,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// <summary>Scales the Polyline3D in place by a given factor around a given center point.</summary>
     /// <param name="cen">The center point of the scaling.</param>
     /// <param name="factor">The scale factor.</param>
-    member p.ScaleAround (cen:Pnt) (factor:float) : unit =
+    member p.ScaleOn (cen:Pnt) (factor:float) : unit =
         let cx = cen.X
         let cy = cen.Y
         let cz = cen.Z
@@ -1516,8 +1516,8 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// <param name="cen">The center point of the scaling.</param>
     /// <param name="factor">The scale factor.</param>
     /// <param name="pl">The Polyline3D to change.</param>
-    static member inline scaleAround (cen:Pnt) (factor:float) (pl:Polyline3D) : unit =
-        pl.ScaleAround cen factor
+    static member inline scaleOn (cen:Pnt) (factor:float) (pl:Polyline3D) : unit =
+        pl.ScaleOn cen factor
 
     /// Moves the Polyline3D in place by a vector. Same as Polyline3D.move and Polyline3D.translate.
     member p.Move (v:Vec) : unit =
@@ -2689,16 +2689,6 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     [<Obsolete("Use Polyline3D.rotateAround instead. Like it, this rotates the Polyline3D in place.")>]
     static member rotateWithCenterByQuaternion (cen:Pnt) (q:Quaternion) (pl:Polyline3D) : unit =
         Polyline3D.rotateAround cen q pl
-
-    /// Obsolete name. Same as p.ScaleAround.
-    [<Obsolete("Use p.ScaleAround instead. Like it, this scales the Polyline3D in place.")>]
-    member p.ScaleOn (cen:Pnt) (factor:float) : unit =
-        p.ScaleAround cen factor
-
-    /// Obsolete name. Same as Polyline3D.scaleAround.
-    [<Obsolete("Use Polyline3D.scaleAround instead. Like it, this scales the Polyline3D in place.")>]
-    static member inline scaleOn (cen:Pnt) (factor:float) (pl:Polyline3D) : unit =
-        pl.ScaleAround cen factor
 
     /// Obsolete name. Same as p.RotateAround, but with tupled arguments.
     [<Obsolete("Use p.RotateAround instead. It takes curried arguments: p.RotateAround cen q. Like it, this rotates the Polyline3D in place.")>]

@@ -661,7 +661,7 @@ type FreeBox private (xyzs:float[]) =
     /// <summary>Scales the FreeBox in place by a given factor around a given center point.</summary>
     /// <param name="cen">The center point of the scaling.</param>
     /// <param name="factor">The scale factor.</param>
-    member _.ScaleAround (cen:Pnt) (factor:float) : unit =
+    member _.ScaleOn (cen:Pnt) (factor:float) : unit =
         let cx = cen.X
         let cy = cen.Y
         let cz = cen.Z
@@ -676,8 +676,8 @@ type FreeBox private (xyzs:float[]) =
     /// <param name="cen">The center point of the scaling.</param>
     /// <param name="factor">The scale factor.</param>
     /// <param name="b">The FreeBox to change.</param>
-    static member inline scaleAround (cen:Pnt) (factor:float) (b:FreeBox) : unit =
-        b.ScaleAround cen factor
+    static member inline scaleOn (cen:Pnt) (factor:float) (b:FreeBox) : unit =
+        b.ScaleOn cen factor
 
     /// Moves the FreeBox in place by a vector. Same as FreeBox.move and FreeBox.translate.
     member _.Move (v:Vec) : unit =
@@ -1216,16 +1216,6 @@ type FreeBox private (xyzs:float[]) =
 
 
     // #region Obsolete
-
-    /// Obsolete name. Same as b.ScaleAround.
-    [<Obsolete("Use b.ScaleAround instead. Like it, this scales the FreeBox in place.")>]
-    member b.ScaleOn (cen:Pnt) (factor:float) : unit =
-        b.ScaleAround cen factor
-
-    /// Obsolete name. Same as FreeBox.scaleAround.
-    [<Obsolete("Use FreeBox.scaleAround instead. Like it, this scales the FreeBox in place.")>]
-    static member inline scaleOn (cen:Pnt) (factor:float) (b:FreeBox) : unit =
-        b.ScaleAround cen factor
 
     /// Obsolete name. Same as b.RotateAround.
     [<Obsolete("Use b.RotateAround instead. Like it, this rotates the FreeBox in place.")>]

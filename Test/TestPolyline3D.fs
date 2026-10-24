@@ -1249,13 +1249,13 @@ let tests =
                 pl.Move(Vec(-2.,5.,3.))
                 pl.RotateAround (Pnt(4.,6.,1.)) q
                 pl.Transform m
-                pl.ScaleAround (Pnt(1.,-1.,2.)) 1.5
+                pl.ScaleOn (Pnt(1.,-1.,2.)) 1.5
                 Expect.isTrue (obj.ReferenceEquals(xyzs, pl.XYZs)) "same coordinate list"
                 let expected = Polyline3D.createFromPnts pts
                 Polyline3D.translate (Vec(-2.,5.,3.)) expected
                 Polyline3D.rotateAround (Pnt(4.,6.,1.)) q expected
                 Polyline3D.transform m expected
-                Polyline3D.scaleAround (Pnt(1.,-1.,2.)) 1.5 expected
+                Polyline3D.scaleOn (Pnt(1.,-1.,2.)) 1.5 expected
                 Expect.isTrue (Polyline3D.equalsTol 1e-12 pl expected) "instance and static calls give the same result"
                 Expect.isFalse (eqPnt pl.Start (Pnt(3.,2.,1.))) "first point moved"
             }

@@ -426,7 +426,7 @@ module AutoOpenPnt =
         /// <param name="factor">The scale factor.</param>
         /// <param name="pnt">The 3D point to scale.</param>
         /// <returns>The scaled 3D point.</returns>
-        static member inline scaleAround (cen:Pnt) (factor:float) (pnt:Pnt) : Pnt =
+        static member inline scaleOn (cen:Pnt) (factor:float) (pnt:Pnt) : Pnt =
             Pnt(cen.X + (pnt.X - cen.X) * factor,
                 cen.Y + (pnt.Y - cen.Y) * factor,
                 cen.Z + (pnt.Z - cen.Z) * factor)

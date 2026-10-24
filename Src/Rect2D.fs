@@ -284,7 +284,7 @@ type Rect2D =
     /// <param name="cen">The center point of the scaling.</param>
     /// <param name="factor">The scale factor.</param>
     /// <returns>The scaled 2D rectangle.</returns>
-    member inline l.ScaleAround (cen:Pt) (factor:float) : Rect2D =
+    member inline l.ScaleOn (cen:Pt) (factor:float) : Rect2D =
         let cx = cen.X
         let cy = cen.Y
         Rect2D.createUnchecked(
@@ -301,8 +301,8 @@ type Rect2D =
     /// <param name="factor">The scale factor.</param>
     /// <param name="r">The 2D rectangle to scale.</param>
     /// <returns>The scaled 2D rectangle.</returns>
-    static member inline scaleAround (cen:Pt) (factor:float) (r:Rect2D) : Rect2D =
-        r.ScaleAround cen factor
+    static member inline scaleOn (cen:Pt) (factor:float) (r:Rect2D) : Rect2D =
+        r.ScaleOn cen factor
 
     /// Returns the longest edge of the Rect2D.
     member inline b.LongestEdge : float =
@@ -2230,16 +2230,6 @@ type Rect2D =
 
     // #endregion
     // #region Obsolete
-
-    /// Obsolete name. Same as r.ScaleAround.
-    [<Obsolete("Use r.ScaleAround instead.")>]
-    member inline r.ScaleOn (cen:Pt) (factor:float) : Rect2D =
-        r.ScaleAround cen factor
-
-    /// Obsolete name. Same as Rect2D.scaleAround.
-    [<Obsolete("Use Rect2D.scaleAround instead.")>]
-    static member inline scaleOn (cen:Pt) (factor:float) (r:Rect2D) : Rect2D =
-        r.ScaleAround cen factor
 
     /// Obsolete name. Same as r.RotateAround, but with tupled arguments.
     [<Obsolete("Use r.RotateAround instead. It takes curried arguments: r.RotateAround cen rot")>]

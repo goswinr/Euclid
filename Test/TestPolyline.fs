@@ -171,7 +171,7 @@ let tests =
             test "scale on center" {
                 let center = Pt(5., 5.)
                 let scaled = plOpen.Duplicate()
-                scaled.ScaleAround center 2.0
+                scaled.ScaleOn center 2.0
                 "first point scaled on center" |> (expectEqPts  scaled.AsPoints.[0] (Pt(-5.,-5.)))
                 "second point scaled on center" |> (expectEqPts  scaled.AsPoints.[1] (Pt(15.,-5.)))
             }
@@ -1887,10 +1887,10 @@ let testsSpecial =
                 for i = 0 to s.PointCount - 1 do
                     $"point {i} at origin" |> expectEqPts s.AsPoints.[i] (Pt(0.,0.))
             }
-            test "scaleAround by zero collapses to center" {
+            test "scaleOn by zero collapses to center" {
                 let cen = Pt(5.,5.)
                 let s = plOpen.Duplicate()
-                Polyline2D.scaleAround cen 0.0 s
+                Polyline2D.scaleOn cen 0.0 s
                 for i = 0 to s.PointCount - 1 do
                     $"point {i} at center" |> expectEqPts s.AsPoints.[i] cen
             }
@@ -2090,12 +2090,12 @@ let testsSpecial =
                 let xys = pl.XYs
                 pl.Move(Vc(-2.,5.))
                 pl.RotateAround (Pt(4.,6.)) (Rotation2D.createFromDegrees 30.)
-                pl.ScaleAround (Pt(1.,-1.)) 1.5
+                pl.ScaleOn (Pt(1.,-1.)) 1.5
                 Expect.isTrue (obj.ReferenceEquals(xys, pl.XYs)) "same coordinate list"
                 let expected = Polyline2D.createFromPts [Pt(3.,2.); Pt(9.,4.); Pt(7.,8.); Pt(3.,2.)]
                 Polyline2D.translate (Vc(-2.,5.)) expected
                 Polyline2D.rotateAround (Pt(4.,6.)) (Rotation2D.createFromDegrees 30.) expected
-                Polyline2D.scaleAround (Pt(1.,-1.)) 1.5 expected
+                Polyline2D.scaleOn (Pt(1.,-1.)) 1.5 expected
                 Expect.isTrue (Polyline2D.equalsTol 1e-12 pl expected) "instance and static calls give the same result"
                 "first point moved" |> expectNotEqPts pl.Start (Pt(3.,2.))
             }

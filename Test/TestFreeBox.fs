@@ -397,14 +397,14 @@ let tests =
                 Expect.isTrue (eqPnt box.Pnt6 (Pnt(22., 14., 12.))) "Pnt6 should be scaled"
             }
 
-            test "ScaleAround center point" {
+            test "ScaleOn center point" {
                 let pts = [|
                     Pnt(0., 0., 0.); Pnt(10., 0., 0.); Pnt(10., 10., 0.); Pnt(0., 10., 0.)
                     Pnt(0., 0., 10.); Pnt(10., 0., 10.); Pnt(10., 10., 10.); Pnt(0., 10., 10.)
                 |]
                 let box = FreeBox.createFromEightPoints pts
                 let center = Pnt(5., 5., 5.)
-                box.ScaleAround center 2.
+                box.ScaleOn center 2.
                 Expect.isTrue (eqPnt box.Pnt0 (Pnt(-5., -5., -5.))) "Pnt0 should be scaled around center"
                 Expect.isTrue (eqPnt box.Pnt6 (Pnt(15., 15., 15.))) "Pnt6 should be scaled around center"
             }

@@ -427,14 +427,14 @@ let tests =
                 "SizeY scaled"  |> Expect.isTrue (eqf r.SizeY 10.)
                 "center scaled" |> Expect.isTrue (eq r.Center (Pt(15., 16.)))
             }
-            test "ScaleAround a center keeps that center fixed" {
-                let r = rr.ScaleAround rCenter 2.
+            test "ScaleOn a center keeps that center fixed" {
+                let r = rr.ScaleOn rCenter 2.
                 "center kept"  |> Expect.isTrue (eq r.Center rCenter)
                 "SizeX scaled" |> Expect.isTrue (eqf r.SizeX 20.)
                 "SizeY scaled" |> Expect.isTrue (eqf r.SizeY 10.)
             }
-            test "scaleAround static" {
-                let r = Rect2D.scaleAround rCenter 0.5 rr
+            test "scaleOn static" {
+                let r = Rect2D.scaleOn rCenter 0.5 rr
                 "center kept"   |> Expect.isTrue (eq r.Center rCenter)
                 "SizeX shrunk"  |> Expect.isTrue (eqf r.SizeX 5.)
             }

@@ -455,9 +455,9 @@ let tests =
                 Expect.equal scaled.SizeZ 6. "SizeZ should be scaled"
             }
 
-            test "ScaleAround center point" {
+            test "ScaleOn center point" {
                 let box = Box.createUncheckedVec(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
-                let scaled = box.ScaleAround (Pnt(5., 5., 5.)) 2.
+                let scaled = box.ScaleOn (Pnt(5., 5., 5.)) 2.
                 Expect.isTrue (eqPnt scaled.Center box.Center) "Center should remain at same position"
                 Expect.equal scaled.SizeX 20. "SizeX should be scaled"
             }

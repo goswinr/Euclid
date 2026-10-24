@@ -367,7 +367,7 @@ type Rect3D =
     /// <param name="cen">The center point of the scaling.</param>
     /// <param name="factor">The scale factor.</param>
     /// <returns>The scaled 3D rectangle.</returns>
-    member inline l.ScaleAround (cen:Pnt) (factor:float) : Rect3D =
+    member inline l.ScaleOn (cen:Pnt) (factor:float) : Rect3D =
         let cx = cen.X
         let cy = cen.Y
         let cz = cen.Z
@@ -388,8 +388,8 @@ type Rect3D =
     /// <param name="factor">The scale factor.</param>
     /// <param name="r">The 3D rectangle to scale.</param>
     /// <returns>The scaled 3D rectangle.</returns>
-    static member inline scaleAround (cen:Pnt) (factor:float) (r:Rect3D) : Rect3D =
-        r.ScaleAround cen factor
+    static member inline scaleOn (cen:Pnt) (factor:float) (r:Rect3D) : Rect3D =
+        r.ScaleOn cen factor
 
     /// Returns a 3D rectangle moved by a vector in world space. Same as Rect3D.move.
     member inline r.Move (v:Vec) : Rect3D =
@@ -2264,16 +2264,6 @@ type Rect3D =
 
     // #endregion
     // #region Obsolete
-
-    /// Obsolete name. Same as r.ScaleAround.
-    [<Obsolete("Use r.ScaleAround instead.")>]
-    member inline r.ScaleOn (cen:Pnt) (factor:float) : Rect3D =
-        r.ScaleAround cen factor
-
-    /// Obsolete name. Same as Rect3D.scaleAround.
-    [<Obsolete("Use Rect3D.scaleAround instead.")>]
-    static member inline scaleOn (cen:Pnt) (factor:float) (r:Rect3D) : Rect3D =
-        r.ScaleAround cen factor
 
     /// Obsolete name. Same as r.RotateAround, but with tupled arguments.
     [<Obsolete("Use r.RotateAround instead. It takes curried arguments: r.RotateAround cen q")>]

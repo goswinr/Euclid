@@ -65,7 +65,7 @@ Therefore transformations that depend on a location never apply to vectors:
   Vectors only rotate around the origin (a pure rotation, e.g. `Vec.rotate`, `Vec.rotateOnZ`).
 
 The API enforces this: vector types (`Vc`, `Vec`, `UnitVc`, `UnitVec`) deliberately offer no
-`translate`, `rotateAround` or `scaleAround` members. (The two members that violated this rule,
+`translate`, `rotateAround` or `scaleOn` members. (The two members that violated this rule,
 `Vec.rotateWithCenter` and `UnitVec.rotateWithCenter`, are scheduled for removal.)
 
 ### Mutability
@@ -146,7 +146,7 @@ Rotations and scaling share one curried naming grammar, with the geometry as the
 | `rotateAroundDegrees center degrees geometry` | Rotate around a center point by an angle in degrees (2D) |
 | `rotateAroundRadians center radians geometry` | Rotate around a center point by an angle in radians (2D) |
 | `scale factor geometry` | Scale from the origin |
-| `scaleAround center factor geometry` | Scale from a center point |
+| `scaleOn center factor geometry` | Scale from a center point |
 
 A raw angle argument always names its unit. The instance members use the same names in PascalCase, e.g. `ln.RotateAround cen r`.
 For repeated rotations, precompute the `Rotation2D` once and use `rotate` or `rotateAround`.

@@ -443,7 +443,7 @@ module AutoOpenPt =
         /// <param name="factor">The scale factor.</param>
         /// <param name="pt">The 2D point to scale.</param>
         /// <returns>The scaled 2D point.</returns>
-        static member inline scaleAround (cen:Pt) (factor:float) (pt:Pt) : Pt =
+        static member inline scaleOn (cen:Pt) (factor:float) (pt:Pt) : Pt =
             Pt(cen.X + (pt.X - cen.X) * factor,
                cen.Y + (pt.Y - cen.Y) * factor)
 
