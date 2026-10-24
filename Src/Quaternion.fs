@@ -233,7 +233,9 @@ type Quaternion =
         Quaternion.equals tolerance a b ||
         Quaternion.equals tolerance a (Quaternion.createUnchecked(-b.X, -b.Y, -b.Z, -b.W))
 
-    /// Multiply two Quaternions. It's like adding one rotation to the other.
+    /// Multiply two Quaternions (Hamilton product l * r).
+    /// Note: The resulting rotation first does r and then l. This is the opposite order of Matrix.multiply and RigidMatrix.multiply.
+    /// Use l.Then(r) for the same application order as in Matrix.multiply (first l, then r).
     /// Note: Repeated multiplications may accumulate floating-point errors that violate the unit-length invariant.
     /// Use q.Normalize() to renormalize if combining many rotations.
     static member multiply (l:Quaternion, r:Quaternion) : Quaternion =
@@ -243,9 +245,19 @@ type Quaternion =
             l.W * r.Z + l.Z * r.W + l.X * r.Y - l.Y * r.X,
             l.W * r.W - l.X * r.X - l.Y * r.Y - l.Z * r.Z)
 
-    /// Multiply two Quaternions. It's like adding one rotation to the other.
+    /// Multiply two Quaternions (Hamilton product l * r).
+    /// Note: The resulting rotation first does r and then l. This is the opposite order of the *** operator on Matrix and RigidMatrix.
+    /// Use l.Then(r) for the same application order as in Matrix *** Matrix (first l, then r).
     static member inline ( *** ) (l:Quaternion, r:Quaternion) : Quaternion =
         Quaternion.multiply(l, r)
+
+    /// <summary>Combines this rotation with another one.
+    /// The resulting rotation will first do this Quaternion and then the other.
+    /// The application order is the same as in Matrix.multiply and RigidMatrix.multiply.</summary>
+    /// <param name="other">The other Quaternion (applied second).</param>
+    /// <returns>A new Quaternion that rotates like this one followed by other.</returns>
+    member inline q.Then (other:Quaternion) : Quaternion =
+        Quaternion.multiply(other, q)
 
     /// This constructor does unitizing too.
     static member create (x, y, z, w) : Quaternion =

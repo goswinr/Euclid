@@ -607,6 +607,14 @@ type Matrix =
     static member inline ( *** ) (matrixA:Matrix, matrixB:Matrix) : Matrix =
         Matrix.multiply(matrixA, matrixB)
 
+    /// <summary>Combines this transformation with another one.
+    /// The resulting transformation will first do this Matrix and then the other.
+    /// The application order is the same as in RigidMatrix.Then and Quaternion.Then.</summary>
+    /// <param name="other">The other Matrix (applied second).</param>
+    /// <returns>A new Matrix that transforms like this one followed by other.</returns>
+    member inline m.Then (other:Matrix) : Matrix =
+        Matrix.multiply(m, other)
+
     /// <summary>Transposes the Matrix by swapping rows and columns.
     /// For transformation matrices, this swaps the effect of row-major and column-major conventions.
     /// For orthogonal rotation matrices, the transpose equals the inverse.</summary>

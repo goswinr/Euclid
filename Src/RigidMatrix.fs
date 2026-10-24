@@ -343,6 +343,14 @@ type RigidMatrix =
     static member inline ( *** ) (matrixA:RigidMatrix, matrixB:RigidMatrix) : RigidMatrix =
         RigidMatrix.multiply(matrixA, matrixB)
 
+    /// <summary>Combines this transformation with another one.
+    /// The resulting transformation will first do this RigidMatrix and then the other.
+    /// The application order is the same as in Matrix.Then and Quaternion.Then.</summary>
+    /// <param name="other">The other RigidMatrix (applied second).</param>
+    /// <returns>A new RigidMatrix that transforms like this one followed by other.</returns>
+    member inline m.Then (other:RigidMatrix) : RigidMatrix =
+        RigidMatrix.multiply(m, other)
+
     /// <summary>Returns the Identity RigidMatrix:
     /// <code>
     /// 1  0  0  0

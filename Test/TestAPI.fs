@@ -1483,7 +1483,8 @@ module QuaternionAPI =
     let (_:Pnt) = p *** quaternion                   // Rotate point
     let (_:UnitVec) = u *** quaternion               // Rotate unit vector
     let (_:Line3D) = ln *** quaternion               // Rotate line
-    let (_:Quaternion) = quaternion *** q2           // Multiply quaternions
+    let (_:Quaternion) = quaternion *** q2           // Multiply quaternions (applies q2 first)
+    let (_:Quaternion) = quaternion.Then q2          // Combine rotations (applies quaternion first)
 
     // Static members - Creation (additional)
     // let (_:Quaternion) = Quaternion.createDirectlyUnchecked(0.0, 0.0, 0.0, 1.0)
@@ -1590,6 +1591,7 @@ module MatrixAPI =
     let (_:Vec) = Vec(1., 2., 3.) *** matrix        // Transform vector
     let (_:Vec) = UnitVec.Xaxis *** matrix          // Transform unit vector (returns Vec)
     let (_:Matrix) = matrix *** m2                  // Multiply matrices
+    let (_:Matrix) = matrix.Then m2                 // Combine transformations (applies matrix first)
 
 // ===== RigidMatrix (4x4 Rigid Transformation Matrix - no scaling/shearing) =====
 
@@ -1655,6 +1657,7 @@ module RigidMatrixAPI =
     let (_:Vec) = Vec(1., 2., 3.) *** rigidmatrix       // Transform vector
     let (_:UnitVec) = UnitVec.Xaxis *** rigidmatrix      // Transform unit vector (RigidMatrix preserves unit length)
     let (_:RigidMatrix) = rigidmatrix *** rm2           // Multiply rigid matrices
+    let (_:RigidMatrix) = rigidmatrix.Then rm2          // Combine transformations (applies rigidmatrix first)
 
 // ===== NPlane (Infinite Plane defined by normal and distance) =====
 

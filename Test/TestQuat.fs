@@ -95,6 +95,36 @@ let tests =
             "quaternion multiplication" |> expectEqual result1 result2
         }
 
+        test "Quaternion Then applies first rotation first" {
+            let qx = Quaternion.createFromDegrees(Vec.Xaxis, 90.)
+            let qy = Quaternion.createFromDegrees(Vec.Yaxis, 90.)
+            let a = Pnt(2,3,5)
+            let viaThen = a *** (qx.Then qy)
+            let viaSteps = (a *** qx) *** qy // note: *** is right associative, so the parentheses are needed
+            "Then equals stepwise" |> expectEqual viaThen viaSteps
+            "Then x then y" |> expectEqual viaThen (Pnt(3,-5,-2))
+            let reversed = a *** (qy.Then qx)
+            "Then y then x" |> expectEqual reversed (Pnt(5,2,3))
+            // Hamilton product applies the right operand first:
+            "multiply applies right first" |> expectEqual (a *** (qx *** qy)) reversed
+        }
+
+        test "Quaternion Then matches Matrix and RigidMatrix order" {
+            let axis = Vec(1., 2., 3.)
+            let q1 = Quaternion.createFromDegrees(axis, 70.)
+            let q2 = Quaternion.createFromDegrees(Vec(-2., 1., 4.), 33.)
+            let m1 = Matrix.createRotationAxis(axis, 70.)
+            let m2 = Matrix.createRotationAxis(Vec(-2., 1., 4.), 33.)
+            let r1 = RigidMatrix.createRotationAxis(axis, 70.)
+            let r2 = RigidMatrix.createRotationAxis(Vec(-2., 1., 4.), 33.)
+            let a = Pnt(12.3, -4.5, 6.7)
+            let pq = a *** (q1.Then q2)
+            "Quaternion vs Matrix" |> expectEqual pq (a *** (m1.Then m2))
+            "Quaternion vs RigidMatrix" |> expectEqual pq (a *** (r1.Then r2))
+            "Matrix.Then equals ***" |> expectEqual (a *** (m1.Then m2)) (a *** (m1 *** m2))
+            "RigidMatrix.Then equals ***" |> expectEqual (a *** (r1.Then r2)) (a *** (r1 *** r2))
+        }
+
         test "Quaternion identity" {
             let q = Quaternion.identity
             let a = Pnt(5,3,7)
