@@ -564,11 +564,6 @@ type Matrix =
         a.Z43 = b.Z43 &&
         a.M44 = b.M44
 
-    /// Obsolete name. Same as Matrix.equalsWithin.
-    [<Obsolete("Use Matrix.equalsWithin instead, or Matrix.equalsExact for an exact match.")>]
-    static member equals (tol:float) (a:Matrix) (b:Matrix) : bool =
-        Matrix.equalsWithin tol a b
-
     /// <summary>Multiplies matrixA with matrixB.
     /// The resulting transformation will first do matrixA and then matrixB.</summary>
     /// <param name="matrixA">The first matrix (applied first).</param>
@@ -1036,12 +1031,6 @@ type Matrix =
             xs[2],  xs[6],  xs[10],  xs[14] ,
             xs[3],  xs[7],  xs[11],  xs[15] )
 
-    /// <summary>Obsolete misspelling. Same as Matrix.createFromColumnMajorArray.</summary>
-    /// <param name="xs">Array of 16 float elements in column-major order.</param>
-    [<Obsolete("typo, use createFromColumnMajorArray instead")>]
-    static member createFromColumMajorArray (xs:float[]) : Matrix =
-        Matrix.createFromColumnMajorArray xs
-
     /// <summary>Creates a matrix from array of 16 elements in Row Major order:
     /// <code>[| M11 M21 M31 X41 M12 M22 M32 Y42 M13 M23 M33 Z43 M14 M24 M34 M44 |]</code>
     /// Where X41, Y42 and Z43 refer to the translation part of the matrix.</summary>
@@ -1151,16 +1140,6 @@ type Matrix =
             0                               , 0                                , -1         ,                               0
             )
 
-    /// <summary>Obsolete. Use createPerspectiveAlongNegZ instead.
-    /// Creates a perspective projection at the origin, looking along -Z, with screen right +X and screen up +Y.</summary>
-    /// <param name="width">Width of the view volume at the near plane, in world units.</param>
-    /// <param name="height">Height of the view volume at the near plane, in world units.</param>
-    /// <param name="nearPlaneDistance">Positive distance to the near plane.</param>
-    /// <param name="farPlaneDistance">Distance greater than nearPlaneDistance; may be positive infinity.</param>
-    [<Obsolete("Use Matrix.createPerspectiveAlongNegZ instead.")>]
-    static member createPerspective(width, height, nearPlaneDistance, farPlaneDistance) : Matrix =
-        Matrix.createPerspectiveAlongNegZ(width, height, nearPlaneDistance, farPlaneDistance)
-
     /// <summary>Creates a perspective projection at the origin, looking along +Y.
     /// Screen right is +X and screen up is +Z. Near and far plane depths map to 0 and 1.</summary>
     /// <param name="width">Width of the view volume at the near plane, in world units.</param>
@@ -1242,139 +1221,6 @@ type Matrix =
     static member createPerspectiveLookAtZUp(eye:Pnt, target:Pnt, width, height, nearPlaneDistance, farPlaneDistance) : Matrix =
         let view = Matrix.createLookAtZUp(eye, target)
         view *** Matrix.createPerspectiveAlongNegZ(width, height, nearPlaneDistance, farPlaneDistance)
-
-    // ----------------------------------------------
-    // operators for matrix multiplication:
-    // For Vectors the translation part of the matrix is ignored.
-    // For Points the translation part of the matrix is applied.
-    // ----------------------------------------------
-
-    /// <summary>Multiplies (or applies) a Matrix to a 3D vector.
-    /// Since a 3D vector represents a direction or translation in space, but not a location,
-    /// the implicit 4th dimension is 0.0 so that all translations are ignored. (Homogeneous Vector)</summary>
-    /// <param name="v">The 3D vector to transform.</param>
-    /// <param name="m">The transformation matrix.</param>
-    [<Obsolete("If the matrix is projecting this transformation will not be correct. Use RigidMatrix or with a Pnt instead.")>]
-    static member inline ( *** ) (v:Vec, m:Matrix) : Vec =
-        // from applyMatrix4(m) in  https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
-        let x = v.X
-        let y = v.Y
-        let z = v.Z
-        //let w = 0.0
-        let x' = m.M11*x + m.M21*y + m.M31*z //+ m.X41 * w
-        let y' = m.M12*x + m.M22*y + m.M32*z //+ m.Y42 * w
-        let z' = m.M13*x + m.M23*y + m.M33*z //+ m.Z43 * w
-        // let w' = m.M14*x + m.M24*y + m.M34*z //+ m.M44 * w
-        // let sc = 1.0 / w'
-        // Vec(x' * sc, y'* sc, z'* sc)
-        Vec(x', y', z')
-
-    /// <summary>Multiplies a Matrix with a 3D unit-vector.
-    /// Since a 3D vector represents a direction or translation in space, but not a location,
-    /// the implicit 4th dimension is 0.0 so that all translations are ignored. (Homogeneous Vector)</summary>
-    /// <param name="v">The 3D unit-vector to transform.</param>
-    /// <param name="m">The transformation matrix.</param>
-    [<Obsolete("If the matrix is projecting this transformation will not be correct. Use RigidMatrix or with a Pnt instead.")>]
-    static member inline ( *** ) (v:UnitVec, m:Matrix) : Vec =
-        // from applyMatrix4(m) in  https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
-        let x = v.X
-        let y = v.Y
-        let z = v.Z
-        //let w = 0.0
-        let x' = m.M11*x + m.M21*y + m.M31*z //+ m.X41 * w
-        let y' = m.M12*x + m.M22*y + m.M32*z //+ m.Y42 * w
-        let z' = m.M13*x + m.M23*y + m.M33*z //+ m.Z43 * w
-        // let w' = m.M14*x + m.M24*y + m.M34*z //+ m.M44 * w
-        // let sc = 1.0 / w'
-        // Vec(x' * sc, y'* sc, z'* sc)
-        Vec(x', y', z')
-
-
-    (*
-    [<Obsolete("Use Inverse instead. This method is not optimized and will be removed in a future version.")>]
-    //member m.InverseSlow =
-        // based on http://www.euclideanspace.com/maths/algebra/matrix/functions/inverse/fourD/index.htm
-        // also see https://github.com/mrdoob/three.js/blob/master/src/math/Matrix4.js#L717
-        let m00 = m.M11
-        let m01 = m.M12
-        let m02 = m.M13
-        let m03 = m.M14
-        let m10 = m.M21
-        let m11 = m.M22
-        let m12 = m.M23
-        let m13 = m.M24
-        let m20 = m.M31
-        let m21 = m.M32
-        let m22 = m.M33
-        let m23 = m.M34
-        let m30 = m.X41
-        let m31 = m.Y42
-        let m32 = m.Z43
-        let m33 = m.M44
-
-        let determinant =
-            m03 * m12 * m21 * m30-m02 * m13 * m21 * m30-m03 * m11 * m22 * m30+m01 * m13 * m22 * m30 +
-            m02 * m11 * m23 * m30-m01 * m12 * m23 * m30-m03 * m12 * m20 * m31+m02 * m13 * m20 * m31 +
-            m03 * m10 * m22 * m31-m00 * m13 * m22 * m31-m02 * m10 * m23 * m31+m00 * m12 * m23 * m31 +
-            m03 * m11 * m20 * m32-m01 * m13 * m20 * m32-m03 * m10 * m21 * m32+m00 * m13 * m21 * m32 +
-            m01 * m10 * m23 * m32-m00 * m11 * m23 * m32-m02 * m11 * m20 * m33+m01 * m12 * m20 * m33 +
-            m02 * m10 * m21 * m33-m00 * m12 * m21 * m33-m01 * m10 * m22 * m33+m00 * m11 * m22 * m33
-
-        if abs determinant < 1e-16 then m.FailedInverse()
-        let detInv = 1. / determinant
-
-        let r00 = m12*m23*m31 - m13*m22*m31 + m13*m21*m32 - m11*m23*m32 - m12*m21*m33 + m11*m22*m33;
-        let r01 = m03*m22*m31 - m02*m23*m31 - m03*m21*m32 + m01*m23*m32 + m02*m21*m33 - m01*m22*m33;
-        let r02 = m02*m13*m31 - m03*m12*m31 + m03*m11*m32 - m01*m13*m32 - m02*m11*m33 + m01*m12*m33;
-        let r03 = m03*m12*m21 - m02*m13*m21 - m03*m11*m22 + m01*m13*m22 + m02*m11*m23 - m01*m12*m23;
-        let r10 = m13*m22*m30 - m12*m23*m30 - m13*m20*m32 + m10*m23*m32 + m12*m20*m33 - m10*m22*m33;
-        let r11 = m02*m23*m30 - m03*m22*m30 + m03*m20*m32 - m00*m23*m32 - m02*m20*m33 + m00*m22*m33;
-        let r12 = m03*m12*m30 - m02*m13*m30 - m03*m10*m32 + m00*m13*m32 + m02*m10*m33 - m00*m12*m33;
-        let r13 = m02*m13*m20 - m03*m12*m20 + m03*m10*m22 - m00*m13*m22 - m02*m10*m23 + m00*m12*m23;
-        let r20 = m11*m23*m30 - m13*m21*m30 + m13*m20*m31 - m10*m23*m31 - m11*m20*m33 + m10*m21*m33;
-        let r21 = m03*m21*m30 - m01*m23*m30 - m03*m20*m31 + m00*m23*m31 + m01*m20*m33 - m00*m21*m33;
-        let r22 = m01*m13*m30 - m03*m11*m30 + m03*m10*m31 - m00*m13*m31 - m01*m10*m33 + m00*m11*m33;
-        let r23 = m03*m11*m20 - m01*m13*m20 - m03*m10*m21 + m00*m13*m21 + m01*m10*m23 - m00*m11*m23;
-        let r30 = m12*m21*m30 - m11*m22*m30 - m12*m20*m31 + m10*m22*m31 + m11*m20*m32 - m10*m21*m32;
-        let r31 = m01*m22*m30 - m02*m21*m30 + m02*m20*m31 - m00*m22*m31 - m01*m20*m32 + m00*m21*m32;
-        let r32 = m02*m11*m30 - m01*m12*m30 - m02*m10*m31 + m00*m12*m31 + m01*m10*m32 - m00*m11*m32;
-        let r33 = m01*m12*m20 - m02*m11*m20 + m02*m10*m21 - m00*m12*m21 - m01*m10*m22 + m00*m11*m22;
-
-        // argument order for Matrix constructor is:
-        // r00 or  M11
-        // r01 or  M21
-        // r02 or  M31
-        // r03 or  X41
-        // r10 or  M12
-        // r11 or  M22
-        // r12 or  M32
-        // r13 or  Y42
-        // r20 or  M13
-        // r21 or  M23
-        // r22 or  M33
-        // r23 or  Z43
-        // r30 or  M14
-        // r31 or  M24
-        // r32 or  M34
-        // r33 or  M44
-        Matrix  ( r00*detInv // M11
-                , r10*detInv // M21
-                , r20*detInv // M31
-                , r30*detInv // X41
-                , r01*detInv // M12
-                , r11*detInv // M22
-                , r21*detInv // M32
-                , r31*detInv // Y42
-                , r02*detInv // M13
-                , r12*detInv // M23
-                , r22*detInv // M33
-                , r32*detInv // Z43
-                , r03*detInv // M14
-                , r13*detInv // M24
-                , r23*detInv // M34
-                , r33*detInv // M44
-                )
-    *)
 
 #if !FABLE_COMPILER
 /// Serializes a Matrix as its 16 elements with System.Text.Json.

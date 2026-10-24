@@ -166,11 +166,6 @@ type Rotation2D =
         a.Sin = b.Sin &&
         a.Cos = b.Cos
 
-    /// Obsolete name. Same as Rotation2D.equalsWithin.
-    [<Obsolete("Use Rotation2D.equalsWithin instead, or Rotation2D.equalsExact for an exact match.")>]
-    static member inline equals (tol:float) (a:Rotation2D) (b:Rotation2D) : bool =
-        Rotation2D.equalsWithin tol a b
-
     /// Construct a counter-clockwise 2D Rotation from angle in radians.
     /// Use negative radians for clockwise rotation.
     static member inline createFromRadians rad : Rotation2D =

@@ -1163,11 +1163,6 @@ type Box =
         let f = distZ / len
         Box.createUnchecked(b.OriginX + b.ZaxisX*f, b.OriginY + b.ZaxisY*f, b.OriginZ + b.ZaxisZ*f, b.XaxisX, b.XaxisY, b.XaxisZ, b.YaxisX, b.YaxisY, b.YaxisZ, b.ZaxisX, b.ZaxisY, b.ZaxisZ)
 
-    /// Move a 3D box by a vector. Same as Box.move.
-    [<Obsolete("This was an alias for Box.move, ambiguous with the local-axis translateLocalX/Y/Z members. Use Box.move for a world-space vector, or Box.translateLocalX/Y/Z to move along the box's own axes.")>]
-    static member inline translate (v:Vec) (b:Box) : Box =
-        Box.createUnchecked(b.OriginX + v.X, b.OriginY + v.Y, b.OriginZ + v.Z, b.XaxisX, b.XaxisY, b.XaxisZ, b.YaxisX, b.YaxisY, b.YaxisZ, b.ZaxisX, b.ZaxisY, b.ZaxisZ)
-
     /// <summary>Intersects an infinite ray (Line3D extended infinitely in both directions) with this Box.
     /// Uses the slab intersection method in the box's local coordinate system.
     /// Returns ValueNone if the ray does not intersect the box or if the ray direction is too short.
@@ -3030,109 +3025,7 @@ type Box =
         b.Edges
 
     // #endregion
-    // #region Obsolete
 
-    /// Obsolete name. Same as Box.equalsWithin.
-    [<Obsolete("Use Box.equalsWithin instead, or Box.equalsExact for an exact match.")>]
-    static member equals (tol:float) (a:Box) (b:Box) : bool =
-        Box.equalsWithin tol a b
-
-    /// Obsolete name. Same as Box.notEqualsWithin.
-    [<Obsolete("Use Box.notEqualsWithin instead.")>]
-    static member notEquals (tol:float) (a:Box) (b:Box) : bool =
-        Box.notEqualsWithin tol a b
-
-    /// Obsolete name. Same as b.RotateAround, but with tupled arguments.
-    [<Obsolete("Use b.RotateAround instead. It takes curried arguments: b.RotateAround cen q")>]
-    member inline b.RotateWithCenter (cen:Pnt, q:Quaternion) : Box =
-        b.RotateAround cen q
-
-    /// Obsolete name. Same as Box.rotateAround.
-    [<Obsolete("Use Box.rotateAround instead.")>]
-    static member inline rotateWithCenter (cen:Pnt) (q:Quaternion) (b:Box) : Box =
-        b.RotateAround cen q
-
-    /// Obsolete name. Same as b.GetPnt.
-    [<Obsolete("Use GetPnt instead.")>]
-    member b.GetPoint (pointIndex:int) : Pnt =
-        b.GetPnt pointIndex
-
-    /// Obsolete name. Same as Box.getPnt.
-    [<Obsolete("Use Box.getPnt instead.")>]
-    static member inline getPoint (pointIndex:int) (b:Box) : Pnt =
-        b.GetPnt pointIndex
-
-    [<Obsolete("This is actually the volume, also this does not scale proportionally, use .Volume")>]
-    member inline r.AreaSq : float =
-        (r.XaxisX*r.XaxisX + r.XaxisY*r.XaxisY + r.XaxisZ*r.XaxisZ)
-        * (r.YaxisX*r.YaxisX + r.YaxisY*r.YaxisY + r.YaxisZ*r.YaxisZ)
-        * (r.ZaxisX*r.ZaxisX + r.ZaxisY*r.ZaxisY + r.ZaxisZ*r.ZaxisZ)
-
-    [<Obsolete("use SizeX")>]
-    member inline b.Width : float =
-        sqrt(b.XaxisX*b.XaxisX + b.XaxisY*b.XaxisY + b.XaxisZ*b.XaxisZ)
-
-    [<Obsolete("use SizeZ")>]
-    member inline b.Height3D : float =
-        sqrt(b.ZaxisX*b.ZaxisX + b.ZaxisY*b.ZaxisY + b.ZaxisZ*b.ZaxisZ)
-
-    [<Obsolete("use SizeY")>]
-    member inline b.Depth : float =
-        sqrt(b.YaxisX*b.YaxisX + b.YaxisY*b.YaxisY + b.YaxisZ*b.YaxisZ)
-
-
-    #nowarn "44" // Obsolete member
-
-    [<Obsolete("If the matrix is projecting this transformation will not return a valid Box. Use RigidMatrix or with the Points of this box instead.")>]
-    member inline b.Transform (m:Matrix) : Box =
-        // Origin is transformed as a position (with translation and perspective division).
-        let ox' = m.M11*b.OriginX + m.M21*b.OriginY + m.M31*b.OriginZ + m.X41
-        let oy' = m.M12*b.OriginX + m.M22*b.OriginY + m.M32*b.OriginZ + m.Y42
-        let oz' = m.M13*b.OriginX + m.M23*b.OriginY + m.M33*b.OriginZ + m.Z43
-        let ow' = m.M14*b.OriginX + m.M24*b.OriginY + m.M34*b.OriginZ + m.M44
-        let sc = 1.0 / ow'
-        let ox = ox' * sc
-        let oy = oy' * sc
-        let oz = oz' * sc
-        // axis vectors are transformed as directions (translation ignored).
-        let xx = m.M11*b.XaxisX + m.M21*b.XaxisY + m.M31*b.XaxisZ
-        let xy = m.M12*b.XaxisX + m.M22*b.XaxisY + m.M32*b.XaxisZ
-        let xz = m.M13*b.XaxisX + m.M23*b.XaxisY + m.M33*b.XaxisZ
-        let yx = m.M11*b.YaxisX + m.M21*b.YaxisY + m.M31*b.YaxisZ
-        let yy = m.M12*b.YaxisX + m.M22*b.YaxisY + m.M32*b.YaxisZ
-        let yz = m.M13*b.YaxisX + m.M23*b.YaxisY + m.M33*b.YaxisZ
-        let zx = m.M11*b.ZaxisX + m.M21*b.ZaxisY + m.M31*b.ZaxisZ
-        let zy = m.M12*b.ZaxisX + m.M22*b.ZaxisY + m.M32*b.ZaxisZ
-        let zz = m.M13*b.ZaxisX + m.M23*b.ZaxisY + m.M33*b.ZaxisZ
-        Box.createUnchecked(ox, oy, oz, xx, xy, xz, yx, yy, yz, zx, zy, zz)
-
-    [<Obsolete("If the matrix is projecting this transformation will not return a valid Box. Use RigidMatrix or with the Points of this box instead.")>]
-    static member inline transform (m:Matrix) (b:Box) : Box =
-        b.Transform m
-
-
-    /// returns minX, minY, minZ, maxX, maxY, maxZ
-    [<Obsolete("Use BBox.createFromBox instead.")>]
-    member b.BBox : float * float * float * float * float * float =
-        // Each of the 8 corners is Origin plus any subset of the three axis
-        // components, so min/max decompose per coordinate: sum the negative
-        // parts for the min, the positive parts for the max.
-        let minX = b.OriginX + min 0. b.XaxisX + min 0. b.YaxisX + min 0. b.ZaxisX
-        let minY = b.OriginY + min 0. b.XaxisY + min 0. b.YaxisY + min 0. b.ZaxisY
-        let minZ = b.OriginZ + min 0. b.XaxisZ + min 0. b.YaxisZ + min 0. b.ZaxisZ
-        let maxX = b.OriginX + max 0. b.XaxisX + max 0. b.YaxisX + max 0. b.ZaxisX
-        let maxY = b.OriginY + max 0. b.XaxisY + max 0. b.YaxisY + max 0. b.ZaxisY
-        let maxZ = b.OriginZ + max 0. b.XaxisZ + max 0. b.YaxisZ + max 0. b.ZaxisZ
-        (minX, minY, minZ, maxX, maxY, maxZ)
-
-    /// minX, minY, minZ, maxX, maxY, maxZ
-    [<Obsolete("Use BBox.createFromBox instead.")>]
-    static member inline bbox (b:Box) : float * float * float * float * float * float =
-        b.BBox
-
-    [<Obsolete("Use bBox.AsBox instead.")>]
-    static member inline createFromBoundingBox (minX, minY, minZ, maxX, maxY, maxZ) : Box =
-        Box.createUnchecked(minX, minY, minZ, maxX - minX, 0.0, 0.0, 0.0, maxY - minY, 0.0, 0.0, 0.0, maxZ - minZ)
 
 #if !FABLE_COMPILER
 /// Serializes a Box as its origin and axis components with System.Text.Json.

@@ -271,11 +271,6 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
         a.NormalY = b.NormalY &&
         a.NormalZ = b.NormalZ
 
-    /// Obsolete name. Same as NPlane.equalsWithin.
-    [<Obsolete("Use NPlane.equalsWithin instead, or NPlane.equalsExact for an exact match.")>]
-    static member inline equals (tol:float) (a:NPlane) (b:NPlane) : bool =
-        NPlane.equalsWithin tol a b
-
     /// Checks if two 3D planes are coincident.
     /// This means that the normals are parallel within 0.25 degrees
     /// and the distance of second origin to the first plane is less than 1e-6 units tolerance.

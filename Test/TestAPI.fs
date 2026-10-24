@@ -2,19 +2,9 @@ module TestAPI
 
 open Euclid
 
-#nowarn "44" // Suppress warnings for obsolete members
 
-
-// IMPORTANT : This file is meant to be a compile-time test of the API surface of Euclid release 16.
-// It should should NOT be changed anymore, it just helped to see what members need to be marked obsolete instead of deleted.
-
-
-
-// A test that has the full API available of release 16
-// This is a compile time only test to find any missing API surface and add them as obsolete members
-// No runtime test is performed here
-
-
+// Compile-time checks of the supported Euclid API.
+// No runtime test is performed here.
 
 // do not build this with Fable
 // because the JS gets evaluated and might throw runtime exceptions while running the Fable test target
@@ -53,7 +43,6 @@ module ApiVc =
     let (_:bool) = vc.IsUnit
     let (_:float) = vc.Cross v2
     let (_:float) = vc.Dot v2
-    let (_:Vc) = vc.RotateBy (Rotation2D.createFromDegrees 45.0)
     let (_:Vc) = vc.RotateDegrees 45.0 // Breaking: Rotate now takes a Rotation2D
     let (_:Vc) = vc.Rotate90CCW
     let (_:Vc) = vc.Rotate90CW
@@ -119,9 +108,6 @@ module ApiVc =
     let (_:UnitVc) = Vc.unitize vc
     let (_:UnitVc) = Vc.unitizeOrDefault UnitVc.Xaxis vc
 
-    // Static members - Comparison
-    let (_:bool) = Vc.equals 0.001 vc v2
-    let (_:bool) = Vc.notEquals 0.001 vc v2
     let (_:float) = Vc.difference vc v2
     let (_:float) = Vc.differenceSq vc v2
 
@@ -149,19 +135,10 @@ module ApiVc =
     // Static members - Orientation checks
     let (_:bool) = Vc.matchesOrientation vc v2
     let (_:bool) = Vc.isOppositeOrientation vc (-v2)
-    let (_:bool) = Vc.areParallel v2 vc
-    let (_:bool) = Vc.areParallelAndMatchOrientation v2 vc
-    let (_:bool) = Vc.arePerpendicular (vc.Rotate90CCW) vc
     let (_:bool) = Vc.isXAligned (Vc.Xaxis)
     let (_:bool) = Vc.isYAligned (Vc.Yaxis)
-    let (_:bool) = Vc.isAngle90Below Cosine.``45.0`` vc v2
-    let (_:bool) = Vc.isAngle90Above Cosine.``45.0`` vc v2
-    let (_:bool) = Vc.isAngle180Below Cosine.``45.0`` vc v2
-    let (_:bool) = Vc.isAngle180Above Cosine.``45.0`` vc v2
     let (_:bool) = Vc.isParallelToUnitVc Cosine.``0.25`` UnitVc.Xaxis vc
 
-    // Static members - Rotation
-    let (_:Vc) = Vc.rotateBy (Rotation2D.createFromDegrees 45.0) vc
     let (_:Vc) = Vc.rotateDegrees 45.0 vc // Breaking: rotate now takes a Rotation2D
     let (_:Vc) = Vc.rotate90CCW vc
     let (_:Vc) = Vc.rotate90CW vc
@@ -213,8 +190,6 @@ module UnitVcAPI =
     let (_:float) = unitvc.Dot (Vc(1., 2.))
     let (_:float<Cosine.cosine>) = unitvc.DotCosine u2
 
-    // Instance members - Rotation
-    let (_:UnitVc) = unitvc.RotateBy (Rotation2D.createFromDegrees 45.0)
     let (_:UnitVc) = unitvc.RotateDegrees 45.0 // Breaking: Rotate now takes a Rotation2D
     let (_:UnitVc) = unitvc.Rotate90CCW
     let (_:UnitVc) = unitvc.Rotate90CW
@@ -292,9 +267,6 @@ module UnitVcAPI =
     let (_:UnitVc) = UnitVc.flip unitvc
     let (_:UnitVc) = UnitVc.reverse unitvc
 
-    // Static members - Comparison
-    let (_:bool) = UnitVc.equals 0.001 unitvc u2
-    let (_:bool) = UnitVc.notEquals 0.001 unitvc u2
     let (_:float) = UnitVc.difference unitvc u2
     let (_:float) = UnitVc.differenceSq unitvc u2
 
@@ -327,18 +299,9 @@ module UnitVcAPI =
     // Static members - Orientation checks
     let (_:bool) = UnitVc.matchesOrientation u2 unitvc
     let (_:bool) = UnitVc.isOppositeOrientation (-u2) unitvc
-    let (_:bool) = UnitVc.areParallel u2 unitvc
-    let (_:bool) = UnitVc.areParallelAndMatchOrientation u2 unitvc
-    let (_:bool) = UnitVc.arePerpendicular u2 unitvc
     let (_:bool) = UnitVc.isXAligned unitvc
     let (_:bool) = UnitVc.isYAligned u2
-    let (_:bool) = UnitVc.isAngle90Below Cosine.``45.0`` unitvc u2
-    let (_:bool) = UnitVc.isAngle90Above Cosine.``45.0`` unitvc u2
-    let (_:bool) = UnitVc.isAngle180Below Cosine.``45.0`` unitvc u2
-    let (_:bool) = UnitVc.isAngle180Above Cosine.``45.0`` unitvc u2
 
-    // Static members - Rotation
-    let (_:UnitVc) = UnitVc.rotateBy (Rotation2D.createFromDegrees 45.0) unitvc
     let (_:UnitVc) = UnitVc.rotateDegrees 45.0 unitvc // Breaking: rotate now takes a Rotation2D
     let (_:UnitVc) = UnitVc.rotate90CCW unitvc
     let (_:UnitVc) = UnitVc.rotate90CW unitvc
@@ -387,9 +350,7 @@ module PtAPI =
 
     // Instance members - Distance
     let (_:float) = pt.DistanceTo p2
-    let (_:float) = pt.DistanceToSquare p2
     let (_:float) = pt.DistanceFromOrigin
-    let (_:float) = pt.DistanceFromOriginSquare
     let (_:Pt) = pt.WithDistanceFromOrigin 5.0
 
     // Instance members - Angles
@@ -420,7 +381,6 @@ module PtAPI =
     let (_:Pt) = Pt.Origin
 
     // Static members - Creation
-    // let (_:Pt) = Pt.create(1.0, 2.0) // deprecated in 0.21
     let (_:Pt) = Pt.createFromPnt(Pnt(1., 2., 3.))
     let (_:Pt) = Pt.createFromVc(Vc(1., 2.))
     let (_:Pt) = Pt.createFromUnitVc(UnitVc.Xaxis)
@@ -443,25 +403,16 @@ module PtAPI =
     let (_:Pt) = Pt.moveX 1.0 pt
     let (_:Pt) = Pt.moveY 1.0 pt
 
-    // Static members - Comparison
-    let (_:bool) = Pt.equals 0.001 pt p2
-    let (_:bool) = Pt.notEquals 0.001 pt p2
     let (_:float) = Pt.dist pt p2
     let (_:float) = Pt.sqDist pt p2
     let (_:float) = Pt.distanceFromOrigin pt
-    let (_:float) = Pt.distanceFromOriginSquare pt
-    let (_:Pt) = Pt.setDistanceFromOrigin 5.0 pt
 
     // Static members - Angles
     let (_:float) = Pt.anglePiPts (pt, Pt.Origin, p2)
     let (_:float) = Pt.angle180Pts (pt, Pt.Origin, p2)
     let (_:Vc) = Pt.bisector (pt, Pt.Origin, p2)
 
-    // Static members - Rotation
-    let (_:Pt) = Pt.rotateBy (Rotation2D.createFromDegrees 45.0) pt
     let (_:Pt) = Pt.rotateDegrees 45.0 pt // Breaking: rotate now takes a Rotation2D
-    let (_:Pt) = Pt.rotateWithCenterBy Pt.Origin (Rotation2D.createFromDegrees 45.0) pt
-    let (_:Pt) = Pt.rotateWithCenter Pt.Origin 45.0 pt
 
     // Static members - Interpolation
     let (_:Pt) = Pt.divPt(pt, p2, 0.5)
@@ -504,13 +455,10 @@ module PntAPI =
 
     // Instance members - Distance
     let (_:float) = pnt.DistanceTo p2
-    let (_:float) = pnt.DistanceToSquare p2
     let (_:float) = pnt.DistanceFromOrigin
-    let (_:float) = pnt.DistanceFromOriginSquare
     let (_:float) = pnt.DistanceInXYFromOrigin
     let (_:float) = pnt.SqDistanceInXYFromOrigin
     let (_:float) = Pnt.sqDistanceInXYFromOrigin pnt
-    let (_:float) = pnt.DistanceInXYFromOriginSquare
     let (_:Pnt) = pnt.WithDistanceFromOrigin 5.0
 
     // Instance members - Angles
@@ -551,7 +499,6 @@ module PntAPI =
     let (_:Pnt) = Pnt.Origin
 
     // Static members - Creation
-    // let (_:Pnt) = Pnt.create(1.0, 2.0, 3.0) // deprecated in 0.21
     let (_:Pnt) = Pnt.createFromPt(Pt(1., 2.))
     let (_:Pnt) = Pnt.createFromVec(Vec(1., 2., 3.))
     let (_:Pnt) = Pnt.createFromUnitVec(UnitVec.Xaxis)
@@ -579,15 +526,9 @@ module PntAPI =
     let (_:Pnt) = Pnt.moveY 1.0 pnt
     let (_:Pnt) = Pnt.moveZ 1.0 pnt
 
-    // Static members - Comparison
-    let (_:bool) = Pnt.equals 0.001 pnt p2
-    let (_:bool) = Pnt.notEquals 0.001 pnt p2
     let (_:float) = Pnt.dist pnt p2
     let (_:float) = Pnt.sqDist pnt p2
-    let (_:float) = Pnt.distanceToXY pnt p2
     let (_:float) = Pnt.distanceFromOrigin pnt
-    let (_:float) = Pnt.distanceFromOriginSquare pnt
-    let (_:Pnt) = Pnt.setDistanceFromOrigin 5.0 pnt
 
     // Static members - Angles
     let (_:float) = Pnt.anglePiPnts(pnt, Pnt.Origin, p2)
@@ -605,21 +546,6 @@ module PntAPI =
     let (_:Pnt) = Pnt.DivideByInt(pnt, 2)
     let (_:Vec) = Pnt.normalOfTwoPointsInXY(pnt, p2)
 
-    // Static members - Rotation (additional)
-    let (_:Pnt) = Pnt.rotateX 45.0 pnt
-    let (_:Pnt) = Pnt.rotateY 45.0 pnt
-    let (_:Pnt) = Pnt.rotateZ 45.0 pnt
-    let (_:Pnt) = Pnt.rotateXBy (Rotation2D.createFromDegrees 45.0) pnt
-    let (_:Pnt) = Pnt.rotateYBy (Rotation2D.createFromDegrees 45.0) pnt
-    let (_:Pnt) = Pnt.rotateZBy (Rotation2D.createFromDegrees 45.0) pnt
-    let (_:Pnt) = Pnt.rotateXWithCenter Pnt.Origin 45.0 pnt
-    let (_:Pnt) = Pnt.rotateYWithCenter Pnt.Origin 45.0 pnt
-    let (_:Pnt) = Pnt.rotateZWithCenter Pnt.Origin 45.0 pnt
-    let (_:Pnt) = Pnt.rotateXWithCenterBy Pnt.Origin (Rotation2D.createFromDegrees 45.0) pnt
-    let (_:Pnt) = Pnt.rotateYWithCenterBy Pnt.Origin (Rotation2D.createFromDegrees 45.0) pnt
-    let (_:Pnt) = Pnt.rotateZWithCenterBy Pnt.Origin (Rotation2D.createFromDegrees 45.0) pnt
-    let (_:Pnt) = Pnt.rotateByQuaternion (Quaternion.createFromDegrees(UnitVec.Zaxis, 45.0)) pnt
-    let (_:Pnt) = Pnt.rotateWithCenterByQuat Pnt.Origin (Quaternion.createFromDegrees(UnitVec.Zaxis, 45.0)) pnt
 
     // Static members - Other (additional)
     let (_:Pnt) = Pnt.snap 0.1 pnt
@@ -635,7 +561,6 @@ module PntAPI =
     let (_:Pnt) = pnt.TransformRigidRotateOnly rm
     let (_:Pnt) = Pnt.transformRigid rm pnt
     let (_:Pnt) = Pnt.transformRigidRotateOnly rm pnt
-    let (_:Pnt*Pnt) = Pnt.offsetTwoPt(pnt, p2, 1.0, 0.5)
 
 // ===== Vec (3D Vector) =====
 
@@ -737,9 +662,6 @@ module VecAPI =
     let (_:Vc) = Vec.asVc vec
     let (_:Pnt) = Vec.asPnt vec
 
-    // Static members - Comparison
-    let (_:bool) = Vec.equals 0.001 vec v2
-    let (_:bool) = Vec.notEquals 0.001 vec v2
     let (_:float) = Vec.difference vec v2
     let (_:float) = Vec.differenceSq vec v2
 
@@ -781,9 +703,6 @@ module VecAPI =
     let (_:UnitVec) = Vec.unitize vec
     let (_:UnitVec) = Vec.unitizeOrDefault UnitVec.Xaxis vec
 
-    // Static members - Comparison
-    let (_:bool) = Vec.equals 0.001 vec v2
-    let (_:bool) = Vec.notEquals 0.001 vec v2
     let (_:float) = Vec.difference vec v2
     let (_:float) = Vec.differenceSq vec v2
 
@@ -811,18 +730,11 @@ module VecAPI =
     // Static members - Orientation checks
     let (_:bool) = Vec.matchesOrientation vec v2
     let (_:bool) = Vec.isOppositeOrientation vec (-v2)
-    let (_:bool) = Vec.areParallel v2 vec
-    let (_:bool) = Vec.areParallelAndMatchOrientation v2 vec
-    let (_:bool) = Vec.arePerpendicular Vec.Zaxis vec
     let (_:bool) = Vec.isXAligned Vec.Xaxis
     let (_:bool) = Vec.isYAligned Vec.Yaxis
     let (_:bool) = Vec.isZAligned Vec.Zaxis
     let (_:bool) = Vec.isVertical Vec.Zaxis
     let (_:bool) = Vec.isHorizontal Vec.Xaxis
-    let (_:bool) = Vec.isAngle90Below Cosine.``45.0`` vec v2
-    let (_:bool) = Vec.isAngle90Above Cosine.``45.0`` vec v2
-    let (_:bool) = Vec.isAngle180Below Cosine.``45.0`` vec v2
-    let (_:bool) = Vec.isAngle180Above Cosine.``45.0`` vec v2
 
     // Static members - Rotation
     let (_:Vec) = Vec.rotateOnX (Rotation2D.createFromDegrees 45.0) vec
@@ -833,7 +745,6 @@ module VecAPI =
     let (_:Vec) = Vec.rotateOnZDeg 45.0 vec
     let (_:Vec) = Vec.rotateOnZ90CCW vec
     let (_:Vec) = Vec.rotateOnZ90CW vec
-    let (_:Vec) = Vec.rotateByQuaternion (Quaternion.createFromDegrees(UnitVec.Zaxis, 45.0)) vec
     let (_:Vec) = Vec.perpendicularInXY vec
     let (_:Vec) = Vec.perpendicularInVerticalPlane vec
     let (_:Vec) = Vec.orientUp vec
@@ -855,8 +766,6 @@ module VecAPI =
     let (_:float) = Vec.dot(vec, UnitVec.Xaxis)
     let (_:float) = Vec.dot(UnitVec.Xaxis, vec)
 
-    // Static members - Intersection
-    let (_:ValueOption<float*float>) = Vec.intersection(Pnt(0., 0., 0.), Pnt(1., 0., 0.), Vec(1., 1., 0.), Vec(0., 1., 0.))
 
     // Static members - Transform
     let rm = RigidMatrix.identity
@@ -963,9 +872,6 @@ module UnitVecAPI =
     let (_:Pnt) = UnitVec.asPnt unitvec
     let (_:Vec) = UnitVec.asVec unitvec
 
-    // Static members - Comparison
-    let (_:bool) = UnitVec.equals 0.001 unitvec u2
-    let (_:bool) = UnitVec.notEquals 0.001 unitvec u2
     let (_:float) = UnitVec.difference unitvec u2
     let (_:float) = UnitVec.differenceSq unitvec u2
 
@@ -1041,18 +947,9 @@ module Line2DAPI =
     let (_:Line2D) = line2d.Move vc
     let (_:Line2D) = line2d.MoveX 1.0
     let (_:Line2D) = line2d.MoveY 1.0
-    let (_:float) = line2d.ClosestParameterInfinite pt
     let (_:float) = line2d.ClosestParameter pt
-    let (_:Pt) = line2d.ClosestPointInfinite pt
     let (_:Pt) = line2d.ClosestPoint pt
-    let (_:float) = line2d.DistanceSqFromPointInfinite pt
-    let (_:float) = line2d.DistanceToPtInfinite pt
-    let (_:float) = line2d.DistanceSqFromPoint pt
     let (_:float) = line2d.DistanceToPt pt
-    let (_:bool) = line2d.MatchesOrientation180 ln2
-    let (_:bool) = line2d.MatchesOrientation180  vc
-    let (_:bool) = line2d.MatchesOrientation180 UnitVc.Xaxis
-    let (_:bool) = line2d.MatchesOrientation90 ln2
     let (_:bool) = line2d.IsParallelTo ln2
     let (_:bool) = line2d.IsParallelTo (Vc(1., 0.))
     let (_:bool) = line2d.IsParallelTo UnitVc.Xaxis
@@ -1081,8 +978,6 @@ module Line2DAPI =
     let (_:Pt) = Line2D.to' line2d
     let (_:float) = Line2D.toX line2d
     let (_:float) = Line2D.toY line2d
-    let (_:Line2D) = Line2D.setStart (Pt(1., 1.)) line2d
-    let (_:Line2D) = Line2D.setEnd (Pt(11., 1.)) line2d
     let (_:Vc) = Line2D.direction line2d
     let (_:Vc) = Line2D.vector line2d
     let (_:Vc) = Line2D.tangent line2d
@@ -1107,15 +1002,9 @@ module Line2DAPI =
     let (_:Line2D) = Line2D.moveY 1.0 line2d
     let (_:Line2D) = Line2D.move  vc line2d
     let (_:Line2D) = Line2D.rotate (Rotation2D.createFromDegrees 45.0) line2d
-    let (_:Line2D) = Line2D.rotateWithCenter Pt.Origin (Rotation2D.createFromDegrees 45.0) line2d
     let (_:Line2D) = Line2D.matchOrientation ln2 line2d
     let (_:Line2D) = Line2D.matchVcOrientation (Vc(1., 0.)) line2d
     let (_:Line2D) = Line2D.matchUnitVcOrientation UnitVc.Xaxis line2d
-    let (_:bool) = Line2D.matchesOrientation180 line2d ln2
-    let (_:bool) = Line2D.matchesOrientation90 line2d ln2
-    let (_:bool) = Line2D.areParallel line2d ln2
-    let (_:bool) = Line2D.areParallelAndMatchOrientation line2d ln2
-    let (_:bool) = Line2D.arePerpendicular line2d ln2
 
     // Static members - Extension/Shrinking
     let (_:Line2D) = Line2D.extend 1.0 1.0 line2d
@@ -1135,17 +1024,10 @@ module Line2DAPI =
     let (_:Line2D) = Line2D.offset 1.0 line2d
     let (_:Line2D) = Line2D.scale 2.0 line2d
 
-    // Static members - Distance/Closest
-    let (_:float) = Line2D.closestParameterInfinite pt line2d
     let (_:float) = Line2D.closestParameter pt line2d
-    let (_:Pt) = Line2D.closestPointInfinite pt line2d
     let (_:Pt) = Line2D.closestPoint pt line2d
-    let (_:float) = Line2D.distanceSqFromPointInfinite pt line2d
-    let (_:float) = Line2D.distanceToPtInfinite pt line2d
-    let (_:float) = Line2D.distanceSqFromPoint pt line2d
     let (_:float) = Line2D.distanceToPt pt line2d
     let (_:float) = Line2D.lengthToPtOnLine (Pt(5., 0.)) line2d
-    let (_:float) = Line2D.distanceBetweenLines (line2d, ln2)
 
     // Static members - Division
     let (_:Pt[]) = Line2D.divide 3 line2d
@@ -1157,22 +1039,7 @@ module Line2DAPI =
     let (_:Line2D[]) = Line2D.splitMinLength 2.0 0.1 line2d
     let (_:Line2D[]) = Line2D.splitMaxLength 2.0 0.1 line2d
 
-    // Static members - Intersection
-    // obsolet warning as error:
-    // let (_) = Line2D.intersectionParamInfinite(line2d, ln2)
-    // let (_) = Line2D.intersectionInfinite(line2d, ln2)
-    // let (_) = Line2D.intersectionPointInfinite(line2d, ln2)
-    // let (_) = Line2D.intersectionParam(line2d, ln2)
-    // let (_) = Line2D.intersection(line2d, ln2)
-    // let (_) = Line2D.intersectionPoint (line2d, ln2)
-    // let (_:int) = Line2D.areTouchingAny 0.001 line2d ln2
-    // let (_:int) = Line2D.areTouchingEither 0.001 line2d ln2
-    let (_:Line2D) = Line2D.projectOn line2d ln2
 
-    // Static members - Comparison
-    let (_:bool) = Line2D.equals 0.001 line2d ln2
-    let (_:bool) = Line2D.notEquals 0.001 line2d ln2
-    let (_:bool) = Line2D.areCoincident line2d ln2
 
 // ===== Line3D (3D Finite Line) =====
 
@@ -1206,22 +1073,16 @@ module Line3DAPI =
     // Instance members - Rotation
     let q = Quaternion.createFromDegrees(UnitVec.Zaxis, 45.0)
     let (_:Line3D) = line3d.Rotate q
-    let (_:Line3D) = line3d.RotateWithCenter(Pnt.Origin, q)
 
     // Instance members - Distance
     let testPnt = Pnt(5., 5., 0.)
     let (_:float) = line3d.DistanceToPnt testPnt
-    let (_:float) = line3d.DistanceToPntInfinite testPnt
-    let (_:float) = line3d.DistanceSqToPnt testPnt
-    let (_:float) = line3d.DistanceSqToPntInfinite testPnt
 
     // Instance members - Move and Transform
     let rm = RigidMatrix.identity
     let (_:Line3D) = line3d.MoveZ 1.0
     let (_:Line3D) = line3d.TransformRigid rm
 
-    // Operators
-    let (_:Line3D) = line3d *** q               // Rotate by quaternion
 
     // Static members - Creation
     let ln2d = Line2D(Pt(0., 0.), Pt(10., 0.))
@@ -1245,7 +1106,7 @@ module Line3DAPI =
     let (_:bool) = Line3D.isNormalToVec Tangent.``89.75`` (Vec(0., 1., 0.)) line3d
     let (_:bool) = Line3D.isNormalToUnitVec Tangent.``89.75`` UnitVec.Yaxis line3d
 
-    // Static members - Distance\n    let (_:float) = Line3D.distanceToPnt testPnt ln\n    let (_:float) = Line3D.distanceToPntInfinite testPnt ln\n    let (_:float) = Line3D.distanceSqToPnt testPnt ln\n    let (_:float) = Line3D.distanceSqToPntInfinite testPnt ln\n    let (_:float) = Line3D.distanceBetweenInfiniteLines(ln, ln2)\n\n    // Static members - Operations\n    let r2d = Rotation2D.createFromDegrees 45.0\n    let (_:Line3D) = Line3D.offsetXY UnitVc.Yaxis 1.0 ln\n    let (_:Line3D) = Line3D.rotate2D r2d ln\n    let (_:Line3D) = Line3D.rotate2dOn Pnt.Origin r2d ln\n    let (_:Line2D) = Line3D.toLine2D ln\n    let (_:Line3D) = Line3D.transformRigid rm ln\n    let (_:Line3D) = Line3D.matchVecOrientation (Vec(1., 0., 0.)) ln\n\n// ===== Rotation2D (2D Counter-Clockwise Rotation) =====
+    // Static members - Distance\n    let (_:float) = Line3D.distanceToPnt testPnt ln\n\n    // Static members - Operations\n    let r2d = Rotation2D.createFromDegrees 45.0\n    let (_:Line3D) = Line3D.offsetXY UnitVc.Yaxis 1.0 ln\n    let (_:Line2D) = Line3D.toLine2D ln\n    let (_:Line3D) = Line3D.transformRigid rm ln\n    let (_:Line3D) = Line3D.matchVecOrientation (Vec(1., 0., 0.)) ln\n\n// ===== Rotation2D (2D Counter-Clockwise Rotation) =====
 
 module Rotation2DAPI =
     // Creation
@@ -1271,8 +1132,6 @@ module Rotation2DAPI =
     let (_:Rotation2D) = Rotation2D.createUnchecked(0.707, 0.707)
     let (_:Rotation2D) = Rotation2D.createFromVectors(UnitVc.Xaxis, UnitVc.Yaxis)
 
-    // Static members - Comparison
-    let (_:bool) = Rotation2D.equals 0.001 rotation2d r2
 
 // ===== BBox (3D Bounding Box) =====
 
@@ -1299,11 +1158,8 @@ module BBoxAPI =
     let (_:Pnt) = bbox.MaxPnt
     let (_:Pnt) = bbox.Center
     let (_:Vec) = bbox.Diagonal
-    let (_:float) = bbox.Width
     let (_:float) = bbox.SizeX
-    let (_:float) = bbox.Depth
     let (_:float) = bbox.SizeY
-    let (_:float) = bbox.Height3D
     let (_:float) = bbox.SizeZ
     let (_:float) = bbox.Volume
     let (_:float) = bbox.LongestEdge
@@ -1380,7 +1236,6 @@ module BBoxAPI =
 
     // Static members - Properties
     let (_:float) = BBox.volume bbox
-    let (_:BRect) = BBox.toBRect bbox
 
     // Static members - Operations
     let (_:BBox) = BBox.expand 1.0 bbox
@@ -1402,11 +1257,6 @@ module BBoxAPI =
     let (_:BBox voption) = BBox.tryIntersection bbox box2 // Breaking: intersection now fails instead of returning ValueNone
     let (_:(float * float) voption) = BBox.tryIntersectRay ray bbox // Breaking: intersectRay now fails instead of returning ValueNone
 
-    // Static members - Comparison
-    let (_:bool) = BBox.equals 0.001 bbox box2
-    let (_:bool) = BBox.notEquals 0.001 bbox box2
-    let (_:bool) = BBox.doOverlap bbox box2
-    let (_:bool) = BBox.doOverlapMoreThan 0.001 bbox box2
 
 // ===== BRect (2D Bounding Rectangle) =====
 
@@ -1430,9 +1280,7 @@ module BRectAPI =
     let (_:Pt) = brect.MaxPt
     let (_:Pt) = brect.Center
     let (_:Vc) = brect.Diagonal
-    let (_:float) = brect.Width
     let (_:float) = brect.SizeX
-    let (_:float) = brect.Height2D
     let (_:float) = brect.SizeY
 
     // Instance members - Expand
@@ -1495,7 +1343,6 @@ module QuaternionAPI =
     let (_:Vec) = v *** quaternion                   // Rotate vector
     let (_:Pnt) = p *** quaternion                   // Rotate point
     let (_:UnitVec) = u *** quaternion               // Rotate unit vector
-    let (_:Line3D) = ln *** quaternion               // Rotate line
     let (_:Quaternion) = quaternion *** q2           // Multiply quaternions (applies q2 first)
     let (_:Quaternion) = quaternion.Then q2          // Combine rotations (applies quaternion first)
 
@@ -1510,9 +1357,6 @@ module QuaternionAPI =
     let (_:Quaternion) = Quaternion.createFromEulerZXY(0.1, 0.2, 0.3)
     let (_:Quaternion) = Quaternion.createFromEulerZYX(0.1, 0.2, 0.3)
 
-    // Instance members - Manipulation
-    let (_:Quaternion) = quaternion.SetAngleInDegrees 90.0
-    let (_:Quaternion) = Quaternion.setAngleInDegrees 1.57 quaternion
     let (_:float * float * float) = Quaternion.toEulerAnglesZYX quaternion
 
 // ===== Matrix (4x4 Transformation Matrix) =====
@@ -1596,13 +1440,9 @@ module MatrixAPI =
     let (_:float[]) = Matrix.toArrayByRows matrix
     let (_:float[]) = Matrix.toArrayByColumns matrix
 
-    // Static members - Comparison
-    let (_:bool) = Matrix.equals 0.001 matrix m2
 
     // Operators
     let (_:Pnt) = Pnt(1., 2., 3.) *** matrix        // Transform point
-    let (_:Vec) = Vec(1., 2., 3.) *** matrix        // Transform vector
-    let (_:Vec) = UnitVec.Xaxis *** matrix          // Transform unit vector (returns Vec)
     let (_:Matrix) = matrix *** m2                  // Multiply matrices
     let (_:Matrix) = matrix.Then m2                 // Combine transformations (applies matrix first)
 
@@ -1622,7 +1462,6 @@ module RigidMatrixAPI =
     let (_:Vec) = rigidmatrix.ColumnVector1
     let (_:Vec) = rigidmatrix.ColumnVector2
     let (_:Vec) = rigidmatrix.ColumnVector3
-    let (_:float) = rigidmatrix.Determinant
     let (_:RigidMatrix) = rigidmatrix.Inverse
     let (_:bool) = rigidmatrix.IsIdentity
     let (_:Matrix) = rigidmatrix.ToMatrix
@@ -1657,13 +1496,10 @@ module RigidMatrixAPI =
     // Static members - Operations
     let (_:RigidMatrix) = RigidMatrix.multiply(rigidmatrix, rm2)
     let (_:RigidMatrix) = RigidMatrix.inverse rigidmatrix
-    let (_:float) = RigidMatrix.determinant rigidmatrix
     let (_:RigidMatrix) = RigidMatrix.addTranslation (Vec(1., 2., 3.)) rigidmatrix
     let (_:RigidMatrix) = RigidMatrix.addTranslationXYZ 1.0 2.0 3.0 rigidmatrix
     let (_:RigidMatrix) = RigidMatrix.removeTranslation rigidmatrix
 
-    // Static members - Comparison
-    let (_:bool) = RigidMatrix.equals 0.001 rigidmatrix rm2
 
     // Operators
     let (_:Pnt) = Pnt(1., 2., 3.) *** rigidmatrix       // Transform point
@@ -1722,8 +1558,6 @@ module NPlaneAPI =
     let (_:Pnt voption) = NPlane.tryIntersectLine (Line3D(Pnt.Origin, Pnt(0., 0., 10.))) nplane // Breaking: intersectLine now fails instead of returning None
     // let (_:float option) = NPlane.intersectLineParameter (Line3D(Pnt.Origin, Pnt(0., 0., 10.))) nplane
 
-    // Static members - Comparison
-    let (_:bool) = NPlane.equals 0.001 nplane np2
 
 // ===== PPlane (Parametric Plane with origin and two axes) =====
 
@@ -1777,11 +1611,6 @@ module PPlaneAPI =
     let (_:PPlane) = PPlane.createOriginNormalXaxis(Pnt.Origin, Vec(0., 0., 1.), Vec(1., 0., 0.))
     let (_:PPlane) = PPlane.createUncheckedVec(Pnt.Origin, UnitVec.Xaxis, UnitVec.Yaxis, UnitVec.Zaxis)
 
-    // Static members - Modification
-    let (_:PPlane) = PPlane.setOrigin (Pnt(1., 2., 3.)) pplane
-    let (_:PPlane) = PPlane.setOriginX 1.0 pplane
-    let (_:PPlane) = PPlane.setOriginY 2.0 pplane
-    let (_:PPlane) = PPlane.setOriginZ 3.0 pplane
     let (_:PPlane) = PPlane.translateBy (Vec(1., 1., 1.)) pplane
     let (_:PPlane) = PPlane.translateByWorldX 1.0 pplane
     let (_:PPlane) = PPlane.translateByWorldY 1.0 pplane
@@ -1795,9 +1624,7 @@ module PPlaneAPI =
     let (_:PPlane) = PPlane.flipOnY pplane
     let (_:PPlane) = PPlane.rotateOnZ180 pplane
     let (_:PPlane) = PPlane.rotateZ180IfYNegative pplane
-    let (_:PPlane) = PPlane.transform (RigidMatrix.identity) pplane
     let (_:PPlane) = PPlane.move (Vec(1., 1., 1.)) pplane
-    let (_:PPlane) = PPlane.translate (Vec(1., 1., 1.)) pplane
     let (_:PPlane) = PPlane.scale 2.0 pplane
 
     // Static members - Intersection
@@ -1807,9 +1634,6 @@ module PPlaneAPI =
     // let (_:float option) = PPlane.intersectLineParameter (Line3D(Pnt.Origin, Pnt(0., 0., 10.))) pplane
     // let (_:(float*float*float) option) = PPlane.intersectLineParameters (Line3D(Pnt.Origin, Pnt(0., 0., 10.))) pplane
 
-    // Static members - Comparison
-    let (_:bool) = PPlane.equals 0.001 pplane pp2
-    let (_:bool) = PPlane.areCoincident 0.001 pplane pp2
 
 // ===== Rect2D (2D Rectangle with origin and axes) =====
 
@@ -1846,10 +1670,7 @@ module Rect2DAPI =
     let (_:float) = rect2d.SizeY
     let (_:float) = rect2d.SizeXSq
     let (_:float) = rect2d.SizeYSq
-    let (_:float) = rect2d.Width
-    let (_:float) = rect2d.Height2D
     let (_:float) = rect2d.Area
-    let (_:float) = rect2d.AreaSq
     let (_:Vc) = rect2d.Diagonal
     let (_:Line2D) = rect2d.DiagonalLine
     let (_:float) = rect2d.LongestEdge
@@ -1861,8 +1682,6 @@ module Rect2DAPI =
     let (_:bool) = rect2d.IsZero
     let (_:bool) = rect2d.IsPoint
     let (_:bool) = rect2d.IsLine
-    // let (_:bool) = rect2d.HasVolume
-    let (_) = rect2d.BRect
     let (_:Rect2D) = rect2d.RotateOrientation90CW
     let (_:Rect2D) = rect2d.RotateOrientation90CCW
     let (_:Rect2D) = rect2d.RotateOrientation180
@@ -1881,8 +1700,6 @@ module Rect2DAPI =
 
     // Static members - Creation
     let (_:Rect2D) = Rect2D.createUncheckedVec(Pt.Origin, Vc(10., 0.), Vc(0., 5.))
-    // let (_:Rect2D) = Rect2D.createFromBRect(BRect.create(Pt.Origin, Pt(10., 5.)))
-    let (_:Rect2D) = Rect2D.createFromBRect(0.0, 0.0, 10.0, 5.0)
     let (_:Rect2D) = Rect2D.createFromLine(Line2D(Pt.Origin, Pt(10., 0.)), 2.5, 2.5)
     let (_:Rect2D) = Rect2D.createFromVectors(Pt.Origin, Vc(10., 0.), Vc(0., 5.))
     let (_:Rect2D) = Rect2D.createFromXVectorAndWidth(Pt.Origin, Vc(10., 0.), 5.0)
@@ -1895,12 +1712,10 @@ module Rect2DAPI =
 
     // Static members - Operations
     let vc = Vc(1., 1.)
-    let (_:Rect2D) = Rect2D.translate  vc rect2d
     let (_:Rect2D) = Rect2D.translateLocalX 1.0 rect2d
     let (_:Rect2D) = Rect2D.translateLocalY 1.0 rect2d
     let (_:Rect2D) = Rect2D.move  vc rect2d
     let (_:Rect2D) = Rect2D.rotate (Rotation2D.createFromDegrees 45.0) rect2d
-    let (_:Rect2D) = Rect2D.rotateWithCenter Pt.Origin (Rotation2D.createFromDegrees 45.0) rect2d
     let (_:Rect2D) = Rect2D.scale 2.0 rect2d
     let (_:Rect2D) = Rect2D.expand 1.0 rect2d
     let (_:Rect2D) = Rect2D.expandRel 0.1 rect2d
@@ -1918,9 +1733,6 @@ module Rect2DAPI =
     let (_:Rect2D[][]) = Rect2D.subDivideMaxLength(rect2d, 3.0, 3.0, 0.1, 0.1)
     let (_:bool) = Rect2D.contains (Pt(5., 2.5)) rect2d
 
-    // Static members - Comparison
-    let (_:bool) = Rect2D.equals 0.001 rect2d rect2
-    let (_:bool) = Rect2D.notEquals 0.001 rect2d rect2
 
 // ===== Rect3D (3D Rectangle with origin and axes) =====
 
@@ -1960,10 +1772,7 @@ module Rect3DAPI =
     let (_:float) = rect3d.SizeY
     let (_:float) = rect3d.SizeXSq
     let (_:float) = rect3d.SizeYSq
-    let (_:float) = rect3d.Width
-    let (_:float) = rect3d.Height2D
     let (_:float) = rect3d.Area
-    let (_:float) = rect3d.AreaSq
     let (_:Vec) = rect3d.Diagonal
     let (_:Line3D) = rect3d.DiagonalLine
     let (_:float) = rect3d.LongestEdge
@@ -1975,9 +1784,6 @@ module Rect3DAPI =
     let (_:bool) = rect3d.IsZero
     let (_:bool) = rect3d.IsPoint
     let (_:bool) = rect3d.IsLine
-    // let (_:bool) = rect3d.HasVolume
-    let (_) = rect3d.BRect
-    let (_) = rect3d.BBox
     let (_:Rect3D) = rect3d.Flipped
     let (_:Rect3D) = rect3d.RotateOrientation90CW
     let (_:Rect3D) = rect3d.RotateOrientation90CCW
@@ -1992,15 +1798,12 @@ module Rect3DAPI =
 
     // Static members - Creation
     let (_:Rect3D) = Rect3D.createUncheckedVec(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.))
-    // let (_:Rect3D) = Rect3D.createFromBRect (BRect.create(Pt.Origin, Pt(10., 5.)))
     let (_:Rect3D) = Rect3D.createFromVectors(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.))
     let (_:Rect3D) = Rect3D.createFromPlane(PPlane.WorldXY, 10.0, 5.0)
     let (_:Rect3D) = Rect3D.createCenteredFromPlane(PPlane.WorldXY, 10.0, 5.0)
     let (_:Rect3D) = Rect3D.createFrom3Points(Pnt.Origin, Pnt(10., 0., 0.), Pnt(0., 5., 0.))
     let (_:Rect3D voption) = Rect3D.tryCreateFrom3Points(Pnt.Origin, Pnt(10., 0., 0.), Pnt(0., 5., 0.)) // Breaking: returns a voption now
 
-    // Static members - Operations
-    let (_:Rect3D) = Rect3D.translate (Vec(1., 1., 1.)) rect3d
     let (_:Rect3D) = Rect3D.translateLocalX 1.0 rect3d
     let (_:Rect3D) = Rect3D.translateLocalY 1.0 rect3d
     let (_:Rect3D) = Rect3D.translateLocalZ 1.0 rect3d
@@ -2032,9 +1835,6 @@ module Rect3DAPI =
     // let (_:(float*float*float) option) = Rect3D.intersectLineParameters ln rect3d
     // let (_:(float*float*float) option) = Rect3D.intersectLineParametersInfinite ln rect3d
 
-    // Static members - Comparison
-    let (_:bool) = Rect3D.equals 0.001 rect3d rect2
-    let (_:bool) = Rect3D.notEquals 0.001 rect3d rect2
 
 // ===== Box (3D Oriented Box with origin and three axes) =====
 
@@ -2089,9 +1889,6 @@ module BoxAPI =
     let (_:float) = box.SizeXSq
     let (_:float) = box.SizeYSq
     let (_:float) = box.SizeZSq
-    let (_:float) = box.Width
-    let (_:float) = box.Depth
-    let (_:float) = box.Height3D
     let (_:float) = box.Volume
     let (_:Vec) = box.Diagonal
     let (_:float) = box.LongestEdge
@@ -2105,8 +1902,6 @@ module BoxAPI =
     let (_:bool) = box.IsLine
     let (_:bool) = box.IsFlat
     let (_:bool) = box.HasVolume
-    let (_) = box.BBox
-    let (_:float) = box.AreaSq
 
     // Instance members - Operations
     let (_:Pnt) = box.EvaluateAt(0.5, 0.5, 0.5)
@@ -2121,7 +1916,6 @@ module BoxAPI =
     let (_:Box) = Box.createFromPlane 1. 1. 1. PPlane.WorldXY
     let (_:Box) = Box.createFromRect2D 3.0 1. (Rect2D.createFromDirectionAndSizes(Pt.Origin, UnitVc.Xaxis, 10.0, 5.0))
     let (_:Box) = Box.createFromRect3D 3.0 1. (Rect3D.createFromPlane(PPlane.WorldXY, 10.0, 5.0))
-    // let (_:Box) = Box.createFromBoundingBox (BBox.create(Pnt.Origin, Pnt(10., 5., 3.)))
     let (_:Box) = Box.createFromPlaneAndPoints PPlane.WorldXY pts
     let (_:Box) = Box.createFromDirsAndPoints Vec.Xaxis Vec.Yaxis pts
 
@@ -2130,7 +1924,6 @@ module BoxAPI =
     let (_:Box) = Box.translateLocalY 1.0 box
     let (_:Box) = Box.translateLocalZ 1.0 box
     let (_:Box) = Box.move (Vec(1., 1., 1.)) box
-    let (_:Box) = Box.transform (Matrix.identity) box
     let (_:Box) = Box.scale 2.0 box
     let (_:Box) = Box.expand 1.0 box
     let (_:Box) = Box.expandRel 0.1 box
@@ -2139,9 +1932,6 @@ module BoxAPI =
     let (_:Box) = Box.offset 1.0 2.0 3.0 4.0 5.0 6.0 box
     let (_:bool) = Box.contains (Pnt(5., 2.5, 1.5)) box
 
-    // Static members - Comparison
-    let (_:bool) = Box.equals 0.001 box box2
-    let (_:bool) = Box.notEquals 0.001 box box2
 
 // ===== FreeBox (8 arbitrary corner points defining a box-like shape) =====
 
@@ -2189,7 +1979,6 @@ module FreeBoxAPI =
     let (_:FreeBox) = FreeBox.translate (Vec(1., 1., 1.)) freebox
     let (_:FreeBox) = FreeBox.scale 2.0 freebox
     let (_:FreeBox) = FreeBox.transformRigid RigidMatrix.identity freebox
-    let (_:FreeBox) = FreeBox.rotateWithCenter Pnt.Origin Quaternion.identity freebox
 
 // ===== Polyline2D (2D Polyline) =====
 
@@ -2210,12 +1999,10 @@ module Polyline2DAPI =
     let (_:Pt) = polyline2d.SecondLastPoint
     let (_:Pt ResizeArray) = polyline2d.AsPoints
     let (_:int) = polyline2d.PointCount
-    let (_:int) = polyline2d.LastPointIndex
     let (_:Line2D) = polyline2d.FirstSegment
     let (_:Line2D) = polyline2d.LastSegment
     let (_:Line2D ResizeArray) = polyline2d.Segments
     let (_:int) = polyline2d.SegmentCount
-    let (_:int) = polyline2d.LastSegmentIndex
     let (_:float) = polyline2d.Length
     let (_:Pt) = polyline2d.Center
     let (_:float) = polyline2d.Area
@@ -2251,7 +2038,6 @@ module Polyline2DAPI =
     // Static members - Creation
     let (_:Polyline2D) = Polyline2D.createFromPts(ResizeArray [Pt(0., 0.); Pt(10., 0.); Pt(10., 10.)])
     let (_:Polyline2D) = Polyline2D.createEmpty(0)
-    let (_:Polyline2D) = Polyline2D.createDirectlyUnsafe(ResizeArray [Pt(0., 0.); Pt(10., 0.); Pt(10., 10.)])
 
     // Static members - Properties
     let (_:Pt) = Polyline2D.start polyline2d
@@ -2265,7 +2051,6 @@ module Polyline2DAPI =
     let (_:Polyline2D) = Polyline2D.moveX 1.0 polyline2d
     let (_:Polyline2D) = Polyline2D.moveY 1.0 polyline2d
     let (_:Polyline2D) = Polyline2D.rotate (Rotation2D.createFromDegrees 45.0) polyline2d
-    let (_:Polyline2D) = Polyline2D.rotateWithCenter Pt.Origin (Rotation2D.createFromDegrees 45.0) polyline2d
     let (_:Polyline2D) = Polyline2D.scale 2.0 polyline2d
     let (_:Polyline2D) = Polyline2D.reverse polyline2d
     let (_:Polyline2D) = Polyline2D.close 1e-6 polyline2d
@@ -2283,8 +2068,6 @@ module Polyline2DAPI =
 
     // Note: findOuterCornerAndRefNormal and offsetCore are internal/private
 
-    // Static members - Comparison
-    let (_:bool) = Polyline2D.equals polyline2d polyline2d
 
 // ===== Polyline3D (3D Polyline) =====
 
@@ -2303,14 +2086,11 @@ module Polyline3DAPI =
     let (_:Pnt) = polyline3d.LastPoint
     let (_:Pnt) = polyline3d.SecondPoint
     let (_:Pnt) = polyline3d.SecondLastPoint
-    let (_:Pnt ResizeArray) = polyline3d.Points
     let (_:int) = polyline3d.PointCount
-    let (_:int) = polyline3d.LastPointIndex
     let (_:Line3D) = polyline3d.FirstSegment
     let (_:Line3D) = polyline3d.LastSegment
     let (_:Line3D ResizeArray) = polyline3d.Segments
     let (_:int) = polyline3d.SegmentCount
-    let (_:int) = polyline3d.LastSegmentIndex
     let (_:float) = polyline3d.Length
     let (_:Pnt) = polyline3d.Center
     let (_:float) = polyline3d.SignedAreaIn2D
@@ -2342,7 +2122,6 @@ module Polyline3DAPI =
     // Static members - Creation
     let (_:Polyline3D) = Polyline3D.createFromPnts(ResizeArray [Pnt(0., 0., 0.); Pnt(10., 0., 0.); Pnt(10., 10., 0.)])
     let (_:Polyline3D) = Polyline3D.createEmpty(0)
-    let (_:Polyline3D) = Polyline3D.createDirectlyUnsafe(ResizeArray [Pnt(0., 0., 0.); Pnt(10., 0., 0.); Pnt(10., 10., 0.)])
 
     // Static members - Properties
     let (_:Pnt) = Polyline3D.start polyline3d
@@ -2375,8 +2154,6 @@ module Polyline3DAPI =
 
     // Note: findOuterCornerAndRefNormal and offsetCore require complex setup or are internal
 
-    // Static members - Comparison
-    let (_:bool) = Polyline3D.equals  polyline3d polyline3d
 
 
 
@@ -2392,47 +2169,6 @@ module FormatAPI =
 
     // Note: Format.Literals is a private module and not accessible
 
-
-// ===== Points (Point collection utilities) =====
-
-module PointsAPI =
-    // 2D points
-    let pts2d = ResizeArray [Pt(0., 0.); Pt(10., 0.); Pt(10., 10.); Pt(0., 10.)]
-    // 3D points
-    let pts3d = ResizeArray [Pnt(0., 0., 0.); Pnt(10., 0., 0.); Pnt(10., 10., 0.); Pnt(0., 10., 0.)]
-
-    // Static members - 2D operations
-    let (_:float) = Points.getSignedArea pts2d
-    let (_:Pt) = Points.closestPoint(pts2d, Pt(5., 5.))
-    let (_:int) = Points.closestPointIdx(pts2d, Pt(5., 5.))
-    let (_:(int*int)) = Points.closestPointsIdx(pts2d, pts2d)
-    let (_:float) = Points.minDistBetweenPointSets(pts2d, pts2d)
-    let (_:(int*int)) = Points.mostDistantPointIdx(pts2d, pts2d)
-    let (_:Pt) = Points.mostDistantPoint(pts2d, pts2d)
-    let (_:Pnt) = Points.center pts3d
-    // let (_:ResizeArray<Pt>) = Points.cullDuplicatePointsInSeq(pts2d, 0.001)
-
-    // Static members - 3D operations
-    let (_:Pnt) = Points.closestPoint(pts3d, Pnt(5., 5., 5.))
-    let (_:int) = Points.closestPointIdx(pts3d, Pnt(5., 5., 5.))
-    let (_:(int*int)) = Points.closestPointsIdx(pts3d, pts3d)
-    let (_:float) = Points.minDistBetweenPointSets(pts3d, pts3d)
-    let (_:(int*int)) = Points.mostDistantPointIdx(pts3d, pts3d)
-    let (_:Pnt) = Points.mostDistantPoint(pts3d, pts3d)
-    let (_:Pnt) = Points.center pts3d
-    let (_:bool) = Points.areInLine(Pnt(0., 0., 0.), Pnt(5., 0., 0.), Pnt(10., 0., 0.), 0.001)
-    let (_:float) = Points.areaTriangle(Pnt(0., 0., 0.), Pnt(10., 0., 0.), Pnt(5., 10., 0.))
-    let (_:float) = Points.areaTriangleDoubleSq(Pnt(0., 0., 0.), Pnt(10., 0., 0.), Pnt(5., 10., 0.))
-    // let (_:ResizeArray<Pnt>) = Points.cullDuplicatePointsInSeq(pts3d, 0.001)
-    let (_:Vec) = Points.normalOfPoints pts3d
-
-    // Static members - Additional operations
-    let (_:Pnt) = Points.closestOfTwo (Pnt(0., 0., 0.)) (Pnt(10., 0., 0.)) (Pnt(3., 0., 0.))
-    let (_:bool) = Points.areInLineFast(Pnt(0., 0., 0.), Pnt(5., 0., 0.), Pnt(10., 0., 0.), 0.001)
-    // Points.areaTrianglefloatSq doesn't exist, use areaTriangleDoubleSq
-    // Points.findContinuousPoints expects ResizeArray<ResizeArray<Pnt>>
-    // Points.offsetInCorner/Ex/Ex2D take 5-6 arguments with complex signatures
-    // These are used internally for polyline offset calculations
 
 // ===== Util (Math utilities) =====
 
@@ -2503,35 +2239,5 @@ module Similarity2DAPI =
     let (_:ResizeArray<ResizeArray<int>>) = Similarity2D.getGrouped(0.001, items, sims)
 
     // Note: simPt and simPts are private
-
-// ===== Topology (Joining and sorting utilities) =====
-
-module TopologyAPI =
-    // 2D lines for topology testing (using ResizeArray for Topology functions)
-    let lines2d = ResizeArray([| Line2D(Pt(0., 0.), Pt(10., 0.)); Line2D(Pt(10., 0.), Pt(10., 10.)) |])
-    // 3D lines for topology testing (using ResizeArray for Topology functions)
-    let lines3d = ResizeArray([| Line3D(Pnt(0., 0., 0.), Pnt(10., 0., 0.)); Line3D(Pnt(10., 0., 0.), Pnt(10., 10., 0.)) |])
-
-    // Note: findIndexByFrom, minIndexByFrom, and swap are private in Topology module
-
-    // Static members - 2D sorting/joining operations
-    // sortToLoop2D: (getLine: 'T -> Line2D, xs:ResizeArray<'T>) -> unit
-    let (_:unit) = Topology.sortToLoop2D(id, lines2d)
-    // sortToLoopWithReversing2D: (getLine: 'T -> Line2D, reverseInPlace: int -> 'T -> unit, xs:ResizeArray<'T>) -> unit
-    let (_:unit) = Topology.sortToLoopWithReversing2D((fun ln -> ln), (fun _ _ -> ()), lines2d)
-    // join2D: (getLine: 'T -> Line2D, splitDistance:float, xs:ResizeArray<'T>) -> ResizeArray<ResizeArray<'T>>
-    let (_:ResizeArray<ResizeArray<Line2D>>) = Topology.join2D(id, 0.001, lines2d)
-    // joinReversing2D: (getLine: 'T -> Line2D, splitDistance:float, xs:ResizeArray<'T>) -> ResizeArray<ResizeArray<'T * bool>>
-    let (_:ResizeArray<ResizeArray<Line2D * bool>>) = Topology.joinReversing2D(id, 0.001, lines2d)
-
-    // Static members - 3D sorting/joining operations
-    // sortToLoop3D: (getLine: 'T -> Line3D, xs:ResizeArray<'T>) -> unit
-    let () = Topology.sortToLoop3D(id, lines3d)
-    // sortToLoopWithReversing3D: (getLine: 'T -> Line3D, reverseInPlace: int -> 'T -> unit, xs:ResizeArray<'T>) -> unit
-    let () = Topology.sortToLoopWithReversing3D((fun ln -> ln), (fun _ _ -> ()), lines3d)
-    // join3D: (getLine: 'T -> Line3D, splitDistance:float, xs:ResizeArray<'T>) -> ResizeArray<ResizeArray<'T>>
-    let (_:ResizeArray<ResizeArray<Line3D>>) = Topology.join3D(id, 0.001, lines3d)
-    // joinReversing3D: (getLine: 'T -> Line3D, splitDistance:float, xs:ResizeArray<'T>) -> ResizeArray<ResizeArray<'T * bool>>
-    let (_:ResizeArray<ResizeArray<Line3D * bool>>) = Topology.joinReversing3D(id, 0.001, lines3d)
 
 #endif

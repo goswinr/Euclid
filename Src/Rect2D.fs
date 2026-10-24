@@ -912,11 +912,6 @@ type Rect2D =
         let f = distY / len
         Rect2D.createUnchecked(r.OriginX + r.YaxisX*f, r.OriginY + r.YaxisY*f, r.XaxisX, r.XaxisY, r.YaxisX, r.YaxisY)
 
-    /// Translate by a 2D vector. (Same as Rect2D.move)
-    [<Obsolete("This was an alias for Rect2D.move, ambiguous with the local-axis translateLocalX/Y members. Use Rect2D.move for a world-space vector, or Rect2D.translateLocalX/Y to move along the rectangle's own axes.")>]
-    static member translate (v:Vc) (r:Rect2D)  : Rect2D =
-        Rect2D.createUnchecked(r.OriginX + v.X, r.OriginY + v.Y, r.XaxisX, r.XaxisY, r.YaxisX, r.YaxisY)
-
     /// Translate by a 2D vector in world space. (Same as Rect2D.Move)
     static member move (v:Vc) (r:Rect2D)  : Rect2D =
         Rect2D.createUnchecked(r.OriginX + v.X, r.OriginY + v.Y, r.XaxisX, r.XaxisY, r.YaxisX, r.YaxisY)
@@ -2321,77 +2316,8 @@ type Rect2D =
 
 
     // #endregion
-    // #region Obsolete
-
-    /// Obsolete name. Same as Rect2D.equalsWithin.
-    [<Obsolete("Use Rect2D.equalsWithin instead, or Rect2D.equalsExact for an exact match.")>]
-    static member equals (tol:float) (a:Rect2D) (b:Rect2D) : bool =
-        Rect2D.equalsWithin tol a b
-
-    /// Obsolete name. Same as Rect2D.notEqualsWithin.
-    [<Obsolete("Use Rect2D.notEqualsWithin instead.")>]
-    static member notEquals (tol:float) (a:Rect2D) (b:Rect2D) : bool =
-        Rect2D.notEqualsWithin tol a b
-
-    /// Obsolete name. Same as r.RotateAround, but with tupled arguments.
-    [<Obsolete("Use r.RotateAround instead. It takes curried arguments: r.RotateAround cen rot")>]
-    member inline r.RotateWithCenter (cen:Pt, rot:Rotation2D) : Rect2D =
-        Rect2D.rotateAround cen rot r
-
-    /// Obsolete name. Same as Rect2D.rotateAround.
-    [<Obsolete("Use Rect2D.rotateAround instead.")>]
-    static member rotateWithCenter (cen:Pt) (rot:Rotation2D) (rect:Rect2D) : Rect2D =
-        Rect2D.rotateAround cen rot rect
-
-    [<Obsolete("use SizeX")>]
-    member inline r.Width : float =
-        sqrt(r.XaxisX*r.XaxisX + r.XaxisY*r.XaxisY)
-
-    [<Obsolete("use SizeY")>]
-    member inline r.Height2D : float =
-        sqrt(r.YaxisX*r.YaxisX + r.YaxisY*r.YaxisY)
-
-    [<Obsolete("This does not scale proportionally to the actual area, use just .Area for sorting by area")>]
-    member inline r.AreaSq : float =
-        (r.XaxisX*r.XaxisX + r.XaxisY*r.XaxisY) * (r.YaxisX*r.YaxisX + r.YaxisY*r.YaxisY)
-
-    [<Obsolete("use PointsXYLooped_CCW")>]
-    member r.PointsXYLoopedCCW : ResizeArray<float> =
-        r.PointsXYLooped_CCW
-
-    [<Obsolete("use PointsXYLooped_CW")>]
-    member r.PointsXYLoopedCW : ResizeArray<float> =
-        r.PointsXYLooped_CW
-
-    [<Obsolete("use pointsXYLooped_CCW")>]
-    static member pointsXYLoopedCCW (r:Rect2D) : ResizeArray<float> =
-        r.PointsXYLooped_CCW
-
-    [<Obsolete("use pointsXYLooped_CW")>]
-    static member pointsXYLoopedCW (r:Rect2D) : ResizeArray<float> =
-        r.PointsXYLooped_CW
-
-
-    /// Takes minX, minY, maxX, maxY
-    [<Obsolete("use bRect.AsRect2D")>]
-    static member createFromBRect (minX:float, minY:float, maxX:float, maxY:float)  : Rect2D =
-        Rect2D.createUnchecked(minX, minY, maxX - minX, 0.0, 0.0, maxY - minY)
-
-    /// returns minX, minY, maxX, maxY
-    [<Obsolete("use BRect.createFromRect2D")>]
-    member r.BRect : float * float * float * float =
-        let minX = r.OriginX + min 0. r.XaxisX + min 0. r.YaxisX
-        let minY = r.OriginY + min 0. r.XaxisY + min 0. r.YaxisY
-        let maxX = r.OriginX + max 0. r.XaxisX + max 0. r.YaxisX
-        let maxY = r.OriginY + max 0. r.XaxisY + max 0. r.YaxisY
-        (minX, minY, maxX, maxY)
 
     #nowarn "44"
-
-    /// Returns minX, minY, maxX, maxY
-    [<Obsolete("use BRect.createFromRect2D")>]
-    static member bRect (r:Rect2D) : float * float * float * float =
-        r.BRect
 
 #if !FABLE_COMPILER
 /// Serializes a Rect2D as its origin and axis components with System.Text.Json.

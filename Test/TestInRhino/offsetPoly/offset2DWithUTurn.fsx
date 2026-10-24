@@ -57,7 +57,7 @@ let offsetWithDirections(pts:ResizeArray<Pt>, dirs: ResizeArray<UnitVc>, dist:fl
         fail $"Offset2D.offsetWithDirections: pts.Count must be one greater than normals. Count but they are {pts.Count} and {dirs.Count}."
 
     let res = ResizeArray<Pt>(pts.Count)
-    let isOpen = Pt.distanceSq pts.First pts.Last > sqOpenTolerance
+    let isOpen = Pt.sqDist pts.First pts.Last > sqOpenTolerance
     let mutable fromIdx = 0
     let mutable nPrev = dirs.[dirs.Count-1]
     if isOpen then // this is needed for open polylines that have 180 degree opposing start and end segments
@@ -94,7 +94,7 @@ type Poly =
                             [<OPT;DEF(Offset2D.UTurn.Fail)>] uTurnBehavior: Offset2D.UTurn,
                             [<OPT;DEF(Cosine.``175.0``)>] useUTurnBehaviorAbove: float<Cosine.cosine>
                             ) : Polyline2D =
-        let pts = polyLine.Points
+        let pts = polyLine.AsPoints
         if pts.Count < 2 then
             fail $"Polyline2D.offset: Polyline2D must have at least 2 points but has {pts.Count} points. {polyLine}"
 
@@ -105,17 +105,17 @@ type Poly =
                 constantOffsetDistance
 
         // check if looping desired and curve is open
-        if loop && Pt.distanceSq pts.First pts.Last > Offset2D.sqOpenTolerance then
+        if loop && Pt.sqDist pts.First pts.Last > Offset2D.sqOpenTolerance then
             let closedPts = pts
             pts.Add pts.First
             let normals = Offset2D.makeOffsetDirections closedPts
             let res  = offsetWithDirections(closedPts, normals, constantOffsetDistance,  uTurnBehavior, useUTurnBehaviorAbove)
             res.Pop() |> ignore // remove last point to open the polyline again
-            Polyline2D.createDirectlyUnsafe res
+            Polyline2D.createFromPts res
         else
             let normals = Offset2D.makeOffsetDirections pts
             offsetWithDirections(pts , normals, constantOffsetDistance, uTurnBehavior, useUTurnBehaviorAbove)
-            |> Polyline2D.createDirectlyUnsafe
+            |> Polyline2D.createFromPts
 
 
 

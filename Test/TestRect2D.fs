@@ -1,7 +1,5 @@
 module TestRect2D
 
-#nowarn "44" // Rect2D.translate is obsolete; still exercised here for backward-compatibility coverage.
-
 open Euclid
 
 open EuclidTestSupport
@@ -475,14 +473,6 @@ let tests =
         // Translation
         // ---------------------------------------------------------------------
         testList "Translation" [
-            test "obsolete translate is still an alias for move" {
-                let a = Rect2D.translate (Vc(1., 2.)) rr
-                let b = Rect2D.move (Vc(1., 2.)) rr
-                "origin moved" |> Expect.isTrue (eq a.Origin (Pt(6., 5.)))
-                "axes unchanged X" |> Expect.isTrue (eqv a.Xaxis rvx)
-                "axes unchanged Y" |> Expect.isTrue (eqv a.Yaxis rvy)
-                "translate=move" |> Expect.isTrue (Rect2D.equalsWithin 1e-9 a b)
-            }
             test "translateLocalX moves along the local X-axis" {
                 let r = Rect2D.translateLocalX 10. rr
                 "moved by full X size" |> Expect.isTrue (eq r.Origin p1)

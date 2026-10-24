@@ -311,11 +311,6 @@ type RigidMatrix =
         a.Y42 = b.Y42 &&
         a.Z43 = b.Z43
 
-    /// Obsolete name. Same as RigidMatrix.equalsWithin.
-    [<Obsolete("Use RigidMatrix.equalsWithin instead, or RigidMatrix.equalsExact for an exact match.")>]
-    static member equals (tol:float) (a:RigidMatrix) (b:RigidMatrix) : bool =
-        RigidMatrix.equalsWithin tol a b
-
     /// <summary>Multiplies matrixA with matrixB.
     /// The resulting transformation will first do matrixA and then matrixB.</summary>
     /// <param name="matrixA">The first matrix (applied first).</param>
@@ -876,22 +871,6 @@ type RigidMatrix =
             , m.M12*x + m.M22*y + m.M32*z + m.Y42
             , m.M13*x + m.M23*y + m.M33*z + m.Z43
             )
-
-    /// <summary>The Determinant of a Rigid Matrix is always 1.0.
-    /// The Determinant describes the volume that a unit cube will have after the matrix was applied.
-    /// This method only exists for testing.</summary>
-    [<Obsolete("The Determinant of a Rigid Matrix is always 1.0.")>]
-    member m.Determinant :float =
-        let m = m.ToMatrix
-        m.Determinant
-
-    /// <summary>The Determinant of a Rigid Matrix is always 1.0.
-    /// The Determinant describes the volume that a unit cube will have after the matrix was applied.</summary>
-    /// <param name="m">The matrix.</param>
-    [<Obsolete("The Determinant of a Rigid Matrix is always 1.0.")>]
-    static member inline determinant (m:RigidMatrix) : float =
-        let m = m.ToMatrix
-        m.Determinant
 
 #if !FABLE_COMPILER
 /// Serializes a RigidMatrix as its 12 elements with System.Text.Json.

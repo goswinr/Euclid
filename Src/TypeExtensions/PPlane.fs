@@ -432,16 +432,6 @@ module AutoOpenPPlane =
             a.YaxisY = b.YaxisY &&
             a.YaxisZ = b.YaxisZ
 
-        /// Obsolete name. Same as PPlane.equalsWithin.
-        [<Obsolete("Use PPlane.equalsWithin instead, or PPlane.equalsExact for an exact match.")>]
-        static member inline equals (tol:float) (a:PPlane) (b:PPlane) : bool =
-            PPlane.equalsWithin tol a b
-
-        /// Obsolete name. Same as PPlane.notEqualsWithin.
-        [<Obsolete("Use PPlane.notEqualsWithin instead.")>]
-        static member inline notEquals (tol:float) (a:PPlane) (b:PPlane) : bool =
-            PPlane.notEqualsWithin tol a b
-
         /// Returns a new plane with given Origin. The axes stay the same.
         static member inline withOrigin (pnt:Pnt) (pl:PPlane) : PPlane =
             PPlane.createUnchecked(pnt.X, pnt.Y, pnt.Z, pl.XaxisX, pl.XaxisY, pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
@@ -687,41 +677,6 @@ module AutoOpenPPlane =
         static member inline scale (factor:float) (pl:PPlane) : PPlane =
             PPlane.createUnchecked(pl.OriginX * factor, pl.OriginY * factor, pl.OriginZ * factor, pl.XaxisX, pl.XaxisY, pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
 
-        /// Move plane origin by vector. Same as PPlane.move.
-        [<Obsolete("This was an alias for PPlane.move, ambiguous with the local-axis translateLocalX/Y/Z members. Use PPlane.move (or translateBy) for a world-space vector, or PPlane.translateLocalX/Y/Z to move along the plane's own axes.")>]
-        static member inline translate (translation:Vec) (pl:PPlane)  : PPlane =
-            PPlane.createUnchecked(pl.OriginX + translation.X, pl.OriginY + translation.Y, pl.OriginZ + translation.Z, pl.XaxisX, pl.XaxisY, pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
-
         /// Move plane origin by vector in world space. Same as PPlane.translateBy.
         static member inline move (translation:Vec) (pl:PPlane)  : PPlane =
             PPlane.createUnchecked(pl.OriginX + translation.X, pl.OriginY + translation.Y, pl.OriginZ + translation.Z, pl.XaxisX, pl.XaxisY, pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
-
-        [<Obsolete("Use PPlane.isCoincidentTo instead. Obsolete since 0.21.0")>]
-        static member inline areCoincident tol (a:PPlane) (b:PPlane) : bool =
-            PPlane.isCoincidentTo tol Cosine.``0.25`` a b
-
-
-        [<Obsolete("rename to PPlane.transformRigid for clarity")>]
-        static member transform (m:RigidMatrix) (pl:PPlane) : PPlane =
-            PPlane.transformRigid m pl
-
-        /// Obsolete name. Same as PPlane.withOrigin.
-        [<Obsolete("Use PPlane.withOrigin instead. This returns a new plane, it does not mutate, so the 'with' prefix is clearer.")>]
-        static member inline setOrigin (pnt:Pnt) (pl:PPlane) : PPlane =
-            PPlane.createUnchecked(pnt.X, pnt.Y, pnt.Z, pl.XaxisX, pl.XaxisY, pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
-
-        /// Obsolete name. Same as PPlane.withOriginX.
-        [<Obsolete("Use PPlane.withOriginX instead. This returns a new plane, it does not mutate, so the 'with' prefix is clearer.")>]
-        static member inline setOriginX (x:float) (pl:PPlane) : PPlane =
-            PPlane.createUnchecked(x, pl.OriginY, pl.OriginZ, pl.XaxisX, pl.XaxisY, pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
-
-        /// Obsolete name. Same as PPlane.withOriginY.
-        [<Obsolete("Use PPlane.withOriginY instead. This returns a new plane, it does not mutate, so the 'with' prefix is clearer.")>]
-        static member inline setOriginY (y:float) (pl:PPlane) : PPlane =
-            PPlane.createUnchecked(pl.OriginX, y, pl.OriginZ, pl.XaxisX, pl.XaxisY, pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
-
-        /// Obsolete name. Same as PPlane.withOriginZ.
-        [<Obsolete("Use PPlane.withOriginZ instead. This returns a new plane, it does not mutate, so the 'with' prefix is clearer.")>]
-        static member inline setOriginZ (z:float) (pl:PPlane) : PPlane =
-            PPlane.createUnchecked(pl.OriginX, pl.OriginY, z, pl.XaxisX, pl.XaxisY, pl.XaxisZ, pl.YaxisX, pl.YaxisY, pl.YaxisZ, pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
-

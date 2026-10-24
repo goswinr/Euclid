@@ -142,7 +142,7 @@ for i = 0 to 100 do
     let o = Pnt.Origin.WithX(3. * float (i%10) ).WithY(3. * float (i/10) )
     let a = b o
     let v = u()
-    let b = a |> Box.translate v.AsVec
+    let b = a |> Box.move v.AsVec
     match getBoxBetween a b with 
     |Some x ->  
         rs.Ot.AddBox x.RhBox  |> rs.setLayer "res" 

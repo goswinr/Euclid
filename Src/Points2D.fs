@@ -132,36 +132,3 @@ type Points2D   =
     static member mostDistantPoint (findPointFrom:IList<Pt>, checkAgainst:IList<Pt>) : Pt =
         let i, _ = Points2D.mostDistantPointIdx (findPointFrom, checkAgainst)
         findPointFrom.[i]
-
-    /// Similar to join polylines, this tries to find continuous sequences of 2D points.
-    /// 'tolGap' is the maximum allowable gap between the start and the endpoint of two segments.
-    /// Search starts from the segment with the most points.
-    /// Both start and end point of each 2D point list are checked for adjacency.
-    [<Obsolete("This method has very poor performance. It is recommended to use a spatial hash to cluster nearby points instead.")>] // TODO
-    static member findContinuousPoints (ptss: ResizeArray<ResizeArray<Pt>>, tolGap:float) : ResizeArray<Pt> =
-        let i = ptss |> ResizeArr.maxIndexBy ResizeArr.len
-        let res = ptss.PopAt(i)
-        let mutable loop = true
-        while loop && ptss.Count > 0 do
-            //first try to append to end
-            let endPt = res.[res.Count-1]
-            let si = ptss |> ResizeArr.minIndexBy (fun ps -> Pt.sqDist endPt ps.First)
-            let ei = ptss |> ResizeArr.minIndexBy (fun ps -> Pt.sqDist endPt ps.Last)
-            let sd = Pt.dist endPt ptss.[si].First
-            let ed = Pt.dist endPt ptss.[ei].Last
-            if   sd < tolGap && sd < ed then  res.AddRange(              ptss.PopAt(si))
-            elif ed < tolGap && ed < sd then  res.AddRange(ResizeArr.rev(ptss.PopAt(ei)) )
-            else
-                //search from start
-                let start = res.[0]
-                let si = ptss |> ResizeArr.minIndexBy (fun ps -> Pt.sqDist start ps.First)
-                let ei = ptss |> ResizeArr.minIndexBy (fun ps -> Pt.sqDist start ps.Last)
-                let sd = Pt.dist start ptss.[si].First
-                let ed = Pt.dist start ptss.[ei].Last
-                if   sd < tolGap && sd < ed then res.InsertRange(0, ResizeArr.rev(ptss.PopAt(si)) )
-                elif ed < tolGap && ed < sd then res.InsertRange(0,               ptss.PopAt(ei))
-                else
-                    loop <- false
-        res
-
-

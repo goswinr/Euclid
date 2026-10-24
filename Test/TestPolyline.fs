@@ -961,7 +961,6 @@ let testsDup =
                 //       let v = (rand.NextDouble() - 0.5) * 1e-6 // add some small numerical jiggle
                 //       Pt(p.X+v, p.Y+v)
                 //       )
-                //   |> Polyline2D.create
 
 
                 // let allInside = expectedInside |> Array.forall jigPoly.Contains

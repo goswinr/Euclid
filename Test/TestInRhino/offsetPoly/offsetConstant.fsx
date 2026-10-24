@@ -31,7 +31,7 @@ for c in rs.GetObjects("crvs", printCount=false)  do
     Printfn.gray $"{ind0}let pli = {pl.AsFSharpCode}"
     
     if true  then // markup
-        let cen, _ = Polyline2D.findLablePoint 0.2 pl 
+        let cen, _ = Polyline2D.findLabelPoint 0.2 pl
         if pl.IsClockwise then   rs.AddTextDot("CW", pt3 cen) |> rs.setLayer "M::Clockwise"
         else  rs.AddTextDot("CCW", pt3 cen) |> rs.setLayer "M::Counter-Clockwise" 
         rs.AddTextDot("0", pt3 pl.Start)|> rs.setLayer "M::Idx"
@@ -42,13 +42,13 @@ for c in rs.GetObjects("crvs", printCount=false)  do
         incr k
         Printfn.orange $"""{ind0}test "offset const dist {dist}-{k.Value}" {{""" 
         
-        Offset2D.offset'' Cosine.``170.0`` Offset2D.UTurnBehavior.Chamfer dist pl.Points 
+        Offset2D.offset'' Cosine.``170.0`` Offset2D.UTurnBehavior.Chamfer dist pl.AsPoints
         |> (fun ps -> Printfn.orange $"{ind0}{ind}let plExp = {Polyline2D(ps).AsFSharpCode}" ; ps)
         |> ResizeArray.map pt3
         |> rs.AddPolyline
         |> rs.setLayer $"O::Constant-dist<{dist}>"
 
-        Printfn.orange $"{ind0}{ind}let plr = Offset2D.offset'' Cosine.``170.0`` Offset2D.UTurnBehavior.Chamfer {dist} pli.Points |> Polyline2D"
+        Printfn.orange $"{ind0}{ind}let plr = Offset2D.offset'' Cosine.``170.0`` Offset2D.UTurnBehavior.Chamfer {dist} pli.AsPoints |> Polyline2D"
         
         Printfn.orange $"""{ind0}{ind}"offset {k.Value}: dist {dist} on {pl.PointCount} points" |> Expect.isTrue (Polyline2D.equalsWithin 0.0001 plr plExp)"""
         Printfn.blue $"{ind0}{ind}}}\n"

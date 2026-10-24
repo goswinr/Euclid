@@ -125,34 +125,6 @@ type Line3D =
     member inline ln.Vector : Vec =
         Vec(ln.VectorX, ln.VectorY, ln.VectorZ)
 
-    /// Operator to Rotate by Quaternion around Origin.
-    /// Multiplies (or applies) a Quaternion to a 3D line.
-    [<Obsolete("Use ln.Rotate(q) or Line3D.rotate instead. Obsolete since 0.20.0")>]
-    static member inline ( *** ) (l:Line3D, q:Quaternion) : Line3D =
-        // adapted from https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
-        let u = l.FromX
-        let v = l.FromY
-        let w = l.FromZ
-        let x = l.ToX
-        let y = l.ToY
-        let z = l.ToZ
-        let qx = q.X
-        let qy = q.Y
-        let qz = q.Z
-        let qw = q.W
-        let tu = 2.0 * ( qy * w - qz * v)
-        let tv = 2.0 * ( qz * u - qx * w)
-        let tw = 2.0 * ( qx * v - qy * u)
-        let tx = 2.0 * ( qy * z - qz * y)
-        let ty = 2.0 * ( qz * x - qx * z)
-        let tz = 2.0 * ( qx * y - qy * x)
-        Line3D( u + qw * tu + qy * tw - qz * tv ,
-                v + qw * tv + qz * tu - qx * tw ,
-                w + qw * tw + qx * tv - qy * tu ,
-                x + qw * tx + qy * tz - qz * ty ,
-                y + qw * ty + qz * tx - qx * tz ,
-                z + qw * tz + qx * ty - qy * tx )
-
 #if !FABLE_COMPILER
 /// Serializes a Line3D as its start and end coordinates with System.Text.Json.
 and internal Line3DJsonConverter() =

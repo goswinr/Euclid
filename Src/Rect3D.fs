@@ -1432,18 +1432,6 @@ type Rect3D =
     static member inline edges (r:Rect3D) : Line3D[] =
         r.Edges
 
-    [<Obsolete("use PointsXYZ")>]
-    member r.PointsXY : ResizeArray<float> =
-        r.PointsXYZ
-
-    [<Obsolete("use pointsXYZ")>]
-    static member inline pointsXY (r:Rect3D) : ResizeArray<float> =
-        r.PointsXYZ
-
-    [<Obsolete("use PointsXYZLooped")>]
-    member r.PointsLoopedXY : ResizeArray<float> =
-        r.PointsXYZLooped
-
     /// <summary>Returns one of the 4 Edges as 3D Line:
     /// Edge 0: from point  0 to 1
     /// Edge 1: from point  1 to 2
@@ -1833,11 +1821,6 @@ type Rect3D =
         if isTooTiny len then failTooSmall "Rect3D.translateLocalY: Yaxis" r
         let f = distY / len
         Rect3D.createUnchecked(r.OriginX + r.YaxisX*f, r.OriginY + r.YaxisY*f, r.OriginZ + r.YaxisZ*f, r.XaxisX, r.XaxisY, r.XaxisZ, r.YaxisX, r.YaxisY, r.YaxisZ)
-
-    /// Translate by a 3D vector. Same as Rect3D.move.
-    [<Obsolete("This was an alias for Rect3D.move, ambiguous with the local-axis translateLocalX/Y/Z members. Use Rect3D.move for a world-space vector, or Rect3D.translateLocalX/Y/Z to move along the rectangle's own axes.")>]
-    static member translate (v:Vec) (r:Rect3D)  : Rect3D =
-        Rect3D.createUnchecked(r.OriginX + v.X, r.OriginY + v.Y, r.OriginZ + v.Z, r.XaxisX, r.XaxisY, r.XaxisZ, r.YaxisX, r.YaxisY, r.YaxisZ)
 
     /// Moves the 3D-rectangle rigidly along its local Z-axis by the given distance. Same as Rect3D.offsetZ.
     /// The local Z-axis is calculated from the Cross Product of the X- and Y-axis of the 3D-rectangle.
@@ -2297,107 +2280,7 @@ type Rect3D =
         | ValueNone -> fail $"Rect3D.intersectLine: the line does not intersect the rectangle:{nl}{ln}{nl}{r}"
 
     // #endregion
-    // #region Obsolete
 
-    /// Obsolete name. Same as Rect3D.equalsWithin.
-    [<Obsolete("Use Rect3D.equalsWithin instead, or Rect3D.equalsExact for an exact match.")>]
-    static member equals (tol:float) (a:Rect3D) (b:Rect3D) : bool =
-        Rect3D.equalsWithin tol a b
-
-    /// Obsolete name. Same as Rect3D.notEqualsWithin.
-    [<Obsolete("Use Rect3D.notEqualsWithin instead.")>]
-    static member notEquals (tol:float) (a:Rect3D) (b:Rect3D) : bool =
-        Rect3D.notEqualsWithin tol a b
-
-    /// Obsolete name. Same as r.RotateAround, but with tupled arguments.
-    [<Obsolete("Use r.RotateAround instead. It takes curried arguments: r.RotateAround cen q")>]
-    member inline r.RotateWithCenter (cen:Pnt, q:Quaternion) : Rect3D =
-        r.RotateAround cen q
-
-    /// Obsolete name. Same as Rect3D.rotateAround.
-    [<Obsolete("Use Rect3D.rotateAround instead.")>]
-    static member inline rotateWithCenter (cen:Pnt) (q:Quaternion) (r:Rect3D) : Rect3D =
-        r.RotateAround cen q
-
-    [<Obsolete("Renamed to Rect3D.xAxisUnit for naming consistency with Rect2D.")>]
-    static member xaxisUnit (r:Rect3D) : UnitVec =
-        r.XaxisUnit
-
-    [<Obsolete("Renamed to Rect3D.yAxisUnit for naming consistency with Rect2D.")>]
-    static member yaxisUnit (r:Rect3D) : UnitVec =
-        r.YaxisUnit
-
-    [<Obsolete("This does not scale proportionally to the actual area, use just .Area for sorting by area")>]
-    member inline r.AreaSq : float =
-        (r.XaxisX*r.XaxisX + r.XaxisY*r.XaxisY + r.XaxisZ*r.XaxisZ) * (r.YaxisX*r.YaxisX + r.YaxisY*r.YaxisY + r.YaxisZ*r.YaxisZ)
-
-
-    /// The size in Y direction, same as member rect.SizeY.
-    [<Obsolete("use SizeY")>]
-    member  r.Height2D : float =
-        r.SizeY
-
-    /// The size in X direction, same as member rect.SizeX.
-    [<Obsolete("use SizeX")>]
-    member  r.Width : float =
-        r.SizeX
-
-
-
-    /// return minX, minY, minZ, maxX, maxY, maxZ
-    [<Obsolete("Use BBox.createFromRect3D instead.")>]
-    member r.BBox : float * float * float * float * float * float =
-        let p0x = r.OriginX
-        let p0y = r.OriginY
-        let p0z = r.OriginZ
-        let p1x = p0x + r.XaxisX
-        let p1y = p0y + r.XaxisY
-        let p1z = p0z + r.XaxisZ
-        let p2x = p1x + r.YaxisX
-        let p2y = p1y + r.YaxisY
-        let p2z = p1z + r.YaxisZ
-        let p3x = p0x + r.YaxisX
-        let p3y = p0y + r.YaxisY
-        let p3z = p0z + r.YaxisZ
-        let minX = min (min (min p0x p1x) p2x) p3x
-        let minY = min (min (min p0y p1y) p2y) p3y
-        let minZ = min (min (min p0z p1z) p2z) p3z
-        let maxX = max (max (max p0x p1x) p2x) p3x
-        let maxY = max (max (max p0y p1y) p2y) p3y
-        let maxZ = max (max (max p0z p1z) p2z) p3z
-        (minX, minY, minZ, maxX, maxY, maxZ)
-
-    /// return minX, minY, maxX, maxY
-    [<Obsolete("Use BRect.createFromRect3D instead.")>]
-    member r.BRect : float * float * float * float  =
-        let p0x = r.OriginX
-        let p0y = r.OriginY
-        let p0z = r.OriginZ
-        let p1x = p0x + r.XaxisX
-        let p1y = p0y + r.XaxisY
-        let p1z = p0z + r.XaxisZ
-        let p2x = p1x + r.YaxisX
-        let p2y = p1y + r.YaxisY
-        let p2z = p1z + r.YaxisZ
-        let p3x = p0x + r.YaxisX
-        let p3y = p0y + r.YaxisY
-        let p3z = p0z + r.YaxisZ
-        let minX = min (min (min p0x p1x) p2x) p3x
-        let minY = min (min (min p0y p1y) p2y) p3y
-        let minZ = min (min (min p0z p1z) p2z) p3z
-        let maxX = max (max (max p0x p1x) p2x) p3x
-        (minX, minY, minZ, maxX)
-
-    [<Obsolete("Use Rect3D.createFromBounds2D instead.")>]
-    static member createFromBRect (minX, minY, maxX, maxY)  : Rect3D =
-        Rect3D.createUnchecked(minX, minY, 0.0, maxX - minX, 0.0, 0.0, 0.0, maxY - minY, 0.0)
-
-    #nowarn "44" // Obsolete member
-
-    /// return minX, minY, minZ, maxX, maxY, maxZ
-    [<Obsolete("Use BBox.createFromRect3D instead.")>]
-    static member inline bBox (r:Rect3D) : float * float * float * float * float * float =
-        r.BBox
 
 #if !FABLE_COMPILER
 /// Serializes a Rect3D as its origin and axis components with System.Text.Json.

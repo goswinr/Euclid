@@ -1241,49 +1241,6 @@ type FreeBox private (xyzs:float[]) =
     // /// The length of the Box from Pnt0 to Pnt4 in the Z direction.
     // static member inline sizeZ (b:FreeBox) : float = b.SizeZ
 
-
-    // #region Obsolete
-
-    /// Obsolete name. Same as b.RotateAround.
-    [<Obsolete("Use b.RotateAround instead. Like it, this rotates the FreeBox in place.")>]
-    member b.RotateWithCenter (cen:Pnt) (q:Quaternion) : unit =
-        b.RotateAround cen q
-
-    /// Obsolete name. Same as FreeBox.rotateAround.
-    [<Obsolete("Use FreeBox.rotateAround instead. Like it, this returns a new FreeBox.")>]
-    static member inline rotateWithCenter (cen:Pnt) (q:Quaternion) (b:FreeBox) : FreeBox =
-        FreeBox.rotateAround cen q b
-
-    /// The 8 points that make up the box.
-    [<Obsolete("Since the internal structure of FreeBox has changed to a flat array of 24 floats, this is not the live internal buffer any more, but a copy. Use FreeBox.AsPoints instead, or FreeBox.XYZs to get the live buffer.")>]
-    member b.Points : Pnt array =
-        b.AsPoints
-
-    /// The 8 points that make up the box.
-    [<Obsolete("Since the internal structure of FreeBox has changed to a flat array of 24 floats, this is not the live internal buffer any more, but a copy. Use FreeBox.asPoints instead, or FreeBox.getXYZs to get the live buffer.")>]
-    static member points (b:FreeBox) : Pnt array =
-        b.AsPoints
-
-    /// Obsolete name. Same as b.GetPnt.
-    [<Obsolete("Use GetPnt instead.")>]
-    member b.GetPt (pointIndex:int) : Pnt =
-        b.GetPnt pointIndex
-
-    /// Obsolete name. Same as FreeBox.getPnt.
-    [<Obsolete("Use FreeBox.getPnt instead.")>]
-    static member inline getPt (pointIndex:int) (b:FreeBox) : Pnt =
-        b.GetPnt pointIndex
-
-    /// Obsolete name. Same as b.SetPnt.
-    [<Obsolete("Use SetPnt instead.")>]
-    member b.SetPt (pointIndex:int) (p:Pnt) : unit =
-        b.SetPnt pointIndex p
-
-    /// Obsolete name. Same as FreeBox.setPnt.
-    [<Obsolete("Use FreeBox.setPnt instead.")>]
-    static member inline setPt (pointIndex:int) (p:Pnt) (b:FreeBox) : unit =
-        b.SetPnt pointIndex p
-
     // #endregion
 
 #if !FABLE_COMPILER

@@ -1154,60 +1154,6 @@ type BRect =
 
 
     // #endregion
-    // #region Obsolete
-
-    /// Obsolete name. Same as BRect.equalsWithin.
-    [<Obsolete("Use BRect.equalsWithin instead, or BRect.equalsExact for an exact match.")>]
-    static member inline equals (tol:float) (a:BRect) (b:BRect) : bool =
-        BRect.equalsWithin tol a b
-
-    /// Obsolete name. Same as BRect.notEqualsWithin.
-    [<Obsolete("Use BRect.notEqualsWithin instead.")>]
-    static member inline notEquals (tol:float) (a:BRect) (b:BRect) : bool =
-        BRect.notEqualsWithin tol a b
-
-    [<Obsolete("use .isOverlapping instead")>]
-    static member inline doOverlap(a:BRect) (b:BRect) : bool =
-        b.IsOverlapping(a)
-
-    [<Obsolete("use .isOverlappingOrClose instead")>]
-    static member inline doOverlapMoreThan tol (a:BRect) (b:BRect)  : bool =
-        b.IsOverlappingOrClose(a, -tol)
-
-    [<Obsolete("use SizeX")>]
-    member inline r.Width : float =
-        r.MaxX - r.MinX
-
-    [<Obsolete("use SizeY")>]
-    member inline r.Height2D : float =
-        r.MaxY - r.MinY
-
-    [<Obsolete("typo, use ExpandSafe instead")>]
-    member inline b.ExpandSave(xDist, yDist) : BRect =
-        b.ExpandSafeXY(xDist, yDist)
-
-    [<Obsolete("typo, use ExpandSafe instead")>]
-    member inline b.ExpandSave(dist) : BRect =
-        b.ExpandSafeXY(dist, dist)
-
-    [<Obsolete("Use ExpandXY instead.")>]
-    member inline r.Expand(xDist:float, yDist:float) : BRect =
-        r.ExpandXY(xDist, yDist)
-
-    [<Obsolete("Use ExpandSafeXY instead.")>]
-    member inline b.ExpandSafe(xDist:float, yDist:float) : BRect =
-        b.ExpandSafeXY(xDist, yDist)
-
-    [<Obsolete("Use IsOverlapping instead.")>]
-    member inline b.OverlapsWith (a:BRect) : bool =
-        b.IsOverlapping(a)
-
-    [<Obsolete("Use IsOverlappingOrClose instead.")>]
-    member inline b.OverlapsWith (a:BRect, tolerance:float) : bool =
-        b.IsOverlappingOrClose(a, tolerance)
-
-
-
 
     // /// Returns TRUE if the two 2D bounding rectangles overlap by at least the specified threshold on every axis.
     // /// (See note: when one box is smaller than the threshold on some axis but fully inside the other,

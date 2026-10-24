@@ -307,16 +307,6 @@ type Quaternion =
     static member inline createFromDegrees (axis:UnitVec, angleInDegrees) : Quaternion =
         Quaternion.createFromRadians (axis, toRadians angleInDegrees)
 
-    /// Obsolete. Use Quaternion.createFromDegrees instead.
-    [<Obsolete("Use Quaternion.createFromDegrees instead.")>]
-    static member inline createFromDegree (axis:Vec, angleInDegrees) : Quaternion =
-        Quaternion.createFromDegrees (axis, angleInDegrees)
-
-    /// Obsolete. Use Quaternion.createFromDegrees instead.
-    [<Obsolete("Use Quaternion.createFromDegrees instead.")>]
-    static member inline createFromDegree (axis:UnitVec, angleInDegrees) : Quaternion =
-        Quaternion.createFromDegrees (axis, angleInDegrees)
-
     /// Creates a rotation from one vector's direction to another vector's direction.
     /// If the tips of the two unit vectors are closer than 1e-12 (squared: 1e-24) then an identity Quaternion is returned.
     /// If the tips of the two vectors are almost exactly opposite (sum length too small),
@@ -594,41 +584,6 @@ type Quaternion =
 
 
     // #endregion
-    // #region Obsolete
-
-    /// Obsolete name. Same as Quaternion.equalsWithin.
-    [<Obsolete("Use Quaternion.equalsWithin instead, or Quaternion.equalsExact for an exact match.")>]
-    static member inline equals (tolerance:float) (a:Quaternion) (b:Quaternion) : bool =
-        Quaternion.equalsWithin tolerance a b
-
-    /// Obsolete name. Same as Quaternion.equalsRotationWithin.
-    [<Obsolete("Use Quaternion.equalsRotationWithin instead.")>]
-    static member inline equalsRotation (tolerance:float) (a:Quaternion) (b:Quaternion) : bool =
-        Quaternion.equalsRotationWithin tolerance a b
-
-    [<Obsolete("The Magnitude is always one. This function only exist for testing.")>]
-    member q.Magnitude : float =
-        sqrt (q.X*q.X + q.Y*q.Y + q.Z*q.Z + q.W*q.W)
-
-    /// Obsolete name. Same as q.WithAngleInRadians.
-    [<Obsolete("Use q.WithAngleInRadians instead. This returns a new Quaternion, it does not mutate, so the 'With' prefix is clearer.")>]
-    member inline q.SetAngleInRadians (angleInRadians:float) : Quaternion =
-        q.WithAngleInRadians angleInRadians
-
-    /// Obsolete name. Same as Quaternion.withAngleInRadians.
-    [<Obsolete("Use Quaternion.withAngleInRadians instead. This returns a new Quaternion, it does not mutate, so the 'with' prefix is clearer.")>]
-    static member inline setAngleInRadians (angleInRadians:float) (q:Quaternion) : Quaternion =
-        q.WithAngleInRadians angleInRadians
-
-    /// Obsolete name. Same as q.WithAngleInDegrees.
-    [<Obsolete("Use q.WithAngleInDegrees instead. This returns a new Quaternion, it does not mutate, so the 'With' prefix is clearer.")>]
-    member inline q.SetAngleInDegrees (angleInDegrees:float) : Quaternion =
-        q.WithAngleInRadians (toRadians angleInDegrees)
-
-    /// Obsolete name. Same as Quaternion.withAngleInDegrees.
-    [<Obsolete("Use Quaternion.withAngleInDegrees instead. This returns a new Quaternion, it does not mutate, so the 'with' prefix is clearer.")>]
-    static member inline setAngleInDegrees (angleInDegrees:float) (q:Quaternion) : Quaternion =
-        q.WithAngleInRadians (toRadians angleInDegrees)
 
 #if !FABLE_COMPILER
 /// Serializes a Quaternion as its X, Y, Z, and W components with System.Text.Json.
