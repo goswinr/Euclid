@@ -232,12 +232,16 @@ type Rotation2D =
 and internal Rotation2DJsonConverter() =
     inherit JsonConverter<Rotation2D>()
 
-    let names = [| "Sin"; "Cos" |]
-
     override _.Write(writer, rotation, options) =
-        JsonConvert.writeFloatProperties writer options "Euclid.Rotation2D" names [| rotation.Sin; rotation.Cos |]
+        writer.WriteStartObject()
+        JsonConvert.writeFloat writer options "Sin" rotation.Sin
+        JsonConvert.writeFloat writer options "Cos" rotation.Cos
+        writer.WriteEndObject()
 
     override _.Read(reader, _, options) =
-        let values = JsonConvert.readFloatProperties &reader options "Euclid.Rotation2D" names
-        Rotation2D.create(values.[0], values.[1])
+        JsonConvert.readStartObject &reader "Euclid.Rotation2D"
+        let sine = JsonConvert.readFloat &reader options "Euclid.Rotation2D" "Sin"
+        let cosine = JsonConvert.readFloat &reader options "Euclid.Rotation2D" "Cos"
+        JsonConvert.readEndObject &reader "Euclid.Rotation2D"
+        Rotation2D.create(sine, cosine)
 #endif

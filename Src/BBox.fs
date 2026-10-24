@@ -2207,13 +2207,24 @@ type BBox =
 and internal BBoxJsonConverter() =
     inherit JsonConverter<BBox>()
 
-    let names = [| "MinX"; "MinY"; "MinZ"; "MaxX"; "MaxY"; "MaxZ" |]
-
     override _.Write(writer, box, options) =
-        JsonConvert.writeFloatProperties writer options "Euclid.BBox" names
-            [| box.MinX; box.MinY; box.MinZ; box.MaxX; box.MaxY; box.MaxZ |]
+        writer.WriteStartObject()
+        JsonConvert.writeFloat writer options "MinX" box.MinX
+        JsonConvert.writeFloat writer options "MinY" box.MinY
+        JsonConvert.writeFloat writer options "MinZ" box.MinZ
+        JsonConvert.writeFloat writer options "MaxX" box.MaxX
+        JsonConvert.writeFloat writer options "MaxY" box.MaxY
+        JsonConvert.writeFloat writer options "MaxZ" box.MaxZ
+        writer.WriteEndObject()
 
     override _.Read(reader, _, options) =
-        let v = JsonConvert.readFloatProperties &reader options "Euclid.BBox" names
-        BBox.create(Pnt(v.[0], v.[1], v.[2]), Pnt(v.[3], v.[4], v.[5]))
+        JsonConvert.readStartObject &reader "Euclid.BBox"
+        let minX = JsonConvert.readFloat &reader options "Euclid.BBox" "MinX"
+        let minY = JsonConvert.readFloat &reader options "Euclid.BBox" "MinY"
+        let minZ = JsonConvert.readFloat &reader options "Euclid.BBox" "MinZ"
+        let maxX = JsonConvert.readFloat &reader options "Euclid.BBox" "MaxX"
+        let maxY = JsonConvert.readFloat &reader options "Euclid.BBox" "MaxY"
+        let maxZ = JsonConvert.readFloat &reader options "Euclid.BBox" "MaxZ"
+        JsonConvert.readEndObject &reader "Euclid.BBox"
+        BBox.create(Pnt(minX, minY, minZ), Pnt(maxX, maxY, maxZ))
 #endif

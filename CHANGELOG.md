@@ -52,6 +52,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   Old calls fail to compile, because the result type changed. Use the `try` name for the old behavior.
 - `Box.getBoxBetween` now raises an `EuclidException` instead of a generic `Exception` when the boxes overlap or are too far apart.
+- **Breaking:** The `System.Text.Json` converters now read the properties of an object only in the order they write them. JSON with properties in another order, or with extra or missing properties, raises a `JsonException`. Before, the order did not matter, extra properties were skipped, and missing ones became 0.0. JSON written by Euclid reads as before. In return, each converter reads its properties one after the other without any lookup.
+- The `System.Text.Json` converters of all struct types, from `Pt` to `Matrix`, no longer allocate on the heap. They used to allocate temporary arrays on every read and write, and a string for each property name on every read. With a `PropertyNamingPolicy`, reads and writes still allocate the converted names, and with `PropertyNameCaseInsensitive`, a read allocates a string for a name whose case differs from the written one. The JSON is unchanged.
+- The `System.Text.Json` converters of `FreeBox`, `Polyline2D` and `Polyline3D` now write without allocating, and read their coordinates directly into a buffer of exactly the needed length, without the temporary arrays of a growing list. As a result, these converters ignore `JsonSerializerOptions.NumberHandling`: they always write plain JSON numbers and only read plain JSON numbers, like the converters of the struct types already did.
 
 ### Fixed
 - `Box.createFromPlaneAndPoints` and `Box.createFromDirsAndPoints` skipped the first point, so the resulting box did not always contain it.

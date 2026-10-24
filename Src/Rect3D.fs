@@ -2404,21 +2404,33 @@ type Rect3D =
 and internal Rect3DJsonConverter() =
     inherit JsonConverter<Rect3D>()
 
-    let names =
-        [| "OriginX"; "OriginY"; "OriginZ"
-           "XaxisX"; "XaxisY"; "XaxisZ"
-           "YaxisX"; "YaxisY"; "YaxisZ" |]
-
     override _.Write(writer, rectangle, options) =
-        JsonConvert.writeFloatProperties writer options "Euclid.Rect3D" names
-            [| rectangle.OriginX; rectangle.OriginY; rectangle.OriginZ
-               rectangle.XaxisX; rectangle.XaxisY; rectangle.XaxisZ
-               rectangle.YaxisX; rectangle.YaxisY; rectangle.YaxisZ |]
+        writer.WriteStartObject()
+        JsonConvert.writeFloat writer options "OriginX" rectangle.OriginX
+        JsonConvert.writeFloat writer options "OriginY" rectangle.OriginY
+        JsonConvert.writeFloat writer options "OriginZ" rectangle.OriginZ
+        JsonConvert.writeFloat writer options "XaxisX" rectangle.XaxisX
+        JsonConvert.writeFloat writer options "XaxisY" rectangle.XaxisY
+        JsonConvert.writeFloat writer options "XaxisZ" rectangle.XaxisZ
+        JsonConvert.writeFloat writer options "YaxisX" rectangle.YaxisX
+        JsonConvert.writeFloat writer options "YaxisY" rectangle.YaxisY
+        JsonConvert.writeFloat writer options "YaxisZ" rectangle.YaxisZ
+        writer.WriteEndObject()
 
     override _.Read(reader, _, options) =
-        let v = JsonConvert.readFloatProperties &reader options "Euclid.Rect3D" names
+        JsonConvert.readStartObject &reader "Euclid.Rect3D"
+        let originX = JsonConvert.readFloat &reader options "Euclid.Rect3D" "OriginX"
+        let originY = JsonConvert.readFloat &reader options "Euclid.Rect3D" "OriginY"
+        let originZ = JsonConvert.readFloat &reader options "Euclid.Rect3D" "OriginZ"
+        let xAxisX = JsonConvert.readFloat &reader options "Euclid.Rect3D" "XaxisX"
+        let xAxisY = JsonConvert.readFloat &reader options "Euclid.Rect3D" "XaxisY"
+        let xAxisZ = JsonConvert.readFloat &reader options "Euclid.Rect3D" "XaxisZ"
+        let yAxisX = JsonConvert.readFloat &reader options "Euclid.Rect3D" "YaxisX"
+        let yAxisY = JsonConvert.readFloat &reader options "Euclid.Rect3D" "YaxisY"
+        let yAxisZ = JsonConvert.readFloat &reader options "Euclid.Rect3D" "YaxisZ"
+        JsonConvert.readEndObject &reader "Euclid.Rect3D"
         Rect3D.createFromVectors(
-            Pnt(v.[0], v.[1], v.[2]),
-            Vec(v.[3], v.[4], v.[5]),
-            Vec(v.[6], v.[7], v.[8]))
+            Pnt(originX, originY, originZ),
+            Vec(xAxisX, xAxisY, xAxisZ),
+            Vec(yAxisX, yAxisY, yAxisZ))
 #endif

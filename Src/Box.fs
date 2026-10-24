@@ -3139,24 +3139,40 @@ type Box =
 and internal BoxJsonConverter() =
     inherit JsonConverter<Box>()
 
-    let names =
-        [| "OriginX"; "OriginY"; "OriginZ"
-           "XaxisX"; "XaxisY"; "XaxisZ"
-           "YaxisX"; "YaxisY"; "YaxisZ"
-           "ZaxisX"; "ZaxisY"; "ZaxisZ" |]
-
     override _.Write(writer, box, options) =
-        JsonConvert.writeFloatProperties writer options "Euclid.Box" names
-            [| box.OriginX; box.OriginY; box.OriginZ
-               box.XaxisX; box.XaxisY; box.XaxisZ
-               box.YaxisX; box.YaxisY; box.YaxisZ
-               box.ZaxisX; box.ZaxisY; box.ZaxisZ |]
+        writer.WriteStartObject()
+        JsonConvert.writeFloat writer options "OriginX" box.OriginX
+        JsonConvert.writeFloat writer options "OriginY" box.OriginY
+        JsonConvert.writeFloat writer options "OriginZ" box.OriginZ
+        JsonConvert.writeFloat writer options "XaxisX" box.XaxisX
+        JsonConvert.writeFloat writer options "XaxisY" box.XaxisY
+        JsonConvert.writeFloat writer options "XaxisZ" box.XaxisZ
+        JsonConvert.writeFloat writer options "YaxisX" box.YaxisX
+        JsonConvert.writeFloat writer options "YaxisY" box.YaxisY
+        JsonConvert.writeFloat writer options "YaxisZ" box.YaxisZ
+        JsonConvert.writeFloat writer options "ZaxisX" box.ZaxisX
+        JsonConvert.writeFloat writer options "ZaxisY" box.ZaxisY
+        JsonConvert.writeFloat writer options "ZaxisZ" box.ZaxisZ
+        writer.WriteEndObject()
 
     override _.Read(reader, _, options) =
-        let v = JsonConvert.readFloatProperties &reader options "Euclid.Box" names
+        JsonConvert.readStartObject &reader "Euclid.Box"
+        let originX = JsonConvert.readFloat &reader options "Euclid.Box" "OriginX"
+        let originY = JsonConvert.readFloat &reader options "Euclid.Box" "OriginY"
+        let originZ = JsonConvert.readFloat &reader options "Euclid.Box" "OriginZ"
+        let xAxisX = JsonConvert.readFloat &reader options "Euclid.Box" "XaxisX"
+        let xAxisY = JsonConvert.readFloat &reader options "Euclid.Box" "XaxisY"
+        let xAxisZ = JsonConvert.readFloat &reader options "Euclid.Box" "XaxisZ"
+        let yAxisX = JsonConvert.readFloat &reader options "Euclid.Box" "YaxisX"
+        let yAxisY = JsonConvert.readFloat &reader options "Euclid.Box" "YaxisY"
+        let yAxisZ = JsonConvert.readFloat &reader options "Euclid.Box" "YaxisZ"
+        let zAxisX = JsonConvert.readFloat &reader options "Euclid.Box" "ZaxisX"
+        let zAxisY = JsonConvert.readFloat &reader options "Euclid.Box" "ZaxisY"
+        let zAxisZ = JsonConvert.readFloat &reader options "Euclid.Box" "ZaxisZ"
+        JsonConvert.readEndObject &reader "Euclid.Box"
         Box.create(
-            Pnt(v.[0], v.[1], v.[2]),
-            Vec(v.[3], v.[4], v.[5]),
-            Vec(v.[6], v.[7], v.[8]),
-            Vec(v.[9], v.[10], v.[11]))
+            Pnt(originX, originY, originZ),
+            Vec(xAxisX, xAxisY, xAxisZ),
+            Vec(yAxisX, yAxisY, yAxisZ),
+            Vec(zAxisX, zAxisY, zAxisZ))
 #endif

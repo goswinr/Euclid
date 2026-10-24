@@ -1292,9 +1292,13 @@ and internal FreeBoxJsonConverter() =
     inherit JsonConverter<FreeBox>()
 
     override _.Write(writer, box, options) =
-        JsonConvert.writeProperty writer options "XYZs" box.XYZs
+        writer.WriteStartObject()
+        JsonConvert.writeFloatArray writer options "XYZs" box.XYZs
+        writer.WriteEndObject()
 
     override _.Read(reader, _, options) =
-        let xyzs = JsonConvert.readProperty<float[]> &reader options "Euclid.FreeBox" "XYZs"
+        JsonConvert.readStartObject &reader "Euclid.FreeBox"
+        let xyzs = JsonConvert.readFloatArray &reader options "Euclid.FreeBox" "XYZs"
+        JsonConvert.readEndObject &reader "Euclid.FreeBox"
         FreeBox.createDirectly xyzs
 #endif

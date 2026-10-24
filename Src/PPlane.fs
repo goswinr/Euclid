@@ -193,24 +193,40 @@ type PPlane =
 and internal PPlaneJsonConverter() =
     inherit JsonConverter<PPlane>()
 
-    let names =
-        [| "OriginX"; "OriginY"; "OriginZ"
-           "XaxisX"; "XaxisY"; "XaxisZ"
-           "YaxisX"; "YaxisY"; "YaxisZ"
-           "ZaxisX"; "ZaxisY"; "ZaxisZ" |]
-
     override _.Write(writer, plane, options) =
-        JsonConvert.writeFloatProperties writer options "Euclid.PPlane" names
-            [| plane.OriginX; plane.OriginY; plane.OriginZ
-               plane.XaxisX; plane.XaxisY; plane.XaxisZ
-               plane.YaxisX; plane.YaxisY; plane.YaxisZ
-               plane.ZaxisX; plane.ZaxisY; plane.ZaxisZ |]
+        writer.WriteStartObject()
+        JsonConvert.writeFloat writer options "OriginX" plane.OriginX
+        JsonConvert.writeFloat writer options "OriginY" plane.OriginY
+        JsonConvert.writeFloat writer options "OriginZ" plane.OriginZ
+        JsonConvert.writeFloat writer options "XaxisX" plane.XaxisX
+        JsonConvert.writeFloat writer options "XaxisY" plane.XaxisY
+        JsonConvert.writeFloat writer options "XaxisZ" plane.XaxisZ
+        JsonConvert.writeFloat writer options "YaxisX" plane.YaxisX
+        JsonConvert.writeFloat writer options "YaxisY" plane.YaxisY
+        JsonConvert.writeFloat writer options "YaxisZ" plane.YaxisZ
+        JsonConvert.writeFloat writer options "ZaxisX" plane.ZaxisX
+        JsonConvert.writeFloat writer options "ZaxisY" plane.ZaxisY
+        JsonConvert.writeFloat writer options "ZaxisZ" plane.ZaxisZ
+        writer.WriteEndObject()
 
     override _.Read(reader, _, options) =
-        let v = JsonConvert.readFloatProperties &reader options "Euclid.PPlane" names
+        JsonConvert.readStartObject &reader "Euclid.PPlane"
+        let originX = JsonConvert.readFloat &reader options "Euclid.PPlane" "OriginX"
+        let originY = JsonConvert.readFloat &reader options "Euclid.PPlane" "OriginY"
+        let originZ = JsonConvert.readFloat &reader options "Euclid.PPlane" "OriginZ"
+        let xAxisX = JsonConvert.readFloat &reader options "Euclid.PPlane" "XaxisX"
+        let xAxisY = JsonConvert.readFloat &reader options "Euclid.PPlane" "XaxisY"
+        let xAxisZ = JsonConvert.readFloat &reader options "Euclid.PPlane" "XaxisZ"
+        let yAxisX = JsonConvert.readFloat &reader options "Euclid.PPlane" "YaxisX"
+        let yAxisY = JsonConvert.readFloat &reader options "Euclid.PPlane" "YaxisY"
+        let yAxisZ = JsonConvert.readFloat &reader options "Euclid.PPlane" "YaxisZ"
+        let zAxisX = JsonConvert.readFloat &reader options "Euclid.PPlane" "ZaxisX"
+        let zAxisY = JsonConvert.readFloat &reader options "Euclid.PPlane" "ZaxisY"
+        let zAxisZ = JsonConvert.readFloat &reader options "Euclid.PPlane" "ZaxisZ"
+        JsonConvert.readEndObject &reader "Euclid.PPlane"
         PPlane.create(
-            Pnt(v.[0], v.[1], v.[2]),
-            UnitVec.createFor("X axis of PPlane", v.[3], v.[4], v.[5]),
-            UnitVec.createFor("Y axis of PPlane", v.[6], v.[7], v.[8]),
-            UnitVec.createFor("Z axis of PPlane", v.[9], v.[10], v.[11]))
+            Pnt(originX, originY, originZ),
+            UnitVec.createFor("X axis of PPlane", xAxisX, xAxisY, xAxisZ),
+            UnitVec.createFor("Y axis of PPlane", yAxisX, yAxisY, yAxisZ),
+            UnitVec.createFor("Z axis of PPlane", zAxisX, zAxisY, zAxisZ))
 #endif

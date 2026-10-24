@@ -898,21 +898,39 @@ type RigidMatrix =
 and internal RigidMatrixJsonConverter() =
     inherit JsonConverter<RigidMatrix>()
 
-    let names =
-        [| "M11"; "M21"; "M31"; "X41"
-           "M12"; "M22"; "M32"; "Y42"
-           "M13"; "M23"; "M33"; "Z43" |]
-
     override _.Write(writer, matrix, options) =
-        JsonConvert.writeFloatProperties writer options "Euclid.RigidMatrix" names
-            [| matrix.M11; matrix.M21; matrix.M31; matrix.X41
-               matrix.M12; matrix.M22; matrix.M32; matrix.Y42
-               matrix.M13; matrix.M23; matrix.M33; matrix.Z43 |]
+        writer.WriteStartObject()
+        JsonConvert.writeFloat writer options "M11" matrix.M11
+        JsonConvert.writeFloat writer options "M21" matrix.M21
+        JsonConvert.writeFloat writer options "M31" matrix.M31
+        JsonConvert.writeFloat writer options "X41" matrix.X41
+        JsonConvert.writeFloat writer options "M12" matrix.M12
+        JsonConvert.writeFloat writer options "M22" matrix.M22
+        JsonConvert.writeFloat writer options "M32" matrix.M32
+        JsonConvert.writeFloat writer options "Y42" matrix.Y42
+        JsonConvert.writeFloat writer options "M13" matrix.M13
+        JsonConvert.writeFloat writer options "M23" matrix.M23
+        JsonConvert.writeFloat writer options "M33" matrix.M33
+        JsonConvert.writeFloat writer options "Z43" matrix.Z43
+        writer.WriteEndObject()
 
     override _.Read(reader, _, options) =
-        let v = JsonConvert.readFloatProperties &reader options "Euclid.RigidMatrix" names
+        JsonConvert.readStartObject &reader "Euclid.RigidMatrix"
+        let m11 = JsonConvert.readFloat &reader options "Euclid.RigidMatrix" "M11"
+        let m21 = JsonConvert.readFloat &reader options "Euclid.RigidMatrix" "M21"
+        let m31 = JsonConvert.readFloat &reader options "Euclid.RigidMatrix" "M31"
+        let x41 = JsonConvert.readFloat &reader options "Euclid.RigidMatrix" "X41"
+        let m12 = JsonConvert.readFloat &reader options "Euclid.RigidMatrix" "M12"
+        let m22 = JsonConvert.readFloat &reader options "Euclid.RigidMatrix" "M22"
+        let m32 = JsonConvert.readFloat &reader options "Euclid.RigidMatrix" "M32"
+        let y42 = JsonConvert.readFloat &reader options "Euclid.RigidMatrix" "Y42"
+        let m13 = JsonConvert.readFloat &reader options "Euclid.RigidMatrix" "M13"
+        let m23 = JsonConvert.readFloat &reader options "Euclid.RigidMatrix" "M23"
+        let m33 = JsonConvert.readFloat &reader options "Euclid.RigidMatrix" "M33"
+        let z43 = JsonConvert.readFloat &reader options "Euclid.RigidMatrix" "Z43"
+        JsonConvert.readEndObject &reader "Euclid.RigidMatrix"
         RigidMatrix.create(
-            v.[0], v.[1], v.[2], v.[3],
-            v.[4], v.[5], v.[6], v.[7],
-            v.[8], v.[9], v.[10], v.[11])
+            m11, m21, m31, x41,
+            m12, m22, m32, y42,
+            m13, m23, m33, z43)
 #endif

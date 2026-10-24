@@ -2746,10 +2746,14 @@ and internal Polyline2DJsonConverter() =
     inherit JsonConverter<Polyline2D>()
 
     override _.Write(writer, polyline, options) =
-        JsonConvert.writeProperty writer options "XYs" polyline.XYs
+        writer.WriteStartObject()
+        JsonConvert.writeFloatResizeArray writer options "XYs" polyline.XYs
+        writer.WriteEndObject()
 
     override _.Read(reader, _, options) =
-        let xys = JsonConvert.readProperty<ResizeArray<float>> &reader options "Euclid.Polyline2D" "XYs"
+        JsonConvert.readStartObject &reader "Euclid.Polyline2D"
+        let xys = JsonConvert.readFloatResizeArray &reader options "Euclid.Polyline2D" "XYs"
+        JsonConvert.readEndObject &reader "Euclid.Polyline2D"
         Polyline2D.createDirectly xys
 #endif
 

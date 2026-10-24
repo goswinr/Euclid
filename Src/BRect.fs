@@ -1238,13 +1238,20 @@ type BRect =
 and internal BRectJsonConverter() =
     inherit JsonConverter<BRect>()
 
-    let names = [| "MinX"; "MinY"; "MaxX"; "MaxY" |]
-
     override _.Write(writer, rectangle, options) =
-        JsonConvert.writeFloatProperties writer options "Euclid.BRect" names
-            [| rectangle.MinX; rectangle.MinY; rectangle.MaxX; rectangle.MaxY |]
+        writer.WriteStartObject()
+        JsonConvert.writeFloat writer options "MinX" rectangle.MinX
+        JsonConvert.writeFloat writer options "MinY" rectangle.MinY
+        JsonConvert.writeFloat writer options "MaxX" rectangle.MaxX
+        JsonConvert.writeFloat writer options "MaxY" rectangle.MaxY
+        writer.WriteEndObject()
 
     override _.Read(reader, _, options) =
-        let v = JsonConvert.readFloatProperties &reader options "Euclid.BRect" names
-        BRect.create(Pt(v.[0], v.[1]), Pt(v.[2], v.[3]))
+        JsonConvert.readStartObject &reader "Euclid.BRect"
+        let minX = JsonConvert.readFloat &reader options "Euclid.BRect" "MinX"
+        let minY = JsonConvert.readFloat &reader options "Euclid.BRect" "MinY"
+        let maxX = JsonConvert.readFloat &reader options "Euclid.BRect" "MaxX"
+        let maxY = JsonConvert.readFloat &reader options "Euclid.BRect" "MaxY"
+        JsonConvert.readEndObject &reader "Euclid.BRect"
+        BRect.create(Pt(minX, minY), Pt(maxX, maxY))
 #endif

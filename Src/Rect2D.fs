@@ -2398,15 +2398,24 @@ type Rect2D =
 and internal Rect2DJsonConverter() =
     inherit JsonConverter<Rect2D>()
 
-    let names = [| "OriginX"; "OriginY"; "XaxisX"; "XaxisY"; "YaxisX"; "YaxisY" |]
-
     override _.Write(writer, rectangle, options) =
-        JsonConvert.writeFloatProperties writer options "Euclid.Rect2D" names
-            [| rectangle.OriginX; rectangle.OriginY
-               rectangle.XaxisX; rectangle.XaxisY
-               rectangle.YaxisX; rectangle.YaxisY |]
+        writer.WriteStartObject()
+        JsonConvert.writeFloat writer options "OriginX" rectangle.OriginX
+        JsonConvert.writeFloat writer options "OriginY" rectangle.OriginY
+        JsonConvert.writeFloat writer options "XaxisX" rectangle.XaxisX
+        JsonConvert.writeFloat writer options "XaxisY" rectangle.XaxisY
+        JsonConvert.writeFloat writer options "YaxisX" rectangle.YaxisX
+        JsonConvert.writeFloat writer options "YaxisY" rectangle.YaxisY
+        writer.WriteEndObject()
 
     override _.Read(reader, _, options) =
-        let v = JsonConvert.readFloatProperties &reader options "Euclid.Rect2D" names
-        Rect2D.createFromVectors(Pt(v.[0], v.[1]), Vc(v.[2], v.[3]), Vc(v.[4], v.[5]))
+        JsonConvert.readStartObject &reader "Euclid.Rect2D"
+        let originX = JsonConvert.readFloat &reader options "Euclid.Rect2D" "OriginX"
+        let originY = JsonConvert.readFloat &reader options "Euclid.Rect2D" "OriginY"
+        let xAxisX = JsonConvert.readFloat &reader options "Euclid.Rect2D" "XaxisX"
+        let xAxisY = JsonConvert.readFloat &reader options "Euclid.Rect2D" "XaxisY"
+        let yAxisX = JsonConvert.readFloat &reader options "Euclid.Rect2D" "YaxisX"
+        let yAxisY = JsonConvert.readFloat &reader options "Euclid.Rect2D" "YaxisY"
+        JsonConvert.readEndObject &reader "Euclid.Rect2D"
+        Rect2D.createFromVectors(Pt(originX, originY), Vc(xAxisX, xAxisY), Vc(yAxisX, yAxisY))
 #endif

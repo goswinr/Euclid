@@ -9,6 +9,7 @@ let tests =
     testList "Pnt JSON serialization" []
 #else
 open System
+open System.Buffers
 open System.Runtime.Serialization
 open System.Text.Json
 open System.Text.Json.Serialization
@@ -119,6 +120,46 @@ let private roundTripTests =
             let actualJson = JsonSerializer.Serialize(roundTripped, contractType)
             expectJsonEqual contractType.Name expectedJson actualJson)
 
+// Reading them allocates the coordinate buffer of the result.
+let private collectionTypes = set [ "FreeBox"; "Polyline2D"; "Polyline3D" ]
+
+/// Returns the bytes allocated by 100 calls of the action, after one warm-up call.
+let private allocatedBytes (action:unit -> unit) =
+    action ()
+    let before = GC.GetAllocatedBytesForCurrentThread()
+    for _ in 1 .. 100 do
+        action ()
+    GC.GetAllocatedBytesForCurrentThread() - before
+
+type private ConverterAllocations =
+
+    /// Returns the bytes allocated by 100 writes and by 100 reads with the converter of 'T.
+    static member Measure<'T>(value:'T) : int64 * int64 =
+        let options = JsonSerializerOptions()
+        let converter = options.GetConverter(typeof<'T>) :?> JsonConverter<'T>
+        let json = JsonSerializer.SerializeToUtf8Bytes(value, options)
+        let buffer = ArrayBufferWriter<byte>(1024)
+        use writer = new Utf8JsonWriter(buffer)
+        let write () =
+            buffer.Clear()
+            writer.Reset()
+            converter.Write(writer, value, options)
+            writer.Flush()
+        let read () =
+            let mutable reader = Utf8JsonReader(ReadOnlySpan<byte>(json))
+            reader.Read() |> ignore
+            converter.Read(&reader, typeof<'T>, options) |> ignore
+        allocatedBytes write, allocatedBytes read
+
+/// Returns the bytes allocated by 100 writes and by 100 reads with the converter of the value's type.
+let private converterAllocations (value:obj) : int64 * int64 =
+    let flags = Reflection.BindingFlags.Static ||| Reflection.BindingFlags.NonPublic // a private F# type has internal members
+    let measure = typeof<ConverterAllocations>.GetMethod("Measure", flags).MakeGenericMethod(value.GetType())
+    measure.Invoke(null, [| value |]) :?> int64 * int64
+
+let private fixture name =
+    contractValues |> List.find (fun (fixtureName, _) -> fixtureName = name) |> snd
+
 let tests =
     testList "JSON serialization" [
 
@@ -171,6 +212,77 @@ let tests =
                 expectJsonEqual name newtonsoftJson systemTextJson
 
         testList "System.Text.Json round-trips every DataContract type" roundTripTests
+
+        testCase "System.Text.Json round-trips every DataContract type with a camelCase naming policy" <| fun _ ->
+            let options = JsonSerializerOptions(PropertyNamingPolicy = JsonNamingPolicy.CamelCase)
+            Expect.equal (JsonSerializer.Serialize(pnt, options)) """{"x":1.5,"y":-2.25,"z":3.75}""" "camelCase JSON"
+            for name, value in contractValues do
+                let contractType = value.GetType()
+                let expectedJson = JsonSerializer.Serialize(value, contractType, options)
+                let roundTripped = JsonSerializer.Deserialize(expectedJson, contractType, options)
+                let actualJson = JsonSerializer.Serialize(roundTripped, contractType, options)
+                expectJsonEqual name expectedJson actualJson
+
+        testCase "System.Text.Json reads properties only in the order they are written" <| fun _ ->
+            let rejected = [
+                """{"Y":-2.25,"X":1.5,"Z":3.75}""", "swapped properties"
+                """{"X":1.5,"Y":-2.25}""", "a missing property"
+                """{"Extra":0,"X":1.5,"Y":-2.25,"Z":3.75}""", "an extra property at the start"
+                """{"X":1.5,"Y":-2.25,"Z":3.75,"Extra":0}""", "an extra property at the end"
+                """{"X":1.5,"Y":"-2.25","Z":3.75}""", "a string instead of a number"
+                """[1.5,-2.25,3.75]""", "an array instead of an object"
+            ]
+            for rejectedJson, description in rejected do
+                Expect.throws (fun () -> JsonSerializer.Deserialize<Pnt>(rejectedJson) |> ignore) $"Pnt with {description}"
+
+        testCase "System.Text.Json reads property names case-insensitively only when configured" <| fun _ ->
+            let lowerCase = """{"x":1.5,"y":-2.25,"z":3.75}"""
+            let options = JsonSerializerOptions(PropertyNameCaseInsensitive = true)
+            expectPnt pnt (JsonSerializer.Deserialize<Pnt>(lowerCase, options))
+            Expect.throws (fun () -> JsonSerializer.Deserialize<Pnt>(lowerCase) |> ignore) "lower-case names without PropertyNameCaseInsensitive"
+
+        testCase "System.Text.Json float property converters write and read without allocating" <| fun _ ->
+            for name, value in contractValues do
+                if not (collectionTypes.Contains name) then
+                    let writeBytes, readBytes = converterAllocations value
+                    Expect.equal writeBytes 0L $"{name}: bytes allocated by 100 writes"
+                    Expect.equal readBytes 0L $"{name}: bytes allocated by 100 reads"
+
+        testCase "System.Text.Json collection converters write without allocating and read only their result" <| fun _ ->
+            let freeBox = fixture "FreeBox" :?> FreeBox
+            let polyline2D = fixture "Polyline2D" :?> Polyline2D
+            let polyline3D = fixture "Polyline3D" :?> Polyline3D
+            // Each function creates an object like the one a read returns, with a coordinate buffer of the same size.
+            let results : (string * obj * (unit -> unit)) list = [
+                "FreeBox", box freeBox, fun () -> FreeBox.createDirectly (Array.zeroCreate freeBox.XYZs.Length) |> ignore
+                "Polyline2D", box polyline2D, fun () -> Polyline2D.createDirectly (ResizeArray<float>(polyline2D.XYs.Count)) |> ignore
+                "Polyline3D", box polyline3D, fun () -> Polyline3D.createDirectly (ResizeArray<float>(polyline3D.XYZs.Count)) |> ignore
+            ]
+            Expect.equal (results |> List.map (fun (name, _, _) -> name) |> Set.ofList) collectionTypes "collection types"
+            for name, value, createResult in results do
+                let writeBytes, readBytes = converterAllocations value
+                Expect.equal writeBytes 0L $"{name}: bytes allocated by 100 writes"
+                Expect.equal readBytes (allocatedBytes createResult) $"{name}: bytes allocated by 100 reads, the same as by creating the result 100 times"
+
+        testCase "System.Text.Json reads coordinate arrays into buffers of exactly their length" <| fun _ ->
+            // 6 floats, since a growing ResizeArray would end with a capacity of 8, but one of 4 floats with a capacity of 4.
+            let polyline = JsonSerializer.Deserialize<Polyline2D>("""{"XYs":[1.5,-2.25,3.75,4.5,5.5,6.5]}""")
+            Expect.equal (List.ofSeq polyline.XYs) [1.5; -2.25; 3.75; 4.5; 5.5; 6.5] "coordinates"
+            Expect.equal polyline.XYs.Capacity 6 "capacity"
+
+            let empty = JsonSerializer.Deserialize<Polyline3D>("""{"XYZs":[]}""")
+            Expect.equal empty.PointCount 0 "point count of an empty array"
+
+            let options = JsonSerializerOptions(PropertyNameCaseInsensitive = true)
+            let lowerCase = JsonSerializer.Deserialize<Polyline2D>("""{"xys":[1.5,-2.25,3.75,4.5]}""", options)
+            Expect.equal (List.ofSeq lowerCase.XYs) [1.5; -2.25; 3.75; 4.5] "coordinates under a lower-case name"
+
+            Expect.throws (fun () -> JsonSerializer.Deserialize<Polyline2D>("""{"Extra":[1,2],"XYs":[1.5,-2.25]}""") |> ignore) "an extra property at the start"
+            Expect.throws (fun () -> JsonSerializer.Deserialize<Polyline2D>("""{"XYs":[1.5,-2.25],"Extra":[1,2]}""") |> ignore) "an extra property at the end"
+            Expect.throws (fun () -> JsonSerializer.Deserialize<Polyline2D>("""{"XYs":[1.5,"2"]}""") |> ignore) "a string in the array"
+            Expect.throws (fun () -> JsonSerializer.Deserialize<Polyline2D>("""{"XYs":{}}""") |> ignore) "an object instead of an array"
+            Expect.throws (fun () -> JsonSerializer.Deserialize<Polyline2D>("""{}""") |> ignore) "a missing array"
+            Expect.throws (fun () -> JsonSerializer.Deserialize<FreeBox>("""{"XYZs":[1,2,3]}""") |> ignore) "a FreeBox with 3 instead of 24 floats"
 
         testCase "System.Text.Json rejects invalid geometry during deserialization" <| fun _ ->
             let invalidValues : (string * Type * string) list = [

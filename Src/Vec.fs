@@ -152,12 +152,18 @@ type Vec =
 and internal VecJsonConverter() =
     inherit JsonConverter<Vec>()
 
-    let names = [| "X"; "Y"; "Z" |]
-
     override _.Write(writer, v, options) =
-        JsonConvert.writeFloatProperties writer options "Euclid.Vec" names [| v.X; v.Y; v.Z |]
+        writer.WriteStartObject()
+        JsonConvert.writeFloat writer options "X" v.X
+        JsonConvert.writeFloat writer options "Y" v.Y
+        JsonConvert.writeFloat writer options "Z" v.Z
+        writer.WriteEndObject()
 
     override _.Read(reader, _, options) =
-        let values = JsonConvert.readFloatProperties &reader options "Euclid.Vec" names
-        Vec(values.[0], values.[1], values.[2])
+        JsonConvert.readStartObject &reader "Euclid.Vec"
+        let x = JsonConvert.readFloat &reader options "Euclid.Vec" "X"
+        let y = JsonConvert.readFloat &reader options "Euclid.Vec" "Y"
+        let z = JsonConvert.readFloat &reader options "Euclid.Vec" "Z"
+        JsonConvert.readEndObject &reader "Euclid.Vec"
+        Vec(x, y, z)
 #endif

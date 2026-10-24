@@ -2891,10 +2891,14 @@ and internal Polyline3DJsonConverter() =
     inherit JsonConverter<Polyline3D>()
 
     override _.Write(writer, polyline, options) =
-        JsonConvert.writeProperty writer options "XYZs" polyline.XYZs
+        writer.WriteStartObject()
+        JsonConvert.writeFloatResizeArray writer options "XYZs" polyline.XYZs
+        writer.WriteEndObject()
 
     override _.Read(reader, _, options) =
-        let xyzs = JsonConvert.readProperty<ResizeArray<float>> &reader options "Euclid.Polyline3D" "XYZs"
+        JsonConvert.readStartObject &reader "Euclid.Polyline3D"
+        let xyzs = JsonConvert.readFloatResizeArray &reader options "Euclid.Polyline3D" "XYZs"
+        JsonConvert.readEndObject &reader "Euclid.Polyline3D"
         Polyline3D.createDirectly xyzs
 #endif
 

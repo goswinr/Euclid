@@ -177,12 +177,16 @@ type Pt =
 and internal PtJsonConverter() =
     inherit JsonConverter<Pt>()
 
-    let names = [| "X"; "Y" |]
-
     override _.Write(writer, p, options) =
-        JsonConvert.writeFloatProperties writer options "Euclid.Pt" names [| p.X; p.Y |]
+        writer.WriteStartObject()
+        JsonConvert.writeFloat writer options "X" p.X
+        JsonConvert.writeFloat writer options "Y" p.Y
+        writer.WriteEndObject()
 
     override _.Read(reader, _, options) =
-        let values = JsonConvert.readFloatProperties &reader options "Euclid.Pt" names
-        Pt(values.[0], values.[1])
+        JsonConvert.readStartObject &reader "Euclid.Pt"
+        let x = JsonConvert.readFloat &reader options "Euclid.Pt" "X"
+        let y = JsonConvert.readFloat &reader options "Euclid.Pt" "Y"
+        JsonConvert.readEndObject &reader "Euclid.Pt"
+        Pt(x, y)
 #endif

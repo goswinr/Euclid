@@ -136,14 +136,20 @@ type Pnt =
 and internal PntJsonConverter() =
     inherit JsonConverter<Pnt>()
 
-    let names = [| "X"; "Y"; "Z" |]
-
     override _.Write(writer, p, options) =
-        JsonConvert.writeFloatProperties writer options "Euclid.Pnt" names [| p.X; p.Y; p.Z |]
+        writer.WriteStartObject()
+        JsonConvert.writeFloat writer options "X" p.X
+        JsonConvert.writeFloat writer options "Y" p.Y
+        JsonConvert.writeFloat writer options "Z" p.Z
+        writer.WriteEndObject()
 
     override _.Read(reader, _, options) =
-        let values = JsonConvert.readFloatProperties &reader options "Euclid.Pnt" names
-        Pnt(values.[0], values.[1], values.[2])
+        JsonConvert.readStartObject &reader "Euclid.Pnt"
+        let x = JsonConvert.readFloat &reader options "Euclid.Pnt" "X"
+        let y = JsonConvert.readFloat &reader options "Euclid.Pnt" "Y"
+        let z = JsonConvert.readFloat &reader options "Euclid.Pnt" "Z"
+        JsonConvert.readEndObject &reader "Euclid.Pnt"
+        Pnt(x, y, z)
 #endif
 
 

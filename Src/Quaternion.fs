@@ -635,13 +635,20 @@ type Quaternion =
 and internal QuaternionJsonConverter() =
     inherit JsonConverter<Quaternion>()
 
-    let names = [| "X"; "Y"; "Z"; "W" |]
-
     override _.Write(writer, quaternion, options) =
-        JsonConvert.writeFloatProperties writer options "Euclid.Quaternion" names
-            [| quaternion.X; quaternion.Y; quaternion.Z; quaternion.W |]
+        writer.WriteStartObject()
+        JsonConvert.writeFloat writer options "X" quaternion.X
+        JsonConvert.writeFloat writer options "Y" quaternion.Y
+        JsonConvert.writeFloat writer options "Z" quaternion.Z
+        JsonConvert.writeFloat writer options "W" quaternion.W
+        writer.WriteEndObject()
 
     override _.Read(reader, _, options) =
-        let values = JsonConvert.readFloatProperties &reader options "Euclid.Quaternion" names
-        Quaternion.create(values.[0], values.[1], values.[2], values.[3])
+        JsonConvert.readStartObject &reader "Euclid.Quaternion"
+        let x = JsonConvert.readFloat &reader options "Euclid.Quaternion" "X"
+        let y = JsonConvert.readFloat &reader options "Euclid.Quaternion" "Y"
+        let z = JsonConvert.readFloat &reader options "Euclid.Quaternion" "Z"
+        let w = JsonConvert.readFloat &reader options "Euclid.Quaternion" "W"
+        JsonConvert.readEndObject &reader "Euclid.Quaternion"
+        Quaternion.create(x, y, z, w)
 #endif

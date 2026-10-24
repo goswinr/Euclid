@@ -1381,20 +1381,48 @@ type Matrix =
 and internal MatrixJsonConverter() =
     inherit JsonConverter<Matrix>()
 
-    let names =
-        [| "M11"; "M21"; "M31"; "X41"
-           "M12"; "M22"; "M32"; "Y42"
-           "M13"; "M23"; "M33"; "Z43"
-           "M14"; "M24"; "M34"; "M44" |]
-
     override _.Write(writer, matrix, options) =
-        JsonConvert.writeFloatProperties writer options "Euclid.Matrix" names
-            [| matrix.M11; matrix.M21; matrix.M31; matrix.X41
-               matrix.M12; matrix.M22; matrix.M32; matrix.Y42
-               matrix.M13; matrix.M23; matrix.M33; matrix.Z43
-               matrix.M14; matrix.M24; matrix.M34; matrix.M44 |]
+        writer.WriteStartObject()
+        JsonConvert.writeFloat writer options "M11" matrix.M11
+        JsonConvert.writeFloat writer options "M21" matrix.M21
+        JsonConvert.writeFloat writer options "M31" matrix.M31
+        JsonConvert.writeFloat writer options "X41" matrix.X41
+        JsonConvert.writeFloat writer options "M12" matrix.M12
+        JsonConvert.writeFloat writer options "M22" matrix.M22
+        JsonConvert.writeFloat writer options "M32" matrix.M32
+        JsonConvert.writeFloat writer options "Y42" matrix.Y42
+        JsonConvert.writeFloat writer options "M13" matrix.M13
+        JsonConvert.writeFloat writer options "M23" matrix.M23
+        JsonConvert.writeFloat writer options "M33" matrix.M33
+        JsonConvert.writeFloat writer options "Z43" matrix.Z43
+        JsonConvert.writeFloat writer options "M14" matrix.M14
+        JsonConvert.writeFloat writer options "M24" matrix.M24
+        JsonConvert.writeFloat writer options "M34" matrix.M34
+        JsonConvert.writeFloat writer options "M44" matrix.M44
+        writer.WriteEndObject()
 
     override _.Read(reader, _, options) =
-        let v = JsonConvert.readFloatProperties &reader options "Euclid.Matrix" names
-        Matrix.createFromRowMajorArray v
+        JsonConvert.readStartObject &reader "Euclid.Matrix"
+        let m11 = JsonConvert.readFloat &reader options "Euclid.Matrix" "M11"
+        let m21 = JsonConvert.readFloat &reader options "Euclid.Matrix" "M21"
+        let m31 = JsonConvert.readFloat &reader options "Euclid.Matrix" "M31"
+        let x41 = JsonConvert.readFloat &reader options "Euclid.Matrix" "X41"
+        let m12 = JsonConvert.readFloat &reader options "Euclid.Matrix" "M12"
+        let m22 = JsonConvert.readFloat &reader options "Euclid.Matrix" "M22"
+        let m32 = JsonConvert.readFloat &reader options "Euclid.Matrix" "M32"
+        let y42 = JsonConvert.readFloat &reader options "Euclid.Matrix" "Y42"
+        let m13 = JsonConvert.readFloat &reader options "Euclid.Matrix" "M13"
+        let m23 = JsonConvert.readFloat &reader options "Euclid.Matrix" "M23"
+        let m33 = JsonConvert.readFloat &reader options "Euclid.Matrix" "M33"
+        let z43 = JsonConvert.readFloat &reader options "Euclid.Matrix" "Z43"
+        let m14 = JsonConvert.readFloat &reader options "Euclid.Matrix" "M14"
+        let m24 = JsonConvert.readFloat &reader options "Euclid.Matrix" "M24"
+        let m34 = JsonConvert.readFloat &reader options "Euclid.Matrix" "M34"
+        let m44 = JsonConvert.readFloat &reader options "Euclid.Matrix" "M44"
+        JsonConvert.readEndObject &reader "Euclid.Matrix"
+        Matrix(
+            m11, m21, m31, x41,
+            m12, m22, m32, y42,
+            m13, m23, m33, z43,
+            m14, m24, m34, m44)
 #endif

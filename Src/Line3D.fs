@@ -158,13 +158,24 @@ type Line3D =
 and internal Line3DJsonConverter() =
     inherit JsonConverter<Line3D>()
 
-    let names = [| "FromX"; "FromY"; "FromZ"; "ToX"; "ToY"; "ToZ" |]
-
     override _.Write(writer, line, options) =
-        JsonConvert.writeFloatProperties writer options "Euclid.Line3D" names
-            [| line.FromX; line.FromY; line.FromZ; line.ToX; line.ToY; line.ToZ |]
+        writer.WriteStartObject()
+        JsonConvert.writeFloat writer options "FromX" line.FromX
+        JsonConvert.writeFloat writer options "FromY" line.FromY
+        JsonConvert.writeFloat writer options "FromZ" line.FromZ
+        JsonConvert.writeFloat writer options "ToX" line.ToX
+        JsonConvert.writeFloat writer options "ToY" line.ToY
+        JsonConvert.writeFloat writer options "ToZ" line.ToZ
+        writer.WriteEndObject()
 
     override _.Read(reader, _, options) =
-        let v = JsonConvert.readFloatProperties &reader options "Euclid.Line3D" names
-        Line3D(v.[0], v.[1], v.[2], v.[3], v.[4], v.[5])
+        JsonConvert.readStartObject &reader "Euclid.Line3D"
+        let fromX = JsonConvert.readFloat &reader options "Euclid.Line3D" "FromX"
+        let fromY = JsonConvert.readFloat &reader options "Euclid.Line3D" "FromY"
+        let fromZ = JsonConvert.readFloat &reader options "Euclid.Line3D" "FromZ"
+        let toX = JsonConvert.readFloat &reader options "Euclid.Line3D" "ToX"
+        let toY = JsonConvert.readFloat &reader options "Euclid.Line3D" "ToY"
+        let toZ = JsonConvert.readFloat &reader options "Euclid.Line3D" "ToZ"
+        JsonConvert.readEndObject &reader "Euclid.Line3D"
+        Line3D(fromX, fromY, fromZ, toX, toY, toZ)
 #endif

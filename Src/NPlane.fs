@@ -445,13 +445,24 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
 and internal NPlaneJsonConverter() =
     inherit JsonConverter<NPlane>()
 
-    let names = [| "OriginX"; "OriginY"; "OriginZ"; "NormalX"; "NormalY"; "NormalZ" |]
-
     override _.Write(writer, plane, options) =
-        JsonConvert.writeFloatProperties writer options "Euclid.NPlane" names
-            [| plane.OriginX; plane.OriginY; plane.OriginZ; plane.NormalX; plane.NormalY; plane.NormalZ |]
+        writer.WriteStartObject()
+        JsonConvert.writeFloat writer options "OriginX" plane.OriginX
+        JsonConvert.writeFloat writer options "OriginY" plane.OriginY
+        JsonConvert.writeFloat writer options "OriginZ" plane.OriginZ
+        JsonConvert.writeFloat writer options "NormalX" plane.NormalX
+        JsonConvert.writeFloat writer options "NormalY" plane.NormalY
+        JsonConvert.writeFloat writer options "NormalZ" plane.NormalZ
+        writer.WriteEndObject()
 
     override _.Read(reader, _, options) =
-        let v = JsonConvert.readFloatProperties &reader options "Euclid.NPlane" names
-        NPlane.create(Pnt(v.[0], v.[1], v.[2]), Vec(v.[3], v.[4], v.[5]))
+        JsonConvert.readStartObject &reader "Euclid.NPlane"
+        let originX = JsonConvert.readFloat &reader options "Euclid.NPlane" "OriginX"
+        let originY = JsonConvert.readFloat &reader options "Euclid.NPlane" "OriginY"
+        let originZ = JsonConvert.readFloat &reader options "Euclid.NPlane" "OriginZ"
+        let normalX = JsonConvert.readFloat &reader options "Euclid.NPlane" "NormalX"
+        let normalY = JsonConvert.readFloat &reader options "Euclid.NPlane" "NormalY"
+        let normalZ = JsonConvert.readFloat &reader options "Euclid.NPlane" "NormalZ"
+        JsonConvert.readEndObject &reader "Euclid.NPlane"
+        NPlane.create(Pnt(originX, originY, originZ), Vec(normalX, normalY, normalZ))
 #endif

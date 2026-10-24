@@ -119,13 +119,17 @@ type Vc =
 and internal VcJsonConverter() =
     inherit JsonConverter<Vc>()
 
-    let names = [| "X"; "Y" |]
-
     override _.Write(writer, vector, options) =
-        JsonConvert.writeFloatProperties writer options "Euclid.Vc" names [| vector.X; vector.Y |]
+        writer.WriteStartObject()
+        JsonConvert.writeFloat writer options "X" vector.X
+        JsonConvert.writeFloat writer options "Y" vector.Y
+        writer.WriteEndObject()
 
     override _.Read(reader, _, options) =
-        let v = JsonConvert.readFloatProperties &reader options "Euclid.Vc" names
-        Vc(v.[0], v.[1])
+        JsonConvert.readStartObject &reader "Euclid.Vc"
+        let x = JsonConvert.readFloat &reader options "Euclid.Vc" "X"
+        let y = JsonConvert.readFloat &reader options "Euclid.Vc" "Y"
+        JsonConvert.readEndObject &reader "Euclid.Vc"
+        Vc(x, y)
 #endif
 
