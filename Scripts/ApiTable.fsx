@@ -58,6 +58,7 @@ let only3D = set [ "Box"; "FreeBox"; "PPlane"; "NPlane"; "Matrix"; "RigidMatrix"
 /// A name also covers the static member of the same name in lowercase, so "Area" pairs BRect.Area with BBox.Volume and BRect.area with BBox.volume.
 /// Besides these, a 3D name with "InXY" or "In2D" pairs with the 2D name without it, e.g. Vec.direction180InXY with Vc.direction180.
 let renamed = [
+    "Polyline2D", "createFromRectCCW"            , "createFromRect3D"
     "Rect2D"    , "PointsXY_CCW"                , "PointsXYZ"
     "Rect2D"    , "PointsXYLooped_CCW"          , "PointsXYZLooped"
     ""          , "Rotate90CCW"                 , "Rotate2Dby90CCW"
@@ -101,6 +102,7 @@ let only2DMembers = [
 /// Members that only exist in 3D on purpose, as 3D type, regular expression for the name and reason.
 /// The type "" stands for all types. The reason is shown in the empty 2D cell next to the member.
 let only3DMembers = [
+    "Polyline3D", @"^(TryFindSelfIntersectionCustom|FindSelfIntersectionCustom)$", "skew tolerance of 3D segments"
     "BBox"      , @"^CreateFromBox$"                              , "conversion from an oriented 3D box"
     "Quaternion", @"^[XYZW]$|Axis|Conjugate|Euler"                , "quaternion components"
     "Quaternion", @"^CreateFrom(Unit)?Vec(Degrees|Radians)$"      , "rotation about an axis vector"

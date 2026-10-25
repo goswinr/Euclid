@@ -4,7 +4,7 @@ All public types, members and functions of Euclid. Corresponding 2D and 3D types
 
 - Corresponding members share a row, also when their names differ, like `Pt.midPt` and `Pnt.midPnt`.
 - `—` and a reason in italics mark a member that exists in one dimension only on purpose.
-- An empty cell marks one of 50 gaps: a member that is missing in one dimension,
+- An empty cell marks one of 47 gaps: a member that is missing in one dimension,
   or a member whose name does not match its counterpart. The contents list the gaps per table.
 - Instance members and fields start with `.`, e.g. `.DistanceTo`.
 - Static members are qualified with their type name. They are listed right below the instance member of the same name.
@@ -47,7 +47,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 - [Offset2D.VarDistParallel / Offset3D.VarDistParallel](#offset2dvardistparallel--offset3dvardistparallel), 1 gap
 - [Offset3D.OffsetDirection](#offset3doffsetdirection)
 - [Offset3D.CollinearPoint](#offset3dcollinearpoint)
-- [Polyline2D / Polyline3D](#polyline2d--polyline3d), 3 gaps
+- [Polyline2D / Polyline3D](#polyline2d--polyline3d), 0 gaps
 - [Topology2D / Topology3D](#topology2d--topology3d), 0 gaps
 - [module Similarity2D](#module-similarity2d)
 - [Similarity2D.GroupInsideObjectToCheck](#similarity2dgroupinsideobjecttocheck)
@@ -2466,7 +2466,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | Polyline2D | Signature | Polyline3D | Signature |
 |:--|:--|:--|:--|
 | `new` | `capacity: int -> Polyline2D` | `new` | `capacity: int -> Polyline3D` |
-|  |  | `new` | `points: Pnt seq -> Polyline3D` |
+| `new` | `points: Pt seq -> Polyline2D` | `new` | `points: Pnt seq -> Polyline3D` |
 | `.AddPoint` | `pt: Pt -> unit` | `.AddPoint` | `pnt: Pnt -> unit` |
 | `Polyline2D.addPoint` | `pt: Pt -> p: Polyline2D -> unit` | `Polyline3D.addPoint` | `pnt: Pnt -> p: Polyline3D -> unit` |
 | `.AddXY` | `x: float * y: float -> unit` | `.AddXYZ` | `x: float * y: float * z: float -> unit` |
@@ -2652,13 +2652,14 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Polyline2D.createFromMembersXY` | `xyObjs: ^T seq -> Polyline2D` | `Polyline3D.createFromMembersXYZ` | `xyzObjs: ^T seq -> Polyline3D` |
 | `Polyline2D.createFromMembersxy` | `xyObjs: ^T seq -> Polyline2D` | `Polyline3D.createFromMembersxyz` | `xyzObjs: ^T seq -> Polyline3D` |
 | `Polyline2D.createFromPts` | `points: Pt seq -> Polyline2D` | `Polyline3D.createFromPnts` | `points: Pnt seq -> Polyline3D` |
-|  |  | `Polyline3D.createFromRect3D` | `r: Rect3D -> Polyline3D` |
-| `Polyline2D.createFromRectCCW` | `r: Rect2D -> Polyline2D` | — | *orientation in the plane* |
+| `Polyline2D.createFromRectCCW` | `r: Rect2D -> Polyline2D` | `Polyline3D.createFromRect3D` | `r: Rect3D -> Polyline3D` |
 | `Polyline2D.createFromRectCW` | `r: Rect2D -> Polyline2D` | — | *orientation in the plane* |
 | `Polyline2D.createFromXYs` | `xys: ResizeArray<float> -> Polyline2D` | `Polyline3D.createFromXYZs` | `xyzs: ResizeArray<float> -> Polyline3D` |
 | `Polyline2D.end'` | `p: Polyline2D -> Pt` | `Polyline3D.end'` | `pl: Polyline3D -> Pnt` |
 | `Polyline2D.equalsExact` | `pl1: Polyline2D -> pl2: Polyline2D -> bool` | `Polyline3D.equalsExact` | `pl1: Polyline3D -> pl2: Polyline3D -> bool` |
 | `Polyline2D.equalsWithin` | `tol: float -> pl1: Polyline2D -> pl2: Polyline2D -> bool` | `Polyline3D.equalsWithin` | `tol: float -> pl1: Polyline3D -> pl2: Polyline3D -> bool` |
+| `Polyline2D.findSelfIntersection` | `pl: Polyline2D -> Pt * int * int` | `Polyline3D.findSelfIntersection` | `pl: Polyline3D -> Pnt * int * int` |
+| — | *skew tolerance of 3D segments* | `Polyline3D.findSelfIntersectionCustom` | `pl: Polyline3D * ?maxSkewDistance: float -> Pnt * int * int` |
 | `Polyline2D.iter` | `action: (float -> float -> unit) -> pl: Polyline2D -> unit` | `Polyline3D.iter` | `action: (float -> float -> float -> unit) -> pl: Polyline3D -> unit` |
 | `Polyline2D.iteri` | `action: (int -> float -> float -> unit) -> pl: Polyline2D -> unit` | `Polyline3D.iteri` | `action: (int -> float -> float -> float -> unit) -> pl: Polyline3D -> unit` |
 | `Polyline2D.iteriPt` | `action: (int -> Pt -> unit) -> pl: Polyline2D -> unit` | `Polyline3D.iteriPnt` | `action: (int -> Pnt -> unit) -> pl: Polyline3D -> unit` |
@@ -2682,7 +2683,8 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Polyline2D.tryFindIndex` | `condition: (float -> float -> bool) -> pl: Polyline2D -> int voption` | `Polyline3D.tryFindIndex` | `condition: (float -> float -> float -> bool) -> pl: Polyline3D -> int voption` |
 | `Polyline2D.tryFindLast` | `condition: (float -> float -> bool) -> pl: Polyline2D -> Pt voption` | `Polyline3D.tryFindLast` | `condition: (float -> float -> float -> bool) -> pl: Polyline3D -> Pnt voption` |
 | `Polyline2D.tryFindLastIndex` | `condition: (float -> float -> bool) -> pl: Polyline2D -> int voption` | `Polyline3D.tryFindLastIndex` | `condition: (float -> float -> float -> bool) -> pl: Polyline3D -> int voption` |
-| `Polyline2D.tryFindSelfIntersection` | `pl: Polyline2D -> (Pt * int * int) voption` |  |  |
+| `Polyline2D.tryFindSelfIntersection` | `pl: Polyline2D -> (Pt * int * int) voption` | `Polyline3D.tryFindSelfIntersection` | `pl: Polyline3D -> (Pnt * int * int) voption` |
+| — | *skew tolerance of 3D segments* | `Polyline3D.tryFindSelfIntersectionCustom` | `pl: Polyline3D * ?maxSkewDistance: float -> (Pnt * int * int) voption` |
 
 ## Topology2D / Topology3D
 

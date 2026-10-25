@@ -1302,6 +1302,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | Polyline2D | Signature |
 |:--|:--|
 | `new` | `capacity: int -> Polyline2D` |
+| `new` | `points: Pt seq -> Polyline2D` |
 | `.AddPoint` | `pt: Pt -> unit` |
 | `Polyline2D.addPoint` | `pt: Pt -> p: Polyline2D -> unit` |
 | `.AddXY` | `x: float * y: float -> unit` |
@@ -1467,6 +1468,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Polyline2D.end'` | `p: Polyline2D -> Pt` |
 | `Polyline2D.equalsExact` | `pl1: Polyline2D -> pl2: Polyline2D -> bool` |
 | `Polyline2D.equalsWithin` | `tol: float -> pl1: Polyline2D -> pl2: Polyline2D -> bool` |
+| `Polyline2D.findSelfIntersection` | `pl: Polyline2D -> Pt * int * int` |
 | `Polyline2D.iter` | `action: (float -> float -> unit) -> pl: Polyline2D -> unit` |
 | `Polyline2D.iteri` | `action: (int -> float -> float -> unit) -> pl: Polyline2D -> unit` |
 | `Polyline2D.iteriPt` | `action: (int -> Pt -> unit) -> pl: Polyline2D -> unit` |

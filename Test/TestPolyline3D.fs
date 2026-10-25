@@ -23,6 +23,33 @@ let expectSamePnt (a:Pnt) (b:Pnt) (msg:string) =
 
 let tests =
     testList "Polyline3D" [
+        test "self intersection in a translated tilted plane" {
+            let point x y = Pnt(13.+x,27.+0.6*y,39.+0.8*y)
+            let bowtie = Polyline3D([point 0. 0.; point 10. 10.; point 10. 0.; point 0. 10.])
+            let p,i,j = Polyline3D.findSelfIntersection bowtie
+            Expect.isTrue (eqPnt p (point 5. 5.)) "intersection in tilted plane"
+            Expect.equal (i,j) (0,2) "segment indices"
+            let closed = Polyline3D([point 0. 0.; point 10. 0.; point 10. 10.; point 0. 10.; point 0. 0.])
+            Expect.isValueNone (Polyline3D.tryFindSelfIntersection closed) "closure is not an intersection"
+            for pts in [[];[point 0. 0.];[point 0. 0.;point 0. 0.];[point 0. 0.;point 10. 0.;point 5. 0.;point 15. 0.]] do
+                let pl = Polyline3D(pts)
+                Expect.isValueNone (Polyline3D.tryFindSelfIntersection pl) "empty, short or collinear"
+                Expect.throws (fun () -> Polyline3D.findSelfIntersection pl |> ignore) "throwing partner"
+            let touching = Polyline3D([point 0. 0.; point 10. 10.; point 10. 0.; point 5. 5.])
+            Expect.isValueSome (Polyline3D.tryFindSelfIntersection touching) "non-adjacent endpoint contact"
+            let duplicate = Polyline3D([point 0. 0.;point 10. 10.;point 10. 10.;point 10. 0.;point 0. 10.])
+            Expect.isValueSome (Polyline3D.tryFindSelfIntersection duplicate) "duplicate does not hide crossing"
+        }
+        test "self intersection skew tolerance" {
+            let skew = Polyline3D([Pnt(13.,27.,39.);Pnt(23.,37.,39.);Pnt(23.,27.,39.01);Pnt(13.,37.,39.01)])
+            Expect.isValueNone (Polyline3D.tryFindSelfIntersection skew) "skew exceeds default"
+            let p,i,j = Polyline3D.findSelfIntersectionCustom(skew, maxSkewDistance=0.02)
+            Expect.isTrue (eqPnt p (Pnt(18.,32.,39.))) "point on first segment"
+            Expect.equal (i,j) (0,2) "indices"
+            Expect.isValueNone (Polyline3D.tryFindSelfIntersectionCustom(skew, maxSkewDistance=0.0)) "strict zero tolerance"
+            for tolerance in [-1.; System.Double.NaN; System.Double.PositiveInfinity] do
+                Expect.throws (fun () -> Polyline3D.tryFindSelfIntersectionCustom(skew, maxSkewDistance=tolerance) |> ignore) "invalid tolerance"
+        }
 
         test "create empty polyline" {
             let pl = Polyline3D([])

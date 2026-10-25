@@ -1600,6 +1600,16 @@ let testsComprehensive =
         ]
 
         testList "tryFindSelfIntersection" [
+            test "sequence constructor copies points and supports empty input" {
+                let pts = ResizeArray [Pt(13.,27.);Pt(18.,31.)]
+                let pl = Polyline2D(pts)
+                pts.[0] <- Pt(0.,0.)
+                "copied coordinates" |> expectEqPts (pl.GetPoint 0) (Pt(13.,27.))
+                Expect.equal (Polyline2D(Seq.empty<Pt>)).PointCount 0 "empty sequence"
+                Expect.equal (Polyline2D([Pt(13.,27.)])).PointCount 1 "single point"
+                Expect.throws (fun () -> Polyline2D(Unchecked.defaultof<seq<Pt>>) |> ignore) "null sequence"
+                Expect.throws (fun () -> Polyline2D.findSelfIntersection pl |> ignore) "throwing partner"
+            }
             test "no intersection in simple polyline" {
                 let result = Polyline2D.tryFindSelfIntersection plOpen
                 Expect.isValueNone result "simple polyline has no self intersection"

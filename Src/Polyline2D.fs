@@ -65,6 +65,17 @@ type Polyline2D private (xys: ResizeArray<float>) =
     new (capacity:int) =
         Polyline2D(ResizeArray<float>(capacity * 2))
 
+    /// <summary>Creates a polyline by copying the coordinates of a sequence of points.</summary>
+    /// <param name="points">The points in traversal order. May be empty.</param>
+    /// <returns>A polyline with its own mutable coordinate buffer.</returns>
+    new (points:seq<Pt>) =
+        if isNull points then failNull "Polyline2D" "points"
+        let coords = ResizeArray<float>()
+        for p in points do
+            coords.Add p.X
+            coords.Add p.Y
+        Polyline2D(coords)
+
 
     /// Gets the X and Y interleaved ResizeArray of the Polyline2D: x0, y0, x1, y1, ...
     /// This is the live internal buffer, so changes to the list will be reflected in the Polyline2D.
@@ -2543,7 +2554,14 @@ type Polyline2D private (xys: ResizeArray<float>) =
                 i <- i + 2
             result
 
-
+    /// <summary>Finds the first intersection between non-adjacent segments, excluding the closure joint.
+    /// Fails when there is no intersection; parallel overlaps and short segments are excluded.</summary>
+    /// <param name="pl">The polyline to search.</param>
+    /// <returns>The intersection point and the two segment indices.</returns>
+    static member findSelfIntersection (pl:Polyline2D) : Pt * int * int =
+        match Polyline2D.tryFindSelfIntersection pl with
+        | ValueSome result -> result
+        | ValueNone -> fail $"Polyline2D.findSelfIntersection: no self intersection in polyline with {pl.PointCount} points."
 
     // #endregion
 

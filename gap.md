@@ -54,9 +54,9 @@ Selection checklist for all **77 empty rows** in [ApiTable.md](Scripts/ApiTable.
 
 ## Polyline2D / Polyline3D — 4 gaps
 
-- [ ] **P1 · Add · 1:** `Polyline2D(points: seq<Pt>)` constructor — mirror the 3D constructor; copy coordinates into the mutable buffer.
-- [ ] **P2 · Map · 1:** Pair `Polyline2D.createFromRectCCW` with `Polyline3D.createFromRect3D`; both produce the same local closed corner order.
-- [ ] **P3 · Add · 2:** `Polyline3D.tryFindSelfIntersection` , with an optional skew-distance tolerance,
+- [x] **P1 · Add · 1:** `Polyline2D(points: seq<Pt>)` constructor — mirror the 3D constructor; copy coordinates into the mutable buffer.
+- [x] **P2 · Map · 1:** Pair `Polyline2D.createFromRectCCW` with `Polyline3D.createFromRect3D`; both produce the same local closed corner order.
+- [x] **P3 · Add · 2:** `Polyline3D.tryFindSelfIntersection` , with an optional skew-distance tolerance,
 
 
 
