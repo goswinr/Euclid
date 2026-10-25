@@ -1023,11 +1023,17 @@ type BRect =
     /// <param name="endPointIndex">End corner index from 0 to 3.</param>
     /// <returns>The line. Fails for invalid or equal indices.</returns>
     member r.GetLine (startPointIndex:int, endPointIndex:int) : Line2D =
+        if startPointIndex < 0 || startPointIndex > 3 then
+            fail $"BRect.GetLine: startPointIndex {startPointIndex} is out of range. Valid range is 0 to 3."
+        if endPointIndex < 0 || endPointIndex > 3 then
+            fail $"BRect.GetLine: endPointIndex {endPointIndex} is out of range. Valid range is 0 to 3."
         if startPointIndex = endPointIndex then
             fail $"BRect.GetLine: startPointIndex and endPointIndex are both {startPointIndex}. They must be different."
-        let a = r.GetPoint startPointIndex
-        let b = r.GetPoint endPointIndex
-        Line2D(a.X, a.Y, b.X, b.Y)
+        let ax = if startPointIndex = 0 || startPointIndex = 3 then r.MinX else r.MaxX
+        let ay = if startPointIndex < 2 then r.MinY else r.MaxY
+        let bx = if endPointIndex = 0 || endPointIndex = 3 then r.MinX else r.MaxX
+        let by = if endPointIndex < 2 then r.MinY else r.MaxY
+        Line2D(ax, ay, bx, by)
 
     /// <summary>Returns a directed line between two distinct corner indices.</summary>
     /// <param name="startPointIndex">Start corner index from 0 to 3.</param>
