@@ -9,6 +9,19 @@ module AutoOpenQuaternion =
 
   type Quaternion with
 
+    /// <summary>Returns half the shortest rotation, treating both identity representations as identity.
+    /// At exactly 180 degrees (W = 0), preserves the encoded axis and rotates counter-clockwise about it
+    /// by the right-hand rule. Thus q and -q have opposite half-turn axes at this tie.</summary>
+    /// <returns>A unit quaternion whose composition with itself represents this rotation.</returns>
+    member q.Half : Quaternion =
+        let sign = if q.W < 0.0 then -1.0 else 1.0
+        Quaternion.create(sign*q.X, sign*q.Y, sign*q.Z, 1.0 + abs q.W)
+
+    /// <summary>Returns half the shortest rotation, preserving the encoded axis at exactly 180 degrees.</summary>
+    /// <param name="rotation">The unit quaternion to halve.</param>
+    /// <returns>The half rotation; both identity representations return identity.</returns>
+    static member inline half (rotation:Quaternion) : Quaternion = rotation.Half
+
     /// If the matrix is affine and has no shear or scaling, it returns the rotation defined in its 3x3 part.
     static member tryCreateFromMatrix(matrix:Matrix) : voption<Quaternion> =
         match RigidMatrix.tryCreateFromMatrix(matrix) with

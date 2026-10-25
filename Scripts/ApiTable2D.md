@@ -470,6 +470,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `.AsString` | `string` |
 | `Rotation2D.asString` | `r: Rotation2D -> string` |
 | `.Half` | `Rotation2D` |
+| `Rotation2D.half` | `rotation: Rotation2D -> Rotation2D` |
 | `.Inverse` | `Rotation2D` |
 | `Rotation2D.inverse` | `r: Rotation2D -> Rotation2D` |
 | `.Then` | `ro: Rotation2D -> Rotation2D` |
@@ -486,6 +487,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Rotation2D.createUnchecked` | `sine: float * cosine: float -> Rotation2D` |
 | `Rotation2D.equalsExact` | `a: Rotation2D -> b: Rotation2D -> bool` |
 | `Rotation2D.equalsWithin` | `tol: float -> a: Rotation2D -> b: Rotation2D -> bool` |
+| `Rotation2D.identity` | `Rotation2D` |
 
 ## Line2D
 

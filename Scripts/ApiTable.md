@@ -4,7 +4,7 @@ All public types, members and functions of Euclid. Corresponding 2D and 3D types
 
 - Corresponding members share a row, also when their names differ, like `Pt.midPt` and `Pnt.midPnt`.
 - `—` and a reason in italics mark a member that exists in one dimension only on purpose.
-- An empty cell marks one of 39 gaps: a member that is missing in one dimension,
+- An empty cell marks one of 25 gaps: a member that is missing in one dimension,
   or a member whose name does not match its counterpart. The contents list the gaps per table.
 - Instance members and fields start with `.`, e.g. `.DistanceTo`.
 - Static members are qualified with their type name. They are listed right below the instance member of the same name.
@@ -20,7 +20,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 - [Vc / Vec](#vc--vec), 0 gaps
 - [UnitVc / UnitVec](#unitvc--unitvec), 0 gaps
 - [Pt / Pnt](#pt--pnt), 0 gaps
-- [Rotation2D / Quaternion](#rotation2d--quaternion), 14 gaps
+- [Rotation2D / Quaternion](#rotation2d--quaternion), 0 gaps
 - [PPlane](#pplane)
 - [Matrix](#matrix)
 - [RigidMatrix](#rigidmatrix)
@@ -603,17 +603,18 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | — | *quaternion components* | `Quaternion.axis` | `q: Quaternion -> Vec` |
 | — | *quaternion components* | `.Conjugate` | `Quaternion` |
 | — | *quaternion components* | `Quaternion.conjugate` | `q: Quaternion -> Quaternion` |
-| `.Half` | `Rotation2D` |  |  |
+| `.Half` | `Rotation2D` | `.Half` | `Quaternion` |
+| `Rotation2D.half` | `rotation: Rotation2D -> Rotation2D` | `Quaternion.half` | `rotation: Quaternion -> Quaternion` |
 | `.Inverse` | `Rotation2D` | `.Inverse` | `Quaternion` |
 | `Rotation2D.inverse` | `r: Rotation2D -> Rotation2D` | `Quaternion.inverse` | `q: Quaternion -> Quaternion` |
-|  |  | `.Normalize` | `unit -> Quaternion` |
-|  |  | `Quaternion.normalize` | `q: Quaternion -> Quaternion` |
+| — | *quaternion renormalization API* | `.Normalize` | `unit -> Quaternion` |
+| — | *quaternion renormalization API* | `Quaternion.normalize` | `q: Quaternion -> Quaternion` |
 | `.Then` | `ro: Rotation2D -> Rotation2D` | `.Then` | `other: Quaternion -> Quaternion` |
 | `.ToString` | `unit -> string` | `.ToString` | `unit -> string` |
-|  |  | `.WithAngleInDegrees` | `angleInDegrees: float -> Quaternion` |
-|  |  | `Quaternion.withAngleInDegrees` | `angleInDegrees: float -> q: Quaternion -> Quaternion` |
-|  |  | `.WithAngleInRadians` | `angleInRadians: float -> Quaternion` |
-|  |  | `Quaternion.withAngleInRadians` | `angleInRadians: float -> q: Quaternion -> Quaternion` |
+| — | *replace angle while retaining the 3D axis* | `.WithAngleInDegrees` | `angleInDegrees: float -> Quaternion` |
+| — | *replace angle while retaining the 3D axis* | `Quaternion.withAngleInDegrees` | `angleInDegrees: float -> q: Quaternion -> Quaternion` |
+| — | *replace angle while retaining the 3D axis* | `.WithAngleInRadians` | `angleInRadians: float -> Quaternion` |
+| — | *replace angle while retaining the 3D axis* | `Quaternion.withAngleInRadians` | `angleInRadians: float -> q: Quaternion -> Quaternion` |
 | **Other static members** | | | |
 | `Rotation2D.andThen` | `ro: Rotation2D -> r: Rotation2D -> Rotation2D` | `Quaternion.andThen` | `next: Quaternion -> q: Quaternion -> Quaternion` |
 | `Rotation2D.create` | `sine: float -> cosine: float -> Rotation2D` | `Quaternion.create` | `x: float * y: float * z: float * w: float -> Quaternion` |
@@ -642,16 +643,16 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Rotation2D.createFromVcs` | `a: Vc -> b: Vc -> Rotation2D` | `Quaternion.createFromVecs` | `vecFrom: Vec -> vecTo: Vec -> Quaternion` |
 | `Rotation2D.createUnchecked` | `sine: float * cosine: float -> Rotation2D` | `Quaternion.createUnchecked` | `x: float * y: float * z: float * w: float -> Quaternion` |
 | `Rotation2D.equalsExact` | `a: Rotation2D -> b: Rotation2D -> bool` | `Quaternion.equalsExact` | `a: Quaternion -> b: Quaternion -> bool` |
-|  |  | `Quaternion.equalsRotationWithin` | `tolerance: float -> a: Quaternion -> b: Quaternion -> bool` |
+| — | *quaternions q and -q represent the same rotation* | `Quaternion.equalsRotationWithin` | `tolerance: float -> a: Quaternion -> b: Quaternion -> bool` |
 | `Rotation2D.equalsWithin` | `tol: float -> a: Rotation2D -> b: Rotation2D -> bool` | `Quaternion.equalsWithin` | `tolerance: float -> a: Quaternion -> b: Quaternion -> bool` |
-|  |  | `Quaternion.identity` | `Quaternion` |
-|  |  | `Quaternion.multiply` | `l: Quaternion * r: Quaternion -> Quaternion` |
+| `Rotation2D.identity` | `Rotation2D` | `Quaternion.identity` | `Quaternion` |
+| — | *quaternion composition and application operators* | `Quaternion.multiply` | `l: Quaternion * r: Quaternion -> Quaternion` |
 | — | *quaternion components* | `Quaternion.toEulerAnglesZYX` | `q: Quaternion -> float * float * float` |
 | — | *transformation matrix* | `Quaternion.tryCreateFromMatrix` | `matrix: Matrix -> Quaternion voption` |
-|  |  | `( *** )` | `l: Quaternion * r: Quaternion -> Quaternion` |
-|  |  | `( *** )` | `v: Vec * q: Quaternion -> Vec` |
-|  |  | `( *** )` | `v: UnitVec * q: Quaternion -> UnitVec` |
-|  |  | `( *** )` | `p: Pnt * q: Quaternion -> Pnt` |
+| — | *quaternion composition and application operators* | `( *** )` | `l: Quaternion * r: Quaternion -> Quaternion` |
+| — | *quaternion composition and application operators* | `( *** )` | `v: Vec * q: Quaternion -> Vec` |
+| — | *quaternion composition and application operators* | `( *** )` | `v: UnitVec * q: Quaternion -> UnitVec` |
+| — | *quaternion composition and application operators* | `( *** )` | `p: Pnt * q: Quaternion -> Pnt` |
 
 ## PPlane
 

@@ -104,6 +104,10 @@ let only2DMembers = [
 /// Members that only exist in 3D on purpose, as 3D type, regular expression for the name and reason.
 /// The type "" stands for all types. The reason is shown in the empty 2D cell next to the member.
 let only3DMembers = [
+    "Quaternion", @"^Normalize$"                                 , "quaternion renormalization API"
+    "Quaternion", @"^WithAngleIn(Degrees|Radians)$"               , "replace angle while retaining the 3D axis"
+    "Quaternion", @"^EqualsRotationWithin$"                      , "quaternions q and -q represent the same rotation"
+    "Quaternion", @"^Multiply$|\*\*\*"                            , "quaternion composition and application operators"
     "Polyline3D", @"^(TryFindSelfIntersectionCustom|FindSelfIntersectionCustom)$", "skew tolerance of 3D segments"
     "BBox"      , @"^CreateFromBox$"                              , "conversion from an oriented 3D box"
     "Quaternion", @"^[XYZW]$|Axis|Conjugate|Euler"                , "quaternion components"

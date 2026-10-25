@@ -11,11 +11,11 @@ Selection checklist for all **77 empty rows** in [ApiTable.md](Scripts/ApiTable.
 - [x] **V3 · Add · 2:** `UnitVec.sine` / `tangent` — unsigned 3D angle versions are possible, add note about sign to 2d and 3d docstrings
 ## Rotation2D / Quaternion — 14 gaps
 
-- [ ] **R1 · Add · 1:** `Quaternion.Half : Quaternion` — shortest-rotation half; choose CCW rotation at at 180 degrees and handle both identity representations. `half` static wrappers on both types as extra API beyond these gaps.
+- [x] **R1 · Add · 1:** `Quaternion.Half : Quaternion` — shortest-rotation half; preserve the encoded axis at exactly 180 degrees and handle both identity representations. `half` static wrappers on both types as extra API beyond these gaps.
 <!-- - [ ] **R2 · Add · 2:** `Rotation2D.Normalize()` / `normalize rotation` — renormalize sine/cosine; reject a zero or invalid pair. -->
 <!-- - [ ] **R3 · Add · 4:** `Rotation2D.WithAngleInDegrees` / `withAngleInDegrees`, `WithAngleInRadians` / `withAngleInRadians` — replace the angle, matching the quaternion names; no axis ambiguity in 2D. -->
-- [ ] **R4 · Map · 1:** `Rotation2D.equalsRotationWithin tolerance a b` — is not applicable in 2d
-- [ ] **R5 · Add · 1:** `Rotation2D.identity : Rotation2D` — sine 0, cosine 1.
+- [x] **R4 · Map · 1:** `Rotation2D.equalsRotationWithin tolerance a b` — is not applicable in 2d
+- [x] **R5 · Add · 1:** `Rotation2D.identity : Rotation2D` — sine 0, cosine 1.
 <!-- - [ ] **R6 · Add · 1:** `Rotation2D.multiply(l, r)` — match quaternion multiplication: apply `r`, then `l`; 2D rotations commute, but document the convention. -->
 <!-- - [ ] **R7 · Add · 4:** `Rotation2D.( *** )` overloads for `Rotation2D * Rotation2D`, `Vc * Rotation2D`, `UnitVc * Rotation2D`, `Pt * Rotation2D` — rotation and application about the origin. -->
 

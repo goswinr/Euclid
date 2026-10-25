@@ -156,6 +156,15 @@ type Rotation2D =
         let halfSinSigned = if r.Sin < 0.0 then -halfSin else halfSin
         Rotation2D.createUnchecked (halfSinSigned, halfCos)
 
+    /// <summary>Returns half the shortest signed rotation; an exact half-turn with zero sine chooses counter-clockwise.</summary>
+    /// <param name="rotation">The rotation to halve.</param>
+    /// <returns>The half rotation.</returns>
+    static member inline half (rotation:Rotation2D) : Rotation2D = rotation.Half
+
+    /// <summary>The rotation that leaves points and vectors unchanged.</summary>
+    /// <returns>Sine zero and cosine one.</returns>
+    static member inline identity : Rotation2D = Rotation2D.createUnchecked(0., 1.)
+
 
     // #endregion
     // #region Static members

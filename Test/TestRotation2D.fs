@@ -26,6 +26,16 @@ let refRotAround (cen:Pt) (r:Rotation2D) (p:Pt) = cen + Vc.rotate r (p - cen)
 
 let tests =
     testList "Rotation2D" [
+        test "identity and half wrappers" {
+            let p = Pt(13.,27.)
+            Expect.isTrue (eqPt (p.Rotate Rotation2D.identity) p) "identity"
+            for angle in [-179.;-37.;0.;37.;180.] do
+                let r = Rotation2D.createFromDegrees angle
+                let h = Rotation2D.half r
+                Expect.isTrue (Rotation2D.equalsWithin 1e-12 (h.Then h) r) "half composed twice"
+            let exact = Rotation2D.createUnchecked(0.,-1.)
+            Expect.isTrue (exact.Half.Sin > 0.) "CCW tie"
+        }
 
         testList "Creation and Properties" [
 

@@ -548,6 +548,8 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Quaternion.axis` | `q: Quaternion -> Vec` |
 | `.Conjugate` | `Quaternion` |
 | `Quaternion.conjugate` | `q: Quaternion -> Quaternion` |
+| `.Half` | `Quaternion` |
+| `Quaternion.half` | `rotation: Quaternion -> Quaternion` |
 | `.Inverse` | `Quaternion` |
 | `Quaternion.inverse` | `q: Quaternion -> Quaternion` |
 | `.Normalize` | `unit -> Quaternion` |

@@ -16,6 +16,22 @@ let inline expectEqual a b msg =
 
 let tests =
     testList "Quaternion transformations" [
+        test "half follows shortest rotation and preserves the half-turn axis" {
+            let axis = UnitVec.create 1. 2. 2.
+            for degrees in [0.; 1e-8; 37.; 179.999; 180.001; 270.; 359.999] do
+                let q = Quaternion.createFromUnitVecDegrees axis degrees
+                let half = Quaternion.half q
+                Expect.isTrue (Quaternion.equalsRotationWithin 1e-12 (half.Then half) q) "half composed twice"
+                Expect.isTrue (half.AngleInDegrees <= 90.000001) "shortest half"
+                let neg = Quaternion.createUnchecked(-q.X,-q.Y,-q.Z,-q.W)
+                Expect.isTrue (Quaternion.equalsWithin 1e-12 half neg.Half) "same half for opposite representations away from tie"
+            let q180 = Quaternion.createUnchecked(axis.X,axis.Y,axis.Z,0.)
+            let n180 = Quaternion.createUnchecked(-axis.X,-axis.Y,-axis.Z,0.)
+            Expect.isTrue (q180.Half.X > 0. && n180.Half.X < 0.) "encoded axis preserved at tie"
+            Expect.isTrue (Quaternion.equalsRotationWithin 1e-12 (q180.Half.Then q180.Half) q180) "exact half turn composition"
+            for q in [Quaternion.identity;Quaternion.createUnchecked(0.,0.,0.,-1.)] do
+                Expect.isTrue (Quaternion.equalsExact q.Half Quaternion.identity) "both identities"
+        }
 
         test "Quaternion 90 z" {
             let q = Quaternion.createFromVecDegrees (Vec.zAxis*9.0) 90.
