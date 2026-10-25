@@ -14,9 +14,9 @@ module Offset3D =
 
     /// The tolerance for considering points to be identical in the input polyline.
     /// The value is 1e-6
-    let [<Literal>] openTolerance = 1e-6
+    let [<Literal>] internal openTolerance = 1e-6
     /// The squared tolerance for open polylines.
-    let [<Literal>] openToleranceSq = 1e-12
+    let [<Literal>] internal openToleranceSq = 1e-12
 
     /// <summary>Formats an interleaved XYZ buffer for diagnostics, including null, empty and incomplete buffers.</summary>
     /// <param name="xyzs">Coordinates in the order x0, y0, z0, x1, y1, z1, ...</param>

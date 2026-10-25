@@ -1125,6 +1125,8 @@ module Rotation2DAPI =
     let (_:Rotation2D) = rotation2d.Then r2
     let (_:Rotation2D) = rotation2d.AddDegrees 45.0
     let (_:Rotation2D) = rotation2d.AddRadians 0.785
+    let (_:Rotation2D) = rotation2d.ScaleAngle 0.25
+    let (_:Rotation2D) = rotation2d |> Rotation2D.scaleAngle 0.25
 
     // Static members - Creation
     let (_:Rotation2D) = Rotation2D.createFromDegrees 90.0
@@ -1318,6 +1320,7 @@ module QuaternionAPI =
     let (_:string) = quaternion.ToString()
     let (_:Quaternion) = quaternion.Conjugate
     let (_:Quaternion) = quaternion.Inverse
+    let (_:Quaternion) = quaternion.ScaleAngle 0.25
     let (_:float) = quaternion.AngleInRadians
     let (_:float) = quaternion.AngleInDegrees
     let (_:Vec) = quaternion.Axis
@@ -1333,6 +1336,7 @@ module QuaternionAPI =
     let (_:Quaternion) = Quaternion.createFromUnitVecs UnitVec.xAxis UnitVec.yAxis
     let (_:Quaternion) = Quaternion.createFromVecs (Vec(1., 0., 0.)) (Vec(0., 1., 0.))
     let (_:Quaternion) = Quaternion.multiply(quaternion, q2)
+    let (_:Quaternion) = quaternion |> Quaternion.scaleAngle 0.25
 
     // Operators - Apply rotation
     let v = Vec(1., 0., 0.)

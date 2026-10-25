@@ -227,16 +227,6 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     new (capacity:int) =
         Polyline3D(ResizeArray<float>(capacity * 3))
 
-    /// Create a new Polyline3D by copying the provided sequence of points into a flat array.
-    new (points: seq<Pnt>) =
-        if isNull points then
-            failNull "Polyline3D" "points"
-        let xyzs = ResizeArray<float>()
-        for pnt in points do
-            xyzs.Add pnt.X
-            xyzs.Add pnt.Y
-            xyzs.Add pnt.Z
-        Polyline3D(xyzs)
 
     /// Gets the X, Y and Z interleaved ResizeArray of the Polyline3D: x0, y0, z0, x1, y1, z1, ...
     /// This is the live internal buffer, so changes to the list will be reflected in the Polyline3D.
@@ -2107,7 +2097,14 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// Create a new Polyline3D by copying over all points.
     /// This will allocate a new ResizeArray and copy all points.
     static member createFromPnts(points: seq<Pnt>) : Polyline3D =
-        Polyline3D(points)
+        if isNull points then
+            failNull "Polyline3D" "points"
+        let xyzs = ResizeArray<float>()
+        for pnt in points do
+            xyzs.Add pnt.X
+            xyzs.Add pnt.Y
+            xyzs.Add pnt.Z
+        Polyline3D(xyzs)
 
     /// Create a new Polyline3D by using the provided X, Y and Z interleaved ResizeArray directly.
     /// The buffer is shared, not copied: later changes to the ResizeArray will be reflected in the Polyline3D, and vice versa.
@@ -2850,9 +2847,6 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
         Polyline3D.offsetVariableByNormalCustom(polyLine, inPlaneOffsetDistances, perpendicularOffsetDistances, refNormal.Unitized, loop, varDistParallelBehavior, considerCollinearBelow, failAtUTurnAbove)
 
 
-
-
-
     // #endregion
 
     /// <summary>Searches non-adjacent segments in index order for an intersection in O(n²) time.
@@ -2862,7 +2856,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// <param name="pl">The polyline to search.</param>
     /// <param name="maxSkewDistance">Finite, nonnegative separation tolerance; defaults to 1e-6.</param>
     /// <returns>ValueSome with a point on the first segment and both segment indices, or ValueNone.</returns>
-    static member tryFindSelfIntersectionCustom(pl:Polyline3D, [<OPT;DEF(1e-6)>] maxSkewDistance:float) : (Pnt * int * int) voption =
+    static member tryFindSelfIntersection(pl:Polyline3D, [<OPT;DEF(1e-6)>] maxSkewDistance:float) : (Pnt * int * int) voption =
         if maxSkewDistance < 0.0 || isNanInfinity maxSkewDistance then
             fail $"Polyline3D.tryFindSelfIntersectionCustom: maxSkewDistance must be finite and nonnegative, got {maxSkewDistance}."
         let xyzs = pl.XYZs
@@ -2890,29 +2884,6 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
                 i <- i + 1
         result
 
-    /// <summary>Finds the first non-adjacent segment intersection using a skew-distance tolerance of 1e-6.
-    /// Excludes closure joints, parallel overlaps and segments shorter than 1e-6, as tryFindSelfIntersectionCustom.</summary>
-    /// <param name="pl">The polyline to search.</param>
-    /// <returns>A point on the first segment and both indices, or ValueNone.</returns>
-    static member tryFindSelfIntersection (pl:Polyline3D) : (Pnt * int * int) voption =
-        Polyline3D.tryFindSelfIntersectionCustom(pl)
-
-    /// <summary>Finds the first non-adjacent segment intersection, with the same exclusions as tryFindSelfIntersectionCustom.
-    /// Fails when there is no intersection.</summary>
-    /// <param name="pl">The polyline to search.</param>
-    /// <param name="maxSkewDistance">Finite, nonnegative separation tolerance; defaults to 1e-6. Separation must be strictly less.</param>
-    /// <returns>A point on the first segment and both segment indices.</returns>
-    static member findSelfIntersectionCustom(pl:Polyline3D, [<OPT;DEF(1e-6)>] maxSkewDistance:float) : Pnt * int * int =
-        match Polyline3D.tryFindSelfIntersectionCustom(pl, maxSkewDistance) with
-        | ValueSome result -> result
-        | ValueNone -> fail $"Polyline3D.findSelfIntersectionCustom: no self intersection in polyline with {pl.PointCount} points at skew tolerance {maxSkewDistance}."
-
-    /// <summary>Finds the first non-adjacent segment intersection using a skew-distance tolerance of 1e-6.
-    /// Fails when there is no intersection; uses the exclusions of tryFindSelfIntersection.</summary>
-    /// <param name="pl">The polyline to search.</param>
-    /// <returns>A point on the first segment and both segment indices.</returns>
-    static member findSelfIntersection (pl:Polyline3D) : Pnt * int * int =
-        Polyline3D.findSelfIntersectionCustom(pl)
 
 #if !FABLE_COMPILER
 /// Serializes a Polyline3D as its interleaved XYZ coordinate buffer with System.Text.Json.

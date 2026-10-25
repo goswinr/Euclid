@@ -26,6 +26,51 @@ let refRotAround (cen:Pt) (r:Rotation2D) (p:Pt) = cen + Vc.rotate r (p - cen)
 
 let tests =
     testList "Rotation2D" [
+        test "scaleAngle supports fractional negative and extended rotations" {
+            let point = Pt(15.5, -3.25)
+            let quarter = Rotation2D.scaleAngle 0.25
+            for degrees in [-179.999; -90.; -37.; 0.; 37.; 90.; 179.999] do
+                let r = Rotation2D.createFromDegrees degrees
+                for factor in [-3.; -1.; 0.; 0.25; 0.5; 1.; 1.5; 2.; 4.] do
+                    let scaled = r |> Rotation2D.scaleAngle factor
+                    let expected = Rotation2D.createFromDegrees (degrees * factor)
+                    Expect.isTrue (Rotation2D.equalsWithin 1e-12 scaled expected) $"{degrees} degrees scaled by {factor}"
+                    Expect.isTrue (eqPt (point.Rotate scaled) (point.Rotate expected)) "scaled rotation applied to a point"
+                    Expect.isTrue (Rotation2D.equalsExact scaled (r.ScaleAngle factor)) "static and instance agree"
+                    Expect.floatClose Accuracy.veryHigh (scaled.Sin*scaled.Sin + scaled.Cos*scaled.Cos) 1. "unit length"
+                Expect.isTrue (Rotation2D.equalsExact (quarter r) (r.ScaleAngle 0.25)) "partial application"
+                Expect.isTrue (Rotation2D.equalsWithin 1e-12 (r.ScaleAngle 0.5) r.Half) "half agrees"
+                Expect.isTrue (Rotation2D.equalsExact r (Rotation2D.createFromDegrees degrees)) "input unchanged"
+        }
+
+        test "scaleAngle uses the stored signed angle and preserves half-turn direction" {
+            let r = Rotation2D.createFromDegrees 270.
+            Expect.isTrue (Rotation2D.equalsWithin 1e-12 (r.ScaleAngle 0.25) (Rotation2D.createFromDegrees (-22.5))) "270 degrees is stored as -90 degrees"
+            for degrees in [-180.; 180.] do
+                let halfTurn = Rotation2D.createFromDegrees degrees
+                Expect.isTrue (Rotation2D.equalsWithin 1e-12 (halfTurn.ScaleAngle 0.25) (Rotation2D.createFromDegrees (degrees * 0.25))) "signed half turn"
+            let exactHalfTurn = Rotation2D.createUnchecked(0., -1.)
+            Expect.isTrue (Rotation2D.equalsWithin 1e-12 (exactHalfTurn.ScaleAngle 0.5) exactHalfTurn.Half) "exact positive half turn"
+        }
+
+        test "scaleAngle handles identity and very small angles" {
+            for factor in [-2.; 0.; 0.25; 1.; 2.; System.Double.MaxValue] do
+                Expect.isTrue (Rotation2D.equalsExact (Rotation2D.identity.ScaleAngle factor) Rotation2D.identity) "identity stays identity"
+            for radians in [-1e-200; -1e-20; -1e-10; 1e-10; 1e-20; 1e-200] do
+                let r = Rotation2D.createFromRadians radians
+                let quarter = r.ScaleAngle 0.25
+                Expect.isTrue (abs (quarter.Sin / (radians * 0.25) - 1.) < 1e-12) "tiny angle retained"
+                Expect.isTrue (Rotation2D.equalsWithin 1e-12 (r.ScaleAngle (1. / radians)) (Rotation2D.createFromRadians 1.)) "tiny angle can be enlarged"
+        }
+
+        test "scaleAngle rejects non-finite factors and overflowing angles" {
+            let r = Rotation2D.createFromDegrees 137.
+            for factor in [nan; infinity; -infinity] do
+                Expect.throws (fun () -> r.ScaleAngle factor |> ignore) "non-finite factor"
+                Expect.throws (fun () -> Rotation2D.identity.ScaleAngle factor |> ignore) "non-finite factor on identity"
+            Expect.throws (fun () -> r.ScaleAngle System.Double.MaxValue |> ignore) "scaled angle overflows"
+        }
+
         test "identity and half wrappers" {
             let p = Pt(13.,27.)
             Expect.isTrue (eqPt (p.Rotate Rotation2D.identity) p) "identity"

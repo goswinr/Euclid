@@ -149,14 +149,40 @@ type Rotation2D =
     static member inline addRadians (rad:float) (r:Rotation2D) : Rotation2D =
         r.AddRadians(rad)
 
-    /// Returns half the 2D Rotation in the same direction.
+    /// <summary>Scales AngleInRadians, the signed angle in [-180, 180] degrees.
+    /// Negative factors reverse the rotation; factors above one extend it. The factor is not clamped.
+    /// Full turns are not retained by Rotation2D: scaling a 270-degree rotation by 0.25 gives -22.5 degrees.
+    /// Fails if the factor or scaled angle is NaN or infinite.</summary>
+    /// <param name="factor">The finite multiplier applied to the signed angle.</param>
+    /// <returns>A new 2D rotation; identity remains identity.</returns>
+    member r.ScaleAngle (factor:float) : Rotation2D =
+        if isNanInfinity factor then
+            EuclidErrors.fail $"Rotation2D.ScaleAngle failed. The factor must be finite: {factor}."
+        let angle = r.AngleInRadians * factor
+        if isNanInfinity angle then
+            EuclidErrors.fail $"Rotation2D.ScaleAngle failed. The scaled angle is not finite for factor {factor} and rotation {r.AsString}."
+        Rotation2D.createUnchecked(sin angle, cos angle)
+
+    /// <summary>Scales AngleInRadians, the signed angle in [-180, 180] degrees.
+    /// The factor is not clamped. Full turns are not retained by Rotation2D.
+    /// Fails if the factor or scaled angle is NaN or infinite.</summary>
+    /// <param name="factor">The finite angle multiplier; negative values and values above one are supported.</param>
+    /// <param name="rotation">The 2D rotation whose signed angle is scaled.</param>
+    /// <returns>A new 2D rotation; identity remains identity.</returns>
+    static member inline scaleAngle (factor:float) (rotation:Rotation2D) : Rotation2D =
+        rotation.ScaleAngle factor
+
+    /// <summary>Returns half the shortest signed rotation.
+    /// For a 180-degree rotation, returns +90 degrees (counter-clockwise)</summary>
+    /// <returns>The half rotation.</returns>
     member inline r.Half : Rotation2D =
-        let halfCos = sqrt ((1.0 + r.Cos) / 2.0)
-        let halfSin = sqrt ((1.0 - r.Cos) / 2.0)
+        let halfCos = sqrt ((1.0 + r.Cos) * 0.5)
+        let halfSin = sqrt ((1.0 - r.Cos) * 0.5)
         let halfSinSigned = if r.Sin < 0.0 then -halfSin else halfSin
         Rotation2D.createUnchecked (halfSinSigned, halfCos)
 
-    /// <summary>Returns half the shortest signed rotation; an exact half-turn with zero sine chooses counter-clockwise.</summary>
+    /// <summary>Returns half the shortest signed rotation.
+    /// For a 180-degree rotation, returns +90 degrees (counter-clockwise)</summary>
     /// <param name="rotation">The rotation to halve.</param>
     /// <returns>The half rotation.</returns>
     static member inline half (rotation:Rotation2D) : Rotation2D = rotation.Half

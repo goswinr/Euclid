@@ -473,6 +473,8 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Rotation2D.half` | `rotation: Rotation2D -> Rotation2D` |
 | `.Inverse` | `Rotation2D` |
 | `Rotation2D.inverse` | `r: Rotation2D -> Rotation2D` |
+| `.ScaleAngle` | `factor: float -> Rotation2D` |
+| `Rotation2D.scaleAngle` | `factor: float -> rotation: Rotation2D -> Rotation2D` |
 | `.Then` | `ro: Rotation2D -> Rotation2D` |
 | `.ToString` | `unit -> string` |
 | **Other static members** | |
@@ -1278,8 +1280,6 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Offset2D.offsetVariable` | `dists: ResizeArray<float> -> xys: ResizeArray<float> -> ResizeArray<float>` |
 | `Offset2D.offsetVariableByDirections` | `xys: ResizeArray<float> * nDirs: ResizeArray<float> * dists: IList<float> * varDistParallelBehavior: VarDistParallel * uTurnBehavior: UTurn * useVarDistParallelBehaviorBelow: float<cosine> * useUTurnBehaviorAbove: float<cosine> -> ResizeArray<float>` |
 | `Offset2D.offsetVariableCustom` | `xys: ResizeArray<float> * distances: ResizeArray<float> * varDistParallelBehavior: VarDistParallel * uTurnBehavior: UTurn * useVarDistParallelBehaviorBelow: float<cosine> * useUTurnBehaviorAbove: float<cosine> -> ResizeArray<float>` |
-| `Offset2D.openTolerance` | `float` |
-| `Offset2D.openToleranceSq` | `float` |
 | `Offset2D.removeUTurns` | `xys: ResizeArray<float> * ns: ResizeArray<float> * minCos: float<cosine> -> ResizeArray<float>` |
 | `Offset2D.setOffCorner` | `res: ResizeArray<float> * x: float * y: float * dist: float * nPrevX: float * nPrevY: float * nNextX: float * nNextY: float * cosine: float -> unit` |
 | `Offset2D.toStringXYs` | `xys: ResizeArray<float> -> string` |
@@ -1307,7 +1307,6 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | Polyline2D | Signature |
 |:--|:--|
 | `new` | `capacity: int -> Polyline2D` |
-| `new` | `points: Pt seq -> Polyline2D` |
 | `.AddPoint` | `pt: Pt -> unit` |
 | `Polyline2D.addPoint` | `pt: Pt -> p: Polyline2D -> unit` |
 | `.AddXY` | `x: float * y: float -> unit` |
@@ -1473,7 +1472,6 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Polyline2D.end'` | `p: Polyline2D -> Pt` |
 | `Polyline2D.equalsExact` | `pl1: Polyline2D -> pl2: Polyline2D -> bool` |
 | `Polyline2D.equalsWithin` | `tol: float -> pl1: Polyline2D -> pl2: Polyline2D -> bool` |
-| `Polyline2D.findSelfIntersection` | `pl: Polyline2D -> Pt * int * int` |
 | `Polyline2D.iter` | `action: (float -> float -> unit) -> pl: Polyline2D -> unit` |
 | `Polyline2D.iteri` | `action: (int -> float -> float -> unit) -> pl: Polyline2D -> unit` |
 | `Polyline2D.iteriPt` | `action: (int -> Pt -> unit) -> pl: Polyline2D -> unit` |

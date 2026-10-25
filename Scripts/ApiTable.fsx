@@ -15,7 +15,7 @@
 // The script type checks the files listed in Euclid.fsproj with FSharp.Compiler.Service.
 // So it needs no build and always reflects the current sources.
 
-#r "nuget: FSharp.Compiler.Service, 43.12.401"
+#r "nuget: FSharp.Compiler.Service, 43.12.401" // needs to match the runtime FSharp.Core dependency!
 
 open System
 open System.IO
@@ -26,6 +26,15 @@ open FSharp.Compiler.CodeAnalysis
 open FSharp.Compiler.Diagnostics
 open FSharp.Compiler.Symbols
 open FSharp.Compiler.Text
+
+do
+    let compilerAssembly = typeof<FSharpChecker>.Assembly
+    let requiredCore =
+        compilerAssembly.GetReferencedAssemblies()
+        |> Array.find (fun reference -> reference.Name = "FSharp.Core")
+    let runtimeCore = typeof<unit>.Assembly.GetName()
+    if runtimeCore.Version <> requiredCore.Version then
+        failwith $"FSharp.Compiler.Service {compilerAssembly.GetName().Version} requires FSharp.Core {requiredCore.Version}, but F# Interactive loaded {runtimeCore.Version}. Use a matching .NET SDK or update the FSharp.Compiler.Service package reference."
 
 // #region Configuration
 

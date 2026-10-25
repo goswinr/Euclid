@@ -13,10 +13,10 @@ module Offset2D=
 
     /// <summary>The distance tolerance for considering input polyline endpoints identical.</summary>
     /// <returns>The tolerance 1e-6.</returns>
-    let [<Literal>] openTolerance = 1e-6
+    let [<Literal>] internal openTolerance = 1e-6
 
     /// The squared tolerance for open polylines.
-    let [<Literal>] openToleranceSq = 1e-6 * 1e-6 // 1e-12
+    let [<Literal>] internal openToleranceSq = 1e-6 * 1e-6 // 1e-12
 
 
     /// An Enum for describing what to do at U-turns (180 degree turns).

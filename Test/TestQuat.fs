@@ -16,6 +16,69 @@ let inline expectEqual a b msg =
 
 let tests =
     testList "Quaternion transformations" [
+        test "scaleAngle scales the encoded rotation without clamping" {
+            let axis = UnitVec.create 1. (-2.) 3.
+            let point = Pnt(12.3, -4.5, 6.7)
+            for degrees in [-90.; 37.; 179.999; 180.; 180.001; 270.; 359.999] do
+                let q = Quaternion.createFromUnitVecDegrees axis degrees
+                for factor in [-3.; -1.; 0.; 0.25; 0.5; 1.; 1.5; 2.; 4.] do
+                    let scaled = q |> Quaternion.scaleAngle factor
+                    let expected = Quaternion.createFromUnitVecDegrees axis (degrees * factor)
+                    Expect.isTrue (Quaternion.equalsWithin 1e-12 scaled expected) $"{degrees} degrees scaled by {factor}"
+                    "scaled rotation applied to a point" |> expectEqual (point *** scaled) (point *** expected)
+                    Expect.isTrue (Quaternion.equalsExact scaled (q.ScaleAngle factor)) "static and instance agree"
+                    Expect.floatClose Accuracy.veryHigh (scaled.X*scaled.X + scaled.Y*scaled.Y + scaled.Z*scaled.Z + scaled.W*scaled.W) 1. "unit length"
+                Expect.isTrue (Quaternion.equalsExact q (Quaternion.createFromUnitVecDegrees axis degrees)) "input unchanged"
+        }
+
+        test "scaleAngle distinguishes opposite quaternion representations" {
+            let axis = UnitVec.create 1. 2. 3.
+            let q = Quaternion.createFromUnitVecDegrees axis 270.
+            let neg = Quaternion.createUnchecked(-q.X, -q.Y, -q.Z, -q.W)
+            let quarter = q.ScaleAngle 0.25
+            let negQuarter = neg.ScaleAngle 0.25
+            Expect.isTrue (Quaternion.equalsWithin 1e-12 quarter (Quaternion.createFromUnitVecDegrees axis 67.5)) "270 degrees gives 67.5 degrees"
+            Expect.isTrue (Quaternion.equalsWithin 1e-12 negQuarter (Quaternion.createFromUnitVecDegrees axis (-22.5))) "negated representation gives -22.5 degrees"
+            Expect.isFalse (Quaternion.equalsRotationWithin 1e-12 quarter negQuarter) "encoded rotations take different paths"
+        }
+
+        test "scaleAngle preserves the axis of exact half turns" {
+            let axis = UnitVec.create 1. (-2.) 3.
+            for sign in [-1.; 1.] do
+                let q = Quaternion.createUnchecked(sign*axis.X, sign*axis.Y, sign*axis.Z, 0.)
+                let expected = Quaternion.createFromUnitVecDegrees axis (sign * 45.)
+                Expect.isTrue (Quaternion.equalsWithin 1e-12 (q.ScaleAngle 0.25) expected) "encoded half-turn axis"
+        }
+
+        test "scaleAngle handles identity and very small rotations" {
+            for factor in [-2.; 0.; 0.25; 1.; 2.; System.Double.MaxValue] do
+                Expect.isTrue (Quaternion.equalsExact (Quaternion.identity.ScaleAngle factor) Quaternion.identity) "identity stays identity"
+            let axis = UnitVec.create 1. (-2.) 3.
+            for radians in [1e-10; 1e-20; 1e-200] do
+                let q = Quaternion.createFromUnitVecRadians axis radians
+                let quarter = q.ScaleAngle 0.25
+                let expected = Quaternion.createFromUnitVecRadians axis (radians * 0.25)
+                Expect.isTrue (abs (quarter.X / expected.X - 1.) < 1e-12) "tiny angle retained"
+                let enlarged = q.ScaleAngle (1. / radians)
+                Expect.isTrue (Quaternion.equalsWithin 1e-12 enlarged (Quaternion.createFromUnitVecRadians axis 1.)) "tiny angle can be enlarged"
+            let almostFullTurn = Quaternion.createUnchecked(axis.X * 1e-20, axis.Y * 1e-20, axis.Z * 1e-20, -1.)
+            Expect.isTrue (Quaternion.equalsWithin 1e-12 (almostFullTurn.ScaleAngle 0.25) (Quaternion.createFromUnitVecDegrees axis 90.)) "near full turn retains its axis"
+        }
+
+        test "scaleAngle rejects non-finite factors and overflowing angles" {
+            let q = Quaternion.createFromUnitVecDegrees (UnitVec.create 1. 2. 3.) 270.
+            for factor in [nan; infinity; -infinity] do
+                Expect.throws (fun () -> q.ScaleAngle factor |> ignore) "non-finite factor"
+                Expect.throws (fun () -> Quaternion.identity.ScaleAngle factor |> ignore) "non-finite factor on identity"
+            Expect.throws (fun () -> q.ScaleAngle System.Double.MaxValue |> ignore) "scaled half angle overflows"
+        }
+
+        test "scaleAngle fails for an undefined full-turn axis" {
+            let fullTurn = Quaternion.createUnchecked(0., 0., 0., -1.)
+            for factor in [-2.; 0.; 0.25; 1.; 2.] do
+                Expect.throws (fun () -> fullTurn.ScaleAngle factor |> ignore) "full-turn axis is undefined"
+        }
+
         test "half follows shortest rotation and preserves the half-turn axis" {
             let axis = UnitVec.create 1. 2. 2.
             for degrees in [0.; 1e-8; 37.; 179.999; 180.001; 270.; 359.999] do

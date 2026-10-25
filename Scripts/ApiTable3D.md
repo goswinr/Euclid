@@ -554,6 +554,8 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Quaternion.inverse` | `q: Quaternion -> Quaternion` |
 | `.Normalize` | `unit -> Quaternion` |
 | `Quaternion.normalize` | `q: Quaternion -> Quaternion` |
+| `.ScaleAngle` | `factor: float -> Quaternion` |
+| `Quaternion.scaleAngle` | `factor: float -> rotation: Quaternion -> Quaternion` |
 | `.Then` | `other: Quaternion -> Quaternion` |
 | `.ToString` | `unit -> string` |
 | `.WithAngleInDegrees` | `angleInDegrees: float -> Quaternion` |
@@ -2300,8 +2302,6 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Offset3D.offsetVariableByDirections` | `xyzs: ResizeArray<float> * segmentDirs: ResizeArray<float> * offDirs: ResizeArray<OffsetDirection voption> * distsInPlane: IList<float> * distsPerpendicular: IList<float> * isClosed: bool * varDistParallelBehavior: VarDistParallel -> ResizeArray<float>` |
 | `Offset3D.offsetVariableByNormal` | `refNormal: UnitVec -> distancesInPlane: ResizeArray<float> -> distancesPerpendicular: ResizeArray<float> -> xyzs: ResizeArray<float> -> ResizeArray<float>` |
 | `Offset3D.offsetVariableByNormalCustom` | `xyzs: ResizeArray<float> * distancesInPlane: ResizeArray<float> * distancesPerpendicular: ResizeArray<float> * refNormal: UnitVec * varDistParallelBehavior: VarDistParallel -> ResizeArray<float>` |
-| `Offset3D.openTolerance` | `float` |
-| `Offset3D.openToleranceSq` | `float` |
 | `Offset3D.removeUTurns` | `xyzs: ResizeArray<float> * uvs: ResizeArray<float> * minCos: float<cosine> -> ResizeArray<float>` |
 | `Offset3D.setOffCorner` | `res: ResizeArray<float> * x: float * y: float * z: float * distInPlane: float * distPerp: float * nPrev: UnitVec * nNext: UnitVec * perpDir: UnitVec * cosine: float -> unit` |
 | `Offset3D.setOffCornerVar` | `res: ResizeArray<float> * x: float * y: float * z: float * distInPlanePrev: float * distInPlaneNext: float * distPerp: float * nPrev: UnitVec * nNext: UnitVec * perpDir: UnitVec * cosine: float * vNext: UnitVec -> unit` |
@@ -2337,7 +2337,6 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | Polyline3D | Signature |
 |:--|:--|
 | `new` | `capacity: int -> Polyline3D` |
-| `new` | `points: Pnt seq -> Polyline3D` |
 | `.AddPoint` | `pnt: Pnt -> unit` |
 | `Polyline3D.addPoint` | `pnt: Pnt -> p: Polyline3D -> unit` |
 | `.AddXYZ` | `x: float * y: float * z: float -> unit` |
@@ -2506,8 +2505,6 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Polyline3D.end'` | `pl: Polyline3D -> Pnt` |
 | `Polyline3D.equalsExact` | `pl1: Polyline3D -> pl2: Polyline3D -> bool` |
 | `Polyline3D.equalsWithin` | `tol: float -> pl1: Polyline3D -> pl2: Polyline3D -> bool` |
-| `Polyline3D.findSelfIntersection` | `pl: Polyline3D -> Pnt * int * int` |
-| `Polyline3D.findSelfIntersectionCustom` | `pl: Polyline3D * ?maxSkewDistance: float -> Pnt * int * int` |
 | `Polyline3D.iter` | `action: (float -> float -> float -> unit) -> pl: Polyline3D -> unit` |
 | `Polyline3D.iteri` | `action: (int -> float -> float -> float -> unit) -> pl: Polyline3D -> unit` |
 | `Polyline3D.iteriPnt` | `action: (int -> Pnt -> unit) -> pl: Polyline3D -> unit` |
@@ -2531,8 +2528,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Polyline3D.tryFindIndex` | `condition: (float -> float -> float -> bool) -> pl: Polyline3D -> int voption` |
 | `Polyline3D.tryFindLast` | `condition: (float -> float -> float -> bool) -> pl: Polyline3D -> Pnt voption` |
 | `Polyline3D.tryFindLastIndex` | `condition: (float -> float -> float -> bool) -> pl: Polyline3D -> int voption` |
-| `Polyline3D.tryFindSelfIntersection` | `pl: Polyline3D -> (Pnt * int * int) voption` |
-| `Polyline3D.tryFindSelfIntersectionCustom` | `pl: Polyline3D * ?maxSkewDistance: float -> (Pnt * int * int) voption` |
+| `Polyline3D.tryFindSelfIntersection` | `pl: Polyline3D * ?maxSkewDistance: float -> (Pnt * int * int) voption` |
 
 ## Topology3D
 

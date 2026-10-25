@@ -608,6 +608,8 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Rotation2D.inverse` | `r: Rotation2D -> Rotation2D` | `Quaternion.inverse` | `q: Quaternion -> Quaternion` |
 | — | *quaternion renormalization API* | `.Normalize` | `unit -> Quaternion` |
 | — | *quaternion renormalization API* | `Quaternion.normalize` | `q: Quaternion -> Quaternion` |
+| `.ScaleAngle` | `factor: float -> Rotation2D` | `.ScaleAngle` | `factor: float -> Quaternion` |
+| `Rotation2D.scaleAngle` | `factor: float -> rotation: Rotation2D -> Rotation2D` | `Quaternion.scaleAngle` | `factor: float -> rotation: Quaternion -> Quaternion` |
 | `.Then` | `ro: Rotation2D -> Rotation2D` | `.Then` | `other: Quaternion -> Quaternion` |
 | `.ToString` | `unit -> string` | `.ToString` | `unit -> string` |
 | — | *replace angle while retaining the 3D axis* | `.WithAngleInDegrees` | `angleInDegrees: float -> Quaternion` |
@@ -2420,8 +2422,6 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | — | *plane or normal* | `Offset3D.offsetVariableByNormal` | `refNormal: UnitVec -> distancesInPlane: ResizeArray<float> -> distancesPerpendicular: ResizeArray<float> -> xyzs: ResizeArray<float> -> ResizeArray<float>` |
 | — | *plane or normal* | `Offset3D.offsetVariableByNormalCustom` | `xyzs: ResizeArray<float> * distancesInPlane: ResizeArray<float> * distancesPerpendicular: ResizeArray<float> * refNormal: UnitVec * varDistParallelBehavior: VarDistParallel -> ResizeArray<float>` |
 | `Offset2D.offsetVariableCustom` | `xys: ResizeArray<float> * distances: ResizeArray<float> * varDistParallelBehavior: VarDistParallel * uTurnBehavior: UTurn * useVarDistParallelBehaviorBelow: float<cosine> * useUTurnBehaviorAbove: float<cosine> -> ResizeArray<float>` | — | *2D collinearity and U-turn policies* |
-| `Offset2D.openTolerance` | `float` | `Offset3D.openTolerance` | `float` |
-| `Offset2D.openToleranceSq` | `float` | `Offset3D.openToleranceSq` | `float` |
 | `Offset2D.removeUTurns` | `xys: ResizeArray<float> * ns: ResizeArray<float> * minCos: float<cosine> -> ResizeArray<float>` | `Offset3D.removeUTurns` | `xyzs: ResizeArray<float> * uvs: ResizeArray<float> * minCos: float<cosine> -> ResizeArray<float>` |
 | `Offset2D.setOffCorner` | `res: ResizeArray<float> * x: float * y: float * dist: float * nPrevX: float * nPrevY: float * nNextX: float * nNextY: float * cosine: float -> unit` | `Offset3D.setOffCorner` | `res: ResizeArray<float> * x: float * y: float * z: float * distInPlane: float * distPerp: float * nPrev: UnitVec * nNext: UnitVec * perpDir: UnitVec * cosine: float -> unit` |
 | — | *algorithm-specific 3D normal and direction representation* | `Offset3D.setOffCornerVar` | `res: ResizeArray<float> * x: float * y: float * z: float * distInPlanePrev: float * distInPlaneNext: float * distPerp: float * nPrev: UnitVec * nNext: UnitVec * perpDir: UnitVec * cosine: float * vNext: UnitVec -> unit` |
@@ -2466,7 +2466,6 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | Polyline2D | Signature | Polyline3D | Signature |
 |:--|:--|:--|:--|
 | `new` | `capacity: int -> Polyline2D` | `new` | `capacity: int -> Polyline3D` |
-| `new` | `points: Pt seq -> Polyline2D` | `new` | `points: Pnt seq -> Polyline3D` |
 | `.AddPoint` | `pt: Pt -> unit` | `.AddPoint` | `pnt: Pnt -> unit` |
 | `Polyline2D.addPoint` | `pt: Pt -> p: Polyline2D -> unit` | `Polyline3D.addPoint` | `pnt: Pnt -> p: Polyline3D -> unit` |
 | `.AddXY` | `x: float * y: float -> unit` | `.AddXYZ` | `x: float * y: float * z: float -> unit` |
@@ -2658,8 +2657,6 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Polyline2D.end'` | `p: Polyline2D -> Pt` | `Polyline3D.end'` | `pl: Polyline3D -> Pnt` |
 | `Polyline2D.equalsExact` | `pl1: Polyline2D -> pl2: Polyline2D -> bool` | `Polyline3D.equalsExact` | `pl1: Polyline3D -> pl2: Polyline3D -> bool` |
 | `Polyline2D.equalsWithin` | `tol: float -> pl1: Polyline2D -> pl2: Polyline2D -> bool` | `Polyline3D.equalsWithin` | `tol: float -> pl1: Polyline3D -> pl2: Polyline3D -> bool` |
-| `Polyline2D.findSelfIntersection` | `pl: Polyline2D -> Pt * int * int` | `Polyline3D.findSelfIntersection` | `pl: Polyline3D -> Pnt * int * int` |
-| — | *skew tolerance of 3D segments* | `Polyline3D.findSelfIntersectionCustom` | `pl: Polyline3D * ?maxSkewDistance: float -> Pnt * int * int` |
 | `Polyline2D.iter` | `action: (float -> float -> unit) -> pl: Polyline2D -> unit` | `Polyline3D.iter` | `action: (float -> float -> float -> unit) -> pl: Polyline3D -> unit` |
 | `Polyline2D.iteri` | `action: (int -> float -> float -> unit) -> pl: Polyline2D -> unit` | `Polyline3D.iteri` | `action: (int -> float -> float -> float -> unit) -> pl: Polyline3D -> unit` |
 | `Polyline2D.iteriPt` | `action: (int -> Pt -> unit) -> pl: Polyline2D -> unit` | `Polyline3D.iteriPnt` | `action: (int -> Pnt -> unit) -> pl: Polyline3D -> unit` |
@@ -2683,8 +2680,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Polyline2D.tryFindIndex` | `condition: (float -> float -> bool) -> pl: Polyline2D -> int voption` | `Polyline3D.tryFindIndex` | `condition: (float -> float -> float -> bool) -> pl: Polyline3D -> int voption` |
 | `Polyline2D.tryFindLast` | `condition: (float -> float -> bool) -> pl: Polyline2D -> Pt voption` | `Polyline3D.tryFindLast` | `condition: (float -> float -> float -> bool) -> pl: Polyline3D -> Pnt voption` |
 | `Polyline2D.tryFindLastIndex` | `condition: (float -> float -> bool) -> pl: Polyline2D -> int voption` | `Polyline3D.tryFindLastIndex` | `condition: (float -> float -> float -> bool) -> pl: Polyline3D -> int voption` |
-| `Polyline2D.tryFindSelfIntersection` | `pl: Polyline2D -> (Pt * int * int) voption` | `Polyline3D.tryFindSelfIntersection` | `pl: Polyline3D -> (Pnt * int * int) voption` |
-| — | *skew tolerance of 3D segments* | `Polyline3D.tryFindSelfIntersectionCustom` | `pl: Polyline3D * ?maxSkewDistance: float -> (Pnt * int * int) voption` |
+| `Polyline2D.tryFindSelfIntersection` | `pl: Polyline2D -> (Pt * int * int) voption` | `Polyline3D.tryFindSelfIntersection` | `pl: Polyline3D * ?maxSkewDistance: float -> (Pnt * int * int) voption` |
 
 ## Topology2D / Topology3D
 
