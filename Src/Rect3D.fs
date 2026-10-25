@@ -1621,10 +1621,10 @@ type Rect3D =
 
     /// <summary>Fits a rectangle to the projections of interleaved XYZ points onto the reference plane.
     /// Keeps the reference plane and axis orientations; excludes the reference corners.
-    /// Fails for null, empty or incomplete coordinate triples, or zero-length reference axes.</summary>
+    /// Fails for null, empty or incomplete coordinate triples, zero-length reference axes, or collapsed fitted bounds.</summary>
     /// <param name="xyzs">Coordinates in the order x0, y0, z0, x1, y1, z1, ...</param>
     /// <param name="refRect">The reference rectangle defining the plane and orientation.</param>
-    /// <returns>The rectangle bounding the projected points. A single point produces collapsed bounds.</returns>
+    /// <returns>The nondegenerate rectangle bounding the projected points.</returns>
     static member fitToPointsXYZ (xyzs:IList<float>) (refRect:Rect3D) : Rect3D =
         if isNull xyzs then failNull "Rect3D.fitToPointsXYZ" "xyzs"
         if xyzs.Count = 0 then failEmptySeq "Rect3D.fitToPointsXYZ" "xyzs"
@@ -1659,6 +1659,8 @@ type Rect3D =
             i <- i + 3
         let sizeX = maxX - minX
         let sizeY = maxY - minY
+        if isTooTiny sizeX || isTooTiny sizeY || isNanInfinity sizeX || isNanInfinity sizeY then
+            fail $"Rect3D.fitToPointsXYZ: fitted axis lengths must be positive, got X={sizeX}, Y={sizeY}."
         Rect3D.createUnchecked(
             refRect.OriginX + xX*minX + yX*minY,
             refRect.OriginY + xY*minX + yY*minY,

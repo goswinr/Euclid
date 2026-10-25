@@ -23,11 +23,12 @@ let tests =
             let actual = Rect3D.fitToPointsXYZ xyzs r
             let expected = Rect3D.fitToPoints pts r
             Expect.isTrue (Rect3D.equalsWithin 1e-10 actual expected) "same projected bounds"
-            let single = Rect3D.fitToPointsXYZ (ResizeArray [13.;26.;39.]) r
-            Expect.isTrue (eq single.Pnt0 single.Pnt2) "single point collapses bounds"
+            Expect.throws (fun () -> Rect3D.fitToPointsXYZ (ResizeArray [13.;26.;39.]) r |> ignore) "single point cannot form a rectangle"
+            let collinear = ResizeArray [13.;26.;36.;14.;28.;38.]
+            Expect.throws (fun () -> Rect3D.fitToPointsXYZ collinear r |> ignore) "collapsed projection cannot form a rectangle"
             for coords in [ResizeArray<float>(); ResizeArray [1.;2.]; Unchecked.defaultof<ResizeArray<float>>] do
                 Expect.throws (fun () -> Rect3D.fitToPointsXYZ coords r |> ignore) "invalid coordinates"
-            let zeroAxis = Rect3D.createUnchecked(10.,20.,30.,0.,0.,0.,2.,-2.,1.)
+            let zeroAxis = Unchecked.defaultof<Rect3D>
             Expect.throws (fun () -> Rect3D.fitToPointsXYZ xyzs zeroAxis |> ignore) "degenerate reference"
         }
 
