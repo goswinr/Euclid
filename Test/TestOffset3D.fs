@@ -81,6 +81,20 @@ let writeTestDataFile () =
 
 let tests =
     testList "Offset3D " [
+        test "XYZ diagnostic formatter handles complete and incomplete buffers" {
+            Expect.equal (Offset3D.toStringXYZs null) "ResizeArray<float> null" "null"
+            Expect.equal (Offset3D.toStringXYZs (ResizeArray())) "Empty ResizeArray<float>" "empty"
+            Expect.equal (Offset3D.toStringXYZs (ResizeArray [13.;27.;39.])) "ResizeArray<float> Single Point: (13, 27, 39)" "single"
+            for coords in [[13.];[13.;27.];[13.;27.;39.;4.]] do
+                Expect.isTrue ((Offset3D.toStringXYZs (ResizeArray coords)).Contains "invalid") "incomplete triple"
+            let closed = Offset3D.toStringXYZs (ResizeArray [13.;27.;39.;13.;27.;39.])
+            Expect.isTrue (closed.Contains "Closed polyline") "closed"
+            let almost = Offset3D.toStringXYZs (ResizeArray [13.;27.;39.;13.;27.;39.0000001])
+            Expect.isTrue (almost.Contains "Almost closed") "Z participates in distance"
+            let long = Offset3D.toStringXYZs (ResizeArray [for i = 0 to 110 do float i])
+            Expect.isTrue (long.Contains "Last point: (108, 109, 110)") "long buffer summary"
+            Expect.equal (Offset2D.openTolerance * Offset2D.openTolerance) Offset2D.openToleranceSq "squared tolerance"
+        }
 
         testCase "Polyline3D.offset open L-shape in XY plane with Z-up normal" <| fun _ ->
             // L-shape: (0,0,0) -> (10,0,0) -> (10,10,0)

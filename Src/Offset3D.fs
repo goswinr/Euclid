@@ -18,6 +18,46 @@ module Offset3D =
     /// The squared tolerance for open polylines.
     let [<Literal>] openToleranceSq = 1e-12
 
+    /// <summary>Formats an interleaved XYZ buffer for diagnostics, including null, empty and incomplete buffers.</summary>
+    /// <param name="xyzs">Coordinates in the order x0, y0, z0, x1, y1, z1, ...</param>
+    /// <returns>A description and up to 34 points; longer buffers also show the last point.</returns>
+    let toStringXYZs (xyzs:ResizeArray<float>) : string =
+        if isNull xyzs then
+            "ResizeArray<float> null"
+        elif xyzs.Count = 0 then
+            "Empty ResizeArray<float>"
+        elif xyzs.Count = 3 then
+            $"ResizeArray<float> Single Point: ({xyzs.[0]}, {xyzs.[1]}, {xyzs.[2]})"
+        else
+            let sb = Text.StringBuilder()
+            let cnt = xyzs.Count
+            let ln (line:string) = sb.AppendLine(line) |> ignore
+            if cnt % 3 <> 0 then
+                ln $"An invalid ResizeArray<float> Polyline with {cnt} values, which is not divisible by 3."
+                for i = 0 to min (cnt - 1) 101 do
+                    let axis = if i % 3 = 0 then "x" elif i % 3 = 1 then "y" else "z"
+                    ln $"    {axis} {xyzs.[i]}"
+                if cnt > 102 then ln $"    ... and {cnt - 102} more values."
+            else
+                let dx = xyzs.[0] - xyzs.[cnt-3]
+                let dy = xyzs.[1] - xyzs.[cnt-2]
+                let dz = xyzs.[2] - xyzs.[cnt-1]
+                let dist = sqrt(dx*dx + dy*dy + dz*dz)
+                if dist = 0.0 then
+                    ln $"ResizeArray<float>:Closed polyline with {cnt / 3} points."
+                elif dist < openTolerance then
+                    ln $"ResizeArray<float>:Almost closed polyline with {cnt / 3} points, distance between first and last point is {dist}."
+                else
+                    ln $"ResizeArray<float>:Open polyline with {cnt / 3} points, distance between first and last point is {dist}."
+                let mutable i = 0
+                while i < min cnt 102 do
+                    ln $"    {xyzs.[i]}  {xyzs.[i+1]}  {xyzs.[i+2]}"
+                    i <- i + 3
+                if cnt > 102 then
+                    ln $"    ... and {cnt - 102} more values."
+                    ln $"    Last point: ({xyzs.[cnt-3]}, {xyzs.[cnt-2]}, {xyzs.[cnt-1]})"
+            sb.ToString()
+
     /// We can only offset collinear segments if the distances are the same.
     /// What shall we do if they differ?
     /// Fail?

@@ -11,6 +11,10 @@ module R = ResizeArr
 /// Normally you would not use this directly; prefer the Polyline2D or Points2D module.
 module Offset2D=
 
+    /// <summary>The distance tolerance for considering input polyline endpoints identical.</summary>
+    /// <returns>The tolerance 1e-6.</returns>
+    let [<Literal>] openTolerance = 1e-6
+
     /// The squared tolerance for open polylines.
     let [<Literal>] openToleranceSq = 1e-6 * 1e-6 // 1e-12
 

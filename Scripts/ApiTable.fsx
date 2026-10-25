@@ -86,6 +86,9 @@ let renamed = [
 /// A member whose name refers to the other dimension, like BRect.createFromRect3D, counts as a conversion between 2D and 3D.
 /// Any other member without a counterpart leaves an empty cell: a gap in the API, or a name that does not match its counterpart.
 let only2DMembers = [
+    "Offset2D"  , @"^MakeOffsetDirections$"                      , "algorithm-specific flat 2D direction buffer"
+    "Offset2D"  , @"^Offset(Variable)?Custom$"                    , "2D collinearity and U-turn policies"
+    "VarDistParallel", @"^StepWithTwoPoints$"                    , "2D two-point step policy"
     "Vc"        , @"^AngleToX(180|Pi)$"                          , "signed angle in a fixed 2D plane"
     "UnitVc"    , @"^AngleToX(180|Pi)$"                          , "signed angle in a fixed 2D plane"
     "Rect2D"    , @"^(TryClipLine|ClipLine)$"                     , "clipping in a fixed plane"
@@ -104,6 +107,7 @@ let only2DMembers = [
 /// Members that only exist in 3D on purpose, as 3D type, regular expression for the name and reason.
 /// The type "" stands for all types. The reason is shown in the empty 2D cell next to the member.
 let only3DMembers = [
+    "Offset3D"  , @"^GetCollinearNeighbors$|^GetOffsetDirections$|^SetOffCornerVar$", "algorithm-specific 3D normal and direction representation"
     "Quaternion", @"^Normalize$"                                 , "quaternion renormalization API"
     "Quaternion", @"^WithAngleIn(Degrees|Radians)$"               , "replace angle while retaining the 3D axis"
     "Quaternion", @"^EqualsRotationWithin$"                      , "quaternions q and -q represent the same rotation"

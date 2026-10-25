@@ -46,11 +46,11 @@ Selection checklist for all **77 empty rows** in [ApiTable.md](Scripts/ApiTable.
 
 ## Offset2D / Offset3D, including VarDistParallel — 9 gaps
 
-- [ ] **O1 · Add · 1:** `Offset3D.toStringXYZs xyzs : string` — diagnostic formatter matching `Offset2D.toStringXYs`.
-- [ ] **O2 · Add · 1:** `Offset2D.openTolerance : float` — expose the existing unsquared 1e-6 tolerance, consistent with `openToleranceSq`.
+- [x] **O1 · Add · 1:** `Offset3D.toStringXYZs xyzs : string` — diagnostic formatter matching `Offset2D.toStringXYs`.
+- [x] **O2 · Add · 1:** `Offset2D.openTolerance : float` — expose the existing unsquared 1e-6 tolerance, consistent with `openToleranceSq`.
 <!-- - [ ] **O3 · Choose · 2:** `Offset3D.offsetCustom(...)` / `offsetVariableCustom(...)` — expose collinearity/U-turn thresholds and variable-distance behavior; decide whether to port the 2D U-turn policies or retain 3D's fail behavior. Explicit reference normals would use `offsetByNormalCustom` / existing `offsetVariableByNormalCustom`. Full 2D policy parity requires more than wrappers. -->
 <!-- - [ ] **O4 · Choose · 1:** `Offset3D.VarDistParallel.StepWithTwoPoints = 5` — implement the actual two-point step for unequal collinear offsets, including perpendicular distances; adding an enum case alone is insufficient. -->
-- [ ] **O5 · Map · 4:** Do not add mechanical counterparts for `Offset3D.getCollinearNeighbors`, `getOffsetDirections`, `setOffCornerVar`, or `Offset2D.makeOffsetDirections`. These expose different internal representations; `Offset2D.setOffCornerVar3` is internal. Document these as algorithm-specific, or separately choose a shared kernel design.
+- [x] **O5 · Map · 4:** Do not add mechanical counterparts for `Offset3D.getCollinearNeighbors`, `getOffsetDirections`, `setOffCornerVar`, or `Offset2D.makeOffsetDirections`. These expose different internal representations; `Offset2D.setOffCornerVar3` is internal. Document these as algorithm-specific, or separately choose a shared kernel design.
 
 ## Polyline2D / Polyline3D — 4 gaps
 
