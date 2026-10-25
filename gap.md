@@ -76,6 +76,6 @@ Selection checklist for all **77 empty rows** in [ApiTable.md](Scripts/ApiTable.
 
 ## Topology2D / Topology3D — 2 gaps
 
-- [ ] **H1 · Add · 2:** `Topology2D.sortToLoopCached getLine items` and `sortToLoopWithReversingCached getLine reverseInPlace items` → `float array` — mirror the 3D mutation and returned cache, storing four coordinates per line instead of six.
+- [x] **H1 · Stale:** The cached sort methods are absent in both dimensions in this checkout. Keep the existing topology API unchanged, as agreed.
 
 After selection: implement only chosen families, add XML docs and edge-case tests, update pairing/exclusion rules where needed, then regenerate the API tables. Mapping-only choices require no new members.
