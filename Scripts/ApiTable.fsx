@@ -123,7 +123,6 @@ let only3DMembers = [
     "Quaternion", @"^WithAngleIn(Degrees|Radians)$"               , "replace angle while retaining the 3D axis"
     "Quaternion", @"^EqualsRotationWithin$"                      , "quaternions q and -q represent the same rotation"
     "Quaternion", @"^Multiply$|\*\*\*"                            , "quaternion composition and application operators"
-    "Polyline3D", @"^(TryFindSelfIntersectionCustom|FindSelfIntersectionCustom)$", "skew tolerance of 3D segments"
     "BBox"      , @"^CreateFromBox$"                              , "conversion from an oriented 3D box"
     "Quaternion", @"^[XYZW]$|Axis|Conjugate|Euler"                , "quaternion components"
     "Quaternion", @"^CreateFrom(Unit)?Vec(Degrees|Radians)$"      , "rotation about an axis vector"

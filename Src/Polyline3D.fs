@@ -2858,7 +2858,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// <returns>ValueSome with a point on the first segment and both segment indices, or ValueNone.</returns>
     static member tryFindSelfIntersection(pl:Polyline3D, [<OPT;DEF(1e-6)>] maxSkewDistance:float) : (Pnt * int * int) voption =
         if maxSkewDistance < 0.0 || isNanInfinity maxSkewDistance then
-            fail $"Polyline3D.tryFindSelfIntersectionCustom: maxSkewDistance must be finite and nonnegative, got {maxSkewDistance}."
+            fail $"Polyline3D.tryFindSelfIntersection: maxSkewDistance must be finite and nonnegative, got {maxSkewDistance}."
         let xyzs = pl.XYZs
         let segmentCount = pl.PointCount - 1
         let mutable result = ValueNone

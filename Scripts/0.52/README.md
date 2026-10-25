@@ -10,9 +10,6 @@ of that commit. The script successfully type checked all 52 historical source fi
 | [2D API](ApiTable2D.md) | [2D API](../ApiTable2D.md) |
 | [3D API](ApiTable3D.md) | [3D API](../ApiTable3D.md) |
 
-For colored changes grouped by type, open the [2D diff](../Diff2DTo0.52.md)
-or [3D diff](../Diff3DTo0.52.md) in Markdown preview (VS Code: **Ctrl+Shift+V**).
-
 To compare from the repository root:
 
 ```powershell
