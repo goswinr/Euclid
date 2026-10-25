@@ -1882,6 +1882,17 @@ type BBox =
         let maxZ = if b.Z > minZ then b.Z else minZ <- b.Z ;  a.Z
         BBox.createUnchecked(minX, minY, minZ, maxX, maxY, maxZ)
 
+    /// <summary>Creates bounds from two points given as scalar coordinates, normalizing each axis.</summary>
+    /// <param name="ax">X coordinate of point A.</param>
+    /// <param name="ay">Y coordinate of point A.</param>
+    /// <param name="az">Z coordinate of point A.</param>
+    /// <param name="bx">X coordinate of point B.</param>
+    /// <param name="by">Y coordinate of point B.</param>
+    /// <param name="bz">Z coordinate of point B.</param>
+    /// <returns>The bounding box containing both points.</returns>
+    static member inline createXYZ (ax:float, ay:float, az:float, bx:float, by:float, bz:float) : BBox =
+        BBox.createUnchecked(min ax bx, min ay by, min az bz, max ax bx, max ay by, max az bz)
+
     /// Finds min and max values for x, y and z.
     /// Creates a 3D bounding box from the points.
     static member createFromSeq (ps:seq<Pnt> )  : BBox =

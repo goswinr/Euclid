@@ -4,7 +4,7 @@ All public types, members and functions of Euclid. Corresponding 2D and 3D types
 
 - Corresponding members share a row, also when their names differ, like `Pt.midPt` and `Pnt.midPnt`.
 - `—` and a reason in italics mark a member that exists in one dimension only on purpose.
-- An empty cell marks one of 74 gaps: a member that is missing in one dimension,
+- An empty cell marks one of 63 gaps: a member that is missing in one dimension,
   or a member whose name does not match its counterpart. The contents list the gaps per table.
 - Instance members and fields start with `.`, e.g. `.DistanceTo`.
 - Static members are qualified with their type name. They are listed right below the instance member of the same name.
@@ -39,7 +39,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 - [Rect2D / Rect3D](#rect2d--rect3d), 13 gaps
 - [Box](#box)
 - [FreeBox](#freebox)
-- [BRect / BBox](#brect--bbox), 11 gaps
+- [BRect / BBox](#brect--bbox), 0 gaps
 - [Tria2D / Tria3D](#tria2d--tria3d), 10 gaps
 - [Points2D / Points3D](#points2d--points3d), 0 gaps
 - [module Offset2D / module Offset3D](#module-offset2d--module-offset3d), 8 gaps
@@ -2154,7 +2154,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | — | *Z axis* | `.MinZ` | `float` |
 | — | *Z axis* | `.MaxZ` | `float` |
 | `.AsRect2D` | `Rect2D` | `.AsBox` | `Box` |
-|  |  | `BBox.asBox` | `b: BBox -> Box` |
+| `BRect.asRect2D` | `r: BRect -> Rect2D` | `BBox.asBox` | `b: BBox -> Box` |
 | — | *conversion between 2D and 3D* | `.AsBRect` | `BRect` |
 | — | *conversion between 2D and 3D* | `BBox.asBRect` | `b: BBox -> BRect` |
 | `.AsFSharpCode` | `string` | `.AsFSharpCode` | `string` |
@@ -2253,14 +2253,14 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | — | *corners, edges and faces of a box* | `BBox.faces` | `b: BBox -> Rect3D array` |
 | — | *corners, edges and faces of a box* | `.FrontFace` | `Rect3D` |
 | — | *corners, edges and faces of a box* | `BBox.frontFace` | `b: BBox -> Rect3D` |
-|  |  | `.GetEdge` | `edgeIndex: int -> Line3D` |
-|  |  | `BBox.getEdge` | `edgeIndex: int -> b: BBox -> Line3D` |
+| `.GetEdge` | `edgeIndex: int -> Line2D` | `.GetEdge` | `edgeIndex: int -> Line3D` |
+| `BRect.getEdge` | `edgeIndex: int -> r: BRect -> Line2D` | `BBox.getEdge` | `edgeIndex: int -> b: BBox -> Line3D` |
 | — | *corners, edges and faces of a box* | `.GetFace` | `faceIndex: int -> Rect3D` |
 | — | *corners, edges and faces of a box* | `BBox.getFace` | `faceIndex: int -> b: BBox -> Rect3D` |
-|  |  | `.GetLine` | `startPointIndex: int * endPointIndex: int -> Line3D` |
-|  |  | `BBox.getLine` | `startPointIndex: int -> endPointIndex: int -> b: BBox -> Line3D` |
-|  |  | `.GetPoint` | `pointIndex: int -> Pnt` |
-|  |  | `BBox.getPoint` | `pointIndex: int -> b: BBox -> Pnt` |
+| `.GetLine` | `startPointIndex: int * endPointIndex: int -> Line2D` | `.GetLine` | `startPointIndex: int * endPointIndex: int -> Line3D` |
+| `BRect.getLine` | `startPointIndex: int -> endPointIndex: int -> r: BRect -> Line2D` | `BBox.getLine` | `startPointIndex: int -> endPointIndex: int -> b: BBox -> Line3D` |
+| `.GetPoint` | `pointIndex: int -> Pt` | `.GetPoint` | `pointIndex: int -> Pnt` |
+| `BRect.getPoint` | `pointIndex: int -> r: BRect -> Pt` | `BBox.getPoint` | `pointIndex: int -> b: BBox -> Pnt` |
 | `.HasArea` | `bool` | `.HasVolume` | `bool` |
 | `BRect.hasArea` | `r: BRect -> bool` | `BBox.hasVolume` | `b: BBox -> bool` |
 | `.Intersection` | `a: BRect -> BRect` | `.Intersection` | `a: BBox -> BBox` |
@@ -2311,8 +2311,8 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | — | *corners, edges and faces of a box* | `BBox.pnt7` | `b: BBox -> Pnt` |
 | `.Points` | `Pt array` | `.Points` | `Pnt array` |
 | `BRect.points` | `r: BRect -> Pt array` | `BBox.points` | `b: BBox -> Pnt array` |
-| `.PointsLooped` | `Pt array` |  |  |
-| `BRect.pointsLooped` | `r: BRect -> Pt array` |  |  |
+| `.PointsLooped` | `Pt array` | — | *a box has no single perimeter* |
+| `BRect.pointsLooped` | `r: BRect -> Pt array` | — | *a box has no single perimeter* |
 | — | *corners, edges and faces of a box* | `.RightFace` | `Rect3D` |
 | — | *corners, edges and faces of a box* | `BBox.rightFace` | `b: BBox -> Rect3D` |
 | `.ShortestEdge` | `float` | `.ShortestEdge` | `float` |
@@ -2345,7 +2345,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | **Other static members** | | | |
 | `BRect.create` | `a: Pt -> b: Pt -> BRect` | `BBox.create` | `a: Pnt -> b: Pnt -> BBox` |
 | `BRect.createCentered` | `sizeX: float -> sizeY: float -> center: Pt -> BRect` | `BBox.createCentered` | `sizeX: float -> sizeY: float -> sizeZ: float -> center: Pnt -> BBox` |
-|  |  | `BBox.createFromBox` | `b: Box -> BBox` |
+| — | *conversion from an oriented 3D box* | `BBox.createFromBox` | `b: Box -> BBox` |
 | — | *conversion between 2D and 3D* | `BBox.createFromBRect` | `minZ: float -> maxZ: float -> r: BRect -> BBox` |
 | `BRect.createFromIList` | `ps: IList<Pt> -> BRect` | `BBox.createFromIList` | `ps: IList<Pnt> -> BBox` |
 | `BRect.createFromLine` | `l: Line2D -> BRect` | `BBox.createFromLine` | `l: Line3D -> BBox` |
@@ -2353,7 +2353,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `BRect.createFromRect2D` | `r: Rect2D -> BRect` | `BBox.createFromRect3D` | `r: Rect3D -> BBox` |
 | `BRect.createFromSeq` | `ps: Pt seq -> BRect` | `BBox.createFromSeq` | `ps: Pnt seq -> BBox` |
 | `BRect.createUnchecked` | `minX: float * minY: float * maxX: float * maxY: float -> BRect` | `BBox.createUnchecked` | `minX: float * minY: float * minZ: float * maxX: float * maxY: float * maxZ: float -> BBox` |
-| `BRect.createXY` | `ptAx: float * ptAy: float * ptBx: float * ptBy: float -> BRect` |  |  |
+| `BRect.createXY` | `ptAx: float * ptAy: float * ptBx: float * ptBy: float -> BRect` | `BBox.createXYZ` | `ax: float * ay: float * az: float * bx: float * by: float * bz: float -> BBox` |
 | `BRect.equalsExact` | `a: BRect -> b: BRect -> bool` | `BBox.equalsExact` | `a: BBox -> b: BBox -> bool` |
 | `BRect.equalsWithin` | `tol: float -> a: BRect -> b: BRect -> bool` | `BBox.equalsWithin` | `tol: float -> a: BBox -> b: BBox -> bool` |
 | `BRect.expandRel` | `factor: float -> r: BRect -> BRect` | `BBox.expandRel` | `factor: float -> b: BBox -> BBox` |

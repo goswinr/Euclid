@@ -1101,6 +1101,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `.AsFSharpCode` | `string` |
 | `BRect.asFSharpCode` | `r: BRect -> string` |
 | `.AsRect2D` | `Rect2D` |
+| `BRect.asRect2D` | `r: BRect -> Rect2D` |
 | `.AsString` | `string` |
 | `BRect.asString` | `r: BRect -> string` |
 | `.Center` | `Pt` |
@@ -1147,6 +1148,12 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `BRect.expandXY` | `xDist: float -> yDist: float -> r: BRect -> BRect` |
 | `.ExpandYAxis` | `startDist: float * endDist: float -> BRect` |
 | `BRect.expandYAxis` | `startDist: float -> endDist: float -> r: BRect -> BRect` |
+| `.GetEdge` | `edgeIndex: int -> Line2D` |
+| `BRect.getEdge` | `edgeIndex: int -> r: BRect -> Line2D` |
+| `.GetLine` | `startPointIndex: int * endPointIndex: int -> Line2D` |
+| `BRect.getLine` | `startPointIndex: int -> endPointIndex: int -> r: BRect -> Line2D` |
+| `.GetPoint` | `pointIndex: int -> Pt` |
+| `BRect.getPoint` | `pointIndex: int -> r: BRect -> Pt` |
 | `.HasArea` | `bool` |
 | `BRect.hasArea` | `r: BRect -> bool` |
 | `.Intersection` | `a: BRect -> BRect` |

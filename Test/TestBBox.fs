@@ -10,6 +10,13 @@ let inline eqFloat a b = abs(a - b) < 1e-9
 
 let tests =
     testList "BBox" [
+        test "scalar factory normalizes every axis" {
+            let box = BBox.createXYZ(18., 27., 45., 13., 31., 39.)
+            let expected = BBox.create (Pnt(18.,27.,45.)) (Pnt(13.,31.,39.))
+            Expect.isTrue (BBox.equalsExact box expected) "same bounds as point factory"
+            let flat = BBox.createXYZ(13.,27.,39.,13.,27.,39.)
+            Expect.isTrue (eqPnt flat.MinPnt flat.MaxPnt) "coincident points"
+        }
 
         testList "Constructor and Basic Properties" [
             test "create from two points" {

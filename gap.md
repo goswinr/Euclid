@@ -33,11 +33,11 @@ Selection checklist for all **77 empty rows** in [ApiTable.md](Scripts/ApiTable.
 
 ## BRect / BBox — 11 gaps
 
-- [ ] **B1 · Add · 1:** `BRect.asRect2D rect : Rect2D` — wrapper for existing `.AsRect2D`, paired with `BBox.asBox`.
-- [ ] **B2 · Add · 6:** `BRect.GetPoint` / `getPoint`, `GetEdge` / `getEdge`, `GetLine` / `getLine` — mirror `BBox`; use existing corner/edge order, check indices, reject equal endpoints for `GetLine`.
+- [x] **B1 · Add · 1:** `BRect.asRect2D rect : Rect2D` — wrapper for existing `.AsRect2D`, paired with `BBox.asBox`.
+- [x] **B2 · Add · 6:** `BRect.GetPoint` / `getPoint`, `GetEdge` / `getEdge`, `GetLine` / `getLine` — mirror `BBox`; use existing corner/edge order, check indices, reject equal endpoints for `GetLine`.
 <!-- - [ ] **B3 · Choose · 2:** `BBox.PointsLooped` / `pointsLooped` — a box has no single perimeter. Prefer marking the gap intentional; existing `BottomPointsLooped` / `TopPointsLooped` cover faces. A traversal of all box vertices needs an explicit order and meaning. -->
 <!-- - [ ] **B4 · Map · 1:** `BBox.createFromBox` has no additional 2D counterpart to add: `BRect.createFromRect2D` already exists and is paired with `BBox.createFromRect3D`. Mark the box conversion as 3D only, or show the existing 2D factory in both conceptual rows. -->
-- [ ] **B5 · Add · 1:** `BBox.createXYZ(ax, ay, az, bx, by, bz)` — scalar counterpart of `BRect.createXY`, with the same bounds normalization.
+- [x] **B5 · Add · 1:** `BBox.createXYZ(ax, ay, az, bx, by, bz)` — scalar counterpart of `BRect.createXY`, with the same bounds normalization.
 
 ## Tria2D / Tria3D — 10 gaps
 

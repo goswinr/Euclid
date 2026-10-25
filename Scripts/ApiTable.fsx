@@ -83,6 +83,7 @@ let renamed = [
 /// A member whose name refers to the other dimension, like BRect.createFromRect3D, counts as a conversion between 2D and 3D.
 /// Any other member without a counterpart leaves an empty cell: a gap in the API, or a name that does not match its counterpart.
 let only2DMembers = [
+    "BRect"     , @"^PointsLooped$"                               , "a box has no single perimeter"
     ""          , @"Left|Right"                                   , "side of a line"
     ""          , @"(?<![0-9])CC?W(?![a-z])|Clockwise|Winding|Signed", "orientation in the plane"
     ""          , @"^Rotate(Around)?(Degrees|Radians)$"           , "a 3D rotation also needs an axis"
@@ -96,6 +97,7 @@ let only2DMembers = [
 /// Members that only exist in 3D on purpose, as 3D type, regular expression for the name and reason.
 /// The type "" stands for all types. The reason is shown in the empty 2D cell next to the member.
 let only3DMembers = [
+    "BBox"      , @"^CreateFromBox$"                              , "conversion from an oriented 3D box"
     "Quaternion", @"^[XYZW]$|Axis|Conjugate|Euler"                , "quaternion components"
     "Quaternion", @"^CreateFrom(Unit)?Vec(Degrees|Radians)$"      , "rotation about an axis vector"
     "XLine3D"   , @"^(DoIntersect|TryIntersect)Custom$"           , "skew tolerance of 3D lines"

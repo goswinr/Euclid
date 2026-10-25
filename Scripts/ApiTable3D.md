@@ -2226,6 +2226,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `BBox.createFromRect3D` | `r: Rect3D -> BBox` |
 | `BBox.createFromSeq` | `ps: Pnt seq -> BBox` |
 | `BBox.createUnchecked` | `minX: float * minY: float * minZ: float * maxX: float * maxY: float * maxZ: float -> BBox` |
+| `BBox.createXYZ` | `ax: float * ay: float * az: float * bx: float * by: float * bz: float -> BBox` |
 | `BBox.equalsExact` | `a: BBox -> b: BBox -> bool` |
 | `BBox.equalsWithin` | `tol: float -> a: BBox -> b: BBox -> bool` |
 | `BBox.expandRel` | `factor: float -> b: BBox -> BBox` |

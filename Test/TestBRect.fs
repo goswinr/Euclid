@@ -8,7 +8,30 @@ let inline eqPt a b = Pt.distanceTo a b < 1e-9
 let inline eqVc a b = Vc.length (a - b) < 1e-9
 
 let tests =
-    testList "BRect" [
+    testList "BRect API" [
+        test "indexed corners, edges and diagonals" {
+            let r = BRect.createXY(13., 27., 18., 31.)
+            let points = [|r.Pt0; r.Pt1; r.Pt2; r.Pt3|]
+            for i = 0 to 3 do
+                Expect.isTrue (eqPt (BRect.getPoint i r) points.[i]) "corner order"
+                let edge = BRect.getEdge i r
+                Expect.isTrue (eqPt edge.From points.[i]) "edge start"
+                Expect.isTrue (eqPt edge.To points.[(i+1)%4]) "edge end"
+                for j = 0 to 3 do
+                    if i <> j then
+                        let line = BRect.getLine i j r
+                        Expect.isTrue (eqPt line.From points.[i] && eqPt line.To points.[j]) "directed line"
+            for i in [-1;4] do
+                Expect.throws (fun () -> r.GetPoint i |> ignore) "invalid corner"
+                Expect.throws (fun () -> r.GetEdge i |> ignore) "invalid edge"
+                Expect.throws (fun () -> r.GetLine(i,0) |> ignore) "invalid start"
+                Expect.throws (fun () -> r.GetLine(0,i) |> ignore) "invalid end"
+            Expect.throws (fun () -> r.GetLine(2,2) |> ignore) "equal indices"
+            Expect.isTrue (eqPt (BRect.asRect2D r).Origin r.AsRect2D.Origin) "conversion"
+            let collapsed = BRect.createXY(13., 27., 13., 27.)
+            Expect.isTrue (eqPt (collapsed.GetLine(0,1)).From (collapsed.GetLine(0,1)).To) "distinct indices may coincide geometrically"
+        }
+
 
         testList "Constructor and Basic Properties" [
             test "create from two points" {

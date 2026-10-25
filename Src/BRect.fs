@@ -984,6 +984,64 @@ type BRect =
     // #endregion
     // #region create
 
+    /// <summary>Returns the corner at the given index, in counter-clockwise order from the minimum corner.</summary>
+    /// <param name="pointIndex">Corner index from 0 to 3.</param>
+    /// <returns>The selected corner. Fails for an invalid index.</returns>
+    member r.GetPoint (pointIndex:int) : Pt =
+        match pointIndex with
+        | 0 -> r.Pt0
+        | 1 -> r.Pt1
+        | 2 -> r.Pt2
+        | 3 -> r.Pt3
+        | _ -> fail $"BRect.GetPoint: pointIndex {pointIndex} is out of range. Valid range is 0 to 3."
+
+    /// <summary>Returns a corner in counter-clockwise order from the minimum corner.</summary>
+    /// <param name="pointIndex">Corner index from 0 to 3.</param>
+    /// <param name="r">The bounding rectangle.</param>
+    /// <returns>The selected corner. Fails for an invalid index.</returns>
+    static member inline getPoint pointIndex (r:BRect) : Pt = r.GetPoint pointIndex
+
+    /// <summary>Returns an edge in counter-clockwise order: 01, 12, 23, 30.</summary>
+    /// <param name="edgeIndex">Edge index from 0 to 3.</param>
+    /// <returns>The selected edge. Fails for an invalid index.</returns>
+    member r.GetEdge (edgeIndex:int) : Line2D =
+        match edgeIndex with
+        | 0 -> r.Edge01
+        | 1 -> r.Edge12
+        | 2 -> r.Edge23
+        | 3 -> r.Edge30
+        | _ -> fail $"BRect.GetEdge: edgeIndex {edgeIndex} is out of range. Valid range is 0 to 3."
+
+    /// <summary>Returns an edge in counter-clockwise order: 01, 12, 23, 30.</summary>
+    /// <param name="edgeIndex">Edge index from 0 to 3.</param>
+    /// <param name="r">The bounding rectangle.</param>
+    /// <returns>The selected edge. Fails for an invalid index.</returns>
+    static member inline getEdge edgeIndex (r:BRect) : Line2D = r.GetEdge edgeIndex
+
+    /// <summary>Returns a directed line between two distinct corner indices.</summary>
+    /// <param name="startPointIndex">Start corner index from 0 to 3.</param>
+    /// <param name="endPointIndex">End corner index from 0 to 3.</param>
+    /// <returns>The line. Fails for invalid or equal indices.</returns>
+    member r.GetLine (startPointIndex:int, endPointIndex:int) : Line2D =
+        if startPointIndex = endPointIndex then
+            fail $"BRect.GetLine: startPointIndex and endPointIndex are both {startPointIndex}. They must be different."
+        let a = r.GetPoint startPointIndex
+        let b = r.GetPoint endPointIndex
+        Line2D(a.X, a.Y, b.X, b.Y)
+
+    /// <summary>Returns a directed line between two distinct corner indices.</summary>
+    /// <param name="startPointIndex">Start corner index from 0 to 3.</param>
+    /// <param name="endPointIndex">End corner index from 0 to 3.</param>
+    /// <param name="r">The bounding rectangle.</param>
+    /// <returns>The line. Fails for invalid or equal indices.</returns>
+    static member inline getLine startPointIndex endPointIndex (r:BRect) : Line2D =
+        r.GetLine(startPointIndex, endPointIndex)
+
+    /// <summary>Converts the bounds to an axis-aligned rectangle.</summary>
+    /// <param name="r">The bounding rectangle.</param>
+    /// <returns>The corresponding Rect2D.</returns>
+    static member inline asRect2D (r:BRect) : Rect2D = r.AsRect2D
+
     /// Finds min and max values for x and y.
     static member inline create (a:Pt) (b:Pt) : BRect =
         BRect.createUnchecked(
