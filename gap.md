@@ -42,7 +42,7 @@ Selection checklist for all **77 empty rows** in [ApiTable.md](Scripts/ApiTable.
 ## Tria2D / Tria3D — 10 gaps
 
 <!-- - [ ] **T1 · Choose · 2:** `Tria3D.tryOffsetPntVariableByNormals` / `offsetPntVariableByNormals` — extend the 2D two-normal construction to a specified local plane. Decide whether normals alone determine the desired solution or an explicit plane normal is required; handle parallel/opposite normals. -->
-- [ ] **T2 · Map · 8:** Keep `Tria3D.[try]intersectLine`, `[try]intersectRay`, `[try]intersectRayXYZ`, `[try]intersectTriaVectorsWithRay` as 3D only. A line can cut a 2D triangle in a segment, so a single-point/parameter counterpart is not equivalent. A separate 2D clipping API could be proposed later.
+- [x] **T2 · Map · 8:** Keep `Tria3D.[try]intersectLine`, `[try]intersectRay`, `[try]intersectRayXYZ`, `[try]intersectTriaVectorsWithRay` as 3D only. A line can cut a 2D triangle in a segment, so a single-point/parameter counterpart is not equivalent. A separate 2D clipping API could be proposed later.
 
 ## Offset2D / Offset3D, including VarDistParallel — 9 gaps
 

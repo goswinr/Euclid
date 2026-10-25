@@ -4,7 +4,7 @@ All public types, members and functions of Euclid. Corresponding 2D and 3D types
 
 - Corresponding members share a row, also when their names differ, like `Pt.midPt` and `Pnt.midPnt`.
 - `—` and a reason in italics mark a member that exists in one dimension only on purpose.
-- An empty cell marks one of 10 gaps: a member that is missing in one dimension,
+- An empty cell marks one of 0 gaps: a member that is missing in one dimension,
   or a member whose name does not match its counterpart. The contents list the gaps per table.
 - Instance members and fields start with `.`, e.g. `.DistanceTo`.
 - Static members are qualified with their type name. They are listed right below the instance member of the same name.
@@ -40,7 +40,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 - [Box](#box)
 - [FreeBox](#freebox)
 - [BRect / BBox](#brect--bbox), 0 gaps
-- [Tria2D / Tria3D](#tria2d--tria3d), 10 gaps
+- [Tria2D / Tria3D](#tria2d--tria3d), 0 gaps
 - [Points2D / Points3D](#points2d--points3d), 0 gaps
 - [module Offset2D / module Offset3D](#module-offset2d--module-offset3d), 0 gaps
 - [Offset2D.UTurn](#offset2duturn)
@@ -2370,10 +2370,10 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Tria2D.areaDouble` | `a: Pt -> b: Pt -> c: Pt -> float` | `Tria3D.areaDouble` | `a: Pnt -> b: Pnt -> c: Pnt -> float` |
 | `Tria2D.areaSigned` | `a: Pt -> b: Pt -> c: Pt -> float` | — | *orientation in the plane* |
 | `Tria2D.det` | `a: Pt * b: Pt * c: Pt -> float` | — | *scalar cross product* |
-|  |  | `Tria3D.intersectLine` | `p1: Pnt -> p2: Pnt -> p3: Pnt -> line: Line3D -> Pnt` |
-|  |  | `Tria3D.intersectRay` | `p1: Pnt -> p2: Pnt -> p3: Pnt -> line: Line3D -> float` |
-|  |  | `Tria3D.intersectRayXYZ` | `lnFromX: float * lnFromY: float * lnFromZ: float * lnToX: float * lnToY: float * lnToZ: float * ptAx: float * ptAy: float * ptAz: float * ptBx: float * ptBy: float * ptBz: float * ptCx: float * ptCy: float * ptCz: float -> float` |
-|  |  | `Tria3D.intersectTriaVectorsWithRay` | `lnFromX: float * lnFromY: float * lnFromZ: float * dirX: float * dirY: float * dirZ: float * ptAx: float * ptAy: float * ptAz: float * e1x: float * e1y: float * e1z: float * e2x: float * e2y: float * e2z: float -> float` |
+| — | *single-point line-triangle intersection in 3D* | `Tria3D.intersectLine` | `p1: Pnt -> p2: Pnt -> p3: Pnt -> line: Line3D -> Pnt` |
+| — | *single-point line-triangle intersection in 3D* | `Tria3D.intersectRay` | `p1: Pnt -> p2: Pnt -> p3: Pnt -> line: Line3D -> float` |
+| — | *single-point line-triangle intersection in 3D* | `Tria3D.intersectRayXYZ` | `lnFromX: float * lnFromY: float * lnFromZ: float * lnToX: float * lnToY: float * lnToZ: float * ptAx: float * ptAy: float * ptAz: float * ptBx: float * ptBy: float * ptBz: float * ptCx: float * ptCy: float * ptCz: float -> float` |
+| — | *single-point line-triangle intersection in 3D* | `Tria3D.intersectTriaVectorsWithRay` | `lnFromX: float * lnFromY: float * lnFromZ: float * dirX: float * dirY: float * dirZ: float * ptAx: float * ptAy: float * ptAz: float * e1x: float * e1y: float * e1z: float * e2x: float * e2y: float * e2z: float -> float` |
 | `Tria2D.isLinear` | `a: Pt -> b: Pt -> c: Pt -> bool` | `Tria3D.isLinear` | `a: Pnt -> b: Pnt -> c: Pnt -> bool` |
 | `Tria2D.isLinearCustom` | `a: Pt * b: Pt * c: Pt * ?distanceTolerance: float -> bool` | `Tria3D.isLinearCustom` | `a: Pnt * b: Pnt * c: Pnt * ?distanceTolerance: float -> bool` |
 | `Tria2D.isLinearFast` | `a: Pt -> b: Pt -> c: Pt -> bool` | `Tria3D.isLinearFast` | `a: Pnt -> b: Pnt -> c: Pnt -> bool` |
@@ -2381,13 +2381,13 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Tria2D.offset` | `dist: float -> a: Pt -> b: Pt -> c: Pt -> Pt * Pt * Pt` | `Tria3D.offset` | `dist: float -> a: Pnt -> b: Pnt -> c: Pnt -> Pnt * Pnt * Pnt` |
 | `Tria2D.offsetPt` | `dist: float -> prev: Pt -> next: Pt -> ptToOffset: Pt -> Pt` | `Tria3D.offsetPnt` | `dist: float -> prev: Pnt -> next: Pnt -> pntToOffset: Pnt -> Pnt` |
 | `Tria2D.offsetPtVariable` | `distPrev: float -> distNext: float -> prev: Pt -> next: Pt -> ptToOffset: Pt -> Pt` | `Tria3D.offsetPntVariable` | `distPrev: float -> distNext: float -> prev: Pnt -> next: Pnt -> pntToOffset: Pnt -> Pnt` |
-| `Tria2D.offsetPtVariableByNormals` | `prevDist: float -> nextDist: float -> prevN: UnitVc -> nextN: UnitVc -> ptToOffset: Pt -> Pt` |  |  |
-|  |  | `Tria3D.tryIntersectLine` | `p1: Pnt -> p2: Pnt -> p3: Pnt -> line: Line3D -> Pnt voption` |
-|  |  | `Tria3D.tryIntersectRay` | `p1: Pnt -> p2: Pnt -> p3: Pnt -> line: Line3D -> float voption` |
-|  |  | `Tria3D.tryIntersectRayXYZ` | `lnFromX: float * lnFromY: float * lnFromZ: float * lnToX: float * lnToY: float * lnToZ: float * ptAx: float * ptAy: float * ptAz: float * ptBx: float * ptBy: float * ptBz: float * ptCx: float * ptCy: float * ptCz: float -> float voption` |
-|  |  | `Tria3D.tryIntersectTriaVectorsWithRay` | `lnFromX: float * lnFromY: float * lnFromZ: float * dirX: float * dirY: float * dirZ: float * ptAx: float * ptAy: float * ptAz: float * e1x: float * e1y: float * e1z: float * e2x: float * e2y: float * e2z: float -> float voption` |
+| `Tria2D.offsetPtVariableByNormals` | `prevDist: float -> nextDist: float -> prevN: UnitVc -> nextN: UnitVc -> ptToOffset: Pt -> Pt` | — | *two normals determine the offset in a fixed 2D plane* |
+| — | *single-point line-triangle intersection in 3D* | `Tria3D.tryIntersectLine` | `p1: Pnt -> p2: Pnt -> p3: Pnt -> line: Line3D -> Pnt voption` |
+| — | *single-point line-triangle intersection in 3D* | `Tria3D.tryIntersectRay` | `p1: Pnt -> p2: Pnt -> p3: Pnt -> line: Line3D -> float voption` |
+| — | *single-point line-triangle intersection in 3D* | `Tria3D.tryIntersectRayXYZ` | `lnFromX: float * lnFromY: float * lnFromZ: float * lnToX: float * lnToY: float * lnToZ: float * ptAx: float * ptAy: float * ptAz: float * ptBx: float * ptBy: float * ptBz: float * ptCx: float * ptCy: float * ptCz: float -> float voption` |
+| — | *single-point line-triangle intersection in 3D* | `Tria3D.tryIntersectTriaVectorsWithRay` | `lnFromX: float * lnFromY: float * lnFromZ: float * dirX: float * dirY: float * dirZ: float * ptAx: float * ptAy: float * ptAz: float * e1x: float * e1y: float * e1z: float * e2x: float * e2y: float * e2z: float -> float voption` |
 | `Tria2D.tryOffsetPtVariable` | `distPrev: float -> distNext: float -> prev: Pt -> next: Pt -> ptToOffset: Pt -> Pt voption` | `Tria3D.tryOffsetPntVariable` | `distPrev: float -> distNext: float -> prev: Pnt -> next: Pnt -> pntToOffset: Pnt -> Pnt voption` |
-| `Tria2D.tryOffsetPtVariableByNormals` | `prevDist: float -> nextDist: float -> prevN: UnitVc -> nextN: UnitVc -> ptToOffset: Pt -> Pt voption` |  |  |
+| `Tria2D.tryOffsetPtVariableByNormals` | `prevDist: float -> nextDist: float -> prevN: UnitVc -> nextN: UnitVc -> ptToOffset: Pt -> Pt voption` | — | *two normals determine the offset in a fixed 2D plane* |
 
 ## Points2D / Points3D
 
