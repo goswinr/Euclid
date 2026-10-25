@@ -4,8 +4,7 @@ All public types, members and functions of Euclid. Corresponding 2D and 3D types
 
 - Corresponding members share a row, also when their names differ, like `Pt.midPt` and `Pnt.midPnt`.
 - `—` and a reason in italics mark a member that exists in one dimension only on purpose.
-- An empty cell marks one of 0 gaps: a member that is missing in one dimension,
-  or a member whose name does not match its counterpart. The contents list the gaps per table.
+- There are no unexplained gaps: every member is paired or has a reason for its dimensional difference.
 - Instance members and fields start with `.`, e.g. `.DistanceTo`.
 - Static members are qualified with their type name. They are listed right below the instance member of the same name.
   The static members without such an instance member follow at the end of each table.

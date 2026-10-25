@@ -741,8 +741,11 @@ writeFile outFile
       ""
       "- Corresponding members share a row, also when their names differ, like `Pt.midPt` and `Pnt.midPnt`."
       "- `—` and a reason in italics mark a member that exists in one dimension only on purpose."
-      $"- An empty cell marks one of {allGaps}: a member that is missing in one dimension,"
-      "  or a member whose name does not match its counterpart. The contents list the gaps per table."
+      if gapCount groups = 0 then
+          "- There are no unexplained gaps: every member is paired or has a reason for its dimensional difference."
+      else
+          $"- An empty cell marks one of {allGaps}: a member that is missing in one dimension,"
+          "  or a member whose name does not match its counterpart. The contents list the gaps per table."
       yield! notation ]
     [ "2D and 3D", groups
       "General", general ]

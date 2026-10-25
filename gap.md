@@ -1,6 +1,6 @@
-# API gap candidates
+# API gap checklist
 
-Selection checklist for all **77 empty rows** in [ApiTable.md](Scripts/ApiTable.md). Counts below refer to table rows, not implementation effort. Check a family or name the individual members you want. No API changes are included.
+Completed checklist based on the original **77 candidate rows** in [ApiTable.md](Scripts/ApiTable.md). Counts in the headings describe that original snapshot. All uncommented selections are implemented or mapped; H1 was stale. Entries inside `<!-- ... -->` are intentional differences and have not been added. The regenerated API table has **0 unexplained gaps**.
 
 **Add** = direct counterpart; **Choose** = semantics/signature need a decision; **Map** = existing equivalent or intentional dimensional difference. New names follow AGENTS.md; legacy names may need explicit pairing in `ApiTable.fsx`.
 
@@ -8,7 +8,7 @@ Selection checklist for all **77 empty rows** in [ApiTable.md](Scripts/ApiTable.
 
 <!-- - [ ] **V1 · Choose · 4:** `Vec.angleToXDegreesInXY`, `Vec.angleToXRadiansInXY`, and the same on `UnitVec`. Match the signed XY angle of `angleToX180` / `angleToXPi`; define failure for a zero XY projection, including vertical unit vectors. Alternatively mark the existing operations as planar only. -->
 - [x] **V2 · Add · 2:** `Vc.isParallelAndOrientedToUnitVc minCosine other vector` and `Vc.isPerpendicularToUnitVc maxCosine other vector` — mirror `Vec`, including zero-length handling.
-- [x] **V3 · Add · 2:** `UnitVec.sine` / `tangent` — unsigned 3D angle versions are possible, add note about sign to 2d and 3d docstrings
+- [x] **V3 · Add · 2:** `UnitVec.sine` / `tangent` — unsigned 3D angles; tangent is negative for obtuse angles and returns Infinity at perpendicularity. Both dimensions document their sign conventions.
 ## Rotation2D / Quaternion — 14 gaps
 
 - [x] **R1 · Add · 1:** `Quaternion.Half : Quaternion` — shortest-rotation half; preserve the encoded axis at exactly 180 degrees and handle both identity representations. `half` static wrappers on both types as extra API beyond these gaps.
@@ -56,26 +56,10 @@ Selection checklist for all **77 empty rows** in [ApiTable.md](Scripts/ApiTable.
 
 - [x] **P1 · Add · 1:** `Polyline2D(points: seq<Pt>)` constructor — mirror the 3D constructor; copy coordinates into the mutable buffer.
 - [x] **P2 · Map · 1:** Pair `Polyline2D.createFromRectCCW` with `Polyline3D.createFromRect3D`; both produce the same local closed corner order.
-- [x] **P3 · Add · 2:** `Polyline3D.tryFindSelfIntersection` , with an optional skew-distance tolerance,
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+- [x] **P3 · Add · 2:** `Polyline3D.tryFindSelfIntersection` and `tryFindSelfIntersectionCustom`, with optional skew-distance tolerance on the latter. Mirror XLine intersection exclusions, and add throwing counterparts (including `Polyline2D.findSelfIntersection`).
 
 ## Topology2D / Topology3D — 2 gaps
 
 - [x] **H1 · Stale:** The cached sort methods are absent in both dimensions in this checkout. Keep the existing topology API unchanged, as agreed.
 
-After selection: implement only chosen families, add XML docs and edge-case tests, update pairing/exclusion rules where needed, then regenerate the API tables. Mapping-only choices require no new members.
+Implemented additions have XML documentation and edge-case tests. Pairing and exclusion rules live in `Scripts/ApiTable.fsx`; all three API tables were regenerated. Mapping-only choices added no geometry members. As separately agreed, `Box.offset` now rejects degenerate inputs and results while unchecked construction remains available.

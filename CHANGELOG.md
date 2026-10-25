@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- Filled the selected 2D/3D API gaps: `Vc.isParallelAndOrientedToUnitVc`, `Vc.isPerpendicularToUnitVc`, unsigned-angle `UnitVec.sine` and `tangent`, `Quaternion.Half`, static `half` wrappers on both rotation types, and `Rotation2D.identity`.
+- Added 3D finite-segment `closestParameters` and skew-aware `isWithinRanges` queries to `XLineXYZ` and `XLine3D`, including point/vector wrappers. Parallel closest-parameter tie-breaking matches 2D.
+- Added `Rect3D.fitToPointsXYZ`, `BRect.GetPoint`, `GetEdge`, `GetLine` and their static wrappers, `BRect.asRect2D`, and `BBox.createXYZ`. XYZ rectangle fitting rejects empty, malformed and collapsed bounds.
+- Added `Polyline2D(seq<Pt>)`, `Polyline3D.tryFindSelfIntersection` and its `Custom` skew-tolerance variant, with throwing `findSelfIntersection` counterparts. The 2D API also gains the throwing counterpart.
+- Added `Offset3D.toStringXYZs` diagnostics and `Offset2D.openTolerance`. Regenerated the API tables with explicit pairings and reasons for intentional dimensional differences.
 - Added a `Radians` factory next to every `Degrees` factory: `Matrix` and `RigidMatrix` get `createRotationXRadians`, `createRotationYRadians`, `createRotationZRadians`, `createRotationFromVecRadians`, `createRotationFromUnitVecRadians`, `createRotationAroundVecRadians` and `createRotationAroundUnitVecRadians`, and `Quaternion` gets `createFromEulerXYZRadians` and the five other Euler orders. Each gives the same result as its `Degrees` partner for the same angle.
 - Added the static `andThen` to `Quaternion`, `Matrix` and `RigidMatrix`, next to their `Then`: `a |> Matrix.andThen b` first applies `a` and then `b`, like `a.Then b`.
 - Added `Line2D.create start finish` and `Line3D.create start finish`, and restored `Pt.create x y` and `Pnt.create x y z` as curried factories.
