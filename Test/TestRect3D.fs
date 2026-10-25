@@ -26,6 +26,9 @@ let tests =
             Expect.throws (fun () -> Rect3D.fitToPointsXYZ (ResizeArray [13.;26.;39.]) r |> ignore) "single point cannot form a rectangle"
             let collinear = ResizeArray [13.;26.;36.;14.;28.;38.]
             Expect.throws (fun () -> Rect3D.fitToPointsXYZ collinear r |> ignore) "collapsed projection cannot form a rectangle"
+            let tiny = r.EvaluateAt(1e-9,1e-9)
+            let tinyCoords = ResizeArray [r.OriginX;r.OriginY;r.OriginZ;tiny.X;tiny.Y;tiny.Z]
+            Expect.throws (fun () -> Rect3D.fitToPointsXYZ tinyCoords r |> ignore) "fitted axes below rectangle tolerance"
             for coords in [ResizeArray<float>(); ResizeArray [1.;2.]; Unchecked.defaultof<ResizeArray<float>>] do
                 Expect.throws (fun () -> Rect3D.fitToPointsXYZ coords r |> ignore) "invalid coordinates"
             let zeroAxis = Unchecked.defaultof<Rect3D>
