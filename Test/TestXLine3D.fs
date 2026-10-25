@@ -8,6 +8,52 @@ open EuclidTestSupport
 
 let tests =
     testList "XLine3D Tests" [
+        test "finite closest parameters preserve 2D policy in a tilted plane" {
+            let point (p:Pt) = Pnt(13.+p.X,27.+0.6*p.Y,39.+0.8*p.Y)
+            let cases = [
+                Line2D(0.,0.,10.,10.), Line2D(10.,0.,0.,10.)
+                Line2D(0.,0.,10.,0.), Line2D(5.,0.,15.,0.)
+                Line2D(0.,0.,10.,0.), Line2D(15.,0.,5.,0.)
+                Line2D(0.,0.,10.,0.), Line2D(-5.,2.,15.,2.)
+                Line2D(0.,0.,10.,0.), Line2D(15.,5.,20.,5.)
+                Line2D(5.,5.,5.,5.), Line2D(0.,0.,10.,0.)
+                Line2D(0.,0.,10.,0.), Line2D(5.,5.,5.,5.)
+                Line2D(5.,5.,5.,5.), Line2D(8.,7.,8.,7.)
+                Line2D(5.,5.,5.+1e-8,5.), Line2D(0.,0.,10.,0.)
+                Line2D(0.,0.,10.,0.), Line2D(0.,2.,10.,2.0001)
+            ]
+            for a,b in cases do
+                let la = Line3D(point a.From, point a.To)
+                let lb = Line3D(point b.From, point b.To)
+                let struct(ea,eb) = XLine2D.closestParameters a b
+                let struct(ta,tb) = XLine3D.closestParameters la lb
+                Expect.floatClose Accuracy.high ta ea "parameter A matches 2D"
+                Expect.floatClose Accuracy.high tb eb "parameter B matches 2D"
+                let struct(va,vb) = XLine3D.closestParametersFromPntsAndVecs la.From lb.From la.Vector lb.Vector
+                Expect.equal (va,vb) (ta,tb) "point/vector wrapper"
+            let a = Line3D(Pnt(13.,27.,39.),Pnt(23.,27.,39.))
+            let b = Line3D(Pnt(18.,22.,41.),Pnt(18.,32.,41.))
+            Expect.equal (XLine3D.closestParameters a b) (struct(0.5,0.5)) "interior skew closest pair"
+        }
+        test "range queries check both parameters and skew distance" {
+            let a = Line3D(Pnt(13.,27.,39.),Pnt(23.,27.,39.))
+            let b = Line3D(Pnt(18.,22.,41.),Pnt(18.,32.,41.))
+            Expect.isTrue (XLine3D.isWithinRanges(2.,0.5,0.5,0.5,0.5,a,b)) "inclusive distance and parameter boundaries"
+            Expect.isFalse (XLine3D.isWithinRanges(1.99,0.,1.,0.,1.,a,b)) "too skew"
+            Expect.isFalse (XLine3D.isWithinRanges(2.,0.,0.49,0.,1.,a,b)) "outside A"
+            Expect.isFalse (XLine3D.isWithinRanges(2.,0.,1.,0.51,1.,a,b)) "outside B"
+            Expect.isTrue (XLine3D.isWithinRangesFromPntsAndVecs(2.,0.,1.,0.,1.,a.From,b.From,a.Vector,b.Vector)) "point/vector wrapper"
+            Expect.isFalse (XLine3D.isWithinRanges(2.,0.,1.,0.,1.,a,a)) "parallel"
+            let point = Line3D(a.From,a.From)
+            Expect.isFalse (XLine3D.isWithinRanges(2.,0.,1.,0.,1.,point,b)) "zero length"
+            let crossing = Line3D(Pnt(18.,22.,39.),Pnt(18.,32.,39.))
+            Expect.isTrue (XLine3D.isWithinRanges(0.,0.,1.,0.,1.,a,crossing)) "exact intersection at zero skew tolerance"
+            let nearParallel = Line3D(Pnt(13.,26.99995,39.),Pnt(23.,27.00005,39.))
+            Expect.isTrue (XLine3D.isWithinRanges(1e-6,0.,1.,0.,1.,a,nearParallel)) "almost parallel crossing"
+            Expect.isFalse (XLine3D.isWithinRanges(2.,1.,0.,0.,1.,a,b)) "reversed range"
+            for tolerance in [-1.;Double.NaN;Double.PositiveInfinity] do
+                Expect.throws (fun () -> XLine3D.isWithinRanges(tolerance,0.,1.,0.,1.,a,b) |> ignore) "invalid tolerance"
+        }
 
         testList "parameterA tests" [
             test "Intersecting lines - basic case" {

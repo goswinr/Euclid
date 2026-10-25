@@ -255,6 +255,101 @@ module XLine3D =
 
 module XLineXYZ =
 
+    /// <summary>Tests whether the closest parameters of two infinite lines fall in the inclusive ranges
+    /// and their separation is at most maxSkewDistance. Returns FALSE for parallel or zero-length lines.</summary>
+    /// <param name="maxSkewDistance">Finite, nonnegative maximum separation.</param>
+    /// <param name="minParameterA">Inclusive lower parameter on A.</param>
+    /// <param name="maxParameterA">Inclusive upper parameter on A.</param>
+    /// <param name="minParameterB">Inclusive lower parameter on B.</param>
+    /// <param name="maxParameterB">Inclusive upper parameter on B.</param>
+    /// <param name="pAx">Start X of A.</param>
+    /// <param name="pAy">Start Y of A.</param>
+    /// <param name="pAz">Start Z of A.</param>
+    /// <param name="pBx">Start X of B.</param>
+    /// <param name="pBy">Start Y of B.</param>
+    /// <param name="pBz">Start Z of B.</param>
+    /// <param name="vAx">Direction X of A.</param>
+    /// <param name="vAy">Direction Y of A.</param>
+    /// <param name="vAz">Direction Z of A.</param>
+    /// <param name="vBx">Direction X of B.</param>
+    /// <param name="vBy">Direction Y of B.</param>
+    /// <param name="vBz">Direction Z of B.</param>
+    /// <returns>TRUE for a unique closest pair within both ranges and the distance tolerance.</returns>
+    let isWithinRanges(maxSkewDistance:float, minParameterA:float, maxParameterA:float, minParameterB:float, maxParameterB:float,
+                       pAx:float, pAy:float, pAz:float, pBx:float, pBy:float, pBz:float,
+                       vAx:float, vAy:float, vAz:float, vBx:float, vBy:float, vBz:float) : bool =
+        if maxSkewDistance < 0.0 || isNanInfinity maxSkewDistance then
+            fail $"XLineXYZ.isWithinRanges: maxSkewDistance must be finite and nonnegative, got {maxSkewDistance}."
+        let cx = vAy*vBz - vAz*vBy
+        let cy = vAz*vBx - vAx*vBz
+        let cz = vAx*vBy - vAy*vBx
+        let denominator = cx*cx + cy*cy + cz*cz
+        if not (denominator > 0.0) || isNanInfinity denominator then false
+        else
+            let dx = pBx - pAx
+            let dy = pBy - pAy
+            let dz = pBz - pAz
+            let ta = ((dy*vBz - dz*vBy)*cx + (dz*vBx - dx*vBz)*cy + (dx*vBy - dy*vBx)*cz) / denominator
+            let tb = ((dy*vAz - dz*vAy)*cx + (dz*vAx - dx*vAz)*cy + (dx*vAy - dy*vAx)*cz) / denominator
+            if ta >= minParameterA && ta <= maxParameterA && tb >= minParameterB && tb <= maxParameterB then
+                let x = pAx + ta*vAx - (pBx + tb*vBx)
+                let y = pAy + ta*vAy - (pBy + tb*vBy)
+                let z = pAz + ta*vAz - (pBz + tb*vBz)
+                x*x + y*y + z*z <= maxSkewDistance*maxSkewDistance
+            else false
+
+    /// <summary>Returns the closest parameters on two finite segments, clamped to [0,1].
+    /// Treats squared lengths at most 1e-12 as points. For parallel overlaps chooses the pair
+    /// closest to parameter zero on A, matching XLineXY.closestParameters.</summary>
+    /// <param name="pAx">The X component of the start point of segment A.</param>
+    /// <param name="pAy">The Y component of the start point of segment A.</param>
+    /// <param name="pAz">The Z component of the start point of segment A.</param>
+    /// <param name="pBx">The X component of the start point of segment B.</param>
+    /// <param name="pBy">The Y component of the start point of segment B.</param>
+    /// <param name="pBz">The Z component of the start point of segment B.</param>
+    /// <param name="vAx">The X component of the direction of segment A.</param>
+    /// <param name="vAy">The Y component of the direction of segment A.</param>
+    /// <param name="vAz">The Z component of the direction of segment A.</param>
+    /// <param name="vBx">The X component of the direction of segment B.</param>
+    /// <param name="vBy">The Y component of the direction of segment B.</param>
+    /// <param name="vBz">The Z component of the direction of segment B.</param>
+    /// <returns>A struct tuple of parameters; (0,0) when both segments are points.</returns>
+    let closestParameters(pAx:float, pAy:float, pAz:float, pBx:float, pBy:float, pBz:float, vAx:float, vAy:float, vAz:float, vBx:float, vBy:float, vBz:float) : struct(float*float) =
+        let diffX = pAx - pBx
+        let diffY = pAy - pBy
+        let diffZ = pAz - pBz
+        let sqLenA = vAx*vAx + vAy*vAy + vAz*vAz   // vA·vA  (>= 0)
+        let sqLenB = vBx*vBx + vBy*vBy + vBz*vBz   // vB·vB  (>= 0)
+        let dotB = vBx*diffX + vBy*diffY + vBz*diffZ     // vB·r
+        let sqTol = 1e-12             // compared against squared lengths
+        let mutable ta = 0.0
+        let mutable tb = 0.0
+        if sqLenA <= sqTol && sqLenB <= sqTol then
+            ()                                      // both points: s = t = 0
+        elif sqLenA <= sqTol then
+            tb <- max 0.0 (min 1.0 (dotB / sqLenB))          // A is a point
+        else
+            let dotA = vAx*diffX + vAy*diffY + vAz*diffZ                 // vA·r
+            if sqLenB <= sqTol then
+                ta <- max 0.0 (min 1.0 (-dotA / sqLenA))     // B is a point
+            else
+                let b = vAx*vBx + vAy*vBy + vAz*vBz            // vA·vB
+                let denom = sqLenA*sqLenB - b*b     //  = 0 iff parallel
+                if denom <> 0.0 then
+                    // The denom <> 0.0 exact-zero test is deliberately not a tolerance check.
+                    // For merely near-parallel segments, dividing by a tiny denom can throw s way out of range,
+                    // but the subsequent clamp-and-recompute steps pull it back to the correct endpoint — so the exact test is actually the robust choice here.
+                    ta <- max 0.0 (min 1.0 ((b*dotB - dotA*sqLenB) / denom))
+                tb <- (b*ta + dotB) / sqLenB
+                if tb < 0.0 then
+                    tb <- 0.0
+                    ta <- max 0.0 (min 1.0 (-dotA / sqLenA))
+                elif tb > 1.0 then
+                    tb <- 1.0
+                    ta <- max 0.0 (min 1.0 ((b - dotA) / sqLenA))
+        struct(ta, tb)
+
+
     open XLine3D
 
         (*
@@ -1463,6 +1558,56 @@ open XLineXYZ
 /// Some functions return Discriminated Unions from the XLine3D module.
 [<RequireQualifiedAccess>]
 type XLine3D =
+
+    /// <summary>Returns the closest parameters on finite segments, clamped to [0,1].
+    /// Handles points and parallel segments; overlapping parallels prefer parameter zero on A.</summary>
+    /// <param name="lineA">The first segment.</param>
+    /// <param name="lineB">The second segment.</param>
+    /// <returns>A struct tuple of closest parameters, treating squared lengths at most 1e-12 as points.</returns>
+    static member closestParameters (lineA:Line3D) (lineB:Line3D) : struct(float * float) =
+        XLineXYZ.closestParameters(lineA.FromX, lineA.FromY, lineA.FromZ, lineB.FromX, lineB.FromY, lineB.FromZ,
+                                  lineA.VectorX, lineA.VectorY, lineA.VectorZ, lineB.VectorX, lineB.VectorY, lineB.VectorZ)
+
+    /// <summary>Returns the closest parameters on finite segments specified by starts and full displacement vectors.
+    /// Handles points and parallel segments; overlapping parallels prefer parameter zero on A.</summary>
+    /// <param name="pA">Start of A.</param>
+    /// <param name="pB">Start of B.</param>
+    /// <param name="vA">Full displacement of A.</param>
+    /// <param name="vB">Full displacement of B.</param>
+    /// <returns>A struct tuple of clamped parameters, treating squared lengths at most 1e-12 as points.</returns>
+    static member closestParametersFromPntsAndVecs (pA:Pnt) (pB:Pnt) (vA:Vec) (vB:Vec) : struct(float * float) =
+        XLineXYZ.closestParameters(pA.X,pA.Y,pA.Z,pB.X,pB.Y,pB.Z,vA.X,vA.Y,vA.Z,vB.X,vB.Y,vB.Z)
+
+    /// <summary>Tests inclusive closest-approach parameter ranges and skew distance on infinite lines.
+    /// Returns FALSE for parallel or zero-length lines.</summary>
+    /// <param name="maxSkewDistance">Finite, nonnegative maximum separation, inclusive.</param>
+    /// <param name="minParameterA">Inclusive lower parameter on A.</param>
+    /// <param name="maxParameterA">Inclusive upper parameter on A.</param>
+    /// <param name="minParameterB">Inclusive lower parameter on B.</param>
+    /// <param name="maxParameterB">Inclusive upper parameter on B.</param>
+    /// <param name="lineA">The first line, extended infinitely in both directions.</param>
+    /// <param name="lineB">The second line, extended infinitely in both directions.</param>
+    /// <returns>TRUE when the unique closest pair satisfies both ranges and the distance tolerance.</returns>
+    static member inline isWithinRanges(maxSkewDistance, minParameterA, maxParameterA, minParameterB, maxParameterB, lineA:Line3D, lineB:Line3D) : bool =
+        XLineXYZ.isWithinRanges(maxSkewDistance, minParameterA, maxParameterA, minParameterB, maxParameterB,
+                               lineA.FromX, lineA.FromY, lineA.FromZ, lineB.FromX, lineB.FromY, lineB.FromZ,
+                               lineA.VectorX, lineA.VectorY, lineA.VectorZ, lineB.VectorX, lineB.VectorY, lineB.VectorZ)
+
+    /// <summary>Tests inclusive closest-approach parameter ranges and skew distance on infinite lines.
+    /// Returns FALSE for parallel or zero-length vectors.</summary>
+    /// <param name="maxSkewDistance">Finite, nonnegative maximum separation, inclusive.</param>
+    /// <param name="minParameterA">Inclusive lower parameter on A.</param>
+    /// <param name="maxParameterA">Inclusive upper parameter on A.</param>
+    /// <param name="minParameterB">Inclusive lower parameter on B.</param>
+    /// <param name="maxParameterB">Inclusive upper parameter on B.</param>
+    /// <param name="pA">Start of A.</param>
+    /// <param name="pB">Start of B.</param>
+    /// <param name="vA">Direction of A.</param>
+    /// <param name="vB">Direction of B.</param>
+    /// <returns>TRUE when the unique closest pair satisfies both ranges and the distance tolerance.</returns>
+    static member inline isWithinRangesFromPntsAndVecs(maxSkewDistance, minParameterA, maxParameterA, minParameterB, maxParameterB, pA:Pnt, pB:Pnt, vA:Vec, vB:Vec) : bool =
+        XLineXYZ.isWithinRanges(maxSkewDistance, minParameterA, maxParameterA, minParameterB, maxParameterB,
+                               pA.X,pA.Y,pA.Z,pB.X,pB.Y,pB.Z,vA.X,vA.Y,vA.Z,vB.X,vB.Y,vB.Z)
 
 
     /// <summary> Returns the closest approach parameter on the first ray (A) where ray A and ray B come closest.

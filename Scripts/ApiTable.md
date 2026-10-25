@@ -4,7 +4,7 @@ All public types, members and functions of Euclid. Corresponding 2D and 3D types
 
 - Corresponding members share a row, also when their names differ, like `Pt.midPt` and `Pnt.midPnt`.
 - `—` and a reason in italics mark a member that exists in one dimension only on purpose.
-- An empty cell marks one of 16 gaps: a member that is missing in one dimension,
+- An empty cell marks one of 10 gaps: a member that is missing in one dimension,
   or a member whose name does not match its counterpart. The contents list the gaps per table.
 - Instance members and fields start with `.`, e.g. `.DistanceTo`.
 - Static members are qualified with their type name. They are listed right below the instance member of the same name.
@@ -32,8 +32,8 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 - [XLine2D.ClParams / XLine3D.ClParams](#xline2dclparams--xline3dclparams), 0 gaps
 - [XLine2D.ClPts / XLine3D.ClPnts](#xline2dclpts--xline3dclpnts), 0 gaps
 - [XLine2D.XEnds / XLine3D.XEnds](#xline2dxends--xline3dxends), 0 gaps
-- [module XLineXY / module XLineXYZ](#module-xlinexy--module-xlinexyz), 2 gaps
-- [XLine2D / XLine3D](#xline2d--xline3d), 4 gaps
+- [module XLineXY / module XLineXYZ](#module-xlinexy--module-xlinexyz), 0 gaps
+- [XLine2D / XLine3D](#xline2d--xline3d), 0 gaps
 - [XLine3D.XCone](#xline3dxcone)
 - [NPlane](#nplane)
 - [Rect2D / Rect3D](#rect2d--rect3d), 0 gaps
@@ -1322,13 +1322,13 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `XLineXY.classifyIntersectionParam` | `pAx: float * pAy: float * pBx: float * pBy: float * vAx: float * vAy: float * vBx: float * vBy: float * tangent: float<tangent> * tooShortTolerance: float -> XParam` | `XLineXYZ.classifyIntersectionParam` | `pAx: float * pAy: float * pAz: float * pBx: float * pBy: float * pBz: float * vAx: float * vAy: float * vAz: float * vBx: float * vBy: float * vBz: float * maxSkewDistance: float * tangent: float<tangent> * tooShortTolerance: float -> XParam` |
 | `XLineXY.classifyRayIntersectionParam` | `pAx: float * pAy: float * pBx: float * pBy: float * vAx: float * vAy: float * vBx: float * vBy: float * tangent: float<tangent> * tooShortTolerance: float -> XRayParam` | `XLineXYZ.classifyRayClosestParam` | `pAx: float * pAy: float * pAz: float * pBx: float * pBy: float * pBz: float * vAx: float * vAy: float * vAz: float * vBx: float * vBy: float * vBz: float * tangent: float<tangent> * tooShortTolerance: float -> XRayParam` |
 | `XLineXY.classifyRayIntersection` | `pAx: float * pAy: float * pBx: float * pBy: float * vAx: float * vAy: float * vBx: float * vBy: float * tangent: float<tangent> * tooShortTolerance: float -> XRay` | `XLineXYZ.classifyRayIntersection` | `pAx: float * pAy: float * pAz: float * pBx: float * pBy: float * pBz: float * vAx: float * vAy: float * vAz: float * vBx: float * vBy: float * vBz: float * maxSkewDistance: float * tangent: float<tangent> * tooShortTolerance: float -> XRay` |
-| `XLineXY.closestParameters` | `pAx: float * pAy: float * pBx: float * pBy: float * vAx: float * vAy: float * vBx: float * vBy: float -> struct (float * float)` |  |  |
+| `XLineXY.closestParameters` | `pAx: float * pAy: float * pBx: float * pBy: float * vAx: float * vAy: float * vBx: float * vBy: float -> struct (float * float)` | `XLineXYZ.closestParameters` | `pAx: float * pAy: float * pAz: float * pBx: float * pBy: float * pBz: float * vAx: float * vAy: float * vAz: float * vBx: float * vBy: float * vBz: float -> struct (float * float)` |
 | `XLineXY.distanceSq` | `pAx: float * pAy: float * pBx: float * pBy: float * vAx: float * vAy: float * vBx: float * vBy: float -> float` | `XLineXYZ.distanceSq` | `pAx: float * pAy: float * pAz: float * pBx: float * pBy: float * pBz: float * vAx: float * vAy: float * vAz: float * vBx: float * vBy: float * vBz: float -> float` |
 | `XLineXY.doIntersect` | `pAx: float * pAy: float * pBx: float * pBy: float * vAx: float * vAy: float * vBx: float * vBy: float -> bool` | `XLineXYZ.doIntersect` | `pAx: float * pAy: float * pAz: float * pBx: float * pBy: float * pBz: float * vAx: float * vAy: float * vAz: float * vBx: float * vBy: float * vBz: float * maxSkewDistance: float * tangent: float<tangent> * tooShortTolerance: float -> bool` |
 | `XLineXY.doOverlap` | `pAx: float * pAy: float * pBx: float * pBy: float * vAx: float * vAy: float * vBx: float * vBy: float * tolerance: float -> bool` | `XLineXYZ.doOverlap` | `pAx: float * pAy: float * pAz: float * pBx: float * pBy: float * pBz: float * vAx: float * vAy: float * vAz: float * vBx: float * vBy: float * vBz: float * tolerance: float -> bool` |
 | — | *rays in 3D are mostly skew* | `XLineXYZ.doRaysIntersect` | `pAx: float * pAy: float * pAz: float * pBx: float * pBy: float * pBz: float * vAx: float * vAy: float * vAz: float * vBx: float * vBy: float * vBz: float * maxSkewDistance: float -> bool` |
 | `XLineXY.intersectRays` | `pAx: float * pAy: float * pBx: float * pBy: float * vAx: float * vAy: float * vBx: float * vBy: float -> Pt` | — | *rays in 3D are mostly skew* |
-| `XLineXY.isWithinRanges` | `pAx: float * pAy: float * pBx: float * pBy: float * vAx: float * vAy: float * vBx: float * vBy: float * minParameterA: float * maxParameterA: float * minParameterB: float * maxParameterB: float -> bool` |  |  |
+| `XLineXY.isWithinRanges` | `pAx: float * pAy: float * pBx: float * pBy: float * vAx: float * vAy: float * vBx: float * vBy: float * minParameterA: float * maxParameterA: float * minParameterB: float * maxParameterB: float -> bool` | `XLineXYZ.isWithinRanges` | `maxSkewDistance: float * minParameterA: float * maxParameterA: float * minParameterB: float * maxParameterB: float * pAx: float * pAy: float * pAz: float * pBx: float * pBy: float * pBz: float * vAx: float * vAy: float * vAz: float * vBx: float * vBy: float * vBz: float -> bool` |
 | `XLineXY.parameterA` | `pAx: float * pAy: float * pBx: float * pBy: float * vAx: float * vAy: float * vBx: float * vBy: float -> float` | `XLineXYZ.parameterA` | `pAx: float * pAy: float * pAz: float * pBx: float * pBy: float * pBz: float * vAx: float * vAy: float * vAz: float * vBx: float * vBy: float * vBz: float -> float` |
 | `XLineXY.parameters` | `pAx: float * pAy: float * pBx: float * pBy: float * vAx: float * vAy: float * vBx: float * vBy: float -> float * float` | `XLineXYZ.parameters` | `pAx: float * pAy: float * pAz: float * pBx: float * pBy: float * pBz: float * vAx: float * vAy: float * vAz: float * vBx: float * vBy: float * vBz: float -> float * float` |
 | `XLineXY.tryParameterA` | `pAx: float * pAy: float * pBx: float * pBy: float * vAx: float * vAy: float * vBx: float * vBy: float -> float voption` | `XLineXYZ.tryClosestParameterRayA` | `pAx: float * pAy: float * pAz: float * pBx: float * pBy: float * pBz: float * vAx: float * vAy: float * vAz: float * vBx: float * vBy: float * vBz: float -> float voption` |
@@ -1369,8 +1369,8 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `XLine2D.classifyRayIntersectionCustom` | `pA: Pt * pB: Pt * vA: Vc * vB: Vc * ?tangent: float<tangent> * ?tooShortTolerance: float -> XRay` | `XLine3D.classifyRayIntersectionCustom` | `pA: Pnt * pB: Pnt * vA: Vec * vB: Vec * ?maxSkewDistance: float * ?tangent: float<tangent> * ?tooShortTolerance: float -> XRay` |
 | `XLine2D.classifyRayIntersectionCustom` | `lineA: Line2D * lineB: Line2D * ?tangent: float<tangent> * ?tooShortTolerance: float -> XRay` | `XLine3D.classifyRayIntersectionCustom` | `lineA: Line3D * lineB: Line3D * ?maxSkewDistance: float * ?tangent: float<tangent> * ?tooShortTolerance: float -> XRay` |
 | `XLine2D.classifyRayIntersectionFromPtsAndVcs` | `pA: Pt -> pB: Pt -> vA: Vc -> vB: Vc -> XRay` | `XLine3D.classifyRayIntersectionFromPntsAndVecs` | `pA: Pnt -> pB: Pnt -> vA: Vec -> vB: Vec -> XRay` |
-| `XLine2D.closestParameters` | `lineA: Line2D -> lineB: Line2D -> struct (float * float)` |  |  |
-| `XLine2D.closestParametersFromPtsAndVcs` | `pA: Pt -> pB: Pt -> vA: Vc -> vB: Vc -> struct (float * float)` |  |  |
+| `XLine2D.closestParameters` | `lineA: Line2D -> lineB: Line2D -> struct (float * float)` | `XLine3D.closestParameters` | `lineA: Line3D -> lineB: Line3D -> struct (float * float)` |
+| `XLine2D.closestParametersFromPtsAndVcs` | `pA: Pt -> pB: Pt -> vA: Vc -> vB: Vc -> struct (float * float)` | `XLine3D.closestParametersFromPntsAndVecs` | `pA: Pnt -> pB: Pnt -> vA: Vec -> vB: Vec -> struct (float * float)` |
 | `XLine2D.distanceSq` | `lineA: Line2D -> lineB: Line2D -> float` | `XLine3D.distanceSq` | `lineA: Line3D -> lineB: Line3D -> float` |
 | `XLine2D.distanceSqFromPtsAndVcs` | `pA: Pt -> pB: Pt -> vA: Vc -> vB: Vc -> float` | `XLine3D.distanceSqFromPntsAndVecs` | `pA: Pnt -> pB: Pnt -> vA: Vec -> vB: Vec -> float` |
 | `XLine2D.doIntersect` | `lineA: Line2D -> lineB: Line2D -> bool` | `XLine3D.doIntersect` | `lineA: Line3D -> lineB: Line3D -> bool` |
@@ -1387,8 +1387,8 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | — | *rays in 3D are mostly skew* | `XLine3D.doRaysIntersectFromPntsAndVecs` | `pA: Pnt -> pB: Pnt -> vA: Vec -> vB: Vec -> bool` |
 | `XLine2D.intersectRays` | `lineA: Line2D -> lineB: Line2D -> Pt` | — | *rays in 3D are mostly skew* |
 | `XLine2D.intersectRaysFromPtsAndVcs` | `pA: Pt -> pB: Pt -> vA: Vc -> vB: Vc -> Pt` | — | *rays in 3D are mostly skew* |
-| `XLine2D.isWithinRanges` | `lineA: Line2D * lineB: Line2D * minParameterA: float * maxParameterA: float * minParameterB: float * maxParameterB: float -> bool` |  |  |
-| `XLine2D.isWithinRangesFromPtsAndVcs` | `pA: Pt * pB: Pt * vA: Vc * vB: Vc * minParameterA: float * maxParameterA: float * minParameterB: float * maxParameterB: float -> bool` |  |  |
+| `XLine2D.isWithinRanges` | `lineA: Line2D * lineB: Line2D * minParameterA: float * maxParameterA: float * minParameterB: float * maxParameterB: float -> bool` | `XLine3D.isWithinRanges` | `maxSkewDistance: float * minParameterA: float * maxParameterA: float * minParameterB: float * maxParameterB: float * lineA: Line3D * lineB: Line3D -> bool` |
+| `XLine2D.isWithinRangesFromPtsAndVcs` | `pA: Pt * pB: Pt * vA: Vc * vB: Vc * minParameterA: float * maxParameterA: float * minParameterB: float * maxParameterB: float -> bool` | `XLine3D.isWithinRangesFromPntsAndVecs` | `maxSkewDistance: float * minParameterA: float * maxParameterA: float * minParameterB: float * maxParameterB: float * pA: Pnt * pB: Pnt * vA: Vec * vB: Vec -> bool` |
 | `XLine2D.parameterA` | `lineA: Line2D -> lineB: Line2D -> float` | `XLine3D.parameterA` | `lineA: Line3D -> lineB: Line3D -> float` |
 | `XLine2D.parameterAFromPtsAndVcs` | `pA: Pt -> pB: Pt -> vA: Vc -> vB: Vc -> float` | `XLine3D.parameterAFromPntsAndVecs` | `pA: Pnt -> pB: Pnt -> vA: Vec -> vB: Vec -> float` |
 | `XLine2D.parameters` | `lineA: Line2D -> lineB: Line2D -> float * float` | `XLine3D.parameters` | `lineA: Line3D -> lineB: Line3D -> float * float` |

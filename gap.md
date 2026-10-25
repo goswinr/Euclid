@@ -21,8 +21,8 @@ Selection checklist for all **77 empty rows** in [ApiTable.md](Scripts/ApiTable.
 
 ## XLineXY / XLineXYZ and XLine2D / XLine3D — 6 gaps
 
-- [ ] **L1 · Add · 3:** `XLineXYZ.closestParameters(...)`, `XLine3D.closestParameters lineA lineB`, `XLine3D.closestParametersFromPntsAndVecs pA pB vA vB` → `struct(float * float)`. Closest **finite-segment** parameters, clamped to [0,1], including parallel and zero-length segments; preserve the 2D tie-breaking policy rather than using the classifiers' overlap midpoint.
-- [ ] **L2 · Add · 3:** `XLineXYZ.isWithinRanges(...)`, `XLine3D.isWithinRanges(...)`, `XLine3D.isWithinRangesFromPntsAndVecs(...)`. with a skew distance tolerance.
+- [x] **L1 · Add · 3:** `XLineXYZ.closestParameters(...)`, `XLine3D.closestParameters lineA lineB`, `XLine3D.closestParametersFromPntsAndVecs pA pB vA vB` → `struct(float * float)`. Closest **finite-segment** parameters, clamped to [0,1], including parallel and zero-length segments; preserve the 2D tie-breaking policy rather than using the classifiers' overlap midpoint.
+- [x] **L2 · Add · 3:** `XLineXYZ.isWithinRanges(...)`, `XLine3D.isWithinRanges(...)`, `XLine3D.isWithinRangesFromPntsAndVecs(...)`. with a skew distance tolerance.
 
 ## Rect2D / Rect3D — 13 gaps
 
