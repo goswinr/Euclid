@@ -2019,20 +2019,17 @@ let testsSpecial =
             }
         ]
 
-        testList "tryFindSelfIntersectionWithBRect" [
-            test "bowtie intersection found by both variants" {
+        testList "tryFindSelfIntersection" [
+            test "bowtie intersection point and segment indices" {
                 let bowtie = Polyline2D.createFromPts [Pt(0.,0.); Pt(10.,10.); Pt(10.,0.); Pt(0.,10.)]
-                match Polyline2D.tryFindSelfIntersection bowtie, Polyline2D.tryFindSelfIntersectionWithBRect bowtie with
-                | ValueSome (pt1, i1, j1), ValueSome (pt2, i2, j2) ->
-                    "same intersection point" |> expectEqPts pt1 pt2
-                    Expect.equal (i1, j1) (i2, j2) "same segment indices"
-                    "intersection at (5,5)" |> expectEqPts pt1 (Pt(5.,5.))
-                | a, b ->
-                    failwithf "both variants should find the intersection but got %A and %A" a b
+                match Polyline2D.tryFindSelfIntersection bowtie with
+                | ValueSome (pt, i, j) ->
+                    Expect.equal (i, j) (0, 2) "intersecting segment indices"
+                    "intersection at (5,5)" |> expectEqPts pt (Pt(5.,5.))
+                | ValueNone -> failwith "bowtie should intersect"
             }
-            test "closed square is not a self intersection in both variants" {
+            test "closed square is not a self intersection" {
                 Expect.isValueNone (Polyline2D.tryFindSelfIntersection plClosed) "closed square has no self intersection"
-                Expect.isValueNone (Polyline2D.tryFindSelfIntersectionWithBRect plClosed) "closed square has no self intersection with BRect"
             }
         ]
 
