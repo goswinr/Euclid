@@ -542,11 +542,12 @@ let tests =
                 Expect.isTrue (Box.equalsExact (Box.offset 0. 0. 0. 0. 0. 0. box) box) "unchanged"
             }
 
-            test "offset inwards down to exactly zero size gives a flat box" {
+            test "offset rejects collapse along every axis" {
                 let box = rotBox ()
-                let r = Box.offset 1. 0. 0. 0. 0. 3. box
-                Expect.isTrue (eqFloat r.SizeZ 0.0) "SizeZ should be zero"
-                Expect.isTrue r.IsFlat "should be flat"
+                Expect.throws (fun () -> Box.offset 0. 0. box.SizeX 0. 0. 0. box |> ignore) "X collapsed"
+                Expect.throws (fun () -> Box.offset 0. box.SizeY 0. 0. 0. 0. box |> ignore) "Y collapsed"
+                Expect.throws (fun () -> Box.offset box.SizeZ 0. 0. 0. 0. 0. box |> ignore) "Z collapsed"
+                Expect.throws (fun () -> Box.offset (box.SizeZ - 1e-8) 0. 0. 0. 0. 0. box |> ignore) "numerically zero axis"
             }
 
             test "offset fails if the box would get inverted" {
@@ -556,25 +557,25 @@ let tests =
                 Expect.throws (fun () -> Box.offset 4.1 0. 0. 0. 0. 0. box |> ignore) "Z inverted by a single face"
             }
 
-            test "offset fails on NaN" {
+            test "offset fails on non-finite distances" {
                 let box = rotBox ()
-                Expect.throws (fun () -> Box.offset 0. 0. nan 0. 0. 0. box |> ignore) "NaN"
+                for distance in [nan; infinity; -infinity] do
+                    Expect.throws (fun () -> Box.offset 0. 0. distance 0. 0. 0. box |> ignore) "non-finite distance"
             }
 
-            test "offset of a flat box takes the missing direction from the other two axes" {
+            test "offset rejects flat boxes while unchecked construction allows them" {
                 let q = Quaternion.createFromEulerXYZDegrees 10. 20. 30.
                 let flat = Box.createFromAxesUnchecked(Pnt(3., 4., 5.), Vec(10., 0., 0.), Vec(0., 6., 0.), Vec.Zero).Rotate q
-                let r = Box.offset (-1.) 0. 0. 0. 0. (-2.) flat
-                Expect.isTrue (eqFloat r.SizeZ 3.0) "SizeZ should be 3"
-                Expect.isTrue (eqVec r.ZAxisUnit.AsVec (Vec.cross(flat.XAxis, flat.YAxis).Unitized.AsVec)) "Z direction from X cross Y"
-                Expect.isTrue (eqPnt r.Origin (flat.Origin - r.ZAxisUnit.AsVec)) "Origin moved down by the bottom distance"
+                Expect.isTrue flat.IsFlat "unchecked flat box remains supported"
+                Expect.throws (fun () -> Box.offset (-1.) 0. 0. 0. 0. (-2.) flat |> ignore) "cannot offset a flat box"
+                Expect.throws (fun () -> Box.offset 0. 0. 0. 0. 0. 0. flat |> ignore) "zero offset also rejects flat input"
             }
 
-            test "offset of a line box works along its only axis but fails across it" {
+            test "offset rejects line and point boxes" {
                 let line = Box.createFromAxesUnchecked(Pnt(3., 4., 5.), Vec(1., 2., 3.), Vec.Zero, Vec.Zero)
-                let r = Box.offset 0. 0. (-1.) 0. (-2.) 0. line
-                Expect.isTrue (eqFloat r.SizeX (line.SizeX + 3.)) "SizeX grows"
-                Expect.throws (fun () -> Box.offset (-1.) 0. 0. 0. 0. 0. line |> ignore) "Z direction undefined"
+                Expect.throws (fun () -> Box.offset 0. 0. (-1.) 0. (-2.) 0. line |> ignore) "line input"
+                let point = Box.createFromAxesUnchecked(Pnt(3.,4.,5.), Vec.Zero, Vec.Zero, Vec.Zero)
+                Expect.throws (fun () -> Box.offset 0. 0. 0. 0. 0. 0. point |> ignore) "point input"
             }
         ]
 

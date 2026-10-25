@@ -933,11 +933,8 @@ type Box =
     ///   4      Left    -X      3, 0, 4, 7
     ///   5      Top     +Z      4, 5, 6, 7
     /// </code>
-    /// Fails if the positive offsets of two opposite faces would invert the box, that is if a resulting size is negative.
-    /// A resulting size of exactly zero is allowed and gives a flat box.
-    /// A zero-length local axis takes its direction from the cross product of the other two axes.
-    /// Fails if that direction cannot be determined because a second axis is zero-length too,
-    /// unless both distances along the zero-length axis are zero.
+    /// Fails if an input or resulting axis length is non-finite or at most 1e-6.
+    /// In particular, offsetting may neither start with nor produce a flat, line or point box.
     /// </summary>
     /// <param name="distBottom">The offset distance of face 0, the bottom face with normal -Z.</param>
     /// <param name="distFront">The offset distance of face 1, the front face with normal -Y.</param>
@@ -951,31 +948,22 @@ type Box =
         let sx = b.SizeX
         let sy = b.SizeY
         let sz = b.SizeZ
+        if isTooSmall sx || isTooSmall sy || isTooSmall sz || isNanInfinity sx || isNanInfinity sy || isNanInfinity sz then
+            fail $"Box.offset: input axis lengths must be finite and greater than 1e-6, got X {sx}, Y {sy}, Z {sz} for Box {b.AsString}."
         let nx = sx - distLeft - distRight
         let ny = sy - distFront - distBack
         let nz = sz - distBottom - distTop
-        // 'not (n >= 0.0)' also catches NaN
-        if not (nx >= 0.0 && ny >= 0.0 && nz >= 0.0) then
-            fail $"Box.offset: Box {b.AsString} would get inverted by the offset distances bottom {distBottom}, front {distFront}, right {distRight}, back {distBack}, left {distLeft}, top {distTop}. The resulting sizes would be X {nx}, Y {ny}, Z {nz}"
+        if isTooSmall nx || isTooSmall ny || isTooSmall nz || isNanInfinity nx || isNanInfinity ny || isNanInfinity nz then
+            fail $"Box.offset: Box {b.AsString} would become invalid with offsets bottom {distBottom}, front {distFront}, right {distRight}, back {distBack}, left {distLeft}, top {distTop}. Resulting sizes must be finite and greater than 1e-6, got X {nx}, Y {ny}, Z {nz}."
         let xa = b.XAxis
         let ya = b.YAxis
         let za = b.ZAxis
-        // Unit direction of a local axis. A zero-length axis takes its direction from the cross product of the other two, since the box is right-handed.
-        let inline unitAxis (axis:Vec) (len:float) (a:Vec) (c:Vec) (name:string) : Vec =
-            if isTooSmall len then
-                let n = Vec.cross(a, c)
-                let l = n.Length
-                if isTooSmall l then
-                    fail $"Box.offset: the direction of the zero-length {name} of Box {b.AsString} cannot be determined because a second axis is zero-length too."
-                n / l
-            else
-                axis / len
         let zeroX = distLeft = 0.0 && distRight = 0.0
         let zeroY = distFront = 0.0 && distBack = 0.0
         let zeroZ = distBottom = 0.0 && distTop = 0.0
-        let ux = if zeroX then Vec.Zero else unitAxis xa sx ya za "X-axis"
-        let uy = if zeroY then Vec.Zero else unitAxis ya sy za xa "Y-axis"
-        let uz = if zeroZ then Vec.Zero else unitAxis za sz xa ya "Z-axis"
+        let ux = if zeroX then Vec.Zero else xa / sx
+        let uy = if zeroY then Vec.Zero else ya / sy
+        let uz = if zeroZ then Vec.Zero else za / sz
         Box.createFromAxesUnchecked(
             b.Origin + ux*distLeft + uy*distFront + uz*distBottom,
             (if zeroX then xa else ux*nx),
