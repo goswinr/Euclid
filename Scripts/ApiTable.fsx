@@ -58,6 +58,8 @@ let only3D = set [ "Box"; "FreeBox"; "PPlane"; "NPlane"; "Matrix"; "RigidMatrix"
 /// A name also covers the static member of the same name in lowercase, so "Area" pairs BRect.Area with BBox.Volume and BRect.area with BBox.volume.
 /// Besides these, a 3D name with "InXY" or "In2D" pairs with the 2D name without it, e.g. Vec.direction180InXY with Vc.direction180.
 let renamed = [
+    "Rect2D"    , "PointsXY_CCW"                , "PointsXYZ"
+    "Rect2D"    , "PointsXYLooped_CCW"          , "PointsXYZLooped"
     ""          , "Rotate90CCW"                 , "Rotate2Dby90CCW"
     ""          , "Rotate90CW"                  , "Rotate2Dby90CW"
     ""          , "createFromMembersxy"         , "createFromMembersxyz"
@@ -83,6 +85,8 @@ let renamed = [
 /// A member whose name refers to the other dimension, like BRect.createFromRect3D, counts as a conversion between 2D and 3D.
 /// Any other member without a counterpart leaves an empty cell: a gap in the API, or a name that does not match its counterpart.
 let only2DMembers = [
+    "Rect2D"    , @"^(TryClipLine|ClipLine)$"                     , "clipping in a fixed plane"
+    "Rect2D"    , @"^Create(Centered)?From(Unit)?Vc$|^CreateFrom(Line|VcAndPts)$", "a 3D rectangle also needs a normal"
     "BRect"     , @"^PointsLooped$"                               , "a box has no single perimeter"
     ""          , @"Left|Right"                                   , "side of a line"
     ""          , @"(?<![0-9])CC?W(?![a-z])|Clockwise|Winding|Signed", "orientation in the plane"

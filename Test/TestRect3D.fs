@@ -16,6 +16,20 @@ let rect = Rect3D.createFromVecs x y o
 
 let tests =
     testList "Rect3D" [
+        test "fit interleaved projected points in a rotated frame" {
+            let r = Rect3D.createFromVecs (Vec(1.,2.,2.)) (Vec(2.,-2.,1.)) (Pnt(10.,20.,30.))
+            let pts = ResizeArray [r.EvaluateAt(-2.,3.) + r.NormalUnit * 7.; r.EvaluateAt(4.,-1.) - r.NormalUnit * 5.; r.EvaluateAt(4.,-1.)]
+            let xyzs = ResizeArray [for p in pts do yield p.X; yield p.Y; yield p.Z]
+            let actual = Rect3D.fitToPointsXYZ xyzs r
+            let expected = Rect3D.fitToPoints pts r
+            Expect.isTrue (Rect3D.equalsWithin 1e-10 actual expected) "same projected bounds"
+            let single = Rect3D.fitToPointsXYZ (ResizeArray [13.;26.;39.]) r
+            Expect.isTrue (eq single.Pnt0 single.Pnt2) "single point collapses bounds"
+            for coords in [ResizeArray<float>(); ResizeArray [1.;2.]; Unchecked.defaultof<ResizeArray<float>>] do
+                Expect.throws (fun () -> Rect3D.fitToPointsXYZ coords r |> ignore) "invalid coordinates"
+            let zeroAxis = Rect3D.createUnchecked(10.,20.,30.,0.,0.,0.,2.,-2.,1.)
+            Expect.throws (fun () -> Rect3D.fitToPointsXYZ xyzs zeroAxis |> ignore) "degenerate reference"
+        }
 
         test "Rect3D Edge01..Edge30 and reverse edges" {
             let p0, p1, p2, p3 = rect.Pnt0, rect.Pnt1, rect.Pnt2, rect.Pnt3

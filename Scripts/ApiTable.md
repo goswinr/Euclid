@@ -4,7 +4,7 @@ All public types, members and functions of Euclid. Corresponding 2D and 3D types
 
 - Corresponding members share a row, also when their names differ, like `Pt.midPt` and `Pnt.midPnt`.
 - `—` and a reason in italics mark a member that exists in one dimension only on purpose.
-- An empty cell marks one of 63 gaps: a member that is missing in one dimension,
+- An empty cell marks one of 50 gaps: a member that is missing in one dimension,
   or a member whose name does not match its counterpart. The contents list the gaps per table.
 - Instance members and fields start with `.`, e.g. `.DistanceTo`.
 - Static members are qualified with their type name. They are listed right below the instance member of the same name.
@@ -36,7 +36,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 - [XLine2D / XLine3D](#xline2d--xline3d), 4 gaps
 - [XLine3D.XCone](#xline3dxcone)
 - [NPlane](#nplane)
-- [Rect2D / Rect3D](#rect2d--rect3d), 13 gaps
+- [Rect2D / Rect3D](#rect2d--rect3d), 0 gaps
 - [Box](#box)
 - [FreeBox](#freebox)
 - [BRect / BBox](#brect--bbox), 0 gaps
@@ -1596,16 +1596,12 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Rect2D.points` | `r: Rect2D -> Pt array` | `Rect3D.points` | `r: Rect3D -> Pnt array` |
 | `.PointsLooped` | `Pt array` | `.PointsLooped` | `Pnt array` |
 | `Rect2D.pointsLooped` | `r: Rect2D -> Pt array` | `Rect3D.pointsLooped` | `r: Rect3D -> Pnt array` |
-|  |  | `.PointsXYZ` | `ResizeArray<float>` |
-|  |  | `Rect3D.pointsXYZ` | `r: Rect3D -> ResizeArray<float>` |
-|  |  | `.PointsXYZLooped` | `ResizeArray<float>` |
-|  |  | `Rect3D.pointsXYZLooped` | `r: Rect3D -> ResizeArray<float>` |
-| `.PointsXYLooped_CCW` | `ResizeArray<float>` | — | *orientation in the plane* |
-| `Rect2D.pointsXYLooped_CCW` | `r: Rect2D -> ResizeArray<float>` | — | *orientation in the plane* |
+| `.PointsXY_CCW` | `ResizeArray<float>` | `.PointsXYZ` | `ResizeArray<float>` |
+| `Rect2D.pointsXY_CCW` | `r: Rect2D -> ResizeArray<float>` | `Rect3D.pointsXYZ` | `r: Rect3D -> ResizeArray<float>` |
+| `.PointsXYLooped_CCW` | `ResizeArray<float>` | `.PointsXYZLooped` | `ResizeArray<float>` |
+| `Rect2D.pointsXYLooped_CCW` | `r: Rect2D -> ResizeArray<float>` | `Rect3D.pointsXYZLooped` | `r: Rect3D -> ResizeArray<float>` |
 | `.PointsXYLooped_CW` | `ResizeArray<float>` | — | *orientation in the plane* |
 | `Rect2D.pointsXYLooped_CW` | `r: Rect2D -> ResizeArray<float>` | — | *orientation in the plane* |
-| `.PointsXY_CCW` | `ResizeArray<float>` | — | *orientation in the plane* |
-| `Rect2D.pointsXY_CCW` | `r: Rect2D -> ResizeArray<float>` | — | *orientation in the plane* |
 | `.PointsXY_CW` | `ResizeArray<float>` | — | *orientation in the plane* |
 | `Rect2D.pointsXY_CW` | `r: Rect2D -> ResizeArray<float>` | — | *orientation in the plane* |
 | `.Rotate` | `rot: Rotation2D -> Rect2D` | `.Rotate` | `q: Quaternion -> Rect3D` |
@@ -1658,17 +1654,17 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `.YCorner` | `Pt` | `.YCorner` | `Pnt` |
 | `Rect2D.yCorner` | `r: Rect2D -> Pt` | `Rect3D.yCorner` | `r: Rect3D -> Pnt` |
 | **Other static members** | | | |
-| `Rect2D.clipLine` | `line: Line2D -> rect: Rect2D -> Line2D` |  |  |
+| `Rect2D.clipLine` | `line: Line2D -> rect: Rect2D -> Line2D` | — | *clipping in a fixed plane* |
 | — | *plane or normal* | `Rect3D.createCenteredFromPlane` | `sizeX: float -> sizeY: float -> pl: PPlane -> Rect3D` |
-| `Rect2D.createCenteredFromUnitVc` | `sizeX: float -> sizeY: float -> directionX: UnitVc -> center: Pt -> Rect2D` |  |  |
-| `Rect2D.createCenteredFromVc` | `sizeY: float -> x: Vc -> center: Pt -> Rect2D` |  |  |
+| `Rect2D.createCenteredFromUnitVc` | `sizeX: float -> sizeY: float -> directionX: UnitVc -> center: Pt -> Rect2D` | — | *a 3D rectangle also needs a normal* |
+| `Rect2D.createCenteredFromVc` | `sizeY: float -> x: Vc -> center: Pt -> Rect2D` | — | *a 3D rectangle also needs a normal* |
 | `Rect2D.createFrom3Pts` | `origin: Pt -> xPt: Pt -> yPt: Pt -> Rect2D` | `Rect3D.createFrom3Pnts` | `origin: Pnt -> xPnt: Pnt -> yPnt: Pnt -> Rect3D` |
 | `Rect2D.createFromBounds` | `minX: float * minY: float * maxX: float * maxY: float -> Rect2D` | `Rect3D.createFromBounds2D` | `minX: float * minY: float * maxX: float * maxY: float -> Rect3D` |
-| `Rect2D.createFromLine` | `offRight: float -> offLeft: float -> line: Line2D -> Rect2D` |  |  |
+| `Rect2D.createFromLine` | `offRight: float -> offLeft: float -> line: Line2D -> Rect2D` | — | *a 3D rectangle also needs a normal* |
 | — | *plane or normal* | `Rect3D.createFromPlane` | `sizeX: float -> sizeY: float -> pl: PPlane -> Rect3D` |
-| `Rect2D.createFromUnitVc` | `sizeX: float -> sizeY: float -> directionX: UnitVc -> origin: Pt -> Rect2D` |  |  |
-| `Rect2D.createFromVc` | `sizeY: float -> x: Vc -> origin: Pt -> Rect2D` |  |  |
-| `Rect2D.createFromVcAndPts` | `dirX: Vc -> pts: IList<Pt> -> Rect2D` |  |  |
+| `Rect2D.createFromUnitVc` | `sizeX: float -> sizeY: float -> directionX: UnitVc -> origin: Pt -> Rect2D` | — | *a 3D rectangle also needs a normal* |
+| `Rect2D.createFromVc` | `sizeY: float -> x: Vc -> origin: Pt -> Rect2D` | — | *a 3D rectangle also needs a normal* |
+| `Rect2D.createFromVcAndPts` | `dirX: Vc -> pts: IList<Pt> -> Rect2D` | — | *a 3D rectangle also needs a normal* |
 | `Rect2D.createFromVcs` | `x: Vc -> y: Vc -> origin: Pt -> Rect2D` | `Rect3D.createFromVecs` | `x: Vec -> y: Vec -> origin: Pnt -> Rect3D` |
 | `Rect2D.createFromVcsUnchecked` | `origin: Pt * x: Vc * y: Vc -> Rect2D` | `Rect3D.createFromVecsUnchecked` | `origin: Pnt * x: Vec * y: Vec -> Rect3D` |
 | `Rect2D.createUnchecked` | `originX: float * originY: float * xaxisX: float * xaxisY: float * yaxisX: float * yaxisY: float -> Rect2D` | `Rect3D.createUnchecked` | `originX: float * originY: float * originZ: float * xAxisX: float * xAxisY: float * xAxisZ: float * yAxisX: float * yAxisY: float * yAxisZ: float -> Rect3D` |
@@ -1679,7 +1675,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Rect2D.expandRelXY` | `factorX: float -> factorY: float -> r: Rect2D -> Rect2D` | `Rect3D.expandRelXY` | `factorX: float -> factorY: float -> r: Rect3D -> Rect3D` |
 | `Rect2D.expandXY` | `distX: float -> distY: float -> r: Rect2D -> Rect2D` | `Rect3D.expandXY` | `distX: float -> distY: float -> r: Rect3D -> Rect3D` |
 | `Rect2D.fitToPoints` | `pts: IList<Pt> -> refRect: Rect2D -> Rect2D` | `Rect3D.fitToPoints` | `pts: IList<Pnt> -> refRect: Rect3D -> Rect3D` |
-| `Rect2D.fitToPointsXY` | `xys: IList<float> -> refRect: Rect2D -> Rect2D` |  |  |
+| `Rect2D.fitToPointsXY` | `xys: IList<float> -> refRect: Rect2D -> Rect2D` | `Rect3D.fitToPointsXYZ` | `xyzs: IList<float> -> refRect: Rect3D -> Rect3D` |
 | — | *plane or normal* | `Rect3D.flip` | `r: Rect3D -> Rect3D` |
 | `Rect2D.grid` | `xCount: int -> yCount: int -> rect: Rect2D -> Pt array array` | `Rect3D.grid` | `xCount: int -> yCount: int -> rect: Rect3D -> Pnt array array` |
 | `Rect2D.gridMaxLength` | `xMaxLen: float -> yMaxLen: float -> rect: Rect2D -> Pt array array` | `Rect3D.gridMaxLength` | `xMaxLen: float -> yMaxLen: float -> rect: Rect3D -> Pnt array array` |
@@ -1702,7 +1698,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Rect2D.subDivide` | `xCount: int -> yCount: int -> xGap: float -> yGap: float -> rect: Rect2D -> Rect2D array array` | `Rect3D.subDivide` | `xCount: int -> yCount: int -> xGap: float -> yGap: float -> rect: Rect3D -> Rect3D array array` |
 | `Rect2D.subDivideMaxLength` | `rect: Rect2D * xMaxLen: float * yMaxLen: float * xGap: float * yGap: float -> Rect2D array array` | `Rect3D.subDivideMaxLength` | `rect: Rect3D * xMaxLen: float * yMaxLen: float * xGap: float * yGap: float -> Rect3D array array` |
 | `Rect2D.subDivideMinLength` | `rect: Rect2D * xMinLen: float * yMinLen: float * xGap: float * yGap: float -> Rect2D array array` | `Rect3D.subDivideMinLength` | `rect: Rect3D * xMinLen: float * yMinLen: float * xGap: float * yGap: float -> Rect3D array array` |
-| `Rect2D.tryClipLine` | `line: Line2D -> rect: Rect2D -> Line2D voption` |  |  |
+| `Rect2D.tryClipLine` | `line: Line2D -> rect: Rect2D -> Line2D voption` | — | *clipping in a fixed plane* |
 | `Rect2D.tryCreateFrom3Pts` | `origin: Pt -> xPt: Pt -> yPt: Pt -> Rect2D voption` | `Rect3D.tryCreateFrom3Pnts` | `origin: Pnt -> xPnt: Pnt -> yPnt: Pnt -> Rect3D voption` |
 | `Rect2D.tryIntersectLine` | `line: Line2D -> rect: Rect2D -> Line2D voption` | `Rect3D.tryIntersectLine` | `ln: Line3D -> r: Rect3D -> Pnt voption` |
 | `Rect2D.tryIntersectRay` | `ray: Line2D -> rect: Rect2D -> (float * float) voption` | `Rect3D.tryIntersectRay` | `ln: Line3D -> r: Rect3D -> float voption` |

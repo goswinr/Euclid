@@ -26,10 +26,10 @@ Selection checklist for all **77 empty rows** in [ApiTable.md](Scripts/ApiTable.
 
 ## Rect2D / Rect3D — 13 gaps
 
-- [ ] **D1 · Map · 4:** Pair `Rect2D.PointsXY_CCW` / `pointsXY_CCW` and `PointsXYLooped_CCW` / `pointsXYLooped_CCW` with the existing 3D XYZ members.
+- [x] **D1 · Map · 4:** Pair `Rect2D.PointsXY_CCW` / `pointsXY_CCW` and `PointsXYLooped_CCW` / `pointsXYLooped_CCW` with the existing 3D XYZ members.
 <!-- - [ ] **D2 · Choose · 2:** `Rect3D.tryClipLine` / `clipLine` — choose coplanar segment clipping, intersection with the planar rectangle, or projection into its plane. The first preserves the 2D clipped-segment meaning but needs a coplanarity tolerance. -->
-- [ ] **D3 · Map · 6:** Counterparts of `createFromVc`, `createFromUnitVc`, `createCenteredFromVc`, `createCenteredFromUnitVc`, `createFromLine`, `createFromVcAndPts`.do not exist in 3d, they would need a normal direction.
-- [ ] **D4 · Add · 1:** `Rect3D.fitToPointsXYZ xyzs refRect` — interleaved-coordinate counterpart of `Rect2D.fitToPointsXY`, retaining the reference frame and the projection behavior of `Rect3D.fitToPoints`.
+- [x] **D3 · Map · 6:** Counterparts of `createFromVc`, `createFromUnitVc`, `createCenteredFromVc`, `createCenteredFromUnitVc`, `createFromLine`, `createFromVcAndPts`.do not exist in 3d, they would need a normal direction.
+- [x] **D4 · Add · 1:** `Rect3D.fitToPointsXYZ xyzs refRect` — interleaved-coordinate counterpart of `Rect2D.fitToPointsXY`, retaining the reference frame and the projection behavior of `Rect3D.fitToPoints`.
 
 ## BRect / BBox — 11 gaps
 

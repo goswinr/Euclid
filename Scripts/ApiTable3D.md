@@ -1557,6 +1557,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Rect3D.expandRelXY` | `factorX: float -> factorY: float -> r: Rect3D -> Rect3D` |
 | `Rect3D.expandXY` | `distX: float -> distY: float -> r: Rect3D -> Rect3D` |
 | `Rect3D.fitToPoints` | `pts: IList<Pnt> -> refRect: Rect3D -> Rect3D` |
+| `Rect3D.fitToPointsXYZ` | `xyzs: IList<float> -> refRect: Rect3D -> Rect3D` |
 | `Rect3D.flip` | `r: Rect3D -> Rect3D` |
 | `Rect3D.grid` | `xCount: int -> yCount: int -> rect: Rect3D -> Pnt array array` |
 | `Rect3D.gridMaxLength` | `xMaxLen: float -> yMaxLen: float -> rect: Rect3D -> Pnt array array` |

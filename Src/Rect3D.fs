@@ -1619,6 +1619,54 @@ type Rect3D =
             yX*sizeY, yY*sizeY, yZ*sizeY)
 
 
+    /// <summary>Fits a rectangle to the projections of interleaved XYZ points onto the reference plane.
+    /// Keeps the reference plane and axis orientations; excludes the reference corners.
+    /// Fails for null, empty or incomplete coordinate triples, or zero-length reference axes.</summary>
+    /// <param name="xyzs">Coordinates in the order x0, y0, z0, x1, y1, z1, ...</param>
+    /// <param name="refRect">The reference rectangle defining the plane and orientation.</param>
+    /// <returns>The rectangle bounding the projected points. A single point produces collapsed bounds.</returns>
+    static member fitToPointsXYZ (xyzs:IList<float>) (refRect:Rect3D) : Rect3D =
+        if isNull xyzs then failNull "Rect3D.fitToPointsXYZ" "xyzs"
+        if xyzs.Count = 0 then failEmptySeq "Rect3D.fitToPointsXYZ" "xyzs"
+        if xyzs.Count % 3 <> 0 then fail $"Rect3D.fitToPointsXYZ: expected triples of coordinates, got {xyzs.Count} values."
+        let xLen = XYZ.length refRect.XAxisX refRect.XAxisY refRect.XAxisZ
+        if isTooTiny xLen then
+            failTooSmall "Rect3D.fitToPointsXYZ: Xaxis" (Vec(refRect.XAxisX, refRect.XAxisY, refRect.XAxisZ))
+        let yLen = XYZ.length refRect.YAxisX refRect.YAxisY refRect.YAxisZ
+        if isTooTiny yLen then
+            failTooSmall "Rect3D.fitToPointsXYZ: Yaxis" (Vec(refRect.YAxisX, refRect.YAxisY, refRect.YAxisZ))
+        let xX = refRect.XAxisX / xLen
+        let xY = refRect.XAxisY / xLen
+        let xZ = refRect.XAxisZ / xLen
+        let yX = refRect.YAxisX / yLen
+        let yY = refRect.YAxisY / yLen
+        let yZ = refRect.YAxisZ / yLen
+        let mutable minX = Double.MaxValue
+        let mutable minY = Double.MaxValue
+        let mutable maxX = Double.MinValue
+        let mutable maxY = Double.MinValue
+        let mutable i = 0
+        while i < xyzs.Count do
+            let vX = xyzs.[i] - refRect.OriginX
+            let vY = xyzs.[i+1] - refRect.OriginY
+            let vZ = xyzs.[i+2] - refRect.OriginZ
+            let dotX = vX*xX + vY*xY + vZ*xZ
+            minX <- min minX dotX
+            maxX <- max maxX dotX
+            let dotY = vX*yX + vY*yY + vZ*yZ
+            minY <- min minY dotY
+            maxY <- max maxY dotY
+            i <- i + 3
+        let sizeX = maxX - minX
+        let sizeY = maxY - minY
+        Rect3D.createUnchecked(
+            refRect.OriginX + xX*minX + yX*minY,
+            refRect.OriginY + xY*minX + yY*minY,
+            refRect.OriginZ + xZ*minX + yZ*minY,
+            xX*sizeX, xY*sizeX, xZ*sizeX,
+            yX*sizeY, yY*sizeY, yZ*sizeY)
+
+
     // #endregion
     // #region Static members
 
