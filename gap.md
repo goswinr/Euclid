@@ -7,8 +7,8 @@ Selection checklist for all **77 empty rows** in [ApiTable.md](Scripts/ApiTable.
 ## Vc / Vec and UnitVc / UnitVec — 8 gaps
 
 <!-- - [ ] **V1 · Choose · 4:** `Vec.angleToXDegreesInXY`, `Vec.angleToXRadiansInXY`, and the same on `UnitVec`. Match the signed XY angle of `angleToX180` / `angleToXPi`; define failure for a zero XY projection, including vertical unit vectors. Alternatively mark the existing operations as planar only. -->
-- [ ] **V2 · Add · 2:** `Vc.isParallelAndOrientedToUnitVc minCosine other vector` and `Vc.isPerpendicularToUnitVc maxCosine other vector` — mirror `Vec`, including zero-length handling.
-- [ ] **V3 · Add · 2:** `UnitVec.sine` / `tangent` — unsigned 3D angle versions are possible, add note about sign to 2d and 3d docstrings
+- [x] **V2 · Add · 2:** `Vc.isParallelAndOrientedToUnitVc minCosine other vector` and `Vc.isPerpendicularToUnitVc maxCosine other vector` — mirror `Vec`, including zero-length handling.
+- [x] **V3 · Add · 2:** `UnitVec.sine` / `tangent` — unsigned 3D angle versions are possible, add note about sign to 2d and 3d docstrings
 ## Rotation2D / Quaternion — 14 gaps
 
 - [ ] **R1 · Add · 1:** `Quaternion.Half : Quaternion` — shortest-rotation half; choose CCW rotation at at 180 degrees and handle both identity representations. `half` static wrappers on both types as extra API beyond these gaps.

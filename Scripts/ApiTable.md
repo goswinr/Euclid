@@ -4,7 +4,7 @@ All public types, members and functions of Euclid. Corresponding 2D and 3D types
 
 - Corresponding members share a row, also when their names differ, like `Pt.midPt` and `Pnt.midPnt`.
 - `—` and a reason in italics mark a member that exists in one dimension only on purpose.
-- An empty cell marks one of 47 gaps: a member that is missing in one dimension,
+- An empty cell marks one of 39 gaps: a member that is missing in one dimension,
   or a member whose name does not match its counterpart. The contents list the gaps per table.
 - Instance members and fields start with `.`, e.g. `.DistanceTo`.
 - Static members are qualified with their type name. They are listed right below the instance member of the same name.
@@ -17,8 +17,8 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 
 **2D and 3D**
 
-- [Vc / Vec](#vc--vec), 4 gaps
-- [UnitVc / UnitVec](#unitvc--unitvec), 4 gaps
+- [Vc / Vec](#vc--vec), 0 gaps
+- [UnitVc / UnitVec](#unitvc--unitvec), 0 gaps
 - [Pt / Pnt](#pt--pnt), 0 gaps
 - [Rotation2D / Quaternion](#rotation2d--quaternion), 14 gaps
 - [PPlane](#pplane)
@@ -191,8 +191,8 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Vc.angleDiamond` | `a: Vc -> b: Vc -> float` | `Vec.angleDiamondInXY` | `a: Vec -> b: Vec -> float` |
 | `Vc.angleHalfPi` | `a: Vc -> b: Vc -> float` | `Vec.angleHalfPi` | `a: Vec -> b: Vec -> float` |
 | `Vc.anglePi` | `a: Vc -> b: Vc -> float` | `Vec.anglePi` | `a: Vec -> b: Vec -> float` |
-| `Vc.angleToX180` | `v: Vc -> float` |  |  |
-| `Vc.angleToXPi` | `vc: Vc -> float` |  |  |
+| `Vc.angleToX180` | `v: Vc -> float` | — | *signed angle in a fixed 2D plane* |
+| `Vc.angleToXPi` | `vc: Vc -> float` | — | *signed angle in a fixed 2D plane* |
 | `Vc.bisector` | `a: Vc -> b: Vc -> Vc` | `Vec.bisector` | `a: Vec -> b: Vec -> Vec` |
 | `Vc.create` | `x: float -> y: float -> Vc` | `Vec.create` | `x: float -> y: float -> z: float -> Vec` |
 | `Vc.createFromMembersXY` | `vec: ^T -> Vc` | `Vec.createFromMembersXYZ` | `vec: ^T -> Vec` |
@@ -215,10 +215,10 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Vc.isAngleAbove` | `cosineValue: float<cosine> -> a: Vc -> b: Vc -> bool` | `Vec.isAngleAbove` | `cosineValue: float<cosine> -> a: Vec -> b: Vec -> bool` |
 | `Vc.isAngleBelow` | `cosineValue: float<cosine> -> a: Vc -> b: Vc -> bool` | `Vec.isAngleBelow` | `cosineValue: float<cosine> -> a: Vec -> b: Vec -> bool` |
 | `Vc.isNotParallelWithin` | `cosineValue: float<cosine> -> a: Vc -> b: Vc -> bool` | `Vec.isNotParallelWithin` | `cosineValue: float<cosine> -> a: Vec -> b: Vec -> bool` |
-|  |  | `Vec.isParallelAndOrientedToUnitVec` | `minCosine: float<cosine> -> b: UnitVec -> a: Vec -> bool` |
+| `Vc.isParallelAndOrientedToUnitVc` | `minCosine: float<cosine> -> other: UnitVc -> vector: Vc -> bool` | `Vec.isParallelAndOrientedToUnitVec` | `minCosine: float<cosine> -> b: UnitVec -> a: Vec -> bool` |
 | `Vc.isParallelToUnitVc` | `minCosine: float<cosine> -> b: UnitVc -> a: Vc -> bool` | `Vec.isParallelToUnitVec` | `minCosine: float<cosine> -> b: UnitVec -> a: Vec -> bool` |
 | `Vc.isParallelWithin` | `cosineValue: float<cosine> -> a: Vc -> b: Vc -> bool` | `Vec.isParallelWithin` | `cosineValue: float<cosine> -> a: Vec -> b: Vec -> bool` |
-|  |  | `Vec.isPerpendicularToUnitVec` | `maxCosine: float<cosine> -> b: UnitVec -> a: Vec -> bool` |
+| `Vc.isPerpendicularToUnitVc` | `maxCosine: float<cosine> -> other: UnitVc -> vector: Vc -> bool` | `Vec.isPerpendicularToUnitVec` | `maxCosine: float<cosine> -> b: UnitVec -> a: Vec -> bool` |
 | `Vc.lerp` | `start: Vc -> endValue: Vc -> rel: float -> Vc` | `Vec.lerp` | `start: Vec -> endValue: Vec -> rel: float -> Vec` |
 | `Vc.matchOrientation` | `orientationToMatch: Vc -> vecToFlip: Vc -> Vc` | `Vec.matchOrientation` | `orientationToMatch: Vec -> vecToFlip: Vec -> Vec` |
 | `Vc.matchUnitVcOrientation` | `orientationToMatch: UnitVc -> vecToFlip: Vc -> Vc` | `Vec.matchUnitVecOrientation` | `orientationToMatch: UnitVec -> vecToFlip: Vec -> Vec` |
@@ -361,8 +361,8 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `UnitVc.angleDiamond` | `a: UnitVc -> b: UnitVc -> float` | `UnitVec.angleDiamondInXY` | `a: UnitVec -> b: UnitVec -> float` |
 | `UnitVc.angleHalfPi` | `a: UnitVc -> b: UnitVc -> float` | `UnitVec.angleHalfPi` | `a: UnitVec -> b: UnitVec -> float` |
 | `UnitVc.anglePi` | `a: UnitVc -> b: UnitVc -> float` | `UnitVec.anglePi` | `a: UnitVec -> b: UnitVec -> float` |
-| `UnitVc.angleToX180` | `v: UnitVc -> float` |  |  |
-| `UnitVc.angleToXPi` | `v: UnitVc -> float` |  |  |
+| `UnitVc.angleToX180` | `v: UnitVc -> float` | — | *signed angle in a fixed 2D plane* |
+| `UnitVc.angleToXPi` | `v: UnitVc -> float` | — | *signed angle in a fixed 2D plane* |
 | `UnitVc.create` | `x: float -> y: float -> UnitVc` | `UnitVec.create` | `x: float -> y: float -> z: float -> UnitVec` |
 | `UnitVc.createFromMembersXY` | `vec: ^T -> UnitVc` | `UnitVec.createFromMembersXYZ` | `vec: ^T -> UnitVec` |
 | `UnitVc.createFromMembersxy` | `vec: ^T -> UnitVc` | `UnitVec.createFromMembersxyz` | `vec: ^T -> UnitVec` |
@@ -401,12 +401,12 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | — | *rotation about a world axis* | `UnitVec.rotateOnZ` | `r: Rotation2D -> v: UnitVec -> UnitVec` |
 | — | *rotation about a world axis* | `UnitVec.rotateOnZDegrees` | `angDegree: float -> v: UnitVec -> UnitVec` |
 | `UnitVc.scale` | `scale: float -> v: UnitVc -> Vc` | `UnitVec.scale` | `f: float -> v: UnitVec -> Vec` |
-| `UnitVc.sine` | `a: UnitVc -> b: UnitVc -> float` |  |  |
+| `UnitVc.sine` | `a: UnitVc -> b: UnitVc -> float` | `UnitVec.sine` | `a: UnitVec -> b: UnitVec -> float` |
 | `UnitVc.slerp` | `start: UnitVc -> endValue: UnitVc -> rel: float -> UnitVc` | `UnitVec.slerp` | `start: UnitVec -> endValue: UnitVec -> rel: float -> UnitVec` |
 | `UnitVc.slopeDegrees` | `v: UnitVc -> float` | `UnitVec.slopeDegrees` | `v: UnitVec -> float` |
 | `UnitVc.slopePercent` | `v: UnitVc -> float` | `UnitVec.slopePercent` | `v: UnitVec -> float` |
 | `UnitVc.slopeRadians` | `v: UnitVc -> float` | `UnitVec.slopeRadians` | `v: UnitVec -> float` |
-| `UnitVc.tangent` | `a: UnitVc -> b: UnitVc -> float` |  |  |
+| `UnitVc.tangent` | `a: UnitVc -> b: UnitVc -> float` | `UnitVec.tangent` | `a: UnitVec -> b: UnitVec -> float` |
 | `UnitVc.withLength` | `length: float -> v: UnitVc -> Vc` | `UnitVec.withLength` | `f: float -> v: UnitVec -> Vec` |
 | `UnitVc.xAxis` | `UnitVc` | `UnitVec.xAxis` | `UnitVec` |
 | `UnitVc.yAxis` | `UnitVc` | `UnitVec.yAxis` | `UnitVec` |

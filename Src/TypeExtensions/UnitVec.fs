@@ -621,6 +621,26 @@ module AutoOpenUnitVec =
             let li = 1. / l
             UnitVec.createUnchecked(li*v.X, li*v.Y, li*v.Z)
 
+        /// <summary>Sine of the unsigned angle in [0, pi] between two 3D unit-vectors.
+        /// Unlike the signed 2D sine, this cross-product magnitude is always nonnegative.</summary>
+        /// <param name="a">The first unit-vector.</param>
+        /// <param name="b">The second unit-vector.</param>
+        /// <returns>The sine of the unsigned angle.</returns>
+        static member inline sine (a:UnitVec) (b:UnitVec) : float =
+            let x = a.Y*b.Z - a.Z*b.Y
+            let y = a.Z*b.X - a.X*b.Z
+            let z = a.X*b.Y - a.Y*b.X
+            sqrt (x*x + y*y + z*z)
+
+        /// <summary>Tangent of the unsigned angle in [0, pi] between two 3D unit-vectors.
+        /// Positive for acute and negative for obtuse angles; no clockwise/counter-clockwise sign exists in 3D.
+        /// Returns Infinity at perpendicularity, matching UnitVc.tangent's floating-point division contract.</summary>
+        /// <param name="a">The first unit-vector.</param>
+        /// <param name="b">The second unit-vector.</param>
+        /// <returns>The cross-product magnitude divided by the dot product.</returns>
+        static member inline tangent (a:UnitVec) (b:UnitVec) : float =
+            UnitVec.sine a b / (a.X*b.X + a.Y*b.Y + a.Z*b.Z)
+
         /// Convert 3D unit-vector to 2D point by ignoring Z value.
         static member inline asPt(v:UnitVec) : Pt =
             Pt(v.X, v.Y)

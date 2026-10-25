@@ -628,6 +628,22 @@ module AutoOpenVc =
         static member inline isPerpendicularTo maxCosine (a:Vc) (b:Vc) : bool =
             a.IsPerpendicularTo(b, maxCosine)
 
+        /// <summary>Tests parallelism with matching orientation. Fails for vectors shorter than 1e-12.</summary>
+        /// <param name="minCosine">Minimum cosine of the angle, exclusive.</param>
+        /// <param name="other">The unit-vector to compare with.</param>
+        /// <param name="vector">The vector to test.</param>
+        /// <returns>TRUE when parallel within the tolerance and similarly oriented.</returns>
+        static member inline isParallelAndOrientedToUnitVc (minCosine:float<Cosine.cosine>) (other:UnitVc) (vector:Vc) : bool =
+            vector.IsParallelAndOrientedTo(other, minCosine)
+
+        /// <summary>Tests perpendicularity to a unit-vector. Fails for vectors shorter than 1e-12.</summary>
+        /// <param name="maxCosine">Maximum absolute cosine of the angle, exclusive.</param>
+        /// <param name="other">The unit-vector to compare with.</param>
+        /// <param name="vector">The vector to test.</param>
+        /// <returns>TRUE when perpendicular within the tolerance.</returns>
+        static member inline isPerpendicularToUnitVc (maxCosine:float<Cosine.cosine>) (other:UnitVc) (vector:Vc) : bool =
+            vector.IsPerpendicularTo(other, maxCosine)
+
 
         // #endregion
         // #region Static members

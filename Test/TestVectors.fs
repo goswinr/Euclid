@@ -9,6 +9,30 @@ let tolMed = Accuracy.medium
 
 let tests =
     testList "Basic Vector and Point Types" [
+        test "unit-vector angle functions preserve dimensional sign conventions" {
+            let a = UnitVec.create 1. 2. 2.
+            let perpendicular = UnitVec.create 2. (-2.) 1.
+            let acute = UnitVec.createFromVec (a.AsVec + perpendicular.AsVec)
+            let obtuse = UnitVec.createFromVec (-a.AsVec + perpendicular.AsVec)
+            Expect.floatClose tol (UnitVec.sine a acute) (sqrt 0.5) "acute sine"
+            Expect.floatClose tol (UnitVec.sine acute a) (sqrt 0.5) "unsigned sine"
+            Expect.floatClose tol (UnitVec.tangent a acute) 1. "acute tangent"
+            Expect.floatClose tol (UnitVec.tangent a obtuse) -1. "obtuse tangent"
+            Expect.equal (UnitVec.sine a a) 0. "parallel"
+            Expect.equal (UnitVec.sine a -a) 0. "opposite"
+            Expect.isTrue (System.Double.IsPositiveInfinity(UnitVec.tangent UnitVec.xAxis UnitVec.yAxis)) "perpendicular infinity"
+            Expect.equal (UnitVc.sine UnitVc.xAxis UnitVc.yAxis) 1. "2D CCW sign"
+            Expect.equal (UnitVc.sine UnitVc.yAxis UnitVc.xAxis) -1. "2D CW sign"
+        }
+        test "Vc comparison wrappers handle short vectors and orientation" {
+            let other = UnitVc.create 3. 4.
+            Expect.isTrue (Vc.isParallelAndOrientedToUnitVc Cosine.``0.25`` other (Vc(6.,8.))) "parallel"
+            Expect.isFalse (Vc.isParallelAndOrientedToUnitVc Cosine.``0.25`` other (Vc(-6.,-8.))) "opposite"
+            Expect.isTrue (Vc.isPerpendicularToUnitVc Cosine.``89.75`` other (Vc(-8.,6.))) "perpendicular"
+            for v in [Vc(0.,0.);Vc(1e-14,0.)] do
+                Expect.throws (fun () -> Vc.isParallelAndOrientedToUnitVc Cosine.``0.25`` other v |> ignore) "short parallel"
+                Expect.throws (fun () -> Vc.isPerpendicularToUnitVc Cosine.``89.75`` other v |> ignore) "short perpendicular"
+        }
 
         testList "Pt (2D Point)" [
             test "create 2D point" {

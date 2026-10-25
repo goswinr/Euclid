@@ -86,6 +86,8 @@ let renamed = [
 /// A member whose name refers to the other dimension, like BRect.createFromRect3D, counts as a conversion between 2D and 3D.
 /// Any other member without a counterpart leaves an empty cell: a gap in the API, or a name that does not match its counterpart.
 let only2DMembers = [
+    "Vc"        , @"^AngleToX(180|Pi)$"                          , "signed angle in a fixed 2D plane"
+    "UnitVc"    , @"^AngleToX(180|Pi)$"                          , "signed angle in a fixed 2D plane"
     "Rect2D"    , @"^(TryClipLine|ClipLine)$"                     , "clipping in a fixed plane"
     "Rect2D"    , @"^Create(Centered)?From(Unit)?Vc$|^CreateFrom(Line|VcAndPts)$", "a 3D rectangle also needs a normal"
     "BRect"     , @"^PointsLooped$"                               , "a box has no single perimeter"

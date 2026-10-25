@@ -547,16 +547,22 @@ module AutoOpenUnitVc =
                 failTooSmall "UnitVc.createFromVec" v
             UnitVc.createUnchecked(v.X / l, v.Y / l)
 
-        /// Tangent of the angle between two 2D unit-vectors.
-        /// Calculated as Cross Product divided by Dot Product.
-        /// Result may be Infinity if the angle is 90 or 270 degrees.
+        /// <summary>Tangent of the signed angle from a to b, positive angles being counter-clockwise.
+        /// Calculated as the signed cross product divided by the dot product; reversing the inputs reverses the sign.
+        /// Unlike UnitVec.tangent, orientation contributes to the sign. May return Infinity at 90 or 270 degrees.</summary>
+        /// <param name="a">The first unit-vector.</param>
+        /// <param name="b">The second unit-vector.</param>
+        /// <returns>The tangent of the signed angle.</returns>
         static member inline tangent (a:UnitVc) (b:UnitVc) : float =
             let dot = a.X * b.X + a.Y * b.Y
             let det = a.X * b.Y - a.Y * b.X
             det / dot
 
-        /// Sine of the angle between two 2D unit-vectors.
-        /// This is the same as the 2D Cross Product or Determinant of the two unit-vectors.
+        /// <summary>Sine of the signed angle from a to b: positive counter-clockwise, negative clockwise.
+        /// This is the 2D cross product. Unlike UnitVec.sine, it carries an orientation sign.</summary>
+        /// <param name="a">The first unit-vector.</param>
+        /// <param name="b">The second unit-vector.</param>
+        /// <returns>The sine of the signed angle.</returns>
         static member inline sine (a:UnitVc) (b:UnitVc) : float =
             a.X * b.Y - a.Y * b.X
 

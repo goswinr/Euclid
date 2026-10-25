@@ -360,10 +360,12 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `UnitVec.rotateOnZ` | `r: Rotation2D -> v: UnitVec -> UnitVec` |
 | `UnitVec.rotateOnZDegrees` | `angDegree: float -> v: UnitVec -> UnitVec` |
 | `UnitVec.scale` | `f: float -> v: UnitVec -> Vec` |
+| `UnitVec.sine` | `a: UnitVec -> b: UnitVec -> float` |
 | `UnitVec.slerp` | `start: UnitVec -> endValue: UnitVec -> rel: float -> UnitVec` |
 | `UnitVec.slopeDegrees` | `v: UnitVec -> float` |
 | `UnitVec.slopePercent` | `v: UnitVec -> float` |
 | `UnitVec.slopeRadians` | `v: UnitVec -> float` |
+| `UnitVec.tangent` | `a: UnitVec -> b: UnitVec -> float` |
 | `UnitVec.withLength` | `f: float -> v: UnitVec -> Vec` |
 | `UnitVec.xAxis` | `UnitVec` |
 | `UnitVec.yAxis` | `UnitVec` |
