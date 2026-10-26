@@ -106,6 +106,7 @@ In 3D, +X points right, +Y points forward and +Z points up.
 
 - Inline small numeric functions and hot-path math.
 - Avoid intermediate allocations. That includes temporary arrays, tuple deconstruction that creates closures, and throwaway `Pnt`/`Vec`/`Pt`/`Vc` values. Prefer `ResizeArray` reuse patterns that match the existing modules.
+- Public members that return several values return a plain F# tuple, such as `Quaternion * Vec`, not a struct tuple. Struct tuples are awkward to use in F#, so the allocation is acceptable there. Private helpers on hot paths may still use struct tuples.
 - To remove temporaries without changing results, follow `.claude/commands/findAllocations.md`.
 - Use squared lengths (`LengthSq`) when they are enough, and avoid unnecessary `sqrt`.
 

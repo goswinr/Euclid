@@ -92,8 +92,10 @@
     <Compile Include="Src/TypeExtensions/Vec.fs" />
     <Compile Include="Src/TypeExtensions/Pnt.fs" />
     <Compile Include="Src/TypeExtensions/PPlane.fs" />
-    <Compile Include="Src/TypeExtensions/Matrix.fs" />
     <Compile Include="Src/TypeExtensions/Quaternion.fs" />
+    <Compile Include="Src/MatrixDecomposition.fs" />
+    <Compile Include="Src/TypeExtensions/Matrix.fs" />
+    <Compile Include="Src/TypeExtensions/RigidMatrix.fs" />
     <Compile Include="Src/TypeExtensions/Line2D.fs" />
     <Compile Include="Src/TypeExtensions/Line3D.fs" />
 

@@ -623,4 +623,117 @@ let tests =
             "rotation first, then translation" |> expectEqual (p *** viaPipe) ((p *** rot) *** move)
             "order matters" |> Expect.isFalse (Pnt.distanceTo (p *** viaPipe) (p *** (move |> Matrix.andThen rot)) < 1e-9)
         }
+
+        test "Matrix.decompose finds scale, shear, rotation and translation" {
+            let q = Quaternion.createFromVecDegrees (Vec(1.0, -2.0, 0.5)) 37.0
+            let t = Vec(12.5, -7.25, 30.0)
+            let m =
+                Matrix.createScale 2.0 3.0 0.5
+                *** Matrix.createShear(0, 0, 0.3, 0, -0.2, 0.4)
+                *** Matrix.createFromQuaternion q
+                *** Matrix.createTranslation t
+            let d = Matrix.decompose m
+            "translation" |> Expect.isTrue (Vec.equalsWithin 1e-12 d.Translation t)
+            "rotation" |> Expect.isTrue (Quaternion.equalsRotationWithin 1e-12 d.Rotation q)
+            "scale" |> Expect.isTrue (Vec.equalsWithin 1e-12 d.Scale (Vec(2.0, 3.0, 0.5)))
+            Expect.floatClose Accuracy.veryHigh d.ShearYX 0.3 "shear YX"
+            Expect.floatClose Accuracy.veryHigh d.ShearZX -0.2 "shear ZX"
+            Expect.floatClose Accuracy.veryHigh d.ShearZY 0.4 "shear ZY"
+            "recomposed" |> Expect.isTrue (Matrix.equalsWithin 1e-12 d.ToMatrix m)
+            "createFromDecomposition" |> Expect.isTrue (Matrix.equalsExact (Matrix.createFromDecomposition d) d.ToMatrix)
+            "instance member" |> Expect.isTrue (MatrixDecomposition.equalsExact (m.Decompose()) d)
+            let p = Pnt(-3.0, 4.5, 8.0)
+            "transforms points like the matrix" |> expectEqual (p *** d.ToMatrix) (p *** m)
+        }
+
+        test "Matrix.decompose of identity" {
+            let d = Matrix.decompose Matrix.identity
+            "identity" |> Expect.isTrue (MatrixDecomposition.equalsWithin 1e-15 d MatrixDecomposition.identity)
+            "identity recomposed" |> Expect.isTrue (MatrixDecomposition.identity.ToMatrix.IsIdentity)
+        }
+
+        test "Matrix.decompose round-trips strong shear and tiny scale" {
+            let q = Quaternion.createFromVecDegrees (Vec(-0.3, 0.8, 1.0)) -128.0
+            let strongShear =
+                Matrix.createShear(0.7, -1.5, 50.0, 2.0, -3.0, 0.1)
+                *** Matrix.createFromQuaternion q
+                *** Matrix.createTranslationXYZ -40.0 15.0 7.5
+            "strong shear" |> Expect.isTrue (Matrix.equalsWithin 1e-9 (Matrix.decompose strongShear).ToMatrix strongShear)
+            let tiny = Matrix.createScale 1e-9 2e-9 3e-9 *** Matrix.createFromQuaternion q
+            "tiny scale" |> Expect.isTrue (Matrix.equalsWithin 1e-20 (Matrix.decompose tiny).ToMatrix tiny)
+        }
+
+        test "Matrix.decompose puts mirroring into a negative X scale" {
+            let pl = PPlane.createFromXAxisAndYAxis (Vec(1.0, 1.0, 0.2)) (Vec(-0.5, 1.0, 2.0)) (Pnt(3.0, -2.0, 7.0))
+            let m = Matrix.createMirror pl *** Matrix.createScale 1.5 1.5 1.5
+            let d = Matrix.decompose m
+            "negative X scale" |> Expect.isTrue (d.ScaleX < 0.0)
+            "positive Y scale" |> Expect.isTrue (d.ScaleY > 0.0)
+            "positive Z scale" |> Expect.isTrue (d.ScaleZ > 0.0)
+            "recomposed" |> Expect.isTrue (Matrix.equalsWithin 1e-12 d.ToMatrix m)
+            let flipX = Matrix.createScale -2.0 1.0 1.0
+            let dx = Matrix.decompose flipX
+            "only X flipped" |> Expect.isTrue (Vec.equalsWithin 1e-15 dx.Scale (Vec(-2.0, 1.0, 1.0)))
+            "no rotation" |> Expect.isTrue (Quaternion.equalsRotationWithin 1e-15 dx.Rotation Quaternion.identity)
+        }
+
+        test "Matrix.tryDecompose rejects projecting and singular matrices" {
+            let persp = Matrix.createPerspectiveLookAtZUp(Pnt(10, -5, 3), Pnt(0, 0, 0), 2.0, 1.5, 0.1, 100.0)
+            "projecting" |> Expect.isValueNone (Matrix.tryDecompose persp)
+            "projecting throws" |> Expect.throws (fun () -> Matrix.decompose persp |> ignore)
+            "zero X scale" |> Expect.isValueNone (Matrix.tryDecompose (Matrix.createScale 0.0 1.0 1.0))
+            "zero Z scale" |> Expect.isValueNone (Matrix.tryDecompose (Matrix.createScale 1.0 1.0 0.0))
+            let parallelColumns = Matrix(1, 2, 0, 0,  1, 2, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1)
+            "parallel columns" |> Expect.isValueNone (Matrix.tryDecompose parallelColumns)
+            "parallel columns instance" |> Expect.isValueNone (parallelColumns.TryDecompose())
+        }
+
+        test "Matrix.interpolate returns the exact end matrices" {
+            let a = Matrix.createScale 2.0 1.0 0.5 *** Matrix.createRotationFromVecDegreesAround (Pnt(3, -2, 5)) (Vec(1, 2, -0.5)) 33.0
+            let b = Matrix.createShear(0, 0, 0.2, 0, 0, 0) *** Matrix.createTranslationXYZ 7.0 -4.0 2.5
+            "factor 0" |> Expect.isTrue (Matrix.equalsExact (Matrix.interpolate a b 0.0) a)
+            "factor 1" |> Expect.isTrue (Matrix.equalsExact (Matrix.interpolate a b 1.0) b)
+            "instance" |> Expect.isTrue (Matrix.equalsExact (a.Interpolate(b, 0.3)) (Matrix.interpolate a b 0.3))
+        }
+
+        test "Matrix.interpolate interpolates rotation angle, scale and translation" {
+            let axis = Vec(1.0, -2.0, 0.5)
+            let make s deg (t:Vec) = Matrix.createScale s s s *** Matrix.createRotationFromVecDegrees axis deg *** Matrix.createTranslation t
+            let a = make 1.0 10.0 (Vec(10, 20, -5))
+            let b = make 3.0 70.0 (Vec(-30, 4, 15))
+            let expected = make 2.0 40.0 (Vec(-10, 12, 5))
+            "middle" |> Expect.isTrue (Matrix.equalsWithin 1e-12 (Matrix.interpolate a b 0.5) expected)
+            let quarter = make 1.5 25.0 (Vec(0, 16, 0))
+            "quarter" |> Expect.isTrue (Matrix.equalsWithin 1e-12 (Matrix.interpolate a b 0.25) quarter)
+            let beyond = make 4.0 100.0 (Vec(-50, -4, 25))
+            "extrapolated" |> Expect.isTrue (Matrix.equalsWithin 1e-12 (Matrix.interpolate a b 1.5) beyond)
+        }
+
+        test "Matrix.interpolate keeps rotations rigid" {
+            let a = Matrix.createRotationZDegrees 0.0
+            let b = Matrix.createRotationZDegrees 170.0
+            let m = Matrix.interpolate a b 0.5
+            Expect.floatClose Accuracy.veryHigh m.ColumnVector1.Length 1.0 "no shrinking"
+            "rotation by 85 degrees" |> Expect.isTrue (Matrix.equalsWithin 1e-12 m (Matrix.createRotationZDegrees 85.0))
+            let c = Matrix.createRotationZDegrees 270.0
+            "shortest rotation" |> Expect.isTrue (Matrix.equalsWithin 1e-12 (Matrix.interpolate a c 0.5) (Matrix.createRotationZDegrees -45.0))
+        }
+
+        test "Matrix.interpolate fails for invalid input" {
+            let a = Matrix.createTranslationXYZ 1.0 2.0 3.0
+            let persp = Matrix.createPerspectiveLookAtZUp(Pnt(10, -5, 3), Pnt(0, 0, 0), 2.0, 1.5, 0.1, 100.0)
+            "NaN factor" |> Expect.throws (fun () -> Matrix.interpolate a a nan |> ignore)
+            "infinite factor" |> Expect.throws (fun () -> Matrix.interpolate a a infinity |> ignore)
+            "projecting start" |> Expect.throws (fun () -> Matrix.interpolate persp a 0.5 |> ignore)
+            "singular finish" |> Expect.throws (fun () -> Matrix.interpolate a (Matrix.createScale 1.0 0.0 1.0) 0.0 |> ignore)
+        }
+
+        test "MatrixDecomposition.interpolate interpolates shear linearly" {
+            let a = MatrixDecomposition.create (Vec(1, 2, 3)) Quaternion.identity (Vec(1, 1, 1)) 0.0 0.2 -0.4
+            let b = MatrixDecomposition.create (Vec(3, 2, 1)) Quaternion.identity (Vec(2, 1, 0.5)) 1.0 0.4 0.4
+            let m = MatrixDecomposition.interpolate a b 0.5
+            let expected = MatrixDecomposition.create (Vec(2, 2, 2)) Quaternion.identity (Vec(1.5, 1, 0.75)) 0.5 0.3 0.0
+            "middle" |> Expect.isTrue (MatrixDecomposition.equalsWithin 1e-15 m expected)
+            "NaN factor" |> Expect.throws (fun () -> MatrixDecomposition.interpolate a b nan |> ignore)
+        }
     ]

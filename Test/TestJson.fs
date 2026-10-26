@@ -97,6 +97,7 @@ let private contractValues : (string * obj) list = [
         0.0, 0.0, 1.0))
     "Matrix", box matrix
     "RigidMatrix", box (RigidMatrix.createTranslationXYZ 1.5 (-2.25) 3.75)
+    "MatrixDecomposition", box (MatrixDecomposition.create (Vec(1.5, -2.25, 3.75)) (Quaternion.createUnchecked(0.0, 0.6, 0.0, 0.8)) (Vec(2.5, 0.5, -1.5)) 0.25 -0.75 1.25)
     "Line2D", box (Line2D(1.5, -2.25, 3.75, 4.5))
     "Line3D", box (Line3D(1.5, -2.25, 3.75, 4.5, 5.5, 6.5))
     "NPlane", box (NPlane.createUnchecked(1.5, -2.25, 3.75, 0.0, 0.0, 1.0))

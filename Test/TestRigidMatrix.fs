@@ -760,4 +760,60 @@ let tests =
             "rotation first, then translation" |> Expect.isTrue (Pnt.distanceTo (p *** viaPipe) ((p *** rot) *** move) < 1e-9)
         }
 
+        test "RigidMatrix.decompose round-trips" {
+            let m = RigidMatrix.createRotationFromVecDegreesAround (Pnt(3.0, -2.0, 5.0)) (Vec(1.0, 2.0, -0.5)) 143.0
+            let q, t = RigidMatrix.decompose m
+            "translation" |> Expect.isTrue (Vec.equalsExact t m.Translation)
+            "rotation" |> Expect.isTrue (Quaternion.equalsExact q (Quaternion.createFromRigidMatrix m))
+            "recomposed" |> Expect.isTrue (RigidMatrix.equalsWithin 1e-12 (RigidMatrix.createFromQuaternionAndTranslation q t) m)
+            let qi, ti = m.Decompose()
+            "instance member" |> Expect.isTrue (Quaternion.equalsExact qi q && Vec.equalsExact ti t)
+        }
+
+        test "RigidMatrix.createFromQuaternionAndTranslation rotates first and translates second" {
+            let q = Quaternion.createFromVecDegrees (Vec(1.0, 1.0, -0.3)) 30.0
+            let t = Vec(10.0, -20.0, 5.5)
+            let m = RigidMatrix.createFromQuaternionAndTranslation q t
+            let p = Pnt(-3.0, 4.5, 8.0)
+            "rotation then translation" |> expectEqual (p *** m) ((p *** q) + t)
+            "same as addTranslation" |> Expect.isTrue (RigidMatrix.equalsExact m (RigidMatrix.createFromQuaternion q |> RigidMatrix.addTranslation t))
+        }
+
+        test "RigidMatrix.interpolate returns the exact end matrices" {
+            let a = RigidMatrix.createRotationFromVecDegreesAround (Pnt(3.0, -2.0, 5.0)) (Vec(1.0, 2.0, -0.5)) 33.0
+            let b = RigidMatrix.createTranslationXYZ 7.0 -4.0 2.5
+            "factor 0" |> Expect.isTrue (RigidMatrix.equalsExact (RigidMatrix.interpolate a b 0.0) a)
+            "factor 1" |> Expect.isTrue (RigidMatrix.equalsExact (RigidMatrix.interpolate a b 1.0) b)
+            "instance" |> Expect.isTrue (RigidMatrix.equalsExact (a.Interpolate(b, 0.3)) (RigidMatrix.interpolate a b 0.3))
+        }
+
+        test "RigidMatrix.interpolate interpolates rotation angle and translation" {
+            let axis = Vec(-1.0, 0.5, 2.0)
+            let make deg x y z = RigidMatrix.createRotationFromVecDegrees axis deg |> RigidMatrix.addTranslationXYZ x y z
+            let a = make -20.0 10.0 20.0 -5.0
+            let b = make 100.0 -30.0 4.0 15.0
+            "middle" |> Expect.isTrue (RigidMatrix.equalsWithin 1e-12 (RigidMatrix.interpolate a b 0.5) (make 40.0 -10.0 12.0 5.0))
+            "quarter" |> Expect.isTrue (RigidMatrix.equalsWithin 1e-12 (RigidMatrix.interpolate a b 0.25) (make 10.0 0.0 16.0 0.0))
+            "extrapolated" |> Expect.isTrue (RigidMatrix.equalsWithin 1e-12 (RigidMatrix.interpolate a b -0.5) (make -80.0 30.0 28.0 -15.0))
+            let m = RigidMatrix.interpolate a b 0.37
+            "result is rigid" |> Expect.isValueSome (RigidMatrix.tryCreateFromMatrix m.ToMatrix)
+            "same as Matrix.interpolate" |> Expect.isTrue (Matrix.equalsWithin 1e-12 m.ToMatrix (Matrix.interpolate a.ToMatrix b.ToMatrix 0.37))
+        }
+
+        test "RigidMatrix.interpolate takes the shortest rotation" {
+            let a = RigidMatrix.createRotationZDegrees 10.0
+            let b = RigidMatrix.createRotationZDegrees 280.0
+            "via -35 degrees" |> Expect.isTrue (RigidMatrix.equalsWithin 1e-12 (RigidMatrix.interpolate a b 0.5) (RigidMatrix.createRotationZDegrees -35.0))
+            let same = RigidMatrix.createTranslationXYZ 1.0 2.0 3.0
+            "identical rotations" |> Expect.isTrue (RigidMatrix.equalsWithin 1e-15 (RigidMatrix.interpolate same same 0.5) same)
+            let almost = RigidMatrix.createRotationZDegrees 1e-9
+            "almost identical rotations" |> Expect.isTrue (RigidMatrix.equalsWithin 1e-15 (RigidMatrix.interpolate RigidMatrix.identity almost 0.5) (RigidMatrix.createRotationZDegrees 5e-10))
+        }
+
+        test "RigidMatrix.interpolate fails for a non-finite factor" {
+            let a = RigidMatrix.createTranslationXYZ 1.0 2.0 3.0
+            "NaN" |> Expect.throws (fun () -> RigidMatrix.interpolate a a nan |> ignore)
+            "infinity" |> Expect.throws (fun () -> RigidMatrix.interpolate a a -infinity |> ignore)
+        }
+
     ]
