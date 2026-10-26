@@ -3,11 +3,12 @@ namespace Euclid
 open System
 open UtilEuclid
 open EuclidErrors
+open System.ComponentModel
 
 
 /// When Euclid is opened this module will be auto-opened.
 /// It only contains extension members for type Pnt.
-[<AutoOpen>]
+[<AutoOpen; EditorBrowsable(EditorBrowsableState.Never)>]
 module AutoOpenPnt =
 
     type Pnt with

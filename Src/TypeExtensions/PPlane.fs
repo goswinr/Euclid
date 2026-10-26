@@ -3,10 +3,11 @@ namespace Euclid
 open System
 open Euclid.UtilEuclid
 open EuclidErrors
+open System.ComponentModel
 
 /// When Euclid is opened this module will be auto-opened.
 /// It only contains extension members for type PPlane.
-[<AutoOpen>]
+[<AutoOpen; EditorBrowsable(EditorBrowsableState.Never)>]
 module AutoOpenPPlane =
 
     type PPlane with

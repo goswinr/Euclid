@@ -4,10 +4,11 @@ open System
 open Euclid.UtilEuclid
 open UtilEuclid
 open EuclidErrors
+open System.ComponentModel
 
 /// When Euclid is opened this module will be auto-opened.
 /// It only contains extension members for type Line3D.
-[<AutoOpen>]
+[<AutoOpen; EditorBrowsable(EditorBrowsableState.Never)>]
 module AutoOpenLine3D =
 
   type Line3D with

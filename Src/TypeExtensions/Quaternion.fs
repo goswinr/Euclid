@@ -1,10 +1,11 @@
 ﻿namespace Euclid
 
 open Euclid.UtilEuclid
+open System.ComponentModel
 
 /// When Euclid is opened, this module will be auto-opened.
 /// It only contains extension members for the type Quaternion.
-[<AutoOpen>]
+[<AutoOpen; EditorBrowsable(EditorBrowsableState.Never)>]
 module AutoOpenQuaternion =
 
   type Quaternion with

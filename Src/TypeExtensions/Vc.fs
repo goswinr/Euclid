@@ -2,11 +2,12 @@ namespace Euclid
 open System
 open UtilEuclid
 open EuclidErrors
+open System.ComponentModel
 
 
 /// When Euclid is opened this module will be auto-opened.
 /// It only contains extension members for type Vc.
-[<AutoOpen>]
+[<AutoOpen; EditorBrowsable(EditorBrowsableState.Never)>]
 module AutoOpenVc =
 
     /// Unitizes two 2D vectors given by their components and returns the angle between them in radians.

@@ -1,10 +1,11 @@
 ﻿namespace Euclid
 
 open Euclid.UtilEuclid
+open System.ComponentModel
 
 /// When Euclid is opened this module will be auto-opened.
 /// It only contains extension members for type Matrix.
-[<AutoOpen>]
+[<AutoOpen; EditorBrowsable(EditorBrowsableState.Never)>]
 module AutoOpenMatrix =
 
   type Matrix with
