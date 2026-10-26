@@ -1338,7 +1338,7 @@ let tests =
                 let pl = Polyline3D.createFromPnts pts
                 let xyzs = pl.XYZs
                 let q = Quaternion.createFromVecDegrees (Vec(1.,2.,3.)) 40.
-                let m = Matrix.createRotationAroundVecDegrees (Pnt(4.,6.,1.)) (Vec(-1.,1.,2.)) 25.
+                let m = Matrix.createRotationFromVecDegreesAround (Pnt(4.,6.,1.)) (Vec(-1.,1.,2.)) 25.
                 pl.Move(Vec(-2.,5.,3.))
                 pl.RotateAround (Pnt(4.,6.,1.)) q
                 pl.Transform m
@@ -1414,7 +1414,7 @@ let tests =
                 let q = Quaternion.createFromVecDegrees (Vec(1.,2.,3.)) 40.
                 let r = Rotation2D.createFromDegrees 30.
                 let cen = Pnt(4.,6.,1.)
-                let m = Matrix.createRotationAroundVecDegrees cen (Vec(-1.,1.,2.)) 25.
+                let m = Matrix.createRotationFromVecDegreesAround cen (Vec(-1.,1.,2.)) 25.
                 expectNewAndInputUnchanged "scale" (Polyline3D.scale 1.5)
                 expectNewAndInputUnchanged "scaleOn" (Polyline3D.scaleOn cen 1.5)
                 expectNewAndInputUnchanged "move" (Polyline3D.move (Vec(-2.,5.,3.)))
@@ -1427,7 +1427,7 @@ let tests =
                 expectNewAndInputUnchanged "rotate" (Polyline3D.rotate q)
                 expectNewAndInputUnchanged "rotateAround" (Polyline3D.rotateAround cen q)
                 expectNewAndInputUnchanged "rotateOnZ" (Polyline3D.rotateOnZ r)
-                expectNewAndInputUnchanged "rotateAroundOnZ" (Polyline3D.rotateAroundOnZ cen r)
+                expectNewAndInputUnchanged "rotateOnZAround" (Polyline3D.rotateOnZAround cen r)
                 expectNewAndInputUnchanged "reverse" Polyline3D.reverse
                 expectNewAndInputUnchanged "close" (Polyline3D.close 1e-6)
                 expectNewAndInputUnchanged "ensureClockwiseIn2D" Polyline3D.ensureClockwiseIn2D

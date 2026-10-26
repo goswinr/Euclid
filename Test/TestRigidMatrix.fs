@@ -127,7 +127,7 @@ let tests =
         test "RigidMatrix rotation with center point" {
             let axis = Vec.zAxis
             let center = Pnt(1, 1, 0)
-            let m = RigidMatrix.createRotationAroundVecDegrees center axis 90.0
+            let m = RigidMatrix.createRotationFromVecDegreesAround center axis 90.0
             let p = Pnt(2, 1, 0)
             let result = p *** m
             "90° rotation around Z at center (1,1,0)" |> expectEqual result (Pnt(1, 2, 0))
@@ -387,7 +387,7 @@ let tests =
             let axis = Vec(0, 0, 1)
             let center = Pnt.Origin
             let angle = 90.0
-            let m1 = RigidMatrix.createRotationAroundVecDegrees center axis angle
+            let m1 = RigidMatrix.createRotationFromVecDegreesAround center axis angle
             let m2 = RigidMatrix.createRotationZDegrees(angle)
 
             "rotation around origin same as simple rotation" |> Expect.isTrue (RigidMatrix.equalsWithin 1e-15 m1 m2)
@@ -459,11 +459,11 @@ let tests =
         test "RigidMatrix createRotationAxisCenter with non-unit Vec" {
             let axis = Vec(1, 2, 1)  // Non-unit vector
             let center = Pnt(2, 3, 4)
-            let m = RigidMatrix.createRotationAroundVecDegrees center axis 45.0
+            let m = RigidMatrix.createRotationFromVecDegreesAround center axis 45.0
 
             // Should give same result as unitized axis
             let unitAxis = UnitVec.create 1 2 1
-            let mUnit = RigidMatrix.createRotationAroundUnitVecDegrees center unitAxis 45.0
+            let mUnit = RigidMatrix.createRotationFromUnitVecDegreesAround center unitAxis 45.0
 
             "non-unit axis center rotation same as unitized" |> Expect.isTrue (RigidMatrix.equalsWithin 1e-12 m mUnit)
         }
@@ -740,19 +740,19 @@ let tests =
                 "Z" |> Expect.isTrue (RigidMatrix.equalsExact (RigidMatrix.createRotationZDegrees deg) (RigidMatrix.createRotationZRadians rad))
                 "Vec" |> Expect.isTrue (RigidMatrix.equalsExact (RigidMatrix.createRotationFromVecDegrees axis deg) (RigidMatrix.createRotationFromVecRadians axis rad))
                 "UnitVec" |> Expect.isTrue (RigidMatrix.equalsExact (RigidMatrix.createRotationFromUnitVecDegrees uAxis deg) (RigidMatrix.createRotationFromUnitVecRadians uAxis rad))
-                "Around Vec" |> Expect.isTrue (RigidMatrix.equalsExact (RigidMatrix.createRotationAroundVecDegrees center axis deg) (RigidMatrix.createRotationAroundVecRadians center axis rad))
-                "Around UnitVec" |> Expect.isTrue (RigidMatrix.equalsExact (RigidMatrix.createRotationAroundUnitVecDegrees center uAxis deg) (RigidMatrix.createRotationAroundUnitVecRadians center uAxis rad))
+                "Around Vec" |> Expect.isTrue (RigidMatrix.equalsExact (RigidMatrix.createRotationFromVecDegreesAround center axis deg) (RigidMatrix.createRotationFromVecRadiansAround center axis rad))
+                "Around UnitVec" |> Expect.isTrue (RigidMatrix.equalsExact (RigidMatrix.createRotationFromUnitVecDegreesAround center uAxis deg) (RigidMatrix.createRotationFromUnitVecRadiansAround center uAxis rad))
         }
 
         test "RigidMatrix rotation around a center keeps the center fixed" {
             let center = Pnt(3.5, -7.25, 11.0)
-            let m = RigidMatrix.createRotationAroundUnitVecDegrees center (Vec(1.0, -2.0, 0.5).Unitized) 37.0
+            let m = RigidMatrix.createRotationFromUnitVecDegreesAround center (Vec(1.0, -2.0, 0.5).Unitized) 37.0
             let c = center *** m
             "center is fixed" |> Expect.isTrue (Pnt.distanceTo c center < 1e-12)
         }
 
         test "RigidMatrix.andThen applies the current matrix first" {
-            let rot = RigidMatrix.createRotationAroundVecDegrees (Pnt(3.0, -2.0, 5.0)) (Vec(1.0, 2.0, -0.5)) 33.0
+            let rot = RigidMatrix.createRotationFromVecDegreesAround (Pnt(3.0, -2.0, 5.0)) (Vec(1.0, 2.0, -0.5)) 33.0
             let move = RigidMatrix.createTranslationXYZ 7.0 -4.0 2.5
             let p = Pnt(-6.0, 11.0, 4.0)
             let viaPipe = rot |> RigidMatrix.andThen move

@@ -494,7 +494,7 @@ module AutoOpenPt =
         /// <param name="cen">The center point of the rotation.</param>
         /// <param name="angDegree">The rotation angle in degrees.</param>
         /// <returns>The rotated 2D point.</returns>
-        member inline pt.RotateAroundDegrees (cen:Pt) (angDegree:float) : Pt =
+        member inline pt.RotateDegreesAround (cen:Pt) (angDegree:float) : Pt =
             Pt.rotateAround cen (Rotation2D.createFromDegrees angDegree) pt
 
         /// <summary>Rotate a 2D point counter-clockwise around a center point by an angle in degrees.</summary>
@@ -502,14 +502,14 @@ module AutoOpenPt =
         /// <param name="angDegree">The rotation angle in degrees.</param>
         /// <param name="pt">The 2D point to rotate.</param>
         /// <returns>The rotated 2D point.</returns>
-        static member inline rotateAroundDegrees (cen:Pt) (angDegree:float) (pt:Pt) : Pt =
+        static member inline rotateDegreesAround (cen:Pt) (angDegree:float) (pt:Pt) : Pt =
             Pt.rotateAround cen (Rotation2D.createFromDegrees angDegree) pt
 
         /// <summary>Rotate the 2D point counter-clockwise around a center point by an angle in radians.</summary>
         /// <param name="cen">The center point of the rotation.</param>
         /// <param name="angRadians">The rotation angle in radians.</param>
         /// <returns>The rotated 2D point.</returns>
-        member inline pt.RotateAroundRadians (cen:Pt) (angRadians:float) : Pt =
+        member inline pt.RotateRadiansAround (cen:Pt) (angRadians:float) : Pt =
             Pt.rotateAround cen (Rotation2D.createFromRadians angRadians) pt
 
         /// <summary>Rotate a 2D point counter-clockwise around a center point by an angle in radians.</summary>
@@ -517,7 +517,7 @@ module AutoOpenPt =
         /// <param name="angRadians">The rotation angle in radians.</param>
         /// <param name="pt">The 2D point to rotate.</param>
         /// <returns>The rotated 2D point.</returns>
-        static member inline rotateAroundRadians (cen:Pt) (angRadians:float) (pt:Pt) : Pt =
+        static member inline rotateRadiansAround (cen:Pt) (angRadians:float) (pt:Pt) : Pt =
             Pt.rotateAround cen (Rotation2D.createFromRadians angRadians) pt
 
         /// Returns a point that is at a given distance from a 2D point in the direction of another point.

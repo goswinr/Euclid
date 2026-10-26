@@ -154,7 +154,7 @@ let tests =
         test "Matrix rotation with center" {
             let axis = Vec.zAxis
             let center = Pnt(1,1,0)
-            let m = Matrix.createRotationAroundVecDegrees center axis 90.0
+            let m = Matrix.createRotationFromVecDegreesAround center axis 90.0
             let a = Pnt(2,1,0)
             let b = a *** m
             "rotation around center" |> expectEqual b (Pnt(1,2,0))
@@ -591,14 +591,14 @@ let tests =
                 "Z" |> Expect.isTrue (Matrix.equalsExact (Matrix.createRotationZDegrees deg) (Matrix.createRotationZRadians rad))
                 "Vec" |> Expect.isTrue (Matrix.equalsExact (Matrix.createRotationFromVecDegrees axis deg) (Matrix.createRotationFromVecRadians axis rad))
                 "UnitVec" |> Expect.isTrue (Matrix.equalsExact (Matrix.createRotationFromUnitVecDegrees uAxis deg) (Matrix.createRotationFromUnitVecRadians uAxis rad))
-                "Around Vec" |> Expect.isTrue (Matrix.equalsExact (Matrix.createRotationAroundVecDegrees center axis deg) (Matrix.createRotationAroundVecRadians center axis rad))
-                "Around UnitVec" |> Expect.isTrue (Matrix.equalsExact (Matrix.createRotationAroundUnitVecDegrees center uAxis deg) (Matrix.createRotationAroundUnitVecRadians center uAxis rad))
+                "Around Vec" |> Expect.isTrue (Matrix.equalsExact (Matrix.createRotationFromVecDegreesAround center axis deg) (Matrix.createRotationFromVecRadiansAround center axis rad))
+                "Around UnitVec" |> Expect.isTrue (Matrix.equalsExact (Matrix.createRotationFromUnitVecDegreesAround center uAxis deg) (Matrix.createRotationFromUnitVecRadiansAround center uAxis rad))
         }
 
         test "Matrix rotation around a center keeps the center fixed" {
             let center = Pnt(3.5, -7.25, 11.0)
             let axis = Vec(1.0, -2.0, 0.5)
-            let m = Matrix.createRotationAroundVecDegrees center axis 37.0
+            let m = Matrix.createRotationFromVecDegreesAround center axis 37.0
             "center is fixed" |> expectEqual (center *** m) center
             let p = Pnt(-4.0, 2.0, 9.0)
             let expected = center + Vec.rotate (Quaternion.createFromVecDegrees axis 37.0) (p - center)
@@ -615,7 +615,7 @@ let tests =
             "partial look at" |> Expect.isTrue (Matrix.equalsExact (lookUp (Pnt(1, 2, 3))) (Matrix.createLookAt Vec.zAxis (Pnt(10, -5, 3)) (Pnt(1, 2, 3))))
         }
         test "Matrix.andThen applies the current matrix first" {
-            let rot = Matrix.createRotationAroundVecDegrees (Pnt(3.0, -2.0, 5.0)) (Vec(1.0, 2.0, -0.5)) 33.0
+            let rot = Matrix.createRotationFromVecDegreesAround (Pnt(3.0, -2.0, 5.0)) (Vec(1.0, 2.0, -0.5)) 33.0
             let move = Matrix.createTranslationXYZ 7.0 -4.0 2.5
             let p = Pnt(-6.0, 11.0, 4.0)
             let viaPipe = rot |> Matrix.andThen move

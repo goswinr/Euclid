@@ -161,8 +161,8 @@ Rotations and scaling share one curried naming grammar, with the geometry as the
 | `rotateDegrees degrees geometry` | Rotate around the origin by an angle in degrees (2D) |
 | `rotateRadians radians geometry` | Rotate around the origin by an angle in radians (2D) |
 | `rotateAround center rotation geometry` | Rotate around a center point |
-| `rotateAroundDegrees center degrees geometry` | Rotate around a center point by an angle in degrees (2D) |
-| `rotateAroundRadians center radians geometry` | Rotate around a center point by an angle in radians (2D) |
+| `rotateDegreesAround center degrees geometry` | Rotate around a center point by an angle in degrees (2D) |
+| `rotateRadiansAround center radians geometry` | Rotate around a center point by an angle in radians (2D) |
 | `scale factor geometry` | Scale from the origin |
 | `scaleOn center factor geometry` | Scale from a center point |
 
@@ -639,7 +639,7 @@ let m3 = Matrix.createRotationXDegrees 45.0      // 45 degrees around X
 let m4 = Matrix.createRotationFromUnitVecDegrees UnitVec.zAxis 30.0
 
 // Rotation around axis at a specific center point
-let m5 = Matrix.createRotationAroundVecDegrees (Pnt(5, 5, 0)) (Vec(0, 0, 1)) 45.0
+let m5 = Matrix.createRotationFromVecDegreesAround (Pnt(5, 5, 0)) (Vec(0, 0, 1)) 45.0
 
 // Scale
 let m6 = Matrix.createScale 2.0 2.0 1.0          // scale X and Y by 2

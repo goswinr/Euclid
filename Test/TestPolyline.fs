@@ -2230,8 +2230,8 @@ let testsSpecial =
                 expectNewAndInputUnchanged "rotateDegrees" (Polyline2D.rotateDegrees 30.)
                 expectNewAndInputUnchanged "rotateRadians" (Polyline2D.rotateRadians 0.5)
                 expectNewAndInputUnchanged "rotateAround" (Polyline2D.rotateAround cen r)
-                expectNewAndInputUnchanged "rotateAroundDegrees" (Polyline2D.rotateAroundDegrees cen 30.)
-                expectNewAndInputUnchanged "rotateAroundRadians" (Polyline2D.rotateAroundRadians cen 0.5)
+                expectNewAndInputUnchanged "rotateDegreesAround" (Polyline2D.rotateDegreesAround cen 30.)
+                expectNewAndInputUnchanged "rotateRadiansAround" (Polyline2D.rotateRadiansAround cen 0.5)
                 expectNewAndInputUnchanged "reverse" Polyline2D.reverse
                 expectNewAndInputUnchanged "close" (Polyline2D.close 1e-6)
                 expectNewAndInputUnchanged "ensureClockwise" Polyline2D.ensureClockwise
@@ -2254,7 +2254,7 @@ let testsSpecial =
                     Expect.isTrue (Polyline2D.equalsExact (op (original ())) expected) $"{name} should match its instance member"
                 check "scaleOn" (Polyline2D.scaleOn cen 1.5) (fun p -> p.ScaleOn cen 1.5)
                 check "rotateAround" (Polyline2D.rotateAround cen r) (fun p -> p.RotateAround cen r)
-                check "rotateAroundDegrees" (Polyline2D.rotateAroundDegrees cen 30.) (fun p -> p.RotateAroundDegrees cen 30.)
+                check "rotateDegreesAround" (Polyline2D.rotateDegreesAround cen 30.) (fun p -> p.RotateDegreesAround cen 30.)
                 check "reverse" Polyline2D.reverse (fun p -> p.Reverse())
                 check "close" (Polyline2D.close 1e-6) (fun p -> p.Close(1e-6))
                 check "ensureClockwise" Polyline2D.ensureClockwise (fun p -> p.EnsureClockwise())

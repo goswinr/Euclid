@@ -620,7 +620,7 @@ type RigidMatrix =
     /// <param name="cen">The center point for the rotation.</param>
     /// <param name="axis">Rotation axis, a vector of any length but 0.0.</param>
     /// <param name="angleDegrees">Rotation angle in degrees.</param>
-    static member createRotationAroundVecDegrees (cen:Pnt) (axis:Vec) (angleDegrees:float) : RigidMatrix =
+    static member createRotationFromVecDegreesAround (cen:Pnt) (axis:Vec) (angleDegrees:float) : RigidMatrix =
         RigidMatrix.createTranslationXYZ (-cen.X) (-cen.Y) (-cen.Z)
         *** RigidMatrix.createRotationFromVecDegrees axis angleDegrees
         *** RigidMatrix.createTranslationXYZ cen.X cen.Y cen.Z
@@ -630,7 +630,7 @@ type RigidMatrix =
     /// <param name="cen">The center point for the rotation.</param>
     /// <param name="axis">Rotation axis, a vector of any length but 0.0.</param>
     /// <param name="angleRadians">Rotation angle in radians.</param>
-    static member createRotationAroundVecRadians (cen:Pnt) (axis:Vec) (angleRadians:float) : RigidMatrix =
+    static member createRotationFromVecRadiansAround (cen:Pnt) (axis:Vec) (angleRadians:float) : RigidMatrix =
         RigidMatrix.createTranslationXYZ (-cen.X) (-cen.Y) (-cen.Z)
         *** RigidMatrix.createRotationFromVecRadians axis angleRadians
         *** RigidMatrix.createTranslationXYZ cen.X cen.Y cen.Z
@@ -640,7 +640,7 @@ type RigidMatrix =
     /// <param name="cen">The center point for the rotation.</param>
     /// <param name="axis">Rotation axis, a unit-vector.</param>
     /// <param name="angleDegrees">Rotation angle in degrees.</param>
-    static member createRotationAroundUnitVecDegrees (cen:Pnt) (axis:UnitVec) (angleDegrees:float) : RigidMatrix =
+    static member createRotationFromUnitVecDegreesAround (cen:Pnt) (axis:UnitVec) (angleDegrees:float) : RigidMatrix =
         RigidMatrix.createTranslationXYZ (-cen.X) (-cen.Y) (-cen.Z)
         *** RigidMatrix.createRotationFromUnitVecDegrees axis angleDegrees
         *** RigidMatrix.createTranslationXYZ cen.X cen.Y cen.Z
@@ -650,7 +650,7 @@ type RigidMatrix =
     /// <param name="cen">The center point for the rotation.</param>
     /// <param name="axis">Rotation axis, a unit-vector.</param>
     /// <param name="angleRadians">Rotation angle in radians.</param>
-    static member createRotationAroundUnitVecRadians (cen:Pnt) (axis:UnitVec) (angleRadians:float) : RigidMatrix =
+    static member createRotationFromUnitVecRadiansAround (cen:Pnt) (axis:UnitVec) (angleRadians:float) : RigidMatrix =
         RigidMatrix.createTranslationXYZ (-cen.X) (-cen.Y) (-cen.Z)
         *** RigidMatrix.createRotationFromUnitVecRadians axis angleRadians
         *** RigidMatrix.createTranslationXYZ cen.X cen.Y cen.Z

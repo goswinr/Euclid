@@ -1743,7 +1743,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
         res
 
     /// Rotates the Polyline3D in place around the local Z-axis through the given center point.
-    member p.RotateAroundOnZ (cen:Pnt) (r:Rotation2D) : unit =
+    member p.RotateOnZAround (cen:Pnt) (r:Rotation2D) : unit =
         let len = xyzs.Count
         let sin = r.Sin
         let cos = r.Cos
@@ -1758,9 +1758,9 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             i <- i + 3
 
     /// Returns a new Polyline3D rotated around the local Z-axis through the given center point. The input Polyline3D is not changed.
-    static member rotateAroundOnZ (cen:Pnt) (r:Rotation2D) (pl:Polyline3D) : Polyline3D =
+    static member rotateOnZAround (cen:Pnt) (r:Rotation2D) (pl:Polyline3D) : Polyline3D =
         let res = pl.Duplicate()
-        res.RotateAroundOnZ cen r
+        res.RotateOnZAround cen r
         res
 
     // #endregion

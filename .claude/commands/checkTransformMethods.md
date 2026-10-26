@@ -34,8 +34,8 @@ A raw angle argument always names its unit in the member name (`Degrees` or `Rad
 | `rotateDegrees degrees geometry` | `RotateDegrees degrees` |
 | `rotateRadians radians geometry` | `RotateRadians radians` |
 | `rotateAround center rotation geometry` | `RotateAround center rotation` |
-| `rotateAroundDegrees center degrees geometry` | `RotateAroundDegrees center degrees` |
-| `rotateAroundRadians center radians geometry` | `RotateAroundRadians center radians` |
+| `rotateDegreesAround center degrees geometry` | `RotateDegreesAround center degrees` |
+| `rotateRadiansAround center radians geometry` | `RotateRadiansAround center radians` |
 | `scale factor geometry` | `Scale factor` |
 | `scaleOn center factor geometry` | `ScaleOn center factor` |
 
@@ -50,12 +50,12 @@ Do not use the obsolete names `rotateBy`, `rotateWithCenter`, `rotateWithCenterB
 
 ### 2D Rotation for 2D Types
 - [ ] `Rotate`, `RotateDegrees`, `RotateRadians` and their static counterparts - rotation around the origin
-- [ ] `RotateAround`, `RotateAroundDegrees`, `RotateAroundRadians` and their static counterparts - rotation around a center (not for vectors)
+- [ ] `RotateAround`, `RotateDegreesAround`, `RotateRadiansAround` and their static counterparts - rotation around a center (not for vectors)
 - [ ] `Rotate90CW` / `Rotate90CCW` - quarter-turn rotations
 - [ ] `RotateByQuarterCircle(n:int)` - rotation by multiples of 90°
 
 ### Rotation in the XY Plane for 3D Types
-- [ ] `rotateOnZ (r:Rotation2D)` and `rotateAroundOnZ (cen:Pnt) (r:Rotation2D)` - rotation around the world Z-axis
+- [ ] `rotateOnZ (r:Rotation2D)` and `rotateOnZAround (cen:Pnt) (r:Rotation2D)` - rotation around the world Z-axis
 
 ### Scale
 - [ ] `Scale` / `scale` - scale from the origin

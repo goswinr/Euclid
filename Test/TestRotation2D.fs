@@ -744,10 +744,10 @@ let tests =
 
         testList "Rotation and scale grammar" [
 
-            test "Pt.rotateAroundDegrees known values" {
-                Expect.isTrue (eqPt (Pt.rotateAroundDegrees (Pt(2., 1.)) 90.0 (Pt(3., 1.))) (Pt(2., 2.))) "90° CCW"
-                Expect.isTrue (eqPt (Pt.rotateAroundDegrees (Pt(2., 1.)) -90.0 (Pt(3., 1.))) (Pt(2., 0.))) "-90° is CW"
-                Expect.isTrue (eqPt (Pt.rotateAroundRadians (Pt(2., 1.)) System.Math.PI (Pt(3., 1.))) (Pt(1., 1.))) "Pi radians"
+            test "Pt.rotateDegreesAround known values" {
+                Expect.isTrue (eqPt (Pt.rotateDegreesAround (Pt(2., 1.)) 90.0 (Pt(3., 1.))) (Pt(2., 2.))) "90° CCW"
+                Expect.isTrue (eqPt (Pt.rotateDegreesAround (Pt(2., 1.)) -90.0 (Pt(3., 1.))) (Pt(2., 0.))) "-90° is CW"
+                Expect.isTrue (eqPt (Pt.rotateRadiansAround (Pt(2., 1.)) System.Math.PI (Pt(3., 1.))) (Pt(1., 1.))) "Pi radians"
             }
 
             test "Pt rotate, rotateDegrees and rotateRadians agree" {
@@ -763,18 +763,18 @@ let tests =
             test "Pt rotateAround variants agree and keep the distance to the center" {
                 let expected = refRotAround gCen gRot gPt
                 Expect.isTrue (eqPt expected (Pt.rotateAround gCen gRot gPt)) "rotateAround"
-                Expect.isTrue (eqPt expected (Pt.rotateAroundDegrees gCen gDeg gPt)) "rotateAroundDegrees"
-                Expect.isTrue (eqPt expected (Pt.rotateAroundRadians gCen gRad gPt)) "rotateAroundRadians"
+                Expect.isTrue (eqPt expected (Pt.rotateDegreesAround gCen gDeg gPt)) "rotateDegreesAround"
+                Expect.isTrue (eqPt expected (Pt.rotateRadiansAround gCen gRad gPt)) "rotateRadiansAround"
                 Expect.isTrue (eqPt expected (gPt.RotateAround gCen gRot)) "RotateAround"
-                Expect.isTrue (eqPt expected (gPt.RotateAroundDegrees gCen gDeg)) "RotateAroundDegrees"
-                Expect.isTrue (eqPt expected (gPt.RotateAroundRadians gCen gRad)) "RotateAroundRadians"
+                Expect.isTrue (eqPt expected (gPt.RotateDegreesAround gCen gDeg)) "RotateDegreesAround"
+                Expect.isTrue (eqPt expected (gPt.RotateRadiansAround gCen gRad)) "RotateRadiansAround"
                 Expect.isTrue (eqFloat (Pt.distanceTo gCen expected) (Pt.distanceTo gCen gPt)) "distance to center is kept"
             }
 
             test "Pt rotateAround identities" {
-                Expect.isTrue (eqPt gPt (Pt.rotateAroundDegrees gCen 0.0 gPt)) "0°"
-                Expect.isTrue (eqPt gPt (Pt.rotateAroundDegrees gCen 360.0 gPt)) "360°"
-                Expect.isTrue (eqPt gPt (Pt.rotateAroundDegrees gPt 123.0 gPt)) "point at the center stays"
+                Expect.isTrue (eqPt gPt (Pt.rotateDegreesAround gCen 0.0 gPt)) "0°"
+                Expect.isTrue (eqPt gPt (Pt.rotateDegreesAround gCen 360.0 gPt)) "360°"
+                Expect.isTrue (eqPt gPt (Pt.rotateDegreesAround gPt 123.0 gPt)) "point at the center stays"
             }
 
             test "Pt.scaleOn" {
@@ -821,17 +821,17 @@ let tests =
             test "Line2D rotateAround variants agree and keep the length" {
                 let expected = Line2D(refRotAround gCen gRot gLn.From, refRotAround gCen gRot gLn.To)
                 Expect.isTrue (eqLn expected (Line2D.rotateAround gCen gRot gLn)) "rotateAround"
-                Expect.isTrue (eqLn expected (Line2D.rotateAroundDegrees gCen gDeg gLn)) "rotateAroundDegrees"
-                Expect.isTrue (eqLn expected (Line2D.rotateAroundRadians gCen gRad gLn)) "rotateAroundRadians"
+                Expect.isTrue (eqLn expected (Line2D.rotateDegreesAround gCen gDeg gLn)) "rotateDegreesAround"
+                Expect.isTrue (eqLn expected (Line2D.rotateRadiansAround gCen gRad gLn)) "rotateRadiansAround"
                 Expect.isTrue (eqLn expected (gLn.RotateAround gCen gRot)) "RotateAround"
-                Expect.isTrue (eqLn expected (gLn.RotateAroundDegrees gCen gDeg)) "RotateAroundDegrees"
-                Expect.isTrue (eqLn expected (gLn.RotateAroundRadians gCen gRad)) "RotateAroundRadians"
+                Expect.isTrue (eqLn expected (gLn.RotateDegreesAround gCen gDeg)) "RotateDegreesAround"
+                Expect.isTrue (eqLn expected (gLn.RotateRadiansAround gCen gRad)) "RotateRadiansAround"
                 Expect.isTrue (eqFloat expected.Length gLn.Length) "length is kept"
             }
 
-            test "Line2D rotateAroundDegrees on a zero-length line" {
+            test "Line2D rotateDegreesAround on a zero-length line" {
                 let ln = Line2D(gPt, gPt)
-                let r = Line2D.rotateAroundDegrees gCen gDeg ln
+                let r = Line2D.rotateDegreesAround gCen gDeg ln
                 let p = refRotAround gCen gRot gPt
                 Expect.isTrue (eqPt r.From p && eqPt r.To p) "both ends rotate to the same point"
             }
@@ -856,12 +856,12 @@ let tests =
                 let expected = Rect2D.rotateAround gCen gRot gRect
                 Expect.isTrue (eqPt expected.Origin (refRotAround gCen gRot gRect.Origin)) "origin is rotated around center"
                 Expect.isTrue (eqVc expected.XAxis (Vc.rotate gRot gRect.XAxis)) "X-axis is rotated"
-                Expect.isTrue (eqRect expected (Rect2D.rotateAroundDegrees gCen gDeg gRect)) "rotateAroundDegrees"
-                Expect.isTrue (eqRect expected (Rect2D.rotateAroundRadians gCen gRad gRect)) "rotateAroundRadians"
+                Expect.isTrue (eqRect expected (Rect2D.rotateDegreesAround gCen gDeg gRect)) "rotateDegreesAround"
+                Expect.isTrue (eqRect expected (Rect2D.rotateRadiansAround gCen gRad gRect)) "rotateRadiansAround"
                 Expect.isTrue (eqRect expected (gRect.RotateAround gCen gRot)) "RotateAround"
-                Expect.isTrue (eqRect expected (gRect.RotateAroundDegrees gCen gDeg)) "RotateAroundDegrees"
-                Expect.isTrue (eqRect expected (gRect.RotateAroundRadians gCen gRad)) "RotateAroundRadians"
-                let aroundOwnCenter = Rect2D.rotateAroundDegrees gRect.Center gDeg gRect
+                Expect.isTrue (eqRect expected (gRect.RotateDegreesAround gCen gDeg)) "RotateDegreesAround"
+                Expect.isTrue (eqRect expected (gRect.RotateRadiansAround gCen gRad)) "RotateRadiansAround"
+                let aroundOwnCenter = Rect2D.rotateDegreesAround gRect.Center gDeg gRect
                 Expect.isTrue (eqPt aroundOwnCenter.Center gRect.Center) "rotating around its own center keeps it fixed"
             }
 
@@ -881,22 +881,22 @@ let tests =
                 checkInPlace "RotateDegrees"        expectedOrigin (fun pl -> pl.RotateDegrees gDeg)
                 checkInPlace "RotateRadians"        expectedOrigin (fun pl -> pl.RotateRadians gRad)
                 checkStatic  "rotateAround"         expectedAround (Polyline2D.rotateAround gCen gRot)
-                checkStatic  "rotateAroundDegrees"  expectedAround (Polyline2D.rotateAroundDegrees gCen gDeg)
-                checkStatic  "rotateAroundRadians"  expectedAround (Polyline2D.rotateAroundRadians gCen gRad)
+                checkStatic  "rotateDegreesAround"  expectedAround (Polyline2D.rotateDegreesAround gCen gDeg)
+                checkStatic  "rotateRadiansAround"  expectedAround (Polyline2D.rotateRadiansAround gCen gRad)
                 checkInPlace "RotateAround"         expectedAround (fun pl -> pl.RotateAround gCen gRot)
-                checkInPlace "RotateAroundDegrees"  expectedAround (fun pl -> pl.RotateAroundDegrees gCen gDeg)
-                checkInPlace "RotateAroundRadians"  expectedAround (fun pl -> pl.RotateAroundRadians gCen gRad)
+                checkInPlace "RotateDegreesAround"  expectedAround (fun pl -> pl.RotateDegreesAround gCen gDeg)
+                checkInPlace "RotateRadiansAround"  expectedAround (fun pl -> pl.RotateRadiansAround gCen gRad)
             }
 
-            test "Polyline2D rotateAroundDegrees with empty, single and duplicate points" {
+            test "Polyline2D rotateDegreesAround with empty, single and duplicate points" {
                 let empty = Polyline2D.createFromPts []
-                let rotatedEmpty = Polyline2D.rotateAroundDegrees gCen gDeg empty
+                let rotatedEmpty = Polyline2D.rotateDegreesAround gCen gDeg empty
                 Expect.equal rotatedEmpty.PointCount 0 "empty stays empty"
                 let single = Polyline2D.createFromPts [gPt]
-                single.RotateAroundDegrees gCen gDeg
+                single.RotateDegreesAround gCen gDeg
                 Expect.isTrue (eqPt (single.GetPoint 0) (refRotAround gCen gRot gPt)) "single point is rotated"
                 let dup = Polyline2D.createFromPts [gPt; gPt]
-                let rotatedDup = Polyline2D.rotateAroundRadians gCen gRad dup
+                let rotatedDup = Polyline2D.rotateRadiansAround gCen gRad dup
                 Expect.isTrue (eqPt (rotatedDup.GetPoint 0) (rotatedDup.GetPoint 1)) "duplicate points stay duplicates"
                 Expect.isTrue (eqPt (dup.GetPoint 0) gPt) "input is not rotated"
             }

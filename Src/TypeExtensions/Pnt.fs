@@ -619,7 +619,7 @@ module AutoOpenPnt =
             Pnt (r.Cos*p.X - r.Sin*p.Y, r.Sin*p.X + r.Cos*p.Y, p.Z)
 
         /// Rotate the 3D point around a center 3D point and an X-aligned axis, from Y to Z-axis, counter-clockwise looking from right.
-        static member rotateAroundOnX (cen:Pnt) (r:Rotation2D) (pnt:Pnt) : Pnt =
+        static member rotateOnXAround (cen:Pnt) (r:Rotation2D) (pnt:Pnt) : Pnt =
             let x = pnt.X - cen.X
             let y = pnt.Y - cen.Y
             let z = pnt.Z - cen.Z
@@ -628,7 +628,7 @@ module AutoOpenPnt =
                     r.Sin*y + r.Cos*z + cen.Z)
 
         /// Rotate the 3D point around a center point and a Y aligned axis, from Z to X-axis, counter-clockwise looking from back.
-        static member rotateAroundOnY (cen:Pnt) (r:Rotation2D) (pnt:Pnt) : Pnt =
+        static member rotateOnYAround (cen:Pnt) (r:Rotation2D) (pnt:Pnt) : Pnt =
             let x = pnt.X - cen.X
             let y = pnt.Y - cen.Y
             let z = pnt.Z - cen.Z
@@ -637,7 +637,7 @@ module AutoOpenPnt =
                     r.Cos*z - r.Sin*x + cen.Z)
 
         /// Rotate the 3D point around a center point and a Z aligned axis, from X to Y-axis, counter-clockwise looking from top.
-        static member rotateAroundOnZ (cen:Pnt) (r:Rotation2D) (pnt:Pnt) : Pnt =
+        static member rotateOnZAround (cen:Pnt) (r:Rotation2D) (pnt:Pnt) : Pnt =
             let x = pnt.X - cen.X
             let y = pnt.Y - cen.Y
             let z = pnt.Z - cen.Z
@@ -659,16 +659,16 @@ module AutoOpenPnt =
 
 
         /// Rotate the 3D point in degrees around center point and an X-aligned axis, from Y to Z-axis, counter-clockwise looking from right.
-        static member inline rotateAroundOnXDegrees (cen:Pnt) (angDegree) (pnt:Pnt) : Pnt =
-            Pnt.rotateAroundOnX cen (Rotation2D.createFromDegrees angDegree) pnt
+        static member inline rotateOnXDegreesAround (cen:Pnt) (angDegree) (pnt:Pnt) : Pnt =
+            Pnt.rotateOnXAround cen (Rotation2D.createFromDegrees angDegree) pnt
 
         /// Rotate the 3D point in degrees around center point and a Y aligned axis, from Z to X-axis, counter-clockwise looking from back.
-        static member inline rotateAroundOnYDegrees (cen:Pnt) (angDegree) (pnt:Pnt) : Pnt =
-            Pnt.rotateAroundOnY cen (Rotation2D.createFromDegrees angDegree) pnt
+        static member inline rotateOnYDegreesAround (cen:Pnt) (angDegree) (pnt:Pnt) : Pnt =
+            Pnt.rotateOnYAround cen (Rotation2D.createFromDegrees angDegree) pnt
 
         /// Rotate the 3D point in degrees around center point and a Z aligned axis, from X to Y-axis, counter-clockwise looking from top.
-        static member inline rotateAroundOnZDegrees (cen:Pnt) (angDegree) (pnt:Pnt) : Pnt =
-            Pnt.rotateAroundOnZ cen (Rotation2D.createFromDegrees angDegree) pnt
+        static member inline rotateOnZDegreesAround (cen:Pnt) (angDegree) (pnt:Pnt) : Pnt =
+            Pnt.rotateOnZAround cen (Rotation2D.createFromDegrees angDegree) pnt
 
         /// 90-degree rotation counter-clockwise around the Z-axis through the World Origin.
         member inline pnt.Rotate2Dby90CCW : Pnt =

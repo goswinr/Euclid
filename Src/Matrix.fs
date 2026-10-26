@@ -874,7 +874,7 @@ type Matrix =
     /// <param name="cen">The center point for the rotation.</param>
     /// <param name="axis">Rotation axis, a vector of any length but 0.0.</param>
     /// <param name="angleDegrees">Rotation angle in degrees.</param>
-    static member createRotationAroundVecDegrees (cen:Pnt) (axis:Vec) (angleDegrees:float) : Matrix =
+    static member createRotationFromVecDegreesAround (cen:Pnt) (axis:Vec) (angleDegrees:float) : Matrix =
         Matrix.createTranslationXYZ (-cen.X) (-cen.Y) (-cen.Z)
         *** Matrix.createRotationFromVecDegrees axis angleDegrees
         *** Matrix.createTranslationXYZ cen.X cen.Y cen.Z
@@ -884,7 +884,7 @@ type Matrix =
     /// <param name="cen">The center point for the rotation.</param>
     /// <param name="axis">Rotation axis, a vector of any length but 0.0.</param>
     /// <param name="angleRadians">Rotation angle in radians.</param>
-    static member createRotationAroundVecRadians (cen:Pnt) (axis:Vec) (angleRadians:float) : Matrix =
+    static member createRotationFromVecRadiansAround (cen:Pnt) (axis:Vec) (angleRadians:float) : Matrix =
         Matrix.createTranslationXYZ (-cen.X) (-cen.Y) (-cen.Z)
         *** Matrix.createRotationFromVecRadians axis angleRadians
         *** Matrix.createTranslationXYZ cen.X cen.Y cen.Z
@@ -894,7 +894,7 @@ type Matrix =
     /// <param name="cen">The center point for the rotation.</param>
     /// <param name="axis">Rotation axis, a unit-vector.</param>
     /// <param name="angleDegrees">Rotation angle in degrees.</param>
-    static member createRotationAroundUnitVecDegrees (cen:Pnt) (axis:UnitVec) (angleDegrees:float) : Matrix =
+    static member createRotationFromUnitVecDegreesAround (cen:Pnt) (axis:UnitVec) (angleDegrees:float) : Matrix =
         Matrix.createTranslationXYZ (-cen.X) (-cen.Y) (-cen.Z)
         *** Matrix.createRotationFromUnitVecDegrees axis angleDegrees
         *** Matrix.createTranslationXYZ cen.X cen.Y cen.Z
@@ -904,7 +904,7 @@ type Matrix =
     /// <param name="cen">The center point for the rotation.</param>
     /// <param name="axis">Rotation axis, a unit-vector.</param>
     /// <param name="angleRadians">Rotation angle in radians.</param>
-    static member createRotationAroundUnitVecRadians (cen:Pnt) (axis:UnitVec) (angleRadians:float) : Matrix =
+    static member createRotationFromUnitVecRadiansAround (cen:Pnt) (axis:UnitVec) (angleRadians:float) : Matrix =
         Matrix.createTranslationXYZ (-cen.X) (-cen.Y) (-cen.Z)
         *** Matrix.createRotationFromUnitVecRadians axis angleRadians
         *** Matrix.createTranslationXYZ cen.X cen.Y cen.Z

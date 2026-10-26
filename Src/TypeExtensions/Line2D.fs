@@ -1192,7 +1192,7 @@ module AutoOpenLine2D =
     /// <param name="cen">The center point of the rotation.</param>
     /// <param name="angDegree">The rotation angle in degrees.</param>
     /// <returns>The rotated 2D line.</returns>
-    member inline ln.RotateAroundDegrees (cen:Pt) (angDegree:float) : Line2D =
+    member inline ln.RotateDegreesAround (cen:Pt) (angDegree:float) : Line2D =
         ln.RotateAround cen (Rotation2D.createFromDegrees angDegree)
 
     /// <summary>Rotate a Line2D counter-clockwise around a given center point by an angle in degrees.</summary>
@@ -1200,14 +1200,14 @@ module AutoOpenLine2D =
     /// <param name="angDegree">The rotation angle in degrees.</param>
     /// <param name="ln">The 2D line to rotate.</param>
     /// <returns>The rotated 2D line.</returns>
-    static member inline rotateAroundDegrees (cen:Pt) (angDegree:float) (ln:Line2D) : Line2D =
+    static member inline rotateDegreesAround (cen:Pt) (angDegree:float) (ln:Line2D) : Line2D =
         ln.RotateAround cen (Rotation2D.createFromDegrees angDegree)
 
     /// <summary>Rotate the Line2D counter-clockwise around a given center point by an angle in radians.</summary>
     /// <param name="cen">The center point of the rotation.</param>
     /// <param name="angRadians">The rotation angle in radians.</param>
     /// <returns>The rotated 2D line.</returns>
-    member inline ln.RotateAroundRadians (cen:Pt) (angRadians:float) : Line2D =
+    member inline ln.RotateRadiansAround (cen:Pt) (angRadians:float) : Line2D =
         ln.RotateAround cen (Rotation2D.createFromRadians angRadians)
 
     /// <summary>Rotate a Line2D counter-clockwise around a given center point by an angle in radians.</summary>
@@ -1215,7 +1215,7 @@ module AutoOpenLine2D =
     /// <param name="angRadians">The rotation angle in radians.</param>
     /// <param name="ln">The 2D line to rotate.</param>
     /// <returns>The rotated 2D line.</returns>
-    static member inline rotateAroundRadians (cen:Pt) (angRadians:float) (ln:Line2D) : Line2D =
+    static member inline rotateRadiansAround (cen:Pt) (angRadians:float) (ln:Line2D) : Line2D =
         ln.RotateAround cen (Rotation2D.createFromRadians angRadians)
 
     /// <summary>Rotate a Line2D counter-clockwise around a given center point by a Rotation2D.

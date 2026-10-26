@@ -106,7 +106,7 @@ let only2DMembers = [
     "BRect"     , @"^PointsLooped$"                               , "a box has no single perimeter"
     ""          , @"Left|Right"                                   , "side of a line"
     ""          , @"(?<![0-9])CC?W(?![a-z])|Clockwise|Winding|Signed", "orientation in the plane"
-    ""          , @"^Rotate(Around)?(Degrees|Radians)$"           , "a 3D rotation also needs an axis"
+    ""          , @"^Rotate(Degrees|Radians)(Around)?$"           , "a 3D rotation also needs an axis"
     ""          , @"^Contains(XY)?$|LabelPoint"                   , "inside of a planar area"
     ""          , @"^(Cross|Det)$"                                , "scalar cross product"
     ""          , @"IntersectRays|IntersectInRange"               , "rays in 3D are mostly skew"

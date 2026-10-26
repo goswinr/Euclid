@@ -1791,7 +1791,7 @@ module AutoOpenLine3D =
                 ln.ToZ)
 
     /// Rotation a 3D line round a given center point an a local Z-axis.
-    static member inline rotateAroundOnZ (cen:Pnt) (r:Rotation2D) (ln:Line3D) : Line3D =
+    static member inline rotateOnZAround (cen:Pnt) (r:Rotation2D) (ln:Line3D) : Line3D =
         let cx = cen.X
         let cy = cen.Y
         let fx = ln.FromX - cx

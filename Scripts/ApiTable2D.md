@@ -387,10 +387,10 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Pt.rotate90CW` | `pt: Pt -> Pt` |
 | `.RotateAround` | `cen: Pt -> r: Rotation2D -> Pt` |
 | `Pt.rotateAround` | `cen: Pt -> r: Rotation2D -> pt: Pt -> Pt` |
-| `.RotateAroundDegrees` | `cen: Pt -> angDegree: float -> Pt` |
-| `Pt.rotateAroundDegrees` | `cen: Pt -> angDegree: float -> pt: Pt -> Pt` |
-| `.RotateAroundRadians` | `cen: Pt -> angRadians: float -> Pt` |
-| `Pt.rotateAroundRadians` | `cen: Pt -> angRadians: float -> pt: Pt -> Pt` |
+| `.RotateDegreesAround` | `cen: Pt -> angDegree: float -> Pt` |
+| `Pt.rotateDegreesAround` | `cen: Pt -> angDegree: float -> pt: Pt -> Pt` |
+| `.RotateRadiansAround` | `cen: Pt -> angRadians: float -> Pt` |
+| `Pt.rotateRadiansAround` | `cen: Pt -> angRadians: float -> pt: Pt -> Pt` |
 | `.RotateByQuarterCircle` | `numberOfQuarters: int -> Pt` |
 | `Pt.rotateByQuarterCircle` | `numberOfQuarters: int -> v: Pt -> Pt` |
 | `.RotateDegrees` | `angDegree: float -> Pt` |
@@ -632,10 +632,10 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Line2D.rotate` | `r: Rotation2D -> ln: Line2D -> Line2D` |
 | `.RotateAround` | `cen: Pt -> r: Rotation2D -> Line2D` |
 | `Line2D.rotateAround` | `cen: Pt -> r: Rotation2D -> ln: Line2D -> Line2D` |
-| `.RotateAroundDegrees` | `cen: Pt -> angDegree: float -> Line2D` |
-| `Line2D.rotateAroundDegrees` | `cen: Pt -> angDegree: float -> ln: Line2D -> Line2D` |
-| `.RotateAroundRadians` | `cen: Pt -> angRadians: float -> Line2D` |
-| `Line2D.rotateAroundRadians` | `cen: Pt -> angRadians: float -> ln: Line2D -> Line2D` |
+| `.RotateDegreesAround` | `cen: Pt -> angDegree: float -> Line2D` |
+| `Line2D.rotateDegreesAround` | `cen: Pt -> angDegree: float -> ln: Line2D -> Line2D` |
+| `.RotateRadiansAround` | `cen: Pt -> angRadians: float -> Line2D` |
+| `Line2D.rotateRadiansAround` | `cen: Pt -> angRadians: float -> ln: Line2D -> Line2D` |
 | `.RotateDegrees` | `angDegree: float -> Line2D` |
 | `Line2D.rotateDegrees` | `angDegree: float -> ln: Line2D -> Line2D` |
 | `.RotateRadians` | `angRadians: float -> Line2D` |
@@ -1006,10 +1006,10 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Rect2D.rotate` | `rot: Rotation2D -> rect: Rect2D -> Rect2D` |
 | `.RotateAround` | `cen: Pt -> rot: Rotation2D -> Rect2D` |
 | `Rect2D.rotateAround` | `cen: Pt -> rot: Rotation2D -> rect: Rect2D -> Rect2D` |
-| `.RotateAroundDegrees` | `cen: Pt -> angDegree: float -> Rect2D` |
-| `Rect2D.rotateAroundDegrees` | `cen: Pt -> angDegree: float -> r: Rect2D -> Rect2D` |
-| `.RotateAroundRadians` | `cen: Pt -> angRadians: float -> Rect2D` |
-| `Rect2D.rotateAroundRadians` | `cen: Pt -> angRadians: float -> r: Rect2D -> Rect2D` |
+| `.RotateDegreesAround` | `cen: Pt -> angDegree: float -> Rect2D` |
+| `Rect2D.rotateDegreesAround` | `cen: Pt -> angDegree: float -> r: Rect2D -> Rect2D` |
+| `.RotateRadiansAround` | `cen: Pt -> angRadians: float -> Rect2D` |
+| `Rect2D.rotateRadiansAround` | `cen: Pt -> angRadians: float -> r: Rect2D -> Rect2D` |
 | `.RotateDegrees` | `angDegree: float -> Rect2D` |
 | `Rect2D.rotateDegrees` | `angDegree: float -> r: Rect2D -> Rect2D` |
 | `.RotateOrientation180` | `Rect2D` |
@@ -1414,10 +1414,10 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Polyline2D.rotate` | `r: Rotation2D -> pl: Polyline2D -> Polyline2D` |
 | `.RotateAround` | `cen: Pt -> r: Rotation2D -> unit` |
 | `Polyline2D.rotateAround` | `cen: Pt -> r: Rotation2D -> pl: Polyline2D -> Polyline2D` |
-| `.RotateAroundDegrees` | `cen: Pt -> angDegree: float -> unit` |
-| `Polyline2D.rotateAroundDegrees` | `cen: Pt -> angDegree: float -> pl: Polyline2D -> Polyline2D` |
-| `.RotateAroundRadians` | `cen: Pt -> angRadians: float -> unit` |
-| `Polyline2D.rotateAroundRadians` | `cen: Pt -> angRadians: float -> pl: Polyline2D -> Polyline2D` |
+| `.RotateDegreesAround` | `cen: Pt -> angDegree: float -> unit` |
+| `Polyline2D.rotateDegreesAround` | `cen: Pt -> angDegree: float -> pl: Polyline2D -> Polyline2D` |
+| `.RotateRadiansAround` | `cen: Pt -> angRadians: float -> unit` |
+| `Polyline2D.rotateRadiansAround` | `cen: Pt -> angRadians: float -> pl: Polyline2D -> Polyline2D` |
 | `.RotateDegrees` | `angDegree: float -> unit` |
 | `Polyline2D.rotateDegrees` | `angDegree: float -> pl: Polyline2D -> Polyline2D` |
 | `.RotateRadians` | `angRadians: float -> unit` |

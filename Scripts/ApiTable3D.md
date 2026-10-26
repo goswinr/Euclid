@@ -501,12 +501,12 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Pnt.projectedParameterOnUnitVec` | `fromPnt: Pnt -> uv: UnitVec -> testPnt: Pnt -> float` |
 | `Pnt.projectedParameterOnVec` | `fromPnt: Pnt -> v: Vec -> testPnt: Pnt -> float` |
 | `Pnt.projectToXYPlane` | `pnt: Pnt -> Pnt` |
-| `Pnt.rotateAroundOnX` | `cen: Pnt -> r: Rotation2D -> pnt: Pnt -> Pnt` |
-| `Pnt.rotateAroundOnXDegrees` | `cen: Pnt -> angDegree: float -> pnt: Pnt -> Pnt` |
-| `Pnt.rotateAroundOnY` | `cen: Pnt -> r: Rotation2D -> pnt: Pnt -> Pnt` |
-| `Pnt.rotateAroundOnYDegrees` | `cen: Pnt -> angDegree: float -> pnt: Pnt -> Pnt` |
-| `Pnt.rotateAroundOnZ` | `cen: Pnt -> r: Rotation2D -> pnt: Pnt -> Pnt` |
-| `Pnt.rotateAroundOnZDegrees` | `cen: Pnt -> angDegree: float -> pnt: Pnt -> Pnt` |
+| `Pnt.rotateOnXAround` | `cen: Pnt -> r: Rotation2D -> pnt: Pnt -> Pnt` |
+| `Pnt.rotateOnXDegreesAround` | `cen: Pnt -> angDegree: float -> pnt: Pnt -> Pnt` |
+| `Pnt.rotateOnYAround` | `cen: Pnt -> r: Rotation2D -> pnt: Pnt -> Pnt` |
+| `Pnt.rotateOnYDegreesAround` | `cen: Pnt -> angDegree: float -> pnt: Pnt -> Pnt` |
+| `Pnt.rotateOnZAround` | `cen: Pnt -> r: Rotation2D -> pnt: Pnt -> Pnt` |
+| `Pnt.rotateOnZDegreesAround` | `cen: Pnt -> angDegree: float -> pnt: Pnt -> Pnt` |
 | `Pnt.rotateOnX` | `r: Rotation2D -> p: Pnt -> Pnt` |
 | `Pnt.rotateOnXDegrees` | `angDegree: float -> pnt: Pnt -> Pnt` |
 | `Pnt.rotateOnY` | `r: Rotation2D -> p: Pnt -> Pnt` |
@@ -787,10 +787,10 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Matrix.createPerspectiveLookAt` | `eye: Pnt * target: Pnt * up: Vec * width: float * height: float * nearPlaneDistance: float * farPlaneDistance: float -> Matrix` |
 | `Matrix.createPerspectiveLookAtZUp` | `eye: Pnt * target: Pnt * width: float * height: float * nearPlaneDistance: float * farPlaneDistance: float -> Matrix` |
 | `Matrix.createPlaneToPlane` | `fromPlane: PPlane -> toPlane: PPlane -> Matrix` |
-| `Matrix.createRotationAroundUnitVecDegrees` | `cen: Pnt -> axis: UnitVec -> angleDegrees: float -> Matrix` |
-| `Matrix.createRotationAroundUnitVecRadians` | `cen: Pnt -> axis: UnitVec -> angleRadians: float -> Matrix` |
-| `Matrix.createRotationAroundVecDegrees` | `cen: Pnt -> axis: Vec -> angleDegrees: float -> Matrix` |
-| `Matrix.createRotationAroundVecRadians` | `cen: Pnt -> axis: Vec -> angleRadians: float -> Matrix` |
+| `Matrix.createRotationFromUnitVecDegreesAround` | `cen: Pnt -> axis: UnitVec -> angleDegrees: float -> Matrix` |
+| `Matrix.createRotationFromUnitVecRadiansAround` | `cen: Pnt -> axis: UnitVec -> angleRadians: float -> Matrix` |
+| `Matrix.createRotationFromVecDegreesAround` | `cen: Pnt -> axis: Vec -> angleDegrees: float -> Matrix` |
+| `Matrix.createRotationFromVecRadiansAround` | `cen: Pnt -> axis: Vec -> angleRadians: float -> Matrix` |
 | `Matrix.createRotationFromUnitVecDegrees` | `axis: UnitVec -> angleDegrees: float -> Matrix` |
 | `Matrix.createRotationFromUnitVecRadians` | `axis: UnitVec -> angleRadians: float -> Matrix` |
 | `Matrix.createRotationFromUnitVecs` | `vecFrom: UnitVec -> vecTo: UnitVec -> Matrix` |
@@ -864,10 +864,10 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `RigidMatrix.createFromMatrix` | `m: Matrix -> RigidMatrix` |
 | `RigidMatrix.createFromQuaternion` | `quaternion: Quaternion -> RigidMatrix` |
 | `RigidMatrix.createPlaneToPlane` | `fromPlane: PPlane -> toPlane: PPlane -> RigidMatrix` |
-| `RigidMatrix.createRotationAroundUnitVecDegrees` | `cen: Pnt -> axis: UnitVec -> angleDegrees: float -> RigidMatrix` |
-| `RigidMatrix.createRotationAroundUnitVecRadians` | `cen: Pnt -> axis: UnitVec -> angleRadians: float -> RigidMatrix` |
-| `RigidMatrix.createRotationAroundVecDegrees` | `cen: Pnt -> axis: Vec -> angleDegrees: float -> RigidMatrix` |
-| `RigidMatrix.createRotationAroundVecRadians` | `cen: Pnt -> axis: Vec -> angleRadians: float -> RigidMatrix` |
+| `RigidMatrix.createRotationFromUnitVecDegreesAround` | `cen: Pnt -> axis: UnitVec -> angleDegrees: float -> RigidMatrix` |
+| `RigidMatrix.createRotationFromUnitVecRadiansAround` | `cen: Pnt -> axis: UnitVec -> angleRadians: float -> RigidMatrix` |
+| `RigidMatrix.createRotationFromVecDegreesAround` | `cen: Pnt -> axis: Vec -> angleDegrees: float -> RigidMatrix` |
+| `RigidMatrix.createRotationFromVecRadiansAround` | `cen: Pnt -> axis: Vec -> angleRadians: float -> RigidMatrix` |
 | `RigidMatrix.createRotationFromUnitVecDegrees` | `axis: UnitVec -> angleDegrees: float -> RigidMatrix` |
 | `RigidMatrix.createRotationFromUnitVecRadians` | `axis: UnitVec -> angleRadians: float -> RigidMatrix` |
 | `RigidMatrix.createRotationFromUnitVecs` | `vecFrom: UnitVec -> vecTo: UnitVec -> RigidMatrix` |
@@ -1135,7 +1135,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Line3D.projectOntoRay` | `rayToProjectOnto: Line3D -> lineToProject: Line3D -> Line3D` |
 | `Line3D.projectOntoRayParam` | `rayToProjectOnto: Line3D -> lineToProject: Line3D -> float * float` |
 | `Line3D.reverse` | `ln: Line3D -> Line3D` |
-| `Line3D.rotateAroundOnZ` | `cen: Pnt -> r: Rotation2D -> ln: Line3D -> Line3D` |
+| `Line3D.rotateOnZAround` | `cen: Pnt -> r: Rotation2D -> ln: Line3D -> Line3D` |
 | `Line3D.rotateOnZ` | `r: Rotation2D -> ln: Line3D -> Line3D` |
 | `Line3D.split` | `gap: float -> segments: int -> ln: Line3D -> Line3D array` |
 | `Line3D.splitMaxLength` | `gap: float -> maxSegmentLength: float -> ln: Line3D -> Line3D array` |
@@ -2452,8 +2452,8 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Polyline3D.rotate` | `q: Quaternion -> pl: Polyline3D -> Polyline3D` |
 | `.RotateAround` | `cen: Pnt -> q: Quaternion -> unit` |
 | `Polyline3D.rotateAround` | `cen: Pnt -> q: Quaternion -> pl: Polyline3D -> Polyline3D` |
-| `.RotateAroundOnZ` | `cen: Pnt -> r: Rotation2D -> unit` |
-| `Polyline3D.rotateAroundOnZ` | `cen: Pnt -> r: Rotation2D -> pl: Polyline3D -> Polyline3D` |
+| `.RotateOnZAround` | `cen: Pnt -> r: Rotation2D -> unit` |
+| `Polyline3D.rotateOnZAround` | `cen: Pnt -> r: Rotation2D -> pl: Polyline3D -> Polyline3D` |
 | `.RotateOnZ` | `r: Rotation2D -> unit` |
 | `Polyline3D.rotateOnZ` | `r: Rotation2D -> pl: Polyline3D -> Polyline3D` |
 | `.Scale` | `factor: float -> unit` |

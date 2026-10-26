@@ -1011,7 +1011,7 @@ type Rect2D =
     /// <param name="cen">The center point of the rotation.</param>
     /// <param name="angDegree">The rotation angle in degrees.</param>
     /// <returns>The rotated 2D rectangle.</returns>
-    member inline r.RotateAroundDegrees (cen:Pt) (angDegree:float) : Rect2D =
+    member inline r.RotateDegreesAround (cen:Pt) (angDegree:float) : Rect2D =
         Rect2D.rotateAround cen (Rotation2D.createFromDegrees angDegree) r
 
     /// <summary>Rotates a 2D rectangle counter-clockwise around a given center point by an angle in degrees.</summary>
@@ -1019,14 +1019,14 @@ type Rect2D =
     /// <param name="angDegree">The rotation angle in degrees.</param>
     /// <param name="r">The 2D rectangle to rotate.</param>
     /// <returns>The rotated 2D rectangle.</returns>
-    static member inline rotateAroundDegrees (cen:Pt) (angDegree:float) (r:Rect2D) : Rect2D =
+    static member inline rotateDegreesAround (cen:Pt) (angDegree:float) (r:Rect2D) : Rect2D =
         Rect2D.rotateAround cen (Rotation2D.createFromDegrees angDegree) r
 
     /// <summary>Rotates the 2D rectangle counter-clockwise around a given center point by an angle in radians.</summary>
     /// <param name="cen">The center point of the rotation.</param>
     /// <param name="angRadians">The rotation angle in radians.</param>
     /// <returns>The rotated 2D rectangle.</returns>
-    member inline r.RotateAroundRadians (cen:Pt) (angRadians:float) : Rect2D =
+    member inline r.RotateRadiansAround (cen:Pt) (angRadians:float) : Rect2D =
         Rect2D.rotateAround cen (Rotation2D.createFromRadians angRadians) r
 
     /// <summary>Rotates a 2D rectangle counter-clockwise around a given center point by an angle in radians.</summary>
@@ -1034,7 +1034,7 @@ type Rect2D =
     /// <param name="angRadians">The rotation angle in radians.</param>
     /// <param name="r">The 2D rectangle to rotate.</param>
     /// <returns>The rotated 2D rectangle.</returns>
-    static member inline rotateAroundRadians (cen:Pt) (angRadians:float) (r:Rect2D) : Rect2D =
+    static member inline rotateRadiansAround (cen:Pt) (angRadians:float) (r:Rect2D) : Rect2D =
         Rect2D.rotateAround cen (Rotation2D.createFromRadians angRadians) r
 
 
