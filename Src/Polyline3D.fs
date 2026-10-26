@@ -2884,6 +2884,44 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
                 i <- i + 1
         result
 
+    /// <summary>Finds all intersections between non-adjacent segments in O(n²) time,
+    /// with the same rules as Polyline3D.tryFindSelfIntersection:
+    /// Excludes the closure joint when endpoints are within 1e-7, parallel overlaps (angle below 0.25 degrees),
+    /// and segments shorter than 1e-6. Uses the XLine3D endpoint parameter tolerance of 1e-6.
+    /// The closest separation must be strictly less than maxSkewDistance; zero therefore finds no intersections.</summary>
+    /// <param name="pl">The polyline to search.</param>
+    /// <param name="maxSkewDistance">Finite, nonnegative separation tolerance; defaults to 1e-6.</param>
+    /// <returns>A new list of points on the first segment with the indices of the two intersecting segments,
+    /// sorted by the first and then by the second segment index. The first index is always smaller than the second.
+    /// The list is empty if no intersection is found.</returns>
+    static member findAllSelfIntersections(pl:Polyline3D, [<OPT;DEF(1e-6)>] maxSkewDistance:float) : ResizeArray<Pnt * int * int> =
+        if maxSkewDistance < 0.0 || isNanInfinity maxSkewDistance then
+            fail $"Polyline3D.findAllSelfIntersections: maxSkewDistance must be finite and nonnegative, got {maxSkewDistance}."
+        let xyzs = pl.XYZs
+        let segmentCount = pl.PointCount - 1
+        let result = ResizeArray<Pnt * int * int>()
+        if segmentCount > 1 then
+            let isClosed = pl.IsAlmostClosed 1e-7
+            let mutable i = 0
+            while i < segmentCount - 2 do
+                let a = i * 3
+                let ax = xyzs.[a+3] - xyzs.[a]
+                let ay = xyzs.[a+4] - xyzs.[a+1]
+                let az = xyzs.[a+5] - xyzs.[a+2]
+                let last = if i = 0 && isClosed then segmentCount - 2 else segmentCount - 1
+                let mutable j = i + 2
+                while j <= last do
+                    let b = j * 3
+                    match XLineXYZ.tryIntersect(
+                        xyzs.[a], xyzs.[a+1], xyzs.[a+2], xyzs.[b], xyzs.[b+1], xyzs.[b+2],
+                        ax, ay, az, xyzs.[b+3] - xyzs.[b], xyzs.[b+4] - xyzs.[b+1], xyzs.[b+5] - xyzs.[b+2],
+                        maxSkewDistance, Tangent.``0.25``, 1e-6) with
+                    | ValueSome p -> result.Add((p, i, j))
+                    | ValueNone -> ()
+                    j <- j + 1
+                i <- i + 1
+        result
+
 
 #if !FABLE_COMPILER
 /// Serializes a Polyline3D as its interleaved XYZ coordinate buffer with System.Text.Json.

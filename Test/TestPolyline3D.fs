@@ -53,6 +53,42 @@ let tests =
             for tolerance in [-1.; System.Double.NaN; System.Double.PositiveInfinity] do
                 Expect.throws (fun () -> Polyline3D.tryFindSelfIntersection(skew, maxSkewDistance=tolerance) |> ignore) "invalid tolerance"
         }
+        test "findAllSelfIntersections of a pentagram in a translated tilted plane" {
+            let point x y = Pnt(13.+x,27.+0.6*y,39.+0.8*y)
+            let pts2D =
+                [ for k in 0 .. 5 ->
+                    let a = (13. + float (k * 144)) * System.Math.PI / 180.
+                    Pt(10. * cos a, 10. * sin a) ]
+            let pentagram = Polyline3D.createFromPnts [ for p in pts2D -> point p.X p.Y ]
+            let res = Polyline3D.findAllSelfIntersections pentagram
+            let expected = Polyline2D.findAllSelfIntersections (Polyline2D.createFromPts pts2D)
+            Expect.equal [ for (_, i, j) in res -> i, j ] [ 0,2; 0,3; 1,3; 1,4; 2,4 ] "segment index pairs, closure joint excluded"
+            for (p, i, j), (q, _, _) in Seq.zip res expected do
+                Expect.isTrue (eqPnt p (point q.X q.Y)) $"intersection of segments {i} and {j} matches 2D"
+            match Polyline3D.tryFindSelfIntersection pentagram with
+            | ValueSome (p, i, j) ->
+                let (p2, i2, j2) = res.[0]
+                Expect.equal (i2, j2) (i, j) "first result equals tryFindSelfIntersection"
+                expectSamePnt p2 p "first point equals tryFindSelfIntersection"
+            | ValueNone -> failwith "pentagram should intersect"
+            let closed = Polyline3D.createFromPnts([point 0. 0.; point 10. 0.; point 10. 10.; point 0. 10.; point 0. 0.])
+            Expect.equal (Polyline3D.findAllSelfIntersections closed).Count 0 "closure is not an intersection"
+            for pts in [[];[point 0. 0.];[point 0. 0.;point 0. 0.];[point 0. 0.;point 10. 0.;point 5. 0.;point 15. 0.]] do
+                Expect.equal (Polyline3D.findAllSelfIntersections (Polyline3D.createFromPnts pts)).Count 0 "empty, short or collinear"
+            let duplicate = Polyline3D.createFromPnts([point 0. 0.;point 10. 10.;point 10. 10.;point 10. 0.;point 0. 10.])
+            Expect.isTrue ((Polyline3D.findAllSelfIntersections duplicate).Count >= 1) "duplicate does not hide crossing"
+        }
+        test "findAllSelfIntersections skew tolerance" {
+            let skew = Polyline3D.createFromPnts([Pnt(13.,27.,39.);Pnt(23.,37.,39.);Pnt(23.,27.,39.01);Pnt(13.,37.,39.01)])
+            Expect.equal (Polyline3D.findAllSelfIntersections skew).Count 0 "skew exceeds default"
+            let res = Polyline3D.findAllSelfIntersections(skew, maxSkewDistance=0.02)
+            Expect.equal res.Count 1 "skew within 0.02"
+            let (p, i, j) = res.[0]
+            Expect.isTrue (eqPnt p (Pnt(18.,32.,39.))) "point on first segment"
+            Expect.equal (i,j) (0,2) "indices"
+            for tolerance in [-1.; System.Double.NaN; System.Double.PositiveInfinity] do
+                Expect.throws (fun () -> Polyline3D.findAllSelfIntersections(skew, maxSkewDistance=tolerance) |> ignore) "invalid tolerance"
+        }
 
         test "create empty polyline" {
             let pl = Polyline3D.createFromPnts([])

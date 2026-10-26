@@ -2043,6 +2043,41 @@ let testsSpecial =
             }
         ]
 
+        testList "findAllSelfIntersections" [
+            // a closed pentagram, rotated and away from the origin
+            let pentagram =
+                [ for k in 0 .. 5 ->
+                    let a = (13. + float (k * 144)) * System.Math.PI / 180.
+                    Pt(37. + 10. * cos a, -21. + 10. * sin a) ]
+                |> Polyline2D.createFromPts
+            test "closed pentagram has five crossings in index order" {
+                let res = Polyline2D.findAllSelfIntersections pentagram
+                let indices = [ for (_, i, j) in res -> i, j ]
+                Expect.equal indices [ 0,2; 0,3; 1,3; 1,4; 2,4 ] "segment index pairs, closure joint excluded"
+                for (pt, i, j) in res do
+                    Expect.isTrue ((pentagram.GetSegment i).DistanceToPtSq pt < 1e-18) $"point on segment {i}"
+                    Expect.isTrue ((pentagram.GetSegment j).DistanceToPtSq pt < 1e-18) $"point on segment {j}"
+            }
+            test "first result equals tryFindSelfIntersection" {
+                match Polyline2D.tryFindSelfIntersection pentagram with
+                | ValueSome (pt, i, j) ->
+                    let (pt2, i2, j2) = (Polyline2D.findAllSelfIntersections pentagram).[0]
+                    Expect.equal (i2, j2) (i, j) "same indices"
+                    "same point" |> expectEqPts pt2 pt
+                | ValueNone -> failwith "pentagram should intersect"
+            }
+            test "no intersections" {
+                for pl in [plEmpty; plSinglePoint; plLine; plOpen; plLShape; plClosed; plTriangle] do
+                    Expect.equal (Polyline2D.findAllSelfIntersections pl).Count 0 "no self intersection"
+            }
+            test "touching and duplicate points" {
+                let touching = Polyline2D.createFromPts [Pt(3.,4.); Pt(13.,14.); Pt(13.,4.); Pt(8.,9.)]
+                Expect.equal (Polyline2D.findAllSelfIntersections touching).Count 1 "non-adjacent endpoint contact"
+                let duplicate = Polyline2D.createFromPts [Pt(3.,4.); Pt(13.,14.); Pt(13.,14.); Pt(13.,4.); Pt(3.,14.)]
+                Expect.isTrue ((Polyline2D.findAllSelfIntersections duplicate).Count >= 1) "duplicate does not hide crossing"
+            }
+        ]
+
         testList "fail fast on degenerate input" [
             test "SignedArea on empty polyline throws" {
                 Expect.throws (fun () -> plEmpty.SignedArea |> ignore) "empty polyline has no signed area"

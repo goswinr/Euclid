@@ -2542,6 +2542,38 @@ type Polyline2D private (xys: ResizeArray<float>) =
                 i <- i + 2
             result
 
+    /// <summary>Finds all self intersections in a Polyline2D in O(n²) time.
+    /// Tests every pair of non-adjacent segments, with the same rules as Polyline2D.tryFindSelfIntersection:
+    /// The closure joint of a closed Polyline2D is not reported as a self intersection.
+    /// Two non-adjacent segments that are just touching are reported.
+    /// For larger polylines with more than 100 points use the Euclid.BVH library for efficient intersection testing.</summary>
+    /// <param name="pl">The polyline to search.</param>
+    /// <returns>A new list of the intersection points with the indices of the two intersecting segments,
+    /// sorted by the first and then by the second segment index. The first index is always smaller than the second.
+    /// The list is empty if no intersection is found or the polyline has fewer than 3 points.</returns>
+    static member findAllSelfIntersections(pl:Polyline2D) : ResizeArray<Pt * int * int> =
+        let xys = pl.XYs
+        let result = ResizeArray<Pt * int * int>()
+        if xys.Count >= 6 then // a polyline with fewer than two segments cannot intersect itself
+            let segmentVs = pl.SegmentVectorsXY
+            let segLastIdx = segmentVs.LastIndex
+            let isClosed = pl.IsAlmostClosed 1e-7
+            let mutable i = 0
+            while i <= segLastIdx do
+                let ptix = xys.[i]
+                let ptiy = xys.[i + 1]
+                let sVix = segmentVs.[i]
+                let sViy = segmentVs.[i + 1]
+                let rowEnd = if i = 0 && isClosed then segLastIdx - 3 else segLastIdx // skip the closure joint
+                let mutable j = i + 4 // +2 to skip the adjacent segment
+                while j <= rowEnd do
+                    match XLineXY.tryIntersect(ptix, ptiy, xys.[j], xys.[j + 1], sVix, sViy, segmentVs.[j], segmentVs.[j + 1]) with
+                    | ValueSome pt -> result.Add((pt, i / 2, j / 2))
+                    | ValueNone    -> ()
+                    j <- j + 2
+                i <- i + 2
+        result
+
     // #endregion
 
 #if !FABLE_COMPILER
