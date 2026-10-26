@@ -129,7 +129,7 @@ Float helpers that already exist (use or extend them, don't duplicate them):
 
 Report each one and fix it in its own commit, with a test and an entry under `### Fixed` in `CHANGELOG.md`. Kinds of bug found this way so far:
 
-- A min/max loop started at index 1 while its accumulators started at `Double.MaxValue` / `Double.MinValue`, so the first point was ignored (`Box.createFromPlaneAndPnts`).
+- A min/max loop started at index 1 while its accumulators started at `Double.MaxValue` / `Double.MinValue`, so the first point was ignored (`Box.createFromPntsAndPlane`).
 - An offset point was moved along the normal instead of the line direction (`Tria3D.tryOffsetPntVar`). Its tests only checked +d / −d round trips, which the wrong formula passed too.
 
 Report problems in obsolete code instead of fixing them silently. For example, the `Points.offsetInCorner` wrappers pass the wrong arguments to `Tria3D.tryOffsetPntVar`.

@@ -65,7 +65,7 @@ let tests =
 
 
         test "Matrix inverse rotate " {
-            let q = Quaternion.createFromVecDegrees (Vec.zAxis*9.0) 90.
+            let q = Quaternion.createFromDegreesVec (Vec.zAxis*9.0) 90.
             let m = Matrix.createFromQuaternion q
             let a = Pnt(9,0,3)
             let inv = m.Inverse
@@ -75,7 +75,7 @@ let tests =
 
         test "Matrix inverse transform rot ***" {
             let t = Matrix.createTranslation (Vec(-2,-3,4))
-            let q = Quaternion.createFromVecDegrees (Vec.zAxis*9.0) 90.
+            let q = Quaternion.createFromDegreesVec (Vec.zAxis*9.0) 90.
             let r = Matrix.createFromQuaternion q
             let m = t *** r
             let inv = m.Inverse
@@ -86,7 +86,7 @@ let tests =
 
         test "Matrix inverse transform rot inv ***" {
             let t = Matrix.createTranslation (Vec(-2,-3,4))
-            let q = Quaternion.createFromVecDegrees (Vec.zAxis*9.0) 90.
+            let q = Quaternion.createFromDegreesVec (Vec.zAxis*9.0) 90.
             let r = Matrix.createFromQuaternion q
             let m = r *** t
             let inv = m.Inverse
@@ -143,7 +143,7 @@ let tests =
 
         test "Matrix rotation arbitrary axis" {
             let axis = Vec(1,1,1)
-            let m = Matrix.createRotationFromVecDegrees axis 120.0
+            let m = Matrix.createRotationFromDegreesVec axis 120.0
             let a = Pnt(1,0,0)
             let b = a *** m
             let c = b *** m
@@ -154,7 +154,7 @@ let tests =
         test "Matrix rotation with center" {
             let axis = Vec.zAxis
             let center = Pnt(1,1,0)
-            let m = Matrix.createRotationFromVecDegreesAround center axis 90.0
+            let m = Matrix.createRotationFromDegreesVecAround center axis 90.0
             let a = Pnt(2,1,0)
             let b = a *** m
             "rotation around center" |> expectEqual b (Pnt(1,2,0))
@@ -236,7 +236,7 @@ let tests =
         }
 
         test "Matrix from quaternion" {
-            let q = Quaternion.createFromVecDegrees Vec.zAxis 90.0
+            let q = Quaternion.createFromDegreesVec Vec.zAxis 90.0
             let m = Matrix.createFromQuaternion(q)
             let a = Pnt(1,0,0)
             let b = a *** m
@@ -359,12 +359,12 @@ let tests =
         // Edge case tests for createRotationAxis
         test "Matrix rotation axis zero-length should fail" {
             let axis = Vec(0.0, 0.0, 0.0)
-            "zero-length axis should throw" |> Expect.throws (fun () -> Matrix.createRotationFromVecDegrees axis 45.0 |> ignore)
+            "zero-length axis should throw" |> Expect.throws (fun () -> Matrix.createRotationFromDegreesVec axis 45.0 |> ignore)
         }
 
         test "Matrix rotation axis very short should fail" {
             let axis = Vec(1e-13, 0.0, 0.0)
-            "very short axis should throw" |> Expect.throws (fun () -> Matrix.createRotationFromVecDegrees axis 45.0 |> ignore)
+            "very short axis should throw" |> Expect.throws (fun () -> Matrix.createRotationFromDegreesVec axis 45.0 |> ignore)
         }
 
         // Edge case tests for IsProjecting
@@ -589,19 +589,19 @@ let tests =
                 "X" |> Expect.isTrue (Matrix.equalsExact (Matrix.createRotationXDegrees deg) (Matrix.createRotationXRadians rad))
                 "Y" |> Expect.isTrue (Matrix.equalsExact (Matrix.createRotationYDegrees deg) (Matrix.createRotationYRadians rad))
                 "Z" |> Expect.isTrue (Matrix.equalsExact (Matrix.createRotationZDegrees deg) (Matrix.createRotationZRadians rad))
-                "Vec" |> Expect.isTrue (Matrix.equalsExact (Matrix.createRotationFromVecDegrees axis deg) (Matrix.createRotationFromVecRadians axis rad))
-                "UnitVec" |> Expect.isTrue (Matrix.equalsExact (Matrix.createRotationFromUnitVecDegrees uAxis deg) (Matrix.createRotationFromUnitVecRadians uAxis rad))
-                "Around Vec" |> Expect.isTrue (Matrix.equalsExact (Matrix.createRotationFromVecDegreesAround center axis deg) (Matrix.createRotationFromVecRadiansAround center axis rad))
-                "Around UnitVec" |> Expect.isTrue (Matrix.equalsExact (Matrix.createRotationFromUnitVecDegreesAround center uAxis deg) (Matrix.createRotationFromUnitVecRadiansAround center uAxis rad))
+                "Vec" |> Expect.isTrue (Matrix.equalsExact (Matrix.createRotationFromDegreesVec axis deg) (Matrix.createRotationFromRadiansVec axis rad))
+                "UnitVec" |> Expect.isTrue (Matrix.equalsExact (Matrix.createRotationFromDegreesUnitVec uAxis deg) (Matrix.createRotationFromRadiansUnitVec uAxis rad))
+                "Around Vec" |> Expect.isTrue (Matrix.equalsExact (Matrix.createRotationFromDegreesVecAround center axis deg) (Matrix.createRotationFromRadiansVecAround center axis rad))
+                "Around UnitVec" |> Expect.isTrue (Matrix.equalsExact (Matrix.createRotationFromDegreesUnitVecAround center uAxis deg) (Matrix.createRotationFromRadiansUnitVecAround center uAxis rad))
         }
 
         test "Matrix rotation around a center keeps the center fixed" {
             let center = Pnt(3.5, -7.25, 11.0)
             let axis = Vec(1.0, -2.0, 0.5)
-            let m = Matrix.createRotationFromVecDegreesAround center axis 37.0
+            let m = Matrix.createRotationFromDegreesVecAround center axis 37.0
             "center is fixed" |> expectEqual (center *** m) center
             let p = Pnt(-4.0, 2.0, 9.0)
-            let expected = center + Vec.rotate (Quaternion.createFromVecDegrees axis 37.0) (p - center)
+            let expected = center + Vec.rotate (Quaternion.createFromDegreesVec axis 37.0) (p - center)
             "rotates around center" |> expectEqual (p *** m) expected
         }
 
@@ -615,7 +615,7 @@ let tests =
             "partial look at" |> Expect.isTrue (Matrix.equalsExact (lookUp (Pnt(1, 2, 3))) (Matrix.createLookAt Vec.zAxis (Pnt(10, -5, 3)) (Pnt(1, 2, 3))))
         }
         test "Matrix.andThen applies the current matrix first" {
-            let rot = Matrix.createRotationFromVecDegreesAround (Pnt(3.0, -2.0, 5.0)) (Vec(1.0, 2.0, -0.5)) 33.0
+            let rot = Matrix.createRotationFromDegreesVecAround (Pnt(3.0, -2.0, 5.0)) (Vec(1.0, 2.0, -0.5)) 33.0
             let move = Matrix.createTranslationXYZ 7.0 -4.0 2.5
             let p = Pnt(-6.0, 11.0, 4.0)
             let viaPipe = rot |> Matrix.andThen move
@@ -625,7 +625,7 @@ let tests =
         }
 
         test "Matrix.decompose finds scale, shear, rotation and translation" {
-            let q = Quaternion.createFromVecDegrees (Vec(1.0, -2.0, 0.5)) 37.0
+            let q = Quaternion.createFromDegreesVec (Vec(1.0, -2.0, 0.5)) 37.0
             let t = Vec(12.5, -7.25, 30.0)
             let m =
                 Matrix.createScale 2.0 3.0 0.5
@@ -653,7 +653,7 @@ let tests =
         }
 
         test "Matrix.decompose round-trips strong shear and tiny scale" {
-            let q = Quaternion.createFromVecDegrees (Vec(-0.3, 0.8, 1.0)) -128.0
+            let q = Quaternion.createFromDegreesVec (Vec(-0.3, 0.8, 1.0)) -128.0
             let strongShear =
                 Matrix.createShear(0.7, -1.5, 50.0, 2.0, -3.0, 0.1)
                 *** Matrix.createFromQuaternion q
@@ -689,7 +689,7 @@ let tests =
         }
 
         test "Matrix.interpolate returns the exact end matrices" {
-            let a = Matrix.createScale 2.0 1.0 0.5 *** Matrix.createRotationFromVecDegreesAround (Pnt(3, -2, 5)) (Vec(1, 2, -0.5)) 33.0
+            let a = Matrix.createScale 2.0 1.0 0.5 *** Matrix.createRotationFromDegreesVecAround (Pnt(3, -2, 5)) (Vec(1, 2, -0.5)) 33.0
             let b = Matrix.createShear(0, 0, 0.2, 0, 0, 0) *** Matrix.createTranslationXYZ 7.0 -4.0 2.5
             "factor 0" |> Expect.isTrue (Matrix.equalsExact (Matrix.interpolate a b 0.0) a)
             "factor 1" |> Expect.isTrue (Matrix.equalsExact (Matrix.interpolate a b 1.0) b)
@@ -698,7 +698,7 @@ let tests =
 
         test "Matrix.interpolate interpolates rotation angle, scale and translation" {
             let axis = Vec(1.0, -2.0, 0.5)
-            let make s deg (t:Vec) = Matrix.createScale s s s *** Matrix.createRotationFromVecDegrees axis deg *** Matrix.createTranslation t
+            let make s deg (t:Vec) = Matrix.createScale s s s *** Matrix.createRotationFromDegreesVec axis deg *** Matrix.createTranslation t
             let a = make 1.0 10.0 (Vec(10, 20, -5))
             let b = make 3.0 70.0 (Vec(-30, 4, 15))
             let expected = make 2.0 40.0 (Vec(-10, 12, 5))

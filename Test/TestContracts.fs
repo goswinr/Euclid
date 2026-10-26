@@ -8,7 +8,7 @@ open EuclidTestSupport
 // 'equalsWithin' compares each coordinate within a tolerance and 'equalsExact' compares exactly.
 
 // Test shapes are rotated and moved, so that they are not axis aligned at the origin.
-let private q = Quaternion.createFromVecDegrees (Vec(1., 2., 3.)) 33.
+let private q = Quaternion.createFromDegreesVec (Vec(1., 2., 3.)) 33.
 let private shift = Vec(12.5, -7.25, 3.5)
 let private place (p:Pnt) = Pnt.rotate q p + shift
 let private placeXYZ x y z = place (Pnt(x, y, z))

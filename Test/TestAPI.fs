@@ -467,8 +467,8 @@ module PntAPI =
     let (_:float) = pnt.Angle360InXYTo p2
 
     // Instance and static members - Rotation
-    let (_:Pnt) = pnt.Rotate (Quaternion.createFromUnitVecDegrees UnitVec.zAxis 45.0)
-    let (_:Pnt) = pnt.RotateAround p2 (Quaternion.createFromUnitVecDegrees UnitVec.zAxis 45.0)
+    let (_:Pnt) = pnt.Rotate (Quaternion.createFromDegreesUnitVec UnitVec.zAxis 45.0)
+    let (_:Pnt) = pnt.RotateAround p2 (Quaternion.createFromDegreesUnitVec UnitVec.zAxis 45.0)
     let (_:Pnt) = pnt.Rotate2Dby90CCW
     let (_:Pnt) = pnt.Rotate2Dby90CW
     let (_:Pnt) = pnt.RotateByQuarterCircle 1
@@ -609,7 +609,7 @@ module VecAPI =
     let (_:Vec) = vec.PerpendicularInXY
     let (_:Vec) = vec.Rotate2Dby90CCW
     let (_:Vec) = vec.Rotate2Dby90CW
-    let (_:Vec) = vec.Rotate (Quaternion.createFromUnitVecDegrees UnitVec.zAxis 45.0)
+    let (_:Vec) = vec.Rotate (Quaternion.createFromDegreesUnitVec UnitVec.zAxis 45.0)
 
     // Instance members - Direction/Angles
     let (_:float) = vec.DirectionDiamondInXY
@@ -810,7 +810,7 @@ module UnitVecAPI =
     let (_:Vec) = unitvec.PerpendicularInXY
     let (_:UnitVec) = unitvec.Rotate2Dby90CCW
     let (_:UnitVec) = unitvec.Rotate2Dby90CW
-    let (_:UnitVec) = unitvec.Rotate (Quaternion.createFromUnitVecDegrees UnitVec.zAxis 45.0)
+    let (_:UnitVec) = unitvec.Rotate (Quaternion.createFromDegreesUnitVec UnitVec.zAxis 45.0)
 
     // Instance members - Direction/Angles
     let (_:float) = unitvec.DirectionDiamondInXY
@@ -1071,7 +1071,7 @@ module Line3DAPI =
     let (_:UnitVec) = line3d.UnitTangent
 
     // Instance members - Rotation
-    let q = Quaternion.createFromUnitVecDegrees UnitVec.zAxis 45.0
+    let q = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 45.0
     let (_:Line3D) = line3d.Rotate q
 
     // Instance members - Distance
@@ -1307,8 +1307,8 @@ module BRectAPI =
 
 module QuaternionAPI =
     // Creation
-    let quaternion = Quaternion.createFromUnitVecDegrees UnitVec.zAxis 45.0
-    let q2 = Quaternion.createFromUnitVecDegrees UnitVec.xAxis 90.0
+    let quaternion = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 45.0
+    let q2 = Quaternion.createFromDegreesUnitVec UnitVec.xAxis 90.0
 
     // Fields
     let (_:float) = quaternion.X
@@ -1329,10 +1329,10 @@ module QuaternionAPI =
     let (_:Quaternion) = Quaternion.identity
 
     // Static members - Creation
-    let (_:Quaternion) = Quaternion.createFromUnitVecRadians UnitVec.zAxis 0.785
-    let (_:Quaternion) = Quaternion.createFromVecRadians (Vec(0., 0., 1.)) 0.785
-    let (_:Quaternion) = Quaternion.createFromUnitVecDegrees UnitVec.zAxis 45.0
-    let (_:Quaternion) = Quaternion.createFromVecDegrees (Vec(0., 0., 1.)) 45.0
+    let (_:Quaternion) = Quaternion.createFromRadiansUnitVec UnitVec.zAxis 0.785
+    let (_:Quaternion) = Quaternion.createFromRadiansVec (Vec(0., 0., 1.)) 0.785
+    let (_:Quaternion) = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 45.0
+    let (_:Quaternion) = Quaternion.createFromDegreesVec (Vec(0., 0., 1.)) 45.0
     let (_:Quaternion) = Quaternion.createFromUnitVecs UnitVec.xAxis UnitVec.yAxis
     let (_:Quaternion) = Quaternion.createFromVecs (Vec(1., 0., 0.)) (Vec(0., 1., 0.))
     let (_:Quaternion) = Quaternion.multiply(quaternion, q2)
@@ -1422,10 +1422,10 @@ module MatrixAPI =
     let (_:Matrix) = Matrix.createRotationXDegrees 45.0
     let (_:Matrix) = Matrix.createRotationYDegrees 45.0
     let (_:Matrix) = Matrix.createRotationZDegrees 45.0
-    let (_:Matrix) = Matrix.createRotationFromUnitVecDegrees UnitVec.zAxis 45.0
-    let (_:Matrix) = Matrix.createRotationFromVecDegrees (Vec(0., 0., 1.)) 45.0
-    let (_:Matrix) = Matrix.createRotationFromUnitVecDegreesAround Pnt.Origin UnitVec.zAxis 45.0
-    let (_:Matrix) = Matrix.createRotationFromVecDegreesAround Pnt.Origin (Vec(0., 0., 1.)) 45.0
+    let (_:Matrix) = Matrix.createRotationFromDegreesUnitVec UnitVec.zAxis 45.0
+    let (_:Matrix) = Matrix.createRotationFromDegreesVec (Vec(0., 0., 1.)) 45.0
+    let (_:Matrix) = Matrix.createRotationFromDegreesUnitVecAround Pnt.Origin UnitVec.zAxis 45.0
+    let (_:Matrix) = Matrix.createRotationFromDegreesVecAround Pnt.Origin (Vec(0., 0., 1.)) 45.0
     let (_:Matrix) = Matrix.createRotationFromUnitVecs UnitVec.xAxis UnitVec.yAxis
     let (_:Matrix) = Matrix.createRotationFromVecs (Vec(1., 0., 0.)) (Vec(0., 1., 0.))
     let (_:Matrix) = Matrix.createFromQuaternion(Quaternion.identity)
@@ -1488,10 +1488,10 @@ module RigidMatrixAPI =
     let (_:RigidMatrix) = RigidMatrix.createRotationXDegrees 45.0
     let (_:RigidMatrix) = RigidMatrix.createRotationYDegrees 45.0
     let (_:RigidMatrix) = RigidMatrix.createRotationZDegrees 45.0
-    let (_:RigidMatrix) = RigidMatrix.createRotationFromUnitVecDegrees UnitVec.zAxis 45.0
-    let (_:RigidMatrix) = RigidMatrix.createRotationFromVecDegrees (Vec(0., 0., 1.)) 45.0
-    let (_:RigidMatrix) = RigidMatrix.createRotationFromUnitVecDegreesAround Pnt.Origin UnitVec.zAxis 45.0
-    let (_:RigidMatrix) = RigidMatrix.createRotationFromVecDegreesAround Pnt.Origin (Vec(0., 0., 1.)) 45.0
+    let (_:RigidMatrix) = RigidMatrix.createRotationFromDegreesUnitVec UnitVec.zAxis 45.0
+    let (_:RigidMatrix) = RigidMatrix.createRotationFromDegreesVec (Vec(0., 0., 1.)) 45.0
+    let (_:RigidMatrix) = RigidMatrix.createRotationFromDegreesUnitVecAround Pnt.Origin UnitVec.zAxis 45.0
+    let (_:RigidMatrix) = RigidMatrix.createRotationFromDegreesVecAround Pnt.Origin (Vec(0., 0., 1.)) 45.0
     let (_:RigidMatrix) = RigidMatrix.createRotationFromUnitVecs UnitVec.xAxis UnitVec.yAxis
     let (_:RigidMatrix) = RigidMatrix.createRotationFromVecs (Vec(1., 0., 0.)) (Vec(0., 1., 0.))
     let (_:RigidMatrix) = RigidMatrix.createFromQuaternion(Quaternion.identity)
@@ -1615,8 +1615,8 @@ module PPlaneAPI =
     let (_:PPlane) = PPlane.createFromXAxisAndYAxis (Vec(1., 0., 0.)) (Vec(0., 1., 0.)) Pnt.Origin
     let (_:PPlane) = PPlane.createFromUnitNormal UnitVec.zAxis Pnt.Origin
     let (_:PPlane) = PPlane.createFromNormal (Vec(0., 0., 1.)) Pnt.Origin
-    let (_:PPlane) = PPlane.createFromUnitNormalAndXAxis UnitVec.zAxis UnitVec.xAxis Pnt.Origin
-    let (_:PPlane) = PPlane.createFromNormalAndXAxis (Vec(0., 0., 1.)) (Vec(1., 0., 0.)) Pnt.Origin
+    let (_:PPlane) = PPlane.createFromUnitXAxisAndNormal UnitVec.zAxis UnitVec.xAxis Pnt.Origin
+    let (_:PPlane) = PPlane.createFromXAxisAndNormal (Vec(0., 0., 1.)) (Vec(1., 0., 0.)) Pnt.Origin
     let (_:PPlane) = PPlane.createFromAxesUnchecked(Pnt.Origin, UnitVec.xAxis, UnitVec.yAxis, UnitVec.zAxis)
 
     let (_:PPlane) = PPlane.translateBy (Vec(1., 1., 1.)) pplane
@@ -1714,7 +1714,7 @@ module Rect2DAPI =
     let (_:Rect2D) = Rect2D.createCenteredFromVc 5.0 (Vc(10., 0.)) (Pt(5., 2.5))
     let (_:Rect2D) = Rect2D.createCenteredFromUnitVc 10.0 5.0 UnitVc.xAxis (Pt(5., 2.5))
     let (_:Rect2D) = Rect2D.createFromUnitVc 10.0 5.0 UnitVc.xAxis Pt.Origin
-    let (_:Rect2D) = Rect2D.createFromVcAndPts (Vc(1., 0.)) (ResizeArray [Pt.Origin; Pt(10., 5.)])
+    let (_:Rect2D) = Rect2D.createFromPtsAndVc (Vc(1., 0.)) (ResizeArray [Pt.Origin; Pt(10., 5.)])
     let (_:Rect2D) = Rect2D.createFrom3Pts Pt.Origin (Pt(10., 0.)) (Pt(0., 5.))
     let (_:Rect2D voption) = Rect2D.tryCreateFrom3Pts Pt.Origin (Pt(10., 0.)) (Pt(0., 5.)) // Breaking: returns a voption now
 
@@ -1924,8 +1924,8 @@ module BoxAPI =
     let (_:Box) = Box.createFromPlane 1. 1. 1. PPlane.WorldXY
     let (_:Box) = Box.createFromRect2D 3.0 1. (Rect2D.createFromUnitVc 10.0 5.0 UnitVc.xAxis Pt.Origin)
     let (_:Box) = Box.createFromRect3D 3.0 1. (Rect3D.createFromPlane 10.0 5.0 PPlane.WorldXY)
-    let (_:Box) = Box.createFromPlaneAndPnts PPlane.WorldXY pts
-    let (_:Box) = Box.createFromVecsAndPnts Vec.xAxis Vec.yAxis pts
+    let (_:Box) = Box.createFromPntsAndPlane PPlane.WorldXY pts
+    let (_:Box) = Box.createFromPntsAndVecs Vec.xAxis Vec.yAxis pts
 
     // Static members - Operations
     let (_:Box) = Box.moveAlongLocalX 1.0 box

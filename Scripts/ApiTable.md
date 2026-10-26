@@ -69,6 +69,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 - [module Tangent](#module-tangent)
 - [module Format](#module-format)
 - [module Format.ToMaxDigits](#module-formattomaxdigits)
+- [MatrixDecomposition](#matrixdecomposition)
 - [module EuclidCollectionUtilities.Arr](#module-euclidcollectionutilitiesarr)
 - [module EuclidCollectionUtilities.ResizeArr](#module-euclidcollectionutilitiesresizearr)
 - [ResizeArray extensions](#resizearray-extensions)
@@ -487,16 +488,16 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Pt.rotate90CW` | `pt: Pt -> Pt` | `Pnt.rotate2Dby90CW` | `pnt: Pnt -> Pnt` |
 | `.RotateAround` | `cen: Pt -> r: Rotation2D -> Pt` | `.RotateAround` | `cen: Pnt -> q: Quaternion -> Pnt` |
 | `Pt.rotateAround` | `cen: Pt -> r: Rotation2D -> pt: Pt -> Pt` | `Pnt.rotateAround` | `cen: Pnt -> q: Quaternion -> pnt: Pnt -> Pnt` |
-| `.RotateDegreesAround` | `cen: Pt -> angDegree: float -> Pt` | — | *a 3D rotation also needs an axis* |
-| `Pt.rotateDegreesAround` | `cen: Pt -> angDegree: float -> pt: Pt -> Pt` | — | *a 3D rotation also needs an axis* |
-| `.RotateRadiansAround` | `cen: Pt -> angRadians: float -> Pt` | — | *a 3D rotation also needs an axis* |
-| `Pt.rotateRadiansAround` | `cen: Pt -> angRadians: float -> pt: Pt -> Pt` | — | *a 3D rotation also needs an axis* |
 | `.RotateByQuarterCircle` | `numberOfQuarters: int -> Pt` | `.RotateByQuarterCircle` | `numberOfQuarters: int -> Pnt` |
 | `Pt.rotateByQuarterCircle` | `numberOfQuarters: int -> v: Pt -> Pt` | `Pnt.rotateByQuarterCircle` | `numberOfQuarters: int -> pnt: Pnt -> Pnt` |
 | `.RotateDegrees` | `angDegree: float -> Pt` | — | *a 3D rotation also needs an axis* |
 | `Pt.rotateDegrees` | `angDegree: float -> pt: Pt -> Pt` | — | *a 3D rotation also needs an axis* |
+| `.RotateDegreesAround` | `cen: Pt -> angDegree: float -> Pt` | — | *a 3D rotation also needs an axis* |
+| `Pt.rotateDegreesAround` | `cen: Pt -> angDegree: float -> pt: Pt -> Pt` | — | *a 3D rotation also needs an axis* |
 | `.RotateRadians` | `angRadians: float -> Pt` | — | *a 3D rotation also needs an axis* |
 | `Pt.rotateRadians` | `angRadians: float -> pt: Pt -> Pt` | — | *a 3D rotation also needs an axis* |
+| `.RotateRadiansAround` | `cen: Pt -> angRadians: float -> Pt` | — | *a 3D rotation also needs an axis* |
+| `Pt.rotateRadiansAround` | `cen: Pt -> angRadians: float -> pt: Pt -> Pt` | — | *a 3D rotation also needs an axis* |
 | `.ToString` | `unit -> string` | `.ToString` | `unit -> string` |
 | — | *transformation matrix* | `.Transform` | `m: Matrix -> Pnt` |
 | — | *transformation matrix* | `Pnt.transform` | `m: Matrix -> p: Pnt -> Pnt` |
@@ -550,18 +551,18 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Pt.projectedParameterOnUnitVc` | `fromPt: Pt -> uv: UnitVc -> testPt: Pt -> float` | `Pnt.projectedParameterOnUnitVec` | `fromPnt: Pnt -> uv: UnitVec -> testPnt: Pnt -> float` |
 | `Pt.projectedParameterOnVc` | `fromPt: Pt -> v: Vc -> testPt: Pt -> float` | `Pnt.projectedParameterOnVec` | `fromPnt: Pnt -> v: Vec -> testPnt: Pnt -> float` |
 | — | *projection to the XY plane* | `Pnt.projectToXYPlane` | `pnt: Pnt -> Pnt` |
-| — | *rotation about a world axis* | `Pnt.rotateOnXAround` | `cen: Pnt -> r: Rotation2D -> pnt: Pnt -> Pnt` |
-| — | *rotation about a world axis* | `Pnt.rotateOnXDegreesAround` | `cen: Pnt -> angDegree: float -> pnt: Pnt -> Pnt` |
-| — | *rotation about a world axis* | `Pnt.rotateOnYAround` | `cen: Pnt -> r: Rotation2D -> pnt: Pnt -> Pnt` |
-| — | *rotation about a world axis* | `Pnt.rotateOnYDegreesAround` | `cen: Pnt -> angDegree: float -> pnt: Pnt -> Pnt` |
-| — | *rotation about a world axis* | `Pnt.rotateOnZAround` | `cen: Pnt -> r: Rotation2D -> pnt: Pnt -> Pnt` |
-| — | *rotation about a world axis* | `Pnt.rotateOnZDegreesAround` | `cen: Pnt -> angDegree: float -> pnt: Pnt -> Pnt` |
 | — | *rotation about a world axis* | `Pnt.rotateOnX` | `r: Rotation2D -> p: Pnt -> Pnt` |
+| — | *rotation about a world axis* | `Pnt.rotateOnXAround` | `cen: Pnt -> r: Rotation2D -> pnt: Pnt -> Pnt` |
 | — | *rotation about a world axis* | `Pnt.rotateOnXDegrees` | `angDegree: float -> pnt: Pnt -> Pnt` |
+| — | *rotation about a world axis* | `Pnt.rotateOnXDegreesAround` | `cen: Pnt -> angDegree: float -> pnt: Pnt -> Pnt` |
 | — | *rotation about a world axis* | `Pnt.rotateOnY` | `r: Rotation2D -> p: Pnt -> Pnt` |
+| — | *rotation about a world axis* | `Pnt.rotateOnYAround` | `cen: Pnt -> r: Rotation2D -> pnt: Pnt -> Pnt` |
 | — | *rotation about a world axis* | `Pnt.rotateOnYDegrees` | `angDegree: float -> pnt: Pnt -> Pnt` |
+| — | *rotation about a world axis* | `Pnt.rotateOnYDegreesAround` | `cen: Pnt -> angDegree: float -> pnt: Pnt -> Pnt` |
 | — | *rotation about a world axis* | `Pnt.rotateOnZ` | `r: Rotation2D -> p: Pnt -> Pnt` |
+| — | *rotation about a world axis* | `Pnt.rotateOnZAround` | `cen: Pnt -> r: Rotation2D -> pnt: Pnt -> Pnt` |
 | — | *rotation about a world axis* | `Pnt.rotateOnZDegrees` | `angDegree: float -> pnt: Pnt -> Pnt` |
+| — | *rotation about a world axis* | `Pnt.rotateOnZDegreesAround` | `cen: Pnt -> angDegree: float -> pnt: Pnt -> Pnt` |
 | `Pt.scale` | `f: float -> pt: Pt -> Pt` | `Pnt.scale` | `f: float -> pnt: Pnt -> Pnt` |
 | `Pt.scaleOn` | `cen: Pt -> factor: float -> pt: Pt -> Pt` | `Pnt.scaleOn` | `cen: Pnt -> factor: float -> pnt: Pnt -> Pnt` |
 | `Pt.snap` | `precision: float -> pt: Pt -> Pt` | `Pnt.snap` | `precision: float -> pnt: Pnt -> Pnt` |
@@ -626,6 +627,8 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Rotation2D.create` | `sine: float -> cosine: float -> Rotation2D` | `Quaternion.create` | `x: float * y: float * z: float * w: float -> Quaternion` |
 | `Rotation2D.createFromCosine` | `cos: float -> Rotation2D` | — | *sine and cosine* |
 | `Rotation2D.createFromDegrees` | `deg: float -> Rotation2D` | — | *a 3D rotation also needs an axis* |
+| — | *rotation about an axis vector* | `Quaternion.createFromDegreesUnitVec` | `axis: UnitVec -> angleInDegrees: float -> Quaternion` |
+| — | *rotation about an axis vector* | `Quaternion.createFromDegreesVec` | `axis: Vec -> angleInDegrees: float -> Quaternion` |
 | — | *quaternion components* | `Quaternion.createFromEulerXYZDegrees` | `degreesX: float -> degreesY: float -> degreesZ: float -> Quaternion` |
 | — | *quaternion components* | `Quaternion.createFromEulerXYZRadians` | `radiansX: float -> radiansY: float -> radiansZ: float -> Quaternion` |
 | — | *quaternion components* | `Quaternion.createFromEulerXZYDegrees` | `degreesX: float -> degreesZ: float -> degreesY: float -> Quaternion` |
@@ -639,13 +642,11 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | — | *quaternion components* | `Quaternion.createFromEulerZYXDegrees` | `degreesZ: float -> degreesY: float -> degreesX: float -> Quaternion` |
 | — | *quaternion components* | `Quaternion.createFromEulerZYXRadians` | `radiansZ: float -> radiansY: float -> radiansX: float -> Quaternion` |
 | `Rotation2D.createFromRadians` | `rad: float -> Rotation2D` | — | *a 3D rotation also needs an axis* |
+| — | *rotation about an axis vector* | `Quaternion.createFromRadiansUnitVec` | `axis: UnitVec -> angleInRadians: float -> Quaternion` |
+| — | *rotation about an axis vector* | `Quaternion.createFromRadiansVec` | `axis: Vec -> angleInRadians: float -> Quaternion` |
 | — | *transformation matrix* | `Quaternion.createFromRigidMatrix` | `orthoMatrix: RigidMatrix -> Quaternion` |
 | `Rotation2D.createFromSine` | `sin: float -> Rotation2D` | — | *sine and cosine* |
-| — | *rotation about an axis vector* | `Quaternion.createFromUnitVecDegrees` | `axis: UnitVec -> angleInDegrees: float -> Quaternion` |
-| — | *rotation about an axis vector* | `Quaternion.createFromUnitVecRadians` | `axis: UnitVec -> angleInRadians: float -> Quaternion` |
 | `Rotation2D.createFromUnitVcs` | `a: UnitVc -> b: UnitVc -> Rotation2D` | `Quaternion.createFromUnitVecs` | `vecFrom: UnitVec -> vecTo: UnitVec -> Quaternion` |
-| — | *rotation about an axis vector* | `Quaternion.createFromVecDegrees` | `axis: Vec -> angleInDegrees: float -> Quaternion` |
-| — | *rotation about an axis vector* | `Quaternion.createFromVecRadians` | `axis: Vec -> angleInRadians: float -> Quaternion` |
 | `Rotation2D.createFromVcs` | `a: Vc -> b: Vc -> Rotation2D` | `Quaternion.createFromVecs` | `vecFrom: Vec -> vecTo: Vec -> Quaternion` |
 | `Rotation2D.createUnchecked` | `sine: float * cosine: float -> Rotation2D` | `Quaternion.createUnchecked` | `x: float * y: float * z: float * w: float -> Quaternion` |
 | `Rotation2D.equalsExact` | `a: Rotation2D -> b: Rotation2D -> bool` | `Quaternion.equalsExact` | `a: Quaternion -> b: Quaternion -> bool` |
@@ -720,10 +721,10 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `PPlane.createFrom3Pnts` | `origin: Pnt -> xPnt: Pnt -> yPnt: Pnt -> PPlane` |
 | `PPlane.createFromAxesUnchecked` | `origin: Pnt * xAxis: UnitVec * yAxis: UnitVec * zAxis: UnitVec -> PPlane` |
 | `PPlane.createFromNormal` | `normal: Vec -> origin: Pnt -> PPlane` |
-| `PPlane.createFromNormalAndXAxis` | `normal: Vec -> xAxis: Vec -> origin: Pnt -> PPlane` |
 | `PPlane.createFromUnitNormal` | `normal: UnitVec -> origin: Pnt -> PPlane` |
-| `PPlane.createFromUnitNormalAndXAxis` | `normal: UnitVec -> xAxis: UnitVec -> origin: Pnt -> PPlane` |
+| `PPlane.createFromUnitXAxisAndNormal` | `normal: UnitVec -> xAxis: UnitVec -> origin: Pnt -> PPlane` |
 | `PPlane.createFromUnitXAxisAndYAxis` | `xAxis: UnitVec -> yAxis: UnitVec -> origin: Pnt -> PPlane` |
+| `PPlane.createFromXAxisAndNormal` | `normal: Vec -> xAxis: Vec -> origin: Pnt -> PPlane` |
 | `PPlane.createFromXAxisAndYAxis` | `xAxis: Vec -> yAxis: Vec -> origin: Pnt -> PPlane` |
 | `PPlane.createUnchecked` | `originX: float * originY: float * originZ: float * xAxisX: float * xAxisY: float * xAxisZ: float * yAxisX: float * yAxisY: float * yAxisZ: float * zAxisX: float * zAxisY: float * zAxisZ: float -> PPlane` |
 | `PPlane.doLinePlaneIntersect` | `ln: Line3D -> pl: PPlane -> bool` |
@@ -801,8 +802,12 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Matrix.columnVector2` | `m: Matrix -> Vec` |
 | `.ColumnVector3` | `Vec` |
 | `Matrix.columnVector3` | `m: Matrix -> Vec` |
+| `.Decompose` | `unit -> MatrixDecomposition` |
+| `Matrix.decompose` | `m: Matrix -> MatrixDecomposition` |
 | `.Determinant` | `float` |
 | `Matrix.determinant` | `m: Matrix -> float` |
+| `.Interpolate` | `finish: Matrix * factor: float -> Matrix` |
+| `Matrix.interpolate` | `start: Matrix -> finish: Matrix -> factor: float -> Matrix` |
 | `.Inverse` | `Matrix` |
 | `Matrix.inverse` | `m: Matrix -> Matrix` |
 | `.IsAffine` | `bool` |
@@ -830,11 +835,14 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `.ToString` | `unit -> string` |
 | `.Translation` | `Vec` |
 | `Matrix.translation` | `m: Matrix -> Vec` |
+| `.TryDecompose` | `unit -> MatrixDecomposition voption` |
+| `Matrix.tryDecompose` | `m: Matrix -> MatrixDecomposition voption` |
 | **Other static members** | |
 | `Matrix.addTranslation` | `v: Vec -> m: Matrix -> Matrix` |
 | `Matrix.addTranslationXYZ` | `x: float -> y: float -> z: float -> m: Matrix -> Matrix` |
 | `Matrix.andThen` | `next: Matrix -> m: Matrix -> Matrix` |
 | `Matrix.createFromColumnMajorArray` | `xs: float array -> Matrix` |
+| `Matrix.createFromDecomposition` | `d: MatrixDecomposition -> Matrix` |
 | `Matrix.createFromQuaternion` | `quaternion: Quaternion -> Matrix` |
 | `Matrix.createFromRigidMatrix` | `m: RigidMatrix -> Matrix` |
 | `Matrix.createFromRowMajorArray` | `xs: float array -> Matrix` |
@@ -846,15 +854,15 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Matrix.createPerspectiveLookAt` | `eye: Pnt * target: Pnt * up: Vec * width: float * height: float * nearPlaneDistance: float * farPlaneDistance: float -> Matrix` |
 | `Matrix.createPerspectiveLookAtZUp` | `eye: Pnt * target: Pnt * width: float * height: float * nearPlaneDistance: float * farPlaneDistance: float -> Matrix` |
 | `Matrix.createPlaneToPlane` | `fromPlane: PPlane -> toPlane: PPlane -> Matrix` |
-| `Matrix.createRotationFromUnitVecDegreesAround` | `cen: Pnt -> axis: UnitVec -> angleDegrees: float -> Matrix` |
-| `Matrix.createRotationFromUnitVecRadiansAround` | `cen: Pnt -> axis: UnitVec -> angleRadians: float -> Matrix` |
-| `Matrix.createRotationFromVecDegreesAround` | `cen: Pnt -> axis: Vec -> angleDegrees: float -> Matrix` |
-| `Matrix.createRotationFromVecRadiansAround` | `cen: Pnt -> axis: Vec -> angleRadians: float -> Matrix` |
-| `Matrix.createRotationFromUnitVecDegrees` | `axis: UnitVec -> angleDegrees: float -> Matrix` |
-| `Matrix.createRotationFromUnitVecRadians` | `axis: UnitVec -> angleRadians: float -> Matrix` |
+| `Matrix.createRotationFromDegreesUnitVec` | `axis: UnitVec -> angleDegrees: float -> Matrix` |
+| `Matrix.createRotationFromDegreesUnitVecAround` | `cen: Pnt -> axis: UnitVec -> angleDegrees: float -> Matrix` |
+| `Matrix.createRotationFromDegreesVec` | `axis: Vec -> angleDegrees: float -> Matrix` |
+| `Matrix.createRotationFromDegreesVecAround` | `cen: Pnt -> axis: Vec -> angleDegrees: float -> Matrix` |
+| `Matrix.createRotationFromRadiansUnitVec` | `axis: UnitVec -> angleRadians: float -> Matrix` |
+| `Matrix.createRotationFromRadiansUnitVecAround` | `cen: Pnt -> axis: UnitVec -> angleRadians: float -> Matrix` |
+| `Matrix.createRotationFromRadiansVec` | `axis: Vec -> angleRadians: float -> Matrix` |
+| `Matrix.createRotationFromRadiansVecAround` | `cen: Pnt -> axis: Vec -> angleRadians: float -> Matrix` |
 | `Matrix.createRotationFromUnitVecs` | `vecFrom: UnitVec -> vecTo: UnitVec -> Matrix` |
-| `Matrix.createRotationFromVecDegrees` | `axis: Vec -> angleDegrees: float -> Matrix` |
-| `Matrix.createRotationFromVecRadians` | `axis: Vec -> angleRadians: float -> Matrix` |
 | `Matrix.createRotationFromVecs` | `vecFrom: Vec -> vecTo: Vec -> Matrix` |
 | `Matrix.createRotationXDegrees` | `angleDegrees: float -> Matrix` |
 | `Matrix.createRotationXRadians` | `angleRadians: float -> Matrix` |
@@ -902,6 +910,10 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `RigidMatrix.columnVector2` | `m: RigidMatrix -> Vec` |
 | `.ColumnVector3` | `Vec` |
 | `RigidMatrix.columnVector3` | `m: RigidMatrix -> Vec` |
+| `.Decompose` | `unit -> Quaternion * Vec` |
+| `RigidMatrix.decompose` | `m: RigidMatrix -> Quaternion * Vec` |
+| `.Interpolate` | `finish: RigidMatrix * factor: float -> RigidMatrix` |
+| `RigidMatrix.interpolate` | `start: RigidMatrix -> finish: RigidMatrix -> factor: float -> RigidMatrix` |
 | `.Inverse` | `RigidMatrix` |
 | `RigidMatrix.inverse` | `m: RigidMatrix -> RigidMatrix` |
 | `.IsIdentity` | `bool` |
@@ -922,16 +934,17 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `RigidMatrix.create` | `m11: float * m21: float * m31: float * x41: float * m12: float * m22: float * m32: float * y42: float * m13: float * m23: float * m33: float * z43: float -> RigidMatrix` |
 | `RigidMatrix.createFromMatrix` | `m: Matrix -> RigidMatrix` |
 | `RigidMatrix.createFromQuaternion` | `quaternion: Quaternion -> RigidMatrix` |
+| `RigidMatrix.createFromTranslationAndQuaternion` | `rotation: Quaternion -> translation: Vec -> RigidMatrix` |
 | `RigidMatrix.createPlaneToPlane` | `fromPlane: PPlane -> toPlane: PPlane -> RigidMatrix` |
-| `RigidMatrix.createRotationFromUnitVecDegreesAround` | `cen: Pnt -> axis: UnitVec -> angleDegrees: float -> RigidMatrix` |
-| `RigidMatrix.createRotationFromUnitVecRadiansAround` | `cen: Pnt -> axis: UnitVec -> angleRadians: float -> RigidMatrix` |
-| `RigidMatrix.createRotationFromVecDegreesAround` | `cen: Pnt -> axis: Vec -> angleDegrees: float -> RigidMatrix` |
-| `RigidMatrix.createRotationFromVecRadiansAround` | `cen: Pnt -> axis: Vec -> angleRadians: float -> RigidMatrix` |
-| `RigidMatrix.createRotationFromUnitVecDegrees` | `axis: UnitVec -> angleDegrees: float -> RigidMatrix` |
-| `RigidMatrix.createRotationFromUnitVecRadians` | `axis: UnitVec -> angleRadians: float -> RigidMatrix` |
+| `RigidMatrix.createRotationFromDegreesUnitVec` | `axis: UnitVec -> angleDegrees: float -> RigidMatrix` |
+| `RigidMatrix.createRotationFromDegreesUnitVecAround` | `cen: Pnt -> axis: UnitVec -> angleDegrees: float -> RigidMatrix` |
+| `RigidMatrix.createRotationFromDegreesVec` | `axis: Vec -> angleDegrees: float -> RigidMatrix` |
+| `RigidMatrix.createRotationFromDegreesVecAround` | `cen: Pnt -> axis: Vec -> angleDegrees: float -> RigidMatrix` |
+| `RigidMatrix.createRotationFromRadiansUnitVec` | `axis: UnitVec -> angleRadians: float -> RigidMatrix` |
+| `RigidMatrix.createRotationFromRadiansUnitVecAround` | `cen: Pnt -> axis: UnitVec -> angleRadians: float -> RigidMatrix` |
+| `RigidMatrix.createRotationFromRadiansVec` | `axis: Vec -> angleRadians: float -> RigidMatrix` |
+| `RigidMatrix.createRotationFromRadiansVecAround` | `cen: Pnt -> axis: Vec -> angleRadians: float -> RigidMatrix` |
 | `RigidMatrix.createRotationFromUnitVecs` | `vecFrom: UnitVec -> vecTo: UnitVec -> RigidMatrix` |
-| `RigidMatrix.createRotationFromVecDegrees` | `axis: Vec -> angleDegrees: float -> RigidMatrix` |
-| `RigidMatrix.createRotationFromVecRadians` | `axis: Vec -> angleRadians: float -> RigidMatrix` |
 | `RigidMatrix.createRotationFromVecs` | `vecFrom: Vec -> vecTo: Vec -> RigidMatrix` |
 | `RigidMatrix.createRotationXDegrees` | `angleDegrees: float -> RigidMatrix` |
 | `RigidMatrix.createRotationXRadians` | `angleRadians: float -> RigidMatrix` |
@@ -1113,14 +1126,14 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Line2D.rotate` | `r: Rotation2D -> ln: Line2D -> Line2D` | `Line3D.rotate` | `q: Quaternion -> ln: Line3D -> Line3D` |
 | `.RotateAround` | `cen: Pt -> r: Rotation2D -> Line2D` | `.RotateAround` | `cen: Pnt -> q: Quaternion -> Line3D` |
 | `Line2D.rotateAround` | `cen: Pt -> r: Rotation2D -> ln: Line2D -> Line2D` | `Line3D.rotateAround` | `cen: Pnt -> q: Quaternion -> ln: Line3D -> Line3D` |
-| `.RotateDegreesAround` | `cen: Pt -> angDegree: float -> Line2D` | — | *a 3D rotation also needs an axis* |
-| `Line2D.rotateDegreesAround` | `cen: Pt -> angDegree: float -> ln: Line2D -> Line2D` | — | *a 3D rotation also needs an axis* |
-| `.RotateRadiansAround` | `cen: Pt -> angRadians: float -> Line2D` | — | *a 3D rotation also needs an axis* |
-| `Line2D.rotateRadiansAround` | `cen: Pt -> angRadians: float -> ln: Line2D -> Line2D` | — | *a 3D rotation also needs an axis* |
 | `.RotateDegrees` | `angDegree: float -> Line2D` | — | *a 3D rotation also needs an axis* |
 | `Line2D.rotateDegrees` | `angDegree: float -> ln: Line2D -> Line2D` | — | *a 3D rotation also needs an axis* |
+| `.RotateDegreesAround` | `cen: Pt -> angDegree: float -> Line2D` | — | *a 3D rotation also needs an axis* |
+| `Line2D.rotateDegreesAround` | `cen: Pt -> angDegree: float -> ln: Line2D -> Line2D` | — | *a 3D rotation also needs an axis* |
 | `.RotateRadians` | `angRadians: float -> Line2D` | — | *a 3D rotation also needs an axis* |
 | `Line2D.rotateRadians` | `angRadians: float -> ln: Line2D -> Line2D` | — | *a 3D rotation also needs an axis* |
+| `.RotateRadiansAround` | `cen: Pt -> angRadians: float -> Line2D` | — | *a 3D rotation also needs an axis* |
+| `Line2D.rotateRadiansAround` | `cen: Pt -> angRadians: float -> ln: Line2D -> Line2D` | — | *a 3D rotation also needs an axis* |
 | `.Scale` | `factor: float -> Line2D` | `.Scale` | `factor: float -> Line3D` |
 | `Line2D.scale` | `factor: float -> ln: Line2D -> Line2D` | `Line3D.scale` | `factor: float -> ln: Line3D -> Line3D` |
 | `.ScaleOn` | `cen: Pt -> factor: float -> Line2D` | `.ScaleOn` | `cen: Pnt -> factor: float -> Line3D` |
@@ -1212,8 +1225,8 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Line2D.projectOntoRay` | `rayToProjectOnto: Line2D -> lineToProject: Line2D -> Line2D` | `Line3D.projectOntoRay` | `rayToProjectOnto: Line3D -> lineToProject: Line3D -> Line3D` |
 | `Line2D.projectOntoRayParam` | `rayToProjectOnto: Line2D -> lineToProject: Line2D -> float * float` | `Line3D.projectOntoRayParam` | `rayToProjectOnto: Line3D -> lineToProject: Line3D -> float * float` |
 | `Line2D.reverse` | `ln: Line2D -> Line2D` | `Line3D.reverse` | `ln: Line3D -> Line3D` |
-| — | *rotation about a world axis* | `Line3D.rotateOnZAround` | `cen: Pnt -> r: Rotation2D -> ln: Line3D -> Line3D` |
 | — | *rotation about a world axis* | `Line3D.rotateOnZ` | `r: Rotation2D -> ln: Line3D -> Line3D` |
+| — | *rotation about a world axis* | `Line3D.rotateOnZAround` | `cen: Pnt -> r: Rotation2D -> ln: Line3D -> Line3D` |
 | `Line2D.split` | `gap: float -> segments: int -> ln: Line2D -> Line2D array` | `Line3D.split` | `gap: float -> segments: int -> ln: Line3D -> Line3D array` |
 | `Line2D.splitMaxLength` | `gap: float -> maxSegmentLength: float -> ln: Line2D -> Line2D array` | `Line3D.splitMaxLength` | `gap: float -> maxSegmentLength: float -> ln: Line3D -> Line3D array` |
 | `Line2D.splitMinLength` | `gap: float -> minSegmentLength: float -> ln: Line2D -> Line2D array` | `Line3D.splitMinLength` | `gap: float -> minSegmentLength: float -> ln: Line3D -> Line3D array` |
@@ -1615,12 +1628,10 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Rect2D.rotate` | `rot: Rotation2D -> rect: Rect2D -> Rect2D` | `Rect3D.rotate` | `q: Quaternion -> r: Rect3D -> Rect3D` |
 | `.RotateAround` | `cen: Pt -> rot: Rotation2D -> Rect2D` | `.RotateAround` | `cen: Pnt -> q: Quaternion -> Rect3D` |
 | `Rect2D.rotateAround` | `cen: Pt -> rot: Rotation2D -> rect: Rect2D -> Rect2D` | `Rect3D.rotateAround` | `cen: Pnt -> q: Quaternion -> r: Rect3D -> Rect3D` |
-| `.RotateDegreesAround` | `cen: Pt -> angDegree: float -> Rect2D` | — | *a 3D rotation also needs an axis* |
-| `Rect2D.rotateDegreesAround` | `cen: Pt -> angDegree: float -> r: Rect2D -> Rect2D` | — | *a 3D rotation also needs an axis* |
-| `.RotateRadiansAround` | `cen: Pt -> angRadians: float -> Rect2D` | — | *a 3D rotation also needs an axis* |
-| `Rect2D.rotateRadiansAround` | `cen: Pt -> angRadians: float -> r: Rect2D -> Rect2D` | — | *a 3D rotation also needs an axis* |
 | `.RotateDegrees` | `angDegree: float -> Rect2D` | — | *a 3D rotation also needs an axis* |
 | `Rect2D.rotateDegrees` | `angDegree: float -> r: Rect2D -> Rect2D` | — | *a 3D rotation also needs an axis* |
+| `.RotateDegreesAround` | `cen: Pt -> angDegree: float -> Rect2D` | — | *a 3D rotation also needs an axis* |
+| `Rect2D.rotateDegreesAround` | `cen: Pt -> angDegree: float -> r: Rect2D -> Rect2D` | — | *a 3D rotation also needs an axis* |
 | `.RotateOrientation180` | `Rect2D` | `.RotateOrientation180` | `Rect3D` |
 | `Rect2D.rotateOrientation180` | `r: Rect2D -> Rect2D` | `Rect3D.rotateOrientation180` | `r: Rect3D -> Rect3D` |
 | `.RotateOrientation90CCW` | `Rect2D` | `.RotateOrientation90CCW` | `Rect3D` |
@@ -1629,6 +1640,8 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Rect2D.rotateOrientation90CW` | `r: Rect2D -> Rect2D` | `Rect3D.rotateOrientation90CW` | `r: Rect3D -> Rect3D` |
 | `.RotateRadians` | `angRadians: float -> Rect2D` | — | *a 3D rotation also needs an axis* |
 | `Rect2D.rotateRadians` | `angRadians: float -> r: Rect2D -> Rect2D` | — | *a 3D rotation also needs an axis* |
+| `.RotateRadiansAround` | `cen: Pt -> angRadians: float -> Rect2D` | — | *a 3D rotation also needs an axis* |
+| `Rect2D.rotateRadiansAround` | `cen: Pt -> angRadians: float -> r: Rect2D -> Rect2D` | — | *a 3D rotation also needs an axis* |
 | `.Scale` | `factor: float -> Rect2D` | `.Scale` | `factor: float -> Rect3D` |
 | `Rect2D.scale` | `factor: float -> r: Rect2D -> Rect2D` | `Rect3D.scale` | `factor: float -> r: Rect3D -> Rect3D` |
 | `.ScaleOn` | `cen: Pt -> factor: float -> Rect2D` | `.ScaleOn` | `cen: Pnt -> factor: float -> Rect3D` |
@@ -1669,9 +1682,9 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Rect2D.createFromBounds` | `minX: float * minY: float * maxX: float * maxY: float -> Rect2D` | `Rect3D.createFromBounds2D` | `minX: float * minY: float * maxX: float * maxY: float -> Rect3D` |
 | `Rect2D.createFromLine` | `offRight: float -> offLeft: float -> line: Line2D -> Rect2D` | — | *a 3D rectangle also needs a normal* |
 | — | *plane or normal* | `Rect3D.createFromPlane` | `sizeX: float -> sizeY: float -> pl: PPlane -> Rect3D` |
+| `Rect2D.createFromPtsAndVc` | `dirX: Vc -> pts: IList<Pt> -> Rect2D` | — | *a 3D rectangle also needs a normal* |
 | `Rect2D.createFromUnitVc` | `sizeX: float -> sizeY: float -> directionX: UnitVc -> origin: Pt -> Rect2D` | — | *a 3D rectangle also needs a normal* |
 | `Rect2D.createFromVc` | `sizeY: float -> x: Vc -> origin: Pt -> Rect2D` | — | *a 3D rectangle also needs a normal* |
-| `Rect2D.createFromVcAndPts` | `dirX: Vc -> pts: IList<Pt> -> Rect2D` | — | *a 3D rectangle also needs a normal* |
 | `Rect2D.createFromVcs` | `x: Vc -> y: Vc -> origin: Pt -> Rect2D` | `Rect3D.createFromVecs` | `x: Vec -> y: Vec -> origin: Pnt -> Rect3D` |
 | `Rect2D.createFromVcsUnchecked` | `origin: Pt * x: Vc * y: Vc -> Rect2D` | `Rect3D.createFromVecsUnchecked` | `origin: Pnt * x: Vec * y: Vec -> Rect3D` |
 | `Rect2D.createUnchecked` | `originX: float * originY: float * xaxisX: float * xaxisY: float * yaxisX: float * yaxisY: float -> Rect2D` | `Rect3D.createUnchecked` | `originX: float * originY: float * originZ: float * xAxisX: float * xAxisY: float * xAxisZ: float * yAxisX: float * yAxisY: float * yAxisZ: float -> Rect3D` |
@@ -1945,10 +1958,10 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Box.createFromAxesUnchecked` | `origin: Pnt * xAxis: Vec * yAxis: Vec * zAxis: Vec -> Box` |
 | `Box.createFromBounds` | `minX: float * minY: float * minZ: float * maxX: float * maxY: float * maxZ: float -> Box` |
 | `Box.createFromPlane` | `sizeX: float -> sizeY: float -> sizeZ: float -> plane: PPlane -> Box` |
-| `Box.createFromPlaneAndPnts` | `pl: PPlane -> pts: IList<Pnt> -> Box` |
+| `Box.createFromPntsAndPlane` | `pl: PPlane -> pts: IList<Pnt> -> Box` |
+| `Box.createFromPntsAndVecs` | `dirX: Vec -> dirY: Vec -> pts: IList<Pnt> -> Box` |
 | `Box.createFromRect2D` | `zLow: float -> zHigh: float -> r: Rect2D -> Box` |
 | `Box.createFromRect3D` | `zLow: float -> zHigh: float -> r: Rect3D -> Box` |
-| `Box.createFromVecsAndPnts` | `dirX: Vec -> dirY: Vec -> pts: IList<Pnt> -> Box` |
 | `Box.createUnchecked` | `originX: float * originY: float * originZ: float * xAxisX: float * xAxisY: float * xAxisZ: float * yAxisX: float * yAxisY: float * yAxisZ: float * zAxisX: float * zAxisY: float * zAxisZ: float -> Box` |
 | `Box.equalsExact` | `a: Box -> b: Box -> bool` |
 | `Box.equalsWithin` | `tol: float -> a: Box -> b: Box -> bool` |
@@ -2588,18 +2601,18 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Polyline2D.rotate` | `r: Rotation2D -> pl: Polyline2D -> Polyline2D` | `Polyline3D.rotate` | `q: Quaternion -> pl: Polyline3D -> Polyline3D` |
 | `.RotateAround` | `cen: Pt -> r: Rotation2D -> unit` | `.RotateAround` | `cen: Pnt -> q: Quaternion -> unit` |
 | `Polyline2D.rotateAround` | `cen: Pt -> r: Rotation2D -> pl: Polyline2D -> Polyline2D` | `Polyline3D.rotateAround` | `cen: Pnt -> q: Quaternion -> pl: Polyline3D -> Polyline3D` |
-| `.RotateDegreesAround` | `cen: Pt -> angDegree: float -> unit` | — | *a 3D rotation also needs an axis* |
-| `Polyline2D.rotateDegreesAround` | `cen: Pt -> angDegree: float -> pl: Polyline2D -> Polyline2D` | — | *a 3D rotation also needs an axis* |
-| — | *rotation about a world axis* | `.RotateOnZAround` | `cen: Pnt -> r: Rotation2D -> unit` |
-| — | *rotation about a world axis* | `Polyline3D.rotateOnZAround` | `cen: Pnt -> r: Rotation2D -> pl: Polyline3D -> Polyline3D` |
-| `.RotateRadiansAround` | `cen: Pt -> angRadians: float -> unit` | — | *a 3D rotation also needs an axis* |
-| `Polyline2D.rotateRadiansAround` | `cen: Pt -> angRadians: float -> pl: Polyline2D -> Polyline2D` | — | *a 3D rotation also needs an axis* |
 | `.RotateDegrees` | `angDegree: float -> unit` | — | *a 3D rotation also needs an axis* |
 | `Polyline2D.rotateDegrees` | `angDegree: float -> pl: Polyline2D -> Polyline2D` | — | *a 3D rotation also needs an axis* |
+| `.RotateDegreesAround` | `cen: Pt -> angDegree: float -> unit` | — | *a 3D rotation also needs an axis* |
+| `Polyline2D.rotateDegreesAround` | `cen: Pt -> angDegree: float -> pl: Polyline2D -> Polyline2D` | — | *a 3D rotation also needs an axis* |
 | — | *rotation about a world axis* | `.RotateOnZ` | `r: Rotation2D -> unit` |
 | — | *rotation about a world axis* | `Polyline3D.rotateOnZ` | `r: Rotation2D -> pl: Polyline3D -> Polyline3D` |
+| — | *rotation about a world axis* | `.RotateOnZAround` | `cen: Pnt -> r: Rotation2D -> unit` |
+| — | *rotation about a world axis* | `Polyline3D.rotateOnZAround` | `cen: Pnt -> r: Rotation2D -> pl: Polyline3D -> Polyline3D` |
 | `.RotateRadians` | `angRadians: float -> unit` | — | *a 3D rotation also needs an axis* |
 | `Polyline2D.rotateRadians` | `angRadians: float -> pl: Polyline2D -> Polyline2D` | — | *a 3D rotation also needs an axis* |
+| `.RotateRadiansAround` | `cen: Pt -> angRadians: float -> unit` | — | *a 3D rotation also needs an axis* |
+| `Polyline2D.rotateRadiansAround` | `cen: Pt -> angRadians: float -> pl: Polyline2D -> Polyline2D` | — | *a 3D rotation also needs an axis* |
 | `.Scale` | `factor: float -> unit` | `.Scale` | `factor: float -> unit` |
 | `Polyline2D.scale` | `factor: float -> pl: Polyline2D -> Polyline2D` | `Polyline3D.scale` | `factor: float -> pl: Polyline3D -> Polyline3D` |
 | `.ScaleOn` | `cen: Pt -> factor: float -> unit` | `.ScaleOn` | `cen: Pnt -> factor: float -> unit` |
@@ -2998,6 +3011,41 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `ToMaxDigits.d8` | `x: float -> string` |
 | `ToMaxDigits.d9` | `x: float -> string` |
 | `ToMaxDigits.trimZeros` | `n: string -> string` |
+
+## MatrixDecomposition
+
+| MatrixDecomposition | Signature |
+|:--|:--|
+| `.TranslationX` | `float` |
+| `.TranslationY` | `float` |
+| `.TranslationZ` | `float` |
+| `.RotationX` | `float` |
+| `.RotationY` | `float` |
+| `.RotationZ` | `float` |
+| `.RotationW` | `float` |
+| `.ScaleX` | `float` |
+| `.ScaleY` | `float` |
+| `.ScaleZ` | `float` |
+| `.ShearYX` | `float` |
+| `.ShearZX` | `float` |
+| `.ShearZY` | `float` |
+| `.AsFSharpCode` | `string` |
+| `MatrixDecomposition.asFSharpCode` | `d: MatrixDecomposition -> string` |
+| `.AsString` | `string` |
+| `MatrixDecomposition.asString` | `d: MatrixDecomposition -> string` |
+| `.Interpolate` | `finish: MatrixDecomposition * factor: float -> MatrixDecomposition` |
+| `MatrixDecomposition.interpolate` | `start: MatrixDecomposition -> finish: MatrixDecomposition -> factor: float -> MatrixDecomposition` |
+| `.Rotation` | `Quaternion` |
+| `.Scale` | `Vec` |
+| `.ToMatrix` | `Matrix` |
+| `MatrixDecomposition.toMatrix` | `d: MatrixDecomposition -> Matrix` |
+| `.ToString` | `unit -> string` |
+| `.Translation` | `Vec` |
+| **Other static members** | |
+| `MatrixDecomposition.create` | `translation: Vec -> rotation: Quaternion -> scale: Vec -> shearYX: float -> shearZX: float -> shearZY: float -> MatrixDecomposition` |
+| `MatrixDecomposition.equalsExact` | `a: MatrixDecomposition -> b: MatrixDecomposition -> bool` |
+| `MatrixDecomposition.equalsWithin` | `tol: float -> a: MatrixDecomposition -> b: MatrixDecomposition -> bool` |
+| `MatrixDecomposition.identity` | `MatrixDecomposition` |
 
 ## module EuclidCollectionUtilities.Arr
 

@@ -99,14 +99,14 @@ let tests =
 
             test "createFromDirsAndPoints with multiple points" {
                 let pts = ResizeArray([Pnt(0., 0., 0.); Pnt(10., 0., 0.); Pnt(0., 5., 0.); Pnt(0., 0., 3.)])
-                let box = Box.createFromVecsAndPnts Vec.xAxis Vec.yAxis pts
+                let box = Box.createFromPntsAndVecs Vec.xAxis Vec.yAxis pts
                 Expect.isTrue (box.SizeX >= 0.) "Should create valid box"
             }
 
             test "createFromDirsAndPoints includes the first point" {
                 // the first point is the plane origin, all others lie in the positive octant
                 let pts = ResizeArray([Pnt(0., 0., 0.); Pnt(10., 2., 1.); Pnt(4., 5., 3.)])
-                let box = Box.createFromVecsAndPnts Vec.xAxis Vec.yAxis pts
+                let box = Box.createFromPntsAndVecs Vec.xAxis Vec.yAxis pts
                 Expect.isTrue (eqPnt box.Origin Pnt.Origin) $"Origin should be at the first point, but is {box.Origin}"
                 Expect.isTrue (eqFloat box.SizeX 10.) $"SizeX should be 10, but is {box.SizeX}"
                 Expect.isTrue (eqFloat box.SizeY 5.) $"SizeY should be 5, but is {box.SizeY}"
@@ -116,7 +116,7 @@ let tests =
             test "createFromPlaneAndPoints includes the first point" {
                 // the first point is the only one with negative coordinates
                 let pts = ResizeArray([Pnt(-5., -5., -5.); Pnt(1., 1., 1.); Pnt(2., 3., 4.)])
-                let box = Box.createFromPlaneAndPnts PPlane.WorldXY pts
+                let box = Box.createFromPntsAndPlane PPlane.WorldXY pts
                 Expect.isTrue (eqPnt box.Origin (Pnt(-5., -5., -5.))) $"Origin should be at the first point, but is {box.Origin}"
                 Expect.isTrue (eqFloat box.SizeX 7.) $"SizeX should be 7, but is {box.SizeX}"
                 Expect.isTrue (eqFloat box.SizeY 8.) $"SizeY should be 8, but is {box.SizeY}"
@@ -125,24 +125,24 @@ let tests =
 
             test "createFromPlaneAndPoints with two points" {
                 let pts = ResizeArray([Pnt(3., 4., 5.); Pnt(1., 1., 1.)])
-                let box = Box.createFromPlaneAndPnts PPlane.WorldXY pts
+                let box = Box.createFromPntsAndPlane PPlane.WorldXY pts
                 Expect.isTrue (eqPnt box.Origin (Pnt(1., 1., 1.))) $"Origin should be at the min corner, but is {box.Origin}"
                 Expect.isTrue (eqPnt box.FarCorner (Pnt(3., 4., 5.))) $"FarCorner should be at the first point, but is {box.FarCorner}"
             }
 
             test "createFromDirsAndPoints rejects too few points" {
                 let pts = ResizeArray([Pnt(0., 0., 0.)])
-                Expect.throws (fun () -> Box.createFromVecsAndPnts Vec.xAxis Vec.yAxis pts |> ignore) "Should throw with just 1 point"
+                Expect.throws (fun () -> Box.createFromPntsAndVecs Vec.xAxis Vec.yAxis pts |> ignore) "Should throw with just 1 point"
             }
 
             test "createFromDirsAndPoints rejects zero-length dirX" {
                 let pts = ResizeArray([Pnt(0., 0., 0.); Pnt(10., 0., 0.)])
-                Expect.throws (fun () -> Box.createFromVecsAndPnts Vec.Zero Vec.yAxis pts |> ignore) "Should throw with zero dirX"
+                Expect.throws (fun () -> Box.createFromPntsAndVecs Vec.Zero Vec.yAxis pts |> ignore) "Should throw with zero dirX"
             }
 
             test "createFromDirsAndPoints rejects zero-length dirY" {
                 let pts = ResizeArray([Pnt(0., 0., 0.); Pnt(10., 0., 0.)])
-                Expect.throws (fun () -> Box.createFromVecsAndPnts Vec.xAxis Vec.Zero pts |> ignore) "Should throw with zero dirY"
+                Expect.throws (fun () -> Box.createFromPntsAndVecs Vec.xAxis Vec.Zero pts |> ignore) "Should throw with zero dirY"
             }
 
             // a rotated, right-handed frame away from the origin, with exact integer dot products
@@ -392,14 +392,14 @@ let tests =
 
             test "Rotate 90 degrees around Z axis" {
                 let box = Box.createFromAxesUnchecked(Pnt(1., 0., 0.), Vec(1., 0., 0.), Vec(0., 1., 0.), Vec(0., 0., 1.))
-                let q = Quaternion.createFromUnitVecDegrees UnitVec.zAxis 90.
+                let q = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 90.
                 let rotated = box.Rotate(q)
                 Expect.isTrue (eqPnt rotated.Origin (Pnt(0., 1., 0.))) "Origin should be rotated 90 degrees"
             }
 
             test "rotate static method" {
                 let box = Box.createFromAxesUnchecked(Pnt(1., 0., 0.), Vec(1., 0., 0.), Vec(0., 1., 0.), Vec(0., 0., 1.))
-                let q = Quaternion.createFromUnitVecDegrees UnitVec.zAxis 90.
+                let q = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 90.
                 let rotated = Box.rotate q box
                 Expect.isTrue (eqPnt rotated.Origin (Pnt(0., 1., 0.))) "Origin should be rotated 90 degrees"
             }
@@ -407,7 +407,7 @@ let tests =
             test "RotateAround keeps center point fixed" {
                 let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
                 let center = box.Center
-                let q = Quaternion.createFromUnitVecDegrees UnitVec.zAxis 90.
+                let q = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 90.
                 let rotated = box.RotateAround center q
                 Expect.isTrue (eqPnt rotated.Center center) "Center should remain fixed"
             }
@@ -415,7 +415,7 @@ let tests =
             test "rotateAround static method" {
                 let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
                 let center = box.Center
-                let q = Quaternion.createFromUnitVecDegrees UnitVec.zAxis 90.
+                let q = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 90.
                 let rotated = Box.rotateAround center q box
                 Expect.isTrue (eqPnt rotated.Center center) "Center should remain fixed"
             }
@@ -712,7 +712,7 @@ let tests =
             test "GetLine is bit-identical to GetPoint" {
                 let box =
                     Box.createFromAxesUnchecked(Pnt(1.1, -2.3, 0.7), Vec(0.3, 0., 0.), Vec(0., 0.7, 0.), Vec(0., 0., 0.9))
-                    |> Box.rotate (Quaternion.createFromVecDegrees (Vec(1., 2., 3.)) 37.)
+                    |> Box.rotate (Quaternion.createFromDegreesVec (Vec(1., 2., 3.)) 37.)
                 for i in 0..7 do
                     for j in 0..7 do
                         if i <> j then
@@ -810,7 +810,7 @@ let tests =
                 // Points all in positive octant
                 let pts = [| Pnt(1., 1., 1.); Pnt(2., 1., 1.); Pnt(2., 2., 1.); Pnt(1., 2., 1.)
                              Pnt(1., 1., 2.); Pnt(2., 1., 2.); Pnt(2., 2., 2.); Pnt(1., 2., 2.) |]
-                let box = Box.createFromPlaneAndPnts pl pts
+                let box = Box.createFromPntsAndPlane pl pts
                 "positive - origin X" |> Expect.isTrue (eqFloat box.Origin.X 1.0)
                 "positive - origin Y" |> Expect.isTrue (eqFloat box.Origin.Y 1.0)
                 "positive - origin Z" |> Expect.isTrue (eqFloat box.Origin.Z 1.0)
@@ -825,7 +825,7 @@ let tests =
                 // Points all in negative octant
                 let pts = [| Pnt(-2., -2., -2.); Pnt(-1., -2., -2.); Pnt(-1., -1., -2.); Pnt(-2., -1., -2.)
                              Pnt(-2., -2., -1.); Pnt(-1., -2., -1.); Pnt(-1., -1., -1.); Pnt(-2., -1., -1.) |]
-                let box = Box.createFromPlaneAndPnts pl pts
+                let box = Box.createFromPntsAndPlane pl pts
                 "negative - origin X" |> Expect.isTrue (eqFloat box.Origin.X -2.0)
                 "negative - origin Y" |> Expect.isTrue (eqFloat box.Origin.Y -2.0)
                 "negative - origin Z" |> Expect.isTrue (eqFloat box.Origin.Z -2.0)
@@ -840,7 +840,7 @@ let tests =
                 // Points spanning across origin
                 let pts = [| Pnt(-1., -1., -1.); Pnt(2., -1., -1.); Pnt(2., 1., -1.); Pnt(-1., 1., -1.)
                              Pnt(-1., -1., 1.); Pnt(2., -1., 1.); Pnt(2., 1., 1.); Pnt(-1., 1., 1.) |]
-                let box = Box.createFromPlaneAndPnts pl pts
+                let box = Box.createFromPntsAndPlane pl pts
                 "mixed - origin X" |> Expect.isTrue (eqFloat box.Origin.X -1.0)
                 "mixed - origin Y" |> Expect.isTrue (eqFloat box.Origin.Y -1.0)
                 "mixed - origin Z" |> Expect.isTrue (eqFloat box.Origin.Z -1.0)
@@ -855,7 +855,7 @@ let tests =
                 // Points relative to offset
                 let pts = [| Pnt(11., 11., 11.); Pnt(13., 11., 11.); Pnt(13., 12., 11.); Pnt(11., 12., 11.)
                              Pnt(11., 11., 12.); Pnt(13., 11., 12.); Pnt(13., 12., 12.); Pnt(11., 12., 12.) |]
-                let box = Box.createFromPlaneAndPnts pl pts
+                let box = Box.createFromPntsAndPlane pl pts
                 "offset - origin X" |> Expect.isTrue (eqFloat box.Origin.X 11.0)
                 "offset - origin Y" |> Expect.isTrue (eqFloat box.Origin.Y 11.0)
                 "offset - origin Z" |> Expect.isTrue (eqFloat box.Origin.Z 11.0)

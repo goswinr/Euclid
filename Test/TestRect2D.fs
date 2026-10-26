@@ -380,16 +380,16 @@ let tests =
             }
             test "createFromDirAndPoints fits the 4 corners" {
                 let pts = System.Collections.Generic.List([p0; p1; p2; p3])
-                let r = Rect2D.createFromVcAndPts rvx pts
+                let r = Rect2D.createFromPtsAndVc rvx pts
                 "equals canonical" |> Expect.isTrue (Rect2D.equalsWithin 1e-9 r rr)
             }
             test "createFromDirAndPoints with fewer than 2 points throws" {
                 let pts = System.Collections.Generic.List([p0])
-                "single point" |> Expect.throws (fun () -> Rect2D.createFromVcAndPts rvx pts |> ignore)
+                "single point" |> Expect.throws (fun () -> Rect2D.createFromPtsAndVc rvx pts |> ignore)
             }
             test "createFromDirAndPoints with zero-length direction throws" {
                 let pts = System.Collections.Generic.List([p0; p1; p2; p3])
-                "zero dir" |> Expect.throws (fun () -> Rect2D.createFromVcAndPts (Vc(0., 0.)) pts |> ignore)
+                "zero dir" |> Expect.throws (fun () -> Rect2D.createFromPtsAndVc (Vc(0., 0.)) pts |> ignore)
             }
         ]
 

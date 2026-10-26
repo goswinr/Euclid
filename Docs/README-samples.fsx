@@ -157,8 +157,8 @@ let pt = Pnt(5.0, 0.0, 0.0)
 let m1 = Matrix.createTranslationXYZ 10.0 0.0 0.0
 let m2 = Matrix.createRotationZDegrees 90.0
 let m3 = Matrix.createRotationXDegrees 45.0
-let m4 = Matrix.createRotationFromUnitVecDegrees UnitVec.zAxis 30.0
-let m5 = Matrix.createRotationFromVecDegreesAround (Pnt(5, 5, 0)) (Vec(0, 0, 1)) 45.0
+let m4 = Matrix.createRotationFromDegreesUnitVec UnitVec.zAxis 30.0
+let m5 = Matrix.createRotationFromDegreesVecAround (Pnt(5, 5, 0)) (Vec(0, 0, 1)) 45.0
 let m6 = Matrix.createScale 2.0 2.0 1.0
 let m7 = Matrix.createShear(0.5, 0, 0, 0, 0, 0)
 let combinedTransform = m1.Then(m2).Then(m6)
@@ -179,8 +179,8 @@ let vTransform = Vec(1, 0, 0)
 let v2Transform = vTransform.TransformRigid rigid
 
 // Quaternion Rotations
-let q1 = Quaternion.createFromVecDegrees (Vec(0, 0, 1)) 90.0
-let q2 = Quaternion.createFromUnitVecRadians UnitVec.xAxis 1.5708
+let q1 = Quaternion.createFromDegreesVec (Vec(0, 0, 1)) 90.0
+let q2 = Quaternion.createFromRadiansUnitVec UnitVec.xAxis 1.5708
 let q3 = Quaternion.createFromUnitVecs UnitVec.xAxis UnitVec.yAxis
 let angleQ = q1.AngleInDegrees
 let axis = q1.Axis

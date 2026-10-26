@@ -14,14 +14,14 @@ module AutoOpenRigidMatrix =
     /// The rotation is applied first and the translation second.</summary>
     /// <param name="m">The matrix to decompose.</param>
     /// <returns>A tuple of the rotation quaternion and the translation vector.
-    /// RigidMatrix.createFromQuaternionAndTranslation recomposes the matrix.</returns>
+    /// RigidMatrix.createFromTranslationAndQuaternion recomposes the matrix.</returns>
     static member decompose (m:RigidMatrix) : Quaternion * Vec =
         Quaternion.createFromRigidMatrix m, m.Translation
 
     /// <summary>Decomposes this RigidMatrix into its rotation and translation.
     /// The rotation is applied first and the translation second.</summary>
     /// <returns>A tuple of the rotation quaternion and the translation vector.
-    /// RigidMatrix.createFromQuaternionAndTranslation recomposes the matrix.</returns>
+    /// RigidMatrix.createFromTranslationAndQuaternion recomposes the matrix.</returns>
     member m.Decompose() : Quaternion * Vec =
         RigidMatrix.decompose m
 
@@ -29,7 +29,7 @@ module AutoOpenRigidMatrix =
     /// <param name="rotation">The rotation, applied first.</param>
     /// <param name="translation">The translation, applied second.</param>
     /// <returns>A new RigidMatrix.</returns>
-    static member createFromQuaternionAndTranslation (rotation:Quaternion) (translation:Vec) : RigidMatrix =
+    static member createFromTranslationAndQuaternion (rotation:Quaternion) (translation:Vec) : RigidMatrix =
         let r = RigidMatrix.createFromQuaternion rotation
         RigidMatrix(
             r.M11, r.M21, r.M31, translation.X,

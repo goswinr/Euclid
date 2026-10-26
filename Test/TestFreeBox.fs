@@ -193,7 +193,7 @@ let tests =
             test "Transformations mutate the same 24 float array" {
                 let box = FreeBox.createFrom8PntArray rotatedPts
                 let xyzs = box.XYZs
-                let q = Quaternion.createFromUnitVecDegrees UnitVec.xAxis 30.
+                let q = Quaternion.createFromDegreesUnitVec UnitVec.xAxis 30.
                 let movedPt0 = rotatedPts.[0] + Vec(1., 2., 3.)
                 box.Move(Vec(1., 2., 3.))
                 Expect.isTrue (obj.ReferenceEquals(xyzs, box.XYZs)) "Move should keep the same array"
@@ -208,7 +208,7 @@ let tests =
             test "Transforming a Duplicate leaves the original unchanged" {
                 let box = FreeBox.createFrom8PntArray rotatedPts
                 let copy = box.Duplicate()
-                copy.RotateAround (Pnt(7., -4., 3.)) (Quaternion.createFromUnitVecDegrees UnitVec.zAxis 35.)
+                copy.RotateAround (Pnt(7., -4., 3.)) (Quaternion.createFromDegreesUnitVec UnitVec.zAxis 35.)
                 copy.Move(Vec(-2., 5., 1.))
                 for i = 0 to 7 do
                     Expect.isTrue (eqPnt (box.GetPoint i) rotatedPts.[i]) $"Pt{i} of the original should be unchanged"
@@ -573,7 +573,7 @@ let tests =
                     Pnt(1., 0., 1.); Pnt(2., 0., 1.); Pnt(2., 1., 1.); Pnt(1., 1., 1.)
                 |]
                 let box = FreeBox.createFrom8PntArray pts
-                let q = Quaternion.createFromUnitVecDegrees UnitVec.zAxis 90.
+                let q = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 90.
                 box.Rotate(q)
                 Expect.isTrue (eqPnt box.Pnt0 (Pnt(0., 1., 0.))) "Pnt0 should be rotated 90 degrees"
             }
@@ -584,7 +584,7 @@ let tests =
                     Pnt(1., 0., 1.); Pnt(2., 0., 1.); Pnt(2., 1., 1.); Pnt(1., 1., 1.)
                 |]
                 let box = FreeBox.createFrom8PntArray pts
-                let q = Quaternion.createFromUnitVecDegrees UnitVec.zAxis 90.
+                let q = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 90.
                 let rotated = FreeBox.rotate q box
                 Expect.isTrue (eqPnt rotated.Pnt0 (Pnt(0., 1., 0.))) "Pnt0 should be rotated 90 degrees"
                 Expect.isTrue (eqPnt box.Pnt0 pts.[0]) "input box should be unchanged"
@@ -597,7 +597,7 @@ let tests =
                 |]
                 let box = FreeBox.createFrom8PntArray pts
                 let center = Pnt(1., 1., 1.)
-                let q = Quaternion.createFromUnitVecDegrees UnitVec.zAxis 90.
+                let q = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 90.
                 box.RotateAround center q
                 // After rotation, center should still be at (1,1,1)
                 // Pnt0 at (0,0,0) rotated 90 degrees around (1,1,1) in Z should go to (2,0,0)
@@ -611,7 +611,7 @@ let tests =
                 |]
                 let box = FreeBox.createFrom8PntArray pts
                 let center = Pnt(1., 1., 1.)
-                let q = Quaternion.createFromUnitVecDegrees UnitVec.zAxis 90.
+                let q = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 90.
                 let rotated = FreeBox.rotateAround center q box
                 Expect.isTrue (eqPnt rotated.Pnt0 (Pnt(2., 0., 0.))) "Pnt0 should be rotated around center"
                 Expect.isTrue (eqPnt box.Pnt0 pts.[0]) "input box should be unchanged"

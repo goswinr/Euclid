@@ -1581,7 +1581,7 @@ type Rect3D =
     /// Creates a new 3D rectangle( = oriented bounding rectangle ) to contain the projections of all given points.
     /// But not the corners of the reference rectangle.
     /// Keeps the same plane and the same X- and Y-axis orientation as the input rectangle.
-    /// For a 3D oriented bounding box use the Box.createFromPlaneAndPnts function.
+    /// For a 3D oriented bounding box use the Box.createFromPntsAndPlane function.
     static member fitToPoints (pts:IList<Pnt>) (refRect:Rect3D) : Rect3D =
         let xLen = XYZ.length refRect.XAxisX refRect.XAxisY refRect.XAxisZ
         if isTooTiny xLen then

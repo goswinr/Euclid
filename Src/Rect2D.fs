@@ -787,10 +787,10 @@ type Rect2D =
 
     /// Finds the oriented bounding rectangle of a set of points.
     /// The orientation of the X-axis is defined by the direction vector.
-    static member createFromVcAndPts (dirX:Vc) (pts:IList<Pt>) :Rect2D =
+    static member createFromPtsAndVc (dirX:Vc) (pts:IList<Pt>) :Rect2D =
         let dirXLenSq = dirX.X*dirX.X + dirX.Y*dirX.Y
-        if isTooSmallSq dirXLenSq then failTooSmall "Rect2D.createFromVcAndPts dirX" dirX
-        if pts.Count < 2 then fail $"Rect2D.createFromVcAndPts: cannot create a 2D rectangle from {pts.Count} points"
+        if isTooSmallSq dirXLenSq then failTooSmall "Rect2D.createFromPtsAndVc dirX" dirX
+        if pts.Count < 2 then fail $"Rect2D.createFromPtsAndVc: cannot create a 2D rectangle from {pts.Count} points"
         let p0 = pts.[0]
         let yDirX = -dirX.Y
         let yDirY = dirX.X

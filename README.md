@@ -166,7 +166,8 @@ Rotations and scaling share one curried naming grammar, with the geometry as the
 | `scale factor geometry` | Scale from the origin |
 | `scaleOn center factor geometry` | Scale from a center point |
 
-A raw angle argument always names its unit. The instance members use the same names in PascalCase, e.g. `ln.RotateAround cen r`.
+A raw angle argument always names its unit. The name parts of the arguments come in reverse argument order, so the last argument is named first,
+as in `rotateDegreesAround center degrees geometry` and `Matrix.createRotationFromDegreesVecAround center axis degrees`. The instance members use the same names in PascalCase, e.g. `ln.RotateAround cen r`.
 For repeated rotations, precompute the `Rotation2D` once and use `rotate` or `rotateAround`.
 
 ### Failure and Tolerance Contracts
@@ -636,10 +637,10 @@ let m2 = Matrix.createRotationZDegrees 90.0      // 90 degrees around Z
 let m3 = Matrix.createRotationXDegrees 45.0      // 45 degrees around X
 
 // Rotation around arbitrary axis
-let m4 = Matrix.createRotationFromUnitVecDegrees UnitVec.zAxis 30.0
+let m4 = Matrix.createRotationFromDegreesUnitVec UnitVec.zAxis 30.0
 
 // Rotation around axis at a specific center point
-let m5 = Matrix.createRotationFromVecDegreesAround (Pnt(5, 5, 0)) (Vec(0, 0, 1)) 45.0
+let m5 = Matrix.createRotationFromDegreesVecAround (Pnt(5, 5, 0)) (Vec(0, 0, 1)) 45.0
 
 // Scale
 let m6 = Matrix.createScale 2.0 2.0 1.0          // scale X and Y by 2
@@ -679,8 +680,8 @@ let mirror = Matrix.createMirror fromPlane
 open Euclid
 
 // Create quaternion from axis and angle
-let q1 = Quaternion.createFromVecDegrees (Vec(0, 0, 1)) 90.0    // 90 degrees around Z
-let q2 = Quaternion.createFromUnitVecRadians UnitVec.xAxis 1.5708 // Pi/2 around X
+let q1 = Quaternion.createFromDegreesVec (Vec(0, 0, 1)) 90.0    // 90 degrees around Z
+let q2 = Quaternion.createFromRadiansUnitVec UnitVec.xAxis 1.5708 // Pi/2 around X
 
 // Rotate from one direction to another
 let q3 = Quaternion.createFromUnitVecs UnitVec.xAxis UnitVec.yAxis // X -> Y

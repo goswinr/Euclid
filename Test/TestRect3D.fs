@@ -224,14 +224,14 @@ let tests =
 
             test "Rotate 90 degrees around Z axis" {
                 let r = Rect3D.createFromVecs (Vec(1., 0., 0.)) (Vec(0., 1., 0.)) (Pnt(1., 0., 0.))
-                let q = Quaternion.createFromUnitVecDegrees UnitVec.zAxis 90.
+                let q = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 90.
                 let rotated = r.Rotate(q)
                 "Rotate 90 - origin" |> Expect.isTrue (eq rotated.Origin (Pnt(0., 1., 0.)))
             }
 
             test "rotate static method" {
                 let r = Rect3D.createFromVecs (Vec(1., 0., 0.)) (Vec(0., 1., 0.)) (Pnt(1., 0., 0.))
-                let q = Quaternion.createFromUnitVecDegrees UnitVec.zAxis 90.
+                let q = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 90.
                 let rotated = Rect3D.rotate q r
                 "rotate static - origin" |> Expect.isTrue (eq rotated.Origin (Pnt(0., 1., 0.)))
             }
@@ -239,7 +239,7 @@ let tests =
             test "RotateAround keeps center fixed" {
                 let r = Rect3D.createFromVecs (Vec(2., 0., 0.)) (Vec(0., 2., 0.)) (Pnt(0., 0., 0.))
                 let center = r.Center
-                let q = Quaternion.createFromUnitVecDegrees UnitVec.zAxis 90.
+                let q = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 90.
                 let rotated = r.RotateAround center q
                 "RotateAround - center" |> Expect.isTrue (eq rotated.Center center)
             }
@@ -247,7 +247,7 @@ let tests =
             test "rotateAround static method" {
                 let r = Rect3D.createFromVecs (Vec(2., 0., 0.)) (Vec(0., 2., 0.)) (Pnt(0., 0., 0.))
                 let center = r.Center
-                let q = Quaternion.createFromUnitVecDegrees UnitVec.zAxis 90.
+                let q = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 90.
                 let rotated = Rect3D.rotateAround center q r
                 "rotateAround static - center" |> Expect.isTrue (eq rotated.Center center)
             }

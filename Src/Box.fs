@@ -1075,8 +1075,8 @@ type Box =
     /// Finds the oriented bounding box in 3D of a set of points.
     /// The orientation of the X-axis is defined by the dirX vector.
     /// The orientation of the Y-axis is defined by the dirY vector.
-    static member createFromPlaneAndPnts (pl:PPlane) (pts:IList<Pnt>) : Box =
-        if pts.Count < 2 then fail $"Box.createFromPlaneAndPnts: cannot create a Box from just {pts.Count} points"
+    static member createFromPntsAndPlane (pl:PPlane) (pts:IList<Pnt>) : Box =
+        if pts.Count < 2 then fail $"Box.createFromPntsAndPlane: cannot create a Box from just {pts.Count} points"
         let ox = pl.OriginX
         let oy = pl.OriginY
         let oz = pl.OriginZ
@@ -1123,12 +1123,12 @@ type Box =
     /// Finds the oriented bounding box in 3D of a set of points.
     /// The orientation of the X-axis is defined by the dirX vector.
     /// The orientation of the Y-axis is defined by the dirY vector.
-    static member createFromVecsAndPnts (dirX:Vec) (dirY:Vec) (pts:IList<Pnt>) : Box =
-        if isTooSmallSq dirX.LengthSq then failTooSmall "Euclid.Box.createFromVecsAndPnts: dirX too short" dirX
-        if isTooSmallSq dirY.LengthSq then failTooSmall "Euclid.Box.createFromVecsAndPnts: dirY too short" dirY
-        if pts.Count < 2              then fail $"Box.createFromVecsAndPnts: cannot create a Box from just {pts.Count} points"
+    static member createFromPntsAndVecs (dirX:Vec) (dirY:Vec) (pts:IList<Pnt>) : Box =
+        if isTooSmallSq dirX.LengthSq then failTooSmall "Euclid.Box.createFromPntsAndVecs: dirX too short" dirX
+        if isTooSmallSq dirY.LengthSq then failTooSmall "Euclid.Box.createFromPntsAndVecs: dirY too short" dirY
+        if pts.Count < 2              then fail $"Box.createFromPntsAndVecs: cannot create a Box from just {pts.Count} points"
         let pl = PPlane.createFromXAxisAndYAxis dirX dirY (pts[0])
-        Box.createFromPlaneAndPnts pl pts
+        Box.createFromPntsAndPlane pl pts
 
     /// Creates a 3D box translated along the local X-axis of the Box.
     static member moveAlongLocalX (distX:float) (b:Box) : Box =

@@ -375,9 +375,9 @@ module AutoOpenPPlane =
         /// Creates a Parametrized Plane from a unit-vector representing the Z-axis, a unit-vector as X-axis hint and an origin point.
         /// The given X vector does not need to be perpendicular to the normal vector, just not parallel.
         /// Fails if normal and xAxis are parallel within 1 degree.
-        static member createFromUnitNormalAndXAxis (normal:UnitVec) (xAxis:UnitVec) (origin:Pnt) : PPlane =
+        static member createFromUnitXAxisAndNormal (normal:UnitVec) (xAxis:UnitVec) (origin:Pnt) : PPlane =
             if normal.IsParallelTo(xAxis, Cosine.``1.0``) then
-                failCollinear "PPlane.createFromUnitNormalAndXAxis" origin normal xAxis
+                failCollinear "PPlane.createFromUnitXAxisAndNormal" origin normal xAxis
             let y = UnitVec.cross (normal, xAxis)
             let x = Vec.cross (y, normal)
             PPlane.createFromAxesUnchecked(origin, x.Unitized, y.Unitized, normal)
@@ -385,18 +385,18 @@ module AutoOpenPPlane =
         /// Creates a Parametrized Plane from a vector representing the Z-axis, a vector as X-axis hint and an origin point.
         /// The given X vector does not need to be perpendicular to the normal vector, just not parallel.
         /// Fails if the vectors are shorter than 1e-6 or normal and X are parallel.
-        static member createFromNormalAndXAxis (normal:Vec) (xAxis:Vec) (origin:Pnt) : PPlane =
+        static member createFromXAxisAndNormal (normal:Vec) (xAxis:Vec) (origin:Pnt) : PPlane =
             let lx = xAxis.Length
             let ln = normal.Length
             if isTooSmall lx then
-                failTooSmall2 "PPlane.createFromNormalAndXAxis xAxis" xAxis normal
+                failTooSmall2 "PPlane.createFromXAxisAndNormal xAxis" xAxis normal
             if isTooSmall ln then
-                failTooSmall2 "PPlane.createFromNormalAndXAxis normal" normal xAxis
+                failTooSmall2 "PPlane.createFromXAxisAndNormal normal" normal xAxis
             let xf = 1./lx
             let nf = 1./ln
             let xu = UnitVec.createUnchecked(xAxis.X *xf,  xAxis.Y*xf,  xAxis.Z*xf)
             let nu = UnitVec.createUnchecked(normal.X*nf, normal.Y*nf, normal.Z*nf)
-            PPlane.createFromUnitNormalAndXAxis nu xu origin
+            PPlane.createFromUnitXAxisAndNormal nu xu origin
 
 
 

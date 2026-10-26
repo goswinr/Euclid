@@ -562,14 +562,14 @@ type RigidMatrix =
     /// A positive angle rotates counter-clockwise when the axis vector is pointing towards the observer (right-hand rule).</summary>
     /// <param name="axis">Rotation axis, as unit-vector.</param>
     /// <param name="angleDegrees">Rotation angle in degrees.</param>
-    static member createRotationFromUnitVecDegrees (axis:UnitVec) (angleDegrees:float) : RigidMatrix =
-        RigidMatrix.createRotationFromUnitVecRadians axis (UtilEuclid.toRadians angleDegrees)
+    static member createRotationFromDegreesUnitVec (axis:UnitVec) (angleDegrees:float) : RigidMatrix =
+        RigidMatrix.createRotationFromRadiansUnitVec axis (UtilEuclid.toRadians angleDegrees)
 
     /// <summary>Creates a rotation around an Axis RigidMatrix.
     /// A positive angle rotates counter-clockwise when the axis vector is pointing towards the observer (right-hand rule).</summary>
     /// <param name="axis">Rotation axis, as unit-vector.</param>
     /// <param name="angleRadians">Rotation angle in radians.</param>
-    static member createRotationFromUnitVecRadians (axis:UnitVec) (angleRadians:float) : RigidMatrix =
+    static member createRotationFromRadiansUnitVec (axis:UnitVec) (angleRadians:float) : RigidMatrix =
         // Based on http://www.gamedev.net/reference/articles/article1199.asp
         let c = cos angleRadians
         let s = sin angleRadians
@@ -588,18 +588,18 @@ type RigidMatrix =
     /// A positive angle rotates counter-clockwise when the axis vector is pointing towards the observer (right-hand rule).</summary>
     /// <param name="axis">Rotation axis, a vector of any length but 0.0.</param>
     /// <param name="angleDegrees">Rotation angle in degrees.</param>
-    static member createRotationFromVecDegrees (axis:Vec) (angleDegrees:float) : RigidMatrix =
-        RigidMatrix.createRotationFromVecRadians axis (UtilEuclid.toRadians angleDegrees)
+    static member createRotationFromDegreesVec (axis:Vec) (angleDegrees:float) : RigidMatrix =
+        RigidMatrix.createRotationFromRadiansVec axis (UtilEuclid.toRadians angleDegrees)
 
     /// <summary>Creates a rotation around an Axis RigidMatrix.
     /// A positive angle rotates counter-clockwise when the axis vector is pointing towards the observer (right-hand rule).</summary>
     /// <param name="axis">Rotation axis, a vector of any length but 0.0.</param>
     /// <param name="angleRadians">Rotation angle in radians.</param>
-    static member createRotationFromVecRadians (axis:Vec) (angleRadians:float) : RigidMatrix =
+    static member createRotationFromRadiansVec (axis:Vec) (angleRadians:float) : RigidMatrix =
         // first unitize
         let len = sqrt (axis.X*axis.X + axis.Y*axis.Y + axis.Z*axis.Z)
         if isTooTiny(len) then
-            fail $"RigidMatrix.createRotationFromVecRadians failed on too short axis: {axis} and rotation: {angleRadians} radians."
+            fail $"RigidMatrix.createRotationFromRadiansVec failed on too short axis: {axis} and rotation: {angleRadians} radians."
         let sc = 1. / len
         let x = axis.X * sc
         let y = axis.Y * sc
@@ -620,9 +620,9 @@ type RigidMatrix =
     /// <param name="cen">The center point for the rotation.</param>
     /// <param name="axis">Rotation axis, a vector of any length but 0.0.</param>
     /// <param name="angleDegrees">Rotation angle in degrees.</param>
-    static member createRotationFromVecDegreesAround (cen:Pnt) (axis:Vec) (angleDegrees:float) : RigidMatrix =
+    static member createRotationFromDegreesVecAround (cen:Pnt) (axis:Vec) (angleDegrees:float) : RigidMatrix =
         RigidMatrix.createTranslationXYZ (-cen.X) (-cen.Y) (-cen.Z)
-        *** RigidMatrix.createRotationFromVecDegrees axis angleDegrees
+        *** RigidMatrix.createRotationFromDegreesVec axis angleDegrees
         *** RigidMatrix.createTranslationXYZ cen.X cen.Y cen.Z
 
     /// <summary>Creates a rotation matrix around an Axis at a given center point.
@@ -630,9 +630,9 @@ type RigidMatrix =
     /// <param name="cen">The center point for the rotation.</param>
     /// <param name="axis">Rotation axis, a vector of any length but 0.0.</param>
     /// <param name="angleRadians">Rotation angle in radians.</param>
-    static member createRotationFromVecRadiansAround (cen:Pnt) (axis:Vec) (angleRadians:float) : RigidMatrix =
+    static member createRotationFromRadiansVecAround (cen:Pnt) (axis:Vec) (angleRadians:float) : RigidMatrix =
         RigidMatrix.createTranslationXYZ (-cen.X) (-cen.Y) (-cen.Z)
-        *** RigidMatrix.createRotationFromVecRadians axis angleRadians
+        *** RigidMatrix.createRotationFromRadiansVec axis angleRadians
         *** RigidMatrix.createTranslationXYZ cen.X cen.Y cen.Z
 
     /// <summary>Creates a rotation matrix around an Axis at a given center point.
@@ -640,9 +640,9 @@ type RigidMatrix =
     /// <param name="cen">The center point for the rotation.</param>
     /// <param name="axis">Rotation axis, a unit-vector.</param>
     /// <param name="angleDegrees">Rotation angle in degrees.</param>
-    static member createRotationFromUnitVecDegreesAround (cen:Pnt) (axis:UnitVec) (angleDegrees:float) : RigidMatrix =
+    static member createRotationFromDegreesUnitVecAround (cen:Pnt) (axis:UnitVec) (angleDegrees:float) : RigidMatrix =
         RigidMatrix.createTranslationXYZ (-cen.X) (-cen.Y) (-cen.Z)
-        *** RigidMatrix.createRotationFromUnitVecDegrees axis angleDegrees
+        *** RigidMatrix.createRotationFromDegreesUnitVec axis angleDegrees
         *** RigidMatrix.createTranslationXYZ cen.X cen.Y cen.Z
 
     /// <summary>Creates a rotation matrix around an Axis at a given center point.
@@ -650,9 +650,9 @@ type RigidMatrix =
     /// <param name="cen">The center point for the rotation.</param>
     /// <param name="axis">Rotation axis, a unit-vector.</param>
     /// <param name="angleRadians">Rotation angle in radians.</param>
-    static member createRotationFromUnitVecRadiansAround (cen:Pnt) (axis:UnitVec) (angleRadians:float) : RigidMatrix =
+    static member createRotationFromRadiansUnitVecAround (cen:Pnt) (axis:UnitVec) (angleRadians:float) : RigidMatrix =
         RigidMatrix.createTranslationXYZ (-cen.X) (-cen.Y) (-cen.Z)
-        *** RigidMatrix.createRotationFromUnitVecRadians axis angleRadians
+        *** RigidMatrix.createRotationFromRadiansUnitVec axis angleRadians
         *** RigidMatrix.createTranslationXYZ cen.X cen.Y cen.Z
 
     /// <summary>Creates a rotation from one unit-vector's direction to another unit-vector's direction.

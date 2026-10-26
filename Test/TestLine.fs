@@ -1982,7 +1982,7 @@ let testsLine3DMove =
 
         test "Rotate with quaternion" {
             let ln = Line3D(0., 0., 0., 10., 0., 0.)
-            let q = Quaternion.createFromVecRadians Vec.zAxis (System.Math.PI / 2.)
+            let q = Quaternion.createFromRadiansVec Vec.zAxis (System.Math.PI / 2.)
             let rotated = ln.Rotate q
             "rotated to X near zero" |> Expect.isTrue (abs rotated.ToX < 1e-9)
             "rotated to Y near 10" |> expectEqualEpsilon rotated.ToY 10.

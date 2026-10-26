@@ -391,28 +391,28 @@ type Quaternion =
 
     /// The created rotation is Clockwise looking in the direction of the vector.
     /// The vector may be of any length but zero.
-    static member createFromVecRadians (axis:Vec) (angleInRadians:float) : Quaternion =
+    static member createFromRadiansVec (axis:Vec) (angleInRadians:float) : Quaternion =
         let length = sqrt(axis.X*axis.X + axis.Y*axis.Y + axis.Z*axis.Z)
         if isTooTiny(length) then
-            fail $"Quaternion.createFromVecRadians failed too short axis: %O{axis} and rotation: %g{toDegrees angleInRadians}° Degrees."
+            fail $"Quaternion.createFromRadiansVec failed too short axis: %O{axis} and rotation: %g{toDegrees angleInRadians}° Degrees."
         let angHalf = angleInRadians * 0.5
         let sa = sin angHalf
         let sc = 1. / length // inverse for unitizing vector:
         Quaternion.createUnchecked(axis.X * sc * sa, axis.Y * sc * sa, axis.Z * sc * sa, cos angHalf)
 
     /// The created rotation is Clockwise looking in the direction of the unit-vector.
-    static member inline createFromUnitVecRadians (axis:UnitVec) (angleInRadians:float) : Quaternion =
+    static member inline createFromRadiansUnitVec (axis:UnitVec) (angleInRadians:float) : Quaternion =
         let angHalf = angleInRadians * 0.5
         let sa = sin angHalf
         Quaternion.createUnchecked(axis.X  * sa, axis.Y  * sa, axis.Z  * sa, cos angHalf)
 
     /// The created rotation is Clockwise looking in the direction of the vector (of any length but zero).
-    static member inline createFromVecDegrees (axis:Vec) (angleInDegrees:float) : Quaternion =
-        Quaternion.createFromVecRadians axis (toRadians angleInDegrees)
+    static member inline createFromDegreesVec (axis:Vec) (angleInDegrees:float) : Quaternion =
+        Quaternion.createFromRadiansVec axis (toRadians angleInDegrees)
 
     /// The created rotation is Clockwise looking in the direction of the unit-vector.
-    static member inline createFromUnitVecDegrees (axis:UnitVec) (angleInDegrees:float) : Quaternion =
-        Quaternion.createFromUnitVecRadians axis (toRadians angleInDegrees)
+    static member inline createFromDegreesUnitVec (axis:UnitVec) (angleInDegrees:float) : Quaternion =
+        Quaternion.createFromRadiansUnitVec axis (toRadians angleInDegrees)
 
     /// Creates a rotation from one vector's direction to another vector's direction.
     /// If the tips of the two unit vectors are closer than 1e-12 (squared: 1e-24) then an identity Quaternion is returned.

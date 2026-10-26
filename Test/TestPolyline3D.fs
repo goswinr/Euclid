@@ -497,7 +497,7 @@ let tests =
 
         test "static point queries take the point first and the polyline last" {
             // rotated and moved off the origin, so a swapped coordinate shows up
-            let m = RigidMatrix.createRotationFromVecDegrees (Vec(1., 2., 3.)) 40. *** RigidMatrix.createTranslationXYZ 100. (-40.) 25.
+            let m = RigidMatrix.createRotationFromDegreesVec (Vec(1., 2., 3.)) 40. *** RigidMatrix.createTranslationXYZ 100. (-40.) 25.
             let place (p:Pnt) = p *** m
             let pl = Polyline3D.createFromPnts [Pnt(0.,0.,0.); Pnt(10.,0.,0.); Pnt(10.,10.,0.); Pnt(0.,10.,0.)] |> Polyline3D.transformRigid m
             let q = place (Pnt(5.,-1.,2.)) // closest to the middle of the first segment
@@ -746,7 +746,7 @@ let tests =
             test "Rotate 90 degrees around Z axis" {
                 let pts = ResizeArray([Pnt(1,0,0); Pnt(2,0,0)])
                 let pl = Polyline3D.createFromPnts(pts)
-                let q = Quaternion.createFromUnitVecDegrees UnitVec.zAxis 90.
+                let q = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 90.
                 let rotated = pl.Duplicate()
                 rotated.Rotate(q)
                 "Rotate 90 - first point" |> Expect.isTrue (eqPnt rotated.FirstPoint (Pnt(0., 1., 0.)))
@@ -755,7 +755,7 @@ let tests =
             test "rotate static method" {
                 let pts = ResizeArray([Pnt(1,0,0); Pnt(2,0,0)])
                 let pl = Polyline3D.createFromPnts(pts)
-                let q = Quaternion.createFromUnitVecDegrees UnitVec.zAxis 90.
+                let q = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 90.
                 let rotated = Polyline3D.rotate q pl
                 "rotate - first point" |> Expect.isTrue (eqPnt rotated.FirstPoint (Pnt(0., 1., 0.)))
                 "rotate - input unchanged" |> Expect.isTrue (eqPnt pl.FirstPoint (Pnt(1., 0., 0.)))
@@ -765,7 +765,7 @@ let tests =
                 let pts = ResizeArray([Pnt(0,0,0); Pnt(2,0,0); Pnt(2,2,0); Pnt(0,2,0)])
                 let pl = Polyline3D.createFromPnts(pts)
                 let center = pl.Center
-                let q = Quaternion.createFromUnitVecDegrees UnitVec.zAxis 90.
+                let q = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 90.
                 let rotated = pl.Duplicate()
                 rotated.RotateAround center q
                 "RotateAround - center" |> Expect.isTrue (eqPnt rotated.Center center)
@@ -775,7 +775,7 @@ let tests =
                 let pts = ResizeArray([Pnt(0,0,0); Pnt(2,0,0); Pnt(2,2,0); Pnt(0,2,0)])
                 let pl = Polyline3D.createFromPnts(pts)
                 let center = pl.Center
-                let q = Quaternion.createFromUnitVecDegrees UnitVec.zAxis 90.
+                let q = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 90.
                 let rotated = Polyline3D.rotateAround center q pl
                 "rotateAround - center" |> Expect.isTrue (eqPnt rotated.Center center)
                 "rotateAround - input unchanged" |> Expect.isTrue (eqPnt pl.FirstPoint (Pnt(0., 0., 0.)))
@@ -1337,8 +1337,8 @@ let tests =
                 let pts = [Pnt(3.,2.,1.); Pnt(9.,4.,2.); Pnt(7.,8.,-1.); Pnt(3.,2.,1.)]
                 let pl = Polyline3D.createFromPnts pts
                 let xyzs = pl.XYZs
-                let q = Quaternion.createFromVecDegrees (Vec(1.,2.,3.)) 40.
-                let m = Matrix.createRotationFromVecDegreesAround (Pnt(4.,6.,1.)) (Vec(-1.,1.,2.)) 25.
+                let q = Quaternion.createFromDegreesVec (Vec(1.,2.,3.)) 40.
+                let m = Matrix.createRotationFromDegreesVecAround (Pnt(4.,6.,1.)) (Vec(-1.,1.,2.)) 25.
                 pl.Move(Vec(-2.,5.,3.))
                 pl.RotateAround (Pnt(4.,6.,1.)) q
                 pl.Transform m
@@ -1411,10 +1411,10 @@ let tests =
                     Expect.isTrue (obj.ReferenceEquals(xyzs, pl.XYZs)) $"{name} should keep the coordinate list of the input"
                     Expect.isTrue (Polyline3D.equalsExact pl (original ())) $"{name} should not change the input"
                 let expectNewAndInputUnchanged name op = check name withDuplicate op
-                let q = Quaternion.createFromVecDegrees (Vec(1.,2.,3.)) 40.
+                let q = Quaternion.createFromDegreesVec (Vec(1.,2.,3.)) 40.
                 let r = Rotation2D.createFromDegrees 30.
                 let cen = Pnt(4.,6.,1.)
-                let m = Matrix.createRotationFromVecDegreesAround cen (Vec(-1.,1.,2.)) 25.
+                let m = Matrix.createRotationFromDegreesVecAround cen (Vec(-1.,1.,2.)) 25.
                 expectNewAndInputUnchanged "scale" (Polyline3D.scale 1.5)
                 expectNewAndInputUnchanged "scaleOn" (Polyline3D.scaleOn cen 1.5)
                 expectNewAndInputUnchanged "move" (Polyline3D.move (Vec(-2.,5.,3.)))
@@ -1442,7 +1442,7 @@ let tests =
 
             test "static functions give the same result as their instance members" {
                 let original () = Polyline3D.createFromPnts [Pnt(3.,2.,1.); Pnt(9.,4.,2.); Pnt(9.,4.,2.); Pnt(7.,8.,-1.); Pnt(5.,6.,0.5); Pnt(3.,2.,1.)]
-                let q = Quaternion.createFromVecDegrees (Vec(1.,2.,3.)) 40.
+                let q = Quaternion.createFromDegreesVec (Vec(1.,2.,3.)) 40.
                 let cen = Pnt(4.,6.,1.)
                 let check (name:string) (op:Polyline3D -> Polyline3D) (inPlace:Polyline3D -> unit) =
                     let expected = original ()

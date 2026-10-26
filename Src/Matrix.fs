@@ -813,14 +813,14 @@ type Matrix =
     /// A positive angle rotates counter-clockwise when the axis vector is pointing towards the observer (right-hand rule).</summary>
     /// <param name="axis">Rotation axis, as unit-vector.</param>
     /// <param name="angleDegrees">Rotation angle in degrees.</param>
-    static member createRotationFromUnitVecDegrees (axis:UnitVec) (angleDegrees:float) : Matrix =
-        Matrix.createRotationFromUnitVecRadians axis (UtilEuclid.toRadians angleDegrees)
+    static member createRotationFromDegreesUnitVec (axis:UnitVec) (angleDegrees:float) : Matrix =
+        Matrix.createRotationFromRadiansUnitVec axis (UtilEuclid.toRadians angleDegrees)
 
     /// <summary>Creates a rotation around an axis transformation matrix.
     /// A positive angle rotates counter-clockwise when the axis vector is pointing towards the observer (right-hand rule).</summary>
     /// <param name="axis">Rotation axis, as unit-vector.</param>
     /// <param name="angleRadians">Rotation angle in radians.</param>
-    static member createRotationFromUnitVecRadians (axis:UnitVec) (angleRadians:float) : Matrix =
+    static member createRotationFromRadiansUnitVec (axis:UnitVec) (angleRadians:float) : Matrix =
         // Based on http://www.gamedev.net/reference/articles/article1199.asp
         let c = cos angleRadians
         let s = sin angleRadians
@@ -840,18 +840,18 @@ type Matrix =
     /// A positive angle rotates counter-clockwise when the axis vector is pointing towards the observer (right-hand rule).</summary>
     /// <param name="axis">Rotation axis, a vector of any length but 0.0.</param>
     /// <param name="angleDegrees">Rotation angle in degrees.</param>
-    static member createRotationFromVecDegrees (axis:Vec) (angleDegrees:float) : Matrix =
-        Matrix.createRotationFromVecRadians axis (UtilEuclid.toRadians angleDegrees)
+    static member createRotationFromDegreesVec (axis:Vec) (angleDegrees:float) : Matrix =
+        Matrix.createRotationFromRadiansVec axis (UtilEuclid.toRadians angleDegrees)
 
     /// <summary>Creates a rotation around an axis transformation matrix.
     /// A positive angle rotates counter-clockwise when the axis vector is pointing towards the observer (right-hand rule).</summary>
     /// <param name="axis">Rotation axis, a vector of any length but 0.0.</param>
     /// <param name="angleRadians">Rotation angle in radians.</param>
-    static member createRotationFromVecRadians (axis:Vec) (angleRadians:float) : Matrix =
+    static member createRotationFromRadiansVec (axis:Vec) (angleRadians:float) : Matrix =
         // first unitize
         let len = sqrt (axis.X*axis.X + axis.Y*axis.Y + axis.Z*axis.Z)
         if isTooTiny(len) then
-            fail $"Matrix.createRotationFromVecRadians failed on too short axis: {axis} and rotation: {angleRadians} radians."
+            fail $"Matrix.createRotationFromRadiansVec failed on too short axis: {axis} and rotation: {angleRadians} radians."
 
         let sc = 1. / len
         let x = axis.X * sc
@@ -874,9 +874,9 @@ type Matrix =
     /// <param name="cen">The center point for the rotation.</param>
     /// <param name="axis">Rotation axis, a vector of any length but 0.0.</param>
     /// <param name="angleDegrees">Rotation angle in degrees.</param>
-    static member createRotationFromVecDegreesAround (cen:Pnt) (axis:Vec) (angleDegrees:float) : Matrix =
+    static member createRotationFromDegreesVecAround (cen:Pnt) (axis:Vec) (angleDegrees:float) : Matrix =
         Matrix.createTranslationXYZ (-cen.X) (-cen.Y) (-cen.Z)
-        *** Matrix.createRotationFromVecDegrees axis angleDegrees
+        *** Matrix.createRotationFromDegreesVec axis angleDegrees
         *** Matrix.createTranslationXYZ cen.X cen.Y cen.Z
 
     /// <summary>Creates a rotation matrix around an axis at a given center point.
@@ -884,9 +884,9 @@ type Matrix =
     /// <param name="cen">The center point for the rotation.</param>
     /// <param name="axis">Rotation axis, a vector of any length but 0.0.</param>
     /// <param name="angleRadians">Rotation angle in radians.</param>
-    static member createRotationFromVecRadiansAround (cen:Pnt) (axis:Vec) (angleRadians:float) : Matrix =
+    static member createRotationFromRadiansVecAround (cen:Pnt) (axis:Vec) (angleRadians:float) : Matrix =
         Matrix.createTranslationXYZ (-cen.X) (-cen.Y) (-cen.Z)
-        *** Matrix.createRotationFromVecRadians axis angleRadians
+        *** Matrix.createRotationFromRadiansVec axis angleRadians
         *** Matrix.createTranslationXYZ cen.X cen.Y cen.Z
 
     /// <summary>Creates a rotation matrix around an axis at a given center point.
@@ -894,9 +894,9 @@ type Matrix =
     /// <param name="cen">The center point for the rotation.</param>
     /// <param name="axis">Rotation axis, a unit-vector.</param>
     /// <param name="angleDegrees">Rotation angle in degrees.</param>
-    static member createRotationFromUnitVecDegreesAround (cen:Pnt) (axis:UnitVec) (angleDegrees:float) : Matrix =
+    static member createRotationFromDegreesUnitVecAround (cen:Pnt) (axis:UnitVec) (angleDegrees:float) : Matrix =
         Matrix.createTranslationXYZ (-cen.X) (-cen.Y) (-cen.Z)
-        *** Matrix.createRotationFromUnitVecDegrees axis angleDegrees
+        *** Matrix.createRotationFromDegreesUnitVec axis angleDegrees
         *** Matrix.createTranslationXYZ cen.X cen.Y cen.Z
 
     /// <summary>Creates a rotation matrix around an axis at a given center point.
@@ -904,9 +904,9 @@ type Matrix =
     /// <param name="cen">The center point for the rotation.</param>
     /// <param name="axis">Rotation axis, a unit-vector.</param>
     /// <param name="angleRadians">Rotation angle in radians.</param>
-    static member createRotationFromUnitVecRadiansAround (cen:Pnt) (axis:UnitVec) (angleRadians:float) : Matrix =
+    static member createRotationFromRadiansUnitVecAround (cen:Pnt) (axis:UnitVec) (angleRadians:float) : Matrix =
         Matrix.createTranslationXYZ (-cen.X) (-cen.Y) (-cen.Z)
-        *** Matrix.createRotationFromUnitVecRadians axis angleRadians
+        *** Matrix.createRotationFromRadiansUnitVec axis angleRadians
         *** Matrix.createTranslationXYZ cen.X cen.Y cen.Z
 
     /// <summary>Creates a scale transformation matrix.
