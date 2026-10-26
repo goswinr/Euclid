@@ -10,7 +10,17 @@ of that commit. The script successfully type checked all 52 historical source fi
 | [2D API](ApiTable2D.md) | [2D API](../ApiTable2D.md) |
 | [3D API](ApiTable3D.md) | [3D API](../ApiTable3D.md) |
 
-To compare from the repository root:
+To compare side by side in VS Code, run from the repository root:
+
+```powershell
+code --reuse-window --diff Scripts/0.52/ApiTable.md Scripts/ApiTable.md
+code --reuse-window --diff Scripts/0.52/ApiTable2D.md Scripts/ApiTable2D.md
+code --reuse-window --diff Scripts/0.52/ApiTable3D.md Scripts/ApiTable3D.md
+```
+
+The 0.52 baseline appears on the left and the current API on the right.
+
+To compare in the terminal from the repository root:
 
 ```powershell
 git diff --no-index -- Scripts/0.52/ApiTable.md Scripts/ApiTable.md
