@@ -4,7 +4,8 @@ All public types, members and functions of Euclid. Corresponding 2D and 3D types
 
 - Corresponding members share a row, also when their names differ, like `Pt.midPt` and `Pnt.midPnt`.
 - `—` and a reason in italics mark a member that exists in one dimension only on purpose.
-- There are no unexplained gaps: every member is paired or has a reason for its dimensional difference.
+- An empty cell marks one of 2 gaps: a member that is missing in one dimension,
+  or a member whose name does not match its counterpart. The contents list the gaps per table.
 - Instance members and fields start with `.`, e.g. `.DistanceTo`.
 - Static members are qualified with their type name. They are listed right below the instance member of the same name.
   The static members without such an instance member follow at the end of each table.
@@ -19,7 +20,7 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 - [Vc / Vec](#vc--vec), 0 gaps
 - [UnitVc / UnitVec](#unitvc--unitvec), 0 gaps
 - [Pt / Pnt](#pt--pnt), 0 gaps
-- [Rotation2D / Quaternion](#rotation2d--quaternion), 0 gaps
+- [Rotation2D / Quaternion](#rotation2d--quaternion), 2 gaps
 - [PPlane](#pplane)
 - [Matrix](#matrix)
 - [RigidMatrix](#rigidmatrix)
@@ -610,6 +611,10 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | — | *quaternion renormalization API* | `Quaternion.normalize` | `q: Quaternion -> Quaternion` |
 | `.ScaleAngle` | `factor: float -> Rotation2D` | `.ScaleAngle` | `factor: float -> Quaternion` |
 | `Rotation2D.scaleAngle` | `factor: float -> rotation: Rotation2D -> Rotation2D` | `Quaternion.scaleAngle` | `factor: float -> rotation: Quaternion -> Quaternion` |
+|  |  | `.Slerp` | `finish: Quaternion * factor: float -> Quaternion` |
+|  |  | `Quaternion.slerp` | `start: Quaternion -> finish: Quaternion -> factor: float -> Quaternion` |
+| — | *quaternions q and -q represent the same rotation* | `.SlerpEncoded` | `finish: Quaternion * factor: float -> Quaternion` |
+| — | *quaternions q and -q represent the same rotation* | `Quaternion.slerpEncoded` | `start: Quaternion -> finish: Quaternion -> factor: float -> Quaternion` |
 | `.Then` | `ro: Rotation2D -> Rotation2D` | `.Then` | `other: Quaternion -> Quaternion` |
 | `.ToString` | `unit -> string` | `.ToString` | `unit -> string` |
 | — | *replace angle while retaining the 3D axis* | `.WithAngleInDegrees` | `angleInDegrees: float -> Quaternion` |

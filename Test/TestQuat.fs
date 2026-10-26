@@ -96,6 +96,84 @@ let tests =
                 Expect.isTrue (Quaternion.equalsExact q.Half Quaternion.identity) "both identities"
         }
 
+        test "slerp along a shared axis interpolates the angle" {
+            let axis = UnitVec.create 1. (-2.) 3.
+            let point = Pnt(12.3, -4.5, 6.7)
+            let start = Quaternion.createFromUnitVecDegrees axis 30.
+            let finish = Quaternion.createFromUnitVecDegrees axis 100.
+            for factor in [-0.5; 0.; 0.25; 0.5; 1.; 1.5] do
+                let expected = Quaternion.createFromUnitVecDegrees axis (30. + 70. * factor)
+                let s = Quaternion.slerp start finish factor
+                Expect.isTrue (Quaternion.equalsWithin 1e-12 s expected) $"slerp at {factor}"
+                Expect.isTrue (Quaternion.equalsExact s (start.Slerp(finish, factor))) "static and instance agree"
+                Expect.isTrue (Quaternion.equalsWithin 1e-12 (Quaternion.slerpEncoded start finish factor) expected) $"slerpEncoded at {factor}"
+                "slerp applied to a point" |> expectEqual (point *** s) (point *** expected)
+            Expect.isTrue (Quaternion.equalsExact (Quaternion.slerp start finish 0.) start) "exact start"
+            Expect.isTrue (Quaternion.equalsExact (Quaternion.slerp start finish 1.) finish) "exact finish"
+        }
+
+        test "slerp matches the Shoemake formula for unrelated rotations" {
+            let shoemake (a:Quaternion) (b:Quaternion) t =
+                let dot = a.X*b.X + a.Y*b.Y + a.Z*b.Z + a.W*b.W
+                let theta = acos dot
+                let ra = sin ((1. - t) * theta) / sin theta
+                let rb = sin (t * theta) / sin theta
+                Quaternion.createUnchecked(a.X*ra + b.X*rb, a.Y*ra + b.Y*rb, a.Z*ra + b.Z*rb, a.W*ra + b.W*rb)
+            let a = Quaternion.createFromEulerXYZDegrees 10. -35. 70.
+            let b = Quaternion.createFromEulerXYZDegrees -60. 20. 125.
+            let bNeg = Quaternion.createUnchecked(-b.X, -b.Y, -b.Z, -b.W)
+            let bFar, bNear = if a.X*b.X + a.Y*b.Y + a.Z*b.Z + a.W*b.W < 0. then b, bNeg else bNeg, b
+            for factor in [-0.5; 0.1; 0.5; 0.9; 1.5] do
+                let s = Quaternion.slerp a bFar factor
+                Expect.isTrue (Quaternion.equalsWithin 1e-12 s (shoemake a bNear factor)) $"shortest path at {factor}"
+                Expect.isTrue (Quaternion.equalsWithin 1e-12 (Quaternion.slerp a bNear factor) s) $"both representations of finish at {factor}"
+                Expect.isTrue (Quaternion.equalsWithin 1e-12 (Quaternion.slerpEncoded a bFar factor) (shoemake a bFar factor)) $"encoded path at {factor}"
+                Expect.isTrue (Quaternion.equalsWithin 1e-12 (Quaternion.slerpEncoded a bNear factor) s) $"encoded path on the near side at {factor}"
+                Expect.floatClose Accuracy.veryHigh (s.X*s.X + s.Y*s.Y + s.Z*s.Z + s.W*s.W) 1. "unit length"
+            let half = Quaternion.slerp a b 0.5
+            let firstHalf = a.Conjugate.Then half
+            Expect.isTrue (Quaternion.equalsRotationWithin 1e-12 ((a.Then firstHalf).Then firstHalf) b) "two halves give finish"
+        }
+
+        test "slerp takes the shortest path and slerpEncoded the encoded one" {
+            let axis = UnitVec.create 1. 2. 3.
+            let q = Quaternion.createFromUnitVecDegrees axis 90.
+            let neg = Quaternion.createUnchecked(-q.X, -q.Y, -q.Z, -q.W)
+            Expect.isTrue (Quaternion.equalsWithin 1e-12 (Quaternion.slerp Quaternion.identity neg 0.5) (Quaternion.createFromUnitVecDegrees axis 45.)) "shortest 45 degrees"
+            Expect.isTrue (Quaternion.equalsWithin 1e-12 (Quaternion.slerp Quaternion.identity neg 1.) q) "negated finish at factor 1"
+            Expect.isTrue (Quaternion.equalsWithin 1e-12 (Quaternion.slerpEncoded Quaternion.identity neg 0.5) (Quaternion.createFromUnitVecDegrees axis -135.)) "encoded 270 degrees the other way"
+            for factor in [-2.; 0.25; 0.5; 1.5] do
+                Expect.isTrue (Quaternion.equalsWithin 1e-15 (Quaternion.slerpEncoded Quaternion.identity neg factor) (neg.ScaleAngle factor)) "same as scaleAngle from identity"
+        }
+
+        test "slerp handles equal, opposite and very close quaternions" {
+            let axis = UnitVec.create -3. 1. 2.
+            let q = Quaternion.createFromUnitVecDegrees axis 123.
+            let neg = Quaternion.createUnchecked(-q.X, -q.Y, -q.Z, -q.W)
+            for factor in [-2.; 0.25; 0.5; 3.] do
+                Expect.isTrue (Quaternion.equalsWithin 1e-15 (Quaternion.slerp q q factor) q) "same quaternion"
+                Expect.isTrue (Quaternion.equalsWithin 1e-15 (Quaternion.slerpEncoded q q factor) q) "same quaternion encoded"
+                Expect.isTrue (Quaternion.equalsWithin 1e-15 (Quaternion.slerp q neg factor) q) "opposite representation is the same rotation"
+                Expect.throws (fun () -> Quaternion.slerpEncoded q neg factor |> ignore) "encoded full-turn axis is undefined"
+            Expect.isTrue (Quaternion.equalsExact (Quaternion.slerpEncoded q neg 0.) q) "encoded factor 0"
+            Expect.isTrue (Quaternion.equalsExact (Quaternion.slerpEncoded q neg 1.) neg) "encoded factor 1"
+            let tinyAxis = UnitVec.create 2. 1. -1.
+            for radians in [1e-10; 1e-14] do
+                let close = q.Then (Quaternion.createFromUnitVecRadians tinyAxis radians)
+                let expected = q.Then (Quaternion.createFromUnitVecRadians tinyAxis (radians * 0.5))
+                Expect.isTrue (Quaternion.equalsWithin 1e-15 (Quaternion.slerp q close 0.5) expected) $"close quaternions at {radians} radians"
+                Expect.isTrue (Quaternion.equalsWithin 1e-15 (Quaternion.slerpEncoded q close 0.5) expected) $"close quaternions encoded at {radians} radians"
+        }
+
+        test "slerp rejects non-finite factors" {
+            let a = Quaternion.createFromUnitVecDegrees (UnitVec.create 1. 2. 3.) 40.
+            let b = Quaternion.createFromUnitVecDegrees (UnitVec.create -1. 0. 2.) 70.
+            for factor in [nan; infinity; -infinity] do
+                Expect.throws (fun () -> Quaternion.slerp a b factor |> ignore) "non-finite factor"
+                Expect.throws (fun () -> Quaternion.slerpEncoded a b factor |> ignore) "non-finite factor encoded"
+                Expect.throws (fun () -> Quaternion.slerp a a factor |> ignore) "non-finite factor on equal quaternions"
+        }
+
         test "Quaternion 90 z" {
             let q = Quaternion.createFromVecDegrees (Vec.zAxis*9.0) 90.
             let a = Pnt(9,0,3)

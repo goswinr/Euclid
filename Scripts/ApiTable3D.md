@@ -556,6 +556,10 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Quaternion.normalize` | `q: Quaternion -> Quaternion` |
 | `.ScaleAngle` | `factor: float -> Quaternion` |
 | `Quaternion.scaleAngle` | `factor: float -> rotation: Quaternion -> Quaternion` |
+| `.Slerp` | `finish: Quaternion * factor: float -> Quaternion` |
+| `Quaternion.slerp` | `start: Quaternion -> finish: Quaternion -> factor: float -> Quaternion` |
+| `.SlerpEncoded` | `finish: Quaternion * factor: float -> Quaternion` |
+| `Quaternion.slerpEncoded` | `start: Quaternion -> finish: Quaternion -> factor: float -> Quaternion` |
 | `.Then` | `other: Quaternion -> Quaternion` |
 | `.ToString` | `unit -> string` |
 | `.WithAngleInDegrees` | `angleInDegrees: float -> Quaternion` |

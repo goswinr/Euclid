@@ -179,41 +179,139 @@ type Quaternion =
     static member inline withAngleInDegrees (angleInDegrees:float) (q:Quaternion) : Quaternion =
         q.WithAngleInRadians (toRadians angleInDegrees)
 
-    (* TODO the interpolation follows a Cone. is that correct ?
 
-    /// Does a spherical linear interpolation between quaternions.
-    /// 'rel' represents the amount of rotation between this quaternion (where rel is 0)
-    /// and the other (where rel is 1).
-    /// The parameter 'rel' is NOT clamped.
-    member q.Slerp (other:Quaternion, rel) =
-        if   rel = 0.0 then q
-        elif rel = 1.0 then other
+    /// <summary>Scales the encoded rotation angle in [0, 360] degrees, preserving the encoded axis.
+    /// This is basically `slerp` (spherical linear interpolation) with the identity quaternion as the start and the same axis as the target.
+    /// Negative factors reverse the rotation; factors above one extend it. The factor is not clamped.
+    /// Unlike quat.Half, this does not choose the shortest rotation.
+    /// Fails for (0, 0, 0, -1), whose full-turn axis is undefined, or if the factor or scaled half angle is not finite.</summary>
+    /// <param name="factor">The finite multiplier applied to the encoded angle.</param>
+    /// <returns>A new unit quaternion; ordinary identity remains identity.</returns>
+    member q.ScaleAngle (factor:float) : Quaternion =
+        if isNanInfinity factor then
+            EuclidErrors.fail $"Quaternion.ScaleAngle failed. The factor must be finite: {factor}."
+        // Scale before taking the length to retain even very small encoded axes.
+        let axisScale = max (abs q.X) (max (abs q.Y) (abs q.Z))
+        if axisScale = 0.0 then
+            if q.W < 0.0 then
+                EuclidErrors.fail $"Quaternion.ScaleAngle failed. The encoded full-turn axis is undefined for quaternion {q.AsString} and factor {factor}."
+            Quaternion.createUnchecked(0.0, 0.0, 0.0, 1.0) // the inline Quaternion.identity is defined further down
         else
-            let x = q.X
-            let y = q.Y
-            let z = q.Z
-            let w = q.W
-            let x2 = other.X
-            let y2 = other.Y
-            let z2 = other.Z
-            let w2 = other.W
-            let cosHalfTheta = w * w2 + x * x2 + y * y2 + z * z2
-            let sqrSinHalfTheta = 1.0 - cosHalfTheta * cosHalfTheta
-            if sqrSinHalfTheta <= 1e-18 then
-                let s = 1.0 - rel
-                Quaternion (s * x + rel * x2, s * y + rel * y2, s * z + rel * z2,s * w + rel * w2)
+            let x = q.X / axisScale
+            let y = q.Y / axisScale
+            let z = q.Z / axisScale
+            let length = sqrt(x*x + y*y + z*z) // At least one component has magnitude one.
+            let halfAngle = atan2 (axisScale * length) q.W
+            let scaledHalfAngle = halfAngle * factor
+            if isNanInfinity scaledHalfAngle then
+                EuclidErrors.fail $"Quaternion.ScaleAngle failed. The scaled half angle is not finite for factor {factor} and quaternion {q.AsString}."
+            let scale = sin scaledHalfAngle / length
+            Quaternion.createUnchecked(x * scale, y * scale, z * scale, cos scaledHalfAngle)
+
+    /// <summary>Scales the encoded angle, preserving its axis without choosing the shortest rotation.
+    /// This is basically `slerp` (spherical linear interpolation) with the identity quaternion as the start and the same axis as the target.
+    /// The factor is not clamped. Fails for (0, 0, 0, -1), whose axis is undefined,
+    /// or if the factor or scaled half angle is not finite.</summary>
+    /// <param name="factor">The finite angle multiplier; negative values and values above one are supported.</param>
+    /// <param name="rotation">The unit quaternion whose encoded angle is scaled.</param>
+    /// <returns>A new unit quaternion; ordinary identity remains identity.</returns>
+    static member inline scaleAngle (factor:float) (rotation:Quaternion) : Quaternion =
+        rotation.ScaleAngle factor
+
+    /// <summary>Returns half the shortest rotation.
+    /// Preserves the encoded axis for rotations between -180 and 180 degrees, inclusive.
+    /// Reverses the axis only when the encoded rotation exceeds 180 degrees in magnitude (W is negative).</summary>
+    /// <returns>A unit quaternion whose composition with itself represents this rotation.</returns>
+    member q.Half : Quaternion =
+        let sign = if q.W < 0.0 then -1.0 else 1.0
+        Quaternion.create(sign*q.X, sign*q.Y, sign*q.Z, 1.0 + abs q.W)
+
+    /// <summary>Returns half the shortest rotation.
+    /// Preserves the encoded axis for rotations between -180 and 180 degrees, inclusive.
+    /// Reverses the axis only when the encoded rotation exceeds 180 degrees in magnitude (W is negative).</summary>
+    /// <param name="rotation">The unit quaternion to halve.</param>
+    /// <returns>The half rotation; both identity representations return identity.</returns>
+    static member inline half (rotation:Quaternion) : Quaternion = rotation.Half
+
+    /// <summary>Spherical linear interpolation along the shortest rotation from this quaternion to finish.
+    /// If the 4D dot product of the two quaternions is negative, finish is negated first, so q and -q as finish give the same orientations.
+    /// The result rotates at a constant angular speed around one fixed axis, so a rotated vector moves on a cone around that axis.
+    /// Factor 0 returns this quaternion and factor 1 returns finish, or finish with all components negated if the dot product is negative.
+    /// The factor is not clamped: negative factors and factors above one extrapolate the rotation.
+    /// Fails if the factor is not finite.</summary>
+    /// <param name="finish">The quaternion at factor 1.</param>
+    /// <param name="factor">The finite interpolation factor.</param>
+    /// <returns>A new unit quaternion.</returns>
+    member q.Slerp (finish:Quaternion, factor:float) : Quaternion =
+        if isNanInfinity factor then
+            EuclidErrors.fail $"Quaternion.Slerp failed. The factor must be finite: {factor}, for start {q.AsString} and finish {finish.AsString}."
+        if factor = 0.0 then
+            q
+        else
+            // The rotation from q to finish, same as q.Conjugate.Then finish. Its W is the 4D dot product of q and finish.
+            // Quaternion.multiply is used instead of the inline Then, which is defined further down.
+            let delta = Quaternion.multiply(finish, q.Conjugate)
+            if delta.W < 0.0 then
+                if factor = 1.0 then
+                    Quaternion.createUnchecked(-finish.X, -finish.Y, -finish.Z, -finish.W)
+                else
+                    let shortDelta = Quaternion.createUnchecked(-delta.X, -delta.Y, -delta.Z, -delta.W)
+                    Quaternion.multiply(shortDelta.ScaleAngle factor, q)
+            elif factor = 1.0 then
+                finish
             else
-                let sinHalfTheta = sqrt sqrSinHalfTheta
-                let halfTheta = atan2 sinHalfTheta cosHalfTheta
-                let ratioA = sin ((1.0 - rel) * halfTheta) / sinHalfTheta
-                let ratioB = sin (rel * halfTheta) / sinHalfTheta
-                Quaternion (
-                    x * ratioA + x2 * ratioB,
-                    y * ratioA + y2 * ratioB,
-                    z * ratioA + z2 * ratioB,
-                    w * ratioA + w2 * ratioB
-                    )
-    *)
+                Quaternion.multiply(delta.ScaleAngle factor, q)
+
+    /// <summary>Spherical linear interpolation along the shortest rotation from start to finish.
+    /// If the 4D dot product of the two quaternions is negative, finish is negated first, so q and -q as finish give the same orientations.
+    /// The result rotates at a constant angular speed around one fixed axis, so a rotated vector moves on a cone around that axis.
+    /// Factor 0 returns start and factor 1 returns finish, or finish with all components negated if the dot product is negative.
+    /// The factor is not clamped: negative factors and factors above one extrapolate the rotation.
+    /// Fails if the factor is not finite.</summary>
+    /// <param name="start">The quaternion at factor 0.</param>
+    /// <param name="finish">The quaternion at factor 1.</param>
+    /// <param name="factor">The finite interpolation factor.</param>
+    /// <returns>A new unit quaternion.</returns>
+    static member inline slerp (start:Quaternion) (finish:Quaternion) (factor:float) : Quaternion =
+        start.Slerp(finish, factor)
+
+    /// <summary>Spherical linear interpolation along the encoded path from this quaternion to finish.
+    /// Unlike Slerp, this never negates finish, so it may take the long way around: from q to -q it does a full 360 degree turn.
+    /// From the identity quaternion this is the same as finish.ScaleAngle factor.
+    /// The result rotates at a constant angular speed around one fixed axis, so a rotated vector moves on a cone around that axis.
+    /// Factor 0 returns this quaternion and factor 1 returns finish.
+    /// The factor is not clamped: negative factors and factors above one extrapolate the rotation.
+    /// Fails if the factor is not finite, or if finish is exactly the negation of this quaternion, because then the axis of the full turn is undefined.</summary>
+    /// <param name="finish">The quaternion at factor 1.</param>
+    /// <param name="factor">The finite interpolation factor.</param>
+    /// <returns>A new unit quaternion.</returns>
+    member q.SlerpEncoded (finish:Quaternion, factor:float) : Quaternion =
+        if isNanInfinity factor then
+            EuclidErrors.fail $"Quaternion.SlerpEncoded failed. The factor must be finite: {factor}, for start {q.AsString} and finish {finish.AsString}."
+        if factor = 0.0 then
+            q
+        elif factor = 1.0 then
+            finish
+        else
+            // The rotation from q to finish, same as q.Conjugate.Then finish. Its W is the 4D dot product of q and finish.
+            let delta = Quaternion.multiply(finish, q.Conjugate)
+            if delta.X = 0.0 && delta.Y = 0.0 && delta.Z = 0.0 && delta.W < 0.0 then
+                EuclidErrors.fail $"Quaternion.SlerpEncoded failed. The full-turn axis is undefined because finish {finish.AsString} is the negation of start {q.AsString}."
+            Quaternion.multiply(delta.ScaleAngle factor, q)
+
+    /// <summary>Spherical linear interpolation along the encoded path from start to finish.
+    /// Unlike slerp, this never negates finish, so it may take the long way around: from q to -q it does a full 360 degree turn.
+    /// From the identity quaternion this is the same as Quaternion.scaleAngle factor finish.
+    /// The result rotates at a constant angular speed around one fixed axis, so a rotated vector moves on a cone around that axis.
+    /// Factor 0 returns start and factor 1 returns finish.
+    /// The factor is not clamped: negative factors and factors above one extrapolate the rotation.
+    /// Fails if the factor is not finite, or if finish is exactly the negation of start, because then the axis of the full turn is undefined.</summary>
+    /// <param name="start">The quaternion at factor 0.</param>
+    /// <param name="finish">The quaternion at factor 1.</param>
+    /// <param name="factor">The finite interpolation factor.</param>
+    /// <returns>A new unit quaternion.</returns>
+    static member inline slerpEncoded (start:Quaternion) (finish:Quaternion) (factor:float) : Quaternion =
+        start.SlerpEncoded(finish, factor)
 
 
 
@@ -666,8 +764,6 @@ type Quaternion =
 
 
     // static member inline ( *** ) ( p:Line3D, q:Quaternion) = // defined in Line3D.fs
-
-    // static member inline slerp (start:Quaternion, endValue:Quaternion, rel) = start.Slerp(endValue, rel)
 
 
     // #endregion

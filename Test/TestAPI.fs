@@ -1337,6 +1337,10 @@ module QuaternionAPI =
     let (_:Quaternion) = Quaternion.createFromVecs (Vec(1., 0., 0.)) (Vec(0., 1., 0.))
     let (_:Quaternion) = Quaternion.multiply(quaternion, q2)
     let (_:Quaternion) = quaternion |> Quaternion.scaleAngle 0.25
+    let (_:Quaternion) = quaternion.Slerp(q2, 0.5)
+    let (_:Quaternion) = quaternion.SlerpEncoded(q2, 0.5)
+    let (_:Quaternion) = Quaternion.slerp quaternion q2 0.5
+    let (_:Quaternion) = Quaternion.slerpEncoded quaternion q2 0.5
 
     // Operators - Apply rotation
     let v = Vec(1., 0., 0.)

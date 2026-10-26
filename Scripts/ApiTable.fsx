@@ -121,7 +121,7 @@ let only3DMembers = [
     "Offset3D"  , @"^GetCollinearNeighbors$|^GetOffsetDirections$|^SetOffCornerVar$", "algorithm-specific 3D normal and direction representation"
     "Quaternion", @"^Normalize$"                                 , "quaternion renormalization API"
     "Quaternion", @"^WithAngleIn(Degrees|Radians)$"               , "replace angle while retaining the 3D axis"
-    "Quaternion", @"^EqualsRotationWithin$"                      , "quaternions q and -q represent the same rotation"
+    "Quaternion", @"^EqualsRotationWithin$|^SlerpEncoded$"       , "quaternions q and -q represent the same rotation"
     "Quaternion", @"^Multiply$|\*\*\*"                            , "quaternion composition and application operators"
     "BBox"      , @"^CreateFromBox$"                              , "conversion from an oriented 3D box"
     "Quaternion", @"^[XYZW]$|Axis|Conjugate|Euler"                , "quaternion components"
