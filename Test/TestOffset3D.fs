@@ -681,6 +681,22 @@ let tests =
                 Expect.throws (fun () -> Offset3D.removeUTurns(xyzs, uvs, Cosine.``179.0``) |> ignore) "non multiple-of-3 should fail"
         ]
 
+        testList "Offset3D.getCollinearNeighbors" [
+            let valid : Offset3D.OffsetDirection voption = ValueSome { prevInPlane = UnitVec.xAxis; nextInPlane = UnitVec.xAxis; perpDir = UnitVec.zAxis }
+
+            testCase "finds the neighbours with valid directions, also across the seam of a closed polyline" <| fun _ ->
+                let dirs = ResizeArray [ ValueNone; valid; ValueNone; ValueNone; valid; ValueNone ] // closed, the last point is the first point
+                let cps = Offset3D.getCollinearNeighbors dirs
+                let got = [ for cp in cps -> cp.idx, cp.prevOK, cp.nextOK ]
+                "neighbours" |> Expect.equal got [ (0, 4, 1); (2, 1, 4); (3, 1, 4); (5, 4, 1) ]
+
+            testCase "fails with a clear message if no point has a valid direction" <| fun _ ->
+                let dirs = ResizeArray [ ValueNone; ValueNone; ValueNone; ValueNone ]
+                let msg = try Offset3D.getCollinearNeighbors dirs |> ignore; "" with e -> e.Message
+                "function name" |> Expect.stringContains msg "Offset3D.getCollinearNeighbors"
+                "point count" |> Expect.stringContains msg "none of the 4 points"
+        ]
+
         // ============ Write test data file ============
 
         testCase "Write test data file (when saveTestData=true)" <| fun _ ->

@@ -422,8 +422,8 @@ module Offset3D =
                             | ValueNone ->
                                 j <- j - 1 // continue search
 
-                        if j = 0 then // actually should never happen if algorithm is correct
-                            fail "Offset3D.offsetConstant: could not find previous valid offset direction for collinear point in closed polyline."
+                        if j = -1 then // no point has a valid direction
+                            fail $"Offset3D.getCollinearNeighbors: could not find a previous point with a valid offset direction for collinear point[{i}], none of the {dirs.Count} points has one."
 
 
                     // (2.2.1) find the next defined direction
@@ -447,8 +447,8 @@ module Offset3D =
                             | ValueNone ->
                                 j <- j + 1 // continue search
 
-                        if j = dirs.Count then // actually should never happen if algorithm is correct
-                            fail "Offset3D.offsetConstant: could not find next valid offset direction for collinear point in closed polyline."
+                        if j = dirs.Count then // no point has a valid direction
+                            fail $"Offset3D.getCollinearNeighbors: could not find a next point with a valid offset direction for collinear point[{i}], none of the {dirs.Count} points has one."
 
                 // (2.3) add the collinear point with its prev and next OK indices even if prevIdx and nextIdx were found earlier
                 collinearPts.Add { idx = i; prevOK = prevIdx; nextOK = nextIdx }

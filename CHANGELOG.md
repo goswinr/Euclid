@@ -91,6 +91,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Tria3D.offsetVar`, now `tryOffsetPntVar`, returned a wrong point: it moved along the offset normal instead of along the previous segment to reach the intersection of the two offset lines.
 - `Polyline2D.equalsTol` and `Polyline3D.equalsTol`, now `equalsWithin`, considered a NaN coordinate equal to any value. Now a NaN coordinate is never equal, like in `Pnt.equalsWithin` and all other `equalsWithin` members. The same instance is still always equal to itself.
 - The exceptions of `XLine3D.intersectCone`, now `classifyConeIntersection`, showed `%g` and `%O` placeholders instead of the actual values.
+- `Offset3D.getCollinearNeighbors` did not fail when no point before a collinear point of a closed polyline had a valid offset direction, and used a stale index instead. Its errors named `Offset3D.offsetConstant`, which does not exist.
 
 ### Removed
 - **Breaking:** Removed all obsolete API members, operators and compatibility types/modules (`Points`, `Loop` and `Topology`), except unsafe public constructors required for inlining. Use the documented replacements. Removed their compatibility tests and updated manual test scripts.
