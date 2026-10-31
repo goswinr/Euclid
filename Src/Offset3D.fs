@@ -288,12 +288,47 @@ module Offset3D =
             UnitVec.createUnchecked (a.Y * b.Z - a.Z * b.Y, a.Z * b.X - a.X * b.Z, a.X * b.Y - a.Y * b.X)
 
 
-    /// For points between collinear segments, ValueNone is returned.
-    /// For an open polyline, the first and last points will be ValueSome,
-    /// For a closed polyline, the first and last points will be identical, and they may be ValueNone if collinear.
-    /// Segments are considered collinear if the cosine of the angle between them is less than considerCollinearBelow.
-    /// Special case: If all points are in a line the first and last point will have directions derived from the refNormal. The inner points will be ValueNone.
-    /// Fails if a U-turn exceeding failAtUTurnAbove is detected.
+    /// The offset direction at a point that is not a corner, derived from a given perpendicular direction.
+    /// The perpendicular direction is made perpendicular to the tangent at the point,
+    /// and the in-plane directions are perpendicular to it and to each segment.
+    /// Fails if the given direction is parallel to the tangent.
+    let private directionFromPerp (perp:UnitVec) (uPrev:UnitVec) (uNext:UnitVec) (ptIdx:int) : OffsetDirection =
+        let tx = uPrev.X + uNext.X // the tangent, not unitized, its length is almost 2.0 because U-turns are excluded
+        let ty = uPrev.Y + uNext.Y
+        let tz = uPrev.Z + uNext.Z
+        let tLenSq = tx * tx + ty * ty + tz * tz
+        if isTooTinySq tLenSq then
+            fail $"Offset3D.getOffsetDirections: the segments before and after pts.[{ptIdx}] are opposite: {uPrev} and {uNext}."
+        let k = (perp.X * tx + perp.Y * ty + perp.Z * tz) / tLenSq
+        let px = perp.X - tx * k
+        let py = perp.Y - ty * k
+        let pz = perp.Z - tz * k
+        let pLen = sqrt (px * px + py * py + pz * pz)
+        if isTooSmall pLen then
+            fail $"Offset3D.getOffsetDirections: the reference normal {perp} is parallel to the polyline at pts.[{ptIdx}], so it cannot define the offset plane there."
+        let p = UnitVec.createUnchecked(px / pLen, py / pLen, pz / pLen)
+        let nPrev = UnitVec.cross(p, uPrev) |> Vec.unitize
+        let nNext = UnitVec.cross(p, uNext) |> Vec.unitize
+        { prevInPlane = nPrev; nextInPlane = nNext; perpDir = p }
+
+
+    /// <summary>Computes the offset directions at each point of a polyline from its segment unit vectors.</summary>
+    /// <remarks>
+    /// At a corner the local plane contains both adjacent segments, and its normal is their cross product.
+    /// Each normal is flipped to match the previous one, starting with refNormal, so that the inside stays on the same side along the polyline.
+    /// A point is collinear if the cosine of the angle between its two segments is bigger than considerCollinearBelow.
+    /// Collinear points get ValueNone. The offset functions place them on the line between the neighboring offset corners.
+    /// The end points of an open polyline get the plane normal of the nearest corner, made perpendicular to their own segment.
+    /// For a closed polyline the first and last points get the same direction, which is ValueNone if the seam is collinear.
+    /// If no point is a corner, for example on a straight or a finely sampled curve, every point gets a direction derived from refNormal instead:
+    /// the perpendicular direction is refNormal made perpendicular to the polyline, and the in-plane directions are perpendicular to it.
+    /// </remarks>
+    /// <param name="uvs">The X, Y and Z interleaved segment unit vectors, as from getSegmentUnitVectors.</param>
+    /// <param name="refNormal">The reference normal that orients the first corner, or all points if there is no corner.</param>
+    /// <param name="isOpen">TRUE for an open polyline, FALSE for a closed one, where the first and last point are the same.</param>
+    /// <param name="considerCollinearBelow">Points where the segments turn by less than this angle are collinear.</param>
+    /// <param name="failAtUTurnAbove">Fails at points where the segments turn by more than this angle.</param>
+    /// <returns>One offset direction per point, ValueNone for collinear points.</returns>
     let getOffsetDirections(uvs: ResizeArray<float>, refNormal:UnitVec, isOpen:bool, considerCollinearBelow: float<Cosine.cosine>, failAtUTurnAbove :float<Cosine.cosine>) : ResizeArray<OffsetDirection voption> =
         let segCount = XYZ.pointCount uvs // number of segment unit vectors, three floats each
         let ptsCount = segCount + 1
@@ -301,11 +336,10 @@ module Offset3D =
         let inline getUV i = UnitVec.createUnchecked(XYZ.getX i uvs, XYZ.getY i uvs, XYZ.getZ i uvs)
 
         // (1) setup
-        let mutable firstDirPending = isOpen
         let mutable fromIdx = 0
         let mutable uPrev = getUV (segCount - 1)
         if isOpen then // this is needed for open polylines that have 180 degree opposing start and end segments
-            dirs.Add ValueNone
+            dirs.Add ValueNone // the start point is set at the end
             fromIdx <- 1
             uPrev <- getUV 0
 
@@ -313,6 +347,10 @@ module Offset3D =
         let mutable perp  = refNormal
         let mutable nNext = UnitVec.zAxis // dummy value
         let mutable nPrev = UnitVec.zAxis // dummy value
+        let mutable firstCornerIdx = -1
+        let mutable firstCornerPerp = refNormal
+        let mutable firstCornerNPrev = UnitVec.zAxis // dummy value
+        let mutable lastCornerIdx = -1
 
         //(2) compute the cross product of the segment unit vectors to get the vertex normals, and offset points
         for i = fromIdx to ptsCount - 2 do // last point is skipped; it's dealt with at the end
@@ -326,31 +364,53 @@ module Offset3D =
                 dirs.Add ValueNone
 
             else
-                // normal case: offset the corner now
-                perp  <- UnitVec.cross(uPrev, uNext) |> Vec.unitize |> UnitVec.matchOrientation perp // use previous perp to keep consistent relative orientation, not always the same refNormal, so it can adapt along the curve, eg. slowly rotate about the uNext axis
-                nNext <- crossProduct (perp,  uNext) // they are perpendicular so the result is already unitized
-                nPrev <- crossProduct (perp, uPrev) // they are perpendicular so the result is already unitized
-                dirs.Add (ValueSome { prevInPlane = nPrev; nextInPlane = nNext; perpDir = perp })
-
-                if firstDirPending  then
-                    dirs.[0] <- ValueSome { prevInPlane = nPrev; nextInPlane = nPrev; perpDir = perp } // uses nPrev twice
-                    firstDirPending <- false
+                match UnitVec.cross(uPrev, uNext) |> Vec.tryUnitize with
+                | ValueNone ->
+                    // the segments are parallel, only possible with extreme thresholds
+                    if dot > 0.0 then
+                        dirs.Add ValueNone // collinear
+                    else
+                        fail $"Offset3D.getOffsetDirections: 180 degree U-turn detected at pts.[{i}]."
+                | ValueSome cross ->
+                    // normal case: offset the corner now
+                    perp  <- cross |> UnitVec.matchOrientation perp // use previous perp to keep consistent relative orientation, not always the same refNormal, so it can adapt along the curve, eg. slowly rotate about the uNext axis
+                    nNext <- crossProduct (perp,  uNext) // they are perpendicular so the result is already unitized
+                    nPrev <- crossProduct (perp, uPrev) // they are perpendicular so the result is already unitized
+                    dirs.Add (ValueSome { prevInPlane = nPrev; nextInPlane = nNext; perpDir = perp })
+                    if firstCornerIdx = -1 then
+                        firstCornerIdx   <- i
+                        firstCornerPerp  <- perp
+                        firstCornerNPrev <- nPrev
+                    lastCornerIdx <- i
 
             uPrev <- uNext
 
 
         // (3) do last point and checks:
-        if firstDirPending then
-            // handle case where all points are collinear for open polyline
-            // set first point too
-            let n = UnitVec.cross(refNormal, getUV 0) |> Vec.unitize
-            let dir = ValueSome { prevInPlane = n; nextInPlane = n; perpDir = refNormal }
-            for i = 0 to dirs.LastIndex do
-                dirs.[i] <- dir
-            dirs.Add dir // last point
+        if firstCornerIdx = -1 then
+            // no corner, all points are collinear: derive every direction from refNormal
+            dirs.Clear()
+            let lastUnique = if isOpen then ptsCount - 1 else ptsCount - 2
+            for i = 0 to lastUnique do
+                let uP = if i > 0 then getUV (i - 1) elif isOpen then getUV 0 else getUV (segCount - 1)
+                let uN = if i < segCount then getUV i else getUV (segCount - 1)
+                dirs.Add (ValueSome (directionFromPerp refNormal uP uN i))
+            if not isOpen then
+                dirs.Add dirs.[0] // closed polyline, last point = first point
 
         elif isOpen then
-            dirs.Add <|  ValueSome { prevInPlane = nNext; nextInPlane = nNext; perpDir = perp } // uses nNext twice
+            // the end points use the plane of the nearest corner, made perpendicular to their own segment
+            dirs.[0] <-
+                if firstCornerIdx = 1 then
+                    ValueSome { prevInPlane = firstCornerNPrev; nextInPlane = firstCornerNPrev; perpDir = firstCornerPerp } // uses nPrev twice
+                else
+                    let u0 = getUV 0
+                    ValueSome (directionFromPerp firstCornerPerp u0 u0 0)
+            if lastCornerIdx = ptsCount - 2 then
+                dirs.Add <| ValueSome { prevInPlane = nNext; nextInPlane = nNext; perpDir = perp } // uses nNext twice
+            else
+                let uLast = getUV (segCount - 1)
+                dirs.Add <| ValueSome (directionFromPerp perp uLast uLast (ptsCount - 1))
 
         else
             // closed polyline, last point = first offset point

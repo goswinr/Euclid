@@ -11,6 +11,30 @@ let inline eqPnt a b = Pnt.distanceTo a b < 1e-6
 
 let tol = Accuracy.veryHigh
 
+/// A rotation about an oblique axis, so that test shapes are not axis aligned.
+let tilt = Quaternion.createFromDegreesUnitVec (UnitVec.create 1.0 2.0 3.0) 37.0
+
+/// Rotates a point with tilt and moves it away from the origin.
+let toWorld (p:Pnt) = Pnt.rotate tilt p + Vec(120.0, -40.0, 15.0)
+
+/// The world Z axis rotated with tilt, the normal of shapes made in the XY plane.
+let worldZ = UnitVec.rotate tilt UnitVec.zAxis
+
+/// Creates a polyline from points in the XY plane, rotated and moved with toWorld.
+let tilted (pts: Pnt list) = pts |> List.map toWorld |> Polyline3D.createFromPnts
+
+/// The largest deviation of the offset points from the distance |d| to the infinite lines of their adjacent input segments.
+/// Only meaningful for planar polylines offset in their plane.
+let maxSegmentDistanceError (input:Polyline3D) (output:Polyline3D) (d:float) =
+    let pts = input.AsPoints
+    let res = output.AsPoints
+    let mutable err = 0.0
+    for i = 0 to pts.Count - 2 do
+        let ln = Line3D(pts.[i], pts.[i + 1])
+        err <- max err (abs (Line3D.distanceRayPoint res.[i] ln - abs d))
+        err <- max err (abs (Line3D.distanceRayPoint res.[i + 1] ln - abs d))
+    err
+
 // ============ Test data recording ============
 
 /// Set to true to save input/output pairs to an F# file during test runs
@@ -684,17 +708,66 @@ let tests =
         testList "Offset3D.getCollinearNeighbors" [
             let valid : Offset3D.OffsetDirection voption = ValueSome { prevInPlane = UnitVec.xAxis; nextInPlane = UnitVec.xAxis; perpDir = UnitVec.zAxis }
 
-            testCase "finds the neighbours with valid directions, also across the seam of a closed polyline" <| fun _ ->
+            testCase "finds the neighbors with valid directions, also across the seam of a closed polyline" <| fun _ ->
                 let dirs = ResizeArray [ ValueNone; valid; ValueNone; ValueNone; valid; ValueNone ] // closed, the last point is the first point
                 let cps = Offset3D.getCollinearNeighbors dirs
                 let got = [ for cp in cps -> cp.idx, cp.prevOK, cp.nextOK ]
-                "neighbours" |> Expect.equal got [ (0, 4, 1); (2, 1, 4); (3, 1, 4); (5, 4, 1) ]
+                "neighbors" |> Expect.equal got [ (0, 4, 1); (2, 1, 4); (3, 1, 4); (5, 4, 1) ]
 
             testCase "fails with a clear message if no point has a valid direction" <| fun _ ->
                 let dirs = ResizeArray [ ValueNone; ValueNone; ValueNone; ValueNone ]
                 let msg = try Offset3D.getCollinearNeighbors dirs |> ignore; "" with e -> e.Message
                 "function name" |> Expect.stringContains msg "Offset3D.getCollinearNeighbors"
                 "point count" |> Expect.stringContains msg "none of the 4 points"
+        ]
+
+        testList "Offset3D directions without corners" [
+            let rad (deg:float) = deg * Math.PI / 180.0
+
+            testCase "finely sampled open arc is offset at every point" <| fun _ ->
+                // 2 degrees per point, below the 2.5 degree collinear threshold, so no point is a corner
+                let arc = tilted [ for i in 0 .. 45 -> let a = rad (2.0 * float i) in Pnt(10.0 * cos a, 10.0 * sin a, 0.0) ]
+                let res = Polyline3D.offsetByNormal worldZ 1.0 0.0 arc
+                "point count" |> Expect.equal res.PointCount arc.PointCount
+                "distance to the segments" |> Expect.isTrue (maxSegmentDistanceError arc res 1.0 < 1e-9)
+                for p in res.AsPoints do
+                    "offset towards the center" |> Expect.isTrue (Pnt.distanceTo p (toWorld Pnt.Origin) < 9.01)
+
+            testCase "finely sampled closed circle is offset and stays closed" <| fun _ ->
+                let n = 200 // 1.8 degrees per point, before it failed because no point had a valid direction
+                let circle = tilted [ for i in 0 .. n -> let a = 2.0 * Math.PI * float (i % n) / float n in Pnt(10.0 * cos a, 10.0 * sin a, 0.0) ]
+                let res = Polyline3D.offset 1.0 0.0 circle
+                "point count" |> Expect.equal res.PointCount circle.PointCount
+                "closed" |> Expect.isTrue (Pnt.equalsExact res.FirstPoint res.LastPoint)
+                "distance to the segments" |> Expect.isTrue (maxSegmentDistanceError circle res 1.0 < 1e-9)
+                let up = Polyline3D.offset 0.0 0.5 circle
+                for i = 0 to n do
+                    "perpendicular offset along the normal" |> Expect.isTrue (eqPnt up.AsPoints.[i] (circle.AsPoints.[i] + worldZ * 0.5))
+
+            testCase "straight oblique line moves perpendicular to itself" <| fun _ ->
+                let line = Polyline3D.createFromPnts [Pnt(3.0, 4.0, 5.0); Pnt(8.0, 4.0, 10.0); Pnt(13.0, 4.0, 15.0)] // 45 degrees to the Z axis
+                let s = sqrt 0.5
+                let perp = Polyline3D.offsetByNormal UnitVec.zAxis 0.0 1.0 line
+                let inPlane = Polyline3D.offsetByNormal UnitVec.zAxis 1.0 0.0 line
+                for i = 0 to 2 do
+                    "perpendicular: refNormal made perpendicular to the line" |> Expect.isTrue (eqPnt perp.AsPoints.[i] (line.AsPoints.[i] + Vec(-s, 0.0, s)))
+                    "in-plane: perpendicular to the line and to refNormal" |> Expect.isTrue (eqPnt inPlane.AsPoints.[i] (line.AsPoints.[i] + Vec(0.0, 1.0, 0.0)))
+
+            testCase "fails with a clear message if refNormal is parallel to a straight polyline" <| fun _ ->
+                let line = Polyline3D.createFromPnts [Pnt(1.0, 2.0, 3.0); Pnt(1.0, 2.0, 13.0)]
+                let msg = try Polyline3D.offsetByNormal UnitVec.zAxis 1.0 0.0 line |> ignore; "" with e -> e.Message
+                "message" |> Expect.stringContains msg "is parallel to the polyline at pts.[0]"
+
+            testCase "open end points are offset perpendicular to their own segment" <| fun _ ->
+                // pts.[1] turns by about 1.1 degrees, so it is collinear, and the first corner is pts.[2]
+                let pl = tilted [Pnt(0.0, 0.0, 0.0); Pnt(10.0, 0.1, 0.0); Pnt(20.0, 0.0, 0.0); Pnt(20.0, 10.0, 0.0)]
+                let res = Polyline3D.offsetByNormal worldZ 1.0 0.0 pl
+                let p = pl.AsPoints
+                let r = res.AsPoints
+                "start distance" |> Expect.floatClose tol (Line3D.distanceRayPoint r.[0] (Line3D(p.[0], p.[1]))) 1.0
+                "start move is perpendicular to the first segment" |> Expect.isTrue (abs ((r.[0] - p.[0]) *** (p.[1] - p.[0])) < 1e-9)
+                "end distance" |> Expect.floatClose tol (Line3D.distanceRayPoint r.[3] (Line3D(p.[2], p.[3]))) 1.0
+                "end move is perpendicular to the last segment" |> Expect.isTrue (abs ((r.[3] - p.[3]) *** (p.[3] - p.[2])) < 1e-9)
         ]
 
         // ============ Write test data file ============
