@@ -58,12 +58,13 @@ module Offset3D =
                     ln $"    Last point: ({xyzs.[cnt-3]}, {xyzs.[cnt-2]}, {xyzs.[cnt-1]})"
             sb.ToString()
 
-    /// We can only offset collinear segments if the distances are the same.
-    /// What shall we do if they differ?
-    /// Fail?
-    /// or just skip the point?
-    /// or add a point at closest distance on the oblique segment, non parallel offsets?
-    /// or add a point perpendicular from here intersecting the oblique segment, non parallel offsets?
+    /// An Enum for describing what to do at collinear points where the two segments have different in-plane offset distances.
+    /// Collinear segments can only be offset parallel to themselves if their distances are the same.
+    /// This Enum describes the options:
+    /// 1: Fail
+    /// 2: just skip the point.
+    /// 3: add a point at the same proportional distance on the oblique segment, non parallel offsets.
+    /// 4: add a point perpendicular from here intersecting the oblique segment, non parallel offsets.
     // [<RequireQualifiedAccess>]
     type VarDistParallel = // needs to be an enum , so it can be an optional parameter with default value
         /// Fail if collinear segments with different offset distances are found.
@@ -75,7 +76,6 @@ module Offset3D =
         | Skip = 2
 
         /// Add a point at the same proportional distance as the input segments.
-        /// This keeps the total point count the same.
         /// This introduces non parallel offset segments.
         /// This keeps the total point count the same.
         | Proportional = 3
@@ -793,13 +793,10 @@ module Offset3D =
     /// <param name="refNormal">The reference normal vector to use for computing the local planes.
     /// For a counter-clockwise polyline in the XY plane this is upwards. If it points down, the offset direction is flipped.</param>
     /// <param name="distInPlane">The offset distance in the local plane defined by two segments.
-    /// A positive distance offsets to the inside of the polyline.
-    /// A negative distance offsets to the outside.
-    /// No matter how the polyline is oriented.</param>
+    /// A positive distance offsets to the inside of a polyline that turns counter-clockwise around refNormal,
+    /// and to the outside of one that turns clockwise. A negative distance offsets the other way.</param>
     /// <param name="distPerpendicular">The offset distance perpendicular to the local plane.
-    /// A positive distance offsets in the direction of the computed normal.
-    /// For a counter-clockwise polyline in xy-plane this is Upwards.
-    /// A negative distance offsets in the opposite direction.</param>
+    /// A positive distance offsets to the side of refNormal, a negative distance to the opposite side.</param>
     /// <param name="xyzs"> The interleaved coordinates (x0, y0, z0, x1, y1, z1, ...) of the polyline to offset.</param>
     /// <returns> A new ResizeArray of interleaved coordinates.</returns>
     let offsetByNormal (refNormal:UnitVec) (distInPlane: float) (distPerpendicular: float) (xyzs:ResizeArray<float>): ResizeArray<float> =
@@ -810,6 +807,7 @@ module Offset3D =
 
 
     /// <summary> A constant-distance offset algorithm for closed or open polylines in 3D.
+    /// The reference normal is the average normal of the polyline.
     /// Uses default angles: collinear below 2.5 degrees, fails at U-turns above 175 degrees.</summary>
     /// <param name="distInPlane">The offset distance in the local plane defined by two segments.
     /// A positive distance offsets to the inside of the polyline.
@@ -829,14 +827,12 @@ module Offset3D =
     /// <summary> Offsetting each segment by its own distance. For closed or open polylines in 3D, with all settings given explicitly.
     /// Note that considerCollinearBelow comes before failAtUTurnAbove, both are cosine measures.</summary>
     /// <param name="xyzs"> The interleaved coordinates (x0, y0, z0, x1, y1, z1, ...) of the polyline to offset.</param>
-    /// <param name="distancesInPlane">The offset distances in the local plane defined by two segments.
-    /// A positive distance offsets to the inside of the polyline.
-    /// A negative distance offsets to the outside.
-    /// No matter how the polyline is oriented.</param>
-    /// <param name="distancesPerpendicular">The offset distances perpendicular to the local plane.
-    /// A positive distance offsets in the direction of the computed normal.
-    /// For a counter-clockwise polyline in xy-plane this is Upwards.
-    /// A negative distance offsets in the opposite direction.</param>
+    /// <param name="distancesInPlane">The offset distances in the local plane defined by two segments, one per segment.
+    /// A positive distance offsets to the inside of a polyline that turns counter-clockwise around refNormal,
+    /// and to the outside of one that turns clockwise. A negative distance offsets the other way.</param>
+    /// <param name="distancesPerpendicular">The offset distances perpendicular to the local plane, one per segment.
+    /// Each point takes the distance of the segment that starts at it, the last point of an open polyline that of the last segment.
+    /// A positive distance offsets to the side of refNormal, a negative distance to the opposite side.</param>
     /// <param name="refNormal">The reference normal vector to use for computing the local planes.
     /// For a counter-clockwise polyline in the XY plane this is upwards. If it points down, the offset direction is flipped.</param>
     /// <param name="varDistParallelBehavior">The behavior to use at collinear points where the two segments have different in-plane distances.</param>
@@ -857,12 +853,14 @@ module Offset3D =
 
 
     /// <summary> Offsetting each segment by its own distance. For closed or open polylines in 3D.
-    /// Fails if collinear segments with different offset distances are found (uses VarDistParallel.Fail).
+    /// Fails at collinear points where the two segments have different in-plane distances (uses VarDistParallel.Fail).
     /// Uses default angles: collinear below 2.5 degrees, fails at U-turns above 175 degrees.</summary>
     /// <param name="refNormal">The reference normal vector to use for computing the local planes.
     /// For a counter-clockwise polyline in the XY plane this is upwards. If it points down, the offset direction is flipped.</param>
-    /// <param name="distancesInPlane">The offset distances in the local plane defined by two segments.</param>
-    /// <param name="distancesPerpendicular">The offset distances perpendicular to the local plane.</param>
+    /// <param name="distancesInPlane">The offset distances in the local plane defined by two segments, one per segment.
+    /// A positive distance offsets to the inside of a polyline that turns counter-clockwise around refNormal.</param>
+    /// <param name="distancesPerpendicular">The offset distances perpendicular to the local plane, one per segment.
+    /// Each point takes the distance of the segment that starts at it, the last point of an open polyline that of the last segment.</param>
     /// <param name="xyzs"> The interleaved coordinates (x0, y0, z0, x1, y1, z1, ...) of the polyline to offset.</param>
     /// <returns> A new ResizeArray of interleaved coordinates.</returns>
     let offsetVariableByNormal (refNormal:UnitVec) (distancesInPlane: ResizeArray<float>) (distancesPerpendicular: ResizeArray<float>) (xyzs: ResizeArray<float>) : ResizeArray<float> =
@@ -870,13 +868,15 @@ module Offset3D =
 
 
     /// <summary> Offsetting each segment by its own distance. For closed or open polylines in 3D.
-    /// Fails if collinear segments are found (uses VarDistParallel.Fail).
+    /// The reference normal is the average normal of the polyline.
+    /// Fails at collinear points where the two segments have different in-plane distances (uses VarDistParallel.Fail).
     /// Uses default angles: collinear below 2.5 degrees, fails at U-turns above 175 degrees.</summary>
-    /// <param name="distancesInPlane">The offset distances in the local plane defined by two segments.
+    /// <param name="distancesInPlane">The offset distances in the local plane defined by two segments, one per segment.
     /// A positive distance offsets to the inside of the polyline.
     /// A negative distance offsets to the outside.
     /// No matter how the polyline is oriented.</param>
-    /// <param name="distancesPerpendicular">The offset distances perpendicular to the local plane.
+    /// <param name="distancesPerpendicular">The offset distances perpendicular to the local plane, one per segment.
+    /// Each point takes the distance of the segment that starts at it, the last point of an open polyline that of the last segment.
     /// A positive distance offsets in the direction of the computed normal.
     /// For a counter-clockwise polyline in xy-plane this is Upwards.
     /// A negative distance offsets in the opposite direction.</param>
