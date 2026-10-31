@@ -317,7 +317,9 @@ module ResizeArr =
 
 
 
-[<AutoOpen>]
+open System.ComponentModel
+
+[<AutoOpen; EditorBrowsable(EditorBrowsableState.Never)>]
 module AutoOpenEuclidResizeArrayExtensions =
 
     type Collections.Generic.List<'T> with
