@@ -2716,7 +2716,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             fail $"Polyline3D.offset: Polyline3D must have at least 2 points but has {polyLine.PointCount} points."
         let refNormal = averageNormalOf polyLine.XYZs // not Polyline3D.AverageNormal, a degenerate normal is reported below
         if refNormal.LengthSq < 1e-8 then
-            fail $"Polyline3D.offset: Cannot compute average normal of Polyline3D, the {polyLine.PointCount} points are collinear or too close together: {polyLine}"
+            fail $"Polyline3D.offset: Cannot compute the average normal, the polygon through the {polyLine.PointCount} points has no area, for example because they are collinear. Use offsetByNormal with an explicit reference normal: {polyLine}"
         Polyline3D.offsetByNormalCustom(polyLine, inPlaneOffsetDistance, perpendicularOffsetDistance, refNormal.Unitized, loop, considerCollinearBelow, failAtUTurnAbove)
 
     /// <summary> Offsets a Polyline in 3D space by finding the local plane in each corner.
@@ -2859,7 +2859,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             fail $"Polyline3D.offsetVariable: Polyline3D must have at least 2 points but has {polyLine.PointCount} points."
         let refNormal = averageNormalOf polyLine.XYZs // not Polyline3D.AverageNormal, a degenerate normal is reported below
         if refNormal.LengthSq < 1e-8 then
-            fail $"Polyline3D.offsetVariable: Cannot compute average normal of Polyline3D, the {polyLine.PointCount} points are collinear or too close together: {polyLine}"
+            fail $"Polyline3D.offsetVariable: Cannot compute the average normal, the polygon through the {polyLine.PointCount} points has no area, for example because they are collinear. Use offsetVariableByNormal with an explicit reference normal: {polyLine}"
         Polyline3D.offsetVariableByNormalCustom(polyLine, inPlaneOffsetDistances, perpendicularOffsetDistances, refNormal.Unitized, loop, varDistParallelBehavior, considerCollinearBelow, failAtUTurnAbove)
 
 

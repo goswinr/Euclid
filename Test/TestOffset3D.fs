@@ -754,6 +754,17 @@ let tests =
                 "closed" |> Expect.isTrue (Pnt.equalsExact res.FirstPoint res.LastPoint)
                 "distance to the segments" |> Expect.isTrue (maxSegmentDistanceError tear res 1.0 < 1e-9)
 
+            testCase "offsets that compute the average normal fail with a clear message without it" <| fun _ ->
+                let msg (f: unit -> 'T) = try f () |> ignore; "" with e -> e.Message
+                let line = tilted [Pnt(0.0, 0.0, 0.0); Pnt(5.0, 0.0, 0.0); Pnt(10.0, 0.0, 0.0)]
+                "Offset3D.offset" |> Expect.stringContains (msg (fun () -> Offset3D.offset 1.0 0.0 line.XYZs)) "Use offsetByNormal with an explicit reference normal"
+                "Offset3D.offsetVariable" |> Expect.stringContains (msg (fun () -> Offset3D.offsetVariable (ResizeArray [1.0; 1.0]) (ResizeArray [0.0; 0.0]) line.XYZs)) "Use offsetVariableByNormal with an explicit reference normal"
+                "Offset3D.offset empty" |> Expect.stringContains (msg (fun () -> Offset3D.offset 1.0 0.0 (ResizeArray<float>()))) "point count 0 must be at least 2"
+                // a symmetric open S-curve, the polygon through its points has no area
+                let sCurve = tilted [Pnt(0.0, 0.0, 0.0); Pnt(10.0, 10.0, 0.0); Pnt(20.0, 0.0, 0.0); Pnt(30.0, -10.0, 0.0); Pnt(40.0, 0.0, 0.0)]
+                "Polyline3D.offset" |> Expect.stringContains (msg (fun () -> Polyline3D.offset 1.0 0.0 sCurve)) "has no area"
+                "with a reference normal it works" |> Expect.equal (Polyline3D.offsetByNormal worldZ 1.0 0.0 sCurve).PointCount 5
+
             testCase "straight oblique line moves perpendicular to itself" <| fun _ ->
                 let line = Polyline3D.createFromPnts [Pnt(3.0, 4.0, 5.0); Pnt(8.0, 4.0, 10.0); Pnt(13.0, 4.0, 15.0)] // 45 degrees to the Z axis
                 let s = sqrt 0.5

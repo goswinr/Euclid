@@ -773,6 +773,18 @@ module Offset3D =
             az <- bz
         normal
 
+    /// The unitized average normal of the polyline, for the offset functions that compute their reference normal.
+    /// Fails with a clear message if there are less than two points or if the average normal is too short.
+    let private averageRefNormal (functionName:string) (xyzs: ResizeArray<float>) : UnitVec =
+        XYZ.checkMod3 functionName xyzs
+        let ptCount = XYZ.pointCount xyzs
+        if ptCount < 2 then
+            fail $"Offset3D.{functionName}: point count {ptCount} must be at least 2 for a polyline."
+        let n = averageNormal xyzs
+        if n.LengthSq < 1e-8 then
+            fail $"Offset3D.{functionName}: Cannot compute the average normal, the polygon through the {ptCount} points has no area, for example because they are collinear. Use {functionName}ByNormal with an explicit reference normal."
+        n.Unitized
+
     // #endregion
     // #region Curried API
 
@@ -810,7 +822,7 @@ module Offset3D =
     /// <param name="xyzs"> The interleaved coordinates (x0, y0, z0, x1, y1, z1, ...) of the polyline to offset.</param>
     /// <returns> A new ResizeArray of interleaved coordinates.</returns>
     let offset (distInPlane: float) (distPerpendicular: float) (xyzs: ResizeArray<float>) : ResizeArray<float> =
-        let refNormal = averageNormal(xyzs) |> Vec.unitize
+        let refNormal = averageRefNormal "offset" xyzs
         offsetByNormal refNormal distInPlane distPerpendicular xyzs
 
 
@@ -871,6 +883,6 @@ module Offset3D =
     /// <param name="xyzs"> The interleaved coordinates (x0, y0, z0, x1, y1, z1, ...) of the polyline to offset.</param>
     /// <returns> A new ResizeArray of interleaved coordinates.</returns>
     let offsetVariable (distancesInPlane: ResizeArray<float>) (distancesPerpendicular: ResizeArray<float>) (xyzs: ResizeArray<float>) : ResizeArray<float> =
-        let refNormal = averageNormal(xyzs) |> Vec.unitize
+        let refNormal = averageRefNormal "offsetVariable" xyzs
         offsetVariableByNormal refNormal distancesInPlane distancesPerpendicular xyzs
 
