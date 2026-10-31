@@ -845,6 +845,12 @@ let tests =
                 let res = Polyline3D.offsetVariableByNormal worldZ (ds [0.0; 0.0; 0.0]) (ds [0.0; 1.0; 2.0]) opened
                 expectPoints res [Pnt(0.0, 0.0, 0.0); Pnt(10.0, 3.0, 1.0); Pnt(20.0, 0.0, 2.0); Pnt(30.0, 3.0, 2.0)] // the last point takes the last segment
 
+            testCase "offsetVariable takes arrays and uses the average normal" <| fun _ ->
+                let pl = tilted [Pnt(0.0, 0.0, 0.0); Pnt(10.0, 0.0, 0.0); Pnt(10.0, 10.0, 0.0); Pnt(0.0, 10.0, 0.0); Pnt(0.0, 0.0, 0.0)]
+                let a = Polyline3D.offsetVariable [|1.0; 2.0; 3.0; 4.0|] [|0.5; 0.5; 0.5; 0.5|] pl
+                let b = Polyline3D.offsetVariableByNormal worldZ [|1.0; 2.0; 3.0; 4.0|] [|0.5; 0.5; 0.5; 0.5|] pl
+                "same as with worldZ" |> Expect.isTrue (Polyline3D.equalsWithin 1e-9 a b)
+
             testCase "fails with a clear message on wrong distance counts" <| fun _ ->
                 let pl = tilted [Pnt(0.0, 0.0, 0.0); Pnt(10.0, 0.0, 0.0); Pnt(10.0, 10.0, 0.0)]
                 let msg (f: unit -> Polyline3D) = try f () |> ignore; "" with e -> e.Message

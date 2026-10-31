@@ -2535,10 +2535,10 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Polyline3D.offsetByNormal` | `refNormal: UnitVec -> inPlaneOffsetDistance: float -> perpendicularOffsetDistance: float -> polyLine: Polyline3D -> Polyline3D` |
 | `Polyline3D.offsetByNormalCustom` | `polyLine: Polyline3D * inPlaneOffsetDistance: float * perpendicularOffsetDistance: float * refNormal: UnitVec * ?loop: bool * ?considerCollinearBelow: float<cosine> * ?failAtUTurnAbove: float<cosine> -> Polyline3D` |
 | `Polyline3D.offsetCustom` | `polyLine: Polyline3D * inPlaneOffsetDistance: float * perpendicularOffsetDistance: float * ?loop: bool * ?considerCollinearBelow: float<cosine> * ?failAtUTurnAbove: float<cosine> -> Polyline3D` |
-| `Polyline3D.offsetVariable` | `inPlaneOffsetDistances: ResizeArray<float> -> perpendicularOffsetDistances: ResizeArray<float> -> polyLine: Polyline3D -> Polyline3D` |
+| `Polyline3D.offsetVariable` | `inPlaneOffsetDistances: IList<float> -> perpendicularOffsetDistances: IList<float> -> polyLine: Polyline3D -> Polyline3D` |
 | `Polyline3D.offsetVariableByNormal` | `refNormal: UnitVec -> inPlaneOffsetDistances: IList<float> -> perpendicularOffsetDistances: IList<float> -> polyLine: Polyline3D -> Polyline3D` |
 | `Polyline3D.offsetVariableByNormalCustom` | `polyLine: Polyline3D * inPlaneOffsetDistances: IList<float> * perpendicularOffsetDistances: IList<float> * refNormal: UnitVec * ?loop: bool * ?varDistParallelBehavior: VarDistParallel * ?considerCollinearBelow: float<cosine> * ?failAtUTurnAbove: float<cosine> -> Polyline3D` |
-| `Polyline3D.offsetVariableCustom` | `polyLine: Polyline3D * inPlaneOffsetDistances: ResizeArray<float> * perpendicularOffsetDistances: ResizeArray<float> * ?loop: bool * ?varDistParallelBehavior: VarDistParallel * ?considerCollinearBelow: float<cosine> * ?failAtUTurnAbove: float<cosine> -> Polyline3D` |
+| `Polyline3D.offsetVariableCustom` | `polyLine: Polyline3D * inPlaneOffsetDistances: IList<float> * perpendicularOffsetDistances: IList<float> * ?loop: bool * ?varDistParallelBehavior: VarDistParallel * ?considerCollinearBelow: float<cosine> * ?failAtUTurnAbove: float<cosine> -> Polyline3D` |
 | `Polyline3D.subPolyline` | `a: float -> b: float -> pl: Polyline3D -> Polyline3D` |
 | `Polyline3D.tryFind` | `condition: (float -> float -> float -> bool) -> pl: Polyline3D -> Pnt voption` |
 | `Polyline3D.tryFindIndex` | `condition: (float -> float -> float -> bool) -> pl: Polyline3D -> int voption` |

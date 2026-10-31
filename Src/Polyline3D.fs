@@ -2822,7 +2822,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// <param name="perpendicularOffsetDistances">The offset distances perpendicular to the local plane. One distance per segment.</param>
     /// <param name="polyLine"> A 3D Polyline, open or closed.</param>
     /// <returns>A new 3D polyline.</returns>
-    static member offsetVariable (inPlaneOffsetDistances: ResizeArray<float>) (perpendicularOffsetDistances: ResizeArray<float>) (polyLine:Polyline3D) : Polyline3D =
+    static member offsetVariable (inPlaneOffsetDistances: Collections.Generic.IList<float>) (perpendicularOffsetDistances: Collections.Generic.IList<float>) (polyLine:Polyline3D) : Polyline3D =
         Polyline3D.offsetVariableCustom(polyLine, inPlaneOffsetDistances, perpendicularOffsetDistances)
 
     /// <summary> Offsets a Polyline in 3D space by finding the local plane in each corner.
@@ -2848,8 +2848,8 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// The cosine of the angle above which a U-turn is considered to fail.</param>
     /// <returns>A new 3D polyline.</returns>
     static member offsetVariableCustom(polyLine:Polyline3D,
-                            inPlaneOffsetDistances: ResizeArray<float>,
-                            perpendicularOffsetDistances: ResizeArray<float>,
+                            inPlaneOffsetDistances: Collections.Generic.IList<float>,
+                            perpendicularOffsetDistances: Collections.Generic.IList<float>,
                             [<OPT;DEF(false)>] loop:bool,
                             [<OPT;DEF(Offset3D.VarDistParallel.Fail)>] varDistParallelBehavior: Offset3D.VarDistParallel, // fail by default
                             [<OPT;DEF(Cosine.``2.5``)>] considerCollinearBelow: float<Cosine.cosine>,
