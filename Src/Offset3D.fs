@@ -531,7 +531,9 @@ module Offset3D =
     let getCollinearNeighbors(dirs: ResizeArray<OffsetDirection voption>) : ResizeArray<CollinearPoint> =
         let marked = Array.zeroCreate<bool> dirs.Count
         for i = 0 to dirs.LastIndex do
-            marked.[i] <- dirs.[i].IsNone
+            match dirs.[i] with
+            | ValueNone -> marked.[i] <- true
+            | ValueSome _ -> ()
         getNeighborsOfMarked marked
 
     /// <summary>Offsets a polyline by a constant distance.</summary>
