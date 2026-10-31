@@ -847,8 +847,68 @@ let tests =
                 let uvs = Offset3D.getSegmentUnitVectors xyzs
                 let dirs = Offset3D.getOffsetDirections(uvs, worldZ, true, Cosine.``2.5``, Cosine.``175.0``)
                 dirs.RemoveAt 0
-                let msg = try Offset3D.offsetVariableWithDirections(xyzs, uvs, dirs, ds [1.0; 1.0], ds [0.0; 0.0], false, Offset3D.VarDistParallel.Fail) |> ignore; "" with e -> e.Message
+                let msg = try Offset3D.offsetVariableWithDirections(xyzs, uvs, dirs, ds [1.0; 1.0], ds [0.0; 0.0], false, Offset3D.VarDistParallel.Fail, Cosine.``2.5``) |> ignore; "" with e -> e.Message
                 "message" |> Expect.stringContains msg "offset directions count must be 3"
+        ]
+
+        testList "Offset3D variable offset at collinear points" [
+            let ds (xs: float list) = ResizeArray xs
+            let zeros n = ResizeArray (List.replicate n 0.0)
+            let offsetWith behavior (dists: float list) (pl:Polyline3D) =
+                Polyline3D.offsetVariableByNormalCustom(pl, ds dists, zeros dists.Length, worldZ, varDistParallelBehavior = behavior)
+            let expectPoints (res:Polyline3D) (expected: Pnt list) =
+                "point count" |> Expect.equal res.PointCount expected.Length
+                expected |> List.iteri (fun i e ->
+                    let p = res.AsPoints.[i]
+                    Expect.isTrue (eqPnt p (toWorld e)) $"pt[{i}] should be {toWorld e} but is {p}")
+            // a square with an extra point on the first edge
+            let square = tilted [Pnt(0.0, 0.0, 0.0); Pnt(5.0, 0.0, 0.0); Pnt(10.0, 0.0, 0.0); Pnt(10.0, 10.0, 0.0); Pnt(0.0, 10.0, 0.0); Pnt(0.0, 0.0, 0.0)]
+            // a square that starts in the middle of an edge, so the seam is collinear
+            let seamSquare = tilted [Pnt(5.0, 0.0, 0.0); Pnt(10.0, 0.0, 0.0); Pnt(10.0, 10.0, 0.0); Pnt(0.0, 10.0, 0.0); Pnt(0.0, 0.0, 0.0); Pnt(5.0, 0.0, 0.0)]
+            let line = tilted [Pnt(0.0, 0.0, 0.0); Pnt(5.0, 0.0, 0.0); Pnt(10.0, 0.0, 0.0)]
+
+            testCase "equal distances at a collinear point do not use VarDistParallel" <| fun _ ->
+                for behavior in [Offset3D.VarDistParallel.Fail; Offset3D.VarDistParallel.Skip] do
+                    let res = offsetWith behavior [1.0; 1.0; 1.0; 1.0; 1.0] square
+                    expectPoints res [Pnt(1.0, 1.0, 0.0); Pnt(5.0, 1.0, 0.0); Pnt(9.0, 1.0, 0.0); Pnt(9.0, 9.0, 0.0); Pnt(1.0, 9.0, 0.0); Pnt(1.0, 1.0, 0.0)]
+                let seam = offsetWith Offset3D.VarDistParallel.Fail [1.0; 1.0; 1.0; 1.0; 1.0] seamSquare
+                expectPoints seam [Pnt(5.0, 1.0, 0.0); Pnt(9.0, 1.0, 0.0); Pnt(9.0, 9.0, 0.0); Pnt(1.0, 9.0, 0.0); Pnt(1.0, 1.0, 0.0); Pnt(5.0, 1.0, 0.0)]
+
+            testCase "different distances at a collinear point fail with a clear message" <| fun _ ->
+                let msg = try offsetWith Offset3D.VarDistParallel.Fail [1.0; 2.0; 1.0; 1.0; 1.0] square |> ignore; "" with e -> e.Message
+                "message" |> Expect.stringContains msg "point[1] is between collinear segments with the different in-plane distances 1 and 2"
+
+            testCase "Proportional and Skip at a collinear point" <| fun _ ->
+                let prop = offsetWith Offset3D.VarDistParallel.Proportional [1.0; 2.0; 1.0; 1.0; 1.0] square
+                expectPoints prop [Pnt(1.0, 1.0, 0.0); Pnt(5.0, 1.5, 0.0); Pnt(9.0, 2.0, 0.0); Pnt(9.0, 9.0, 0.0); Pnt(1.0, 9.0, 0.0); Pnt(1.0, 1.0, 0.0)]
+                let skip = offsetWith Offset3D.VarDistParallel.Skip [1.0; 2.0; 1.0; 1.0; 1.0] square
+                expectPoints skip [Pnt(1.0, 1.0, 0.0); Pnt(9.0, 2.0, 0.0); Pnt(9.0, 9.0, 0.0); Pnt(1.0, 9.0, 0.0); Pnt(1.0, 1.0, 0.0)]
+
+            testCase "a collinear seam stays closed with Proportional and Skip" <| fun _ ->
+                let prop = offsetWith Offset3D.VarDistParallel.Proportional [2.0; 1.0; 1.0; 1.0; 1.0] seamSquare
+                expectPoints prop [Pnt(5.0, 1.5, 0.0); Pnt(9.0, 2.0, 0.0); Pnt(9.0, 9.0, 0.0); Pnt(1.0, 9.0, 0.0); Pnt(1.0, 1.0, 0.0); Pnt(5.0, 1.5, 0.0)]
+                "Proportional closed" |> Expect.isTrue (Pnt.equalsExact prop.FirstPoint prop.LastPoint)
+                let skip = offsetWith Offset3D.VarDistParallel.Skip [2.0; 1.0; 1.0; 1.0; 1.0] seamSquare
+                expectPoints skip [Pnt(9.0, 2.0, 0.0); Pnt(9.0, 9.0, 0.0); Pnt(1.0, 9.0, 0.0); Pnt(1.0, 1.0, 0.0); Pnt(9.0, 2.0, 0.0)]
+
+            testCase "a straight polyline with different distances uses VarDistParallel" <| fun _ ->
+                // no point is a corner, so all points get directions from refNormal, before this gave infinite points
+                Expect.throws (fun () -> offsetWith Offset3D.VarDistParallel.Fail [1.0; 2.0] line |> ignore) "Fail"
+                expectPoints (offsetWith Offset3D.VarDistParallel.Proportional [1.0; 2.0] line) [Pnt(0.0, 1.0, 0.0); Pnt(5.0, 1.5, 0.0); Pnt(10.0, 2.0, 0.0)]
+                expectPoints (offsetWith Offset3D.VarDistParallel.Skip [1.0; 2.0] line) [Pnt(0.0, 1.0, 0.0); Pnt(10.0, 2.0, 0.0)]
+                expectPoints (offsetWith Offset3D.VarDistParallel.Fail [1.0; 1.0] line) [Pnt(0.0, 1.0, 0.0); Pnt(5.0, 1.0, 0.0); Pnt(10.0, 1.0, 0.0)]
+
+            testCase "a smaller considerCollinearBelow offsets a shallow corner with different distances" <| fun _ ->
+                let a = 2.0 * Math.PI / 180.0 // a 2 degree turn, collinear at the default of 2.5 degrees
+                let pl = tilted [Pnt(0.0, 0.0, 0.0); Pnt(10.0, 0.0, 0.0); Pnt(10.0 + 10.0 * cos a, 10.0 * sin a, 0.0)]
+                Expect.throws (fun () -> offsetWith Offset3D.VarDistParallel.Fail [1.0; 1.1] pl |> ignore) "collinear at the default"
+                let res = Polyline3D.offsetVariableByNormalCustom(pl, ds [1.0; 1.1], zeros 2, worldZ, considerCollinearBelow = Cosine.``0.5``)
+                let p = pl.AsPoints
+                let r = res.AsPoints
+                "corner to first segment" |> Expect.floatClose tol (Line3D.distanceRayPoint r.[1] (Line3D(p.[0], p.[1]))) 1.0
+                "corner to second segment" |> Expect.floatClose tol (Line3D.distanceRayPoint r.[1] (Line3D(p.[1], p.[2]))) 1.1
+                let viaKernel = Offset3D.offsetVariableByNormalCustom(pl.XYZs, ds [1.0; 1.1], zeros 2, worldZ, Offset3D.VarDistParallel.Fail, Cosine.``0.5``, Cosine.``175.0``)
+                "Offset3D gives the same" |> Expect.isTrue (Polyline3D.equalsExact res (Polyline3D.createFromXYZs viaKernel))
         ]
 
         // ============ Write test data file ============
@@ -867,7 +927,7 @@ let tests =
                 let a = ResizeArray [ 0.5; 1.0; 0.75 ]
                 let b = ResizeArray [ 0.1; 0.2; 0.3 ]
                 let r1 = Offset3D.offsetVariableByNormal n a b xyzs
-                let r2 = Offset3D.offsetVariableByNormalCustom(xyzs, a, b, n, Offset3D.VarDistParallel.Fail)
+                let r2 = Offset3D.offsetVariableByNormalCustom(xyzs, a, b, n, Offset3D.VarDistParallel.Fail, Cosine.``2.5``, Cosine.``175.0``)
                 "same count" |> Expect.equal r1.Count r2.Count
                 for i = 0 to r1.Count - 1 do
                     "same values" |> Expect.isTrue (r1.[i] = r2.[i])
