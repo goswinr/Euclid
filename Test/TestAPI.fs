@@ -2159,7 +2159,7 @@ module Polyline3DAPI =
     let (_:Polyline3D) = Polyline3D.mapPnt (fun p -> p + Vec(1., 1., 1.)) polyline3d
     // let (_:Pnt ResizeArray) = Polyline3D.pointsUnsafeInternal polyline3d
     let (_:Polyline3D) = Polyline3D.offset 1.0 0 polyline3d
-    let (_:Polyline3D) = Polyline3D.offsetVariable [|1.0; 1.0; 1.0|] [|0.0; 0.0; 0.0|] polyline3d
+    let (_:Polyline3D) = Polyline3D.offsetVariable [|1.0; 1.0; 1.0|] [|0.0; 0.0; 0.0; 0.0|] polyline3d
 
     // Note: findOuterCornerAndRefNormal and offsetCore require complex setup or are internal
 

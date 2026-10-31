@@ -2736,15 +2736,15 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     static member offset (inPlaneOffsetDistance:float) (perpendicularOffsetDistance:float) (polyLine:Polyline3D): Polyline3D =
         Polyline3D.offsetCustom(polyLine, inPlaneOffsetDistance, perpendicularOffsetDistance)
 
-    /// <summary> Offsets a Polyline in 3D space by finding the local plane in each corner, with one pair of distances per segment.
+    /// <summary> Offsets a Polyline in 3D space by finding the local plane in each corner, with one in-plane distance per segment and one perpendicular distance per point.
     /// Takes a reference normal for orienting the perpendicular offset and determining inside/outside.
     /// Auto-detects if given points are from a closed Polyline (first point = last point) and loops them.
     /// This function raises an Exception on duplicate points, on U-turns sharper than 175 degrees, and at collinear points where the two segments have different in-plane distances.
     /// Uses the default settings of Polyline3D.offsetVariableByNormalCustom. Use Polyline3D.offsetVariableByNormalCustom to set them.</summary>
     /// <param name="refNormal">A unit vector defining an approximate normal direction for orienting the perpendicular offset and determining inside/outside.</param>
     /// <param name="inPlaneOffsetDistances">The offset distances in the local plane defined by two segments. One distance per segment.</param>
-    /// <param name="perpendicularOffsetDistances">The offset distances perpendicular to the local plane. One distance per segment.
-    /// Each point takes the distance of the segment that starts at it, the last point of an open polyline that of the last segment.</param>
+    /// <param name="perpendicularOffsetDistances">The offset distances perpendicular to the local plane. One distance per point.
+    /// For a closed polyline one less, because its last point is its first point.</param>
     /// <param name="polyLine"> A 3D Polyline, open or closed.</param>
     /// <returns>A new 3D polyline.</returns>
     static member offsetVariableByNormal (refNormal:UnitVec) (inPlaneOffsetDistances: Collections.Generic.IList<float>) (perpendicularOffsetDistances: Collections.Generic.IList<float>) (polyLine:Polyline3D) : Polyline3D =
@@ -2758,8 +2758,8 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// <param name="inPlaneOffsetDistances">The offset distances in the local plane defined by two segments. One distance per segment.
     /// A positive distance offsets to the inside of the polyline (for counter-clockwise polylines when refNormal points up).
     /// A negative distance offsets to the outside.</param>
-    /// <param name="perpendicularOffsetDistances">The offset distances perpendicular to the local plane. One distance per segment.
-    /// Each point takes the distance of the segment that starts at it, the last point of an open polyline that of the last segment.
+    /// <param name="perpendicularOffsetDistances">The offset distances perpendicular to the local plane. One distance per point.
+    /// For a closed polyline one less, because its last point is its first point. With loop = TRUE one per point of the open polyline.
     /// A positive distance offsets in the same orientation of refNormal. A negative distance offsets in the opposite direction.</param>
     /// <param name="refNormal">A unit vector defining an approximate normal direction for orienting the perpendicular offset and determining inside/outside.</param>
     /// <param name="loop">Optional, defaults to FALSE.
@@ -2815,14 +2815,14 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             Offset3D.offsetVariableWithDirections(xyzs, uvs, dirs, inPlaneOffsetDistances, perpendicularOffsetDistances, not isOpen, varDistParallelBehavior, considerCollinearBelow)
             |> Polyline3D.createFromXYZs
 
-    /// <summary> Offsets a Polyline in 3D space by finding the local plane in each corner, with one pair of distances per segment.
+    /// <summary> Offsets a Polyline in 3D space by finding the local plane in each corner, with one in-plane distance per segment and one perpendicular distance per point.
     /// Auto-detects if given points are from a closed Polyline (first point = last point) and loops them.
     /// The reference normal is computed from the average normal of the polyline.
     /// This function raises an Exception on duplicate points, on U-turns sharper than 175 degrees, at collinear points where the two segments have different in-plane distances, and if the average normal cannot be computed, for example if all points are collinear.
     /// Uses the default settings of Polyline3D.offsetVariableCustom. Use Polyline3D.offsetVariableCustom to set them.</summary>
     /// <param name="inPlaneOffsetDistances">The offset distances in the local plane defined by two segments. One distance per segment.</param>
-    /// <param name="perpendicularOffsetDistances">The offset distances perpendicular to the local plane. One distance per segment.
-    /// Each point takes the distance of the segment that starts at it, the last point of an open polyline that of the last segment.</param>
+    /// <param name="perpendicularOffsetDistances">The offset distances perpendicular to the local plane. One distance per point.
+    /// For a closed polyline one less, because its last point is its first point.</param>
     /// <param name="polyLine"> A 3D Polyline, open or closed.</param>
     /// <returns>A new 3D polyline.</returns>
     static member offsetVariable (inPlaneOffsetDistances: Collections.Generic.IList<float>) (perpendicularOffsetDistances: Collections.Generic.IList<float>) (polyLine:Polyline3D) : Polyline3D =
@@ -2837,8 +2837,8 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// A positive distance offsets to the inside of the polyline.
     /// A negative distance offsets to the outside.
     /// No matter how the polyline is oriented.</param>
-    /// <param name="perpendicularOffsetDistances">The offset distances perpendicular to the local plane. One distance per segment.
-    /// Each point takes the distance of the segment that starts at it, the last point of an open polyline that of the last segment.
+    /// <param name="perpendicularOffsetDistances">The offset distances perpendicular to the local plane. One distance per point.
+    /// For a closed polyline one less, because its last point is its first point. With loop = TRUE one per point of the open polyline.
     /// A positive distance offsets in the direction of the computed normal.
     /// For a counter-clockwise polyline in xy-plane this is Upwards.
     /// A negative distance offsets in the opposite direction.</param>

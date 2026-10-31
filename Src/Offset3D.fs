@@ -577,18 +577,18 @@ module Offset3D =
         res
 
     /// <summary>Offsets a polyline by variable distances.</summary>
-    /// <remarks>Collinear points, where the segments turn by less than considerCollinearBelow, are placed on the line between the neighboring offset corners.
+    /// <remarks>Collinear points, where the segments turn by less than considerCollinearBelow, are first placed in-plane, on the line between the in-plane offsets of the neighboring corners.
     /// Where the in-plane distances of their two segments are equal, they are placed at the closest point to the input point.
-    /// Where these distances differ, varDistParallelBehavior decides.</remarks>
+    /// Where these distances differ, varDistParallelBehavior decides.
+    /// Then they are moved by their own perpendicular distance, along the perpendicular directions of the neighboring corners,
+    /// interpolated at the position of the input point between them and made perpendicular to the polyline.</remarks>
     /// <param name="xyzs">The interleaved coordinates (x0, y0, z0, x1, y1, z1, ...) of the polyline to offset.</param>
     /// <param name="segmentDirs">The unit vectors of each segment in the polyline.</param>
     /// <param name="offDirs">The offset directions at each point of the polyline.</param>
     /// <param name="distsInPlane">The offset distances in the local plane, one per segment.
     /// Each segment is offset parallel to itself by its own distance.</param>
-    /// <param name="distsPerpendicular">The offset distances perpendicular to the local plane, one per segment.
-    /// Each point takes the distance of the segment that starts at it, the last point of an open polyline that of the last segment.
-    /// So a segment is offset by its own distance at its start and by the next segment's distance at its end, and reversing the polyline changes the result.
-    /// Collinear points take the perpendicular offset of the line between the neighboring offset corners instead.</param>
+    /// <param name="distsPerpendicular">The offset distances perpendicular to the local plane, one per point.
+    /// For a closed polyline one less, because its last point is its first point.</param>
     /// <param name="isClosed">Whether the polyline is closed (TRUE) or open (FALSE).</param>
     /// <param name="varDistParallelBehavior">The behavior to use at collinear points where the two segments have different in-plane distances.</param>
     /// <param name="considerCollinearBelow">Points where the segments turn by less than this angle are collinear.
@@ -621,8 +621,11 @@ module Offset3D =
         if ptCount <> distsInPlane.Count + 1  then
             fail $"Offset3D.offsetVariableWithDirections:\n in-plane distances count must be {ptCount-1} for {ptCount} points, but is {distsInPlane.Count}."
 
-        if ptCount <> distsPerpendicular.Count + 1  then
-            fail $"Offset3D.offsetVariableWithDirections:\n perpendicular distances count must be {ptCount-1} for {ptCount} points, but is {distsPerpendicular.Count}."
+        if isClosed then
+            if ptCount <> distsPerpendicular.Count + 1 then
+                fail $"Offset3D.offsetVariableWithDirections:\n perpendicular distances count must be {ptCount-1} for the {ptCount} points of a closed polyline, one per point except the last, which is the first, but is {distsPerpendicular.Count}."
+        elif ptCount <> distsPerpendicular.Count then
+            fail $"Offset3D.offsetVariableWithDirections:\n perpendicular distances count must be {ptCount} for the {ptCount} points of an open polyline, one per point, but is {distsPerpendicular.Count}."
 
 
         let mutable res = ResizeArray<float>(xyzs.Count)
@@ -643,26 +646,68 @@ module Offset3D =
                 let dot = XYZ.getX a segmentDirs * XYZ.getX i segmentDirs + XYZ.getY a segmentDirs * XYZ.getY i segmentDirs + XYZ.getZ a segmentDirs * XYZ.getZ i segmentDirs
                 withMeasure dot > considerCollinearBelow
 
-        // (1) first pass: offset points that have valid directions
-        // the last point of a closed polyline is the first point, it is added below
+        // The perpendicular direction at the collinear point i without a direction of its own:
+        // the perpendicular directions of the neighboring corners, interpolated at the position of the input point between them,
+        // and made perpendicular to the tangent at the point.
+        let collinearPerpDir (i:int) (prevOK:int) (nextOK:int) (distPerp:float) : UnitVec =
+            let perpAt k =
+                match offDirs.[k] with
+                | ValueSome dir -> dir.perpDir
+                | ValueNone -> fail $"Offset3D.offsetVariableWithDirections: point[{k}] next to the collinear point[{i}] has no offset direction."
+            let pPrev = perpAt prevOK
+            let pNext = perpAt nextOK
+            let t =
+                rayClosestParameter(
+                    XYZ.getX prevOK xyzs,
+                    XYZ.getY prevOK xyzs,
+                    XYZ.getZ prevOK xyzs,
+                    XYZ.getX nextOK xyzs,
+                    XYZ.getY nextOK xyzs,
+                    XYZ.getZ nextOK xyzs,
+                    XYZ.getX i xyzs,
+                    XYZ.getY i xyzs,
+                    XYZ.getZ i xyzs)
+                |> clamp01
+            let px = pPrev.X + (pNext.X - pPrev.X) * t
+            let py = pPrev.Y + (pNext.Y - pPrev.Y) * t
+            let pz = pPrev.Z + (pNext.Z - pPrev.Z) * t
+            // the tangent, not unitized, its length is almost 2.0 at a collinear point
+            let a = if i > 0 then i - 1 elif isClosed then lastSeg else 0
+            let b = min i lastSeg
+            let tx = XYZ.getX a segmentDirs + XYZ.getX b segmentDirs
+            let ty = XYZ.getY a segmentDirs + XYZ.getY b segmentDirs
+            let tz = XYZ.getZ a segmentDirs + XYZ.getZ b segmentDirs
+            let tLenSq = tx * tx + ty * ty + tz * tz
+            if isTooTinySq tLenSq then
+                fail $"Offset3D.offsetVariableWithDirections: the segments before and after the collinear point[{i}] are opposite."
+            let k = (px * tx + py * ty + pz * tz) / tLenSq
+            let qx = px - tx * k
+            let qy = py - ty * k
+            let qz = pz - tz * k
+            let len = sqrt (qx * qx + qy * qy + qz * qz)
+            if isTooSmall len then
+                fail $"Offset3D.offsetVariableWithDirections: the perpendicular directions {pPrev} and {pNext} of the points[{prevOK}] and [{nextOK}] cancel out or are parallel to the polyline at the collinear point[{i}] between them, so it cannot be offset perpendicularly by {distPerp}."
+            UnitVec.createUnchecked(qx / len, qy / len, qz / len)
+
+        // (1) first pass: the in-plane offsets of the points that have valid directions.
+        // Their perpendicular offsets are added in the third pass, so that the second pass can place the collinear points in-plane.
+        // The last point of a closed polyline is the first point, it is added below.
         let lastPt = if isClosed then ptCount - 2 else ptCount - 1
         for i = 0 to lastPt do
             let x = XYZ.getX i xyzs
             let y = XYZ.getY i xyzs
             let z = XYZ.getZ i xyzs
-            let seg = min i lastSeg // the segment starting at this point, or the last segment for the last point
             let nextDistInPlane = nextDistAt i
             let prevDistInPlane = prevDistAt i
-            let distPerp = distsPerpendicular.[seg]
             let sameDist = abs (prevDistInPlane - nextDistInPlane) < 1e-6
             match offDirs.[i] with
             | ValueSome dir when sameDist ->
                 // same distances, also at the end points of an open polyline, where prevInPlane and nextInPlane are the same
                 let cosine = dir.prevInPlane *** dir.nextInPlane
-                setOffCorner(res, x, y, z, nextDistInPlane, distPerp, dir.prevInPlane, dir.nextInPlane, dir.perpDir, cosine)
+                setOffCorner(res, x, y, z, nextDistInPlane, 0.0, dir.prevInPlane, dir.nextInPlane, dir.perpDir, cosine)
             | ValueSome dir when not (isCollinear i) ->
                 let cosine = dir.prevInPlane *** dir.nextInPlane
-                setOffCornerVar(res, x, y, z, prevDistInPlane, nextDistInPlane, distPerp, dir.prevInPlane, dir.nextInPlane, dir.perpDir, cosine, getSegUV seg)
+                setOffCornerVar(res, x, y, z, prevDistInPlane, nextDistInPlane, 0.0, dir.prevInPlane, dir.nextInPlane, dir.perpDir, cosine, getSegUV (min i lastSeg))
             | _ ->
                 // a collinear point without direction, or with different distances, so the corner would be far away or at infinity
                 needsFix.[i] <- true
@@ -675,11 +720,12 @@ module Offset3D =
             XYZ.add res.[0] res.[1] res.[2] res
 
 
-        // (2) second pass: place the collinear points on the line between the neighboring offset corners
+        // (2) second pass: place the collinear points in-plane on the line between the neighboring offset corners,
+        // then offset them perpendicularly by their own distance
+        let skip = if fixCount > 0 && varDistParallelBehavior = VarDistParallel.Skip then Array.zeroCreate<bool> ptCount else [||]
         if fixCount > 0 then
             if fixCount = lastPt + 1 then // only possible for a closed polyline
                 fail $"Offset3D.offsetVariableWithDirections: the polyline has no corner to place its {fixCount} collinear points between."
-            let skip = Array.zeroCreate<bool> ptCount // only used with VarDistParallel.Skip
             let collinearPoints = getNeighborsOfMarked needsFix
             for j = 0 to collinearPoints.LastIndex do
                 let cP = collinearPoints.[j]
@@ -688,7 +734,7 @@ module Offset3D =
                     let prevDist = prevDistAt i
                     let nextDist = nextDistAt i
                     if abs (prevDist - nextDist) < 1e-6 then
-                        // same distances, the line between the neighbors is the offset line
+                        // same distances, the line between the neighbors is the in-plane offset line
                         projectPointToLineInPlace i cP.prevOK cP.nextOK xyzs res res
                     else
                         match varDistParallelBehavior with
@@ -725,20 +771,38 @@ module Offset3D =
                         |_  ->
                             fail $"Offset3D.offsetVariableWithDirections: unknown VarDistParallel behavior {varDistParallelBehavior}."
 
-            if isClosed then
-                XYZ.set (ptCount - 1) res.[0] res.[1] res.[2] res
+                    // (2.1) the perpendicular offset by the point's own distance, skipped points need none
+                    let distPerp = distsPerpendicular.[i]
+                    if distPerp <> 0.0 && not (skip.Length > 0 && skip.[i]) then
+                        let p =
+                            match offDirs.[i] with
+                            | ValueSome dir -> dir.perpDir // a collinear point with different in-plane distances
+                            | ValueNone -> collinearPerpDir i cP.prevOK cP.nextOK distPerp
+                        XYZ.set i (XYZ.getX i res + p.X * distPerp) (XYZ.getY i res + p.Y * distPerp) (XYZ.getZ i res + p.Z * distPerp) res
 
-            if varDistParallelBehavior = VarDistParallel.Skip then
-                if isClosed then
-                    skip.[ptCount - 1] <- skip.[0]
-                let newRes = ResizeArray<float>(res.Count)
-                for i = 0 to ptCount - 1 do
-                    if not skip.[i] then
-                        XYZ.add (XYZ.getX i res) (XYZ.getY i res) (XYZ.getZ i res) newRes
-                // if the seam point was skipped, close the polyline again with the new first point
-                if isClosed && skip.[0] then
-                    XYZ.add newRes.[0] newRes.[1] newRes.[2] newRes
-                res <- newRes
+        // (3) third pass: the perpendicular offsets of the points that have valid directions
+        for i = 0 to lastPt do
+            if not needsFix.[i] then
+                match offDirs.[i] with
+                | ValueSome dir ->
+                    let distPerp = distsPerpendicular.[i]
+                    XYZ.set i (XYZ.getX i res + dir.perpDir.X * distPerp) (XYZ.getY i res + dir.perpDir.Y * distPerp) (XYZ.getZ i res + dir.perpDir.Z * distPerp) res
+                | ValueNone -> () // not possible, points without a direction are placed in the second pass
+
+        if isClosed then
+            XYZ.set (ptCount - 1) res.[0] res.[1] res.[2] res
+
+        if skip.Length > 0 then
+            if isClosed then
+                skip.[ptCount - 1] <- skip.[0]
+            let newRes = ResizeArray<float>(res.Count)
+            for i = 0 to ptCount - 1 do
+                if not skip.[i] then
+                    XYZ.add (XYZ.getX i res) (XYZ.getY i res) (XYZ.getZ i res) newRes
+            // if the seam point was skipped, close the polyline again with the new first point
+            if isClosed && skip.[0] then
+                XYZ.add newRes.[0] newRes.[1] newRes.[2] newRes
+            res <- newRes
 
         res
 
@@ -832,8 +896,8 @@ module Offset3D =
     /// <param name="distancesInPlane">The offset distances in the local plane defined by two segments, one per segment.
     /// A positive distance offsets to the inside of a polyline that turns counter-clockwise around refNormal,
     /// and to the outside of one that turns clockwise. A negative distance offsets the other way.</param>
-    /// <param name="distancesPerpendicular">The offset distances perpendicular to the local plane, one per segment.
-    /// Each point takes the distance of the segment that starts at it, the last point of an open polyline that of the last segment.
+    /// <param name="distancesPerpendicular">The offset distances perpendicular to the local plane, one per point.
+    /// For a closed polyline one less, because its last point is its first point.
     /// A positive distance offsets to the side of refNormal, a negative distance to the opposite side.</param>
     /// <param name="refNormal">The reference normal vector to use for computing the local planes.
     /// For a counter-clockwise polyline in the XY plane this is upwards. If it points down, the offset direction is flipped.</param>
@@ -861,8 +925,8 @@ module Offset3D =
     /// For a counter-clockwise polyline in the XY plane this is upwards. If it points down, the offset direction is flipped.</param>
     /// <param name="distancesInPlane">The offset distances in the local plane defined by two segments, one per segment.
     /// A positive distance offsets to the inside of a polyline that turns counter-clockwise around refNormal.</param>
-    /// <param name="distancesPerpendicular">The offset distances perpendicular to the local plane, one per segment.
-    /// Each point takes the distance of the segment that starts at it, the last point of an open polyline that of the last segment.</param>
+    /// <param name="distancesPerpendicular">The offset distances perpendicular to the local plane, one per point.
+    /// For a closed polyline one less, because its last point is its first point.</param>
     /// <param name="xyzs"> The interleaved coordinates (x0, y0, z0, x1, y1, z1, ...) of the polyline to offset.</param>
     /// <returns> A new ResizeArray of interleaved coordinates.</returns>
     let offsetVariableByNormal (refNormal:UnitVec) (distancesInPlane: ResizeArray<float>) (distancesPerpendicular: ResizeArray<float>) (xyzs: ResizeArray<float>) : ResizeArray<float> =
@@ -877,8 +941,8 @@ module Offset3D =
     /// A positive distance offsets to the inside of the polyline.
     /// A negative distance offsets to the outside.
     /// No matter how the polyline is oriented.</param>
-    /// <param name="distancesPerpendicular">The offset distances perpendicular to the local plane, one per segment.
-    /// Each point takes the distance of the segment that starts at it, the last point of an open polyline that of the last segment.
+    /// <param name="distancesPerpendicular">The offset distances perpendicular to the local plane, one per point.
+    /// For a closed polyline one less, because its last point is its first point.
     /// A positive distance offsets in the direction of the computed normal.
     /// For a counter-clockwise polyline in xy-plane this is Upwards.
     /// A negative distance offsets in the opposite direction.</param>
