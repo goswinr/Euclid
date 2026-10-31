@@ -559,8 +559,11 @@ module Offset3D =
     /// <param name="xyzs">The interleaved coordinates (x0, y0, z0, x1, y1, z1, ...) of the polyline to offset.</param>
     /// <param name="segmentDirs">The unit vectors of each segment in the polyline.</param>
     /// <param name="offDirs">The offset directions at each point of the polyline.</param>
-    /// <param name="distsInPlane">The distance to offset in the local plane of each vertex.</param>
-    /// <param name="distsPerpendicular">The distance to offset perpendicular to the local plane of each vertex.</param>
+    /// <param name="distsInPlane">The offset distances in the local plane, one per segment.
+    /// Each segment is offset parallel to itself by its own distance.</param>
+    /// <param name="distsPerpendicular">The offset distances perpendicular to the local plane, one per segment.
+    /// Each point takes the distance of the segment that starts at it, the last point of an open polyline that of the last segment.
+    /// So a segment is offset by its own distance at its start and by the next segment's distance at its end, and reversing the polyline changes the result.</param>
     /// <param name="isClosed">Whether the polyline is closed (TRUE) or open (FALSE).</param>
     /// <param name="varDistParallelBehavior">The behavior to use when collinear segments with different offset distances are found.</param>
     /// <returns>The offset points as a ResizeArray of interleaved coordinates.</returns>
@@ -583,45 +586,47 @@ module Offset3D =
         if ptCount <> segCount + 1  then
             fail $"Offset3D.offsetVariableWithDirections:\n Segment directions count must be {ptCount-1} for {ptCount} points, but is {segCount}."
 
+        if ptCount <> offDirs.Count then
+            fail $"Offset3D.offsetVariableWithDirections:\n offset directions count must be {ptCount} for {ptCount} points, but is {offDirs.Count}."
+
         if ptCount <> distsInPlane.Count + 1  then
             fail $"Offset3D.offsetVariableWithDirections:\n in-plane distances count must be {ptCount-1} for {ptCount} points, but is {distsInPlane.Count}."
+
+        if ptCount <> distsPerpendicular.Count + 1  then
+            fail $"Offset3D.offsetVariableWithDirections:\n perpendicular distances count must be {ptCount-1} for {ptCount} points, but is {distsPerpendicular.Count}."
 
 
         let mutable res = ResizeArray<float>(xyzs.Count)
         let mutable needsSecondPass = false
-        let mutable prevDistInPlane = if isClosed then distsInPlane.[distsInPlane.Count - 1] else distsInPlane.[0]
+        let lastSeg = segCount - 1
 
         // (1) first pass: offset points that have valid directions
-        for i = 0 to ptCount - 2 do
+        // the end points of an open polyline take the distances of their own segment,
+        // the last point of a closed polyline is the first point, it is added below
+        let lastPt = if isClosed then ptCount - 2 else ptCount - 1
+        for i = 0 to lastPt do
             let x = XYZ.getX i xyzs
             let y = XYZ.getY i xyzs
             let z = XYZ.getZ i xyzs
-            let nextDistInPlane = distsInPlane.[i]
-            let distPerp = distsPerpendicular.[i]
+            let seg = min i lastSeg // the segment starting at this point, or the last segment for the last point
+            let nextDistInPlane = distsInPlane.[seg]
+            let prevDistInPlane = if i > 0 then distsInPlane.[i - 1] elif isClosed then distsInPlane.[lastSeg] else nextDistInPlane
+            let distPerp = distsPerpendicular.[seg]
             match offDirs.[i] with
             | ValueNone ->
                 needsSecondPass <- true
                 XYZ.add x y z res // for now just keep the input point, will be projected in second pass
             | ValueSome dir ->
                 let cosine = dir.prevInPlane *** dir.nextInPlane
-                setOffCornerVar(res, x, y, z, prevDistInPlane, nextDistInPlane, distPerp, dir.prevInPlane, dir.nextInPlane, dir.perpDir, cosine, getSegUV i)
-            prevDistInPlane <- nextDistInPlane
+                if abs (prevDistInPlane - nextDistInPlane) < 1e-6 then
+                    // same distances, also at the end points of an open polyline, where prevInPlane and nextInPlane are the same
+                    setOffCorner(res, x, y, z, nextDistInPlane, distPerp, dir.prevInPlane, dir.nextInPlane, dir.perpDir, cosine)
+                else
+                    setOffCornerVar(res, x, y, z, prevDistInPlane, nextDistInPlane, distPerp, dir.prevInPlane, dir.nextInPlane, dir.perpDir, cosine, getSegUV seg)
 
-
-        // (1.1) handle last point extra because distsInPlane has one less entry than pts and nextDistInPlane depends on loop status
-        let li = ptCount - 1
-        let x = XYZ.getX li xyzs
-        let y = XYZ.getY li xyzs
-        let z = XYZ.getZ li xyzs
-        let nextDistInPlane = if isClosed then distsInPlane.[0] else distsInPlane.[distsInPlane.Count - 1]
-        let distPerp = distsPerpendicular.[distsPerpendicular.Count - 1]
-        match offDirs.Last with
-        | ValueNone ->
-            needsSecondPass <- true
-            XYZ.add x y z res // for now just keep the input point, will be projected in second pass
-        | ValueSome dir ->
-            let cosine = dir.prevInPlane *** dir.nextInPlane
-            setOffCornerVar(res, x, y, z, prevDistInPlane, nextDistInPlane, distPerp, dir.prevInPlane, dir.nextInPlane, dir.perpDir, cosine, getSegUV (segCount - 1))
+        // (1.1) the last point of a closed polyline is the first point, a collinear one is projected in the second pass
+        if isClosed then
+            XYZ.add res.[0] res.[1] res.[2] res
 
 
         // (2) second pass: project collinear points

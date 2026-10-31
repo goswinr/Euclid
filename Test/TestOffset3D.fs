@@ -797,6 +797,60 @@ let tests =
                 "smaller threshold is exact" |> Expect.isTrue (maxSegmentDistanceError pl fine 1.0 < 1e-9)
         ]
 
+        testList "Polyline3D.offsetVariable" [
+            let ds (xs: float list) = ResizeArray xs
+            let expectPoints (res:Polyline3D) (expected: Pnt list) =
+                "point count" |> Expect.equal res.PointCount expected.Length
+                expected |> List.iteri (fun i e ->
+                    let p = res.AsPoints.[i]
+                    Expect.isTrue (eqPnt p (toWorld e)) $"pt[{i}] should be {toWorld e} but is {p}")
+
+            testCase "equal distances give the same result as the constant offset" <| fun _ ->
+                let shapes = [
+                    tilted [Pnt(0.0, 0.0, 0.0); Pnt(10.0, 0.0, 0.0); Pnt(10.0, 10.0, 0.0)]
+                    tilted [Pnt(0.0, 0.0, 0.0); Pnt(10.0, 0.0, 0.0); Pnt(10.0, 4.0, 0.0); Pnt(4.0, 4.0, 0.0); Pnt(4.0, 10.0, 0.0); Pnt(0.0, 10.0, 0.0); Pnt(0.0, 0.0, 0.0)]
+                    tilted [Pnt(0.0, 0.0, 0.0); Pnt(10.0, 0.0, 3.0); Pnt(10.0, 10.0, 0.0); Pnt(0.0, 10.0, 3.0); Pnt(0.0, 0.0, 0.0)] ] // not planar
+                for pl in shapes do
+                    let n = pl.SegmentCount
+                    let v = Polyline3D.offsetVariableByNormal worldZ (ds (List.replicate n 1.5)) (ds (List.replicate n 0.5)) pl
+                    let c = Polyline3D.offsetByNormal worldZ 1.5 0.5 pl
+                    Expect.isTrue (Polyline3D.equalsWithin 1e-9 v c) $"variable {v} should equal constant {c}"
+
+            testCase "open polyline end points take the distances of their own segment" <| fun _ ->
+                let pl = tilted [Pnt(0.0, 0.0, 0.0); Pnt(10.0, 0.0, 0.0); Pnt(10.0, 10.0, 0.0)]
+                let res = Polyline3D.offsetVariableByNormal worldZ (ds [1.0; 2.0]) (ds [0.0; 0.0]) pl
+                expectPoints res [Pnt(0.0, 1.0, 0.0); Pnt(8.0, 1.0, 0.0); Pnt(8.0, 10.0, 0.0)]
+
+            testCase "closed polyline seam takes the distances of the first and last segment" <| fun _ ->
+                let pl = tilted [Pnt(0.0, 0.0, 0.0); Pnt(10.0, 0.0, 0.0); Pnt(10.0, 10.0, 0.0); Pnt(0.0, 10.0, 0.0); Pnt(0.0, 0.0, 0.0)]
+                let res = Polyline3D.offsetVariableByNormal worldZ (ds [1.0; 2.0; 3.0; 4.0]) (ds [0.0; 0.0; 0.0; 0.0]) pl
+                expectPoints res [Pnt(4.0, 1.0, 0.0); Pnt(8.0, 1.0, 0.0); Pnt(8.0, 7.0, 0.0); Pnt(4.0, 7.0, 0.0); Pnt(4.0, 1.0, 0.0)]
+                "closed" |> Expect.isTrue (Pnt.equalsExact res.FirstPoint res.LastPoint)
+
+            testCase "each point takes the perpendicular distance of the segment that starts at it" <| fun _ ->
+                let closed = tilted [Pnt(0.0, 0.0, 0.0); Pnt(10.0, 0.0, 0.0); Pnt(10.0, 10.0, 0.0); Pnt(0.0, 10.0, 0.0); Pnt(0.0, 0.0, 0.0)]
+                let res = Polyline3D.offsetVariableByNormal worldZ (ds [1.0; 1.0; 1.0; 1.0]) (ds [1.0; 2.0; 3.0; 4.0]) closed
+                expectPoints res [Pnt(1.0, 1.0, 1.0); Pnt(9.0, 1.0, 2.0); Pnt(9.0, 9.0, 3.0); Pnt(1.0, 9.0, 4.0); Pnt(1.0, 1.0, 1.0)]
+                let opened = tilted [Pnt(0.0, 0.0, 0.0); Pnt(10.0, 3.0, 0.0); Pnt(20.0, 0.0, 0.0); Pnt(30.0, 3.0, 0.0)]
+                let res = Polyline3D.offsetVariableByNormal worldZ (ds [0.0; 0.0; 0.0]) (ds [0.0; 1.0; 2.0]) opened
+                expectPoints res [Pnt(0.0, 0.0, 0.0); Pnt(10.0, 3.0, 1.0); Pnt(20.0, 0.0, 2.0); Pnt(30.0, 3.0, 2.0)] // the last point takes the last segment
+
+            testCase "fails with a clear message on wrong distance counts" <| fun _ ->
+                let pl = tilted [Pnt(0.0, 0.0, 0.0); Pnt(10.0, 0.0, 0.0); Pnt(10.0, 10.0, 0.0)]
+                let msg (f: unit -> Polyline3D) = try f () |> ignore; "" with e -> e.Message
+                "too few perpendicular" |> Expect.stringContains (msg (fun () -> Polyline3D.offsetVariableByNormal worldZ (ds [1.0; 1.0]) (ds [0.0]) pl)) "perpendicular distances count must be 2"
+                "too many perpendicular" |> Expect.stringContains (msg (fun () -> Polyline3D.offsetVariableByNormal worldZ (ds [1.0; 1.0]) (ds [0.0; 0.0; 5.0]) pl)) "perpendicular distances count must be 2"
+                "too few in-plane" |> Expect.stringContains (msg (fun () -> Polyline3D.offsetVariableByNormal worldZ (ds [1.0]) (ds [0.0; 0.0]) pl)) "in-plane distances count must be 2"
+
+            testCase "kernel fails on a wrong offset directions count" <| fun _ ->
+                let xyzs = (tilted [Pnt(0.0, 0.0, 0.0); Pnt(10.0, 0.0, 0.0); Pnt(10.0, 10.0, 0.0)]).XYZs
+                let uvs = Offset3D.getSegmentUnitVectors xyzs
+                let dirs = Offset3D.getOffsetDirections(uvs, worldZ, true, Cosine.``2.5``, Cosine.``175.0``)
+                dirs.RemoveAt 0
+                let msg = try Offset3D.offsetVariableWithDirections(xyzs, uvs, dirs, ds [1.0; 1.0], ds [0.0; 0.0], false, Offset3D.VarDistParallel.Fail) |> ignore; "" with e -> e.Message
+                "message" |> Expect.stringContains msg "offset directions count must be 3"
+        ]
+
         // ============ Write test data file ============
 
         testCase "Write test data file (when saveTestData=true)" <| fun _ ->
