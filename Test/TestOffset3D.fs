@@ -24,7 +24,8 @@ let worldZ = UnitVec.rotate tilt UnitVec.zAxis
 let tilted (pts: Pnt list) = pts |> List.map toWorld |> Polyline3D.createFromPnts
 
 /// The largest deviation of the offset points from the distance |d| to the infinite lines of their adjacent input segments.
-/// Only meaningful for planar polylines offset in their plane.
+/// Meaningful for planar polylines offset in their plane, and for any polyline where every point is a corner,
+/// because a corner is offset in the local plane of its two segments.
 let maxSegmentDistanceError (input:Polyline3D) (output:Polyline3D) (d:float) =
     let pts = input.AsPoints
     let res = output.AsPoints
@@ -789,6 +790,57 @@ let tests =
                 "start move is perpendicular to the first segment" |> Expect.isTrue (abs ((r.[0] - p.[0]) *** (p.[1] - p.[0])) < 1e-9)
                 "end distance" |> Expect.floatClose tol (Line3D.distanceRayPoint r.[3] (Line3D(p.[2], p.[3]))) 1.0
                 "end move is perpendicular to the last segment" |> Expect.isTrue (abs ((r.[3] - p.[3]) *** (p.[3] - p.[2])) < 1e-9)
+        ]
+
+        testList "Offset3D invariants" [
+            let lShape = tilted [Pnt(0.0, 0.0, 0.0); Pnt(10.0, 0.0, 0.0); Pnt(10.0, 4.0, 0.0); Pnt(4.0, 4.0, 0.0); Pnt(4.0, 10.0, 0.0); Pnt(0.0, 10.0, 0.0); Pnt(0.0, 0.0, 0.0)]
+            let skewQuad = tilted [Pnt(0.0, 0.0, 0.0); Pnt(10.0, 0.0, 3.0); Pnt(10.0, 10.0, 0.0); Pnt(0.0, 10.0, 3.0); Pnt(0.0, 0.0, 0.0)]
+            let spiral = tilted [Pnt(10.0, 0.0, 0.0); Pnt(0.0, 10.0, 5.0); Pnt(-10.0, 0.0, 10.0); Pnt(0.0, -10.0, 15.0); Pnt(10.0, 0.0, 20.0)]
+            let reversed (pl:Polyline3D) = Polyline3D.createFromPnts (Seq.rev pl.AsPoints)
+            let shiftStart k (pl:Polyline3D) = // for closed polylines, start at point k
+                let open' = pl.AsPoints |> Seq.take (pl.PointCount - 1) |> Seq.toList
+                let s = List.skip k open' @ List.take k open'
+                Polyline3D.createFromPnts (s @ [s.Head])
+
+            testCase "every point is at the offset distance from its adjacent segments" <| fun _ ->
+                for d in [1.25; -0.75] do
+                    "concave L-shape" |> Expect.isTrue (maxSegmentDistanceError lShape (Polyline3D.offset d 0.0 lShape) d < 1e-9)
+                    "non-planar quad" |> Expect.isTrue (maxSegmentDistanceError skewQuad (Polyline3D.offsetByNormal worldZ d 0.0 skewQuad) d < 1e-9)
+                    "non-planar spiral" |> Expect.isTrue (maxSegmentDistanceError spiral (Polyline3D.offsetByNormal worldZ d 0.0 spiral) d < 1e-9)
+                // the perpendicular offset is perpendicular to both adjacent segments too
+                let both = Polyline3D.offsetByNormal worldZ 0.6 0.8 spiral
+                "in-plane and perpendicular" |> Expect.isTrue (maxSegmentDistanceError spiral both 1.0 < 1e-9)
+
+            testCase "positive distances offset the concave L-shape inwards" <| fun _ ->
+                let res = Polyline3D.offset 1.0 0.0 lShape
+                let expected = [Pnt(1.0, 1.0, 0.0); Pnt(9.0, 1.0, 0.0); Pnt(9.0, 3.0, 0.0); Pnt(3.0, 3.0, 0.0); Pnt(3.0, 9.0, 0.0); Pnt(1.0, 9.0, 0.0); Pnt(1.0, 1.0, 0.0)]
+                expected |> List.iteri (fun i e -> Expect.isTrue (eqPnt res.AsPoints.[i] (toWorld e)) $"pt[{i}]")
+
+            testCase "reversing the polyline and the normal gives the reversed result" <| fun _ ->
+                // the in-plane inside stays inside, the perpendicular side follows the normal, so it flips
+                for pl in [lShape; skewQuad; spiral] do
+                    let a = Polyline3D.offsetByNormal worldZ 1.0 0.5 pl
+                    let b = Polyline3D.offsetByNormal -worldZ 1.0 -0.5 (reversed pl)
+                    Expect.isTrue (Polyline3D.equalsWithin 1e-9 a (reversed b)) $"reversed {pl}"
+                // the average normal flips with the polyline
+                let c = Polyline3D.offset 1.0 0.5 lShape
+                let d = Polyline3D.offset 1.0 -0.5 (reversed lShape)
+                "average normal" |> Expect.isTrue (Polyline3D.equalsWithin 1e-9 c (reversed d))
+
+            testCase "the start point of a closed polyline does not change the result" <| fun _ ->
+                for pl in [lShape; skewQuad] do
+                    let a = Polyline3D.offsetByNormal worldZ 1.0 0.5 pl
+                    for k in 1 .. pl.PointCount - 2 do
+                        let b = Polyline3D.offsetByNormal worldZ 1.0 0.5 (shiftStart k pl)
+                        for i = 0 to pl.PointCount - 2 do
+                            Expect.isTrue (eqPnt b.AsPoints.[i] a.AsPoints.[(i + k) % (pl.PointCount - 1)]) $"shift {k}, pt[{i}]"
+
+            testCase "variable offset: reversing the polyline and the in-plane distances gives the reversed result" <| fun _ ->
+                let ds = [0.5; 1.0; 1.5; 0.75; 1.25; 0.25]
+                let zeros = ResizeArray (List.replicate ds.Length 0.0)
+                let a = Polyline3D.offsetVariableByNormal worldZ (ResizeArray ds) zeros lShape
+                let b = Polyline3D.offsetVariableByNormal -worldZ (ResizeArray (List.rev ds)) zeros (reversed lShape)
+                "reversed" |> Expect.isTrue (Polyline3D.equalsWithin 1e-9 a (reversed b))
         ]
 
         testList "Polyline3D offset thresholds" [
