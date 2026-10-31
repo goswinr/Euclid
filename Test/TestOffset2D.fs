@@ -1569,18 +1569,16 @@ let testsExtra =
             }
         ]
 
-        testList "toStringXYs special inputs" [
-            test "handles all degenerate and valid shapes" {
-                "null" |> Expect.stringContains (Offset2D.toStringXYs null) "null"
-                "empty" |> Expect.stringContains (Offset2D.toStringXYs (ResizeArray<float>())) "Empty"
-                "single value" |> Expect.stringContains (Offset2D.toStringXYs (ResizeArray([1.0]))) "1 value"
-                "single point" |> Expect.stringContains (Offset2D.toStringXYs (ResizeArray([1.0; 2.0]))) "Single Point"
-                let odd = ResizeArray([1.0; 2.0; 3.0])
-                "odd values" |> Expect.stringContains (Offset2D.toStringXYs odd) "not even"
-                let closed = ResizeArray([Pt(0,0); Pt(1,0); Pt(1,1); Pt(0,0)]) |> xysOfPts
-                "closed" |> Expect.stringContains (Offset2D.toStringXYs closed) "Closed"
-                let openP = ResizeArray([Pt(0,0); Pt(1,0); Pt(1,1); Pt(0,2)]) |> xysOfPts
-                "open" |> Expect.stringContains (Offset2D.toStringXYs openP) "Open"
+        testList "makeOffsetDirections duplicate point failure message" [
+            test "lists the polyline" {
+                let failMessage (pts: Pt list) =
+                    try Offset2D.makeOffsetDirections (ResizeArray pts |> xysOfPts) |> ignore; "" with e -> e.Message
+                let openMsg = failMessage [Pt(13,27); Pt(13,27); Pt(14,29)]
+                "location" |> Expect.stringContains openMsg "point[1] and point[0] are the same, at Pt(13, 27)"
+                "open" |> Expect.stringContains openMsg "Open polyline with 3 points"
+                "points listed" |> Expect.stringContains openMsg "14  29"
+                let closedMsg = failMessage [Pt(13,27); Pt(14,29); Pt(14,29); Pt(13,27)]
+                "closed" |> Expect.stringContains closedMsg "Closed polyline with 4 points"
             }
         ]
 
@@ -1626,27 +1624,27 @@ let testsExtra =
             }
         ]
 
-        testList "offsetByDirections and offsetVariableByDirections errors" [
-            test "offsetByDirections fails on direction count mismatch" {
+        testList "offsetWithDirections and offsetVariableWithDirections errors" [
+            test "offsetWithDirections fails on direction count mismatch" {
                 let xys = ResizeArray([Pt(0,0); Pt(1,0); Pt(1,1)]) |> xysOfPts // needs 2 directions
                 let dirs = ResizeArray([0.0; 1.0]) // only 1 direction
                 Expect.throws
-                    (fun () -> Offset2D.offsetByDirections(xys, dirs, 1.0, Offset2D.UTurn.Fail, Cosine.``175.0``) |> ignore)
+                    (fun () -> Offset2D.offsetWithDirections(xys, dirs, 1.0, Offset2D.UTurn.Fail, Cosine.``175.0``) |> ignore)
                     "direction count mismatch should fail"
             }
-            test "offsetByDirections fails with fewer than 2 points" {
+            test "offsetWithDirections fails with fewer than 2 points" {
                 let xys = ResizeArray([Pt(0,0)]) |> xysOfPts
                 let dirs = ResizeArray<float>()
                 Expect.throws
-                    (fun () -> Offset2D.offsetByDirections(xys, dirs, 1.0, Offset2D.UTurn.Fail, Cosine.``175.0``) |> ignore)
+                    (fun () -> Offset2D.offsetWithDirections(xys, dirs, 1.0, Offset2D.UTurn.Fail, Cosine.``175.0``) |> ignore)
                     "too few points should fail"
             }
-            test "offsetVariableByDirections fails on distances count mismatch" {
+            test "offsetVariableWithDirections fails on distances count mismatch" {
                 let xys = ResizeArray([Pt(0,0); Pt(1,0); Pt(1,1)]) |> xysOfPts
                 let dirs = Offset2D.makeOffsetDirections xys // 2 directions
                 let dists = ResizeArray([1.0]) // only 1, needs 2
                 Expect.throws
-                    (fun () -> Offset2D.offsetVariableByDirections(xys, dirs, dists, Offset2D.VarDistParallel.Fail, Offset2D.UTurn.Fail, Cosine.``2.5``, Cosine.``175.0``) |> ignore)
+                    (fun () -> Offset2D.offsetVariableWithDirections(xys, dirs, dists, Offset2D.VarDistParallel.Fail, Offset2D.UTurn.Fail, Cosine.``2.5``, Cosine.``175.0``) |> ignore)
                     "distances count mismatch should fail"
             }
         ]

@@ -1275,14 +1275,13 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Offset2D.makeOffsetDirections` | `xys: ResizeArray<float> -> ResizeArray<float>` |
 | `Offset2D.makeUnitTangents` | `xys: ResizeArray<float> -> ResizeArray<float>` |
 | `Offset2D.offset` | `dist: float -> xys: ResizeArray<float> -> ResizeArray<float>` |
-| `Offset2D.offsetByDirections` | `xys: ResizeArray<float> * dirs: ResizeArray<float> * dist: float * uTurnBehavior: UTurn * useUTurnBehaviorAbove: float<cosine> -> ResizeArray<float>` |
+| `Offset2D.offsetWithDirections` | `xys: ResizeArray<float> * dirs: ResizeArray<float> * dist: float * uTurnBehavior: UTurn * useUTurnBehaviorAbove: float<cosine> -> ResizeArray<float>` |
 | `Offset2D.offsetCustom` | `xys: ResizeArray<float> * distance: float * uTurnBehavior: UTurn * useUTurnBehaviorAbove: float<cosine> -> ResizeArray<float>` |
 | `Offset2D.offsetVariable` | `dists: ResizeArray<float> -> xys: ResizeArray<float> -> ResizeArray<float>` |
-| `Offset2D.offsetVariableByDirections` | `xys: ResizeArray<float> * nDirs: ResizeArray<float> * dists: IList<float> * varDistParallelBehavior: VarDistParallel * uTurnBehavior: UTurn * useVarDistParallelBehaviorBelow: float<cosine> * useUTurnBehaviorAbove: float<cosine> -> ResizeArray<float>` |
+| `Offset2D.offsetVariableWithDirections` | `xys: ResizeArray<float> * nDirs: ResizeArray<float> * dists: IList<float> * varDistParallelBehavior: VarDistParallel * uTurnBehavior: UTurn * useVarDistParallelBehaviorBelow: float<cosine> * useUTurnBehaviorAbove: float<cosine> -> ResizeArray<float>` |
 | `Offset2D.offsetVariableCustom` | `xys: ResizeArray<float> * distances: ResizeArray<float> * varDistParallelBehavior: VarDistParallel * uTurnBehavior: UTurn * useVarDistParallelBehaviorBelow: float<cosine> * useUTurnBehaviorAbove: float<cosine> -> ResizeArray<float>` |
 | `Offset2D.removeUTurns` | `xys: ResizeArray<float> * ns: ResizeArray<float> * minCos: float<cosine> -> ResizeArray<float>` |
 | `Offset2D.setOffCorner` | `res: ResizeArray<float> * x: float * y: float * dist: float * nPrevX: float * nPrevY: float * nNextX: float * nNextY: float * cosine: float -> unit` |
-| `Offset2D.toStringXYs` | `xys: ResizeArray<float> -> string` |
 
 ## Offset2D.UTurn
 

@@ -134,7 +134,7 @@ module Offset2D=
             dx * dx + dy * dy
 
     /// A helper function to print interleaved ResizeArrays for debugging.
-    let toStringXYs (xys: ResizeArray<float>) : string =
+    let internal toStringXYs (xys: ResizeArray<float>) : string =
         if isNull xys then
             "ResizeArray<float> null"
         elif xys.Count = 0 then
@@ -386,7 +386,7 @@ module Offset2D=
         match uTurnBehavior with
         | UTurn.Fail ->
             // for i,d in Seq.indexed dirs do printfn $"*dir[{i}]= {d.AsString}"
-            fail $"Offset2D.offsetVariableByDirections: point ({x}, {y}) makes a {toDegrees(acos cosine) } degree U-turn, max {toDegrees(acos (float useUTurnBehaviorAbove))} is allowed."
+            fail $"Offset2D.offsetVariableWithDirections: point ({x}, {y}) makes a {toDegrees(acos cosine) } degree U-turn, max {toDegrees(acos (float useUTurnBehaviorAbove))} is allowed."
 
         | UTurn.Chamfer ->
             // (1.2) special case: sharp U-turn, add a chamfer (two points) with variable distance
@@ -435,16 +435,16 @@ module Offset2D=
     /// <param name="uTurnBehavior"> What to do at a 180 degree U-turn? Fail, Chamfer with two points, or UseThreshold.</param>
     /// <param name="useUTurnBehaviorAbove"> The angle between normals after which, U-TurnBehavior is used.</param>
     /// <returns> A new ResizeArray of interleaved coordinates. Due to error correction at sharp U-turns the point count may not be the same as the input.</returns>
-    let offsetByDirections(xys:ResizeArray<float>, dirs: ResizeArray<float>, dist:float, uTurnBehavior:UTurn, useUTurnBehaviorAbove :float<Cosine.cosine>) : ResizeArray<float> = //[<OPT;DEF(Cosine.``179.0``)>]
-        XY.checkEven "offsetByDirections" xys
-        XY.checkEven "offsetByDirections dirs" dirs
+    let offsetWithDirections(xys:ResizeArray<float>, dirs: ResizeArray<float>, dist:float, uTurnBehavior:UTurn, useUTurnBehaviorAbove :float<Cosine.cosine>) : ResizeArray<float> = //[<OPT;DEF(Cosine.``179.0``)>]
+        XY.checkEven "offsetWithDirections" xys
+        XY.checkEven "offsetWithDirections dirs" dirs
         let ptCount = XY.pointCount xys
         let dirCount = XY.pointCount dirs
         if ptCount < 2 then
-            fail $"Offset2D.offsetByDirections: point count must be at least 2 but is {ptCount}."
+            fail $"Offset2D.offsetWithDirections: point count must be at least 2 but is {ptCount}."
 
         if ptCount <> dirCount + 1  then
-            fail $"Offset2D.offsetByDirections: point count must be one greater than normals count but they are {ptCount} and {dirCount}."
+            fail $"Offset2D.offsetWithDirections: point count must be one greater than normals count but they are {ptCount} and {dirCount}."
 
         let res = ResizeArray<float>(xys.Count)
         let isOpen = XY.sqDistFirstLast xys > openToleranceSq
@@ -565,7 +565,7 @@ module Offset2D=
     let internal handleVarOffsetCollinear (i:int, x:float, y:float, nPrevX:float, nPrevY:float, nNextX:float, nNextY:float, dPrev:float, dNext:float, res:ResizeArray<float>, idxsToFixProportional: ResizeArray<IndexToFixProportional>, projectIdxs: ResizeArray<IndexToProject>, varDistParallelBehavior: VarDistParallel) =
         match varDistParallelBehavior with
         | VarDistParallel.Fail ->
-            fail $"Offset2D.offsetVariableByDirections: point[{i}] and point[{i-1}] are collinear but have different distances {dPrev} and {dNext}."
+            fail $"Offset2D.offsetVariableWithDirections: point[{i}] and point[{i-1}] are collinear but have different distances {dPrev} and {dNext}."
         | VarDistParallel.Skip ->
             ()
         | VarDistParallel.Proportional ->
@@ -592,7 +592,7 @@ module Offset2D=
     /// <param name="useVarDistParallelBehaviorBelow"> The angle between normals below which points are considered collinear and VarDistParallelBehavior is applied if distances are not the same. </param>
     /// <param name="useUTurnBehaviorAbove"> The angle between normals after which uTurnBehavior is applied .</param>
     /// <returns> A new ResizeArray of Points as a flat array of coordinates. If UTurnBehavior.Chamfer is used the total point count may be more than the input.</returns>
-    let offsetVariableByDirections(xys : ResizeArray<float>,
+    let offsetVariableWithDirections(xys : ResizeArray<float>,
                                      nDirs : ResizeArray<float>,
                                      dists : Collections.Generic.IList<float>,
                                      varDistParallelBehavior : VarDistParallel,
@@ -600,17 +600,17 @@ module Offset2D=
                                      useVarDistParallelBehaviorBelow : float<Cosine.cosine>,
                                      useUTurnBehaviorAbove : float<Cosine.cosine>
                                      ) : ResizeArray<float> =
-        XY.checkEven "offsetVariableByDirections" xys
-        XY.checkEven "offsetVariableByDirections nDirs" nDirs
+        XY.checkEven "offsetVariableWithDirections" xys
+        XY.checkEven "offsetVariableWithDirections nDirs" nDirs
         let ptCount = XY.pointCount xys
         let nDirCount = XY.pointCount nDirs
         if ptCount < 2 then
-            fail $"Offset2D.offsetVariableByDirections:\n point count must be at least 2, but is {ptCount}."
+            fail $"Offset2D.offsetVariableWithDirections:\n point count must be at least 2, but is {ptCount}."
 
         if ptCount <> nDirCount + 1  then
-            fail $"Offset2D.offsetVariableByDirections:\n normal directions count must be {ptCount-1} for {ptCount} points, but is {nDirCount}."
+            fail $"Offset2D.offsetVariableWithDirections:\n normal directions count must be {ptCount-1} for {ptCount} points, but is {nDirCount}."
         if ptCount <> dists.Count + 1  then
-            fail $"Offset2D.offsetVariableByDirections:\n distances count must be {ptCount-1} for {ptCount} points, but is {dists.Count}."
+            fail $"Offset2D.offsetVariableWithDirections:\n distances count must be {ptCount-1} for {ptCount} points, but is {dists.Count}."
 
         let res = ResizeArray<float>(xys.Count)
         let idxsToFixProportional = ResizeArray<IndexToFixProportional>() // only used if varDistParallelBehavior is Proportional
@@ -705,7 +705,7 @@ module Offset2D=
         if abs distance < 1e-12 then
             R.clone xys// if distance is zero, just clone the polyline
         else
-            offsetByDirections(xys, makeOffsetDirections xys, distance, uTurnBehavior, useUTurnBehaviorAbove)
+            offsetWithDirections(xys, makeOffsetDirections xys, distance, uTurnBehavior, useUTurnBehaviorAbove)
 
 
     /// <summary> A constant-distance offset algorithm for closed or open polylines.
@@ -718,7 +718,7 @@ module Offset2D=
         if abs dist < 1e-12 then
             R.clone xys// if distance is zero, just clone the polyline
         else
-            offsetByDirections(xys, makeOffsetDirections xys, dist, UTurn.Fail, Cosine.``177.5``) // default chamfer after the given angle
+            offsetWithDirections(xys, makeOffsetDirections xys, dist, UTurn.Fail, Cosine.``177.5``) // default chamfer after the given angle
 
 
     /// <summary> Offsetting each segment by its own distance. For closed or open polylines.
@@ -740,7 +740,7 @@ module Offset2D=
                             useVarDistParallelBehaviorBelow :float<Cosine.cosine>,
                             useUTurnBehaviorAbove :float<Cosine.cosine>) : ResizeArray<float> =
         let nDirs = makeOffsetDirections xys
-        offsetVariableByDirections(xys, nDirs, distances, varDistParallelBehavior, uTurnBehavior, useVarDistParallelBehaviorBelow, useUTurnBehaviorAbove)
+        offsetVariableWithDirections(xys, nDirs, distances, varDistParallelBehavior, uTurnBehavior, useVarDistParallelBehaviorBelow, useUTurnBehaviorAbove)
 
 
     /// <summary> Offsetting each segment by its own distance. For closed or open polylines.
@@ -750,6 +750,6 @@ module Offset2D=
     /// <returns> A new ResizeArray of Points. The point count is the same as the input.</returns>
     let offsetVariable (dists:ResizeArray<float>) (xys:ResizeArray<float>) =
         let nDirs = makeOffsetDirections xys
-        offsetVariableByDirections(xys, nDirs, dists, VarDistParallel.Fail, UTurn.Fail, Cosine.``2.5``, Cosine.``175.0``)
+        offsetVariableWithDirections(xys, nDirs, dists, VarDistParallel.Fail, UTurn.Fail, Cosine.``2.5``, Cosine.``175.0``)
 
 

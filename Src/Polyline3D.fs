@@ -2663,7 +2663,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             closedXYZs.Add xyzs.[2]
             let uvs  = Offset3D.getSegmentUnitVectors closedXYZs
             let dirs = Offset3D.getOffsetDirections(uvs, refNormal, false, Cosine.``2.5``, Cosine.``179.0``)
-            let res  = Offset3D.offsetByDirections(closedXYZs, dirs, inPlaneOffsetDistance, perpendicularOffsetDistance)
+            let res  = Offset3D.offsetWithDirections(closedXYZs, dirs, inPlaneOffsetDistance, perpendicularOffsetDistance)
             ResizeArr.popOff res// remove last point to open the polyline again
             ResizeArr.popOff res
             ResizeArr.popOff res
@@ -2672,7 +2672,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             let uvs = Offset3D.getSegmentUnitVectors xyzs
             let isOpen = dx * dx + dy * dy + dz * dz > Offset3D.openToleranceSq
             let dirs = Offset3D.getOffsetDirections(uvs, refNormal, isOpen, Cosine.``2.5``, Cosine.``179.0``)
-            Offset3D.offsetByDirections(xyzs, dirs, inPlaneOffsetDistance, perpendicularOffsetDistance)
+            Offset3D.offsetWithDirections(xyzs, dirs, inPlaneOffsetDistance, perpendicularOffsetDistance)
             |> Polyline3D.createFromXYZs
 
     /// <summary> Offsets a Polyline in 3D space by finding the local plane in each corner.
@@ -2786,7 +2786,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             closedXYZs.Add xyzs.[2]
             let uvs  = Offset3D.getSegmentUnitVectors closedXYZs
             let dirs = Offset3D.getOffsetDirections(uvs, refNormal, false, considerCollinearBelow, failAtUTurnAbove)
-            let res  = Offset3D.offsetVariableByDirections(closedXYZs, uvs, dirs, inPlaneOffsetDistances, perpendicularOffsetDistances, true, varDistParallelBehavior)
+            let res  = Offset3D.offsetVariableWithDirections(closedXYZs, uvs, dirs, inPlaneOffsetDistances, perpendicularOffsetDistances, true, varDistParallelBehavior)
             res.RemoveAt(res.Count - 1) // remove last point to open the polyline again
             res.RemoveAt(res.Count - 1)
             res.RemoveAt(res.Count - 1)
@@ -2794,7 +2794,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
         else
             let uvs = Offset3D.getSegmentUnitVectors xyzs
             let dirs = Offset3D.getOffsetDirections(uvs, refNormal, isOpen, considerCollinearBelow, failAtUTurnAbove)
-            Offset3D.offsetVariableByDirections(xyzs, uvs, dirs, inPlaneOffsetDistances, perpendicularOffsetDistances, isOpen, varDistParallelBehavior)
+            Offset3D.offsetVariableWithDirections(xyzs, uvs, dirs, inPlaneOffsetDistances, perpendicularOffsetDistances, isOpen, varDistParallelBehavior)
             |> Polyline3D.createFromXYZs
 
     /// <summary> Offsets a Polyline in 3D space by finding the local plane in each corner, with one pair of distances per segment.

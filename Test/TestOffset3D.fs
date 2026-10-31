@@ -81,18 +81,19 @@ let writeTestDataFile () =
 
 let tests =
     testList "Offset3D " [
-        test "XYZ diagnostic formatter handles complete and incomplete buffers" {
-            Expect.equal (Offset3D.toStringXYZs null) "ResizeArray<float> null" "null"
-            Expect.equal (Offset3D.toStringXYZs (ResizeArray())) "Empty ResizeArray<float>" "empty"
-            Expect.equal (Offset3D.toStringXYZs (ResizeArray [13.;27.;39.])) "ResizeArray<float> Single Point: (13, 27, 39)" "single"
-            for coords in [[13.];[13.;27.];[13.;27.;39.;4.]] do
-                Expect.isTrue ((Offset3D.toStringXYZs (ResizeArray coords)).Contains "invalid") "incomplete triple"
-            let closed = Offset3D.toStringXYZs (ResizeArray [13.;27.;39.;13.;27.;39.])
-            Expect.isTrue (closed.Contains "Closed polyline") "closed"
-            let almost = Offset3D.toStringXYZs (ResizeArray [13.;27.;39.;13.;27.;39.0000001])
-            Expect.isTrue (almost.Contains "Almost closed") "Z participates in distance"
-            let long = Offset3D.toStringXYZs (ResizeArray [for i = 0 to 110 do float i])
-            Expect.isTrue (long.Contains "Last point: (108, 109, 110)") "long buffer summary"
+        test "duplicate point failure message lists the polyline" {
+            let failMessage (coords: float list) =
+                try Offset3D.getSegmentUnitVectors (ResizeArray coords) |> ignore; "" with e -> e.Message
+            let openMsg = failMessage [13.;27.;39.; 13.;27.;39.; 14.;29.;42.]
+            "location" |> Expect.stringContains openMsg "point[1] and point[0] are the same at (13, 27, 39)"
+            "open" |> Expect.stringContains openMsg "Open polyline with 3 points"
+            "points listed" |> Expect.stringContains openMsg "14  29  42"
+            let closedMsg = failMessage [13.;27.;39.; 14.;29.;42.; 14.;29.;42.; 13.;27.;39.]
+            "closed" |> Expect.stringContains closedMsg "Closed polyline with 4 points"
+            let almostMsg = failMessage [13.;27.;39.; 14.;29.;42.; 14.;29.;42.; 13.;27.;39.0000001]
+            "Z participates in distance" |> Expect.stringContains almostMsg "Almost closed polyline"
+            let longMsg = failMessage [ yield! [0.;0.;0.; 0.;0.;0.]; for i = 6 to 110 do float i ]
+            "long buffer summary" |> Expect.stringContains longMsg "Last point: (108, 109, 110)"
         }
 
         testCase "Polyline3D.offset open L-shape in XY plane with Z-up normal" <| fun _ ->

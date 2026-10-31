@@ -2386,13 +2386,13 @@ type Polyline2D private (xys: ResizeArray<float>) =
             closedXYs.Add xys.[0]
             closedXYs.Add xys.[1]
             let normals = Offset2D.makeOffsetDirections closedXYs
-            let res  = Offset2D.offsetByDirections(closedXYs, normals, constantOffsetDistance,  uTurnBehavior, useUTurnBehaviorAbove)
+            let res  = Offset2D.offsetWithDirections(closedXYs, normals, constantOffsetDistance,  uTurnBehavior, useUTurnBehaviorAbove)
             res.RemoveAt(res.Count - 1) // remove last point to open the polyline again
             res.RemoveAt(res.Count - 1)
             Polyline2D.createFromXYs res
         else
             let normals = Offset2D.makeOffsetDirections xys
-            Offset2D.offsetByDirections(xys, normals, constantOffsetDistance, uTurnBehavior, useUTurnBehaviorAbove)
+            Offset2D.offsetWithDirections(xys, normals, constantOffsetDistance, uTurnBehavior, useUTurnBehaviorAbove)
             |> Polyline2D.createFromXYs
 
     /// Offsets a Polyline in 2D space by finding the local offset in each corner.
@@ -2475,13 +2475,13 @@ type Polyline2D private (xys: ResizeArray<float>) =
             closedXYs.Add xys.[0]
             closedXYs.Add xys.[1]
             let normals = Offset2D.makeOffsetDirections closedXYs
-            let res  = Offset2D.offsetVariableByDirections(closedXYs, normals, distances, varDistParallelBehavior, uTurnBehavior, useVarDistParallelBehaviorBelow, useUTurnBehaviorAbove)
+            let res  = Offset2D.offsetVariableWithDirections(closedXYs, normals, distances, varDistParallelBehavior, uTurnBehavior, useVarDistParallelBehaviorBelow, useUTurnBehaviorAbove)
             res.RemoveAt(res.Count - 1) // remove last point to open the polyline again
             res.RemoveAt(res.Count - 1)
             Polyline2D.createFromXYs res
         else
             let normals = Offset2D.makeOffsetDirections xys
-            Offset2D.offsetVariableByDirections(xys, normals, distances, varDistParallelBehavior, uTurnBehavior, useVarDistParallelBehaviorBelow, useUTurnBehaviorAbove)
+            Offset2D.offsetVariableWithDirections(xys, normals, distances, varDistParallelBehavior, uTurnBehavior, useVarDistParallelBehaviorBelow, useUTurnBehaviorAbove)
             |> Polyline2D.createFromXYs
 
     // #endregion
