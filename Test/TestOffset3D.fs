@@ -770,6 +770,33 @@ let tests =
                 "end move is perpendicular to the last segment" |> Expect.isTrue (abs ((r.[3] - p.[3]) *** (p.[3] - p.[2])) < 1e-9)
         ]
 
+        testList "Polyline3D offset thresholds" [
+            let rad (deg:float) = deg * Math.PI / 180.0
+            // a 177 degree U-turn at pts.[1]
+            let uTurn = tilted [Pnt(0.0, 0.0, 0.0); Pnt(10.0, 0.0, 0.0); Pnt(10.0 + 10.0 * cos (rad 177.0), 10.0 * sin (rad 177.0), 0.0)]
+
+            testCase "all constant offsets fail at a 177 degree U-turn by default" <| fun _ ->
+                Expect.throws (fun () -> Polyline3D.offset 1.0 0.0 uTurn |> ignore) "Polyline3D.offset"
+                Expect.throws (fun () -> Polyline3D.offsetByNormal worldZ 1.0 0.0 uTurn |> ignore) "Polyline3D.offsetByNormal"
+                Expect.throws (fun () -> Offset3D.offsetByNormal worldZ 1.0 0.0 uTurn.XYZs |> ignore) "Offset3D.offsetByNormal"
+
+            testCase "failAtUTurnAbove allows a sharper U-turn" <| fun _ ->
+                let a = Polyline3D.offsetByNormalCustom(uTurn, 1.0, 0.0, worldZ, failAtUTurnAbove = Cosine.``179.0``)
+                let b = Polyline3D.offsetCustom(uTurn, 1.0, 0.0, failAtUTurnAbove = Cosine.``179.0``)
+                "point count" |> Expect.equal a.PointCount 3
+                "distance to the segments" |> Expect.isTrue (maxSegmentDistanceError uTurn a 1.0 < 1e-9)
+                "same as with the average normal" |> Expect.isTrue (Polyline3D.equalsWithin 1e-9 a b)
+
+            testCase "a smaller considerCollinearBelow offsets a fine arc with a sharp corner exactly" <| fun _ ->
+                // a quarter arc with 2 degrees per point, then a sharp corner: at 2.5 degrees the arc points are placed on a chord
+                let pts = [ for i in 0 .. 45 -> let a = rad (2.0 * float i) in Pnt(10.0 * cos a, 10.0 * sin a, 0.0) ] @ [Pnt(-5.0, 5.0, 0.0)]
+                let pl = tilted pts
+                let coarse = Polyline3D.offsetByNormal worldZ 1.0 0.0 pl
+                let fine = Polyline3D.offsetByNormalCustom(pl, 1.0, 0.0, worldZ, considerCollinearBelow = Cosine.``0.5``)
+                "default places the arc points on a chord" |> Expect.isTrue (maxSegmentDistanceError pl coarse 1.0 > 0.1)
+                "smaller threshold is exact" |> Expect.isTrue (maxSegmentDistanceError pl fine 1.0 < 1e-9)
+        ]
+
         // ============ Write test data file ============
 
         testCase "Write test data file (when saveTestData=true)" <| fun _ ->
