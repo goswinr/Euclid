@@ -80,7 +80,9 @@ module Offset3D =
         /// This keeps the total point count the same.
         | Proportional = 3
 
-        /// Project the offset point onto the oblique segment.
+        /// Project the offset point onto the oblique segment,
+        /// where it crosses the plane through the input point that is perpendicular to the polyline.
+        /// For a planar polyline this moves the point along its in-plane normal, like Offset2D.VarDistParallel.Project.
         /// In shallow angles with strongly different distances the projected point may be outside of the input segments.
         /// This introduces non parallel offset segments.
         /// This keeps the total point count the same.
@@ -186,6 +188,18 @@ module Offset3D =
                 XYZ.getY idx pointXYZs,
                 XYZ.getZ idx pointXYZs)
         setLinePointAt idx fromIdx toIdx t lineXYZs res
+
+    /// Places point idx where the line between the points fromIdx and toIdx in res crosses
+    /// the plane through point idx of pointXYZs that is perpendicular to the tangent (tx, ty, tz).
+    let private intersectLineWithNormalPlaneInPlace (idx:int) (fromIdx:int) (toIdx:int) (tx:float) (ty:float) (tz:float) (pointXYZs: ResizeArray<float>) (res: ResizeArray<float>) : unit =
+        let ax = XYZ.getX fromIdx res
+        let ay = XYZ.getY fromIdx res
+        let az = XYZ.getZ fromIdx res
+        let denom = (XYZ.getX toIdx res - ax) * tx + (XYZ.getY toIdx res - ay) * ty + (XYZ.getZ toIdx res - az) * tz
+        if isTooTiny (abs denom) then
+            fail $"Offset3D.offsetVariableWithDirections: the line between the offset points[{fromIdx}] and [{toIdx}] is perpendicular to the polyline at point[{idx}], so VarDistParallel.Project cannot place it."
+        let t = ((XYZ.getX idx pointXYZs - ax) * tx + (XYZ.getY idx pointXYZs - ay) * ty + (XYZ.getZ idx pointXYZs - az) * tz) / denom
+        setLinePointAt idx fromIdx toIdx t res res
 
     /// Computes the unit vectors of each segment in the polyline defined by the X, Y and Z  interleaved ResizeArray xyzs (x0, y0, z0, x1, y1, z1, ...).
     /// Fails if any two consecutive points are identical.
@@ -696,9 +710,13 @@ module Offset3D =
                             setLinePointAt i cP.prevOK cP.nextOK t res res
 
                         | VarDistParallel.Project ->
-                            // just project the original point onto the line between the two adjacent offset points
-                            // this can lead to duplicate points in the result
-                            projectPointToLineInPlace i cP.prevOK cP.nextOK xyzs res res
+                            // where the line between the neighboring offset points crosses the plane through the input point perpendicular to the tangent,
+                            // so for planar polylines along the in-plane normal, like in Offset2D
+                            let a = if i > 0 then i - 1 else lastSeg
+                            let tx = XYZ.getX a segmentDirs + XYZ.getX i segmentDirs
+                            let ty = XYZ.getY a segmentDirs + XYZ.getY i segmentDirs
+                            let tz = XYZ.getZ a segmentDirs + XYZ.getZ i segmentDirs
+                            intersectLineWithNormalPlaneInPlace i cP.prevOK cP.nextOK tx ty tz xyzs res
 
                         |_  ->
                             fail $"Offset3D.offsetVariableWithDirections: unknown VarDistParallel behavior {varDistParallelBehavior}."

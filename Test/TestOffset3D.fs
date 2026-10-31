@@ -891,6 +891,18 @@ let tests =
                 let skip = offsetWith Offset3D.VarDistParallel.Skip [2.0; 1.0; 1.0; 1.0; 1.0] seamSquare
                 expectPoints skip [Pnt(9.0, 2.0, 0.0); Pnt(9.0, 9.0, 0.0); Pnt(1.0, 9.0, 0.0); Pnt(1.0, 1.0, 0.0); Pnt(9.0, 2.0, 0.0)]
 
+            testCase "Project gives the same points as in 2D" <| fun _ ->
+                let pts2D = [Pt(0.0, 0.0); Pt(5.0, 0.0); Pt(10.0, 0.0); Pt(10.0, 10.0); Pt(0.0, 10.0)] // open, closed with loop = true
+                let dists = [1.0; 2.0; 1.0; 1.0; 1.0]
+                let res2D = Polyline2D.offsetVariableCustom(Polyline2D.createFromPts pts2D, ds dists, loop = true, varDistParallelBehavior = Offset2D.VarDistParallel.Project)
+                let pl = tilted [ for p in pts2D -> Pnt(p.X, p.Y, 0.0) ]
+                let res3D = Polyline3D.offsetVariableByNormalCustom(pl, ds dists, zeros dists.Length, worldZ, loop = true, varDistParallelBehavior = Offset3D.VarDistParallel.Project)
+                expectPoints res3D [ for p in res2D.AsPoints -> Pnt(p.X, p.Y, 0.0) ]
+                expectPoints res3D [Pnt(1.0, 1.0, 0.0); Pnt(5.0, 1.5, 0.0); Pnt(9.0, 2.0, 0.0); Pnt(9.0, 9.0, 0.0); Pnt(1.0, 9.0, 0.0)]
+                let seam = offsetWith Offset3D.VarDistParallel.Project [2.0; 1.0; 1.0; 1.0; 1.0] seamSquare
+                expectPoints seam [Pnt(5.0, 1.5, 0.0); Pnt(9.0, 2.0, 0.0); Pnt(9.0, 9.0, 0.0); Pnt(1.0, 9.0, 0.0); Pnt(1.0, 1.0, 0.0); Pnt(5.0, 1.5, 0.0)]
+                expectPoints (offsetWith Offset3D.VarDistParallel.Project [1.0; 2.0] line) [Pnt(0.0, 1.0, 0.0); Pnt(5.0, 1.5, 0.0); Pnt(10.0, 2.0, 0.0)]
+
             testCase "a straight polyline with different distances uses VarDistParallel" <| fun _ ->
                 // no point is a corner, so all points get directions from refNormal, before this gave infinite points
                 Expect.throws (fun () -> offsetWith Offset3D.VarDistParallel.Fail [1.0; 2.0] line |> ignore) "Fail"
