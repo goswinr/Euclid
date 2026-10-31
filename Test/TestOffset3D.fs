@@ -744,6 +744,16 @@ let tests =
                 for i = 0 to n do
                     "perpendicular offset along the normal" |> Expect.isTrue (eqPnt up.AsPoints.[i] (circle.AsPoints.[i] + worldZ * 0.5))
 
+            testCase "closed teardrop with just one corner is offset at every point" <| fun _ ->
+                // an arc with straight sides that are tangent to it, so only the tip turns by more than 2.5 degrees
+                let tear = tilted [ yield Pnt(20.0, 0.0, 0.0)
+                                    for i in 0 .. 120 -> let a = rad (60.0 + 2.0 * float i) in Pnt(10.0 * cos a, 10.0 * sin a, 0.0)
+                                    yield Pnt(20.0, 0.0, 0.0) ]
+                let res = Polyline3D.offset 1.0 0.0 tear // before, this failed because the line between the corner and itself has no length
+                "point count" |> Expect.equal res.PointCount tear.PointCount
+                "closed" |> Expect.isTrue (Pnt.equalsExact res.FirstPoint res.LastPoint)
+                "distance to the segments" |> Expect.isTrue (maxSegmentDistanceError tear res 1.0 < 1e-9)
+
             testCase "straight oblique line moves perpendicular to itself" <| fun _ ->
                 let line = Polyline3D.createFromPnts [Pnt(3.0, 4.0, 5.0); Pnt(8.0, 4.0, 10.0); Pnt(13.0, 4.0, 15.0)] // 45 degrees to the Z axis
                 let s = sqrt 0.5

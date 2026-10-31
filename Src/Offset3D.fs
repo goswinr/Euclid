@@ -334,7 +334,8 @@ module Offset3D =
     /// Collinear points get ValueNone. The offset functions place them on the line between the neighboring offset corners.
     /// The end points of an open polyline get the plane normal of the nearest corner, made perpendicular to their own segment.
     /// For a closed polyline the first and last points get the same direction, which is ValueNone if the seam is collinear.
-    /// If no point is a corner, for example on a straight or a finely sampled curve, every point gets a direction derived from refNormal instead:
+    /// If no point is a corner, for example on a straight or a finely sampled curve, or if a closed polyline has just one corner,
+    /// every point gets a direction derived from refNormal instead:
     /// the perpendicular direction is refNormal made perpendicular to the polyline, and the in-plane directions are perpendicular to it.
     /// </remarks>
     /// <param name="uvs">The X, Y and Z interleaved segment unit vectors, as from getSegmentUnitVectors.</param>
@@ -401,8 +402,9 @@ module Offset3D =
 
 
         // (3) do last point and checks:
-        if firstCornerIdx = -1 then
-            // no corner, all points are collinear: derive every direction from refNormal
+        if firstCornerIdx = -1 || (not isOpen && firstCornerIdx = lastCornerIdx) then
+            // no corner, or a closed polyline with just one corner, so there is no line between two corners to place the collinear points on:
+            // derive every direction from refNormal
             dirs.Clear()
             let lastUnique = if isOpen then ptsCount - 1 else ptsCount - 2
             for i = 0 to lastUnique do
