@@ -703,7 +703,7 @@ module Offset3D =
         let isOpen = XYZ.sqDistFirstLast xyzs > openToleranceSq
         let uvs = getSegmentUnitVectors xyzs
         let dirs = getOffsetDirections(uvs, refNormal, isOpen, Cosine.``2.5``, Cosine.``175.0``)
-        offsetVariableWithDirections(xyzs, uvs, dirs, distancesInPlane, distancesPerpendicular, isOpen, varDistParallelBehavior)
+        offsetVariableWithDirections(xyzs, uvs, dirs, distancesInPlane, distancesPerpendicular, not isOpen, varDistParallelBehavior)
 
 
     /// <summary> Offsetting each segment by its own distance. For closed or open polylines in 3D.
