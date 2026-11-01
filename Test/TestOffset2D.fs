@@ -1648,6 +1648,61 @@ let testsExtra =
                     "distances count mismatch should fail"
             }
         ]
+        testList "collinear points with different distances" [
+            let rad (deg:float) = deg * System.Math.PI / 180.0
+            let behaviors = [Offset2D.VarDistParallel.Proportional; Offset2D.VarDistParallel.Project; Offset2D.VarDistParallel.Skip]
+            let lineDistance (p:Pt) (a:Pt) (b:Pt) = abs (Vc.cross (b - a, p - a)) / Pt.distanceTo a b
+
+            test "a fine arc with a different distance on every segment keeps its shape" {
+                // 2 degrees per point, so every point is collinear by itself, but the angle from the last exact point accumulates.
+                // Before, Proportional placed all points on the chord between the end points.
+                let n = 45
+                let pts = [ for i in 0 .. n -> let a = rad (2.0 * float i) in Pt(3.0 + 10.0 * cos a, -4.0 + 10.0 * sin a) ]
+                let dists = ResizeArray [ for i in 0 .. n - 1 -> 1.0 + 0.01 * float i ]
+                for b in behaviors do
+                    let res = Polyline2D.offsetVariableCustom(Polyline2D.createFromPts pts, dists, checkOrientation = false, varDistParallelBehavior = b)
+                    for p in res.AsPoints do
+                        let r = Pt.distanceTo p (Pt(3.0, -4.0))
+                        Expect.isTrue (r > 8.5 && r < 9.01) $"{b}: radius {r}"
+            }
+
+            test "where the angle accumulates past the threshold, the point is where the offset lines meet" {
+                let n = 45
+                let pts = [ for i in 0 .. n -> let a = rad (2.0 * float i) in Pt(3.0 + 10.0 * cos a, -4.0 + 10.0 * sin a) ]
+                let dists = [ for i in 0 .. n - 1 -> 1.0 + 0.01 * float i ]
+                let res = Polyline2D.offsetVariableCustom(Polyline2D.createFromPts pts, ResizeArray dists, checkOrientation = false, varDistParallelBehavior = Offset2D.VarDistParallel.Proportional)
+                // pts.[1] turns by 2 degrees from the first segment, so it is collinear, pts.[2] by 4 degrees, so it is a corner
+                "pt[2] to its previous segment" |> eqf (lineDistance res.AsPoints.[2] pts.[1] pts.[2]) dists.[1]
+                "pt[2] to its next segment" |> eqf (lineDistance res.AsPoints.[2] pts.[2] pts.[3]) dists.[2]
+                "pt[1] is placed between its neighbors" |> Expect.isFalse (abs (lineDistance res.AsPoints.[1] pts.[0] pts.[1] - dists.[0]) < 1e-9)
+                Expect.throws (fun () -> Polyline2D.offsetVariable (ResizeArray dists) (Polyline2D.createFromPts pts) |> ignore) "Fail at the collinear pt[1]"
+            }
+
+            test "a closed fine circle with a different distance on most segments is the same for any start point" {
+                let n = 180
+                // the first ten segments have the same distance, the others vary
+                let dists = [ for i in 0 .. n - 1 -> if i < 10 then 1.0 else 1.0 + 0.2 * sin (2.0 * System.Math.PI * float i / float n) ]
+                let pts = [ for i in 0 .. n -> let a = 2.0 * System.Math.PI * float (i % n) / float n in Pt(3.0 + 10.0 * cos a, -4.0 + 10.0 * sin a) ]
+                let prop = Offset2D.VarDistParallel.Proportional
+                let a = Polyline2D.offsetVariableCustom(Polyline2D.createFromPts pts, ResizeArray dists, varDistParallelBehavior = prop)
+                "closed" |> Expect.isTrue (Pt.equalsExact a.FirstPoint a.LastPoint)
+                for k in [7; 95] do
+                    let shiftedPts = [ for i in 0 .. n -> pts.[(i + k) % n] ]
+                    let shiftedDists = [ for i in 0 .. n - 1 -> dists.[(i + k) % n] ]
+                    let b = Polyline2D.offsetVariableCustom(Polyline2D.createFromPts shiftedPts, ResizeArray shiftedDists, varDistParallelBehavior = prop)
+                    for i = 0 to n - 1 do
+                        Expect.isTrue (eq b.AsPoints.[i] a.AsPoints.[(i + k) % n]) $"shift {k}, pt[{i}]"
+            }
+
+            test "Polyline2D.offsetVariableCustom treats a turn of 3 degrees as a corner by default" {
+                // before, its default was 5 degrees, so this failed as collinear with different distances
+                let pts = [Pt(3.0, 4.0); Pt(13.0, 4.0); Pt(13.0 + 10.0 * cos (rad 3.0), 4.0 + 10.0 * sin (rad 3.0))]
+                let res = Polyline2D.offsetVariableCustom(Polyline2D.createFromPts pts, ResizeArray [1.0; 1.1], checkOrientation = false)
+                "first segment" |> eqf (lineDistance res.AsPoints.[1] pts.[0] pts.[1]) 1.0
+                "second segment" |> eqf (lineDistance res.AsPoints.[1] pts.[1] pts.[2]) 1.1
+            }
+        ]
+
         testList "With forms keep the old settings" [
             // a rotated L-shape away from the origin, with a 90 degree corner
             let lShape () =
@@ -1674,6 +1729,13 @@ let testsExtra =
                 "three points" |> Expect.equal ok.Count 6
                 // swapped order: the corner counts as collinear with different distances, so it fails
                 Expect.throws (fun () -> Offset2D.offsetVariableCustom(xys, ds, Offset2D.VarDistParallel.Fail, Offset2D.UTurn.Fail, Cosine.``175.0``, Cosine.``2.5``) |> ignore) "swapped thresholds fail"
+            }
+            test "Offset2D.offset fails at U-turns above 175 degrees, like Polyline2D.offset" {
+                let rad (deg:float) = deg * System.Math.PI / 180.0
+                let turn deg = xysOfPts (ResizeArray [Pt(3.0, 4.0); Pt(13.0, 4.0); Pt(13.0 + 10.0 * cos (rad deg), 4.0 + 10.0 * sin (rad deg))])
+                Expect.throws (fun () -> Offset2D.offset 1.0 (turn 176.0) |> ignore) "176 degrees fails"
+                Expect.throws (fun () -> Polyline2D.offset 1.0 (Polyline2D.createFromXYs (turn 176.0)) |> ignore) "176 degrees fails in Polyline2D"
+                "174 degrees works" |> Expect.equal (Offset2D.offset 1.0 (turn 174.0)).Count 6
             }
             test "Polyline2D.offset uses the defaults of Polyline2D.offsetCustom" {
                 let pl = Polyline2D.createFromPts [Pt(12.0, -7.0); Pt(20.0, -1.0); Pt(17.0, 3.0); Pt(9.0, -3.0); Pt(12.0, -7.0)]

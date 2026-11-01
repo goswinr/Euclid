@@ -177,6 +177,7 @@ let tests =
             // Closed polygon should remain closed after offset
             Expect.equal result.PointCount 4 "Should have 4 points (closed)"
             Expect.isTrue (eqPnt result.AsPoints.[0] result.AsPoints.[3]) $"Should remain closed, start={result.AsPoints.[0]}, end={result.AsPoints.[3]}"
+            Expect.isTrue (maxSegmentDistanceError pl result inPlane < 1e-9) "every point is at the offset distance from its adjacent segments"
 
         testCase "Polyline3D.offset closed square inward" <| fun _ ->
             // Square in XY plane, CCW when viewed from +Z
@@ -217,6 +218,9 @@ let tests =
             recordTestCase "open L-shape with loop=true" pl 1.0 0.0 refNormal result
             // With loop=true, the polyline is treated as if first and last are connected
             Expect.equal result.PointCount 3 "Should still have 3 points (loop closes and opens)"
+            Expect.isTrue (maxSegmentDistanceError pl result 1.0 < 1e-9) "every point is at the offset distance from its adjacent segments"
+            let closing = Line3D(pts.[2], pts.[0])
+            Expect.floatClose tol (Line3D.distanceRayPoint result.AsPoints.[0] closing) 1.0 "the start point is offset from the closing segment too"
 
         testCase "Polyline3D.offset 3D polyline not in XY plane" <| fun _ ->
             // L-shape in XZ plane
@@ -227,6 +231,8 @@ let tests =
             recordTestCase "L-shape in XZ plane" pl 1.0 0.0 refNormal result
             // With Y-up reference normal for XZ plane L-shape
             Expect.equal result.PointCount 3 "Should have 3 points"
+            // seen from +Y the turn from +X to +Z is clockwise, so a positive distance offsets to the outside
+            Expect.isTrue (eqPnt result.AsPoints.[1] (Pnt(11, 0, -1))) $"Corner should be Pnt(11, 0, -1), got {result.AsPoints.[1]}"
 
         testCase "Polyline3D.offset combined in-plane and perpendicular" <| fun _ ->
             // Simple 2-point line along X axis
@@ -706,22 +712,6 @@ let tests =
                 Expect.throws (fun () -> Offset3D.removeUTurns(xyzs, uvs, Cosine.``179.0``) |> ignore) "non multiple-of-3 should fail"
         ]
 
-        testList "Offset3D.getCollinearNeighbors" [
-            let valid : Offset3D.OffsetDirection voption = ValueSome { prevInPlane = UnitVec.xAxis; nextInPlane = UnitVec.xAxis; perpDir = UnitVec.zAxis }
-
-            testCase "finds the neighbors with valid directions, also across the seam of a closed polyline" <| fun _ ->
-                let dirs = ResizeArray [ ValueNone; valid; ValueNone; ValueNone; valid; ValueNone ] // closed, the last point is the first point
-                let cps = Offset3D.getCollinearNeighbors dirs
-                let got = [ for cp in cps -> cp.idx, cp.prevOK, cp.nextOK ]
-                "neighbors" |> Expect.equal got [ (0, 4, 1); (2, 1, 4); (3, 1, 4); (5, 4, 1) ]
-
-            testCase "fails with a clear message if no point has a valid direction" <| fun _ ->
-                let dirs = ResizeArray [ ValueNone; ValueNone; ValueNone; ValueNone ]
-                let msg = try Offset3D.getCollinearNeighbors dirs |> ignore; "" with e -> e.Message
-                "function name" |> Expect.stringContains msg "Offset3D.getCollinearNeighbors"
-                "point count" |> Expect.stringContains msg "none of the 4 points"
-        ]
-
         testList "Offset3D directions without corners" [
             let rad (deg:float) = deg * Math.PI / 180.0
 
@@ -860,13 +850,13 @@ let tests =
                 "distance to the segments" |> Expect.isTrue (maxSegmentDistanceError uTurn a 1.0 < 1e-9)
                 "same as with the average normal" |> Expect.isTrue (Polyline3D.equalsWithin 1e-9 a b)
 
-            testCase "a smaller considerCollinearBelow offsets a fine arc with a sharp corner exactly" <| fun _ ->
-                // a quarter arc with 2 degrees per point, then a sharp corner: at 2.5 degrees the arc points are placed on a chord
+            testCase "a fine arc with a sharp corner is offset exactly, with the default and a smaller considerCollinearBelow" <| fun _ ->
+                // a quarter arc with 2 degrees per point, then a sharp corner: before, the default placed the arc points on a chord
                 let pts = [ for i in 0 .. 45 -> let a = rad (2.0 * float i) in Pnt(10.0 * cos a, 10.0 * sin a, 0.0) ] @ [Pnt(-5.0, 5.0, 0.0)]
                 let pl = tilted pts
                 let coarse = Polyline3D.offsetByNormal worldZ 1.0 0.0 pl
                 let fine = Polyline3D.offsetByNormalCustom(pl, 1.0, 0.0, worldZ, considerCollinearBelow = Cosine.``0.5``)
-                "default places the arc points on a chord" |> Expect.isTrue (maxSegmentDistanceError pl coarse 1.0 > 0.1)
+                "default is exact" |> Expect.isTrue (maxSegmentDistanceError pl coarse 1.0 < 1e-9)
                 "smaller threshold is exact" |> Expect.isTrue (maxSegmentDistanceError pl fine 1.0 < 1e-9)
         ]
 
@@ -938,10 +928,14 @@ let tests =
             testCase "kernel fails on a wrong offset directions count" <| fun _ ->
                 let xyzs = (tilted [Pnt(0.0, 0.0, 0.0); Pnt(10.0, 0.0, 0.0); Pnt(10.0, 10.0, 0.0)]).XYZs
                 let uvs = Offset3D.getSegmentUnitVectors xyzs
-                let dirs = Offset3D.getOffsetDirections(uvs, worldZ, true, Cosine.``2.5``, Cosine.``175.0``)
+                let dirs = Offset3D.getOffsetDirections(xyzs, uvs, worldZ, Cosine.``2.5``, Cosine.``175.0``)
                 dirs.RemoveAt 0
-                let msg = try Offset3D.offsetVariableWithDirections(xyzs, uvs, dirs, ds [1.0; 1.0], ds [0.0; 0.0; 0.0], false, Offset3D.VarDistParallel.Fail, Cosine.``2.5``) |> ignore; "" with e -> e.Message
+                let msg = try Offset3D.offsetVariableWithDirections(xyzs, uvs, dirs, ds [1.0; 1.0], ds [0.0; 0.0; 0.0], Offset3D.VarDistParallel.Fail, Cosine.``2.5``) |> ignore; "" with e -> e.Message
                 "message" |> Expect.stringContains msg "offset directions count must be 3"
+                let constMsg = try Offset3D.offsetWithDirections(xyzs, dirs, 1.0, 0.0) |> ignore; "" with e -> e.Message
+                "constant" |> Expect.stringContains constMsg "point count must equal offset directions count, but they are 3 and 2"
+                let dirMsg = try Offset3D.getOffsetDirections(xyzs, ResizeArray [1.0; 0.0; 0.0], worldZ, Cosine.``2.5``, Cosine.``175.0``) |> ignore; "" with e -> e.Message
+                "directions" |> Expect.stringContains dirMsg "point count must be one greater than segment vector count but they are 3 and 1"
         ]
 
         testList "Offset3D variable offset at collinear points" [
@@ -1057,6 +1051,239 @@ let tests =
                 let v = r.[2] - p.[2]
                 "own distance" |> Expect.floatClose tol v.Length d
                 "perpendicular to the polyline" |> Expect.floatClose tol (v *** (p.[3] - p.[1]).Unitized) 0.0
+        ]
+
+        testList "Offset3D curves between corners" [
+            let rad (deg:float) = deg * Math.PI / 180.0
+            let toLocal (p:Pnt) = Pnt.rotate tilt.Conjugate (p - Vec(120.0, -40.0, 15.0))
+            // a half circle sampled at 2 degrees, closed by its diameter, so it has just two sharp corners
+            let dShape = tilted [ for i in 0 .. 90 -> let a = rad (2.0 * float i) in Pnt(10.0 * cos a, 10.0 * sin a, 0.0)
+                                  yield Pnt(10.0, 0.0, 0.0) ]
+
+            testCase "a fine arc between two corners keeps its shape" <| fun _ ->
+                for d in [1.0; -0.5] do
+                    let res = Polyline3D.offset d 0.0 dShape // before, the arc points were placed on the chord between the two corners
+                    "distance to the segments" |> Expect.isTrue (maxSegmentDistanceError dShape res d < 1e-9)
+                    // the miter of a vertex that turns by 2 degrees
+                    Expect.isTrue (eqPnt res.AsPoints.[45] (toWorld (Pnt(0.0, 10.0 - d / cos (rad 1.0), 0.0)))) $"apex for {d}"
+                let n = dShape.SegmentCount
+                let v = Polyline3D.offsetVariable (Array.create n 1.0) (Array.create n 0.5) dShape
+                "variable with equal distances" |> Expect.isTrue (Polyline3D.equalsWithin 1e-9 v (Polyline3D.offset 1.0 0.5 dShape))
+
+            testCase "a fine circle stays in its plane with an approximate refNormal" <| fun _ ->
+                // the circle is tilted by 30 degrees to refNormal. Before, with 1.8 degrees per point no point was a corner, and its offset left the plane
+                let q = Quaternion.createFromDegreesUnitVec UnitVec.xAxis 30.0
+                let normal = UnitVec.rotate tilt (UnitVec.rotate q UnitVec.zAxis)
+                let center = toWorld Pnt.Origin
+                for n in [36; 200] do
+                    let circle = tilted [ for i in 0 .. n -> let a = 2.0 * Math.PI * float (i % n) / float n in Pnt.rotate q (Pnt(10.0 * cos a, 10.0 * sin a, 0.0)) ]
+                    let res = Polyline3D.offsetByNormal worldZ 1.0 0.0 circle
+                    Expect.isTrue (maxSegmentDistanceError circle res 1.0 < 1e-9) $"distance to the segments, {n} points"
+                    for p in res.AsPoints do
+                        Expect.isTrue (abs ((p - center) *** normal) < 1e-9) $"in the plane, {n} points"
+
+            testCase "a finely sampled helix gets its planes from the curve" <| fun _ ->
+                // 1 degree per point, so every point is collinear by itself, but the angle from the last corner accumulates
+                let helix = tilted [ for i in 0 .. 360 -> let a = rad (float i) in Pnt(10.0 * cos a, 10.0 * sin a, 0.02 * float i) ]
+                let res = Polyline3D.offsetByNormal worldZ 1.0 0.0 helix
+                "distance to the segments" |> Expect.isTrue (maxSegmentDistanceError helix res 1.0 < 1e-6)
+                for i in 1 .. 359 do
+                    let p = toLocal res.AsPoints.[i]
+                    Expect.isTrue (abs (sqrt (p.X * p.X + p.Y * p.Y) - 9.0) < 1e-3) $"pt[{i}] towards the axis"
+
+            testCase "a jittery straight run keeps the plane of its corners" <| fun _ ->
+                // the segments between the two corners deviate by less than 2.5 degrees from the first one, so their points take the plane of the corners
+                let pl = tilted [Pnt(0.0, 10.0, 0.0); Pnt(0.0, 0.0, 0.0); Pnt(2.0, 0.0, 0.01); Pnt(4.0, 0.0, -0.015); Pnt(6.0, 0.0, 0.02); Pnt(8.0, 0.0, -0.01); Pnt(10.0, 0.0, 0.0); Pnt(12.0, 0.0, 0.0); Pnt(12.0, 10.0, 0.0)]
+                let res = Polyline3D.offsetByNormal worldZ 0.0 1.0 pl
+                for i = 0 to pl.PointCount - 1 do
+                    let v = res.AsPoints.[i] - pl.AsPoints.[i]
+                    Expect.isTrue (v *** worldZ > float Cosine.``2.5``) $"pt[{i}] moves within 2.5 degrees of the normal of the corners: {v}"
+        ]
+
+        testList "Offset3D orientation" [
+            // X, Y, Z, then X again: the planes of consecutive bends are perpendicular
+            let route = tilted [Pnt(0.0, 0.0, 0.0); Pnt(10.0, 0.0, 0.0); Pnt(10.0, 10.0, 0.0); Pnt(10.0, 10.0, 10.0); Pnt(20.0, 10.0, 10.0)]
+            // a closed path along six edges of a cube, all its bends are in perpendicular planes
+            let hexagon = tilted [Pnt(0.0, 0.0, 0.0); Pnt(10.0, 0.0, 0.0); Pnt(10.0, 10.0, 0.0); Pnt(10.0, 10.0, 10.0); Pnt(0.0, 10.0, 10.0); Pnt(0.0, 0.0, 10.0); Pnt(0.0, 0.0, 0.0)]
+            let spiral = tilted [Pnt(10.0, 0.0, 0.0); Pnt(0.0, 10.0, 5.0); Pnt(-10.0, 0.0, 10.0); Pnt(0.0, -10.0, 15.0); Pnt(10.0, 0.0, 20.0)]
+            let rotate (q:Quaternion) (pl:Polyline3D) = Polyline3D.createFromPnts [ for p in pl.AsPoints -> Pnt.rotate q p ]
+
+            testCase "rotating the polyline rotates the offset, also by tiny angles" <| fun _ ->
+                // before, the side of the offset at bends in perpendicular planes depended on rounding
+                let axis = UnitVec.create 3.0 -1.0 2.0
+                for deg in [1e-7; 37.0; 37.0000001; 80.0; 211.0] do
+                    let q = Quaternion.createFromDegreesUnitVec axis deg
+                    for pl in [route; hexagon; spiral] do
+                        let a = Polyline3D.offsetByNormal (UnitVec.rotate q worldZ) 1.0 0.5 (rotate q pl)
+                        let b = rotate q (Polyline3D.offsetByNormal worldZ 1.0 0.5 pl)
+                        Expect.isTrue (Polyline3D.equalsWithin 1e-9 a b) $"offsetByNormal, rotated by {deg} degrees: {pl}"
+                        let c = Polyline3D.offset 1.0 0.5 (rotate q pl)
+                        let d = rotate q (Polyline3D.offset 1.0 0.5 pl)
+                        Expect.isTrue (Polyline3D.equalsWithin 1e-9 c d) $"offset, rotated by {deg} degrees: {pl}"
+
+            testCase "an orthogonal route keeps the side of each bend" <| fun _ ->
+                // the first bend is oriented by refNormal, the next ones by the in-plane direction of the bend before
+                let res = Polyline3D.offsetByNormal worldZ 0.0 1.0 route
+                let expected = [Vec(0.0, 0.0, 1.0); Vec(0.0, 0.0, 1.0); Vec(-1.0, 0.0, 0.0); Vec(0.0, 1.0, 0.0); Vec(0.0, 1.0, 0.0)]
+                for i = 0 to 4 do
+                    let v = Vec.rotate tilt.Conjugate (res.AsPoints.[i] - route.AsPoints.[i])
+                    Expect.isTrue (Vec.equalsWithin 1e-9 v expected.[i]) $"pt[{i}] should move along {expected.[i]} but moves along {v}"
+
+            testCase "reversing an orthogonal route and its normal gives the reversed result" <| fun _ ->
+                let reversed (pl:Polyline3D) = Polyline3D.createFromPnts (Seq.rev pl.AsPoints)
+                let a = Polyline3D.offsetByNormal worldZ 1.0 0.5 route
+                let b = Polyline3D.offsetByNormal -worldZ 1.0 -0.5 (reversed route)
+                "reversed" |> Expect.isTrue (Polyline3D.equalsWithin 1e-9 a (reversed b))
+
+            testCase "fails with a clear message if refNormal is perpendicular to every corner" <| fun _ ->
+                let pl = tilted [Pnt(0.0, 0.0, 0.0); Pnt(10.0, 0.0, 0.0); Pnt(10.0, 10.0, 0.0)]
+                let msg = try Polyline3D.offsetByNormal (UnitVec.rotate tilt UnitVec.xAxis) 1.0 0.0 pl |> ignore; "" with e -> e.Message
+                "message" |> Expect.stringContains msg "is perpendicular to the plane of every corner"
+        ]
+
+        testList "Offset3D variable offsets like in 2D" [
+            let rad (deg:float) = deg * Math.PI / 180.0
+            let ds (xs: float list) = ResizeArray xs
+            let zeros n = ResizeArray (List.replicate n 0.0)
+            let inWorld (p:Pt) = toWorld (Pnt(p.X, p.Y, 0.0))
+            let behaviors = [ Offset2D.VarDistParallel.Proportional, Offset3D.VarDistParallel.Proportional
+                              Offset2D.VarDistParallel.Project, Offset3D.VarDistParallel.Project
+                              Offset2D.VarDistParallel.Skip, Offset3D.VarDistParallel.Skip ]
+            let expectLike2D (msg:string) (r2:Polyline2D) (r3:Polyline3D) =
+                Expect.equal r3.PointCount r2.PointCount $"{msg} point count"
+                for i = 0 to r2.PointCount - 1 do
+                    Expect.isTrue (eqPnt r3.AsPoints.[i] (inWorld r2.AsPoints.[i])) $"{msg} pt[{i}] should be {inWorld r2.AsPoints.[i]} but is {r3.AsPoints.[i]}"
+
+            testCase "a run with equal and different distances gives the same points as in 2D" <| fun _ ->
+                // before, the point between two segments of distance 1 was placed on the line between the corners, at 1.108
+                let pts2D = [Pt(0.0, 0.0); Pt(2.0, 0.0); Pt(5.0, 0.0); Pt(10.0, 0.0); Pt(10.0, 10.0); Pt(0.0, 10.0); Pt(0.0, 0.0)]
+                let dists = [1.0; 1.0; 2.0; 1.0; 1.0; 1.0]
+                let pl = tilted [ for p in pts2D -> Pnt(p.X, p.Y, 0.0) ]
+                for b2, b3 in behaviors do
+                    let r2 = Polyline2D.offsetVariableCustom(Polyline2D.createFromPts pts2D, ds dists, varDistParallelBehavior = b2)
+                    let r3 = Polyline3D.offsetVariableByNormalCustom(pl, ds dists, zeros 6, worldZ, varDistParallelBehavior = b3)
+                    expectLike2D $"{b3}" r2 r3
+                    if b3 <> Offset3D.VarDistParallel.Skip then
+                        "pt[1] is between two segments of distance 1" |> Expect.isTrue (eqPnt r3.AsPoints.[1] (toWorld (Pnt(2.0, 1.0, 0.0))))
+                Expect.throws (fun () -> Polyline3D.offsetVariableByNormal worldZ (ds dists) (zeros 6) pl |> ignore) "Fail"
+
+            testCase "a fine arc with a different distance on every segment keeps its shape" <| fun _ ->
+                // 2 degrees per point, so every point is collinear by itself, but the angle from the last exact point accumulates.
+                // Before, Proportional placed all points on the chord between the end points, in 2D too.
+                let n = 45
+                let dists = [ for i in 0 .. n - 1 -> 1.0 + 0.01 * float i ]
+                let pts2D = [ for i in 0 .. n -> let a = rad (2.0 * float i) in Pt(10.0 * cos a, 10.0 * sin a) ]
+                let pl = tilted [ for p in pts2D -> Pnt(p.X, p.Y, 0.0) ]
+                for b2, b3 in behaviors do
+                    let r2 = Polyline2D.offsetVariableCustom(Polyline2D.createFromPts pts2D, ds dists, checkOrientation = false, varDistParallelBehavior = b2)
+                    let r3 = Polyline3D.offsetVariableByNormalCustom(pl, ds dists, zeros (n + 1), worldZ, varDistParallelBehavior = b3)
+                    expectLike2D $"{b3}" r2 r3
+                    for p in r3.AsPoints do
+                        let r = Pnt.distanceTo p (toWorld Pnt.Origin)
+                        Expect.isTrue (r > 8.5 && r < 9.01) $"{b3}: radius {r}"
+
+            testCase "a closed fine circle with a different distance on every segment can be offset" <| fun _ ->
+                // before, this failed in 3D because no point was a corner
+                let n = 180
+                let dists = [ for i in 0 .. n - 1 -> 1.0 + 0.2 * sin (2.0 * Math.PI * float i / float n) ]
+                let pts2D = [ for i in 0 .. n -> let a = 2.0 * Math.PI * float (i % n) / float n in Pt(10.0 * cos a, 10.0 * sin a) ]
+                let pl = tilted [ for p in pts2D -> Pnt(p.X, p.Y, 0.0) ]
+                let r2 = Polyline2D.offsetVariableCustom(Polyline2D.createFromPts pts2D, ds dists, varDistParallelBehavior = Offset2D.VarDistParallel.Proportional)
+                let r3 = Polyline3D.offsetVariableCustom(pl, ds dists, zeros n, varDistParallelBehavior = Offset3D.VarDistParallel.Proportional)
+                expectLike2D "Proportional" r2 r3
+                "closed" |> Expect.isTrue (Pnt.equalsExact r3.FirstPoint r3.LastPoint)
+                for i = 0 to n - 1 do
+                    let r = Pnt.distanceTo r3.AsPoints.[i] (toWorld Pnt.Origin)
+                    Expect.isTrue (abs (r - (10.0 - dists.[i])) < 0.05) $"pt[{i}] radius {r}"
+
+            testCase "a teardrop with a different distance on every segment of the arc can be offset" <| fun _ ->
+                // before, Proportional failed with an error about a line that is too short, because the tip was the only corner
+                let tear = tilted [ yield Pnt(20.0, 0.0, 0.0)
+                                    for i in 0 .. 120 -> let a = rad (60.0 + 2.0 * float i) in Pnt(10.0 * cos a, 10.0 * sin a, 0.0)
+                                    yield Pnt(20.0, 0.0, 0.0) ]
+                let n = tear.SegmentCount
+                let dists = ds [ for i in 0 .. n - 1 -> 1.0 + 0.001 * float i ]
+                let res = Polyline3D.offsetVariableByNormalCustom(tear, dists, zeros n, worldZ, varDistParallelBehavior = Offset3D.VarDistParallel.Proportional)
+                "point count" |> Expect.equal res.PointCount tear.PointCount
+                "closed" |> Expect.isTrue (Pnt.equalsExact res.FirstPoint res.LastPoint)
+
+            testCase "constant and variable offsets agree at a collinear point between corners in different planes" <| fun _ ->
+                // the corner at pts.[1] is in the XY plane, the one at pts.[3] is tilted up, pts.[2] is collinear between them
+                let pl = tilted [Pnt(0.0, 10.0, 0.0); Pnt(0.0, 0.0, 0.0); Pnt(5.0, 0.0, 0.0); Pnt(10.0, 0.0, 0.0); Pnt(10.0, 5.0, 10.0)]
+                let c = Polyline3D.offsetByNormal worldZ 1.0 1.0 pl
+                let v = Polyline3D.offsetVariableByNormal worldZ (ds [1.0; 1.0; 1.0; 1.0]) (ds [1.0; 1.0; 1.0; 1.0; 1.0]) pl
+                "same" |> Expect.isTrue (Polyline3D.equalsWithin 1e-9 c v)
+                let ln = Line3D(pl.AsPoints.[1], pl.AsPoints.[3])
+                "at its own distances" |> Expect.floatClose tol (Line3D.distanceRayPoint c.AsPoints.[2] ln) (sqrt 2.0)
+                let inPlane = Polyline3D.offsetByNormal worldZ 1.0 0.0 pl
+                "in-plane distance" |> Expect.floatClose tol (Line3D.distanceRayPoint inPlane.AsPoints.[2] ln) 1.0
+        ]
+
+        testList "Offset3D edge cases" [
+            let rad (deg:float) = deg * Math.PI / 180.0
+
+            testCase "an almost closed polyline gives an exactly closed offset" <| fun _ ->
+                let pl = tilted [Pnt(0.0, 0.0, 0.0); Pnt(10.0, 0.0, 0.0); Pnt(10.0, 10.0, 0.0); Pnt(0.0, 10.0, 0.0); Pnt(5e-7, 0.0, 0.0)]
+                let c = Polyline3D.offset 1.0 0.5 pl
+                "constant" |> Expect.isTrue (Pnt.equalsExact c.FirstPoint c.LastPoint)
+                let v = Polyline3D.offsetVariable [|1.0; 2.0; 1.0; 2.0|] [|0.5; 0.5; 0.5; 0.5|] pl
+                "variable" |> Expect.isTrue (Pnt.equalsExact v.FirstPoint v.LastPoint)
+
+            testCase "the average normal check is the one of Polyline3D.AverageNormal" <| fun _ ->
+                // before, a square of 0.005 units failed as having no area
+                for s in [0.005; 0.001; 0.0005] do
+                    let sq = tilted [Pnt(0.0, 0.0, 0.0); Pnt(s, 0.0, 0.0); Pnt(s, s, 0.0); Pnt(0.0, s, 0.0); Pnt(0.0, 0.0, 0.0)]
+                    let works f = try f () |> ignore; true with _ -> false
+                    Expect.equal (works (fun () -> Polyline3D.offset (s * 0.1) 0.0 sq)) sq.TryAverageNormal.IsSome $"Polyline3D.offset, size {s}"
+                    Expect.equal (works (fun () -> Offset3D.offset (s * 0.1) 0.0 sq.XYZs)) sq.TryAverageNormal.IsSome $"Offset3D.offset, size {s}"
+
+            testCase "very short segments are offset exactly, duplicate points fail" <| fun _ ->
+                let pl = tilted [Pnt(0.0, 0.0, 0.0); Pnt(10.0, 0.0, 0.0); Pnt(10.0, 2e-6, 0.0); Pnt(15.0, 8.0, 0.0)]
+                let res = Polyline3D.offsetByNormal worldZ 1.0 0.0 pl
+                "distance to the segments" |> Expect.isTrue (maxSegmentDistanceError pl res 1.0 < 1e-6)
+                let dup = tilted [Pnt(0.0, 0.0, 0.0); Pnt(10.0, 0.0, 0.0); Pnt(10.0, 5e-7, 0.0); Pnt(15.0, 8.0, 0.0)]
+                let msg = try Polyline3D.offsetByNormal worldZ 1.0 0.0 dup |> ignore; "" with e -> e.Message
+                "duplicate" |> Expect.stringContains msg "point[2] and point[1] are the same"
+
+            testCase "turns just below and above 2.5 degrees are offset exactly" <| fun _ ->
+                for deg in [2.4; 2.6] do
+                    let angles = [0.0; deg; 0.0; deg; 0.0; deg]
+                    let pts = angles |> List.scan (fun (p:Pnt) a -> p + Vec(10.0 * cos (rad a), 10.0 * sin (rad a), 0.0)) Pnt.Origin
+                    let pl = tilted pts
+                    let res = Polyline3D.offsetByNormal worldZ 1.0 0.5 pl
+                    Expect.isTrue (maxSegmentDistanceError pl res (sqrt 1.25) < 1e-9) $"distance to the segments at {deg} degrees"
+                    let v = Polyline3D.offsetVariableByNormal worldZ (Array.create 6 1.0) (Array.create 7 0.5) pl
+                    Expect.isTrue (Polyline3D.equalsWithin 1e-9 res v) $"variable at {deg} degrees"
+        ]
+
+        testList "Offset3D module functions" [
+            let rad (deg:float) = deg * Math.PI / 180.0
+            let pl = tilted [Pnt(0.0, 0.0, 0.0); Pnt(10.0, 0.0, 3.0); Pnt(10.0, 10.0, 0.0); Pnt(5.0, 12.0, 1.0); Pnt(0.0, 10.0, 3.0); Pnt(0.0, 0.0, 0.0)]
+            let same (a: ResizeArray<float>) (b:Polyline3D) msg = Expect.isTrue (Polyline3D.equalsWithin 1e-12 (Polyline3D.createFromXYZs a) b) msg
+
+            testCase "the Offset3D functions give the same results as the Polyline3D members" <| fun _ ->
+                let c1, u170 = Cosine.``1.0``, Cosine.``170.0``
+                same (Offset3D.offset 1.0 0.5 pl.XYZs) (Polyline3D.offset 1.0 0.5 pl) "offset"
+                same (Offset3D.offsetByNormal worldZ 1.0 0.5 pl.XYZs) (Polyline3D.offsetByNormal worldZ 1.0 0.5 pl) "offsetByNormal"
+                same (Offset3D.offsetCustom(pl.XYZs, 1.0, 0.5, c1, u170)) (Polyline3D.offsetCustom(pl, 1.0, 0.5, considerCollinearBelow = c1, failAtUTurnAbove = u170)) "offsetCustom"
+                same (Offset3D.offsetByNormalCustom(pl.XYZs, 1.0, 0.5, worldZ, c1, u170)) (Polyline3D.offsetByNormalCustom(pl, 1.0, 0.5, worldZ, considerCollinearBelow = c1, failAtUTurnAbove = u170)) "offsetByNormalCustom"
+                let ins = [| 0.5; 1.0; 1.5; 1.0; 0.5 |]
+                let perps = [| 0.1; 0.2; 0.3; 0.4; 0.5 |]
+                same (Offset3D.offsetVariable ins perps pl.XYZs) (Polyline3D.offsetVariable ins perps pl) "offsetVariable"
+                same (Offset3D.offsetVariableByNormal worldZ ins perps pl.XYZs) (Polyline3D.offsetVariableByNormal worldZ ins perps pl) "offsetVariableByNormal"
+                let prop = Offset3D.VarDistParallel.Proportional
+                same (Offset3D.offsetVariableCustom(pl.XYZs, ins, perps, prop, c1, u170)) (Polyline3D.offsetVariableCustom(pl, ins, perps, varDistParallelBehavior = prop, considerCollinearBelow = c1, failAtUTurnAbove = u170)) "offsetVariableCustom"
+                same (Offset3D.offsetVariableByNormalCustom(pl.XYZs, ins, perps, worldZ, prop, c1, u170)) (Polyline3D.offsetVariableByNormalCustom(pl, ins, perps, worldZ, varDistParallelBehavior = prop, considerCollinearBelow = c1, failAtUTurnAbove = u170)) "offsetVariableByNormalCustom"
+                let msg = try Offset3D.offsetCustom(ResizeArray [1.0; 2.0; 3.0; 4.0; 5.0; 6.0; 7.0; 8.0; 9.0], 1.0, 0.0, c1, u170) |> ignore; "" with e -> e.Message
+                "offsetCustom without area" |> Expect.stringContains msg "Use offsetByNormalCustom with an explicit reference normal"
+
+            testCase "failAtUTurnAbove applies to the variable offsets" <| fun _ ->
+                let uTurn = tilted [Pnt(0.0, 0.0, 0.0); Pnt(10.0, 0.0, 0.0); Pnt(10.0 + 10.0 * cos (rad 177.0), 10.0 * sin (rad 177.0), 0.0)]
+                Expect.throws (fun () -> Polyline3D.offsetVariableByNormal worldZ [| 1.0; 2.0 |] [| 0.0; 0.0; 0.0 |] uTurn |> ignore) "fails by default"
+                let res = Polyline3D.offsetVariableByNormalCustom(uTurn, [| 1.0; 2.0 |], [| 0.0; 0.0; 0.0 |], worldZ, failAtUTurnAbove = Cosine.``179.0``)
+                let p = uTurn.AsPoints
+                "corner to first segment" |> Expect.floatClose tol (Line3D.distanceRayPoint res.AsPoints.[1] (Line3D(p.[0], p.[1]))) 1.0
+                "corner to second segment" |> Expect.floatClose tol (Line3D.distanceRayPoint res.AsPoints.[1] (Line3D(p.[1], p.[2]))) 2.0
         ]
 
         // ============ Write test data file ============

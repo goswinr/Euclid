@@ -97,8 +97,7 @@ let renamed = [
 let only2DMembers = [
     "Tria2D"    , @"^(Try)?OffsetPtVariableByNormals$"             , "two normals determine the offset in a fixed 2D plane"
     "Offset2D"  , @"^MakeOffsetDirections$"                      , "algorithm-specific flat 2D direction buffer"
-    "Offset2D"  , @"^Offset(Variable)?Custom$"                    , "2D collinearity and U-turn policies"
-    "VarDistParallel", @"^StepWithTwoPoints$"                    , "2D two-point step policy"
+    "VarDistParallel", @"^StepWithTwoPoints$"                    , "excluded in 3D: a collinear 3D point has no consistent plane for the step"
     "Vc"        , @"^AngleToX(180|Pi)$"                          , "signed angle in a fixed 2D plane"
     "UnitVc"    , @"^AngleToX(180|Pi)$"                          , "signed angle in a fixed 2D plane"
     "Rect2D"    , @"^(TryClipLine|ClipLine)$"                     , "clipping in a fixed plane"
@@ -118,7 +117,7 @@ let only2DMembers = [
 /// The type "" stands for all types. The reason is shown in the empty 2D cell next to the member.
 let only3DMembers = [
     "Tria3D"    , @"^(Try)?Intersect(Line|Ray|RayXYZ|TriaVectorsWithRay)$", "single-point line-triangle intersection in 3D"
-    "Offset3D"  , @"^GetCollinearNeighbors$|^GetOffsetDirections$|^SetOffCornerVar$", "algorithm-specific 3D normal and direction representation"
+    "Offset3D"  , @"^GetOffsetDirections$"                       , "algorithm-specific 3D normal and direction representation"
     "Quaternion", @"^Normalize$"                                 , "quaternion renormalization API"
     "Quaternion", @"^WithAngleIn(Degrees|Radians)$"               , "replace angle while retaining the 3D axis"
     "Quaternion", @"^EqualsRotationWithin$|^SlerpEncoded$"       , "quaternions q and -q represent the same rotation"

@@ -44,41 +44,8 @@ module private Polyline3DUtil =
     /// The result is not unitized, its length is twice the area of the polygon projected onto that plane.
     /// Does not check for bad input, the result may be zero length, e.g. if all points are in one line.
     /// There must be at least one point.
-    let averageNormalOf (xyzs: ResizeArray<float>) : Vec =
-        let len = xyzs.Count
-        // the center of all points
-        let mutable ox = 0.0
-        let mutable oy = 0.0
-        let mutable oz = 0.0
-        let mutable i = 0
-        while i < len do
-            ox <- ox + xyzs.[i    ]
-            oy <- oy + xyzs.[i + 1]
-            oz <- oz + xyzs.[i + 2]
-            i <- i + 3
-        let count = float (len / 3) // divide, just like Polyline3D.Center does, so the same center is used
-        ox <- ox / count
-        oy <- oy / count
-        oz <- oz / count
-        let mutable nx = 0.0
-        let mutable ny = 0.0
-        let mutable nz = 0.0
-        let mutable ax = xyzs.[len - 3] - ox // the previous point, starting at the last one to close the loop
-        let mutable ay = xyzs.[len - 2] - oy
-        let mutable az = xyzs.[len - 1] - oz
-        i <- 0
-        while i < len do
-            let bx = xyzs.[i    ] - ox
-            let by = xyzs.[i + 1] - oy
-            let bz = xyzs.[i + 2] - oz
-            nx <- nx + ay * bz - az * by
-            ny <- ny + az * bx - ax * bz
-            nz <- nz + ax * by - ay * bx
-            ax <- bx
-            ay <- by
-            az <- bz
-            i <- i + 3
-        Vec(nx, ny, nz)
+    let inline averageNormalOf (xyzs: ResizeArray<float>) : Vec =
+        Offset3D.averageNormal xyzs
 
     /// Tries to find the average plane of the points.
     /// If 'checkPlanarity' is TRUE it also verifies that every point is within the tolerance of that plane.
@@ -2616,7 +2583,9 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// Auto-detects if given points are from a closed Polyline (first point = last point) and loops them.
     /// This function raises an Exception on duplicate points and on U-turns sharper than 175 degrees.
     /// Uses the default settings of Polyline3D.offsetByNormalCustom. Use Polyline3D.offsetByNormalCustom to set them.</summary>
-    /// <param name="refNormal">A unit vector defining an approximate normal direction for orienting the perpendicular offset and determining inside/outside.</param>
+    /// <param name="refNormal">A unit vector defining an approximate normal direction for orienting the perpendicular offset and determining inside/outside.
+    /// Only if the polyline has no corner, like a straight one, it defines the offset plane.
+    /// Fails if it is within half a degree of perpendicular to the plane of every corner, because then it cannot tell the sides apart.</param>
     /// <param name="inPlaneOffsetDistance">The offset distance in the local plane defined by two segments.
     /// A positive distance offsets to the inside of the polyline (for counter-clockwise polylines when refNormal points up).
     /// A negative distance offsets to the outside.</param>
@@ -2637,15 +2606,18 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// A negative distance offsets to the outside.</param>
     /// <param name="perpendicularOffsetDistance">The offset distance perpendicular to the local plane.
     /// A positive distance offsets in the same orientation of refNormal. A negative distance offsets in the opposite direction.</param>
-    /// <param name="refNormal">A unit vector defining an approximate normal direction for orienting the perpendicular offset and determining inside/outside.</param>
+    /// <param name="refNormal">A unit vector defining an approximate normal direction for orienting the perpendicular offset and determining inside/outside.
+    /// Only if the polyline has no corner, like a straight one, it defines the offset plane.
+    /// Fails if it is within half a degree of perpendicular to the plane of every corner, because then it cannot tell the sides apart.</param>
     /// <param name="loop">Optional, defaults to FALSE.
     /// Set to TRUE to treat an open polyline as a closed loop, even if first and last points are not at the same location.</param>
     /// <param name="considerCollinearBelow">Optional, defaults to 2.5 degrees in cosine measure.
-    /// The cosine of the angle below which segments are considered collinear.
-    /// Collinear points are placed on the line between the neighboring offset corners.
-    /// Use a smaller angle for finely sampled curves with a few sharper corners.</param>
+    /// The cosine of the angle below which segments are considered collinear,
+    /// unless the polyline turned by more than this angle since the previous corner, so that an arc keeps its corners.
+    /// A collinear point takes the plane interpolated between the neighboring corners.</param>
     /// <param name="failAtUTurnAbove">Optional, defaults to 175 degrees in cosine measure.
-    /// The cosine of the angle above which a U-turn is considered to fail.</param>
+    /// The cosine of the angle above which a U-turn is considered to fail.
+    /// There is no U-turn behavior like Offset2D.UTurn, on purpose: two almost opposite segments span no reliable plane in 3D, so a chamfer or threshold point has no defined direction. Remove U-turns first, for example with Polyline3D.removeUTurns.</param>
     /// <returns>A new 3D polyline.</returns>
     static member offsetByNormalCustom(polyLine:Polyline3D,
                                 inPlaneOffsetDistance: float,
@@ -2670,17 +2642,13 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             closedXYZs.Add xyzs.[0]
             closedXYZs.Add xyzs.[1]
             closedXYZs.Add xyzs.[2]
-            let uvs  = Offset3D.getSegmentUnitVectors closedXYZs
-            let dirs = Offset3D.getOffsetDirections(uvs, refNormal, false, considerCollinearBelow, failAtUTurnAbove) // use false for isOpen since we are considering it closed (loop = true)
-            let res  = Offset3D.offsetWithDirections(closedXYZs, dirs, inPlaneOffsetDistance, perpendicularOffsetDistance)
+            let res = Offset3D.offsetByNormalCustom(closedXYZs, inPlaneOffsetDistance, perpendicularOffsetDistance, refNormal, considerCollinearBelow, failAtUTurnAbove)
             ResizeArr.popOff res// remove last point to open the polyline again
             ResizeArr.popOff res
             ResizeArr.popOff res
             Polyline3D.createFromXYZs res
         else
-            let uvs = Offset3D.getSegmentUnitVectors xyzs
-            let dirs = Offset3D.getOffsetDirections(uvs, refNormal, isOpen, considerCollinearBelow, failAtUTurnAbove)
-            Offset3D.offsetWithDirections(xyzs, dirs, inPlaneOffsetDistance, perpendicularOffsetDistance)
+            Offset3D.offsetByNormalCustom(xyzs, inPlaneOffsetDistance, perpendicularOffsetDistance, refNormal, considerCollinearBelow, failAtUTurnAbove)
             |> Polyline3D.createFromXYZs
 
     /// <summary> Offsets a Polyline in 3D space by finding the local plane in each corner.
@@ -2699,11 +2667,12 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// <param name="loop">Optional, defaults to FALSE.
     /// Set to TRUE to treat an open polyline as a closed loop, even if first and last points are not at the same location.</param>
     /// <param name="considerCollinearBelow">Optional, defaults to 2.5 degrees in cosine measure.
-    /// The cosine of the angle below which segments are considered collinear.
-    /// Collinear points are placed on the line between the neighboring offset corners.
-    /// Use a smaller angle for finely sampled curves with a few sharper corners.</param>
+    /// The cosine of the angle below which segments are considered collinear,
+    /// unless the polyline turned by more than this angle since the previous corner, so that an arc keeps its corners.
+    /// A collinear point takes the plane interpolated between the neighboring corners.</param>
     /// <param name="failAtUTurnAbove">Optional, defaults to 175 degrees in cosine measure.
-    /// The cosine of the angle above which a U-turn is considered to fail.</param>
+    /// The cosine of the angle above which a U-turn is considered to fail.
+    /// There is no U-turn behavior like Offset2D.UTurn, on purpose: two almost opposite segments span no reliable plane in 3D, so a chamfer or threshold point has no defined direction. Remove U-turns first, for example with Polyline3D.removeUTurns.</param>
     /// <returns>A new 3D polyline.</returns>
     static member offsetCustom(polyLine:Polyline3D,
                             inPlaneOffsetDistance: float,
@@ -2715,7 +2684,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
         if polyLine.PointCount < 2 then
             fail $"Polyline3D.offset: Polyline3D must have at least 2 points but has {polyLine.PointCount} points."
         let refNormal = averageNormalOf polyLine.XYZs // not Polyline3D.AverageNormal, a degenerate normal is reported below
-        if refNormal.LengthSq < 1e-8 then
+        if isTooSmallSq refNormal.LengthSq then // like Polyline3D.AverageNormal
             fail $"Polyline3D.offset: Cannot compute the average normal, the polygon through the {polyLine.PointCount} points has no area, for example because they are collinear. Use offsetByNormal with an explicit reference normal: {polyLine}"
         Polyline3D.offsetByNormalCustom(polyLine, inPlaneOffsetDistance, perpendicularOffsetDistance, refNormal.Unitized, loop, considerCollinearBelow, failAtUTurnAbove)
 
@@ -2741,7 +2710,9 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// Auto-detects if given points are from a closed Polyline (first point = last point) and loops them.
     /// This function raises an Exception on duplicate points, on U-turns sharper than 175 degrees, and at collinear points where the two segments have different in-plane distances.
     /// Uses the default settings of Polyline3D.offsetVariableByNormalCustom. Use Polyline3D.offsetVariableByNormalCustom to set them.</summary>
-    /// <param name="refNormal">A unit vector defining an approximate normal direction for orienting the perpendicular offset and determining inside/outside.</param>
+    /// <param name="refNormal">A unit vector defining an approximate normal direction for orienting the perpendicular offset and determining inside/outside.
+    /// Only if the polyline has no corner, like a straight one, it defines the offset plane.
+    /// Fails if it is within half a degree of perpendicular to the plane of every corner, because then it cannot tell the sides apart.</param>
     /// <param name="inPlaneOffsetDistances">The offset distances in the local plane defined by two segments. One distance per segment.</param>
     /// <param name="perpendicularOffsetDistances">The offset distances perpendicular to the local plane. One distance per point.
     /// For a closed polyline one less, because its last point is its first point.</param>
@@ -2761,15 +2732,19 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// <param name="perpendicularOffsetDistances">The offset distances perpendicular to the local plane. One distance per point.
     /// For a closed polyline one less, because its last point is its first point. With loop = TRUE one per point of the open polyline.
     /// A positive distance offsets in the same orientation of refNormal. A negative distance offsets in the opposite direction.</param>
-    /// <param name="refNormal">A unit vector defining an approximate normal direction for orienting the perpendicular offset and determining inside/outside.</param>
+    /// <param name="refNormal">A unit vector defining an approximate normal direction for orienting the perpendicular offset and determining inside/outside.
+    /// Only if the polyline has no corner, like a straight one, it defines the offset plane.
+    /// Fails if it is within half a degree of perpendicular to the plane of every corner, because then it cannot tell the sides apart.</param>
     /// <param name="loop">Optional, defaults to FALSE.
     /// Set to TRUE to treat an open polyline as a closed loop, even if first and last points are not at the same location.</param>
     /// <param name="varDistParallelBehavior">Optional, defaults to Fail.
     /// The behavior to use when collinear segments with different offset distances are found.</param>
     /// <param name="considerCollinearBelow">Optional, defaults to 2.5 degrees in cosine measure.
-    /// The cosine of the angle below which segments are considered collinear.</param>
+    /// The cosine of the angle below which segments are considered collinear,
+    /// unless the polyline turned by more than this angle since the previous corner, or for different distances, since the last point that was offset exactly.</param>
     /// <param name="failAtUTurnAbove">Optional, defaults to 175 degrees in cosine measure.
-    /// The cosine of the angle above which a U-turn is considered to fail.</param>
+    /// The cosine of the angle above which a U-turn is considered to fail.
+    /// There is no U-turn behavior like Offset2D.UTurn, on purpose: two almost opposite segments span no reliable plane in 3D, so a chamfer or threshold point has no defined direction. Remove U-turns first, for example with Polyline3D.removeUTurns.</param>
     /// <returns>A new 3D polyline.</returns>
     static member offsetVariableByNormalCustom(
                             polyLine:Polyline3D,
@@ -2802,17 +2777,13 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
             closedXYZs.Add xyzs.[0]
             closedXYZs.Add xyzs.[1]
             closedXYZs.Add xyzs.[2]
-            let uvs  = Offset3D.getSegmentUnitVectors closedXYZs
-            let dirs = Offset3D.getOffsetDirections(uvs, refNormal, false, considerCollinearBelow, failAtUTurnAbove) // use false for isOpen since we are considering it closed (loop = true)
-            let res  = Offset3D.offsetVariableWithDirections(closedXYZs, uvs, dirs, inPlaneOffsetDistances, perpendicularOffsetDistances, true, varDistParallelBehavior, considerCollinearBelow)
-            res.RemoveAt(res.Count - 1) // remove last point to open the polyline again
-            res.RemoveAt(res.Count - 1)
-            res.RemoveAt(res.Count - 1)
+            let res = Offset3D.offsetVariableByNormalCustom(closedXYZs, inPlaneOffsetDistances, perpendicularOffsetDistances, refNormal, varDistParallelBehavior, considerCollinearBelow, failAtUTurnAbove)
+            ResizeArr.popOff res // remove last point to open the polyline again
+            ResizeArr.popOff res
+            ResizeArr.popOff res
             Polyline3D.createFromXYZs res
         else
-            let uvs = Offset3D.getSegmentUnitVectors xyzs
-            let dirs = Offset3D.getOffsetDirections(uvs, refNormal, isOpen, considerCollinearBelow, failAtUTurnAbove)
-            Offset3D.offsetVariableWithDirections(xyzs, uvs, dirs, inPlaneOffsetDistances, perpendicularOffsetDistances, not isOpen, varDistParallelBehavior, considerCollinearBelow)
+            Offset3D.offsetVariableByNormalCustom(xyzs, inPlaneOffsetDistances, perpendicularOffsetDistances, refNormal, varDistParallelBehavior, considerCollinearBelow, failAtUTurnAbove)
             |> Polyline3D.createFromXYZs
 
     /// <summary> Offsets a Polyline in 3D space by finding the local plane in each corner, with one in-plane distance per segment and one perpendicular distance per point.
@@ -2847,9 +2818,11 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// <param name="varDistParallelBehavior">Optional, defaults to Fail.
     /// The behavior to use when collinear segments with different offset distances are found.</param>
     /// <param name="considerCollinearBelow">Optional, defaults to 2.5 degrees in cosine measure.
-    /// The cosine of the angle below which segments are considered collinear.</param>
+    /// The cosine of the angle below which segments are considered collinear,
+    /// unless the polyline turned by more than this angle since the previous corner, or for different distances, since the last point that was offset exactly.</param>
     /// <param name="failAtUTurnAbove">Optional, defaults to 175 degrees in cosine measure.
-    /// The cosine of the angle above which a U-turn is considered to fail.</param>
+    /// The cosine of the angle above which a U-turn is considered to fail.
+    /// There is no U-turn behavior like Offset2D.UTurn, on purpose: two almost opposite segments span no reliable plane in 3D, so a chamfer or threshold point has no defined direction. Remove U-turns first, for example with Polyline3D.removeUTurns.</param>
     /// <returns>A new 3D polyline.</returns>
     static member offsetVariableCustom(polyLine:Polyline3D,
                             inPlaneOffsetDistances: Collections.Generic.IList<float>,
@@ -2862,7 +2835,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
         if polyLine.PointCount < 2 then
             fail $"Polyline3D.offsetVariable: Polyline3D must have at least 2 points but has {polyLine.PointCount} points."
         let refNormal = averageNormalOf polyLine.XYZs // not Polyline3D.AverageNormal, a degenerate normal is reported below
-        if refNormal.LengthSq < 1e-8 then
+        if isTooSmallSq refNormal.LengthSq then // like Polyline3D.AverageNormal
             fail $"Polyline3D.offsetVariable: Cannot compute the average normal, the polygon through the {polyLine.PointCount} points has no area, for example because they are collinear. Use offsetVariableByNormal with an explicit reference normal: {polyLine}"
         Polyline3D.offsetVariableByNormalCustom(polyLine, inPlaneOffsetDistances, perpendicularOffsetDistances, refNormal.Unitized, loop, varDistParallelBehavior, considerCollinearBelow, failAtUTurnAbove)
 

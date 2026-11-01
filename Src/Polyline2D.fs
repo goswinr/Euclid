@@ -2434,8 +2434,9 @@ type Polyline2D private (xys: ResizeArray<float>) =
     ///  What to do with collinear segments below 'useVarDistParallelBehaviorBelow' degrees when offset distances are different too.</param>
     /// <param name="uTurnBehavior"> Optional. Default value: `Offset2D.UTurn.Fail`.
     /// What to do at a 180 degree U-turn? Fail, Chamfer with two points, Use179 or Skip the point.</param>
-    /// <param name="useVarDistParallelBehaviorBelow"> Optional. Default value: `Cosine.``5.0`` `.
-    /// The angle between normals below which points are considered collinear and VarDistParallelBehavior is applied if distances are not the same. </param>
+    /// <param name="useVarDistParallelBehaviorBelow"> Optional. Default value: `Cosine.``2.5`` `.
+    /// The angle between normals below which points are considered collinear and VarDistParallelBehavior is applied if distances are not the same.
+    /// Unless the polyline turned by more than this angle since the last point that was offset exactly, then the point is offset where the offset lines meet, so that an arc keeps its shape.</param>
     /// <param name="useUTurnBehaviorAbove"> Optional. Default value: `Cosine.``175.0`` `.
     /// The angle between normals after which, instead of a normal miter, the joint is chamfered by adding an extra point.</param>
     /// <returns>A new 2D polyline.</returns>
@@ -2445,7 +2446,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
                             [<OPT;DEF(true)>] checkOrientation:bool,
                             [<OPT;DEF(Offset2D.VarDistParallel.Fail)>] varDistParallelBehavior: Offset2D.VarDistParallel,
                             [<OPT;DEF(Offset2D.UTurn.Fail)>] uTurnBehavior: Offset2D.UTurn,
-                            [<OPT;DEF(Cosine.``5.0``)>] useVarDistParallelBehaviorBelow: float<Cosine.cosine>,
+                            [<OPT;DEF(Cosine.``2.5``)>] useVarDistParallelBehaviorBelow: float<Cosine.cosine>,
                             [<OPT;DEF(Cosine.``175.0``)>] useUTurnBehaviorAbove: float<Cosine.cosine>
                             ) : Polyline2D =
         let xys = polyLine.XYs

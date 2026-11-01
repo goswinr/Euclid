@@ -40,7 +40,6 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 - [module Offset3D](#module-offset3d)
 - [Offset3D.VarDistParallel](#offset3dvardistparallel)
 - [Offset3D.OffsetDirection](#offset3doffsetdirection)
-- [Offset3D.CollinearPoint](#offset3dcollinearpoint)
 - [Polyline3D](#polyline3d)
 - [Topology3D](#topology3d)
 
@@ -2308,19 +2307,20 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 
 | Offset3D | Signature |
 |:--|:--|
-| `Offset3D.getCollinearNeighbors` | `dirs: ResizeArray<OffsetDirection voption> -> ResizeArray<CollinearPoint>` |
-| `Offset3D.getOffsetDirections` | `uvs: ResizeArray<float> * refNormal: UnitVec * isOpen: bool * considerCollinearBelow: float<cosine> * failAtUTurnAbove: float<cosine> -> ResizeArray<OffsetDirection voption>` |
+| `Offset3D.getOffsetDirections` | `xyzs: ResizeArray<float> * uvs: ResizeArray<float> * refNormal: UnitVec * considerCollinearBelow: float<cosine> * failAtUTurnAbove: float<cosine> -> ResizeArray<OffsetDirection>` |
 | `Offset3D.getSegmentUnitVectors` | `xyzs: ResizeArray<float> -> ResizeArray<float>` |
-| `Offset3D.offset` | `distInPlane: float -> distPerpendicular: float -> xyzs: ResizeArray<float> -> ResizeArray<float>` |
-| `Offset3D.offsetByNormal` | `refNormal: UnitVec -> distInPlane: float -> distPerpendicular: float -> xyzs: ResizeArray<float> -> ResizeArray<float>` |
-| `Offset3D.offsetVariable` | `distancesInPlane: ResizeArray<float> -> distancesPerpendicular: ResizeArray<float> -> xyzs: ResizeArray<float> -> ResizeArray<float>` |
-| `Offset3D.offsetVariableByNormal` | `refNormal: UnitVec -> distancesInPlane: ResizeArray<float> -> distancesPerpendicular: ResizeArray<float> -> xyzs: ResizeArray<float> -> ResizeArray<float>` |
-| `Offset3D.offsetVariableByNormalCustom` | `xyzs: ResizeArray<float> * distancesInPlane: ResizeArray<float> * distancesPerpendicular: ResizeArray<float> * refNormal: UnitVec * varDistParallelBehavior: VarDistParallel * considerCollinearBelow: float<cosine> * failAtUTurnAbove: float<cosine> -> ResizeArray<float>` |
-| `Offset3D.offsetVariableWithDirections` | `xyzs: ResizeArray<float> * segmentDirs: ResizeArray<float> * offDirs: ResizeArray<OffsetDirection voption> * distsInPlane: IList<float> * distsPerpendicular: IList<float> * isClosed: bool * varDistParallelBehavior: VarDistParallel * considerCollinearBelow: float<cosine> -> ResizeArray<float>` |
-| `Offset3D.offsetWithDirections` | `xyzs: ResizeArray<float> * dirs: ResizeArray<OffsetDirection voption> * distInPlane: float * distPerpendicular: float -> ResizeArray<float>` |
+| `Offset3D.offset` | `distanceInPlane: float -> distancePerpendicular: float -> xyzs: ResizeArray<float> -> ResizeArray<float>` |
+| `Offset3D.offsetByNormal` | `refNormal: UnitVec -> distanceInPlane: float -> distancePerpendicular: float -> xyzs: ResizeArray<float> -> ResizeArray<float>` |
+| `Offset3D.offsetByNormalCustom` | `xyzs: ResizeArray<float> * distanceInPlane: float * distancePerpendicular: float * refNormal: UnitVec * considerCollinearBelow: float<cosine> * failAtUTurnAbove: float<cosine> -> ResizeArray<float>` |
+| `Offset3D.offsetCustom` | `xyzs: ResizeArray<float> * distanceInPlane: float * distancePerpendicular: float * considerCollinearBelow: float<cosine> * failAtUTurnAbove: float<cosine> -> ResizeArray<float>` |
+| `Offset3D.offsetVariable` | `distancesInPlane: IList<float> -> distancesPerpendicular: IList<float> -> xyzs: ResizeArray<float> -> ResizeArray<float>` |
+| `Offset3D.offsetVariableByNormal` | `refNormal: UnitVec -> distancesInPlane: IList<float> -> distancesPerpendicular: IList<float> -> xyzs: ResizeArray<float> -> ResizeArray<float>` |
+| `Offset3D.offsetVariableByNormalCustom` | `xyzs: ResizeArray<float> * distancesInPlane: IList<float> * distancesPerpendicular: IList<float> * refNormal: UnitVec * varDistParallelBehavior: VarDistParallel * considerCollinearBelow: float<cosine> * failAtUTurnAbove: float<cosine> -> ResizeArray<float>` |
+| `Offset3D.offsetVariableCustom` | `xyzs: ResizeArray<float> * distancesInPlane: IList<float> * distancesPerpendicular: IList<float> * varDistParallelBehavior: VarDistParallel * considerCollinearBelow: float<cosine> * failAtUTurnAbove: float<cosine> -> ResizeArray<float>` |
+| `Offset3D.offsetVariableWithDirections` | `xyzs: ResizeArray<float> * uvs: ResizeArray<float> * dirs: ResizeArray<OffsetDirection> * distancesInPlane: IList<float> * distancesPerpendicular: IList<float> * varDistParallelBehavior: VarDistParallel * considerCollinearBelow: float<cosine> -> ResizeArray<float>` |
+| `Offset3D.offsetWithDirections` | `xyzs: ResizeArray<float> * dirs: ResizeArray<OffsetDirection> * distanceInPlane: float * distancePerpendicular: float -> ResizeArray<float>` |
 | `Offset3D.removeUTurns` | `xyzs: ResizeArray<float> * uvs: ResizeArray<float> * minCos: float<cosine> -> ResizeArray<float>` |
-| `Offset3D.setOffCorner` | `res: ResizeArray<float> * x: float * y: float * z: float * distInPlane: float * distPerp: float * nPrev: UnitVec * nNext: UnitVec * perpDir: UnitVec * cosine: float -> unit` |
-| `Offset3D.setOffCornerVar` | `res: ResizeArray<float> * x: float * y: float * z: float * distInPlanePrev: float * distInPlaneNext: float * distPerp: float * nPrev: UnitVec * nNext: UnitVec * perpDir: UnitVec * cosine: float * vNext: UnitVec -> unit` |
+| `Offset3D.setOffCorner` | `res: ResizeArray<float> * x: float * y: float * z: float * distanceInPlane: float * distancePerpendicular: float * previousInPlane: UnitVec * nextInPlane: UnitVec * perpendicular: UnitVec * cosine: float -> unit` |
 
 ## Offset3D.VarDistParallel
 
@@ -2335,17 +2335,9 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 
 | OffsetDirection | Signature |
 |:--|:--|
-| `.prevInPlane` | `UnitVec` |
-| `.nextInPlane` | `UnitVec` |
-| `.perpDir` | `UnitVec` |
-
-## Offset3D.CollinearPoint
-
-| CollinearPoint | Signature |
-|:--|:--|
-| `.idx` | `int` |
-| `.prevOK` | `int` |
-| `.nextOK` | `int` |
+| `.PreviousInPlane` | `UnitVec` |
+| `.NextInPlane` | `UnitVec` |
+| `.Perpendicular` | `UnitVec` |
 
 ## Polyline3D
 

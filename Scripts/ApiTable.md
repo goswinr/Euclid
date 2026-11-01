@@ -46,7 +46,6 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 - [Offset2D.UTurn](#offset2duturn)
 - [Offset2D.VarDistParallel / Offset3D.VarDistParallel](#offset2dvardistparallel--offset3dvardistparallel), 0 gaps
 - [Offset3D.OffsetDirection](#offset3doffsetdirection)
-- [Offset3D.CollinearPoint](#offset3dcollinearpoint)
 - [Polyline2D / Polyline3D](#polyline2d--polyline3d), 0 gaps
 - [Topology2D / Topology3D](#topology2d--topology3d), 0 gaps
 - [module Similarity2D](#module-similarity2d)
@@ -2427,22 +2426,21 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 
 | Offset2D | Signature | Offset3D | Signature |
 |:--|:--|:--|:--|
-| — | *algorithm-specific 3D normal and direction representation* | `Offset3D.getCollinearNeighbors` | `dirs: ResizeArray<OffsetDirection voption> -> ResizeArray<CollinearPoint>` |
-| — | *algorithm-specific 3D normal and direction representation* | `Offset3D.getOffsetDirections` | `uvs: ResizeArray<float> * refNormal: UnitVec * isOpen: bool * considerCollinearBelow: float<cosine> * failAtUTurnAbove: float<cosine> -> ResizeArray<OffsetDirection voption>` |
+| — | *algorithm-specific 3D normal and direction representation* | `Offset3D.getOffsetDirections` | `xyzs: ResizeArray<float> * uvs: ResizeArray<float> * refNormal: UnitVec * considerCollinearBelow: float<cosine> * failAtUTurnAbove: float<cosine> -> ResizeArray<OffsetDirection>` |
 | `Offset2D.makeUnitTangents` | `xys: ResizeArray<float> -> ResizeArray<float>` | `Offset3D.getSegmentUnitVectors` | `xyzs: ResizeArray<float> -> ResizeArray<float>` |
 | `Offset2D.makeOffsetDirections` | `xys: ResizeArray<float> -> ResizeArray<float>` | — | *algorithm-specific flat 2D direction buffer* |
-| `Offset2D.offset` | `dist: float -> xys: ResizeArray<float> -> ResizeArray<float>` | `Offset3D.offset` | `distInPlane: float -> distPerpendicular: float -> xyzs: ResizeArray<float> -> ResizeArray<float>` |
-| — | *plane or normal* | `Offset3D.offsetByNormal` | `refNormal: UnitVec -> distInPlane: float -> distPerpendicular: float -> xyzs: ResizeArray<float> -> ResizeArray<float>` |
-| `Offset2D.offsetCustom` | `xys: ResizeArray<float> * distance: float * uTurnBehavior: UTurn * useUTurnBehaviorAbove: float<cosine> -> ResizeArray<float>` | — | *2D collinearity and U-turn policies* |
-| `Offset2D.offsetVariable` | `dists: ResizeArray<float> -> xys: ResizeArray<float> -> ResizeArray<float>` | `Offset3D.offsetVariable` | `distancesInPlane: ResizeArray<float> -> distancesPerpendicular: ResizeArray<float> -> xyzs: ResizeArray<float> -> ResizeArray<float>` |
-| — | *plane or normal* | `Offset3D.offsetVariableByNormal` | `refNormal: UnitVec -> distancesInPlane: ResizeArray<float> -> distancesPerpendicular: ResizeArray<float> -> xyzs: ResizeArray<float> -> ResizeArray<float>` |
-| — | *plane or normal* | `Offset3D.offsetVariableByNormalCustom` | `xyzs: ResizeArray<float> * distancesInPlane: ResizeArray<float> * distancesPerpendicular: ResizeArray<float> * refNormal: UnitVec * varDistParallelBehavior: VarDistParallel * considerCollinearBelow: float<cosine> * failAtUTurnAbove: float<cosine> -> ResizeArray<float>` |
-| `Offset2D.offsetVariableCustom` | `xys: ResizeArray<float> * distances: ResizeArray<float> * varDistParallelBehavior: VarDistParallel * uTurnBehavior: UTurn * useVarDistParallelBehaviorBelow: float<cosine> * useUTurnBehaviorAbove: float<cosine> -> ResizeArray<float>` | — | *2D collinearity and U-turn policies* |
-| `Offset2D.offsetVariableWithDirections` | `xys: ResizeArray<float> * nDirs: ResizeArray<float> * dists: IList<float> * varDistParallelBehavior: VarDistParallel * uTurnBehavior: UTurn * useVarDistParallelBehaviorBelow: float<cosine> * useUTurnBehaviorAbove: float<cosine> -> ResizeArray<float>` | `Offset3D.offsetVariableWithDirections` | `xyzs: ResizeArray<float> * segmentDirs: ResizeArray<float> * offDirs: ResizeArray<OffsetDirection voption> * distsInPlane: IList<float> * distsPerpendicular: IList<float> * isClosed: bool * varDistParallelBehavior: VarDistParallel * considerCollinearBelow: float<cosine> -> ResizeArray<float>` |
-| `Offset2D.offsetWithDirections` | `xys: ResizeArray<float> * dirs: ResizeArray<float> * dist: float * uTurnBehavior: UTurn * useUTurnBehaviorAbove: float<cosine> -> ResizeArray<float>` | `Offset3D.offsetWithDirections` | `xyzs: ResizeArray<float> * dirs: ResizeArray<OffsetDirection voption> * distInPlane: float * distPerpendicular: float -> ResizeArray<float>` |
+| `Offset2D.offset` | `dist: float -> xys: ResizeArray<float> -> ResizeArray<float>` | `Offset3D.offset` | `distanceInPlane: float -> distancePerpendicular: float -> xyzs: ResizeArray<float> -> ResizeArray<float>` |
+| — | *plane or normal* | `Offset3D.offsetByNormal` | `refNormal: UnitVec -> distanceInPlane: float -> distancePerpendicular: float -> xyzs: ResizeArray<float> -> ResizeArray<float>` |
+| — | *plane or normal* | `Offset3D.offsetByNormalCustom` | `xyzs: ResizeArray<float> * distanceInPlane: float * distancePerpendicular: float * refNormal: UnitVec * considerCollinearBelow: float<cosine> * failAtUTurnAbove: float<cosine> -> ResizeArray<float>` |
+| `Offset2D.offsetCustom` | `xys: ResizeArray<float> * distance: float * uTurnBehavior: UTurn * useUTurnBehaviorAbove: float<cosine> -> ResizeArray<float>` | `Offset3D.offsetCustom` | `xyzs: ResizeArray<float> * distanceInPlane: float * distancePerpendicular: float * considerCollinearBelow: float<cosine> * failAtUTurnAbove: float<cosine> -> ResizeArray<float>` |
+| `Offset2D.offsetVariable` | `dists: IList<float> -> xys: ResizeArray<float> -> ResizeArray<float>` | `Offset3D.offsetVariable` | `distancesInPlane: IList<float> -> distancesPerpendicular: IList<float> -> xyzs: ResizeArray<float> -> ResizeArray<float>` |
+| — | *plane or normal* | `Offset3D.offsetVariableByNormal` | `refNormal: UnitVec -> distancesInPlane: IList<float> -> distancesPerpendicular: IList<float> -> xyzs: ResizeArray<float> -> ResizeArray<float>` |
+| — | *plane or normal* | `Offset3D.offsetVariableByNormalCustom` | `xyzs: ResizeArray<float> * distancesInPlane: IList<float> * distancesPerpendicular: IList<float> * refNormal: UnitVec * varDistParallelBehavior: VarDistParallel * considerCollinearBelow: float<cosine> * failAtUTurnAbove: float<cosine> -> ResizeArray<float>` |
+| `Offset2D.offsetVariableCustom` | `xys: ResizeArray<float> * distances: IList<float> * varDistParallelBehavior: VarDistParallel * uTurnBehavior: UTurn * useVarDistParallelBehaviorBelow: float<cosine> * useUTurnBehaviorAbove: float<cosine> -> ResizeArray<float>` | `Offset3D.offsetVariableCustom` | `xyzs: ResizeArray<float> * distancesInPlane: IList<float> * distancesPerpendicular: IList<float> * varDistParallelBehavior: VarDistParallel * considerCollinearBelow: float<cosine> * failAtUTurnAbove: float<cosine> -> ResizeArray<float>` |
+| `Offset2D.offsetVariableWithDirections` | `xys: ResizeArray<float> * nDirs: ResizeArray<float> * dists: IList<float> * varDistParallelBehavior: VarDistParallel * uTurnBehavior: UTurn * useVarDistParallelBehaviorBelow: float<cosine> * useUTurnBehaviorAbove: float<cosine> -> ResizeArray<float>` | `Offset3D.offsetVariableWithDirections` | `xyzs: ResizeArray<float> * uvs: ResizeArray<float> * dirs: ResizeArray<OffsetDirection> * distancesInPlane: IList<float> * distancesPerpendicular: IList<float> * varDistParallelBehavior: VarDistParallel * considerCollinearBelow: float<cosine> -> ResizeArray<float>` |
+| `Offset2D.offsetWithDirections` | `xys: ResizeArray<float> * dirs: ResizeArray<float> * dist: float * uTurnBehavior: UTurn * useUTurnBehaviorAbove: float<cosine> -> ResizeArray<float>` | `Offset3D.offsetWithDirections` | `xyzs: ResizeArray<float> * dirs: ResizeArray<OffsetDirection> * distanceInPlane: float * distancePerpendicular: float -> ResizeArray<float>` |
 | `Offset2D.removeUTurns` | `xys: ResizeArray<float> * ns: ResizeArray<float> * minCos: float<cosine> -> ResizeArray<float>` | `Offset3D.removeUTurns` | `xyzs: ResizeArray<float> * uvs: ResizeArray<float> * minCos: float<cosine> -> ResizeArray<float>` |
-| `Offset2D.setOffCorner` | `res: ResizeArray<float> * x: float * y: float * dist: float * nPrevX: float * nPrevY: float * nNextX: float * nNextY: float * cosine: float -> unit` | `Offset3D.setOffCorner` | `res: ResizeArray<float> * x: float * y: float * z: float * distInPlane: float * distPerp: float * nPrev: UnitVec * nNext: UnitVec * perpDir: UnitVec * cosine: float -> unit` |
-| — | *algorithm-specific 3D normal and direction representation* | `Offset3D.setOffCornerVar` | `res: ResizeArray<float> * x: float * y: float * z: float * distInPlanePrev: float * distInPlaneNext: float * distPerp: float * nPrev: UnitVec * nNext: UnitVec * perpDir: UnitVec * cosine: float * vNext: UnitVec -> unit` |
+| `Offset2D.setOffCorner` | `res: ResizeArray<float> * x: float * y: float * dist: float * nPrevX: float * nPrevY: float * nNextX: float * nNextY: float * cosine: float -> unit` | `Offset3D.setOffCorner` | `res: ResizeArray<float> * x: float * y: float * z: float * distanceInPlane: float * distancePerpendicular: float * previousInPlane: UnitVec * nextInPlane: UnitVec * perpendicular: UnitVec * cosine: float -> unit` |
 
 ## Offset2D.UTurn
 
@@ -2460,23 +2458,15 @@ Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
 | `Skip` | `VarDistParallel = 2` | `Skip` | `VarDistParallel = 2` |
 | `Proportional` | `VarDistParallel = 3` | `Proportional` | `VarDistParallel = 3` |
 | `Project` | `VarDistParallel = 4` | `Project` | `VarDistParallel = 4` |
-| `StepWithTwoPoints` | `VarDistParallel = 5` | — | *2D two-point step policy* |
+| `StepWithTwoPoints` | `VarDistParallel = 5` | — | *excluded in 3D: a collinear 3D point has no consistent plane for the step* |
 
 ## Offset3D.OffsetDirection
 
 | OffsetDirection | Signature |
 |:--|:--|
-| `.prevInPlane` | `UnitVec` |
-| `.nextInPlane` | `UnitVec` |
-| `.perpDir` | `UnitVec` |
-
-## Offset3D.CollinearPoint
-
-| CollinearPoint | Signature |
-|:--|:--|
-| `.idx` | `int` |
-| `.prevOK` | `int` |
-| `.nextOK` | `int` |
+| `.PreviousInPlane` | `UnitVec` |
+| `.NextInPlane` | `UnitVec` |
+| `.Perpendicular` | `UnitVec` |
 
 ## Polyline2D / Polyline3D
 

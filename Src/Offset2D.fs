@@ -21,6 +21,8 @@ module Offset2D=
 
     /// An Enum for describing what to do at U-turns (180 degree turns).
     /// It is not possible to offset U-turns correctly.
+    /// Only for 2D offsets: the 3D offsets always fail at U-turns, on purpose,
+    /// because two almost opposite segments span no reliable plane in 3D, so a chamfer or threshold point has no defined direction.
     /// This Enum describes the options:
     /// 1: Fail
     /// 2: Add a chamfer with two points.
@@ -44,6 +46,8 @@ module Offset2D=
 
     /// An Enum for describing what to do with collinear segments with different offset distances.
     /// It is not possible to offset collinear segments if the distances are not the same.
+    /// A point is collinear here if it turns by less than useVarDistParallelBehaviorBelow,
+    /// and if the polyline also turns by less than that from the last point that was offset exactly.
     /// This Enum describes the options:
     /// 1: Fail
     /// 2: just skip the point.
@@ -78,6 +82,8 @@ module Offset2D=
         /// Add a step with two points at the collinear segment.
         /// This keeps parallel offset segments.
         /// But introduces an extra point.
+        /// Only in 2D: Offset3D.VarDistParallel has no such option, on purpose,
+        /// because a collinear 3D point only has the plane interpolated between its neighboring corners, so there is no consistent plane for the step.
         | StepWithTwoPoints = 5
 
 
@@ -589,7 +595,8 @@ module Offset2D=
     /// <param name="dists"> The distances to offset the Polyline. One item less than xys. Positive values will create inside offsets on counter-clockwise polylines.</param>
     /// <param name="varDistParallelBehavior"> What to do with collinear segments below 'useVarDistParallelBehaviorBelow' degrees when offset distances are different too.</param>
     /// <param name="uTurnBehavior"> What to do at a 180 degree U-turn? Fail, Chamfer with two points, or UseThreshold.</param>
-    /// <param name="useVarDistParallelBehaviorBelow"> The angle between normals below which points are considered collinear and VarDistParallelBehavior is applied if distances are not the same. </param>
+    /// <param name="useVarDistParallelBehaviorBelow"> The angle between normals below which points are considered collinear and VarDistParallelBehavior is applied if distances are not the same.
+    /// Unless the polyline turned by more than this angle since the last point that was offset exactly, then the point is offset where the offset lines meet, so that an arc keeps its shape.</param>
     /// <param name="useUTurnBehaviorAbove"> The angle between normals after which uTurnBehavior is applied .</param>
     /// <returns> A new ResizeArray of Points as a flat array of coordinates. If UTurnBehavior.Chamfer is used the total point count may be more than the input.</returns>
     let offsetVariableWithDirections(xys : ResizeArray<float>,
@@ -620,6 +627,54 @@ module Offset2D=
         let mutable nPrevY = XY.getY (nDirCount - 1) nDirs
 
         let isOpen = XY.sqDistFirstLast xys > openToleranceSq
+
+        // (0) find the collinear points with different distances, that need varDistParallelBehavior.
+        // A point is collinear if it turns by less than useVarDistParallelBehaviorBelow, and if the polyline also turns by less than that
+        // from the segment after the last point that is offset exactly to the segment after this point. So a finely sampled arc keeps exact points.
+        // The scan starts at a point that is offset exactly, so that a closed polyline gives the same points for any start point.
+        let isCollinear = Array.zeroCreate<bool> ptCount
+        let lastSeg = nDirCount - 1
+        let inline prevSeg i = if i > 0 then i - 1 else lastSeg // only used at index 0 for closed polylines
+        let inline cosineAt a b = dot (XY.getX a nDirs) (XY.getY a nDirs) (XY.getX b nDirs) (XY.getY b nDirs)
+        // the sine of the turn at point i: the offset lines of different distances meet at a finite point if it is not too small
+        let inline sineAt i =
+            let a = prevSeg i
+            abs (XY.getX a nDirs * XY.getY i nDirs - XY.getY a nDirs * XY.getX i nDirs)
+        // the point is offset exactly no matter where the scan starts
+        let isExact i =
+            let cosine = cosineAt (prevSeg i) i
+            abs (dists.[prevSeg i] - dists.[i]) < 1e-6
+            || not (withMeasure cosine > useUTurnBehaviorAbove) // U-turns are handled by uTurnBehavior
+            || (withMeasure cosine < useVarDistParallelBehaviorBelow && not (isTooSmall (sineAt i)))
+        let count = if isOpen then ptCount else ptCount - 1 // the last point of a closed polyline is the first point
+        let mutable start = 0
+        if not isOpen then
+            start <- -1
+            let mutable i = 0
+            while start = -1 && i < count do
+                if isExact i then start <- i
+                i <- i + 1
+            if start = -1 then
+                // every point is collinear with different distances, like on a finely sampled circle:
+                // start at the first of the points that turn the most, so that rounding does not decide
+                let mutable best = 0.0
+                for j = 0 to count - 1 do
+                    best <- max best (sineAt j)
+                if isTooSmall best then
+                    fail $"Offset2D.offsetVariableWithDirections: no point of the closed polyline with {ptCount} points turns, so no point can be offset where the offset lines of different distances meet."
+                let mutable j = 0
+                while start = -1 do
+                    if isTooSmall (best - sineAt j) then start <- j
+                    j <- j + 1
+        let steps = if isOpen then count - 2 else count - 1
+        let mutable runSeg = start // the first segment after the last point that is offset exactly
+        for k = 1 to steps do
+            let i = (start + k) % count
+            if isExact i || (withMeasure (cosineAt runSeg i) < useVarDistParallelBehaviorBelow && not (isTooSmall (sineAt i))) then
+                runSeg <- i
+            else
+                isCollinear.[i] <- true
+
         let mutable fromIdx = 0
         if isOpen then // this is needed for open polylines that have 180 degree opposing start and end segments , see check 2.01 below
             fromIdx <- 1
@@ -648,7 +703,7 @@ module Offset2D=
             else
                 // (2) distances are different, so we need to find the intersection of the two offset lines
                 if withMeasure cosine > useUTurnBehaviorAbove || (i=0 && isOpen) then // exclude U-turns, but don't check the first point of an open polyline , ( check 2.01 )
-                    if withMeasure cosine < useVarDistParallelBehaviorBelow then // check for collinear segments
+                    if not isCollinear.[i] then // check for collinear segments
                         // (2.1) the regular case for variable distances:
                         setOffCornerVar3 (res, x, y, dPrev, dNext, nPrevX, nPrevY, nNextX, nNextY, cosine) // the cheapest method, all are correct
                     else
@@ -709,7 +764,7 @@ module Offset2D=
 
 
     /// <summary> A constant-distance offset algorithm for closed or open polylines.
-    /// Fails at corners or U-turns sharper than joints after 177.5 degrees.</summary>
+    /// Fails at U-turns sharper than 175 degrees, like Polyline2D.offset.</summary>
     /// <param name="xys">The points of the Polyline2D to offset.</param>
     /// <param name="dist">The distance to offset the Polyline2D. A positive distance will offset inwards on counter-clockwise curves.
     /// A negative distance will offset inwards on clockwise curves.</param>
@@ -718,7 +773,7 @@ module Offset2D=
         if abs dist < 1e-12 then
             R.clone xys// if distance is zero, just clone the polyline
         else
-            offsetWithDirections(xys, makeOffsetDirections xys, dist, UTurn.Fail, Cosine.``177.5``) // default chamfer after the given angle
+            offsetWithDirections(xys, makeOffsetDirections xys, dist, UTurn.Fail, Cosine.``175.0``)
 
 
     /// <summary> Offsetting each segment by its own distance. For closed or open polylines.
@@ -728,13 +783,14 @@ module Offset2D=
     /// <param name="distances"> The distances to offset the Polyline. One item less than xys. Positive values will create inside offsets on counter-clockwise polylines.</param>
     /// <param name="varDistParallelBehavior"> What to do with collinear segments below 'useVarDistParallelBehaviorBelow' degrees when offset distances are different too.</param>
     /// <param name="uTurnBehavior"> What to do at a 180 degree U-turn? Fail, Chamfer with two points, or UseThreshold.</param>
-    /// <param name="useVarDistParallelBehaviorBelow"> The angle between normals below which points are considered collinear and VarDistParallelBehavior is applied if distances are not the same. </param>
+    /// <param name="useVarDistParallelBehaviorBelow"> The angle between normals below which points are considered collinear and VarDistParallelBehavior is applied if distances are not the same.
+    /// Unless the polyline turned by more than this angle since the last point that was offset exactly, then the point is offset where the offset lines meet, so that an arc keeps its shape.</param>
     /// <param name="useUTurnBehaviorAbove"> The angle between normals after which, instead of a normal miter, the joint is chamfered by adding an extra point.</param>
     /// <returns> A new ResizeArray of Points.
     /// Due to error correction at sharp U-turns or the picked behavior for collinear segments
     /// the point count may not be the same as the input.</returns>
     let offsetVariableCustom (xys:ResizeArray<float>,
-                            distances:ResizeArray<float>,
+                            distances:Collections.Generic.IList<float>,
                             varDistParallelBehavior: VarDistParallel,
                             uTurnBehavior:UTurn,
                             useVarDistParallelBehaviorBelow :float<Cosine.cosine>,
@@ -748,7 +804,7 @@ module Offset2D=
     /// <param name="dists"> The distances to offset the Polyline. One item less than xys.</param>
     /// <param name="xys">The points of the Polyline to offset. Positive values will create inside offsets on counter-clockwise polylines.</param>
     /// <returns> A new ResizeArray of Points. The point count is the same as the input.</returns>
-    let offsetVariable (dists:ResizeArray<float>) (xys:ResizeArray<float>) =
+    let offsetVariable (dists:Collections.Generic.IList<float>) (xys:ResizeArray<float>) : ResizeArray<float> =
         let nDirs = makeOffsetDirections xys
         offsetVariableWithDirections(xys, nDirs, dists, VarDistParallel.Fail, UTurn.Fail, Cosine.``2.5``, Cosine.``175.0``)
 
