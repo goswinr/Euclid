@@ -7,7 +7,7 @@ open Euclid.EuclidCollectionUtilities
 
 
 /// A module containing the core algorithms for offsetting 3D polylines.
-/// Normally you would not use this directly; prefer the Polyline3D module.
+/// For a simpler interface, prefer the offset functions in the Polyline3D module.
 /// Each point gets its own offset direction: a local plane, with an in-plane direction perpendicular to each adjacent segment,
 /// and the direction perpendicular to that plane.
 /// At a corner the local plane contains both adjacent segments. A collinear point takes the plane interpolated between the neighboring corners.
@@ -68,10 +68,11 @@ module Offset3D =
     /// 2: just skip the point.
     /// 3: add a point at the same proportional distance on the oblique segment, non parallel offsets.
     /// 4: add a point perpendicular from here intersecting the oblique segment, non parallel offsets.
-    /// There is no StepWithTwoPoints like in Offset2D.VarDistParallel, on purpose:
-    /// a collinear 3D point only has the plane interpolated between its neighboring corners, so there is no consistent plane for the step.
     // [<RequireQualifiedAccess>]
     type VarDistParallel = // needs to be an enum , so it can be an optional parameter with default value
+        // There is no StepWithTwoPoints like in Offset2D.VarDistParallel, on purpose:
+        // a collinear 3D point only has the plane interpolated between its neighboring corners, so there is no consistent plane for the step.
+
         /// Fail if collinear segments with different offset distances are found.
         | Fail = 1
 

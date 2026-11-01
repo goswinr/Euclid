@@ -8,7 +8,7 @@ open Euclid.EuclidCollectionUtilities
 module R = ResizeArr
 
 /// A module containing the core algorithms for offsetting 2D polylines.
-/// Normally you would not use this directly; prefer the Polyline2D or Points2D module.
+/// For a simpler interface, prefer the offset functions in the Polyline2D or Points2D module.
 module Offset2D=
 
     /// <summary>The distance tolerance for considering input polyline endpoints identical.</summary>
@@ -21,14 +21,14 @@ module Offset2D=
 
     /// An Enum for describing what to do at U-turns (180 degree turns).
     /// It is not possible to offset U-turns correctly.
-    /// Only for 2D offsets: the 3D offsets always fail at U-turns, on purpose,
-    /// because two almost opposite segments span no reliable plane in 3D, so a chamfer or threshold point has no defined direction.
     /// This Enum describes the options:
     /// 1: Fail
     /// 2: Add a chamfer with two points.
     /// 3: Use the offset point for the threshold angle, by default this is 179 degrees.
     // [<RequireQualifiedAccess>]
     type UTurn = // needs to be an enum , so it can bve an optional parameter with default value
+        // Only for 2D offsets: the 3D offsets always fail at U-turns, on purpose,
+        // because two almost opposite segments span no reliable plane in 3D, so a chamfer or threshold point has no defined direction.
 
         /// Fail if at a U-turn of more than the tolerance (179 degrees?) is present in the polyline.
         | Fail = 1
@@ -40,14 +40,14 @@ module Offset2D=
         /// Makes the offset point as if the acute angle matches the threshold angle, even if it is more acute.
         /// by default this is 179 degrees.
         /// This option guarantees the same number of points in the returned Polyline.
-        /// (unless StepWithTwoPoints is used for var dist offsets)
+        /// (unless StepWithTwoPoints is used for collinear segments with variable distance offsets)
         | UseThreshold = 3
 
 
     /// An Enum for describing what to do with collinear segments with different offset distances.
     /// It is not possible to offset collinear segments if the distances are not the same.
-    /// A point is collinear here if it turns by less than useVarDistParallelBehaviorBelow,
-    /// and if the polyline also turns by less than that from the last point that was offset exactly.
+    /// Two adjacent segments are considered collinear if they turn by less than the angle useVarDistParallelBehaviorBelow.
+    /// Small consecutive angles accumulate the error till the sum exceeds the tolerance.
     /// This Enum describes the options:
     /// 1: Fail
     /// 2: just skip the point.
@@ -79,11 +79,11 @@ module Offset2D=
         /// The Proportional method is usually better.
         | Project = 4
 
+        // Only in 2D: Offset3D.VarDistParallel has no such option, on purpose,
+        // because a collinear 3D point only has the plane interpolated between its neighboring corners, so there is no consistent plane for the step.
         /// Add a step with two points at the collinear segment.
         /// This keeps parallel offset segments.
         /// But introduces an extra point.
-        /// Only in 2D: Offset3D.VarDistParallel has no such option, on purpose,
-        /// because a collinear 3D point only has the plane interpolated between its neighboring corners, so there is no consistent plane for the step.
         | StepWithTwoPoints = 5
 
 
