@@ -1,0 +1,11 @@
+{
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dotnet": "dotnet run --configuration Release",
+    "dotnet-memory": "dotnet run --configuration Release -- --memory",
+    "js": "dotnet fable --outDir dist --configuration Release --noCache --run node --expose-gc dist/Program.js --pollute",
+    "js-unpolluted": "dotnet fable --outDir dist --configuration Release --noCache --run node --expose-gc dist/Program.js",
+    "js-memory": "dotnet fable --outDir dist --configuration Release --noCache --run node --expose-gc dist/Program.js --memory"
+  }
+}

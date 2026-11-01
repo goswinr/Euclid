@@ -246,8 +246,8 @@ module Offset2D=
         let mutable i = 2
         let normals = ResizeArray<float>(cnt-2) // the normals of the segments, two floats per segment
         while i < cnt do
-            let x = xys.[i]
-            let y = xys.[i + 1]
+            let x = ResizeArr.getIdx i xys
+            let y = ResizeArr.getIdx (i + 1) xys
             let vx = x - px
             let vy = y - py
             let len = sqrt (vx * vx + vy * vy)
@@ -497,8 +497,8 @@ module Offset2D=
     let internal chunkBy (split: 'T -> 'T -> bool) (res:ResizeArray<'T>) : ResizeArray<ResizeArray<'T>> =
         let chunks = ResizeArray<ResizeArray<'T>>()
         for i=0 to res.Count - 1 do
-            let item = res.[i]
-            if i=0 || split item res.[i-1] then // start a new chunk
+            let item = ResizeArr.getIdx i res
+            if i=0 || split item (ResizeArr.getIdx (i-1) res) then // start a new chunk
                 chunks.Add (ResizeArray<'T>())
             chunks.Last.Add item
         chunks
@@ -519,7 +519,7 @@ module Offset2D=
         let chunks = collinearIdxs |> chunkBy (fun thisIdx prevIdx -> thisIdx.idxRes <> prevIdx.idxRes + 1 ) // return true for split if not  consecutive indices
         reLoop (XY.pointCount res - 1) (fun (i: IndexToFixProportional) -> i.idxRes) chunks
         for i=0 to chunks.LastIndex do
-            let chunk = chunks.[i]
+            let chunk = ResizeArr.getIdx i chunks
             let offLn =
                 let prevOkIdx = safeIdx (chunk.First.idxRes - 1) (XY.pointCount res)  // the previous point before the chunk
                 let nextOkIdx = safeIdx (chunk.Last.idxRes  + 1) (XY.pointCount res) // the next point after the chunk
@@ -531,7 +531,7 @@ module Offset2D=
                 Line2D( XY.getX origPrevOkIdx origs, XY.getY origPrevOkIdx origs,
                         XY.getX origNextOkIdx origs, XY.getY origNextOkIdx origs)
             for j=0 to chunk.LastIndex do
-                let bi = chunk.[j]
+                let bi = ResizeArr.getIdx j chunk
                 // the parameter of the original point to fix on the original line:
                 let t = origLn.RayClosestParameterXY(XY.getX bi.idxOrig origs, XY.getY bi.idxOrig origs)
                 // evaluate the offset line at that parameter:
@@ -542,12 +542,12 @@ module Offset2D=
        let chunks = collinearIdxs |> chunkBy (fun thisIdx prevIdx -> thisIdx.idx <> prevIdx.idx + 1 )  // return true for split if not consecutive indices
        reLoop (XY.pointCount res - 1) _.idx chunks
        for i=0 to chunks.LastIndex do
-           let chunk = chunks.[i]
+           let chunk = ResizeArr.getIdx i chunks
            let prevIdx = safeIdx (chunk.First.idx - 1) (XY.pointCount res) // the previous point before the chunk
            let nextIdx = safeIdx (chunk.Last.idx + 1) (XY.pointCount res) // the next point after the chunk
            let ln = Line2D(XY.getX prevIdx res, XY.getY prevIdx res, XY.getX nextIdx res, XY.getY nextIdx res)
            for j=0 to chunk.LastIndex do
-                let itp = chunk.[j]
+                let itp = ResizeArr.getIdx j chunk
                 let x = XY.getX itp.idx res // the point to fix
                 let y = XY.getY itp.idx res
                 let pln = Line2D(x, y, x + itp.dirX, y + itp.dirY) // the line from the point in the direction of the normal
@@ -643,7 +643,7 @@ module Offset2D=
         // the point is offset exactly no matter where the scan starts
         let isExact i =
             let cosine = cosineAt (prevSeg i) i
-            abs (dists.[prevSeg i] - dists.[i]) < 1e-6
+            abs (IList.getIdx (prevSeg i) dists - IList.getIdx i dists) < 1e-6
             || not (withMeasure cosine > useUTurnBehaviorAbove) // U-turns are handled by uTurnBehavior
             || (withMeasure cosine < useVarDistParallelBehaviorBelow && not (isTooSmall (sineAt i)))
         let count = if isOpen then ptCount else ptCount - 1 // the last point of a closed polyline is the first point
@@ -686,7 +686,7 @@ module Offset2D=
         for i = fromIdx to ptCount - 2 do // last point is skipped; it is dealt with at the end
             let nNextX = XY.getX i nDirs
             let nNextY = XY.getY i nDirs
-            let dNext = dists.[i]
+            let dNext = IList.getIdx i dists
             let x = XY.getX i xys
             let y = XY.getY i xys
             let cosine = dot nPrevX nPrevY nNextX nNextY

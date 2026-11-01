@@ -133,18 +133,18 @@ module Offset3D =
                 failMod3 methodName xyzs
 
         let inline getX i (xyzs: ResizeArray<float>) : float =
-            xyzs.[i * 3]
+            ResizeArr.getIdx (i * 3) xyzs
 
         let inline getY i (xyzs: ResizeArray<float>) : float =
-            xyzs.[i * 3 + 1]
+            ResizeArr.getIdx (i * 3 + 1) xyzs
 
         let inline getZ i (xyzs: ResizeArray<float>) : float =
-            xyzs.[i * 3 + 2]
+            ResizeArr.getIdx (i * 3 + 2) xyzs
 
         let inline set i x y z (xyzs: ResizeArray<float>) : unit =
-            xyzs.[i * 3    ] <- x
-            xyzs.[i * 3 + 1] <- y
-            xyzs.[i * 3 + 2] <- z
+            ResizeArr.setIdx (i * 3    ) x xyzs
+            ResizeArr.setIdx (i * 3 + 1) y xyzs
+            ResizeArr.setIdx (i * 3 + 2) z xyzs
 
         let inline add x y z (xyzs: ResizeArray<float>) : unit =
             xyzs.Add x
@@ -670,7 +670,7 @@ module Offset3D =
         let res = ResizeArray<float>(xyzs.Count)
         let lastPt = if isClosed then ptCount - 2 else ptCount - 1
         for i = 0 to lastPt do
-            let dir = dirs.[i]
+            let dir = ResizeArr.getIdx i dirs
             let cosine = dir.PreviousInPlane *** dir.NextInPlane
             setOffCorner(res, XYZ.getX i xyzs, XYZ.getY i xyzs, XYZ.getZ i xyzs, distanceInPlane, distancePerpendicular, dir.PreviousInPlane, dir.NextInPlane, dir.Perpendicular, cosine)
         if isClosed then
@@ -735,11 +735,11 @@ module Offset3D =
         // the segments before and after a point, the end points of an open polyline use their own segment twice, and so their distances
         let inline prevSeg i = if i > 0 then i - 1 elif isClosed then lastSeg else 0
         let inline nextSeg i = min i lastSeg
-        let inline prevDistAt i = distancesInPlane.[prevSeg i]
-        let inline nextDistAt i = distancesInPlane.[nextSeg i]
+        let inline prevDistAt i = IList.getIdx (prevSeg i) distancesInPlane
+        let inline nextDistAt i = IList.getIdx (nextSeg i) distancesInPlane
         let inline isSameDist i = abs (prevDistAt i - nextDistAt i) < 1e-6
         // the in-plane offset lines of the two segments meet at a finite point
-        let inline linesMeet i = not (isTooSmall (abs (dirs.[i].PreviousInPlane *** XYZ.getUnitVec (nextSeg i) uvs)))
+        let inline linesMeet i = not (isTooSmall (abs ((ResizeArr.getIdx i dirs).PreviousInPlane *** XYZ.getUnitVec (nextSeg i) uvs)))
         // the point is offset exactly no matter where the scan starts
         let isExact i =
             (not isClosed && (i = 0 || i = ptCount - 1))
@@ -760,7 +760,7 @@ module Offset3D =
             if start = -1 then
                 // every point is collinear with different distances, like on a finely sampled circle:
                 // start at the first of the points where the offset lines meet at the biggest angle, so that rounding does not decide
-                let inline sineAt j = abs (dirs.[j].PreviousInPlane *** XYZ.getUnitVec (nextSeg j) uvs)
+                let inline sineAt j = abs ((ResizeArr.getIdx j dirs).PreviousInPlane *** XYZ.getUnitVec (nextSeg j) uvs)
                 let mutable best = 0.0
                 for j = 0 to count - 1 do
                     best <- max best (sineAt j)
@@ -792,7 +792,7 @@ module Offset3D =
             if needsFix.[i] then
                 XYZ.add x y z res // for now just keep the input point, it is placed in the second pass
             else
-                let dir = dirs.[i]
+                let dir = ResizeArr.getIdx i dirs
                 let prevDist = prevDistAt i
                 let nextDist = nextDistAt i
                 let cosine = dir.PreviousInPlane *** dir.NextInPlane
@@ -809,7 +809,7 @@ module Offset3D =
         if fixCount > 0 then
             let collinearPoints = getNeighborsOfMarked needsFix
             for j = 0 to collinearPoints.LastIndex do
-                let cP = collinearPoints.[j]
+                let cP = ResizeArr.getIdx j collinearPoints
                 let i = cP.Index
                 if not (isClosed && i = ptCount - 1) then // the last point of a closed polyline is copied from the first one below
                     match varDistParallelBehavior with
@@ -840,16 +840,16 @@ module Offset3D =
                         fail $"Offset3D.offsetVariableWithDirections: unknown VarDistParallel behavior {varDistParallelBehavior}."
 
                     // (3.1) the perpendicular offset by the point's own distance, skipped points need none
-                    let distPerp = distancesPerpendicular.[i]
+                    let distPerp = IList.getIdx i distancesPerpendicular
                     if distPerp <> 0.0 && not (skip.Length > 0 && skip.[i]) then
-                        let p = dirs.[i].Perpendicular
+                        let p = (ResizeArr.getIdx i dirs).Perpendicular
                         XYZ.set i (XYZ.getX i res + p.X * distPerp) (XYZ.getY i res + p.Y * distPerp) (XYZ.getZ i res + p.Z * distPerp) res
 
         // (4) third pass: the perpendicular offsets of the points that are offset exactly
         for i = 0 to count - 1 do
             if not needsFix.[i] then
-                let p = dirs.[i].Perpendicular
-                let distPerp = distancesPerpendicular.[i]
+                let p = (ResizeArr.getIdx i dirs).Perpendicular
+                let distPerp = IList.getIdx i distancesPerpendicular
                 XYZ.set i (XYZ.getX i res + p.X * distPerp) (XYZ.getY i res + p.Y * distPerp) (XYZ.getZ i res + p.Z * distPerp) res
 
         if isClosed then
@@ -881,9 +881,9 @@ module Offset3D =
         let mutable oz = 0.0
         let mutable i = 0
         while i < len do
-            ox <- ox + xyzs.[i    ]
-            oy <- oy + xyzs.[i + 1]
-            oz <- oz + xyzs.[i + 2]
+            ox <- ox + ResizeArr.getIdx i xyzs
+            oy <- oy + ResizeArr.getIdx (i + 1) xyzs
+            oz <- oz + ResizeArr.getIdx (i + 2) xyzs
             i <- i + 3
         let count = float (len / 3) // divide, just like Polyline3D.Center does, so the same center is used
         ox <- ox / count
@@ -897,9 +897,9 @@ module Offset3D =
         let mutable az = xyzs.[len - 1] - oz
         i <- 0
         while i < len do
-            let bx = xyzs.[i    ] - ox
-            let by = xyzs.[i + 1] - oy
-            let bz = xyzs.[i + 2] - oz
+            let bx = ResizeArr.getIdx i xyzs - ox
+            let by = ResizeArr.getIdx (i + 1) xyzs - oy
+            let bz = ResizeArr.getIdx (i + 2) xyzs - oz
             nx <- nx + ay * bz - az * by
             ny <- ny + az * bx - ax * bz
             nz <- nz + ax * by - ay * bx
