@@ -9,8 +9,14 @@
 [![license](https://img.shields.io/github/license/goswinr/Euclid)](LICENSE.md)
 ![code size](https://img.shields.io/github/languages/code-size/goswinr/Euclid.svg)
 
-A comprehensive 2D and 3D geometry library in F# without dependencies, designed for precision engineering and computational design.<br>
+A comprehensive library for primitive 2D and 3D geometry in and for F#, without dependencies, designed for precision engineering and computational design.<br>
 It runs on JavaScript too.
+
+## Is this vibe coded ?
+
+No, from 2019 till 2025 it was crafted by hand with careful attention to performance and correctness.<br>
+But of course, the powerful LLMs from 2026 caught a few real bugs, added some functionality,<br>
+wrote a lot of tests and helped unify and standardize the public API surface for release 1.0
 
 
 ## Features
@@ -19,21 +25,25 @@ While most 3D geometry libraries just use a generic type ( often called Vec3 or 
 Euclid makes a distinction to preserve semantic meaning and avoid accidental misuse.<br>
 A point represents a position in space, while a vector represents a direction and magnitude.<br>
 Even unitized vectors are a separate type. They are guaranteed to have a length of 1.0.<br>
-This helps to skip checks for zero length vectors in many operations.
-
+This also helps to skip checks for zero length vectors in many operations.
 
 🎯 **Core Geometry Types**
 - Points (`Pt`, `Pnt`), Vectors (`Vc`, `Vec`), Unit Vectors (`UnitVc`, `UnitVec`)
-- Lines, Planes, Boxes, Bounding Boxes, Polylines
+- Lines, Planes, Rectangles, Boxes, Bounding Boxes, Polylines
 - Rotations, Quaternions, 4x4 and rigid orthonormal 4x3 matrices
 
 ✨ **Key Characteristics**
 - **Zero dependencies:** lightweight and self-contained<br>
 - **Double precision:** designed for CAD/manufacturing accuracy<br>
-- **Immutable types:** all types are immutable for safety and ease of reasoning, except `Polyline2D`, `Polyline3D` and `FreeBox`<br>
-- **Cross-platform:** compiles to .NET, JavaScript, TypeScript, Rust, Python via Fable<br>
-- **Performance Focus:** All small types are structs, functions are often inline and try to minimize the allocation.<br>
-- **Interoperability:** Can be used with [Rhino3D](https://github.com/goswinr/Euclid.Rhino), Revit, or any .NET environment, and also in JavaScript/TypeScript projects via Fable.<br>
+- **Immutable types:** geometry types are immutable for safety and ease of reasoning, except `Polyline2D`, `Polyline3D` and `FreeBox`<br>
+- **Cross-platform:** compiles to .NET, JavaScript, TypeScript and more via Fable<br>
+- **Performance Focus:** All small types are structs, functions are often inline and try to minimize allocations.<br>
+
+## Extensions
+
+- use [Euclid.Rhino](https://github.com/goswinr/Euclid.Rhino) for Rhino3D integration.
+- use [Euclid.BVH](https://github.com/goswinr/Euclid.BVH) for efficient spatial indexing and collision detection via a bounding-volume-hierarchy tree.
+- use [Euclid.Kontur](https://github.com/goswinr/Euclid.Kontur) for efficient boolean operations on 2d polylines.
 
 
 ## Coordinate System
@@ -69,7 +79,7 @@ The API enforces this: vector types (`Vc`, `Vec`, `UnitVc`, `UnitVec`) deliberat
 
 ### Mutability
 All types are immutable, except `Polyline2D`, `Polyline3D` and `FreeBox`.
-These three are classes that wrap a flat buffer of coordinates.
+These three are classes that wrap a flat Resizable array of float coordinates.
 Their instance members, such as `Move`, `Rotate`, `Transform`, `Reverse` or `SetPoint`, change the instance in place and return `unit`.
 Their static functions, such as `Polyline2D.move` or `Polyline2D.reverse`, return a new instance and leave the input unchanged.
 Only the indexed point setters and movers, like `setPoint` and `movePoint`, and the append functions, like `addPoint`, mutate as static functions too.
@@ -77,7 +87,7 @@ Only the indexed point setters and movers, like `setPoint` and `movePoint`, and 
 Call `Duplicate()` to get an independent copy before you change a shared instance.
 
 ### Rays
-A ray in Euclid is a line extended infinitely in both directions, not a half-line that starts at a point.
+A ray in Euclid is a line extended infinitely in both directions.
 Functions with `Ray` in their name, such as `XLine2D.classifyRayIntersection`, `Line3D.RayClosestParameters`
 or `BBox.IntersectRay`, take a finite `Line2D` or `Line3D` and treat it as infinite.
 Their parameters are measured along that line: 0.0 is at its `From` point and 1.0 at its `To` point.
@@ -95,7 +105,8 @@ Values below 0.0 or above 1.0 are valid results.
 | Line | `Line2D` | `Line3D` |
 | Polyline | `Polyline2D` | `Polyline3D` |
 | Rectangle | `Rect2D` | `Rect3D` |
-| Bounding Rect/Box | `BRect` | `BBox` |
+| Bounding Rectangle/Box | `BRect` | `BBox` |
+
 
 Member names follow the same split:
 2D members that take or return points or vectors usually say `Pt` or `Vc` in their name,
@@ -110,7 +121,7 @@ or `Line2D.isParallelToVc` and `Line3D.isParallelToVec`.
 | `PPlane` | Parametrized plane (origin + X/Y/Z axes) |
 | `NPlane` | Normal plane (origin + normal vector) |
 | `Box` | Oriented 3D box (origin + 3 axis vectors) |
-| `FreeBox` | Mutable box-like shape with 8 freely placed corner points |
+| `FreeBox` | Mutable box-like topology with 8 freely placed corner points |
 | `Matrix` | 4x4 transformation matrix |
 | `RigidMatrix` | 4x3 rigid transformation (rotation + translation only) |
 | `Quaternion` | Unitized quaternion for 3D rotations |
@@ -247,14 +258,10 @@ on NuGet is pre-compiled without it.
 
 ## Development
 
-### Use of AI and LLMs
-All core function are are written by hand to ensure performance and correctness.<br>
-However, AI tools have been used for code review, typo and grammar checking in documentation<br>
-and to generate not all but many of the tests.
 
 ### Prerequisites
 - .NET SDK 10.0 or later (to have [scoped warnings](https://learn.microsoft.com/en-us/dotnet/fsharp/whats-new/fsharp-10#scoped-warning-suppression) available)
-- Node.js (only needed to run the .NET tests in JavaScript and TypeScript via Fable.Mocha)
+- Node.js (only needed to run the .NET tests in JavaScript and TypeScript via [Scriptorium](https://github.com/fable-hub/Scriptorium))
 
 ### Building from Source
 
