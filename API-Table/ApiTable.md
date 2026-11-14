@@ -11,7 +11,7 @@ All public types, members and functions of Euclid. Corresponding 2D and 3D types
   The static members without such an instance member follow at the end of each table.
 - A property shows only its type. `with get, set` marks a property that can be set. `?name` marks an optional parameter.
 
-Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand.
+Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 
 ## Contents
 

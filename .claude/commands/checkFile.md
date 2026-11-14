@@ -39,7 +39,7 @@ For each member:
   - Single-element collections
   - Duplicate elements
   - Division by zero checks
-  - NaN/Infinity handling where applicable
+
 
 ## 3. Code Quality Review
 

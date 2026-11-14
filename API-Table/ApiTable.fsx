@@ -7,9 +7,9 @@
 // A member without a counterpart either exists in one dimension on purpose, see 'only2DMembers' and 'only3DMembers',
 // or leaves an empty cell. So the empty cells are a checklist of gaps in the API and of names that do not match.
 //
-// Usage, from the repo root:
-//     dotnet fsi Scripts/ApiTable.fsx [output.md]
-// The default output is Scripts/ApiTable.md.
+// Usage, from this folder (API-Table/, which pins the SDK to .NET 10 with global.json):
+//     dotnet fsi ApiTable.fsx [output.md]
+// The default output is ApiTable.md next to this script.
 // Next to it, ApiTable2D.md and ApiTable3D.md list only the 2D or only the 3D geometry types, without the general utilities.
 //
 // The script type checks the files listed in Euclid.fsproj with FSharp.Compiler.Service.
@@ -694,7 +694,7 @@ let writeFile (path: string) (intro: string list) (parts: (string * Group list) 
     let line (s: string) = sb.Append(s).Append('\n') |> ignore
     for l in intro do line l
     line ""
-    line "Generated from the sources by `Scripts/ApiTable.fsx`. Do not edit by hand."
+    line "Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand."
     line ""
     line "## Contents"
     for label, gs in parts do
