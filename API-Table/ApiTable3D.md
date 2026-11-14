@@ -1,7 +1,7 @@
 # Euclid 3D API
 
 All public 3D geometry types of Euclid, with their members and functions.
-The general utilities and helper types are left out. See [ApiTable.md](ApiTable.md) for them and for 2D and 3D side by side.
+The general utilities and helper types are in [ApiTableGeneral.md](ApiTableGeneral.md). [ApiTable.md](https://github.com/goswinr/Euclid/blob/main/API-Table/ApiTable.md) lists 2D and 3D side by side.
 
 - Instance members and fields start with `.`, e.g. `.DistanceTo`.
 - Static members are qualified with their type name. They are listed right below the instance member of the same name.
@@ -30,6 +30,7 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 - [XLine3D.XEnds](#xline3dxends)
 - [module XLineXYZ](#module-xlinexyz)
 - [XLine3D](#xline3d)
+- [MatrixDecomposition](#matrixdecomposition)
 - [NPlane](#nplane)
 - [Rect3D](#rect3d)
 - [Box](#box)
@@ -1351,6 +1352,41 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `XLine3D.tryIntersectRayCustom` | `pA: Pnt * pB: Pnt * vA: Vec * vB: Vec * ?maxSkewDistance: float * ?tangent: float<tangent> * ?tooShortTolerance: float -> Pnt voption` |
 | `XLine3D.tryIntersectRayCustom` | `lineA: Line3D * lineB: Line3D * ?maxSkewDistance: float * ?tangent: float<tangent> * ?tooShortTolerance: float -> Pnt voption` |
 | `XLine3D.tryIntersectRayFromPntsAndVecs` | `pA: Pnt -> pB: Pnt -> vA: Vec -> vB: Vec -> Pnt voption` |
+
+## MatrixDecomposition
+
+| MatrixDecomposition | Signature |
+|:--|:--|
+| `.TranslationX` | `float` |
+| `.TranslationY` | `float` |
+| `.TranslationZ` | `float` |
+| `.RotationX` | `float` |
+| `.RotationY` | `float` |
+| `.RotationZ` | `float` |
+| `.RotationW` | `float` |
+| `.ScaleX` | `float` |
+| `.ScaleY` | `float` |
+| `.ScaleZ` | `float` |
+| `.ShearYX` | `float` |
+| `.ShearZX` | `float` |
+| `.ShearZY` | `float` |
+| `.AsFSharpCode` | `string` |
+| `MatrixDecomposition.asFSharpCode` | `d: MatrixDecomposition -> string` |
+| `.AsString` | `string` |
+| `MatrixDecomposition.asString` | `d: MatrixDecomposition -> string` |
+| `.Interpolate` | `finish: MatrixDecomposition * factor: float -> MatrixDecomposition` |
+| `MatrixDecomposition.interpolate` | `start: MatrixDecomposition -> finish: MatrixDecomposition -> factor: float -> MatrixDecomposition` |
+| `.Rotation` | `Quaternion` |
+| `.Scale` | `Vec` |
+| `.ToMatrix` | `Matrix` |
+| `MatrixDecomposition.toMatrix` | `d: MatrixDecomposition -> Matrix` |
+| `.ToString` | `unit -> string` |
+| `.Translation` | `Vec` |
+| **Other static members** | |
+| `MatrixDecomposition.create` | `translation: Vec -> rotation: Quaternion -> scale: Vec -> shearYX: float -> shearZX: float -> shearZY: float -> MatrixDecomposition` |
+| `MatrixDecomposition.equalsExact` | `a: MatrixDecomposition -> b: MatrixDecomposition -> bool` |
+| `MatrixDecomposition.equalsWithin` | `tol: float -> a: MatrixDecomposition -> b: MatrixDecomposition -> bool` |
+| `MatrixDecomposition.identity` | `MatrixDecomposition` |
 
 ## NPlane
 

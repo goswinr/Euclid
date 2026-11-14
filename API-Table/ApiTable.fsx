@@ -10,7 +10,9 @@
 // Usage, from this folder (API-Table/, which pins the SDK to .NET 10 with global.json):
 //     dotnet fsi ApiTable.fsx [output.md]
 // The default output is ApiTable.md next to this script.
-// Next to it, ApiTable2D.md and ApiTable3D.md list only the 2D or only the 3D geometry types, without the general utilities.
+// Next to it, ApiTable2D.md and ApiTable3D.md list only the 2D or only the 3D geometry types,
+// and ApiTableGeneral.md lists only the general utilities.
+// These three files are packed into the agent skill of the NuGet package, see skills/euclid/SKILL.md.
 //
 // The script type checks the files listed in Euclid.fsproj with FSharp.Compiler.Service.
 // So it needs no build and always reflects the current sources.
@@ -61,7 +63,7 @@ let explicitPairs =
         ]
 
 /// Types that only exist in 3D and do not have "3D" in their name.
-let only3D = set [ "Box"; "FreeBox"; "PPlane"; "NPlane"; "Matrix"; "RigidMatrix" ]
+let only3D = set [ "Box"; "FreeBox"; "PPlane"; "NPlane"; "Matrix"; "RigidMatrix"; "MatrixDecomposition" ]
 
 /// Members whose 3D counterpart has another name, as 2D type, 2D name and 3D name. The type "" stands for all types.
 /// A name also covers the static member of the same name in lowercase, so "Area" pairs BRect.Area with BBox.Volume and BRect.area with BBox.volume.
@@ -757,14 +759,32 @@ writeFile outFile
     [ "2D and 3D", groups
       "General", general ]
 
+let file2D = Path.GetFileName (withSuffix "2D")
+let file3D = Path.GetFileName (withSuffix "3D")
+let generalFile = Path.GetFileName (withSuffix "General")
+
+// The 2D, 3D and general files are also packed into the agent skill, without the combined file.
+// So they link to the combined file on GitHub.
+let combinedLink = "[ApiTable.md](https://github.com/goswinr/Euclid/blob/main/API-Table/ApiTable.md)"
+
 for dim, name in [ D2, "2D"; D3, "3D" ] do
     writeFile (withSuffix name)
         [ $"# Euclid {name} API"
           ""
           $"All public {name} geometry types of Euclid, with their members and functions."
-          $"The general utilities and helper types are left out. See [{Path.GetFileName outFile}]({Path.GetFileName outFile}) for them and for 2D and 3D side by side."
+          $"The general utilities and helper types are in [{generalFile}]({generalFile}). {combinedLink} lists 2D and 3D side by side."
           ""
           yield! notation ]
         [ (name, onlyDim dim) ]
+
+writeFile (withSuffix "General")
+    [ "# Euclid General API"
+      ""
+      "The general utilities and helper types of Euclid, used by both the 2D and the 3D types:"
+      "exceptions, tolerances, angle measures, formatting and collection helpers."
+      $"The geometry types are in [{file2D}]({file2D}) and [{file3D}]({file3D})."
+      ""
+      yield! notation ]
+    [ ("General", general) ]
 
 // #endregion

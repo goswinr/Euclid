@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- Added an agent skill to the NuGet package, in `skills/euclid/`, in the [Agent Skills](https://agentskills.io) format. Its `SKILL.md` tells coding agents which type to pick, how names are composed, and the failure, tolerance, equality and mutability contracts. Its `references/` folder holds the API tables `ApiTable2D.md`, `ApiTable3D.md` and the new `ApiTableGeneral.md`, with the signature of every public member. Tools like `dotnet-package-skills` copy it into the `.agents/skills/` folder of a repository. `API-Table/ApiTable.fsx` now also writes `ApiTableGeneral.md` with the general utilities, and lists `MatrixDecomposition` with the 3D types.
 - Filled the selected 2D/3D API gaps: `Vc.isParallelAndOrientedToUnitVc`, `Vc.isPerpendicularToUnitVc`, unsigned-angle `UnitVec.sine` and `tangent`, `Quaternion.Half`, static `half` wrappers on both rotation types, and `Rotation2D.identity`.
 - Added 3D finite-segment `closestParameters` and skew-aware `isWithinRanges` queries to `XLineXYZ` and `XLine3D`, including point/vector wrappers. Parallel closest-parameter tie-breaking matches 2D.
 - Added `Rect3D.fitToPointsXYZ`, `BRect.GetPoint`, `GetEdge`, `GetLine` and their static wrappers, `BRect.asRect2D`, and `BBox.createXYZ`. XYZ rectangle fitting rejects empty, malformed and collapsed bounds.

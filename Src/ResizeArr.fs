@@ -315,7 +315,7 @@ module ResizeArr =
         result
 
 
-/// An internal module with functions for working with IList<'T>.
+/// An internal module with optimized unchecked functions for working with IList<'T> in Fable JS.
 module IList =
 
     /// just iList.[idx], but optimized and unchecked in Fable Release.
@@ -326,6 +326,14 @@ module IList =
             Fable.Core.JsInterop.emitJsExpr (iList,idx) "$0[$1]"
         #else
             iList.[idx]
+        #endif
+
+    /// Just like iList.Count, but optimized to plain `iList.length` in Fable Release.
+    let inline count (iList: Collections.Generic.IList<'T>) : int =
+        #if RELEASE && (FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT)
+            Fable.Core.JsInterop.emitJsExpr (iList) "$0.length"
+        #else
+            iList.Count
         #endif
 
 

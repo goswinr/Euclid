@@ -61,6 +61,11 @@
         The Src items need their own PackagePath because MSBuild strips the part of the path before the wildcard.-->
     <Content Include="*.fsproj" PackagePath="fable/" />
     <Content Include="Src/**/*.fs; Src/**/*.fsi" PackagePath="fable/Src/" />
+    <!-- The agent skill for users of the package, in the Agent Skills format of https://agentskills.io.
+         The API tables are packed from API-Table/, so there is only one copy of them in the repository.
+         The release workflow regenerates them before the build. -->
+    <None Include="skills/euclid/SKILL.md" Pack="true" PackagePath="skills/euclid/" />
+    <None Include="API-Table/ApiTable2D.md; API-Table/ApiTable3D.md; API-Table/ApiTableGeneral.md" Pack="true" PackagePath="skills/euclid/references/" />
 
     <Compile Include="Src/EuclidErrors.fs" />
     <Compile Include="Src/UtilEuclid.fs" />

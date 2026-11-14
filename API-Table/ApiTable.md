@@ -35,6 +35,7 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 - [module XLineXY / module XLineXYZ](#module-xlinexy--module-xlinexyz), 0 gaps
 - [XLine2D / XLine3D](#xline2d--xline3d), 0 gaps
 - [XLine3D.XCone](#xline3dxcone)
+- [MatrixDecomposition](#matrixdecomposition)
 - [NPlane](#nplane)
 - [Rect2D / Rect3D](#rect2d--rect3d), 0 gaps
 - [Box](#box)
@@ -68,9 +69,9 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 - [module Tangent](#module-tangent)
 - [module Format](#module-format)
 - [module Format.ToMaxDigits](#module-formattomaxdigits)
-- [MatrixDecomposition](#matrixdecomposition)
 - [module EuclidCollectionUtilities.Arr](#module-euclidcollectionutilitiesarr)
 - [module EuclidCollectionUtilities.ResizeArr](#module-euclidcollectionutilitiesresizearr)
+- [module EuclidCollectionUtilities.IList](#module-euclidcollectionutilitiesilist)
 - [ResizeArray extensions](#resizearray-extensions)
 
 ## Vc / Vec
@@ -1438,6 +1439,41 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Touching` | `float -> XCone` |
 | `ThroughTip` | `float -> XCone` |
 | `LineOnCone` | `tipParam: float * onConeTowardsPositiveT: bool -> XCone` |
+
+## MatrixDecomposition
+
+| MatrixDecomposition | Signature |
+|:--|:--|
+| `.TranslationX` | `float` |
+| `.TranslationY` | `float` |
+| `.TranslationZ` | `float` |
+| `.RotationX` | `float` |
+| `.RotationY` | `float` |
+| `.RotationZ` | `float` |
+| `.RotationW` | `float` |
+| `.ScaleX` | `float` |
+| `.ScaleY` | `float` |
+| `.ScaleZ` | `float` |
+| `.ShearYX` | `float` |
+| `.ShearZX` | `float` |
+| `.ShearZY` | `float` |
+| `.AsFSharpCode` | `string` |
+| `MatrixDecomposition.asFSharpCode` | `d: MatrixDecomposition -> string` |
+| `.AsString` | `string` |
+| `MatrixDecomposition.asString` | `d: MatrixDecomposition -> string` |
+| `.Interpolate` | `finish: MatrixDecomposition * factor: float -> MatrixDecomposition` |
+| `MatrixDecomposition.interpolate` | `start: MatrixDecomposition -> finish: MatrixDecomposition -> factor: float -> MatrixDecomposition` |
+| `.Rotation` | `Quaternion` |
+| `.Scale` | `Vec` |
+| `.ToMatrix` | `Matrix` |
+| `MatrixDecomposition.toMatrix` | `d: MatrixDecomposition -> Matrix` |
+| `.ToString` | `unit -> string` |
+| `.Translation` | `Vec` |
+| **Other static members** | |
+| `MatrixDecomposition.create` | `translation: Vec -> rotation: Quaternion -> scale: Vec -> shearYX: float -> shearZX: float -> shearZY: float -> MatrixDecomposition` |
+| `MatrixDecomposition.equalsExact` | `a: MatrixDecomposition -> b: MatrixDecomposition -> bool` |
+| `MatrixDecomposition.equalsWithin` | `tol: float -> a: MatrixDecomposition -> b: MatrixDecomposition -> bool` |
+| `MatrixDecomposition.identity` | `MatrixDecomposition` |
 
 ## NPlane
 
@@ -3001,41 +3037,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `ToMaxDigits.d9` | `x: float -> string` |
 | `ToMaxDigits.trimZeros` | `n: string -> string` |
 
-## MatrixDecomposition
-
-| MatrixDecomposition | Signature |
-|:--|:--|
-| `.TranslationX` | `float` |
-| `.TranslationY` | `float` |
-| `.TranslationZ` | `float` |
-| `.RotationX` | `float` |
-| `.RotationY` | `float` |
-| `.RotationZ` | `float` |
-| `.RotationW` | `float` |
-| `.ScaleX` | `float` |
-| `.ScaleY` | `float` |
-| `.ScaleZ` | `float` |
-| `.ShearYX` | `float` |
-| `.ShearZX` | `float` |
-| `.ShearZY` | `float` |
-| `.AsFSharpCode` | `string` |
-| `MatrixDecomposition.asFSharpCode` | `d: MatrixDecomposition -> string` |
-| `.AsString` | `string` |
-| `MatrixDecomposition.asString` | `d: MatrixDecomposition -> string` |
-| `.Interpolate` | `finish: MatrixDecomposition * factor: float -> MatrixDecomposition` |
-| `MatrixDecomposition.interpolate` | `start: MatrixDecomposition -> finish: MatrixDecomposition -> factor: float -> MatrixDecomposition` |
-| `.Rotation` | `Quaternion` |
-| `.Scale` | `Vec` |
-| `.ToMatrix` | `Matrix` |
-| `MatrixDecomposition.toMatrix` | `d: MatrixDecomposition -> Matrix` |
-| `.ToString` | `unit -> string` |
-| `.Translation` | `Vec` |
-| **Other static members** | |
-| `MatrixDecomposition.create` | `translation: Vec -> rotation: Quaternion -> scale: Vec -> shearYX: float -> shearZX: float -> shearZY: float -> MatrixDecomposition` |
-| `MatrixDecomposition.equalsExact` | `a: MatrixDecomposition -> b: MatrixDecomposition -> bool` |
-| `MatrixDecomposition.equalsWithin` | `tol: float -> a: MatrixDecomposition -> b: MatrixDecomposition -> bool` |
-| `MatrixDecomposition.identity` | `MatrixDecomposition` |
-
 ## module EuclidCollectionUtilities.Arr
 
 | Arr | Signature |
@@ -3072,6 +3073,13 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `ResizeArr.thisNext` | `rarr: ResizeArray<'T> -> ('T * 'T) seq` |
 | `ResizeArr.tryFindBack` | `predicate: ('T -> bool) -> resizeArray: ResizeArray<'T> -> 'T voption` |
 | `ResizeArr.tryFindIndex` | `predicate: ('T -> bool) -> xs: ResizeArray<'T> -> int voption` |
+
+## module EuclidCollectionUtilities.IList
+
+| IList | Signature |
+|:--|:--|
+| `IList.count` | `iList: IList<'T> -> int` |
+| `IList.getIdx` | `idx: int -> iList: IList<'T> -> 'T` |
 
 ## ResizeArray extensions
 
